@@ -398,10 +398,10 @@ LL_DeleteNode (LinkedList * list)
 	if (list->current == &list->tail)
 		return NULL;
 
-#ifdef DEBUG
+/*
 	printf ("LL_DeleteNode: Before...\n");
 	LL_dprint (list);
-#endif
+*/
 
 	next = list->current->next;
 	prev = list->current->prev;
@@ -423,10 +423,10 @@ LL_DeleteNode (LinkedList * list)
 
 	list->current = next;
 
-#ifdef DEBUG
+/*
 	printf ("LL_DeleteNode: After...\n");
 	LL_dprint (list);
-#endif
+*/
 
 	return data;
 }
