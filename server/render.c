@@ -171,16 +171,12 @@ render_frame (LinkedList * list,
 #define	VerticalScrolling (fscroll == 'v')
 #define	HorizontalScrolling (fscroll == 'h')
 
-	char str[BUFSIZE];			/* scratch buffer */
-	Widget * w;
-
-	int vis_width, vis_height;		/* Width and height of visible frame area */
+	int vis_width = right - left;		/* width of visible frame area */
+	int vis_height = bottom - top;		/* height of visible frame area */
 	int x, y;
-	int fx, fy;				/* Scrolling offset for the frame... */
+	int fx = 0, fy = 0;				/* Scrolling offset for the frame... */
 	int length, speed;
-	/*int lines; */
 	int str_length = BUFSIZE-1;
-
 	int reset = 1;
 
 	debug( RPT_DEBUG, "%s( list=%p, fscroll='%c', left=%d, top=%d, "
@@ -188,50 +184,47 @@ render_frame (LinkedList * list,
 			  __FUNCTION__, list, fscroll, left,top, right, bottom,
 			  fwid, fhgt, fspeed, timer );
 
-	vis_width = right - left;		/* This is the size of the visible frame area */
-	vis_height = bottom - top;
+	/* return on no data or illegal height */
+	if (!list || (fhgt <= 0))
+		return -1;
 
-	fx = 0;
-	fy = 0;
 	if (VerticalScrolling) {
-		if (fspeed > 0)
-			fy = (timer - fspeed) / fspeed;
-		else if (fspeed < 0)
-			fy = (-fspeed) * timer;
+		// FIXME: timer may be negative (this should be changed generally)
+		// only set offset !=0 when fspeed is != 0 and there is something to scroll
+		if (fspeed && (fhgt > vis_height)) {
+			int fy_max = fhgt - vis_height + 1;
 
-		if (fy < 0)
-			fy = 0;
+			fy = (fspeed > 0)
+			     ? (timer / fspeed) % fy_max
+			     : (-fspeed * timer) % fy_max;
 
-		if (fhgt == 0) { fy = 0; } else { fy %= fhgt; }
-		if (fy > fhgt - vis_height)
-			fy = fhgt - vis_height;
-
+			fy = max(fy, 0);	// safeguard against negative values
+		}	
 	} else if (HorizontalScrolling) {
 		/* TODO:  Frames don't scroll horizontally yet! */
 	}
 
-	if (!list)
-		return -1;
-
+	/* reset widget list */
 	LL_Rewind (list);
+
+	/* loop over all widgets */
 	do {
-		w = (Widget *) LL_Get (list);
+		char str[BUFSIZE];			/* scratch buffer */
+		Widget *w = (Widget *) LL_Get (list);
+
 		if (!w)
 			return -1;
 
 		/* TODO:  Make this cleaner and more flexible!*/
 		switch (w->type) {
 			case WID_STRING:
-				if (w->x>0 && w->y>0 && w->text) {
-					if ((w->y <= vis_height + fy) && (w->y > fy)) {
-						if (w->x > vis_width) w->x=vis_width;
-						str_length = abs(vis_width - w->x + 1);
-						if (str_length >= BUFSIZE)
-							str_length = BUFSIZE - 1;
-						strncpy (str, w->text, str_length);
-						str[str_length] = 0;
-						drivers_string (w->x + left, w->y + top - fy, str);
-					}
+				if ((w->x > 0) && (w->y > 0) && (w->text) &&
+				    (w->y <= vis_height + fy) && (w->y > fy)) {
+					w->x = min(w->x, vis_width);
+					str_length = min(vis_width - w->x + 1, BUFSIZE - 1);
+					strncpy (str, w->text, str_length);
+					str[str_length] = 0;
+					drivers_string (w->x + left, w->y + top - fy, str);
 				}
 				break;
 			case WID_HBAR:
@@ -239,29 +232,28 @@ render_frame (LinkedList * list,
 					//drivers_init_hbar ();
 					reset = 0;
 				}
-				if ((w->x > 0) && (w->y > 0)) {
-					if ((w->y <= vis_height + fy) && (w->y > fy)) {
-						if (w->length > 0) {
-							if ((w->length / display_props->cellwidth) < vis_width - w->x + 1) {
-								/*was: drivers_hbar (w->x + left, w->y + top - fy, w->length); */
-								/* improvised len and promille */
-								int full_len = display_props->width - w->x - left + 1;
-								int promille = (long) 1000 * w->length / ( display_props->cellwidth * full_len );
-								drivers_hbar (w->x + left, w->y + top - fy, full_len, promille, BAR_PATTERN_FILLED);
-							}
-							else {
-								/*was: drivers_hbar (w->x + left, w->y + top - fy, wid * display_props->cellwidth); */
-								/* Improvised len and promille while we have the old widget language */
-								int full_len = ( display_props->width - w->x - left + 1 );
-								drivers_hbar (w->x + left, w->y + top - fy, full_len, 1000, BAR_PATTERN_FILLED);
-							}
-						} else if (w->length < 0) {
-							/* TODO:  Rearrange stuff to get left-extending
-							 * hbars to draw correctly...
-							 * .. er, this'll require driver modifications,
-							 * so I'll leave it out for now.
-							 */
+				if ((w->x > 0) && (w->y > 0) &&
+				    (w->y <= vis_height + fy) && (w->y > fy)) {
+					if (w->length > 0) {
+						if ((w->length / display_props->cellwidth) < vis_width - w->x + 1) {
+							/*was: drivers_hbar (w->x + left, w->y + top - fy, w->length); */
+							/* improvised len and promille */
+							int full_len = display_props->width - w->x - left + 1;
+							int promille = (long) 1000 * w->length / ( display_props->cellwidth * full_len );
+							drivers_hbar (w->x + left, w->y + top - fy, full_len, promille, BAR_PATTERN_FILLED);
 						}
+						else {
+							/*was: drivers_hbar (w->x + left, w->y + top - fy, wid * display_props->cellwidth); */
+							/* Improvised len and promille while we have the old widget language */
+							int full_len = ( display_props->width - w->x - left + 1 );
+							drivers_hbar (w->x + left, w->y + top - fy, full_len, 1000, BAR_PATTERN_FILLED);
+						}
+					} else if (w->length < 0) {
+						/* TODO:  Rearrange stuff to get left-extending
+						 * hbars to draw correctly...
+						 * .. er, this'll require driver modifications,
+						 * so I'll leave it out for now.
+						 */
 					}
 				}
 				break;
@@ -299,8 +291,7 @@ render_frame (LinkedList * list,
 				drivers_icon (w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
 
 				length = strlen (w->text);
-				if (length >= BUFSIZE)
-					length = BUFSIZE - 1;
+				length = min(length, BUFSIZE - 1);
 				if (length <= vis_width - 6) {
 					strncpy (str, w->text, length);
 					str[length] = 0;
@@ -311,19 +302,15 @@ render_frame (LinkedList * list,
 					x = timer / speed;
 					y = x / length;
 
-					x %= (length);
-					if (x < 0)
-						x = 0;
+					x %= length;
+					x = max(x, 0);
 					if (x > length - (vis_width - 6))
 						x = length - (vis_width - 6);
 
 					if (y & 1)			  /* Scrolling backwards...*/
-					{
 						x = (length - (vis_width - 6)) - x;
-					}
 					str_length = abs(vis_width - 6);
-					if (str_length >= BUFSIZE)
-						str_length = BUFSIZE -1;
+					str_length = min(str_length, BUFSIZE -1);
 					strncpy (str, w->text + x, str_length);
 					str[str_length] = 0;
 					x = vis_width - 1;
@@ -340,18 +327,54 @@ render_frame (LinkedList * list,
 				{
 					int offset;
 					int screen_width;
+
 					if (!w->text)
 						break;
 					if (w->right < w->left)
 						break;
 					/*debug(RPT_DEBUG, "%s: %s %d",__FUNCTION__,w->text,timer);*/
 					screen_width = abs(w->right - w->left + 1);
-					if (screen_width >= BUFSIZE)
-						screen_width = BUFSIZE -1;
+					screen_width = min(screen_width, BUFSIZE -1);
 					switch (w->length) {	/* actually, direction...*/
 						/* FIXED:  Horz scrollers don't show the
 						 * last letter in the string...  (1-off error?)
 						 */
+					case 'm': // Marquee
+						length = strlen (w->text);
+						if (length <= screen_width) {
+							/* it fits within the box, just render it */
+							drivers_string (w->left, w->top, w->text);
+						} else {
+							int necessaryTimeUnits = 0;
+							
+							if (w->speed > 0) {
+								necessaryTimeUnits = length * w->speed;
+								offset = (timer % (length * w->speed)) / w->speed;
+							} else if (w->speed < 0) {
+								necessaryTimeUnits = length / (w->speed * -1);
+								offset = (timer % (length / (w->speed * -1))) * w->speed * -1;
+							} else {
+								offset = 0;
+							}
+							if (offset <= length) {
+								int room = screen_width - (length - offset);
+
+								strncpy (str, &w->text[offset], screen_width);
+
+								// if there's more room, restart at the beginning
+								if (room > 0) {
+									strncat (str, w->text, room);
+								}
+
+								str[screen_width] = '\0';
+
+								/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset);*/
+							} else {
+								str[0] = '\0';
+							}
+							drivers_string (w->left, w->top, str);
+						}
+						break;
 					case 'h':
 						length = strlen (w->text) + 1;
 						if (length <= screen_width) {
@@ -360,6 +383,7 @@ render_frame (LinkedList * list,
 						} else {
 							int effLength = length - screen_width;
 							int necessaryTimeUnits = 0;
+
 							if (w->speed > 0) {
 								necessaryTimeUnits = effLength * w->speed;
 								if (((timer / (effLength * w->speed)) % 2) == 0) {
@@ -400,6 +424,7 @@ render_frame (LinkedList * list,
 					case 'v':
 						{
 							int i = 0;
+							
 							length = strlen (w->text);
 							if (length <= screen_width) {
 								/* no scrolling required... */
@@ -408,6 +433,7 @@ render_frame (LinkedList * list,
 								int lines_required = (length / screen_width)
 									 + (length % screen_width ? 1 : 0);
 								int available_lines = (w->bottom - w->top + 1);
+								
 								if (lines_required <= available_lines) {
 									/* easy...*/
 									for (i = 0; i < lines_required; i++) {
@@ -419,6 +445,7 @@ render_frame (LinkedList * list,
 									int necessaryTimeUnits = 0;
 									int effLines = lines_required - available_lines + 1;
 									int begin = 0;
+
 									/*debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);*/
 									if (w->speed > 0) {
 										necessaryTimeUnits = effLines * w->speed;
@@ -465,19 +492,13 @@ render_frame (LinkedList * list,
 					/* FIXME: doesn't handle nested frames quite right!
 					 * doesn't handle scrolling in nested frames at all...
 					 */
-					int new_left, new_top, new_right, new_bottom;
-					new_left = left + w->left - 1;
-					new_top = top + w->top - 1;
-					new_right = left + w->right;
-					new_bottom = top + w->bottom;
-					if (new_right > right)
-						new_right = right;
-					if (new_bottom > bottom)
-						new_bottom = bottom;
-					if (new_left >= right || new_top >= bottom) {	/* Do nothing if it's invisible...*/
-					} else {
+					int new_left = left + w->left - 1;
+					int new_top = top + w->top - 1;
+					int new_right = min(left + w->right, right);
+					int new_bottom = min(top + w->bottom, bottom);
+
+					if ((new_left < right) && (new_top < bottom))	/* Render only if it's visible...*/
 						render_frame (w->frame_screen->widgetlist, w->length, new_left, new_top, new_right, new_bottom, w->width, w->height, w->speed, timer);
-					}
 				}
 				break;
 			case WID_NUM:				  /* FIXME: doesn't work in frames...*/

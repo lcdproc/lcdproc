@@ -373,8 +373,9 @@ widget_set_func (Client * c, int argc, char **argv)
 				/*debug("dir: %c",(char)direction);*/
 				speed = atoi (argv[i + 5]);
 				/*debug("speed: %d",speed);*/
-				/* Direction must be v or h*/
-				if (((char) direction != 'h') && ((char) direction != 'v')) {
+				/* Direction must be m, v or h*/
+				if (((char) direction != 'h') && ((char) direction != 'v') &&
+				    ((char) direction != 'm')) {
 					sock_send_string (c->sock, "huh?  Invalid direction\n");
 				} else {
 					w->left = left;

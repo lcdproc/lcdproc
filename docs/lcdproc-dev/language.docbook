@@ -348,7 +348,7 @@
 		  &lt;left&gt; &lt;top&gt; &lt;right&gt; &lt;bottom&gt; &lt;direction&gt; &lt;speed&gt; &lt;text&gt;
 	        </para>
 	        <para>
-                  direction can be "h" or "v".
+                  direction can be "h", "m" or "v".
 	        </para>
 	        <para>
                   speed is the number of movements per rendering stroke (8 times/second).

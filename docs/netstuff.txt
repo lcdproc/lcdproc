@@ -194,7 +194,9 @@ widget_set #screen #id data
 			The speed is how many display frames to delay
 			between scrolling.  Each display frame is
 			1/8th of a second, by default.
-			Direction must be "h" or "v".
+			Direction must be "h" for horizontal, "m" for
+			marquee style horizontal or "v" for vertical
+			scrolling..
 			Positive speeds indicate frames per movement.
 			Negative speeds indicate movements per frame.
 
