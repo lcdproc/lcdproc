@@ -7,9 +7,33 @@ Key:
 
 Coming soon: (?) (my list of stuff to do soon...)
  + Client menus
- + Configuration file support
- * Better syntax for driver parameters
  * Dynamically-loaded driver system
+ + LCDproc Developer's Guide
+
+v0.4.3
+ - Removed possibility of passing arguments to the drivers from the
+   command line, which can be done in the configuration file now
+ + Added configuration file support
+ + Added ability of dropping root privileges to LCDd
+ + Added LCDM001 driver (kernelconcepts.de)
+ + Added Toshiba T6963 driver
+ * Modified the CFontz driver so that the new ROM version is
+   supported
+ + Added ASCII emulation of BigNum to the drivers that did not
+   support custom characters
+ + Added ability of configuring (rearranging) the keypad of MtxOrb
+   displays
+ + Added .lircrc location to the options of the lirc driver
+ * Fixed backlight code (partly rewritten)
+ * Fixed heartbeat code (completely rewritten analogous to
+   the backlight code)
+ + Added init scripts for debian and Redhat/Mandrake
+ + Added EPM list file so that you can use EPM
+   (http://www.easysw.com/epm) to generate packages of LCDproc
+ + Added documentation in docbook format
+   (LCDproc User's Guide - docs/lcdproc-user)
+ * Ported some screens of lcdproc to *BSD.
+ * Ported the parallel port functions in port.h to *BSD.
 
 v0.4.2:
  - Removed multiple output driver support - to simplify life
@@ -24,6 +48,7 @@ v0.4.2:
  + Fixed compile problems on non-Linux platforms where cfmakeraw,
    CBAUD, and ioperm don't exist.  All drivers now use the same code
    to initialize a serial port.
+
 v0.4.1:
  + Changed protocol to 0.3 because we now accept both -foo and foo
    as argument introducers.  in 0.4-pre10, these were changed
