@@ -1,0 +1,157 @@
+This document describes the driver API of v0.4 of LCDproc.
+
+The API consists of several functions to tell the driver that
+certains actions should be performed, and some data. I consider
+the data part of the API, because this data is transfered 
+between core and driver.
+
+OVERVIEW OF OPERATION
+
+The API is best descibed by starting with the struct lcd_logical_driver
+which is defined in server/drivers/lcd.h.
+
+The various variables and functions in this struct are filled by the server
+with default values and functions. It is then passed to the driver while
+calling the init function of the driver. The driver can decide to change
+values and to override functions.
+
+typedef struct lcd_logical_driver {
+	// Size in cells of the LCD
+	int wid, hgt;
+	// Size of each LCD cell, in pixels
+	int cellwid, cellhgt;
+	// Frame buffer...
+	char *framebuf;
+
+	// Functions which might be the same for all drivers...
+	void (*clear) ();
+	void (*string) (int x, int y, char lcd[]);
+
+	void (*chr) (int x, int y, char c);
+	void (*vbar) (int x, int len);
+	void (*hbar) (int x, int y, int len);
+	void (*init_num) ();
+	void (*num) (int x, int num);
+
+	// Functions which should probably be implemented in each driver...
+	int (*init) (struct lcd_logical_driver * driver, char *args);
+	void (*close) ();
+	void (*flush) ();
+	void (*flush_box) (int lft, int top, int rgt, int bot);
+	int (*contrast) (int contrast);
+	void (*backlight) (int on);
+	void (*output) (int on);
+	void (*set_char) (int n, char *dat);
+	void (*icon) (int which, char dest);
+	void (*init_vbar) ();
+	void (*init_hbar) ();
+	void (*draw_frame) ();
+
+	// Returns 0 for "no key pressed", or (A-Z).
+	char (*getkey) ();
+
+	// more?
+
+} lcd_logical_driver;
+
+The various parts are meant for the following:
+
+1. Several variables
+These vars are meant to tell the server how many characters wide and high the
+LCD is, and what size the definable characters are. 
+
+2. Framebuf
+The framebuffer can be written to by server and client in the 0.4 version.
+Therefor the framebuffer must always be of the size wid*hgt. It holds the
+display contents, line after line.
+
+3. Functions which might be the same for all drivers
+These functions are usually implemented by server's internal functions that
+perform standard operations. Placing a char in the framebuffer etc. are
+all equal in all drivers and therefor are implemented in the server.
+This behaviour probably changes in v0.5.
+
+4. Functions which should probably be implemented in each driver
+These functions are probably different for all drivers.
+
+
+FUNCTIONS IN DETAIL
+
+void (*clear) ();
+// Clears the framebuffer
+
+void (*string) (int x, int y, char lcd[]);
+// Places a string in the framebuffer
+// All coordinates are 1-based, (1,1) is top left.
+
+void (*chr) (int x, int y, char c);
+// Places a char in the framebuffer
+
+void (*vbar) (int x, int len);
+// Draws a vertical bar at horizontal position x and with length len.
+// init_vbar will be called once before this functions.
+
+void (*hbar) (int x, int y, int len);
+// Draws a horizontal bar at position x,y and with length len.
+// init_hbar will be called once before this functions.
+
+void (*init_num) ();
+// Initializes the big number displaying. A big number should have a width
+// of 4 characters, and a spacing of 1 character.
+
+void (*num) (int x, int num);
+// Displays a big number at position x.
+
+int (*init) (struct lcd_logical_driver * driver, char *args);
+// The init function
+// Starts up the LCD and initializes the struct with correct values and
+// correct function pointers.
+
+void (*close) ();
+// Shuts down the connection with the LCD.
+
+void (*flush) ();
+// Flushes the framebuffer to the LCD.
+
+void (*flush_box) (int lft, int top, int rgt, int bot);
+// Flushes only a part of the framebuffer to the LCD.
+// Not called by the server currently.
+
+int (*contrast) (int contrast);
+// Sets the contrast to the given value.
+// Many displays do not support software setting of contrast.
+
+void (*backlight) (int on);
+// Sets the backlight to brightness 'on'.
+// Often hardware can only support on and off, in that case any value
+// of on>0 will switch the backlight on.
+
+void (*output) (int on);
+// Sets the output value. Some displays/wirings have a general purpose
+// output, which can be controlled by calling this function. See the
+// 'output' command in the 'widget language'.
+
+void (*set_char) (int n, char *dat);
+// Define a character
+
+void (*icon) (int which, char dest);
+// Define a character to be a standard icon. Is used for the heartbeat.
+
+void (*init_vbar) ();
+// Initializes the LCD to display vertical bars
+
+void (*init_hbar) ();
+// Initializes the LCD to display horizontal bars
+
+void (*draw_frame) ();
+// Unclear function.
+// Not called by the server currently.
+
+char (*getkey) ();
+// Checks if a key has been pressed on the device.
+// Returns 0 for "no key pressed", or a character for the key.
+// These characters do not always match the keypad-layout.
+
+
+First version, Joris Robijn, 20011016
+
