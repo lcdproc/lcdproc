@@ -48,6 +48,8 @@
 
 #undef MTXORB_DRV
 
+#undef LCDM001_DRV
+
 #undef SED1520_DRV
 
 #undef STV5730_DRV

@@ -65,6 +65,10 @@ static char *lcd_drv_getinfo ();
  *
  */
 
+#ifdef LCDM001_DRV
+#include "lcdm001.h"
+#endif
+
 #ifdef MTXORB_DRV
 #include "MtxOrb.h"
 #endif
@@ -154,6 +158,10 @@ lcd_logical_driver lcd, *lcd_root = NULL, *lcd_ptr = NULL;
 //
 lcd_physical_driver drivers[] = {
 
+#ifdef LCDM001_DRV
+	{"lcdm001", lcdm001_init,},
+	{"LCDM001", lcdm001_init,},
+#endif
 #ifdef MTXORB_DRV
 	{"MtxOrb", MtxOrb_init,},
 	{"MatrixOrbital", MtxOrb_init,},

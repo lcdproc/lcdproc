@@ -6,15 +6,15 @@ AC_ARG_ENABLE(drivers,
 	[                  drivers may be separated with commas.]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval", 
-  	drivers=[mtxorb,cfontz,curses,text,lb216,bayrad,glk])
+  	drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
 	case "$host" in
 	*-*-*linux*)
-		drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520,svgalib]
+		drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520,svgalib]
 		;;
 	*-*-*solaris*)
-		drivers=[mtxorb,cfontz,curses,text,lb216,bayrad,glk]
+		drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk]
 		;;
 	esac
   	AC_MSG_RESULT(all)
@@ -25,6 +25,10 @@ fi
   	for driver in $drivers
   	do
     		case "$driver" in
+        	lcdm001)
+			DRIVERS="$DRIVERS lcdm001.o"
+			AC_DEFINE(LCDM001_DRV)
+			;;
         	mtxorb)
 			DRIVERS="$DRIVERS MtxOrb.o"
 			AC_DEFINE(MTXORB_DRV)
