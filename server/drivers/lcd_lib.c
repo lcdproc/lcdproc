@@ -14,6 +14,10 @@
 // Drawn from the "base driver" which really was the precursor
 // to this library....
 
+// TODO: What should this really be?  Probably should be in the
+// driver code or headers or something...
+#define MAX_CUSTOM_CHARS 16
+
 void
 free_framebuf (struct lcd_logical_driver *driver) {
 	if (!driver)
@@ -38,11 +42,20 @@ clear_framebuf (struct lcd_logical_driver *driver) {
 
 int
 new_framebuf (struct lcd_logical_driver *driver, char *oldbuf) {
+	int i;
+
 	if (driver->framebuf == NULL)
 		return 1;
 	if (oldbuf == NULL)
 		return 1;
-	return (strncmp(driver->framebuf, oldbuf, driver->wid * driver->hgt) != 0);
+
+	for (i = 0; i < driver->wid * driver->hgt; i++) {
+		if (driver->framebuf[i] < MAX_CUSTOM_CHARS)
+			return 1;
+		if (driver->framebuf[i] != oldbuf[i])
+			return 1;
+	}
+	return 0;
 }
 
 void
