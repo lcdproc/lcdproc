@@ -18,5 +18,5 @@ int lcdm001_init (struct lcd_logical_driver *driver, char *args);
 
 #define OPEN_HEART ' '     //This combination is at least visible
 #define FILLED_HEART '*'
-#define PAD '#'
+#define PAD 255
 #endif
