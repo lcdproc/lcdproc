@@ -53,9 +53,9 @@ static int reset;
 static int draw_frame (LinkedList * list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, int timer);
 
 int
-draw_screen (screen * s, int timer)
+draw_screen (Screen * s, int timer)
 {
-	static screen *old_s = NULL;
+	static Screen * old_s = NULL;
 	int tmp = 0, tmp_state = 0;
 
 	report(RPT_INFO, "draw_screen( screen=\"%.40s\", timer=%d )  ==== START RENDERING ====", s->name, timer );
@@ -82,10 +82,10 @@ draw_screen (screen * s, int timer)
 	 * inherit the backlight state from the parent client. This allows
 	 * the client to override it's childrens settings.
 	 */
-	if (s->backlight_state == BACKLIGHT_NOTSET) {
-		if (s->parent) tmp_state = s->parent->backlight_state;
+	if (s->backlight == BACKLIGHT_OPEN) {
+		if (s->client) tmp_state = s->client->backlight;
 	} else {
-		tmp_state = s->backlight_state;
+		tmp_state = s->backlight;
 	}
 
 	/* Set up backlight to the correct state... */
@@ -126,7 +126,7 @@ draw_screen (screen * s, int timer)
 	drivers_output (output_state);
 
 	/* Draw a frame... */
-	draw_frame (s->widgets, 'v', 0, 0, display_props->width, display_props->height, s->wid, s->hgt, (((s->duration / s->hgt) < 1) ? 1 : (s->duration / s->hgt)), timer);
+	draw_frame (s->widgetlist, 'v', 0, 0, display_props->width, display_props->height, s->width, s->height, (((s->duration / s->height) < 1) ? 1 : (s->duration / s->height)), timer);
 
 	/*debug(RPT_DEBUG, "draw_screen done"); */
 
@@ -176,12 +176,12 @@ draw_frame (LinkedList * list,
 #define	VerticalScrolling (fscroll == 'v')
 #define	HorizontalScrolling (fscroll == 'h')
 
-	char str[BUFSIZE];			  /* scratch buffer */
-	widget *w;
+	char str[BUFSIZE];			/* scratch buffer */
+	Widget * w;
 
-	int wid, hgt;				  /* Width and height of visible frame area */
+	int vis_width, vis_height;		/* Width and height of visible frame area */
 	int x, y;
-	int fx, fy;				  /* Scrolling offset for the frame... */
+	int fx, fy;				/* Scrolling offset for the frame... */
 	int length, speed;
 	/*int lines; */
 
@@ -191,8 +191,8 @@ draw_frame (LinkedList * list,
 			  "right=%d, bottom=%d, fwid=%d, fhgt=%d, fspeed=%d, timer=%d )",
 			  list, fscroll, left,top, right, bottom, fwid, fhgt, fspeed, timer );
 
-	wid = right - left;			  /* This is the size of the visible frame area */
-	hgt = bottom - top;
+	vis_width = right - left;		/* This is the size of the visible frame area */
+	vis_height = bottom - top;
 
 	fx = 0;
 	fy = 0;
@@ -220,8 +220,8 @@ draw_frame (LinkedList * list,
 		}
 
 		fy %= fhgt;
-		if (fy > fhgt - hgt)
-			fy = fhgt - hgt;
+		if (fy > fhgt - vis_height)
+			fy = fhgt - vis_height;
 
 	} else if (HorizontalScrolling) {
 		/* TODO:  Frames don't scroll horizontally yet! */
@@ -239,7 +239,7 @@ draw_frame (LinkedList * list,
 
 	LL_Rewind (list);
 	do {
-		w = (widget *) LL_Get (list);
+		w = (Widget *) LL_Get (list);
 		if (!w)
 			return -1;
 
@@ -247,10 +247,10 @@ draw_frame (LinkedList * list,
 		switch (w->type) {
 			case WID_STRING:
 				if (ValidPoint(w) && TextPresent(w)) {
-					if ((w->y <= hgt + fy) && (w->y > fy)) {
-						if (w->x > wid) w->x=wid;
-						strncpy (str, w->text, wid - w->x + 1);
-						str[wid - w->x + 1] = 0;
+					if ((w->y <= vis_height + fy) && (w->y > fy)) {
+						if (w->x > vis_width) w->x=vis_width;
+						strncpy (str, w->text, vis_width - w->x + 1);
+						str[vis_width - w->x + 1] = 0;
 						drivers_string (w->x + left, w->y + top - fy, str);
 					}
 				}
@@ -261,9 +261,9 @@ draw_frame (LinkedList * list,
 					reset = 0;
 				}
 				if ((w->x > 0) && (w->y > 0)) {
-					if ((w->y <= hgt + fy) && (w->y > fy)) {
+					if ((w->y <= vis_height + fy) && (w->y > fy)) {
 						if (w->length > 0) {
-							if ((w->length / display_props->cellwidth) < wid - w->x + 1) {
+							if ((w->length / display_props->cellwidth) < vis_width - w->x + 1) {
 								/*was: drivers_hbar (w->x + left, w->y + top - fy, w->length); */
 								/* improvised len and promille */
 								int full_len = display_props->width - w->x - left + 1;
@@ -311,13 +311,16 @@ draw_frame (LinkedList * list,
 			case WID_TITLE:			  /* FIXME:  Doesn't work quite right in frames...*/
 				if (!w->text)
 					break;
-				if (wid < 8)
+				if (vis_width < 8)
 					break;
 
-				memset (str, 255, wid);
+				/*memset (str, 255, width);*/
+				memset (str, '*', vis_width);
+				/* TODO: Use icon function to draw the bar */
+
 				str[2] = ' ';
 				length = strlen (w->text);
-				if (length <= wid - 6) {
+				if (length <= vis_width - 6) {
 					memcpy (str + 3, w->text, length);
 					str[length + 3] = ' ';
 				} else					  /* Scroll the title, if it doesn't fit...*/
@@ -338,17 +341,17 @@ draw_frame (LinkedList * list,
 					x -= 3;
 					if (x < 0)
 						x = 0;
-					if (x > length - (wid - 6))
-						x = length - (wid - 6);
+					if (x > length - (vis_width - 6))
+						x = length - (vis_width - 6);
 
 					if (y & 1)			  /* Scrolling backwards...*/
 					{
-						x = (length - (wid - 6)) - x;
+						x = (length - (vis_width - 6)) - x;
 					}
-					strncpy (str + 3, w->text + x, (wid - 6));
-					str[wid - 3] = ' ';
+					strncpy (str + 3, w->text + x, (vis_width - 6));
+					str[vis_width - 3] = ' ';
 				}
-				str[wid] = 0;
+				str[vis_width] = 0;
 
 				drivers_string (1 + left, 1 + top, str);
 				break;
@@ -504,7 +507,7 @@ draw_frame (LinkedList * list,
 						new_bottom = bottom;
 					if (new_left >= right || new_top >= bottom) {	/* Do nothing if it's invisible...*/
 					} else {
-						draw_frame (w->kids, w->length, new_left, new_top, new_right, new_bottom, w->wid, w->hgt, w->speed, timer);
+						draw_frame (w->frame_screen->widgetlist, w->length, new_left, new_top, new_right, new_bottom, w->width, w->height, w->speed, timer);
 					}
 				}
 				break;

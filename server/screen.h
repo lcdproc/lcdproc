@@ -13,34 +13,57 @@
 #define SCREEN_H
 
 #include "shared/LL.h"
-#include "clients.h"
 
-typedef struct screen {
+typedef struct Screen {
 	char *id;
 	char *name;
-	int wid, hgt;
-	int priority;
+	int width, height;
 	int duration;
-	int heartbeat;
 	int timeout;
-	int backlight_state;
-	int cursor;
-	int cursor_x;
-	int cursor_y;
+	short int priority;
+	short int heartbeat;
+	short int backlight;
+	short int cursor;
+	short int cursor_x;
+	short int cursor_y;
 	char *keys;
-	LinkedList *widgets;
-	client *parent;
-} screen;
+	LinkedList *widgetlist;
+	struct Client *client;
+} Screen;
+
+#include "client.h"
+#include "widget.h"
+
 
 extern int  default_duration ;
 extern int  default_priority ;
 
-screen *screen_create ();
-int screen_destroy (screen * s);
 
-screen *screen_find (client * c, char *id);
+/* Creates a new screen */
+Screen * screen_create (char * id, Client * client);
 
-int screen_add (client * c, char *id);
-int screen_remove (client * c, char *id);
+/* Destroys a screen */
+int screen_destroy (Screen * s);
+
+/* Add a widget to a screen */
+int screen_add_widget (Screen * s, Widget * w);
+
+/* Remove a widget from a screen (does not destroy it) */
+int screen_remove_widget (Screen * s, Widget * w);
+
+/* List functions */
+static inline Widget * screen_getfirst_widget (Screen * s)
+{
+	return LL_GetFirst(s->widgetlist);
+}
+
+static inline Widget * screen_getnext_widget (Screen * s)
+{
+	return LL_GetNext(s->widgetlist);
+}
+
+
+/* Find a widget in a screen */
+Widget *screen_find_widget (Screen * s, char *id);
 
 #endif

@@ -159,6 +159,7 @@ LCD_DRIVERS_SELECT
 AC_OUTPUT(Makefile
 	shared/Makefile
 	server/Makefile
+	server/commands/Makefile
 	server/drivers/Makefile
 	clients/Makefile
 	clients/lcdproc/Makefile

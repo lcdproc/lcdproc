@@ -12,39 +12,25 @@
 #ifndef CLIENTS_H
 #define CLIENTS_H
 
-#include "client_data.h"
+#include "client.h"
 #include "shared/LL.h"
 
-typedef struct client {
-	int sock;
-	char addr[64];
-	int backlight_state;
-	LinkedList *messages;
-	client_data *data;
-
-} client;
-
-extern LinkedList *clients;
+/* extern LinkedList *clientlist;   Not needed outside ? */
 
 /* Initialize and kill client list...*/
-int client_init ();
-int client_shutdown ();
+int clients_init ();
+int clients_shutdown ();
 
-/* Create and destroy clients....*/
-client *client_create (int sock);
-int client_destroy (client * c);
+/* Add/remove clients (return -1 for error) */
+int clients_add_client (Client *c);
+int clients_remove_client (Client *c);
 
-/* Add and remove messages from the client's queue...*/
-int client_add_message (client * c, char *message);
-char *client_get_message (client * c);
-
-/* Get and set the client's data...
- * Not used at all yet, and may never be.  Oh, well.
- */
-int client_set (client * c, void *data);
-void *client_get (client * c);
+/* List functions */
+Client * clients_getfirst ();
+Client * clients_getnext ();
+int clients_client_count ();
 
 /* Search for a client with a particular filedescriptor...*/
-client *client_find_sock (int sock);
+Client * clients_find_client_by_sock (int sock);
 
 #endif

@@ -31,34 +31,45 @@
 int  default_duration = 0;
 int  default_timeout  = -1;
 
-screen *
-screen_create ()
+Screen *
+screen_create (char * id, Client * client)
 {
-	screen *s;
+	Screen *s;
 
-	s = malloc (sizeof (screen));
+	s = malloc (sizeof (Screen));
 	if (!s) {
-		report(RPT_ERR, "screen_create: Error allocating new screen");
+		report(RPT_ERR, "screen_create: Error allocating");
+		return NULL;
+	}
+	if (!id) {
+		report (RPT_ERR, "screen_create: Need id string");
+		return NULL;
+	}
+	/* Client can be NULL for serverscreens and other client-less screens */
+
+	s->id = strdup(id);
+	if (!s->id) {
+		report(RPT_ERR, "screen_create: Error allocating");
 		return NULL;
 	}
 
-	s->id = NULL;
 	s->name = NULL;
 	s->priority = DEFAULT_SCREEN_PRIORITY;
 	s->duration = default_duration;
-	s->heartbeat = DEFAULT_HEARTBEAT;
-	s->wid = display_props->width;
-	s->hgt = display_props->height;
+	s->backlight = BACKLIGHT_OPEN;
+	s->heartbeat = HEARTBEAT_OPEN;
+	s->width = display_props->width;
+	s->height = display_props->height;
 	s->keys = NULL;
-	s->parent = NULL;
-	s->widgets = NULL;
-	s->timeout = default_timeout; /*ignored unless greater than 0.*/
-	s->backlight_state = BACKLIGHT_NOTSET;	/*Lets the screen do it's own*/
+	s->client = client;
+	s->widgetlist = NULL;
+	s->timeout = default_timeout; 	/*ignored unless greater than 0.*/
+	s->backlight = BACKLIGHT_OPEN;		/*Lets the screen do it's own*/
 						/*or do what the client says.*/
 
-	s->widgets = LL_new ();
-	if (!s->widgets) {
-		report(RPT_ERR, "screen_create:  Error allocating widget list");
+	s->widgetlist = LL_new ();
+	if (!s->widgetlist) {
+		report(RPT_ERR, "screen_create: Error allocating");
 		return NULL;
 	}
 
@@ -66,20 +77,18 @@ screen_create ()
 }
 
 int
-screen_destroy (screen * s)
+screen_destroy (Screen * s)
 {
-	widget *w;
+	Widget *w;
 
 	if (!s)
 		return -1;
 
-	LL_Rewind (s->widgets);
-	do {
+	for (w=LL_GetFirst(s->widgetlist); w; w=LL_GetNext(s->widgetlist)) {
 		/* Free a widget...*/
-		w = LL_Get (s->widgets);
 		widget_destroy (w);
-	} while (LL_Next (s->widgets) == 0);
-	LL_Destroy (s->widgets);
+	}
+	LL_Destroy (s->widgetlist);
 
 	if (s->id)
 		free (s->id);
@@ -93,99 +102,59 @@ screen_destroy (screen * s)
 	return 0;
 }
 
-screen *
-screen_find (client * c, char *id)
+int
+screen_add_widget (Screen * s, Widget * w)
 {
-	screen *s;
+	report (RPT_INFO, "screen_add_widget(%s,%s)", s->id, w->id);
+	if (!s)
+		return -1;
+	if (!w)
+		return 1;
 
-	if (!c)
+	LL_Push (s->widgetlist, (void *) w);
+
+	return 0;
+}
+
+int
+screen_remove_widget (Screen * s, Widget * w)
+{
+	report (RPT_INFO, "screen_remove_widget(%s,%s)", s->id, w->id);
+
+	if (!s)
+		return -1;
+	if (!w)
+		return 1;
+
+	LL_Remove (s->widgetlist, (void *) w);
+
+	return 0;
+}
+
+Widget *
+screen_find_widget (Screen * s, char *id)
+{
+	Widget * w;
+
+	if (!s)
 		return NULL;
 	if (!id)
 		return NULL;
 
-	debug (RPT_INFO, "client_find_screen(%s)", id);
+	debug (RPT_DEBUG, "screen_find_widget(%s,%s)", s->id, id);
 
-	LL_Rewind (c->data->screenlist);
-	do {
-		s = LL_Get (c->data->screenlist);
-		if ((s) && (0 == strcmp (s->id, id))) {
-			debug (RPT_DEBUG, "client_find_screen:  Found %s", id);
-			return s;
+	for ( w=LL_GetFirst(s->widgetlist); w; w=LL_GetNext(s->widgetlist) ) {
+		if (0 == strcmp (w->id, id)) {
+			debug (RPT_DEBUG, "screen_find_widget: Found %s", id);
+			return w;
 		}
-	} while (LL_Next (c->data->screenlist) == 0);
-
+		/* Search subscreens recursively */
+		if (w->type == WID_FRAME) {
+			w = widget_search_subs (w, id);
+			if (w)
+				return w;
+		}
+	}
+	debug (RPT_DEBUG, "screen_find_widget: Not found");
 	return NULL;
-}
-
-int
-screen_add (client * c, char *id)
-{
-	screen *s;
-
-	if (!c)
-		return -1;
-	if (!id)
-		return -1;
-
-	/* Make sure this screen doesn't already exist...*/
-	s = screen_find (c, id);
-	if (s) {
-		return 1;
-	}
-
-	s = screen_create ();
-	if (!s) {
-		report (RPT_ERR, "screen_add:  Error creating screen");
-		return -1;
-	}
-
-	s->parent = c;
-
-	s->id = strdup (id);
-	if (!s->id) {
-		report (RPT_ERR, "screen_add:  Error allocating name");
-		return -1;
-	}
-	/* TODO:  Check for errors here?*/
-	LL_Push (c->data->screenlist, (void *) s);
-
-	/* Now, add it to the screenlist...*/
-	if (screenlist_add (s) < 0) {
-		report (RPT_ERR, "screen_add:  Error queueing new screen");
-		return -1;
-	}
-
-	return 0;
-}
-
-int
-screen_remove (client * c, char *id)
-{
-	screen *s;
-
-	if (!c)
-		return -1;
-	if (!id)
-		return -1;
-
-	/* Make sure this screen *does* exist...*/
-	s = screen_find (c, id);
-	if (!s) {
-		report (RPT_ERR, "screen_remove:  Error finding screen %s", id);
-		return 1;
-	}
-	/* TODO:  Check for errors here?*/
-	LL_Remove (c->data->screenlist, (void *) s);
-
-	/* Now, remove it from the screenlist...*/
-	if (screenlist_remove_all (s) < 0) {
-		/* Not a serious error..*/
-		report (RPT_ERR, "screen_remove:  Error dequeueing screen");
-		return 0;
-	}
-
-	/* TODO:  Check for errors here too?*/
-	screen_destroy (s);
-
-	return 0;
 }

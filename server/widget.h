@@ -12,42 +12,52 @@
 #ifndef WIDGET_H
 #define WIDGET_H
 
-#include "screen.h"
-
-typedef struct widget {
-	char *id;
-	int type;
-	/* some sort of data here...*/
-	int x, y;			/* Position*/
-	int wid, hgt;			/* Size*/
-	int left, top, right, bottom;	/* bounding rectangle*/
-	int length;			/* size or direction*/
-	int speed;			/* For scroller...*/
-	char *text;			/* text or binary data*/
-	LinkedList *kids;		/* Frames can contain more widgets...*/
-} widget;
+struct Widget;
 
 /* These correspond to the index into the "types" array...*/
-#define WID_NONE 0
-#define WID_STRING 1
-#define WID_HBAR 2
-#define WID_VBAR 3
-#define WID_ICON 4
-#define WID_TITLE 5
-#define WID_SCROLLER 6
-#define WID_FRAME 7
-#define WID_NUM 8
+typedef enum WidgetType {
+	WID_NONE = 0,
+	WID_STRING,
+	WID_HBAR,
+	WID_VBAR,
+	WID_ICON,
+	WID_TITLE,
+	WID_SCROLLER,
+	WID_FRAME,
+	WID_NUM
+} WidgetType;
+
+typedef struct Widget {
+	char *id;
+	WidgetType type;
+	Screen * screen;		/* What screen is this widget in ? */
+	int x, y;			/* Position */
+	int width, height;		/* Visible size */
+	int left, top, right, bottom;	/* bounding rectangle */
+	int length;			/* size or direction */
+	int speed;			/* For scroller... */
+	char *text;			/* text or binary data */
+	struct Screen * frame_screen;	/* frame widget get an associated screen */
+	//LinkedList *kids;		/* Frames can contain more widgets...*/
+} Widget;
+
+#include "screen.h"
 
 #define WID_MAX_DIR 4
 
-extern char *types[];
+/* Create new widget */
+Widget * widget_create (char *id, WidgetType type, Screen * screen);
 
-widget *widget_create ();
-int widget_destroy (widget * w);
+/* Destroy a widget */
+int widget_destroy (Widget * w);
 
-widget *widget_find (screen * s, char *id);
+/* Convert a widget typename to a widget type */
+WidgetType widget_typename_to_type (char * typename);
 
-int widget_add (screen * s, char *id, char *type, char *in, int sock);
-int widget_remove (screen * s, char *id, int sock);
+/* Convert a widget typename to a widget type */
+char *widget_type_to_typename (WidgetType t);
+
+/* Search subwidgets of a widget */
+Widget * widget_search_subs (Widget * w, char * id);
 
 #endif

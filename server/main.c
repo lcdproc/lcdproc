@@ -391,7 +391,7 @@ process_configfile ( char *configfile )
 			report( RPT_ERR, "Serverscreen can only be no, noscreen or yes" );
 		}
 	}
-	
+
 	if( backlight == UNSET_INT ) {
 		s = config_get_string( "server", "backlight", 0, UNSET_STR );
 		if( strcmp( s, "on" ) == 0 ) {
@@ -526,7 +526,7 @@ init_sockets ()
 
 	/* Now init a bunch of required stuff...*/
 
-	if (client_init () < 0) {
+	if (clients_init () < 0) {
 		report(RPT_ERR, "Error initializing client list");
 		return -1;
 	}
@@ -614,7 +614,7 @@ init_screens ()
 			report(RPT_ERR, "Error initializing server screens");
 			return -1;
 		}
-		
+
 		if (enable_server_screen == SERVER_SCREEN_NOSCREEN) {
 			/* Display the server screen only when there are no other screens */
 			server_screen->priority = 256;
@@ -627,7 +627,7 @@ init_screens ()
 void
 do_mainloop ()
 {
-	screen *s = NULL;
+	Screen *s = NULL;
 	char *message=NULL;
 
 	report( RPT_INFO, "do_mainloop()" );
@@ -708,7 +708,8 @@ do_mainloop ()
 				free(message);
 			}
 			if (s->timeout <= 0) {
-				screen_remove (s->parent, s->id);
+				client_remove_screen (s->client, s);
+				screen_destroy (s);
 				if((message = malloc(256)) == NULL)
 					report(RPT_ERR, "Error allocating message string");
 				else {
@@ -760,7 +761,7 @@ exit_program (int val)
 
 	/* Shutdown things if server start was complete */
 	if( serverStarted ) {
-		client_shutdown ();		/* shutdown clients (must come first) */
+		clients_shutdown ();		/* shutdown clients (must come first) */
 		screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
 		sock_close_all ();		/* close all open sockets (must come after client_shutdown) */
 	}

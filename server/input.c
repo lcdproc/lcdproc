@@ -43,19 +43,17 @@
 
 #include "drivers.h"
 
-#include "client_data.h"
+#include "client.h"
 #include "clients.h"
 #include "screen.h"
 #include "widget.h"
 #include "screenlist.h"
-#include "menus.h"
+//#include "menus.h"
 
 #include "input.h"
 
 #define KeyWanted(a,b)	((a) && strchr((a), (b)))
 #define CurrentScreen	screenlist_current
-#define FirstClient(a)	(client *)LL_GetFirst(a);
-#define NextClient(a)	(client *)LL_GetNext(a);
 
 int server_input (int key);
 
@@ -69,9 +67,9 @@ handle_input ()
 {
 	char str[15];
 	int key;
-	screen *s;
-	/*widget *w; */
-	client *c;
+	Screen * s;
+	/*Widget * w; */
+	Client * c;
 
 	report (RPT_INFO, "handle_input()" );
 
@@ -103,7 +101,7 @@ handle_input ()
 	if (KeyWanted(s->keys, key)) {
 		/* This screen wants this key.  Tell it we got one */
 		snprintf(str, sizeof(str), "key %c\n", key);
-		sock_send_string(s->parent->sock, str);
+		sock_send_string(s->client->sock, str);
 		/* Nobody else gets this key */
 	}
 
@@ -114,17 +112,17 @@ handle_input ()
 	else {
 		/* Give key to clients who want it */
 
-		c = FirstClient(clients);
+		c = clients_getfirst();
 
 		while (c) {
 			/* If the client should have this keypress... */
-			if(KeyWanted(c->data->client_keys,key)) {
+			if(KeyWanted(c->client_keys,key)) {
 				/* Send keypress to client */
 				snprintf(str, sizeof(str), "key %c\n", key);
 				sock_send_string(c->sock, str);
 				break;	/* first come, first serve */
 			};
-			c = NextClient(clients);
+			c = clients_getnext();
 		} /* while clients */
 
 		/* Give server a shot at all keys */
@@ -156,7 +154,8 @@ server_input (int key)
 			break;
 		case INPUT_MAIN_MENU_KEY:
 			debug (RPT_DEBUG, "got the menu key!");
-			server_menu ();
+			//server_menu ();
+			report (RPT_ERR, "MENU TEMPORATY DISABLED");
 			break;
 		default:
 			debug (RPT_DEBUG, "server_input: Unused key \"%c\" (%i)", (char) key, key);

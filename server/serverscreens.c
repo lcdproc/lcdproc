@@ -23,76 +23,68 @@
 #include "shared/report.h"
 
 #include "drivers.h"
-
 #include "clients.h"
 #include "screen.h"
 #include "screenlist.h"
 #include "widget.h"
-
 #include "serverscreens.h"
 
-screen *server_screen;
-char *id = "ClientList";
-char *name = "Client List";
+Screen * server_screen;
 
 char title[256] = "LCDproc Server";
 char one[256] = "";
 char two[256] = "";
 char three[256] = "";
 
-#define WidgetXPos(w,a) (w)->x = (a)
-#define WidgetYPos(w,a) (w)->y = (a)
-#define WidgetText(w,a) (w)->text = (a)
-#define WidgetString(w,a,b,t)	{WidgetXPos(w,a);WidgetYPos(w,b);WidgetText(w,t);}
+#define WidgetString(w,a,b,t)	{(w)->x=(a);(w)->y=(b);(w)->text=(t);}
 
 int
 server_screen_init ()
 {
-	widget *w;
+	Widget * w;
 
 	debug (RPT_DEBUG, "server_screen_init");
 
-	server_screen = screen_create ();
-
+	server_screen = screen_create ("_server_screen", NULL);
 	if (!server_screen) {
 		report (RPT_ERR, "server_screen_init: Error allocating screen");
 		return -1;
 	}
 
-	server_screen->id = id;
-	server_screen->name = name;
+	server_screen->name = "Server screen";
 	server_screen->duration = 8; /* 1 second, instead of 4...*/
+	server_screen->priority = -1; /* TODO: use priorities good */
 
-	if (widget_add (server_screen, "title", "title", NULL, 1) != 0) {
-		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
-	}
-	if (widget_add (server_screen, "one", "string", NULL, 1) != 0) {
-		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
-	}
-	if (widget_add (server_screen, "two", "string", NULL, 1) != 0) {
-		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
-	}
-	if (widget_add (server_screen, "three", "string", NULL, 1) != 0) {
-		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
+	if (	(w = widget_create ("title", WID_TITLE, server_screen)) == NULL
+	||	screen_add_widget (server_screen, w) != 0
+	||	(w = widget_create ("one", WID_STRING, server_screen)) == NULL
+	||	screen_add_widget (server_screen, w) != 0
+	||	(w = widget_create ("two", WID_STRING, server_screen)) == NULL
+	||	screen_add_widget (server_screen, w) != 0
+	||	(w = widget_create ("three", WID_STRING, server_screen)) == NULL
+	||	screen_add_widget (server_screen, w) != 0
+	) {
+		report (RPT_ERR, "server_screen_init: Can't create widgets");
+		return -1;
 	}
 
 	/* Now, initialize all the widgets...*/
-	if ((w = widget_find (server_screen, "title")) != NULL) {
-		WidgetText(w,title);
+	if ((w = screen_find_widget (server_screen, "title")) != NULL) {
+		w->text = title;
 	} else
 		report (RPT_ERR, "server_screen_init: Can't find title");
 
-	if ((w = widget_find (server_screen, "one")) != NULL)
+	if ((w = screen_find_widget (server_screen, "one")) != NULL)
 		WidgetString(w,1,2,one)
 	else
 		report (RPT_ERR, "server_screen_init: Can't find widget one");
 
-	if ((w = widget_find (server_screen, "two")) != NULL)
+	if ((w = screen_find_widget (server_screen, "two")) != NULL)
 		WidgetString(w,1,3,two)
 	else
 		report (RPT_ERR, "server_screen_init: Can't find widget two");
 
-	if ((w = widget_find (server_screen, "three")) != NULL)
+	if ((w = screen_find_widget (server_screen, "three")) != NULL)
 		WidgetString(w,1,4,three)
 	else
 		report (RPT_ERR, "server_screen_init: Can't find widget three");
@@ -106,15 +98,15 @@ server_screen_init ()
 }
 
 static int
-screen_count (client *c) {
+screen_count (Client * c) {
 	int n;
 
 	n = 0;
-	LL_Rewind (c->data->screenlist);
+	LL_Rewind (c->screenlist);
 	do {
-		if (LL_Get (c->data->screenlist) != NULL)
+		if (LL_Get (c->screenlist) != NULL)
 			n++;
-	} while (LL_Next (c->data->screenlist) == 0);
+	} while (LL_Next (c->screenlist) == 0);
 
 	return n;
 }
@@ -122,7 +114,7 @@ screen_count (client *c) {
 int
 update_server_screen (int timer)
 {
-	client *c;
+	Client * c;
 	int num_clients;
 	/*screen *s;*/
 	int num_screens;
@@ -131,14 +123,22 @@ update_server_screen (int timer)
 	/*strcpy(title, "LCDproc Server");*/
 
 	/* Now get info on the number of connected clients...*/
-	num_clients = 0;
+	num_clients = clients_client_count();
+
+	/* ... and screens */
 	num_screens = 0;
-	LL_Rewind (clients);
-	do {
-		c = LL_Get (clients);
+	for (c = clients_getfirst (); c; c = clients_getnext () ) {
+		num_screens += client_screen_count(c);
+	}
+
+/*
 		if (c) {
 			num_clients++;
+			num_screens += client_screen_count(c);
+
 			num_screens += screen_count(c);
+*/
+
 /*			LL_Rewind (c->data->screenlist); */
 /*			do { */
 /*				s = LL_Get (c->data->screenlist); */
@@ -146,8 +146,11 @@ update_server_screen (int timer)
 /*					num_screens++; */
 /*				} */
 /*			} while (LL_Next (c->data->screenlist) == 0); */
+
+/*
 		}
-	} while (LL_Next (clients) == 0);
+	}
+*/
 
 	/* Format strings for the appropriate size display... */
 	if (display_props->height >= 3) {

@@ -33,8 +33,11 @@
 
 #include "shared/sockets.h"
 #include "sock.h"
+#include "client.h"
 #include "clients.h"
+#include "screen.h"
 #include "shared/report.h"
+#include "screenlist.h"
 
 extern char bind_addr[64];
 extern int lcd_port;
@@ -142,7 +145,7 @@ sock_poll_clients ()
 	struct sockaddr_in clientname;
 	size_t size;
 	struct timeval t;
-	client *c;
+	Client * c;
 
 	debug(RPT_INFO, "sock_poll_clients()");
 
@@ -162,22 +165,26 @@ sock_poll_clients ()
 		if (FD_ISSET (i, &read_fd_set)) {
 			if (i == orig_sock) {
 				/* Connection request on original socket. */
-				int new;
+				int new_sock;
 				size = sizeof (clientname);
-				new = accept (orig_sock, (struct sockaddr *) &clientname, &size);
-				if (new < 0) {
+				new_sock = accept (orig_sock, (struct sockaddr *) &clientname, &size);
+				if (new_sock < 0) {
 					report (RPT_ERR, "sock_poll_clients: Accept error");
 					return -1;
 				}
 				report (RPT_INFO, "sock_poll_clients: Connect from host %s:%hd on #%d",
-					inet_ntoa (clientname.sin_addr), ntohs (clientname.sin_port), new);
-				FD_SET (new, &active_fd_set);
+					inet_ntoa (clientname.sin_addr), ntohs (clientname.sin_port), new_sock);
+				FD_SET (new_sock, &active_fd_set);
 
-				fcntl (new, F_SETFL, O_NONBLOCK);
+				fcntl (new_sock, F_SETFL, O_NONBLOCK);
 
-				/* TODO:  Create new "client" here...  (done?)*/
-				if (client_create (new) == NULL) {
-					report( RPT_ERR, "sock_poll_clients: error creating client %i", i);
+				/* Create new client */
+				if ((c = client_create (new_sock)) == NULL) {
+					report( RPT_ERR, "sock_poll_clients: Error creating client %i", i);
+					return -1;
+				}
+				if (clients_add_client (c) != 0) {
+					report( RPT_ERR, "sock_poll_clients: Could not add client %i", i);
 					return -1;
 				}
 			} else {
@@ -189,10 +196,11 @@ sock_poll_clients ()
 					debug (RPT_DEBUG, "sock_poll_clients: ...done");
 					if (err < 0) {
 						/* TODO:  Destroy a "client" here... (done?)*/
-						c = client_find_sock (i);
+						c = clients_find_client_by_sock (i);
 						if (c) {
 							/*sock_send_string(i, "bye\n");*/
 							client_destroy (c);
+							clients_remove_client (c);
 							close (i);
 							FD_CLR (i, &active_fd_set);
 							report (RPT_INFO, "sock_poll_clients: Closed connection %i", i);
@@ -200,7 +208,6 @@ sock_poll_clients ()
 							report (RPT_ERR, "sock_poll_clients: Can't find client %i", i);
 					}
 				} while (err > 0);
-
 			}
 		}
 	}
@@ -212,7 +219,7 @@ read_from_client (int filedes)
 {
 	char buffer[MAXMSG];
 	int nbytes, i;
-	client *c;
+	Client * c;
 
 	report(RPT_DEBUG, "read_from_client()" );
 
@@ -241,7 +248,7 @@ read_from_client (int filedes)
 			if (buffer[i] == 0)
 				buffer[i] = '\n';
 		/* Enqueue a "client message" here...*/
-		c = client_find_sock (filedes);
+		c = clients_find_client_by_sock (filedes);
 		if (c) {
 			client_add_message (c, buffer);
 		} else

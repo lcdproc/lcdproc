@@ -28,10 +28,10 @@ int timer = 0;
 
 LinkedList *screenlist;
 
-int screenlist_add_end (screen * screen);
-screen *screenlist_next_roll ();
-screen *screenlist_prev_roll ();
-screen *screenlist_next_priority ();
+int screenlist_add_end (Screen * screen);
+Screen *screenlist_next_roll ();
+Screen *screenlist_prev_roll ();
+Screen *screenlist_next_priority ();
 
 int compare_priority (void *one, void *two);
 int compare_addresses (void *one, void *two);
@@ -64,7 +64,7 @@ screenlist_shutdown ()
 }
 
 int
-screenlist_remove (screen * s)
+screenlist_remove (Screen * s)
 {
 	report (RPT_INFO, "screenlist_remove()");
 
@@ -75,7 +75,7 @@ screenlist_remove (screen * s)
 }
 
 int
-screenlist_remove_all (screen * s)
+screenlist_remove_all (Screen * s)
 {
 	int i = 0;
 
@@ -97,19 +97,19 @@ screenlist_getlist ()
 	return screenlist;
 }
 
-screen *
+Screen *
 screenlist_current ()
 {
 	char str[256];
-	screen *s;
-	static screen *old_s = NULL;
-	client *c;
+	Screen * s;
+	static Screen * old_s = NULL;
+	Client * c;
 
 	debug( RPT_INFO, "screenlist_current:");
 
 	/*LL_dprint(screenlist);*/
 
-	s = (screen *) LL_GetFirst (screenlist);
+	s = (Screen *) LL_GetFirst (screenlist);
 
 	/* FIXME:  Make sure the screen/client exists!*/
 	if (s != old_s) {
@@ -124,7 +124,7 @@ screenlist_current ()
 				report (RPT_WARNING, "screenlist: Didn't find screen 0x%8x! Client crashed?", (int) old_s);
 			} else {
 				/*debug(RPT_DEBUG, "screenlist_current: ... sending ignore");*/
-				c = old_s->parent;
+				c = old_s->client;
 				if (c)				  /* Tell the client we're not listening any more...*/
 				{
 					snprintf (str, sizeof(str), "ignore %s\n", old_s->id);
@@ -138,7 +138,7 @@ screenlist_current ()
 		}
 		if (s) {
 			/*debug(RPT_DEBUG, "screenlist_current: listening to new screen");*/
-			c = s->parent;
+			c = s->client;
 			if (c)					  /* Tell the client we're paying attention...*/
 			{
 				snprintf (str, sizeof(str), "listen %s\n", s->id);
@@ -158,16 +158,16 @@ screenlist_current ()
 }
 
 int
-screenlist_add (screen * s)
+screenlist_add (Screen * s)
 {
 	/* TODO:  Different queueing modes...*/
 	return screenlist_add_end (s);
 }
 
-screen *
+Screen *
 screenlist_next ()
 {
-	screen *s;
+	Screen *s;
 
 	/*debug(RPT_DEBUG, "Screenlist_next()");*/
 
@@ -194,10 +194,10 @@ screenlist_next ()
 	return s;
 }
 
-screen *
+Screen *
 screenlist_prev ()
 {
-	screen *s;
+	Screen *s;
 
 	s = screenlist_current ();
 
@@ -219,7 +219,7 @@ screenlist_prev ()
 
 /* Adds new screens to the end of the screenlist...*/
 int
-screenlist_add_end (screen * screen)
+screenlist_add_end (Screen * screen)
 {
 	debug (RPT_DEBUG, "screenlist_add_end()");
 
@@ -227,7 +227,7 @@ screenlist_add_end (screen * screen)
 }
 
 /* Simple round-robin approach to screen cycling...*/
-screen *
+Screen *
 screenlist_next_roll ()
 {
 	/*debug(RPT_DEBUG, "screenlist_next_roll()");*/
@@ -239,7 +239,7 @@ screenlist_next_roll ()
 }
 
 /* Strict priority queue approach...*/
-screen *
+Screen *
 screenlist_next_priority ()
 {
 	/*screen *s, *t;*/
@@ -254,7 +254,7 @@ screenlist_next_priority ()
 }
 
 /* Simple round-robin approach to screen cycling...*/
-screen *
+Screen *
 screenlist_prev_roll ()
 {
 	/*debug(RPT_DEBUG, "screenlist_prev_roll()");*/
@@ -268,7 +268,7 @@ screenlist_prev_roll ()
 int
 compare_priority (void *one, void *two)
 {
-	screen *a, *b;
+	Screen *a, *b;
 
 	/*debug(RPT_DEBUG, "compare_priority: %8x %8x", one, two);*/
 
@@ -277,8 +277,8 @@ compare_priority (void *one, void *two)
 	if (!two)
 		return 0;
 
-	a = (screen *) one;
-	b = (screen *) two;
+	a = (Screen *) one;
+	b = (Screen *) two;
 
 	/*debug(RPT_DEBUG, "compare_priority: done?");*/
 

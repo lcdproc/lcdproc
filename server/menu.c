@@ -6,6 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2002, Joris Robijn
  *
  *
  * Handles server-supplied menus defined by a table.  Read menu.h for
@@ -19,6 +20,16 @@
  * to handle dynamically-changing menus such as the client list.  Tcl/Tk
  * has neat ways to do it.  Hmm...
  *
+ * NEW DESCRIPTION
+ *
+ * Handles a menu and all actions that can be performed on it.
+ *
+ * Menus are similar to "pull-down" menus, but have some extra features.
+ * They can contain "normal" menu items, checkboxes, sliders, "movers",
+ * etc..
+ *
+ * The servermenu is created from servermenu.c
+ *
  */
 
 #include <stdlib.h>
@@ -26,329 +37,205 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "parse.h"
-#include "sock.h"
-#include "render.h"
-#include "main.h"
+#include "config.h"
 
-#include "drivers.h"
 #include "menu.h"
-#include "input.h"
+#include "shared/report.h"
+#include "drivers.h"
 
-/* FIXME: Implement this where it is supposed to be...*/
-void
-framedelay ()
+#include "screen.h"
+
+
+/* Internal menu item drawing functions */
+void menu_build_menu_screen	(MenuItem *item, Screen *s);
+void menu_build_slider_screen	(MenuItem *item, Screen *s);
+void menu_build_numeric_screen	(MenuItem *item, Screen *s);
+void menu_build_string_screen	(MenuItem *item, Screen *s);
+void menu_update_menu_screen	(MenuItem *item, Screen *s);
+void menu_update_slider_screen	(MenuItem *item, Screen *s);
+void menu_update_numeric_screen	(MenuItem *item, Screen *s);
+void menu_update_string_screen	(MenuItem *item, Screen *s);
+
+
+MenuItem *menu_create_add_item (Menu *into_menu, int type, char *id,
+		EventFunc(*event_func))
 {
-	sock_poll_clients ();
-	parse_all_client_messages ();
+	Menu *new_item;
 
-	usleep (TIME_UNIT);
-}
-
-static void
-draw_heartbeat ()
-{
-	static int timer = 0;
-
-	if (heartbeat) {
-		/* Set this to pulsate like a real heart beat... */
-		/*drivers_icon (!((timer + 4) & 5), 0); */
-		/*drivers_chr (display_props->width, 1, 0); */
+	/* Allocate space and fill struct */
+	new_item = malloc (sizeof(MenuItem));
+	if (!new_item) {
+		report (RPT_ERR, "menu_add_new_item: Could not allocate memory");
+		return NULL;
 	}
-	drivers_flush ();
+	new_item->type = type;
+	new_item->id = strdup (id);
+	if (!new_item->id) {
+		report (RPT_ERR, "menu_add_new_item: Could not allocate memory");
+		return NULL;
+	}
+	new_item->event_func = event_func;
 
-	timer++;
-	timer &= 0x0f;
-}
+	/* Clear the type specific data part */
+	memset ( &(new_item->data), 0, sizeof(new_item->data));
 
-static int PAD = 255;
-
-typedef struct menu_info {
-	int selected;
-	int length;
-} menu_info;
-
-static int draw_menu (Menu menu, menu_info * info);
-static int fill_menu_info (Menu menu, menu_info * info);
-static int menu_handle_action (menu_item * item);
-
-static int slid_func (menu_item * item);
-
-int
-do_menu (Menu menu)
-{
-	menu_info info;
-	int key = 0;
-	int status = MENU_OK;
-	int done = 0;
-
-	int (*func) ();
-	int (*readfunc) (int);
-
-	if (!menu)
-		return MENU_ERROR;
-
-	fill_menu_info (menu, &info);
-
-	while (!done) {
-		/* Keep the cursor off titles... (?) */
-		while (menu[info.selected].type == TYPE_TITL) {
-			info.selected++;
-			/* If the title is the last thing in the menu... */
-			if (!menu[info.selected].text)
-				info.selected -= 2;
-		}
-
-		draw_menu (menu, &info);
-
-		/* FIXME: This should use a better keypress interface, which */
-		/* FIXME: handles things according to keybindings... */
-
-		for (key = drivers_getkey (); key == 0; key = drivers_getkey ()) {
-			/* sleep for 1/8th second... */
-			framedelay ();
-			/* do the heartbeat... */
-			draw_heartbeat ();
-			/* Check for client input... */
-		}
-		printf( "Received key: %c\n", key );
-
-		/* Handle the key according to the keybindings... */
-		switch (key) {
-		case 'D':
-			done = 1;
-			break;
-		case 'B':
-			if (info.selected > 0)
-				info.selected--;
-			while (menu[info.selected].type == TYPE_TITL) {
-				if (info.selected > 0)
-					info.selected--;
-				else
-					break;
-			}
-			break;
-		case INPUT_FORWARD_KEY:
-			if (menu[info.selected + 1].text)
-				info.selected++;
-			break;
-		case INPUT_PAUSE_KEY:
-			switch (menu[info.selected].type) {
-			case TYPE_MENU:
-				status = do_menu (menu[info.selected].data);
-				break;
-			case TYPE_FUNC:
-				func = menu[info.selected].data;
-				if (func)
-					status = func ();
-				break;
-			case TYPE_CHEK:
-				readfunc = menu[info.selected].data;
-				if (readfunc)
-					status = readfunc (MENU_CHECK);
-				status &= 0xffff0000;
-				break;
-			case TYPE_SLID:
-				func = menu[info.selected].data;
-				if (func)
-					status = slid_func (&menu[info.selected]);
-				break;
-			default:
-				break;
-			}
-
-			switch (status) {
-			case MENU_OK:
-				break;
-			case MENU_CLOSE:
-				return MENU_OK;
-			case MENU_QUIT:
-				return MENU_QUIT;
-/*        case MENU_KILL:
- *          return MENU_KILL;
- */
-			case MENU_ERROR:
-				return MENU_ERROR;
-			}
-
-			/* status = menu_handle_action(&menu[info.selected]);*/
-			/* TODO: It should now do special stuff for "mover" widgets,
-			 * TODO: and handle the return code appropriately.
-			 */
-			break;
-		default:
-			break;
-		}
-
+	if (type == MENUITEM_MENU ) {
+		/* We have created a menu, create our needed data */
+		new_item->data.menu.parent = into_menu;
+		LL_new (new_item->data.menu.contents);
 	}
 
-	return status;
-
-}
-
-static int
-draw_menu (Menu menu, menu_info * info)
-{
-	int i;
-	int x = 1, y = 1;
-	int top = 0, bottom = 0;
-
-	int (*readfunc) (int);
-
-	/* these should maybe be removed: */
-	int wid = display_props->width, hgt = display_props->height;
-
-	if (!menu)
-		return MENU_ERROR;
-
-	drivers_clear ();
-
-	/* Scroll down until the selected item is centered, if possible...*/
-	top = info->selected - (hgt / 2);
-	if (top < 0)
-		top = 0;
-	bottom = top + hgt;
-	if (bottom > info->length)
-		bottom = info->length;
-	top = bottom - hgt;
-	if (top < 0)
-		top = 0;
-
-	/* Draw all visible items...*/
-	for (i = top; i < bottom; i++, y++) {
-		if (i == info->selected)
-			drivers_chr (2, y, '>');
-
-		switch (menu[i].type) {
-		case TYPE_TITL:
-			drivers_chr (1, y, PAD);
-			drivers_chr (2, y, PAD);
-			drivers_string (4, y, menu[i].text);
-			for (x = strlen (menu[i].text) + 5; x <= wid; x++)
-				drivers_chr (x, y, PAD);
-			break;
-		case TYPE_MENU:
-			drivers_string (3, y, menu[i].text);
-			drivers_chr (wid, y, '>');
-			break;
-		case TYPE_FUNC:
-			drivers_string (3, y, menu[i].text);
-			break;
-		case TYPE_CHEK:
-			if (menu[i].data) {
-				readfunc = menu[i].data;
-				if (readfunc (MENU_READ))
-					drivers_chr (wid, y, 'Y');
-				else
-					drivers_chr (wid, y, 'N');
-			}
-			drivers_string (3, y, menu[i].text);
-			break;
-		case TYPE_SLID:
-			drivers_string (3, y, menu[i].text);
-			break;
-		case TYPE_MOVE:
-			break;
-		default:
-			break;
-		}
+	if (into_menu) {
+		/* Add the item to the menu */
+		LL_Push (into_menu->data.menu.contents, new_item);
 	}
 
-	if (top != 0)
-		drivers_chr (1, 1, '^');
-	if (bottom < info->length)
-		drivers_chr (1, hgt, 'v');
+	return new_item;
+}
 
-	draw_heartbeat ();
-	/*drivers_flush(); */
+int menu_destroy_item (Menu *menu, MenuItem *item)
+{
+	/* Is the item a menu ? */
+	if (item->type == MENUITEM_MENU ) {
+		/* Check if the menu is empty */
+		if ( LL_Length(item->data.menu.contents) != 0 ) {
+			report (RPT_ERR, "menu not empty, cannot be destroyed");
+			return -1;
+		}
+		/* Destroy our menu data */
+		if (item->data.menu.text)
+			free (item->data.menu.text);
+		LL_Destroy (item->data.menu.contents);
+	}
+	free (item->id);
+	free (item);
+
+	/* Remove the item from the menu */
+	LL_Remove (menu->data.menu.contents, item);
 
 	return 0;
 }
 
-static int
-fill_menu_info (Menu menu, menu_info * info)
+MenuItem *menu_find_item (Menu *menu, char *id)
 {
-	int i;
-
-	info->selected = 0;
-
-	/* count the entries in the menu*/
-	for (i = 0; menu[i].text; i++);
-
-	info->length = i;
-
-	return 0;
-
+	MenuItem * item;
+	for( item = menu_getfirst_item(menu); item; item = menu_getnext_item(menu) ) {
+		if ( strcmp(item->id, id) == 0 ) {
+			return item;
+		}
+	}
+	return NULL;
 }
 
-static int
-menu_handle_action (menu_item * item)
+
+/******** MENU SCREEN BUILD FUNCTIONS ********/
+
+void menu_build_screen (MenuItem *item, Screen *s)
 {
-	return MENU_OK;
-}
+	Widget * w;
 
-static int
-slid_func (menu_item * item)
-{
-	char str[16];
-	int key = 0;
-	int value = 0;
-	int x, y = 1;
-	int (*readfunc) (int);
-
-	readfunc = item->data;
-
-	/*drivers_init_hbar (); OBSOLETE */
-
-	while (key != 'A' && key != 'D') {
-		/* Draw the title... */
-		drivers_clear ();
-		drivers_chr (1, y, PAD);
-		drivers_chr (2, y, PAD);
-		drivers_string (4, y, item->text);
-		for (x = strlen (item->text) + 5; x <= display_props->width; x++)
-			drivers_chr (x, y, PAD);
-
-		/* Draw the slider now...*/
-		value = readfunc (MENU_READ);
-		if (value < 0 || value >= MENU_CLOSE)
-			return value;
-		snprintf (str, sizeof(str), "%i", value);
-		if (display_props->height >= 4) {
-			int promille;
-			drivers_string (8, 4, str);
-			value = (display_props->width * display_props->cellwidth * value / 256);
-			promille = (long) 100 * value / 256;
-			drivers_hbar (1, 3, display_props->width, promille, BAR_PATTERN_FILLED);
-		} else {
-			int promille;
-			drivers_string (17, 2, str);
-			value = ((display_props->width - 4) * display_props->cellwidth * value / 256);
-			promille = (long) 100 * value / 256;
-			drivers_hbar (1, 2, display_props->width, promille, BAR_PATTERN_FILLED);
-		}
-		/*drivers_flush(); */
-
-		for (key = drivers_getkey (); key == 0; key = drivers_getkey ()) {
-			/* do the heartbeat... */
-			draw_heartbeat ();
-			/* sleep for 1/8th second... */
-			framedelay ();
-			/* Check for client input... */
-		}
-
-		switch (key) {
-		case 'B':
-			value = readfunc (MENU_MINUS);
-			break;
-		case 'C':
-			value = readfunc (MENU_PLUS);
-			break;
-		}
-
-		if (value >= MENU_CLOSE || value < 0 || key == 'A' || key == 'D')
-			return value;
+	if (display_props) {
+		/* Nothing to build if no display size is known */
+		report (RPT_ERR, "menu_build_screen: display size unknown");
+		return;
 	}
 
-	return MENU_OK;
+	/* First remove all widgets from the screen */
+	for ( w=screen_getfirst_widget(s); w; w=screen_getnext_widget(s) ) {
+		/* We know these widgets don't have subwidgets */
+		screen_remove_widget (s, w);
+		widget_destroy (w);
+	}
+
+	switch (item->type) {
+	  case MENUITEM_MENU:
+		menu_build_menu_screen (item, s);
+		break;
+	  case MENUITEM_SLIDER:
+		menu_build_slider_screen (item, s);
+		break;
+	  case MENUITEM_NUMERIC_INPUT:
+		menu_build_slider_screen (item, s);
+		break;
+	  case MENUITEM_STRING_INPUT:
+		menu_build_slider_screen (item, s);
+		break;
+	  default:
+		report (RPT_ERR, "menu_build_screen: given menuitem cannot be active");
+		return;
+	}
+	menu_update_screen (item, s);
 }
+
+void menu_build_menu_screen	(MenuItem *item, Screen *s)
+{
+	Widget * w;
+	int linenr;
+
+	for (linenr=1; linenr<display_props->width; linenr++) {
+		char buf[8];
+		snprintf (buf, sizeof(buf)-1, "line%d", linenr);
+		buf[sizeof(buf)-1] = 0;
+		w = widget_create (buf, WID_STRING, s);
+					/* (buf will be copied) */
+		w->text = strdup("");
+		screen_add_widget (s, w);
+	}
+}
+
+void menu_build_slider_screen	(MenuItem *item, Screen *s)
+{
+}
+
+void menu_build_numeric_screen	(MenuItem *item, Screen *s)
+{
+}
+
+void menu_build_string_screen	(MenuItem *item, Screen *s)
+{
+}
+
+void menu_build_password_screen	(MenuItem *item, Screen *s)
+{
+}
+
+/******** MENU SCREEN UPDATE FUNCTIONS ********/
+
+void menu_update_screen (MenuItem *item, Screen *s) {
+	switch (item->type) {
+		case MENUITEM_MENU:
+			menu_update_menu_screen (item, s);
+			break;
+		case MENUITEM_SLIDER:
+			menu_update_slider_screen (item, s);
+			break;
+		case MENUITEM_NUMERIC_INPUT:
+			menu_update_slider_screen (item, s);
+			break;
+		case MENUITEM_STRING_INPUT:
+			menu_update_slider_screen (item, s);
+			break;
+		default:
+			report (RPT_ERR, "menu_update_screen: given menuitem cannot be active");
+	}
+}
+
+void menu_update_menu_screen	(MenuItem *item, Screen *s)
+{
+}
+
+void menu_update_slider_screen	(MenuItem *item, Screen *s)
+{
+
+}
+
+void menu_update_numeric_screen	(MenuItem *item, Screen *s)
+{
+
+}
+
+void menu_update_string_screen	(MenuItem *item, Screen *s)
+{
+
+}
+

@@ -28,13 +28,13 @@ int screenlist_init ();
 int screenlist_shutdown ();
 
 LinkedList *screenlist_getlist ();
-screen *screenlist_current ();
+Screen *screenlist_current ();
 
-int screenlist_add (screen * s);
-screen *screenlist_next ();
-screen *screenlist_prev ();
+int screenlist_add (Screen * s);
+Screen *screenlist_next ();
+Screen *screenlist_prev ();
 
-int screenlist_remove (screen * s);
-int screenlist_remove_all (screen * s);
+int screenlist_remove (Screen * s);
+int screenlist_remove_all (Screen * s);
 
 #endif
