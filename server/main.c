@@ -126,7 +126,10 @@ main (int argc, char **argv)
 	int i, err;
 	int daemon_mode = 1;
 	int disable_server_screen = 1;
+
+	// FIXME: s is getting clobbered - in MANY places!!!
 	screen *s = NULL;
+
 	//char *str, *ing;				  // strings for commandline handling
 	char user[64];
 	char c, buf[64], *driverlist[MAX_DRIVERS], *driverargs[MAX_DRIVERS];
@@ -171,6 +174,8 @@ main (int argc, char **argv)
 	i = 0;
 	// analyze options here..
 	while ((c = getopt(argc, argv, "a:p:d:hfiw:c:u:")) > 0) {
+		// FIXME: Setting of c in this loop clobbers s!
+		// s is set equivalent to c.
 		switch(c) {
 			case 'd':
 				// Add to a list of drivers to be initialized later...
@@ -265,6 +270,8 @@ main (int argc, char **argv)
 				driver_index = -1;
 
 				linebuf[strlen(linebuf) - 1] = '\0';
+
+				// FIXME: This sets s to point to the current driver_name!!!
 				strncpy(driver_name, linebuf + 1, sizeof(driver_name));
 
 				for (i = 0; i < MAX_DRIVERS; i++) {
@@ -361,6 +368,9 @@ main (int argc, char **argv)
 		strcpy(driverlist[0], DEFAULT_DRIVER);
 	}
 
+	// FIXME: This sets s equal to a value related to i
+	// (bitshifted left?)  FIX FIX FIX ARGH....
+	//
 	// Go thru all drivers and initialize all of them
 	for (i = 0; i < MAX_DRIVERS; i++) {
 		if (driverlist[i] == NULL)
@@ -622,6 +632,8 @@ main (int argc, char **argv)
 		syslog(LOG_DEBUG, "framebuffer at %0X",
 			lcd_ptr->framebuf);
 
+	// FIXME: s should still be null from initialization.... what's happening here?!
+	s = NULL;
 	while (1) {
 		sock_poll_clients ();		// poll clients for input
 		parse_all_client_messages ();	// analyze input from network clients
@@ -633,10 +645,13 @@ main (int argc, char **argv)
 
 		timer++;
 
+		//if (s == NULL)
+		//	s = screenlist_current();
+
 		// this is here because s is getting overwritten...
 		//if (s != screenlist_current()) {
 		//	syslog(LOG_DEBUG, "internal error! s was found overwritten at main.c:637");
-			s = screenlist_current();
+		//	s = screenlist_current();
 		//}
 		//
 		//TODO: THIS MUST BE FIXED..... WHY is s getting overwritten?
