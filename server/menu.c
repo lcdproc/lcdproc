@@ -59,10 +59,11 @@ menu_create (char *id, MenuEventFunc(*event_func),
 void
 menu_destroy (Menu *menu)
 {
+	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"));
+
 	if (menu == NULL)
 		return;
-
-	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
 
 	menu_destroy_all_items (menu);
 	LL_Destroy (menu->data.menu.contents);
@@ -74,10 +75,12 @@ menu_destroy (Menu *menu)
 void
 menu_add_item (Menu *menu, MenuItem *item)
 {
+	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"),
+			((item != NULL) ? item->id : "(null)"));
+
 	if ((menu == NULL) || (item == NULL))
 		return;
-
-	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__, menu->id, item->id);
 
 	/* Add the item to the menu */
 	LL_Push (menu->data.menu.contents, item);
@@ -90,13 +93,15 @@ menu_remove_item (Menu *menu, MenuItem *item)
 	int i;
 	MenuItem * item2;
 
-	if ((menu == NULL) || (item == NULL))
-		return
+	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"),
+			((item != NULL) ? item->id : "(null)"));
 
-	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__, menu->id, item->id);
+	if ((menu == NULL) || (item == NULL))
+		return;
 
 	/* Find the item */
-	for (item2 = LL_GetFirst(menu->data.menu.contents), i=0;
+	for (item2 = LL_GetFirst(menu->data.menu.contents), i = 0;
 	     item2 != NULL;
 	     item2 = LL_GetNext(menu->data.menu.contents), i++ ) {
 		if (item == item2) {
@@ -116,10 +121,11 @@ menu_destroy_all_items (Menu *menu)
 {
 	MenuItem * item;
 
+	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"));
+
 	if (menu == NULL)
 		return;
-
-	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
 
 	for( item = menu_getfirst_item(menu); item != NULL; item = menu_getfirst_item(menu) ) {
 		menuitem_destroy (item);
@@ -131,10 +137,11 @@ MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
 {
 	MenuItem * item;
 
+	debug (RPT_DEBUG, "%s( menu=[%s], id=\"%s\", recursive=%d )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"), id, recursive);
+
 	if ((menu == NULL) || (id == NULL))
 		return NULL;
-
-	debug (RPT_DEBUG, "%s( menu=[%s], id=\"%s\", recursive=%d )", __FUNCTION__, menu->id, id, recursive);
 
 	for( item = menu_getfirst_item(menu); item != NULL; item = menu_getnext_item(menu) ) {
 		if ( strcmp(item->id, id) == 0 ) {
@@ -153,10 +160,11 @@ MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
 
 void menu_reset (Menu *menu)
 {
+	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"));
+
 	if (menu == NULL)
 		return;
-
-	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
 
 	menu->data.menu.selector_pos = 0;
 	menu->data.menu.scroll = 0;
@@ -168,10 +176,12 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 	MenuItem * subitem;
 	int itemnr;
 
+	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"),
+			((s != NULL) ? s->id : "(null)"));
+
 	if ((menu == NULL) || (s == NULL))
 		return;
-
-	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__, menu->id, s->id);
 
 	/* TODO: Put menu in a frame to do easy scrolling */
 	/* Problem: frames are not handled correctly by renderer */
@@ -278,10 +288,12 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 	MenuItem * subitem;
 	int itemnr;
 
+	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"),
+			((s != NULL) ? s->id : "(null)"));
+
 	if ((menu == NULL) || (s == NULL))
 		return;
-
-	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__, menu->id, s->id);
 
 	/* Update widgets for the title */
 	w = screen_find_widget (s, "title");
@@ -368,35 +380,36 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 
 	/* Update selector position */
 	w = screen_find_widget (s, "selector");
-	if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "selector");
-	w->y = 2 + menu->data.menu.selector_pos - menu->data.menu.scroll;
+	if (w != NULL)
+		w->y = 2 + menu->data.menu.selector_pos - menu->data.menu.scroll;
+	else
+		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "selector");
 
-	/* Enable upscroller */
+	/* Enable upscroller (if necessary) */
 	w = screen_find_widget (s, "upscroller");
-	if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "upscroller");
-	if (menu->data.menu.scroll > 0) {
-		w->type = WID_ICON;
-	} else {
-		w->type = WID_NONE; /* disable it this way */
-	}
-	/* Enable downscroller */
+	if (w != NULL)
+		w->type = (menu->data.menu.scroll > 0) ? WID_ICON : WID_NONE;
+	else
+		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "upscroller");
+	
+	/* Enable downscroller (if necessary) */
 	w = screen_find_widget (s, "downscroller");
-	if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "downscroller");
-	if (LL_Length(menu->data.menu.contents) - menu->data.menu.scroll - display_props->height + 1 > 0 ) {
-		w->type = WID_ICON;
-	} else {
-		w->type = WID_NONE; /* disable it this way */
-	}
+	if (w != NULL)
+		w->type = (LL_Length(menu->data.menu.contents) >= menu->data.menu.scroll + display_props->height)
+			? WID_ICON : WID_NONE;
+	else
+		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "downscroller");
 }
 
 MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
 {
 	MenuItem *subitem;
 
+	debug (RPT_DEBUG, "%s( menu=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"), token, key);
+
 	if (menu == NULL)
 		return MENURESULT_ERROR;
-	
-	debug (RPT_DEBUG, "%s( menu=[%s], token=%d, key=\"%s\" )", __FUNCTION__, menu->id, token, key);
 
 	switch (token) {
 	  case MENUTOKEN_MENU:
@@ -404,7 +417,8 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
 	  case MENUTOKEN_ENTER:
 		subitem = LL_GetByIndex (menu->data.menu.contents,
 					menu->data.menu.selector_pos);
-		if (!subitem) break;
+		if (!subitem)
+			break;
 		switch (subitem->type) {
 		  case MENUITEM_ACTION:
 			if (subitem->event_func)
