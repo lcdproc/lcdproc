@@ -574,12 +574,16 @@ MtxOrb_draw_frame (char *dat)
 	if (!dat)
 		return;
 
+        sprintf(out, "%cG%c%c", 254, 1, 1);
+        write(fd, out, 4);
+        write(fd, dat, lcd.wid*lcd.hgt);
+/*
 	for (i = 0; i < lcd.hgt; i++) {
 		sprintf (out, "%cG%c%c", 254, 1, i + 1);
 		write (fd, out, 4);
 		write (fd, dat + (lcd.wid * i), lcd.wid);
 	}
-
+*/
 }
 
 /////////////////////////////////////////////////////////////
