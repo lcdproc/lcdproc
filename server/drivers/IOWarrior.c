@@ -233,8 +233,8 @@ PrivateData *p;
 
   /* Initialise the PrivateData structure */
 
-  p->cellwidth = LCD_DEFAULT_CELLWIDTH;
-  p->cellheight = LCD_DEFAULT_CELLHEIGHT;
+  p->cellwidth = CELLWIDTH;
+  p->cellheight = CELLHEIGHT;
 
   p->backlight = DEFAULT_BACKLIGHT;
 
