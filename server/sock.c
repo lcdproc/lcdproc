@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -57,6 +58,7 @@ sock_create_inet_socket (char * addr, unsigned int port)
 
 	/* Give the socket a name. */
 	//debug("Binding Inet Socket\n");
+	memset (&name, 0, sizeof (name));
 	name.sin_family = AF_INET;
 	name.sin_port = htons (port);
 	inet_aton(addr, &name.sin_addr);
