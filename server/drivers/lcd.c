@@ -420,7 +420,7 @@ int
 lcd_add_driver (char *driver, char *args)
 {
 	int i;
-	char buf[64];
+	char buf[80];
 	int (*init_driver) ();
 
 	lcd_logical_driver *ptr = NULL;
@@ -445,7 +445,13 @@ lcd_add_driver (char *driver, char *args)
 		// Default settings for the driver...
 		lcd_drv_init(add, NULL);
 
-		// Allocate space for a framebuffer...
+		memset(buf, '\0', sizeof(buf));
+		add->framebuf = buf; // *** HACK: makes drivers think framebuffer is allocated!
+
+		i = init_driver (add, args);
+
+		// Allocate space for a framebuffer... *AFTER* the driver
+		// has a chance to initialize height and width!!
 		if ((add->framebuf = malloc (add->wid * add->hgt)) == NULL) {
 			snprintf (buf, sizeof(buf), "couldn't allocate framebuffer for driver \"%s\"", driver);
 			syslog (LOG_ERR, buf);
@@ -453,8 +459,6 @@ lcd_add_driver (char *driver, char *args)
 			return -1;
 		}
 		memset (add->framebuf, ' ', (add->wid * add->hgt));
-
-		i = init_driver (add, args);
 
 		// Now patch up the returned driver structure
 		// before returning

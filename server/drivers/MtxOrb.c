@@ -19,6 +19,7 @@
 #include <string.h>
 #include <errno.h>
 #include <syslog.h>
+#include <ctype.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -241,43 +242,74 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 		p = argv[i];
 		//printf("Arg(%i): %s\n", i, argv[i]);
 
-		if (strcmp (p, "-d") == 0) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
-				return -1;
+		if (*p == '-') {
+			p++;
+			switch (*p) {
+				case 'd':
+					if (i + 1 > argc) {
+						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					strcpy (device, argv[++i]);
+					break;
+				case 'c':
+					if (i + 1 > argc) {
+						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					contrast = MtxOrb_set_contrast (argv[++i]);
+					break;
+				case 's':
+					if (i + 1 > argc) {
+						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					speed = MtxOrb_get_speed (argv[++i]);
+					break;
+				case 'h':
+					MtxOrb_usage();
+					return -1;
+					break;
+				case 't':
+					if (i + 1 > argc) {
+						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					i++;
+					p = argv[i];
+
+					if (isdigit((unsigned int) *p) && isdigit((unsigned int) *(p+1))) {
+						int wid, hgt;
+
+						wid = ((*p - '0') * 10) + (*(p+1) - '0');
+						p += 2;
+
+						if (*p != 'x')
+							break;
+
+						p++;
+						if (!isdigit((unsigned int) *p))
+							break;
+
+						hgt = (*p - '0');
+
+						MtxOrb->wid = wid;
+						MtxOrb->hgt = hgt;
+						}
+					break;
+				case 'b':
+					if (i + 1 > argc) {
+						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					i++;
+					MtxOrb_type = MtxOrb_set_type(argv[i]);
+					break;
+				default:
+					printf ("Invalid parameter: %s\n", argv[i]);
+					break;
 			}
-			strcpy (device, argv[++i]);
-
-		} else if (strcmp (argv[i], "-c") == 0) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			contrast = MtxOrb_set_contrast (argv[++i]);
-
-		} else if (0 == strcmp (argv[i], "-s") || 0 == strcmp (argv[i], "--speed")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			speed = MtxOrb_get_speed (argv[++i]);
-
-		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-			MtxOrb_usage();
-			return -1;
-
-		} else if (0 == strcmp (argv[i], "-t") || 0 == strcmp (argv[i], "--type")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			i++;
-			MtxOrb_type = MtxOrb_set_type(argv[i]);
-
-		} else {
-			printf ("Invalid parameter: %s\n", argv[i]);
 		}
-
 	}
 #endif
 
@@ -331,7 +363,7 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 
 	if (!driver->framebuf) {
 		syslog(LOG_ERR, "no frame buffer! exiting driver init...");
-		driver->close ();
+		MtxOrb_close ();
 		return -1;
 	}
 
