@@ -21,6 +21,7 @@
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <syslog.h>
 
 #include <linux/joystick.h>
 #ifndef JSIOCGNAME
@@ -31,6 +32,7 @@
 #include "shared/str.h"
 
 #define NAME_LENGTH 128
+#define JOY_DEFAULT_DEVICE "/dev/js0"
 
 #include "lcd.h"
 #include "joy.h"
@@ -38,6 +40,7 @@
 lcd_logical_driver *joy;
 
 int fd;
+extern int debug_level;
 
 struct js_event js;
 
@@ -65,7 +68,7 @@ joy_init (struct lcd_logical_driver *driver, char *args)
 
 	joy = driver;
 
-	strcpy (device, "/dev/js0");
+	strcpy (device, JOY_DEFAULT_DEVICE);
 
 	argc = get_args (argv, args, 64);
 
@@ -101,29 +104,30 @@ joy_init (struct lcd_logical_driver *driver, char *args)
 	driver->getkey = joy_getkey;
 	driver->close = joy_close;
 
-	/*  FIXME:  This crashes!
-	   if(args)
-	   {
-	   if(strlen(args) > 0)
-	   strcpy(device, args);
-	   }
-	 */
-
-	fd = open (device, O_RDONLY);
-	fcntl (fd, F_SETFL, O_NONBLOCK);
-
-	if (fd < 0)
+	if ((fd = open (device, O_RDONLY)) < 0)
 		return -1;
 
+	fcntl (fd, F_SETFL, O_NONBLOCK);
 	ioctl (fd, JSIOCGVERSION, &jsversion);
 	ioctl (fd, JSIOCGAXES, &axes);
 	ioctl (fd, JSIOCGBUTTONS, &buttons);
 	ioctl (fd, JSIOCGNAME (NAME_LENGTH), jsname);
 
-	debug ("Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n", jsname, axes, buttons, jsversion >> 16, (jsversion >> 8) & 0xff, jsversion & 0xff);
+	if (debug_level > 2) {
+		syslog(LOG_DEBUG, "Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
+			jsname, axes, buttons,
+			jsversion >> 16, (jsversion >> 8) & 0xff, jsversion & 0xff);
+	}
 
-	axis = calloc (axes, sizeof (int));
-	button = calloc (buttons, sizeof (char));
+	if ((axis = calloc (axes, sizeof (int))) == NULL) {
+		syslog(LOG_ERR, "joystick: could not allocate memory for axes");
+		return -1;
+	}
+
+	if ((button = calloc (buttons, sizeof (char))) == NULL) {
+		syslog(LOG_ERR, "joystick: could not allocate memory for buttons");
+		return -1;
+	}
 
 	return fd;						  // 200 is arbitrary.  (must be 1 or more)
 }
@@ -133,13 +137,16 @@ joy_close ()
 {
 	if (joy->framebuf != NULL)
 		free (joy->framebuf);
+
 	close (fd);
 
 	joy->framebuf = NULL;
 
 	// Why do I have so much trouble getting memory freed without segfaults??
-	//if(axis) free(axis);
-	//if(button) free(button);
+	// Use gdb and find out :) In preliminary testing, this seemed to work...
+
+	if (axis) free(axis);
+	if (button) free(button);
 
 }
 
@@ -154,22 +161,23 @@ joy_getkey ()
 	int i;
 	int err;
 
-	err = read (fd, &js, sizeof (struct js_event));
-	if (err <= 0)
+	if ((err = read (fd, &js, sizeof (struct js_event))) <= 0) {
 		return 0;
-	if (err != sizeof (struct js_event)) {
-		fprintf (stderr, "\nerror reading joystick\n");
-		return 0;
-	}
+	} else
+		if (err != sizeof (struct js_event)) {
+			syslog(LOG_ERR, "error reading joystick input");
+			return 0;
+		}
+
 //   if(js.type & JS_EVENT_INIT) return 0;
 
 	switch (js.type & ~JS_EVENT_INIT) {
-	case JS_EVENT_BUTTON:
-		button[js.number] = js.value;
-		break;
-	case JS_EVENT_AXIS:
-		axis[js.number] = js.value;
-		break;
+		case JS_EVENT_BUTTON:
+			button[js.number] = js.value;
+			break;
+		case JS_EVENT_AXIS:
+			axis[js.number] = js.value;
+			break;
 	}
 
 	if (buttons) {
