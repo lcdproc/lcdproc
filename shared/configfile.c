@@ -226,7 +226,33 @@ int config_has_key( char *sectionname, char *keyname )
 
 void config_clear()
 {
-	report( RPT_WARNING, "config_clear is unimplemented" );
+	section * s;
+	section * next_s;
+	key * k;
+	key * next_k;
+
+	for( s = first_section; s; ) {
+		for( k=s->first_key; k; ) {
+			/* Advance before we destroy the current key */
+			next_k = k->next_key;
+
+			free( k->name );
+			free( k->value );
+			free( k );
+
+			k = next_k;
+		}
+		/* Advance before we destroy the current section */
+		next_s = s->next_section;
+
+		/* And destroy it */
+		free( s->name );
+		free( s );
+
+		s = next_s;
+	}
+	/* And make everything inaccessable */
+	first_section = NULL;
 }
 
 
@@ -253,8 +279,7 @@ section * add_section( char * sectionname )
 		place = &(s->next_section);
 
 	*place = (section*) malloc( sizeof( section ));
-	(*place)->name = (char*) malloc( strlen(sectionname)+1 );
-	strcpy( (*place)->name, sectionname );
+	(*place)->name = strdup( sectionname );
 	(*place)->first_key = NULL;
 	(*place)->next_section = NULL;
 
@@ -298,10 +323,8 @@ key * add_key( section * s, char * keyname, char * value )
 		place = &(k->next_key);
 
 	*place = (key*) malloc( sizeof( key ));
-	(*place)->name = (char*) malloc( strlen(keyname)+1 );
-	strcpy( (*place)->name, keyname );
-	(*place)->value = (char*) malloc( strlen(value)+1 );
-	strcpy( (*place)->value, value );
+	(*place)->name = strdup( keyname );
+	(*place)->value = strdup( value );
 	(*place)->next_key = NULL;
 
 	return (*place);
