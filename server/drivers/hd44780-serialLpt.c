@@ -50,7 +50,7 @@
  */
 
 #include "hd44780-serialLpt.h"
-#include "hd44780.h"
+#include "hd44780-low.h"
 #include "lpt-port.h"
 
 #include "port.h"
@@ -60,12 +60,12 @@
 #include <errno.h>
 
 // Hardware specific functions
-void lcdserLpt_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
-void lcdserLpt_HD44780_backlight (unsigned char state);
+void lcdserLpt_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void lcdserLpt_HD44780_backlight (PrivateData *p, unsigned char state);
 
-unsigned char lcdserLpt_HD44780_scankeypad ();
-void rawshift (unsigned char r);
-void shiftreg (unsigned char displayID, unsigned char r);
+unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p);
+void rawshift (PrivateData *p, unsigned char r);
+void shiftreg (PrivateData *p, unsigned char displayID, unsigned char r);
 
 #define RS       32
 #define LCDDATA   8
@@ -73,50 +73,46 @@ void shiftreg (unsigned char displayID, unsigned char r);
 #define EN1       4
 #define EN2      32
 
-static unsigned int lptPort;
-static char backlight_bit = 0;
-
 // Initialisation
 int
-hd_init_serialLpt (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)
+hd_init_serialLpt (Driver *drvthis)
 {
+	PrivateData *p = (PrivateData*) drvthis->private_data;
+	HD44780_functions *hd44780_functions = p->hd44780_functions;
 	unsigned char enableLines = EN1 | EN2;
 
 	// Reserve the port registers
-	lptPort = port;
-	port_access(lptPort);
-	port_access(lptPort+1);
-	port_access(lptPort+2);
+	port_access(p->port);
+	port_access(p->port+1);
+	port_access(p->port+2);
 
 	hd44780_functions->senddata = lcdserLpt_HD44780_senddata;
 	hd44780_functions->backlight = lcdserLpt_HD44780_backlight;
 	hd44780_functions->scankeypad = lcdserLpt_HD44780_scankeypad;
 
 	// setup the lcd in 4 bit mode
-	shiftreg (enableLines, 3);
-	hd44780_functions->uPause (15000);
+	shiftreg (p, enableLines, 3);
+	hd44780_functions->uPause (p, 15000);
 
-	shiftreg (enableLines, 3);
-	hd44780_functions->uPause (5000);
+	shiftreg (p, enableLines, 3);
+	hd44780_functions->uPause (p, 5000);
 
-	shiftreg (enableLines, 3);
-	hd44780_functions->uPause (100);
+	shiftreg (p, enableLines, 3);
+	hd44780_functions->uPause (p, 150);
 
-	shiftreg (enableLines, 3);
-	hd44780_functions->uPause (100);
+	shiftreg (p, enableLines, 2);
+	hd44780_functions->uPause (p, 100);
 
-	shiftreg (enableLines, 2);
-	hd44780_functions->uPause (100);
+	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	hd44780_functions->uPause (p, 40);
 
-	hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
-
-	common_init ();
+	common_init (p);
 
 	return 0;
 }
 
 void
-lcdserLpt_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
+lcdserLpt_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	unsigned char enableLines;
 	unsigned char portControl = 0;
@@ -134,24 +130,24 @@ lcdserLpt_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 	else
 		portControl = 0;
 
-	shiftreg (enableLines, portControl | h);
-	shiftreg (enableLines, portControl | l);
+	shiftreg (p, enableLines, portControl | h);
+	shiftreg (p, enableLines, portControl | l);
 
 	// Restore line status for backlight
-	port_out (lptPort, backlight_bit );
+	port_out (p->port, p->backlight_bit );
 }
 
 void
-lcdserLpt_HD44780_backlight (unsigned char state)
+lcdserLpt_HD44780_backlight (PrivateData *p, unsigned char state)
 {
 	// Store new state
-	backlight_bit = (state?LCDDATA:0);
+	p->backlight_bit = (state?LCDDATA:0);
 
 	// Set line status for backlight
-	port_out (lptPort, backlight_bit );
+	port_out (p->port, p->backlight_bit );
 }
 
-unsigned char lcdserLpt_HD44780_scankeypad ()
+unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 {
 	// Unfortunately just bit shifting does not work with the 2-wire version...
 
@@ -162,36 +158,41 @@ unsigned char lcdserLpt_HD44780_scankeypad ()
 	int i;
 	unsigned int scancode = 0;
 
-	// While scanning the keypad, the 2-wire version executes the 0xFF
-	// command. This command sets the cursor position, so it's harmless.
+	// While scanning the keypad, the 2-wire version will place the
+	// character 0xFF on the current cursor position. Therefor we fisrt
+	// set the cursor position to -1, so it's harmless.
 	// I could not prevent this, while staying compatible with both
 	// wiring versions.
 
 	// Clear the shiftregister, needed for 3-wire version
-	rawshift(0);
-	hd44780_functions->uPause (2);
+	rawshift(p, 0);
+	p->hd44780_functions->uPause (p, 1);
 
-	readval = ~ port_in (lptPort + 1) ^ INMASK;
+	readval = ~ port_in (p->port + 1) ^ INMASK;
 	inputs_zero = ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) );
 
 	if( inputs_zero == 0 ) {
 		// No keys were pressed
 
 		// Restore line status for backlight.
-		port_out (lptPort, backlight_bit );
+		port_out (p->port, p->backlight_bit );
 		return 0;
 	}
 
+	// Set cursor position to -1
+	p->hd44780_functions->senddata (p, 0, RS_INSTR, POSITION | 127);
+	p->hd44780_functions->uPause (p, 40);
+
 	// Scan the keypad while sending the first half of the command (high nibble)
 	for (i = 7; i >= 0; i--) {				/* MSB first  */
-		port_out (lptPort, LCDDATA);			/*set up data */
-		port_out (lptPort, LCDDATA | LCDCLOCK);		/*rising edge of clock */
+		port_out (p->port, LCDDATA);			/*set up data */
+		port_out (p->port, LCDDATA | LCDCLOCK);		/*rising edge of clock */
 
-		hd44780_functions->uPause (2);
+		p->hd44780_functions->uPause (p, 2);
 
 		if( !scancode ) {
 			// Read input line(s)
-			readval = ~ port_in (lptPort + 1) ^ INMASK;
+			readval = ~ port_in (p->port + 1) ^ INMASK;
 			keybits = ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) );
 			if( keybits != inputs_zero ) {
 				shiftingbit = 1;
@@ -207,40 +208,40 @@ unsigned char lcdserLpt_HD44780_scankeypad ()
 	}
 
 	// Wait for 2-wire version to clear the latch...
-	hd44780_functions->uPause (6);
+	p->hd44780_functions->uPause (p, 6);
 
 	// And again for the second half of the command (low nibble).
 	// Needed for 2-wire version.
-	rawshift (0xFF);
+	rawshift (p, 0xFF);
 
 	// Wait for 2-wire version to clear the latch...
-	hd44780_functions->uPause (6);
+	p->hd44780_functions->uPause (p, 6);
 
 	// Restore line status for backlight.
-	port_out (lptPort, backlight_bit );
+	port_out (p->port, p->backlight_bit );
 
 	return scancode;
 }
 
 /* this function sends r out onto the shift register */
 void
-rawshift (unsigned char r)
+rawshift (PrivateData *p, unsigned char r)
 {
 	int i;
 
 	for (i = 7; i >= 0; i--) {						/* MSB first      */
-		port_out (lptPort, ((r >> i) & 1) * LCDDATA);			/*set up data   */
-		port_out (lptPort, (((r >> i) & 1) * LCDDATA) | LCDCLOCK);	/*rising edge of clock   */
+		port_out (p->port, ((r >> i) & 1) * LCDDATA);			/*set up data   */
+		port_out (p->port, (((r >> i) & 1) * LCDDATA) | LCDCLOCK);	/*rising edge of clock   */
 	}
 }
 
 // enableLines = value on parallel port to toggle the correct display
 void
-shiftreg (unsigned char enableLines, unsigned char r)
+shiftreg (PrivateData *p, unsigned char enableLines, unsigned char r)
 {
-	rawshift (r | 0x80);			// highest bit always set to 1 for Clear for 2-wire version
-	port_out (lptPort, enableLines);	// latch it, to correct display
-	hd44780_functions->uPause (1);
-	port_out (lptPort, 0);			// for 3-wire version
-	hd44780_functions->uPause (5);		// wait for 2-wire version to clear the latch...
+	rawshift (p, r | 0x80);			// highest bit always set to 1 for Clear for 2-wire version
+	port_out (p->port, enableLines);	// latch it, to correct display
+	p->hd44780_functions->uPause (p, 1);
+	port_out (p->port, 0);			// for 3-wire version
+	p->hd44780_functions->uPause (p, 5);		// wait for 2-wire version to clear the latch...
 }

@@ -21,26 +21,25 @@
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <syslog.h>
 
 #include <linux/joystick.h>
 #ifndef JSIOCGNAME
 #define JSIOCGNAME(len)           _IOC(_IOC_READ, 'j', 0x13, len)         /* get identifier string */
 #endif
 
-#include "shared/debug.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#include "lcd.h"
+#include "joy.h"
+#include "report.h"
 #include "shared/str.h"
 
 #define NAME_LENGTH 128
 #define JOY_DEFAULT_DEVICE "/dev/js0"
 
-#include "lcd.h"
-#include "joy.h"
-
-lcd_logical_driver *joy;
-
 int fd;
-extern int debug_level;
 
 struct js_event js;
 
@@ -49,24 +48,29 @@ char buttons = 2;
 int jsversion = 0x000800;
 char jsname[NAME_LENGTH] = "Unknown";
 
-int *axis;
-int *button;
+int *axis = NULL;
+int *button = NULL;
 
 // Configured for a Gravis Gamepad  (2 axis, 4 button)
 char *axismap = "EFGHIJKLMNOPQRST";
 char *buttonmap = "BDACEFGHIJKLMNOP";
 
+// Vars for the server core
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 0;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "joy_";
+
+
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
 int
-joy_init (struct lcd_logical_driver *driver, char *args)
+joy_init (Driver *drvthis, char *args)
 {
 	char device[256];
 	char *argv[64];
 	int argc, i;
-
-	joy = driver;
 
 	strcpy (device, JOY_DEFAULT_DEVICE);
 
@@ -101,8 +105,14 @@ joy_init (struct lcd_logical_driver *driver, char *args)
 
 	}
 
-	driver->getkey = joy_getkey;
-	driver->close = joy_close;
+	// Set variables for server
+	drvthis->api_version = api_version;
+	drvthis->stay_in_foreground = &stay_in_foreground;
+	drvthis->supports_multiple = &supports_multiple;
+
+	// Set the functions the driver supports
+	drvthis->getkey = joy_getkey;
+	drvthis->close = joy_close;
 
 	if ((fd = open (device, O_RDONLY)) < 0)
 		return -1;
@@ -113,40 +123,33 @@ joy_init (struct lcd_logical_driver *driver, char *args)
 	ioctl (fd, JSIOCGBUTTONS, &buttons);
 	ioctl (fd, JSIOCGNAME (NAME_LENGTH), jsname);
 
-	if (debug_level > 2) {
-		syslog(LOG_DEBUG, "Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
-			jsname, axes, buttons,
-			jsversion >> 16, (jsversion >> 8) & 0xff, jsversion & 0xff);
-	}
+	report (RPT_NOTICE, "Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
+		jsname, axes, buttons,
+		jsversion >> 16, (jsversion >> 8) & 0xff, jsversion & 0xff);
 
 	if ((axis = calloc (axes, sizeof (int))) == NULL) {
-		syslog(LOG_ERR, "joystick: could not allocate memory for axes");
+		report (RPT_ERR, "joystick: could not allocate memory for axes");
 		return -1;
 	}
 
 	if ((button = calloc (buttons, sizeof (char))) == NULL) {
-		syslog(LOG_ERR, "joystick: could not allocate memory for buttons");
+		report (RPT_ERR, "joystick: could not allocate memory for buttons");
 		return -1;
 	}
 
-	return fd;						  // 200 is arbitrary.  (must be 1 or more)
+	return 0;
 }
 
-void
-joy_close ()
+MODULE_EXPORT void
+joy_close (Driver *drvthis)
 {
-	if (joy->framebuf != NULL)
-		free (joy->framebuf);
-
 	close (fd);
-
-	joy->framebuf = NULL;
 
 	// Why do I have so much trouble getting memory freed without segfaults??
 	// Use gdb and find out :) In preliminary testing, this seemed to work...
 
-	if (axis) free(axis);
-	if (button) free(button);
+	if(axis) free(axis);
+	if(button) free(button);
 
 }
 
@@ -155,8 +158,8 @@ joy_close ()
 //
 // Return 0 for "nothing available".
 //
-char
-joy_getkey ()
+MODULE_EXPORT char
+joy_getkey (Driver *drvthis)
 {
 	int i;
 	int err;
@@ -165,7 +168,7 @@ joy_getkey ()
 		return 0;
 	} else
 		if (err != sizeof (struct js_event)) {
-			syslog(LOG_ERR, "error reading joystick input");
+			report(RPT_ERR, "error reading joystick input");
 			return 0;
 		}
 

@@ -16,33 +16,29 @@
 #ifndef HD44780_H
 #define HD44780_H
 
-// Maximum sizes of the keypad
-// DO NOT CHANGE THESE 2 VALUES, unless you change the functions too
-#define KEYPAD_MAXX 5
-#define KEYPAD_MAXY 11
+              int  HD44780_init (struct lcd_logical_driver *driver, char *args);
+MODULE_EXPORT void HD44780_close (Driver *drvthis);
+MODULE_EXPORT int  HD44780_width (Driver *drvthis);
+MODULE_EXPORT int  HD44780_height (Driver *drvthis);
+MODULE_EXPORT void HD44780_clear (Driver *drvthis);
+MODULE_EXPORT void HD44780_flush (Driver *drvthis);
+MODULE_EXPORT void HD44780_string (Driver *drvthis, int x, int y, char *s);
+MODULE_EXPORT void HD44780_chr (Driver *drvthis, int x, int y, char ch);
 
-extern char have_keypad;	// non-zero if the keypad code is activated
-extern char have_backlight;	// non-zero if we can control the backlight
-extern char extIF;		// non-zero if we should control > 2 LCDs
-extern char delayBus;		// non-zero if axtra delays for the bus speed
-				// should be inserted.
+MODULE_EXPORT void HD44780_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void HD44780_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void HD44780_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void HD44780_heartbeat (Driver *drvthis, int type);
+MODULE_EXPORT void HD44780_icon (Driver *drvthis, int which, char dest);
 
-int HD44780_init (struct lcd_logical_driver *driver, char *args);
-/* The following methods can all be hidden. They are used through function ptrs
-void HD44780_close();
-void HD44780_flush();
-void HD44780_flush_box(int lft, int top, int rgt, int bot);
-int HD44780_contrast(int contrast);
-void HD44780_backlight(int on);
-void HD44780_init_vbar();
-void HD44780_init_hbar();
-void HD44780_vbar(int x, int len);
-void HD44780_hbar(int x, int y, int len);
-void HD44780_init_num();
-void HD44780_num(int x, int num);
-void HD44780_set_char(int n, char *dat);
-void HD44780_icon(int which, char dest);
-void HD44780_draw_frame(char *dat);
-*/
+MODULE_EXPORT void HD44780_set_char (Driver *drvthis, int n, char *dat);
+
+MODULE_EXPORT void HD44780_backlight (Driver *drvthis, int on);
+
+MODULE_EXPORT char HD44780_getkey (Driver *drvthis);
+
+MODULE_EXPORT void HD44780_init_vbar (Driver *drvthis);
+MODULE_EXPORT void HD44780_init_hbar (Driver *drvthis);
+MODULE_EXPORT void HD44780_init_num (Driver *drvthis);
 
 #endif

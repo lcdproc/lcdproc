@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *               2001, Joris Robijn
  *
  *
  * Handles keypad (and other?) input from the user.
@@ -34,44 +33,6 @@
               E-Z      Ignored
 */
 
-// These are the keys for a (likely) properly functioning LK202-25...
-// #define KEY_UP    'I'
-// #define KEY_DOWN  'J'
-// #define KEY_LEFT  'O'
-// #define KEY_RIGHT 'E'
-// #define KEY_F1    'N'
-// #define KEY_F2    'M'
-// #define KEY_ENTER 'H'
-
-// These are the keys for my (possibly) broken LK202-25...
-// #define KEY_UP    'I'
-// #define KEY_DOWN  'F'
-// #define KEY_LEFT  'K'
-// #define KEY_RIGHT 'A'
-// #define KEY_F1    'N'
-// #define KEY_F2    'M'
-// #define KEY_ENTER 'H'
-
-// TODO: Generalize these into each driver...
-//
-// Really, what this comes down to, is different settings for
-// different displays.  Unless you want to recompile for all
-// the defaults, these key settings must be in the driver.
-//
-// But then, which driver is active and which screen takes which
-// input and... (sigh).
-//
-// #define PAUSE_KEY	KEY_F1
-// #define BACK_KEY	KEY_LEFT
-// #define FORWARD_KEY	KEY_RIGHT
-// #define MAIN_MENU_KEY	KEY_DOWN
-
-// This seems somewhat arbitrary, but it IS the original settings:
-//
-#define PAUSE_KEY	'A'
-#define BACK_KEY	'B'
-#define FORWARD_KEY	'C'
-#define MAIN_MENU_KEY	'D'
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -80,7 +41,7 @@
 #include "shared/sockets.h"
 #include "shared/report.h"
 
-#include "drivers/lcd.h"
+#include "drivers.h"
 
 #include "client_data.h"
 #include "clients.h"
@@ -98,70 +59,75 @@
 
 int server_input (int key);
 
-// FIXME!  The server tends to crash when "E" is pressed..  (?!)
-// (but only when the joystick driver is the last one on the list...)
+/* FIXME!  The server tends to crash when "E" is pressed..  (?!)
+ * (but only when the joystick driver is the last one on the list...)
+ */
 
-// Checks for keypad input, and dispatches it
+/* Checks for keypad input, and dispatches it */
 int
 handle_input ()
 {
 	char str[15];
 	int key;
 	screen *s;
-	//widget *w;
+	/*widget *w; */
 	client *c;
 
-	if ((key = lcd_ptr->getkey ()) == 0)
+	report (RPT_INFO, "handle_input()" );
+
+	if ((key = drivers_getkey ()) == 0)
 		return 0;
 
-	//debug (RPT_DEBUG, "handle_input(%c)", (char) key);
+	debug (RPT_INFO, "handle_input got key: '%c'", key);
 
-	// Sequence:
-	// 	Does the current screen want the key?
-	// 	IfTrue: handle and quit
-	// 	IfFalse:
-	// 	    Let ALL clients handle it if they want
-	// 	    Let Server handle it, too
-	//
-	// This leads to a unique situation:
-	//     First: multiple clients may handle the same key in multiple ways
-	//     Second: the server may handle the key differently yet
-	//
-	// Solution: Only the current screen can handle the key press.
-	// Alternately, only one client can handle the key press.
+	/* Sequence:
+	 * 	Does the current screen want the key?
+	 * 	IfTrue: handle and quit
+	 * 	IfFalse:
+	 * 	    Let ALL clients handle it if they want
+	 * 	    Let Server handle it, too
+	 *
+	 * This leads to a unique situation:
+	 *     First: multiple clients may handle the same key in multiple ways
+	 *     Second: the server may handle the key differently yet
+	 *
+	 * Solution: Only the current screen can handle the key press.
+	 * Alternately, only one client can handle the key press.
+	 */
 
-	// TODO:  Interpret and translate keys!
+	/* TODO:  Interpret and translate keys! */
 
-	// Give current screen a shot at the key first
+	/* Give current screen a shot at the key first */
 	s = CurrentScreen ();
 
 	if (KeyWanted(s->keys, key)) {
-		// This screen wants this key.  Tell it we got one
+		/* This screen wants this key.  Tell it we got one */
 		snprintf(str, sizeof(str), "key %c\n", key);
 		sock_send_string(s->parent->sock, str);
-		// Nobody else gets this key
+		/* Nobody else gets this key */
 	}
 
-	// if the current screen doesn't want it,
-	// let the server have it...
+	/* if the current screen doesn't want it,
+	 * let the server have it...
+	 */
 
 	else {
-		// Give key to clients who want it
+		/* Give key to clients who want it */
 
 		c = FirstClient(clients);
 
 		while (c) {
-			// If the client should have this keypress...
+			/* If the client should have this keypress... */
 			if(KeyWanted(c->data->client_keys,key)) {
-				// Send keypress to client
+				/* Send keypress to client */
 				snprintf(str, sizeof(str), "key %c\n", key);
 				sock_send_string(c->sock, str);
-				break;	// first come, first serve
+				break;	/* first come, first serve */
 			};
 			c = NextClient(clients);
-		} // while clients
+		} /* while clients */
 
-		// Give server a shot at all keys
+		/* Give server a shot at all keys */
 		server_input (key);
 	}
 
@@ -171,25 +137,24 @@ handle_input ()
 int
 server_input (int key)
 {
-	debug (RPT_INFO, "server_input(%c)", (char) key);
-	report(RPT_INFO, "key %d pressed on device", key);
+	report(RPT_INFO, "server_input( key='%c' )", (char) key);
 
 	switch ((char) key) {
-		case PAUSE_KEY:
+		case INPUT_PAUSE_KEY:
 			if (screenlist_action == SCR_HOLD)
 				screenlist_action = 0;
 			else
 				screenlist_action = SCR_HOLD;
 			break;
-		case BACK_KEY:
+		case INPUT_BACK_KEY:
 			screenlist_action = SCR_BACK;
 			screenlist_prev ();
 			break;
-		case FORWARD_KEY:
+		case INPUT_FORWARD_KEY:
 			screenlist_action = SCR_SKIP;
 			screenlist_next ();
 			break;
-		case MAIN_MENU_KEY:
+		case INPUT_MAIN_MENU_KEY:
 			debug (RPT_DEBUG, "got the menu key!");
 			server_menu ();
 			break;

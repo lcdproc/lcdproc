@@ -1,41 +1,53 @@
 #ifndef MTXORB_H
 #define MTXORB_H
 
-extern lcd_logical_driver *MtxOrb;
+#include "lcd.h"
 
-int MtxOrb_init (lcd_logical_driver * driver, char *device);
-/*
- * Just like in hd44780 those function are assing by _init ...
-static void MtxOrb_clear ();
-static void MtxOrb_close ();
-static void MtxOrb_flush ();
-static void MtxOrb_flush_box (int lft, int top, int rgt, int bot);
-static void MtxOrb_chr (int x, int y, char c);
-static int MtxOrb_contrast (int contrast);
-static void MtxOrb_backlight (int on);
-static void MtxOrb_output (int on);
-static void MtxOrb_init_vbar ();
-static void MtxOrb_init_hbar ();
-static void MtxOrb_vbar (int x, int len);
-static void MtxOrb_hbar (int x, int y, int len);
-static void MtxOrb_init_num ();
-static void MtxOrb_num (int x, int num);
-static void MtxOrb_set_char (int n, char *dat);
-static void MtxOrb_icon (int which, char dest);
-static void MtxOrb_draw_frame (char *dat);
-static char MtxOrb_getkey ();
-static char * MtxOrb_getinfo ();
-static void MtxOrb_heartbeat (int type);
+              int  MtxOrb_init (Driver *drvthis, char *device);
+MODULE_EXPORT void MtxOrb_close (Driver *drvthis);
+MODULE_EXPORT int  MtxOrb_width (Driver *drvthis);
+MODULE_EXPORT int  MtxOrb_height (Driver *drvthis);
+MODULE_EXPORT void MtxOrb_clear (Driver *drvthis);
+MODULE_EXPORT void MtxOrb_flush (Driver *drvthis);
+MODULE_EXPORT void MtxOrb_string (Driver *drvthis, int x, int y, char *string);
+MODULE_EXPORT void MtxOrb_chr (Driver *drvthis, int x, int y, char c);
 
-static int MtxOrb_ask_bar (int type);
-static void MtxOrb_set_known_char (int car, int type);
-*/
+MODULE_EXPORT void MtxOrb_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void MtxOrb_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void MtxOrb_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void MtxOrb_icon (Driver *drvthis, int which, char dest);
+MODULE_EXPORT void MtxOrb_heartbeat (Driver *drvthis, int type);
 
-#define DEFAULT_CONTRAST	120
+MODULE_EXPORT void MtxOrb_set_char (Driver *drvthis, int n, char *dat);
+
+MODULE_EXPORT int  MtxOrb_get_contrast (Driver *drvthis);
+MODULE_EXPORT void MtxOrb_set_contrast (Driver *drvthis, int promille);
+MODULE_EXPORT void MtxOrb_backlight (Driver *drvthis, int on);
+MODULE_EXPORT void MtxOrb_output (Driver *drvthis, int on);
+
+MODULE_EXPORT char MtxOrb_getkey (Driver *drvthis);
+MODULE_EXPORT char * MtxOrb_get_info (Driver *drvthis);
+
+MODULE_EXPORT void MtxOrb_init_vbar (Driver *drvthis);
+MODULE_EXPORT void MtxOrb_init_hbar (Driver *drvthis);
+MODULE_EXPORT void MtxOrb_init_num (Driver *drvthis);
+
+#define DEFAULT_CONTRAST	480
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_SPEED		B19200
 #define DEFAULT_LINEWRAP	1
 #define DEFAULT_AUTOSCROLL	1
 #define DEFAULT_CURSORBLINK	0
+
+/* These are the keys for a (possibly) broken LK202-25...*/
+#define KEY_UP    'I'
+#define KEY_DOWN  'F'
+#define KEY_LEFT  'K'
+#define KEY_RIGHT 'A'
+#define KEY_F1    'N'
+/* TODO: add more if you've got any more ;) or correct the settings
+ * the actual translation is done in MtxOrb_getkey()
+ */
+
 #endif
 

@@ -34,7 +34,7 @@ typedef struct section {
 
 
 static section * first_section = NULL;
-// Yes there is a static. It's C after all :)
+/* Yes there is a static. It's C after all :)*/
 
 
 section * find_section( char * sectionname );
@@ -44,7 +44,7 @@ key * add_key( section * s, char * keyname, char * value );
 int process_config( section ** current_section, char (*get_next_char)(), char modify_section_allowed, char * source_descr );
 
 
-//// EXTERNAL FUNCTIONS ////
+/**** EXTERNAL FUNCTIONS ****/
 
 #define FILECHUNKSIZE 10
 
@@ -56,11 +56,11 @@ int config_read_file( char *filename )
 	int pos=0;
 	section * curr_section = NULL;
 
-	// We use a nested fuction to transfer the characters from buffer to parser
+	/* We use a nested fuction to transfer the characters from buffer to parser*/
 	char get_next_char() {
 		if( pos>=bytesread ) {
 			if( !( bytesread = fread( buf, 1, FILECHUNKSIZE, f ))) {
-				// We're at the end
+				/* We're at the end*/
 				return 0;
 			}
 			pos = 0;
@@ -82,12 +82,12 @@ int config_read_file( char *filename )
 
 
 int config_read_string( char *sectionname, char *str )
-// All the config parameters are placed in the given section in memory.
+/* All the config parameters are placed in the given section in memory.*/
 {
 	int pos=0;
 	section * s;
 
-	// We use a nested fuction to transfer the characters from buffer to parser
+	/* We use a nested fuction to transfer the characters from buffer to parser*/
 	char get_next_char() {
 		return str[pos++];
 	}
@@ -115,9 +115,10 @@ char *config_get_string( char * sectionname, char * keyname,
 
 	return k->value;
 
-/* This is the safer way:
+/* This is the safer way:*/
 
-	// Reallocate memory space for the return value
+	/* Reallocate memory space for the return value*/
+	/*
 	string_storage = realloc( string_storage, ( strlen( k->value ) / 256 + 1) * 256 );
 	strcpy( string_storage, k->value );
 
@@ -164,7 +165,7 @@ long int config_get_int( char *sectionname, char *keyname,
 
 	v = strtol( k->value, &v_end, 0 );
 	if( v_end-(k->value) != strlen(k->value) ) {
-		// Conversion not succesful
+		/* Conversion not succesful*/
 		return default_value;
 	}
 	return v;
@@ -186,7 +187,7 @@ double config_get_float( char *sectionname, char *keyname,
 
 	v = strtod( k->value, &v_end );
 	if( v_end-(k->value) != strlen(k->value) ) {
-		// Conversion not succesful
+		/* Conversion not succesful*/
 		return default_value;
 	}
 	return v;
@@ -214,7 +215,7 @@ int config_has_key( char *sectionname, char *keyname )
 
 	for( k=s->first_key; k; k=k->next_key ) {
 
-		// Did we find the right key ?
+		/* Did we find the right key ?*/
 		if( strcasecmp( k->name, keyname ) == 0 ) {
 			count ++;
 		}
@@ -229,7 +230,7 @@ void config_clear()
 }
 
 
-//// INTERNAL FUNCTIONS ////
+/**** INTERNAL FUNCTIONS ****/
 
 section * find_section( char * sectionname )
 {
@@ -240,7 +241,7 @@ section * find_section( char * sectionname )
 			return s;
 		}
 	}
-	return NULL; // not found
+	return NULL; /* not found*/
 }
 
 section * add_section( char * sectionname )
@@ -266,12 +267,12 @@ key * find_key( section * s, char * keyname, int skip )
 	int count = 0;
 	key * last_key = NULL;
 
-	// Check for NULL section
+	/* Check for NULL section*/
 	if(!s) return NULL;
 
 	for( k=s->first_key; k; k=k->next_key ) {
 
-		// Did we find the right key ?
+		/* Did we find the right key ?*/
 		if( strcasecmp( k->name, keyname ) == 0 ) {
 			if( count == skip ) {
 				return k;
@@ -284,7 +285,7 @@ key * find_key( section * s, char * keyname, int skip )
 	if( skip == -1 ) {
 		return last_key;
 	}
-	return NULL; // not found
+	return NULL; /* not found*/
 }
 
 key * add_key( section * s, char * keyname, char * value )
@@ -307,7 +308,7 @@ key * add_key( section * s, char * keyname, char * value )
 }
 
 
-// Parser states
+/* Parser states*/
 #define ST_INITIAL 0
 #define ST_IGNORE 1
 #define ST_SECTIONNAME 2
@@ -321,7 +322,7 @@ key * add_key( section * s, char * keyname, char * value )
 #define ST_INVALID_QUOTEDVALUE 31
 #define ST_END 99
 
-// Limits
+/* Limits*/
 #define MAXSECTIONNAMELENGTH 40
 #define MAXKEYNAMELENGTH 40
 #define MAXVALUELENGTH 200
@@ -346,7 +347,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 
 		ch = get_next_char();
 
-		// Secretly keep count of the line numbers
+		/* Secretly keep count of the line numbers*/
 		if( ch == '\n' ) {
 			line_nr ++;
 		}
@@ -363,11 +364,11 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case ';':
 			  case '=':
 			  case ']':
-				// It's a comment or an error
+				/* It's a comment or an error*/
 				state = ST_IGNORE;
 				break;
 			  case '[':
-				// It's a section name
+				/* It's a section name*/
 				state = ST_SECTIONNAME;
 				sectionname[0] = 0;
 				sectionname_pos = 0;
@@ -375,7 +376,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case 0:
 				break;
 			  default:
-				// It's a keyname
+				/* It's a keyname*/
 				state = ST_KEYNAME;
 				keyname[0] = ch;
 				keyname[1] = 0;
@@ -465,7 +466,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			switch( ch ) {
 			  case '\n':
 				state = ST_INITIAL;
-			  //case ' ':
+			  /*case ' ':*/
 			}
 			break;
 		  case ST_VALUE:
@@ -486,15 +487,15 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case '\r':
 			  case '\t':
 			  case ' ':
-				// Value complete !
+				/* Value complete !*/
 				if( ! *current_section ) {
 					report( RPT_WARNING, "Data before any section on line %d of %s with key: %s", line_nr, source_descr, keyname );
 				}
 				else {
-					// Store the value
+					/* Store the value*/
 					k = add_key( *current_section, keyname, value );
 				}
-				// And be ready for next thing...
+				/* And be ready for next thing...*/
 				state = ST_INITIAL;
 				break;
 			  default:
@@ -539,7 +540,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 					  case 'n': ch = '\n'; break;
 					  case 'r': ch = '\r'; break;
 					  case 't': ch = '\t'; break;
-					  // default: litteral
+					  /* default: litteral*/
 					}
 					quote = 0;
 				}

@@ -12,6 +12,8 @@
 #ifndef T6963_H
 #define T6963_H
 
+#include "lcd.h"
+
 #define SM_UP (1)
 #define SM_DOWN (2)
 #define CM_ERASE (2)
@@ -105,25 +107,28 @@ typedef unsigned char u8;
 // *                  F U N C T I O N S                                                   *
 // ****************************************************************************************
 
-extern lcd_logical_driver *t6963;
 
-int  t6963_init (struct lcd_logical_driver *driver, char *args);
-void t6963_close ();
-void t6963_clear ();
-void t6963_graphic_clear ();
-void t6963_flush ();
-void t6963_string (int x, int y, char string[]);
-void t6963_chr (int x, int y, char c);
-void t6963_vbar (int x, int len);
-void t6963_hbar (int x, int y, int len);
-void t6963_num (int x, int num);
-void t6963_set_nchar (int n, char *dat, int num);
-void t6963_set_char (int n, char *dat);
-void t6963_icon (int which, char dest);
-void t6963_heartbeat (int type);
-void t6963_flush_box (int lft, int top, int rgt, int bot);
-void t6963_draw_frame (char *dat);
-char t6963_getkey ();
+              int  t6963_init (Driver *drvthis, char *args);
+MODULE_EXPORT void t6963_close (Driver *drvthis);
+MODULE_EXPORT int  t6963_width (Driver *drvthis);
+MODULE_EXPORT int  t6963_height (Driver *drvthis);
+MODULE_EXPORT void t6963_clear (Driver *drvthis);
+MODULE_EXPORT void t6963_flush (Driver *drvthis);
+MODULE_EXPORT void t6963_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void t6963_chr (Driver *drvthis, int x, int y, char c);
+
+MODULE_EXPORT void t6963_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void t6963_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void t6963_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void t6963_icon (Driver *drvthis, int which, char dest);
+MODULE_EXPORT void t6963_heartbeat (Driver *drvthis, int type);
+
+MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
+
+MODULE_EXPORT char t6963_getkey (Driver *drvthis);
+
+void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
+void t6963_set_nchar (Driver *drvthis, int n, char *dat, int num);
 
 void t6963_low_data(u8 byte);
 void t6963_low_command (u8 byte);

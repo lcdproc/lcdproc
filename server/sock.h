@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  */
 
@@ -17,7 +16,7 @@
 
 typedef struct sockaddr_in sockaddr_in;
 
-// Server functions...
+/* Server functions...*/
 int sock_create_server ();
 int sock_create_inet_socket (unsigned short int port);
 int sock_poll_clients ();

@@ -1,20 +1,22 @@
 #ifndef SED1520_H
 #define SED1520_H
 
-extern lcd_logical_driver *sed1520;
+#include "lcd.h"
 
-int sed1520_init (struct lcd_logical_driver *driver, char *args);
-void sed1520_close ();
-void sed1520_clear ();
-void sed1520_flush ();
-void sed1520_string (int x, int y, char string[]);
-void sed1520_chr (int x, int y, char c);
-void sed1520_vbar (int x, int len);
-void sed1520_hbar (int x, int y, int len);
-void sed1520_num (int x, int num);
-void sed1520_set_char (int n, char *dat);
-void sed1520_icon (int which, char dest);
-void sed1520_flush_box (int lft, int top, int rgt, int bot);
-void sed1520_draw_frame (char *dat);
+              int sed1520_init (Driver *drvthis, char *args);
+MODULE_EXPORT void sed1520_close (Driver *drvthis);
+MODULE_EXPORT int sed1520_width (Driver *drvthis);
+MODULE_EXPORT int sed1520_height (Driver *drvthis);
+MODULE_EXPORT void sed1520_clear (Driver *drvthis);
+MODULE_EXPORT void sed1520_flush (Driver *drvthis);
+MODULE_EXPORT void sed1520_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void sed1520_chr (Driver *drvthis, int x, int y, char c);
+
+MODULE_EXPORT void sed1520_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void sed1520_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void sed1520_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void sed1520_icon (Driver *drvthis, int which, char dest);
+
+MODULE_EXPORT void sed1520_set_char (Driver *drvthis, int n, char *dat);
 
 #endif

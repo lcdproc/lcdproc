@@ -1,19 +1,21 @@
 #ifndef STV5730_H
 #define STV5730_H
 
-extern lcd_logical_driver *stv5730;
+#include "lcd.h"
 
-int stv5730_init (struct lcd_logical_driver *driver, char *args);
-void stv5730_close ();
-void stv5730_clear ();
-void stv5730_flush ();
-void stv5730_string (int x, int y, char string[]);
-void stv5730_chr (int x, int y, char c);
-void stv5730_vbar (int x, int len);
-void stv5730_hbar (int x, int y, int len);
-void stv5730_num (int x, int num);
-void stv5730_icon (int which, char dest);
-void stv5730_flush_box (int lft, int top, int rgt, int bot);
-void stv5730_draw_frame (char *dat);
+              int stv5730_init (Driver *drvthis, char *args);
+MODULE_EXPORT void stv5730_close (Driver *drvthis);
+MODULE_EXPORT int stv5730_width (Driver *drvthis);
+MODULE_EXPORT int stv5730_height (Driver *drvthis);
+MODULE_EXPORT int stv5730_cellwidth (Driver *drvthis);
+MODULE_EXPORT int stv5730_cellheight (Driver *drvthis);
+MODULE_EXPORT void stv5730_clear (Driver *drvthis);
+MODULE_EXPORT void stv5730_flush (Driver *drvthis);
+MODULE_EXPORT void stv5730_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void stv5730_chr (Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT void stv5730_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void stv5730_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void stv5730_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void stv5730_icon (Driver *drvthis, int which, char dest);
 
 #endif

@@ -30,10 +30,10 @@ extern char *build_date;
 
 void exit_program (int val);
 
-// 1/8th second is a single time unit...
+/* 1/8th second is a single time unit...*/
 #define TIME_UNIT 125000
-// But I plan to double the framerate soon, or make it variable...
-//#define TIME_UNIT (125000/2)
+/* But I plan to double the framerate soon, or make it variable...*/
+/*#define TIME_UNIT (125000/2)*/
 
 typedef struct screen_size {
 	char *size;

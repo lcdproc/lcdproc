@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  */
 
@@ -27,10 +26,10 @@ typedef struct client_menu {
 
 typedef struct client_menu_item {
 	char id[];
-	int type;						  // Title, function, submenu, slider, checkbox, etc...
-	int value;						  // Holds stuff like "true", 43, etc...
-	char text[];					  // Text to display here...
-	char child[];					  // For the "submenu" type
+	int type;				/* Title, function, submenu, slider, checkbox, etc...*/
+	int value;				/* Holds stuff like "true", 43, etc...*/
+	char text[];				/* Text to display here...*/
+	char child[];				/* For the "submenu" type*/
 } client_menu;
 
 #endif

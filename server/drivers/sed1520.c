@@ -53,8 +53,18 @@
 
 
 unsigned int sed1520_lptport = LPTPORT;
+char *framebuf = NULL;
+int width = LCD_DEFAULT_WIDTH;
+int height = LCD_DEFAULT_HEIGHT;
+int cellwidth = LCD_DEFAULT_CELLWIDTH;
+int cellheight = LCD_DEFAULT_CELLHEIGHT;
 
-lcd_logical_driver *sed1520;
+
+// Vars for the server core
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 0;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "sed1520_";
 
 /////////////////////////////////////////////////////////////////
 // writes command value to one or both sed1520 selected by chip
@@ -125,22 +135,20 @@ drawchar2fb (int x, int y, unsigned char z)
 		    (((fontmap[(int) z][j] * 2) & (1 << i)) / (1 << i)) *
 		    (1 << j);
 	    }
-	  sed1520->framebuf[(y * 122) + (x * 6) + (6 - i)] = k;
+	  framebuf[(y * 122) + (x * 6) + (6 - i)] = k;
       }
 
 }
 
 /////////////////////////////////////////////////////////////////
-// This initialises the stuff. We support supplying port as 
+// This initialises the stuff. We support supplying port as
 // a command line argument.
-// 
+//
 int
-sed1520_init (struct lcd_logical_driver *driver, char *args)
+sed1520_init (Driver *drvthis, char *args)
 {
     char *argv[64], *str;
     int argc, i;
-
-    sed1520 = driver;
 
     if (args)
 	if ((str = (char *) malloc (strlen (args) + 1)))
@@ -195,11 +203,22 @@ sed1520_init (struct lcd_logical_driver *driver, char *args)
 	    }
       }
 
-    driver->wid = 20;
-    driver->hgt = 4;
+    // driver->wid = 20;
+    // driver->hgt = 4;
 
 	if (timing_init() == -1)
 		return -1;
+
+    // Allocate our framebuffer
+    framebuf = malloc (122 * 4);
+    if (!framebuf)
+      {
+	  // sed1520_close ();
+	  return -1;
+      }
+
+    // clear screen
+    memset (framebuf, 0, 122 * 4);
 
     // Initialize the Port and the sed1520s
     if(port_access(sed1520_lptport)) return -1;
@@ -212,87 +231,105 @@ sed1520_init (struct lcd_logical_driver *driver, char *args)
     writecommand (0xC0, CS1 + CS2);
     selectpage (3);
 
-    driver->cellwid = 6;
-    driver->cellhgt = 8;
+    cellwidth = 6;
+    cellheight = 8;
 
-    // The Framebuffer LCDproc allocates by default is too small,
-    // so we free() it (if it exists) and allocate one of adequate size.
-    if (!driver->framebuf)
-	free (driver->framebuf);
 
-    driver->framebuf = malloc (122 * 4);
-    if (!driver->framebuf)
-      {
-	  sed1520_close ();
-	  return -1;
-      }
+    // Set variables for server
+    drvthis->api_version = api_version;
+    drvthis->stay_in_foreground = &stay_in_foreground;
+    drvthis->supports_multiple = &supports_multiple;
 
-    // clear screen
-    memset (driver->framebuf, 0, 122 * 4);
+    // Set the functions the driver supports
+    drvthis->clear = sed1520_clear;
+    drvthis->string = sed1520_string;
+    drvthis->chr = sed1520_chr;
+    drvthis->old_vbar = sed1520_vbar;
+    drvthis->old_hbar = sed1520_hbar;
+    drvthis->num = sed1520_num;
+    drvthis->init = sed1520_init;
+    drvthis->close = sed1520_close;
+    drvthis->flush = sed1520_flush;
+    drvthis->set_char = sed1520_set_char;
 
-    driver->clear = sed1520_clear;
-    driver->string = sed1520_string;
-    driver->chr = sed1520_chr;
-    driver->vbar = sed1520_vbar;
-    driver->hbar = sed1520_hbar;
-    driver->num = sed1520_num;
-    driver->init = sed1520_init;
-    driver->close = sed1520_close;
-    driver->flush = sed1520_flush;
-    driver->flush_box = sed1520_flush_box;
-    driver->set_char = sed1520_set_char;
-
-    driver->icon = sed1520_icon;
-    driver->draw_frame = sed1520_draw_frame;
+    drvthis->old_icon = sed1520_icon;
     // We dont't need init for vbar,hbar and friends.
-    //driver->init_hbar = NULL;
-    //driver->init_vbar = NULL;
-    //driver->init_num = NULL;
+    //drvthis->init_hbar = NULL;
+    //drvthis->init_vbar = NULL;
+    //drvthis->init_num = NULL;
     // Neither contrast nor backlight are controllable.
-    //driver->contrast = NULL;
-    //driver->backlight = NULL;
+    //drvthis->contrast = NULL;
+    //drvthis->backlight = NULL;
     // There are some unused input lines that may be used for input,
     // but nothing is programmed so far.
-    //driver->getkey = NULL;
-    return 200;			// 200 is arbitrary.  (must be 1 or more)
+    //drvthis->getkey = NULL;
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////
 // Frees the frambuffer and exits the driver.
 //
-void
-sed1520_close ()
+MODULE_EXPORT void
+sed1520_close (Driver *drvthis)
 {
-    if (sed1520->framebuf != NULL)
-	free (sed1520->framebuf);
-    sed1520->framebuf = NULL;
+    if (framebuf != NULL)
+	free (framebuf);
+    framebuf = NULL;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display width
+//
+MODULE_EXPORT int
+sed1520_width (Driver *drvthis)
+{
+	return width;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display height
+//
+MODULE_EXPORT int
+sed1520_height (Driver *drvthis)
+{
+	return height;
 }
 
 /////////////////////////////////////////////////////////////////
 // Clears the LCD screen
 //
-void
-sed1520_clear ()
+MODULE_EXPORT void
+sed1520_clear (Driver *drvthis)
 {
-    memset (sed1520->framebuf, 0, 488);
+    memset (framebuf, 0, 488);
 }
 
 /////////////////////////////////////////////////////////////////
-// 
+//
 // Flushes all output to the lcd...
 //
-void
-sed1520_flush ()
+MODULE_EXPORT void
+sed1520_flush (Driver *drvthis)
 {
-    sed1520->draw_frame (sed1520->framebuf);
+    int i, j;
+    for (i = 0; i < 4; i++)
+      {
+	  selectpage (i);
+	  selectcolumn (0, CS2) ;
+	  for (j = 0; j < 61; j++)
+	      writedata (framebuf[j + (i * 122)], CS2);
+	  selectcolumn (0, CS1) ;
+	  for (j = 61; j < 122; j++)
+	      writedata (framebuf[j + (i * 122)], CS1);
+      }
 }
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lc display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
-void
-sed1520_string (int x, int y, char string[])
+MODULE_EXPORT void
+sed1520_string (Driver *drvthis, int x, int y, char string[])
 {
     int i;
     x--;			// Convert 1-based coords to 0-based...
@@ -308,8 +345,8 @@ sed1520_string (int x, int y, char string[])
 // Writes  char c at position x,y into the framebuffer.
 // x and y are 1-based textmode coordinates.
 //
-void
-sed1520_chr (int x, int y, char c)
+MODULE_EXPORT void
+sed1520_chr (Driver *drvthis, int x, int y, char c)
 {
     y--;
     x--;
@@ -317,14 +354,14 @@ sed1520_chr (int x, int y, char c)
 }
 
 /////////////////////////////////////////////////////////////////
-// This function draws a number num into the last 3 rows of the 
+// This function draws a number num into the last 3 rows of the
 // framebuffer at 1-based position x. It should draw a 4-row font,
 // but methinks this would look a little stretched. When
 // num=10 a colon is drawn.
 // FIXME: make big numbers use less memory
 //
-void
-sed1520_num (int x, int num)
+MODULE_EXPORT void
+sed1520_num (Driver *drvthis, int x, int num)
 {
     int z, c, i, s;
     x--;
@@ -349,7 +386,7 @@ sed1520_num (int x, int num)
 			    if (*(fontbigdp[(z * 8) + i] + c) == '.')
 				s += 128;
 			}
-		      sed1520->framebuf[(z * 122) + 122 + (x * 6) + c] = s;
+		      framebuf[(z * 122) + 122 + (x * 6) + c] = s;
 		  }
 	    }
       }
@@ -367,7 +404,7 @@ sed1520_num (int x, int num)
 			    if (*(fontbignum[num][z * 8 + i] + c) == '.')
 				s += 128;
 			}
-		      sed1520->framebuf[(z * 122) + 122 + (x * 6) + c] = s;
+		      framebuf[(z * 122) + 122 + (x * 6) + c] = s;
 		  }
 	    }
       }
@@ -381,10 +418,10 @@ sed1520_num (int x, int num)
 // can be altered. !Important: Characters have to be redraw
 // by drawchar2fb() to show their new shape. Because we use
 // a non-standard 6x8 font a *dat not calculated from
-// sed1520->width and sed1520->height will fail. 
+// widthth and sed1520->height will fail.
 //
-void
-sed1520_set_char (int n, char *dat)
+MODULE_EXPORT void
+sed1520_set_char (Driver *drvthis, int n, char *dat)
 {
 
     int row, col, i;
@@ -406,11 +443,11 @@ sed1520_set_char (int n, char *dat)
 
 
 /////////////////////////////////////////////////////////////////
-// Draws a vertical from the bottom up to the last 3 rows of the 
+// Draws a vertical from the bottom up to the last 3 rows of the
 // framebuffer at 1-based position x. len is given in pixels.
 //
-void
-sed1520_vbar (int x, int len)
+MODULE_EXPORT void
+sed1520_vbar (Driver *drvthis, int x, int len)
 {
     int i, j, k;
     x--;
@@ -426,12 +463,12 @@ sed1520_vbar (int x, int len)
 		    k += 1 << (7 - i);
 	    }
 
-	  sed1520->framebuf[((3 - j) * 122) + (x * 6)] = 0;
-	  sed1520->framebuf[((3 - j) * 122) + (x * 6) + 1] = 0;
-	  sed1520->framebuf[((3 - j) * 122) + (x * 6) + 2] = k;
-	  sed1520->framebuf[((3 - j) * 122) + (x * 6) + 3] = k;
-	  sed1520->framebuf[((3 - j) * 122) + (x * 6) + 4] = k;
-	  sed1520->framebuf[((3 - j) * 122) + (x * 6) + 5] = 0;
+	  framebuf[((3 - j) * 122) + (x * 6)] = 0;
+	  framebuf[((3 - j) * 122) + (x * 6) + 1] = 0;
+	  framebuf[((3 - j) * 122) + (x * 6) + 2] = k;
+	  framebuf[((3 - j) * 122) + (x * 6) + 3] = k;
+	  framebuf[((3 - j) * 122) + (x * 6) + 4] = k;
+	  framebuf[((3 - j) * 122) + (x * 6) + 5] = 0;
 	  len -= 8;
       }
 
@@ -439,11 +476,11 @@ sed1520_vbar (int x, int len)
 
 
 /////////////////////////////////////////////////////////////////
-// Draws a horizontal bar from left to right at 1-based position 
+// Draws a horizontal bar from left to right at 1-based position
 // x,y into the framebuffer. len is given in pixels.
 //
-void
-sed1520_hbar (int x, int y, int len)
+MODULE_EXPORT void
+sed1520_hbar (Driver *drvthis, int x, int y, int len)
 {
     int i;
     x--;
@@ -453,15 +490,15 @@ sed1520_hbar (int x, int y, int len)
 	return;
 
     for (i = 0; i < len; i++)
-	sed1520->framebuf[(y * 122) + (x * 6) + i] = 0x3C;
+	framebuf[(y * 122) + (x * 6) + i] = 0x3C;
 }
 
 /////////////////////////////////////////////////////////////////
-// Reprogrammes character dest to contain an icon given by 
+// Reprogrammes character dest to contain an icon given by
 // which. Calls set_char() to do this.
 //
-void
-sed1520_icon (int which, char dest)
+MODULE_EXPORT void
+sed1520_icon (Driver *drvthis, int which, char dest)
 {
     char icons[3][6 * 8] = {
 	{
@@ -495,42 +532,6 @@ sed1520_icon (int which, char dest)
 	 1, 0, 1, 0, 1, 0,}
 	,
     };
-    sed1520_set_char (dest, &icons[which][0]);
+    sed1520_set_char (drvthis, dest, &icons[which][0]);
 }
 
-/////////////////////////////////////////////////////////////////
-// Send a rectangular area from lft,top to rgt,bot to the display
-// These coordinates are probably one-based, too. It's so fast to
-// flush the whole display that it makes no sense to flush less then
-// the whole display. Therefore this function redraws the whole
-// display. 
-// FIXME: Check if this function is worth implementing.
-//
-void
-sed1520_flush_box (int lft, int top, int rgt, int bot)
-{
-    sed1520_flush ();
-}
-
-/////////////////////////////////////////////////////////////////
-// Outputs the whole framebuffer *dat to the display. This Display   
-// contains 2 Controllers, each of them controlling one half of the
-// screen.
-//
-void
-sed1520_draw_frame (char *dat)
-{
-    int i, j;
-    if (!dat)
-	return;
-    for (i = 0; i < 4; i++)
-      {
-	  selectpage (i);
-	  selectcolumn (0, CS2) ;
-	  for (j = 0; j < 61; j++)
-	      writedata (dat[j + (i * 122)], CS2);
-	  selectcolumn (0, CS1) ;
-	  for (j = 61; j < 122; j++)
-	      writedata (dat[j + (i * 122)], CS1);
-      }
-}

@@ -6,7 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *               2001, Joris Robijn
+ *		 2001, Joris Robijn
  *
  *
  * Draws screens on the LCD.
@@ -31,7 +31,8 @@
 #include "shared/report.h"
 #include "shared/LL.h"
 
-#include "drivers/lcd.h"
+#include "drivers.h"
+#include "drivers.h"
 
 #include "screen.h"
 #include "screenlist.h"
@@ -57,12 +58,9 @@ draw_screen (screen * s, int timer)
 	static screen *old_s = NULL;
 	int tmp = 0, tmp_state = 0;
 
-	//debug(RPT_DEBUG, "Render...");
-	//return 0;
+	report(RPT_INFO, "draw_screen( screen=\"%.40s\", timer=%d )  ==== START RENDERING ====", s->name, timer );
 
 	reset = 1;
-
-	//debug(RPT_DEBUG, "draw_screen: %8x, %i", (int)s, timer);
 
 	if (!s)
 		return -1;
@@ -71,123 +69,129 @@ draw_screen (screen * s, int timer)
 		reset = 0;
 	old_s = s;
 
-	// Clear the LCD screen...
-	lcd_ptr->clear ();
+	/* Clear the LCD screen... */
+	drivers_clear ();
 
-	// FIXME lcd_ptr->backlight --
-	//
-	// This should be in a separate function altogether.
-	// Perhaps several: lcd_ptr->backlight_off, lcd_ptr->backlight_on,
-	// lcd_ptr->backlight_brightness, lcd_ptr->backlight_flash ...
-
-	// If the screen's backlight_state isn't set (default) then we
-	// inherit the backlight state from the parent client. This allows
-	// the client to override it's childrens settings.
+	/* FIXME drivers_backlight --
+	 *
+	 * This should be in a separate function altogether.
+	 * Perhaps several: drivers_backlight_off, drivers_backlight_on,
+	 * drivers_backlight_brightness, drivers_backlight_flash ...
+	 *
+	 * If the screen's backlight_state isn't set (default) then we
+	 * inherit the backlight state from the parent client. This allows
+	 * the client to override it's childrens settings.
+	 */
 	if (s->backlight_state == BACKLIGHT_NOTSET) {
 		if (s->parent) tmp_state = s->parent->backlight_state;
 	} else {
 		tmp_state = s->backlight_state;
 	}
 
-	// Set up backlight to the correct state...
-	// NOTE: dirty stripping of other options...
+	/* Set up backlight to the correct state... */
+	/* NOTE: dirty stripping of other options... */
 	switch (tmp_state & 1) {
 		case BACKLIGHT_OFF:
-			lcd_ptr->backlight (BACKLIGHT_OFF);
+			drivers_backlight (BACKLIGHT_OFF);
 			break;
-		// Backlight on (easy)
+		/* Backlight on (easy) */
 		case BACKLIGHT_ON:
-			lcd_ptr->backlight (BACKLIGHT_ON);
+			drivers_backlight (BACKLIGHT_ON);
 			break;
 		default:
-			// Backlight flash: check timer and flip backlight as appropriate
+			/* Backlight flash: check timer and flip backlight as appropriate */
 			if (tmp_state & BACKLIGHT_FLASH) {
 				tmp = (!((timer & 7) == 7));
 				if (tmp_state & 1)
-					lcd_ptr->backlight (tmp ? backlight_brightness : backlight_off_brightness);
-				//lcd_ptr->backlight(backlight_brightness * (!((timer&7) == 7)));
+					drivers_backlight (tmp ? backlight_brightness : backlight_off_brightness);
+				/*drivers_backlight(backlight_brightness * (!((timer&7) == 7))); */
 				else
-					lcd_ptr->backlight (!tmp ? backlight_brightness : backlight_off_brightness);
-				//lcd_ptr->backlight(backlight_brightness * ((timer&7) == 7));
+					drivers_backlight (!tmp ? backlight_brightness : backlight_off_brightness);
+				/*drivers_backlight(backlight_brightness * ((timer&7) == 7)); */
 
-			// Backlight blink: check timer and flip backlight as appropriate
+			/* Backlight blink: check timer and flip backlight as appropriate */
 			} else if (tmp_state & BACKLIGHT_BLINK) {
 				tmp = (!((timer & 14) == 14));
 				if (tmp_state & 1)
-					lcd_ptr->backlight (tmp ? backlight_brightness : backlight_off_brightness);
-				//lcd_ptr->backlight(backlight_brightness * (!((timer&14) == 14)));
+					drivers_backlight (tmp ? backlight_brightness : backlight_off_brightness);
+				/*drivers_backlight(backlight_brightness * (!((timer&14) == 14))); */
 				else
-					lcd_ptr->backlight (!tmp ? backlight_brightness : backlight_off_brightness);
-				//lcd_ptr->backlight(backlight_brightness * ((timer&14) == 14));
+					drivers_backlight (!tmp ? backlight_brightness : backlight_off_brightness);
+				/*drivers_backlight(backlight_brightness * ((timer&14) == 14)); */
 			}
 			break;
 	}
 
-	// Output ports from LCD - outputs depend on the current screen
-	lcd_ptr->output (output_state);
+	/* Output ports from LCD - outputs depend on the current screen */
+	drivers_output (output_state);
 
-	// Draw a frame...
-	draw_frame (s->widgets, 'v', 0, 0, lcd_ptr->wid, lcd_ptr->hgt, s->wid, s->hgt, (((s->duration / s->hgt) < 1) ? 1 : (s->duration / s->hgt)), timer);
+	/* Draw a frame... */
+	draw_frame (s->widgets, 'v', 0, 0, display_props->width, display_props->height, s->wid, s->hgt, (((s->duration / s->hgt) < 1) ? 1 : (s->duration / s->hgt)), timer);
 
-	//debug(RPT_DEBUG, "draw_screen done");
+	/*debug(RPT_DEBUG, "draw_screen done"); */
 
 	if (heartbeat) {
-		lcd_ptr->heartbeat(s->heartbeat);
-		//if ((s->heartbeat == HEART_ON) || heartbeat == HEART_ON) {
-			// Set this to pulsate like a real heart beat...
-			// (binary is fun...  :)
-			// lcd_ptr->heartbeat ();
-			//lcd_ptr->icon (!((timer + 4) & 5), 0);
-			//lcd_ptr->chr (lcd_ptr->wid, 1, 0);
-		//}
-		// else
-		// This seems unnecessary... heartbeat is nicer...
-		// if ((s->heartbeat == HEART_OPEN) && heartbeat != HEART_OFF) {
-		// 	char *phases = "-\\|/";
-		// 	lcd_ptr->chr (lcd_ptr->wid, 1, phases[timer & 3]);
-		// }
+		drivers_heartbeat(s->heartbeat);
+		/*if ((s->heartbeat == HEART_ON) || heartbeat == HEART_ON) { */
+			/* Set this to pulsate like a real heart beat... */
+			/* (binary is fun...  :) */
+			/* drivers_heartbeat (); */
+			/*drivers_icon (!((timer + 4) & 5), 0); */
+			/*drivers_chr (display_props->width, 1, 0); */
+		/*} */
+		/* else */
+		/* This seems unnecessary... heartbeat is nicer... */
+		/* if ((s->heartbeat == HEART_OPEN) && heartbeat != HEART_OFF) { */
+		/* 	char *phases = "-\\|/"; */
+		/* 	drivers_chr (ldisplay_props->width, 1, phases[timer & 3]); */
+		/* } */
 	}
 
-	// flush display out, frame and all...
-	lcd_ptr->flush ();
+	/* flush display out, frame and all... */
+	drivers_flush ();
 
-	//debug(RPT_DEBUG, "draw_screen: %8x, %i", s, timer);
+	/*debug(RPT_DEBUG, "draw_screen: %8x, %i", s, timer); */
 
+	report(RPT_INFO, "==== END RENDERING ====" );
 	return 0;
 
 }
 
-// The following function is positively ghastly (as was mentioned above!)
-// Best thing to do is to remove support for frames... but anyway...
-//
+/* The following function is positively ghastly (as was mentioned above!) */
+/* Best thing to do is to remove support for frames... but anyway... */
+/* */
 static int
 draw_frame (LinkedList * list,
-		char fscroll,	// direction of scrolling
-		int left,	// left edge of frame
-		int top,	// top edge of frame
-		int right,	// right edge of frame
-		int bottom,	// bottom edge of frame
-		int fwid,	// frame width?
-		int fhgt,	// frame height?
-		int fspeed,	// speed of scrolling...
-		int timer)	// ?
+		char fscroll,	/* direction of scrolling */
+		int left,	/* left edge of frame */
+		int top,	/* top edge of frame */
+		int right,	/* right edge of frame */
+		int bottom,	/* bottom edge of frame */
+		int fwid,	/* frame width? */
+		int fhgt,	/* frame height? */
+		int fspeed,	/* speed of scrolling... */
+		int timer)	/* ? */
 {
 
 #define	VerticalScrolling (fscroll == 'v')
 #define	HorizontalScrolling (fscroll == 'h')
 
-	char str[BUFSIZE];			  // scratch buffer
+	char str[BUFSIZE];			  /* scratch buffer */
 	widget *w;
 
-	int wid, hgt;				  // Width and height of visible frame area
+	int wid, hgt;				  /* Width and height of visible frame area */
 	int x, y;
-	int fx, fy;				  // Scrolling offset for the frame...
+	int fx, fy;				  /* Scrolling offset for the frame... */
 	int length, speed;
-	//int lines;
+	/*int lines; */
 
 	int reset = 1;
 
-	wid = right - left;			  // This is the size of the visible frame area
+	report( RPT_INFO, "draw_frame( list=%p, fscroll='%c', left=%d, top=%d, "
+			  "right=%d, bottom=%d, fwid=%d, fhgt=%d, fspeed=%d, timer=%d )",
+			  list, fscroll, left,top, right, bottom, fwid, fhgt, fspeed, timer );
+
+	wid = right - left;			  /* This is the size of the visible frame area */
 	hgt = bottom - top;
 
 	fx = 0;
@@ -201,15 +205,16 @@ draw_frame (LinkedList * list,
 		if (fy < 0)
 			fy = 0;
 
-		// Make sure the whole frame gets displayed, at least...
-		// ...by setting the action to RENDER_HOLD if no other action
-		// is currently defined...
+		/* Make sure the whole frame gets displayed, at least...
+		 * ...by setting the action to RENDER_HOLD if no other action
+		 * is currently defined...
+		 */
 
 		if (!screenlist_action)
 			screenlist_action = RENDER_HOLD;
 
 		if ((fy) > fhgt - 1) {
-			// Release hold after it has been displayed
+			/* Release hold after it has been displayed */
 			if (!screenlist_action || screenlist_action == RENDER_HOLD)
 				screenlist_action = 0;
 		}
@@ -219,14 +224,13 @@ draw_frame (LinkedList * list,
 			fy = fhgt - hgt;
 
 	} else if (HorizontalScrolling) {
-		// TODO:  Frames don't scroll horizontally yet!
+		/* TODO:  Frames don't scroll horizontally yet! */
 	}
-	//debug(RPT_DEBUG, "draw_screen: %8x, %i", s, timer);
 
 	if (!list)
 		return -1;
 
-	//debug(RPT_DEBUG, "draw_frame: %8x, %i", frame, timer);
+	/*debug(RPT_DEBUG, "draw_frame: %8x, %i", frame, timer); */
 
 #define PositiveX(a)	((a)->x > 0)
 #define PositiveY(a)	((a)->y > 0)
@@ -239,7 +243,7 @@ draw_frame (LinkedList * list,
 		if (!w)
 			return -1;
 
-		// TODO:  Make this cleaner and more flexible!
+		/* TODO:  Make this cleaner and more flexible!*/
 		switch (w->type) {
 			case WID_STRING:
 				if (ValidPoint(w) && TextPresent(w)) {
@@ -247,50 +251,64 @@ draw_frame (LinkedList * list,
 						if (w->x > wid) w->x=wid;
 						strncpy (str, w->text, wid - w->x + 1);
 						str[wid - w->x + 1] = 0;
-						lcd_ptr->string (w->x + left, w->y + top - fy, str);
+						drivers_string (w->x + left, w->y + top - fy, str);
 					}
 				}
 				break;
 			case WID_HBAR:
 				if (reset) {
-					lcd_ptr->init_hbar ();
+					drivers_init_hbar ();
 					reset = 0;
 				}
 				if ((w->x > 0) && (w->y > 0)) {
 					if ((w->y <= hgt + fy) && (w->y > fy)) {
 						if (w->length > 0) {
-							if ((w->length / lcd_ptr->cellwid) < wid - w->x + 1)
-								lcd_ptr->hbar (w->x + left, w->y + top - fy, w->length);
-							else
-								lcd_ptr->hbar (w->x + left, w->y + top - fy, wid * lcd_ptr->cellwid);
+							if ((w->length / display_props->cellwidth) < wid - w->x + 1) {
+								/*was: drivers_hbar (w->x + left, w->y + top - fy, w->length); */
+								/* improvised len and promille */
+								int full_len = display_props->width - w->x + left;
+								int promille = (long) 1000 * w->length / ( display_props->cellwidth * full_len );
+								drivers_hbar (w->x + left, w->y + top - fy, full_len, promille, BAR_PATTERN_FILLED);
+							}
+							else {
+								/*was: drivers_hbar (w->x + left, w->y + top - fy, wid * display_props->cellwidth); */
+								/* Improvised len and promille while we have the old widget language */
+								int full_len = ( display_props->width - w->x + left);
+								drivers_hbar (w->x + left, w->y + top - fy, full_len, 1000, BAR_PATTERN_FILLED);
+							}
 						} else if (w->length < 0) {
-							// TODO:  Rearrange stuff to get left-extending
-							// hbars to draw correctly...
-							// .. er, this'll require driver modifications,
-							// so I'll leave it out for now.
+							/* TODO:  Rearrange stuff to get left-extending
+							 * hbars to draw correctly...
+							 * .. er, this'll require driver modifications,
+							 * so I'll leave it out for now.
+							 */
 						}
 					}
 				}
 				break;
-			case WID_VBAR:			  // FIXME:  Vbars don't work in frames!
+			case WID_VBAR:			  /* FIXME:  Vbars don't work in frames!*/
 				if (reset) {
-					lcd_ptr->init_vbar ();
+					drivers_init_vbar ();
 					reset = 0;
 				}
 				if ((w->x > 0) && (w->y > 0)) {
 					if (w->length > 0) {
-						lcd_ptr->vbar (w->x, w->length);
+						/* Improvised len and promille while we have the old widget language */
+						int full_len = - display_props->height;  /* Yeah negative length because the bar grows in the */
+						int promille = (long) 1000 * w->length / display_props->cellheight / -full_len;
+						drivers_vbar (w->x, display_props->height, full_len, promille, BAR_PATTERN_FILLED);
 					} else if (w->length < 0) {
-						// TODO:  Rearrange stuff to get down-extending
-						// vbars to draw correctly...
-						// .. er, this'll require driver modifications,
-						// so I'll leave it out for now.
+						/* TODO:  Rearrange stuff to get down-extending
+						 * vbars to draw correctly...
+						 * .. er, this'll require driver modifications,
+						 * so I'll leave it out for now.
+						 */
 					}
 				}
 				break;
-			case WID_ICON:			  // FIXME:  Not implemented
+			case WID_ICON:			  /* FIXME:  Not implemented*/
 				break;
-			case WID_TITLE:			  // FIXME:  Doesn't work quite right in frames...
+			case WID_TITLE:			  /* FIXME:  Doesn't work quite right in frames...*/
 				if (!w->text)
 					break;
 				if (wid < 8)
@@ -302,17 +320,17 @@ draw_frame (LinkedList * list,
 				if (length <= wid - 6) {
 					memcpy (str + 3, w->text, length);
 					str[length + 3] = ' ';
-				} else					  // Scroll the title, if it doesn't fit...
+				} else					  /* Scroll the title, if it doesn't fit...*/
 				{
 					speed = 1;
 					x = timer / speed;
 					y = x / length;
 
-					// Make sure the whole title gets displayed, at least...
+					/* Make sure the whole title gets displayed, at least...*/
 					if (!screenlist_action)
 						screenlist_action = RENDER_HOLD;
 					if (x > length - 6) {
-						// Release hold after it has been displayed
+						/* Release hold after it has been displayed*/
 						if (!screenlist_action || screenlist_action == RENDER_HOLD)
 							screenlist_action = 0;
 					}
@@ -323,7 +341,7 @@ draw_frame (LinkedList * list,
 					if (x > length - (wid - 6))
 						x = length - (wid - 6);
 
-					if (y & 1)			  // Scrolling backwards...
+					if (y & 1)			  /* Scrolling backwards...*/
 					{
 						x = (length - (wid - 6)) - x;
 					}
@@ -332,9 +350,9 @@ draw_frame (LinkedList * list,
 				}
 				str[wid] = 0;
 
-				lcd_ptr->string (1 + left, 1 + top, str);
+				drivers_string (1 + left, 1 + top, str);
 				break;
-			case WID_SCROLLER:		  // FIXME: doesn't work in frames...
+			case WID_SCROLLER:		  /* FIXME: doesn't work in frames...*/
 				{
 					int offset;
 					int screen_width;
@@ -342,16 +360,17 @@ draw_frame (LinkedList * list,
 						break;
 					if (w->right < w->left)
 						break;
-					//printf(RPT_DEBUG, "rendering: %s %d",w->text,timer);
+					/*debug(RPT_DEBUG, "rendering: %s %d",w->text,timer);*/
 					screen_width = w->right - w->left + 1;
-					switch (w->length) {	// actually, direction...
-						// FIXED:  Horz scrollers don't show the
-						// last letter in the string...  (1-off error?)
+					switch (w->length) {	/* actually, direction...*/
+						/* FIXED:  Horz scrollers don't show the
+						 * last letter in the string...  (1-off error?)
+						 */
 					case 'h':
 						length = strlen (w->text) + 1;
 						if (length <= screen_width) {
 							/* it fits within the box, just render it */
-							lcd_ptr->string (w->left, w->top, w->text);
+							drivers_string (w->left, w->top, w->text);
 						} else {
 							int effLength = length - screen_width;
 							int necessaryTimeUnits = 0;
@@ -360,11 +379,11 @@ draw_frame (LinkedList * list,
 							if (w->speed > 0) {
 								necessaryTimeUnits = effLength * w->speed;
 								if (((timer / (effLength * w->speed)) % 2) == 0) {
-									//wiggle one way
+									/*wiggle one way*/
 									offset = (timer % (effLength * w->speed))
 										 / w->speed;
 								} else {
-									//wiggle the other
+									/*wiggle the other*/
 									offset = (((timer % (effLength * w->speed))
 												  - (effLength * w->speed) + 1)
 												 / w->speed) * -1;
@@ -390,33 +409,33 @@ draw_frame (LinkedList * list,
 							if (offset <= length) {
 								strncpy (str, &((w->text)[offset]), screen_width);
 								str[screen_width] = '\0';
-								//debug(RPT_DEBUG, "scroller %s : %d", str, length-offset);
+								/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset); */
 							} else {
 								str[0] = '\0';
 							}
-							lcd_ptr->string (w->left, w->top, str);
+							drivers_string (w->left, w->top, str);
 						}
 						break;
-						// FIXME:  Vert scrollers don't always seem to scroll
-						// back up after hitting the bottom.  They jump back to
-						// the top instead...  (nevermind?)
+						/* FIXME:  Vert scrollers don't always seem to scroll */
+						/* back up after hitting the bottom.  They jump back to */
+						/* the top instead...  (nevermind?) */
 					case 'v':
 						{
 							int i = 0;
 							length = strlen (w->text);
 							if (length <= screen_width) {
 								/* no scrolling required... */
-								lcd_ptr->string (w->left, w->top, w->text);
+								drivers_string (w->left, w->top, w->text);
 							} else {
 								int lines_required = (length / screen_width)
 									 + (length % screen_width ? 1 : 0);
 								int available_lines = (w->bottom - w->top + 1);
 								if (lines_required <= available_lines) {
-									// easy...
+									/* easy...*/
 									for (i = 0; i < lines_required; i++) {
 										strncpy (str, &((w->text)[i * screen_width]), screen_width);
 										str[screen_width] = '\0';
-										lcd_ptr->string (w->left, w->top + i, str);
+										drivers_string (w->left, w->top + i, str);
 									}
 								} else {
 									int necessaryTimeUnits = 0;
@@ -424,15 +443,15 @@ draw_frame (LinkedList * list,
 									int begin = 0;
 									if (!screenlist_action)
 										screenlist_action = RENDER_HOLD;
-									//debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);
+									/*debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);*/
 									if (w->speed > 0) {
 										necessaryTimeUnits = effLines * w->speed;
 										if (((timer / (effLines * w->speed)) % 2) == 0) {
-											//debug(RPT_DEBUG, "up ");
+											/*debug(RPT_DEBUG, "up ");*/
 											begin = (timer % (effLines * w->speed))
 												 / w->speed;
 										} else {
-											//debug(RPT_DEBUG, "down ");
+											/*debug(RPT_DEBUG, "down ");*/
 											begin = (((timer % (effLines * w->speed))
 														 - (effLines * w->speed) + 1) / w->speed)
 												 * -1;
@@ -450,13 +469,13 @@ draw_frame (LinkedList * list,
 									} else {
 										begin = 0;
 									}
-									//debug(RPT_DEBUG, "rendering begin: %d  timer: %d effLines: %d",begin,timer,effLines);
+									/*debug(RPT_DEBUG, "rendering begin: %d  timer: %d effLines: %d",begin,timer,effLines); */
 									for (i = begin; i < begin + available_lines; i++) {
 										strncpy (str, &((w->text)[i * (screen_width)]), screen_width);
 										str[screen_width] = '\0';
-										//debug(RPT_DEBUG, "rendering: '%s' of %s",
-										//str,w->text);
-										lcd_ptr->string (w->left, w->top + (i - begin), str);
+										/*debug(RPT_DEBUG, "rendering: '%s' of %s", */
+										/*str,w->text); */
+										drivers_string (w->left, w->top + (i - begin), str);
 									}
 									if (timer > necessaryTimeUnits) {
 										if (screenlist_action == RENDER_HOLD)
@@ -471,8 +490,9 @@ draw_frame (LinkedList * list,
 				}
 			case WID_FRAME:
 				{
-					// FIXME: doesn't handle nested frames quite right!
-					// doesn't handle scrolling in nested frames at all...
+					/* FIXME: doesn't handle nested frames quite right!
+					 * doesn't handle scrolling in nested frames at all...
+					 */
 					int new_left, new_top, new_right, new_bottom;
 					new_left = left + w->left - 1;
 					new_top = top + w->top - 1;
@@ -482,20 +502,20 @@ draw_frame (LinkedList * list,
 						new_right = right;
 					if (new_bottom > bottom)
 						new_bottom = bottom;
-					if (new_left >= right || new_top >= bottom) {	// Do nothing if it's invisible...
+					if (new_left >= right || new_top >= bottom) {	/* Do nothing if it's invisible...*/
 					} else {
 						draw_frame (w->kids, w->length, new_left, new_top, new_right, new_bottom, w->wid, w->hgt, w->speed, timer);
 					}
 				}
 				break;
-			case WID_NUM:				  // FIXME: doesn't work in frames...
-				// NOTE: y=10 means COLON (:)
+			case WID_NUM:				  /* FIXME: doesn't work in frames...*/
+				/* NOTE: y=10 means COLON (:)*/
 				if ((w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
 					if (reset) {
-						lcd_ptr->init_num ();
+						drivers_init_num ();
 						reset = 0;
 					}
-					lcd_ptr->num (w->x + left, w->y);
+					drivers_num (w->x + left, w->y);
 				}
 				break;
 			case WID_NONE:

@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  *
  * LCDproc sockets code...
@@ -44,12 +43,12 @@ extern int lcd_port;
 fd_set active_fd_set, read_fd_set;
 int orig_sock;
 
-// Length of longest transmission allowed at once...
+/* Length of longest transmission allowed at once...*/
 #define MAXMSG 8192
 
 int read_from_client (int filedes);
 
-// Creates a socket in internet space
+/* Creates a socket in internet space*/
 int
 sock_create_inet_socket (char * addr, unsigned int port)
 {
@@ -59,7 +58,7 @@ sock_create_inet_socket (char * addr, unsigned int port)
 	report (RPT_INFO, "sock_create_inet_socket(%i)", port);
 
 	/* Create the socket. */
-	//debug(RPT_DEBUG, "Creating Inet Socket");
+	/*debug(RPT_DEBUG, "Creating Inet Socket");*/
 	sock = socket (PF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
 		report(RPT_ERR, "Could not create socket");
@@ -72,7 +71,7 @@ sock_create_inet_socket (char * addr, unsigned int port)
 	}
 
 	/* Give the socket a name. */
-	//debug(RPT_DEBUG, "Binding Inet Socket");
+	/*debug(RPT_DEBUG, "Binding Inet Socket");*/
 	memset (&name, 0, sizeof (name));
 	name.sin_family = AF_INET;
 	name.sin_port = htons (port);
@@ -89,7 +88,7 @@ sock_create_inet_socket (char * addr, unsigned int port)
 
 }
 
-//int StartSocketServer()
+/*int StartSocketServer()*/
 int
 sock_create_server (char *bind_addr, int lcd_port)
 {
@@ -133,7 +132,7 @@ sock_create_server (char *bind_addr, int lcd_port)
 	return sock;
 }
 
-// Service all clients with input pending...
+/* Service all clients with input pending...*/
 
 int
 sock_poll_clients ()
@@ -176,7 +175,7 @@ sock_poll_clients ()
 
 				fcntl (new, F_SETFL, O_NONBLOCK);
 
-				// TODO:  Create new "client" here...  (done?)
+				/* TODO:  Create new "client" here...  (done?)*/
 				if (client_create (new) == NULL) {
 					report( RPT_ERR, "sock_poll_clients: error creating client %i", i);
 					return -1;
@@ -189,10 +188,10 @@ sock_poll_clients ()
 					err = read_from_client (i);
 					debug (RPT_DEBUG, "sock_poll_clients: ...done");
 					if (err < 0) {
-						// TODO:  Destroy a "client" here... (done?)
+						/* TODO:  Destroy a "client" here... (done?)*/
 						c = client_find_sock (i);
 						if (c) {
-							//sock_send_string(i, "bye\n");
+							/*sock_send_string(i, "bye\n");*/
 							client_destroy (c);
 							close (i);
 							FD_CLR (i, &active_fd_set);
@@ -217,31 +216,31 @@ read_from_client (int filedes)
 
 	report(RPT_DEBUG, "read_from_client()" );
 
-	//nbytes = read (filedes, buffer, MAXMSG);
-	//debug(RPT_DEBUG, "read_from_client(%i): reading...", filedes);
-	//nbytes = sock_recv (filedes, buffer, MAXMSG);
-	//debug(RPT_DEBUG, "read_from_client(%i): ...done", filedes);
-	//debug (RPT_DEBUG, "read_from_client(%i): %i bytes", filedes, nbytes);
+	/*nbytes = read (filedes, buffer, MAXMSG);*/
+	/*debug(RPT_DEBUG, "read_from_client(%i): reading...", filedes);*/
+	/*nbytes = sock_recv (filedes, buffer, MAXMSG);*/
+	/*debug(RPT_DEBUG, "read_from_client(%i): ...done", filedes);*/
+	/*debug (RPT_DEBUG, "read_from_client(%i): %i bytes", filedes, nbytes);*/
 
 	errno = 0;
 	if ((nbytes = sock_recv (filedes, buffer, MAXMSG)) < 0) {
 		if (errno != EAGAIN)
 			report (RPT_DEBUG, "read_from_client: (fd %d) %s", filedes, strerror(errno));
 		return 0;
-	} else if (nbytes == 0)		  // EOF
+	} else if (nbytes == 0)		  /* EOF*/
 		return -1;
-	else if (nbytes > (MAXMSG - (MAXMSG / 8)))	// Very noisy client...
+	else if (nbytes > (MAXMSG - (MAXMSG / 8)))	/* Very noisy client...*/
 	{
 		sock_send_string (filedes, "huh? Too much data received... quiet down!\n");
 		return -1;
-	} else							  // Data Read
+	} else							  /* Data Read*/
 	{
 		buffer[nbytes] = 0;
-		// Now, replace zeros with linefeeds...
+		/* Now, replace zeros with linefeeds...*/
 		for (i = 0; i < nbytes; i++)
 			if (buffer[i] == 0)
 				buffer[i] = '\n';
-		// Enqueue a "client message" here...
+		/* Enqueue a "client message" here...*/
 		c = client_find_sock (filedes);
 		if (c) {
 			client_add_message (c, buffer);
@@ -254,9 +253,10 @@ read_from_client (int filedes)
 	return nbytes;
 }
 
-// FIXME: This talks to all open files, including
-// stdin, stdout, stderr, the LCD, etc...
-// BUT it should only talk to sockets!
+/* FIXME: This talks to all open files, including
+ * stdin, stdout, stderr, the LCD, etc...
+ * BUT it should only talk to sockets!
+ */
 int
 sock_close_all ()
 {
@@ -265,19 +265,20 @@ sock_close_all ()
 	report (RPT_INFO, "sock_close_all()");
 
 	for (fd = 0; fd < FD_SETSIZE; fd++) {
-		// TODO:  Destroy a "client" here...?  Nope.
+		/* TODO:  Destroy a "client" here...?  Nope.*/
 
-		// Instead of using STDIN_FILENO, STDOUT_FILENO,
-		// and STDERR_FILENO, one could use "fd = 4" in the
-		// for() call - but this would probably not be good
-		// practice...
+		/* Instead of using STDIN_FILENO, STDOUT_FILENO,
+		 * and STDERR_FILENO, one could use "fd = 4" in the
+		 * for() call - but this would probably not be good
+		 * practice...
+		 */
 
 		if (	fd == STDIN_FILENO ||
 			fd == STDOUT_FILENO ||
 			fd == STDERR_FILENO)
 			continue;
 		else {
-			//sock_send_string (fd, "bye\n");
+			/*sock_send_string (fd, "bye\n");*/
 			close (fd);
 			FD_CLR (fd, &active_fd_set);
 			debug (RPT_DEBUG, "sock_close_all: Closed connection %i", fd);

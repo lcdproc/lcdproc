@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  *
  * Creates and destroys a client's data structures.  These are mainly
@@ -68,15 +67,15 @@ client_data_destroy (client_data * d)
 
 	d->ack = 0;
 
-	// Clean up the name...
+	/* Clean up the name...*/
 	if (d->name)
 		free (d->name);
 
-	// Clean up the key list...
+	/* Clean up the key list...*/
 	if (d->client_keys)
 		free (d->client_keys);
 
-	// Clean up the screenlist...
+	/* Clean up the screenlist...*/
 	debug( RPT_DEBUG, "client_data_destroy: Cleaning screenlist");
 	ResetScreenList (d->screenlist);
 	do {
@@ -84,20 +83,20 @@ client_data_destroy (client_data * d)
 		if (s) {
 			debug( RPT_DEBUG, "client_data_destroy: removing screen %s", s->id);
 
-			// FIXME? This shouldn't be handled here...
-			// Now, remove it from the screenlist...
+			/* FIXME? This shouldn't be handled here...
+			 * Now, remove it from the screenlist...*/
 			if (screenlist_remove_all (s) < 0) {
-				// Not a serious error..
+				/* Not a serious error..*/
 				report( RPT_ERR, "client_data_destroy:  Error dequeueing screen");
 				return 0;
 			}
-			// Free its memory...
+			/* Free its memory...*/
 			screen_destroy (s);
 		}
 	} while (MoreScreens(d->screenlist));
 	DestroyScreenList(d->screenlist);
 
-	// TODO:  clean up the rest of the data...
+	/* TODO:  clean up the rest of the data...*/
 
 	return 0;
 }

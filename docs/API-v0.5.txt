@@ -1,11 +1,9 @@
-DG: David GLAUDE as added a few comment for discussing this document.
-
 This document describes the driver API of v0.5 of LCDproc.
 At time of this writing, this version is not released and some things might
 be changed.
 
 The API consists of several functions to tell the driver that
-certains actions should be performed, some data, and several functions 
+certains actions should be performed, some data, and several functions
 to retrieve configuration data from the server.
 
 OVERVIEW OF OPERATION
@@ -16,32 +14,45 @@ which is defined in server/drivers/lcd.h.
 The use of the API has changed from v0.4 to v0.5. The default functions that
 the server put in the pointers in v0.4 do no longer exist. Instead empty
 functions are the default. If a driver implements a function, the function
-will be detected by the server. The driver should at least implement all 
-basic functions like driver_chr and driver_str itself.
+will be detected by the server. The driver should at least implement all
+basic functions like driver_chr and driver_str itself, and should also have
+defined a number of other symbols for the server.
 
-Because the drivers are loadable, some kind of version checking should be done.
-Therefor the server expects the correct version number to be returned from the
-version function. For the v0.5 version this should be "0.5". If it is wrong,
-the driver will not be loaded. This version number can be found in the define
-API_VERSION.
+I will walk through the driver struct here.
 
-#define drvthis struct lcd_logical_driver * driver
-DG: This is very C++ and it is meaningfull in C++ to have
-DG: DATA + FUNCTION in the "this" because we have polymorph
-DG: and heritage. But in our case we only need private data
-DG: in order to support multiple instances.
-DG: Or do we want the driver to provide different function
-DG: based on the detected hardware (or something like that)?
-DG: Except for init and close, I don't see why we don't give
-DG: the private data rather than drvthis???
-DG: Please explain (again).
 
 typedef struct lcd_logical_driver {
 
-	char * name;	// Name of this driver. Filled by server.
+	//////// Variables in the driver module
+	// The driver loader will look for symbols with these names !
+	char *api_version;
+	int *stay_in_foreground;	// Does this driver require to be in foreground ?
+	int *does_input;	// Does this driver do output ?
+	int *does_output;	// Does this driver do output ?
 
+The programmer should define the following symbols:
+char * api_version = API_VERSION;  // <-- this symbol is defined by make
+int stay_in_foreground = 0; // This driver does not need to be in foreground
+int does_input = 0;	    // This driver does not do input
+int does_output = 1;	    // But only output
+And fill these values with the correct values. Upon loading the driver module,
+the server will locate these symbols and store pointers to them in the
+driver struct.
+
+Because the drivers are loadable, some kind of version checking should be
+done. Therefor the server expects the correct version number to be found in
+the api_version symbol (a string). For the v0.5 version this should be "0.5".
+If the version is incompatible, the driver will not be loaded. The current
+API version can always be determined by inserting the compiler define
+API_VERSION in the code.
+
+
+
+	//////// Functions in the driver module
 	// Basic functions
-	char *(*version);	// OR CAN WE RETRIEVE A STRING FROM THE MODULE
+
+All these Basic functions should be implemented !
+
 	int (*init)		(drvthis, char *args);
 	void (*close)		(drvthis);
 	int (*width)		(drvthis);
@@ -51,34 +62,78 @@ typedef struct lcd_logical_driver {
 	void (*string)		(drvthis, int x, int y, char *str);
 	void (*chr)		(drvthis, int x, int y, char c);
 
+
 	// Extended functions
-	void (*vbar)		(drvthis, int x, int y, int len, int promille, int pattern);
-	void (*hbar)		(drvthis, int x, int y, int len, int promille, int pattern);
+	void (*vbar)		(drvthis, int x, int y, int len, int promille, int options);
+	void (*hbar)		(drvthis, int x, int y, int len, int promille, int options);
+
+These functions have been extended since v0.4. They now now expext complete
+coordinates, a length (in chars, not pixels!) a promillage (0 to 1000) and an
+option.
+
 	void (*num)		(drvthis, int x, int num);
+
+Draw big numbers on your display. Only 6 positions exist, 1 to 6.
+
 	void (*heartbeat)	(drvthis, int state);
-	char (*set_icon)	(drvthis, int icon);
-DG: I don't like this function...
-DG: I would prefer the following definition (like chr)
-DG:	void (*set_icon)	(drvthis, int x, int y, int icon);
+
+Should be called to animate the heartbeat. The driver should thererfor
+probably call the icon function below.
+
+	void (*icon)		(drvthis, int x, int y, int icon);
+
+Tells to place a certain icon at a position.
+
+
+	// Userdef characters
+	void (*set_char)	(drvthis, char ch, char *dat);
+	int (*get_free_chars)	(drvthis);
+	int (*cellwidth)	(drvthis);
+	int (*cellheight)	(drvthis);
+
+Functions to define a character. It is currently unclear how this system
+should exactly work. The set_char function expects a simple block of data
+with 1 byte for each pixel-line. So that is 8 bytes for a 5x8 char.
+
 
 	// Hardware functions
 	int (*contrast)		(drvthis, int contrast);
-	void (*backlight)	(drvthis, int on);
-	void (*output)		(drvthis, int on);
+	void (*backlight)	(drvthis, int brightness);
+	void (*output)		(drvthis, int state);
 
-	// Userdef characters, are those still supported ?
-	//void (*set_char)	(drvthis, int n, char *dat);
-	//int (*cellwidth)	(drvthis);
-	//int (*cellheight)	(drvthis);
 
 	// Key functions
 	char *(*get_key)	(drvthis);
-				// Returns a string. Server cannot modify
-				// this string.
+
+Returns a string. This string is withing driver's memory space and the server
+should therefor never try to modify this string.
+
+	char * (*get_info) ();
+
+Returns a string describing the driver and it's features.
+
+
+
+	//////// Variables in server core available for drivers
+
+	char * name;		// Name of this driver.
+	void * private_data;
+
+These variables should be taken read-only for the drivers. The name variable
+should be used to access the driver's own section in the config file.
+The private_data pointer is the pointer to the driver's own data block. This
+pointer should be stored using the store_private_ptr function below. The
+driver should cast this to it's own private structure pointer.
+
+
+	//////// Functions in server core available for drivers
+
+	int (*store_private_ptr) (struct lcd_logical_driver * driver, void * private_data);
+
+Store the driver's private data:
+
 
 	// Config file functions, filled by server
-	// DO THESE NEED TO BE IN THIS STRUCTURE ? 
-	// LOADABLE MODULES CAN CALL FUNCS IN THE MAIN MODULE ...
 	char (*config_get_bool)	(char * sectionname, char * keyname,
 				int skip, char default_value);
 	int (*config_get_int)	(char * sectionname, char * keyname,
@@ -86,36 +141,50 @@ DG:	void (*set_icon)	(drvthis, int x, int y, int icon);
 	double (*config_get_float) (char * sectionname, char * keyname,
 				int skip, double default_value);
 	char *(*config_get_string) (char * sectionname, char * keyname,
-				int skip, char * default);
+				int skip, char * default_value);
 				// Returns a string in server memory space.
 				// Copy this string.
 	int config_has_section	(char *sectionname);
 	int config_has_key	(char *sectionname, char *keyname);
 
+See configfile.h on how to use these functions. As sectionname, always use the
+driver name: drvthis->name
+
+
+	// Reporting function
+	void (*report)			( const int level, const char *format, .../*args*/ );
+
+Easily usable report functions by including drivers/report.h. See that file
+for details.
+
+
+	// Display properties functions (for drivers that adapt to other loaded drivers)
+	int (*get_display_width) ();
+	int (*get_display_height) ();
+
+If you have a driver that can adapt its size to the size of an other driver,
+it should read these values. If there is no other driver loaded yet, the
+returned values will be 0.
+
+
 	// Driver private data
-	int (*store_private_ptr) (void * private_data);
 	void * private_data;	// Filled by server by calling store_private_ptr()
-DG: I think it is the driver that should take care of using the right
-DG: private data.
-DG: The server need to remember two thing about a driver,
-DG: 1) The drvthis wich contain what function to call and is a well define
-DG: structure that we get at init time.
-DG: drvthis should be the same for every instances of the driver.
-DG: 2) private_data wich we remember and receave as a pointer to a black box
-DG: and we give it back to the driver in EVERY call.
-DG: 
-DG: Implicitly the driver knows about wich function is what...
-DG: But the driver need to know only wich instance is currently "active".
-DG: 
-DG: It does not change much, but we don't need store_private_ptr anymore.
 
-				// Driver should cast this to it's own
-				// private structure pointer
-
-} lcd_logical_driver;
+} Driver;
 
 The flush_box and draw_frame functions have been removed for v0.5.
-In the private structure will probably at least be:
+
+
+
+PRIVATE DATA
+
+With the introduction of loadable modules it is necesary to stop using global
+variables to store a driver's data in. Instead, you should store it in a
+structure, that you allocate abd store on driver's init. If you don't use
+this system, but use globals, you get queer results if you run two LCDd
+daemons on one machine. They will then use the same variables !
+
+In the driver's private structure will probably at least be something like:
 
 typedef struct my_driver_private {
 
@@ -125,23 +194,43 @@ typedef struct my_driver_private {
         int cellwidth, cellheight;
         // Frame buffer...
         char *framebuf;
-};
+} PrivateData;
+
+You allocate and store this structure like this:
+
+	PrivateData * p;
+
+	// Alocate and store private data
+	p = (PrivateData *) malloc( sizeof(PrivateData) );
+	if( p == NULL )
+		return -1;
+	if( drvthis->store_private_ptr( drvthis, p ) < 0 )
+		return -1;
+
+	(... continue with the rest of your init routine)
+
+
+You retrieve this private data pointer by adding the following code to the
+beginning of your functions:
+
+  PrivateData * p = (PrivateData*) drvthis->private_data;
+
+Then you can access your data like:
+  p->framebuf
+
 
 
 
 FUNCTIONS IN DETAIL
 
-char *(*version);
-// Return the API version string as the driver knows it.
-
 int (*init)		(drvthis, char *args);
 // The init function
 // Starts up the LCD, initializes all vars. Allocates private data space
 // and stores the pointer by calling store_private_ptr();
-// The init function should return the correct version number.
 
 void (*close)		(drvthis);
 // Shuts down the connection with the LCD.
+// Called just before unloading the driver.
 
 int (*width)		(drvthis);
 // Get the screen width.
@@ -158,9 +247,11 @@ void (*flush)		(drvthis);
 void (*string)		(drvthis, int x, int y, char *str);
 // Places a string in the framebuffer
 // All coordinates are 1-based, (1,1) is top left.
+// Driver should check for overflows
 
 void (*chr)		(drvthis, int x, int y, char c);
 // Places a char in the framebuffer
+// Driver should check for overflows
 
 void (*vbar)		(drvthis, int x, int len);
 // Draws a vertical bar at horizontal position x and with length len.
@@ -178,8 +269,9 @@ void (*heartbeat)	(drvthis, int state);
 // 0=off 1=graph1 2=graph2
 
 int (*contrast)		(drvthis, int contrast);
-// Sets the contrast to the given value.
+// Sets the contrast to the given value. Values should be 0 to 255.
 // Many displays do not support software setting of contrast.
+// Use -1 to get the current value returned.
 
 void (*backlight)	(drvthis, int on);
 // Sets the backlight to brightness 'on'.
@@ -195,6 +287,10 @@ char *(*getkey) ();
 // Checks if a key has been pressed on the device.
 // Returns NULL for "no key pressed", or a string describing the pressd key.
 // These characters should match the keypad-layout.
+
+char *(*getinfo) ();
+// Returns a string describing the driver and its features.
+
 
 char (*config_get_bool)	(char * sectionname, char * keyname,
 			int skip, char default_value);
@@ -218,9 +314,9 @@ char *(*config_get_string) (char * sectionname, char * keyname,
 // Fill result with a pointer to some available space. You can fill it
 // with a default value. If the key is found, it will be overwritten
 // with the value from the key.
-// Note that you should always first copy the the returned string. 
+// Note that you should always first copy the the returned string.
 // It is in the address space of the server, and will be freed at the
-// next call. 
+// next call.
 
 int config_has_section	(char *sectionname);
 // Returns wether a section exists. Does not need to be called prior

@@ -35,10 +35,12 @@
 
 #include "lcd.h"
 #include "CFontz.h"
-#include "render.h"
+//#include "drv_base.h"
+//#include "shared/debug.h"
 #include "shared/str.h"
-#include "shared/report.h"
-#include "server/configfile.h"
+#include "report.h"
+//#include "server/configfile.h"
+
 
 static int custom = 0;
 typedef enum {
@@ -49,25 +51,36 @@ typedef enum {
 } custom_type;
 
 static int fd;
+static char *framebuf = NULL;
+static int width = 0;
+static int height = 0;
+static int cellwidth = DEFAULT_CELL_WIDTH;
+static int cellheight = DEFAULT_CELL_HEIGHT;
+static int contrast = DEFAULT_CONTRAST;
 static int brightness = DEFAULT_BRIGHTNESS;
 static int offbrightness = DEFAULT_OFFBRIGHTNESS;
 static int newfirmware = 0;
 
+// Vars for the server core
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 1;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "CFontz_";
+
+// Internal functions
 static void CFontz_linewrap (int on);
 static void CFontz_autoscroll (int on);
 static void CFontz_hidecursor ();
 static void CFontz_reboot ();
-static void CFontz_heartbeat (int type);
 
-// TODO:  Get rid of this variable?
-lcd_logical_driver *CFontz;
+
 // TODO:  Get the frame buffers working right
 
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
 //
 int
-CFontz_init (lcd_logical_driver * driver, char *args)
+CFontz_init (Driver * drvthis, char *args)
 {
 	struct termios portset;
 	int tmp, w, h;
@@ -78,57 +91,52 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	int speed = DEFAULT_SPEED;
 	char size[200] = DEFAULT_SIZE;
 
-	CFontz = driver;
-
-	debug(RPT_INFO, "CFontz: init(%p,%s)", driver, args );
-
-	// TODO: replace DriverName with driver->name when that field exists.
-	#define DriverName "CFontz"
-
+	debug(RPT_INFO, "CFontz: init(%p,%s)", drvthis, args );
 
 	/*Read config file*/
 
 	/*Which serial device should be used*/
-	strncpy(device, config_get_string ( DriverName , "Device" , 0 , DEFAULT_DEVICE),sizeof(device));
+	strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , DEFAULT_DEVICE),sizeof(device));
 	device[sizeof(device)-1]=0;
 	debug (RPT_INFO,"CFontz: Using device: %s", device);
 
 	/*Which size*/
-	strncpy(size, config_get_string ( DriverName , "Size" , 0 , DEFAULT_SIZE),sizeof(size));
+	strncpy(size, drvthis->config_get_string ( drvthis->name , "Size" , 0 , DEFAULT_SIZE),sizeof(size));
 	size[sizeof(size)-1]=0;
 	if( sscanf(size , "%dx%d", &w, &h ) != 2
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 		report (RPT_WARNING, "CFontz_init: Cannot read size: %s. Using default value.\n", size);
 		sscanf( DEFAULT_SIZE , "%dx%d", &w, &h );
+	} else {
+		width = w;
+		height = h;
 	}
-	driver->wid = w;
-	driver->hgt = h;
 
 	/*Which contrast*/
-	if (0<=config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) && config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
-		contrast = config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST);
+	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
+		contrast = drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST);
 	} else {
 		report (RPT_WARNING, "CFontz_init: Contrast must between 0 and 255. Using default value.\n");
 	}
 
 	/*Which backlight brightness*/
-	if (0<=config_get_int ( DriverName , "Brightness" , 0 , DEFAULT_BRIGHTNESS) && config_get_int ( DriverName , "Brightness" , 0 , DEFAULT_BRIGHTNESS) <= 255) {
-		brightness = config_get_int ( DriverName , "Brightness" , 0 , DEFAULT_BRIGHTNESS);
+	if (0<=drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS) && drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS) <= 255) {
+		brightness = drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS);
 	} else {
 		report (RPT_WARNING, "CFontz_init: Brightness must between 0 and 255. Using default value.\n");
 	}
 
 	/*Which backlight-off "brightness"*/
-	if (0<=config_get_int ( DriverName , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) && config_get_int ( DriverName , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) <= 255) {
-		offbrightness = config_get_int ( DriverName , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS);
+	if (0<=drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) && drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) <= 255) {
+		offbrightness = drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS);
 	} else {
 		report (RPT_WARNING, "CFontz_init: OffBrightness must between 0 and 255. Using default value.\n");
 	}
 
 
 	/*Which speed*/
-	tmp = config_get_int ( DriverName , "Speed" , 0 , DEFAULT_SPEED);
+	tmp = drvthis->config_get_int ( drvthis->name , "Speed" , 0 , DEFAULT_SPEED);
 	if (tmp == 1200) speed = B1200;
 	else if (tmp == 2400) speed = B2400;
 	else if (tmp == 9600) speed = B9600;
@@ -136,12 +144,12 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	}
 
 	/*New firmware version?*/
-	if(config_get_bool( DriverName , "NewFirmware" , 0 , 0)) {
+	if(drvthis->config_get_bool( drvthis->name , "NewFirmware" , 0 , 0)) {
 		newfirmware = 1;
 	}
 
 	/*Reboot display?*/
-	if (config_get_bool( DriverName , "Reboot" , 0 , 0)) {
+	if (drvthis->config_get_bool( drvthis->name , "Reboot" , 0 , 0)) {
 		report (RPT_INFO, "LCDd: rebooting CrystalFontz LCD...\n");
 		reboot = 1;
 	}
@@ -178,10 +186,8 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	tcsetattr (fd, TCSANOW, &portset);
 
 	// Make sure the frame buffer is there...
-	if (!CFontz->framebuf)
-		CFontz->framebuf = (unsigned char *)
-			malloc (CFontz->wid * CFontz->hgt);
-	memset (CFontz->framebuf, ' ', CFontz->wid * CFontz->hgt);
+	framebuf = (unsigned char *) malloc (width * height);
+	memset (framebuf, ' ', width * height);
 
 	// Set display-specific stuff..
 	if (reboot) {
@@ -193,84 +199,107 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	CFontz_hidecursor ();
 	CFontz_linewrap (1);
 	CFontz_autoscroll (0);
-	CFontz_backlight (backlight_brightness);
+	//CFontz_backlight (drvthis, backlight_brightness);  // render.c variables should not be used in drivers !
 
-	// Set the functions the driver supports...
+	// Set variables for server
+	drvthis->api_version = api_version;
+	drvthis->stay_in_foreground = &stay_in_foreground;
+	drvthis->supports_multiple = &supports_multiple;
 
-	driver->clear = CFontz_clear;
-	driver->string = CFontz_string;
-	driver->chr = CFontz_chr;
-	driver->vbar = CFontz_vbar;
-	driver->init_vbar = CFontz_init_vbar;
-	driver->hbar = CFontz_hbar;
-	driver->init_hbar = CFontz_init_hbar;
-	driver->num = CFontz_num;
+	// Set the functions the driver supports
 
-	driver->init = CFontz_init;
-	driver->close = CFontz_close;
-	driver->flush = CFontz_flush;
-	driver->flush_box = CFontz_flush_box;
-	driver->contrast = CFontz_contrast;
-	driver->backlight = CFontz_backlight;
-	driver->set_char = CFontz_set_char;
-	driver->icon = CFontz_icon;
-	driver->draw_frame = CFontz_draw_frame;
+	drvthis->clear = CFontz_clear;
+	drvthis->string = CFontz_string;
+	drvthis->chr = CFontz_chr;
+	drvthis->old_vbar = CFontz_vbar;
+	drvthis->init_vbar = CFontz_init_vbar;
+	drvthis->old_hbar = CFontz_hbar;
+	drvthis->init_hbar = CFontz_init_hbar;
+	drvthis->num = CFontz_num;
 
-	CFontz_contrast (contrast);
+	drvthis->init = CFontz_init;
+	drvthis->close = CFontz_close;
+	drvthis->flush = CFontz_flush;
+	drvthis->get_contrast = CFontz_get_contrast;
+	drvthis->set_contrast = CFontz_set_contrast;
+	drvthis->backlight = CFontz_backlight;
+	drvthis->set_char = CFontz_set_char;
+	drvthis->old_icon = CFontz_icon;
+	drvthis->heartbeat = CFontz_heartbeat;
 
-	driver->cellwid = DEFAULT_CELL_WIDTH;
-	driver->cellhgt = DEFAULT_CELL_HEIGHT;
+	CFontz_set_contrast (drvthis, contrast);
 
-	driver->heartbeat = CFontz_heartbeat;
 
 	report (RPT_DEBUG, "CFontz_init: done\n");
 
-	return fd;
+	return 0;
 }
 
 /////////////////////////////////////////////////////////////////
 // Clean-up
 //
-void
-CFontz_close ()
+MODULE_EXPORT void
+CFontz_close (Driver * drvthis)
 {
 	close (fd);
 
-	if (CFontz->framebuf)
-		free (CFontz->framebuf);
-
-	CFontz->framebuf = NULL;
+	if(framebuf) free (framebuf);
+	framebuf = NULL;
 }
 
-void
-CFontz_flush ()
+/////////////////////////////////////////////////////////////////
+// Returns the display width
+//
+MODULE_EXPORT int
+CFontz_width (Driver *drvthis)
 {
-	CFontz_draw_frame (CFontz->framebuf);
+	return width;
 }
 
-void
-CFontz_flush_box (int lft, int top, int rgt, int bot)
+/////////////////////////////////////////////////////////////////
+// Returns the display height
+//
+MODULE_EXPORT int
+CFontz_height (Driver *drvthis)
 {
-	int y;
-	char out[LCD_MAX_WIDTH];
+	return height;
+}
 
-//  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
+//////////////////////////////////////////////////////////////////
+// Flushes all output to the lcd...
+//
+MODULE_EXPORT void
+CFontz_flush (Driver * drvthis)
+{
+	char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
+	int i;
 
-	for (y = top; y <= bot; y++) {
-		snprintf (out, sizeof(out), "%c%c%c", 17, lft, y);
-		write (fd, out, 4);
-		write (fd, CFontz->framebuf + (y * CFontz->wid) + lft, rgt - lft + 1);
+	// Custom characters start at 128, not at 0.
+	/*
+	   for(i=0; i<width*height; i++)
+	   {
+	   if(framebuf[i] < 32  &&  framebuf[i] >= 0) framebuf[i] += 128;
+	   }
+	 */
 
+	for (i = 0; i < height; i++) {
+		snprintf (out, sizeof(out), "%c%c%c", 17, 0, i);
+		write (fd, out, 3);
+		write (fd, framebuf + (width * i), width);
 	}
-
+	/*
+	   snprintf(out, sizeof(out), "%c", 1);
+	   write(fd, out, 1);
+	   write(fd, framebuf, width*height);
+	 */
 }
 
 /////////////////////////////////////////////////////////////////
 // Prints a character on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
-void
-CFontz_chr (int x, int y, char c)
+MODULE_EXPORT void
+CFontz_chr (Driver * drvthis, int x, int y, char c)
 {
 	y--;
 	x--;
@@ -280,38 +309,51 @@ CFontz_chr (int x, int y, char c)
 
 	// For V2 of the firmware to get the block to display right
 	if (newfirmware && c==-1) {
-	c=214;
+		c=214;
 	}
 
-	CFontz->framebuf[(y * CFontz->wid) + x] = c;
+	framebuf[(y * width) + x] = c;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns current contrast
+// This is only the locally stored contrast, the contrast value
+// cannot be retrieved from the LCD.
+// Value 0 to 1000.
+//
+MODULE_EXPORT int
+CFontz_get_contrast (Driver * drvthis)
+{
+	return contrast;
 }
 
 /////////////////////////////////////////////////////////////////
 // Changes screen contrast (0-255; 140 seems good)
+// Value 0 to 100.
 //
-int
-CFontz_contrast (int contrast)
+MODULE_EXPORT void
+CFontz_set_contrast (Driver * drvthis, int promille)
 {
-	int realcontrast;
 	char out[4];
-	static int status = 140;
 
-	if (contrast > 0) {
-		status = contrast;
-		realcontrast = (((int) (status)) * 100) / 255;
-		snprintf (out, sizeof(out), "%c%c", 15, realcontrast);
-		write (fd, out, 3);
-	}
+	// Check it
+	if( promille < 0 || promille > 1000 )
+		return;
 
-	return status;
+	// Store it
+	contrast = promille;
+
+	// And do it
+	snprintf (out, sizeof(out), "%c%c", 15, (unsigned char) (promille / 10) ); // converted to be 0 to 100
+	write (fd, out, 3);
 }
 
 /////////////////////////////////////////////////////////////////
 // Sets the backlight on or off -- can be done quickly for
 // an intermediate brightness...
 //
-void
-CFontz_backlight (int on)
+MODULE_EXPORT void
+CFontz_backlight (Driver * drvthis, int on)
 {
 	char out[4];
 	if (on) {
@@ -375,8 +417,8 @@ CFontz_reboot ()
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before CFontz->vbar()
 //
-void
-CFontz_init_vbar ()
+MODULE_EXPORT void
+CFontz_init_vbar (Driver * drvthis)
 {
 	char a[] = {
 		0, 0, 0, 0, 0, 0,
@@ -450,13 +492,13 @@ CFontz_init_vbar ()
 	};
 
 	if (custom != vbar) {
-		CFontz_set_char (1, a);
-		CFontz_set_char (2, b);
-		CFontz_set_char (3, c);
-		CFontz_set_char (4, d);
-		CFontz_set_char (5, e);
-		CFontz_set_char (6, f);
-		CFontz_set_char (7, g);
+		CFontz_set_char (drvthis, 1, a);
+		CFontz_set_char (drvthis, 2, b);
+		CFontz_set_char (drvthis, 3, c);
+		CFontz_set_char (drvthis, 4, d);
+		CFontz_set_char (drvthis, 5, e);
+		CFontz_set_char (drvthis, 6, f);
+		CFontz_set_char (drvthis, 7, g);
 		custom = vbar;
 	}
 }
@@ -464,8 +506,8 @@ CFontz_init_vbar ()
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-void
-CFontz_init_hbar ()
+MODULE_EXPORT void
+CFontz_init_hbar (Driver * drvthis)
 {
 
 	char a[] = {
@@ -530,12 +572,12 @@ CFontz_init_hbar ()
 	};
 
 	if (custom != hbar) {
-		CFontz_set_char (1, a);
-		CFontz_set_char (2, b);
-		CFontz_set_char (3, c);
-		CFontz_set_char (4, d);
-		CFontz_set_char (5, e);
-		CFontz_set_char (6, f);
+		CFontz_set_char (drvthis, 1, a);
+		CFontz_set_char (drvthis, 2, b);
+		CFontz_set_char (drvthis, 3, c);
+		CFontz_set_char (drvthis, 4, d);
+		CFontz_set_char (drvthis, 5, e);
+		CFontz_set_char (drvthis, 6, f);
 		custom = hbar;
 	}
 }
@@ -543,19 +585,19 @@ CFontz_init_hbar ()
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar...
 //
-void
-CFontz_vbar (int x, int len)
+MODULE_EXPORT void
+CFontz_vbar (Driver * drvthis, int x, int len)
 {
 	char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
 
 	int y;
-	for (y = CFontz->hgt; y > 0 && len > 0; y--) {
-		if (len >= CFontz->cellhgt)
-			CFontz_chr (x, y, 255);
+	for (y = height; y > 0 && len > 0; y--) {
+		if (len >= cellheight)
+			CFontz_chr (drvthis, x, y, 255);
 		else
-			CFontz_chr (x, y, map[len]);
+			CFontz_chr (drvthis, x, y, map[len]);
 
-		len -= CFontz->cellhgt;
+		len -= cellheight;
 	}
 
 }
@@ -563,18 +605,18 @@ CFontz_vbar (int x, int len)
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
-void
-CFontz_hbar (int x, int y, int len)
+MODULE_EXPORT void
+CFontz_hbar (Driver * drvthis, int x, int y, int len)
 {
 	char map[7] = { 32, 1, 2, 3, 4, 5, 6 };
 
-	for (; x <= CFontz->wid && len > 0; x++) {
-		if (len >= CFontz->cellwid)
-			CFontz_chr (x, y, map[6]);
+	for (; x <= width && len > 0; x++) {
+		if (len >= cellwidth)
+			CFontz_chr (drvthis, x, y, map[6]);
 		else
-			CFontz_chr (x, y, map[len]);
+			CFontz_chr (drvthis, x, y, map[len]);
 
-		len -= CFontz->cellwid;
+		len -= cellwidth;
 
 	}
 
@@ -584,8 +626,8 @@ CFontz_hbar (int x, int y, int len)
 /////////////////////////////////////////////////////////////////
 // Writes a big number.
 //
-void
-CFontz_num (int x, int num)
+MODULE_EXPORT void
+CFontz_num (Driver * drvthis, int x, int num)
 {
 	char out[5];
 	snprintf (out, sizeof(out), "%c%c%c", 28, x, num);
@@ -599,8 +641,8 @@ CFontz_num (int x, int num)
 //
 // The input is just an array of characters...
 //
-void
-CFontz_set_char (int n, char *dat)
+MODULE_EXPORT void
+CFontz_set_char (Driver * drvthis, int n, char *dat)
 {
 	char out[4];
 	int row, col;
@@ -614,18 +656,18 @@ CFontz_set_char (int n, char *dat)
 	snprintf (out, sizeof(out), "%c%c", 25, n);
 	write (fd, out, 2);
 
-	for (row = 0; row < CFontz->cellhgt; row++) {
+	for (row = 0; row < cellheight; row++) {
 		letter = 0;
-		for (col = 0; col < CFontz->cellwid; col++) {
+		for (col = 0; col < cellheight; col++) {
 			letter <<= 1;
-			letter |= (dat[(row * CFontz->cellwid) + col] > 0);
+			letter |= (dat[(row * cellheight) + col] > 0);
 		}
 		write (fd, &letter, 1);
 	}
 }
 
-void
-CFontz_icon (int which, char dest)
+MODULE_EXPORT void
+CFontz_icon (Driver * drvthis, int which, char dest)
 {
 	char icons[3][6 * 8] = {
 		{
@@ -665,51 +707,16 @@ CFontz_icon (int which, char dest)
 
 	if (custom == bign)
 		custom = beat;
-	CFontz_set_char (dest, &icons[which][0]);
-}
-
-/////////////////////////////////////////////////////////////
-// Blasts a single frame onscreen, to the lcd...
-//
-// Input is a character array, sized CFontz->wid*CFontz->hgt
-//
-void
-CFontz_draw_frame (char *dat)
-{
-	char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
-	int i;
-
-	if (!dat)
-		return;
-
-	// Custom characters start at 128, not at 0.
-	/*
-	   for(i=0; i<CFontz->wid*CFontz->hgt; i++)
-	   {
-	   if(dat[i] < 32  &&  dat[i] >= 0) dat[i] += 128;
-	   }
-	 */
-
-	for (i = 0; i < CFontz->hgt; i++) {
-		snprintf (out, sizeof(out), "%c%c%c", 17, 0, i);
-		write (fd, out, 3);
-		write (fd, dat + (CFontz->wid * i), CFontz->wid);
-	}
-	/*
-	   snprintf(out, sizeof(out), "%c", 1);
-	   write(fd, out, 1);
-	   write(fd, dat, CFontz->wid*CFontz->hgt);
-	 */
-
+	CFontz_set_char (drvthis, dest, &icons[which][0]);
 }
 
 /////////////////////////////////////////////////////////////////
 // Clears the LCD screen
 //
-void
-CFontz_clear ()
+MODULE_EXPORT void
+CFontz_clear (Driver * drvthis)
 {
-	memset (CFontz->framebuf, ' ', CFontz->wid * CFontz->hgt);
+	memset (framebuf, ' ', width * height);
 
 }
 
@@ -717,8 +724,8 @@ CFontz_clear ()
 // Prints a string on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
-void
-CFontz_string (int x, int y, char string[])
+MODULE_EXPORT void
+CFontz_string (Driver * drvthis, int x, int y, char string[])
 {
 	int i;
 
@@ -727,7 +734,7 @@ CFontz_string (int x, int y, char string[])
 
 	for (i = 0; string[i]; i++) {
 
-		
+
 		// For V2 of the firmware to get the block to display right
 		if (newfirmware && string[i]==-1) {
 		string[i]=214;
@@ -735,17 +742,17 @@ CFontz_string (int x, int y, char string[])
 
 
 		// Check for buffer overflows...
-		if ((y * CFontz->wid) + x + i > (CFontz->wid * CFontz->hgt))
+		if ((y * width) + x + i > (width * height))
 			break;
-		CFontz->framebuf[(y * CFontz->wid) + x + i] = string[i];
+		framebuf[(y * width) + x + i] = string[i];
 	}
 }
 
 /////////////////////////////////////////////////////////////
 // Does the heartbeat...
 //
-static void
-CFontz_heartbeat (int type)
+MODULE_EXPORT void
+CFontz_heartbeat (Driver *drvthis, int type)
 {
 	static int timer = 0;
 	int whichIcon;
@@ -760,13 +767,13 @@ CFontz_heartbeat (int type)
 
 		// This defines a custom character EVERY time...
 		// not efficient... is this necessary?
-		CFontz_icon (whichIcon, 0);
+		CFontz_icon (drvthis, whichIcon, 0);
 
 		// Put character on screen...
-		CFontz_chr (CFontz->wid, 1, 0);
+		CFontz_chr (drvthis, width, 1, 0);
 
 		// change display...
-		CFontz_flush ();
+		CFontz_flush (drvthis);
 	}
 
 	timer++;

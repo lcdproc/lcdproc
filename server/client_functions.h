@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  */
 
@@ -23,7 +22,7 @@ typedef struct client_function {
 	int (*function) (client * c, int argc, char **argv);
 } client_function;
 
-// FIXME?  Do these really need to be visible from other sources?
+/* FIXME?  Do these really need to be visible from other sources?*/
 int test_func_func (client * c, int argc, char **argv);
 int hello_func (client * c, int argc, char **argv);
 int client_set_func (client * c, int argc, char **argv);

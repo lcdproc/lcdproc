@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  */
 
@@ -18,17 +17,17 @@
 typedef struct widget {
 	char *id;
 	int type;
-	// some sort of data here...
-	int x, y;						  // Position
-	int wid, hgt;					  // Size
-	int left, top, right, bottom;	// bounding rectangle
-	int length;						  // size or direction
-	int speed;						  // For scroller...
-	char *text;						  // text or binary data
-	LinkedList *kids;						  // Frames can contain more widgets...
+	/* some sort of data here...*/
+	int x, y;			/* Position*/
+	int wid, hgt;			/* Size*/
+	int left, top, right, bottom;	/* bounding rectangle*/
+	int length;			/* size or direction*/
+	int speed;			/* For scroller...*/
+	char *text;			/* text or binary data*/
+	LinkedList *kids;		/* Frames can contain more widgets...*/
 } widget;
 
-// These correspond to the index into the "types" array...
+/* These correspond to the index into the "types" array...*/
 #define WID_NONE 0
 #define WID_STRING 1
 #define WID_HBAR 2

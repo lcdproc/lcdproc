@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *               2001, Joris Robijn
  *
  *
  * Implements the serverscreens
@@ -23,7 +22,7 @@
 
 #include "shared/report.h"
 
-#include "drivers/lcd.h"
+#include "drivers.h"
 
 #include "clients.h"
 #include "screen.h"
@@ -62,7 +61,7 @@ server_screen_init ()
 
 	server_screen->id = id;
 	server_screen->name = name;
-	server_screen->duration = 8; // 1 second, instead of 4...
+	server_screen->duration = 8; /* 1 second, instead of 4...*/
 
 	if (widget_add (server_screen, "title", "title", NULL, 1) != 0) {
 		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
@@ -77,7 +76,7 @@ server_screen_init ()
 		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
 	}
 
-	// Now, initialize all the widgets...
+	/* Now, initialize all the widgets...*/
 	if ((w = widget_find (server_screen, "title")) != NULL) {
 		WidgetText(w,title);
 	} else
@@ -98,7 +97,7 @@ server_screen_init ()
 	else
 		report (RPT_ERR, "server_screen_init: Can't find widget three");
 
-	// And enqueue the screen
+	/* And enqueue the screen*/
 	screenlist_add (server_screen);
 
 	debug (RPT_DEBUG, "server_screen_init done");
@@ -125,13 +124,13 @@ update_server_screen (int timer)
 {
 	client *c;
 	int num_clients;
-	//screen *s;
+	/*screen *s;*/
 	int num_screens;
 
-	// Draw a title...
-	//strcpy(title, "LCDproc Server");
+	/* Draw a title...*/
+	/*strcpy(title, "LCDproc Server");*/
 
-	// Now get info on the number of connected clients...
+	/* Now get info on the number of connected clients...*/
 	num_clients = 0;
 	num_screens = 0;
 	LL_Rewind (clients);
@@ -140,27 +139,26 @@ update_server_screen (int timer)
 		if (c) {
 			num_clients++;
 			num_screens += screen_count(c);
-//			LL_Rewind (c->data->screenlist);
-//			do {
-//				s = LL_Get (c->data->screenlist);
-//				if (s) {
-//					num_screens++;
-//				}
-//			} while (LL_Next (c->data->screenlist) == 0);
+/*			LL_Rewind (c->data->screenlist); */
+/*			do { */
+/*				s = LL_Get (c->data->screenlist); */
+/*				if (s) { */
+/*					num_screens++; */
+/*				} */
+/*			} while (LL_Next (c->data->screenlist) == 0); */
 		}
 	} while (LL_Next (clients) == 0);
 
-	// Format strings for the appropriate size display...
-	//
-	if (lcd_ptr->hgt >= 3) {
+	/* Format strings for the appropriate size display... */
+	if (display_props->height >= 3) {
 		snprintf (one, sizeof(one), "Clients: %i", num_clients);
 		snprintf (two, sizeof(two), "Screens: %i", num_screens);
 	} else {
-		if (lcd_ptr->wid >= 20)
+		if (display_props->width >= 20)
 			snprintf (one, sizeof(one), "%i Client%s, %i Screen%s", num_clients,
 				(num_clients == 1) ? "" : "s", num_screens,
 				(num_screens == 1) ? "" : "s");
-		else							  // 16x2 size
+		else							  /* 16x2 size*/
 			snprintf (one, sizeof(one), "%i Cli%s, %i Scr%s", num_clients,
 				(num_clients == 1) ? "" : "s", num_screens,
 				(num_screens == 1) ? "" : "s");
@@ -173,9 +171,9 @@ int
 no_screen_screen (int timer)
 {
 
-	lcd_ptr->clear ();
-	lcd_ptr->string (1, 1, "Error:  No screen!");
-	lcd_ptr->flush ();
+	drivers_clear ();
+	drivers_string (1, 1, "Error:  No screen!");
+	drivers_flush ();
 
 	return 0;
 }
@@ -199,31 +197,31 @@ goodbye_screen ()
 	char *l16 = "    LCDproc!    ";
 #endif
 
-	lcd_ptr->clear ();
+	drivers_clear ();
 
-	if (lcd_ptr->hgt >= 4) {
-		if (lcd_ptr->wid >= 20) {
-			lcd_ptr->string (1, 1, b20);
-			lcd_ptr->string (1, 2, t20);
-			lcd_ptr->string (1, 3, l20);
-			lcd_ptr->string (1, 4, b20);
+	if (display_props->height >= 4) {
+		if (display_props->width >= 20) {
+			drivers_string (1, 1, b20);
+			drivers_string (1, 2, t20);
+			drivers_string (1, 3, l20);
+			drivers_string (1, 4, b20);
 		} else {
-			lcd_ptr->string (1, 1, b16);
-			lcd_ptr->string (1, 2, t16);
-			lcd_ptr->string (1, 3, l16);
-			lcd_ptr->string (1, 4, b16);
+			drivers_string (1, 1, b16);
+			drivers_string (1, 2, t16);
+			drivers_string (1, 3, l16);
+			drivers_string (1, 4, b16);
 		}
 	} else {
-		if (lcd_ptr->wid >= 20) {
-			lcd_ptr->string (1, 1, t20);
-			lcd_ptr->string (1, 2, l20);
+		if (display_props->width >= 20) {
+			drivers_string (1, 1, t20);
+			drivers_string (1, 2, l20);
 		} else {
-			lcd_ptr->string (1, 1, t16);
-			lcd_ptr->string (1, 2, l16);
+			drivers_string (1, 1, t16);
+			drivers_string (1, 2, l16);
 		}
 	}
 
-	lcd_ptr->flush ();
+	drivers_flush ();
 
 	return 0;
 }

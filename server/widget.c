@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  *
  * Does widget management
@@ -33,7 +32,7 @@ char *types[] = { "none",
 	"scroller",
 	"frame",
 	"num",
-	//"",
+	/*"",*/
 	NULL,
 };
 
@@ -84,12 +83,12 @@ widget_destroy (widget * w)
 
 	if (w->id)
 		free (w->id);
-	//debug(RPT_DEBUG, "widget_destroy: id...");
+	/*debug(RPT_DEBUG, "widget_destroy: id...");*/
 	if (w->text)
 		free (w->text);
-	//debug(RPT_DEBUG, "widget_destroy: text...");
+	/*debug(RPT_DEBUG, "widget_destroy: text...");*/
 
-	// TODO: Free kids!
+	/* TODO: Free kids!*/
 	if (w->kids) {
 		list = w->kids;
 		LL_Rewind (list);
@@ -104,7 +103,7 @@ widget_destroy (widget * w)
 	}
 
 	free (w);
-	//debug(RPT_DEBUG, "widget_destroy: widget...");
+	/*debug(RPT_DEBUG, "widget_destroy: widget...");*/
 
 	return 0;
 }
@@ -112,7 +111,7 @@ widget_destroy (widget * w)
 widget *
 widget_find (screen * s, char *id)
 {
-	//widget *w, *err;
+	/*widget *w, *err;*/
 
 	if (!s)
 		return NULL;
@@ -138,22 +137,22 @@ widget_finder (LinkedList * list, char *id)
 
 	LL_Rewind (list);
 	do {
-		//debug(RPT_DEBUG, "widget_finder: Iteration");
+		/*debug(RPT_DEBUG, "widget_finder: Iteration");*/
 		w = LL_Get (list);
 		if (w) {
-			//debug(RPT_DEBUG, "widget_finder: ...");
+			/*debug(RPT_DEBUG, "widget_finder: ...");*/
 			if (0 == strcmp (w->id, id)) {
 				debug (RPT_DEBUG, "widget_finder:  Found %s", id);
 				return w;
 			}
-			// Search kids recursively
-			//debug(RPT_DEBUG, "widget_finder: ...");
+			/* Search kids recursively*/
+			/*debug(RPT_DEBUG, "widget_finder: ...");*/
 			if (w->type == WID_FRAME) {
 				err = widget_finder (w->kids, id);
 				if (err)
 					return err;
 			}
-			//debug(RPT_DEBUG, "widget_finder: ...");
+			/*debug(RPT_DEBUG, "widget_finder: ...");*/
 		}
 
 	} while (LL_Next (list) == 0);
@@ -180,22 +179,22 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 	list = s->widgets;
 
 	if (0 == strcmp (id, "heartbeat")) {
-		s->heartbeat = HEARTBEAT_ON; // was 1
+		s->heartbeat = HEARTBEAT_ON; /* was 1*/
 		return 0;
 	}
 
-	// Make sure this screen doesn't already exist...
+	/* Make sure this screen doesn't already exist...*/
 	w = widget_find (s, id);
 	if (w) {
-		// already exists
+		/* already exists*/
 		sock_send_string (sock, "huh? You already have a widget with that id#\n");
 		return 1;
 	}
-	// Make sure the container, if any, is real
+	/* Make sure the container, if any, is real*/
 	if (in) {
 		parent = widget_find (s, in);
 		if (!parent) {
-			// no frame to use as parent
+			/* no frame to use as parent*/
 			sock_send_string (sock, "huh? Frame doesn't exist\n");
 			return 3;
 		} else {
@@ -204,31 +203,31 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 				if (!list)
 					report (RPT_DEBUG, "widget_add: Parent has no kids");
 			} else {
-				// no frame to use as parent
+				/* no frame to use as parent*/
 				sock_send_string (sock, "huh? Not a frame\n");
 				return 4;
 			}
 		}
 	}
 
-	// Make sure it's a valid widget type
+	/* Make sure it's a valid widget type*/
 	for (i = 1; types[i]; i++) {
 		if (0 == strcmp (types[i], type)) {
 			valid = 1;
 			wid_type = i;
-			break; // it's valid: skip out...
+			break; /* it's valid: skip out...*/
 		}
 	}
 
 	if (!valid) {
-		// invalid widget type
+		/* invalid widget type*/
 		sock_send_string (sock, "huh? Invalid widget type\n");
 		return 2;
 	}
 
 	debug (RPT_DEBUG, "widget_add: making widget");
 
-	// Now, make it...
+	/* Now, make it...*/
 	w = widget_create ();
 	if (!w) {
 		report (RPT_ERR, "widget_add:  Error creating widget");
@@ -243,7 +242,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 
 	w->type = wid_type;
 
-	// Set up the container's widget list...
+	/* Set up the container's widget list...*/
 	if (w->type == WID_FRAME) {
 		if (!w->kids) {
 			w->kids = LL_new ();
@@ -254,7 +253,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 		}
 	}
 
-	// TODO:  Check for errors here?
+	/* TODO:  Check for errors here?*/
 	LL_Push (list, (void *) w);
 
 	return 0;
@@ -276,10 +275,10 @@ widget_remove (screen * s, char *id, int sock)
 	list = s->widgets;
 
 	if (0 == strcmp (id, "heartbeat")) {
-		s->heartbeat = HEARTBEAT_OFF; // was 0
+		s->heartbeat = HEARTBEAT_OFF; /* was 0*/
 		return 0;
 	}
-	// Make sure this screen *does* exist...
+	/* Make sure this screen *does* exist...*/
 	w = widget_find (s, id);
 	if (!w) {
 		sock_send_string (sock, "huh? You don't have a widget with that id#\n");
@@ -287,17 +286,19 @@ widget_remove (screen * s, char *id, int sock)
 		return 1;
 	}
 
-//	TODO: Check for errors here?
-//	TODO: Make this work with frames...
-//	LL_Remove(list, (void *)w);
+/*	TODO: Check for errors here?
+ *	TODO: Make this work with frames...
+ *	LL_Remove(list, (void *)w);
+ */
 
 
-//	TODO: Check for errors here?
-//	widget_destroy(w);
+/*	TODO: Check for errors here?
+ *	widget_destroy(w);
+ */
 
 	return widget_remover (list, w);
 
-//	return 0;
+/*	return 0;*/
 }
 
 int
@@ -313,19 +314,19 @@ widget_remover (LinkedList * list, widget * w)
 	if (!w)
 		return 0;
 
-	// Search through the list...
+	/* Search through the list...*/
 	LL_Rewind (list);
 	do {
-		// Test each item
+		/* Test each item*/
 		foo = LL_Get (list);
 		if (foo) {
-			// Frames require recursion to search and/or destroy
+			/* Frames require recursion to search and/or destroy*/
 			if (foo->type == WID_FRAME) {
-				// If removing a frame, kill all its kids, too...
+				/* If removing a frame, kill all its kids, too...*/
 				if (foo == w) {
 					if (!foo->kids) {
 						debug (RPT_DEBUG, "widget_remover: frame has no kids");
-					} else			  // Kill the kids...
+					} else			  /* Kill the kids...*/
 					{
 						LL_Rewind (foo->kids);
 						do {
@@ -333,12 +334,12 @@ widget_remover (LinkedList * list, widget * w)
 							err = widget_remover (foo->kids, bar);
 						} while (0 == LL_Next (foo->kids));
 
-						// Then kill the parent...
+						/* Then kill the parent...*/
 						LL_Remove (list, (void *) w);
 						widget_destroy (w);
 					}
 
-				} else				  // Otherwise, search the frame recursively...
+				} else				  /* Otherwise, search the frame recursively...*/
 				{
 					if (!foo->kids) {
 						debug (RPT_DEBUG, "widget_remover: frame has no kids");
@@ -346,7 +347,7 @@ widget_remover (LinkedList * list, widget * w)
 						err = widget_remover (foo->kids, w);
 
 				}
-			} else					  // If not a frame, remove it if it matches...
+			} else					  /* If not a frame, remove it if it matches...*/
 			{
 				if (foo == w) {
 					LL_Remove (list, (void *) w);

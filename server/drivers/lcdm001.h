@@ -30,10 +30,27 @@
   lcdm001.h
 ******************************************************************/
 
-// REMOVE: I don't thing this is actualy needed.
-// extern lcd_logical_driver *lcdm001;
+/* REMOVE: I don't thing this is actualy needed. */
+/* extern lcd_logical_driver *lcdm001; */
 
-int lcdm001_init (struct lcd_logical_driver *driver, char *args);
+              int  lcdm001_init (struct lcd_logical_driver *driver, char *args);
+MODULE_EXPORT void lcdm001_close (Driver *drvthis);
+MODULE_EXPORT int  lcdm001_width (Driver *drvthis);
+MODULE_EXPORT int  lcdm001_height (Driver *drvthis);
+MODULE_EXPORT void lcdm001_clear (Driver *drvthis);
+MODULE_EXPORT void lcdm001_flush (Driver *drvthis);
+MODULE_EXPORT void lcdm001_string (Driver *drvthis, int x, int y, char *string);
+MODULE_EXPORT void lcdm001_chr (Driver *drvthis, int x, int y, char c);
+
+MODULE_EXPORT void lcdm001_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void lcdm001_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void lcdm001_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void lcdm001_icon (Driver *drvthis, int which, char dest);
+MODULE_EXPORT void lcdm001_heartbeat (Driver *drvthis, int type);
+
+MODULE_EXPORT void lcdm001_output (Driver *drvthis, int on);
+
+MODULE_EXPORT char lcdm001_getkey (Driver *drvthis);
 
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_CURSORBLINK	0
@@ -41,7 +58,7 @@ int lcdm001_init (struct lcd_logical_driver *driver, char *args);
 /*Heartbeat workaround
   set chars to be displayed instead of "normal" icons*/
 
-#define OPEN_HEART ' '     //This combination is at least visible
+#define OPEN_HEART ' '     /* This combination is at least visible */
 #define FILLED_HEART '*'
 #define PAD 255
 

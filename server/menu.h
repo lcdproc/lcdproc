@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  */
 
@@ -106,14 +105,14 @@ and sliders should return 0-255.
 **************************************************************************/
 #endif
 
-// Return codes from selected menu items...
+/* Return codes from selected menu items...*/
 #define MENU_ERROR -0x7FFF0000
 #define MENU_OK 0
 #define MENU_CLOSE 0x10000
 #define MENU_QUIT 0x20000
 #define MENU_KILL 0x20000
 
-// Menu item Types...
+/* Menu item Types...*/
 #define TYPE_TITL 0
 #define TYPE_MENU 1
 #define TYPE_FUNC 2
@@ -127,7 +126,7 @@ and sliders should return 0-255.
 #define CLIENT_SLID 0x103
 #define CLIENT_MOVE 0x104
 
-// User actions, sent to item-handling functions as input.
+/* User actions, sent to item-handling functions as input.*/
 #define MENU_SELECT 1
 #define MENU_CHECK 2
 #define MENU_PLUS 3

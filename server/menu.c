@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *               2001, Joris Robijn
  *
  *
  * Handles server-supplied menus defined by a table.  Read menu.h for
@@ -32,10 +31,11 @@
 #include "render.h"
 #include "main.h"
 
-#include "drivers/lcd.h"
+#include "drivers.h"
 #include "menu.h"
+#include "input.h"
 
-// FIXME: Implement this where it is supposed to be...
+/* FIXME: Implement this where it is supposed to be...*/
 void
 framedelay ()
 {
@@ -51,12 +51,11 @@ draw_heartbeat ()
 	static int timer = 0;
 
 	if (heartbeat) {
-		// Set this to pulsate like a real heart beat...
-		// (binary is fun...  :)
-		lcd_ptr->icon (!((timer + 4) & 5), 0);
-		lcd_ptr->chr (lcd_ptr->wid, 1, 0);
+		/* Set this to pulsate like a real heart beat... */
+		/*drivers_icon (!((timer + 4) & 5), 0); */
+		/*drivers_chr (display_props->width, 1, 0); */
 	}
-	lcd_ptr->flush ();
+	drivers_flush ();
 
 	timer++;
 	timer &= 0x0f;
@@ -92,28 +91,29 @@ do_menu (Menu menu)
 	fill_menu_info (menu, &info);
 
 	while (!done) {
-		// Keep the cursor off titles... (?)
+		/* Keep the cursor off titles... (?) */
 		while (menu[info.selected].type == TYPE_TITL) {
 			info.selected++;
-			// If the title is the last thing in the menu...
+			/* If the title is the last thing in the menu... */
 			if (!menu[info.selected].text)
 				info.selected -= 2;
 		}
 
 		draw_menu (menu, &info);
 
-		// FIXME: This should use a better keypress interface, which
-		// FIXME: handles things according to keybindings...
+		/* FIXME: This should use a better keypress interface, which */
+		/* FIXME: handles things according to keybindings... */
 
-		for (key = lcd_ptr->getkey (); key == 0; key = lcd_ptr->getkey ()) {
-			// sleep for 1/8th second...
+		for (key = drivers_getkey (); key == 0; key = drivers_getkey ()) {
+			/* sleep for 1/8th second... */
 			framedelay ();
-			// do the heartbeat...
+			/* do the heartbeat... */
 			draw_heartbeat ();
-			// Check for client input...
+			/* Check for client input... */
 		}
+		printf( "Received key: %c\n", key );
 
-		// Handle the key according to the keybindings...
+		/* Handle the key according to the keybindings... */
 		switch (key) {
 		case 'D':
 			done = 1;
@@ -128,11 +128,11 @@ do_menu (Menu menu)
 					break;
 			}
 			break;
-		case 'C':
+		case INPUT_FORWARD_KEY:
 			if (menu[info.selected + 1].text)
 				info.selected++;
 			break;
-		case 'A':
+		case INPUT_PAUSE_KEY:
 			switch (menu[info.selected].type) {
 			case TYPE_MENU:
 				status = do_menu (menu[info.selected].data);
@@ -164,15 +164,17 @@ do_menu (Menu menu)
 				return MENU_OK;
 			case MENU_QUIT:
 				return MENU_QUIT;
-//        case MENU_KILL:
-//          return MENU_KILL;
+/*        case MENU_KILL:
+ *          return MENU_KILL;
+ */
 			case MENU_ERROR:
 				return MENU_ERROR;
 			}
 
-			// status = menu_handle_action(&menu[info.selected]);
-			// TODO: It should now do special stuff for "mover" widgets,
-			// TODO: and handle the return code appropriately.
+			/* status = menu_handle_action(&menu[info.selected]);*/
+			/* TODO: It should now do special stuff for "mover" widgets,
+			 * TODO: and handle the return code appropriately.
+			 */
 			break;
 		default:
 			break;
@@ -193,15 +195,15 @@ draw_menu (Menu menu, menu_info * info)
 
 	int (*readfunc) (int);
 
-	// these should maybe be removed:
-	int wid = lcd_ptr->wid, hgt = lcd_ptr->hgt;
+	/* these should maybe be removed: */
+	int wid = display_props->width, hgt = display_props->height;
 
 	if (!menu)
 		return MENU_ERROR;
 
-	lcd_ptr->clear ();
+	drivers_clear ();
 
-	// Scroll down until the selected item is centered, if possible...
+	/* Scroll down until the selected item is centered, if possible...*/
 	top = info->selected - (hgt / 2);
 	if (top < 0)
 		top = 0;
@@ -212,38 +214,38 @@ draw_menu (Menu menu, menu_info * info)
 	if (top < 0)
 		top = 0;
 
-	// Draw all visible items...
+	/* Draw all visible items...*/
 	for (i = top; i < bottom; i++, y++) {
 		if (i == info->selected)
-			lcd_ptr->chr (2, y, '>');
+			drivers_chr (2, y, '>');
 
 		switch (menu[i].type) {
 		case TYPE_TITL:
-			lcd_ptr->chr (1, y, PAD);
-			lcd_ptr->chr (2, y, PAD);
-			lcd_ptr->string (4, y, menu[i].text);
+			drivers_chr (1, y, PAD);
+			drivers_chr (2, y, PAD);
+			drivers_string (4, y, menu[i].text);
 			for (x = strlen (menu[i].text) + 5; x <= wid; x++)
-				lcd_ptr->chr (x, y, PAD);
+				drivers_chr (x, y, PAD);
 			break;
 		case TYPE_MENU:
-			lcd_ptr->string (3, y, menu[i].text);
-			lcd_ptr->chr (wid, y, '>');
+			drivers_string (3, y, menu[i].text);
+			drivers_chr (wid, y, '>');
 			break;
 		case TYPE_FUNC:
-			lcd_ptr->string (3, y, menu[i].text);
+			drivers_string (3, y, menu[i].text);
 			break;
 		case TYPE_CHEK:
 			if (menu[i].data) {
 				readfunc = menu[i].data;
 				if (readfunc (MENU_READ))
-					lcd_ptr->chr (wid, y, 'Y');
+					drivers_chr (wid, y, 'Y');
 				else
-					lcd_ptr->chr (wid, y, 'N');
+					drivers_chr (wid, y, 'N');
 			}
-			lcd_ptr->string (3, y, menu[i].text);
+			drivers_string (3, y, menu[i].text);
 			break;
 		case TYPE_SLID:
-			lcd_ptr->string (3, y, menu[i].text);
+			drivers_string (3, y, menu[i].text);
 			break;
 		case TYPE_MOVE:
 			break;
@@ -253,12 +255,12 @@ draw_menu (Menu menu, menu_info * info)
 	}
 
 	if (top != 0)
-		lcd_ptr->chr (1, 1, '^');
+		drivers_chr (1, 1, '^');
 	if (bottom < info->length)
-		lcd_ptr->chr (1, hgt, 'v');
+		drivers_chr (1, hgt, 'v');
 
 	draw_heartbeat ();
-	//lcd_ptr->flush();
+	/*drivers_flush(); */
 
 	return 0;
 }
@@ -270,7 +272,7 @@ fill_menu_info (Menu menu, menu_info * info)
 
 	info->selected = 0;
 
-	// count the entries in the menu
+	/* count the entries in the menu*/
 	for (i = 0; menu[i].text; i++);
 
 	info->length = i;
@@ -296,39 +298,43 @@ slid_func (menu_item * item)
 
 	readfunc = item->data;
 
-	lcd_ptr->init_hbar ();
+	/*drivers_init_hbar (); OBSOLETE */
 
 	while (key != 'A' && key != 'D') {
-		// Draw the title...
-		lcd_ptr->clear ();
-		lcd_ptr->chr (1, y, PAD);
-		lcd_ptr->chr (2, y, PAD);
-		lcd_ptr->string (4, y, item->text);
-		for (x = strlen (item->text) + 5; x <= lcd_ptr->wid; x++)
-			lcd_ptr->chr (x, y, PAD);
+		/* Draw the title... */
+		drivers_clear ();
+		drivers_chr (1, y, PAD);
+		drivers_chr (2, y, PAD);
+		drivers_string (4, y, item->text);
+		for (x = strlen (item->text) + 5; x <= display_props->width; x++)
+			drivers_chr (x, y, PAD);
 
-		// Draw the slider now...
+		/* Draw the slider now...*/
 		value = readfunc (MENU_READ);
 		if (value < 0 || value >= MENU_CLOSE)
 			return value;
 		snprintf (str, sizeof(str), "%i", value);
-		if (lcd_ptr->hgt >= 4) {
-			lcd_ptr->string (8, 4, str);
-			value = (lcd_ptr->wid * lcd_ptr->cellwid * value / 256);
-			lcd_ptr->hbar (1, 3, value);
+		if (display_props->height >= 4) {
+			int promille;
+			drivers_string (8, 4, str);
+			value = (display_props->width * display_props->cellwidth * value / 256);
+			promille = (long) 100 * value / 256;
+			drivers_hbar (1, 3, display_props->width, promille, BAR_PATTERN_FILLED);
 		} else {
-			lcd_ptr->string (17, 2, str);
-			value = ((lcd_ptr->wid - 4) * lcd_ptr->cellwid * value / 256);
-			lcd_ptr->hbar (1, 2, value);
+			int promille;
+			drivers_string (17, 2, str);
+			value = ((display_props->width - 4) * display_props->cellwidth * value / 256);
+			promille = (long) 100 * value / 256;
+			drivers_hbar (1, 2, display_props->width, promille, BAR_PATTERN_FILLED);
 		}
-		//lcd_ptr->flush();
+		/*drivers_flush(); */
 
-		for (key = lcd_ptr->getkey (); key == 0; key = lcd_ptr->getkey ()) {
-			// do the heartbeat...
+		for (key = drivers_getkey (); key == 0; key = drivers_getkey ()) {
+			/* do the heartbeat... */
 			draw_heartbeat ();
-			// sleep for 1/8th second...
+			/* sleep for 1/8th second... */
 			framedelay ();
-			// Check for client input...
+			/* Check for client input... */
 		}
 
 		switch (key) {

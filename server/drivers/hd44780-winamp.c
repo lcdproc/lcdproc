@@ -59,7 +59,7 @@
  */
 
 #include "hd44780-winamp.h"
-#include "hd44780.h"
+#include "hd44780-low.h"
 #include "lpt-port.h"
 
 #include "port.h"
@@ -74,9 +74,9 @@
 // HD44780_senddata
 // HD44780_readkeypad
 
-void lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
-void lcdwinamp_HD44780_backlight (unsigned char state);
-unsigned char lcdwinamp_HD44780_readkeypad (unsigned int YData);
+void lcdwinamp_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void lcdwinamp_HD44780_backlight (PrivateData *p, unsigned char state);
+unsigned char lcdwinamp_HD44780_readkeypad (PrivateData *p, unsigned int YData);
 
 #define EN1	STRB
 #define EN2	SEL
@@ -85,41 +85,45 @@ unsigned char lcdwinamp_HD44780_readkeypad (unsigned int YData);
 #define RS	INIT
 #define BL	SEL
 
-static unsigned char EnMask[] = { EN1, EN2, EN3 };
-
-static unsigned int lptPort;
-static char stuckinputs = 0;	// if an input line is stuck, it will be ignored
-static char backlight_bit = 0;	// default to low to enable two displays
+static const unsigned char EnMask[] = { EN1, EN2, EN3 };
 
 // initialise the driver
 int
-hd_init_winamp (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)
+hd_init_winamp (Driver *drvthis)
 {
+	PrivateData *p = (PrivateData*) drvthis->private_data;
+	HD44780_functions *hd44780_functions = p->hd44780_functions;
+
 	// Reserve the port registers
-	lptPort = port;
-	port_access(lptPort);
-	port_access(lptPort+1);
-	port_access(lptPort+2);
+	port_access(p->port);
+	port_access(p->port+1);
+	port_access(p->port+2);
 
 	hd44780_functions->senddata = lcdwinamp_HD44780_senddata;
 	hd44780_functions->backlight = lcdwinamp_HD44780_backlight;
 	hd44780_functions->readkeypad = lcdwinamp_HD44780_readkeypad;
 
 	// setup the lcd in 8 bit mode
-	hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT);
-	hd44780_functions->uPause (4100);
-	hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT);
-	hd44780_functions->uPause (100);
-	hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT | TWOLINE | SMALLCHAR);
-	hd44780_functions->uPause (40);
+	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_8BIT);
+	hd44780_functions->uPause (p, 4100);
+	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_8BIT);
+	hd44780_functions->uPause (p, 100);
+	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_8BIT | TWOLINE | SMALLCHAR);
+	hd44780_functions->uPause (p, 40);
 
-	common_init ();
+	common_init (p);
+
+	if (p->have_keypad) {
+		// Remember which input lines are stuck
+		p->stuckinputs = lcdwinamp_HD44780_readkeypad (p, 0);
+	}
+
 	return 0;
 }
 
 // lcdwinamp_HD44780_senddata
 void
-lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
+lcdwinamp_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	unsigned char enableLines = 0, portControl;
 
@@ -128,25 +132,25 @@ lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 	else
 		portControl = 0;
 
-	portControl |= backlight_bit;
+	portControl |= p->backlight_bit;
 
 	if (displayID == 0)
-		enableLines = EnMask[0] | EnMask[1] | ((extIF) ? EnMask[2] : 0);
+		enableLines = EnMask[0] | EnMask[1] | ((p->extIF) ? EnMask[2] : 0);
 	else
 		enableLines = EnMask[displayID - 1];
 
 	// 40 nS setup time for RS valid to EN high, so set RS
-	port_out (lptPort + 2, portControl ^ OUTMASK);
+	port_out (p->port + 2, portControl ^ OUTMASK);
 
 	// Output the actual data
-	port_out (lptPort, ch);
+	port_out (p->port, ch);
 
-	if( delayBus ) hd44780_functions->uPause (1);
+	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 
 	// then set EN high
-	port_out (lptPort + 2, (enableLines|portControl) ^ OUTMASK);
+	port_out (p->port + 2, (enableLines|portControl) ^ OUTMASK);
 
-	if( delayBus ) hd44780_functions->uPause (1);
+	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 
 	// 80 nS setup from valid data to EN low will be met without any delay
 	// unless you are running a REALLY FAST ISA bus (like 75 MHZ!)
@@ -155,34 +159,34 @@ lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 	// ABOVE TEXT ignored now, using delays if delayBus is specified
 
 	// Set EN low and we're done...
-	port_out (lptPort + 2, portControl ^ OUTMASK);
+	port_out (p->port + 2, portControl ^ OUTMASK);
 
 	// 10 nS data hold time provided by the length of ISA write for EN
 }
 
-void lcdwinamp_HD44780_backlight (unsigned char state)
+void lcdwinamp_HD44780_backlight (PrivateData *p, unsigned char state)
 {
-	backlight_bit = (state?0:nSEL);
+	p->backlight_bit = (state?0:nSEL);
 
-	port_out (lptPort + 2, backlight_bit ^ OUTMASK);
+	port_out (p->port + 2, p->backlight_bit ^ OUTMASK);
 }
 
-unsigned char lcdwinamp_HD44780_readkeypad (unsigned int YData)
+unsigned char lcdwinamp_HD44780_readkeypad (PrivateData *p, unsigned int YData)
 {
 	unsigned char readval;
 
 	// 8 bits output
 	// Convert the positive logic to the negative logic on the LPT port
-	port_out (lptPort, ~YData & 0x00FF );
+	port_out (p->port, ~YData & 0x00FF );
 
-	if( delayBus ) hd44780_functions->uPause (1);
+	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 
 	// Read inputs
-	readval = ~ port_in (lptPort + 1) ^ INMASK;
+	readval = ~ port_in (p->port + 1) ^ INMASK;
 
 	// Set output back to idle state for backlight
-	port_out (lptPort + 2, backlight_bit ^ OUTMASK );
+	port_out (p->port + 2, p->backlight_bit ^ OUTMASK );
 
 	// And convert value back.
-	return ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) ) & ~stuckinputs;
+	return ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) ) & ~p->stuckinputs;
 }

@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  */
 
@@ -20,17 +19,17 @@
 typedef struct client_data {
 	int ack;
 	char *name;
-	// and other stuff...  doesn't matter yet
+	/* and other stuff...  doesn't matter yet*/
 	LinkedList *screenlist;
-	// list of requested keys...
+	/* list of requested keys...*/
 	char *client_keys ;
 	LinkedList *menulist;
 
 } client_data;
 
-// sets up an existing (empty) client_data struct
+/* sets up an existing (empty) client_data struct*/
 int client_data_init (client_data * d);
-// destroys members of a client's data
+/* destroys members of a client's data*/
 int client_data_destroy (client_data * d);
 
 #endif

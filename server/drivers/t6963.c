@@ -24,7 +24,6 @@
 #include "shared/debug.h"
 
 #include "lcd.h"
-#include "render.h"
 #include "port.h"
 #include "t6963.h"
 #include "t6963_font.h"
@@ -37,7 +36,6 @@
 #define DEBUG4 if(debug_level > 3) printf
 
 extern int debug_level;
-lcd_logical_driver *t6963;
 
 static u16 t6963_out_port;
 static u16 t6963_display_mode;
@@ -45,8 +43,20 @@ static u8  *t6963_display_buffer1;
 static u8  *t6963_display_buffer2;
 static u8  t6963_graph_line[6];
 
+static char *t6963_framebuf = NULL;
+static int width;
+static int height;
+static int cellwidth;
+static int cellheight;
+
+// Vars for the server core
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 0;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "t6963_";
+
 int
-t6963_init (struct lcd_logical_driver *driver, char *args)
+t6963_init (Driver *drvthis, char *args)
 {
         char *argv[64];
         int argc;
@@ -62,8 +72,6 @@ t6963_init (struct lcd_logical_driver *driver, char *args)
 	t6963_graph_line[3] = 0x3C;
 	t6963_graph_line[4] = 0x3E;
 	t6963_graph_line[5] = 0x3F;
-
-	t6963 = driver;
 
 	DEBUG3 ("Reading arguments...\n");
         argc = get_args (argv, args, 64);
@@ -101,47 +109,50 @@ t6963_init (struct lcd_logical_driver *driver, char *args)
 
 	DEBUG3 ("   cool, got 'em!\nSetting width and height\n");
 
-	DEBUG3 ("done\nAllocating memory: %i x %i bytes = %i...\n", driver->wid, driver->hgt, driver->wid * driver->hgt);
+	DEBUG3 ("done\nAllocating memory: %i x %i bytes = %i...\n", width, height, width * height);
 
 		// Set display size
-	t6963->wid = 20;
-	t6963->hgt = 6;
-	t6963->cellwid = 6;
-	t6963->cellhgt = 8;
+	width = 20;
+	height = 6;
+	cellwidth = 6;
+	cellheight = 8;
 
-		// You must use driver->framebuf here, but may use lcd.framebuf later.
-	if (!driver->framebuf)
-		driver->framebuf = malloc (driver->wid * driver->hgt);
+		// Allocate framebuf
+	t6963_framebuf = malloc (width * height);
 
-	if (!driver->framebuf) {
-		t6963_close ();
+	if (!t6963_framebuf) {
+		t6963_close (drvthis);
 		return -1;
 	}
 		// Allocate memory
-	t6963_display_buffer1 = malloc (driver->wid * 6);
-	t6963_display_buffer2 = malloc (driver->wid * 6);
+	t6963_display_buffer1 = malloc (width * 6);
+	t6963_display_buffer2 = malloc (width * 6);
 		// Clear front and back buffer
-	if(t6963_display_buffer1) memset(t6963_display_buffer1, ' ', driver->wid * 6);
-	if(t6963_display_buffer2) memset(t6963_display_buffer1, ' ', driver->wid * 6);
+	if(t6963_display_buffer1) memset(t6963_display_buffer1, ' ', width * 6);
+	if(t6963_display_buffer2) memset(t6963_display_buffer1, ' ', width * 6);
 
 	DEBUG3 ("done\nSetting function pointers...\n");
 
-	driver->clear = t6963_clear;
-	driver->string = t6963_string;
-	driver->chr = t6963_chr;
-	driver->vbar = t6963_vbar;
-	driver->hbar = t6963_hbar;
-	driver->num = t6963_num;
-	driver->init = t6963_init;
-	driver->close = t6963_close;
-	driver->flush = t6963_flush;
-	driver->flush_box = t6963_flush_box;
-	driver->set_char = t6963_set_char;
-	driver->icon = t6963_icon;
-	driver->heartbeat = t6963_heartbeat;
-	driver->draw_frame = t6963_draw_frame;
+	// Set variables for server
+	drvthis->stay_in_foreground = &stay_in_foreground;
+	drvthis->api_version = api_version;
+	drvthis->supports_multiple = &supports_multiple;
 
-	driver->getkey = t6963_getkey;
+	// Set the functions the driver supports
+	drvthis->clear = t6963_clear;
+	drvthis->string = t6963_string;
+	drvthis->chr = t6963_chr;
+	drvthis->old_vbar = t6963_vbar;
+	drvthis->old_hbar = t6963_hbar;
+	drvthis->num = t6963_num;
+	drvthis->init = t6963_init;
+	drvthis->close = t6963_close;
+	drvthis->flush = t6963_flush;
+	drvthis->set_char = t6963_set_char;
+	drvthis->old_icon = t6963_icon;
+	drvthis->heartbeat = t6963_heartbeat;
+
+	drvthis->getkey = t6963_getkey;
 
 	DEBUG3 ("done\nSending init to display...\n");
 	DEBUG4 ("  make parallel port an output port\n");
@@ -155,25 +166,25 @@ t6963_init (struct lcd_logical_driver *driver, char *args)
 	DEBUG4("  set graphic/text home adress and area\n");
 
         t6963_low_command_word (SET_GRAPHIC_HOME_ADDRESS, ATTRIB_BASE);
-        t6963_low_command_word (SET_GRAPHIC_AREA,         driver->wid);
+        t6963_low_command_word (SET_GRAPHIC_AREA,         width);
         t6963_low_command_word (SET_TEXT_HOME_ADDRESS,    TEXT_BASE);
-        t6963_low_command_word (SET_TEXT_AREA,            driver->wid);
+        t6963_low_command_word (SET_TEXT_AREA,            width);
 
         t6963_low_command         (SET_MODE | OR_MODE | EXTERNAL_CG);
         t6963_low_command_2_bytes (SET_OFFSET_REGISTER, CHARGEN_BASE>>11, 0);
         t6963_low_command         (SET_CURSOR_PATTERN | 7); // cursor is 8 lines high
         t6963_low_command_2_bytes (SET_CURSOR_POINTER, 0, 0);
 
-	t6963_set_nchar (0, fontdata_6x8, 256);
+	t6963_set_nchar (drvthis, 0, fontdata_6x8, 256);
 
 	t6963_low_enable_mode (TEXT_ON);
 	t6963_low_disable_mode (GRAPHIC_ON);
 	t6963_low_disable_mode (CURSOR_ON);
 	t6963_low_disable_mode (BLINK_ON);
 
-	t6963_clear ();
-	t6963_graphic_clear (0, 0, driver->wid, driver->cellhgt * 6);
-	t6963_flush();
+	t6963_clear (drvthis);
+	t6963_graphic_clear (drvthis, 0, 0, width, cellheight * 6);
+	t6963_flush(drvthis);
 	DEBUG3 ("Initialization done!\n");
 
 	return 0;						  // 200 is arbitrary.  (must be 1 or more)
@@ -183,19 +194,19 @@ t6963_init (struct lcd_logical_driver *driver, char *args)
 // lcd.framebuf will be set to the appropriate buffer before calling
 // your driver.
 
-void
-t6963_close ()
+MODULE_EXPORT void
+t6963_close (Driver *drvthis)
 {
 	DEBUG3 ("Shutting down!\n");
 	t6963_low_disable_mode (BLINK_ON);
 
 	ioperm(t6963_out_port, 3, 0);
-	if (t6963->framebuf != NULL)
-		free (t6963->framebuf);
+	if (t6963_framebuf != NULL)
+		free (t6963_framebuf);
 	if (t6963_display_buffer1 != NULL) free (t6963_display_buffer1);
 	if (t6963_display_buffer2 != NULL) free (t6963_display_buffer2);
 
-	t6963->framebuf = NULL;
+	t6963_framebuf = NULL;
 	t6963_display_buffer1 = NULL;
 	t6963_display_buffer2 = NULL;
 }
@@ -203,20 +214,20 @@ t6963_close ()
 /////////////////////////////////////////////////////////////////
 // Clears the LCD screen
 //
-void
-t6963_clear ()
+MODULE_EXPORT void
+t6963_clear (Driver *drvthis)
 {
-	DEBUG4 ("Clearing Display of size %i x %i\n", t6963->wid, 6);
+	DEBUG4 ("Clearing Display of size %i x %i\n", width, 6);
 
-	memset (t6963_display_buffer1, ' ', t6963->wid * 6);
+	memset (t6963_display_buffer1, ' ', width * 6);
 //	for (i=0; i < 6; i++)
-//		if (t6963_hbar_len[i]==0) t6963_graphic_clear(0, i*t6963->cellhgt, t6963->wid, (i+1)*t6963->cellhgt);
+//		if (t6963_hbar_len[i]==0) t6963_graphic_clear(0, i*cellheight, width, (i+1)*cellheight);
 
 	DEBUG4 ("Done\n");
 }
 
 void
-t6963_graphic_clear (int x1, int y1, int x2, int y2)
+t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2)
 {
 	int x;
 
@@ -224,7 +235,7 @@ t6963_graphic_clear (int x1, int y1, int x2, int y2)
 
 	for (;y1 < y2; y1++)
 	{
-		t6963_low_command_word(SET_ADDRESS_POINTER, ATTRIB_BASE + y1 * t6963->wid + x1);
+		t6963_low_command_word(SET_ADDRESS_POINTER, ATTRIB_BASE + y1 * width + x1);
 		for (x = x1; x < x2; x++)
 			t6963_low_command_byte(DATA_WRITE_INC, 0);
 	}
@@ -233,13 +244,13 @@ t6963_graphic_clear (int x1, int y1, int x2, int y2)
 //////////////////////////////////////////////////////////////////
 // Flushes all output to the lcd...
 //
-void
-t6963_flush ()
+MODULE_EXPORT void
+t6963_flush (Driver *drvthis)
 {
 	int i;
-	DEBUG4 ("Flushing %i x %i\n", t6963->wid, t6963->hgt);
+	DEBUG4 ("Flushing %i x %i\n", width, height);
 
-	for (i = 0; i < (t6963->wid * 6); i++)
+	for (i = 0; i < (width * 6); i++)
 	{
 		DEBUG4 ("%i%i|", t6963_display_buffer1[i], t6963_display_buffer2[i]);
 		if (t6963_display_buffer1[i] != t6963_display_buffer2[i])
@@ -250,30 +261,15 @@ t6963_flush ()
 	}
 	DEBUG4 ("\n");
 	t6963_swap_buffers();
-	t6963_clear();
-}
-
-//////////////////////////////////////////////////////////////////////
-// Send a rectangular area to the display.
-//
-// I've just called drv_base_flush() because there's not much point yet
-// in flushing less than the entire framebuffer.
-//
-void
-t6963_flush_box (int lft, int top, int rgt, int bot)
-{
-	DEBUG4 ("flush_box\n");
-	t6963_flush();
-	//drv_base_flush();
-
+	t6963_clear(drvthis);
 }
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,6).
 //
-void
-t6963_string (int x, int y, char string[])
+MODULE_EXPORT void
+t6963_string (Driver *drvthis, int x, int y, char string[])
 {
 	DEBUG4 ("String out\n");
 
@@ -281,8 +277,8 @@ t6963_string (int x, int y, char string[])
 	y -= 1;
 
 //	t6963_low_command_word(SET_ADDRESS_POINTER,TEXT_BASE+POSITION(x,y));
-	if(y * t6963->wid + x + strlen(string) <= t6963->wid * 6);
-		memcpy(&t6963_display_buffer1[y * t6963->wid + x], string, strlen(string));
+	if(y * width + x + strlen(string) <= width * 6);
+		memcpy(&t6963_display_buffer1[y * width + x], string, strlen(string));
 
 }
 
@@ -290,21 +286,21 @@ t6963_string (int x, int y, char string[])
 // Prints a character on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,6).
 //
-void
-t6963_chr (int x, int y, char c)
+MODULE_EXPORT void
+t6963_chr (Driver *drvthis, int x, int y, char c)
 {
 	DEBUG4 ("Char out\n");
 	y--;
 	x--;
-	if ((y * t6963->wid) + x <= (t6963->wid * 6))
-		t6963_display_buffer1[(y * t6963->wid) + x] = c;
+	if ((y * width) + x <= (width * 6))
+		t6963_display_buffer1[(y * width) + x] = c;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Draws a big (4-row) number.
 //
-void
-t6963_num (int x, int num)
+MODULE_EXPORT void
+t6963_num (Driver *drvthis, int x, int num)
 {
 //  printf("BigNum(%i, %i)\n", x, num);
 }
@@ -313,7 +309,7 @@ t6963_num (int x, int num)
 // Changes the font data of character n.
 //
 void
-t6963_set_nchar (int n, char *dat, int num)
+t6963_set_nchar (Driver *drvthis, int n, char *dat, int num)
 {
 	int row, col;
 	char letter;
@@ -324,36 +320,36 @@ t6963_set_nchar (int n, char *dat, int num)
                 return;
 
 	t6963_low_command_word(SET_ADDRESS_POINTER, CHARGEN_BASE + n*8);
-        for (row = 0; row < t6963->cellhgt * num; row++) {
+        for (row = 0; row < cellheight * num; row++) {
                 letter = 0;
-                for (col = 0; col < t6963->cellwid; col++) {
+                for (col = 0; col < cellwidth; col++) {
                         letter <<= 1;
-                        letter |= (dat[(row * t6963->cellwid) + col] > 0);
+                        letter |= (dat[(row * cellwidth) + col] > 0);
                 }
 
 		t6963_low_command_byte(DATA_WRITE_INC, letter);
         }
 }
 
-void
-t6963_set_char (int n, char *dat)
+MODULE_EXPORT void
+t6963_set_char (Driver *drvthis, int n, char *dat)
 {
-	t6963_set_nchar (n, dat, 1);
+	t6963_set_nchar (drvthis, n, dat, 1);
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar, from the bottom of the screen up.
 //
-void
-t6963_vbar (int x, int len)
+MODULE_EXPORT void
+t6963_vbar (Driver *drvthis, int x, int len)
 {
 	int y;
 	DEBUG4 ("Drawing vertical bar...");
-	for (y = 0; y < len/t6963->cellhgt; y++)
-		t6963_chr (x, 6-y, 219);
+	for (y = 0; y < len/cellheight; y++)
+		t6963_chr (drvthis, x, 6-y, 219);
 
-	if (len % t6963->cellhgt)
-		t6963_chr (x, 6-y, 211 + (len % t6963->cellhgt));
+	if (len % cellheight)
+		t6963_chr (drvthis, x, 6-y, 211 + (len % cellheight));
 
 	DEBUG4 ("Done\n");
 }
@@ -361,16 +357,16 @@ t6963_vbar (int x, int len)
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
-void
-t6963_hbar (int x, int y, int len)
+MODULE_EXPORT void
+t6963_hbar (Driver *drvthis, int x, int y, int len)
 {
-	int stop = x + len/t6963->cellwid;
+	int stop = x + len/cellwidth;
 	DEBUG4 ("Drawing horizontal bar x: %i, y: %i, len:%i, stop: %i...", x, y, len, stop);
 	for (; x < stop; x++)
-		t6963_chr (x, y, 219);
+		t6963_chr (drvthis, x, y, 219);
 
-	if (len % t6963->cellwid)
-		t6963_chr (x, y, 225 - (len % t6963->cellwid));
+	if (len % cellwidth)
+		t6963_chr (drvthis, x, y, 225 - (len % cellwidth));
 
 	DEBUG4 ("Done\n");
 }
@@ -378,8 +374,8 @@ t6963_hbar (int x, int y, int len)
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
-void
-t6963_icon (int which, char dest)
+MODULE_EXPORT void
+t6963_icon (Driver *drvthis, int which, char dest)
 {
 //  printf("Char %i set to icon %i\n", dest, which);
 	DEBUG4 ("Icon %i\n", which);
@@ -388,8 +384,8 @@ t6963_icon (int which, char dest)
 /////////////////////////////////////////////////////////////////
 // Does the heartbeat
 //
-void
-t6963_heartbeat (int type)
+MODULE_EXPORT void
+t6963_heartbeat (Driver *drvthis, int type)
 {
 	static int timer;
 	int whichIcon;
@@ -402,7 +398,7 @@ t6963_heartbeat (int type)
 		// Set this to pulsate like a real heartbeat...
 		whichIcon = (! ((timer + 4) & 5));
 		// Put character on screen...
-		t6963_chr (t6963->wid, 1, 3+whichIcon);
+		t6963_chr (drvthis, width, 1, 3+whichIcon);
 	}
 
 	timer++;
@@ -410,26 +406,12 @@ t6963_heartbeat (int type)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Gets a whole screen buffer as argument...
-//
-
-void
-t6963_draw_frame (char *dat)
-{
-	DEBUG4 ("Drawing frame...");
-
-	memcpy (t6963_display_buffer1, dat, t6963->wid * t6963->hgt);
-
-	DEBUG4 ("Done");
-}
-
-//////////////////////////////////////////////////////////////////////
 // Tries to read a character from an input device...
 //
 // Return 0 for "nothing available".
 //
-char
-t6963_getkey ()
+MODULE_EXPORT char
+t6963_getkey (Driver *drvthis)
 {
 	DEBUG4 ("Get key");
 	return 0;

@@ -53,7 +53,7 @@ extern int optind, optopt, opterr;
 
 #define MAX_TIMER 0x10000
 
-//#define DEFAULT_DEBUG_LEVEL 1
+/*#define DEFAULT_DEBUG_LEVEL 1*/
 #define DEFAULT_LCD_PORT LCDPORT
 #define DEFAULT_BIND_ADDR "127.0.0.1"
 #define DEFAULT_CONFIGFILE "/etc/LCDd.conf"
@@ -85,13 +85,13 @@ char *build_date = __DATE__;
 
 /**** Configuration variables ****/
 
-// All variables are set to 'unset' values
+/* All variables are set to 'unset' values*/
 #define UNSET_INT -1
 #define UNSET_STR "\01"
 
-int debug_level; // for compatibility with MtxOrb, lcdm001 and joy drivers.
-// I was about to remove the comment in front of this.
-// Now how do we become compatible WITHOUT this debug_level ?
+int debug_level; /* for compatibility with MtxOrb and joy drivers.
+ * I was about to remove the comment in front of this.
+ * Now how do we become compatible WITHOUT this debug_level ?*/
 
 int lcd_port = UNSET_INT;
 char bind_addr[64] = UNSET_STR;
@@ -105,33 +105,34 @@ static int reportLevel = UNSET_INT;
 static int reportToSyslog = UNSET_INT;
 static int serverStarted = 0;
 
-// The drivers and their driver parameters
+/* The drivers and their driver parameters*/
 char *drivernames[MAX_DRIVERS];
 char *driverfilenames[MAX_DRIVERS];
 char *driverargs[MAX_DRIVERS];
 int num_drivers = 0;
 
 
-// The parameter structure and args[] should
-// be removed when getopt(3) is implemented,
-// as there won't be any need for them then.
-//typedef struct parameter {
-//	char *sh, *lg;	// short and long versions
-//} parameter;
-
-// This is currently only a list of available arguments, but doesn't
-// really *do* anything.  It just helps to figure out which parameters
-// go to the server, and which ones go to individual drivers...
-//static parameter args[] = {
-//	{"-h", "--help"},
-//	{"-d", "--driver"},
-//	{"-t", "--type"},
-//	{"-f", "--foreground"},
-//	{"-b", "--backlight"},
-//	{"-i", "--serverinfo"},
-//	{"-w", "--waittime"},
-//	{NULL, NULL},
-//};
+/* The parameter structure and args[] should
+ * be removed when getopt(3) is implemented,
+ * as there won't be any need for them then.
+ * typedef struct parameter {
+ *	char *sh, *lg;	*/ /* short and long versions*/
+ /*} parameter;
+ +
+ * This is currently only a list of available arguments, but doesn't
+ * really *do* anything.  It just helps to figure out which parameters
+ * go to the server, and which ones go to individual drivers...
+ *static parameter args[] = {
+ *	{"-h", "--help"},
+ *	{"-d", "--driver"},
+ *	{"-t", "--type"},
+ *	{"-f", "--foreground"},
+ *	{"-b", "--backlight"},
+ *	{"-i", "--serverinfo"},
+ *	{"-w", "--waittime"},
+ *	{NULL, NULL},
+ *};
+ */
 
 
 /**** Local functions ****/
@@ -155,18 +156,20 @@ void lcd_list_drivers();
 int
 main (int argc, char **argv)
 {
-	// FIXME: s is getting clobbered - in MANY places!!!
-	//screen *s = NULL;
-	//char buf[64];
+	/* FIXME: s is getting clobbered - in MANY places!!!
+	 *screen *s = NULL;
+	 *char buf[64];
+	 */
 
-	signal (SIGINT, exit_program);		// Ctrl-C will cause a clean exit...
-	signal (SIGTERM, exit_program);		// and "kill"...
-	signal (SIGHUP, exit_program);		// and "kill -HUP" (hangup)...
-	signal (SIGKILL, exit_program);		// and just in case, "kill -KILL" (which cannot be trapped; but oh well)
+	signal (SIGINT, exit_program);		/* Ctrl-C will cause a clean exit...*/
+	signal (SIGTERM, exit_program);		/* and "kill"...*/
+	signal (SIGHUP, exit_program);		/* and "kill -HUP" (hangup)...*/
+	signal (SIGKILL, exit_program);		/* and just in case, "kill -KILL" (which cannot be trapped; but oh well)*/
 
-	// If no paramaters given, give the help screen.
-	//if (argc == 1)
-	//	HelpScreen ();
+	/* If no paramaters given, give the help screen.
+	 *if (argc == 1)
+	 *	HelpScreen ();
+	 */
 
 	/*
 	 * Settings in order of preference:
@@ -188,41 +191,42 @@ main (int argc, char **argv)
 	 * in the variable declaration...
 	 */
 
-	// Set the initial reporting parameters
+	/* Set the initial reporting parameters*/
 	report(RPT_NOTICE, "LCDd version %s starting", version );
 	report(RPT_INFO, "Built on %s, protocol version %s, API version %s",
 		build_date, protocol_version, api_version );
 
 	clear_settings();
 
-	// Read command line
+	/* Read command line*/
 	ESSENTIAL( process_command_line (argc, argv) );
 
-	// Read config file
-	// Set configfile to default value first unless changed before
+	/* Read config file
+	 * Set configfile to default value first unless changed before
+	 */
 	if (strcmp(configfile, UNSET_STR)==0)
 		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
 	ESSENTIAL( process_configfile (configfile) );
 
-	// Set default values
+	/* Set default values*/
 	set_default_settings();
 
-	// Set reporting values
+	/* Set reporting values*/
 	debug_level = reportLevel;
 	ESSENTIAL( set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
  	report( RPT_NOTICE, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
 
-	// Startup the server
+	/* Startup the server*/
 	ESSENTIAL( init_sockets() );
 	ESSENTIAL( init_drivers() );
 	ESSENTIAL( init_screens() );
 	ESSENTIAL( drop_privs(user) );
 
-	// Store it for exit_program()
+	/* Store it for exit_program()*/
 	serverStarted = 1;
 
 #ifndef DEBUG
-	// Now, go into daemon mode...
+	/* Now, go into daemon mode...*/
 	if (daemon_mode) {
 		report(RPT_NOTICE, "Server forking to background");
 		ESSENTIAL( daemonize() );
@@ -232,7 +236,7 @@ main (int argc, char **argv)
 #endif
 
 	do_mainloop();
-	// This loop never stops; we'll get out only with a signal...
+	/* This loop never stops; we'll get out only with a signal...*/
 
 	return 0;
 }
@@ -243,7 +247,7 @@ clear_settings ()
 {
 	int i;
 
-	//report( RPT_INFO, "clear_settings()" );
+	/*report( RPT_INFO, "clear_settings()" );*/
 
 	lcd_port = UNSET_INT;
 	strncpy( bind_addr, UNSET_STR, sizeof(bind_addr) );
@@ -275,15 +279,16 @@ process_command_line (int argc, char **argv)
 {
 	char  c;
 
-	//report( RPT_INFO, "process_command_line()" );
+	/*report( RPT_INFO, "process_command_line()" );*/
 
-	// analyze options here..
+	/* analyze options here..*/
 	while ((c = getopt(argc, argv, "a:p:d:hfib:w:c:u:sr:")) > 0) {
-		// FIXME: Setting of c in this loop clobbers s!
-		// s is set equivalent to c.
+		/* FIXME: Setting of c in this loop clobbers s!
+		 * s is set equivalent to c.
+		  */
 		switch(c) {
 	 		case 'd':
-				// Add to a list of drivers to be initialized later...
+				/* Add to a list of drivers to be initialized later...*/
 				if (num_drivers < MAX_DRIVERS) {
 					drivernames[num_drivers]	= malloc( strlen(optarg)+1 );
 					driverfilenames[num_drivers]	= malloc( strlen(optarg)+1 );
@@ -371,16 +376,17 @@ process_configfile ( char *configfile )
 {
 	int i;
 	char * s;
-	//char buf[64];
+	/*char buf[64];*/
 
-	//report( RPT_INFO, "process_configfile()" );
+	/*report( RPT_INFO, "process_configfile()" );*/
 
-	// Read server settings
+	/* Read server settings*/
 
 	config_read_file( configfile );
 
-//	if( debug_level == UNSET_INT )
-//		debug_level = config_get_int( "server", "debug", 0, UNSET_INT );
+/*	if( debug_level == UNSET_INT )
+ *		debug_level = config_get_int( "server", "debug", 0, UNSET_INT );
+ */
 
 	if( lcd_port == UNSET_INT )
 		lcd_port = config_get_int( "server", "port", 0, UNSET_INT );
@@ -430,7 +436,7 @@ process_configfile ( char *configfile )
 	}
 
 	if( reportToSyslog == UNSET_INT ) {
-		// Is the value set in the config file anyway ?
+		/* Is the value set in the config file anyway ?*/
 		if( strcmp( config_get_string( "server", "reportToSyslog", 0, "" ), "" ) != 0 ) {
 			reportToSyslog = config_get_bool( "server", "reportToSyslog", 0, 0 );
 		}
@@ -440,12 +446,13 @@ process_configfile ( char *configfile )
 	}
 
 
-	// Read drivers
+	/* Read drivers*/
 
-	// If drivers have been specified on the command line, then do not
-	// use the driver list from the config file.
+	 /* If drivers have been specified on the command line, then do not
+	 * use the driver list from the config file.
+	 */
 	if( num_drivers == 0 ) {
-		// read the drivernames
+		/* read the drivernames*/
 
 		while( 1 ) {
 			s = config_get_string( "server", "driver", num_drivers, "" );
@@ -464,8 +471,9 @@ process_configfile ( char *configfile )
 		}
 	}
 
-	// Now read the driver options that the server needs
-	// Drivers can read their own options later...
+	/* Now read the driver options that the server needs
+	 * Drivers can read their own options later...
+	 */
 	for( i=0; i<num_drivers; i ++ ) {
 		s = config_get_string( drivernames[i], "file", 0, "" );
 		driverfilenames[i] = realloc( driverfilenames[i], strlen(s)+1 );
@@ -483,12 +491,13 @@ process_configfile ( char *configfile )
 void
 set_default_settings()
 {
-	//report( RPT_INFO, "set_default_settings()" );
+	/*report( RPT_INFO, "set_default_settings()" );*/
 
-	// Set defaults into unfilled variables....
+	/* Set defaults into unfilled variables....*/
 
-//	if (debug_level == UNSET_INT)
-//		debug_level = DEFAULT_DEBUG_LEVEL;
+/*	if (debug_level == UNSET_INT)
+ *		debug_level = DEFAULT_DEBUG_LEVEL;
+ */
 	if (lcd_port == UNSET_INT)
 		lcd_port = DEFAULT_LCD_PORT;
 	if (strcmp( bind_addr, UNSET_STR ) == 0)
@@ -512,7 +521,7 @@ set_default_settings()
 		reportLevel = DEFAULT_REPORTLEVEL;
 
 
-	// Use default driver
+	/* Use default driver*/
 	if( num_drivers == 0 ) {
 		drivernames[0] = malloc(strlen(DEFAULT_DRIVER)+1);
 		driverfilenames[0] = malloc(1);
@@ -537,20 +546,21 @@ daemonize()
 	  case -1:
 		report(RPT_ERR, "Could not fork");
 		return -1;
-	  case 0: // We are the child
+	  case 0: /* We are the child*/
 		break;
-	  default: // We are the parent
-		usleep (1500000);		  // Wait for child to initialize
+	  default: /* We are the parent*/
+		usleep (1500000);		  /* Wait for child to initialize*/
 		exit (0);				  /* PARENT EXITS */
 	}
-	// This line removed because it eats error messages...
-	//setsid();                                       /* RELEASE TTY */
-	//
-	// After this point, as a daemon, no error messages should
-	// go to the console unless drastic; rather, they should go to syslog
-	//
-	// However, option processing is not yet done, nor is any initialization (!)
-	// So we must wait until the main loop.
+	/* This line removed because it eats error messages...
+	 * setsid();*/                                       /* RELEASE TTY */
+	/*
+	 * After this point, as a daemon, no error messages should
+	 * go to the console unless drastic; rather, they should go to syslog
+	 *
+	 * However, option processing is not yet done, nor is any initialization (!)
+	 * So we must wait until the main loop.
+	 */
 	return 0;
 }
 
@@ -565,7 +575,7 @@ init_sockets ()
 		return -1;
 	}
 
-	// Now init a bunch of required stuff...
+	/* Now init a bunch of required stuff...*/
 
 	if (client_init () < 0) {
 		report(RPT_ERR, "Error initializing client list");
@@ -584,23 +594,19 @@ init_drivers()
 
 	report( RPT_INFO, "init_drivers()" );
 
-	// FIXME: This sets s equal to a value related to i
-	// (bitshifted left?)  FIX FIX FIX ARGH....
-	//
-	// Go thru all drivers and initialize all of them
 	for (i = 0; i < num_drivers; i++) {
 
-		res = load_driver (drivernames[i], driverfilenames[i], driverargs[i]);
+		res = drivers_load_driver (drivernames[i], driverfilenames[i], driverargs[i]);
 		if (res >= 0) {
-			// Load went OK
+			/* Load went OK */
 
 			switch( res ) {
-			  case 0: // Driver does input only
+			  case 0: /* Driver does input only */
 			  	break;
-			  case 1: // Driver does output
+			  case 1: /* Driver does output */
 			  	output_loaded = 1;
 			  	break;
-			  case 2: // Driver does output in foreground (don't daemonize)
+			  case 2: /* Driver does output in foreground (don't daemonize) */
 			  	if ( !output_loaded ) {
 			  		daemon_mode = 0;
 			  	}
@@ -612,7 +618,7 @@ init_drivers()
 		}
 	}
 
-	// Do we have a running output driver ?
+	/* Do we have a running output driver ?*/
 	if ( output_loaded ) {
 		return 0;
 	} else {
@@ -652,7 +658,7 @@ init_screens ()
 		report(RPT_ERR, "Error initializing screen list");
 		return -1;
 	}
-	// Make sure the server screen shows up every once in a while..
+	/* Make sure the server screen shows up every once in a while..*/
 	if (server_screen_init () < 0) {
 		report(RPT_ERR, "Error initializing server screens");
 		return -1;
@@ -671,49 +677,54 @@ do_mainloop ()
 
 	report( RPT_INFO, "do_mainloop()" );
 
-	//char buf[64];
+	/*char buf[64];*/
 
-	// FIXME: s should still be null from initialization.... what's happening here?!
+	/* FIXME: s should still be null from initialization.... what's happening here?!*/
 	while (1) {
-		sock_poll_clients ();		// poll clients for input
-		parse_all_client_messages ();	// analyze input from network clients
-		handle_input ();		// handle key input from devices
+		sock_poll_clients ();		/* poll clients for input*/
+		parse_all_client_messages ();	/* analyze input from network clients*/
+		handle_input ();		/* handle key input from devices*/
 
-		// TODO:  Move this code to screenlist.c...
-		// ... it should just say "handle_screens();"
-		// Timer gets reset by screenlist_next()
+		/* TODO:  Move this code to screenlist.c...
+		 * ... it should just say "handle_screens();"
+		 * Timer gets reset by screenlist_next()
+		 */
 
 		timer++;
 
-		//if (s == NULL)
-		//	s = screenlist_current();
+		/*if (s == NULL)
+		 *	s = screenlist_current();
 
-		// this is here because s is getting overwritten...
-		//if (s != screenlist_current()) {
-		//	report(RPT_DEBUG, "internal error! s was found overwritten at main.c:637");
-		//	s = screenlist_current();
-		//}
-		//
-		//TODO: THIS MUST BE FIXED..... WHY is s getting overwritten?
-		// s is a local, it is never passed or assigned to anywhere.
-		// So SOMETHING is going haywire and clobbering memory....
+		 * this is here because s is getting overwritten...
+		 *if (s != screenlist_current()) {
+		 *	report(RPT_DEBUG, "internal error! s was found overwritten at main.c:637");
+		 *	s = screenlist_current();
+		 *}
+		 */
+
+		/*TODO: THIS MUST BE FIXED..... WHY is s getting overwritten?
+		 * s is a local, it is never passed or assigned to anywhere.
+		 * So SOMETHING is going haywire and clobbering memory....
+		 */
 
 		if (s && (timer >= s->duration))
 			screenlist_next ();
 
-		// Just in case it gets out of hand...
+		/* Just in case it gets out of hand...*/
 		if (timer >= MAX_TIMER)
 			timer = 0;
 
-		// Update server screen with the right number
-		// of clients and screens...
-		//
-		// TODO: Move this call to every client connection
-		//       and every screen add...
+		/* Update server screen with the right number
+		 * of clients and screens...
+		 */
+
+		/* TODO: Move this call to every client connection
+		 *       and every screen add...
+		 */
 
 		update_server_screen (timer);
 
-		// draw the current scren
+		/* draw the current scren*/
 
 		if ((s = screenlist_current ()) != NULL)
 
@@ -723,9 +734,10 @@ do_mainloop ()
 
 		usleep (TIME_UNIT);
 
-		//Check to see if the screen has a timeout value, if it does
-		//decrese it and then check to see if it has excpired.
-		//Remove if expired.
+		/* Check to see if the screen has a timeout value, if it does
+		 * decrese it and then check to see if it has excpired.
+		 * Remove if expired.
+		 */
 		if((message = malloc(256)) == NULL)
 			report(RPT_ERR, "Error allocating message string");
 		else {
@@ -756,7 +768,7 @@ do_mainloop ()
 		}
 	}
 
-	// Quit!
+	/* Quit! */
 	exit_program (0);
 }
 
@@ -767,8 +779,9 @@ exit_program (int val)
 
 	report( RPT_INFO, "exit_program()" );
 
-	// TODO: These things shouldn't be so interdependent.  The order
-	// things are shut down in shouldn't matter...
+	/* TODO: These things shouldn't be so interdependent.  The order
+	 * things are shut down in shouldn't matter...
+	 */
 
 	strncpy(buf, "Server shutting down on ", sizeof (buf) );
 	switch(val) {
@@ -776,26 +789,26 @@ exit_program (int val)
 		case 2: strcat(buf, "SIGINT"); break;
 		case 15: strcat(buf, "SIGTERM"); break;
 		default: snprintf(buf, sizeof(buf), "Server shutting down on signal %d", val); break;
-			 // Other values should not be seen, but just in case..
+			 /* Other values should not be seen, but just in case.. */
 	}
 
-	report(RPT_NOTICE, buf);	// report it
+	report(RPT_NOTICE, buf);	/* report it */
 
-	// Set emergency reporting and flush all messages if not done already.
+	/* Set emergency reporting and flush all messages if not done already. */
 	if( reportLevel == UNSET_INT )
 		reportLevel = DEFAULT_REPORTLEVEL;
 	if( reportToSyslog == UNSET_INT )
 		reportLevel = DEFAULT_REPORTLEVEL;
 	set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
 
-	// Shutdown things if server start was complete
+	/* Shutdown things if server start was complete */
 	if( serverStarted ) {
-		goodbye_screen ();		// display goodbye screen on LCD display
-		unload_all_drivers ();		// release driver memory and file descriptors
+		goodbye_screen ();		/* display goodbye screen on LCD display */
+		drivers_unload_all ();		/* release driver memory and file descriptors */
 
-		client_shutdown ();		// shutdown clients (must come first)
-		screenlist_shutdown ();		// shutdown screens (must come after client_shutdown)
-		sock_close_all ();		// close all open sockets (must come after client_shutdown)
+		client_shutdown ();		/* shutdown clients (must come first) */
+		screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
+		sock_close_all ();		/* close all open sockets (must come after client_shutdown) */
 	}
 
 	exit (0);
@@ -805,39 +818,40 @@ exit_program (int val)
 void
 HelpScreen ()
 {
-	// Help screen is printed to stdout on purpose. No reason to have
-	// this in syslog...
+	/* Help screen is printed to stdout on purpose. No reason to have
+	 * this in syslog...
+	 */
 	report( RPT_INFO, "HelpScreen()" );
 
-	printf ("\nLCDd Server Daemon (part of lcdproc), %s\n", version);
-	printf ("Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
-	printf ("This program is freely redistributable under the terms of the GNU Public License\n\n");
-	printf ("Usage: LCDd [ -hfiws ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \\\n\t[ -p <port> ] [ -u <user> ] [ -w <time> ] [ -r <level> ]\n\n");
-	printf ("Available options are:\n");
+	fprintf (stdout, "\nLCDd Server Daemon (part of lcdproc), %s\n", version);
+	fprintf (stdout, "Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
+	fprintf (stdout, "This program is freely redistributable under the terms of the GNU Public License\n\n");
+	fprintf (stdout, "Usage: LCDd [ -hfiws ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \\\n\t[ -p <port> ] [ -u <user> ] [ -w <time> ] [ -r <level> ]\n\n");
+	fprintf (stdout, "Available options are:\n");
 
-	printf ("\t-h\t\tDisplay this help screen\n");
-	printf ("\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
-	//printf ("\t-t\t\tSelect an LCD size (20x4, 16x2, etc...)\n");
-	printf ("\t-d <driver>\tAdd a driver to use (output only to first)\n");
-	//printf ("\t\t\tCFontz, curses, HD44780, irmanin, joy,\n\t\t\tMtxOrb, LB216, text\n");
-	//printf ("\t\t\t(args will be passed to the driver for init)\n");
-	printf ("\t-f\t\tRun in the foreground\n");
-	//printf ("\t-b\t--backlight <mode>\n\t\t\tSet backlight mode (on, off, open)\n");
-	printf ("\t-i\t\tDisable showing of the main LCDproc server screen\n");
-	printf ("\t-w <waittime>\tTime to pause at each screen (in seconds)\n");
-	printf ("\t-a <addr>\tNetwork (IP) address to bind to\n");
-	printf ("\t-p <port>\tNetwork port to listen for connections on\n");
-	printf ("\t-u <user>\tUser to run as\n");
-	printf ("\t-s\t\tOutput messages to syslog\n");
-	printf ("\t-r <level>\tReport level (default=2)\n");
+	fprintf (stdout, "\t-h\t\tDisplay this help screen\n");
+	fprintf (stdout, "\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
+	/*fprintf (stdout, "\t-t\t\tSelect an LCD size (20x4, 16x2, etc...)\n");*/
+	fprintf (stdout, "\t-d <driver>\tAdd a driver to use (output only to first)\n");
+	/*fprintf (stdout, "\t\t\tCFontz, curses, HD44780, irmanin, joy,\n\t\t\tMtxOrb, LB216, text\n");*/
+	/*fprintf (stdout, "\t\t\t(args will be passed to the driver for init)\n");*/
+	fprintf (stdout, "\t-f\t\tRun in the foreground\n");
+	/*fprintf (stdout, "\t-b\t--backlight <mode>\n\t\t\tSet backlight mode (on, off, open)\n");*/
+	fprintf (stdout, "\t-i\t\tDisable showing of the main LCDproc server screen\n");
+	fprintf (stdout, "\t-w <waittime>\tTime to pause at each screen (in seconds)\n");
+	fprintf (stdout, "\t-a <addr>\tNetwork (IP) address to bind to\n");
+	fprintf (stdout, "\t-p <port>\tNetwork port to listen for connections on\n");
+	fprintf (stdout, "\t-u <user>\tUser to run as\n");
+	fprintf (stdout, "\t-s\t\tOutput messages to syslog\n");
+	fprintf (stdout, "\t-r <level>\tReport level (default=2)\n");
 
-	printf ("\nCurrently available drivers:\n");
+	fprintf (stdout, "\nCurrently available drivers:\n");
 	lcd_list_drivers();
 
-	//printf ("\tHelp on each driver's parameters are obtained upon request:\n\t\t\"LCDd -d driver --help\"\n");
-	//printf ("Example:\n");
-	//printf ("\tLCDd -d MtxOrb \"--device /dev/lcd --contrast 200\" -d joy\n");
-	printf ("\n");
+	/*fprintf (stdout, "\tHelp on each driver's parameters are obtained upon request:\n\t\t\"LCDd -d driver --help\"\n");*/
+	/*fprintf (stdout, "Example:\n");*/
+	/*fprintf (stdout, "\tLCDd -d MtxOrb \"--device /dev/lcd --contrast 200\" -d joy\n");*/
+	fprintf (stdout, "\n");
 
 	exit (0);
 }

@@ -1,31 +1,34 @@
 #ifndef LCD_CURSES_H
 #define LCD_CURSES_H
 
-extern lcd_logical_driver *curses_drv;
+#include "lcd.h"
 
-int curses_drv_init (struct lcd_logical_driver *driver, char *args);
-void curses_drv_backlight (int on);
-void curses_drv_close ();
-void curses_drv_clear ();
-void curses_drv_flush ();
-void curses_drv_string (int x, int y, char string[]);
-void curses_drv_chr (int x, int y, char c);
-void curses_drv_vbar (int x, int len);
-void curses_drv_hbar (int x, int y, int len);
-void curses_drv_icon (int which, char dest);
-void curses_drv_flush ();
-void curses_drv_flush_box (int lft, int top, int rgt, int bot);
-void curses_drv_draw_frame (char *dat);
-char curses_drv_getkey ();
-void curses_drv_init_num ();
-void curses_drv_num (int x, int num);
-void curses_drv_heartbeat (int type);
+              int  curses_drv_init (Driver * drvthis, char *args);
+MODULE_EXPORT void curses_drv_close (Driver *drvthis);
+MODULE_EXPORT int  curses_drv_width (Driver *drvthis);
+MODULE_EXPORT int  curses_drv_height (Driver *drvthis);
+MODULE_EXPORT void curses_drv_clear (Driver *drvthis);
+MODULE_EXPORT void curses_drv_flush (Driver *drvthis);
+MODULE_EXPORT void curses_drv_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void curses_drv_chr (Driver *drvthis, int x, int y, char c);
+
+MODULE_EXPORT void curses_drv_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void curses_drv_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void curses_drv_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void curses_drv_heartbeat (Driver *drvthis, int type);
+MODULE_EXPORT void curses_drv_icon (Driver *drvthis, int which, char dest);
+
+MODULE_EXPORT void curses_drv_backlight (Driver *drvthis, int on);
+
+MODULE_EXPORT char curses_drv_getkey (Driver *drvthis);
+
+MODULE_EXPORT void curses_drv_init_num (Driver *drvthis);
 
 /*Default settings for config file parsing*/
 #define CONF_DEF_FOREGR "blue"
 #define CONF_DEF_BACKGR "cyan"
 #define CONF_DEF_BACKLIGHT "red"
-#define CONF_DEF_SIZE "20x4"
+#define CONF_DEF_SIZE "20x4"  // currently not used, LCD_DEFAULT_WIDTH etc. is used
 #define CONF_DEF_TOP_LEFT_X 7
 #define CONF_DEF_TOP_LEFT_Y 7
 

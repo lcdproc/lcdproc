@@ -36,6 +36,7 @@
 
 #include "lcd.h"
 
+/*
 static int lcd_drv_init (lcd_logical_driver * driver, char *args);
 static void lcd_drv_close ();
 static void lcd_drv_clear ();
@@ -59,6 +60,7 @@ static char lcd_drv_getkey ();
 static char lcd_drv_getkey_loop ();
 static char *lcd_drv_getinfo ();
 static void lcd_drv_heartbeat (int type);
+*/
 
 /*
  * Add all of the driver's header files in...
@@ -153,7 +155,8 @@ static void lcd_drv_heartbeat (int type);
 
 // TODO: Make a Windows server, and clients...?
 
-lcd_logical_driver lcd, *lcd_root = NULL, *lcd_ptr = NULL;
+//Driver *lcd_root = NULL;
+//Driver *lcd_ptr = NULL;
 
 // TODO: Add multiple names for the same driver?
 //
@@ -267,15 +270,20 @@ lcd_list_drivers (void) {
 //
 // This was eliminated; everything
 // done here is to be replaced by the use of lcd_add_driver()...
+
+/*
 int
 lcd_init (char *args)
 {
 	return 0;
 }
+*/
 
 // This sets up all of the "wrapper" driver functions
 // which call all of the drivers in turn.
 //
+
+/*
 static int
 lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 {
@@ -379,12 +387,14 @@ lcd_drv_patch_init (struct lcd_logical_driver *driver)
 
 	return 0;
 }
+*/
 
 /*
  * This function can be replaced later with something
  * that utilizes the results of dynamic library loading
  *
  */
+
 
 void *
 lcd_find_init (char *driver) {
@@ -401,11 +411,13 @@ lcd_find_init (char *driver) {
 	return NULL;
 }
 
+
 // TODO:  lcd_remove_driver()
 
-struct lcd_logical_driver *
+/*
+Driver *
 lcd_allocate_driver () {
-	struct lcd_logical_driver *driver;
+	Driver *driver;
 	//int driver_size;
 
 	// This bit of fakery allows us to use lcd as the first
@@ -414,7 +426,7 @@ lcd_allocate_driver () {
 
 #define FirstTime (lcd_ptr->framebuf == NULL)
 
-	if ((driver = malloc(sizeof(lcd_logical_driver))) == NULL) {
+	if ((driver = malloc(sizeof(Driver))) == NULL) {
 		syslog(LOG_ERR, "error allocating driver space!");
 		return NULL;
 	}
@@ -431,6 +443,7 @@ lcd_allocate_driver () {
 // This initializes the specified driver and sends parameters to
 // it.  This is the function which calls, for example,
 // MtxOrb_init.  The specifics come from the drivers[] array.
+
 
 static char (*main_getkey) () = NULL;
 
@@ -507,19 +520,7 @@ lcd_add_driver (char *driver, char *args)
 	}
 	return -1;
 }
-
-// TODO: Put lcd_shutdown in the shutdown function...
-int
-lcd_shutdown ()
-{
-	//lcd_logical_driver *driver;
-
-	// This does not shutdown any input sources;
-	// is that sufficient?
-	lcd_root->close ();
-
-	return 0;
-}
+*/
 
 //////////////////////////////////////////////////////////////////////
 // All functions below here call their respective driver functions...
@@ -563,6 +564,7 @@ lcd_shutdown ()
 // lcd_drv_getkey ()
 // lcd_drv_getinfo ()
 
+/*
 static void
 lcd_drv_close ()
 {
@@ -686,9 +688,10 @@ lcd_drv_getkey ()
 // This loops through all defined getkeys, returning
 // the first input that it finds, if any.
 
+
 static char
 lcd_drv_getkey_loop () {
-	lcd_logical_driver *driver;
+	Driver *driver;
 	char c;
 
 	if ((c = main_getkey()) != 0)
@@ -708,3 +711,4 @@ lcd_drv_heartbeat (int type)
 	;
 }
 
+*/

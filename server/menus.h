@@ -6,7 +6,6 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
  *
  */
 
@@ -15,14 +14,14 @@
 
 #include "menu.h"
 
-// These probably don't need to be defined here...
+/* These probably don't need to be defined here... */
 extern menu_item main_menu[];
 extern menu_item options_menu[];
 extern menu_item screens_menu[];
 extern menu_item shutdown_menu[];
 extern menu_item Backlight_menu[];
 
-// Brings up the main menu...
+/* Brings up the main menu... */
 void server_menu ();
 
 #endif

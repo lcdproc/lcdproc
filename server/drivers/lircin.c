@@ -17,7 +17,6 @@
 #define __u32 unsigned int
 #define __u8 unsigned char
 
-#include "shared/debug.h"
 #include "shared/str.h"
 
 #define NAME_LENGTH 128
@@ -33,11 +32,16 @@ struct sockaddr_un addr;
 
 static struct lirc_config *config;
 
+// Vars for the server core
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 0;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "LB216_";
+
+
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// Base "class" to derive from ///////////////////////
 //////////////////////////////////////////////////////////////////////////
-
-lcd_logical_driver *lircin;
 
 //void sigterm(int sig)
 //{
@@ -46,8 +50,8 @@ lcd_logical_driver *lircin;
 //  raise(sig);
 //}
 
-void
-lircin_close ()
+MODULE_EXPORT void
+lircin_close (Driver * drvthis)
 {
 	lirc_freeconfig (config);
 	lirc_deinit ();
@@ -58,8 +62,8 @@ lircin_close ()
 //
 // Return 0 for "nothing available".
 //
-char
-lircin_getkey ()
+MODULE_EXPORT char
+lircin_getkey (Driver * drvthis)
 {
 	char key;
 	char *ir, *cmd;
@@ -84,15 +88,19 @@ lircin_getkey ()
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
 int
-lircin_init (struct lcd_logical_driver *driver, char *args)
+lircin_init (Driver * drvthis, char *args)
 {
 
 /* assign funktions */
 
-	lircin = driver;
+	// Set variables for server
+	drvthis->api_version = api_version;
+	drvthis->stay_in_foreground = &stay_in_foreground;
+	drvthis->supports_multiple = &supports_multiple;
 
-	driver->getkey = lircin_getkey;
-	driver->close = lircin_close;
+	// Set the functions the driver supports
+	drvthis->getkey = lircin_getkey;
+	drvthis->close = lircin_close;
 
 /* open socket to lirc */
 
@@ -113,5 +121,5 @@ lircin_init (struct lcd_logical_driver *driver, char *args)
 	fcntl (fd, F_SETFL, O_NONBLOCK);
 	fcntl (fd, F_SETFD, FD_CLOEXEC);
 
-	return 1;						  // 200 is arbitrary.  (must be 1 or more)
+	return 0;
 }

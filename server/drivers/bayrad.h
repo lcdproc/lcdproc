@@ -8,24 +8,28 @@
 #ifndef _BAYRAD_H
 #define _BAYRAD_H
 
-extern lcd_logical_driver *bayrad;
+#include "lcd.h"
 
-int bayrad_init(struct lcd_logical_driver *driver, char *args);
-void bayrad_close();
-void bayrad_clear();
-void bayrad_flush();
-void bayrad_string(int x, int y, char string[]);
-void bayrad_chr(int x, int y, char c);
-int bayrad_contrast(int contrast);
-void bayrad_backlight(int on);
-void bayrad_vbar(int x, int len);
-void bayrad_init_vbar();
-void bayrad_hbar(int x, int y, int len);
-void bayrad_init_hbar();
-void bayrad_set_char(int n, char *dat);
-void bayrad_icon(int which, char dest);
-void bayrad_flush_box(int lft, int top, int rgt, int bot);
-void bayrad_draw_frame(char *dat);
-char bayrad_getkey();
+              int  bayrad_init(Driver * drvthis, char *args);
+MODULE_EXPORT void bayrad_close(Driver * drvthis);
+MODULE_EXPORT int  bayrad_width(Driver * drvthis);
+MODULE_EXPORT int  bayrad_height(Driver * drvthis);
+MODULE_EXPORT void bayrad_clear(Driver * drvthis);
+MODULE_EXPORT void bayrad_flush(Driver * drvthis);
+MODULE_EXPORT void bayrad_string(Driver * drvthis, int x, int y, char string[]);
+MODULE_EXPORT void bayrad_chr(Driver * drvthis, int x, int y, char c);
+
+MODULE_EXPORT void bayrad_vbar(Driver * drvthis, int x, int len);
+MODULE_EXPORT void bayrad_hbar(Driver * drvthis, int x, int y, int len);
+MODULE_EXPORT void bayrad_icon(Driver * drvthis, int which, char dest);
+
+MODULE_EXPORT void bayrad_set_char(Driver * drvthis, int n, char *dat);
+
+MODULE_EXPORT void bayrad_backlight(Driver * drvthis, int promille);
+
+MODULE_EXPORT char bayrad_getkey(Driver * drvthis);
+
+MODULE_EXPORT void bayrad_init_vbar(Driver * drvthis);
+MODULE_EXPORT void bayrad_init_hbar(Driver * drvthis);
 
 #endif

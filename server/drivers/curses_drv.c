@@ -22,13 +22,13 @@
 
 /*
 Different implementations of (n)curses available on:
-OpenBSD: 
+OpenBSD:
  	http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libcurses/
 	ncurses
-NetBSD: 
+NetBSD:
 	http://cvsweb.netbsd.org/bsdweb.cgi/basesrc/lib/libcurses/
 	curses : does not define ACS_S3, ACS_S7, wcolor_set() or redrawwin().
-	it is possible to make a: 
+	it is possible to make a:
 		#define ACS_S3 (_acs_char['p'])
 		#define ACS_S7 (_acs_char['r'])
 FreeBSD:
@@ -38,7 +38,7 @@ RedHat, Debian, (most distros) Linux:
 	ncurses
 SunOS (5.5.1):
 	curses : does not define ACS_S3, ACS_S7 or wcolor_set().
-	it is possible to make a: 
+	it is possible to make a:
 		#define ACS_S3 (acs_map['p'])
 		#define ACS_S7 (acs_map['r'])
 */
@@ -63,11 +63,10 @@ SunOS (5.5.1):
 
 #include "shared/str.h"
 
-#include "render.h"
 #include "lcd.h"
 #include "curses_drv.h"
-#include "shared/report.h"
-#include "configfile.h"
+#include "report.h"
+//#include "configfile.h"
 
 // ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
 // However, ACS_S3 and ACS_S7 are not; these definitions were created to support
@@ -85,7 +84,7 @@ SunOS (5.5.1):
 #  else
 #   define ACS_S3 ACS_S1    // Last resort
 #  endif
-# endif 
+# endif
 #endif
 
 #ifndef ACS_S7
@@ -97,17 +96,16 @@ SunOS (5.5.1):
 #  else
 #   define ACS_S7 ACS_S9    // Last resort
 #  endif
-# endif 
+# endif
 #endif
-
-lcd_logical_driver *curses_drv;
 
 // Character used for title bars...
 #define PAD '#'
 // #define PAD ACS_BLOCK
 
-int ELLIPSIS = 7;
-void curses_drv_restore_screen (void);
+int ELLIPSIS = 7;  // Should this go in PrivateData ?
+void curses_drv_restore_screen (Driver *drvthis);
+
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// For Curses Terminal Output ////////////////////////
@@ -117,7 +115,7 @@ static char icon_char = '@';
 static WINDOW *lcd_win;
 
 /*this is really ugly ;) but works ;)*/
-static char num_icon [10][4][3] = 	{{{' ','_',' '}, /*0*/
+static char num_icon [10][4][3] =	{{{' ','_',' '}, /*0*/
 					  {'|',' ','|'},
 					  {'|','_','|'},
 					  {' ',' ',' '}},
@@ -222,13 +220,22 @@ set_background_color (char * buf) {
 #define TOP_LEFT_X 7
 #define TOP_LEFT_Y 7
 
-int current_color_pair, current_border_pair, curses_backlight_state = 0;
+static int current_color_pair, current_border_pair, curses_backlight_state = 0;
+static int width, height;
+
+
+// Vars for the server core
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 1;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "curses_drv_";
+
 
 int
-curses_drv_init (struct lcd_logical_driver *driver, char *args)
+curses_drv_init (Driver *drvthis, char *args)
 {
 	char buf[256];
-	int wid=0, hgt=0;
+	int w, h;
 
 	// Colors....
 	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
@@ -239,26 +246,34 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	int	screen_begx = CONF_DEF_TOP_LEFT_X,
 		screen_begy = CONF_DEF_TOP_LEFT_Y;
 
-	curses_drv = driver;
-
-	// TODO: replace DriverName with driver->name when that field exists.
-	#define DriverName "curses"
+	// Set display sizes
+	if( drvthis->request_display_width() > 0
+	&& drvthis->request_display_height() > 0 ) {
+		// Use size from primary driver
+		width = drvthis->request_display_width();
+		height = drvthis->request_display_height();
+	}
+	else {
+		// Use default size
+		width = LCD_DEFAULT_WIDTH;
+		height = LCD_DEFAULT_HEIGHT;
+	}
 
 	/*Get settings from config file*/
 
 	/*Get color settings*/
 	/*foreground color*/
-	strncpy(buf, config_get_string ( DriverName , "foreground" , 0 , CONF_DEF_FOREGR),sizeof(buf));
+	strncpy(buf, drvthis->config_get_string ( drvthis->name , "foreground" , 0 , CONF_DEF_FOREGR),sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 	fore_color = set_foreground_color(buf);
 	debug( RPT_DEBUG, "CURSES: using foreground color: %s", buf);
 	/*background color*/
-	strncpy(buf, config_get_string ( DriverName , "background" , 0 , CONF_DEF_BACKGR),sizeof(buf));
+	strncpy(buf, drvthis->config_get_string ( drvthis->name , "background" , 0 , CONF_DEF_BACKGR),sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 	back_color = set_background_color(buf);
 	debug( RPT_DEBUG, "CURSES: using background color: %s", buf);
 	/*backlight color*/
-	strncpy(buf, config_get_string ( DriverName , "backlight" , 0 , CONF_DEF_BACKLIGHT), sizeof(buf));
+	strncpy(buf, drvthis->config_get_string ( drvthis->name , "backlight" , 0 , CONF_DEF_BACKLIGHT), sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 	backlight_color = set_background_color(buf);
 	debug( RPT_DEBUG, "CURSES: using backlight color: %s", buf);
@@ -267,25 +282,28 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	//      Or maybe don't do so? - Rene Wagner
 
 	/*Get size settings*/
-	strncpy(buf, config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE), sizeof(buf));
+	strncpy(buf, drvthis->config_get_string ( drvthis->name , "size" , 0 , CONF_DEF_SIZE), sizeof(buf));
 	buf[sizeof(buf)-1]=0;
-	if( sscanf(buf , "%dx%d", &wid, &hgt ) != 2
-	|| (wid <= 0)
-	|| (hgt <= 0)) {
-		report (RPT_WARNING, "CURSES: Cannot read size: %s. Using default value %s.\n", buf, CONF_DEF_SIZE);
-		sscanf( CONF_DEF_SIZE , "%dx%d", &wid, &hgt );
+	if( sscanf(buf , "%dx%d", &w, &h ) != 2
+	|| (w <= 0)
+	|| (h <= 0)) {
+		report (RPT_WARNING, "CURSES: Cannot read size: %s. Using default value.\n", buf);
+		//sscanf( CONF_DEF_SIZE , "%dx%d", &width, &height );
+		// default value is already set
 	}
-	driver->wid = wid;
-	driver->hgt = hgt;
+	else {
+		width = w;
+		height = h;
+	}
 
 	/*Get position settings*/
-	if (0<=config_get_int ( DriverName , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) && config_get_int ( DriverName , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) <= 255) {
-		screen_begx = config_get_int ( DriverName , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X);
+	if (0<=drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) && drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) <= 255) {
+		screen_begx = drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X);
 	} else {
 		report (RPT_WARNING, "CURSES: topleftx must between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_X);
 	}
-	if (0<=config_get_int ( DriverName , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) && config_get_int ( DriverName , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) <= 255) {
-		screen_begy = config_get_int ( DriverName , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y);
+	if (0<=drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) && drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) <= 255) {
+		screen_begy = drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y);
 	} else {
 		report (RPT_WARNING, "CURSES: toplefty must between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_Y);
 	}
@@ -302,8 +320,8 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	intrflush (stdscr, FALSE);
 	keypad (stdscr, TRUE);
 
-	lcd_win = newwin(curses_drv->hgt + 2,
-			 curses_drv->wid + 2,
+	lcd_win = newwin(height + 2,
+			 width + 2,
 			 screen_begy,
 			 screen_begx);
 
@@ -325,38 +343,41 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 		current_border_pair = 3;
 	}
 
-	curses_drv_clear ();
+	curses_drv_clear (drvthis);
 
-	driver->daemonize = 0; // don't daemonize...
+	// Set variables for server
+	drvthis->api_version = api_version;
+	drvthis->stay_in_foreground = &stay_in_foreground;
+	drvthis->supports_multiple = &supports_multiple;
 
-	// Override output functions...
-	driver->clear = curses_drv_clear;
-	driver->string = curses_drv_string;
-	driver->chr = curses_drv_chr;
-	driver->vbar = curses_drv_vbar;
-	//driver->init_vbar = NULL;
-	driver->hbar = curses_drv_hbar;
-	//driver->init_hbar = NULL;
-	driver->num = curses_drv_num;
-	driver->init_num = curses_drv_init_num;
+	// Set the functions the driver supports
+	drvthis->init = curses_drv_init;
+	drvthis->close = curses_drv_close;
+	drvthis->width = curses_drv_width;
+	drvthis->height = curses_drv_height;
+	drvthis->clear = curses_drv_clear;
+	drvthis->flush = curses_drv_flush;
+	drvthis->string = curses_drv_string;
+	drvthis->chr = curses_drv_chr;
 
-	driver->init = curses_drv_init;
-	driver->close = curses_drv_close;
-	driver->flush = curses_drv_flush;
-	driver->flush_box = curses_drv_flush_box;
-	//driver->contrast = NULL;
-	driver->backlight = curses_drv_backlight;
-	//driver->set_char = NULL;
-	driver->icon = curses_drv_icon;
-	driver->draw_frame = curses_drv_draw_frame;
+	drvthis->old_vbar = curses_drv_vbar;
+	//drvthis->init_vbar = NULL;
+	drvthis->old_hbar = curses_drv_hbar;
+	//drvthis->init_hbar = NULL;
+	drvthis->num = curses_drv_num;
+	//drvthis->init_num = curses_drv_init_num;
 
-	driver->getkey = curses_drv_getkey;
-	driver->heartbeat = curses_drv_heartbeat;
+	drvthis->backlight = curses_drv_backlight;
+	//drvthis->set_char = NULL;
+	drvthis->old_icon = curses_drv_icon;  // NEEDS TO BE CHANGED !
+
+	drvthis->getkey = curses_drv_getkey;
+	drvthis->heartbeat = curses_drv_heartbeat;
 
 	// Change the character used for "..."
 	ELLIPSIS = '~';
 
-	return 200;						  // 200 is arbitrary.  (must be 1 or more)
+	return 0;
 }
 
 static void
@@ -383,8 +404,8 @@ curses_drv_wborder (WINDOW *win) {
 #endif
 }
 
-void
-curses_drv_close ()
+MODULE_EXPORT void
+curses_drv_close (Driver *drvthis)
 {
 	// Note that the program leaves a screen on
 	// the display to be left behind after closing;
@@ -397,62 +418,69 @@ curses_drv_close ()
 	move (0, 0);
 	endwin ();
 	curs_set(1);
+}
 
-	if (curses_drv->framebuf != NULL)
-		free (curses_drv->framebuf);
+/////////////////////////////////////////////////////////////////
+// Returns the display width
+//
+MODULE_EXPORT int
+curses_drv_width (Driver *drvthis)
+{
+	return width;
+}
 
-	curses_drv->framebuf = NULL;
-
+/////////////////////////////////////////////////////////////////
+// Returns the display height
+//
+MODULE_EXPORT int
+curses_drv_height (Driver *drvthis)
+{
+	return height;
 }
 
 /////////////////////////////////////////////////////////////////
 // Clears the LCD screen
 //
-void
-curses_drv_clear ()
+MODULE_EXPORT void
+curses_drv_clear (Driver *drvthis)
 {
 	wbkgdset(lcd_win, COLOR_PAIR(current_color_pair) | ' ');
 	curses_drv_wborder (lcd_win);
 	werase (lcd_win);
 }
 
-#define ValidX(x) { if ((x) > curses_drv->wid) { (x) = curses_drv->wid; } else (x) = (x) < 1 ? 1 : x; }
-#define ValidY(y) { if ((y) > curses_drv->hgt) { (y) = curses_drv->hgt; } else (y) = (y) < 1 ? 1 : y; }
+#define ValidX(x) { if ((x) > width) { (x) = width; } else (x) = (x) < 1 ? 1 : x; }
+#define ValidY(y) { if ((y) > height) { (y) = height; } else (y) = (y) < 1 ? 1 : y; }
 
-void
-curses_drv_backlight (int on)
+MODULE_EXPORT void
+curses_drv_backlight (Driver *drvthis, int promille)
 {
-	if (curses_backlight_state == on)
+	if (curses_backlight_state == promille)
 		return;
 
 	// no backlight: pairs 2, 3
 	// backlight:    pairs 4, 5
 
-	switch (on) {
-		case 0:
-			curses_backlight_state = 0;
-			current_color_pair = 2;
-			current_border_pair = 3;
-			break;
-		case 1:
-			curses_backlight_state = 1;
-			current_color_pair = 4;
-			current_border_pair = 5;
-			break;
-		default:
-			return;
-			break;
+	curses_backlight_state = promille;
+
+	if (promille) {
+		current_color_pair = 4;
+		current_border_pair = 5;
+	}
+	else {
+		current_color_pair = 2;
+		current_border_pair = 3;
 	}
 
-	curses_drv_clear();
+	curses_drv_clear(drvthis);
 }
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
-void
-curses_drv_string (int x, int y, char *string)
+MODULE_EXPORT void
+curses_drv_string (Driver *drvthis, int x, int y, char *string)
 {
 	//int i;
 	unsigned char *p;
@@ -483,8 +511,8 @@ curses_drv_string (int x, int y, char *string)
 // Prints a character on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
-void
-curses_drv_chr (int x, int y, char c)
+MODULE_EXPORT void
+curses_drv_chr (Driver *drvthis, int x, int y, char c)
 {
 	int ch;
 
@@ -504,7 +532,7 @@ curses_drv_chr (int x, int y, char c)
 
 	if ((ch = getch ()) != ERR)
 		if (ch == 0x0C) {
-			curses_drv_restore_screen();
+			curses_drv_restore_screen(drvthis);
 			ungetch(ch);
 		}
 
@@ -514,8 +542,8 @@ curses_drv_chr (int x, int y, char c)
 /////////////////////////////////////////////////////////////////
 // Sets up for big numbers.
 //
-void
-curses_drv_init_num ()
+MODULE_EXPORT void
+curses_drv_init_num (Driver *drvthis)
 {
 	;
 }
@@ -523,47 +551,47 @@ curses_drv_init_num ()
 /////////////////////////////////////////////////////////////////
 // Writes a big number.
 //
-void
-curses_drv_num (int x, int num)
+MODULE_EXPORT void
+curses_drv_num (Driver *drvthis, int x, int num)
 {
 	int y, dx;
 
 	for (y = 1; y < 5; y++)
 		for (dx = 0; dx < 3; dx++)
-			curses_drv_chr (x + dx, y, num_icon[num][y-1][dx]);
+			curses_drv_chr (drvthis, x + dx, y, num_icon[num][y-1][dx]);
 //   printf("%1d",num);
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar; erases entire column onscreen.
 //
-void
-curses_drv_vbar (int x, int len)
+MODULE_EXPORT void
+curses_drv_vbar (Driver *drvthis, int x, int len)
 {
 	int y;
 	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
 
 	ValidX(x);
 
-#define MAX_LINES (curses_drv->cellhgt * curses_drv->hgt)
+#define MAX_LINES (LCD_DEFAULT_CELLHEIGHT * height)
 
 	len = len > (MAX_LINES - 1) ? (MAX_LINES - 1) : len;
 	len = len < 0 ? 0 : len;
 
 	// len is the length of the bar (in pixels/scanlines)
-	// y is one character line (cellhgt pixels/scanlines)
+	// y is one character line (cellheight pixels/scanlines)
 
-	for (y = curses_drv->hgt; y > 0 && len > 0; y--) {
+	for (y = height; y > 0 && len > 0; y--) {
 
-		if (len >= curses_drv->cellhgt) {
+		if (len >= LCD_DEFAULT_CELLHEIGHT) {
 			// write a "full" block to the screen...
 			//curses_drv_chr (x, y, '8');
-			curses_drv_chr (x, y, ACS_BLOCK);
-			len -= curses_drv->cellhgt;
+			curses_drv_chr (drvthis, x, y, ACS_BLOCK);
+			len -= LCD_DEFAULT_CELLHEIGHT;
 		}
 		else {
 			// write a partial block...
-			curses_drv_chr (x, y, map[len-1]);
+			curses_drv_chr (drvthis, x, y, map[len-1]);
 			break;
 		}
 
@@ -577,16 +605,16 @@ curses_drv_vbar (int x, int len)
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
-void
-curses_drv_hbar (int x, int y, int len)
+MODULE_EXPORT void
+curses_drv_hbar (Driver *drvthis, int x, int y, int len)
 {
-	for (; x <= curses_drv->wid && len > 0; x++) {
-		if (len >= curses_drv->cellwid)
-			curses_drv_chr (x, y, '=');
+	for (; x <= width && len > 0; x++) {
+		if (len >= LCD_DEFAULT_CELLWIDTH)
+			curses_drv_chr (drvthis, x, y, '=');
 		else
-			curses_drv_chr (x, y, '-');
+			curses_drv_chr (drvthis, x, y, '-');
 
-		len -= curses_drv->cellwid;
+		len -= LCD_DEFAULT_CELLWIDTH;
 	}
 
 //  move(y-1, x-1);
@@ -596,8 +624,8 @@ curses_drv_hbar (int x, int y, int len)
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
-void
-curses_drv_icon (int which, char dest)
+MODULE_EXPORT void
+curses_drv_icon (Driver *drvthis, int which, char dest)
 {
 	if (dest == 0)
 		switch (which) {
@@ -617,8 +645,8 @@ curses_drv_icon (int which, char dest)
 /////////////////////////////////////////////////////////////
 // Does the heartbeat...
 //
-void
-curses_drv_heartbeat (int type)
+MODULE_EXPORT void
+curses_drv_heartbeat (Driver *drvthis, int type)
 {
 	static int timer = 0;
 	int whichIcon;
@@ -633,13 +661,13 @@ curses_drv_heartbeat (int type)
 
 		// This defines a custom character EVERY time...
 		// not efficient... is this necessary?
-		curses_drv_icon (whichIcon, 0);
+		curses_drv_icon (drvthis, whichIcon, 0);
 
 		// Put character on screen...
-		curses_drv_chr (curses_drv->wid, 1, 0);
+		curses_drv_chr (drvthis, width, 1, 0);
 
 		// change display...
-		curses_drv_flush ();
+		curses_drv_flush (drvthis);
 	}
 
 	timer++;
@@ -649,26 +677,14 @@ curses_drv_heartbeat (int type)
 //////////////////////////////////////////////////////////////////
 // Flushes all output to the lcd...
 //
-void
-curses_drv_flush ()
-{
-	curses_drv_draw_frame (curses_drv->framebuf);
-}
-
-void
-curses_drv_flush_box (int lft, int top, int rgt, int bot)
-{
-	curses_drv_flush ();
-}
-
-void
-curses_drv_draw_frame (char *dat)
+MODULE_EXPORT void
+curses_drv_flush (Driver *drvthis)
 {
 	int c;
 
 	if ((c = getch ()) != ERR)
 		if (c == 0x0C) {
-			curses_drv_restore_screen();
+			curses_drv_restore_screen(drvthis);
 			ungetch (c);
 		}
 
@@ -676,8 +692,9 @@ curses_drv_draw_frame (char *dat)
 	wrefresh (lcd_win);
 }
 
-char
-curses_drv_getkey ()
+
+MODULE_EXPORT char
+curses_drv_getkey (Driver *drvthis)
 {
 	int i;
 
@@ -685,7 +702,7 @@ curses_drv_getkey ()
 
 	switch(i) {
 		case 0x0C:
-			curses_drv_restore_screen();
+			curses_drv_restore_screen(drvthis);
 			return 0;
 			break;
 		case KEY_LEFT:
@@ -710,7 +727,8 @@ curses_drv_getkey ()
 }
 
 void
-curses_drv_restore_screen () {
+curses_drv_restore_screen (Driver *drvthis) {
+
 	erase();
 	refresh();
 #ifdef CURSES_HAS_REDRAWWIN

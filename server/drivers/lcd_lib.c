@@ -20,6 +20,9 @@
 // driver code or headers or something...
 #define MAX_CUSTOM_CHARS 16
 
+/*
+ANY DRIVER SHOULD SIMPLY FREE ITS FRAMEBUFFER AT CLOSE()
+NO CHECKING FOR NULL NEEDED
 void
 free_framebuf (struct lcd_logical_driver *driver) {
 	if (!driver)
@@ -30,7 +33,10 @@ free_framebuf (struct lcd_logical_driver *driver) {
 
 	driver->framebuf = NULL;
 }
+*/
 
+/*
+NEED TO BE ADAPTED TO NEW SITUATION
 void
 clear_framebuf (struct lcd_logical_driver *driver) {
 	int framebuf_size;
@@ -41,7 +47,10 @@ clear_framebuf (struct lcd_logical_driver *driver) {
 	framebuf_size = driver->wid * driver->hgt;
 	memset (driver->framebuf, ' ', framebuf_size);
 }
+*/
 
+/*
+NEED TO BE ADAPTED TO NEW SITUATION
 int
 new_framebuf (struct lcd_logical_driver *driver, char *oldbuf) {
 	int i;
@@ -59,7 +68,10 @@ new_framebuf (struct lcd_logical_driver *driver, char *oldbuf) {
 	}
 	return 0;
 }
+*/
 
+/*
+NEED TO BE ADAPTED TO NEW SITUATION
 void
 insert_str_framebuf (struct lcd_logical_driver *driver, int x, int y, char *string) {
 	//int i;
@@ -85,7 +97,10 @@ insert_str_framebuf (struct lcd_logical_driver *driver, int x, int y, char *stri
 	pos = (driver->framebuf + (y * driver->wid) + x);
 	strcpy(pos, buf);
 }
+*/
 
+/*
+NEED TO BE ADAPTED TO NEW SITUATION
 void
 insert_chr_framebuf (struct lcd_logical_driver *driver, int x, int y, char c) {
 	if (!driver)
@@ -101,6 +116,7 @@ insert_chr_framebuf (struct lcd_logical_driver *driver, int x, int y, char c) {
 
 	driver->framebuf[(y * driver->wid) + x] = c;
 }
+*/
 
 void
 output_heartbeat (struct lcd_logical_driver *driver, int type) {
@@ -113,17 +129,26 @@ output_heartbeat (struct lcd_logical_driver *driver, int type) {
 
 	if (type == HEARTBEAT_ON) {
 		// Set this to pulsate like a real heart beat...
-		whichIcon = (! ((timer + 4) & 5));
+		if ( (timer + 4) & 5 ) {
+			whichIcon = ICON_HEART_OPEN;
+		}
+		else {
+			whichIcon = ICON_HEART_FILLED;
+		}
 
+		driver->icon (driver, driver->width(driver), 1, whichIcon);
+
+		/* OLD CODE
 		// This defines a custom character EVERY time...
 		// not efficient... is this necessary?
-		driver->icon (whichIcon, 0);
+		driver->icon (driver, whichIcon, 0);
 
 		// Put character on screen...
-		driver->chr (driver->wid, 1, 0);
+		driver->chr (driver, driver->wid, 1, 0);
+		*/
 
 		// change display...
-		driver->flush ();
+		driver->flush (driver);
 	}
 
 	timer++;

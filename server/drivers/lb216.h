@@ -1,25 +1,28 @@
 #ifndef LB216_H
 #define LB216_H
 
+#include "lcd.h"
 
-extern lcd_logical_driver *LB216;
+              int  LB216_init(Driver * drvthis, char *device);
+MODULE_EXPORT void LB216_close(Driver * drvthis);
+MODULE_EXPORT int  LB216_width (Driver *drvthis);
+MODULE_EXPORT int  LB216_height (Driver *drvthis);
+MODULE_EXPORT void LB216_clear (Driver * drvthis);
+MODULE_EXPORT void LB216_flush(Driver * drvthis);
+MODULE_EXPORT void LB216_string (Driver * drvthis, int x, int y, char string[]);
+MODULE_EXPORT void LB216_chr(Driver * drvthis, int x, int y, char c) ;
 
-int LB216_init(lcd_logical_driver *driver, char *device);
-void LB216_clear ();
-void LB216_close();
-void LB216_string (int x, int y, char string[]);
-void LB216_flush();
-void LB216_flush_box(int lft, int top, int rgt, int bot);
-void LB216_chr(int x, int y, char c) ;
-void LB216_backlight(int on);
-void LB216_init_vbar();
-void LB216_init_hbar();
-void LB216_vbar(int x, int len);
-void LB216_hbar(int x, int y, int len);
-void LB216_init_num();
-void LB216_num(int x, int num);
-void LB216_set_char(int n, char *dat);
-void LB216_icon(int which, char dest);
-void LB216_draw_frame(char *dat);
+MODULE_EXPORT void LB216_vbar(Driver * drvthis, int x, int len);
+MODULE_EXPORT void LB216_hbar(Driver * drvthis, int x, int y, int len);
+MODULE_EXPORT void LB216_num(Driver * drvthis, int x, int num);
+MODULE_EXPORT void LB216_icon(Driver * drvthis, int which, char dest);
+
+MODULE_EXPORT void LB216_set_char(Driver * drvthis, int n, char *dat);
+
+MODULE_EXPORT void LB216_backlight(Driver * drvthis, int on);
+
+MODULE_EXPORT void LB216_init_vbar(Driver * drvthis);
+MODULE_EXPORT void LB216_init_hbar(Driver * drvthis);
+MODULE_EXPORT void LB216_init_num(Driver * drvthis);
 
 #endif
