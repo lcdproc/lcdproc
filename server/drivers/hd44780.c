@@ -16,10 +16,15 @@
  * Modular driver created and generic support for multiple displays added 
  * Dec 1999, Benjamin Tse <blt@Comports.com>
  *
+ * Modified July 2000 by Charles Steinkuehler to use one of 3 methods for delay
+ * timing.  I/O reads, gettimeofday, and nanosleep.  Of the three, nanosleep
+ * seems to work best, so that's what is set by default.
+ *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
  * Copyright (c)  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
+ *		  2000, Charles Steinkuehler <cstein@newtek.com>
  *		  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  1998 Richard Rognlie <rrognlie@gamerz.net>
  *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
@@ -32,6 +37,22 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/perm.h>
+
+// Uncomment one of the lines below to select your desired delay generation
+// mechanism.  If both defines are commented, the original I/O read timing
+// loop is used.  Using DELAY_NANOSLEEP  seems to provide the best performance.
+//#define DELAY_GETTIMEOFDAY
+#define DELAY_NANOSLEEP
+
+#if defined DELAY_GETTIMEOFDAY
+#include <sys/time.h>
+#include <unistd.h>
+// Only one alternate delay method at a time, please ;-)
+#undef DELAY_NANOSLEEP
+#elif defined DELAY_NANOSLEEP
+#include <sched.h>
+#include <time.h>
+#endif
 
 #include "../../shared/str.h"
 
@@ -209,6 +230,18 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 		} else
 			fprintf (stderr, "Error mallocing for display sizes list\n");
 	}
+#if defined DELAY_NANOSLEEP
+	// Change to Round-Robin scheduling for nanosleep
+	{
+		// Set priority to 1
+		struct sched_param param;
+		param.sched_priority=1;
+		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
+			fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
+			return -1;
+		}
+	}
+#endif
 	// Set up io port correctly, and open it...
 	if ((ioperm (port, 1, 255)) == -1) {
 		fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
@@ -293,10 +326,37 @@ common_init (enum ifWidth ifwidth)
 void
 uPause (int delayCalls)
 {
+#if defined DELAY_GETTIMEOFDAY
+	struct timeval current_time,delay_time,wait_time;
+
+	// Get current time first thing
+	gettimeofday(&current_time,NULL);
+
+	// Calculate when delay is over
+	delay_time.tv_sec  = 0;
+	delay_time.tv_usec = delayCalls;
+	timeradd(&current_time,&delay_time,&wait_time);
+
+	do {
+		gettimeofday(&current_time,NULL);
+	} while (timercmp(&current_time,&wait_time,<));
+
+#elif defined DELAY_NANOSLEEP
+	struct timespec delay,remaining;
+
+	delay.tv_sec = 0;
+	delay.tv_nsec = delayCalls * 1000;
+	while ( nanosleep(&delay,&remaining) == -1 )
+	{
+		delay.tv_sec  = remaining.tv_sec;
+		delay.tv_nsec = remaining.tv_nsec;
+	}
+#else
 	int i;
 	for (i = 0; i < delayCalls; ++i)
 		port_in (port);
 	//TODO: put in option for nanosleep rather than dummy I/O call
+#endif
 }
 
 // displayID     - ID of display to use (0 = all displays)

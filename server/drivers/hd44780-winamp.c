@@ -6,6 +6,11 @@
  * Copyright (c)  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  modular driver 1999-2000 Benjamin Tse <blt@Comports.com> 
  *
+ *		  Modified July 2000 by Charles Steinkuehler for enhanced
+ *		  performance and reduced CPU usage
+ *		    - provided required setup time for RS valid to E high
+ *		    - 1 uS call to uPause removed as it is unnecessary
+ *
  * The connections are:
  * printer port	  LCD
  * D0 (2)      	  D0 (7)
@@ -93,8 +98,21 @@ lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 	else
 		dispID = EnMask[displayID - 1];
 
-	port_out (lptPort, ch);
-	port_out (lptPort + 2, (dispID | portControl) ^ OUTMASK);
-	hd44780_functions->uPause (1);
+	// 40 nS setup time for RS valid to EN high, so set RS
 	port_out (lptPort + 2, portControl ^ OUTMASK);
+
+	// then set EN high
+	port_out (lptPort + 2, (dispID | portControl) ^ OUTMASK);
+
+	// Output the actual data
+	port_out (lptPort, ch);
+
+	// 80 nS setup from valid data to EN low will be met without any delay
+	// unless you are running a REALLY FAST ISA bus (like 75 MHZ!)
+	// 230 nS minimum E high time provided by ISA bus delays as well...
+
+	// Set EN low and we're done...
+	port_out (lptPort + 2, portControl ^ OUTMASK);
+
+	// 10 nS data hold time provided by the length of ISA write for EN
 }
