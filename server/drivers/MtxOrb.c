@@ -63,7 +63,7 @@
 #define DEFAULT_SIZE "20x4"
 #define DEFAULT_BACKLIGHT 1
 #define DEFAULT_TYPE "lcd"
-#define CONFIG_FILE
+/* #define CONFIG_FILE Non config file code removed by David GLAUDE */
 /* Above 5 lines added by Joris :( */
 
 #define IS_LCD_DISPLAY	(MtxOrb_type == MTXORB_LCD)
@@ -168,7 +168,6 @@ static int cellwidth = LCD_DEFAULT_CELLWIDTH;
 static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 static int contrast = DEFAULT_CONTRAST;
 
-#ifdef CONFIG_FILE
 static int backlightenabled = DEFAULT_BACKLIGHT;
 
 static int backlight_state = -1;
@@ -179,7 +178,6 @@ static char back_key = MTXORB_DEFAULT_BACK_KEY;
 static char forward_key = MTXORB_DEFAULT_FORWARD_KEY;
 static char main_menu_key = MTXORB_DEFAULT_MAIN_MENU_KEY;
 static int keypad_test_mode = 0;
-#endif
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -246,18 +244,6 @@ MtxOrb_parse_speed (Driver *drvthis, char *arg) {
 	return speed;
 	}
 
-static void
-MtxOrb_usage (void) {
-	printf ("LCDproc Matrix-Orbital LCD driver\n"
-		"\t-d\t\tSelect the output device to use [/dev/lcd]\n"
-		"\t-t\t\tSelect the LCD type (size) [20x4]\n"
-/*		"\t-b\t--backlight\tSelect the backlight state [on]\n" */
-		"\t-c\t\tSet the initial contrast [140]\n"
-		"\t-s\t\tSet the communication speed [19200]\n"
-		"\t-h\t\tShow this help information\n"
-		"\t-b\t\tdisplay type: lcd, lkd, vfd, vkd\n");
-}
-
 int
 MtxOrb_parse_contrast (Driver *drvthis, char * str) {
 	int contrast;
@@ -271,7 +257,6 @@ MtxOrb_parse_contrast (Driver *drvthis, char * str) {
 }
 
 
-#ifdef CONFIG_FILE
 /* Parse one key from the configfile */
 static char MtxOrb_parse_keypad_setting (Driver *drvthis, char * keyname, char default_value)
 {
@@ -289,7 +274,6 @@ static char MtxOrb_parse_keypad_setting (Driver *drvthis, char * keyname, char d
 	}
 	return return_val;
 }
-#endif
 
 /* TODO:  Get the frame buffers working right */
 
@@ -300,7 +284,6 @@ static char MtxOrb_parse_keypad_setting (Driver *drvthis, char * keyname, char d
 MODULE_EXPORT int
 MtxOrb_init (Driver *drvthis, char *args)
 {
-#ifdef CONFIG_FILE
 	/* Start of command line parsing*/
 
 	struct termios portset;
@@ -430,114 +413,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 		main_menu_key = MtxOrb_parse_keypad_setting (drvthis, "MainMenuKey", MTXORB_DEFAULT_MAIN_MENU_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as main_menu_key", main_menu_key);
 	}
-
 	/* End of config file parsing*/
-#else
-	/* Start of command line parsing*/
-
-	char *argv[64];		/* Notice: 64 arguments - overflows? */
-	int argc;
-	struct termios portset;
-	int i;
-	/* int tmp; */
-
-	int contrast = DEFAULT_CONTRAST;
-	char device[256] = DEFAULT_DEVICE;
-	int speed = DEFAULT_SPEED;
-	/* char c; */
-
-	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
-
-	/* debug("MtxOrb_init: Args(all): %s\n", args); */
-
-	argc = get_args (argv, args, 64);
-
-	/*
-	   for(i=0; i<argc; i++)
-	   {
-	   printf("Arg(%i): %s\n", i, argv[i]);
-	   }
-	 */
-
-	for (i = 0; i < argc; i++) {
-		char *p;
-
-		p = argv[i];
-		/* printf("Arg(%i): %s\n", i, argv[i]); */
-
-		if (*p == '-') {
-
-			p++;
-			switch (*p) {
-				case 'd':
-					if (i + 1 > argc) {
-						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					strcpy (device, argv[++i]);
-					break;
-				case 'c':
-					if (i + 1 > argc) {
-						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					contrast = MtxOrb_parse_contrast (drvthis, argv[++i]);
-					break;
-				case 's':
-					if (i + 1 > argc) {
-						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					speed = MtxOrb_parse_speed (drvthis, argv[++i]);
-					break;
-				case 'h':
-					MtxOrb_usage();
-					return -1;
-					break;
-				case 't':
-					if (i + 1 > argc) {
-						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					i++;
-					p = argv[i];
-
-					if (isdigit((unsigned int) *p) && isdigit((unsigned int) *(p+1))) {
-						int wid, hgt;
-
-						wid = ((*p - '0') * 10) + (*(p+1) - '0');
-						p += 2;
-
-						if (*p != 'x')
-							break;
-
-						p++;
-						if (!isdigit((unsigned int) *p))
-							break;
-
-						hgt = (*p - '0');
-
-						width = wid;
-						height = hgt;
-						}
-					break;
-				case 'b':
-					if (i + 1 > argc) {
-						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					i++;
-					MtxOrb_type = MtxOrb_parse_type(drvthis, argv[i]);
-					break;
-				default:
-					printf ("Invalid parameter: %s\n", argv[i]);
-					break;
-			}
-		}
-	}
-
-	/* End of command line parsing */
-#endif
 
 	/* Set up io port correctly, and open it... */
 	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
