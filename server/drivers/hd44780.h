@@ -16,7 +16,14 @@
 #ifndef HD44780_H
 #define HD44780_H
 
-extern char have_keypad;	   // non-zero if the keypad code is activated
+// Maximum sizes of the keypad
+// DO NOT CHANGE THESE 2 VALUES, unless you change the functions too
+#define KEYPAD_MAXX 5
+#define KEYPAD_MAXY 11
+
+extern char have_keypad;	// non-zero if the keypad code is activated
+extern char have_backlight;	// non-zero if we can control the backlight
+extern char extIF;		// non-zero if we should control > 2 LCDs
 
 int HD44780_init (struct lcd_logical_driver *driver, char *args);
 /* The following methods can all be hidden. They are used through function ptrs

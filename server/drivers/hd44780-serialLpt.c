@@ -36,6 +36,7 @@
  * Q4 (7)	  Y3
  * Q5 (14)	  Y4
  * Q6 (13)	  Y5
+ * Q7 (12)	  Y6
  * The 'output' of the keys should be connected to the following LPT pins:
  * nACK   (10)    X0
  * BUSY   (11)    X1
@@ -59,9 +60,9 @@
 
 // Hardware specific functions
 void lcdserLpt_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
-unsigned char lcdserLpt_HD44780_readkeypad (unsigned int YData);
+void lcdserLpt_HD44780_backlight (unsigned char state);
 
-static char lcdserLpt_HD44780_getkey (void);  // old keypad code
+unsigned char lcdserLpt_HD44780_scankeypad ();
 void rawshift (unsigned char r);
 void shiftreg (unsigned char displayID, unsigned char r);
 
@@ -72,9 +73,6 @@ void shiftreg (unsigned char displayID, unsigned char r);
 #define EN2      32
 
 static unsigned int lptPort;
-static char stuckinputs = 0;	      // if an input line is stuck, it will be ignored
-
-static char lastkey = 0;		  // currently not in use, old keypad code
 
 // Initialisation
 int
@@ -89,11 +87,9 @@ hd_init_serialLpt (HD44780_functions * hd44780_functions, lcd_logical_driver * d
 	port_access(lptPort+2);
 
 	hd44780_functions->senddata = lcdserLpt_HD44780_senddata;
-	hd44780_functions->readkeypad = lcdserLpt_HD44780_readkeypad;
+	hd44780_functions->backlight = lcdserLpt_HD44780_backlight;
+	hd44780_functions->scankeypad = lcdserLpt_HD44780_scankeypad;
 
-	if (have_keypad) {
-		driver->getkey = lcdserLpt_HD44780_getkey;
-	}
 	// Clear the shiftregister
 	rawshift (0);
 
@@ -113,17 +109,6 @@ hd_init_serialLpt (HD44780_functions * hd44780_functions, lcd_logical_driver * d
 	hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
 
 	common_init ();
-
-	/*
-	// set display type functions
-	lcdserLpt_HD44780_senddata (0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
-	// clear
-	lcdserLpt_HD44780_senddata (0, RS_INSTR, CLEAR);
-	hd44780_functions->uPause (1600);
-	// Now turn on the display
-	lcdserLpt_HD44780_senddata (displayID, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
-	hd44780_functions->uPause (1600);
-	*/
 
 	return 0;
 }
@@ -149,47 +134,67 @@ lcdserLpt_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 
 	shiftreg (enableLines, portControl | h);
 	shiftreg (enableLines, portControl | l);
-
-	/* TODO: instead of delay read keys here */
 }
 
-char
-lcdserLpt_HD44780_getkey ()
+void
+lcdserLpt_HD44780_backlight (unsigned char state)
 {
-	// TODO: a keypad scan that does not use shift register
-	// define a key table
-	char keytr[] = "ABCDEFGH";
-	int n;
+}
 
-	// disabled now !
-	return 0;
+unsigned char lcdserLpt_HD44780_scankeypad ()
+{
+	// Unfortunately just bit shifting does not work with the 2 IC version...
 
-	rawshift (0);					//send all line on shift register low
-	hd44780_functions->uPause (1);
-	if ((port_in (lptPort + 1) & 32) == 0)		//test if line back is low - if not return(0)
-	{									 //else
-		//start walking a single zero across the eight lines
-		for (n = 7; n >= 0; n--) {
-			rawshift (255 - (1 << n));
-			hd44780_functions->uPause (1);
+	unsigned char keybits;
+	unsigned int shiftcount;
+	unsigned int shiftingbit;
+	unsigned char readval, inputs_zero, r;
+	int i;
+	unsigned int scancode = 0;
 
-			if ((port_in (lptPort + 1) & 32) == 0)  // check if line back is low if yes debounce
-			{
-				if (lastkey == keytr[n])
-					return (0);
-				//      printf("key is %c %d\n",keytr[n],n);
-				lastkey = keytr[n];
-				return (keytr[n]);  	//return correct key code.
+
+	r = 0xFF;  // This command will set the cursor position, so it's harmless
+
+	readval = ~ port_in (lptPort + 1) ^ INMASK;
+	inputs_zero = ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) );
+
+	if( inputs_zero == 0 ) {
+		return 0;
+	}
+
+	// Scan the keypad while sending the first half of the command (high nibble)
+	for (i = 7; i >= 0; i--) {						/* MSB first      */
+		port_out (lptPort, ((r >> i) & 1) * LCDDATA);			/*set up data   */
+		port_out (lptPort, (((r >> i) & 1) * LCDDATA) | LCDCLOCK);	/*rising edge of clock   */
+
+		hd44780_functions->uPause (2);
+
+		// Do keyscan too !
+		if( !scancode ) {
+			// Read input line(s)
+			readval = ~ port_in (lptPort + 1) ^ INMASK;
+			keybits = ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) );
+			if( keybits != inputs_zero ) {
+				shiftingbit = 1;
+				for (shiftcount=0; shiftcount<KEYPAD_MAXX && !scancode; shiftcount++) {
+					if ( (keybits ^ inputs_zero ) & shiftingbit) {
+						// Found !
+						scancode = ((8-i)<<4) | (shiftcount+1);
+					}
+					shiftingbit <<= 1;
+				}
 			}
 		}
-	}				 	//else fall out and return(0) [too transient a keypress]
-	lastkey = 0;
-	return (0);
-}
+	}
 
-unsigned char lcdserLpt_HD44780_readkeypad (unsigned int YData)
-{
-	return 0;
+	hd44780_functions->uPause (4);
+
+	// And again for the second half of the command (low nibble)
+	rawshift (r);
+
+	hd44780_functions->uPause (4);
+
+	return scancode;
 }
 
 /* this function sends r out onto the shift register */
@@ -197,6 +202,8 @@ void
 rawshift (unsigned char r)
 {
 	int i;
+	// r |= 0x80;  // just to make sure ...
+
 	for (i = 7; i >= 0; i--) {						/* MSB first      */
 		port_out (lptPort, ((r >> i) & 1) * LCDDATA);			/*set up data   */
 		port_out (lptPort, (((r >> i) & 1) * LCDDATA) | LCDCLOCK);	/*rising edge of clock   */
@@ -207,13 +214,9 @@ rawshift (unsigned char r)
 void
 shiftreg (unsigned char enableLines, unsigned char r)
 {
-	//unsigned char mr;
-	//mr = (r & 0xF0) | ((r<<3) & 0x0F) | ((r<<1) & 0x04) |
-	//	      ((r>>1) & 0x02) | ((r>>3) & 0x01);
-
-	rawshift (r | 0x80);			// highest bit always set to 1 for Clear
-	port_out (lptPort, enableLines);	//latch it, to correct display
+	rawshift (r | 0x80);			// highest bit always set to 1 for Clear for wiring with 2 ICs
+	port_out (lptPort, enableLines);	// latch it, to correct display
 	hd44780_functions->uPause (1);
-	port_out (lptPort, 0);
+	port_out (lptPort, 0);			// for wiring with 1 IC
 	hd44780_functions->uPause (3);
 }

@@ -16,10 +16,12 @@
  * D5 (7)	  D5 (12)
  * D6 (8)	  D6 (13)
  * D7 (9)	  D7 (14)
- * nSEL  (17)     -
  * nSTRB (1)      RS (4)
  * nLF   (14)     RW (5) (LCD2 - 6) (optional - pull all LCD RW low)
  * INIT  (16)     EN (6)
+ *
+ * Backlight
+ * SEL  (17)	  backlight (optional, see documentation)
  *
  * Keypad connection (optional):
  * Some diodes and resistors are needed, see further documentation.
@@ -65,20 +67,17 @@
 // HD44780_readkeypad
 
 void lcdtime_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
+void lcdtime_HD44780_backlight (unsigned char state);
 unsigned char lcdtime_HD44780_readkeypad (unsigned int YData);
 
-#define nRS     nSTRB
-#define nRW     nLF
-#define EN1     INIT
-#define METER_OFF nSEL
+#define RS	STRB
+#define RW	LF
+#define EN1	INIT
+#define BL	SEL
 
-#define SETUPLCD (METER_OFF | nRS)
-#define CTRL    (nRW | METER_OFF | nRS)
-#define CHAR    (nRW | METER_OFF)
-
-static int extIF = 0;		   // non-zero if extended interface
 static unsigned int lptPort;
-static char stuckinputs = 0;	    // if an input line is stuck, it will be ignored
+static char stuckinputs = 0;	// if an input line is stuck, it will be ignored
+static char backlight_bit = 0;
 
 static int semid;
 
@@ -95,6 +94,7 @@ hd_init_ext8bit (HD44780_functions * hd44780_functions, lcd_logical_driver * dri
 	port_access(lptPort+2);
 
 	hd44780_functions->senddata = lcdtime_HD44780_senddata;
+	hd44780_functions->backlight = lcdtime_HD44780_backlight;
 	hd44780_functions->readkeypad = lcdtime_HD44780_readkeypad;
 
 	// setup the lcd in 8 bit mode
@@ -106,6 +106,11 @@ hd_init_ext8bit (HD44780_functions * hd44780_functions, lcd_logical_driver * dri
 	hd44780_functions->uPause (40);
 
 	common_init ();
+
+	if (have_keypad) {
+		// Remember which input lines are stuck
+		stuckinputs = lcdtime_HD44780_readkeypad (0);
+	}
 	return 0;
 }
 
@@ -113,30 +118,41 @@ hd_init_ext8bit (HD44780_functions * hd44780_functions, lcd_logical_driver * dri
 void
 lcdtime_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-	unsigned char dispID = 0, portControl;
+	unsigned char enableLines = 0, portControl;
 
-	if (displayID == 1)
-		dispID |= EN1;
-	else							      //if (displayID == 0)
-		dispID |= EN1;
+	// Only one controller is supported
+	enableLines = EN1;
 
-	if (flags == RS_DATA)
-		portControl = CHAR;
-	else
-		portControl = CTRL;
+	if (flags == RS_INSTR)
+		portControl = 0;
+	else //if (iflags == RS_DATA)
+		portControl = RS;
+
+	portControl |= backlight_bit;
 
 	sem_wait (semid);
-	port_out (lptPort + 2, SETUPLCD);
+	port_out (lptPort + 2, portControl ^ OUTMASK);
 	port_out (lptPort, ch);
-	port_out (lptPort + 2, dispID | portControl);
+	port_out (lptPort + 2, (enableLines|portControl) ^ OUTMASK);
 	hd44780_functions->uPause (1);
-	port_out (lptPort + 2, portControl);
+	port_out (lptPort + 2, portControl ^ OUTMASK);
 	sem_signal (semid);
+}
+
+void lcdtime_HD44780_backlight (unsigned char state)
+{
+	backlight_bit = (state?0:SEL);
+
+	// Semaphores not needed because backlight will not go together with
+	// the bacrgraph anyway...
+	port_out (lptPort + 2, backlight_bit ^ OUTMASK);
 }
 
 unsigned char lcdtime_HD44780_readkeypad (unsigned int YData)
 {
 	unsigned char readval;
+
+	sem_wait (semid);
 
 	// 10 bits output
 	// Convert the positive logic to the negative logic on the LPT port
@@ -145,7 +161,13 @@ unsigned char lcdtime_HD44780_readkeypad (unsigned int YData)
 		port_out (lptPort + 2, ( ((~YData & 0x0100) >> 8) | ((~YData & 0x0200) >> 6)) ^ OUTMASK);
 	}
 
-	// And convert it back.
+	// Read inputs
 	readval = ~ port_in (lptPort + 1) ^ INMASK;
+
+	// Put port back into idle state for backlight
+	port_out (lptPort, backlight_bit ^ OUTMASK);
+	sem_signal (semid);
+
+	// And convert value back.
 	return ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) ) & ~stuckinputs;
 }

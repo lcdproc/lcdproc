@@ -14,25 +14,28 @@ typedef struct hwDependentFns {
 	// microsec pauses
 	void (*uPause) (int microSecondsTenths);
 
-	// senddata to the LCD
+	// Senddata to the LCD
 	// dispID     - display to send data to (0 = all displays)
 	// flags      - data or instruction command (RS_DATA | RS_INSTR)
 	// ch	      - character to display or instruction value
 	void (*senddata) (unsigned char dispID, unsigned char flags, unsigned char ch);
 
-	// position the cursor
-	// dispID     - display to send data to (0 = all displays)
-	// DDaddr     - display data address (see sect 2.5.2 of the LCD module FAQ)
-	void (*position) (int dispID, int DDaddr);
+	// Switch the backlight on or off
+	// state      - to be or not to be on
+	void (*backlight) (unsigned char state);
 
-	// toggle vertical autoscroll on all displays
-	// on	      - non-zero turns autoscroll on, zero value turns it off
-	void (*autoscroll) (int on);
-
-	// read the keypad
+	// Read the keypad
 	// Ydata      - the up to 11 bits that should be put on the Y side of the matrix
 	// return     - the up to 5 bits that are read out on the X side of the matrix
 	unsigned char (*readkeypad) (unsigned int Ydata);
+
+	// Scan the keypad and return a scancode.
+	// The code is the Yvalue in the high nibble and the Xvalue in the low nibble.
+	// A subdriver should do only one of two things:
+	// - set readkeypad; or
+	// - override scankeypad.
+	unsigned char (*scankeypad) ();
+
 
 } HD44780_functions;				  /* for want of a better name :-) */
 
