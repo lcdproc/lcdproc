@@ -26,9 +26,10 @@
 
 #include "shared/str.h"
 
+#include "render.h"
 #include "lcd.h"
 #include "curses_drv.h"
-#include "drv_base.h"
+//#include "drv_base.h"
 
 lcd_logical_driver *curses_drv;
 
@@ -258,6 +259,7 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	driver->draw_frame = curses_drv_draw_frame;
 
 	driver->getkey = curses_drv_getkey;
+	driver->heartbeat = curses_drv_heartbeat;
 
 	// Change the character used for "..."
 	ELLIPSIS = '~';
@@ -517,6 +519,38 @@ curses_drv_icon (int which, char dest)
 				break;
 		}
 
+}
+
+/////////////////////////////////////////////////////////////
+// Does the heartbeat...
+//
+static void
+curses_drv_heartbeat (int type)
+{
+	static int timer = 0;
+	int whichIcon;
+	static int saved_type = HEARTBEAT_ON;
+
+	if (type)
+		saved_type = type;
+
+	if (type == HEARTBEAT_ON) {
+		// Set this to pulsate like a real heart beat...
+		whichIcon = (! ((timer + 4) & 5));
+
+		// This defines a custom character EVERY time...
+		// not efficient... is this necessary?
+		curses_drv_icon (whichIcon, 0);
+
+		// Put character on screen...
+		curses_drv_chr (curses_drv->wid, 1, 0);
+
+		// change display...
+		curses_drv_flush ();
+	}
+
+	timer++;
+	timer &= 0x0f;
 }
 
 //////////////////////////////////////////////////////////////////

@@ -58,6 +58,7 @@ static void lcd_drv_draw_frame ();
 static char lcd_drv_getkey ();
 static char lcd_drv_getkey_loop ();
 static char *lcd_drv_getinfo ();
+static void lcd_drv_heartbeat (int type);
 
 /*
  * Add all of the driver's header files in...
@@ -306,6 +307,7 @@ lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	driver->getkey = lcd_drv_getkey;
 	driver->getinfo = lcd_drv_getinfo;
+	driver->heartbeat = lcd_drv_heartbeat;
 
 	return 1;						  // 1 is arbitrary.  (must be 1 or more)
 }
@@ -340,6 +342,7 @@ lcd_drv_patch_init (struct lcd_logical_driver *driver)
 
 	ChkNull(getkey, lcd_drv_getkey, "getkey");
 	ChkNull(getinfo, lcd_drv_getinfo, "getinfo");
+	ChkNull(heartbeat, lcd_drv_heartbeat, "heartbeat");
 
 	// Now check for base driver entries...;
 	ChkBaseDrv(clear, lcd_drv_clear, "clear");
@@ -365,6 +368,7 @@ lcd_drv_patch_init (struct lcd_logical_driver *driver)
 
 	ChkBaseDrv(getkey, lcd_drv_getkey, "getkey");
 	ChkBaseDrv(getinfo, lcd_drv_getinfo, "getinfo");
+	ChkBaseDrv(heartbeat, lcd_drv_heartbeat, "heartbeat");
 
 	return 0;
 }
@@ -690,5 +694,11 @@ lcd_drv_getkey_loop () {
 			return c;
 
 	return 0;
+}
+
+static void
+lcd_drv_heartbeat (int type)
+{
+	;
 }
 

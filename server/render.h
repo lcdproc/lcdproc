@@ -3,9 +3,13 @@
 
 #include "screen.h"
 
-#define HEART_OFF 0
-#define HEART_ON 1
-#define HEART_OPEN 2
+#define HEART_OFF 1
+#define HEART_ON 2
+#define HEART_OPEN 3
+
+#define HEARTBEAT_OFF HEART_OFF
+#define HEARTBEAT_ON HEART_ON
+#define HEARTBEAT_OPEN HEART_OPEN
 
 #define BACKLIGHT_OFF 0
 #define BACKLIGHT_ON 1

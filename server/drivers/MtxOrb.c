@@ -25,6 +25,7 @@
 # include "config.h"
 #endif
 
+#include "render.h"
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "MtxOrb.h"
@@ -383,6 +384,7 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 
 	driver->getkey = MtxOrb_getkey;
 	driver->getinfo = MtxOrb_getinfo;
+	driver->heartbeat = MtxOrb_heartbeat;
 
 	return fd;
 }
@@ -1265,12 +1267,33 @@ MtxOrb_ask_bar (int type)
 /////////////////////////////////////////////////////////////
 // Does the heartbeat...
 //
-static char
-MtxOrb_heartbeat (int timer)
+static void
+MtxOrb_heartbeat (int type)
 {
-	MtxOrb_icon (!((timer + 4) & 5), 0);
-	MtxOrb_chr (MtxOrb->wid, 1, 0);
-	return (char) 0;
+	static int timer = 0;
+	int whichIcon;
+	static int saved_type = HEARTBEAT_ON;
+
+	if (type)
+		saved_type = type;
+
+	if (type == HEARTBEAT_ON) {
+		// Set this to pulsate like a real heart beat...
+		whichIcon = (! ((timer + 4) & 5));
+
+		// This defines a custom character EVERY time...
+		// not efficient... is this necessary?
+		MtxOrb_icon (whichIcon, 0);
+
+		// Put character on screen...
+		MtxOrb_chr (MtxOrb->wid, 1, 0);
+
+		// change display...
+		MtxOrb_flush ();
+	}
+
+	timer++;
+	timer &= 0x0f;
 }
 
 /////////////////////////////////////////////////////////////////

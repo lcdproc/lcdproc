@@ -23,6 +23,7 @@ static void MtxOrb_icon (int which, char dest);
 static void MtxOrb_draw_frame (char *dat);
 static char MtxOrb_getkey ();
 static char * MtxOrb_getinfo ();
+static void MtxOrb_heartbeat (int type);
 
 static int MtxOrb_ask_bar (int type);
 static void MtxOrb_set_known_char (int car, int type);

@@ -116,13 +116,14 @@ draw_screen (screen * s, int timer)
 	//debug("draw_screen done\n");
 
 	if (heartbeat) {
-		if ((s->heartbeat == HEART_ON) || heartbeat == HEART_ON) {
+		lcd_ptr->heartbeat(s->heartbeat);
+		//if ((s->heartbeat == HEART_ON) || heartbeat == HEART_ON) {
 			// Set this to pulsate like a real heart beat...
 			// (binary is fun...  :)
 			// lcd_ptr->heartbeat ();
-			lcd_ptr->icon (!((timer + 4) & 5), 0);
-			lcd_ptr->chr (lcd_ptr->wid, 1, 0);
-		}
+			//lcd_ptr->icon (!((timer + 4) & 5), 0);
+			//lcd_ptr->chr (lcd_ptr->wid, 1, 0);
+		//}
 		// else
 		// This seems unnecessary... heartbeat is nicer...
 		// if ((s->heartbeat == HEART_OPEN) && heartbeat != HEART_OFF) {

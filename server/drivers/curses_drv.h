@@ -19,5 +19,6 @@ void curses_drv_draw_frame (char *dat);
 char curses_drv_getkey ();
 void curses_drv_init_num ();
 void curses_drv_num (int x, int num);
+void curses_drv_heartbeat (int type);
 
 #endif

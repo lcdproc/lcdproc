@@ -67,6 +67,8 @@ typedef struct lcd_logical_driver {
 	// Returns pointer to static string.
 	char * (*getinfo) ();
 
+	// Puts up a heartbeat...
+	void (*heartbeat) (int type);
 	// more?
 
 } lcd_logical_driver;

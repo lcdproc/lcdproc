@@ -7,6 +7,7 @@
 
 #include "screen.h"
 #include "widget.h"
+#include "render.h"
 
 char *types[] = { "none",
 	"string",
@@ -164,7 +165,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 	list = s->widgets;
 
 	if (0 == strcmp (id, "heartbeat")) {
-		s->heartbeat = 1;
+		s->heartbeat = HEARTBEAT_ON; // was 1
 		return 0;
 	}
 
@@ -260,7 +261,7 @@ widget_remove (screen * s, char *id, int sock)
 	list = s->widgets;
 
 	if (0 == strcmp (id, "heartbeat")) {
-		s->heartbeat = 0;
+		s->heartbeat = HEARTBEAT_OFF; // was 0
 		return 0;
 	}
 	// Make sure this screen *does* exist...
