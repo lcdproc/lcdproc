@@ -305,7 +305,9 @@ draw_frame (LinkedList * list,
 					}
 				}
 				break;
-			case WID_ICON:			  /* FIXME:  Not implemented*/
+			case WID_ICON:
+				drivers_icon (w->x, w->y, w->length);
+				
 				break;
 			case WID_TITLE:			  /* FIXME:  Doesn't work quite right in frames...*/
 				if (!w->text)
@@ -313,8 +315,8 @@ draw_frame (LinkedList * list,
 				if (vis_width < 8)
 					break;
 
-				drivers_icon (w->x, w->y, ICON_BLOCK_FILLED);
-				drivers_icon (w->x+1, w->y, ICON_BLOCK_FILLED);
+				drivers_icon (w->x + left, w->y + top, ICON_BLOCK_FILLED);
+				drivers_icon (w->x + 1 + left, w->y + top, ICON_BLOCK_FILLED);
 
 				str[0] = ' ';
 				length = strlen (w->text);
@@ -353,10 +355,10 @@ draw_frame (LinkedList * list,
 				}
 				str[vis_width-4] = 0;
 
-				drivers_string (3 + left, 1 + top, str);
+				drivers_string (w->x + 2 + left, w->y + top, str);
 
 				for (; x<vis_width; x++) {
-					drivers_icon (w->x+x, w->y, ICON_BLOCK_FILLED);
+					drivers_icon (w->x + x + left, w->y + top, ICON_BLOCK_FILLED);
 				}
 				
 				break;

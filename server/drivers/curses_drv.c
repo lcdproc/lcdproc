@@ -543,17 +543,32 @@ curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 MODULE_EXPORT void
 curses_drv_icon (Driver *drvthis, int x, int y, int icon)
 {
+	char ch1 = '?';
+	char ch2 = 0;
+
 	switch (icon) {
-		case ICON_HEART_OPEN:
-			curses_drv_chr( drvthis, x, y, '+');
-			break;
-		case ICON_HEART_FILLED:
-			curses_drv_chr( drvthis, x, y, '*');
-			break;
-		case ICON_BLOCK_FILLED:
-			curses_drv_chr( drvthis, x, y, ACS_BLOCK);
-			break;
+	  case ICON_BLOCK_FILLED:       ch1 = ACS_BLOCK; break;
+	  case ICON_HEART_OPEN:         ch1 = '-'; break;
+	  case ICON_HEART_FILLED:       ch1 = '+'; break;
+	  case ICON_ARROW_UP:           ch1 = '^'; break; /* or does curses do real arrows ? */
+	  case ICON_ARROW_DOWN:         ch1 = 'v'; break;
+	  case ICON_ARROW_LEFT:         ch1 = '<'; break;
+	  case ICON_ARROW_RIGHT:        ch1 = '>'; break;
+	  case ICON_STOP:               ch1 = '['; ch2 = ']'; break;
+	  case ICON_PAUSE:              ch1 = '|'; ch2 = '|'; break;
+	  case ICON_PLAY:               ch1 = '>'; ch2 = ' '; break;
+	  case ICON_PLAYR:              ch1 = '<'; ch2 = ' '; break;
+	  case ICON_FF:                 ch1 = '>'; ch2 = '>'; break;
+	  case ICON_FR:                 ch1 = '<'; ch2 = '<'; break;
+	  case ICON_NEXT:               ch1 = '>'; ch2 = '|'; break;
+	  case ICON_PREV:               ch1 = '|'; ch2 = '<'; break;
+	  case ICON_REC:                ch1 = '('; ch2 = ')'; break;
 	}
+	curses_drv_chr( drvthis, x, y, ch1);
+	if (ch2) {
+		curses_drv_chr( drvthis, x+1, y, ch2);
+	}
+
 /* There was something with placing PAD
  * What wasthat ever for ?
  */

@@ -314,7 +314,7 @@ widget_set_func (Client * c, int argc, char **argv)
 			sock_send_string(c->sock, "success\n");
 		}
 		break;
-	case WID_ICON:				  /* Icon takes "x y binary_data"*/
+	case WID_ICON:				  /* Icon takes "x y icon"*/
 		if (argc != i + 3)
 			sock_send_string (c->sock, "huh?  Wrong number of arguments\n");
 		else {
@@ -322,14 +322,20 @@ widget_set_func (Client * c, int argc, char **argv)
 			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
 				sock_send_string (c->sock, "huh?  Invalid coordinates\n");
 			} else {
+				int icon;
 				x = atoi (argv[i]);
 				y = atoi (argv[i + 1]);
-				w->x = x;
-				w->y = y;
-				/* TODO:  Parse binary data and copy it to widget's data...*/
+				icon = widget_iconname_to_icon (argv[i + 2]);
+				if (icon == -1) {
+					sock_send_string (c->sock, "huh?  Invalid icon name\n");
+				} else {
+					w->x = x;
+					w->y = y;
+					w->length = icon;
+					sock_send_string(c->sock, "success\n");
+				}
 			}
 		}
-		sock_send_string (c->sock, "huh?  Widget type not yet implemented\n");
 		break;
 	case WID_TITLE:				  /* title takes "text"*/
 		if (argc != i + 1)

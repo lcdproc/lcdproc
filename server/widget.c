@@ -22,6 +22,7 @@
 #include "screen.h"
 #include "widget.h"
 #include "render.h"
+#include "drivers/lcd.h"
 
 char *typenames[] = {
 	"none",
@@ -36,8 +37,32 @@ char *typenames[] = {
 	NULL,
 };
 
+struct icontable {
+	int icon;
+	char *iconname;
+} icontable[] = {
+	{ICON_BLOCK_FILLED, "BLOCK_FILLED"},
+	{ICON_HEART_OPEN, "HEART_OPEN"},
+	{ICON_HEART_FILLED, "HEART_FILLED"},
+	{ICON_ARROW_UP, "ARROW_UP"},
+	{ICON_ARROW_DOWN, "ARROW_DOWN"},
+	{ICON_ARROW_LEFT, "ARROW_LEFT"},
+	{ICON_ARROW_RIGHT, "ARROW_RIGHT"},
+	{ICON_STOP, "STOP"},
+	{ICON_PAUSE, "PAUSE"},
+	{ICON_PLAY, "PLAY"},
+	{ICON_PLAYR, "PLAYR"},
+	{ICON_FF, "FF"},
+	{ICON_FR, "FR"},
+	{ICON_NEXT, "NEXT"},
+	{ICON_PREV, "PREV"},
+	{ICON_REC, "REC"},
+	{0,NULL}
+};
+
 //static widget *widget_finder (LinkedList * list, char *id);
 //static int widget_remover (LinkedList * list, widget * w);
+
 
 Widget *
 widget_create (char *id, WidgetType type, Screen * screen)
@@ -148,3 +173,30 @@ widget_search_subs (Widget * w, char * id)
 		return NULL; /* no kids */
 	}
 }
+
+char *widget_icon_to_iconname (int icon)
+{
+	int i;
+
+	for (i=0; icontable[i].iconname; i++) {
+		if (icontable[i].icon == icon) {
+			return icontable[i].iconname;
+		}
+	}
+
+	return NULL;
+}
+
+int widget_iconname_to_icon (char *iconname)
+{
+	int i;
+
+	for (i=0; icontable[i].iconname; i++) {
+		if (strcasecmp( icontable[i].iconname, iconname) == 0) {
+			return icontable[i].icon;
+		}
+	}
+
+	return -1;
+}
+

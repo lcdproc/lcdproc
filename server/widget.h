@@ -60,4 +60,10 @@ char *widget_type_to_typename (WidgetType t);
 /* Search subwidgets of a widget */
 Widget * widget_search_subs (Widget * w, char * id);
 
+/* Convert icon number to icon name */
+char *widget_icon_to_iconname (int icon);
+
+/* Convert iconname to icon number */
+int widget_iconname_to_icon (char *iconname);
+
 #endif

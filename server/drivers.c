@@ -294,7 +294,7 @@ drivers_icon( int x, int y, int icon )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_icon( x=%d, y=%d, icon=%d )", x, y, icon );
+	report( RPT_INFO, "drivers_icon( x=%d, y=%d, icon=ICON_%s )", x, y, widget_icon_to_iconname (icon) );
 
 	ForAllDrivers(drv) {
 		if( drv->icon )

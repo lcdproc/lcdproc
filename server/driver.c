@@ -29,6 +29,7 @@
 #include "shared/report.h"
 #include "configfile.h"
 
+#include "widget.h"
 #include "driver.h"
 #include "drivers.h"
 #include "drivers/lcd.h"
@@ -311,6 +312,8 @@ driver_alt_vbar( Driver * drv, int x, int y, int len, int promille, int pattern 
 {
 	int pos;
 
+	debug (RPT_DEBUG, "%s( drv=[%.40s], x=%d, y=%d, len=%d, promille=%d, pattern=%d", __FILE__, drv->name, x, y, len, promille, pattern);
+
 	if (!drv->chr)
 		return;
 	for ( pos=0; pos<len; pos++ ) {
@@ -326,6 +329,8 @@ void
 driver_alt_hbar( Driver * drv, int x, int y, int len, int promille, int pattern )
 {
 	int pos;
+
+	debug (RPT_DEBUG, "%s( drv=[%.40s], x=%d, y=%d, len=%d, promille=%d, pattern=%d", __FILE__, drv->name, x, y, len, promille, pattern);
 
 	if (!drv->chr)
 		return;
@@ -401,6 +406,8 @@ driver_alt_num( Driver * drv, int x, int num )
 
 	int y, dx;
 
+	debug (RPT_DEBUG, "%s( drv=[%.40s], x=%d, num=%d", __FILE__, drv->name, x, num);
+
 	if (!drv->chr)
 		return;
 
@@ -414,6 +421,7 @@ driver_alt_heartbeat( Driver * drv, int state )
 {
 	int icon;
 
+	debug (RPT_DEBUG, "%s( drv=[%.40s], state=%d", __FILE__, drv->name, state);
 
 	if (state == HEARTBEAT_OFF)
 		return;
@@ -438,6 +446,8 @@ driver_alt_icon( Driver * drv, int x, int y, int icon )
 {
 	char ch1 = '?';
 	char ch2 = 0;
+
+	debug (RPT_DEBUG, "%s( drv=[%.40s], x=%d, y=%d, icon=ICON_%s", __FILE__, drv->name, x, y, widget_icon_to_iconname (icon) );
 
 	if (!drv->chr)
 		return;
@@ -468,6 +478,8 @@ driver_alt_icon( Driver * drv, int x, int y, int icon )
 void driver_alt_cursor( Driver * drv, int x, int y, int state )
 {
 	/* Same question about timer in this function... */
+
+	debug (RPT_DEBUG, "%s( drv=[%.40s], x=%d, y=%d, state=%d", __FILE__, drv->name, x, y, state);
 
 	switch( state ) {
 	  case CURSOR_BLOCK:
