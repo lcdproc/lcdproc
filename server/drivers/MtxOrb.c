@@ -26,6 +26,7 @@
 #endif
 
 #include "lcd.h"
+#include "lcd_lib.h"
 #include "MtxOrb.h"
 #include "drv_base.h"
 #include "shared/debug.h"
@@ -1037,30 +1038,57 @@ static void
 MtxOrb_draw_frame (char *dat)
 {
 	char out[12];
-	int i;
-	char *old = NULL;
+	int i,j,mv = 1;
+	static char *old = NULL;
+	char *p, *q;
 
 	if (!dat)
 		return;
 
-	if (!old) {
+	if (old == NULL) {
 		old = malloc(MtxOrb->wid * MtxOrb->hgt);
+
+		write(fd, "\x0FEG\x01\x01", 4);
+		write(fd, dat, MtxOrb->wid * MtxOrb->hgt);
+
+		strncpy(old, dat, MtxOrb->wid * MtxOrb->hgt);
+
+		return;
+
 	} else {
 		if (! new_framebuf(MtxOrb, old))
 			return;
 	}
 
-	strncpy(old, dat, MtxOrb->wid * MtxOrb->hgt);
+	p = dat;
+	q = old;
 
-//        snprintf(out, sizeof(out), "%cG%c%c", 254, 1, 1);
-//        write(fd, out, 4);
-//        write(fd, dat, lcd.wid*lcd.hgt);
+	for (i = 1; i <= MtxOrb->hgt; i++) {
+		for (j = 1; j <= MtxOrb->wid; j++) {
 
-	for (i = 0; i < MtxOrb->hgt; i++) {
-		snprintf (out, sizeof(out), "\x0FEG\x001%c", i + 1);
-		write (fd, out, 4);
-		write (fd, dat + (MtxOrb->wid * i), MtxOrb->wid);
+			if ((*p) == (*q))
+				mv = 1;
+			else {
+				if (mv == 1) {
+					snprintf(out, sizeof(out), "\x0FEG%c%c", j, i);
+					write (fd, out, 4);
+					mv = 0;
+				}
+				write (fd, p, 1);
+			}
+			p++;
+			q++;
+		}
 	}
+
+
+	//for (i = 0; i < MtxOrb->hgt; i++) {
+	//	snprintf (out, sizeof(out), "\x0FEG\x001%c", i + 1);
+	//	write (fd, out, 4);
+	//	write (fd, dat + (MtxOrb->wid * i), MtxOrb->wid);
+	//}
+
+	strncpy(old, dat, MtxOrb->wid * MtxOrb->hgt);
 }
 
 /////////////////////////////////////////////////////////////
