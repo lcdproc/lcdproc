@@ -219,7 +219,7 @@ CFontz633_init (Driver * drvthis, char *args)
         portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
         portset.c_cflag |= CS8 | CREAD | CLOCAL ;
         portset.c_cc[VMIN] = 0;
-        portset.c_cc[VTIME] = 1;
+        portset.c_cc[VTIME] = 0;
     } else {
 #ifdef HAVE_CFMAKERAW
 		/* The easy way */
