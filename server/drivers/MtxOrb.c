@@ -386,40 +386,41 @@ MtxOrb_init (Driver *drvthis, char *args)
 
 	/* keypad test mode? */
 	if (drvthis->config_get_bool( drvthis->name , "keypad_test_mode" , 0 , 0)) {
-		report (RPT_INFO, "MtxOrb: Entering keypad test mode...\n");
+		fprintf( stdout, "MtxOrb: Entering keypad test mode...\n");
 		p->keypad_test_mode = 1;
+		stay_in_foreground = 1;
 	}
 
 	if (!p->keypad_test_mode) {
 		/* We don't send any chars to the server in keypad test mode.
-		 * So there's no need to get them from the configfile in keypad test mode.
+		 * So there's no need to get them from the configfile in keypad
+		 * test mode.
 		 */
 
-/* left_key */
-p->left_key = MtxOrb_parse_keypad_setting (drvthis, "LeftKey", MTXORB_DEFAULT_Left);
-report (RPT_DEBUG, "MtxOrb: Using \"%c\" as Leftkey.", p->left_key);
-
-/* right_key */
-p->right_key = MtxOrb_parse_keypad_setting (drvthis, "RightKey", MTXORB_DEFAULT_Right);
-report (RPT_DEBUG, "MtxOrb: Using \"%c\" as RightKey.", p->right_key);
-
-/* up_key */
-p->up_key = MtxOrb_parse_keypad_setting (drvthis, "UpKey", MTXORB_DEFAULT_Up);
-report (RPT_DEBUG, "MtxOrb: Using \"%c\" as UpKey.", p->up_key);
-
-/* down_key */
-p->down_key = MtxOrb_parse_keypad_setting (drvthis, "DownKey", MTXORB_DEFAULT_Down);
-report (RPT_DEBUG, "MtxOrb: Using \"%c\" as DownKey.", p->down_key);
-
-/* right_key */
-p->enter_key = MtxOrb_parse_keypad_setting (drvthis, "EnterKey", MTXORB_DEFAULT_Enter);
-report (RPT_DEBUG, "MtxOrb: Using \"%c\" as EnterKey.", p->enter_key);
-
-/* escape_key */
-p->escape_key = MtxOrb_parse_keypad_setting (drvthis, "EscapeKey", MTXORB_DEFAULT_Escape);
-report (RPT_DEBUG, "MtxOrb: Using \"%c\" as EscapeKey.", p->escape_key);
-
-
+		/* left_key */
+		p->left_key = MtxOrb_parse_keypad_setting (drvthis, "LeftKey", MTXORB_DEFAULT_Left);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as Leftkey.", p->left_key);
+		
+		/* right_key */
+		p->right_key = MtxOrb_parse_keypad_setting (drvthis, "RightKey", MTXORB_DEFAULT_Right);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as RightKey.", p->right_key);
+		
+		/* up_key */
+		p->up_key = MtxOrb_parse_keypad_setting (drvthis, "UpKey", MTXORB_DEFAULT_Up);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as UpKey.", p->up_key);
+		
+		/* down_key */
+		p->down_key = MtxOrb_parse_keypad_setting (drvthis, "DownKey", MTXORB_DEFAULT_Down);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as DownKey.", p->down_key);
+		
+		/* right_key */
+		p->enter_key = MtxOrb_parse_keypad_setting (drvthis, "EnterKey", MTXORB_DEFAULT_Enter);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as EnterKey.", p->enter_key);
+		
+		/* escape_key */
+		p->escape_key = MtxOrb_parse_keypad_setting (drvthis, "EscapeKey", MTXORB_DEFAULT_Escape);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as EscapeKey.", p->escape_key);
+		
 	}
 	/* End of config file parsing*/
 
@@ -876,7 +877,8 @@ MtxOrb_get_info (Driver *drvthis)
 	tv.tv_sec = 0;		/* seconds */
 	tv.tv_usec = 500;	/* microseconds */
 
-	retval = select(1, &rfds, NULL, NULL, &tv);
+/*	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); */
+	retval = select(p->fd+1, &rfds, NULL, NULL, NULL);
 
 	if (retval) {
 		if (read (p->fd, &in, 1) < 0) {
@@ -928,7 +930,8 @@ MtxOrb_get_info (Driver *drvthis)
 	tv.tv_sec = 0;		/* seconds */
 	tv.tv_usec = 500;	/* microseconds */
 
-	retval = select(1, &rfds, NULL, NULL, &tv);
+/*	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); */
+	retval = select(p->fd+1, &rfds, NULL, NULL, NULL);
 
 	if (retval) {
 		if (read (p->fd, &tmp, 2) < 0) {
@@ -951,7 +954,8 @@ MtxOrb_get_info (Driver *drvthis)
 	tv.tv_sec = 0;		/* seconds */
 	tv.tv_usec = 500;	/* microseconds */
 
-	retval = select(1, &rfds, NULL, NULL, &tv);
+/*	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); */
+	retval = select(p->fd+1, &rfds, NULL, NULL, NULL);
 
 	if (retval) {
 		if (read (p->fd, &tmp, 2) < 0) {
@@ -1236,20 +1240,32 @@ MtxOrb_get_key (Driver *drvthis)
 {
 	char in = 0;
 
-        PrivateData * p = drvthis->private_data;
+    PrivateData * p = drvthis->private_data;
 
-	read (p->fd, &in, 1);
+	(void) read (p->fd, &in, 1);
 
+	if ( 0 == in ) {
+		debug( RPT_INFO, "MtxOrb_get_key: in=>%d\n", in );
+		return NULL;
+	}
+
+	if (!p->keypad_test_mode) {
         if (in==p->left_key) { return "Left";
-	} else if (in==p->right_key) { return "Up";
-	} else if (in==p->up_key) { return "Down";
-	} else if (in==p->down_key) { return "Right";
-	} else if (in==p->enter_key) { return "Enter"; 
-	} else if (in==p->escape_key) { return "Escape";
-	} else {
-                        report( RPT_INFO, "MtxOrb Untreated key 0x%2x", in);
+		} else if (in==p->right_key) { return "Up";
+		} else if (in==p->up_key) { return "Down";
+		} else if (in==p->down_key) { return "Right";
+		} else if (in==p->enter_key) { return "Enter"; 
+		} else if (in==p->escape_key) { return "Escape";
+		} else {
+            report( RPT_INFO, "MtxOrb Untreated key 0x%2x", in);
 			return NULL;
         }
+	} else {
+		fprintf (stdout, "MtxOrb: Received character %c\n", in);
+		in = 0;
+		fprintf (stdout, "MtxOrb: Press another key of your device.\n");
+	}
+	return NULL;
 }
 
 
