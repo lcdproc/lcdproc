@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -30,6 +31,7 @@ sock_init_sockaddr (sockaddr_in * name, const char *hostname, unsigned short int
 {
 	struct hostent *hostinfo;
 
+	memset (name, 0, sizeof (*name));
 	name->sin_family = AF_INET;
 	name->sin_port = htons (port);
 	hostinfo = gethostbyname (hostname);
