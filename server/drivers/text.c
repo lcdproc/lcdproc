@@ -19,6 +19,23 @@
 #include "text.h"
 #include "drv_base.h"
 
+static void text_close ();
+static void text_clear ();
+static void text_flush ();
+static void text_string (int x, int y, char string[]);
+static void text_chr (int x, int y, char c);
+static int text_contrast (int contrast);
+static void text_backlight (int on);
+//static void text_init_vbar ();
+//static void text_init_hbar ();
+//static void text_init_num ();
+static void text_vbar (int x, int len);
+static void text_hbar (int x, int y, int len);
+static void text_num (int x, int num);
+//static void text_set_char (int n, char *dat);
+//static void text_flush_box (int lft, int top, int rgt, int bot);
+static void text_draw_frame (char *dat);
+
 /* Ugly code extracted by David GLAUDE from lcdm001.c ;)*/
 static char num_icon [10][4][3] = 	{{{' ','_',' '}, /*0*/
 					  {'|',' ','|'},
@@ -122,7 +139,7 @@ text_init (lcd_logical_driver * driver, char *args)
 	return 200;						  // 200 is arbitrary.  (must be 1 or more)
 }
 
-void
+static void
 text_close ()
 {
 	if (text->framebuf != NULL)
@@ -134,7 +151,7 @@ text_close ()
 /////////////////////////////////////////////////////////////////
 // Clears the LCD screen
 //
-void
+static void
 text_clear ()
 {
 	memset (text->framebuf, ' ', text->wid * text->hgt);
@@ -143,7 +160,7 @@ text_clear ()
 //////////////////////////////////////////////////////////////////
 // Flushes all output to the lcd...
 //
-void
+static void
 text_flush ()
 {
 	text_draw_frame (text->framebuf);
@@ -153,7 +170,7 @@ text_flush ()
 // Prints a string on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
-void
+static void
 text_string (int x, int y, char string[])
 {
 	int i;
@@ -169,7 +186,7 @@ text_string (int x, int y, char string[])
 // Prints a character on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
-void
+static void
 text_chr (int x, int y, char c)
 {
 	y--; x--;
@@ -177,14 +194,14 @@ text_chr (int x, int y, char c)
 	text->framebuf[(y * text->wid) + x] = c;
 }
 
-int
+static int
 text_contrast (int contrast)
 {
 //  printf("Contrast: %i\n", contrast);
 	return 0;
 }
 
-void
+static void
 text_backlight (int on)
 {
 /*
@@ -239,7 +256,7 @@ static void text_num (int x, int num)
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar; erases entire column onscreen.
 //
-void
+static void
 text_vbar (int x, int len)
 {
 	int y;
@@ -254,7 +271,7 @@ text_vbar (int x, int len)
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
-void
+static void
 text_hbar (int x, int y, int len)
 {
 	for (; x <= text->wid && len > 0; x++) {
@@ -265,13 +282,13 @@ text_hbar (int x, int y, int len)
 
 }
 
-void
+static void
 text_flush_box (int lft, int top, int rgt, int bot)
 {
 	text_flush ();
 }
 
-void
+static void
 text_draw_frame (char *dat)
 {
 	int i, j;
