@@ -257,7 +257,7 @@ lcd_list_drivers (void) {
 // This function initializes a few basics as well as the
 // "base" array.  To initialize a specific driver, use the
 // lcd_add_driver() function.
-// 
+//
 // This was eliminated; everything
 // done here is to be replaced by the use of lcd_add_driver()...
 int
@@ -379,7 +379,6 @@ lcd_drv_patch_init (struct lcd_logical_driver *driver)
  *
  */
 
-static
 void *
 lcd_find_init (char *driver) {
 	int i;

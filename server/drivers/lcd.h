@@ -71,6 +71,26 @@ typedef struct lcd_logical_driver {
 	void (*heartbeat) (int type);
 	// more?
 
+	// Config file functions, filled by server
+	char (*config_get_bool)	(char * sectionname, char * keyname,
+				int skip, char default_value);
+	int (*config_get_int)	(char * sectionname, char * keyname,
+				int skip, int default_value);
+	double (*config_get_float) (char * sectionname, char * keyname,
+				int skip, double default_value);
+	char *(*config_get_string) (char * sectionname, char * keyname,
+				int skip, char * default_value);
+				// Returns a string in server memory space.
+				// Copy this string.
+	int (*config_has_section) (char *sectionname);
+	int (*config_has_key)	(char *sectionname, char *keyname);
+
+	// Driver private data
+	int (*store_private_ptr) (struct lcd_logical_driver * driver, void * private_data);
+	void * private_data;	// Filled by server by calling store_private_ptr()
+				// Driver should cast this to it's own
+				// private structure pointer
+
 } lcd_logical_driver;
 
 typedef struct lcd_physical_driver {

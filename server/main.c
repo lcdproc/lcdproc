@@ -10,7 +10,7 @@
   Some of this stuff should probably be move elsewhere eventually,
   such as command-line handling and the main loop.  main() is supposed
   to be "dumb".
-  
+
  */
 
 #include <stdlib.h>
@@ -21,6 +21,7 @@
 #include <pwd.h>
 #include <errno.h>
 #include <syslog.h>
+#include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -30,7 +31,7 @@ extern int optind, optopt, opterr;
 
 #include "shared/debug.h"
 
-#include "drivers/lcd.h"
+#include "drivers.h"
 #include "sock.h"
 #include "clients.h"
 #include "screenlist.h"
@@ -39,17 +40,29 @@ extern int optind, optopt, opterr;
 #include "render.h"
 #include "serverscreens.h"
 #include "input.h"
+#include "configfile.h"
+#include "drivers.h"
 #include "main.h"
 
 #define MAX_TIMER 0x10000
-#define DEFAULT_USER "nobody"
-#define DEFAULT_CONFIG_FILE "/etc/LCDd.conf"
-#define DEFAULT_DRIVER "curses"
 
-int debug_level = 0;
+#define DEFAULT_DEBUG_LEVEL 1
+#define DEFAULT_LCD_PORT LCDPORT
+#define DEFAULT_BIND_ADDR "127.0.0.1"
+#define DEFAULT_CONFIGFILE "/etc/LCDd.conf"
+#define DEFAULT_USER "nobody"
+#define DEFAULT_DRIVER "curses"
+#define DEFAULT_WAITTIME 8
+#define MAX_DRIVERS 8
+#define DEFAULT_DAEMON_MODE 1
+#define DEFAULT_ENABLE_SERVER_SCREEN 0
+
+
+/* Store some standard defines into vars... */
 char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
 char *build_date = __DATE__;
+
 
 /* Socket to bind to...
 
@@ -59,8 +72,25 @@ char *build_date = __DATE__;
    Using variables for these means that (later) we can select which port
    and which address to bind to at run time. */
 
-char bind_addr[64];
-int lcd_port = 0;
+
+/**** Configuration variables ****/
+
+// All are set to 'unset' values
+int debug_level = -1;
+int lcd_port = -1;
+char bind_addr[64] = "";
+char configfile[256] = "";
+char user[64] = "";
+
+int daemon_mode = -1;
+int enable_server_screen = -1;
+
+// The drivers and their driver parameters
+char *drivernames[MAX_DRIVERS];
+char *driverfilenames[MAX_DRIVERS];
+char *driverargs[MAX_DRIVERS];
+int num_drivers = 0;
+
 
 // The parameter structure and args[] should
 // be removed when getopt(3) is implemented,
@@ -83,59 +113,30 @@ int lcd_port = 0;
 //	{NULL, NULL},
 //};
 
+
+/**** Local functions ****/
 void exit_program (int val);
 void HelpScreen ();
 
-// At this point, this function will only succeed;
-// all other options will stop the program.
-// However, it may not always be thus; so we prepared
-// for this possibility by making it return an int.
-//
-int drop_privs(char *user) {
-	struct passwd *pwent;
+void clear_settings();
+int process_command_line (int argc, char **argv);
+int process_configfile (char *cfgfile);
+void set_default_settings();
+int daemonize();
+int init_sockets();
+int drop_privs(char *user);
+int init_drivers();
+int init_screens();
+void do_mainloop();
 
-	if (getuid() == 0 || geteuid() == 0) {
-		if ((pwent = getpwnam(user)) == NULL) {
-			if (errno) {
-				perror("LCDd: getpwnam");
-				exit(1);
-			} else {
-				fprintf(stderr, "user %s not a valid user!", user);
-				exit(1);
-			}
-		} else {
-			if (setuid(pwent->pw_uid) < 0) {
-				fprintf(stderr, "unable to switch to user %s\n", user);
-				perror("LCDd: setuid");
-				exit(1);
-			}
-		}
-	}
-	return 0;
-}
-
-#define MAX_DRIVERS 12
-#define MAX_DRIVER_NAME_SIZE 64
+#define ESSENTIAL(f) {int r; if( ( r=f )!=0 ) return r;}
 
 int
 main (int argc, char **argv)
 {
-	char cfgfile[256] = DEFAULT_CONFIG_FILE;
-	FILE *config;
-
-	int i, err;
-	int daemon_mode = 1;
-	int disable_server_screen = 1;
-
 	// FIXME: s is getting clobbered - in MANY places!!!
-	screen *s = NULL;
-
-	//char *str, *ing;				  // strings for commandline handling
-	char user[64];
-	char c, buf[64], *driverlist[MAX_DRIVERS], *driverargs[MAX_DRIVERS];
-	char linebuf[128], driver_name[64];
-	int driver_index, list_index;
-	//char *nullargs[64];
+	//screen *s = NULL;
+	//char buf[64];
 
 	signal (SIGINT, exit_program);		// Ctrl-C will cause a clean exit...
 	signal (SIGTERM, exit_program);		// and "kill"...
@@ -145,11 +146,6 @@ main (int argc, char **argv)
 	// If no paramaters given, give the help screen.
 	//if (argc == 1)
 	//	HelpScreen ();
-
-	memset(driverlist, '\0', sizeof(driverlist));
-	memset(bind_addr, '\0', sizeof(bind_addr));
-	memset(user, '\0', sizeof(user));
-	memset(driverargs, '\0', sizeof(driverargs));
 
 	/*
 	 * Settings in order of preference:
@@ -171,18 +167,99 @@ main (int argc, char **argv)
 	 * in the variable declaration...
 	 */
 
-	i = 0;
+	// Open syslog facility
+	openlog("LCDd", LOG_PID, LOG_DAEMON);
+	syslog(LOG_NOTICE, "server version %s starting up (protocol version %s)",
+		version, protocol_version);
+	syslog(LOG_NOTICE, "server built on %s",
+		build_date);
+
+	clear_settings();
+
+	// Read command line
+	ESSENTIAL( process_command_line (argc, argv) );
+
+	// Read config file
+	ESSENTIAL( process_configfile (configfile) );
+
+	// Set default values
+	set_default_settings();
+
+	if (debug_level > 0)
+		syslog(LOG_NOTICE, "debug level set to %d", debug_level);
+
+	ESSENTIAL( init_sockets() );
+	ESSENTIAL( drop_privs(user) );
+	ESSENTIAL( init_drivers() );
+	ESSENTIAL( init_screens() );
+
+#ifndef DEBUG
+	// Now, go into daemon mode...
+	if (daemon_mode) {
+		syslog(LOG_NOTICE, "server forking to background");
+		ESSENTIAL( daemonize() );
+	} else {
+		syslog(LOG_NOTICE, "server running in foreground");
+	}
+#endif
+
+	do_mainloop();
+	// This loop never stops; we'll get out only with a signal...
+
+	return 0;
+}
+
+
+void
+clear_settings ()
+{
+	int i;
+
+	debug_level = -1;
+	lcd_port = 0;
+	bind_addr[0] = 0;
+	configfile[0] = 0;
+	user[0] = 0;
+	daemon_mode = -1;
+	enable_server_screen = -1;
+
+	default_duration = -1;
+
+	for( i=0; i < num_drivers; i++ ) {
+		free( drivernames[i] );
+		free( driverfilenames[i] );
+		free( driverargs[i] );
+		drivernames[i] = NULL;
+		driverfilenames[i] = NULL;
+		driverargs[i] = NULL;
+	}
+	num_drivers = 0;
+}
+
+
+/* parses arguments given on command line */
+int
+process_command_line (int argc, char **argv)
+{
+	char  c;
+	char  buf[64];
+
 	// analyze options here..
 	while ((c = getopt(argc, argv, "a:p:d:hfiw:c:u:")) > 0) {
 		// FIXME: Setting of c in this loop clobbers s!
 		// s is set equivalent to c.
 		switch(c) {
-			case 'd':
+	 		case 'd':
 				// Add to a list of drivers to be initialized later...
-				if (i < MAX_DRIVERS) {
-					driverlist[i] = malloc(MAX_DRIVER_NAME_SIZE);
-					strncpy(driverlist[i], optarg, MAX_DRIVER_NAME_SIZE);
-					i++;
+				if (num_drivers < MAX_DRIVERS) {
+					drivernames[num_drivers]	= malloc( strlen(optarg)+1 );
+					driverfilenames[num_drivers]	= malloc( strlen(optarg)+1 );
+					driverargs[num_drivers]		= malloc(1);
+
+					strcpy( drivernames[num_drivers], optarg );
+					strcpy( driverfilenames[num_drivers], optarg );
+					strcpy( driverargs[num_drivers], "");
+					num_drivers ++;
 				} else
 					fprintf(stderr, "too many drivers!");
 				break;
@@ -202,10 +279,10 @@ main (int argc, char **argv)
 				daemon_mode = 0;
 				break;
 			case 'c':
-				strncpy(cfgfile, optarg, sizeof(cfgfile));
+				strncpy(configfile, optarg, sizeof(configfile));
 				break;
 			case 'i':
-				disable_server_screen = 1;
+				enable_server_screen = 0;
 				break;
 			case 'w':
 				default_duration = atoi(optarg);
@@ -230,378 +307,161 @@ main (int argc, char **argv)
 	if (optind < argc)
 		fprintf(stderr, "non-option arguments!! BAD...");
 
-	openlog("LCDd", LOG_PID, LOG_DAEMON);
-	syslog(LOG_NOTICE, "server version %s starting up (protocol version %s)",
-		version, protocol_version);
-	syslog(LOG_NOTICE, "server built on %s",
-		build_date);
+	return 0;
+}
 
-	if ((config = fopen(cfgfile, "r")) == NULL) {
-		syslog(LOG_WARNING, "no configuration file found... using defaults");
-	} else {
-		driver_index = -1;
-		list_index = 0;
 
-		memset(linebuf, '\0', sizeof(linebuf));
+/* reads and parses configuration file */
+int
+process_configfile ( char *configfile )
+{
+	int i;
+	char * s;
+	//char buf[64];
 
-		while (fgets(linebuf, sizeof(linebuf), config)) {
-			if (linebuf[strlen(linebuf) - 1] == '\n')
-				linebuf[strlen(linebuf) - 1] = '\0';
+	// Read server settings
 
-			/*
-			 * Comment lines and empty lines...
-			 *
-			 */
+	config_read_file( configfile );
 
-			if (linebuf[0] == '\0' ||			// empty line
-			    linebuf[0] == '\n' ||			// empty line
-			    linebuf[0] == '\r' ||			// empty line
-			    linebuf[0] == '#'  ||			// comment line (#)
-			    linebuf[0] == ';'  ||			// comment line (;)
-			    (linebuf[0] == '/' && linebuf[1] == '/'))	// comment line (//)
-				continue;
+	if( debug_level == -1 )
+		debug_level = config_get_int( "server", "debug", 0, -1 );
 
-			/*
-			 * Driver section lines...
-			 *
-			 */
+	if( lcd_port == -1 )
+		lcd_port = config_get_int( "server", "port", 0, -1 );
 
-			else if (linebuf[0] == '[' && linebuf[strlen(linebuf) - 1] == ']') {
-				driver_index = -1;
+	if( bind_addr == "" )
+		strncpy( bind_addr, config_get_string( "server", "bind", 0, "" ), sizeof(bind_addr));
 
-				linebuf[strlen(linebuf) - 1] = '\0';
+	if( user == "" )
+		strncpy( user, config_get_string( "server", "user", 0, "" ), sizeof(user));
 
-				// FIXME: This sets s to point to the current driver_name!!!
-				strncpy(driver_name, linebuf + 1, sizeof(driver_name));
-
-				for (i = 0; i < MAX_DRIVERS; i++) {
-					if (driverlist[i] == NULL)
-						break;
-
-					if (strcasecmp(driver_name, driverlist[i]) == 0) {
-						driver_index = i;
-						break;
-					}
-				}
-
-			/*
-			 * Driver section data lines
-			 *
-			 * These are only scanned for drivers that are being used...
-			 *
-			 */
-
-			} else if (driver_index >= 0) {
-				if (strncasecmp(linebuf, "arguments ", 10) == 0) {
-					if ((driverargs[driver_index] = malloc(strlen(linebuf))) == NULL) {
-						fprintf(stderr, "could not allocate memory for driver arguments!");
-						exit(1);
-					} else {
-						strncpy(driverargs[driver_index], linebuf + 9, strlen(linebuf));
-					}
-				} else {
-					fprintf(stderr, "unknown command line: %s\n", linebuf);
-					exit(1);
-				}
-			} else {
-
-			/*
-			 * Global settings..
-			 *
-			 */
-
-				// not in a driver section...
-				if (strncasecmp(linebuf, "Driver ", 7) == 0) {
-					if (driverlist[0] == NULL) { // check for arguments: override conf file drivers...
-						driverlist[list_index] = malloc(MAX_DRIVER_NAME_SIZE);
-						snprintf(driverlist[list_index++], MAX_DRIVER_NAME_SIZE, "%s", linebuf + 7);
-					}
-				} else if (strncasecmp(linebuf, "Bind ", 5) == 0) {
-					if (bind_addr[0] == '\0')
-						strncpy(bind_addr, linebuf + 5, sizeof(bind_addr));
-				} else if (strncasecmp(linebuf, "User ", 5) == 0) {
-					if (user[0] == '\0')
-						strncpy(user, linebuf + 5, sizeof(user));
-				} else if (strncasecmp(linebuf, "Port ", 5) == 0) {
-					if (lcd_port == 0)
-						lcd_port = atoi(linebuf + 5);
-				} else if ((strncasecmp(linebuf, "Wait ", 5) == 0) ||
-					   (strncasecmp(linebuf, "WaitTime ", 9) == 0)) {
-					char *p;
-
-					p = linebuf;
-					while (*p != ' ') p++;
-					p++;
-					
-					default_duration = atoi(p);
-					if ( default_duration < 16 || default_duration > 10000 ) {
-						snprintf(buf, sizeof(buf),
-							"wait time should be between 16 and 10000 (in 1/8ths of second), not %s\n", optarg);
-						fprintf(stderr, "%s", buf);
-						HelpScreen ();
-					}
-				} else if (strncasecmp(linebuf, "Debug ", 5) == 0) {
-					debug_level = atoi(linebuf + 5);
-				}
-			}
+	if( default_duration == -1 ) {
+		default_duration = (config_get_float( "server", "waittime", 0, 0 ) * 1000000 / TIME_UNIT );
+		if( default_duration == 0 )
+			default_duration = -1;
+		else if( default_duration < 16 ) {
+			fprintf( stderr, "waittime should be at least 2 (seconds)\n" );
+			return -1;
 		}
-		fclose(config);
 	}
 
-	if (debug_level > 0)
-		syslog(LOG_NOTICE, "debug level set to %d",
-			debug_level);
+	if( daemon_mode == -1 )
+		daemon_mode = ! config_get_bool( "server", "foreground", 0, -1 );
 
-	// set defaults....
+	if( enable_server_screen == -1 )
+		enable_server_screen = config_get_bool( "server", "serverscreen", 0, -1 );
+
+	// Read drivers
+
+	// If drivers have been specified on the command line, then do not
+	// use the driver list from the config file.
+	if( num_drivers == 0 ) {
+		// read the drivernames
+		s = ""; // fill with anything
+
+		while( s ) {
+			s = config_get_string( "server", "driver", num_drivers, "" );
+			if( s ) {
+
+				drivernames[num_drivers] = malloc(strlen(s) + 1);
+				driverfilenames[num_drivers] = malloc(1);
+				driverargs[num_drivers] = malloc(1);
+
+				strcpy( drivernames[num_drivers], s );
+				strcpy( driverfilenames[num_drivers], s );
+				strcpy( driverargs[num_drivers], "" );
+
+				num_drivers++;
+			}
+		}
+	}
+
+	// Now read the driver options that the server needs
+	// Drivers can read their own options later...
+	for( i=0; i<num_drivers; i ++ ) {
+		s = config_get_string( drivernames[i], "file", 0, "" );
+		driverfilenames[i] = realloc( driverfilenames[i], strlen(s)+1 );
+		strcpy (driverfilenames[i], s );
+
+		s = config_get_string( drivernames[i], "arguments", 0, "" );
+		driverargs[i] = realloc( driverargs[i], strlen(s)+1 );
+		strcpy (driverargs[i], s );
+	}
+
+	return 0;
+}
+
+
+void
+set_default_settings()
+{
+	// Set defaults into unfilled variables....
+
+	if (debug_level == -1)
+		debug_level = DEFAULT_DEBUG_LEVEL;
+	if (lcd_port == 0)
+		lcd_port = DEFAULT_LCD_PORT;
+	if (bind_addr[0] == 0)
+		strncpy (bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
+	if (configfile[0] == 0)
+		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
 	if (user[0] == '\0')
 		strncpy(user, DEFAULT_USER, sizeof(user));
-	if (bind_addr[0] == '\0')
-		strncpy(bind_addr, DEFAULT_ADDR, sizeof(bind_addr));
-	if (lcd_port == 0)
-		lcd_port = LCDPORT;
-	if (default_duration == 0)
+	if (daemon_mode == -1)
+		daemon_mode = DEFAULT_DAEMON_MODE;
+	if (enable_server_screen == -1)
+		enable_server_screen = DEFAULT_ENABLE_SERVER_SCREEN;
+
+	if (default_duration == -1)
 		default_duration = DEFAULT_SCREEN_DURATION;
 
 	// Use default driver
-	if (driverlist[0] == NULL) {
-		driverlist[0] = malloc(MAX_DRIVER_NAME_SIZE);
-		strcpy(driverlist[0], DEFAULT_DRIVER);
+	if( num_drivers == 0 ) {
+		drivernames[0] = malloc(strlen(DEFAULT_DRIVER)+1);
+		strcpy(drivernames[0], DEFAULT_DRIVER);
+		driverfilenames[0] = malloc(1);
+		strcpy(driverfilenames[0], DEFAULT_DRIVER);
+		driverargs[0] = malloc(1);
+		strcpy(driverargs[0], "");
 	}
+}
 
-	// FIXME: This sets s equal to a value related to i
-	// (bitshifted left?)  FIX FIX FIX ARGH....
+
+int
+daemonize()
+{
+	int child;
+
+	switch ((child = fork ()) ) {
+	  case -1:
+		syslog(LOG_ERR, "could not fork");
+		return 1;
+	  case 0: // We are the child
+		break;
+	  default: // We are the parent
+		usleep (1500000);		  // Wait for child to initialize
+		exit (0);				  /* PARENT EXITS */
+	}
+	// This line removed because it eats error messages...
+	//setsid();                                       /* RELEASE TTY */
 	//
-	// Go thru all drivers and initialize all of them
-	for (i = 0; i < MAX_DRIVERS; i++) {
-		if (driverlist[i] == NULL)
-			continue;
-
-		if ((err = lcd_add_driver (driverlist[i], driverargs[i])) > 0) {
-			// if we are to run as a background daemon,
-			// make this fact dependent on the output driver's
-			// sayso - if the output driver desires, do NOT daemonize...
-			if (daemon_mode == 1)
-				daemon_mode = lcd_ptr->daemonize;
-		} else {
-			if (i == 0) {
-				snprintf(buf, sizeof(buf), "error loading output driver %s...\n", driverlist[i]);
-				fprintf(stderr, buf);
-				exit(1);
-			} else {
-				snprintf(buf, sizeof(buf), "error loading input driver %s... continuing\n", driverlist[i]);
-				fprintf(stderr, buf);
-			}
-		}
-	}
-
-#ifndef DEBUG
-	// Now, go into daemon mode...
-	if (daemon_mode) {
-		int child;
-
-		syslog(LOG_NOTICE, "server forking to background");
-
-		if ((child = fork ()) != 0) {
-			usleep (1500000);		  // Wait for child to initialize
-			exit (0);				  /* PARENT EXITS */
-		}
-		// This line removed because it eats error messages...
-		//setsid();                                       /* RELEASE TTY */
-		//
-		// After this point, as a daemon, no error messages should
-		// go to the console unless drastic; rather, they should go to syslog
-		//
-		// However, option processing is not yet done, nor is any initialization (!)
-		// So we must wait until the main loop.
-	} else {
-		syslog(LOG_NOTICE, "server running in foreground");
-	}
-#endif
-
-	// Set up lcd driver base system
-	//lcd_init ("");
-
-#ifdef IGNORE_THIS
-	// Parse the command line now...
-	// TODO:  Move this to a separate function?
+	// After this point, as a daemon, no error messages should
+	// go to the console unless drastic; rather, they should go to syslog
 	//
-	for (i = 1; i < argc; i++) {
-		if (argv[i][0] == '-') {
+	// However, option processing is not yet done, nor is any initialization (!)
+	// So we must wait until the main loop.
+	return 0;
+}
 
-			/*
-			 * -d <driver> [ <driver_opts> ... ]
-			 * --driver <driver> [ <driver_opts> ... ]
-			 * 
-			 * This option does not transfer to a getopt() version;
-			 * will have to change the option format...
-			 */
 
-			if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--driver")) {
-				if (argc <= i + 1)
-					HelpScreen ();
-				str = argv[++i];
-				ing = NULL;
-
-				// Check to see if the next parameter is intended for LCDd,
-				// or if it should be passed to the driver...
-				if (argc > i + 1) {
-					int j, skip = 0;
-					for (j = 1; args[j].lg; j++)	// check each option except "help"
-						if (!strcmp (argv[i + 1], args[j].sh) || !strcmp (argv[i + 1], args[j].lg))
-							skip = 1;
-
-					if (!skip) {
-						ing = argv[++i];
-					}
-					//else i++;
-				}
-				err = lcd_add_driver (str, ing);
-				if (err <= 0) {
-					printf ("Error loading driver %s.  Continuing anyway...\n", str);
-				}
-				if ((err > 0) && (0 == strcmp (str, "curses")))
-					daemon_mode = 0;
-
-			/*
-			 * -h
-			 * --help
-			 *
-			 * Help function
-			 */
-
-			} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-				HelpScreen ();
-			}
-
-			/*
-			 * -f
-			 * --foreground
-			 *
-			 * Keep program in foreground; use for debugging, such
-			 * as with gdb
-			 */
-
-			// Redundant, but it prevents errors...
-			else if (0 == strcmp (argv[i], "-f") || 0 == strcmp (argv[i], "--foreground")) {
-				daemon_mode = 0;
-
-			/*
-			 * -b [ "on" | "off" | "open" ]
-			 * --backlight [ "on" | "off" | "open" ]
-			 *
-			 * This should be a driver option, likely within the config file.
-			 * What IS "open" anyway?
-			 */
-
-			} else if (0 == strcmp (argv[i], "-b") || 0 == strcmp (argv[i], "--backlight")) {
-				if (argc <= i + 1)
-					HelpScreen ();
-				str = argv[++i];
-				if (0 == strcmp (str, "off"))
-					backlight_state = backlight = BACKLIGHT_OFF;
-				else if (0 == strcmp (str, "on"))
-					backlight_state = backlight = BACKLIGHT_ON;
-				else if (0 == strcmp (str, "open"))
-					backlight = BACKLIGHT_OPEN;
-				else
-					HelpScreen ();
-
-			/*
-			 * -t
-			 * --type
-			 *
-			 * Type of LCD; this *DEFINITELY* should only be
-			 * a driver option.
-			 */
-
-			} else if (0 == strcmp (argv[i], "-t") || 0 == strcmp (argv[i], "--type")) {
-				if (i + 1 > argc)
-					HelpScreen ();
-				else {
-					int wid, hgt;
-
-					i++;
-					sscanf (argv[i], "%ix%i", &wid, &hgt);
-					if (wid > 80 || wid < 16 || hgt > 25 || hgt < 2) {
-						fprintf (stderr, "LCDd: Invalid lcd size \"%s\".  Using 20x4.\n", argv[i]);
-						lcd_ptr->wid = 20;
-						lcd_ptr->hgt = 4;
-					} else {
-						lcd_ptr->wid = wid;
-						lcd_ptr->hgt = hgt;
-					}
-
-				}
-
-			/*
-			 * -i
-			 * --serverinfo
-			 *
-			 * Display server information during normal screen
-			 * updates when windows are active; server information
-			 * is always shown if there are no windows active.
-			 */
-
-			} else if (0 == strcmp (argv[i], "-i") || 0 == strcmp (argv[i], "--serverinfo")) {
-				if (i + 1 > argc)
-					HelpScreen ();
-				else {
-					i++;
-					if (0 == strcmp (argv[i], "off"))
-						disable_server_screen = 1;
-					if (0 == strcmp (argv[i], "on"))
-						disable_server_screen = 0;
-				}
-
-			/*
-			 * -w <1/8 secs>
-			 * --waittime <1/8 secs>
-			 *
-			 * Sets the default duration that a screen
-			 * is present.
-			 */
-
-			} else if (0 == strcmp (argv[i], "-w") || 0 == strcmp (argv[i], "--waittime")) {
-				if (i + 1 > argc)
-					HelpScreen ();
-				else {
-					int  tmp ;
-					i++;
-					tmp = atoi( argv[i] );
-					if ( tmp < 16 || tmp > 10000 ) {
-						printf ("Wait time should be between 16 and 10000 (1/8ths of second), not %s\n", argv[i]);
-						HelpScreen ();
-					} else {
-						default_duration = tmp ;
-					};
-				}
-			} else {
-
-			/*
-			 * End of valid options
-			 */
-
-				printf ("Invalid parameter: %s\n", argv[i]);
-				HelpScreen ();
-			}
-		} else {
-			printf("non-option: %s", argv[i]);
-			HelpScreen ();
-		}
-	}
-#endif
-
-	// switch to a different user for the real work...
-	if (lcd_port >= 1024)	// unpriviledged port
-		drop_privs(user);
+int
+init_sockets ()
+{
 
 	if (sock_create_server (&bind_addr, lcd_port) <= 0) {
 		syslog(LOG_ERR, "error opening socket");
 		return 1;
 	}
-
-	if (lcd_port < 1024)	// priviledged port
-		drop_privs(user);
 
 	// Now init a bunch of required stuff...
 
@@ -609,7 +469,84 @@ main (int argc, char **argv)
 		syslog(LOG_ERR, "error initializing client list");
 		return 1;
 	}
+	return 0;
+}
 
+
+int
+init_drivers()
+{
+	int i, res;
+	char buf[64];
+
+	int output_loaded = 0;
+
+	// FIXME: This sets s equal to a value related to i
+	// (bitshifted left?)  FIX FIX FIX ARGH....
+	//
+	// Go thru all drivers and initialize all of them
+	for (i = 0; i < num_drivers; i++) {
+
+		res = load_driver (drivernames[i], driverfilenames[i], driverargs[i]);
+		if (res >= 0) {
+			// Load went OK
+
+			switch( res ) {
+			  case 0: // Driver does input only
+			  	break;
+			  case 1: // Driver does output
+			  	output_loaded = 1;
+			  	break;
+			  case 2: // Driver does output in foreground (don't daemonize)
+			  	if ( !output_loaded ) {
+			  		daemon_mode = 1;
+			  	}
+			  	output_loaded = 1;
+			  	break;
+			}
+		} else {
+			snprintf(buf, sizeof(buf), "Could not load driver %s\n", drivernames[i]);
+			fprintf(stderr, buf);
+		}
+	}
+
+	// Do we have a running output driver ?
+	if ( output_loaded ) {
+		return 0;
+	} else {
+		return -1;
+	}
+}
+
+
+int drop_privs(char *user)
+{
+	struct passwd *pwent;
+
+	if (getuid() == 0 || geteuid() == 0) {
+		if ((pwent = getpwnam(user)) == NULL) {
+			if (errno) {
+				perror("LCDd: getpwnam");
+				return 1;
+			} else {
+				fprintf(stderr, "user %s not a valid user!", user);
+				return 1;
+			}
+		} else {
+			if (setuid(pwent->pw_uid) < 0) {
+				fprintf(stderr, "unable to switch to user %s\n", user);
+				perror("LCDd: setuid");
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+
+int
+init_screens ()
+{
 	if (screenlist_init () < 0) {
 		syslog(LOG_ERR, "error initializing screen list");
 		return 1;
@@ -618,22 +555,20 @@ main (int argc, char **argv)
 	if (server_screen_init () < 0) {
 		syslog(LOG_ERR, "error initializing server screens");
 		return 1;
-	} else if (disable_server_screen) {
+	} else if (!enable_server_screen) {
 		server_screen->priority = 256;
 	}
+	return 0;
+}
 
-	// Probably a better place to fork
-	//
-	// Main loop...
 
-	syslog(LOG_NOTICE, "using %dx%d LCD with cells %dx%d",
-		lcd_ptr->wid, lcd_ptr->hgt, lcd_ptr->cellwid, lcd_ptr->cellhgt);
-	if (debug_level > 2)
-		syslog(LOG_DEBUG, "framebuffer at %0X",
-			lcd_ptr->framebuf);
+void
+do_mainloop ()
+{
+	screen *s = NULL;
+	//char buf[64];
 
 	// FIXME: s should still be null from initialization.... what's happening here?!
-	s = NULL;
 	while (1) {
 		sock_poll_clients ();		// poll clients for input
 		parse_all_client_messages ();	// analyze input from network clients
@@ -686,8 +621,6 @@ main (int argc, char **argv)
 
 	// Quit!
 	exit_program (0);
-
-	return 0;
 }
 
 void
@@ -709,26 +642,22 @@ exit_program (int val)
 
 	syslog(LOG_NOTICE, buf);	// send message to syslog
 
-	if (lcd_ptr->framebuf != NULL) {
-		goodbye_screen ();		// display goodbye screen on LCD display
-		lcd_shutdown ();		// release driver memory and file descriptors
 
-		client_shutdown ();		// shutdown clients (must come first)
+	goodbye_screen ();		// display goodbye screen on LCD display
+	unload_all_drivers ();		// release driver memory and file descriptors
 
-		screenlist_shutdown ();		// shutdown screens (must come after client_shutdown)
-		sock_close_all ();		// close all open sockets (must come after client_shutdown)
-	}
+	client_shutdown ();		// shutdown clients (must come first)
+	screenlist_shutdown ();		// shutdown screens (must come after client_shutdown)
+	sock_close_all ();		// close all open sockets (must come after client_shutdown)
+
 
 	exit (0);
 }
 
+
 void
 HelpScreen ()
 {
-	// This cleans up any messes on the display output if needed...
-	if (lcd_ptr)
-		if (lcd_ptr->framebuf != NULL)
-			lcd_ptr->close();
 
 	printf ("\nLCDd Server Daemon (part of lcdproc), %s\n", version);
 	printf ("Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
@@ -737,7 +666,7 @@ HelpScreen ()
 	printf ("Available options are:\n");
 
 	printf ("\t-h\t\tDisplay this help screen\n");
-	printf ("\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIG_FILE);
+	printf ("\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
 	//printf ("\t-t\t\tSelect an LCD size (20x4, 16x2, etc...)\n");
 	printf ("\t-d <driver>\tAdd a driver to use (output only to first)\n");
 	//printf ("\t\t\tCFontz, curses, HD44780, irmanin, joy,\n\t\t\tMtxOrb, LB216, text\n");
