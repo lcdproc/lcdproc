@@ -43,9 +43,8 @@
 // NOTE: This does not appear to make use of the
 //       hbar and vbar functions present in the LKD202-25.
 //       Why I do not know.
+// RESP: Because software emulated hbar/vbar permit simultaneous use.
 
-static int custom = 0;
-static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
 extern int debug_level;
 
 // TODO: Remove this custom_type if not in use anymore.
@@ -84,6 +83,10 @@ typedef enum {
 	barb = 255
 } bar_type;
 
+// The following variable should be per instance of the driver.
+static char * lcd_contents = (char *) 0;	// for incremental updates
+static int custom = 0;
+static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
 static int fd;
 static int clear = 1;
 
@@ -94,6 +97,36 @@ static void MtxOrb_linewrap (int on);
 static void MtxOrb_autoscroll (int on);
 static void MtxOrb_cursorblink (int on);
 static void MtxOrb_string (int x, int y, char *string);
+
+/* 
+ * This does not belong to MtxOrb.h except if used externaly
+ * Having them here reduce the number of warning.
+ */ 
+static void MtxOrb_clear ();
+static void MtxOrb_close ();
+static void MtxOrb_flush ();
+static void MtxOrb_flush_box (int lft, int top, int rgt, int bot);
+static void MtxOrb_chr (int x, int y, char c);
+static int MtxOrb_contrast (int contrast);
+static void MtxOrb_backlight (int on);
+static void MtxOrb_output (int on);
+static void MtxOrb_init_vbar ();
+static void MtxOrb_init_hbar ();
+static void MtxOrb_vbar (int x, int len);
+static void MtxOrb_hbar (int x, int y, int len);
+static void MtxOrb_init_num ();
+static void MtxOrb_num (int x, int num);
+static void MtxOrb_set_char (int n, char *dat);
+static void MtxOrb_icon (int which, char dest);
+static void MtxOrb_draw_frame (char *dat);
+static char MtxOrb_getkey ();
+static char * MtxOrb_getinfo ();
+static void MtxOrb_heartbeat (int type);
+static int MtxOrb_ask_bar (int type);
+static void MtxOrb_set_known_char (int car, int type);
+/*
+ * End of what was in MtxOrb.h
+ */
 
 static int
 MtxOrb_set_type (char * str) {
@@ -348,6 +381,18 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	// Do it...
 	tcsetattr (fd, TCSANOW, &portset);
 
+	// Make sure the frame buffer is there...
+	if (!MtxOrb->framebuf)
+		MtxOrb->framebuf = (unsigned char *)
+			malloc (MtxOrb->wid * MtxOrb->hgt);
+	memset (MtxOrb->framebuf, ' ', MtxOrb->wid * MtxOrb->hgt);
+
+
+        // Allocate and clear the buffer for incremental updates
+	lcd_contents = (unsigned char *) malloc (MtxOrb->wid * MtxOrb->hgt);
+	if (!lcd_contents) { return -1; }
+	memset(lcd_contents, ' ', MtxOrb->wid * MtxOrb->hgt);
+			
 	/*
 	 * Configure display
 	 */
@@ -423,6 +468,11 @@ MtxOrb_close ()
 		free (MtxOrb->framebuf);
 
 	MtxOrb->framebuf = NULL;
+
+	if (lcd_contents)
+		free (lcd_contents);
+
+	lcd_contents = NULL;
 
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: closed");
@@ -686,26 +736,20 @@ MtxOrb_cursorblink (int on)
 	}
 }
 
-//// TODO: Might not be needed anymore...
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before lcd.vbar()
 //
 static void
 MtxOrb_init_vbar ()
 {
-// Isn't this function supposed to go away?
-	MtxOrb_init_all (vbar);
 }
 
-// TODO: Might not be needed anymore...
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
 static void
 MtxOrb_init_hbar ()
 {
-// Isn't this function supposed to go away?
-	MtxOrb_init_all (hbar);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -1534,13 +1578,3 @@ MtxOrb_set_known_char (int car, int type)
 	MtxOrb_set_char (car, &all_bar[type][0]);
 }
 
-/////////////////STOP READING --- TRASH IS AT THE END////////////////
-
-// TODO: Remove this code wich was use for developpement.
-// PS: There might be reference to this code left, so keep it for some time.
-//
-// MtxOrb_init_hbar and MtxOrb_init_vbar use it; it's prototyped in MtxOrb.h ...
-static void
-MtxOrb_init_all (int type)
-{
-}

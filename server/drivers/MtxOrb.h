@@ -4,6 +4,8 @@
 extern lcd_logical_driver *MtxOrb;
 
 int MtxOrb_init (lcd_logical_driver * driver, char *device);
+/*
+ * Just like in hd44780 those function are assing by _init ...
 static void MtxOrb_clear ();
 static void MtxOrb_close ();
 static void MtxOrb_flush ();
@@ -27,9 +29,7 @@ static void MtxOrb_heartbeat (int type);
 
 static int MtxOrb_ask_bar (int type);
 static void MtxOrb_set_known_char (int car, int type);
-
-// Isn't this function supposed to go away?
-static void MtxOrb_init_all (int type);
+*/
 
 #define DEFAULT_CONTRAST	120
 #define DEFAULT_DEVICE		"/dev/lcd"
