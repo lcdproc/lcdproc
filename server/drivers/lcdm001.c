@@ -1,8 +1,8 @@
 /*lcdm001.c*/
-/////////////////////////////////////////////////////////////////////////////////////////////////
-//// Driver for the LCDM001 device from kernelconcepts.de////
-////          written by Rene Wagner <reenoo@gmx.de>          ////
-/////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+//// Driver for the LCDM001 device from kernelconcepts.de ////
+////          written by Rene Wagner <reenoo@gmx.de>      ////
+//////////////////////////////////////////////////////////////
 
 /*LCDM001 does NOT support custom chars
    So the output may look a bit strange*/
@@ -31,6 +31,28 @@
 #include "drv_base.h"
 #include "shared/debug.h"
 #include "shared/str.h"
+
+// Moved here from lcdm001.h to reduce the number of warning.
+static void lcdm001_close ();
+static void lcdm001_clear ();
+static void lcdm001_flush ();
+static void lcdm001_string (int x, int y, char string[]);
+static void lcdm001_chr (int x, int y, char c);
+static int  lcdm001_contrast (int contrast);
+static void lcdm001_backlight (int on);
+static void lcdm001_output (int on);
+static void lcdm001_vbar (int x, int len);
+static void lcdm001_init_vbar ();
+static void lcdm001_hbar (int x, int y, int len);
+static void lcdm001_init_hbar ();
+static void lcdm001_num (int x, int num);
+static void lcdm001_init_num ();
+static void lcdm001_set_char (int n, char *dat);
+static void lcdm001_icon (int which, char dest);
+static void lcdm001_flush_box (int lft, int top, int rgt, int bot);
+static void lcdm001_draw_frame (char *dat);
+static char lcdm001_getkey ();
+// End of extract from lcdm001.h by David GLAUDE.
 
 #define NotEnoughArgs (i + 1 > argc)
 
@@ -245,11 +267,13 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 static void lcdm001_num (int x, int num)
 {
         /*TODO: find out what this function is supposed to do*/
+	/*ANSWER: Print a BigNum, see MtxOrb and curses. */
 }
 
 static void lcdm001_init_num ()
 {
         /*TODO: find out what this function is supposed to do*/
+	/*ANSWER: prepare for the use of _num in stupid driver. */
 }
 
 static void
@@ -555,3 +579,4 @@ lcdm001_getkey ()
 	/*debug: if(in) fprintf(stderr,"key: %c",in); */
         return in;
 }
+
