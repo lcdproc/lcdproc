@@ -70,7 +70,7 @@ fi
 			AC_DEFINE(LIRCIN_DRV)
 			;;
 	*) 	
-			AC_MSG_ERROR([Uknown driver $driver])
+			AC_MSG_ERROR([Unknown driver $driver])
 			;;
   		esac
   	done
