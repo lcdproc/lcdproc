@@ -502,7 +502,6 @@ int CwLnx_init(Driver * drvthis, char *args)
     int w;
     int h;
     char *s;
-    char x;
 
     PrivateData *p;
 
@@ -602,7 +601,7 @@ int CwLnx_init(Driver * drvthis, char *args)
     /* read the keypad mapping only if we have a keypad. */
     if (p->have_keypad) 
     	{
-
+	int x;
 
 	/* Read keymap */
 	for(x=0; x<MaxKeyMap; x++ ) 
@@ -623,8 +622,6 @@ int CwLnx_init(Driver * drvthis, char *args)
 		/* Was a key specified in the config file ? */
 		if( s ) {
 			p->KeyMap[x] = strdup( s );     
-/* Code from hd44780 but why a strcpy adfter a strdup ?   */
-/*  			strcpy( p->KeyMap[x], s );	  */
 /* printf("CwLnx: Key '%c' to \"%s\"\n", x+'A', s );      */
 			report( RPT_INFO, "CwLnx: Key '%c' to \"%s\"", x+'A', s );
 			}

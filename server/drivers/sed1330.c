@@ -405,7 +405,6 @@ sed1330_init( Driver * drvthis, char *args )
 			// Was a key specified in the config file ?
 			if( s ) {
 				p->keyMapDirect[x] = strdup( s );
-				strcpy( p->keyMapDirect[x], s );
 				report( RPT_INFO, "SED1330: Direct key %d: \"%s\"", x, s );
 			}
 		}
@@ -424,7 +423,6 @@ sed1330_init( Driver * drvthis, char *args )
 				// Was a key specified in the config file ?
 				if( s ) {
 					p->keyMapMatrix[y][x] = strdup( s );
-					strcpy( p->keyMapMatrix[y][x], s );
 					report( RPT_INFO, "SED1330: Matrix key %d,%d: \"%s\"", x, y, s );
 				}
 			}
