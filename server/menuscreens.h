@@ -15,10 +15,10 @@
 #define MENUSCREENS_H
 
 #include "menu.h"
+#include "menuitem.h"
 #include "screen.h"
 
 extern Screen * menuscreen;
-extern MenuItem * active_menuitem;
 extern Menu * main_menu;
 
 int init_menu();
@@ -26,6 +26,16 @@ int init_menu();
 bool is_menu_key (char * key);
 /* This function indicates to the input part whether this key was the
  * reserved menu key.
+ */
+
+void menuscreen_inform_item_destruction (MenuItem * item);
+/* Meant for other parts of the program to inform the menuscreen that the
+ * item is about to be removed.
+ */
+
+void menuscreen_inform_item_modified (MenuItem * item);
+/* Meant for other parts of the program to inform the menuscreen that some
+ * properties of the item have been modified.
  */
 
 void menuscreen_key_handler (char *key);

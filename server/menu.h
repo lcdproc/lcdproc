@@ -103,7 +103,7 @@ void menu_update_screen (Menu *menu, Screen *s);
  * DO NOT CALL THIS FUNCTION, CALL menuitem_build_screen INSTEAD !
  */
 
-MenuResult menu_handle_input (Menu *menu, MenuToken token, char * key);
+MenuResult menu_process_input (Menu *menu, MenuToken token, char * key);
 /* Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  * DO NOT CALL THIS FUNCTION, CALL menuitem_build_screen INSTEAD !

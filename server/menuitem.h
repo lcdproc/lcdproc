@@ -258,8 +258,8 @@ void menuitem_reset (MenuItem *item);
  * Those items do not keep temporary data.
  */
 
-void menuitem_build_screen (MenuItem *item, Screen *s);
-/* Builds the selected menuitem on screen using widgets.
+void menuitem_rebuild_screen (MenuItem *item, Screen *s);
+/* (Re)builds the selected menuitem on screen using widgets.
  * Should be re-called if menuitem data has been changed.
  * There are a few (logical) exceptions to this:
  * - the values

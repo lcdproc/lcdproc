@@ -9,7 +9,8 @@
  *               2002, Joris Robijn
  *
  *
- * Handles a menu and all actions that can be performed on it.
+ * Handles a menu and all actions that can be performed on it. Note that a
+ * menu is itself also a menuitem.
  *
  * Menus are similar to "pull-down" menus, but have some extra features.
  * They can contain "normal" menu items, checkboxes, sliders, "movers",
@@ -323,7 +324,7 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 	}
 }
 
-MenuResult menu_handle_input	(Menu *menu, MenuToken token, char * key)
+MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
 {
 	MenuItem *subitem;
 

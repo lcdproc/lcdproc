@@ -20,6 +20,7 @@
 #include "screenlist.h"
 #include "render.h"
 #include "input.h"
+#include "menuscreens.h"
 #include "menuitem.h"
 #include "shared/report.h"
 #include "shared/LL.h"
@@ -89,8 +90,11 @@ client_destroy (Client * c)
 	LL_Destroy( c->screenlist);
 
 	/* Destroy the client's menu, if it exists */
-	if (c->menu)
+	if (c->menu) {
+		menuscreen_inform_item_destruction (c->menu);
+		menu_remove_item (c->menu->parent, c->menu);
 		menuitem_destroy (c->menu);
+	}
 
 	/* Forget client's key reservations */
 	input_release_client_keys (c);

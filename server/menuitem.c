@@ -37,9 +37,9 @@ void menuitem_destroy_alpha (MenuItem *item);
 void menuitem_reset_numeric (MenuItem *item);
 void menuitem_reset_alpha (MenuItem *item);
 
-void menuitem_build_screen_slider (MenuItem *item, Screen *s);
-void menuitem_build_screen_numeric (MenuItem *item, Screen *s);
-void menuitem_build_screen_alpha (MenuItem *item, Screen *s);
+void menuitem_rebuild_screen_slider (MenuItem *item, Screen *s);
+void menuitem_rebuild_screen_numeric (MenuItem *item, Screen *s);
+void menuitem_rebuild_screen_alpha (MenuItem *item, Screen *s);
 
 void menuitem_update_screen_slider (MenuItem *item, Screen *s);
 void menuitem_update_screen_numeric (MenuItem *item, Screen *s);
@@ -79,9 +79,9 @@ void (*build_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
 	NULL,
 	NULL,
 	NULL,
-	menuitem_build_screen_slider,
-	menuitem_build_screen_numeric,
-	menuitem_build_screen_alpha
+	menuitem_rebuild_screen_slider,
+	menuitem_rebuild_screen_numeric,
+	menuitem_rebuild_screen_alpha
 };
 void (*update_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
 {
@@ -96,7 +96,7 @@ void (*update_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
 
 MenuResult (*process_input_table[NUM_ITEMTYPES] ) (MenuItem *item, MenuToken token, char *key) =
 {
-	menu_handle_input,
+	menu_process_input,
 	NULL,
 	NULL,
 	NULL,
@@ -351,7 +351,7 @@ void menuitem_reset_alpha (MenuItem *item)
 
 /******** MENU SCREEN BUILD FUNCTIONS ********/
 
-void menuitem_build_screen (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen (MenuItem *item, Screen *s)
 {
 	Widget * w;
 	void (*build_screen) (MenuItem *item, Screen *s);
@@ -381,9 +381,12 @@ void menuitem_build_screen (MenuItem *item, Screen *s)
 		report (RPT_ERR, "%s: given menuitem cannot be active", __FUNCTION__);
 		return;
 	}
+
+	/* Also always call update_screen */
+	menuitem_update_screen (item, s);
 }
 
-void menuitem_build_screen_slider (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen_slider (MenuItem *item, Screen *s)
 {
 	Widget * w;
 
@@ -431,7 +434,7 @@ void menuitem_build_screen_slider (MenuItem *item, Screen *s)
 	}
 }
 
-void menuitem_build_screen_numeric (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen_numeric (MenuItem *item, Screen *s)
 {
 	Widget * w;
 
@@ -462,7 +465,7 @@ void menuitem_build_screen_numeric (MenuItem *item, Screen *s)
 	}
 }
 
-void menuitem_build_screen_alpha (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen_alpha (MenuItem *item, Screen *s)
 {
 	Widget * w;
 

@@ -157,6 +157,7 @@ menu_add_item_func (Client * c, int argc, char **argv)
 		break;
 	}
 	menu_add_item (menu, item);
+	menuscreen_inform_item_modified (menu);
 	sock_send_string(c->sock, "success\n");
 	return 0;
 }
@@ -181,13 +182,19 @@ menu_del_item_func (Client * c, int argc, char **argv)
 	if (!c->ack)
 		return 1;
 
-	if ((argc < 4 )) {
+	if ((argc < 3 )) {
 		sock_send_string (c->sock, "huh?  Usage: menu_del_item <menuid> <itemid>\n");
 		return 0;
 	}
 
 	menu_id = argv[1];
 	item_id = argv[2];
+
+	/* Does the client have a menu already ? */
+	if (!c->menu) {
+		sock_send_string (c->sock, "huh?  Client has no menu\n");
+		return 0;
+	}
 
 	if ( menu_id[0] == 0 ) {
 		/* No menu specified = client's main menu */
@@ -206,9 +213,19 @@ menu_del_item_func (Client * c, int argc, char **argv)
 		sock_send_string (c->sock, "huh?  Cannot find item\n");
 		return 0;
 	}
+	menuscreen_inform_item_destruction (item);
 	menu_remove_item (menu, item);
+	menuscreen_inform_item_modified (item->parent);
 	menuitem_destroy (item);
 
+	/* Was it the last item in the client's menu ? */
+	if (menu_getfirst_item(c->menu) == NULL) {
+		menuscreen_inform_item_destruction (c->menu);
+		menu_remove_item (main_menu, c->menu);
+		menuscreen_inform_item_modified (main_menu);
+		menu_destroy (c->menu);
+		c->menu = NULL;
+	}
 	sock_send_string(c->sock, "success\n");
 	return 0;
 }
@@ -580,11 +597,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 			argnr ++;
 			continue; /* Skip current option and the invalid value */
 		}
-		if( active_menuitem && menuscreen ) {
-			/* We need to rebuild the screen */
-			menuitem_build_screen( active_menuitem, menuscreen );
-			menuitem_update_screen( active_menuitem, menuscreen );
-		}
+		menuscreen_inform_item_modified (item);
 		if( option_table[option_nr].attr_type != NOVALUE ) {
 			/* Skip the now used argument */
 			argnr ++;
@@ -645,7 +658,7 @@ MenuEventFunc (menu_commands_handler)
 	buf[sizeof(buf)-1] = 0;
 
 	/* Where should the message go to ? */
-	for( i = item; i && i->parent != main_menu; i = item->parent );
+	for( i = item; i && i->parent != main_menu; i = i->parent );
 	c = (Client *) i->data.menu.association;
 	if( !c ) {
 		report( RPT_ERR, "%s: Could not find client of item \"%s\"", __FUNCTION__, item->id );

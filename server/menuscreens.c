@@ -44,7 +44,8 @@ MenuItem * active_menuitem;
 Menu * main_menu;
 Menu * screens_menu;
 
-
+/* Local prototypes */
+void menuscreen_switch_item (MenuItem * new_menuitem);
 void menuscreen_create_menu ();
 MenuEventFunc (heartbeat_handler);
 MenuEventFunc (backlight_handler);
@@ -78,12 +79,71 @@ int init_menu()
 	return 0;
 }
 
+
+void menuscreen_inform_item_destruction (MenuItem * item)
+{
+	MenuItem * i;
+
+	/* Are we currently in (a subitem of) the given item ? */
+	for( i = active_menuitem; i; i = i->parent ) {
+		if( i == item ) {
+			menuscreen_switch_item (item->parent);
+		}
+	}
+}
+
+void menuscreen_inform_item_modified (MenuItem * item)
+{
+	/* Are we currently in the item or the parent of the item ? */
+	if( active_menuitem == item || active_menuitem == item->parent ) {
+		menuitem_rebuild_screen( active_menuitem, menuscreen );
+	}
+}
+
 bool is_menu_key (char * key)
 {
 	if (strcmp (key, menu_key) == 0)
 		return true;
 	else
 		return false;
+}
+
+void menuscreen_switch_item (MenuItem * new_menuitem)
+/* This function changes the menuitem to the given one, and does necesary
+ * actions.
+ * The item will not be reset when the new item is a child of the last one.
+ */
+{
+	MenuItem * old_menuitem = active_menuitem;
+
+	/* First we do the switch */
+	active_menuitem = new_menuitem;
+
+	/* What was the state change ? */
+	if (old_menuitem && !new_menuitem) {
+		/* Menu is being quit */
+
+		/* TODO: send menu to backgr */
+		if (screenlist_remove (menuscreen) < 0) {
+			report (RPT_ERR, "%s: Error unqueueing menu screen", __FUNCTION__);
+		}
+	} else if (!old_menuitem && new_menuitem) {
+		/* Menu is becoming active */
+		menuitem_reset (active_menuitem);
+		menuitem_rebuild_screen (active_menuitem, menuscreen);
+
+		if (screenlist_add (menuscreen) < 0) {
+			report (RPT_ERR, "%s: Error queueing menu screen", __FUNCTION__);
+		}
+		/* TODO: raise it ! */
+		return;
+	} else {
+		/* We're left with the usual case: a menu level switch */
+		if( old_menuitem->parent != new_menuitem) {
+			menuitem_reset (new_menuitem);
+		}
+		menuitem_rebuild_screen (active_menuitem, menuscreen);
+	}
 }
 
 void menuscreen_key_handler (char *key)
@@ -112,16 +172,7 @@ void menuscreen_key_handler (char *key)
 	/* Is the menu already active ? */
 	if (!active_menuitem) {
 		debug (RPT_DEBUG, "%s: Activating menu screen", __FUNCTION__);
-		active_menuitem = main_menu;
-		menuitem_build_screen (active_menuitem, menuscreen);
-		menuitem_reset (active_menuitem);
-		menuitem_update_screen (active_menuitem, menuscreen);
-
-		if (screenlist_add (menuscreen) < 0) {
-			report (RPT_ERR, "%s: Error queueing menu screen", __FUNCTION__);
-		}
-		/* TODO: raise it ! */
-
+		menuscreen_switch_item (main_menu);
 		return;
 	}
 
@@ -132,41 +183,29 @@ void menuscreen_key_handler (char *key)
 		report (RPT_ERR, "%s: Error from menu_handle_input", __FUNCTION__);
 		break;
 	  case MENURESULT_NONE:
+		if (active_menuitem) {
+			menuitem_update_screen (active_menuitem, menuscreen);
+			/* No rebuild needed, only value can be changed */
+		}
 		/* Nothing extra to be done */
 		break;
 	  case MENURESULT_ENTER:
-	  	/* Enter the selected menuitem
-	  	 * Note: this is not for checkboxes etc that don't have their
-	  	 *   own screen. The menu_handle_input function should do
-	  	 *   things like toggling checkboxes !
-	  	 */
+		/* Enter the selected menuitem
+		 * Note: this is not for checkboxes etc that don't have their
+		 *   own screen. The menu_handle_input function should do
+		 *   things like toggling checkboxes !
+		 */
 		debug (RPT_DEBUG, "%s: Entering subitem", __FUNCTION__);
-	  	active_menuitem = menu_get_current_item (active_menuitem);
-	  	menuitem_build_screen (active_menuitem, menuscreen);
-		menuitem_reset (active_menuitem);
+		menuscreen_switch_item (menu_get_current_item (active_menuitem));
 		break;
 	  case MENURESULT_CLOSE:
 		debug (RPT_DEBUG, "%s: Closing item", __FUNCTION__);
-		active_menuitem = menuitem_get_parent (active_menuitem);
-		if (active_menuitem) {
-			/* We were in at least second level menu */
-		  	menuitem_build_screen (active_menuitem, menuscreen);
-			break;
-		}
-		/* If first level menu, quit menu now
-		 * Therefor no break; now.
-		 */
+		menuscreen_switch_item (active_menuitem->parent);
+		break;
 	  case MENURESULT_QUIT:
 		debug (RPT_DEBUG, "%s: Closing menu screen", __FUNCTION__);
-		active_menuitem = NULL;
-		/* TODO: send menu to backgr */
-		if (screenlist_remove (menuscreen) < 0) {
-			report (RPT_ERR, "%s: Error unqueueing menu screen", __FUNCTION__);
-		}
+		menuscreen_switch_item (NULL);
 		break;
-	}
-	if (active_menuitem) {
-		menuitem_update_screen (active_menuitem, menuscreen);
 	}
 }
 
