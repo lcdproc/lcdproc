@@ -108,6 +108,8 @@ set_background_color (char * buf) {
 #define TOP_LEFT_X 7
 #define TOP_LEFT_Y 7
 
+int current_color_pair, current_border_pair, curses_backlight_state = 0;
+
 int
 curses_drv_init (struct lcd_logical_driver *driver, char *args)
 {
@@ -118,7 +120,8 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	// Colors....
 	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
-		fore_color = DEFAULT_FOREGROUND_COLOR;
+		fore_color = DEFAULT_FOREGROUND_COLOR,
+		backlight_color = DEFAULT_BACKGROUND_COLOR;
 
 	// Screen position (top left)
 	int	screen_begx = TOP_LEFT_X,
@@ -149,6 +152,14 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 					}
 					strncpy(buf, argv[++i], sizeof(buf));
 					back_color = set_background_color(buf);
+					break;
+				case 'B':
+					if (i + 1 >= argc) {
+						fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					strncpy(buf, argv[++i], sizeof(buf));
+					backlight_color = set_background_color(buf);
 					break;
 				case 'h':
 					printf ("LCDproc [n]curses driver\n"
@@ -210,9 +221,14 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	if (has_colors()) {
 		start_color();
-		init_pair(1, fore_color, back_color);
-		init_pair(2, back_color, fore_color);
+		init_pair(1, back_color, fore_color);
+		init_pair(2, fore_color, back_color);
 		init_pair(3, COLOR_WHITE, back_color);
+		init_pair(4, fore_color, backlight_color);
+		init_pair(5, COLOR_WHITE, backlight_color);
+
+		current_color_pair = 2;
+		current_border_pair = 3;
 	}
 
 	curses_drv_clear ();
@@ -235,7 +251,7 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	driver->flush = curses_drv_flush;
 	driver->flush_box = curses_drv_flush_box;
 	//driver->contrast = NULL;
-	//driver->backlight = NULL;
+	driver->backlight = curses_drv_backlight;
 	//driver->set_char = NULL;
 	driver->icon = curses_drv_icon;
 	driver->draw_frame = curses_drv_draw_frame;
@@ -254,15 +270,15 @@ curses_drv_wborder (WINDOW *win) {
 	char buf[128];
 
 	if (has_colors()) {
-		wcolor_set(win, 3, NULL);
-		wattron(win, COLOR_PAIR(3) | A_BOLD);
+		wcolor_set(win, current_border_pair, NULL);
+		wattron(win, COLOR_PAIR(current_border_pair) | A_BOLD);
 	}
 
 	box(win, 0, 0);
 
 	if (has_colors()) {
-		wcolor_set(win, 1, NULL);
-		wattron(win, COLOR_PAIR(1));
+		wcolor_set(win, current_color_pair, NULL);
+		wattron(win, COLOR_PAIR(current_color_pair));
 		wattroff(win, A_BOLD);
 	}
 }
@@ -294,13 +310,40 @@ curses_drv_close ()
 void
 curses_drv_clear ()
 {
-	wbkgdset(lcd_win, COLOR_PAIR(1) | ' ');
+	wbkgdset(lcd_win, COLOR_PAIR(current_color_pair) | ' ');
 	curses_drv_wborder (lcd_win);
 	werase (lcd_win);
 }
 
 #define ValidX(a) { if (x > curses_drv->wid) { x = curses_drv->wid; } else x < 1 ? 1 : x; }
 #define ValidY(a) { if (y > curses_drv->hgt) { y = curses_drv->hgt; } else y < 1 ? 1 : y; }
+
+void
+curses_drv_backlight (int on)
+{
+	if (curses_backlight_state == on)
+		return;
+
+	// no backlight: pairs 2, 3
+	// backlight:    pairs 4, 5
+
+	switch (on) {
+		case 0:
+			curses_backlight_state = 0;
+			current_color_pair = 2;
+			current_border_pair = 3;
+			break;
+		case 1:
+			curses_backlight_state = 1;
+			current_color_pair = 4;
+			current_border_pair = 5;
+			break;
+		default:
+			return;
+			break;
+	}
+	curses_drv_clear;
+}
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The

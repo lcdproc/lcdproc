@@ -4,6 +4,7 @@
 extern lcd_logical_driver *curses_drv;
 
 int curses_drv_init (struct lcd_logical_driver *driver, char *args);
+void curses_drv_backlight (int on);
 void curses_drv_close ();
 void curses_drv_clear ();
 void curses_drv_flush ();
