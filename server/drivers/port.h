@@ -64,6 +64,10 @@ static inline int port_access_full (unsigned short int port) {
 	return ioperm(port, 3, 255);
 }
 
+static inline int port_deny_full (unsigned short int port) {
+	return ioperm(port, 3, 0);
+}
+
 // -------------------------------------------------------------
 // Use i386_get_ioperm, i386_set_ioperm, inb and outb from <machine/pio.h> (NetBSD)
 #elif defined HAVE_LIBI386 && defined HAVE_MACHINE_PIO_H && defined HAVE_MACHINE_SYSARCH_H
