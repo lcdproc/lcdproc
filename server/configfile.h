@@ -58,6 +58,26 @@ char *config_get_string( char * sectionname, char * keyname,
  * The string should never be modified, and used only short-term. You can
  * for example scan it or copy it. In successive calls this function can
  * re-use the data space !
+ *
+ * found in a mail from Joris:
+ *
+ * The strings it returns are always terminated.
+ *
+ * You can do some things with them:
+ * 1. Scan them:
+ *    s = config_get_string(...);
+ *    sscanf( s, "%dx%d", &w, &h );  // scan format like: 20x4
+ *    ...and check the w and h values...
+ * 2. Copy it to a preallocated buffer like device[256]:
+ *    s = config_get_string(...);
+ *    strncpy( device, s, sizeof(device));
+ *    device[sizeof(device)-1] = 0;
+ * 3. Copy it to a newly allocated space in char *device:
+ *    s = config_get_string(...);
+ *    device = malloc(strlen(s)+1);
+ *    if( device == NULL ) return -5; // or whatever < 0
+ *    strcpy( device, s );
+ * 
  */
 
 int config_has_section( char *sectionname );
