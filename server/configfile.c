@@ -327,11 +327,11 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 	char state = ST_INITIAL;
 	char ch;
 	char sectionname[MAXSECTIONNAMELENGTH+1];
-	int sectionname_pos;
+	int sectionname_pos = 0;
 	char keyname[MAXKEYNAMELENGTH+1];
-	int keyname_pos;
+	int keyname_pos = 0;
 	char value[MAXVALUELENGTH+1];
-	int value_pos;
+	int value_pos = 0;
 	int quote = 0;
 	key * k;
 	int line_nr = 1;
@@ -459,7 +459,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			switch( ch ) {
 			  case '\n':
 				state = ST_INITIAL;
-			  case ' ':
+			  //case ' ':
 			}
 			break;
 		  case ST_VALUE:
