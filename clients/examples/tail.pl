@@ -1,9 +1,32 @@
 #!/usr/bin/perl -w
 
+# tail.pl - an example client for LCDproc
+
 #
 # This client for LCDproc displays the tail of a specified file.
 # It's possible to change the visible part of the file with LCDproc
 # controlled keys
+#
+#
+# Copyright (c) 1999, William Ferrell, Scott Scriven
+#               2001, David Glaude
+#               2001, Jarda Benkovsky
+#               2002, Jonathan Oxer
+#               2002, Rene Wagner <reenoo@gmx.de>
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# any later version.
+#
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this file; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
 #
 
 use IO::Socket;
@@ -53,8 +76,11 @@ $remote->autoflush(1);
 sleep 1;	# Give server plenty of time to notice us...
 
 print $remote "hello\n";
-my $lcdconnect = <$remote>;
-print $lcdconnect;
+# Note: it's good practice to listen for a response after a print to the
+# server even if there isn't meant to be one. If you don't, you may find
+# your program crashes after running for a while when the buffers fill up.
+my $lcdresponse = <$remote>;
+print $lcdresponse;
 
 
 # Turn off blocking mode...
@@ -63,14 +89,31 @@ fcntl($remote, F_SETFL, O_NONBLOCK);
 
 # Set up some screen widgets...
 print $remote "client_set name {Tail}\n";
+$lcdresponse = <$remote>;
 print $remote "screen_add tail\n";
+$lcdresponse = <$remote>;
 print $remote "screen_set tail name {Tail $filename}\n";
+$lcdresponse = <$remote>;
 print $remote "widget_add tail title title\n";
+$lcdresponse = <$remote>;
 print $remote "widget_set tail title {Tail: $filename}\n";
+$lcdresponse = <$remote>;
 print $remote "widget_add tail 1 string\n";
+$lcdresponse = <$remote>;
 print $remote "widget_add tail 2 string\n";
+$lcdresponse = <$remote>;
 print $remote "widget_add tail 3 string\n";
+$lcdresponse = <$remote>;
 
+# NOTE: You have to ask LCDd to send you keys you want to handle
+print $remote "client_add_key E\n";
+$lcdresponse = <$remote>;
+print $remote "client_add_key F\n";
+$lcdresponse = <$remote>;
+print $remote "client_add_key G\n";
+$lcdresponse = <$remote>;
+print $remote "client_add_key H\n";
+$lcdresponse = <$remote>;
 
 
 # Forever, we should do stuff...
@@ -120,13 +163,17 @@ while(1)
 		else { $line = $lines[$i]; }
 		if(!($line =~ /\S/)) { $line = " ";}
 		print $remote "widget_set tail $j 1 $k {$line }\n";
+		my $lcdresponse = <$remote>;
 	    }
 	}
 	else  # If the file is unreadable, show an error
 	{
 	    print $remote "widget_set tail 1 1 2 {$filename}\n";
+		$lcdresponse = <$remote>;
 	    print $remote "widget_set tail 2 1 3 {doesn't exist.}\n";
+		$lcdresponse = <$remote>;
 	    print $remote "widget_set tail 3 1 4 { }\n";
+		$lcdresponse = <$remote>;
 	}
 
 	# And wait a little while before we show stuff again.

@@ -3,10 +3,34 @@
 use IO::Socket;
 use Fcntl;
 
+# iosock.pl - an example client for LCDproc
+
 #
 # This LCDproc client takes a list of machines to ping and and reports
 # number of those which ping and number of those which do not and their list
 #
+#
+# Copyright (c) 1999, William Ferrell, Scott Scriven
+#               2001, David Glaude
+#               2001, Jarda Benkovsky
+#               2002, Jonathan Oxer
+#               2002, Rene Wagner <reenoo@gmx.de>
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# any later version.
+#
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this file; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+#
+
 
 ############################################################
 # Configurable part. Set it according your setup.
@@ -50,8 +74,11 @@ $remote->autoflush(1);
 sleep (1);	# Give server plenty of time to notice us...
 
 print $remote "hello\n";
-my $lcdconnect = <$remote>;
-print $lcdconnect;
+# Note: it's good practice to listen for a response after a print to the
+# server even if there isn't meant to be one. If you don't, you may find
+# your program crashes after running for a while when the buffers fill up:
+my $lcdresponse = <$remote>;
+print $lcdresponse;
 
 
 # Turn off blocking mode...
@@ -60,13 +87,21 @@ fcntl($remote, F_SETFL, O_NONBLOCK);
 
 # Set up some screen widgets...
 print $remote "client_set name {Test Client (Perl)}\n";
+$lcdresponse = <$remote>;
 print $remote "screen_add pings\n";
+$lcdresponse = <$remote>;
 print $remote "screen_set pings name {Ping Status}\n";
+$lcdresponse = <$remote>;
 print $remote "widget_add pings title title\n";
+$lcdresponse = <$remote>;
 print $remote "widget_set pings title {Ping Status}\n";
+$lcdresponse = <$remote>;
 print $remote "widget_add pings one string\n";
+$lcdresponse = <$remote>;
 print $remote "widget_add pings two string\n";
+$lcdresponse = <$remote>;
 print $remote "widget_set pings one 1 2 {Checking machines...}\n";
+$lcdresponse = <$remote>;
 
 
 my ($machine, %down, %up, $i, $list);
@@ -95,6 +130,7 @@ while(1)
 		$list .= "$machine, ";
 	}
 	print $remote "widget_set pings one 1 2 {Machines Up: $i}\n";
+	my $lcdresponse = <$remote>;
 	$i = 0;  $list = "";
 	foreach $machine (keys %down)
 	{
@@ -102,6 +138,7 @@ while(1)
 		$list .= "$machine, ";
 	}
 	print $remote "widget_set pings two 1 3 {Down ($i): $list}\n";
+	$lcdresponse = <$remote>;
 }
 
 close ($remote)            || die "close: $!";

@@ -79,6 +79,7 @@ main (int argc, char **argv)
 	int port = LCDPORT;
 	int i, j, k;
 	int tmp;
+	int daemonize=0;
 
 	memset (sequence, 0, sizeof (mode) * MAX_SEQUENCE);
 
@@ -111,6 +112,10 @@ main (int argc, char **argv)
 				port = atoi (argv[++i]);
 				if (port < 1 && port > 0xffff)
 					fprintf (stderr, "Warning:  Port %i outside of standard range\n", port);
+				break;
+			case 'd':
+			case 'D':
+				daemonize=1;
 				break;
 
 				// otherwise...  Get help!
@@ -165,6 +170,11 @@ main (int argc, char **argv)
 	lcd_cellwid = 5;
 	lcd_cellhgt = 8;
 
+	if(daemonize) {
+		if (daemon(1,0)!=0)
+			fprintf(stderr, "Error: daemonize failed");;
+	}
+
 	// Init the status gatherers...
 	mode_init (sequence);
 
@@ -180,7 +190,7 @@ void
 HelpScreen ()
 {
 	printf ("LCDproc, %s\n", version);
-	printf ("Usage: lcdproc [-s server] [-p port] [modelist]\n");
+	printf ("Usage: lcdproc [-s server] [-p port] [-d] [modelist]\n");
 	printf ("\tOptions in []'s are optional.\n");
 	printf ("\tmodelist is \"mode [mode mode ...]\"\n");
 	printf ("\tMode letters: \t[C]pu [G]raph [T]ime [M]emory [X]load [D]isk [B]attery\n\t\t\tproc_[S]izes [O]ld_time big_cloc[K] [U]ptime CPU_SM[P]\n\t\t\t[A]bout\n");

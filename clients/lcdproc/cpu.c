@@ -12,14 +12,70 @@
 #include "mode.h"
 #include "cpu.h"
 
-#ifdef SOLARIS
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
+#endif
+
+#ifdef HAVE_SYS_CPUVAR_H
 #include <sys/cpuvar.h>
 #endif
 
 #ifdef HAVE_LIBKSTAT
 #include <kstat.h>
+#endif
+
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
+
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
+#if HAVE_KVM_H
+#include <kvm.h>
+#endif
+
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#if HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+
+#if HAVE_SYS_SYSCTL_H
+#include <sys/sysctl.h>
+#endif
+
+#if HAVE_SYS_SCHED_H
+#include <sys/sched.h>
+#endif
+
+#if HAVE_SYS_DKSTAT_H
+#include <sys/dkstat.h>
+#endif
+
+#if FREEBSD
+/* definitions for indices in the nlist array */
+/* from /usr/src/src.bin/top/machine.c */
+static struct nlist nlst[] = {
+#define X_CCPU      0
+    { "_ccpu" },
+#define X_CP_TIME   1   
+    { "_cp_time" },
+    { 0 }
+};
+#elif OPENBSD
+#define X_CP_TIME   0
+static struct nlist nlst[] = {
+	{ "_cp_time" },     /* 0 */
+	{ 0 }
+};
 #endif
 
 struct load {
@@ -31,11 +87,22 @@ kstat_ctl_t *kc;
 #endif
 
 int load_fd = 0;
-static void get_load (struct load * result, struct load * last_load );
 
-static void
-get_load (struct load *result, struct load * last_load )
-{
+#ifdef NETBSD
+static void netbsd_get_load (struct load * result, struct load * last_load );
+#define get_load netbsd_get_load
+#elif defined OPENBSD || FREEBSD
+static void openfreebsd_get_load (struct load * result, struct load * last_load );
+#define get_load openfreebsd_get_load
+#elif defined SOLARIS || LINUX
+static void linuxsolaris_get_load (struct load * result, struct load * last_load );
+#define get_load linuxsolaris_get_load
+#else
+#error "Does not know how to get the CPU load on your system."
+#endif
+
+#if defined LINUX || SOLARIS
+static void linuxsolaris_get_load (struct load *result, struct load * last_load ) {
 	struct load curr_load;
 
 #ifndef HAVE_LIBKSTAT
@@ -72,13 +139,91 @@ get_load (struct load *result, struct load * last_load )
 
 	*last_load = curr_load ;
 }
+#endif
+
+#ifdef NETBSD
+static void netbsd_get_load(struct load * result, struct load * last_load) {
+	struct load curr_load;
+	u_int64_t cp_time[CPUSTATES];
+	size_t size;
+	int mib[2];
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_CP_TIME;
+	size = sizeof(cp_time);
+    
+	if(sysctl(mib, 2, cp_time, &size, NULL, 0) < 0) {
+        //fprintf(stderr, "sysctl kern.cp_time failed: %s\n", strerror(errno));
+		curr_load.user = 1;
+		curr_load.nice = 1;
+		curr_load.system = 1;
+		curr_load.idle = 1;
+	} else {
+		curr_load.user = cp_time[CP_USER];
+		curr_load.nice = cp_time[CP_NICE];
+		curr_load.system = cp_time[CP_SYS] + cp_time[CP_INTR];
+		curr_load.idle = cp_time[CP_IDLE];
+	}
+	curr_load.total = curr_load.user + curr_load.nice + curr_load.system + curr_load.idle;
+	result->total = curr_load.total - last_load->total;
+	result->user = curr_load.user - last_load->user;
+	result->nice = curr_load.nice - last_load->nice;
+	result->system = curr_load.system - last_load->system;
+	result->idle = curr_load.idle - last_load->idle;
+
+	*last_load = curr_load ;
+}
+#endif
+
+#if defined OPENBSD || FREEBSD
+static void openfreebsd_get_load(struct load * result, struct load * last_load) {
+	struct load curr_load;
+	long cp_time[CPUSTATES];
+	char errbuf[_POSIX2_LINE_MAX];
+	kvm_t *kvmd = NULL;
+
+	/* open kernel virtual memory */
+	kvmd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
+	if(kvmd==NULL) {
+		//fprintf(stderr, "kvm_openfiles: %s\n", errbuf);
+		curr_load.user = 1;
+		curr_load.nice = 1;
+		curr_load.system = 1;
+		curr_load.idle = 1;
+	} else {
+		/* ask for specified values */
+		if(kvm_nlist(kvmd, nlst) >= 0) {
+			/* read values for cpu time (user, nice, sys, intr, idle) */
+			if(kvm_read(kvmd, nlst[X_CP_TIME].n_value, (char *)&cp_time, sizeof(cp_time))==sizeof(cp_time)) {
+				curr_load.user = cp_time[CP_USER];
+				curr_load.nice = cp_time[CP_NICE];
+				curr_load.system = cp_time[CP_SYS] + cp_time[CP_INTR];
+				curr_load.idle = cp_time[CP_IDLE];
+			}
+		}
+		kvm_close(kvmd);
+	}
+	curr_load.total = curr_load.user + curr_load.nice + curr_load.system + curr_load.idle;
+	result->total = curr_load.total - last_load->total;
+	result->user = curr_load.user - last_load->user;
+	result->nice = curr_load.nice - last_load->nice;
+	result->system = curr_load.system - last_load->system;
+	result->idle = curr_load.idle - last_load->idle;
+
+	*last_load = curr_load ;
+}
+#endif
 
 int
 cpu_init ()
 {
 #ifndef HAVE_LIBKSTAT
 	if (!load_fd) {
+# if defined LINUX || SOLARIS
 		load_fd = open ("/proc/stat", O_RDONLY);
+# else
+		load_fd=1;
+# endif
 	}
 #else
 	kc = kstat_open();
@@ -87,7 +232,6 @@ cpu_init ()
 	}
 #endif
 
-
 	return 0;
 }
 
@@ -95,8 +239,10 @@ int
 cpu_close ()
 {
 #ifndef HAVE_LIBKSTAT
+# if defined LINUX || SOLARIS
 	if (load_fd)
 		close (load_fd);
+# endif
 #else
 	kstat_close(kc);
 #endif
