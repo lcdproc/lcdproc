@@ -148,7 +148,7 @@ battery_screen (int rep, int display)
 				strcat(buffer, "Unknown");
 				break;
 		}
-		sprintf(buffer, "}\n");
+		strcat(buffer, "}\n");
 		if(display)
 			sock_send_string(sock, buffer);
 	}
