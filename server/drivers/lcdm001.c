@@ -5,7 +5,9 @@
 //////////////////////////////////////////////////////////////
 
 /*LCDM001 does NOT support custom chars
-   So the output may look a bit strange*/
+   So the output may look a bit strange
+   Most of the "strange output" has been fixed by
+   using ASCII workarounds*/
 
 /*All the functions neccessary for running "normal" clients
    have been implemented.
@@ -37,7 +39,6 @@
 
 #include "lcd.h"
 #include "lcdm001.h"
-/*#include "shared/debug.h"*/
 #include "shared/str.h"
 #include "shared/report.h"
 #include "configfile.h"
@@ -49,16 +50,10 @@ static void lcdm001_clear ();
 static void lcdm001_flush ();
 static void lcdm001_string (int x, int y, char string[]);
 static void lcdm001_chr (int x, int y, char c);
-static int  lcdm001_contrast (int contrast);
-static void lcdm001_backlight (int on);
 static void lcdm001_output (int on);
 static void lcdm001_vbar (int x, int len);
-static void lcdm001_init_vbar ();
 static void lcdm001_hbar (int x, int y, int len);
-static void lcdm001_init_hbar ();
 static void lcdm001_num (int x, int num);
-static void lcdm001_init_num ();
-static void lcdm001_set_char (int n, char *dat);
 static void lcdm001_icon (int which, char dest);
 static void lcdm001_flush_box (int lft, int top, int rgt, int bot);
 static void lcdm001_draw_frame (char *dat);
@@ -67,8 +62,6 @@ static char lcdm001_getkey ();
 static void lcdm001_heartbeat (int type);
 
 #define NotEnoughArgs (i + 1 > argc)
-
-extern int debug_level;
 
 lcd_logical_driver *lcdm001;
 int fd;
@@ -148,7 +141,7 @@ lcdm001_cursorblink (int on)
 int
 lcdm001_init (struct lcd_logical_driver *driver, char *args)
 {
-        char device[20];
+        char device[256];
         int speed=B38400;
         struct termios portset;
 
@@ -186,7 +179,8 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	//READ CONFIG FILE:
 
 	//which serial device should be used
-	strcpy(device, config_get_string ( DriverName , "Device" , 0 , "/dev/lcd"));
+	strncpy(device, config_get_string ( DriverName , "Device" , 0 , "/dev/lcd"),255);
+	if (strlen(device)>254) strncat(device, "\0", 1);
 	report (RPT_INFO,"LCDM001: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
@@ -241,20 +235,24 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	driver->string = lcdm001_string;
 	driver->chr = lcdm001_chr;
 	driver->vbar =lcdm001_vbar;
-	driver->init_vbar = lcdm001_init_vbar;
+	//init_vbar is not needed
 	driver->hbar = lcdm001_hbar;
-	driver->init_hbar = lcdm001_init_hbar;
+	//init_hbar is not needed
 	driver->num = lcdm001_num;
-	driver->init_num = lcdm001_init_num;
+	//init_num is not needed
 
 	driver->init = lcdm001_init;
 	driver->close = lcdm001_close;
 	driver->flush = lcdm001_flush;
 	driver->flush_box = lcdm001_flush_box;
-	driver->contrast = lcdm001_contrast;
-	driver->backlight = lcdm001_backlight;
+	//contrast and backlight are not implemented as
+	//changing the contrast or the state of the backlight
+	//is not supported by the device
+	//Well ... you could make use of your screw driver and
+	//soldering iron ;)
 	driver->output = lcdm001_output;
-	driver->set_char = lcdm001_set_char;
+	//set_char is not implemented as custom chars are not
+	//supported by the device
 	driver->icon = lcdm001_icon;
 	driver->draw_frame = lcdm001_draw_frame;
 
@@ -263,50 +261,6 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 
 	return fd;
 }
-
-/////////////////////////////////////////////////////////////////
-// Writes a big number.
-//
-static void lcdm001_num (int x, int num)
-{
-	int y, dx;
-
-	debug (RPT_DEBUG, "LCDM001: Writing big number \"%d\" at x = %d", num, x);
-
-	for (y = 1; y < 5; y++)
-		for (dx = 0; dx < 3; dx++)
-			lcdm001_chr (x + dx, y, num_icon[num][y-1][dx]);
-}
-
-static void lcdm001_init_num ()
-{
-        /*prepare for the use of _num in stupid driver. */
-	/*nothing to be done*/
-}
-
-/* DUMMY functions: */
-static void
-lcdm001_backlight (int on)
-{
-        /*Go and get your soldering iron ...*/
-}
-
-static int
-lcdm001_contrast (int contrast)
-{
-        /*Go and get your screwdriver ...*/
-	return -1;
-}
-
-/////////////////////////////////////////////////////////////////
-// Sets a custom character from 0-7...
-static void
-lcdm001_set_char (int n, char *dat)
-{
-	/* custom chars are NOT supported */
-}
-
-/*End of DUMMY functions*/
 
 // Below here, you may use either lcd.framebuf or driver->framebuf..
 // lcd.framebuf will be set to the appropriate buffer before calling
@@ -445,32 +399,11 @@ lcdm001_output (int on)
         debug (RPT_DEBUG, "LCDM001: current LED state: %d", on);
 }
 
-//////////////////////////////////////////////////////////////////////
-// Tells the driver to get ready for vertical bargraphs.
-//
-static void lcdm001_init_vbar() 
-{
-  //printf("Init Vertical bars.\n");
-
-  //Nothing to be done
-
-  return;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Tells the driver to get ready for horizontal bargraphs.
-//
-static void lcdm001_init_hbar() 
-{
-  //printf("Init Horizontal bars.\n");  
-  //nothing to be done!
-}
-
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar, from the bottom of the screen up.
 //
 static void
-lcdm001_vbar(int x, int len) 
+lcdm001_vbar(int x, int len)
 {
    int y = 4;
 
@@ -518,6 +451,22 @@ lcdm001_hbar(int x, int y, int len)
   }
 
   return;
+}
+
+/////////////////////////////////////////////////////////////////
+// Writes a big number.
+//
+static void lcdm001_num (int x, int num)
+{
+	int y, dx;
+
+	debug (RPT_DEBUG, "LCDM001: Writing big number \"%d\" at x = %d", num, x);
+
+	/*This function uses an ASCII emulation of big numbers*/
+
+	for (y = 1; y < 5; y++)
+		for (dx = 0; dx < 3; dx++)
+			lcdm001_chr (x + dx, y, num_icon[num][y-1][dx]);
 }
 
 /////////////////////////////////////////////////////////////////
