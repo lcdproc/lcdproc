@@ -30,35 +30,59 @@
 #define CF633_Set_Up_Temperature_Reporting 19
 #define CF633_Arbitrary_DOW_Transaction 20
 #define CF633_Set_Up_Live_Fan_or_Temperature_Display 21
+/* Add all the new message type */
+
+/* Those are all the possible keys we know off */
+#define KEY_UP_PRESS 1
+#define KEY_DOWN_PRESS 2
+#define KEY_LEFT_PRESS 3
+#define KEY_RIGHT_PRESS 4
+#define KEY_ENTER_PRESS 5
+#define KEY_EXIT_PRESS 6
+#define KEY_UP_RELEASE 7
+#define KEY_DOWN_RELEASE 8
+#define KEY_LEFT_RELEASE 9
+#define KEY_RIGHT_RELEASE 10
+#define KEY_ENTER_RELEASE 11
+#define KEY_EXIT_RELEASE 12
+
 
 typedef unsigned char ubyte;
 typedef signed char sbyte;
 typedef unsigned short word;
 typedef unsigned long dword;
 typedef union {
-    ubyte as_bytes[2];
+    unsigned char as_bytes[2];
     word as_word;
 } WORD_UNION;
+
+/* KeyRing management */
+void EmptyKeyRing(void);
+int AddKeyToKeyRing(unsigned char key);
+unsigned char GetKeyFromKeyRing(void);
+
 
 void send_bytes_message(int fd, int len, int msg, char *framebuf);
 void send_onebyte_message(int fd, int msg, int value);
 void send_zerobyte_message(int fd, int msg);
 
-void            EmptyReceiveBuffer(void);
+void           EmptyReceiveBuffer(void);
 int            Serial_Init(int port, int baud_rate);
 void           Uninit_Serial();
 void           SendByte(int fd, unsigned char datum);
-void           Sync_Read_Buffer(ubyte expected_bytes);
+void           Sync_Read_Buffer(int fd, unsigned char expected_bytes);
 int	       BytesAvail(void);
-char           GetByte(void);
+unsigned char  GetByte(void);
 int            PeekBytesAvail(void);
 void           Sync_Peek_Pointer(void);
 void           AcceptPeekedData(void);
-ubyte PeekByte(void);
-void         Clear_Buffer(void);
+unsigned char  PeekByte(void);
+void           Clear_Buffer(void);
 void           Buffer_Character(int fd, unsigned char datum);
 void           Buffer_String(int fd, char *input);
 void           Send_Buffer(int fd);
+
+int            test_packet(int fd);
 
 #define MAX_DATA_LENGTH 16
 #define MAX_COMMAND 21
@@ -72,7 +96,8 @@ typedef struct {
 int get_crc(char * bufptr, int len, int seed);
 extern COMMAND_PACKET incoming_command;
 extern COMMAND_PACKET outgoing_response;
-ubyte check_for_packet(ubyte expected_length);
+unsigned char check_for_packet(int fd, unsigned char expected_length);
+void print_packet(COMMAND_PACKET *packet);
 void send_packet(int fd);
 
 #endif

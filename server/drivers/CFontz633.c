@@ -21,22 +21,28 @@
 /*
  * Driver status
  * 04/04/2002: Working driver
- * BUT
- * + No support for keypad (inactive)
- * + No checking of LCD response (ACK of each message)
+ * 05/06/2002: KeyPad handeling are reading of return value
+ *
+ * THINGS NOT DONE:
  * + No checking if right hardware is connected (firmware/hardware)
  * + No BigNum (but screen is too small ???)
  * + No support for multiple instance (require private structure)
  * + No cache of custom char usage (like in MtxOrb)
  *
+ * THINGS PARTIALY DONE:
+ * + Checking of LCD response (message are only read for key detection) 
+ *
+ *
  * THINGS DONE:
  * + Stopping the live reporting (of temperature)
  * + Stopping the reporting of temp and fan (is it necessary after reboot)
  * + Use of library for hbar and vbar (good but library could be better)
+ * + Support for keypad (Using a KeyRing)
  *
  * THINGS TO DO:
- * + make the caching at least for heartbeat icon
- * +
+ * + Make the caching at least for heartbeat icon
+ * + Backporting to 0.4.x
+ * + Create and use the library (for custom char handeling)
  *
  */
 
@@ -83,7 +89,6 @@ MODULE_EXPORT int stay_in_foreground = 1;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "CFontz633_";
 
-
 /* Internal functions */
 /* static void CFontz633_linewrap (int on); */
 /* static void CFontz633_autoscroll (int on);  */
@@ -112,8 +117,10 @@ CFontz633_init (Driver * drvthis, char *args)
 
 	debug(RPT_INFO, "CFontz633: init(%p,%s)", drvthis, args );
 
-	/* Read config file */
+	EmptyKeyRing();
+	EmptyReceiveBuffer();
 
+	/* Read config file */
 	/* Which serial device should be used */
 	strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , DEFAULT_DEVICE),sizeof(device));
 	device[sizeof(device)-1]=0;
@@ -163,7 +170,10 @@ CFontz633_init (Driver * drvthis, char *args)
 	else { report (RPT_WARNING, "CFontz633_init: Speed must be 1200, 2400, 9600 or 19200. Using default value.\n", speed);
 	}
 
-	/* New firmware version? */
+	/* New firmware version?
+	 * I will try to behave differently for firmware 0.6 or above.
+	 * Currently this is not in use.
+	 */
 	if(drvthis->config_get_bool( drvthis->name , "NewFirmware" , 0 , 0)) {
 		newfirmware = 1;
 	}
@@ -215,12 +225,11 @@ CFontz633_init (Driver * drvthis, char *args)
 		sleep (4);
 		reboot = 0;
 	}
-	sleep (1);
+	sleep (2);
 	CFontz633_hidecursor ();
 
 	CFontz633_set_contrast (drvthis, contrast);
 	CFontz633_no_live_report ();
-
 
 	report (RPT_DEBUG, "CFontz633_init: done\n");
 
@@ -302,7 +311,6 @@ memcpy(&old[width], &framebuf[width], width);
 	xp++; xq++;
 	}
 
-
 }
 
 /*
@@ -348,7 +356,7 @@ CFontz633_set_contrast (Driver * drvthis, int promille)
 
 	hardware_contrast = contrast/20;
 
-//send_onebyte_message(fd, CF633_Set_LCD_Contrast, hardware_contrast);
+//	send_onebyte_message(fd, CF633_Set_LCD_Contrast, hardware_contrast);
 }
 
 /*
@@ -665,6 +673,7 @@ CFontz633_set_char (Driver * drvthis, int n, char *dat)
 		for (col = 0; col < cellwidth; col++) {
 			letter <<= 1;
 			letter |= (dat[(row * cellwidth) + col] > 0);
+		/* I should remove that debug code. */
 		//	if (dat[(row * cellheight) + col] == 0) printf(".");
 		//	if (dat[(row * cellheight) + col] == 1) printf("+");
 		//	if (dat[(row * cellheight) + col] == 2) printf("x");
@@ -754,7 +763,7 @@ CFontz633_clear (Driver * drvthis)
 static void
 CFontz633_hardware_clear (Driver * drvthis)
 {
-send_zerobyte_message(fd, CF633_Clear_LCD_Screen);
+	send_zerobyte_message(fd, CF633_Clear_LCD_Screen);
 }
 
 /*
@@ -778,3 +787,4 @@ CFontz633_string (Driver * drvthis, int x, int y, char string[])
 		framebuf[(y * width) + x + i] = string[i];
 	}
 }
+
