@@ -156,22 +156,14 @@ typedef enum {
 
 static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
 
-
-/* Those information are moving to PrivateData */
-/* static int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 }; */
-/* static int use[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 }; */
-
-static char *framebuf = NULL;
 static int cellwidth = LCD_DEFAULT_CELLWIDTH;
 static int cellheight = LCD_DEFAULT_CELLHEIGHT;
-static int contrast = DEFAULT_CONTRAST;
-
-static int backlightenabled = DEFAULT_BACKLIGHT;
 
 static char pause_key = MTXORB_DEFAULT_PAUSE_KEY;
 static char back_key = MTXORB_DEFAULT_BACK_KEY;
 static char forward_key = MTXORB_DEFAULT_FORWARD_KEY;
 static char main_menu_key = MTXORB_DEFAULT_MAIN_MENU_KEY;
+
 static int keypad_test_mode = 0;
 
 /* This is an embrionic Private Date, it need to grow ! */
@@ -183,9 +175,13 @@ typedef struct p {
 	int backlight_state;	/* static data from MtxOrb_backlight */
 	int width;
 	int height;
+	char *framebuf;		/* Frame buffer */
+	char *old;		/* Current on screen frame buffer */
 	int widthBYheight;	/* Avoid computing width * height frequently */
 	int clear;		/* Control when the LCD is cleared */
 	int fd;			/* The LCD file descriptor */
+	int contrast;		/* static data from set/get_contrast */
+	int backlightenabled;
 
 /*
         int type;
@@ -201,6 +197,7 @@ typedef struct p {
         char cursor_state;
         int bytesperline;
 */
+
         } PrivateData;
 
 /* Vars for the server core */
@@ -275,6 +272,10 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->height = LCD_DEFAULT_HEIGHT;
 	p->widthBYheight = LCD_DEFAULT_WIDTH * LCD_DEFAULT_HEIGHT;
 	p->clear = 1;		/* assume LCD is cleared at startup */
+	p->contrast = DEFAULT_CONTRAST;
+	p->framebuf = NULL;
+	p->backlightenabled = DEFAULT_BACKLIGHT;
+	p->old = NULL;
 
 	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
 
@@ -347,7 +348,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 
 	/* Get backlight setting*/
 	if(drvthis->config_get_bool( drvthis->name , "enablebacklight" , 0 , DEFAULT_BACKLIGHT)) {
-		backlightenabled = 1;
+		p->backlightenabled = 1;
 	}
 
 	/* Get display type */
@@ -437,10 +438,10 @@ MtxOrb_init (Driver *drvthis, char *args)
 	tcsetattr (p->fd, TCSANOW, &portset);
 
 	/* Make sure the frame buffer is there... */
-	if (!framebuf)
-		framebuf = (unsigned char *)
+	if (!p->framebuf)
+		p->framebuf = (unsigned char *)
 			malloc (p->widthBYheight);
-	memset (framebuf, ' ', p->widthBYheight);
+	memset (p->framebuf, ' ', p->widthBYheight);
 
 	/*
 	 * Configure display
@@ -470,8 +471,8 @@ MtxOrb_clear (Driver *drvthis)
 {
         PrivateData * p = drvthis->private_data;
 
-	if (framebuf != NULL)
-		memset (framebuf, ' ', (p->widthBYheight));
+	if (p->framebuf != NULL)
+		memset (p->framebuf, ' ', (p->widthBYheight));
 
 	/* We don't use hardware clear anymore.
 	 * We use incremental update with the frame_buffer. */
@@ -491,9 +492,9 @@ MtxOrb_close (Driver *drvthis)
 
 	close (p->fd);
 
-	if (framebuf)
-		free (framebuf);
-	framebuf = NULL;
+	if (p->framebuf)
+		free (p->framebuf);
+	p->framebuf = NULL;
 
         free( p );
 
@@ -537,7 +538,7 @@ MtxOrb_string (Driver *drvthis, int x, int y, char *string)
 	siz = (p->widthBYheight) - offset;
 	siz = siz > strlen(string) ? strlen(string) : siz;
 
-	memcpy(framebuf + offset, string, siz);
+	memcpy(p->framebuf + offset, string, siz);
 
 	debug(RPT_DEBUG, "MtxOrb: printed string at (%d,%d)", x, y);
 }
@@ -547,18 +548,17 @@ MtxOrb_flush (Driver *drvthis)
 {
 	char out[12];
 	int i,j,mv = 1;
-	static char *old = NULL;
 	char *xp, *xq;
 
         PrivateData * p = drvthis->private_data;
 
-	if (old == NULL) {
-		old = malloc(p->widthBYheight);
+	if (p->old == NULL) {
+		p->old = malloc(p->widthBYheight);
 
 		write(p->fd, "\x0FEG\x01\x01", 4);
-		write(p->fd, framebuf, p->widthBYheight);
+		write(p->fd, p->framebuf, p->widthBYheight);
 
-		strncpy(old, framebuf, p->widthBYheight);
+		strncpy(p->old, p->framebuf, p->widthBYheight);
 
 		return;
 
@@ -572,8 +572,8 @@ MtxOrb_flush (Driver *drvthis)
 		*/
 	}
 
-	xp = framebuf;
-	xq = old;
+	xp = p->framebuf;
+	xq = p->old;
 
 	for (i = 1; i <= p->height; i++) {
 		for (j = 1; j <= p->width; j++) {
@@ -606,7 +606,7 @@ MtxOrb_flush (Driver *drvthis)
 	 * }
 	 */
 
-	strncpy(old, framebuf, p->widthBYheight);
+	strncpy(p->old, p->framebuf, p->widthBYheight);
 
 	debug(RPT_DEBUG, "MtxOrb: frame buffer flushed");
 }
@@ -638,7 +638,7 @@ MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 	/* write to frame buffer */
 	y--; x--; /* translate to 0-index */
 	offset = (y * p->width) + x;
-	framebuf[offset] = c;
+	p->framebuf[offset] = c;
 
 	debug(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x, y);
 }
@@ -646,7 +646,9 @@ MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT int
 MtxOrb_get_contrast (Driver *drvthis)
 {
-	return contrast;
+        PrivateData * p = drvthis->private_data;
+
+	return p->contrast;
 }
 
 /******************************
@@ -669,7 +671,7 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 		return;
 
 	/* Store it */
-	contrast = promille;
+	p->contrast = promille;
 
 	real_contrast = (int) ((long)promille * 255 / 1000 );
 
@@ -1056,10 +1058,7 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 }
 
 /* TODO: REMOVE ME */
-MODULE_EXPORT void
-MtxOrb_init_old_num (Driver *drvthis)
-{
-}
+MODULE_EXPORT void MtxOrb_init_old_num (Driver *drvthis) { }
 
 
 /* TODO: MtxOrb_set_char is doing the job "real-time" as oppose
@@ -1148,10 +1147,7 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 }
 
 /* TODO: REMOVE ME */
-MODULE_EXPORT void
-MtxOrb_old_icon (Driver *drvthis, int which, char dest)
-{
-}
+MODULE_EXPORT void MtxOrb_old_icon (Driver *drvthis, int which, char dest) { }
 
 /* TODO: This is not yet my idea of icon frame buffer but it work well.
  */
