@@ -18,19 +18,21 @@ LDFLAGS += @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses glk hd44780 irman joy lb216 lcdm001 lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli 
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses glk hd44780 irman icp_a106 joy lb216 lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli
 noinst_LIBRARIES = libLCD.a
 
 CFontz_LDADD =       libLCD.a
 CFontz633_LDADD =    libLCD.a
 curses_LDADD =       @LIBCURSES@
 hd44780_LDADD =      libLCD.a
+icp_a106_LDADD =     libLCD.a
 irman_LDADD =        @LIBIRMAN@
 lirc_LDADD =         @LIBLIRC_CLIENT@
+lcterm_LDADD =       libLCD.a
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 
-libLCD_a_SOURCES =        lcd_lib.h lcd_lib.c
+libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
 
 bayrad_SOURCES =     lcd.h bayrad.h bayrad.c report.h
 CFontz_SOURCES =     lcd.h CFontz.c CFontz.h report.h
@@ -38,9 +40,11 @@ CFontz633_SOURCES =  lcd.h CFontz633.c CFontz633.h CFontz633io.c CFontz633io.h r
 curses_SOURCES =     lcd.h curses_drv.h curses_drv.c report.h
 glk_SOURCES =        lcd.h glk.c glk.h glkproto.c glkproto.h report.h
 hd44780_SOURCES =    lcd.h hd44780.h hd44780.c hd44780-drivers.h hd44780-low.h hd44780-charmap.h hd44780-4bit.c hd44780-4bit.h hd44780-ext8bit.c hd44780-ext8bit.h lcd_sem.c lcd_sem.h hd44780-serialLpt.c hd44780-serialLpt.h hd44780-winamp.c hd44780-winamp.h hd44780-picanlcd.c hd44780-picanlcd.h port.h lpt-port.h timing.h report.h
+icp_a106_SOURCES =   lcd.h icp_a106.c icp_a106.h report.h
 irman_SOURCES =      lcd.h irmanin.c irmanin.h report.h
 joy_SOURCES =        lcd.h joy.c joy.h port.h report.h
 lb216_SOURCES =      lcd.h lb216.c lb216.h report.h
+lcterm_SOURCES =     lcd.h lcterm.c lcterm.h report.h
 lcdm001_SOURCES =    lcd.h lcdm001.c lcdm001.h report.h
 lirc_SOURCES =       lcd.h lircin.c lircin.h report.h
 MtxOrb_SOURCES =     lcd.h MtxOrb.c MtxOrb.h report.h bigfont.h
