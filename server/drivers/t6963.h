@@ -8,6 +8,17 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c)  2001 Manuel Stahl <mythos@xmythos.de>
+ *
+ * Wiring:
+ *  Parallel:              LCD: 
+ *  1 (Strobe) ----------- 5 (WR)
+ *  2-9 (Data) ----------- 11-18 (Data)
+ *  14 (Autofeed) -------- 7 (CE)
+ *  16 (Init) ------------ 8 (C/D)
+ *  17 (Slct) ------------ 6 (RD)
+ *  18 (GND) ------------- 3 (GND)
+ *  +5V ------------------ 3(LCD +)
+ *
  */
 
 #ifndef T6963_H
