@@ -39,7 +39,7 @@
 #include "widget.h"
 #include "render.h"
 
-int heartbeat = HEART_OPEN;
+int heartbeat = HEARTBEAT_OPEN;
 int backlight = BACKLIGHT_OPEN;
 int backlight_state = BACKLIGHT_OPEN;
 int backlight_brightness = 255;

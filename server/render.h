@@ -14,13 +14,10 @@
 
 #include "screen.h"
 
-#define HEART_OFF 1
-#define HEART_ON 2
-#define HEART_OPEN 3
-
-#define HEARTBEAT_OFF HEART_OFF
-#define HEARTBEAT_ON HEART_ON
-#define HEARTBEAT_OPEN HEART_OPEN
+#define HEARTBEAT_OFF 0
+#define HEARTBEAT_ON 1
+#define HEARTBEAT_OPEN 2
+#define HEARTBEAT_SLASH 3
 
 #define SERVER_SCREEN_NEVER 0
 #define SERVER_SCREEN_NOSCREEN 1

@@ -560,7 +560,8 @@ screen_del_func (client * c, int argc, char **argv)
  *  name, priority, or duration
  *
  * usage: screen_set <id> [ -priority <int> ] [ -name <name> ] [ -duration <int> ]
- *     [ -wid <width> ] [ -hgt <height> ] [ -heartbeat <type> ]
+ *     [ -wid <width> ] [ -hgt <height> ] [ -heartbeat <type> ] [ -cursor <type> ]
+ *     [ -cursor_x <xpos> ] [ -cursor_y <ypos> ]
  */
 int
 screen_set_func (client * c, int argc, char **argv)
@@ -654,19 +655,19 @@ screen_set_func (client * c, int argc, char **argv)
 
 				/* set the heartbeat type...*/
 				if (0 == strcmp (argv[i], "on"))
-					s->heartbeat = HEART_ON;
+					s->heartbeat = HEARTBEAT_ON;
 				if (0 == strcmp (argv[i], "heart"))
-					s->heartbeat = HEART_ON;
+					s->heartbeat = HEARTBEAT_ON;
 				if (0 == strcmp (argv[i], "normal"))
-					s->heartbeat = HEART_ON;
+					s->heartbeat = HEARTBEAT_ON;
 				if (0 == strcmp (argv[i], "default"))
-					s->heartbeat = HEART_ON;
+					s->heartbeat = HEARTBEAT_ON;
 				if (0 == strcmp (argv[i], "off"))
-					s->heartbeat = HEART_OFF;
+					s->heartbeat = HEARTBEAT_OFF;
 				if (0 == strcmp (argv[i], "none"))
-					s->heartbeat = HEART_OFF;
+					s->heartbeat = HEARTBEAT_OFF;
 				if (0 == strcmp (argv[i], "slash"))
-					s->heartbeat = HEART_OPEN;
+					s->heartbeat = HEARTBEAT_SLASH;
 				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -heartbeat requires a parameter\n");
@@ -722,8 +723,7 @@ screen_set_func (client * c, int argc, char **argv)
 				sock_send_string (c->sock, "huh? -timeout requires a parameter\n");
 			}
 		}
-
-		/* Handle the backlight parameter*/
+		/* Handle the "backlight" parameter*/
 		else if (strcmp (argv[i], "backlight") == 0) {
 			if (argc > i + 1) {
 				i++;
@@ -759,7 +759,67 @@ screen_set_func (client * c, int argc, char **argv)
 			} else {
 				sock_send_string (c->sock, "huh? -backlight requires a parameter\n");
 			}
-		} else sock_send_string (c->sock, "huh? invalid parameter\n");
+		}
+		/* Handle the "cursor" parameter */
+		else if (strcmp (argv[i], "cursor") == 0) {
+			if (argc > i + 1) {
+				i++;
+				debug (RPT_DEBUG, "screen_set: cursor=\"%s\"", argv[i]);
+
+				/* set the heartbeat type...*/
+				if (0 == strcmp (argv[i], "off"))
+					s->heartbeat = CURSOR_OFF;
+				if (0 == strcmp (argv[i], "on"))
+					s->cursor = CURSOR_DEFAULT_ON;
+				if (0 == strcmp (argv[i], "under"))
+					s->cursor = CURSOR_UNDER;
+				if (0 == strcmp (argv[i], "block"))
+					s->cursor = CURSOR_BLOCK;
+				sock_send_string(c->sock, "success\n");
+			} else {
+				sock_send_string (c->sock, "huh? -cursor requires a parameter\n");
+			}
+		}
+		/* Handle the "cursor_x" parameter */
+		else if (strcmp (p, "cursor_x") == 0) {
+			if (argc > i + 1) {
+				i++;
+				debug (RPT_DEBUG, "screen_set: cursor_x=\"%s\"", argv[i]);
+
+				/* set the position...*/
+				number = atoi (argv[i]);
+				if (number > 0 && number <= s->wid) {
+					s->cursor_x = number;
+					sock_send_string(c->sock, "success\n");
+				}
+				else {
+					sock_send_string(c->sock, "huh? cursor position outside screen\n");
+				}
+			} else {
+				sock_send_string (c->sock, "huh? -cursor_x requires a parameter\n");
+			}
+		}
+		/* Handle the "cursor_y" parameter */
+		else if (strcmp (p, "cursor_y") == 0) {
+			if (argc > i + 1) {
+				i++;
+				debug (RPT_DEBUG, "screen_set: cursor_y=\"%s\"", argv[i]);
+
+				/* set the position...*/
+				number = atoi (argv[i]);
+				if (number > 0 && number <= s->hgt) {
+					s->cursor_y = number;
+					sock_send_string(c->sock, "success\n");
+				}
+				else {
+					sock_send_string(c->sock, "huh? cursor position outside screen\n");
+				}
+			} else {
+				sock_send_string (c->sock, "huh? -cursor_y requires a parameter\n");
+			}
+		}
+
+		else sock_send_string (c->sock, "huh? invalid parameter\n");
 	}/* done checking argv*/
 	return 0;
 }

@@ -186,6 +186,9 @@ goodbye_screen ()
 	char *l16 = "    LCDproc!    ";
 #endif
 
+	if( !display_props )
+		return 0;
+
 	drivers_clear ();
 
 	if (display_props->height >= 4) {

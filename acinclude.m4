@@ -6,7 +6,7 @@ AC_ARG_ENABLE(drivers,
 	[                  drivers may be separated with commas.]
   	[                  Possible choices are:]
  	[                    mtxorb,cfontz,curses,text,lb216,]
- 	[                    hd44780,joy,irman,lircin,bayrad,glk,]
+ 	[                    hd44780,joy,irman,lirc,bayrad,glk,]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
@@ -51,7 +51,7 @@ fi
  				AC_CHECK_HEADER(ncurses.h,
  					dnl We have ncurses.h and libncurses, add driver.
 	 				LIBCURSES="-lncurses"
- 					DRIVERS="$DRIVERS curses_drv${SO}"
+ 					DRIVERS="$DRIVERS curses${SO}"
  					actdrivers=["$actdrivers curses"]
  				,
 dnl				else
@@ -63,7 +63,7 @@ dnl			else
  					AC_CHECK_HEADER(curses.h,
  						dnl We have curses.h and libcurses, add driver.
  						LIBCURSES="-lcurses"
- 						DRIVERS="$DRIVERS curses_drv${SO}"
+ 						DRIVERS="$DRIVERS curses${SO}"
  						actdrivers=["$actdrivers curses"]
  					,
 dnl					else
@@ -132,7 +132,7 @@ dnl				else
 			AC_CHECK_LIB(lirc_client, main,
 				LIBLIRC_CLIENT="-llirc_client"
 				DRIVERS="$DRIVERS lirc${SO}"
-				actdrivers=["$actdrivers lircin"]
+				actdrivers=["$actdrivers lirc"]
 				,
 dnl				else
 				AC_MSG_WARN([The lirc driver needs the lirc client library])

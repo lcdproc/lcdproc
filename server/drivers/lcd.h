@@ -42,19 +42,16 @@
 #define BACKLIGHT_WARNING 2
 #define BACKLIGHT_RED_ALERT 3
 
-// Icons for icon function
+/* Icons for icon function */
 #define ICON_BLOCK_FILLED 0
 #define ICON_HEART_OPEN 8
 #define ICON_HEART_FILLED 9
 
 /* Heartbeat data, taken from render.h */
-/* ??? What do all these mean ? */
-#define HEART_OFF 1
-#define HEART_ON 2
-#define HEART_OPEN 3
-#define HEARTBEAT_OFF HEART_OFF
-#define HEARTBEAT_ON HEART_ON
-#define HEARTBEAT_OPEN HEART_OPEN
+/* ??? What does OPEN mean here ? */
+#define HEARTBEAT_OFF 0
+#define HEARTBEAT_ON 1
+#define HEARTBEAT_OPEN 2
 
 /* Patterns for hbar / vbar */
 #define BAR_POS			0x001 /* default */
