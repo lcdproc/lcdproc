@@ -1,0 +1,263 @@
+<chapter id="shared-files">
+<title>Shared files</title>
+
+<sect1 id="shared-files-intro">
+<title>Introduction</title>
+
+<para>
+Here we provide functions that should be used by all parts of the program.
+</para>
+
+</sect1>
+
+<sect1 id="debug.h">
+<title>report.h : Debugging and reporting</title>
+
+<para>To enable the debug() function on all of the software, just type:
+./configure --enable-debug and recompile with 'make'.</para>
+
+<para>To enable the debug() function only in specific files:
+1) Configure without enabling debug (that is without --enable-debug)
+2) Edit the source file that you want to debug and put the following
+   line at the top, before the #include "report.h" line:
+   #define DEBUG
+3) Then recompile with 'make'
+This way, the global DEBUG macro is off but is locally enabled in
+certains parts of the software.</para>
+
+<para>The reporting levels have the following meaning.</para>
+
+<variablelist><title>Reporting Levels</title>
+
+<varlistentry><term>0 RPT_CRIT</term>
+<listitem><para>
+Critical conditions: the program stops right after
+this. Only use this if the program is actually exited
+from the current function.
+</para></listitem>
+</varlistentry>
+
+<varlistentry><term>1 RPT_ERR</term>
+<listitem><para>
+Error conditions: serious problem, program continues.
+Use this just before you return -1 from a function.
+</para></listitem>
+</varlistentry>
+
+<varlistentry><term>2 RPT_WARNING</term>
+<listitem><para>
+Warning conditions: Something that the user should
+fix, but the program can continue without a real
+problem. Ex: Protocol errors from a client.
+</para></listitem>
+</varlistentry>
+
+<varlistentry><term>3 RPT_NOTICE</term>
+<listitem><para>
+Major event in the program: (un)loading of driver, client (dis)connect.
+</para></listitem>
+</varlistentry>
+
+<varlistentry><term>4 RPT_INFO</term>
+<listitem><para>
+Minor event in the program: the activation of a
+setting, details of a loaded driver, a key
+reservation, a keypress, a screen switch.
+</para></listitem>
+</varlistentry>
+
+<varlistentry><term>5 RPT_DEBUG</term>
+<listitem><para>
+Insignificant event: What function has been called, what subpart of a
+function is being executed, what was received and sent
+over the socket, etc.
+</para></listitem>
+</varlistentry>
+
+</variablelist>
+
+<para>Levels 4 (maybe) and 5 (certainly) should be reported using the debug
+function. The code that this function generates will not be in the executable when
+compiled without debugging. This way memory and CPU cycles are saved.</para>
+
+<para>report.h file defines 3 functions for debugging and reporting:</para>
+
+<sect2 id="set_reporting">
+<title>Sets reporting level and message destination</title>
+
+<funcsynopsis>
+<funcprototype>
+  <funcdef>int <function>set_reporting</function></funcdef>
+  <paramdef>char * <parameter>application_name</parameter></paramdef>
+  <paramdef>int  <parameter>new_level</parameter></paramdef>
+  <paramdef>int <parameter>new_dest</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+<para>Returns the content of the byte.</para>
+
+</sect2>
+
+<sect2 id="report">
+<title>Report the message to the selected destination if important enough</title>
+
+<funcsynopsis>
+<funcprototype>
+  <funcdef>void <function>report</function></funcdef>
+  <paramdef>const int <parameter>level</parameter></paramdef>
+  <paramdef>const char *<parameter>format</parameter></paramdef>
+  <paramdef>...</paramdef>
+</funcprototype>
+</funcsynopsis>
+<para>Returns nothing (void).</para>
+
+<para>The format parameter is the same as the one used by printf.</para>
+
+</sect2>
+
+<sect2 id="debug">
+<title>Send debugging information if important enough</title>
+
+<para>Consider the debug function to be exactly the same as the report function. The only difference is that it is only compiled in if DEBUG is defined.</para>
+
+</sect2>
+
+</sect1>
+
+<sect1 id="LL.h">
+<title>LL.h : Linked Lists (Doubly-Linked Lists)</title>
+
+<sect2 id="LL.h-new">
+<title>Creating a list</title>
+
+<para>To create a list, do the following:</para>
+
+<screen>
+LinkedList *list;
+list = LL_new();
+if(!list) handle_an_error();
+</screen>
+
+<para>The list can hold any type of data.  You will need to typecast your datatype to a "void *", though.  So, to add something to the list, the following would be a good way to start:</para>
+
+<screen>
+typedef struct my_data {
+  char string[16];
+  int number;
+} my_data;
+
+my_data *thingie;
+
+for(something to something else) {
+  thingie = malloc(sizeof(my_data));
+  LL_AddNode(list, (void *)thingie);  // typecast it to a "void *"
+}
+</screen>
+
+<para>For errors, the general convention is that "0" means success, and a negative number means failure.  Check LL.c to be sure, though.</para>
+
+</sect2>
+<sect2 id="LL.h-edit">
+<title>Changing data</title>
+
+<para>To change the data, try this:</para>
+
+<screen>
+thingie = (my_data *)LL_Get(list);  // typecast it back to "my_data"
+thingie->number = another_number;
+</screen>
+
+<para>You don't need to "Put" the data back, but it doesn't hurt anything.</para>
+
+<screen>
+LL_Put(list, (void *)thingie);
+</screen>
+
+<para>However, if you want to point the node's data somewhere else, you'll need to get the current data first, keep track of it, then set the data to a new location:</para>
+
+<screen>
+my_data * old_thingie, new_thingie;
+
+old_thingie = (my_data *)LL_Get(list);
+LL_Put(list, (void *)new_thingie);
+
+// Now, do something with old_thingie.  (maybe, free it?)
+</screen>
+
+<para>Or, you could just delete the node entirely and then add a new one:</para>
+
+<screen>
+my_data * thingie;
+
+thingie = (my_data *)LL_DeleteNode(list);
+free(thingie);
+
+thingie->number = 666;
+
+LL_InsertNode(list, (void *)thingie);
+</screen>
+
+</sect2>
+<sect2 id="LL.h-iterate">
+<title>Iterations throught the list</title>
+
+<para>To iterate on each list item, try this:</para>
+
+<screen>
+LL_Rewind(list);
+do {
+  my_data = (my_data *)LL_Get(list);
+  /* ... do something to it ... */
+} while(LL_Next(list) == 0);
+</screen>
+
+</sect2>
+<sect2 id="LL.h-stack">
+<title>Using the list as a stack or a queue</title>
+
+<para>You can also treat the list like a stack, or a queue.  Just use the following functions:</para>
+
+<screen>
+LL_Push()      // Regular stack stuff: add, remove, peek, rotate
+LL_Pop()
+LL_Top()
+LL_Roll()
+
+LL_Shift()     // Other end of the stack (like in perl)
+LL_Unshift()
+LL_Look()
+LL_UnRoll()
+
+LL_Enqueue()   // Standard queue operations
+LL_Dequeue()
+</screen>
+
+<para>There are also other goodies, like sorting and searching.</para>
+
+</sect2>
+<sect2 id="LL.h-future">
+<title>Future</title>
+
+<para>Array-like operations will come later, to allow numerical indexing:</para>
+
+<screen>
+LL_nGet(list, 3);
+LL_nSwap(list, 6, 13);
+LL_nPut(list, -4, data);   // Puts item at 4th place from the end..
+</screen>
+
+<para>More ideas for later:</para>
+
+<screen>
+LL_MoveNode(list, amount);  // Slides a node to another spot in the list
+-- LL_MoveNode(list, -1); // moves a node back one toward the head
+</screen>
+
+<para>That's about it, for now...  Be sure to free the list when you're done!</para>
+
+<para>See LL.c for more detailed descriptions of these functions.</para>
+
+</sect2>
+
+</sect1>
+
+</chapter>

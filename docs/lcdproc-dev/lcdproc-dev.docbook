@@ -1,0 +1,20 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+  <!ENTITY bookinfo SYSTEM "bookinfo.docbook">
+  <!ENTITY introduction SYSTEM "introduction.docbook">
+  <!ENTITY shared-files SYSTEM "shared-files.docbook">
+  <!ENTITY make-driver SYSTEM "make-driver.docbook">
+  <!ENTITY add-your-driver SYSTEM "add-your-driver.docbook">
+  <!ENTITY license SYSTEM "license.docbook">  
+]>
+
+<book id="lcdproc-dev" lang="en">
+
+&bookinfo;
+
+&introduction;
+&shared-files;
+&make-driver;
+&add-your-driver;
+&license;
+
+</book>

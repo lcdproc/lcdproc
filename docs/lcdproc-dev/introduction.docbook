@@ -1,0 +1,35 @@
+<chapter id="introduction">
+<title>Introduction</title>
+
+<sect1 id="what-is-this">
+<title>About this Document</title>
+
+<para>
+This document is meant to be a reference for LCDproc developers. It tries to indicate you
+where to find the relevant information about LCDproc's inner workings.
+</para>
+
+<note><para>
+Please note that this document is still "under construction". 
+If you run into any trouble feel free to write to the LCDproc mailing list.
+See <ulink url="http://lcdproc.org/mail.php3">http://lcdproc.org/mail.php3</ulink>
+for details on how to subscribe to the list.
+</para>
+<para>
+Therefore you might want to have a look at <ulink url="http://lcdproc.sf.net/docs/">http://lcdproc.sf.net/docs/</ulink>,
+to get the latest version of this document, unless you want to generate it yourself from the
+docbook files in the CVS).
+</para></note>
+
+<para>
+This document was written for LCDproc 0.5.
+</para>
+
+<para>
+In several other places e-mails and other documents have been included in this
+document. The authors of those are listed below every such document.
+</para>
+
+</sect1>
+
+</chapter>
