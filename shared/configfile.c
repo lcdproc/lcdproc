@@ -6,16 +6,23 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 2001, Joris Robijn
+ *           (c) 2003, Rene Wagner
  *
  *
  * Defines routines to read ini-file-like files.
+ * Optionally retrieves settings from an LDAP directory (OpenLDAP 2.1.x)
  */
 
+#include "config.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+
+#ifdef WITH_LDAP_SUPPORT
+# include <ldap.h>
+#endif /* WITH_LDAP_SUPPORT */
 
 #include "shared/report.h"
 
@@ -43,6 +50,20 @@ key * find_key( section * s, char * keyname, int skip );
 key * add_key( section * s, char * keyname, char * value );
 int process_config( section ** current_section, char (*get_next_char)(), char modify_section_allowed, char * source_descr );
 
+#ifdef WITH_LDAP_SUPPORT
+int connect_to_ldap(void);
+
+static LDAP * ld = NULL;
+int use_ldap=0;
+
+static char * ldap_host=NULL, * ldap_base_dn=NULL;
+int ldap_port;
+
+/* not supported for now
+ * char ldap_user[255] = "",
+ *      ldap_pwd[255]  = "";
+ */
+#endif /* WITH_LDAP_SUPPORT */
 
 /**** EXTERNAL FUNCTIONS ****/
 
@@ -55,6 +76,41 @@ int config_read_file( char *filename )
 	int bytesread=0;
 	int pos=0;
 	section * curr_section = NULL;
+
+#ifdef WITH_LDAP_SUPPORT
+	LDAPURLDesc * url = NULL;
+	int retval;
+#endif /* WITH_LDAP_SUPPORT */   
+
+	report( RPT_NOTICE, "Using Configuration File: %s", filename);
+
+#ifdef WITH_LDAP_SUPPORT
+	if (ldap_is_ldap_url( filename )) {
+		use_ldap=1;
+		
+		if (0 != (retval = ldap_url_parse( filename, &url))) {
+			report( RPT_ERR, "Errors parsing LDAP URL %s: %s", filename, ldap_err2string(retval));
+			ldap_free_urldesc(url);
+			return (-1);
+		}
+
+		ldap_host=strdup(url->lud_host);
+		ldap_port=url->lud_port;
+		report( RPT_INFO, "Using LDAP server: %s:%d", ldap_host, ldap_port);
+
+		ldap_base_dn=strdup(url->lud_dn);
+		report( RPT_INFO, "Using LDAP base DN: %s", ldap_base_dn);
+
+		ldap_free_urldesc(url);
+
+		if (connect_to_ldap() < 0 ) {
+			debug( RPT_DEBUG, "connect_to_ldap returned errors.");
+			return (-1);
+		}
+
+		return 0;
+	}
+#endif /* WITH_LDAP_SUPPORT */ 
 
 	/* We use a nested fuction to transfer the characters from buffer to parser*/
 	char get_next_char() {
@@ -258,9 +314,93 @@ void config_clear()
 
 /**** INTERNAL FUNCTIONS ****/
 
+#ifdef WITH_LDAP_SUPPORT
+int
+connect_to_ldap (void)
+{
+	int retval;
+	LDAPMessage * res;
+
+	debug( RPT_INFO, "Connecting to LDAP server: %s:%d", ldap_host, ldap_port);
+
+	if (!(ld = ldap_init(ldap_host, ldap_port))) {
+		report(RPT_ERR, "LDAP session could not be initialized.");
+		return (-1);
+	}
+
+/*****************************************************
+ * disabled unless you really have a DN/pwd to bind to
+ * WARNING: LCDd should not have LDAP write access!!
+ *
+ *	if (LDAP_SUCCESS != (retval = ldap_simple_bind_s (ld, ldap_user, ldap_pwd))) {
+ *		report (RPT_ERR, "LDAP login on %s:%d failed: %s", ldap_host, ldap_port, ldap_err2string (retval));
+ *		ldap_unbind (ld);
+ *		ld = NULL;
+ *		
+ *		return (-1);
+ *	}
+ *	fprintf(stderr, "LDAP login successful on %s:%d\n", ldap_host, ldap_port);
+ ********************************************************/
+ 
+	/* check for the existence of the config object... */
+	if (LDAP_SUCCESS != (retval = ldap_search_s (ld, ldap_base_dn, LDAP_SCOPE_BASE, "objectClass=lcdprocConfig", NULL, 0, &res))) {
+		report( RPT_ERR, "Could not access LDAP server on %s:%d", ldap_host, ldap_port);
+		return (-1);
+	}
+	if (0 == ldap_count_entries(ld, res)) {
+		report( RPT_ERR, "No configuration object found in LDAP at: %s", ldap_base_dn);
+		return (-1);
+	}
+	debug( RPT_DEBUG, "Configuration LDAP object found.");
+	return 0;
+}
+
+#define BUFSIZE 255
+#endif /* WITH_LDAP_SUPPORT */
+
 section * find_section( char * sectionname )
 {
 	section * s;
+
+#ifdef WITH_LDAP_SUPPORT
+	LDAPMessage * res;
+	int retval;
+	char *filter=NULL;
+
+	if (use_ldap) {
+		debug( RPT_DEBUG, "Searching LDAP for section [%s]", sectionname);
+		if (NULL == (filter = malloc(BUFSIZE))){
+			report( RPT_ERR, "Could not allocate memory in find_section()");
+			return NULL;
+		}
+		strcpy(filter, "cn=");
+		strncat(filter, sectionname, BUFSIZE);
+		if (LDAP_SUCCESS != (retval = ldap_search_s (ld, ldap_base_dn, LDAP_SCOPE_ONELEVEL, filter, NULL, 0, &res))) {
+			if (NULL != filter) {
+				free(filter);
+				filter=NULL;
+			}
+			ldap_msgfree(res);
+			report( RPT_ERR, "Could not access LDAP server on %s:%d", ldap_host, ldap_port);
+			return NULL;
+		}
+		if (NULL != filter) {
+			free(filter);
+			filter=NULL;
+		}
+		if (0 == ldap_count_entries( ld, res )) {
+			debug( RPT_DEBUG, "Section [%s] not found in LDAP.", sectionname);
+			return NULL;
+		}
+		ldap_msgfree(res);
+		debug( RPT_DEBUG, "Found section [%s] in LDAP", sectionname);
+		s = (section*) malloc( sizeof( section ));
+		s->name=strdup( sectionname );
+		s->first_key = NULL;
+		s->next_section = NULL;
+		return s;
+	}
+#endif /* WITH_LDAP_SUPPORT */
 
 	for( s=first_section; s; s=s->next_section ) {
 		if( strcasecmp( s->name, sectionname ) == 0 ) {
@@ -292,8 +432,103 @@ key * find_key( section * s, char * keyname, int skip )
 	int count = 0;
 	key * last_key = NULL;
 
+#ifdef WITH_LDAP_SUPPORT	
+	LDAPMessage * res;
+	LDAPMessage * entry;
+	int retval;
+	char *buf=NULL;
+	char **vals;
+#endif /* WITH_LDAP_SUPPORT */
+
 	/* Check for NULL section*/
 	if(!s) return NULL;
+
+#ifdef WITH_LDAP_SUPPORT
+	if (use_ldap) {
+		debug( RPT_DEBUG, "Searching LDAP for key '%s' in section [%s] skipping %d entries.", keyname, s->name, skip);
+
+		if (NULL == (buf = malloc(BUFSIZE))){
+			report (RPT_ERR, "Could not allocate memory in find_key().");
+		}
+		strcpy(buf, "cn=");
+		strncat(buf, s->name, BUFSIZE);
+		if (LDAP_SUCCESS != (retval = ldap_search_s (ld, ldap_base_dn, LDAP_SCOPE_ONELEVEL, buf, NULL, 0, &res))) {
+			if (NULL != buf) {
+				free(buf);
+				buf=NULL;
+			}
+			ldap_msgfree(res);
+			report( RPT_ERR, "Could not access LDAP server on %s:%d", ldap_host, ldap_port);
+			return NULL;
+		}
+		if (NULL == (entry = ldap_first_entry( ld, res ))) {
+			debug( RPT_DEBUG, "Section [%s] not found in LDAP.", s->name);
+			if (NULL != buf) {
+				free(buf);
+				buf=NULL;
+			}
+			/* DON'T enable the following
+			 * ldap_msgfree(entry);
+			 * ldap_msgfree below does that already
+			 */
+			ldap_msgfree(res);
+			return NULL;
+		}
+
+		
+		strcpy(buf, "lcdproc");
+		strncat(buf, keyname, BUFSIZE);
+		/* debug( RPT_DEBUG, "Key name translated to attribute name: %s", buf); */
+		vals = ldap_get_values (ld, entry, buf);
+		
+		if (skip+1 > ldap_count_values (vals)) {
+			debug( RPT_DEBUG, "No such entry found.");
+			if (NULL != buf) {
+				free(buf);
+				buf=NULL;
+			}
+			ldap_value_free(vals);
+			/* DON'T enable the following
+			 * ldap_msgfree(entry);
+			 * ldap_msgfree below does that already
+			 */
+			ldap_msgfree(res);
+			return NULL;
+		}
+		/* DON'T enable the following
+		 * ldap_msgfree(entry);
+		 * ldap_msgfree below does that already
+		 */
+		ldap_msgfree(res);
+		if (vals && vals[skip]) {
+			if (NULL != buf) {
+				free(buf);
+				buf=NULL;
+			}
+			buf=strdup(vals[skip]);
+			debug( RPT_DEBUG, "Entry found. Value is: %s", buf);
+			ldap_value_free (vals);
+						
+			k=(key*) malloc( sizeof( key ));
+			k->name = strdup( keyname );
+			k->value = strdup( buf );
+			k->next_key = NULL;
+			
+			if (NULL != buf) {
+				free(buf);
+				buf=NULL;
+			}
+			return k;
+		} 
+		report( RPT_ERR, "LDAP server encountered errors.");
+		ldap_value_free (vals);
+		if (NULL != buf) {
+			free(buf);
+			buf=NULL;
+		}
+		return NULL;
+	}
+#endif /* WITH_LDAP_SUPPORT */
 
 	for( k=s->first_key; k; k=k->next_key ) {
 

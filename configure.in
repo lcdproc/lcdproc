@@ -202,6 +202,186 @@ AC_MODULES_INFO
 
 LCD_DRIVERS_SELECT
 
+dnl ######################################################################
+dnl Open LDAP
+dnl based on code from perdition http://www.vergenet.net/linux/perdition/
+dnl
+dnl not all options have effect at the moment
+
+AC_SUBST(ldap_libs)
+AC_SUBST(ldap_includes)
+AC_SUBST(ldap_schemadir)
+
+AC_MSG_CHECKING([if LDAP support has been enabled]);
+AC_ARG_ENABLE(
+  ldap,
+  [  --enable-ldap           compile with LDAP support.  ],
+  [ 
+    if test "$enable_ldap" = "yes"; then
+      AC_MSG_RESULT("yes")
+    else
+      AC_MSG_RESULT("no")
+    fi
+  ],
+  [ 
+    enable_ldap="no";
+    AC_MSG_RESULT("no") 
+  ]
+)
+
+if test "$enable_ldap" = "yes"; then
+AC_ARG_WITH(
+  ldap-includes,
+  [  --with-ldap-includes=DIR  
+                          Open LDAP include files are in DIR.  ],
+  [ 
+    if test "$withval" = "no"; then 
+     ldap_build_dir=""; 
+    else
+      ldap_includepath="$withval" 
+    fi
+  ],
+  [ 
+    AC_MSG_CHECKING(OpenLDAP include path)
+    for ldap_includepath in /usr/openldap/include /usr/local/openldap/include \
+        /usr/include/openldap /usr/local/include/openldap \
+    	/usr/include /usr/local/include; do
+      if test -f "${ldap_includepath}/ldap.h"; then
+        break
+      fi
+    done
+    AC_MSG_RESULT($ldap_includepath)
+  ]
+)
+fi
+
+ldap_includes="-I$ldap_includepath"
+
+if test "$enable_ldap" = "yes"; then
+AC_ARG_WITH(
+  ldap-libraries,
+  [  --with-ldap-libraries=DIR 
+                          Open LDAP library files are in DIR.  ],
+  [ 
+    if test "$withval" = "no"; then 
+     ldap_build_dir=""; 
+    else
+      ldap_libpath="$withval" 
+    fi
+  ],
+  [ 
+    AC_MSG_CHECKING(OpenLDAP library path)
+    for ldap_libpath in /usr/openldap/lib /usr/local/openldap/lib \
+        /usr/lib/openldap /usr/local/lib/openldap \
+    	/usr/lib /usr/local/lib; do
+      if test -f "${ldap_libpath}/libldap.a" \
+      	-o -f "${ldap_libpath}/libldap.so"; then
+        break
+      fi
+    done
+    AC_MSG_RESULT($ldap_libpath)
+  ]
+)
+fi
+
+ldap_libs="-L$ldap_libpath -lldap -llber"
+
+if test "$enable_ldap" = "yes"; then
+AC_CHECK_FILE(
+  $ldap_includepath/ldap.h,
+  [ : ] ,
+  [ enable_ldap="no" ]
+)
+fi
+
+if test "$enable_ldap" = "yes"; then
+AC_CHECK_LIB(
+  ldap,
+  ldap_url_parse,
+  [ : ],
+  [ enable_ldap="no" ],
+  $ldap_libs
+)
+fi
+
+if test "$enable_ldap" = "yes"; then
+        AC_MSG_CHECKING(OpenLDAP lud_exts in LDAPURLDesc)
+	AC_TRY_COMPILE([#include <stdlib.h>
+			#include <lber.h>
+			#include <ldap.h>],
+		[LDAPURLDesc ludp; 
+		 ludp.lud_exts[0] = NULL;],
+		AC_MSG_RESULT("yes") 
+		AC_DEFINE(WITH_LDAP_LUD_EXTS, 1, Compile with LDAP lud_exts),
+		AC_MSG_RESULT("no")
+AC_MSG_WARN(
+""
+"************************************************************"
+"* Password and Username support will not be built in the"
+"* LDAP module. For Password and Username support compile"
+"* openldap2. Available from openldap.org"
+"************************************************************"
+)
+	)
+fi
+
+if test "$enable_ldap" = "yes"; then
+        AC_CHECK_LIB(ldap, ldap_set_option, 
+	AC_DEFINE(WITH_LDAP_SET_OPTION, 1, Compile with LDAP set_option),
+AC_MSG_WARN(
+""
+"************************************************************"
+"* Cannot expicitly set network timeout or ldap protocol"
+"* version. For ldap_set_option support please use openlap2."
+"* Available from openldap.org"
+"************************************************************"
+),)
+fi
+
+if test "$enable_ldap" = "yes"; then
+AC_ARG_WITH(
+  ldap-schema-directory,
+  [  --with-ldap-schema-directory=DIR 
+                          Open LDAP schema files are in DIR.  ],
+  [ 
+    if test "$withval" = "no"; then 
+     ldap_schemadir=""; 
+    else
+      ldap_schemadir="$withval" 
+    fi
+  ],
+  [ 
+    AC_MSG_CHECKING(OpenLDAP schema path)
+    for ldap_schemadir in /etc/openldap/schema /etc/ldap/schema \
+        /usr/local/openldap/etc/schema; do
+      if test -f "${ldap_schemadir}/openldap.schema"; then
+        break
+      fi
+      ldap_schemadir="Not found"
+    done
+    AC_MSG_RESULT($ldap_schemadir)
+    if test "$ldap_schemadir" = "Not found"; then
+AC_MSG_WARN(
+""
+"************************************************************"
+"* Could not find OpenLDAP schema directory."
+"* lcdproc.schema will not be installed"
+"************************************************************"
+)
+      ldap_schemadir=""
+    fi
+  ]
+)
+fi
+
+if test "$enable_ldap" = "yes"; then
+    AC_DEFINE(WITH_LDAP_SUPPORT, 1, Compile in LDAP support)
+else
+    ldab_libs="";
+    ldap_includes="";
+fi
+
+
 AC_OUTPUT(Makefile
 	shared/Makefile
 	server/Makefile
