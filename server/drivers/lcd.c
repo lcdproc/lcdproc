@@ -59,6 +59,12 @@ static char lcd_drv_getkey ();
 static char lcd_drv_getkey_loop ();
 static char *lcd_drv_getinfo ();
 
+/*
+ * Add all of the driver's header files in...
+ * but WHY?
+ *
+ */
+
 #ifdef MTXORB_DRV
 #include "MtxOrb.h"
 #endif
@@ -138,7 +144,7 @@ static char *lcd_drv_getinfo ();
 
 // TODO: Make a Windows server, and clients...?
 
-lcd_logical_driver lcd, *lcd_root = NULL;
+lcd_logical_driver lcd, *lcd_root = NULL, *lcd_ptr = NULL;
 
 // TODO: Add multiple names for the same driver?
 //
@@ -150,15 +156,19 @@ lcd_physical_driver drivers[] = {
 
 #ifdef MTXORB_DRV
 	{"MtxOrb", MtxOrb_init,},
+	{"MatrixOrbital", MtxOrb_init,},
 #endif
 #ifdef CFONTZ_DRV
 	{"CFontz", CFontz_init,},
+	{"CrystalFontz", CFontz_init,},
 #endif
 #ifdef HD44780_DRV
 	{"HD44780", HD44780_init,},
+	{"Hitachi", HD44780_init,},
 #endif
 #ifdef SLI_DRV
 	{"sli", sli_init,},
+	{"Wirz", sli_init,},
 #endif
 #ifdef LB216_DRV
 	{"LB216", LB216_init,},
@@ -171,9 +181,11 @@ lcd_physical_driver drivers[] = {
 #endif
 #ifdef CURSES_DRV
 	{"curses", curses_drv_init,},
+	{"ncurses", curses_drv_init,},
 #endif
 #ifdef JOY_DRV
 	{"joy", joy_init,},
+	{"joystick", joy_init,},
 #endif
 #ifdef IRMANIN_DRV
 	{"irmanin", irmanin_init,},
@@ -186,6 +198,7 @@ lcd_physical_driver drivers[] = {
 #endif
 #ifdef GLK_DRV
 	{"glk", glk_init,},
+	{"glc", glk_init,},
 #endif
 #ifdef SED1520_DRV
 	{"sed1520", sed1520_init,},
@@ -195,9 +208,12 @@ lcd_physical_driver drivers[] = {
 #endif
 #ifdef SVGALIB_DRV
 	{"svgalib", svgalib_drv_init,},
+	{"vga", svgalib_drv_init,},
+	{"svga", svgalib_drv_init,},
 #endif
 #ifdef T6963_DRV
 	{"t6963", t6963_init,},
+	{"Toshiba", t6963_init,},
 #endif
 
 	{NULL, NULL,},
@@ -254,6 +270,7 @@ lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 	driver->cellhgt = LCD_STD_CELL_HEIGHT;
 
 	driver->framebuf = NULL;
+	driver->nextkey = NULL;
 
 	driver->daemonize = 1;
 
@@ -359,7 +376,7 @@ lcd_find_init (char *driver) {
 		return NULL;
 
 	for (i = 0; drivers[i].name; i++) {
-		if (strcmp(driver, drivers[i].name) == 0) {
+		if (strcasecmp(driver, drivers[i].name) == 0) {
 			return (*drivers[i].init);
 		}
 	}
@@ -377,19 +394,20 @@ lcd_allocate_driver () {
 	// allocated buffer, which is what everything currently uses for
 	// output in the main server code.
 
-#define FirstTime (lcd.framebuf == NULL)
+#define FirstTime (lcd_ptr->framebuf == NULL)
 
-	if (FirstTime) {
-		lcd_root = &lcd;
-		return &lcd;
+	if ((driver = malloc(sizeof(lcd_logical_driver))) == NULL) {
+		syslog(LOG_ERR, "error allocating driver space!");
+		return NULL;
 	}
-	else {
-		if ((driver = malloc(sizeof(lcd_logical_driver))) == NULL) {
-			syslog(LOG_ERR, "error allocating driver space!");
-			return NULL;
-		}
-	}
-	return NULL;
+
+	if (lcd_root == NULL)
+		lcd_root = driver;
+
+	if (lcd_ptr == NULL)
+		lcd_ptr = driver;
+
+	return driver;
 }
 
 // This initializes the specified driver and sends parameters to
@@ -404,9 +422,9 @@ lcd_add_driver (char *driver, char *args)
 	int i;
 	char buf[64];
 	int (*init_driver) ();
-	lcd_logical_driver *ptr;
 
-	lcd_logical_driver *add;
+	lcd_logical_driver *ptr = NULL;
+	lcd_logical_driver *add = NULL;
 
 	if (!driver)
 		return -1;
@@ -447,6 +465,7 @@ lcd_add_driver (char *driver, char *args)
 			// Patch the getkey with the getkey loop...
 			main_getkey = add->getkey;
 			add->getkey = lcd_drv_getkey_loop;
+			add->nextkey = NULL;
 
 		} else {
 

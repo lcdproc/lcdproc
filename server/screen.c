@@ -32,8 +32,8 @@ screen_create ()
 	s->priority = DEFAULT_SCREEN_PRIORITY;
 	s->duration = default_duration;
 	s->heartbeat = DEFAULT_HEARTBEAT;
-	s->wid = lcd.wid;
-	s->hgt = lcd.hgt;
+	s->wid = lcd_ptr->wid;
+	s->hgt = lcd_ptr->hgt;
 	s->keys = NULL;
 	s->parent = NULL;
 	s->widgets = NULL;

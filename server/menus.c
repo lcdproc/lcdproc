@@ -246,7 +246,7 @@ Backlight_func (int input)
 	   else backlight = BACKLIGHT_OPEN;
 	   }
 	 */
-	lcd.backlight (backlight_state & BACKLIGHT_ON);
+	lcd_ptr->backlight (backlight_state & BACKLIGHT_ON);
 
 	return (status | MENU_OK);
 }
@@ -271,7 +271,7 @@ Contrast_func (int input)
 {
 	int status;
 
-	status = lcd.contrast (-1);
+	status = lcd_ptr->contrast (-1);
 
 	if (input == MENU_READ)
 		return status;
@@ -284,7 +284,7 @@ Contrast_func (int input)
 		status = 0;
 	if (status > 255)
 		status = 255;
-	lcd.contrast (status);
+	lcd_ptr->contrast (status);
 
 	return (status | MENU_OK);
 }
@@ -314,7 +314,7 @@ Backlight_Brightness_func (int input)
 		status = 0;
 	if (status > 255)
 		status = 255;
-	lcd.backlight (status);
+	lcd_ptr->backlight (status);
 
 	backlight_brightness = status;
 
@@ -337,7 +337,7 @@ Backlight_Off_Brightness_func (int input)
 		status = 0;
 	if (status > 255)
 		status = 255;
-	lcd.backlight (status);
+	lcd_ptr->backlight (status);
 
 	backlight_off_brightness = status;
 
@@ -349,7 +349,7 @@ Backlight_Off_func ()
 {
 	backlight_state = BACKLIGHT_OFF;
 	backlight = BACKLIGHT_OFF;
-	lcd.backlight (backlight_off_brightness);
+	lcd_ptr->backlight (backlight_off_brightness);
 	return MENU_OK;
 }
 
@@ -358,7 +358,7 @@ Backlight_On_func ()
 {
 	backlight_state = BACKLIGHT_ON;
 	backlight = BACKLIGHT_ON;
-	lcd.backlight (backlight_brightness * (backlight_state & BACKLIGHT_ON));
+	lcd_ptr->backlight (backlight_brightness * (backlight_state & BACKLIGHT_ON));
 	return MENU_OK;
 }
 

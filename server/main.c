@@ -306,14 +306,14 @@ main (int argc, char **argv)
 			// make this fact dependent on the output driver's
 			// sayso - if the output driver desires, do NOT daemonize...
 			if (daemon_mode == 1)
-				daemon_mode = lcd.daemonize;
+				daemon_mode = lcd_ptr->daemonize;
 		} else {
 			if (i == 0) {
-				snprintf(buf, sizeof(buf), "error loading output driver %s...\n", optarg);
+				snprintf(buf, sizeof(buf), "error loading output driver %s...\n", driverlist[i]);
 				fprintf(stderr, buf);
 				exit(1);
 			} else {
-				snprintf(buf, sizeof(buf), "error loading input driver %s... continuing\n", optarg);
+				snprintf(buf, sizeof(buf), "error loading input driver %s... continuing\n", driverlist[i]);
 				fprintf(stderr, buf);
 			}
 		}
@@ -449,11 +449,11 @@ main (int argc, char **argv)
 					sscanf (argv[i], "%ix%i", &wid, &hgt);
 					if (wid > 80 || wid < 16 || hgt > 25 || hgt < 2) {
 						fprintf (stderr, "LCDd: Invalid lcd size \"%s\".  Using 20x4.\n", argv[i]);
-						lcd.wid = 20;
-						lcd.hgt = 4;
+						lcd_ptr->wid = 20;
+						lcd_ptr->hgt = 4;
 					} else {
-						lcd.wid = wid;
-						lcd.hgt = hgt;
+						lcd_ptr->wid = wid;
+						lcd_ptr->hgt = hgt;
 					}
 
 				}
@@ -552,10 +552,10 @@ main (int argc, char **argv)
 	// Main loop...
 
 	syslog(LOG_NOTICE, "using %dx%d LCD with cells %dx%d",
-		lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
+		lcd_ptr->wid, lcd_ptr->hgt, lcd_ptr->cellwid, lcd_ptr->cellhgt);
 	if (debug_level > 2)
 		syslog(LOG_DEBUG, "framebuffer at %0X",
-			lcd.framebuf);
+			lcd_ptr->framebuf);
 
 	while (1) {
 		sock_poll_clients ();		// poll clients for input
@@ -623,7 +623,7 @@ exit_program (int val)
 
 	syslog(LOG_NOTICE, buf);	// send message to syslog
 
-	if (lcd.framebuf != NULL) {
+	if (lcd_ptr->framebuf != NULL) {
 		goodbye_screen ();		// display goodbye screen on LCD display
 		lcd_shutdown ();		// release driver memory and file descriptors
 
@@ -640,8 +640,8 @@ void
 HelpScreen ()
 {
 	// This cleans up any messes on the display output if needed...
-	if (lcd.framebuf != NULL)
-		lcd.close();
+	if (lcd_ptr->framebuf != NULL)
+		lcd_ptr->close();
 
 	printf ("\nLCDproc server daemon, %s\n", version);
 	printf ("Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");

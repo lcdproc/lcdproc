@@ -76,6 +76,7 @@ typedef struct lcd_physical_driver {
 	int (*init) (struct lcd_logical_driver * driver, char *device);
 } lcd_physical_driver;
 
-extern lcd_logical_driver lcd;
+//extern lcd_logical_driver lcd;
+extern lcd_logical_driver *lcd_ptr;
 
 #endif

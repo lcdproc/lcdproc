@@ -102,7 +102,7 @@ handle_input ()
 	widget *w;
 	client *c;
 
-	if ((key = lcd.getkey ()) == 0)
+	if ((key = lcd_ptr->getkey ()) == 0)
 		return 0;
 
 	//debug ("handle_input(%c)\n", (char) key);

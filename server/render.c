@@ -64,54 +64,54 @@ draw_screen (screen * s, int timer)
 	old_s = s;
 
 	// Clear the LCD screen...
-	lcd.clear ();
+	lcd_ptr->clear ();
 
-	// lcd.backlight --
+	// lcd_ptr->backlight --
 	//
 	// This should be in a separate function altogether.
-	// Perhaps several: lcd.backlight_off, lcd.backlight_on,
-	// lcd.backlight_brightness, lcd.backlight_flash ...
+	// Perhaps several: lcd_ptr->backlight_off, lcd_ptr->backlight_on,
+	// lcd_ptr->backlight_brightness, lcd_ptr->backlight_flash ...
 	//
 	// Set up backlight to the correct state...
 	// NOTE: dirty stripping of other options...
 	switch (backlight_state & 1) {
 		// Backlight off (easy)
 		case BACKLIGHT_OFF:
-			lcd.backlight (BACKLIGHT_OFF);
+			lcd_ptr->backlight (BACKLIGHT_OFF);
 			break;
 		// Backlight on (easy)
 		case BACKLIGHT_ON:
-			lcd.backlight (BACKLIGHT_ON);
+			lcd_ptr->backlight (BACKLIGHT_ON);
 			break;
 		default:
 			// Backlight flash: check timer and flip backlight as appropriate
 			if (backlight_state & BACKLIGHT_FLASH) {
 				tmp = (!((timer & 7) == 7));
 				if (backlight_state & 1)
-					lcd.backlight (tmp ? backlight_brightness : backlight_off_brightness);
-				//lcd.backlight(backlight_brightness * (!((timer&7) == 7)));
+					lcd_ptr->backlight (tmp ? backlight_brightness : backlight_off_brightness);
+				//lcd_ptr->backlight(backlight_brightness * (!((timer&7) == 7)));
 				else
-					lcd.backlight (!tmp ? backlight_brightness : backlight_off_brightness);
-				//lcd.backlight(backlight_brightness * ((timer&7) == 7));
+					lcd_ptr->backlight (!tmp ? backlight_brightness : backlight_off_brightness);
+				//lcd_ptr->backlight(backlight_brightness * ((timer&7) == 7));
 
 			// Backlight blink: check timer and flip backlight as appropriate
 			} else if (backlight_state & BACKLIGHT_BLINK) {
 				tmp = (!((timer & 14) == 14));
 				if (backlight_state & 1)
-					lcd.backlight (tmp ? backlight_brightness : backlight_off_brightness);
-				//lcd.backlight(backlight_brightness * (!((timer&14) == 14)));
+					lcd_ptr->backlight (tmp ? backlight_brightness : backlight_off_brightness);
+				//lcd_ptr->backlight(backlight_brightness * (!((timer&14) == 14)));
 				else
-					lcd.backlight (!tmp ? backlight_brightness : backlight_off_brightness);
-				//lcd.backlight(backlight_brightness * ((timer&14) == 14));
+					lcd_ptr->backlight (!tmp ? backlight_brightness : backlight_off_brightness);
+				//lcd_ptr->backlight(backlight_brightness * ((timer&14) == 14));
 			}
 			break;
 	}
 
 	// Output ports from LCD - outputs depend on the current screen
-	lcd.output (output_state);
+	lcd_ptr->output (output_state);
 
 	// Draw a frame...
-	draw_frame (s->widgets, 'v', 0, 0, lcd.wid, lcd.hgt, s->wid, s->hgt, (((s->duration / s->hgt) < 1) ? 1 : (s->duration / s->hgt)), timer);
+	draw_frame (s->widgets, 'v', 0, 0, lcd_ptr->wid, lcd_ptr->hgt, s->wid, s->hgt, (((s->duration / s->hgt) < 1) ? 1 : (s->duration / s->hgt)), timer);
 
 	//debug("draw_screen done\n");
 
@@ -119,20 +119,20 @@ draw_screen (screen * s, int timer)
 		if ((s->heartbeat == HEART_ON) || heartbeat == HEART_ON) {
 			// Set this to pulsate like a real heart beat...
 			// (binary is fun...  :)
-			// lcd.heartbeat ();
-			lcd.icon (!((timer + 4) & 5), 0);
-			lcd.chr (lcd.wid, 1, 0);
+			// lcd_ptr->heartbeat ();
+			lcd_ptr->icon (!((timer + 4) & 5), 0);
+			lcd_ptr->chr (lcd_ptr->wid, 1, 0);
 		}
 		// else
 		// This seems unnecessary... heartbeat is nicer...
 		// if ((s->heartbeat == HEART_OPEN) && heartbeat != HEART_OFF) {
 		// 	char *phases = "-\\|/";
-		// 	lcd.chr (lcd.wid, 1, phases[timer & 3]);
+		// 	lcd_ptr->chr (lcd_ptr->wid, 1, phases[timer & 3]);
 		// }
 	}
 
 	// flush display out, frame and all...
-	lcd.flush ();
+	lcd_ptr->flush ();
 
 	//debug("draw_screen: %8x, %i\n", s, timer);
 
@@ -230,22 +230,22 @@ draw_frame (LL * list,
 						if (w->x > wid) w->x=wid;
 						strncpy (str, w->text, wid - w->x + 1);
 						str[wid - w->x + 1] = 0;
-						lcd.string (w->x + left, w->y + top - fy, str);
+						lcd_ptr->string (w->x + left, w->y + top - fy, str);
 					}
 				}
 				break;
 			case WID_HBAR:
 				if (reset) {
-					lcd.init_hbar ();
+					lcd_ptr->init_hbar ();
 					reset = 0;
 				}
 				if ((w->x > 0) && (w->y > 0)) {
 					if ((w->y <= hgt + fy) && (w->y > fy)) {
 						if (w->length > 0) {
-							if ((w->length / lcd.cellwid) < wid - w->x + 1)
-								lcd.hbar (w->x + left, w->y + top - fy, w->length);
+							if ((w->length / lcd_ptr->cellwid) < wid - w->x + 1)
+								lcd_ptr->hbar (w->x + left, w->y + top - fy, w->length);
 							else
-								lcd.hbar (w->x + left, w->y + top - fy, wid * lcd.cellwid);
+								lcd_ptr->hbar (w->x + left, w->y + top - fy, wid * lcd_ptr->cellwid);
 						} else if (w->length < 0) {
 							// TODO:  Rearrange stuff to get left-extending
 							// hbars to draw correctly...
@@ -257,12 +257,12 @@ draw_frame (LL * list,
 				break;
 			case WID_VBAR:			  // FIXME:  Vbars don't work in frames!
 				if (reset) {
-					lcd.init_vbar ();
+					lcd_ptr->init_vbar ();
 					reset = 0;
 				}
 				if ((w->x > 0) && (w->y > 0)) {
 					if (w->length > 0) {
-						lcd.vbar (w->x, w->length);
+						lcd_ptr->vbar (w->x, w->length);
 					} else if (w->length < 0) {
 						// TODO:  Rearrange stuff to get down-extending
 						// vbars to draw correctly...
@@ -315,7 +315,7 @@ draw_frame (LL * list,
 				}
 				str[wid] = 0;
 
-				lcd.string (1 + left, 1 + top, str);
+				lcd_ptr->string (1 + left, 1 + top, str);
 				break;
 			case WID_SCROLLER:		  // FIXME: doesn't work in frames...
 				{
@@ -334,7 +334,7 @@ draw_frame (LL * list,
 						length = strlen (w->text) + 1;
 						if (length <= screen_width) {
 							/* it fits within the box, just render it */
-							lcd.string (w->left, w->top, w->text);
+							lcd_ptr->string (w->left, w->top, w->text);
 						} else {
 							int effLength = length - screen_width;
 							int necessaryTimeUnits = 0;
@@ -377,7 +377,7 @@ draw_frame (LL * list,
 							} else {
 								str[0] = '\0';
 							}
-							lcd.string (w->left, w->top, str);
+							lcd_ptr->string (w->left, w->top, str);
 						}
 						break;
 						// FIXME:  Vert scrollers don't always seem to scroll
@@ -389,7 +389,7 @@ draw_frame (LL * list,
 							length = strlen (w->text);
 							if (length <= screen_width) {
 								/* no scrolling required... */
-								lcd.string (w->left, w->top, w->text);
+								lcd_ptr->string (w->left, w->top, w->text);
 							} else {
 								int lines_required = (length / screen_width)
 									 + (length % screen_width ? 1 : 0);
@@ -399,7 +399,7 @@ draw_frame (LL * list,
 									for (i = 0; i < lines_required; i++) {
 										strncpy (str, &((w->text)[i * screen_width]), screen_width);
 										str[screen_width] = '\0';
-										lcd.string (w->left, w->top + i, str);
+										lcd_ptr->string (w->left, w->top + i, str);
 									}
 								} else {
 									int necessaryTimeUnits = 0;
@@ -439,7 +439,7 @@ draw_frame (LL * list,
 										str[screen_width] = '\0';
 										//printf("rendering: '%s' of %s\n",
 										//str,w->text);
-										lcd.string (w->left, w->top + (i - begin), str);
+										lcd_ptr->string (w->left, w->top + (i - begin), str);
 									}
 									if (timer > necessaryTimeUnits) {
 										if (screenlist_action == RENDER_HOLD)
@@ -475,10 +475,10 @@ draw_frame (LL * list,
 				// NOTE: y=10 means COLON (:)
 				if ((w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
 					if (reset) {
-						lcd.init_num ();
+						lcd_ptr->init_num ();
 						reset = 0;
 					}
-					lcd.num (w->x + left, w->y);
+					lcd_ptr->num (w->x + left, w->y);
 				}
 				break;
 			case WID_NONE:

@@ -137,11 +137,11 @@ update_server_screen (int timer)
 
 	// Format strings for the appropriate size display...
 	//
-	if (lcd.hgt >= 3) {
+	if (lcd_ptr->hgt >= 3) {
 		snprintf (one, sizeof(one), "Clients: %i", num_clients);
 		snprintf (two, sizeof(two), "Screens: %i", num_screens);
 	} else {
-		if (lcd.wid >= 20)
+		if (lcd_ptr->wid >= 20)
 			snprintf (one, sizeof(one), "%i Client%s, %i Screen%s", num_clients,
 				(num_clients == 1) ? "" : "s", num_screens,
 				(num_screens == 1) ? "" : "s");
@@ -158,9 +158,9 @@ int
 no_screen_screen (int timer)
 {
 
-	lcd.clear ();
-	lcd.string (1, 1, "Error:  No screen!");
-	lcd.flush ();
+	lcd_ptr->clear ();
+	lcd_ptr->string (1, 1, "Error:  No screen!");
+	lcd_ptr->flush ();
 
 	return 0;
 }
@@ -184,31 +184,31 @@ goodbye_screen ()
 	char *l16 = "    LCDproc!    ";
 #endif
 
-	lcd.clear ();
+	lcd_ptr->clear ();
 
-	if (lcd.hgt >= 4) {
-		if (lcd.wid >= 20) {
-			lcd.string (1, 1, b20);
-			lcd.string (1, 2, t20);
-			lcd.string (1, 3, l20);
-			lcd.string (1, 4, b20);
+	if (lcd_ptr->hgt >= 4) {
+		if (lcd_ptr->wid >= 20) {
+			lcd_ptr->string (1, 1, b20);
+			lcd_ptr->string (1, 2, t20);
+			lcd_ptr->string (1, 3, l20);
+			lcd_ptr->string (1, 4, b20);
 		} else {
-			lcd.string (1, 1, b16);
-			lcd.string (1, 2, t16);
-			lcd.string (1, 3, l16);
-			lcd.string (1, 4, b16);
+			lcd_ptr->string (1, 1, b16);
+			lcd_ptr->string (1, 2, t16);
+			lcd_ptr->string (1, 3, l16);
+			lcd_ptr->string (1, 4, b16);
 		}
 	} else {
-		if (lcd.wid >= 20) {
-			lcd.string (1, 1, t20);
-			lcd.string (1, 2, l20);
+		if (lcd_ptr->wid >= 20) {
+			lcd_ptr->string (1, 1, t20);
+			lcd_ptr->string (1, 2, l20);
 		} else {
-			lcd.string (1, 1, t16);
-			lcd.string (1, 2, l16);
+			lcd_ptr->string (1, 1, t16);
+			lcd_ptr->string (1, 2, l16);
 		}
 	}
 
-	lcd.flush ();
+	lcd_ptr->flush ();
 
 	return 0;
 }

@@ -45,10 +45,10 @@ draw_heartbeat ()
 	if (heartbeat) {
 		// Set this to pulsate like a real heart beat...
 		// (binary is fun...  :)
-		lcd.icon (!((timer + 4) & 5), 0);
-		lcd.chr (lcd.wid, 1, 0);
+		lcd_ptr->icon (!((timer + 4) & 5), 0);
+		lcd_ptr->chr (lcd_ptr->wid, 1, 0);
 	}
-	lcd.flush ();
+	lcd_ptr->flush ();
 
 	timer++;
 	timer &= 0x0f;
@@ -97,7 +97,7 @@ do_menu (Menu menu)
 		// FIXME: This should use a better keypress interface, which
 		// FIXME: handles things according to keybindings...
 
-		for (key = lcd.getkey (); key == 0; key = lcd.getkey ()) {
+		for (key = lcd_ptr->getkey (); key == 0; key = lcd_ptr->getkey ()) {
 			// sleep for 1/8th second...
 			framedelay ();
 			// do the heartbeat...
@@ -186,12 +186,12 @@ draw_menu (Menu menu, menu_info * info)
 	int (*readfunc) (int);
 
 	// these should maybe be removed:
-	int wid = lcd.wid, hgt = lcd.hgt;
+	int wid = lcd_ptr->wid, hgt = lcd_ptr->hgt;
 
 	if (!menu)
 		return MENU_ERROR;
 
-	lcd.clear ();
+	lcd_ptr->clear ();
 
 	// Scroll down until the selected item is centered, if possible...
 	top = info->selected - (hgt / 2);
@@ -207,35 +207,35 @@ draw_menu (Menu menu, menu_info * info)
 	// Draw all visible items...
 	for (i = top; i < bottom; i++, y++) {
 		if (i == info->selected)
-			lcd.chr (2, y, '>');
+			lcd_ptr->chr (2, y, '>');
 
 		switch (menu[i].type) {
 		case TYPE_TITL:
-			lcd.chr (1, y, PAD);
-			lcd.chr (2, y, PAD);
-			lcd.string (4, y, menu[i].text);
+			lcd_ptr->chr (1, y, PAD);
+			lcd_ptr->chr (2, y, PAD);
+			lcd_ptr->string (4, y, menu[i].text);
 			for (x = strlen (menu[i].text) + 5; x <= wid; x++)
-				lcd.chr (x, y, PAD);
+				lcd_ptr->chr (x, y, PAD);
 			break;
 		case TYPE_MENU:
-			lcd.string (3, y, menu[i].text);
-			lcd.chr (wid, y, '>');
+			lcd_ptr->string (3, y, menu[i].text);
+			lcd_ptr->chr (wid, y, '>');
 			break;
 		case TYPE_FUNC:
-			lcd.string (3, y, menu[i].text);
+			lcd_ptr->string (3, y, menu[i].text);
 			break;
 		case TYPE_CHEK:
 			if (menu[i].data) {
 				readfunc = menu[i].data;
 				if (readfunc (MENU_READ))
-					lcd.chr (wid, y, 'Y');
+					lcd_ptr->chr (wid, y, 'Y');
 				else
-					lcd.chr (wid, y, 'N');
+					lcd_ptr->chr (wid, y, 'N');
 			}
-			lcd.string (3, y, menu[i].text);
+			lcd_ptr->string (3, y, menu[i].text);
 			break;
 		case TYPE_SLID:
-			lcd.string (3, y, menu[i].text);
+			lcd_ptr->string (3, y, menu[i].text);
 			break;
 		case TYPE_MOVE:
 			break;
@@ -245,12 +245,12 @@ draw_menu (Menu menu, menu_info * info)
 	}
 
 	if (top != 0)
-		lcd.chr (1, 1, '^');
+		lcd_ptr->chr (1, 1, '^');
 	if (bottom < info->length)
-		lcd.chr (1, hgt, 'v');
+		lcd_ptr->chr (1, hgt, 'v');
 
 	draw_heartbeat ();
-	//lcd.flush();
+	//lcd_ptr->flush();
 
 	return 0;
 }
@@ -288,34 +288,34 @@ slid_func (menu_item * item)
 
 	readfunc = item->data;
 
-	lcd.init_hbar ();
+	lcd_ptr->init_hbar ();
 
 	while (key != 'A' && key != 'D') {
 		// Draw the title...
-		lcd.clear ();
-		lcd.chr (1, y, PAD);
-		lcd.chr (2, y, PAD);
-		lcd.string (4, y, item->text);
-		for (x = strlen (item->text) + 5; x <= lcd.wid; x++)
-			lcd.chr (x, y, PAD);
+		lcd_ptr->clear ();
+		lcd_ptr->chr (1, y, PAD);
+		lcd_ptr->chr (2, y, PAD);
+		lcd_ptr->string (4, y, item->text);
+		for (x = strlen (item->text) + 5; x <= lcd_ptr->wid; x++)
+			lcd_ptr->chr (x, y, PAD);
 
 		// Draw the slider now...
 		value = readfunc (MENU_READ);
 		if (value < 0 || value >= MENU_CLOSE)
 			return value;
 		snprintf (str, sizeof(str), "%i", value);
-		if (lcd.hgt >= 4) {
-			lcd.string (8, 4, str);
-			value = (lcd.wid * lcd.cellwid * value / 256);
-			lcd.hbar (1, 3, value);
+		if (lcd_ptr->hgt >= 4) {
+			lcd_ptr->string (8, 4, str);
+			value = (lcd_ptr->wid * lcd_ptr->cellwid * value / 256);
+			lcd_ptr->hbar (1, 3, value);
 		} else {
-			lcd.string (17, 2, str);
-			value = ((lcd.wid - 4) * lcd.cellwid * value / 256);
-			lcd.hbar (1, 2, value);
+			lcd_ptr->string (17, 2, str);
+			value = ((lcd_ptr->wid - 4) * lcd_ptr->cellwid * value / 256);
+			lcd_ptr->hbar (1, 2, value);
 		}
-		//lcd.flush();
+		//lcd_ptr->flush();
 
-		for (key = lcd.getkey (); key == 0; key = lcd.getkey ()) {
+		for (key = lcd_ptr->getkey (); key == 0; key = lcd_ptr->getkey ()) {
 			// do the heartbeat...
 			draw_heartbeat ();
 			// sleep for 1/8th second...

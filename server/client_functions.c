@@ -111,7 +111,7 @@ hello_func (client * c, int argc, char **argv)
 
 	memset(str, '\0', sizeof(str));
 	snprintf (str, sizeof(str), "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
-		version, protocol_version, lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
+		version, protocol_version, lcd_ptr->wid, lcd_ptr->hgt, lcd_ptr->cellwid, lcd_ptr->cellhgt);
 
 //	lcdproc (client) depends on the above format...
 //	snprintf (str, sizeof(str), "connect LCDproc %s protocol %s LCD %ix%i with cells %ix%i\n",
@@ -1355,7 +1355,7 @@ output_func (client * c, int argc, char **argv)
 	// draw_screen(screen * s, int timer)
 	// Whatever for?
 
-	// lcd.output (output_state);
+	// lcd_ptr->output (output_state);
 
 	syslog(LOG_NOTICE, "output states changed");
 	return 0;
@@ -1376,7 +1376,7 @@ info_func (client * c, int argc, char **argv)
 	}
 
 	memset(str, '\0', sizeof(str));
-	snprintf (str, sizeof(str), (char*) lcd.getinfo());
+	snprintf (str, sizeof(str), (char*) lcd_ptr->getinfo());
 
 	sock_send_string (c->sock, str);
 
