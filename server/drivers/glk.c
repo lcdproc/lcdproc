@@ -141,6 +141,8 @@ int glk_init(struct lcd_logical_driver *driver, char *args)
       width = 20 ; height = 4 ; gpo_count = 2 ; break ;
     case 0x23 :  // GLK12232-25SM
       width = 20 ; height = 4 ; gpo_count = 2 ; break ;
+    case 0x24 :  // GLK12232-25SM-Penguin
+      width = 20 ; height = 4 ; gpo_count = 2 ; break ;
     default :
       fprintf( stderr, "glk: Unrecognized module type: 0x%02x\n", i );
       return( -1 );
@@ -635,18 +637,18 @@ char glk_getkey()
   /* Remap keys according to what LCDproc expects */
   switch( c ) {
   default :  break ;
-  case 'U' : c = 'A' ; break ;
-  case 'Q' : c = 'B' ; break ;
-  case 'P' : c = 'C' ; break ;
-  case 'K' : c = 'D' ; break ;
-  case 'V' : c = 'E' ; break ;
-  case 'L' : c = 'F' ; break ;
-  case 'u' : c = 'N' ; break ;
-  case 'q' : c = 'O' ; break ;
-  case 'p' : c = 'P' ; break ;
-  case 'k' : c = 'Q' ; break ;
-  case 'v' : c = 'R' ; break ;
-  case 'l' : c = 'S' ; break ;
+  case 'V' : c = 'A' ; break ; /* Hold/Select */
+  case 'P' : c = 'B' ; break ; /* Left  -- Minus */
+  case 'Q' : c = 'C' ; break ; /* Right -- Plus */
+  case 'L' : c = 'D' ; break ; /* Menu/Exit */
+  case 'U' : c = 'E' ; break ; /* Up */
+  case 'K' : c = 'F' ; break ; /* Down */
+  case 'v' : c = 'N' ; break ;
+  case 'p' : c = 'O' ; break ;
+  case 'q' : c = 'P' ; break ;
+  case 'l' : c = 'Q' ; break ;
+  case 'u' : c = 'R' ; break ;
+  case 'k' : c = 'S' ; break ;
   };
 
 //  if( c ) {

@@ -10,7 +10,8 @@ typedef struct client_data {
 	char *name;
 	// and other stuff...  doesn't matter yet
 	LL *screenlist;
-	// list of accepted keys... (?)
+	// list of requested keys...
+	char *client_keys ;
 	LL *menulist;
 
 } client_data;

@@ -11,17 +11,17 @@
   Normal               "normal" context is handled in this source file.
               A        Pause/Continue
               B        Back(Go to previous screen)
-	      C        Forward(Go to next screen)
-	      D        Open main menu
+              C        Forward(Go to next screen)
+              D        Open main menu
               E-Z      Sent to client, if any; ignored otherwise
 
  (menu keys are not handled here, but in the menu code)
   Menu
               A        Enter/select
-	      B        Up/Left
-	      C        Down/Right
-	      D        Exit/Cancel
-	      E-Z      Ignored
+              B        Up/Left
+              C        Down/Right
+              D        Exit/Cancel
+              E-Z      Ignored
 */
 
 #include <stdlib.h>
@@ -76,21 +76,15 @@ handle_input ()
 			sock_send_string(s->parent->sock, str);
 			// Nobody else gets this key
 		} else {
-			// Give key to anyone who wants it
+			// Give key to clients who want it
 			c = (client *)LL_GetFirst(clients);
 			while(c) {
 				// If the client should have this keypress...
-				s = (screen *)LL_GetFirst(c->data->screenlist);
-				while(s) {
-					w = widget_find( s, KEYS_WIDGETID );
-					if( s->parent && w && w->text && strchr( w->text, key ) ) {
-						// Send keypress to client
-						sprintf(str, "key %c\n", key);
-						sock_send_string(c->sock, str);
-						break ;  // Screen loop
-					}
-					s = (screen *)LL_GetNext(c->data->screenlist);
-				} // while screens
+				if( c->data->client_keys && strchr(c->data->client_keys, key) ) {
+					// Send keypress to client
+					sprintf(str, "key %c\n", key);
+					sock_send_string(c->sock, str);
+				};
 				c = (client *)LL_GetNext(clients);
 			} // while clients
 

@@ -142,11 +142,45 @@ client_set_func (client * c, int argc, char **argv)
 int
 client_add_key_func (client * c, int argc, char **argv)
 {
+	char *  keys ;
 
 	if (!c->data->ack)
 		return 1;
 
-	sock_send_string (c->sock, "huh?  Not implemented yet.  Try using screen_add_key.\n");
+	if (argc < 2) {
+		sock_send_string (c->sock, "huh? You must specify a key list\n");
+		return 0;
+	}
+	if (argc > 2) {
+		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+		return 0;
+	}
+	keys = argv[1];
+	debug ("client_add_key: Adding key(s) %s to client_keys\n", keys);
+
+	if (!c->data->client_keys) {
+		// No keys list, create a new one
+		c->data->client_keys = strdup( keys );
+	} else {
+		// Add supplied keys to existing list
+		// NOTE: There could be duplicates in the resulting list
+		//    That's OK, it's the existence of the key in the list
+		//    that's important.  We'll be more careful in the delete
+		//    key function.
+		char *  new ;
+		int  new_len = strlen(c->data->client_keys) + strlen(keys) + 1 ;
+
+		new = realloc( c->data->client_keys, new_len );
+		if( new ) {
+			c->data->client_keys = new ;
+			strcat( new, keys );
+		}
+	}
+
+	if (!c->data->client_keys) {
+		sock_send_string(c->sock, "huh? failed\n");
+	} else
+		sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
@@ -158,11 +192,45 @@ client_add_key_func (client * c, int argc, char **argv)
 int
 client_del_key_func (client * c, int argc, char **argv)
 {
+	char *  keys ;
 
 	if (!c->data->ack)
 		return 1;
 
-	sock_send_string (c->sock, "huh?  Not implemented yet.  Try using screen_del_key.\n");
+	if (argc < 2) {
+		sock_send_string (c->sock, "huh? You must specify a key list\n");
+		return 0;
+	}
+	if (argc > 2) {
+		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+		return 0;
+	}
+	keys = argv[1] ;
+	debug ("client_del_key: Deleting key(s) %s from client_keys\n", keys);
+
+	if (c->data->client_keys) {
+		// Client has keys, remove keys from the list
+		// NOTE: We let malloc/realloc remember the length
+		//    of the allocated storage.  If keys are later
+		//    added, realloc (in add_key above) will make
+		//    sure there is enough space at c->data->client_keys
+		char *  from ;
+		char *  to ;
+
+		to = from = c->data->client_keys ;
+		while( *from ) {
+			//  Is this key to be deleted from the list?
+			if( strchr( keys, *from ) ) {
+				// Yes, skip it
+				++from ;
+			} else {
+				// No, save it
+				*to++ = *from++ ;
+			}
+		}
+	}
+
+	sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
@@ -222,7 +290,7 @@ screen_add_key_func (client * c, int argc, char **argv)
 		if (!w->text) {
 			// Save supplied key list
 			w->text = strdup( keys );
-        } else {
+		} else {
 			// Add supplied keys to existing list
 			// NOTE: There could be duplicates in the resulting list
 			//    That's OK, it's the existence of the key in the list

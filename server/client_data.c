@@ -24,6 +24,7 @@ client_data_init (client_data * d)
 
 	d->ack = 0;
 	d->name = NULL;
+	d->client_keys = NULL;
 
 	d->screenlist = LL_new ();
 	if (!d->screenlist) {
@@ -56,6 +57,10 @@ client_data_destroy (client_data * d)
 	// Clean up the name...
 	if (d->name)
 		free (d->name);
+
+	// Clean up the key list...
+	if (d->client_keys)
+		free (d->client_keys);
 
 	// Clean up the screenlist...
 	debug ("client_data_destroy: Cleaning screenlist\n");
