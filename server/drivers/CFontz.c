@@ -113,8 +113,6 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 				speed = B2400;
 			else if (tmp == 9600)
 				speed = B9600;
-			else if (tmp == 19200)
-				speed = B19200;
 			else {
 				fprintf (stderr, "CFontz_init: %s argument must be 1200, 2400, or 9600. Using default value.\n", argv[i]);
 			}

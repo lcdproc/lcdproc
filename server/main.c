@@ -58,6 +58,7 @@ static parameter args[] = {
 	{"-t", "--type"},
 	{"-f", "--foreground"},
 	{"-b", "--backlight"},
+	{"-i", "--serverinfo"},
 	{NULL, NULL},
 };
 
