@@ -196,6 +196,8 @@ static void MtxOrb_set_known_char (Driver * drvthis, int car, int type);
 static void MtxOrb_linewrap (Driver *drvthis, int on);
 static void MtxOrb_autoscroll (Driver *drvthis, int on);
 static void MtxOrb_cursorblink (Driver *drvthis, int on);
+static void MtxOrb_mold_vbar (Driver *drvthis, int x, int y, int len);
+static void MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len);
 
 
 /* Parse one key from the configfile */
@@ -448,8 +450,6 @@ MtxOrb_init (Driver *drvthis, char *args)
 #define ValidY(y) if ((y) > p->height) { (y) = p->height; } else (y) = (y) < 1 ? 1 : (y);
 
 /*
- * TODO: Check this quick hack to detect clear of the screen.
- *
  * Clear: catch up when the screen get clear to be able to
  * forget bar caracter not in use anymore and reuse the
  * slot for another bar caracter.
@@ -949,23 +949,22 @@ MtxOrb_get_info (Driver *drvthis)
 }
 
 /* TODO: Finish the support for bar growing reverse way.
- * TODO: Need a "y" as input also !!!
  * TODO: Migrate to the new vbar.
  ******************************
  * Draws a vertical bar...
  * This is the new version using dynamic icon alocation
  */
-MODULE_EXPORT void
-MtxOrb_old_vbar (Driver *drvthis, int x, int len)
+static void MtxOrb_mold_vbar (Driver *drvthis, int x, int y, int len)
 {
 	/* baru5 = bigfonte ... The cache can benefit from it. */
 	unsigned char mapu[9] =
 	{ barw, baru1, baru2, baru3, baru4, bigfonte, baru6, baru7, barb };
 	/* bard5 = bigfontf ... The cache can benefit from it. */
+/*
 	unsigned char mapd[9] = 
 	{ barw, bard1, bard2, bard3, bard4, bigfontf, bard6, bard7, barb };
+*/
 
-	int y;
 
         PrivateData * p = drvthis->private_data;
 
@@ -976,7 +975,7 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 /* REMOVE THE PREVIOUS LINE FOR TESTING ONLY... */
 
 	if (len > 0) {
-		for (y = p->height; y > 0 && len > 0; y--) {
+		for (; y > 0 && len > 0; y--) {
 			if (len >= p->cellheight)
 				MtxOrb_icon (drvthis, x, y, barb);
 			else
@@ -1007,11 +1006,12 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
  * Draws a horizontal bar to the right.
  * This is the new version ussing dynamic icon alocation
  */
-MODULE_EXPORT void
-MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
+static void MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 {
 	unsigned char mapr[6] = { barw, barr1, barr2, barr3, barr4, barb };
+/*
 	unsigned char mapl[6] = { barw, barl1, barl2, barl3, barl4, barb };
+*/
 
         PrivateData * p = drvthis->private_data;
 
@@ -1073,7 +1073,7 @@ MtxOrb_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 	 * between David & Joris.
 	 */ 
 
-	MtxOrb_old_vbar (drvthis, x, total_pixels);
+	MtxOrb_mold_vbar (drvthis, x, y, total_pixels);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -1190,8 +1190,6 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 	}
 }
 
-/* TODO: REMOVE ME */
-MODULE_EXPORT void MtxOrb_old_icon (Driver *drvthis, int which, char dest) { }
 
 /* TODO: This is not yet my idea of icon frame buffer but it work well.
  */

@@ -25,17 +25,9 @@ MODULE_EXPORT char * MtxOrb_get_info (Driver *drvthis);
 
 MODULE_EXPORT void MtxOrb_num (Driver *drvthis, int x, int num);
 
-/* Old stuff to be removed */
-MODULE_EXPORT void MtxOrb_old_vbar (Driver *drvthis, int x, int len);
-MODULE_EXPORT void MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len);
-MODULE_EXPORT void MtxOrb_old_icon (Driver *drvthis, int which, char dest);
-MODULE_EXPORT void MtxOrb_init_old_vbar (Driver *drvthis);
-MODULE_EXPORT void MtxOrb_init_old_hbar (Driver *drvthis);
-MODULE_EXPORT void MtxOrb_init_old_num (Driver *drvthis);
-/* Old stuff to be removed */
-
-/* New version */
 MODULE_EXPORT void MtxOrb_icon (Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT void MtxOrb_vbar (Driver * drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void MtxOrb_hbar (Driver * drvthis, int x, int y, int len, int promille, int options);
 
 
 #define DEFAULT_CONTRAST	480
