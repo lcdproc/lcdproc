@@ -19,11 +19,11 @@
 #include <strings.h>
 #include <sys/stat.h>
 #include <sys/swap.h>
-#ifdef HAVE_SYS_PROCFS_H
-# include <sys/procfs.h>
-#endif
 #ifdef HAVE_PROCFS_H
 # include <procfs.h>
+#endif
+#ifdef HAVE_SYS_PROCFS_H
+# include <sys/procfs.h>
 #endif
 #endif
 
