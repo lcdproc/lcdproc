@@ -252,7 +252,8 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 
 		sscanf(line, "%s %s %s", fs[x].dev, fs[x].mpoint, fs[x].type);
 
-		if(strcmp(fs[x].type, "proc")
+		if (strcmp(fs[x].type, "proc")
+			&& strcmp(fs[x].type, "tmpfs")
 #ifndef STAT_NFS
 			 && strcmp(fs[x].type, "nfs")
 #endif
