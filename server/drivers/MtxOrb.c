@@ -304,10 +304,10 @@ void
 MtxOrb_output (int on)
 {
 	char out[4];
-	if (on) {
+	if (on > 0) {
 		sprintf (out, "%cW", 254);
 		write (fd, out, 2);
-	} else {
+	} else if (on < 0) {
 		sprintf (out, "%cV", 254);
 		write (fd, out, 2);
 	}
@@ -573,17 +573,16 @@ MtxOrb_draw_frame (char *dat)
 
 	if (!dat)
 		return;
-
+/*
         sprintf(out, "%cG%c%c", 254, 1, 1);
         write(fd, out, 4);
         write(fd, dat, lcd.wid*lcd.hgt);
-/*
+*/
 	for (i = 0; i < lcd.hgt; i++) {
 		sprintf (out, "%cG%c%c", 254, 1, i + 1);
 		write (fd, out, 4);
 		write (fd, dat + (lcd.wid * i), lcd.wid);
 	}
-*/
 }
 
 /////////////////////////////////////////////////////////////

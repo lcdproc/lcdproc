@@ -879,6 +879,8 @@ output_func (client * c, int argc, char **argv)
 	} else {
 		if (0 == strcmp (argv[1], "on"))
 			output_state = 1;
+	        else if (0 == strcmp (argv[1], "off"))
+	                output_state = -1;
 		else
 			output_state = 0;
 	}
