@@ -267,10 +267,16 @@ mem_screen (int rep, int display)
 			sock_send_string (sock, tmp);
 
 		// Free swap graph
-		value = ((float) mem[1].free / (float) mem[1].total);
-		value = 1.0 - value;
-		n = (int) ((lcd_cellwid * (float) (lcd_wid - 13)) * (value));
-		sprintf (tmp, "widget_set M swapgauge 8 2 %i\n", n);
+		if (mem[1].total == 0) {
+			value = 0;
+			sprintf(tmp, "widget_set M swapgauge 8 2 0\n");
+		} else {
+			value = ((float) mem[1].free / (float) mem[1].total);
+			value = 1.0 - value;
+			n = (int) ((lcd_cellwid * (float) (lcd_wid - 13)) * (value));
+			sprintf(tmp, "widget_set M swapgauge 8 2 %i\n", n);
+		}
+
 		if (display)
 			sock_send_string (sock, tmp);
 
@@ -278,8 +284,12 @@ mem_screen (int rep, int display)
 		if (value >= 99.9) {
 			sprintf (buffer, "100%%");
 		} else {
-			sprintf (buffer, "%4.1f%%", value);
+			if (mem[1].total == 0)
+				sprintf (buffer, " n/a");
+			else
+				sprintf (buffer, "%4.1f%%", value);
 		}
+
 		sprintf (tmp, "widget_set M swap%% %i 2 {%s}\n", lcd_wid - 4, buffer);
 		if (display)
 			sock_send_string (sock, tmp);
