@@ -226,23 +226,25 @@ dnl
 dnl Find out where is the mounted filesystem table
 dnl
 
-AC_DEFUN([AC_FIND_MFS], [
-	dnl Linux
-	AC_CHECK_FILE([/etc/mtab], [
-		mtab=/etc/mtab
-	],[
-		dnl Solaris
-		AC_CHECK_FILE([/etc/mnttab], [
-			mtab=/etc/mnttab
-		], [
-			dnl BSD
-			AC_CHECK_FILE([/etc/fstab], [
-				mtab=/etc/fstab
-			])
-		])
+AC_DEFUN([AC_FIND_MTAB_FILE], [
+	AC_CACHE_CHECK([for your mounted filesystem table], ac_cv_mtab_file, [
+		dnl Linux
+		if test -e "/etc/mtab"; then
+			ac_cv_mtab_file=/etc/mtab
+		else 
+			dnl Solaris
+			if test -e "/etc/mnttab"; then
+				ac_cv_mtab_file=/etc/mnttab
+			else
+				dnl BSD
+				if test -e "/etc/fstab"; then
+					ac_cv_mtab_file=/etc/fstab
+				fi
+			fi
+		fi
 	])
-	if test "$mtab"; then
-		AC_DEFINE_UNQUOTED(MTAB_FILE, ["$mtab"], [Where is your mounted filesystem table located?])
+	if test "$ac_cv_mtab_file"; then
+		AC_DEFINE_UNQUOTED([MTAB_FILE], ["$ac_cv_mtab_file"], [Location of your mounted filesystem table file])
 	fi
 ])
 

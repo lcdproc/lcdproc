@@ -87,7 +87,7 @@ AC_CHECK_FUNCS(select socket strdup strerror strtol uname cfmakeraw ioperm)
 
 dnl Check for various defines and features
 
-AC_FIND_MFS
+AC_FIND_MTAB_FILE
 AC_GET_FS_INFO
 
 AC_ARG_ENABLE(stat-nfs,
