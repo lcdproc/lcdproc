@@ -42,6 +42,6 @@ if grep "^A[CM]_CONFIG_HEADER" configure.in >/dev/null; then
 fi
 
 echo "Running automake  ..."
-automake --add-missing 
+automake --add-missing  --copy
 echo "Running autoconf ..."
 autoconf
