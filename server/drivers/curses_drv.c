@@ -327,8 +327,8 @@ curses_drv_clear ()
 	werase (lcd_win);
 }
 
-#define ValidX(x) { if ((x) > curses_drv->wid) { (x) = curses_drv->wid; } else (x) < 1 ? 1 : x; }
-#define ValidY(y) { if ((y) > curses_drv->hgt) { (y) = curses_drv->hgt; } else (y) < 1 ? 1 : y; }
+#define ValidX(x) { if ((x) > curses_drv->wid) { (x) = curses_drv->wid; } else (x) = (x) < 1 ? 1 : x; }
+#define ValidY(y) { if ((y) > curses_drv->hgt) { (y) = curses_drv->hgt; } else (y) = (y) < 1 ? 1 : y; }
 
 void
 curses_drv_backlight (int on)

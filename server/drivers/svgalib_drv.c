@@ -247,11 +247,11 @@ svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 {
 	char *argv[64];
 	int argc;
-	int i, j;
+	//int i, j;
 	int VGAMODE;
-	int fgtemp;
-	char param[100];
-	char buffer[1024];
+	//int fgtemp;
+	//char param[100];
+	//char buffer[1024];
 
 	/* not used at the moment */
 	argc = get_args (argv, args, 64);
@@ -474,8 +474,8 @@ char
 svgalib_drv_getkey ()
 {
 	int i;
-	int loop;
-	FILE *fd;
+	//int loop;
+	//FILE *fd;
 	i = vga_getkey ();
 	if (i) {
 		switch (i) {

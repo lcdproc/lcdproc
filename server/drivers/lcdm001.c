@@ -46,8 +46,8 @@ static void lcdm001_string (int x, int y, char *string);
 static void lcdm001_usage (void);
 
 
-#define ValidX(a) { if (x > lcdm001->wid) { x = lcdm001->wid; } else x < 1 ? 1 : x; }
-#define ValidY(a) { if (y > lcdm001->hgt) { y = lcdm001->hgt; } else y < 1 ? 1 : y; }
+#define ValidX(x) if ((x) > lcdm001->wid) { (x) = lcdm001->wid; } else (x) = (x) < 1 ? 1 : (x);
+#define ValidY(y) if ((y) > lcdm001->hgt) { (y) = lcdm001->hgt; } else (y) = (y) < 1 ? 1 : (y);
 
 // Set cursorblink on/off
 //
@@ -88,7 +88,7 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
         int argc;
         int i;
         struct termios portset;
-	char c;
+	//char c;
 
 	char out[5]="";
   //fprintf(stderr,"lcdm001_init()\n");
@@ -351,7 +351,7 @@ lcdm001_flush_box (int lft, int top, int rgt, int bot)
 static void
 lcdm001_chr (int x, int y, char c)
 {
-	char out[10], buf[64];
+	char buf[64]; // char out[10];
 	int offset;
 
 	ValidX(x);

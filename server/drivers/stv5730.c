@@ -320,7 +320,7 @@ stv5730_init (struct lcd_logical_driver *driver, char *args)
 	  else if (0 == strcmp (argv[i], "-h")
 		   || 0 == strcmp (argv[i], "--help"))
 	    {
-		int i;
+		//int i;
 		printf
 		    ("LCDproc stv5730 driver\n\t-p n\t--port n\tSelect the output device to use port n\n");
 		printf ("put the options in quotes like this:  '-p 0x278'\n");

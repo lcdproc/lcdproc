@@ -186,12 +186,12 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	int argc;
 	struct termios portset;
 	int i;
-	int tmp;
+	//int tmp;
 
 	int contrast = DEFAULT_CONTRAST;
 	char device[256] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
-	char c;
+	//char c;
 
 	MtxOrb_type = MTXORB_LKD;  // Assume it's an LCD w/keypad
 
@@ -389,8 +389,8 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	return fd;
 }
 
-#define ValidX(a) { if (x > MtxOrb->wid) { x = MtxOrb->wid; } else x < 1 ? 1 : x; }
-#define ValidY(a) { if (y > MtxOrb->hgt) { y = MtxOrb->hgt; } else y < 1 ? 1 : y; }
+#define ValidX(x) if ((x) > MtxOrb->wid) { (x) = MtxOrb->wid; } else (x) = (x) < 1 ? 1 : (x);
+#define ValidY(y) if ((y) > MtxOrb->hgt) { (y) = MtxOrb->hgt; } else (y) = (y) < 1 ? 1 : (y);
 
 // TODO: Check this quick hack to detect clear of the screen.
 /////////////////////////////////////////////////////////////////
@@ -480,7 +480,7 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 static void
 MtxOrb_chr (int x, int y, char c)
 {
-	char out[10], buf[64];
+	char buf[64]; // char out[10];
 	int offset;
 
 	// Characters may or may NOT be alphabetic; it appears
@@ -717,7 +717,7 @@ MtxOrb_getinfo (void)
 	char in = 0;
 	static char info[255];
 	char tmp[255], buf[64];
-	int i = 0;
+	//int i = 0;
 	fd_set rfds;
 
 	struct timeval tv;
