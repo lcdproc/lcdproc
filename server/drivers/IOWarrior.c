@@ -920,7 +920,7 @@ IOWarrior_num(Driver *drvthis, int x, int num)
 PrivateData *p =(PrivateData *) drvthis->private_data;
 
 /* each bignum is constructed in a 3 x 4 matrix and consists
- * of only the 8 characters defiend above as well as ' '
+ * of only the 8 characters defined above as well as ' '
  *
  * The following table defines the 11 big numbers '0'-'9', ':'
  * and the custom base characters they consist of
@@ -1025,17 +1025,16 @@ int row;
   if (dat == NULL)
     return;
 
-  if (!p->lastline)
-    dat[(p->cellheight - 1) * p->cellwidth] = 0;
-
   for (row = 0; row < p->cellheight; row++) {
     int letter = 0;
     int col;
 
-    for (col = 0; col < p->cellwidth; col++) {
-      letter <<= 1;
-      letter |=(dat[(row * p->cellwidth) + col] > 0);
-    }
+    if (p->lastline || (row < p->cellheight - 1)) {
+      for (col = 0; col < p->cellwidth; col++) {
+        letter <<= 1;
+        letter |= (dat[(row * p->cellwidth) + col] > 0) ? 1 : 0;
+      }
+    }  
     if (p->cc[n].cache[row] != letter)
       p->cc[n].clean = 0;	 /* only mark dirty if really different */
     p->cc[n].cache[row] = letter;
@@ -1120,7 +1119,7 @@ char block_filled[CELLWIDTH*CELLHEIGHT] = {
   1, 1, 1, 1, 1,
   1, 1, 1, 1, 1,
   1, 1, 1, 1, 1,
-  0, 0, 0, 0, 0 };
+  1, 1, 1, 1, 1 };
 
   /* Yes we know, this is a VERY BAD implementation */
   switch(icon) {

@@ -975,15 +975,14 @@ HD44780_set_char (Driver *drvthis, int n, char *dat)
 	if (!dat)
 		return;
 
-	if (!p->lastline)
-	    dat[(p->cellheight - 1) * p->cellwidth]=0;
-
 	for (row = 0; row < p->cellheight; row++) {
 		letter = 0;
-		for (col = 0; col < p->cellwidth; col++) {
-			letter <<= 1;
-			letter |= (dat[(row * p->cellwidth) + col] > 0);
-		}
+		if (p->lastline || (row < p->cellheight - 1)) {
+			for (col = 0; col < p->cellwidth; col++) {
+				letter <<= 1;
+				letter |= (dat[(row * p->cellwidth) + col] > 0) ? 1 : 0;
+			}
+		}	
 		if( p->cc_buf[n*p->cellheight+row] != letter ) {
 			p->cc_dirty[n] = 1; /* only mark as dirty if really different */
 		}
@@ -1068,7 +1067,7 @@ HD44780_icon (Driver *drvthis, int x, int y, int icon)
 		 1, 1, 1, 1, 1,
 		 1, 1, 1, 1, 1,
 		 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0 };
+		 1, 1, 1, 1, 1 };
 
 	/* Yes I know, this is a VERY BAD implementation */
 	switch( icon ) {
