@@ -47,7 +47,7 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "MtxOrb.h"
-//#include "drv_base.h"
+/*#include "drv_base.h"*/
 
 #include "shared/report.h"
 
@@ -61,13 +61,14 @@
 
 #define NotEnoughArgs (i + 1 > argc)
 
-// NOTE: This does not appear to make use of the
-//       hbar and vbar functions present in the LKD202-25.
-//       Why I do not know.
-// RESP: Because software emulated hbar/vbar permit simultaneous use.
+/*
+ NOTE: This does not appear to make use of the
+       hbar and vbar functions present in the LKD202-25.
+       Why I do not know.
+ RESP: Because software emulated hbar/vbar permit simultaneous use.
+*/
 
-
-// TODO: Remove this custom_type if not in use anymore.
+/* TODO: Remove this custom_type if not in use anymore.  */
 typedef enum {
 	bar = 2,
 	bign = 4,
@@ -121,7 +122,7 @@ static int cellwidth = LCD_DEFAULT_CELLWIDTH;
 static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 static int contrast = DEFAULT_CONTRAST;
 
-// Vars for the server core
+/* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
@@ -134,15 +135,15 @@ static void MtxOrb_linewrap (Driver *drvthis, int on);
 static void MtxOrb_autoscroll (Driver *drvthis, int on);
 static void MtxOrb_cursorblink (Driver *drvthis, int on);
 
-// Very private function that clear internal definition.
+/* Very private function that clear internal definition. */
 static void
 MtxOrb_clear_custom (Driver *drvthis)
 {
 	int pos;
 
 	for (pos = 0; pos < 9; pos++) {
-		def[pos] = -1;		// Not in use.
-		use[pos] = 0;		// Not in use.
+		def[pos] = -1;		/* Not in use. */
+		use[pos] = 0;		/* Not in use. */
 		}
 }
 
@@ -202,7 +203,7 @@ MtxOrb_usage (void) {
 	printf ("LCDproc Matrix-Orbital LCD driver\n"
 		"\t-d\t\tSelect the output device to use [/dev/lcd]\n"
 		"\t-t\t\tSelect the LCD type (size) [20x4]\n"
-//		"\t-b\t--backlight\tSelect the backlight state [on]\n"
+/*		"\t-b\t--backlight\tSelect the backlight state [on]\n" */
 		"\t-c\t\tSet the initial contrast [140]\n"
 		"\t-s\t\tSet the communication speed [19200]\n"
 		"\t-h\t\tShow this help information\n"
@@ -221,30 +222,29 @@ MtxOrb_parse_contrast (char * str) {
 	return contrast;
 }
 
-// TODO:  Get the frame buffers working right
+/* TODO:  Get the frame buffers working right */
 
-/////////////////////////////////////////////////////////////////
-// Opens com port and sets baud correctly...
-//
-// Called to initialize driver settings
-//
+/* Opens com port and sets baud correctly...
+ *
+ * Called to initialize driver settings
+ */
 int
 MtxOrb_init (Driver *drvthis, char *args)
 {
-	char *argv[64];		// Notice: 64 arguments - overflows?
+	char *argv[64];		/* Notice: 64 arguments - overflows? */
 	int argc;
 	struct termios portset;
 	int i;
-	//int tmp;
+	/* int tmp; */
 
 	int contrast = DEFAULT_CONTRAST;
 	char device[256] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
-	//char c;
+	/* char c; */
 
-	MtxOrb_type = MTXORB_LKD;  // Assume it's an LCD w/keypad
+	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
 
-	//debug("MtxOrb_init: Args(all): %s\n", args);
+	/* debug("MtxOrb_init: Args(all): %s\n", args); */
 
 	argc = get_args (argv, args, 64);
 
@@ -282,7 +282,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 		char *p;
 
 		p = argv[i];
-		//printf("Arg(%i): %s\n", i, argv[i]);
+		/* printf("Arg(%i): %s\n", i, argv[i]); */
 
 		if (*p == '-') {
 
@@ -356,7 +356,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 	}
 #endif
 
-	// Set up io port correctly, and open it...
+	/* Set up io port correctly, and open it... */
 	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1) {
 		switch (errno) {
@@ -374,12 +374,12 @@ MtxOrb_init (Driver *drvthis, char *args)
 
 	tcgetattr (fd, &portset);
 
-	// We use RAW mode
+	/* We use RAW mode */
 #ifdef HAVE_CFMAKERAW
-	// The easy way
+	/* The easy way */
 	cfmakeraw( &portset );
 #else
-	// The hard way
+	/* The hard way */
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
 	                      | INLCR | IGNCR | ICRNL | IXON );
 	portset.c_oflag &= ~OPOST;
@@ -388,14 +388,14 @@ MtxOrb_init (Driver *drvthis, char *args)
 	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
 
-	// Set port speed
+	/* Set port speed */
 	cfsetospeed (&portset, speed);
 	cfsetispeed (&portset, B0);
 
-	// Do it...
+	/* Do it... */
 	tcsetattr (fd, TCSANOW, &portset);
 
-	// Make sure the frame buffer is there...
+	/* Make sure the frame buffer is there... */
 	if (!framebuf)
 		framebuf = (unsigned char *)
 			malloc (width * height);
@@ -414,12 +414,12 @@ MtxOrb_init (Driver *drvthis, char *args)
 	 * Configure the display functions
 	 */
 
-	// Set variables for server
+	/* Set variables for server */
 	drvthis->api_version = api_version;
 	drvthis->stay_in_foreground = &stay_in_foreground;
 	drvthis->supports_multiple = &supports_multiple;
 
-	// Set the functions the driver supports
+	/* Set the functions the driver supports */
 	drvthis->clear = MtxOrb_clear;
 	drvthis->string = MtxOrb_string;
 	drvthis->chr = MtxOrb_chr;
@@ -452,27 +452,29 @@ MtxOrb_init (Driver *drvthis, char *args)
 #define ValidX(x) if ((x) > width) { (x) = width; } else (x) = (x) < 1 ? 1 : (x);
 #define ValidY(y) if ((y) > height) { (y) = height; } else (y) = (y) < 1 ? 1 : (y);
 
-// TODO: Check this quick hack to detect clear of the screen.
-/////////////////////////////////////////////////////////////////
-// Clear: catch up when the screen get clear to be able to
-//  forget bar caracter not in use anymore and reuse the
-//  slot for another bar caracter.
-//
+/*
+ * TODO: Check this quick hack to detect clear of the screen.
+ *
+ * Clear: catch up when the screen get clear to be able to
+ * forget bar caracter not in use anymore and reuse the
+ * slot for another bar caracter.
+ */
+
 MODULE_EXPORT void
 MtxOrb_clear (Driver *drvthis)
 {
 	if (framebuf != NULL)
 		memset (framebuf, ' ', (width * height));
 
-	//write(fd, "\x0FE" "X", 2);  // instant clear...
+	/* write(fd, "\x0FE" "X", 2); */ /* instant clear... */
 	clear = 1;
 
 	debug(RPT_DEBUG, "MtxOrb: cleared screen");
 }
 
-/////////////////////////////////////////////////////////////////
-// Clean-up
-//
+/******************************
+ * Clean-up
+ */
 MODULE_EXPORT void
 MtxOrb_close (Driver *drvthis)
 {
@@ -485,18 +487,18 @@ MtxOrb_close (Driver *drvthis)
 	debug(RPT_DEBUG, "MtxOrb: closed");
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+/******************************
+ * Returns the display width
+ */
 MODULE_EXPORT int
 MtxOrb_width (Driver *drvthis)
 {
 	return width;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+/******************************
+ * Returns the display height
+ */
 MODULE_EXPORT int
 MtxOrb_height (Driver *drvthis)
 {
@@ -511,7 +513,7 @@ MtxOrb_string (Driver *drvthis, int x, int y, char *string)
 	ValidX(x);
 	ValidY(y);
 
-	x--; y--; // Convert 1-based coords to 0-based...
+	x--; y--; /* Convert 1-based coords to 0-based... */
 	offset = (y * width) + x;
 	siz = (width * height) - offset - 1;
 	siz = siz > strlen(string) ? strlen(string) : siz;
@@ -542,6 +544,8 @@ MtxOrb_flush (Driver *drvthis)
 	} else {
 		/* CODE TEMPORARY DISABLED (joris)
 		   UNSURE IF IT STILL WORKS NOW
+	David GLAUDE:	It seems to work...
+			But I did not try to understand...
 		if (! new_framebuf(drvthis, old))
 			return;
 		*/
@@ -556,9 +560,10 @@ MtxOrb_flush (Driver *drvthis)
 			if ((*p == *q) && (*p > 8))
 				mv = 1;
 			else {
-				// Draw characters that have changed, as well
-				// as custom characters.  We know not if a custom
-				// character has changed.
+			/* Draw characters that have changed, as well
+			 * as custom characters.  We know not if a custom
+			 * character has changed.
+			 */
 
 				if (mv == 1) {
 					snprintf(out, sizeof(out), "\x0FEG%c%c", j, i);
@@ -573,39 +578,42 @@ MtxOrb_flush (Driver *drvthis)
 	}
 
 
-	//for (i = 0; i < height; i++) {
-	//	snprintf (out, sizeof(out), "\x0FEG\x001%c", i + 1);
-	//	write (fd, out, 4);
-	//	write (fd, framebuf + (width * i), width);
-	//}
+	/* for (i = 0; i < height; i++) {
+	 *	snprintf (out, sizeof(out), "\x0FEG\x001%c", i + 1);
+	 *	write (fd, out, 4);
+	 *	write (fd, framebuf + (width * i), width);
+	 * }
+	 */
 
 	strncpy(old, framebuf, width * height);
 
 	debug(RPT_DEBUG, "MtxOrb: frame buffer flushed");
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a character on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+/******************************
+ * Prints a character on the lcd display, at position (x,y).
+ * The upper-left is (1,1), and the lower right should be (20,4).
+ */
 MODULE_EXPORT void
 MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 {
 	int offset;
 
-	// Characters may or may NOT be alphabetic; it appears
-	// that characters 0..4 (or similar) are graphic fonts
+	/* Characters may or may NOT be alphabetic; it appears
+	 * that characters 0..4 (or similar) are graphic fonts
+	 */
 
 	ValidX(x);
 	ValidY(y);
 
-	// write immediately to screen... this code was taken
-	// from the LK202-25; should work for others, yes?
-	// snprintf(out, sizeof(out), "\x0FEG%c%c%c", x, y, c);
-	// write (fd, out, 4);
+	/* write immediately to screen... this code was taken 
+	 * from the LK202-25; should work for others, yes?
+	 * snprintf(out, sizeof(out), "\x0FEG%c%c%c", x, y, c);
+	 * write (fd, out, 4);
+	 */
 
-	// write to frame buffer
-	y--; x--; // translate to 0-index
+	/* write to frame buffer */
+	y--; x--; /* translate to 0-index */
 	offset = (y * width) + x;
 	framebuf[offset] = c;
 
@@ -618,27 +626,29 @@ MtxOrb_get_contrast (Driver *drvthis)
 	return contrast;
 }
 
-/////////////////////////////////////////////////////////////////
-// Changes screen contrast (0-255; 140 seems good)
-// note: works only for LCD displays
-// Is it better to use the brightness for VFD/VKD displays ?
-//
+/******************************
+ * Changes screen contrast in promille
+ * The hardware support value from 0 to 255.
+ * Hardware 140 seems good
+ * note: works only for LCD displays
+ * Is it better to use the brightness for VFD/VKD displays ?
+ */
 MODULE_EXPORT void
 MtxOrb_set_contrast (Driver *drvthis, int promille)
 {
 	char out[4];
 	int real_contrast;
 
-	// Check it
+	/* Check it */
 	if( promille < 0 || promille > 1000 )
 		return;
 
-	// Store it
+	/* Store it */
 	contrast = promille;
 
 	real_contrast = (int) ((long)promille * 255 / 1000 );
 
-	// And do it
+	/* And do it */
 
 	if (IS_LCD_DISPLAY || IS_LKD_DISPLAY) {
 		snprintf (out, sizeof(out), "\x0FEP%c", real_contrast);
@@ -650,15 +660,16 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets the backlight on or off -- can be done quickly for
-// an intermediate brightness...
-//
-// WARNING: off switches vfd/vkd displays off entirely
-//	    so maybe it is best to start LCDd with -b on
-//
-// WARNING: there seems to be a movement afoot to add more
-//          functions than just on/off to this..
+/******************************
+ * Sets the backlight on or off -- can be done quickly for
+ * an intermediate brightness...
+ * 
+ * WARNING: off switches vfd/vkd displays off entirely
+ *	    so maybe it is best to start LCDd with -b on
+ *
+ * WARNING: there seems to be a movement afoot to add more
+ *          functions than just on/off to this..
+ */
 
 #define BACKLIGHT_OFF 0
 #define BACKLIGHT_ON 1
@@ -681,30 +692,31 @@ MtxOrb_backlight (Driver *drvthis, int on)
 		case BACKLIGHT_OFF:
 			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY) {
 	debug(RPT_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
-				; // turns display off entirely (whoops!)
+				; /* turns display off entirely (whoops!) */
 			} else {
 	debug(RPT_DEBUG, "MtxOrb: backlight turned off");
 				write (fd, "\x0FE" "B" "\x000", 3);
 			}
 			break;
-		default: // ignored...
+		default: /* ignored... */
 	debug(RPT_DEBUG, "MtxOrb: backlight - invalid setting");
 			break;
 		}
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets output port on or off
-// displays with keypad have 6 outputs but the one without kepad
-// have only one output
-// NOTE: length of command are different
+/******************************
+ * Sets output port on or off
+ * displays with keypad have 6 outputs but the one without kepad
+ * have only one output
+ * NOTE: length of command are different
+ */
 MODULE_EXPORT void
 MtxOrb_output (Driver *drvthis, int on)
 {
 	char out[5];
 	static int output_state = -1;
 
-	on = on & 077;	// strip to six bits
+	on = on & 077;	/* strip to six bits */
 
 	if (output_state == on)
 		return;
@@ -714,16 +726,17 @@ MtxOrb_output (Driver *drvthis, int on)
 	debug(RPT_DEBUG, "MtxOrb: output pins set: %04X", on);
 
 	if (IS_LCD_DISPLAY || IS_VFD_DISPLAY) {
-		// LCD and VFD displays only have one output port
+		/* LCD and VFD displays only have one output port */
 		(on) ?
 			write (fd, "\x0FEW", 2) :
 			write (fd, "\x0FEV", 2);
 	} else {
 		int i;
 
-		// Other displays have six output ports;
-		// the value "on" is a binary value determining which
-		// ports are turned on (1) and off (0).
+		/* Other displays have six output ports; 
+		 * the value "on" is a binary value determining which
+		 * ports are turned on (1) and off (0).
+		 */
 
 		for(i = 0; i < 6; i++) {
 			(on & (1 << i)) ?
@@ -734,9 +747,9 @@ MtxOrb_output (Driver *drvthis, int on)
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Toggle the built-in linewrapping feature
-//
+/******************************
+ * Toggle the built-in linewrapping feature
+ */
 static void
 MtxOrb_linewrap (Driver *drvthis, int on)
 {
@@ -751,9 +764,9 @@ MtxOrb_linewrap (Driver *drvthis, int on)
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Toggle the built-in automatic scrolling feature
-//
+/******************************
+ * Toggle the built-in automatic scrolling feature
+ */
 static void
 MtxOrb_autoscroll (Driver *drvthis, int on)
 {
@@ -768,10 +781,10 @@ MtxOrb_autoscroll (Driver *drvthis, int on)
 	}
 }
 
-// TODO: make sure this doesn't mess up non-VFD displays
-/////////////////////////////////////////////////////////////////
-// Toggle cursor blink on/off
-//
+/* TODO: make sure this doesn't mess up non-VFD displays
+ ******************************
+ * Toggle cursor blink on/off
+ */
 static void
 MtxOrb_cursorblink (Driver *drvthis, int on)
 {
@@ -786,34 +799,34 @@ MtxOrb_cursorblink (Driver *drvthis, int on)
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before lcd.vbar()
-//
+/******************************
+ * Sets up for vertical bars.  Call before lcd.vbar()
+ */
 MODULE_EXPORT void
 MtxOrb_init_vbar (Driver *drvthis)
 {
 	custom = bar;
 }
 
-/////////////////////////////////////////////////////////////////
-// Inits horizontal bars...
-//
+/******************************
+ * Inits horizontal bars...
+ */
 MODULE_EXPORT void
 MtxOrb_init_hbar (Driver *drvthis)
 {
 	custom = bar;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns string with general information about the display
-//
+/******************************
+ * Returns string with general information about the display
+ */
 MODULE_EXPORT char *
 MtxOrb_get_info (Driver *drvthis)
 {
 	char in = 0;
 	static char info[255];
 	char tmp[255], buf[64];
-	//int i = 0;
+	/* int i = 0; */
 	fd_set rfds;
 
 	struct timeval tv;
@@ -835,8 +848,8 @@ MtxOrb_get_info (Driver *drvthis)
 	FD_SET(fd, &rfds);
 
 	/* Wait the specified amount of time. */
-	tv.tv_sec = 0;		// seconds
-	tv.tv_usec = 500;	// microseconds
+	tv.tv_sec = 0;		/* seconds */
+	tv.tv_usec = 500;	/* microseconds */
 
 	retval = select(1, &rfds, NULL, NULL, &tv);
 
@@ -872,7 +885,7 @@ MtxOrb_get_info (Driver *drvthis)
 				case '\x33': strcat(info, "LK402-12 "); break;
 				case '\x34': strcat(info, "LK162-12 "); break;
 				case '\x35': strcat(info, "LK204-25PC "); break;
-				default: //snprintf(tmp, sizeof(tmp), "Unknown (%X) ", in); strcat(info, tmp);
+				default: /*snprintf(tmp, sizeof(tmp), "Unknown (%X) ", in); strcat(info, tmp); */
 					     break;
 			}
 		}
@@ -887,8 +900,8 @@ MtxOrb_get_info (Driver *drvthis)
 	write(fd, "\x0FE" "5", 2);
 
 	/* Wait the specified amount of time. */
-	tv.tv_sec = 0;		// seconds
-	tv.tv_usec = 500;	// microseconds
+	tv.tv_sec = 0;		/* seconds */
+	tv.tv_usec = 500;	/* microseconds */
 
 	retval = select(1, &rfds, NULL, NULL, &tv);
 
@@ -910,8 +923,8 @@ MtxOrb_get_info (Driver *drvthis)
 	write(fd, "\x0FE" "6", 2);
 
 	/* Wait the specified amount of time. */
-	tv.tv_sec = 0;		// seconds
-	tv.tv_usec = 500;	// microseconds
+	tv.tv_sec = 0;		/* seconds */
+	tv.tv_usec = 500;	/* microseconds */
 
 	retval = select(1, &rfds, NULL, NULL, &tv);
 
@@ -928,12 +941,12 @@ MtxOrb_get_info (Driver *drvthis)
 	return info;
 }
 
-// TODO: Finish the support for bar growing reverse way.
-// TODO: Need a "y" as input also !!!
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar...
-// This is the new version ussing dynamic icon alocation
-//
+/* TODO: Finish the support for bar growing reverse way.
+ * TODO: Need a "y" as input also !!!
+ ******************************
+ * Draws a vertical bar...
+ * This is the new version ussing dynamic icon alocation
+ */
 MODULE_EXPORT void
 MtxOrb_vbar (Driver *drvthis, int x, int len)
 {
@@ -944,9 +957,9 @@ MtxOrb_vbar (Driver *drvthis, int x, int len)
 
 	debug(RPT_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
 
-// REMOVE THE NEXT LINE FOR TESTING ONLY...
-//  len=-len;
-// REMOVE THE PREVIOUS LINE FOR TESTING ONLY...
+/* REMOVE THE NEXT LINE FOR TESTING ONLY... */
+/*  len=-len; */
+/* REMOVE THE PREVIOUS LINE FOR TESTING ONLY... */
 
 	if (len > 0) {
 		for (y = height; y > 0 && len > 0; y--) {
@@ -971,11 +984,11 @@ MtxOrb_vbar (Driver *drvthis, int x, int len)
 
 }
 
-// TODO: Finish the support for bar growing reverse way.
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-// This is the new version ussing dynamic icon alocation
-//
+/* TODO: Finish the support for bar growing reverse way.
+ ******************************
+ * Draws a horizontal bar to the right.
+ * This is the new version ussing dynamic icon alocation
+ */
 MODULE_EXPORT void
 MtxOrb_hbar (Driver *drvthis, int x, int y, int len)
 {
@@ -1012,14 +1025,14 @@ MtxOrb_hbar (Driver *drvthis, int x, int y, int len)
 
 }
 
-// TODO: Might not work, bignum is untested... an untested with dynamic bar.
-//
-// TODO: Rather than to use the hardware BigNum we should use software
-// emulation, this will make it work simultaniously as hbar/vbar. GLU
-//
-/////////////////////////////////////////////////////////////////
-// Sets up for big numbers.
-//
+/* TODO: Might not work, bignum is untested... an untested with dynamic bar.
+ *
+ * TODO: Rather than to use the hardware BigNum we should use software
+ * emulation, this will make it work simultaniously as hbar/vbar. GLU
+ *
+ ******************************
+ * Sets up for big numbers.
+ */
 MODULE_EXPORT void
 MtxOrb_init_num (Driver *drvthis)
 {
@@ -1033,21 +1046,21 @@ MtxOrb_init_num (Driver *drvthis)
 
 }
 
-// TODO: MtxOrb_set_char is d ing the j b "real-time" as oppose
-// to at flush time. Call to this function should be done in flush
-// this mean in  raw_frame. GLU
-//
-// TODO: Rather than to use the hardware BigNum we should use software
-// emulation, this will make it work simultaniously as hbar/vbar. GLU
-//
-// TODO: Before the desinitive solution we need to make the caracter
-// hiden behind the hardware bignum dirty so that they get cleaned
-// when draw_frame is called. There is no dirty char so I will use 254
-// hoping nowone is using that char. GLU
-
-/////////////////////////////////////////////////////////////////
-// Writes a big number.
-//
+/* TODO: MtxOrb_set_char is d ing the j b "real-time" as oppose
+ * to at flush time. Call to this function should be done in flush
+ * this mean in  raw_frame. GLU
+ *
+ * TODO: Rather than to use the hardware BigNum we should use software
+ * emulation, this will make it work simultaniously as hbar/vbar. GLU
+ *
+ * TODO: Before the desinitive solution we need to make the caracter
+ * hiden behind the hardware bignum dirty so that they get cleaned
+ * when draw_frame is called. There is no dirty char so I will use 254
+ * hoping nowone is using that char. GLU
+ *
+ ******************************
+ * Writes a big number.
+ */
 MODULE_EXPORT void
 MtxOrb_num (Driver *drvthis, int x, int num)
 {
@@ -1059,35 +1072,36 @@ MtxOrb_num (Driver *drvthis, int x, int num)
 	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);
 	write (fd, out, 4);
 
-// Make this space dirty as far as frame buffer knows.
+/* Make this space dirty as far as frame buffer knows. */
 	for (y = 1; y < 5; y++)
 		for (dx = 0; dx < 3; dx++)
 			MtxOrb_chr (drvthis, x + dx, y, DIRTY_CHAR);
 
 }
 
-// TODO: Every time we define a custom char within the LCD,
-// we have to compute the binary value we are going to use.
-// It is easy to keep the bitmap in this source file,
-// but we compute that once rather than every time. GLU
-//
-// TODO: MtxOrb_set_char is doing the job "real-time" as oppose
-// to at flush time. Call to this function should be done in flush
-// this mean in draw_frame. GLU
-//
-// TODO: _icon should not call this directly, this is why we define
-// so frequently the heartbeat custom char. GLU
-//
-// TODO: We make one 3 bytes write folowed by cellheight one byte
-// write. This should be done in one single write. GLU
+/* TODO: Every time we define a custom char within the LCD,
+ * we have to compute the binary value we are going to use.
+ * It is easy to keep the bitmap in this source file,
+ * but we compute that once rather than every time. GLU
+ *
+ * TODO: MtxOrb_set_char is doing the job "real-time" as oppose
+ * to at flush time. Call to this function should be done in flush
+ * this mean in draw_frame. GLU
+ *
+ * TODO: _icon should not call this directly, this is why we define
+ * so frequently the heartbeat custom char. GLU
+ *
+ * TODO: We make one 3 bytes write folowed by cellheight one byte
+ * write. This should be done in one single write. GLU
+ */
 
 #define MAX_CUSTOM_CHARS 7
 
-/////////////////////////////////////////////////////////////////
-// Sets a custom character from 0-7...
-//
-// The input is just an array of characters...
-//
+/******************************
+ * Sets a custom character from 0-7...
+ *
+ * The input is just an array of characters...
+ */
 MODULE_EXPORT void
 MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 {
@@ -1106,22 +1120,24 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 	for (row = 0; row < cellheight; row++) {
 		letter = 0;
 		for (col = 0; col < cellwidth; col++) {
-			// shift to make room for new scan line data
+			/* shift to make room for new scan line data */
 			letter <<= 1;
-			// Now read a single bit of data
-			// -- one entry in dat[] --
-			// and add it to the binary data in "letter"
+			/* Now read a single bit of data 
+			 * -- one entry in dat[] --
+			 * and add it to the binary data in "letter"
+			 */
 			letter |= (dat[(row * cellwidth) + col] > 0);
 		}
-		write (fd, &letter, 1); // write one character for each row
+		write (fd, &letter, 1); /* write one character for each row */
 	}
 }
 
-// TODO (DONE): All the icon are now define at the end of the custom char
-// used for hbar/vbar. GLU
-//
-// TODO (DONE): Don't make direct call to caracter definition if the caracter is
-// already defined. GLU
+/* TODO (DONE): All the icon are now define at the end of the custom char
+ * used for hbar/vbar. GLU
+ *
+ * TODO (DONE): Don't make direct call to caracter definition if the caracter is
+ * already defined. GLU
+ */
 MODULE_EXPORT void
 MtxOrb_icon (Driver *drvthis, int which, char dest)
 {
@@ -1130,14 +1146,15 @@ MtxOrb_icon (Driver *drvthis, int which, char dest)
 	MtxOrb_set_known_char (drvthis, dest, START_ICON+which);
 }
 
-// TODO: Recover the code for I2C connectivity to MtxOrb
-// and don't query the LCD if it does not support keypad.
-// Otherwise crash of the LCD and/or I2C bus.
-//
-/////////////////////////////////////////////////////////////
-// returns one character from the keypad...
-// (A-Z) on success, 0 on failure...
-//
+/* TODO: Recover the code for I2C connectivity to MtxOrb
+ * and don't query the LCD if it does not support keypad.
+ * Otherwise crash of the LCD and/or I2C bus.
+ *
+ ******************************
+ * returns one character from the keypad...
+ * (A-Z) on success, 0 on failure...
+ */
+
 MODULE_EXPORT char
 MtxOrb_getkey (Driver *drvthis)
 {
@@ -1166,157 +1183,115 @@ MtxOrb_getkey (Driver *drvthis)
 	return in;
 }
 
-/////////////////////////////////////////////////////////////////
-// Ask for dynamic allocation of a custom caracter to be
-//  a well none bar graphic. The function is suppose to
-//  return a value between 0 and 7 but 0 is reserver for
-//  heart beat.
-//  This function manadge a cache of graphical caracter in use.
-//  I really hope it is working and bug-less because it is not
-//  completely tested, just a quick hack.
-//
+/******************************
+ * Ask for dynamic allocation of a custom caracter to be
+ *  a well none bar graphic. The function is suppose to
+ *  return a value between 0 and 7 but 0 is reserver for
+ *  heart beat.
+ *  This function manadge a cache of graphical caracter in use.
+ *  I really hope it is working and bug-less because it is not
+ *  completely tested, just a quick hack.
+ */
 static int
 MtxOrb_ask_bar (Driver *drvthis, int type)
 {
 	int i;
 	int last_not_in_use;
-	int pos;							  // 0 is icon, 1 to 7 are free, 8 is not found.
-	// TODO: Reuse graphic caracter 0 if heartbeat is not in use.
-
-	// REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar(%d).\n", type);
-	// Check if the screen was clear.
-	if (clear) {					  // If the screen was clear then graphic caracter are not in use.
-		//REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar| clear was set.\n");
-		use[0] = 1;					  // Heartbeat is always in use (not true but it help).
+	int pos;							  
+	/* 0 is icon, 1 to 7 are free, 8 is not found.
+	 * TODO: Reuse graphic caracter 0 if heartbeat is not in use.
+	 *
+	 * REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar(%d).\n", type);
+	 * Check if the screen was clear.
+	 */
+	if (clear) {					  
+	/* If the screen was clear then graphic caracter are not in use.
+	 * REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar| clear was set.\n");
+	 */
+		use[0] = 1;					  
+	/* Heartbeat is always in use (not true but it help). */
 		for (pos = 1; pos < 8; pos++) {
-			use[pos] = 0;			  // Other are not in use.
+			use[pos] = 0;			  
+	/* Other are not in use. */
 		}
-		clear = 0;					  // We made the special treatement.
+		clear = 0;
+	/* We made the special treatement. */
 	} else {
-		// Nothing special if some caracter a curently in use (...) ?
+	/* Nothing special if some caracter a curently in use (...) ? */
 	}
 
-	// Search for a match with caracter already defined.
-	pos = 8;							  // Not found.
-	last_not_in_use = 8;			  // No empty slot to reuse.
-	for (i = 1; i < 8; i++) {	  // For all but first (heartbeat).
+	/* Search for a match with caracter already defined. */
+	pos = 8;		  /* Not found. */
+	last_not_in_use = 8;	  /* No empty slot to reuse. */
+	for (i = 1; i < 8; i++) { /* For all but first (heartbeat). */
 		if (!use[i])
-			last_not_in_use = i;	  // New empty slot.
+			last_not_in_use = i;	  /* New empty slot. */
 		if (def[i] == type)
-			pos = i;					  // Founded (should break now).
+			pos = i;	/* Founded (should break now). */
 	}
 
 	if (pos == 8) {
-		// REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar| not found.\n");
+	/* REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar| not found.\n"); */
 		pos = last_not_in_use;
-		// TODO: Best match/deep search is no more graphic caracter are available.
+	/* TODO: Best match/deep search is no more graphic caracter are available. */
 	}
 
-	if (pos != 8) {				  // A caracter is found (Best match could solve our problem).
-		// REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar| found at %d.\n", pos);
+	if (pos != 8) {	
+	/* A caracter is found (Best match could solve our problem).
+ 	 * REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar| found at %d.\n", pos);
+	 */
 		if (def[pos] != type) {
-			MtxOrb_set_known_char (drvthis, pos, type);	// Define a new graphic caracter.
-			def[pos] = type;		  // Remember that now the caracter is available.
+			MtxOrb_set_known_char (drvthis, pos, type);
+			/* Define a new graphic caracter. */
+			def[pos] = type;		  
+			/* Remember that now the caracter is available. */
 		}
-		if (!use[pos]) {			  // If the caracter is no yet in use (but defined).
-			use[pos] = 1;			  // Remember it is in use (so protect it from re-use).
+		if (!use[pos]) {			  
+			/* If the caracter is no yet in use (but defined). */
+			use[pos] = 1;			  
+			/* Remember it is in use (so protect it from re-use). */
 		}
 	}
 
-	if (pos == 8)					  // TODO: Choose a character to approximate the graph
+	if (pos == 8)				
+		/* TODO: Choose a character to approximate the graph */
 	{
-		//pos=65; // ("A")?
+		/* pos=65;  ("A")? */
 		switch (type) {
-		case baru1:
-			pos = '_';
-			break;
-		case baru2:
-			pos = '.';
-			break;
-		case baru3:
-			pos = ',';
-			break;
-		case baru4:
-			pos = 'o';
-			break;
-		case baru5:
-			pos = 'o';
-			break;
-		case baru6:
-			pos = 'O';
-			break;
-		case baru7:
-			pos = '8';
-			break;
-
-		case bard1:
-			pos = '\'';
-			break;
-		case bard2:
-			pos = '"';
-			break;
-		case bard3:
-			pos = '^';
-			break;
-		case bard4:
-			pos = '^';
-			break;
-		case bard5:
-			pos = '*';
-			break;
-		case bard6:
-			pos = 'O';
-			break;
-		case bard7:
-			pos = '8';
-			break;
-
-		case barr1:
-			pos = '-';
-			break;
-		case barr2:
-			pos = '-';
-			break;
-		case barr3:
-			pos = '=';
-			break;
-		case barr4:
-			pos = '=';
-			break;
-
-		case barl1:
-			pos = '-';
-			break;
-		case barl2:
-			pos = '-';
-			break;
-		case barl3:
-			pos = '=';
-			break;
-		case barl4:
-			pos = '=';
-			break;
-
-		case barw:
-			pos = ' ';
-			break;
-
-		case barb:
-			pos = 255;
-			break;
-
-		default:
-			pos = '?';
-			break;
+		case baru1: pos = '_';  break;
+		case baru2: pos = '.';  break;
+		case baru3: pos = ',';  break;
+		case baru4: pos = 'o';  break;
+		case baru5: pos = 'o';  break;
+		case baru6: pos = 'O';  break;
+		case baru7: pos = '8';  break;
+		case bard1: pos = '\''; break;
+		case bard2: pos = '"';  break;
+		case bard3: pos = '^';  break;
+		case bard4: pos = '^';  break;
+		case bard5: pos = '*';  break;
+		case bard6: pos = 'O';  break;
+		case bard7: pos = '8';  break;
+		case barr1: pos = '-';  break;
+		case barr2: pos = '-';  break;
+		case barr3: pos = '=';  break;
+		case barr4: pos = '=';  break;
+		case barl1: pos = '-';  break;
+		case barl2: pos = '-';  break;
+		case barl3: pos = '=';  break;
+		case barl4: pos = '=';  break;
+		case barw:  pos = ' ';  break;
+		case barb:  pos = 255;  break;
+		default:    pos = '?';  break;
 		}
 	}
 
 	return (pos);
 }
 
-/////////////////////////////////////////////////////////////
-// Does the heartbeat...
-//
+/******************************
+ * Does the heartbeat...
+ */
 MODULE_EXPORT void
 MtxOrb_heartbeat (Driver *drvthis, int type)
 {
@@ -1329,18 +1304,18 @@ MtxOrb_heartbeat (Driver *drvthis, int type)
 		saved_type = type;
 
 	if (type == HEARTBEAT_ON) {
-		// Set this to pulsate like a real heart beat...
+		/* Set this to pulsate like a real heart beat... */
 		whichIcon = (! ((timer + 4) & 5));
 
-		// This defines a custom character EVERY time...
-		// not efficient... is this necessary?
-//		MtxOrb_icon (whichIcon, 0);
+		/* This defines a custom character EVERY time... */
+		/* not efficient... is this necessary? */
+/*		MtxOrb_icon (whichIcon, 0); */
 		the_icon=MtxOrb_ask_bar (drvthis, whichIcon+START_ICON);
 
-		// Put character on screen...
+		/* Put character on screen... */
 		MtxOrb_chr (drvthis, width, 1, the_icon);
 
-		// change display...
+		/* change display... */
 		MtxOrb_flush (drvthis);
 	}
 
@@ -1348,15 +1323,15 @@ MtxOrb_heartbeat (Driver *drvthis, int type)
 	timer &= 0x0f;
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets up a well known character for use.
-//
+/******************************
+ * Sets up a well known character for use.
+ */
 static void
 MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 {
 	char all_bar[25][5 * 8] = {
 		{
-		0, 0, 0, 0, 0,	//  char u1[] =
+		0, 0, 0, 0, 0,	/*  char u1[] = */
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
@@ -1365,7 +1340,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 0,
 		1, 1, 1, 1, 1,
 		}, {
-		0, 0, 0, 0, 0,	//  char u2[] =
+		0, 0, 0, 0, 0,	/*  char u2[] = */
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
@@ -1374,7 +1349,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		}, {
-		0, 0, 0, 0, 0,	//  char u3[] =
+		0, 0, 0, 0, 0,	/*  char u3[] = */
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
@@ -1383,7 +1358,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		}, {
-		0, 0, 0, 0, 0,	//  char u4[] =
+		0, 0, 0, 0, 0,	/*  char u4[] = */
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
@@ -1392,7 +1367,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		}, {
-		0, 0, 0, 0, 0,	//  char u5[] =
+		0, 0, 0, 0, 0,	/*  char u5[] = */
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		1, 1, 1, 1, 1,
@@ -1401,7 +1376,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		}, {
-		0, 0, 0, 0, 0,	//  char u6[] =
+		0, 0, 0, 0, 0,	/*  char u6[] = */
 		0, 0, 0, 0, 0,
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
@@ -1410,7 +1385,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		}, {
-		0, 0, 0, 0, 0,	//  char u7[] =
+		0, 0, 0, 0, 0,	/*  char u7[] = */
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
@@ -1419,7 +1394,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		}, {
-		1, 1, 1, 1, 1,	//  char d1[] =
+		1, 1, 1, 1, 1,	/*  char d1[] = */
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
@@ -1428,7 +1403,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		}, {
-		1, 1, 1, 1, 1,	//  char d2[] =
+		1, 1, 1, 1, 1,	/*  char d2[] = */
 		1, 1, 1, 1, 1,
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
@@ -1437,7 +1412,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		}, {
-		1, 1, 1, 1, 1,	//  char d3[] =
+		1, 1, 1, 1, 1,	/*  char d3[] = */
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		0, 0, 0, 0, 0,
@@ -1446,7 +1421,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		}, {
-		1, 1, 1, 1, 1,	//  char d4[] =
+		1, 1, 1, 1, 1,	/*  char d4[] = */
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
@@ -1455,7 +1430,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		}, {
-		1, 1, 1, 1, 1,	//  char d5[] =
+		1, 1, 1, 1, 1,	/*  char d5[] = */
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
@@ -1464,7 +1439,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		}, {
-		1, 1, 1, 1, 1,	//  char d6[] =
+		1, 1, 1, 1, 1,	/*  char d6[] = */
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
@@ -1473,7 +1448,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		}, {
-		1, 1, 1, 1, 1,	//  char d7[] =
+		1, 1, 1, 1, 1,	/*  char d7[] = */
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
@@ -1482,7 +1457,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 1, 1,
 		0, 0, 0, 0, 0,
 		}, {
-		1, 0, 0, 0, 0,	//  char r1[] =
+		1, 0, 0, 0, 0,	/*  char r1[] = */
 		1, 0, 0, 0, 0,
 		1, 0, 0, 0, 0,
 		1, 0, 0, 0, 0,
@@ -1491,7 +1466,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 0, 0, 0, 0,
 		1, 0, 0, 0, 0,
 		}, {
-		1, 1, 0, 0, 0,	//  char r2[] =
+		1, 1, 0, 0, 0,	/*  char r2[] = */
 		1, 1, 0, 0, 0,
 		1, 1, 0, 0, 0,
 		1, 1, 0, 0, 0,
@@ -1500,7 +1475,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 0, 0, 0,
 		1, 1, 0, 0, 0,
 		}, {
-		1, 1, 1, 0, 0,	//  char r3[] =
+		1, 1, 1, 0, 0,	/*  char r3[] = */
 		1, 1, 1, 0, 0,
 		1, 1, 1, 0, 0,
 		1, 1, 1, 0, 0,
@@ -1509,7 +1484,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 0, 0,
 		1, 1, 1, 0, 0,
 		}, {
-		1, 1, 1, 1, 0,	//  char r4[] =
+		1, 1, 1, 1, 0,	/*  char r4[] = */
 		1, 1, 1, 1, 0,
 		1, 1, 1, 1, 0,
 		1, 1, 1, 1, 0,
@@ -1518,7 +1493,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 1, 1, 0,
 		1, 1, 1, 1, 0,
 		}, {
-		0, 0, 0, 0, 1,	//  char l1[] =
+		0, 0, 0, 0, 1,	/*  char l1[] = */
 		0, 0, 0, 0, 1,
 		0, 0, 0, 0, 1,
 		0, 0, 0, 0, 1,
@@ -1527,7 +1502,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 1,
 		0, 0, 0, 0, 1,
 		}, {
-		0, 0, 0, 1, 1,	//  char l2[] =
+		0, 0, 0, 1, 1,	/*  char l2[] = */
 		0, 0, 0, 1, 1,
 		0, 0, 0, 1, 1,
 		0, 0, 0, 1, 1,
@@ -1536,7 +1511,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 1, 1,
 		0, 0, 0, 1, 1,
 		}, {
-		0, 0, 1, 1, 1,	//  char l3[] =
+		0, 0, 1, 1, 1,	/*  char l3[] = */
 		0, 0, 1, 1, 1,
 		0, 0, 1, 1, 1,
 		0, 0, 1, 1, 1,
@@ -1545,7 +1520,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 1, 1, 1,
 		0, 0, 1, 1, 1,
 		}, {
-		0, 1, 1, 1, 1,	//  char l4[] =
+		0, 1, 1, 1, 1,	/*  char l4[] = */
 		0, 1, 1, 1, 1,
 		0, 1, 1, 1, 1,
 		0, 1, 1, 1, 1,
@@ -1554,7 +1529,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 1, 1, 1, 1,
 		0, 1, 1, 1, 1,
 		}, {
-		1, 1, 1, 1, 1,	// Empty Heart
+		1, 1, 1, 1, 1,	/* Empty Heart */
 		1, 0, 1, 0, 1,
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
@@ -1563,7 +1538,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 0, 1, 1,
 		1, 1, 1, 1, 1,
 		}, {
-		1, 1, 1, 1, 1,	// Filled Heart
+		1, 1, 1, 1, 1,	/* Filled Heart */
 		1, 0, 1, 0, 1,
 		0, 1, 0, 1, 0,
 		0, 1, 1, 1, 0,
@@ -1572,7 +1547,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		1, 1, 0, 1, 1,
 		1, 1, 1, 1, 1,
 		}, {
-		0, 0, 0, 0, 0,	// Ellipsis
+		0, 0, 0, 0, 0,	/* Ellipsis */
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
