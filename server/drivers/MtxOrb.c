@@ -49,9 +49,9 @@
 #include "MtxOrb.h"
 
 #include "report.h"
-//#include "shared/str.h"
-//#include "input.h"
-/* Above 3 lines modified by Joris */
+/* #include "shared/str.h"
+   #include "input.h"
+   Above 3 lines modified by Joris */
 #define INPUT_PAUSE_KEY         'A'
 #define INPUT_BACK_KEY          'B'
 #define INPUT_FORWARD_KEY       'C'
@@ -312,7 +312,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 	char buf[256] = "";
 	int tmp, w, h;
 
-	MtxOrb_type = MTXORB_LKD;  // Assume it's an LCD w/keypad
+	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
 
 	debug( RPT_INFO, "MtxOrb: init(%p,%s)", drvthis, args );
 
@@ -1200,8 +1200,8 @@ MtxOrb_num (Driver *drvthis, int pos, int val)
 /* Currently we are bignum but if bigalpha is there remove this line */
   c=val+'0';	/* We transform from 0-9 to 'O' to '9' */
 
-  if ((pos < -2) || (pos > 20)) return;  // are we outisde the visible spectrum
-  if (('c' < 32) || ('c' > 127)) return; // are we characteristic or not?
+  if ((pos < -2) || (pos > 20)) return;  /* are we outisde the visible spectrum */
+  if (('c' < 32) || ('c' > 127)) return; /* are we characteristic or not? */
 
   c -= 32;
 
