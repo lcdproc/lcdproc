@@ -11,9 +11,6 @@
  *      XX      ··      XX      X·       XX
  */
 
-#define S 8
-#define F 9
-
 /****************************************************************
  * Normal charset
  */
@@ -1181,9 +1178,6 @@ int normal[96][3*4] = {
    }, // ->
  
  };
- 
-#undef S
-#undef F
  
 #endif
 
