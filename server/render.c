@@ -27,6 +27,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "shared/report.h"
 #include "shared/LL.h"
@@ -38,8 +39,6 @@
 #include "widget.h"
 #include "render.h"
 
-int metronome = 0; /* This counter will be increased at every rendering */
-
 int heartbeat = HEARTBEAT_OPEN;
 int heartbeat_fallback = HEARTBEAT_ON; /* If no heartbeat setting has been set at all */
 int backlight = BACKLIGHT_OPEN;
@@ -47,6 +46,8 @@ int backlight_fallback = BACKLIGHT_ON; /* If no backlight setting has been set a
 int backlight_brightness = 255;
 int backlight_off_brightness = 0;
 int output_state = 0;
+char * server_msg_text;
+int server_msg_expire = 0;
 
 static int reset;
 
@@ -122,8 +123,6 @@ render_screen (Screen * s, long int timer)
 	/* Set the cursor */
 	drivers_cursor (s->cursor_x, s->cursor_y, s->cursor);
 
-	/*debug(RPT_DEBUG, "%s done", __FUNCTION__); */
-
 	if (heartbeat != HEARTBEAT_OPEN) {
 		tmp_state = heartbeat;
 	} else if (s->client && s->client->heartbeat != HEARTBEAT_OPEN) {
@@ -135,10 +134,18 @@ render_screen (Screen * s, long int timer)
 	}
 	drivers_heartbeat(tmp_state);
 
+	/* If there is an server message that is not expired, display it */
+	if( server_msg_expire > 0 ) {
+		drivers_string( display_props->width - strlen(server_msg_text) + 1,
+				display_props->height, server_msg_text );
+		server_msg_expire --;
+		if( server_msg_expire == 0 ) {
+			free( server_msg_text );
+		}
+	}
+
 	/* flush display out, frame and all... */
 	drivers_flush ();
-
-	/*debug(RPT_DEBUG, "%s: %8x, %i", __FUNCTION__, s, timer); */
 
 	debug(RPT_DEBUG, "==== END RENDERING ====" );
 	return 0;
@@ -204,8 +211,6 @@ render_frame (LinkedList * list,
 
 	if (!list)
 		return -1;
-
-	/*debug(RPT_DEBUG, "%s: %8x, %i", __FUNCTION__, frame, timer); */
 
 	LL_Rewind (list);
 	do {
@@ -478,6 +483,31 @@ render_frame (LinkedList * list,
 				break;
 		}
 	} while (LL_Next (list) == 0);
+
+	return 0;
+}
+
+int
+server_msg( const char * text, int expire )
+{
+	debug( RPT_DEBUG, "%s( text=\"%.40s\", expire=%d )", __FUNCTION__, text, expire );
+
+	if( strlen(text) > 15 || expire <= 0 ) {
+		return -1;
+	}
+
+	/* Still a message active ? */
+
+	if( server_msg_expire > 0 ) {
+		free( server_msg_text );
+	}
+
+	/* Store new message */
+	server_msg_text = malloc( strlen(text) + 3 );
+	strcpy( server_msg_text, "| " );
+	strcat( server_msg_text, text );
+
+	server_msg_expire = expire;
 
 	return 0;
 }

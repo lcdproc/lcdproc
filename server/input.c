@@ -20,6 +20,7 @@
 
 #include "shared/sockets.h"
 #include "shared/report.h"
+#include "shared/configfile.h"
 
 #include "drivers.h"
 
@@ -28,14 +29,15 @@
 #include "menuscreens.h"
 
 #include "input.h"
+#include "render.h" /* For server_msg* */
 
 
 LinkedList * keylist;
-char * toggle_rotate_key = "Enter";
-char * prev_screen_key   = "Left";
-char * next_screen_key   = "Right";
-char * scroll_up_key     = "Up";
-char * scroll_down_key   = "Down";
+char * toggle_rotate_key;
+char * prev_screen_key;
+char * next_screen_key;
+char * scroll_up_key;
+char * scroll_down_key;
 
 /* Local functions */
 int server_input (int key);
@@ -49,6 +51,13 @@ int input_init()
 
 	keylist = LL_new();
 
+	/* Get rotate/scroll keys from config file */
+	toggle_rotate_key = strdup (config_get_string ("server", "ToggleRotateKey", 0, "Enter"));
+	prev_screen_key = strdup (config_get_string ("server", "PrevScreenKey", 0, "Left"));
+	next_screen_key = strdup (config_get_string ("server", "NextScreenKey", 0, "Right"));
+	scroll_up_key = strdup (config_get_string ("server", "ScrollUpKey", 0, "Up"));
+	scroll_down_key = strdup (config_get_string ("server", "ScrollDownKey", 0, "Down"));
+
 	return 0;
 }
 
@@ -61,6 +70,12 @@ int input_shutdown()
 	}
 
 	free (keylist);
+
+	free (toggle_rotate_key);
+	free (prev_screen_key);
+	free (next_screen_key);
+	free (scroll_up_key);
+	free (scroll_down_key);
 
 	return 0;
 }
@@ -134,12 +149,19 @@ input_internal_key (char * key)
 		/* Keys are for scrolling or rotating */
 		if( strcmp(key,toggle_rotate_key) == 0 ) {
 			autorotate = !autorotate;
+			if( autorotate ) {
+				server_msg( "Rotate", 4 );
+			} else {
+				server_msg( "Hold", 4 );
+			}
 		}
 		else if( strcmp(key,prev_screen_key) == 0 ) {
 			screenlist_goto_prev ();
+			server_msg( "Prev", 4 );
 		}
 		else if( strcmp(key,next_screen_key) == 0 ) {
 			screenlist_goto_next ();
+			server_msg( "Next", 4 );
 		}
 		else if( strcmp(key,scroll_up_key) == 0 ) {
 		}
