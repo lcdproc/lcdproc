@@ -200,6 +200,8 @@ typedef struct p {
         int cellwidth;
 	int cellheight;
 	char info[255];		/* static data from MtxOrb_get_info */
+/*	LibData *libdata;		*/
+/* Private Data of the new library: Work in progress */
         } PrivateData;
 
 /* Vars for the server core */
@@ -308,10 +310,10 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->widthBYheight = w * h;
 
 	/* Get contrast */
-	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
+	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 1000) {
 		contrast = drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST);
 	} else {
-		report (RPT_WARNING, "MtxOrb: Contrast must be between 0 and 255. Using default value.");
+		report (RPT_WARNING, "MtxOrb: Contrast must be between 0 and 1000. Using default value.");
 	}
 
 	/* Get speed */
