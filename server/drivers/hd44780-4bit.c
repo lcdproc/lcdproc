@@ -1,16 +1,17 @@
 /*
  * 4-bit driver module for Hitachi HD44780 based LCD displays.
  * The LCD is operated in it's 4 bit-mode to be connected to a single
- * 8 bit-port. 
+ * 8 bit-port.
  *
  * Copyright (c)  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
+ *		  2001 Joris Robijn <joris@robijn.net>
  *		  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  1998 Richard Rognlie <rrognlie@gamerz.net>
  *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
  *
  * The connections are:
- * printer port	  LCD
- * D0 (2)      	  D4 (11)
+ * printer port   LCD
+ * D0 (2)	  D4 (11)
  * D1 (3)	  D5 (12)
  * D2 (4)	  D6 (13)
  * D3 (5)	  D7 (14)
@@ -22,8 +23,27 @@
  * Extended interface (including LCD3 above)
  * STR (1)	  EN4
  * LF (14)	  EN5
- * INIT (16)	  EN6
- * SEL (17)	  EN7
+ * INIT (16)      EN6
+ * SEL (17)       EN7
+ *
+ * Keypad connection (optional):
+ * Some diodes and resistors are needed, see further documentation.
+ * printer port   keypad
+ * D0 (2)	  Y0
+ * D1 (3)	  Y1
+ * D2 (4)	  Y2
+ * D3 (5)	  Y3
+ * D4 (6)	  Y4
+ * D5 (7)	  Y5
+ * nSTRB (1)      Y6
+ * nLF  (14)      Y7
+ * INIT (16)      Y8
+ * nSEL (17)      Y9
+ * nACK (10)      X0
+ * BUSY (11)      X1
+ * PAPEREND (12   X2
+ * SELIN (13)     X3
+ * nFAULT (15)    X4
  *
  * Added support for up to 7 LCDs Jan 2000, Benjamin Tse
  * Created modular driver Dec 1999, Benjamin Tse <blt@Comports.com>
@@ -37,8 +57,9 @@
  */
 
 #include "hd44780-4bit.h"
-#include "port.h"
+#include "hd44780.h"
 
+#include "port.h"
 #include "shared/str.h"
 #include <stdio.h>
 #include <string.h>
@@ -46,21 +67,23 @@
 
 // Generally, any function that accesses the LCD control lines needs to be
 // implemented separately for each HW design. This is typically just
-// HD44780_senddata
+// HD44780_senddata and HD44780_readkeypad
 
 void lcdstat_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
+unsigned char lcdstat_HD44780_readkeypad (unsigned int YData);
 
-#define RS 	0x10
-#define RW 	0x20
-#define EN1 	0x40
-#define EN2	0x80
-#define EN3	0x20
+#define RS    0x10
+#define RW    0x20
+#define EN1   0x40
+#define EN2   0x80
+#define EN3   0x20
 
 static unsigned char EnMask[] = { EN1, EN2, EN3, STRB, LF, INIT, SEL };
 static int EnMaskSize = sizeof (EnMask) / sizeof (unsigned char);
 
+static int extIF = 0;		   // non-zero if extended interface
 static unsigned int lptPort;
-static int extIF = 0;			  // non-zero if extended interface
+static char stuckinputs = 0;	    // if an input line is stuck, it will be ignored
 
 // initialisation function
 int
@@ -72,9 +95,14 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 	int i;
 	int displayID = EN1 | EN2;
 
+	// Reserve the port registers
 	lptPort = port;
+	port_access(lptPort);
+	port_access(lptPort+1);
+	port_access(lptPort+2);
 
 	hd44780_functions->senddata = lcdstat_HD44780_senddata;
+	hd44780_functions->readkeypad = lcdstat_HD44780_readkeypad;
 
 	// parse command-line arguments
 	argc = get_args (argv, args, 64);
@@ -82,10 +110,6 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 	for (i = 0; i < argc; ++i) {
 		if (strcmp (argv[i], "-e") == 0 || strcmp (argv[i], "--extended") == 0) {
 			extIF = 1;
-			if (port_access (port + 2)) {
-				fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
-				return -1;
-			}
 		}
 	}
 
@@ -132,7 +156,13 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 		port_out (lptPort + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (40);
 
-	common_init (IF_4bit);
+	common_init ();
+
+	if (keypad) {
+		// Remember which input lines are stuck
+		stuckinputs = lcdstat_HD44780_readkeypad (0);
+	}
+
 	return 0;
 }
 
@@ -140,47 +170,63 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 void
 lcdstat_HD44780_senddata (unsigned char displayID, unsigned char iflags, unsigned char ch)
 {
-	unsigned char dispID = 0, flags = 0;
-	unsigned char h = (ch >> 4) & 0x0f;	// high and low nibbles
+	unsigned char enableLines = 0, flags = 0;
+	unsigned char h = (ch >> 4) & 0x0f;     // high and low nibbles
 	unsigned char l = ch & 0x0f;
 
 	if (iflags == RS_INSTR)
 		flags = 0;
-	else								  //if (iflags == RS_DATA)
+	else							      //if (iflags == RS_DATA)
 		flags = RS;
 
 	if (displayID <= 3) {
 		if (displayID == 0)
-			dispID = EnMask[0] | EnMask[1] | EnMask[2];
+			enableLines = EnMask[0] | EnMask[1] | EnMask[2];
 		else
-			dispID = EnMask[displayID - 1];
+			enableLines = EnMask[displayID - 1];
 
 		port_out (lptPort, flags | h);
 		hd44780_functions->uPause (2);
-		port_out (lptPort, dispID | flags | h);
+		port_out (lptPort, enableLines | flags | h);
 		hd44780_functions->uPause (4);
 		port_out (lptPort, flags | h);
 
-		port_out (lptPort, dispID | flags | l);
+		port_out (lptPort, enableLines | flags | l);
 		hd44780_functions->uPause (4);
 		port_out (lptPort, flags | l);
 	}
 
 	if (extIF && (displayID == 0 || displayID >= 4)) {
 		if (displayID == 0)
-			dispID = EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6];
+			enableLines = EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6];
 		else
-			dispID = EnMask[(displayID - 1) % EnMaskSize];
+			enableLines = EnMask[(displayID - 1) % EnMaskSize];
 
 		port_out (lptPort, flags | h);
 		hd44780_functions->uPause (2);
-		port_out (lptPort + 2, dispID ^ OUTMASK);
+		port_out (lptPort + 2, enableLines ^ OUTMASK);
 		hd44780_functions->uPause (4);
 		port_out (lptPort + 2, 0 ^ OUTMASK);
 
 		port_out (lptPort, flags | l);
-		port_out (lptPort + 2, dispID ^ OUTMASK);
+		port_out (lptPort + 2, enableLines ^ OUTMASK);
 		hd44780_functions->uPause (4);
 		port_out (lptPort + 2, 0 ^ OUTMASK);
 	}
+}
+
+unsigned char lcdstat_HD44780_readkeypad (unsigned int YData)
+{
+	unsigned char readval;
+
+	// 10 bits output or 6 bits if >=3 displays
+	// Convert the positive logic to the negative logic on the LPT port
+	port_out (lptPort, ~YData & 0x003F );
+	if (!extIF) {
+		port_out (lptPort + 2, ( ((~YData & 0x03C0) << 6 )) ^ OUTMASK);
+	}
+
+	// And convert it back.
+	readval = ~ port_in (lptPort + 1) ^ INMASK;
+	return ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) ) & ~stuckinputs;
 }
