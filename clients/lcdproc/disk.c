@@ -156,7 +156,6 @@ disk_screen (int rep, int display)
       sock_send_string (sock, "widget_set D err1 5 2 {  Reading  }\n");
       sock_send_string (sock, "widget_set D err2 5 3 {Filesystems}\n");
    }
-
    // Grab disk stats on first display, and fill "table".
    // Get rid of old, unmounted filesystems...
    memset (table, 0, sizeof (struct disp) * 256);

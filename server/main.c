@@ -233,7 +233,6 @@ main (int argc, char **argv)
    } else if (disable_server_screen) {
       server_screen->priority = 256;
    }
-
    // Main loop...
    while (1) {
       sock_poll_clients ();

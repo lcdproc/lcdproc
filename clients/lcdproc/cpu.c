@@ -142,7 +142,6 @@ cpu_screen (int rep, int display)
          cpu[i][j] = cpu[CPU_BUF_SIZE-1][j];
        */
    }
-
    // Average values for final result
    for (i = 0; i < 5; i++) {
       value = 0;
