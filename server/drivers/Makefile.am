@@ -18,7 +18,7 @@ LDFLAGS += @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses glk hd44780 irman icp_a106 joy lb216 lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli 
 noinst_LIBRARIES = libLCD.a
 
 CFontz_LDADD =       libLCD.a
@@ -47,6 +47,7 @@ icp_a106_SOURCES =   lcd.h icp_a106.c icp_a106.h report.h
 irman_SOURCES =      lcd.h irmanin.c irmanin.h report.h
 joy_SOURCES =        lcd.h joy.c joy.h port.h report.h
 lb216_SOURCES =      lcd.h lb216.c lb216.h report.h
+mtc_s16209x_SOURCES =  lcd.h mtc_s16209x.c mtc_s16209x.h report.h
 lcterm_SOURCES =     lcd.h lcterm.c lcterm.h report.h
 lcdm001_SOURCES =    lcd.h lcdm001.c lcdm001.h report.h
 lirc_SOURCES =       lcd.h lircin.c lircin.h report.h
