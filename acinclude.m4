@@ -30,8 +30,8 @@ else
 			AC_DEFINE(SLI_DRV)
 			;;
 		curses)
-			AC_CHECK_LIB(curses, main, LIBCURSES="-lcurses",
-				AC_CHECK_LIB(ncurses, main, LIBCURSES="-lncurses",
+			AC_CHECK_LIB(ncurses, main, LIBCURSES="-lncurses",
+				AC_CHECK_LIB(curses, main, LIBCURSES="-lcurses",
 					AC_MSG_ERROR([The curses driver needs the curses library])))
 			DRIVERS="$DRIVERS curses_drv.o"
 			AC_DEFINE(CURSES_DRV)
