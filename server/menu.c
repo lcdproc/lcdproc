@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#include "menuitem.h"
 #include "menu.h"
 #include "shared/report.h"
 #include "drivers.h"
@@ -93,7 +94,7 @@ menu_destroy_all_items (Menu *menu)
 	}
 }
 
-MenuItem *menu_find_item (Menu *menu, char *id)
+MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
 {
 	MenuItem * item;
 
@@ -102,6 +103,13 @@ MenuItem *menu_find_item (Menu *menu, char *id)
 	for( item = menu_getfirst_item(menu); item; item = menu_getnext_item(menu) ) {
 		if ( strcmp(item->id, id) == 0 ) {
 			return item;
+		}
+		else if (recursive && item->type == MENUITEM_MENU) {
+			MenuItem * res;
+			res = menu_find_item (item, id, recursive);
+			if (res) {
+				return res;
+			}
 		}
 	}
 	return NULL;
@@ -262,23 +270,30 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 			}
 			break;
 		  case MENUITEM_RING:
-			/* Limit string length and add ringstring */
-			p = LL_GetByIndex (subitem->data.ring.strings, subitem->data.ring.value);
-			if (strlen(p) > display_props->width - 3) {
-				short a = display_props->width - 3;
-				/* We need to limit the ring string and DON'T
-				 * display the item text */
-				strcpy (w->text, " ");
-				memcpy (w->text + 1, p, a);
-				w->text[a + 1] = 0;
+			if (subitem->data.ring.value >= LL_Length(subitem->data.ring.strings)) {
+				/* No strings available */
+				memcpy (w->text, subitem->text, display_props->width - 2);
+				w->text[ display_props->width - 2 ] = 0;
 			}
 			else {
-				short b = display_props->width - 2 - strlen (p);
-				short c = min (strlen (subitem->text), b - 1);
-				/* We don't limit the ring string */
-				memset (w->text, ' ', b);
-				memcpy (w->text, subitem->text, c);
-				strcpy (w->text + b, p);
+				/* Limit string length and add ringstring */
+				p = LL_GetByIndex (subitem->data.ring.strings, subitem->data.ring.value);
+				if (strlen(p) > display_props->width - 3) {
+					short a = display_props->width - 3;
+					/* We need to limit the ring string and DON'T
+					 * display the item text */
+					strcpy (w->text, " ");
+					memcpy (w->text + 1, p, a);
+					w->text[a + 1] = 0;
+				}
+				else {
+					short b = display_props->width - 2 - strlen (p);
+					short c = min (strlen (subitem->text), b - 1);
+					/* We don't limit the ring string */
+					memset (w->text, ' ', b);
+					memcpy (w->text, subitem->text, c);
+					strcpy (w->text + b, p);
+				}
 			}
 			break;
 		  default:
@@ -324,12 +339,8 @@ MenuResult menu_handle_input	(Menu *menu, MenuToken token, char * key)
 		switch (subitem->type) {
 		  case MENUITEM_ACTION:
 			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_ENTER);
-			if (subitem->data.action.quit_menu)
-				return MENURESULT_QUIT;
-			if (subitem->data.action.close_menu)
-				return MENURESULT_CLOSE;
-			return MENURESULT_OK;
+				subitem->event_func (subitem, MENUEVENT_SELECT);
+			return subitem->data.action.menu_result;				return MENURESULT_QUIT;
 		  case MENUITEM_CHECKBOX:
 			if (subitem->data.checkbox.allow_gray) {
 				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
@@ -339,18 +350,18 @@ MenuResult menu_handle_input	(Menu *menu, MenuToken token, char * key)
 			}
 			if (subitem->event_func)
 				subitem->event_func (subitem, MENUEVENT_UPDATE);
-			return MENURESULT_OK;
+			return MENURESULT_NONE;
 		  case MENUITEM_RING:
 			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
 			if (subitem->event_func)
 				subitem->event_func (subitem, MENUEVENT_UPDATE);
-			return MENURESULT_OK;
+			return MENURESULT_NONE;
 		  case MENUITEM_MENU:
 		  case MENUITEM_SLIDER:
 		  case MENUITEM_NUMERIC:
 		  case MENUITEM_ALPHA:
-			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_ENTER);
+			//if (subitem->event_func)
+			//	subitem->event_func (subitem, MENUEVENT_ENTER);
 			return MENURESULT_ENTER;
 		  default:
 			break;
@@ -368,7 +379,7 @@ MenuResult menu_handle_input	(Menu *menu, MenuToken token, char * key)
 				menu->data.menu.scroll --;
 			}
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 		if (menu->data.menu.selector_pos < LL_Length(menu->data.menu.contents) - 1) {
 			menu->data.menu.selector_pos ++;
@@ -376,10 +387,10 @@ MenuResult menu_handle_input	(Menu *menu, MenuToken token, char * key)
 		if (menu->data.menu.selector_pos - menu->data.menu.scroll + 2 > display_props->height) {
 			menu->data.menu.scroll ++;
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_OTHER:
 		/* TODO: move to the selected number and enter it */
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	}
 	return MENURESULT_ERROR;
 }

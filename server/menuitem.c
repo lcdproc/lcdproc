@@ -24,6 +24,8 @@
 #define MAX_NUMERIC_LEN 40
 
 char *error_strs[] = {"", "Out of range", "Too long", "Too short"};
+char *menuitemtypenames[] = {"menu", "action", "checkbox", "ring", "slider", "numeric", "alpha"};
+char *menueventtypenames[] = {"select", "update", "plus", "minus"};
 
 void menuitem_destroy_action (MenuItem *item);
 void menuitem_destroy_checkbox (MenuItem *item);
@@ -43,9 +45,10 @@ void menuitem_update_screen_slider (MenuItem *item, Screen *s);
 void menuitem_update_screen_numeric (MenuItem *item, Screen *s);
 void menuitem_update_screen_alpha (MenuItem *item, Screen *s);
 
-MenuResult menuitem_handle_input_slider (MenuItem *item, MenuToken token, char * key);
-MenuResult menuitem_handle_input_numeric (MenuItem *item, MenuToken token, char * key);
-MenuResult menuitem_handle_input_alpha (MenuItem *item, MenuToken token, char * key);
+MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, char * key);
+MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char * key);
+MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char * key);
+
 
 /******** FUNCTION TABLES ********/
 /* Tables with functions to call for all different item types */
@@ -53,6 +56,7 @@ MenuResult menuitem_handle_input_alpha (MenuItem *item, MenuToken token, char * 
 void (*destructor_table[NUM_ITEMTYPES] ) (MenuItem *item) =
 {
 	menu_destroy,
+	NULL,
 	NULL,
 	menuitem_destroy_ring,
 	menuitem_destroy_slider,
@@ -90,15 +94,15 @@ void (*update_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
 	menuitem_update_screen_alpha
 };
 
-MenuResult (*handle_input_table[NUM_ITEMTYPES] ) (MenuItem *item, MenuToken token, char *key) =
+MenuResult (*process_input_table[NUM_ITEMTYPES] ) (MenuItem *item, MenuToken token, char *key) =
 {
 	menu_handle_input,
 	NULL,
 	NULL,
 	NULL,
-	menuitem_handle_input_slider,
-	menuitem_handle_input_numeric,
-	menuitem_handle_input_alpha
+	menuitem_process_input_slider,
+	menuitem_process_input_numeric,
+	menuitem_process_input_alpha
 };
 
 /******** METHODS ********/
@@ -138,16 +142,15 @@ MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_fun
 }
 
 MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
-	char *text, bool close_menu, bool quit_menu)
+	char *text, MenuResult menu_result)
 {
 	MenuItem *new_item;
 
 	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", close_menu=%d )",
-			__FUNCTION__, id, event_func, text, close_menu);
+			__FUNCTION__, id, event_func, text, menu_result);
 
 	new_item = menuitem_create (MENUITEM_ACTION, id, event_func, text);
-	new_item->data.action.close_menu = close_menu;
-	new_item->data.action.quit_menu = quit_menu;
+	new_item->data.action.menu_result = menu_result;
 
 	return new_item;
 }
@@ -171,33 +174,12 @@ MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
 	char *text, char *strings, short value)
 {
 	MenuItem *new_item;
-	char *tabptr, *p, *new_s;
 
 	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", strings=\"%s\", value=%d )",
 			__FUNCTION__, id, event_func, text, strings, value);
 
 	new_item = menuitem_create (MENUITEM_RING, id, event_func, text);
-
-	/* parse strings */
-	p = strings;
-	new_item->data.ring.strings = LL_new();
-	while ((tabptr = strchr(p, '\t')) != NULL) {
-		int len = (int)(tabptr - p);
-
-		/* Alloc and copy substring */
-		new_s = malloc (len + 1);
-		strncpy (new_s, p, len);
-		new_s[len] = 0;
-
-		LL_Push (new_item->data.ring.strings, new_s);
-
-		/* Go to next string */
-		p = tabptr + 1;
-	}
-	/* Add last string */
-	new_s = strdup (p);
-	LL_Push (new_item->data.ring.strings, new_s);
-
+	new_item->data.ring.strings = tablist2linkedlist (strings);
 	new_item->data.ring.value = value;
 
 	return new_item;
@@ -246,7 +228,6 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
 	char *allowed_extra, char *value)
 {
 	MenuItem *new_item;
-	char * chars;
 
 	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", password_char=%d, maxlength=%d, value=\"%s\" )",
 			__FUNCTION__, id, event_func, text, password_char, maxlength, value);
@@ -256,23 +237,14 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
 	new_item->data.alpha.minlength = minlength;
 	new_item->data.alpha.maxlength = maxlength;
 
+	new_item->data.alpha.allow_caps = allow_caps;
+	new_item->data.alpha.allow_noncaps = allow_noncaps;
+	new_item->data.alpha.allow_numbers = allow_numbers;
+	new_item->data.alpha.allowed_extra = strdup (allowed_extra);
+
 	new_item->data.alpha.value = malloc (maxlength + 1);
 	strncpy (new_item->data.alpha.value, value, maxlength);
 	new_item->data.alpha.value[maxlength] = 0;
-
-	/* Create list of allowed chars */
-	chars = malloc (26 + 26 + 10 + strlen(allowed_extra) + 1);
-	chars[0] = 0;
-	if (allow_caps)
-		strcat (chars, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-	if (allow_noncaps)
-		strcat (chars, "abcdefghijklmnopqrstuvwxyz");
-	if (allow_numbers)
-		strcat (chars, "0123456789");
-	if (allowed_extra) {
-		strcat (chars, allowed_extra);
-	}
-	new_item->data.alpha.allowed_chars = chars;
 
 	new_item->data.alpha.edit_str = malloc (maxlength + 1);
 
@@ -335,7 +307,7 @@ void menuitem_destroy_alpha (MenuItem *item)
 	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
 
 	/* These strings should always be allocated */
-	free (item->data.alpha.allowed_chars);
+	free (item->data.alpha.allowed_extra);
 	free (item->data.alpha.value);
 	free (item->data.alpha.edit_str);
 }
@@ -611,8 +583,8 @@ void menuitem_update_screen_alpha (MenuItem *item, Screen *s)
 	if (item->data.alpha.password_char == 0) {
 		strcpy (w->text, item->data.alpha.edit_str);
 	} else {
-		memset (item->data.alpha.edit_str, 0, item->data.alpha.maxlength+1);
-		memset (item->data.alpha.edit_str, item->data.alpha.password_char, strlen (item->data.alpha.edit_str));
+		memset (w->text, item->data.alpha.password_char, strlen (item->data.alpha.edit_str));
+		w->text[ strlen (item->data.alpha.edit_str) ] = 0;
 	}
 
 	s->cursor = CURSOR_DEFAULT_ON;
@@ -629,23 +601,23 @@ void menuitem_update_screen_alpha (MenuItem *item, Screen *s)
 
 /******** MENU SCREEN INPUT HANDLING FUNCTIONS ********/
 
-MenuResult menuitem_handle_input (MenuItem *item, MenuToken token, char * key)
+MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key)
 {
-	MenuResult (*handle_input) (MenuItem *item, MenuToken token, char * key);
+	MenuResult (*process_input) (MenuItem *item, MenuToken token, char * key);
 
 	debug (RPT_DEBUG, "%s( item=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
 
 	/* Call type specific screen building function */
-	handle_input  = handle_input_table [item->type];
-	if (handle_input ) {
-		return handle_input (item, token, key);
+	process_input  = process_input_table [item->type];
+	if (process_input ) {
+		return process_input (item, token, key);
 	} else {
 		report (RPT_ERR, "%s: given menuitem cannot be active", __FUNCTION__);
 		return MENURESULT_ERROR;
 	}
 }
 
-MenuResult menuitem_handle_input_slider (MenuItem *item, MenuToken token, char * key)
+MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, char * key)
 {
 	debug (RPT_DEBUG, "%s( item=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
 
@@ -658,20 +630,20 @@ MenuResult menuitem_handle_input_slider (MenuItem *item, MenuToken token, char *
 	  		item->data.slider.value + item->data.slider.stepsize);
 		if (item->event_func)
 			item->event_func (item, MENUEVENT_PLUS);
-	  	return MENURESULT_OK;
+	  	return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 	  	item->data.slider.value = max (item->data.slider.minvalue,
 	  		item->data.slider.value - item->data.slider.stepsize);
 		if (item->event_func)
 			item->event_func (item, MENUEVENT_MINUS);
-	  	return MENURESULT_OK;
+	  	return MENURESULT_NONE;
 	  case MENUTOKEN_OTHER:
 	}
 
 	return MENURESULT_ERROR;
 }
 
-MenuResult menuitem_handle_input_numeric (MenuItem *item, MenuToken token, char * key)
+MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char * key)
 {
 	char buf1[MAX_NUMERIC_LEN];
 	char buf2[MAX_NUMERIC_LEN];
@@ -710,7 +682,7 @@ MenuResult menuitem_handle_input_numeric (MenuItem *item, MenuToken token, char 
 			memset (str, 0, MAX_NUMERIC_LEN);
 			snprintf (str, MAX_NUMERIC_LEN, format_str, item->data.numeric.value);
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_ENTER:
 		if (str[pos] == 0) {
 			int value;
@@ -728,7 +700,7 @@ MenuResult menuitem_handle_input_numeric (MenuItem *item, MenuToken token, char 
 				 */
 				item->data.numeric.error_code = 1;
 				item->data.numeric.edit_pos = 0;
-				return MENURESULT_OK;
+				return MENURESULT_NONE;
 			}
 
 			/* OK, store value */
@@ -746,13 +718,13 @@ MenuResult menuitem_handle_input_numeric (MenuItem *item, MenuToken token, char 
 				item->data.numeric.edit_pos ++;
 			}
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_UP:
 		if (pos >= max_len) {
 			/* We're not allowed to add anything anymore */
 			item->data.numeric.error_code = 2;
 			item->data.numeric.edit_pos = 0;
-			return MENURESULT_OK;
+			return MENURESULT_NONE;
 		}
 		if (allow_signed && pos == 0) {
 			/* make negative */
@@ -767,13 +739,13 @@ MenuResult menuitem_handle_input_numeric (MenuItem *item, MenuToken token, char 
 				str[pos] = '0';
 			}
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 		if (pos >= max_len) {
 			/* We're not allowed to add anything anymore */
 			item->data.numeric.error_code = 2;
 			item->data.numeric.edit_pos = 0;
-			return MENURESULT_OK;
+			return MENURESULT_NONE;
 		}
 		if (allow_signed && pos == 0) {
 			/* make negative */
@@ -788,34 +760,45 @@ MenuResult menuitem_handle_input_numeric (MenuItem *item, MenuToken token, char 
 	  			str[pos] = '9';
 			}
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_OTHER:
 		if (pos >= max_len) {
 			/* We're not allowed to add anything anymore */
 			item->data.numeric.error_code = 2;
 			item->data.numeric.edit_pos = 0;
-			return MENURESULT_OK;
+			return MENURESULT_NONE;
 		}
 		/* proces numeric keys */
   		if ( strlen(key) == 1 && key[0] >= '0' && key[0] <= '9') {
 			str[pos] = key[0];
 			item->data.numeric.edit_pos ++;
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	}
 	return MENURESULT_ERROR;
 }
 
-MenuResult menuitem_handle_input_alpha (MenuItem *item, MenuToken token, char * key)
+MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char * key)
 {
 	char * p;
-	char * chars = item->data.alpha.allowed_chars;
+	static char * chars = NULL;
 
 	/* To make life easy... */
 	char *str = item->data.alpha.edit_str;
 	int pos = item->data.alpha.edit_pos;
 
 	debug (RPT_DEBUG, "%s( item=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
+
+	/* Create list of allowed chars */
+	chars = realloc (chars, 26 + 26 + 10 + strlen(item->data.alpha.allowed_extra) + 1);
+	chars[0] = 0; /* clear string */
+	if (item->data.alpha.allow_caps)
+		strcat (chars, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+	if (item->data.alpha.allow_noncaps)
+		strcat (chars, "abcdefghijklmnopqrstuvwxyz");
+	if (item->data.alpha.allow_numbers)
+		strcat (chars, "0123456789");
+	strcat (chars, item->data.alpha.allowed_extra);
 
 	/* Clear the error */
 	item->data.alpha.error_code = 0;
@@ -831,7 +814,7 @@ MenuResult menuitem_handle_input_alpha (MenuItem *item, MenuToken token, char * 
 			memset (str, 0, item->data.alpha.maxlength+1);
 			strcpy (str, item->data.alpha.value);
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_ENTER:
 		if (str[item->data.alpha.edit_pos] == 0) {
 			/* The user completed his input */
@@ -839,7 +822,7 @@ MenuResult menuitem_handle_input_alpha (MenuItem *item, MenuToken token, char * 
 			/* It's not too short ? */
 			if (strlen (item->data.alpha.edit_str) < item->data.alpha.minlength) {
 				item->data.alpha.error_code = 3;
-				return MENURESULT_OK;
+				return MENURESULT_NONE;
 			}
 
 			/* Store value */
@@ -857,13 +840,13 @@ MenuResult menuitem_handle_input_alpha (MenuItem *item, MenuToken token, char * 
 				item->data.alpha.edit_pos ++;
 			}
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_UP:
 		if (pos >= item->data.alpha.maxlength) {
 			/* We're not allowed to add anything anymore */
 			item->data.alpha.error_code = 2;
 			item->data.numeric.edit_pos = 0;
-			return MENURESULT_OK;
+			return MENURESULT_NONE;
 		}
 		if (str[pos] == 0) {
 			/* User goes past EOL */
@@ -878,13 +861,13 @@ MenuResult menuitem_handle_input_alpha (MenuItem *item, MenuToken token, char * 
 				str[pos] = 0;
 			}
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 		if (pos >= item->data.alpha.maxlength) {
 			/* We're not allowed to add anything anymore */
 			item->data.alpha.error_code = 2;
 			item->data.numeric.edit_pos = 0;
-			return MENURESULT_OK;
+			return MENURESULT_NONE;
 		}
 		if (str[pos] == 0) {
 			/* User goes past EOL */
@@ -902,21 +885,92 @@ MenuResult menuitem_handle_input_alpha (MenuItem *item, MenuToken token, char * 
 				str[pos] = 0;
 			}
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	  case MENUTOKEN_OTHER:
 		if (pos >= item->data.alpha.maxlength) {
 			/* We're not allowed to add anything anymore */
 			item->data.alpha.error_code = 2;
 			item->data.numeric.edit_pos = 0;
-			return MENURESULT_OK;
+			return MENURESULT_NONE;
 		}
 		/* proces other keys */
   		if ( strlen(key) == 1 && key[0] >= ' ' && key[0] <= 'Z') {
 			str[pos] = key[0];
 			item->data.alpha.edit_pos ++;
 		}
-		return MENURESULT_OK;
+		return MENURESULT_NONE;
 	}
 	return MENURESULT_ERROR;
+}
+
+LinkedList * tablist2linkedlist (char *strings)
+{
+	char *tabptr, *p, *new_s;
+	LinkedList * list;
+
+	list = LL_new();
+
+	/* Parse strings */
+	p = strings;
+	while ((tabptr = strchr(p, '\t')) != NULL) {
+		int len = (int)(tabptr - p);
+
+		/* Alloc and copy substring */
+		new_s = malloc (len + 1);
+		strncpy (new_s, p, len);
+		new_s[len] = 0;
+
+		LL_Push (list, new_s);
+
+		/* Go to next string */
+		p = tabptr + 1;
+	}
+	/* Add last string */
+	new_s = strdup (p);
+	LL_Push (list, new_s);
+
+	return list;
+}
+
+MenuItemType menuitem_typename_to_type (char *name)
+{
+	MenuItemType type;
+	for (type = 0; type < NUM_ITEMTYPES; type ++) {
+		if (strcmp (menuitemtypenames[type], name) == 0) {
+			return type;
+		}
+	}
+	return -1;
+}
+
+char *menuitem_type_to_typename (MenuItemType type)
+{
+	if (type >= 0 && type < NUM_ITEMTYPES) {
+		return menuitemtypenames[type];
+	}
+	else {
+		return NULL;
+	}
+}
+
+MenuEventType menuitem_eventtypename_to_eventtype (char *name)
+{
+	MenuEventType type;
+	for (type = 0; type < NUM_EVENTTYPES; type ++) {
+		if (strcmp (menueventtypenames[type], name) == 0) {
+			return type;
+		}
+	}
+	return -1;
+}
+
+char *menuitem_eventtype_to_eventtypename (MenuEventType type)
+{
+	if (type >= 0 && type < NUM_EVENTTYPES) {
+		return menueventtypenames[type];
+	}
+	else {
+		return NULL;
+	}
 }
 

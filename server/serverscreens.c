@@ -22,6 +22,7 @@
 
 #include "shared/report.h"
 
+#include "drivers/lcd.h"
 #include "drivers.h"
 #include "clients.h"
 #include "screen.h"
@@ -31,59 +32,45 @@
 
 Screen * server_screen;
 
-char title[256] = "LCDproc Server";
-char one[256] = "";
-char two[256] = "";
-char three[256] = "";
+#define MAX_SERVERSCREEN_WIDTH 40
 
 int
 server_screen_init ()
 {
 	Widget * w;
+	int line;
 
 	debug (RPT_DEBUG, "server_screen_init");
 
+	/* Create the screen */
 	server_screen = screen_create ("_server_screen", NULL);
 	if (!server_screen) {
 		report (RPT_ERR, "server_screen_init: Error allocating screen");
 		return -1;
 	}
-
 	server_screen->name = "Server screen";
 	server_screen->duration = 8; /* 1 second, instead of 4...*/
 	server_screen->priority = -1; /* TODO: use priorities good */
 
-	if (	(w = widget_create ("title", WID_TITLE, server_screen)) == NULL
-	||	screen_add_widget (server_screen, w) != 0
-	||	(w = widget_create ("one", WID_STRING, server_screen)) == NULL
-	||	screen_add_widget (server_screen, w) != 0
-	||	(w = widget_create ("two", WID_STRING, server_screen)) == NULL
-	||	screen_add_widget (server_screen, w) != 0
-	||	(w = widget_create ("three", WID_STRING, server_screen)) == NULL
-	||	screen_add_widget (server_screen, w) != 0
-	) {
-		report (RPT_ERR, "server_screen_init: Can't create widgets");
-		return -1;
+	/* Create all the widgets...*/
+	for (line=1; line<=4; line++) {
+		char id[8];
+		sprintf (id, "line%d", line);
+
+		w = widget_create (id, WID_STRING, server_screen);
+		if (!w) {
+			report (RPT_ERR, "server_screen_init: Can't create a widget");
+			return -1;
+		}
+		screen_add_widget (server_screen, w);
+		w->x = 1;
+		w->y = line;
+		w->text = malloc (MAX_SERVERSCREEN_WIDTH+1);
+		if (line == 1) {
+			w->type = WID_TITLE;
+			strncpy (w->text, "LCDproc Server", MAX_SERVERSCREEN_WIDTH);
+		}
 	}
-
-	/* Now, initialize all the widgets...*/
-	w = screen_find_widget (server_screen, "title");
-	w->text = strdup (title);
-
-	w = screen_find_widget (server_screen, "one");
-	w->x = 1;
-	w->y = 2;
-	w->text = strdup (one);
-
-	w = screen_find_widget (server_screen, "two");
-	w->x = 1;
-	w->y = 3;
-	w->text = strdup (two);
-
-	w = screen_find_widget (server_screen, "three");
-	w->x = 1;
-	w->y = 4;
-	w->text = strdup (three);
 
 	/* And enqueue the screen*/
 	screenlist_add (server_screen);
@@ -97,12 +84,9 @@ int
 update_server_screen (int timer)
 {
 	Client * c;
+	Widget * w;
 	int num_clients;
-	/*screen *s;*/
 	int num_screens;
-
-	/* Draw a title...*/
-	/*strcpy(title, "LCDproc Server");*/
 
 	/* Now get info on the number of connected clients...*/
 	num_clients = clients_client_count();
@@ -115,19 +99,20 @@ update_server_screen (int timer)
 
 	/* Format strings for the appropriate size display... */
 	if (display_props->height >= 3) {
-		snprintf (one, sizeof(one), "Clients: %i", num_clients);
-		snprintf (two, sizeof(two), "Screens: %i", num_screens);
+		w = screen_find_widget (server_screen, "line2");
+		snprintf (w->text, MAX_SERVERSCREEN_WIDTH,
+					"Clients: %i", num_clients);
+		w = screen_find_widget (server_screen, "line3");
+		snprintf (w->text, MAX_SERVERSCREEN_WIDTH,
+					"Screens: %i", num_screens);
 	} else {
-		if (display_props->width >= 20)
-			snprintf (one, sizeof(one), "%i Client%s, %i Screen%s", num_clients,
-				(num_clients == 1) ? "" : "s", num_screens,
-				(num_screens == 1) ? "" : "s");
-		else							  /* 16x2 size*/
-			snprintf (one, sizeof(one), "%i Cli%s, %i Scr%s", num_clients,
-				(num_clients == 1) ? "" : "s", num_screens,
-				(num_screens == 1) ? "" : "s");
+		w = screen_find_widget (server_screen, "line2");
+		/*if (display_props->width >= 20)*/
+		snprintf (w->text, MAX_SERVERSCREEN_WIDTH,
+				"Cli: %i  Scr: %i",
+				num_clients, num_screens);
+		/*else					* 16x2 size */
 	}
-
 	return 0;
 }
 

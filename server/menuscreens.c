@@ -46,11 +46,10 @@ Menu * screens_menu;
 
 
 void menuscreen_create_menu ();
-MenuEventFunc (menuscreen_heartbeat);
-MenuEventFunc (menuscreen_backlight);
-MenuEventFunc (menuscreen_contrast);
-MenuEventFunc (menuscreen_brightness);
-MenuEventFunc (menuscreen_screens);
+MenuEventFunc (heartbeat_handler);
+MenuEventFunc (backlight_handler);
+MenuEventFunc (contrast_handler);
+MenuEventFunc (brightness_handler);
 
 int init_menu()
 {
@@ -126,13 +125,13 @@ void menuscreen_key_handler (char *key)
 		return;
 	}
 
-	res = menuitem_handle_input (active_menuitem, token, key);
+	res = menuitem_process_input (active_menuitem, token, key);
 
 	switch (res) {
 	  case MENURESULT_ERROR:
 		report (RPT_ERR, "%s: Error from menu_handle_input", __FUNCTION__);
 		break;
-	  case MENURESULT_OK:
+	  case MENURESULT_NONE:
 		/* Nothing extra to be done */
 		break;
 	  case MENURESULT_ENTER:
@@ -189,13 +188,13 @@ void menuscreen_create_menu ()
 	options_menu = menu_create ("options", NULL, "Options", NULL);
 	menu_add_item (main_menu, options_menu);
 
-	screens_menu = menu_create ("screens", menuscreen_screens, "Screens", NULL);
+	screens_menu = menu_create ("screens", NULL, "Screens", NULL);
 	menu_add_item (main_menu, screens_menu);
 
-	checkbox = menuitem_create_checkbox ("heartbeat", menuscreen_heartbeat, "Heartbeat", true, heartbeat);
+	checkbox = menuitem_create_checkbox ("heartbeat", heartbeat_handler, "Heartbeat", true, heartbeat);
 	menu_add_item (options_menu, checkbox);
 
-	checkbox = menuitem_create_checkbox ("backlight", menuscreen_backlight, "Backlight", true, backlight);
+	checkbox = menuitem_create_checkbox ("backlight", backlight_handler, "Backlight", true, backlight);
 	menu_add_item (options_menu, checkbox);
 
 	for (driver = drivers_getfirst(); driver; driver = drivers_getnext()) {
@@ -209,14 +208,14 @@ void menuscreen_create_menu ()
 			driver_menu = menu_create (driver->name, NULL, driver->name, driver);
 			menu_add_item (options_menu, driver_menu);
 			if (contrast_avail) {
-				slider = menuitem_create_slider ("contrast", menuscreen_contrast, "Contrast", "min", "max", 0, 1000, 100, 500);
+				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast", "min", "max", 0, 1000, 100, 500);
 				menu_add_item (driver_menu, slider);
 			}
 			if (brightness_avail) {
-				slider = menuitem_create_slider ("onbrightness", menuscreen_brightness, "On Brightness", "min", "max", 0, 1000, 100, 500);
+				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness", "min", "max", 0, 1000, 100, 500);
 				menu_add_item (driver_menu, slider);
 
-				slider = menuitem_create_slider ("offbrightness", menuscreen_brightness, "Off Brightness", "min", "max", 0, 1000, 100, 500);
+				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness", "min", "max", 0, 1000, 100, 500);
 				menu_add_item (driver_menu, slider);
 			}
 		}
@@ -224,11 +223,11 @@ void menuscreen_create_menu ()
 	test_menu = menu_create ("test", NULL, "Test menu", NULL);
 	menu_add_item (main_menu, test_menu);
 
-	test_item = menuitem_create_action ("", NULL, "Action", false, false);
+	test_item = menuitem_create_action ("", NULL, "Action", MENURESULT_NONE);
 	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_action ("", NULL, "Action,closing", true, false);
+	test_item = menuitem_create_action ("", NULL, "Action,closing", MENURESULT_CLOSE);
 	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_action ("", NULL, "Action,quiting", true, true);
+	test_item = menuitem_create_action ("", NULL, "Action,quiting", MENURESULT_QUIT);
 	menu_add_item (test_menu, test_item);
 
 	test_item = menuitem_create_checkbox ("", NULL, "Checkbox", false, false);
@@ -255,7 +254,7 @@ void menuscreen_create_menu ()
 	menu_add_item (test_menu, test_item);
 }
 
-MenuEventFunc (menuscreen_heartbeat)
+MenuEventFunc (heartbeat_handler)
 {
 	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
 
@@ -268,7 +267,7 @@ MenuEventFunc (menuscreen_heartbeat)
 	return 0;
 }
 
-MenuEventFunc (menuscreen_backlight)
+MenuEventFunc (backlight_handler)
 {
 	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
 
@@ -282,7 +281,7 @@ MenuEventFunc (menuscreen_backlight)
 	return 0;
 }
 
-MenuEventFunc (menuscreen_contrast)
+MenuEventFunc (contrast_handler)
 {
 	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
 
@@ -302,7 +301,7 @@ MenuEventFunc (menuscreen_contrast)
 	return 0;
 }
 
-MenuEventFunc (menuscreen_brightness)
+MenuEventFunc (brightness_handler)
 {
 	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
 
@@ -324,39 +323,46 @@ MenuEventFunc (menuscreen_brightness)
 	return 0;
 }
 
-MenuEventFunc (menuscreen_screens)
+void
+menuscreen_add_screen (Screen * s)
 {
-	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
+	Menu * m;
+	MenuItem * mi;
 
-	if (event == MENUEVENT_ENTER) {
-		/* We are entering this menu */
-		Screen * s;
-		Menu * m;
-		MenuItem * mi;
+	debug (RPT_DEBUG, "%s( Screen=\"%s\" )", __FUNCTION__, s->id);
 
-		/* Clean the screens menu */
-		menu_destroy_all_items (screens_menu);
+	if (!screens_menu)
+		return;	/* When screens have not been created ... */
 
-		/* Read list of screens */
-		for (s = LL_GetFirst(screenlist_getlist()); s; s = LL_GetNext(screenlist_getlist())) {
+	/* Create a menu entry for the screen */
+	m = menu_create (s->id, NULL, s->name?s->name:s->id, s);
+	menu_add_item (screens_menu, m);
 
-			/* TODO: don't display screens that have _ at start of id */
+	/* And add some items for it... */
+	mi = menuitem_create_action ("", NULL, "(don't work yet)", MENURESULT_NONE);
+	menu_add_item (m, mi);
 
-			m = menu_create (s->id, NULL, s->name?s->name:s->id, s);
-			menu_add_item (screens_menu, m);
+	mi = menuitem_create_action ("", NULL, "To Front", MENURESULT_QUIT);
+	menu_add_item (m, mi);
 
-			mi = menuitem_create_action ("", NULL, "To Front", true, true);
-			menu_add_item (m, mi);
+	mi = menuitem_create_checkbox ("", NULL, "Visible", false, true);
+	menu_add_item (m, mi);
 
-			mi = menuitem_create_checkbox ("", NULL, "Visible", false, true);
-			menu_add_item (m, mi);
+	mi = menuitem_create_numeric ("", NULL, "Duration", 2, 3600, s->duration);
+	menu_add_item (m, mi);
 
-			mi = menuitem_create_numeric ("", NULL, "Duration", 2, 3600, s->duration);
-			menu_add_item (m, mi);
+	mi = menuitem_create_numeric ("", NULL, "Priority", 0, 255, s->priority);
+	menu_add_item (m, mi);
+}
 
-			mi = menuitem_create_numeric ("", NULL, "Priority", -1, 4, s->priority);
-			menu_add_item (m, mi);
-		}
-	}
-	return 0;
+void
+menuscreen_remove_screen (Screen * s)
+{
+	Menu * m;
+
+	debug (RPT_DEBUG, "%s( Screen=\"%s\" )", __FUNCTION__, s->id);
+
+	m = menu_find_item (screens_menu, s->id, false);
+	menu_remove_item (screens_menu, m);
+	menuitem_destroy (m);
 }

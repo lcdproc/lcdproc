@@ -1,3 +1,20 @@
+/*
+ * client.h
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2002, Joris Robijn
+ *
+ * Defines all the client data and actions.
+ */
+
+#include "menu.h"
+#include "menuitem.h"
+/* These headers are placed here on purpose ! (circular references) */
+
 #ifndef CLIENT_H
 #define CLIENT_H
 
@@ -16,21 +33,15 @@ typedef struct Client {
 
 	LinkedList *messages;
 
-	/* and other stuff...  doesn't matter yet*/
+	/* The list of screens */
 	LinkedList *screenlist;
 
-	/* TO BE REMOVED */
-	char *client_keys;
-
-	/* list of requested keys */
-	//LinkedList *keylist;
-	/* list of client supplied menus */
-	//LinkedList *menulist;
+	/* Maybe it has created a menu */
+	Menu * menu;
 
 } Client;
 
 #include "screen.h"
-
 
 /* When a new client connects, set up a new client data struct */
 Client * client_create (int sock);

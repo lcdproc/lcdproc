@@ -75,6 +75,8 @@ screen_create (char * id, Client * client)
 		return NULL;
 	}
 
+	menuscreen_add_screen (s);
+
 	return s;
 }
 
@@ -85,6 +87,10 @@ screen_destroy (Screen * s)
 
 	if (!s)
 		return -1;
+
+	menuscreen_remove_screen (s);
+
+	screenlist_remove (s);
 
 	for (w=LL_GetFirst(s->widgetlist); w; w=LL_GetNext(s->widgetlist)) {
 		/* Free a widget...*/

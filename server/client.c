@@ -19,6 +19,8 @@
 #include "client.h"
 #include "screenlist.h"
 #include "render.h"
+#include "input.h"
+#include "menuitem.h"
 #include "shared/report.h"
 #include "shared/LL.h"
 
@@ -50,7 +52,7 @@ Client * client_create (int sock)
 
 	c->ack = 0;
 	c->name = NULL;
-	c->client_keys = NULL;
+	c->menu = NULL;
 
 	c->screenlist = LL_new();
 
@@ -74,30 +76,10 @@ client_destroy (Client * c)
 
 	client_close_sock (c);
 
-	/*Free client's other data*/
-	c->ack = 0;
-
-	/* Clean up the name...*/
-	if (c->name)
-		free (c->name);
-
-	/* Clean up the key list...*/
-	//if (d->client_keys)
-	//	free (d->client_keys);
-
 	/* Clean up the screenlist...*/
 	debug( RPT_DEBUG, "client_data_destroy: Cleaning screenlist");
 
 	for( s=LL_GetFirst (c->screenlist); s; s=LL_GetNext(c->screenlist) ) {
-		debug( RPT_DEBUG, "client_data_destroy: removing screen %s", s->id);
-
-		/* FIXME? This shouldn't be handled here...
-		 * Now, remove it from the screenlist...*/
-		if (screenlist_remove_all (s) < 0) {
-			/* Not a serious error..*/
-			report( RPT_ERR, "client_data_destroy:  Error dequeueing screen");
-			return 0;
-		}
 		/* Free its memory...*/
 		screen_destroy (s);
 		/* Note that the screen is not removed from the list because
@@ -105,6 +87,20 @@ client_destroy (Client * c)
 		 */
 	}
 	LL_Destroy( c->screenlist);
+
+	/* Destroy the client's menu, if it exists */
+	if (c->menu)
+		menuitem_destroy (c->menu);
+
+	/* Forget client's key reservations */
+	input_release_client_keys (c);
+
+	/* Free client's other data */
+	c->ack = 0;
+
+	/* Clean up the name...*/
+	if (c->name)
+		free (c->name);
 
 	/* Remove structure */
 	free (c);

@@ -195,6 +195,8 @@ main (int argc, char **argv)
 	/* Startup the server*/
 	ESSENTIAL( init_drivers() );
 	ESSENTIAL( init_sockets() );
+	ESSENTIAL( init_input() );
+	ESSENTIAL( init_menu() );
 	ESSENTIAL( init_screens() );
 	ESSENTIAL( drop_privs(user) );
 
@@ -211,9 +213,6 @@ main (int argc, char **argv)
 		report(RPT_NOTICE, "Server running in foreground");
 	}
 #endif
-
-	ESSENTIAL( init_input() );
-	ESSENTIAL( init_menu() );
 
 	do_mainloop();
 	/* This loop never stops; we'll get out only with a signal...*/

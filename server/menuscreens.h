@@ -18,6 +18,8 @@
 #include "screen.h"
 
 extern Screen * menuscreen;
+extern MenuItem * active_menuitem;
+extern Menu * main_menu;
 
 int init_menu();
 
@@ -30,5 +32,10 @@ void menuscreen_key_handler (char *key);
 /* This handler handles the keypresses for the menu.
  */
 
-#endif
+void menuscreen_add_screen (Screen * s);
+/* Adds a menu for the given screen */
 
+void menuscreen_remove_screen (Screen * s);
+/* Removes the menu of the screen */
+
+#endif

@@ -9,10 +9,16 @@
  *
  */
 
+#include "menu.h"
+#include "menuitem.h"
+#include "client.h"
+/* These headers are placed here on purpose ! (circular references) */
+
 #ifndef SCREEN_H
 #define SCREEN_H
 
 #include "shared/LL.h"
+#include "client.h"
 
 typedef struct Screen {
 	char *id;
@@ -31,13 +37,13 @@ typedef struct Screen {
 	struct Client *client;
 } Screen;
 
-#include "client.h"
 #include "widget.h"
 
 
 extern int  default_duration ;
 extern int  default_priority ;
 
+#include "client.h"
 
 /* Creates a new screen */
 Screen * screen_create (char * id, Client * client);

@@ -32,6 +32,7 @@
 #include "drivers.h"
 #include "render.h"
 #include "client.h"
+#include "input.h"
 
 /***************************************************************
  * Debugging only..  prints out a list of arguments it receives
@@ -165,59 +166,51 @@ client_set_func (Client * c, int argc, char **argv)
  * Tells the server the client would like to accept keypresses
  * of a particular type
  *
- * usage: client_add_key <keylist>
+ * usage: client_add_key [-exclusively|-shared] {<key>}+
  */
+#define BUFLEN 80
 int
 client_add_key_func (Client * c, int argc, char **argv)
 {
-	char *  keys ;
+	int exclusively = 0;
+	int argnr;
+	char errmsg[BUFLEN];
 
 	if (!c->ack)
 		return 1;
 
-	if (argc != 2) {
+	if (argc < 2) {
 		switch (argc) {
 			case 1:
-				sock_send_string (c->sock, "huh? usage: client_add_key <keylist>\n");
-				break;
-			default:
-				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				sock_send_string (c->sock, "huh?  Usage: client_add_key [-exclusively|-shared] {<key>}+\n");
 				break;
 		}
 		return 0;
 	}
 
-	keys = argv[1];
-	debug(RPT_DEBUG, "client_add_key: current client will handle key(s) %s", keys);
-
-	if (!c->client_keys) {
-		/* No keys list, create a new one*/
-		c->client_keys = strdup( keys );
-	} else {
-		/* Add supplied keys to existing list
-		 * NOTE: There could be duplicates in the resulting list
-		 *    That's OK, it's the existence of the key in the list
-		 *    that's important.  We'll be more careful in the delete
-		 *    key function.
-		 */
-		char *  new ;
-		int  new_len = strlen(c->client_keys) + strlen(keys) + 1 ;
-
-		new = realloc( c->client_keys, new_len );
-		if( new ) {
-			c->client_keys = new ;
-			strcat( new, keys );
-		} else {
-			sock_send_string(c->sock, "huh? could not allocate memory for new keys\n");
-			return 0;
+	argnr = 1;
+	if( argv[argnr][0] == '-' ) {
+		if( strcmp( argv[argnr], "-shared") == 0 ) {
+			exclusively = 0;
+		}
+		else if( strcmp( argv[argnr], "-exclusively") == 0 ) {
+			exclusively = 1;
+		}
+		else {
+			snprintf( errmsg, BUFLEN-1, "huh?  Invalid option: %s\n", argv[argnr] );
+			errmsg[BUFLEN-1] = 0;
+			sock_send_string( c->sock, errmsg );
+		}
+		argnr ++;
+	}
+	for ( ; argnr < argc; argnr++ ) {
+		if( input_reserve_key( argv[argnr], exclusively, c ) < 0 ) {
+			snprintf( errmsg, BUFLEN-1, "huh?  Could not reserve key \"%s\"\n", argv[argnr] );
+			errmsg[BUFLEN-1] = 0;
+			sock_send_string( c->sock, errmsg );
 		}
 	}
-
-	if (c->client_keys) {
-		sock_send_string(c->sock, "success\n");
-	} else {
-		sock_send_string(c->sock, "huh? failed\n");
-	}
+	sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
@@ -226,52 +219,24 @@ client_add_key_func (Client * c, int argc, char **argv)
  * Tells the server the client would NOT like to accept keypresses
  * of a particular type
  *
- * usage: client_del_key <keylist>
+ * usage: client_del_key {<key>}+
  */
 int
 client_del_key_func (Client * c, int argc, char **argv)
 {
-	char *  keys ;
+	int argnr;
 
 	if (!c->ack)
 		return 1;
 
-	if (argc != 2) {
-		if (argc == 1) {
-			sock_send_string (c->sock, "huh? usage: client_del_key <keylist>\n");
-			return 0;
-		} else {
-			sock_send_string (c->sock, "huh?  Too many parameters...\n");
-			return 0;
-		}
+	if (argc < 2) {
+		sock_send_string (c->sock, "huh?  Usage: client_del_key {<key>}+\n");
+		return 0;
 	}
 
-	keys = argv[1] ;
-	debug(RPT_DEBUG, "client_del_key: Deleting key(s) %s from client_keys", keys);
-
-	if (c->client_keys) {
-		/* Client has keys, remove keys from the list
-		 * NOTE: We let malloc/realloc remember the length
-		 *    of the allocated storage.  If keys are later
-		 *    added, realloc (in add_key above) will make
-		 *    sure there is enough space at c->data->client_keys
-		 */
-		char *  from ;
-		char *  to ;
-
-		to = from = c->client_keys ;
-		while( *from ) {
-			/*  Is this key to be deleted from the list?*/
-			if( strchr( keys, *from ) ) {
-				/* Yes, skip it*/
-				++from ;
-			} else {
-				/* No, save it*/
-				*to++ = *from++ ;
-			}
-		}
+	for( argnr=1; argnr < argc; argnr++) {
+		input_release_key( argv[argnr], c );
 	}
-
 	sock_send_string(c->sock, "success\n");
 
 	return 0;

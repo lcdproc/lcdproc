@@ -12,7 +12,7 @@
  * The functions here are to be called only from parse.c's interpreter.
  *
  * The client's available function set is defined here, as is the syntax
- * for each command.
+ * for each command. <-- TODO !
  *
  */
 
@@ -39,9 +39,6 @@ client_function commands[] = {
 	{"widget_add", widget_add_func},
 	{"widget_del", widget_del_func},
 	{"widget_set", widget_set_func},
-	{"menu_add", menu_add_func},
-	{"menu_del", menu_del_func},
-	{"menu_set", menu_set_func},
 	{"menu_add_item", menu_add_item_func},
 	{"menu_del_item", menu_del_item_func},
 	{"menu_set_item", menu_set_item_func},

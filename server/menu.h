@@ -8,19 +8,14 @@
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *
  * Defines all the menu data and actions.
+ *
  */
+
+#include "menuitem.h"
+/* These headers are placed here on purpose ! (circular references) */
 
 #ifndef MENU_H
 #define MENU_H
-
-
-struct MenuData;
-#include "menuitem.h"
-
-
-#include "shared/LL.h"
-
-#include "screen.h"
 
 #ifndef bool
 # define bool short
@@ -31,10 +26,14 @@ struct MenuData;
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 
+#include "shared/LL.h"
+
 typedef MenuItem Menu;
 /* A Menu is a MenuItem too.
  * This definition is only for better understanding of this code.
  */
+
+#include "screen.h"
 
 Menu *menu_create (char *id, MenuEventFunc(*event_func),
 	char *text, void *association);
@@ -86,8 +85,8 @@ static inline MenuItem *menu_get_current_item (Menu *menu)
 		menu->data.menu.selector_pos);
 }
 
-MenuItem *menu_find_item (Menu *menu, char *id);
-/* Retrieves the first item from the list of items in the menu. */
+MenuItem *menu_find_item (Menu *menu, char *id, bool recursive);
+/* Finds an item in the menu by the given id. */
 
 void menu_reset (Menu *menu);
 /* Resets it to initial state.

@@ -27,8 +27,6 @@
 
 #include "shared/LL.h"
 
-#include "screen.h"
-
 #ifndef bool
 # define bool short
 # define true 1
@@ -42,7 +40,6 @@
  */
 
 #define NUM_ITEMTYPES 7
-
 typedef enum MenuItemType {	/* These values are used in the */
 	MENUITEM_MENU = 0,	/* function tables in menuitem.c ! */
 	MENUITEM_ACTION = 1,
@@ -69,7 +66,7 @@ typedef enum MenuToken {
 /* Return codes from an input handler */
 typedef enum MenuResult {
 	MENURESULT_ERROR = -1,	/* Something has gone wrong */
-	MENURESULT_OK = 0,	/* Token handled OK */
+	MENURESULT_NONE = 0,	/* Token handled OK, no extra action */
 	MENURESULT_ENTER,	/* Token handled OK, enter the selected
 				   menuitem now */
 	MENURESULT_CLOSE,	/* Token handled OK, close the current
@@ -78,16 +75,15 @@ typedef enum MenuResult {
 } MenuResult;
 
 /* Events caused by a menuitem */
+#define NUM_EVENTTYPES 4
 typedef enum MenuEventType {
-	MENUEVENT_ENTER,	/* Item has been entered
-				(menu opened, action chosen)
-				Can be used to trigger one-time update of
-				the items in a menu. */
+	MENUEVENT_SELECT = 0,	/* Item has been selected
+				(action chosen) */
 	MENUEVENT_UPDATE,	/* Item has been modified
 				(checkbox, numeric, alphanumeric) */
 	MENUEVENT_PLUS,		/* Item has been modified in positive direction
 				 (slider moved) */
-	MENUEVENT_MINUS		/* Item has been modified in negative direction
+	MENUEVENT_MINUS,	/* Item has been modified in negative direction
 				(slider moved) */
 } MenuEventType;
 
@@ -121,8 +117,9 @@ typedef struct MenuItem {
 			LinkedList *contents;	/* What's in this menu */
 		} menu;
 		struct action {
-			bool close_menu;	/* Close active menu ? */
-			bool quit_menu;	/* Close entire menu ? */
+			enum MenuResult menu_result;
+						/* What to do when selected ?
+						   Nothing, close or quit ? */
 		} action;
 		struct checkbox {
 			bool allow_gray;	/* Is CHECKBOX_GRAY allowed ? */
@@ -143,7 +140,7 @@ typedef struct MenuItem {
 		struct numeric {
 			int maxvalue;
 			int minvalue;
-			short allowed_decimals;	/* Number of numbers behind dot */
+			//short allowed_decimals;	/* Number of numbers behind dot */
 			int value;		/* Current value */
 			char *edit_str;		/* Value while being edited */
 			short edit_pos;		/* Position while editing */
@@ -153,7 +150,10 @@ typedef struct MenuItem {
 			char password_char;	/* For passwords */
 			short minlength;
 			short maxlength;
-			char *allowed_chars;	/* Allowed characters */
+			bool allow_caps;	/* Caps allowed ? */
+			bool allow_noncaps;	/* Non-caps allowed ? */
+			bool allow_numbers;	/* Numbers allowed ? */
+			char *allowed_extra;	/* Allowed extra characters */
 			char *value;		/* Current value */
 			char *edit_str;		/* Value while being edited */
 			short edit_pos;		/* Position while editing */
@@ -162,6 +162,8 @@ typedef struct MenuItem {
 	} data;
 } MenuItem;
 
+
+#include "screen.h"
 
 /*********************************************************************
  * Functions to use the menustuff
@@ -187,7 +189,7 @@ MenuItem *menuitem_create (MenuItemType type, char *id,
  *
  */
 MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
-	char *text, bool close_menu, bool quit_menu);
+	char *text, MenuResult menu_result);
 /* Creates a an action item (a string only).
  * Generated events: MENUEVENT_ENTER when user selects the item.
  */
@@ -269,9 +271,20 @@ void menuitem_update_screen (MenuItem *item, Screen *s);
  * Fills all widget attributes with the corrrect values.
  */
 
-MenuResult menuitem_handle_input (MenuItem *item, MenuToken token, char * key);
+MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key);
 /* Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  */
+
+LinkedList * tablist2linkedlist (char * strings);
+/* Converts a tab-separated list to a LinkedList. */
+
+MenuItemType menuitem_typename_to_type (char *name);
+
+char *menuitem_type_to_typename (MenuItemType type);
+
+MenuEventType menuitem_eventtypename_to_eventtype (char *name);
+
+char *menuitem_eventtype_to_eventtypename (MenuEventType type);
 
 #endif

@@ -31,10 +31,10 @@
  * TODO: Simplify... simplify...
  */
 
-#define MAX_ARGUMENTS 256
+#define MAX_ARGUMENTS 40
 
 int
-parse_all_client_messages ()
+parse_all_client_messages2 ()
 {
 	int i; /* int j, len;*/
 	/*int newtoken, inquote;*/
@@ -178,6 +178,184 @@ parse_all_client_messages ()
 
 			free (str);			  /* fixed memory leak?*/
 		}							  /* end for(str...)*/
+	}
+
+	return 0;
+}
+
+int parse_message (char * str, Client * c);
+
+int
+parse_all_client_messages ()
+{
+	Client * c;
+	char * str;
+
+	debug( RPT_DEBUG, "parse_all_client_messages()" );
+
+	for( c=clients_getfirst(); c; c=clients_getnext()) {
+
+		/* And parse all its messages...*/
+		/*debug(RPT_DEBUG, "parse: Getting messages...");*/
+		for (str = client_get_message (c); str; str = client_get_message (c)) {
+			parse_message (str, c);
+			free (str);
+		}
+	}
+	return 0;
+}
+
+int parse_message (char * str, Client * c)
+{
+	typedef enum { ST_INITIAL, ST_WHITESPACE, ST_IGNORE, ST_ARGUMENT, ST_FINAL } State;
+	State state = ST_INITIAL;
+
+	char escape_chars[] = "nrt";
+	char escape_trans[] = "\n\r\t";
+	char errmsg[256];
+	int error = 0;
+	char used_quote = 0;	/* The quote used to open a quote string */
+	int pos = 0;
+	char ch;
+	int i;
+	int argc =0 ;
+	char *argv[MAX_ARGUMENTS];
+	int argpos = 0;
+
+	void close_arg () {
+		argv[argc][argpos] = 0;
+		argv[argc+1] = argv[argc] + argpos + 1;
+		argc ++;
+		argpos = 0;
+	}
+
+	argv[0] = malloc(strlen(str)+1);
+	/* We will create a new string that is shorter or equally long as
+	 * the original string str.
+	 */
+
+	while( state != ST_FINAL ) {
+		ch = str[pos++];
+		switch( state ) {
+
+		  case ST_INITIAL:
+		  case ST_WHITESPACE:
+			switch( ch ) {
+			  case '\r':
+			  case '\t':
+			  case ' ':
+				break;
+			  case '\n':
+			  case 0:
+				state = ST_FINAL;
+				break;
+			  default:
+				state = ST_ARGUMENT;
+				pos --; /* Rescan current char */
+			}
+			break;
+		  case ST_IGNORE:
+			switch( ch ) {
+			  case '\n':
+				state = ST_FINAL;
+			  	break;
+			}
+			break;
+		  case ST_ARGUMENT:
+			switch( ch ) {
+			  case '\r':
+			  case '\t':
+			  case ' ':
+				if (used_quote) {
+					/* We're in a quoted string, add it */
+					argv[argc][argpos++] = ch;
+				}
+				else {
+					close_arg();
+					state = ST_WHITESPACE;
+				}
+				break;
+			  case '\n':
+				if (used_quote) {
+					/* Just ad it */
+					argv[argc][argpos++] = ch;
+					break;
+				}
+				/* else go to case 0 */
+			  case 0:
+				if (used_quote) {
+					error = 2;
+				}
+				close_arg();
+				state = ST_FINAL;
+				break;
+			  case '\\':
+			 	if (str[pos]) {
+			 		/* We solve quoted chars here right away */
+			 		char * p;
+					p = strchr( escape_chars, str[pos++] );
+					if (p != NULL) {
+						/* Insert a replacement for the code */
+						argv[argc][argpos++] = escape_trans[(int)*p];
+					}
+					else {
+						 /* Copy char litterally */
+						argv[argc][argpos++] = str[pos];
+					}
+			 	}
+			 	else {
+			 		close_arg();
+			 		error = 2;
+			 		state = ST_FINAL;
+			 	}
+			  case '\"':
+			  case '{':
+				if (!used_quote) {
+					used_quote = ch;
+					break;
+				}
+				/* else fall through to default... */
+			  default:
+				if (used_quote) {
+					/* Have we reached the end of the
+					 * quote already ?
+					 */
+					if ((used_quote == '{' && ch == '}')
+					|| (used_quote == '\"' && ch == '\"')) {
+						used_quote = 0;
+						break;
+					}
+				}
+				argv[argc][argpos++] = ch;
+			}
+			break;
+		  case ST_FINAL:
+		  	/* This will never be reached */
+			break;
+		}
+	}
+	argv[argc] = NULL;
+	if (error) {
+		snprintf (errmsg, sizeof(errmsg), "huh? Could not parse command\n");
+		sock_send_string (c->sock, errmsg);
+	}
+
+	/* Now find and call the appropriate function...*/
+	error = 1;
+	for (i = 0; commands[i].keyword; i++) {
+		if (0 == strcmp (argv[0], commands[i].keyword)) {
+			error = commands[i].function (c, argc, argv);
+			break; /* found our function - don't continue on...*/
+		}
+	}
+
+	if (error == 1) {
+		snprintf (errmsg, sizeof(errmsg), "huh? Invalid command \"%.40s\"\n", argv[0]);
+		sock_send_string (c->sock, errmsg);
+	}
+	else if (error) {
+		snprintf (errmsg, sizeof(errmsg), "huh? Function returned error \"%.40s\"\n", argv[0]);
+		sock_send_string (c->sock, errmsg);
 	}
 
 	return 0;
