@@ -32,8 +32,12 @@ AC_DEFINE_UNQUOTED([SYSTEM_HOST], [$ac_system_host], [Set this to your system ho
 AC_MSG_CHECKING(whether to enable debugging)
 AC_ARG_ENABLE(debug,
   [  --enable-debug          show debug information],
-  AC_DEFINE(DEBUG)
-  debug="yes",
+  if [[[ "$enableval" = "yes" ]]]; then
+        AC_DEFINE(DEBUG)
+        debug="yes"
+  else
+        debug="no"
+  fi,
   debug="no"
 )
 AC_MSG_RESULT($debug)
