@@ -19,9 +19,9 @@ basic functions like driver_chr and driver_str itself.
 
 Because the drivers are loadable, some kind of version checking should be done.
 Therefor the server expects the correct version number to be returned from the
-driver_init function. For the v0.5 version this should be 50. If it is wrong,
+version function. For the v0.5 version this should be "0.5". If it is wrong,
 the driver will not be loaded. This version number can be found in the define
-API_VERSION (TODO!!!).
+API_VERSION.
 
 #define drvthis struct lcd_logical_driver * driver
 
@@ -30,23 +30,22 @@ typedef struct lcd_logical_driver {
 	char * name;	// Name of this driver. Filled by server.
 
 	// Basic functions
+	char *(*version);	// OR CAN WE RETRIEVE A STRING FROM THE MODULE
 	int (*init)		(drvthis, char *args);
 	void (*close)		(drvthis);
-	int (*wid)		(drvthis);
-	int (*hgt)		(drvthis);
+	int (*width)		(drvthis);
+	int (*height)		(drvthis);
 	void (*clear)		(drvthis);
 	void (*flush)		(drvthis);
 	void (*string)		(drvthis, int x, int y, char *str);
 	void (*chr)		(drvthis, int x, int y, char c);
 
 	// Extended functions
-	void (*init_vbar)	(drvthis);
-	void (*vbar)		(drvthis, int x, int len);
-	void (*init_hbar)	(drvthis);
-	void (*hbar)		(drvthis, int x, int y, int len);
-	void (*init_num)	(drvthis);
+	void (*vbar)		(drvthis, int x, int y, int len, int promille, int pattern);
+	void (*hbar)		(drvthis, int x, int y, int len, int promille, int pattern);
 	void (*num)		(drvthis, int x, int num);
 	void (*heartbeat)	(drvthis, int state);
+	char (*set_icon)	(drvthis, int icon);
 
 	// Hardware functions
 	int (*contrast)		(drvthis, int contrast);
@@ -55,15 +54,17 @@ typedef struct lcd_logical_driver {
 
 	// Userdef characters, are those still supported ?
 	//void (*set_char)	(drvthis, int n, char *dat);
-	//int (*cellwid)	(drvthis);
-	//int (*cellhgt)	(drvthis);
+	//int (*cellwidth)	(drvthis);
+	//int (*cellheight)	(drvthis);
 
 	// Key functions
-	char *(*getkey)		(drvthis);
+	char *(*get_key)	(drvthis);
 				// Returns a string. Server cannot modify
 				// this string.
 
 	// Config file functions, filled by server
+	// DO THESE NEED TO BE IN THIS STRUCTURE ? 
+	// LOADABLE MODULES CAN CALL FUNCS IN THE MAIN MODULE ...
 	char (*config_get_bool)	(char * sectionname, char * keyname,
 				int skip, char default_value);
 	int (*config_get_int)	(char * sectionname, char * keyname,
@@ -91,9 +92,9 @@ In the private structure will probably at least be:
 typedef struct my_driver_private {
 
         // Size in cells of the LCD
-        int wid, hgt;
+        int width, height;
         // Size of each LCD cell, in pixels
-        int cellwid, cellhgt;
+        int cellwidth, cellheight;
         // Frame buffer...
         char *framebuf;
 };
@@ -101,6 +102,9 @@ typedef struct my_driver_private {
 
 
 FUNCTIONS IN DETAIL
+
+char *(*version);
+// Return the API version string as the driver knows it.
 
 int (*init)		(drvthis, char *args);
 // The init function
@@ -110,6 +114,12 @@ int (*init)		(drvthis, char *args);
 
 void (*close)		(drvthis);
 // Shuts down the connection with the LCD.
+
+int (*width)		(drvthis);
+// Get the screen width.
+
+int (*height)		(drvthis);
+// Get the screen height.
 
 void (*clear)		(drvthis);
 // Clears the framebuffer
@@ -124,23 +134,13 @@ void (*string)		(drvthis, int x, int y, char *str);
 void (*chr)		(drvthis, int x, int y, char c);
 // Places a char in the framebuffer
 
-void (*init_vbar)	(drvthis);
-// Initializes the LCD to display vertical bars
-
 void (*vbar)		(drvthis, int x, int len);
 // Draws a vertical bar at horizontal position x and with length len.
 // init_vbar will be called once before this functions.
 
-void (*init_hbar)	(drvthis);
-// Initializes the LCD to display horizontal bars
-
 void (*hbar)		(drvthis, int x, int y, int len);
 // Draws a horizontal bar at position x,y and with length len.
 // init_hbar will be called once before this functions.
-
-void (*init_num)	(drvthis);
-// Initializes the big number displaying. A big number should have a width
-// of 4 characters, and a spacing of 1 character.
 
 void (*num)		(drvthis, int x, int num);
 // Displays a big number at position x.
