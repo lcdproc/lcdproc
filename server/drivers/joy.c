@@ -8,8 +8,6 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-#define __u32 unsigned int
-#define __u8 unsigned char
 #include <linux/joystick.h>
 
 #include "../../shared/debug.h"
@@ -50,7 +48,7 @@ joy_init (struct lcd_logical_driver *driver, char *args)
 {
 	char device[256];
 	char *argv[64];
-	int argc, i, j;
+	int argc, i;
 
 	joy = driver;
 

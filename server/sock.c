@@ -13,10 +13,10 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-#include "../shared/sockets.h"
+#include "shared/sockets.h"
 #include "sock.h"
 #include "clients.h"
-#include "../shared/debug.h"
+#include "shared/debug.h"
 
 /**************************************************
   LCDproc sockets code...

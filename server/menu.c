@@ -28,7 +28,6 @@
 #include "menu.h"
 
 // FIXME: Implement this where it is supposed to be...
-#include <time.h>
 void
 framedelay ()
 {

@@ -37,7 +37,7 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 {
 	char *argv[64];
 	int argc;
-	int i, j;
+	int i;
 
 	argc = get_args (argv, args, 64);
 

@@ -57,6 +57,6 @@ int glkgetc( GLKDisplay * fd );
 int glkpoll( GLKDisplay * fd, int timeout );
 int glkflow( GLKDisplay * fd, int full, int empty );
 
-static int glkunget( GLKDisplay * fd, int c );
+int glkunget( GLKDisplay * fd, int c );
 
 #endif

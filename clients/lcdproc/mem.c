@@ -34,8 +34,6 @@ static void get_mem_info (struct meminfo *result);
 static void
 get_mem_info (struct meminfo *result)
 {
-//  int i, res; char *bufptr;
-	int pagesize,page;
 
 #ifndef SOLARIS
 	reread (meminfo_fd, "get_meminfo:");

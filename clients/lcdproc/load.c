@@ -4,15 +4,25 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "../../shared/sockets.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
+#if defined( HAVE_GETLOADAVG ) && defined( HAVE_SYS_LOADAVG_H )
+# define USE_GETLOADAVG
+#else
+# undef USE_GETLOADAVG
+#endif
+
+#include "shared/sockets.h"
 #include "main.h"
 #include "mode.h"
 #include "load.h"
 
-#ifdef HAVE_GETLOADAVG
-#include <sys/loadavg.h>
+#ifdef USE_GETLOADAVG
+# include <sys/loadavg.h>
 #endif
+
 
 int loadavg_fd = 0;
 
@@ -22,11 +32,11 @@ static double
 get_loadavg (void)
 {
 	double load;
-#ifdef HAVE_GETLOADAVG
+#ifdef USE_GETLOADAVG
 	double loadavg[LOADAVG_NSTATS];
 #endif
 
-#ifndef HAVE_GETLOADAVG
+#ifndef USE_GETLOADAVG
 	reread (loadavg_fd, "get_load:");
 	sscanf (buffer, "%lf", &load);
 #else
@@ -39,7 +49,7 @@ get_loadavg (void)
 int
 load_init ()
 {
-#ifndef SOLARIS
+#ifndef USE_GETLOADAVG
 	if (!loadavg_fd)
 		loadavg_fd = open ("/proc/loadavg", O_RDONLY);
 #endif
@@ -49,12 +59,11 @@ load_init ()
 int
 load_close ()
 {
-#ifndef SOLARIS
+#ifndef USE_GETLOADAVG
 	if (loadavg_fd)
 		close (loadavg_fd);
 
 	loadavg_fd = 0;
-
 #endif
 	return 0;
 }

@@ -1,13 +1,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
-#include "../shared/debug.h"
+#include "shared/debug.h"
 
 #include "drivers/lcd.h"
 
@@ -152,20 +151,21 @@ no_screen_screen (int timer)
 int
 goodbye_screen ()
 {
-	char
-	*b20 = "                    ", *t20 = "  Thanks for using  ",
+	char *b20 = "                    ";
+	char *t20 = "  Thanks for using  ";
 #ifdef LINUX
-	*l20 = " LCDproc and Linux! ",
+	char *l20 = " LCDproc and Linux! ";
 #else
-	*l20 = "      LCDproc!      ",
+	char *l20 = "      LCDproc!      ";
 #endif
-	*b16 = "                ", *t16 = "Thanks for using",
+
+	char *b16 = "                ";
+	char *t16 = "Thanks for using";
 #ifdef LINUX
-	*l16 = " LCDproc+Linux! ",
+	char *l16 = " LCDproc+Linux! ";
 #else
-	*l16 = "    LCDproc!    ",
+	char *l16 = "    LCDproc!    ";
 #endif
-	*nil = "";
 
 	lcd.clear ();
 

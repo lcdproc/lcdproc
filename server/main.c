@@ -70,10 +70,9 @@ main (int argc, char **argv)
 {
 	// TODO:  Use a config file!
 	//char cfgfile[256] = "/etc/LCDd.cf";
-	int i, err, tmp;
+	int i, err;
 	int daemon_mode = 1;
 	int disable_server_screen = 1;
-	int child;
 	screen *s = NULL;
 	char *str, *ing;				  // strings for commandline handling
 //   screen_size *size = &sizes[0]; // No longer needed
@@ -100,6 +99,7 @@ main (int argc, char **argv)
 	// Now, go into daemon mode...
 #ifndef DEBUG
 	if (daemon_mode) {
+		int child;
 		if ((child = fork ()) != 0) {
 			usleep (1500000);		  // Wait for child to initialize
 			exit (0);				  /* PARENT EXITS */

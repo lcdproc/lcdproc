@@ -37,6 +37,9 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/perm.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 // Uncomment one of the lines below to select your desired delay generation
 // mechanism.  If both defines are commented, the original I/O read timing
@@ -45,13 +48,22 @@
 #define DELAY_NANOSLEEP
 
 #if defined DELAY_GETTIMEOFDAY
-#include <sys/time.h>
-#include <unistd.h>
+# if TIME_WITH_SYS_TIME
+#  include <sys/time.h>
+#  include <time.h>
+# else
+#  if HAVE_SYS_TIME_H
+#   include <sys/time.h>
+#  else
+#   include <time.h>
+#  endif
+# endif
+
 // Only one alternate delay method at a time, please ;-)
-#undef DELAY_NANOSLEEP
+# undef DELAY_NANOSLEEP
 #elif defined DELAY_NANOSLEEP
-#include <sched.h>
-#include <time.h>
+# include <sched.h>
+# include <time.h>
 #endif
 
 #include "../../shared/str.h"
@@ -178,7 +190,6 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 			connIdx = j;
 			++i;
 		} else if (0 == strcmp (argv[i], "-v") || 0 == strcmp (argv[i], "--vspan")) {
-			int j = 0;
 			if (i + 1 >= argc) {
 				fprintf (stderr, "HD44780_init: %s requires an argument\n", argv[i]);
 				return -1;
@@ -810,7 +821,7 @@ parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dO
 				for (++j; spanlist[j] < '1' || spanlist[j] > '9'; ++j);
 			} else {
 				fprintf (stderr, "Error reallocing for span list\n");
-				retVal - 1;
+				retVal = -1;
 			}
 		} else {
 			fprintf (stderr, "Error reading spansize\n");

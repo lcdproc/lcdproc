@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/time.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>

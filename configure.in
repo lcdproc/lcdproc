@@ -27,7 +27,7 @@ if test $debug = "yes"; then
 else
 	CFLAGS="-Wno-unused -O6"
 fi
-CFLAGS="-Wall -Wp,-lang-c-c++-comments $CFLAGS"
+CFLAGS="-Wall $CFLAGS"
 export CFLAGS
 
 dnl Checks for programs.
@@ -48,7 +48,7 @@ AC_CHECK_FUNC(connect,,[AC_CHECK_LIB(socket,connect)])
 AC_CHECK_FUNC(inet_aton,,[AC_CHECK_LIB(resolv,inet_aton)])
 AC_CHECK_LIB(kstat, kstat_open)
 AC_CHECK_FUNCS(getloadavg swapctl)
-AC_CHECK_HEADERS(procfs.h sys/procfs.h, break)
+AC_CHECK_HEADERS(procfs.h sys/procfs.h sys/loadavg.h)
 
 dnl Some versions of Solaris require -lelf for -lkvm
 AC_CHECK_LIB(kvm, kvm_open,[

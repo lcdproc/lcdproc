@@ -6,17 +6,20 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#ifdef IRIX
-#include <strings.h>
-#endif
 #include <fcntl.h>
 #include <unistd.h>
-#include <time.h>
-#include <sys/time.h>
 #include <sys/utsname.h>
 
-#include "../../shared/sockets.h"
+#include <string.h>
+#if defined( IRIX ) || defined( SOLARIS )
+# include <strings.h>
+#endif
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "shared/sockets.h"
 
 #include "mode.h"
 #include "main.h"
@@ -28,10 +31,6 @@
 #include "disk.h"
 #include "load.h"
 #include "mem.h"
-
-#ifdef SOLARIS
-#include <strings.h>
-#endif
 
 int ELLIPSIS = '-';
 

@@ -2,7 +2,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
-#include <sys/time.h>
 #include <termios.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -15,8 +14,8 @@
 
 #include "main.h"
 #include "mode.h"
-#include "../../shared/sockets.h"
-#include "../../shared/debug.h"
+#include "shared/sockets.h"
+#include "shared/debug.h"
 
 // TODO: Commenting...  Everything!
 
