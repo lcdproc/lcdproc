@@ -58,7 +58,7 @@ sleep 1;        # Give server plenty of time to notice us...
 
 print $remote "hello\n";
 my $lcdconnect = <$remote>;
-#print $lcdconnect;
+print $lcdconnect;
 
 
 # Turn off blocking mode...
@@ -74,16 +74,34 @@ print $remote "widget_add metar temp string\n";
 print $remote "widget_add metar cloud string\n";
 print $remote "widget_add metar wind string\n";
 
-
+# set metar source
 
 my $ua = new LWP::UserAgent;
 
 my $req = new HTTP::Request GET =>
   "http://weather.noaa.gov/cgi-bin/mgetmetar.pl?cccc=$site_code";
 
+# fork data collector from socket handling
+
+$kidpid = fork();
+
+# Parent 
+if ($kidpid) {
+
+while (1==1) {
+	# read socket
+	my $lcdconnect = <$remote>;
+}
+
+# child
+
+} else
+{
+
+# fetch weather information
 while (1==1) {
 
-	my $lcdconnect = <$remote>;
+	print "Fetching weather information\n";
 	my $response = $ua->request($req);
 
 	if (!$response->is_success) {
@@ -128,16 +146,13 @@ while (1==1) {
 	    print $remote "widget_set metar cloud 1 4 {Sky " . join(',', @{$m->{sky}}) . "}\n";
             # print "The temperature at $site_code is $c_temp C as of $time.\n";
 	    # print "The wind blows to $wind_dir_eng, speed $wind_mph mph\n";
-	$lcdconnect = <$remote>;
 
 	} # end else
-	for ( $i=1 ; $i < 600 ; $i++ ) {
-		$lcdconnect = <$remote>;
-		# printf "sleeping 1 second";
-#		sleep 1;
-	}
-#	sleep 600;
+	print "Sleeping 15 minutes.\n";
+	sleep 900;
 }
+}
+
 close($remote);
 exit;
 
