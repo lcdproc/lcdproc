@@ -72,7 +72,6 @@ void shiftreg (unsigned char displayID, unsigned char r);
 #define EN2      32
 
 static unsigned int lptPort;
-static char keypad;
 static char stuckinputs = 0;	      // if an input line is stuck, it will be ignored
 
 static char lastkey = 0;		  // currently not in use, old keypad code
@@ -92,7 +91,7 @@ hd_init_serialLpt (HD44780_functions * hd44780_functions, lcd_logical_driver * d
 	hd44780_functions->senddata = lcdserLpt_HD44780_senddata;
 	hd44780_functions->readkeypad = lcdserLpt_HD44780_readkeypad;
 
-	if (keypad) {
+	if (have_keypad) {
 		driver->getkey = lcdserLpt_HD44780_getkey;
 	}
 	// Clear the shiftregister

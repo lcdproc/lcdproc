@@ -452,7 +452,7 @@ lcd_add_driver (char *driver, char *args)
 		if ((add = lcd_allocate_driver()) == NULL)
 			return -1;
 
-		memset (add, 0, sizeof (add));
+		memset (add, 0, sizeof (lcd_logical_driver));
 
 		// Default settings for the driver...
 		lcd_drv_init(add, NULL);

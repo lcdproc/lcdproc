@@ -16,7 +16,7 @@
 #ifndef HD44780_H
 #define HD44780_H
 
-extern char keypad;		   // non-zero if the keypad code is activated
+extern char have_keypad;	   // non-zero if the keypad code is activated
 
 int HD44780_init (struct lcd_logical_driver *driver, char *args);
 /* The following methods can all be hidden. They are used through function ptrs

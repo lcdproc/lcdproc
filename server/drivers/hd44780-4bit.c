@@ -158,7 +158,7 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 
 	common_init ();
 
-	if (keypad) {
+	if (have_keypad) {
 		// Remember which input lines are stuck
 		stuckinputs = lcdstat_HD44780_readkeypad (0);
 	}

@@ -48,6 +48,8 @@
 #endif
 #include "port.h"
 
+#define atest(i)
+
 // Uncomment one of the lines below to select your desired delay generation
 // mechanism.  If both defines are commented, the original I/O read timing
 // loop is used.  Using DELAY_NANOSLEEP  seems to provide the best performance.
@@ -111,7 +113,7 @@ static int numDisplays = 0;
 static int *dispSizes = NULL;
 
 // Keypad option
-char keypad = 0;	 // off by default
+char have_keypad = 0;	 // off by default
 			 // This var is not static, so it's accessable from all sub-drivers
 			 // Indeed, this should become cleaner...  later...
 
@@ -246,7 +248,7 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 			}
 			++i;
 		} else if (strcmp (argv[i], "-k") == 0 || strcmp (argv[i], "--keypad") == 0) {
-			keypad = 1;
+			have_keypad = 1;
 			printf( "HD44780 keypad extension enabled\n" );
 
 		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
@@ -303,6 +305,9 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 		}
 	}
 #endif
+
+	atest( port );
+
 	// Make sure the frame buffer is there...
 	if (!HD44780->framebuf)
 		HD44780->framebuf = (unsigned char *) malloc (HD44780->wid * HD44780->hgt);
@@ -315,7 +320,7 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	// These are the default HD44780 functions
 	driver->clear = (void *) -1;
 	driver->string = (void *) -1;
-	driver->chr = (void *) -1;
+	driver->chr = HD44780_chr;
 	driver->vbar = HD44780_vbar;
 	driver->init_vbar = HD44780_init_vbar;
 	driver->hbar = HD44780_hbar;
@@ -333,7 +338,7 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	driver->icon = HD44780_icon;
 	driver->draw_frame = HD44780_draw_frame;
 
-	if( keypad ) {
+	if( have_keypad ) {
 		driver->getkey = HD44780_getkey;
 	}
 
