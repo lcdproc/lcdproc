@@ -249,8 +249,8 @@ void uPause (int usecs);
 void sed1330_command( PrivateData * p, char command, int datacount, char * data );
 void sed1330_update_cursor( PrivateData * p );
 void sed1330_rect( PrivateData * p, int x1, int y1, int x2, int y2, char pattern );
-inline void sed1330_set_pixel( PrivateData * p, int x, int y );
-inline void sed1330_clear_pixel( PrivateData * p, int x, int y );
+void sed1330_line ( PrivateData * p, int x1, int y1, int x2, int y2, char pattern );
+inline void sed1330_set_pixel( PrivateData * p, int x, int y, int value );
 
 
 /////////////////////////////////////////////////////////////////
@@ -703,7 +703,7 @@ sed1330_backlight( Driver * drvthis, int on )
 //
 void
 sed1330_rect ( PrivateData * p, int x1, int y1, int x2, int y2, char pattern )
-// pattern: 0=empty 1=filled     later more patterns ?
+/* pattern: 0=clear 1=set     later more patterns ? */
 {
 	int x, y;
 
@@ -722,7 +722,7 @@ sed1330_rect ( PrivateData * p, int x1, int y1, int x2, int y2, char pattern )
 	}
 	for( x=x1; x<=x2; x++ ) {
 		for( y=y1; y<=y2; y++ ) {
-			sed1330_set_pixel( p, x, y );
+			sed1330_set_pixel( p, x, y, pattern );
 		}
 	}
 }
@@ -734,49 +734,48 @@ sed1330_rect ( PrivateData * p, int x1, int y1, int x2, int y2, char pattern )
 //
 void
 sed1330_line ( PrivateData * p, int x1, int y1, int x2, int y2, char pattern )
-// pattern: 0=empty 1=filled     later more patterns ?
+/* pattern: 0=clear 1=set     later more patterns ? */
 {
 	int x, y;
+	int more_x;
 
-	// Swap coordinates if needed
+	/* Swap coordinates if needed. We want to draw the line from left
+	 * to right.
+	 */
 	if( x1>x2 ) {
 		int swap;
-		swap=x1;
-		x1=x2;
-		x2=swap;
+		swap=x1; x1=x2; x2=swap;
+		swap=y1; y1=y2; y2=swap;
 	}
-	if( y1>y2 ) {
-		int swap;
-		swap=y1;
-		y1=y2;
-		y2=swap;
-	}
-	// Do we have an angle of more or less than 45 degrees ?
-	if( x2-x1 >= y2-y1 ) {
-		// Mostly horizontal
-		for( x=x1; x<=x2; x++ ) {
-			y = x * (y2-y1) / (x2-x1);
-			switch( pattern ) {
-			  case 0:
-				sed1330_clear_pixel( p, x, y );
-				break;
-			  case 1:
-				sed1330_set_pixel( p, x, y );
-				break;
+
+	/* Draw from left to right... */
+	more_x = 1;
+	for( x=x1, y=y1; x<=x2; x++ ) {
+
+		int more_y = 1; /* always draw one pixel */
+		while( more_y ) {
+			/* set the pixel */
+			sed1330_set_pixel( p, x, y, pattern );
+
+			/* Check what we need to do next */
+			if( y1 < y2 ) {
+				more_y = (y<=y2);
+				if( x1 != x2 ) {
+					more_y &= ((float)y+0.5-y1) < ((float) x+0.5-x1) * (y2-y1) / ((float) x2-x1)  ;
+				}
+			} else {
+				more_y = (y>=y2);
+				if( x1 != x2 ) {
+					more_y &= ((float)y+0.5-y1) > ((float) x+0.5-x1) * (y2-y1) / ((float) x2-x1)  ;
+				}
 			}
-		}
-	}
-	else {
-		// Mostly vertical
-		for( y=y1; y<=y2; y++ ) {
-			x = y * (x2-x1) / (y2-y1) ;
-			switch( pattern ) {
-			  case 0:
-				sed1330_clear_pixel( p, x, y );
-				break;
-			  case 1:
-				sed1330_set_pixel( p, x, y );
-				break;
+			/* Increment y if we should draw a other pixel for this x value */
+			if( more_y ) {
+				if( y1 < y2 ) {
+					y ++;
+				} else {
+					y --;
+				}
 			}
 		}
 	}
@@ -788,32 +787,20 @@ sed1330_line ( PrivateData * p, int x1, int y1, int x2, int y2, char pattern )
 // INTERNAL
 //
 inline void
-sed1330_set_pixel( PrivateData * p, int x, int y )
-// x, y are graph LCD coordinates, 0-based
+sed1330_set_pixel( PrivateData * p, int x, int y, int value )
+/* x, y are graph LCD coordinates, 0-based */
+/* value: 0=clear 1=set */
 {
 	unsigned int bytepos;
 	char bitmask;
 
 	bytepos = y*p->bytesperline + x/PIXELSPERBYTE;
 	bitmask = 0x80 >> (x % PIXELSPERBYTE);
-	p->framebuf_graph[bytepos] |= bitmask;
-}
-
-
-/////////////////////////////////////////////////////////////////
-// clears a specified pixel
-// INTERNAL
-//
-inline void
-sed1330_clear_pixel( PrivateData * p, int x, int y )
-// x, y are graph LCD coordinates, 0-based
-{
-	int bytepos;
-	char bitmask;
-
-	bytepos = y*p->bytesperline + x/PIXELSPERBYTE;
-	bitmask = 0x80 >> (x % PIXELSPERBYTE);
-	p->framebuf_graph[bytepos] &= ~bitmask;
+	if( value ) {
+		p->framebuf_graph[bytepos] |= bitmask; /* set it */
+	} else {
+		p->framebuf_graph[bytepos] &= ~bitmask; /* clear it */
+	}
 }
 
 
@@ -827,7 +814,7 @@ sed1330_vbar( Driver * drvthis, int x, int y, int len, int promille, int pattern
 
 	debug( RPT_INFO, "sed1330_hbar x=%d len=%d", x, len );
 
-	sed1330_rect ( p, (x-1) * CHARWIDTH, y * CHARHEIGHT - CHARHEIGHT/2, x * CHARWIDTH - 1, y * CHARHEIGHT - CHARHEIGHT/2 + (long) len * CHARHEIGHT * promille / 1000 - 1, 1 );
+	sed1330_rect ( p, (x-1) * CHARWIDTH, y * CHARHEIGHT, x * CHARWIDTH - 1, y * CHARHEIGHT - (long) len * CHARHEIGHT * promille / 1000 - 1, 1 );
 }
 
 
@@ -842,7 +829,7 @@ sed1330_hbar( Driver * drvthis, int x, int y, int len, int promille, int pattern
 
 	debug( RPT_INFO, "sed1330_hbar x=%d y=%d len=%d", x, y, len );
 
-	sed1330_rect ( p, x * CHARWIDTH, (y-1) * CHARHEIGHT, x * CHARWIDTH  - CHARWIDTH/2 + (long) len * CHARWIDTH * promille / 1000 - 1, y * CHARHEIGHT - 1, 1 );
+	sed1330_rect ( p, x * CHARWIDTH, (y-1) * CHARHEIGHT, x * CHARWIDTH + (long) len * CHARWIDTH * promille / 1000 - 1, y * CHARHEIGHT - 1, 1 );
 }
 
 
