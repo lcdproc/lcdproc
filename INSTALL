@@ -19,10 +19,14 @@ different types of displays are now supported.
 
 3. BUILDING LCDPROC
 
-As long as you have a working gcc and make, this should work.
+As long as you have a working automake, gcc and make, this should work.
 
- - Run the configure script from the distribution: ./configure
- - Run "make"
+ - Run the autogen.sh script to create ./configure
+        sh autogen.sh
+ - Run the configure script:
+        ./configure
+ - Run make to build the server and all clients
+        make
 
 LCDproc will build in (hopefully) a few seconds. It's not very big. If
 you want, you can install it (if you're root) by typing:
@@ -36,7 +40,7 @@ to allow all users to write to the port (so users can run LCDproc).
 If you _don't_ want to allow this, change the permissions back after
 installing LCDproc. :)
 
-[change this crap]
+[change this stuff]
 
 4. RUNNING LCDPROC / MANUAL INSTALL
 
