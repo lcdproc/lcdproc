@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <syslog.h>
 
 #include "lcd.h"
 #include "debug.h"
@@ -16,23 +17,21 @@
 // TODO: somehow allow access to the driver->framebuffer to each
 // function...
 
+static lcd_logical_driver *debug_drv;
+
 int
 debug_init (struct lcd_logical_driver *driver, char *args)
 {
-	printf ("debug_init(%s)\n", device);
+	syslog(LOG_DEBUG, "debug_init");
 
-	if (!driver->framebuf) {
-		printf ("Allocating frame buffer (%ix%i)\n", lcd.wid, lcd.hgt);
-		driver->framebuf = malloc (lcd.wid * lcd.hgt);
-	}
-
-	if (!driver->framebuf) {
-		debug_close ();
-		return -1;
-	}
+	debug_drv = driver;
 
 	if (driver->framebuf)
-		printf ("Frame buffer: %i\n", (int) driver->framebuf);
+		syslog(LOG_INFO, "frame buffer at: %010X", (int) driver->framebuf);
+	else {
+		syslog(LOG_ERR, "no frame buffer!");
+		return -1;
+	}
 
 	debug_clear ();
 
@@ -64,18 +63,14 @@ debug_init (struct lcd_logical_driver *driver, char *args)
 void
 debug_close ()
 {
-// Ack!  This shouldn't crash the program, but does..  Why??
+	syslog(LOG_DEBUG, "debug_close()");
 
-	printf ("debug_close()\n");
+	if (debug_drv->framebuf) {
+		printf ("frame buffer: %010X", (int) debug_drv->framebuf);
+		free (debug_drv->framebuf);
+		}
 
-// This is the line which crashes.
-	if (driver->framebuf)
-		free (driver->framebuf);
-
-	if (driver->framebuf)
-		printf ("Frame buffer: %i\n", (int) driver->framebuf);
-	driver->framebuf = NULL;
-//  printf("debug_close() finished\n");
+	debug_drv->framebuf = NULL;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -84,9 +79,9 @@ debug_close ()
 void
 debug_clear ()
 {
-	printf ("clear()\n");
+	syslog(LOG_DEBUG, "clear()");
 
-	memset (driver->framebuf, ' ', lcd.wid * lcd.hgt);
+	memset (debug_drv->framebuf, ' ', lcd.wid * lcd.hgt);
 
 }
 
@@ -96,7 +91,7 @@ debug_clear ()
 void
 debug_flush ()
 {
-	printf ("flush()\n");
+	syslog(LOG_DEBUG, "flush()");
 
 	lcd.draw_frame ();
 }
@@ -110,14 +105,15 @@ debug_string (int x, int y, char string[])
 {
 
 	int i;
+	char buf[64];
 
-	printf ("string(%i, %i):%s \n", x, y, string);
+	snprintf(buf, sizeof(buf), "string(%i,%i): %s", x, y, string);
+	syslog (LOG_DEBUG, buf);
 
-	x -= 1;							  // Convert 1-based coords to 0-based...
-	y -= 1;
+	y --; x --;  // Convert 1-based coords to 0-based...
 
 	for (i = 0; string[i]; i++) {
-		driver->framebuf[(y * lcd.wid) + x + i] = string[i];
+		debug_drv->framebuf[(y * lcd.wid) + x + i] = string[i];
 	}
 }
 
@@ -128,58 +124,62 @@ debug_string (int x, int y, char string[])
 void
 debug_chr (int x, int y, char c)
 {
-	printf ("character(%i, %i):%c\n", x, y, c);
+	char buf[64];
 
-	y--;
-	x--;
+	snprintf(buf, sizeof(buf), "character(%i,%i): %c", x, y, c);
+	syslog (LOG_DEBUG, buf);
 
+	x--; y--;
 	lcd.framebuf[(y * lcd.wid) + x] = c;
 }
 
-void
+int
 debug_contrast (int contrast)
 {
-	printf ("Contrast: %i\n", contrast);
+	syslog(LOG_DEBUG, "contrast: %i", contrast);
+	return 0;
 }
 
 void
 debug_backlight (int on)
 {
-	if (on) {
-		printf ("Backlight ON\n");
-	} else {
-		printf ("Backlight OFF\n");
-	}
+	if (on)
+		syslog(LOG_DEBUG, "backlight turned on");
+	else
+		syslog(LOG_DEBUG, "backlight turned off");
 }
 
 void
 debug_init_vbar ()
 {
-	printf ("Vertical bars.\n");
+	syslog(LOG_DEBUG, "Init vertical bars");
 }
 
 void
 debug_init_hbar ()
 {
-	printf ("Horizontal bars.\n");
+	syslog(LOG_DEBUG, "Init horizontal bars");
 }
 
 void
 debug_init_num ()
 {
-	printf ("Big Numbers.\n");
+	syslog(LOG_DEBUG, "Big numbers");
 }
 
 void
 debug_num (int x, int num)
 {
-	printf ("BigNum(%i, %i)\n", x, num);
+	char buf[64];
+
+	snprintf(buf, sizeof(buf), "big number(%i): %i", x, num);
+	syslog (LOG_DEBUG, buf);
 }
 
 void
 debug_set_char (int n, char *dat)
 {
-	printf ("Set Character %i\n", n);
+	syslog(LOG_DEBUG, "set character %i", n);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -190,7 +190,7 @@ debug_vbar (int x, int len)
 {
 	int y;
 
-	printf ("Vbar(%i, %i)\n", x, len);
+	syslog (LOG_DEBUG, "vbar(%i): len = %i", x, len);
 
 	for (y = lcd.hgt; y > 0 && len > 0; y--) {
 		debug_chr (x, y, '|');
@@ -206,7 +206,7 @@ debug_vbar (int x, int len)
 void
 debug_hbar (int x, int y, int len)
 {
-	printf ("Hbar(%i, %i, %i)\n", x, y, len);
+	syslog(LOG_DEBUG, "hbar(%i,%i): len = %i", x, y, len);
 
 	for (; x < lcd.wid && len > 0; x++) {
 		debug_chr (x, y, '-');
@@ -222,16 +222,15 @@ debug_hbar (int x, int y, int len)
 void
 debug_icon (int which, char dest)
 {
-	printf ("Char %i is icon %i\n", dest, which);
+	syslog (LOG_DEBUG, "char %i = icon %i", dest, which);
 }
 
 void
 debug_flush_box (int lft, int top, int rgt, int bot)
 {
-	printf ("Flush Box(%i, %i)-(%i, %i)\n", lft, top, rgt, bot);
+	syslog (LOG_DEBUG, "flush_box(%i,%i) - (%i,%i)", lft, top, rgt, bot);
 
 	debug_flush ();
-
 }
 
 void
@@ -241,7 +240,7 @@ debug_draw_frame (char *dat)
 
 	char out[LCD_MAX_WIDTH];
 
-	printf ("draw_frame()\n");
+	syslog (LOG_DEBUG, "draw_frame()");
 
 	if (!dat)
 		return;
@@ -252,14 +251,14 @@ debug_draw_frame (char *dat)
 		out[i] = '-';
 	}
 	out[lcd.wid] = 0;
-	printf ("+%s+\n", out);
+	//printf ("+%s+\n", out);
 
 	for (i = 0; i < lcd.hgt; i++) {
 		for (j = 0; j < lcd.wid; j++) {
 			out[j] = dat[j + (i * lcd.wid)];
 		}
 		out[lcd.wid] = 0;
-		printf ("|%s|\n", out);
+		//printf ("|%s|\n", out);
 
 	}
 
@@ -267,13 +266,13 @@ debug_draw_frame (char *dat)
 		out[i] = '-';
 	}
 	out[lcd.wid] = 0;
-	printf ("+%s+\n", out);
+	//printf ("+%s+\n", out);
 
 }
 
 char
 debug_getkey ()
 {
-	printf ("Trying to grab keypress.\n");
+	syslog(LOG_DEBUG, "getkey");
 	return 0;
 }

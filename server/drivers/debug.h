@@ -7,7 +7,7 @@ void debug_clear ();
 void debug_flush ();
 void debug_string (int x, int y, char string[]);
 void debug_chr (int x, int y, char c);
-void debug_contrast (int contrast);
+int debug_contrast (int contrast);
 void debug_backlight (int on);
 void debug_init_vbar ();
 void debug_init_hbar ();
