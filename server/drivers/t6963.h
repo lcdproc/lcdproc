@@ -134,7 +134,7 @@ void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
 void t6963_set_nchar (Driver *drvthis, int n, char *dat, int num);
 
 void t6963_low_set_control(char wr, char ce, char cd, char rd);
-int  t6963_low_dsp_ready(void);
+void t6963_low_dsp_ready(void);
 
 void t6963_low_data(u8 byte);
 void t6963_low_command (u8 byte);
