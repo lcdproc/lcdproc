@@ -109,6 +109,8 @@ AC_DEFINE_UNQUOTED(LCDPORT, $LCDPORT)
 
 AC_DEFINE_UNQUOTED(PROTOCOL_VERSION, "0.3")
 
+AC_DEFINE_UNQUOTED(API_VERSION, "0.4")
+
 
 AC_ARG_WITH(loadmax,
   [  --with-loadmax=<load>   Max Load Avg at which the backlight will]

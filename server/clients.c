@@ -15,12 +15,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <syslog.h>
 
 #include "sock.h"
 #include "clients.h"
 #include "client_data.h"
-#include "shared/debug.h"
+#include "shared/report.h"
 #include "render.h"
 
 LinkedList *clients;
@@ -29,11 +28,11 @@ LinkedList *clients;
 int
 client_init ()
 {
-	debug ("client_init()\n");
+	debug(RPT_INFO, "client_init()");
 
 	clients = LL_new ();
 	if (!clients) {
-		fprintf (stderr, "client_init:  Unable to create client list\n");
+		report( RPT_ERR, "client_init:  Unable to create client list");
 		return -1;
 	}
 
@@ -45,29 +44,29 @@ client_shutdown ()
 {
 	client *c;
 
-	debug ("client_shutdown()\n");
+	debug (RPT_INFO, "client_shutdown()");
 
 	// Free all client structures...
 	// Note that the regular list loop doesn't work here, because
 	// client_destroy() calls LL_Remove()
 	for (c = LL_Pop (clients); c; c = LL_Pop (clients)) {
-		debug ("client_shutdown: ...\n");
+		debug (RPT_DEBUG, "client_shutdown: ...");
 		if (c) {
-			debug ("client_shutdown: ... %i ...\n", c->sock);
+			debug (RPT_DEBUG, "client_shutdown: ... %i ...", c->sock);
 			if (client_destroy (c) != 0) {
-				fprintf (stderr, "client_shutdown: Error freeing client\n");
+				report (RPT_ERR, "client_shutdown: Error freeing client");
 			} else {
-				debug ("client_shutdown: Freed client...\n");
+				debug (RPT_DEBUG, "client_shutdown: Freed client...");
 			}
 		} else {
-			debug ("client_shutdown: No client!\n");
+			debug (RPT_DEBUG, "client_shutdown: No client!");
 		}
 	}
 
 	// Then, free the list...
 	LL_Destroy (clients);
 
-	debug ("client_shutdown: done\n");
+	debug (RPT_DEBUG, "client_shutdown: done");
 
 	return 0;
 }
@@ -81,12 +80,12 @@ client_create (int sock)
 {
 	client *c;
 
-	debug ("client_create(%i)\n", sock);
+	debug (RPT_DEBUG, "client_create(%i)", sock);
 
 	// Allocate new client...
 	c = malloc (sizeof (client));
 	if (!c) {
-		fprintf (stderr, "client_create: error allocating new client\n");
+		report (RPT_ERR, "client_create: error allocating new client");
 		return NULL;
 	}
 	// Init struct members
@@ -100,14 +99,14 @@ client_create (int sock)
 	// Set up message list...
 	c->messages = LL_new ();
 	if (!c->messages) {
-		fprintf (stderr, "client_create: error allocating message list\n");
+		report (RPT_ERR, "client_create: error allocating message list");
 		free (c);
 		return NULL;
 	}
 	// TODO:  allocate and init client data...
 	c->data = malloc (sizeof (client_data));
 	if (!c->data) {
-		fprintf (stderr, "client_create: error allocating client data\n");
+		report (RPT_ERR, "client_create: error allocating client data");
 		free (c->messages);
 		free (c);
 		return NULL;
@@ -127,16 +126,16 @@ client_destroy (client * c)
 
 	char *str;
 
-	debug ("client_destroy()\n");
+	debug (RPT_INFO, "client_destroy()");
 
 	if (!c)
 		return -1;
 
 	// Eat the rest of the incoming requests...
-	debug ("client_destroy: get_messages\n");
+	debug (RPT_DEBUG, "client_destroy: get_messages");
 	while ((str = client_get_message (c))) {
 		if (str) {
-			debug ("client_destroy: kill message %s\n", str);
+			debug (RPT_DEBUG, "client_destroy: kill message %s", str);
 			free (str);
 		}
 	}
@@ -145,7 +144,7 @@ client_destroy (client * c)
 	if (c->sock) {
 		// sock_send_string (c->sock, "bye\n");
 		close(c->sock);
-		syslog(LOG_NOTICE, "closed socket for #%d\n", c->sock);
+		report(RPT_NOTICE, "closed socket for #%d", c->sock);
 	}
 
 	err = LL_Destroy (c->messages);
@@ -171,7 +170,7 @@ client_add_message (client * c, char *message)
 	char delimiters[] = "\n\r\0";
 //   int len;
 
-	//debug("client_add_message(%s)\n", message);
+	debug(RPT_DEBUG, "client_add_message(%s)", message);
 
 	if (!c)
 		return -1;
@@ -184,17 +183,17 @@ client_add_message (client * c, char *message)
 	// Copy the string to avoid overwriting the original...
 	dup = strdup (message);
 	if (!dup) {
-		fprintf (stderr, "client_add_message: Error allocating new string\n");
+		report(RPT_ERR, "client_add_message: Error allocating new string");
 		return -1;
 	}
 	// Now split the string into lines and enqueue each one...
 	for (str = strtok (dup, delimiters); str; str = strtok (NULL, delimiters)) {
 		cp = strdup (str);
-		debug ("client_add_message: %s\n", cp);
+		debug (RPT_DEBUG, "client_add_message: %s", cp);
 		err += LL_Enqueue (c->messages, (void *) cp);
 	}
 
-	//debug("client_add_message(%s): %i errors\n", message, err);
+	//debug(RPT_DEBUG, "client_add_message(%s): %i errors", message, err);
 	free (dup);						  // Fixed memory leak...
 
 	// Err is the number of errors encountered...
@@ -208,14 +207,14 @@ client_get_message (client * c)
 {
 	char *str;
 
-	//debug("client_get_message()\n");
+	debug(RPT_DEBUG, "client_get_message()");
 
 	if (!c)
 		return NULL;
 
 	str = (char *) LL_Dequeue (c->messages);
 
-	//debug("client_get_message:  \"%s\"\n", str);
+	//debug(RPT_DEBUG, "client_get_message:  \"%s\"", str);
 
 	return str;
 }
@@ -241,19 +240,19 @@ client_find_sock (int sock)
 {
 	client *c;
 
-//   debug("client_find_sock(%i)\n", sock);
+//   debug(RPT_INFO, "client_find_sock(%i)", sock);
 
 	LL_Rewind (clients);
 	do {
 		c = (client *) LL_Get (clients);
-//      debug("client_find_sock: ... %i ...\n", c->sock);
+//      debug(RPT_DEBUG, "client_find_sock: ... %i ...", c->sock);
 		if (c->sock == sock) {
-//       debug("client_find_sock: ..! %i !..\n", c->sock);
+//       debug(RPT_DEBUG, "client_find_sock: ..! %i !..", c->sock);
 			return c;
 		}
 	} while (LL_Next (clients) == 0);
 
-	debug ("client_find_sock: failed\n");
+	debug (RPT_ERR, "client_find_sock: failed");
 
 	return NULL;
 }

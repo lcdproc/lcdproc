@@ -1,12 +1,12 @@
 /*
   client_functions.c
-  
+
   This contains definitions for all the functions which clients can run.
   The functions here are to be called only from parse.c's interpreter.
-  
+
   The client's available function set is defined here, as is the syntax
   for each command.
-  
+
 */
 
 #include <unistd.h>
@@ -15,9 +15,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <syslog.h>
 
-#include "shared/debug.h"
+#include "shared/report.h"
 #include "shared/sockets.h"
 
 #include "drivers/lcd.h"
@@ -83,7 +82,7 @@ test_func_func (client * c, int argc, char **argv)
 
 	for (i = 0; i < argc; i++) {
 		snprintf (str, sizeof(str), "test_func_func:  %i -> %s\n", i, argv[i]);
-		printf (str);
+		report (RPT_INFO, str);
 		sock_send_string (c->sock, str);
 	}
 	return 0;
@@ -107,7 +106,7 @@ hello_func (client * c, int argc, char **argv)
 		sock_send_string (c->sock, "huh? extra parameters ignored\n");
 	}
 
-	debug ("Hello!\n");
+	debug(RPT_INFO, "Hello!");
 
 	memset(str, '\0', sizeof(str));
 	snprintf (str, sizeof(str), "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
@@ -178,9 +177,7 @@ client_set_func (client * c, int argc, char **argv)
 			} else {
 				strncpy(str, argv[i], sizeof(str) - 1);
 
-				debug ("client_set: name=\"%s\"\n", argv[i]);
-
-				syslog(LOG_INFO, "client set name to %s", str);
+				debug(RPT_DEBUG, "client_set: name=\"%s\"", argv[i]);
 
 				// set the name...
 				if (c->data->name)
@@ -229,7 +226,7 @@ client_add_key_func (client * c, int argc, char **argv)
 	}
 
 	keys = argv[1];
-	debug ("client_add_key: current client will handle key(s) %s\n", keys);
+	debug(RPT_DEBUG, "client_add_key: current client will handle key(s) %s", keys);
 
 	if (!c->data->client_keys) {
 		// No keys list, create a new one
@@ -287,7 +284,7 @@ client_del_key_func (client * c, int argc, char **argv)
 	}
 
 	keys = argv[1] ;
-	debug ("client_del_key: Deleting key(s) %s from client_keys\n", keys);
+	debug(RPT_DEBUG, "client_del_key: Deleting key(s) %s from client_keys", keys);
 
 	if (c->data->client_keys) {
 		// Client has keys, remove keys from the list
@@ -350,7 +347,7 @@ screen_add_key_func (client * c, int argc, char **argv)
 
 	id = argv[1];
 	keys = argv[2];
-	debug ("screen_add_key: Adding key(s) %s to screen %s\n", keys, id);
+	debug(RPT_DEBUG, "screen_add_key: Adding key(s) %s to screen %s", keys, id);
 
 	// Find the screen
 	s = screen_find (c, id);
@@ -422,7 +419,7 @@ screen_del_key_func (client * c, int argc, char **argv)
 
 	id = argv[1] ;
 	keys = argv[2] ;
-	debug ("screen_del_key: Deleting key(s) %s from screen %s\n", keys, id);
+	debug(RPT_DEBUG, "screen_del_key: Deleting key(s) %s from screen %s", keys, id);
 
 	// Find the screen
 	s = screen_find (c, id);
@@ -487,7 +484,7 @@ screen_add_func (client * c, int argc, char **argv)
 		return 0;
 	}
 
-	debug ("screen_add: Adding screen %s\n", argv[1]);
+	debug(RPT_DEBUG, "screen_add: Adding screen %s", argv[1]);
 
 	memset(scr, '\0', sizeof(scr));
 	strncpy(scr, argv[1], sizeof(scr) - 1);
@@ -496,12 +493,12 @@ screen_add_func (client * c, int argc, char **argv)
 	if (err == 0)
 		sock_send_string(c->sock, "success\n");
 	else if (err < 0) {
-		fprintf (stderr, "screen_add_func:  Error adding screen\n");
+		report(RPT_WARNING, "screen_add_func:  Error adding screen");
 		sock_send_string (c->sock, "huh? failed to add screen id#\n");
 	} else
 		sock_send_string (c->sock, "huh? You already have a screen with that id#\n");
 
-	syslog(LOG_NOTICE, "added a screen (%s) to the display", scr);
+	report(RPT_NOTICE, "added a screen (%s) to the display", scr);
 	return 0;
 }
 
@@ -527,7 +524,7 @@ screen_del_func (client * c, int argc, char **argv)
 		return 0;
 	}
 
-	debug ("screen_del: Deleting screen %s\n", argv[1]);
+	debug (RPT_DEBUG, "screen_del: Deleting screen %s", argv[1]);
 
 	// Enforce bounds limits on argv[1]
 	memset(scr, '\0', sizeof(scr));
@@ -537,12 +534,12 @@ screen_del_func (client * c, int argc, char **argv)
 	if ( err == 0 )
 		sock_send_string(c->sock, "success\n");
 	else if (err < 0) {
-		fprintf (stderr, "screen_del_func:  Error removing screen\n");
+		report(RPT_WARNING, "screen_del_func:  Error removing screen");
 		sock_send_string(c->sock, "huh? failed to remove screen\n");
 	} else
 		sock_send_string (c->sock, "huh? You don't have a screen with that id#\n");
 
-	syslog(LOG_NOTICE, "removed a screen (%s) from the display", scr);
+	report(RPT_NOTICE, "removed a screen (%s) from the display", scr);
 	return 0;
 }
 
@@ -589,12 +586,12 @@ screen_set_func (client * c, int argc, char **argv)
 		p = argv[i];
 		if (*p == '-')
 			p++;
-		
+
 		// Handle the "name" parameter
 		if (strcmp (p, "name") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug ("screen_set: name=\"%s\"\n", argv[i]);
+				debug (RPT_DEBUG, "screen_set: name=\"%s\"", argv[i]);
 
 				// set the name...
 				if (s->name)
@@ -609,7 +606,7 @@ screen_set_func (client * c, int argc, char **argv)
 		else if (strcmp (p, "priority") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug ("screen_set: priority=\"%s\"\n", argv[i]);
+				debug (RPT_DEBUG, "screen_set: priority=\"%s\"", argv[i]);
 
 				// set the priority...
 				number = atoi (argv[i]);
@@ -624,7 +621,7 @@ screen_set_func (client * c, int argc, char **argv)
 		else if (strcmp (p, "duration") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug ("screen_set: duration=\"%s\"\n", argv[i]);
+				debug (RPT_DEBUG, "screen_set: duration=\"%s\"", argv[i]);
 
 				// set the duration...
 				number = atoi (argv[i]);
@@ -639,7 +636,7 @@ screen_set_func (client * c, int argc, char **argv)
 		else if (strcmp (p, "heartbeat") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug ("screen_set: heartbeat=\"%s\"\n", argv[i]);
+				debug (RPT_DEBUG, "screen_set: heartbeat=\"%s\"", argv[i]);
 
 				// set the heartbeat type...
 				if (0 == strcmp (argv[i], "on"))
@@ -665,7 +662,7 @@ screen_set_func (client * c, int argc, char **argv)
 		else if (strcmp (p, "wid") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug ("screen_set: wid=\"%s\"\n", argv[i]);
+				debug (RPT_DEBUG, "screen_set: wid=\"%s\"", argv[i]);
 
 				// set the duration...
 				number = atoi (argv[i]);
@@ -675,13 +672,13 @@ screen_set_func (client * c, int argc, char **argv)
 			} else {
 				sock_send_string (c->sock, "huh? -wid requires a parameter\n");
 			}
-		
+
 		}
 		// Handle the "hgt" parameter
 		else if (strcmp (p, "hgt") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug ("screen_set: hgt=\"%s\"\n", argv[i]);
+				debug (RPT_DEBUG, "screen_set: hgt=\"%s\"", argv[i]);
 
 				// set the duration...
 				number = atoi (argv[i]);
@@ -696,43 +693,42 @@ screen_set_func (client * c, int argc, char **argv)
 		else if (strcmp (p, "timeout") == 0) {
 			if (argc > i + 1) {
 				i++;
-				syslog(LOG_NOTICE, "Setting timeout.");
-				debug ("screen_set: timeout=\"%s\"\n", argv[i]);
+				debug (RPT_DEBUG, "screen_set: timeout=\"%s\"", argv[i]);
 				// set the duration...
 				number = atoi (argv[i]);
 				// Add the timeout value (count of TIME_UNITS)
 				//  to struct,  TIME_UNIT is 1/8th of a second
 				if (number > 0) {
 					s->timeout = number;
-					syslog(LOG_NOTICE, "Timeout set.");
+					report(RPT_NOTICE, "Timeout set.");
 				}
 				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -timeout requires a parameter\n");
 			}
 		}
-		
+
 		// Handle the backlight parameter
 		else if (strcmp (argv[i], "backlight") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug ("screen_set: backlight=\"%s\"\n", argv[i]);
+				debug (RPT_DEBUG, "screen_set: backlight=\"%s\"", argv[i]);
 				// set the backlight status based on what the client has set
 				switch(c->backlight_state) {
 					case BACKLIGHT_OPEN:
 						if (strcmp ("on", argv[i]) == 0)
 							s->backlight_state = BACKLIGHT_ON;
-						
+
 						if (strcmp ("off", argv[i]) == 0)
 							s->backlight_state = BACKLIGHT_OFF;
-						
+
 						if (strcmp ("toggle", argv[i]) == 0) {
 							if (s->backlight_state == BACKLIGHT_ON)
 								s->backlight_state = BACKLIGHT_OFF;
 							else if (s-backlight_state == BACKLIGHT_OFF)
 								s->backlight_state = BACKLIGHT_ON;
 						}
-						
+
 						if (strcmp ("blink", argv[i]) == 0)
 							s->backlight_state  |= BACKLIGHT_BLINK;
 
@@ -824,7 +820,7 @@ widget_add_func (client * c, int argc, char **argv)
 	if (err == 0)
 		sock_send_string(c->sock, "success\n");
 	else {
-		fprintf (stderr, "widget_add_func:  Error adding widget\n");
+		report(RPT_WARNING, "widget_add_func:  Error adding widget");
 		sock_send_string(c->sock, "huh? failed\n");
 	}
 
@@ -866,7 +862,7 @@ widget_del_func (client * c, int argc, char **argv)
 	sid = argv[1];
 	wid = argv[2];
 
-	debug ("screen_del: Deleting widget %s.%s\n", sid, wid);
+	debug (RPT_DEBUG, "screen_del: Deleting widget %s.%s", sid, wid);
 
 	s = screen_find (c, sid);
 	if (!s) {
@@ -877,7 +873,7 @@ widget_del_func (client * c, int argc, char **argv)
 	if (err == 0)
 		sock_send_string(c->sock, "success\n");
 	else {
-		fprintf (stderr, "widget_del_func:  Error removing widget\n");
+		report( RPT_WARNING, "widget_del_func:  Error removing widget");
 		sock_send_string(c->sock, "huh? failed\n");
 	}
 
@@ -942,10 +938,9 @@ widget_set_func (client * c, int argc, char **argv)
 		// Client Debugging...
 		{
 			int i;
-			fprintf (stderr, "huh? Invalid widget id (%s)\n", wid);
+			report( RPT_WARNING, "huh? Invalid widget id (%s)", wid);
 			for (i = 0; i < argc; i++)
-				fprintf (stderr, "%s ", argv[i]);
-			fprintf (stderr, "\n");
+				report( RPT_WARNING, "    %.40s ", argv[i]);
 		}
 		return 0;
 	}
@@ -969,10 +964,10 @@ widget_set_func (client * c, int argc, char **argv)
 					free (w->text);
 				w->text = strdup (argv[i + 2]);
 				if (!w->text) {
-					fprintf (stderr, "widget_set_func: Error allocating string\n");
+					report( RPT_WARNING, "widget_set_func: Error allocating string");
 					return -1;
 				}
-				debug ("Widget %s set to %s\n", wid, w->text);
+				debug (RPT_DEBUG, "Widget %s set to %s", wid, w->text);
 				sock_send_string(c->sock, "success\n");
 			}
 		}
@@ -992,7 +987,7 @@ widget_set_func (client * c, int argc, char **argv)
 				w->y = y;
 				w->length = length;
 			}
-			debug ("Widget %s set to %i\n", wid, w->length);
+			debug (RPT_DEBUG, "Widget %s set to %i", wid, w->length);
 			sock_send_string(c->sock, "success\n");
 		}
 		break;
@@ -1011,7 +1006,7 @@ widget_set_func (client * c, int argc, char **argv)
 				w->y = y;
 				w->length = length;
 			}
-			debug ("Widget %s set to %i\n", wid, w->length);
+			debug (RPT_DEBUG, "Widget %s set to %i", wid, w->length);
 			sock_send_string(c->sock, "success\n");
 		}
 		break;
@@ -1040,10 +1035,10 @@ widget_set_func (client * c, int argc, char **argv)
 				free (w->text);
 			w->text = strdup (argv[i]);
 			if (!w->text) {
-				fprintf (stderr, "widget_set_func: Error allocating string\n");
+				report( RPT_WARNING, "widget_set_func: Error allocating string");
 				return -1;
 			}
-			debug ("Widget %s set to %s\n", wid, w->text);
+			debug (RPT_DEBUG, "Widget %s set to %s", wid, w->text);
 			sock_send_string(c->sock, "success\n");
 		}
 		break;
@@ -1058,17 +1053,17 @@ widget_set_func (client * c, int argc, char **argv)
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
 			} else {
 				left = atoi (argv[i]);
-				//debug("left: %d\n",left);
+				//debug("left: %d",left);
 				top = atoi (argv[i + 1]);
-				//debug("top: %d\n",top);
+				//debug("top: %d",top);
 				right = atoi (argv[i + 2]);
-				//debug("right: %d\n",right);
+				//debug("right: %d",right);
 				bottom = atoi (argv[i + 3]);
-				//debug("bottom: %d\n",bottom);
+				//debug("bottom: %d",bottom);
 				direction = (int) (argv[i + 4][0]);
-				//debug("dir: %c\n",(char)direction);
+				//debug("dir: %c",(char)direction);
 				speed = atoi (argv[i + 5]);
-				//debug("speed: %d\n",speed);
+				//debug("speed: %d",speed);
 				// Direction must be v or h
 				if (((char) direction != 'h') && ((char) direction != 'v')) {
 					sock_send_string (c->sock, "huh? Invalid direction\n");
@@ -1084,10 +1079,10 @@ widget_set_func (client * c, int argc, char **argv)
 					w->text = strdup (argv[i + 6]);
 					if (!w->text) {
 						sock_send_string(c->sock, "huh? out of memory\n");
-						fprintf (stderr, "widget_set_func: Error allocating string\n");
+						report( RPT_WARNING, "widget_set_func: Error allocating string");
 						return -1;
 					}
-					debug ("Widget %s set to %s\n", wid, w->text);
+					debug (RPT_DEBUG, "Widget %s set to %s", wid, w->text);
 					sock_send_string(c->sock, "success\n");
 				}
 			}
@@ -1106,21 +1101,21 @@ widget_set_func (client * c, int argc, char **argv)
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
 			} else {
 				left = atoi (argv[i]);
-				//debug("left: %d\n",left);
+				//debug("left: %d",left);
 				top = atoi (argv[i + 1]);
-				//debug("top: %d\n",top);
+				//debug("top: %d",top);
 				right = atoi (argv[i + 2]);
-				//debug("right: %d\n",right);
+				//debug("right: %d",right);
 				bottom = atoi (argv[i + 3]);
-				//debug("bottom: %d\n",bottom);
+				//debug("bottom: %d",bottom);
 				width = atoi (argv[i + 4]);
-				//debug("right: %d\n",right);
+				//debug("right: %d",right);
 				height = atoi (argv[i + 5]);
-				//debug("bottom: %d\n",bottom);
+				//debug("bottom: %d",bottom);
 				direction = (int) (argv[i + 6][0]);
-				//debug("dir: %c\n",(char)direction);
+				//debug("dir: %c",(char)direction);
 				speed = atoi (argv[i + 7]);
-				//debug("speed: %d\n",speed);
+				//debug("speed: %d",speed);
 				// Direction must be v or h
 				if (((char) direction != 'h') && ((char) direction != 'v')) {
 					sock_send_string (c->sock, "huh? Invalid direction\n");
@@ -1133,7 +1128,7 @@ widget_set_func (client * c, int argc, char **argv)
 					w->hgt = height;
 					w->length = direction;
 					w->speed = speed;
-					debug ("Widget %s set to (%i,%i)-(%i,%i) %ix%i\n", wid, left, top, right, bottom, width, height);
+					debug (RPT_DEBUG, "Widget %s set to (%i,%i)-(%i,%i) %ix%i", wid, left, top, right, bottom, width, height);
 					sock_send_string(c->sock, "success\n");
 				}
 			}
@@ -1153,7 +1148,7 @@ widget_set_func (client * c, int argc, char **argv)
 				w->x = x;
 				w->y = y;
 			}
-			debug ("Widget %s set to %i\n", wid, w->y);
+			debug (RPT_DEBUG, "Widget %s set to %i", wid, w->y);
 			sock_send_string(c->sock, "success\n");
 		}
 		break;
@@ -1294,9 +1289,9 @@ backlight_func (client * c, int argc, char **argv)
 		return 0;
 	}
 
-	debug ("backlight(%s)\n", argv[1]);
+	debug (RPT_DEBUG, "backlight(%s)", argv[1]);
 
-	
+
 	backlight = (backlight && 1);  // only preserves ON/OFF bit
 
 	if (strcmp ("on", argv[1]) == 0) {
@@ -1403,7 +1398,7 @@ output_func (client * c, int argc, char **argv)
 
 	// lcd_ptr->output (output_state);
 
-	syslog(LOG_NOTICE, "output states changed");
+	report(RPT_NOTICE, "output states changed");
 	return 0;
 }
 

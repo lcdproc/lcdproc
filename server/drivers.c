@@ -11,14 +11,13 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/errno.h>
-#include <syslog.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include "shared/LL.h"
-#include "shared/debug.h"
+#include "shared/report.h"
 #include "configfile.h"
 
 #include "drivers/lcd.h"
@@ -40,14 +39,14 @@ load_driver ( char * name, char * filename, char * args )
 	void (*driver_init)();
 	lcd_logical_driver * driver;
 
-	debug ("load_driver(%s,%s,%s)\n", name,filename,args);
+	report( RPT_INFO, "load_driver(%s,%s,%s)", name, filename, args );
 
 	// First driver ?
 	if( !loaded_drivers ) {
 		// Create linked list
 		loaded_drivers = LL_new ();
 		if( !loaded_drivers ) {
-			fprintf( stderr, "Error allocating driver list.\n" );
+			report( RPT_ERR, "Error allocating driver list." );
 			return -1;
 		}
 	}
@@ -56,7 +55,7 @@ load_driver ( char * name, char * filename, char * args )
 	// Find the driver in the array of driver types
 	if ((driver_init = (void *) lcd_find_init(name)) == NULL) {
 		// Driver not found
-		fprintf( stderr, "invalid driver: %s\n", name);
+		report( RPT_ERR, "invalid driver: %s", name);
 		return -1;
 	}
 
@@ -75,7 +74,7 @@ load_driver ( char * name, char * filename, char * args )
 
 	res = driver->init( driver, args );
 	if( res < 0 ) {
-		fprintf( stderr, "res<0\n" );
+		report( RPT_ERR, "Driver load failed, return code < 0" );
 		// driver load failed, don't add driver to list
 		return -1;
 	}
@@ -97,10 +96,10 @@ unload_all_drivers ()
 {
 	lcd_logical_driver * driver;
 
-	debug ("unload_all_driver()\n");
+	report( RPT_INFO, "unload_all_driver()");
 
 	while( (driver = LL_Pop( loaded_drivers )) != NULL ) {
-		debug ("driver->close %p\n", driver );
+		debug( RPT_DEBUG, "driver->close %p", driver );
 		driver->close();
 	}
 

@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-#include "debug.h"
+#include "report.h"
 #include "sockets.h"
 
 /**************************************************
@@ -36,7 +36,7 @@ sock_init_sockaddr (sockaddr_in * name, const char *hostname, unsigned short int
 	name->sin_port = htons (port);
 	hostinfo = gethostbyname (hostname);
 	if (hostinfo == NULL) {
-		fprintf (stderr, "sock_init_sockaddr: Unknown host %s.\n", hostname);
+		report (RPT_ERR, "sock_init_sockaddr: Unknown host %s.", hostname);
 		return -1;
 	}
 	name->sin_addr = *(struct in_addr *) hostinfo->h_addr;
@@ -53,19 +53,19 @@ sock_connect (char *host, unsigned short int port)
 	int sock;
 	int err = 0;
 
-	debug ("sock_connect: Creating socket\n");
+	report (RPT_DEBUG, "sock_connect: Creating socket");
 	sock = socket (PF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
-		perror ("sock_connect: Error creating socket");
+		report (RPT_ERR, "sock_connect: Error creating socket");
 		return sock;
 	}
-	debug ("sock_connect: Created socket (%i)\n", sock);
+	debug (RPT_DEBUG, "sock_connect: Created socket (%i)", sock);
 
 	sock_init_sockaddr (&servername, host, port);
 
 	err = connect (sock, (struct sockaddr *) &servername, sizeof (servername));
 	if (err < 0) {
-		perror ("sock_connect: connect failed");
+		report (RPT_ERR, "sock_connect: connect failed");
 		shutdown (sock, 2);
 		return 0;					  // Normal exit if server doesn't exist...
 	}
@@ -104,8 +104,8 @@ sock_send_string (int fd, char *string)
 		int sent = write (fd, string + offset, len - offset);
 		if (sent == -1) {
 			if (errno != EAGAIN) {
-				perror ("sock_send_string: socket write error");
-				printf ("Message was: %s\n", string);
+				report (RPT_ERR, "sock_send_string: socket write error");
+				report (RPT_DEBUG, "Message was: %s", string);
 				//shutdown(fd, 2);
 				return sent;
 			}
@@ -145,7 +145,7 @@ sock_recv_string (int fd, char *dest, size_t maxlen)
 				}
 				return 0;
 			} else {
-				perror ("sock_recv_string: socket read error");
+				report (RPT_ERR, "sock_recv_string: socket read error");
 				return err;
 			}
 		} else if (err == 0) {
@@ -188,7 +188,7 @@ sock_send (int fd, void *src, size_t size)
 		int sent = write (fd, ((char *) src) + offset, size - offset);
 		if (sent == -1) {
 			if (errno != EAGAIN) {
-				perror ("sock_send: socket write error");
+				report (RPT_ERR, "sock_send: socket write error");
 				//shutdown(fd, 2);
 				return sent;
 			}
@@ -217,11 +217,11 @@ sock_recv (int fd, void *dest, size_t maxlen)
 
 	err = read (fd, dest, maxlen);
 	if (err < 0) {
-		//fprintf (stderr,"sock_recv: socket read error\n");
+		//report (RPT_DEBUG,"sock_recv: socket read error");
 		//shutdown(fd, 2);
 		return err;
 	}
-	//debug("sock_recv: Got message \"%s\"\n", (char *)dest);
+	//debug(RPT_DEBUG, "sock_recv: Got message \"%s\"", (char *)dest);
 
 	return err;
 }

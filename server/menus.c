@@ -7,14 +7,14 @@
   So far, all menus are static, and not dynamically generated.  I'll
   have to find a way to fix this, since many menu items will be dynamic.
   (clients connected, screens available, etc...)
-  
+
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 
-#include "shared/debug.h"
+#include "shared/report.h"
 
 #include "drivers/lcd.h"
 
@@ -292,7 +292,7 @@ Contrast_func (int input)
 void
 server_menu ()
 {
-	debug ("server_menu()\n");
+	debug (RPT_DEBUG, "server_menu()");
 
 	do_menu (main_menu);
 

@@ -18,8 +18,7 @@
 #include "shared/sockets.h"
 #include "sock.h"
 #include "clients.h"
-#include "shared/debug.h"
-#include "syslog.h"
+#include "shared/report.h"
 
 extern char bind_addr[64];
 extern int lcd_port;
@@ -45,36 +44,33 @@ sock_create_inet_socket (char * addr, unsigned int port)
 	struct sockaddr_in name;
 	int sock, sockopt=1;
 
-	debug ("sock_create_inet_socket(%i)\n", port);
+	report (RPT_INFO, "sock_create_inet_socket(%i)", port);
 
 	/* Create the socket. */
-	//debug("Creating Inet Socket\n");
+	//debug(RPT_DEBUG, "Creating Inet Socket");
 	sock = socket (PF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
-		perror ("Error creating socket");
-		syslog(LOG_ALERT, "could not create socket");
+		report(RPT_ERR, "Could not create socket");
 		return -1;
 	}
 	/* Set the socket so we can re-use it*/
 	if(setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&sockopt,sizeof(sockopt)) < 0) {
-		perror("Error setting socket option SO_REUSEADDR");
-		syslog(LOG_ALERT, "Error setting socket option SO_REUSEADDR");
+		report(RPT_ERR, "Error setting socket option SO_REUSEADDR");
 		return -1;
 	}
-			
+
 	/* Give the socket a name. */
-	//debug("Binding Inet Socket\n");
+	//debug(RPT_DEBUG, "Binding Inet Socket");
 	memset (&name, 0, sizeof (name));
 	name.sin_family = AF_INET;
 	name.sin_port = htons (port);
 	inet_aton(addr, &name.sin_addr);
 
 	if (bind (sock, (struct sockaddr *) &name, sizeof (name)) < 0) {
-		perror ("Error binding socket");
-		syslog(LOG_ALERT, "could not bind to port %d", port);
+		report(RPT_ERR, "Could not bind to port %d", port);
 		return -1;
 	} else {
-		syslog(LOG_NOTICE, "listening for queries on port %d", port);
+		report(RPT_NOTICE, "listening for queries on port %d", port);
 	}
 
 	return sock;
@@ -87,18 +83,17 @@ sock_create_server (char *bind_addr, int lcd_port)
 {
 	int sock;
 
-	debug ("sock_create_server()\n");
+	report (RPT_INFO, "sock_create_server()");
 
 	/* Create the socket and set it up to accept connections. */
 	sock = sock_create_inet_socket (bind_addr, lcd_port);
 	if (sock < 0) {
-		perror ("sock_create_server: Error creating socket");
+		report (RPT_ERR, "sock_create_server: Error creating socket");
 		return -1;
 	}
 
 	if (listen (sock, 1) < 0) {
-		perror ("sock_create_server: Listen error");
-		syslog(LOG_ALERT, "error in attempting to listen to port");
+		report(RPT_ERR, "error in attempting to listen to port");
 		return -1;
 	}
 
@@ -112,14 +107,14 @@ sock_create_server (char *bind_addr, int lcd_port)
   {
      int val, len, sock;
      sock = new;
-     
+
      len = sizeof(int);
      getsockopt(sock, SOL_SOCKET, SO_SNDBUF, &val, &len);
-     printf("SEND buffer: %i bytes\n", val);
+     debug(RPT_DEBUG, "SEND buffer: %i bytes", val);
 
      len = sizeof(int);
      getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &val, &len);
-     printf("RECV buffer: %i bytes\n", val);
+     debug(RPT_DEBUG, "RECV buffer: %i bytes", val);
   }
 */
 
@@ -138,7 +133,7 @@ sock_poll_clients ()
 	struct timeval t;
 	client *c;
 
-	//debug("sock_poll_clients()\n");
+	debug(RPT_INFO, "sock_poll_clients()");
 
 	t.tv_sec = 0;
 	t.tv_usec = 0;
@@ -147,7 +142,7 @@ sock_poll_clients ()
 	read_fd_set = active_fd_set;
 
 	if (select (FD_SETSIZE, &read_fd_set, NULL, NULL, &t) < 0) {
-		perror ("sock_poll_clients: Select error");
+		report (RPT_ERR, "sock_poll_clients: Select error");
 		return -1;
 	}
 
@@ -160,12 +155,10 @@ sock_poll_clients ()
 				size = sizeof (clientname);
 				new = accept (orig_sock, (struct sockaddr *) &clientname, &size);
 				if (new < 0) {
-					perror ("sock_poll_clients: Accept error");
-					syslog(LOG_WARNING, "error in accepting client");
+					report (RPT_ERR, "sock_poll_clients: Accept error");
 					return -1;
 				}
-				debug ("sock_poll_clients: connect from host %s, port %hd.\n", inet_ntoa (clientname.sin_addr), ntohs (clientname.sin_port));
-				syslog(LOG_NOTICE, "connect from host %s:%hd on #%d",
+				report (RPT_INFO, "sock_poll_clients: Connect from host %s:%hd on #%d",
 					inet_ntoa (clientname.sin_addr), ntohs (clientname.sin_port), new);
 				FD_SET (new, &active_fd_set);
 
@@ -173,16 +166,16 @@ sock_poll_clients ()
 
 				// TODO:  Create new "client" here...  (done?)
 				if (client_create (new) == NULL) {
-					fprintf (stderr, "sock_poll_clients: error creating client %i\n", i);
+					report( RPT_ERR, "sock_poll_clients: error creating client %i", i);
 					return -1;
 				}
 			} else {
 				/* Data arriving on an already-connected socket. */
 				err = 0;
 				do {
-					debug ("sock_poll_clients: reading...\n");
+					debug (RPT_DEBUG, "sock_poll_clients: reading...");
 					err = read_from_client (i);
-					debug ("sock_poll_clients: ...done\n");
+					debug (RPT_DEBUG, "sock_poll_clients: ...done");
 					if (err < 0) {
 						// TODO:  Destroy a "client" here... (done?)
 						c = client_find_sock (i);
@@ -191,10 +184,9 @@ sock_poll_clients ()
 							client_destroy (c);
 							close (i);
 							FD_CLR (i, &active_fd_set);
-							debug ("sock_poll_clients: Closed connection %i\n", i);
-							syslog(LOG_NOTICE, "closed connection #%i", i);
+							report (RPT_INFO, "sock_poll_clients: Closed connection %i", i);
 						} else
-							fprintf (stderr, "sock_poll_clients: Can't find client %i\n", i);
+							report (RPT_ERR, "sock_poll_clients: Can't find client %i", i);
 					}
 				} while (err > 0);
 
@@ -211,16 +203,18 @@ read_from_client (int filedes)
 	int nbytes, i;
 	client *c;
 
+	report(RPT_DEBUG, "read_from_client()" );
+
 	//nbytes = read (filedes, buffer, MAXMSG);
-	//debug("read_from_client(%i): reading...\n", filedes);
+	//debug(RPT_DEBUG, "read_from_client(%i): reading...", filedes);
 	//nbytes = sock_recv (filedes, buffer, MAXMSG);
-	//debug("read_from_client(%i): ...done\n", filedes);
-	//debug ("read_from_client(%i): %i bytes\n", filedes, nbytes);
+	//debug(RPT_DEBUG, "read_from_client(%i): ...done", filedes);
+	//debug (RPT_DEBUG, "read_from_client(%i): %i bytes", filedes, nbytes);
 
 	errno = 0;
 	if ((nbytes = sock_recv (filedes, buffer, MAXMSG)) < 0) {
 		if (errno != EAGAIN)
-			fprintf (stderr, "read_from_client: (fd %d) %s\n", filedes, strerror(errno));
+			report (RPT_DEBUG, "read_from_client: (fd %d) %s", filedes, strerror(errno));
 		return 0;
 	} else if (nbytes == 0)		  // EOF
 		return -1;
@@ -240,9 +234,9 @@ read_from_client (int filedes)
 		if (c) {
 			client_add_message (c, buffer);
 		} else
-			fprintf (stderr, "read_from_client:  Can't find client %i\n", filedes);
+			report (RPT_DEBUG, "read_from_client:  Can't find client %i", filedes);
 
-		debug ("read_from_client: got message: `%s'\n", buffer);
+		debug (RPT_DEBUG, "read_from_client: got message: `%s'", buffer);
 		return nbytes;
 	}
 	return nbytes;
@@ -256,7 +250,7 @@ sock_close_all ()
 {
 	int fd;
 
-	debug ("sock_close_all()\n");
+	report (RPT_INFO, "sock_close_all()");
 
 	for (fd = 0; fd < FD_SETSIZE; fd++) {
 		// TODO:  Destroy a "client" here...?  Nope.
@@ -274,7 +268,7 @@ sock_close_all ()
 			//sock_send_string (fd, "bye\n");
 			close (fd);
 			FD_CLR (fd, &active_fd_set);
-			debug ("sock_close_all: Closed connection %i\n", fd);
+			debug (RPT_DEBUG, "sock_close_all: Closed connection %i", fd);
 		}
 	}
 

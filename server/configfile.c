@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include "shared/report.h"
+
 
 typedef struct key {
 	char * name;
@@ -219,7 +221,7 @@ int config_has_key( char *sectionname, char *keyname )
 
 void config_clear()
 {
-	printf( "config_clear is unimplemented" );
+	report( RPT_WARNING, "config_clear is unimplemented" );
 }
 
 
@@ -386,7 +388,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 		  case ST_SECTIONNAME:
 			switch( ch ) {
 			  case '\n':
-				fprintf( stderr, "Section name incorrectly closed on line %d of %s: %s\n", line_nr, source_descr, sectionname );
+				report( RPT_WARNING, "Section name incorrectly closed on line %d of %s: %s", line_nr, source_descr, sectionname );
 				state = ST_INITIAL;
 				break;
 			  case '\r':
@@ -394,7 +396,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case ' ':
 			  case '"':
 			  case '[':
-				fprintf( stderr, "Section name contains invalid chars on line %d of %s: %s\n", line_nr, source_descr, sectionname );
+				report( RPT_WARNING, "Section name contains invalid chars on line %d of %s: %s", line_nr, source_descr, sectionname );
 				state = ST_INVALID_SECTIONNAME;
 				break;
 			  case ']':
@@ -404,14 +406,14 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 				state = ST_INITIAL;
 				break;
 			  case 0:
-				fprintf( stderr, "Section name incorrectly closed on line %d of %s: %s\n", line_nr, source_descr, sectionname );
+				report( RPT_WARNING, "Section name incorrectly closed on line %d of %s: %s", line_nr, source_descr, sectionname );
 				break;
 			  default:
 				if( sectionname_pos<MAXSECTIONNAMELENGTH ) {
 					sectionname[sectionname_pos++] = ch;
 					sectionname[sectionname_pos] = 0;
 				} else {
-					fprintf( stderr, "Section name too long on line %d of %s: %s\n", line_nr, source_descr, sectionname );
+					report( RPT_WARNING, "Section name too long on line %d of %s: %s", line_nr, source_descr, sectionname );
 					state = ST_INVALID_SECTIONNAME;
 				}
 			}
@@ -431,13 +433,13 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case '\r':
 			  case '\t':
 			  case ' ':
-				fprintf( stderr, "Loose word found on line %d of %s: %s\n", line_nr, source_descr, keyname );
+				report( RPT_WARNING, "Loose word found on line %d of %s: %s", line_nr, source_descr, keyname );
 				state = ST_INITIAL;
 				break;
 			  case '"':
 			  case '[':
 			  case ']':
-				fprintf( stderr, "Key name contains invalid characters on line %d of %s: %s\n", line_nr, source_descr, keyname );
+				report( RPT_WARNING, "Key name contains invalid characters on line %d of %s: %s", line_nr, source_descr, keyname );
 				state = ST_INVALID_KEYNAME;
 				break;
 			  case '=':
@@ -447,7 +449,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 				break;
 			  default:
 				if( keyname_pos>=MAXKEYNAMELENGTH ) {
-					fprintf( stderr, "Key name too long on line %d of %s: %s\n", line_nr, source_descr, keyname );
+					report( RPT_WARNING, "Key name too long on line %d of %s: %s", line_nr, source_descr, keyname );
 					state = ST_INVALID_KEYNAME;
 				} else {
 					keyname[keyname_pos++] = ch;
@@ -469,7 +471,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case '#':
 			  case ';':
 			  case '=':
-				fprintf( stderr, "Value contains invalid characters on line %d of %s, at key: %s\n", line_nr, source_descr, keyname );
+				report( RPT_WARNING, "Value contains invalid characters on line %d of %s, at key: %s", line_nr, source_descr, keyname );
 				state = ST_INVALID_VALUE;
 				break;
 			  case '"':
@@ -482,7 +484,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case ' ':
 				// Value complete !
 				if( ! *current_section ) {
-					fprintf( stderr, "Data before any section on line %d of %s with key: %s\n", line_nr, source_descr, keyname );
+					report( RPT_WARNING, "Data before any section on line %d of %s with key: %s", line_nr, source_descr, keyname );
 				}
 				else {
 					// Store the value
@@ -496,7 +498,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 					value[value_pos++] = ch;
 					value[value_pos] = 0;
 				} else {
-					fprintf( stderr, "Value key is too long on line %d of %s, at key: %s\n", line_nr, source_descr, keyname );
+					report( RPT_WARNING, "Value key is too long on line %d of %s, at key: %s", line_nr, source_descr, keyname );
 					state = ST_INVALID_KEYNAME;
 				}
 			}
@@ -514,7 +516,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			switch( ch ) {
 			  case 0:
 			  case '\n':
-				fprintf( stderr, "String is incorrectly terminated on line %d of %s: %s\n", line_nr, source_descr, keyname );
+				report( RPT_WARNING, "String is incorrectly terminated on line %d of %s: %s", line_nr, source_descr, keyname );
 				state = ST_INITIAL;
 				break;
 			  case '\\':

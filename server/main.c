@@ -20,7 +20,6 @@
 #include <unistd.h>
 #include <pwd.h>
 #include <errno.h>
-#include <syslog.h>
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -29,7 +28,7 @@
 extern char *optarg;
 extern int optind, optopt, opterr;
 
-#include "shared/debug.h"
+#include "shared/report.h"
 
 #include "drivers.h"
 #include "sock.h"
@@ -46,7 +45,7 @@ extern int optind, optopt, opterr;
 
 #define MAX_TIMER 0x10000
 
-#define DEFAULT_DEBUG_LEVEL 1
+//#define DEFAULT_DEBUG_LEVEL 1
 #define DEFAULT_LCD_PORT LCDPORT
 #define DEFAULT_BIND_ADDR "127.0.0.1"
 #define DEFAULT_CONFIGFILE "/etc/LCDd.conf"
@@ -56,11 +55,14 @@ extern int optind, optopt, opterr;
 #define MAX_DRIVERS 8
 #define DEFAULT_DAEMON_MODE 1
 #define DEFAULT_ENABLE_SERVER_SCREEN 0
+#define DEFAULT_REPORTTOSYSLOG 0
+#define DEFAULT_REPORTLEVEL RPT_WARNING
 
 
 /* Store some standard defines into vars... */
 char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
+char *api_version = API_VERSION;
 char *build_date = __DATE__;
 
 
@@ -75,15 +77,22 @@ char *build_date = __DATE__;
 
 /**** Configuration variables ****/
 
-// All are set to 'unset' values
-int debug_level = -1;
-int lcd_port = -1;
-char bind_addr[64] = "";
-char configfile[256] = "";
-char user[64] = "";
+// All variables are set to 'unset' values
+#define UNSET_INT -1
+#define UNSET_STR "\01"
 
-int daemon_mode = -1;
-int enable_server_screen = -1;
+//int debug_level = UNSET_INT;
+int lcd_port = UNSET_INT;
+char bind_addr[64] = UNSET_STR;
+char configfile[256] = UNSET_STR;
+char user[64] = UNSET_STR;
+
+int daemon_mode = UNSET_INT;
+int enable_server_screen = UNSET_INT;
+
+static int reportLevel = UNSET_INT;
+static int reportToSyslog = UNSET_INT;
+static int serverStarted = 0;
 
 // The drivers and their driver parameters
 char *drivernames[MAX_DRIVERS];
@@ -130,7 +139,7 @@ int init_screens();
 void do_mainloop();
 void lcd_list_drivers();
 
-#define ESSENTIAL(f) {int r; if( ( r=f )!=0 ) return r;}
+#define ESSENTIAL(f) {int r; if( ( r=(f) )<0 ) { report( RPT_CRIT,"Critical error, abort"); return r;}}
 
 int
 main (int argc, char **argv)
@@ -168,12 +177,10 @@ main (int argc, char **argv)
 	 * in the variable declaration...
 	 */
 
-	// Open syslog facility
-	openlog("LCDd", LOG_PID, LOG_DAEMON);
-	syslog(LOG_NOTICE, "server version %s starting up (protocol version %s)",
-		version, protocol_version);
-	syslog(LOG_NOTICE, "server built on %s",
-		build_date);
+	// Set the initial reporting parameters
+	report(RPT_NOTICE, "LCDd version %s starting", version );
+	report(RPT_INFO, "Built on %s, protocol version %s, API version %s",
+		build_date, protocol_version, api_version );
 
 	clear_settings();
 
@@ -186,21 +193,26 @@ main (int argc, char **argv)
 	// Set default values
 	set_default_settings();
 
-	if (debug_level > 0)
-		syslog(LOG_NOTICE, "debug level set to %d", debug_level);
+	// Set reporting values
+	ESSENTIAL( set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
+ 	report( RPT_NOTICE, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
 
+	// Startup the server
 	ESSENTIAL( init_sockets() );
 	ESSENTIAL( init_drivers() );
 	ESSENTIAL( init_screens() );
 	ESSENTIAL( drop_privs(user) );
 
+	// Store it for exit_program()
+	serverStarted = 1;
+
 #ifndef DEBUG
 	// Now, go into daemon mode...
 	if (daemon_mode) {
-		syslog(LOG_NOTICE, "server forking to background");
+		report(RPT_NOTICE, "Server forking to background");
 		ESSENTIAL( daemonize() );
 	} else {
-		syslog(LOG_NOTICE, "server running in foreground");
+		report(RPT_NOTICE, "Server running in foreground");
 	}
 #endif
 
@@ -216,16 +228,19 @@ clear_settings ()
 {
 	int i;
 
-	debug_level = -1;
-	lcd_port = -1;
-	bind_addr[0] = 0;
-	configfile[0] = 0;
-	user[0] = 0;
-	daemon_mode = -1;
-	enable_server_screen = -1;
-	backlight = -1;
+	//report( RPT_INFO, "clear_settings()" );
 
-	default_duration = -1;
+	lcd_port = UNSET_INT;
+	strcpy( bind_addr, UNSET_STR );
+	strcpy( configfile, UNSET_STR );
+	strcpy( user, UNSET_STR );
+	daemon_mode = UNSET_INT;
+	enable_server_screen = UNSET_INT;
+	backlight = UNSET_INT;
+
+	default_duration = UNSET_INT;
+	reportToSyslog = UNSET_INT;
+	reportLevel = UNSET_INT;
 
 	for( i=0; i < num_drivers; i++ ) {
 		free( drivernames[i] );
@@ -244,10 +259,11 @@ int
 process_command_line (int argc, char **argv)
 {
 	char  c;
-	char  buf[64];
+
+	//report( RPT_INFO, "process_command_line()" );
 
 	// analyze options here..
-	while ((c = getopt(argc, argv, "a:p:d:hfib:w:c:u:")) > 0) {
+	while ((c = getopt(argc, argv, "a:p:d:hfib:w:c:u:sr:")) > 0) {
 		// FIXME: Setting of c in this loop clobbers s!
 		// s is set equivalent to c.
 		switch(c) {
@@ -260,10 +276,10 @@ process_command_line (int argc, char **argv)
 
 					strcpy( drivernames[num_drivers], optarg );
 					strcpy( driverfilenames[num_drivers], optarg );
-					strcpy( driverargs[num_drivers], "");
+					strcpy( driverargs[num_drivers], "" );
 					num_drivers ++;
 				} else
-					fprintf(stderr, "too many drivers!");
+					report( RPT_ERR, "Too many drivers!" );
 				break;
 			case 'p':
 				lcd_port = atoi(optarg);
@@ -299,32 +315,36 @@ process_command_line (int argc, char **argv)
 					backlight = BACKLIGHT_OPEN;
 				}
 				else if( strcmp( optarg, "" ) != 0 ) {
-					fprintf( stderr, "backlight state should be on, off or open\n" );
+					report( RPT_ERR, "Backlight state should be on, off or open" );
 					HelpScreen();
 				}
 				break;
 			case 'w':
-				default_duration = atoi(optarg);
-				if ( default_duration < 16 || default_duration > 10000 ) {
-					snprintf(buf, sizeof(buf),
-						"wait time should be between 16 and 10000 (in 1/8ths of second), not %s\n", optarg);
-					fprintf(stderr, "%s", buf);
+				default_duration = (int) (atof(optarg) * 1e6 / TIME_UNIT);
+				if ( default_duration * TIME_UNIT < 2e6 ) {
+					report( RPT_ERR, "Waittime should be at least 2 (seconds), not %.8s", optarg );
 					HelpScreen ();
 				};
 				break;
+			case 's':
+				reportToSyslog = 1;
+				break;
+			case 'r':
+				reportLevel = atoi(optarg);
+				break;
 			case '?':
-				fprintf(stderr, "unknown option: '%c'\n", optopt);
+				report( RPT_ERR, "Unknown option: '%c'", optopt );
 				HelpScreen();
 				break;
 			case ':':
-				fprintf(stderr, "missing option argument!");
+				report( RPT_ERR, "Missing option argument!" );
 				HelpScreen();
 				break;
 		}
 	}
 
 	if (optind < argc)
-		fprintf(stderr, "non-option arguments!! BAD...");
+		report( RPT_ERR, "Non-option arguments on the command line !");
 
 	return 0;
 }
@@ -338,44 +358,46 @@ process_configfile ( char *configfile )
 	char * s;
 	//char buf[64];
 
+	//report( RPT_INFO, "process_configfile()" );
+
 	// Read server settings
 
 	config_read_file( configfile );
 
-	if( debug_level == -1 )
-		debug_level = config_get_int( "server", "debug", 0, -1 );
+//	if( debug_level == UNSET_INT )
+//		debug_level = config_get_int( "server", "debug", 0, UNSET_INT );
 
-	if( lcd_port == -1 )
-		lcd_port = config_get_int( "server", "port", 0, -1 );
+	if( lcd_port == UNSET_INT )
+		lcd_port = config_get_int( "server", "port", 0, UNSET_INT );
 
-	if( bind_addr[0] == 0 )
-		strncpy( bind_addr, config_get_string( "server", "bind", 0, "" ), sizeof(bind_addr));
+	if( strcmp( bind_addr, UNSET_STR ) == 0 )
+		strncpy( bind_addr, config_get_string( "server", "bind", 0, UNSET_STR ), sizeof(bind_addr));
 
-	if( user[0] == 0 )
-		strncpy( user, config_get_string( "server", "user", 0, "" ), sizeof(user));
+	if( strcmp( user, UNSET_STR ) == 0 )
+		strncpy( user, config_get_string( "server", "user", 0, UNSET_STR ), sizeof(user));
 
-	if( default_duration == -1 ) {
-		default_duration = (config_get_float( "server", "waittime", 0, 0 ) * 1000000 / TIME_UNIT );
+	if( default_duration == UNSET_INT ) {
+		default_duration = (config_get_float( "server", "waittime", 0, 0 ) * 1e6 / TIME_UNIT );
 		if( default_duration == 0 )
-			default_duration = -1;
-		else if( default_duration < 16 ) {
-			fprintf( stderr, "waittime should be at least 2 (seconds)\n" );
+			default_duration = UNSET_INT;
+		else if( default_duration * TIME_UNIT < 2e6 ) {
+			report( RPT_ERR, "Waittime should be at least 2 (seconds)" );
 			return -1;
 		}
 	}
 
-	if( daemon_mode == -1 ) {
+	if( daemon_mode == UNSET_INT ) {
 		int fg;
-		fg = config_get_bool( "server", "foreground", 0, -1 );
-		if( fg != -1 )
+		fg = config_get_bool( "server", "foreground", 0, UNSET_INT );
+		if( fg != UNSET_INT )
 			daemon_mode = !fg;
 	}
 
-	if( enable_server_screen == -1 )
-		enable_server_screen = config_get_bool( "server", "serverscreen", 0, -1 );
+	if( enable_server_screen == UNSET_INT )
+		enable_server_screen = config_get_bool( "server", "serverscreen", 0, UNSET_INT );
 
-	if( backlight == -1 ) {
-		s = config_get_string( "server", "backlight", 0, "" );
+	if( backlight == UNSET_INT ) {
+		s = config_get_string( "server", "backlight", 0, UNSET_STR );
 		if( strcmp( s, "on" ) == 0 ) {
 			backlight = BACKLIGHT_ON;
 			backlight_state = backlight;
@@ -387,10 +409,21 @@ process_configfile ( char *configfile )
 		else if( strcmp( s, "open" ) == 0 ) {
 			backlight = BACKLIGHT_OPEN;
 		}
-		else if( strcmp( s, "" ) != 0 ) {
-			fprintf( stderr, "backlight state should be on, off or open\n" );
+		else if( strcmp( s, UNSET_STR ) != 0 ) {
+			report( RPT_ERR, "Backlight state should be on, off or open" );
 		}
 	}
+
+	if( reportToSyslog == UNSET_INT ) {
+		// Is the value set in the config file anyway ?
+		if( strcmp( config_get_string( "server", "reportToSyslog", 0, "" ), "" ) != 0 ) {
+			reportToSyslog = config_get_bool( "server", "reportToSyslog", 0, 0 );
+		}
+	}
+	if( reportLevel == UNSET_INT ) {
+		reportLevel = config_get_int( "server", "reportLevel", 0, UNSET_INT );
+	}
+
 
 	// Read drivers
 
@@ -435,28 +468,36 @@ process_configfile ( char *configfile )
 void
 set_default_settings()
 {
+	//report( RPT_INFO, "set_default_settings()" );
+
 	// Set defaults into unfilled variables....
 
-	if (debug_level == -1)
-		debug_level = DEFAULT_DEBUG_LEVEL;
-	if (lcd_port == -1)
+//	if (debug_level == UNSET_INT)
+//		debug_level = DEFAULT_DEBUG_LEVEL;
+	if (lcd_port == UNSET_INT)
 		lcd_port = DEFAULT_LCD_PORT;
-	if (bind_addr[0] == 0)
+	if (strcmp( bind_addr, UNSET_STR ) == 0)
 		strncpy (bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
-	if (configfile[0] == 0)
+	if (strcmp( configfile, UNSET_STR ) == 0)
 		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	if (user[0] == 0)
+	if (strcmp( user, UNSET_STR ) == 0)
 		strncpy(user, DEFAULT_USER, sizeof(user));
 
-	if (daemon_mode == -1)
+	if (daemon_mode == UNSET_INT)
 		daemon_mode = DEFAULT_DAEMON_MODE;
-	if (enable_server_screen == -1)
+	if (enable_server_screen == UNSET_INT)
 		enable_server_screen = DEFAULT_ENABLE_SERVER_SCREEN;
 
-	if (default_duration == -1)
+	if (default_duration == UNSET_INT)
 		default_duration = DEFAULT_SCREEN_DURATION;
-	if (backlight == -1)
+	if (backlight == UNSET_INT)
 		backlight = BACKLIGHT_OPEN;
+
+	if (reportToSyslog == UNSET_INT )
+		reportToSyslog = DEFAULT_REPORTTOSYSLOG;
+	if( reportLevel == UNSET_INT )
+		reportLevel = DEFAULT_REPORTLEVEL;
+
 
 	// Use default driver
 	if( num_drivers == 0 ) {
@@ -477,10 +518,12 @@ daemonize()
 {
 	int child;
 
+	report( RPT_INFO, "daemonize()" );
+
 	switch ((child = fork ()) ) {
 	  case -1:
-		syslog(LOG_ERR, "could not fork");
-		return 1;
+		report(RPT_ERR, "Could not fork");
+		return -1;
 	  case 0: // We are the child
 		break;
 	  default: // We are the parent
@@ -502,17 +545,18 @@ daemonize()
 int
 init_sockets ()
 {
+	report( RPT_INFO, "init_sockets()" );
 
 	if (sock_create_server (&bind_addr, lcd_port) <= 0) {
-		syslog(LOG_ERR, "error opening socket");
-		return 1;
+		report(RPT_ERR, "Error opening socket");
+		return -1;
 	}
 
 	// Now init a bunch of required stuff...
 
 	if (client_init () < 0) {
-		syslog(LOG_ERR, "error initializing client list");
-		return 1;
+		report(RPT_ERR, "Error initializing client list");
+		return -1;
 	}
 	return 0;
 }
@@ -522,9 +566,10 @@ int
 init_drivers()
 {
 	int i, res;
-	char buf[64];
 
 	int output_loaded = 0;
+
+	report( RPT_INFO, "init_drivers()" );
 
 	// FIXME: This sets s equal to a value related to i
 	// (bitshifted left?)  FIX FIX FIX ARGH....
@@ -550,8 +595,7 @@ init_drivers()
 			  	break;
 			}
 		} else {
-			snprintf(buf, sizeof(buf), "Could not load driver %s\n", drivernames[i]);
-			fprintf(stderr, buf);
+			report( RPT_ERR, "Could not load driver %.40s", drivernames[i] );
 		}
 	}
 
@@ -559,6 +603,7 @@ init_drivers()
 	if ( output_loaded ) {
 		return 0;
 	} else {
+		report( RPT_ERR, "There is no output driver" );
 		return -1;
 	}
 }
@@ -568,20 +613,16 @@ int drop_privs(char *user)
 {
 	struct passwd *pwent;
 
+	report( RPT_INFO, "drop_privs()" );
+
 	if (getuid() == 0 || geteuid() == 0) {
 		if ((pwent = getpwnam(user)) == NULL) {
-			if (errno) {
-				perror("LCDd: getpwnam");
-				return 1;
-			} else {
-				fprintf(stderr, "user %s not a valid user!", user);
-				return 1;
-			}
+			report( RPT_ERR, "User %.40s not a valid user!", user );
+			return -1;
 		} else {
 			if (setuid(pwent->pw_uid) < 0) {
-				fprintf(stderr, "unable to switch to user %s\n", user);
-				perror("LCDd: setuid");
-				return 1;
+				report( RPT_ERR, "Unable to switch to user %.40s", user );
+				return -1;
 			}
 		}
 	}
@@ -592,14 +633,16 @@ int drop_privs(char *user)
 int
 init_screens ()
 {
+	report( RPT_INFO, "init_screens()" );
+
 	if (screenlist_init () < 0) {
-		syslog(LOG_ERR, "error initializing screen list");
-		return 1;
+		report(RPT_ERR, "Error initializing screen list");
+		return -1;
 	}
 	// Make sure the server screen shows up every once in a while..
 	if (server_screen_init () < 0) {
-		syslog(LOG_ERR, "error initializing server screens");
-		return 1;
+		report(RPT_ERR, "Error initializing server screens");
+		return -1;
 	} else if (!enable_server_screen) {
 		server_screen->priority = 256;
 	}
@@ -612,7 +655,9 @@ do_mainloop ()
 {
 	screen *s = NULL;
 	char *message=NULL;
-	
+
+	report( RPT_INFO, "do_mainloop()" );
+
 	//char buf[64];
 
 	// FIXME: s should still be null from initialization.... what's happening here?!
@@ -632,7 +677,7 @@ do_mainloop ()
 
 		// this is here because s is getting overwritten...
 		//if (s != screenlist_current()) {
-		//	syslog(LOG_DEBUG, "internal error! s was found overwritten at main.c:637");
+		//	report(RPT_DEBUG, "internal error! s was found overwritten at main.c:637");
 		//	s = screenlist_current();
 		//}
 		//
@@ -665,33 +710,33 @@ do_mainloop ()
 
 		usleep (TIME_UNIT);
 
-		//Check to see if the screen has a timeout value, if it does 
-		//decrese it and then check to see if it has excpired. 
+		//Check to see if the screen has a timeout value, if it does
+		//decrese it and then check to see if it has excpired.
 		//Remove if expired.
 		if((message = malloc(256)) == NULL)
-			syslog(LOG_NOTICE, "Error allocating message string");
+			report(RPT_ERR, "Error allocating message string");
 		else {
 			snprintf(message, 256, "Screen->%s has timeout->%d", s->name, s->timeout);
-			syslog(LOG_NOTICE, message);
+			report(RPT_DEBUG, message);
 			free(message);
 		}
 		if (s && s->timeout != -1) {
-		
+
 			--(s->timeout);
 			if((message = malloc(256)) == NULL)
-				syslog(LOG_NOTICE, "Error allocating message string");
+				report(RPT_ERR, "Error allocating message string");
 			else {
 				snprintf(message, 256, "Timeout matches check, screen %s has timeout->%d", s->name, s->timeout);
-				syslog(LOG_NOTICE, message);
+				report(RPT_DEBUG, message);
 				free(message);
 			}
 			if (s->timeout <= 0) {
 				screen_remove (s->parent, s->id);
 				if((message = malloc(256)) == NULL)
-					syslog(LOG_NOTICE, "Error allocating message string");
+					report(RPT_ERR, "Error allocating message string");
 				else {
 					snprintf(message, 256, "Removing screen %s which has timeout->%d", s->name, s->timeout);
-					syslog(LOG_NOTICE, message);
+					report(RPT_DEBUG, message);
 					free(message);
 				}
 			}
@@ -707,28 +752,38 @@ exit_program (int val)
 {
 	char buf[64];
 
+	report( RPT_INFO, "exit_program()" );
+
 	// TODO: These things shouldn't be so interdependent.  The order
 	// things are shut down in shouldn't matter...
 
-	strcpy(buf, "server shutting down on ");
+	strcpy(buf, "Server shutting down on ");
 	switch(val) {
 		case 1: strcat(buf, "SIGHUP"); break;
 		case 2: strcat(buf, "SIGINT"); break;
 		case 15: strcat(buf, "SIGTERM"); break;
-		default: snprintf(buf, sizeof(buf), "server shutting down on signal %d", val); break;
+		default: snprintf(buf, sizeof(buf), "Server shutting down on signal %d", val); break;
 			 // Other values should not be seen, but just in case..
 	}
 
-	syslog(LOG_NOTICE, buf);	// send message to syslog
+	report(RPT_NOTICE, buf);	// report it
 
+	// Set emergency reporting and flush all messages if not done already.
+	if( reportLevel == UNSET_INT )
+		reportLevel = DEFAULT_REPORTLEVEL;
+	if( reportToSyslog == UNSET_INT )
+		reportLevel = DEFAULT_REPORTLEVEL;
+	set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
 
-	goodbye_screen ();		// display goodbye screen on LCD display
-	unload_all_drivers ();		// release driver memory and file descriptors
+	// Shutdown things if server start was complete
+	if( serverStarted ) {
+		goodbye_screen ();		// display goodbye screen on LCD display
+		unload_all_drivers ();		// release driver memory and file descriptors
 
-	client_shutdown ();		// shutdown clients (must come first)
-	screenlist_shutdown ();		// shutdown screens (must come after client_shutdown)
-	sock_close_all ();		// close all open sockets (must come after client_shutdown)
-
+		client_shutdown ();		// shutdown clients (must come first)
+		screenlist_shutdown ();		// shutdown screens (must come after client_shutdown)
+		sock_close_all ();		// close all open sockets (must come after client_shutdown)
+	}
 
 	exit (0);
 }
@@ -737,11 +792,14 @@ exit_program (int val)
 void
 HelpScreen ()
 {
+	// Help screen is printed to stdout on purpose. No reason to have
+	// this in syslog...
+	report( RPT_INFO, "HelpScreen()" );
 
 	printf ("\nLCDd Server Daemon (part of lcdproc), %s\n", version);
 	printf ("Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
 	printf ("This program is freely redistributable under the terms of the GNU Public License\n\n");
-	printf ("Usage: LCDd [ -hfiw ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \\\n\t[ -p <port> ] [ -u <user> ] [ -w <time> ]\n\n");
+	printf ("Usage: LCDd [ -hfiws ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \\\n\t[ -p <port> ] [ -u <user> ] [ -w <time> ] [ -r <level> ]\n\n");
 	printf ("Available options are:\n");
 
 	printf ("\t-h\t\tDisplay this help screen\n");
@@ -753,10 +811,12 @@ HelpScreen ()
 	printf ("\t-f\t\tRun in the foreground\n");
 	//printf ("\t-b\t--backlight <mode>\n\t\t\tSet backlight mode (on, off, open)\n");
 	printf ("\t-i\t\tDisable showing of the main LCDproc server screen\n");
-	printf ("\t-w <waittime>\tTime to pause at each screen (in 1/8s of a second)\n");
+	printf ("\t-w <waittime>\tTime to pause at each screen (in seconds)\n");
 	printf ("\t-a <addr>\tNetwork (IP) address to bind to\n");
 	printf ("\t-p <port>\tNetwork port to listen for connections on\n");
 	printf ("\t-u <user>\tUser to run as\n");
+	printf ("\t-s\t\tOutput messages to syslog\n");
+	printf ("\t-r <level>\tReport level (default=2)\n");
 
 	printf ("\nCurrently available drivers:\n");
 	lcd_list_drivers();

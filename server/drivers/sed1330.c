@@ -165,7 +165,9 @@
 #include "lpt-port.h"
 #include "lcd.h"
 #include "shared/str.h"
-#include <stdio.h>
+#include "shared/report.h"
+#include "configfile.h"
+
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -274,6 +276,9 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 
 	sed1330 = driver;
 
+
+	debug( RPT_INFO, "SED1330: init(%p,%s)", driver, args );
+
 	// TODO: replace DriverName with driver->name when that field exists.
 	#define DriverName "sed1330"
 
@@ -291,13 +296,13 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 	// READ THE CONFIG FILE
 
 	// Port
-	port = driver->config_get_int( DriverName, "port", 0, 0x278 );
+	port = config_get_int( DriverName, "port", 0, 0x278 );
 	data->port = port;
 
 	// Type
 	s = driver->config_get_string( DriverName, "type", 0, NULL );
 	if( !s ) {
-		printf( "SED1330: you need to specify the display type\n" );
+		report( RPT_ERR, "SED1330: you need to specify the display type" );
 	} else if( strcmp( s, "G321D" ) == 0 ) {
 		data->type = TYPE_G321D;
 		data->graph_width = 320;
@@ -311,13 +316,16 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 		data->graph_width = 240;
 		data->graph_height = 128;
 	} else {
-		printf( "SED1330: Unknown display type: %s\n", s );
+		report( RPT_ERR, "SED1330: Unknown display type: %s", s );
 		return -1;
 	}
-
 	driver->wid = data->graph_width / CHARWIDTH;
 	driver->hgt = data->graph_height / CHARHEIGHT;
 	data->bytesperline = (data->graph_width - 1 ) / CHARWIDTH + 1;
+
+	report( RPT_INFO, "SED1330: Using LCD type: %s", s );
+	report( RPT_INFO, "SED1330: Text size: %dx%d", driver->wid, driver->hgt );
+
 
 	// Keymap
 	for( i=0; i<MAXKEYS; i++ ) {
@@ -327,6 +335,8 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 		if( s ) {
 			data->keymap[i] = (char *) malloc( strlen(s)+1 );
 			strcpy( data->keymap[i], s );
+			report( RPT_INFO, "SED1330: Key %d: \"%s\"", i, s );
+
 		} else {
 			data->keymap[i] = ""; // Pointing to an constant empty string
 		}
@@ -360,6 +370,7 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 
 
 	// Arrange for access to port
+	debug( RPT_DEBUG, "SED1330: getting port access" );
 	port_access(data->port);
 	port_access(data->port+1);
 	port_access(data->port+2);
@@ -372,7 +383,7 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 		struct sched_param param;
 		param.sched_priority=1;
 		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-			fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
+			report( RPT_ERR, "HD44780_init: failed (%s)", strerror (errno));
 			return -1;
 		}
 	}
@@ -404,6 +415,7 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 
 	// INITIALIZE THE LCD
 	// End reset-state
+	debug( RPT_DEBUG, "SED1330: initializing LCD" );
 	port_out( port+2, (nWR) ^ OUTMASK );	// raise ^RD and ^WR
 	port_out( port+2, (nRESET|nWR) ^ OUTMASK );	// lower RESET
 	uPause( 200 );
@@ -495,7 +507,7 @@ sed1330_command( char command, int datacount, char * data )
 	int i;
 	int port = private_data->port;
 
-	printf( "sed1330_command %x #data=%d\n", command, datacount );
+	debug( RPT_INFO, "sed1330_command %x #data=%d", command, datacount );
 
 	port_out( port+2, (nRESET|nWR|A0) ^ OUTMASK );	// set A0 to indicate command
 	port_out( port, command );		// set up data
@@ -531,7 +543,7 @@ void sed1330_update_cursor()
 	char disp_en;
 	char fc; // named after CF register in SED1330
 
-	printf( "sed1330_update_cursor\n" );
+	debug( RPT_INFO, "sed1330_update_cursor" );
 
 	cursor_pos = (data->cursor_y-1) * data->bytesperline + (data->cursor_x-1) + 256 * SCR1_H + SCR1_L;
 	csrloc[0] = cursor_pos % 256;
@@ -568,7 +580,7 @@ void sed1330_update_cursor()
 void
 sed1330_close()
 {
-	printf( "sed1330_close\n" );
+	debug( RPT_INFO, "sed1330_close" );
 
 	//sed1330_command( CMD_DISP_DIS, 0, NULL ); // display off
 	//port_out( port+2, (nWR) ^ OUTMASK ); // give LCD reset signal
@@ -586,7 +598,7 @@ sed1330_clear()
 {
 	private_data * data = sed1330->private_data;
 
-	printf( "sed1330_clear\n" );
+	debug( RPT_INFO, "sed1330_clear" );
 
 	memset( data->framebuf_text, ' ', data->bytesperline * sed1330->hgt);
 	memset( data->framebuf_graph, 0, data->bytesperline * data->graph_height );
@@ -603,7 +615,8 @@ sed1330_string( int x, int y, char *str )
 	char * start;
 	int len;
 
-	printf( "sed1330_string x=%d y=%d s=\"%s\"\n", x, y, str );
+	debug( RPT_INFO, "sed1330_string x=%d y=%d s=\"%s\"", x, y, str );
+
 	if( y > sed1330->hgt ) {
 		return; // outside framebuf_textfer
 	}
@@ -626,7 +639,7 @@ sed1330_chr( int x, int y, char c )
 {
 	private_data * data = sed1330->private_data;
 
-	printf( "sed1330_chr x=%d y=%d c='%c'\n", x, y, c );
+	debug( RPT_INFO, "sed1330_chr x=%d y=%d c='%c'", x, y, c );
 
 	if( y > sed1330->hgt || x > sed1330->wid ) {
 		return; // outside framebuf_textfer
@@ -645,7 +658,7 @@ sed1330_flush()
 	unsigned int pos, start_pos, nr_equal, fblen, len, cursor_pos;
 	char csrloc[2];
 
-	printf( "sed1330_flush\n" );
+	debug( RPT_INFO, "sed1330_flush" );
 
 	sed1330_command( CMD_DISP_EN, 1, ((char[1]) {0x16}) ); // cursor off
 
@@ -703,7 +716,7 @@ void sed1330_cursor( int x, int y, char state )
 {
 	private_data * data = sed1330->private_data;
 
-	printf( "sed1330_cursor x=%d y=%d state='%c'\n", x, y, state );
+	debug( RPT_INFO, "sed1330_cursor x=%d y=%d state='%c'", x, y, state );
 
 	data->cursor_x = x;
 	data->cursor_y = y;
@@ -721,7 +734,7 @@ sed1330_backlight( int on )
 {
 	//private_data * data = sed1330->private_data;
 
-	printf( "sed1330_backlight on='%c'\n", on );
+	debug( RPT_INFO, "sed1330_backlight on='%c'", on );
 	// unimplemented
 }
 
@@ -737,7 +750,7 @@ sed1330_rect ( int x1, int y1, int x2, int y2, char pattern )
 	//private_data * data = sed1330->private_data;
 	int x, y;
 
-	printf( "sed1330_rect x1=%d y1=%d x2=%d y2=%d pattern=%d\n", x1, y1, x2, y2, (int) pattern );
+	debug( RPT_INFO, "sed1330_rect x1=%d y1=%d x2=%d y2=%d pattern=%d", x1, y1, x2, y2, (int) pattern );
 
 	// Swap coordinates if needed
 	if( x1>x2 ) {
@@ -771,7 +784,7 @@ sed1330_line ( int x1, int y1, int x2, int y2, char pattern )
 	//private_data * data = sed1330->private_data;
 	int x, y;
 
-	printf( "sed1330_rect x1=%d y1=%d x2=%d y2=%d pattern=%d\n", x1, y1, x2, y2, (int) pattern );
+	debug( RPT_INFO, "sed1330_rect x1=%d y1=%d x2=%d y2=%d pattern=%d", x1, y1, x2, y2, (int) pattern );
 
 	// Swap coordinates if needed
 	if( x1>x2 ) {
@@ -830,7 +843,7 @@ sed1330_set_pixel( int x, int y )
 	unsigned int bytepos;
 	char bitmask;
 
-	//printf( "sed1330_set_pixel x=%d y=%d\n", x, y );
+	//debug( RPT_INFO, "sed1330_set_pixel x=%d y=%d", x, y );
 
 	bytepos = y*data->bytesperline + x/PIXELSPERBYTE;
 	bitmask = 0x80 >> (x % PIXELSPERBYTE);
@@ -850,7 +863,7 @@ sed1330_clear_pixel( int x, int y )
 	int bytepos;
 	char bitmask;
 
-	//printf( "sed1330_clear_pixel x=%d y=%d\n", x, y );
+	//debug( RPT_INFO, "sed1330_clear_pixel x=%d y=%d", x, y );
 
 	bytepos = y*data->bytesperline + x/PIXELSPERBYTE;
 	bitmask = 0x80 >> (x % PIXELSPERBYTE);
@@ -866,7 +879,7 @@ sed1330_vbar( int x, int len )
 {
 	private_data * data = sed1330->private_data;
 
-	printf( "sed1330_hbar x=%d len=%d\n", x, len );
+	debug( RPT_INFO, "sed1330_hbar x=%d len=%d", x, len );
 
 	sed1330_rect ( (x-1) * CHARWIDTH, data->graph_height-1, x * CHARWIDTH - 1, data->graph_height-1 - ((long) len * CHARHEIGHT / sed1330->cellhgt ), 1 );
 }
@@ -881,7 +894,7 @@ sed1330_hbar( int x, int y, int len )
 {
 	//private_data * data = sed1330->private_data;
 
-	printf( "sed1330_hbar x=%d y=%d len=%d\n", x, y, len );
+	debug( RPT_INFO, "sed1330_hbar x=%d y=%d len=%d", x, y, len );
 
 	sed1330_rect ( (x-1) * CHARWIDTH, (y-1) * CHARHEIGHT, x * CHARWIDTH + len, y * CHARHEIGHT - 1, 1 );
 }
@@ -895,7 +908,7 @@ sed1330_num( int x, int num )
 {
 	//private_data * data = sed1330->private_data;
 
-	printf( "sed1330_bignum x=%d num=%d\n", x, num );
+	debug( RPT_INFO, "sed1330_bignum x=%d num=%d", x, num );
 
 
 }
@@ -918,7 +931,7 @@ sed1330_heartbeat( int type )
 		{ 0xFF, 0xAF, 0x07, 0x07, 0x07, 0x8F, 0xDF, 0xFF, 0x00, 0x00 }
 	};
 
-	printf( "sed1330_heartbeat type=%d\n", type );
+	report( RPT_INFO, "sed1330_heartbeat type=%d", type );
 
 	data->framebuf_text[sed1330->wid-1] = ' ';
 	whichIcon = (! ((timer + 4) & 5));

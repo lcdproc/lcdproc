@@ -6,7 +6,7 @@
 #include "config.h"
 #endif
 
-#include "shared/debug.h"
+#include "shared/report.h"
 
 #include "drivers/lcd.h"
 
@@ -36,12 +36,12 @@ server_screen_init ()
 {
 	widget *w;
 
-	debug ("server_screen_init\n");
+	debug (RPT_DEBUG, "server_screen_init");
 
 	server_screen = screen_create ();
 
 	if (!server_screen) {
-		fprintf (stderr, "server_screen_init: Error allocating screen\n");
+		report (RPT_ERR, "server_screen_init: Error allocating screen");
 		return -1;
 	}
 
@@ -50,43 +50,43 @@ server_screen_init ()
 	server_screen->duration = 8; // 1 second, instead of 4...
 
 	if (widget_add (server_screen, "title", "title", NULL, 1) != 0) {
-		fprintf (stderr, "server_screen_init: internal error: could not add title widget\n");
+		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
 	}
 	if (widget_add (server_screen, "one", "string", NULL, 1) != 0) {
-		fprintf (stderr, "server_screen_init: internal error: could not add title widget\n");
+		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
 	}
 	if (widget_add (server_screen, "two", "string", NULL, 1) != 0) {
-		fprintf (stderr, "server_screen_init: internal error: could not add title widget\n");
+		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
 	}
 	if (widget_add (server_screen, "three", "string", NULL, 1) != 0) {
-		fprintf (stderr, "server_screen_init: internal error: could not add title widget\n");
+		report (RPT_ERR, "server_screen_init: internal error: could not add title widget");
 	}
 
 	// Now, initialize all the widgets...
 	if ((w = widget_find (server_screen, "title")) != NULL) {
 		WidgetText(w,title);
 	} else
-		fprintf (stderr, "server_screen_init: Can't find title\n");
+		report (RPT_ERR, "server_screen_init: Can't find title");
 
 	if ((w = widget_find (server_screen, "one")) != NULL)
 		WidgetString(w,1,2,one)
 	else
-		fprintf (stderr, "server_screen_init: Can't find widget one\n");
+		report (RPT_ERR, "server_screen_init: Can't find widget one");
 
 	if ((w = widget_find (server_screen, "two")) != NULL)
 		WidgetString(w,1,3,two)
 	else
-		fprintf (stderr, "server_screen_init: Can't find widget two\n");
+		report (RPT_ERR, "server_screen_init: Can't find widget two");
 
 	if ((w = widget_find (server_screen, "three")) != NULL)
 		WidgetString(w,1,4,three)
 	else
-		fprintf (stderr, "server_screen_init: Can't find widget three\n");
+		report (RPT_ERR, "server_screen_init: Can't find widget three");
 
 	// And enqueue the screen
 	screenlist_add (server_screen);
 
-	debug ("server_screen_init done\n");
+	debug (RPT_DEBUG, "server_screen_init done");
 
 	return 0;
 }

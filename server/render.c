@@ -10,7 +10,7 @@
   This will probably take a while to do.  :(
 
   THIS FILE IS MESSY!  Anyone care to rewrite it nicely?  Please??  :)
-  
+
   NOTE: (from David Douthitt) Multiple screen sizes?  Multiple simultaneous
   screens?  Horrors of horrors... next thing you know it'll be making coffee...
   Better believe it'll take a while to do...
@@ -20,7 +20,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "shared/debug.h"
+#include "shared/report.h"
 #include "shared/LL.h"
 
 #include "drivers/lcd.h"
@@ -49,12 +49,12 @@ draw_screen (screen * s, int timer)
 	static screen *old_s = NULL;
 	int tmp = 0, tmp_state = 0;
 
-	//debug("Render...\n");
+	//debug(RPT_DEBUG, "Render...");
 	//return 0;
 
 	reset = 1;
 
-	//debug("draw_screen: %8x, %i\n", (int)s, timer);
+	//debug(RPT_DEBUG, "draw_screen: %8x, %i", (int)s, timer);
 
 	if (!s)
 		return -1;
@@ -73,7 +73,7 @@ draw_screen (screen * s, int timer)
 	// lcd_ptr->backlight_brightness, lcd_ptr->backlight_flash ...
 
 	// If the screen's backlight_state isn't set (default) then we
-	// inherit the backlight state from the parent client. This allows 
+	// inherit the backlight state from the parent client. This allows
 	// the client to override it's childrens settings.
 	if (s->backlight_state == BACKLIGHT_NOTSET) {
 		if (s->parent) tmp_state = s->parent->backlight_state;
@@ -121,7 +121,7 @@ draw_screen (screen * s, int timer)
 	// Draw a frame...
 	draw_frame (s->widgets, 'v', 0, 0, lcd_ptr->wid, lcd_ptr->hgt, s->wid, s->hgt, (((s->duration / s->hgt) < 1) ? 1 : (s->duration / s->hgt)), timer);
 
-	//debug("draw_screen done\n");
+	//debug(RPT_DEBUG, "draw_screen done");
 
 	if (heartbeat) {
 		lcd_ptr->heartbeat(s->heartbeat);
@@ -143,7 +143,7 @@ draw_screen (screen * s, int timer)
 	// flush display out, frame and all...
 	lcd_ptr->flush ();
 
-	//debug("draw_screen: %8x, %i\n", s, timer);
+	//debug(RPT_DEBUG, "draw_screen: %8x, %i", s, timer);
 
 	return 0;
 
@@ -213,12 +213,12 @@ draw_frame (LinkedList * list,
 	} else if (HorizontalScrolling) {
 		// TODO:  Frames don't scroll horizontally yet!
 	}
-	//debug("draw_screen: %8x, %i\n", s, timer);
+	//debug(RPT_DEBUG, "draw_screen: %8x, %i", s, timer);
 
 	if (!list)
 		return -1;
 
-	//debug("draw_frame: %8x, %i\n", frame, timer);
+	//debug(RPT_DEBUG, "draw_frame: %8x, %i", frame, timer);
 
 #define PositiveX(a)	((a)->x > 0)
 #define PositiveY(a)	((a)->y > 0)
@@ -334,7 +334,7 @@ draw_frame (LinkedList * list,
 						break;
 					if (w->right < w->left)
 						break;
-					//printf("rendering: %s %d\n",w->text,timer);
+					//printf(RPT_DEBUG, "rendering: %s %d",w->text,timer);
 					screen_width = w->right - w->left + 1;
 					switch (w->length) {	// actually, direction...
 						// FIXED:  Horz scrollers don't show the
@@ -382,7 +382,7 @@ draw_frame (LinkedList * list,
 							if (offset <= length) {
 								strncpy (str, &((w->text)[offset]), screen_width);
 								str[screen_width] = '\0';
-								//printf("%s : %d\n",str,length-offset);
+								//debug(RPT_DEBUG, "scroller %s : %d", str, length-offset);
 							} else {
 								str[0] = '\0';
 							}
@@ -416,15 +416,15 @@ draw_frame (LinkedList * list,
 									int begin = 0;
 									if (!screenlist_action)
 										screenlist_action = RENDER_HOLD;
-									//printf("length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d \n",length,screen_width,lines_required,available_lines,effLines);
+									//debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);
 									if (w->speed > 0) {
 										necessaryTimeUnits = effLines * w->speed;
 										if (((timer / (effLines * w->speed)) % 2) == 0) {
-											//printf("up ");
+											//debug(RPT_DEBUG, "up ");
 											begin = (timer % (effLines * w->speed))
 												 / w->speed;
 										} else {
-											//printf("down ");
+											//debug(RPT_DEBUG, "down ");
 											begin = (((timer % (effLines * w->speed))
 														 - (effLines * w->speed) + 1) / w->speed)
 												 * -1;
@@ -442,11 +442,11 @@ draw_frame (LinkedList * list,
 									} else {
 										begin = 0;
 									}
-									//printf("rendering begin: %d  timer: %d effLines: %d\n",begin,timer,effLines);
+									//debug(RPT_DEBUG, "rendering begin: %d  timer: %d effLines: %d",begin,timer,effLines);
 									for (i = begin; i < begin + available_lines; i++) {
 										strncpy (str, &((w->text)[i * (screen_width)]), screen_width);
 										str[screen_width] = '\0';
-										//printf("rendering: '%s' of %s\n",
+										//debug(RPT_DEBUG, "rendering: '%s' of %s",
 										//str,w->text);
 										lcd_ptr->string (w->left, w->top + (i - begin), str);
 									}

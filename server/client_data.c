@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "shared/debug.h"
+#include "shared/report.h"
 
 #include "client_data.h"
 #include "screen.h"
@@ -34,14 +34,14 @@ client_data_init (client_data * d)
 
 	d->screenlist = NewScreen();
 	if (!d->screenlist) {
-		fprintf (stderr, "client_data_init: Error allocating screenlist\n");
+		report( RPT_ERR, "client_data_init: Error allocating screenlist");
 		return -1;
 	}
 	/* TODO:  this section...  (client menus)
 	   d->menulist = LL_new();
 	   if(!d->menulist)
 	   {
-	   fprintf(stderr, "client_data_init: Error allocating menulist\n");
+	   report( RPT_ERR, "client_data_init: Error allocating menulist");
 	   return -1;
 	   }
 	 */
@@ -53,7 +53,7 @@ client_data_destroy (client_data * d)
 {
 	screen *s;
 
-	debug ("client_data_destroy\n");
+	report( RPT_INFO, "client_data_destroy");
 
 	if (!d)
 		return -1;
@@ -69,18 +69,18 @@ client_data_destroy (client_data * d)
 		free (d->client_keys);
 
 	// Clean up the screenlist...
-	debug ("client_data_destroy: Cleaning screenlist\n");
+	debug( RPT_DEBUG, "client_data_destroy: Cleaning screenlist");
 	ResetScreenList (d->screenlist);
 	do {
 		s = NextScreen(d->screenlist);
 		if (s) {
-			debug ("client_data_destroy: removing screen %s\n", s->id);
+			debug( RPT_DEBUG, "client_data_destroy: removing screen %s", s->id);
 
 			// FIXME? This shouldn't be handled here...
 			// Now, remove it from the screenlist...
 			if (screenlist_remove_all (s) < 0) {
 				// Not a serious error..
-				fprintf (stderr, "client_data_destroy:  Error dequeueing screen\n");
+				report( RPT_ERR, "client_data_destroy:  Error dequeueing screen");
 				return 0;
 			}
 			// Free its memory...

@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "shared/sockets.h"
-#include "shared/debug.h"
+#include "shared/report.h"
 
 #include "screen.h"
 #include "widget.h"
@@ -30,11 +30,11 @@ widget_create ()
 {
 	widget *w;
 
-	debug ("widget_create()\n");
+	report (RPT_INFO, "widget_create()");
 
 	w = malloc (sizeof (widget));
 	if (!w) {
-		fprintf (stderr, "widget_create: Error allocating widget\n");
+		report (RPT_DEBUG, "widget_create: Error allocating widget");
 		return NULL;
 	}
 
@@ -65,14 +65,14 @@ widget_destroy (widget * w)
 	if (!w)
 		return -1;
 
-	debug ("widget_destroy(%s)\n", w->id);
+	debug (RPT_INFO, "widget_destroy(%s)", w->id);
 
 	if (w->id)
 		free (w->id);
-	//debug("widget_destroy: id...\n");
+	//debug(RPT_DEBUG, "widget_destroy: id...");
 	if (w->text)
 		free (w->text);
-	//debug("widget_destroy: text...\n");
+	//debug(RPT_DEBUG, "widget_destroy: text...");
 
 	// TODO: Free kids!
 	if (w->kids) {
@@ -89,7 +89,7 @@ widget_destroy (widget * w)
 	}
 
 	free (w);
-	//debug("widget_destroy: widget...\n");
+	//debug(RPT_DEBUG, "widget_destroy: widget...");
 
 	return 0;
 }
@@ -104,7 +104,7 @@ widget_find (screen * s, char *id)
 	if (!id)
 		return NULL;
 
-	debug ("widget_find(%s)\n", id);
+	debug (RPT_DEBUG, "widget_find(%s)", id);
 
 	return widget_finder (s->widgets, id);
 }
@@ -119,26 +119,26 @@ widget_finder (LinkedList * list, char *id)
 	if (!id)
 		return NULL;
 
-	debug ("widget_finder(%s)\n", id);
+	debug (RPT_DEBUG, "widget_finder(%s)", id);
 
 	LL_Rewind (list);
 	do {
-		//debug("widget_finder: Iteration\n");
+		//debug(RPT_DEBUG, "widget_finder: Iteration");
 		w = LL_Get (list);
 		if (w) {
-			//debug("widget_finder: ...\n");
+			//debug(RPT_DEBUG, "widget_finder: ...");
 			if (0 == strcmp (w->id, id)) {
-				debug ("widget_finder:  Found %s\n", id);
+				debug (RPT_DEBUG, "widget_finder:  Found %s", id);
 				return w;
 			}
 			// Search kids recursively
-			//debug("widget_finder: ...\n");
+			//debug(RPT_DEBUG, "widget_finder: ...");
 			if (w->type == WID_FRAME) {
 				err = widget_finder (w->kids, id);
 				if (err)
 					return err;
 			}
-			//debug("widget_finder: ...\n");
+			//debug(RPT_DEBUG, "widget_finder: ...");
 		}
 
 	} while (LL_Next (list) == 0);
@@ -155,7 +155,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 	widget *w, *parent;
 	LinkedList *list;
 
-	debug ("widget_add(%s, %s, %s)\n", id, type, in);
+	report (RPT_INFO, "widget_add(%s, %s, %s)", id, type, in);
 
 	if (!s)
 		return -1;
@@ -187,7 +187,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 			if (parent->type == WID_FRAME) {
 				list = parent->kids;
 				if (!list)
-					fprintf (stderr, "widget_add: Parent has no kids\n");
+					report (RPT_DEBUG, "widget_add: Parent has no kids");
 			} else {
 				// no frame to use as parent
 				sock_send_string (sock, "huh? Not a frame\n");
@@ -211,18 +211,18 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 		return 2;
 	}
 
-	debug ("widget_add: making widget\n");
+	debug (RPT_DEBUG, "widget_add: making widget");
 
 	// Now, make it...
 	w = widget_create ();
 	if (!w) {
-		fprintf (stderr, "widget_add:  Error creating widget\n");
+		report (RPT_ERR, "widget_add:  Error creating widget");
 		return -1;
 	}
 
 	w->id = strdup (id);
 	if (!w->id) {
-		fprintf (stderr, "widget_add:  Error allocating id\n");
+		report (RPT_ERR, "widget_add:  Error allocating id");
 		return -1;
 	}
 
@@ -233,7 +233,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 		if (!w->kids) {
 			w->kids = LL_new ();
 			if (!w->kids) {
-				fprintf (stderr, "widget_add: error allocating kids for frame\n");
+				report (RPT_ERR, "widget_add: error allocating kids for frame");
 				return -1;
 			}
 		}
@@ -251,7 +251,7 @@ widget_remove (screen * s, char *id, int sock)
 	widget *w;
 	LinkedList *list;
 
-	debug ("widget_remove(%s)\n", id);
+	report (RPT_INFO, "widget_remove(%s)", id);
 
 	if (!s)
 		return -1;
@@ -268,7 +268,7 @@ widget_remove (screen * s, char *id, int sock)
 	w = widget_find (s, id);
 	if (!w) {
 		sock_send_string (sock, "huh? You don't have a widget with that id#\n");
-		debug ("widget_remove:  Error finding widget %s\n", id);
+		report (RPT_ERR, "widget_remove:  Error finding widget %s", id);
 		return 1;
 	}
 
@@ -276,7 +276,7 @@ widget_remove (screen * s, char *id, int sock)
 //	TODO: Make this work with frames...
 //	LL_Remove(list, (void *)w);
 
-   
+
 //	TODO: Check for errors here?
 //	widget_destroy(w);
 
@@ -291,7 +291,7 @@ widget_remover (LinkedList * list, widget * w)
 	widget *foo, *bar;
 	int err;
 
-	debug ("widget_remover\n");
+	debug (RPT_DEBUG, "widget_remover");
 
 	if (!list)
 		return 0;
@@ -309,7 +309,7 @@ widget_remover (LinkedList * list, widget * w)
 				// If removing a frame, kill all its kids, too...
 				if (foo == w) {
 					if (!foo->kids) {
-						fprintf (stderr, "widget_remover: frame has no kids\n");
+						debug (RPT_DEBUG, "widget_remover: frame has no kids");
 					} else			  // Kill the kids...
 					{
 						LL_Rewind (foo->kids);
@@ -326,7 +326,7 @@ widget_remover (LinkedList * list, widget * w)
 				} else				  // Otherwise, search the frame recursively...
 				{
 					if (!foo->kids) {
-						fprintf (stderr, "widget_remover: frame has no kids\n");
+						debug (RPT_DEBUG, "widget_remover: frame has no kids");
 					} else
 						err = widget_remover (foo->kids, w);
 

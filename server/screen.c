@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "shared/debug.h"
+#include "shared/report.h"
 
 #include "drivers/lcd.h"
 
@@ -24,7 +24,7 @@ screen_create ()
 
 	s = malloc (sizeof (screen));
 	if (!s) {
-		fprintf (stderr, "screen_create: Error allocating new screen\n");
+		report(RPT_ERR, "screen_create: Error allocating new screen");
 		return NULL;
 	}
 
@@ -38,13 +38,13 @@ screen_create ()
 	s->keys = NULL;
 	s->parent = NULL;
 	s->widgets = NULL;
-	s->timeout = default_timeout; //ignored unless greater than 0. 
+	s->timeout = default_timeout; //ignored unless greater than 0.
 	s->backlight_state = BACKLIGHT_NOTSET;	//Lets the screen do it's own
 						//or do what the client says.
-		
+
 	s->widgets = LL_new ();
 	if (!s->widgets) {
-		fprintf (stderr, "screen_create:  Error allocating widget list\n");
+		report(RPT_ERR, "screen_create:  Error allocating widget list");
 		return NULL;
 	}
 
@@ -89,13 +89,13 @@ screen_find (client * c, char *id)
 	if (!id)
 		return NULL;
 
-	debug ("client_find_screen(%s)\n", id);
+	debug (RPT_INFO, "client_find_screen(%s)", id);
 
 	LL_Rewind (c->data->screenlist);
 	do {
 		s = LL_Get (c->data->screenlist);
 		if ((s) && (0 == strcmp (s->id, id))) {
-			debug ("client_find_screen:  Found %s\n", id);
+			debug (RPT_DEBUG, "client_find_screen:  Found %s", id);
 			return s;
 		}
 	} while (LL_Next (c->data->screenlist) == 0);
@@ -121,7 +121,7 @@ screen_add (client * c, char *id)
 
 	s = screen_create ();
 	if (!s) {
-		fprintf (stderr, "screen_add:  Error creating screen\n");
+		report (RPT_ERR, "screen_add:  Error creating screen");
 		return -1;
 	}
 
@@ -129,7 +129,7 @@ screen_add (client * c, char *id)
 
 	s->id = strdup (id);
 	if (!s->id) {
-		fprintf (stderr, "screen_add:  Error allocating name\n");
+		report (RPT_ERR, "screen_add:  Error allocating name");
 		return -1;
 	}
 	// TODO:  Check for errors here?
@@ -137,7 +137,7 @@ screen_add (client * c, char *id)
 
 	// Now, add it to the screenlist...
 	if (screenlist_add (s) < 0) {
-		fprintf (stderr, "screen_add:  Error queueing new screen\n");
+		report (RPT_ERR, "screen_add:  Error queueing new screen");
 		return -1;
 	}
 
@@ -157,7 +157,7 @@ screen_remove (client * c, char *id)
 	// Make sure this screen *does* exist...
 	s = screen_find (c, id);
 	if (!s) {
-		fprintf (stderr, "screen_remove:  Error finding screen %s\n", id);
+		report (RPT_ERR, "screen_remove:  Error finding screen %s", id);
 		return 1;
 	}
 	// TODO:  Check for errors here?
@@ -166,7 +166,7 @@ screen_remove (client * c, char *id)
 	// Now, remove it from the screenlist...
 	if (screenlist_remove_all (s) < 0) {
 		// Not a serious error..
-		fprintf (stderr, "screen_remove:  Error dequeueing screen\n");
+		report (RPT_ERR, "screen_remove:  Error dequeueing screen");
 		return 0;
 	}
 

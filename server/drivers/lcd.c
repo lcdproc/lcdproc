@@ -32,7 +32,7 @@
 #endif
 
 #include "shared/LL.h"
-#include "shared/debug.h"
+#include "shared/report.h"
 
 #include "lcd.h"
 

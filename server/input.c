@@ -66,10 +66,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <syslog.h>
 
 #include "shared/sockets.h"
-#include "shared/debug.h"
+#include "shared/report.h"
 
 #include "drivers/lcd.h"
 
@@ -105,7 +104,7 @@ handle_input ()
 	if ((key = lcd_ptr->getkey ()) == 0)
 		return 0;
 
-	//debug ("handle_input(%c)\n", (char) key);
+	//debug (RPT_DEBUG, "handle_input(%c)", (char) key);
 
 	// Sequence:
 	// 	Does the current screen want the key?
@@ -162,8 +161,8 @@ handle_input ()
 int
 server_input (int key)
 {
-	debug ("server_input(%c)\n", (char) key);
-	syslog(LOG_DEBUG, "key %d pressed on device", key);
+	debug (RPT_INFO, "server_input(%c)", (char) key);
+	report(RPT_INFO, "key %d pressed on device", key);
 
 	switch ((char) key) {
 		case PAUSE_KEY:
@@ -181,11 +180,11 @@ server_input (int key)
 			screenlist_next ();
 			break;
 		case MAIN_MENU_KEY:
-			debug ("got the menu key!\n");
+			debug (RPT_DEBUG, "got the menu key!");
 			server_menu ();
 			break;
 		default:
-			debug ("server_input: Unused key \"%c\" (%i)\n", (char) key, key);
+			debug (RPT_DEBUG, "server_input: Unused key \"%c\" (%i)", (char) key, key);
 			break;
 	}
 

@@ -5,10 +5,10 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/errno.h>
-#include <syslog.h>
 
 #include "lcd.h"
 #include "debug.h"
+#include "shared/report.h"
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// For Debugging Output //////////////////////////////
@@ -22,7 +22,7 @@ static lcd_logical_driver *debug_drv;
 int
 debug_init (struct lcd_logical_driver *driver, char *args)
 {
-	syslog(LOG_DEBUG, "debug_init");
+	report (RPT_INFO, "debug_init()");
 
 	debug_drv = driver;
 
@@ -58,10 +58,10 @@ debug_init (struct lcd_logical_driver *driver, char *args)
 void
 debug_close ()
 {
-	syslog(LOG_DEBUG, "debug_close()");
+	report (RPT_INFO, "debug_close()");
 
 	if (debug_drv->framebuf) {
-		printf ("frame buffer: %010X", (int) debug_drv->framebuf);
+		report (RPT_DEBUG, "frame buffer: %010X", (int) debug_drv->framebuf);
 		free (debug_drv->framebuf);
 		}
 
@@ -74,7 +74,7 @@ debug_close ()
 void
 debug_clear ()
 {
-	syslog(LOG_DEBUG, "clear()");
+	report (RPT_INFO, "clear()");
 
 	memset (debug_drv->framebuf, ' ', debug_drv->wid * debug_drv->hgt);
 
@@ -86,7 +86,7 @@ debug_clear ()
 void
 debug_flush ()
 {
-	syslog(LOG_DEBUG, "flush()");
+	report (RPT_INFO, "flush()");
 
 	debug_drv->draw_frame ();
 }
@@ -100,10 +100,8 @@ debug_string (int x, int y, char string[])
 {
 
 	int i;
-	char buf[64];
 
-	snprintf(buf, sizeof(buf), "string(%i,%i): %s", x, y, string);
-	syslog (LOG_DEBUG, buf);
+	report(RPT_INFO, "string(%i,%i,%.40s)", x, y, string);
 
 	y --; x --;  // Convert 1-based coords to 0-based...
 
@@ -119,10 +117,7 @@ debug_string (int x, int y, char string[])
 void
 debug_chr (int x, int y, char c)
 {
-	char buf[64];
-
-	snprintf(buf, sizeof(buf), "character(%i,%i): %c", x, y, c);
-	syslog (LOG_DEBUG, buf);
+	report (RPT_DEBUG, "char(%i,%i,%c)", x, y, c);
 
 	x--; y--;
 	debug_drv->framebuf[(y * debug_drv->wid) + x] = c;
@@ -131,50 +126,44 @@ debug_chr (int x, int y, char c)
 int
 debug_contrast (int contrast)
 {
-	syslog(LOG_DEBUG, "contrast: %i", contrast);
+	report (RPT_INFO, "contrast(%i)", contrast);
 	return 0;
 }
 
 void
 debug_backlight (int on)
 {
-	if (on)
-		syslog(LOG_DEBUG, "backlight turned on");
-	else
-		syslog(LOG_DEBUG, "backlight turned off");
+	report (RPT_INFO, "backlight(%i)", on);
 }
 
 void
 debug_init_vbar ()
 {
-	syslog(LOG_DEBUG, "Init vertical bars");
+	report (LOG_INFO, "init_vbar()");
 }
 
 void
 debug_init_hbar ()
 {
-	syslog(LOG_DEBUG, "Init horizontal bars");
+	report (RPT_INFO, "init_hbar()");
 }
 
 void
 debug_init_num ()
 {
-	syslog(LOG_DEBUG, "Big numbers");
+	report (RPT_INFO, "init_bignum()");
 }
 
 void
 debug_num (int x, int num)
 {
-	char buf[64];
-
-	snprintf(buf, sizeof(buf), "big number(%i): %i", x, num);
-	syslog (LOG_DEBUG, buf);
+	report (RPT_INFO, "big number(%i,%i)", x, num);
 }
 
 void
 debug_set_char (int n, char *dat)
 {
-	syslog(LOG_DEBUG, "set character %i", n);
+	report (RPT_INFO, "set_char(%i,data)", n);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -185,7 +174,7 @@ debug_vbar (int x, int len)
 {
 	int y;
 
-	syslog (LOG_DEBUG, "vbar(%i): len = %i", x, len);
+	report (RPT_INFO, "vbar(%i,%i)", x, len);
 
 	for (y = debug_drv->hgt; y > 0 && len > 0; y--) {
 		debug_chr (x, y, '|');
@@ -201,7 +190,7 @@ debug_vbar (int x, int len)
 void
 debug_hbar (int x, int y, int len)
 {
-	syslog(LOG_DEBUG, "hbar(%i,%i): len = %i", x, y, len);
+	report (RPT_INFO, "hbar(%i,%i,%i)", x, y, len);
 
 	for (; x < debug_drv->wid && len > 0; x++) {
 		debug_chr (x, y, '-');
@@ -217,13 +206,13 @@ debug_hbar (int x, int y, int len)
 void
 debug_icon (int which, char dest)
 {
-	syslog (LOG_DEBUG, "char %i = icon %i", dest, which);
+	report (RPT_INFO, "icon(%i,%i", which, dest);
 }
 
 void
 debug_flush_box (int lft, int top, int rgt, int bot)
 {
-	syslog (LOG_DEBUG, "flush_box(%i,%i) - (%i,%i)", lft, top, rgt, bot);
+	report (RPT_INFO, "flush_box(%i,%i,%i,%i)", lft, top, rgt, bot);
 
 	debug_flush ();
 }
@@ -235,25 +224,25 @@ debug_draw_frame (char *dat)
 
 	char out[LCD_MAX_WIDTH];
 
-	syslog (LOG_DEBUG, "draw_frame()");
+	report (RPT_INFO, "draw_frame(data)");
 
 	if (!dat)
 		return;
 
-//  printf("Frame (%ix%i): \n%s\n", debug_drv->wid, debug_drv->hgt, dat);
+//  report (RPT_DEBUG, "Frame (%ix%i): %s", debug_drv->wid, debug_drv->hgt, dat);
 
 	for (i = 0; i < debug_drv->wid; i++) {
 		out[i] = '-';
 	}
 	out[debug_drv->wid] = 0;
-	//printf ("+%s+\n", out);
+	//report (RPT_DEBUG, "+%s+", out);
 
 	for (i = 0; i < debug_drv->hgt; i++) {
 		for (j = 0; j < debug_drv->wid; j++) {
 			out[j] = dat[j + (i * debug_drv->wid)];
 		}
 		out[debug_drv->wid] = 0;
-		//printf ("|%s|\n", out);
+		//report (RPT_DEBUG, "|%s|", out);
 
 	}
 
@@ -261,13 +250,13 @@ debug_draw_frame (char *dat)
 		out[i] = '-';
 	}
 	out[debug_drv->wid] = 0;
-	//printf ("+%s+\n", out);
+	//report (RPT_DEBUG, "+%s+", out);
 
 }
 
 char
 debug_getkey ()
 {
-	syslog(LOG_DEBUG, "getkey");
+	report (RPT_INFO, "getkey()");
 	return 0;
 }

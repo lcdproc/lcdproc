@@ -66,6 +66,8 @@
 /* Define the protocol version */
 #undef PROTOCOL_VERSION
 
+#undef API_VERSION
+
 #undef SLI_DRV
 
 #undef SOLARIS

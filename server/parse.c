@@ -6,7 +6,7 @@
 
   It works much like a command line.  Only the first token is used to
   determine what function to call.
-  
+
  */
 
 #include <stdlib.h>
@@ -15,7 +15,7 @@
 
 #include "shared/LL.h"
 #include "shared/sockets.h"
-#include "shared/debug.h"
+#include "shared/report.h"
 #include "clients.h"
 #include "client_functions.h"
 #include "parse.h"
@@ -42,6 +42,8 @@ parse_all_client_messages ()
 	int invalid = 0;
 	int quoteindex;
 
+	debug( RPT_DEBUG, "parse_all_client_messages()" );
+
 	for (i = 0; i < MAX_ARGUMENTS; i++) {
 		argv[i] = NULL;
 	}
@@ -50,17 +52,17 @@ parse_all_client_messages ()
 #define	LINE_TERM_CHAR	'\0'
 #define COMMENT_CHAR '#'
 
-	//debug("parse: Rewinding list...\n");
+	//debug("parse: Rewinding list...");
 	LL_Rewind (clients);
 	do {
 		// Get the next client...
-		//debug("parse: Getting client...\n");
+		//debug("parse: Getting client...");
 		c = LL_Get (clients);
 		if (c) {
 			// And parse all its messages...
-			//debug("parse: Getting messages...\n");
+			//debug(RPT_DEBUG, "parse: Getting messages...");
 			for (str = client_get_message (c); str; str = client_get_message (c)) {
-				debug ("parse: ...%s\n", str);
+				debug (RPT_DEBUG, "parse: ...%s", str);
 				// Now, split up the string...
 				argc = 0;
 				i = 0;
@@ -70,7 +72,7 @@ parse_all_client_messages ()
 					continue; // found a comment line - skip it...
 				}
 
-				//fprintf(stderr, "starting string scan...\n");
+				debug (RPT_DEBUG, "starting string scan...");
 
 				do {
 					// bypass initial white space...
@@ -98,7 +100,7 @@ parse_all_client_messages ()
 					// Handle quoted strings...
 					if ((s = strchr(leftquote, *p)) != NULL) {
 						quoteindex = s - leftquote;
-						//fprintf(stderr, "found <%c> at index [%d] = <%c>\n", *p, quoteindex, leftquote[quoteindex]);
+						//debug(RPT_DEBUG, "found <%c> at index [%d] = <%c>", *p, quoteindex, leftquote[quoteindex]);
 						q = ++p; // past open quote...
 						while ((rightquote[quoteindex] != *p) && (*p != LINE_TERM_CHAR)) {
 							p++;
@@ -130,11 +132,11 @@ parse_all_client_messages ()
 					// Not end of line?
 					if (*p) {
 						*p = LINE_TERM_CHAR;
-						//fprintf(stderr, "found new token: %s\n", q);
+						//debug(RPT_DEBUG, "found new token: %s", q);
 						argv[i++] = q;
 						q = ++p;
 					} else {
-						//fprintf(stderr, "found new token: %s\n", q);
+						//debug(RPT_DEBUG, "found new token: %s", q);
 						argv[i++] = q;
 					}
 					// At the end of this statement,
@@ -146,7 +148,7 @@ parse_all_client_messages ()
 					argc++;
 				} while (*p);
 
-				//fprintf(stderr, "exiting string scan...\n");
+				//debug(RPT_DEBUG, "exiting string scan...");
 
 				argv[argc] = NULL;
 				if (argc < 1)
