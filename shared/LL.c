@@ -803,12 +803,11 @@ LL_dprint (LL * list)
 
 	current = &list->head;
 
-	printf ("Head:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n", (int) list->head.prev, (int) &list->head, (int) list->head.next);
+	printf ("Head:  prev:\t0x%p\taddr:\t0x%p\tnext:\t0x%p\n", list->head.prev, &list->head, list->head.next);
 
 	for (current = current->next; current != &list->tail; current = current->next) {
-		printf ("node:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n", (int) current->prev, (int) current, (int) current->next);
-
+		printf ("node:  prev:\t0x%p\taddr:\t0x%p\tnext:\t0x%p\n", current->prev, current, current->next);
 	}
 
-	printf ("Tail:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n", (int) list->tail.prev, (int) &list->tail, (int) list->tail.next);
+	printf ("Tail:  prev:\t0x%p\taddr:\t0x%p\tnext:\t0x%p\n", list->tail.prev, &list->tail, list->tail.next);
 }
