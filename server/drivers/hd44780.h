@@ -1,23 +1,15 @@
-/* Driver module for Hitachi HD44780 based Optrex DMC-20481 LCD display 
- * The module is operated in it's 4 bit-mode to be connected to a single
- * 8 bit-port
+/* 
+ * Base driver module for Hitachi HD44780 based LCD displays. This is
+ * a modular driver that allows support for alternative HD44780
+ * designs to be added in a flexible and maintainable manner.
  *
- * Copyright (c) 1998 Richard Rognlie       GNU Public License  
- *                    <rrognlie@gamerz.net>
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
  *
- * Large quantities of this code lifted (nearly verbatim) from
- * the lcd4.c module of lcdtext.  Copyright (C) 1997 Matthias Prinke
- * <m.prinke@trashcan.mcnet.de> and covered by GNU's GPL.
- * In particular, this program is free software and comes WITHOUT
- * ANY WARRANTY.
- *
- * Matthias stole (er, adapted) the code from the package lcdtime by
- * Benjamin Tse (blt@mundil.cs.mu.oz.au), August/October 1995
- * which uses the LCD-controller's 8 bit-mode.
- * References: port.h             by <damianf@wpi.edu>
- *             Data Sheet LTN211, Philips
- *             Various FAQs and TXTs about Hitachi's LCD Controller HD44780 -
- *                www.paranoia.com/~filipg is a good starting point  ???   
+ * Copyright (c)  1999, 1995 Benjamin Tse <blt@Comports.com>
+ *		  1999 Andrew McMeikan <andrewm@engineer.com>
+ *		  1998 Richard Rognlie <rrognlie@gamerz.net>
+ *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
  */
 
 #ifndef HD44780_H
@@ -25,10 +17,8 @@
 
 #include "port.h"
 
-
-extern lcd_logical_driver *hd44780;
-
 int HD44780_init(struct lcd_logical_driver *driver, char *args);
+/* The following methods can all be hidden. They are used through function ptrs
 void HD44780_close();
 void HD44780_flush();
 void HD44780_flush_box(int lft, int top, int rgt, int bot);
@@ -43,7 +33,6 @@ void HD44780_num(int x, int num);
 void HD44780_set_char(int n, char *dat);
 void HD44780_icon(int which, char dest);
 void HD44780_draw_frame(char *dat);
-
-
+*/
 
 #endif
