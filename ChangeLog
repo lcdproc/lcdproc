@@ -11,6 +11,13 @@ Coming soon: (?) (my list of stuff to do soon...)
  * Better syntax for driver parameters
  * Dynamically-loaded driver system
 
+v0.4.2:
+ + Added --waittime server argument.  You can now specify how long
+   a screen should stay on the display.  The default is 64 ticks or
+   8 seconds.
+ + Fixed compile problems on non-Linux platforms where cfmakeraw,
+   CBAUD, and ioperm don't exist.  All drivers now use the same code
+   to initialize a serial port.
 v0.4.1:
  + Changed protocol to 0.3 because we now accept both -foo and foo
    as argument introducers.  in 0.4-pre10, these were changed
