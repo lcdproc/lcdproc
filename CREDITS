@@ -4,38 +4,154 @@ not listed, let us know!
 
 CONTRIBUTORS
 
-William Ferrell - Project founder, wrote 1st version, much
-	documentation, design for V0.4, continued maintenance
+(in order of appearance :)
 
-Scott Scriven - wrote V0.3 and most of V0.4, and helped
-	procrastinate the rest of the time...
+William Ferrell:
+	- Project founder, wrote 1st version, much documentation, design
+	  for V0.4, continued maintenance
 
-Gareth Watts - Patches, mailing list, ideas, web hosting, CVS,
-	etc.
+Scott Scriven:
+	- wrote V0.3 and most of V0.4, and helped procrastinate the rest
+	  of the time...
 
-Matrix Orbital Corporation - Free displays for us developers,
-	and lots of help early on
+Gareth Watts:
+	- Patches, mailing list, ideas, web hosting, CVS, etc.
 
-David Glaude - Lirc driver, IRMAN driver, Big Number support,
-	general-purpose output, dynamic custom char allocation,
-	i2c support, ...
+Matrix Orbital Corporation:
+	- Free displays for us developers, and lots of help early on
+
+Benjamin Tse <blt@Comports.com>, Matthias Prinke <m.prinke@trashcan.mcnet.de>:
+	- HD44780 driver and predecessors
+
+Richard Rognlie <rrognlie@gamerz.net>:
+	- Work on HD44780 driver 
+	- GIF driver (lost code)
+
+Tom Wheeley:
+	- IRMan input driver
+
+Bjoern Andersson:
+	- Curses driver
+
+Andrew McMeikan <andrewm@engineer.com>:
+	- HD44780 driver
+
+David Glaude:
+	- Lirc driver(not the current version)
+	- IRMAN driver,
+        - lcdproc big clocK screen.
+        - Matrix Orbital enhancement: Big Number, general-purpose output,
+	  dynamic custom char allocation, i2c support(lost), ...
+	- Crystal Fontz driver
+	- Matrix orbital GLK driver
+
+Todd Porter:
+	- Windows 95/98 and NT version
+
+Bjoern Andersson:
+	- Autoconf/automake build system
+	- Curses driver
+
+Jason Dale Woodward:
+	- widget scrolling
+
+Ethan Dicks:
+	- PIC-an-LCD original driver (later merged into HD44780 driver)
+
+Michael Reinelt:
+	- SED1520 (copied work of him)
+
+Simon Harrison:
+	- SVGAlib driver
+
+Horizon Technologies:
+	- WIRZ-SLI driver
+
+Charles Steinkuehler:
+	- Work on HD44780 timing code
+
+Harald Klein:
+	- Lirc driver (initial version of the current code)
+	- Metar Client
+
+Philip Pokorny:
+	- Crystal Fontz driver
+	- Matrix Orbital driver
+	- Matrix Orbital GLK driver
+	- Curses driver
+
+Glen Gray:
+	- ?
+
+David Douthitt:
+	- Crystal Fontz driver
+	- Matrix Orbital driver
+	- Matrix Orbital GLK driver
+	- Curses driver
+
+Eddie Sheldrake:
+	- Crystal Fontz driver
+
+Rene Wagner <reenoo@gmx.de>:
+	- LCDM001 driver
+	- ASCII emulation of BigNum
+	- CFontz v2.0 patches merging,
+	- LIRC driver updates (new API, merged David's code)
+	- Lots of driver updates for 0.4.3 (configfile, reporting):
+	- CFontz, curses, glk, MtxOrb,
+	- EPM list file for automatic package generation,
+	- current documentation in docbook format
+	- 0.4.3 backlight and heartbeat implementation
+	- Lots of other stuff for the 0.4.3 release
+
+Andre Breiler:
+	- Matrix Orbital driver
 	
-Todd Porter - Windows 95/98 and NT version
+Joris Robijn:
+	- HD44780 driver maintenance and enhancement
+	- Config file stuff
+	- Reporting stuff
+	- Work on API 0.5 architecture and implementation, loadable drivers.
 
-Bjorn Andersson - Autoconf/automake build system
+Guillaume Filion:
+	- Portability bug fixes on the curses, HD44780, SED1520 and 
+	  STV5730 drivers.
+	- Partially implemented Thomas Runge's BSD port of lcdproc.
+	- Ported the parallel functions in port.h to BSD.
+	- Autoconf/automake stuff.
+	- Various small 0.4.3 changes.
 
-Andrew McMeikan - Awesome hd44780 driver!
+Chris Debenham:
+	- Matrix Orbital GLK driver
+	- LB216 driver
 
-Jason Dale Woodward - widget scrolling
+Mark Haemmerling:
+	- HD44780 character conversion table
 
-Richard Rognlie - GIF driver
+Robin Adams:
+	- SED1520 driver
+	- STV5730 driver
 
-Harald Klein - Lirc driver, Metar Client
+Manuel Stahl:
+	- T6963 driver
 
-Rene Wagner <reenoo@gmx.de> - LCDM001 driver, ASCII emulation
-	of BigNum, CFontz driver update (configfile, reporting)
-	curses driver update (configfile and reporting support)
+Mike Patnode:
+	- Crystal Fontz
+	- Various 0.4.3 changes
 
+Further developers in the sourceforge lcdproc team:
+Mindaugas Idzelis       aim4min
+Andre Burton            andreb
+Colin Munro             colinmunro
+Shane Spencer           hardwire
+J Robert Ray            jrray
+Matthew Dainty          mattd
+Jim McCracken           merlin_jim
+Ken Robertson		seadawg
+Simon Harrison		smh
+Stephen Paul		tegetana
+Luis Llorente		luisllo
 
 Please let us know if your name is missing, or your credit
 information is incorrect!
+
