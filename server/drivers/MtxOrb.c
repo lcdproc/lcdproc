@@ -1245,6 +1245,10 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 	static int circular = -1;
 
 /*	fprintf(stderr, "GLU: MtxOrb_ask_bar(%d).\n", type); */
+
+/* This bypass the search for WHITE and BLACK */
+	if (type==barw) return 32;
+	if (type==barb) return 255;
 	
 	/* If the screen was clear then no graphic caracter are in use yet. */
 	if (clear) {					  

@@ -11,8 +11,8 @@
  *      XX      ··      XX      X·       XX
  */
 
-#define S 32
-#define F 255
+#define S 8
+#define F 9
 
 /****************************************************************
  * Normal charset
