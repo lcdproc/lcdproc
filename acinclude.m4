@@ -248,7 +248,6 @@ AC_DEFUN([AC_FIND_MTAB_FILE], [
 	fi
 ])
 
-
 dnl
 dnl Filesystem information detection
 dnl
@@ -420,3 +419,58 @@ AC_DEFUN(AC_GET_FS_INFO, [
     dnl fi
 ])
 
+dnl 1.1 (2001/07/26) -- Miscellaneous @ ac-archive-0.5.32 
+dnl Warren Young <warren@etr-usa.com> 
+dnl This macro checks for the SysV IPC header files. It only checks 
+dnl that you can compile a program with them, not whether the system 
+dnl actually implements working SysV IPC. 
+dnl http://ac-archive.sourceforge.net/Miscellaneous/etr_sysv_ipc.html
+AC_DEFUN([ETR_SYSV_IPC],
+[
+AC_CACHE_CHECK([for System V IPC headers], ac_cv_sysv_ipc, [
+        AC_TRY_COMPILE(
+                [
+                        #include <sys/types.h>
+                        #include <sys/ipc.h>
+                        #include <sys/msg.h>
+                        #include <sys/sem.h>
+                        #include <sys/shm.h>
+                ],, ac_cv_sysv_ipc=yes, ac_cv_sysv_ipc=no)
+])
+
+        if test x"$ac_cv_sysv_ipc" = "xyes"
+        then
+                AC_DEFINE(HAVE_SYSV_IPC, 1, [ Define if you have System V IPC ])
+        fi
+]) dnl ETR_SYSV_IPC
+
+dnl 1.1 (2001/07/26) -- Miscellaneous @ ac-archive-0.5.32 
+dnl Warren Young <warren@etr-usa.com> 
+dnl This macro checks to see if sys/sem.h defines union semun. Some 
+dnl systems do, some systems don't. Your code must be able to deal with 
+dnl this possibility; if HAVE_STRUCT_SEMUM isn't defined for a given system, 
+dnl you have to define this structure before you can call functions 
+dnl like semctl(). 
+dnl You should call ETR_SYSV_IPC before this macro, to separate the check 
+dnl for System V IPC headers from the check for struct semun. 
+dnl http://ac-archive.sourceforge.net/Miscellaneous/etr_struct_semun.html
+AC_DEFUN([ETR_UNION_SEMUN],
+[
+AC_CACHE_CHECK([for union semun], ac_cv_union_semun, [
+        AC_TRY_COMPILE(
+                [
+                        #include <sys/types.h>
+                        #include <sys/ipc.h>
+                        #include <sys/sem.h>
+                ],
+                [ union semun s ],
+                ac_cv_union_semun=yes,
+                ac_cv_union_semun=no)
+])
+
+        if test x"$ac_cv_union_semun" = "xyes"
+        then
+                AC_DEFINE(HAVE_UNION_SEMUN, 1,
+                        [ Define if your system's sys/sem.h file defines union semun ])
+        fi
+]) dnl ETR_UNION_SEMUN

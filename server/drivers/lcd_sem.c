@@ -21,6 +21,7 @@
  * $Id$
  */
 
+#include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>			  /* for semaphore functions */
@@ -30,8 +31,9 @@
 
 #include "lcd_sem.h"
 
-#ifdef _SEM_SEMUN_UNDEFINED
-/* according to X/OPEN we have to define it ourselves */
+// according to X/OPEN we have to define it ourselves
+//#ifdef _SEM_SEMUN_UNDEFINED
+#ifndef HAVE_UNION_SEMUN
 union semun {
 	int val;                    /* value for SETVAL */
 	struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
@@ -148,6 +150,7 @@ sem_signal (int sid)
 int
 sem_remove (int sid)
 {
+#ifdef EIDRM
 	int i;
 	union semun dummy;
 
@@ -163,5 +166,6 @@ sem_remove (int sid)
 		}
 	}
 
+#endif
 	return 0;
 }
