@@ -40,8 +40,10 @@ typedef struct KeyReservation {
 } KeyReservation;
 
 
-int init_input();
+int input_init();
 	/* Init the input handling system */
+int input_shutdown();
+	/* Shut it down */
 int input_reserve_key (char * key, bool exclusive, Client * client);
 	/* Reserves a key for a client */
 	/* Return -1 if reservation of key is not possible */

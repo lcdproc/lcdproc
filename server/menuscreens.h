@@ -21,7 +21,9 @@
 extern Screen * menuscreen;
 extern Menu * main_menu;
 
-int init_menu();
+int menuscreens_init();
+
+int menuscreens_shutdown();
 
 bool is_menu_key (char * key);
 /* This function indicates to the input part whether this key was the

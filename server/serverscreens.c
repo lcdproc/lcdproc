@@ -50,7 +50,7 @@ server_screen_init ()
 	}
 	server_screen->name = "Server screen";
 	server_screen->duration = 8; /* 1 second, instead of 4...*/
-	server_screen->priority = -1; /* TODO: use priorities good */
+	server_screen->priority = 255;
 
 	/* Create all the widgets...*/
 	for (line=1; line<=4; line++) {
@@ -83,7 +83,17 @@ server_screen_init ()
 }
 
 int
-update_server_screen (int timer)
+server_screen_shutdown ()
+{
+	if (!server_screen) return -1;
+
+	screenlist_remove (server_screen);
+	screen_destroy (server_screen);
+	return 0;
+}
+
+int
+update_server_screen ()
 {
 	Client * c;
 	Widget * w;

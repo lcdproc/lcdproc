@@ -19,14 +19,18 @@
 #include "shared/sockets.h"
 #include "shared/report.h"
 #include "screenlist.h"
+#include "render.h"
 #include "screen.h"
+#include "serverscreens.h"
 #include "clients.h"
 
+#include "main.h" /* for timer */
+
 int screenlist_action = 0;
+long int current_screen_start_time;
 
-int timer = 0;
-
-LinkedList *screenlist;
+LinkedList *screenlist = NULL;
+Screen * current_screen = NULL;
 
 int screenlist_add_end (Screen * screen);
 Screen *screenlist_next_roll ();
@@ -46,10 +50,7 @@ screenlist_init ()
 		report(RPT_ERR, "%s: error allocating list", __FUNCTION__);
 		return -1;
 	}
-
 	screenlist_action = 0;
-	timer = 0;
-
 	return 0;
 }
 
@@ -58,6 +59,10 @@ screenlist_shutdown ()
 {
 	report (RPT_DEBUG, "%s()", __FUNCTION__);
 
+	if( !screenlist ) {
+		/* Program shutdown before completed startup */
+		return -1;
+	}
 	LL_Destroy (screenlist);
 
 	return 0;
@@ -89,72 +94,91 @@ screenlist_remove_all (Screen * s)
 	return i;
 }
 
-LinkedList *
-screenlist_getlist ()
+void
+screenlist_update ()
+/* Decide if we need to switch to an other screen.
+ */
 {
+	Screen * s;
+
 	report (RPT_DEBUG, "%s()", __FUNCTION__);
 
-	return screenlist;
+	s = screenlist_current ();
+	if (!s) {
+		/* Try to switch to the first screen in the list */
+
+		s = LL_GetFirst(screenlist);
+		if (!s) {
+			/* There was no screen in the list */
+			return;
+		}
+		screenlist_switch (s);
+	}
+	if (timer - current_screen_start_time >= s->duration) {
+		screenlist_switch( screenlist_next ());
+	}
+
+	/* Check to see if the screen has a timeout value, if it does
+	 * decrese it and then check to see if it has excpired.
+	 * Remove if expired.
+	 */
+	if (s && s->timeout != -1) {
+		--(s->timeout);
+		report(RPT_DEBUG, "Timeout matches check, screen %s has timeout->%d", s->name, s->timeout);
+		if (s->timeout <= 0) {
+			client_remove_screen (s->client, s);
+			screen_destroy (s);
+			report(RPT_DEBUG, "Removing screen %s which has timeout->%d", s->name, s->timeout);
+		}
+	}
+	for (s=LL_GetFirst(screenlist); s; s=LL_GetNext(screenlist)) {
+		report( RPT_DEBUG, "%s: [%s] %d %d", __FUNCTION__, s->id, s->priority, s->duration );
+	}
+}
+
+void
+screenlist_switch (Screen * s)
+/* Switch to an other screen */
+{
+	Client * c;
+	char str[256];
+
+	if (!s) return;
+
+	report (RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id );
+
+	if (s == current_screen) {
+		/* Nothing to be done */
+		return;
+	}
+
+	if (current_screen) {
+		c = current_screen->client;
+		if (c) {
+			/* Tell the client we're not listening any more...*/
+			snprintf (str, sizeof(str), "ignore %s\n", current_screen->id);
+			sock_send_string (c->sock, str);
+		} else {
+			/* It's a server screen, no need to inform it. */
+		}
+	}
+	c = s->client;
+	if (c) {
+		/* Tell the client we're paying attention...*/
+		snprintf (str, sizeof(str), "listen %s\n", s->id);
+		sock_send_string (c->sock, str);
+	} else {
+		/* It's a server screen, no need to inform it. */
+	}
+	report (RPT_INFO, "%s: switched to screen [%.40s]", __FUNCTION__, s->id );
+	current_screen = s;
+	current_screen_start_time = timer;
 }
 
 Screen *
 screenlist_current ()
 {
-	char str[256];
-	Screen * s;
-	static Screen * old_s = NULL;
-	Client * c;
-
-	debug( RPT_DEBUG, "%s()", __FUNCTION__);
-
-	/*LL_dprint(screenlist);*/
-
-	s = (Screen *) LL_GetFirst (screenlist);
-
-	/* FIXME:  Make sure the screen/client exists!*/
-	if (s != old_s) {
-		/*debug (RPT_DEBUG, "screenlist_current: new screen");*/
-		timer = 0;
-
-		/* Tell the client we're done with the current screen*/
-		if (old_s) {
-			/*debug(RPT_DEBUG, "screenlist_current: ignoring old screen");*/
-			LL_Rewind (screenlist);
-			if (old_s != LL_Find (screenlist, compare_addresses, old_s)) {
-				report (RPT_WARNING, "screenlist: Didn't find screen 0x%8x! Client crashed?", (int) old_s);
-			} else {
-				/*debug(RPT_DEBUG, "screenlist_current: ... sending ignore");*/
-				c = old_s->client;
-				if (c)				  /* Tell the client we're not listening any more...*/
-				{
-					snprintf (str, sizeof(str), "ignore %s\n", old_s->id);
-					sock_send_string (c->sock, str);
-				} else				  /* The server has the display, so do nothing*/
-				{
-					;
-				}
-				/*debug(RPT_DEBUG, "screenlist_current: ... sent ignore");*/
-			}
-		}
-		if (s) {
-			/*debug(RPT_DEBUG, "screenlist_current: listening to new screen");*/
-			c = s->client;
-			if (c)					  /* Tell the client we're paying attention...*/
-			{
-				snprintf (str, sizeof(str), "listen %s\n", s->id);
-				sock_send_string (c->sock, str);
-			} else					  /* The server has the display, so do nothing*/
-			{
-				;
-			}
-		}
-	}
-
-	old_s = s;
-
-	/*debug(RPT_DEBUG, "screenlist_current: return %8x", s);*/
-
-	return s;
+	return current_screen;
 }
 
 int
@@ -252,7 +276,7 @@ screenlist_next_priority ()
 
 	LL_Sort (screenlist, compare_priority);
 
-	return screenlist_current ();
+	return LL_Get (screenlist);
 }
 
 /* Simple round-robin approach to screen cycling...*/

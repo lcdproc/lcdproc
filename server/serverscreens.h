@@ -17,7 +17,8 @@
 extern Screen * server_screen;
 
 int server_screen_init ();
-int update_server_screen (int timer);
+int server_screen_shutdown ();
+int update_server_screen ();
 int goodbye_screen ();
 
 #endif

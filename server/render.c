@@ -38,6 +38,8 @@
 #include "widget.h"
 #include "render.h"
 
+int metronome = 0; /* This counter will be increased at every rendering */
+
 int heartbeat = HEARTBEAT_OPEN;
 int heartbeat_fallback = HEARTBEAT_ON; /* If no heartbeat setting has been set at all */
 int backlight = BACKLIGHT_OPEN;
@@ -50,10 +52,10 @@ static int reset;
 
 #define BUFSIZE 1024
 
-static int draw_frame (LinkedList * list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, int timer);
+static int render_frame (LinkedList * list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, long int timer);
 
 int
-draw_screen (Screen * s, int timer)
+render_screen (Screen * s, long int timer)
 {
 	static Screen * old_s = NULL;
 	int tmp_state = 0;
@@ -115,7 +117,7 @@ draw_screen (Screen * s, int timer)
 	drivers_output (output_state);
 
 	/* Draw a frame... */
-	draw_frame (s->widgetlist, 'v', 0, 0, display_props->width, display_props->height, s->width, s->height, (((s->duration / s->height) < 1) ? 1 : (s->duration / s->height)), timer);
+	render_frame (s->widgetlist, 'v', 0, 0, display_props->width, display_props->height, s->width, s->height, (((s->duration / s->height) < 1) ? 1 : (s->duration / s->height)), timer);
 
 	/* Set the cursor */
 	drivers_cursor (s->cursor_x, s->cursor_y, s->cursor);
@@ -147,7 +149,7 @@ draw_screen (Screen * s, int timer)
 /* Best thing to do is to remove support for frames... but anyway... */
 /* */
 static int
-draw_frame (LinkedList * list,
+render_frame (LinkedList * list,
 		char fscroll,	/* direction of scrolling */
 		int left,	/* left edge of frame */
 		int top,	/* top edge of frame */
@@ -156,7 +158,7 @@ draw_frame (LinkedList * list,
 		int fwid,	/* frame width? */
 		int fhgt,	/* frame height? */
 		int fspeed,	/* speed of scrolling... */
-		int timer)	/* ? */
+		long int timer)	/* ? */
 {
 
 #define	VerticalScrolling (fscroll == 'v')
@@ -498,7 +500,7 @@ draw_frame (LinkedList * list,
 						new_bottom = bottom;
 					if (new_left >= right || new_top >= bottom) {	/* Do nothing if it's invisible...*/
 					} else {
-						draw_frame (w->frame_screen->widgetlist, w->length, new_left, new_top, new_right, new_bottom, w->width, w->height, w->speed, timer);
+						render_frame (w->frame_screen->widgetlist, w->length, new_left, new_top, new_right, new_bottom, w->width, w->height, w->speed, timer);
 					}
 				}
 				break;

@@ -7,6 +7,9 @@
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *		 2001, Joris Robijn
+ *               2001, Rene Wagner
+ *               2002, Mike Patnode
+ *               2002, Guillaume Filion
  *
  *
  * Contains main(), plus signal callback functions and a help screen.
@@ -21,6 +24,8 @@
  *
  */
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,6 +37,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+/* TODO: fill in what to include otherwise */
 
 extern char *optarg;
 extern int optind, optopt, opterr;
@@ -52,28 +62,22 @@ extern int optind, optopt, opterr;
 #include "drivers.h"
 #include "main.h"
 
-#define MAX_TIMER 0x10000
-
 #define DEFAULT_LCD_PORT LCDPORT
 #define DEFAULT_BIND_ADDR "127.0.0.1"
 #define DEFAULT_CONFIGFILE "/etc/LCDd.conf"
 #define DEFAULT_USER "nobody"
 #define DEFAULT_DRIVER "curses"
 #define DEFAULT_DRIVER_PATH
-#define DEFAULT_WAITTIME 8
 #define MAX_DRIVERS 8
 #define DEFAULT_DAEMON_MODE 1
-#define DEFAULT_ENABLE_SERVER_SCREEN SERVER_SCREEN_NOSCREEN
+#define DEFAULT_ROTATE_SERVER_SCREEN 1
 #define DEFAULT_REPORTTOSYSLOG 0
 #define DEFAULT_REPORTLEVEL RPT_WARNING
+#define DEFAULT_ADDR "127.0.0.1"
 
-
-/* Store some standard defines into vars... */
-char *version = VERSION;
-char *protocol_version = PROTOCOL_VERSION;
-char *api_version = API_VERSION;
-char *build_date = __DATE__;
-
+//#define DEFAULT_WAITTIME 8
+#define DEFAULT_SCREEN_DURATION 32
+#define DEFAULT_HEARTBEAT HEARTBEAT_ON
 
 /* Socket to bind to...
 
@@ -84,7 +88,21 @@ char *build_date = __DATE__;
    and which address to bind to at run time. */
 
 
+/* Store some standard defines into vars... */
+char *version = VERSION;
+char *protocol_version = PROTOCOL_VERSION;
+char *api_version = API_VERSION;
+char *build_date = __DATE__;
+
+
 /**** Configuration variables ****/
+/* Some variables are settable on the command line. This are variables that
+ * change the mode of operation. This includes settings that you can use to
+ * enable debugging: driver selection, report settings, bind address etc.
+ * All other settings do not need to be settable from the command line. They
+ * also do not necesarily need to be read in main.c but can better be read in
+ * in the file concerned.
+ */
 
 /* All variables are set to 'unset' values*/
 #define UNSET_INT -1
@@ -96,19 +114,23 @@ char configfile[256];	/* a lot of space in the executable. */
 char user[64];		/* The values will be overwritten anyway... */
 
 int daemon_mode = UNSET_INT;
-int enable_server_screen = UNSET_INT;
+int rotate_server_screen = UNSET_INT;
 
 static int reportLevel = UNSET_INT;
 static int reportToSyslog = UNSET_INT;
-static int serverStarted = 0;
 
-/* The drivers and their driver parameters*/
+/* The drivers and their driver parameters */
 char *drivernames[MAX_DRIVERS];
 int num_drivers = 0;
+int stored_argc;
+char **stored_argv;
+short got_reload_signal = 0;
 
+long int timer = 0;
 
 /**** Local functions ****/
 void exit_program (int val);
+void catch_reload_signal (int val);
 void HelpScreen ();
 
 void clear_settings();
@@ -123,20 +145,21 @@ int init_drivers();
 int init_screens();
 void do_mainloop();
 
-#define ESSENTIAL(f) {int r; if( ( r=(f) )<0 ) { report( RPT_CRIT,"Critical error, abort"); exit_program(0);}}
 
+#define ESSENTIAL(f) {int r; if( ( r=(f) )<0 ) { report( RPT_CRIT,"Critical error, abort"); exit_program(0);}}
 int
 main (int argc, char **argv)
 {
-	/* FIXME: s is getting clobbered - in MANY places!!!
-	 *screen *s = NULL;
-	 *char buf[64];
-	 */
+
+	stored_argc = argc;
+	stored_argv = argv;
 
 	signal (SIGINT, exit_program);		/* Ctrl-C will cause a clean exit...*/
 	signal (SIGTERM, exit_program);		/* and "kill"...*/
-	signal (SIGHUP, exit_program);		/* and "kill -HUP" (hangup)...*/
 	signal (SIGKILL, exit_program);		/* and just in case, "kill -KILL" (which cannot be trapped; but oh well)*/
+
+	signal (SIGHUP, catch_reload_signal);		/* On SIGHUP reread config and restart the drivers ! */
+	/* Let's see if we can actually get this to work ;) */
 
 	/* If no paramaters given, give the help screen.
 	 *if (argc == 1)
@@ -188,17 +211,14 @@ main (int argc, char **argv)
  	report( RPT_INFO, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
 
 	/* Startup the server*/
+	ESSENTIAL( screenlist_init() );
 	ESSENTIAL( init_drivers() );
 	ESSENTIAL( init_sockets() );
-	ESSENTIAL( init_input() );
-	ESSENTIAL( init_menu() );
-	ESSENTIAL( init_screens() );
+	ESSENTIAL( input_init() );
+	ESSENTIAL( menuscreens_init() );
+	ESSENTIAL( server_screen_init() );
 	ESSENTIAL( drop_privs(user) );
 
-	/* Store it for exit_program()*/
-	serverStarted = 1;
-
-#ifndef DEBUG
 	/* Now, go into daemon mode...*/
 	if (daemon_mode) {
 		report(RPT_INFO, "Server forking to background");
@@ -207,13 +227,13 @@ main (int argc, char **argv)
 		output_GPL_notice();
 		report(RPT_INFO, "Server running in foreground");
 	}
-#endif
 
 	do_mainloop();
 	/* This loop never stops; we'll get out only with a signal...*/
 
 	return 0;
 }
+#undef ESSENTIAL
 
 
 void
@@ -228,7 +248,7 @@ clear_settings ()
 	strncpy( configfile, UNSET_STR, sizeof(configfile) );
 	strncpy( user, UNSET_STR, sizeof(user) );
 	daemon_mode = UNSET_INT;
-	enable_server_screen = UNSET_INT;
+	rotate_server_screen = UNSET_INT;
 	backlight = UNSET_INT;
 
 	default_duration = UNSET_INT;
@@ -251,11 +271,15 @@ process_command_line (int argc, char **argv)
 
 	debug( RPT_DEBUG, "%s( argc=%d, argv=...)", __FUNCTION__, argc );
 
+	/* Reset getopt */
+	optind = 0;
+
 	/* analyze options here..*/
 	while ((c = getopt(argc, argv, "a:p:d:hfib:w:c:u:sr:")) > 0) {
 		/* FIXME: Setting of c in this loop clobbers s!
 		 * s is set equivalent to c.
 		  */
+		report( RPT_INFO, ">>>> %i", (int) c );
 		switch(c) {
 	 		case 'd':
 				/* Add to a list of drivers to be initialized later...*/
@@ -285,7 +309,7 @@ process_command_line (int argc, char **argv)
 				strncpy(configfile, optarg, sizeof(configfile));
 				break;
 			case 'i':
-				enable_server_screen = 0;
+				rotate_server_screen = 0;
 				break;
 			case 'b':
 				if( strcmp( optarg, "on" ) == 0 ) {
@@ -374,20 +398,8 @@ process_configfile ( char *configfile )
 			daemon_mode = !fg;
 	}
 
-	if( enable_server_screen == UNSET_INT ) {
-		s = config_get_string( "server", "serverscreen", 0, UNSET_STR );
-		if( strcmp( s, "no" ) == 0 ) {
-			enable_server_screen = SERVER_SCREEN_NEVER;
-		}
-		else if( strcmp( s, "noscreen" ) == 0 ) {
-			enable_server_screen = SERVER_SCREEN_NOSCREEN;
-		}
-		else if( strcmp( s, "yes" ) == 0 ) {
-			enable_server_screen = SERVER_SCREEN_ALWAYS;
-		}
-		else if( strcmp( s, UNSET_STR ) != 0 ) {
-			report( RPT_ERR, "Serverscreen can only be no, noscreen or yes" );
-		}
+	if( rotate_server_screen == UNSET_INT ) {
+		rotate_server_screen = config_get_bool( "server", "serverscreen", 0, UNSET_INT );
 	}
 
 	if( backlight == UNSET_INT ) {
@@ -407,10 +419,7 @@ process_configfile ( char *configfile )
 	}
 
 	if( reportToSyslog == UNSET_INT ) {
-		/* Is the value set in the config file anyway ?*/
-		if( strcmp( config_get_string( "server", "reportToSyslog", 0, "" ), "" ) != 0 ) {
-			reportToSyslog = config_get_bool( "server", "reportToSyslog", 0, 0 );
-		}
+		reportToSyslog = config_get_bool( "server", "reportToSyslog", 0, UNSET_INT );
 	}
 	if( reportLevel == UNSET_INT ) {
 		reportLevel = config_get_int( "server", "reportLevel", 0, UNSET_INT );
@@ -457,8 +466,8 @@ set_default_settings()
 
 	if (daemon_mode == UNSET_INT)
 		daemon_mode = DEFAULT_DAEMON_MODE;
-	if (enable_server_screen == UNSET_INT)
-		enable_server_screen = DEFAULT_ENABLE_SERVER_SCREEN;
+	if (rotate_server_screen == UNSET_INT)
+		rotate_server_screen = DEFAULT_ROTATE_SERVER_SCREEN;
 
 	if (default_duration == UNSET_INT)
 		default_duration = DEFAULT_SCREEN_DURATION;
@@ -631,101 +640,115 @@ init_screens ()
 		return -1;
 	}
 
-	if (enable_server_screen > SERVER_SCREEN_NEVER) {
-		/* Add the server screen */
-		if (server_screen_init () < 0) {
-			report(RPT_ERR, "Error initializing server screens");
-			return -1;
-		}
-
-		if (enable_server_screen == SERVER_SCREEN_NOSCREEN) {
-			/* Display the server screen only when there are no other screens */
-			server_screen->priority = 256;
-		}
+	/* Add the server screen */
+	if (server_screen_init () < 0) {
+		report(RPT_ERR, "Error initializing server screens");
+		return -1;
+	}
+	if (!rotate_server_screen) {
+		/* Display the server screen only when there are no other screens */
+		server_screen->priority = 256;
 	}
 	return 0;
 }
 
+#define ESSENTIAL(f) {int r; if( ( r=(f) )<0 ) { report( RPT_CRIT,"Critical error while reloading, abort"); _exit(0);}}
+void
+do_reload ()
+{
+	drivers_unload_all ();		/* Close all drivers */
+
+	config_clear();
+	clear_settings();
+
+	/* Reread command line*/
+	ESSENTIAL( process_command_line (stored_argc, stored_argv) );
+
+	/* Reread config file */
+	if (strcmp(configfile, UNSET_STR)==0)
+		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
+	ESSENTIAL( process_configfile (configfile) );
+
+	/* Set default values */
+	set_default_settings();
+
+	/* Set reporting values */
+	ESSENTIAL( set_reporting( "LCDd", reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
+ 	report( RPT_INFO, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
+
+	/* And restart the drivers */
+	ESSENTIAL( init_drivers() );
+
+}
+#undef ESSENTIAL
 
 void
 do_mainloop ()
 {
-	Screen *s = NULL;
-	char *message=NULL;
+	Screen * s;
+	struct timeval t;
+	struct timeval last_t;
+	int sleeptime;
+	long int process_lag = 0;
+	long int render_lag = 0;
+	long int t_diff;
 
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
-	/*char buf[64];*/
+	gettimeofday (&t, NULL); /* Get initial time */
 
-	/* FIXME: s should still be null from initialization.... what's happening here?!*/
 	while (1) {
-		sock_poll_clients ();		/* poll clients for input*/
-		parse_all_client_messages ();	/* analyze input from network clients*/
-		handle_input ();		/* handle key input from devices*/
+		/* Get current time */
+		last_t = t;
+		gettimeofday (&t, NULL);
+		t_diff = ((t.tv_sec - last_t.tv_sec) * 1e6 + (t.tv_usec - last_t.tv_usec));
 
-		/* TODO:  Move this code to screenlist.c...
-		 * ... it should just say "handle_screens();"
-		 * Timer gets reset by screenlist_next()
-		 */
+		process_lag += t_diff;
+		if (process_lag > 0) {
+			/* Time for a processing stroke */
+			sock_poll_clients ();		/* poll clients for input*/
+			parse_all_client_messages ();	/* analyze input from network clients*/
+			handle_input ();		/* handle key input from devices*/
 
-		timer++;
-
-		if (s && (timer >= s->duration))
-			screenlist_next ();
-
-		/* Just in case it gets out of hand...*/
-		if (timer >= MAX_TIMER)
-			timer = 0;
-
-		/* Update server screen with the right number
-		 * of clients and screens...
-		 */
-
-		/* TODO: Move this call to every client connection
-		 *       and every screen add...
-		 */
-
-		update_server_screen (timer);
-
-		/* draw the current scren*/
-
-		if ((s = screenlist_current ()) != NULL)
-			draw_screen (s, timer);
-
-		usleep (TIME_UNIT);
-
-		/* Check to see if the screen has a timeout value, if it does
-		 * decrese it and then check to see if it has excpired.
-		 * Remove if expired.
-		 */
-		if((message = malloc(256)) == NULL)
-			report(RPT_ERR, "Error allocating message string");
-		else if (s) {
-			snprintf(message, 256, "Screen->%s has timeout->%d", s->name, s->timeout);
-			report(RPT_DEBUG, message);
-			free(message);
+			/* We've done the job... */
+			process_lag = 0 - (1e6/PROCESS_FREQ);
+			/* Note : this does not make a fixed frequency */
 		}
-		if (s && s->timeout != -1) {
 
-			--(s->timeout);
-			if((message = malloc(256)) == NULL)
-				report(RPT_ERR, "Error allocating message string");
-			else {
-				snprintf(message, 256, "Timeout matches check, screen %s has timeout->%d", s->name, s->timeout);
-				report(RPT_DEBUG, message);
-				free(message);
+		render_lag += t_diff;
+		if (render_lag > 0) {
+			/* Time for a rendering stroke */
+			timer ++;
+			screenlist_update ();
+			s = screenlist_current ();
+
+			/* TODO: Move this call to every client connection
+			 *       and every screen add...
+			 */
+			if( s == server_screen ) {
+				update_server_screen (timer);
 			}
-			if (s->timeout <= 0) {
-				client_remove_screen (s->client, s);
-				screen_destroy (s);
-				if((message = malloc(256)) == NULL)
-					report(RPT_ERR, "Error allocating message string");
-				else {
-					snprintf(message, 256, "Removing screen %s which has timeout->%d", s->name, s->timeout);
-					report(RPT_DEBUG, message);
-					free(message);
-				}
+			render_screen (s, timer);
+
+			/* We've done the job... */
+			if( render_lag > (1e6/RENDER_FREQ) * MAX_RENDER_LAG_FRAMES ) {
+				/* Cause rendering slowdown because too much lag */
+				render_lag = (1e6/RENDER_FREQ) * MAX_RENDER_LAG_FRAMES;
 			}
+			render_lag -= (1e6/RENDER_FREQ);
+			/* Note: this DOES make a fixed frequency (except with slowdown) */
+		}
+
+		/* Sleep just as long as needed */
+		sleeptime = min (0-process_lag, 0-render_lag);
+		if( sleeptime > 0 ) {
+			usleep (sleeptime);
+		}
+
+		/* Check if a SIGHUP has been caught */
+		if( got_reload_signal ) {
+			got_reload_signal = 0;
+			do_reload ();
 		}
 	}
 
@@ -753,9 +776,8 @@ exit_program (int val)
 			default: snprintf(buf, sizeof(buf), "Server shutting down on signal %d", val); break;
 				 /* Other values should not be seen, but just in case.. */
 		}
+		report(RPT_NOTICE, buf);	/* report it */
 	}
-
-	report(RPT_NOTICE, buf);	/* report it */
 
 	/* Set emergency reporting and flush all messages if not done already. */
 	if( reportLevel == UNSET_INT )
@@ -768,14 +790,21 @@ exit_program (int val)
 	drivers_unload_all ();		/* release driver memory and file descriptors */
 
 	/* Shutdown things if server start was complete */
-	if( serverStarted ) {
-		clients_shutdown ();		/* shutdown clients (must come first) */
-		screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
-	}
+	clients_shutdown ();		/* shutdown clients (must come first) */
+	menuscreens_shutdown ();
+	screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
+	input_shutdown ();		/* shutdown key input part */
 
-	exit (0);
+	_exit (0);
 }
 
+void
+catch_reload_signal (int val)
+{
+	debug( RPT_DEBUG, "%s( val=%d )", __FUNCTION__, val );
+
+	got_reload_signal = 1;
+}
 
 void
 HelpScreen ()

@@ -24,7 +24,7 @@
 #include "config.h"
 #endif
 
-#include "screenlist.h" /* for timer  */
+#include "main.h" /* for timer  */
 
 #include "shared/report.h"
 #include "shared/configfile.h"

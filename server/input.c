@@ -35,7 +35,7 @@ void input_internal_key (char * key);
 LinkedList * keylist;
 
 
-int init_input()
+int input_init()
 {
 	debug (RPT_DEBUG, "%s()", __FUNCTION__ );
 
@@ -44,17 +44,34 @@ int init_input()
 	return 0;
 }
 
+int input_shutdown()
+{
+	if (!keylist) {
+		/* Program shutdown before completed startup */
+		return -1;
+	}
+
+	free (keylist);
+
+	return 0;
+}
+
 int
 handle_input ()
 {
 	char * key;
+	Screen * current_screen;
 	Client * current_client;
 	Client * target;
 	KeyReservation * kr;
 
 	debug (RPT_DEBUG, "%s()", __FUNCTION__ );
 
-	current_client = screenlist_current()->client;
+	current_screen = screenlist_current();
+	if( current_screen )
+		current_client = current_screen->client;
+	else
+		current_client = NULL;
 
 	/* Handle all keypresses */
 	while ((key = drivers_get_key ()) != NULL ) {

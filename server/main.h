@@ -21,21 +21,25 @@
   contains a few things that other parts of the program might want
   to know about...
  */
+#define DEFAULT_SCREEN_PRIORITY 128
 
 extern char *version;
 extern char *protocol_version;
 extern char *build_date;
 
-void exit_program (int val);
+/* You should be able to modify the following freqencies... */
+#define RENDER_FREQ 8
+/* We want 8 frames per second */
+#define PROCESS_FREQ 32
+/* And 32 times per second processing of messages and keypresses. */
+#define MAX_RENDER_LAG_FRAMES 16
+/* Allow the rendering strokes to lag behind this many frames.
+ * More lag will not be corrected, but will cause slow-down. */
+#define TIME_UNIT (1e6/RENDER_FREQ)
+/* Variable from stone age, still used a lot.  */
 
-/* 1/8th second is a single time unit...*/
-#define TIME_UNIT 125000
-/* But I plan to double the framerate soon, or make it variable...*/
-/*#define TIME_UNIT (125000/2)*/
-
-#define DEFAULT_SCREEN_PRIORITY 128
-#define DEFAULT_SCREEN_DURATION 32
-#define DEFAULT_HEARTBEAT HEARTBEAT_ON
-#define DEFAULT_ADDR "127.0.0.1"
+extern long int timer;
+/* 32 bits at 8Hz will overflow in 2 ^ 29 = 5e8 seconds = 17 years.
+ * Please mail us if you got an overflow :) */
 
 #endif

@@ -25,7 +25,7 @@
 #include "shared/report.h"
 #include "render.h"
 
-LinkedList *clientlist;
+LinkedList *clientlist = NULL;
 
 /* Initialize and kill client list...*/
 int
@@ -48,6 +48,11 @@ clients_shutdown ()
 	Client *c;
 
 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
+
+	if( !clientlist ) {
+		/* Program shutdown before completed startup */
+		return -1;
+	}
 
 	/* Free all client structures... */
 	for (c=LL_GetFirst (clientlist); c; c=LL_GetNext (clientlist) ) {

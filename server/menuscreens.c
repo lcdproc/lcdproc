@@ -39,10 +39,10 @@ char * enter_key;
 char * up_key;
 char * down_key;
 
-Screen * menuscreen;
-MenuItem * active_menuitem;
-Menu * main_menu;
-Menu * screens_menu;
+Screen * menuscreen = NULL;
+MenuItem * active_menuitem = NULL;
+Menu * main_menu = NULL;
+Menu * screens_menu = NULL;
 
 /* Local prototypes */
 void menuscreen_switch_item (MenuItem * new_menuitem);
@@ -52,10 +52,8 @@ MenuEventFunc (backlight_handler);
 MenuEventFunc (contrast_handler);
 MenuEventFunc (brightness_handler);
 
-int init_menu()
+int menuscreens_init()
 {
-	active_menuitem = NULL;
-
 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Get keys from config file */
@@ -75,6 +73,39 @@ int init_menu()
 
 	/* Build menu */
 	menuscreen_create_menu ();
+
+	return 0;
+}
+
+
+int menuscreens_shutdown()
+{
+	debug (RPT_DEBUG, "%s()", __FUNCTION__ );
+
+	if (!menuscreen) {
+		/* Program shutdown before completed startup */
+		return -1;
+	}
+
+	/* Quit menu just to make sure */
+	menuscreen_switch_item (NULL);
+
+	/* Destroy the menuscreen */
+	screen_destroy (menuscreen);
+	menuscreen = NULL;
+	screens_menu = NULL;
+
+	/* Destroy all menus */
+	menuitem_destroy (main_menu);
+	main_menu = NULL;
+
+	/* Forget menu's key reservations */
+	input_release_client_keys (NULL);
+
+	free (menu_key);
+	free (enter_key);
+	free (up_key);
+	free (down_key);
 
 	return 0;
 }
@@ -108,7 +139,7 @@ void menuscreen_inform_item_modified (MenuItem * item)
 
 bool is_menu_key (char * key)
 {
-	if (strcmp (key, menu_key) == 0)
+	if (menu_key && strcmp (key, menu_key) == 0)
 		return true;
 	else
 		return false;
@@ -128,12 +159,13 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 	active_menuitem = new_menuitem;
 
 	/* What was the state change ? */
-	if (old_menuitem && !new_menuitem) {
-		/* Menu is being quit */
-
+	if (!old_menuitem && !new_menuitem) {
+		/* Nothing to be done */
+	} else if (old_menuitem && !new_menuitem) {
 		/* TODO: send menu to backgr */
 		if (screenlist_remove (menuscreen) < 0) {
 			report (RPT_ERR, "%s: Error unqueueing menu screen", __FUNCTION__);
+			return;
 		}
 	} else if (!old_menuitem && new_menuitem) {
 		/* Menu is becoming active */
@@ -142,9 +174,9 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 
 		if (screenlist_add (menuscreen) < 0) {
 			report (RPT_ERR, "%s: Error queueing menu screen", __FUNCTION__);
+			return;
 		}
 		/* TODO: raise it ! */
-		return;
 	} else {
 		/* We're left with the usual case: a menu level switch */
 		if( old_menuitem->parent != new_menuitem) {
@@ -408,6 +440,11 @@ menuscreen_remove_screen (Screen * s)
 	Menu * m;
 
 	debug (RPT_DEBUG, "%s( s=[%s] )", __FUNCTION__, s->id);
+
+	if (s == menuscreen) {
+		return;
+		/* To allow to remove the menuscreen itself */
+	}
 
 	m = menu_find_item (screens_menu, s->id, false);
 	menu_remove_item (screens_menu, m);

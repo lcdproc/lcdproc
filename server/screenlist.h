@@ -22,12 +22,12 @@
 #define RENDER_BACK 13
 
 extern int screenlist_action;
-extern int timer;
 
 int screenlist_init ();
 int screenlist_shutdown ();
 
-LinkedList *screenlist_getlist ();
+void screenlist_update ();
+void screenlist_switch (Screen * s);
 Screen *screenlist_current ();
 
 int screenlist_add (Screen * s);
