@@ -66,14 +66,14 @@
 #if defined DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
 # undef DELAY_IOCALLS
-#elif defined DELAY_NANOSLEEP
-# undef DELAY_GETTIMEOFDAY
-# undef DELAY_IOCALLS
-# include <sched.h>
-#else    // assume  DELAY_IOCALLS
+#elif defined DELAY_IOCALLS && defined HAVE_LPT_PORT
 # undef DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
 # include "port.h"
+#else // assume DELAY_NANOSLEEP
+# undef DELAY_GETTIMEOFDAY
+# undef DELAY_IOCALLS
+# include <sched.h>
 #endif
 
 /////////////////////////////////////////////////////////////////

@@ -86,7 +86,7 @@ static inline int port_deny_full (unsigned short int port) {
 
 /*  ------------------------------------------------------------- */
 /*  Use i386_get_ioperm, i386_set_ioperm, inb and outb from <machine/pio.h> (NetBSD&OpenBSD) */
-#elif defined HAVE_I386_IOPERM_NETBSD && defined HAVE_MACHINE_PIO_H && defined HAVE_MACHINE_SYSARCH_H
+#elif defined HAVE_I386_IOPERM_NETBSD && defined HAVE_MACHINE_PIO_H && defined HAVE_MACHINE_SYSARCH_H && defined HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #include <machine/pio.h>
 #include <machine/sysarch.h>
@@ -175,7 +175,7 @@ static inline int port_deny_full (unsigned short int port) {
 /*#endif // defined HAVE_I386_IOPERM_NETBSD && defined HAVE_MACHINE_PIO_H && defined HAVE_MACHINE_SYSARCH_H
 -------------------------------------------------------------
 Use i386_get_ioperm, i386_set_ioperm from <machine/sysarch.h> and inb and outb from <machine/cpufunc.h> (FreeBSD) */
-#elif defined HAVE_I386_IOPERM_FREEBSD && defined HAVE_MACHINE_SYSARCH_H
+#elif defined HAVE_I386_IOPERM_FREEBSD && defined HAVE_MACHINE_CPUFUNC_H && defined HAVE_MACHINE_SYSARCH_H && defined HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #include <machine/cpufunc.h>
 #include <machine/sysarch.h>
