@@ -128,6 +128,7 @@ int drop_privs(char *user);
 int init_drivers();
 int init_screens();
 void do_mainloop();
+void lcd_list_drivers();
 
 #define ESSENTIAL(f) {int r; if( ( r=f )!=0 ) return r;}
 
@@ -680,7 +681,7 @@ do_mainloop ()
 			if((message = malloc(256)) == NULL)
 				syslog(LOG_NOTICE, "Error allocating message string");
 			else {
-				snprintf(message, 256, "Timeout matches check, has timeout->%d", s->name, s->timeout);
+				snprintf(message, 256, "Timeout matches check, screen %s has timeout->%d", s->name, s->timeout);
 				syslog(LOG_NOTICE, message);
 				free(message);
 			}
