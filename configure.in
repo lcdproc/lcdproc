@@ -209,6 +209,7 @@ AC_OUTPUT(Makefile
 	clients/headlines/Makefile
 	clients/metar/Makefile
 	docs/Makefile
+	docs/lcdproc-dev/Makefile
 	docs/lcdproc-user/Makefile
 	docs/lcdproc-user/drivers/Makefile
 	scripts/Makefile
