@@ -12,6 +12,12 @@ Coming soon: (?) (my list of stuff to do soon...)
  * Dynamically-loaded driver system
 
 v0.4.2:
+ - Removed multiple output driver support - to simplify life
+ * Removed use of sprintf() (in favor of snprintf) for security
+ + Added ability to use defined port and address to listen on
+   (for security) - now defaults to 127.0.0.1
+ + Revamped curses driver: now supports color; has border; and
+   can be (with recompile) placed anywhere on screen it fits
  + Added --waittime server argument.  You can now specify how long
    a screen should stay on the display.  The default is 64 ticks or
    8 seconds.
