@@ -174,7 +174,7 @@ int LB216_init(lcd_logical_driver *driver, char *args)
 
    // Set the functions the driver supports...
 
-   driver->clear =      NULL;
+   driver->clear =      drv_base_clear;
    driver->string =     LB216_string;
    driver->chr =        LB216_chr;
    driver->vbar =       LB216_vbar;
@@ -296,14 +296,15 @@ void LB216_draw_frame(char *dat)
   sprintf(out, "%c%c", 254,80);
   write(fd, out, 2);
 
-
   for(j=0; j<lcd.hgt; j++) {
-    sprintf(out,"%c%c",254,128+(64*(j)));
-//	printf ("|\n|");
+	if (j>=2) {
+    	sprintf(out,"%c%c",254,148+(64*(j-2)));
+	} else {
+    	sprintf(out,"%c%c",254,128+(64*(j)));
+	}
     write(fd, out, 2);
     for(i=0; i<lcd.wid; i++) {
       sprintf(out,"%c",dat[i+(j*lcd.wid)]);
-//		printf("%d,",out[0]);
       write(fd, out, 1);
     }
   }
