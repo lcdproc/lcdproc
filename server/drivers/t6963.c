@@ -139,6 +139,8 @@ t6963_init (Driver *drvthis, char *args)
 	drvthis->supports_multiple = &supports_multiple;
 
 	// Set the functions the driver supports
+	drvthis->width = t6963_width;
+	drvthis->height = t6963_height;
 	drvthis->clear = t6963_clear;
 	drvthis->string = t6963_string;
 	drvthis->chr = t6963_chr;
@@ -209,6 +211,24 @@ t6963_close (Driver *drvthis)
 	t6963_framebuf = NULL;
 	t6963_display_buffer1 = NULL;
 	t6963_display_buffer2 = NULL;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display width
+//
+MODULE_EXPORT int
+t6963_width (Driver *drvthis)
+{
+	return width;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display height
+//
+MODULE_EXPORT int
+t6963_height (Driver *drvthis)
+{
+	return height;
 }
 
 /////////////////////////////////////////////////////////////////
