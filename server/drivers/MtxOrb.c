@@ -184,6 +184,7 @@ static int keypad_test_mode = 0;
 typedef struct p {
 	int def[9];
 	int use[9];
+	int circular;
 /*
         int type;
         int port;
@@ -342,6 +343,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 
 	memset( p->def, -1, sizeof(p->def) );
 	memset( p->use,  0, sizeof(p->use) );
+	p->circular = -1;
 
 
 	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
@@ -1255,7 +1257,7 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 	int pos;
 	int last_not_in_use;
 
-	static int circular = -1;
+/*	static int circular = -1;	Moved to PrivateData	*/
 
         PrivateData * p = drvthis->private_data;
 
@@ -1280,11 +1282,11 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 	if (pos == 8) {
 		last_not_in_use = 8;	     /* No empty slot to reuse. */
 /*		fprintf(stderr, "GLU: MtxOrb_ask_bar| not found.\n");  */
-		circular = (circular + 1) % 8;
+		p->circular = (p->circular + 1) % 8;
 
 		for (i = 0; i < 8; i++) {
-			if (!p->use[(i + circular) % 8])
-				last_not_in_use = (i + circular) % 8;
+			if (!p->use[(i + p->circular) % 8])
+				last_not_in_use = (i + p->circular) % 8;
 		}
 		pos = last_not_in_use;
 	}
