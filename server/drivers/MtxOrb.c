@@ -182,12 +182,13 @@ typedef struct p {
 	int keypad_test_mode;
         int cellwidth;
 	int cellheight;
+	char info[255];		/* static data from MtxOrb_get_info */
         } PrivateData;
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
-MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT int supports_multiple = 1;
 MODULE_EXPORT char *symbol_prefix = "MtxOrb_";
 
 static int  MtxOrb_ask_bar (Driver *drvthis, int type);
@@ -829,7 +830,6 @@ MODULE_EXPORT char *
 MtxOrb_get_info (Driver *drvthis)
 {
 	char in = 0;
-	static char info[255];
 	char tmp[255], buf[64];
 	/* int i = 0; */
         PrivateData * p = drvthis->private_data;
@@ -841,8 +841,8 @@ MtxOrb_get_info (Driver *drvthis)
 
 	debug(RPT_DEBUG, "MtxOrb: get_info");
 
-	memset(info, '\0', sizeof(info));
-	strcpy(info, "Matrix Orbital Driver ");
+	memset(p->info, '\0', sizeof(p->info));
+	strcpy(p->info, "Matrix Orbital Driver ");
 
 	/*
 	 * Read type of display
@@ -865,33 +865,33 @@ MtxOrb_get_info (Driver *drvthis)
 			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
 		} else {
 			switch (in) {
-				case '\x01': strcat(info, "LCD0821 "); break;
-				case '\x03': strcat(info, "LCD2021 "); break;
-				case '\x04': strcat(info, "LCD1641 "); break;
-				case '\x05': strcat(info, "LCD2041 "); break;
-				case '\x06': strcat(info, "LCD4021 "); break;
-				case '\x07': strcat(info, "LCD4041 "); break;
-				case '\x08': strcat(info, "LK202-25 "); break;
-				case '\x09': strcat(info, "LK204-25 "); break;
-				case '\x0A': strcat(info, "LK404-55 "); break;
-				case '\x0B': strcat(info, "VFD2021 "); break;
-				case '\x0C': strcat(info, "VFD2041 "); break;
-				case '\x0D': strcat(info, "VFD4021 "); break;
-				case '\x0E': strcat(info, "VK202-25 "); break;
-				case '\x0F': strcat(info, "VK204-25 "); break;
-				case '\x10': strcat(info, "GLC12232 "); break;
-				case '\x11': strcat(info, "GLC12864 "); break;
-				case '\x12': strcat(info, "GLC128128 "); break;
-				case '\x13': strcat(info, "GLC24064 "); break;
-				case '\x14': strcat(info, "GLK12864-25 "); break;
-				case '\x15': strcat(info, "GLK24064-25 "); break;
-				case '\x21': strcat(info, "GLK128128-25 "); break;
-				case '\x22': strcat(info, "GLK12232-25 "); break;
-				case '\x31': strcat(info, "LK404-AT "); break;
-				case '\x32': strcat(info, "VFD1621 "); break;
-				case '\x33': strcat(info, "LK402-12 "); break;
-				case '\x34': strcat(info, "LK162-12 "); break;
-				case '\x35': strcat(info, "LK204-25PC "); break;
+				case '\x01': strcat(p->info, "LCD0821 "); break;
+				case '\x03': strcat(p->info, "LCD2021 "); break;
+				case '\x04': strcat(p->info, "LCD1641 "); break;
+				case '\x05': strcat(p->info, "LCD2041 "); break;
+				case '\x06': strcat(p->info, "LCD4021 "); break;
+				case '\x07': strcat(p->info, "LCD4041 "); break;
+				case '\x08': strcat(p->info, "LK202-25 "); break;
+				case '\x09': strcat(p->info, "LK204-25 "); break;
+				case '\x0A': strcat(p->info, "LK404-55 "); break;
+				case '\x0B': strcat(p->info, "VFD2021 "); break;
+				case '\x0C': strcat(p->info, "VFD2041 "); break;
+				case '\x0D': strcat(p->info, "VFD4021 "); break;
+				case '\x0E': strcat(p->info, "VK202-25 "); break;
+				case '\x0F': strcat(p->info, "VK204-25 "); break;
+				case '\x10': strcat(p->info, "GLC12232 "); break;
+				case '\x11': strcat(p->info, "GLC12864 "); break;
+				case '\x12': strcat(p->info, "GLC128128 "); break;
+				case '\x13': strcat(p->info, "GLC24064 "); break;
+				case '\x14': strcat(p->info, "GLK12864-25 "); break;
+				case '\x15': strcat(p->info, "GLK24064-25 "); break;
+				case '\x21': strcat(p->info, "GLK128128-25 "); break;
+				case '\x22': strcat(p->info, "GLK12232-25 "); break;
+				case '\x31': strcat(p->info, "LK404-AT "); break;
+				case '\x32': strcat(p->info, "VFD1621 "); break;
+				case '\x33': strcat(p->info, "LK402-12 "); break;
+				case '\x34': strcat(p->info, "LK162-12 "); break;
+				case '\x35': strcat(p->info, "LK204-25PC "); break;
 				default: /*snprintf(tmp, sizeof(tmp), "Unknown (%X) ", in); strcat(info, tmp); */
 					     break;
 			}
@@ -917,7 +917,7 @@ MtxOrb_get_info (Driver *drvthis)
 			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
 		} else {
 			snprintf(buf, sizeof(buf), "Serial No: %ld ", (long int) tmp);
-			strcat(info, buf);
+			strcat(p->info, buf);
 		}
 	} else
 		syslog(LOG_WARNING, "MatrixOrbital driver: unable to read device serial number");
@@ -940,12 +940,12 @@ MtxOrb_get_info (Driver *drvthis)
 			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
 		} else {
 			snprintf(buf, sizeof(buf), "Firmware Rev. %ld ", (long int) tmp);
-			strcat(info, buf);
+			strcat(p->info, buf);
 		}
 	} else
 		syslog(LOG_WARNING, "MatrixOrbital driver: unable to read device firmware revision");
 
-	return info;
+	return p->info;
 }
 
 /* TODO: Finish the support for bar growing reverse way.
