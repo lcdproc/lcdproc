@@ -8,18 +8,24 @@
 #include "config.h"
 #endif
 
-#ifdef LINUX
-#include <sys/vfs.h>
-#else
-#ifdef xBSD
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_MOUNT_H
 #include <sys/mount.h>
-#else
+#endif
+#ifdef HAVE_SYS_VFS_H 
+#include <sys/vfs.h>
+#endif
+#ifdef HAVE_SYS_STATVFS_H
+#include <sys/statvfs.h>
+#endif
+#ifdef HAVE_SYS_STATFS_H
 #include <sys/statfs.h>
 #endif
-
-#endif
-
 
 #include "../../shared/sockets.h"
 
@@ -40,7 +46,11 @@ typedef struct mounts
 
 static int get_fs(mounts fs[])
 {
+#ifdef STAT_STATVFS
+  struct statvfs fsinfo;
+#else
   struct statfs fsinfo;
+#endif
   char line[256];
   int x = 0, y;
   
@@ -68,11 +78,16 @@ static int get_fs(mounts fs[])
 #endif
         ) 
      {
-#if LINUX || BSD
+#ifdef STAT_STATVFS
+        y = statvfs(fs[x].mpoint, &fsinfo);
+#elif STAT_STATFS2_BSIZE 
         y = statfs(fs[x].mpoint, &fsinfo); 
-#else
+#elif STAT_STATFS4
         y = statfs(fs[x].mpoint, &fsinfo, sizeof(fsinfo), 0); 
+#else
+#error "statfs for this system noy yet supported"
 #endif
+	
         fs[x].blocks = fsinfo.f_blocks;
         if(fs[x].blocks > 0)
         {
