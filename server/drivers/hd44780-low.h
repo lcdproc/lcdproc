@@ -81,27 +81,4 @@ extern HD44780_functions *hd44780_functions;
 
 #define POSITION    0x80
 
-// Parallel port pin definitions
-// Output lines
-#define nSTRB 	0x01				  /* negative logic */
-#define STRB 	0x01
-#define nLF 	0x02
-#define LF 	0x02
-#define INIT 	0x04				  /* the only positive logic output line */
-#define nSEL 	0x08
-#define SEL 	0x08
-
-#define OUTMASK	0x0B	/* SEL, LF and STRB are hardware inverted */
-
-// Input lines
-#define nFAULT	0x08
-#define FAULT	0x08
-#define SELIN	0x10
-#define PAPEREND  0x20
-#define nACK	0x40
-#define ACK	0x40
-#define BUSY	0x80
-
-#define INMASK	0x84	/* BUSY input and the IRQ indicator are inverted */
-
 #endif

@@ -53,6 +53,7 @@
 
 #include "hd44780-ext8bit.h"
 #include "hd44780.h"
+#include "lpt-port.h"
 
 #include "port.h"
 #include "lcd_sem.h"

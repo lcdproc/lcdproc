@@ -383,7 +383,7 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 		struct sched_param param;
 		param.sched_priority=1;
 		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-			report( RPT_ERR, "HD44780_init: failed (%s)", strerror (errno));
+			report( RPT_ERR, "SED1330: init failed (%s)", strerror (errno));
 			return -1;
 		}
 	}

@@ -51,6 +51,7 @@
 
 #include "hd44780-serialLpt.h"
 #include "hd44780.h"
+#include "lpt-port.h"
 
 #include "port.h"
 #include "shared/str.h"

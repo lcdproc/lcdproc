@@ -60,6 +60,7 @@
 
 #include "hd44780-winamp.h"
 #include "hd44780.h"
+#include "lpt-port.h"
 
 #include "port.h"
 #include "shared/str.h"
