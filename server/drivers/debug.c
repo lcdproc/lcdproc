@@ -81,7 +81,7 @@ debug_clear ()
 {
 	syslog(LOG_DEBUG, "clear()");
 
-	memset (debug_drv->framebuf, ' ', lcd.wid * lcd.hgt);
+	memset (debug_drv->framebuf, ' ', debug_drv->wid * debug_drv->hgt);
 
 }
 
@@ -93,7 +93,7 @@ debug_flush ()
 {
 	syslog(LOG_DEBUG, "flush()");
 
-	lcd.draw_frame ();
+	debug_drv->draw_frame ();
 }
 
 /////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ debug_string (int x, int y, char string[])
 	y --; x --;  // Convert 1-based coords to 0-based...
 
 	for (i = 0; string[i]; i++) {
-		debug_drv->framebuf[(y * lcd.wid) + x + i] = string[i];
+		debug_drv->framebuf[(y * debug_drv->wid) + x + i] = string[i];
 	}
 }
 
@@ -130,7 +130,7 @@ debug_chr (int x, int y, char c)
 	syslog (LOG_DEBUG, buf);
 
 	x--; y--;
-	lcd.framebuf[(y * lcd.wid) + x] = c;
+	debug_drv->framebuf[(y * debug_drv->wid) + x] = c;
 }
 
 int
@@ -192,10 +192,10 @@ debug_vbar (int x, int len)
 
 	syslog (LOG_DEBUG, "vbar(%i): len = %i", x, len);
 
-	for (y = lcd.hgt; y > 0 && len > 0; y--) {
+	for (y = debug_drv->hgt; y > 0 && len > 0; y--) {
 		debug_chr (x, y, '|');
 
-		len -= lcd.cellhgt;
+		len -= debug_drv->cellhgt;
 	}
 
 }
@@ -208,10 +208,10 @@ debug_hbar (int x, int y, int len)
 {
 	syslog(LOG_DEBUG, "hbar(%i,%i): len = %i", x, y, len);
 
-	for (; x < lcd.wid && len > 0; x++) {
+	for (; x < debug_drv->wid && len > 0; x++) {
 		debug_chr (x, y, '-');
 
-		len -= lcd.cellwid;
+		len -= debug_drv->cellwid;
 	}
 
 }
@@ -245,27 +245,27 @@ debug_draw_frame (char *dat)
 	if (!dat)
 		return;
 
-//  printf("Frame (%ix%i): \n%s\n", lcd.wid, lcd.hgt, dat);
+//  printf("Frame (%ix%i): \n%s\n", debug_drv->wid, debug_drv->hgt, dat);
 
-	for (i = 0; i < lcd.wid; i++) {
+	for (i = 0; i < debug_drv->wid; i++) {
 		out[i] = '-';
 	}
-	out[lcd.wid] = 0;
+	out[debug_drv->wid] = 0;
 	//printf ("+%s+\n", out);
 
-	for (i = 0; i < lcd.hgt; i++) {
-		for (j = 0; j < lcd.wid; j++) {
-			out[j] = dat[j + (i * lcd.wid)];
+	for (i = 0; i < debug_drv->hgt; i++) {
+		for (j = 0; j < debug_drv->wid; j++) {
+			out[j] = dat[j + (i * debug_drv->wid)];
 		}
-		out[lcd.wid] = 0;
+		out[debug_drv->wid] = 0;
 		//printf ("|%s|\n", out);
 
 	}
 
-	for (i = 0; i < lcd.wid; i++) {
+	for (i = 0; i < debug_drv->wid; i++) {
 		out[i] = '-';
 	}
-	out[lcd.wid] = 0;
+	out[debug_drv->wid] = 0;
 	//printf ("+%s+\n", out);
 
 }
