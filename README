@@ -1,6 +1,6 @@
 -- INTRODUCTION --------------------------------------------------------------
 
-LCDproc is a client server suite including drivers for all kinds of nifty LCD
+LCDproc is a client/server suite including drivers for all kinds of nifty LCD
 devices. The server works with different display sizes and supports several
 serial devices: Matrix Orbital, Crystal Fontz, Bayrad, LB216, LCDM001
 (kernelconcepts.de), Wirz-SLI and PIC-an-LCD; and some devices connected to
@@ -10,14 +10,19 @@ usage, uptime, and a lot more.
 
 LCDproc also supports key or remote control input for controlling the clients.
 
+The client and the server use a TCP connection to communicate, so it is
+possible to have a client on a box in Sweden showing its stats on a LCD
+display in the United States.
+
 Our web site is located at http://lcdproc.omnipotent.net
 For new versions and CVS go to http://sourceforge.net/projects/lcdproc/
 
-Check there first for new versions or updates.  We've got a spot on the web
-site for user's suggestions, and you can e-mail us as well:
+Check there first for new versions or updates. For remaining questions,
+you can ask the mailing list. For how to get on the mailing list, see
+the main web site.
 
-choadster@earthlink.net (William W. Ferrell)
-scriven@cs.colostate.edu (Scott Scriven)
+LCDproc was originally written by William W. Ferrell <wwf@splatwerks.org>
+and Scott Scriven <scriven@cs.colostate.edu>.
 
 -- INSTALLATION --------------------------------------------------------------
 
@@ -34,59 +39,26 @@ See the ChangeLog file for more details.
 The first thing you should do is join the mailing list, to do so, go to out
 web site and click on MAIL and follow the instructions.
 
-If you get the urge to help out by writing code, feel free to take a look at
-the TODO file and find out what needs to be done...
-Also, of course, new ideas are good too! :) 
+If you get the urge to help out by writing code, take a look at the TODO
+file to see what we think that needs to be done. If you want to work on
+something, or you want to add something different, tell it on the
+mailing list. Maybe someone is already working on the part, and maybe someone
+has already writen something that you can use. New ideas are always welcome !
 
-To add new drivers, read server/drivers/drv_base.h for instructions.
-
-Also you should spend some time reading the files in the docs/ directory.
+To learn more about how LCDproc works, first have a look at the docs/
+directory. Some important things are documented there, but because this is
+still somewhat a big hacking project, some documentation will be missing ;)
 
 -- SPECIAL THANKS ------------------------------------------------------------
 
-We'd like to thank the following people for helping out with this:
-
-Everyone at Matrix Orbital Corporation -- you guys are great!
-Gareth Watts -- Patches, mailing list, ideas, www, etc.  Thanks!
-Everyone on the mailing list.  :)
-
-The developers (our team at Sourceforge):
-
-Robin Adams		afrob
-Mindaugas Idzelis	aim4min
-Andre Burton		andreb
-Bjoern Andersson	ban
-Benjamin Tse		blt
-Chris Debenham		cjdebenh
-Colin Munro		colinmunro
-Charles Steinkuehler	cstein
-David Douthitt		ddouthitt
-David GLAUDE		dglaude
-Guillaume Filion	gfk
-Glen Gray		glengray
-Mark Haemmerling	haemi
-Shane Spencer		hardwire
-Harald Klein		hklein
-J Robert Ray		jrray
-Matthew Dainty		mattd
-Jim McCracken		merlin_jim
-Philip Pokorny		ppokorny
-Rene Wagner		reenoo
-Joris Robijn		robijn
-Ken Robertson		seadawg
-Simon Harrison		smh
-Stephen Paul		tegetana
-Manuel Stahl		themythos
-Scott Scriven		toykeeper
-William W. Ferrell	willfe
-
-Everyone who contributed, tested or suggested something to help make LCDproc
-a better software.
+LCDproc is a community effort, and as such we'd like to recognize everyone's
+efforts. We've tried to list all the people that have contributed in the
+CREDITS file. Thanks all !
 
 -- LEGAL STUFF ---------------------------------------------------------------
 
-LCDproc is Copyright (C) 1999-2002
-	William Ferrell, Scott Scriven and several other contributors.
+LCDproc is Copyright (C) 1998-2002
+	William Ferrell, Scott Scriven and many other contributors.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
