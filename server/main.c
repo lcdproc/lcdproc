@@ -357,22 +357,21 @@ process_configfile ( char *configfile )
 	// use the driver list from the config file.
 	if( num_drivers == 0 ) {
 		// read the drivernames
-		s = ""; // fill with anything
 
-		while( s ) {
+		while( 1 ) {
 			s = config_get_string( "server", "driver", num_drivers, "" );
-			if( s ) {
+			if( !s || s[0] == 0 )
+				break;
 
-				drivernames[num_drivers] = malloc(strlen(s) + 1);
-				driverfilenames[num_drivers] = malloc(1);
-				driverargs[num_drivers] = malloc(1);
+			drivernames[num_drivers] = malloc(strlen(s)+1);
+			driverfilenames[num_drivers] = malloc(strlen(s)+1);
+			driverargs[num_drivers] = malloc(1);
 
-				strcpy( drivernames[num_drivers], s );
-				strcpy( driverfilenames[num_drivers], s );
-				strcpy( driverargs[num_drivers], "" );
+			strcpy( drivernames[num_drivers], s );
+			strcpy( driverfilenames[num_drivers], s );
+			strcpy( driverargs[num_drivers], "" );
 
-				num_drivers++;
-			}
+			num_drivers++;
 		}
 	}
 
