@@ -5,7 +5,11 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#ifdef HAVE_NCURSES_H
 #include <ncurses.h>
+#else
+#include <curses.h>
+#endif
 
 #include "../../shared/str.h"
 
