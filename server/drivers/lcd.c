@@ -52,6 +52,10 @@
 #include "irmanin.h"
 #endif
 
+#ifdef LIRCIN_DRV
+#include "lircin.h"
+#endif
+
 // TODO: Make a Windows server, and clients...?
 
 
@@ -86,6 +90,9 @@ lcd_physical_driver drivers[] =
 #endif
 #ifdef IRMANIN_DRV
   { "irmanin",   irmanin_init, },
+#endif
+#ifdef LIRCIN_DRV
+  { "lircin",	lircin_init, },
 #endif
   { NULL,       NULL, },
   
