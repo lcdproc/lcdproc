@@ -83,7 +83,7 @@ load_driver ( char * name, char * filename, char * args )
 	LL_Push( loaded_drivers, driver );
 
 	// Check the driver type
-	if( driver->daemonize ) {
+	if( !driver->daemonize ) {
 		return 2;
 	}
 

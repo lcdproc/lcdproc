@@ -270,6 +270,7 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
         /*
          * Configure the display functions
         */
+	driver->daemonize = 1; // daemonize.
 
 	driver->clear = lcdm001_clear;
 	driver->string = lcdm001_string;
