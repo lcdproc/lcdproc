@@ -7,8 +7,8 @@
  */
 
 typedef struct client_function {
-   char *keyword;
-   int (*function) (client * c, int argc, char **argv);
+	char *keyword;
+	int (*function) (client * c, int argc, char **argv);
 } client_function;
 
 // FIXME?  Do these really need to be visible from other sources?

@@ -47,54 +47,54 @@ static unsigned char EnMask[] = { EN1, EN2, EN3 };
 static int EnMaskSize = sizeof (EnMask) / sizeof (unsigned char);
 
 static unsigned int lptPort;
-static int extIF = 0;		// non-zero if extended interface
+static int extIF = 0;			  // non-zero if extended interface
 
 // initialise the driver
 int
 hd_init_winamp (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)
 {
-   // TODO: remove magic numbers below
-   char *argv[64];
-   int argc;
-   int i;
+	// TODO: remove magic numbers below
+	char *argv[64];
+	int argc;
+	int i;
 
-   hd44780_functions->senddata = lcdwinamp_HD44780_senddata;
-   lptPort = port;
+	hd44780_functions->senddata = lcdwinamp_HD44780_senddata;
+	lptPort = port;
 
-   // parse command-line arguments
-   argc = get_args (argv, args, 64);
+	// parse command-line arguments
+	argc = get_args (argv, args, 64);
 
-   for (i = 0; i < argc; ++i)
-      if (strcmp (argv[i], "-e") == 0 || strcmp (argv[i], "--extended") == 0)
-	 extIF = 1;
+	for (i = 0; i < argc; ++i)
+		if (strcmp (argv[i], "-e") == 0 || strcmp (argv[i], "--extended") == 0)
+			extIF = 1;
 
-   if ((ioperm (lptPort + 2, 1, 255)) == -1) {
-      fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
-      return -1;
-   }
+	if ((ioperm (lptPort + 2, 1, 255)) == -1) {
+		fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
+		return -1;
+	}
 
-   common_init (IF_8bit);
-   return 0;
+	common_init (IF_8bit);
+	return 0;
 }
 
 // lcdwinamp_HD44780_senddata
 void
 lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-   unsigned char dispID = 0, portControl;
+	unsigned char dispID = 0, portControl;
 
-   if (flags == RS_DATA)
-      portControl = RS;
-   else
-      portControl = 0;
+	if (flags == RS_DATA)
+		portControl = RS;
+	else
+		portControl = 0;
 
-   if (displayID == 0)
-      dispID = EnMask[0] | EnMask[1] | ((extIF) ? EnMask[2] : 0);
-   else
-      dispID = EnMask[displayID - 1];
+	if (displayID == 0)
+		dispID = EnMask[0] | EnMask[1] | ((extIF) ? EnMask[2] : 0);
+	else
+		dispID = EnMask[displayID - 1];
 
-   port_out (lptPort, ch);
-   port_out (lptPort + 2, (dispID | portControl) ^ OUTMASK);
-   hd44780_functions->uPause (1);
-   port_out (lptPort + 2, portControl ^ OUTMASK);
+	port_out (lptPort, ch);
+	port_out (lptPort + 2, (dispID | portControl) ^ OUTMASK);
+	hd44780_functions->uPause (1);
+	port_out (lptPort + 2, portControl ^ OUTMASK);
 }

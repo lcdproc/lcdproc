@@ -5,9 +5,9 @@
 #include "../shared/LL.h"
 
 typedef struct client {
-   int sock;
-   LL *messages;
-   client_data *data;
+	int sock;
+	LL *messages;
+	client_data *data;
 
 } client;
 

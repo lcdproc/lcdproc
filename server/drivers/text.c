@@ -19,47 +19,47 @@ lcd_logical_driver *text;
 int
 text_init (lcd_logical_driver * driver, char *args)
 {
-   text = driver;
+	text = driver;
 
-   if (!driver->framebuf) {
-      driver->close ();
-      return -1;
-   }
+	if (!driver->framebuf) {
+		driver->close ();
+		return -1;
+	}
 
-   driver->wid = 20;
-   driver->hgt = 4;
-   driver->cellwid = 5;
-   driver->cellhgt = 8;
+	driver->wid = 20;
+	driver->hgt = 4;
+	driver->cellwid = 5;
+	driver->cellhgt = 8;
 
-   driver->clear = (void *) -1;
-   driver->string = (void *) -1;
-   driver->chr = (void *) -1;
-   driver->vbar = text_vbar;
-   driver->init_vbar = NULL;
-   driver->hbar = text_hbar;
-   driver->init_hbar = NULL;
-   driver->num = (void *) -1;
-   driver->init_num = NULL;
+	driver->clear = (void *) -1;
+	driver->string = (void *) -1;
+	driver->chr = (void *) -1;
+	driver->vbar = text_vbar;
+	driver->init_vbar = NULL;
+	driver->hbar = text_hbar;
+	driver->init_hbar = NULL;
+	driver->num = (void *) -1;
+	driver->init_num = NULL;
 
-   driver->init = text_init;
-   driver->close = text_close;
-   driver->flush = text_flush;
-   driver->flush_box = NULL;
-   driver->contrast = NULL;
-   driver->backlight = NULL;
-   driver->set_char = NULL;
-   driver->icon = NULL;
-   driver->draw_frame = text_draw_frame;
+	driver->init = text_init;
+	driver->close = text_close;
+	driver->flush = text_flush;
+	driver->flush_box = NULL;
+	driver->contrast = NULL;
+	driver->backlight = NULL;
+	driver->set_char = NULL;
+	driver->icon = NULL;
+	driver->draw_frame = text_draw_frame;
 
-   driver->getkey = NULL;
+	driver->getkey = NULL;
 
-   return 200;			// 200 is arbitrary.  (must be 1 or more)
+	return 200;						  // 200 is arbitrary.  (must be 1 or more)
 }
 
 void
 text_close ()
 {
-   drv_base_close ();
+	drv_base_close ();
 }
 
 /////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ text_close ()
 void
 text_clear ()
 {
-   memset (lcd.framebuf, ' ', lcd.wid * lcd.hgt);
+	memset (lcd.framebuf, ' ', lcd.wid * lcd.hgt);
 
 }
 
@@ -78,7 +78,7 @@ text_clear ()
 void
 text_flush ()
 {
-   text_draw_frame (lcd.framebuf);
+	text_draw_frame (lcd.framebuf);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -88,14 +88,14 @@ text_flush ()
 void
 text_string (int x, int y, char string[])
 {
-   int i;
+	int i;
 
-   x -= 1;			// Convert 1-based coords to 0-based...
-   y -= 1;
+	x -= 1;							  // Convert 1-based coords to 0-based...
+	y -= 1;
 
-   for (i = 0; string[i]; i++) {
-      lcd.framebuf[(y * lcd.wid) + x + i] = string[i];
-   }
+	for (i = 0; string[i]; i++) {
+		lcd.framebuf[(y * lcd.wid) + x + i] = string[i];
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -105,17 +105,17 @@ text_string (int x, int y, char string[])
 void
 text_chr (int x, int y, char c)
 {
-   y--;
-   x--;
+	y--;
+	x--;
 
-   lcd.framebuf[(y * lcd.wid) + x] = c;
+	lcd.framebuf[(y * lcd.wid) + x] = c;
 }
 
 int
 text_contrast (int contrast)
 {
 //  printf("Contrast: %i\n", contrast);
-   return 0;
+	return 0;
 }
 
 void
@@ -169,12 +169,12 @@ text_set_char (int n, char *dat)
 void
 text_vbar (int x, int len)
 {
-   int y;
-   for (y = lcd.hgt; y > 0 && len > 0; y--) {
-      text_chr (x, y, '|');
+	int y;
+	for (y = lcd.hgt; y > 0 && len > 0; y--) {
+		text_chr (x, y, '|');
 
-      len -= lcd.cellhgt;
-   }
+		len -= lcd.cellhgt;
+	}
 
 }
 
@@ -184,52 +184,52 @@ text_vbar (int x, int len)
 void
 text_hbar (int x, int y, int len)
 {
-   for (; x <= lcd.wid && len > 0; x++) {
-      text_chr (x, y, '-');
+	for (; x <= lcd.wid && len > 0; x++) {
+		text_chr (x, y, '-');
 
-      len -= lcd.cellwid;
-   }
+		len -= lcd.cellwid;
+	}
 
 }
 
 void
 text_flush_box (int lft, int top, int rgt, int bot)
 {
-   text_flush ();
+	text_flush ();
 
 }
 
 void
 text_draw_frame (char *dat)
 {
-   int i, j;
+	int i, j;
 
-   char out[LCD_MAX_WIDTH];
+	char out[LCD_MAX_WIDTH];
 
-   if (!dat)
-      return;
+	if (!dat)
+		return;
 
 //  printf("Frame (%ix%i): \n%s\n", lcd.wid, lcd.hgt, dat);
 
-   for (i = 0; i < lcd.wid; i++) {
-      out[i] = '-';
-   }
-   out[lcd.wid] = 0;
-   printf ("+%s+\n", out);
+	for (i = 0; i < lcd.wid; i++) {
+		out[i] = '-';
+	}
+	out[lcd.wid] = 0;
+	printf ("+%s+\n", out);
 
-   for (i = 0; i < lcd.hgt; i++) {
-      for (j = 0; j < lcd.wid; j++) {
-	 out[j] = dat[j + (i * lcd.wid)];
-      }
-      out[lcd.wid] = 0;
-      printf ("|%s|\n", out);
+	for (i = 0; i < lcd.hgt; i++) {
+		for (j = 0; j < lcd.wid; j++) {
+			out[j] = dat[j + (i * lcd.wid)];
+		}
+		out[lcd.wid] = 0;
+		printf ("|%s|\n", out);
 
-   }
+	}
 
-   for (i = 0; i < lcd.wid; i++) {
-      out[i] = '-';
-   }
-   out[lcd.wid] = 0;
-   printf ("+%s+\n", out);
+	for (i = 0; i < lcd.wid; i++) {
+		out[i] = '-';
+	}
+	out[lcd.wid] = 0;
+	printf ("+%s+\n", out);
 
 }

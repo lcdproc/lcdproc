@@ -9,16 +9,16 @@
  */
 
 typedef struct client_menu {
-   char id[];
-   LL *items;
+	char id[];
+	LL *items;
 } client_menu;
 
 typedef struct client_menu_item {
-   char id[];
-   int type;			// Title, function, submenu, slider, checkbox, etc...
-   int value;			// Holds stuff like "true", 43, etc...
-   char text[];			// Text to display here...
-   char child[];		// For the "submenu" type
+	char id[];
+	int type;						  // Title, function, submenu, slider, checkbox, etc...
+	int value;						  // Holds stuff like "true", 43, etc...
+	char text[];					  // Text to display here...
+	char child[];					  // For the "submenu" type
 } client_menu;
 
 #endif

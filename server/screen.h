@@ -5,14 +5,14 @@
 #include "clients.h"
 
 typedef struct screen {
-   char *id;
-   char *name;
-   int wid, hgt;
-   int priority;
-   int duration;
-   int heartbeat;
-   LL *widgets;
-   client *parent;
+	char *id;
+	char *name;
+	int wid, hgt;
+	int priority;
+	int duration;
+	int heartbeat;
+	LL *widgets;
+	client *parent;
 } screen;
 
 screen *screen_create ();

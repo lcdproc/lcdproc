@@ -50,110 +50,110 @@ static char lastkey = 0;
 int
 hd_init_serialLpt (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)
 {
-   int displayID = EN1 | EN2;
+	int displayID = EN1 | EN2;
 
-   lp = port;
+	lp = port;
 
-   hd44780_functions->senddata = lcdserLpt_HD44780_senddata;
+	hd44780_functions->senddata = lcdserLpt_HD44780_senddata;
 
-   // TODO: enable keypad only if specified on command line
-   driver->getkey = lcdserLpt_HD44780_getkey;
+	// TODO: enable keypad only if specified on command line
+	driver->getkey = lcdserLpt_HD44780_getkey;
 
-   // setup the lcd in 4 bit mode
-   shiftreg (displayID, 3);
-   hd44780_functions->uPause (4100);
+	// setup the lcd in 4 bit mode
+	shiftreg (displayID, 3);
+	hd44780_functions->uPause (4100);
 
-   shiftreg (displayID, 3);
-   hd44780_functions->uPause (100);
+	shiftreg (displayID, 3);
+	hd44780_functions->uPause (100);
 
-   shiftreg (displayID, 3);
-   hd44780_functions->uPause (40);
+	shiftreg (displayID, 3);
+	hd44780_functions->uPause (40);
 
-   shiftreg (displayID, 2);
-   hd44780_functions->uPause (40);
+	shiftreg (displayID, 2);
+	hd44780_functions->uPause (40);
 
-   // set display type functions
-   lcdserLpt_HD44780_senddata (0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
-   // clear
-   lcdserLpt_HD44780_senddata (0, RS_INSTR, CLEAR);
-   hd44780_functions->uPause (1600);
-   // Now turn on the display
-   lcdserLpt_HD44780_senddata (displayID, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
-   hd44780_functions->uPause (1600);
+	// set display type functions
+	lcdserLpt_HD44780_senddata (0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	// clear
+	lcdserLpt_HD44780_senddata (0, RS_INSTR, CLEAR);
+	hd44780_functions->uPause (1600);
+	// Now turn on the display
+	lcdserLpt_HD44780_senddata (displayID, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
+	hd44780_functions->uPause (1600);
 
-   return 0;
+	return 0;
 }
 
 void
 lcdserLpt_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-   unsigned char dispID = 0, portControl = 0, h = ch >> 4, l = ch & 15;
+	unsigned char dispID = 0, portControl = 0, h = ch >> 4, l = ch & 15;
 
-   if (displayID == 1)
-      dispID |= EN1;
-   else if (displayID == 2)
-      dispID |= EN2;
-   else
-      dispID |= EN1 | EN2;
+	if (displayID == 1)
+		dispID |= EN1;
+	else if (displayID == 2)
+		dispID |= EN2;
+	else
+		dispID |= EN1 | EN2;
 
-   if (flags == RS_DATA)
-      portControl = RS;
-   else
-      portControl = 0;
+	if (flags == RS_DATA)
+		portControl = RS;
+	else
+		portControl = 0;
 
-   shiftreg (displayID, flags | portControl | h);
-   shiftreg (displayID, flags | portControl | l);
+	shiftreg (displayID, flags | portControl | h);
+	shiftreg (displayID, flags | portControl | l);
 
-   /* TODO: instead of delay read keys here */
+	/* TODO: instead of delay read keys here */
 }
 
 char
 lcdserLpt_HD44780_getkey ()
 {
-   // TODO: a keypad scan that does not use shift register
-   // define a key table 
-   char keytr[] = "ABCDEFGH";
-   int n;
+	// TODO: a keypad scan that does not use shift register
+	// define a key table 
+	char keytr[] = "ABCDEFGH";
+	int n;
 
-   rawshift (0);		//send all line on shift register low
-   hd44780_functions->uPause (1);
-   if ((port_in (lp + 1) & 32) == 0)	//test if line back is low - if not return(0)
-   {				//else 
-      //start walking a single zero across the eight lines 
-      for (n = 7; n >= 0; n--) {
-	 rawshift (255 - (1 << n));
-	 hd44780_functions->uPause (1);
+	rawshift (0);					  //send all line on shift register low
+	hd44780_functions->uPause (1);
+	if ((port_in (lp + 1) & 32) == 0)	//test if line back is low - if not return(0)
+	{									  //else 
+		//start walking a single zero across the eight lines 
+		for (n = 7; n >= 0; n--) {
+			rawshift (255 - (1 << n));
+			hd44780_functions->uPause (1);
 
-	 if ((port_in (lp + 1) & 32) == 0)	// check if line back is low if yes debounce 
-	 {
-	    if (lastkey == keytr[n])
-	       return (0);
-	    //      printf("key is %c %d\n",keytr[n],n);
-	    lastkey = keytr[n];
-	    return (keytr[n]);	//return correct key code.
-	 }
-      }
-   }				//else fall out and return(0) [too transient a keypress]
-   lastkey = 0;
-   return (0);
+			if ((port_in (lp + 1) & 32) == 0)	// check if line back is low if yes debounce 
+			{
+				if (lastkey == keytr[n])
+					return (0);
+				//      printf("key is %c %d\n",keytr[n],n);
+				lastkey = keytr[n];
+				return (keytr[n]);  //return correct key code.
+			}
+		}
+	}									  //else fall out and return(0) [too transient a keypress]
+	lastkey = 0;
+	return (0);
 }
 
 /* this function sends r out onto the shift register */
 void
 rawshift (unsigned char r)
 {
-   int i;
-   for (i = 7; i >= 0; i--) {	/* MSB first      */
-      port_out (lp, ((r >> i) & 1) * LCDDATA);	/*set up data   */
-      port_out (lp, (((r >> i) & 1) * LCDDATA) | LCDCLOCK);	/*rising edge of clock   */
-   }
+	int i;
+	for (i = 7; i >= 0; i--) {	  /* MSB first      */
+		port_out (lp, ((r >> i) & 1) * LCDDATA);	/*set up data   */
+		port_out (lp, (((r >> i) & 1) * LCDDATA) | LCDCLOCK);	/*rising edge of clock   */
+	}
 }
 
 // displayID = value on parallel port to toggle the correct display
 void
 shiftreg (unsigned char displayID, unsigned char r)
 {
-   rawshift (r);
-   port_out (lp, displayID);	//latch it, to correct display
-   port_out (lp, 0);
+	rawshift (r);
+	port_out (lp, displayID);	  //latch it, to correct display
+	port_out (lp, 0);
 }

@@ -116,13 +116,13 @@
 // See LL.c for more detailed descriptions of these functions.
 
 typedef struct LL_node {
-   struct LL_node *next, *prev;
-   void *data;
+	struct LL_node *next, *prev;
+	void *data;
 } LL_node;
 
 typedef struct LL {
-   LL_node head, tail;
-   LL_node *current;
+	LL_node head, tail;
+	LL_node *current;
 } LL;
 
 // Creates a new list...
@@ -149,10 +149,10 @@ int LL_Put (LL * list, void *data);
 LL_node *LL_GetNode (LL * list);
 int LL_PutNode (LL * list, LL_node * node);
 
-void *LL_GetFirst (LL * list);	// gets data from first node
-void *LL_GetNext (LL * list);	//            ... next node
-void *LL_GetPrev (LL * list);	//            ... prev node
-void *LL_GetLast (LL * list);	//            ... last node
+void *LL_GetFirst (LL * list);  // gets data from first node
+void *LL_GetNext (LL * list);	  //            ... next node
+void *LL_GetPrev (LL * list);	  //            ... prev node
+void *LL_GetLast (LL * list);	  //            ... last node
 
 int LL_AddNode (LL * list, void *add);	// Adds node AFTER current one
 int LL_InsertNode (LL * list, void *add);	// Adds node BEFORE current one
@@ -163,14 +163,14 @@ void *LL_Remove (LL * list, void *data);
 
 // Stack operations
 int LL_Push (LL * list, void *add);	// Add node to end of list
-void *LL_Pop (LL * list);	// Remove node from end of list
-void *LL_Top (LL * list);	// Peek at end node
-void *LL_Shift (LL * list);	// Remove node from start of list
-void *LL_Look (LL * list);	// Peek at first node
+void *LL_Pop (LL * list);		  // Remove node from end of list
+void *LL_Top (LL * list);		  // Peek at end node
+void *LL_Shift (LL * list);	  // Remove node from start of list
+void *LL_Look (LL * list);		  // Peek at first node
 int LL_Unshift (LL * list, void *add);	// Add node to beginning of list
 
-int LL_Roll (LL * list);	// Make first node last
-int LL_UnRoll (LL * list);	// Roll the other way...
+int LL_Roll (LL * list);		  // Make first node last
+int LL_UnRoll (LL * list);		  // Roll the other way...
 
 // Queue operations...
 //int LL_Enqueue(LL *list, void *add);
@@ -186,7 +186,7 @@ int LL_PriorityEnqueue (LL * list, void *add, int compare (void *, void *));
 int LL_SwapNodes (LL_node * one, LL_node * two);	// Switch two nodes positions...
 int LL_nSwapNodes (int one, int two);	// Switch two nodes positions...
 
-int LL_Length (LL * list);	// Returns # of nodes in entire list
+int LL_Length (LL * list);		  // Returns # of nodes in entire list
 
 // Searching...
 void *LL_Find (LL * list, int compare (void *, void *), void *value);

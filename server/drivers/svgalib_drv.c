@@ -166,8 +166,8 @@ const unsigned char simple_font5x7[] = {
 };
 
 // <start user definable!!!>
-#define SVGALIB_FONT_VER 10	/* vertical spacing between lines (pixels) */
-#define SVGALIB_Y_OFFSET 40	/* distance from the top of the screen (pixels) */
+#define SVGALIB_FONT_VER 10	  /* vertical spacing between lines (pixels) */
+#define SVGALIB_Y_OFFSET 40	  /* distance from the top of the screen (pixels) */
 // <end user defineable!!!>
 
 // No, I don't understand SVGALIB key mappings or a neat way of doing this
@@ -183,9 +183,9 @@ lcd_logical_driver *svgalib_drv;
 int SVGALIB_PAD = 255;
 int SVGALIB_ELLIPSIS = 7;
 
-void *SVGALIB_font;		/* normal font   */
-void *SVGALIB_highfont;		/* highlighted font (not used yet) */
-void *SVGALIB_warnfont;		/* warning font (not used yet)    */
+void *SVGALIB_font;				  /* normal font   */
+void *SVGALIB_highfont;			  /* highlighted font (not used yet) */
+void *SVGALIB_warnfont;			  /* warning font (not used yet)    */
 
 /*
   Setting SVGALIB_figure_mappings will trap all keypresses and write the 
@@ -205,26 +205,26 @@ void
 ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, unsigned char *ptr)
 // Expand groovy 5x7 font into an area of memory
 {
-   int x, n, y;
-   unsigned char mask;
-   unsigned char base;
-   unsigned char *p;
-   p = ptr;
-   for (n = 0; n < 127; n++) {
-      for (y = 0; y < ht; y++) {
-	 mask = 1;
-	 base = fnt[n * ht + y];
-	 for (x = 0; x < w; x++) {
-	    if (base & mask) {
-	       *p = 0;
-	    } else {
-	       *p = col;
-	    }
-	    p++;
-	    mask *= 2;
-	 }
-      }
-   }
+	int x, n, y;
+	unsigned char mask;
+	unsigned char base;
+	unsigned char *p;
+	p = ptr;
+	for (n = 0; n < 127; n++) {
+		for (y = 0; y < ht; y++) {
+			mask = 1;
+			base = fnt[n * ht + y];
+			for (x = 0; x < w; x++) {
+				if (base & mask) {
+					*p = 0;
+				} else {
+					*p = col;
+				}
+				p++;
+				mask *= 2;
+			}
+		}
+	}
 
 }
 
@@ -234,10 +234,10 @@ spaced_gl_writen (int x, int y, int count, char *text)
 // Like gl_write but this one gets the spacing correct.
 //
 {
-   int i;
-   for (i = 0; i < count; i++) {
-      gl_writen (20 + x + i * 6, y, 1, &text[i]);
-   }
+	int i;
+	for (i = 0; i < count; i++) {
+		gl_writen (20 + x + i * 6, y, 1, &text[i]);
+	}
 }
 
 static char icon_char = '@';
@@ -245,81 +245,81 @@ static char icon_char = '@';
 int
 svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 {
-   char *argv[64];
-   int argc;
-   int i, j;
-   int VGAMODE;
-   int fgtemp;
-   char param[100];
-   char buffer[1024];
+	char *argv[64];
+	int argc;
+	int i, j;
+	int VGAMODE;
+	int fgtemp;
+	char param[100];
+	char buffer[1024];
 
-   /* not used at the moment */
-   argc = get_args (argv, args, 64);
+	/* not used at the moment */
+	argc = get_args (argv, args, 64);
 
-   svgalib_drv = driver;
-   vga_init ();
-   VGAMODE = G320x200x256;	/* Default mode. */
+	svgalib_drv = driver;
+	vga_init ();
+	VGAMODE = G320x200x256;		  /* Default mode. */
 
-   if (!vga_hasmode (VGAMODE)) {
-      printf ("320x200x256 Mode not available.\n");
-      return -1;
-   } else {
-      vga_setmode (VGAMODE);
-      gl_setcontextvga (VGAMODE);	/* Physical screen context. */
-      gl_setrgbpalette ();
+	if (!vga_hasmode (VGAMODE)) {
+		printf ("320x200x256 Mode not available.\n");
+		return -1;
+	} else {
+		vga_setmode (VGAMODE);
+		gl_setcontextvga (VGAMODE);	/* Physical screen context. */
+		gl_setrgbpalette ();
 
-      /* get the font */
-      SVGALIB_font = malloc (256 * 8 * 8 * 1);
-      ExpandGroovyFont (5, 7, gl_rgbcolor (0, 255, 0), simple_font5x7, SVGALIB_font);
-      gl_setfont (5, 7, SVGALIB_font);
+		/* get the font */
+		SVGALIB_font = malloc (256 * 8 * 8 * 1);
+		ExpandGroovyFont (5, 7, gl_rgbcolor (0, 255, 0), simple_font5x7, SVGALIB_font);
+		gl_setfont (5, 7, SVGALIB_font);
 
-   }
+	}
 
-   gl_clearscreen (gl_rgbcolor (0, 0, 0));
+	gl_clearscreen (gl_rgbcolor (0, 0, 0));
 
-   // Override output functions...
-   driver->clear = svgalib_drv_clear;
-   driver->string = svgalib_drv_string;
-   driver->chr = svgalib_drv_chr;
-   driver->vbar = svgalib_drv_vbar;
-   driver->init_vbar = NULL;
-   driver->hbar = svgalib_drv_hbar;
-   driver->init_hbar = NULL;
-   driver->num = svgalib_drv_num;
-   driver->init_num = svgalib_drv_init_num;
+	// Override output functions...
+	driver->clear = svgalib_drv_clear;
+	driver->string = svgalib_drv_string;
+	driver->chr = svgalib_drv_chr;
+	driver->vbar = svgalib_drv_vbar;
+	driver->init_vbar = NULL;
+	driver->hbar = svgalib_drv_hbar;
+	driver->init_hbar = NULL;
+	driver->num = svgalib_drv_num;
+	driver->init_num = svgalib_drv_init_num;
 
-   driver->init = svgalib_drv_init;
-   driver->close = svgalib_drv_close;
-   driver->flush = svgalib_drv_flush;
-   driver->flush_box = svgalib_drv_flush_box;
-   driver->contrast = NULL;
-   driver->backlight = NULL;
-   driver->set_char = NULL;
-   driver->icon = svgalib_drv_icon;
-   driver->draw_frame = svgalib_drv_draw_frame;
+	driver->init = svgalib_drv_init;
+	driver->close = svgalib_drv_close;
+	driver->flush = svgalib_drv_flush;
+	driver->flush_box = svgalib_drv_flush_box;
+	driver->contrast = NULL;
+	driver->backlight = NULL;
+	driver->set_char = NULL;
+	driver->icon = svgalib_drv_icon;
+	driver->draw_frame = svgalib_drv_draw_frame;
 
-   driver->getkey = svgalib_drv_getkey;
+	driver->getkey = svgalib_drv_getkey;
 
-   // Change the character used for padding the title bars...
-   SVGALIB_PAD = '#';
-   // Change the character used for "..."
-   SVGALIB_ELLIPSIS = '~';
+	// Change the character used for padding the title bars...
+	SVGALIB_PAD = '#';
+	// Change the character used for "..."
+	SVGALIB_ELLIPSIS = '~';
 
-   return 1;
+	return 1;
 }
 
 void
 svgalib_drv_close ()
 {
-   vga_setmode (TEXT);
-   drv_base_close ();
+	vga_setmode (TEXT);
+	drv_base_close ();
 }
 
 void
 svgalib_drv_clear ()
 {
-   vga_waitretrace ();
-   gl_clearscreen (gl_rgbcolor (0, 0, 0));
+	vga_waitretrace ();
+	gl_clearscreen (gl_rgbcolor (0, 0, 0));
 }
 
 /////////////////////////////////////////////////////////////////
@@ -329,21 +329,21 @@ svgalib_drv_clear ()
 void
 svgalib_drv_string (int x, int y, char string[])
 {
-   int i;
-   unsigned char *c;
-   for (i = 0; string[i]; i++) {
-      c = &string[i];
-      switch (*c) {
-      case 0:
-	 *c = icon_char;
-	 break;
-      case 255:
-	 *c = '#';
-	 break;
-      }
-   }
-   gl_setfont (5, 7, SVGALIB_font);
-   spaced_gl_writen (x * 8, y * SVGALIB_FONT_VER + SVGALIB_Y_OFFSET, i, string);
+	int i;
+	unsigned char *c;
+	for (i = 0; string[i]; i++) {
+		c = &string[i];
+		switch (*c) {
+		case 0:
+			*c = icon_char;
+			break;
+		case 255:
+			*c = '#';
+			break;
+		}
+	}
+	gl_setfont (5, 7, SVGALIB_font);
+	spaced_gl_writen (x * 8, y * SVGALIB_FONT_VER + SVGALIB_Y_OFFSET, i, string);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -353,19 +353,19 @@ svgalib_drv_string (int x, int y, char string[])
 void
 svgalib_drv_chr (int x, int y, char c)
 {
-   char buffer[2];
-   switch (c) {
-   case 0:
-      c = icon_char;
-      break;
-   case -1:
-      c = '#';
-      break;
-   }
-   buffer[0] = c;
-   buffer[1] = 0;
-   gl_setfont (5, 7, SVGALIB_font);
-   spaced_gl_writen (x * 8, y * SVGALIB_FONT_VER + SVGALIB_Y_OFFSET, 1, buffer);
+	char buffer[2];
+	switch (c) {
+	case 0:
+		c = icon_char;
+		break;
+	case -1:
+		c = '#';
+		break;
+	}
+	buffer[0] = c;
+	buffer[1] = 0;
+	gl_setfont (5, 7, SVGALIB_font);
+	spaced_gl_writen (x * 8, y * SVGALIB_FONT_VER + SVGALIB_Y_OFFSET, 1, buffer);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -382,14 +382,14 @@ svgalib_drv_init_num ()
 void
 svgalib_drv_num (int x, int num)
 {
-   char c;
-   int y, dx;
+	char c;
+	int y, dx;
 
-   c = '0' + num;
+	c = '0' + num;
 
-   for (y = 1; y < 5; y++)
-      for (dx = 0; dx < 3; dx++)
-	 svgalib_drv_chr (x + dx, y, c);
+	for (y = 1; y < 5; y++)
+		for (dx = 0; dx < 3; dx++)
+			svgalib_drv_chr (x + dx, y, c);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -398,17 +398,17 @@ svgalib_drv_num (int x, int num)
 void
 svgalib_drv_vbar (int x, int len)
 {
-   char map[] = "_.,,ooO8";
+	char map[] = "_.,,ooO8";
 
-   int y;
-   for (y = lcd.hgt; y > 0 && len > 0; y--) {
-      if (len >= lcd.cellhgt)
-	 svgalib_drv_chr (x, y, '8');
-      else
-	 svgalib_drv_chr (x, y, map[len - 1]);
+	int y;
+	for (y = lcd.hgt; y > 0 && len > 0; y--) {
+		if (len >= lcd.cellhgt)
+			svgalib_drv_chr (x, y, '8');
+		else
+			svgalib_drv_chr (x, y, map[len - 1]);
 
-      len -= lcd.cellhgt;
-   }
+		len -= lcd.cellhgt;
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -417,14 +417,14 @@ svgalib_drv_vbar (int x, int len)
 void
 svgalib_drv_hbar (int x, int y, int len)
 {
-   for (; x <= lcd.wid && len > 0; x++) {
-      if (len >= lcd.cellwid)
-	 svgalib_drv_chr (x, y, '=');
-      else
-	 svgalib_drv_chr (x, y, '-');
+	for (; x <= lcd.wid && len > 0; x++) {
+		if (len >= lcd.cellwid)
+			svgalib_drv_chr (x, y, '=');
+		else
+			svgalib_drv_chr (x, y, '-');
 
-      len -= lcd.cellwid;
-   }
+		len -= lcd.cellwid;
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -433,18 +433,18 @@ svgalib_drv_hbar (int x, int y, int len)
 void
 svgalib_drv_icon (int which, char dest)
 {
-   if (dest == 0)
-      switch (which) {
-      case 0:
-	 icon_char = '+';
-	 break;
-      case 1:
-	 icon_char = '*';
-	 break;
-      default:
-	 icon_char = '#';
-	 break;
-      }
+	if (dest == 0)
+		switch (which) {
+		case 0:
+			icon_char = '+';
+			break;
+		case 1:
+			icon_char = '*';
+			break;
+		default:
+			icon_char = '#';
+			break;
+		}
 }
 
 void
@@ -465,97 +465,97 @@ svgalib_drv_draw_frame (char *dat)
 char
 svgalib_drv_getkey ()
 {
-   int i;
-   int loop;
-   FILE *fd;
-   i = vga_getkey ();
-   if (i) {
-      switch (i) {
-	 /* map the cursor keys to something sensible. */
-      case 27:
-	 i = vga_getkey ();
-	 if (i == 91) {
-	    i = vga_getkey ();
-	    switch (i) {
-	    case VGAKEY_LEFT:
-	       i = 'D';
-	       break;
-	    case VGAKEY_UP:
-	       i = 'B';
-	       break;
-	    case VGAKEY_DOWN:
-	       i = 'C';
-	       break;
-	    case VGAKEY_RIGHT:
-	       i = 'A';
-	       break;
-	    default:
-	       i = 0;		/* key not recognised */
-	    }
-	 } else {
-	    i = 0;
-	 }
-	 break;
+	int i;
+	int loop;
+	FILE *fd;
+	i = vga_getkey ();
+	if (i) {
+		switch (i) {
+			/* map the cursor keys to something sensible. */
+		case 27:
+			i = vga_getkey ();
+			if (i == 91) {
+				i = vga_getkey ();
+				switch (i) {
+				case VGAKEY_LEFT:
+					i = 'D';
+					break;
+				case VGAKEY_UP:
+					i = 'B';
+					break;
+				case VGAKEY_DOWN:
+					i = 'C';
+					break;
+				case VGAKEY_RIGHT:
+					i = 'A';
+					break;
+				default:
+					i = 0;			  /* key not recognised */
+				}
+			} else {
+				i = 0;
+			}
+			break;
 
-	 /* 
-	    Change this bit to your liking.  I only set these values because
-	    they tie in with my keypads use of the keyboard controller chip
-	    see http://www.gofree.co.uk/home/smh/mp3 for details.
-	    Having said that try to make sure four keys map to D,B,C,A so you'll
-	    be able to quit LCDproc from the emulation.
+			/* 
+			   Change this bit to your liking.  I only set these values because
+			   they tie in with my keypads use of the keyboard controller chip
+			   see http://www.gofree.co.uk/home/smh/mp3 for details.
+			   Having said that try to make sure four keys map to D,B,C,A so you'll
+			   be able to quit LCDproc from the emulation.
 
-	  */
-      case 'j':
-	 i = 'D';
-	 break;			/* left */
-      case 'm':
-	 i = 'B';
-	 break;			/* up */
-      case '7':
-	 i = 'C';
-	 break;			/* down */
-      case 'u':
-	 i = 'A';
-	 break;			/* right */
+			 */
+		case 'j':
+			i = 'D';
+			break;					  /* left */
+		case 'm':
+			i = 'B';
+			break;					  /* up */
+		case '7':
+			i = 'C';
+			break;					  /* down */
+		case 'u':
+			i = 'A';
+			break;					  /* right */
 
-      case 'v':
-	 i = 'Q';
-	 break;			/* one */
-      case 'c':
-	 i = 'W';
-	 break;			/* two */
-      case 'z':
-	 i = 'E';
-	 break;			/* three */
-      case '4':
-	 i = 'R';
-	 break;			/* four */
-      case '3':
-	 i = 'T';
-	 break;			/* five */
-      case '1':
-	 i = 'Y';
-	 break;			/* six */
-      case 'f':
-	 i = 'U';
-	 break;			/* seven */
-      case 'd':
-	 i = 'I';
-	 break;			/* eight */
-      case 'a':
-	 i = 'O';
-	 break;			/* nine */
-      case 'e':
-	 i = 'P';
-	 break;			/* zero */
-      case 'r':
-	 i = 'L';
-	 break;			/* 'C' key */
-      default:
-	 i = 0;
-      }
-   }
-   /* if (i) */
-   return i;
+		case 'v':
+			i = 'Q';
+			break;					  /* one */
+		case 'c':
+			i = 'W';
+			break;					  /* two */
+		case 'z':
+			i = 'E';
+			break;					  /* three */
+		case '4':
+			i = 'R';
+			break;					  /* four */
+		case '3':
+			i = 'T';
+			break;					  /* five */
+		case '1':
+			i = 'Y';
+			break;					  /* six */
+		case 'f':
+			i = 'U';
+			break;					  /* seven */
+		case 'd':
+			i = 'I';
+			break;					  /* eight */
+		case 'a':
+			i = 'O';
+			break;					  /* nine */
+		case 'e':
+			i = 'P';
+			break;					  /* zero */
+		case 'r':
+			i = 'L';
+			break;					  /* 'C' key */
+		default:
+			i = 0;
+		}
+	}
+	/* if (i) */
+	return i;
 
 }

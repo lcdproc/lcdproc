@@ -22,12 +22,12 @@ void exit_program (int val);
 //#define TIME_UNIT (125000/2)
 
 typedef struct screen_size {
-   char *size;
-   int wid, hgt;
+	char *size;
+	int wid, hgt;
 } screen_size;
 
 typedef struct parameter {
-   char *sh, *lg;		// short and long versions
+	char *sh, *lg;					  // short and long versions
 } parameter;
 
 #endif

@@ -12,12 +12,12 @@ extern int lcd_cellwid;
 extern int lcd_cellhgt;
 
 typedef struct mode {
-   char which;			// Which screen is it?
-   int on_time;			// How often to update while visible?
-   int off_time;		// How often to get stats while not visible?
-   int show_invisible;		// Send stats while not visible?
-   int timer;			// Time since last update
-   int visible;			// Can we be seen right now?
+	char which;						  // Which screen is it?
+	int on_time;					  // How often to update while visible?
+	int off_time;					  // How often to get stats while not visible?
+	int show_invisible;			  // Send stats while not visible?
+	int timer;						  // Time since last update
+	int visible;					  // Can we be seen right now?
 } mode;
 
 #define BLINK_ON 0x10

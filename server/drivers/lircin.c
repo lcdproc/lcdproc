@@ -49,8 +49,8 @@ lcd_logical_driver *lircin;
 void
 lircin_close ()
 {
-   lirc_freeconfig (config);
-   lirc_deinit ();
+	lirc_freeconfig (config);
+	lirc_deinit ();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -61,23 +61,23 @@ lircin_close ()
 char
 lircin_getkey ()
 {
-   char key;
-   char *ir, *cmd;
+	char key;
+	char *ir, *cmd;
 
-   if (!(ir = lirc_nextir ())) {
-      return 0;
-   } else {
-      if (!(cmd = lirc_ir2char (config, ir)))
-	 return 0;
+	if (!(ir = lirc_nextir ())) {
+		return 0;
+	} else {
+		if (!(cmd = lirc_ir2char (config, ir)))
+			return 0;
 
-      printf ("lirc: \"%s\"\n", cmd);
-      sscanf (cmd, "%c", &key);
-      printf ("\n%c\n", key);
-      free (ir);
-      return key;
-   }
+		printf ("lirc: \"%s\"\n", cmd);
+		sscanf (cmd, "%c", &key);
+		printf ("\n%c\n", key);
+		free (ir);
+		return key;
+	}
 
-   return 0;
+	return 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -89,29 +89,29 @@ lircin_init (struct lcd_logical_driver *driver, char *args)
 
 /* assign funktions */
 
-   lircin = driver;
+	lircin = driver;
 
-   driver->getkey = lircin_getkey;
-   driver->close = lircin_close;
+	driver->getkey = lircin_getkey;
+	driver->close = lircin_close;
 
 /* open socket to lirc */
 
-   if (-1 == (fd = lirc_init ("lcdd", 1))) {
-      fprintf (stderr, "no infrared remote support available\n");
-      return -1;
-   }
+	if (-1 == (fd = lirc_init ("lcdd", 1))) {
+		fprintf (stderr, "no infrared remote support available\n");
+		return -1;
+	}
 
-   if (0 != lirc_readconfig (NULL, &config, NULL)) {
-      lirc_deinit ();
-      return -1;
-   }
-   fcntl (fd, F_SETFL, O_NONBLOCK);
-   fcntl (fd, F_SETFD, FD_CLOEXEC);
+	if (0 != lirc_readconfig (NULL, &config, NULL)) {
+		lirc_deinit ();
+		return -1;
+	}
+	fcntl (fd, F_SETFL, O_NONBLOCK);
+	fcntl (fd, F_SETFD, FD_CLOEXEC);
 
 /* socket shouldn block lcdd */
 
-   fcntl (fd, F_SETFL, O_NONBLOCK);
-   fcntl (fd, F_SETFD, FD_CLOEXEC);
+	fcntl (fd, F_SETFL, O_NONBLOCK);
+	fcntl (fd, F_SETFD, FD_CLOEXEC);
 
-   return 1;			// 200 is arbitrary.  (must be 1 or more)
+	return 1;						  // 200 is arbitrary.  (must be 1 or more)
 }

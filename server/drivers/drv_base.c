@@ -25,51 +25,51 @@ drv_base_init (struct lcd_logical_driver *driver, char *args)
 {
 //  printf("drv_base_init()\n");
 
-   drv_base = driver;
+	drv_base = driver;
 
-   driver->wid = 20;
-   driver->hgt = 4;
+	driver->wid = 20;
+	driver->hgt = 4;
 
-   // You must use driver->framebuf here, but may use lcd.framebuf later.
-   if (!driver->framebuf)
-      driver->framebuf = malloc (driver->wid * driver->hgt);
+	// You must use driver->framebuf here, but may use lcd.framebuf later.
+	if (!driver->framebuf)
+		driver->framebuf = malloc (driver->wid * driver->hgt);
 
-   if (!driver->framebuf) {
-      drv_base_close ();
-      return -1;
-   }
+	if (!driver->framebuf) {
+		drv_base_close ();
+		return -1;
+	}
 // Debugging...
 //  if(lcd.framebuf) printf("Frame buffer: %i\n", (int)lcd.framebuf);
 
-   memset (driver->framebuf, ' ', driver->wid * driver->hgt);
+	memset (driver->framebuf, ' ', driver->wid * driver->hgt);
 //  drv_base_clear();
 
-   driver->cellwid = 5;
-   driver->cellhgt = 8;
+	driver->cellwid = 5;
+	driver->cellhgt = 8;
 
-   driver->clear = drv_base_clear;
-   driver->string = drv_base_string;
-   driver->chr = drv_base_chr;
-   driver->vbar = drv_base_vbar;
-   driver->init_vbar = drv_base_init_vbar;
-   driver->hbar = drv_base_hbar;
-   driver->init_hbar = drv_base_init_hbar;
-   driver->num = drv_base_num;
-   driver->init_num = drv_base_init_num;
+	driver->clear = drv_base_clear;
+	driver->string = drv_base_string;
+	driver->chr = drv_base_chr;
+	driver->vbar = drv_base_vbar;
+	driver->init_vbar = drv_base_init_vbar;
+	driver->hbar = drv_base_hbar;
+	driver->init_hbar = drv_base_init_hbar;
+	driver->num = drv_base_num;
+	driver->init_num = drv_base_init_num;
 
-   driver->init = drv_base_init;
-   driver->close = drv_base_close;
-   driver->flush = drv_base_flush;
-   driver->flush_box = drv_base_flush_box;
-   driver->contrast = drv_base_contrast;
-   driver->backlight = drv_base_backlight;
-   driver->set_char = drv_base_set_char;
-   driver->icon = drv_base_icon;
-   driver->draw_frame = drv_base_draw_frame;
+	driver->init = drv_base_init;
+	driver->close = drv_base_close;
+	driver->flush = drv_base_flush;
+	driver->flush_box = drv_base_flush_box;
+	driver->contrast = drv_base_contrast;
+	driver->backlight = drv_base_backlight;
+	driver->set_char = drv_base_set_char;
+	driver->icon = drv_base_icon;
+	driver->draw_frame = drv_base_draw_frame;
 
-   driver->getkey = drv_base_getkey;
+	driver->getkey = drv_base_getkey;
 
-   return 200;			// 200 is arbitrary.  (must be 1 or more)
+	return 200;						  // 200 is arbitrary.  (must be 1 or more)
 }
 
 // Below here, you may use either lcd.framebuf or driver->framebuf..
@@ -79,10 +79,10 @@ drv_base_init (struct lcd_logical_driver *driver, char *args)
 void
 drv_base_close ()
 {
-   if (lcd.framebuf != NULL)
-      free (lcd.framebuf);
+	if (lcd.framebuf != NULL)
+		free (lcd.framebuf);
 
-   lcd.framebuf = NULL;
+	lcd.framebuf = NULL;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ drv_base_close ()
 void
 drv_base_clear ()
 {
-   memset (lcd.framebuf, ' ', lcd.wid * lcd.hgt);
+	memset (lcd.framebuf, ' ', lcd.wid * lcd.hgt);
 
 }
 
@@ -101,7 +101,7 @@ drv_base_clear ()
 void
 drv_base_flush ()
 {
-   //lcd.draw_frame(lcd.framebuf);
+	//lcd.draw_frame(lcd.framebuf);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -111,17 +111,17 @@ drv_base_flush ()
 void
 drv_base_string (int x, int y, char string[])
 {
-   int i;
+	int i;
 
-   x -= 1;			// Convert 1-based coords to 0-based...
-   y -= 1;
+	x -= 1;							  // Convert 1-based coords to 0-based...
+	y -= 1;
 
-   for (i = 0; string[i]; i++) {
-      // Check for buffer overflows...
-      if ((y * lcd.wid) + x + i > (lcd.wid * lcd.hgt))
-	 break;
-      lcd.framebuf[(y * lcd.wid) + x + i] = string[i];
-   }
+	for (i = 0; string[i]; i++) {
+		// Check for buffer overflows...
+		if ((y * lcd.wid) + x + i > (lcd.wid * lcd.hgt))
+			break;
+		lcd.framebuf[(y * lcd.wid) + x + i] = string[i];
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -131,10 +131,10 @@ drv_base_string (int x, int y, char string[])
 void
 drv_base_chr (int x, int y, char c)
 {
-   y--;
-   x--;
+	y--;
+	x--;
 
-   lcd.framebuf[(y * lcd.wid) + x] = c;
+	lcd.framebuf[(y * lcd.wid) + x] = c;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ int
 drv_base_contrast (int contrast)
 {
 //  printf("Contrast: %i\n", contrast);
-   return -1;
+	return -1;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -154,16 +154,16 @@ drv_base_contrast (int contrast)
 void
 drv_base_backlight (int on)
 {
-   /*
-      if(on)
-      {
-      printf("Backlight ON\n");
-      }
-      else
-      {
-      printf("Backlight OFF\n");
-      }
-    */
+	/*
+	   if(on)
+	   {
+	   printf("Backlight ON\n");
+	   }
+	   else
+	   {
+	   printf("Backlight OFF\n");
+	   }
+	 */
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -217,12 +217,12 @@ drv_base_set_char (int n, char *dat)
 void
 drv_base_vbar (int x, int len)
 {
-   int y;
-   for (y = lcd.hgt; y > 0 && len > 0; y--) {
-      drv_base_chr (x, y, '|');
+	int y;
+	for (y = lcd.hgt; y > 0 && len > 0; y--) {
+		drv_base_chr (x, y, '|');
 
-      len -= lcd.cellhgt;
-   }
+		len -= lcd.cellhgt;
+	}
 
 }
 
@@ -232,11 +232,11 @@ drv_base_vbar (int x, int len)
 void
 drv_base_hbar (int x, int y, int len)
 {
-   for (; x <= lcd.wid && len > 0; x++) {
-      drv_base_chr (x, y, '-');
+	for (; x <= lcd.wid && len > 0; x++) {
+		drv_base_chr (x, y, '-');
 
-      len -= lcd.cellwid;
-   }
+		len -= lcd.cellwid;
+	}
 
 }
 
@@ -258,7 +258,7 @@ drv_base_icon (int which, char dest)
 void
 drv_base_flush_box (int lft, int top, int rgt, int bot)
 {
-   //drv_base_flush();
+	//drv_base_flush();
 
 }
 
@@ -313,5 +313,5 @@ drv_base_draw_frame (char *dat)
 char
 drv_base_getkey ()
 {
-   return 0;
+	return 0;
 }

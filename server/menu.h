@@ -123,9 +123,9 @@ and sliders should return 0-255.
 #define MENU_READ 5
 
 typedef struct menu_item {
-   char *text;
-   int type;
-   void *data;
+	char *text;
+	int type;
+	void *data;
 } menu_item;
 
 #define Menu menu_item *

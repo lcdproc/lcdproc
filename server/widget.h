@@ -4,16 +4,16 @@
 #include "screen.h"
 
 typedef struct widget {
-   char *id;
-   int type;
-   // some sort of data here...
-   int x, y;			// Position
-   int wid, hgt;		// Size
-   int left, top, right, bottom;	// bounding rectangle
-   int length;			// size or direction
-   int speed;			// For scroller...
-   char *text;			// text or binary data
-   LL *kids;			// Frames can contain more widgets...
+	char *id;
+	int type;
+	// some sort of data here...
+	int x, y;						  // Position
+	int wid, hgt;					  // Size
+	int left, top, right, bottom;	// bounding rectangle
+	int length;						  // size or direction
+	int speed;						  // For scroller...
+	char *text;						  // text or binary data
+	LL *kids;						  // Frames can contain more widgets...
 } widget;
 
 // These correspond to the index into the "types" array...

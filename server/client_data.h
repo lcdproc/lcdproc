@@ -6,12 +6,12 @@
 #define CLIENT_NAME_SIZE 256
 
 typedef struct client_data {
-   int ack;
-   char *name;
-   // and other stuff...  doesn't matter yet
-   LL *screenlist;
-   // list of accepted keys... (?)
-   LL *menulist;
+	int ack;
+	char *name;
+	// and other stuff...  doesn't matter yet
+	LL *screenlist;
+	// list of accepted keys... (?)
+	LL *menulist;
 
 } client_data;
 
