@@ -13,6 +13,7 @@
 #define DRIVERS_H
 
 #include "drivers/lcd.h"
+#include "shared/LL.h"
 
 typedef struct DisplayProps {
 	int width, height;
@@ -21,7 +22,11 @@ typedef struct DisplayProps {
 
 extern DisplayProps * display_props;
 
-#define bool int
+#ifndef bool
+# define bool short
+# define true 1
+# define false 0
+#endif
 
 
 int
@@ -85,6 +90,9 @@ void
 drivers_set_contrast( int contrast );
 
 void
+drivers_cursor( int x, int y, int state );
+
+void
 drivers_backlight( int brightness );
 
 void
@@ -95,5 +103,18 @@ drivers_get_key();
 
 char
 drivers_getkey();
+
+extern LinkedList * loaded_drivers;
+/* Please don't read this list except using the following functions */
+
+static inline Driver * drivers_getfirst ()
+{
+	return LL_GetFirst(loaded_drivers);
+}
+
+static inline Driver * drivers_getnext ()
+{
+	return LL_GetNext(loaded_drivers);
+}
 
 #endif

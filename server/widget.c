@@ -6,9 +6,10 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2002, Joris Robijn
  *
  *
- * Does widget management
+ * Does all actions on widgets
  *
  */
 
@@ -64,9 +65,6 @@ struct icontable {
 	{ICON_REC, "REC"},
 	{0,NULL}
 };
-
-//static widget *widget_finder (LinkedList * list, char *id);
-//static int widget_remover (LinkedList * list, widget * w);
 
 
 Widget *
@@ -128,14 +126,8 @@ widget_destroy (Widget * w)
 
 	if (w->id)
 		free (w->id);
-	/*debug(RPT_DEBUG, "widget_destroy: id...");*/
 	if (w->text)
 		free (w->text);
-	/*debug(RPT_DEBUG, "widget_destroy: text...");*/
-
-	if (w->type == WID_FRAME) {
-		/* TODO: create a screen for the frame widget */
-	}
 
 	/* Free subscreen of frame widget too */
 	if (w->type == WID_FRAME) {
@@ -143,7 +135,6 @@ widget_destroy (Widget * w)
 	}
 
 	free (w);
-	/*debug(RPT_DEBUG, "widget_destroy: widget...");*/
 
 	return 0;
 }

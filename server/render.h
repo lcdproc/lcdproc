@@ -36,7 +36,6 @@
 
 extern int heartbeat;
 extern int backlight;
-extern int backlight_state;
 extern int backlight_brightness;
 extern int backlight_off_brightness;
 extern int output_state;

@@ -600,16 +600,16 @@ curses_drv_get_key (Driver *drvthis)
 			return 0;
 			break;
 		case KEY_LEFT:
-			return "ArrowLeft";
+			return "Left";
 			break;
 		case KEY_UP:
-			return "ArrowUp";
+			return "Up";
 			break;
 		case KEY_DOWN:
-			return "ArrowDown";
+			return "Down";
 			break;
 		case KEY_RIGHT:
-			return "ArrowRight";
+			return "Right";
 			break;
 		case ERR:
 			return NULL;

@@ -269,6 +269,10 @@ sock_close_all ()
 {
 	int fd;
 
+	return 0;
+	/* Do we need to do this ? Clients_shutdown already closes all
+           client connections ... */
+
 	report (RPT_INFO, "sock_close_all()");
 
 	for (fd = 0; fd < FD_SETSIZE; fd++) {

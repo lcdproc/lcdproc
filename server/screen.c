@@ -65,6 +65,9 @@ screen_create (char * id, Client * client)
 	s->timeout = default_timeout; 	/*ignored unless greater than 0.*/
 	s->backlight = BACKLIGHT_OPEN;		/*Lets the screen do it's own*/
 						/*or do what the client says.*/
+	s->cursor = CURSOR_OFF;
+	s->cursor_x = 1;
+	s->cursor_y = 1;
 
 	s->widgetlist = LL_new ();
 	if (!s->widgetlist) {

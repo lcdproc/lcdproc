@@ -43,8 +43,6 @@
 /* Backlight data */
 #define BACKLIGHT_OFF 0
 #define BACKLIGHT_ON  1
-#define BACKLIGHT_WARNING 2
-#define BACKLIGHT_RED_ALERT 3
 
 /* Icons. If a driver does not support an icon, it can return -1 from the
  * icon function, and let the core place a replacement character.

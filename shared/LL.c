@@ -744,6 +744,30 @@ LL_Find (LinkedList * list, int compare (void *, void *), void *value)
 }
 
 //////////////////////////////////////////////////////////////////////
+// Array like...
+// Goes to the nth list item, and returns the
+// data found there.
+//
+void *
+LL_GetByIndex (LinkedList * list, int index)
+{
+	LL_node *node;
+	int num = 0;
+
+	if (!list)
+		return NULL;
+	if (index<0)
+		return NULL;
+
+	for (node = list->head.next; node != &list->tail; node = node->next) {
+		if (num == index)
+			return node->data;
+		num ++;
+	}
+	return NULL; // got past the end
+}
+
+//////////////////////////////////////////////////////////////////////
 // Sorts the list, then rewinds it...
 //
 int

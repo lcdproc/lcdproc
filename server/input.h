@@ -12,6 +12,8 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+#include <stdlib.h>
+
 /* Accepts and uses keypad input while displaying screens... */
 int handle_input ();
 
@@ -25,5 +27,32 @@ int handle_input ();
 #define INPUT_FORWARD_KEY       'C'
 #define INPUT_MAIN_MENU_KEY     'D'
 
+#ifndef bool
+# define bool short
+# define true 1
+# define false 0
+#endif
+
+typedef struct KeyReservation {
+	char * key;
+	bool exclusive;
+	Client * client;	/* NULL for internal clients */
+} KeyReservation;
+
+
+int init_input();
+	/* Init the input handling system */
+int input_reserve_key (char * key, bool exclusive, Client * client);
+	/* Reserves a key for a client */
+	/* Return -1 if reservation of key is not possible */
+void input_release_key (char * key, Client * client);
+	/* Releases a key reservation */
+void input_release_client_keys (Client * client);
+	/* Releases all key reservations for a given client */
+KeyReservation * input_find_key (char * key, Client * client);
+	/* Finds if a key reservation causes a 'hit'.
+	 * If the key was reserved exclusively, the client will be ignored.
+	 * If the key was reserved shared, the client must match.
+	 */
 
 #endif

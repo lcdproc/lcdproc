@@ -9,19 +9,6 @@
  *               2002, Joris Robijn
  *
  *
- * Handles server-supplied menus defined by a table.  Read menu.h for
- * more information.
- *
- * Menus are similar to "pull-down" menus, but have some extra features.
- * They can contain "normal" menu items, checkboxes, sliders, "movers",
- * etc..
- *
- * I should probably find a more elegant way of doing this in order
- * to handle dynamically-changing menus such as the client list.  Tcl/Tk
- * has neat ways to do it.  Hmm...
- *
- * NEW DESCRIPTION
- *
  * Handles a menu and all actions that can be performed on it.
  *
  * Menus are similar to "pull-down" menus, but have some extra features.
@@ -45,80 +32,73 @@
 
 #include "screen.h"
 
-
-/* Internal menu item drawing functions */
-void menu_build_menu_screen	(MenuItem *item, Screen *s);
-void menu_build_slider_screen	(MenuItem *item, Screen *s);
-void menu_build_numeric_screen	(MenuItem *item, Screen *s);
-void menu_build_string_screen	(MenuItem *item, Screen *s);
-void menu_update_menu_screen	(MenuItem *item, Screen *s);
-void menu_update_slider_screen	(MenuItem *item, Screen *s);
-void menu_update_numeric_screen	(MenuItem *item, Screen *s);
-void menu_update_string_screen	(MenuItem *item, Screen *s);
-
-
-MenuItem *menu_create_add_item (Menu *into_menu, int type, char *id,
-		EventFunc(*event_func))
+Menu *
+menu_create (char *id, MenuEventFunc(*event_func),
+	char *text, void *association)
 {
-	Menu *new_item;
+	Menu *new_menu;
 
-	/* Allocate space and fill struct */
-	new_item = malloc (sizeof(MenuItem));
-	if (!new_item) {
-		report (RPT_ERR, "menu_add_new_item: Could not allocate memory");
-		return NULL;
-	}
-	new_item->type = type;
-	new_item->id = strdup (id);
-	if (!new_item->id) {
-		report (RPT_ERR, "menu_add_new_item: Could not allocate memory");
-		return NULL;
-	}
-	new_item->event_func = event_func;
+	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", association=%p )", __FUNCTION__, id, event_func, text, association);
 
-	/* Clear the type specific data part */
-	memset ( &(new_item->data), 0, sizeof(new_item->data));
+	new_menu = menuitem_create (MENUITEM_MENU, id, event_func, text);
 
-	if (type == MENUITEM_MENU ) {
-		/* We have created a menu, create our needed data */
-		new_item->data.menu.parent = into_menu;
-		LL_new (new_item->data.menu.contents);
-	}
+	new_menu->data.menu.contents = LL_new();
+	new_menu->data.menu.association = association;
 
-	if (into_menu) {
-		/* Add the item to the menu */
-		LL_Push (into_menu->data.menu.contents, new_item);
-	}
-
-	return new_item;
+	return new_menu;
 }
 
-int menu_destroy_item (Menu *menu, MenuItem *item)
+void
+menu_destroy (Menu *menu)
 {
-	/* Is the item a menu ? */
-	if (item->type == MENUITEM_MENU ) {
-		/* Check if the menu is empty */
-		if ( LL_Length(item->data.menu.contents) != 0 ) {
-			report (RPT_ERR, "menu not empty, cannot be destroyed");
-			return -1;
-		}
-		/* Destroy our menu data */
-		if (item->data.menu.text)
-			free (item->data.menu.text);
-		LL_Destroy (item->data.menu.contents);
-	}
-	free (item->id);
-	free (item);
+	debug (RPT_DEBUG, "%s( menu=\"%s\" )", __FUNCTION__, menu->id);
 
-	/* Remove the item from the menu */
+	menu_destroy_all_items (menu);
+	LL_Destroy (menu->data.menu.contents);
+	menu->data.menu.contents = NULL;
+
+	/* After this the general menuitem routine destroys the rest... */
+}
+
+void
+menu_add_item (Menu *menu, MenuItem *item)
+{
+	debug (RPT_DEBUG, "%s( menu=\"%s\", item=\"%s\" )", __FUNCTION__, menu->id, item->id);
+
+	if (!menu) return;
+
+	/* Add the item to the menu */
+	LL_Push (menu->data.menu.contents, item);
+	item->parent = menu;
+}
+
+void
+menu_remove_item (Menu *menu, MenuItem *item)
+{
+	debug (RPT_DEBUG, "%s( menu=\"%s\", item=\"%s\" )", __FUNCTION__, menu->id, item->id);
+
 	LL_Remove (menu->data.menu.contents, item);
+}
 
-	return 0;
+void
+menu_destroy_all_items (Menu *menu)
+{
+	MenuItem * item;
+
+	debug (RPT_DEBUG, "%s( menu=\"%s\" )", __FUNCTION__, menu->id);
+
+	for( item = menu_getfirst_item(menu); item; item = menu_getfirst_item(menu) ) {
+		menuitem_destroy (item);
+		LL_Remove (menu->data.menu.contents, item);
+	}
 }
 
 MenuItem *menu_find_item (Menu *menu, char *id)
 {
 	MenuItem * item;
+
+	debug (RPT_DEBUG, "%s( menu=\"%s\", id=\"%s\" )", __FUNCTION__, menu->id, id);
+
 	for( item = menu_getfirst_item(menu); item; item = menu_getnext_item(menu) ) {
 		if ( strcmp(item->id, id) == 0 ) {
 			return item;
@@ -127,115 +107,279 @@ MenuItem *menu_find_item (Menu *menu, char *id)
 	return NULL;
 }
 
-
-/******** MENU SCREEN BUILD FUNCTIONS ********/
-
-void menu_build_screen (MenuItem *item, Screen *s)
+void menu_reset (Menu *menu)
 {
-	Widget * w;
-
-	if (display_props) {
-		/* Nothing to build if no display size is known */
-		report (RPT_ERR, "menu_build_screen: display size unknown");
-		return;
-	}
-
-	/* First remove all widgets from the screen */
-	for ( w=screen_getfirst_widget(s); w; w=screen_getnext_widget(s) ) {
-		/* We know these widgets don't have subwidgets */
-		screen_remove_widget (s, w);
-		widget_destroy (w);
-	}
-
-	switch (item->type) {
-	  case MENUITEM_MENU:
-		menu_build_menu_screen (item, s);
-		break;
-	  case MENUITEM_SLIDER:
-		menu_build_slider_screen (item, s);
-		break;
-	  case MENUITEM_NUMERIC_INPUT:
-		menu_build_slider_screen (item, s);
-		break;
-	  case MENUITEM_STRING_INPUT:
-		menu_build_slider_screen (item, s);
-		break;
-	  default:
-		report (RPT_ERR, "menu_build_screen: given menuitem cannot be active");
-		return;
-	}
-	menu_update_screen (item, s);
+	menu->data.menu.selector_pos = 0;
+	menu->data.menu.scroll = 0;
 }
 
-void menu_build_menu_screen	(MenuItem *item, Screen *s)
+void menu_build_screen (MenuItem *menu, Screen *s)
 {
 	Widget * w;
-	int linenr;
+	MenuItem * subitem;
+	int itemnr;
 
-	for (linenr=1; linenr<display_props->width; linenr++) {
-		char buf[8];
-		snprintf (buf, sizeof(buf)-1, "line%d", linenr);
+	debug (RPT_DEBUG, "%s( menu=\"%s\", screen=\"%s\" )", __FUNCTION__, menu->id, s->id);
+
+	/* TODO: Put menu in a frame to do easy scrolling */
+	/* Problem: frames are not handled correctly by renderer */
+
+	/* Create menu title widget */
+	w = widget_create ("title", WID_TITLE, s);
+	screen_add_widget (s, w);
+	w->text = strdup(menu->text);
+	w->x = 1;
+
+	/* Create widgets for each subitem in the menu */
+	for (subitem = LL_GetFirst (menu->data.menu.contents), itemnr = 0;
+	     subitem;
+	     subitem = LL_GetNext (menu->data.menu.contents), itemnr ++ )
+	{
+		char buf[10];
+
+		snprintf (buf, sizeof(buf)-1, "text%d", itemnr);
 		buf[sizeof(buf)-1] = 0;
 		w = widget_create (buf, WID_STRING, s);
 					/* (buf will be copied) */
-		w->text = strdup("");
 		screen_add_widget (s, w);
+		w->x = 2;
+
+		switch (subitem->type) {
+		  case MENUITEM_CHECKBOX:
+
+			/* Limit string length */
+			w->text = strdup (subitem->text);
+			if (strlen(subitem->text) >= display_props->width-2) {
+				(w->text)[display_props->width-2] = 0;
+			}
+
+			/* Add icon for checkbox */
+			snprintf (buf, sizeof(buf)-1, "icon%d", itemnr);
+			buf[sizeof(buf)-1] = 0;
+			w = widget_create (buf, WID_ICON, s);
+						/* (buf will be copied) */
+			screen_add_widget (s, w);
+			w->x = display_props->width - 1;
+			w->length = ICON_CHECKBOX_OFF;
+			break;
+		  case MENUITEM_RING:
+			/* Create string for text + ringtext */
+			w->text = malloc (display_props->width);
+			break;
+		  case MENUITEM_MENU:
+		  case MENUITEM_ACTION:
+		  case MENUITEM_SLIDER:
+		  case MENUITEM_NUMERIC:
+		  case MENUITEM_ALPHA:
+			/* Limit string length */
+			w->text = strdup (subitem->text);
+			if (strlen(subitem->text) >= display_props->width-1) {
+				(w->text)[display_props->width-1] = 0;
+			}
+			break;
+		}
+	}
+
+	/* Add arrow for selection on the left */
+	w = widget_create ("selector", WID_ICON, s);
+	screen_add_widget (s, w);
+	w->length = ICON_SELECTOR_AT_LEFT;
+	w->x = 1;
+
+	/* Add scrollers on the right side on top and bottom */
+	/* TODO: when menu is in a frame, these can be removed */
+	w = widget_create ("upscroller", WID_ICON, s);
+	screen_add_widget (s, w);
+	w->length = ICON_ARROW_UP;
+	w->x = display_props->width;
+	w->y = 1;
+
+	w = widget_create ("downscroller", WID_ICON, s);
+	screen_add_widget (s, w);
+	w->length = ICON_ARROW_DOWN;
+	w->x = display_props->width;
+	w->y = display_props->height;
+
+}
+
+void menu_update_screen (MenuItem *menu, Screen *s)
+{
+	Widget * w;
+	MenuItem * subitem;
+	int itemnr;
+
+	debug (RPT_INFO, "%s( menu=\"%s\", screen=\"%s\" )", __FUNCTION__, menu->id, s->id);
+
+	/* Update widgets for the title */
+	w = screen_find_widget (s, "title");
+	if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "title");
+	w->y = 1 - menu->data.menu.scroll;
+
+	/* TODO: remove next 5 limes when rendering is safe */
+	if (w->y > 0 && w->y <= display_props->height) {
+		w->type = WID_TITLE;
+	} else {
+		w->type = WID_NONE; /* make invisible */
+	}
+
+	/* Update widgets for each subitem in the menu */
+	for (subitem = LL_GetFirst (menu->data.menu.contents), itemnr = 0;
+	     subitem;
+	     subitem = LL_GetNext (menu->data.menu.contents), itemnr ++ )
+	{
+		char buf[10];
+		char * p;
+
+		snprintf (buf, sizeof(buf)-1, "text%d", itemnr);
+		buf[sizeof(buf)-1] = 0;
+		w = screen_find_widget (s, buf);
+		if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, buf);
+		w->y = 2 + itemnr - menu->data.menu.scroll;
+
+		/* TODO: remove next 5 limes when rendering is safe */
+		if (w->y > 0 && w->y <= display_props->height) {
+			w->type = WID_STRING;
+		} else {
+			w->type = WID_NONE; /* make invisible */
+		}
+
+		switch (subitem->type) {
+		  case MENUITEM_CHECKBOX:
+
+			/* Update icon value for checkbox */
+			snprintf (buf, sizeof(buf)-1, "icon%d", itemnr);
+			buf[sizeof(buf)-1] = 0;
+			w = screen_find_widget (s, buf);
+			if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, buf);
+			w->y = 2 + itemnr - menu->data.menu.scroll;
+			w->length = ((int[]){ICON_CHECKBOX_OFF,ICON_CHECKBOX_ON,ICON_CHECKBOX_GRAY})[subitem->data.checkbox.value];
+
+			/* TODO: remove next 5 limes when rendering is safe */
+			if (w->y > 0 && w->y <= display_props->height) {
+				w->type = WID_ICON;
+			} else {
+				w->type = WID_NONE; /* make invisible */
+			}
+			break;
+		  case MENUITEM_RING:
+			/* Limit string length and add ringstring */
+			p = LL_GetByIndex (subitem->data.ring.strings, subitem->data.ring.value);
+			if (strlen(p) > display_props->width - 3) {
+				short a = display_props->width - 3;
+				/* We need to limit the ring string and DON'T
+				 * display the item text */
+				strcpy (w->text, " ");
+				memcpy (w->text + 1, p, a);
+				w->text[a + 1] = 0;
+			}
+			else {
+				short b = display_props->width - 2 - strlen (p);
+				short c = min (strlen (subitem->text), b - 1);
+				/* We don't limit the ring string */
+				memset (w->text, ' ', b);
+				memcpy (w->text, subitem->text, c);
+				strcpy (w->text + b, p);
+			}
+			break;
+		  default:
+		}
+	}
+
+	/* Update selector position */
+	w = screen_find_widget (s, "selector");
+	if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "selector");
+	w->y = 2 + menu->data.menu.selector_pos - menu->data.menu.scroll;
+
+	/* Enable upscroller */
+	w = screen_find_widget (s, "upscroller");
+	if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "upscroller");
+	if (menu->data.menu.scroll > 0) {
+		w->type = WID_ICON;
+	} else {
+		w->type = WID_NONE; /* disable it this way */
+	}
+	/* Enable downscroller */
+	w = screen_find_widget (s, "downscroller");
+	if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "downscroller");
+	if (LL_Length(menu->data.menu.contents) - menu->data.menu.scroll - display_props->height + 1 > 0 ) {
+		w->type = WID_ICON;
+	} else {
+		w->type = WID_NONE; /* disable it this way */
 	}
 }
 
-void menu_build_slider_screen	(MenuItem *item, Screen *s)
+MenuResult menu_handle_input	(Menu *menu, MenuToken token, char * key)
 {
-}
+	MenuItem *subitem;
 
-void menu_build_numeric_screen	(MenuItem *item, Screen *s)
-{
-}
+	debug (RPT_DEBUG, "%s( menu=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, menu->id, token, key);
 
-void menu_build_string_screen	(MenuItem *item, Screen *s)
-{
-}
-
-void menu_build_password_screen	(MenuItem *item, Screen *s)
-{
-}
-
-/******** MENU SCREEN UPDATE FUNCTIONS ********/
-
-void menu_update_screen (MenuItem *item, Screen *s) {
-	switch (item->type) {
-		case MENUITEM_MENU:
-			menu_update_menu_screen (item, s);
+	switch (token) {
+	  case MENUTOKEN_MENU:
+		return MENURESULT_CLOSE;
+	  case MENUTOKEN_ENTER:
+		subitem = LL_GetByIndex (menu->data.menu.contents,
+					menu->data.menu.selector_pos);
+		if (!subitem) break;
+		switch (subitem->type) {
+		  case MENUITEM_ACTION:
+			if (subitem->event_func)
+				subitem->event_func (subitem, MENUEVENT_ENTER);
+			if (subitem->data.action.quit_menu)
+				return MENURESULT_QUIT;
+			if (subitem->data.action.close_menu)
+				return MENURESULT_CLOSE;
+			return MENURESULT_OK;
+		  case MENUITEM_CHECKBOX:
+			if (subitem->data.checkbox.allow_gray) {
+				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
+			}
+			else {
+				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
+			}
+			if (subitem->event_func)
+				subitem->event_func (subitem, MENUEVENT_UPDATE);
+			return MENURESULT_OK;
+		  case MENUITEM_RING:
+			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
+			if (subitem->event_func)
+				subitem->event_func (subitem, MENUEVENT_UPDATE);
+			return MENURESULT_OK;
+		  case MENUITEM_MENU:
+		  case MENUITEM_SLIDER:
+		  case MENUITEM_NUMERIC:
+		  case MENUITEM_ALPHA:
+			if (subitem->event_func)
+				subitem->event_func (subitem, MENUEVENT_ENTER);
+			return MENURESULT_ENTER;
+		  default:
 			break;
-		case MENUITEM_SLIDER:
-			menu_update_slider_screen (item, s);
-			break;
-		case MENUITEM_NUMERIC_INPUT:
-			menu_update_slider_screen (item, s);
-			break;
-		case MENUITEM_STRING_INPUT:
-			menu_update_slider_screen (item, s);
-			break;
-		default:
-			report (RPT_ERR, "menu_update_screen: given menuitem cannot be active");
+		}
+		return MENURESULT_ERROR;
+	  case MENUTOKEN_UP:
+		if (menu->data.menu.selector_pos > 0) {
+			menu->data.menu.selector_pos --;
+			if (menu->data.menu.selector_pos + 1 < menu->data.menu.scroll) {
+				menu->data.menu.scroll --;
+			}
+		}
+		else if (menu->data.menu.selector_pos == 0) {
+			if (menu->data.menu.selector_pos < menu->data.menu.scroll) {
+				menu->data.menu.scroll --;
+			}
+		}
+		return MENURESULT_OK;
+	  case MENUTOKEN_DOWN:
+		if (menu->data.menu.selector_pos < LL_Length(menu->data.menu.contents) - 1) {
+			menu->data.menu.selector_pos ++;
+		}
+		if (menu->data.menu.selector_pos - menu->data.menu.scroll + 2 > display_props->height) {
+			menu->data.menu.scroll ++;
+		}
+		return MENURESULT_OK;
+	  case MENUTOKEN_OTHER:
+		/* TODO: move to the selected number and enter it */
+		return MENURESULT_OK;
 	}
+	return MENURESULT_ERROR;
 }
-
-void menu_update_menu_screen	(MenuItem *item, Screen *s)
-{
-}
-
-void menu_update_slider_screen	(MenuItem *item, Screen *s)
-{
-
-}
-
-void menu_update_numeric_screen	(MenuItem *item, Screen *s)
-{
-
-}
-
-void menu_update_string_screen	(MenuItem *item, Screen *s)
-{
-
-}
-

@@ -11,27 +11,6 @@
  * Handles keypad (and other?) input from the user.
  */
 
-/*
-
-  Currently, the keys are as follows:
-
-  Context     Key      Function
-  -------     ---      --------
-  Normal               "normal" context is handled in this source file.
-              A        Pause/Continue
-              B        Back(Go to previous screen)
-              C        Forward(Go to next screen)
-              D        Open main menu
-              E-Z      Sent to client, if any; ignored otherwise
-
- (menu keys are not handled here, but in the menu code)
-  Menu
-              A        Enter/select
-              B        Up/Left
-              C        Down/Right
-              D        Exit/Cancel
-              E-Z      Ignored
-*/
 
 
 #include <stdlib.h>
@@ -44,98 +23,95 @@
 #include "drivers.h"
 
 #include "client.h"
-#include "clients.h"
-#include "screen.h"
-#include "widget.h"
 #include "screenlist.h"
-//#include "menus.h"
+#include "menuscreens.h"
 
 #include "input.h"
 
-#define KeyWanted(a,b)	((a) && strchr((a), (b)))
-#define CurrentScreen	screenlist_current
-
 int server_input (int key);
+void input_send_to_client (Client * c, char * key);
+void input_internal_key (KeyReservation * kr);
 
-/* FIXME!  The server tends to crash when "E" is pressed..  (?!)
- * (but only when the joystick driver is the last one on the list...)
- */
+LinkedList * keylist;
 
-/* Checks for keypad input, and dispatches it */
-int
-handle_input ()
+
+int init_input()
 {
-	char str[15];
-	int key;
-	Screen * s;
-	/*Widget * w; */
-	Client * c;
+	report (RPT_INFO, "%s()", __FUNCTION__ );
 
-	report (RPT_INFO, "handle_input()" );
-
-	if ((key = drivers_getkey ()) == 0)
-		return 0;
-
-	debug (RPT_INFO, "handle_input got key: '%c'", key);
-
-	/* Sequence:
-	 * 	Does the current screen want the key?
-	 * 	IfTrue: handle and quit
-	 * 	IfFalse:
-	 * 	    Let ALL clients handle it if they want
-	 * 	    Let Server handle it, too
-	 *
-	 * This leads to a unique situation:
-	 *     First: multiple clients may handle the same key in multiple ways
-	 *     Second: the server may handle the key differently yet
-	 *
-	 * Solution: Only the current screen can handle the key press.
-	 * Alternately, only one client can handle the key press.
-	 */
-
-	/* TODO:  Interpret and translate keys! */
-
-	/* Give current screen a shot at the key first */
-	s = CurrentScreen ();
-
-	if (KeyWanted(s->keys, key)) {
-		/* This screen wants this key.  Tell it we got one */
-		snprintf(str, sizeof(str), "key %c\n", key);
-		sock_send_string(s->client->sock, str);
-		/* Nobody else gets this key */
-	}
-
-	/* if the current screen doesn't want it,
-	 * let the server have it...
-	 */
-
-	else {
-		/* Give key to clients who want it */
-
-		c = clients_getfirst();
-
-		while (c) {
-			/* If the client should have this keypress... */
-			if(KeyWanted(c->client_keys,key)) {
-				/* Send keypress to client */
-				snprintf(str, sizeof(str), "key %c\n", key);
-				sock_send_string(c->sock, str);
-				break;	/* first come, first serve */
-			};
-			c = clients_getnext();
-		} /* while clients */
-
-		/* Give server a shot at all keys */
-		server_input (key);
-	}
+	keylist = LL_new();
 
 	return 0;
 }
 
 int
+handle_input ()
+{
+	char * key;
+	Client * c;
+	KeyReservation * kr;
+
+	report (RPT_INFO, "%s()", __FUNCTION__ );
+
+	c = screenlist_current()->client;
+
+	/* Handle all keypresses */
+	while ((key = drivers_get_key ()) != NULL ) {
+
+		/* Find what client wants the key */
+		kr = input_find_key (key, c);
+		if (kr) {
+			/* A hit ! */
+			if (kr->client == NULL) {
+				report (RPT_DEBUG, "%s: key for internal client: [%.40s]", __FUNCTION__, key );
+				input_internal_key (kr);
+			}
+			else {
+				/* It's an external client */
+				report (RPT_DEBUG, "%s: key for external client: [%.40s]", __FUNCTION__, key );
+				input_send_to_client (c, key);
+			}
+		}
+		else {
+			/* What do we do with left-over keys ? */
+			report (RPT_INFO, "%s: left over key: [%.40s]", __FUNCTION__, key );
+
+			/* Well... nothing ! */
+		}
+	}
+	return 0;
+}
+
+void input_send_to_client (Client * c, char * key)
+{
+	char * s;
+
+	debug (RPT_DEBUG, "%s( client=%p, key=\"%.40s\" )", __FUNCTION__, c, key);
+
+	/* Allocate just as much as we need */
+	s = malloc (strlen(key) + strlen("key \n") + 1);
+	sprintf(s, "key %s\n", key);
+	sock_send_string(c->sock, s);
+	free (s);
+}
+
+void
+input_internal_key (KeyReservation * kr)
+{
+	if (kr->exclusive || screenlist_current() == menuscreen) {
+		menuscreen_key_handler (kr->key);
+	}
+	else {
+		/* TODO: give keys to server screen */
+	}
+}
+
+
+/* TODO: REPLACE THE FOLLOWING FUNCTION BY SOMETHING NEW */
+int
 server_input (int key)
 {
-	report(RPT_INFO, "server_input( key='%c' )", (char) key);
+	report(RPT_INFO, "%s( key='%c' )", __FUNCTION__, (char) key);
 
 	switch ((char) key) {
 		case INPUT_PAUSE_KEY:
@@ -153,14 +129,98 @@ server_input (int key)
 			screenlist_next ();
 			break;
 		case INPUT_MAIN_MENU_KEY:
-			debug (RPT_DEBUG, "got the menu key!");
+			debug (RPT_DEBUG, "%s: got the menu key!", __FUNCTION__);
 			//server_menu ();
 			report (RPT_ERR, "MENU TEMPORATY DISABLED");
 			break;
 		default:
-			debug (RPT_DEBUG, "server_input: Unused key \"%c\" (%i)", (char) key, key);
+			debug (RPT_DEBUG, "%s: Unused key \"%c\" (%i)", __FUNCTION__, (char) key, key);
 			break;
 	}
 
 	return 0;
+}
+
+int input_reserve_key (char * key, bool exclusive, Client * client)
+{
+	KeyReservation * kr;
+
+	debug (RPT_DEBUG, "%s( key=\"%.40s\", exclusive=%d, client=%p )", __FUNCTION__, key, exclusive, client);
+
+	/* Find out if this key is already reserved in a way that interferes
+	 * with the new reservation.
+	 */
+	for (kr=LL_GetFirst(keylist); kr; kr=LL_GetNext(keylist)) {
+		if (strcmp (kr->key, key) == 0) {
+			if (kr->exclusive || exclusive) {
+				/* Sorry ! */
+				return -1;
+			}
+		}
+	}
+
+	/* We can now safely add it ! */
+	kr = malloc (sizeof(KeyReservation));
+	kr->key = strdup (key);
+	kr->exclusive = exclusive;
+	kr->client = client;
+	LL_Push(keylist, kr);
+
+	report (RPT_INFO, "%s: key [%.40s] is now reserved in %s mode", __FUNCTION__, key, (exclusive?"exclusive":"shared"));
+
+	return 0;
+}
+
+void input_release_key (char * key, Client * client)
+{
+	KeyReservation * kr;
+
+	debug (RPT_DEBUG, "%s( key=\"%.40s\", client=%p )", __FUNCTION__, key, client);
+
+	for (kr=LL_GetFirst(keylist); kr; kr=LL_GetNext(keylist)) {
+		if (kr->client == client
+		&& strcmp (kr->key, key) == 0) {
+			report (RPT_INFO, "%s: key [%.40s] is being released from %s mode", __FUNCTION__, key, (kr->exclusive?"exclusive":"shared"));
+			free (kr->key);
+			free (kr);
+			LL_DeleteNode (keylist);
+			return;
+		}
+	}
+}
+
+void input_release_client_keys (Client * client)
+{
+	KeyReservation * kr;
+
+	debug (RPT_DEBUG, "%s( client=%p )", __FUNCTION__, client);
+
+	kr=LL_GetFirst(keylist);
+	while (kr) {
+		if (kr->client == client) {
+			report (RPT_INFO, "%s: key [%.40s] is now released from %s mode", __FUNCTION__, kr->key, (kr->exclusive?"exclusive":"shared"));
+			free (kr->key);
+			free (kr);
+			LL_DeleteNode (keylist);
+			kr = LL_Get (keylist);
+		} else {
+			kr = LL_GetNext(keylist);
+		}
+	}
+}
+
+KeyReservation * input_find_key (char * key, Client * client)
+{
+	KeyReservation * kr;
+
+	debug (RPT_DEBUG, "%s( key=\"%.40s\", client=%p )", __FUNCTION__, key, client);
+
+	for (kr=LL_GetFirst(keylist); kr; kr=LL_GetNext(keylist)) {
+		if (strcmp (kr->key, key) == 0) {
+			if (kr->exclusive || client==kr->client) {
+				return kr;
+			}
+		}
+	}
+	return NULL;
 }

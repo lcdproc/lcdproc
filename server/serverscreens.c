@@ -36,8 +36,6 @@ char one[256] = "";
 char two[256] = "";
 char three[256] = "";
 
-#define WidgetString(w,a,b,t)	{(w)->x=(a);(w)->y=(b);(w)->text=(t);}
-
 int
 server_screen_init ()
 {
@@ -69,25 +67,23 @@ server_screen_init ()
 	}
 
 	/* Now, initialize all the widgets...*/
-	if ((w = screen_find_widget (server_screen, "title")) != NULL) {
-		w->text = title;
-	} else
-		report (RPT_ERR, "server_screen_init: Can't find title");
+	w = screen_find_widget (server_screen, "title");
+	w->text = strdup (title);
 
-	if ((w = screen_find_widget (server_screen, "one")) != NULL)
-		WidgetString(w,1,2,one)
-	else
-		report (RPT_ERR, "server_screen_init: Can't find widget one");
+	w = screen_find_widget (server_screen, "one");
+	w->x = 1;
+	w->y = 2;
+	w->text = strdup (one);
 
-	if ((w = screen_find_widget (server_screen, "two")) != NULL)
-		WidgetString(w,1,3,two)
-	else
-		report (RPT_ERR, "server_screen_init: Can't find widget two");
+	w = screen_find_widget (server_screen, "two");
+	w->x = 1;
+	w->y = 3;
+	w->text = strdup (two);
 
-	if ((w = screen_find_widget (server_screen, "three")) != NULL)
-		WidgetString(w,1,4,three)
-	else
-		report (RPT_ERR, "server_screen_init: Can't find widget three");
+	w = screen_find_widget (server_screen, "three");
+	w->x = 1;
+	w->y = 4;
+	w->text = strdup (three);
 
 	/* And enqueue the screen*/
 	screenlist_add (server_screen);
@@ -95,20 +91,6 @@ server_screen_init ()
 	debug (RPT_DEBUG, "server_screen_init done");
 
 	return 0;
-}
-
-static int
-screen_count (Client * c) {
-	int n;
-
-	n = 0;
-	LL_Rewind (c->screenlist);
-	do {
-		if (LL_Get (c->screenlist) != NULL)
-			n++;
-	} while (LL_Next (c->screenlist) == 0);
-
-	return n;
 }
 
 int
@@ -130,27 +112,6 @@ update_server_screen (int timer)
 	for (c = clients_getfirst (); c; c = clients_getnext () ) {
 		num_screens += client_screen_count(c);
 	}
-
-/*
-		if (c) {
-			num_clients++;
-			num_screens += client_screen_count(c);
-
-			num_screens += screen_count(c);
-*/
-
-/*			LL_Rewind (c->data->screenlist); */
-/*			do { */
-/*				s = LL_Get (c->data->screenlist); */
-/*				if (s) { */
-/*					num_screens++; */
-/*				} */
-/*			} while (LL_Next (c->data->screenlist) == 0); */
-
-/*
-		}
-	}
-*/
 
 	/* Format strings for the appropriate size display... */
 	if (display_props->height >= 3) {

@@ -15,9 +15,20 @@
 #define MENUSCREENS_H
 
 #include "menu.h"
+#include "screen.h"
 
-MenuEventFuncResult menuscreen_key_handler ();
-/* This handler should be called by the real handler for the event */
+extern Screen * menuscreen;
+
+int init_menu();
+
+bool is_menu_key (char * key);
+/* This function indicates to the input part whether this key was the
+ * reserved menu key.
+ */
+
+void menuscreen_key_handler (char *key);
+/* This handler handles the keypresses for the menu.
+ */
 
 #endif
 

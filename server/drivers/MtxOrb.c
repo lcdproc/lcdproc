@@ -1190,12 +1190,11 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 MODULE_EXPORT int
 MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 {
+	return -1;
+	/* Does not use current icon definitions */
+
 	MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, icon));
 
-	return 0;
-	/* We return 0, however many icons are not supported
-	 * TODO...
-	 */
 }
 
 /* TODO: Recover the code for I2C connectivity to MtxOrb

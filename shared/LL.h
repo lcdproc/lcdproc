@@ -30,7 +30,7 @@
 
     For errors, the general convention is that "0" means success, and
     a negative number means failure.  Check LL.c to be sure, though.
-    
+
   *******************************************************************
 
   To change the data, try this:
@@ -73,12 +73,12 @@
       my_data = (my_data *)LL_Get(list);
       ... do something to it ...
     } while(LL_Next(list) == 0);
-  
+
   *******************************************************************
-  
+
   You can also treat the list like a stack, or a queue.  Just use the
   following functions:
-  
+
     LL_Push()      // Regular stack stuff: add, remove, peek, rotate
     LL_Pop()
     LL_Top()
@@ -190,6 +190,9 @@ int LL_Length (LinkedList * list);		  // Returns # of nodes in entire list
 
 // Searching...
 void *LL_Find (LinkedList * list, int compare (void *, void *), void *value);
+
+// Array operation...
+void *LL_GetByIndex (LinkedList * list, int index);  // gets the nth node, 0 being the first
 
 // Sorts the list...
 int LL_Sort (LinkedList * list, int compare (void *, void *));

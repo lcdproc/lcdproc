@@ -20,7 +20,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "sock.h"
 #include "client.h"
 #include "clients.h"
 #include "shared/report.h"

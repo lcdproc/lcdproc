@@ -46,6 +46,7 @@ extern int optind, optopt, opterr;
 #include "parse.h"
 #include "render.h"
 #include "serverscreens.h"
+#include "menuscreens.h"
 #include "input.h"
 #include "configfile.h"
 #include "drivers.h"
@@ -211,6 +212,9 @@ main (int argc, char **argv)
 	}
 #endif
 
+	ESSENTIAL( init_input() );
+	ESSENTIAL( init_menu() );
+
 	do_mainloop();
 	/* This loop never stops; we'll get out only with a signal...*/
 
@@ -292,11 +296,9 @@ process_command_line (int argc, char **argv)
 			case 'b':
 				if( strcmp( optarg, "on" ) == 0 ) {
 					backlight = BACKLIGHT_ON;
-					backlight_state = backlight;
 				}
 				else if( strcmp( optarg, "off" ) == 0 ) {
 					backlight = BACKLIGHT_OFF;
-					backlight_state = backlight;
 				}
 				else if( strcmp( optarg, "open" ) == 0 ) {
 					backlight = BACKLIGHT_OPEN;
@@ -398,11 +400,9 @@ process_configfile ( char *configfile )
 		s = config_get_string( "server", "backlight", 0, UNSET_STR );
 		if( strcmp( s, "on" ) == 0 ) {
 			backlight = BACKLIGHT_ON;
-			backlight_state = backlight;
 		}
 		else if( strcmp( s, "off" ) == 0 ) {
 			backlight = BACKLIGHT_OFF;
-			backlight_state = backlight;
 		}
 		else if( strcmp( s, "open" ) == 0 ) {
 			backlight = BACKLIGHT_OPEN;

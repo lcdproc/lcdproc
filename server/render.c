@@ -39,8 +39,9 @@
 #include "render.h"
 
 int heartbeat = HEARTBEAT_OPEN;
+int heartbeat_fallback = HEARTBEAT_ON; /* If no heartbeat setting has been set at all */
 int backlight = BACKLIGHT_OPEN;
-int backlight_state = BACKLIGHT_OPEN;
+int backlight_fallback = BACKLIGHT_ON; /* If no backlight setting has been set at all */
 int backlight_brightness = 255;
 int backlight_off_brightness = 0;
 int output_state = 0;
@@ -55,9 +56,9 @@ int
 draw_screen (Screen * s, int timer)
 {
 	static Screen * old_s = NULL;
-	int tmp = 0, tmp_state = 0;
+	int tmp_state = 0;
 
-	report(RPT_INFO, "draw_screen( screen=\"%.40s\", timer=%d )  ==== START RENDERING ====", s->name, timer );
+	report(RPT_INFO, "draw_screen( screen=\"%.40s\", timer=%d )  ==== START RENDERING ====", s->id, timer );
 
 	reset = 1;
 
@@ -73,52 +74,41 @@ draw_screen (Screen * s, int timer)
 
 	/* FIXME drivers_backlight --
 	 *
-	 * This should be in a separate function altogether.
-	 * Perhaps several: drivers_backlight_off, drivers_backlight_on,
-	 * drivers_backlight_brightness, drivers_backlight_flash ...
-	 *
-	 * If the screen's backlight_state isn't set (default) then we
+	 * If the screen's backlight isn't set (default) then we
 	 * inherit the backlight state from the parent client. This allows
 	 * the client to override it's childrens settings.
+	 * The server can also override the clients and screens settings.
 	 */
-	if (s->backlight == BACKLIGHT_OPEN) {
-		if (s->client) tmp_state = s->client->backlight;
-	} else {
+	if (backlight != BACKLIGHT_OPEN) {
+		tmp_state = backlight;
+	} else if (s->client && s->client->backlight != BACKLIGHT_OPEN) {
+		tmp_state = s->client->backlight;
+	} else if (s->backlight != BACKLIGHT_OPEN) {
 		tmp_state = s->backlight;
+	} else {
+		tmp_state = backlight_fallback;
 	}
 
 	/* Set up backlight to the correct state... */
 	/* NOTE: dirty stripping of other options... */
-	switch (tmp_state & 1) {
-		case BACKLIGHT_OFF:
-			drivers_backlight (BACKLIGHT_OFF);
-			break;
-		/* Backlight on (easy) */
-		case BACKLIGHT_ON:
-			drivers_backlight (BACKLIGHT_ON);
-			break;
-		default:
-			/* Backlight flash: check timer and flip backlight as appropriate */
-			if (tmp_state & BACKLIGHT_FLASH) {
-				tmp = (!((timer & 7) == 7));
-				if (tmp_state & 1)
-					drivers_backlight (tmp ? backlight_brightness : backlight_off_brightness);
-				/*drivers_backlight(backlight_brightness * (!((timer&7) == 7))); */
-				else
-					drivers_backlight (!tmp ? backlight_brightness : backlight_off_brightness);
-				/*drivers_backlight(backlight_brightness * ((timer&7) == 7)); */
-
-			/* Backlight blink: check timer and flip backlight as appropriate */
-			} else if (tmp_state & BACKLIGHT_BLINK) {
-				tmp = (!((timer & 14) == 14));
-				if (tmp_state & 1)
-					drivers_backlight (tmp ? backlight_brightness : backlight_off_brightness);
-				/*drivers_backlight(backlight_brightness * (!((timer&14) == 14))); */
-				else
-					drivers_backlight (!tmp ? backlight_brightness : backlight_off_brightness);
-				/*drivers_backlight(backlight_brightness * ((timer&14) == 14)); */
-			}
-			break;
+	/* Backlight flash: check timer and flip backlight as appropriate */
+	if (tmp_state & BACKLIGHT_FLASH) {
+		drivers_backlight (
+			(
+				(tmp_state & BACKLIGHT_ON)
+				^ ((timer & 7) == 7)
+			) ? BACKLIGHT_ON : BACKLIGHT_OFF );
+	/* Backlight blink: check timer and flip backlight as appropriate */
+	}
+	else if (tmp_state & BACKLIGHT_BLINK) {
+		drivers_backlight (
+			(
+				(tmp_state & BACKLIGHT_ON)
+				^ ((timer & 14) == 14)
+			) ? BACKLIGHT_ON : BACKLIGHT_OFF );
+	} else {
+		/* Simple: Only send lowest bit then...*/
+		drivers_backlight (tmp_state & BACKLIGHT_ON);
 	}
 
 	/* Output ports from LCD - outputs depend on the current screen */
@@ -127,24 +117,21 @@ draw_screen (Screen * s, int timer)
 	/* Draw a frame... */
 	draw_frame (s->widgetlist, 'v', 0, 0, display_props->width, display_props->height, s->width, s->height, (((s->duration / s->height) < 1) ? 1 : (s->duration / s->height)), timer);
 
+	/* Set the cursor */
+	drivers_cursor (s->cursor_x, s->cursor_y, s->cursor);
+
 	/*debug(RPT_DEBUG, "draw_screen done"); */
 
-	if (heartbeat) {
-		drivers_heartbeat(s->heartbeat);
-		/*if ((s->heartbeat == HEART_ON) || heartbeat == HEART_ON) { */
-			/* Set this to pulsate like a real heart beat... */
-			/* (binary is fun...  :) */
-			/* drivers_heartbeat (); */
-			/*drivers_icon (!((timer + 4) & 5), 0); */
-			/*drivers_chr (display_props->width, 1, 0); */
-		/*} */
-		/* else */
-		/* This seems unnecessary... heartbeat is nicer... */
-		/* if ((s->heartbeat == HEART_OPEN) && heartbeat != HEART_OFF) { */
-		/* 	char *phases = "-\\|/"; */
-		/* 	drivers_chr (ldisplay_props->width, 1, phases[timer & 3]); */
-		/* } */
+	if (heartbeat != HEARTBEAT_OPEN) {
+		tmp_state = heartbeat;
+	} else if (s->client && s->client->heartbeat != HEARTBEAT_OPEN) {
+		tmp_state = s->client->heartbeat;
+	} else if (s->heartbeat != HEARTBEAT_OPEN) {
+		tmp_state = s->heartbeat;
+	} else {
+		tmp_state = heartbeat_fallback;
 	}
+	drivers_heartbeat(tmp_state);
 
 	/* flush display out, frame and all... */
 	drivers_flush ();
@@ -307,7 +294,7 @@ draw_frame (LinkedList * list,
 				break;
 			case WID_ICON:
 				drivers_icon (w->x, w->y, w->length);
-				
+
 				break;
 			case WID_TITLE:			  /* FIXME:  Doesn't work quite right in frames...*/
 				if (!w->text)
@@ -316,14 +303,12 @@ draw_frame (LinkedList * list,
 					break;
 
 				drivers_icon (w->x + left, w->y + top, ICON_BLOCK_FILLED);
-				drivers_icon (w->x + 1 + left, w->y + top, ICON_BLOCK_FILLED);
+				drivers_icon (w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
 
-				str[0] = ' ';
 				length = strlen (w->text);
 				if (length <= vis_width - 6) {
-					memcpy (str + 1, w->text, length);
-					str[length + 1] = ' ';
-					x = length + 4;
+					strcpy (str, w->text);
+					x = length + 5;
 				} else					  /* Scroll the title, if it doesn't fit...*/
 				{
 					speed = 1;
@@ -339,7 +324,6 @@ draw_frame (LinkedList * list,
 							screenlist_action = 0;
 					}
 					x %= (length);
-					x -= 3;
 					if (x < 0)
 						x = 0;
 					if (x > length - (vis_width - 6))
@@ -349,18 +333,17 @@ draw_frame (LinkedList * list,
 					{
 						x = (length - (vis_width - 6)) - x;
 					}
-					strncpy (str + 1, w->text + x, (vis_width - 6));
-					str[vis_width - 5] = ' ';
-					x = vis_width - 2;
+					strncpy (str, w->text + x, (vis_width - 6));
+					x = vis_width - 1;
+					str[vis_width-6] = 0;
 				}
-				str[vis_width-4] = 0;
 
-				drivers_string (w->x + 2 + left, w->y + top, str);
+				drivers_string (w->x + 3 + left, w->y + top, str);
 
-				for (; x<vis_width; x++) {
-					drivers_icon (w->x + x + left, w->y + top, ICON_BLOCK_FILLED);
+				for (; x<=vis_width; x++) {
+					drivers_icon (w->x + x - 1 + left, w->y + top, ICON_BLOCK_FILLED);
 				}
-				
+
 				break;
 			case WID_SCROLLER:		  /* FIXME: doesn't work in frames...*/
 				{
