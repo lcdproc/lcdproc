@@ -43,7 +43,7 @@ int
 sock_create_inet_socket (char * addr, unsigned int port)
 {
 	struct sockaddr_in name;
-	int sock;
+	int sock, sockopt=1;
 
 	debug ("sock_create_inet_socket(%i)\n", port);
 
@@ -55,7 +55,13 @@ sock_create_inet_socket (char * addr, unsigned int port)
 		syslog(LOG_ALERT, "could not create socket");
 		return -1;
 	}
-
+	/* Set the socket so we can re-use it*/
+	if(setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,&sockopt,sizeof(sockopt)) < 0) {
+		perror("Error setting socket option SO_REUSEADDR");
+		syslog(LOG_ALERT, "Error setting socket option SO_REUSEADDR");
+		return -1;
+	}
+			
 	/* Give the socket a name. */
 	//debug("Binding Inet Socket\n");
 	memset (&name, 0, sizeof (name));
