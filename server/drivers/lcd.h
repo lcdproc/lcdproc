@@ -11,6 +11,7 @@
 #define LCD_STD_CELL_WIDTH 5
 #define LCD_STD_CELL_HEIGHT 8
 
+void lcd_list_drivers (void);
 int lcd_init (char *args);
 int lcd_add_driver (char *driver, char *args);
 int lcd_shutdown ();
@@ -28,6 +29,9 @@ typedef struct lcd_logical_driver {
 	int cellwid, cellhgt;
 	// Frame buffer...
 	char *framebuf;
+
+	// Daemonizable?  Usually yes...
+	int daemonize;
 
 	// Pointer to next input function...
 	//lcd_logical_driver *nextkey;

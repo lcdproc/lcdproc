@@ -113,12 +113,12 @@ static char *lcd_drv_getinfo ();
 
 // Make program more readable and understandable;
 // hide details...
-#define ResetList(a)		LL_Rewind(a)
-#define GetDriverData(a)	((lcd_logical_driver *)LL_Get(a))
-#define NextDriver(a)		(LL_Next(a))
-#define MoreDrivers(a)		(LL_Next(a) == 0)
-#define DriverPresent(a)	(a)
-#define FunctionPresent(a)	((a) != 0)
+//#define ResetList(a)		LL_Rewind(a)
+//#define GetDriverData(a)	((lcd_logical_driver *)LL_Get(a))
+//#define NextDriver(a)		(LL_Next(a))
+//#define MoreDrivers(a)		(LL_Next(a) == 0)
+//#define DriverPresent(a)	(a)
+//#define FunctionPresent(a)	((a) != 0)
 
 // TODO: Make a Windows server, and clients...?
 
@@ -187,6 +187,26 @@ lcd_physical_driver drivers[] = {
 
 LL *list;
 
+#define CurrentDriver (drivers[i].name)
+#define NextDriver (drivers[i+1].name)
+
+void
+lcd_list_drivers (void) {
+	int i = 0;
+
+	printf("\t");
+	while (CurrentDriver != NULL) {
+		printf("%s", CurrentDriver);
+
+		if (NextDriver != NULL)
+			printf(",");
+
+		i++;
+		if ((i % 8) == 0)
+			printf("\n");
+	}
+}
+
 ////////////////////////////////////////////////////////////
 // This function initializes a few basics as well as the
 // "base" array.  To initialize a specific driver, use the
@@ -213,6 +233,8 @@ lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 	driver->cellhgt = LCD_STD_CELL_HEIGHT;
 
 	driver->framebuf = NULL;
+
+	driver->daemonize = 1;
 
 	// Set up these wrapper functions...
 	driver->clear = lcd_drv_clear;
@@ -312,6 +334,9 @@ void *
 lcd_find_init (char *driver) {
 	int i;
 
+	if (!driver)
+		return NULL;
+
 	for (i = 0; drivers[i].name; i++) {
 		if (strcmp(driver, drivers[i].name) == 0) {
 			return (*drivers[i].init);
@@ -361,6 +386,9 @@ lcd_add_driver (char *driver, char *args)
 	lcd_logical_driver *ptr;
 
 	lcd_logical_driver *add;
+
+	if (!driver)
+		return -1;
 
 	if ((init_driver = (void *) lcd_find_init(driver)) != NULL) {
 
