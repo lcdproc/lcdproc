@@ -402,7 +402,7 @@ MtxOrb_clear ()
 	if (MtxOrb->framebuf != NULL)
 		memset (MtxOrb->framebuf, ' ', (MtxOrb->wid * MtxOrb->hgt));
 
-	write(fd, "\x0FE" "X", 2);  // instant clear...
+	//write(fd, "\x0FE" "X", 2);  // instant clear...
 	clear = 1;
 
 	if (debug_level > 3)
