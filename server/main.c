@@ -147,7 +147,7 @@ main (int argc, char **argv)
 
 	i = 0;
 	// analyze options here..
-	while ((c = getopt(argc, argv, "d:hfiw:c:")) > 0) {
+	while ((c = getopt(argc, argv, "a:p:d:hfiw:c:")) > 0) {
 		switch(c) {
 			case 'd':
 				// Add to a list of drivers to be initialized later...
@@ -158,6 +158,12 @@ main (int argc, char **argv)
 				} else
 					fprintf(stderr, "too many drivers!");
 				break;
+			case 'p':
+				lcd_port = atoi(optarg);
+				break;
+			case 'a':
+				strncpy(bind_addr, optarg, sizeof(bind_addr));
+				break;
 			case 'h':
 				HelpScreen ();
 				break;
@@ -165,7 +171,7 @@ main (int argc, char **argv)
 				daemon_mode = 0;
 				break;
 			case 'c':
-				strncmp(cfgfile, optarg, sizeof(cfgfile));
+				strncpy(cfgfile, optarg, sizeof(cfgfile));
 				break;
 			case 'i':
 				disable_server_screen = 1;
@@ -626,8 +632,9 @@ void
 HelpScreen ()
 {
 	// This cleans up any messes on the display output if needed...
-	if (lcd_ptr->framebuf != NULL)
-		lcd_ptr->close();
+	if (lcd_ptr)
+		if (lcd_ptr->framebuf != NULL)
+			lcd_ptr->close();
 
 	printf ("\nLCDproc server daemon, %s\n", version);
 	printf ("Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
