@@ -220,6 +220,9 @@ set_background_color (char * buf) {
 #define TOP_LEFT_X 7
 #define TOP_LEFT_Y 7
 
+#define ValidX(x) { if ((x) > width  || (x) < 1) { report(RPT_ERR, "curses_drv: Invalid X"); return; } }
+#define ValidY(y) { if ((y) > height || (y) < 1) { report(RPT_ERR, "curses_drv: Invalid Y"); return; } }
+
 static int current_color_pair, current_border_pair, curses_backlight_state = 0;
 static int width, height;
 
@@ -360,9 +363,9 @@ curses_drv_init (Driver *drvthis, char *args)
 	drvthis->string = curses_drv_string;
 	drvthis->chr = curses_drv_chr;
 
-	drvthis->old_vbar = curses_drv_vbar;
+	drvthis->vbar = curses_drv_vbar;
 	//drvthis->init_vbar = NULL;
-	drvthis->old_hbar = curses_drv_hbar;
+	drvthis->hbar = curses_drv_hbar;
 	//drvthis->init_hbar = NULL;
 	drvthis->num = curses_drv_num;
 	//drvthis->init_num = curses_drv_init_num;
@@ -448,9 +451,6 @@ curses_drv_clear (Driver *drvthis)
 	curses_drv_wborder (lcd_win);
 	werase (lcd_win);
 }
-
-#define ValidX(x) { if ((x) > width) { (x) = width; } else (x) = (x) < 1 ? 1 : x; }
-#define ValidY(y) { if ((y) > height) { (y) = height; } else (y) = (y) < 1 ? 1 : y; }
 
 MODULE_EXPORT void
 curses_drv_backlight (Driver *drvthis, int promille)
@@ -566,59 +566,81 @@ curses_drv_num (Driver *drvthis, int x, int num)
 // Draws a vertical bar; erases entire column onscreen.
 //
 MODULE_EXPORT void
-curses_drv_vbar (Driver *drvthis, int x, int len)
+curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	int y;
 	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
+	int pos;
+	int total_pixels = (long) len * LCD_DEFAULT_CELLHEIGHT * promille / 1000;
 
 	ValidX(x);
+	ValidY(y);
 
-#define MAX_LINES (LCD_DEFAULT_CELLHEIGHT * height)
+	// x and y are the start position of the bar.
+	// The bar by default grows in the 'up' direction
+	// (other directions not yet implemented).
+	// len is the number of characters that the bar is long at 100%
+	// promille is the number of percent * 10 that the bar should be filled.
 
-	len = len > (MAX_LINES - 1) ? (MAX_LINES - 1) : len;
-	len = len < 0 ? 0 : len;
+	for (pos = 0; pos < len; pos ++ ) {
 
-	// len is the length of the bar (in pixels/scanlines)
-	// y is one character line (cellheight pixels/scanlines)
+		int pixels = total_pixels - LCD_DEFAULT_CELLHEIGHT * pos;
 
-	for (y = height; y > 0 && len > 0; y--) {
+		ValidY(y-pos);
 
-		if (len >= LCD_DEFAULT_CELLHEIGHT) {
+		if( pixels >= LCD_DEFAULT_CELLHEIGHT ) {
 			// write a "full" block to the screen...
 			//curses_drv_chr (x, y, '8');
-			curses_drv_chr (drvthis, x, y, ACS_BLOCK);
-			len -= LCD_DEFAULT_CELLHEIGHT;
+			curses_drv_chr (drvthis, x, y-pos, ACS_BLOCK);
 		}
-		else {
+		else if( pixels > 0 ) {
 			// write a partial block...
-			curses_drv_chr (drvthis, x, y, map[len-1]);
+			curses_drv_chr (drvthis, x, y-pos, map[len-1]);
 			break;
 		}
-
+		else {
+			; // write nothing (not even a space)
+		}
 	}
-
-//  move(4-len/lcd.cellhgt, x-1);
-//  vline(0, len/lcd.cellhgt);
-
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-curses_drv_hbar (Driver *drvthis, int x, int y, int len)
+curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	for (; x <= width && len > 0; x++) {
-		if (len >= LCD_DEFAULT_CELLWIDTH)
-			curses_drv_chr (drvthis, x, y, '=');
-		else
-			curses_drv_chr (drvthis, x, y, '-');
+	int pos;
+	int total_pixels = (long) len * LCD_DEFAULT_CELLWIDTH * promille / 1000;
 
-		len -= LCD_DEFAULT_CELLWIDTH;
+	ValidX(x);
+	ValidY(y);
+
+	// x and y are the start position of the bar.
+	// The bar by default grows in the 'up' direction
+	// (other directions not yet implemented).
+	// len is the number of characters that the bar is long at 100%
+	// promille is the number of percent * 10 that the bar should be filled.
+
+	for (pos = 0; pos < len; pos ++ ) {
+
+		int pixels = total_pixels - LCD_DEFAULT_CELLWIDTH * pos;
+
+		ValidX(x+pos);
+
+		if( pixels >= LCD_DEFAULT_CELLHEIGHT * 2/3 ) {
+			// write a "full" block to the screen...
+			//curses_drv_chr (x, y, '8');
+			curses_drv_chr (drvthis, x+pos, y, '=');
+		}
+		else if( pixels > LCD_DEFAULT_CELLHEIGHT * 1/3 ) {
+			// write a partial block...
+			curses_drv_chr (drvthis, x+pos, y, '-');
+			break;
+		}
+		else {
+			; // write nothing (not even a space)
+		}
 	}
-
-//  move(y-1, x-1);
-//  hline(0, len/lcd.cellwid);
 }
 
 /////////////////////////////////////////////////////////////////

@@ -12,8 +12,8 @@ MODULE_EXPORT void curses_drv_flush (Driver *drvthis);
 MODULE_EXPORT void curses_drv_string (Driver *drvthis, int x, int y, char string[]);
 MODULE_EXPORT void curses_drv_chr (Driver *drvthis, int x, int y, char c);
 
-MODULE_EXPORT void curses_drv_vbar (Driver *drvthis, int x, int len);
-MODULE_EXPORT void curses_drv_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void curses_drv_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT void curses_drv_heartbeat (Driver *drvthis, int type);
 MODULE_EXPORT void curses_drv_icon (Driver *drvthis, int which, char dest);
