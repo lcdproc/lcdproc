@@ -91,7 +91,6 @@ while (1==1) {
 	    print $response->error_as_HTML;
 	    my $err_msg = $response->error_as_HTML;
 	    warn "$err_msg\n\n";
-	    die "$!";
 
 	} else {
 
@@ -132,7 +131,12 @@ while (1==1) {
 	$lcdconnect = <$remote>;
 
 	} # end else
-	sleep 600;
+	for ( $i=1 ; $i < 600 ; $i++ ) {
+		$lcdconnect = <$remote>;
+		# printf "sleeping 1 second";
+#		sleep 1;
+	}
+#	sleep 600;
 }
 close($remote);
 exit;
