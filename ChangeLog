@@ -12,6 +12,7 @@ Coming soon: (?) (my list of stuff to do soon...)
  * Dynamically-loaded driver system
 
 v0.4-pre10:
+ + Metar client added (Weather information)
  + Linux infrared control (LIRC) driver added.
  + "rotating slash" heartbeat mode (looks weird on CFontz displays)
    Use "screen_set s -heartbeat slash" to use this.
