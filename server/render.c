@@ -257,7 +257,7 @@ draw_frame (LinkedList * list,
 				break;
 			case WID_HBAR:
 				if (reset) {
-					drivers_init_hbar ();
+					//drivers_init_hbar ();
 					reset = 0;
 				}
 				if ((w->x > 0) && (w->y > 0)) {
@@ -288,7 +288,7 @@ draw_frame (LinkedList * list,
 				break;
 			case WID_VBAR:			  /* FIXME:  Vbars don't work in frames!*/
 				if (reset) {
-					drivers_init_vbar ();
+					//drivers_init_vbar ();
 					reset = 0;
 				}
 				if ((w->x > 0) && (w->y > 0)) {
@@ -512,7 +512,7 @@ draw_frame (LinkedList * list,
 				/* NOTE: y=10 means COLON (:)*/
 				if ((w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
 					if (reset) {
-						drivers_init_num ();
+						//drivers_init_num ();
 						reset = 0;
 					}
 					drivers_num (w->x + left, w->y);

@@ -31,7 +31,8 @@
 #include "port.h"
 #include "timing.h"
 #define uPause timing_uPause
-#include "sed1520fm.c"
+
+#include "sed1520fm.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -144,7 +145,7 @@ drawchar2fb (int x, int y, unsigned char z)
 // This initialises the stuff. We support supplying port as
 // a command line argument.
 //
-int
+MODULE_EXPORT int
 sed1520_init (Driver *drvthis, char *args)
 {
     char *argv[64], *str;
@@ -234,35 +235,6 @@ sed1520_init (Driver *drvthis, char *args)
     cellwidth = 6;
     cellheight = 8;
 
-
-    // Set variables for server
-    drvthis->api_version = api_version;
-    drvthis->stay_in_foreground = &stay_in_foreground;
-    drvthis->supports_multiple = &supports_multiple;
-
-    // Set the functions the driver supports
-    drvthis->clear = sed1520_clear;
-    drvthis->string = sed1520_string;
-    drvthis->chr = sed1520_chr;
-    drvthis->old_vbar = sed1520_vbar;
-    drvthis->old_hbar = sed1520_hbar;
-    drvthis->num = sed1520_num;
-    drvthis->init = sed1520_init;
-    drvthis->close = sed1520_close;
-    drvthis->flush = sed1520_flush;
-    drvthis->set_char = sed1520_set_char;
-
-    drvthis->old_icon = sed1520_icon;
-    // We dont't need init for vbar,hbar and friends.
-    //drvthis->init_hbar = NULL;
-    //drvthis->init_vbar = NULL;
-    //drvthis->init_num = NULL;
-    // Neither contrast nor backlight are controllable.
-    //drvthis->contrast = NULL;
-    //drvthis->backlight = NULL;
-    // There are some unused input lines that may be used for input,
-    // but nothing is programmed so far.
-    //drvthis->getkey = NULL;
     return 0;
 }
 

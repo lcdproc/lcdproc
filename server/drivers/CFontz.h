@@ -13,7 +13,7 @@
 #define DEFAULT_SIZE "20x4"
 
 
-              int  CFontz_init (Driver * drvthis, char *device);
+MODULE_EXPORT int  CFontz_init (Driver * drvthis, char *device);
 MODULE_EXPORT void CFontz_close (Driver * drvthis);
 MODULE_EXPORT int  CFontz_width (Driver * drvthis);
 MODULE_EXPORT int  CFontz_height (Driver * drvthis);
@@ -33,8 +33,5 @@ MODULE_EXPORT void CFontz_set_char (Driver * drvthis, int n, char *dat);
 MODULE_EXPORT int  CFontz_get_contrast (Driver * drvthis);
 MODULE_EXPORT void CFontz_set_contrast (Driver * drvthis, int contrast);
 MODULE_EXPORT void CFontz_backlight (Driver * drvthis, int on);
-
-MODULE_EXPORT void CFontz_init_vbar (Driver * drvthis);
-MODULE_EXPORT void CFontz_init_hbar (Driver * drvthis);
 
 #endif

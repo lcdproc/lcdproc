@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-              int  curses_drv_init (Driver * drvthis, char *args);
+MODULE_EXPORT int  curses_drv_init (Driver * drvthis, char *args);
 MODULE_EXPORT void curses_drv_close (Driver *drvthis);
 MODULE_EXPORT int  curses_drv_width (Driver *drvthis);
 MODULE_EXPORT int  curses_drv_height (Driver *drvthis);
@@ -28,7 +28,7 @@ MODULE_EXPORT void curses_drv_init_num (Driver *drvthis);
 #define CONF_DEF_FOREGR "blue"
 #define CONF_DEF_BACKGR "cyan"
 #define CONF_DEF_BACKLIGHT "red"
-#define CONF_DEF_SIZE "20x4"  // currently not used, LCD_DEFAULT_WIDTH etc. is used
+#define CONF_DEF_SIZE "20x4"
 #define CONF_DEF_TOP_LEFT_X 7
 #define CONF_DEF_TOP_LEFT_Y 7
 

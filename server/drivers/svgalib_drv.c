@@ -242,7 +242,7 @@ spaced_gl_writen (int x, int y, int count, char *text)
 
 static char icon_char = '@';
 
-int
+MODULE_EXPORT int
 svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 {
 	char *argv[64];
@@ -276,31 +276,6 @@ svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 	}
 
 	gl_clearscreen (gl_rgbcolor (0, 0, 0));
-
-	driver->daemonize = 0; // don't daemonize...
-
-	// Override output functions...
-	driver->clear = svgalib_drv_clear;
-	driver->string = svgalib_drv_string;
-	driver->chr = svgalib_drv_chr;
-	driver->vbar = svgalib_drv_vbar;
-	//driver->init_vbar = NULL;
-	driver->hbar = svgalib_drv_hbar;
-	//driver->init_hbar = NULL;
-	driver->num = svgalib_drv_num;
-	driver->init_num = svgalib_drv_init_num;
-
-	driver->init = svgalib_drv_init;
-	driver->close = svgalib_drv_close;
-	driver->flush = svgalib_drv_flush;
-	driver->flush_box = svgalib_drv_flush_box;
-	//driver->contrast = NULL;
-	//driver->backlight = NULL;
-	//driver->set_char = NULL;
-	driver->icon = svgalib_drv_icon;
-	driver->draw_frame = svgalib_drv_draw_frame;
-
-	driver->getkey = svgalib_drv_getkey;
 
 	// Change the character used for padding the title bars...
 	SVGALIB_PAD = '#';

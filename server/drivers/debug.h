@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-              int  debug_init (Driver *drvthis, char *args);
+MODULE_EXPORT int  debug_init (Driver *drvthis, char *args);
 MODULE_EXPORT void debug_close (Driver *drvthis);
 MODULE_EXPORT int  debug_width (Driver *drvthis);
 MODULE_EXPORT int  debug_height (Driver *drvthis);

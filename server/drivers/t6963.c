@@ -18,7 +18,7 @@
 #include <string.h>
 #include <errno.h>
 //#include <asm/io.h>
-#include <sys/perm.h>
+//#include <sys/perm.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -28,7 +28,6 @@
 #include "t6963.h"
 #include "t6963_font.h"
 
-#include "shared/str.h"
 #include "shared/debug.h"
 #include "report.h"
 #include "lcd_lib.h"
@@ -60,7 +59,7 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "t6963_";
 
-int
+MODULE_EXPORT int
 t6963_init (Driver *drvthis, char *args)
 {
 	int w, h, p;
@@ -152,35 +151,6 @@ t6963_init (Driver *drvthis, char *args)
 		return -1;
 	}	
 
-
-		debug (RPT_DEBUG, "T6963: Setting function pointers...\n");
-
-	// Set variables for server
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->api_version = api_version;
-	drvthis->supports_multiple = &supports_multiple;
-		
-		debug (RPT_DEBUG, "T6963:   Server variables set!");
-
-	// Set the functions the driver supports
-	drvthis->width = t6963_width;
-	drvthis->height = t6963_height;
-	drvthis->clear = t6963_clear;
-	drvthis->string = t6963_string;
-	drvthis->chr = t6963_chr;
-	drvthis->vbar = t6963_vbar;
-	drvthis->hbar = t6963_hbar;
-	drvthis->num = t6963_num;
-	drvthis->init = t6963_init;
-	drvthis->close = t6963_close;
-	drvthis->flush = t6963_flush;
-	drvthis->set_char = t6963_set_char;
-	drvthis->icon = t6963_icon;
-	drvthis->heartbeat = t6963_heartbeat;
-
-	//drvthis->get_key = t6963_get_key;
-
-		debug (RPT_DEBUG, "T6963:   Supported functions set!");
 
 		debug (RPT_DEBUG, "T6963: Sending init to display...");
 

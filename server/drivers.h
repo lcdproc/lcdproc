@@ -25,7 +25,7 @@ extern DisplayProps * display_props;
 
 
 int
-drivers_load_driver( char * name, char * filename, char * args );
+drivers_load_driver( char * name );
 /* returns:
  * <0 error
  *  0 ok, driver is an input driver only

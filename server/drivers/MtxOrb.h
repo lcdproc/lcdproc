@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-              int  MtxOrb_init (Driver *drvthis, char *device);
+MODULE_EXPORT int  MtxOrb_init (Driver *drvthis, char *device);
 MODULE_EXPORT void MtxOrb_close (Driver *drvthis);
 MODULE_EXPORT int  MtxOrb_width (Driver *drvthis);
 MODULE_EXPORT int  MtxOrb_height (Driver *drvthis);

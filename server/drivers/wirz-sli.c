@@ -46,7 +46,7 @@ MODULE_EXPORT char *symbol_prefix = "sli_";
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
 //
-int
+MODULE_EXPORT int
 sli_init (Driver *drvthis, char *args)
 {
 	char *argv[64];
@@ -158,32 +158,6 @@ sli_init (Driver *drvthis, char *args)
 	// Currently, $30 for interface kit and 16x2 non-backlit LCD...
 	width = 15;
 	height = 2;
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports
-	drvthis->clear = sli_clear;
-	drvthis->string = sli_string;
-	drvthis->chr = sli_chr;
-	drvthis->old_vbar = sli_vbar;
-	drvthis->init_vbar = sli_init_vbar;
-	drvthis->old_hbar = sli_hbar;
-	drvthis->init_hbar = sli_init_hbar;
-	//drvthis->num = NULL;
-	//drvthis->init_num = NULL;
-
-	drvthis->init = sli_init;
-	drvthis->close = sli_close;
-	drvthis->flush = sli_flush;
-	//drvthis->contrast = NULL;
-	//drvthis->backlight = NULL;
-	drvthis->set_char = sli_set_char;
-	drvthis->old_icon = sli_icon;
-
-	//drvthis->getkey = NULL;
 
 	return fd;
 }

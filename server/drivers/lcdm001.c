@@ -60,7 +60,6 @@
 
 #include "lcd.h"
 #include "lcdm001.h"
-#include "shared/str.h"
 #include "report.h"
 //#include "configfile.h"
 
@@ -174,7 +173,7 @@ lcdm001_cursorblink (Driver *drvthis, int on)
  * init() should set up any device-specific stuff, and
  * point all the function pointers.
  */
-int
+MODULE_EXPORT int
 lcdm001_init (Driver *drvthis, char *args)
 {
         char device[200];
@@ -249,40 +248,6 @@ lcdm001_init (Driver *drvthis, char *args)
 	// Turn all LEDs off
 	snprintf (out, sizeof(out), "\%cL%c%c", 126, 0, 0);
 	write (fd, out, 4);
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports
-	drvthis->clear = lcdm001_clear;
-	drvthis->width = lcdm001_width;
-	drvthis->height = lcdm001_height;
-	drvthis->string = lcdm001_string;
-	drvthis->chr = lcdm001_chr;
-	drvthis->old_vbar =lcdm001_vbar;
-	//init_vbar is not needed
-	drvthis->old_hbar = lcdm001_hbar;
-	//init_hbar is not needed
-	drvthis->num = lcdm001_num;
-	//init_num is not needed
-
-	drvthis->init = lcdm001_init;
-	drvthis->close = lcdm001_close;
-	drvthis->flush = lcdm001_flush;
-	//contrast and backlight are not implemented as
-	//changing the contrast or the state of the backlight
-	//is not supported by the device
-	//Well ... you could make use of your screw drvthis and
-	//soldering iron ;)
-	drvthis->output = lcdm001_output;
-	//set_char is not implemented as custom chars are not
-	//supported by the device
-	drvthis->old_icon = lcdm001_icon;
-
-	drvthis->getkey = lcdm001_getkey;
-	drvthis->heartbeat = lcdm001_heartbeat;
 
 	return 0;
 }

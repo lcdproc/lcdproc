@@ -9,11 +9,11 @@ AC_ARG_ENABLE(drivers,
  	[                    hd44780,joy,irman,lircin,bayrad,glk,]
  	[                    stv5730,sed1330,sed1520,svgalib,lcdm001,t6963]
 	[                  \"all\" compiles all drivers],
-  	drivers="$enableval", 
+  	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1330,sed1520,svgalib,lcdm001,t6963]
+	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svgalib,lcdm001,t6963]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -22,43 +22,36 @@ fi
 
     case "$driver" in
         lcdm001)
-			DRIVERS="$DRIVERS lcdm001.o"
-			AC_DEFINE(LCDM001_DRV)
+			DRIVERS="$DRIVERS lcdm001${SO}"
 			actdrivers=["$actdrivers lcdm001"]
 			;;
         mtxorb)
-			DRIVERS="$DRIVERS MtxOrb.o"
-			AC_DEFINE(MTXORB_DRV)
+			DRIVERS="$DRIVERS MtxOrb${SO}"
 			actdrivers=["$actdrivers mtxorb"]
 			;;
 		glk)
-			DRIVERS="$DRIVERS glk.o glkproto.o"
-			AC_DEFINE(GLK_DRV)
+			DRIVERS="$DRIVERS glk${SO}"
 			actdrivers=["$actdrivers glk"]
 			;;
 		bayrad)
-			DRIVERS="$DRIVERS bayrad.o"
-			AC_DEFINE(BAYRAD_DRV)
+			DRIVERS="$DRIVERS bayrad${SO}"
 			actdrivers=["$actdrivers bayrad"]
 			;;
 		cfontz)
-			DRIVERS="$DRIVERS CFontz.o"
-			AC_DEFINE(CFONTZ_DRV)
+			DRIVERS="$DRIVERS CFontz${SO}"
 			actdrivers=["$actdrivers cfontz"]
 			;;
-		sli)	
-			DRIVERS="$DRIVERS wirz-sli.o"
-			AC_DEFINE(SLI_DRV)
+		sli)
+			DRIVERS="$DRIVERS wirz-sli${SO}"
 			actdrivers=["$actdrivers sli"]
 			;;
 		curses)
 			AC_CHECK_HEADERS(ncurses.h curses.h)
- 			AC_CHECK_LIB(ncurses, main, 
+ 			AC_CHECK_LIB(ncurses, main,
  				AC_CHECK_HEADER(ncurses.h,
  					dnl We have ncurses.h and libncurses, add driver.
 	 				LIBCURSES="-lncurses"
- 					DRIVERS="$DRIVERS curses_drv.o"
- 					AC_DEFINE(CURSES_DRV)
+ 					DRIVERS="$DRIVERS curses_drv${SO}"
  					actdrivers=["$actdrivers curses"]
  				,
 dnl				else
@@ -66,12 +59,11 @@ dnl				else
 				)
  			,
 dnl			else
- 				AC_CHECK_LIB(curses, main, 
+ 				AC_CHECK_LIB(curses, main,
  					AC_CHECK_HEADER(curses.h,
  						dnl We have curses.h and libcurses, add driver.
  						LIBCURSES="-lcurses"
- 						DRIVERS="$DRIVERS curses_drv.o"
- 						AC_DEFINE(CURSES_DRV)
+ 						DRIVERS="$DRIVERS curses_drv${SO}"
  						actdrivers=["$actdrivers curses"]
  					,
 dnl					else
@@ -82,9 +74,9 @@ dnl				else
  					AC_MSG_WARN([The curses driver needs the curses (or ncurses) library.]),
  				)
  			)
- 			
+
  			AC_CURSES_ACS_ARRAY
- 			
+
  			AC_CACHE_CHECK([for redrawwin() in curses], ac_cv_curses_redrawwin,
 			[oldlibs="$LIBS"
 			 LIBS="$LIBS $LIBCURSES"
@@ -94,7 +86,7 @@ dnl				else
 			if test "$ac_cv_curses_redrawwin" = yes; then
 				AC_DEFINE(CURSES_HAS_REDRAWWIN)
 			fi
- 						
+
 			AC_CACHE_CHECK([for wcolor_set() in curses], ac_cv_curses_wcolor_set,
 			[oldlibs="$LIBS"
 			 LIBS="$LIBS $LIBCURSES"
@@ -106,24 +98,20 @@ dnl				else
 			fi
 			;;
 		text)
-			DRIVERS="$DRIVERS text.o"
-			AC_DEFINE(TEXT_DRV)
+			DRIVERS="$DRIVERS text${SO}"
 			actdrivers=["$actdrivers text"]
 			;;
 		lb216)
-			DRIVERS="$DRIVERS lb216.o"
-			AC_DEFINE(LB216_DRV)
+			DRIVERS="$DRIVERS lb216${SO}"
 			actdrivers=["$actdrivers lb216"]
 			;;
 		hd44780)
-			DRIVERS="$DRIVERS hd44780.o hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-winamp.o hd44780-picanlcd.o"
-			AC_DEFINE(HD44780_DRV)
+			DRIVERS="$DRIVERS hd44780${SO}"
 			actdrivers=["$actdrivers hd44780"]
 			;;
-		joy)	
+		joy)
 			AC_CHECK_HEADER(linux/joystick.h,
-				DRIVERS="$DRIVERS joy.o"
-				AC_DEFINE(JOY_DRV)
+				DRIVERS="$DRIVERS joy${SO}"
 				actdrivers=["$actdrivers joy"]
 				,
 dnl				else
@@ -131,21 +119,19 @@ dnl				else
  			)
 			;;
 		irman)
- 			AC_CHECK_LIB(irman, main, 
+ 			AC_CHECK_LIB(irman, main,
  				LIBIRMAN="-lirman"
- 				DRIVERS="$DRIVERS irmanin.o"
- 				AC_DEFINE(IRMANIN_DRV)
+ 				DRIVERS="$DRIVERS irman${SO}"
  				actdrivers=["$actdrivers irman"]
  				,
 dnl				else
  				AC_MSG_WARN([The irman driver needs the irman library.])
  			)
 			;;
-		lircin)
-			AC_CHECK_LIB(lirc_client, main, 
+		lirc)
+			AC_CHECK_LIB(lirc_client, main,
 				LIBLIRC_CLIENT="-llirc_client"
-				DRIVERS="$DRIVERS lircin.o"
-				AC_DEFINE(LIRCIN_DRV)
+				DRIVERS="$DRIVERS lirc${SO}"
 				actdrivers=["$actdrivers lircin"]
 				,
 dnl				else
@@ -153,36 +139,31 @@ dnl				else
 			)
 			;;
 		sed1330)
-			DRIVERS="$DRIVERS sed1330.o"
-			AC_DEFINE(SED1330_DRV)
+			DRIVERS="$DRIVERS sed1330${SO}"
 			actdrivers=["$actdrivers sed1330"]
 			;;
 		sed1520)
-			DRIVERS="$DRIVERS sed1520.o"
-			AC_DEFINE(SED1520_DRV)
+			DRIVERS="$DRIVERS sed1520${SO}"
 			actdrivers=["$actdrivers sed1520"]
 			;;
 		stv5730)
-			DRIVERS="$DRIVERS stv5730.o"
-			AC_DEFINE(STV5730_DRV)
+			DRIVERS="$DRIVERS stv5730${SO}"
 			actdrivers=["$actdrivers stv5730"]
 			;;
 		svgalib)
-			AC_CHECK_LIB(vga, main, 
+			AC_CHECK_LIB(vga, main,
 				LIBSVGA="-lvga -lvgagl"
-				DRIVERS="$DRIVERS svgalib_drv.o"
-				AC_DEFINE(SVGALIB_DRV)
+				DRIVERS="$DRIVERS svgalib_drv${SO}"
 				actdrivers=["$actdrivers svgalib"]
 				,
 dnl				else
 				AC_MSG_WARN([The svgalib driver needs the vga library]))
 			;;
 		t6963)
-			DRIVERS="$DRIVERS t6963.o"
-			AC_DEFINE(T6963_DRV)
+			DRIVERS="$DRIVERS t6963${SO}"
 			actdrivers=["$actdrivers t6963"]
 			;;
-	*) 	
+	*)
 			AC_MSG_ERROR([Unknown driver $driver])
 			;;
   		esac
@@ -203,22 +184,22 @@ dnl
 dnl Curses test to check if we use _acs_char* or acs_map*
 dnl
 AC_DEFUN(AC_CURSES_ACS_ARRAY, [
-	AC_CACHE_CHECK([for acs_map in curses.h], ac_cv_curses_acs_map, 
+	AC_CACHE_CHECK([for acs_map in curses.h], ac_cv_curses_acs_map,
 	[AC_TRY_COMPILE([#include <curses.h>], [ char map = acs_map['p'] ], ac_cv_curses_acs_map=yes, ac_cv_curses_acs_map=no)])
-	
+
 	if test "$ac_cv_curses_acs_map" = yes
 	then
 		AC_DEFINE(CURSES_HAS_ACS_MAP)
 	else
-	
-		AC_CACHE_CHECK([for _acs_char in curses.h], ac_cv_curses__acs_char, 
+
+		AC_CACHE_CHECK([for _acs_char in curses.h], ac_cv_curses__acs_char,
 		[AC_TRY_COMPILE([#include <curses.h>], [ char map = _acs_char['p'] ], ac_cv_curses__acs_char=yes, ac_cv_curses__acs_char=no)])
 
 		if test "$ac_cv_curses__acs_char" = yes
 		then
 			AC_DEFINE(CURSES_HAS__ACS_CHAR)
 		fi
-		
+
 	fi
 ])
 
@@ -231,7 +212,7 @@ AC_DEFUN([AC_FIND_MTAB_FILE], [
 		dnl Linux
 		if test -e "/etc/mtab"; then
 			ac_cv_mtab_file=/etc/mtab
-		else 
+		else
 			dnl Solaris
 			if test -e "/etc/mnttab"; then
 				ac_cv_mtab_file=/etc/mnttab
@@ -243,7 +224,7 @@ AC_DEFUN([AC_FIND_MTAB_FILE], [
 			fi
 		fi
 	])
-	if test "$ac_cv_mtab_file"; then
+	if test ! -z "$ac_cv_mtab_file"; then
 		AC_DEFINE_UNQUOTED([MTAB_FILE], ["$ac_cv_mtab_file"], [Location of your mounted filesystem table file])
 	fi
 ])
@@ -419,11 +400,11 @@ AC_DEFUN(AC_GET_FS_INFO, [
     dnl fi
 ])
 
-dnl 1.1 (2001/07/26) -- Miscellaneous @ ac-archive-0.5.32 
-dnl Warren Young <warren@etr-usa.com> 
-dnl This macro checks for the SysV IPC header files. It only checks 
-dnl that you can compile a program with them, not whether the system 
-dnl actually implements working SysV IPC. 
+dnl 1.1 (2001/07/26) -- Miscellaneous @ ac-archive-0.5.32
+dnl Warren Young <warren@etr-usa.com>
+dnl This macro checks for the SysV IPC header files. It only checks
+dnl that you can compile a program with them, not whether the system
+dnl actually implements working SysV IPC.
 dnl http://ac-archive.sourceforge.net/Miscellaneous/etr_sysv_ipc.html
 AC_DEFUN([ETR_SYSV_IPC],
 [
@@ -444,15 +425,15 @@ AC_CACHE_CHECK([for System V IPC headers], ac_cv_sysv_ipc, [
         fi
 ]) dnl ETR_SYSV_IPC
 
-dnl 1.1 (2001/07/26) -- Miscellaneous @ ac-archive-0.5.32 
-dnl Warren Young <warren@etr-usa.com> 
-dnl This macro checks to see if sys/sem.h defines union semun. Some 
-dnl systems do, some systems don't. Your code must be able to deal with 
-dnl this possibility; if HAVE_STRUCT_SEMUM isn't defined for a given system, 
-dnl you have to define this structure before you can call functions 
-dnl like semctl(). 
-dnl You should call ETR_SYSV_IPC before this macro, to separate the check 
-dnl for System V IPC headers from the check for struct semun. 
+dnl 1.1 (2001/07/26) -- Miscellaneous @ ac-archive-0.5.32
+dnl Warren Young <warren@etr-usa.com>
+dnl This macro checks to see if sys/sem.h defines union semun. Some
+dnl systems do, some systems don't. Your code must be able to deal with
+dnl this possibility; if HAVE_STRUCT_SEMUM isn't defined for a given system,
+dnl you have to define this structure before you can call functions
+dnl like semctl().
+dnl You should call ETR_SYSV_IPC before this macro, to separate the check
+dnl for System V IPC headers from the check for struct semun.
 dnl http://ac-archive.sourceforge.net/Miscellaneous/etr_struct_semun.html
 AC_DEFUN([ETR_UNION_SEMUN],
 [
@@ -474,3 +455,81 @@ AC_CACHE_CHECK([for union semun], ac_cv_union_semun, [
                         [ Define if your system's sys/sem.h file defines union semun ])
         fi
 ]) dnl ETR_UNION_SEMUN
+
+dnl Loadable modules determination.
+dnl Joris Robijn, 2002
+dnl I choose not to use libtool.
+dnl If your platform does not compile or link the modules correctly, add
+dnl appropriate flags here.
+AC_DEFUN([AC_MODULES_INFO],
+[
+AC_SUBST(SO)
+dnl $SO is the extension of shared libraries (including the dot!)
+dnl It is available in the program code as MODULE_EXTENSION
+AC_MSG_CHECKING(module extension)
+case $host in
+  hp*|HP*)
+	SO=.sl;;
+  cygwin*)
+	SO=.dll;;
+  *)
+	SO=.so;;
+esac
+AC_DEFINE_UNQUOTED(MODULE_EXTENSION,"$SO")
+AC_MSG_RESULT($SO)
+
+AC_SUBST(CCSHARED)
+dnl CCSHARED are the flags used to compile the sources for the shared library
+AC_SUBST(LDSHARED)
+dnl LDSHARED are the flags used to create shared library.
+
+dnl By default assume a GNU compatible build system
+CCSHARED="-fPIC"
+LDSHARED="-shared"
+dnl Now override flags that should be different
+case "$host" in
+  SunOS/4*)
+  	LDSHARED=""
+  	;;
+  SunOS/5*)
+	if test ! "$GCC" = "yes" ; then
+		LDSHARED="-G";
+	fi
+	;;
+  hp*|HP*)
+	if test ! "$GCC" = "yes"; then
+		CCSHARED="+z";
+	fi
+  	LDSHARED="-b"
+  	;;
+  CYGWIN*)
+  	CCSHARED="-DUSE_DL_IMPORT"
+	LDSHARED="-shared -Wl,--enable-auto-image-base"
+	;;
+  BSD/OS*/4*)
+	CCSHARED="-fpic"
+	;;
+esac
+
+dnl checks for libraries
+AC_CHECK_LIB(dl, dlopen)	# Dynamic linking for Linux, *BSD, SunOS/Solaris and SYSV
+AC_CHECK_LIB(dld, shl_load)	# Dynamic linking for HP-UX
+
+dnl End of loadable modules determination
+]) dnl AC_MODULES_INFO
+
+
+dnl Generate the drivers/Makefile.am file from Makefile.am.pre
+dnl Joris Robijn, 2002
+AC_DEFUN([AC_GENERATE_MAKEFILE_AM],
+[
+echo creating server/drivers/Makefile.am
+( cd $srcdir/server/drivers
+  SO_WO_DOT=`echo $SO|sed 's/[[.]]//'`
+  sed "s/[[!]]SO[[!]]/$SO_WO_DOT/g" < Makefile.am.pre | \
+  sed "s/[[!]]DRIVERS[[!]]/$DRIVERS/g" > Makefile.am
+)
+
+dnl End of Generate drivers Makefile.am
+]) dnl AC_GENERATE_MAKEFILE_AM
+

@@ -65,7 +65,7 @@ MODULE_EXPORT char *symbol_prefix = "joy_";
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
-int
+MODULE_EXPORT int
 joy_init (Driver *drvthis, char *args)
 {
 	char device[256];
@@ -104,15 +104,6 @@ joy_init (Driver *drvthis, char *args)
 		}
 
 	}
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports
-	drvthis->getkey = joy_getkey;
-	drvthis->close = joy_close;
 
 	if ((fd = open (device, O_RDONLY)) < 0)
 		return -1;

@@ -170,9 +170,8 @@
 
 #include "port.h"
 #include "lpt-port.h"
-#include "shared/str.h"
-#include "shared/report.h"
-#include "configfile.h"
+#include "report.h"
+//#include "configfile.h"
 #include "timing.h"
 #define uPause timing_uPause
 
@@ -256,7 +255,7 @@ inline void sed1330_set_pixel( PrivateData * p, int x, int y, int value );
 /////////////////////////////////////////////////////////////////
 // Init the driver and display
 //
-int
+MODULE_EXPORT int
 sed1330_init( Driver * drvthis, char *args )
 {
 	char * s;
@@ -264,8 +263,6 @@ sed1330_init( Driver * drvthis, char *args )
 	PrivateData * p;
 
 	debug( RPT_INFO, "SED1330: init(%p,%s)", drvthis, args );
-
-	// TODO: replace DriverName with driver->name when that field exists.
 
 
 	// Alocate and store private p
@@ -281,13 +278,14 @@ sed1330_init( Driver * drvthis, char *args )
 	// READ THE CONFIG FILE
 
 	// Port
-	port = config_get_int( drvthis->name, "port", 0, 0x278 );
+	port = drvthis->config_get_int( drvthis->name, "port", 0, 0x278 );
 	p->port = port;
 
 	// Type
 	s = drvthis->config_get_string( drvthis->name, "type", 0, NULL );
 	if( !s ) {
 		report( RPT_ERR, "SED1330: you need to specify the display type" );
+		return -1;
 	} else if( strcmp( s, "G321D" ) == 0 ) {
 		p->type = TYPE_G321D;
 		p->graph_width = 320;
@@ -363,39 +361,6 @@ sed1330_init( Driver * drvthis, char *args )
 	if (timing_init() == -1)
 		return -1;
 
-	// Set variables for server
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->api_version = api_version;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports...
-	drvthis->init = sed1330_init;
-	drvthis->close = sed1330_close;
-
-	drvthis->width = sed1330_width;
-	drvthis->height = sed1330_height;
-
-	drvthis->flush = sed1330_flush;
-	drvthis->clear = sed1330_clear;
-	drvthis->chr = sed1330_chr;
-	drvthis->string = sed1330_string;
-	//drvthis->init_vbar = sed1330_init_vbar;
-	//drvthis->init_hbar = sed1330_init_hbar;
-	drvthis->vbar = sed1330_vbar;
-	drvthis->hbar = sed1330_hbar;
-	//drvthis->init_num = sed1330_init_num;
-	drvthis->num = sed1330_num;
-	drvthis->heartbeat = sed1330_heartbeat;
-	//drvthis->set_char = sed1330_set_char;
-	//drvthis->icon = sed1330_icon;
-
-	// drvthis->contrast = sed1330_contrast; // contrast is set by potmeter we assume
-	// drvthis->output = sed1330_output; // not implemented
-
-	// drvthis->flush_box = sed1330_flush_box; // NOT SUPPORTED ANYMORE
-	// drvthis->draw_frame = sed1330_draw_frame; // NOT SUPPORTED ANYMORE
-
-
 	// INITIALIZE THE LCD
 	// End reset-state
 	debug( RPT_DEBUG, "SED1330: initializing LCD" );
@@ -413,11 +378,11 @@ sed1330_init( Driver * drvthis, char *args )
 		sed1330_command( p, CMD_SCROLL, 10, ((char[6]) {SCR1_L,SCR1_H,0xC7,SCR2_L,SCR2_H,0xC7}) );		// screen1 and screen2 memory locations
 		break;
 	  case TYPE_G121C:
-		sed1330_command( p, CMD_SYSTEM_SET, 8, ((char[8]) {0x30,0x80+CHARWIDTH-1,CHARHEIGHT-1,0x14,0x18,0x7F,0x16,0x00}) );	// Set textmode 21x12
+		sed1330_command( p, CMD_SYSTEM_SET, 8, ((char[8]) {0x30,0x80+CHARWIDTH-1,CHARHEIGHT-1,0x14,0x58,0x7F,0x16,0x00}) );	// Set textmode 21x12
 		sed1330_command( p, CMD_SCROLL, 10, ((char[6]) {SCR1_L,SCR1_H,0xC7,SCR2_L,SCR2_H,0xC7}) );		// screen1 and screen2 memory locations
 		break;
 	  case TYPE_G242C:
-		sed1330_command( p, CMD_SYSTEM_SET, 8, ((char[8]) {0x30,0x80+CHARWIDTH-1,CHARHEIGHT-1,0x27,0x2B,0x7F,0x29,0x00}) );	// Set textmode 40x12
+		sed1330_command( p, CMD_SYSTEM_SET, 8, ((char[8]) {0x30,0x80+CHARWIDTH-1,CHARHEIGHT-1,0x27,0x58,0x7F,0x29,0x00}) );	// Set textmode 40x12
 		sed1330_command( p, CMD_SCROLL, 10, ((char[6]) {SCR1_L,SCR1_H,0xC7,SCR2_L,SCR2_H,0xC7}) );		// screen1 and screen2 memory locations
 		break;
 	  default:

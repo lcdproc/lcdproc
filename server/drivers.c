@@ -12,7 +12,6 @@
  *
  */
 
-#include <malloc.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -25,6 +24,7 @@
 
 #include "shared/LL.h"
 #include "shared/report.h"
+#include "configfile.h"
 
 #include "drivers.h"
 #include "driver.h"
@@ -39,11 +39,15 @@ DisplayProps * display_props = NULL;
 
 
 int
-drivers_load_driver( char * name, char * filename, char * args )
+drivers_load_driver( char * name )
 {
 	Driver * driver;
+	char * s;
+	char * driverpath;
+	char * filename;
+	char * args;
 
-	report( RPT_INFO, "drivers_load_driver( name=\"%.40s\", filename=\"%.80s\", args=\"%.80s\")", name, filename, args );
+	report( RPT_INFO, "drivers_load_driver( name=\"%.40s\")", name );
 
 	/* First driver ? */
 	if( !loaded_drivers ) {
@@ -55,14 +59,44 @@ drivers_load_driver( char * name, char * filename, char * args )
 		}
 	}
 
+	/* Retrieve data from config file */
+	s = config_get_string( "server", "driverpath", 0, "" );
+	driverpath = malloc( strlen(s) + 1 );
+	strcpy( driverpath, s );
+
+	s = config_get_string( name, "file", 0, NULL );
+	if( s ) {
+		filename = malloc( strlen(driverpath) + strlen(s) + 1 );
+		strcpy( filename, driverpath );
+		strcat( filename, s );
+	} else {
+		filename = malloc( strlen(driverpath) + strlen(name) + strlen(MODULE_EXTENSION) + 1 );
+		strcpy( filename, driverpath );
+		strcat( filename, name  );
+		strcat( filename, MODULE_EXTENSION );
+	}
+
+	s = config_get_string( name, "arguments", 0, "" );
+	args = malloc( strlen(s)+1 );
+	strcpy( args, s );
+
 	/* Load the module */
 	driver = driver_load( name, filename, args );
-	if( driver == NULL )
+	if( driver == NULL ) {
 		/* It failed. The message has already been given by driver_load() */
+		report( RPT_INFO, "Module %.40s could not be loaded", filename );
+		free( driverpath );
+		free( filename );
+		free( args );
 		return -1;
+	}
 
 	/* Add driver to list */
 	LL_Push( loaded_drivers, driver );
+
+	free( driverpath );
+	free( filename );
+	free( args );
 
 	/* If first driver, store display properties */
 	if( driver_does_output(driver) && !display_props ) {
@@ -186,53 +220,9 @@ drivers_chr( int x, int y, char c )
 
 
 void
-drivers_init_vbar()	/* TO BE REMOVED */
-{
-	Driver *drv;
-
-	report( RPT_INFO, "drivers_init_vbar()" );
-
-	ForAllDrivers(drv) {
-		if( drv->init_vbar )
-			drv->init_vbar(drv);
-	}
-}
-
-
-void
-drivers_init_hbar()	/* TO BE REMOVED */
-{
-	Driver *drv;
-
-	report( RPT_INFO, "drivers_init_hbar()" );
-
-	ForAllDrivers(drv) {
-		if( drv->init_hbar )
-			drv->init_hbar(drv);
-	}
-}
-
-
-void
-drivers_init_num()	/* TO BE REMOVED */
-{
-	Driver *drv;
-
-	report( RPT_INFO, "drivers_init_num()" );
-
-	ForAllDrivers(drv) {
-		if( drv->init_num )
-			drv->init_num( drv );
-	}
-}
-
-
-void
 drivers_vbar( int x, int y, int len, int promille, int pattern )
 {
 	Driver *drv;
-
-	int old_len;
 
 	report( RPT_INFO, "drivers_vbar( x=%d, y=%d, len=%d, promille=%d, pattern=%d )", x, y, len, promille, pattern );
 
@@ -247,21 +237,6 @@ drivers_vbar( int x, int y, int len, int promille, int pattern )
 			drv->vbar( drv, x, y, len, promille, pattern );
 		}
 	}
-
-	/* OLD FUNCTIONS
-	 *
-	 * We need to convert the bar lengths, because the displays can
-	 * have different pixels per char
-	 */
-
-	old_len = (long) display_props->cellheight * len * promille / 1000;
-
-	ForAllDrivers(drv) {
-		if( drv->old_vbar ) {
-			drv->old_vbar( drv, x, old_len );
-		}
-	}
-
 }
 
 
@@ -269,29 +244,12 @@ void
 drivers_hbar( int x, int y, int len, int promille, int pattern )
 {
 	Driver *drv;
-	int old_len;
 
 	report( RPT_INFO, "drivers_hbar( x=%d, y=%d, len=%d, promille=%d, pattern=%d )", x, y, len, promille, pattern );
-
-	/* NEW FUNCTIONS */
 
 	ForAllDrivers(drv) {
 		if( drv->hbar ) {
 			drv->hbar( drv, x, y, len, promille, pattern );
-		}
-	}
-
-	/* OLD FUNCTIONS
-         *
-	 * We need to convert the bar lengths, because the displays can
-	 * have different pixels per char
-	 */
-
-	old_len = (long) display_props->cellwidth * len * promille / 1000;
-
-	ForAllDrivers(drv) {
-		if( drv->old_hbar ) {
-			drv->old_hbar( drv, x, y, old_len );
 		}
 	}
 }

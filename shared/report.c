@@ -48,8 +48,9 @@ void report( const int level, const char *format, .../*args*/ )
 		va_list ap;
 		va_start(ap, format); /* measure the required size (the number of elements of format) */
 
-     		switch( report_dest ) {
-     		  case RPT_DEST_STDERR:
+
+		switch( report_dest ) {
+		  case RPT_DEST_STDERR:
 			vfprintf( stderr, format, ap );
 			fprintf( stderr, "\n" );
 			break;
@@ -57,9 +58,9 @@ void report( const int level, const char *format, .../*args*/ )
 			vsyslog( LOG_USER|(level+2), format, ap );
 			break;
 		  case RPT_DEST_STORE:
-		  	vsnprintf( buf, sizeof(buf), format, ap );
-		  	buf[sizeof(buf)-1] = 0; // be sure to have a terminating 0
-		  	store_report_message( level, buf );
+			vsnprintf( buf, sizeof(buf), format, ap );
+			buf[sizeof(buf)-1] = 0; // be sure to have a terminating 0
+			store_report_message( level, buf );
 			break;
 		}
 		va_end(ap);
@@ -93,10 +94,12 @@ int set_reporting( int new_level, int new_dest )
 
 static void store_report_message( int level, const char *message )
 {
-	stored_msgs[num_stored_msgs] = malloc(strlen( message )+1);
-	strcpy( stored_msgs[num_stored_msgs], message );
-	stored_levels[num_stored_msgs] = level;
-	num_stored_msgs ++;
+	if( num_stored_msgs < MAX_STORED_MSGS ) {
+		stored_msgs[num_stored_msgs] = malloc(strlen( message )+1);
+		strcpy( stored_msgs[num_stored_msgs], message );
+		stored_levels[num_stored_msgs] = level;
+		num_stored_msgs ++;
+	}
 }
 
 

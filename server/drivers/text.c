@@ -82,7 +82,7 @@ MODULE_EXPORT char *symbol_prefix = "text_";
 //////////////////////////////////////////////////////////////////////////
 
 
-int
+MODULE_EXPORT int
 text_init (Driver *drvthis, char *args)
 {
 	// Set display sizes
@@ -101,37 +101,6 @@ text_init (Driver *drvthis, char *args)
 	// Allocate the framebuffer
 	framebuf = (unsigned char *) malloc (width * height);
 	memset (framebuf, ' ', width * height);
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports
-	drvthis->init = text_init;
-	drvthis->close = text_close;
-	drvthis->width = text_width;
-	drvthis->height = text_height;
-
-	drvthis->clear = text_clear;
-	drvthis->flush = text_flush;
-	drvthis->string = text_string;
-	drvthis->chr = text_chr;
-
-	drvthis->vbar = text_vbar;
-	//drvthis->init_vbar = NULL;
-	drvthis->hbar = text_hbar;
-	//drvthis->init_hbar = NULL;
-	drvthis->num = text_num;
-	//drvthis->init_num = NULL;
-
-	drvthis->set_contrast = text_set_contrast;
-	drvthis->backlight = text_backlight;
-
-	//drvthis->set_char = NULL;
-	//drvthis->icon = NULL;
-
-	//drvthis->get_key = NULL;
 
 	return 0;
 }

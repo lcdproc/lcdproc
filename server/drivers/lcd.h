@@ -1,5 +1,5 @@
 /*
- * client.h
+ * lcd.h
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -23,6 +23,8 @@
 
 #ifndef LCD_H
 #define LCD_H
+
+#include <stddef.h>
 
 /* Maximum supported sizes */
 #define LCD_MAX_WIDTH 256
@@ -71,9 +73,9 @@
 
 /* What does the shared module handle look like on the current platform? */
 #define MODULE_HANDLE void*
+
 /* And how do we define the exported functions */
-#define MODULE_EXPORT static
-/* WHILE NOT MODULES static BECAUSE OTHERWISE WE HAVE MULTIPLE IDENTICAL SYMBOLS */
+#define MODULE_EXPORT
 
 typedef struct lcd_logical_driver {
 
@@ -84,10 +86,10 @@ typedef struct lcd_logical_driver {
 	/******** Variables in the driver module ********/
 	/* The driver loader will look for symbols with these names ! */
 
-	char *api_version;
+	char **api_version;
 	int *stay_in_foreground;	/* Does this driver require to be in foreground ?   */
 	int *supports_multiple;		/* Does this driver support multiple instances ?    */
-	char *func_prefix;		/* What should be prepended to the function names ? */
+	char **symbol_prefix;		/* What should alternatively be prepended to the function names ? */
 
 
 	/******** Functions in the driver module ********/
@@ -132,20 +134,6 @@ typedef struct lcd_logical_driver {
 
 	char * (*get_info) ();
 
-
-	/* OLD FUNCTIONS */
-	void (*old_vbar)	(struct lcd_logical_driver* drvthis, int x, int len);
-	void (*old_hbar)	(struct lcd_logical_driver* drvthis, int x, int y, int len);
-	void (*old_icon)	(struct lcd_logical_driver* drvthis, int which, char dest);
-	/* THESE 3 TO BE REMOVED */
-
-	void (*init_vbar) ();
-	void (*init_hbar) ();
-	void (*init_num) ();
-	void (*draw_frame) ();
-	void (*flush_box) (int lft, int top, int rgt, int bot);
-	/* THESE 4 TO BE REMOVED */
-
 	/* Returns 0 for "no key pressed", or (A-Z). */
 	char (*getkey) ();
 	/* TO BE REMOVED, IS RENAMED AND CHANGED */
@@ -188,13 +176,5 @@ typedef struct lcd_logical_driver {
 	int (*request_display_height) ();
 
 } Driver;
-
-
-void lcd_list_drivers (void);  /* TO BE REMOVED WHEN WE HAVE LOADABLE MODULES */
-
-typedef struct lcd_physical_driver {   /* TO BE REMOVED WHEN WE HAVE LOADABLE MODULES */
-	char *name;
-	int (*init) (struct lcd_logical_driver * driver, char *device);
-} lcd_physical_driver;
 
 #endif

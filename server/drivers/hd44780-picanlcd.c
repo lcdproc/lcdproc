@@ -19,9 +19,7 @@
 
 #include "hd44780-picanlcd.h"
 #include "hd44780-low.h"
-#include "hd44780.h"
 
-#include "shared/str.h"
 #include "report.h"
 
 #include <stdlib.h>

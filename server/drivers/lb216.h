@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-              int  LB216_init(Driver * drvthis, char *device);
+MODULE_EXPORT int  LB216_init(Driver * drvthis, char *device);
 MODULE_EXPORT void LB216_close(Driver * drvthis);
 MODULE_EXPORT int  LB216_width (Driver *drvthis);
 MODULE_EXPORT int  LB216_height (Driver *drvthis);

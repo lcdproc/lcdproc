@@ -36,7 +36,7 @@ MODULE_EXPORT char *symbol_prefix = "debug_";
 // TODO: somehow allow access to the driver->framebuffer to each
 // function...
 
-int
+MODULE_EXPORT int
 debug_init (Driver *drvthis, char *args)
 {
 	report (RPT_INFO, "debug_init()");
@@ -44,34 +44,6 @@ debug_init (Driver *drvthis, char *args)
 	framebuf = malloc (width * height);
 
 	debug_clear (drvthis);
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports
-	drvthis->clear = debug_clear;
-	drvthis->string = debug_string;
-	drvthis->chr = debug_chr;
-	drvthis->vbar = debug_vbar;
-	drvthis->hbar = debug_hbar;
-	drvthis->init_num = debug_init_num;
-	drvthis->num = debug_num;
-
-	drvthis->init = debug_init;
-	drvthis->close = debug_close;
-	drvthis->width = debug_width;
-	drvthis->height = debug_height;
-	drvthis->flush = debug_flush;
-	drvthis->set_contrast = debug_set_contrast;
-	drvthis->backlight = debug_backlight;
-	drvthis->set_char = debug_set_char;
-	drvthis->icon = debug_icon;
-	drvthis->init_vbar = debug_init_vbar;
-	drvthis->init_hbar = debug_init_hbar;
-
-	drvthis->get_key = debug_get_key;
 
 	return 0;
 }

@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-              int  joy_init (Driver *drvthis, char *args);
+MODULE_EXPORT int  joy_init (Driver *drvthis, char *args);
 MODULE_EXPORT void joy_close (Driver *drvthis);
 
 MODULE_EXPORT char joy_getkey (Driver *drvthis);

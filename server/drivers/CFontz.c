@@ -37,7 +37,7 @@
 #include "CFontz.h"
 //#include "drv_base.h"
 //#include "shared/debug.h"
-#include "shared/str.h"
+//#include "shared/str.h"
 #include "report.h"
 #include "lcd_lib.h"
 //#include "server/configfile.h"
@@ -68,11 +68,14 @@ MODULE_EXPORT int stay_in_foreground = 1;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "CFontz_";
 
+
 // Internal functions
 static void CFontz_linewrap (int on);
 static void CFontz_autoscroll (int on);
 static void CFontz_hidecursor ();
 static void CFontz_reboot ();
+static void CFontz_init_vbar (Driver * drvthis);
+static void CFontz_init_hbar (Driver * drvthis);
 
 
 // TODO:  Get the frame buffers working right
@@ -80,7 +83,7 @@ static void CFontz_reboot ();
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
 //
-int
+MODULE_EXPORT int
 CFontz_init (Driver * drvthis, char *args)
 {
 	struct termios portset;
@@ -201,32 +204,6 @@ CFontz_init (Driver * drvthis, char *args)
 	CFontz_linewrap (1);
 	CFontz_autoscroll (0);
 	//CFontz_backlight (drvthis, backlight_brightness);  // render.c variables should not be used in drivers !
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports
-
-	drvthis->clear = CFontz_clear;
-	drvthis->string = CFontz_string;
-	drvthis->chr = CFontz_chr;
-	drvthis->vbar = CFontz_vbar;
-	//drvthis->init_vbar = CFontz_init_vbar;
-	drvthis->hbar = CFontz_hbar;
-	//drvthis->init_hbar = CFontz_init_hbar;
-	drvthis->num = CFontz_num;
-
-	drvthis->init = CFontz_init;
-	drvthis->close = CFontz_close;
-	drvthis->flush = CFontz_flush;
-	drvthis->get_contrast = CFontz_get_contrast;
-	drvthis->set_contrast = CFontz_set_contrast;
-	drvthis->backlight = CFontz_backlight;
-	drvthis->set_char = CFontz_set_char;
-	drvthis->icon = CFontz_icon;
-	drvthis->heartbeat = CFontz_heartbeat;
 
 	CFontz_set_contrast (drvthis, contrast);
 

@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-              int lircin_init (Driver * drvthis, char *args);
+MODULE_EXPORT int lircin_init (Driver * drvthis, char *args);
 MODULE_EXPORT void lircin_close (Driver * drvthis);
 MODULE_EXPORT char lircin_getkey (Driver * drvthis);
 

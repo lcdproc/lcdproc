@@ -63,7 +63,6 @@
 #include "lpt-port.h"
 
 #include "port.h"
-#include "shared/str.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

@@ -61,8 +61,6 @@ SunOS (5.5.1):
 #include <curses.h>
 #endif
 
-#include "shared/str.h"
-
 #include "lcd.h"
 #include "curses_drv.h"
 #include "report.h"
@@ -234,11 +232,10 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "curses_drv_";
 
 
-int
+MODULE_EXPORT int
 curses_drv_init (Driver *drvthis, char *args)
 {
 	char buf[256];
-	int w, h;
 
 	// Colors....
 	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
@@ -248,19 +245,6 @@ curses_drv_init (Driver *drvthis, char *args)
 	// Screen position (top left)
 	int	screen_begx = CONF_DEF_TOP_LEFT_X,
 		screen_begy = CONF_DEF_TOP_LEFT_Y;
-
-	// Set display sizes
-	if( drvthis->request_display_width() > 0
-	&& drvthis->request_display_height() > 0 ) {
-		// Use size from primary driver
-		width = drvthis->request_display_width();
-		height = drvthis->request_display_height();
-	}
-	else {
-		// Use default size
-		width = LCD_DEFAULT_WIDTH;
-		height = LCD_DEFAULT_HEIGHT;
-	}
 
 	/*Get settings from config file*/
 
@@ -284,20 +268,25 @@ curses_drv_init (Driver *drvthis, char *args)
 	//TODO: Make it possible to configure the backlight's "off" color and its "on" color
 	//      Or maybe don't do so? - Rene Wagner
 
-	/*Get size settings*/
-	strncpy(buf, drvthis->config_get_string ( drvthis->name , "size" , 0 , CONF_DEF_SIZE), sizeof(buf));
-	buf[sizeof(buf)-1]=0;
-	if( sscanf(buf , "%dx%d", &w, &h ) != 2
-	|| (w <= 0)
-	|| (h <= 0)) {
-		report (RPT_WARNING, "CURSES: Cannot read size: %s. Using default value.\n", buf);
-		//sscanf( CONF_DEF_SIZE , "%dx%d", &width, &height );
-		// default value is already set
+	/* Get size settings */
+	if( drvthis->request_display_width() > 0
+	&& drvthis->request_display_height() > 0 ) {
+		/* If this driver is secondairy driver, use size from primary driver */
+		width = drvthis->request_display_width();
+		height = drvthis->request_display_height();
 	}
 	else {
-		width = w;
-		height = h;
+		/* Use our own size from config file */
+		strncpy(buf, drvthis->config_get_string ( drvthis->name , "size" , 0 , CONF_DEF_SIZE), sizeof(buf));
+		buf[sizeof(buf)-1]=0;
+		if( sscanf(buf , "%dx%d", &width, &height ) != 2
+		|| (width <= 0)
+		|| (height <= 0)) {
+			report (RPT_WARNING, "CURSES: Cannot read size: %s. Using default value: %s\n", buf, CONF_DEF_SIZE);
+			sscanf( CONF_DEF_SIZE , "%dx%d", &width, &height );
+		}
 	}
+
 
 	/*Get position settings*/
 	if (0<=drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) && drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) <= 255) {
@@ -347,35 +336,6 @@ curses_drv_init (Driver *drvthis, char *args)
 	}
 
 	curses_drv_clear (drvthis);
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports
-	drvthis->init = curses_drv_init;
-	drvthis->close = curses_drv_close;
-	drvthis->width = curses_drv_width;
-	drvthis->height = curses_drv_height;
-	drvthis->clear = curses_drv_clear;
-	drvthis->flush = curses_drv_flush;
-	drvthis->string = curses_drv_string;
-	drvthis->chr = curses_drv_chr;
-
-	drvthis->vbar = curses_drv_vbar;
-	//drvthis->init_vbar = NULL;
-	drvthis->hbar = curses_drv_hbar;
-	//drvthis->init_hbar = NULL;
-	drvthis->num = curses_drv_num;
-	//drvthis->init_num = curses_drv_init_num;
-
-	drvthis->backlight = curses_drv_backlight;
-	//drvthis->set_char = NULL;
-	drvthis->icon = curses_drv_icon;
-
-	drvthis->get_key = curses_drv_get_key;
-	drvthis->heartbeat = curses_drv_heartbeat;
 
 	// Change the character used for "..."
 	ELLIPSIS = '~';

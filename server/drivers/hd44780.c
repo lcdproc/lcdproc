@@ -69,7 +69,6 @@
 # include "config.h"
 #endif
 
-#include "shared/str.h"
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "hd44780.h"
@@ -121,7 +120,7 @@ MODULE_EXPORT char *symbol_prefix = "HD44780_";
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
 //
-int
+MODULE_EXPORT int
 HD44780_init (Driver * drvthis, char *args)
 {
 	// TODO: remove the two magic numbers below
@@ -251,8 +250,6 @@ HD44780_init (Driver * drvthis, char *args)
 	if ( p->have_keypad ) {
 		int x, y;
 
-		drvthis->get_key = HD44780_get_key;
-
 		// Read keymap
 		for( x=0; x<KEYPAD_MAXX; x++ ) {
 			char buf[40];
@@ -292,36 +289,6 @@ HD44780_init (Driver * drvthis, char *args)
 			}
 		}
 	}
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports...
-	// These are the default HD44780 functions
-	drvthis->init = HD44780_init;
-	drvthis->close = HD44780_close;
-	drvthis->width = HD44780_width;
-	drvthis->height = HD44780_height;
-	drvthis->flush = HD44780_flush;
-	drvthis->clear = HD44780_clear;
-	drvthis->chr = HD44780_chr;
-	drvthis->string = HD44780_string;
-	//drvthis->flush_box = HD44780_flush_box; // TO BE REMOVED
-	//drvthis->contrast = HD44780_contrast; // contrast is set by potmeter we assume
-
-	//drvthis->output = HD44780_output; // not implemented
-	//drvthis->init_vbar = HD44780_init_vbar;
-	//drvthis->init_hbar = HD44780_init_hbar;
-	drvthis->vbar = HD44780_vbar;
-	drvthis->hbar = HD44780_hbar;
-	drvthis->init_num = HD44780_init_num;
-	drvthis->num = HD44780_num;
-	drvthis->heartbeat = HD44780_heartbeat;
-	drvthis->set_char = HD44780_set_char;
-	drvthis->icon = HD44780_icon;
-	//drvthis->draw_frame = HD44780_draw_frame; // TO BE REMOVED
 
 	if ((p->hd44780_functions = (HD44780_functions *) malloc (sizeof (HD44780_functions))) == NULL) {
 		fprintf (stderr, "Error mallocing for function struct");
@@ -1074,6 +1041,8 @@ HD44780_get_key(Driver *drvthis)
 	unsigned char scancode;
 	char * keystr = NULL;
 	struct timeval curr_time, time_diff;
+
+	if( ! p->have_keypad ) return NULL;
 
 	gettimeofday(&curr_time,NULL);
 

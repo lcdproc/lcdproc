@@ -87,20 +87,11 @@ lircin_getkey (Driver * drvthis)
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
-int
+MODULE_EXPORT int
 lircin_init (Driver * drvthis, char *args)
 {
 
 /* assign funktions */
-
-	// Set variables for server
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	// Set the functions the driver supports
-	drvthis->getkey = lircin_getkey;
-	drvthis->close = lircin_close;
 
 /* open socket to lirc */
 

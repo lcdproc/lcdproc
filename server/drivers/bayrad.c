@@ -317,7 +317,7 @@ MODULE_EXPORT char *symbol_prefix = "bayrad_";
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
-int
+MODULE_EXPORT int
 bayrad_init(Driver *drvthis, char *args)
 {
 
@@ -455,32 +455,6 @@ bayrad_init(Driver *drvthis, char *args)
 
    /* Reset and clear the BayRAD */
    write(fd, "\x80\x86\x00\x1a\x1e", 5);  // sync,reset to type 0, clear screen, home
-
-
-  // Set variables for server
-  drvthis->api_version = api_version;
-  drvthis->stay_in_foreground = &stay_in_foreground;
-  drvthis->supports_multiple = &supports_multiple;
-
-  // Set the functions the driver supports
-  drvthis->clear = bayrad_clear;
-  drvthis->string = bayrad_string;
-  drvthis->chr = bayrad_chr;
-  drvthis->vbar = bayrad_vbar;
-  //drvthis->init_vbar = bayrad_init_vbar;
-  drvthis->hbar = bayrad_hbar;
-  //drvthis->init_hbar = bayrad_init_hbar;
-  //drvthis->num = NULL; //bayrad_num;
-  //drvthis->init_num = NULL; //bayrad_init_num;
-  drvthis->init = bayrad_init;
-  drvthis->close = bayrad_close;
-  drvthis->flush = bayrad_flush;
-  drvthis->backlight = bayrad_backlight;
-  drvthis->set_char = bayrad_set_char;
-  drvthis->icon = bayrad_icon;
-
-  drvthis->get_key = bayrad_get_key;
-
 
   return 0;
 }

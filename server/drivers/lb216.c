@@ -68,7 +68,7 @@ MODULE_EXPORT char *symbol_prefix = "LB216_";
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
 //
-int
+MODULE_EXPORT int
 LB216_init(Driver * drvthis, char *args)
 {
    char *argv[64];
@@ -210,31 +210,6 @@ LB216_init(Driver * drvthis, char *args)
    sleep(1);
    LB216_hidecursor();
    LB216_backlight(drvthis, backlight_brightness);
-
-   // Set variables for server
-   drvthis->api_version = api_version;
-   drvthis->stay_in_foreground = &stay_in_foreground;
-   drvthis->supports_multiple = &supports_multiple;
-
-   // Set the functions the driver supports
-   drvthis->clear =      LB216_clear;
-   drvthis->string =     LB216_string;
-   drvthis->chr =        LB216_chr;
-   drvthis->old_vbar =       LB216_vbar;
-   drvthis->init_vbar =  LB216_init_vbar;
-   drvthis->old_hbar =       LB216_hbar;
-   drvthis->init_hbar =  LB216_init_hbar;
-   //drvthis->num =        NULL;
-   //drvthis->init_num =   NULL;
-
-   drvthis->init =       LB216_init;
-   drvthis->close =      LB216_close;
-   drvthis->width =	 LB216_width;
-   drvthis->height = 	 LB216_height;
-   drvthis->flush =      LB216_flush;
-   drvthis->backlight =  LB216_backlight;
-   drvthis->set_char =   LB216_set_char;
-   drvthis->old_icon =       LB216_icon;
 
    return 0;
 }

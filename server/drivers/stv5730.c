@@ -24,7 +24,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/errno.h>
-#include <sys/io.h>
+//#include <sys/io.h>
 #include <time.h>
 #include "port.h"
 #include "timing.h"
@@ -279,7 +279,7 @@ stv5730_drawchar2fb (int x, int y, unsigned char z)
 // This initialises the stuff. We support supplying port as
 // a command line argument.
 //
-int
+MODULE_EXPORT int
 stv5730_init (Driver *drvthis, char *args)
 {
     char *argv[64], *str;
@@ -440,39 +440,6 @@ stv5730_init (Driver *drvthis, char *args)
     // clear screen
     memset (stv5730_framebuf, 0, STV5730_WID * STV5730_HGT);
 
-    // Set variables for server
-    drvthis->api_version = api_version;
-    drvthis->stay_in_foreground = &stay_in_foreground;
-    drvthis->supports_multiple = &supports_multiple;
-
-    // Set the functions the driver supports
-    drvthis->clear = stv5730_clear;
-    drvthis->string = stv5730_string;
-    drvthis->chr = stv5730_chr;
-    drvthis->old_vbar = stv5730_vbar;
-    drvthis->old_hbar = stv5730_hbar;
-    drvthis->num = stv5730_num;
-    drvthis->init = stv5730_init;
-    drvthis->close = stv5730_close;
-    drvthis->width = stv5730_width;
-    drvthis->height = stv5730_height;
-    drvthis->cellwidth = stv5730_cellwidth;
-    drvthis->cellheight = stv5730_cellheight;
-    drvthis->flush = stv5730_flush;
-    // We dont't have any programmable chars.
-    //drvthis->set_char = NULL;
-
-    drvthis->old_icon = stv5730_icon;
-    // We dont't need init for vbar,hbar and friends.
-    //drvthis->init_hbar = NULL;
-    //drvthis->init_vbar = NULL;
-    //drvthis->init_num = NULL;
-    // Neither contrast nor backlight are controllable.
-    //drvthis->contrast = NULL;
-    //drvthis->backlight = NULL;
-    // There are some unused input lines that may be used for input,
-    // but nothing is programmed so far.
-    //drvthis->getkey = NULL;
     return 0;
 }
 

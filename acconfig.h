@@ -18,14 +18,6 @@
 /*   Leave the following blank line there!!  Autoheader needs it.  */
 
 
-#undef LIRCIN_DRV
-
-#undef BAYRAD_DRV
-
-#undef CFONTZ_DRV
-
-#undef CURSES_DRV
-
 #undef CURSES_HAS__ACS_CHAR
 
 #undef CURSES_HAS_ACS_MAP
@@ -38,16 +30,6 @@
 
 #undef DEFINED_ACS
 
-#undef GLK_DRV
-
-#undef HD44780_DRV
-
-#undef IRMANIN_DRV
-
-#undef JOY_DRV
-
-#undef LB216_DRV
-
 #undef LCDPORT
 
 #undef LINUX
@@ -55,18 +37,6 @@
 #undef LOAD_MAX
 
 #undef LOAD_MIN
-
-#undef MTXORB_DRV
-
-#undef LCDM001_DRV
-
-#undef SED1330_DRV
-
-#undef SED1520_DRV
-
-#undef STV5730_DRV
-
-#undef T6963_DRV
 
 /* Define the package name */
 #undef PACKAGE
@@ -76,6 +46,8 @@
 
 #undef API_VERSION
 
+#undef MODULE_EXTENSION
+
 #undef SLI_DRV
 
 #undef SOLARIS
@@ -83,6 +55,10 @@
 #undef STAT_NFS
 
 #undef STAT_SMBFS
+
+/* Define for AIX if your compiler is a genuine IBM xlC/xlC_r
+   and you want support for AIX C++ shared extension modules. */
+#undef AIX_GENUINE_CPLUSPLUS
 
 /* two-argument statfs with statfs.bsize member (AIX, 4.3BSD) */
 #undef STAT_STATFS2_BSIZE

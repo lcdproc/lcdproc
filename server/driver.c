@@ -12,12 +12,12 @@
  *
  */
 
-#include <malloc.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <dlfcn.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -31,7 +31,47 @@
 #include "drivers/lcd.h"
 /* lcd.h is used for the driver API definition */
 
-void * lcd_find_init (char *driver); /* HACK TO USE THIS WHILE NO LOADABLE DRIVERS */
+
+typedef struct driver_symbols {
+	char *name;
+	short offset; /* offset in Driver structure */
+	short required;
+} DriverSymbols;
+
+DriverSymbols driver_symbols[] = {
+	{ "api_version", offsetof(Driver, api_version), 1 },
+	{ "stay_in_foreground", offsetof(Driver, stay_in_foreground), 1 },
+	{ "supports_multiple", offsetof(Driver, supports_multiple), 1 },
+	{ "symbol_prefix", offsetof(Driver, symbol_prefix), 1 },
+	{ "init", offsetof(Driver, init), 1 },
+	{ "close", offsetof(Driver, close), 1 },
+	{ "width", offsetof(Driver, width), 1 },
+	{ "height", offsetof(Driver, height), 1 },
+	{ "clear", offsetof(Driver, clear), 1 },
+	{ "flush", offsetof(Driver, flush), 1 },
+	{ "string", offsetof(Driver, string), 1 },
+	{ "chr", offsetof(Driver, chr), 1 },
+	{ "vbar", offsetof(Driver, vbar), 0 },
+	{ "hbar", offsetof(Driver, hbar), 0 },
+	{ "num", offsetof(Driver, num), 0 },
+	{ "heartbeat", offsetof(Driver, heartbeat), 0 },
+	{ "icon", offsetof(Driver, icon), 0 },
+	{ "cursor", offsetof(Driver, cursor), 0 },
+	{ "set_char", offsetof(Driver, set_char), 0 },
+	{ "get_free_chars", offsetof(Driver, get_free_chars), 0 },
+	{ "cellwidth", offsetof(Driver, cellwidth), 0 },
+	{ "cellheight", offsetof(Driver, cellheight), 0 },
+	{ "get_contrast", offsetof(Driver, get_contrast), 0 },
+	{ "set_contrast", offsetof(Driver, set_contrast), 0 },
+	{ "get_brightness", offsetof(Driver, get_brightness), 0 },
+	{ "set_brightness", offsetof(Driver, set_brightness), 0 },
+	{ "backlight", offsetof(Driver, backlight), 0 },
+	{ "output", offsetof(Driver, output), 0 },
+	{ "get_key", offsetof(Driver, get_key), 0 },
+	{ "get_info", offsetof(Driver, get_info), 0 },
+	{ NULL, 0, 0 }
+};
+
 
 
 /* Functions for the driver */
@@ -43,30 +83,14 @@ static int driver_store_private_ptr(Driver * driver, void * private_data);
 Driver *
 driver_load( char * name, char * filename, char * args )
 {
-	void (*driver_init)();
 	Driver * driver = NULL;
 	int res;
 
-	debug( RPT_DEBUG, "Loading driver [%.40s]", name );
+	report( RPT_INFO, "driver_load( name=\"%.40s\", filename=\"%.80s\", args=\"%.80s\")", name, filename, args );
 
 	/* Allocate memory for new driver struct */
 	driver = malloc( sizeof( Driver ));
 	memset( driver, 0, sizeof (Driver));
-
-	/* Load the driver modules and fill the symbols */
-	if( driver_bind_module( driver ) < 0 ) {
-		report( RPT_ERR, "Driver [%.40s] load failed", name );
-		free( driver );
-		return NULL;
-	}
-
-	/* Find the driver in the array of driver types    OLD CODE IS CALLED HERE */
-	if ((driver_init = lcd_find_init(name)) == NULL) {
-		/* Driver not found */
-		report( RPT_ERR, "Unknown driver [%.40s]", name);
-		return NULL;
-	}
-	driver->init = (int (*)(Driver*,char*)) driver_init;
 
 	/* And store its name and filename */
 	driver->name = malloc( strlen( name ) + 1 );
@@ -74,28 +98,40 @@ driver_load( char * name, char * filename, char * args )
 	driver->filename = malloc( strlen( filename ) + 1 );
 	strcpy( driver->filename, filename );
 
-	/* Call the init function */
-	report( RPT_DEBUG, "Calling driver [%.40s] init function", driver->name );
-	res = driver->init( driver, args );
-	if( res < 0 ) {
-		report( RPT_ERR, "Driver [%.40s] init failed, return code < 0", driver->name );
-		/* Driver load failed, don't add driver to list
-		 * Free driver structure again
-		 */
+	/* Load and bind the driver module and locate the symbols */
+	if( driver_bind_module( driver ) < 0 ) {
+		report( RPT_ERR, "Driver [%.40s] binding failed", name );
 		free( driver->name );
 		free( driver->filename );
 		free( driver );
 		return NULL;
 	}
 
-	/* Check if necesary functions are filled
-	 * SHOULD BE DONE BEFORE CALLING INIT WHEN WE HAVE LOADABLE DRIVERS
-	 */
-	if( ! driver_has_obligatory_symbols( driver ) ) {
-		report( RPT_ERR, "Driver [%.40s] does not have all obligatory symbols", driver->name );
-		driver_unload( driver );
+	/* Check module version */
+	if( strcmp( *(driver->api_version), API_VERSION ) != 0 ) {
+		report( RPT_ERR, "Driver [%.40s] is of an incompatible version", name );
+		driver_unbind_module( driver );
+		free( driver->name );
+		free( driver->filename );
+		free( driver );
 		return NULL;
 	}
+
+	/* Call the init function */
+	debug( RPT_DEBUG, "Calling driver [%.40s] init function", driver->name );
+	res = driver->init( driver, args );
+	if( res < 0 ) {
+		report( RPT_ERR, "Driver [%.40s] init failed, return code < 0", driver->name );
+		/* Driver load failed, driver should not be added to list
+		 * Free driver structure again
+		 */
+		driver_unbind_module( driver );
+		free( driver->name );
+		free( driver->filename );
+		free( driver );
+		return NULL;
+	}
+
 	debug( RPT_NOTICE, "Driver [%.40s] loaded", driver->name );
 
 	return driver;
@@ -109,7 +145,7 @@ driver_unload( Driver * driver )
 	if( driver->close )
 		driver->close (driver);
 
-	/* FUTURE: UNLOAD THE LOADED MODULE */
+	/* Unlaod the module */
 	driver_unbind_module( driver );
 
 	/* Free its data */
@@ -125,11 +161,54 @@ driver_unload( Driver * driver )
 int
 driver_bind_module( Driver * driver )
 {
-	/* Clear the struct, including all functions */
-	memset( driver, 0, sizeof(Driver) );
+	int i;
+	int missing_symbols = 0;
 
-	/* FUTURE: GET THE SYMBOLS FROM THE DRIVER MODULE */
+	/* Load the module */
+	driver->module_handle = dlopen( driver->filename, RTLD_NOW );
+	if( driver->module_handle == NULL ) {
+		report( RPT_ERR, "Could not dlopen driver module %.40s: %s", driver->filename, dlerror() );
+		return -1;
+	}
 
+	/* And locate the symbols */
+	for( i=0; driver_symbols[i].name; i++ ) {
+		void (**p)();
+		p = (void(**)() ) ((size_t)driver + (driver_symbols[i].offset));
+		*p = NULL;
+
+		/* Add the symbol_prefix */
+		if( driver->symbol_prefix ) {
+			char *s = malloc( strlen( *(driver->symbol_prefix) ) + strlen( driver_symbols[i].name ) + 1 );
+			strcpy( s, *(driver->symbol_prefix) ) ;
+			strcat( s, driver_symbols[i].name );
+			debug( RPT_DEBUG, "finding symbol: %s", s );
+			*p = dlsym( driver->module_handle, s );
+			free( s );
+		}
+		/* Retrieve the symbol */
+		if( !*p ) {
+			debug( RPT_DEBUG, "finding symbol: %s", driver_symbols[i].name );
+			*p = dlsym( driver->module_handle, driver_symbols[i].name );
+		}
+
+		if( *p ) {
+			debug( RPT_DEBUG, "found symbol at: %p", *p );
+		}
+
+		/* Was the symbol required but not found ? */
+		if( !*p && driver_symbols[i].required ) {
+			report( RPT_ERR, "Module [%.40s] does not have required symbol: %s", driver->name, driver_symbols[i].name );
+			missing_symbols = 1;
+		}
+	}
+
+	/* If errors, leave now while we can :) */
+	if( missing_symbols ) {
+  		report( RPT_ERR, "Driver [%.40s] does not have all obligatory symbols", driver->name );
+		dlclose( driver->module_handle );
+		return -1;
+	}
 
 
 	/* Add our exported functions */
@@ -159,30 +238,9 @@ driver_bind_module( Driver * driver )
 int
 driver_unbind_module( Driver * driver )
 {
+	dlclose( driver->module_handle );
+
 	return 0;
-}
-
-
-bool
-driver_has_obligatory_symbols( Driver * driver )
-{
-	if( driver->api_version == NULL
-	|| driver->stay_in_foreground == NULL
-	|| driver->supports_multiple == NULL ) {
-		report( RPT_ERR, "Driver [%.40s] misses symbols", driver->name );
-		return 0;
-	}
-
-	if( driver_does_output(driver)
-	&& ( driver->width == NULL
-	  || driver->height == NULL
-	  || driver->clear == NULL
-	  || driver->string == NULL
-	  || driver->chr == NULL )) {
-		report( RPT_ERR, "Driver [%.40s] does output but misses a obligatory function", driver->name );
-		return 0;
-	}
-	return 1;
 }
 
 

@@ -75,7 +75,7 @@ lcd_logical_driver *irmanin;
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
-int
+MODULE_EXPORT int
 irmanin_init (struct lcd_logical_driver *driver, char *args)
 {
 	char device[256];

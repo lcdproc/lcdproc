@@ -30,9 +30,6 @@ int
 driver_unbind_module( Driver * driver );
 
 bool
-driver_has_obligatory_symbols( Driver * driver );
-
-bool
 driver_does_output( Driver * driver );
 
 bool

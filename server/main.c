@@ -53,12 +53,12 @@ extern int optind, optopt, opterr;
 
 #define MAX_TIMER 0x10000
 
-/*#define DEFAULT_DEBUG_LEVEL 1*/
 #define DEFAULT_LCD_PORT LCDPORT
 #define DEFAULT_BIND_ADDR "127.0.0.1"
 #define DEFAULT_CONFIGFILE "/etc/LCDd.conf"
 #define DEFAULT_USER "nobody"
 #define DEFAULT_DRIVER "curses"
+#define DEFAULT_DRIVER_PATH
 #define DEFAULT_WAITTIME 8
 #define MAX_DRIVERS 8
 #define DEFAULT_DAEMON_MODE 1
@@ -89,14 +89,14 @@ char *build_date = __DATE__;
 #define UNSET_INT -1
 #define UNSET_STR "\01"
 
-int debug_level; /* for compatibility with MtxOrb and joy drivers.
+/* int debug_level; for compatibility with MtxOrb and joy drivers.
  * I was about to remove the comment in front of this.
  * Now how do we become compatible WITHOUT this debug_level ?*/
 
 int lcd_port = UNSET_INT;
-char bind_addr[64] = UNSET_STR;
-char configfile[256] = UNSET_STR;
-char user[64] = UNSET_STR;
+char bind_addr[64];	/* Do not preinit these strings as they will occupy */
+char configfile[256];	/* a lot of space in the executable. */
+char user[64];		/* The values will be overwritten anyway... */
 
 int daemon_mode = UNSET_INT;
 int enable_server_screen = UNSET_INT;
@@ -107,32 +107,7 @@ static int serverStarted = 0;
 
 /* The drivers and their driver parameters*/
 char *drivernames[MAX_DRIVERS];
-char *driverfilenames[MAX_DRIVERS];
-char *driverargs[MAX_DRIVERS];
 int num_drivers = 0;
-
-
-/* The parameter structure and args[] should
- * be removed when getopt(3) is implemented,
- * as there won't be any need for them then.
- * typedef struct parameter {
- *	char *sh, *lg;	*/ /* short and long versions*/
- /*} parameter;
- +
- * This is currently only a list of available arguments, but doesn't
- * really *do* anything.  It just helps to figure out which parameters
- * go to the server, and which ones go to individual drivers...
- *static parameter args[] = {
- *	{"-h", "--help"},
- *	{"-d", "--driver"},
- *	{"-t", "--type"},
- *	{"-f", "--foreground"},
- *	{"-b", "--backlight"},
- *	{"-i", "--serverinfo"},
- *	{"-w", "--waittime"},
- *	{NULL, NULL},
- *};
- */
 
 
 /**** Local functions ****/
@@ -149,9 +124,8 @@ int drop_privs(char *user);
 int init_drivers();
 int init_screens();
 void do_mainloop();
-void lcd_list_drivers();
 
-#define ESSENTIAL(f) {int r; if( ( r=(f) )<0 ) { report( RPT_CRIT,"Critical error, abort"); return r;}}
+#define ESSENTIAL(f) {int r; if( ( r=(f) )<0 ) { report( RPT_CRIT,"Critical error, abort"); exit_program(0);}}
 
 int
 main (int argc, char **argv)
@@ -212,13 +186,13 @@ main (int argc, char **argv)
 	set_default_settings();
 
 	/* Set reporting values*/
-	debug_level = reportLevel;
+	/*debug_level = reportLevel; */
 	ESSENTIAL( set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
  	report( RPT_NOTICE, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
 
 	/* Startup the server*/
-	ESSENTIAL( init_sockets() );
 	ESSENTIAL( init_drivers() );
+	ESSENTIAL( init_sockets() );
 	ESSENTIAL( init_screens() );
 	ESSENTIAL( drop_privs(user) );
 
@@ -263,11 +237,7 @@ clear_settings ()
 
 	for( i=0; i < num_drivers; i++ ) {
 		free( drivernames[i] );
-		free( driverfilenames[i] );
-		free( driverargs[i] );
 		drivernames[i] = NULL;
-		driverfilenames[i] = NULL;
-		driverargs[i] = NULL;
 	}
 	num_drivers = 0;
 }
@@ -277,7 +247,7 @@ clear_settings ()
 int
 process_command_line (int argc, char **argv)
 {
-	char  c;
+	signed char c;
 
 	/*report( RPT_INFO, "process_command_line()" );*/
 
@@ -290,13 +260,8 @@ process_command_line (int argc, char **argv)
 	 		case 'd':
 				/* Add to a list of drivers to be initialized later...*/
 				if (num_drivers < MAX_DRIVERS) {
-					drivernames[num_drivers]	= malloc( strlen(optarg)+1 );
-					driverfilenames[num_drivers]	= malloc( strlen(optarg)+1 );
-					driverargs[num_drivers]		= malloc(1);
-
+					drivernames[num_drivers] = malloc( strlen(optarg)+1 );
 					strcpy( drivernames[num_drivers], optarg );
-					strcpy( driverfilenames[num_drivers], optarg );
-					strcpy( driverargs[num_drivers], "" );
 					num_drivers ++;
 				} else
 					report( RPT_ERR, "Too many drivers!" );
@@ -374,7 +339,6 @@ process_command_line (int argc, char **argv)
 int
 process_configfile ( char *configfile )
 {
-	int i;
 	char * s;
 	/*char buf[64];*/
 
@@ -382,11 +346,9 @@ process_configfile ( char *configfile )
 
 	/* Read server settings*/
 
-	config_read_file( configfile );
-
-/*	if( debug_level == UNSET_INT )
- *		debug_level = config_get_int( "server", "debug", 0, UNSET_INT );
- */
+	if( config_read_file( configfile ) != 0 ) {
+		report( RPT_WARNING, "Could not read config file: %s", configfile );
+	}
 
 	if( lcd_port == UNSET_INT )
 		lcd_port = config_get_int( "server", "port", 0, UNSET_INT );
@@ -402,8 +364,8 @@ process_configfile ( char *configfile )
 		if( default_duration == 0 )
 			default_duration = UNSET_INT;
 		else if( default_duration * TIME_UNIT < 2e6 ) {
-			report( RPT_ERR, "Waittime should be at least 2 (seconds)" );
-			return -1;
+			report( RPT_WARNING, "Waittime should be at least 2 (seconds). Set to 2 seconds." );
+			default_duration = 2e6 / TIME_UNIT;
 		}
 	}
 
@@ -431,7 +393,7 @@ process_configfile ( char *configfile )
 			backlight = BACKLIGHT_OPEN;
 		}
 		else if( strcmp( s, UNSET_STR ) != 0 ) {
-			report( RPT_ERR, "Backlight state should be on, off or open" );
+			report( RPT_WARNING, "Backlight state should be on, off or open" );
 		}
 	}
 
@@ -455,33 +417,15 @@ process_configfile ( char *configfile )
 		/* read the drivernames*/
 
 		while( 1 ) {
-			s = config_get_string( "server", "driver", num_drivers, "" );
-			if( !s || s[0] == 0 )
+			s = config_get_string( "server", "driver", num_drivers, NULL );
+			if( !s )
 				break;
-
-			drivernames[num_drivers] = malloc(strlen(s)+1);
-			driverfilenames[num_drivers] = malloc(1);
-			driverargs[num_drivers] = malloc(1);
-
-			strcpy( drivernames[num_drivers], s );
-			strcpy( driverfilenames[num_drivers], "" );
-			strcpy( driverargs[num_drivers], "" );
-
-			num_drivers++;
+			if( s[0] != 0 ) {
+				drivernames[num_drivers] = malloc(strlen(s)+1);
+				strcpy( drivernames[num_drivers], s );
+				num_drivers++;
+			}
 		}
-	}
-
-	/* Now read the driver options that the server needs
-	 * Drivers can read their own options later...
-	 */
-	for( i=0; i<num_drivers; i ++ ) {
-		s = config_get_string( drivernames[i], "file", 0, "" );
-		driverfilenames[i] = realloc( driverfilenames[i], strlen(s)+1 );
-		strcpy (driverfilenames[i], s );
-
-		s = config_get_string( drivernames[i], "arguments", 0, "" );
-		driverargs[i] = realloc( driverargs[i], strlen(s)+1 );
-		strcpy (driverargs[i], s );
 	}
 
 	return 0;
@@ -495,9 +439,6 @@ set_default_settings()
 
 	/* Set defaults into unfilled variables....*/
 
-/*	if (debug_level == UNSET_INT)
- *		debug_level = DEFAULT_DEBUG_LEVEL;
- */
 	if (lcd_port == UNSET_INT)
 		lcd_port = DEFAULT_LCD_PORT;
 	if (strcmp( bind_addr, UNSET_STR ) == 0)
@@ -524,13 +465,8 @@ set_default_settings()
 	/* Use default driver*/
 	if( num_drivers == 0 ) {
 		drivernames[0] = malloc(strlen(DEFAULT_DRIVER)+1);
-		driverfilenames[0] = malloc(1);
-		driverargs[0] = malloc(1);
 		strcpy(drivernames[0], DEFAULT_DRIVER);
-		strcpy(driverfilenames[0], "");
-		strcpy(driverargs[0], "");
-
-		num_drivers++;
+		num_drivers = 1;
 	}
 }
 
@@ -596,7 +532,7 @@ init_drivers()
 
 	for (i = 0; i < num_drivers; i++) {
 
-		res = drivers_load_driver (drivernames[i], driverfilenames[i], driverargs[i]);
+		res = drivers_load_driver (drivernames[i]);
 		if (res >= 0) {
 			/* Load went OK */
 
@@ -783,13 +719,15 @@ exit_program (int val)
 	 * things are shut down in shouldn't matter...
 	 */
 
-	strncpy(buf, "Server shutting down on ", sizeof (buf) );
-	switch(val) {
-		case 1: strcat(buf, "SIGHUP"); break;
-		case 2: strcat(buf, "SIGINT"); break;
-		case 15: strcat(buf, "SIGTERM"); break;
-		default: snprintf(buf, sizeof(buf), "Server shutting down on signal %d", val); break;
-			 /* Other values should not be seen, but just in case.. */
+	if( val > 0 ) {
+		strncpy(buf, "Server shutting down on ", sizeof (buf) );
+		switch(val) {
+			case 1: strcat(buf, "SIGHUP"); break;
+			case 2: strcat(buf, "SIGINT"); break;
+			case 15: strcat(buf, "SIGTERM"); break;
+			default: snprintf(buf, sizeof(buf), "Server shutting down on signal %d", val); break;
+				 /* Other values should not be seen, but just in case.. */
+		}
 	}
 
 	report(RPT_NOTICE, buf);	/* report it */
@@ -801,11 +739,11 @@ exit_program (int val)
 		reportLevel = DEFAULT_REPORTLEVEL;
 	set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
 
+	goodbye_screen ();		/* display goodbye screen on LCD display */
+	drivers_unload_all ();		/* release driver memory and file descriptors */
+
 	/* Shutdown things if server start was complete */
 	if( serverStarted ) {
-		goodbye_screen ();		/* display goodbye screen on LCD display */
-		drivers_unload_all ();		/* release driver memory and file descriptors */
-
 		client_shutdown ();		/* shutdown clients (must come first) */
 		screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
 		sock_close_all ();		/* close all open sockets (must come after client_shutdown) */
@@ -844,9 +782,6 @@ HelpScreen ()
 	fprintf (stdout, "\t-u <user>\tUser to run as\n");
 	fprintf (stdout, "\t-s\t\tOutput messages to syslog\n");
 	fprintf (stdout, "\t-r <level>\tReport level (default=2)\n");
-
-	fprintf (stdout, "\nCurrently available drivers:\n");
-	lcd_list_drivers();
 
 	/*fprintf (stdout, "\tHelp on each driver's parameters are obtained upon request:\n\t\t\"LCDd -d driver --help\"\n");*/
 	/*fprintf (stdout, "Example:\n");*/

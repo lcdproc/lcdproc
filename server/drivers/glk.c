@@ -62,7 +62,7 @@ MODULE_EXPORT char *symbol_prefix = "glk_";
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
-int
+MODULE_EXPORT int
 glk_init(Driver *drvthis, char *args)
 {
    char *  argv[64];
@@ -205,34 +205,6 @@ glk_init(Driver *drvthis, char *args)
 
   // Set contrast
   glk_set_contrast( drvthis, contrast );
-
-  // Set variables for server
-  drvthis->api_version = api_version;
-  drvthis->stay_in_foreground = &stay_in_foreground;
-  drvthis->supports_multiple = &supports_multiple;
-
-  // Set the functions the driver supports
-  drvthis->clear = glk_clear;
-  drvthis->string = glk_string;
-  drvthis->chr = glk_chr;
-  drvthis->old_vbar = glk_vbar;
-  drvthis->init_vbar = glk_init_vbar;
-  drvthis->old_hbar = glk_hbar;
-  drvthis->init_hbar = glk_init_hbar;
-  drvthis->num = glk_num ;
-  drvthis->init_num = glk_init_num ;
-
-  drvthis->init = glk_init;
-  drvthis->close = glk_close;
-  drvthis->flush = glk_flush;
-  drvthis->get_contrast = glk_get_contrast;
-  drvthis->set_contrast = glk_set_contrast;
-  drvthis->backlight = glk_backlight;
-  drvthis->output = glk_output;
-  drvthis->set_char = glk_set_char;
-  drvthis->old_icon = glk_icon;
-
-  drvthis->getkey = glk_getkey;
 
   return 0;
 }

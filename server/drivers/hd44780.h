@@ -18,7 +18,7 @@
 
 #include "lcd.h"
 
-              int  HD44780_init (struct lcd_logical_driver *driver, char *args);
+MODULE_EXPORT int  HD44780_init (struct lcd_logical_driver *driver, char *args);
 MODULE_EXPORT void HD44780_close (Driver *drvthis);
 MODULE_EXPORT int  HD44780_width (Driver *drvthis);
 MODULE_EXPORT int  HD44780_height (Driver *drvthis);
@@ -39,8 +39,8 @@ MODULE_EXPORT void HD44780_backlight (Driver *drvthis, int on);
 
 MODULE_EXPORT char * HD44780_get_key (Driver *drvthis);
 
-MODULE_EXPORT void HD44780_init_vbar (Driver *drvthis);
-MODULE_EXPORT void HD44780_init_hbar (Driver *drvthis);
-MODULE_EXPORT void HD44780_init_num (Driver *drvthis);
+static        void HD44780_init_vbar (Driver *drvthis);
+static        void HD44780_init_hbar (Driver *drvthis);
+static        void HD44780_init_num (Driver *drvthis);
 
 #endif

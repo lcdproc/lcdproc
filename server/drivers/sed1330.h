@@ -8,7 +8,7 @@
 
 #include "lcd.h"
 
-              int sed1330_init( Driver * drvthis, char *args );
+MODULE_EXPORT int sed1330_init( Driver * drvthis, char *args );
 MODULE_EXPORT void sed1330_close( Driver * drvthis );
 MODULE_EXPORT int sed1330_width( Driver * drvthis );
 MODULE_EXPORT int sed1330_height( Driver * drvthis );

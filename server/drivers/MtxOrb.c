@@ -1,4 +1,4 @@
-/*  This is the LCDproc driver for Matrix Orbital devices 
+/*  This is the LCDproc driver for Matrix Orbital devices
     (http://www.matrixorbital.com)
 
     For the Matrix Orbital LCD* LKD* VFD* and VKD* displays
@@ -25,7 +25,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
 */
 
 #include <stdlib.h>
@@ -48,9 +48,23 @@
 #include "lcd_lib.h"
 #include "MtxOrb.h"
 
-#include "shared/report.h"
-#include "shared/str.h"
-#include "input.h"
+#include "report.h"
+//#include "shared/str.h"
+//#include "input.h"
+/* Above 3 lines modified by Joris */
+#define INPUT_PAUSE_KEY         'A'
+#define INPUT_BACK_KEY          'B'
+#define INPUT_FORWARD_KEY       'C'
+#define INPUT_MAIN_MENU_KEY     'D'
+#define MTXORB_DEFAULT_PAUSE_KEY         'A'
+#define MTXORB_DEFAULT_BACK_KEY          'B'
+#define MTXORB_DEFAULT_FORWARD_KEY       'C'
+#define MTXORB_DEFAULT_MAIN_MENU_KEY     'D'
+#define DEFAULT_SIZE "20x4"
+#define DEFAULT_BACKLIGHT 1
+#define DEFAULT_TYPE "lcd"
+#define CONFIG_FILE
+/* Above 5 lines added by Joris :( */
 
 #define IS_LCD_DISPLAY	(MtxOrb_type == MTXORB_LCD)
 #define IS_LKD_DISPLAY	(MtxOrb_type == MTXORB_LKD)
@@ -66,9 +80,9 @@
  RESP: Because software emulated hbar/vbar permit simultaneous use.
 */
 
-/* TODO: Find a better way to deal with the bitmap/name of custom char 
+/* TODO: Find a better way to deal with the bitmap/name of custom char
  *       Here the value link to the enum and the definition at the end.
- */ 
+ */
 #define START_FONT 30
 #define WHITE 254
 #define BLACK 255
@@ -182,7 +196,7 @@ static void MtxOrb_cursorblink (Driver *drvthis, int on);
 
 
 static int
-MtxOrb_parse_type (char * str) {
+MtxOrb_parse_type (Driver *drvthis, char * str) {
 	char c;
 	c = str[0];
 
@@ -209,7 +223,7 @@ MtxOrb_parse_type (char * str) {
 }
 
 static int
-MtxOrb_parse_speed (char *arg) {
+MtxOrb_parse_speed (Driver *drvthis, char *arg) {
 	int speed;
 
 	switch (atoi(arg)) {
@@ -245,7 +259,7 @@ MtxOrb_usage (void) {
 }
 
 int
-MtxOrb_parse_contrast (char * str) {
+MtxOrb_parse_contrast (Driver *drvthis, char * str) {
 	int contrast;
 
 	contrast = atoi (str);
@@ -259,13 +273,13 @@ MtxOrb_parse_contrast (char * str) {
 
 #ifdef CONFIG_FILE
 /* Parse one key from the configfile */
-static char MtxOrb_parse_keypad_setting (char * sectionname, char * keyname, char default_value)
+static char MtxOrb_parse_keypad_setting (Driver *drvthis, char * keyname, char default_value)
 {
 	char return_val = 0;
 	char * s;
 	char buf [255];
 
-	s = config_get_string ( sectionname, keyname, 0, NULL);
+	s = drvthis->config_get_string ( drvthis->name, keyname, 0, NULL);
 	if (s != NULL){
 		strncpy (buf, s, sizeof(buf));
 		buf[sizeof(buf)-1]=0;
@@ -283,7 +297,7 @@ static char MtxOrb_parse_keypad_setting (char * sectionname, char * keyname, cha
  *
  * Called to initialize driver settings
  */
-int
+MODULE_EXPORT int
 MtxOrb_init (Driver *drvthis, char *args)
 {
 #ifdef CONFIG_FILE
@@ -300,23 +314,18 @@ MtxOrb_init (Driver *drvthis, char *args)
 
 	MtxOrb_type = MTXORB_LKD;  // Assume it's an LCD w/keypad
 
-	MtxOrb = driver;
-
-	debug( RPT_INFO, "MtxOrb: init(%p,%s)", driver, args );
-
-	/* TODO: replace DriverName with driver->name when that field exists. */
-	#define DriverName "MtxOrb"
+	debug( RPT_INFO, "MtxOrb: init(%p,%s)", drvthis, args );
 
 
 	/* READ CONFIG FILE */
 
 	/* Get serial device to use */
-	strncpy(device, config_get_string ( DriverName , "device" , 0 , DEFAULT_DEVICE),sizeof(device));
+	strncpy(device, drvthis->config_get_string ( drvthis->name , "device" , 0 , DEFAULT_DEVICE),sizeof(device));
 	device[sizeof(device)-1]=0;
 	report (RPT_INFO,"MtxOrb: Using device: %s", device);
 
 	/* Get display size */
-	strncpy(size, config_get_string ( DriverName , "size" , 0 , DEFAULT_SIZE),sizeof(size));
+	strncpy(size, drvthis->config_get_string ( drvthis->name , "size" , 0 , DEFAULT_SIZE),sizeof(size));
 	size[sizeof(size)-1]=0;
 	if( sscanf(size , "%dx%d", &w, &h ) != 2
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
@@ -324,18 +333,18 @@ MtxOrb_init (Driver *drvthis, char *args)
 		report (RPT_WARNING, "MtxOrb: Cannot read size: %s. Using default value %s.", size, DEFAULT_SIZE);
 		sscanf( DEFAULT_SIZE , "%dx%d", &w, &h );
 	}
-	driver->wid = w;
-	driver->hgt = h;
+	width = w;
+	height = h;
 
 	/* Get contrast */
-	if (0<=config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) && config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
-		contrast = config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST);
+	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
+		contrast = drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST);
 	} else {
 		report (RPT_WARNING, "MtxOrb: Contrast must be between 0 and 255. Using default value.");
 	}
 
 	/* Get speed */
-	tmp = config_get_int ( DriverName , "Speed" , 0 , DEFAULT_SPEED);
+	tmp = drvthis->config_get_int ( drvthis->name , "Speed" , 0 , DEFAULT_SPEED);
 
 	switch (tmp) {
 		case 1200:
@@ -372,12 +381,12 @@ MtxOrb_init (Driver *drvthis, char *args)
 
 
 	/* Get backlight setting*/
-	if(config_get_bool( DriverName , "enablebacklight" , 0 , DEFAULT_BACKLIGHT)) {
+	if(drvthis->config_get_bool( drvthis->name , "enablebacklight" , 0 , DEFAULT_BACKLIGHT)) {
 		backlightenabled = 1;
 	}
 
 	/* Get display type */
-	strncpy(buf, config_get_string ( DriverName , "type" , 0 , DEFAULT_TYPE),sizeof(size));
+	strncpy(buf, drvthis->config_get_string ( drvthis->name , "type" , 0 , DEFAULT_TYPE),sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 
 	if (strncasecmp(buf, "lcd", 3) == 0) {
@@ -396,7 +405,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 	/* Get keypad settings*/
 
 	/* keypad test mode? */
-	if (config_get_bool( DriverName , "keypad_test_mode" , 0 , 0)) {
+	if (drvthis->config_get_bool( drvthis->name , "keypad_test_mode" , 0 , 0)) {
 		report (RPT_INFO, "MtxOrb: Entering keypad test mode...\n");
 		keypad_test_mode = 1;
 	}
@@ -406,19 +415,19 @@ MtxOrb_init (Driver *drvthis, char *args)
 		 * So there's no need to get them from the configfile in keypad test mode.
 		 */
 		/* pause_key */
-		pause_key = MtxOrb_parse_keypad_setting (DriverName, "pause_key", MTXORB_DEFAULT_PAUSE_KEY);
+		pause_key = MtxOrb_parse_keypad_setting (drvthis, "pause_key", MTXORB_DEFAULT_PAUSE_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as pause_key.", pause_key);
 
 		/* back_key */
-		back_key = MtxOrb_parse_keypad_setting (DriverName, "back_key", MTXORB_DEFAULT_BACK_KEY);
+		back_key = MtxOrb_parse_keypad_setting (drvthis, "back_key", MTXORB_DEFAULT_BACK_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as back_key", back_key);
 
 		/* forward_key */
-		forward_key = MtxOrb_parse_keypad_setting (DriverName, "forward_key", MTXORB_DEFAULT_FORWARD_KEY);
+		forward_key = MtxOrb_parse_keypad_setting (drvthis, "forward_key", MTXORB_DEFAULT_FORWARD_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as forward_key", forward_key);
 
 		/* main_menu_key */
-		main_menu_key = MtxOrb_parse_keypad_setting (DriverName, "main_menu_key", MTXORB_DEFAULT_MAIN_MENU_KEY);
+		main_menu_key = MtxOrb_parse_keypad_setting (drvthis, "main_menu_key", MTXORB_DEFAULT_MAIN_MENU_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as main_menu_key", main_menu_key);
 	}
 
@@ -472,14 +481,14 @@ MtxOrb_init (Driver *drvthis, char *args)
 						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
 						return -1;
 					}
-					contrast = MtxOrb_parse_contrast (argv[++i]);
+					contrast = MtxOrb_parse_contrast (drvthis, argv[++i]);
 					break;
 				case 's':
 					if (i + 1 > argc) {
 						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
 						return -1;
 					}
-					speed = MtxOrb_parse_speed (argv[++i]);
+					speed = MtxOrb_parse_speed (drvthis, argv[++i]);
 					break;
 				case 'h':
 					MtxOrb_usage();
@@ -518,7 +527,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 						return -1;
 					}
 					i++;
-					MtxOrb_type = MtxOrb_parse_type(argv[i]);
+					MtxOrb_type = MtxOrb_parse_type(drvthis, argv[i]);
 					break;
 				default:
 					printf ("Invalid parameter: %s\n", argv[i]);
@@ -583,48 +592,6 @@ MtxOrb_init (Driver *drvthis, char *args)
 	MtxOrb_autoscroll (drvthis, DEFAULT_AUTOSCROLL);
 	MtxOrb_cursorblink (drvthis, DEFAULT_CURSORBLINK);
 	MtxOrb_set_contrast (drvthis, contrast);
-
-	/*
-	 * Configure the display functions
-	 */
-
-	/* Set variables for server */
-	drvthis->api_version = api_version;
-	drvthis->stay_in_foreground = &stay_in_foreground;
-	drvthis->supports_multiple = &supports_multiple;
-
-	/* Set the functions the driver supports */
-	drvthis->clear = MtxOrb_clear;
-	drvthis->string = MtxOrb_string;
-	drvthis->chr = MtxOrb_chr;
-	drvthis->num = MtxOrb_num;
-
-/* Old stuff that are going to be removed */
-	drvthis->old_vbar = MtxOrb_old_vbar;
-	drvthis->init_vbar = MtxOrb_init_old_vbar;	/* EMPTY NOW */
-	drvthis->old_hbar = MtxOrb_old_hbar;
-	drvthis->init_hbar = MtxOrb_init_old_hbar;	/* EMPTY NOW */
-	drvthis->old_icon = MtxOrb_old_icon;		
-	drvthis->init_num = MtxOrb_init_old_num;	/* EMPTY NOW */
-/* Old stuff that are going to be removed */
-
-	drvthis->init = MtxOrb_init;
-	drvthis->close = MtxOrb_close;
-	drvthis->width = MtxOrb_width;
-	drvthis->height = MtxOrb_height;
-	drvthis->flush = MtxOrb_flush;
-	drvthis->get_contrast = MtxOrb_get_contrast;
-	drvthis->set_contrast = MtxOrb_set_contrast;
-	drvthis->backlight = MtxOrb_backlight;
-	drvthis->output = MtxOrb_output;
-	drvthis->set_char = MtxOrb_set_char;
-
-/* Looking for the segfault... */
-/*	drvthis->icon = MtxOrb_icon;  */
-
-	drvthis->getkey = MtxOrb_getkey;
-	drvthis->get_info = MtxOrb_get_info;
-	drvthis->heartbeat = MtxOrb_heartbeat;
 
 	return 0;
 }
@@ -788,7 +755,7 @@ MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 	ValidX(x);
 	ValidY(y);
 
-	/* write immediately to screen... this code was taken 
+	/* write immediately to screen... this code was taken
 	 * from the LK202-25; should work for others, yes?
 	 * snprintf(out, sizeof(out), "\x0FEG%c%c%c", x, y, c);
 	 * write (fd, out, 4);
@@ -845,7 +812,7 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 /******************************
  * Sets the backlight on or off -- can be done quickly for
  * an intermediate brightness...
- * 
+ *
  * WARNING: off switches vfd/vkd displays off entirely
  *	    so maybe it is best to start LCDd with -b on
  *
@@ -915,7 +882,7 @@ MtxOrb_output (Driver *drvthis, int on)
 	} else {
 		int i;
 
-		/* Other displays have six output ports; 
+		/* Other displays have six output ports;
 		 * the value "on" is a binary value determining which
 		 * ports are turned on (1) and off (0).
 		 */
@@ -1241,7 +1208,7 @@ MtxOrb_num (Driver *drvthis, int pos, int val)
 /*  printf("pos: %d char: %d val: %d\n", pos, c, val); */
   for (y=0;y<4;y++) {
     for (x=0;x<3;x++) {
-      MtxOrb_icon (drvthis, x+pos, y+1, START_FONT + normal[c][x + (y * 3)]); 
+      MtxOrb_icon (drvthis, x+pos, y+1, START_FONT + normal[c][x + (y * 3)]);
     }
   }
 }
@@ -1285,7 +1252,7 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 		for (col = 0; col < cellwidth; col++) {
 			/* shift to make room for new scan line data */
 			letter <<= 1;
-			/* Now read a single bit of data 
+			/* Now read a single bit of data
 			 * -- one entry in dat[] --
 			 * and add it to the binary data in "letter"
 			 */
@@ -1366,9 +1333,9 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 /* This bypass the search for WHITE and BLACK */
 	if (type==barw) return 32;
 	if (type==barb) return 255;
-	
+
 	/* If the screen was clear then no graphic caracter are in use yet. */
-	if (clear) {					  
+	if (clear) {
   	  for (pos = 0; pos < 8; pos++) use[pos] = 0;
 	  clear = 0;
 	}
@@ -1391,7 +1358,7 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 		pos = last_not_in_use;
 	}
 
-	if (pos != 8) {	
+	if (pos != 8) {
 	/* A caracter is found (Best match could solve our problem).
  	 * REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar| found at %d.\n", pos);
 	 */
@@ -1399,15 +1366,15 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 			MtxOrb_set_known_char (drvthis, pos, type);
 /* fprintf(stderr, "GLU: MtxOrb_ask_bar [Set a char] pos: %d.\n", pos); */
 			/* Define a new graphic caracter. */
-			def[pos] = type;		  
+			def[pos] = type;
 			/* Remember that now the caracter is available. */
 		}
-		if (!use[pos]) {			  
+		if (!use[pos]) {
 			/* If the caracter is no yet in use (but defined). */
-			use[pos] = 1;			  
+			use[pos] = 1;
 			/* Remember it is in use (so protect it from re-use). */
 		}
-	} 
+	}
 	if (pos==8) {
 		/* pos=65;  ("A")? */
 		switch (type) {
