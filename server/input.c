@@ -134,27 +134,27 @@ handle_input ()
 	}
 
 	// if the current screen doesn't want it,
-	// ignore the key...
+	// let the server have it...
 
-//	else {
-//		// Give key to clients who want it
-//
-//		c = FirstClient(clients);
-//
-//		while (c) {
-//			// If the client should have this keypress...
-//			if(KeyWanted(c->data->client_keys,key)) {
-//				// Send keypress to client
-//				snprintf(str, sizeof(str), "key %c\n", key);
-//				sock_send_string(c->sock, str);
-//				break;	// first come, first serve
-//			};
-//			c = NextClient(clients);
-//		} // while clients
-//
-//		// Give server a shot at all keys
-//		server_input (key);
-//	}
+	else {
+		// Give key to clients who want it
+
+		c = FirstClient(clients);
+
+		while (c) {
+			// If the client should have this keypress...
+			if(KeyWanted(c->data->client_keys,key)) {
+				// Send keypress to client
+				snprintf(str, sizeof(str), "key %c\n", key);
+				sock_send_string(c->sock, str);
+				break;	// first come, first serve
+			};
+			c = NextClient(clients);
+		} // while clients
+
+		// Give server a shot at all keys
+		server_input (key);
+	}
 
 	return 0;
 }
