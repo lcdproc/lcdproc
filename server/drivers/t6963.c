@@ -1,5 +1,5 @@
 /*
- * Base driver module for Toshiba T6963 based LCD displays. ver 2.0
+ * Base driver module for Toshiba T6963 based LCD displays. ver 2.1
  *
  * Parts of this file are based on the kernel driver by Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
  *
@@ -138,12 +138,12 @@ t6963_init (Driver *drvthis, char *args)
 
 		// Allocate memory for double buffering
 		debug (RPT_DEBUG, "T6963: Allocating double buffering...");
-	t6963_display_buffer1 = malloc (width * 6);
-	t6963_display_buffer2 = malloc (width * 6);
+	t6963_display_buffer1 = malloc (width * height);
+	t6963_display_buffer2 = malloc (width * height);
 		// Clear front and back buffer
 	if(t6963_display_buffer1 && t6963_display_buffer2) {
-		memset(t6963_display_buffer1, ' ', width * 6);
-		memset(t6963_display_buffer1, ' ', width * 6);
+		memset(t6963_display_buffer1, ' ', width * height);
+		memset(t6963_display_buffer1, ' ', width * height);
 		debug (RPT_DEBUG, "T6963:     done!");
 	} else {
 		report (RPT_ERR, "T6963: No memory for double buffering!");
@@ -151,13 +151,10 @@ t6963_init (Driver *drvthis, char *args)
 		return -1;
 	}	
 
-
+    /* ------------------- I N I T I A L I Z A T I O N ----------------------- */
 		debug (RPT_DEBUG, "T6963: Sending init to display...");
 
-	T6963_CEHI;  // disable chip
-	T6963_RDHI;  // disable reading from LCD
-	T6963_WRHI;  // disable writing to LCD
-	T6963_CDHI;  // command/status mode
+	t6963_low_set_control(1, 1, 1, 1);
 	T6963_DATAOUT; // make 8-bit parallel port an output port
 
 		debug (RPT_DEBUG, "T6963:  set graphic/text home adress and area");
@@ -180,7 +177,7 @@ t6963_init (Driver *drvthis, char *args)
 	t6963_low_disable_mode (BLINK_ON);
 
 	t6963_clear (drvthis);
-	t6963_graphic_clear (drvthis, 0, 0, width, cellheight * 6);
+	t6963_graphic_clear (drvthis, 0, 0, width, cellheight * height);
 	t6963_flush(drvthis);
 	
 		debug (RPT_DEBUG, "T6963: Initialization done!");
@@ -195,10 +192,11 @@ t6963_init (Driver *drvthis, char *args)
 MODULE_EXPORT void
 t6963_close (Driver *drvthis)
 {
-	DEBUG3 ("Shutting down!\n");
+	debug (RPT_INFO, "Shutting down!\n");
 	t6963_low_disable_mode (BLINK_ON);
 
-	ioperm(t6963_out_port, 3, 0);
+	port_deny_full(t6963_out_port);
+
 	if (framebuf != NULL)
 		free (framebuf);
 	if (t6963_display_buffer1 != NULL) free (t6963_display_buffer1);
@@ -266,7 +264,7 @@ t6963_flush (Driver *drvthis)
 	int i;
 	DEBUG4 ("Flushing %i x %i\n", width, height);
 
-	for (i = 0; i < (width * 6); i++)
+	for (i = 0; i < (width * height); i++)
 	{
 		DEBUG4 ("%i%i|", t6963_display_buffer1[i], t6963_display_buffer2[i]);
 		if (t6963_display_buffer1[i] != t6963_display_buffer2[i])
@@ -436,33 +434,70 @@ t6963_heartbeat (Driver *drvthis, int type)
 }
 
 /* ---------------------- internal functions ------------------------------------- */
+void
+t6963_low_set_control(char wr, char ce, char cd, char rd)
+{
+	unsigned char status = port_in(T6963_CONTROL_PORT); /* TODO: support multiple wirings! */
+	if(wr == 1)  /* WR = HI */
+		status &= 0xfe;
+	else if(wr == 0)
+		status |= 0x01;
+	if(ce == 1)  /* CE = HI */
+		status &= 0xfd;
+	else if(ce == 0)
+		status |= 0x02;
+	if(cd == 0)  /* CD = HI */
+		status &= 0xfb;
+	else if(cd == 1)
+		status |= 0x04;
+	if(rd == 1)  /* CE = HI */
+		status &= 0xf7;
+	else if(rd == 0)
+		status |= 0x08;
+	port_out(T6963_CONTROL_PORT, status);	
+		
+}
+
+void
+t6963_low_dsp_ready (void)
+{
+    int i = 0;
+    int input;
+    T6963_DATAIN;
+    do {
+    	i++;
+	t6963_low_set_control(1, 0, 1, -1);
+	t6963_low_set_control(1, 0, 1, 0);
+	input = port_in(T6963_DATA_PORT);
+	t6963_low_set_control(1, 0, 1, -1);
+    } while (i < 50000 && (input & 3)!=3);
+    T6963_DATAOUT;
+}
 
 void
 t6963_low_data (u8 byte)
 {
- //   lcd_wait_until_ready();
+    t6963_low_dsp_ready();
 
-    T6963_CDLO;
-    T6963_WRLO;                       // activate LCD's write mode
+//    port_out(0x80, 0x00);
+
     port_out(T6963_DATA_PORT, byte);     // write value to data port
-    T6963_CELO;                       // pulse enable LOW > 80 ns (hah!)
-    T6963_CEHI;                       // return enable HIGH
-    T6963_WRHI;                       // restore Write mode to inactive
+    t6963_low_set_control(1, 1,  0, 1);
+    t6963_low_set_control(0, 0,  0, 1);
+    t6963_low_set_control(1, 1,  1, 1);
 }
 
 void
 t6963_low_command (u8 byte)
 {
-  //  lcd_wait_until_ready();
-
+    t6963_low_dsp_ready();
+//    port_out(0x80, 0x00);
+    
     port_out(T6963_DATA_PORT, byte);  // present data to LCD on PC's port pins
 
-    T6963_CDHI;                      // control/status mode
-    T6963_RDHI;                      // make sure LCD read mode is off
-    T6963_WRLO;                      // activate LCD write mode
-    T6963_CELO;                      // pulse ChipEnable LOW, > 80 ns, enables LCD I/O
-    T6963_CEHI;                      // disable LCD I/O
-    T6963_WRHI;                      // deactivate write mode
+    t6963_low_set_control(1, 1, 1, 1);
+    t6963_low_set_control(0, 0, 1, 1);
+    t6963_low_set_control(1, 1, 0, 1);
 }
 
 void
