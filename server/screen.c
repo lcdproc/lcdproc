@@ -14,7 +14,7 @@
 #include "main.h"
 
 int  default_priority = 128 ;
-int  default_duration = 64 ;  // About 8 seconds
+int  default_duration = DEFAULT_SCREEN_DURATION ;  // About 8 seconds
 
 screen *
 screen_create ()
@@ -30,7 +30,7 @@ screen_create ()
 	s->id = NULL;
 	s->name = NULL;
 	s->priority = DEFAULT_SCREEN_PRIORITY;
-	s->duration = DEFAULT_SCREEN_DURATION;
+	s->duration = default_duration;
 	s->heartbeat = DEFAULT_HEARTBEAT;
 	s->wid = lcd.wid;
 	s->hgt = lcd.hgt;

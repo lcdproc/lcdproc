@@ -38,6 +38,7 @@
 
 #define MAX_TIMER 0x10000
 #define DEFAULT_USER "nobody"
+#define CONFIG_FILE "/etc/LCDd.conf"
 
 int debug_level = 3;
 char *version = VERSION;
@@ -111,7 +112,7 @@ int
 main (int argc, char **argv)
 {
 	// TODO:  Use a config file!
-	//char cfgfile[256] = "/etc/LCDd.cf";
+	char cfgfile[256] = CONFIG_FILE;
 	int i, err;
 	int daemon_mode = 1;
 	int disable_server_screen = 1;
@@ -119,14 +120,10 @@ main (int argc, char **argv)
 	char *str, *ing;				  // strings for commandline handling
 	char *user = DEFAULT_USER;
 
-	// Ctrl-C will cause a clean exit...
-	signal (SIGINT, exit_program);
-	// and "kill"...
-	signal (SIGTERM, exit_program);
-	// and "kill -HUP" (hangup)...
-	signal (SIGHUP, exit_program);
-	// and just in case, "kill -KILL" (which cannot be trapped; but oh well)
-	signal (SIGKILL, exit_program);
+	signal (SIGINT, exit_program);		// Ctrl-C will cause a clean exit...
+	signal (SIGTERM, exit_program);		// and "kill"...
+	signal (SIGHUP, exit_program);		// and "kill -HUP" (hangup)...
+	signal (SIGKILL, exit_program);		// and just in case, "kill -KILL" (which cannot be trapped; but oh well)
 
 	// If no paramaters given, give the help screen.
 	if (argc == 1)
@@ -174,124 +171,196 @@ main (int argc, char **argv)
 	// Parse the command line now...
 	// TODO:  Move this to a separate function?
 	for (i = 1; i < argc; i++) {
-		if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--driver")) {
-			if (argc <= i + 1)
-				HelpScreen ();
-			str = argv[++i];
-			ing = NULL;
+		if (argv[i][0] == '-') {
 
-			// Check to see if the next parameter is intended for LCDd,
-			// or if it should be passed to the driver...
-			if (argc > i + 1) {
-				int j, skip = 0;
-				for (j = 1; args[j].lg; j++)	// check each option except "help"
-					if (!strcmp (argv[i + 1], args[j].sh) || !strcmp (argv[i + 1], args[j].lg))
-						skip = 1;
+			/*
+			 * -d <driver> [ <driver_opts> ... ]
+			 * --driver <driver> [ <driver_opts> ... ]
+			 * 
+			 * This option does not transfer to a getopt() version;
+			 * will have to change the option format...
+			 */
 
-				if (!skip) {
-					ing = argv[++i];
-				}
-				//else i++;
-			}
-			err = lcd_add_driver (str, ing);
-			if (err <= 0) {
-				printf ("Error loading driver %s.  Continuing anyway...\n", str);
-			}
-			if ((err > 0) && (0 == strcmp (str, "curses")))
-				daemon_mode = 0;
-		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-			HelpScreen ();
-		}
-		// Redundant, but it prevents errors...
-		else if (0 == strcmp (argv[i], "-f") || 0 == strcmp (argv[i], "--foreground")) {
-			daemon_mode = 0;
-		} else if (0 == strcmp (argv[i], "-b") || 0 == strcmp (argv[i], "--backlight")) {
-			if (argc <= i + 1)
-				HelpScreen ();
-			str = argv[++i];
-			if (0 == strcmp (str, "off"))
-				backlight_state = backlight = BACKLIGHT_OFF;
-			else if (0 == strcmp (str, "on"))
-				backlight_state = backlight = BACKLIGHT_ON;
-			else if (0 == strcmp (str, "open"))
-				backlight = BACKLIGHT_OPEN;
-			else
-				HelpScreen ();
-		} else if (0 == strcmp (argv[i], "-t") || 0 == strcmp (argv[i], "--type")) {
-			if (i + 1 > argc)
-				HelpScreen ();
-			else {
-				int wid, hgt;
-
-				i++;
-				sscanf (argv[i], "%ix%i", &wid, &hgt);
-				if (wid > 80 || wid < 16 || hgt > 25 || hgt < 2) {
-					fprintf (stderr, "LCDd: Invalid lcd size \"%s\".  Using 20x4.\n", argv[i]);
-					lcd.wid = 20;
-					lcd.hgt = 4;
-				} else {
-					lcd.wid = wid;
-					lcd.hgt = hgt;
-				}
-
-			}
-		} else if (0 == strcmp (argv[i], "-i") || 0 == strcmp (argv[i], "--serverinfo")) {
-			if (i + 1 > argc)
-				HelpScreen ();
-			else {
-				i++;
-				if (0 == strcmp (argv[i], "off"))
-					disable_server_screen = 1;
-				if (0 == strcmp (argv[i], "on"))
-					disable_server_screen = 0;
-			}
-		} else if (0 == strcmp (argv[i], "-w") || 0 == strcmp (argv[i], "--waittime")) {
-			if (i + 1 > argc)
-				HelpScreen ();
-			else {
-				int  tmp ;
-				i++;
-				tmp = atoi( argv[i] );
-				if ( tmp < 16 || tmp > 10000 ) {
-					printf ("Wait time should be between 16 and 10000 (1/8ths of second), not %s\n", argv[i]);
+			if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--driver")) {
+				if (argc <= i + 1)
 					HelpScreen ();
-				} else {
-					default_duration = tmp ;
-				};
+				str = argv[++i];
+				ing = NULL;
+
+				// Check to see if the next parameter is intended for LCDd,
+				// or if it should be passed to the driver...
+				if (argc > i + 1) {
+					int j, skip = 0;
+					for (j = 1; args[j].lg; j++)	// check each option except "help"
+						if (!strcmp (argv[i + 1], args[j].sh) || !strcmp (argv[i + 1], args[j].lg))
+							skip = 1;
+
+					if (!skip) {
+						ing = argv[++i];
+					}
+					//else i++;
+				}
+				err = lcd_add_driver (str, ing);
+				if (err <= 0) {
+					printf ("Error loading driver %s.  Continuing anyway...\n", str);
+				}
+				if ((err > 0) && (0 == strcmp (str, "curses")))
+					daemon_mode = 0;
+
+			/*
+			 * -h
+			 * --help
+			 *
+			 * Help function
+			 */
+
+			} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
+				HelpScreen ();
+			}
+
+			/*
+			 * -f
+			 * --foreground
+			 *
+			 * Keep program in foreground; use for debugging, such
+			 * as with gdb
+			 */
+
+			// Redundant, but it prevents errors...
+			else if (0 == strcmp (argv[i], "-f") || 0 == strcmp (argv[i], "--foreground")) {
+				daemon_mode = 0;
+
+			/*
+			 * -b [ "on" | "off" | "open" ]
+			 * --backlight [ "on" | "off" | "open" ]
+			 *
+			 * This should be a driver option, likely within the config file.
+			 * What IS "open" anyway?
+			 */
+
+			} else if (0 == strcmp (argv[i], "-b") || 0 == strcmp (argv[i], "--backlight")) {
+				if (argc <= i + 1)
+					HelpScreen ();
+				str = argv[++i];
+				if (0 == strcmp (str, "off"))
+					backlight_state = backlight = BACKLIGHT_OFF;
+				else if (0 == strcmp (str, "on"))
+					backlight_state = backlight = BACKLIGHT_ON;
+				else if (0 == strcmp (str, "open"))
+					backlight = BACKLIGHT_OPEN;
+				else
+					HelpScreen ();
+
+			/*
+			 * -t
+			 * --type
+			 *
+			 * Type of LCD; this *DEFINITELY* should only be
+			 * a driver option.
+			 */
+
+			} else if (0 == strcmp (argv[i], "-t") || 0 == strcmp (argv[i], "--type")) {
+				if (i + 1 > argc)
+					HelpScreen ();
+				else {
+					int wid, hgt;
+
+					i++;
+					sscanf (argv[i], "%ix%i", &wid, &hgt);
+					if (wid > 80 || wid < 16 || hgt > 25 || hgt < 2) {
+						fprintf (stderr, "LCDd: Invalid lcd size \"%s\".  Using 20x4.\n", argv[i]);
+						lcd.wid = 20;
+						lcd.hgt = 4;
+					} else {
+						lcd.wid = wid;
+						lcd.hgt = hgt;
+					}
+
+				}
+
+			/*
+			 * -i
+			 * --serverinfo
+			 *
+			 * Display server information during normal screen
+			 * updates when windows are active; server information
+			 * is always shown if there are no windows active.
+			 */
+
+			} else if (0 == strcmp (argv[i], "-i") || 0 == strcmp (argv[i], "--serverinfo")) {
+				if (i + 1 > argc)
+					HelpScreen ();
+				else {
+					i++;
+					if (0 == strcmp (argv[i], "off"))
+						disable_server_screen = 1;
+					if (0 == strcmp (argv[i], "on"))
+						disable_server_screen = 0;
+				}
+
+			/*
+			 * -w <1/8 secs>
+			 * --waittime <1/8 secs>
+			 *
+			 * Sets the default duration that a screen
+			 * is present.
+			 */
+
+			} else if (0 == strcmp (argv[i], "-w") || 0 == strcmp (argv[i], "--waittime")) {
+				if (i + 1 > argc)
+					HelpScreen ();
+				else {
+					int  tmp ;
+					i++;
+					tmp = atoi( argv[i] );
+					if ( tmp < 16 || tmp > 10000 ) {
+						printf ("Wait time should be between 16 and 10000 (1/8ths of second), not %s\n", argv[i]);
+						HelpScreen ();
+					} else {
+						default_duration = tmp ;
+					};
+				}
+			} else {
+
+			/*
+			 * End of valid options
+			 */
+
+				printf ("Invalid parameter: %s\n", argv[i]);
+				HelpScreen ();
 			}
 		} else {
-			// otherwise...  Get help!
-			printf ("Invalid parameter: %s\n", argv[i]);
+			printf("non-option: %s", argv[i]);
 			HelpScreen ();
 		}
 	}
 
 	// switch to a different user for the real work...
-	if (lcd_port >= 1024)
+	if (lcd_port >= 1024)	// unpriviledged port
 		drop_privs(user);
 
 	if (sock_create_server (&bind_addr, lcd_port) <= 0) {
-		printf ("Error opening socket.\n");
+		syslog(LOG_ERR, "error opening socket");
 		return 1;
 	}
 
-	if (lcd_port > 1024)
+	if (lcd_port < 1024)	// priviledged port
 		drop_privs(user);
 
 	// Now init a bunch of required stuff...
 
 	if (client_init () < 0) {
-		printf ("Error initializing client list\n");
+		syslog(LOG_ERR, "error initializing client list");
 		return 1;
 	}
 
 	if (screenlist_init () < 0) {
-		printf ("Error initializing screen list\n");
+		syslog(LOG_ERR, "error initializing screen list");
 		return 1;
 	}
 	// Make sure the server screen shows up every once in a while..
 	if (server_screen_init () < 0) {
-		printf ("Error initializing server screens\n");
+		syslog(LOG_ERR, "error initializing server screens");
 		return 1;
 	} else if (disable_server_screen) {
 		server_screen->priority = 256;
@@ -368,22 +437,16 @@ exit_program (int val)
 			 // Other values should not be seen, but just in case..
 	}
 
-	// Make note in the logs...
-	syslog(LOG_NOTICE, buf);
-	// Say goodbye!
-	goodbye_screen ();
-	// Can go anywhere...
-	lcd_shutdown ();
+	syslog(LOG_NOTICE, buf);	// send message to syslog
+	goodbye_screen ();		// display goodbye screen on LCD display
+	lcd_shutdown ();		// release driver memory and file descriptors
 
-	// Must come before screenlist_shutdown
-	client_shutdown ();
-	// Must come after client_shutdown
-	screenlist_shutdown ();
-	// Should come after client_shutdown
-	sock_close_all ();
+	client_shutdown ();		// shutdown clients (must come first)
+
+	screenlist_shutdown ();		// shutdown screens (must come after client_shutdown)
+	sock_close_all ();		// close all open sockets (must come after client_shutdown)
 
 	exit (0);
-
 }
 
 void
