@@ -25,7 +25,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <ctype.h>
-#include <dlfcn.h>
 #include <errno.h>
 
 #include "shared/report.h"
