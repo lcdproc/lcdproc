@@ -44,48 +44,100 @@ int ELLIPSIS = 7;
 static char icon_char = '@';
 static WINDOW *lcd_win;
 
+chtype get_color (char *colorstr) {
+	if (strcasecmp(colorstr, "red") == 0)
+		return COLOR_RED;
+	else if (strcasecmp(colorstr, "black") == 0)
+		return COLOR_BLACK;
+	else if (strcasecmp(colorstr, "green") == 0)
+		return COLOR_GREEN;
+	else if (strcasecmp(colorstr, "yellow") == 0)
+		return COLOR_YELLOW;
+	else if (strcasecmp(colorstr, "blue") == 0)
+		return COLOR_BLUE;
+	else if (strcasecmp(colorstr, "magenta") == 0)
+		return COLOR_MAGENTA;
+	else if (strcasecmp(colorstr, "cyan") == 0)
+		return COLOR_CYAN;
+	else if (strcasecmp(colorstr, "white") == 0)
+		return COLOR_WHITE;
+	else
+		return -1;
+}
+
+/*
+ * A few different nice pairs of colors to use...
+ *
+ */
+
+#define DEFAULT_FOREGROUND_COLOR COLOR_CYAN
+#define DEFAULT_BACKGROUND_COLOR COLOR_BLUE
+
+// #define DEFAULT_FOREGROUND_COLOR COLOR_WHITE
+// #define DEFAULT_BACKGROUND_COLOR COLOR_BLUE
+
+// #define DEFAULT_FOREGROUND_COLOR COLOR_WHITE
+// #define DEFAULT_BACKGROUND_COLOR COLOR_RED
+
+set_foreground_color (char * buf) {
+	if ((fore_color = get_color(buf)) < 0)
+		fore_color = DEFAULT_FOREGROUND_COLOR;
+}
+
+set_background_color (char * buf) {
+	if ((back_color = get_color(buf)) < 0)
+		back_color = DEFAULT_BACKGROUND_COLOR;
+}
+
+/*
+ * What position (X,Y) to start the left top corner at...
+ *
+ */
+
+#define TOP_LEFT_X 7
+#define TOP_LEFT_Y 7
+
 int
 curses_drv_init (struct lcd_logical_driver *driver, char *args)
 {
 	char *argv[64];
 	int argc;
 	int i;
+	char buf[64];
 
 	// Colors....
-	//chtype back_color = COLOR_BLUE, fore_color = COLOR_WHITE;
-	//chtype back_color = COLOR_RED, fore_color = COLOR_WHITE;
-	chtype back_color = COLOR_CYAN, fore_color = COLOR_BLUE;
+	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
+		fore_color = DEFAULT_FOREGROUND_COLOR;
 
 	// Screen position (top left)
-	int screen_begx = 5, screen_begy = 5;
+	int	screen_begx = TOP_LEFT_X,
+		screen_begy = TOP_LEFT_Y;
 
+	memset(&argv, '\0', sizeof(argv));
 	argc = get_args (argv, args, 64);
 
 	for (i = 0; i < argc; i++) {
 		if (0 == strcmp (argv[i], "-f") || 0 == strcmp (argv[i], "--forecolor")) {
-			if (i + 1 > argc) {
+			if (i + 1 >= argc) {
 				fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
 				return -1;
 			}
-			// TODO:  color display in curses driver!
-			printf ("Sorry, colors not yet implemented...\n");
-			//strcpy(device, argv[++i]);
+			strncpy(buf, argv[++i], sizeof(buf));
+			set_foreground_color(buf);
 		} else if (0 == strcmp (argv[i], "-b") || 0 == strcmp (argv[i], "--backcolor")) {
-			if (i + 1 > argc) {
+			if (i + 1 >= argc) {
 				fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
 				return -1;
 			}
-			// TODO:  color display in curses driver!
-			printf ("Sorry, colors not yet implemented...\n");
-			//strcpy(device, argv[++i]);
+			strncpy(buf, argv[++i], sizeof(buf));
+			set_background_color(buf);
 		} else if (0 == strcmp (argv[i], "-B") || 0 == strcmp (argv[i], "--backlight")) {
-			if (i + 1 > argc) {
+			if (i + 1 >= argc) {
 				fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
 				return -1;
 			}
-			// TODO:  color display in curses driver!
-			printf ("Sorry, colors not yet implemented...\n");
-			//strcpy(device, argv[++i]);
+			// TODO:  Backlight... backlight? where?
+			printf ("Sorry, backlight not yet implemented...\n");
 		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
 			printf ("LCDproc [n]curses driver\n" "\t-f\t--forecolor\tChange the foreground color\n" "\t-b\t--backcolor\tChange the backlight's \"off\" color\n" "\t-B\t--backlight\tChange the backlight's \"on\" color\n" "\t-h\t--help\t\tShow this help information\n");
 			return -1;
@@ -105,7 +157,10 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	nonl ();
 	intrflush (stdscr, FALSE);
 	keypad (stdscr, TRUE);
-	lcd_win = newwin(curses_drv->hgt + 2, curses_drv->wid + 2, screen_begy, screen_begx);
+	lcd_win = newwin(curses_drv->hgt + 2,
+			 curses_drv->wid + 2,
+			 screen_begy,
+			 screen_begx);
 	curs_set(0);
 
 	if (has_colors()) {
