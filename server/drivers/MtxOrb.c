@@ -56,10 +56,13 @@
 #define INPUT_BACK_KEY          'B'
 #define INPUT_FORWARD_KEY       'C'
 #define INPUT_MAIN_MENU_KEY     'D'
-#define MTXORB_DEFAULT_PAUSE_KEY         'A'
-#define MTXORB_DEFAULT_BACK_KEY          'B'
-#define MTXORB_DEFAULT_FORWARD_KEY       'C'
-#define MTXORB_DEFAULT_MAIN_MENU_KEY     'D'
+#define MTXORB_DEFAULT_Left     'A'
+#define MTXORB_DEFAULT_Right    'B'
+#define MTXORB_DEFAULT_Up       'C'
+#define MTXORB_DEFAULT_Down     'D'
+#define MTXORB_DEFAULT_Enter    'E'
+#define MTXORB_DEFAULT_Escape   'F'
+
 #define DEFAULT_SIZE "20x4"
 #define DEFAULT_BACKLIGHT 1
 #define DEFAULT_TYPE "lcd"
@@ -192,10 +195,12 @@ typedef struct p {
 	int contrast;		/* static data from set/get_contrast */
 	int backlightenabled;
 	MtxOrb_type_type MtxOrb_type;
-	char pause_key;
-	char back_key;
-	char forward_key;
-	char main_menu_key;
+	char left_key;
+	char right_key;
+	char up_key;
+	char down_key;
+	char enter_key;
+	char escape_key;
 	int keypad_test_mode;
         int cellwidth;
 	int cellheight;
@@ -279,10 +284,12 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->backlightenabled = DEFAULT_BACKLIGHT;
 	p->old = NULL;
 	p->MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
-	p->pause_key = MTXORB_DEFAULT_PAUSE_KEY;
-	p->back_key = MTXORB_DEFAULT_BACK_KEY;
-	p->forward_key = MTXORB_DEFAULT_FORWARD_KEY;
-	p->main_menu_key = MTXORB_DEFAULT_MAIN_MENU_KEY;
+	p->left_key = MTXORB_DEFAULT_Left;
+	p->right_key = MTXORB_DEFAULT_Right;
+	p->up_key = MTXORB_DEFAULT_Up;
+	p->down_key = MTXORB_DEFAULT_Down;
+	p->enter_key = MTXORB_DEFAULT_Enter;
+	p->escape_key = MTXORB_DEFAULT_Escape;
 	p->keypad_test_mode = 0;
 	p->cellwidth = LCD_DEFAULT_CELLWIDTH;
 	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
@@ -387,21 +394,32 @@ MtxOrb_init (Driver *drvthis, char *args)
 		/* We don't send any chars to the server in keypad test mode.
 		 * So there's no need to get them from the configfile in keypad test mode.
 		 */
-		/* pause_key */
-		p->pause_key = MtxOrb_parse_keypad_setting (drvthis, "PauseKey", MTXORB_DEFAULT_PAUSE_KEY);
-		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as pause_key.", p->pause_key);
 
-		/* back_key */
-		p->back_key = MtxOrb_parse_keypad_setting (drvthis, "BackKey", MTXORB_DEFAULT_BACK_KEY);
-		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as back_key", p->back_key);
+/* left_key */
+p->left_key = MtxOrb_parse_keypad_setting (drvthis, "LeftKey", MTXORB_DEFAULT_Left);
+report (RPT_DEBUG, "MtxOrb: Using \"%c\" as Leftkey.", p->left_key);
 
-		/* forward_key */
-		p->forward_key = MtxOrb_parse_keypad_setting (drvthis, "ForwardKey", MTXORB_DEFAULT_FORWARD_KEY);
-		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as forward_key", p->forward_key);
+/* right_key */
+p->right_key = MtxOrb_parse_keypad_setting (drvthis, "RightKey", MTXORB_DEFAULT_Right);
+report (RPT_DEBUG, "MtxOrb: Using \"%c\" as RightKey.", p->right_key);
 
-		/* main_menu_key */
-		p->main_menu_key = MtxOrb_parse_keypad_setting (drvthis, "MainMenuKey", MTXORB_DEFAULT_MAIN_MENU_KEY);
-		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as main_menu_key", p->main_menu_key);
+/* up_key */
+p->up_key = MtxOrb_parse_keypad_setting (drvthis, "UpKey", MTXORB_DEFAULT_Up);
+report (RPT_DEBUG, "MtxOrb: Using \"%c\" as UpKey.", p->up_key);
+
+/* down_key */
+p->down_key = MtxOrb_parse_keypad_setting (drvthis, "DownKey", MTXORB_DEFAULT_Down);
+report (RPT_DEBUG, "MtxOrb: Using \"%c\" as DownKey.", p->down_key);
+
+/* right_key */
+p->enter_key = MtxOrb_parse_keypad_setting (drvthis, "EnterKey", MTXORB_DEFAULT_Enter);
+report (RPT_DEBUG, "MtxOrb: Using \"%c\" as EnterKey.", p->enter_key);
+
+/* escape_key */
+p->escape_key = MtxOrb_parse_keypad_setting (drvthis, "EscapeKey", MTXORB_DEFAULT_Escape);
+report (RPT_DEBUG, "MtxOrb: Using \"%c\" as EscapeKey.", p->escape_key);
+
+
 	}
 	/* End of config file parsing*/
 
@@ -1210,35 +1228,30 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 
  /* TODO implement for new API call (get_key) that returns a string */
 
-MODULE_EXPORT char
-MtxOrb_getkey (Driver *drvthis)
+/*
+ * Return one char from the KeyRing
+ */
+MODULE_EXPORT char *
+MtxOrb_get_key (Driver *drvthis)
 {
 	char in = 0;
 
         PrivateData * p = drvthis->private_data;
 
 	read (p->fd, &in, 1);
-	switch (in) {
-		case KEY_LEFT:
-			in = INPUT_BACK_KEY;
-			break;
-		case KEY_RIGHT:
-			in = INPUT_FORWARD_KEY;
-			break;
-		case KEY_DOWN:
-			in = INPUT_MAIN_MENU_KEY;
-			break;
-		case KEY_F1:
-			in = INPUT_PAUSE_KEY;
-			break;
-		/*TODO: add more translations here (if neccessary)*/
-		default:
-			in = 0;
-			break;
-	}
 
-	return in;
+        if (in==p->left_key) { return "Left";
+	} else if (in==p->right_key) { return "Up";
+	} else if (in==p->up_key) { return "Down";
+	} else if (in==p->down_key) { return "Right";
+	} else if (in==p->enter_key) { return "Enter"; 
+	} else if (in==p->escape_key) { return "Escape";
+	} else {
+                        report( RPT_INFO, "MtxOrb Untreated key 0x%2x", in);
+			return NULL;
+        }
 }
+
 
 /*************************************************************************
  * Ask for allocation of a custom caracter to be a well known graphic.
