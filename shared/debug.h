@@ -7,7 +7,7 @@
 
 #else
 
-#define debug /* printf */
+#define debug			/* printf */
 
 #endif
 

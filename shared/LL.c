@@ -11,391 +11,448 @@
 
 //////////////////////////////////////////////////////////////////////
 // Creates a new list...
-LL * LL_new()
+LL *
+LL_new ()
 {
-  LL *list;
-  
-  list = malloc(sizeof(LL));
-  if(!list) return NULL;
-  
-  list->head.data=NULL;
-  list->head.prev=NULL;
-  list->head.next=&list->tail;
-  list->tail.data=NULL;
-  list->tail.prev=&list->head;
-  list->tail.next=NULL;
-  list->current = &list->head;
+   LL *list;
 
-  return list;
+   list = malloc (sizeof (LL));
+   if (!list)
+      return NULL;
+
+   list->head.data = NULL;
+   list->head.prev = NULL;
+   list->head.next = &list->tail;
+   list->tail.data = NULL;
+   list->tail.prev = &list->head;
+   list->tail.next = NULL;
+   list->current = &list->head;
+
+   return list;
 }
 
 //////////////////////////////////////////////////////////////////////
 // TODO: test this function
 // Destroys the entire list
 // Warning!  Does not free the list data! (only the list itself)
-int LL_Destroy(LL *list)
+int
+LL_Destroy (LL * list)
 {
-  LL_node *node, *next;
-  
-  if(!list) return -1;
+   LL_node *node, *next;
 
-  node = &list->head;
-  
-  for(node = node->next;  node  &&  node->next;  node = next)
-  {
-     // Avoid accessing "node" after it's freed..  :)
-     next = node->next;
-     if(LL_node_Destroy(node) < 0) return -1;
-  }
-  
-  free(list);
-  
-  return 0;
+   if (!list)
+      return -1;
+
+   node = &list->head;
+
+   for (node = node->next; node && node->next; node = next) {
+      // Avoid accessing "node" after it's freed..  :)
+      next = node->next;
+      if (LL_node_Destroy (node) < 0)
+	 return -1;
+   }
+
+   free (list);
+
+   return 0;
 }
 
 //////////////////////////////////////////////////////////////////////
 // TODO: test this function
 // Warning!  This does not assert that the node data is free!
-int LL_node_Destroy(LL_node *node)
+int
+LL_node_Destroy (LL_node * node)
 {
-  if(!node) return -1;
+   if (!node)
+      return -1;
 
-  if(LL_node_Unlink(node) < 0) return -1;
+   if (LL_node_Unlink (node) < 0)
+      return -1;
 
-  free(node);
-  
-  return 0;
+   free (node);
+
+   return 0;
 }
 
 //////////////////////////////////////////////////////////////////////
-int LL_node_Unlink(LL_node *node)
+int
+LL_node_Unlink (LL_node * node)
 {
-  LL_node *next, *prev;
+   LL_node *next, *prev;
 
-  if(!node) return -1;
+   if (!node)
+      return -1;
 
-  next = node->next;
-  prev = node->prev;
-  
-  if(next)
-    next->prev = prev;
-  if(prev)
-    prev->next = next;
-  
-  node->next = NULL;
-  node->prev = NULL;
+   next = node->next;
+   prev = node->prev;
 
-  return 0;
+   if (next)
+      next->prev = prev;
+   if (prev)
+      prev->next = next;
+
+   node->next = NULL;
+   node->prev = NULL;
+
+   return 0;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Frees the data in a list node, if not NULL...
-int LL_node_DestroyData(LL_node *node)
+int
+LL_node_DestroyData (LL_node * node)
 {
-  if(!node) return -1;
+   if (!node)
+      return -1;
 
-  if(node->data) free(node->data);
-  else return -1;
-  return 0;
+   if (node->data)
+      free (node->data);
+   else
+      return -1;
+   return 0;
 }
 
 
 //////////////////////////////////////////////////////////////////////
 // Returns to the beginning of the list...
-int LL_Rewind(LL *list)
+int
+LL_Rewind (LL * list)
 {
-  if(!list) return -1;
+   if (!list)
+      return -1;
 /*
   printf("LL_Rewind:  list=%8x\n", list);
   printf("LL_Rewind:  list.head=%8x\n", &list->head);
   printf("LL_Rewind:  list.tail=%8x\n", &list->tail);
 */
-  
-  if(list->head.next != &list->tail)
-    list->current = list->head.next;
-  else
-    list->current = &list->head;
 
-  return 0;
+   if (list->head.next != &list->tail)
+      list->current = list->head.next;
+   else
+      list->current = &list->head;
+
+   return 0;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Goes to the end of the list...
-int LL_End(LL *list)
+int
+LL_End (LL * list)
 {
-  if(!list) return -1;
+   if (!list)
+      return -1;
 
-  if(list->tail.prev != &list->head)
-    list->current = list->tail.prev;
-  else
-    list->current = &list->tail;
+   if (list->tail.prev != &list->head)
+      list->current = list->tail.prev;
+   else
+      list->current = &list->tail;
 
-  return 0;
+   return 0;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Go to the next node
-int LL_Next(LL *list)
+int
+LL_Next (LL * list)
 {
-  if(!list) return -1;
-  if(!list->current) return -1;
-  
-  if(list->current->next != &list->tail)
-  {
-    list->current = list->current->next;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
+   if (!list)
+      return -1;
+   if (!list->current)
+      return -1;
+
+   if (list->current->next != &list->tail) {
+      list->current = list->current->next;
+      return 0;
+   } else {
+      return -1;
+   }
 }
 
 //////////////////////////////////////////////////////////////////////
 // Go to the previous node
-int LL_Prev(LL *list)
+int
+LL_Prev (LL * list)
 {
-  if(!list) return -1;
-  if(!list->current) return -1;
-  
-  if(list->current->prev != &list->head)
-  {
-    list->current = list->current->prev;
-    return 0;
-  }
-  else
-  {
-    return -1;
-  }
+   if (!list)
+      return -1;
+   if (!list->current)
+      return -1;
+
+   if (list->current->prev != &list->head) {
+      list->current = list->current->prev;
+      return 0;
+   } else {
+      return -1;
+   }
 }
 
 
 //////////////////////////////////////////////////////////////////////
 // Data manipulation
-void * LL_Get(LL *list)
+void *
+LL_Get (LL * list)
 {
-  if(!list) return NULL;
-  if(!list->current) return NULL;
-  
-  return list->current->data;
+   if (!list)
+      return NULL;
+   if (!list->current)
+      return NULL;
+
+   return list->current->data;
 }
 
 //////////////////////////////////////////////////////////////////////
-int LL_Put(LL *list, void *data)
+int
+LL_Put (LL * list, void *data)
 {
-  if(!list) return -1;
-  if(!list->current) return -1;
-  
-  list->current->data = data;
+   if (!list)
+      return -1;
+   if (!list->current)
+      return -1;
 
-  return 0;
+   list->current->data = data;
+
+   return 0;
 }
 
 
 //////////////////////////////////////////////////////////////////////
-LL_node * LL_GetNode(LL *list)
+LL_node *
+LL_GetNode (LL * list)
 {
-  if(!list) return NULL;
+   if (!list)
+      return NULL;
 
-  return list->current;
+   return list->current;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Don't use this unless you know what you're doing.
-int LL_PutNode(LL *list, LL_node *node)
+int
+LL_PutNode (LL * list, LL_node * node)
 {
-  if(!list) return -1;
-  if(!node) return -1;
+   if (!list)
+      return -1;
+   if (!node)
+      return -1;
 
-  list->current = node;
-  
-  return 0;
+   list->current = node;
+
+   return 0;
 }
 
 
 //////////////////////////////////////////////////////////////////////
-void * LL_GetFirst(LL *list)	// gets data from first node
+void *
+LL_GetFirst (LL * list)		// gets data from first node
 {
-  if(!list) return NULL;
+   if (!list)
+      return NULL;
 
-  if(0> LL_Rewind(list)) return NULL;
+   if (0 > LL_Rewind (list))
+      return NULL;
 
-  return LL_Get(list);
+   return LL_Get (list);
 }
 
 //////////////////////////////////////////////////////////////////////
 //
-void * LL_GetNext (LL *list)	//            ... next node
+void *
+LL_GetNext (LL * list)		//            ... next node
 {
-  if(!list) return NULL;
+   if (!list)
+      return NULL;
 
-  if(0 > LL_Next(list)) return NULL;
-  
-  return LL_Get(list);
+   if (0 > LL_Next (list))
+      return NULL;
+
+   return LL_Get (list);
 }
 
 //////////////////////////////////////////////////////////////////////
-void * LL_GetPrev (LL *list)	//            ... prev node
+void *
+LL_GetPrev (LL * list)		//            ... prev node
 {
-  if(!list) return NULL;
+   if (!list)
+      return NULL;
 
-  if(0 > LL_Prev(list)) return NULL;
-  
-  return LL_Get(list);
+   if (0 > LL_Prev (list))
+      return NULL;
+
+   return LL_Get (list);
 }
 
 //////////////////////////////////////////////////////////////////////
-void * LL_GetLast (LL *list)	//            ... last node
+void *
+LL_GetLast (LL * list)		//            ... last node
 {
-  if(!list) return NULL;
+   if (!list)
+      return NULL;
 
-  if(0 > LL_End(list)) return NULL;
-  
-  return LL_Get(list);
+   if (0 > LL_End (list))
+      return NULL;
+
+   return LL_Get (list);
 }
 
 //////////////////////////////////////////////////////////////////////
-int LL_AddNode(LL *list, void * add)	// Adds node AFTER current one
+int
+LL_AddNode (LL * list, void *add)	// Adds node AFTER current one
 {
-  LL_node *node;
+   LL_node *node;
 
-  if(!list) return -1;
-  //if(!add) return -1;  // Nevermind..  NULL entries can be good...
-  if(!list->current) return -1;
+   if (!list)
+      return -1;
+   //if(!add) return -1;  // Nevermind..  NULL entries can be good...
+   if (!list->current)
+      return -1;
 
-  //LL_dprint(list);
-  
-  
-  node = malloc(sizeof(LL_node));
-  if(!node) return -1;
-  //printf("Allocated node\n");
+   //LL_dprint(list);
+
+
+   node = malloc (sizeof (LL_node));
+   if (!node)
+      return -1;
+   //printf("Allocated node\n");
 
 /*   printf("Current: prev: %8x\tnode: %8x\tnext: %8x\n", */
 /*   	 (int)list->current->prev, */
 /*   	 (int)list->current, */
 /*   	 (int)list->current->next); */
-  if(list->current == &list->tail)
-  {
-     list->current = list->current->prev;
+   if (list->current == &list->tail) {
+      list->current = list->current->prev;
 /*      printf("Was at end of list...\n"); */
 /*      printf("Current: prev: %8x\tnode: %8x\tnext: %8x\n", */
 /* 	    (int)list->current->prev, */
 /* 	    (int)list->current, */
 /* 	    (int)list->current->next); */
-  }
-  
+   }
 //  printf("Setting node data\n");
-  node->next = list->current->next;
-  node->prev = list->current;
-  node->data = add;
+   node->next = list->current->next;
+   node->prev = list->current;
+   node->data = add;
 //  printf("...done\n");
 /*      printf("NewNode: prev: %8x\tnode: %8x\tnext: %8x\n", */
 /* 	    (int)node->prev, */
 /* 	    (int)node, */
 /* 	    (int)node->next); */
-  
+
 //  printf("Relinking...\n");
-  if(node->next)
-    node->next->prev = node;
+   if (node->next)
+      node->next->prev = node;
 //  printf("...\n");
-  list->current->next = node;
+   list->current->next = node;
 //  printf("...done\n");
-  
-  list->current = node;
+
+   list->current = node;
 
 //  printf("Added node\n");
 //  LL_dprint(list);
-  
-  return 0;
+
+   return 0;
 }
 
 //////////////////////////////////////////////////////////////////////
-int LL_InsertNode(LL *list, void * add)// Adds node BEFORE current one
+int
+LL_InsertNode (LL * list, void *add)	// Adds node BEFORE current one
 {
-  LL_node *node;
+   LL_node *node;
 
-  if(!list) return -1;
-  if(!add) return -1;
-  if(!list->current) return -1;
+   if (!list)
+      return -1;
+   if (!add)
+      return -1;
+   if (!list->current)
+      return -1;
 
-  node = malloc(sizeof(LL_node));
-  if(!node) return -1;
+   node = malloc (sizeof (LL_node));
+   if (!node)
+      return -1;
 
-  if(list->current == &list->head)  list->current = list->current->next;
-  
-  node->next = list->current;
-  node->prev = list->current->prev;
-  node->data = add;
-  
-  if(list->current->prev)
-    list->current->prev->next = node;
-  
-  list->current->prev = node;
+   if (list->current == &list->head)
+      list->current = list->current->next;
 
-  list->current = node;
-  
-  return 0;
+   node->next = list->current;
+   node->prev = list->current->prev;
+   node->data = add;
+
+   if (list->current->prev)
+      list->current->prev->next = node;
+
+   list->current->prev = node;
+
+   list->current = node;
+
+   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////
 // Removes a node from the link
 // ... and advances one node forward
-void * LL_DeleteNode(LL *list)
+void *
+LL_DeleteNode (LL * list)
 {
-  LL_node *next, *prev;
-  void *data;
+   LL_node *next, *prev;
+   void *data;
 
-  if(!list) return NULL;
-  if(!list->current) return NULL;
-  if(list->current == &list->head) return NULL;
-  if(list->current == &list->tail) return NULL;
+   if (!list)
+      return NULL;
+   if (!list->current)
+      return NULL;
+   if (list->current == &list->head)
+      return NULL;
+   if (list->current == &list->tail)
+      return NULL;
 
-  #ifdef DEBUG
-  printf("LL_DeleteNode: Before...\n");
-  LL_dprint(list);
-  #endif
-  
-  
-  next = list->current->next;
-  prev = list->current->prev;
-  data = list->current->data;
+#ifdef DEBUG
+   printf ("LL_DeleteNode: Before...\n");
+   LL_dprint (list);
+#endif
 
-  if(prev)
-    prev->next = next;
-  
-  if(next)
-    next->prev = prev;
 
-  list->current->prev = NULL;
-  list->current->next = NULL;
-  // This should not free things; the user should do it explicitly.
-  //if(list->current->data) free(list->current->data);
-  list->current->data = NULL;
-  
-  free(list->current);
+   next = list->current->next;
+   prev = list->current->prev;
+   data = list->current->data;
 
-  list->current = next;
+   if (prev)
+      prev->next = next;
 
-  #ifdef DEBUG
-  printf("LL_DeleteNode: After...\n");
-  LL_dprint(list);
-  #endif
-  
-  return data;
+   if (next)
+      next->prev = prev;
+
+   list->current->prev = NULL;
+   list->current->next = NULL;
+   // This should not free things; the user should do it explicitly.
+   //if(list->current->data) free(list->current->data);
+   list->current->data = NULL;
+
+   free (list->current);
+
+   list->current = next;
+
+#ifdef DEBUG
+   printf ("LL_DeleteNode: After...\n");
+   LL_dprint (list);
+#endif
+
+   return data;
 }
+
 //////////////////////////////////////////////////////////////////////
 // Removes a specific node...
-void * LL_Remove(LL *list, void * data)
+void *
+LL_Remove (LL * list, void *data)
 {
    void *find;
-   
-   if(!list) return NULL;
 
-   LL_Rewind(list);
+   if (!list)
+      return NULL;
+
+   LL_Rewind (list);
    do {
-      find = LL_Get(list);
-      if(find == data) return LL_DeleteNode(list);
-   } while (LL_Next(list) == 0);
+      find = LL_Get (list);
+      if (find == data)
+	 return LL_DeleteNode (list);
+   } while (LL_Next (list) == 0);
 
    return NULL;
 }
@@ -403,161 +460,155 @@ void * LL_Remove(LL *list, void * data)
 
 //////////////////////////////////////////////////////////////////////
 // Stack operations
-int LL_Push(LL *list, void *add)    // Add node to end of list
+int
+LL_Push (LL * list, void *add)	// Add node to end of list
 {
-  if(!list) return -1;
-  if(!add) return -1;
-  
+   if (!list)
+      return -1;
+   if (!add)
+      return -1;
+
 //  printf("Going to end of list...\n");
-  LL_End(list);
+   LL_End (list);
 
 //  printf("Adding node...\n");
-  return LL_AddNode(list, add);
+   return LL_AddNode (list, add);
 }
 
 //////////////////////////////////////////////////////////////////////
-void * LL_Pop(LL *list)	     // Remove node from end of list
+void *
+LL_Pop (LL * list)		// Remove node from end of list
 {
-  if(!list) return NULL;
-  
-  if(0 > LL_End(list)) return NULL;
-  
-  return LL_DeleteNode(list);
+   if (!list)
+      return NULL;
+
+   if (0 > LL_End (list))
+      return NULL;
+
+   return LL_DeleteNode (list);
 }
 
 //////////////////////////////////////////////////////////////////////
-void * LL_Top(LL *list)	     // Peek at end node
+void *
+LL_Top (LL * list)		// Peek at end node
 {
-  return LL_GetLast(list);
+   return LL_GetLast (list);
 }
 
 //////////////////////////////////////////////////////////////////////
-void * LL_Shift(LL *list)	     // Remove node from start of list
+void *
+LL_Shift (LL * list)		// Remove node from start of list
 {
-  if(!list) return NULL;
+   if (!list)
+      return NULL;
 
-  if(0 > LL_Rewind(list)) return NULL;
-  
-  return LL_DeleteNode(list);
+   if (0 > LL_Rewind (list))
+      return NULL;
+
+   return LL_DeleteNode (list);
 }
 
 //////////////////////////////////////////////////////////////////////
-void * LL_Look(LL *list)            // Peek at first node
+void *
+LL_Look (LL * list)		// Peek at first node
 {
-  return LL_GetFirst(list);
+   return LL_GetFirst (list);
 }
 
 //////////////////////////////////////////////////////////////////////
-int LL_Unshift(LL *list, void *add) // Add node to beginning of list
+int
+LL_Unshift (LL * list, void *add)	// Add node to beginning of list
 {
-  if(!list) return -1;
-  if(!add) return -1;
-  
-  LL_Rewind(list);
+   if (!list)
+      return -1;
+   if (!add)
+      return -1;
 
-  return LL_InsertNode(list, add);
+   LL_Rewind (list);
+
+   return LL_InsertNode (list, add);
 }
 
 //////////////////////////////////////////////////////////////////////
-int LL_Roll(LL *list)  // Make last node first
+int
+LL_Roll (LL * list)		// Make last node first
 {
-  LL_node *node, *next;
-  
-  if(!list) return -1;
-  //if(!list->current) return -1;
+   LL_node *node, *next;
 
-  if(0 > LL_End(list)) return -1;
+   if (!list)
+      return -1;
+   //if(!list->current) return -1;
 
-  // Avoid rolling an empty list, or unlinking the head/tail...
-  if(list->current == &list->head) list->current = list->current->next;
-  if(list->current == &list->tail) list->current = list->current->prev;
-  // List is empty
-  if(list->current == &list->head) return 0;
-  // List has one item
-  if(list->current->prev == &list->head) return 0;
+   if (0 > LL_End (list))
+      return -1;
 
-  node = list->current;
-  
-  LL_node_Unlink(node);
+   // Avoid rolling an empty list, or unlinking the head/tail...
+   if (list->current == &list->head)
+      list->current = list->current->next;
+   if (list->current == &list->tail)
+      list->current = list->current->prev;
+   // List is empty
+   if (list->current == &list->head)
+      return 0;
+   // List has one item
+   if (list->current->prev == &list->head)
+      return 0;
 
-  if(0 > LL_Rewind(list)) return -1;
+   node = list->current;
 
-  next = list->head.next;
+   LL_node_Unlink (node);
 
-  list->head.next = node;
-  next->prev = node;
-  node->prev = &list->head;
-  node->next = next;
-  
-  return 0;
+   if (0 > LL_Rewind (list))
+      return -1;
+
+   next = list->head.next;
+
+   list->head.next = node;
+   next->prev = node;
+   node->prev = &list->head;
+   node->next = next;
+
+   return 0;
 }
 
 //////////////////////////////////////////////////////////////////////
-int LL_UnRoll(LL *list)// Roll the other way...
+int
+LL_UnRoll (LL * list)		// Roll the other way...
 {
-  LL_node *node, *prev;
-  
-  if(!list) return -1;
-  //if(!list->current) return -1;
+   LL_node *node, *prev;
 
-  if(0 > LL_Rewind(list)) return -1;
+   if (!list)
+      return -1;
+   //if(!list->current) return -1;
 
-  // Avoid rolling an empty list, or unlinking the head/tail...
-  if(list->current == &list->tail) list->current = list->current->prev;
-  if(list->current == &list->head) list->current = list->current->next;
-  // List is empty
-  if(list->current == &list->tail) return 0;
-  // List has one item
-  if(list->current->next == &list->tail) return 0;
+   if (0 > LL_Rewind (list))
+      return -1;
 
-  node = list->current;
-  
-  LL_node_Unlink(node);
+   // Avoid rolling an empty list, or unlinking the head/tail...
+   if (list->current == &list->tail)
+      list->current = list->current->prev;
+   if (list->current == &list->head)
+      list->current = list->current->next;
+   // List is empty
+   if (list->current == &list->tail)
+      return 0;
+   // List has one item
+   if (list->current->next == &list->tail)
+      return 0;
 
-  if(0 > LL_End(list)) return -1;
+   node = list->current;
 
-  prev = list->tail.prev;
+   LL_node_Unlink (node);
 
-  list->tail.prev = node;
-  prev->next = node;
-  node->next = &list->tail;
-  node->prev = prev;
-  
-  return 0;
-}
+   if (0 > LL_End (list))
+      return -1;
 
+   prev = list->tail.prev;
 
-
-//////////////////////////////////////////////////////////////////////
-// Add an item to the end of its "priority group"
-// The list is assumed to be sorted already...
-int LL_PriorityEnqueue(LL *list, void *add, int compare(void *, void *))
-{
-   void *data;
-   int i;
-   
-   if(!list) return -1;
-   if(!add) return -1;
-   if(!compare) return -1;
-
-   // From the end of the list, keep searching while we're "less than"
-   // the given nodes...
-   LL_End(list);
-   do {
-      data = LL_Get(list);
-      if(data)
-      {
-	 i = compare(add, data);
-	 if(i >= 0) // If we're in the right place, add it and exit
-	 {
-	    LL_AddNode(list, add);
-	    return 0;
-	 }
-      }
-   } while(LL_Prev(list) == 0);
-
-   // If we're less than *everything*, put it at the beginning
-   LL_Unshift(list, add);
+   list->tail.prev = node;
+   prev->next = node;
+   node->next = &list->tail;
+   node->prev = prev;
 
    return 0;
 }
@@ -565,60 +616,112 @@ int LL_PriorityEnqueue(LL *list, void *add, int compare(void *, void *))
 
 
 //////////////////////////////////////////////////////////////////////
-int LL_SwapNodes(LL_node *one, LL_node *two)   // Switch two nodes positions...
+// Add an item to the end of its "priority group"
+// The list is assumed to be sorted already...
+int
+LL_PriorityEnqueue (LL * list, void *add, int compare (void *, void *))
 {
-  LL_node *firstprev, *firstnext;
-  LL_node *secondprev, *secondnext;
+   void *data;
+   int i;
 
-  if(!one  ||  !two) return -1;
-  if(one == two) return 0;    // Do nothing
+   if (!list)
+      return -1;
+   if (!add)
+      return -1;
+   if (!compare)
+      return -1;
 
-  firstprev  = one->prev;    // Look up the nodes neighbors...
-  firstnext  = one->next;
-  secondprev = two->prev;
-  secondnext = two->next;
+   // From the end of the list, keep searching while we're "less than"
+   // the given nodes...
+   LL_End (list);
+   do {
+      data = LL_Get (list);
+      if (data) {
+	 i = compare (add, data);
+	 if (i >= 0)		// If we're in the right place, add it and exit
+	 {
+	    LL_AddNode (list, add);
+	    return 0;
+	 }
+      }
+   } while (LL_Prev (list) == 0);
 
-  if(firstprev  != NULL)  firstprev->next  = two;  // Swap the neighboring
-  if(firstnext  != NULL)  firstnext->prev  = two;  // nodes pointers...
-  if(secondprev != NULL)  secondprev->next = one;
-  if(secondprev != NULL)  secondnext->prev = one;
+   // If we're less than *everything*, put it at the beginning
+   LL_Unshift (list, add);
 
-  one->next = secondnext;      // Swap the nodes pointers
-  one->prev = secondprev;
-  two->next = firstnext;
-  two->prev = firstprev;
-
-  if(firstnext  == two)  one->prev = two;  // Fix things in case
-  if(firstprev  == two)  one->next = two;  // they were next to
-  if(secondprev == one)  two->next = one;  // each other...
-  if(secondnext == one)  two->prev = one;
-  
-  
-  return 0;
-  
-}
-//////////////////////////////////////////////////////////////////////
-int LL_nSwapNodes(int one, int two)   // Switch two nodes positions...
-{
-  return -1;
+   return 0;
 }
 
+
+
 //////////////////////////////////////////////////////////////////////
-int LL_Length(LL *list)	// Returns # of nodes in entire list
+int
+LL_SwapNodes (LL_node * one, LL_node * two)	// Switch two nodes positions...
 {
-  LL_node *node;
-  int num = 0;
-  
-  if(!list) return -1;
-  
-  node = &list->head;
+   LL_node *firstprev, *firstnext;
+   LL_node *secondprev, *secondnext;
 
-  for(num = -1;  
-      node != &list->tail;  
-      num++)
-    node = node->next;
+   if (!one || !two)
+      return -1;
+   if (one == two)
+      return 0;			// Do nothing
 
-  return num;
+   firstprev = one->prev;	// Look up the nodes neighbors...
+   firstnext = one->next;
+   secondprev = two->prev;
+   secondnext = two->next;
+
+   if (firstprev != NULL)
+      firstprev->next = two;	// Swap the neighboring
+   if (firstnext != NULL)
+      firstnext->prev = two;	// nodes pointers...
+   if (secondprev != NULL)
+      secondprev->next = one;
+   if (secondprev != NULL)
+      secondnext->prev = one;
+
+   one->next = secondnext;	// Swap the nodes pointers
+   one->prev = secondprev;
+   two->next = firstnext;
+   two->prev = firstprev;
+
+   if (firstnext == two)
+      one->prev = two;		// Fix things in case
+   if (firstprev == two)
+      one->next = two;		// they were next to
+   if (secondprev == one)
+      two->next = one;		// each other...
+   if (secondnext == one)
+      two->prev = one;
+
+
+   return 0;
+
+}
+
+//////////////////////////////////////////////////////////////////////
+int
+LL_nSwapNodes (int one, int two)	// Switch two nodes positions...
+{
+   return -1;
+}
+
+//////////////////////////////////////////////////////////////////////
+int
+LL_Length (LL * list)		// Returns # of nodes in entire list
+{
+   LL_node *node;
+   int num = 0;
+
+   if (!list)
+      return -1;
+
+   node = &list->head;
+
+   for (num = -1; node != &list->tail; num++)
+      node = node->next;
+
+   return num;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -630,99 +733,97 @@ int LL_Length(LL *list)	// Returns # of nodes in entire list
 //
 // Note that this does *not* rewind the list first!  You should do
 // it yourself if you want to start from the beginning!
-void * LL_Find(LL *list, int compare(void *, void *), void *value)
+void *
+LL_Find (LL * list, int compare (void *, void *), void *value)
 {
-  void *data;
+   void *data;
 
-  if(!list) return NULL;
-  if(!compare) return NULL;
-  if(!value) return NULL;
+   if (!list)
+      return NULL;
+   if (!compare)
+      return NULL;
+   if (!value)
+      return NULL;
 
-  do{
-    data = LL_Get(list);
-    if( 0 == compare(data, value) ) return data;
-    
-  } while(LL_Next(list) == 0);
-  
-  return NULL;
+   do {
+      data = LL_Get (list);
+      if (0 == compare (data, value))
+	 return data;
+
+   } while (LL_Next (list) == 0);
+
+   return NULL;
 }
 
 
 //////////////////////////////////////////////////////////////////////
 // Sorts the list, then rewinds it...
 //
-int LL_Sort(LL *list, int compare(void *, void *))
+int
+LL_Sort (LL * list, int compare (void *, void *))
 {
-  int i,j;		// Junk / loop variables
-  int numnodes;		// number of nodes in list
-  LL_node *best, *last;	// best match and last node in the list
-  LL_node *current;
-  
-  
-  if(!list) return -1;
-  if(!compare) return -1;
+   int i, j;			// Junk / loop variables
+   int numnodes;		// number of nodes in list
+   LL_node *best, *last;	// best match and last node in the list
+   LL_node *current;
 
-  numnodes = LL_Length(list);	// get the number of nodes...
-  if(0 > LL_End(list)) return -1;      	// Find the last node.
-  last = LL_GetNode(list);
-  
-  if(numnodes < 2) return 0;
-  
 
-  for(i=numnodes-1; i>0; i--)
-  {
-    LL_Rewind(list);	// get the first node again
-    best = last;			// reset our "best" node
-    
-    for(j=0; j<i; j++)
-    {
-      current = LL_GetNode(list);
-      // If we found a better match...
-      if(compare(current->data, best->data) > 0)
-      {
-        best = current;			// keep track of the "best" match
+   if (!list)
+      return -1;
+   if (!compare)
+      return -1;
+
+   numnodes = LL_Length (list);	// get the number of nodes...
+   if (0 > LL_End (list))
+      return -1;		// Find the last node.
+   last = LL_GetNode (list);
+
+   if (numnodes < 2)
+      return 0;
+
+
+   for (i = numnodes - 1; i > 0; i--) {
+      LL_Rewind (list);		// get the first node again
+      best = last;		// reset our "best" node
+
+      for (j = 0; j < i; j++) {
+	 current = LL_GetNode (list);
+	 // If we found a better match...
+	 if (compare (current->data, best->data) > 0) {
+	    best = current;	// keep track of the "best" match
+	 }
+	 LL_Next (list);	// Go to the next node.
       }
-      LL_Next(list);	// Go to the next node.
-    }
 
-    LL_SwapNodes(last, best);		// Switch two nodes...
-    if(best) last = best->prev;
-    else return -1;
-    
-    //last = LL_FindPrev(best);		// And go backwards by one node.
-  }
-  
-  //return LLFindFirst(current);	// return pointer to the first node.
-  LL_Rewind(list);
-  
-  return 0;
-  
+      LL_SwapNodes (last, best);	// Switch two nodes...
+      if (best)
+	 last = best->prev;
+      else
+	 return -1;
+
+      //last = LL_FindPrev(best);         // And go backwards by one node.
+   }
+
+   //return LLFindFirst(current);        // return pointer to the first node.
+   LL_Rewind (list);
+
+   return 0;
+
 }
 
-void LL_dprint(LL *list)
+void
+LL_dprint (LL * list)
 {
    LL_node *current;
 
    current = &list->head;
 
-   printf("Head:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n",
-	  (int)list->head.prev,
-	  (int)&list->head,
-	  (int)list->head.next);
+   printf ("Head:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n", (int) list->head.prev, (int) &list->head, (int) list->head.next);
 
-   for(current = current->next;
-       current != &list->tail;
-       current = current->next)
-   {
-      printf("node:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n",
-	     (int)current->prev,
-	     (int)current,
-	     (int)current->next);
-      
+   for (current = current->next; current != &list->tail; current = current->next) {
+      printf ("node:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n", (int) current->prev, (int) current, (int) current->next);
+
    }
 
-   printf("Tail:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n",
-	  (int)list->tail.prev,
-	  (int)&list->tail,
-	  (int)list->tail.next);
+   printf ("Tail:  prev:\t0x%8x\taddr:\t0x%8x\tnext:\t0x%8x\n", (int) list->tail.prev, (int) &list->tail, (int) list->tail.next);
 }
