@@ -177,6 +177,7 @@ draw_frame (LL * list, char fscroll, int left, int top, int right, int bottom, i
 		case WID_STRING:
 			if ((w->x > 0) && (w->y > 0) && (w->text)) {
 				if ((w->y <= hgt + fy) && (w->y > fy)) {
+					if (w->x > wid) { w->x=wid; };
 					strncpy (str, w->text, wid - w->x + 1);
 					str[wid - w->x + 1] = 0;
 					lcd.string (w->x + left, w->y + top - fy, str);
