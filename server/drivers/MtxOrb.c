@@ -460,7 +460,8 @@ MtxOrb_init (Driver *drvthis, char *args)
 	drvthis->output = MtxOrb_output;
 	drvthis->set_char = MtxOrb_set_char;
 
-	drvthis->icon = MtxOrb_icon; 
+/* Looking for the segfault... */
+/*	drvthis->icon = MtxOrb_icon;  */
 
 	drvthis->getkey = MtxOrb_getkey;
 	drvthis->get_info = MtxOrb_get_info;
@@ -987,11 +988,11 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 	if (len > 0) {
 		for (y = height; y > 0 && len > 0; y--) {
 			if (len >= cellheight)
-				MtxOrb_icon (drvthis, x, y, barb);
-/* MtxOrb_chr (drvthis, x, y, 255 ); */
+//				MtxOrb_icon (drvthis, x, y, barb);
+MtxOrb_chr (drvthis, x, y, 255 ); 
 			else
-				MtxOrb_icon (drvthis, x, y, mapu[len]);
-/* MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapu[len])); */
+//				MtxOrb_icon (drvthis, x, y, mapu[len]);
+MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapu[len])); 
 
 			len -= cellheight;
 		}
@@ -1031,11 +1032,11 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 	if (len > 0) {
 		for (; x <= width && len > 0; x++) {
 			if (len >= cellwidth)
-				MtxOrb_icon (drvthis, x, y, barb);
-/* MtxOrb_chr (drvthis, x, y, 255 ); */
+//				MtxOrb_icon (drvthis, x, y, barb);
+MtxOrb_chr (drvthis, x, y, 255 ); 
 			else
-				MtxOrb_icon (drvthis, x, y, mapr[len]);
-/* MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapr[len])); */
+//				MtxOrb_icon (drvthis, x, y, mapr[len]);
+MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapr[len])); 
 
 			len -= cellwidth;
 
@@ -1044,11 +1045,11 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 		len = -len;
 		for (; x > 0 && len > 0; x--) {
 			if (len >= cellwidth)
-				MtxOrb_icon (drvthis, x, y, barb);
-/* MtxOrb_chr (drvthis, x, y, 255 ); */
+//				MtxOrb_icon (drvthis, x, y, barb);
+MtxOrb_chr (drvthis, x, y, 255 ); 
 			else
-				MtxOrb_icon (drvthis, x, y, mapl[len]);
-/* MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapl[len])); */
+//				MtxOrb_icon (drvthis, x, y, mapl[len]);
+MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapl[len])); 
 
 			len -= cellwidth;
 
