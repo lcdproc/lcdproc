@@ -29,6 +29,8 @@
 
 #undef JOY_DRV
 
+#undef LB216_DRV
+
 #undef LCDPORT
 
 #undef LINUX
@@ -46,6 +48,8 @@
 #undef PROTOCOL_VERSION
 
 #undef SLI_DRV
+
+#undef SOLARIS
 
 #undef STAT_NFS
 

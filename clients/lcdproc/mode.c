@@ -29,6 +29,10 @@
 #include "load.h"
 #include "mem.h"
 
+#ifdef SOLARIS
+#include <strings.h>
+#endif
+
 int ELLIPSIS = '-';
 
 // TODO: Clean this up...  Support multiple display sizes..

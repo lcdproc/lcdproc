@@ -2,7 +2,7 @@ noinst_LIBRARIES = libLCDdrivers.a
 libLCDdrivers_a_SOURCES = lcd.c lcd.h drv_base.c
 EXTRA_libLCDdrivers_a_SOURCES = MtxOrb.c MtxOrb.h text.c text.h \
         curses_drv.c curses_drv.h drv_base.c drv_base.h \
-        hd44780.c hd44780.h \
+        hd44780.c hd44780.h lb216.c lb216.h \
 	hd44780-4bit.c hd44780-4bit.h \
 	hd44780-ext8bit.c hd44780-ext8bit.h lcd_sem.c lcd_sem.h \
 	hd44780-serialLpt.c hd44780-serialLpt.h \

@@ -101,7 +101,9 @@ chrono_init ()
 # endif
 
 		/* Get OS name and version from uname() */
-		if (uname (unamebuf) != 0) {
+		/* Changed to check if eq -1 instead of non-zero */
+		/* since uname may return any non-negative value */
+		if (uname (unamebuf) == -1) {
 			perror ("Error calling uname:");
 		}
 		strcpy (kver, unamebuf->release);

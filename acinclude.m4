@@ -6,10 +6,10 @@ AC_ARG_ENABLE(drivers,
 	[                  drivers may be separated with commas.]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval", 
-  	drivers=[mtxorb,cfontz,curses,text])
+  	drivers=[mtxorb,cfontz,curses,text,lb216])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,hd44780,joy,irman,lircin]
+	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin]
   	AC_MSG_RESULT(all)
 fi
 
@@ -40,6 +40,10 @@ fi
 		text)
 			DRIVERS="$DRIVERS text.o"
 			AC_DEFINE(TEXT_DRV)
+			;;
+		lb216)
+			DRIVERS="$DRIVERS lb216.o"
+			AC_DEFINE(LB216_DRV)
 			;;
 		hd44780)
 			DRIVERS="$DRIVERS hd44780.o hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-winamp.o"

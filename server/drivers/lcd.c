@@ -24,6 +24,10 @@
 #include "CFontz.h"
 #endif
 
+#ifdef LB216_DRV
+#include "lb216.h"
+#endif
+
 #ifdef TEXT_DRV
 #include "text.h"
 #endif
@@ -73,6 +77,9 @@ lcd_physical_driver drivers[] = {
 #endif
 #ifdef SLI_DRV
 	{"sli", sli_init,},
+#endif
+#ifdef LB216_DRV
+	{"LB216", LB216_init,},
 #endif
 #ifdef TEXT_DRV
 	{"text", text_init,},

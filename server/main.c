@@ -303,7 +303,7 @@ HelpScreen ()
 	printf ("\t-h\t--help\n\t\t\tDisplay this help screen\n");
 	printf ("\t-t\t--type <size>\n\t\t\tSelect an LCD size (20x4, 16x2, etc...)\n");
 	printf ("\t-d\t--driver <driver> [args]\n\t\t\tAdd a driver to use:\n");
-	printf ("\t\t\tCFontz, curses, HD44780, irmanin, joy,\n\t\t\tMtxOrb, text\n");
+	printf ("\t\t\tCFontz, curses, HD44780, irmanin, joy,\n\t\t\tMtxOrb, LB216, text\n");
 	printf ("\t\t\t(args will be passed to the driver for init)\n");
 	printf ("\t-f\t--foreground\n\t\t\tRun in the foreground (no daemon)\n");
 	printf ("\t-b\t--backlight <mode>\n\t\t\tSet backlight mode (on, off, open)\n");

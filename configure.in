@@ -8,6 +8,10 @@ case "$host" in
 *-*-*linux*) 
 	AC_DEFINE(LINUX)
 	;;
+*-*-*solaris*)
+	AC_DEFINE(SOLARIS)
+	LIBS="-lnsl -lsocket"
+	;;
 esac
 
 AC_MSG_CHECKING(whether to enable debugging)

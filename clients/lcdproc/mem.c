@@ -15,6 +15,11 @@
 #include "mode.h"
 #include "mem.h"
 
+#ifdef SOLARIS
+#include <strings.h>
+#endif
+
+
 struct meminfo {
 	int total, cache, buffers, free, shared;
 };
@@ -27,7 +32,9 @@ static void
 get_mem_info (struct meminfo *result)
 {
 //  int i, res; char *bufptr;
+	int pagesize,page,i;
 
+#ifndef SOLARIS
 	reread (meminfo_fd, "get_meminfo:");
 	result[0].total = getentry ("MemTotal:", buffer);
 	result[0].free = getentry ("MemFree:", buffer);
@@ -36,26 +43,39 @@ get_mem_info (struct meminfo *result)
 	result[0].cache = getentry ("Cached:", buffer);
 	result[1].total = getentry ("SwapTotal:", buffer);
 	result[1].free = getentry ("SwapFree:", buffer);
+#else
+	result[0].total = 0;
+	result[0].free = 0;
+	result[0].shared = 0;
+	result[0].buffers = 0;
+	result[0].cache = 0;
+	result[1].total = 0;
+	result[1].free = 0;
+#endif
 }
 
 int
 mem_init ()
 {
+#ifndef SOLARIS
 	if (!meminfo_fd) {
 		meminfo_fd = open ("/proc/meminfo", O_RDONLY);
 	}
 
+#endif
 	return 0;
 }
 
 int
 mem_close ()
 {
+#ifndef SOLARIS
 	if (meminfo_fd)
 		meminfo_fd = open ("/proc/meminfo", O_RDONLY);
 
 	meminfo_fd = 0;
 
+#endif
 	return 0;
 }
 

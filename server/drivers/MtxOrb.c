@@ -11,6 +11,7 @@
 
 #include "../../shared/debug.h"
 #include "../../shared/str.h"
+#include "../../config.h"
 
 static int custom = 0;
 
@@ -149,7 +150,9 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	tcgetattr (fd, &portset);
 	// This is necessary in Linux, but does not exist in irix.
 #ifndef IRIX
+#ifndef SOLARIS
 	cfmakeraw (&portset);
+#endif
 #endif
 	cfsetospeed (&portset, speed);
 	cfsetispeed (&portset, speed);

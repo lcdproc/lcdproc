@@ -27,20 +27,24 @@ get_loadavg (void)
 int
 load_init ()
 {
+#ifndef SOLARIS
 	if (!loadavg_fd)
 		loadavg_fd = open ("/proc/loadavg", O_RDONLY);
 
+#endif
 	return 0;
 }
 
 int
 load_close ()
 {
+#ifndef SOLARIS
 	if (loadavg_fd)
 		close (loadavg_fd);
 
 	loadavg_fd = 0;
 
+#endif
 	return 0;
 }
 
