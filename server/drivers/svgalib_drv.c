@@ -277,6 +277,8 @@ svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	gl_clearscreen (gl_rgbcolor (0, 0, 0));
 
+	driver->daemonize = 0; // don't daemonize...
+
 	// Override output functions...
 	driver->clear = svgalib_drv_clear;
 	driver->string = svgalib_drv_string;

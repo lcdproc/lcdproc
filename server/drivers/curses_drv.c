@@ -182,6 +182,8 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	curses_drv_clear ();
 
+	driver->daemonize = 0; // don't daemonize...
+
 	// Override output functions...
 	driver->clear = curses_drv_clear;
 	driver->string = curses_drv_string;
