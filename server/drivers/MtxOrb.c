@@ -39,6 +39,7 @@
 #include <errno.h>
 #include <syslog.h>
 #include <ctype.h>
+#include <sys/poll.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -425,7 +426,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 	/* End of config file parsing*/
 
 	/* Set up io port correctly, and open it... */
-	p->fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+	p->fd = open (device, O_RDWR | O_NOCTTY);
 	if (p->fd == -1) {
 		switch (errno) {
 			case ENOENT: report (RPT_ERR, "MtxOrb_init: %s device file missing!\n", device);
@@ -442,8 +443,9 @@ MtxOrb_init (Driver *drvthis, char *args)
 
 	tcgetattr (p->fd, &portset);
 
+	// THIS ALL COMMENTED OUT BECAUSE WE NEED TO SET TIMEOUTS
 	/* We use RAW mode */
-#ifdef HAVE_CFMAKERAW
+#ifdef HAVE_CFMAKERAW_NOT
 	/* The easy way */
 	cfmakeraw( &portset );
 #else
@@ -454,6 +456,8 @@ MtxOrb_init (Driver *drvthis, char *args)
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
 	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+	portset.c_cc[VMIN] = 1;
+	portset.c_cc[VTIME] = 3;
 #endif
 
 	/* Set port speed */
@@ -1242,7 +1246,16 @@ MtxOrb_get_key (Driver *drvthis)
 
     PrivateData * p = drvthis->private_data;
 
+	// POLL For data or return
+	struct pollfd fds[1];
+	fds[0].fd = p->fd;
+	fds[0].events = POLLIN;
+	fds[0].revents = 0;
+	poll (fds,1,0);
+	if (fds[0].revents == 0) { return NULL; }
+
 	(void) read (p->fd, &in, 1);
+	report(RPT_INFO, "MtxOrb: getkey: key X %i", in);
 
 	if ( 0 == in ) {
 		debug( RPT_INFO, "MtxOrb_get_key: in=>%d\n", in );
