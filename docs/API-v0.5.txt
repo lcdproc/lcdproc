@@ -74,6 +74,14 @@ option.
 	void (*num)		(drvthis, int x, int num);
 
 Draw big numbers on your display. Only 6 positions exist, 1 to 6.
+David GLAUDE:
+"
+I don't think this is valid... There are as many position as wanted.
+A BigNum could be at any column from 1 to end of the LCD.
+It could also be at -1 and -2 (where only the end is visible).
+Optionaly it could be on a specific raw from -3 to end of the LCD.
+This permit scrolling of BIGNUM or in the futur BIGFONT.
+"
 
 	void (*heartbeat)	(drvthis, int state);
 
@@ -267,6 +275,10 @@ void (*num)		(drvthis, int x, int num);
 void (*heartbeat)	(drvthis, int state);
 // Sets the heartbeat to the indicated state.
 // 0=off 1=graph1 2=graph2
+David GLAUDE:
+"state is apparently type and it could have the value
+HEARTBEAT_ON to say that we want to display/refresh the heartbeat.
+The driver choose how to do it. See MtxOrb.c"
 
 int (*contrast)		(drvthis, int contrast);
 // Sets the contrast to the given value. Values should be 0 to 255.
