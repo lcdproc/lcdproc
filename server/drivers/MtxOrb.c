@@ -30,15 +30,7 @@
 #include "MtxOrb.h"
 //#include "drv_base.h"
 
-// I don't want to break anything here so let's do it step by step
-//#define USE_REPORT
-#ifdef USE_REPORT
-//#define DEBUG
 #include "shared/report.h"
-//#undef DEBUG
-#else
-#include "shared/debug.h"
-#endif
 
 #include "shared/str.h"
 #include "input.h"
@@ -55,10 +47,6 @@
 //       Why I do not know.
 // RESP: Because software emulated hbar/vbar permit simultaneous use.
 
-#ifdef USE_REPORT
-#else
-extern int debug_level;
-#endif
 
 // TODO: Remove this custom_type if not in use anymore.
 typedef enum {
@@ -150,7 +138,7 @@ MtxOrb_parse_type (char * str) {
 		} else if (strncasecmp(str, "lkd", 3) == 0) {
 			return MTXORB_LKD;
 		} else {
-			fprintf (stderr, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
+			report (RPT_ERR, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
 		}
 	} else if (c == 'v') {
 		if (strncasecmp (str, "vfd", 3) == 0) {
@@ -158,10 +146,10 @@ MtxOrb_parse_type (char * str) {
 		} else if (strncasecmp (str, "vkd", 3) == 0) {
 			return MTXORB_VKD;
 		} else {
-			fprintf (stderr, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
+			report (RPT_ERR, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
 		}
 	} else {
-		fprintf (stderr, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
+		report (RPT_ERR, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
 	}
 	return (-1);
 }
@@ -177,13 +165,13 @@ MtxOrb_parse_speed (char *arg) {
 		case 19200: speed = B19200; break;
 		default:
 			speed = DEFAULT_SPEED;
-			fprintf (stderr, "MtxOrb_init: argument must be 1200, 2400, 9600 or 19200. Using default value");
+			report (RPT_ERR, "MtxOrb_init: argument must be 1200, 2400, 9600 or 19200. Using default value");
 			switch (speed) {
-				case B1200: fprintf(stderr, " of 1200 baud.\n"); break;
-				case B2400: fprintf(stderr, " of 2400 baud.\n"); break;
-				case B9600: fprintf(stderr, " of 9600 baud.\n"); break;
-				case B19200: fprintf(stderr, " of 19200 baud.\n"); break;
-				default: fprintf(stderr, ".\n"); break;
+				case B1200: report(RPT_ERR, " of 1200 baud.\n"); break;
+				case B2400: report(RPT_ERR, " of 2400 baud.\n"); break;
+				case B9600: report(RPT_ERR, " of 9600 baud.\n"); break;
+				case B19200: report(RPT_ERR, " of 19200 baud.\n"); break;
+				default: report(RPT_ERR, " of unkown baud.\n"); break;
 			}
 		}
 
@@ -208,7 +196,7 @@ MtxOrb_parse_contrast (char * str) {
 
 	contrast = atoi (str);
 	if ((contrast < 0) || (contrast > 255)) {
-		fprintf(stderr, "MtxOrb_init: argument must between 0 and 255 (found %s). Using default contrast value of %d.\n", str, DEFAULT_CONTRAST);
+		report (RPT_ERR, "MtxOrb_init: argument must between 0 and 255 (found %s). Using default contrast value of %d.\n", str, DEFAULT_CONTRAST);
 		contrast = DEFAULT_CONTRAST;
 	}
 	return contrast;
@@ -283,21 +271,21 @@ MtxOrb_init (Driver *drvthis, char *args)
 			switch (*p) {
 				case 'd':
 					if (i + 1 > argc) {
-						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
 						return -1;
 					}
 					strcpy (device, argv[++i]);
 					break;
 				case 'c':
 					if (i + 1 > argc) {
-						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
 						return -1;
 					}
 					contrast = MtxOrb_parse_contrast (argv[++i]);
 					break;
 				case 's':
 					if (i + 1 > argc) {
-						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
 						return -1;
 					}
 					speed = MtxOrb_parse_speed (argv[++i]);
@@ -308,7 +296,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 					break;
 				case 't':
 					if (i + 1 > argc) {
-						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
 						return -1;
 					}
 					i++;
@@ -335,7 +323,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 					break;
 				case 'b':
 					if (i + 1 > argc) {
-						fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+						report (RPT_ERR, "MtxOrb_init: %s requires an argument\n", argv[i]);
 						return -1;
 					}
 					i++;
@@ -353,17 +341,17 @@ MtxOrb_init (Driver *drvthis, char *args)
 	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1) {
 		switch (errno) {
-			case ENOENT: fprintf(stderr, "MtxOrb_init: %s device file missing!\n", device);
+			case ENOENT: report (RPT_ERR, "MtxOrb_init: %s device file missing!\n", device);
 				break;
-			case EACCES: fprintf(stderr, "MtxOrb_init: %s device could not be opened...\n", device);
-				fprintf(stderr, "MtxOrb_init: perhaps you should run LCDd as root?\n");
+			case EACCES: report (RPT_ERR, "MtxOrb_init: %s device could not be opened...\n", device);
+				report (RPT_ERR, "MtxOrb_init: perhaps you should run LCDd as root?\n");
 				break;
-			default: fprintf (stderr, "MtxOrb_init: failed (%s)\n", strerror (errno));
+			default: report (RPT_ERR, "MtxOrb_init: failed (%s)\n", strerror (errno));
 				break;
 		}
   		return -1;
 	} else
-		syslog(LOG_INFO, "opened Matrix Orbital display on %s\n", device);
+		report (RPT_INFO, "MtxOrb: opened display on %s\n", device);
 
 	tcgetattr (fd, &portset);
 
@@ -460,12 +448,7 @@ MtxOrb_clear (Driver *drvthis)
 	//write(fd, "\x0FE" "X", 2);  // instant clear...
 	clear = 1;
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: cleared screen");
-#else
-	if (debug_level > 3)
-		syslog(LOG_DEBUG, "MtxOrb: cleared screen");
-#endif
 }
 
 /////////////////////////////////////////////////////////////////
@@ -480,12 +463,7 @@ MtxOrb_close (Driver *drvthis)
 		free (framebuf);
 	framebuf = NULL;
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: closed");
-#else
-	if (debug_level > 3)
-		syslog(LOG_DEBUG, "MtxOrb: closed");
-#endif
 }
 
 /////////////////////////////////////////////////////////////////
@@ -521,12 +499,7 @@ MtxOrb_string (Driver *drvthis, int x, int y, char *string)
 
 	memcpy(framebuf + offset, string, siz);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: printed string at (%d,%d)", x, y);
-#else
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "MtxOrb: printed string at (%d,%d)", x, y);
-#endif
 }
 
 MODULE_EXPORT void
@@ -589,12 +562,7 @@ MtxOrb_flush (Driver *drvthis)
 
 	strncpy(old, framebuf, width * height);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: frame buffer flushed");
-#else
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "MtxOrb: frame buffer flushed");
-#endif
 }
 
 /////////////////////////////////////////////////////////////////
@@ -604,10 +572,6 @@ MtxOrb_flush (Driver *drvthis)
 MODULE_EXPORT void
 MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 {
-#ifdef USE_REPORT
-#else
-	char buf[64]; // char out[10];
-#endif
 	int offset;
 
 	// Characters may or may NOT be alphabetic; it appears
@@ -626,18 +590,7 @@ MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 	offset = (y * width) + x;
 	framebuf[offset] = c;
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x, y);
-	debug(RPT_DEBUG, "MtxOrb: printed a char at (%d,%d)", x, y);
-#else
-	if (debug_level > 2) {
-		snprintf(buf, sizeof(buf), "writing character %02X to position (%d,%d)", c, x, y);
-		syslog(LOG_DEBUG, buf);
-
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "MtxOrb: printed a char at (%d,%d)", x, y);
-	}
-#endif
 }
 
 MODULE_EXPORT int
@@ -672,19 +625,9 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 		snprintf (out, sizeof(out), "\x0FEP%c", real_contrast);
 		write (fd, out, 3);
 
-#ifdef USE_REPORT
-	debug(RPT_DEBUG, "MtxOrb: contrast set to %d", real_contrast);
-#else
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "MtxOrb: contrast set to %d", real_contrast);
-#endif
+	report(RPT_DEBUG, "MtxOrb: contrast set to %d", real_contrast);
 	} else {
-#ifdef USE_REPORT
-	debug(RPT_DEBUG, "MtxOrb: contrast not set to %d - not LCD or LKD display", real_contrast);
-#else
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "MtxOrb: contrast not set to %d - not LCD or LKD display", real_contrast);
-#endif
+	report(RPT_DEBUG, "MtxOrb: contrast not set to %d - not LCD or LKD display", real_contrast);
 	}
 }
 
@@ -714,39 +657,19 @@ MtxOrb_backlight (Driver *drvthis, int on)
 	switch (on) {
 		case BACKLIGHT_ON:
 			write (fd, "\x0FE" "F", 2);
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: backlight turned on");
-#else
-			if (debug_level > 3)
-				syslog(LOG_DEBUG, "MtxOrb: backlight turned on");
-#endif
 			break;
 		case BACKLIGHT_OFF:
 			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY) {
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
-#else
-				if (debug_level > 3)
-					syslog(LOG_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
-#endif
 				; // turns display off entirely (whoops!)
 			} else {
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: backlight turned off");
-#else
-				if (debug_level > 3)
-					syslog(LOG_DEBUG, "MtxOrb: backlight turned off");
-#endif
 				write (fd, "\x0FE" "B" "\x000", 3);
 			}
 			break;
 		default: // ignored...
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: backlight - invalid setting");
-#else
-			if (debug_level > 3)
-				syslog(LOG_DEBUG, "MtxOrb: backlight - invalid setting");
-#endif
 			break;
 		}
 }
@@ -769,12 +692,7 @@ MtxOrb_output (Driver *drvthis, int on)
 
 	output_state = on;
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: output pins set: %04X", on);
-#else
-	if (debug_level > 3)
-		syslog(LOG_DEBUG, "MtxOrb: output pins set: %04X", on);
-#endif
 
 	if (IS_LCD_DISPLAY || IS_VFD_DISPLAY) {
 		// LCD and VFD displays only have one output port
@@ -806,21 +724,11 @@ MtxOrb_linewrap (Driver *drvthis, int on)
 	if (on) {
 		write (fd, "\x0FE" "C", 2);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: linewrap turned on");
-#else
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "MtxOrb: linewrap turned on");
-#endif
 	} else {
 		write (fd, "\x0FE" "D", 2);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: linewrap turned off");
-#else
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "MtxOrb: linewrap turned off");
-#endif
 	}
 }
 
@@ -833,21 +741,11 @@ MtxOrb_autoscroll (Driver *drvthis, int on)
 	if (on) {
 		write (fd, "\x0FEQ", 2);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: autoscroll turned on");
-#else
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "MtxOrb: autoscroll turned on");
-#endif
 	} else {
 		write (fd, "\x0FER", 2);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: autoscroll turned off");
-#else
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "MtxOrb: autoscroll turned off");
-#endif
 	}
 }
 
@@ -861,21 +759,11 @@ MtxOrb_cursorblink (Driver *drvthis, int on)
 	if (on) {
 		write (fd, "\x0FES", 2);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: cursorblink turned on");
-#else
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "MtxOrb: cursorblink turned on");
-#endif
 	} else {
 		write (fd, "\x0FET", 2);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: cursorblink turned off");
-#else
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "MtxOrb: cursorblink turned off");
-#endif
 	}
 }
 
@@ -912,12 +800,7 @@ MtxOrb_get_info (Driver *drvthis)
 	struct timeval tv;
 	int retval;
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: get_info");
-#else
-	if (debug_level > 3)
-		syslog(LOG_DEBUG, "MtxOrb: get_info");
-#endif
 
 	memset(info, '\0', sizeof(info));
 	strcpy(info, "Matrix Orbital Driver ");
@@ -1040,12 +923,7 @@ MtxOrb_vbar (Driver *drvthis, int x, int len)
 
 	int y;
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
-#else
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
-#endif
 
 // REMOVE THE NEXT LINE FOR TESTING ONLY...
 //  len=-len;
@@ -1088,12 +966,7 @@ MtxOrb_hbar (Driver *drvthis, int x, int y, int len)
 	ValidX(x);
 	ValidY(y);
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: horizontal bar at %d set to %d", x, len);
-#else
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "MtxOrb: horizontal bar at %d set to %d", x, len);
-#endif
 
 	if (len > 0) {
 		for (; x <= width && len > 0; x++) {
@@ -1131,12 +1004,7 @@ MtxOrb_hbar (Driver *drvthis, int x, int y, int len)
 MODULE_EXPORT void
 MtxOrb_init_num (Driver *drvthis)
 {
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: init for big numbers");
-#else
-	if (debug_level > 3)
-		syslog(LOG_DEBUG, "MtxOrb: init for big numbers");
-#endif
 
 	if (custom != bign) {
 		write (fd, "\x0FEn", 2);
@@ -1167,12 +1035,7 @@ MtxOrb_num (Driver *drvthis, int x, int num)
 	int y, dx;
 	char out[5];
 
-#ifdef USE_REPORT
 	debug(RPT_DEBUG, "MtxOrb: write big number %d at %d", num, x);
-#else
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "MtxOrb: write big number %d at %d", num, x);
-#endif
 
 	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);
 	write (fd, out, 4);
