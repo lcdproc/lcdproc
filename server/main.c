@@ -823,7 +823,7 @@ HelpScreen ()
 	 */
 	report( RPT_INFO, "HelpScreen()" );
 
-	fprintf (stdout, "\nLCDd Server Daemon (part of lcdproc), %s\n", version);
+	fprintf (stdout, "\nLCDd: LCDproc Server Daemon, %s\n", version);
 	fprintf (stdout, "Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
 	fprintf (stdout, "This program is freely redistributable under the terms of the GNU Public License\n\n");
 	fprintf (stdout, "Usage: LCDd [ -hfiws ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \\\n\t[ -p <port> ] [ -u <user> ] [ -w <time> ] [ -r <level> ]\n\n");
