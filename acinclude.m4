@@ -11,7 +11,8 @@ AC_ARG_ENABLE(drivers,
 if test "$drivers" = "all"; then
 	drivers=[mtxorb,cfontz,curses,text,hd44780,joy,irman,lircin]
   	AC_MSG_RESULT(all)
-else
+fi
+
   	drivers=`echo $drivers | sed 's/,/ /g'`
   	AC_MSG_RESULT($drivers)
   	for driver in $drivers
@@ -41,7 +42,7 @@ else
 			AC_DEFINE(TEXT_DRV)
 			;;
 		hd44780)
-			DRIVERS="$DRIVERS hd44780.o"
+			DRIVERS="$DRIVERS hd44780.o hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-winamp.o"
 			AC_DEFINE(HD44780_DRV)
 			;;
 		joy)	
@@ -65,7 +66,7 @@ else
 			;;
   		esac
   	done
-fi
+
 AC_SUBST(LIBCURSES)
 AC_SUBST(LIBIRMAN)
 AC_SUBST(LIBLIRC_CLIENT)
