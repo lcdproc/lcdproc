@@ -32,11 +32,11 @@
 int TwentyFourHour = 1;
 int uptime_fd = 0;
 
-#ifdef HAVE_SYS_NMLN
+#ifdef SYS_NMLN
  static char kver[SYS_NMLN];
  static char sysname[SYS_NMLN];
 #else
-# ifdef HAVE__SYS_NAMELEN
+# ifdef _SYS_NAMELEN
   static char kver[_SYS_NAMELEN];
   static char sysname[_SYS_NAMELEN];
 # else

@@ -72,28 +72,6 @@ AC_CHECK_HEADERS(fcntl.h sys/ioctl.h sys/time.h unistd.h)
 
 dnl Check for particular preprocessor macros
 
-dnl Checking if sys/utsname.h is present and defines SYS_NMLN or _SYS_NAMELEN
-AC_CHECK_HEADER(sys/utsname.h, 
-
-AC_MSG_CHECKING(if sys/utsname.h defines SYS_NMLN)
-AC_TRY_COMPILE([#include <sys/utsname.h>], [[ char kver[SYS_NMLN] ]], [ 
-dnl then
-	AC_DEFINE(HAVE_SYS_NMLN)
-	AC_MSG_RESULT(yes) ], [
-dnl else
-	AC_MSG_RESULT(no)
-	AC_MSG_CHECKING(if sys/utsname.h defines _SYS_NAMELEN)
-	AC_TRY_COMPILE([#include <sys/utsname.h>],[[ char kver[_SYS_NAMELEN] ]], [ 
-	dnl then
-		AC_DEFINE(HAVE__SYS_NAMELEN)
-		AC_MSG_RESULT(yes) ], [
-	dnl else
-	AC_MSG_RESULT(no)
-	AC_MSG_WARN([sys/utsname.h does not define SYS_NMLN or _SYS_NAMELEN])],[:])
-],[:])
-
-, [AC_MSG_WARN([LCDproc client requires sys/utsname.h.])])
-
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE

@@ -34,10 +34,6 @@
 
 #undef HD44780_DRV
 
-#undef HAVE_SYS_NMLN
-
-#undef HAVE__SYS_NAMELEN
-
 #undef IRMANIN_DRV
 
 #undef JOY_DRV

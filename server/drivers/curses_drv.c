@@ -31,6 +31,20 @@
 #include "curses_drv.h"
 //#include "drv_base.h"
 
+// ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
+// However, ACS_S3 and ACS_S7 are not; these definitions were created to support
+// commonly available graphics found in many terminfo definitions.  The acsc character
+// used for ACS_S3 is 'p'; the acsc character used for ACS_S7 is 'r'.
+//
+// Other systems may very likely support these characters; however,
+// their names were invented for ncurses.
+#ifndef ACS_S3
+#define ACS_S3 (acs_map['p'])
+#endif
+#ifndef ACS_S7
+#define ACS_S7 (acs_map['r'])
+#endif
+
 lcd_logical_driver *curses_drv;
 
 // Character used for title bars...
@@ -455,22 +469,7 @@ void
 curses_drv_vbar (int x, int len)
 {
 	int y;
-
-// ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
-// However, ACS_S3 and ACS_S7 are not; these definitions were created to support
-// commonly available graphics found in many terminfo definitions.  The acsc character
-// used for ACS_S3 is 'p'; the acsc character used for ACS_S7 is 'r'.
-//
-// Other systems may very likely support these characters; however,
-// their names were invented for ncurses.
-//
-// Perhaps we could create our own ACS_S7 and ACS_S3?
-
-#ifdef DEFINED_ACS
 	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
-#else
-	char map[] = "_.,,ooO8";
-#endif
 	
 	ValidX(x);
 
