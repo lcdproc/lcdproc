@@ -11,6 +11,8 @@
 #define DEFAULT_BRIGHTNESS 100
 #define DEFAULT_OFFBRIGHTNESS 0
 #define DEFAULT_SIZE "16x2"
+#define	DEFAULT_SIZE_CF633 "16x2"
+#define	DEFAULT_SIZE_CF631 "20x2"
 
 MODULE_EXPORT int  CFontz633_init (Driver * drvthis, char *device);
 MODULE_EXPORT void CFontz633_close (Driver * drvthis);
