@@ -5,6 +5,7 @@
 extern lcd_logical_driver *LB216;
 
 int LB216_init(lcd_logical_driver *driver, char *device);
+void LB216_clear ();
 void LB216_close();
 void LB216_string (int x, int y, char string[]);
 void LB216_flush();

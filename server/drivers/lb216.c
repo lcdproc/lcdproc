@@ -1,3 +1,19 @@
+/*
+ *
+ * Chris Debenham - eSun Systems Engineer <chris.debenham@aus.sun.com>
+ *
+ * Heres a bit more info on the display.
+ * It is the LB216 and is made by R.T.N. Australia
+ * The web page for it is http://www.nollet.com.au/
+ * It is a serial 16x2 LCD with software controllable backlight.
+ * They also make 40x4 displays (which I'll be getting one of soon :-) )
+ * 3 wire connection (5V,0V and serial), 2400 or 9600 bps.
+ * 8 custom characters
+ * 40*83.5MM size
+ * made in australia :-)
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -191,7 +207,7 @@ int LB216_init(lcd_logical_driver *driver, char *args)
 
    // Set the functions the driver supports...
 
-   driver->clear =      drv_base_clear;
+   driver->clear =      LB216_clear;
    driver->string =     LB216_string;
    driver->chr =        LB216_chr;
    driver->vbar =       LB216_vbar;
@@ -233,6 +249,15 @@ void LB216_close()
   LB216->framebuf = NULL;
 }
 
+/////////////////////////////////////////////////////////////////
+// Clears the LCD screen
+//
+void
+LB216_clear ()
+{
+	memset (LB216->framebuf, ' ', LB216->wid * LB216->hgt);
+
+}
 
 void LB216_flush()
 {
