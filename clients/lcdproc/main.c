@@ -28,10 +28,10 @@ int sock;
 char *version = VERSION;
 char *build_date = __DATE__;
 
-int lcd_wid;
-int lcd_hgt;
-int lcd_cellwid;
-int lcd_cellhgt;
+int lcd_wid = 0;
+int lcd_hgt = 0;
+int lcd_cellwid = 0;
+int lcd_cellhgt = 0;
 static struct utsname unamebuf;
 
 /*
@@ -278,7 +278,7 @@ void
 main_loop()
 {
 	int i = 0, j;
-	//int status=0;
+	int connected = 0;
 	char buf[8192];
 	char *argv[256];
 	int argc, newtoken;
@@ -360,6 +360,7 @@ main_loop()
 									else if(0 == strcmp(argv[a], "cellhgt"))
 										lcd_cellhgt = atoi(argv[++a]);
 								}
+								connected = 1;
 								sock_send_string(sock, "client_set -name LCDproc\n");
 							}
 							else if(0 == strcmp(argv[0], "bye"))
@@ -392,29 +393,32 @@ main_loop()
 
 		// Gather stats...
 		// Update screens...
-		for(i = 0; sequence[i].which > 1; i++)
+		if (connected)
 		{
-			sequence[i].timer++;
-			if(sequence[i].visible)
+			for(i = 0; sequence[i].which > 1; i++)
 			{
-				if(sequence[i].timer >= sequence[i].on_time)
+				sequence[i].timer++;
+				if(sequence[i].visible)
 				{
-					sequence[i].timer = 0;
-					// Now, update the screen...
-					update_screen(&sequence[i], 1);
+					if(sequence[i].timer >= sequence[i].on_time)
+					{
+						sequence[i].timer = 0;
+						// Now, update the screen...
+						update_screen(&sequence[i], 1);
+					}
 				}
-			}
-			else
-			{
-				if(sequence[i].timer >= sequence[i].off_time)
+				else
 				{
-					sequence[i].timer = 0;
-					// Now, update the screen...
-					update_screen(&sequence[i], sequence[i].show_invisible);
+					if(sequence[i].timer >= sequence[i].off_time)
+					{
+						sequence[i].timer = 0;
+						// Now, update the screen...
+						update_screen(&sequence[i], sequence[i].show_invisible);
+					}
 				}
+				if(islow > 0)
+					usleep(islow * 10000);
 			}
-			if(islow > 0)
-				usleep(islow * 10000);
 		}
 
 		// Now sleep...
