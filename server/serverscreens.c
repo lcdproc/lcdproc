@@ -168,17 +168,6 @@ update_server_screen (int timer)
 }
 
 int
-no_screen_screen (int timer)
-{
-
-	drivers_clear ();
-	drivers_string (1, 1, "Error:  No screen!");
-	drivers_flush ();
-
-	return 0;
-}
-
-int
 goodbye_screen ()
 {
 	char *b20 = "                    ";

@@ -62,7 +62,7 @@ extern int optind, optopt, opterr;
 #define DEFAULT_WAITTIME 8
 #define MAX_DRIVERS 8
 #define DEFAULT_DAEMON_MODE 1
-#define DEFAULT_ENABLE_SERVER_SCREEN 0
+#define DEFAULT_ENABLE_SERVER_SCREEN SERVER_SCREEN_NOSCREEN
 #define DEFAULT_REPORTTOSYSLOG 0
 #define DEFAULT_REPORTLEVEL RPT_WARNING
 
@@ -376,9 +376,22 @@ process_configfile ( char *configfile )
 			daemon_mode = !fg;
 	}
 
-	if( enable_server_screen == UNSET_INT )
-		enable_server_screen = config_get_bool( "server", "serverscreen", 0, UNSET_INT );
-
+	if( enable_server_screen == UNSET_INT ) {
+		s = config_get_string( "server", "serverscreen", 0, UNSET_STR );
+		if( strcmp( s, "no" ) == 0 ) {
+			enable_server_screen = SERVER_SCREEN_NEVER;
+		}
+		else if( strcmp( s, "noscreen" ) == 0 ) {
+			enable_server_screen = SERVER_SCREEN_NOSCREEN;
+		}
+		else if( strcmp( s, "yes" ) == 0 ) {
+			enable_server_screen = SERVER_SCREEN_ALWAYS;
+		}
+		else if( strcmp( s, UNSET_STR ) != 0 ) {
+			report( RPT_ERR, "Serverscreen can only be no, noscreen or yes" );
+		}
+	}
+	
 	if( backlight == UNSET_INT ) {
 		s = config_get_string( "server", "backlight", 0, UNSET_STR );
 		if( strcmp( s, "on" ) == 0 ) {
@@ -594,12 +607,18 @@ init_screens ()
 		report(RPT_ERR, "Error initializing screen list");
 		return -1;
 	}
-	/* Make sure the server screen shows up every once in a while..*/
-	if (server_screen_init () < 0) {
-		report(RPT_ERR, "Error initializing server screens");
-		return -1;
-	} else if (!enable_server_screen) {
-		server_screen->priority = 256;
+
+	if (enable_server_screen > SERVER_SCREEN_NEVER) {
+		/* Add the server screen */
+		if (server_screen_init () < 0) {
+			report(RPT_ERR, "Error initializing server screens");
+			return -1;
+		}
+		
+		if (enable_server_screen == SERVER_SCREEN_NOSCREEN) {
+			/* Display the server screen only when there are no other screens */
+			server_screen->priority = 256;
+		}
 	}
 	return 0;
 }
@@ -663,10 +682,7 @@ do_mainloop ()
 		/* draw the current scren*/
 
 		if ((s = screenlist_current ()) != NULL)
-
 			draw_screen (s, timer);
-		else
-			no_screen_screen (timer);
 
 		usleep (TIME_UNIT);
 
@@ -676,7 +692,7 @@ do_mainloop ()
 		 */
 		if((message = malloc(256)) == NULL)
 			report(RPT_ERR, "Error allocating message string");
-		else {
+		else if (s) {
 			snprintf(message, 256, "Screen->%s has timeout->%d", s->name, s->timeout);
 			report(RPT_DEBUG, message);
 			free(message);
