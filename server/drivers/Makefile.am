@@ -9,7 +9,7 @@
 EXEEXT = @SO@
 
 ## How to compile the files for the modules:
-CCFLAGS += @CCSHARED@
+AM_CCFLAGS = @CCSHARED@
 
 ## And how to build them
 LDFLAGS += @LDSHARED@

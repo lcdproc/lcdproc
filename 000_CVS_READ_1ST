@@ -9,8 +9,8 @@ COMPILE! YOU'VE BEEN WARNED!
 ***************************************************************
 
 With that out of the way, welcome to the bleeding edge of LCDproc.
-To build and run this version, you'll need autoconf and friends
-installed.
+To build and run this version, you'll need autoconf 2.50 or higher
+and friends installed.
 
 Run:
 

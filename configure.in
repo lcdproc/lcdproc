@@ -1,6 +1,9 @@
-dnl Process this file with autoconf to produce a configure script.
-AC_INIT(clients/lcdproc/batt.c)
+dnl Process this file with autoconf  2.50 (or higher) to produce a configure script.
+AC_PREREQ(2.59)
+AC_INIT
+AC_CONFIG_SRCDIR([clients/lcdproc/batt.c])
 AM_INIT_AUTOMAKE(lcdproc, 0.5dev)
+
 AM_CONFIG_HEADER(config.h)
 AC_EXEEXT
 
@@ -74,8 +77,7 @@ AC_CHECK_LIB(kvm, kvm_open,[
    AC_CACHE_VAL(ac_cv_lib_kvm_with_elf,
    [ac_save_LIBS="$LIBS"
     LIBS="-lkvm -lelf $LIBS"
-    AC_TRY_LINK([char kvm_open();], [kvm_open()],
-                ac_cv_lib_kvm_with_elf=yes, ac_cv_lib_kvm_with_elf=no)
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[char kvm_open();]], [[kvm_open()]])],[ac_cv_lib_kvm_with_elf=yes],[ac_cv_lib_kvm_with_elf=no])
     LIBS="$ac_save_LIBS"
    ])
    if test "$ac_cv_lib_kvm_with_elf" = "yes"; then
@@ -124,7 +126,7 @@ AC_CHECK_HEADERS(sys/io.h)
 dnl Check if we support this parallel (LPT) port
 dnl IMPORTANT: we must do all the checks used in port.h before doing this test!
 AC_CACHE_CHECK([for a parallel port], ac_cv_port_have_lpt,
-[AC_TRY_COMPILE([#include "${srcdir}/server/drivers/port.h"], [char val = port_in(0x350)], ac_cv_port_have_lpt=yes, ac_cv_port_have_lpt=no)])
+[AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include "${srcdir}/server/drivers/port.h"]], [[char val = port_in(0x350)]])],[ac_cv_port_have_lpt=yes],[ac_cv_port_have_lpt=no])])
 
 if test "$ac_cv_port_have_lpt" = yes
 then
@@ -423,14 +425,11 @@ fi
 
 if test "$enable_ldap" = "yes"; then
         AC_MSG_CHECKING(OpenLDAP lud_exts in LDAPURLDesc)
-	AC_TRY_COMPILE([#include <stdlib.h>
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdlib.h>
 			#include <lber.h>
-			#include <ldap.h>],
-		[LDAPURLDesc ludp; 
-		 ludp.lud_exts[0] = NULL;],
-		AC_MSG_RESULT(yes) 
-		AC_DEFINE(WITH_LDAP_LUD_EXTS, 1, Compile with LDAP lud_exts),
-		AC_MSG_RESULT(no)
+			#include <ldap.h>]], [[LDAPURLDesc ludp; 
+		 ludp.lud_exts[0] = NULL;]])],[AC_MSG_RESULT(yes) 
+		AC_DEFINE(WITH_LDAP_LUD_EXTS, 1, Compile with LDAP lud_exts)],[AC_MSG_RESULT(no)
 AC_MSG_WARN(
 ""
 "************************************************************"
@@ -439,7 +438,7 @@ AC_MSG_WARN(
 "* openldap2. Available from openldap.org"
 "************************************************************"
 )
-	)
+	])
 fi
 
 if test "$enable_ldap" = "yes"; then
@@ -499,7 +498,7 @@ else
 fi
 
 
-AC_OUTPUT(Makefile
+AC_CONFIG_FILES([Makefile
 	shared/Makefile
 	server/Makefile
 	server/commands/Makefile
@@ -518,4 +517,5 @@ AC_OUTPUT(Makefile
 	scripts/init-LCDd.debian
 	scripts/init-LCDd.rpm
 	scripts/init-lcdproc.debian
-	scripts/init-lcdproc.rpm)
+	scripts/init-lcdproc.rpm])
+AC_OUTPUT
