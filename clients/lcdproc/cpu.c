@@ -88,7 +88,7 @@ kstat_ctl_t *kc;
 
 int load_fd = 0;
 
-#ifdef NETBSD
+#ifdef __NetBSD__
 static void netbsd_get_load (struct load * result, struct load * last_load );
 #define get_load netbsd_get_load
 #elif defined OPENBSD || FREEBSD
@@ -141,7 +141,7 @@ static void linuxsolaris_get_load (struct load *result, struct load * last_load 
 }
 #endif
 
-#ifdef NETBSD
+#ifdef __NetBSD__
 static void netbsd_get_load(struct load * result, struct load * last_load) {
 	struct load curr_load;
 	u_int64_t cp_time[CPUSTATES];
@@ -153,7 +153,7 @@ static void netbsd_get_load(struct load * result, struct load * last_load) {
 	size = sizeof(cp_time);
     
 	if(sysctl(mib, 2, cp_time, &size, NULL, 0) < 0) {
-        //fprintf(stderr, "sysctl kern.cp_time failed: %s\n", strerror(errno));
+        fprintf(stderr, "sysctl kern.cp_time failed: %s\n", strerror(errno));
 		curr_load.user = 1;
 		curr_load.nice = 1;
 		curr_load.system = 1;

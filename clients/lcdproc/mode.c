@@ -280,12 +280,20 @@ credit_screen (int rep, int display)
 			sock_send_string (sock, "widget_add A one string\n");
 			sock_send_string (sock, "widget_add A two string\n");
 			sock_send_string (sock, "widget_add A three string\n");
-			sock_send_string (sock, "widget_set A one 1 2 {     for Linux      }\n");
+#ifdef __NetBSD__
+			sock_send_string (sock, "widget_set A one 1 2 { for Linux & NetBSD}\n");
+#else
+			sock_send_string (sock, "widget_set A one 1 2 {     for Linux     }\n");
+#endif
 			sock_send_string (sock, "widget_set A two 1 3 { by William Ferrell}\n");
 			sock_send_string (sock, "widget_set A three 1 4 { and Scott Scriven}\n");
 		} else {
 			sock_send_string (sock, "widget_add A text scroller\n");
+#ifdef __NetBSD__
+			sock_send_string (sock, "widget_set A text 1 2 20 2 v 8 { for Linux & NetBSD by William Ferrell and Scott Scriven}\n");
+#else
 			sock_send_string (sock, "widget_set A text 1 2 20 2 v 8 {     for Linux       by William Ferrell and Scott Scriven}\n");
+#endif
 		}
 	}
 

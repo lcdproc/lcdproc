@@ -23,6 +23,11 @@
 # include <sys/loadavg.h>
 #endif
 
+#ifdef __NetBSD__
+#define USE_GETLOADAVG
+#define LOADAVG_NSTATS 1
+#define LOADAVG_1MIN 1
+#endif
 
 int loadavg_fd = 0;
 

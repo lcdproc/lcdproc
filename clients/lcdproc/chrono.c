@@ -100,7 +100,7 @@ int uptime_fd = 0;
 #if FREEBSD
 static double freebsd_get_uptime(double *up, double *idle);
 #define get_uptime freebsd_get_uptime
-#elif (NETBSD || OPENBSD)
+#elif (__NetBSD__ || OPENBSD)
 static double opennetbsd_get_uptime(double *up, double *idle);
 #define get_uptime opennetbsd_get_uptime
 #elif LINUX
@@ -196,7 +196,7 @@ static long get_openbsd_idle_time() {
 }
 #endif
 
-#if (NETBSD || OPENBSD)
+#if (__NetBSD__ || OPENBSD)
 static double opennetbsd_get_uptime(double *up, double *idle) {
 	double uptime = 0;
 	struct timeval boottime;
@@ -204,7 +204,7 @@ static double opennetbsd_get_uptime(double *up, double *idle) {
 	time_t now, uuptime;
 	size_t size;
 	int mib[2];
-#if NETBSD
+#if __NetBSD__
 	u_int64_t cp_time[CPUSTATES];
 #endif
 

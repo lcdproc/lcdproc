@@ -64,6 +64,12 @@
 #ifdef HAVE_LIBKSTAT
 #include <kstat.h>
 #endif
+#ifdef __NetBSD__
+#include <sys/param.h>  
+#include <sys/sysctl.h>
+#include <sys/sched.h>
+#include <errno.h>
+#endif
 
 #define MAX_CPUS 8
 
@@ -79,13 +85,64 @@ static int load_fd = 0;
 
 static char *numnames[MAX_CPUS] = { "one", "two", "three", "four", "five", "six", "seven", "eight" };
 
+#ifdef __NetBSD__
+static void
+get_netbsd_load (struct load *result, int *numcpus)
+{
+	int mib[2], i, num;
+	size_t size;
+	struct load curr_load;
+	u_int64_t cp_time[CPUSTATES];
+
+	mib[0] = CTL_HW;
+	mib[1] = HW_NCPU;
+	size = sizeof(int);
+
+	if(sysctl(mib, 2, &num, &size, NULL, 0) < 0)
+	{
+		fprintf(stderr, "sysctl kern.boottime failed: %s\n", strerror(errno));
+	}
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_CP_TIME; 
+	size = sizeof(cp_time);
+
+	if(sysctl(mib, 2, cp_time, &size, NULL, 0) < 0)
+	{
+		fprintf(stderr, "sysctl kern.cp_time failed: %s\n", strerror(errno));
+		curr_load.user = 1;
+		curr_load.nice = 1;  
+		curr_load.system = 1;
+		curr_load.idle = 1;
+	}
+	else
+	{
+		curr_load.user = cp_time[CP_USER];
+		curr_load.nice = cp_time[CP_NICE];
+		curr_load.system = cp_time[CP_SYS] + cp_time[CP_INTR];
+		curr_load.idle = cp_time[CP_IDLE];
+	}
+	curr_load.total = curr_load.user + curr_load.nice + curr_load.system + curr_load.idle;
+
+	*numcpus = num;
+	num = num > 8 ? 8 : num;
+	/* we can not get per-cpu-load values */
+	for(i = 0; i < num; i++)
+	{
+		result[i] = curr_load;
+	}
+}
+#endif /* __NetBSD__ */
+
 static void
 get_load (struct load *result, int *numcpus)
 {
+#ifdef __NetBSD__
+	get_netbsd_load(result, numcpus);
+#else
 	char *token;
 	static struct load last_load[MAX_CPUS];
 	struct load curr_load[MAX_CPUS];
-
 
 #ifndef HAVE_LIBKSTAT
 	*numcpus = 0;
@@ -155,11 +212,13 @@ get_load (struct load *result, int *numcpus)
 		}
 	}
 #endif
+#endif /* __NetBSD__ */
 }
 
 int
 cpu_smp_init ()
 {
+#ifndef __NetBSD__
 #ifndef HAVE_LIBKSTAT
 	if (!load_fd) {
 		load_fd = open ("/proc/stat", O_RDONLY);
@@ -170,6 +229,7 @@ cpu_smp_init ()
 		exit(1);
 	}
 #endif
+#endif /* __NetBSD__ */
 
 	return 0;
 }
@@ -177,6 +237,7 @@ cpu_smp_init ()
 int
 cpu_smp_close ()
 {
+#ifndef __NetBSD__
 #ifndef HAVE_LIBKSTAT
 	if (load_fd)
 		close (load_fd);
@@ -186,6 +247,7 @@ cpu_smp_close ()
 
 	load_fd = 0;
 
+#endif /* __NetBSD__ */
 	return 0;
 }
 

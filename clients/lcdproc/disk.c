@@ -33,7 +33,13 @@
 #include "mode.h"
 #include "disk.h"
 
+#ifdef __NetBSD__
+#include <sys/param.h>
+#include <sys/ucred.h>
+#include <sys/mount.h>
+#else
 FILE *mtab_fd;
+#endif
 
 typedef struct mounts {
 	char dev[256], type[64], mpoint[256];
@@ -43,6 +49,58 @@ typedef struct mounts {
 static int
 get_fs (mounts fs[])
 {
+#ifdef __NetBSD__
+	struct statfs *mntbuf;
+	struct statfs *pp;
+	int statcnt, cnt, i; 
+
+	cnt = getmntinfo(&mntbuf, MNT_WAIT);
+	if(cnt == 0) 
+	{ 
+		perror("getmntinfo");
+		return(0);
+	}
+	for(statcnt = 0, pp = mntbuf, i = 0; i < cnt; pp++, i++)
+	{
+		if(strcmp(pp->f_fstypename, "procfs")
+			&& strcmp(pp->f_fstypename, "kernfs")
+			&& strcmp(pp->f_fstypename, "linprocfs")
+#ifndef STAT_NFS
+			&& strcmp(pp->f_fstypename, "nfs")
+#endif
+#ifndef STAT_SMBFS
+			&& strcmp(pp->f_fstypename, "smbfs")
+#endif
+		)
+		{
+/*
+			printf("mount point: %s\n", pp->f_mntonname);
+			printf("fs name    : %s\n", pp->f_mntfromname);
+			printf("fs type    : %s\n", pp->f_fstypename);
+*/
+			snprintf(fs[statcnt].dev, 255, "%s", pp->f_mntfromname);
+			snprintf(fs[statcnt].mpoint, 255, "%s", pp->f_mntonname);
+			snprintf(fs[statcnt].type, 255, "%s", pp->f_fstypename);
+
+			fs[statcnt].blocks = pp->f_blocks;
+			if(fs[statcnt].blocks > 0)
+			{
+				fs[statcnt].bsize = pp->f_bsize;
+				fs[statcnt].bfree = pp->f_bfree;
+				fs[statcnt].files = pp->f_files;
+				fs[statcnt].ffree = pp->f_ffree;
+
+/*
+				printf("bsize : %ld\n", pp->f_bsize);
+				printf("blocks: %ld\n", pp->f_blocks);
+				printf("free  : %ld\n", pp->f_bfree);
+*/
+			}
+			statcnt++;
+		}
+	}    
+	return(statcnt);
+#else
 #ifdef STAT_STATVFS
 	struct statvfs fsinfo;
 #else
@@ -99,6 +157,7 @@ get_fs (mounts fs[])
 
 	fclose (mtab_fd);
 	return x;
+#endif
 }
 
 int
@@ -178,7 +237,7 @@ disk_screen (int rep, int display)
 				sprintf (table[i].dev, "%s", mnt[i].mpoint);
 			}
 
-			//table[i].full = (lcd.cellwid * 4)
+			//table[i].full = (lcd_cellwid * 4);
 			table[i].full = (huge) (lcd_cellwid * 4)
 				 * (huge) (mnt[i].blocks - mnt[i].bfree)
 				 / (huge) mnt[i].blocks;

@@ -7,6 +7,14 @@
 
 #include "shared/sockets.h"
 
+#ifdef __NetBSD__
+#include <errno.h>
+#include <sys/fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <machine/apmvar.h>
+#endif
+
 #include "main.h"
 #include "mode.h"
 #include "batt.h"
@@ -18,6 +26,44 @@ static int get_batt_stat (int *acstat, int *battstat, int *battflag, int *percen
 static int
 get_batt_stat (int *acstat, int *battstat, int *battflag, int *percent)
 {
+#ifdef __NetBSD__
+	struct apm_power_info apmi;
+	int apmd;
+   
+	if((apmd = open("/dev/apm", O_RDONLY)) == -1)
+		return -1;
+   
+	memset(&apmi, 0, sizeof(apmi));
+	if(ioctl(apmd, APM_IOC_GETPOWER, &apmi) == -1)
+	{   
+		fprintf(stderr, "APM_IOC_GETPOWER failed in get_batt_stat(): %s\n",
+                        strerror(errno));
+		return -1;
+	}
+    
+	/* don't know, what the Linux counterparts exactly mean */
+	switch(apmi.ac_state)
+	{
+		case APM_AC_OFF:
+			*acstat = 0;
+			break;
+		case APM_AC_ON:
+			*acstat = 1;
+			break;
+		case APM_AC_BACKUP:
+			*acstat = 2;
+			break;
+		default:
+			*acstat = apmi.ac_state;
+			break;
+	}
+
+	*battstat = 0;
+	*battflag = apmi.battery_state;
+	*percent  = apmi.battery_life;
+
+	close(apmd);
+#else
 	char str[64];
 
 	if (!batt_fd)
@@ -34,6 +80,7 @@ get_batt_stat (int *acstat, int *battstat, int *battflag, int *percent)
 	if (3 > sscanf (str + 13, "0x%x 0x%x 0x%x %d", acstat, battstat, battflag, percent))
 		return -1;
 
+#endif
 	return 0;
 
 }
@@ -133,6 +180,27 @@ battery_screen (int rep, int display)
 			sock_send_string (sock, tmp);
 
 		sprintf (tmp, "widget_set B two 1 3 {");
+#ifdef __NetBSD__
+		switch(battflag)
+		{
+			case APM_BATT_HIGH:
+				sprintf (tmp + strlen (tmp), "Batt: High");
+				break;
+			case APM_BATT_LOW:
+				sprintf (tmp + strlen (tmp), "Batt: Low");
+				break;
+			case APM_BATT_CRITICAL:
+				sprintf (tmp + strlen (tmp), "Batt: Critical");
+				break;
+			case APM_BATT_CHARGING:
+				sprintf (tmp + strlen (tmp), "Batt: Charging");
+				break;
+			case APM_BATT_UNKNOWN:
+			default:
+			sprintf (tmp + strlen (tmp), "Batt: Unknown");
+				break;
+		}
+#else
 		if (battflag == 0xff) {
 			sprintf (tmp + strlen (tmp), "Battery Stat Unknown");
 		} else {
@@ -148,6 +216,7 @@ battery_screen (int rep, int display)
 			if (battflag & 128)
 				sprintf (tmp + strlen (tmp), " (NONE)");
 		}
+#endif
 		sprintf (tmp + strlen (tmp), "}\n");
 		if (display)
 			sock_send_string (sock, tmp);

@@ -290,7 +290,6 @@ process_command_line (int argc, char **argv)
 	debug( RPT_DEBUG, "%s( argc=%d, argv=...)", __FUNCTION__, argc );
 
 	/* Reset getopt */
-	optind = 0;
 	opterr = 0; /* Prevent some messages to stderr */
 
 	/* Analyze options here.. (please try to keep list of options the
