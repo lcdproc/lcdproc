@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <syslog.h>
 
 #include "shared/LL.h"
 #include "shared/sockets.h"
@@ -29,7 +30,7 @@ screenlist_init ()
 
 	screenlist = LL_new ();
 	if (!screenlist) {
-		fprintf (stderr, "screenlist_init: Error allocating list\n");
+		syslog(LOG_ERR, "screenlist_init: error allocating list");
 		return -1;
 	}
 
@@ -116,6 +117,7 @@ screenlist_current ()
 					sock_send_string (c->sock, str);
 				} else				  // The server has the display, so do nothing
 				{
+					;
 				}
 				//debug("screenlist_current: ... sent ignore\n");
 			}
@@ -129,6 +131,7 @@ screenlist_current ()
 				sock_send_string (c->sock, str);
 			} else					  // The server has the display, so do nothing
 			{
+				;
 			}
 		}
 	}

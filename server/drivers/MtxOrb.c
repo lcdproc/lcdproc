@@ -52,6 +52,7 @@
 
 static int custom = 0;
 static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
+extern int debug_level;
 
 // TODO: Remove this custom_type if not in use anymore.
 typedef enum {
@@ -98,8 +99,9 @@ static int use[9] = { 1, 0, 0, 0, 0, 0, 0, 0, 0 };
 static void MtxOrb_linewrap (int on);
 static void MtxOrb_autoscroll (int on);
 static void MtxOrb_cursorblink (int on);
+static void MtxOrb_string (int x, int y, char *string);
 
-int
+static int
 MtxOrb_set_type (char * str) {
 	char c;
 	c = str[0];
@@ -126,7 +128,7 @@ MtxOrb_set_type (char * str) {
 	return (-1);
 }
 
-int
+static int
 MtxOrb_get_speed (char *arg) {
 	int speed;
 
@@ -150,7 +152,7 @@ MtxOrb_get_speed (char *arg) {
 	return speed;
 	}
 
-void
+static void
 MtxOrb_usage (void) {
 	printf ("LCDproc Matrix-Orbital LCD driver\n"
 		"\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
@@ -162,7 +164,7 @@ MtxOrb_usage (void) {
 		"\t-t\t--type\t\tdisplay type: lcd, lkd, vfd, vkd\n");
 }
 
-int
+static int
 MtxOrb_set_contrast (char * str) {
 	int contrast;
 
@@ -174,7 +176,7 @@ MtxOrb_set_contrast (char * str) {
 	return contrast;
 }
 
-// TODO:  Get rid of this variable?
+// TODO:  Get rid of this variable? Probably not...
 lcd_logical_driver *MtxOrb;	// set by MtxOrb_init(); doesn't seem to be used anywhere
 // TODO:  Get the frame buffers working right
 
@@ -323,7 +325,7 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	MtxOrb_contrast (contrast);
 
 	if (!driver->framebuf) {
-		fprintf (stderr, "MtxOrb_init: No frame buffer.\n");
+		syslog(LOG_ERR, "no frame buffer! exiting driver init...");
 		driver->close ();
 		return -1;
 	}
@@ -332,13 +334,13 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	 * Configure the display functions
 	 */
 
-	driver->clear = MtxOrb_clear;		// was GENERIC
-	driver->string = GENERIC;
-	driver->chr = MtxOrb_chr;		// was GENERIC
+	driver->clear = MtxOrb_clear;
+	driver->string = MtxOrb_string;
+	driver->chr = MtxOrb_chr;
 	driver->vbar = MtxOrb_vbar;
-	driver->init_vbar = MtxOrb_init_vbar;	// was GENERIC
+	driver->init_vbar = MtxOrb_init_vbar;
 	driver->hbar = MtxOrb_hbar;
-	driver->init_hbar = MtxOrb_init_hbar;	// was GENERIC
+	driver->init_hbar = MtxOrb_init_hbar;
 	driver->num = MtxOrb_num;
 	driver->init_num = MtxOrb_init_num;
 
@@ -369,18 +371,20 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 // This reliance on drv_base_clear seems suspicious... especially as
 // using a (void *) -1 in the driver structure does the same thing...
 //
-void
+static void
 MtxOrb_clear ()
 {
-	drv_base_clear ();  // do we need this?
-	write(fd, "\x0FEX", 2);  // instant clear...
+	if (MtxOrb->framebuf != NULL)
+		memset (MtxOrb->framebuf, ' ', (MtxOrb->wid * MtxOrb->hgt));
+
+	write(fd, "\x0FE" "X", 2);  // instant clear...
 	clear = 1;
 }
 
 /////////////////////////////////////////////////////////////////
 // Clean-up
 //
-void
+static void
 MtxOrb_close ()
 {
 	close (fd);
@@ -391,24 +395,48 @@ MtxOrb_close ()
 	MtxOrb->framebuf = NULL;
 }
 
-void
-MtxOrb_flush ()
+static void
+MtxOrb_string (int x, int y, char *string)
 {
-	MtxOrb_draw_frame (lcd.framebuf);
+	int offset, siz;
+
+	x--; y--; // Convert 1-based coords to 0-based...
+
+	// Check range of Y
+	if (y > MtxOrb->hgt) {
+		syslog(LOG_WARNING, "lcd height overflow!");
+		return;
+	}
+
+	// Check range of X
+	if (x > MtxOrb->wid) {
+		syslog(LOG_WARNING, "lcd width overflow!");
+		return;
+	}
+
+	offset = (y * MtxOrb->wid) + x;
+	siz = (MtxOrb->wid * MtxOrb->hgt) - offset - 1;
+	siz = siz > strlen(string) ? strlen(string) : siz;
+
+	memcpy(MtxOrb->framebuf + offset, string, siz);
 }
 
-void
+static void
+MtxOrb_flush ()
+{
+	MtxOrb_draw_frame (MtxOrb->framebuf);
+}
+
+static void
 MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 {
 	int y;
 	char out[LCD_MAX_WIDTH];
 
-//  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
-
 	for (y = top; y <= bot; y++) {
 		sprintf (out, "\x0FEG%c%c", lft, y);
 		write (fd, out, 4);
-		write (fd, lcd.framebuf + (y * lcd.wid) + lft, rgt - lft + 1);
+		write (fd, MtxOrb->framebuf + (y * MtxOrb->wid) + lft, rgt - lft + 1);
 
 	}
 
@@ -418,29 +446,41 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 // Prints a character on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
-void
+static void
 MtxOrb_chr (int x, int y, char c)
 {
-	char out[10];
+	char out[10], buf[64];
+	int offset;
+
+	// Characters may or may NOT be alphabetic; it appears
+	// that characters 0..4 (or similar) are graphic fonts
 
 	// validate x and y
-	if (y > lcd.hgt)
-		y = lcd.hgt;
-	if (x > lcd.wid)
-		x = lcd.wid;
-	if (y < 1)
-		y = 1;
+	if (x > MtxOrb->wid)
+		x = MtxOrb->wid;
 	if (x < 1)
 		x = 1;
 
+	if (y > MtxOrb->hgt)
+		y = MtxOrb->hgt;
+	if (y < 1)
+		y = 1;
+
 	// write immediately to screen... this code was taken
 	// from the LK202-25; should work for others, yes?
-	sprintf(out, "\x0FEG%c%c%c", x, y, c);
-	write (fd, out, 4);
+	// sprintf(out, "\x0FEG%c%c%c", x, y, c);
+	// write (fd, out, 4);
 
 	// write to frame buffer
-	y--; x--;
-	lcd.framebuf[(y * lcd.wid) + x] = c;
+	y--; x--; // translate to 0-index
+	offset = (y * MtxOrb->wid) + x;
+	MtxOrb->framebuf[offset] = c;
+
+	if (debug_level > 2) {
+		snprintf(buf, sizeof(buf), "writing character %02X to position (%d,%d)",
+			c, x, y);
+		syslog(LOG_DEBUG, buf);
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -448,7 +488,7 @@ MtxOrb_chr (int x, int y, char c)
 // note: works only for LCD displays
 // Is it better to use the brightness for VFD/VKD displays ?
 //
-int
+static int
 MtxOrb_contrast (int contrast)
 {
 	char out[4];
@@ -479,7 +519,7 @@ MtxOrb_contrast (int contrast)
 #define BACKLIGHT_OFF 0
 #define BACKLIGHT_ON 1
 
-void
+static void
 MtxOrb_backlight (int on)
 {
 	switch (on) {
@@ -502,7 +542,7 @@ MtxOrb_backlight (int on)
 // displays with keypad have 6 outputs but the one without kepad
 // have only one output
 // NOTE: length of command are different
-void
+static void
 MtxOrb_output (int on)
 {
 	char out[5];
@@ -561,7 +601,7 @@ MtxOrb_cursorblink (int on)
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before lcd.vbar()
 //
-void
+static void
 MtxOrb_init_vbar ()
 {
 // Isn't this function supposed to go away?
@@ -572,7 +612,7 @@ MtxOrb_init_vbar ()
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-void
+static void
 MtxOrb_init_hbar ()
 {
 // Isn't this function supposed to go away?
@@ -582,7 +622,7 @@ MtxOrb_init_hbar ()
 /////////////////////////////////////////////////////////////////
 // Returns string with general information about the display
 //
-char *
+static char *
 MtxOrb_getinfo (void)
 {
 	char in = 0;
@@ -707,7 +747,7 @@ MtxOrb_getinfo (void)
 // Draws a vertical bar...
 // This is the new version ussing dynamic icon alocation
 //
-void
+static void
 MtxOrb_vbar (int x, int len)
 {
 	unsigned char mapu[9] = { barw, baru1, baru2, baru3, baru4, baru5, baru6, baru7, barb };
@@ -720,23 +760,23 @@ MtxOrb_vbar (int x, int len)
 // REMOVE THE PREVIOUS LINE FOR TESTING ONLY...
 
 	if (len > 0) {
-		for (y = lcd.hgt; y > 0 && len > 0; y--) {
-			if (len >= lcd.cellhgt)
+		for (y = MtxOrb->hgt; y > 0 && len > 0; y--) {
+			if (len >= MtxOrb->cellhgt)
 				MtxOrb_chr (x, y, 255);
 			else
 				MtxOrb_chr (x, y, MtxOrb_ask_bar (mapu[len]));
 
-			len -= lcd.cellhgt;
+			len -= MtxOrb->cellhgt;
 		}
 	} else {
 		len = -len;
-		for (y = 2; y <= lcd.hgt && len > 0; y++) {
-			if (len >= lcd.cellhgt)
+		for (y = 2; y <= MtxOrb->hgt && len > 0; y++) {
+			if (len >= MtxOrb->cellhgt)
 				MtxOrb_chr (x, y, 255);
 			else
 				MtxOrb_chr (x, y, MtxOrb_ask_bar (mapd[len]));
 
-			len -= lcd.cellhgt;
+			len -= MtxOrb->cellhgt;
 		}
 	}
 
@@ -747,31 +787,31 @@ MtxOrb_vbar (int x, int len)
 // Draws a horizontal bar to the right.
 // This is the new version ussing dynamic icon alocation
 //
-void
+static void
 MtxOrb_hbar (int x, int y, int len)
 {
 	unsigned char mapr[6] = { barw, barr1, barr2, barr3, barr4, barb };
 	unsigned char mapl[6] = { barw, barl1, barl2, barl3, barl4, barb };
 
 	if (len > 0) {
-		for (; x <= lcd.wid && len > 0; x++) {
-			if (len >= lcd.cellwid)
+		for (; x <= MtxOrb->wid && len > 0; x++) {
+			if (len >= MtxOrb->cellwid)
 				MtxOrb_chr (x, y, 255);
 			else
 				MtxOrb_chr (x, y, MtxOrb_ask_bar (mapr[len]));
 
-			len -= lcd.cellwid;
+			len -= MtxOrb->cellwid;
 
 		}
 	} else {
 		len = -len;
 		for (; x > 0 && len > 0; x--) {
-			if (len >= lcd.cellwid)
+			if (len >= MtxOrb->cellwid)
 				MtxOrb_chr (x, y, 255);
 			else
 				MtxOrb_chr (x, y, MtxOrb_ask_bar (mapl[len]));
 
-			len -= lcd.cellwid;
+			len -= MtxOrb->cellwid;
 
 		}
 	}
@@ -783,7 +823,7 @@ MtxOrb_hbar (int x, int y, int len)
 /////////////////////////////////////////////////////////////////
 // Sets up for big numbers.
 //
-void
+static void
 MtxOrb_init_num ()
 {
 	if (custom != bign) {
@@ -797,7 +837,7 @@ MtxOrb_init_num ()
 /////////////////////////////////////////////////////////////////
 // Writes a big number.
 //
-void
+static void
 MtxOrb_num (int x, int num)
 {
 	char out[5];
@@ -814,7 +854,7 @@ MtxOrb_num (int x, int num)
 //
 // The input is just an array of characters...
 //
-void
+static void
 MtxOrb_set_char (int n, char *dat)
 {
 	char out[4];
@@ -829,17 +869,17 @@ MtxOrb_set_char (int n, char *dat)
 	sprintf (out, "\x0FEN%c", n);
 	write (fd, out, 3);
 
-	for (row = 0; row < lcd.cellhgt; row++) {
+	for (row = 0; row < MtxOrb->cellhgt; row++) {
 		letter = 0;
-		for (col = 0; col < lcd.cellwid; col++) {
+		for (col = 0; col < MtxOrb->cellwid; col++) {
 			letter <<= 1;
-			letter |= (dat[(row * lcd.cellwid) + col] > 0);
+			letter |= (dat[(row * MtxOrb->cellwid) + col] > 0);
 		}
 		write (fd, &letter, 1);
 	}
 }
 
-void
+static void
 MtxOrb_icon (int which, char dest)
 {
 	char icons[3][5 * 8] = {
@@ -888,7 +928,7 @@ MtxOrb_icon (int which, char dest)
 //
 // Input is a character array, sized lcd.wid*lcd.hgt
 //
-void
+static void
 MtxOrb_draw_frame (char *dat)
 {
 	char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
@@ -901,10 +941,10 @@ MtxOrb_draw_frame (char *dat)
         write(fd, out, 4);
         write(fd, dat, lcd.wid*lcd.hgt);
 */
-	for (i = 0; i < lcd.hgt; i++) {
+	for (i = 0; i < MtxOrb->hgt; i++) {
 		sprintf (out, "\x0FEG\x001%c", i + 1);
 		write (fd, out, 4);
-		write (fd, dat + (lcd.wid * i), lcd.wid);
+		write (fd, dat + (MtxOrb->wid * i), MtxOrb->wid);
 	}
 }
 
@@ -912,7 +952,7 @@ MtxOrb_draw_frame (char *dat)
 // returns one character from the keypad...
 // (A-Z) on success, 0 on failure...
 //
-char
+static char
 MtxOrb_getkey ()
 {
 	char in = 0;
@@ -930,7 +970,7 @@ MtxOrb_getkey ()
 //  I really hope it is working and bug-less because it is not
 //  completely tested, just a quick hack.
 //
-int
+static int
 MtxOrb_ask_bar (int type)
 {
 	int i;
@@ -1072,18 +1112,18 @@ MtxOrb_ask_bar (int type)
 /////////////////////////////////////////////////////////////
 // Does the heartbeat...
 //
-char
+static char
 MtxOrb_heartbeat (int timer)
 {
 	MtxOrb_icon (!((timer + 4) & 5), 0);
-	MtxOrb_chr (lcd.wid, 1, 0);
+	MtxOrb_chr (MtxOrb->wid, 1, 0);
 	return (char) 0;
 }
 
 /////////////////////////////////////////////////////////////////
 // Sets up a well known character for use.
 //
-void
+static void
 MtxOrb_set_known_char (int car, int type)
 {
 	char all_bar[25][5 * 8] = {
@@ -1324,7 +1364,7 @@ MtxOrb_set_known_char (int car, int type)
 // PS: There might be reference to this code left, so keep it for some time.
 //
 // MtxOrb_init_hbar and MtxOrb_init_vbar use it; it's prototyped in MtxOrb.h ...
-void
+static void
 MtxOrb_init_all (int type)
 {
 }

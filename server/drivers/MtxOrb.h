@@ -4,29 +4,29 @@
 extern lcd_logical_driver *MtxOrb;
 
 int MtxOrb_init (lcd_logical_driver * driver, char *device);
-void MtxOrb_clear ();
-void MtxOrb_close ();
-void MtxOrb_flush ();
-void MtxOrb_flush_box (int lft, int top, int rgt, int bot);
-void MtxOrb_chr (int x, int y, char c);
-int MtxOrb_contrast (int contrast);
-void MtxOrb_backlight (int on);
-void MtxOrb_output (int on);
-void MtxOrb_init_vbar ();
-void MtxOrb_init_hbar ();
-void MtxOrb_vbar (int x, int len);
-void MtxOrb_hbar (int x, int y, int len);
-void MtxOrb_init_num ();
-void MtxOrb_num (int x, int num);
-void MtxOrb_set_char (int n, char *dat);
-void MtxOrb_icon (int which, char dest);
-void MtxOrb_draw_frame (char *dat);
-char MtxOrb_getkey ();
-char * MtxOrb_getinfo ();
+static void MtxOrb_clear ();
+static void MtxOrb_close ();
+static void MtxOrb_flush ();
+static void MtxOrb_flush_box (int lft, int top, int rgt, int bot);
+static void MtxOrb_chr (int x, int y, char c);
+static int MtxOrb_contrast (int contrast);
+static void MtxOrb_backlight (int on);
+static void MtxOrb_output (int on);
+static void MtxOrb_init_vbar ();
+static void MtxOrb_init_hbar ();
+static void MtxOrb_vbar (int x, int len);
+static void MtxOrb_hbar (int x, int y, int len);
+static void MtxOrb_init_num ();
+static void MtxOrb_num (int x, int num);
+static void MtxOrb_set_char (int n, char *dat);
+static void MtxOrb_icon (int which, char dest);
+static void MtxOrb_draw_frame (char *dat);
+static char MtxOrb_getkey ();
+static char * MtxOrb_getinfo ();
 
-int MtxOrb_ask_bar (int type);
-void MtxOrb_set_known_char (int car, int type);
+static int MtxOrb_ask_bar (int type);
+static void MtxOrb_set_known_char (int car, int type);
 
 // Isn't this function supposed to go away?
-void MtxOrb_init_all (int type);
+static void MtxOrb_init_all (int type);
 #endif

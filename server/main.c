@@ -39,6 +39,7 @@
 #define MAX_TIMER 0x10000
 #define DEFAULT_USER "nobody"
 
+int debug_level = 3;
 char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
 char *build_date = __DATE__;

@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <syslog.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -23,7 +24,27 @@
 
 #include "lcd.h"
 
-#include "drv_base.h"
+static int lcd_drv_init (lcd_logical_driver * driver, char *args);
+static void lcd_drv_close ();
+static void lcd_drv_clear ();
+static void lcd_drv_flush ();
+static void lcd_drv_string (int x, int y, char *string);
+static void lcd_drv_chr (int x, int y, char c);
+static int lcd_drv_contrast (int contrast);
+static void lcd_drv_backlight (int on);
+static void lcd_drv_output (int on);
+static void lcd_drv_init_vbar ();
+static void lcd_drv_init_hbar ();
+static void lcd_drv_init_num ();
+static void lcd_drv_num (int x, int num);
+static void lcd_drv_set_char (int n, char *dat);
+static void lcd_drv_vbar (int x, int len);
+static void lcd_drv_hbar (int x, int y, int len);
+static void lcd_drv_icon (int which, char dest);
+static void lcd_drv_flush_box (int lft, int top, int rgt, int bot);
+static void lcd_drv_draw_frame ();
+static char lcd_drv_getkey ();
+static char *lcd_drv_getinfo ();
 
 #ifdef MTXORB_DRV
 #include "MtxOrb.h"
@@ -105,7 +126,7 @@ lcd_logical_driver lcd;
 // names, as well as older ones...
 //
 lcd_physical_driver drivers[] = {
-	{"base", drv_base_init,},
+
 #ifdef MTXORB_DRV
 	{"MtxOrb", MtxOrb_init,},
 #endif
@@ -162,46 +183,73 @@ LL *list;
 // "base" array.  To initialize a specific driver, use the
 // lcd_add_driver() function.
 // 
+// This was eliminated; everything
+// done here is to be replaced by the use of lcd_add_driver()...
 int
 lcd_init (char *args)
 {
-//  int i;
-	int err;
+	return 0;
+}
 
-	list = LL_new ();
-	if (!list) {
-		printf ("Error allocating driver list.\n");
-		return -1;
+// This sets up all of the "wrapper" driver functions
+// which call all of the drivers in turn.
+//
+static int
+lcd_drv_init (struct lcd_logical_driver *driver, char *args)
+{
+	driver->wid = LCD_STD_WIDTH;
+	driver->hgt = LCD_STD_HEIGHT;
+
+	driver->cellwid = LCD_STD_CELL_WIDTH;
+	driver->cellhgt = LCD_STD_CELL_HEIGHT;
+
+	driver->framebuf = NULL;
+
+	// Set up these wrapper functions...
+	driver->clear = lcd_drv_clear;
+	driver->string = lcd_drv_string;
+	driver->chr = lcd_drv_chr;
+	driver->vbar = lcd_drv_vbar;
+	driver->hbar = lcd_drv_hbar;
+	driver->init_num = lcd_drv_init_num;
+	driver->num = lcd_drv_num;
+
+	driver->init = lcd_drv_init;
+	driver->close = lcd_drv_close;
+	driver->flush = lcd_drv_flush;
+	driver->flush_box = lcd_drv_flush_box;
+	driver->contrast = lcd_drv_contrast;
+	driver->backlight = lcd_drv_backlight;
+	driver->output = lcd_drv_output;
+	driver->set_char = lcd_drv_set_char;
+	driver->icon = lcd_drv_icon;
+	driver->init_vbar = lcd_drv_init_vbar;
+	driver->init_hbar = lcd_drv_init_hbar;
+	driver->draw_frame = lcd_drv_draw_frame;
+
+	driver->getkey = lcd_drv_getkey;
+	driver->getinfo = lcd_drv_getinfo;
+
+	return 1;						  // 1 is arbitrary.  (must be 1 or more)
+}
+
+/*
+ * This function can be replaced later with something
+ * that utilizes the results of dynamic library loading
+ *
+ */
+
+static
+void *
+lcd_find_init (char *driver) {
+	int i;
+
+	for (i = 0; drivers[i].name; i++) {
+		if (strcmp(driver, drivers[i].name) == 0) {
+			return (*drivers[i].init);
+		}
 	}
-
-	// This sets up functions which call all drivers in
-	// round-robin fashion
-	lcd_drv_init (NULL, NULL);
-
-	// "base" driver is a special driver which is always
-	// loaded...
-	err = lcd_add_driver ("base", args);
-
-	lcd.wid = 20;
-	lcd.hgt = 4;
-
-	return err;
-
-	/*
-	   drv_base_init(args);
-
-	   for(i=0; drivers[i].name; i++)
-	   {
-	   if(!strcmp(driver, drivers[i].name))
-	   {
-	   return drivers[i].init(args);
-	   }
-	   }
-
-	   printf("Invalid driver: %s\n", driver);
-	   return -1;
-	 */
-
+	return NULL;
 }
 
 // TODO:  lcd_remove_driver()
@@ -209,56 +257,47 @@ lcd_init (char *args)
 // This initializes the specified driver and sends parameters to
 // it.  This is the function which calls, for example,
 // MtxOrb_init.  The specifics come from the drivers[] array.
-//
+
 int
 lcd_add_driver (char *driver, char *args)
 {
 	int i;
+	char buf[64];
+	int (*init_driver) ();
 
 	lcd_logical_driver *add;
 
-	for (i = 0; drivers[i].name; i++) {
+	if ((init_driver = (void *) lcd_find_init(driver)) != NULL) {
 
-		//printf("Checking driver: %s\n", drivers[i].name);
+		// This creates an instance of the lcd structure specific to the
+		// driver... it is passed to the driver's init routine...
 
-		if (0 == strcmp (driver, drivers[i].name)) {
+		//if ((add = malloc (sizeof (*add))) == NULL) {
+		//	snprintf (buf, sizeof(buf), "couldn't allocate space for driver \"%s\"", driver);
+		//	syslog (LOG_ERR, buf);
+		//	return -1;
+		//}
 
-			//printf("Found driver: %s (%s)\n", drivers[i].name, driver);
+		add = &lcd;
+		memset (add, 0, sizeof (add));
 
-			// This creates an instance of the lcd structure specific to the
-			// driver... it is passed to the driver's init routine...
-			add = malloc (sizeof (lcd_logical_driver));
-			if (!add) {
-				printf ("Couldn't allocate driver \"%s\".\n", driver);
-				return -1;
-			}
-			//printf("Allocated driver\n");
-			memset (add, 0, sizeof (lcd_logical_driver));
+		// Default settings for the driver...
+		lcd_drv_init(add, NULL);
 
-			add->wid = lcd.wid;
-			add->hgt = lcd.hgt;
-			add->cellwid = lcd.cellwid;
-			add->cellhgt = lcd.cellhgt;
-
-//       printf("LCD driver info:\n\twid: %i\thgt: %i\n",
-//              add->wid, add->hgt);
-
-			add->framebuf = malloc (add->wid * add->hgt);
-
-			if (!add->framebuf) {
-				printf ("Couldn't allocate framebuffer for driver \"%s\".\n", driver);
-				free (add);
-				return -1;
-			}
-			//printf("Allocated frame buffer\n");
-
-			LL_Push (list, (void *) add);
-
-			// This is where the driver itself is actually called;
-			return drivers[i].init (add, args);
+		// Allocate space for a framebuffer...
+		if ((add->framebuf = malloc (add->wid * add->hgt)) == NULL) {
+			snprintf (buf, sizeof(buf), "couldn't allocate framebuffer for driver \"%s\"", driver);
+			syslog (LOG_ERR, buf);
+			// free (add);
+			return -1;
 		}
-	}
+		memset (add->framebuf, ' ', (add->wid * add->hgt));
 
+		return init_driver (add, args);
+	} else {
+		snprintf(buf, sizeof(buf), "invalid driver: %s", driver);
+		syslog(LOG_ERR, buf);
+	}
 	return -1;
 }
 
@@ -268,85 +307,9 @@ lcd_shutdown ()
 {
 	lcd_logical_driver *driver;
 
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			//printf("driver...\n");
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->close > 0) {
-				driver->close ();
-			} else if ((int) driver->close == -1) {
-				drv_base->close ();
-			}
-
-			LL_Shift (list);
-			// FIXME: This crashes!
-			//if(driver) free(driver);
-			//printf("...freed\n");
-		}
-
-	} while (LL_Length (list) > 0);
+	lcd.close ();
 
 	return 0;
-}
-
-// This sets up all of the "wrapper" driver functions
-// which call all of the drivers in turn.
-//
-int
-lcd_drv_init (struct lcd_logical_driver *driver, char *args)
-{
-//  printf("lcd_drv_init()\n");
-
-	lcd.wid = LCD_MAX_WID;
-	lcd.hgt = LCD_MAX_HGT;
-
-	lcd.framebuf = NULL;
-/*
-  if(!lcd.framebuf) 
-     lcd.framebuf = malloc(lcd.wid * lcd.hgt);
-
-  if(!lcd.framebuf)
-  {
-     lcd_drv_close();
-     return -1;
-  }
-  memset(lcd.framebuf, ' ', lcd.wid*lcd.hgt);
-*/
-// Debugging...
-//  if(lcd.framebuf) printf("Frame buffer: %i\n", (int)lcd.framebuf);
-
-	lcd.cellwid = 5;
-	lcd.cellhgt = 8;
-
-	// Set up these wrapper functions...
-	lcd.clear = lcd_drv_clear;
-	lcd.string = lcd_drv_string;
-	lcd.chr = lcd_drv_chr;
-	lcd.vbar = lcd_drv_vbar;
-	lcd.hbar = lcd_drv_hbar;
-	lcd.init_num = lcd_drv_init_num;
-	lcd.num = lcd_drv_num;
-
-	lcd.init = lcd_drv_init;
-	lcd.close = lcd_drv_close;
-	lcd.flush = lcd_drv_flush;
-	lcd.flush_box = lcd_drv_flush_box;
-	lcd.contrast = lcd_drv_contrast;
-	lcd.backlight = lcd_drv_backlight;
-	lcd.output = lcd_drv_output;
-	lcd.set_char = lcd_drv_set_char;
-	lcd.icon = lcd_drv_icon;
-	lcd.init_vbar = lcd_drv_init_vbar;
-	lcd.init_hbar = lcd_drv_init_hbar;
-	lcd.draw_frame = lcd_drv_draw_frame;
-
-	lcd.getkey = lcd_drv_getkey;
-	lcd.getinfo = lcd_drv_getinfo;
-
-	return 1;						  // 1 is arbitrary.  (must be 1 or more)
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -364,438 +327,188 @@ lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 //       driver->func() == -1 means it should call the generic driver.
 //////////////////////////////////////////////////////////////////////
 
-void
+/*
+ * The functions below are wrapper functions for the actual driver
+ * functions.
+ *
+ */
+
+/*
+ * TODO: Convert these functions to either null functions (output)
+ * or to use a new interface for a linked list (input).
+ *
+ */
+
+// lcd_drv_close ()
+// lcd_drv_clear ()
+// lcd_drv_flush ()
+// lcd_drv_string (int x, int y, char string[])
+// lcd_drv_chr (int x, int y, char c)
+// lcd_drv_contrast (int contrast)
+// lcd_drv_backlight (int on)
+// lcd_drv_output (int on)
+// lcd_drv_init_vbar ()
+// lcd_drv_init_hbar ()
+// lcd_drv_init_num ()
+// lcd_drv_num (int x, int num)
+// lcd_drv_set_char (int n, char *dat)
+// lcd_drv_vbar (int x, int len)
+// lcd_drv_hbar (int x, int y, int len)
+// lcd_drv_icon (int which, char dest)
+// lcd_drv_flush_box (int lft, int top, int rgt, int bot)
+// lcd_drv_draw_frame (char *dat)
+// lcd_drv_getkey ()
+// lcd_drv_getinfo ()
+
+static void
 lcd_drv_close ()
 {
-	lcd_logical_driver *driver;
-
-//   printf("lcd_drv_close()\n");
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->close > 0) {
-				printf ("Calling close()\n");
-				driver->close ();
-			} else if ((int) driver->close == -1) {
-				drv_base->close ();
-			}
-		}
-	} while (LL_Next (list) == 0);
-
+	;
 }
 
-void
+static void
 lcd_drv_clear ()
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->clear > 0)
-				driver->clear ();
-			else if ((int) driver->clear == -1) {
-				drv_base->clear ();
-			}
-		}
-	} while (LL_Next (list) == 0);
-
+	;
 }
 
-void
+static void
 lcd_drv_flush ()
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->flush > 0)
-				driver->flush ();
-			else if ((int) driver->flush == -1) {
-				drv_base->flush ();
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
-lcd_drv_string (int x, int y, char string[])
+static void
+lcd_drv_string (int x, int y, char *string)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->string > 0)
-				driver->string (x, y, string);
-			else if ((int) driver->string == -1) {
-				drv_base->string (x, y, string);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_chr (int x, int y, char c)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->chr > 0)
-				driver->chr (x, y, c);
-			else if ((int) driver->chr == -1) {
-				drv_base->chr (x, y, c);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-int
+static int
 lcd_drv_contrast (int contrast)
 {
-	int res = 0;
-
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->contrast > 0) {
-				res = driver->contrast (contrast);
-				if (res >= 0)
-					return res;
-			}
-			/*
-			   else if((int)driver->contrast == -1)
-			   {
-			   res=drv_base->contrast(contrast);
-			   }
-			 */
-		}
-	} while (LL_Next (list) == 0);
-
-	return res;
+	return -1;
 }
 
-void
+static void
 lcd_drv_backlight (int on)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->backlight > 0)
-				driver->backlight (on);
-			else if ((int) driver->backlight == -1) {
-				drv_base->backlight (on);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_output (int on)
 {
-	lcd_logical_driver *driver;
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-			if ((int) driver->output > 0)
-				driver->output (on);
-			else if ((int) driver->output == -1) {
-				drv_base->output (on);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_init_vbar ()
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->init_vbar > 0)
-				driver->init_vbar ();
-			else if ((int) driver->init_vbar == -1) {
-				drv_base->init_vbar ();
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_init_hbar ()
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->init_hbar > 0)
-				driver->init_hbar ();
-			else if ((int) driver->init_hbar == -1) {
-				drv_base->init_hbar ();
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_init_num ()
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->init_num > 0)
-				driver->init_num ();
-			else if ((int) driver->init_num == -1) {
-				drv_base->init_num ();
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_num (int x, int num)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->num > 0)
-				driver->num (x, num);
-			else if ((int) driver->num == -1) {
-				drv_base->num (x, num);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_set_char (int n, char *dat)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->set_char > 0)
-				driver->set_char (n, dat);
-			else if ((int) driver->set_char == -1) {
-				drv_base->set_char (n, dat);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_vbar (int x, int len)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->vbar > 0)
-				driver->vbar (x, len);
-			else if ((int) driver->vbar == -1) {
-				drv_base->vbar (x, len);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_hbar (int x, int y, int len)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->hbar > 0)
-				driver->hbar (x, y, len);
-			else if ((int) driver->hbar == -1) {
-				drv_base->hbar (x, y, len);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_icon (int which, char dest)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->icon > 0)
-				driver->icon (which, dest);
-			else if ((int) driver->icon == -1) {
-				drv_base->icon (which, dest);
-			}
-		}
-	} while (LL_Next (list) == 0);
+	;
 }
 
-void
+static void
 lcd_drv_flush_box (int lft, int top, int rgt, int bot)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->flush_box > 0)
-				driver->flush_box (lft, top, rgt, bot);
-			else if ((int) driver->flush_box == -1) {
-				drv_base->flush_box (lft, top, rgt, bot);
-			}
-		}
-	} while (LL_Next (list) == 0);
-
+	;
 }
 
 // TODO:  Check whether lcd.draw_frame() should really take a framebuffer
 // TODO:   as an argument, or if it should always use lcd.framebuf
-void
+static void
 lcd_drv_draw_frame (char *dat)
 {
-	lcd_logical_driver *driver;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->draw_frame > 0)
-				driver->draw_frame (dat);
-			else if ((int) driver->draw_frame == -1) {
-				drv_base->draw_frame (dat);
-			}
-		}
-	} while (LL_Next (list) == 0);
-
+	;
 }
 
-char
+static char *
+lcd_drv_getinfo ()
+{
+	return NULL;
+}
+
+// Input functions: may come from multiple sources...
+
+static char
 lcd_drv_getkey ()
 {
-	lcd_logical_driver *driver;
-
-	char key;
-
-	LL_Rewind (list);
-	do {
-		driver = (lcd_logical_driver *) LL_Get (list);
-		if (driver) {
-			lcd.framebuf = driver->framebuf;
-
-			if ((int) driver->getkey > 0) {
-				key = driver->getkey ();
-				if (key)
-					return key;
-			} else if ((int) driver->getkey == -1) {
-				key = drv_base->getkey ();
-				if (key)
-					return key;
-			}
-		}
-	} while (LL_Next (list) == 0);
-
 	return 0;
 }
 
-#define MAX_INFO_BUF 1024
+// char
+// lcd_drv_getkey ()
+// {
+// 	lcd_logical_driver *driver;
+// 
+// 	char key;
+// 
+// 	LL_Rewind (list);
+// 	do {
+// 		driver = (lcd_logical_driver *) LL_Get (list);
+// 		if (driver) {
+// 			lcd.framebuf = driver->framebuf;
+// 
+// 			if ((int) driver->getkey > 0) {
+// 				key = driver->getkey ();
+// 				if (key)
+// 					return key;
+// 			} else if ((int) driver->getkey == -1) {
+// 				key = drv_base->getkey ();
+// 				if (key)
+// 					return key;
+// 			}
+// 		}
+// 	} while (LL_Next (list) == 0);
+// 
+// 	return 0;
+// }
 
-char *
-lcd_drv_getinfo ()
-{
-	static char info[MAX_INFO_BUF];
-	char *p;
-	lcd_logical_driver *driver;
-
-	memset(info, '\0', sizeof(info));
-
-	ResetList(list);
-	do {
-		driver = GetDriverData(list);
-
-		if (DriverPresent(driver)) {
-			if (FunctionPresent(driver->getinfo)) {
-				p = (char *) driver->getinfo ();
-				if (strlen(p) + strlen(info) < (MAX_INFO_BUF - 2)) {
-					strcat(info, p);
-				}
-				strcat(info, "\n");
-			}
-
-		}
-
-	} while (MoreDrivers(list));
-
-	return info;
-}

@@ -2,10 +2,14 @@
 #define LCD_H
 
 // Maximum supported sizes
-#define LCD_MAX_WID 256
 #define LCD_MAX_WIDTH 256
-#define LCD_MAX_HGT 256
 #define LCD_MAX_HEIGHT 256
+
+// Standard supported sizes
+#define LCD_STD_WIDTH 20
+#define LCD_STD_HEIGHT 4
+#define LCD_STD_CELL_WIDTH 5
+#define LCD_STD_CELL_HEIGHT 8
 
 int lcd_init (char *args);
 int lcd_add_driver (char *driver, char *args);
@@ -65,27 +69,5 @@ typedef struct lcd_physical_driver {
 } lcd_physical_driver;
 
 extern lcd_logical_driver lcd;
-
-int lcd_drv_init (lcd_logical_driver * driver, char *args);
-void lcd_drv_close ();
-void lcd_drv_clear ();
-void lcd_drv_flush ();
-void lcd_drv_string (int x, int y, char string[]);
-void lcd_drv_chr (int x, int y, char c);
-int lcd_drv_contrast (int contrast);
-void lcd_drv_backlight (int on);
-void lcd_drv_output (int on);
-void lcd_drv_init_vbar ();
-void lcd_drv_init_hbar ();
-void lcd_drv_init_num ();
-void lcd_drv_num (int x, int num);
-void lcd_drv_set_char (int n, char *dat);
-void lcd_drv_vbar (int x, int len);
-void lcd_drv_hbar (int x, int y, int len);
-void lcd_drv_icon (int which, char dest);
-void lcd_drv_flush_box (int lft, int top, int rgt, int bot);
-void lcd_drv_draw_frame ();
-char lcd_drv_getkey ();
-char *lcd_drv_getinfo ();
 
 #endif
