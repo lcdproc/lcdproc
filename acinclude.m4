@@ -4,109 +4,146 @@ AC_MSG_CHECKING(for which drivers to compile)
 AC_ARG_ENABLE(drivers,
   	[  --enable-drivers=<list> compile driver for LCDs in <list>.]
 	[                  drivers may be separated with commas.]
+  	[                  Possible choices are:]
+ 	[                    mtxorb,cfontz,curses,text,lb216,]
+ 	[                    hd44780,joy,irman,lircin,bayrad,]
+ 	[                    glk,stv5730,sed1520,svgalib,lcdm001]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval", 
   	drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	case "$host" in
-	*-*-*linux*)
-		drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520,svgalib]
-		;;
-	*-*-*solaris*)
-		drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk]
-		;;
-	esac
-  	AC_MSG_RESULT(all)
+	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520,svgalib,lcdm001]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
-  	AC_MSG_RESULT($drivers)
   	for driver in $drivers
   	do
-    		case "$driver" in
-        	lcdm001)
+
+    case "$driver" in
+        lcdm001)
 			DRIVERS="$DRIVERS lcdm001.o"
 			AC_DEFINE(LCDM001_DRV)
+			actdrivers=["$actdrivers lcdm001"]
 			;;
-        	mtxorb)
+        mtxorb)
 			DRIVERS="$DRIVERS MtxOrb.o"
 			AC_DEFINE(MTXORB_DRV)
+			actdrivers=["$actdrivers mtxorb"]
 			;;
 		glk)
 			DRIVERS="$DRIVERS glk.o glkproto.o"
 			AC_DEFINE(GLK_DRV)
+			actdrivers=["$actdrivers glk"]
 			;;
 		bayrad)
 			DRIVERS="$DRIVERS bayrad.o"
 			AC_DEFINE(BAYRAD_DRV)
+			actdrivers=["$actdrivers bayrad"]
 			;;
 		cfontz)
 			DRIVERS="$DRIVERS CFontz.o"
 			AC_DEFINE(CFONTZ_DRV)
+			actdrivers=["$actdrivers cfontz"]
 			;;
 		sli)	
 			DRIVERS="$DRIVERS wirz-sli.o"
 			AC_DEFINE(SLI_DRV)
+			actdrivers=["$actdrivers sli"]
 			;;
 		curses)
-			AC_CHECK_LIB(ncurses, main, LIBCURSES="-lncurses",
-				AC_CHECK_LIB(curses, main, LIBCURSES="-lcurses",
-					AC_MSG_ERROR([The curses driver needs the curses library])))
-			DRIVERS="$DRIVERS curses_drv.o"
-			AC_DEFINE(CURSES_DRV)
+ 			AC_CHECK_LIB(ncurses, main, 
+ 				LIBCURSES="-lncurses"
+ 				DRIVERS="$DRIVERS curses_drv.o"
+ 				AC_DEFINE(CURSES_DRV)
+ 				actdrivers=["$actdrivers ncurses"]
+ 				,
+dnl				else
+ 				AC_CHECK_LIB(curses, main, 
+ 					LIBCURSES="-lcurses"
+ 					DRIVERS="$DRIVERS curses_drv.o"
+ 					AC_DEFINE(CURSES_DRV)
+ 					actdrivers=["$actdrivers curses"]
+ 					,
+dnl					else
+ 					AC_MSG_WARN([The curses driver needs the curses (or ncurses) library.]),
+ 				)
+ 			)
 			;;
 		text)
 			DRIVERS="$DRIVERS text.o"
 			AC_DEFINE(TEXT_DRV)
+			actdrivers=["$actdrivers text"]
 			;;
 		lb216)
 			DRIVERS="$DRIVERS lb216.o"
 			AC_DEFINE(LB216_DRV)
+			actdrivers=["$actdrivers lb216"]
 			;;
 		hd44780)
 			DRIVERS="$DRIVERS hd44780.o hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-winamp.o"
 			AC_DEFINE(HD44780_DRV)
+			actdrivers=["$actdrivers hd44780"]
 			;;
 		joy)	
 			DRIVERS="$DRIVERS joy.o"
 			AC_DEFINE(JOY_DRV)
+			actdrivers=["$actdrivers joy"]
 			;;
 		irman)
-			AC_CHECK_LIB(irman, main, LIBIRMAN="-lirman",
-				AC_MSG_ERROR([The irman driver needs the irman library]))
-			DRIVERS="$DRIVERS irmanin.o"
-			AC_DEFINE(IRMANIN_DRV)
+ 			AC_CHECK_LIB(irman, main, 
+ 				LIBIRMAN="-lirman"
+ 				DRIVERS="$DRIVERS irmanin.o"
+ 				AC_DEFINE(IRMANIN_DRV)
+ 				actdrivers=["$actdrivers irman"]
+ 				,
+dnl				else
+ 				AC_MSG_WARN([The irman driver needs the irman library.])
+ 			)
 			;;
 		lircin)
-			AC_CHECK_LIB(lirc_client, main, LIBLIRC_CLIENT="-llirc_client",
-				AC_MSG_ERROR([The lirc driver needs the lirc client library]))
-			DRIVERS="$DRIVERS lircin.o"
-			AC_DEFINE(LIRCIN_DRV)
+			AC_CHECK_LIB(lirc_client, main, 
+				LIBLIRC_CLIENT="-llirc_client"
+				DRIVERS="$DRIVERS lircin.o"
+				AC_DEFINE(LIRCIN_DRV)
+				actdrivers=["$actdrivers lircin"]
+				,
+dnl				else
+				AC_MSG_WARN([The lirc driver needs the lirc client library])
+			)
 			;;
 		sed1520)
 			DRIVERS="$DRIVERS sed1520.o"
 			AC_DEFINE(SED1520_DRV)
+			actdrivers=["$actdrivers sed1520"]
 			;;
 		stv5730)
 			DRIVERS="$DRIVERS stv5730.o"
 			AC_DEFINE(STV5730_DRV)
+			actdrivers=["$actdrivers stv5730"]
 			;;
 		svgalib)
-			AC_CHECK_LIB(vga, main, LIBSVGA="-lvga -lvgagl",
-				AC_MSG_ERROR([The svgalib driver needs the vga library]))
-			DRIVERS="$DRIVERS svgalib_drv.o"
-			AC_DEFINE(SVGALIB_DRV)
+			AC_CHECK_LIB(vga, main, 
+				LIBSVGA="-lvga -lvgagl"
+				DRIVERS="$DRIVERS svgalib_drv.o"
+				AC_DEFINE(SVGALIB_DRV)
+				actdrivers=["$actdrivers svgalib"]
+				,
+dnl				else
+				AC_MSG_WARN([The svgalib driver needs the vga library]))
 			;;
 		t6963)
 			DRIVERS="$DRIVERS t6963.o"
 			AC_DEFINE(T6963_DRV)
+			actdrivers=[$actdrivers sed1520]
 			;;
 	*) 	
 			AC_MSG_ERROR([Unknown driver $driver])
 			;;
   		esac
   	done
+
+AC_MSG_RESULT([Will compile drivers:$actdrivers])
 
 AC_SUBST(LIBCURSES)
 AC_SUBST(LIBIRMAN)
