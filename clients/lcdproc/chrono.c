@@ -32,8 +32,8 @@
 int TwentyFourHour = 1;
 int uptime_fd = 0;
 
-static char *kver;
-static char *sysname;
+static char kver[SYS_NMLN];
+static char sysname[SYS_NMLN];
 
 static double get_uptime (double *up, double *idle);
 
