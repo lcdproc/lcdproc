@@ -110,7 +110,7 @@ update_server_screen (int timer)
 {
 	client *c;
 	int num_clients;
-	screen *s;
+	//screen *s;
 	int num_screens;
 
 	// Draw a title...

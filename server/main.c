@@ -127,7 +127,7 @@ main (int argc, char **argv)
 	int daemon_mode = 1;
 	int disable_server_screen = 1;
 	screen *s = NULL;
-	char *str, *ing;				  // strings for commandline handling
+	//char *str, *ing;				  // strings for commandline handling
 	char user[64];
 	char c, buf[64], *driverlist[MAX_DRIVERS], *driverargs[MAX_DRIVERS];
 	char linebuf[128], driver_name[64];

@@ -400,7 +400,7 @@ lcd_find_init (char *driver) {
 struct lcd_logical_driver *
 lcd_allocate_driver () {
 	struct lcd_logical_driver *driver;
-	int driver_size;
+	//int driver_size;
 
 	// This bit of fakery allows us to use lcd as the first
 	// allocated buffer, which is what everything currently uses for
@@ -506,7 +506,7 @@ lcd_add_driver (char *driver, char *args)
 int
 lcd_shutdown ()
 {
-	lcd_logical_driver *driver;
+	//lcd_logical_driver *driver;
 
 	// This does not shutdown any input sources;
 	// is that sufficient?

@@ -62,7 +62,7 @@ new_framebuf (struct lcd_logical_driver *driver, char *oldbuf) {
 
 void
 insert_str_framebuf (struct lcd_logical_driver *driver, int x, int y, char *string) {
-	int i;
+	//int i;
 	char buf[64];
 	char *pos;
 
@@ -93,7 +93,7 @@ insert_chr_framebuf (struct lcd_logical_driver *driver, int x, int y, char c) {
 
 	x--; y--;
 
-	if (x >= driver->wid) driver->wid;
+	if (x >= driver->wid) x = driver->wid;
 	if (x < 0) x = 0;
 
 	if (y >= driver->hgt) y = driver->hgt;

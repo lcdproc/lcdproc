@@ -99,8 +99,8 @@ handle_input ()
 	char str[15];
 	int key;
 	screen *s;
-	widget *w;
-	client *c;
+	//widget *w;
+	//client *c;
 
 	if ((key = lcd_ptr->getkey ()) == 0)
 		return 0;

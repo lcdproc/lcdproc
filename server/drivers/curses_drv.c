@@ -276,8 +276,8 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 
 static void
 curses_drv_wborder (WINDOW *win) {
-	int x, y;
-	char buf[128];
+	//int x, y;
+	//char buf[128];
 
 	if (has_colors()) {
 		wcolor_set(win, current_border_pair, NULL);
@@ -327,8 +327,8 @@ curses_drv_clear ()
 	werase (lcd_win);
 }
 
-#define ValidX(a) { if (x > curses_drv->wid) { x = curses_drv->wid; } else x < 1 ? 1 : x; }
-#define ValidY(a) { if (y > curses_drv->hgt) { y = curses_drv->hgt; } else y < 1 ? 1 : y; }
+#define ValidX(x) { if ((x) > curses_drv->wid) { (x) = curses_drv->wid; } else (x) < 1 ? 1 : x; }
+#define ValidY(y) { if ((y) > curses_drv->hgt) { (y) = curses_drv->hgt; } else (y) < 1 ? 1 : y; }
 
 void
 curses_drv_backlight (int on)
@@ -354,7 +354,8 @@ curses_drv_backlight (int on)
 			return;
 			break;
 	}
-	curses_drv_clear;
+
+	curses_drv_clear();
 }
 
 /////////////////////////////////////////////////////////////////
@@ -364,7 +365,7 @@ curses_drv_backlight (int on)
 void
 curses_drv_string (int x, int y, char *string)
 {
-	int i;
+	//int i;
 	unsigned char *p;
 
 	ValidX(x);

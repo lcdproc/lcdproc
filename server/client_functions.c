@@ -325,7 +325,7 @@ client_del_key_func (client * c, int argc, char **argv)
 int
 screen_add_key_func (client * c, int argc, char **argv)
 {
-	widget *  w ;  /* Keys are stored on a WID_KEYS widget */
+	//widget *  w ;  /* Keys are stored on a WID_KEYS widget */
 	screen *  s ;  /* Attached to a specific screen */
 	char *  id ;  /* Screen ID */
 	char *  keys ;  /* Keys wanted */
@@ -397,7 +397,7 @@ screen_add_key_func (client * c, int argc, char **argv)
 int
 screen_del_key_func (client * c, int argc, char **argv)
 {
-	widget *  w ;  /* Keys are stored on a WID_KEYS widget */
+	//widget *  w ;  /* Keys are stored on a WID_KEYS widget */
 	screen *  s ;  /* Attached to a specific screen */
 	char *  id ;  /* Screen ID */
 	char *  keys ;  /* Keys wanted */
@@ -1290,7 +1290,7 @@ backlight_func (client * c, int argc, char **argv)
 int
 output_func (client * c, int argc, char **argv)
 {
-	int rc = 0;
+	//int rc = 0;
 	char str[128];
 
 	if (argc != 2) {

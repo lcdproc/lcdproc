@@ -25,14 +25,14 @@
 int
 parse_all_client_messages ()
 {
-	int i, j, len;
-	int newtoken, inquote;
+	int i; // int j, len;
+	//int newtoken, inquote;
 	client *c;
 	char *str, *p, *q, *s;
 //   char *tok;
 	int argc;
 	char *argv[256];
-	char delimiters[] = " ";
+	//char delimiters[] = " ";
 	char leftquote[] = "\"'`([{";
 	char rightquote[] = "\"'`)]}";
 	char errmsg[256];
@@ -40,7 +40,7 @@ parse_all_client_messages ()
 	int quoteindex;
 
 	for (i = 0; i <= 256; i++) {
-		argv[i] == NULL;
+		argv[i] = NULL;
 	}
 
 #define	SEPARATOR_CHAR	' '
