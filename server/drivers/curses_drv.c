@@ -37,6 +37,7 @@ lcd_logical_driver *curses_drv;
 // #define PAD ACS_BLOCK
 
 int ELLIPSIS = 7;
+void curses_drv_restore_screen (void);
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// For Curses Terminal Output ////////////////////////
@@ -385,6 +386,8 @@ curses_drv_string (int x, int y, char *string)
 void
 curses_drv_chr (int x, int y, char c)
 {
+	int ch;
+
 	ValidX(x);
 	ValidY(y);
 
@@ -398,6 +401,12 @@ curses_drv_chr (int x, int y, char c)
 		//default:
 		//	normal character...
 	}
+
+	if ((ch = getch ()) != ERR)
+		if (ch == 0x0C) {
+			curses_drv_restore_screen();
+			ungetch(ch);
+		}
 
 	mvwaddch (lcd_win, y, x, c);
 }
@@ -527,6 +536,14 @@ curses_drv_flush_box (int lft, int top, int rgt, int bot)
 void
 curses_drv_draw_frame (char *dat)
 {
+	int c;
+
+	if ((c = getch ()) != ERR)
+		if (c == 0x0C) {
+			curses_drv_restore_screen();
+			ungetch (c);
+		}
+
 	curses_drv_wborder (lcd_win);
 	wrefresh (lcd_win);
 }
@@ -540,21 +557,34 @@ curses_drv_getkey ()
 
 	switch(i) {
 		case 0x0C:
-			redrawwin(lcd_win);
-			wrefresh(lcd_win);
+			curses_drv_restore_screen();
 			return 0;
 			break;
 		case KEY_LEFT:
 			return 'D';
+			break;
 		case KEY_UP:
 			return 'B';
+			break;
 		case KEY_DOWN:
 			return 'C';
+			break;
 		case KEY_RIGHT:
 			return 'A';
+			break;
 		case ERR:
 			return 0;
+			break;
 		default:
 			return i;
+			break;
 	}
+}
+
+void
+curses_drv_restore_screen () {
+	erase();
+	refresh();
+	redrawwin(lcd_win);
+	wrefresh(lcd_win);
 }
