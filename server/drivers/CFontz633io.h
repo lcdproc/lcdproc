@@ -30,7 +30,17 @@
 #define CF633_Set_Up_Temperature_Reporting 19
 #define CF633_Arbitrary_DOW_Transaction 20
 #define CF633_Set_Up_Live_Fan_or_Temperature_Display 21
-/* Add all the new message type */
+#define CF633_Send_Command_Directly_to_the_LCD_Controller 22
+#define CF633_Configure_Key_Reporting 23
+#define CF633_Read_Keypad_Polled_Mode 24
+#define CF633_Set_Fan_Power_Failsafe 25
+#define CF633_Set_Fan_Tachometer_Glitch_Filter 26
+#define CF633_Query_Fan_Power_and_Failsafe_Mask 27
+#define CF633_Set_ATX_Power_Switch_Functionality 28
+#define CF633_Enable_Disable_and_Reset_the_Watchdog 29
+#define CF633_Read_Reporting_and_Status 30
+#define CF633_Send_Data_to_LCD	31
+#define CF633_Key_Legends 32
 
 /* Those are all the possible keys we know off */
 #define KEY_UP_PRESS 1
@@ -85,7 +95,7 @@ void           Send_Buffer(int fd);
 int            test_packet(int fd);
 
 #define MAX_DATA_LENGTH 16
-#define MAX_COMMAND 21
+#define MAX_COMMAND 32
 
 typedef struct {
     ubyte command;
