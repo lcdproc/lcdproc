@@ -133,14 +133,14 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 				return -1;
 			}
 			strncpy(buf, argv[++i], sizeof(buf));
-			set_foreground_color(buf);
+			fore_color = set_foreground_color(buf);
 		} else if (0 == strcmp (argv[i], "-b") || 0 == strcmp (argv[i], "--backcolor")) {
 			if (i + 1 >= argc) {
 				fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
 				return -1;
 			}
 			strncpy(buf, argv[++i], sizeof(buf));
-			set_background_color(buf);
+			back_color = set_background_color(buf);
 		} else if (0 == strcmp (argv[i], "-B") || 0 == strcmp (argv[i], "--backlight")) {
 			if (i + 1 >= argc) {
 				fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
