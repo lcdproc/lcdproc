@@ -31,13 +31,6 @@
 #include "shared/debug.h"
 #include "shared/str.h"
 
-#define DEFAULT_CONTRAST	140
-#define DEFAULT_DEVICE		"/dev/lcd"
-#define DEFAULT_SPEED		B19200
-#define DEFAULT_LINEWRAP	1
-#define DEFAULT_AUTOSCROLL	1
-#define DEFAULT_CURSORBLINK	0
-
 #define IS_LCD_DISPLAY	(MtxOrb_type == MTXORB_LCD)
 #define IS_LKD_DISPLAY	(MtxOrb_type == MTXORB_LKD)
 #define IS_VFD_DISPLAY	(MtxOrb_type == MTXORB_VFD)
@@ -163,7 +156,7 @@ MtxOrb_usage (void) {
 		"\t-b\t\tdisplay type: lcd, lkd, vfd, vkd\n");
 }
 
-static int
+int
 MtxOrb_set_contrast (char * str) {
 	int contrast;
 
@@ -243,6 +236,7 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 		//printf("Arg(%i): %s\n", i, argv[i]);
 
 		if (*p == '-') {
+
 			p++;
 			switch (*p) {
 				case 'd':
@@ -409,6 +403,9 @@ MtxOrb_clear ()
 
 	write(fd, "\x0FE" "X", 2);  // instant clear...
 	clear = 1;
+
+	if (debug_level > 3)
+		syslog(LOG_DEBUG, "MtxOrb: cleared screen");
 }
 
 /////////////////////////////////////////////////////////////////
@@ -423,6 +420,9 @@ MtxOrb_close ()
 		free (MtxOrb->framebuf);
 
 	MtxOrb->framebuf = NULL;
+
+	if (debug_level > 3)
+		syslog(LOG_DEBUG, "MtxOrb: closed");
 }
 
 static void
@@ -439,12 +439,18 @@ MtxOrb_string (int x, int y, char *string)
 	siz = siz > strlen(string) ? strlen(string) : siz;
 
 	memcpy(MtxOrb->framebuf + offset, string, siz);
+
+	if (debug_level > 4)
+		syslog(LOG_DEBUG, "MtxOrb: printed string at (%d,%d)", x, y);
 }
 
 static void
 MtxOrb_flush ()
 {
 	MtxOrb_draw_frame (MtxOrb->framebuf);
+
+	if (debug_level > 4)
+		syslog(LOG_DEBUG, "MtxOrb: frame buffer flushed");
 }
 
 static void
@@ -458,6 +464,8 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 		write (fd, out, 4);
 		write (fd, MtxOrb->framebuf + (y * MtxOrb->wid) + lft, rgt - lft + 1);
 
+	if (debug_level > 4)
+		syslog(LOG_DEBUG, "MtxOrb: frame buffer box flushed");
 	}
 
 }
@@ -492,6 +500,9 @@ MtxOrb_chr (int x, int y, char c)
 		snprintf(buf, sizeof(buf), "writing character %02X to position (%d,%d)",
 			c, x, y);
 		syslog(LOG_DEBUG, buf);
+
+	if (debug_level > 4)
+		syslog(LOG_DEBUG, "MtxOrb: printed a char at (%d,%d)", x, y);
 	}
 }
 
@@ -514,7 +525,14 @@ MtxOrb_contrast (int contrast)
 	if (IS_LCD_DISPLAY || IS_LKD_DISPLAY) {
 		snprintf (out, sizeof(out), "\x0FEP%c", contrast);
 		write (fd, out, 3);
+
+		if (debug_level > 3)
+			syslog(LOG_DEBUG, "MtxOrb: contrast set to %d", contrast);
+	} else {
+		if (debug_level > 3)
+			syslog(LOG_DEBUG, "MtxOrb: contrast not set to %d - not LCD or LKD display", contrast);
 	}
+
 	return contrast;
 }
 
@@ -534,17 +552,33 @@ MtxOrb_contrast (int contrast)
 static void
 MtxOrb_backlight (int on)
 {
+	static int backlight_state = 1;
+
+	if (backlight_state == on)
+		return;
+
+	backlight_state = on;
+
 	switch (on) {
 		case BACKLIGHT_ON: 
 			write (fd, "\x0FE" "F", 2);
+			if (debug_level > 3)
+				syslog(LOG_DEBUG, "MtxOrb: backlight turned on");
 			break;
 		case BACKLIGHT_OFF: 
-			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY)
+			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY) {
+				if (debug_level > 3)
+					syslog(LOG_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
 				; // turns display off entirely (whoops!)
-			else
+			} else {
+				if (debug_level > 3)
+					syslog(LOG_DEBUG, "MtxOrb: backlight turned off");
 				write (fd, "\x0FE" "B" "\x000", 3);
+			}
 			break;
 		default: // ignored...
+			if (debug_level > 3)
+				syslog(LOG_DEBUG, "MtxOrb: backlight - invalid setting");
 			break;
 		}
 }
@@ -558,6 +592,17 @@ static void
 MtxOrb_output (int on)
 {
 	char out[5];
+	static int output_state = -1;
+
+	on = on & 077;	// strip to six bits
+
+	if (output_state == on)
+		return;
+
+	output_state = on;
+
+	if (debug_level > 3)
+		syslog(LOG_DEBUG, "MtxOrb: output pins set: %04X", on);
 
 	if (IS_LCD_DISPLAY || IS_VFD_DISPLAY) {
 		// LCD and VFD displays only have one output port
@@ -571,7 +616,6 @@ MtxOrb_output (int on)
 		// the value "on" is a binary value determining which
 		// ports are turned on (1) and off (0).
 
-		on = on & 077;	// strip to six bits
 		for(i = 0; i < 6; i++) {
 			(on & (1 << i)) ?
 				snprintf (out, sizeof(out), "\x0FEW%c", i + 1) :
@@ -587,7 +631,17 @@ MtxOrb_output (int on)
 static void
 MtxOrb_linewrap (int on)
 {
-	(on) ? write (fd, "\x0FE" "C", 2) : write (fd, "\x0FE" "D", 2);
+	if (on) {
+		write (fd, "\x0FE" "C", 2);
+
+		if (debug_level > 3)
+			syslog(LOG_DEBUG, "MtxOrb: linewrap turned on");
+	} else {
+		write (fd, "\x0FE" "D", 2);
+
+		if (debug_level > 3)
+			syslog(LOG_DEBUG, "MtxOrb: linewrap turned off");
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -596,7 +650,17 @@ MtxOrb_linewrap (int on)
 static void
 MtxOrb_autoscroll (int on)
 {
-	(on) ? write (fd, "\x0FEQ", 2) : write (fd, "\x0FER", 2);
+	if (on) {
+		write (fd, "\x0FEQ", 2);
+
+		if (debug_level > 3)
+			syslog(LOG_DEBUG, "MtxOrb: autoscroll turned on");
+	} else {
+		write (fd, "\x0FER", 2);
+
+		if (debug_level > 3)
+			syslog(LOG_DEBUG, "MtxOrb: autoscroll turned off");
+	}
 }
 
 // TODO: make sure this doesn't mess up non-VFD displays
@@ -606,7 +670,17 @@ MtxOrb_autoscroll (int on)
 static void
 MtxOrb_cursorblink (int on)
 {
-	(on) ?  write (fd, "\x0FES", 2) : write (fd, "\x0FET", 2);
+	if (on) {
+		write (fd, "\x0FES", 2);
+
+		if (debug_level > 3)
+			syslog(LOG_DEBUG, "MtxOrb: cursorblink turned on");
+	} else {
+		write (fd, "\x0FET", 2);
+
+		if (debug_level > 3)
+			syslog(LOG_DEBUG, "MtxOrb: cursorblink turned off");
+	}
 }
 
 //// TODO: Might not be needed anymore...
@@ -645,6 +719,9 @@ MtxOrb_getinfo (void)
 
 	struct timeval tv;
 	int retval;
+
+	if (debug_level > 3)
+		syslog(LOG_DEBUG, "MtxOrb: getinfo");
 
 	memset(info, '\0', sizeof(info));
 	strcpy(info, "Matrix Orbital Driver ");
@@ -767,6 +844,9 @@ MtxOrb_vbar (int x, int len)
 
 	int y;
 
+	if (debug_level > 4)
+		syslog(LOG_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
+
 // REMOVE THE NEXT LINE FOR TESTING ONLY...
 //  len=-len;
 // REMOVE THE PREVIOUS LINE FOR TESTING ONLY...
@@ -808,6 +888,9 @@ MtxOrb_hbar (int x, int y, int len)
 	ValidX(x);
 	ValidY(y);
 
+	if (debug_level > 4)
+		syslog(LOG_DEBUG, "MtxOrb: horizontal bar at %d set to %d", x, len);
+
 	if (len > 0) {
 		for (; x <= MtxOrb->wid && len > 0; x++) {
 			if (len >= MtxOrb->cellwid)
@@ -841,6 +924,9 @@ MtxOrb_hbar (int x, int y, int len)
 static void
 MtxOrb_init_num ()
 {
+	if (debug_level > 3)
+		syslog(LOG_DEBUG, "MtxOrb: init for big numbers");
+
 	if (custom != bign) {
 		write (fd, "\x0FEn", 2);
 		custom = bign;
@@ -856,6 +942,10 @@ static void
 MtxOrb_num (int x, int num)
 {
 	char out[5];
+
+	if (debug_level > 4)
+		syslog(LOG_DEBUG, "MtxOrb: write big number %d at %d", num, x);
+
 	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);
 	write (fd, out, 4);
 }
@@ -946,11 +1036,21 @@ MtxOrb_icon (int which, char dest)
 static void
 MtxOrb_draw_frame (char *dat)
 {
-	char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
+	char out[12];
 	int i;
+	char *old = NULL;
 
 	if (!dat)
 		return;
+
+	if (!old) {
+		old = malloc(MtxOrb->wid * MtxOrb->hgt);
+	} else {
+		if (! new_framebuf(MtxOrb, old))
+			return;
+	}
+
+	strncpy(old, dat, MtxOrb->wid * MtxOrb->hgt);
 
 //        snprintf(out, sizeof(out), "%cG%c%c", 254, 1, 1);
 //        write(fd, out, 4);

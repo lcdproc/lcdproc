@@ -29,4 +29,12 @@ static void MtxOrb_set_known_char (int car, int type);
 
 // Isn't this function supposed to go away?
 static void MtxOrb_init_all (int type);
+
+#define DEFAULT_CONTRAST	120
+#define DEFAULT_DEVICE		"/dev/lcd"
+#define DEFAULT_SPEED		B19200
+#define DEFAULT_LINEWRAP	1
+#define DEFAULT_AUTOSCROLL	1
+#define DEFAULT_CURSORBLINK	0
 #endif
+
