@@ -70,7 +70,8 @@ int menuscreens_init()
 
 	/* Create screen */
 	menuscreen = screen_create ("_menu_screen", NULL);
-	menuscreen->priority = PRI_HIDDEN;
+	if (menuscreen != NULL)
+		menuscreen->priority = PRI_HIDDEN;
 	active_menuitem = NULL;
 
 	screenlist_add (menuscreen);
@@ -120,10 +121,11 @@ void menuscreen_inform_item_destruction (MenuItem * item)
 {
 	MenuItem * i;
 
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+			((item != NULL) ? item->id : "(null)"));
 
 	/* Are we currently in (a subitem of) the given item ? */
-	for( i = active_menuitem; i; i = i->parent ) {
+	for( i = active_menuitem; i != NULL; i = i->parent ) {
 		if( i == item ) {
 			menuscreen_switch_item (item->parent);
 		}
@@ -132,9 +134,11 @@ void menuscreen_inform_item_destruction (MenuItem * item)
 
 void menuscreen_inform_item_modified (MenuItem * item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+			((item != NULL) ? item->id : "(null)"));
 
-	if( !active_menuitem ) return;
+	if ((active_menuitem == NULL) || (item == NULL))
+		return;
 
 	/* Are we currently in the item or the parent of the item ? */
 	if( active_menuitem == item || active_menuitem == item->parent ) {
@@ -144,7 +148,7 @@ void menuscreen_inform_item_modified (MenuItem * item)
 
 bool is_menu_key (char * key)
 {
-	if (menu_key && strcmp (key, menu_key) == 0)
+	if (menu_key && key && strcmp (key, menu_key) == 0)
 		return true;
 	else
 		return false;
@@ -159,7 +163,8 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 {
 	MenuItem * old_menuitem = active_menuitem;
 
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, new_menuitem?new_menuitem->id:NULL);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+			((new_menuitem != NULL) ? new_menuitem->id : "(null)"));
 
 	/* First we do the switch */
 	active_menuitem = new_menuitem;
@@ -219,7 +224,7 @@ void menuscreen_key_handler (char *key)
 
 	switch (res) {
 	  case MENURESULT_ERROR:
-		report (RPT_ERR, "%s: Error from menu_handle_input", __FUNCTION__);
+		report (RPT_ERR, "%s: Error from menu_process_input", __FUNCTION__);
 		break;
 	  case MENURESULT_NONE:
 		if (active_menuitem) {
@@ -231,7 +236,7 @@ void menuscreen_key_handler (char *key)
 	  case MENURESULT_ENTER:
 		/* Enter the selected menuitem
 		 * Note: this is not for checkboxes etc that don't have their
-		 *   own screen. The menu_handle_input function should do
+		 *   own screen. The menu_process_input function should do
 		 *   things like toggling checkboxes !
 		 */
 		debug (RPT_DEBUG, "%s: Entering subitem", __FUNCTION__);
@@ -276,8 +281,8 @@ void menuscreen_create_menu ()
 	menu_add_item (options_menu, checkbox);
 
 	for (driver = drivers_getfirst(); driver; driver = drivers_getnext()) {
-		int contrast_avail = 0;
-		int brightness_avail = 0;
+		int contrast_avail = (driver->get_contrast && driver->set_contrast) ? 1 : 0;
+		int brightness_avail = (driver->get_brightness && driver->set_brightness) ? 1 : 0;
 
 		contrast_avail = (driver->get_contrast && driver->set_contrast);
 		brightness_avail = (driver->get_brightness && driver->set_brightness);
@@ -286,14 +291,19 @@ void menuscreen_create_menu ()
 			driver_menu = menu_create (driver->name, NULL, driver->name, driver);
 			menu_add_item (options_menu, driver_menu);
 			if (contrast_avail) {
-				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast", "min", "max", 0, 1000, 100, 500);
+				int contrast = driver->get_contrast(driver);
+				
+				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast", "min", "max", 0, 1000, 100, contrast);
 				menu_add_item (driver_menu, slider);
 			}
 			if (brightness_avail) {
-				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness", "min", "max", 0, 1000, 100, 500);
+				int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
+				int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
+				
+				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness", "min", "max", 0, 1000, 100, onbrightness);
 				menu_add_item (driver_menu, slider);
 
-				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness", "min", "max", 0, 1000, 100, 500);
+				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness", "min", "max", 0, 1000, 100, offbrightness);
 				menu_add_item (driver_menu, slider);
 			}
 		}
@@ -334,7 +344,8 @@ void menuscreen_create_menu ()
 
 MenuEventFunc (heartbeat_handler)
 {
-	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__, item->id, event);
+	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__,
+			((item != NULL) ? item->id : "(null)"), event);
 
 	if (event == MENUEVENT_UPDATE) {
 		/* Set heartbeat setting */
@@ -347,7 +358,8 @@ MenuEventFunc (heartbeat_handler)
 
 MenuEventFunc (backlight_handler)
 {
-	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__, item->id, event);
+	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__,
+			((item != NULL) ? item->id : "(null)"), event);
 
 	if (event == MENUEVENT_UPDATE)
 	{
@@ -361,7 +373,8 @@ MenuEventFunc (backlight_handler)
 
 MenuEventFunc (contrast_handler)
 {
-	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__, item->id, event);
+	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__,
+			((item != NULL) ? item->id : "(null)"), event);
 
 	/* This function can be called by one of several drivers that
 	 * support contrast !
@@ -381,7 +394,8 @@ MenuEventFunc (contrast_handler)
 
 MenuEventFunc (brightness_handler)
 {
-	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__, item->id, event);
+	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__,
+			((item != NULL) ? item->id : "(null)"), event);
 
 	/* This function can be called by one of several drivers that
 	 * support contrast !
@@ -407,13 +421,15 @@ menuscreen_add_screen (Screen * s)
 	Menu * m;
 	MenuItem * mi;
 
-	debug (RPT_DEBUG, "%s( s=[%s] )", __FUNCTION__, s->id);
+	debug (RPT_DEBUG, "%s( s=[%s] )", __FUNCTION__,
+			((s != NULL) ? s->id : "(null)"));
 
-	if (!screens_menu)
-		return;	/* When screens have not been created ... */
+	/* screens have not been created or no screen given ... */
+	if ((screens_menu == NULL) || (s == NULL))
+		return;
 
 	/* Create a menu entry for the screen */
-	m = menu_create (s->id, NULL, s->name?s->name:s->id, s);
+	m = menu_create (s->id, NULL, ((s->name != NULL) ? s->name : s->id), s);
 	menu_add_item (screens_menu, m);
 
 	/* And add some items for it... */
@@ -439,12 +455,12 @@ menuscreen_remove_screen (Screen * s)
 {
 	Menu * m;
 
-	debug (RPT_DEBUG, "%s( s=[%s] )", __FUNCTION__, s->id);
+	debug (RPT_DEBUG, "%s( s=[%s] )", __FUNCTION__,
+			(s != NULL) ? s->id : "(NULL)");
 
-	if (s == menuscreen) {
+	/* allow to remove the menuscreen itself */
+	if ((s == NULL) || (s == menuscreen))
 		return;
-		/* To allow to remove the menuscreen itself */
-	}
 
 	m = menu_find_item (screens_menu, s->id, false);
 	menu_remove_item (screens_menu, m);
