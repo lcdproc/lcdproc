@@ -105,17 +105,17 @@ MtxOrb_set_type (char * str) {
 	c = str[0];
 
 	if (c == 'l') {
-		if (strcmp(str, "lcd") == 0) {
+		if (strncasecmp(str, "lcd", 3) == 0) {
 			return MTXORB_LCD;
-		} else if (strcmp(str, "lkd") == 0) {
+		} else if (strncasecmp(str, "lkd", 3) == 0) {
 			return MTXORB_LKD;
 		} else {
 			fprintf (stderr, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
 		}
 	} else if (c == 'v') {
-		if (strcmp (str, "vfd") == 0) {
+		if (strncasecmp (str, "vfd", 3) == 0) {
 			return MTXORB_VFD;
-		} else if (strcmp (str, "vkd") == 0) {
+		} else if (strncasecmp (str, "vkd", 3) == 0) {
 			return MTXORB_VKD;
 		} else {
 			fprintf (stderr, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
@@ -195,7 +195,9 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	int contrast = DEFAULT_CONTRAST;
 	char device[256] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
-	MtxOrb_type = MTXORB_LKD ;  // Assume it's an LCD w/keypad
+	char c;
+
+	MtxOrb_type = MTXORB_LKD;  // Assume it's an LCD w/keypad
 
 	MtxOrb = driver;
 
@@ -210,69 +212,74 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	   }
 	 */
 
+#ifdef USE_GETOPT
+	while ((c = getopt(argc, argv, "d:c:s:ht:")) > 0) {
+		switch(c) {
+			case 'd':
+				strncpy(device, optarg, sizeof(device));
+				break;
+			case 's':
+				speed = MtxOrb_get_speed(optarg);
+				break;
+			case 'c':
+				contrast = MtxOrb_set_contrast(optarg);
+				break;
+			case 'h':
+				MtxOrb_usage();
+				return -1;
+			case 't':
+				MtxOrb_set_type(optarg);
+			default:
+				MtxOrb_usage();
+				return -1;
+		}
+	}
+#else
 	for (i = 0; i < argc; i++) {
+		char *p;
+
+		p = argv[i];
 		//printf("Arg(%i): %s\n", i, argv[i]);
-		if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--device")) {
+
+		if (strcmp (p, "-d") == 0) {
 			if (i + 1 > argc) {
 				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
 				return -1;
 			}
 			strcpy (device, argv[++i]);
-		} else if (0 == strcmp (argv[i], "-c") || 0 == strcmp (argv[i], "--contrast")) {
+
+		} else if (strcmp (argv[i], "-c") == 0) {
 			if (i + 1 > argc) {
 				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
 				return -1;
 			}
-			tmp = atoi (argv[++i]);
-			if ((tmp < 0) || (tmp > 255)) {
-				fprintf (stderr, "MtxOrb_init: %s argument must between 0 and 255. Ussing default value.\n", argv[i]);
-			} else
-				contrast = tmp;
+			contrast = MtxOrb_set_contrast (argv[++i]);
+
 		} else if (0 == strcmp (argv[i], "-s") || 0 == strcmp (argv[i], "--speed")) {
 			if (i + 1 > argc) {
 				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
 				return -1;
 			}
-			tmp = atoi (argv[++i]);
-			if (tmp == 1200)
-				speed = B1200;
-			else if (tmp == 2400)
-				speed = B2400;
-			else if (tmp == 9600)
-				speed = B9600;
-			else if (tmp == 19200)
-				speed = B19200;
-			else {
-				fprintf (stderr, "MtxOrb_init: %s argument must be 1200, 2400, 9600 or 19200. Ussing default value.\n", argv[i]);
-			}
+			speed = MtxOrb_get_speed (argv[++i]);
+
 		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-			printf ("LCDproc Matrix-Orbital LCD driver\n" "\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
-//              "\t-t\t--type\t\tSelect the LCD type (size) [20x4]\n"
-					  "\t-c\t--contrast\tSet the initial contrast [140]\n" "\t-s\t--speed\t\tSet the communication speed [19200]\n" "\t-h\t--help\t\tShow this help information\n" "\t-t\t--type\t\tdisplay type: lcd, lkd, vfd, vkd\n");
+			MtxOrb_usage();
 			return -1;
+
 		} else if (0 == strcmp (argv[i], "-t") || 0 == strcmp (argv[i], "--type")) {
 			if (i + 1 > argc) {
 				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
 				return -1;
 			}
 			i++;
-			if ( 0 == strcmp (argv[i], "lcd") ) {
-				MtxOrb_type = MTXORB_LCD;
-			} else if ( 0 == strcmp (argv[i], "lkd") ) {
-				MtxOrb_type = MTXORB_LKD;
-			} else if ( 0 == strcmp (argv[i], "vfd") ) {
-				MtxOrb_type = MTXORB_VFD;
-			} else if ( 0 == strcmp (argv[i], "vkd") ) {
-				MtxOrb_type = MTXORB_VKD;
-			} else {
-				fprintf (stderr, "MtxOrb_init: unknwon display type %s\n", argv[i]);
-				return(-1);
-			}
+			MtxOrb_type = MtxOrb_set_type(argv[i]);
+
 		} else {
 			printf ("Invalid parameter: %s\n", argv[i]);
 		}
 
 	}
+#endif
 
 	// Set up io port correctly, and open it...
 	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
