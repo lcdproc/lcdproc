@@ -65,6 +65,50 @@ int fd;
 static int clear = 1;
 static char icon_char = '@';
 
+
+/*this is really ugly ;) but works ;)*/
+static char num_icon [10][4][3] = 	{{{' ','_',' '}, /*0*/
+					  {'|',' ','|'},
+					  {'|','_','|'},
+					  {' ',' ',' '}},
+					  {{' ',' ',' '},/*1*/
+					  {' ',' ','|'},
+					  {' ',' ','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*2*/
+					  {' ','_','|'},
+					  {'|','_',' '},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*3*/
+					  {' ','_','|'},
+					  {' ','_','|'},
+					  {' ',' ',' '}},
+					  {{' ',' ',' '},/*4*/
+					  {'|','_','|'},
+					  {' ',' ','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*5*/
+					  {'|','_',' '},
+					  {' ','_','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*6*/
+					  {'|','_',' '},
+					  {'|','_','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*7*/
+					  {' ',' ','|'},
+					  {' ',' ','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*8*/
+					  {'|','_','|'},
+					  {'|','_','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*9*/
+					  {'|','_','|'},
+					  {' ','_','|'},
+					  {' ',' ',' '}}};
+/*end of ugly code ;) Rene Wagner*/
+
 static void lcdm001_cursorblink (int on);
 static void lcdm001_string (int x, int y, char *string);
 static void lcdm001_usage (void);
@@ -266,20 +310,25 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	return fd;
 }
 
-/* DUMMY functions: */
+/////////////////////////////////////////////////////////////////
+// Writes a big number.
+//
 static void lcdm001_num (int x, int num)
 {
-        /*TODO: find out what this function is supposed to do*/
-	/*ANSWER: Print a BigNum, see MtxOrb and curses. */
-	/*OK! I'll have a look at the curses driver later ;) */
+	int y, dx;
+
+	for (y = 1; y < 5; y++)
+		for (dx = 0; dx < 3; dx++)
+			lcdm001_chr (x + dx, y, num_icon[num][y-1][dx]);
 }
 
 static void lcdm001_init_num ()
 {
-        /*TODO: find out what this function is supposed to do*/
-	/*ANSWER: prepare for the use of _num in stupid driver. */
+        /*prepare for the use of _num in stupid driver. */
+	/*nothing to be done*/
 }
 
+/* DUMMY functions: */
 static void
 lcdm001_backlight (int on)
 {
