@@ -40,16 +40,34 @@
 /* Define the package name */
 #undef PACKAGE
 
+#undef SLI_DRV
+
 #undef STAT_NFS
 
 #undef STAT_SMBFS
+
+/* two-argument statfs with statfs.bsize member (AIX, 4.3BSD) */
+#undef STAT_STATFS2_BSIZE
+
+/* two-argument statfs with statfs.fsize member (4.4BSD and NetBSD) */
+#undef STAT_STATFS2_FSIZE
+
+/* two-argument statfs with struct fs_data (Ultrix) */
+#undef STAT_STATFS2_FS_DATA
+
+/* 3-argument statfs function (DEC OSF/1) */
+#undef STAT_STATFS3_OSF1
+
+/* four-argument statfs (AIX-3.2.5, SVR3) */
+#undef STAT_STATFS4
+
+/* Define if you have the statvfs function */
+#undef STAT_STATVFS
 
 #undef TEXT_DRV
 
 /* Define the package version */
 #undef VERSION
-
-#undef xBSD
 
 
 /* Leave that blank line there!!  Autoheader needs it.
