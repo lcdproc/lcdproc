@@ -21,17 +21,15 @@
 /*
  * Driver status
  * 04/04/2002: Working driver
- * 05/06/2002: KeyPad handeling are reading of return value
+ * 05/06/2002: Reading of return value
+ * 02/09/2002: KeyPad handeling and return string
+ * 03/09/2002: New icon incorporated
  *
  * THINGS NOT DONE:
  * + No checking if right hardware is connected (firmware/hardware)
  * + No BigNum (but screen is too small ???)
  * + No support for multiple instance (require private structure)
  * + No cache of custom char usage (like in MtxOrb)
- *
- * THINGS PARTIALY DONE:
- * + Checking of LCD response (message are only read for key detection) 
- *
  *
  * THINGS DONE:
  * + Stopping the live reporting (of temperature)
@@ -41,7 +39,6 @@
  *
  * THINGS TO DO:
  * + Make the caching at least for heartbeat icon
- * + Backporting to 0.4.x
  * + Create and use the library (for custom char handeling)
  *
  */
@@ -65,10 +62,18 @@
 #include "report.h"
 #include "lcd_lib.h"
 
+#define CF633_KEY_UP       1
+#define CF633_KEY_DOWN     2
+#define CF633_KEY_LEFT     3
+#define CF633_KEY_RIGHT    4
+#define CF633_KEY_ENTER    5
+#define CF633_KEY_ESCAPE   6
+
 static int custom = 0;
 typedef enum {
 	hbar = 1,
-	vbar = 2
+	vbar = 2,
+	cust = 3,
 } custom_type;
 
 static int fd;
@@ -85,7 +90,7 @@ static int newfirmware = 0;
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
-MODULE_EXPORT int stay_in_foreground = 1;
+MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "CFontz633_";
 
@@ -222,7 +227,6 @@ CFontz633_init (Driver * drvthis, char *args)
 	/* Set display-specific stuff.. */
 	if (reboot) {
 		CFontz633_reboot ();
-		sleep (4);
 		reboot = 0;
 	}
 	sleep (2);
@@ -257,6 +261,10 @@ CFontz633_close (Driver * drvthis)
 MODULE_EXPORT int
 CFontz633_width (Driver *drvthis)
 {
+/*
+        PrivateData *p = (PrivateData *) drvthis->private_data;
+	return p->width;
+*/
 	return width;
 }
 
@@ -279,7 +287,7 @@ CFontz633_flush (Driver * drvthis)
 	char *xp, *xq;
 /*
  * We don't use delta update yet.
- * It should be possible but since we can only update one.
+ * It is possible but not easy, we can only update a line, full or begining.
  */
 	if (old==NULL) {
 		old = (unsigned char *) malloc (width * height);
@@ -312,6 +320,43 @@ memcpy(&old[width], &framebuf[width], width);
 	}
 
 }
+
+/*
+ * Return one char from the KeyRing
+ */
+MODULE_EXPORT char *
+CFontz633_get_key (Driver *drvthis)
+{
+        unsigned char akey;
+
+	akey = GetKeyFromKeyRing();
+
+        switch(akey) {
+                case CF633_KEY_LEFT:
+                        return "Left";
+                        break;
+                case CF633_KEY_UP:
+                        return "Up";
+                        break;
+                case CF633_KEY_DOWN:
+                        return "Down";
+                        break;
+                case CF633_KEY_RIGHT:
+                        return "Right";
+                        break;
+                case CF633_KEY_ENTER:
+                        return "Enter"; /* Is this correct ? */
+                        break;
+                case CF633_KEY_ESCAPE:
+                        return "Escape";
+                        break;
+                default:
+                        report( RPT_INFO, "cfontz633: Untreated key 0x%2x", akey);
+                        return NULL;
+                        break;
+        }
+}
+
 
 /*
  * Prints a character on the lcd display, at position (x,y).
@@ -355,8 +400,8 @@ CFontz633_set_contrast (Driver * drvthis, int promille)
 	contrast = promille;
 
 	hardware_contrast = contrast/20;
-
-//	send_onebyte_message(fd, CF633_Set_LCD_Contrast, hardware_contrast);
+/* Next line is to be checked $$$ */
+	send_onebyte_message(fd, CF633_Set_LCD_Contrast, hardware_contrast);
 }
 
 /*
@@ -368,9 +413,11 @@ MODULE_EXPORT void
 CFontz633_backlight (Driver * drvthis, int on)
 {
 	if (on) {
-//send_onebyte_message(fd, CF633_Set_LCD_And_Keypad_Backlight, brightness);
+/* Next line is to be checked $$$ */
+send_onebyte_message(fd, CF633_Set_LCD_And_Keypad_Backlight, brightness);
 	} else {
-//send_onebyte_message(fd, CF633_Set_LCD_And_Keypad_Backlight, offbrightness);
+/* Next line is to be checked $$$ */
+send_onebyte_message(fd, CF633_Set_LCD_And_Keypad_Backlight, offbrightness);
 	}
 }
 
@@ -693,9 +740,10 @@ send_bytes_message(fd, 9, CF633_Set_LCD_Special_Character_Data , out);
 MODULE_EXPORT int
 CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 {
-	char icons[3][6 * 8] = {
+	char icons[8][6 * 8] = {
+	/* Empty Heart */
 		{
-		 1, 1, 1, 1, 1, 1,		  /* Empty Heart */
+		 1, 1, 1, 1, 1, 1,
 		 1, 1, 0, 1, 0, 1,
 		 1, 0, 0, 0, 0, 0,
 		 1, 0, 0, 0, 0, 0,
@@ -704,9 +752,9 @@ CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 		 1, 1, 1, 0, 1, 1,
 		 1, 1, 1, 1, 1, 1,
 		 },
-
+	/* Filled Heart */
 		{
-		 1, 1, 1, 1, 1, 1,		  /* Filled Heart */
+		 1, 1, 1, 1, 1, 1,		  
 		 1, 1, 0, 1, 0, 1,
 		 1, 0, 1, 0, 1, 0,
 		 1, 0, 1, 1, 1, 0,
@@ -715,9 +763,64 @@ CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 		 1, 1, 1, 0, 1, 1,
 		 1, 1, 1, 1, 1, 1,
 		 },
-
+	/* arrow_up */
 		{
-		 0, 0, 0, 0, 0, 0,		  /* Ellipsis */
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 1, 1, 1, 0,
+		 0, 1, 0, 1, 0, 1,
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 0, 0, 0,
+		 },
+	/* arrow_down */
+		{
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 1, 0, 0,
+		 0, 1, 0, 1, 0, 1,
+		 0, 0, 1, 1, 1, 0,
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 0, 0, 0,
+		 },
+	/* checkbox_off */
+		{
+		 0, 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0, 0,
+		 0, 1, 1, 1, 1, 1,
+		 0, 1, 0, 0, 0, 1,
+		 0, 1, 0, 0, 0, 1,
+		 0, 1, 0, 0, 0, 1,
+		 0, 1, 1, 1, 1, 1,
+		 0, 0, 0, 0, 0, 0,
+		 },
+	/* checkbox_on */
+		{
+		 0, 0, 0, 1, 0, 0,
+		 0, 0, 0, 1, 0, 0,
+		 0, 1, 1, 1, 0, 1,
+		 0, 1, 0, 1, 1, 0,
+		 0, 1, 0, 1, 0, 1,
+		 0, 1, 0, 0, 0, 1,
+		 0, 1, 1, 1, 1, 1,
+		 0, 0, 0, 0, 0, 0,
+		 },
+	/* checkbox_gray */
+		{
+		 0, 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0, 0,
+		 0, 1, 1, 1, 1, 1,
+		 0, 1, 0, 1, 0, 1,
+		 0, 1, 1, 0, 1, 1,
+		 0, 1, 0, 1, 0, 1,
+		 0, 1, 1, 1, 1, 1,
+		 0, 0, 0, 0, 0, 0,
+		 },
+	 /* Ellipsis */
+		{
+		 0, 0, 0, 0, 0, 0,		 
 		 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0,
@@ -726,20 +829,53 @@ CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 		 0, 0, 0, 0, 0, 0,
 		 1, 0, 1, 0, 1, 0,
 		 },
-
 	};
 
+	/* Yes we know, this is a VERY BAD implementation :-) */
 	switch( icon ) {
 		case ICON_BLOCK_FILLED:
 			CFontz633_chr( drvthis, x, y, 255 );
 			break;
 		case ICON_HEART_FILLED:
+		        custom = cust;
 			CFontz633_set_char( drvthis, 0, icons[1] );
 			CFontz633_chr( drvthis, x, y, 0 );
 			break;
 		case ICON_HEART_OPEN:
+		        custom = cust;
 			CFontz633_set_char( drvthis, 0, icons[0] );
 			CFontz633_chr( drvthis, x, y, 0 );
+			break;
+		case ICON_ARROW_UP:
+		        custom = cust;
+			CFontz633_set_char( drvthis, 1, icons[2] );
+			CFontz633_chr( drvthis, x, y, 1 );
+			break;
+		case ICON_ARROW_DOWN:
+		        custom = cust;
+			CFontz633_set_char( drvthis, 2, icons[3] );
+			CFontz633_chr( drvthis, x, y, 2 );
+			break;
+		case ICON_ARROW_LEFT:
+			CFontz633_chr( drvthis, x, y, 0x7F );
+			break;
+		case ICON_ARROW_RIGHT:
+			CFontz633_chr( drvthis, x, y, 0x7E );
+			break;
+		case ICON_CHECKBOX_OFF:
+		        custom = cust;
+			CFontz633_set_char( drvthis, 3, icons[4] );
+			CFontz633_chr( drvthis, x, y, 3 );
+			break;
+		case ICON_CHECKBOX_ON:
+		        custom = cust;
+			CFontz633_set_char( drvthis, 4, icons[5] );
+			CFontz633_chr( drvthis, x, y, 4 );
+			break;
+		case ICON_CHECKBOX_GRAY:
+		        custom = cust;
+			CFontz633_set_char( drvthis, 5, icons[6] );
+			CFontz633_chr( drvthis, x, y, 5 );
 			break;
 		default:
 			return -1; /* Let the core do other icons */

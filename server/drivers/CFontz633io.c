@@ -54,13 +54,13 @@ void EmptyKeyRing(void)
 int AddKeyToKeyRing(unsigned char key) {
   int oldhead;
 
-  printf("We have key: %d\n", key);
+/*  printf("We add key: %d\n", key); */
 
   oldhead=KeyHead;
   KeyHead++;
   if (KeyHead==KEYRINGSIZE) KeyHead=0;
   if (KeyHead!=KeyTail) {
-          KeyRing[KeyHead]=key;
+          KeyRing[oldhead]=key;
 	  return 1;
   	  }
   /* We have a KeyRing overflow */
@@ -78,6 +78,8 @@ unsigned char GetKeyFromKeyRing(void) {
         KeyTail++;
         if (KeyTail==KEYRINGSIZE) KeyTail=0;
   	}
+
+/*  if (retval) printf("We remove key: %d\n", retval); */
 
   return retval;
   }
@@ -177,10 +179,7 @@ int get_crc(char *bufptr, int len, int seed)
 	    (newCrc >> 8) ^ crcLookupTable[(newCrc ^ *bufptr++) & 0xff];
 
     /*
-     * Make this crc match the one's complement that is sent in the 
-     */
-    /*
-     * packet. 
+     * Make this crc match the one's complement that is sent in the packet. 
      */
     return (~newCrc);
 }
@@ -192,9 +191,9 @@ SendByte(int fd, unsigned char datum)
     int bytes_written;
     bytes_written = 0;
     bytes_written = write(fd, &datum, 1);
-    if (bytes_written != 1) {
+/*    if (bytes_written != 1) {
 	printf("SendByte(): only %d of %d bytes sent.", bytes_written, 1);
-    }
+    } */
 
     return;
 }
@@ -352,7 +351,7 @@ unsigned char DiscardGetByte(void)
       ReceiveBufferTail=0;
     }
   
-  printf("Discarded : /%02x/\n", return_byte);
+/*  printf("Discarded : /%02x/\n", return_byte); */
 
   return(return_byte);
   }
@@ -462,7 +461,7 @@ unsigned char check_for_packet(int fd, unsigned char expected_length)
     /* Throw out one byte of garbage. Next pass through should re-sync. */
     DiscardGetByte();
     tossed++;
-    printf("###: Unknown command.\n");
+/*    printf("###: Unknown command.\n"); */
     return(TRY_AGAIN);
     }
   /* There is a valid command byte. Get the data_length. */
@@ -472,7 +471,7 @@ unsigned char check_for_packet(int fd, unsigned char expected_length)
     //Throw out one byte of garbage. Next pass through should re-sync.
     DiscardGetByte();
     tossed++;
-    printf("###: Too long packet: %d.\n", incoming_command.data_length);
+/*    printf("###: Too long packet: %d.\n", incoming_command.data_length); */
     return(TRY_AGAIN);
     }
 
@@ -481,7 +480,7 @@ unsigned char check_for_packet(int fd, unsigned char expected_length)
   if((int)PeekBytesAvail()<(incoming_command.data_length+2)) {
     //It looked like a valid start of a packet, but it does not look
     //like the complete packet has been received yet.
-          printf("Not enough read to check the complete message.\n"); 
+/*          printf("Not enough read to check the complete message.\n"); */
 	  return(GIVE_UP); /* Let's not return until more byte are available */
 	  }
 
@@ -515,8 +514,8 @@ unsigned char check_for_packet(int fd, unsigned char expected_length)
    */
   tossed++;
   DiscardGetByte();
-  printf("###: Wrong CheckSum. computed/real %04x:%04x \n",
-  		testcrc, incoming_command.CRC.as_word);
+/*  printf("###: Wrong CheckSum. computed/real %04x:%04x \n",
+  		testcrc, incoming_command.CRC.as_word); */
   return(TRY_AGAIN);
   }
 //============================================================================
