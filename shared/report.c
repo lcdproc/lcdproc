@@ -8,6 +8,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include <string.h>
 #include <syslog.h>
 
 int report_level = RPT_INFO;
