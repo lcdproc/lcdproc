@@ -8,6 +8,7 @@ well as the configuration of LCDd.
 </para>
 
 &hd44780;
+&t6963;
 &ppttrouble;
 &mtxorb;
 &lircin;

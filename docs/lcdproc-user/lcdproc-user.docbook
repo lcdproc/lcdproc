@@ -11,6 +11,7 @@
   <!ENTITY license SYSTEM "license.docbook">
 
   <!ENTITY hd44780 SYSTEM "drivers/hd44780.docbook">
+  <!ENTITY t6963 SYSTEM "drivers/t6963.docbook">
   <!ENTITY ppttrouble SYSTEM "drivers/ppttrouble.docbook">
   <!ENTITY mtxorb SYSTEM "drivers/mtxorb.docbook">
   <!ENTITY lircin SYSTEM "drivers/lircin.docbook">
