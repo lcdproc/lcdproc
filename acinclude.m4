@@ -2,14 +2,8 @@ dnl This test is used by the curses driver.
 dnl Checks if $1 defined the ACS_S* preprocessor macros.
 dnl Example: AC_CHECK_DEFINE_ACS(curses.h)
 AC_DEFUN(AC_CHECK_DEFINE_ACS, [
-	AC_MSG_CHECKING(if $1 defines ACS_S*)
-	AC_TRY_RUN([
-		#include <$1>
-		int main() {
-		[[char map[] = { ACS_S9, ACS_S7, ACS_S3, ACS_S1 };]]
-		return 0;
-		}
-	], [ 
+	AC_MSG_CHECKING(if $1 defines ACS_S3 and ACS_S7)
+	AC_TRY_COMPILE([#include <$1>], [[[char map[] = { ACS_S9, ACS_S7, ACS_S3, ACS_S1 }]]], [ 
 	dnl then
 		AC_DEFINE(DEFINED_ACS)
 		AC_MSG_RESULT(yes) ], [
