@@ -21,3 +21,4 @@ int menu_del_item_func (Client * c, int argc, char **argv);
 int menu_set_item_func (Client * c, int argc, char **argv);
 
 #endif
+

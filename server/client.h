@@ -57,3 +57,4 @@ int client_remove_screen (Client * c, Screen * s);
 int client_screen_count (Client * c);
 
 #endif
+

@@ -20,3 +20,4 @@ int screen_add_key_func (Client * c, int argc, char **argv);
 int screen_del_key_func (Client * c, int argc, char **argv);
 
 #endif
+

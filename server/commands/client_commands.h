@@ -20,3 +20,4 @@ int client_del_key_func (Client * c, int argc, char **argv);
 int backlight_func (Client * c, int argc, char **argv);
 
 #endif
+

@@ -20,3 +20,4 @@ MenuEventFuncResult menuscreen_key_handler ();
 /* This handler should be called by the real handler for the event */
 
 #endif
+
