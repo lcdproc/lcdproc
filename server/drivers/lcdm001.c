@@ -148,7 +148,7 @@ lcdm001_cursorblink (int on)
 int
 lcdm001_init (struct lcd_logical_driver *driver, char *args)
 {
-        char * device;
+        char device[20];
         int speed=B38400;
         struct termios portset;
 
@@ -186,7 +186,7 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	//READ CONFIG FILE:
 
 	//which serial device should be used
-	device = config_get_string ( DriverName , "Device" , 0 , "/dev/lcd");
+	strcpy(device, config_get_string ( DriverName , "Device" , 0 , "/dev/lcd"));
 	report (RPT_INFO,"LCDM001: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
