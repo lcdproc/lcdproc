@@ -191,6 +191,9 @@ main (int argc, char **argv)
 	ESSENTIAL( process_command_line (argc, argv) );
 
 	// Read config file
+	// Set configfile to default value first unless changed before
+	if (strcmp(configfile, UNSET_STR)==0)
+		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
 	ESSENTIAL( process_configfile (configfile) );
 
 	// Set default values
@@ -235,9 +238,9 @@ clear_settings ()
 	//report( RPT_INFO, "clear_settings()" );
 
 	lcd_port = UNSET_INT;
-	strcpy( bind_addr, UNSET_STR );
-	strcpy( configfile, UNSET_STR );
-	strcpy( user, UNSET_STR );
+	strncpy( bind_addr, UNSET_STR, sizeof(bind_addr) );
+	strncpy( configfile, UNSET_STR, sizeof(configfile) );
+	strncpy( user, UNSET_STR, sizeof(user) );
 	daemon_mode = UNSET_INT;
 	enable_server_screen = UNSET_INT;
 	backlight = UNSET_INT;
@@ -482,8 +485,6 @@ set_default_settings()
 		lcd_port = DEFAULT_LCD_PORT;
 	if (strcmp( bind_addr, UNSET_STR ) == 0)
 		strncpy (bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
-	if (strcmp( configfile, UNSET_STR ) == 0)
-		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
 	if (strcmp( user, UNSET_STR ) == 0)
 		strncpy(user, DEFAULT_USER, sizeof(user));
 
@@ -761,7 +762,7 @@ exit_program (int val)
 	// TODO: These things shouldn't be so interdependent.  The order
 	// things are shut down in shouldn't matter...
 
-	strcpy(buf, "Server shutting down on ");
+	strncpy(buf, "Server shutting down on ", sizeof (buf) );
 	switch(val) {
 		case 1: strcat(buf, "SIGHUP"); break;
 		case 2: strcat(buf, "SIGINT"); break;
