@@ -51,6 +51,8 @@ lcd_logical_driver *lircin;
 
 void lircin_close()
 {
+	lirc_freeconfig(config);
+	lirc_deinit();
 }
 
 
