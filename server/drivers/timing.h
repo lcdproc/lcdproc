@@ -98,9 +98,9 @@ static inline void timing_uPause (int usecs) {
 		delay_time.tv_nsec = remaining.tv_nsec;
 	}
 #else // using I/O timing
-      // Assuming every port I/O takes 1ms, we'll do at least one.
-	int i=0;
-	do { port_in (port); } while (i++ < usecs/1000);
+      // Assuming every port I/O takes 1us
+	for (int i=0; i < usecs; ++i)
+		port_in(port);
 #endif
 }
 
