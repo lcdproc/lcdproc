@@ -11,6 +11,10 @@
  *  It support the CrystalFontz 633 USB/Serial and the 631 USB
  *  (get yours from http://crystalfontz.com)
  *
+ *  Applicable Data Sheets
+ *  http://www.crystalfontz.com/products/631/CFA-631_v1.0.pdf
+ *  http://www.crystalfontz.com/products/633/CFA_633_0_6.PDF
+ *
  *  Copyright (C) 2002 David GLAUDE
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,7 +31,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
  */
-
 
 /*
  * Driver status
@@ -295,12 +298,15 @@ else
 
 	/* Set display-specific stuff.. */
 	if (reboot) {
+		debug(RPT_INFO, "CFontz633: reboot requested\n" );
 		CFontz633_reboot ();
 		reboot = 0;
 		sleep (1);
+		debug(RPT_INFO, "CFontz633: reboot done" );
 	}
+	
 	CFontz633_hidecursor ();
-
+	
 	CFontz633_set_contrast (drvthis, contrast);
 	CFontz633_no_live_report ();
 
@@ -357,9 +363,8 @@ MODULE_EXPORT void
 CFontz633_flush (Driver * drvthis)
 {
 int i,j;
-int count_diff;
+int diff_length;
 int first_diff;
-int current_pos;
 char *xp, *xq;
 char out[22];
 
@@ -369,7 +374,7 @@ char out[22];
 
 if (old==NULL) {
   old = (unsigned char *) malloc (width * height);
-  memset (old, ' ', width * height);
+  memset (old, ' ', width * height );
   CFontz633_hardware_clear (drvthis);
   }
 
@@ -404,60 +409,46 @@ if (model==633) {
 /*
  * CF631 protocol is more flexible and we can do real delta update.
  */
-  xp = framebuf;
-  xq = old;
 
 
 
-  current_pos=0;
   first_diff=0;
 
   for (i = 0; i < height; i++) {
 
-    memcpy(&out[0], &framebuf[current_pos], 20);
-    out[20]=0;
-    debug (RPT_INFO,"Framebuf: '%s'", out);
-    memcpy(&out[0], &old[current_pos], 20);
-    out[20]=0;
-    debug (RPT_INFO," old    : '%s'", out);
+  	xp = framebuf+(i*width);
+  	xq = old+(i*width);
 
+    debug (RPT_INFO,"Framebuf: '%.*s'", width, xp );
+    debug (RPT_INFO,"     old: '%.*s'", width, xq );
 
-    count_diff=0;
-    for (j = 0; j < width; j++) {
-      if (*xp == *xq) {
-        if (count_diff!=0) {
-          out[0]=i;
-          out[1]=first_diff-(i*width);
-          debug (RPT_INFO,"WriteDiff: l=%d c=%d count=%d", out[0], out[1], count_diff);
-          memcpy(&out[2], &framebuf[first_diff], count_diff);
-          send_bytes_message(fd, count_diff+2, CF633_Send_Data_to_LCD, out);
-          count_diff=0;
-          }  
-        } else { /* (*xp != *xq) */
-        if (count_diff==0)
-	  {
-          debug (RPT_INFO,"NewDiff: pos=%d", current_pos);
-          first_diff=current_pos;
-	  }
-        count_diff++;
-        }
-      current_pos++;
-      xp++;
-      xq++;
-      } /* for j loop */ 
+    for (j = 0; j < width; ) { 
 
-    if (count_diff!=0) { /* End of line treatment (assuming no wrap) */
-      out[0]=i;
-      out[1]=first_diff-(i*width);
-      debug (RPT_INFO,"WriteDiffEOL: l=%d c=%d count=%d", out[0], out[1], count_diff);
-      memcpy(&out[2], &framebuf[first_diff], count_diff);
-      send_bytes_message(fd, count_diff+2, CF633_Send_Data_to_LCD, out);
-      count_diff=0;
-      }
+		// skip over identical portions
+		for ( ; *xp == *xq && j < width; xp++, xq++, j++ );
+		
+		// deal with the differences
+		if ( j < width ){
+			first_diff = j;
+			for ( ; *xp != *xq && j < width; xp++, xq++, j++ );
 
-    }
-  strncpy(old, framebuf, width*height);
-  }
+			// send the difference to the screen
+			diff_length = j - first_diff;
+			out[0]=i;
+			out[1]=first_diff;
+			
+			debug (RPT_INFO,"WriteDiff: l=%d c=%d count=%d string='%.*s'",
+			 	out[0], out[1], diff_length, diff_length,
+				&framebuf[first_diff+(i*width)] );
+
+			memcpy(&out[2], &framebuf[first_diff+(i*width)], diff_length );
+			send_bytes_message(fd, diff_length+2, CF633_Send_Data_to_LCD, out);
+		}
+	} // j < width
+
+  }	//i < height
+  memcpy(old, framebuf, width*height);
+}
 }
 
 /*
@@ -632,6 +623,7 @@ if (model==633)
 static void
 CFontz633_reboot ()
 {
+
 char out[3]= {8, 18, 99};
 send_bytes_message(fd, 3, CF633_Reboot, out);
 }
