@@ -18,12 +18,14 @@ LDFLAGS += @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931
 noinst_LIBRARIES = libLCD.a
 
 CFontz_LDADD =       libLCD.a
 CFontz633_LDADD =    libLCD.a
 curses_LDADD =       @LIBCURSES@
+CwLnx_LDADD =        libLCD.a
+CwLnx_SOURCES =      lcd.h CwLnx.c CwLnx.h report.h
 hd44780_LDADD =      libLCD.a @HD44780_DRIVERS@
 hd44780_DEPENDENCIES = @HD44780_DRIVERS@
 icp_a106_LDADD =     libLCD.a

@@ -5,16 +5,16 @@ AC_ARG_ENABLE(drivers,
   	[  --enable-drivers=<list> compile driver for LCDs in <list>.]
 	[                  drivers may be separated with commas.]
   	[                  Possible choices are:]
- 	[                    mtxorb,cfontz,cfontz633,curses,text,lb216,]
+ 	[                    mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,]
  	[                    hd44780,joy,irman,lirc,bayrad,glk,,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
 	[                    lcterm,icp_a106,ms6931]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
-  	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,text,lb216,bayrad,glk])
+  	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,cfontz633,curses,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931]
+	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -113,6 +113,10 @@ dnl				else
 			if test "$ac_cv_curses_wcolor_set" = yes; then
 				AC_DEFINE(CURSES_HAS_WCOLOR_SET)
 			fi
+			;;
+		cwlnx)
+			DRIVERS="$DRIVERS CwLnx${SO}"
+			actdrivers=["$actdrivers cwlnx"]
 			;;
 		text)
 			DRIVERS="$DRIVERS text${SO}"
