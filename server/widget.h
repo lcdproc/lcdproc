@@ -31,9 +31,6 @@ typedef struct widget {
 
 extern char *types[];
 
-// RESERVED widget ID for keys active on a screen
-#define KEYS_WIDGETID "screenkeys"
-
 widget *widget_create ();
 int widget_destroy (widget * w);
 

@@ -69,8 +69,7 @@ handle_input ()
 
 		// Give current screen a shot at the key first
 		s = screenlist_current ();
-		w = widget_find( s, KEYS_WIDGETID );
-		if( s->parent && w && w->text && strchr( w->text, key ) ) {
+		if( s->keys && strchr( s->keys, key ) ) {
 			// This screen wants this key.  Tell it we got one
 			sprintf(str, "key %c\n", key);
 			sock_send_string(s->parent->sock, str);
