@@ -154,13 +154,13 @@ MtxOrb_get_speed (char *arg) {
 static void
 MtxOrb_usage (void) {
 	printf ("LCDproc Matrix-Orbital LCD driver\n"
-		"\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
-//		"\t-t\t--type\t\tSelect the LCD type (size) [20x4]\n"
+		"\t-d\t\tSelect the output device to use [/dev/lcd]\n"
+		"\t-t\t\tSelect the LCD type (size) [20x4]\n"
 //		"\t-b\t--backlight\tSelect the backlight state [on]\n"
-		"\t-c\t--contrast\tSet the initial contrast [140]\n"
-		"\t-s\t--speed\t\tSet the communication speed [19200]\n"
-		"\t-h\t--help\t\tShow this help information\n"
-		"\t-t\t--type\t\tdisplay type: lcd, lkd, vfd, vkd\n");
+		"\t-c\t\tSet the initial contrast [140]\n"
+		"\t-s\t\tSet the communication speed [19200]\n"
+		"\t-h\t\tShow this help information\n"
+		"\t-b\t\tdisplay type: lcd, lkd, vfd, vkd\n");
 }
 
 static int
