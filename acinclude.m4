@@ -119,7 +119,11 @@ dnl				else
 			actdrivers=["$actdrivers lb216"]
 			;;
 		hd44780)
-			DRIVERS="$DRIVERS hd44780${SO}"
+			if test "$ac_cv_port_have_lpt" = yes ; then
+				DRIVERS="$DRIVERS hd44780.o hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-winamp.o hd44780-picanlcd.o"
+			else
+				DRIVERS="$DRIVERS hd44780.o hd44780-picanlcd.o"
+			fi
 			actdrivers=["$actdrivers hd44780"]
 			;;
 		joy)

@@ -74,7 +74,6 @@
 #include "hd44780.h"
 #include "report.h"
 
-#include "port.h"
 #include "timing.h"
 #include "hd44780-low.h"
 #include "hd44780-drivers.h"
