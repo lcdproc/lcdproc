@@ -31,7 +31,10 @@
 
 lcd_logical_driver *curses_drv;
 
-int PAD = 255;
+// Character used for title bars...
+#define PAD '#'
+// #define PAD ACS_BLOCK
+
 int ELLIPSIS = 7;
 
 //////////////////////////////////////////////////////////////////////////
@@ -39,6 +42,7 @@ int ELLIPSIS = 7;
 //////////////////////////////////////////////////////////////////////////
 
 static char icon_char = '@';
+static WINDOW *lcd_win;
 
 int
 curses_drv_init (struct lcd_logical_driver *driver, char *args)
@@ -46,6 +50,14 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	char *argv[64];
 	int argc;
 	int i;
+
+	// Colors....
+	//chtype back_color = COLOR_BLUE, fore_color = COLOR_WHITE;
+	//chtype back_color = COLOR_RED, fore_color = COLOR_WHITE;
+	chtype back_color = COLOR_CYAN, fore_color = COLOR_BLUE;
+
+	// Screen position (top left)
+	int screen_begx = 5, screen_begy = 5;
 
 	argc = get_args (argv, args, 64);
 
@@ -93,6 +105,15 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	nonl ();
 	intrflush (stdscr, FALSE);
 	keypad (stdscr, TRUE);
+	lcd_win = newwin(curses_drv->hgt + 2, curses_drv->wid + 2, screen_begy, screen_begx);
+	curs_set(0);
+
+	if (has_colors()) {
+		start_color();
+		init_pair(1, fore_color, back_color);
+		init_pair(2, back_color, fore_color);
+		init_pair(3, COLOR_WHITE, back_color);
+	}
 
 	curses_drv_clear ();
 
@@ -119,21 +140,49 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	driver->getkey = curses_drv_getkey;
 
-	// Change the character used for padding the title bars...
-	PAD = '#';
 	// Change the character used for "..."
 	ELLIPSIS = '~';
 
 	return 200;						  // 200 is arbitrary.  (must be 1 or more)
 }
 
+static void
+curses_drv_wborder (WINDOW *win) {
+	int x, y;
+	char buf[128];
+
+	if (has_colors()) {
+		wcolor_set(win, 3, NULL);
+		wattron(win, COLOR_PAIR(3) | A_BOLD);
+	}
+
+	// TODO: How, HOW, HOW to get the ENTIRE window in color....
+	// Why can't we just set the color and wrefresh() ?
+	//memset(buf, ' ', sizeof(buf));
+	//buf[curses_drv->wid] = '\0';
+
+	//usleep(500);
+	//for (y = 1; y <= curses_drv->hgt; y++)
+	//	mvwaddstr (win, y, 1, buf);
+
+	box(win, 0, 0);
+
+	if (has_colors()) {
+		wcolor_set(win, 1, NULL);
+		wattron(win, COLOR_PAIR(1));
+		wattroff(win, A_BOLD);
+	}
+}
+
 void
 curses_drv_close ()
 {
 	// Close curses
-	clear ();
+	wclear (lcd_win);
+	wrefresh (lcd_win);
+	delwin (lcd_win);
+
 	move (0, 0);
-	refresh ();
 	endwin ();
 
 	if (curses_drv->framebuf != NULL)
@@ -149,32 +198,43 @@ curses_drv_close ()
 void
 curses_drv_clear ()
 {
-	clear ();
-
+	curses_drv_wborder (lcd_win);
+	werase (lcd_win);
 }
+
+#define ValidX(a) { if (x > curses_drv->wid) { x = curses_drv->wid; } else x < 1 ? 1 : x; }
+#define ValidY(a) { if (y > curses_drv->hgt) { y = curses_drv->hgt; } else y < 1 ? 1 : y; }
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 void
-curses_drv_string (int x, int y, char string[])
+curses_drv_string (int x, int y, char *string)
 {
 	int i;
-	unsigned char *c;
+	unsigned char *p;
 
-	for (i = 0; string[i]; i++) {
-		c = &string[i];
-		switch (*c) {
-		case 0:
-			*c = icon_char;
-			break;
-		case 255:
-			*c = '#';
-			break;
+	ValidX(x);
+	ValidY(y);
+
+	p = string;
+
+	// Convert NULLs and 0xFF in string to
+	// valid printables...
+	while (*p) {
+		switch (*p) {
+			//case 0: -- can never happen?
+			//	*p = icon_char;
+			//	break;
+			case 255:
+				*p = PAD;
+				break;
 		}
+		p++;
 	}
-	mvaddstr (y - 1, x - 1, string);
+
+	mvwaddstr (lcd_win, y, x, string);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -184,16 +244,21 @@ curses_drv_string (int x, int y, char string[])
 void
 curses_drv_chr (int x, int y, char c)
 {
+	ValidX(x);
+	ValidY(y);
+
 	switch (c) {
-	case 0:
-		c = icon_char;
-		break;
-	case -1:
-		c = '#';
-		break;
+		case 0:
+			c = icon_char;
+			break;
+		case -1:	// translates to 255 (ouch!)
+			c = PAD;
+			break;
+		//default:
+		//	normal character...
 	}
 
-	mvaddch (y - 1, x - 1, c);
+	mvwaddch (lcd_win, y, x, c);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -202,6 +267,7 @@ curses_drv_chr (int x, int y, char c)
 void
 curses_drv_init_num ()
 {
+	;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -227,16 +293,34 @@ curses_drv_num (int x, int num)
 void
 curses_drv_vbar (int x, int len)
 {
-	char map[] = "_.,,ooO8";
-
+	//char map[] = "_.,,ooO8";
+	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
 	int y;
-	for (y = curses_drv->hgt; y > 0 && len > 0; y--) {
-		if (len >= curses_drv->cellhgt)
-			curses_drv_chr (x, y, '8');
-		else
-			curses_drv_chr (x, y, map[len - 1]);
 
-		len -= curses_drv->cellhgt;
+	ValidX(x);
+
+#define MAX_LINES (curses_drv->cellhgt * curses_drv->hgt)
+
+	len = len > (MAX_LINES - 1) ? (MAX_LINES - 1) : len;
+	len = len < 0 ? 0 : len;
+
+	// len is the length of the bar (in pixels/scanlines)
+	// y is one character line (cellhgt pixels/scanlines)
+
+	for (y = curses_drv->hgt; y > 0 && len > 0; y--) {
+
+		if (len >= curses_drv->cellhgt) {
+			// write a "full" block to the screen...
+			//curses_drv_chr (x, y, '8');
+			curses_drv_chr (x, y, ACS_BLOCK);
+			len -= curses_drv->cellhgt;
+		}
+		else {
+			// write a partial block...
+			curses_drv_chr (x, y, map[len-1]);
+			break;
+		}
+
 	}
 
 //  move(4-len/lcd.cellhgt, x-1);
@@ -271,15 +355,15 @@ curses_drv_icon (int which, char dest)
 {
 	if (dest == 0)
 		switch (which) {
-		case 0:
-			icon_char = '+';
-			break;
-		case 1:
-			icon_char = '*';
-			break;
-		default:
-			icon_char = '#';
-			break;
+			case 0:
+				icon_char = '+';
+				break;
+			case 1:
+				icon_char = '*';
+				break;
+			default:
+				icon_char = PAD;
+				break;
 		}
 
 }
@@ -302,10 +386,8 @@ curses_drv_flush_box (int lft, int top, int rgt, int bot)
 void
 curses_drv_draw_frame (char *dat)
 {
-//  border(0, 0, 0, 0,  0, 0, lcd.wid+1, lcd.hgt+1);
-
-	refresh ();
-
+	curses_drv_wborder (lcd_win);
+	wrefresh (lcd_win);
 }
 
 char
