@@ -193,7 +193,7 @@ typedef struct lcd_logical_driver {
 	/* Configfile functions */
 	/* See configfile.h for descriptions and usage. */
 
-	unsigned char (*config_get_bool)( char *sectionname, char *keyname, int skip, unsigned char default_value );
+	short (*config_get_bool)( char *sectionname, char *keyname, int skip, short default_value );
 	long int (*config_get_int)	( char *sectionname, char *keyname, int skip, long int default_value );
 	double (*config_get_float)	( char *sectionname, char *keyname, int skip, double default_value );
 	char *( *config_get_string)	( char *sectionname, char *keyname, int skip, char *default_value );

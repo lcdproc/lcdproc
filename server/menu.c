@@ -18,6 +18,8 @@
  *
  * The servermenu is created from servermenu.c
  *
+ * For separation this file should never need to include menuscreen.h.
+ *
  */
 
 #include <stdlib.h>
@@ -33,6 +35,7 @@
 #include "drivers.h"
 
 #include "screen.h"
+#include "widget.h"
 
 Menu *
 menu_create (char *id, MenuEventFunc(*event_func),

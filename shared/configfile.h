@@ -32,8 +32,8 @@ int config_read_string( char *sectionname, char *str );
  * Returns -16 if a malloc went wrong.
  */
 
-unsigned char config_get_bool( char *sectionname, char *keyname,
-		int skip, unsigned char default_value );
+short config_get_bool( char *sectionname, char *keyname,
+		int skip, short default_value );
 /* Tries to interpret a value in the config file as a boolean.
  * 0, false, no, n = false
  * 1, true, yes, y = true

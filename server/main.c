@@ -275,33 +275,28 @@ process_command_line (int argc, char **argv)
 	optind = 0;
 	opterr = 0; /* Prevent some message to strerr */
 
-	/* analyze options here..*/
-	while ((c = getopt(argc, argv, "ha:p:f:i:b:w:c:u:s:r:")) > 0) {
+	/* Analyze options here.. (please try to keep list of options the
+	 * same everywhere) */
+	while ((c = getopt(argc, argv, "hc:d:f:a:p:u:w:s:r:i:" )) > 0) {
 		switch(c) {
+			case 'h':
+				help = 1; /* Continue to process the other
+					   * options */
+				break;
+			case 'c':
+				strncpy(configfile, optarg, sizeof(configfile));
+				configfile[sizeof(configfile)-1] = 0; /* Terminate string */
+				break;
 	 		case 'd':
 				/* Add to a list of drivers to be initialized later...*/
 				if (num_drivers < MAX_DRIVERS) {
 					drivernames[num_drivers] = malloc( strlen(optarg)+1 );
 					strcpy( drivernames[num_drivers], optarg );
 					num_drivers ++;
-				} else
+				} else {
 					report( RPT_ERR, "Too many drivers!" );
 					e = -1;
-				break;
-			case 'p':
-				lcd_port = atoi(optarg);
-				break;
-			case 'u':
-				strncpy(user, optarg, sizeof(user));
-				user[sizeof(user)-1] = 0; /* Terminate string */
-				break;
-			case 'a':
-				strncpy(bind_addr, optarg, sizeof(bind_addr));
-				bind_addr[sizeof(bind_addr)-1] = 0; /* Terminate string */
-				break;
-			case 'h':
-				help = 1; /* Continue to process the other
-					   * options */
+				}
 				break;
 			case 'f':
 				b = interpret_boolean_arg( optarg );
@@ -312,40 +307,23 @@ process_command_line (int argc, char **argv)
 					daemon_mode = !b;
 				}
 				break;
-			case 'c':
-				strncpy(configfile, optarg, sizeof(configfile));
-				configfile[sizeof(configfile)-1] = 0; /* Terminate string */
+			case 'a':
+				strncpy(bind_addr, optarg, sizeof(bind_addr));
+				bind_addr[sizeof(bind_addr)-1] = 0; /* Terminate string */
 				break;
-			case 'i':
-				b = interpret_boolean_arg( optarg );
-				if( b == -1 ) {
-					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
-					e = -1;
-				} else {
-					rotate_server_screen = b;
-				}
+			case 'p':
+				lcd_port = atoi(optarg);
 				break;
-			case 'b':
-				if( strcmp( optarg, "on" ) == 0 ) {
-					backlight = BACKLIGHT_ON;
-				}
-				else if( strcmp( optarg, "off" ) == 0 ) {
-					backlight = BACKLIGHT_OFF;
-				}
-				else if( strcmp( optarg, "open" ) == 0 ) {
-					backlight = BACKLIGHT_OPEN;
-				}
-				else if( strcmp( optarg, "" ) != 0 ) {
-					report( RPT_ERR, "Backlight state should be on, off or open" );
-					e = -1;
-				}
+			case 'u':
+				strncpy(user, optarg, sizeof(user));
+				user[sizeof(user)-1] = 0; /* Terminate string */
 				break;
 			case 'w':
 				default_duration = (int) (atof(optarg) * 1e6 / TIME_UNIT);
 				if ( default_duration * TIME_UNIT < 2e6 ) {
 					report( RPT_ERR, "Waittime should be at least 2 (seconds), not %.8s", optarg );
 					e = -1;
-				};
+				}
 				break;
 			case 's':
 				b = interpret_boolean_arg( optarg );
@@ -358,6 +336,15 @@ process_command_line (int argc, char **argv)
 				break;
 			case 'r':
 				report_level = atoi(optarg);
+				break;
+			case 'i':
+				b = interpret_boolean_arg( optarg );
+				if( b == -1 ) {
+					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
+					e = -1;
+				} else {
+					rotate_server_screen = b;
+				}
 				break;
 			case '?':
 				/* For some reason getopt also returns an '?'
@@ -856,17 +843,12 @@ output_help_screen ()
 	 */
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
-	fprintf (stdout, "\nLCDd: LCDproc Server Daemon, %s\n", version);
+	fprintf (stdout, "LCDd: LCDproc Server Daemon, %s\n", version);
 	fprintf (stdout, "Copyright (c) 1999-2003 Scott Scriven, William Ferrell, and misc contributors\n");
 	fprintf (stdout, "This program is freely redistributable under the terms of the GNU Public License\n\n");
-	
-	/* Actually set reporting settings and flush all report messages */
-	set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
-	
-	/* Now the actual help message */
 	fprintf (stdout, "Usage: LCDd [ -h ] [ -c <config> ] [ -d <driver> ] [ -f <bool> ] \\\n");
 	fprintf (stdout, "\t[-a <addr> ] [ -p <port> ] [ -u <user> ] [ -w <time> ]\\\n");
-	fprintf (stdout, "\t[ -r <level> ] [ -s <bool> ] [ -u <user> ] [ -i <bool> ]\n\n");
+	fprintf (stdout, "\t[ -r <level> ] [ -s <bool> ] [ -i <bool> ]\n\n");
 	fprintf (stdout, "Available options are:\n");
 	fprintf (stdout, "\t-h\t\tDisplay this help screen\n");
 	fprintf (stdout, "\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
@@ -880,4 +862,8 @@ output_help_screen ()
 	fprintf (stdout, "\t-r <level>\tReport level [%d]\n", DEFAULT_REPORTLEVEL);
 	fprintf (stdout, "\t-i <bool>\tWhether to rotate the server info screen\n");
 	fprintf (stdout, "\n");
+
+	/* Error messages will be flushed to the configured output after this
+	 * help message.
+	 */
 }

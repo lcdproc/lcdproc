@@ -127,8 +127,8 @@ char *config_get_string( char * sectionname, char * keyname,
 }
 
 
-unsigned char config_get_bool( char *sectionname, char *keyname,
-		unsigned int skip, unsigned char default_value )
+short config_get_bool( char *sectionname, char *keyname,
+		int skip, short default_value )
 {
 	section * s;
 	key * k;
@@ -151,7 +151,7 @@ unsigned char config_get_bool( char *sectionname, char *keyname,
 
 
 long int config_get_int( char *sectionname, char *keyname,
-		unsigned int skip, long int default_value )
+		int skip, long int default_value )
 {
 	section * s;
 	key * k;
@@ -173,7 +173,7 @@ long int config_get_int( char *sectionname, char *keyname,
 
 
 double config_get_float( char *sectionname, char *keyname,
-		unsigned int skip, double default_value )
+		int skip, double default_value )
 {
 	section * s;
 	key * k;
