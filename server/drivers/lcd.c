@@ -330,10 +330,10 @@ lcd_drv_patch_init (struct lcd_logical_driver *driver)
 	ChkNull(init_hbar, lcd_drv_init_hbar, "init_hbar");
 	ChkNull(draw_frame, lcd_drv_draw_frame, "draw_frame");
 
-	// Now check for base driver entries...;
-	ChkBaseDrv(getkey, lcd_drv_getkey, "getkey");
-	ChkBaseDrv(getinfo, lcd_drv_getinfo, "getinfo");
+	ChkNull(getkey, lcd_drv_getkey, "getkey");
+	ChkNull(getinfo, lcd_drv_getinfo, "getinfo");
 
+	// Now check for base driver entries...;
 	ChkBaseDrv(clear, lcd_drv_clear, "clear");
 	ChkBaseDrv(string, lcd_drv_string, "string");
 	ChkBaseDrv(chr, lcd_drv_chr, "chr");
