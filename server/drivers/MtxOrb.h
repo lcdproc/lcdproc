@@ -15,7 +15,7 @@ MODULE_EXPORT void MtxOrb_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void MtxOrb_vbar (Driver *drvthis, int x, int len);
 MODULE_EXPORT void MtxOrb_hbar (Driver *drvthis, int x, int y, int len);
 MODULE_EXPORT void MtxOrb_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void MtxOrb_icon (Driver *drvthis, int which, char dest);
+MODULE_EXPORT void MtxOrb_old_icon (Driver *drvthis, int which, char dest);
 MODULE_EXPORT void MtxOrb_heartbeat (Driver *drvthis, int type);
 
 MODULE_EXPORT void MtxOrb_set_char (Driver *drvthis, int n, char *dat);
