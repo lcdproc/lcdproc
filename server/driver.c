@@ -16,8 +16,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#ifndef WIN32
 #include <sys/errno.h>
 #include <dlfcn.h>
+#else
+#include <windows.h>
+#endif
 #include <string.h>
 
 #ifdef HAVE_CONFIG_H
@@ -171,9 +175,18 @@ driver_bind_module( Driver * driver )
 	debug( RPT_DEBUG, "%s( driver=[%.40s] )", __FUNCTION__, driver->name );
 
 	/* Load the module */
+#ifndef WIN32
 	driver->module_handle = dlopen( driver->filename, RTLD_NOW );
+#else
+        driver->module_handle = LoadLibraryEx( (driver->filename), NULL, 0 );
+#endif
 	if( driver->module_handle == NULL ) {
+#ifndef WIN32
 		report( RPT_ERR, "Could not open driver module %.40s: %s", driver->filename, dlerror() );
+#else
+                /* REVISIT: replace dlerror() */
+		report( RPT_ERR, "Could not open driver module %.40s.", driver->filename );
+#endif
 		return -1;
 	}
 
@@ -189,13 +202,21 @@ driver_bind_module( Driver * driver )
 			strcpy( s, *(driver->symbol_prefix) ) ;
 			strcat( s, driver_symbols[i].name );
 			debug( RPT_DEBUG, "%s: finding symbol: %s", __FUNCTION__, s );
+#ifndef WIN32
 			*p = dlsym( driver->module_handle, s );
+#else
+                        *p = (void(*)()) (GetProcAddress( driver->module_handle, s ));
+#endif
 			free( s );
 		}
 		/* Retrieve the symbol */
 		if( !*p ) {
 			debug( RPT_DEBUG, "%s: finding symbol: %s", __FUNCTION__, driver_symbols[i].name );
+#ifndef WIN32
 			*p = dlsym( driver->module_handle, driver_symbols[i].name );
+#else
+                        *p = (void(*)()) (GetProcAddress( driver->module_handle, driver_symbols[i].name ));
+#endif
 		}
 
 		if( *p ) {
@@ -212,7 +233,11 @@ driver_bind_module( Driver * driver )
 	/* If errors, leave now while we can :) */
 	if( missing_symbols ) {
   		report( RPT_ERR, "Driver [%.40s] does not have all obligatory symbols", driver->name );
+#ifndef WIN32
 		dlclose( driver->module_handle );
+#else
+                FreeLibrary( driver->module_handle );
+#endif
 		return -1;
 	}
 
@@ -246,7 +271,11 @@ driver_unbind_module( Driver * driver )
 {
 	debug( RPT_DEBUG, "%s( driver=[%.40s] )", __FUNCTION__, driver->name );
 
+#ifndef WIN32
 	dlclose( driver->module_handle );
+#else
+        FreeLibrary( driver->module_handle );
+#endif
 
 	return 0;
 }
