@@ -136,7 +136,10 @@ curses_drv_close ()
 	refresh ();
 	endwin ();
 
-	drv_base_close ();
+	if (curses_drv->framebuf != NULL)
+		free (curses_drv->framebuf);
+
+	curses_drv->framebuf = NULL;
 
 }
 
@@ -227,13 +230,13 @@ curses_drv_vbar (int x, int len)
 	char map[] = "_.,,ooO8";
 
 	int y;
-	for (y = lcd.hgt; y > 0 && len > 0; y--) {
-		if (len >= lcd.cellhgt)
+	for (y = curses_drv->hgt; y > 0 && len > 0; y--) {
+		if (len >= curses_drv->cellhgt)
 			curses_drv_chr (x, y, '8');
 		else
 			curses_drv_chr (x, y, map[len - 1]);
 
-		len -= lcd.cellhgt;
+		len -= curses_drv->cellhgt;
 	}
 
 //  move(4-len/lcd.cellhgt, x-1);
@@ -247,13 +250,13 @@ curses_drv_vbar (int x, int len)
 void
 curses_drv_hbar (int x, int y, int len)
 {
-	for (; x <= lcd.wid && len > 0; x++) {
-		if (len >= lcd.cellwid)
+	for (; x <= curses_drv->wid && len > 0; x++) {
+		if (len >= curses_drv->cellwid)
 			curses_drv_chr (x, y, '=');
 		else
 			curses_drv_chr (x, y, '-');
 
-		len -= lcd.cellwid;
+		len -= curses_drv->cellwid;
 	}
 
 //  move(y-1, x-1);

@@ -74,7 +74,10 @@ text_init (lcd_logical_driver * driver, char *args)
 void
 text_close ()
 {
-	drv_base_close ();
+	if (lcd.framebuf != NULL)
+		free (lcd.framebuf);
+
+	lcd.framebuf = NULL;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -83,7 +86,7 @@ text_close ()
 void
 text_clear ()
 {
-	memset (lcd.framebuf, ' ', lcd.wid * lcd.hgt);
+	memset (text->framebuf, ' ', text->wid * text->hgt);
 
 }
 
@@ -93,7 +96,7 @@ text_clear ()
 void
 text_flush ()
 {
-	text_draw_frame (lcd.framebuf);
+	text_draw_frame (text->framebuf);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -109,7 +112,7 @@ text_string (int x, int y, char string[])
 	y -= 1;
 
 	for (i = 0; string[i]; i++) {
-		lcd.framebuf[(y * lcd.wid) + x + i] = string[i];
+		text->framebuf[(y * text->wid) + x + i] = string[i];
 	}
 }
 
@@ -123,7 +126,7 @@ text_chr (int x, int y, char c)
 	y--;
 	x--;
 
-	lcd.framebuf[(y * lcd.wid) + x] = c;
+	text->framebuf[(y * text->wid) + x] = c;
 }
 
 int
@@ -185,10 +188,10 @@ void
 text_vbar (int x, int len)
 {
 	int y;
-	for (y = lcd.hgt; y > 0 && len > 0; y--) {
+	for (y = text->hgt; y > 0 && len > 0; y--) {
 		text_chr (x, y, '|');
 
-		len -= lcd.cellhgt;
+		len -= text->cellhgt;
 	}
 
 }
@@ -199,10 +202,10 @@ text_vbar (int x, int len)
 void
 text_hbar (int x, int y, int len)
 {
-	for (; x <= lcd.wid && len > 0; x++) {
+	for (; x <= text->wid && len > 0; x++) {
 		text_chr (x, y, '-');
 
-		len -= lcd.cellwid;
+		len -= text->cellwid;
 	}
 
 }
@@ -226,25 +229,25 @@ text_draw_frame (char *dat)
 
 //  printf("Frame (%ix%i): \n%s\n", lcd.wid, lcd.hgt, dat);
 
-	for (i = 0; i < lcd.wid; i++) {
+	for (i = 0; i < text->wid; i++) {
 		out[i] = '-';
 	}
-	out[lcd.wid] = 0;
+	out[text->wid] = 0;
 	printf ("+%s+\n", out);
 
-	for (i = 0; i < lcd.hgt; i++) {
-		for (j = 0; j < lcd.wid; j++) {
-			out[j] = dat[j + (i * lcd.wid)];
+	for (i = 0; i < text->hgt; i++) {
+		for (j = 0; j < text->wid; j++) {
+			out[j] = dat[j + (i * text->wid)];
 		}
-		out[lcd.wid] = 0;
+		out[text->wid] = 0;
 		printf ("|%s|\n", out);
 
 	}
 
-	for (i = 0; i < lcd.wid; i++) {
+	for (i = 0; i < text->wid; i++) {
 		out[i] = '-';
 	}
-	out[lcd.wid] = 0;
+	out[text->wid] = 0;
 	printf ("+%s+\n", out);
 
 }
