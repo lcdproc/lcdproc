@@ -1,1 +1,1 @@
-SUBDIRS = examples headlines lcdproc metar
+SUBDIRS = examples headlines lcdexec lcdproc metar
