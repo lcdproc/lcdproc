@@ -1,6 +1,10 @@
 LCDproc client/server protocol, V0.2
 ---------------------------------------------
 
+fixme: most of this stuff is described better in
+       ./docs/lcdproc-dev/language.docbook so this file should
+       probably be removed after extracting the information that is
+       not anywhere else; see also ./docs/menustuff.txt (Volker)
 
 QUICKSTART
 ----------
@@ -229,12 +233,6 @@ key #id
 	Sends a keypress to the client.
 
 
-
-
---- Not implemented yet ---
-The functions below are planned but not completed.
-
-
 client->server functions
 -------------------------
 client_add_key #id
@@ -298,11 +296,8 @@ driver_del #id? (or type)
 
 server->client functions
 -------------------------
-menu #menu #item #action
+menuevent #menu #item #action
 	Tells the client that a menu item was selected/used/etc...
-	The action can be "click", "up", or "down".  The client should
-	handle this according to what type of menu item has been
-	activated, and should probably send the server a new item
-	definition if the item was a checkbox or slider.
-
-
+	The client should handle this according to what type of menu
+	item has been activated, and should probably send the server a
+	new item definition if the item was a checkbox or slider.

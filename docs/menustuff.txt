@@ -8,6 +8,11 @@ Reading these files it becomes easy to understand the menus.
 I (Joris) have given the file you are reading a new purpose:
 client-supplied menus.
 
+fixme: some of this stuff is described better in
+       ./docs/lcdproc-dev/language.docbook so this file should
+       probably be removed after extracting the information that is
+       not anywhere else; see also ./docs/netstuff.txt (Volker)
+
 
 INTERNAL SERVER DATA
 
@@ -66,10 +71,14 @@ checkbox	A checkbox. The client is notified whenever the state is
 slider		A checkbox. The client is notified whenever the slider is
 		moved.
 
+fixme: missing description of numeric, alpha, ip, ..., see
+       ./docs/lcdproc-dev/language.docbook (Volker)
+
 Note that I have changed the 'function' menu type to 'action' here. The name
 'function' was only appropriate internally, because a function was called.
 For clients we only know an action will be performed.
 
+fixme: missing reference to lcdexec (Volker)
 
 
 RETURNED DATA
@@ -116,6 +125,9 @@ slider volume 40
 
 When it is set at 40%.
 
+
+
+fixme: missing description of menuscreen_goto for session control (Volker)
 
 
 --
