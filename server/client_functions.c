@@ -901,7 +901,8 @@ widget_set_func (client * c, int argc, char **argv)
 		if (argc != i + 3)
 			sock_send_string (c->sock, "huh? Wrong number of arguments\n");
 		else {
-			if ((!isdigit (argv[i][0])) || (!isdigit (argv[i + 1][0]))) {
+			if ((!isdigit ((unsigned int) argv[i][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
 			} else					  // Set all the data...
 			{
@@ -925,7 +926,8 @@ widget_set_func (client * c, int argc, char **argv)
 		if (argc != i + 3)
 			sock_send_string (c->sock, "huh? Wrong number of arguments\n");
 		else {
-			if ((!isdigit (argv[i][0])) || (!isdigit (argv[i + 1][0]))) {
+			if ((!isdigit ((unsigned int) argv[i][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
 			} else {
 				x = atoi (argv[i]);
@@ -943,7 +945,8 @@ widget_set_func (client * c, int argc, char **argv)
 		if (argc != i + 3)
 			sock_send_string (c->sock, "huh? Wrong number of arguments\n");
 		else {
-			if ((!isdigit (argv[i][0])) || (!isdigit (argv[i + 1][0]))) {
+			if ((!isdigit ((unsigned int) argv[i][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
 			} else {
 				x = atoi (argv[i]);
@@ -961,7 +964,8 @@ widget_set_func (client * c, int argc, char **argv)
 		if (argc != i + 3)
 			sock_send_string (c->sock, "huh? Wrong number of arguments\n");
 		else {
-			if ((!isdigit (argv[i][0])) || (!isdigit (argv[i + 1][0]))) {
+			if ((!isdigit ((unsigned int) argv[i][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
 			} else {
 				x = atoi (argv[i]);
@@ -992,7 +996,10 @@ widget_set_func (client * c, int argc, char **argv)
 		if (argc != i + 7) {
 			sock_send_string (c->sock, "huh? Wrong number of arguments\n");
 		} else {
-			if ((!isdigit (argv[i][0])) || (!isdigit (argv[i + 1][0])) || (!isdigit (argv[i + 2][0])) || (!isdigit (argv[i + 3][0]))) {
+			if ((!isdigit ((unsigned int) argv[i][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 1][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 2][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 3][0]))) {
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
 			} else {
 				left = atoi (argv[i]);
@@ -1035,7 +1042,12 @@ widget_set_func (client * c, int argc, char **argv)
 		if (argc != i + 8) {
 			sock_send_string (c->sock, "huh? Wrong number of arguments\n");
 		} else {
-			if ((!isdigit (argv[i][0])) || (!isdigit (argv[i + 1][0])) || (!isdigit (argv[i + 2][0])) || (!isdigit (argv[i + 3][0])) || (!isdigit (argv[i + 4][0])) || (!isdigit (argv[i + 5][0]))) {
+			if ((!isdigit ((unsigned int) argv[i][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 1][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 2][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 3][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 4][0])) ||
+			    (!isdigit ((unsigned int) argv[i + 5][0]))) {
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
 			} else {
 				left = atoi (argv[i]);
@@ -1076,9 +1088,9 @@ widget_set_func (client * c, int argc, char **argv)
 		if (argc != i + 2)
 			sock_send_string (c->sock, "huh? Wrong number of arguments\n");
 		else {
-			if (!isdigit (argv[i][0])) {
+			if (!isdigit ((unsigned int) argv[i][0])) {
 				sock_send_string (c->sock, "huh? Invalid coordinates\n");
-			} else if (!isdigit (argv[i + 1][0])) {
+			} else if (!isdigit ((unsigned int) argv[i + 1][0])) {
 				sock_send_string (c->sock, "huh? Invalid number\n");
 			} else {
 				x = atoi (argv[i]);

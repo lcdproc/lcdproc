@@ -12,6 +12,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "shared/sockets.h"
 #include "sock.h"
