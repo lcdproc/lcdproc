@@ -154,6 +154,19 @@ static int cellwidth = LCD_DEFAULT_CELLWIDTH;
 static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 static int contrast = DEFAULT_CONTRAST;
 
+#ifdef CONFIG_FILE
+static int backlightenabled = DEFAULT_BACKLIGHT;
+
+static int backlight_state = -1;
+static int output_state = -1;
+
+static char pause_key = MTXORB_DEFAULT_PAUSE_KEY;
+static char back_key = MTXORB_DEFAULT_BACK_KEY;
+static char forward_key = MTXORB_DEFAULT_FORWARD_KEY;
+static char main_menu_key = MTXORB_DEFAULT_MAIN_MENU_KEY;
+static int keypad_test_mode = 0;
+#endif
+
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
@@ -243,6 +256,27 @@ MtxOrb_parse_contrast (char * str) {
 	return contrast;
 }
 
+
+#ifdef CONFIG_FILE
+/* Parse one key from the configfile */
+static char MtxOrb_parse_keypad_setting (char * sectionname, char * keyname, char default_value)
+{
+	char return_val = 0;
+	char * s;
+	char buf [255];
+
+	s = config_get_string ( sectionname, keyname, 0, NULL);
+	if (s != NULL){
+		strncpy (buf, s, sizeof(buf));
+		buf[sizeof(buf)-1]=0;
+		return_val = buf[0];
+	} else {
+		return_val=default_value;
+	}
+	return return_val;
+}
+#endif
+
 /* TODO:  Get the frame buffers working right */
 
 /* Opens com port and sets baud correctly...
@@ -252,6 +286,146 @@ MtxOrb_parse_contrast (char * str) {
 int
 MtxOrb_init (Driver *drvthis, char *args)
 {
+#ifdef CONFIG_FILE
+	/* Start of command line parsing*/
+
+	struct termios portset;
+
+	int contrast = DEFAULT_CONTRAST;
+	char device[256] = DEFAULT_DEVICE;
+	int speed = DEFAULT_SPEED;
+	char size[256] = DEFAULT_SIZE;
+	char buf[256] = "";
+	int tmp, w, h;
+
+	MtxOrb_type = MTXORB_LKD;  // Assume it's an LCD w/keypad
+
+	MtxOrb = driver;
+
+	debug( RPT_INFO, "MtxOrb: init(%p,%s)", driver, args );
+
+	/* TODO: replace DriverName with driver->name when that field exists. */
+	#define DriverName "MtxOrb"
+
+
+	/* READ CONFIG FILE */
+
+	/* Get serial device to use */
+	strncpy(device, config_get_string ( DriverName , "device" , 0 , DEFAULT_DEVICE),sizeof(device));
+	device[sizeof(device)-1]=0;
+	report (RPT_INFO,"MtxOrb: Using device: %s", device);
+
+	/* Get display size */
+	strncpy(size, config_get_string ( DriverName , "size" , 0 , DEFAULT_SIZE),sizeof(size));
+	size[sizeof(size)-1]=0;
+	if( sscanf(size , "%dx%d", &w, &h ) != 2
+	|| (w <= 0) || (w > LCD_MAX_WIDTH)
+	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
+		report (RPT_WARNING, "MtxOrb: Cannot read size: %s. Using default value %s.", size, DEFAULT_SIZE);
+		sscanf( DEFAULT_SIZE , "%dx%d", &w, &h );
+	}
+	driver->wid = w;
+	driver->hgt = h;
+
+	/* Get contrast */
+	if (0<=config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) && config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
+		contrast = config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST);
+	} else {
+		report (RPT_WARNING, "MtxOrb: Contrast must be between 0 and 255. Using default value.");
+	}
+
+	/* Get speed */
+	tmp = config_get_int ( DriverName , "Speed" , 0 , DEFAULT_SPEED);
+
+	switch (tmp) {
+		case 1200:
+			speed = B1200;
+			break;
+		case 2400:
+			speed = B2400;
+			break;
+		case 9600:
+			speed = B9600;
+			break;
+		case 19200:
+			speed = B19200;
+			break;
+		default:
+			speed = DEFAULT_SPEED;
+			switch (speed) {
+				case B1200:
+					strncpy(buf,"1200", sizeof(buf));
+					break;
+				case B2400:
+					strncpy(buf,"2400", sizeof(buf));
+					break;
+				case B9600:
+					strncpy(buf,"9600", sizeof(buf));
+					break;
+				case B19200:
+					strncpy(buf,"19200", sizeof(buf));
+					break;
+			}
+			report (RPT_WARNING , "MtxOrb: Speed must be 1200, 2400, 9600 or 19200. Using default value of %s baud!", buf);
+			strncpy(buf,"", sizeof(buf));
+	}
+
+
+	/* Get backlight setting*/
+	if(config_get_bool( DriverName , "enablebacklight" , 0 , DEFAULT_BACKLIGHT)) {
+		backlightenabled = 1;
+	}
+
+	/* Get display type */
+	strncpy(buf, config_get_string ( DriverName , "type" , 0 , DEFAULT_TYPE),sizeof(size));
+	buf[sizeof(buf)-1]=0;
+
+	if (strncasecmp(buf, "lcd", 3) == 0) {
+		MtxOrb_type = MTXORB_LCD;
+	} else if (strncasecmp(buf, "lkd", 3) == 0) {
+		MtxOrb_type = MTXORB_LKD;
+	} else if (strncasecmp (buf, "vfd", 3) == 0) {
+		MtxOrb_type = MTXORB_VFD;
+	} else if (strncasecmp (buf, "vkd", 3) == 0) {
+		MtxOrb_type = MTXORB_VKD;
+	} else {
+		report (RPT_ERR, "MtxOrb: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd", buf);
+		return (-1);
+		}
+
+	/* Get keypad settings*/
+
+	/* keypad test mode? */
+	if (config_get_bool( DriverName , "keypad_test_mode" , 0 , 0)) {
+		report (RPT_INFO, "MtxOrb: Entering keypad test mode...\n");
+		keypad_test_mode = 1;
+	}
+
+	if (!keypad_test_mode) {
+		/* We don't send any chars to the server in keypad test mode.
+		 * So there's no need to get them from the configfile in keypad test mode.
+		 */
+		/* pause_key */
+		pause_key = MtxOrb_parse_keypad_setting (DriverName, "pause_key", MTXORB_DEFAULT_PAUSE_KEY);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as pause_key.", pause_key);
+
+		/* back_key */
+		back_key = MtxOrb_parse_keypad_setting (DriverName, "back_key", MTXORB_DEFAULT_BACK_KEY);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as back_key", back_key);
+
+		/* forward_key */
+		forward_key = MtxOrb_parse_keypad_setting (DriverName, "forward_key", MTXORB_DEFAULT_FORWARD_KEY);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as forward_key", forward_key);
+
+		/* main_menu_key */
+		main_menu_key = MtxOrb_parse_keypad_setting (DriverName, "main_menu_key", MTXORB_DEFAULT_MAIN_MENU_KEY);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as main_menu_key", main_menu_key);
+	}
+
+	/* End of config file parsing*/
+#else
+	/* Start of command line parsing*/
+
 	char *argv[64];		/* Notice: 64 arguments - overflows? */
 	int argc;
 	struct termios portset;
@@ -276,29 +450,6 @@ MtxOrb_init (Driver *drvthis, char *args)
 	   }
 	 */
 
-#ifdef USE_GETOPT
-	while ((c = getopt(argc, argv, "d:c:s:ht:")) > 0) {
-		switch(c) {
-			case 'd':
-				strncpy(device, optarg, sizeof(device));
-				break;
-			case 's':
-				speed = MtxOrb_parse_speed(optarg);
-				break;
-			case 'c':
-				contrast = MtxOrb_parse_contrast(optarg);
-				break;
-			case 'h':
-				MtxOrb_usage();
-				return -1;
-			case 't':
-				MtxOrb_type = MtxOrb_parse_type(optarg);
-			default:
-				MtxOrb_usage();
-				return -1;
-		}
-	}
-#else
 	for (i = 0; i < argc; i++) {
 		char *p;
 
@@ -375,6 +526,8 @@ MtxOrb_init (Driver *drvthis, char *args)
 			}
 		}
 	}
+
+	/* End of command line parsing */
 #endif
 
 	/* Set up io port correctly, and open it... */
