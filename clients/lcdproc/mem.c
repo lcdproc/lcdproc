@@ -114,6 +114,10 @@ mem_init ()
 #ifndef SOLARIS
 	if (!meminfo_fd) {
 		meminfo_fd = open ("/proc/meminfo", O_RDONLY);
+		if (meminfo_fd < 0) {
+		  perror ("Can't open /proc/meminfo");
+		  exit (1);
+		}
 	}
 
 #endif
