@@ -538,18 +538,23 @@ curses_drv_getkey ()
 
 	i = getch ();
 
-	if (i == KEY_LEFT)
-		return 'D';
-	if (i == KEY_UP)
-		return 'B';
-	if (i == KEY_DOWN)
-		return 'C';
-	if (i == KEY_RIGHT)
-		return 'A';
-
-	if (i != ERR)
-		return i;
-	else
-		return 0;
-
+	switch(i) {
+		case 0x0C:
+			redrawwin(lcd_win);
+			wrefresh(lcd_win);
+			return 0;
+			break;
+		case KEY_LEFT:
+			return 'D';
+		case KEY_UP:
+			return 'B';
+		case KEY_DOWN:
+			return 'C';
+		case KEY_RIGHT:
+			return 'A';
+		case ERR:
+			return 0;
+		default:
+			return i;
+	}
 }
