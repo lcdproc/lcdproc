@@ -1,22 +1,38 @@
 /*lcdm001.c*/
-//////////////////////////////////////////////////////////////
-//// Driver for the LCDM001 device from kernelconcepts.de ////
-////          written by Rene Wagner <reenoo@gmx.de>      ////
-//////////////////////////////////////////////////////////////
+/*  This is the LCDproc driver for the "LCDM001" device from kernelconcepts.de
 
-/*LCDM001 does NOT support custom chars
-   So the output may look a bit strange
-   Most of the "strange output" has been fixed by
+    Copyright (C) 2001  Rene Wagner <reenoo@gmx.de>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 */
+
+/* This driver is mostly based on the MtxOrb driver.
+   See the file MtxOrb.c for copyright details */
+/* The heartbeat workaround has been taken from the curses driver
+   See the file curses_drv.c for copyright details */
+/* The function calls needed for reporting and getting settings from the
+   configfile have been written taking the calls in
+   sed1330.c ((C) by Joris Robijn) as examples*/
+/* (Hopefully I have NOT forgotten any file I have stolen code from.
+   If so send me an e-mail or add your copyright here!) */
+
+/* LCDM001 does NOT support custom chars
+   Most of the displaying problems have been fixed
    using ASCII workarounds*/
 
-/*All the functions neccessary for running "normal" clients
-   have been implemented.
-   Thanks to the curses driver ;) heartbeat works as well now.
-   The chars that are used instead of the heartbeat-icons can
-   be set in lcdm001.h*/
-
-/*Most of the code has been stolen from MtxOrb.c ;)
-   So if you make changes here, do the same with MtxOrb.c*/
+/* You can modify the characters that are displayed instead of
+   the normal icons for the heartbeat in lcdm001.h*/
 
 #include <stdlib.h>
 #include <stdio.h>
