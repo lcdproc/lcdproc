@@ -17,6 +17,9 @@
 # include "hd44780-serialLpt.h"
 # include "hd44780-winamp.h"
 #endif
+#ifdef HAVE_LIBUSB
+# include "hd44780-bwct-usb.h"
+#endif
 #include "hd44780-picanlcd.h"
 // add new connection type header files here
 
@@ -32,6 +35,9 @@ static const ConnectionMapping connectionMapping[] = {
 	{"winamp", hd_init_winamp, "\tnone\n"},
 #endif
 	{"picanlcd", hd_init_picanlcd, "\tnone\n"},
+#ifdef HAVE_LIBUSB
+	{"bwctusb", hd_init_bwct_usb, "\tnone\n"},
+#endif
 		 // add new connection types and their string specifier here
 		 // default, end of structure element (do not delete)
 	{NULL, NULL, NULL}

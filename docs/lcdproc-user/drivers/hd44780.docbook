@@ -1011,6 +1011,22 @@ It does not support a keypad nor backlight switching.
 
 </sect3>
 
+<sect3 id="hd44780-bwctusb">
+<title>BWCT USB device "bwctusb"</title>
+
+<para>
+The BWCT USB LCD module is also supported. It is not connected to an LPT port
+but to an USB port, which saves you from a lot of potential problems.
+To use it, set the connection type in the config file with the ConnectionType=
+setting to "bwctusb" (without the quotes).
+It does neithert support a keypad nor backlight switching but it supports setting
+the display's contrast using the "Contrast" configuration parameter as well as
+specifying which one (of multiple BWCT LCD devices) is wanted using the
+"SerialNumber" configuration parameter.
+</para>
+
+</sect3>
+
 </sect2>
 
 <sect2 id=hd44780-compiling>
@@ -1066,6 +1082,10 @@ it clear, how the ConnectionType is to be set.
 <row>
 <entry>PIC-an-LCD serial device "picanlcd"</entry>
 <entry>picanlcd</entry>
+</row>
+<row>
+<entry>BWCT USB device "bwctusb"</entry>
+<entry>bwctusb</entry>
 </row>
 </tbody>
 </tgroup>

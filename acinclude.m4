@@ -136,6 +136,9 @@ dnl				else
 			else
 				HD44780_DRIVERS="hd44780-picanlcd.o"
 			fi
+			if test "$enable_libusb" = yes ; then
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-bwct-usb.o"
+			fi
 			DRIVERS="$DRIVERS hd44780${SO}"
 			actdrivers=["$actdrivers hd44780"]
 			;;
@@ -149,14 +152,12 @@ dnl				else
  			])
 			;;
 		iowarrior)
- 			AC_CHECK_LIB(usb, main,[
- 				LIBUSB="-lusb"
+ 			if test "$enable_libusb" = yes ; then
 				DRIVERS="$DRIVERS IOWarrior${SO}"
 				actdrivers=["$actdrivers iowarrior"]
- 				],[
-dnl				else
+			else
  				AC_MSG_WARN([The iowarrior driver needs the libusb library.])
- 			])
+			fi
 			;;
 		irman)
  			AC_CHECK_LIB(irman, main,[
@@ -239,7 +240,6 @@ actdrivers=`echo $actdrivers | sed 's/ /,/g'`
 AC_MSG_RESULT([Will compile drivers: $actdrivers])
 
 AC_SUBST(LIBCURSES)
-AC_SUBST(LIBUSB)
 AC_SUBST(LIBIRMAN)
 AC_SUBST(LIBLIRC_CLIENT)
 AC_SUBST(LIBSVGA)

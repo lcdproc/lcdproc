@@ -129,6 +129,7 @@ HD44780_init (Driver * drvthis, char *args)
 	char buf[40];
 	char *s;
 	int i;
+	int usb = 0;
 	PrivateData *p;
 
 	// Alocate and store private data
@@ -163,6 +164,10 @@ HD44780_init (Driver * drvthis, char *args)
 		return -1; // fatal error
 	} else {
 		p->connectiontype_index = i;
+		# check if ConnectionType contains the string "USB" or "usb"
+		if ((strstr(connectionMapping[i].name, "usb") != NULL) ||
+		    (strstr(connectionMapping[i].name, "USB") != NULL))
+			usb = 1;
 	}
 
 	// Get and parse vspan only when specified
@@ -302,11 +307,20 @@ HD44780_init (Driver * drvthis, char *args)
 	HD44780_clear (drvthis);
 	sprintf (buf, "HD44780 %dx%d", p->width, p->height );
 	HD44780_string (drvthis, 1, 1, buf);
+	if (usb) {
+		sprintf (buf, "USB %s%s%s",
+				(p->have_backlight?" bl":""),
+				(p->have_keypad?" key":""),
+				(p->have_output?" out":"")
+			);
+	}
+	else {
 	sprintf (buf, "LPT 0x%x%s%s%s", p->port,
 			(p->have_backlight?" bl":""),
 			(p->have_keypad?" key":""),
 			(p->have_output?" out":"")
 		);
+	}
 	HD44780_string (drvthis, 1, 2, buf);
 	HD44780_flush (drvthis);
 	sleep (2);
