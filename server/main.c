@@ -62,8 +62,8 @@ extern int optind, optopt, opterr;
 #include "drivers.h"
 #include "main.h"
 
-#define DEFAULT_LCD_PORT LCDPORT
 #define DEFAULT_BIND_ADDR "127.0.0.1"
+#define DEFAULT_BIND_PORT LCDPORT
 #define DEFAULT_CONFIGFILE "/etc/LCDd.conf"
 #define DEFAULT_USER "nobody"
 #define DEFAULT_DRIVER "curses"
@@ -73,9 +73,7 @@ extern int optind, optopt, opterr;
 #define DEFAULT_ROTATE_SERVER_SCREEN 1
 #define DEFAULT_REPORTTOSYSLOG 0
 #define DEFAULT_REPORTLEVEL RPT_WARNING
-#define DEFAULT_ADDR "127.0.0.1"
 
-//#define DEFAULT_WAITTIME 8
 #define DEFAULT_SCREEN_DURATION 32
 #define DEFAULT_HEARTBEAT HEARTBEAT_ON
 
@@ -116,8 +114,8 @@ char user[64];		/* The values will be overwritten anyway... */
 int daemon_mode = UNSET_INT;
 int rotate_server_screen = UNSET_INT;
 
-static int reportLevel = UNSET_INT;
-static int reportToSyslog = UNSET_INT;
+static int report_level = UNSET_INT;
+static int report_to_syslog = UNSET_INT;
 
 /* The drivers and their driver parameters */
 char *drivernames[MAX_DRIVERS];
@@ -131,6 +129,7 @@ long int timer = 0;
 /**** Local functions ****/
 void exit_program (int val);
 void catch_reload_signal (int val);
+int interpret_boolean_arg (char *s);
 void HelpScreen ();
 
 void clear_settings();
@@ -145,11 +144,13 @@ int init_drivers();
 int init_screens();
 void do_mainloop();
 
+#define CHAIN(e,f) { if( e>=0 ) { e=(f); }}
+#define CHAIN_END(e,msg) { if( e<0 ) { report( RPT_CRIT,(msg)); exit(e); }}
 
-#define ESSENTIAL(f) {int r; if( ( r=(f) )<0 ) { report( RPT_CRIT,"Critical error, abort"); exit_program(0);}}
 int
 main (int argc, char **argv)
 {
+	int e = 0;
 
 	stored_argc = argc;
 	stored_argv = argv;
@@ -194,46 +195,47 @@ main (int argc, char **argv)
 	clear_settings();
 
 	/* Read command line*/
-	ESSENTIAL( process_command_line (argc, argv) );
+	CHAIN( e, process_command_line (argc, argv) );
 
 	/* Read config file
 	 * Set configfile to default value first unless changed before
 	 */
 	if (strcmp(configfile, UNSET_STR)==0)
 		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	ESSENTIAL( process_configfile (configfile) );
+	CHAIN( e, process_configfile (configfile) );
 
 	/* Set default values*/
-	set_default_settings();
+	CHAIN( e, ( set_default_settings(), 0 ));
 
 	/* Set reporting values*/
-	ESSENTIAL( set_reporting( "LCDd", reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
- 	report( RPT_INFO, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
+	CHAIN( e, set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
+ 	CHAIN( e, ( report( RPT_INFO, "Set report level to %d, output to %s", report_level, (report_to_syslog?"syslog":"stderr") ), 0 ));
 
 	/* Startup the server*/
-	ESSENTIAL( screenlist_init() );
-	ESSENTIAL( init_drivers() );
-	ESSENTIAL( init_sockets() );
-	ESSENTIAL( input_init() );
-	ESSENTIAL( menuscreens_init() );
-	ESSENTIAL( server_screen_init() );
-	ESSENTIAL( drop_privs(user) );
+	CHAIN( e, screenlist_init() );
+	CHAIN( e, init_drivers() );
+	CHAIN( e, init_sockets() );
+	CHAIN( e, input_init() );
+	CHAIN( e, menuscreens_init() );
+	CHAIN( e, server_screen_init() );
+	CHAIN( e, drop_privs(user) );
+	CHAIN_END( e, "Critical error while initializing, abort." );
 
 	/* Now, go into daemon mode...*/
 	if (daemon_mode) {
 		report(RPT_INFO, "Server forking to background");
-		ESSENTIAL( daemonize() );
+		CHAIN( e, daemonize() );
 	} else {
 		output_GPL_notice();
 		report(RPT_INFO, "Server running in foreground");
 	}
+	CHAIN_END( e, "Critical error while initializing, abort." );
 
 	do_mainloop();
 	/* This loop never stops; we'll get out only with a signal...*/
 
 	return 0;
 }
-#undef ESSENTIAL
 
 
 void
@@ -252,8 +254,8 @@ clear_settings ()
 	backlight = UNSET_INT;
 
 	default_duration = UNSET_INT;
-	reportToSyslog = UNSET_INT;
-	reportLevel = UNSET_INT;
+	report_to_syslog = UNSET_INT;
+	report_level = UNSET_INT;
 
 	for( i=0; i < num_drivers; i++ ) {
 		free( drivernames[i] );
@@ -267,7 +269,8 @@ clear_settings ()
 int
 process_command_line (int argc, char **argv)
 {
-	int c;
+	int c, b;
+	int e = 0;
 
 	debug( RPT_DEBUG, "%s( argc=%d, argv=...)", __FUNCTION__, argc );
 
@@ -275,7 +278,7 @@ process_command_line (int argc, char **argv)
 	optind = 0;
 
 	/* analyze options here..*/
-	while ((c = getopt(argc, argv, "a:p:d:hfib:w:c:u:sr:")) > 0) {
+	while ((c = getopt(argc, argv, "ha:p:f:ib:w:c:u:s:r:")) > 0) {
 		/* FIXME: Setting of c in this loop clobbers s!
 		 * s is set equivalent to c.
 		  */
@@ -289,27 +292,44 @@ process_command_line (int argc, char **argv)
 					num_drivers ++;
 				} else
 					report( RPT_ERR, "Too many drivers!" );
+					e = 1;
 				break;
 			case 'p':
 				lcd_port = atoi(optarg);
 				break;
 			case 'u':
 				strncpy(user, optarg, sizeof(user));
+				user[sizeof(user)-1] = 0; /* Terminate string */
 				break;
 			case 'a':
 				strncpy(bind_addr, optarg, sizeof(bind_addr));
+				bind_addr[sizeof(bind_addr)-1] = 0; /* Terminate string */
 				break;
 			case 'h':
-				HelpScreen ();
+				e = 1;	/* Well, it's not an error, but
+						will give the same result */
 				break;
 			case 'f':
-				daemon_mode = 0;
+				b = interpret_boolean_arg( optarg );
+				if( b == -1 ) {
+					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
+					e = 1;
+				} else {
+					daemon_mode = !b;
+				}
 				break;
 			case 'c':
 				strncpy(configfile, optarg, sizeof(configfile));
+				configfile[sizeof(configfile)-1] = 0; /* Terminate string */
 				break;
 			case 'i':
-				rotate_server_screen = 0;
+				b = interpret_boolean_arg( optarg );
+				if( b == -1 ) {
+					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
+					e = 1;
+				} else {
+					rotate_server_screen = b;
+				}
 				break;
 			case 'b':
 				if( strcmp( optarg, "on" ) == 0 ) {
@@ -323,36 +343,46 @@ process_command_line (int argc, char **argv)
 				}
 				else if( strcmp( optarg, "" ) != 0 ) {
 					report( RPT_ERR, "Backlight state should be on, off or open" );
-					HelpScreen();
+					e = 1;
 				}
 				break;
 			case 'w':
 				default_duration = (int) (atof(optarg) * 1e6 / TIME_UNIT);
 				if ( default_duration * TIME_UNIT < 2e6 ) {
 					report( RPT_ERR, "Waittime should be at least 2 (seconds), not %.8s", optarg );
-					HelpScreen ();
+					e = 1;
 				};
 				break;
 			case 's':
-				reportToSyslog = 1;
+				b = interpret_boolean_arg( optarg );
+				if( b == -1 ) {
+					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
+					e = 1;
+				} else {
+					report_to_syslog = b;
+				}
 				break;
 			case 'r':
-				reportLevel = atoi(optarg);
+				report_level = atoi(optarg);
 				break;
 			case '?':
 				report( RPT_ERR, "Unknown option: '%c'", optopt );
-				HelpScreen();
+				e = 1;
 				break;
 			case ':':
 				report( RPT_ERR, "Missing option argument!" );
-				HelpScreen();
+				e = 1;
 				break;
 		}
 	}
 
-	if (optind < argc)
+	if (optind < argc) {
 		report( RPT_ERR, "Non-option arguments on the command line !");
-
+		e = 1;
+	}
+	if( e ) {
+		HelpScreen();
+	}
 	return 0;
 }
 
@@ -418,11 +448,11 @@ process_configfile ( char *configfile )
 		}
 	}
 
-	if( reportToSyslog == UNSET_INT ) {
-		reportToSyslog = config_get_bool( "server", "reportToSyslog", 0, UNSET_INT );
+	if( report_to_syslog == UNSET_INT ) {
+		report_to_syslog = config_get_bool( "server", "reportToSyslog", 0, UNSET_INT );
 	}
-	if( reportLevel == UNSET_INT ) {
-		reportLevel = config_get_int( "server", "reportLevel", 0, UNSET_INT );
+	if( report_level == UNSET_INT ) {
+		report_level = config_get_int( "server", "reportLevel", 0, UNSET_INT );
 	}
 
 
@@ -458,7 +488,7 @@ set_default_settings()
 	/* Set defaults into unfilled variables....*/
 
 	if (lcd_port == UNSET_INT)
-		lcd_port = DEFAULT_LCD_PORT;
+		lcd_port = DEFAULT_BIND_PORT;
 	if (strcmp( bind_addr, UNSET_STR ) == 0)
 		strncpy (bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
 	if (strcmp( user, UNSET_STR ) == 0)
@@ -474,10 +504,10 @@ set_default_settings()
 	if (backlight == UNSET_INT)
 		backlight = BACKLIGHT_OPEN;
 
-	if (reportToSyslog == UNSET_INT )
-		reportToSyslog = DEFAULT_REPORTTOSYSLOG;
-	if( reportLevel == UNSET_INT )
-		reportLevel = DEFAULT_REPORTLEVEL;
+	if (report_to_syslog == UNSET_INT )
+		report_to_syslog = DEFAULT_REPORTTOSYSLOG;
+	if( report_level == UNSET_INT )
+		report_level = DEFAULT_REPORTLEVEL;
 
 
 	/* Use default driver*/
@@ -497,7 +527,7 @@ output_GPL_notice()
 	 */
 	fprintf (stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
 	fprintf (stderr, "Part of LCDproc\n");
-	fprintf (stderr, "Copyright (C) 1998-2002 William Ferrell, Scott Scriven\n");
+	fprintf (stderr, "Copyright (C) 1998-2003 William Ferrell, Scott Scriven\n");
 	fprintf (stderr, "                        and many other contributors\n\n");
 	fprintf (stderr, "This program is free software; you can redistribute it and/or\n");
 	fprintf (stderr, "modify it under the terms of the GNU General Public License\n");
@@ -647,40 +677,40 @@ init_screens ()
 	}
 	if (!rotate_server_screen) {
 		/* Display the server screen only when there are no other screens */
-		server_screen->priority = 256;
+		server_screen->priority = PRI_BACKGROUND;
 	}
 	return 0;
 }
 
-#define ESSENTIAL(f) {int r; if( ( r=(f) )<0 ) { report( RPT_CRIT,"Critical error while reloading, abort"); _exit(0);}}
 void
 do_reload ()
 {
+	int e = 0;
+
 	drivers_unload_all ();		/* Close all drivers */
 
 	config_clear();
 	clear_settings();
 
 	/* Reread command line*/
-	ESSENTIAL( process_command_line (stored_argc, stored_argv) );
+	CHAIN( e, process_command_line (stored_argc, stored_argv) );
 
 	/* Reread config file */
 	if (strcmp(configfile, UNSET_STR)==0)
 		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	ESSENTIAL( process_configfile (configfile) );
+	CHAIN( e, process_configfile (configfile) );
 
 	/* Set default values */
-	set_default_settings();
+	CHAIN( e, ( set_default_settings(), 0 ));
 
 	/* Set reporting values */
-	ESSENTIAL( set_reporting( "LCDd", reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
- 	report( RPT_INFO, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
+	CHAIN( e, set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
+ 	CHAIN( e, ( report( RPT_INFO, "Set report level to %d, output to %s", report_level, (report_to_syslog?"syslog":"stderr") ), 0 ));
 
 	/* And restart the drivers */
-	ESSENTIAL( init_drivers() );
-
+	CHAIN( e, init_drivers() );
+	CHAIN_END( e, "Critical error while reloading, abort." );
 }
-#undef ESSENTIAL
 
 void
 do_mainloop ()
@@ -780,11 +810,11 @@ exit_program (int val)
 	}
 
 	/* Set emergency reporting and flush all messages if not done already. */
-	if( reportLevel == UNSET_INT )
-		reportLevel = DEFAULT_REPORTLEVEL;
-	if( reportToSyslog == UNSET_INT )
-		reportToSyslog = DEFAULT_REPORTTOSYSLOG;
-	set_reporting( "LCDd", reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
+	if( report_level == UNSET_INT )
+		report_level = DEFAULT_REPORTLEVEL;
+	if( report_to_syslog == UNSET_INT )
+		report_to_syslog = DEFAULT_REPORTTOSYSLOG;
+	set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
 
 	goodbye_screen ();		/* display goodbye screen on LCD display */
 	drivers_unload_all ();		/* release driver memory and file descriptors */
@@ -806,6 +836,20 @@ catch_reload_signal (int val)
 	got_reload_signal = 1;
 }
 
+int
+interpret_boolean_arg (char *s)
+{
+	if( strcmp( s, "on" ) == 0 || strcmp( s, "yes" ) 
+	|| strcmp( s, "true" ) || strcmp( s, "1" )) {
+		return 1;
+	}
+	if( strcmp( s, "off" ) == 0 || strcmp( s, "no" )
+	|| strcmp( s, "false" ) || strcmp( s, "0" )) {
+		return 0;
+	}
+	return -1;
+}
+
 void
 HelpScreen ()
 {
@@ -815,30 +859,23 @@ HelpScreen ()
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	fprintf (stdout, "\nLCDd: LCDproc Server Daemon, %s\n", version);
-	fprintf (stdout, "Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
+	fprintf (stdout, "Copyright (c) 1999-2003 Scott Scriven, William Ferrell, and misc contributors\n");
 	fprintf (stdout, "This program is freely redistributable under the terms of the GNU Public License\n\n");
-	fprintf (stdout, "Usage: LCDd [ -hfiws ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \\\n\t[ -p <port> ] [ -u <user> ] [ -w <time> ] [ -r <level> ]\n\n");
+	fprintf (stdout, "Usage: LCDd [ -h ] [ -c <config> ] [ -d <driver> ] [ -f <bool> ] \\\n");
+	fprintf (stdout, "\t[-a <addr> ] [ -p <port> ] [ -u <user> ] [ -w <time> ]\\\n");
+	fprintf (stdout, "\t[ -r <level> ] [ -s <bool> ] [ -u <user> ] [ -i <bool> ]\n\n");
 	fprintf (stdout, "Available options are:\n");
-
 	fprintf (stdout, "\t-h\t\tDisplay this help screen\n");
 	fprintf (stdout, "\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
-	/*fprintf (stdout, "\t-t\t\tSelect an LCD size (20x4, 16x2, etc...)\n");*/
-	fprintf (stdout, "\t-d <driver>\tAdd a driver to use (output only to first)\n");
-	/*fprintf (stdout, "\t\t\tCFontz, curses, HD44780, irmanin, joy,\n\t\t\tMtxOrb, LB216, text\n");*/
-	/*fprintf (stdout, "\t\t\t(args will be passed to the driver for init)\n");*/
-	fprintf (stdout, "\t-f\t\tRun in the foreground\n");
-	/*fprintf (stdout, "\t-b\t--backlight <mode>\n\t\t\tSet backlight mode (on, off, open)\n");*/
-	fprintf (stdout, "\t-i\t\tDisable showing of the main LCDproc server screen\n");
-	fprintf (stdout, "\t-w <waittime>\tTime to pause at each screen (in seconds)\n");
-	fprintf (stdout, "\t-a <addr>\tNetwork (IP) address to bind to\n");
-	fprintf (stdout, "\t-p <port>\tNetwork port to listen for connections on\n");
-	fprintf (stdout, "\t-u <user>\tUser to run as\n");
-	fprintf (stdout, "\t-s\t\tOutput messages to syslog\n");
-	fprintf (stdout, "\t-r <level>\tReport level (default=2)\n");
-
-	/*fprintf (stdout, "\tHelp on each driver's parameters are obtained upon request:\n\t\t\"LCDd -d driver --help\"\n");*/
-	/*fprintf (stdout, "Example:\n");*/
-	/*fprintf (stdout, "\tLCDd -d MtxOrb \"--device /dev/lcd --contrast 200\" -d joy\n");*/
+	fprintf (stdout, "\t-d <driver>\tAdd a driver to use (overrides drivers in config file) [%s]\n", DEFAULT_DRIVER);
+	fprintf (stdout, "\t-f <bool>\tWhether to run in the foreground\n");
+	fprintf (stdout, "\t-a <addr>\tNetwork (IP) address to bind to [%s]\n", DEFAULT_BIND_ADDR);
+	fprintf (stdout, "\t-p <port>\tNetwork port to listen for connections on [%i]\n", DEFAULT_BIND_PORT);
+	fprintf (stdout, "\t-u <user>\tUser to run as [%s]\n", DEFAULT_USER);
+	fprintf (stdout, "\t-w <waittime>\tTime to pause at each screen (in seconds) [%d]\n", DEFAULT_SCREEN_DURATION);
+	fprintf (stdout, "\t-s <bool>\tIf set, reporting will be done using syslog\n");
+	fprintf (stdout, "\t-r <level>\tReport level [%d]\n", DEFAULT_REPORTLEVEL);
+	fprintf (stdout, "\t-i <bool>\tWhether to rotate the server info screen\n");
 	fprintf (stdout, "\n");
 
 	exit (0);
