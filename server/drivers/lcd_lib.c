@@ -42,7 +42,7 @@ new_framebuf (struct lcd_logical_driver *driver, char *oldbuf) {
 		return 1;
 	if (oldbuf == NULL)
 		return 1;
-	return (strncpy(driver->framebuf, oldbuf, driver->wid * driver->hgt) != 0);
+	return (strncmp(driver->framebuf, oldbuf, driver->wid * driver->hgt) != 0);
 }
 
 void
