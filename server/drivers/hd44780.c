@@ -112,11 +112,16 @@ static int numDisplays = 0;
 // input span list but is kept to save some cpu cycles.
 static int *dispSizes = NULL;
 
-// Keypad and backlight option
+// Keypad, backlight extended interface and delay options
 char have_keypad = 0;	 // off by default
 char have_backlight = 0; // off by default
 char extIF = 0;		 // off by default
-			 // These vars is not static, so it's accessable from all sub-drivers
+int delayMult = 1;	 // Delay multiplier for slow displays
+char delayBus = 0;	 // Delay if the computer can send data too fast over
+			 // its bus to LPT port
+
+			 // These vars is not static, so it's accessable from
+			 // all sub-drivers
 			 // Indeed, this should become cleaner...  later...
 
 // Autorepeat values
@@ -193,6 +198,11 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	//// READ THE CONFIG FILE
 
 	port		= driver->config_get_int( DriverName, "port", 0, 0x278 );
+	extIF		= driver->config_get_bool( DriverName, "extended", 0, 0 );
+	have_keypad	= driver->config_get_bool( DriverName, "keypad", 0, 0 );
+	have_backlight	= driver->config_get_bool( DriverName, "backlight", 0, 0 );
+	delayMult 	= driver->config_get_int( DriverName, "delaymult", 0, 1 );
+	delayBus 	= driver->config_get_bool( DriverName, "delaybus", 0, 0 );
 
 	// Get and search for the connection type
 	s = driver->config_get_string( DriverName, "connectiontype", 0, "4bit" );
@@ -212,10 +222,6 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 			return -1;
 		}
 	}
-
-	extIF		= driver->config_get_bool( DriverName, "extended", 0, 0 );
-	have_keypad	= driver->config_get_bool( DriverName, "keypad", 0, 0 );
-	have_backlight	= driver->config_get_bool( DriverName, "backlight", 0, 0 );
 
 	// Get and parse size
 	s = driver->config_get_string( DriverName, "size", 0, "20x4" );
@@ -336,8 +342,10 @@ common_init ()
 // IO delay to avoid a task switch
 //
 void
-uPause (int delayCalls)
+uPause (int usecs)
 {
+	int delay = usecs * delayMult;  // To correct for slower displays
+
 #if defined DELAY_GETTIMEOFDAY
 	struct timeval current_time,delay_time,wait_time;
 
@@ -346,7 +354,7 @@ uPause (int delayCalls)
 
 	// Calculate when delay is over
 	delay_time.tv_sec  = 0;
-	delay_time.tv_usec = delayCalls;
+	delay_time.tv_usec = delay;
 	timeradd(&current_time,&delay_time,&wait_time);
 
 	do {
@@ -354,18 +362,19 @@ uPause (int delayCalls)
 	} while (timercmp(&current_time,&wait_time,<));
 
 #elif defined DELAY_NANOSLEEP
-	struct timespec delay,remaining;
+	struct timespec delay_time,remaining;
 
-	delay.tv_sec = 0;
-	delay.tv_nsec = delayCalls * 1000;
-	while ( nanosleep(&delay,&remaining) == -1 )
+	delay_time.tv_sec = 0;
+	delay_time.tv_nsec = delay * 1000;
+	while ( nanosleep(&delay_time,&remaining) == -1 )
 	{
-		delay.tv_sec  = remaining.tv_sec;
-		delay.tv_nsec = remaining.tv_nsec;
+		delay_time.tv_sec  = remaining.tv_sec;
+		delay_time.tv_nsec = remaining.tv_nsec;
 	}
 #else // using I/O timing
+      // Assuming every call takes 1us (which can be quite incorrect)
 	int i;
-	for (i = 0; i < delayCalls; ++i)
+	for (i = 0; i < delay; ++i)
 		port_in (port);
 #endif
 }

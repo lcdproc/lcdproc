@@ -118,10 +118,12 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 		port_out (lptPort + 2, 0 ^ OUTMASK);
 	}
 
+	port_out (lptPort, 0x03);
+	if( delayBus ) hd44780_functions->uPause (1);
 	port_out (lptPort, enableLines | 0x03);
 	if (extIF)
 		port_out (lptPort + 2, ALLEXT ^ OUTMASK);
-	hd44780_functions->uPause (1);
+	if( delayBus ) hd44780_functions->uPause (1);
 	port_out (lptPort, 0x03);
 	if (extIF)
 		port_out (lptPort + 2, 0 ^ OUTMASK);
@@ -130,7 +132,7 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 	port_out (lptPort, enableLines | 0x03);
 	if (extIF)
 		port_out (lptPort + 2, ALLEXT ^ OUTMASK);
-	hd44780_functions->uPause (1);
+	if( delayBus ) hd44780_functions->uPause (1);
 	port_out (lptPort, 0x03);
 	if (extIF)
 		port_out (lptPort + 2, 0 ^ OUTMASK);
@@ -139,7 +141,7 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 	port_out (lptPort, enableLines | 0x03);
 	if (extIF)
 		port_out (lptPort + 2, ALLEXT ^ OUTMASK);
-	hd44780_functions->uPause (1);
+	if( delayBus ) hd44780_functions->uPause (1);
 	port_out (lptPort, 0x03);
 	if (extIF)
 		port_out (lptPort + 2, 0 ^ OUTMASK);
@@ -149,7 +151,7 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 	port_out (lptPort, enableLines | 0x02);
 	if (extIF)
 		port_out (lptPort + 2, ALLEXT ^ OUTMASK);
-	hd44780_functions->uPause (1);
+	if( delayBus ) hd44780_functions->uPause (1);
 	port_out (lptPort, 0x02);
 	if (extIF)
 		port_out (lptPort + 2, 0 ^ OUTMASK);
@@ -187,13 +189,15 @@ lcdstat_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned
 			enableLines = EnMask[displayID - 1];
 
 		port_out (lptPort, portControl | h);
-		hd44780_functions->uPause (2);
+		if( delayBus ) hd44780_functions->uPause (1);
 		port_out (lptPort, enableLines | portControl | h);
-		hd44780_functions->uPause (4);
+		if( delayBus ) hd44780_functions->uPause (1);
 		port_out (lptPort, portControl | h);
 
+		port_out (lptPort, portControl | l);
+		if( delayBus ) hd44780_functions->uPause (1);
 		port_out (lptPort, enableLines | portControl | l);
-		hd44780_functions->uPause (4);
+		if( delayBus ) hd44780_functions->uPause (1);
 		port_out (lptPort, portControl | l);
 	}
 
@@ -204,14 +208,15 @@ lcdstat_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned
 			enableLines = EnMask[(displayID - 1)];
 
 		port_out (lptPort, portControl | h);
-		hd44780_functions->uPause (2);
+		if( delayBus ) hd44780_functions->uPause (1);
 		port_out (lptPort + 2, enableLines ^ OUTMASK);
-		hd44780_functions->uPause (4);
+		if( delayBus ) hd44780_functions->uPause (1);
 		port_out (lptPort + 2, 0 ^ OUTMASK);
 
 		port_out (lptPort, portControl | l);
+		if( delayBus ) hd44780_functions->uPause (1);
 		port_out (lptPort + 2, enableLines ^ OUTMASK);
-		hd44780_functions->uPause (4);
+		if( delayBus ) hd44780_functions->uPause (1);
 		port_out (lptPort + 2, 0 ^ OUTMASK);
 	}
 }
@@ -233,6 +238,7 @@ unsigned char lcdstat_HD44780_readkeypad (unsigned int YData)
 	if (!extIF) {
 		port_out (lptPort + 2, ( ((~YData & 0x03C0) << 6 )) ^ OUTMASK);
 	}
+	if( delayBus ) hd44780_functions->uPause (1);
 
 	// Read inputs
 	readval = ~ port_in (lptPort + 1) ^ INMASK;

@@ -138,12 +138,18 @@ lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 	// Output the actual data
 	port_out (lptPort, ch);
 
+	if( delayBus ) hd44780_functions->uPause (1);
+
 	// then set EN high
 	port_out (lptPort + 2, (enableLines|portControl|backlight_bit) ^ OUTMASK);
+
+	if( delayBus ) hd44780_functions->uPause (1);
 
 	// 80 nS setup from valid data to EN low will be met without any delay
 	// unless you are running a REALLY FAST ISA bus (like 75 MHZ!)
 	// 230 nS minimum E high time provided by ISA bus delays as well...
+
+	// ABOVE TEXT ignored now, using delays if delayBus is specified
 
 	// Set EN low and we're done...
 	port_out (lptPort + 2, (portControl|backlight_bit) ^ OUTMASK);
@@ -166,6 +172,8 @@ unsigned char lcdwinamp_HD44780_readkeypad (unsigned int YData)
 	// Convert the positive logic to the negative logic on the LPT port
 	port_out (lptPort, ~YData & 0x00FF );
 	port_out (lptPort + 2, ( ((~YData & 0x0100) >> 7) | ((~YData & 0x0200) >> 7 )) ^ OUTMASK);
+
+	if( delayBus ) hd44780_functions->uPause (1);
 
 	// Read inputs
 	readval = ~ port_in (lptPort + 1) ^ INMASK;

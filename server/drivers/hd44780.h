@@ -24,6 +24,8 @@
 extern char have_keypad;	// non-zero if the keypad code is activated
 extern char have_backlight;	// non-zero if we can control the backlight
 extern char extIF;		// non-zero if we should control > 2 LCDs
+extern char delayBus;		// non-zero if axtra delays for the bus speed
+				// should be inserted.
 
 int HD44780_init (struct lcd_logical_driver *driver, char *args);
 /* The following methods can all be hidden. They are used through function ptrs

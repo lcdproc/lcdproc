@@ -133,8 +133,9 @@ lcdtime_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned
 	sem_wait (semid);
 	port_out (lptPort + 2, portControl ^ OUTMASK);
 	port_out (lptPort, ch);
+	if( delayBus ) hd44780_functions->uPause (1);
 	port_out (lptPort + 2, (enableLines|portControl) ^ OUTMASK);
-	hd44780_functions->uPause (1);
+	if( delayBus ) hd44780_functions->uPause (1);
 	port_out (lptPort + 2, portControl ^ OUTMASK);
 	sem_signal (semid);
 }
@@ -160,6 +161,7 @@ unsigned char lcdtime_HD44780_readkeypad (unsigned int YData)
 	if (!extIF) {
 		port_out (lptPort + 2, ( ((~YData & 0x0100) >> 8) | ((~YData & 0x0200) >> 6)) ^ OUTMASK);
 	}
+	if( delayBus ) hd44780_functions->uPause (1);
 
 	// Read inputs
 	readval = ~ port_in (lptPort + 1) ^ INMASK;
