@@ -1,119 +1,59 @@
-WARNING!
-	This man page hasn't been updated since V0.3.4.
+.TH lcdproc 1 "1-aug-01" "LCDproc"
+.SH NAME
+lcdproc - displays system status on LCDproc server
+.SH SYNOPSIS
+.B lcdproc
+[\-s \fIserver\fP] [\-p \fIport\fP] [\fImode\fP [\fImode\fP ...]]
+.SH DESCRIPTION
+lcdproc connects to the LCDproc server to display status information about the system.
+.PP
+Currently, only Linux, xBSD and Solaris are supported with not all features being available on all platforms.
+.SH OPTIONS
+.I lcdproc
+understands these options:
+.TP 8
+.B \-s \fIserver\fP
+Set the hostname which LCDproc is running on, assumed to be localhost unless otherwise set
+.TP 8
+.B \-p \fIport\fP
+Set the port which LCDproc is accepting connections on, assumed to be 13666 unless otherwise set
+.TP 8
+.B \fImode\fP
+Where mode is one of the following letters:
+.RS
+[C]pu [G]raph [T]ime [M]emory [X]load [D]isk [B]attery proc_[S]izes [O]ld_time big_cloc[K] [U]ptime CPU_SM[P] [A]bout
+.RE
+.PP
+
+.SH EXAMPLES
+lcdproc C M D X 
+
+.TP 8
+connects to the LCDproc server and specifies the following modes:
+.RS
+- CPU Usage
+.PP
+- Memory usage
+.PP
+- Uptime
+.PP
+- Date and Time
+.PP
+- X-Load average over time
+.RE
+.PP
 
 
-SYNOPSIS
+.SH AUTHOR
+LCDproc was written by William Ferrell (choadster@earthlink.net) and Scott Scriven (scriven@cs.colostate.edu).
 
-        lcdproc - displays system status on Matrix-Orbital 20x4 LCD
-        on a serial port
-
-USAGE
-
-        lcdproc [-d device] [-c contrast] [modelist]
-
-DESCRIPTION
-
-        lcdproc uses a 20x4 character LCD manufactured by Matrix-Orbital
-        to display status information about the system.
-
-        Currently, only Linux is supported (kernels 2.0 and greater), and
-        /proc filesystem support is required. In addition, only displays
-        made by Matrix-Orbital are supported at this time (their displays
-        have built-in controllers and a very good BIOS).
-
-        lcdproc understands these options:
-
-        -l driver
-        	The lcd display driver to use.  So far, this can only be:
-			text	Text-mode output.		(20x4)
-			MtxOrb	Matrix Orbital displays...	(20x4)
-			curses	Curses-based terminal output	(20x4)
-			debug	Verbose debugging text output	(terminal)
-
-        -d device
-        	The serial port attached to the display. Usually /dev/cua0
-                or /dev/cua1. This device is locked by lcdproc.
-
-        -c contrast
-        	Sets the display's contrast setting to the value specified,
-                ranging from 0 to 255. Note that values below around 30
-                yield invisible characters from most viewing angles, and
-                values above 200 yield solid cells from most viewing
-                angles.
-
-        modelist
-                A list specifying what screens to display, and in what order;
-                in the form:
-
-		mode [mode mode mode ...]
-
-		where mode is one of...
-			"C" (CPU usage), 
-			"G" (CPU Graph like Xload),
-			"M" (Memory Usage),
-			"X" (X-Load),  
-			"T" (Date, time, Uptime, OS version)
-			"D" (Disk Stats),
-			"B" (Battery Stats),
-			"A" (About),
-			"O" (old date and time screen), (removed soon?)
-			"U" (System Uptime), (will be removed soon?)
-
-	For example:
-
-		lcdproc -d /dev/cua1 -c 180 C M D X -l MtxOrb
-
-		selects /dev/cua1 (com2) as the serial port for the
-		MtxOrb driver, sets the display's contrast to 180, 
-		and specifies the following modes:
-
-		- CPU Usage, updated every 1/8th of a second for 4 seconds.
-		- Memory usage, updated every 1/4th of a second for 4 seconds.
-		- Uptime, updated every 1/2 second for 4 seconds.
-		- Date and Time, updated every 1/2 second for 4 seconds.
-		- X-Load average over time, updated once per mode cycle.
-
-
-CAVEATS
-
-The command line will change a lot Real Soon Now(tm).  Be sure to
-check on this when installing new versions.
-
-The "idle" stat on the time screen (D) reflects how much idle time
-your system has had since booting.  So, if you leave the machine
-running at night without doing anything, you'll have at least 50%
-idle.  :)
-
-KNOWN BUGS
-
-	- Only supports 20x4 displays, so far.
-	- Doesn't lock the com port... yet.
-	- Doesn't always shut down correctly when killed by init. (?)
-	  (during "shutdown -h now", for example)
-
-CONTACT INFORMATION
-
-	LCDproc was written by William Ferrell (choadster@earthlink.net) and
-	Scott Scriven (scriven@cs.colostate.edu).
-
-	Matrix Orbital (http://www.matrix-orbital.com/) designed and
-	manufactures the LCD displays.
-
-	The newest version of LCDproc should be available from here:
+The newest version of LCDproc should be available from here:
 
 		http://lcdproc.omnipotent.net/
 
-LEGAL STUFF
-
-	LCDproc is released as "WorksForMe-Ware".  In other words, it is free,
-	kinda neat, and we don't guarantee that it will do anything in
-	particular on any machine except the ones it was developed on.
-	
-	It is technically released under the GNU GPL license (you should
-	have received the file, "COPYING", with LCDproc) (also, look on
-	http://www.fsf.org/ for more information), so you can distribute and
-	use it for free -- but you must make the source code freely available
-	to anyone who wants it.
-
-	For any sort of real legal information, read the GNU GPL (GNU General
-	Public License).  It's worth reading.
+.SH LEGAL STUFF
+LCDproc is released as "WorksForMe-Ware".  In other words, it is free, kinda neat, and we don't guarantee that it will do anything in particular on any machine except the ones it was developed on.
+.PP
+It is technically released under the GNU GPL license (you should have received the file, "COPYING", with LCDproc) (also, look on http://www.fsf.org/ for more information), so you can distribute and use it for free -- but you must make the source code freely available to anyone who wants it.
+.PP
+For any sort of real legal information, read the GNU GPL (GNU General Public License).  It's worth reading.
