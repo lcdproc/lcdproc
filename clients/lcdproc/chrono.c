@@ -470,3 +470,34 @@ big_clock_screen (int rep, int display)
 
 	return 0;
 }										  // End big_clock_screen()
+
+int
+essential_clock_screen (int rep, int display)
+{
+	static int first = 1;
+	struct tm *rtime;
+	struct timeval ttime;
+	char  cmdbuf[64];
+	char heartbeat[] = {':', ' '};
+	char fulltxt[6];
+
+	if (first) {
+		first = 0;
+
+		sock_send_string (sock, "screen_add E\n");
+		sock_send_string (sock, "screen_set E -name {Essential Clock Screen} -heartbeat off\n");
+		sock_send_string (sock, "widget_add E s0 string\n");
+	}
+
+	gettimeofday(&ttime, NULL);
+
+	rtime = localtime (&ttime.tv_sec);
+
+	sprintf (fulltxt, "%02d%c%02d", rtime->tm_hour, heartbeat[ttime.tv_usec / 500000], rtime->tm_min);
+
+	sprintf (cmdbuf, "widget_set E s0 %d %d \"%s\"\n", ( lcd_wid - 5 ) / 2, lcd_hgt / 2, fulltxt);
+
+	sock_send_string (sock, cmdbuf);
+
+	return 0;
+}										  // End essential_clock_screen()

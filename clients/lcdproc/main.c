@@ -70,6 +70,7 @@ static mode default_sequence[] =
 	{'G', 1, 2, 0, 0xffff, 0,},			// Cpu histogram [G]raph
 	{'S', 16, 256, 1, 0xffff, 0,},		// [S]ize of biggest programs
 	{'D', 256, 256, 1, 0xffff, 0,},		// [D]isk stats
+	{'E', 4, 64, 0, 0xffff, 0,},		// [E]ssential clock 
 	{0, 0, 0, 0, 0,},					// No more..  all done.
 };
 
@@ -248,7 +249,9 @@ HelpScreen ()
 	printf("Usage: lcdproc [-s server] [-p port] [-e islow] [-d] [modelist]\n");
 	printf("\tOptions in []'s are optional.\n");
 	printf("\tmodelist is \"mode [mode mode ...]\"\n");
-	printf("\tMode letters: \t[C]pu [G]raph [T]ime [M]emory [X]load [D]isk [B]attery\n\t\t\tproc_[S]izes [O]ld_time big_cloc[K] [U]ptime CPU_SM[P]\n\t\t\t[A]bout\n");
+	printf("\tMode letters: \t[C]pu [G]raph [T]ime [M]emory [X]load [D]isk [B]attery\n"
+		 	   "\t\t\tproc_[S]izes [O]ld_time big_cloc[K] [E]ssential_clock\n"
+			   "\t\t\t[U]ptime CPU_SM[P] [A]bout\n");
 	printf("\n");
 	printf("\tislow is to slow down initial announcement of modes (in 1/100 sec)\n");
 	printf("\tUse \"man lcdproc\" for more info.\n");

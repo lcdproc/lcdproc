@@ -133,6 +133,10 @@ update_screen(mode *m, int display)
 			case 'P':
 				status = cpu_smp_screen(m->timer, display);
 				break;
+			case 'e':
+			case 'E':
+				status = essential_clock_screen(m->timer, display);
+				break;
 			default:
 				break;
 		}
