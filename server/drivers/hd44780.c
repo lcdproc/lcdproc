@@ -36,10 +36,10 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/perm.h>
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+#include "port.h"
 
 // Uncomment one of the lines below to select your desired delay generation
 // mechanism.  If both defines are commented, the original I/O read timing
@@ -254,7 +254,7 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	}
 #endif
 	// Set up io port correctly, and open it...
-	if ((ioperm (port, 1, 255)) == -1) {
+	if (port_access (port)) {
 		fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
 		return -1;
 	}

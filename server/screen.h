@@ -16,6 +16,9 @@ typedef struct screen {
 	client *parent;
 } screen;
 
+extern int  default_duration ;
+extern int  default_priority ;
+
 screen *screen_create ();
 int screen_destroy (screen * s);
 

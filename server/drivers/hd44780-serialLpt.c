@@ -27,6 +27,10 @@
  * COPYING file distributed with this package.
  */
 
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+
 #include "hd44780-serialLpt.h"
 #include "port.h"
 
@@ -53,6 +57,10 @@ hd_init_serialLpt (HD44780_functions * hd44780_functions, lcd_logical_driver * d
 	int displayID = EN1 | EN2;
 
 	lp = port;
+	if (port_access (lp) || port_access (lp +1)) {
+		fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
+		return( -1 );
+	};
 
 	hd44780_functions->senddata = lcdserLpt_HD44780_senddata;
 

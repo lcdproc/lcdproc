@@ -1,3 +1,5 @@
+#ifndef PORT_H
+#define PORT_H
 /*-----------------------------------------------------------------------------
  * port.h (by damianf@wpi.edu)
  * Low level I/O functions taken from led-stat.txt
@@ -9,9 +11,8 @@
  */
 
 /* #define DOS */
-
-#ifndef PORT_H
-#define PORT_H
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
 
 #ifndef DOS
@@ -30,6 +31,38 @@ port_out (unsigned short int port, unsigned char val)
 	__asm__ volatile ("outb %0,%1\n"::"a" (val), "d" (port)
 		 );
 }
+
+/***
+ *** Get access to a specific port
+ ***/
+#ifdef HAVE_IOPERM
+/* Assume this is a LINUX system with ioperm */
+#include <sys/io.h>
+
+static inline int
+port_access (unsigned short int port)
+{
+	return ioperm( port, 1, 255);
+}
+
+#else
+/* Assume this is a BSD system */
+#include <stdio.h>
+
+FILE *  port_access_handle = NULL ;
+
+static inline int
+port_access (unsigned short int port)
+{
+	if( port_access_handle
+	    || (port_access_handle = fopen("/dev/io", "rw")) != NULL ) {
+		return( 0 );  /* Success */
+	} else {
+		return( -1 );  /* Failure */
+	};
+}
+#endif
+
 #else
 #include <pc.h>
 
@@ -49,3 +82,4 @@ port_out (unsigned int port, unsigned char val)
 #endif
 
 /**** END OF FILE ****/
+#endif

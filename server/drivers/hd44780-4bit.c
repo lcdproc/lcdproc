@@ -40,7 +40,6 @@
 #include "port.h"
 
 #include "shared/str.h"
-#include <sys/perm.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -83,7 +82,7 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 	for (i = 0; i < argc; ++i) {
 		if (strcmp (argv[i], "-e") == 0 || strcmp (argv[i], "--extended") == 0) {
 			extIF = 1;
-			if ((ioperm (port + 2, 1, 255)) == -1) {
+			if (port_access (port + 2)) {
 				fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
 				return -1;
 			}

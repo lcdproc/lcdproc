@@ -408,15 +408,28 @@ int bayrad_init(struct lcd_logical_driver *driver, char *args)
 
    tcflush(fd, TCIOFLUSH);
 
-   // This is necessary in Linux, but does not exist in irix.
-   bzero(&portset, sizeof(portset));
-   portset.c_iflag = IGNPAR;
-   portset.c_oflag = 0;
-   portset.c_cflag = B9600|CS8|CREAD|CLOCAL;
-   portset.c_lflag = 0;
+   // We use RAW mode
+#ifdef HAVE_CFMAKERAW
+   // The easy way
+   cfmakeraw( &portset );
+#else
+   // The hard way
+   portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+                         | INLCR | IGNCR | ICRNL | IXON );
+   portset.c_oflag &= ~OPOST;
+   portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+   portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+   portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+#endif
+
    portset.c_cc[VTIME] = 0;  // Don't use the timer, no workee
    portset.c_cc[VMIN] = 1;  // Need at least 1 char
 
+   // Set port speed
+   cfsetospeed(&portset, B9600);
+   cfsetispeed(&portset, B0);
+
+   // Do it...
    tcsetattr(fd, TCSANOW, &portset);
    tcflush(fd, TCIOFLUSH);
 

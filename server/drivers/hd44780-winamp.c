@@ -36,7 +36,6 @@
 #include "port.h"
 
 #include "shared/str.h"
-#include <sys/perm.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -73,7 +72,7 @@ hd_init_winamp (HD44780_functions * hd44780_functions, lcd_logical_driver * driv
 		if (strcmp (argv[i], "-e") == 0 || strcmp (argv[i], "--extended") == 0)
 			extIF = 1;
 
-	if ((ioperm (lptPort + 2, 1, 255)) == -1) {
+	if (port_access (lptPort + 2) || port_access (lptPort)) {
 		fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
 		return -1;
 	}

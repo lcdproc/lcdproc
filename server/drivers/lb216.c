@@ -146,14 +146,26 @@ int LB216_init(lcd_logical_driver *driver, char *args)
    }
    //else fprintf(stderr, "LB216_init: opened device %s\n", device);
    tcgetattr(fd, &portset);
-   // This is necessary in Linux, but does not exist in irix or solaris.
-#ifndef IRIX
-#ifndef SOLARIS
-   cfmakeraw(&portset);
+
+   // We use RAW mode
+#ifdef HAVE_CFMAKERAW
+   // The easy way
+   cfmakeraw( &portset );
+#else
+   // The hard way
+   portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+                         | INLCR | IGNCR | ICRNL | IXON );
+   portset.c_oflag &= ~OPOST;
+   portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+   portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+   portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
-#endif
-   cfsetospeed(&portset, speed);
-   cfsetispeed(&portset, speed);
+
+   // Set port speed
+   cfsetospeed (&portset, speed);
+   cfsetispeed (&portset, B0);
+
+   // Do it...
    tcsetattr(fd, TCSANOW, &portset);
    
 

@@ -12,6 +12,9 @@
 #include "screenlist.h"
 #include "screen.h"
 
+int  default_priority = 128 ;
+int  default_duration = 64 ;  // About 8 seconds
+
 screen *
 screen_create ()
 {
@@ -25,8 +28,8 @@ screen_create ()
 
 	s->id = NULL;
 	s->name = NULL;
-	s->priority = 128;  // Default priority
-	s->duration = 32;  // Default duration (~ 8 seconds)
+	s->priority = default_priority ;
+	s->duration = default_duration ;
 	s->heartbeat = 1;
 	s->wid = lcd.wid;
 	s->hgt = lcd.hgt;

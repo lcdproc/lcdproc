@@ -84,6 +84,7 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	int contrast = 140;
 	char device[256] = "/dev/lcd";
 	int speed = B19200;
+	MtxOrb_type = MTXORB_LKD ;  // Assume it's an LCD w/keypad
 
 	MtxOrb = driver;
 
@@ -170,14 +171,26 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	}
 	//else fprintf(stderr, "MtxOrb_init: opened device %s\n", device);
 	tcgetattr (fd, &portset);
-	// This is necessary in Linux, but does not exist in irix.
-#ifndef IRIX
-#ifndef SOLARIS
-	cfmakeraw (&portset);
+
+	// We use RAW mode
+#ifdef HAVE_CFMAKERAW
+	// The easy way
+	cfmakeraw( &portset );
+#else
+	// The hard way
+	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+	                      | INLCR | IGNCR | ICRNL | IXON );
+	portset.c_oflag &= ~OPOST;
+	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
-#endif
+
+	// Set port speed
 	cfsetospeed (&portset, speed);
-	cfsetispeed (&portset, speed);
+	cfsetispeed (&portset, B0);
+
+	// Do it...
 	tcsetattr (fd, TCSANOW, &portset);
 
 	// Set display-specific stuff..

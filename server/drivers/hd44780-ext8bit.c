@@ -33,7 +33,6 @@
 #include "port.h"
 
 #include "lcd_sem.h"
-#include <sys/perm.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -66,7 +65,7 @@ hd_init_ext8bit (HD44780_functions * hd44780_functions, lcd_logical_driver * dri
 
 	hd44780_functions->senddata = lcdtime_HD44780_senddata;
 
-	if ((ioperm (port + 2, 1, 255)) == -1) {
+	if (port_access (port + 2)) {
 		fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
 		return -1;
 	}

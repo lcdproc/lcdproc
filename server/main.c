@@ -36,18 +36,6 @@ char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
 char *build_date = __DATE__;
 
-/* no longer needed
-static screen_size sizes[] =
-{
-   {"16x2", 16, 2},
-   {"16x4", 16, 4},
-   {"20x2", 20, 2},
-   {"20x4", 20, 4},
-   {"40x2", 40, 2},
-   {"40x4", 40, 4},
-   {NULL  ,  0, 0},
-};
-*/
 
 // This is currently only a list of available arguments, but doesn't
 // really *do* anything.  It just helps to figure out which parameters
@@ -59,6 +47,7 @@ static parameter args[] = {
 	{"-f", "--foreground"},
 	{"-b", "--backlight"},
 	{"-i", "--serverinfo"},
+	{"-w", "--waittime"},
 	{NULL, NULL},
 };
 
@@ -75,7 +64,6 @@ main (int argc, char **argv)
 	int disable_server_screen = 1;
 	screen *s = NULL;
 	char *str, *ing;				  // strings for commandline handling
-//   screen_size *size = &sizes[0]; // No longer needed
 
 	// Ctrl-C will cause a clean exit...
 	signal (SIGINT, exit_program);
@@ -175,24 +163,6 @@ main (int argc, char **argv)
 					lcd.hgt = hgt;
 				}
 
-/* no longer needed
-	    int j=0, valid=0;
-	    i++;
-	    for(j=0; sizes[j].size; j++)
-	    {
-	       if(0 == strcmp(sizes[j].size, argv[i]))
-	       {
-		  valid = 1;
-		  size = &sizes[j];
-		  lcd.wid = size->wid;
-		  lcd.hgt = size->hgt;
-	       }
-	    }
-	    if(!valid)
-	    {
-	       fprintf(stderr, "LCDd: Invalid lcd size \"%s\".  Using 20x4.\n", argv[i]);
-	    }
-*/
 			}
 		} else if (0 == strcmp (argv[i], "-i") || 0 == strcmp (argv[i], "--serverinfo")) {
 			if (i + 1 > argc)
@@ -203,6 +173,20 @@ main (int argc, char **argv)
 					disable_server_screen = 1;
 				if (0 == strcmp (argv[i], "on"))
 					disable_server_screen = 0;
+			}
+		} else if (0 == strcmp (argv[i], "-w") || 0 == strcmp (argv[i], "--waittime")) {
+			if (i + 1 > argc)
+				HelpScreen ();
+			else {
+				int  tmp ;
+				i++;
+				tmp = atoi( argv[i] );
+				if ( tmp < 16 || tmp > 10000 ) {
+					printf ("Wait time should be between 16 and 10000 (1/8ths of second), not %s\n", argv[i]);
+					HelpScreen ();
+				} else {
+					default_duration = tmp ;
+				};
 			}
 		} else {
 			// otherwise...  Get help!
