@@ -11,6 +11,9 @@
 *   ignoring punctuation (such as underscores).  Although this order
 *   can split up related entries, it makes it easier to check whether
 *   a given entry is in the file.
+*
+*   To add a new driver, insert the appropriate variable into
+*   this list alphabetically.
 */
 /*   Leave the following blank line there!!  Autoheader needs it.  */
 
@@ -81,7 +84,11 @@
 /* Define if you have the statvfs function */
 #undef STAT_STATVFS
 
+#undef SVGALIB_DRV
+
 #undef TEXT_DRV
+
+#undef T6963_DRV
 
 /* Define the package version */
 #undef VERSION

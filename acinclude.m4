@@ -9,7 +9,14 @@ AC_ARG_ENABLE(drivers,
   	drivers=[mtxorb,cfontz,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520]
+	case "$host" in
+	*-*-*linux*)
+		drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520,svgalib]
+		;;
+	*-*-*solaris*)
+		drivers=[mtxorb,cfontz,curses,text,lb216,bayrad,glk]
+		;;
+	esac
   	AC_MSG_RESULT(all)
 fi
 
@@ -81,6 +88,16 @@ fi
 			DRIVERS="$DRIVERS stv5730.o"
 			AC_DEFINE(STV5730_DRV)
 			;;
+		svgalib)
+			AC_CHECK_LIB(vga, main, LIBSVGA="-lvga -lvgagl",
+				AC_MSG_ERROR([The svgalib driver needs the vga library]))
+			DRIVERS="$DRIVERS svgalib_drv.o"
+			AC_DEFINE(SVGALIB_DRV)
+			;;
+		t6963)
+			DRIVERS="$DRIVERS t6963.o"
+			AC_DEFINE(T6963_DRV)
+			;;
 	*) 	
 			AC_MSG_ERROR([Unknown driver $driver])
 			;;
@@ -90,6 +107,7 @@ fi
 AC_SUBST(LIBCURSES)
 AC_SUBST(LIBIRMAN)
 AC_SUBST(LIBLIRC_CLIENT)
+AC_SUBST(LIBSVGA)
 AC_SUBST(DRIVERS)
 ])
 
