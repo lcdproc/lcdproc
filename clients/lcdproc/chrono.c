@@ -714,8 +714,7 @@ big_clock_screen (int rep, int display)
 		first = 0;
 
 		sock_send_string (sock, "screen_add K\n");
-		sock_send_string (sock, "screen_set K -name {Big Clock Screen}\n");
-		sock_send_string (sock, "widget_del K heartbeat\n");
+		sock_send_string (sock, "screen_set K -name {Big Clock Screen} -heartbeat off\n");
 		sock_send_string (sock, "widget_add K d0 num\n");
 		sock_send_string (sock, "widget_add K d1 num\n");
 		sock_send_string (sock, "widget_add K d2 num\n");
