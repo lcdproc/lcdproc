@@ -6,14 +6,14 @@ AC_ARG_ENABLE(drivers,
 	[                  drivers may be separated with commas.]
   	[                  Possible choices are:]
  	[                    mtxorb,cfontz,curses,text,lb216,]
- 	[                    hd44780,joy,irman,lircin,bayrad,]
- 	[                    glk,stv5730,sed1520,svgalib,lcdm001]
+ 	[                    hd44780,joy,irman,lircin,bayrad,glk,]
+ 	[                    stv5730,sed1520,svgalib,lcdm001,t6963]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval", 
   	drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520,svgalib,lcdm001]
+	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520,svgalib,lcdm001,t6963]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -153,7 +153,7 @@ dnl				else
 		t6963)
 			DRIVERS="$DRIVERS t6963.o"
 			AC_DEFINE(T6963_DRV)
-			actdrivers=[$actdrivers sed1520]
+			actdrivers=["$actdrivers t6963"]
 			;;
 	*) 	
 			AC_MSG_ERROR([Unknown driver $driver])

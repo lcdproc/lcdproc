@@ -56,6 +56,8 @@
 
 #undef STV5730_DRV
 
+#undef T6963_DRV
+
 /* Define the package name */
 #undef PACKAGE
 
