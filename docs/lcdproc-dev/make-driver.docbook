@@ -36,7 +36,7 @@ Of course, these functions will only work if the computer where LCDproc runs has
 
 <para>port.h file defines 6 static inline functions for port I/O:</para>
 
-<sect3 id="port_in">
+<sect3 id="port-in">
 <title>Read a byte from port</title>
 
 <funcsynopsis>
@@ -48,7 +48,7 @@ Of course, these functions will only work if the computer where LCDproc runs has
 <para>Returns the content of the byte.</para>
 
 </sect3>
-<sect3 id="port_out">
+<sect3 id="port-out">
 <title>Write a char(byte) 'val' to port</title>
 
 <funcsynopsis>
@@ -61,7 +61,7 @@ Of course, these functions will only work if the computer where LCDproc runs has
 <para>Returns nothing (void).</para>
 
 </sect3>
-<sect3 id="port_access">
+<sect3 id="port-access">
 <title>Get access to a specific port</title>
 
 <funcsynopsis>
@@ -74,7 +74,7 @@ Of course, these functions will only work if the computer where LCDproc runs has
 
 
 </sect3>
-<sect3 id="port_deny">
+<sect3 id="port-deny">
 <title>Close access to a specific port</title>
 
 <funcsynopsis>
@@ -87,7 +87,7 @@ Of course, these functions will only work if the computer where LCDproc runs has
 
 
 </sect3>
-<sect3 id="port_access_multiple">
+<sect3 id="port-access-multiple">
 <title>Get access to multiple sequential ports</title>
 
 <funcsynopsis>
@@ -100,7 +100,7 @@ Of course, these functions will only work if the computer where LCDproc runs has
 <para>Returns 0 if successful, -1 if failed.</para>
 
 </sect3>
-<sect3 id="port_deny_multiple">
+<sect3 id="port-deny-multiple">
 <title>Close access to multiple sequential ports</title>
 
 <funcsynopsis>

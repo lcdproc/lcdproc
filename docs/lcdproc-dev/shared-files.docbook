@@ -82,7 +82,7 @@ compiled without debugging. This way memory and CPU cycles are saved.</para>
 
 <para>report.h file defines 3 functions for debugging and reporting:</para>
 
-<sect2 id="set_reporting">
+<sect2 id="set-reporting">
 <title>Sets reporting level and message destination</title>
 
 <funcsynopsis>
