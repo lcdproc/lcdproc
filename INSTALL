@@ -61,7 +61,7 @@ driver source code in server/drivers/. You may have some good indications
 there.
 
 You may want to take a look at LCDproc's hardware page at
-http://lcdproc.omnipotent.net/hardware.php3 for details. Several
+http://lcdproc.org/hardware.php3 for details. Several
 different types of displays are now supported.
 
 
@@ -118,7 +118,7 @@ porting. Here's are the prerequistes for both:
 The client should run on any POSIX compliant system.
 It has been sucessfully tested on:
 Linux 2.2.x, Linux 2.4.x, NetBSD 1.5, OpenBSD 3.0
-In the future want it to run on Windows, MacOS and others.
+In the future, we want it to run on Windows, MacOS and others.
 
 --- Server ---
 The server needs to talk to the LCD display. At this time, it works
