@@ -21,7 +21,7 @@ command line.  Or,
 
 would have the same result as pressing a key on the keypad.
 
-
+STATUS: Loadable drivers are working in 0.5 but not loggin in remotely nor key
 ----------------------------------------
 Menus / Client menus
 
@@ -31,6 +31,7 @@ add/remove drivers, change screen priorities, kick off clients, etc...
 
 You can also access client menus to configure options in each client.
 
+STATUS: We only have a server menu that control contrast, backlight, ...
 ----------------------------------------
 Config Files...
 
@@ -47,6 +48,7 @@ about screen priorities, etc...
 Code will be made generic, so that other programs can use it for their
 own config files.  Clients may want to use this..
 
+STATUS: We have a config file only for LCDd but we don't save config.
 ----------------------------------------
 Scheduling modes
 
@@ -57,6 +59,8 @@ algorithms for screen-ordering.
 One example: High-priority screens will be shown more often than
 low-priority screens, simply by showing up more often.
 
+STATUS: Currently high priority screens will only be shown _first_ after
+a resorting of the screenlist. The time that it's visible is unaltered.
 ----------------------------------------
 Shell Commands
 
@@ -64,6 +68,7 @@ The server will also be able to run arbitrary shell commands from the
 config file.  This will allow you to, for example, shut down the
 machine, get online, or other system tasks.
 
+STATUS: We have a few build-in cmd, but exec should be done into a client.
 ----------------------------------------
 Improved display driver API
 
@@ -76,4 +81,5 @@ So, I'll be working on a new driver spec which is more flexible and
 more powerful.  In addition, I'm looking for ways to better handle
 multiple driver devices.
 
+STATUS: This is API and version 0.5
 ----------------------------------------
