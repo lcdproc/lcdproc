@@ -89,6 +89,7 @@ menu_add_item_func (Client * c, int argc, char **argv)
 	/* Does the client have a menu already ? */
 	if (!c->menu) {
 		/* We need to create it */
+		report( RPT_INFO, "Client [%d] is using the menu", c->sock );
 		c->menu = menu_create ("_client_menu_", menu_commands_handler, c->name, c);
 		menu_add_item (main_menu, c->menu);
 	}

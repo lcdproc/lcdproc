@@ -90,10 +90,6 @@ char *build_date = __DATE__;
 #define UNSET_INT -1
 #define UNSET_STR "\01"
 
-/* int debug_level; for compatibility with MtxOrb and joy drivers.
- * I was about to remove the comment in front of this.
- * Now how do we become compatible WITHOUT this debug_level ?*/
-
 int lcd_port = UNSET_INT;
 char bind_addr[64];	/* Do not preinit these strings as they will occupy */
 char configfile[256];	/* a lot of space in the executable. */
@@ -188,9 +184,8 @@ main (int argc, char **argv)
 	set_default_settings();
 
 	/* Set reporting values*/
-	/*debug_level = reportLevel; */
 	ESSENTIAL( set_reporting( "LCDd", reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
- 	report( RPT_NOTICE, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
+ 	report( RPT_INFO, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
 
 	/* Startup the server*/
 	ESSENTIAL( init_drivers() );
@@ -206,11 +201,11 @@ main (int argc, char **argv)
 #ifndef DEBUG
 	/* Now, go into daemon mode...*/
 	if (daemon_mode) {
-		report(RPT_NOTICE, "Server forking to background");
+		report(RPT_INFO, "Server forking to background");
 		ESSENTIAL( daemonize() );
 	} else {
 		output_GPL_notice();
-		report(RPT_NOTICE, "Server running in foreground");
+		report(RPT_INFO, "Server running in foreground");
 	}
 #endif
 
@@ -226,7 +221,7 @@ clear_settings ()
 {
 	int i;
 
-	/*report( RPT_INFO, "clear_settings()" );*/
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	lcd_port = UNSET_INT;
 	strncpy( bind_addr, UNSET_STR, sizeof(bind_addr) );
@@ -254,7 +249,7 @@ process_command_line (int argc, char **argv)
 {
 	signed char c;
 
-	/*report( RPT_INFO, "process_command_line()" );*/
+	debug( RPT_DEBUG, "%s( argc=%d, argv=...)", __FUNCTION__, argc );
 
 	/* analyze options here..*/
 	while ((c = getopt(argc, argv, "a:p:d:hfib:w:c:u:sr:")) > 0) {
@@ -345,7 +340,7 @@ process_configfile ( char *configfile )
 	char * s;
 	/*char buf[64];*/
 
-	/*report( RPT_INFO, "process_configfile()" );*/
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	/* Read server settings*/
 
@@ -449,7 +444,7 @@ process_configfile ( char *configfile )
 void
 set_default_settings()
 {
-	/*report( RPT_INFO, "set_default_settings()" );*/
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	/* Set defaults into unfilled variables....*/
 
@@ -517,7 +512,7 @@ daemonize()
 {
 	int child;
 
-	report( RPT_INFO, "daemonize()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	switch ((child = fork ()) ) {
 	  case -1:
@@ -545,7 +540,7 @@ daemonize()
 int
 init_sockets ()
 {
-	report( RPT_INFO, "init_sockets()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	if (sock_create_server (&bind_addr, lcd_port) <= 0) {
 		report(RPT_ERR, "Error opening socket");
@@ -569,7 +564,7 @@ init_drivers()
 
 	int output_loaded = 0;
 
-	report( RPT_INFO, "init_drivers()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	for (i = 0; i < num_drivers; i++) {
 
@@ -609,7 +604,7 @@ int drop_privs(char *user)
 {
 	struct passwd *pwent;
 
-	report( RPT_INFO, "drop_privs()" );
+	debug( RPT_DEBUG, "%s( user=\"%.40s\" )", __FUNCTION__, user );
 
 	if (getuid() == 0 || geteuid() == 0) {
 		if ((pwent = getpwnam(user)) == NULL) {
@@ -629,7 +624,7 @@ int drop_privs(char *user)
 int
 init_screens ()
 {
-	report( RPT_INFO, "init_screens()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	if (screenlist_init () < 0) {
 		report(RPT_ERR, "Error initializing screen list");
@@ -658,7 +653,7 @@ do_mainloop ()
 	Screen *s = NULL;
 	char *message=NULL;
 
-	report( RPT_INFO, "do_mainloop()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	/*char buf[64];*/
 
@@ -674,21 +669,6 @@ do_mainloop ()
 		 */
 
 		timer++;
-
-		/*if (s == NULL)
-		 *	s = screenlist_current();
-
-		 * this is here because s is getting overwritten...
-		 *if (s != screenlist_current()) {
-		 *	report(RPT_DEBUG, "internal error! s was found overwritten at main.c:637");
-		 *	s = screenlist_current();
-		 *}
-		 */
-
-		/*TODO: THIS MUST BE FIXED..... WHY is s getting overwritten?
-		 * s is a local, it is never passed or assigned to anywhere.
-		 * So SOMETHING is going haywire and clobbering memory....
-		 */
 
 		if (s && (timer >= s->duration))
 			screenlist_next ();
@@ -758,7 +738,7 @@ exit_program (int val)
 {
 	char buf[64];
 
-	report( RPT_INFO, "exit_program()" );
+	debug( RPT_DEBUG, "%s( val=%d )", __FUNCTION__, val );
 
 	/* TODO: These things shouldn't be so interdependent.  The order
 	 * things are shut down in shouldn't matter...
@@ -781,7 +761,7 @@ exit_program (int val)
 	if( reportLevel == UNSET_INT )
 		reportLevel = DEFAULT_REPORTLEVEL;
 	if( reportToSyslog == UNSET_INT )
-		reportLevel = DEFAULT_REPORTLEVEL;
+		reportToSyslog = DEFAULT_REPORTTOSYSLOG;
 	set_reporting( "LCDd", reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
 
 	goodbye_screen ();		/* display goodbye screen on LCD display */
@@ -791,7 +771,6 @@ exit_program (int val)
 	if( serverStarted ) {
 		clients_shutdown ();		/* shutdown clients (must come first) */
 		screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
-		sock_close_all ();		/* close all open sockets (must come after client_shutdown) */
 	}
 
 	exit (0);
@@ -804,7 +783,7 @@ HelpScreen ()
 	/* Help screen is printed to stdout on purpose. No reason to have
 	 * this in syslog...
 	 */
-	report( RPT_INFO, "HelpScreen()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	fprintf (stdout, "\nLCDd: LCDproc Server Daemon, %s\n", version);
 	fprintf (stdout, "Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");

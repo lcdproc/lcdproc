@@ -84,6 +84,8 @@ void menuscreen_inform_item_destruction (MenuItem * item)
 {
 	MenuItem * i;
 
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
+
 	/* Are we currently in (a subitem of) the given item ? */
 	for( i = active_menuitem; i; i = i->parent ) {
 		if( i == item ) {
@@ -94,6 +96,10 @@ void menuscreen_inform_item_destruction (MenuItem * item)
 
 void menuscreen_inform_item_modified (MenuItem * item)
 {
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
+
+	if( !active_menuitem ) return;
+
 	/* Are we currently in the item or the parent of the item ? */
 	if( active_menuitem == item || active_menuitem == item->parent ) {
 		menuitem_rebuild_screen( active_menuitem, menuscreen );
@@ -115,6 +121,8 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
  */
 {
 	MenuItem * old_menuitem = active_menuitem;
+
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, new_menuitem?new_menuitem->id:NULL);
 
 	/* First we do the switch */
 	active_menuitem = new_menuitem;
@@ -295,7 +303,7 @@ void menuscreen_create_menu ()
 
 MenuEventFunc (heartbeat_handler)
 {
-	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
+	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__, item->id, event);
 
 	if (event == MENUEVENT_UPDATE) {
 		/* Set heartbeat setting */
@@ -308,7 +316,7 @@ MenuEventFunc (heartbeat_handler)
 
 MenuEventFunc (backlight_handler)
 {
-	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
+	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__, item->id, event);
 
 	if (event == MENUEVENT_UPDATE)
 	{
@@ -322,7 +330,7 @@ MenuEventFunc (backlight_handler)
 
 MenuEventFunc (contrast_handler)
 {
-	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
+	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__, item->id, event);
 
 	/* This function can be called by one of several drivers that
 	 * support contrast !
@@ -342,7 +350,7 @@ MenuEventFunc (contrast_handler)
 
 MenuEventFunc (brightness_handler)
 {
-	debug (RPT_DEBUG, "%s( item=%s, event=%d )", __FUNCTION__, item->id, event);
+	debug (RPT_DEBUG, "%s( item=[%s], event=%d )", __FUNCTION__, item->id, event);
 
 	/* This function can be called by one of several drivers that
 	 * support contrast !
@@ -368,7 +376,7 @@ menuscreen_add_screen (Screen * s)
 	Menu * m;
 	MenuItem * mi;
 
-	debug (RPT_DEBUG, "%s( Screen=\"%s\" )", __FUNCTION__, s->id);
+	debug (RPT_DEBUG, "%s( s=[%s] )", __FUNCTION__, s->id);
 
 	if (!screens_menu)
 		return;	/* When screens have not been created ... */
@@ -399,7 +407,7 @@ menuscreen_remove_screen (Screen * s)
 {
 	Menu * m;
 
-	debug (RPT_DEBUG, "%s( Screen=\"%s\" )", __FUNCTION__, s->id);
+	debug (RPT_DEBUG, "%s( s=[%s] )", __FUNCTION__, s->id);
 
 	m = menu_find_item (screens_menu, s->id, false);
 	menu_remove_item (screens_menu, m);

@@ -61,7 +61,8 @@ sock_connect (char *host, unsigned short int port)
 	}
 	debug (RPT_DEBUG, "sock_connect: Created socket (%i)", sock);
 
-	sock_init_sockaddr (&servername, host, port);
+	if( sock_init_sockaddr (&servername, host, port) < 0 )
+		return -1;
 
 	err = connect (sock, (struct sockaddr *) &servername, sizeof (servername));
 	if (err < 0) {

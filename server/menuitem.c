@@ -146,7 +146,7 @@ MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", close_menu=%d )",
+	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", close_menu=%d )",
 			__FUNCTION__, id, event_func, text, menu_result);
 
 	new_item = menuitem_create (MENUITEM_ACTION, id, event_func, text);
@@ -160,7 +160,7 @@ MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", allow_gray=%d, value=%d )",
+	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", allow_gray=%d, value=%d )",
 			__FUNCTION__, id, event_func, text, allow_gray, value);
 
 	new_item = menuitem_create (MENUITEM_CHECKBOX, id, event_func, text);
@@ -175,7 +175,7 @@ MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", strings=\"%s\", value=%d )",
+	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", strings=\"%s\", value=%d )",
 			__FUNCTION__, id, event_func, text, strings, value);
 
 	new_item = menuitem_create (MENUITEM_RING, id, event_func, text);
@@ -191,7 +191,7 @@ MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", mintext=\"%s\", maxtext=\"%s\", minvalue=%d, maxvalue=%d, stepsize=%d, value=%d )",
+	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", mintext=\"%s\", maxtext=\"%s\", minvalue=%d, maxvalue=%d, stepsize=%d, value=%d )",
 			__FUNCTION__, id, event_func, text, mintext, maxtext, minvalue, maxvalue, stepsize, value);
 
 	new_item = menuitem_create (MENUITEM_SLIDER, id, event_func, text);
@@ -210,7 +210,7 @@ MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", minvalue=%d, maxvalue=%d, value=%d )",
+	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", minvalue=%d, maxvalue=%d, value=%d )",
 			__FUNCTION__, id, event_func, text, minvalue, minvalue, value);
 
 	new_item = menuitem_create (MENUITEM_NUMERIC, id, event_func, text);
@@ -256,7 +256,7 @@ void menuitem_destroy (MenuItem *item)
 {
 	void (*destructor) (MenuItem *);
 
-	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
 
 	/* First destroy type specific data */
 	destructor = destructor_table[item->type];
@@ -275,7 +275,7 @@ void menuitem_destroy_ring (MenuItem *item)
 {
 	char * s;
 
-	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
 
 	/* deallocate the strings */
 	for (s = LL_GetFirst(item->data.ring.strings); s; s = LL_GetNext(item->data.ring.strings)) {
@@ -287,7 +287,7 @@ void menuitem_destroy_ring (MenuItem *item)
 
 void menuitem_destroy_slider (MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
 
 	/* These strings should always be allocated */
 	free (item->data.slider.mintext);
@@ -296,7 +296,7 @@ void menuitem_destroy_slider (MenuItem *item)
 
 void menuitem_destroy_numeric (MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
 
 	/* This string should always be allocated */
 	free (item->data.alpha.edit_str);
@@ -304,7 +304,7 @@ void menuitem_destroy_numeric (MenuItem *item)
 
 void menuitem_destroy_alpha (MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
 
 	/* These strings should always be allocated */
 	free (item->data.alpha.allowed_extra);
@@ -318,7 +318,7 @@ void menuitem_reset (MenuItem *item)
 {
 	void (*func) (MenuItem *);
 
-	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
 
 	/* First destroy type specific data */
 	func = reset_table[item->type];
@@ -328,7 +328,7 @@ void menuitem_reset (MenuItem *item)
 
 void menuitem_reset_numeric (MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
 
 	item->data.numeric.edit_pos = 0;
 	memset ( item->data.numeric.edit_str, 0, MAX_NUMERIC_LEN);
@@ -341,7 +341,7 @@ void menuitem_reset_numeric (MenuItem *item)
 
 void menuitem_reset_alpha (MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=\"%s\" )", __FUNCTION__, item->id);
+	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__, item->id);
 
 	item->data.alpha.edit_pos = 0;
 	memset (item->data.alpha.edit_str, 0, item->data.alpha.maxlength+1);
@@ -356,7 +356,7 @@ void menuitem_rebuild_screen (MenuItem *item, Screen *s)
 	Widget * w;
 	void (*build_screen) (MenuItem *item, Screen *s);
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", screen=\"%s\" )", __FUNCTION__, item->id, s->id);
+	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__, item->id, s->id);
 
 	if (!display_props) {
 		/* Nothing to build if no display size is known */
@@ -390,7 +390,7 @@ void menuitem_rebuild_screen_slider (MenuItem *item, Screen *s)
 {
 	Widget * w;
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", screen=\"%s\" )", __FUNCTION__, item->id, s->id);
+	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__, item->id, s->id);
 
 	if (display_props->height >= 2 ) {
 		/* Only add a title if enough space... */
@@ -438,7 +438,7 @@ void menuitem_rebuild_screen_numeric (MenuItem *item, Screen *s)
 {
 	Widget * w;
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", screen=\"%s\" )", __FUNCTION__, item->id, s->id);
+	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__, item->id, s->id);
 
 	if (display_props->height >= 2 ) {
 		/* Only add a title if enough space... */
@@ -469,7 +469,7 @@ void menuitem_rebuild_screen_alpha (MenuItem *item, Screen *s)
 {
 	Widget * w;
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", screen=\"%s\" )", __FUNCTION__, item->id, s->id);
+	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__, item->id, s->id);
 
 	if (display_props->height >= 2 ) {
 		/* Only add a title if enough space... */
@@ -502,7 +502,7 @@ void menuitem_update_screen (MenuItem *item, Screen *s)
 {
 	void (*update_screen) (MenuItem *item, Screen *s);
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", screen=\"%s\" )", __FUNCTION__, item->id, s->id);
+	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__, item->id, s->id);
 
 	/* Disable the cursor by default */
 	s->cursor = CURSOR_OFF;
@@ -522,7 +522,7 @@ void menuitem_update_screen_slider (MenuItem *item, Screen *s)
 	Widget * w;
 	int min_len, max_len;
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", screen=\"%s\" )", __FUNCTION__, item->id, s->id);
+	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__, item->id, s->id);
 
 	/* Calculate the bar position and length by filling buffers */
 	min_len = strlen (item->data.slider.mintext);
@@ -559,7 +559,7 @@ void menuitem_update_screen_numeric (MenuItem *item, Screen *s)
 {
 	Widget * w;
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", screen=\"%s\" )", __FUNCTION__, item->id, s->id);
+	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__, item->id, s->id);
 
 	w = screen_find_widget (s, "value");
 	strcpy (w->text, item->data.numeric.edit_str);
@@ -580,7 +580,7 @@ void menuitem_update_screen_alpha (MenuItem *item, Screen *s)
 {
 	Widget * w;
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", screen=\"%s\" )", __FUNCTION__, item->id, s->id);
+	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__, item->id, s->id);
 
 	w = screen_find_widget (s, "value");
 	if (item->data.alpha.password_char == 0) {
@@ -608,7 +608,7 @@ MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key)
 {
 	MenuResult (*process_input) (MenuItem *item, MenuToken token, char * key);
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
+	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
 
 	/* Call type specific screen building function */
 	process_input  = process_input_table [item->type];
@@ -622,7 +622,7 @@ MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key)
 
 MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, char * key)
 {
-	debug (RPT_DEBUG, "%s( item=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
+	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
 
 	switch (token) {
 	  case MENUTOKEN_MENU:
@@ -659,7 +659,7 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 	int pos = item->data.numeric.edit_pos;
 	int allow_signed = (item->data.numeric.minvalue < 0);
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
+	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
 
 	if (allow_signed) {
 		format_str = "%+d";
@@ -790,7 +790,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 	char *str = item->data.alpha.edit_str;
 	int pos = item->data.alpha.edit_pos;
 
-	debug (RPT_DEBUG, "%s( item=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
+	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__, item->id, token, key);
 
 	/* Create list of allowed chars */
 	chars = realloc (chars, 26 + 26 + 10 + strlen(item->data.alpha.allowed_extra) + 1);

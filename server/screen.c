@@ -36,20 +36,22 @@ screen_create (char * id, Client * client)
 {
 	Screen *s;
 
+	debug( RPT_DEBUG, "%s( id=\"%.40s\", client=[%d] )", __FUNCTION__, id, (client?client->sock:-1));
+
 	s = malloc (sizeof (Screen));
 	if (!s) {
-		report(RPT_ERR, "screen_create: Error allocating");
+		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 	if (!id) {
-		report (RPT_ERR, "screen_create: Need id string");
+		report (RPT_ERR, "%s: Need id string", __FUNCTION__);
 		return NULL;
 	}
 	/* Client can be NULL for serverscreens and other client-less screens */
 
 	s->id = strdup(id);
 	if (!s->id) {
-		report(RPT_ERR, "screen_create: Error allocating");
+		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 
@@ -72,7 +74,7 @@ screen_create (char * id, Client * client)
 
 	s->widgetlist = LL_new ();
 	if (!s->widgetlist) {
-		report(RPT_ERR, "screen_create: Error allocating");
+		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 
@@ -86,8 +88,7 @@ screen_destroy (Screen * s)
 {
 	Widget *w;
 
-	if (!s)
-		return -1;
+	debug( RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id );
 
 	menuscreen_remove_screen (s);
 
@@ -103,8 +104,6 @@ screen_destroy (Screen * s)
 		free (s->id);
 	if (s->name)
 		free (s->name);
-	if (s->keys)
-		free (s->keys);
 
 	free (s);
 
@@ -114,11 +113,7 @@ screen_destroy (Screen * s)
 int
 screen_add_widget (Screen * s, Widget * w)
 {
-	report (RPT_INFO, "screen_add_widget(%s,%s)", s->id, w->id);
-	if (!s)
-		return -1;
-	if (!w)
-		return 1;
+	debug( RPT_DEBUG, "%s( s=[%.40s], widget=[%.40s] )", __FUNCTION__, s->id, w->id );
 
 	LL_Push (s->widgetlist, (void *) w);
 
@@ -128,12 +123,7 @@ screen_add_widget (Screen * s, Widget * w)
 int
 screen_remove_widget (Screen * s, Widget * w)
 {
-	report (RPT_INFO, "screen_remove_widget(%s,%s)", s->id, w->id);
-
-	if (!s)
-		return -1;
-	if (!w)
-		return 1;
+	debug( RPT_DEBUG, "%s( s=[%.40s], widget=[%.40s] )", __FUNCTION__, s->id, w->id );
 
 	LL_Remove (s->widgetlist, (void *) w);
 
@@ -150,11 +140,11 @@ screen_find_widget (Screen * s, char *id)
 	if (!id)
 		return NULL;
 
-	debug (RPT_DEBUG, "screen_find_widget(%s,%s)", s->id, id);
+	debug( RPT_DEBUG, "%s( s=[%.40s], id=\"%.40s\" )", __FUNCTION__, s->id, id );
 
 	for ( w=LL_GetFirst(s->widgetlist); w; w=LL_GetNext(s->widgetlist) ) {
 		if (0 == strcmp (w->id, id)) {
-			debug (RPT_DEBUG, "screen_find_widget: Found %s", id);
+			debug (RPT_DEBUG, "%s: Found %s", __FUNCTION__, id);
 			return w;
 		}
 		/* Search subscreens recursively */
@@ -164,6 +154,6 @@ screen_find_widget (Screen * s, char *id)
 				return w;
 		}
 	}
-	debug (RPT_DEBUG, "screen_find_widget: Not found");
+	debug (RPT_DEBUG, "%s: Not found", __FUNCTION__);
 	return NULL;
 }

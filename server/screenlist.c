@@ -39,11 +39,11 @@ int compare_addresses (void *one, void *two);
 int
 screenlist_init ()
 {
-	report (RPT_INFO, "screenlist_init()");
+	report (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	screenlist = LL_new ();
 	if (!screenlist) {
-		report(RPT_ERR, "screenlist_init: error allocating list");
+		report(RPT_ERR, "%s: error allocating list", __FUNCTION__);
 		return -1;
 	}
 
@@ -56,7 +56,7 @@ screenlist_init ()
 int
 screenlist_shutdown ()
 {
-	report (RPT_INFO, "screenlist_shutdown()");
+	report (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	LL_Destroy (screenlist);
 
@@ -66,7 +66,7 @@ screenlist_shutdown ()
 int
 screenlist_remove (Screen * s)
 {
-	report (RPT_INFO, "screenlist_remove()");
+	debug (RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id);
 
 	if (!LL_Remove (screenlist, s))
 		return -1;
@@ -79,7 +79,7 @@ screenlist_remove_all (Screen * s)
 {
 	int i = 0;
 
-	report (RPT_INFO, "screenlist_remove_all()");
+	debug (RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id);
 
 	while (LL_Remove (screenlist, s))
 		i++;
@@ -92,7 +92,7 @@ screenlist_remove_all (Screen * s)
 LinkedList *
 screenlist_getlist ()
 {
-	report (RPT_INFO, "screenlist_getlist()");
+	report (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	return screenlist;
 }
@@ -105,7 +105,7 @@ screenlist_current ()
 	static Screen * old_s = NULL;
 	Client * c;
 
-	debug( RPT_INFO, "screenlist_current:");
+	debug( RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/*LL_dprint(screenlist);*/
 
@@ -169,7 +169,7 @@ screenlist_next ()
 {
 	Screen *s;
 
-	/*debug(RPT_DEBUG, "Screenlist_next()");*/
+	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	s = screenlist_current ();
 
@@ -199,6 +199,8 @@ screenlist_prev ()
 {
 	Screen *s;
 
+	debug (RPT_DEBUG, "%s()", __FUNCTION__);
+
 	s = screenlist_current ();
 
 	/* If we're on hold, don't advance!*/
@@ -221,7 +223,7 @@ screenlist_prev ()
 int
 screenlist_add_end (Screen * screen)
 {
-	debug (RPT_DEBUG, "screenlist_add_end()");
+	debug (RPT_DEBUG, "%s( screen=[%.40s] )", __FUNCTION__, screen->id);
 
 	return LL_Push (screenlist, (void *) screen);
 }
@@ -230,7 +232,7 @@ screenlist_add_end (Screen * screen)
 Screen *
 screenlist_next_roll ()
 {
-	/*debug(RPT_DEBUG, "screenlist_next_roll()");*/
+	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	if (LL_UnRoll (screenlist) != 0)
 		return NULL;
@@ -243,7 +245,7 @@ Screen *
 screenlist_next_priority ()
 {
 	/*screen *s, *t;*/
-	/*debug(RPT_DEBUG, "screenlist_next_priority");*/
+	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	if (LL_UnRoll (screenlist) != 0)
 		return NULL;
@@ -257,7 +259,7 @@ screenlist_next_priority ()
 Screen *
 screenlist_prev_roll ()
 {
-	/*debug(RPT_DEBUG, "screenlist_prev_roll()");*/
+	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	if (LL_Roll (screenlist) != 0)
 		return NULL;

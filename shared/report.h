@@ -31,19 +31,23 @@
  * The reporting levels have the following meaning:
  *
  *   0 RPT_CRIT		Critical conditions: the program stops right after
- *			this. Only use this if the program is exited from
- * 			the current function.
+ *			this. Only use this if the program is actually exited
+ *			from the current function.
  *   1 RPT_ERR		Error conditions: serious problem, program continues.
- * 			Use just before you return -1 from a function.
- *   2 RPT_WARNING	Warning conditions: request user to fix this problem.
- * 			Ex: What a queer port did you select.
- *   3 RPT_NOTICE	Normal but significant condition:
- * 			Ex: What options have been set, version number.
- *   4 RPT_INFO		Informational
- * 			Ex: What functions have been called.
- *   5 RPT_DEBUG	Debug-level messages: further debug messages
- * 			Ex: what are we going to do in the next few lines of
- * 			code.
+ * 			Use this just before you return -1 from a function.
+ *   2 RPT_WARNING	Warning conditions: Something that the user should
+ *			fix, but the program can continue without a real
+ *			problem.
+ *			Ex: Protocol errors from a client.
+ *   3 RPT_NOTICE	Major event in the program.
+ *			Ex: (un)loading of driver, client (dis)connect.
+ *   4 RPT_INFO		Minor event in the program: the activation of a
+ *			setting, details of a loaded driver, a key
+ *			reservation, a keypress, a screen switch.
+ *   5 RPT_DEBUG	Insignificant event.
+ *			Ex: What function has been called, what subpart of a
+ *			function is being executed, what was received and sent
+ *			over the socket, etc.
  *
  * Levels 4 (maybe) and 5 (certainly) should be reported using the debug
  * function.
@@ -60,35 +64,32 @@
 #include <syslog.h>
 
 
-// Reporting levels
+/* Reporting levels */
 #define RPT_CRIT 0
 #define RPT_ERR 1
 #define RPT_WARNING 2
 #define RPT_NOTICE 3
 #define RPT_INFO 4
 #define RPT_DEBUG 5
-// Don't just modify these numbers, they're related to syslog.
+/* Don't just modify these numbers, they're related to syslog. */
 
-// Reporting destinations
+/* Reporting destinations */
 #define RPT_DEST_STDERR 0
 #define RPT_DEST_SYSLOG 1
 #define RPT_DEST_STORE 2
 
-// For compatibility, to be removed ?
-extern int report_level;
-extern int report_dest;
-
 int set_reporting( char *application_name, int new_level, int new_dest );
-// Sets reporting level and message destination.
+/* Sets reporting level and message destination. */
 
 void report( const int level, const char *format, .../*args*/ );
-// Report the message to the selected destination if important enough
+/* Report the message to the selected destination if important enough */
 
-// Consider the debug function to be exactly the same as the report function.
-// The only difference is that it is only compiled in if DEBUG is defined.
+/* Consider the debug function to be exactly the same as the report function.
+ * The only difference is that it is only compiled in if DEBUG is defined.
+ */
 
 static inline void dont_report( const int level, const char *format, .../*args*/ )
-{} // The idea is that this gets optimized out
+{} /* The idea is that this gets optimized out */
 
 #ifdef DEBUG
 #  define debug report

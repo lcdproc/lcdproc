@@ -58,7 +58,7 @@ draw_screen (Screen * s, int timer)
 	static Screen * old_s = NULL;
 	int tmp_state = 0;
 
-	report(RPT_INFO, "draw_screen( screen=\"%.40s\", timer=%d )  ==== START RENDERING ====", s->id, timer );
+	debug(RPT_DEBUG, "%s( screen=[%.40s], timer=%d )  ==== START RENDERING ====", __FUNCTION__, s->id, timer );
 
 	reset = 1;
 
@@ -120,7 +120,7 @@ draw_screen (Screen * s, int timer)
 	/* Set the cursor */
 	drivers_cursor (s->cursor_x, s->cursor_y, s->cursor);
 
-	/*debug(RPT_DEBUG, "draw_screen done"); */
+	/*debug(RPT_DEBUG, "%s done", __FUNCTION__); */
 
 	if (heartbeat != HEARTBEAT_OPEN) {
 		tmp_state = heartbeat;
@@ -136,9 +136,9 @@ draw_screen (Screen * s, int timer)
 	/* flush display out, frame and all... */
 	drivers_flush ();
 
-	/*debug(RPT_DEBUG, "draw_screen: %8x, %i", s, timer); */
+	/*debug(RPT_DEBUG, "%s: %8x, %i", __FUNCTION__, s, timer); */
 
-	report(RPT_INFO, "==== END RENDERING ====" );
+	debug(RPT_DEBUG, "==== END RENDERING ====" );
 	return 0;
 
 }
@@ -173,9 +173,10 @@ draw_frame (LinkedList * list,
 
 	int reset = 1;
 
-	report( RPT_INFO, "draw_frame( list=%p, fscroll='%c', left=%d, top=%d, "
+	debug( RPT_DEBUG, "%s( list=%p, fscroll='%c', left=%d, top=%d, "
 			  "right=%d, bottom=%d, fwid=%d, fhgt=%d, fspeed=%d, timer=%d )",
-			  list, fscroll, left,top, right, bottom, fwid, fhgt, fspeed, timer );
+			  __FUNCTION__, list, fscroll, left,top, right, bottom,
+			  fwid, fhgt, fspeed, timer );
 
 	vis_width = right - left;		/* This is the size of the visible frame area */
 	vis_height = bottom - top;
@@ -216,7 +217,7 @@ draw_frame (LinkedList * list,
 	if (!list)
 		return -1;
 
-	/*debug(RPT_DEBUG, "draw_frame: %8x, %i", frame, timer); */
+	/*debug(RPT_DEBUG, "%s: %8x, %i", __FUNCTION__, frame, timer); */
 
 #define PositiveX(a)	((a)->x > 0)
 #define PositiveY(a)	((a)->y > 0)
@@ -353,7 +354,7 @@ draw_frame (LinkedList * list,
 						break;
 					if (w->right < w->left)
 						break;
-					/*debug(RPT_DEBUG, "rendering: %s %d",w->text,timer);*/
+					/*debug(RPT_DEBUG, "%s: %s %d",__FUNCTION__,w->text,timer);*/
 					screen_width = w->right - w->left + 1;
 					switch (w->length) {	/* actually, direction...*/
 						/* FIXED:  Horz scrollers don't show the

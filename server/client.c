@@ -29,12 +29,12 @@ Client * client_create (int sock)
 {
 	Client *c;
 
-	debug (RPT_DEBUG, "new_client(%i)", sock);
+	debug (RPT_DEBUG, "%s( sock=%i )", __FUNCTION__, sock);
 
 	/* Allocate new client...*/
 	c = malloc (sizeof (Client));
 	if (!c) {
-		report (RPT_ERR, "client_create: Error allocating");
+		report (RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 	/* Init struct members*/
@@ -46,7 +46,7 @@ Client * client_create (int sock)
 	/*Set up message list...*/
 	c->messages = LL_new ();
 	if (!c->messages) {
-		report (RPT_ERR, "client_create: Error allocating");
+		report (RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		free (c);
 		return NULL;
 	}
@@ -58,7 +58,7 @@ Client * client_create (int sock)
 	c->screenlist = LL_new();
 
 	if (!c->screenlist) {
-		report( RPT_ERR, "client_create: Error allocating");
+		report( RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 	return c;
@@ -67,18 +67,25 @@ Client * client_create (int sock)
 int
 client_destroy (Client * c)
 {
-	//int err;
 	Screen *s;
-
-	debug (RPT_INFO, "client_destroy()");
+	char * str;
 
 	if (!c)
 		return -1;
 
-	client_close_sock (c);
+	debug (RPT_DEBUG, "%s( c=[%d] )", __FUNCTION__, c->sock );
+
+	/* Close the socket */
+	close (c->sock);
+
+	/* Eat messages */
+	while ((str = client_get_message (c))) {
+		free (str);
+	}
+	LL_Destroy( c->messages );
 
 	/* Clean up the screenlist...*/
-	debug( RPT_DEBUG, "client_data_destroy: Cleaning screenlist");
+	debug( RPT_DEBUG, "%s: Cleaning screenlist", __FUNCTION__);
 
 	for( s=LL_GetFirst (c->screenlist); s; s=LL_GetNext(c->screenlist) ) {
 		/* Free its memory...*/
@@ -93,6 +100,7 @@ client_destroy (Client * c)
 	if (c->menu) {
 		menuscreen_inform_item_destruction (c->menu);
 		menu_remove_item (c->menu->parent, c->menu);
+		menuscreen_inform_item_modified (c->menu->parent);
 		menuitem_destroy (c->menu);
 	}
 
@@ -109,32 +117,8 @@ client_destroy (Client * c)
 	/* Remove structure */
 	free (c);
 
+	debug( RPT_DEBUG, "%s: Client data removed", __FUNCTION__);
 	return 0;
-}
-
-void client_close_sock (Client * c)
-{
-	char *str;
-
-	if (c->sock == EOF )
-		return;
-
-	/*Eat the rest of the incoming requests...*/
-	debug (RPT_DEBUG, "client_destroy: get_messages");
-	while ((str = client_get_message (c))) {
-		if (str) {
-			debug (RPT_DEBUG, "client_destroy: kill message %s", str);
-			free (str);
-		}
-	}
-
-	/*close socket...*/
-	if (c->sock) {
-		/*sock_send_string (c->sock, "bye\n");*/
-		close(c->sock);
-		report(RPT_NOTICE, "closed socket for #%d", c->sock);
-	}
-	c->sock = EOF;
 }
 
 /*Add and remove messages from the client's queue...*/
@@ -145,38 +129,31 @@ client_add_message (Client * c, char *message)
 	char *dup;
 	char *str, *cp;
 	char delimiters[] = "\n\r\0";
-/*  int len;*/
 
-	debug(RPT_DEBUG, "client_add_message(%s)", message);
+	debug(RPT_DEBUG, "%s( c=[%d], message=\"%s\" )", __FUNCTION__, c->sock, message);
 
 	if (!c)
 		return -1;
 	if (!message)
 		return -1;
 
-/*  len = strlen(message);
- *   if(len < 1) return 0;
- */
-
 	/* Copy the string to avoid overwriting the original...*/
 	dup = strdup (message);
 	if (!dup) {
-		report(RPT_ERR, "client_add_message: Error allocating");
+		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return -1;
 	}
 	/* Now split the string into lines and enqueue each one...*/
 	for (str = strtok (dup, delimiters); str; str = strtok (NULL, delimiters)) {
 		cp = strdup (str);
-		debug (RPT_DEBUG, "client_add_message: %s", cp);
+		debug (RPT_DEBUG, "%s: Queued message: \"%s\"", __FUNCTION__, cp);
 		err += LL_Enqueue (c->messages, (void *) cp);
 	}
 
-	/*debug(RPT_DEBUG, "client_add_message(%s): %i errors", message, err);*/
-	free (dup);						  /* Fixed memory leak...*/
+	free (dup);
 
 	/* Err is the number of errors encountered...*/
 	return err;
-
 }
 
 /* Woo-hoo!  A simple function.  :)*/
@@ -185,14 +162,12 @@ client_get_message (Client * c)
 {
 	char *str;
 
-	debug(RPT_DEBUG, "client_get_message()");
+	debug(RPT_DEBUG, "%s( c=[%d] )", __FUNCTION__, c->sock);
 
 	if (!c)
 		return NULL;
 
 	str = (char *) LL_Dequeue (c->messages);
-
-	/*debug(RPT_DEBUG, "client_get_message:  \"%s\"", str);*/
 
 	return str;
 }
@@ -208,13 +183,13 @@ client_find_screen (Client * c, char *id)
 	if (!id)
 		return NULL;
 
-	debug (RPT_INFO, "client_find_screen(%s)", id);
+	debug (RPT_DEBUG, "%s( c=[%d], id=\"%s\" )", __FUNCTION__, c->sock, id);
 
 	LL_Rewind (c->screenlist);
 	do {
 		s = LL_Get (c->screenlist);
 		if ((s) && (0 == strcmp (s->id, id))) {
-			debug (RPT_DEBUG, "client_find_screen: Found %s", id);
+			debug (RPT_DEBUG, "%s: Found %s", __FUNCTION__, id);
 			return s;
 		}
 	} while (LL_Next (c->screenlist) == 0);
@@ -225,7 +200,13 @@ client_find_screen (Client * c, char *id)
 int
 client_add_screen (Client * c, Screen * s)
 {
-	/* TODO:  Check for errors here?*/
+	if (!c)
+		return -1;
+	if (!s)
+		return -1;
+
+	debug (RPT_DEBUG, "%s( c=[%d], s=[%s] )", __FUNCTION__, c->sock, s->id);
+
 	LL_Push (c->screenlist, (void *) s);
 
 	/* Now, add it to the screenlist...*/
@@ -245,13 +226,15 @@ client_remove_screen (Client * c, Screen * s)
 	if (!s)
 		return -1;
 
+	debug (RPT_DEBUG, "%s( c=[%d], s=[%s] )", __FUNCTION__, c->sock, s->id);
+
 	/* TODO:  Check for errors here?*/
 	LL_Remove (c->screenlist, (void *) s);
 
 	/* Now, remove it from the screenlist...*/
 	if (screenlist_remove_all (s) < 0) {
 		/* Not a serious error..*/
-		report (RPT_ERR, "client_remove_screen: Error dequeueing screen");
+		report (RPT_ERR, "%s: Error dequeueing screen", __FUNCTION__);
 		return 0;
 	}
 	return 0;

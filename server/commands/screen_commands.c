@@ -82,7 +82,7 @@ screen_add_func (Client * c, int argc, char **argv)
 		report(RPT_WARNING, "screen_add_func: Error adding screen");
 		sock_send_string (c->sock, "huh?  Failed to add screen\n");
 	}
-	report(RPT_NOTICE, "added a screen (%s) to the display", s->id);
+	report(RPT_INFO, "Client on socket %d added added screen \"%s\"", c->sock, s->id);
 	return 0;
 }
 
@@ -125,7 +125,9 @@ screen_del_func (Client * c, int argc, char **argv)
 	} else
 		sock_send_string (c->sock, "huh?  Unknown screen id\n");
 
-	report(RPT_NOTICE, "removed a screen (%s) from the display", argv[1]);
+	report(RPT_INFO, "Client on socket %d removed screen \"%s\"", c->sock, s->id);
+
+	screen_destroy(s);
 	return 0;
 }
 

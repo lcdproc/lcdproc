@@ -191,7 +191,7 @@ parse_all_client_messages ()
 	Client * c;
 	char * str;
 
-	debug( RPT_DEBUG, "parse_all_client_messages()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	for( c=clients_getfirst(); c; c=clients_getnext()) {
 
@@ -229,6 +229,8 @@ int parse_message (char * str, Client * c)
 		argc ++;
 		argpos = 0;
 	}
+
+	debug( RPT_DEBUG, "%s( str=\"%.120s\", client=[%d] )", __FUNCTION__, str, c->sock );
 
 	arg_space = malloc(strlen(str)+1);
 	argv[0] = arg_space;
@@ -339,6 +341,7 @@ int parse_message (char * str, Client * c)
 	argv[argc] = NULL;
 	if (error) {
 		snprintf (errmsg, sizeof(errmsg), "huh? Could not parse command\n");
+		report( RPT_WARNING, "Could not parse command from client on socket %d: %s", __FUNCTION__, c->sock, str );
 		sock_send_string (c->sock, errmsg);
 		free( arg_space  );
 		return 0;
@@ -356,10 +359,12 @@ int parse_message (char * str, Client * c)
 	if (error == 1) {
 		snprintf (errmsg, sizeof(errmsg), "huh? Invalid command \"%.40s\"\n", argv[0]);
 		sock_send_string (c->sock, errmsg);
+		report( RPT_WARNING, "Invalid command from client on socket %d: %s", __FUNCTION__, c->sock, str );
 	}
 	else if (error) {
 		snprintf (errmsg, sizeof(errmsg), "huh? Function returned error \"%.40s\"\n", argv[0]);
 		sock_send_string (c->sock, errmsg);
+		report( RPT_WARNING, "Command function returned an error after command from client on socket %d: %s", __FUNCTION__, c->sock, str );
 	}
 
 	free( arg_space );

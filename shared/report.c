@@ -31,19 +31,20 @@ static int stored_levels[MAX_STORED_MSGS];
 static int num_stored_msgs = 0;
 
 
-// local functions
+/* local functions */
 static void store_report_message( int level, const char *message );
 static void flush_messages();
 
 void report( const int level, const char *format, .../*args*/ )
 {
-	// Check if we should report it
+	/* Check if we should report it */
 	if( level <= report_level || report_dest == RPT_DEST_STORE ) {
 
 	  	char buf[1024];
 
-		// Following functions appear to work on RedHat and Debian
-		// Linux, FreeBSD and Solaris
+		/* Following functions appear to work on RedHat and Debian
+		 * Linux, FreeBSD and Solaris
+		 */
 
 		va_list ap;
 		va_start(ap, format); /* measure the required size (the number of elements of format) */
@@ -58,7 +59,7 @@ void report( const int level, const char *format, .../*args*/ )
 			break;
 		  case RPT_DEST_STORE:
 			vsnprintf( buf, sizeof(buf), format, ap );
-			buf[sizeof(buf)-1] = 0; // be sure to have a terminating 0
+			buf[sizeof(buf)-1] = 0; /* be sure to have a terminating 0 */
 			store_report_message( level, buf );
 			break;
 		}

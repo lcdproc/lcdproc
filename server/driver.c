@@ -90,7 +90,7 @@ driver_load( char * name, char * filename, char * args )
 	Driver * driver = NULL;
 	int res;
 
-	report( RPT_INFO, "driver_load( name=\"%.40s\", filename=\"%.80s\", args=\"%.80s\")", name, filename, args );
+	report( RPT_DEBUG, "%s( name=\"%.40s\", filename=\"%.80s\", args=\"%.80s\")", __FUNCTION__, name, filename, args );
 
 	/* Allocate memory for new driver struct */
 	driver = malloc( sizeof( Driver ));
@@ -122,7 +122,7 @@ driver_load( char * name, char * filename, char * args )
 	}
 
 	/* Call the init function */
-	debug( RPT_DEBUG, "Calling driver [%.40s] init function", driver->name );
+	debug( RPT_DEBUG, "%s: Calling driver [%.40s] init function", __FUNCTION__, driver->name );
 	res = driver->init( driver, args );
 	if( res < 0 ) {
 		report( RPT_ERR, "Driver [%.40s] init failed, return code < 0", driver->name );
@@ -156,7 +156,7 @@ driver_unload( Driver * driver )
 	free( driver->filename );
 	free( driver->name );
 	free( driver );
-	debug( RPT_DEBUG, "Driver unloaded" );
+	debug( RPT_DEBUG, "%s: Driver unloaded", __FUNCTION__ );
 
 	return 0;
 }
@@ -168,10 +168,12 @@ driver_bind_module( Driver * driver )
 	int i;
 	int missing_symbols = 0;
 
+	debug( RPT_DEBUG, "%s( driver=[%.40s] )", __FUNCTION__, driver->name );
+
 	/* Load the module */
 	driver->module_handle = dlopen( driver->filename, RTLD_NOW );
 	if( driver->module_handle == NULL ) {
-		report( RPT_ERR, "Could not dlopen driver module %.40s: %s", driver->filename, dlerror() );
+		report( RPT_ERR, "Could not open driver module %.40s: %s", driver->filename, dlerror() );
 		return -1;
 	}
 
@@ -186,23 +188,23 @@ driver_bind_module( Driver * driver )
 			char *s = malloc( strlen( *(driver->symbol_prefix) ) + strlen( driver_symbols[i].name ) + 1 );
 			strcpy( s, *(driver->symbol_prefix) ) ;
 			strcat( s, driver_symbols[i].name );
-			debug( RPT_DEBUG, "finding symbol: %s", s );
+			debug( RPT_DEBUG, "%s: finding symbol: %s", __FUNCTION__, s );
 			*p = dlsym( driver->module_handle, s );
 			free( s );
 		}
 		/* Retrieve the symbol */
 		if( !*p ) {
-			debug( RPT_DEBUG, "finding symbol: %s", driver_symbols[i].name );
+			debug( RPT_DEBUG, "%s: finding symbol: %s", __FUNCTION__, driver_symbols[i].name );
 			*p = dlsym( driver->module_handle, driver_symbols[i].name );
 		}
 
 		if( *p ) {
-			debug( RPT_DEBUG, "found symbol at: %p", *p );
+			debug( RPT_DEBUG, "%s: found symbol at: %p", __FUNCTION__, *p );
 		}
 
 		/* Was the symbol required but not found ? */
 		if( !*p && driver_symbols[i].required ) {
-			report( RPT_ERR, "Module [%.40s] does not have required symbol: %s", driver->name, driver_symbols[i].name );
+			report( RPT_ERR, "Driver [%.40s] does not have required symbol: %s", driver->name, driver_symbols[i].name );
 			missing_symbols = 1;
 		}
 	}
@@ -242,6 +244,8 @@ driver_bind_module( Driver * driver )
 int
 driver_unbind_module( Driver * driver )
 {
+	debug( RPT_DEBUG, "%s( driver=[%.40s] )", __FUNCTION__, driver->name );
+
 	dlclose( driver->module_handle );
 
 	return 0;
@@ -284,7 +288,7 @@ driver_supports_multiple( Driver * driver )
 static int
 driver_store_private_ptr(Driver * driver, void * private_data)
 {
-	report( RPT_INFO, "driver_store_private_ptr( driver=%p, ptr=%p )", driver, private_data );
+	debug( RPT_DEBUG, "%s( driver=[%.40s], ptr=%p )", __FUNCTION__, driver->name, private_data );
 
 	driver->private_data = private_data;
 	return 0;

@@ -101,9 +101,6 @@ drivers_output( int state );
 char *
 drivers_get_key();
 
-char
-drivers_getkey();
-
 extern LinkedList * loaded_drivers;
 /* Please don't read this list except using the following functions */
 

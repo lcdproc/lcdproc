@@ -53,7 +53,7 @@ menu_create (char *id, MenuEventFunc(*event_func),
 void
 menu_destroy (Menu *menu)
 {
-	debug (RPT_DEBUG, "%s( menu=\"%s\" )", __FUNCTION__, menu->id);
+	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
 
 	menu_destroy_all_items (menu);
 	LL_Destroy (menu->data.menu.contents);
@@ -65,7 +65,7 @@ menu_destroy (Menu *menu)
 void
 menu_add_item (Menu *menu, MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( menu=\"%s\", item=\"%s\" )", __FUNCTION__, menu->id, item->id);
+	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__, menu->id, item->id);
 
 	if (!menu) return;
 
@@ -77,9 +77,25 @@ menu_add_item (Menu *menu, MenuItem *item)
 void
 menu_remove_item (Menu *menu, MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( menu=\"%s\", item=\"%s\" )", __FUNCTION__, menu->id, item->id);
+	int i;
+	MenuItem * item2;
 
-	LL_Remove (menu->data.menu.contents, item);
+	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__, menu->id, item->id);
+
+	/* Find the item */
+	for (item2=LL_GetFirst(menu->data.menu.contents), i=0;
+	  item2;
+	  item2=LL_GetNext(menu->data.menu.contents), i++ ) {
+		if (item==item2) {
+			LL_DeleteNode (menu->data.menu.contents);
+			if (menu->data.menu.selector_pos>=i) {
+				menu->data.menu.selector_pos--;
+				if (menu->data.menu.scroll > 0)
+					menu->data.menu.scroll--;
+			}
+			return;
+		}
+	}
 }
 
 void
@@ -87,7 +103,7 @@ menu_destroy_all_items (Menu *menu)
 {
 	MenuItem * item;
 
-	debug (RPT_DEBUG, "%s( menu=\"%s\" )", __FUNCTION__, menu->id);
+	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
 
 	for( item = menu_getfirst_item(menu); item; item = menu_getfirst_item(menu) ) {
 		menuitem_destroy (item);
@@ -99,7 +115,7 @@ MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
 {
 	MenuItem * item;
 
-	debug (RPT_DEBUG, "%s( menu=\"%s\", id=\"%s\" )", __FUNCTION__, menu->id, id);
+	debug (RPT_DEBUG, "%s( menu=[%s], id=\"%s\", recursive=%d )", __FUNCTION__, menu->id, id, recursive);
 
 	for( item = menu_getfirst_item(menu); item; item = menu_getnext_item(menu) ) {
 		if ( strcmp(item->id, id) == 0 ) {
@@ -118,6 +134,8 @@ MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
 
 void menu_reset (Menu *menu)
 {
+	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
+
 	menu->data.menu.selector_pos = 0;
 	menu->data.menu.scroll = 0;
 }
@@ -128,7 +146,7 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 	MenuItem * subitem;
 	int itemnr;
 
-	debug (RPT_DEBUG, "%s( menu=\"%s\", screen=\"%s\" )", __FUNCTION__, menu->id, s->id);
+	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__, menu->id, s->id);
 
 	/* TODO: Put menu in a frame to do easy scrolling */
 	/* Problem: frames are not handled correctly by renderer */
@@ -176,6 +194,14 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 			w->text = malloc (display_props->width);
 			break;
 		  case MENUITEM_MENU:
+			/* Limit string length */
+			w->text = malloc( strlen(subitem->text) + 4 );
+			strcpy( w->text, subitem->text );
+			strcat( w->text, " >" );
+			if (strlen(subitem->text) >= display_props->width-1) {
+				(w->text)[display_props->width-1] = 0;
+			}
+			break;
 		  case MENUITEM_ACTION:
 		  case MENUITEM_SLIDER:
 		  case MENUITEM_NUMERIC:
@@ -217,7 +243,7 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 	MenuItem * subitem;
 	int itemnr;
 
-	debug (RPT_INFO, "%s( menu=\"%s\", screen=\"%s\" )", __FUNCTION__, menu->id, s->id);
+	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__, menu->id, s->id);
 
 	/* Update widgets for the title */
 	w = screen_find_widget (s, "title");
@@ -328,7 +354,7 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
 {
 	MenuItem *subitem;
 
-	debug (RPT_DEBUG, "%s( menu=\"%s\", token=%d, key=\"%s\" )", __FUNCTION__, menu->id, token, key);
+	debug (RPT_DEBUG, "%s( menu=[%s], token=%d, key=\"%s\" )", __FUNCTION__, menu->id, token, key);
 
 	switch (token) {
 	  case MENUTOKEN_MENU:

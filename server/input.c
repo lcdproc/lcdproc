@@ -30,14 +30,14 @@
 
 int server_input (int key);
 void input_send_to_client (Client * c, char * key);
-void input_internal_key (KeyReservation * kr);
+void input_internal_key (char * key);
 
 LinkedList * keylist;
 
 
 int init_input()
 {
-	report (RPT_INFO, "%s()", __FUNCTION__ );
+	debug (RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	keylist = LL_new();
 
@@ -48,35 +48,35 @@ int
 handle_input ()
 {
 	char * key;
-	Client * c;
+	Client * current_client;
+	Client * target;
 	KeyReservation * kr;
 
-	report (RPT_INFO, "%s()", __FUNCTION__ );
+	debug (RPT_DEBUG, "%s()", __FUNCTION__ );
 
-	c = screenlist_current()->client;
+	current_client = screenlist_current()->client;
 
 	/* Handle all keypresses */
 	while ((key = drivers_get_key ()) != NULL ) {
 
 		/* Find what client wants the key */
-		kr = input_find_key (key, c);
+		kr = input_find_key (key, current_client);
 		if (kr) {
 			/* A hit ! */
-			if (kr->client == NULL) {
-				report (RPT_DEBUG, "%s: key for internal client: [%.40s]", __FUNCTION__, key );
-				input_internal_key (kr);
-			}
-			else {
-				/* It's an external client */
-				report (RPT_DEBUG, "%s: key for external client: [%.40s]", __FUNCTION__, key );
-				input_send_to_client (c, key);
-			}
+			report (RPT_DEBUG, "%s: reserved key: \"%.40s\"", __FUNCTION__, key );
+			target = kr->client;
+		} else {
+			report (RPT_DEBUG, "%s: left over key: \"%.40s\"", __FUNCTION__, key );
+			/*target = current_client;*/
+			target = NULL; /* left-over keys are always for internal client */
 		}
-		else {
-			/* What do we do with left-over keys ? */
-			report (RPT_INFO, "%s: left over key: [%.40s]", __FUNCTION__, key );
-
-			/* Well... nothing ! */
+		if (target == NULL) {
+			report (RPT_DEBUG, "%s: key is for internal client", __FUNCTION__ );
+			input_internal_key (key);
+		} else {
+			/* It's an external client */
+			report (RPT_DEBUG, "%s: key is for external client on socket %d", __FUNCTION__, target->sock );
+			input_send_to_client (current_client, key);
 		}
 	}
 	return 0;
@@ -86,7 +86,7 @@ void input_send_to_client (Client * c, char * key)
 {
 	char * s;
 
-	debug (RPT_DEBUG, "%s( client=%p, key=\"%.40s\" )", __FUNCTION__, c, key);
+	debug (RPT_DEBUG, "%s( client=[%d], key=\"%.40s\" )", __FUNCTION__, c->sock, key);
 
 	/* Allocate just as much as we need */
 	s = malloc (strlen(key) + strlen("key \n") + 1);
@@ -96,10 +96,10 @@ void input_send_to_client (Client * c, char * key)
 }
 
 void
-input_internal_key (KeyReservation * kr)
+input_internal_key (char * key)
 {
-	if (kr->exclusive || screenlist_current() == menuscreen) {
-		menuscreen_key_handler (kr->key);
+	if (is_menu_key(key) || screenlist_current() == menuscreen) {
+		menuscreen_key_handler (key);
 	}
 	else {
 		/* TODO: give keys to server screen */
@@ -111,7 +111,7 @@ input_internal_key (KeyReservation * kr)
 int
 server_input (int key)
 {
-	report(RPT_INFO, "%s( key='%c' )", __FUNCTION__, (char) key);
+	debug(RPT_DEBUG, "%s( key='%c' )", __FUNCTION__, (char) key);
 
 	switch ((char) key) {
 		case INPUT_PAUSE_KEY:
@@ -145,7 +145,7 @@ int input_reserve_key (char * key, bool exclusive, Client * client)
 {
 	KeyReservation * kr;
 
-	debug (RPT_DEBUG, "%s( key=\"%.40s\", exclusive=%d, client=%p )", __FUNCTION__, key, exclusive, client);
+	debug (RPT_DEBUG, "%s( key=\"%.40s\", exclusive=%d, client=[%d] )", __FUNCTION__, key, exclusive, (client?client->sock:-1));
 
 	/* Find out if this key is already reserved in a way that interferes
 	 * with the new reservation.
@@ -166,7 +166,7 @@ int input_reserve_key (char * key, bool exclusive, Client * client)
 	kr->client = client;
 	LL_Push(keylist, kr);
 
-	report (RPT_INFO, "%s: key [%.40s] is now reserved in %s mode", __FUNCTION__, key, (exclusive?"exclusive":"shared"));
+	report (RPT_INFO, "Key \"%.40s\" is now reserved in %s mode by client [%d]", key, (exclusive?"exclusive":"shared"), (client?client->sock:-1));
 
 	return 0;
 }
@@ -175,15 +175,15 @@ void input_release_key (char * key, Client * client)
 {
 	KeyReservation * kr;
 
-	debug (RPT_DEBUG, "%s( key=\"%.40s\", client=%p )", __FUNCTION__, key, client);
+	debug (RPT_DEBUG, "%s( key=\"%.40s\", client=[%d] )", __FUNCTION__, key, (client?client->sock:-1));
 
 	for (kr=LL_GetFirst(keylist); kr; kr=LL_GetNext(keylist)) {
 		if (kr->client == client
 		&& strcmp (kr->key, key) == 0) {
-			report (RPT_INFO, "%s: key [%.40s] is being released from %s mode", __FUNCTION__, key, (kr->exclusive?"exclusive":"shared"));
 			free (kr->key);
 			free (kr);
 			LL_DeleteNode (keylist);
+			report (RPT_INFO, "Key \"%.40s\" was reserved in %s mode by client [%d] and is now released", key, (kr->exclusive?"exclusive":"shared"), (client?client->sock:-1));
 			return;
 		}
 	}
@@ -193,12 +193,12 @@ void input_release_client_keys (Client * client)
 {
 	KeyReservation * kr;
 
-	debug (RPT_DEBUG, "%s( client=%p )", __FUNCTION__, client);
+	debug (RPT_DEBUG, "%s( client=[%d] )", __FUNCTION__, (client?client->sock:-1));
 
 	kr=LL_GetFirst(keylist);
 	while (kr) {
 		if (kr->client == client) {
-			report (RPT_INFO, "%s: key [%.40s] is now released from %s mode", __FUNCTION__, kr->key, (kr->exclusive?"exclusive":"shared"));
+			report (RPT_INFO, "Key \"%.40s\" was reserved in %s mode by client [%d] and is now released", kr->key, (kr->exclusive?"exclusive":"shared"), (client?client->sock:-1));
 			free (kr->key);
 			free (kr);
 			LL_DeleteNode (keylist);
@@ -213,7 +213,7 @@ KeyReservation * input_find_key (char * key, Client * client)
 {
 	KeyReservation * kr;
 
-	debug (RPT_DEBUG, "%s( key=\"%.40s\", client=%p )", __FUNCTION__, key, client);
+	debug (RPT_DEBUG, "%s( key=\"%.40s\", client=[%d] )", __FUNCTION__, key, (client?client->sock:-1));
 
 	for (kr=LL_GetFirst(keylist); kr; kr=LL_GetNext(keylist)) {
 		if (strcmp (kr->key, key) == 0) {

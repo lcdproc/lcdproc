@@ -48,7 +48,7 @@ drivers_load_driver( char * name )
 	char * filename;
 	char * args;
 
-	report( RPT_INFO, "drivers_load_driver( name=\"%.40s\")", name );
+	debug( RPT_DEBUG, "%s( name=\"%.40s\")", __FUNCTION__, name );
 
 	/* First driver ? */
 	if( !loaded_drivers ) {
@@ -138,7 +138,7 @@ drivers_unload_all()
 {
 	Driver * driver;
 
-	report( RPT_INFO, "unload_all_driver()");
+	debug( RPT_DEBUG, "%s()", __FUNCTION__);
 
 	while( (driver = LL_Pop( loaded_drivers )) != NULL ) {
 		driver_unload( driver );
@@ -153,7 +153,7 @@ drivers_get_info()
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_getinfo()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	ForAllDrivers(drv) {
 		if( drv->get_info ) {
@@ -169,7 +169,7 @@ drivers_clear()
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_clear()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	ForAllDrivers(drv) {
 		if( drv->clear )
@@ -183,7 +183,7 @@ drivers_flush()
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_flush()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	ForAllDrivers(drv) {
 		if( drv->flush )
@@ -197,7 +197,7 @@ drivers_string( int x, int y, char * string )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_string( x=%d, y=%d, string=\"%.40s\" )", x, y, string );
+	debug( RPT_DEBUG, "%s( x=%d, y=%d, string=\"%.40s\" )", __FUNCTION__, x, y, string );
 
 	ForAllDrivers(drv) {
 		if( drv->string )
@@ -211,7 +211,7 @@ drivers_chr( int x, int y, char c )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_chr( x=%d, y=%d, c='%c' )", x, y, c );
+	debug( RPT_DEBUG, "%s( x=%d, y=%d, c='%c' )", __FUNCTION__, x, y, c );
 
 	ForAllDrivers(drv) {
 		if( drv->chr )
@@ -225,7 +225,7 @@ drivers_vbar( int x, int y, int len, int promille, int pattern )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_vbar( x=%d, y=%d, len=%d, promille=%d, pattern=%d )", x, y, len, promille, pattern );
+	debug( RPT_DEBUG, "%s( x=%d, y=%d, len=%d, promille=%d, pattern=%d )", __FUNCTION__, x, y, len, promille, pattern );
 
 	/* NEW FUNCTIONS
 	 *
@@ -247,7 +247,7 @@ drivers_hbar( int x, int y, int len, int promille, int pattern )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_hbar( x=%d, y=%d, len=%d, promille=%d, pattern=%d )", x, y, len, promille, pattern );
+	debug( RPT_DEBUG, "%s( x=%d, y=%d, len=%d, promille=%d, pattern=%d )", __FUNCTION__, x, y, len, promille, pattern );
 
 	ForAllDrivers(drv) {
 		if( drv->hbar )
@@ -263,7 +263,7 @@ drivers_num( int x, int num )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_num( x=%d, num=%d )", x, num );
+	debug( RPT_DEBUG, "%s( x=%d, num=%d )", __FUNCTION__, x, num );
 
 	ForAllDrivers(drv) {
 		if( drv->num )
@@ -279,7 +279,7 @@ drivers_heartbeat( int state )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_heartbeat( state=%d )", state );
+	debug( RPT_DEBUG, "%s( state=%d )", __FUNCTION__, state );
 
 	ForAllDrivers(drv) {
 		if( drv->heartbeat )
@@ -295,7 +295,7 @@ drivers_icon( int x, int y, int icon )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_icon( x=%d, y=%d, icon=ICON_%s )", x, y, widget_icon_to_iconname (icon) );
+	debug( RPT_DEBUG, "%s( x=%d, y=%d, icon=ICON_%s )", __FUNCTION__, x, y, widget_icon_to_iconname (icon) );
 
 	ForAllDrivers(drv) {
 		/* Does the driver have the icon function ? */
@@ -317,7 +317,7 @@ drivers_cursor( int x, int y, int state )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_cursor( x=%d, y=%d, state=%d )", x, y, state );
+	debug( RPT_DEBUG, "%s( x=%d, y=%d, state=%d )", __FUNCTION__, x, y, state );
 
 	ForAllDrivers(drv) {
 		if( drv->cursor )
@@ -332,7 +332,7 @@ drivers_backlight( int brightness )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_backlight( brightness=%d )", brightness );
+	debug( RPT_DEBUG, "%s( brightness=%d )", __FUNCTION__, brightness );
 
 	ForAllDrivers(drv) {
 		if( drv->backlight )
@@ -346,7 +346,7 @@ drivers_output( int state )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_output( state=%d )", state );
+	debug( RPT_DEBUG, "%s( state=%d )", __FUNCTION__, state );
 
 	ForAllDrivers(drv) {
 		if( drv->output )
@@ -362,7 +362,7 @@ drivers_get_key()
 	Driver *drv;
 	char * keystroke;
 
-	report( RPT_INFO, "drivers_get_key()" );
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	ForAllDrivers(drv) {
 		if( drv->get_key ) {
@@ -376,27 +376,3 @@ drivers_get_key()
 	return NULL;
 }
 
-
-char
-drivers_getkey() /* TO BE REMOVED AS SOON AS INPUT ROUTINES ACCEPT STRINGS */
-{
-	Driver *drv;
-	char * s;
-	char ch;
-
-	report( RPT_INFO, "drivers_getkey()" );
-
-	ForAllDrivers(drv) {
-		if( drv->get_key ) {
-			s = drv->get_key(drv);
-			if( s )
-				return s[0];	/* It returns the first char only ! a hack ! */
-		}
-		else if( drv->getkey ) {
-			ch = drv->getkey(drv);
-			if( ch )
-				return ch;
-		}
-	}
-	return 0;
-}

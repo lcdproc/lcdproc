@@ -72,18 +72,18 @@ widget_create (char *id, WidgetType type, Screen * screen)
 {
 	Widget * w;
 
-	report (RPT_INFO, "widget_create(%s,%d)", id, type);
+	debug (RPT_DEBUG, "%s( id=\"%s\", type=%d, screen=[%s] )", __FUNCTION__, id, type, screen->id );
 
 	/* Create it */
 	w = malloc (sizeof (Widget));
 	if (!w) {
-		report (RPT_DEBUG, "widget_create: Error allocating");
+		report (RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 
 	w->id = strdup(id);
 	if (!w->id) {
-		report (RPT_DEBUG, "widget_create: Error allocating");
+		report (RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 
@@ -119,7 +119,7 @@ widget_create (char *id, WidgetType type, Screen * screen)
 int
 widget_destroy (Widget * w)
 {
-	debug (RPT_INFO, "widget_destroy(%s)", w->id);
+	debug (RPT_DEBUG, "%s( w=[%s] )", __FUNCTION__, w->id);
 
 	if (!w)
 		return -1;

@@ -27,10 +27,10 @@ typedef struct Client {
 	char *name;
 	int ack;
 	int sock;
-	char addr[64];
 	int backlight;
 	int heartbeat;
 
+	/* Messages that the client generated */
 	LinkedList *messages;
 
 	/* The list of screens */

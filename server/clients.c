@@ -31,11 +31,11 @@ LinkedList *clientlist;
 int
 clients_init ()
 {
-	debug(RPT_INFO, "client_init()");
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	clientlist = LL_new ();
 	if (!clientlist) {
-		report( RPT_ERR, "client_init:  Unable to create client list");
+		report( RPT_ERR, "%s: Unable to create client list", __FUNCTION__);
 		return -1;
 	}
 
@@ -47,27 +47,27 @@ clients_shutdown ()
 {
 	Client *c;
 
-	debug (RPT_INFO, "clients_shutdown()");
+	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Free all client structures... */
 	for (c=LL_GetFirst (clientlist); c; c=LL_GetNext (clientlist) ) {
-		debug (RPT_DEBUG, "clients_shutdown: ...");
+		debug (RPT_DEBUG, "%s: ...", __FUNCTION__);
 		if (c) {
-			debug (RPT_DEBUG, "clients_shutdown: ... %i ...", c->sock);
+			debug (RPT_DEBUG, "%s: ... %i ...", __FUNCTION__, c->sock);
 			if (client_destroy (c) != 0) {
-				report (RPT_ERR, "clients_shutdown: Error freeing client");
+				report (RPT_ERR, "%s: Error freeing client", __FUNCTION__);
 			} else {
-				debug (RPT_DEBUG, "clients_shutdown: Freed client...");
+				debug (RPT_DEBUG, "%s: Freed client...", __FUNCTION__);
 			}
 		} else {
-			debug (RPT_DEBUG, "clients_shutdown: No client!");
+			debug (RPT_DEBUG, "%s: No client!", __FUNCTION__);
 		}
 	}
 
 	/* Then, free the list...*/
 	LL_Destroy (clientlist);
 
-	debug (RPT_DEBUG, "clients_shutdown: done");
+	debug (RPT_DEBUG, "%s: done", __FUNCTION__);
 
 	return 0;
 }
@@ -114,7 +114,7 @@ clients_find_client_by_sock (int sock)
 {
 	Client *c;
 
-	debug(RPT_INFO, "clients_find_client_by_sock(%i)", sock);
+	debug(RPT_DEBUG, "%s( sock=%i )", __FUNCTION__, sock);
 
 	for( c=LL_GetFirst(clientlist); c; c=LL_GetNext(clientlist) ) {
 		if (c->sock == sock) {
@@ -122,7 +122,7 @@ clients_find_client_by_sock (int sock)
 		}
 	}
 
-	debug (RPT_ERR, "client_find_sock: failed");
+	debug (RPT_ERR, "%s: failed", __FUNCTION__);
 
 	return NULL;
 }
