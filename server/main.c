@@ -81,7 +81,8 @@ char *build_date = __DATE__;
 #define UNSET_INT -1
 #define UNSET_STR "\01"
 
-//int debug_level = UNSET_INT;
+int debug_level; // for compatibility with MtxOrb, lcdm001 and joy drivers.
+
 int lcd_port = UNSET_INT;
 char bind_addr[64] = UNSET_STR;
 char configfile[256] = UNSET_STR;
@@ -194,6 +195,7 @@ main (int argc, char **argv)
 	set_default_settings();
 
 	// Set reporting values
+	debug_level = reportLevel;
 	ESSENTIAL( set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
  	report( RPT_NOTICE, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
 
