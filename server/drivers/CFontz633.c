@@ -114,6 +114,7 @@ CFontz633_init (Driver * drvthis, char *args)
 	struct termios portset;
 	int tmp, w, h;
 	int reboot = 0;
+	int usb = 0;
 
 	int contrast = DEFAULT_CONTRAST;
 	char device[200] = DEFAULT_DEVICE;
@@ -189,9 +190,18 @@ CFontz633_init (Driver * drvthis, char *args)
 		reboot = 1;
 	}
 
+	/*Am I USB or not?*/
+	if(drvthis->config_get_bool( drvthis->name , "USB" , 0 , 0)) {
+		usb = 1;
+	}
+
 	/* Set up io port correctly, and open it... */
 	debug( RPT_DEBUG, "CFontz633: Opening serial device: %s", device);
-	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+    if ( usb ) {
+        fd = open (device, O_RDWR | O_NOCTTY);
+    } else {
+        fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+    }
 	if (fd == -1) {
 		report (RPT_ERR, "CFontz633_init: failed (%s)\n", strerror (errno));
 		return -1;
@@ -200,18 +210,30 @@ CFontz633_init (Driver * drvthis, char *args)
 	tcgetattr (fd, &portset);
 
 	/* We use RAW mode */
+    if ( usb ) {
+        // The USB way
+        portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+                              | INLCR | IGNCR | ICRNL | IXON );
+        portset.c_oflag &= ~OPOST;
+        portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+        portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+        portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+        portset.c_cc[VMIN] = 0;
+        portset.c_cc[VTIME] = 1;
+    } else {
 #ifdef HAVE_CFMAKERAW
-	/* The easy way */
-	cfmakeraw( &portset );
+		/* The easy way */
+		cfmakeraw( &portset );
 #else
-	/* The hard way */
-	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+		/* The hard way */
+		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
 	                      | INLCR | IGNCR | ICRNL | IXON );
-	portset.c_oflag &= ~OPOST;
-	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+		portset.c_oflag &= ~OPOST;
+		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+		portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
+    }
 
 	/* Set port speed */
 	cfsetospeed (&portset, speed);
