@@ -258,9 +258,9 @@ HD44780_init (Driver * drvthis, char *args)
 
 			// Was a key specified in the config file ?
 			if( s ) {
-				p->keyMapDirect[x] = (char *) malloc( strlen(s)+1 );
+				p->keyMapDirect[x] = strdup( s );
 				strcpy( p->keyMapDirect[x], s );
-				//report( RPT_INFO, "HD44780: Direct key %d: \"%s\"", x, s );
+				report( RPT_INFO, "HD44780: Direct key %d: \"%s\"", x, s );
 			}
 		}
 
@@ -277,9 +277,9 @@ HD44780_init (Driver * drvthis, char *args)
 
 				// Was a key specified in the config file ?
 				if( s ) {
-					p->keyMapMatrix[y][x] = (char *) malloc( strlen(s)+1 );
+					p->keyMapMatrix[y][x] = strdup( s );
 					strcpy( p->keyMapMatrix[y][x], s );
-					//report( RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x, y, s );
+					report( RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x, y, s );
 				}
 			}
 		}
@@ -1066,7 +1066,7 @@ HD44780_get_key(Driver *drvthis)
 			// It's a new keypress
 			p->pressed_key_time = curr_time;
 			p->pressed_key_repetitions = 0;
-			printf( "Key: %s  (%d,%d)\n", keystr, scancode&0x0F, (scancode&0xF0)>>4 );
+			report( RPT_INFO, "HD44780_get_key: Key pressed: %s  (%d,%d)\n", keystr, scancode&0x0F, (scancode&0xF0)>>4 );
 		}
 	}
 
