@@ -30,4 +30,11 @@ static char lcdm001_getkey ();
 
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_CURSORBLINK	0
+
+/*Heartbeat workaround
+  set chars to be displayed instead of "normal" icons*/
+
+#define OPEN_HEART ' '     //This combination is at least visible
+#define FILLED_HEART '*'
+#define PAD '#'
 #endif

@@ -7,7 +7,13 @@
 /*LCDM001 does NOT support custom chars
    So the output may look a bit strange*/
 
-/*Most of the code has been stolen from MtxOrb.c ;-)
+/*All the functions neccessary for running "normal" clients
+   have been implemented.
+   Thanks to the curses driver ;) heartbeat works as well now.
+   The chars that are used instead of the heartbeat-icons can
+   be set in lcdm001.h*/
+
+/*Most of the code has been stolen from MtxOrb.c ;)
    So if you make changes here, do the same with MtxOrb.c*/
 
 #include <stdlib.h>
@@ -33,6 +39,7 @@ extern int debug_level;
 lcd_logical_driver *lcdm001;
 int fd;
 static int clear = 1;
+static char icon_char = '@';
 
 static void lcdm001_cursorblink (int on);
 static void lcdm001_string (int x, int y, char *string);
@@ -266,14 +273,6 @@ lcdm001_set_char (int n, char *dat)
 	/* custom chars are NOT supported */
 }
 
-void
-lcdm001_icon (int which, char dest)
-{
-
-    /* custom chars are NOT supported*/
-
-}
-
 /*End of DUMMY functions*/
 
 // Below here, you may use either lcd.framebuf or driver->framebuf..
@@ -357,6 +356,10 @@ lcdm001_chr (int x, int y, char c)
 
 	ValidX(x);
 	ValidY(y);
+
+        if (c==0) {
+                c = icon_char;   //heartbeat workaround
+        }
 
 	// write to frame buffer
 	y--; x--; // translate to 0-coords
@@ -497,6 +500,32 @@ lcdm001_hbar(int x, int y, int len)
   }
  
   return;
+}
+
+/////////////////////////////////////////////////////////////////
+// Sets character 0 to an icon...
+//
+void
+lcdm001_icon (int which, char dest)
+{
+
+/*Heartbeat workaround:
+   As custom chars are not supported OPEN_HEART
+   and FILLED_HEART are displayed instead.
+   Change them in lcdm001.h*/
+
+	if (dest == 0)
+		switch (which) {
+			case 0:
+				icon_char = OPEN_HEART;
+				break;
+			case 1:
+				icon_char = FILLED_HEART;
+				break;
+			default:
+				icon_char = PAD;
+				break;
+		}
 }
 
 //////////////////////////////////////////////////////////////////////
