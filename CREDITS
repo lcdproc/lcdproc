@@ -33,7 +33,7 @@ Richard Rognlie - GIF driver
 Harald Klein - Lirc driver, Metar Client
 
 Rene Wagner <reenoo@gmx.de> - LCDM001 driver, ASCII emulation
-	of BigNum
+	of BigNum, CFontz driver update (configfile, reporting)
 
 
 Please let us know if your name is missing, or your credit
