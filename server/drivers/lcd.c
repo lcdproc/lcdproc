@@ -44,6 +44,7 @@ static void lcd_drv_icon (int which, char dest);
 static void lcd_drv_flush_box (int lft, int top, int rgt, int bot);
 static void lcd_drv_draw_frame ();
 static char lcd_drv_getkey ();
+static char lcd_drv_getkey_loop ();
 static char *lcd_drv_getinfo ();
 
 #ifdef MTXORB_DRV
@@ -121,7 +122,7 @@ static char *lcd_drv_getinfo ();
 
 // TODO: Make a Windows server, and clients...?
 
-lcd_logical_driver lcd;
+lcd_logical_driver lcd, *lcd_root = NULL;
 
 // TODO: Add multiple names for the same driver?
 //
@@ -321,9 +322,35 @@ lcd_find_init (char *driver) {
 
 // TODO:  lcd_remove_driver()
 
+struct lcd_logical_driver *
+lcd_allocate_driver () {
+	struct lcd_logical_driver *driver;
+	int driver_size;
+
+	// This bit of fakery allows us to use lcd as the first
+	// allocated buffer, which is what everything currently uses for
+	// output in the main server code.
+
+#define FirstTime (lcd.framebuf == NULL)
+
+	if (FirstTime) {
+		lcd_root = &lcd;
+		return &lcd;
+	}
+	else {
+		if ((driver = malloc(sizeof(lcd_logical_driver))) == NULL) {
+			syslog(LOG_ERR, "error allocating driver space!");
+			return NULL;
+		}
+	}
+	return NULL;
+}
+
 // This initializes the specified driver and sends parameters to
 // it.  This is the function which calls, for example,
 // MtxOrb_init.  The specifics come from the drivers[] array.
+
+static char (*main_getkey) () = NULL;
 
 int
 lcd_add_driver (char *driver, char *args)
@@ -331,7 +358,7 @@ lcd_add_driver (char *driver, char *args)
 	int i;
 	char buf[64];
 	int (*init_driver) ();
-	static lcd_logical_driver *old_driver = NULL;
+	lcd_logical_driver *ptr;
 
 	lcd_logical_driver *add;
 
@@ -343,20 +370,9 @@ lcd_add_driver (char *driver, char *args)
 		// This creates an instance of the lcd structure specific to the
 		// driver... it is passed to the driver's init routine...
 
-		// Notice here that every driver will overwrite the last....!
-		// TODO: handle multiple input drivers cleanly...
-		add = &lcd;
-		//
-		// if (old_driver) {
-		//   add = malloc(); -- with error checking...
-		//   old_driver->nextkey = add;
-		//   add->nextkey = NULL;
-		//   old_driver = add;
-		//   }
-		// else {
-		//   add = &lcd;
-		//   }
-		//
+		if ((add = lcd_allocate_driver()) == NULL)
+			return -1;
+
 		memset (add, 0, sizeof (add));
 
 		// Default settings for the driver...
@@ -372,7 +388,30 @@ lcd_add_driver (char *driver, char *args)
 		memset (add->framebuf, ' ', (add->wid * add->hgt));
 
 		i = init_driver (add, args);
+
+		// Now patch up the returned driver structure
+		// before returning
 		lcd_drv_patch_init (add);	// patches drivers that think NULL is okay...
+
+		if (main_getkey == NULL) {
+
+			// Patch the getkey with the getkey loop...
+			main_getkey = add->getkey;
+			add->getkey = lcd_drv_getkey_loop;
+
+		} else {
+
+			// Tack additional drivers onto the getkey list...
+			ptr = lcd_root;
+			while (ptr->nextkey)
+				ptr = ptr->nextkey;
+
+			// ptr now points to a driver which contains
+			// a nextkey which is NULL... add the new
+			// driver in.
+			ptr->nextkey = add;
+		}
+
 		return i;
 	} else {
 		snprintf(buf, sizeof(buf), "invalid driver: %s", driver);
@@ -387,7 +426,9 @@ lcd_shutdown ()
 {
 	lcd_logical_driver *driver;
 
-	lcd.close ();
+	// This does not shutdown any input sources;
+	// is that sufficient?
+	lcd_root->close ();
 
 	return 0;
 }
@@ -408,14 +449,8 @@ lcd_shutdown ()
 //////////////////////////////////////////////////////////////////////
 
 /*
- * The functions below are wrapper functions for the actual driver
- * functions.
- *
- */
-
-/*
- * TODO: Convert these functions to either null functions (output)
- * or to use a new interface for a linked list (input).
+ * The functions below are null functions which are used
+ * when a particular driver does not set them.
  *
  */
 
@@ -542,8 +577,6 @@ lcd_drv_flush_box (int lft, int top, int rgt, int bot)
 	;
 }
 
-// TODO:  Check whether lcd.draw_frame() should really take a framebuffer
-// TODO:   as an argument, or if it should always use lcd.framebuf
 static void
 lcd_drv_draw_frame (char *dat)
 {
@@ -556,59 +589,28 @@ lcd_drv_getinfo ()
 	return NULL;
 }
 
-// Input functions: may come from multiple sources...
-
 static char
 lcd_drv_getkey ()
 {
 	return 0;
 }
 
+// This loops through all defined getkeys, returning
+// the first input that it finds, if any.
+
 static char
-lcd_drv_roundrobin_getkey () {
+lcd_drv_getkey_loop () {
 	lcd_logical_driver *driver;
-	static char (*getkey) ();
 	char c;
 
-	if (getkey == NULL)
-		getkey = lcd.getkey;
-
-	if ((c = getkey()) != 0)
+	if ((c = main_getkey()) != 0)
 		return c;
 
-	driver = &lcd;
+	driver = lcd_root;
 	while ((driver = driver->nextkey) != NULL)
 		if ((c = driver->getkey()) > 0)
 			return c;
 
 	return 0;
 }
-
-// char
-// lcd_drv_getkey ()
-// {
-// 	lcd_logical_driver *driver;
-// 
-// 	char key;
-// 
-// 	LL_Rewind (list);
-// 	do {
-// 		driver = (lcd_logical_driver *) LL_Get (list);
-// 		if (driver) {
-// 			lcd.framebuf = driver->framebuf;
-// 
-// 			if ((int) driver->getkey > 0) {
-// 				key = driver->getkey ();
-// 				if (key)
-// 					return key;
-// 			} else if ((int) driver->getkey == -1) {
-// 				key = drv_base->getkey ();
-// 				if (key)
-// 					return key;
-// 			}
-// 		}
-// 	} while (LL_Next (list) == 0);
-// 
-// 	return 0;
-// }
 
