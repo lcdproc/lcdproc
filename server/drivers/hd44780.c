@@ -358,7 +358,7 @@ HD44780_close(Driver *drvthis)
 MODULE_EXPORT int
 HD44780_width (Driver *drvthis)
 {
-	PrivateData * p = (PrivateData*) drvthis->private_data;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
 	return p->width;
 }
 
@@ -368,7 +368,7 @@ HD44780_width (Driver *drvthis)
 MODULE_EXPORT int
 HD44780_height (Driver *drvthis)
 {
-	PrivateData * p = (PrivateData*) drvthis->private_data;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
 	return p->height;
 }
 
