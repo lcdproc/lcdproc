@@ -45,6 +45,7 @@ static void CFontz_linewrap (int on);
 static void CFontz_autoscroll (int on);
 static void CFontz_hidecursor ();
 static void CFontz_reboot ();
+static void CFontz_heartbeat (int type);
 
 // TODO:  Get rid of this variable?
 lcd_logical_driver *CFontz;
@@ -88,6 +89,20 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 				return -1;
 			}
 			strcpy (device, argv[++i]);
+		} else if (0 == strcmp (argv[i], "-t") || 0 == strcmp (argv[i], "--type")) {
+			int w, h;
+			if (i + 1 > argc) {
+				fprintf (stderr, "CFontz_init: %s requires an argument\n", argv[i]);
+				return -1;
+			}
+			if( sscanf( argv[++i], "%dx%d", &w, &h ) != 2 
+			|| (w <= 0) || (w > LCD_MAX_WIDTH) 
+			|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
+				fprintf (stderr, "CFontz_init: Cannot read size: %s. Using default value.\n", argv[i]);
+			} else {
+				driver->wid = w;
+				driver->hgt = h;
+			}
 		} else if (0 == strcmp (argv[i], "-c") || 0 == strcmp (argv[i], "--contrast")) {
 			if (i + 1 > argc) {
 				fprintf (stderr, "CFontz_init: %s requires an argument\n", argv[i]);
@@ -219,6 +234,8 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 
 	driver->cellwid = DEFAULT_CELL_WIDTH;
 	driver->cellhgt = DEFAULT_CELL_HEIGHT;
+
+	driver->heartbeat = CFontz_heartbeat;
 
 	debug ("CFontz: foo!\n");
 
@@ -732,3 +749,34 @@ CFontz_string (int x, int y, char string[])
 	}
 }
 
+/////////////////////////////////////////////////////////////
+// Does the heartbeat...
+//
+static void
+CFontz_heartbeat (int type)
+{
+	static int timer = 0;
+	int whichIcon;
+	static int saved_type = HEARTBEAT_ON;
+
+	if (type)
+		saved_type = type;
+
+	if (type == HEARTBEAT_ON) {
+		// Set this to pulsate like a real heart beat...
+		whichIcon = (! ((timer + 4) & 5));
+
+		// This defines a custom character EVERY time...
+		// not efficient... is this necessary?
+		CFontz_icon (whichIcon, 0);
+
+		// Put character on screen...
+		CFontz_chr (CFontz->wid, 1, 0);
+
+		// change display...
+		CFontz_flush ();
+	}
+
+	timer++;
+	timer &= 0x0f;
+}
