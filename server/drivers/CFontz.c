@@ -1,9 +1,24 @@
-/*
- * CrystalFontz driver
- *
- * http://www.crystalfontz.com
- *
- */
+/*  This is the LCDproc driver for CrystalFontz devices (http://crystalfontz.com)
+
+    Copyright (C) 2001 ????
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 */
+
+/*configfile support added by Rene Wagner (c) 2001*/
+/*backlight support modified by Rene Wagner (c) 2001*/
+/*block patch by Eddie Sheldrake (c) 2001 inserted by Rene Wagner*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -20,16 +35,10 @@
 
 #include "lcd.h"
 #include "CFontz.h"
-#include "drv_base.h"
 #include "render.h"
-#include "shared/debug.h"
 #include "shared/str.h"
-
-#define DEFAULT_CELL_WIDTH 6
-#define DEFAULT_CELL_HEIGHT 8
-#define DEFAULT_CONTRAST 140
-#define DEFAULT_DEVICE "/dev/lcd"
-#define DEFAULT_SPEED B9600
+#include "shared/report.h"
+#include "server/configfile.h"
 
 static int custom = 0;
 typedef enum {
@@ -40,6 +49,9 @@ typedef enum {
 } custom_type;
 
 static int fd;
+static int brightness = DEFAULT_BRIGHTNESS;
+static int offbrightness = DEFAULT_OFFBRIGHTNESS;
+static int newfirmware = 0;
 
 static void CFontz_linewrap (int on);
 static void CFontz_autoscroll (int on);
@@ -57,116 +69,91 @@ lcd_logical_driver *CFontz;
 int
 CFontz_init (lcd_logical_driver * driver, char *args)
 {
-	char *argv[64];
-	int argc;
 	struct termios portset;
-	int i;
-	int tmp;
+	int tmp, w, h;
 	int reboot = 0;
 
 	int contrast = DEFAULT_CONTRAST;
 	char device[256] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
+	char size[256] = DEFAULT_SIZE;
 
 	CFontz = driver;
 
-	//debug("CFontz_init: Args(all): %s\n", args);
+	debug(RPT_INFO, "CFontz: init(%p,%s)", driver, args );
 
-	argc = get_args (argv, args, 64);
+	// TODO: replace DriverName with driver->name when that field exists.
+	#define DriverName "CFontz"
 
-	/*
-	   for(i=0; i<argc; i++)
-	   {
-	   printf("Arg(%i): %s\n", i, argv[i]);
-	   }
-	 */
 
-	for (i = 0; i < argc; i++) {
-		//printf("Arg(%i): %s\n", i, argv[i]);
-		if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--device")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "CFontz_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			strcpy (device, argv[++i]);
-		} else if (0 == strcmp (argv[i], "-t") || 0 == strcmp (argv[i], "--type")) {
-			int w, h;
-			if (i + 1 > argc) {
-				fprintf (stderr, "CFontz_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			if( sscanf( argv[++i], "%dx%d", &w, &h ) != 2 
-			|| (w <= 0) || (w > LCD_MAX_WIDTH) 
-			|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-				fprintf (stderr, "CFontz_init: Cannot read size: %s. Using default value.\n", argv[i]);
-			} else {
-				driver->wid = w;
-				driver->hgt = h;
-			}
-		} else if (0 == strcmp (argv[i], "-c") || 0 == strcmp (argv[i], "--contrast")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "CFontz_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			tmp = atoi (argv[++i]);
-			if ((tmp < 0) || (tmp > 255)) {
-				fprintf (stderr, "CFontz_init: %s argument must between 0 and 255. Using default value.\n", argv[i]);
-			} else
-				contrast = tmp;
-		} else if (0 == strcmp (argv[i], "-b") || 0 == strcmp (argv[i], "--brightness")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "CFontz_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			tmp = atoi (argv[++i]);
-			if ((tmp < 0) || (tmp > 255)) {
-				fprintf (stderr, "CFontz_init: %s argument must between 0 and 255. Using default value.\n", argv[i]);
-			} else
-				backlight_brightness = tmp;
-		} else if (0 == strcmp (argv[i], "-o") || 0 == strcmp (argv[i], "--off-bright")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "CFontz_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			tmp = atoi (argv[++i]);
-			if ((tmp < 0) || (tmp > 255)) {
-				fprintf (stderr, "CFontz_init: %s argument must between 0 and 255. Using default value.\n", argv[i]);
-			} else
-				backlight_off_brightness = tmp;
-		} else if (0 == strcmp (argv[i], "-s") || 0 == strcmp (argv[i], "--speed")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "CFontz_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			tmp = atoi (argv[++i]);
-			if (tmp == 1200)
-				speed = B1200;
-			else if (tmp == 2400)
-				speed = B2400;
-			else if (tmp == 9600)
-				speed = B9600;
-			else {
-				fprintf (stderr, "CFontz_init: %s argument must be 1200, 2400, or 9600. Using default value.\n", argv[i]);
-			}
-		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-			printf ("LCDproc CrystalFontz LCD driver\n" "\t-d\t--device\tSelect the output device to use [/dev/lcd]\n" "\t-t\t--type\t\tSelect the LCD type (size) [20x4]\n" "\t-c\t--contrast\tSet the initial contrast [140]\n" "\t-b\t--brightness\tSet the initial brightness [255]\n" "\t-o\t--off-bright\tSet the initial brightness [0]\n" "\t-s\t--speed\t\tSet the communication speed [9600]\n" "\t-r\t--reboot\tReinitialize the LCD's BIOS\n" "\t-h\t--help\t\tShow this help information\n");
-			return -1;
-		} else if (0 == strcmp (argv[i], "-r") || 0 == strcmp (argv[i], "--reboot")) {
-			printf ("LCDd: rebooting CrystalFontz LCD...\n");
-			reboot = 1;
-		} else {
-			printf ("Invalid parameter: %s\n", argv[i]);
-		}
+	/*Read config file*/
 
+	/*Which serial device should be used*/
+	strncpy(device, config_get_string ( DriverName , "Device" , 0 , DEFAULT_DEVICE),200);
+	if (strlen(device)>199) strncat(device, "\0", 1);
+	debug (RPT_INFO,"CFontz: Using device: %s", device);
+
+	/*Which size*/
+	strncpy(size, config_get_string ( DriverName , "Size" , 0 , DEFAULT_SIZE),200);
+	if (strlen(size)>199) strncat(size, "\0", 1);
+	if( sscanf(size , "%dx%d", &w, &h ) != 2
+	|| (w <= 0) || (w > LCD_MAX_WIDTH)
+	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
+		report (RPT_WARNING, "CFontz_init: Cannot read size: %s. Using default value.\n", size);
+	} else {
+		driver->wid = w;
+		driver->hgt = h;
+	}
+
+	/*Which contrast*/
+	if (0<=config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) && config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
+		contrast = config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST);
+	} else {
+		report (RPT_WARNING, "CFontz_init: Contrast must between 0 and 255. Using default value.\n");
+	}
+
+	/*Which backlight brightness*/
+	if (0<=config_get_int ( DriverName , "Brightness" , 0 , DEFAULT_BRIGHTNESS) && config_get_int ( DriverName , "Brightness" , 0 , DEFAULT_BRIGHTNESS) <= 255) {
+		brightness = config_get_int ( DriverName , "Brightness" , 0 , DEFAULT_BRIGHTNESS);
+	} else {
+		report (RPT_WARNING, "CFontz_init: Brightness must between 0 and 255. Using default value.\n");
+	}
+
+	/*Which backlight-off "brightness"*/
+	if (0<=config_get_int ( DriverName , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) && config_get_int ( DriverName , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) <= 255) {
+		offbrightness = config_get_int ( DriverName , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS);
+	} else {
+		report (RPT_WARNING, "CFontz_init: OffBrightness must between 0 and 255. Using default value.\n");
+	}
+
+
+	/*Which speed*/
+	tmp = config_get_int ( DriverName , "Speed" , 0 , DEFAULT_OFFBRIGHTNESS);
+	if (tmp == 1200) speed = B1200;
+	else if (tmp == 2400) speed = B2400;
+	else if (tmp == 9600) speed = B9600;
+	else { report (RPT_WARNING, "CFontz_init: Speed must be 1200, 2400, or 9600. Using default value.\n", speed);
+	}
+
+	/*New firmware version?*/
+	if(config_get_bool( DriverName , "NewFirmware" , 0 , 0)) {
+		newfirmware = 1;
+	}
+
+	/*Reboot display?*/
+	if (config_get_bool( DriverName , "Reboot" , 0 , 0)) {
+		report (RPT_INFO, "LCDd: rebooting CrystalFontz LCD...\n");
+		reboot = 1;
 	}
 
 	// Set up io port correctly, and open it...
+	debug( RPT_DEBUG, "CFontz: Opening serial device: %s", device);
 	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1) {
-		fprintf (stderr, "CFontz_init: failed (%s)\n", strerror (errno));
+		report (RPT_ERR, "CFontz_init: failed (%s)\n", strerror (errno));
 		return -1;
 	}
-	//else fprintf(stderr, "CFontz_init: opened device %s\n", device);
+
 	tcgetattr (fd, &portset);
 
 	// We use RAW mode
@@ -218,7 +205,6 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	driver->hbar = CFontz_hbar;
 	driver->init_hbar = CFontz_init_hbar;
 	driver->num = CFontz_num;
-	driver->init_num = CFontz_init_num;
 
 	driver->init = CFontz_init;
 	driver->close = CFontz_close;
@@ -237,7 +223,7 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 
 	driver->heartbeat = CFontz_heartbeat;
 
-	debug ("CFontz: foo!\n");
+	report (RPT_DEBUG, "CFontz_init: done\n");
 
 	return fd;
 }
@@ -291,6 +277,12 @@ CFontz_chr (int x, int y, char c)
 
 	if (c < 32 && c >= 0)
 		c += 128;
+
+	// For V2 of the firmware to get the block to display right
+	if (newfirmware && c==-1) {
+	c=214;
+	}
+
 	CFontz->framebuf[(y * CFontz->wid) + x] = c;
 }
 
@@ -323,10 +315,9 @@ CFontz_backlight (int on)
 {
 	char out[4];
 	if (on) {
-		snprintf (out, sizeof(out), "%c%c", 14, (unsigned char) (on * 100 / 255));
-		//snprintf(out, sizeof(out), "%c%c", 14, 100);
+		snprintf (out, sizeof(out), "%c%c", 14, brightness);
 	} else {
-		snprintf (out, sizeof(out), "%c%c", 14, 0);
+		snprintf (out, sizeof(out), "%c%c", 14, offbrightness);
 	}
 	write (fd, out, 3);
 }
@@ -589,13 +580,6 @@ CFontz_hbar (int x, int y, int len)
 
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets up for big numbers.
-//
-void
-CFontz_init_num ()
-{
-}
 
 /////////////////////////////////////////////////////////////////
 // Writes a big number.
