@@ -65,23 +65,23 @@ int lcd_port = 0;
 // The parameter structure and args[] should
 // be removed when getopt(3) is implemented,
 // as there won't be any need for them then.
-typedef struct parameter {
-	char *sh, *lg;	// short and long versions
-} parameter;
+//typedef struct parameter {
+//	char *sh, *lg;	// short and long versions
+//} parameter;
 
 // This is currently only a list of available arguments, but doesn't
 // really *do* anything.  It just helps to figure out which parameters
 // go to the server, and which ones go to individual drivers...
-static parameter args[] = {
-	{"-h", "--help"},
-	{"-d", "--driver"},
-	{"-t", "--type"},
-	{"-f", "--foreground"},
-	{"-b", "--backlight"},
-	{"-i", "--serverinfo"},
-	{"-w", "--waittime"},
-	{NULL, NULL},
-};
+//static parameter args[] = {
+//	{"-h", "--help"},
+//	{"-d", "--driver"},
+//	{"-t", "--type"},
+//	{"-f", "--foreground"},
+//	{"-b", "--backlight"},
+//	{"-i", "--serverinfo"},
+//	{"-w", "--waittime"},
+//	{NULL, NULL},
+//};
 
 void exit_program (int val);
 void HelpScreen ();
@@ -128,7 +128,7 @@ main (int argc, char **argv)
 	int disable_server_screen = 1;
 	screen *s = NULL;
 	char *str, *ing;				  // strings for commandline handling
-	char *user = DEFAULT_USER;
+	char user[64];
 	char c, buf[64], *driverlist[MAX_DRIVERS], *driverargs[MAX_DRIVERS];
 	char linebuf[128], driver_name[64];
 	int driver_index, list_index;
@@ -145,6 +145,7 @@ main (int argc, char **argv)
 
 	memset(driverlist, '\0', sizeof(driverlist));
 	memset(bind_addr, '\0', sizeof(bind_addr));
+	memset(user, '\0', sizeof(user));
 
 	/*
 	 * Settings in order of preference:
@@ -168,7 +169,7 @@ main (int argc, char **argv)
 
 	i = 0;
 	// analyze options here..
-	while ((c = getopt(argc, argv, "a:p:d:hfiw:c:")) > 0) {
+	while ((c = getopt(argc, argv, "a:p:d:hfiw:c:u:")) > 0) {
 		switch(c) {
 			case 'd':
 				// Add to a list of drivers to be initialized later...
@@ -181,6 +182,9 @@ main (int argc, char **argv)
 				break;
 			case 'p':
 				lcd_port = atoi(optarg);
+				break;
+			case 'u':
+				strncpy(user, optarg, sizeof(user));
 				break;
 			case 'a':
 				strncpy(bind_addr, optarg, sizeof(bind_addr));
@@ -295,6 +299,12 @@ main (int argc, char **argv)
 					exit(1);
 				}
 			} else {
+
+			/*
+			 * Global settings..
+			 *
+			 */
+
 				// not in a driver section...
 				if (strncasecmp(linebuf, "Driver ", 7) == 0) {
 					if (driverlist[0] == NULL) { // check for arguments: override conf file drivers...
@@ -304,6 +314,9 @@ main (int argc, char **argv)
 				} else if (strncasecmp(linebuf, "Bind ", 5) == 0) {
 					if (bind_addr[0] == '\0')
 						strncpy(bind_addr, linebuf + 5, sizeof(bind_addr));
+				} else if (strncasecmp(linebuf, "User ", 5) == 0) {
+					if (user[0] == '\0')
+						strncpy(user, linebuf + 5, sizeof(user));
 				} else if (strncasecmp(linebuf, "Port ", 5) == 0) {
 					if (lcd_port == 0)
 						lcd_port = atoi(linebuf + 5);
@@ -335,6 +348,8 @@ main (int argc, char **argv)
 			debug_level);
 
 	// set defaults....
+	if (user[0] == '\0')
+		strncpy(user, DEFAULT_USER, sizeof(user));
 	if (bind_addr[0] == '\0')
 		strncpy(bind_addr, DEFAULT_ADDR, sizeof(bind_addr));
 	if (lcd_port == 0)
@@ -696,11 +711,11 @@ HelpScreen ()
 		if (lcd_ptr->framebuf != NULL)
 			lcd_ptr->close();
 
-	printf ("\nLCDproc server daemon, %s\n", version);
+	printf ("\nLCDd Server Daemon (part of lcdproc), %s\n", version);
 	printf ("Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
 	printf ("This program is freely redistributable under the terms of the GNU Public License\n\n");
-	printf ("Usage: LCDd [ -hfiw ] [ -c <config> ] [ -d <driver> ]\n\n");
-	printf ("Available options are:\n\n");
+	printf ("Usage: LCDd [ -hfiw ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \\\n\t[ -p <port> ] [ -u <user> ] [ -w <time> ]\n\n");
+	printf ("Available options are:\n");
 
 	printf ("\t-h\t\tDisplay this help screen\n");
 	printf ("\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIG_FILE);
@@ -712,11 +727,13 @@ HelpScreen ()
 	//printf ("\t-b\t--backlight <mode>\n\t\t\tSet backlight mode (on, off, open)\n");
 	printf ("\t-i\t\tDisable showing of the main LCDproc server screen\n");
 	printf ("\t-w <waittime>\tTime to pause at each screen (in 1/8s of a second)\n");
+	printf ("\t-a <addr>\tNetwork (IP) address to bind to\n");
+	printf ("\t-p <port>\tNetwork port to listen for connections on\n");
+	printf ("\t-u <user>\tUser to run as\n");
 
-	printf ("\nCurrently available drivers:\n\n");
+	printf ("\nCurrently available drivers:\n");
 	lcd_list_drivers();
 
-	printf ("\nUse \"man LCDd\" for more info.\n");
 	//printf ("\tHelp on each driver's parameters are obtained upon request:\n\t\t\"LCDd -d driver --help\"\n");
 	//printf ("Example:\n");
 	//printf ("\tLCDd -d MtxOrb \"--device /dev/lcd --contrast 200\" -d joy\n");
