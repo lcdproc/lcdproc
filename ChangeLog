@@ -11,6 +11,37 @@ Coming soon: (?) (my list of stuff to do soon...)
  * Better syntax for driver parameters
  * Dynamically-loaded driver system
 
+v0.4-????:
+ + Added support for client_add_key and friends.  Clients MUST now
+   request keys to get notified.  Keys are NO LONGER broadcast to all
+   clients.  Keys are now tied to a SCREEN.  (We should probably rename
+   the command to screen_add_key huh...)  If the current screen is
+   has requested the key just pressed, the client gets the key and no
+   other client gets it.  Clients only get one key notification even
+   if they have multiple screens requesting a given key.
+ + Added driver for Matrix Orbital GLK12232-25 graphical display.
+   Display is run in text mode since there isn't enough information in
+   the widgets.  If we knew the max width/height of an hbar/vbar, we
+   could use graphical vbar/hbar's.  Oh well.  BigNums' look really
+   cool though.  You'll need some additional characters in the "Small Font"
+   font (and the BigNumbers font) for this to work.
+ + Left the client_add_key routines alone and created new screen_add_key
+   and screen_del_key to allow per screen keystrokes.  If someone else
+   implements a global client_key function, they can do that.
+ + Rewrote Big Number Clock function in chrono.c.  Many problems with
+   it have been fixed.  It now uses number value 10 to display a colon
+   in between the digits.  Don't know what this will do on a the MtxOrb
+   driver.  GLK driver draws a colon.
+ + Cleaned up the CPU GRAPH (G) function in cpu.c and made get_load take
+   a 'struct load' from the caller to save the last time values.  This
+   allows two callers (CPU GRAPH and CPU LOAD) to call get_load and
+   both get reaosonable values.  Without this, CPU GRAPH was always
+   getting 0 because it was called immediatly after CPU LOAD called
+   get_load and no clock ticks had gone by.
+ + Changed --enable-debug autoconf option to be processed correctly.
+   Debug now turns on -g and turns off -O6
+ + Lots of other little fixes.
+
 v0.4-pre10:
  + Metar client added (Weather information)
  + Linux infrared control (LIRC) driver added.

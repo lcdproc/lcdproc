@@ -25,6 +25,8 @@
 
 #undef DEBUG
 
+#undef GLK_DRV
+
 #undef HD44780_DRV
 
 #undef IRMANIN_DRV
