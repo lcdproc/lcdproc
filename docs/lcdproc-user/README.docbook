@@ -12,3 +12,7 @@ On my box (Mdk 8.1) I have to run
 $ docbook2html -c /etc/sgml/catalog lcdproc-user.docbook
 
 (-c defines the location of the SGML catalog)
+
+Another tool is 'xmlto', use it this way:
+
+$ xmlto html lcdproc-dev.docbook
