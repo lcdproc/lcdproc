@@ -633,12 +633,18 @@ main (int argc, char **argv)
 
 		timer++;
 
-		// this line's here because s was getting overwritten at one time...
-		//s = screenlist_current();
+		// this is here because s is getting overwritten...
+		//if (s != screenlist_current()) {
+		//	syslog(LOG_DEBUG, "internal error! s was found overwritten at main.c:637");
+			s = screenlist_current();
+		//}
+		//
+		//TODO: THIS MUST BE FIXED..... WHY is s getting overwritten?
+		// s is a local, it is never passed or assigned to anywhere.
+		// So SOMETHING is going haywire and clobbering memory....
 
-		if (s && (timer >= s->duration)) {
+		if (s && (timer >= s->duration))
 			screenlist_next ();
-		}
 
 		// Just in case it gets out of hand...
 		if (timer >= MAX_TIMER)
