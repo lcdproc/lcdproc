@@ -53,9 +53,9 @@
 // 8bit Data output
 #define T6963_DATAOUT port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) & 0xdf)
 
-#define CHARGEN_BASE 0x1000
 #define TEXT_BASE 0x0000
-#define ATTRIB_BASE 0x0200
+#define ATTRIB_BASE 0x7000
+#define CHARGEN_BASE 0xF000
 
 #define SET_CURSOR_POINTER 0x21
 #define SET_OFFSET_REGISTER 0x22
@@ -134,7 +134,7 @@ void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
 void t6963_set_nchar (Driver *drvthis, int n, char *dat, int num);
 
 void t6963_low_set_control(char wr, char ce, char cd, char rd);
-void t6963_low_dsp_ready(void);
+int  t6963_low_dsp_ready(void);
 
 void t6963_low_data(u8 byte);
 void t6963_low_command (u8 byte);
