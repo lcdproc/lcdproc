@@ -49,13 +49,13 @@ extern int debug_level;
 
 // TODO: Remove this custom_type if not in use anymore.
 typedef enum {
-	hbar = 1,
-	vbar = 2,
+	bar = 2,
 	bign = 4,
 	beat = 8
 } custom_type;
 
-// TODO: This is my ugglyest piece of code.
+#define DIRTY_CHAR 254
+#define START_ICON 22
 typedef enum {
 	baru1 = 0,
 	baru2 = 1,
@@ -79,12 +79,13 @@ typedef enum {
 	barl2 = 19,
 	barl3 = 20,
 	barl4 = 21,
+	empty_heart = 22,
+	filled_heart = 23,
+	ellipsis = 24,
 	barw = 32,
 	barb = 255
 } bar_type;
 
-// The following variable should be per instance of the driver.
-static char * lcd_contents = (char *) 0;	// for incremental updates
 static int custom = 0;
 static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
 static int fd;
@@ -98,10 +99,10 @@ static void MtxOrb_autoscroll (int on);
 static void MtxOrb_cursorblink (int on);
 static void MtxOrb_string (int x, int y, char *string);
 
-/*
+/* 
  * This does not belong to MtxOrb.h except if used externaly
  * Having them here reduce the number of warning.
- */
+ */ 
 static void MtxOrb_clear ();
 static void MtxOrb_close ();
 static void MtxOrb_flush ();
@@ -127,6 +128,17 @@ static void MtxOrb_set_known_char (int car, int type);
 /*
  * End of what was in MtxOrb.h
  */
+
+static int
+MtxOrb_clear_custom ()
+{
+	int pos;
+
+	for (pos = 0; pos < 9; pos++) {
+		def[pos] = -1;		// Not in use.
+		use[pos] = 0;		// Not in use.
+		}
+}
 
 static int
 MtxOrb_set_type (char * str) {
@@ -387,11 +399,6 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 			malloc (MtxOrb->wid * MtxOrb->hgt);
 	memset (MtxOrb->framebuf, ' ', MtxOrb->wid * MtxOrb->hgt);
 
-        // Allocate and clear the buffer for incremental updates
-	lcd_contents = (unsigned char *) malloc (MtxOrb->wid * MtxOrb->hgt);
-	if (!lcd_contents) { return -1; }
-	memset(lcd_contents, ' ', MtxOrb->wid * MtxOrb->hgt);
-
 	/*
 	 * Configure display
 	 */
@@ -467,11 +474,6 @@ MtxOrb_close ()
 		free (MtxOrb->framebuf);
 
 	MtxOrb->framebuf = NULL;
-
-	if (lcd_contents)
-		free (lcd_contents);
-
-	lcd_contents = NULL;
 
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: closed");
@@ -612,12 +614,12 @@ MtxOrb_backlight (int on)
 	backlight_state = on;
 
 	switch (on) {
-		case BACKLIGHT_ON:
+		case BACKLIGHT_ON: 
 			write (fd, "\x0FE" "F", 2);
 			if (debug_level > 3)
 				syslog(LOG_DEBUG, "MtxOrb: backlight turned on");
 			break;
-		case BACKLIGHT_OFF:
+		case BACKLIGHT_OFF: 
 			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY) {
 				if (debug_level > 3)
 					syslog(LOG_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
@@ -741,6 +743,7 @@ MtxOrb_cursorblink (int on)
 static void
 MtxOrb_init_vbar ()
 {
+	custom = bar;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -749,6 +752,7 @@ MtxOrb_init_vbar ()
 static void
 MtxOrb_init_hbar ()
 {
+	custom = bar;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -976,10 +980,22 @@ MtxOrb_init_num ()
 	if (custom != bign) {
 		write (fd, "\x0FEn", 2);
 		custom = bign;
+		MtxOrb_clear_custom ();
 	}
+
 }
 
-// TODO: Might not work, bignum is untested... an untested with dynamic bar.
+// TODO: MtxOrb_set_char is d ing the j b "real-time" as oppose
+// to at flush time. Call to this function should be done in flush
+// this mean in  raw_frame. GLU
+//
+// TODO: Rather than to use the hardware BigNum we should use software
+// emulation, this will make it work simultaniously as hbar/vbar. GLU
+//
+// TODO: Before the desinitive solution we need to make the caracter
+// hiden behind the hardware bignum dirty so that they get cleaned
+// when draw_frame is called. There is no dirty char so I will use 254 
+// hoping nowone is using that char. GLU
 
 /////////////////////////////////////////////////////////////////
 // Writes a big number.
@@ -987,6 +1003,7 @@ MtxOrb_init_num ()
 static void
 MtxOrb_num (int x, int num)
 {
+	int y, dx;
 	char out[5];
 
 	if (debug_level > 4)
@@ -994,16 +1011,33 @@ MtxOrb_num (int x, int num)
 
 	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);
 	write (fd, out, 4);
+
+// Make this space dirty as far as frame buffer knows.
+	for (y = 1; y < 5; y++)
+		for (dx = 0; dx < 3; dx++)
+			MtxOrb_chr (x + dx, y, DIRTY_CHAR);
+
 }
 
-// TODO: This could be higly optimised if data where to be pre-computed.
+// TODO: Every time we define a custom char within the LCD,
+// we have to compute the binary value we are going to use.
+// It is easy to keep the bitmap in this source file,
+// but we compute that once rather than every time. GLU
+//
+// TODO: MtxOrb_set_char is doing the job "real-time" as oppose
+// to at flush time. Call to this function should be done in flush
+// this mean in draw_frame.
+//
+// TODO: _icon should not call this directly, this is why we define
+// so frequently the heartbeat custom char.
+//
+// TODO: We make one 3 bytes write folowed by MtxOrb->cellhgt one byte
+// write. This should be done in one single write.
 
 #define MAX_CUSTOM_CHARS 7
 
 /////////////////////////////////////////////////////////////////
 // Sets a custom character from 0-7...
-//
-// For input, values > 0 mean "on" and values <= 0 are "off".
 //
 // The input is just an array of characters...
 //
@@ -1027,8 +1061,8 @@ MtxOrb_set_char (int n, char *dat)
 		for (col = 0; col < MtxOrb->cellwid; col++) {
 			// shift to make room for new scan line data
 			letter <<= 1;
-
-			// Now read a single bit of data -- one entry in dat[] --
+			// Now read a single bit of data
+			// -- one entry in dat[] --
 			// and add it to the binary data in "letter"
 			letter |= (dat[(row * MtxOrb->cellwid) + col] > 0);
 		}
@@ -1036,48 +1070,54 @@ MtxOrb_set_char (int n, char *dat)
 	}
 }
 
+// TODO (DONE): All the icon are now define at the end of the custom char
+// used for hbar/vbar. GLU
+//
+// TODO: Don't make direct call to caracter definition if the caracter is
+// already defined.
 static void
 MtxOrb_icon (int which, char dest)
 {
-	char icons[3][5 * 8] = {
-		{
-		 1, 1, 1, 1, 1,			  // Empty Heart
-		 1, 0, 1, 0, 1,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 0, 0, 0, 1,
-		 1, 1, 0, 1, 1,
-		 1, 1, 1, 1, 1,
-		 },
-
-		{
-		 1, 1, 1, 1, 1,			  // Filled Heart
-		 1, 0, 1, 0, 1,
-		 0, 1, 0, 1, 0,
-		 0, 1, 1, 1, 0,
-		 0, 1, 1, 1, 0,
-		 1, 0, 1, 0, 1,
-		 1, 1, 0, 1, 1,
-		 1, 1, 1, 1, 1,
-		 },
-
-		{
-		 0, 0, 0, 0, 0,			  // Ellipsis
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 0, 1, 0, 1,
-		 },
-
-	};
+//	char icons[3][5 * 8] = {
+//		{
+//		 1, 1, 1, 1, 1,			  // Empty Heart
+//		 1, 0, 1, 0, 1,
+//		 0, 0, 0, 0, 0,
+//		 0, 0, 0, 0, 0,
+//		 0, 0, 0, 0, 0,
+//		 1, 0, 0, 0, 1,
+//		 1, 1, 0, 1, 1,
+//		 1, 1, 1, 1, 1,
+//		 },
+//
+//		{
+//		 1, 1, 1, 1, 1,			  // Filled Heart
+//		 1, 0, 1, 0, 1,
+//		 0, 1, 0, 1, 0,
+//		 0, 1, 1, 1, 0,
+//		 0, 1, 1, 1, 0,
+//		 1, 0, 1, 0, 1,
+//		 1, 1, 0, 1, 1,
+//		 1, 1, 1, 1, 1,
+//		 },
+//
+//		{
+//		 0, 0, 0, 0, 0,			  // Ellipsis
+//		 0, 0, 0, 0, 0,
+//		 0, 0, 0, 0, 0,
+//		 0, 0, 0, 0, 0,
+//		 0, 0, 0, 0, 0,
+//		 0, 0, 0, 0, 0,
+//		 0, 0, 0, 0, 0,
+//		 1, 0, 1, 0, 1,
+//		 },
+//
+//	};
 
 	if (custom == bign)
 		custom = beat;
-	MtxOrb_set_char (dest, &icons[which][0]);
+	MtxOrb_set_known_char (dest, START_ICON+which);
+//	MtxOrb_set_char (dest, &icons[which][0]);
 }
 
 /////////////////////////////////////////////////////////////
@@ -1313,6 +1353,7 @@ MtxOrb_ask_bar (int type)
 static void
 MtxOrb_heartbeat (int type)
 {
+	int the_icon=255;
 	static int timer = 0;
 	int whichIcon;
 	static int saved_type = HEARTBEAT_ON;
@@ -1326,10 +1367,11 @@ MtxOrb_heartbeat (int type)
 
 		// This defines a custom character EVERY time...
 		// not efficient... is this necessary?
-		MtxOrb_icon (whichIcon, 0);
+//		MtxOrb_icon (whichIcon, 0);
+		the_icon=MtxOrb_ask_bar (whichIcon+START_ICON);
 
 		// Put character on screen...
-		MtxOrb_chr (MtxOrb->wid, 1, 0);
+		MtxOrb_chr (MtxOrb->wid, 1, the_icon);
 
 		// change display...
 		MtxOrb_flush ();
@@ -1347,7 +1389,7 @@ MtxOrb_set_known_char (int car, int type)
 {
 	char all_bar[25][5 * 8] = {
 		{
-		 0, 0, 0, 0, 0,			  //  char u1[] =
+		 0, 0, 0, 0, 0,			  //  char u1[] = 
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
@@ -1356,7 +1398,7 @@ MtxOrb_set_known_char (int car, int type)
 		 0, 0, 0, 0, 0,
 		 1, 1, 1, 1, 1,
 		 }, {
-			  0, 0, 0, 0, 0,		  //  char u2[] =
+			  0, 0, 0, 0, 0,		  //  char u2[] = 
 			  0, 0, 0, 0, 0,
 			  0, 0, 0, 0, 0,
 			  0, 0, 0, 0, 0,
@@ -1365,7 +1407,7 @@ MtxOrb_set_known_char (int car, int type)
 			  1, 1, 1, 1, 1,
 			  1, 1, 1, 1, 1,
 			  }, {
-					0, 0, 0, 0, 0,	  //  char u3[] =
+					0, 0, 0, 0, 0,	  //  char u3[] = 
 					0, 0, 0, 0, 0,
 					0, 0, 0, 0, 0,
 					0, 0, 0, 0, 0,
@@ -1374,7 +1416,7 @@ MtxOrb_set_known_char (int car, int type)
 					1, 1, 1, 1, 1,
 					1, 1, 1, 1, 1,
 					}, {
-						 0, 0, 0, 0, 0,	//  char u4[] =
+						 0, 0, 0, 0, 0,	//  char u4[] = 
 						 0, 0, 0, 0, 0,
 						 0, 0, 0, 0, 0,
 						 0, 0, 0, 0, 0,
@@ -1383,7 +1425,7 @@ MtxOrb_set_known_char (int car, int type)
 						 1, 1, 1, 1, 1,
 						 1, 1, 1, 1, 1,
 						 }, {
-							  0, 0, 0, 0, 0,	//  char u5[] =
+							  0, 0, 0, 0, 0,	//  char u5[] = 
 							  0, 0, 0, 0, 0,
 							  0, 0, 0, 0, 0,
 							  1, 1, 1, 1, 1,
@@ -1392,7 +1434,7 @@ MtxOrb_set_known_char (int car, int type)
 							  1, 1, 1, 1, 1,
 							  1, 1, 1, 1, 1,
 							  }, {
-									0, 0, 0, 0, 0,	//  char u6[] =
+									0, 0, 0, 0, 0,	//  char u6[] = 
 									0, 0, 0, 0, 0,
 									1, 1, 1, 1, 1,
 									1, 1, 1, 1, 1,
@@ -1401,7 +1443,7 @@ MtxOrb_set_known_char (int car, int type)
 									1, 1, 1, 1, 1,
 									1, 1, 1, 1, 1,
 									}, {
-										 0, 0, 0, 0, 0,	//  char u7[] =
+										 0, 0, 0, 0, 0,	//  char u7[] = 
 										 1, 1, 1, 1, 1,
 										 1, 1, 1, 1, 1,
 										 1, 1, 1, 1, 1,
@@ -1410,7 +1452,7 @@ MtxOrb_set_known_char (int car, int type)
 										 1, 1, 1, 1, 1,
 										 1, 1, 1, 1, 1,
 										 }, {
-											  1, 1, 1, 1, 1,	//  char d1[] =
+											  1, 1, 1, 1, 1,	//  char d1[] = 
 											  0, 0, 0, 0, 0,
 											  0, 0, 0, 0, 0,
 											  0, 0, 0, 0, 0,
@@ -1419,7 +1461,7 @@ MtxOrb_set_known_char (int car, int type)
 											  0, 0, 0, 0, 0,
 											  0, 0, 0, 0, 0,
 											  }, {
-													1, 1, 1, 1, 1,	//  char d2[] =
+													1, 1, 1, 1, 1,	//  char d2[] = 
 													1, 1, 1, 1, 1,
 													0, 0, 0, 0, 0,
 													0, 0, 0, 0, 0,
@@ -1428,7 +1470,7 @@ MtxOrb_set_known_char (int car, int type)
 													0, 0, 0, 0, 0,
 													0, 0, 0, 0, 0,
 													}, {
-														 1, 1, 1, 1, 1,	//  char d3[] =
+														 1, 1, 1, 1, 1,	//  char d3[] = 
 														 1, 1, 1, 1, 1,
 														 1, 1, 1, 1, 1,
 														 0, 0, 0, 0, 0,
@@ -1437,7 +1479,7 @@ MtxOrb_set_known_char (int car, int type)
 														 0, 0, 0, 0, 0,
 														 0, 0, 0, 0, 0,
 														 }, {
-															  1, 1, 1, 1, 1,	//  char d4[] =
+															  1, 1, 1, 1, 1,	//  char d4[] = 
 															  1, 1, 1, 1, 1,
 															  1, 1, 1, 1, 1,
 															  1, 1, 1, 1, 1,
@@ -1446,7 +1488,7 @@ MtxOrb_set_known_char (int car, int type)
 															  0, 0, 0, 0, 0,
 															  0, 0, 0, 0, 0,
 															  }, {
-																	1, 1, 1, 1, 1,	//  char d5[] =
+																	1, 1, 1, 1, 1,	//  char d5[] = 
 																	1, 1, 1, 1, 1,
 																	1, 1, 1, 1, 1,
 																	1, 1, 1, 1, 1,
@@ -1455,7 +1497,7 @@ MtxOrb_set_known_char (int car, int type)
 																	0, 0, 0, 0, 0,
 																	0, 0, 0, 0, 0,
 																	}, {
-																		 1, 1, 1, 1, 1,	//  char d6[] =
+																		 1, 1, 1, 1, 1,	//  char d6[] = 
 																		 1, 1, 1, 1, 1,
 																		 1, 1, 1, 1, 1,
 																		 1, 1, 1, 1, 1,
@@ -1464,7 +1506,7 @@ MtxOrb_set_known_char (int car, int type)
 																		 0, 0, 0, 0, 0,
 																		 0, 0, 0, 0, 0,
 																		 }, {
-																			  1, 1, 1, 1, 1,	//  char d7[] =
+																			  1, 1, 1, 1, 1,	//  char d7[] = 
 																			  1, 1, 1, 1, 1,
 																			  1, 1, 1, 1, 1,
 																			  1, 1, 1, 1, 1,
@@ -1473,7 +1515,7 @@ MtxOrb_set_known_char (int car, int type)
 																			  1, 1, 1, 1, 1,
 																			  0, 0, 0, 0, 0,
 																			  }, {
-																					1, 0, 0, 0, 0,	//  char r1[] =
+																					1, 0, 0, 0, 0,	//  char r1[] = 
 																					1, 0, 0, 0, 0,
 																					1, 0, 0, 0, 0,
 																					1, 0, 0, 0, 0,
@@ -1482,7 +1524,7 @@ MtxOrb_set_known_char (int car, int type)
 																					1, 0, 0, 0, 0,
 																					1, 0, 0, 0, 0,
 																					}, {
-																						 1, 1, 0, 0, 0,	//  char r2[] =
+																						 1, 1, 0, 0, 0,	//  char r2[] = 
 																						 1, 1, 0, 0, 0,
 																						 1, 1, 0, 0, 0,
 																						 1, 1, 0, 0, 0,
@@ -1491,7 +1533,7 @@ MtxOrb_set_known_char (int car, int type)
 																						 1, 1, 0, 0, 0,
 																						 1, 1, 0, 0, 0,
 																						 }, {
-																							  1, 1, 1, 0, 0,	//  char r3[] =
+																							  1, 1, 1, 0, 0,	//  char r3[] = 
 																							  1, 1, 1, 0, 0,
 																							  1, 1, 1, 0, 0,
 																							  1, 1, 1, 0, 0,
@@ -1500,7 +1542,7 @@ MtxOrb_set_known_char (int car, int type)
 																							  1, 1, 1, 0, 0,
 																							  1, 1, 1, 0, 0,
 																							  }, {
-																									1, 1, 1, 1, 0,	//  char r4[] =
+																									1, 1, 1, 1, 0,	//  char r4[] = 
 																									1, 1, 1, 1, 0,
 																									1, 1, 1, 1, 0,
 																									1, 1, 1, 1, 0,
@@ -1509,7 +1551,7 @@ MtxOrb_set_known_char (int car, int type)
 																									1, 1, 1, 1, 0,
 																									1, 1, 1, 1, 0,
 																									}, {
-																										 0, 0, 0, 0, 1,	//  char l1[] =
+																										 0, 0, 0, 0, 1,	//  char l1[] = 
 																										 0, 0, 0, 0, 1,
 																										 0, 0, 0, 0, 1,
 																										 0, 0, 0, 0, 1,
@@ -1518,7 +1560,7 @@ MtxOrb_set_known_char (int car, int type)
 																										 0, 0, 0, 0, 1,
 																										 0, 0, 0, 0, 1,
 																										 }, {
-																											  0, 0, 0, 1, 1,	//  char l2[] =
+																											  0, 0, 0, 1, 1,	//  char l2[] = 
 																											  0, 0, 0, 1, 1,
 																											  0, 0, 0, 1, 1,
 																											  0, 0, 0, 1, 1,
@@ -1527,7 +1569,7 @@ MtxOrb_set_known_char (int car, int type)
 																											  0, 0, 0, 1, 1,
 																											  0, 0, 0, 1, 1,
 																											  }, {
-																													0, 0, 1, 1, 1,	//  char l3[] =
+																													0, 0, 1, 1, 1,	//  char l3[] = 
 																													0, 0, 1, 1, 1,
 																													0, 0, 1, 1, 1,
 																													0, 0, 1, 1, 1,
@@ -1536,7 +1578,7 @@ MtxOrb_set_known_char (int car, int type)
 																													0, 0, 1, 1, 1,
 																													0, 0, 1, 1, 1,
 																													}, {
-																														 0, 1, 1, 1, 1,	//  char l4[] =
+																														 0, 1, 1, 1, 1,	//  char l4[] = 
 																														 0, 1, 1, 1, 1,
 																														 0, 1, 1, 1, 1,
 																														 0, 1, 1, 1, 1,
