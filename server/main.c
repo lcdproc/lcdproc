@@ -189,9 +189,9 @@ main (int argc, char **argv)
 		syslog(LOG_NOTICE, "debug level set to %d", debug_level);
 
 	ESSENTIAL( init_sockets() );
-	ESSENTIAL( drop_privs(user) );
 	ESSENTIAL( init_drivers() );
 	ESSENTIAL( init_screens() );
+	ESSENTIAL( drop_privs(user) );
 
 #ifndef DEBUG
 	// Now, go into daemon mode...
@@ -329,10 +329,10 @@ process_configfile ( char *configfile )
 	if( lcd_port == -1 )
 		lcd_port = config_get_int( "server", "port", 0, -1 );
 
-	if( bind_addr == "" )
+	if( bind_addr[0] == 0 )
 		strncpy( bind_addr, config_get_string( "server", "bind", 0, "" ), sizeof(bind_addr));
 
-	if( user == "" )
+	if( user[0] == 0 )
 		strncpy( user, config_get_string( "server", "user", 0, "" ), sizeof(user));
 
 	if( default_duration == -1 ) {
