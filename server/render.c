@@ -114,12 +114,17 @@ int draw_screen(screen *s, int timer)
    
    if(heartbeat)
    {
-      if(s->heartbeat  ||  heartbeat == HEART_ON)
+      if((s->heartbeat==1)  ||  heartbeat == HEART_ON)
       {
 	 // Set this to pulsate like a real heart beat...
 	 // (binary is fun...  :)
 	 lcd.icon(!((timer+4)&5), 0);
 	 lcd.chr(lcd.wid, 1, 0);
+      }
+      if((s->heartbeat==2) && heartbeat != HEART_OFF)
+      {
+	 char *phases = "-\\|/";
+	 lcd.chr(lcd.wid, 1, phases[timer&3]);
       }
    }
    

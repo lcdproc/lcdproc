@@ -80,6 +80,9 @@ AC_ARG_WITH(lcdport,
 )
 AC_DEFINE_UNQUOTED(LCDPORT, $LCDPORT)
 
+AC_DEFINE_UNQUOTED(PROTOCOL_VERSION, "0.2")
+
+
 AC_ARG_WITH(loadmax,
   [  --with-loadmax=<load>   Max Load Avg at which the backlight will]
   [                        start blinking [1.3]],

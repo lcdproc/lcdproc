@@ -73,7 +73,7 @@ int mem_screen(int rep, int display)
      first = 0;
 
      sock_send_string(sock, "screen_add M\n");
-     sprintf(buffer, "screen_set M name {Memory & Swap: %s}\n", host);
+     sprintf(buffer, "screen_set M -name {Memory & Swap: %s}\n", host);
      sock_send_string(sock, buffer);
 
      if(lcd_hgt >= 4)
@@ -289,7 +289,7 @@ int mem_top_screen(int rep, int display)
       first = 0;
 
       sock_send_string(sock, "screen_add S\n");
-      sprintf(buffer, "screen_set S name {Top Memory Use: %s}\n", host);
+      sprintf(buffer, "screen_set S -name {Top Memory Use: %s}\n", host);
       sock_send_string(sock, buffer);
       sock_send_string(sock, "widget_add S title title\n");
       sprintf(buffer, "widget_set S title {TOP MEM: %s}\n", host);

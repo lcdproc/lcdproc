@@ -27,6 +27,7 @@
 #include <sys/statfs.h>
 #endif
 
+
 #include "../../shared/sockets.h"
 
 #include "main.h"
@@ -150,7 +151,7 @@ int disk_screen(int rep, int display)
       first = 0;
 
       sock_send_string(sock, "screen_add D\n");
-      sprintf(buffer, "screen_set D name {Disk Use: %s}\n", host);
+      sprintf(buffer, "screen_set D -name {Disk Use: %s}\n", host);
       sock_send_string(sock, buffer);
       sock_send_string(sock, "widget_add D title title\n");
       sprintf(buffer, "widget_set D title {DISKS: %s}\n", host);

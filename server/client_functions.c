@@ -90,8 +90,9 @@ int hello_func(client *c, int argc, char **argv)
    debug("Hello!\n");
 
    sprintf(str,
-	   "connect LCDproc %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
-	   version, lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
+	   "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
+	   version, protocol_version,
+	   lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
    sock_send_string(c->sock, str);
 
    if(c->data)
@@ -112,7 +113,7 @@ int client_set_func(client *c, int argc, char **argv)
    for(i=1; i<argc; i++)
    {
       // Handle the "name" parameter
-      if(0 == strcmp(argv[i], "name"))
+      if(0 == strcmp(argv[i], "-name"))
       {
 	 if(argc > i+1)
 	 {
@@ -277,7 +278,7 @@ int screen_set_func(client *c, int argc, char **argv)
    for(i=2; i<argc; i++)
    {
       // Handle the "name" parameter
-      if(0 == strcmp(argv[i], "name"))
+      if(0 == strcmp(argv[i], "-name"))
       {
 	 if(argc > i+1)
 	 {
@@ -291,11 +292,11 @@ int screen_set_func(client *c, int argc, char **argv)
 	 }
 	 else
 	 {
-	    sock_send_string(c->sock, "huh? name requires a parameter\n");
+	    sock_send_string(c->sock, "huh? -name requires a parameter\n");
 	 }
       }
       // Handle the "priority" parameter
-      else if(0 == strcmp(argv[i], "priority"))
+      else if(0 == strcmp(argv[i], "-priority"))
       {
 	 if(argc > i+1)
 	 {
@@ -309,11 +310,11 @@ int screen_set_func(client *c, int argc, char **argv)
 	 }
 	 else
 	 {
-	    sock_send_string(c->sock, "huh? priority requires a parameter\n");
+	    sock_send_string(c->sock, "huh? -priority requires a parameter\n");
 	 }
       }
       // Handle the "duration" parameter
-      else if(0 == strcmp(argv[i], "duration"))
+      else if(0 == strcmp(argv[i], "-duration"))
       {
 	 if(argc > i+1)
 	 {
@@ -327,11 +328,40 @@ int screen_set_func(client *c, int argc, char **argv)
 	 }
 	 else
 	 {
-	    sock_send_string(c->sock, "huh? duration requires a parameter\n");
+	    sock_send_string(c->sock, "huh? -duration requires a parameter\n");
+	 }
+      }
+      // Handle the "heartbeat" parameter
+      else if(0 == strcmp(argv[i], "-heartbeat"))
+      {
+	 if(argc > i+1)
+	 {
+	    i++;
+	    debug("screen_set: heartbeat=\"%s\"\n", argv[i]);
+
+	    // set the heartbeat type...
+	    if(0 == strcmp(argv[i], "on"))
+	       s->heartbeat = 1;
+	    if(0 == strcmp(argv[i], "heart"))
+	       s->heartbeat = 1;
+	    if(0 == strcmp(argv[i], "normal"))
+	       s->heartbeat = 1;
+	    if(0 == strcmp(argv[i], "default"))
+	       s->heartbeat = 1;
+	    if(0 == strcmp(argv[i], "off"))
+	       s->heartbeat = 0;
+	    if(0 == strcmp(argv[i], "none"))
+	       s->heartbeat = 0;
+	    if(0 == strcmp(argv[i], "slash"))
+	       s->heartbeat = 2;
+	 }
+	 else
+	 {
+	    sock_send_string(c->sock, "huh? -heartbeat requires a parameter\n");
 	 }
       }
       // Handle the "wid" parameter
-      else if(0 == strcmp(argv[i], "wid"))
+      else if(0 == strcmp(argv[i], "-wid"))
       {
 	 if(argc > i+1)
 	 {
@@ -345,11 +375,11 @@ int screen_set_func(client *c, int argc, char **argv)
 	 }
 	 else
 	 {
-	    sock_send_string(c->sock, "huh? wid requires a parameter\n");
+	    sock_send_string(c->sock, "huh? -wid requires a parameter\n");
 	 }
       }
       // Handle the "hgt" parameter
-      else if(0 == strcmp(argv[i], "hgt"))
+      else if(0 == strcmp(argv[i], "-hgt"))
       {
 	 if(argc > i+1)
 	 {
@@ -363,7 +393,7 @@ int screen_set_func(client *c, int argc, char **argv)
 	 }
 	 else
 	 {
-	    sock_send_string(c->sock, "huh? hgt requires a parameter\n");
+	    sock_send_string(c->sock, "huh? -hgt requires a parameter\n");
 	 }
       }
       else

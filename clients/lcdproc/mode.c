@@ -249,7 +249,7 @@ int credit_screen(int rep, int display)
       
       sock_send_string(sock, "screen_add A\n");
       sock_send_string(sock,
-		       "screen_set A name {Credits for LCDproc}\n");
+		       "screen_set A -name {Credits for LCDproc}\n");
       sock_send_string(sock, "widget_add A title title\n");
       sprintf(tmp, "widget_set A title {LCDPROC %s}\n", version);
       sock_send_string(sock, tmp);

@@ -1,4 +1,4 @@
-LCDproc client/server protocol
+LCDproc client/server protocol, V0.2
 ---------------------------------------------
 
 
@@ -98,18 +98,8 @@ hello
 	in return...  (a "connect" string)
 
 
-client_set [name #id]
+client_set [-name #id]
 	Set client's name and other info
-
-client_add_key #id
-	Tells the server the client can handle keypresses of type #id.
-	#id is probably just "A", "B", and so on...
-	All keypresses are disabled by default, so you'll have to tell
-	the server which ones you want to accept...
-
-client_del_key #id
-	Tells the server to never send that keypress.
-	All keypresses are disabled by default.
 
 
 screen_add #id
@@ -118,9 +108,14 @@ screen_add #id
 screen_del #id
 	Remove a screen
 
-screen_set #id [priority integer] [name "my_name"] [duration integer]
-	   [wid width] [hgt height]
+screen_set #id [-priority integer] [-name "my_name"] [-duration integer]
+	   [-wid width] [-hgt height] [-heartbeat type]
 	Initialize a screen, or reset its data.
+	Heartbeat types can be:
+		on, heart				"Heart" icon
+		normal, default				User's choice
+		off, none				None
+		slash					Rotating slash
 	Priority values are as follows:
 	    0	You feel like getting kicked off the server, don't you?
 	    1	The world is about to explode
@@ -238,6 +233,17 @@ The functions below are planned but not completed.
 
 client->server functions
 -------------------------
+client_add_key #id
+	Tells the server the client can handle keypresses of type #id.
+	#id is probably just "A", "B", and so on...
+	All keypresses are disabled by default, so you'll have to tell
+	the server which ones you want to accept...
+
+client_del_key #id
+	Tells the server to never send that keypress.
+	All keypresses are disabled by default.
+
+
 menu_add #id
 	Add a new menu.  
 

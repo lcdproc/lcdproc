@@ -40,6 +40,9 @@
 /* Define the package name */
 #undef PACKAGE
 
+/* Define the protocol version */
+#undef PROTOCOL_VERSION
+
 #undef SLI_DRV
 
 #undef STAT_NFS

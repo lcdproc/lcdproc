@@ -12,6 +12,12 @@ Coming soon: (?) (my list of stuff to do soon...)
  * Dynamically-loaded driver system
 
 v0.4-pre10:
+ + "rotating slash" heartbeat mode (looks weird on CFontz displays)
+   Use "screen_set s -heartbeat slash" to use this.
+ * Switched to client-server protocol V0.2, so arguments can come in
+   any order, and require a "-" on the front.  Instead of
+   "widget_set s w 1 2 foo", use "widget_set s w -x 1 -y 2 -text foo".
+ * Server info screen no longer enabled by default.
  * Merged Andrew McMeikan's HD44780 driver changes
  - Removed WHATSNEW
  + Added ChangeLog (okay, fine, I renamed WHATSNEW and typed a few

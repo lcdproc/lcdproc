@@ -309,6 +309,7 @@ void main_loop(mode *sequence)
 			else if(0 == strcmp(argv[a], "cellhgt"))
 			   lcd_cellhgt = atoi(argv[++a]);
 		     }
+		     sock_send_string(sock, "client_set -name LCDproc\n");
 		  }
 		  else if(0 == strcmp(argv[0], "bye"))
 		  {

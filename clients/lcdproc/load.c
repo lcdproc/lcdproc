@@ -62,7 +62,7 @@ int xload_screen(int rep, int display)
       memset(loads, 0, sizeof(float)*LCD_MAX_WIDTH);
       
       sock_send_string(sock, "screen_add X\n");
-      sprintf(buffer, "screen_set X name {X-Load: %s}\n", host);
+      sprintf(buffer, "screen_set X -name {X-Load: %s}\n", host);
       sock_send_string(sock, buffer);
       // Add the vbars...
       for(i=1; i<lcd_wid; i++)

@@ -83,7 +83,7 @@ int battery_screen(int rep, int display)
    {
       first = 0;
 
-      sprintf(buffer, "screen_set B name {APM stats: %s}\n", host);
+      sprintf(buffer, "screen_set B -name {APM stats: %s}\n", host);
       sock_send_string(sock, buffer);
       sock_send_string(sock, "widget_add B title title\n");
       sprintf(tmp, "widget_set B title {LCDPROC %s}\n", version);

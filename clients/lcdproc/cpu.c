@@ -85,7 +85,7 @@ int cpu_screen(int rep, int display)
       first = 0;
 
       sock_send_string(sock, "screen_add C\n");
-      sprintf(buffer, "screen_set C name {CPU Use: %s}\n", host);
+      sprintf(buffer, "screen_set C -name {CPU Use: %s}\n", host);
       sock_send_string(sock, buffer);
       if(lcd_hgt >= 4)
       {
@@ -272,7 +272,7 @@ int cpu_graph_screen(int rep, int display)
    {
       first = 0;
       sock_send_string(sock, "screen_add G\n");
-      sprintf(buffer, "screen_set G name {CPU Graph: %s}\n", host);
+      sprintf(buffer, "screen_set G -name {CPU Graph: %s}\n", host);
       sock_send_string(sock, buffer);
       if(lcd_hgt >= 4)
       {

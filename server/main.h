@@ -11,6 +11,7 @@
  */
 
 extern char *version;
+extern char *protocol_version;
 extern char *build_date;
 
 void exit_program(int val);

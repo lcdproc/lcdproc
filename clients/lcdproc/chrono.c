@@ -162,7 +162,7 @@ int time_screen(int rep, int display)
       first = 0;
 
       sock_send_string(sock, "screen_add T\n");
-      sprintf(buffer, "screen_set T name {Time Screen: %s}\n", host);
+      sprintf(buffer, "screen_set T -name {Time Screen: %s}\n", host);
       sock_send_string(sock, buffer);
       sock_send_string(sock, "widget_add T title title\n");
       sock_send_string(sock, "widget_set T title {Time Screen}\n");
@@ -324,7 +324,7 @@ int clock_screen(int rep, int display)
       first = 0;
       
       sock_send_string(sock, "screen_add O\n");
-      sprintf(buffer, "screen_set O name {Clock Screen: %s}\n", host);
+      sprintf(buffer, "screen_set O -name {Clock Screen: %s}\n", host);
       sock_send_string(sock, buffer);
       sock_send_string(sock, "widget_add O title title\n");
       sock_send_string(sock, "widget_add O one string\n");
@@ -435,7 +435,7 @@ int uptime_screen(int rep, int display)
       first = 0;
 
       sock_send_string(sock, "screen_add U\n");
-      sprintf(buffer, "screen_set U name {Uptime Screen: %s}\n", host);
+      sprintf(buffer, "screen_set U -name {Uptime Screen: %s}\n", host);
       sock_send_string(sock, buffer);
       sock_send_string(sock, "widget_add U title title\n");
       if(lcd_hgt >= 4)
@@ -519,7 +519,7 @@ int big_clock_screen(int rep, int display)
       first = 0;
 
       sock_send_string(sock, "screen_add K\n");
-      sock_send_string(sock, "screen_set K name {Big Clock Screen}\n");
+      sock_send_string(sock, "screen_set K -name {Big Clock Screen}\n");
       sock_send_string(sock, "widget_del K heartbeat\n");
       sock_send_string(sock, "widget_add K d0 num\n");
       sock_send_string(sock, "widget_add K d1 num\n");

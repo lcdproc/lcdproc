@@ -144,7 +144,7 @@ int MtxOrb_init(lcd_logical_driver *driver, char *args)
       {
 	 printf("LCDproc Matrix-Orbital LCD driver\n"
 		"\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
-		"\t-t\t--type\t\tSelect the LCD type (size) [20x4]\n"
+//		"\t-t\t--type\t\tSelect the LCD type (size) [20x4]\n"
 		"\t-c\t--contrast\tSet the initial contrast [140]\n"
 		"\t-s\t--speed\t\tSet the communication speed [19200]\n"
 		"\t-h\t--help\t\tShow this help information\n");

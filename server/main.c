@@ -34,6 +34,7 @@
 
 
 char *version = VERSION;
+char *protocol_version = PROTOCOL_VERSION;
 char *build_date = __DATE__;
 
 
@@ -74,7 +75,7 @@ int main(int argc, char **argv)
    //char cfgfile[256] = "/etc/LCDd.cf";
    int i, err, tmp;
    int daemon_mode=1;
-   int disable_server_screen=0;
+   int disable_server_screen=1;
    int child;
    screen *s = NULL;
    char *str, *ing;  // strings for commandline handling
@@ -237,6 +238,7 @@ int main(int argc, char **argv)
 	 {
 	    i++;
 	    if(0 == strcmp(argv[i], "off")) disable_server_screen = 1;
+	    if(0 == strcmp(argv[i], "on"))  disable_server_screen = 0;
 	 }
       }
       else
@@ -348,7 +350,7 @@ void HelpScreen()
   printf("LCDproc server daemon, %s\n", version);
   printf("Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors\n");
   printf("This program is freely redistributable under the terms of the GNU Public License\n\n");
-  printf("Usage: lcdproc [options]\n");
+  printf("Usage: LCDd [options]\n");
   printf("\tOptions in []'s are optional.  Available options are:\n");
   printf("\t-h\t--help\n\t\t\tDisplay this help screen\n");
   printf("\t-t\t--type <size>\n\t\t\tSelect an LCD size (20x4, 16x2, etc...)\n");
