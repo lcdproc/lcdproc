@@ -565,6 +565,8 @@ void
 do_mainloop ()
 {
 	screen *s = NULL;
+	char *message=NULL;
+	
 	//char buf[64];
 
 	// FIXME: s should still be null from initialization.... what's happening here?!
@@ -616,6 +618,38 @@ do_mainloop ()
 			no_screen_screen (timer);
 
 		usleep (TIME_UNIT);
+
+		//Check to see if the screen has a timeout value, if it does 
+		//decrese it and then check to see if it has excpired. 
+		//Remove if expired.
+		if((message = malloc(256)) == NULL)
+			syslog(LOG_NOTICE, "Error allocating message string");
+		else {
+			snprintf(message, 256, "Screen->%s has timeout->%d", s->name, s->timeout);
+			syslog(LOG_NOTICE, message);
+			free(message);
+		}
+		if (s && s->timeout != -1) {
+		
+			--(s->timeout);
+			if((message = malloc(256)) == NULL)
+				syslog(LOG_NOTICE, "Error allocating message string");
+			else {
+				snprintf(message, 256, "Timeout matches check, has timeout->%d", s->name, s->timeout);
+				syslog(LOG_NOTICE, message);
+				free(message);
+			}
+			if (s->timeout <= 0) {
+				screen_remove (s->parent, s->id);
+				if((message = malloc(256)) == NULL)
+					syslog(LOG_NOTICE, "Error allocating message string");
+				else {
+					snprintf(message, 256, "Removing screen %s which has timeout->%d", s->name, s->timeout);
+					syslog(LOG_NOTICE, message);
+					free(message);
+				}
+			}
+		}
 	}
 
 	// Quit!

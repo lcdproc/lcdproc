@@ -589,9 +589,9 @@ screen_set_func (client * c, int argc, char **argv)
 		p = argv[i];
 		if (*p == '-')
 			p++;
-
+		
 		// Handle the "name" parameter
-		if (strcmp (p, "name")) {
+		if (strcmp (p, "name") == 0) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: name=\"%s\"\n", argv[i]);
@@ -606,7 +606,7 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "priority" parameter
-		else if (strcmp (p, "priority")) {
+		else if (strcmp (p, "priority") == 0) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: priority=\"%s\"\n", argv[i]);
@@ -621,7 +621,7 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "duration" parameter
-		else if (strcmp (p, "duration")) {
+		else if (strcmp (p, "duration") == 0) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: duration=\"%s\"\n", argv[i]);
@@ -636,7 +636,7 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "heartbeat" parameter
-		else if (strcmp (p, "heartbeat")) {
+		else if (strcmp (p, "heartbeat") == 0) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: heartbeat=\"%s\"\n", argv[i]);
@@ -662,7 +662,7 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "wid" parameter
-		else if (strcmp (p, "wid")) {
+		else if (strcmp (p, "wid") == 0) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: wid=\"%s\"\n", argv[i]);
@@ -675,9 +675,10 @@ screen_set_func (client * c, int argc, char **argv)
 			} else {
 				sock_send_string (c->sock, "huh? -wid requires a parameter\n");
 			}
+		
 		}
 		// Handle the "hgt" parameter
-		else if (strcmp (p, "hgt")) {
+		else if (strcmp (p, "hgt") == 0) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: hgt=\"%s\"\n", argv[i]);
@@ -690,11 +691,28 @@ screen_set_func (client * c, int argc, char **argv)
 			} else {
 				sock_send_string (c->sock, "huh? -hgt requires a parameter\n");
 			}
-		} else {
-			sock_send_string (c->sock, "huh? invalid parameter\n");
 		}
-	}									  // done checking argv
-
+		// Handle the "timeout" parameter
+		else if (strcmp (p, "timeout") == 0) {
+			if (argc > i + 1) {
+				i++;
+				syslog(LOG_NOTICE, "Setting timeout.");
+				debug ("screen_set: timeout=\"%s\"\n", argv[i]);
+				// set the duration...
+				number = atoi (argv[i]);
+				// Add the timeout value (count of TIME_UNITS)
+				//  to struct,  TIME_UNIT is 1/8th of a second
+				if (number > 0) {
+					s->timeout = number;
+					syslog(LOG_NOTICE, "Timeout set.");
+				}
+				sock_send_string(c->sock, "success\n");
+			} else {
+				sock_send_string (c->sock, "huh? -timeout requires a parameter\n");
+			}
+		}
+		else sock_send_string (c->sock, "huh? invalid parameter\n");
+	}// done checking argv
 	return 0;
 }
 

@@ -14,6 +14,7 @@
 #include "main.h"
 
 int  default_duration = 0;
+int  default_timeout  = -1;
 
 screen *
 screen_create ()
@@ -36,6 +37,7 @@ screen_create ()
 	s->keys = NULL;
 	s->parent = NULL;
 	s->widgets = NULL;
+	s->timeout = default_timeout; //ignored unless greater than 0. 
 
 	s->widgets = LL_new ();
 	if (!s->widgets) {
