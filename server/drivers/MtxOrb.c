@@ -34,9 +34,11 @@
 // I don't want to break anything here so let's do it step by step
 //#define USE_REPORT
 #ifdef USE_REPORT
-#include "shared/debug.h"
-#else
+//#define DEBUG
 #include "shared/report.h"
+//#undef DEBUG
+#else
+#include "shared/debug.h"
 #endif
 
 #include "shared/str.h"
@@ -471,6 +473,7 @@ MtxOrb_clear ()
 	clear = 1;
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: cleared screen");
 #else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: cleared screen");
@@ -491,6 +494,7 @@ MtxOrb_close ()
 	MtxOrb->framebuf = NULL;
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: closed");
 #else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: closed");
@@ -513,6 +517,7 @@ MtxOrb_string (int x, int y, char *string)
 	memcpy(MtxOrb->framebuf + offset, string, siz);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: printed string at (%d,%d)", x, y);
 #else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: printed string at (%d,%d)", x, y);
@@ -525,6 +530,7 @@ MtxOrb_flush ()
 	MtxOrb_draw_frame (MtxOrb->framebuf);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: frame buffer flushed");
 #else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: frame buffer flushed");
@@ -543,6 +549,7 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 		write (fd, MtxOrb->framebuf + (y * MtxOrb->wid) + lft, rgt - lft + 1);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: frame buffer box flushed");
 #else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: frame buffer box flushed");
@@ -581,10 +588,11 @@ MtxOrb_chr (int x, int y, char c)
 	MtxOrb->framebuf[offset] = c;
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x, y);
+	debug(RPT_DEBUG, "MtxOrb: printed a char at (%d,%d)", x, y);
 #else
 	if (debug_level > 2) {
-		snprintf(buf, sizeof(buf), "writing character %02X to position (%d,%d)",
-			c, x, y);
+		snprintf(buf, sizeof(buf), "writing character %02X to position (%d,%d)", c, x, y);
 		syslog(LOG_DEBUG, buf);
 
 	if (debug_level > 4)
@@ -614,12 +622,14 @@ MtxOrb_contrast (int contrast)
 		write (fd, out, 3);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: contrast set to %d", contrast);
 #else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: contrast set to %d", contrast);
 #endif
 	} else {
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: contrast not set to %d - not LCD or LKD display", contrast);
 #else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: contrast not set to %d - not LCD or LKD display", contrast);
@@ -656,6 +666,7 @@ MtxOrb_backlight (int on)
 		case BACKLIGHT_ON: 
 			write (fd, "\x0FE" "F", 2);
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: backlight turned on");
 #else
 			if (debug_level > 3)
 				syslog(LOG_DEBUG, "MtxOrb: backlight turned on");
@@ -664,6 +675,7 @@ MtxOrb_backlight (int on)
 		case BACKLIGHT_OFF: 
 			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY) {
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
 #else
 				if (debug_level > 3)
 					syslog(LOG_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
@@ -671,6 +683,7 @@ MtxOrb_backlight (int on)
 				; // turns display off entirely (whoops!)
 			} else {
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: backlight turned off");
 #else
 				if (debug_level > 3)
 					syslog(LOG_DEBUG, "MtxOrb: backlight turned off");
@@ -680,6 +693,7 @@ MtxOrb_backlight (int on)
 			break;
 		default: // ignored...
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: backlight - invalid setting");
 #else
 			if (debug_level > 3)
 				syslog(LOG_DEBUG, "MtxOrb: backlight - invalid setting");
@@ -707,6 +721,7 @@ MtxOrb_output (int on)
 	output_state = on;
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: output pins set: %04X", on);
 #else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: output pins set: %04X", on);
@@ -743,6 +758,7 @@ MtxOrb_linewrap (int on)
 		write (fd, "\x0FE" "C", 2);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: linewrap turned on");
 #else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: linewrap turned on");
@@ -751,6 +767,7 @@ MtxOrb_linewrap (int on)
 		write (fd, "\x0FE" "D", 2);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: linewrap turned off");
 #else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: linewrap turned off");
@@ -768,6 +785,7 @@ MtxOrb_autoscroll (int on)
 		write (fd, "\x0FEQ", 2);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: autoscroll turned on");
 #else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: autoscroll turned on");
@@ -776,6 +794,7 @@ MtxOrb_autoscroll (int on)
 		write (fd, "\x0FER", 2);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: autoscroll turned off");
 #else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: autoscroll turned off");
@@ -794,6 +813,7 @@ MtxOrb_cursorblink (int on)
 		write (fd, "\x0FES", 2);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: cursorblink turned on");
 #else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: cursorblink turned on");
@@ -802,6 +822,7 @@ MtxOrb_cursorblink (int on)
 		write (fd, "\x0FET", 2);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: cursorblink turned off");
 #else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: cursorblink turned off");
@@ -843,6 +864,7 @@ MtxOrb_getinfo (void)
 	int retval;
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: getinfo");
 #else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: getinfo");
@@ -970,6 +992,7 @@ MtxOrb_vbar (int x, int len)
 	int y;
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
 #else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
@@ -1017,6 +1040,7 @@ MtxOrb_hbar (int x, int y, int len)
 	ValidY(y);
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: horizontal bar at %d set to %d", x, len);
 #else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: horizontal bar at %d set to %d", x, len);
@@ -1059,6 +1083,7 @@ static void
 MtxOrb_init_num ()
 {
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: init for big numbers");
 #else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: init for big numbers");
@@ -1094,6 +1119,7 @@ MtxOrb_num (int x, int num)
 	char out[5];
 
 #ifdef USE_REPORT
+	debug(RPT_DEBUG, "MtxOrb: write big number %d at %d", num, x);
 #else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: write big number %d at %d", num, x);
