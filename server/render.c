@@ -266,14 +266,14 @@ draw_frame (LinkedList * list,
 							if ((w->length / display_props->cellwidth) < wid - w->x + 1) {
 								/*was: drivers_hbar (w->x + left, w->y + top - fy, w->length); */
 								/* improvised len and promille */
-								int full_len = display_props->width - w->x + left;
+								int full_len = display_props->width - w->x - left + 1;
 								int promille = (long) 1000 * w->length / ( display_props->cellwidth * full_len );
 								drivers_hbar (w->x + left, w->y + top - fy, full_len, promille, BAR_PATTERN_FILLED);
 							}
 							else {
 								/*was: drivers_hbar (w->x + left, w->y + top - fy, wid * display_props->cellwidth); */
 								/* Improvised len and promille while we have the old widget language */
-								int full_len = ( display_props->width - w->x + left);
+								int full_len = ( display_props->width - w->x - left + 1 );
 								drivers_hbar (w->x + left, w->y + top - fy, full_len, 1000, BAR_PATTERN_FILLED);
 							}
 						} else if (w->length < 0) {
