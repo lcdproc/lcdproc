@@ -86,9 +86,14 @@ dnl					else
 			actdrivers=["$actdrivers hd44780"]
 			;;
 		joy)	
-			DRIVERS="$DRIVERS joy.o"
-			AC_DEFINE(JOY_DRV)
-			actdrivers=["$actdrivers joy"]
+			AC_CHECK_HEADER(linux/joystick.h,
+				DRIVERS="$DRIVERS joy.o"
+				AC_DEFINE(JOY_DRV)
+				actdrivers=["$actdrivers joy"]
+				,
+dnl				else
+ 				AC_MSG_WARN([The joy driver needs header file linux/joystick.h.])
+ 			)
 			;;
 		irman)
  			AC_CHECK_LIB(irman, main, 
