@@ -17,6 +17,7 @@ char *types[] = { "none",
 	"scroller",
 	"frame",
 	"num",
+	"keys",
 	//"",
 	NULL,
 };

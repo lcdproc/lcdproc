@@ -34,6 +34,8 @@ client_function commands[] = {
 	{"client_set", client_set_func},
 	{"client_add_key", client_add_key_func},
 	{"client_del_key", client_del_key_func},
+	{"screen_add_key", screen_add_key_func},
+	{"screen_del_key", screen_del_key_func},
 	{"screen_add", screen_add_func},
 	{"screen_del", screen_del_func},
 	{"screen_set", screen_set_func},
@@ -144,7 +146,7 @@ client_add_key_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	sock_send_string (c->sock, "huh?  Not implemented yet.\n");
+	sock_send_string (c->sock, "huh?  Not implemented yet.  Try using screen_add_key.\n");
 
 	return 0;
 }
@@ -160,7 +162,150 @@ client_del_key_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	sock_send_string (c->sock, "huh?  Not implemented yet.\n");
+	sock_send_string (c->sock, "huh?  Not implemented yet.  Try using screen_del_key.\n");
+
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Tells the server the client would like to accept keypresses
+// of a particular type when the given screen is active on the display
+//
+int
+screen_add_key_func (client * c, int argc, char **argv)
+{
+	widget *  w ;  /* Keys are stored on a WID_KEYS widget */
+	screen *  s ;  /* Attached to a specific screen */
+	char *  id ;  /* Screen ID */
+	char *  keys ;  /* Keys wanted */
+
+	if (!c->data->ack)
+		return 1;
+
+	if (argc < 2) {
+		sock_send_string (c->sock, "huh? You must specify a screen id\n");
+		return 0;
+	}
+	if (argc < 3) {
+		sock_send_string (c->sock, "huh? You must specify a key list\n");
+		return 0;
+	}
+	if (argc > 3) {
+		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+		return 0;
+	}
+	id = argv[1];
+	keys = argv[2];
+	debug ("screen_add_key: Adding key(s) %s to screen %s\n", keys, id);
+
+	// Find the screen
+	s = screen_find (c, id);
+	if (!s) {
+		sock_send_string (c->sock, "huh? Invalid screen id\n");
+		return 0;
+	}
+	// Find the keys widget
+	w = widget_find( s, KEYS_WIDGETID );
+	if (!w) {
+		int  err ;
+		// No keys widget, create a new one
+		err = widget_add (s, KEYS_WIDGETID, types[WID_KEYS], NULL, c->sock);
+		if (err < 0) {
+			fprintf (stderr, "screen_add_key: Error creating keys widget\n");
+		} else {
+			w = widget_find (s, KEYS_WIDGETID );
+		}
+	};
+
+	if (w) {
+		// Have a widget
+		if (!w->text) {
+			// Save supplied key list
+			w->text = strdup( keys );
+        } else {
+			// Add supplied keys to existing list
+			// NOTE: There could be duplicates in the resulting list
+			//    That's OK, it's the existence of the key in the list
+			//    that's important.  We'll be more careful in the delete
+			//    key function.
+			char *  new ;
+			new = realloc( w->text, strlen(w->text) + strlen(keys) +1 );
+			if( new ) {
+				w->text = new ;
+				strcat( new, keys );
+			}
+		}
+	}
+
+	if (!w) {
+		sock_send_string(c->sock, "huh? failed\n");
+	} else
+		sock_send_string(c->sock, "success\n");
+
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Tells the server the client would NOT like to accept keypresses
+// of a particular type when the given screen is active on the display
+//
+int
+screen_del_key_func (client * c, int argc, char **argv)
+{
+	widget *  w ;  /* Keys are stored on a WID_KEYS widget */
+	screen *  s ;  /* Attached to a specific screen */
+	char *  id ;  /* Screen ID */
+	char *  keys ;  /* Keys wanted */
+
+	if (!c->data->ack)
+		return 1;
+
+	if (argc < 2) {
+		sock_send_string (c->sock, "huh? You must specify a screen id\n");
+		return 0;
+	}
+	if (argc < 3) {
+		sock_send_string (c->sock, "huh? You must specify a key list\n");
+		return 0;
+	}
+	if (argc > 3) {
+		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+		return 0;
+	}
+	id = argv[1] ;
+	keys = argv[2] ;
+	debug ("screen_del_key: Deleting key(s) %s from screen %s\n", keys, id);
+	// Find the screen
+	s = screen_find (c, id);
+	if (!s) {
+		sock_send_string (c->sock, "huh? Invalid screen id\n");
+		return 0;
+	}
+	// Find the keys widget
+	w = widget_find( s, KEYS_WIDGETID );
+	if (w && w->text) {
+		// Got the widget, remove keys from the text member
+		// NOTE: We let malloc/realloc remember the length
+		//    of the allocated storage.  If keys are later
+		//    added, realloc (in add_key above) will make
+		//    sure there is enough space at w->text
+		char *  from ;
+		char *  to ;
+
+		to = from = w->text ;
+		while( *from ) {
+			//  Is this key to be deleted from the list?
+			if( strchr( keys, *from ) ) {
+				// Yes, skip it
+				++from ;
+			} else {
+				// No, save it
+				*to++ = *from++ ;
+			}
+		}
+	}
+
+	sock_send_string(c->sock, "success\n");
 
 	return 0;
 }

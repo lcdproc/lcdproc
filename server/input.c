@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "../shared/sockets.h"
 #include "../shared/debug.h"
@@ -35,6 +36,7 @@
 #include "client_data.h"
 #include "clients.h"
 #include "screen.h"
+#include "widget.h"
 #include "screenlist.h"
 #include "menus.h"
 
@@ -52,6 +54,7 @@ handle_input ()
 	char str[256];
 	int key;
 	screen *s;
+	widget *w;
 	client *c;
 
 	key = lcd.getkey ();
@@ -62,19 +65,39 @@ handle_input ()
 	debug ("handle_input(%c)\n", (char) key);
 
 	if (key) {
-		/* s = screenlist_current (); */
-		c = (client *)LL_GetFirst(clients);
-		while(c) {
-			// TODO:  Interpret and translate keys!
-			// If the client should have this keypress...
-			// Send keypress to client
-			// TODO:  Implement client "acceptable key" lists
+		// TODO:  Interpret and translate keys!
+
+		// Give current screen a shot at the key first
+		s = screenlist_current ();
+		w = widget_find( s, KEYS_WIDGETID );
+		if( s->parent && w && w->text && strchr( w->text, key ) ) {
+			// This screen wants this key.  Tell it we got one
 			sprintf(str, "key %c\n", key);
-			sock_send_string(c->sock, str);
-			c = (client *)LL_GetNext(clients);
+			sock_send_string(s->parent->sock, str);
+			// Nobody else gets this key
+		} else {
+			// Give key to anyone who wants it
+			c = (client *)LL_GetFirst(clients);
+			while(c) {
+				// If the client should have this keypress...
+				s = (screen *)LL_GetFirst(c->data->screenlist);
+				while(s) {
+					w = widget_find( s, KEYS_WIDGETID );
+					if( s->parent && w && w->text && strchr( w->text, key ) ) {
+						// Send keypress to client
+						sprintf(str, "key %c\n", key);
+						sock_send_string(c->sock, str);
+						break ;  // Screen loop
+					}
+					s = (screen *)LL_GetNext(c->data->screenlist);
+				} // while screens
+				c = (client *)LL_GetNext(clients);
+			} // while clients
+
+			// Give server a shot at all keys
+			server_input (key);
 		}
-		server_input (key);
-	}
+	};
 
 	return 0;
 }
@@ -104,7 +127,7 @@ server_input (int key)
 		server_menu ();
 		break;
 	default:
-		debug ("server_input: Invalid key \"%c\" (%i)\n", (char) key, key);
+		debug ("server_input: Unused key \"%c\" (%i)\n", (char) key, key);
 		break;
 	}
 

@@ -347,7 +347,7 @@ MtxOrb_output (int on)
 			if ( on & (1 << i) ) {
 				sprintf (out, "%cW%c", 254, i+1);
 			} else {
-				sprintf (out, "%cW%c", 254, i+1);
+				sprintf (out, "%cV%c", 254, i+1);
 			}
 			write (fd, out, 3);
 		}

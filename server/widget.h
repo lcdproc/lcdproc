@@ -26,10 +26,14 @@ typedef struct widget {
 #define WID_SCROLLER 6
 #define WID_FRAME 7
 #define WID_NUM 8
+#define WID_KEYS 9
 
 #define WID_MAX_DIR 4
 
 extern char *types[];
+
+// RESERVED widget ID for keys active on a screen
+#define KEYS_WIDGETID "screenkeys"
 
 widget *widget_create ();
 int widget_destroy (widget * w);

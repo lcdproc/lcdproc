@@ -422,7 +422,8 @@ draw_frame (LL * list, char fscroll, int left, int top, int right, int bottom, i
 			}
 			break;
 		case WID_NUM:				  // FIXME: doesn't work in frames...
-			if ((w->x > 0) && (w->y >= 0) && (w->y <= 9)) {
+			// NOTE: y=10 means COLON (:)
+			if ((w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
 				if (reset) {
 					lcd.init_num ();
 					reset = 0;

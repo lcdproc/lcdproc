@@ -153,15 +153,15 @@ screen_remove (client * c, char *id)
 	// TODO:  Check for errors here?
 	LL_Remove (c->data->screenlist, (void *) s);
 
-	// ... and here?
-	screen_destroy (s);
-
 	// Now, remove it from the screenlist...
 	if (screenlist_remove_all (s) < 0) {
 		// Not a serious error..
 		fprintf (stderr, "screen_remove:  Error dequeueing screen\n");
 		return 0;
 	}
+
+	// TODO:  Check for errors here too?
+	screen_destroy (s);
 
 	return 0;
 }

@@ -31,12 +31,11 @@ kstat_ctl_t *kc;
 #endif
 
 int load_fd = 0;
-static void get_load (struct load *result);
+static void get_load (struct load * result, struct load * last_load );
 
 static void
-get_load (struct load *result)
+get_load (struct load *result, struct load * last_load )
 {
-	static struct load last_load = { 0, 0, 0, 0, 0 };
 	struct load curr_load;
 
 #ifndef HAVE_LIBKSTAT
@@ -65,16 +64,13 @@ get_load (struct load *result)
 	curr_load.nice=0;
 #endif
 	curr_load.total = curr_load.user + curr_load.nice + curr_load.system + curr_load.idle;
-	result->total = curr_load.total - last_load.total;
-	result->user = curr_load.user - last_load.user;
-	result->nice = curr_load.nice - last_load.nice;
-	result->system = curr_load.system - last_load.system;
-	result->idle = curr_load.idle - last_load.idle;
-	last_load.total = curr_load.total;
-	last_load.user = curr_load.user;
-	last_load.nice = curr_load.nice;
-	last_load.system = curr_load.system;
-	last_load.idle = curr_load.idle;
+	result->total = curr_load.total - last_load->total;
+	result->user = curr_load.user - last_load->user;
+	result->nice = curr_load.nice - last_load->nice;
+	result->system = curr_load.system - last_load->system;
+	result->idle = curr_load.idle - last_load->idle;
+
+	*last_load = curr_load ;
 }
 
 int
@@ -122,6 +118,7 @@ cpu_screen (int rep, int display)
 	static int first = 1;
 	float value;
 	static float cpu[CPU_BUF_SIZE + 1][5];	// last buffer is scratch
+	static struct load last_load = { 0, 0, 0, 0, 0 };
 	struct load load;
 
 	if (first) {
@@ -169,7 +166,7 @@ cpu_screen (int rep, int display)
 	}
 	//else return 0;
 
-	get_load (&load);
+	get_load (&load, &last_load);
 
 	// Shift values over by one
 	for (i = 0; i < (CPU_BUF_SIZE - 1); i++)
@@ -314,13 +311,13 @@ cpu_graph_screen (int rep, int display)
 {
 	int i, j, n = 0;
 	static int first = 1;
-	float value, maxload;
+	float value ;
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 2
-	static float cpu[CPU_BUF_SIZE + 1];	// last buffer is scratch
+	static float cpu[CPU_BUF_SIZE];
 	static int cpu_past[LCD_MAX_WIDTH];
+	static struct load last_load;
 	struct load load;
-	int status = 0;
 
 	if (first) {
 		first = 0;
@@ -341,66 +338,55 @@ cpu_graph_screen (int rep, int display)
 			sock_send_string (sock, tmp);
 			sprintf (tmp, "widget_set G %i %i %i 0\n", i, i, lcd_hgt);
 			sock_send_string (sock, tmp);
-		}
-	}
+			cpu_past[i - 1] = 0 ;
+		};
 
-	get_load (&load);
+		// Clear out CPU averaging array
+		for (i = 0 ; i < CPU_BUF_SIZE ; ++i) {
+			cpu[i] = 0 ;
+		};
+
+	}
 
 	// Shift values over by one
 	for (i = 0; i < (CPU_BUF_SIZE - 1); i++)
 		cpu[i] = cpu[i + 1];
 
-	// Read new data
+	// Read and save new data
+	get_load (&load, &last_load);
 	cpu[CPU_BUF_SIZE - 1] = ((float) load.user + (float) load.system + (float) load.nice) / (float) load.total;
 
-	// Only clear on first display...
-	if (!rep) {
-		/*
-		   // Make all the same, if this is the first time...
-		   for(i=0; i<CPU_BUF_SIZE-1; i++)
-		   cpu[i] = cpu[CPU_BUF_SIZE-1];
-		 */
-	}
 	// Average values for final result
 	value = 0;
 	for (j = 0; j < CPU_BUF_SIZE; j++) {
 		value += cpu[j];
 	}
 	value /= (float) CPU_BUF_SIZE;
-	cpu[CPU_BUF_SIZE] = value;
 
-	maxload = 0;
-	for (i = 0; i < lcd_wid - 1; i++) {
-		cpu_past[i] = cpu_past[i + 1];
-
-		j = cpu_past[i];
-		sprintf (tmp, "widget_set G %i %i %i %i\n", i + 1, i + 1, lcd_hgt, j);
-		if (display)
-			sock_send_string (sock, tmp);
-
-		if (cpu_past[i] > maxload)
-			maxload = cpu_past[i];
-	}
-
-	value = cpu[CPU_BUF_SIZE];
+	// Scale result to available height
 	if (lcd_hgt > 2)
 		n = (int) (value * (float) (lcd_cellhgt) * (float) (lcd_hgt - 1));
 	else
 		n = (int) (value * (float) (lcd_cellhgt) * (float) (lcd_hgt));
 
+	// Shift and update display the graph
+	for (i = 0; i < lcd_wid - 1; i++) {
+		cpu_past[i] = cpu_past[i + 1];
+
+		if (display) {
+			sprintf (tmp, "widget_set G %i %i %i %i\n",
+			              i + 1, i + 1, lcd_hgt, cpu_past[i] );
+			sock_send_string (sock, tmp);
+		};
+
+	};
+
+	// Save the newest entry and display it
 	cpu_past[lcd_wid - 1] = n;
-	sprintf (tmp, "widget_set G %i %i %i %i\n", lcd_wid, lcd_wid, lcd_hgt, n);
-	if (display)
+	if (display) {
+		sprintf (tmp, "widget_set G %i %i %i %i\n", lcd_wid, lcd_wid, lcd_hgt, n);
 		sock_send_string (sock, tmp);
+	};
 
-	if (n > maxload)
-		maxload = n;
-
-	if (cpu_past[lcd_wid - 1] > 0)
-		status = BACKLIGHT_ON;
-	if (maxload < 1)
-		status = BACKLIGHT_OFF;
-
-//  return status;
 	return 0;
 }										  // End cpu_graph_screen()

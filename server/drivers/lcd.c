@@ -64,6 +64,10 @@
 #include "bayrad.h"
 #endif
 
+#ifdef GLK_DRV
+#include "glk.h"
+#endif
+
 // TODO: Make a Windows server, and clients...?
 
 lcd_logical_driver lcd;
@@ -105,6 +109,9 @@ lcd_physical_driver drivers[] = {
 #endif
 #ifdef BAYRAD_DRV
 	{"BayRAD", bayrad_init,},
+#endif
+#ifdef GLK_DRV
+	{"glk", glk_init,},
 #endif
 	{NULL, NULL,},
 

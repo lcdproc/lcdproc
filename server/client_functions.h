@@ -17,6 +17,8 @@ int hello_func (client * c, int argc, char **argv);
 int client_set_func (client * c, int argc, char **argv);
 int client_add_key_func (client * c, int argc, char **argv);
 int client_del_key_func (client * c, int argc, char **argv);
+int screen_add_key_func (client * c, int argc, char **argv);
+int screen_del_key_func (client * c, int argc, char **argv);
 int screen_add_func (client * c, int argc, char **argv);
 int screen_del_func (client * c, int argc, char **argv);
 int screen_set_func (client * c, int argc, char **argv);
