@@ -242,10 +242,6 @@ HD44780_init (Driver * drvthis, char *args)
 	memset(p->cc_buf, 0, NUM_CCs * p->cellheight);
 	memset(p->cc_dirty, 1, NUM_CCs); /* all custom chars dirty */
 
-	// Backlight ?
-	if ( p->have_backlight ) {
-		drvthis->backlight = HD44780_backlight;
-	}
 	// Keypad ?
 	if ( p->have_keypad ) {
 		int x, y;

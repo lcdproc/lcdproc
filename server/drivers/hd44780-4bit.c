@@ -197,10 +197,14 @@ lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 	portControl |= p->backlight_bit;
 
 	if (displayID <= 3) {
-		if (displayID == 0)
-			enableLines = EnMask[0] | EnMask[1] | EnMask[2];
-		else
+		if (displayID == 0) {
+			enableLines = EnMask[0] | EnMask[1];
+			if (p->extIF) {
+				enableLines |= EnMask[2];
+			}
+		} else {
 			enableLines = EnMask[displayID - 1];
+		}
 
 		port_out (p->port, portControl | h);
 		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
@@ -237,7 +241,7 @@ lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 
 void lcdstat_HD44780_backlight (PrivateData *p, unsigned char state)
 {
-	p->backlight_bit = (state?0:0x20);	// D5 line
+	p->backlight_bit = ((!p->have_backlight||state)?0:BL);
 
 	port_out (p->port, p->backlight_bit);
 }
