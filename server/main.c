@@ -11,7 +11,7 @@
  *               2002, Mike Patnode
  *               2002, Guillaume Filion
  *               2003, Benjamin Tse (Win32 support)
- *
+ *               2005, Peter Marschall (cleanup)
  *
  * Contains main(), plus signal callback functions and a help screen.
  *
@@ -33,10 +33,10 @@
 #include <signal.h>
 #include <unistd.h>
 #ifndef WIN32
-#include <pwd.h>
-#include <sys/wait.h>
+# include <pwd.h>
+# include <sys/wait.h>
 #else
-#include "getopt.h"
+# include "getopt.h"
 #endif
 #include <errno.h>
 #include <math.h>
@@ -70,20 +70,20 @@ extern int optind, optopt, opterr;
 #include "drivers.h"
 #include "main.h"
 
-#define DEFAULT_BIND_ADDR "127.0.0.1"
-#define DEFAULT_BIND_PORT LCDPORT
-#define DEFAULT_CONFIGFILE "/etc/LCDd.conf"
-#define DEFAULT_USER "nobody"
-#define DEFAULT_DRIVER "curses"
-#define DEFAULT_DRIVER_PATH
-#define MAX_DRIVERS 8
-#define DEFAULT_FOREGROUND_MODE 0
-#define DEFAULT_ROTATE_SERVER_SCREEN 1
-#define DEFAULT_REPORTTOSYSLOG 0
-#define DEFAULT_REPORTLEVEL RPT_WARNING
+#define DEFAULT_BIND_ADDR		"127.0.0.1"
+#define DEFAULT_BIND_PORT		LCDPORT
+#define DEFAULT_CONFIGFILE		"/etc/LCDd.conf"
+#define DEFAULT_USER			"nobody"
+#define DEFAULT_DRIVER			"curses"
+#define DEFAULT_DRIVER_PATH		""	/* not needed */
+#define MAX_DRIVERS			8
+#define DEFAULT_FOREGROUND_MODE		0
+#define DEFAULT_ROTATE_SERVER_SCREEN	1
+#define DEFAULT_REPORTDEST		RPT_DEST_STDERR
+#define DEFAULT_REPORTLEVEL		RPT_WARNING
 
-#define DEFAULT_SCREEN_DURATION 32
-#define DEFAULT_HEARTBEAT HEARTBEAT_ON
+#define DEFAULT_SCREEN_DURATION		32
+#define DEFAULT_HEARTBEAT		HEARTBEAT_ON
 
 /* All variables are set to 'unset' values*/
 #define UNSET_INT -1	 
@@ -121,10 +121,6 @@ char bind_addr[64];	/* Do not preinit these strings as they will occupy */
 char configfile[256];	/* a lot of space in the executable. */
 char user[64];		/* The values will be overwritten anyway... */
 
-int foreground_mode = UNSET_INT;
-
-static int report_to_syslog = UNSET_INT;
-
 /* The drivers and their driver parameters */
 char *drivernames[MAX_DRIVERS];
 int num_drivers = 0;
@@ -132,38 +128,43 @@ int num_drivers = 0;
 /* End of configuration variables */
 
 /* Local variables */
-int stored_argc;
-char **stored_argv;
-short got_reload_signal = 0;
+static int foreground_mode = UNSET_INT;
+static int report_dest = UNSET_INT;
+static int report_level = UNSET_INT;
+
+static int stored_argc;
+static char **stored_argv;
+static volatile short got_reload_signal = 0;
 
 /* Local exported variables */
 long int timer = 0;
 
 /**** Local functions ****/
-void clear_settings();
-int process_command_line (int argc, char **argv);
-int process_configfile (char *cfgfile);
-void set_default_settings();
-void install_signal_handlers (int allow_reload);
-void child_ok_func (int signal);
-pid_t daemonize();
-int wave_to_parent (pid_t parent_pid);
-int init_drivers();
-int drop_privs(char *user);
-int init_screens();
-void do_reload();
-void do_mainloop();
-void exit_program (int val);
-void catch_reload_signal (int val);
-int interpret_boolean_arg (char *s);
-void output_help_screen ();
-void output_GPL_notice();
+static void clear_settings(void);
+static int process_command_line(int argc, char **argv);
+static int process_configfile(char *cfgfile);
+static void set_default_settings(void);
+static void install_signal_handlers(int allow_reload);
+static void child_ok_func(int signal);
+static pid_t daemonize(void);
+static int wave_to_parent(pid_t parent_pid);
+static int init_drivers(void);
+static int drop_privs(char *user);
+static int init_screens(void);
+static void do_reload(void);
+static void do_mainloop(void);
+static void exit_program(int val);
+static void catch_reload_signal(int val);
+static int interpret_boolean_arg(char *s);
+static void output_help_screen(void);
+static void output_GPL_notice(void);
 
 #define CHAIN(e,f) { if( e>=0 ) { e=(f); }}
 #define CHAIN_END(e,msg) { if( e<0 ) { report( RPT_CRIT,(msg)); exit(e); }}
 
+
 int
-main (int argc, char **argv)
+main(int argc, char **argv)
 {
 	int e = 0;
 	pid_t parent_pid = 0;
@@ -199,20 +200,21 @@ main (int argc, char **argv)
 	clear_settings();
 
 	/* Read command line*/
-	CHAIN( e, process_command_line (argc, argv) );
+	CHAIN( e, process_command_line(argc, argv) );
 
 	/* Read config file
 	 * If config file was not given on command line use default */
 	if (strcmp(configfile, UNSET_STR)==0)
-		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	CHAIN( e, process_configfile (configfile) );
+		strncpy(configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
+	CHAIN( e, process_configfile(configfile) );
 
 	/* Set default values*/
 	set_default_settings();
 
 	/* Set reporting settings (will also flush delayed reports) */
-	set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
- 	report( RPT_INFO, "Set report level to %d, output to %s", report_level, (report_to_syslog?"syslog":"stderr") );
+	set_reporting("LCDd", report_level, report_dest);
+ 	report(RPT_INFO, "Set report level to %d, output to %s", report_level,
+			((report_dest == RPT_DEST_SYSLOG) ? "syslog" : "stderr"));
 	CHAIN_END( e, "Critical error while processing settings, abort." );
 
 	/* Now, go into daemon mode (if we should)...
@@ -252,8 +254,8 @@ main (int argc, char **argv)
 }
 
 
-void
-clear_settings ()
+static void
+clear_settings(void)
 {
 	int i;
 
@@ -268,7 +270,7 @@ clear_settings ()
 	backlight = UNSET_INT;
 
 	default_duration = UNSET_INT;
-	report_to_syslog = UNSET_INT;
+	report_dest = UNSET_INT;
 	report_level = UNSET_INT;
 
 	for( i=0; i < num_drivers; i++ ) {
@@ -280,8 +282,8 @@ clear_settings ()
 
 
 /* parses arguments given on command line */
-int
-process_command_line (int argc, char **argv)
+static int
+process_command_line(int argc, char **argv)
 {
 	int c, b;
 	int e = 0, help = 0;
@@ -347,7 +349,7 @@ process_command_line (int argc, char **argv)
 					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
 					e = -1;
 				} else {
-					report_to_syslog = b;
+					report_dest = (b) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
 				}
 				break;
 			case 'r':
@@ -388,8 +390,8 @@ process_command_line (int argc, char **argv)
 
 
 /* reads and parses configuration file */
-int
-process_configfile ( char *configfile )
+static int
+process_configfile(char *configfile)
 {
 	char * s;
 	/*char buf[64];*/
@@ -423,8 +425,8 @@ process_configfile ( char *configfile )
 	}
 
 	if( foreground_mode == UNSET_INT ) {
-		int fg;
-		fg = config_get_bool( "server", "foreground", 0, UNSET_INT );
+		int fg = config_get_bool( "server", "foreground", 0, UNSET_INT );
+
 		if( fg != UNSET_INT )
 			foreground_mode = fg;
 	}
@@ -449,8 +451,11 @@ process_configfile ( char *configfile )
 		}
 	}
 
-	if( report_to_syslog == UNSET_INT ) {
-		report_to_syslog = config_get_bool( "server", "reportToSyslog", 0, UNSET_INT );
+	if (report_dest == UNSET_INT) {
+		int rs = config_get_bool("server", "reportToSyslog", 0, UNSET_INT);
+		
+		if (rs != UNSET_INT)
+			report_dest = (rs) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
 	}
 	if( report_level == UNSET_INT ) {
 		report_level = config_get_int( "server", "reportLevel", 0, UNSET_INT );
@@ -481,8 +486,8 @@ process_configfile ( char *configfile )
 }
 
 
-void
-set_default_settings()
+static void
+set_default_settings(void)
 {
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
@@ -505,8 +510,8 @@ set_default_settings()
 	if (backlight == UNSET_INT)
 		backlight = BACKLIGHT_OPEN;
 
-	if (report_to_syslog == UNSET_INT )
-		report_to_syslog = DEFAULT_REPORTTOSYSLOG;
+	if (report_dest == UNSET_INT )
+		report_dest = DEFAULT_REPORTDEST;
 	if( report_level == UNSET_INT )
 		report_level = DEFAULT_REPORTLEVEL;
 
@@ -520,8 +525,8 @@ set_default_settings()
 }
 
 
-void
-install_signal_handlers (int allow_reload)
+static void
+install_signal_handlers(int allow_reload)
 {
 #ifndef WIN32
 	/* Installs signal handlers so that the program does clean exit and
@@ -558,8 +563,9 @@ install_signal_handlers (int allow_reload)
 }
 
 
-void
-child_ok_func (int signal) {
+static void
+child_ok_func(int signal)
+{
 	/* We only catch this signal to be sure the child runs OK. */
 
 	debug( RPT_INFO, "%s( signal=%d )", __FUNCTION__, signal );
@@ -569,8 +575,8 @@ child_ok_func (int signal) {
 }
 
 
-pid_t
-daemonize()
+static pid_t
+daemonize(void)
 {
 #ifdef WIN32
         /* WIN32 does not support fork() - CreateProcess() does not even have
@@ -636,8 +642,8 @@ daemonize()
 }
 
 
-int
-wave_to_parent (pid_t parent_pid)
+static int
+wave_to_parent(pid_t parent_pid)
 {
 #ifndef WIN32
 	debug( RPT_DEBUG, "%s( parent_pid=%d )", __FUNCTION__, parent_pid );
@@ -649,8 +655,8 @@ wave_to_parent (pid_t parent_pid)
 }
 
 
-int
-init_drivers()
+static int
+init_drivers(void)
 {
 	int i, res;
 
@@ -690,7 +696,8 @@ init_drivers()
 }
 
 
-int drop_privs(char *user)
+static int
+drop_privs(char *user)
 {
 #ifndef WIN32
 	struct passwd *pwent;
@@ -716,8 +723,8 @@ int drop_privs(char *user)
 }
 
 
-int
-init_screens ()
+static int
+init_screens(void)
 {
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
@@ -739,8 +746,9 @@ init_screens ()
 	return 0;
 }
 
-void
-do_reload ()
+
+static void
+do_reload(void)
 {
 	int e = 0;
 
@@ -754,23 +762,25 @@ do_reload ()
 
 	/* Reread config file */
 	if (strcmp(configfile, UNSET_STR)==0)
-		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
+		strncpy(configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
 	CHAIN( e, process_configfile (configfile) );
 
 	/* Set default values */
 	CHAIN( e, ( set_default_settings(), 0 ));
 
 	/* Set reporting values */
-	CHAIN( e, set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
- 	CHAIN( e, ( report( RPT_INFO, "Set report level to %d, output to %s", report_level, (report_to_syslog?"syslog":"stderr") ), 0 ));
+	CHAIN( e, set_reporting("LCDd", report_level, report_dest) );
+ 	CHAIN( e, ( report(RPT_INFO, "Set report level to %d, output to %s", report_level,
+			((report_dest == RPT_DEST_SYSLOG) ? "syslog" : "stderr")), 0 ) );
 
 	/* And restart the drivers */
 	CHAIN( e, init_drivers() );
 	CHAIN_END( e, "Critical error while reloading, abort." );
 }
 
-void
-do_mainloop ()
+
+static void
+do_mainloop(void)
 {
 	Screen * s;
 #ifndef WIN32
@@ -871,8 +881,9 @@ do_mainloop ()
 	exit_program (0);
 }
 
-void
-exit_program (int val)
+
+static void
+exit_program(int val)
 {
 	char buf[64];
 
@@ -895,11 +906,11 @@ exit_program (int val)
 	}
 
 	/* Set emergency reporting and flush all messages if not done already. */
-	if( report_level == UNSET_INT )
+	if (report_level == UNSET_INT )
 		report_level = DEFAULT_REPORTLEVEL;
-	if( report_to_syslog == UNSET_INT )
-		report_to_syslog = DEFAULT_REPORTTOSYSLOG;
-	set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
+	if (report_dest == UNSET_INT )
+		report_dest = DEFAULT_REPORTDEST;
+	set_reporting("LCDd", report_level, report_dest);
 
 	goodbye_screen ();		/* display goodbye screen on LCD display */
 	drivers_unload_all ();		/* release driver memory and file descriptors */
@@ -915,16 +926,18 @@ exit_program (int val)
 	_exit (0);
 }
 
-void
-catch_reload_signal (int val)
+
+static void
+catch_reload_signal(int val)
 {
 	debug( RPT_DEBUG, "%s( val=%d )", __FUNCTION__, val );
 
 	got_reload_signal = 1;
 }
 
-int
-interpret_boolean_arg (char *s)
+
+static int
+interpret_boolean_arg(char *s)
 {
 	if( strcmp( s, "on" ) == 0 || strcmp( s, "yes" ) == 0
 	|| strcmp( s, "true" ) == 0 || strcmp( s, "1" ) == 0 ) {
@@ -937,8 +950,9 @@ interpret_boolean_arg (char *s)
 	return -1;
 }
 
-void
-output_GPL_notice()
+
+static void
+output_GPL_notice(void)
 {
 	/* This will only be invoked when running in foreground
 	 * So, directly output to stderr
@@ -964,8 +978,8 @@ output_GPL_notice()
 }
 
 
-void
-output_help_screen ()
+static void
+output_help_screen(void)
 {
 	/* Help screen is printed to stdout on purpose. No reason to have
 	 * this in syslog...

@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *		 2001, Joris Robijn
- *
+ *		 2005, Peter Marschall
  *
  * Contains reporting functions
  *
@@ -20,13 +20,13 @@
 #include <stdio.h>
 #include <string.h>
 #ifndef WIN32
-#include <syslog.h>
+# include <syslog.h>
 #else
-#include <windows.h>
+# include <windows.h>
 #endif
 
-int report_level = RPT_INFO;
-int report_dest = RPT_DEST_STORE;
+static int report_level = RPT_INFO;
+static int report_dest = RPT_DEST_STORE;
 
 #ifdef WIN32
 HANDLE event_log_handle = NULL;
