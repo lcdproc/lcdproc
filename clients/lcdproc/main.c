@@ -285,6 +285,7 @@ main_loop (mode * sequence)
 						} else if (0 == strcmp (argv[0], "bye")) {
 							//printf("Exiting LCDproc\n");
 							exit_program (0);
+						} else if (0 == strcmp (argv[0], "success")) {
 						} else {
 							int j;
 							for (j = 0; j < argc; j++)

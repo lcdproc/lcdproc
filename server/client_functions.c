@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include "../shared/debug.h"
 #include "../shared/sockets.h"
@@ -116,6 +117,7 @@ client_set_func (client * c, int argc, char **argv)
 				if (c->data->name)
 					free (c->data->name);
 				c->data->name = strdup (argv[i]);
+				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? name requires a parameter\n");
 			}
@@ -185,10 +187,14 @@ screen_add_func (client * c, int argc, char **argv)
 
 	debug ("screen_add: Adding screen %s\n", argv[1]);
 	err = screen_add (c, argv[1]);
-	if (err < 0)
+	if (err < 0) {
 		fprintf (stderr, "screen_add_func:  Error adding screen\n");
+		sock_send_string (c->sock, "huh? failed to add screen id#\n");
+	}
 	if (err > 0)
 		sock_send_string (c->sock, "huh? You already have a screen with that id#\n");
+	if (err == 0)
+		sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
@@ -215,10 +221,14 @@ screen_del_func (client * c, int argc, char **argv)
 
 	debug ("screen_del: Deleting screen %s\n", argv[1]);
 	err = screen_remove (c, argv[1]);
-	if (err < 0)
+	if (err < 0) {
 		fprintf (stderr, "screen_del_func:  Error removing screen\n");
+		sock_send_string(c->sock, "huh? failed to remove screen\n");
+	}
 	if (err > 0)
 		sock_send_string (c->sock, "huh? You don't have a screen with that id#\n");
+	if ( err == 0 )
+		sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
@@ -268,6 +278,7 @@ screen_set_func (client * c, int argc, char **argv)
 				if (s->name)
 					free (s->name);
 				s->name = strdup (argv[i]);
+				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -name requires a parameter\n");
 			}
@@ -282,6 +293,7 @@ screen_set_func (client * c, int argc, char **argv)
 				number = atoi (argv[i]);
 				if (number > 0)
 					s->priority = number;
+				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -priority requires a parameter\n");
 			}
@@ -296,6 +308,7 @@ screen_set_func (client * c, int argc, char **argv)
 				number = atoi (argv[i]);
 				if (number > 0)
 					s->duration = number;
+				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -duration requires a parameter\n");
 			}
@@ -321,6 +334,7 @@ screen_set_func (client * c, int argc, char **argv)
 					s->heartbeat = 0;
 				if (0 == strcmp (argv[i], "slash"))
 					s->heartbeat = 2;
+				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -heartbeat requires a parameter\n");
 			}
@@ -335,6 +349,7 @@ screen_set_func (client * c, int argc, char **argv)
 				number = atoi (argv[i]);
 				if (number > 0)
 					s->wid = number;
+				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -wid requires a parameter\n");
 			}
@@ -349,6 +364,7 @@ screen_set_func (client * c, int argc, char **argv)
 				number = atoi (argv[i]);
 				if (number > 0)
 					s->hgt = number;
+				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -hgt requires a parameter\n");
 			}
@@ -419,8 +435,12 @@ widget_add_func (client * c, int argc, char **argv)
 	}
 	// Add the widget and set its type...
 	err = widget_add (s, wid, type, in, c->sock);
-	if (err < 0)
+	if (err < 0) {
 		fprintf (stderr, "widget_add_func:  Error adding widget\n");
+		sock_send_string(c->sock, "huh? failed\n");
+	}
+	else
+		sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
@@ -465,8 +485,12 @@ widget_del_func (client * c, int argc, char **argv)
 	}
 
 	err = widget_remove (s, wid, c->sock);
-	if (err < 0)
+	if (err < 0) {
 		fprintf (stderr, "widget_del_func:  Error removing widget\n");
+		sock_send_string(c->sock, "huh? failed\n");
+	}
+	else
+		sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
@@ -550,6 +574,7 @@ widget_set_func (client * c, int argc, char **argv)
 					return -1;
 				}
 				debug ("Widget %s set to %s\n", wid, w->text);
+				sock_send_string(c->sock, "success\n");
 			}
 		}
 		break;
@@ -568,6 +593,7 @@ widget_set_func (client * c, int argc, char **argv)
 				w->length = length;
 			}
 			debug ("Widget %s set to %i\n", wid, w->length);
+			sock_send_string(c->sock, "success\n");
 		}
 		break;
 	case WID_VBAR:				  // Vbar takes "x y length"
@@ -585,6 +611,7 @@ widget_set_func (client * c, int argc, char **argv)
 				w->length = length;
 			}
 			debug ("Widget %s set to %i\n", wid, w->length);
+			sock_send_string(c->sock, "success\n");
 		}
 		break;
 	case WID_ICON:				  // Icon takes "x y binary_data"
@@ -615,6 +642,7 @@ widget_set_func (client * c, int argc, char **argv)
 				return -1;
 			}
 			debug ("Widget %s set to %s\n", wid, w->text);
+			sock_send_string(c->sock, "success\n");
 		}
 		break;
 	case WID_SCROLLER:			  // Scroller takes "left top right bottom direction speed text"
@@ -650,10 +678,12 @@ widget_set_func (client * c, int argc, char **argv)
 						free (w->text);
 					w->text = strdup (argv[i + 6]);
 					if (!w->text) {
+						sock_send_string(c->sock, "huh? out of memory\n");
 						fprintf (stderr, "widget_set_func: Error allocating string\n");
 						return -1;
 					}
 					debug ("Widget %s set to %s\n", wid, w->text);
+					sock_send_string(c->sock, "success\n");
 				}
 			}
 		}
@@ -694,6 +724,7 @@ widget_set_func (client * c, int argc, char **argv)
 					w->length = direction;
 					w->speed = speed;
 					debug ("Widget %s set to (%i,%i)-(%i,%i) %ix%i\n", wid, left, top, right, bottom, width, height);
+					sock_send_string(c->sock, "success\n");
 				}
 			}
 		}
@@ -713,6 +744,7 @@ widget_set_func (client * c, int argc, char **argv)
 				w->y = y;
 			}
 			debug ("Widget %s set to %i\n", wid, w->y);
+			sock_send_string(c->sock, "success\n");
 		}
 		break;
 	case WID_NONE:
@@ -864,6 +896,7 @@ backlight_func (client * c, int argc, char **argv)
 	case BACKLIGHT_VIS:
 		break;
 	}
+	sock_send_string(c->sock, "success\n");
 
 	return 0;
 
@@ -874,16 +907,37 @@ backlight_func (client * c, int argc, char **argv)
 int
 output_func (client * c, int argc, char **argv)
 {
+	int rc = 0;
 	if (argc != 2) {
 		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+		rc = 1;
 	} else {
 		if (0 == strcmp (argv[1], "on"))
-			output_state = 1;
+			/* switch all ouputs on */
+			output_state = -1;
 	        else if (0 == strcmp (argv[1], "off"))
-	                output_state = -1;
-		else
-			output_state = 0;
+			/* switch all ouputs off */
+	                output_state = 0;
+		else {
+			long out;
+			char *endptr;
+
+			out = strtol(argv[1], &endptr, 0);
+			if ( (out == 0) && (errno != 0) ) {
+				sock_send_string (c->sock,
+					 "huh?  invalid parameter...\n");
+				rc = 1;
+			}
+			else {
+				output_state = out;
+			}
+		}
 	}
+
+	if ( rc == 0 ) {
+		sock_send_string(c->sock, "success\n");
+	}
+
 	return 0;
 }
 

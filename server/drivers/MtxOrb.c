@@ -14,6 +14,7 @@
 #include "../../config.h"
 
 static int custom = 0;
+static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
 
 // TODO: Remove this custom_type if not in use anymore.
 typedef enum {
@@ -132,8 +133,26 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
 			printf ("LCDproc Matrix-Orbital LCD driver\n" "\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
 //              "\t-t\t--type\t\tSelect the LCD type (size) [20x4]\n"
-					  "\t-c\t--contrast\tSet the initial contrast [140]\n" "\t-s\t--speed\t\tSet the communication speed [19200]\n" "\t-h\t--help\t\tShow this help information\n");
+					  "\t-c\t--contrast\tSet the initial contrast [140]\n" "\t-s\t--speed\t\tSet the communication speed [19200]\n" "\t-h\t--help\t\tShow this help information\n" "\t-t\t--type\t\tdisplay type: lcd, lkd, vfd, vkd\n");
 			return -1;
+		} else if (0 == strcmp (argv[i], "-t") || 0 == strcmp (argv[i], "--type")) {
+			if (i + 1 > argc) {
+				fprintf (stderr, "MtxOrb_init: %s requires an argument\n", argv[i]);
+				return -1;
+			}
+			i++;
+			if ( 0 == strcmp (argv[i], "lcd") ) {
+				MtxOrb_type = MTXORB_LCD;
+			} else if ( 0 == strcmp (argv[i], "lkd") ) {
+				MtxOrb_type = MTXORB_LKD;
+			} else if ( 0 == strcmp (argv[i], "vfd") ) {
+				MtxOrb_type = MTXORB_VFD;
+			} else if ( 0 == strcmp (argv[i], "vkd") ) {
+				MtxOrb_type = MTXORB_VKD;
+			} else {
+				fprintf (stderr, "MtxOrb_init: unknwon display type %s\n", argv[i]);
+				return(-1);
+			}
 		} else {
 			printf ("Invalid parameter: %s\n", argv[i]);
 		}
@@ -268,6 +287,8 @@ MtxOrb_chr (int x, int y, char c)
 
 /////////////////////////////////////////////////////////////////
 // Changes screen contrast (0-255; 140 seems good)
+// note: works only for LCD displays
+// Is it better to use the brightness for VFD/VKD displays ?
 //
 int
 MtxOrb_contrast (int contrast)
@@ -275,7 +296,8 @@ MtxOrb_contrast (int contrast)
 	char out[4];
 	static int status = 140;
 
-	if (contrast > 0) {
+	if ( ((MtxOrb_type == MTXORB_LCD) || (MtxOrb_type == MTXORB_LKD)) &&
+	     (contrast > 0) ) {
 		status = contrast;
 		sprintf (out, "%cP%c", 254, status);
 		write (fd, out, 3);
@@ -287,6 +309,8 @@ MtxOrb_contrast (int contrast)
 /////////////////////////////////////////////////////////////////
 // Sets the backlight on or off -- can be done quickly for
 // an intermediate brightness...
+// WARN: off switches vfd/vkd displays off
+//	 -> so it's maybe the best to start LCDd with -b on
 //
 void
 MtxOrb_backlight (int on)
@@ -303,16 +327,30 @@ MtxOrb_backlight (int on)
 
 /////////////////////////////////////////////////////////////////
 // Sets output port on or off
+// displays with keypad have 6 outputs but the one without kepad
+// have only one output
+// NOTE: length of command are different
 void
 MtxOrb_output (int on)
 {
-	char out[4];
-	if (on > 0) {
-		sprintf (out, "%cW", 254);
+	char out[5];
+	if ( ((MtxOrb_type == MTXORB_LCD) || (MtxOrb_type == MTXORB_VFD)) ) {
+		if (on) {
+			sprintf (out, "%cW", 254);
+		} else {
+			sprintf (out, "%cV", 254);
+		}
 		write (fd, out, 2);
-	} else if (on < 0) {
-		sprintf (out, "%cV", 254);
-		write (fd, out, 2);
+	} else {
+		int i;
+		for(i=0; i<6; i++) {
+			if ( on & (1 << i) ) {
+				sprintf (out, "%cW%c", 254, i+1);
+			} else {
+				sprintf (out, "%cW%c", 254, i+1);
+			}
+			write (fd, out, 3);
+		}
 	}
 }
 
@@ -598,29 +636,6 @@ MtxOrb_getkey ()
 	char in = 0;
 	read (fd, &in, 1);
 	return in;
-}
-
-void
-MtxOrb_led (int which, int on)
-{
-	char out[4];
-
-	if (which < 0 || which > 7)
-		return;
-
-	if (!which) {
-		if (on)
-			sprintf (out, "%cV", 254);
-		else
-			sprintf (out, "%cW", 254);
-		write (fd, out, 2);
-	} else {
-		if (on)
-			sprintf (out, "%cV%c", 254, which);
-		else
-			sprintf (out, "%cW%c", 254, which);
-		write (fd, out, 3);
-	}
 }
 
 /////////////////////////////////////////////////////////////////

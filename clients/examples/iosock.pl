@@ -43,6 +43,7 @@ while(1)
 	#print "Main loop...\n";
 	# Handle input...  (just spew it to the console)
 	while(defined($line = <$remote>)) {
+	    if ( $line =~ /^success$/ ) next;
 	    print $line;
 	}
 

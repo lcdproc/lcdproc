@@ -58,6 +58,7 @@ while(1)
 	# Handle input...  (spew it to the console)
         # Also, certain keys scroll the display
 	while(defined($input = <$remote>)) {
+	    if ( $input =~ /^success$/ ) next;
 	    print $input;
 
 	    $slow = -10;

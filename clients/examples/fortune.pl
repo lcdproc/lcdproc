@@ -49,6 +49,7 @@ while(1)
 	    @lines = split(/\n/, $input);
 	    foreach $line (@lines)
 	    {
+		if ( $line =~ /^success$/ ) next;
 		if($line =~ /^ignore (\S)/)  # Update just after disappearing
 		{
 		    &update_text();

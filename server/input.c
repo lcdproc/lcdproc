@@ -62,28 +62,18 @@ handle_input ()
 	debug ("handle_input(%c)\n", (char) key);
 
 	if (key) {
-		s = screenlist_current ();
-		if (s) {
-			c = s->parent;
-			if (c) {
-				// TODO:  Interpret and translate keys!
-				// If the client should have this keypress...
-				// Send keypress to client
-				if (key >= 'E' && key <= 'Z') {
-					// TODO:  Implement client "acceptable key" lists
-					sprintf (str, "key %c\n", key);
-					sock_send_string (c->sock, str);
-				}
-				// Otherwise, tell the server about it.
-				else {
-					server_input (key);
-				}
-			} else {
-				// If no parent, it means we're on the server screen.
-				// so, the server gets all keypresses there.
-				server_input (key);
-			}
+		/* s = screenlist_current (); */
+		c = (client *)LL_GetFirst(clients);
+		while(c) {
+			// TODO:  Interpret and translate keys!
+			// If the client should have this keypress...
+			// Send keypress to client
+			// TODO:  Implement client "acceptable key" lists
+			sprintf(str, "key %c\n", key);
+			sock_send_string(c->sock, str);
+			c = (client *)LL_GetNext(clients);
 		}
+		server_input (key);
 	}
 
 	return 0;

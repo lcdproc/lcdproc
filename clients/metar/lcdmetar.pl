@@ -148,6 +148,11 @@ while (1==1) {
 	    # print "The wind blows to $wind_dir_eng, speed $wind_mph mph\n";
 
 	} # end else
+	# eat all input from LCDd
+	while(defined($input = <$remote>)) {
+	    if ( $input =~ /^success$/ ) next;
+	    #print $input;
+	}
 	print "Sleeping 15 minutes.\n";
 	sleep 900;
 }

@@ -72,6 +72,9 @@ while(1)
 	    elsif($command eq "ignore")
 	    {
 	    }
+	    elsif($command eq "success")
+	    {
+	    }
 	    else {
 		if($line =~ /\S/) {print "Huh?  $line\n";}
 	    }
