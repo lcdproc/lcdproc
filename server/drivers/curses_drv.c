@@ -1,3 +1,11 @@
+/*
+ * ncurses driver
+ *
+ * Display LCD display at top left of terminal screen
+ * using ncurses.
+ *
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

@@ -2,7 +2,7 @@
 	Copyright (C) 1999 Horizon Technologies-http://horizon.pair.com/
 	Written by Bryan Rittmeyer <bryanr@pair.com> - Released under GPL
 			
-        LCD info: http://www.wirz.com/sli/                               */
+        LCD info: http://www.wirz.com/                               */
 
 #include <stdlib.h>
 #include <stdio.h>

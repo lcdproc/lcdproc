@@ -1,3 +1,10 @@
+/*
+ * MatrixOrbital GLK Graphic Display Driver
+ *
+ * http://www.matrixorbital.com
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>

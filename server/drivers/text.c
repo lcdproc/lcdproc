@@ -1,3 +1,11 @@
+/*
+ * TextMode driver
+ *
+ * Displays LCD screens, one after another; suitable for hard-copy
+ * terminals.
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>

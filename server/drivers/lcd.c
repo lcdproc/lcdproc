@@ -1,3 +1,11 @@
+/*
+ * Driver master (lcd.c)
+ *
+ * This code actually sets up the drivers as requested,
+ * initializes drivers, and allocates memory for drivers.
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -90,6 +98,12 @@
 
 lcd_logical_driver lcd;
 
+// TODO: Add multiple names for the same driver?
+//
+// Would allow the use of "MatrixOrbital" (for example) or
+// "Joystick" or "CrystalFontz" or similar more memorable
+// names, as well as older ones...
+//
 lcd_physical_driver drivers[] = {
 	{"base", drv_base_init,},
 #ifdef MTXORB_DRV
