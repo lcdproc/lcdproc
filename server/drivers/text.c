@@ -118,9 +118,9 @@ text_init (Driver *drvthis, char *args)
 	drvthis->string = text_string;
 	drvthis->chr = text_chr;
 
-	drvthis->old_vbar = text_vbar;
+	drvthis->vbar = text_vbar;
 	//drvthis->init_vbar = NULL;
-	drvthis->old_hbar = text_hbar;
+	drvthis->hbar = text_hbar;
 	//drvthis->init_hbar = NULL;
 	drvthis->num = text_num;
 	//drvthis->init_num = NULL;
@@ -131,7 +131,7 @@ text_init (Driver *drvthis, char *args)
 	//drvthis->set_char = NULL;
 	//drvthis->icon = NULL;
 
-	//drvthis->getkey = NULL;
+	//drvthis->get_key = NULL;
 
 	return 0;
 }
@@ -266,28 +266,11 @@ text_backlight (Driver *drvthis, int on)
 */
 }
 
-//void
-//text_init_vbar ()
-//{
-////  printf("Vertical bars.\n");
-//}
-
-//void
-//text_init_hbar ()
-//{
-////  printf("Horizontal bars.\n");
-//}
-
-//void
-//text_init_num ()
-//{
-////  printf("Big Numbers.\n");
-//}
-
 /////////////////////////////////////////////////////////////////
 // Writes a big number. (by Rene Wagner from lcdm001.c)
 //
-MODULE_EXPORT void text_num (Driver *drvthis, int x, int num)
+MODULE_EXPORT void
+text_num (Driver *drvthis, int x, int num)
 {
 	//PrivateData * p = (PrivateData*) drvthis->private_data;
 
@@ -309,28 +292,33 @@ MODULE_EXPORT void text_num (Driver *drvthis, int x, int num)
 // Draws a vertical bar; erases entire column onscreen.
 //
 MODULE_EXPORT void
-text_vbar (Driver *drvthis, int x, int len)
+text_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	int y;
-	for (y = height; y > 0 && len > 0; y--) {
-		text_chr (drvthis, x, y, '|');
+	int pos;
 
-		len -= LCD_DEFAULT_CELLHEIGHT;
+	for ( pos=0; pos<len; pos++ ) {
+		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+			text_chr (drvthis, x, y-pos, '|');
+		} else {
+			; /* print nothing */
+		}
 	}
-
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-text_hbar (Driver *drvthis, int x, int y, int len)
+text_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	for (; x <= width && len > 0; x++) {
-		text_chr (drvthis, x, y, '-');
+	int pos;
 
-		len -= LCD_DEFAULT_CELLWIDTH;
+	for ( pos=0; pos<len; pos++ ) {
+		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+			text_chr (drvthis, x+pos, y, '-');
+		} else {
+			; /* print nothing */
+		}
 	}
-
 }
 

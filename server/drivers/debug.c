@@ -54,8 +54,8 @@ debug_init (Driver *drvthis, char *args)
 	drvthis->clear = debug_clear;
 	drvthis->string = debug_string;
 	drvthis->chr = debug_chr;
-	drvthis->old_vbar = debug_vbar;
-	drvthis->old_hbar = debug_hbar;
+	drvthis->vbar = debug_vbar;
+	drvthis->hbar = debug_hbar;
 	drvthis->init_num = debug_init_num;
 	drvthis->num = debug_num;
 
@@ -67,11 +67,11 @@ debug_init (Driver *drvthis, char *args)
 	drvthis->set_contrast = debug_set_contrast;
 	drvthis->backlight = debug_backlight;
 	drvthis->set_char = debug_set_char;
-	drvthis->old_icon = debug_icon;
+	drvthis->icon = debug_icon;
 	drvthis->init_vbar = debug_init_vbar;
 	drvthis->init_hbar = debug_init_hbar;
 
-	drvthis->getkey = debug_getkey;
+	drvthis->get_key = debug_get_key;
 
 	return 0;
 }
@@ -229,51 +229,55 @@ debug_set_char (Driver *drvthis, int n, char *dat)
 // Draws a vertical bar; erases entire column onscreen.
 //
 MODULE_EXPORT void
-debug_vbar (Driver *drvthis, int x, int len)
+debug_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	int y;
+	int pos;
 
-	report (RPT_INFO, "vbar(%i,%i)", x, len);
+	report (RPT_INFO, "vbar(%i,%i,%i,%i,%i)", x, y, len, promille, options);
 
-	for (y = height; y > 0 && len > 0; y--) {
-		debug_chr (drvthis, x, y, '|');
-
-		len -= LCD_DEFAULT_CELLHEIGHT;
+	for ( pos=0; pos<len; pos++ ) {
+		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+			debug_chr (drvthis, x, y-pos, '|');
+		} else {
+			; /* print nothing */
+		}
 	}
-
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-debug_hbar (Driver *drvthis, int x, int y, int len)
+debug_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	report (RPT_INFO, "hbar(%i,%i,%i)", x, y, len);
+	int pos;
 
-	for (; x < width && len > 0; x++) {
-		debug_chr (drvthis, x, y, '-');
+	report (RPT_INFO, "hbar(%i,%i,%i,%i,%i)", x, y, len, promille, options);
 
-		len -= LCD_DEFAULT_CELLWIDTH;
+	for ( pos=0; pos<len; pos++ ) {
+		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+			debug_chr (drvthis, x+pos, y, '-');
+		} else {
+			; /* print nothing */
+		}
 	}
-
 }
 
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
 MODULE_EXPORT void
-debug_icon (Driver *drvthis, int which, char dest)
+debug_icon (Driver *drvthis, int x, int y, int icon)
 {
-	report (RPT_INFO, "icon(%i,%i", which, dest);
+	report (RPT_INFO, "icon(%i,%i,%i)", x, y, icon);
 }
 
 /////////////////////////////////////////////////////////////////
 // Return a keypress
 //
-MODULE_EXPORT char
-debug_getkey (Driver *drvthis)
+MODULE_EXPORT char *
+debug_get_key (Driver *drvthis)
 {
-	report (RPT_INFO, "getkey()");
-	return 0;
+	report (RPT_INFO, "get_key()");
+	return NULL;
 }

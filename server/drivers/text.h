@@ -16,8 +16,8 @@ MODULE_EXPORT void text_backlight (Driver *drvthis, int on);
 //MODULE_EXPORT void text_init_vbar (Driver *drvthis);
 //MODULE_EXPORT void text_init_hbar (Driver *drvthis);
 //MODULE_EXPORT void text_init_num (Driver *drvthis);
-MODULE_EXPORT void text_vbar (Driver *drvthis, int x, int len);
-MODULE_EXPORT void text_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void text_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void text_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void text_num (Driver *drvthis, int x, int num);
 //MODULE_EXPORT void text_set_char (Driver *drvthis, int n, char *dat);
 

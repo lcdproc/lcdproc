@@ -16,11 +16,11 @@ MODULE_EXPORT void curses_drv_vbar (Driver *drvthis, int x, int y, int len, int 
 MODULE_EXPORT void curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void curses_drv_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT void curses_drv_heartbeat (Driver *drvthis, int type);
-MODULE_EXPORT void curses_drv_icon (Driver *drvthis, int which, char dest);
+MODULE_EXPORT void curses_drv_icon (Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void curses_drv_backlight (Driver *drvthis, int on);
 
-MODULE_EXPORT char curses_drv_getkey (Driver *drvthis);
+MODULE_EXPORT char *curses_drv_get_key (Driver *drvthis);
 
 MODULE_EXPORT void curses_drv_init_num (Driver *drvthis);
 

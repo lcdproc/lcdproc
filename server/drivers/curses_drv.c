@@ -372,9 +372,9 @@ curses_drv_init (Driver *drvthis, char *args)
 
 	drvthis->backlight = curses_drv_backlight;
 	//drvthis->set_char = NULL;
-	drvthis->old_icon = curses_drv_icon;  // NEEDS TO BE CHANGED !
+	drvthis->icon = curses_drv_icon;
 
-	drvthis->getkey = curses_drv_getkey;
+	drvthis->get_key = curses_drv_get_key;
 	drvthis->heartbeat = curses_drv_heartbeat;
 
 	// Change the character used for "..."
@@ -498,7 +498,7 @@ curses_drv_string (Driver *drvthis, int x, int y, char *string)
 			//	*p = icon_char;
 			//	break;
 			case 255:
-				*p = PAD;
+				*p = PAD; // CAN BE REMOVED AS SOON AS SERVER USES _icon INSTEAD OF character 255
 				break;
 		}
 		p++;
@@ -521,10 +521,10 @@ curses_drv_chr (Driver *drvthis, int x, int y, char c)
 
 	switch (c) {
 		case 0:
-			c = icon_char;
+			c = icon_char; // The whole icon_char stuff can be removed too if API change is complete
 			break;
 		case -1:	// translates to 255 (ouch!)
-			c = PAD;
+			c = PAD;  // CAN BE REMOVED AS SOON AS SERVER USES _icon INSTEAD OF character 255
 			break;
 		//default:
 		//	normal character...
@@ -570,16 +570,17 @@ curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 {
 	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
 	int pos;
-	int total_pixels = (long) len * LCD_DEFAULT_CELLHEIGHT * promille / 1000;
+	int total_pixels = ((long) 2 * len * LCD_DEFAULT_CELLHEIGHT + 1 ) * promille / 2000;
 
 	ValidX(x);
 	ValidY(y);
 
-	// x and y are the start position of the bar.
-	// The bar by default grows in the 'up' direction
-	// (other directions not yet implemented).
-	// len is the number of characters that the bar is long at 100%
-	// promille is the number of percent * 10 that the bar should be filled.
+	/* x and y are the start position of the bar.
+	 * The bar by default grows in the 'up' direction
+	 * (other direction not yet implemented).
+	 * len is the number of characters that the bar is long at 100%
+	 * promille is the number of promilles (0..1000) that the bar should be filled.
+	 */
 
 	for (pos = 0; pos < len; pos ++ ) {
 
@@ -588,8 +589,7 @@ curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 		ValidY(y-pos);
 
 		if( pixels >= LCD_DEFAULT_CELLHEIGHT ) {
-			// write a "full" block to the screen...
-			//curses_drv_chr (x, y, '8');
+			/* write a "full" block to the screen... */
 			curses_drv_chr (drvthis, x, y-pos, ACS_BLOCK);
 		}
 		else if( pixels > 0 ) {
@@ -610,16 +610,17 @@ MODULE_EXPORT void
 curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	int pos;
-	int total_pixels = (long) len * LCD_DEFAULT_CELLWIDTH * promille / 1000;
+	int total_pixels  = ((long) 2 * len * LCD_DEFAULT_CELLWIDTH + 1 ) * promille / 2000;
 
 	ValidX(x);
 	ValidY(y);
 
-	// x and y are the start position of the bar.
-	// The bar by default grows in the 'up' direction
-	// (other directions not yet implemented).
-	// len is the number of characters that the bar is long at 100%
-	// promille is the number of percent * 10 that the bar should be filled.
+	/* x and y are the start position of the bar.
+	 * The bar by default grows in the 'right' direction
+	 * (other direction not yet implemented).
+	 * len is the number of characters that the bar is long at 100%
+	 * promille is the number of promilles (0..1000) that the bar should be filled.
+	 */
 
 	for (pos = 0; pos < len; pos ++ ) {
 
@@ -628,12 +629,11 @@ curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 		ValidX(x+pos);
 
 		if( pixels >= LCD_DEFAULT_CELLHEIGHT * 2/3 ) {
-			// write a "full" block to the screen...
-			//curses_drv_chr (x, y, '8');
+			/* write a "full" block to the screen... */
 			curses_drv_chr (drvthis, x+pos, y, '=');
 		}
 		else if( pixels > LCD_DEFAULT_CELLHEIGHT * 1/3 ) {
-			// write a partial block...
+			/* write a partial block... */
 			curses_drv_chr (drvthis, x+pos, y, '-');
 			break;
 		}
@@ -647,21 +647,22 @@ curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 // Sets character 0 to an icon...
 //
 MODULE_EXPORT void
-curses_drv_icon (Driver *drvthis, int which, char dest)
+curses_drv_icon (Driver *drvthis, int x, int y, int icon)
 {
-	if (dest == 0)
-		switch (which) {
-			case 0:
-				icon_char = '+';
-				break;
-			case 1:
-				icon_char = '*';
-				break;
-			default:
-				icon_char = PAD;
-				break;
-		}
-
+	switch (icon) {
+		case ICON_HEART_OPEN:
+			curses_drv_chr( drvthis, x, y, '+');
+			break;
+		case ICON_HEART_FILLED:
+			curses_drv_chr( drvthis, x, y, '*');
+			break;
+		case ICON_BLOCK_FILLED:
+			curses_drv_chr( drvthis, x, y, ACS_BLOCK);
+			break;
+	}
+/* There was something with placing PAD
+ * What wasthat ever for ?
+ */
 }
 
 /////////////////////////////////////////////////////////////
@@ -679,17 +680,14 @@ curses_drv_heartbeat (Driver *drvthis, int type)
 
 	if (type == HEARTBEAT_ON) {
 		// Set this to pulsate like a real heart beat...
-		whichIcon = (! ((timer + 4) & 5));
-
-		// This defines a custom character EVERY time...
-		// not efficient... is this necessary?
-		curses_drv_icon (drvthis, whichIcon, 0);
-
-		// Put character on screen...
-		curses_drv_chr (drvthis, width, 1, 0);
-
-		// change display...
-		curses_drv_flush (drvthis);
+		if ( (timer + 4) & 5 ) {
+			whichIcon = ICON_HEART_OPEN;
+		}
+		else {
+			whichIcon = ICON_HEART_FILLED;
+		}
+		// Place the icon on screen
+		curses_drv_icon (drvthis, width, 1, whichIcon);
 	}
 
 	timer++;
@@ -715,10 +713,11 @@ curses_drv_flush (Driver *drvthis)
 }
 
 
-MODULE_EXPORT char
-curses_drv_getkey (Driver *drvthis)
+MODULE_EXPORT char *
+curses_drv_get_key (Driver *drvthis)
 {
 	int i;
+	static char ret_val[2] = {0,0};
 
 	i = getch ();
 
@@ -728,22 +727,31 @@ curses_drv_getkey (Driver *drvthis)
 			return 0;
 			break;
 		case KEY_LEFT:
-			return 'D';
+			return "ArrowLeft";
 			break;
 		case KEY_UP:
-			return 'B';
+			return "ArrowUp";
 			break;
 		case KEY_DOWN:
-			return 'C';
+			return "ArrowDown";
 			break;
 		case KEY_RIGHT:
-			return 'A';
+			return "ArrowRight";
 			break;
 		case ERR:
-			return 0;
+			return NULL;
+			break;
+		case KEY_ENTER:
+		case 0x0D:
+			return "Enter"; /* Is this correct ? */
+			break;
+		case 0x1B:
+			return "Escape";
 			break;
 		default:
-			return i;
+			report( RPT_INFO, "curses_drv: Unknown key 0x%4x", i );
+			ret_val[0] = (char) i & 0xFF;
+			return ret_val;
 			break;
 	}
 }
