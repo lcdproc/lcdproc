@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <syslog.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -23,6 +24,12 @@
 #include "render.h"
 #include "shared/debug.h"
 #include "shared/str.h"
+
+#define DEFAULT_CELL_WIDTH 6
+#define DEFAULT_CELL_HEIGHT 8
+#define DEFAULT_CONTRAST 140
+#define DEFAULT_DEVICE "/dev/lcd"
+#define DEFAULT_SPEED B9600
 
 static int custom = 0;
 typedef enum {
@@ -56,9 +63,9 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	int tmp;
 	int reboot = 0;
 
-	int contrast = 140;
-	char device[256] = "/dev/lcd";
-	int speed = B9600;
+	int contrast = DEFAULT_CONTRAST;
+	char device[256] = DEFAULT_DEVICE;
+	int speed = DEFAULT_SPEED;
 
 	CFontz = driver;
 
@@ -181,17 +188,14 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	CFontz_backlight (backlight_brightness);
 
 	if (!driver->framebuf) {
-		fprintf (stderr, "CFontz_init: No frame buffer.\n");
-		driver->close ();
+		syslog(LOG_ERR, "cfontz_init: no frame buffer!");
+		CFontz_close ();
 		return -1;
 	}
 	// Set the functions the driver supports...
 
-	//driver->clear = (void *) -1;
 	driver->clear = CFontz_clear;
-	//driver->string = (void *) -1;
 	driver->string = CFontz_string;
-//  driver->chr =        CFontz_chr;
 	driver->chr = CFontz_chr;
 	driver->vbar = CFontz_vbar;
 	driver->init_vbar = CFontz_init_vbar;
@@ -212,8 +216,8 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 
 	CFontz_contrast (contrast);
 
-	lcd.cellwid = 6;
-	lcd.cellhgt = 8;
+	driver->cellwid = DEFAULT_CELL_WIDTH;
+	driver->cellhgt = DEFAULT_CELL_HEIGHT;
 
 	debug ("CFontz: foo!\n");
 
@@ -237,7 +241,7 @@ CFontz_close ()
 void
 CFontz_flush ()
 {
-	CFontz_draw_frame (lcd.framebuf);
+	CFontz_draw_frame (CFontz->framebuf);
 }
 
 void
@@ -249,9 +253,9 @@ CFontz_flush_box (int lft, int top, int rgt, int bot)
 //  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
 
 	for (y = top; y <= bot; y++) {
-		sprintf (out, "%c%c%c", 17, lft, y);
+		snprintf (out, sizeof(out), "%c%c%c", 17, lft, y);
 		write (fd, out, 4);
-		write (fd, lcd.framebuf + (y * lcd.wid) + lft, rgt - lft + 1);
+		write (fd, CFontz->framebuf + (y * CFontz->wid) + lft, rgt - lft + 1);
 
 	}
 
@@ -269,7 +273,7 @@ CFontz_chr (int x, int y, char c)
 
 	if (c < 32 && c >= 0)
 		c += 128;
-	lcd.framebuf[(y * lcd.wid) + x] = c;
+	CFontz->framebuf[(y * CFontz->wid) + x] = c;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -285,7 +289,7 @@ CFontz_contrast (int contrast)
 	if (contrast > 0) {
 		status = contrast;
 		realcontrast = (((int) (status)) * 100) / 255;
-		sprintf (out, "%c%c", 15, realcontrast);
+		snprintf (out, sizeof(out), "%c%c", 15, realcontrast);
 		write (fd, out, 3);
 	}
 
@@ -301,10 +305,10 @@ CFontz_backlight (int on)
 {
 	char out[4];
 	if (on) {
-		sprintf (out, "%c%c", 14, (unsigned char) (on * 100 / 255));
+		snprintf (out, sizeof(out), "%c%c", 14, (unsigned char) (on * 100 / 255));
 		//sprintf(out, "%c%c", 14, 100);
 	} else {
-		sprintf (out, "%c%c", 14, 0);
+		snprintf (out, sizeof(out), "%c%c", 14, 0);
 	}
 	write (fd, out, 3);
 }
@@ -317,9 +321,9 @@ CFontz_linewrap (int on)
 {
 	char out[4];
 	if (on)
-		sprintf (out, "%c", 23);
+		snprintf (out, sizeof(out), "%c", 23);
 	else
-		sprintf (out, "%c", 24);
+		snprintf (out, sizeof(out), "%c", 24);
 	write (fd, out, 1);
 }
 
@@ -331,9 +335,9 @@ CFontz_autoscroll (int on)
 {
 	char out[4];
 	if (on)
-		sprintf (out, "%c", 19);
+		snprintf (out, sizeof(out), "%c", 19);
 	else
-		sprintf (out, "%c", 20);
+		snprintf (out, sizeof(out), "%c", 20);
 	write (fd, out, 1);
 }
 
@@ -344,7 +348,7 @@ static void
 CFontz_hidecursor ()
 {
 	char out[4];
-	sprintf (out, "%c", 4);
+	snprintf (out, sizeof(out), "%c", 4);
 	write (fd, out, 1);
 }
 
@@ -355,12 +359,12 @@ static void
 CFontz_reboot ()
 {
 	char out[4];
-	sprintf (out, "%c", 26);
+	snprintf (out, sizeof(out), "%c", 26);
 	write (fd, out, 1);
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before lcd.vbar()
+// Sets up for vertical bars.  Call before CFontz->vbar()
 //
 void
 CFontz_init_vbar ()
@@ -536,13 +540,13 @@ CFontz_vbar (int x, int len)
 	char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
 
 	int y;
-	for (y = lcd.hgt; y > 0 && len > 0; y--) {
-		if (len >= lcd.cellhgt)
+	for (y = CFontz->hgt; y > 0 && len > 0; y--) {
+		if (len >= CFontz->cellhgt)
 			CFontz_chr (x, y, 255);
 		else
 			CFontz_chr (x, y, map[len]);
 
-		len -= lcd.cellhgt;
+		len -= CFontz->cellhgt;
 	}
 
 }
@@ -555,13 +559,13 @@ CFontz_hbar (int x, int y, int len)
 {
 	char map[7] = { 32, 1, 2, 3, 4, 5, 6 };
 
-	for (; x <= lcd.wid && len > 0; x++) {
-		if (len >= lcd.cellwid)
+	for (; x <= CFontz->wid && len > 0; x++) {
+		if (len >= CFontz->cellwid)
 			CFontz_chr (x, y, map[6]);
 		else
 			CFontz_chr (x, y, map[len]);
 
-		len -= lcd.cellwid;
+		len -= CFontz->cellwid;
 
 	}
 
@@ -582,7 +586,7 @@ void
 CFontz_num (int x, int num)
 {
 	char out[5];
-	sprintf (out, "%c%c%c", 28, x, num);
+	snprintf (out, sizeof(out), "%c%c%c", 28, x, num);
 	write (fd, out, 3);
 }
 
@@ -605,14 +609,14 @@ CFontz_set_char (int n, char *dat)
 	if (!dat)
 		return;
 
-	sprintf (out, "%c%c", 25, n);
+	snprintf (out, sizeof(out), "%c%c", 25, n);
 	write (fd, out, 2);
 
-	for (row = 0; row < lcd.cellhgt; row++) {
+	for (row = 0; row < CFontz->cellhgt; row++) {
 		letter = 0;
-		for (col = 0; col < lcd.cellwid; col++) {
+		for (col = 0; col < CFontz->cellwid; col++) {
 			letter <<= 1;
-			letter |= (dat[(row * lcd.cellwid) + col] > 0);
+			letter |= (dat[(row * CFontz->cellwid) + col] > 0);
 		}
 		write (fd, &letter, 1);
 	}
@@ -665,7 +669,7 @@ CFontz_icon (int which, char dest)
 /////////////////////////////////////////////////////////////
 // Blasts a single frame onscreen, to the lcd...
 //
-// Input is a character array, sized lcd.wid*lcd.hgt
+// Input is a character array, sized CFontz->wid*CFontz->hgt
 //
 void
 CFontz_draw_frame (char *dat)
@@ -678,21 +682,21 @@ CFontz_draw_frame (char *dat)
 
 	// Custom characters start at 128, not at 0.
 	/*
-	   for(i=0; i<lcd.wid*lcd.hgt; i++)
+	   for(i=0; i<CFontz->wid*CFontz->hgt; i++)
 	   {
 	   if(dat[i] < 32  &&  dat[i] >= 0) dat[i] += 128;
 	   }
 	 */
 
-	for (i = 0; i < lcd.hgt; i++) {
-		sprintf (out, "%c%c%c", 17, 0, i);
+	for (i = 0; i < CFontz->hgt; i++) {
+		snprintf (out, sizeof(out), "%c%c%c", 17, 0, i);
 		write (fd, out, 3);
-		write (fd, dat + (lcd.wid * i), lcd.wid);
+		write (fd, dat + (CFontz->wid * i), CFontz->wid);
 	}
 	/*
 	   sprintf(out, "%c", 1);
 	   write(fd, out, 1);
-	   write(fd, dat, lcd.wid*lcd.hgt);
+	   write(fd, dat, CFontz->wid*CFontz->hgt);
 	 */
 
 }
@@ -703,7 +707,7 @@ CFontz_draw_frame (char *dat)
 void
 CFontz_clear ()
 {
-	memset (lcd.framebuf, ' ', lcd.wid * lcd.hgt);
+	memset (CFontz->framebuf, ' ', CFontz->wid * CFontz->hgt);
 
 }
 
@@ -721,9 +725,9 @@ CFontz_string (int x, int y, char string[])
 
 	for (i = 0; string[i]; i++) {
 		// Check for buffer overflows...
-		if ((y * lcd.wid) + x + i > (lcd.wid * lcd.hgt))
+		if ((y * CFontz->wid) + x + i > (CFontz->wid * CFontz->hgt))
 			break;
-		lcd.framebuf[(y * lcd.wid) + x + i] = string[i];
+		CFontz->framebuf[(y * CFontz->wid) + x + i] = string[i];
 	}
 }
 
