@@ -2,6 +2,7 @@
   <!ENTITY bookinfo SYSTEM "bookinfo.docbook">
   <!ENTITY introduction SYSTEM "introduction.docbook">
   <!ENTITY shared-files SYSTEM "shared-files.docbook">
+  <!ENTITY language SYSTEM "language.docbook">
   <!ENTITY make-driver SYSTEM "make-driver.docbook">
   <!ENTITY add-your-driver SYSTEM "add-your-driver.docbook">
   <!ENTITY license SYSTEM "license.docbook">  
@@ -13,6 +14,7 @@
 
 &introduction;
 &shared-files;
+&language;
 &make-driver;
 &add-your-driver;
 &license;
