@@ -171,9 +171,6 @@ static int contrast = DEFAULT_CONTRAST;
 
 static int backlightenabled = DEFAULT_BACKLIGHT;
 
-static int backlight_state = -1;
-static int output_state = -1;
-
 static char pause_key = MTXORB_DEFAULT_PAUSE_KEY;
 static char back_key = MTXORB_DEFAULT_BACK_KEY;
 static char forward_key = MTXORB_DEFAULT_FORWARD_KEY;
@@ -184,7 +181,9 @@ static int keypad_test_mode = 0;
 typedef struct p {
 	int def[9];
 	int use[9];
-	int circular;
+	int circular;		/* static data from MtxOrb_ask_bar */
+	int output_state;	/* static data from MtxOrb_output */
+	int backlight_state;	/* static data from MtxOrb_backlight */
 /*
         int type;
         int port;
@@ -214,82 +213,6 @@ static void MtxOrb_set_known_char (Driver * drvthis, int car, int type);
 static void MtxOrb_linewrap (Driver *drvthis, int on);
 static void MtxOrb_autoscroll (Driver *drvthis, int on);
 static void MtxOrb_cursorblink (Driver *drvthis, int on);
-
-
-static int
-MtxOrb_parse_type (Driver *drvthis, char * str) {
-	char c;
-	c = str[0];
-
-	if (c == 'l') {
-		if (strncasecmp(str, "lcd", 3) == 0) {
-			return MTXORB_LCD;
-		} else if (strncasecmp(str, "lkd", 3) == 0) {
-			return MTXORB_LKD;
-		} else {
-			report (RPT_ERR, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
-		}
-	} else if (c == 'v') {
-		if (strncasecmp (str, "vfd", 3) == 0) {
-			return MTXORB_VFD;
-		} else if (strncasecmp (str, "vkd", 3) == 0) {
-			return MTXORB_VKD;
-		} else {
-			report (RPT_ERR, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
-		}
-	} else {
-		report (RPT_ERR, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
-	}
-	return (-1);
-}
-
-static int
-MtxOrb_parse_speed (Driver *drvthis, char *arg) {
-	int speed;
-
-	switch (atoi(arg)) {
-		case 1200: speed = B1200; break;
-		case 2400: speed = B2400; break;
-		case 9600: speed = B9600; break;
-		case 19200: speed = B19200; break;
-		default:
-			speed = DEFAULT_SPEED;
-			report (RPT_ERR, "MtxOrb_init: argument must be 1200, 2400, 9600 or 19200. Using default value");
-			switch (speed) {
-				case B1200: report(RPT_ERR, " of 1200 baud.\n"); break;
-				case B2400: report(RPT_ERR, " of 2400 baud.\n"); break;
-				case B9600: report(RPT_ERR, " of 9600 baud.\n"); break;
-				case B19200: report(RPT_ERR, " of 19200 baud.\n"); break;
-				default: report(RPT_ERR, " of unkown baud.\n"); break;
-			}
-		}
-
-	return speed;
-	}
-
-static void
-MtxOrb_usage (void) {
-	printf ("LCDproc Matrix-Orbital LCD driver\n"
-		"\t-d\t\tSelect the output device to use [/dev/lcd]\n"
-		"\t-t\t\tSelect the LCD type (size) [20x4]\n"
-/*		"\t-b\t--backlight\tSelect the backlight state [on]\n" */
-		"\t-c\t\tSet the initial contrast [140]\n"
-		"\t-s\t\tSet the communication speed [19200]\n"
-		"\t-h\t\tShow this help information\n"
-		"\t-b\t\tdisplay type: lcd, lkd, vfd, vkd\n");
-}
-
-int
-MtxOrb_parse_contrast (Driver *drvthis, char * str) {
-	int contrast;
-
-	contrast = atoi (str);
-	if ((contrast < 0) || (contrast > 255)) {
-		report (RPT_ERR, "MtxOrb_init: argument must between 0 and 255 (found %s). Using default contrast value of %d.\n", str, DEFAULT_CONTRAST);
-		contrast = DEFAULT_CONTRAST;
-	}
-	return contrast;
-}
 
 
 /* Parse one key from the configfile */
@@ -343,7 +266,9 @@ MtxOrb_init (Driver *drvthis, char *args)
 
 	memset( p->def, -1, sizeof(p->def) );
 	memset( p->use,  0, sizeof(p->use) );
-	p->circular = -1;
+	p->circular = -1;	/* static data from MtxOrb_ask_bar */
+	p->output_state = -1;	/* static data from MtxOrb_output */
+	p->backlight_state = 1; /* static data from MtxOrb_backlight */
 
 
 	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
@@ -757,12 +682,12 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 MODULE_EXPORT void
 MtxOrb_backlight (Driver *drvthis, int on)
 {
-	static int backlight_state = 1;
+        PrivateData * p = drvthis->private_data;
 
-	if (backlight_state == on)
+	if (p->backlight_state == on)
 		return;
 
-	backlight_state = on;
+	p->backlight_state = on;
 
 	switch (on) {
 		case BACKLIGHT_ON:
@@ -794,14 +719,15 @@ MODULE_EXPORT void
 MtxOrb_output (Driver *drvthis, int on)
 {
 	char out[5];
-	static int output_state = -1;
+
+        PrivateData * p = drvthis->private_data;
 
 	on = on & 077;	/* strip to six bits */
 
-	if (output_state == on)
+	if (p->output_state == on)
 		return;
 
-	output_state = on;
+	p->output_state = on;
 
 	debug(RPT_DEBUG, "MtxOrb: output pins set: %04X", on);
 
@@ -1256,8 +1182,6 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 	int i;
 	int pos;
 	int last_not_in_use;
-
-/*	static int circular = -1;	Moved to PrivateData	*/
 
         PrivateData * p = drvthis->private_data;
 
