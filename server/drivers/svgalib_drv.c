@@ -282,9 +282,9 @@ svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 	driver->string = svgalib_drv_string;
 	driver->chr = svgalib_drv_chr;
 	driver->vbar = svgalib_drv_vbar;
-	driver->init_vbar = NULL;
+	//driver->init_vbar = NULL;
 	driver->hbar = svgalib_drv_hbar;
-	driver->init_hbar = NULL;
+	//driver->init_hbar = NULL;
 	driver->num = svgalib_drv_num;
 	driver->init_num = svgalib_drv_init_num;
 
@@ -292,9 +292,9 @@ svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 	driver->close = svgalib_drv_close;
 	driver->flush = svgalib_drv_flush;
 	driver->flush_box = svgalib_drv_flush_box;
-	driver->contrast = NULL;
-	driver->backlight = NULL;
-	driver->set_char = NULL;
+	//driver->contrast = NULL;
+	//driver->backlight = NULL;
+	//driver->set_char = NULL;
 	driver->icon = svgalib_drv_icon;
 	driver->draw_frame = svgalib_drv_draw_frame;
 
@@ -308,11 +308,17 @@ svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 	return 1;
 }
 
+/////////////////////////////////////////////////////////////////
+// Close down driver
+//
 void
 svgalib_drv_close ()
 {
 	vga_setmode (TEXT);
-	drv_base_close ();
+	if (svgalib_drv->framebuf != NULL)
+		free (svgalib_drv->framebuf);
+
+	svgalib_drv->framebuf = NULL;
 }
 
 void
@@ -401,13 +407,13 @@ svgalib_drv_vbar (int x, int len)
 	char map[] = "_.,,ooO8";
 
 	int y;
-	for (y = lcd.hgt; y > 0 && len > 0; y--) {
-		if (len >= lcd.cellhgt)
+	for (y = svgalib_drv->hgt; y > 0 && len > 0; y--) {
+		if (len >= svgalib_drv->cellhgt)
 			svgalib_drv_chr (x, y, '8');
 		else
 			svgalib_drv_chr (x, y, map[len - 1]);
 
-		len -= lcd.cellhgt;
+		len -= svgalib_drv->cellhgt;
 	}
 }
 
@@ -417,13 +423,13 @@ svgalib_drv_vbar (int x, int len)
 void
 svgalib_drv_hbar (int x, int y, int len)
 {
-	for (; x <= lcd.wid && len > 0; x++) {
-		if (len >= lcd.cellwid)
+	for (; x <= svgalib_drv->wid && len > 0; x++) {
+		if (len >= svgalib_drv->cellwid)
 			svgalib_drv_chr (x, y, '=');
 		else
 			svgalib_drv_chr (x, y, '-');
 
-		len -= lcd.cellwid;
+		len -= svgalib_drv->cellwid;
 	}
 }
 

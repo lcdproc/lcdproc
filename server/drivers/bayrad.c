@@ -474,10 +474,10 @@ int bayrad_init(struct lcd_logical_driver *driver, char *args)
 
 void bayrad_close() 
 {
-  if(lcd.framebuf != NULL) 
-    free(lcd.framebuf);
+  if(bayrad->framebuf != NULL) 
+    free(bayrad->framebuf);
 
-  lcd.framebuf = NULL;
+  bayrad->framebuf = NULL;
   write(fd, "\x8e\x00", 2);  // Backlight OFF
 
   //fprintf(stderr, "\nClosing BayRAD.\n");
@@ -490,7 +490,7 @@ void bayrad_close()
 //
 void bayrad_clear() 
 {
-  memset(lcd.framebuf, ' ', lcd.wid*lcd.hgt);
+  memset(bayrad->framebuf, ' ', bayrad->wid*bayrad->hgt);
   
 }
 
@@ -504,9 +504,9 @@ void bayrad_flush()
   //fprintf(stderr, "\nBayRAD flush"); 
 
   write(fd, "\x80\x1e", 2);  //sync, home
-  write(fd, lcd.framebuf, 20);
+  write(fd, bayrad->framebuf, 20);
   write(fd, "\x1e\x0a", 2);  //home, LF
-  write(fd, lcd.framebuf+20, 20);
+  write(fd, bayrad->framebuf+20, 20);
 
   return;
 }
@@ -528,7 +528,7 @@ void bayrad_string(int x, int y, char string[])
   for(i=0; string[i]; i++)
   {
      // Check for buffer overflows...
-     if((y*lcd.wid) + x + i  >  (lcd.wid*lcd.hgt)) 
+     if((y*bayrad->wid) + x + i  >  (bayrad->wid*bayrad->hgt)) 
        break;
 
      c = (unsigned char) string[i];
@@ -545,7 +545,7 @@ void bayrad_string(int x, int y, char string[])
        c += 0x98;   /* as 0x07 makes a beep instead of printing a character */
 
 
-     lcd.framebuf[(y*lcd.wid) + x + i] = c;
+     bayrad->framebuf[(y*bayrad->wid) + x + i] = c;
   }
 }
 
@@ -571,7 +571,7 @@ void bayrad_chr(int x, int y, char c)
 
   /* No shifting the custom chars here, so bayrad_chr() can beep */
 
-  lcd.framebuf[(y*lcd.wid) + x] = ch;
+  bayrad->framebuf[(y*bayrad->wid) + x] = ch;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -672,13 +672,13 @@ void bayrad_set_char(int n, char *dat)
   snprintf(out, sizeof(out), "\x88%c", n);
   write(fd, out, 2);
   
-  for(row=0; row<lcd.cellhgt; row++)
+  for(row=0; row<bayrad->cellhgt; row++)
   {
     letter = 0;
-    for(col=0; col<lcd.cellwid; col++)
+    for(col=0; col<bayrad->cellwid; col++)
     {
       letter <<= 1;
-      letter |= (dat[(row*lcd.cellwid) + col] > 0);
+      letter |= (dat[(row*bayrad->cellwid) + col] > 0);
     }
     write(fd, &letter, 1);
   }
@@ -698,17 +698,17 @@ void bayrad_vbar(int x, int len)
 
    //fprintf(stderr, "\nVbar at %i, length %i", x, len);
 
-   if(len >= lcd.cellhgt)
+   if(len >= bayrad->cellhgt)
      {
        bayrad_chr(x, y, 0xFF);
-       len -= lcd.cellhgt;
+       len -= bayrad->cellhgt;
        y = 1;
      }
    
    if(!len)
      return;
    
-   if(len > lcd.cellhgt)
+   if(len > bayrad->cellhgt)
      {
        bayrad_chr(x, y, '^');  /* Show we've gone off the chart */
        return;
@@ -731,16 +731,16 @@ void bayrad_hbar(int x, int y, int len)
 
   //fprintf(stderr, "\nHbar at %i,%i; length %i", x, y, len);
 
-  while((x <= lcd.wid) && (len > 0))
+  while((x <= bayrad->wid) && (len > 0))
   {
-    if(len < lcd.cellwid)
+    if(len < bayrad->cellwid)
       {
 	bayrad_chr(x, y, 0x98 + len);
 	break;
       }
 
     bayrad_chr(x, y, 0xFF);
-    len -= lcd.cellwid;
+    len -= bayrad->cellwid;
     x++;
   }
  
@@ -783,9 +783,9 @@ void bayrad_draw_frame(char *dat)
   //fprintf(stderr, "\nBayRAD draw frame");
 
   write(fd, "\x80\x1e", 2);  // NOP, home
-  write(fd, lcd.framebuf, 20);
+  write(fd, bayrad->framebuf, 20);
   write(fd, "\n", 1);
-  write(fd, lcd.framebuf+20, 20);  
+  write(fd, bayrad->framebuf+20, 20);  
 
 }
 

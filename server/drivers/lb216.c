@@ -211,8 +211,8 @@ int LB216_init(lcd_logical_driver *driver, char *args)
    driver->icon =       LB216_icon;
    driver->draw_frame = LB216_draw_frame;
 
-   lcd.cellwid = 5;
-   lcd.cellhgt = 8;
+   LB216->cellwid = 5;
+   LB216->cellhgt = 8;
 
    debug("LB216: foo!\n");
    
@@ -236,7 +236,7 @@ void LB216_close()
 
 void LB216_flush()
 {
-   LB216_draw_frame(lcd.framebuf);
+   LB216_draw_frame(LB216->framebuf);
 }
 
 
@@ -251,7 +251,7 @@ void LB216_chr(int x, int y, char c)
  // x--;
   
   //if(c < 32  &&  c >= 0) c += 128;
-//  lcd.framebuf[(y*lcd.wid) + x] = c;
+//  LB216->framebuf[(y*LB216->wid) + x] = c;
 	char chr[1];
 	snprintf (chr, sizeof(chr), "%c", c);
 	LB216_string (x, y, chr);
@@ -301,7 +301,7 @@ static void LB216_reboot()
 /////////////////////////////////////////////////////////////
 // Blasts a single frame onscreen, to the lcd...
 //
-// Input is a character array, sized lcd.wid*lcd.hgt
+// Input is a character array, sized LB216->wid*LB216->hgt
 //
 void LB216_draw_frame(char *dat)
 {
@@ -313,15 +313,15 @@ void LB216_draw_frame(char *dat)
   snprintf (out, sizeof(out), "%c%c", 254,80);
   write(fd, out, 2);
 
-  for(j=0; j<lcd.hgt; j++) {
+  for(j=0; j<LB216->hgt; j++) {
 	if (j>=2) {
     	snprintf (out, sizeof(out),"%c%c",254,148+(64*(j-2)));
 	} else {
     	snprintf (out, sizeof(out),"%c%c",254,128+(64*(j)));
 	}
     write(fd, out, 2);
-    for(i=0; i<lcd.wid; i++) {
-      snprintf (out, sizeof(out),"%c",dat[i+(j*lcd.wid)]);
+    for(i=0; i<LB216->wid; i++) {
+      snprintf (out, sizeof(out),"%c",dat[i+(j*LB216->wid)]);
       write(fd, out, 1);
     }
   }
@@ -341,13 +341,13 @@ void LB216_string (int x, int y, char string[])
       {
          case '\254': c = '#'; break;
       }
-      lcd.framebuf[(y*lcd.wid) + x+i] = c;
+      LB216->framebuf[(y*LB216->wid) + x+i] = c;
    }
 
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before lcd.vbar()
+// Sets up for vertical bars.  Call before LB216->vbar()
 //
 void LB216_init_vbar() 
 {
@@ -510,12 +510,12 @@ void LB216_vbar(int x, int len)
   
 
   int y;
-  for(y=lcd.hgt; y > 0 && len>0; y--)
+  for(y=LB216->hgt; y > 0 && len>0; y--)
     {
-      if(len >= lcd.cellhgt) LB216_chr(x, y, 255);
+      if(len >= LB216->cellhgt) LB216_chr(x, y, 255);
       else LB216_chr(x, y, map[len]);
 
-      len -= lcd.cellhgt;
+      len -= LB216->cellhgt;
     }
   
 }
@@ -527,13 +527,13 @@ void LB216_hbar(int x, int y, int len)
 {
   char map[7] = { 32, 1, 2, 3, 4, 5 };
 
-  for(; x<=lcd.wid && len>0; x++)
+  for(; x<=LB216->wid && len>0; x++)
     {
-      if(len >= lcd.cellwid) LB216_chr(x,y,map[5]);
+      if(len >= LB216->cellwid) LB216_chr(x,y,map[5]);
       else LB216_chr(x, y, map[len]);
       
 	 //printf ("%d,",len);
-      len -= lcd.cellwid;
+      len -= LB216->cellwid;
       
     }
 //	printf ("\n");
@@ -561,13 +561,13 @@ void LB216_set_char(int n, char *dat)
   snprintf (out, sizeof(out), "%c%c", 254, n);
   write(fd, out, 2);
 
-  for(row=0; row<lcd.cellhgt; row++)
+  for(row=0; row<LB216->cellhgt; row++)
   {
     letter = 1;
-    for(col=0; col<lcd.cellwid; col++)
+    for(col=0; col<LB216->cellwid; col++)
     {
       letter <<= 1;
-      letter |= (dat[(row*lcd.cellwid) + col] > 0);
+      letter |= (dat[(row*LB216->cellwid) + col] > 0);
     }
 	snprintf (out, sizeof(out),"%c",letter);
     write(fd, out, 1);
