@@ -306,7 +306,7 @@ CFontz_backlight (int on)
 	char out[4];
 	if (on) {
 		snprintf (out, sizeof(out), "%c%c", 14, (unsigned char) (on * 100 / 255));
-		//sprintf(out, "%c%c", 14, 100);
+		//snprintf(out, sizeof(out), "%c%c", 14, 100);
 	} else {
 		snprintf (out, sizeof(out), "%c%c", 14, 0);
 	}
@@ -694,7 +694,7 @@ CFontz_draw_frame (char *dat)
 		write (fd, dat + (CFontz->wid * i), CFontz->wid);
 	}
 	/*
-	   sprintf(out, "%c", 1);
+	   snprintf(out, sizeof(out), "%c", 1);
 	   write(fd, out, 1);
 	   write(fd, dat, CFontz->wid*CFontz->hgt);
 	 */

@@ -110,7 +110,7 @@ hello_func (client * c, int argc, char **argv)
 	debug ("Hello!\n");
 
 	memset(str, '\0', sizeof(str));
-	sprintf (str, "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
+	snprintf (str, sizeof(str), "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
 		version, protocol_version, lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
 
 //	lcdproc (client) depends on the above format...
@@ -1433,7 +1433,7 @@ sleep_func (client * c, int argc, char **argv)
 
 	// Repeat until no more remains - should normally be zero
 	// on exit the first time...
-	sprintf(str, "sleeping %d seconds\n", secs);
+	snprintf(str, sizeof(str), "sleeping %d seconds\n", secs);
 	sock_send_string (c->sock, str);
 
 	// whoops.... if this takes place as planned, ALL screens

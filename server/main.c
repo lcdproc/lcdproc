@@ -433,7 +433,7 @@ exit_program (int val)
 		case 1: strcat(buf, "SIGHUP"); break;
 		case 2: strcat(buf, "SIGINT"); break;
 		case 15: strcat(buf, "SIGTERM"); break;
-		default: sprintf(buf, "server shutting down on signal %d", val); break;
+		default: snprintf(buf, sizeof(buf), "server shutting down on signal %d", val); break;
 			 // Other values should not be seen, but just in case..
 	}
 

@@ -421,7 +421,7 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 	char out[LCD_MAX_WIDTH];
 
 	for (y = top; y <= bot; y++) {
-		sprintf (out, "\x0FEG%c%c", lft, y);
+		snprintf (out, sizeof(out), "\x0FEG%c%c", lft, y);
 		write (fd, out, 4);
 		write (fd, MtxOrb->framebuf + (y * MtxOrb->wid) + lft, rgt - lft + 1);
 
@@ -447,7 +447,7 @@ MtxOrb_chr (int x, int y, char c)
 
 	// write immediately to screen... this code was taken
 	// from the LK202-25; should work for others, yes?
-	// sprintf(out, "\x0FEG%c%c%c", x, y, c);
+	// snprintf(out, sizeof(out), "\x0FEG%c%c%c", x, y, c);
 	// write (fd, out, 4);
 
 	// write to frame buffer
@@ -479,7 +479,7 @@ MtxOrb_contrast (int contrast)
 		contrast = 0;
 
 	if (IS_LCD_DISPLAY || IS_LKD_DISPLAY) {
-		sprintf (out, "\x0FEP%c", contrast);
+		snprintf (out, sizeof(out), "\x0FEP%c", contrast);
 		write (fd, out, 3);
 	}
 	return contrast;
@@ -541,8 +541,8 @@ MtxOrb_output (int on)
 		on = on & 077;	// strip to six bits
 		for(i = 0; i < 6; i++) {
 			(on & (1 << i)) ?
-				sprintf (out, "\x0FEW%c", i + 1) :
-				sprintf (out, "\x0FEV%c", i + 1);
+				snprintf (out, sizeof(out), "\x0FEW%c", i + 1) :
+				snprintf (out, sizeof(out), "\x0FEV%c", i + 1);
 			write (fd, out, 3);
 		}
 	}
@@ -664,7 +664,7 @@ MtxOrb_getinfo (void)
 				case '\x33': strcat(info, "LK402-12 "); break;
 				case '\x34': strcat(info, "LK162-12 "); break;
 				case '\x35': strcat(info, "LK204-25PC "); break;
-				default: //sprintf(tmp, "Unknown (%X) ", in); strcat(info, tmp);
+				default: //snprintf(tmp, sizeof(tmp), "Unknown (%X) ", in); strcat(info, tmp);
 					     break;
 			}
 		}
@@ -688,7 +688,7 @@ MtxOrb_getinfo (void)
 		if (read (fd, &tmp, 2) < 0) {
 			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
 		} else {
-			sprintf(buf, "Serial No: %ld ", (long int) tmp);
+			snprintf(buf, sizeof(buf), "Serial No: %ld ", (long int) tmp);
 			strcat(info, buf);
 		}
 	} else
@@ -711,7 +711,7 @@ MtxOrb_getinfo (void)
 		if (read (fd, &tmp, 2) < 0) {
 			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
 		} else {
-			sprintf(buf, "Firmware Rev. %ld ", (long int) tmp);
+			snprintf(buf, sizeof(buf), "Firmware Rev. %ld ", (long int) tmp);
 			strcat(info, buf);
 		}
 	} else
@@ -823,7 +823,7 @@ static void
 MtxOrb_num (int x, int num)
 {
 	char out[5];
-	sprintf (out, "\x0FE#%c%c", x, num);
+	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);
 	write (fd, out, 4);
 }
 
@@ -848,7 +848,7 @@ MtxOrb_set_char (int n, char *dat)
 	if (!dat)
 		return;
 
-	sprintf (out, "\x0FEN%c", n);
+	snprintf (out, sizeof(out), "\x0FEN%c", n);
 	write (fd, out, 3);
 
 	for (row = 0; row < MtxOrb->cellhgt; row++) {
@@ -919,12 +919,12 @@ MtxOrb_draw_frame (char *dat)
 	if (!dat)
 		return;
 
-//        sprintf(out, "%cG%c%c", 254, 1, 1);
+//        snprintf(out, sizeof(out), "%cG%c%c", 254, 1, 1);
 //        write(fd, out, 4);
 //        write(fd, dat, lcd.wid*lcd.hgt);
 
 	for (i = 0; i < MtxOrb->hgt; i++) {
-		sprintf (out, "\x0FEG\x001%c", i + 1);
+		snprintf (out, sizeof(out), "\x0FEG\x001%c", i + 1);
 		write (fd, out, 4);
 		write (fd, dat + (MtxOrb->wid * i), MtxOrb->wid);
 	}

@@ -669,7 +669,7 @@ void bayrad_set_char(int n, char *dat)
   n = 0x40 + (n * 8);  /* Set n to the proper location in CG RAM */
 
   /* Set the LCD to accept data for rewrite-able char n */
-  sprintf(out, "\x88%c", n);
+  snprintf(out, sizeof(out), "\x88%c", n);
   write(fd, out, 2);
   
   for(row=0; row<lcd.cellhgt; row++)

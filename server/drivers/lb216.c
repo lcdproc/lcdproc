@@ -253,7 +253,7 @@ void LB216_chr(int x, int y, char c)
   //if(c < 32  &&  c >= 0) c += 128;
 //  lcd.framebuf[(y*lcd.wid) + x] = c;
 	char chr[1];
-	sprintf(chr, "%c", c);
+	snprintf (chr, sizeof(chr), "%c", c);
 	LB216_string (x, y, chr);
 }
 
@@ -267,11 +267,11 @@ void LB216_backlight(int on)
   char out[4];
   if(on)
   {
-    sprintf(out, "%c%c", 254, 253);
+    snprintf (out, sizeof(out), "%c%c", 254, 253);
   }
   else
   {
-    sprintf(out, "%c%c", 254, 252);
+    snprintf (out, sizeof(out), "%c%c", 254, 252);
   }
     write(fd, out, 2);
 }
@@ -283,7 +283,7 @@ void LB216_backlight(int on)
 static void LB216_hidecursor()
 {
   char out[4];
-  sprintf(out, "%c%c", 254,12);
+  snprintf (out, sizeof(out), "%c%c", 254,12);
   write(fd, out, 2);
 }
 
@@ -293,7 +293,7 @@ static void LB216_hidecursor()
 static void LB216_reboot()
 {
   char out[4];
-  sprintf(out, "%c%c", 254,1);
+  snprintf (out, sizeof(out), "%c%c", 254,1);
   write(fd, out, 2);
 }
 
@@ -310,18 +310,18 @@ void LB216_draw_frame(char *dat)
   
   if(!dat) return;
 
-  sprintf(out, "%c%c", 254,80);
+  snprintf (out, sizeof(out), "%c%c", 254,80);
   write(fd, out, 2);
 
   for(j=0; j<lcd.hgt; j++) {
 	if (j>=2) {
-    	sprintf(out,"%c%c",254,148+(64*(j-2)));
+    	snprintf (out, sizeof(out),"%c%c",254,148+(64*(j-2)));
 	} else {
-    	sprintf(out,"%c%c",254,128+(64*(j)));
+    	snprintf (out, sizeof(out),"%c%c",254,128+(64*(j)));
 	}
     write(fd, out, 2);
     for(i=0; i<lcd.wid; i++) {
-      sprintf(out,"%c",dat[i+(j*lcd.wid)]);
+      snprintf (out, sizeof(out),"%c",dat[i+(j*lcd.wid)]);
       write(fd, out, 1);
     }
   }
@@ -558,7 +558,7 @@ void LB216_set_char(int n, char *dat)
   n=64+(8*n);
   if(!dat) return;
 
-  sprintf(out, "%c%c", 254, n);
+  snprintf (out, sizeof(out), "%c%c", 254, n);
   write(fd, out, 2);
 
   for(row=0; row<lcd.cellhgt; row++)
@@ -569,7 +569,7 @@ void LB216_set_char(int n, char *dat)
       letter <<= 1;
       letter |= (dat[(row*lcd.cellwid) + col] > 0);
     }
-	sprintf(out,"%c",letter);
+	snprintf (out, sizeof(out),"%c",letter);
     write(fd, out, 1);
   }
 }

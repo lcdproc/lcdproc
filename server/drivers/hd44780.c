@@ -675,7 +675,7 @@ void
 HD44780_init_num ()
 {
 	char out[3];
-	sprintf (out, "%cn", 254);
+	snprintf (out, sizeof(out), "%cn", 254);
 	//write(fd, out, 2);
 }
 
@@ -686,7 +686,7 @@ void
 HD44780_num (int x, int num)
 {
 	char out[5];
-	sprintf (out, "%c#%c%c", 254, x, num);
+	snprintf (out, sizeof(out), "%c#%c%c", 254, x, num);
 	//write(fd, out, 4);
 }
 

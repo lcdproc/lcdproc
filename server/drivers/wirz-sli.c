@@ -226,9 +226,9 @@ sli_flush_box (int lft, int top, int rgt, int bot)
 /* I like having hex, everywhere and all the time */
 	for (y = top; y <= bot; y++) {
 		if (y == 1)
-			sprintf (out, "%c%c", 0x0FE, 0x080 + lft);
+			snprintf (out, sizeof(out), "%c%c", 0x0FE, 0x080 + lft);
 		if (y == 2)
-			sprintf (out, "%c%c", 0x0FE, 0x0C0 + lft);
+			snprintf (out, sizeof(out), "%c%c", 0x0FE, 0x0C0 + lft);
 		write (fd, out, 0x002);
 		write (fd, lcd.framebuf + (y * lcd.wid) + lft, rgt - lft + 1);
 	}
