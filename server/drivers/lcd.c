@@ -118,6 +118,10 @@ static void lcd_drv_heartbeat (int type);
 #include "bayrad.h"
 #endif
 
+#ifdef SED1330_DRV
+#include "sed1330.h"
+#endif
+
 #ifdef SED1520_DRV
 #include "sed1520.h"
 #endif
@@ -208,6 +212,9 @@ lcd_physical_driver drivers[] = {
 #ifdef GLK_DRV
 	{"glk", glk_init,},
 	{"glc", glk_init,},
+#endif
+#ifdef SED1330_DRV
+	{"sed1330", sed1330_init,},
 #endif
 #ifdef SED1520_DRV
 	{"sed1520", sed1520_init,},

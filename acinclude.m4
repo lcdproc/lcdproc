@@ -7,13 +7,13 @@ AC_ARG_ENABLE(drivers,
   	[                  Possible choices are:]
  	[                    mtxorb,cfontz,curses,text,lb216,]
  	[                    hd44780,joy,irman,lircin,bayrad,glk,]
- 	[                    stv5730,sed1520,svgalib,lcdm001,t6963]
+ 	[                    stv5730,sed1330,sed1520,svgalib,lcdm001,t6963]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval", 
   	drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520,svgalib,lcdm001,t6963]
+	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1330,sed1520,svgalib,lcdm001,t6963]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -129,6 +129,11 @@ dnl				else
 dnl				else
 				AC_MSG_WARN([The lirc driver needs the lirc client library])
 			)
+			;;
+		sed1330)
+			DRIVERS="$DRIVERS sed1330.o"
+			AC_DEFINE(SED1330_DRV)
+			actdrivers=["$actdrivers sed1330"]
 			;;
 		sed1520)
 			DRIVERS="$DRIVERS sed1520.o"
