@@ -71,7 +71,9 @@
 #define IS_VFD_DISPLAY	(MtxOrb_type == MTXORB_VFD)
 #define IS_VKD_DISPLAY	(MtxOrb_type == MTXORB_VKD)
 
-#define NotEnoughArgs (i + 1 > argc)
+/* TODO: Remove this if not in use anymore...
+ * #define NotEnoughArgs (i + 1 > argc)
+ */
 
 /*
  NOTE: This does not appear to make use of the
@@ -163,8 +165,6 @@ static int clear = 1;
 /* static int use[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 }; */
 
 static char *framebuf = NULL;
-static int width = LCD_DEFAULT_WIDTH;
-static int height = LCD_DEFAULT_HEIGHT;
 static int cellwidth = LCD_DEFAULT_CELLWIDTH;
 static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 static int contrast = DEFAULT_CONTRAST;
@@ -184,6 +184,10 @@ typedef struct p {
 	int circular;		/* static data from MtxOrb_ask_bar */
 	int output_state;	/* static data from MtxOrb_output */
 	int backlight_state;	/* static data from MtxOrb_backlight */
+	int width;
+	int height;
+	int widthBYheight;	/* Avoid computing width * height frequently */
+
 /*
         int type;
         int port;
@@ -192,7 +196,6 @@ typedef struct p {
         char * lcd_contents_text;
         char * framebuf_graph;
         char * lcd_contents_graph;
-        int width, height;
         //int cellwidth, cellheight;
         int graph_width, graph_height;
         int cursor_x, cursor_y;
@@ -269,7 +272,9 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->circular = -1;	/* static data from MtxOrb_ask_bar */
 	p->output_state = -1;	/* static data from MtxOrb_output */
 	p->backlight_state = 1; /* static data from MtxOrb_backlight */
-
+	p->width = LCD_DEFAULT_WIDTH;
+	p->height = LCD_DEFAULT_HEIGHT;
+	p->widthBYheight = LCD_DEFAULT_WIDTH * LCD_DEFAULT_HEIGHT;
 
 	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
 
@@ -292,8 +297,9 @@ MtxOrb_init (Driver *drvthis, char *args)
 		report (RPT_WARNING, "MtxOrb: Cannot read size: %s. Using default value %s.", size, DEFAULT_SIZE);
 		sscanf( DEFAULT_SIZE , "%dx%d", &w, &h );
 	}
-	width = w;
-	height = h;
+	p->width = w;
+	p->height = h;
+	p->widthBYheight = w * h;
 
 	/* Get contrast */
 	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
@@ -433,8 +439,8 @@ MtxOrb_init (Driver *drvthis, char *args)
 	/* Make sure the frame buffer is there... */
 	if (!framebuf)
 		framebuf = (unsigned char *)
-			malloc (width * height);
-	memset (framebuf, ' ', width * height);
+			malloc (p->width * p->height);
+	memset (framebuf, ' ', p->width * p->height);
 
 	/*
 	 * Configure display
@@ -448,8 +454,8 @@ MtxOrb_init (Driver *drvthis, char *args)
 	return 0;
 }
 
-#define ValidX(x) if ((x) > width) { (x) = width; } else (x) = (x) < 1 ? 1 : (x);
-#define ValidY(y) if ((y) > height) { (y) = height; } else (y) = (y) < 1 ? 1 : (y);
+#define ValidX(x) if ((x) > p->width) { (x) = p->width; } else (x) = (x) < 1 ? 1 : (x);
+#define ValidY(y) if ((y) > p->height) { (y) = p->height; } else (y) = (y) < 1 ? 1 : (y);
 
 /*
  * TODO: Check this quick hack to detect clear of the screen.
@@ -462,8 +468,10 @@ MtxOrb_init (Driver *drvthis, char *args)
 MODULE_EXPORT void
 MtxOrb_clear (Driver *drvthis)
 {
+        PrivateData * p = drvthis->private_data;
+
 	if (framebuf != NULL)
-		memset (framebuf, ' ', (width * height));
+		memset (framebuf, ' ', (p->width * p->height));
 
 	/* We don't use hardware clear anymore.
 	 * We use incremental update with the frame_buffer. */
@@ -498,7 +506,9 @@ MtxOrb_close (Driver *drvthis)
 MODULE_EXPORT int
 MtxOrb_width (Driver *drvthis)
 {
-	return width;
+        PrivateData * p = drvthis->private_data;
+
+        return p->width;
 }
 
 /******************************
@@ -507,7 +517,9 @@ MtxOrb_width (Driver *drvthis)
 MODULE_EXPORT int
 MtxOrb_height (Driver *drvthis)
 {
-	return height;
+        PrivateData * p = drvthis->private_data;
+
+	return p->height;
 }
 
 MODULE_EXPORT void
@@ -515,12 +527,14 @@ MtxOrb_string (Driver *drvthis, int x, int y, char *string)
 {
 	int offset, siz;
 
+        PrivateData * p = drvthis->private_data;
+
 	ValidX(x);
 	ValidY(y);
 
 	x--; y--; /* Convert 1-based coords to 0-based... */
-	offset = (y * width) + x;
-	siz = (width * height) - offset;
+	offset = (y * p->width) + x;
+	siz = (p->width * p->height) - offset;
 	siz = siz > strlen(string) ? strlen(string) : siz;
 
 	memcpy(framebuf + offset, string, siz);
@@ -534,15 +548,17 @@ MtxOrb_flush (Driver *drvthis)
 	char out[12];
 	int i,j,mv = 1;
 	static char *old = NULL;
-	char *p, *q;
+	char *xp, *xq;
+
+        PrivateData * p = drvthis->private_data;
 
 	if (old == NULL) {
-		old = malloc(width * height);
+		old = malloc(p->width * p->height);
 
 		write(fd, "\x0FEG\x01\x01", 4);
-		write(fd, framebuf, width * height);
+		write(fd, framebuf, p->width * p->height);
 
-		strncpy(old, framebuf, width * height);
+		strncpy(old, framebuf, p->width * p->height);
 
 		return;
 
@@ -556,13 +572,13 @@ MtxOrb_flush (Driver *drvthis)
 		*/
 	}
 
-	p = framebuf;
-	q = old;
+	xp = framebuf;
+	xq = old;
 
-	for (i = 1; i <= height; i++) {
-		for (j = 1; j <= width; j++) {
+	for (i = 1; i <= p->height; i++) {
+		for (j = 1; j <= p->width; j++) {
 
-			if ((*p == *q) && (*p > 8))
+			if ((*xp == *xq) && (*xp > 8))
 				mv = 1;
 			else {
 			/* Draw characters that have changed, as well
@@ -575,10 +591,10 @@ MtxOrb_flush (Driver *drvthis)
 					write (fd, out, 4);
 					mv = 0;
 				}
-				write (fd, p, 1);
+				write (fd, xp, 1);
 			}
-			p++;
-			q++;
+			xp++;
+			xq++;
 		}
 	}
 
@@ -590,7 +606,7 @@ MtxOrb_flush (Driver *drvthis)
 	 * }
 	 */
 
-	strncpy(old, framebuf, width * height);
+	strncpy(old, framebuf, p->width * p->height);
 
 	debug(RPT_DEBUG, "MtxOrb: frame buffer flushed");
 }
@@ -608,6 +624,8 @@ MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 	 * that characters 0..4 (or similar) are graphic fonts
 	 */
 
+        PrivateData * p = drvthis->private_data;
+
 	ValidX(x);
 	ValidY(y);
 
@@ -619,7 +637,7 @@ MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 
 	/* write to frame buffer */
 	y--; x--; /* translate to 0-index */
-	offset = (y * width) + x;
+	offset = (y * p->width) + x;
 	framebuf[offset] = c;
 
 	debug(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x, y);
@@ -958,6 +976,8 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 
 	int y;
 
+        PrivateData * p = drvthis->private_data;
+
 	debug(RPT_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
 
 /* REMOVE THE NEXT LINE FOR TESTING ONLY... */
@@ -965,7 +985,7 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 /* REMOVE THE PREVIOUS LINE FOR TESTING ONLY... */
 
 	if (len > 0) {
-		for (y = height; y > 0 && len > 0; y--) {
+		for (y = p->height; y > 0 && len > 0; y--) {
 			if (len >= cellheight)
 				MtxOrb_icon (drvthis, x, y, barb);
 			else
@@ -975,7 +995,7 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 		}
 	} else {
 		len = -len;
-		for (y = 2; y <= height && len > 0; y++) {
+		for (y = 2; y <= p->height && len > 0; y++) {
 			if (len >= cellheight)
 				MtxOrb_icon (drvthis, x, y, barb);
 			else
@@ -999,13 +1019,15 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 	unsigned char mapr[6] = { barw, barr1, barr2, barr3, barr4, barb };
 	unsigned char mapl[6] = { barw, barl1, barl2, barl3, barl4, barb };
 
+        PrivateData * p = drvthis->private_data;
+
 	ValidX(x);
 	ValidY(y);
 
 	debug(RPT_DEBUG, "MtxOrb: horizontal bar at %d set to %d", x, len);
 
 	if (len > 0) {
-		for (; x <= width && len > 0; x++) {
+		for (; x <= p->width && len > 0; x++) {
 			if (len >= cellwidth)
 				MtxOrb_icon (drvthis, x, y, barb);
 			else
@@ -1290,12 +1312,14 @@ MtxOrb_heartbeat (Driver *drvthis, int type)
 	static int timer = 0;
 	int whichIcon;
 
+        PrivateData * p = drvthis->private_data;
+
 	if (type == HEARTBEAT_ON) {
 		/* Set this to pulsate like a real heart beat... */
 		whichIcon = (! ((timer + 4) & 5));
 
 		/* Ask for the right heartbeat icon... */
-		MtxOrb_icon (drvthis, width, 1, whichIcon);
+		MtxOrb_icon (drvthis, p->width, 1, whichIcon);
 
 		/* change display... */
 		MtxOrb_flush (drvthis);
