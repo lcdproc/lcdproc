@@ -1,0 +1,25 @@
+Source: lcdproc
+Section: utils
+Priority: extra
+Maintainer: Jonathan Oxer <jon@debian.org>
+Build-Depends: debhelper (>= 4.0.0), automake | automaken, autoconf2.13 | autoconf, texinfo, libncurses5-dev, libusb-dev (>= 0.1.8)
+Standards-Version: 3.6.0
+
+Package: lcdproc
+Architecture: any
+Depends: ${shlibs:Depends}, debconf (>= 0.5.0)
+Description: LCD display driver daemon and clients
+ This is a client/server suite including drivers for all kinds of
+ nifty LCD displays. The server supports several serial devices: Matrix
+ Orbital, Crystal Fontz, Bayrad, LB216, LCDM001 (kernelconcepts.de),
+ Wirz-SLI and PIC-an-LCD; some devices connected to the parallel port:
+ HD44780, STV5730, T6963, SED1520 and SED1330; and also some displays
+ connected via USB: CFonz633, CwLnx, USBLCD, IOWarrior and HD44780
+ (ConnectionType=bwctusb).
+ .
+ Various clients are available that display things like CPU load, system
+ load, memory usage, uptime, and a lot more. Custom clients can be
+ written using the simple client-server protocol and provided example
+ code.
+ .
+ http://lcdproc.omnipotent.net/  or http://www.lcdproc.org/
