@@ -9,7 +9,7 @@ lcdproc (0.4.99+cvs20050101) unstable; urgency=low
       + BWCT USB LCD
     - licence problem for CFonz633 solved  
 
- -- Peter Marschall <peter@adpm.de>  Fri, 31 Dec 2004 23:21:28 +0r10
+ -- Peter Marschall <peter@adpm.de>  Fri, 31 Dec 2004 23:21:28 +0100
 
 lcdproc (0.4.5-1) unstable; urgency=high
 
