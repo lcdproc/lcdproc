@@ -267,8 +267,10 @@ main (int argc, char **argv)
 			} else {
 				// not in a driver section...
 				if (strncasecmp(linebuf, "Driver ", 7) == 0) {
-					driverlist[list_index] = malloc(MAX_DRIVER_NAME_SIZE);
-					snprintf(driverlist[list_index++], MAX_DRIVER_NAME_SIZE, "%s", linebuf + 7);
+					if (driverlist[0] == NULL) { // check for arguments: override conf file drivers...
+						driverlist[list_index] = malloc(MAX_DRIVER_NAME_SIZE);
+						snprintf(driverlist[list_index++], MAX_DRIVER_NAME_SIZE, "%s", linebuf + 7);
+					}
 				}
 			}
 		}
