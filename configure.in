@@ -10,7 +10,6 @@ case "$host" in
 	;;
 *-*-*solaris*)
 	AC_DEFINE(SOLARIS)
-	LIBS="-lnsl -lsocket"
 	;;
 esac
 
@@ -42,6 +41,33 @@ dnl Replace `main' with a function in -lLCDstuff:
 dnl AC_CHECK_LIB(LCDstuff, main)
 dnl Replace `main' with a function in -lncurses:
 dnl AC_CHECK_LIB(ncurses, main)
+
+dnl Solaris
+AC_CHECK_FUNC(gethostbyname,,[AC_CHECK_LIB(nsl,gethostbyname)])
+AC_CHECK_FUNC(connect,,[AC_CHECK_LIB(socket,connect)])
+AC_CHECK_FUNC(inet_aton,,[AC_CHECK_LIB(resolv,inet_aton)])
+AC_CHECK_LIB(kstat, kstat_open)
+AC_CHECK_FUNCS(getloadavg swapctl)
+AC_CHECK_HEADERS(procfs.h sys/procfs.h, break)
+
+dnl Some versions of Solaris require -lelf for -lkvm
+AC_CHECK_LIB(kvm, kvm_open,[
+  LIBS="-lkvm $LIBS"
+],[AC_MSG_CHECKING(for kvm_open in -lkvm with -lelf)
+   AC_CACHE_VAL(ac_cv_lib_kvm_with_elf,
+   [ac_save_LIBS="$LIBS"
+    LIBS="-lkvm -lelf $LIBS"
+    AC_TRY_LINK([char kvm_open();], [kvm_open()],
+                ac_cv_lib_kvm_with_elf=yes, ac_cv_lib_kvm_with_elf=no)
+    LIBS="$ac_save_LIBS"
+   ])
+   if test "$ac_cv_lib_kvm_with_elf" = "yes"; then
+     AC_MSG_RESULT(yes)
+     LIBS="-lkvm -lelf $LIBS"
+   else
+     AC_MSG_RESULT(no)
+   fi
+])
 
 dnl Checks for header files.
 AC_HEADER_DIRENT
