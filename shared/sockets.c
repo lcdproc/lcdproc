@@ -171,7 +171,7 @@ sock_recv_string (int fd, char *dest, size_t maxlen)
 #endif
 		if (err == -1) {
 			if (errno == EAGAIN) {
-				if (recv) {
+				if (recvBytes) {
 					// We've begun to read a string, but no bytes are
 					// available.  Loop.
 					continue;
