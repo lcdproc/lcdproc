@@ -229,7 +229,7 @@ render_frame (LinkedList * list,
 						if (str_length >= BUFSIZE)
 							str_length = BUFSIZE - 1;
 						strncpy (str, w->text, str_length);
-						str[str_length+1] = 0;
+						str[str_length] = 0;
 						drivers_string (w->x + left, w->y + top - fy, str);
 					}
 				}
@@ -303,7 +303,7 @@ render_frame (LinkedList * list,
 					length = BUFSIZE - 1;
 				if (length <= vis_width - 6) {
 					strncpy (str, w->text, length);
-					str[length+1] = 0;
+					str[length] = 0;
 					x = length + 5;
 				} else					  /* Scroll the title, if it doesn't fit...*/
 				{
@@ -325,7 +325,7 @@ render_frame (LinkedList * list,
 					if (str_length >= BUFSIZE)
 						str_length = BUFSIZE -1;
 					strncpy (str, w->text + x, str_length);
-					str[str_length+1] = 0;
+					str[str_length] = 0;
 					x = vis_width - 1;
 				}
 
