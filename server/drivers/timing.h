@@ -1,6 +1,3 @@
-#ifndef _TIMING_H
-#define _TIMING_H
-
 /*
  * Utility header file for timing functions
  *
@@ -19,16 +16,40 @@
  *                2000 Charles Steinkuehler <cstein@newtek.com>
  */
 
-// Uncomment one of the lines below to select your desired delay generation
-// mechanism.  If both defines are commented, the original I/O read timing
-// loop is used.  Using DELAY_NANOSLEEP  seems to provide the best performance.
+#ifndef _TIMING_H
+#define _TIMING_H
+
+// Uncomment one of the lines below this paragraph to select your desired
+// delay generation mechanism.
+// Mechanism DELAY_NANOSLEEP seems to provide the best performance.
+// Mechanism DELAY_IOCALLS can be quite inaccurate.
+// Mechanism DELAY_AUTOSELECT lets the system determine a mechanism, and is
+// the default.
+
+#define DELAY_AUTOSELECT
 //#define DELAY_GETTIMEOFDAY
-#ifdef HAVE_SCHED_H
-# define DELAY_NANOSLEEP
-#else
-# define DELAY_GETTIMEOFDAY
+//#define DELAY_NANOSLEEP
+//#define DELAY_IOCALLS
+
+
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
 
+// Autoselect...  Does this always work well ?
+#ifdef DELAY_AUTOSELECT
+# ifdef HAVE_SCHED_H
+#  define DELAY_NANOSLEEP
+# else
+#  define DELAY_GETTIMEOFDAY
+# endif
+#endif
+
+// Include the correct time.h stuff (regardless of selected mechanism)
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -41,11 +62,18 @@
 #endif
 
 // Only one alternate delay method at a time, please ;-)
+// And include extra header files here...
 #if defined DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
+# undef DELAY_IOCALLS
 #elif defined DELAY_NANOSLEEP
+# undef DELAY_GETTIMEOFDAY
+# undef DELAY_IOCALLS
 # include <sched.h>
-# include <time.h>
+#else    // assume  DELAY_IOCALLS
+# undef DELAY_GETTIMEOFDAY
+# undef DELAY_NANOSLEEP
+# include "port.h"
 #endif
 
 /////////////////////////////////////////////////////////////////

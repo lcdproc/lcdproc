@@ -1,7 +1,4 @@
-#ifndef PORT_H
-#define PORT_H
-
-/* $id$ 
+/* $id$
  * Low level I/O functions taken from led-stat.txt
  * Jan 22 95 copyright damianf@wpi.edu
  *
@@ -12,12 +9,6 @@
  *
  * NetBSD port by Guillaume Filion, copyright 12/2001
  */
-
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
-
-#include <stdio.h>
 
 /*
 This file defines 4 static inline functions for port I/O:
@@ -38,6 +29,15 @@ static inline int port_access (unsigned short int port);
 static inline int port_access_full (unsigned short int port);
 // Returns 0 if successful, -1 if failed
 */
+
+#ifndef PORT_H
+#define PORT_H
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <stdio.h>
 
 // -------------------------------------------------------------
 // Use ioperm, inb and outb in <sys/io.h> (Linux)
@@ -99,22 +99,22 @@ static inline void setaccess(u_long * map, u_int bit, int allow) {
 // Get access to a specific port
 static inline int port_access (unsigned short int port) {
 	u_long          iomap[32];
-	
+
 	if (i386_get_ioperm(iomap) == -1) return -1;
 
 	setaccess(iomap, port  , 1);
 
 	if (i386_set_ioperm(iomap) == -1) return -1;
-	
+
 	return 0;
 }
 
 // Get access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA)
 static inline int port_access_full (unsigned short int port) {
 	u_long          iomap[32];
-	
+
 	if (i386_get_ioperm(iomap) == -1) return -1;
-		
+
 	setaccess(iomap, port  , 1);
 	setaccess(iomap, port+1, 1);
 	setaccess(iomap, port+2, 1);
@@ -154,7 +154,7 @@ static inline int port_access_full (unsigned short int port) {
 	} else {
 		return( -1 );  // Failure
 	};
-	
+
 	return -1;
 }
 

@@ -1,5 +1,20 @@
-// This file contains defines to control the LPT port.
-// A lot of this was originally in hd44780-low.h
+/*
+ * This file contains defines to control the LPT port.
+ * A lot of this was originally in hd44780-low.h
+ *
+ * Moved from the HD44780 driver by Joris Robijn.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c)  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
+ *		  2001 Joris Robijn <joris@robijn.net>
+ *		  2001 Mark Haemmerling <mail@markh.de>
+ *		  2000 Charles Steinkuehler <cstein@newtek.com>
+ *		  1999 Andrew McMeikan <andrewm@engineer.com>
+ *		  1998 Richard Rognlie <rrognlie@gamerz.net>
+ *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
+ */
 
 #ifndef LPT_PORT_H
 #define LPT_PORT_H

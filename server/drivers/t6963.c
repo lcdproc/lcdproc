@@ -1,7 +1,7 @@
 /*
  * Base driver module for Toshiba T6963 based LCD displays. ver 1.2
  *
- * Parts of this file are based on the kernel driver by Alexander Frink <Alexander.Frink@Uni-Mainz.DE> 
+ * Parts of this file are based on the kernel driver by Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
  *
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -17,9 +17,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <asm/io.h>
+//#include <asm/io.h>
 #include <sys/perm.h>
-	
+
 #include "shared/str.h"
 #include "shared/debug.h"
 
@@ -88,7 +88,7 @@ t6963_init (struct lcd_logical_driver *driver, char *args)
         }
 
 	DEBUG3 ("Getting permissions to %i...\n", t6963_out_port);
-	for (i = t6963_out_port; i < t6963_out_port+2; i++) 
+	for (i = t6963_out_port; i < t6963_out_port+2; i++)
 		if( port_access(i) ) {   //ioperm(t6963_out_port, 3, 1)) {
 			fprintf (stderr, "T6963_init: failed (%s)\n", strerror (errno));
                 	return -1;
@@ -100,7 +100,7 @@ t6963_init (struct lcd_logical_driver *driver, char *args)
         }
 
 	DEBUG3 ("   cool, got 'em!\nSetting width and height\n");
-	
+
 	DEBUG3 ("done\nAllocating memory: %i x %i bytes = %i...\n", driver->wid, driver->hgt, driver->wid * driver->hgt);
 
 		// Set display size
@@ -218,7 +218,7 @@ t6963_clear ()
 void
 t6963_graphic_clear (int x1, int y1, int x2, int y2)
 {
-	int x; 
+	int x;
 
 	DEBUG4 ("Clearing Graphic %i bytes\n", (x2-x1)*(y2-y1));
 
@@ -352,7 +352,7 @@ t6963_vbar (int x, int len)
 	for (y = 0; y < len/t6963->cellhgt; y++)
 		t6963_chr (x, 6-y, 219);
 
-	if (len % t6963->cellhgt) 
+	if (len % t6963->cellhgt)
 		t6963_chr (x, 6-y, 211 + (len % t6963->cellhgt));
 
 	DEBUG4 ("Done\n");
@@ -386,7 +386,7 @@ t6963_icon (int which, char dest)
 }
 
 /////////////////////////////////////////////////////////////////
-// Does the heartbeat 
+// Does the heartbeat
 //
 void
 t6963_heartbeat (int type)
@@ -410,7 +410,7 @@ t6963_heartbeat (int type)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Gets a whole screen buffer as argument...  
+// Gets a whole screen buffer as argument...
 //
 
 void
