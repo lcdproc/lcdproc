@@ -111,6 +111,10 @@ static char *lcd_drv_getinfo ();
 #include "svgalib_drv.h"
 // -- #endif
 
+// -- #ifdef T6963_DRV
+#include "t6963.h"
+// -- #endif
+
 // Make program more readable and understandable;
 // hide details...
 //#define ResetList(a)		LL_Rewind(a)
@@ -180,6 +184,9 @@ lcd_physical_driver drivers[] = {
 // -- #ifdef SVGALIB_DRV
 	{"svgalib", svgalib_drv_init,},
 // -- #endif
+// -- #ifdef T6963_DRV
+	{"t6963", t6963_init,},
+// -- #endif
 
 	{NULL, NULL,},
 
@@ -199,12 +206,14 @@ lcd_list_drivers (void) {
 		printf("%s", CurrentDriver);
 
 		if (NextDriver != NULL)
-			printf(",");
+			printf(", ");
 
 		i++;
 		if ((i % 8) == 0)
-			printf("\n");
+			printf("\n\t");
 	}
+
+	printf("\n");
 }
 
 ////////////////////////////////////////////////////////////
