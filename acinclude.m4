@@ -1,5 +1,5 @@
 AC_DEFUN(LCD_DRIVERS_SELECT, [
-AC_MSG_CHECKING(for which drivers to compile)
+AC_CHECKING(for which drivers to compile)
 
 AC_ARG_ENABLE(drivers,
   	[  --enable-drivers=<list> compile driver for LCDs in <list>.]
@@ -188,7 +188,8 @@ dnl				else
   		esac
   	done
 
-AC_MSG_RESULT([Will compile drivers:$actdrivers])
+actdrivers=`echo $actdrivers | sed 's/ /,/g'`
+AC_MSG_RESULT([Will compile drivers: $actdrivers])
 
 AC_SUBST(LIBCURSES)
 AC_SUBST(LIBIRMAN)
