@@ -11,6 +11,9 @@ rest of the file. 8)
 
 First read the README if you haven't already.
 
+Please take a few minutes to read the user guide located at 
+http://lcdproc.sf.net/docs/
+
 In order to compile LCDproc, you'll need:
 
 an ANSI C compiler, we recommend GCC. Most Linux or BSD systems come
