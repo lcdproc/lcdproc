@@ -6,6 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2003, Joris Robijn
  *
  *
  * Does screen management
@@ -30,6 +31,16 @@
 
 int  default_duration = 0;
 int  default_timeout  = -1;
+
+char *pri_names[] = {
+	"hidden",
+	"background",
+	"info",
+	"foreground",
+	"alert",
+	"input",
+	NULL,
+};
 
 Screen *
 screen_create (char * id, Client * client)
@@ -56,7 +67,7 @@ screen_create (char * id, Client * client)
 	}
 
 	s->name = NULL;
-	s->priority = DEFAULT_SCREEN_PRIORITY;
+	s->priority = PRI_INFO;
 	s->duration = default_duration;
 	s->backlight = BACKLIGHT_OPEN;
 	s->heartbeat = HEARTBEAT_OPEN;
@@ -156,4 +167,25 @@ screen_find_widget (Screen * s, char *id)
 	}
 	debug (RPT_DEBUG, "%s: Not found", __FUNCTION__);
 	return NULL;
+}
+
+Priority
+screen_pri_name_to_pri (char * priname)
+{
+	Priority pri = WID_NONE;
+	int i;
+
+	for (i = 0; pri_names[i]; i++) {
+		if (strcmp (pri_names[i], priname) == 0) {
+			pri = i;
+			break; /* it's valid: skip out...*/
+		}
+	}
+	return pri;
+}
+
+char *
+screen_pri_to_pri_name (Priority pri)
+{
+	return pri_names[pri];
 }

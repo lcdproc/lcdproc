@@ -6,9 +6,11 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2003, Joris Robijn
  *
  *
- * All actions that can be performed on the list of screens
+ * All actions that can be performed on the list of screens.
+ * This file also manages the rotation of screens.
  *
  */
 
@@ -19,26 +21,18 @@
 #include "shared/sockets.h"
 #include "shared/report.h"
 #include "screenlist.h"
-#include "render.h"
 #include "screen.h"
-#include "serverscreens.h"
-#include "clients.h"
 
 #include "main.h" /* for timer */
 
-int screenlist_action = 0;
-long int current_screen_start_time;
+/* Local functions */
+int compare_priority (void *one, void *two);
 
+bool autorotate = 1;			/* If on, INFO and FOREGROUND screens will rotate */
 LinkedList *screenlist = NULL;
 Screen * current_screen = NULL;
+long int current_screen_start_time = 0;
 
-int screenlist_add_end (Screen * screen);
-Screen *screenlist_next_roll ();
-Screen *screenlist_prev_roll ();
-Screen *screenlist_next_priority ();
-
-int compare_priority (void *one, void *two);
-int compare_addresses (void *one, void *two);
 
 int
 screenlist_init ()
@@ -47,12 +41,12 @@ screenlist_init ()
 
 	screenlist = LL_new ();
 	if (!screenlist) {
-		report(RPT_ERR, "%s: error allocating list", __FUNCTION__);
+		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return -1;
 	}
-	screenlist_action = 0;
 	return 0;
 }
+
 
 int
 screenlist_shutdown ()
@@ -68,77 +62,110 @@ screenlist_shutdown ()
 	return 0;
 }
 
+
+int
+screenlist_add (Screen * s)
+{
+	if (!screenlist)
+		return -1;
+	return LL_Push (screenlist, s);
+}
+
+
 int
 screenlist_remove (Screen * s)
 {
 	debug (RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id);
 
-	if (!LL_Remove (screenlist, s))
+	if (!screenlist)
 		return -1;
-	else
-		return 0;
+
+	/* Are we trying to remove the current screen ? */
+	if (s == current_screen) {
+		screenlist_goto_next ();
+		if (s == current_screen) {
+			/* Hmm, no other screen had same priority */
+			void * res = LL_Remove (screenlist, s);
+			/* And now once more */
+			screenlist_goto_next ();
+			return (res == NULL) ? -1 : 0;
+		}
+	}
+	return (LL_Remove (screenlist, s) == NULL) ? -1 : 0;
 }
 
-int
-screenlist_remove_all (Screen * s)
-{
-	int i = 0;
-
-	debug (RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id);
-
-	while (LL_Remove (screenlist, s))
-		i++;
-
-	debug (RPT_DEBUG, "screenlist_remove_all()... got %i", i);
-
-	return i;
-}
 
 void
-screenlist_update ()
-/* Decide if we need to switch to an other screen.
- */
+screenlist_process ()
 {
 	Screen * s;
+	Screen * f;
 
 	report (RPT_DEBUG, "%s()", __FUNCTION__);
 
+	if (!screenlist)
+		return;
+
+	/* Sort the list acfording to priority class */
+	LL_Sort (screenlist, compare_priority);
+	f = LL_GetFirst(screenlist);
+
+	/**** First we need to check out the current situation. ****/
+
+	/* Check whether there is an active screen */
 	s = screenlist_current ();
 	if (!s) {
-		/* Try to switch to the first screen in the list */
+		/* We have no active screen yet.
+		 * Try to switch to the first screen in the list... */
 
-		s = LL_GetFirst(screenlist);
+		s = f;
 		if (!s) {
 			/* There was no screen in the list */
 			return;
 		}
 		screenlist_switch (s);
+		return;
 	}
-	if (timer - current_screen_start_time >= s->duration) {
-		screenlist_switch( screenlist_next ());
-	}
-
-	/* Check to see if the screen has a timeout value, if it does
-	 * decrese it and then check to see if it has excpired.
-	 * Remove if expired.
-	 */
-	if (s && s->timeout != -1) {
-		--(s->timeout);
-		report(RPT_DEBUG, "Timeout matches check, screen %s has timeout->%d", s->name, s->timeout);
-		if (s->timeout <= 0) {
-			client_remove_screen (s->client, s);
-			screen_destroy (s);
-			report(RPT_DEBUG, "Removing screen %s which has timeout->%d", s->name, s->timeout);
+	else {
+		/* There already was an active screen.
+		 * Check to see if it has an expiry time. If so, decrease it
+		 * and then check to see if it has expired. Remove the screen
+		 * if expired. */
+		if (s->timeout != -1) {
+			--(s->timeout);
+			report(RPT_DEBUG, "Active screen [%.40s] has timeout->%d", s->id, s->timeout);
+			if (s->timeout <= 0) {
+				/* Expired, we can destroy it */
+				report(RPT_DEBUG, "Removing expired screen [%.40s]", s->id);
+				client_remove_screen (s->client, s);
+				screen_destroy (s);
+			}
 		}
 	}
-	for (s=LL_GetFirst(screenlist); s; s=LL_GetNext(screenlist)) {
-		report( RPT_DEBUG, "%s: [%s] %d %d", __FUNCTION__, s->id, s->priority, s->duration );
+
+	/**** OK, current situation examined. We can now see if we need to switch. */
+
+	/* Is there a screen of a higher priority class than the
+	 * current one ? */
+	if (f->priority > s->priority) {
+		/* Yes, switch to that screen, job done */
+		screenlist_switch(f);
+		return;
+	}
+
+	/* Current screen has been visible long enough and is it of 'normal'
+	 * priority ?
+	 */
+	if (autorotate && (timer - current_screen_start_time >= s->duration)
+	&& s->priority > PRI_BACKGROUND && s->priority <= PRI_FOREGROUND) {
+		/* Ah, rotate! */
+		screenlist_goto_next();
 	}
 }
 
+
 void
 screenlist_switch (Screen * s)
-/* Switch to an other screen */
 {
 	Client * c;
 	char str[256];
@@ -175,122 +202,70 @@ screenlist_switch (Screen * s)
 	current_screen_start_time = timer;
 }
 
+
 Screen *
 screenlist_current ()
 {
 	return current_screen;
 }
 
-int
-screenlist_add (Screen * s)
-{
-	/* TODO:  Different queueing modes...*/
-	return screenlist_add_end (s);
-}
 
-Screen *
-screenlist_next ()
+int
+screenlist_goto_next ()
 {
 	Screen *s;
 
 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
-	s = screenlist_current ();
+	if (!current_screen)
+		return -1;
 
-	/* If we're on hold, don't advance!*/
-	if (screenlist_action == SCR_HOLD)
-		return s;
-	if (screenlist_action == RENDER_HOLD)
-		return s;
+	/* Find current screen in screenlist */
+	for( s = LL_GetFirst(screenlist); s && s != current_screen; s = LL_GetNext(screenlist) );
 
-	/* Otherwise, reset it to regular operation*/
-	screenlist_action = 0;
-
-	/*debug(RPT_DEBUG, "Screenlist_next: calling handler...");*/
-
-	/* Call the selected queuing function...*/
-	/* TODO:  Different queueing modes...*/
-	s = screenlist_next_priority ();
-	/*s = screenlist_next_roll();*/
-
-	/*debug(RPT_DEBUG, "Screenlist_next() done");*/
-
-	return s;
+	/* One step forward */
+	s = LL_GetNext(screenlist);
+	if( !s || s->priority < current_screen->priority) {
+		/* To far, go back to start of screenlist */
+		s = LL_GetFirst(screenlist);
+	}
+	screenlist_switch (s);
+	return 0;
 }
 
-Screen *
-screenlist_prev ()
+
+int
+screenlist_goto_prev ()
 {
 	Screen *s;
 
 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
-	s = screenlist_current ();
+	if (!current_screen)
+		return -1;
 
-	/* If we're on hold, don't advance!*/
-	if (screenlist_action == SCR_HOLD)
-		return s;
-	if (screenlist_action == RENDER_HOLD)
-		return s;
+	/* Find current screen in screenlist */
+	for( s = LL_GetFirst(screenlist); s && s != current_screen; s = LL_GetNext(screenlist) );
 
-	/* Otherwise, reset it no regular operation*/
-	screenlist_action = 0;
+	/* One step back */
+	s = LL_GetPrev(screenlist);
+	if( !s ) {
+		/* We're at the start of the screenlist. We should find the
+		 * last screen with the same priority as the first screen.
+		 */
+		Screen * f = LL_GetFirst(screenlist);
+		Screen * n;
 
-	/* Call the selected queuing function...*/
-	/* TODO:  Different queueing modes...*/
-	s = screenlist_prev_roll ();
-
-	return s;
+		s = f;
+		while( (n = LL_GetNext(screenlist)) && n->priority == f->priority ) {
+			s = n;
+		}
+	}
+	screenlist_switch (s);
+	return 0;
 }
 
-/* Adds new screens to the end of the screenlist...*/
-int
-screenlist_add_end (Screen * screen)
-{
-	debug (RPT_DEBUG, "%s( screen=[%.40s] )", __FUNCTION__, screen->id);
-
-	return LL_Push (screenlist, (void *) screen);
-}
-
-/* Simple round-robin approach to screen cycling...*/
-Screen *
-screenlist_next_roll ()
-{
-	debug (RPT_DEBUG, "%s()", __FUNCTION__);
-
-	if (LL_UnRoll (screenlist) != 0)
-		return NULL;
-
-	return screenlist_current ();
-}
-
-/* Strict priority queue approach...*/
-Screen *
-screenlist_next_priority ()
-{
-	/*screen *s, *t;*/
-	debug (RPT_DEBUG, "%s()", __FUNCTION__);
-
-	if (LL_UnRoll (screenlist) != 0)
-		return NULL;
-
-	LL_Sort (screenlist, compare_priority);
-
-	return LL_Get (screenlist);
-}
-
-/* Simple round-robin approach to screen cycling...*/
-Screen *
-screenlist_prev_roll ()
-{
-	debug (RPT_DEBUG, "%s()", __FUNCTION__);
-
-	if (LL_Roll (screenlist) != 0)
-		return NULL;
-
-	return screenlist_current ();
-}
-
+/* Internal function for sorting. */
 int
 compare_priority (void *one, void *two)
 {
@@ -308,12 +283,5 @@ compare_priority (void *one, void *two)
 
 	/*debug(RPT_DEBUG, "compare_priority: done?");*/
 
-	return (a->priority - b->priority);
-}
-
-int
-compare_addresses (void *one, void *two)
-{
-	/*debug(RPT_DEBUG, "compare_addresses: %p == %p ???", one, two);*/
-	return (one != two);
+	return (b->priority - a->priority);
 }

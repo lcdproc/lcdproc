@@ -71,7 +71,7 @@ void report( const int level, const char *format, .../*args*/ )
 int set_reporting( char *application_name, int new_level, int new_dest )
 {
 	if( new_level < RPT_CRIT || new_level > RPT_DEBUG ) {
-		report( RPT_ERR, "debug level invalid: %d", new_level );
+		report( RPT_ERR, "report level invalid: %d", new_level );
 		return -1;
 	}
 

@@ -194,20 +194,6 @@ render_frame (LinkedList * list,
 		if (fy < 0)
 			fy = 0;
 
-		/* Make sure the whole frame gets displayed, at least...
-		 * ...by setting the action to RENDER_HOLD if no other action
-		 * is currently defined...
-		 */
-
-		if (!screenlist_action)
-			screenlist_action = RENDER_HOLD;
-
-		if ((fy) > fhgt - 1) {
-			/* Release hold after it has been displayed */
-			if (!screenlist_action || screenlist_action == RENDER_HOLD)
-				screenlist_action = 0;
-		}
-
 		if (fhgt == 0) { fy = 0; } else { fy %= fhgt; }
 		if (fy > fhgt - vis_height)
 			fy = fhgt - vis_height;
@@ -221,11 +207,6 @@ render_frame (LinkedList * list,
 
 	/*debug(RPT_DEBUG, "%s: %8x, %i", __FUNCTION__, frame, timer); */
 
-#define PositiveX(a)	((a)->x > 0)
-#define PositiveY(a)	((a)->y > 0)
-#define ValidPoint(a)	(PositiveX(a) && PositiveY(a))
-#define TextPresent(a)	((a)->text)
-
 	LL_Rewind (list);
 	do {
 		w = (Widget *) LL_Get (list);
@@ -235,7 +216,7 @@ render_frame (LinkedList * list,
 		/* TODO:  Make this cleaner and more flexible!*/
 		switch (w->type) {
 			case WID_STRING:
-				if (ValidPoint(w) && TextPresent(w)) {
+				if (w->x>0 && w->y>0 && w->text) {
 					if ((w->y <= vis_height + fy) && (w->y > fy)) {
 						if (w->x > vis_width) w->x=vis_width;
 						strncpy (str, w->text, vis_width - w->x + 1);
@@ -318,14 +299,6 @@ render_frame (LinkedList * list,
 					x = timer / speed;
 					y = x / length;
 
-					/* Make sure the whole title gets displayed, at least...*/
-					if (!screenlist_action)
-						screenlist_action = RENDER_HOLD;
-					if (x > length - 6) {
-						/* Release hold after it has been displayed*/
-						if (!screenlist_action || screenlist_action == RENDER_HOLD)
-							screenlist_action = 0;
-					}
 					x %= (length);
 					if (x < 0)
 						x = 0;
@@ -370,8 +343,6 @@ render_frame (LinkedList * list,
 						} else {
 							int effLength = length - screen_width;
 							int necessaryTimeUnits = 0;
-							if (!screenlist_action)
-								screenlist_action = RENDER_HOLD;
 							if (w->speed > 0) {
 								necessaryTimeUnits = effLength * w->speed;
 								if (((timer / (effLength * w->speed)) % 2) == 0) {
@@ -395,12 +366,6 @@ render_frame (LinkedList * list,
 								}
 							} else {
 								offset = 0;
-								if (screenlist_action == RENDER_HOLD)
-									screenlist_action = 0;
-							}
-							if (timer > necessaryTimeUnits) {
-								if (screenlist_action == RENDER_HOLD)
-									screenlist_action = 0;
 							}
 							if (offset <= length) {
 								strncpy (str, &((w->text)[offset]), screen_width);
@@ -437,8 +402,6 @@ render_frame (LinkedList * list,
 									int necessaryTimeUnits = 0;
 									int effLines = lines_required - available_lines + 1;
 									int begin = 0;
-									if (!screenlist_action)
-										screenlist_action = RENDER_HOLD;
 									/*debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);*/
 									if (w->speed > 0) {
 										necessaryTimeUnits = effLines * w->speed;
@@ -472,10 +435,6 @@ render_frame (LinkedList * list,
 										/*debug(RPT_DEBUG, "rendering: '%s' of %s", */
 										/*str,w->text); */
 										drivers_string (w->left, w->top + (i - begin), str);
-									}
-									if (timer > necessaryTimeUnits) {
-										if (screenlist_action == RENDER_HOLD)
-											screenlist_action = 0;
 									}
 								}
 							}

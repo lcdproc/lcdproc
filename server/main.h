@@ -21,7 +21,6 @@
   contains a few things that other parts of the program might want
   to know about...
  */
-#define DEFAULT_SCREEN_PRIORITY 128
 
 extern char *version;
 extern char *protocol_version;
@@ -40,6 +39,7 @@ extern char *build_date;
 
 extern long int timer;
 /* 32 bits at 8Hz will overflow in 2 ^ 29 = 5e8 seconds = 17 years.
- * Please mail us if you got an overflow :) */
+ * If you get an overflow, please mail us and we will fix this personally
+ * for you ! */
 
 #endif

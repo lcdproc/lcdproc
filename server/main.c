@@ -159,7 +159,7 @@ main (int argc, char **argv)
 	signal (SIGTERM, exit_program);		/* and "kill"...*/
 	signal (SIGKILL, exit_program);		/* and just in case, "kill -KILL" (which cannot be trapped; but oh well)*/
 
-	signal (SIGHUP, catch_reload_signal);		/* On SIGHUP reread config and restart the drivers ! */
+	signal (SIGHUP, catch_reload_signal);	/* On SIGHUP reread config and restart the drivers ! */
 	/* Let's see if we can actually get this to work ;) */
 
 	/*
@@ -273,7 +273,7 @@ process_command_line (int argc, char **argv)
 
 	/* Reset getopt */
 	optind = 0;
-	opterr = 0; /* Prevent some message to strerr */
+	opterr = 0; /* Prevent some messages to stderr */
 
 	/* Analyze options here.. (please try to keep list of options the
 	 * same everywhere) */
@@ -707,7 +707,7 @@ do_mainloop ()
 		if (render_lag > 0) {
 			/* Time for a rendering stroke */
 			timer ++;
-			screenlist_update ();
+			screenlist_process ();
 			s = screenlist_current ();
 
 			/* TODO: Move this call to every client connection
@@ -797,7 +797,7 @@ catch_reload_signal (int val)
 int
 interpret_boolean_arg (char *s)
 {
-	if( strcmp( s, "on" ) == 0 || strcmp( s, "yes" ) == 0 
+	if( strcmp( s, "on" ) == 0 || strcmp( s, "yes" ) == 0
 	|| strcmp( s, "true" ) == 0 || strcmp( s, "1" ) == 0 ) {
 		return 1;
 	}

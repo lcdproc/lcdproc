@@ -6,6 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ * 		 2003, Joris Robijn
  *
  */
 
@@ -20,13 +21,17 @@
 #include "shared/LL.h"
 #include "client.h"
 
+typedef enum {	PRI_HIDDEN, PRI_BACKGROUND, PRI_INFO, PRI_FOREGROUND,
+		PRI_ALERT, PRI_INPUT
+} Priority;
+
 typedef struct Screen {
 	char *id;
 	char *name;
 	int width, height;
 	int duration;
 	int timeout;
-	short int priority;
+	Priority priority;
 	short int heartbeat;
 	short int backlight;
 	short int cursor;
@@ -71,5 +76,9 @@ static inline Widget * screen_getnext_widget (Screen * s)
 
 /* Find a widget in a screen */
 Widget *screen_find_widget (Screen * s, char *id);
+
+/* Convert priority names to priority and vv */
+Priority screen_pri_name_to_pri (char * pri_name);
+char * screen_pri_to_pri_name (Priority pri);
 
 #endif

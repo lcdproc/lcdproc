@@ -6,6 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2003, Joris Robijn
  *
  *
  * Handles keypad (and other?) input from the user.
@@ -28,11 +29,18 @@
 
 #include "input.h"
 
+
+LinkedList * keylist;
+char * toggle_rotate_key = "Enter";
+char * prev_screen_key   = "Left";
+char * next_screen_key   = "Right";
+char * scroll_up_key     = "Up";
+char * scroll_down_key   = "Down";
+
+/* Local functions */
 int server_input (int key);
 void input_send_to_client (Client * c, char * key);
 void input_internal_key (char * key);
-
-LinkedList * keylist;
 
 
 int input_init()
@@ -43,6 +51,7 @@ int input_init()
 
 	return 0;
 }
+
 
 int input_shutdown()
 {
@@ -55,6 +64,7 @@ int input_shutdown()
 
 	return 0;
 }
+
 
 int
 handle_input ()
@@ -93,11 +103,12 @@ handle_input ()
 		} else {
 			/* It's an external client */
 			report (RPT_DEBUG, "%s: key is for external client on socket %d", __FUNCTION__, target->sock );
-			input_send_to_client (current_client, key);
+			input_send_to_client (target, key);
 		}
 	}
 	return 0;
 }
+
 
 void input_send_to_client (Client * c, char * key)
 {
@@ -112,50 +123,29 @@ void input_send_to_client (Client * c, char * key)
 	free (s);
 }
 
+
 void
 input_internal_key (char * key)
 {
-	if (is_menu_key(key) || screenlist_current() == menuscreen) {
-		menuscreen_key_handler (key);
+	if( is_menu_key(key) || screenlist_current() == menuscreen ) {
+		menuscreen_key_handler(key);
 	}
 	else {
-		/* TODO: give keys to server screen */
+		/* Keys are for scrolling or rotating */
+		if( strcmp(key,toggle_rotate_key) == 0 ) {
+			autorotate = !autorotate;
+		}
+		else if( strcmp(key,prev_screen_key) == 0 ) {
+			screenlist_goto_prev ();
+		}
+		else if( strcmp(key,next_screen_key) == 0 ) {
+			screenlist_goto_next ();
+		}
+		else if( strcmp(key,scroll_up_key) == 0 ) {
+		}
+		else if( strcmp(key,scroll_down_key) == 0 ) {
+		}
 	}
-}
-
-
-/* TODO: REPLACE THE FOLLOWING FUNCTION BY SOMETHING NEW */
-int
-server_input (int key)
-{
-	debug(RPT_DEBUG, "%s( key='%c' )", __FUNCTION__, (char) key);
-
-	switch ((char) key) {
-		case INPUT_PAUSE_KEY:
-			if (screenlist_action == SCR_HOLD)
-				screenlist_action = 0;
-			else
-				screenlist_action = SCR_HOLD;
-			break;
-		case INPUT_BACK_KEY:
-			screenlist_action = SCR_BACK;
-			screenlist_prev ();
-			break;
-		case INPUT_FORWARD_KEY:
-			screenlist_action = SCR_SKIP;
-			screenlist_next ();
-			break;
-		case INPUT_MAIN_MENU_KEY:
-			debug (RPT_DEBUG, "%s: got the menu key!", __FUNCTION__);
-			//server_menu ();
-			report (RPT_ERR, "MENU TEMPORATY DISABLED");
-			break;
-		default:
-			debug (RPT_DEBUG, "%s: Unused key \"%c\" (%i)", __FUNCTION__, (char) key, key);
-			break;
-	}
-
-	return 0;
 }
 
 int input_reserve_key (char * key, bool exclusive, Client * client)

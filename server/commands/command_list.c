@@ -6,6 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2003, Joris Robijn
  *
  *
  * This contains definitions for all the functions which clients can run.
@@ -42,6 +43,7 @@ client_function commands[] = {
 	{"menu_add_item", menu_add_item_func},
 	{"menu_del_item", menu_del_item_func},
 	{"menu_set_item", menu_set_item_func},
+	{"menu_goto", menu_goto_func},
 	/* Misc stuff...*/
 	{"backlight", backlight_func},
 	{"output", output_func},

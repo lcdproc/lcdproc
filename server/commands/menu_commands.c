@@ -36,7 +36,9 @@
 #include "menuscreens.h"
 #include "client.h"
 
+/* Local functions */
 MenuEventFunc(menu_commands_handler);
+
 
 /*************************************************************************
  * menu_add_item_func
@@ -59,7 +61,6 @@ MenuEventFunc(menu_commands_handler);
  * - numeric
  * - alpha
  */
-
 int
 menu_add_item_func (Client * c, int argc, char **argv)
 {
@@ -307,20 +308,24 @@ menu_del_item_func (Client * c, int argc, char **argv)
  *
  * Hmm, this is getting very big. We might need a some real parser after all.
  */
-
 int
 menu_set_item_func (Client * c, int argc, char **argv)
 {
 	typedef enum AttrType { NOVALUE, BOOLEAN, CHECKBOX_VALUE, SHORT, INT,
 				FLOAT, STRING } AttrType;
 
+	/* This table generalizes the options.
+	 * The table lists which options can exist for which menu items,
+	 * what kind of parameter they should have and where this scanned
+	 * parameter should be stored.
+	 */
 	struct OptionTable {
 		MenuItemType menuitem_type;	/* For what MenuItem type is
 						   the option ?
 						   Use -1 for ALL types. */
 		char * name;			/* The option concerned */
 		AttrType attr_type;		/* Type of value */
-		int attr_offset;		/* Where to put it the value
+		int attr_offset;		/* Where to put the value
 						   in the structure.
 						   Use -1 to process it
 						   yourself. */
@@ -608,6 +613,52 @@ menu_set_item_func (Client * c, int argc, char **argv)
 	return 0;
 }
 
+/***************************************************************
+ * Requests the menu system to display the given menu screen.
+ * This will only work if the menu is not active at the moment.
+ * However, if a valid menu id has been given the function will
+ * always return "success".
+ *
+ * usage: menu_goto <id>
+ */
+int
+menu_goto_func (Client * c, int argc, char **argv)
+{
+	char * menu_id;
+	Menu * menu;
+
+	if (!c->ack)
+		return 1;
+
+	if ((argc < 2 )) {
+		sock_send_string (c->sock, "huh?  Usage: menu_goto <menuid>\n");
+		return 0;
+	}
+
+	menu_id = argv[1];
+
+	if ( menu_id[0] == 0 ) {
+		/* No menu specified = client's main menu */
+		menu = c->menu;
+	} else {
+		/* A specified menu */
+		menu = menu_find_item (c->menu, menu_id, true);
+	}
+	if (!menu) {
+		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
+		return 0;
+	}
+	menuscreen_goto (menu);
+	/* Failure is not returned */
+	sock_send_string(c->sock, "success\n");
+	return 0;
+}
+
+/***************************************************************
+ * This function cathes the event for the menus that have been
+ * created on behalf of the clients. It informs the client with
+ * an event message.
+ */
 MenuEventFunc (menu_commands_handler)
 {
 	char buf[80] = "";

@@ -70,6 +70,10 @@ int menuscreens_init()
 
 	/* Create screen */
 	menuscreen = screen_create ("_menu_screen", NULL);
+	menuscreen->priority = PRI_HIDDEN;
+	active_menuitem = NULL;
+
+	screenlist_add (menuscreen);
 
 	/* Build menu */
 	menuscreen_create_menu ();
@@ -91,13 +95,14 @@ int menuscreens_shutdown()
 	menuscreen_switch_item (NULL);
 
 	/* Destroy the menuscreen */
+	screenlist_remove (menuscreen);
 	screen_destroy (menuscreen);
 	menuscreen = NULL;
-	screens_menu = NULL;
 
 	/* Destroy all menus */
 	menuitem_destroy (main_menu);
 	main_menu = NULL;
+	screens_menu = NULL;
 
 	/* Forget menu's key reservations */
 	input_release_client_keys (NULL);
@@ -148,6 +153,7 @@ bool is_menu_key (char * key)
 void menuscreen_switch_item (MenuItem * new_menuitem)
 /* This function changes the menuitem to the given one, and does necesary
  * actions.
+ * To leave the menu system, specify NULL for new_menuitem.
  * The item will not be reset when the new item is a child of the last one.
  */
 {
@@ -162,21 +168,13 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 	if (!old_menuitem && !new_menuitem) {
 		/* Nothing to be done */
 	} else if (old_menuitem && !new_menuitem) {
-		/* TODO: send menu to backgr */
-		if (screenlist_remove (menuscreen) < 0) {
-			report (RPT_ERR, "%s: Error unqueueing menu screen", __FUNCTION__);
-			return;
-		}
+		menuscreen->priority = PRI_HIDDEN;
 	} else if (!old_menuitem && new_menuitem) {
 		/* Menu is becoming active */
 		menuitem_reset (active_menuitem);
 		menuitem_rebuild_screen (active_menuitem, menuscreen);
 
-		if (screenlist_add (menuscreen) < 0) {
-			report (RPT_ERR, "%s: Error queueing menu screen", __FUNCTION__);
-			return;
-		}
-		/* TODO: raise it ! */
+		menuscreen->priority = PRI_INPUT;
 	} else {
 		/* We're left with the usual case: a menu level switch */
 		if( old_menuitem->parent != new_menuitem) {
@@ -184,6 +182,7 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 		}
 		menuitem_rebuild_screen (active_menuitem, menuscreen);
 	}
+	return;
 }
 
 void menuscreen_key_handler (char *key)
@@ -430,9 +429,10 @@ menuscreen_add_screen (Screen * s)
 	mi = menuitem_create_numeric ("", NULL, "Duration", 2, 3600, s->duration);
 	menu_add_item (m, mi);
 
-	mi = menuitem_create_numeric ("", NULL, "Priority", 0, 255, s->priority);
+	mi = menuitem_create_ring ("", NULL, "Priority", "Hidden\tBackground\tForeground\tAlert\tInput", s->priority);
 	menu_add_item (m, mi);
 }
+
 
 void
 menuscreen_remove_screen (Screen * s)
@@ -449,4 +449,19 @@ menuscreen_remove_screen (Screen * s)
 	m = menu_find_item (screens_menu, s->id, false);
 	menu_remove_item (screens_menu, m);
 	menuitem_destroy (m);
+}
+
+
+int
+menuscreen_goto (Menu * menu)
+{
+	if( !active_menuitem ) {
+		/* OK we can do it */
+		menuscreen_switch_item (menu);
+		return 0;
+	}
+	else {
+		/* Sorry there is a menu already active. */
+		return -1;
+	}
 }

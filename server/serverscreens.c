@@ -6,6 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2002, Joris Robijn
  *
  *
  * Implements the serverscreens
@@ -50,7 +51,7 @@ server_screen_init ()
 	}
 	server_screen->name = "Server screen";
 	server_screen->duration = 8; /* 1 second, instead of 4...*/
-	server_screen->priority = 255;
+	server_screen->priority = PRI_INFO;
 
 	/* Create all the widgets...*/
 	for (line=1; line<=4; line++) {

@@ -199,11 +199,26 @@ screen_set_func (Client * c, int argc, char **argv)
 				i++;
 				debug (RPT_DEBUG, "screen_set: priority=\"%s\"", argv[i]);
 
-				/* set the priority...*/
+				/* first try to interpret it as a number */
 				number = atoi (argv[i]);
-				if (number > 0)
+				if (number > 0) {
+					if (number <= 64) {
+						s->priority = PRI_FOREGROUND;
+					} else if (number < 192) {
+						s->priority = PRI_INFO;
+					} else {
+						s->priority = PRI_BACKGROUND;
+					}
+				} else {
+					/* Try if it is a priority class */
+					number = screen_pri_name_to_pri (argv[i]);
+				}
+				if (number >= 0) {
 					s->priority = number;
-				sock_send_string(c->sock, "success\n");
+					sock_send_string(c->sock, "success\n");
+				} else {
+					sock_send_string(c->sock, "huh?  invalid argument at -priority\n");
+				}
 			} else {
 				sock_send_string (c->sock, "huh?  -priority requires a parameter\n");
 			}

@@ -1,14 +1,30 @@
 Recent changes:
 
-Key:  
+Key:
      - Something removed
      + Something added
      * Something changed / fixed
 
-Coming soon: (?) (my list of stuff to do soon...)
- + Client menus
- * Dynamically-loaded driver system
- + LCDproc Developer's Guide
+v0.5
+This version has split off from unstable-0.4.3. Includes major changes.
+ + LCDd now does dynamic loading of driver modules
+ * New API in use
+ + LCDd will use fill-in functions for drivers that don't support a certain
+   function. Available for: vbar, hbar, bignum, heartbeat, icon, cursor.
+ * Server internal functions cleaned up, moved to other files etc.
+ * Menu system rewritten
+ + Client-supplied menus are now supported
+ * Key support improved: now keys have descriptive names, not just a letter
+   anymore.
+ + Reloading of configuration and drivers by sending a SIGHUP. Probably
+   needs improvement ;)
+ * HD44780 output register support on winamp wiring
+ * Reporting levels are now used more consistently
+ + lcdexec client added
+ * Display update frequency is now exactly 8Hz. Key scan frequency increased
+   to 32Hz.
+ * Priority scheme changed. Priority classes are now used, that indicate what
+   kind of a screen we're dealing with. More useful for interactive clients.
 
 v0.4.3
  - Removed possibility of passing arguments to the drivers from the
@@ -17,6 +33,9 @@ v0.4.3
  + Added ability of dropping root privileges to LCDd
  + Added LCDM001 driver (kernelconcepts.de)
  + Added Toshiba T6963 driver
+ + Added Seiko-Epson SED 1520 driver
+ + Added Seiko-Epson SED 1330 driver
+ + Added STV5730 driver composite TV signal character generation driver
  * Modified the CFontz driver so that the new ROM version is
    supported
  + Added ASCII emulation of BigNum to the drivers that did not
@@ -117,7 +136,7 @@ v0.4-pre10:
 
 V0.4-pre9:
  * small fixes for irix
- * Added flag in LCDd to shut off server screen:  
+ * Added flag in LCDd to shut off server screen:
  	"-i off" or "--serverinfo off"
  + Wirz SLI driver
  + 16x2 support (server only)
@@ -130,7 +149,7 @@ V0.4-pre9:
  * sizes > 20x4 no longer crash
 
 V0.4-pre8:
- * LCDd gives more updated info in the connect string: 
+ * LCDd gives more updated info in the connect string:
 	cell size, lcd dimensions.
  * bargraphs are now the correct length on CFontz displays, in the main
    lcdproc client.  For other clients, please parse the connect string!

@@ -210,10 +210,7 @@ client_add_screen (Client * c, Screen * s)
 	LL_Push (c->screenlist, (void *) s);
 
 	/* Now, add it to the screenlist...*/
-	if (screenlist_add (s) < 0) {
-		report (RPT_ERR, "client_add_screen: Error queueing new screen");
-		return -1;
-	}
+	screenlist_add (s);
 
 	return 0;
 }
@@ -232,11 +229,8 @@ client_remove_screen (Client * c, Screen * s)
 	LL_Remove (c->screenlist, (void *) s);
 
 	/* Now, remove it from the screenlist...*/
-	if (screenlist_remove_all (s) < 0) {
-		/* Not a serious error..*/
-		report (RPT_ERR, "%s: Error dequeueing screen", __FUNCTION__);
-		return 0;
-	}
+	screenlist_remove (s);
+
 	return 0;
 }
 

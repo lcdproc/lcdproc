@@ -6,6 +6,8 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2003, Joris Robijn
+ *
  *
  * Creates all menuscreens, menus and handles the keypresses for the
  * menuscreens.
@@ -48,6 +50,8 @@ void menuscreen_add_screen (Screen * s);
 /* Adds a menu for the given screen */
 
 void menuscreen_remove_screen (Screen * s);
-/* Removes the menu of the screen */
+/* Removes the menu of the given screen */
+
+int menuscreen_goto (Menu * menu);
 
 #endif

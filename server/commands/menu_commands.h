@@ -13,12 +13,10 @@
 #ifndef COMMANDS_MENU_H
 #define COMMANDS_MENU_H
 
-int menu_add_func (Client * c, int argc, char **argv);
-int menu_del_func (Client * c, int argc, char **argv);
-int menu_set_func (Client * c, int argc, char **argv);
 int menu_add_item_func (Client * c, int argc, char **argv);
 int menu_del_item_func (Client * c, int argc, char **argv);
 int menu_set_item_func (Client * c, int argc, char **argv);
+int menu_goto_func (Client * c, int argc, char **argv);
 
 #endif
 
