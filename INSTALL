@@ -1,78 +1,172 @@
-0. REALLY-QUICK START
+-- REALLY-QUICK START --------------------------------------------------
 
-If you're in a desperate hurry:
-
-./configure
+If you're in a desperate hurry type:
+./configure --enable-drivers=all
 make
-su
-make install
 
-1. GETTING STARTED
+And if you start wondering why it doesn't work, come back and read the
+rest of the file. 8)
+
+-- PREREQUISITES -----------------------------------------------------
 
 First read the README if you haven't already.
 
-2. CONNECTING THE DISPLAY TO YOUR SYSTEM
+In order to compile LCDproc, you'll need:
 
-For now, please refer to LCDproc's hardware page at
+an ANSI C compiler, we recommend GCC. Most Linux or BSD systems come 
+with GCC.
+
+GNU Make, Most Linux come with GNU Make, on some BSD you will need to 
+install it. See the PLATFORM SPECIFIC section for more infos.
+
+
+LCDproc is in fact two things, a client (lcdproc) and a server (LCDd).
+The client gathers informations and sends them to the server.
+The server displays the informations on an LCD display.
+The client and the server use a TCP connection to communicate, so it is
+possible to have a client on a box in Sweden showing its stats on a LCD
+display in the United States. For hardware reasons, the client is much 
+more portable than the server. Here's are the prerequistes for both:
+
+--- Client ---
+The client should run on any POSIX compliant system. 
+It has been sucessfully tested on:
+Linux 2.2.x, Linux 2.4.x, NetBSD 1.5, OpenBSD 3.0
+In the future want it to run on Windows, MacOS and others.
+
+--- Server ---
+The server needs to talk with the LCD display. At this time, it only works
+on Intel i386 (PC Compatible) architecture.
+It has been sucessfully tested on:
+Linux 2.2.x, Linux 2.4.x, NetBSD 1.5, OpenBSD 3.0
+
+Connecting the display to your system
+
+Depending on what kind of LCD display that you have, there are several
+sources for informations. If your LCD display came with a manual, this
+is a great place to start. If you don't have a manual, then you must find
+out what kind of display this is, and check the related informations:
+
+HD44780 and compatible: http://robijn.net/lcdproc/
+STV5730: http://www.adams-online.de/lcd/
+SED1520: http://www.adams-online.de/lcd/
+
+Also take a look at the comments in the driver source code in 
+server/drivers. You may have some good indications there.
+
+You may want to take a look at LCDproc's hardware page at
 http://lcdproc.omnipotent.net/hardware.php3 for details. Several
 different types of displays are now supported.
 
-3. BUILDING LCDPROC
 
-As long as you have a working automake, gcc and make, this should work.
+-- BUILDING LCDPROC -------------------------------------------------
 
- - Run the configure script:
-        ./configure
- - Run make to build the server and all clients
-        make
+--- Configuration ---
+The simplest way of doing it is with:
+    ./configure
+But it may not do what you want, so please take a few seconds to type:
+    ./configure --help
+And read the available options, especially --enable-drivers
 
-LCDproc will build in (hopefully) a few seconds. It's not very big. If
-you want, you can install it (if you're root) by typing:
+--- Compilation ---
+Run make to build the server and all clients
+    make
 
-make install
+If you only want to compile the clients, you must first go to the
+clients directory and then type make:
+	cd clients
+	make
 
-This will install the binaries and the man page, and will make a link
-called /dev/lcd which points to whatever port you specified in the
-Makefile. It will also change the permissions on the specified port
-to allow all users to write to the port (so users can run LCDproc).
-If you _don't_ want to allow this, change the permissions back after
-installing LCDproc. :)
+Similarly, if you only want to compile the server, you must first go 
+to the server directory and then type make:
+	cd server
+	make
 
-[change this stuff]
+Depending on your system, LCDproc will build in a few seconds to a 
+few minutes. It's not very big. 
 
-4. RUNNING LCDPROC / MANUAL INSTALL
+If you want, you can install it (if you're root) by typing:
+	make install
 
-First, you'll need to run the LCDd server.  If you're in the LCDproc
-source directory, and have just built it, run...
+This will install the binaries and the man pages in the directory you
+specified in configure.
 
-       server/LCDd -d joy -d MtxOrb
+-- PLATFORM SPECIFIC ------------------------------------------------
 
-This assumes you want to use the Matrix Orbital LCD driver and a
-joystick.  You can find out what other drivers are available by
-running "LCDd -h".  Note that you can use more than one driver at the
-same time.
+Here are some comments specific to each platform that LCDproc has been
+tested on.
+
+--- Linux ---
+Nothing special to say, everything should go well.
+
+You may be able to compile the server on something else than i386 if your
+linux installation can emulate ioperm, inb and outb commands. I heared 
+that some Alpha do that.
+
+--- NetBSD ---
+You need to use GUN Make instead of NetBSD's make. 
+You can find a GNU Make binary package to use with pkg_add at:
+ftp://ftp.netbsd.org/pub/NetBSD/packages/pkgsrc/devel/gmake/README.html
+
+Or download the source code at: 
+http://www.gnu.org/software/make/make.html
+
+Remember to type gmake instead of make to compile LCDproc.
+
+
+If you try to run LCDd and you get this error:
+Bus error (core dumped)
+It is likely that you did not have the right permission to access the ports. 
+Try starting the program as root.
+
+As said ealier, the server should only compile on NetBSD/i386.
+
+--- OpenBSD ---
+You need to use GUN Make instead of OpenBSD's make. 
+You can find a GNU Make binary package to use with pkg_add at:
+ftp://ftp.openbsd.org/pub/OpenBSD/3.0/packages/i386/
+
+Or download the source code at: 
+http://www.gnu.org/software/make/make.html
+
+As said ealier, the server should only compile on i386.
+
+--- FreeBSD ---
+(not tested yet)
+
+-- RUNNING LCDPROC -----------------------------------------------------
+
+--- Configuration file ---
+
+The first thing that you need to do is to modify the configuration file
+for your server. A example file (LCDd.conf) is available in the tarball.
+The comments present in this file should give you indications on what
+to do.
+
+--- Starting the server ---
+
+If you're in the LCDproc source directory, and have just built it, run:
+    server/LCDd -c path/to/config/file
+
+You can find out what drivers were compiled by running "LCDd -h".  
+Note that you cannot use more than one display driver at the same time.
+
+For security reasons, LCDd only accept connections from the 
+localhost, it will not accept connections from other computers on 
+the Internet. You can change this behavior in the configuration file.
+
+--- Starting the client(s) ---
 
 Then, you'll need some clients.  LCDproc comes with one:
-
-       clients/lcdproc/lcdproc C M T X &
+    clients/lcdproc/lcdproc C M T X &
 
 This will run the main LCDproc client, with the [C]pu, [M]emory,
 [T]ime, and [X]load screens.  The ampersand (&) puts it in the background.
 
-To install manually, you'll want to do something like the following:
+By default, the client tries to connect to a server located on localhost
+and listening to port 13666. To change this, use the -s and -p options.
 
-	su
-	cp server/LCDd /usr/local/bin
-	cp clients/lcdproc/lcdproc /usr/local/bin
-	cp docs/lcdproc.1.gz /usr/local/man/cat1
-	ln -s /dev/ttyS0 /dev/lcd
-
-Some prereleases or development releases will have broken auto-install
-scripts, so manual installs may be necessary for those versions.
-
-[this needs to be updated as well]
-
-5. PUTTING LCDPROC IN SYSTEM STARTUP
+-- PUTTING LCDPROC IN SYSTEM STARTUP -----------------------------------
 
 It's nice to have LCDproc start when the computer boots, so here's how
 to do it:
@@ -103,7 +197,7 @@ In Debian:
 
 That's all the OS`s we've actually done this with so far..
 
-6. OUR WEB SITE
+-- WEB SITE -------------------------------------------------------------
 
 Visit http://lcdproc.omnipotent.net/ for the latest updates and news
 for LCDproc. If you've got comments, suggestions, bug fixes, or 

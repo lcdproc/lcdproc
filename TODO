@@ -77,10 +77,3 @@ more powerful.  In addition, I'm looking for ways to better handle
 multiple driver devices.
 
 ----------------------------------------
-Anonymous CVS
-
-I want to *really* open up LCDproc development, by giving everyone
-access to the CVS repository.  But, alas, I've got to figure out how
-to set up a CVS server first...  (or convince Gareth to do it..  :)
-
-----------------------------------------

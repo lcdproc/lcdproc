@@ -1,52 +1,83 @@
-Warning:  This is a prerelease.  It will probably have some rough edges.
-
-
-INTRODUCTION
+-- INTRODUCTION --------------------------------------------------------
 
 LCDproc is a small program that extracts various statistics about your
 machine and displays them on an LCD display.  It works with several types
 and sizes of displays.
 
-Our site is located at http://lcdproc.omnipotent.net/ ... so check
+Our site is located at http://lcdproc.omnipotent.net/ So check
 there first for new versions or updates.  We've got a spot on the web
 site for user's suggestions, and you can e-mail us as well:
 
 choadster@earthlink.net (William W. Ferrell)
 scriven@cs.colostate.edu (Scott Scriven)
 
-INSTALLATION
+-- INSTALLATION -------------------------------------------------------
 
 Refer to the INSTALL file included with this archive for installation
 instructions (including how to connect the LCD to your system).
 
-Also, be sure to EDIT THE Makefile.config before compiling.  It
-contains many configuration options.  (these will be removed as soon
-as LCDproc uses a real config file)
+-- CHANGES ------------------------------------------------------------
 
-CHANGES
+Woow...  a lot.  :) 
+See the ChangeLog file for more details.
 
-Woow...  a lot.  :)
+-- HELPING OUT --------------------------------------------------------
 
-HELPING OUT
+The first thing you should do is join the mailing list, to do so, go
+to out web site and click on MAIL and follow the instructions.
 
-If you get the urge to help out by writing code, feel free to "make todo"
-and find out what needs to be done...  (also, of course, new ideas are
-good too :) 
+If you get the urge to help out by writing code, feel free to take a 
+look at the TODO file and find out what needs to be done...  
+Also, of course, new ideas are good too! :) 
 
-To add new drivers, read drv_base.h for instructions.
+To add new drivers, read server/drivers/drv_base.h for instructions.
 
-SPECIAL THANKS
+Also you should spend some time reading the files in the docs/ 
+directory.
+
+-- SPECIAL THANKS ----------------------------------------------------
 
 We'd like to thank the following people for helping out with this:
-   Everyone at Matrix Orbital Corporation -- you guys are great!
-   Gareth Watts -- Patches, mailing list, ideas, www, etc.  Thanks!
-   Everyone on the mailing list.  :)
-   And... Where's that list of contributors??
 
-LEGAL STUFF
+Everyone at Matrix Orbital Corporation -- you guys are great!
+Gareth Watts -- Patches, mailing list, ideas, www, etc.  Thanks!
+Everyone on the mailing list.  :)
+The developpers (Sourceforge members):
+Robin Adams			afrob
+Mindaugas Idzelis	aim4min
+andre burton		andreb
+Bjšrn Andersson		ban
+Benjamin Tse		blt
+Chris Debenham		cjdebenh
+Colin Munro			colinmunro
+Charles Steinkuehler cstein
+David Douthitt		ddouthitt
+David GLAUDE		dglaude
+Guillaume Filion	gfk
+Glen Gray			glengray
+Mark HŠmmerling		haemi
+Shane Spencer		hardwire
+Harald Klein		hklein
+J Robert Ray		jrray
+Matthew Dainty		mattd
+Jim McCracken		merlin_jim
+Philip Pokorny		ppokorny
+Rene Wagner			reenoo
+Joris Robijn		robijn
+Ken Robertson		seadawg
+Simon Harrison		smh
+Stephen Paul		tegetana
+Manuel Stahl		themythos
+Scott Scriven		toykeeper
+William W. Ferrell	willfe
 
-LCDproc is Copyright (C) 1999 William Ferrell and Scott Scriven
-The included file, "COPYING", contains the full GNU license.
+Everyone who contributed, tested or suggested something to help make 
+LCDproc a better software.
+
+-- LEGAL STUFF ---------------------------------------------------------
+
+LCDproc is Copyright (C) 1999-2001 
+	William Ferrell, Scott Scriven and several other contributors.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -58,6 +89,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
+The file COPYING contains the GNU General Public License.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
