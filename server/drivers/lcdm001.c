@@ -179,8 +179,8 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	//READ CONFIG FILE:
 
 	//which serial device should be used
-	strncpy(device, config_get_string ( DriverName , "Device" , 0 , "/dev/lcd"),255);
-	if (strlen(device)>254) strncat(device, "\0", 1);
+	strncpy(device, config_get_string ( DriverName , "Device" , 0 , "/dev/lcd"),200);
+	if (strlen(device)>199) strncat(device, "\0", 1);
 	report (RPT_INFO,"LCDM001: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
