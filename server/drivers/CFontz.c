@@ -74,9 +74,9 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	int reboot = 0;
 
 	int contrast = DEFAULT_CONTRAST;
-	char device[256] = DEFAULT_DEVICE;
+	char device[200] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
-	char size[256] = DEFAULT_SIZE;
+	char size[200] = DEFAULT_SIZE;
 
 	CFontz = driver;
 
@@ -89,12 +89,12 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	/*Read config file*/
 
 	/*Which serial device should be used*/
-	strncpy(device, config_get_string ( DriverName , "Device" , 0 , DEFAULT_DEVICE),sizeof(config_get_string ( DriverName , "Device" , 0 , DEFAULT_DEVICE)));
+	strncpy(device, config_get_string ( DriverName , "Device" , 0 , DEFAULT_DEVICE),sizeof(device));
 	device[sizeof(device)-1]=0;
 	debug (RPT_INFO,"CFontz: Using device: %s", device);
 
 	/*Which size*/
-	strncpy(size, config_get_string ( DriverName , "Size" , 0 , DEFAULT_SIZE),sizeof(config_get_string ( DriverName , "Size" , 0 , DEFAULT_SIZE)));
+	strncpy(size, config_get_string ( DriverName , "Size" , 0 , DEFAULT_SIZE),sizeof(size));
 	size[sizeof(size)-1]=0;
 	if( sscanf(size , "%dx%d", &w, &h ) != 2
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
@@ -128,7 +128,7 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 
 
 	/*Which speed*/
-	tmp = config_get_int ( DriverName , "Speed" , 0 , DEFAULT_OFFBRIGHTNESS);
+	tmp = config_get_int ( DriverName , "Speed" , 0 , DEFAULT_SPEED);
 	if (tmp == 1200) speed = B1200;
 	else if (tmp == 2400) speed = B2400;
 	else if (tmp == 9600) speed = B9600;
@@ -726,6 +726,14 @@ CFontz_string (int x, int y, char string[])
 	y -= 1;
 
 	for (i = 0; string[i]; i++) {
+
+		
+		// For V2 of the firmware to get the block to display right
+		if (newfirmware && string[i]==-1) {
+		string[i]=214;
+		}
+
+
 		// Check for buffer overflows...
 		if ((y * CFontz->wid) + x + i > (CFontz->wid * CFontz->hgt))
 			break;

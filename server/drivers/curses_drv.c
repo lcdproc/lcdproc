@@ -247,17 +247,17 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	/*Get color settings*/
 	/*foreground color*/
-	strncpy(buf, config_get_string ( DriverName , "foreground" , 0 , CONF_DEF_FOREGR),sizeof(config_get_string ( DriverName , "foreground" , 0 , CONF_DEF_FOREGR)));
+	strncpy(buf, config_get_string ( DriverName , "foreground" , 0 , CONF_DEF_FOREGR),sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 	fore_color = set_foreground_color(buf);
 	debug( RPT_DEBUG, "CURSES: using foreground color: %s", buf);
 	/*background color*/
-	strncpy(buf, config_get_string ( DriverName , "background" , 0 , CONF_DEF_BACKGR),sizeof(config_get_string ( DriverName , "background" , 0 , CONF_DEF_BACKGR)));
+	strncpy(buf, config_get_string ( DriverName , "background" , 0 , CONF_DEF_BACKGR),sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 	back_color = set_background_color(buf);
 	debug( RPT_DEBUG, "CURSES: using background color: %s", buf);
 	/*backlight color*/
-	strncpy(buf, config_get_string ( DriverName , "backlight" , 0 , CONF_DEF_BACKLIGHT), sizeof(config_get_string ( DriverName , "backlight" , 0 , CONF_DEF_BACKLIGHT)));
+	strncpy(buf, config_get_string ( DriverName , "backlight" , 0 , CONF_DEF_BACKLIGHT), sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 	backlight_color = set_background_color(buf);
 	debug( RPT_DEBUG, "CURSES: using backlight color: %s", buf);
@@ -266,13 +266,13 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	//      Or maybe don't do so? - Rene Wagner
 
 	/*Get size settings*/
-	strncpy(buf, config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE), sizeof(config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE)));
+	strncpy(buf, config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE), sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 	int wid, hgt;
 	if( sscanf(buf , "%dx%d", &wid, &hgt ) != 2
 	|| (wid <= 0)
 	|| (hgt <= 0)) {
-		report (RPT_WARNING, "CURSES: Cannot read size: %s. Using default value.\n", buf);
+		report (RPT_WARNING, "CURSES: Cannot read size: %s. Using default value %s.\n", buf, CONF_DEF_SIZE);
 		sscanf( CONF_DEF_SIZE , "%dx%d", &wid, &hgt );
 	}
 	driver->wid = wid;
