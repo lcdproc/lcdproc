@@ -455,6 +455,15 @@
 		</para></listitem>
               </varlistentry>
               <varlistentry>
+                <term>ip</term>
+                <listitem><para>
+		  Allows the user to input an ip number (v4 or
+                v6). When selected, a screen comes up that shows an ip
+                number that can be edited - digit by digit - via
+                left/right (switch digit) and up/down keys (increase/decrease).
+		</para></listitem>
+              </varlistentry>
+              <varlistentry>
                 <term>menu</term>
                 <listitem><para>
 		  This is a submenu. It is visible as a text, with an appended '>'. When selected, the submenu becomes the active menu.
@@ -469,7 +478,7 @@
         <term>menu_del_item &lt;menu_id&gt; &lt;item_id&gt;</term>
         <listitem>
           <para>
-	    Adds a new menuitem to a menu. THe menu named "" is the client's main menu that will be created automatically.
+	    Removes a menuitem &lt;item_id&gt; from menu &lt;menu_id&gt;. The menu named "" is the client's main menu.
 	  </para>
         </listitem>
       </varlistentry>
@@ -647,12 +656,45 @@
 		</para></listitem>
               </varlistentry>
               <varlistentry>
+                <term>ip</term>
+                <listitem><para>
+                  <variablelist>
+                    <varlistentry>
+                      <term>-value &lt;string&gt; ("192.168.1.245")</term>
+                      <listitem><para>
+		  	Set the value of the item,
+                      e.g. "192.168.1.245" (v4) or
+                      ":::ffff:ffff:ffff:ffff:ffff" (v6).
+		      </para></listitem>
+		    </varlistentry>
+                    <varlistentry>
+                      <term>-v6 false|true (false)</term>
+                      <listitem><para>
+		        Changes IP version from default v4.
+		      </para></listitem>
+		    </varlistentry>
+                  </variablelist>
+		</para></listitem>
+              </varlistentry>
+              <varlistentry>
                 <term>menu</term>
                 <listitem><para>
 		  This is a submenu. It is visible as a text, with an appended '>'. When selected, the submenu becomes the active menu.
 		</para></listitem>
               </varlistentry>
             </variablelist>
+	  </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>menuscreen_goto &lt;menu_id&gt;</term>
+        <listitem>
+          <para>
+	    Changes current menu to &lt;menu_id&gt;. Depending on the
+	    configure option --enable-permissive-menuscreen-goto the
+	    client may switch to any (if enabled) or his menus only
+	    (if not enabled).
 	  </para>
         </listitem>
       </varlistentry>
@@ -745,7 +787,7 @@
               <varlistentry>
                 <term>select (action)</term>
                 <listitem><para>
-                  The item was activated. 
+                  The item was activated.
 	        </para></listitem>
               </varlistentry>
               <varlistentry>
@@ -764,7 +806,7 @@
 	        </para></listitem>
               </varlistentry>
               <varlistentry>
-                <term>enter (unimplemented)</term>
+                <term>enter</term>
                 <listitem><para>
                   This item has been entered, which means it is currently
 		  active on the screen. The client could now for example
@@ -774,7 +816,7 @@
 	        </para></listitem>
               </varlistentry>
               <varlistentry>
-                <term>leave (unimplemented)</term>
+                <term>leave</term>
                 <listitem><para>
                   This item has been left, so it is currenly not the (main)
 		  active item anymore.
