@@ -118,11 +118,11 @@ typedef enum {
 	ellipsis     = 32,
 /* This was for standard icon */
 /* This is for non standard icon */
-	play        = 33, /* Play */
-	fforward    = 34, /* FForward */
-	frewind     = 35, /* Rewind */
-	uparrow     = 36, /* Up arrow */
-	downarrow   = 37, /* Down arrow */
+	play        = 33,
+	fforward    = 34,
+	frewind     = 35,
+	uparrow     = 36,
+	downarrow   = 37,
 /* This was for non standard icon */
 	dirty       = 253,
 	barw        = 254,
@@ -136,8 +136,9 @@ static int fd;
 static int clear = 1;
 
 static int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-static int use[9] = { 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+static int use[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
+/* TODO: Extend this with the White and Black (32 and 255) icon */
 /* This is the char to use for the basic block of bigfont. */
 static int fonttable[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -1001,7 +1002,7 @@ MtxOrb_vbar (Driver *drvthis, int x, int len)
 }
 
 /* TODO: Finish the support for bar growing reverse way.
- * TODO: Migrate to the new vbar.
+ * TODO: Migrate to the new hbar.
  ******************************
  * Draws a horizontal bar to the right.
  * This is the new version ussing dynamic icon alocation
@@ -1068,25 +1069,8 @@ MtxOrb_init_num (Driver *drvthis)
   fonttable[6]=MtxOrb_ask_bar ( drvthis, bigfontg);
   fonttable[7]=MtxOrb_ask_bar ( drvthis, bigfonth);
 
-/* This was using hardware call */
-/*
-  MtxOrb_set_known_char (drvthis, 0, bigfonta);
-  MtxOrb_set_known_char (drvthis, 1, bigfontb);
-  MtxOrb_set_known_char (drvthis, 2, bigfontc);
-  MtxOrb_set_known_char (drvthis, 3, bigfontd);
-  MtxOrb_set_known_char (drvthis, 4, bigfonte);
-  MtxOrb_set_known_char (drvthis, 5, bigfontf);
-  MtxOrb_set_known_char (drvthis, 6, bigfontg);
-  MtxOrb_set_known_char (drvthis, 7, bigfonth);
-*/
-  
 /* This was the hardware way of doing it. We keep it for historical reason. */
-/*	if (custom != bign) {
- *		write (fd, "\x0FEn", 2);
- *		custom = bign;
- *		MtxOrb_clear_custom (drvthis);
- *	}
- */	
+/*		write (fd, "\x0FEn", 2); */	
 
 }
 
@@ -1094,15 +1078,6 @@ MtxOrb_init_num (Driver *drvthis)
 /* TODO: MtxOrb_set_char is doing the job "real-time" as oppose
  * to at flush time. Call to this function should be done in flush
  * this mean in  raw_frame. GLU
- *
- * TODO: Rather than to use the hardware BigNum we should use software
- * emulation, this will make it work simultaniously as hbar/vbar. GLU
- *
- * TODO: Before the desinitive solution we need to make the caracter
- * hiden behind the hardware bignum dirty so that they get cleaned
- * when draw_frame is called. There is no dirty char so I will use 254
- * hoping nowone is using that char. GLU
- *
  ******************************
  * Writes a big number.
  */
@@ -1110,28 +1085,16 @@ MODULE_EXPORT void
 MtxOrb_num (Driver *drvthis, int pos, int val)
 {
 	int x, y;
-/*	char out[5]; */
 	int c;
 
-/*  printf( "MtxOrb: write big number %d at %d ", val, pos);  */
+	debug(RPT_DEBUG, "MtxOrb: write big number %d at %d", val, pos);
 
-/*	We don't use hardware bignum anymore, so we remove those. */
-/*
-	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);
-	write (fd, out, 4);
-*/
-/* Make this space dirty as far as frame buffer knows. */
-/*
-	for (y = 1; y < 5; y++)
-		for (dx = 0; dx < 3; dx++)
-			MtxOrb_chr (drvthis, x + dx, y, dirty);
-*/
+/*	We don't use hardware bignum anymore, so we remove those. 	*/
+/*	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);        	*/
+/*	write (fd, out, 4);						*/
 
+/* Currently we are bignum but if bigalpha is there remove this line */
   c=val+'0';	/* We transform from 0-9 to 'O' to '9' */
-
-/*  printf("c: %d '%c'\n", c, c); */
-
-	debug(RPT_DEBUG, "MtxOrb: write big number %d at %d", c, pos);
 
   if ((pos < -2) || (pos > 20)) return;  // are we outisde the visible spectrum
   if (('c' < 32) || ('c' > 127)) return; // are we characteristic or not?
@@ -1141,18 +1104,14 @@ MtxOrb_num (Driver *drvthis, int pos, int val)
 /*  printf("pos: %d char: %d val: %d\n", pos, c, val); */
   for (y=0;y<4;y++) {
     for (x=0;x<3;x++) {
-/*      lcd.chr(x+pos+1, y+1, normal[c][x + (y * 3)]); */
+/* Those if then else compensate that bigfont.h is MtxOrb oriented */
 	    if ( normal[c][x + (y * 3)] == 32)
-      MtxOrb_chr (drvthis, x+pos, y+1, 32);
+      MtxOrb_chr (drvthis, x+pos, y+1, 32);   /* Full White */
 	    else if ( normal[c][x + (y * 3)] == 255)
-      MtxOrb_chr (drvthis, x+pos, y+1, 255);
+      MtxOrb_chr (drvthis, x+pos, y+1, 255);  /* Full Black */
 	    else
-      {
-/* This was using hardware call */
-/*      MtxOrb_chr (drvthis, x+pos, y+1, normal[c][x + (y * 3)]); */
-/* This is using the custom char cache */
       MtxOrb_chr (drvthis, x+pos, y+1, fonttable[normal[c][x + (y * 3)]]); 
-      }
+/* The line above is to use the right custom char when needed */
     }
   }
 }
@@ -1163,11 +1122,7 @@ MtxOrb_num (Driver *drvthis, int pos, int val)
  * but we compute that once rather than every time. GLU
  *
  * TODO: MtxOrb_set_char is doing the job "real-time" as oppose
- * to at flush time. Call to this function should be done in flush
- * this mean in draw_frame. GLU
- *
- * TODO: _icon should not call this directly, this is why we define
- * so frequently the heartbeat custom char. GLU
+ * to at flush time. Call to this function should be done in flush. GLU
  *
  * TODO: We make one 3 bytes write folowed by cellheight one byte
  * write. This should be done in one single write. GLU
@@ -1210,11 +1165,7 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 	}
 }
 
-/* TODO (DONE): All the icon are now define at the end of the custom char
- * used for hbar/vbar. GLU
- *
- * TODO (DONE): Don't make direct call to caracter definition if the caracter is
- * already defined. GLU
+/* TODO: This need to be removed and replaced by the new _icon function.
  */
 MODULE_EXPORT void
 MtxOrb_old_icon (Driver *drvthis, int which, char dest)
@@ -1371,9 +1322,9 @@ MtxOrb_heartbeat (Driver *drvthis, int type)
 		/* Set this to pulsate like a real heart beat... */
 		whichIcon = (! ((timer + 4) & 5));
 
-		/* This defines a custom character EVERY time... */
-		/* not efficient... is this necessary? */
-		/* Normaly the cache should take care of that. */
+/* TODO: Modify this to use the new _icon function when available */
+
+		/* Ask for the right heart to be defined */
 		the_icon=MtxOrb_ask_bar (drvthis, whichIcon+START_ICON);
 
 		/* Put character on screen... */
@@ -1592,7 +1543,14 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 1, 1, 1, 1,
 		0, 1, 1, 1, 1,
 		0, 1, 1, 1, 1,
-		}, { /* char a[] */
+		},
+/* Here start the 8 basic block used by bigfont.h */
+/* TODO: Some of those are identical to hbar/vbar definition
+ *       However the cache does not know that so we need to find
+ *       a way to avoid that duplication and replace that ASAP.
+ * TODO: It need some editing to make it like above (REMOVE ME WHEN DONE)
+ */ 
+		{ /* char a[] */
     		0,0,0,0,0,
     		0,0,0,0,0,
     		0,0,0,0,0,
@@ -1664,7 +1622,9 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
     		1,1,1,0,0,
     		1,1,0,0,0,
     		1,0,0,0,0,
-		}, {
+		},
+/* Here start 3 standard icon used by heartbear and other. */
+		{
 		1, 1, 1, 1, 1,	/* Empty Heart */
 		1, 0, 1, 0, 1,
 		0, 0, 0, 0, 0,
@@ -1691,11 +1651,12 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 		1, 0, 1, 0, 1,
-		}, {
+		},
 /* This is not suppose to be standard icon, just I don't want to lose them.
  * They come directly from the old patch for bignum.
  * TODO: It need some editing to make it like above (REMOVE ME WHEN DONE)
  */
+		{
 		0, 1, 0, 0, 0,  /* Play */
      		0,1,1,0,0,
      		0,1,1,1,0,
@@ -1714,7 +1675,7 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
      		0,0,0,0,0,
      		0,0,0,0,0,
    		}, {
-     		0,0,0,0,0,  /* Rewind */
+     		0,0,0,0,0,  /* FRewind */
      		0,0,1,0,1,
      		0,1,0,1,1,
      		1,0,1,1,1,
@@ -1732,14 +1693,14 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
      		0,0,1,0,0,
      		0,0,0,0,0,
    		}, {
-     		0,0,1,0,0,  /* Down arrow */
-     		0,0,1,0,0,
-     		0,0,1,0,0,
-     		0,0,1,0,0,
-     		1,1,1,1,1,
-     		0,1,1,1,0,
-     		0,0,1,0,0,
-     		0,0,0,0,0,
+     		0, 0, 1, 0, 0,  /* Down arrow */
+     		0, 0, 1, 0, 0,
+     		0, 0, 1, 0, 0,
+     		0, 0, 1, 0, 0,
+     		1, 1, 1, 1, 1,
+     		0, 1, 1, 1, 0,
+     		0, 0, 1, 0, 0,
+     		0, 0, 0, 0, 0,
    		}
 	};
 
