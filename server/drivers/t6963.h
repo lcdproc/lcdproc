@@ -1,5 +1,6 @@
 /*
- * Base driver module for Toshiba T6963 based LCD displays ver 1.2
+ * Base driver module for Toshiba T6963 based LCD displays ver 2.0
+ *    ( ver 2.* is not at all compatible to 1.* versions!)
  *
  * Parts of this file are based on the kernel driver by Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
  *
@@ -13,6 +14,11 @@
 #define T6963_H
 
 #include "lcd.h"
+
+#define DEFAULT_CELL_WIDTH 6
+#define DEFAULT_CELL_HEIGHT 8
+#define DEFAULT_SIZE "20x6"
+#define DEFAULT_PORT 0x378
 
 #define SM_UP (1)
 #define SM_DOWN (2)
@@ -117,15 +123,15 @@ MODULE_EXPORT void t6963_flush (Driver *drvthis);
 MODULE_EXPORT void t6963_string (Driver *drvthis, int x, int y, char string[]);
 MODULE_EXPORT void t6963_chr (Driver *drvthis, int x, int y, char c);
 
-MODULE_EXPORT void t6963_vbar (Driver *drvthis, int x, int len);
-MODULE_EXPORT void t6963_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void t6963_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void t6963_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void t6963_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void t6963_icon (Driver *drvthis, int which, char dest);
+MODULE_EXPORT void t6963_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT void t6963_heartbeat (Driver *drvthis, int type);
 
 MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
 
-MODULE_EXPORT char t6963_getkey (Driver *drvthis);
+//MODULE_EXPORT char t6963_getkey (Driver *drvthis);
 
 void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
 void t6963_set_nchar (Driver *drvthis, int n, char *dat, int num);
