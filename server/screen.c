@@ -21,7 +21,6 @@
 #include "drivers.h"
 
 #include "clients.h"
-#include "client_data.h"
 #include "widget.h"
 #include "screenlist.h"
 #include "screen.h"
