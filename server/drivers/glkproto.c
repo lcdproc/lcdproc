@@ -13,6 +13,9 @@
 #include <stdarg.h>
 #include <sys/poll.h>
 #include "glkproto.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #define INLINE  inline
 #undef MANUAL_FLOWCONTROL
@@ -78,7 +81,11 @@ GLKDisplay *
     *   framing errors incase the module transmits back
     *   to back with only one stop bit.
     */
+#ifndef IRIX
+#ifndef SOLARIS
    cfmakeraw( &new );  /* Sets CS8 */
+#endif
+#endif
    new.c_iflag |= IGNPAR ;  /* Ignore framing/parity errors */
    new.c_cflag &= ~(CBAUD | CRTSCTS ) ;
    new.c_cflag |= speed | CREAD | CLOCAL | CSTOPB ;
