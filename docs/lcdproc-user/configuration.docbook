@@ -5,7 +5,7 @@
 <title>Configure LCDd</title>
 
 <para>
-As mentioned in the <link linkend=introduction>introduction</link>
+As mentioned in the <link linkend="introduction">introduction</link>
 LCDd, the LCDproc server, now (with version 0.4.3 of LCDproc) has its
 own configuration file, which is normally <filename>/etc/LCDd.conf</filename>.
 </para>
@@ -33,8 +33,8 @@ has a section which defines how the driver acts. Those sections start with
 [drivername].
 </para>
 <para>
-<anchor id=which-driver>The drivers are activated by specifiying them in a driver= line in the
-server section, like:
+<anchor id="which-driver">The drivers are activated by specifiying them in a driver= line in the
+server section, like:</anchor>
 </para>
 
 <example>
@@ -111,7 +111,7 @@ settings for the LCDproc server <application>LCDd</application>.
 <listitem>
 <para>
 Tells the server which driver(s) to use. See
-<link linkend=which-driver>above</link> for details
+<link linkend="which-driver">above</link> for details
 </para>
 <note>
 <para>

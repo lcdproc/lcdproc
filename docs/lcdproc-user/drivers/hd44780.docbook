@@ -1029,7 +1029,7 @@ specifying which one (of multiple BWCT LCD devices) is wanted using the
 
 </sect2>
 
-<sect2 id=hd44780-compiling>
+<sect2 id="hd44780-compiling">
 <title>Compiling</title>
 
 <para>

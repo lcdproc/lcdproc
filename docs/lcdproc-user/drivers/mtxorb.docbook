@@ -88,8 +88,8 @@
 	  you have some idea of where you intend to permanently mount the module. For
 	  mounting ideas and tips, refer to the section "Mounting" below.
 	</para>
-	<Tip>
-	  <Title>Before you start</title>
+	<tip>
+	  <title>Before you start</title>
 	  <para>
 	    Your Matrix Orbital LCD or VFD module should be clearly marked with an
 	    indication of the module's power requirements. It should be either a 5 volt

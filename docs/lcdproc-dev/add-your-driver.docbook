@@ -20,7 +20,7 @@ This chapter will explain you the major steps and few gotchas of adding your own
 <para>How I Learned to Stop Worrying and Love the Configure Script</para>
 
 <para>
-It was decided pretty early in LCDproc's life to use GNU autoconf and GNU automake. This allows LCDproc to be ported to several platforms with much less effort. It can be quite daunting to understand how autoconf & automake interact with each others and with your code, but don't be discouraged. We have taken great care in making this as simple as possible for programers to add their own driver to LCDproc. Hopefully, you'll only have to modify two files, one for autoconf and one for automake.
+It was decided pretty early in LCDproc's life to use GNU autoconf and GNU automake. This allows LCDproc to be ported to several platforms with much less effort. It can be quite daunting to understand how autoconf &amp; automake interact with each others and with your code, but don't be discouraged. We have taken great care in making this as simple as possible for programers to add their own driver to LCDproc. Hopefully, you'll only have to modify two files, one for autoconf and one for automake.
 </para>
 
 <para>

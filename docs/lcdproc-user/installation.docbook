@@ -18,7 +18,7 @@ debian tool), you can skip this this chapter.
 
 <para>
 If you're building this version from CVS, you'll need 
-autoconf, automake, aclocal & autoheader installed.
+autoconf, automake, aclocal &amp; autoheader installed.
 </para>
 
 <para>

@@ -82,9 +82,9 @@ settings for the lircin LCDproc driver.
 <term>lircrc=</term>
 <listitem>
 <para>
-<anchor id=which-lircrc>Normally all LIRC clients scan the file <filename>~/.lircrc</filename>.
+<anchor id="which-lircrc">Normally all LIRC clients scan the file <filename>~/.lircrc</filename>.
 However, you might want to have a separate file to configure the
-LCDproc lircin driver only.
+LCDproc lircin driver only.</anchor>
 </para>
 <para>
 This option enables you to specify the file you want the lircin
@@ -119,7 +119,7 @@ The prog=... line must be the same as in your <filename>~/.lircrc</filename>
 <para>
 As mentioned above you can either modify the <filename>~/.lircrc</filename>
 or use a separate file for the lircin LCDproc driver (See
-<link linkend=which-lircrc>above</link> for details).
+<link linkend="which-lircrc">above</link> for details).
 </para>
 
 <para>
