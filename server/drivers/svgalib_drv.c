@@ -26,11 +26,10 @@
 #include <vga.h>
 #include <vgagl.h>
 
-#include "shared/str.h"
+#include "config.h"
 
 #include "lcd.h"
 #include "svgalib_drv.h"
-#include "drv_base.h"
 
 /* Small font */
 
@@ -165,20 +164,19 @@ const unsigned char simple_font5x7[] = {
 /*  ascii '126' (~) */ 31, 27, 23, 0, 23, 27, 31
 };
 
-// <start user definable!!!>
+/* <start user definable!!!> */
 #define SVGALIB_FONT_VER 10	  /* vertical spacing between lines (pixels) */
 #define SVGALIB_Y_OFFSET 40	  /* distance from the top of the screen (pixels) */
-// <end user defineable!!!>
+/* <end user defineable!!!> */
 
-// No, I don't understand SVGALIB key mappings or a neat way of doing this
-// Cursor keys manifest themselves as 3 byte excapes in svgalib: 27,91 
-// followed by one of the codes below.
+/* No, I don't understand SVGALIB key mappings or a neat way of doing this
+ * Cursor keys manifest themselves as 3 byte excapes in svgalib: 27,91 
+ * followed by one of the codes below.
+ */
 #define VGAKEY_UP 65
 #define VGAKEY_DOWN 66
 #define VGAKEY_RIGHT 67
 #define VGAKEY_LEFT 68
-
-lcd_logical_driver *svgalib_drv;
 
 int SVGALIB_PAD = 255;
 int SVGALIB_ELLIPSIS = 7;
@@ -197,13 +195,15 @@ void *SVGALIB_warnfont;			  /* warning font (not used yet)    */
 */
 int SVGALIB_figure_mappings = 0;
 
-//////////////////////////////////////////////////////////////////////////
-////////////////////// For Output on SVGALIB screen //////////////////////
-//////////////////////////////////////////////////////////////////////////
+int width, height;
+
+/*************************************************************************
+********************** For Output on SVGALIB screen **********************
+*************************************************************************/
 
 void
 ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, unsigned char *ptr)
-// Expand groovy 5x7 font into an area of memory
+/* Expand groovy 5x7 font into an area of memory */
 {
 	int x, n, y;
 	unsigned char mask;
@@ -225,14 +225,13 @@ ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, un
 			}
 		}
 	}
-
 }
 
 void
 spaced_gl_writen (int x, int y, int count, char *text)
-//
-// Like gl_write but this one gets the spacing correct.
-//
+/*
+ * Like gl_write but this one gets the spacing correct.
+ */
 {
 	int i;
 	for (i = 0; i < count; i++) {
@@ -242,21 +241,21 @@ spaced_gl_writen (int x, int y, int count, char *text)
 
 static char icon_char = '@';
 
+/* Vars for the server core */
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 1;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "svgalib_drv_";
+
+
+/******************************************************************************
+ * Init driver
+ */
 MODULE_EXPORT int
-svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
+svgalib_drv_init (Driver *drvthis, char *args)
 {
-	char *argv[64];
-	int argc;
-	//int i, j;
 	int VGAMODE;
-	//int fgtemp;
-	//char param[100];
-	//char buffer[1024];
 
-	/* not used at the moment */
-	argc = get_args (argv, args, 64);
-
-	svgalib_drv = driver;
 	vga_init ();
 	VGAMODE = G320x200x256;		  /* Default mode. */
 
@@ -277,40 +276,74 @@ svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	gl_clearscreen (gl_rgbcolor (0, 0, 0));
 
-	// Change the character used for padding the title bars...
+	/* Change the character used for padding the title bars... */
 	SVGALIB_PAD = '#';
-	// Change the character used for "..."
+	/* Change the character used for "..." */
 	SVGALIB_ELLIPSIS = '~';
 
-	return 1;
+	/* Determine the size of the screen */
+	width = drvthis->request_display_width();
+	height = drvthis->request_display_height();
+	if( width <= 0 || height <= 0 ) {
+		width = LCD_DEFAULT_WIDTH;
+		height = LCD_DEFAULT_HEIGHT;
+	}
+
+	return 0;
 }
 
-/////////////////////////////////////////////////////////////////
-// Close down driver
-//
-void
-svgalib_drv_close ()
+/******************************************************************************
+ * Close down driver
+ */
+MODULE_EXPORT void
+svgalib_drv_close (Driver *drvthis)
 {
 	vga_setmode (TEXT);
-	if (svgalib_drv->framebuf != NULL)
-		free (svgalib_drv->framebuf);
-
-	svgalib_drv->framebuf = NULL;
 }
 
-void
-svgalib_drv_clear ()
+/******************************************************************************
+ * Return width
+ */
+MODULE_EXPORT int
+svgalib_drv_width (Driver *drvthis)
+{
+	return width;
+}
+
+/******************************************************************************
+ * Return height
+ */
+MODULE_EXPORT int
+svgalib_drv_height (Driver *drvthis)
+{
+	return height;
+}
+
+/******************************************************************************
+ * Clear screen
+ */
+MODULE_EXPORT void
+svgalib_drv_clear (Driver * drvthis)
 {
 	vga_waitretrace ();
 	gl_clearscreen (gl_rgbcolor (0, 0, 0));
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a string on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
-void
-svgalib_drv_string (int x, int y, char string[])
+/******************************************************************************
+ * Flush framebuffer to screen
+ */
+MODULE_EXPORT void
+svgalib_drv_flush (Driver *drvthis)
+{
+	/* It's already in screen ! */
+}
+
+/******************************************************************************
+ * Prints a string on the lcd display, at position (x,y).  The
+ * upper-left is (1,1), and the lower right should be (20,4).
+ */
+MODULE_EXPORT void
+svgalib_drv_string (Driver *drvthis, int x, int y, char string[])
 {
 	int i;
 	unsigned char *c;
@@ -329,12 +362,12 @@ svgalib_drv_string (int x, int y, char string[])
 	spaced_gl_writen (x * 8, y * SVGALIB_FONT_VER + SVGALIB_Y_OFFSET, i, string);
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a character on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
-void
-svgalib_drv_chr (int x, int y, char c)
+/******************************************************************************
+ * Prints a character on the lcd display, at position (x,y).  The
+ * upper-left is (1,1), and the lower right should be (20,4).
+ */
+MODULE_EXPORT void
+svgalib_drv_chr (Driver *drvthis, int x, int y, char c)
 {
 	char buffer[2];
 	switch (c) {
@@ -351,19 +384,11 @@ svgalib_drv_chr (int x, int y, char c)
 	spaced_gl_writen (x * 8, y * SVGALIB_FONT_VER + SVGALIB_Y_OFFSET, 1, buffer);
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets up for big numbers.
-//
-void
-svgalib_drv_init_num ()
-{
-}
-
-/////////////////////////////////////////////////////////////////
-// Writes a big number, but not.  A bit like the curses driver.
-//
-void
-svgalib_drv_num (int x, int num)
+/******************************************************************************
+ * Writes a big number, but not.  A bit like the curses driver.
+ */
+MODULE_EXPORT void
+svgalib_drv_num (Driver *drvthis, int x, int num)
 {
 	char c;
 	int y, dx;
@@ -372,49 +397,48 @@ svgalib_drv_num (int x, int num)
 
 	for (y = 1; y < 5; y++)
 		for (dx = 0; dx < 3; dx++)
-			svgalib_drv_chr (x + dx, y, c);
+			svgalib_drv_chr (drvthis, x + dx, y, c);
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar; erases entire column onscreen.
-//
-void
-svgalib_drv_vbar (int x, int len)
+/******************************************************************************
+ * Draws a vertical bar; erases entire column onscreen.
+ */
+MODULE_EXPORT void
+svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
 {
-	char map[] = "_.,,ooO8";
+	int pos;
 
-	int y;
-	for (y = svgalib_drv->hgt; y > 0 && len > 0; y--) {
-		if (len >= svgalib_drv->cellhgt)
-			svgalib_drv_chr (x, y, '8');
-		else
-			svgalib_drv_chr (x, y, map[len - 1]);
-
-		len -= svgalib_drv->cellhgt;
+	for ( pos=0; pos<len; pos++ ) {
+		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+			svgalib_drv_chr (drvthis, x, y-pos, '|');
+		} else {
+			; /* print nothing */
+		}
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-//
-void
-svgalib_drv_hbar (int x, int y, int len)
+/******************************************************************************
+ * Draws a horizontal bar to the right.
+ */
+MODULE_EXPORT void
+svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
 {
-	for (; x <= svgalib_drv->wid && len > 0; x++) {
-		if (len >= svgalib_drv->cellwid)
-			svgalib_drv_chr (x, y, '=');
-		else
-			svgalib_drv_chr (x, y, '-');
+	int pos;
 
-		len -= svgalib_drv->cellwid;
+	for ( pos=0; pos<len; pos++ ) {
+		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+			svgalib_drv_chr (drvthis, x+pos, y, '-');
+		} else {
+			; /* print nothing */
+		}
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets character 0 to an icon...
-//
-void
-svgalib_drv_icon (int which, char dest)
+/******************************************************************************
+ * Sets character 0 to an icon...
+ */
+MODULE_EXPORT void
+svgalib_drv_icon (Driver *drvthis, int which, char dest)
 {
 	if (dest == 0)
 		switch (which) {
@@ -430,27 +454,18 @@ svgalib_drv_icon (int which, char dest)
 		}
 }
 
-void
-svgalib_drv_flush ()
-{
-}
-
-void
-svgalib_drv_flush_box (int lft, int top, int rgt, int bot)
-{
-}
-
-void
-svgalib_drv_draw_frame (char *dat)
-{
-}
-
-char
-svgalib_drv_getkey ()
+/******************************************************************************
+ * Return a keypress
+ */
+MODULE_EXPORT char *
+svgalib_drv_get_key (Driver *drvthis)
 {
 	int i;
-	//int loop;
-	//FILE *fd;
+	char *s;
+	static char buf[2];
+
+	s = "";
+
 	i = vga_getkey ();
 	if (i) {
 		switch (i) {
@@ -461,22 +476,19 @@ svgalib_drv_getkey ()
 				i = vga_getkey ();
 				switch (i) {
 				case VGAKEY_LEFT:
-					i = 'D';
+					s = "ArrowLeft";
 					break;
 				case VGAKEY_UP:
-					i = 'B';
+					s = "ArrowUp";
 					break;
 				case VGAKEY_DOWN:
-					i = 'C';
+					s = "ArrowDown";
 					break;
 				case VGAKEY_RIGHT:
-					i = 'A';
+					s = "ArrowRight";
 					break;
-				default:
-					i = 0;			  /* key not recognised */
+				/* otherwise key not recognised */
 				}
-			} else {
-				i = 0;
 			}
 			break;
 
@@ -488,57 +500,14 @@ svgalib_drv_getkey ()
 			   be able to quit LCDproc from the emulation.
 
 			 */
-		case 'j':
-			i = 'D';
-			break;					  /* left */
-		case 'm':
-			i = 'B';
-			break;					  /* up */
-		case '7':
-			i = 'C';
-			break;					  /* down */
-		case 'u':
-			i = 'A';
-			break;					  /* right */
-
-		case 'v':
-			i = 'Q';
-			break;					  /* one */
-		case 'c':
-			i = 'W';
-			break;					  /* two */
-		case 'z':
-			i = 'E';
-			break;					  /* three */
-		case '4':
-			i = 'R';
-			break;					  /* four */
-		case '3':
-			i = 'T';
-			break;					  /* five */
-		case '1':
-			i = 'Y';
-			break;					  /* six */
-		case 'f':
-			i = 'U';
-			break;					  /* seven */
-		case 'd':
-			i = 'I';
-			break;					  /* eight */
-		case 'a':
-			i = 'O';
-			break;					  /* nine */
-		case 'e':
-			i = 'P';
-			break;					  /* zero */
-		case 'r':
-			i = 'L';
-			break;					  /* 'C' key */
+		case 13:
+			s = "Enter";
+			break;
 		default:
-			i = 0;
+			buf[0] = i;
+			buf[1] = 0;
+			s = buf;
 		}
 	}
-	/* if (i) */
-	return i;
-
+	return s;
 }
