@@ -179,6 +179,7 @@ render_frame (LinkedList * list,
 	int fx, fy;				/* Scrolling offset for the frame... */
 	int length, speed;
 	/*int lines; */
+	int str_length = BUFSIZE-1;
 
 	int reset = 1;
 
@@ -224,8 +225,11 @@ render_frame (LinkedList * list,
 				if (w->x>0 && w->y>0 && w->text) {
 					if ((w->y <= vis_height + fy) && (w->y > fy)) {
 						if (w->x > vis_width) w->x=vis_width;
-						strncpy (str, w->text, vis_width - w->x + 1);
-						str[vis_width - w->x + 1] = 0;
+						str_length = abs(vis_width - w->x + 1);
+						if (str_length >= BUFSIZE)
+							str_length = BUFSIZE - 1;
+						strncpy (str, w->text, str_length);
+						str[str_length+1] = 0;
 						drivers_string (w->x + left, w->y + top - fy, str);
 					}
 				}
@@ -295,8 +299,11 @@ render_frame (LinkedList * list,
 				drivers_icon (w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
 
 				length = strlen (w->text);
+				if (length >= BUFSIZE)
+					length = BUFSIZE - 1;
 				if (length <= vis_width - 6) {
-					strcpy (str, w->text);
+					strncpy (str, w->text, length);
+					str[length+1] = 0;
 					x = length + 5;
 				} else					  /* Scroll the title, if it doesn't fit...*/
 				{
@@ -314,9 +321,12 @@ render_frame (LinkedList * list,
 					{
 						x = (length - (vis_width - 6)) - x;
 					}
-					strncpy (str, w->text + x, (vis_width - 6));
+					str_length = abs(vis_width - 6);
+					if (str_length >= BUFSIZE)
+						str_length = BUFSIZE -1;
+					strncpy (str, w->text + x, str_length);
+					str[str_length+1] = 0;
 					x = vis_width - 1;
-					str[vis_width-6] = 0;
 				}
 
 				drivers_string (w->x + 3 + left, w->y + top, str);
@@ -335,7 +345,9 @@ render_frame (LinkedList * list,
 					if (w->right < w->left)
 						break;
 					/*debug(RPT_DEBUG, "%s: %s %d",__FUNCTION__,w->text,timer);*/
-					screen_width = w->right - w->left + 1;
+					screen_width = abs(w->right - w->left + 1);
+					if (screen_width >= BUFSIZE)
+						screen_width = BUFSIZE -1;
 					switch (w->length) {	/* actually, direction...*/
 						/* FIXED:  Horz scrollers don't show the
 						 * last letter in the string...  (1-off error?)
