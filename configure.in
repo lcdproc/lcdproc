@@ -1,3 +1,4 @@
+# -*- mode: m4; -*-
 dnl Process this file with autoconf  2.50 (or higher) to produce a configure script.
 AC_PREREQ(2.59)
 AC_INIT(lcdproc, 0.5dev, lcdproc@lists.omnipotent.net)
@@ -483,6 +484,21 @@ else
     ldap_includes="";
 fi
 
+AC_ARG_ENABLE(testmenus,
+  [  --enable-testmenus      enable server test menus],
+  if [[[ "$enableval" = "yes" ]]]; then
+        AC_DEFINE(LCDPROC_TESTMENUS,[1],[Define to 1 to enable server test menus])
+  fi,
+)
+
+AC_ARG_ENABLE(permissive_menuscreen_goto,
+  [  --enable-permissive-menuscreen-goto allow transitions]
+  [                        between different client's menus],
+  if [[[ "$enableval" = "yes" ]]]; then
+        AC_DEFINE(LCDPROC_PERMISSIVE_MENUSCREEN_GOTO,[1],
+		  [Define to 1 to allow transitions between different client's menus])
+  fi,
+)
 
 AC_CONFIG_FILES([Makefile
 	shared/Makefile
