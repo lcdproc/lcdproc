@@ -32,8 +32,19 @@
 int TwentyFourHour = 1;
 int uptime_fd = 0;
 
-static char kver[SYS_NMLN];
-static char sysname[SYS_NMLN];
+#ifdef HAVE_SYS_NMLN
+ static char kver[SYS_NMLN];
+ static char sysname[SYS_NMLN];
+#else
+# ifdef HAVE__SYS_NAMELEN
+  static char kver[_SYS_NAMELEN];
+  static char sysname[_SYS_NAMELEN];
+# else
+  // Last hope! May segfault!
+  static char *kver;
+  static char *sysname;
+# endif
+#endif
 
 static double get_uptime (double *up, double *idle);
 
