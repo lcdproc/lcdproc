@@ -72,21 +72,25 @@ And read the available options, especially --enable-drivers
 Run make to build the server and all clients
     make
 
-If you only want to compile the clients, you must first go to the
-clients directory and then type make:
-	cd clients
-	make
+If you only want to compile the clients, you can omit to compile the 
+server:
+    cd shared
+    make
+    cd ../clients
+    make
 
-Similarly, if you only want to compile the server, you must first go 
-to the server directory and then type make:
-	cd server
-	make
+Similarly, if you only want to compile the server, you can omit to 
+compile the clients:
+    cd shared
+    make
+    cd ../server
+    make
 
 Depending on your system, LCDproc will build in a few seconds to a 
 few minutes. It's not very big. 
 
 If you want, you can install it (if you're root) by typing:
-	make install
+    make install
 
 This will install the binaries and the man pages in the directory you
 specified in configure.
