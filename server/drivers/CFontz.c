@@ -100,10 +100,10 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 		report (RPT_WARNING, "CFontz_init: Cannot read size: %s. Using default value.\n", size);
-	} else {
-		driver->wid = w;
-		driver->hgt = h;
+		sscanf( DEFAULT_SIZE , "%dx%d", &w, &h );
 	}
+	driver->wid = w;
+	driver->hgt = h;
 
 	/*Which contrast*/
 	if (0<=config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) && config_get_int ( DriverName , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {

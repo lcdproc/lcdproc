@@ -1,10 +1,24 @@
-/*
- * ncurses driver
- *
- * Display LCD display at top left of terminal screen
- * using ncurses.
- *
- */
+/*  This is the LCDproc driver for ncurses.
+    It displays an emulated LCD display at top left of terminal screen
+    using ncurses.
+
+    Copyright (C) ?????? ?????????
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 */
+
+/*Configfile support added by Rene Wagner (C) 2001*/
 
 /*
 Different implementations of (n)curses available on:
@@ -52,7 +66,8 @@ SunOS (5.5.1):
 #include "render.h"
 #include "lcd.h"
 #include "curses_drv.h"
-//#include "drv_base.h"
+#include "shared/report.h"
+#include "configfile.h"
 
 // ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
 // However, ACS_S3 and ACS_S7 are not; these definitions were created to support
@@ -212,10 +227,7 @@ int current_color_pair, current_border_pair, curses_backlight_state = 0;
 int
 curses_drv_init (struct lcd_logical_driver *driver, char *args)
 {
-	char *argv[64];
-	int argc;
-	int i;
-	char buf[64], *p;
+	char buf[256];
 
 	// Colors....
 	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
@@ -223,86 +235,62 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 		backlight_color = DEFAULT_BACKGROUND_COLOR;
 
 	// Screen position (top left)
-	int	screen_begx = TOP_LEFT_X,
-		screen_begy = TOP_LEFT_Y;
+	int	screen_begx = CONF_DEF_TOP_LEFT_X,
+		screen_begy = CONF_DEF_TOP_LEFT_Y;
 
 	curses_drv = driver;
 
-	memset(&argv, '\0', sizeof(argv));
-	argc = get_args (argv, args, 64);
+	// TODO: replace DriverName with driver->name when that field exists.
+	#define DriverName "curses"
 
-	for (i = 0; i < argc; i++) {
-		p = argv[i];
-		if (*p == '-') {
-			p++;
-			switch (*p) {
-				case 'f':
-					if (i + 1 >= argc) {
-						fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					strncpy(buf, argv[++i], sizeof(buf));
-					fore_color = set_foreground_color(buf);
-					break;
-				case 'b':
-					if (i + 1 >= argc) {
-						fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					strncpy(buf, argv[++i], sizeof(buf));
-					back_color = set_background_color(buf);
-					break;
-				case 'B':
-					if (i + 1 >= argc) {
-						fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					strncpy(buf, argv[++i], sizeof(buf));
-					backlight_color = set_background_color(buf);
-					break;
-				case 'h':
-					printf ("LCDproc [n]curses driver\n"
-							"\t-f\tChange the foreground color\n"
-							"\t-b\tChange the background color\n"
-							"\t-t\tChange the type of screen (20x2, etc.)\n"
-							// "\t-b\t--backcolor\tChange the backlight's \"off\" color\n"
-							// "\t-B\t--backlight\tChange the backlight's \"on\" color\n"
-							"\t-h\t--help\t\tShow this help information\n");
-					return -1;
-					break;
-				case 't':
-					if (i + 1 > argc) {
-						fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					i++;
-					p = argv[i];
+	/*Get settings from config file*/
 
-					if (isdigit((unsigned int) *p) && isdigit((unsigned int) *(p+1))) {
-						int wid, hgt;
+	/*Get color settings*/
+	/*foreground color*/
+	strncpy(buf, config_get_string ( DriverName , "foreground" , 0 , CONF_DEF_FOREGR),200);
+	if (strlen(buf)>199) strncat(buf, "\0", 1);
+	fore_color = set_foreground_color(buf);
+	debug( RPT_DEBUG, "CURSES: using foreground color: %s", buf);
+	/*background color*/
+	strncpy(buf, config_get_string ( DriverName , "background" , 0 , CONF_DEF_BACKGR),200);
+	if (strlen(buf)>199) strncat(buf, "\0", 1);
+	back_color = set_background_color(buf);
+	debug( RPT_DEBUG, "CURSES: using background color: %s", buf);
+	/*backlight color*/
+	strncpy(buf, config_get_string ( DriverName , "backlight" , 0 , CONF_DEF_BACKLIGHT),200);
+	if (strlen(buf)>199) strncat(buf, "\0", 1);
+	backlight_color = set_background_color(buf);
+	debug( RPT_DEBUG, "CURSES: using backlight color: %s", buf);
 
-						wid = ((*p - '0') * 10) + (*(p+1) - '0');
-						p += 2;
+	//TODO: Make it possible to configure the backlight's "off" color and its "on" color
+	//      Or maybe don't do so? - Rene Wagner
 
-						if (*p != 'x')
-							break;
-
-						p++;
-						if (!isdigit((unsigned int) *p))
-							break;
-
-						hgt = (*p - '0');
-
-						curses_drv->wid = wid;
-						curses_drv->hgt = hgt;
-						}
-					break;
-				default:
-					return -1;
-					break;
-			}
-		}
+	/*Get size settings*/
+	strncpy(buf, config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE),200);
+	if (strlen(buf)>199) strncat(buf, "\0", 1);
+	int wid, hgt;
+	if( sscanf(buf , "%dx%d", &wid, &hgt ) != 2
+	|| (wid <= 0)
+	|| (hgt <= 0)) {
+		report (RPT_WARNING, "CURSES: Cannot read size: %s. Using default value.\n", buf);
+		sscanf( CONF_DEF_SIZE , "%dx%d", &wid, &hgt );
 	}
+	driver->wid = wid;
+	driver->hgt = hgt;
+
+	/*Get position settings*/
+	if (0<=config_get_int ( DriverName , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) && config_get_int ( DriverName , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) <= 255) {
+		screen_begx = config_get_int ( DriverName , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X);
+	} else {
+		report (RPT_WARNING, "CURSES: topleftx must between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_X);
+	}
+	if (0<=config_get_int ( DriverName , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) && config_get_int ( DriverName , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) <= 255) {
+		screen_begy = config_get_int ( DriverName , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y);
+	} else {
+		report (RPT_WARNING, "CURSES: toplefty must between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_Y);
+	}
+
+	//debug: sleep(1);
 
 	// Init curses...
 	initscr ();
@@ -554,7 +542,7 @@ curses_drv_vbar (int x, int len)
 {
 	int y;
 	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
-	
+
 	ValidX(x);
 
 #define MAX_LINES (curses_drv->cellhgt * curses_drv->hgt)
