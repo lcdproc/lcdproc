@@ -4,6 +4,18 @@ Feel free to help out with any of this stuff!  :)
 
 Please send a message to the mailing list if you have any question.
 
+Things for the short term:
+- The menu_goto command: A given menu should come up
+  (if the menu accepts that).
+- Rotation and priorities
+- Have server also use Left and Right key 
+- Entire server menu working properly
+- Fix rendering of subframes
+- Fix rendering anyway ;)
+- (?) Use centralized command message parsing engine (more secure)
+
+Things for the longer term:
+
 ----------------------------------------
 Client driver
 
@@ -66,7 +78,8 @@ add/remove drivers, change screen priorities, kick off clients, etc...
 
 You can also access client menus to configure options in each client.
 
-STATUS: We only have a server menu that control contrast, backlight, ...
+STATUS: This is currently being worked on. Client supplied menus work.
+Check 0.5 to see it.
 ----------------------------------------
 Config Files...
 
@@ -103,7 +116,7 @@ The server will also be able to run arbitrary shell commands from the
 config file.  This will allow you to, for example, shut down the
 machine, get online, or other system tasks.
 
-STATUS: We have a few build-in cmd, but exec should be done into a client.
+STATUS: These commands can now be run by the lcdexec client.
 ----------------------------------------
 Improved display driver API
 

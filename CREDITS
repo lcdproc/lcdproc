@@ -1,24 +1,40 @@
-LCDproc is a community effort, and as such we'd like to
-recognize everyone's efforts.  If you have helped out but are
-not listed, let us know!
+This is the CREDITS file that should list all people that are or have
+been involved in LCDproc. 
+
+Please help us keeping this file up to date. Developers, please insert
+your name and a short description of your activities. Other people
+involved, please tell us if your name is missing or your credit
+information is incorrect. LCDproc is a community effort, and as such
+we'd like to recognize everyone's efforts!
 
 CONTRIBUTORS
 
 (in order of appearance :)
 
-William Ferrell:
+William Ferrell (Choadstre) <willfe@yahoo.com>:
 	- Project founder, wrote 1st version, much documentation, design
 	  for V0.4, continued maintenance
+It's Choadstre's fault that LCDproc exists. He wanted his computer to have
+a heartbeat, like some HP workstations do. So he found a nice LCD, wrote
+some amazingly spiffy software for it, and life was good. 
 
-Scott Scriven:
+Scott Scriven (ToyKeeper) <toykeeper@cheerful.com>:
 	- wrote V0.3 and most of V0.4, and helped procrastinate the rest
 	  of the time...
+ToyKeeper was the main programmer for LCDproc 0.3. He took Choadstre's idea and
+put it in its current form. 
 
-Gareth Watts:
+Gareth Watts (Xeno42):
 	- Patches, mailing list, ideas, web hosting, CVS, etc.
 
-Matrix Orbital Corporation:
+Matrix Orbital Corporation <http://www.matrix-orbital.com/>:
 	- Free displays for us developers, and lots of help early on
+
+Crystal Fontz <http://www.crystalfontz.com/>:
+	- Sends us testing LCDs to get LCDproc going on all their models
+
+Lorand Bruhacs <bruhacs@ip23.net>:
+	- Lorand made LCDproc V0.3.5, which added lots of nifty stuff while keeping the old program model
 
 Benjamin Tse <blt@Comports.com>, Matthias Prinke <m.prinke@trashcan.mcnet.de>:
 	- HD44780 driver and predecessors
@@ -42,7 +58,7 @@ David Glaude:
         - lcdproc big clocK screen.
         - Matrix Orbital enhancement: Big Number, general-purpose output,
 	  dynamic custom char allocation, i2c support(lost), ...
-	- Crystal Fontz driver
+	- Crystal Fontz drivers
 	- Matrix orbital GLK driver
 
 Todd Porter:
@@ -112,6 +128,8 @@ Joris Robijn:
 	- Config file stuff
 	- Reporting stuff
 	- Work on API 0.5 architecture and implementation, loadable drivers.
+	- Menu stuff of 0.5
+	- SED1330 driver
 
 Guillaume Filion:
 	- Portability bug fixes on the curses, HD44780, SED1520 and 
@@ -151,7 +169,4 @@ Ken Robertson		seadawg
 Simon Harrison		smh
 Stephen Paul		tegetana
 Luis Llorente		luisllo
-
-Please let us know if your name is missing, or your credit
-information is incorrect!
 
