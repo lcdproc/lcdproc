@@ -38,6 +38,15 @@ text_init (lcd_logical_driver * driver, char *args)
 {
 	text = driver;
 
+	// Make sure the frame buffer is there...
+	if (!text->framebuf)
+		text->framebuf = (unsigned char *)
+			malloc (text->wid * text->hgt);
+	memset (text->framebuf, ' ', text->wid * text->hgt);
+
+
+	// Set the functions the driver supports
+
 	text->wid = LCD_DEFAULT_WIDTH;
 	text->hgt = LCD_DEFAULT_HEIGHT;
 	text->cellwid = LCD_DEFAULT_CELL_WIDTH;

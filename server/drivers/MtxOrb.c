@@ -98,10 +98,10 @@ static void MtxOrb_autoscroll (int on);
 static void MtxOrb_cursorblink (int on);
 static void MtxOrb_string (int x, int y, char *string);
 
-/* 
+/*
  * This does not belong to MtxOrb.h except if used externaly
  * Having them here reduce the number of warning.
- */ 
+ */
 static void MtxOrb_clear ();
 static void MtxOrb_close ();
 static void MtxOrb_flush ();
@@ -387,12 +387,11 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 			malloc (MtxOrb->wid * MtxOrb->hgt);
 	memset (MtxOrb->framebuf, ' ', MtxOrb->wid * MtxOrb->hgt);
 
-
         // Allocate and clear the buffer for incremental updates
 	lcd_contents = (unsigned char *) malloc (MtxOrb->wid * MtxOrb->hgt);
 	if (!lcd_contents) { return -1; }
 	memset(lcd_contents, ' ', MtxOrb->wid * MtxOrb->hgt);
-			
+
 	/*
 	 * Configure display
 	 */
@@ -613,12 +612,12 @@ MtxOrb_backlight (int on)
 	backlight_state = on;
 
 	switch (on) {
-		case BACKLIGHT_ON: 
+		case BACKLIGHT_ON:
 			write (fd, "\x0FE" "F", 2);
 			if (debug_level > 3)
 				syslog(LOG_DEBUG, "MtxOrb: backlight turned on");
 			break;
-		case BACKLIGHT_OFF: 
+		case BACKLIGHT_OFF:
 			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY) {
 				if (debug_level > 3)
 					syslog(LOG_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
@@ -1348,7 +1347,7 @@ MtxOrb_set_known_char (int car, int type)
 {
 	char all_bar[25][5 * 8] = {
 		{
-		 0, 0, 0, 0, 0,			  //  char u1[] = 
+		 0, 0, 0, 0, 0,			  //  char u1[] =
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
@@ -1357,7 +1356,7 @@ MtxOrb_set_known_char (int car, int type)
 		 0, 0, 0, 0, 0,
 		 1, 1, 1, 1, 1,
 		 }, {
-			  0, 0, 0, 0, 0,		  //  char u2[] = 
+			  0, 0, 0, 0, 0,		  //  char u2[] =
 			  0, 0, 0, 0, 0,
 			  0, 0, 0, 0, 0,
 			  0, 0, 0, 0, 0,
@@ -1366,7 +1365,7 @@ MtxOrb_set_known_char (int car, int type)
 			  1, 1, 1, 1, 1,
 			  1, 1, 1, 1, 1,
 			  }, {
-					0, 0, 0, 0, 0,	  //  char u3[] = 
+					0, 0, 0, 0, 0,	  //  char u3[] =
 					0, 0, 0, 0, 0,
 					0, 0, 0, 0, 0,
 					0, 0, 0, 0, 0,
@@ -1375,7 +1374,7 @@ MtxOrb_set_known_char (int car, int type)
 					1, 1, 1, 1, 1,
 					1, 1, 1, 1, 1,
 					}, {
-						 0, 0, 0, 0, 0,	//  char u4[] = 
+						 0, 0, 0, 0, 0,	//  char u4[] =
 						 0, 0, 0, 0, 0,
 						 0, 0, 0, 0, 0,
 						 0, 0, 0, 0, 0,
@@ -1384,7 +1383,7 @@ MtxOrb_set_known_char (int car, int type)
 						 1, 1, 1, 1, 1,
 						 1, 1, 1, 1, 1,
 						 }, {
-							  0, 0, 0, 0, 0,	//  char u5[] = 
+							  0, 0, 0, 0, 0,	//  char u5[] =
 							  0, 0, 0, 0, 0,
 							  0, 0, 0, 0, 0,
 							  1, 1, 1, 1, 1,
@@ -1393,7 +1392,7 @@ MtxOrb_set_known_char (int car, int type)
 							  1, 1, 1, 1, 1,
 							  1, 1, 1, 1, 1,
 							  }, {
-									0, 0, 0, 0, 0,	//  char u6[] = 
+									0, 0, 0, 0, 0,	//  char u6[] =
 									0, 0, 0, 0, 0,
 									1, 1, 1, 1, 1,
 									1, 1, 1, 1, 1,
@@ -1402,7 +1401,7 @@ MtxOrb_set_known_char (int car, int type)
 									1, 1, 1, 1, 1,
 									1, 1, 1, 1, 1,
 									}, {
-										 0, 0, 0, 0, 0,	//  char u7[] = 
+										 0, 0, 0, 0, 0,	//  char u7[] =
 										 1, 1, 1, 1, 1,
 										 1, 1, 1, 1, 1,
 										 1, 1, 1, 1, 1,
@@ -1411,7 +1410,7 @@ MtxOrb_set_known_char (int car, int type)
 										 1, 1, 1, 1, 1,
 										 1, 1, 1, 1, 1,
 										 }, {
-											  1, 1, 1, 1, 1,	//  char d1[] = 
+											  1, 1, 1, 1, 1,	//  char d1[] =
 											  0, 0, 0, 0, 0,
 											  0, 0, 0, 0, 0,
 											  0, 0, 0, 0, 0,
@@ -1420,7 +1419,7 @@ MtxOrb_set_known_char (int car, int type)
 											  0, 0, 0, 0, 0,
 											  0, 0, 0, 0, 0,
 											  }, {
-													1, 1, 1, 1, 1,	//  char d2[] = 
+													1, 1, 1, 1, 1,	//  char d2[] =
 													1, 1, 1, 1, 1,
 													0, 0, 0, 0, 0,
 													0, 0, 0, 0, 0,
@@ -1429,7 +1428,7 @@ MtxOrb_set_known_char (int car, int type)
 													0, 0, 0, 0, 0,
 													0, 0, 0, 0, 0,
 													}, {
-														 1, 1, 1, 1, 1,	//  char d3[] = 
+														 1, 1, 1, 1, 1,	//  char d3[] =
 														 1, 1, 1, 1, 1,
 														 1, 1, 1, 1, 1,
 														 0, 0, 0, 0, 0,
@@ -1438,7 +1437,7 @@ MtxOrb_set_known_char (int car, int type)
 														 0, 0, 0, 0, 0,
 														 0, 0, 0, 0, 0,
 														 }, {
-															  1, 1, 1, 1, 1,	//  char d4[] = 
+															  1, 1, 1, 1, 1,	//  char d4[] =
 															  1, 1, 1, 1, 1,
 															  1, 1, 1, 1, 1,
 															  1, 1, 1, 1, 1,
@@ -1447,7 +1446,7 @@ MtxOrb_set_known_char (int car, int type)
 															  0, 0, 0, 0, 0,
 															  0, 0, 0, 0, 0,
 															  }, {
-																	1, 1, 1, 1, 1,	//  char d5[] = 
+																	1, 1, 1, 1, 1,	//  char d5[] =
 																	1, 1, 1, 1, 1,
 																	1, 1, 1, 1, 1,
 																	1, 1, 1, 1, 1,
@@ -1456,7 +1455,7 @@ MtxOrb_set_known_char (int car, int type)
 																	0, 0, 0, 0, 0,
 																	0, 0, 0, 0, 0,
 																	}, {
-																		 1, 1, 1, 1, 1,	//  char d6[] = 
+																		 1, 1, 1, 1, 1,	//  char d6[] =
 																		 1, 1, 1, 1, 1,
 																		 1, 1, 1, 1, 1,
 																		 1, 1, 1, 1, 1,
@@ -1465,7 +1464,7 @@ MtxOrb_set_known_char (int car, int type)
 																		 0, 0, 0, 0, 0,
 																		 0, 0, 0, 0, 0,
 																		 }, {
-																			  1, 1, 1, 1, 1,	//  char d7[] = 
+																			  1, 1, 1, 1, 1,	//  char d7[] =
 																			  1, 1, 1, 1, 1,
 																			  1, 1, 1, 1, 1,
 																			  1, 1, 1, 1, 1,
@@ -1474,7 +1473,7 @@ MtxOrb_set_known_char (int car, int type)
 																			  1, 1, 1, 1, 1,
 																			  0, 0, 0, 0, 0,
 																			  }, {
-																					1, 0, 0, 0, 0,	//  char r1[] = 
+																					1, 0, 0, 0, 0,	//  char r1[] =
 																					1, 0, 0, 0, 0,
 																					1, 0, 0, 0, 0,
 																					1, 0, 0, 0, 0,
@@ -1483,7 +1482,7 @@ MtxOrb_set_known_char (int car, int type)
 																					1, 0, 0, 0, 0,
 																					1, 0, 0, 0, 0,
 																					}, {
-																						 1, 1, 0, 0, 0,	//  char r2[] = 
+																						 1, 1, 0, 0, 0,	//  char r2[] =
 																						 1, 1, 0, 0, 0,
 																						 1, 1, 0, 0, 0,
 																						 1, 1, 0, 0, 0,
@@ -1492,7 +1491,7 @@ MtxOrb_set_known_char (int car, int type)
 																						 1, 1, 0, 0, 0,
 																						 1, 1, 0, 0, 0,
 																						 }, {
-																							  1, 1, 1, 0, 0,	//  char r3[] = 
+																							  1, 1, 1, 0, 0,	//  char r3[] =
 																							  1, 1, 1, 0, 0,
 																							  1, 1, 1, 0, 0,
 																							  1, 1, 1, 0, 0,
@@ -1501,7 +1500,7 @@ MtxOrb_set_known_char (int car, int type)
 																							  1, 1, 1, 0, 0,
 																							  1, 1, 1, 0, 0,
 																							  }, {
-																									1, 1, 1, 1, 0,	//  char r4[] = 
+																									1, 1, 1, 1, 0,	//  char r4[] =
 																									1, 1, 1, 1, 0,
 																									1, 1, 1, 1, 0,
 																									1, 1, 1, 1, 0,
@@ -1510,7 +1509,7 @@ MtxOrb_set_known_char (int car, int type)
 																									1, 1, 1, 1, 0,
 																									1, 1, 1, 1, 0,
 																									}, {
-																										 0, 0, 0, 0, 1,	//  char l1[] = 
+																										 0, 0, 0, 0, 1,	//  char l1[] =
 																										 0, 0, 0, 0, 1,
 																										 0, 0, 0, 0, 1,
 																										 0, 0, 0, 0, 1,
@@ -1519,7 +1518,7 @@ MtxOrb_set_known_char (int car, int type)
 																										 0, 0, 0, 0, 1,
 																										 0, 0, 0, 0, 1,
 																										 }, {
-																											  0, 0, 0, 1, 1,	//  char l2[] = 
+																											  0, 0, 0, 1, 1,	//  char l2[] =
 																											  0, 0, 0, 1, 1,
 																											  0, 0, 0, 1, 1,
 																											  0, 0, 0, 1, 1,
@@ -1528,7 +1527,7 @@ MtxOrb_set_known_char (int car, int type)
 																											  0, 0, 0, 1, 1,
 																											  0, 0, 0, 1, 1,
 																											  }, {
-																													0, 0, 1, 1, 1,	//  char l3[] = 
+																													0, 0, 1, 1, 1,	//  char l3[] =
 																													0, 0, 1, 1, 1,
 																													0, 0, 1, 1, 1,
 																													0, 0, 1, 1, 1,
@@ -1537,7 +1536,7 @@ MtxOrb_set_known_char (int car, int type)
 																													0, 0, 1, 1, 1,
 																													0, 0, 1, 1, 1,
 																													}, {
-																														 0, 1, 1, 1, 1,	//  char l4[] = 
+																														 0, 1, 1, 1, 1,	//  char l4[] =
 																														 0, 1, 1, 1, 1,
 																														 0, 1, 1, 1, 1,
 																														 0, 1, 1, 1, 1,

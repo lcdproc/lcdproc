@@ -175,6 +175,12 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	// Do it...
 	tcsetattr (fd, TCSANOW, &portset);
 
+	// Make sure the frame buffer is there...
+	if (!CFontz->framebuf)
+		CFontz->framebuf = (unsigned char *)
+			malloc (CFontz->wid * CFontz->hgt);
+	memset (CFontz->framebuf, ' ', CFontz->wid * CFontz->hgt);
+
 	// Set display-specific stuff..
 	if (reboot) {
 		CFontz_reboot ();

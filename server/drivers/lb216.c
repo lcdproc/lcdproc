@@ -68,14 +68,14 @@ int LB216_init(lcd_logical_driver *driver, char *args)
    int i;
    int tmp;
    int reboot=0;
-   
+
    char device[256] = "/dev/lcd";
    int speed=B9600;
-   
+
    LB216 = driver;
 
    //debug("LB216_init: Args(all): %s\n", args);
-   
+
    argc = get_args(argv, args, 64);
 
    /*
@@ -84,7 +84,7 @@ int LB216_init(lcd_logical_driver *driver, char *args)
       printf("Arg(%i): %s\n", i, argv[i]);
    }
    */
-   
+
    for(i=0; i<argc; i++)
    {
       //printf("Arg(%i): %s\n", i, argv[i]);
@@ -150,12 +150,12 @@ int LB216_init(lcd_logical_driver *driver, char *args)
       {
 	 printf("Invalid parameter: %s\n", argv[i]);
       }
-      
+
    }
-   
+
    // Set up io port correctly, and open it...
-   fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY); 
-   if (fd == -1) 
+   fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
+   if (fd == -1)
    {
       fprintf(stderr, "LB216_init: failed (%s)\n", strerror(errno));
       return -1;
@@ -183,7 +183,13 @@ int LB216_init(lcd_logical_driver *driver, char *args)
 
    // Do it...
    tcsetattr(fd, TCSANOW, &portset);
-   
+
+
+   // Make sure the frame buffer is there...
+   if (!LB216->framebuf)
+      LB216->framebuf = (unsigned char *)
+      malloc (LB216->wid * LB216->hgt);
+   memset (LB216->framebuf, ' ', LB216->wid * LB216->hgt);
 
    // Set display-specific stuff..
    if(reboot)
@@ -222,7 +228,7 @@ int LB216_init(lcd_logical_driver *driver, char *args)
    LB216->cellhgt = 8;
 
    debug("LB216: foo!\n");
-   
+
    return fd;
 }
 
@@ -231,9 +237,9 @@ int LB216_init(lcd_logical_driver *driver, char *args)
 /////////////////////////////////////////////////////////////////
 // Clean-up
 //
-void LB216_close() 
+void LB216_close()
 {
-  close (fd); 
+  close (fd);
 
   if(LB216->framebuf) free(LB216->framebuf);
 
@@ -261,15 +267,21 @@ void LB216_flush()
 // Prints a character on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (16,2).
 //
-void LB216_chr(int x, int y, char c) 
+void LB216_chr(int x, int y, char c)
 {
   //y--;
  // x--;
-  
+
   //if(c < 32  &&  c >= 0) c += 128;
 //  LB216->framebuf[(y*LB216->wid) + x] = c;
-	char chr[1];
-	snprintf (chr, sizeof(chr), "%c", c);
+
+//	char chr[1];
+//	snprintf (chr, sizeof(chr), "%c", c);
+// Above two lines are incorrect (Joris)
+
+	char chr[2];
+	chr[0] = c;
+	chr[1] = 0;
 	LB216_string (x, y, chr);
 }
 
@@ -323,7 +335,7 @@ void LB216_draw_frame(char *dat)
 {
   char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
   int i,j;
-  
+
   if(!dat) return;
 
   snprintf (out, sizeof(out), "%c%c", 254,80);
@@ -365,7 +377,7 @@ void LB216_string (int x, int y, char string[])
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before LB216->vbar()
 //
-void LB216_init_vbar() 
+void LB216_init_vbar()
 {
   char a[] = {
     0,0,0,0,0,
@@ -453,7 +465,7 @@ void LB216_init_vbar()
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-void LB216_init_hbar() 
+void LB216_init_hbar()
 {
 
   char a[] = {
@@ -520,10 +532,10 @@ void LB216_init_hbar()
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar...
 //
-void LB216_vbar(int x, int len) 
+void LB216_vbar(int x, int len)
 {
   char map[9] = {32, 1, 2, 3, 4, 5, 6, 7, 255 };
-  
+
 
   int y;
   for(y=LB216->hgt; y > 0 && len>0; y--)
@@ -533,7 +545,7 @@ void LB216_vbar(int x, int len)
 
       len -= LB216->cellhgt;
     }
-  
+
 }
 
 /////////////////////////////////////////////////////////////////
@@ -547,10 +559,10 @@ void LB216_hbar(int x, int y, int len)
     {
       if(len >= LB216->cellwid) LB216_chr(x,y,map[5]);
       else LB216_chr(x, y, map[len]);
-      
+
 	 //printf ("%d,",len);
       len -= LB216->cellwid;
-      
+
     }
 //	printf ("\n");
 
@@ -602,7 +614,7 @@ void LB216_icon(int which, char dest)
      1,0,0,0,1,
      1,1,0,1,1,
      1,1,1,1,1,
-   },   
+   },
 
    {
      1,1,1,1,1,  // Filled Heart
@@ -614,7 +626,7 @@ void LB216_icon(int which, char dest)
      1,1,0,1,1,
      1,1,1,1,1,
    },
-   
+
    {
      0,0,0,0,0,  // Ellipsis
      0,0,0,0,0,
@@ -625,9 +637,9 @@ void LB216_icon(int which, char dest)
      0,0,0,0,0,
      1,0,1,0,1,
    },
-   
+
   };
-  
+
   if(custom==bign) custom=beat;
   LB216_set_char(dest, &icons[which][0]);
 }
