@@ -60,33 +60,33 @@ fi
 			;;
 		curses)
 			AC_CHECK_HEADERS(ncurses.h curses.h)
- 			AC_CHECK_LIB(ncurses, main,
- 				AC_CHECK_HEADER(ncurses.h,
+ 			AC_CHECK_LIB(ncurses, main, [
+ 				AC_CHECK_HEADER(ncurses.h, [
  					dnl We have ncurses.h and libncurses, add driver.
 	 				LIBCURSES="-lncurses"
  					DRIVERS="$DRIVERS curses${SO}"
  					actdrivers=["$actdrivers curses"]
- 				,
+ 				],[
 dnl				else
-					AC_MSG_WARN([Could not find ncurses.h]),
-				)
- 			,
+					AC_MSG_WARN([Could not find ncurses.h])],
+				[])
+ 			],[
 dnl			else
- 				AC_CHECK_LIB(curses, main,
- 					AC_CHECK_HEADER(curses.h,
+ 				AC_CHECK_LIB(curses, main, [
+ 					AC_CHECK_HEADER(curses.h, [
  						dnl We have curses.h and libcurses, add driver.
  						LIBCURSES="-lcurses"
  						DRIVERS="$DRIVERS curses${SO}"
  						actdrivers=["$actdrivers curses"]
- 					,
+ 					],[
 dnl					else
-						AC_MSG_WARN([Could not find curses.h]),
-					)
- 				,
+						AC_MSG_WARN([Could not find curses.h])],
+					[])
+ 				],[
 dnl				else
- 					AC_MSG_WARN([The curses driver needs the curses (or ncurses) library.]),
- 				)
- 			)
+ 					AC_MSG_WARN([The curses driver needs the curses (or ncurses) library.])],
+ 				[])
+ 			])
 
  			AC_CURSES_ACS_ARRAY
 
@@ -127,33 +127,33 @@ dnl				else
 			actdrivers=["$actdrivers hd44780"]
 			;;
 		joy)
-			AC_CHECK_HEADER(linux/joystick.h,
+			AC_CHECK_HEADER(linux/joystick.h, [
 				DRIVERS="$DRIVERS joy${SO}"
 				actdrivers=["$actdrivers joy"]
-				,
+				],[
 dnl				else
  				AC_MSG_WARN([The joy driver needs header file linux/joystick.h.])
- 			)
+ 			])
 			;;
 		irman)
- 			AC_CHECK_LIB(irman, main,
+ 			AC_CHECK_LIB(irman, main,[
  				LIBIRMAN="-lirman"
  				DRIVERS="$DRIVERS irman${SO}"
  				actdrivers=["$actdrivers irman"]
- 				,
+ 				],[
 dnl				else
  				AC_MSG_WARN([The irman driver needs the irman library.])
- 			)
+ 			])
 			;;
 		lirc)
-			AC_CHECK_LIB(lirc_client, main,
+			AC_CHECK_LIB(lirc_client, main,[
 				LIBLIRC_CLIENT="-llirc_client"
 				DRIVERS="$DRIVERS lirc${SO}"
 				actdrivers=["$actdrivers lirc"]
-				,
+				],[
 dnl				else
 				AC_MSG_WARN([The lirc driver needs the lirc client library])
-			)
+			])
 			;;
 		sed1330)
 			if test "$ac_cv_port_have_lpt" = yes
@@ -183,19 +183,19 @@ dnl				else
 			fi
 			;;
 		svga)
-			AC_CHECK_LIB(vga, main,
- 				AC_CHECK_HEADER(ncurses.h,
+			AC_CHECK_HEADERS([vga.h vgagl.h],[
+				AC_CHECK_LIB(vga, main,[
 					LIBSVGA="-lvga -lvgagl"
 					DRIVERS="$DRIVERS svga${SO}"
 					actdrivers=["$actdrivers svga"]
- 				,
+ 				],[
 dnl				else
-					AC_MSG_WARN([Could not find vga.h and/or vgagl.h]),
-				)
-			,
+					AC_MSG_WARN([The svga driver needs the vga library])
+				])
+			],[
 dnl			else
-				AC_MSG_WARN([The svga driver needs the vga library])
-			)
+				AC_MSG_WARN([The svga driver needs vga.h and vgagl.h])
+			])
 			;;
 		t6963)
 			if test "$ac_cv_port_have_lpt" = yes
