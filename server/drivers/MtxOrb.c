@@ -155,10 +155,7 @@ typedef enum {
 } bar_type;
 
 static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
-static int fd;
 
-/* Control when the LCD is cleared to custom char are not in use anymore */
-static int clear = 1;
 
 /* Those information are moving to PrivateData */
 /* static int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 }; */
@@ -187,6 +184,8 @@ typedef struct p {
 	int width;
 	int height;
 	int widthBYheight;	/* Avoid computing width * height frequently */
+	int clear;		/* Control when the LCD is cleared */
+	int fd;			/* The LCD file descriptor */
 
 /*
         int type;
@@ -275,6 +274,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->width = LCD_DEFAULT_WIDTH;
 	p->height = LCD_DEFAULT_HEIGHT;
 	p->widthBYheight = LCD_DEFAULT_WIDTH * LCD_DEFAULT_HEIGHT;
+	p->clear = 1;		/* assume LCD is cleared at startup */
 
 	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
 
@@ -398,8 +398,8 @@ MtxOrb_init (Driver *drvthis, char *args)
 	/* End of config file parsing*/
 
 	/* Set up io port correctly, and open it... */
-	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
-	if (fd == -1) {
+	p->fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+	if (p->fd == -1) {
 		switch (errno) {
 			case ENOENT: report (RPT_ERR, "MtxOrb_init: %s device file missing!\n", device);
 				break;
@@ -413,7 +413,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 	} else
 		report (RPT_INFO, "MtxOrb: opened display on %s\n", device);
 
-	tcgetattr (fd, &portset);
+	tcgetattr (p->fd, &portset);
 
 	/* We use RAW mode */
 #ifdef HAVE_CFMAKERAW
@@ -434,13 +434,13 @@ MtxOrb_init (Driver *drvthis, char *args)
 	cfsetispeed (&portset, B0);
 
 	/* Do it... */
-	tcsetattr (fd, TCSANOW, &portset);
+	tcsetattr (p->fd, TCSANOW, &portset);
 
 	/* Make sure the frame buffer is there... */
 	if (!framebuf)
 		framebuf = (unsigned char *)
-			malloc (p->width * p->height);
-	memset (framebuf, ' ', p->width * p->height);
+			malloc (p->widthBYheight);
+	memset (framebuf, ' ', p->widthBYheight);
 
 	/*
 	 * Configure display
@@ -471,12 +471,12 @@ MtxOrb_clear (Driver *drvthis)
         PrivateData * p = drvthis->private_data;
 
 	if (framebuf != NULL)
-		memset (framebuf, ' ', (p->width * p->height));
+		memset (framebuf, ' ', (p->widthBYheight));
 
 	/* We don't use hardware clear anymore.
 	 * We use incremental update with the frame_buffer. */
 	/* write(fd, "\x0FE" "X", 2); */ /* instant clear... */
-	clear = 1;
+	p->clear = 1;
 
 	debug(RPT_DEBUG, "MtxOrb: cleared screen");
 }
@@ -489,7 +489,7 @@ MtxOrb_close (Driver *drvthis)
 {
         PrivateData * p = drvthis->private_data;
 
-	close (fd);
+	close (p->fd);
 
 	if (framebuf)
 		free (framebuf);
@@ -534,7 +534,7 @@ MtxOrb_string (Driver *drvthis, int x, int y, char *string)
 
 	x--; y--; /* Convert 1-based coords to 0-based... */
 	offset = (y * p->width) + x;
-	siz = (p->width * p->height) - offset;
+	siz = (p->widthBYheight) - offset;
 	siz = siz > strlen(string) ? strlen(string) : siz;
 
 	memcpy(framebuf + offset, string, siz);
@@ -553,12 +553,12 @@ MtxOrb_flush (Driver *drvthis)
         PrivateData * p = drvthis->private_data;
 
 	if (old == NULL) {
-		old = malloc(p->width * p->height);
+		old = malloc(p->widthBYheight);
 
-		write(fd, "\x0FEG\x01\x01", 4);
-		write(fd, framebuf, p->width * p->height);
+		write(p->fd, "\x0FEG\x01\x01", 4);
+		write(p->fd, framebuf, p->widthBYheight);
 
-		strncpy(old, framebuf, p->width * p->height);
+		strncpy(old, framebuf, p->widthBYheight);
 
 		return;
 
@@ -588,10 +588,10 @@ MtxOrb_flush (Driver *drvthis)
 
 				if (mv == 1) {
 					snprintf(out, sizeof(out), "\x0FEG%c%c", j, i);
-					write (fd, out, 4);
+					write (p->fd, out, 4);
 					mv = 0;
 				}
-				write (fd, xp, 1);
+				write (p->fd, xp, 1);
 			}
 			xp++;
 			xq++;
@@ -606,7 +606,7 @@ MtxOrb_flush (Driver *drvthis)
 	 * }
 	 */
 
-	strncpy(old, framebuf, p->width * p->height);
+	strncpy(old, framebuf, p->widthBYheight);
 
 	debug(RPT_DEBUG, "MtxOrb: frame buffer flushed");
 }
@@ -662,6 +662,8 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 	char out[4];
 	int real_contrast;
 
+        PrivateData * p = drvthis->private_data;
+
 	/* Check it */
 	if( promille < 0 || promille > 1000 )
 		return;
@@ -675,7 +677,7 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 
 	if (IS_LCD_DISPLAY || IS_LKD_DISPLAY) {
 		snprintf (out, sizeof(out), "\x0FEP%c", real_contrast);
-		write (fd, out, 3);
+		write (p->fd, out, 3);
 
 	report(RPT_DEBUG, "MtxOrb: contrast set to %d", real_contrast);
 	} else {
@@ -709,7 +711,7 @@ MtxOrb_backlight (Driver *drvthis, int on)
 
 	switch (on) {
 		case BACKLIGHT_ON:
-			write (fd, "\x0FE" "F", 2);
+			write (p->fd, "\x0FE" "F", 2);
 	debug(RPT_DEBUG, "MtxOrb: backlight turned on");
 			break;
 		case BACKLIGHT_OFF:
@@ -718,7 +720,7 @@ MtxOrb_backlight (Driver *drvthis, int on)
 				; /* turns display off entirely (whoops!) */
 			} else {
 	debug(RPT_DEBUG, "MtxOrb: backlight turned off");
-				write (fd, "\x0FE" "B" "\x000", 3);
+				write (p->fd, "\x0FE" "B" "\x000", 3);
 			}
 			break;
 		default: /* ignored... */
@@ -752,8 +754,8 @@ MtxOrb_output (Driver *drvthis, int on)
 	if (IS_LCD_DISPLAY || IS_VFD_DISPLAY) {
 		/* LCD and VFD displays only have one output port */
 		(on) ?
-			write (fd, "\x0FEW", 2) :
-			write (fd, "\x0FEV", 2);
+			write (p->fd, "\x0FEW", 2) :
+			write (p->fd, "\x0FEV", 2);
 	} else {
 		int i;
 
@@ -766,7 +768,7 @@ MtxOrb_output (Driver *drvthis, int on)
 			(on & (1 << i)) ?
 				snprintf (out, sizeof(out), "\x0FEW%c", i + 1) :
 				snprintf (out, sizeof(out), "\x0FEV%c", i + 1);
-			write (fd, out, 3);
+			write (p->fd, out, 3);
 		}
 	}
 }
@@ -777,12 +779,14 @@ MtxOrb_output (Driver *drvthis, int on)
 static void
 MtxOrb_linewrap (Driver *drvthis, int on)
 {
+        PrivateData * p = drvthis->private_data;
+
 	if (on) {
-		write (fd, "\x0FE" "C", 2);
+		write (p->fd, "\x0FE" "C", 2);
 
 	debug(RPT_DEBUG, "MtxOrb: linewrap turned on");
 	} else {
-		write (fd, "\x0FE" "D", 2);
+		write (p->fd, "\x0FE" "D", 2);
 
 	debug(RPT_DEBUG, "MtxOrb: linewrap turned off");
 	}
@@ -794,12 +798,14 @@ MtxOrb_linewrap (Driver *drvthis, int on)
 static void
 MtxOrb_autoscroll (Driver *drvthis, int on)
 {
+        PrivateData * p = drvthis->private_data;
+
 	if (on) {
-		write (fd, "\x0FEQ", 2);
+		write (p->fd, "\x0FEQ", 2);
 
 	debug(RPT_DEBUG, "MtxOrb: autoscroll turned on");
 	} else {
-		write (fd, "\x0FER", 2);
+		write (p->fd, "\x0FER", 2);
 
 	debug(RPT_DEBUG, "MtxOrb: autoscroll turned off");
 	}
@@ -812,28 +818,24 @@ MtxOrb_autoscroll (Driver *drvthis, int on)
 static void
 MtxOrb_cursorblink (Driver *drvthis, int on)
 {
+        PrivateData * p = drvthis->private_data;
+
 	if (on) {
-		write (fd, "\x0FES", 2);
+		write (p->fd, "\x0FES", 2);
 
 	debug(RPT_DEBUG, "MtxOrb: cursorblink turned on");
 	} else {
-		write (fd, "\x0FET", 2);
+		write (p->fd, "\x0FET", 2);
 
 	debug(RPT_DEBUG, "MtxOrb: cursorblink turned off");
 	}
 }
 
 /* TODO: REMOVE ME */
-MODULE_EXPORT void
-MtxOrb_init_old_vbar (Driver *drvthis)
-{
-}
+MODULE_EXPORT void MtxOrb_init_old_vbar (Driver *drvthis) { }
 
 /* TODO: REMOVE ME */
-MODULE_EXPORT void
-MtxOrb_init_old_hbar (Driver *drvthis)
-{
-}
+MODULE_EXPORT void MtxOrb_init_old_hbar (Driver *drvthis) { }
 
 /******************************
  * Returns string with general information about the display
@@ -845,6 +847,8 @@ MtxOrb_get_info (Driver *drvthis)
 	static char info[255];
 	char tmp[255], buf[64];
 	/* int i = 0; */
+        PrivateData * p = drvthis->private_data;
+
 	fd_set rfds;
 
 	struct timeval tv;
@@ -859,11 +863,11 @@ MtxOrb_get_info (Driver *drvthis)
 	 * Read type of display
 	 */
 
-	write(fd, "\x0FE" "7", 2);
+	write(p->fd, "\x0FE" "7", 2);
 
 	/* Watch fd to see when it has input. */
 	FD_ZERO(&rfds);
-	FD_SET(fd, &rfds);
+	FD_SET(p->fd, &rfds);
 
 	/* Wait the specified amount of time. */
 	tv.tv_sec = 0;		/* seconds */
@@ -872,7 +876,7 @@ MtxOrb_get_info (Driver *drvthis)
 	retval = select(1, &rfds, NULL, NULL, &tv);
 
 	if (retval) {
-		if (read (fd, &in, 1) < 0) {
+		if (read (p->fd, &in, 1) < 0) {
 			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
 		} else {
 			switch (in) {
@@ -915,7 +919,7 @@ MtxOrb_get_info (Driver *drvthis)
 	 */
 
 	memset(tmp, '\0', sizeof(tmp));
-	write(fd, "\x0FE" "5", 2);
+	write(p->fd, "\x0FE" "5", 2);
 
 	/* Wait the specified amount of time. */
 	tv.tv_sec = 0;		/* seconds */
@@ -924,7 +928,7 @@ MtxOrb_get_info (Driver *drvthis)
 	retval = select(1, &rfds, NULL, NULL, &tv);
 
 	if (retval) {
-		if (read (fd, &tmp, 2) < 0) {
+		if (read (p->fd, &tmp, 2) < 0) {
 			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
 		} else {
 			snprintf(buf, sizeof(buf), "Serial No: %ld ", (long int) tmp);
@@ -938,7 +942,7 @@ MtxOrb_get_info (Driver *drvthis)
 	 */
 
 	memset(tmp, '\0', sizeof(tmp));
-	write(fd, "\x0FE" "6", 2);
+	write(p->fd, "\x0FE" "6", 2);
 
 	/* Wait the specified amount of time. */
 	tv.tv_sec = 0;		/* seconds */
@@ -947,7 +951,7 @@ MtxOrb_get_info (Driver *drvthis)
 	retval = select(1, &rfds, NULL, NULL, &tv);
 
 	if (retval) {
-		if (read (fd, &tmp, 2) < 0) {
+		if (read (p->fd, &tmp, 2) < 0) {
 			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
 		} else {
 			snprintf(buf, sizeof(buf), "Firmware Rev. %ld ", (long int) tmp);
@@ -1118,13 +1122,15 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 	int row, col;
 	int letter;
 
+        PrivateData * p = drvthis->private_data;
+
 	if (n < 0 || n > MAX_CUSTOM_CHARS)
 		return;
 	if (!dat)
 		return;
 
 	snprintf (out, sizeof(out), "\x0FEN%c", n);
-	write (fd, out, 3);
+	write (p->fd, out, 3);
 
 	for (row = 0; row < cellheight; row++) {
 		letter = 0;
@@ -1137,7 +1143,7 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 			 */
 			letter |= (dat[(row * cellwidth) + col] > 0);
 		}
-		write (fd, &letter, 1); /* write one character for each row */
+		write (p->fd, &letter, 1); /* write one character for each row */
 	}
 }
 
@@ -1169,7 +1175,9 @@ MtxOrb_getkey (Driver *drvthis)
 {
 	char in = 0;
 
-	read (fd, &in, 1);
+        PrivateData * p = drvthis->private_data;
+
+	read (p->fd, &in, 1);
 	switch (in) {
 		case KEY_LEFT:
 			in = INPUT_BACK_KEY;
@@ -1214,9 +1222,9 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 	if (type==barb) return 255;
 
 	/* If the screen was clear then no graphic caracter are in use yet. */
-	if (clear) {
+	if (p->clear) {
   	  for (pos = 0; pos < 8; pos++) p->use[pos] = 0;
-	  clear = 0;
+	  p->clear = 0;
 	}
 
 	/* Search for a match with caracter already defined. */
