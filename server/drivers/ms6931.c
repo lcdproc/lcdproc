@@ -52,6 +52,7 @@ static unsigned char heartbeatCharacter;
 static fd_set fdset;
 static int width = 0;
 static int height = 0;
+static struct timeval selectTimeout = { 0, 0 };
 
 // mandatory symbols
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -214,6 +215,9 @@ ms6931_init (struct lcd_logical_driver *drvthis, char *args)
 	// create framebuffer and clear display
 	framebuf = (unsigned char *) malloc (width * height);
 	ms6931_clear(drvthis);
+
+	selectTimeout.tv_sec = 0;
+	selectTimeout.tv_usec = 0;
 
 	report (RPT_DEBUG, "ms6931_init: done");
 
@@ -417,7 +421,6 @@ ms6931_heartbeat (struct lcd_logical_driver *drvthis, int state)
 /////////////////////////////////////////////////////////////
 // controls the keys
 //
-static struct timeval selectTimeout = { 0, 0 };
 
 MODULE_EXPORT char 
 ms6931_get_key (struct lcd_logical_driver *drvthis)
