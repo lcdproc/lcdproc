@@ -100,7 +100,7 @@ handle_input ()
 	int key;
 	screen *s;
 	//widget *w;
-	//client *c;
+	client *c;
 
 	if ((key = lcd_ptr->getkey ()) == 0)
 		return 0;
