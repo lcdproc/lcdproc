@@ -69,6 +69,8 @@ server_screen_init ()
 		if (line == 1) {
 			w->type = WID_TITLE;
 			strncpy (w->text, "LCDproc Server", MAX_SERVERSCREEN_WIDTH);
+		} else {
+			w->text[0] = 0;
 		}
 	}
 
