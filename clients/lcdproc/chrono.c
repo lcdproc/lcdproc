@@ -105,7 +105,7 @@ chrono_init ()
 		unamebuf = (struct utsname *) malloc (sizeof (struct utsname));
 		uptime_fd = open ("/proc/uptime", O_RDONLY);
 
-#ifdef 0
+#if 0
 		kversion_fd = open ("/proc/sys/kernel/osrelease", O_RDONLY);
 
 		reread (kversion_fd, "main:");
@@ -469,10 +469,10 @@ int
 big_clock_screen (int rep, int display)
 {
 	static int first = 1;
-	static int colons = 0;
 	time_t thetime;
 	struct tm *rtime;
 	int pos[] = { 1, 4, 8, 11, 15, 18 };
+	char  cmdbuf[64] ;
 	//  int i=0;
 
 	char fulltxt[16], old_fulltxt[16];
@@ -493,6 +493,8 @@ big_clock_screen (int rep, int display)
 		sock_send_string (sock, "widget_add K d3 num\n");
 		sock_send_string (sock, "widget_add K d4 num\n");
 		sock_send_string (sock, "widget_add K d5 num\n");
+		sock_send_string (sock, "widget_add K c0 num\n");
+		sock_send_string (sock, "widget_add K c1 num\n");
 //      sock_send_string(sock, "widget_add K one string\n");
 		sock_send_string (sock, "widget_set K d0 1 0\n");
 		sock_send_string (sock, "widget_set K d1 4 0\n");
@@ -500,6 +502,8 @@ big_clock_screen (int rep, int display)
 		sock_send_string (sock, "widget_set K d3 11 0\n");
 		sock_send_string (sock, "widget_set K d4 15 0\n");
 		sock_send_string (sock, "widget_set K d5 18 0\n");
+		sock_send_string (sock, "widget_set K c0 7 10\n");
+		sock_send_string (sock, "widget_set K c1 14 10\n");
 		old_fulltxt[0] = '0';
 		old_fulltxt[1] = '0';
 		old_fulltxt[2] = '0';
@@ -516,13 +520,11 @@ big_clock_screen (int rep, int display)
 	sprintf (fulltxt, "%02d%02d%02d", rtime->tm_hour, rtime->tm_min, rtime->tm_sec);
 	for (j = 0; j < 6; j++) {
 		if (fulltxt[j] != old_fulltxt[j]) {
-			sprintf (tmp + strlen (tmp), "widget_set K d%d %d %c\n", j, pos[j], fulltxt[j]);
+			sprintf (cmdbuf, "widget_set K d%d %d %c\n", j, pos[j], fulltxt[j]);
+			sock_send_string (sock, cmdbuf);
 			old_fulltxt[j] = fulltxt[j];
 		}
 	}
-
-	if (display)
-		sock_send_string (sock, tmp);
 
 	return 0;
 }										  // End big_clock_screen()
