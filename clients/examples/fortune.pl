@@ -1,14 +1,31 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
 use IO::Socket;
 use Fcntl;
+
+############################################################
+# Configurable part. Set it according your setup.
+############################################################
+
+# Path to `fortune' program.
+$FORTUNE = "fortune";
+
+# Host which runs lcdproc daemon (LCDd)
+$HOST = "localhost";
+
+# Port on which LCDd listens to requests
+$PORT = "13666";
+
+############################################################
+# End of user configurable parts
+############################################################
 
 
 # Connect to the server...
 $remote = IO::Socket::INET->new(
 		Proto     => "tcp",
-		PeerAddr  => "localhost",
-		PeerPort  => "13666",
+		PeerAddr  => $HOST,
+		PeerPort  => $PORT,
 	)
 	|| die "Cannot connect to LCDproc port\n";
 
@@ -49,7 +66,7 @@ while(1)
 	    @lines = split(/\n/, $input);
 	    foreach $line (@lines)
 	    {
-		if ( $line =~ /^success$/ ) next;
+		if ( $line =~ /^success$/ ) { next; }
 		if($line =~ /^ignore (\S)/)  # Update just after disappearing
 		{
 		    &update_text();
@@ -66,7 +83,7 @@ exit;
 
 sub update_text {
     # Grab some text.
-    $text = `fortune`;
+    $text = `$FORTUNE` || die "\n$0: Error running `$FORTUNE'.\nPlease check that the path is correct.\n\n";
     @lines = split(/\n/, $text);
     $text = join(" / ", @lines);
     
