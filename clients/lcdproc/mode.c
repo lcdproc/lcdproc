@@ -11,12 +11,13 @@
 #include <sys/utsname.h>
 
 #include <string.h>
-#if defined( IRIX ) || defined( SOLARIS )
-# include <strings.h>
-#endif
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+#if defined( IRIX ) || defined( SOLARIS )
+# include <strings.h>
 #endif
 
 #include "shared/sockets.h"
