@@ -31,7 +31,10 @@
 #include "widget.h"
 #include "serverscreens.h"
 
+#define UNSET_INT -1
+
 Screen * server_screen;
+int rotate_server_screen = UNSET_INT;
 
 #define MAX_SERVERSCREEN_WIDTH 40
 
@@ -51,7 +54,12 @@ server_screen_init ()
 	}
 	server_screen->name = "Server screen";
 	server_screen->duration = 8; /* 1 second, instead of 4...*/
-	server_screen->priority = PRI_INFO;
+	
+	if ((rotate_server_screen == UNSET_INT ) || (rotate_server_screen == 1)) {
+		server_screen->priority = PRI_INFO;
+	} else {
+		server_screen->priority = PRI_BACKGROUND;
+	}
 
 	/* Create all the widgets...*/
 	for (line=1; line<=4; line++) {

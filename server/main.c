@@ -112,7 +112,6 @@ char configfile[256];	/* a lot of space in the executable. */
 char user[64];		/* The values will be overwritten anyway... */
 
 int daemon_mode = UNSET_INT;
-int rotate_server_screen = UNSET_INT;
 
 static int report_level = UNSET_INT;
 static int report_to_syslog = UNSET_INT;

@@ -16,6 +16,8 @@
 
 extern Screen * server_screen;
 
+extern int rotate_server_screen;
+
 int server_screen_init ();
 int server_screen_shutdown ();
 int update_server_screen ();
