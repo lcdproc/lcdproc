@@ -25,11 +25,11 @@ MODULE_EXPORT void HD44780_flush (Driver *drvthis);
 MODULE_EXPORT void HD44780_string (Driver *drvthis, int x, int y, char *s);
 MODULE_EXPORT void HD44780_chr (Driver *drvthis, int x, int y, char ch);
 
-MODULE_EXPORT void HD44780_vbar (Driver *drvthis, int x, int len);
-MODULE_EXPORT void HD44780_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void HD44780_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void HD44780_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void HD44780_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT void HD44780_heartbeat (Driver *drvthis, int type);
-MODULE_EXPORT void HD44780_icon (Driver *drvthis, int which, char dest);
+MODULE_EXPORT void HD44780_icon (Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void HD44780_set_char (Driver *drvthis, int n, char *dat);
 

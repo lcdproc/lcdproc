@@ -313,13 +313,13 @@ HD44780_init (Driver * drvthis, char *args)
 	//drvthis->output = HD44780_output; // not implemented
 	drvthis->init_vbar = HD44780_init_vbar;
 	drvthis->init_hbar = HD44780_init_hbar;
-	drvthis->old_vbar = HD44780_vbar;
-	drvthis->old_hbar = HD44780_hbar;
+	drvthis->vbar = HD44780_vbar;
+	drvthis->hbar = HD44780_hbar;
 	drvthis->init_num = HD44780_init_num;
 	drvthis->num = HD44780_num;
 	drvthis->heartbeat = HD44780_heartbeat;
 	drvthis->set_char = HD44780_set_char;
-	drvthis->old_icon = HD44780_icon;
+	drvthis->icon = HD44780_icon;
 	//drvthis->draw_frame = HD44780_draw_frame; // TO BE REMOVED
 
 	if ((p->hd44780_functions = (HD44780_functions *) malloc (sizeof (HD44780_functions))) == NULL) {
@@ -469,7 +469,7 @@ HD44780_flush (Driver *drvthis)
 		}
 	}
 	debug( RPT_DEBUG, "HD44780: flushed %d chars", count );
-	
+
 	/* Check which defineable chars we need to update */
 	count = 0;
 	for( i = 0; i < NUM_UDCs; i ++ ) {
@@ -718,41 +718,79 @@ HD44780_init_hbar (Driver *drvthis)
 // Draws a vertical bar...
 //
 MODULE_EXPORT void
-HD44780_vbar (Driver *drvthis, int x, int len)
+HD44780_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	PrivateData *p = (PrivateData *) drvthis->private_data;
-	char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
+	//PrivateData *p = (PrivateData *) drvthis->private_data;
+	char map[8] = { 32, 1, 2, 3, 4, 5, 6, 7 };
+	int total_pixels = (long) len * LCD_DEFAULT_CELLHEIGHT * promille / 1000;
+	int pos;
 
-	int y;
-	for (y = p->height; y > 0 && len > 0; y--) {
-		if (len >= p->cellheight)
-			HD44780_chr (drvthis, x, y, 255);
-		else
-			HD44780_chr (drvthis, x, y, map[len]);
+	/* x and y are the start position of the bar.
+	 * The bar by default grows in the 'up' direction
+	 * (other direction not yet implemented).
+	 * len is the number of characters that the bar is long at 100%
+	 * promille is the number of promilles (0..1000) that the bar should be filled.
+	 */
 
-		len -= p->cellheight;
+	HD44780_init_vbar(drvthis);
+
+	for (pos = 0; pos < len; pos ++ ) {
+
+		int pixels = total_pixels - LCD_DEFAULT_CELLHEIGHT * pos;
+
+		if( pixels >= LCD_DEFAULT_CELLHEIGHT ) {
+			/* write a "full" block to the screen... */
+			HD44780_icon (drvthis, x, y-pos, ICON_BLOCK_FILLED);
+		}
+		else if( pixels > 0 ) {
+			/* write a partial block... */
+			HD44780_chr (drvthis, x, y-pos, map[pixels]);
+			break;
+		}
+		else {
+			; // write nothing (not even a space)
+		}
 	}
-
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-HD44780_hbar (Driver *drvthis, int x, int y, int len)
+HD44780_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	PrivateData *p = (PrivateData *) drvthis->private_data;
-	char map[6] = { 32, 1, 2, 3, 4, 255 };
+	//PrivateData *p = (PrivateData *) drvthis->private_data;
+	char map[5] = { 32, 1, 2, 3, 4 };
+	int total_pixels = (long) len * LCD_DEFAULT_CELLWIDTH * promille / 1000;
+	int pos;
 
-	for (; x <= p->width && len > 0; x++) {
-		if (len >= p->cellwidth)
-			HD44780_chr (drvthis, x, y, 255);
-		else
-			HD44780_chr (drvthis, x, y, map[len]);
+	/* x and y are the start position of the bar.
+	 * The bar by default grows in the 'up' direction
+	 * (other direction not yet implemented).
+	 * len is the number of characters that the bar is long at 100%
+	 * promille is the number of promilles (0..1000) that the bar should be filled.
+	 */
 
-		len -= p->cellwidth;
+	HD44780_init_hbar(drvthis);
 
+	for (pos = 0; pos < len; pos ++ ) {
+
+		int pixels = total_pixels - LCD_DEFAULT_CELLWIDTH * pos;
+
+		if( pixels >= LCD_DEFAULT_CELLWIDTH ) {
+			/* write a "full" block to the screen. */
+			HD44780_icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
+		}
+		else if( pixels > 0 ) {
+			/* write a partial block... */
+			HD44780_chr (drvthis, x+pos, y, map[pixels]);
+			break;
+		}
+		else {
+			; // write nothing (not even a space)
+		}
 	}
+
 }
 
 /////////////////////////////////////////////////////////////////
@@ -837,12 +875,12 @@ HD44780_init_num (Driver *drvthis)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0
 	}};
-	
+
 	if( p->udcmode == UDCMODE_BIGNUM ) {
 		/* Work already done */
 		return;
 	}
-	
+
 	if( p->udcmode != UDCMODE_STANDARD ) {
 		/* Not supported (yet) */
 		report( RPT_WARNING, "HD44780_init_num: Cannot combine two modes using user defined characters" );
@@ -966,7 +1004,7 @@ MODULE_EXPORT void
 HD44780_heartbeat (Driver *drvthis, int type)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
-	
+
 	static int timer = 0;
 	int whichIcon;
 	static int saved_type = HEARTBEAT_ON;
@@ -975,18 +1013,14 @@ HD44780_heartbeat (Driver *drvthis, int type)
 		saved_type = type;
 
 	if (type == HEARTBEAT_ON) {
-		// Set this to pulsate like a real heart beat...
-		whichIcon = (! ((timer + 4) & 5));
+		/* Set this to pulsate like a real heart beat... */
+		if( ((timer + 4) & 5))
+			whichIcon = ICON_HEART_OPEN;
+		else
+			whichIcon = ICON_HEART_FILLED;
 
-		// This defines a custom character EVERY time...
-		// not efficient... is this necessary?
-		HD44780_icon (drvthis, whichIcon, 0);
-
-		// Put character on screen...
-		HD44780_chr (drvthis, p->width, 1, 0);
-
-		// change display...
-		HD44780_flush (drvthis);
+		/* place the icon */
+		HD44780_icon (drvthis, p->width, 1, whichIcon);
 	}
 
 	timer++;
@@ -1020,7 +1054,7 @@ HD44780_set_char (Driver *drvthis, int n, char *dat)
 		}
 		if( p->udc_buf[n*p->cellheight+row] != letter ) {
 			p->udc_dirty[n] = 1; /* only mark as dirty if really different */
-		}		
+		}
 		p->udc_buf[n*p->cellheight+row] = letter;
 	}
 }
@@ -1029,46 +1063,43 @@ HD44780_set_char (Driver *drvthis, int n, char *dat)
 // Set default icon into a userdef char
 //
 MODULE_EXPORT void
-HD44780_icon (Driver *drvthis, int which, char dest)
+HD44780_icon (Driver *drvthis, int x, int y, int icon)
 {
-	//PrivateData *p = (PrivateData *) drvthis->private_data;
-	char icons[3][5 * 8] = {
-		{
-		 1, 1, 1, 1, 1,		   // Empty Heart
+	char heart_open[] = {
+		 1, 1, 1, 1, 1,
 		 1, 0, 1, 0, 1,
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
 		 1, 0, 0, 0, 1,
 		 1, 1, 0, 1, 1,
-		 1, 1, 1, 1, 1,
-		 },
+		 1, 1, 1, 1, 1 };
 
-		{
-		 1, 1, 1, 1, 1,		   // Filled Heart
+	char heart_filled[] = {
+		 1, 1, 1, 1, 1,
 		 1, 0, 1, 0, 1,
 		 0, 1, 0, 1, 0,
 		 0, 1, 1, 1, 0,
 		 0, 1, 1, 1, 0,
 		 1, 0, 1, 0, 1,
 		 1, 1, 0, 1, 1,
-		 1, 1, 1, 1, 1,
-		 },
+		 1, 1, 1, 1, 1 };
 
-		{
-		 0, 0, 0, 0, 0,		   // Ellipsis
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 0, 1, 0, 1,
-		 },
-
-	};
-
-	HD44780_set_char (drvthis, dest, &icons[which][0]);
+	switch( icon ) {
+		case ICON_BLOCK_FILLED:
+			HD44780_chr( drvthis, x, y, 255 );
+			break;
+		case ICON_HEART_FILLED:
+			HD44780_set_char( drvthis, 0, heart_filled );
+			HD44780_chr( drvthis, x, y, 0 );
+			break;
+		case ICON_HEART_OPEN:
+			HD44780_set_char( drvthis, 0, heart_open );
+			HD44780_chr( drvthis, x, y, 0 );
+			break;
+		default:
+			report( RPT_WARNING, "HD44780_icon: unknown or unsupported icon: %d", icon );
+	}
 }
 
 /////////////////////////////////////////////////////////////
