@@ -164,6 +164,7 @@ goodbye_screen ()
 		}
 	}
 
+	drivers_cursor (1, 1, CURSOR_OFF);
 	drivers_flush ();
 
 	return 0;
