@@ -39,6 +39,7 @@
 //#include "shared/debug.h"
 #include "shared/str.h"
 #include "report.h"
+#include "lcd_lib.h"
 //#include "server/configfile.h"
 
 
@@ -211,10 +212,10 @@ CFontz_init (Driver * drvthis, char *args)
 	drvthis->clear = CFontz_clear;
 	drvthis->string = CFontz_string;
 	drvthis->chr = CFontz_chr;
-	drvthis->old_vbar = CFontz_vbar;
-	drvthis->init_vbar = CFontz_init_vbar;
-	drvthis->old_hbar = CFontz_hbar;
-	drvthis->init_hbar = CFontz_init_hbar;
+	drvthis->vbar = CFontz_vbar;
+	//drvthis->init_vbar = CFontz_init_vbar;
+	drvthis->hbar = CFontz_hbar;
+	//drvthis->init_hbar = CFontz_init_hbar;
 	drvthis->num = CFontz_num;
 
 	drvthis->init = CFontz_init;
@@ -224,7 +225,7 @@ CFontz_init (Driver * drvthis, char *args)
 	drvthis->set_contrast = CFontz_set_contrast;
 	drvthis->backlight = CFontz_backlight;
 	drvthis->set_char = CFontz_set_char;
-	drvthis->old_icon = CFontz_icon;
+	drvthis->icon = CFontz_icon;
 	drvthis->heartbeat = CFontz_heartbeat;
 
 	CFontz_set_contrast (drvthis, contrast);
@@ -415,9 +416,9 @@ CFontz_reboot ()
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before CFontz->vbar()
+// Sets up for vertical bars.
 //
-MODULE_EXPORT void
+static void
 CFontz_init_vbar (Driver * drvthis)
 {
 	char a[] = {
@@ -506,7 +507,7 @@ CFontz_init_vbar (Driver * drvthis)
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-MODULE_EXPORT void
+static void
 CFontz_init_hbar (Driver * drvthis)
 {
 
@@ -586,40 +587,36 @@ CFontz_init_hbar (Driver * drvthis)
 // Draws a vertical bar...
 //
 MODULE_EXPORT void
-CFontz_vbar (Driver * drvthis, int x, int len)
+CFontz_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 {
-	char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
+	/* x and y are the start position of the bar.
+	 * The bar by default grows in the 'up' direction
+	 * (other direction not yet implemented).
+	 * len is the number of characters that the bar is long at 100%
+	 * promille is the number of promilles (0..1000) that the bar should be filled.
+	 */
 
-	int y;
-	for (y = height; y > 0 && len > 0; y--) {
-		if (len >= cellheight)
-			CFontz_chr (drvthis, x, y, 255);
-		else
-			CFontz_chr (drvthis, x, y, map[len]);
+	CFontz_init_vbar(drvthis);
 
-		len -= cellheight;
-	}
-
+	lib_vbar_static(drvthis, x, y, len, promille, options, cellheight, 0);
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-CFontz_hbar (Driver * drvthis, int x, int y, int len)
+CFontz_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 {
-	char map[7] = { 32, 1, 2, 3, 4, 5, 6 };
+	/* x and y are the start position of the bar.
+	 * The bar by default grows in the 'right' direction
+	 * (other direction not yet implemented).
+	 * len is the number of characters that the bar is long at 100%
+	 * promille is the number of promilles (0..1000) that the bar should be filled.
+	 */
 
-	for (; x <= width && len > 0; x++) {
-		if (len >= cellwidth)
-			CFontz_chr (drvthis, x, y, map[6]);
-		else
-			CFontz_chr (drvthis, x, y, map[len]);
+	CFontz_init_hbar(drvthis);
 
-		len -= cellwidth;
-
-	}
-
+	lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 0);
 }
 
 
@@ -666,8 +663,11 @@ CFontz_set_char (Driver * drvthis, int n, char *dat)
 	}
 }
 
+/////////////////////////////////////////////////////////////////
+// Places an icon on screen
+//
 MODULE_EXPORT void
-CFontz_icon (Driver * drvthis, int which, char dest)
+CFontz_icon (Driver * drvthis, int x, int y, int icon)
 {
 	char icons[3][6 * 8] = {
 		{
@@ -707,7 +707,23 @@ CFontz_icon (Driver * drvthis, int which, char dest)
 
 	if (custom == bign)
 		custom = beat;
-	CFontz_set_char (drvthis, dest, &icons[which][0]);
+
+	switch( icon ) {
+		case ICON_BLOCK_FILLED:
+			CFontz_chr( drvthis, x, y, 255 );
+			break;
+		case ICON_HEART_FILLED:
+			CFontz_set_char( drvthis, 0, icons[1] );
+			CFontz_chr( drvthis, x, y, 0 );
+			break;
+		case ICON_HEART_OPEN:
+			CFontz_set_char( drvthis, 0, icons[0] );
+			CFontz_chr( drvthis, x, y, 0 );
+			break;
+		default:
+			report( RPT_WARNING, "CFontz_icon: unknown or unsupported icon: %d", icon );
+	}
+
 }
 
 /////////////////////////////////////////////////////////////////
@@ -762,18 +778,14 @@ CFontz_heartbeat (Driver *drvthis, int type)
 		saved_type = type;
 
 	if (type == HEARTBEAT_ON) {
-		// Set this to pulsate like a real heart beat...
-		whichIcon = (! ((timer + 4) & 5));
+		/* Set this to pulsate like a real heart beat... */
+		if( ((timer + 4) & 5))
+			whichIcon = ICON_HEART_OPEN;
+		else
+			whichIcon = ICON_HEART_FILLED;
 
-		// This defines a custom character EVERY time...
-		// not efficient... is this necessary?
-		CFontz_icon (drvthis, whichIcon, 0);
-
-		// Put character on screen...
-		CFontz_chr (drvthis, width, 1, 0);
-
-		// change display...
-		CFontz_flush (drvthis);
+		/* place the icon */
+		CFontz_icon (drvthis, width, 1, whichIcon);
 	}
 
 	timer++;

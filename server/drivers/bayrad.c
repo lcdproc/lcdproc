@@ -32,6 +32,14 @@
 #include "bayrad.h"
 //#include "drv_base.h"
 #include "shared/str.h"
+#include "report.h"
+#include "lcd_lib.h"
+
+#define NUM_CCs 8 /* number of characters */
+#define CCMODE_STANDARD 0 /* only char 0 is used for heartbeat */
+#define CCMODE_VBAR 1
+#define CCMODE_HBAR 2
+#define CCMODE_BIGNUM 3
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// Base "class" to derive from ///////////////////////
@@ -43,6 +51,7 @@ static int height = 0;
 static int cellwidth = 5;
 static int cellheight = 8;
 static char *framebuf = NULL;
+static char ccmode = CCMODE_STANDARD;
 
   /////////////////////////////////////////////////////////////
  /* Declare a bunch of global, static custom character data */
@@ -320,7 +329,7 @@ bayrad_init(Driver *drvthis, char *args)
    struct termios portset;
    int tmp;
 
-   //printf("bayrad_init()\n");
+   //debug(RPT_DEBUG,"bayrad_init()\n");
    strcpy(device, "/dev/lcd");
    width = 20;
    height = 2;
@@ -330,7 +339,7 @@ bayrad_init(Driver *drvthis, char *args)
   if(!framebuf)
     {
       bayrad_close(drvthis);
-      fprintf(stderr, "\nError: unable to create BayRAD framebuffer.\n");
+      report(RPT_ERR, "bayrad_init: Error: unable to create BayRAD framebuffer.");
       return -1;
     }
 
@@ -341,24 +350,24 @@ bayrad_init(Driver *drvthis, char *args)
 
   /*-----------------------------------------------------*/
 
-  //fprintf(stderr, "bayrad_init: Args(all): %s\n", args);
+  //debug(RPT_DEBUG, "bayrad_init: Args(all): %s\n", args);
 
    argc = get_args(argv, args, 64);
 
    /*
    for(i=0; i<argc; i++)
    {
-      printf("Arg(%i): %s\n", i, argv[i]);
+      debug(RPT_DEBUG,"Arg(%i): %s\n", i, argv[i]);
    }
    */
 
    for(i=0; i<argc; i++)
    {
-      //printf("Arg(%i): %s\n", i, argv[i]);
+      //debug(RPT_DEBUG,"Arg(%i): %s\n", i, argv[i]);
       if(0 == strcmp(argv[i], "-d")  || 0 == strcmp(argv[i], "--device"))
 	{
 	  if(i + 1 > argc) {
-	    fprintf(stderr, "bayrad_init: %s requires an argument\n",
+	    report(RPT_ERR, "bayrad_init: %s requires an argument",
 		    argv[i]);
 	    return -1;
 	  }
@@ -368,7 +377,7 @@ bayrad_init(Driver *drvthis, char *args)
 	{
 	  if(i + 1 > argc)
 	    {
-	      fprintf(stderr, "bayrad_init: %s requires an argument\n", argv[i]);
+	      report(RPT_ERR, "bayrad_init: %s requires an argument", argv[i]);
 	      return -1;
 	    }
 	  tmp = atoi(argv[++i]);
@@ -382,13 +391,13 @@ bayrad_init(Driver *drvthis, char *args)
 	    speed=B19200;
 	  else
 	    {
-	      fprintf(stderr, "bayrad_init: %s argument must be 1200, 2400, 9600 or 19200. Using default value.\n",
+	      report(RPT_ERR, "bayrad_init: %s argument must be 1200, 2400, 9600 or 19200. Using default value.",
 		      argv[i]);
 	    }
       }
       else if(0 == strcmp(argv[i], "-h")  || 0 == strcmp(argv[i], "--help"))
 	{
-	  printf("LCDproc EMAC BayRAD LCD driver\n"
+	  report(RPT_ERR, "LCDproc EMAC BayRAD LCD driver\n"
 		 "\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
 		 /*"\t-t\t--type\t\tSelect the LCD type (size) [20x2]\n"*/
 		 "\t-s\t--speed\t\tSet the communication speed [19200]\n"
@@ -397,7 +406,7 @@ bayrad_init(Driver *drvthis, char *args)
 	}
       else
 	{
-	  printf("Invalid parameter: %s\n", argv[i]);
+	  report(RPT_ERR, "bayrad_init: Invalid parameter: %s", argv[i]);
 	}
 
    }
@@ -406,11 +415,11 @@ bayrad_init(Driver *drvthis, char *args)
    fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
    if (fd == -1)
    {
-      fprintf(stderr, "bayrad_init: failed (%s)\n", strerror(errno));
+      report(RPT_ERR, "bayrad_init: failed (%s)", strerror(errno));
       return -1;
    }
 
-   //else fprintf(stderr, "bayrad_init: opened device %s\n", device);
+   //else debug(RPT_DEBUG, "bayrad_init: opened device %s\n", device);
 
    tcflush(fd, TCIOFLUSH);
 
@@ -457,10 +466,10 @@ bayrad_init(Driver *drvthis, char *args)
   drvthis->clear = bayrad_clear;
   drvthis->string = bayrad_string;
   drvthis->chr = bayrad_chr;
-  drvthis->old_vbar = bayrad_vbar;
-  drvthis->init_vbar = bayrad_init_vbar;
-  drvthis->old_hbar = bayrad_hbar;
-  drvthis->init_hbar = bayrad_init_hbar;
+  drvthis->vbar = bayrad_vbar;
+  //drvthis->init_vbar = bayrad_init_vbar;
+  drvthis->hbar = bayrad_hbar;
+  //drvthis->init_hbar = bayrad_init_hbar;
   //drvthis->num = NULL; //bayrad_num;
   //drvthis->init_num = NULL; //bayrad_init_num;
   drvthis->init = bayrad_init;
@@ -468,9 +477,9 @@ bayrad_init(Driver *drvthis, char *args)
   drvthis->flush = bayrad_flush;
   drvthis->backlight = bayrad_backlight;
   drvthis->set_char = bayrad_set_char;
-  drvthis->old_icon = bayrad_icon;
+  drvthis->icon = bayrad_icon;
 
-  drvthis->getkey = bayrad_getkey;
+  drvthis->get_key = bayrad_get_key;
 
 
   return 0;
@@ -484,7 +493,7 @@ bayrad_init(Driver *drvthis, char *args)
 MODULE_EXPORT void
 bayrad_close(Driver * drvthis)
 {
-  //fprintf(stderr, "\nClosing BayRAD.\n");
+  //debug(RPT_DEBUG, "\nClosing BayRAD.\n");
   write(fd, "\x8e\x00", 2);  // Backlight OFF
 
   if(framebuf) free(framebuf);
@@ -521,6 +530,7 @@ MODULE_EXPORT void
 bayrad_clear(Driver * drvthis)
 {
   memset(framebuf, ' ', width * height);
+  ccmode = CCMODE_STANDARD;
 
 }
 
@@ -532,7 +542,7 @@ MODULE_EXPORT void
 bayrad_flush(Driver * drvthis)
 {
 
-  //fprintf(stderr, "\nBayRAD flush");
+  //debug(RPT_DEBUG, "\nBayRAD flush");
 
   write(fd, "\x80\x1e", 2);  //sync, home
   write(fd, framebuf, 20);
@@ -552,7 +562,7 @@ bayrad_string(Driver * drvthis, int x, int y, char string[])
   int i;
   unsigned char c;
 
-  //fprintf(stderr, "\nPutting string %s at %i, %i", string, x, y);
+  //debug(RPT_DEBUG, "\nPutting string %s at %i, %i", string, x, y);
 
   x -= 1;  // Convert 1-based coords to 0-based...
   y -= 1;
@@ -568,7 +578,7 @@ bayrad_string(Driver * drvthis, int x, int y, char string[])
      if(c> 0x7F && c < 0x98)
        {
 	 //c &= 0x7F;
-	 fprintf(stderr, "\nIllegal char %#x requested in bayrad_string()!\n", c);
+	 report(RPT_WARNING, "bayrad_strign: Illegal char %#x requested in bayrad_string()!", c);
 	 c = ' ';
 
        }
@@ -590,7 +600,7 @@ bayrad_chr(Driver * drvthis, int x, int y, char c)
 {
   unsigned char ch;
 
-  //fprintf(stderr, "\nPutting char %c (%#x) at %i, %i", c, c, x, y);
+  //debug(RPT_DEBUG, "\nPutting char %c (%#x) at %i, %i", c, c, x, y);
 
   y--;
   x--;
@@ -598,7 +608,7 @@ bayrad_chr(Driver * drvthis, int x, int y, char c)
 
   if(ch > 0x7F && ch < 0x98)
     {
-      fprintf(stderr, "\nIllegal char %#x requested in bayrad_chr()!\n", ch);
+      report(RPT_WARNING, "Illegal char %#x requested in bayrad_chr()!", ch);
       ch = ' ';
     }
 
@@ -622,12 +632,12 @@ bayrad_backlight(Driver * drvthis, int on)
   if(on)
   {;
     //write(fd, "\x8e\x0f", 2);
-    //fprintf(stderr, "Backlight ON\n");
+    //debug(RPT_DEBUG, "Backlight ON\n");
   }
   else
   {;
     //write(fd, "\x8e\x00", 2);
-    //fprintf(stderr, "Backlight OFF\n");
+    //debug(RPT_DEBUG, "Backlight OFF\n");
   }
 
 }
@@ -635,10 +645,22 @@ bayrad_backlight(Driver * drvthis, int on)
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for vertical bargraphs.
 //
-MODULE_EXPORT void
+void
 bayrad_init_vbar(Driver * drvthis)
 {
-  //printf("Init Vertical bars.\n");
+  //debug(RPT_DEBUG,"Init Vertical bars.\n");
+
+  if( ccmode == CCMODE_VBAR ) {
+    /* Work already done */
+    return;
+  }
+
+  if( ccmode != CCMODE_STANDARD ) {
+    /* Not supported (yet) */
+    report( RPT_WARNING, "bayrad_init_vbar: Cannot combine two modes using user defined characters" );
+    return;
+  }
+  ccmode = CCMODE_VBAR;
 
   bayrad_set_char(drvthis, 1, bar_up[0]);
   bayrad_set_char(drvthis, 2, bar_up[1]);
@@ -655,10 +677,22 @@ bayrad_init_vbar(Driver * drvthis)
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for horizontal bargraphs.
 //
-MODULE_EXPORT void
+void
 bayrad_init_hbar(Driver * drvthis)
 {
-  //printf("Init Horizontal bars.\n");
+  //debug(RPT_DEBUG,"Init Horizontal bars.\n");
+
+  if( ccmode == CCMODE_HBAR ) {
+    /* Work already done */
+    return;
+  }
+
+  if( ccmode != CCMODE_STANDARD ) {
+    /* Not supported (yet) */
+    report( RPT_WARNING, "bayrad_init_hbar: Cannot combine two modes using user defined characters" );
+    return;
+  }
+  ccmode = CCMODE_HBAR;
 
   bayrad_set_char(drvthis, 1, bar_right[0]);
   bayrad_set_char(drvthis, 2, bar_right[1]);
@@ -671,10 +705,10 @@ return;
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for big numbers, if possible.
 //
-MODULE_EXPORT void
+void
 bayrad_init_num(Driver * drvthis)
 {
-//  printf("Big Numbers.\n");
+//  debug(RPT_DEBUG,"Big Numbers.\n");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -683,7 +717,7 @@ bayrad_init_num(Driver * drvthis)
 MODULE_EXPORT void
 bayrad_num(Driver * drvthis, int x, int num)
 {
-//  printf("BigNum(%i, %i)\n", x, num);
+//  debug(RPT_DEBUG,"BigNum(%i, %i)\n", x, num);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -696,7 +730,7 @@ bayrad_set_char(Driver * drvthis, int n, char *dat)
   int row, col;
   char letter;
 
-  //fprintf(stderr, "\nSet char %i", n);
+  //debug(RPT_DEBUG, "\nSet char %i", n);
 
   if(n < 0 || n > 7) /* Do we want to the aliased indexes as well (0x98 - 0x9F?) */
     return;
@@ -732,74 +766,54 @@ return;
 // Draws a vertical bar, from the bottom of the screen up.
 //
 MODULE_EXPORT void
-bayrad_vbar(Driver * drvthis, int x, int len)
+bayrad_vbar(Driver * drvthis, int x, int y, int len, int promille, int options)
 {
-   int y = 2;
+  //debug(RPT_DEBUG, "\nVbar at %i, length %i", x, len);
 
-   //fprintf(stderr, "\nVbar at %i, length %i", x, len);
+  /* x and y are the start position of the bar.
+   * The bar by default grows in the 'up' direction
+   * (other direction not yet implemented).
+   * len is the number of characters that the bar is long at 100%
+   * promille is the number of promilles (0..1000) that the bar should be filled.
+   */
 
-   if(len >= cellheight)
-     {
-       bayrad_chr(drvthis, x, y, 0xFF);
-       len -= cellheight;
-       y = 1;
-     }
+  bayrad_init_vbar(drvthis);
 
-   if(!len)
-     return;
-
-   if(len > cellheight)
-     {
-       bayrad_chr(drvthis, x, y, '^');  /* Show we've gone off the chart */
-       return;
-     }
-
-   /* init_vbar sets custom chars 1 - 7.  Height 8 is char 0xFF. */
-   if(len == 8)
-     bayrad_chr(drvthis, x, y, 0xFF);
-   else
-     bayrad_chr(drvthis, x, y, (len+0x98));
-
-return;
+  lib_vbar_static(drvthis, x, y, len, promille, options, cellheight, 0x98);
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-bayrad_hbar(Driver * drvthis, int x, int y, int len)
+bayrad_hbar(Driver * drvthis, int x, int y, int len, int promille, int options)
 {
+  //debug(RPT_DEBUG, "\nHbar at %i,%i; length %i", x, y, len);
 
-  //fprintf(stderr, "\nHbar at %i,%i; length %i", x, y, len);
+  /* x and y are the start position of the bar.
+   * The bar by default grows in the 'right' direction
+   * (other direction not yet implemented).
+   * len is the number of characters that the bar is long at 100%
+   * promille is the number of promilles (0..1000) that the bar should be filled.
+   */
 
-  while((x <= cellwidth) && (len > 0))
-  {
-    if(len < cellwidth)
-      {
-	bayrad_chr(drvthis, x, y, 0x98 + len);
-	break;
-      }
+  bayrad_init_hbar(drvthis);
 
-    bayrad_chr(drvthis, x, y, 0xFF);
-    len -= cellwidth;
-    x++;
-  }
-
-  return;
+  lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 0x98);
 }
 
 
 /////////////////////////////////////////////////////////////////
-// Sets character 0 to an icon...
+// Places an icon on screen
 //
 MODULE_EXPORT void
-bayrad_icon(Driver * drvthis, int which, char dest)
+bayrad_icon(Driver * drvthis, int x, int y, int icon)
 {
-
-  //printf("Char %i set to icon %i\n", dest, which);
-  bayrad_set_char(drvthis, dest, &icons[which][0]);
-
-  return;
+  switch( icon ) {
+    case ICON_BLOCK_FILLED:
+      bayrad_chr( drvthis, x, y, 0xFF );
+      break;
+  }
 }
 
 
@@ -808,19 +822,21 @@ bayrad_icon(Driver * drvthis, int which, char dest)
 //
 // Return 0 for "nothing available".
 //
-MODULE_EXPORT char
-bayrad_getkey(Driver * drvthis)
+MODULE_EXPORT char *
+bayrad_get_key(Driver * drvthis)
 {
   fd_set brfdset;
   struct timeval twait;
   char readchar;
   int retval;
+  static char ret_val[2] = {0,0};
 
-  //fprintf(stderr, "\nBayRAD getkey...");
+  //debug(RPT_DEBUG, "\nBayRAD get_key...");
 
   /* Check for incoming data.  Turn backlight ON/OFF as needed */
-  /* This is strictly custom, as LCDd doesn't do anything */
-  /* with received keypad characters. */
+
+  /* TODO: NEEDS TO BE ADAPTED TO RETURN REAL KEY DESCRIPTION STRINGS ! */
+
   FD_ZERO(&brfdset);
   FD_SET(fd, &brfdset);
 
@@ -832,7 +848,7 @@ bayrad_getkey(Driver * drvthis)
       retval = read(fd, &readchar, 1);
       if(retval > 0)
 	{
-	  //fprintf(stderr, "Received char %c", readchar);
+          debug(RPT_INFO, "bayrad_get_key: Got key: %c", readchar);
 
 	  if(readchar == 'Y')
 	    {
@@ -846,14 +862,15 @@ bayrad_getkey(Driver * drvthis)
 	}  /* if read returned data */
       else
 	{  /* Read error */
-	  fprintf(stderr, "\nRead error in BayRAD getchar.");
+	  report(RPT_ERR, "bayrad_get_key: Read error in BayRAD getchar.");
 	}
     }  /* if select */
   else
     {
-      ;//fprintf(stderr, "No BayRAD data present.");
+      ;//debug(RPT_DEBUG, "No BayRAD data present.");
     }
 
-return readchar;
+  ret_val[0] = readchar;
+  return ret_val;
 }
 
