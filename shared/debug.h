@@ -1,6 +1,9 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
+#include <stdarg.h>
+#include <stdio.h>
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -20,11 +23,6 @@ Then recompile with 'make'
 This way, the global DEBUG macro is off but is locally enabled in 
 certains parts of the software.
 */
-
-#ifdef DEBUG
-#include <stdarg.h>
-#include <stdio.h>
-#endif
 
 static inline void debug(const char *format, .../*args*/) {
 #ifdef DEBUG

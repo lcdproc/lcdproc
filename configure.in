@@ -132,7 +132,7 @@ AC_TYPE_UID_T
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(select socket strdup strerror strtol uname cfmakeraw ioperm)
+AC_CHECK_FUNCS(select socket strdup strerror strtol uname cfmakeraw snprintf)
 
 dnl Check for various defines and features
 
