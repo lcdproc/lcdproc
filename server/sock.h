@@ -17,9 +17,9 @@
 typedef struct sockaddr_in sockaddr_in;
 
 /* Server functions...*/
-int sock_init ();
-int sock_shutdown ();
-int sock_create_inet_socket (char * addr, unsigned int port);
-int sock_poll_clients ();
+int sock_init(char* bind_addr, int bind_port);
+int sock_shutdown();
+int sock_create_inet_socket(char* bind_addr, unsigned int port);
+int sock_poll_clients();
 
 #endif

@@ -10,6 +10,7 @@
  *               2001, Rene Wagner
  *               2002, Mike Patnode
  *               2002, Guillaume Filion
+ *               2003, Benjamin Tse (Win32 support)
  *
  *
  * Contains main(), plus signal callback functions and a help screen.
@@ -31,20 +32,25 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#ifndef WIN32
 #include <pwd.h>
+#include <sys/wait.h>
+#else
+#include "getopt.h"
+#endif
 #include <errno.h>
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 #endif
 /* TODO: fill in what to include otherwise */
 
+/* REVISIT: externs should be provided by a header */
 extern char *optarg;
 extern int optind, optopt, opterr;
 
@@ -78,6 +84,10 @@ extern int optind, optopt, opterr;
 
 #define DEFAULT_SCREEN_DURATION 32
 #define DEFAULT_HEARTBEAT HEARTBEAT_ON
+
+/* All variables are set to 'unset' values*/
+#define UNSET_INT -1	 
+#define UNSET_STR "\01"
 
 /* Socket to bind to...
 
@@ -221,7 +231,7 @@ main (int argc, char **argv)
 		/* Only catch SIGHUP if not in foreground mode */
 
 	/* Startup the subparts of the server */
-	CHAIN( e, sock_init() );
+	CHAIN( e, sock_init(bind_addr, bind_port) );
 	CHAIN( e, screenlist_init() );
 	CHAIN( e, init_drivers() );
 	CHAIN( e, clients_init() );
@@ -514,6 +524,7 @@ set_default_settings()
 void
 install_signal_handlers (int allow_reload)
 {
+#ifndef WIN32
 	/* Installs signal handlers so that the program does clean exit and
 	 * can also receive a reload signal.
 	 * sigaction() is favoured over signal() */
@@ -537,6 +548,14 @@ install_signal_handlers (int allow_reload)
 		/* Treat this signal just like INT and TERM */
 	}
 	sigaction (SIGHUP, &sa, NULL);
+#else
+        /* Win32 does not support POSIX signals i.e. sigaction(). However, it does 
+         * support ANSI signals in mingw. */
+	signal (SIGINT, exit_program);		/* Ctrl-C will cause a clean exit...*/
+	signal (SIGTERM, exit_program);		/* and "kill"...*/
+
+        /* REVISIT: implement SIGHUP on windows */
+#endif
 }
 
 
@@ -554,6 +573,13 @@ child_ok_func (int signal) {
 pid_t
 daemonize()
 {
+#ifdef WIN32
+        /* WIN32 does not support fork() - CreateProcess() does not even have
+         * similar functionality. Instead don't daemonize on WIN32. 
+         */
+	pid_t parent;
+	parent = getpid();
+#else
 	pid_t child;
 	pid_t parent;
 	int child_status;
@@ -605,6 +631,7 @@ daemonize()
 
 	setsid();	/* Create a new session because otherwise we'll
 			 * catch a SIGHUP when the shell is closed. */
+#endif
 
 	return parent;
 }
@@ -613,9 +640,11 @@ daemonize()
 int
 wave_to_parent (pid_t parent_pid)
 {
+#ifndef WIN32
 	debug( RPT_DEBUG, "%s( parent_pid=%d )", __FUNCTION__, parent_pid );
 
 	kill( parent_pid, SIGUSR1 );
+#endif
 
 	return 0;
 }
@@ -664,6 +693,7 @@ init_drivers()
 
 int drop_privs(char *user)
 {
+#ifndef WIN32
 	struct passwd *pwent;
 
 	debug( RPT_DEBUG, "%s( user=\"%.40s\" )", __FUNCTION__, user );
@@ -679,6 +709,10 @@ int drop_privs(char *user)
 			}
 		}
 	}
+#else
+        /* Don't alter privileges in WIN32 */
+#endif
+
 	return 0;
 }
 
@@ -740,8 +774,14 @@ void
 do_mainloop ()
 {
 	Screen * s;
+#ifndef WIN32
 	struct timeval t;
 	struct timeval last_t;
+#else
+        LARGE_INTEGER t;
+        LARGE_INTEGER last_t;
+        LARGE_INTEGER perf_freq;        /* frequency of high perf counter (cycles per usec) */
+#endif
 	int sleeptime;
 	long int process_lag = 0;
 	long int render_lag = 0;
@@ -749,15 +789,32 @@ do_mainloop ()
 
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
+#ifndef WIN32
 	gettimeofday (&t, NULL); /* Get initial time */
+#else
+        QueryPerformanceFrequency(&perf_freq);
+        /* scale perf_freq to number of cycles per micro-sec */
+        /* REVISIT: this causes rounding errors below but is more efficient */
+        perf_freq.QuadPart /= 1e6;
+        QueryPerformanceCounter(&t);
+#endif
 
 	while (1) {
 		/* Get current time */
 		last_t = t;
+#ifndef WIN32
 		gettimeofday (&t, NULL);
 		t_diff = ((t.tv_sec - last_t.tv_sec) * 1e6 + (t.tv_usec - last_t.tv_usec));
-
-		process_lag += t_diff;
+#else
+                QueryPerformanceCounter(&t);
+                /*t_diff.HighPart = t.HighPart - last_t.HighPart;
+                t_diff.LowPart  = t.LowPart - last_t.LowPart;
+                */
+                t_diff = t.QuadPart - last_t.QuadPart;
+                t_diff /= perf_freq.QuadPart;    /* scale to microseconds */
+                /* REVISIT: assumes fits into long */
+#endif
+                process_lag += t_diff;
 		if (process_lag > 0) {
 			/* Time for a processing stroke */
 			sock_poll_clients ();		/* poll clients for input*/
@@ -796,7 +853,12 @@ do_mainloop ()
 		/* Sleep just as long as needed */
 		sleeptime = min (0-process_lag, 0-render_lag);
 		if( sleeptime > 0 ) {
+#ifndef WIN32
 			usleep (sleeptime);
+#else
+                        /* Sleep in Windows takes milliseconds argument */
+                        Sleep(sleeptime / 1000);
+#endif
 		}
 
 		/* Check if a SIGHUP has been caught */
@@ -848,6 +910,7 @@ exit_program (int val)
 	menuscreens_shutdown ();
 	screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
 	input_shutdown ();		/* shutdown key input part */
+        sock_shutdown();                /* shutdown the sockets server */
 
 	report( RPT_INFO, "Exiting." );
 	_exit (0);
