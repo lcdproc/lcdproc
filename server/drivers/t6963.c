@@ -52,6 +52,7 @@ static int width;
 static int height;
 static int cellwidth;
 static int cellheight;
+static char bidirectLPT;
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -100,8 +101,9 @@ t6963_init (Driver *drvthis, char *args)
 	} else {
 		t6963_out_port = DEFAULT_PORT;
 		report (RPT_WARNING, "T6963_init: Port value must be between 0x200 and 0x400. Using default value.\n");
-	}	
-
+	}
+	
+	bidirectLPT = drvthis->config_get_bool ( drvthis->name, "ECPlpt", 0, 0 );
 	
 	/* ------------------ Get permission to parallel port --------------------------------------------*/
 
@@ -463,15 +465,21 @@ t6963_low_dsp_ready (void)
 {
     int i = 0;
     int input;
-    T6963_DATAIN;
-    do {
-    	i++;
-	t6963_low_set_control(1, 0, 1, -1);
-	t6963_low_set_control(1, 0, 1, 0);
-	input = port_in(T6963_DATA_PORT);
-	t6963_low_set_control(1, 0, 1, -1);
-    } while (i < 50000 && (input & 3)!=3);
-    T6963_DATAOUT;
+
+    if(bidirectLPT == 1) {
+	    T6963_DATAIN;
+	    do {
+	    	i++;
+		t6963_low_set_control(1, 0, 1, -1);
+		t6963_low_set_control(1, 0, 1, 0);
+		input = port_in(T6963_DATA_PORT);
+		t6963_low_set_control(1, 0, 1, -1);
+	    } while (i < 50000 && (input & 3)!=3);
+	    T6963_DATAOUT;
+    } else {
+    	for(i=0; i<3; i++) 
+		port_out(0x80, 0x00);  /* wait 1ms */
+    }
 }
 
 void
