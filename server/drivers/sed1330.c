@@ -328,7 +328,7 @@ sed1330_init( Driver * drvthis, char *args )
 	// Init cursor p
 	p->cursor_x = 1;
 	p->cursor_y = 1;
-	p->cursor_state = 1;
+	p->cursor_state = CURSOR_OFF;
 
 	// Allocate framebuffer
 	p->framebuf_text = (unsigned char *) malloc( p->bytesperline * p->height );
@@ -450,27 +450,28 @@ void sed1330_update_cursor( PrivateData * p )
 	csrloc[1] = cursor_pos / 256;
 
 	switch( p->cursor_state ) {
-	  case 0: // Off
+	  case CURSOR_OFF: // Off
 		fc = 0;
 		csrform[0] = 0x04;
 		csrform[1] = 0x07;
 		break;
-	  case 1: // Underlined
+	  case CURSOR_DEFAULT_ON:
+	  case CURSOR_UNDER: // Underlined
 		fc = 2;
 		csrform[0] = 0x04;
 		csrform[1] = 0x07;
 		break;
-	  case 2: // Block
+	  case CURSOR_BLOCK: // Block
 		fc = 2;
-		break;
 		csrform[0] = 0x84;
 		csrform[1] = 0x07;
+		break;
 	}
 	disp_en = 0x14 + fc;
 
 	sed1330_command( p, CMD_CSRW, 2, csrloc );
-	sed1330_command( p, CMD_DISP_EN, 1, &disp_en ); // cursor on
-	sed1330_command( p, CMD_CSR_FORM, 2, csrform );	// 5x8 cursor
+	sed1330_command( p, CMD_DISP_EN, 1, &disp_en ); // set cursor on/off
+	sed1330_command( p, CMD_CSR_FORM, 2, csrform );	// set cursor shape
 }
 
 
@@ -545,8 +546,8 @@ sed1330_string( Driver * drvthis, int x, int y, char *str )
 	// Calculate where to start and length to write
 	start = p->framebuf_text + (y-1)*p->bytesperline + (x-1);
 	len = strlen(str);
-	if( p->width < len ) {
-		len = p->width;
+	if( p->width <= len ) {
+		len = p->width - x + 1;
 	}
 
 	memcpy( start, str, len );
