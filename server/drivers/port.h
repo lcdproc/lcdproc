@@ -187,7 +187,7 @@ static inline int port_in (unsigned short int port) {
         
 /* Write a byte 'val' to port */
 static inline void port_out (unsigned short int port, unsigned char val) {
-        outb(val,port);
+        outb(port,val);
 }
         
 /* Get access to a specific port */
