@@ -127,22 +127,22 @@ short got_reload_signal = 0;
 long int timer = 0;
 
 /**** Local functions ****/
-void exit_program (int val);
-void catch_reload_signal (int val);
-int interpret_boolean_arg (char *s);
-void HelpScreen ();
-
 void clear_settings();
 int process_command_line (int argc, char **argv);
 int process_configfile (char *cfgfile);
 void set_default_settings();
-void output_GPL_notice();
 int daemonize();
 int init_sockets();
-int drop_privs(char *user);
 int init_drivers();
+int drop_privs(char *user);
 int init_screens();
+void do_reload();
 void do_mainloop();
+void exit_program (int val);
+void catch_reload_signal (int val);
+int interpret_boolean_arg (char *s);
+void output_help_screen ();
+void output_GPL_notice();
 
 #define CHAIN(e,f) { if( e>=0 ) { e=(f); }}
 #define CHAIN_END(e,msg) { if( e<0 ) { report( RPT_CRIT,(msg)); exit(e); }}
@@ -161,11 +161,6 @@ main (int argc, char **argv)
 
 	signal (SIGHUP, catch_reload_signal);		/* On SIGHUP reread config and restart the drivers ! */
 	/* Let's see if we can actually get this to work ;) */
-
-	/* If no paramaters given, give the help screen.
-	 *if (argc == 1)
-	 *	HelpScreen ();
-	 */
 
 	/*
 	 * Settings in order of preference:
@@ -187,7 +182,7 @@ main (int argc, char **argv)
 	 * in the variable declaration...
 	 */
 
-	/* Set the initial reporting parameters*/
+	/* Report that server is starting (report will be delayed) */
 	report(RPT_NOTICE, "LCDd version %s starting", version );
 	report(RPT_INFO, "Built on %s, protocol version %s, API version %s",
 		build_date, protocol_version, api_version );
@@ -198,18 +193,18 @@ main (int argc, char **argv)
 	CHAIN( e, process_command_line (argc, argv) );
 
 	/* Read config file
-	 * Set configfile to default value first unless changed before
-	 */
+	 * If config file was not given on command line use default */
 	if (strcmp(configfile, UNSET_STR)==0)
 		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
 	CHAIN( e, process_configfile (configfile) );
 
 	/* Set default values*/
-	CHAIN( e, ( set_default_settings(), 0 ));
+	set_default_settings();
 
-	/* Set reporting values*/
-	CHAIN( e, set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
- 	CHAIN( e, ( report( RPT_INFO, "Set report level to %d, output to %s", report_level, (report_to_syslog?"syslog":"stderr") ), 0 ));
+	/* Set reporting settings (will also flush delayed reports) */
+	set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
+ 	report( RPT_INFO, "Set report level to %d, output to %s", report_level, (report_to_syslog?"syslog":"stderr") );
+	CHAIN_END( e, "Critical error while processing settings, abort." );
 
 	/* Startup the server*/
 	CHAIN( e, screenlist_init() );
@@ -222,6 +217,8 @@ main (int argc, char **argv)
 	CHAIN_END( e, "Critical error while initializing, abort." );
 
 	/* Now, go into daemon mode...*/
+	/* TODO: do this earlier and let parent process wait until
+	 * child has fully started or reported its errors. */
 	if (daemon_mode) {
 		report(RPT_INFO, "Server forking to background");
 		CHAIN( e, daemonize() );
@@ -270,19 +267,16 @@ int
 process_command_line (int argc, char **argv)
 {
 	int c, b;
-	int e = 0;
+	int e = 0, help = 0;
 
 	debug( RPT_DEBUG, "%s( argc=%d, argv=...)", __FUNCTION__, argc );
 
 	/* Reset getopt */
 	optind = 0;
+	opterr = 0; /* Prevent some message to strerr */
 
 	/* analyze options here..*/
-	while ((c = getopt(argc, argv, "ha:p:f:ib:w:c:u:s:r:")) > 0) {
-		/* FIXME: Setting of c in this loop clobbers s!
-		 * s is set equivalent to c.
-		  */
-		report( RPT_INFO, ">>>> %i", (int) c );
+	while ((c = getopt(argc, argv, "ha:p:f:i:b:w:c:u:s:r:")) > 0) {
 		switch(c) {
 	 		case 'd':
 				/* Add to a list of drivers to be initialized later...*/
@@ -292,7 +286,7 @@ process_command_line (int argc, char **argv)
 					num_drivers ++;
 				} else
 					report( RPT_ERR, "Too many drivers!" );
-					e = 1;
+					e = -1;
 				break;
 			case 'p':
 				lcd_port = atoi(optarg);
@@ -306,14 +300,14 @@ process_command_line (int argc, char **argv)
 				bind_addr[sizeof(bind_addr)-1] = 0; /* Terminate string */
 				break;
 			case 'h':
-				e = 1;	/* Well, it's not an error, but
-						will give the same result */
+				help = 1; /* Continue to process the other
+					   * options */
 				break;
 			case 'f':
 				b = interpret_boolean_arg( optarg );
 				if( b == -1 ) {
 					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
-					e = 1;
+					e = -1;
 				} else {
 					daemon_mode = !b;
 				}
@@ -326,7 +320,7 @@ process_command_line (int argc, char **argv)
 				b = interpret_boolean_arg( optarg );
 				if( b == -1 ) {
 					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
-					e = 1;
+					e = -1;
 				} else {
 					rotate_server_screen = b;
 				}
@@ -343,21 +337,21 @@ process_command_line (int argc, char **argv)
 				}
 				else if( strcmp( optarg, "" ) != 0 ) {
 					report( RPT_ERR, "Backlight state should be on, off or open" );
-					e = 1;
+					e = -1;
 				}
 				break;
 			case 'w':
 				default_duration = (int) (atof(optarg) * 1e6 / TIME_UNIT);
 				if ( default_duration * TIME_UNIT < 2e6 ) {
 					report( RPT_ERR, "Waittime should be at least 2 (seconds), not %.8s", optarg );
-					e = 1;
+					e = -1;
 				};
 				break;
 			case 's':
 				b = interpret_boolean_arg( optarg );
 				if( b == -1 ) {
 					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
-					e = 1;
+					e = -1;
 				} else {
 					report_to_syslog = b;
 				}
@@ -366,24 +360,27 @@ process_command_line (int argc, char **argv)
 				report_level = atoi(optarg);
 				break;
 			case '?':
+				/* For some reason getopt also returns an '?'
+				 * when an option argument is mission... */
 				report( RPT_ERR, "Unknown option: '%c'", optopt );
-				e = 1;
+				e = -1;
 				break;
 			case ':':
 				report( RPT_ERR, "Missing option argument!" );
-				e = 1;
+				e = -1;
 				break;
 		}
 	}
 
 	if (optind < argc) {
 		report( RPT_ERR, "Non-option arguments on the command line !");
-		e = 1;
+		e = -1;
 	}
-	if( e ) {
-		HelpScreen();
+	if( help ) {
+		output_help_screen();
+		e = -1;
 	}
-	return 0;
+	return e;
 }
 
 
@@ -519,33 +516,6 @@ set_default_settings()
 }
 
 
-void
-output_GPL_notice()
-{
-	/* This will only be invoked when running in foreground
-	 * So, directly output to stderr
-	 */
-	fprintf (stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
-	fprintf (stderr, "Part of LCDproc\n");
-	fprintf (stderr, "Copyright (C) 1998-2003 William Ferrell, Scott Scriven\n");
-	fprintf (stderr, "                        and many other contributors\n\n");
-	fprintf (stderr, "This program is free software; you can redistribute it and/or\n");
-	fprintf (stderr, "modify it under the terms of the GNU General Public License\n");
-	fprintf (stderr, "as published by the Free Software Foundation; either version 2\n");
-	fprintf (stderr, "of the License, or (at your option) any later version.\n\n");
-
-	fprintf (stderr, "This program is distributed in the hope that it will be useful,\n");
-	fprintf (stderr, "but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
-	fprintf (stderr, "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
-	fprintf (stderr, "GNU General Public License for more details.\n\n");
-
-	fprintf (stderr, "The file COPYING contains the GNU General Public License.\n");
-	fprintf (stderr, "You should have received a copy of the GNU General Public License\n");
-	fprintf (stderr, "along with this program; if not, write to the Free Software\n");
-	fprintf (stderr, "Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n\n");
-}
-
-
 int
 daemonize()
 {
@@ -676,8 +646,9 @@ init_screens ()
 		return -1;
 	}
 	if (!rotate_server_screen) {
-		/* Display the server screen only when there are no other screens */
-		server_screen->priority = PRI_BACKGROUND;
+		/* Display the server screen only when there are no other
+		 * screens */
+		/* server_screen->priority = PRI_BACKGROUND; */
 	}
 	return 0;
 }
@@ -839,19 +810,46 @@ catch_reload_signal (int val)
 int
 interpret_boolean_arg (char *s)
 {
-	if( strcmp( s, "on" ) == 0 || strcmp( s, "yes" ) 
-	|| strcmp( s, "true" ) || strcmp( s, "1" )) {
+	if( strcmp( s, "on" ) == 0 || strcmp( s, "yes" ) == 0 
+	|| strcmp( s, "true" ) == 0 || strcmp( s, "1" ) == 0 ) {
 		return 1;
 	}
-	if( strcmp( s, "off" ) == 0 || strcmp( s, "no" )
-	|| strcmp( s, "false" ) || strcmp( s, "0" )) {
+	if( strcmp( s, "off" ) == 0 || strcmp( s, "no" ) == 0
+	|| strcmp( s, "false" ) == 0 || strcmp( s, "0" ) == 0 ) {
 		return 0;
 	}
 	return -1;
 }
 
 void
-HelpScreen ()
+output_GPL_notice()
+{
+	/* This will only be invoked when running in foreground
+	 * So, directly output to stderr
+	 */
+	fprintf (stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
+	fprintf (stderr, "Part of LCDproc\n");
+	fprintf (stderr, "Copyright (C) 1998-2003 William Ferrell, Scott Scriven\n");
+	fprintf (stderr, "                        and many other contributors\n\n");
+	fprintf (stderr, "This program is free software; you can redistribute it and/or\n");
+	fprintf (stderr, "modify it under the terms of the GNU General Public License\n");
+	fprintf (stderr, "as published by the Free Software Foundation; either version 2\n");
+	fprintf (stderr, "of the License, or (at your option) any later version.\n\n");
+
+	fprintf (stderr, "This program is distributed in the hope that it will be useful,\n");
+	fprintf (stderr, "but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+	fprintf (stderr, "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
+	fprintf (stderr, "GNU General Public License for more details.\n\n");
+
+	fprintf (stderr, "The file COPYING contains the GNU General Public License.\n");
+	fprintf (stderr, "You should have received a copy of the GNU General Public License\n");
+	fprintf (stderr, "along with this program; if not, write to the Free Software\n");
+	fprintf (stderr, "Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n\n");
+}
+
+
+void
+output_help_screen ()
 {
 	/* Help screen is printed to stdout on purpose. No reason to have
 	 * this in syslog...
@@ -861,6 +859,11 @@ HelpScreen ()
 	fprintf (stdout, "\nLCDd: LCDproc Server Daemon, %s\n", version);
 	fprintf (stdout, "Copyright (c) 1999-2003 Scott Scriven, William Ferrell, and misc contributors\n");
 	fprintf (stdout, "This program is freely redistributable under the terms of the GNU Public License\n\n");
+	
+	/* Actually set reporting settings and flush all report messages */
+	set_reporting( "LCDd", report_level, (report_to_syslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
+	
+	/* Now the actual help message */
 	fprintf (stdout, "Usage: LCDd [ -h ] [ -c <config> ] [ -d <driver> ] [ -f <bool> ] \\\n");
 	fprintf (stdout, "\t[-a <addr> ] [ -p <port> ] [ -u <user> ] [ -w <time> ]\\\n");
 	fprintf (stdout, "\t[ -r <level> ] [ -s <bool> ] [ -u <user> ] [ -i <bool> ]\n\n");
@@ -877,6 +880,4 @@ HelpScreen ()
 	fprintf (stdout, "\t-r <level>\tReport level [%d]\n", DEFAULT_REPORTLEVEL);
 	fprintf (stdout, "\t-i <bool>\tWhether to rotate the server info screen\n");
 	fprintf (stdout, "\n");
-
-	exit (0);
 }
