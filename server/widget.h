@@ -9,6 +9,9 @@
  *
  */
 
+#include "screen.h"
+/* These headers are placed here on purpose ! (circular references) */
+
 #ifndef WIDGET_H
 #define WIDGET_H
 
@@ -40,8 +43,6 @@ typedef struct Widget {
 	struct Screen * frame_screen;	/* frame widget get an associated screen */
 	//LinkedList *kids;		/* Frames can contain more widgets...*/
 } Widget;
-
-#include "screen.h"
 
 #define WID_MAX_DIR 4
 

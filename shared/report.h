@@ -78,7 +78,7 @@
 extern int report_level;
 extern int report_dest;
 
-int set_reporting( int new_level, int new_dest );
+int set_reporting( char *application_name, int new_level, int new_dest );
 // Sets reporting level and message destination.
 
 void report( const int level, const char *format, .../*args*/ );

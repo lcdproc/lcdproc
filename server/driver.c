@@ -27,7 +27,7 @@
 #include "screenlist.h" /* for timer  */
 
 #include "shared/report.h"
-#include "configfile.h"
+#include "shared/configfile.h"
 
 #include "widget.h"
 #include "driver.h"

@@ -25,7 +25,7 @@
 #include "screen.h"
 #include "screenlist.h"
 #include "menuscreens.h"
-#include "configfile.h"
+#include "shared/configfile.h"
 #include "shared/report.h"
 #include "input.h"
 #include "driver.h"

@@ -48,7 +48,6 @@ void report( const int level, const char *format, .../*args*/ )
 		va_list ap;
 		va_start(ap, format); /* measure the required size (the number of elements of format) */
 
-
 		switch( report_dest ) {
 		  case RPT_DEST_STDERR:
 			vfprintf( stderr, format, ap );
@@ -68,7 +67,7 @@ void report( const int level, const char *format, .../*args*/ )
 }
 
 
-int set_reporting( int new_level, int new_dest )
+int set_reporting( char *application_name, int new_level, int new_dest )
 {
 	if( new_level < RPT_CRIT || new_level > RPT_DEBUG ) {
 		report( RPT_ERR, "debug level invalid: %d", new_level );
@@ -76,7 +75,7 @@ int set_reporting( int new_level, int new_dest )
 	}
 
 	if( report_dest != RPT_DEST_SYSLOG && new_dest == RPT_DEST_SYSLOG ) {
-		openlog( "LCDd", 0, LOG_USER );
+		openlog( application_name, 0, LOG_USER );
 	}
 	else if( report_dest == RPT_DEST_SYSLOG && new_dest != RPT_DEST_SYSLOG ) {
 		closelog();

@@ -24,11 +24,12 @@
 
 #include "shared/LL.h"
 #include "shared/report.h"
-#include "configfile.h"
+#include "shared/configfile.h"
 
 #include "drivers.h"
 #include "driver.h"
 #include "drivers/lcd.h"
+#include "widget.h"
 /* lcd.h is used for the driver API definition */
 
 

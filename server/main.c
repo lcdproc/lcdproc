@@ -48,7 +48,7 @@ extern int optind, optopt, opterr;
 #include "serverscreens.h"
 #include "menuscreens.h"
 #include "input.h"
-#include "configfile.h"
+#include "shared/configfile.h"
 #include "drivers.h"
 #include "main.h"
 
@@ -189,7 +189,7 @@ main (int argc, char **argv)
 
 	/* Set reporting values*/
 	/*debug_level = reportLevel; */
-	ESSENTIAL( set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
+	ESSENTIAL( set_reporting( "LCDd", reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) ) );
  	report( RPT_NOTICE, "Set report level to %d, output to %s", reportLevel, (reportToSyslog?"syslog":"stderr") );
 
 	/* Startup the server*/
@@ -782,7 +782,7 @@ exit_program (int val)
 		reportLevel = DEFAULT_REPORTLEVEL;
 	if( reportToSyslog == UNSET_INT )
 		reportLevel = DEFAULT_REPORTLEVEL;
-	set_reporting( reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
+	set_reporting( "LCDd", reportLevel, (reportToSyslog?RPT_DEST_SYSLOG:RPT_DEST_STDERR) );
 
 	goodbye_screen ();		/* display goodbye screen on LCD display */
 	drivers_unload_all ();		/* release driver memory and file descriptors */
