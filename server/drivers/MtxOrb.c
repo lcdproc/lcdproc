@@ -415,19 +415,19 @@ MtxOrb_init (Driver *drvthis, char *args)
 		 * So there's no need to get them from the configfile in keypad test mode.
 		 */
 		/* pause_key */
-		pause_key = MtxOrb_parse_keypad_setting (drvthis, "pause_key", MTXORB_DEFAULT_PAUSE_KEY);
+		pause_key = MtxOrb_parse_keypad_setting (drvthis, "PauseKey", MTXORB_DEFAULT_PAUSE_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as pause_key.", pause_key);
 
 		/* back_key */
-		back_key = MtxOrb_parse_keypad_setting (drvthis, "back_key", MTXORB_DEFAULT_BACK_KEY);
+		back_key = MtxOrb_parse_keypad_setting (drvthis, "BackKey", MTXORB_DEFAULT_BACK_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as back_key", back_key);
 
 		/* forward_key */
-		forward_key = MtxOrb_parse_keypad_setting (drvthis, "forward_key", MTXORB_DEFAULT_FORWARD_KEY);
+		forward_key = MtxOrb_parse_keypad_setting (drvthis, "ForwardKey", MTXORB_DEFAULT_FORWARD_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as forward_key", forward_key);
 
 		/* main_menu_key */
-		main_menu_key = MtxOrb_parse_keypad_setting (drvthis, "main_menu_key", MTXORB_DEFAULT_MAIN_MENU_KEY);
+		main_menu_key = MtxOrb_parse_keypad_setting (drvthis, "MainMenuKey", MTXORB_DEFAULT_MAIN_MENU_KEY);
 		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as main_menu_key", main_menu_key);
 	}
 
