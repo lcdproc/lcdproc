@@ -12,7 +12,7 @@ EXEEXT = @SO@
 AM_CCFLAGS = @CCSHARED@
 
 ## And how to build them
-LDFLAGS += @LDSHARED@
+AM_LDFLAGS = @LDSHARED@
 
 ## Forget the libs that the server core requires
 LIBS =
