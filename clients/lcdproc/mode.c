@@ -178,7 +178,7 @@ credit_screen(int rep, int display)
 			sock_send_string(sock, "widget_add A one string\n");
 			sock_send_string(sock, "widget_add A two string\n");
 			sock_send_string(sock, "widget_add A three string\n");
-			sock_send_string(sock, "widget_set A one 1 2 { for Linux & BSD   }\n");
+			sock_send_string(sock, "widget_set A one 1 2 { for Linux & *BSD}\n");
 			sock_send_string(sock, "widget_set A two 1 3 { by William Ferrell}\n");
 			sock_send_string(sock, "widget_set A three 1 4 { and Scott Scriven}\n");
 		}
