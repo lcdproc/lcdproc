@@ -47,8 +47,9 @@ double config_get_float( char *sectionname, char *keyname,
 char *config_get_string( char * sectionname, char * keyname,
 		int skip, char * default_value );
 // Returns a pointer to the string associated with the specified key.
-// The string should never be modified, but for example immediately be
-// copied.
+// The string should never be modified, and used only short-term. You can
+// for example scan it or copy it. In successive calls this function can
+// re-use the data space !
 
 int config_has_section( char *sectionname );
 // Checks if a specified section exists.
