@@ -12,12 +12,7 @@ MODULE_EXPORT void MtxOrb_flush (Driver *drvthis);
 MODULE_EXPORT void MtxOrb_string (Driver *drvthis, int x, int y, char *string);
 MODULE_EXPORT void MtxOrb_chr (Driver *drvthis, int x, int y, char c);
 
-MODULE_EXPORT void MtxOrb_vbar (Driver *drvthis, int x, int len);
-MODULE_EXPORT void MtxOrb_hbar (Driver *drvthis, int x, int y, int len);
-MODULE_EXPORT void MtxOrb_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void MtxOrb_old_icon (Driver *drvthis, int which, char dest);
 MODULE_EXPORT void MtxOrb_heartbeat (Driver *drvthis, int type);
-
 MODULE_EXPORT void MtxOrb_set_char (Driver *drvthis, int n, char *dat);
 
 MODULE_EXPORT int  MtxOrb_get_contrast (Driver *drvthis);
@@ -28,9 +23,19 @@ MODULE_EXPORT void MtxOrb_output (Driver *drvthis, int on);
 MODULE_EXPORT char MtxOrb_getkey (Driver *drvthis);
 MODULE_EXPORT char * MtxOrb_get_info (Driver *drvthis);
 
-MODULE_EXPORT void MtxOrb_init_vbar (Driver *drvthis);
-MODULE_EXPORT void MtxOrb_init_hbar (Driver *drvthis);
 MODULE_EXPORT void MtxOrb_init_num (Driver *drvthis);
+MODULE_EXPORT void MtxOrb_num (Driver *drvthis, int x, int num);
+
+/* Old stuff to be removed */
+MODULE_EXPORT void MtxOrb_old_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void MtxOrb_old_icon (Driver *drvthis, int which, char dest);
+MODULE_EXPORT void MtxOrb_init_old_vbar (Driver *drvthis);
+MODULE_EXPORT void MtxOrb_init_old_hbar (Driver *drvthis);
+
+/* New version */
+MODULE_EXPORT void MtxOrb_icon (Driver *drvthis, int x, int y, int icon);
+
 
 #define DEFAULT_CONTRAST	480
 #define DEFAULT_DEVICE		"/dev/lcd"

@@ -438,12 +438,16 @@ MtxOrb_init (Driver *drvthis, char *args)
 	drvthis->clear = MtxOrb_clear;
 	drvthis->string = MtxOrb_string;
 	drvthis->chr = MtxOrb_chr;
-	drvthis->old_vbar = MtxOrb_vbar;
-	drvthis->init_vbar = MtxOrb_init_vbar;
-	drvthis->old_hbar = MtxOrb_hbar;
-	drvthis->init_hbar = MtxOrb_init_hbar;
 	drvthis->num = MtxOrb_num;
 	drvthis->init_num = MtxOrb_init_num;
+
+/* Old stuff that are going to be removed */
+	drvthis->old_vbar = MtxOrb_old_vbar;
+	drvthis->init_vbar = MtxOrb_init_old_vbar;
+	drvthis->old_hbar = MtxOrb_old_hbar;
+	drvthis->init_hbar = MtxOrb_init_old_hbar;
+	drvthis->old_icon = MtxOrb_old_icon;
+/* Old stuff that are going to be removed */
 
 	drvthis->init = MtxOrb_init;
 	drvthis->close = MtxOrb_close;
@@ -455,7 +459,6 @@ MtxOrb_init (Driver *drvthis, char *args)
 	drvthis->backlight = MtxOrb_backlight;
 	drvthis->output = MtxOrb_output;
 	drvthis->set_char = MtxOrb_set_char;
-	drvthis->old_icon = MtxOrb_old_icon;
 
 	drvthis->icon = MtxOrb_icon; 
 
@@ -822,7 +825,7 @@ MtxOrb_cursorblink (Driver *drvthis, int on)
  * Sets up for vertical bars.  Call before lcd.vbar()
  */
 MODULE_EXPORT void
-MtxOrb_init_vbar (Driver *drvthis)
+MtxOrb_init_old_vbar (Driver *drvthis)
 {
 }
 
@@ -830,7 +833,7 @@ MtxOrb_init_vbar (Driver *drvthis)
  * Inits horizontal bars...
  */
 MODULE_EXPORT void
-MtxOrb_init_hbar (Driver *drvthis)
+MtxOrb_init_old_hbar (Driver *drvthis)
 {
 }
 
@@ -966,7 +969,7 @@ MtxOrb_get_info (Driver *drvthis)
  * This is the new version ussing dynamic icon alocation
  */
 MODULE_EXPORT void
-MtxOrb_vbar (Driver *drvthis, int x, int len)
+MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 {
 	unsigned char mapu[9] = { barw, baru1, baru2, baru3, baru4, baru5, baru6, baru7, barb };
 	unsigned char mapd[9] = { barw, bard1, bard2, bard3, bard4, bard5, bard6, bard7, barb };
@@ -1009,7 +1012,7 @@ MtxOrb_vbar (Driver *drvthis, int x, int len)
  * This is the new version ussing dynamic icon alocation
  */
 MODULE_EXPORT void
-MtxOrb_hbar (Driver *drvthis, int x, int y, int len)
+MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 {
 	unsigned char mapr[6] = { barw, barr1, barr2, barr3, barr4, barb };
 	unsigned char mapl[6] = { barw, barl1, barl2, barl3, barl4, barb };
