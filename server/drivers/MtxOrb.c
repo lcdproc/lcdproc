@@ -158,8 +158,9 @@ static int fd;
 /* Control when the LCD is cleared to custom char are not in use anymore */
 static int clear = 1;
 
-static int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-static int use[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+/* Those information are moving to PrivateData */
+/* static int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 }; */
+/* static int use[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 }; */
 
 static char *framebuf = NULL;
 static int width = LCD_DEFAULT_WIDTH;
@@ -178,6 +179,27 @@ static char back_key = MTXORB_DEFAULT_BACK_KEY;
 static char forward_key = MTXORB_DEFAULT_FORWARD_KEY;
 static char main_menu_key = MTXORB_DEFAULT_MAIN_MENU_KEY;
 static int keypad_test_mode = 0;
+
+/* This is an embrionic Private Date, it need to grow ! */
+typedef struct p {
+	int def[9];
+	int use[9];
+/*
+        int type;
+        int port;
+        char * keymap[MAXKEYS];
+        char * framebuf_text;
+        char * lcd_contents_text;
+        char * framebuf_graph;
+        char * lcd_contents_graph;
+        int width, height;
+        //int cellwidth, cellheight;
+        int graph_width, graph_height;
+        int cursor_x, cursor_y;
+        char cursor_state;
+        int bytesperline;
+*/
+        } PrivateData;
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -244,6 +266,18 @@ MtxOrb_parse_speed (Driver *drvthis, char *arg) {
 	return speed;
 	}
 
+static void
+MtxOrb_usage (void) {
+	printf ("LCDproc Matrix-Orbital LCD driver\n"
+		"\t-d\t\tSelect the output device to use [/dev/lcd]\n"
+		"\t-t\t\tSelect the LCD type (size) [20x4]\n"
+/*		"\t-b\t--backlight\tSelect the backlight state [on]\n" */
+		"\t-c\t\tSet the initial contrast [140]\n"
+		"\t-s\t\tSet the communication speed [19200]\n"
+		"\t-h\t\tShow this help information\n"
+		"\t-b\t\tdisplay type: lcd, lkd, vfd, vkd\n");
+}
+
 int
 MtxOrb_parse_contrast (Driver *drvthis, char * str) {
 	int contrast;
@@ -294,6 +328,21 @@ MtxOrb_init (Driver *drvthis, char *args)
 	char size[256] = DEFAULT_SIZE;
 	char buf[256] = "";
 	int tmp, w, h;
+        PrivateData *p;
+
+/*	int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };	*/
+/*	int use[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };		*/
+	/* Alocate and store private data */
+
+        p = (PrivateData *) malloc( sizeof( PrivateData) );
+	if( ! p )
+	        return -1;
+	if( drvthis->store_private_ptr( drvthis, p ) )
+	        return -1;
+
+	memset( p->def, -1, sizeof(p->def) );
+	memset( p->use,  0, sizeof(p->use) );
+
 
 	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
 
@@ -503,11 +552,15 @@ MtxOrb_clear (Driver *drvthis)
 MODULE_EXPORT void
 MtxOrb_close (Driver *drvthis)
 {
+        PrivateData * p = drvthis->private_data;
+
 	close (fd);
 
 	if (framebuf)
 		free (framebuf);
 	framebuf = NULL;
+
+        free( p );
 
 	debug(RPT_DEBUG, "MtxOrb: closed");
 }
@@ -1204,6 +1257,8 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 
 	static int circular = -1;
 
+        PrivateData * p = drvthis->private_data;
+
 /*	fprintf(stderr, "GLU: MtxOrb_ask_bar(%d).\n", type); */
 
 /* This bypass the search for WHITE and BLACK */
@@ -1212,14 +1267,14 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 
 	/* If the screen was clear then no graphic caracter are in use yet. */
 	if (clear) {
-  	  for (pos = 0; pos < 8; pos++) use[pos] = 0;
+  	  for (pos = 0; pos < 8; pos++) p->use[pos] = 0;
 	  clear = 0;
 	}
 
 	/* Search for a match with caracter already defined. */
 	pos = 8;		             /* Not found. */
 	for (i = 0; i < 8; i++) {            /* For all including heartbeat. */
-	  if (def[i] == type) pos = i;	     /* Founded (should break now). */
+	  if (p->def[i] == type) pos = i;	     /* Founded (should break now). */
 	}
 
 	if (pos == 8) {
@@ -1228,7 +1283,7 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 		circular = (circular + 1) % 8;
 
 		for (i = 0; i < 8; i++) {
-			if (!use[(i + circular) % 8])
+			if (!p->use[(i + circular) % 8])
 				last_not_in_use = (i + circular) % 8;
 		}
 		pos = last_not_in_use;
@@ -1238,16 +1293,16 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 	/* A caracter is found (Best match could solve our problem).
  	 * REMOVE: fprintf(stderr, "GLU: MtxOrb_ask_bar| found at %d.\n", pos);
 	 */
-		if (def[pos] != type) {
+		if (p->def[pos] != type) {
 			MtxOrb_set_known_char (drvthis, pos, type);
 /* fprintf(stderr, "GLU: MtxOrb_ask_bar [Set a char] pos: %d.\n", pos); */
 			/* Define a new graphic caracter. */
-			def[pos] = type;
+			p->def[pos] = type;
 			/* Remember that now the caracter is available. */
 		}
-		if (!use[pos]) {
+		if (!p->use[pos]) {
 			/* If the caracter is no yet in use (but defined). */
-			use[pos] = 1;
+			p->use[pos] = 1;
 			/* Remember it is in use (so protect it from re-use). */
 		}
 	}
