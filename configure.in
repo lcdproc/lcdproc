@@ -107,7 +107,7 @@ AC_CACHE_CHECK([for a parallel port], ac_cv_port_have_lpt,
 
 if test "$ac_cv_port_have_lpt" = yes
 then
-	AC_DEFINE([HAVE_LPT_PORT],[1],[Define if you have a parallel port and LCDproc knows how to talk to it.])
+	AC_DEFINE([HAVE_PCSTYLE_LPT_CONTROL],[1],[Define if you have a parallel port and LCDproc knows how to talk to it.])
 else
 	AC_MSG_WARN([Can't talk to the parallel port, disabling drivers that use it.])
 fi

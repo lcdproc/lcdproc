@@ -66,7 +66,7 @@
 #if defined DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
 # undef DELAY_IOCALLS
-#elif defined DELAY_IOCALLS && defined HAVE_LPT_PORT
+#elif defined DELAY_IOCALLS && defined HAVE_PCSTYLE_LPT_CONTROL
 # undef DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
 # include "port.h"
