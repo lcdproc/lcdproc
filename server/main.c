@@ -131,7 +131,7 @@ main (int argc, char **argv)
 	char *user = DEFAULT_USER;
 	char c, buf[64], *driverlist[MAX_DRIVERS], *driverargs[MAX_DRIVERS];
 	char linebuf[128], driver_name[64];
-	int driver_index;
+	int driver_index, list_index;
 	//char *nullargs[64];
 
 	signal (SIGINT, exit_program);		// Ctrl-C will cause a clean exit...
@@ -193,12 +193,6 @@ main (int argc, char **argv)
 	if (optind < argc)
 		fprintf(stderr, "non-option arguments!! BAD...");
 
-	// Default driver: curses
-	if (driverlist[0] == NULL) {
-		driverlist[0] = malloc(MAX_DRIVER_NAME_SIZE);
-		strcpy(driverlist[0], DEFAULT_DRIVER);
-	}
-
 	openlog("LCDd", LOG_PID, LOG_DAEMON);
 	syslog(LOG_NOTICE, "server version %s starting up (protocol version %s)",
 		version, protocol_version);
@@ -209,6 +203,7 @@ main (int argc, char **argv)
 		syslog(LOG_WARNING, "no configuration file found... using defaults");
 	} else {
 		driver_index = -1;
+		list_index = 0;
 
 		memset(linebuf, '\0', sizeof(linebuf));
 
@@ -263,38 +258,27 @@ main (int argc, char **argv)
 						fprintf(stderr, "could not allocate memory for driver arguments!");
 						exit(1);
 					} else {
-						;
-
-						// Strip out string quotes
-
-						//char *p;
-
-						//p = linebuf + 10;
-						//if (*p == '\"') {
-						//	char *q;
-
-						//	p++;
-						//	q = p;
-						//	while ((*q) || (*q != '\"'))
-						//		q++;
-
-						//	if (! (*q)) {
-						//		fprintf(stderr, "unterminated string!");
-						//		exit (1);
-						//	} else {
-						//		q == '\0';
-						//	}
-						//}
-
 						strncpy(driverargs[driver_index], linebuf + 9, strlen(linebuf));
 					}
 				} else {
 					fprintf(stderr, "unknown command line: %s\n", linebuf);
 					exit(1);
 				}
+			} else {
+				// not in a driver section...
+				if (strncasecmp(linebuf, "Driver ", 7) == 0) {
+					driverlist[list_index] = malloc(MAX_DRIVER_NAME_SIZE);
+					snprintf(driverlist[list_index++], MAX_DRIVER_NAME_SIZE, "%s", linebuf + 7);
+				}
 			}
 		}
 		fclose(config);
+	}
+
+	// Use default driver
+	if (driverlist[0] == NULL) {
+		driverlist[0] = malloc(MAX_DRIVER_NAME_SIZE);
+		strcpy(driverlist[0], DEFAULT_DRIVER);
 	}
 
 	for (i = 0; i < MAX_DRIVERS; i++) {
