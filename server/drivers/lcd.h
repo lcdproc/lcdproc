@@ -42,10 +42,25 @@
 #define BACKLIGHT_WARNING 2
 #define BACKLIGHT_RED_ALERT 3
 
-/* Icons for icon function */
-#define ICON_BLOCK_FILLED 0
-#define ICON_HEART_OPEN 8
-#define ICON_HEART_FILLED 9
+/* Icons below are one character wide */
+#define ICON_BLOCK_FILLED	0x100
+#define ICON_HEART_OPEN		0x108
+#define ICON_HEART_FILLED	0x109
+#define ICON_ARROW_UP		0x110
+#define ICON_ARROW_DOWN		0x111
+#define ICON_ARROW_LEFT		0x112
+#define ICON_ARROW_RIGHT	0x113
+
+/* Icons below are two characters wide */
+#define ICON_STOP		0x200	/* should look like  []  */
+#define ICON_PAUSE		0x201	/* should look like  ||  */
+#define ICON_PLAY		0x202	/* should look like  >   */
+#define ICON_PLAYR		0x203	/* should llok like  <   */
+#define ICON_FF			0x204	/* should look like  >>  */
+#define ICON_FR			0x205	/* should look like  <<  */
+#define ICON_NEXT		0x206	/* should look like  >|  */
+#define ICON_PREV		0x207	/* should look like  |<  */
+#define ICON_REC		0x208	/* should look like  ()  */
 
 /* Heartbeat data, taken from render.h */
 /* ??? What does OPEN mean here ? */

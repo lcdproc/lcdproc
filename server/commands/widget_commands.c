@@ -33,6 +33,8 @@
 #include "screen.h"
 #include "widget.h"
 
+#include "drivers.h"
+
 
 /*************************************************************************
  * Adds a widget to a screen, but doesn't give it a value
@@ -340,6 +342,8 @@ widget_set_func (Client * c, int argc, char **argv)
 				report( RPT_WARNING, "widget_set_func: Allocation error");
 				return -1;
 			}
+			/* Set width too */
+			w->width = display_props->width;
 			debug (RPT_DEBUG, "Widget %s set to %s", wid, w->text);
 			sock_send_string(c->sock, "success\n");
 		}

@@ -32,7 +32,6 @@
 #include "shared/LL.h"
 
 #include "drivers.h"
-#include "drivers.h"
 
 #include "screen.h"
 #include "screenlist.h"
@@ -314,15 +313,15 @@ draw_frame (LinkedList * list,
 				if (vis_width < 8)
 					break;
 
-				/*memset (str, 255, width);*/
-				memset (str, '*', vis_width);
-				/* TODO: Use icon function to draw the bar */
+				drivers_icon (w->x, w->y, ICON_BLOCK_FILLED);
+				drivers_icon (w->x+1, w->y, ICON_BLOCK_FILLED);
 
-				str[2] = ' ';
+				str[0] = ' ';
 				length = strlen (w->text);
 				if (length <= vis_width - 6) {
-					memcpy (str + 3, w->text, length);
-					str[length + 3] = ' ';
+					memcpy (str + 1, w->text, length);
+					str[length + 1] = ' ';
+					x = length + 4;
 				} else					  /* Scroll the title, if it doesn't fit...*/
 				{
 					speed = 1;
@@ -348,12 +347,18 @@ draw_frame (LinkedList * list,
 					{
 						x = (length - (vis_width - 6)) - x;
 					}
-					strncpy (str + 3, w->text + x, (vis_width - 6));
-					str[vis_width - 3] = ' ';
+					strncpy (str + 1, w->text + x, (vis_width - 6));
+					str[vis_width - 5] = ' ';
+					x = vis_width - 2;
 				}
-				str[vis_width] = 0;
+				str[vis_width-4] = 0;
 
-				drivers_string (1 + left, 1 + top, str);
+				drivers_string (3 + left, 1 + top, str);
+
+				for (; x<vis_width; x++) {
+					drivers_icon (w->x+x, w->y, ICON_BLOCK_FILLED);
+				}
+				
 				break;
 			case WID_SCROLLER:		  /* FIXME: doesn't work in frames...*/
 				{

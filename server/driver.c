@@ -436,25 +436,33 @@ driver_alt_heartbeat( Driver * drv, int state )
 void
 driver_alt_icon( Driver * drv, int x, int y, int icon )
 {
-	char ch;
+	char ch1 = '?';
+	char ch2 = 0;
 
 	if (!drv->chr)
 		return;
 
 	switch (icon) {
-	  case ICON_HEART_OPEN:
-		ch = '-';
-		break;
-	  case ICON_HEART_FILLED:
-		ch = '#';
-		break;
-	  case ICON_BLOCK_FILLED:
-	  	ch = '#';
-		break;
-	  default:
-		ch = '?';
+	  case ICON_BLOCK_FILLED:	ch1 = '#'; break;
+	  case ICON_HEART_OPEN:		ch1 = '-'; break;
+	  case ICON_HEART_FILLED:	ch1 = '#'; break;
+	  case ICON_ARROW_UP:		ch1 = '^'; break;
+	  case ICON_ARROW_DOWN:		ch1 = 'v'; break;
+	  case ICON_ARROW_LEFT:		ch1 = '<'; break;
+	  case ICON_ARROW_RIGHT:	ch1 = '>'; break;
+	  case ICON_STOP:		ch1 = '['; ch2 = ']'; break;
+	  case ICON_PAUSE:		ch1 = '|'; ch2 = '|'; break;
+	  case ICON_PLAY:		ch1 = '>'; ch2 = ' '; break;
+	  case ICON_PLAYR:		ch1 = '<'; ch2 = ' '; break;
+	  case ICON_FF:			ch1 = '>'; ch2 = '>'; break;
+	  case ICON_FR:			ch1 = '<'; ch2 = '<'; break;
+	  case ICON_NEXT:		ch1 = '>'; ch2 = '|'; break;
+	  case ICON_PREV:		ch1 = '|'; ch2 = '<'; break;
+	  case ICON_REC:		ch1 = '('; ch2 = ')'; break;
 	}
-	drv->chr( drv, x, y, ch);
+	drv->chr( drv, x, y, ch1);
+	if (ch2)
+		drv->chr( drv, x+1, y, ch2);
 }
 
 void driver_alt_cursor( Driver * drv, int x, int y, int state )
