@@ -400,7 +400,8 @@ process_configfile ( char *configfile )
 	/* Read server settings*/
 
 	if( config_read_file( configfile ) != 0 ) {
-		report( RPT_WARNING, "Could not read config file: %s", configfile );
+		report( RPT_CRIT, "Could not read config file: %s", configfile );
+		return -1;
 	}
 
 	if( bind_port == UNSET_INT )
