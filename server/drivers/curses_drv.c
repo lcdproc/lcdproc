@@ -228,6 +228,7 @@ int
 curses_drv_init (struct lcd_logical_driver *driver, char *args)
 {
 	char buf[256];
+	int wid=0, hgt=0;
 
 	// Colors....
 	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
@@ -268,7 +269,6 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	/*Get size settings*/
 	strncpy(buf, config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE), sizeof(buf));
 	buf[sizeof(buf)-1]=0;
-	int wid, hgt;
 	if( sscanf(buf , "%dx%d", &wid, &hgt ) != 2
 	|| (wid <= 0)
 	|| (hgt <= 0)) {
