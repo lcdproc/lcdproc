@@ -5,15 +5,15 @@ AC_ARG_ENABLE(drivers,
   	[  --enable-drivers=<list> compile driver for LCDs in <list>.]
 	[                  drivers may be separated with commas.]
   	[                  Possible choices are:]
- 	[                    mtxorb,cfontz,curses,text,lb216,]
+ 	[                    mtxorb,cfontz,cfontz633,curses,text,lb216,]
  	[                    hd44780,joy,irman,lirc,bayrad,glk,]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
-  	drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk])
+  	drivers=[lcdm001,mtxorb,cfontz,cfontz633,,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963]
+	drivers=[mtxorb,cfontz,cfontz633,curses,text,lb216,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -40,6 +40,10 @@ fi
 		cfontz)
 			DRIVERS="$DRIVERS CFontz${SO}"
 			actdrivers=["$actdrivers cfontz"]
+			;;
+		cfontz633)
+			DRIVERS="$DRIVERS CFontz633${SO}"
+			actdrivers=["$actdrivers cfontz633"]
 			;;
 		sli)
 			DRIVERS="$DRIVERS wirz-sli${SO}"
