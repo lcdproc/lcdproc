@@ -664,7 +664,7 @@ MtxOrb_string (Driver *drvthis, int x, int y, char *string)
 
 	x--; y--; /* Convert 1-based coords to 0-based... */
 	offset = (y * width) + x;
-	siz = (width * height) - offset - 1;
+	siz = (width * height) - offset;
 	siz = siz > strlen(string) ? strlen(string) : siz;
 
 	memcpy(framebuf + offset, string, siz);
