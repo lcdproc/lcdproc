@@ -164,7 +164,7 @@ HD44780_init (Driver * drvthis, char *args)
 		return -1; // fatal error
 	} else {
 		p->connectiontype_index = i;
-		# check if ConnectionType contains the string "USB" or "usb"
+		/* check if ConnectionType contains the string "USB" or "usb" */
 		if ((strstr(connectionMapping[i].name, "usb") != NULL) ||
 		    (strstr(connectionMapping[i].name, "USB") != NULL))
 			usb = 1;
