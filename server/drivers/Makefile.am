@@ -18,7 +18,7 @@ LDFLAGS += @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931 IOWarrior
 noinst_LIBRARIES = libLCD.a
 
 CFontz_LDADD =       libLCD.a
@@ -29,6 +29,7 @@ CwLnx_SOURCES =      lcd.h CwLnx.c CwLnx.h report.h
 hd44780_LDADD =      libLCD.a @HD44780_DRIVERS@
 hd44780_DEPENDENCIES = @HD44780_DRIVERS@
 icp_a106_LDADD =     libLCD.a
+IOWarrior_LDADD =    @LIBUSB@ libLCD.a
 irman_LDADD =        @LIBIRMAN@
 lirc_LDADD =         @LIBLIRC_CLIENT@
 lcterm_LDADD =       libLCD.a
@@ -46,6 +47,7 @@ hd44780_SOURCES =    lcd.h hd44780.h hd44780.c hd44780-drivers.h hd44780-low.h h
 EXTRA_hd44780_SOURCES = hd44780-4bit.c hd44780-4bit.h hd44780-ext8bit.c hd44780-ext8bit.h lcd_sem.c lcd_sem.h hd44780-serialLpt.c hd44780-serialLpt.h hd44780-winamp.c hd44780-winamp.h hd44780-picanlcd.c hd44780-picanlcd.h port.h lpt-port.h timing.h
 
 icp_a106_SOURCES =   lcd.h icp_a106.c icp_a106.h report.h
+IOWarrior_SOURCES =  lcd.h lcd_lib.h hd44780-charmap.h IOWarrior.c IOWarrior.h report.h
 irman_SOURCES =      lcd.h irmanin.c irmanin.h report.h
 joy_SOURCES =        lcd.h joy.c joy.h port.h report.h
 lb216_SOURCES =      lcd.h lb216.c lb216.h report.h

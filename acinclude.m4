@@ -8,13 +8,13 @@ AC_ARG_ENABLE(drivers,
  	[                    mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,]
  	[                    hd44780,joy,irman,lirc,bayrad,glk,,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
-	[                    lcterm,icp_a106,ms6931]
+	[                    lcterm,icp_a106,ms6931,iowarrior]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931]
+	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -148,6 +148,16 @@ dnl				else
  				AC_MSG_WARN([The joy driver needs header file linux/joystick.h.])
  			])
 			;;
+		iowarrior)
+ 			AC_CHECK_LIB(usb, main,[
+ 				LIBUSB="-lusb"
+				DRIVERS="$DRIVERS IOWarrior${SO}"
+				actdrivers=["$actdrivers iowarrior"]
+ 				],[
+dnl				else
+ 				AC_MSG_WARN([The iowarrior driver needs the libusb library.])
+ 			])
+			;;
 		irman)
  			AC_CHECK_LIB(irman, main,[
  				LIBIRMAN="-lirman"
@@ -229,6 +239,7 @@ actdrivers=`echo $actdrivers | sed 's/ /,/g'`
 AC_MSG_RESULT([Will compile drivers: $actdrivers])
 
 AC_SUBST(LIBCURSES)
+AC_SUBST(LIBUSB)
 AC_SUBST(LIBIRMAN)
 AC_SUBST(LIBLIRC_CLIENT)
 AC_SUBST(LIBSVGA)
