@@ -211,14 +211,21 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	initscr ();
 	cbreak ();
 	noecho ();
-	nodelay (stdscr, TRUE);
 	nonl ();
+
+	nodelay (stdscr, TRUE);
 	intrflush (stdscr, FALSE);
 	keypad (stdscr, TRUE);
+
 	lcd_win = newwin(curses_drv->hgt + 2,
 			 curses_drv->wid + 2,
 			 screen_begy,
 			 screen_begx);
+
+	//nodelay (lcd_win, TRUE);
+	//intrflush (lcd_win, FALSE);
+	//keypad (lcd_win, TRUE);
+
 	curs_set(0);
 
 	if (has_colors()) {
@@ -524,7 +531,7 @@ curses_drv_icon (int which, char dest)
 /////////////////////////////////////////////////////////////
 // Does the heartbeat...
 //
-static void
+void
 curses_drv_heartbeat (int type)
 {
 	static int timer = 0;
