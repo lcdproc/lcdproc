@@ -117,9 +117,9 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 		enableLines |= EN3;
 		port_out (lptPort + 2, 0 ^ OUTMASK);
 	}
-
 	port_out (lptPort, 0x03);
 	if( delayBus ) hd44780_functions->uPause (1);
+
 	port_out (lptPort, enableLines | 0x03);
 	if (extIF)
 		port_out (lptPort + 2, ALLEXT ^ OUTMASK);
@@ -148,6 +148,9 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 	hd44780_functions->uPause (40);
 
 	// now in 8-bit mode...  set 4-bit mode
+	port_out (lptPort, 0x02);
+	if( delayBus ) hd44780_functions->uPause (1);
+
 	port_out (lptPort, enableLines | 0x02);
 	if (extIF)
 		port_out (lptPort + 2, ALLEXT ^ OUTMASK);
@@ -155,6 +158,10 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
 	port_out (lptPort, 0x02);
 	if (extIF)
 		port_out (lptPort + 2, 0 ^ OUTMASK);
+	hd44780_functions->uPause (40);
+
+	// Set up two-line, small character (5x8) mode
+	hd44780_functions->senddata (0, RS_INSTR, FUNCSET | TWOLINE | SMALLCHAR );
 	hd44780_functions->uPause (40);
 
 	common_init ();

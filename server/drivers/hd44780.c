@@ -151,6 +151,9 @@ static char pressed_key = 0;
 static int pressed_key_repetitions = 0;
 static struct timeval pressed_key_time;
 
+// for incremental updates store last lcd contents
+static char * lcd_contents = (char *) 0;
+
 // function declarations
 void HD44780_close ();
 void HD44780_flush ();
@@ -272,6 +275,15 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 		//HD44780_close();
 		return -1;
 	}
+
+	// Allocate and clear the buffer for incremental updates
+	lcd_contents = (unsigned char *) malloc (HD44780->wid * HD44780->hgt);
+	if (!lcd_contents) {
+		return -1;
+	}
+	memset(lcd_contents, ' ', HD44780->wid * HD44780->hgt);
+
+
 	// Set the functions the driver supports...
 	// These are the default HD44780 functions
 	driver->init = HD44780_init;
@@ -384,6 +396,8 @@ uPause (int usecs)
 //
 void HD44780_close()
 {
+	free( HD44780->framebuf );
+	free( lcd_contents );
 }
 
 /////////////////////////////////////////////////////////////////
@@ -813,21 +827,30 @@ void
 HD44780_draw_frame (char *dat)
 {
 	int x, y;
+	int wid = HD44780->wid;
+	char drawing;
 
 	if (!dat)
 		return;
 
-	for (y = 0; y < HD44780->hgt; y++) {
-		//printf("\n%d :",y);
-		for (x = 0; x < HD44780->wid; x++) {
-
-			if( x % 8 == 0 )
-				HD44780_position (x, y);
-			hd44780_functions->senddata (spanList[y], RS_DATA, HD44780_charmap[(unsigned char)dat[(y * HD44780->wid) + x]]);
-			hd44780_functions->uPause (40);  // Minimum exec time for all commands
+	// Update LCD incrementally by comparing with last contents
+	for (y=0; y<HD44780->hgt; y++) {
+		drawing = 0;
+		for (x=0 ; x<wid; x++) {
+			if( dat[(y*wid)+x] != lcd_contents[(y*wid)+x] ) {
+				if( !drawing || x % 8 == 0 ) { // x%8 for 16x1 displays
+					drawing = 1;
+					HD44780_position(x,y);
+				}
+				hd44780_functions->senddata( spanList[y], RS_DATA, HD44780_charmap[(unsigned char)dat[(y * wid) + x]]);
+				hd44780_functions->uPause (40);  // Minimum exec time for all commands
+				lcd_contents[(y*wid)+x] = dat[(y*wid)+x];
+			}
+			else {
+				drawing = 0;
+			}
 		}
 	}
-
 }
 
 /////////////////////////////////////////////////////////////
