@@ -260,6 +260,10 @@ unsigned char lcdstat_HD44780_readkeypad (PrivateData *p, unsigned int YData)
 	// Put port back into idle state for backlight
 	port_out (p->port, p->backlight_bit);
 
-	// And convert value back.
-	return ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) ) & ~p->stuckinputs;
+	// And convert value back (MSB first).
+	return (((readval & FAULT) / FAULT <<4) |		/* pin 15 */
+		((readval & SELIN) / SELIN <<3) |		/* pin 13 */
+		((readval & PAPEREND) / PAPEREND <<2) |		/* pin 12 */
+		((readval & BUSY) / BUSY <<1) |			/* pin 11 */
+		((readval & ACK) / ACK )) & ~p->stuckinputs;	/* pin 10 */
 }

@@ -11,6 +11,7 @@ parallel port:
  - 8-bit (winamp style)
  - extended 8-bit (LCD + LED bargraph)
  - serial LPT
+And supports a PIC-an-LCD connected to a serial port.
 
 The driver also lets you use multiple displays as a single virtual
 display.  For example, a 4, 2 and 1 line display can be used to form a
@@ -203,13 +204,13 @@ this. The extension uses one output pin, you cannot use that pin for other
 functions anymore. The wiring looks like this:
 
                                              O 5V
-                                 ___         |
-                            +---|___|--------+
-LPT Sub-D connector         |   4k7          |
-                            |                |e
-                            |    ___     b |/
-     BL pin o---------------+---|___|------|
-                                330E       |\
+                                      ___    |
+                                 +---|___|---+
+LPT Sub-D connector              |   4k7     |
+                                 |           |e
+                          ___    |       b |/
+     BL pin o------------|___|---+---------|
+                          1k               |\
                                        bc327 |c
                                              |        LCD connector
                                              |
@@ -219,7 +220,7 @@ LPT Sub-D connector         |   4k7          |
                                              |
                                             === GND
 
-Note: 4k7 means 4,7 kohm and 330E means 330 ohm.
+Note: 4k7 means 4,7 kohm.
 The BC327 transistor has the following connections:
 
      _____
@@ -233,8 +234,8 @@ The BC327 transistor has the following connections:
 
 Sometimes the backlight connections are not on the 'main' connector, but on
 the side. If that is the case, there is usually NO RESISTOR present to limit
-the current through the LEDs. Therefor you should add a resistor after
-the transistor of 10 ohm.
+the current through the LEDs. Therefor you should then add a resistor after
+the transistor of about 10 ohm (see display documentation).
 
 If you want the backlight to light a bit while it's switched 'off', you can
 add a resistor bypassing the transistor from e to c, with a value of, say
@@ -532,6 +533,16 @@ complex. If you do not understand the schematic, do not build it.
  18..25 o--------+-------+------+-------+----------+-----+------+-----o 1 GND
                                                          |
                                                         === GND
+
+
+1.6  PIC-an-LCD serial device "picanlcd"
+----------------------------------------
+
+The PIC-an-LCD module is also supported. It is not connected to the LPT port
+but to a serial port, which saves you from a lot of potential problems.
+To use it, specify the device to which you have connected the module in the
+config file with the Device= setting. The default is /dev/lcd.
+It does not support a keypad nor backlight switching.
 
 
 1.5.1 Keypad

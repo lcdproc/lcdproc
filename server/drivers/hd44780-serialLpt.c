@@ -97,7 +97,10 @@ hd_init_serialLpt (Driver *drvthis)
 	hd44780_functions->uPause (p, 5000);
 
 	shiftreg (p, enableLines, 3);
-	hd44780_functions->uPause (p, 150);
+	hd44780_functions->uPause (p, 100);
+
+	shiftreg (p, enableLines, 3);
+	hd44780_functions->uPause (p, 100);
 
 	shiftreg (p, enableLines, 2);
 	hd44780_functions->uPause (p, 100);
@@ -168,7 +171,14 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 	p->hd44780_functions->uPause (p, 1);
 
 	readval = ~ port_in (p->port + 1) ^ INMASK;
-	inputs_zero = ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) );
+
+	// And convert value back (MSB first).
+	inputs_zero =  (((readval & FAULT) / FAULT <<4) |		/* pin 15 */
+			((readval & SELIN) / SELIN <<3) |		/* pin 13 */
+			((readval & PAPEREND) / PAPEREND <<2) |		/* pin 12 */
+			((readval & BUSY) / BUSY <<1) |			/* pin 11 */
+			((readval & ACK) / ACK ));			/* pin 10 */
+
 
 	if( inputs_zero == 0 ) {
 		// No keys were pressed
@@ -192,7 +202,14 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 		if( !scancode ) {
 			// Read input line(s)
 			readval = ~ port_in (p->port + 1) ^ INMASK;
-			keybits = ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) );
+
+			// And convert value back (MSB first).
+			keybits = (((readval & FAULT) / FAULT <<4) |		/* pin 15 */
+				((readval & SELIN) / SELIN <<3) |		/* pin 13 */
+				((readval & PAPEREND) / PAPEREND <<2) |		/* pin 12 */
+				((readval & BUSY) / BUSY <<1) |			/* pin 11 */
+				((readval & ACK) / ACK ));			/* pin 10 */
+
 			if( keybits != inputs_zero ) {
 				shiftingbit = 1;
 				for (shiftcount=0; shiftcount<KEYPAD_MAXX && !scancode; shiftcount++) {
