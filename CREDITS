@@ -157,6 +157,11 @@ Mike Patnode:
 	- Crystal Fontz
 	- Various 0.4.3 changes
 
+Peter Marschall:
+	- IOWarrior driver
+	- bwctusb connection type to the HD44780 drivr
+	- various fixes in preparation of 0.5
+
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min
 Andre Burton            andreb
