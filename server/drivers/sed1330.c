@@ -13,7 +13,8 @@
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
- * Copyright (c) 2001,2002, Joris Robijn <joris@robijn.net
+ * Copyright (c) 2001-2003, Joris Robijn <joris@robijn.net>
+ * 		 2003, Michael Rohde <Micha.R@online.de>
  *
  *
  * Changelog:
@@ -522,7 +523,7 @@ sed1330_init( Driver * drvthis, char *args )
 	sed1330_command( p, CMD_HDOT_SCR, 1, ((char[1]) {0x00}) );	// horizontal pixel shift=0
 	sed1330_command( p, CMD_OVLAY, 1, ((char[1]) {0x01}) );		// XOR mode, screen1 text, screen3 text (screen2 and screen4 are always graph)
 	sed1330_command( p, CMD_DISP_DIS, 1, ((char[1]) {0x14}) );	// display off,set cursor off, screen1 on, screen2 on, screen3 off
-	// sed1330_command( p, CMD_CSR_DIR_R, 0, NULL );			// cursor move right
+	sed1330_command( p, CMD_CSR_DIR_R, 0, NULL );			// cursor move right
 
 	sed1330_flush( drvthis ); 	// Clear the contents of the LCD
 	sed1330_command( p, CMD_DISP_EN, 0, NULL );	// And display on
