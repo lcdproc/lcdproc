@@ -6,7 +6,7 @@
 ##
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad.!SO! CFontz.!SO! curses_drv.!SO! glk.!SO! hd44780.!SO! irman.!SO! joy.!SO! lb216.!SO! lcdm001.!SO! lirc.!SO! MtxOrb.!SO! sed1330.!SO! sed1520.!SO! stv5730.!SO! svga.!SO! t6963.!SO! text.!SO! wirz_sli.!SO!
+EXTRA_PROGRAMS = bayrad.!SO! CFontz.!SO! curses.!SO! glk.!SO! hd44780.!SO! irman.!SO! joy.!SO! lb216.!SO! lcdm001.!SO! lirc.!SO! MtxOrb.!SO! sed1330.!SO! sed1520.!SO! stv5730.!SO! svga.!SO! t6963.!SO! text.!SO! wirz_sli.!SO!
 noinst_LIBRARIES = libLCD.a
 
 EXTRA_DIST = Makefile.am.pre
@@ -19,10 +19,13 @@ CCFLAGS += @CCSHARED@
 LDFLAGS += @LDSHARED@
 
 ## Forget the libs that the server core requires
-LIBS=
+LIBS =
+
+## Forget automake's EXEEXT variable that will determine the executable's extension
+EXEEXT =
 
 CFontz_!SO!_LDADD =       libLCD.a
-curses_drv_!SO!_LDADD =   @LIBCURSES@
+curses_!SO!_LDADD =       @LIBCURSES@
 hd44780_!SO!_LDADD =      libLCD.a
 irman_!SO!_LDADD =        @LIBIRMAN@
 lirc_!SO!_LDADD =         @LIBLIRC_CLIENT@
@@ -33,7 +36,7 @@ libLCD_a_SOURCES =        lcd_lib.h lcd_lib.c
 
 bayrad_!SO!_SOURCES =     lcd.h bayrad.h bayrad.c report.h
 CFontz_!SO!_SOURCES =     lcd.h CFontz.c CFontz.h report.h
-curses_drv_!SO!_SOURCES = lcd.h curses_drv.h curses_drv.c report.h
+curses_!SO!_SOURCES = lcd.h curses_drv.h curses_drv.c report.h
 glk_!SO!_SOURCES =        lcd.h glk.c glk.h glkproto.c glkproto.h report.h
 hd44780_!SO!_SOURCES =    lcd.h hd44780.h hd44780.c hd44780-drivers.h hd44780-low.h hd44780-charmap.h hd44780-4bit.c hd44780-4bit.h hd44780-ext8bit.c hd44780-ext8bit.h lcd_sem.c lcd_sem.h hd44780-serialLpt.c hd44780-serialLpt.h hd44780-winamp.c hd44780-winamp.h hd44780-picanlcd.c hd44780-picanlcd.h port.h lpt-port.h timing.h report.h
 irman_!SO!_SOURCES =      lcd.h irmanin.c irmanin.h report.h

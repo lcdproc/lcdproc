@@ -7,13 +7,13 @@ AC_ARG_ENABLE(drivers,
   	[                  Possible choices are:]
  	[                    mtxorb,cfontz,curses,text,lb216,]
  	[                    hd44780,joy,irman,lircin,bayrad,glk,]
- 	[                    stv5730,sed1330,sed1520,svgalib,lcdm001,t6963]
+ 	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svgalib,lcdm001,t6963]
+	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -150,14 +150,20 @@ dnl				else
 			DRIVERS="$DRIVERS stv5730${SO}"
 			actdrivers=["$actdrivers stv5730"]
 			;;
-		svgalib)
+		svga)
 			AC_CHECK_LIB(vga, main,
-				LIBSVGA="-lvga -lvgagl"
-				DRIVERS="$DRIVERS svgalib_drv${SO}"
-				actdrivers=["$actdrivers svgalib"]
-				,
+ 				AC_CHECK_HEADER(ncurses.h,
+					LIBSVGA="-lvga -lvgagl"
+					DRIVERS="$DRIVERS svga${SO}"
+					actdrivers=["$actdrivers svga"]
+ 				,
 dnl				else
-				AC_MSG_WARN([The svgalib driver needs the vga library]))
+					AC_MSG_WARN([Could not find vga.h and/or vgagl.h]),
+				)
+			,
+dnl			else
+				AC_MSG_WARN([The svga driver needs the vga library])
+			)
 			;;
 		t6963)
 			DRIVERS="$DRIVERS t6963${SO}"
@@ -470,7 +476,7 @@ AC_MSG_CHECKING(module extension)
 case $host in
   hp*|HP*)
 	SO=.sl;;
-  cygwin*)
+  *cygwin*)
 	SO=.dll;;
   *)
 	SO=.so;;
@@ -502,7 +508,7 @@ case "$host" in
 	fi
   	LDSHARED="-b"
   	;;
-  CYGWIN*)
+  *cygwin*)
   	CCSHARED="-DUSE_DL_IMPORT"
 	LDSHARED="-shared -Wl,--enable-auto-image-base"
 	;;
