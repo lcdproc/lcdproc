@@ -12,6 +12,7 @@
 #include "screenlist.h"
 #include "screen.h"
 #include "main.h"
+#include "render.h"
 
 int  default_duration = 0;
 int  default_timeout  = -1;
@@ -38,7 +39,9 @@ screen_create ()
 	s->parent = NULL;
 	s->widgets = NULL;
 	s->timeout = default_timeout; //ignored unless greater than 0. 
-
+	s->backlight_state = BACKLIGHT_NOTSET;	//Lets the screen do it's own
+						//or do what the client says.
+		
 	s->widgets = LL_new ();
 	if (!s->widgets) {
 		fprintf (stderr, "screen_create:  Error allocating widget list\n");

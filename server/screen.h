@@ -12,6 +12,7 @@ typedef struct screen {
 	int duration;
 	int heartbeat;
 	int timeout;
+	int backlight_state;
 	char *keys;
 	LinkedList *widgets;
 	client *parent;

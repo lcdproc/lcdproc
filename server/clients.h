@@ -7,6 +7,7 @@
 typedef struct client {
 	int sock;
 	char addr[64];
+	int backlight_state;
 	LinkedList *messages;
 	client_data *data;
 

@@ -711,7 +711,44 @@ screen_set_func (client * c, int argc, char **argv)
 				sock_send_string (c->sock, "huh? -timeout requires a parameter\n");
 			}
 		}
-		else sock_send_string (c->sock, "huh? invalid parameter\n");
+		
+		// Handle the backlight parameter
+		else if (strcmp (argv[i], "backlight") == 0) {
+			if (argc > i + 1) {
+				i++;
+				debug ("screen_set: backlight=\"%s\"\n", argv[i]);
+				// set the backlight status based on what the client has set
+				switch(c->backlight_state) {
+					case BACKLIGHT_OPEN:
+						if (strcmp ("on", argv[i]) == 0)
+							s->backlight_state = BACKLIGHT_ON;
+						
+						if (strcmp ("off", argv[i]) == 0)
+							s->backlight_state = BACKLIGHT_OFF;
+						
+						if (strcmp ("toggle", argv[i]) == 0) {
+							if (s->backlight_state == BACKLIGHT_ON)
+								s->backlight_state = BACKLIGHT_OFF;
+							else if (s-backlight_state == BACKLIGHT_OFF)
+								s->backlight_state = BACKLIGHT_ON;
+						}
+						
+						if (strcmp ("blink", argv[i]) == 0)
+							s->backlight_state  |= BACKLIGHT_BLINK;
+
+						if (strcmp ("flash", argv[i]) == 0)
+							s->backlight_state |= BACKLIGHT_FLASH;
+					break;
+					default:
+						//If the backlight is not OPEN then inherit its state
+						s->backlight_state = c->backlight_state;
+					break;
+				}
+				sock_send_string(c->sock, "success\n");
+			} else {
+				sock_send_string (c->sock, "huh? -backlight requires a parameter\n");
+			}
+		} else sock_send_string (c->sock, "huh? invalid parameter\n");
 	}// done checking argv
 	return 0;
 }
@@ -1259,35 +1296,26 @@ backlight_func (client * c, int argc, char **argv)
 
 	debug ("backlight(%s)\n", argv[1]);
 
-	// TODO: The following don't seem to be used;
-	// either use them or lose them:
-	//
-	// #define BACKLIGHT_LOAD 3
-	// #define BACKLIGHT_VIS 4
-	//
-	// TODO: The meaning of this one isn't clear; make it so...
-	//
-	// #define BACKLIGHT_OPEN 2
-
+	
 	backlight = (backlight && 1);  // only preserves ON/OFF bit
 
 	if (strcmp ("on", argv[1]) == 0) {
-		backlight_state = BACKLIGHT_ON;
+		c->backlight_state = BACKLIGHT_ON;
 
 	} else if (strcmp ("off", argv[1]) == 0) {
-		backlight_state = BACKLIGHT_OFF;
+		c->backlight_state = BACKLIGHT_OFF;
 
 	} else if (strcmp ("toggle", argv[1]) == 0) {
-		if (backlight_state == BACKLIGHT_ON)
-			backlight_state = BACKLIGHT_OFF;
-		else if (backlight_state == BACKLIGHT_OFF)
-			backlight_state = BACKLIGHT_ON;
+		if (c->backlight_state == BACKLIGHT_ON)
+			c->backlight_state = BACKLIGHT_OFF;
+		else if (c->backlight_state == BACKLIGHT_OFF)
+			c->backlight_state = BACKLIGHT_ON;
 
 	} else if (strcmp ("blink", argv[1]) == 0) {
-		backlight_state |= BACKLIGHT_BLINK;
+		c->backlight_state |= BACKLIGHT_BLINK;
 
-	} else if (0 == strcmp ("flash", argv[1])) {
-		backlight_state |= BACKLIGHT_FLASH;
+	} else if (strcmp ("flash", argv[1]) == 0) {
+		c->backlight_state |= BACKLIGHT_FLASH;
 	}
 
 	sock_send_string(c->sock, "success\n");

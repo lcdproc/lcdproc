@@ -21,6 +21,7 @@
 #include "clients.h"
 #include "client_data.h"
 #include "shared/debug.h"
+#include "render.h"
 
 LinkedList *clients;
 
@@ -94,6 +95,7 @@ client_create (int sock)
 	c->messages = NULL;
 
 	c->sock = sock;
+	c->backlight_state = backlight; //By default we get the server setting
 
 	// Set up message list...
 	c->messages = LL_new ();

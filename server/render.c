@@ -47,7 +47,7 @@ int
 draw_screen (screen * s, int timer)
 {
 	static screen *old_s = NULL;
-	int tmp = 0;
+	int tmp = 0, tmp_state = 0;
 
 	//debug("Render...\n");
 	//return 0;
@@ -66,16 +66,24 @@ draw_screen (screen * s, int timer)
 	// Clear the LCD screen...
 	lcd_ptr->clear ();
 
-	// lcd_ptr->backlight --
+	// FIXME lcd_ptr->backlight --
 	//
 	// This should be in a separate function altogether.
 	// Perhaps several: lcd_ptr->backlight_off, lcd_ptr->backlight_on,
 	// lcd_ptr->backlight_brightness, lcd_ptr->backlight_flash ...
-	//
+
+	// If the screen's backlight_state isn't set (default) then we
+	// inherit the backlight state from the parent client. This allows 
+	// the client to override it's childrens settings.
+	if (s->backlight_state == BACKLIGHT_NOTSET) {
+		if (s->parent) tmp_state = s->parent->backlight_state;
+	} else {
+		tmp_state = s->backlight_state;
+	}
+
 	// Set up backlight to the correct state...
 	// NOTE: dirty stripping of other options...
-	switch (backlight_state & 1) {
-		// Backlight off (easy)
+	switch (tmp_state & 1) {
 		case BACKLIGHT_OFF:
 			lcd_ptr->backlight (BACKLIGHT_OFF);
 			break;
@@ -85,9 +93,9 @@ draw_screen (screen * s, int timer)
 			break;
 		default:
 			// Backlight flash: check timer and flip backlight as appropriate
-			if (backlight_state & BACKLIGHT_FLASH) {
+			if (tmp_state & BACKLIGHT_FLASH) {
 				tmp = (!((timer & 7) == 7));
-				if (backlight_state & 1)
+				if (tmp_state & 1)
 					lcd_ptr->backlight (tmp ? backlight_brightness : backlight_off_brightness);
 				//lcd_ptr->backlight(backlight_brightness * (!((timer&7) == 7)));
 				else
@@ -95,9 +103,9 @@ draw_screen (screen * s, int timer)
 				//lcd_ptr->backlight(backlight_brightness * ((timer&7) == 7));
 
 			// Backlight blink: check timer and flip backlight as appropriate
-			} else if (backlight_state & BACKLIGHT_BLINK) {
+			} else if (tmp_state & BACKLIGHT_BLINK) {
 				tmp = (!((timer & 14) == 14));
-				if (backlight_state & 1)
+				if (tmp_state & 1)
 					lcd_ptr->backlight (tmp ? backlight_brightness : backlight_off_brightness);
 				//lcd_ptr->backlight(backlight_brightness * (!((timer&14) == 14)));
 				else
