@@ -7,7 +7,9 @@
  *
  * FreeBSD support by Guillaume Filion and Philip Pokorny, copyright 05/2001
  *
- * NetBSD port by Guillaume Filion, copyright 12/2001 and 02/2002
+ * NetBSD & OpenBSD port by Guillaume Filion, copyright 12/2001 and 02/2002
+ *
+ * (Better) FreeBSD port by Guillaume Filion, copyright 05/2002
  */
 
 /*
@@ -172,22 +174,20 @@ static inline int port_deny_full (unsigned short int port) {
 
 /*#endif // defined HAVE_I386_IOPERM_NETBSD && defined HAVE_MACHINE_PIO_H && defined HAVE_MACHINE_SYSARCH_H
 -------------------------------------------------------------
-Use i386_get_ioperm, i386_set_ioperm and ASM inb and outb from <machine/sysarch.h> (FreeBSD) */
+Use i386_get_ioperm, i386_set_ioperm from <machine/sysarch.h> and inb and outb from <machine/cpufunc.h> (FreeBSD) */
 #elif defined HAVE_I386_IOPERM_FREEBSD && defined HAVE_MACHINE_SYSARCH_H
-#include <machine/sysarch.h>  
+#include <sys/types.h>
+#include <machine/cpufunc.h>
+#include <machine/sysarch.h>
         
 /* Read a byte from port */
 static inline int port_in (unsigned short int port) {
-        unsigned char value;
-        __asm__ volatile ("inb %1,%0":"=a" (value)
-                        :"d" ((unsigned short) port));
-        return value;
+        return inb(port);
 }
         
 /* Write a byte 'val' to port */
 static inline void port_out (unsigned short int port, unsigned char val) {
-        __asm__ volatile ("outb %0,%1\n"::"a" (val), "d" (port)
-                 );
+        outb(val,port);
 }
         
 /* Get access to a specific port */
