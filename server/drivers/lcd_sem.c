@@ -30,6 +30,16 @@
 
 #include "lcd_sem.h"
 
+#ifdef _SEM_SEMUN_UNDEFINED
+/* according to X/OPEN we have to define it ourselves */
+union semun {
+	int val;                    /* value for SETVAL */
+	struct semid_ds *buf;       /* buffer for IPC_STAT, IPC_SET */
+	unsigned short int *array;  /* array for GETALL, SETALL */
+	struct seminfo *__buf;      /* buffer for IPC_INFO */
+};
+#endif
+
 #define SEMAPHORE       "portctrl"
 #define SEMKEY          0x706f7274	/* semaphore key */
 #define SEMCOUNT        1		  /* number of semaphores to create */
