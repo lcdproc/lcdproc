@@ -245,7 +245,7 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	driver->hbar = lcdm001_hbar;
 	driver->init_hbar = lcdm001_init_hbar;
 	driver->num = lcdm001_num;
-	driver->init_num = lcdm001_num;
+	driver->init_num = lcdm001_init_num;
 
 	driver->init = lcdm001_init;
 	driver->close = lcdm001_close;
