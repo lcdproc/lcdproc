@@ -233,6 +233,63 @@ lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 	return 1;						  // 1 is arbitrary.  (must be 1 or more)
 }
 
+#define ChkNull(a,b,c) if ((driver->a) == 0) { syslog(LOG_INFO, "warning: %s: null entries deprecated!", (c)); driver->a = (b); }
+#define ChkBaseDrv(a,b,c) if ((driver->a) == (void *) -1) { syslog(LOG_ERR, "warning: %s: base driver has been REMOVED!", (c)); driver->a = (b); }
+
+static int
+lcd_drv_patch_init (struct lcd_logical_driver *driver)
+{
+	// These are to patch drivers that use "NULL" as a valid value...
+	ChkNull(clear, lcd_drv_clear, "clear");
+	ChkNull(string, lcd_drv_string, "string");
+	ChkNull(chr, lcd_drv_chr, "chr");
+	ChkNull(vbar, lcd_drv_vbar, "vbar");
+	ChkNull(hbar, lcd_drv_hbar, "hbar");
+	ChkNull(init_num, lcd_drv_init_num, "init_num");
+	ChkNull(num, lcd_drv_num, "num");
+
+	ChkNull(init, lcd_drv_init, "init");
+	ChkNull(close, lcd_drv_close, "close");
+	ChkNull(flush, lcd_drv_flush, "flush");
+	ChkNull(flush_box, lcd_drv_flush_box, "flush_box");
+	ChkNull(contrast, lcd_drv_contrast, "contrast");
+	ChkNull(backlight, lcd_drv_backlight, "backlight");
+	ChkNull(output, lcd_drv_output, "output");
+	ChkNull(set_char, lcd_drv_set_char, "set_char");
+	ChkNull(icon, lcd_drv_icon, "icon");
+	ChkNull(init_vbar, lcd_drv_init_vbar, "init_vbar");
+	ChkNull(init_hbar, lcd_drv_init_hbar, "init_hbar");
+	ChkNull(draw_frame, lcd_drv_draw_frame, "draw_frame");
+
+	// Now check for base driver entries...;
+	ChkBaseDrv(getkey, lcd_drv_getkey, "getkey");
+	ChkBaseDrv(getinfo, lcd_drv_getinfo, "getinfo");
+
+	ChkBaseDrv(clear, lcd_drv_clear, "clear");
+	ChkBaseDrv(string, lcd_drv_string, "string");
+	ChkBaseDrv(chr, lcd_drv_chr, "chr");
+	ChkBaseDrv(vbar, lcd_drv_vbar, "vbar");
+	ChkBaseDrv(hbar, lcd_drv_hbar, "hbar");
+	ChkBaseDrv(init_num, lcd_drv_init_num, "init_num");
+	ChkBaseDrv(num, lcd_drv_num, "num");
+
+	ChkBaseDrv(init, lcd_drv_init, "init");
+	ChkBaseDrv(close, lcd_drv_close, "close");
+	ChkBaseDrv(flush, lcd_drv_flush, "flush");
+	ChkBaseDrv(flush_box, lcd_drv_flush_box, "flush_box");
+	ChkBaseDrv(contrast, lcd_drv_contrast, "contrast");
+	ChkBaseDrv(backlight, lcd_drv_backlight, "backlight");
+	ChkBaseDrv(output, lcd_drv_output, "output");
+	ChkBaseDrv(set_char, lcd_drv_set_char, "set_char");
+	ChkBaseDrv(icon, lcd_drv_icon, "icon");
+	ChkBaseDrv(init_vbar, lcd_drv_init_vbar, "init_vbar");
+	ChkBaseDrv(init_hbar, lcd_drv_init_hbar, "init_hbar");
+	ChkBaseDrv(draw_frame, lcd_drv_draw_frame, "draw_frame");
+
+	ChkBaseDrv(getkey, lcd_drv_getkey, "getkey");
+	ChkBaseDrv(getinfo, lcd_drv_getinfo, "getinfo");
+}
+
 /*
  * This function can be replaced later with something
  * that utilizes the results of dynamic library loading
@@ -278,6 +335,9 @@ lcd_add_driver (char *driver, char *args)
 		//	return -1;
 		//}
 
+		snprintf(buf, sizeof(buf), "adding %s driver", driver);
+		syslog(LOG_INFO, buf);
+
 		add = &lcd;
 		memset (add, 0, sizeof (add));
 
@@ -293,7 +353,9 @@ lcd_add_driver (char *driver, char *args)
 		}
 		memset (add->framebuf, ' ', (add->wid * add->hgt));
 
-		return init_driver (add, args);
+		i = init_driver (add, args);
+		lcd_drv_patch_init (add);	// patches drivers that think NULL is okay...
+		return i;
 	} else {
 		snprintf(buf, sizeof(buf), "invalid driver: %s", driver);
 		syslog(LOG_ERR, buf);

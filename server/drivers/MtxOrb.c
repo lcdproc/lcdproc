@@ -37,8 +37,6 @@
 #define DEFAULT_AUTOSCROLL	1
 #define DEFAULT_CURSORBLINK	0
 
-#define GENERIC (void *) -1
-
 #define IS_LCD_DISPLAY	(MtxOrb_type == MTXORB_LCD)
 #define IS_LKD_DISPLAY	(MtxOrb_type == MTXORB_LKD)
 #define IS_VFD_DISPLAY	(MtxOrb_type == MTXORB_VFD)
@@ -366,10 +364,6 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 // Clear: catch up when the screen get clear to be able to
 //  forget bar caracter not in use anymore and reuse the
 //  slot for another bar caracter.
-//
-// Why not just use Matrix Orbital's "clear screen" function or output a "^L"?
-// This reliance on drv_base_clear seems suspicious... especially as
-// using a (void *) -1 in the driver structure does the same thing...
 //
 static void
 MtxOrb_clear ()

@@ -187,8 +187,10 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	}
 	// Set the functions the driver supports...
 
-	driver->clear = (void *) -1;
-	driver->string = (void *) -1;
+	//driver->clear = (void *) -1;
+	driver->clear = CFontz_clear;
+	//driver->string = (void *) -1;
+	driver->string = CFontz_string;
 //  driver->chr =        CFontz_chr;
 	driver->chr = CFontz_chr;
 	driver->vbar = CFontz_vbar;
@@ -694,3 +696,34 @@ CFontz_draw_frame (char *dat)
 	 */
 
 }
+
+/////////////////////////////////////////////////////////////////
+// Clears the LCD screen
+//
+void
+CFontz_clear ()
+{
+	memset (lcd.framebuf, ' ', lcd.wid * lcd.hgt);
+
+}
+
+/////////////////////////////////////////////////////////////////
+// Prints a string on the lcd display, at position (x,y).  The
+// upper-left is (1,1), and the lower right should be (20,4).
+//
+void
+CFontz_string (int x, int y, char string[])
+{
+	int i;
+
+	x -= 1;							  // Convert 1-based coords to 0-based...
+	y -= 1;
+
+	for (i = 0; string[i]; i++) {
+		// Check for buffer overflows...
+		if ((y * lcd.wid) + x + i > (lcd.wid * lcd.hgt))
+			break;
+		lcd.framebuf[(y * lcd.wid) + x + i] = string[i];
+	}
+}
+

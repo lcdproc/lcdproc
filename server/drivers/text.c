@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <syslog.h>
 
 #include "lcd.h"
 #include "text.h"
@@ -24,42 +25,48 @@ lcd_logical_driver *text;
 ////////////////////// For Text-Mode Output //////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
+#define LCD_DEFAULT_WIDTH 20
+#define LCD_DEFAULT_HEIGHT 4
+#define LCD_DEFAULT_CELL_WIDTH 5
+#define LCD_DEFAULT_CELL_HEIGHT 8
+
 int
 text_init (lcd_logical_driver * driver, char *args)
 {
 	text = driver;
 
 	if (!driver->framebuf) {
+		syslog(LOG_ERR, "text: no frame buffer!");
 		driver->close ();
 		return -1;
 	}
 
-	driver->wid = 20;
-	driver->hgt = 4;
-	driver->cellwid = 5;
-	driver->cellhgt = 8;
+	driver->wid = LCD_DEFAULT_WIDTH;
+	driver->hgt = LCD_DEFAULT_HEIGHT;
+	driver->cellwid = LCD_DEFAULT_CELL_WIDTH;
+	driver->cellhgt = LCD_DEFAULT_CELL_HEIGHT;
 
-	driver->clear = (void *) -1;
-	driver->string = (void *) -1;
-	driver->chr = (void *) -1;
+	driver->clear = text_clear;
+	driver->string = text_string;
+	driver->chr = text_chr;
 	driver->vbar = text_vbar;
-	driver->init_vbar = NULL;
+	//driver->init_vbar = NULL;
 	driver->hbar = text_hbar;
-	driver->init_hbar = NULL;
-	driver->num = (void *) -1;
-	driver->init_num = NULL;
+	//driver->init_hbar = NULL;
+	driver->num = text_num;
+	//driver->init_num = NULL;
 
 	driver->init = text_init;
 	driver->close = text_close;
 	driver->flush = text_flush;
-	driver->flush_box = NULL;
-	driver->contrast = NULL;
-	driver->backlight = NULL;
-	driver->set_char = NULL;
-	driver->icon = NULL;
+	//driver->flush_box = NULL;
+	//driver->contrast = NULL;
+	//driver->backlight = NULL;
+	//driver->set_char = NULL;
+	//driver->icon = NULL;
 	driver->draw_frame = text_draw_frame;
 
-	driver->getkey = NULL;
+	//driver->getkey = NULL;
 
 	return 200;						  // 200 is arbitrary.  (must be 1 or more)
 }

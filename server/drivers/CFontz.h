@@ -19,5 +19,7 @@ void CFontz_num (int x, int num);
 void CFontz_set_char (int n, char *dat);
 void CFontz_icon (int which, char dest);
 void CFontz_draw_frame (char *dat);
+void CFontz_clear (void);
+void CFontz_string (int x, int y, char string[]);
 
 #endif
