@@ -101,9 +101,9 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	driver->string = curses_drv_string;
 	driver->chr = curses_drv_chr;
 	driver->vbar = curses_drv_vbar;
-	driver->init_vbar = NULL;
+	//driver->init_vbar = NULL;
 	driver->hbar = curses_drv_hbar;
-	driver->init_hbar = NULL;
+	//driver->init_hbar = NULL;
 	driver->num = curses_drv_num;
 	driver->init_num = curses_drv_init_num;
 
@@ -111,9 +111,9 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	driver->close = curses_drv_close;
 	driver->flush = curses_drv_flush;
 	driver->flush_box = curses_drv_flush_box;
-	driver->contrast = NULL;
-	driver->backlight = NULL;
-	driver->set_char = NULL;
+	//driver->contrast = NULL;
+	//driver->backlight = NULL;
+	//driver->set_char = NULL;
 	driver->icon = curses_drv_icon;
 	driver->draw_frame = curses_drv_draw_frame;
 
