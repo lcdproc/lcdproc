@@ -10,10 +10,10 @@
 
 
 
-int load_init();
-int load_close();
+int load_init ();
+int load_close ();
 
-int xload_screen(int rep, int display);
+int xload_screen (int rep, int display);
 
 
 #endif

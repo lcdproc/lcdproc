@@ -43,9 +43,7 @@
 // restricted to):
 // HD44780_senddata
 
-void lcdtime_HD44780_senddata(unsigned char displayID, 
-			      unsigned char flags, 
-			      unsigned char ch);
+void lcdtime_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
 
 
 #define nRS 	nSTRB
@@ -62,48 +60,45 @@ static int semid;
 
 
 // initialise the driver
-int hd_init_ext8bit(HD44780_functions *hd44780_functions, 
-		    lcd_logical_driver *driver, 
-		    char *args, 
-		    unsigned int port)
+int
+hd_init_ext8bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)
 {
-  lptPort = port;
-  semid = sem_get();
+   lptPort = port;
+   semid = sem_get ();
 
-  hd44780_functions->senddata   = lcdtime_HD44780_senddata;
+   hd44780_functions->senddata = lcdtime_HD44780_senddata;
 
-  if ((ioperm(port + 2, 1, 255)) == -1) {
-    fprintf(stderr, "HD44780_init: failed (%s)\n", strerror(errno)); 
-    return -1;
-  }
+   if ((ioperm (port + 2, 1, 255)) == -1) {
+      fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
+      return -1;
+   }
 
-  common_init(IF_8bit);
-  return 0;
+   common_init (IF_8bit);
+   return 0;
 }
 
 
 // lcdtime_HD44780_senddata
-void lcdtime_HD44780_senddata(unsigned char displayID, 
-			      unsigned char flags, 
-			      unsigned char ch)
+void
+lcdtime_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-  unsigned char dispID = 0, portControl;
+   unsigned char dispID = 0, portControl;
 
-  if (displayID == 1)
-    dispID |= EN1;
-  else //if (displayID == 0)
-    dispID |= EN1;
+   if (displayID == 1)
+      dispID |= EN1;
+   else				//if (displayID == 0)
+      dispID |= EN1;
 
-  if (flags == RS_DATA)
-    portControl = CHAR;
-  else
-    portControl = CTRL;
+   if (flags == RS_DATA)
+      portControl = CHAR;
+   else
+      portControl = CTRL;
 
-  sem_wait(semid);
-  port_out(lptPort + 2, SETUPLCD);
-  port_out(lptPort, ch);
-  port_out(lptPort + 2, dispID | portControl);
-  hd44780_functions->uPause(1);
-  port_out(lptPort + 2, portControl);
-  sem_signal(semid);
+   sem_wait (semid);
+   port_out (lptPort + 2, SETUPLCD);
+   port_out (lptPort, ch);
+   port_out (lptPort + 2, dispID | portControl);
+   hd44780_functions->uPause (1);
+   port_out (lptPort + 2, portControl);
+   sem_signal (semid);
 }

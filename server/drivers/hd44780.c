@@ -73,299 +73,243 @@ static int *dispSizes = NULL;
 
 
 // function declarations
-void HD44780_flush();
-void HD44780_flush_box(int lft, int top, int rgt, int bot);
-int  HD44780_contrast(int contrast);
-void HD44780_backlight(int on);
-void HD44780_init_vbar();
-void HD44780_init_hbar();
-void HD44780_vbar(int x, int len);
-void HD44780_hbar(int x, int y, int len);
-void HD44780_init_num();
-void HD44780_num(int x, int num);
-void HD44780_set_char(int n, char *dat);
-void HD44780_icon(int which, char dest);
-void HD44780_draw_frame(char *dat);
-void HD44780_close();
+void HD44780_flush ();
+void HD44780_flush_box (int lft, int top, int rgt, int bot);
+int HD44780_contrast (int contrast);
+void HD44780_backlight (int on);
+void HD44780_init_vbar ();
+void HD44780_init_hbar ();
+void HD44780_vbar (int x, int len);
+void HD44780_hbar (int x, int y, int len);
+void HD44780_init_num ();
+void HD44780_num (int x, int num);
+void HD44780_set_char (int n, char *dat);
+void HD44780_icon (int which, char dest);
+void HD44780_draw_frame (char *dat);
+void HD44780_close ();
 
-static void HD44780_linewrap(int on);
-static void HD44780_autoscroll(int on);
-static void HD44780_position(int x, int y);
+static void HD44780_linewrap (int on);
+static void HD44780_autoscroll (int on);
+static void HD44780_position (int x, int y);
 
-static void common_position(int display, int DDaddr);
-static void common_autoscroll(int on);
-static void uPause(int delayCalls);
-static void HD44780_senddata(unsigned char displayID, 
-			     unsigned char flags, 
-			     unsigned char ch);
+static void common_position (int display, int DDaddr);
+static void common_autoscroll (int on);
+static void uPause (int delayCalls);
+static void HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
 
-static int parse_span_list(int *spanListArray[], int *spLsize, 
-			   int *dispOffsets[], int *dOffsize,
-			   int *dispSizeArray[], char *spanlist);
+static int parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], char *spanlist);
 
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
 //
-int HD44780_init(lcd_logical_driver *driver, char *args) 
+int
+HD44780_init (lcd_logical_driver * driver, char *args)
 {
-  // TODO: remove the two magic numbers below
-  // TODO: single point of return
-  char *argv[64], *str;
-  int argc, i;
-   
-  HD44780 = driver;
+   // TODO: remove the two magic numbers below
+   // TODO: single point of return
+   char *argv[64], *str;
+   int argc, i;
 
-  // get_args inserts \0 into args - nasty !
-  if (args)
-    if ((str = (char *) malloc(strlen(args) + 1)))
-      strcpy(str, args);
-    else
-    {
-      fprintf(stderr, "Error mallocing\n");
-      return -1;
-    }
-  else
-    str = NULL;
+   HD44780 = driver;
 
-  argc = get_args(argv, args, 64);
+   // get_args inserts \0 into args - nasty !
+   if (args)
+      if ((str = (char *) malloc (strlen (args) + 1)))
+	 strcpy (str, args);
+      else {
+	 fprintf (stderr, "Error mallocing\n");
+	 return -1;
+   } else
+      str = NULL;
+
+   argc = get_args (argv, args, 64);
 
    // arguments are passed in with -d HD44780 "-p 0x278"
    // getopt will work well here
-  for(i=0; i<argc; i++)
-  {
-    if(0 == strcmp(argv[i], "-p")  ||
-       0 == strcmp(argv[i], "--port"))
-    {
-      if(i + 1 >= argc) {
-	fprintf(stderr, "HD44780_init: %s requires an argument\n",
-		argv[i]);
-	return -1;
-      } else {
-	int myport;
-	if (sscanf(argv[i + 1], "%i", &myport) != 1) {
-	  fprintf(stderr, "HD44780_init: Couldn't read port address -"
-		  " using default value 0x%x\n", port);
-	  return -1;
-	} else {
-	  port = myport;
-	  ++i;
-	}
-      }
-    }
-    else if(0 == strcmp(argv[i], "-c")  ||
-	    0 == strcmp(argv[i], "--connect"))
-    {
-      int j = 0;
-      if(i + 1 >= argc) {
-	fprintf(stderr, "HD44780_init: %s requires an argument\n",
-		argv[i]);
-	return -1;
-      }
-      // search the next argument for the connection type
-      for (j = 0;
-	   strcmp(argv[i + 1], connectionMapping[j].connectionTypeStr) != 0
-	     && connectionMapping[j].type != HD_unknown;
-	   ++j)
-	;
+   for (i = 0; i < argc; i++) {
+      if (0 == strcmp (argv[i], "-p") || 0 == strcmp (argv[i], "--port")) {
+	 if (i + 1 >= argc) {
+	    fprintf (stderr, "HD44780_init: %s requires an argument\n", argv[i]);
+	    return -1;
+	 } else {
+	    int myport;
+	    if (sscanf (argv[i + 1], "%i", &myport) != 1) {
+	       fprintf (stderr, "HD44780_init: Couldn't read port address -" " using default value 0x%x\n", port);
+	       return -1;
+	    } else {
+	       port = myport;
+	       ++i;
+	    }
+	 }
+      } else if (0 == strcmp (argv[i], "-c") || 0 == strcmp (argv[i], "--connect")) {
+	 int j = 0;
+	 if (i + 1 >= argc) {
+	    fprintf (stderr, "HD44780_init: %s requires an argument\n", argv[i]);
+	    return -1;
+	 }
+	 // search the next argument for the connection type
+	 for (j = 0; strcmp (argv[i + 1], connectionMapping[j].connectionTypeStr) != 0 && connectionMapping[j].type != HD_unknown; ++j);
 
-      if (connectionMapping[j].type == HD_unknown)
-      {
-	fprintf(stderr, 
-		"HD44780_init: Unknown connection type - using default %s driver\n",
-		connectionMapping[0].connectionTypeStr);
-	connection = connectionMapping[0].type;
-	j = 0;
-      }
-      else
-	connection = connectionMapping[j].type;
+	 if (connectionMapping[j].type == HD_unknown) {
+	    fprintf (stderr, "HD44780_init: Unknown connection type - using default %s driver\n", connectionMapping[0].connectionTypeStr);
+	    connection = connectionMapping[0].type;
+	    j = 0;
+	 } else
+	    connection = connectionMapping[j].type;
 
-      connIdx = j;
-      ++i;
-    }
-    else if(0 == strcmp(argv[i], "-v")  ||
-	    0 == strcmp(argv[i], "--vspan"))
-    {
-      int j = 0;
-      if(i + 1 >= argc) {
-	fprintf(stderr, "HD44780_init: %s requires an argument\n",
-		argv[i]);
-	return -1;
-      }
-      if (parse_span_list(&spanList, &numLines, 
-			  &dispVOffset, &numDisplays,
-			  &dispSizes, argv[i + 1]) == -1)
-      {
-	fprintf(stderr, "HD44780_init: invalid vspan argument\n");
-	return -1;
-      }
-      ++i;
-    }
-    else if(0 == strcmp(argv[i], "-h")  ||
-	    0 == strcmp(argv[i], "--help"))
-    {
-      int i;
-      printf("LCDproc HD44780 driver\n"
-	     "\t-p n\t--port n\tSelect the output device to use port n\n"
-	     "\t-c type\t--connect type\tSet the connection type (default 4 bit)\n"
-	     "\t\t\t\ttype = %s", connectionMapping[0].connectionTypeStr);
-      for (i = 1; connectionMapping[i].type != HD_unknown; ++i)
-	printf(" | %s", connectionMapping[i].connectionTypeStr);
-      printf("\n\t-v spanlist\t--vspan spanlist\tvertical span n{,m}\n"
-	     "\t-h\t--help\t\tShow this help information\n"
-	     "\n\tNote that the '-t' option should precede the '-d' option\n");
+	 connIdx = j;
+	 ++i;
+      } else if (0 == strcmp (argv[i], "-v") || 0 == strcmp (argv[i], "--vspan")) {
+	 int j = 0;
+	 if (i + 1 >= argc) {
+	    fprintf (stderr, "HD44780_init: %s requires an argument\n", argv[i]);
+	    return -1;
+	 }
+	 if (parse_span_list (&spanList, &numLines, &dispVOffset, &numDisplays, &dispSizes, argv[i + 1]) == -1) {
+	    fprintf (stderr, "HD44780_init: invalid vspan argument\n");
+	    return -1;
+	 }
+	 ++i;
+      } else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
+	 int i;
+	 printf ("LCDproc HD44780 driver\n" "\t-p n\t--port n\tSelect the output device to use port n\n" "\t-c type\t--connect type\tSet the connection type (default 4 bit)\n" "\t\t\t\ttype = %s", connectionMapping[0].connectionTypeStr);
+	 for (i = 1; connectionMapping[i].type != HD_unknown; ++i)
+	    printf (" | %s", connectionMapping[i].connectionTypeStr);
+	 printf ("\n\t-v spanlist\t--vspan spanlist\tvertical span n{,m}\n" "\t-h\t--help\t\tShow this help information\n" "\n\tNote that the '-t' option should precede the '-d' option\n");
 
-      if (connectionMapping[connIdx].type != HD_unknown)
-      {
-	printf("\n    Parameters for %s driver\n", 
-	       connectionMapping[connIdx].connectionTypeStr);
-	printf("%s", connectionMapping[connIdx].helpMsg);
+	 if (connectionMapping[connIdx].type != HD_unknown) {
+	    printf ("\n    Parameters for %s driver\n", connectionMapping[connIdx].connectionTypeStr);
+	    printf ("%s", connectionMapping[connIdx].helpMsg);
+	 }
+	 return -1;
       }
+      /* ignore invalid arguments as they might be valid to the lower-level init
+         else
+         {
+         printf("Invalid parameter: %s\n", argv[i]);
+         }
+       */
+   }
+
+   // default case for when spans aren't indicated
+   // - add a sanity check against lcd.hgt ??
+   // - this only works if the -t option is specified before -d
+   if (numLines == 0) {
+      if ((spanList = (int *) malloc (sizeof (int) * lcd.hgt))) {
+	 int i;
+	 for (i = 0; i < lcd.hgt; ++i) {
+	    spanList[i] = 1;
+	    numLines = lcd.hgt;
+	 }
+      } else
+	 fprintf (stderr, "Error mallocing for span list\n");
+   }
+   if (numDisplays == 0) {
+      if ((dispVOffset = (int *) malloc (sizeof (int))) && (dispSizes = (int *) malloc (sizeof (int)))) {
+	 dispVOffset[0] = 0;
+	 dispSizes[0] = lcd.hgt;
+	 numDisplays = 1;
+      } else
+	 fprintf (stderr, "Error mallocing for display sizes list\n");
+   }
+   // Set up io port correctly, and open it...
+   if ((ioperm (port, 1, 255)) == -1) {
+      fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
       return -1;
-    }
-    /* ignore invalid arguments as they might be valid to the lower-level init
-    else
-    {
-      printf("Invalid parameter: %s\n", argv[i]);
-    }
-    */      
-  }
+   }
+   // Make sure the frame buffer is there...  
+   if (!HD44780->framebuf)
+      HD44780->framebuf = (unsigned char *) malloc (lcd.wid * lcd.hgt);
 
-  // default case for when spans aren't indicated
-  // - add a sanity check against lcd.hgt ??
-  // - this only works if the -t option is specified before -d
-  if (numLines == 0)
-  { 	
-    if ((spanList = (int *) malloc(sizeof(int) * lcd.hgt)))
-    {
-      int i;
-      for (i = 0; i < lcd.hgt; ++i)
-      {
-	spanList[i] = 1;
-	numLines = lcd.hgt;
-      }
-    }
-    else
-      fprintf(stderr, "Error mallocing for span list\n");
-  }
-  if (numDisplays == 0)
-  {
-    if ((dispVOffset = (int *) malloc(sizeof(int))) && 
-	(dispSizes = (int *) malloc(sizeof(int))))
-    {
-      dispVOffset[0] = 0;
-      dispSizes[0] = lcd.hgt;
-      numDisplays = 1;
-    }
-    else
-      fprintf(stderr, "Error mallocing for display sizes list\n");
-  }       
-   
-  // Set up io port correctly, and open it...
-  if ((ioperm(port, 1, 255)) == -1) {
-    fprintf(stderr, "HD44780_init: failed (%s)\n", strerror(errno)); 
-    return -1;
-  }
+   if (!HD44780->framebuf) {
+      //HD44780_close();
+      return -1;
+   }
 
-  // Make sure the frame buffer is there...  
-  if (!HD44780->framebuf) 
-    HD44780->framebuf = (unsigned char *) malloc(lcd.wid * lcd.hgt);
+   // Set the functions the driver supports...
+   // These are the default HD44780 functions
+   driver->clear = (void *) -1;
+   driver->string = (void *) -1;
+   driver->chr = (void *) -1;
+   driver->vbar = HD44780_vbar;
+   driver->init_vbar = HD44780_init_vbar;
+   driver->hbar = HD44780_hbar;
+   driver->init_hbar = HD44780_init_hbar;
+   driver->num = HD44780_num;
+   driver->init_num = HD44780_init_num;
 
-  if (!HD44780->framebuf) {
-    //HD44780_close();
-    return -1;
-  }
+   driver->init = HD44780_init;
+   driver->close = (void *) -1;
+   driver->flush = HD44780_flush;
+   driver->flush_box = HD44780_flush_box;
+   driver->contrast = HD44780_contrast;
+   driver->backlight = HD44780_backlight;
+   driver->set_char = HD44780_set_char;
+   driver->icon = HD44780_icon;
+   driver->draw_frame = HD44780_draw_frame;
+   driver->getkey = NULL;
 
+   if ((hd44780_functions = (HD44780_functions *) malloc (sizeof (HD44780_functions))) == NULL) {
+      return -1;
+   }
+   hd44780_functions->uPause = uPause;
+   hd44780_functions->position = common_position;
+   hd44780_functions->autoscroll = common_autoscroll;
 
-  // Set the functions the driver supports...
-  // These are the default HD44780 functions
-  driver->clear =      (void *)-1;
-  driver->string =     (void *)-1;
-  driver->chr =        (void *)-1;
-  driver->vbar =       HD44780_vbar;
-  driver->init_vbar =  HD44780_init_vbar;
-  driver->hbar =       HD44780_hbar;
-  driver->init_hbar =  HD44780_init_hbar;
-  driver->num =        HD44780_num;
-  driver->init_num =   HD44780_init_num;
-	
-  driver->init =       HD44780_init;
-  driver->close =      (void *)-1;
-  driver->flush =      HD44780_flush;
-  driver->flush_box =  HD44780_flush_box;
-  driver->contrast =   HD44780_contrast;
-  driver->backlight =  HD44780_backlight;
-  driver->set_char =   HD44780_set_char;
-  driver->icon =       HD44780_icon;
-  driver->draw_frame = HD44780_draw_frame;
-  driver->getkey =     NULL;		 
+   connectionMapping[connIdx].init_fn (hd44780_functions, driver, str, port);
 
-  if ((hd44780_functions = 
-       (HD44780_functions *) malloc(sizeof(HD44780_functions))) == NULL)
-  {
-    return -1;
-  }
-  hd44780_functions->uPause     = uPause;
-  hd44780_functions->position   = common_position;
-  hd44780_functions->autoscroll = common_autoscroll;
+   HD44780_autoscroll (0);
 
-  connectionMapping[connIdx].init_fn(hd44780_functions, driver, str, port);
-
-  HD44780_autoscroll(0);
-
-  return port;
+   return port;
 }
 
 // common initialisation sequence - sets twoline, small characters (5x8),
 // cursor off and not blinking, clear display and homecursor
-void common_init(enum ifWidth ifwidth)
+void
+common_init (enum ifWidth ifwidth)
 {
-  if (ifwidth == IF_8bit)
-  {
-    // setup the lcd in 8 bit mode
-    hd44780_functions->senddata(0, RS_INSTR, FUNCSET | IF_8BIT);
-    hd44780_functions->uPause(4100);
-    hd44780_functions->senddata(0, RS_INSTR, FUNCSET | IF_8BIT);
-    hd44780_functions->uPause(100);
-    hd44780_functions->senddata(0, RS_INSTR, FUNCSET | IF_8BIT);
-    hd44780_functions->uPause(40);
-  }
-  // else 4bit
-  //   senddata can't generate the timings to initialise a four bit device
-  //   properly but it might just work properly anyway ....
+   if (ifwidth == IF_8bit) {
+      // setup the lcd in 8 bit mode
+      hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT);
+      hd44780_functions->uPause (4100);
+      hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT);
+      hd44780_functions->uPause (100);
+      hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT);
+      hd44780_functions->uPause (40);
+   }
+   // else 4bit
+   //   senddata can't generate the timings to initialise a four bit device
+   //   properly but it might just work properly anyway ....
 
-  // set display type functions
-  hd44780_functions->senddata(0, 
-			      RS_INSTR, 
-			      FUNCSET | 
-			      ((ifwidth == IF_4BIT) ? IF_4BIT : IF_8BIT) | 
-			      TWOLINE | SMALLCHAR);
-  hd44780_functions->uPause(40);
+   // set display type functions
+   hd44780_functions->senddata (0, RS_INSTR, FUNCSET | ((ifwidth == IF_4BIT) ? IF_4BIT : IF_8BIT) | TWOLINE | SMALLCHAR);
+   hd44780_functions->uPause (40);
 
-  hd44780_functions->senddata(0, 
-			      RS_INSTR, 
-			      ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
-  hd44780_functions->uPause(40); 
-  hd44780_functions->senddata(0, RS_INSTR, CLEAR);
-  hd44780_functions->uPause(1600);
-  hd44780_functions->senddata(0, RS_INSTR, HOMECURSOR);
-  hd44780_functions->uPause(1600); 
+   hd44780_functions->senddata (0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
+   hd44780_functions->uPause (40);
+   hd44780_functions->senddata (0, RS_INSTR, CLEAR);
+   hd44780_functions->uPause (1600);
+   hd44780_functions->senddata (0, RS_INSTR, HOMECURSOR);
+   hd44780_functions->uPause (1600);
 }
 
 // IO delay to avoid a task switch
-void uPause(int delayCalls)
+void
+uPause (int delayCalls)
 {
-  int i;
-  for (i = 0; i < delayCalls; ++i)
-    port_in(port);
-  //TODO: put in option for nanosleep rather than dummy I/O call
+   int i;
+   for (i = 0; i < delayCalls; ++i)
+      port_in (port);
+   //TODO: put in option for nanosleep rather than dummy I/O call
 }
 
 
 // displayID     - ID of display to use (0 = all displays)
-static void HD44780_senddata(unsigned char displayID, unsigned char flags, unsigned char ch)
+static void
+HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-  hd44780_functions->senddata(displayID, flags, ch);
-  hd44780_functions->uPause(40);
+   hd44780_functions->senddata (displayID, flags, ch);
+   hd44780_functions->uPause (40);
 }
 
 
@@ -380,53 +324,56 @@ static void HD44780_senddata(unsigned char displayID, unsigned char flags, unsig
 */
 
 // x and y here are for the virtual lcd.hgt x lcd.wid display
-static void HD44780_position(int x, int y)
+static void
+HD44780_position (int x, int y)
 {
-  int dispID = spanList[y];
-  int relY = y - dispVOffset[dispID - 1];
-  int DDaddr;
+   int dispID = spanList[y];
+   int relY = y - dispVOffset[dispID - 1];
+   int DDaddr;
 
-  // 16x1 is a special case
-  if (dispSizes[dispID - 1] == 1 && lcd.wid == 16)
-    if (x >= 8)
-    {
-      x -= 8; relY = 1;
-    }
+   // 16x1 is a special case
+   if (dispSizes[dispID - 1] == 1 && lcd.wid == 16)
+      if (x >= 8) {
+	 x -= 8;
+	 relY = 1;
+      }
 
-  DDaddr = x + (relY % 2) * 0x40;
-  if ((relY % 4) >= 2) 
-    DDaddr += lcd.wid;
+   DDaddr = x + (relY % 2) * 0x40;
+   if ((relY % 4) >= 2)
+      DDaddr += lcd.wid;
 
-  hd44780_functions->position(dispID, DDaddr);
+   hd44780_functions->position (dispID, DDaddr);
 }
 
-void common_position(int display, int DDaddr)
+void
+common_position (int display, int DDaddr)
 {
-  hd44780_functions->senddata(display, RS_INSTR, POSITION | DDaddr);
-  hd44780_functions->uPause(40);
+   hd44780_functions->senddata (display, RS_INSTR, POSITION | DDaddr);
+   hd44780_functions->uPause (40);
 }
 
-void HD44780_flush()
+void
+HD44780_flush ()
 {
-  HD44780_draw_frame(lcd.framebuf);
+   HD44780_draw_frame (lcd.framebuf);
 }
 
 
-void HD44780_flush_box(int lft, int top, int rgt, int bot)
+void
+HD44780_flush_box (int lft, int top, int rgt, int bot)
 {
-  int x,y;
-  
-  //  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
+   int x, y;
 
-  for (y=top; y<=bot; y++) {
-    HD44780_position(lft,y);
-    //printf("\n%d,%d :",lft,y);
-    for (x=lft ; x<=rgt ; x++) {
-      HD44780_senddata(spanList[y], RS_DATA, 
-		       lcd.framebuf[(y*lcd.wid)+x]);
-    }
-    //write(fd, lcd.framebuf[(y*lcd.wid)+lft, rgt-lft+1]);
-  }
+   //  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
+
+   for (y = top; y <= bot; y++) {
+      HD44780_position (lft, y);
+      //printf("\n%d,%d :",lft,y);
+      for (x = lft; x <= rgt; x++) {
+	 HD44780_senddata (spanList[y], RS_DATA, lcd.framebuf[(y * lcd.wid) + x]);
+      }
+      //write(fd, lcd.framebuf[(y*lcd.wid)+lft, rgt-lft+1]);
+   }
 
 }
 
@@ -434,16 +381,18 @@ void HD44780_flush_box(int lft, int top, int rgt, int bot)
 /////////////////////////////////////////////////////////////////
 // Changes screen contrast (0-255; 140 seems good)
 //
-int HD44780_contrast(int contrast) 
+int
+HD44780_contrast (int contrast)
 {
-  return 0;
+   return 0;
 }
 
 /////////////////////////////////////////////////////////////////
 // Sets the backlight on or off -- can be done quickly for
 // an intermediate brightness...
 //
-void HD44780_backlight(int on)
+void
+HD44780_backlight (int on)
 {
 }
 
@@ -451,223 +400,230 @@ void HD44780_backlight(int on)
 /////////////////////////////////////////////////////////////////
 // Toggle the built-in linewrapping feature
 //
-static void HD44780_linewrap(int on)
+static void
+HD44780_linewrap (int on)
 {
 }
 
 /////////////////////////////////////////////////////////////////
 // Toggle the built-in automatic scrolling feature
 //
-static void HD44780_autoscroll(int on)
+static void
+HD44780_autoscroll (int on)
 {
-  hd44780_functions->autoscroll(on);
+   hd44780_functions->autoscroll (on);
 }
 
-void common_autoscroll(int on)
+void
+common_autoscroll (int on)
 {
-  hd44780_functions->senddata(0, RS_INSTR, 
-			      ENTRYMODE | E_MOVERIGHT | 
-			      ((on) ? EDGESCROLL : NOSCROLL));
-  hd44780_functions->uPause(1600);
+   hd44780_functions->senddata (0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | ((on) ? EDGESCROLL : NOSCROLL));
+   hd44780_functions->uPause (1600);
 }
 
 
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before lcd.vbar()
 //
-void HD44780_init_vbar() 
+void
+HD44780_init_vbar ()
 {
-  char a[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-  };
-  char b[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char c[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char d[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char e[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char f[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char g[] = {
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
+   char a[] = {
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      1, 1, 1, 1, 1,
+   };
+   char b[] = {
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+   };
+   char c[] = {
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+   };
+   char d[] = {
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+   };
+   char e[] = {
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+   };
+   char f[] = {
+      0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+   };
+   char g[] = {
+      0, 0, 0, 0, 0,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1,
+   };
 
-  HD44780_set_char(1,a);
-  HD44780_set_char(2,b);
-  HD44780_set_char(3,c);
-  HD44780_set_char(4,d);
-  HD44780_set_char(5,e);
-  HD44780_set_char(6,f);
-  HD44780_set_char(7,g);  
+   HD44780_set_char (1, a);
+   HD44780_set_char (2, b);
+   HD44780_set_char (3, c);
+   HD44780_set_char (4, d);
+   HD44780_set_char (5, e);
+   HD44780_set_char (6, f);
+   HD44780_set_char (7, g);
 }
 
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-void HD44780_init_hbar() 
+void
+HD44780_init_hbar ()
 {
 
-  char a[] = {
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-  };
-  char b[] = {
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-  };
-  char c[] = {
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-  };
-  char d[] = {
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-  };
+   char a[] = {
+      1, 0, 0, 0, 0,
+      1, 0, 0, 0, 0,
+      1, 0, 0, 0, 0,
+      1, 0, 0, 0, 0,
+      1, 0, 0, 0, 0,
+      1, 0, 0, 0, 0,
+      1, 0, 0, 0, 0,
+      1, 0, 0, 0, 0,
+   };
+   char b[] = {
+      1, 1, 0, 0, 0,
+      1, 1, 0, 0, 0,
+      1, 1, 0, 0, 0,
+      1, 1, 0, 0, 0,
+      1, 1, 0, 0, 0,
+      1, 1, 0, 0, 0,
+      1, 1, 0, 0, 0,
+      1, 1, 0, 0, 0,
+   };
+   char c[] = {
+      1, 1, 1, 0, 0,
+      1, 1, 1, 0, 0,
+      1, 1, 1, 0, 0,
+      1, 1, 1, 0, 0,
+      1, 1, 1, 0, 0,
+      1, 1, 1, 0, 0,
+      1, 1, 1, 0, 0,
+      1, 1, 1, 0, 0,
+   };
+   char d[] = {
+      1, 1, 1, 1, 0,
+      1, 1, 1, 1, 0,
+      1, 1, 1, 1, 0,
+      1, 1, 1, 1, 0,
+      1, 1, 1, 1, 0,
+      1, 1, 1, 1, 0,
+      1, 1, 1, 1, 0,
+      1, 1, 1, 1, 0,
+   };
 
-  HD44780_set_char(1,a);
-  HD44780_set_char(2,b);
-  HD44780_set_char(3,c);
-  HD44780_set_char(4,d);
+   HD44780_set_char (1, a);
+   HD44780_set_char (2, b);
+   HD44780_set_char (3, c);
+   HD44780_set_char (4, d);
 
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar...
 //
-void HD44780_vbar(int x, int len) 
+void
+HD44780_vbar (int x, int len)
 {
-  char map[9] = {32, 1, 2, 3, 4, 5, 6, 7, 255 };
+   char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
 
-  int y;
-  for(y=lcd.hgt; y > 0 && len>0; y--) {
-    if (len >= lcd.cellhgt)
-      drv_base_chr(x, y, 255);
-    else
-      drv_base_chr(x, y, map[len]);
+   int y;
+   for (y = lcd.hgt; y > 0 && len > 0; y--) {
+      if (len >= lcd.cellhgt)
+	 drv_base_chr (x, y, 255);
+      else
+	 drv_base_chr (x, y, map[len]);
 
-    len -= lcd.cellhgt;
-  }
-  
+      len -= lcd.cellhgt;
+   }
+
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
-void HD44780_hbar(int x, int y, int len) 
+void
+HD44780_hbar (int x, int y, int len)
 {
-  char map[6] = { 32, 1, 2, 3, 4, 255  };
+   char map[6] = { 32, 1, 2, 3, 4, 255 };
 
-  for (; x<=lcd.wid && len>0; x++) {
-    if (len >= lcd.cellwid)
-      drv_base_chr(x,y,255);
-    else
-      drv_base_chr(x, y, map[len]);
+   for (; x <= lcd.wid && len > 0; x++) {
+      if (len >= lcd.cellwid)
+	 drv_base_chr (x, y, 255);
+      else
+	 drv_base_chr (x, y, map[len]);
 
-    len -= lcd.cellwid;
+      len -= lcd.cellwid;
 
-  }
+   }
 }
 
 
 /////////////////////////////////////////////////////////////////
 // Sets up for big numbers.
 //
-void HD44780_init_num() 
+void
+HD44780_init_num ()
 {
-  char out[3];
-  sprintf(out, "%cn", 254);
-  //write(fd, out, 2);
+   char out[3];
+   sprintf (out, "%cn", 254);
+   //write(fd, out, 2);
 }
 
 
 /////////////////////////////////////////////////////////////////
 // Writes a big number.
 //
-void HD44780_num(int x, int num) 
+void
+HD44780_num (int x, int num)
 {
-  char out[5];
-  sprintf(out, "%c#%c%c", 254, x, num);
-  //write(fd, out, 4);
+   char out[5];
+   sprintf (out, "%c#%c%c", 254, x, num);
+   //write(fd, out, 4);
 }
 
 
@@ -678,69 +634,71 @@ void HD44780_num(int x, int num)
 //
 // The input is just an array of characters...
 //
-void HD44780_set_char(int n, char *dat)
+void
+HD44780_set_char (int n, char *dat)
 {
-  int row, col;
-  int letter;
+   int row, col;
+   int letter;
 
-  if (n < 0 || n > 7) return;
-  if (!dat) return;
+   if (n < 0 || n > 7)
+      return;
+   if (!dat)
+      return;
 
-  HD44780_senddata(0, RS_INSTR, SETCHAR | n*8);
+   HD44780_senddata (0, RS_INSTR, SETCHAR | n * 8);
 
-  for(row=0; row < lcd.cellhgt; row++) 
-  {
-    letter = 0;
-    for(col=0; col < lcd.cellwid; col++) 
-    {
-      letter <<= 1;
-      letter |= (dat[(row * lcd.cellwid) + col] > 0);
-    }
-    HD44780_senddata(0, RS_DATA, letter);
-  }
+   for (row = 0; row < lcd.cellhgt; row++) {
+      letter = 0;
+      for (col = 0; col < lcd.cellwid; col++) {
+	 letter <<= 1;
+	 letter |= (dat[(row * lcd.cellwid) + col] > 0);
+      }
+      HD44780_senddata (0, RS_DATA, letter);
+   }
 }
 
 
-void HD44780_icon(int which, char dest)
+void
+HD44780_icon (int which, char dest)
 {
-  char icons[3][5*8] = {
-    {
-      1,1,1,1,1,  // Empty Heart
-      1,0,1,0,1,
-      0,0,0,0,0,
-      0,0,0,0,0,
-      0,0,0,0,0,
-      1,0,0,0,1,
-      1,1,0,1,1,
-      1,1,1,1,1,
-    },   
+   char icons[3][5 * 8] = {
+      {
+       1, 1, 1, 1, 1,		// Empty Heart
+       1, 0, 1, 0, 1,
+       0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0,
+       1, 0, 0, 0, 1,
+       1, 1, 0, 1, 1,
+       1, 1, 1, 1, 1,
+       },
 
-    {
-      1,1,1,1,1,  // Filled Heart
-      1,0,1,0,1,
-      0,1,0,1,0,
-      0,1,1,1,0,
-      0,1,1,1,0,
-      1,0,1,0,1,
-      1,1,0,1,1,
-      1,1,1,1,1,
-    },
-   
-    {
-      0,0,0,0,0,  // Ellipsis
-      0,0,0,0,0,
-      0,0,0,0,0,
-      0,0,0,0,0,
-      0,0,0,0,0,
-      0,0,0,0,0,
-      0,0,0,0,0,
-      1,0,1,0,1,
-    },
-   
-  };
+      {
+       1, 1, 1, 1, 1,		// Filled Heart
+       1, 0, 1, 0, 1,
+       0, 1, 0, 1, 0,
+       0, 1, 1, 1, 0,
+       0, 1, 1, 1, 0,
+       1, 0, 1, 0, 1,
+       1, 1, 0, 1, 1,
+       1, 1, 1, 1, 1,
+       },
 
-   
-  HD44780_set_char(dest, &icons[which][0]);
+      {
+       0, 0, 0, 0, 0,		// Ellipsis
+       0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0,
+       0, 0, 0, 0, 0,
+       1, 0, 1, 0, 1,
+       },
+
+   };
+
+
+   HD44780_set_char (dest, &icons[which][0]);
 }
 
 
@@ -749,82 +707,71 @@ void HD44780_icon(int which, char dest)
 //
 // Input is a character array, sized lcd.wid*lcd.hgt
 //
-void HD44780_draw_frame(char *dat)
+void
+HD44780_draw_frame (char *dat)
 {
-  int x,y;
+   int x, y;
 
-  if (!dat) return;
+   if (!dat)
+      return;
 
-  for (y=0; y<lcd.hgt; y++) {
-    HD44780_position(0,y);
-    //printf("\n%d :",y);
-    for (x=0 ; x<lcd.wid ; x++) {
-      HD44780_senddata(spanList[y],RS_DATA,dat[(y*lcd.wid)+x]);
-    }
-  }
-	
+   for (y = 0; y < lcd.hgt; y++) {
+      HD44780_position (0, y);
+      //printf("\n%d :",y);
+      for (x = 0; x < lcd.wid; x++) {
+	 HD44780_senddata (spanList[y], RS_DATA, dat[(y * lcd.wid) + x]);
+      }
+   }
+
 }
 
 // Parse the span list
-// 	spanListArray	- array to store vertical spans
-//	spLsize		- size of spanListArray
-//	dispOffsets	- array to store display offsets
-//	dOffsize	- size of dispOffsets
+//      spanListArray   - array to store vertical spans
+//      spLsize         - size of spanListArray
+//      dispOffsets     - array to store display offsets
+//      dOffsize        - size of dispOffsets
 //      dispSizeArray   - array of display vertical sizes (= spanlist)
-//	spanlist	- null terminated input span list in comma delimited 
-//			  format. All span elements [1-9] e.g. "1,4,2"
-//	returns number of span elements, -1 on parse error
+//      spanlist        - null terminated input span list in comma delimited 
+//                        format. All span elements [1-9] e.g. "1,4,2"
+//      returns number of span elements, -1 on parse error
 
 int
-parse_span_list(int *spanListArray[], int *spLsize, 
-		int *dispOffsets[], int *dOffsize,
-		int *dispSizeArray[], char *spanlist)
+parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], char *spanlist)
 {
-  int j = 0, retVal = 0;
+   int j = 0, retVal = 0;
 
-  *spLsize = 0;
-  *dOffsize = 0;
+   *spLsize = 0;
+   *dOffsize = 0;
 
-  while (j < strlen(spanlist))
-  {
-    if (spanlist[j] >= '1' && spanlist[j] <= '9')
-    {
-      int spansize = spanlist[j] - '0';
+   while (j < strlen (spanlist)) {
+      if (spanlist[j] >= '1' && spanlist[j] <= '9') {
+	 int spansize = spanlist[j] - '0';
 
-      // add spansize lines to the span list, note the offset to
-      // the previous display and the size of the display
-      if ((*spanListArray = (int *) realloc(*spanListArray, 
-					    sizeof(int) * (*spLsize + spansize)))
-	  && (*dispOffsets = (int *) realloc(*dispOffsets,
-					     sizeof(int) * (*dOffsize + 1)))
-	  && (*dispSizeArray = (int *) realloc(*dispSizeArray,
-					       sizeof(int) * (*dOffsize + 1))))
-      {
-	int k;
-	for (k = 0; k < spansize; ++k)
-	  (*spanListArray)[*spLsize + k] = *dOffsize + 1;
+	 // add spansize lines to the span list, note the offset to
+	 // the previous display and the size of the display
+	 if ((*spanListArray = (int *) realloc (*spanListArray, sizeof (int) * (*spLsize + spansize)))
+	     && (*dispOffsets = (int *) realloc (*dispOffsets, sizeof (int) * (*dOffsize + 1)))
+	     && (*dispSizeArray = (int *) realloc (*dispSizeArray, sizeof (int) * (*dOffsize + 1)))) {
+	    int k;
+	    for (k = 0; k < spansize; ++k)
+	       (*spanListArray)[*spLsize + k] = *dOffsize + 1;
 
-	(*dispOffsets)[*dOffsize] = *spLsize;
-	(*dispSizeArray)[*dOffsize] = spansize;
-	*spLsize += spansize;
-	++(*dOffsize);
-	retVal = *dOffsize;
+	    (*dispOffsets)[*dOffsize] = *spLsize;
+	    (*dispSizeArray)[*dOffsize] = spansize;
+	    *spLsize += spansize;
+	    ++(*dOffsize);
+	    retVal = *dOffsize;
 
-	// find the next number (\0 is also outside this range)
-	for ( ++j; spanlist[j] < '1' || spanlist[j] > '9'; ++j)
-	  ;
+	    // find the next number (\0 is also outside this range)
+	    for (++j; spanlist[j] < '1' || spanlist[j] > '9'; ++j);
+	 } else {
+	    fprintf (stderr, "Error reallocing for span list\n");
+	    retVal - 1;
+	 }
+      } else {
+	 fprintf (stderr, "Error reading spansize\n");
+	 retVal = -1;
       }
-      else
-      {
-	fprintf(stderr, "Error reallocing for span list\n");
-	retVal -1;
-      }
-    }
-    else
-    {
-      fprintf(stderr, "Error reading spansize\n");
-      retVal = -1;
-    }
-  }	
-  return retVal;
+   }
+   return retVal;
 }

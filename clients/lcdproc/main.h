@@ -3,8 +3,8 @@
 
 extern int Quit;
 extern int sock;
-extern char * version;
-extern char * build_date;
+extern char *version;
+extern char *build_date;
 
 extern int lcd_wid;
 extern int lcd_hgt;
@@ -13,12 +13,12 @@ extern int lcd_cellhgt;
 
 
 typedef struct mode {
-      char which;      // Which screen is it?
-      int on_time;     // How often to update while visible?
-      int off_time;    // How often to get stats while not visible?
-      int show_invisible;  // Send stats while not visible?
-      int timer;       // Time since last update
-      int visible;     // Can we be seen right now?
+   char which;			// Which screen is it?
+   int on_time;			// How often to update while visible?
+   int off_time;		// How often to get stats while not visible?
+   int show_invisible;		// Send stats while not visible?
+   int timer;			// Time since last update
+   int visible;			// Can we be seen right now?
 } mode;
 
 

@@ -3,18 +3,17 @@
 
 #include "screen.h"
 
-typedef struct widget
-{
-      char *id;
-      int type;
-      // some sort of data here...
-      int x, y;     // Position
-      int wid, hgt; // Size
-      int left, top, right, bottom; // bounding rectangle
-      int length;   // size or direction
-      int speed;    // For scroller...
-      char *text;   // text or binary data
-      LL *kids;     // Frames can contain more widgets...
+typedef struct widget {
+   char *id;
+   int type;
+   // some sort of data here...
+   int x, y;			// Position
+   int wid, hgt;		// Size
+   int left, top, right, bottom;	// bounding rectangle
+   int length;			// size or direction
+   int speed;			// For scroller...
+   char *text;			// text or binary data
+   LL *kids;			// Frames can contain more widgets...
 } widget;
 
 // These correspond to the index into the "types" array...
@@ -33,13 +32,13 @@ typedef struct widget
 extern char *types[];
 
 
-widget * widget_create();
-int widget_destroy(widget *w);
+widget *widget_create ();
+int widget_destroy (widget * w);
 
-widget * widget_find(screen *s, char *id);
+widget *widget_find (screen * s, char *id);
 
-int widget_add(screen *s, char *id, char *type, char *in, int sock);
-int widget_remove(screen *s, char *id, int sock);
+int widget_add (screen * s, char *id, char *type, char *in, int sock);
+int widget_remove (screen * s, char *id, int sock);
 
 
 #endif

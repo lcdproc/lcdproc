@@ -19,71 +19,69 @@
 
 
 
-int client_data_init(client_data *d)
+int
+client_data_init (client_data * d)
 {
-   if(!d) return -1;
+   if (!d)
+      return -1;
 
    d->ack = 0;
    d->name = NULL;
 
-   d->screenlist = LL_new();
-   if(!d->screenlist)
-   {
-      fprintf(stderr, "client_data_init: Error allocating screenlist\n");
+   d->screenlist = LL_new ();
+   if (!d->screenlist) {
+      fprintf (stderr, "client_data_init: Error allocating screenlist\n");
       return -1;
    }
    /* TODO:  this section...  (client menus)
-   d->menulist = LL_new();
-   if(!d->menulist)
-   {
+      d->menulist = LL_new();
+      if(!d->menulist)
+      {
       fprintf(stderr, "client_data_init: Error allocating menulist\n");
       return -1;
-   }
-   */
+      }
+    */
    return 0;
 }
 
-int client_data_destroy(client_data *d)
+int
+client_data_destroy (client_data * d)
 {
    screen *s;
 
-   debug("client_data_destroy\n");
-   
-   if(!d) return -1;
+   debug ("client_data_destroy\n");
+
+   if (!d)
+      return -1;
 
    d->ack = 0;
 
    // Clean up the name...
-   if(d->name)
-      free(d->name);
+   if (d->name)
+      free (d->name);
 
    // Clean up the screenlist...
-   debug("client_data_destroy: Cleaning screenlist\n");
-   LL_Rewind(d->screenlist);
+   debug ("client_data_destroy: Cleaning screenlist\n");
+   LL_Rewind (d->screenlist);
    do {
-      s = (screen *)LL_Get(d->screenlist);
-      if(s)
-      {
-	 debug("client_data_destroy: removing screen %s\n", s->id);
+      s = (screen *) LL_Get (d->screenlist);
+      if (s) {
+	 debug ("client_data_destroy: removing screen %s\n", s->id);
 
 	 // FIXME? This shouldn't be handled here...
 	 // Now, remove it from the screenlist...
-	 if(screenlist_remove_all(s) < 0)
-	 {
+	 if (screenlist_remove_all (s) < 0) {
 	    // Not a serious error..
-	    fprintf(stderr, "client_data_destroy:  Error dequeueing screen\n");
+	    fprintf (stderr, "client_data_destroy:  Error dequeueing screen\n");
 	    return 0;
 	 }
-
 	 // Free its memory...
-	 screen_destroy(s);
+	 screen_destroy (s);
       }
-   } while(LL_Next(d->screenlist) == 0);
-   LL_Destroy(d->screenlist);
-   
+   } while (LL_Next (d->screenlist) == 0);
+   LL_Destroy (d->screenlist);
+
    // TODO:  clean up the rest of the data...
 
    return 0;
 }
-
-

@@ -18,36 +18,30 @@
 // add new connection type header files here
 
 enum connectionType { HD_4bit, HD_8bit, HD_serialLpt, HD_winamp,
-		      // add new connection types here
+   // add new connection types here
 
-		      HD_unknown };
+   HD_unknown
+};
 
-static struct ConnectionMapping
-{
-  enum connectionType type;
-  char *connectionTypeStr;
-  int (*init_fn)(HD44780_functions *hd44780_functions,
-		 lcd_logical_driver *driver, 
-		 char *args, 
-		 unsigned int port);
-  const char *helpMsg;
+static struct ConnectionMapping {
+   enum connectionType type;
+   char *connectionTypeStr;
+   int (*init_fn) (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port);
+   const char *helpMsg;
 } connectionMapping[] = {
-    // connectionType enumerator
-			// string to identify connection on command line
-					// your initialisation function
-    // help string for your particular connection
-  { HD_4bit,		"4bit",		hd_init_4bit, 
-    "\t-e\t--extended\tEnable three or more displays\n" },
-  { HD_8bit,		"8bit",		hd_init_ext8bit, 
-    "\tnone\n" },
-  { HD_serialLpt,	"serialLpt",	hd_init_serialLpt, 
-    "\tnone\n" },
-  { HD_winamp,		"winamp",	hd_init_winamp, 
-    "\t-e\t--extended\tEnable three or more displays\n" },
-  // add new connection types and their string specifier here
-
-  // default, end of structure element (do not delete)
-  { HD_unknown,		"",		NULL,	"" }
+   // connectionType enumerator
+   // string to identify connection on command line
+   // your initialisation function
+   // help string for your particular connection
+   {
+   HD_4bit, "4bit", hd_init_4bit, "\t-e\t--extended\tEnable three or more displays\n"}, {
+   HD_8bit, "8bit", hd_init_ext8bit, "\tnone\n"}, {
+   HD_serialLpt, "serialLpt", hd_init_serialLpt, "\tnone\n"}, {
+   HD_winamp, "winamp", hd_init_winamp, "\t-e\t--extended\tEnable three or more displays\n"},
+       // add new connection types and their string specifier here
+       // default, end of structure element (do not delete)
+   {
+   HD_unknown, "", NULL, ""}
 };
 
 #endif

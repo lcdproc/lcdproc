@@ -73,8 +73,8 @@
 
 /* Define the package version */
 #undef VERSION
-
 
+
 /* Leave that blank line there!!  Autoheader needs it.
    If you're adding to this file, keep in mind:
    The entries are in sort -df order: alphabetical, case insensitive,

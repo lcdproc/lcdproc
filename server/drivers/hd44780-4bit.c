@@ -49,9 +49,7 @@
 // implemented separately for each HW design. This is typically just
 // HD44780_senddata
 
-void lcdstat_HD44780_senddata(unsigned char displayID, 
-			      unsigned char flags, 
-			      unsigned char ch);
+void lcdstat_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
 
 
 #define RS 	0x10
@@ -61,136 +59,131 @@ void lcdstat_HD44780_senddata(unsigned char displayID,
 #define EN3	0x20
 
 static unsigned char EnMask[] = { EN1, EN2, EN3, STRB, LF, INIT, SEL };
-static int EnMaskSize = sizeof(EnMask) / sizeof(unsigned char);
+static int EnMaskSize = sizeof (EnMask) / sizeof (unsigned char);
 
 static unsigned int lptPort;
 static int extIF = 0;		// non-zero if extended interface
 
 // initialisation function
-int hd_init_4bit(HD44780_functions *hd44780_functions, 
-		 lcd_logical_driver *driver, 
-		 char *args, 
-		 unsigned int port)
+int
+hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)
 {
-  // TODO: remove magic numbers below
-  char *argv[64];
-  int argc;
-  int i;
-  int displayID = EN1 | EN2;
+   // TODO: remove magic numbers below
+   char *argv[64];
+   int argc;
+   int i;
+   int displayID = EN1 | EN2;
 
-  lptPort = port;
+   lptPort = port;
 
-  hd44780_functions->senddata   = lcdstat_HD44780_senddata;
+   hd44780_functions->senddata = lcdstat_HD44780_senddata;
 
-  // parse command-line arguments
-  argc = get_args(argv, args, 64);
+   // parse command-line arguments
+   argc = get_args (argv, args, 64);
 
-  for (i = 0; i < argc; ++i)
-  {
-    if (strcmp(argv[i], "-e") == 0 ||
-	strcmp(argv[i], "--extended") == 0)
-    {
-      extIF = 1;
-      if ((ioperm(port + 2, 1, 255)) == -1) {
-	fprintf(stderr, "HD44780_init: failed (%s)\n", strerror(errno)); 
-	return -1;
+   for (i = 0; i < argc; ++i) {
+      if (strcmp (argv[i], "-e") == 0 || strcmp (argv[i], "--extended") == 0) {
+	 extIF = 1;
+	 if ((ioperm (port + 2, 1, 255)) == -1) {
+	    fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
+	    return -1;
+	 }
       }
-    }
-  }
-      
-  // powerup the lcd now
-  if (extIF) 
-  {
-    displayID |= EN3;
-    port_out(lptPort + 2, 0 ^ OUTMASK);
-  }
+   }
 
-  port_out(lptPort, displayID | 0x03);
-  if (extIF) port_out(lptPort + 2, 
-		      (EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6]) ^ OUTMASK);
-  hd44780_functions->uPause(1);
-  port_out(lptPort, 0x03);
-  if (extIF) port_out(lptPort + 2, 0 ^ OUTMASK);
-  hd44780_functions->uPause(4100);
+   // powerup the lcd now
+   if (extIF) {
+      displayID |= EN3;
+      port_out (lptPort + 2, 0 ^ OUTMASK);
+   }
 
-  port_out(lptPort, displayID | 0x03);	
-  if (extIF) port_out(lptPort + 2, 
-		      (EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6]) ^ OUTMASK);
-  hd44780_functions->uPause(1);
-  port_out(lptPort, 0x03);
-  if (extIF) port_out(lptPort + 2, 0 ^ OUTMASK);
-  hd44780_functions->uPause(100);
+   port_out (lptPort, displayID | 0x03);
+   if (extIF)
+      port_out (lptPort + 2, (EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6]) ^ OUTMASK);
+   hd44780_functions->uPause (1);
+   port_out (lptPort, 0x03);
+   if (extIF)
+      port_out (lptPort + 2, 0 ^ OUTMASK);
+   hd44780_functions->uPause (4100);
 
-  port_out(lptPort, displayID | 0x03);
-  if (extIF) port_out(lptPort + 2, 
-		      (EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6]) ^ OUTMASK);
-  hd44780_functions->uPause(1);
-  port_out(lptPort, 0x03);
-  if (extIF) port_out(lptPort + 2, 0 ^ OUTMASK);
-  hd44780_functions->uPause(40);
+   port_out (lptPort, displayID | 0x03);
+   if (extIF)
+      port_out (lptPort + 2, (EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6]) ^ OUTMASK);
+   hd44780_functions->uPause (1);
+   port_out (lptPort, 0x03);
+   if (extIF)
+      port_out (lptPort + 2, 0 ^ OUTMASK);
+   hd44780_functions->uPause (100);
 
-  // now in 8-bit mode...  set 4-bit mode
-  port_out(lptPort,displayID | 0x02);
-  if (extIF) port_out(lptPort + 2, 
-		      (EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6]) ^ OUTMASK);
-  hd44780_functions->uPause(1);
-  port_out(lptPort, 0x02);
-  if (extIF) port_out(lptPort + 2, 0 ^ OUTMASK);
-  hd44780_functions->uPause(40);
+   port_out (lptPort, displayID | 0x03);
+   if (extIF)
+      port_out (lptPort + 2, (EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6]) ^ OUTMASK);
+   hd44780_functions->uPause (1);
+   port_out (lptPort, 0x03);
+   if (extIF)
+      port_out (lptPort + 2, 0 ^ OUTMASK);
+   hd44780_functions->uPause (40);
 
-  common_init(IF_4bit);
-  return 0;
+   // now in 8-bit mode...  set 4-bit mode
+   port_out (lptPort, displayID | 0x02);
+   if (extIF)
+      port_out (lptPort + 2, (EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6]) ^ OUTMASK);
+   hd44780_functions->uPause (1);
+   port_out (lptPort, 0x02);
+   if (extIF)
+      port_out (lptPort + 2, 0 ^ OUTMASK);
+   hd44780_functions->uPause (40);
+
+   common_init (IF_4bit);
+   return 0;
 }
 
 
 // lcdstat_HD44780_senddata
-void lcdstat_HD44780_senddata(unsigned char displayID, 
-			      unsigned char iflags, 
-			      unsigned char ch)
+void
+lcdstat_HD44780_senddata (unsigned char displayID, unsigned char iflags, unsigned char ch)
 {
-  unsigned char dispID = 0, flags = 0;
-  unsigned char h = (ch >> 4) & 0x0f;	// high and low nibbles
-  unsigned char l = ch & 0x0f;
+   unsigned char dispID = 0, flags = 0;
+   unsigned char h = (ch >> 4) & 0x0f;	// high and low nibbles
+   unsigned char l = ch & 0x0f;
 
-  if (iflags == RS_INSTR)
-    flags = 0;
-  else //if (iflags == RS_DATA)
-    flags = RS;
+   if (iflags == RS_INSTR)
+      flags = 0;
+   else				//if (iflags == RS_DATA)
+      flags = RS;
 
-  if (displayID <= 3)
-  {
-    if (displayID == 0)
-      dispID = EnMask[0] | EnMask[1] | EnMask[2];
-    else
-      dispID = EnMask[displayID - 1];
+   if (displayID <= 3) {
+      if (displayID == 0)
+	 dispID = EnMask[0] | EnMask[1] | EnMask[2];
+      else
+	 dispID = EnMask[displayID - 1];
 
-    port_out(lptPort, flags | h);
-    hd44780_functions->uPause(2);
-    port_out(lptPort, dispID | flags | h);
-    hd44780_functions->uPause(4);
-    port_out(lptPort, flags | h);
+      port_out (lptPort, flags | h);
+      hd44780_functions->uPause (2);
+      port_out (lptPort, dispID | flags | h);
+      hd44780_functions->uPause (4);
+      port_out (lptPort, flags | h);
 
-    port_out(lptPort, dispID | flags | l);
-    hd44780_functions->uPause(4);
-    port_out(lptPort, flags | l);
-  }
+      port_out (lptPort, dispID | flags | l);
+      hd44780_functions->uPause (4);
+      port_out (lptPort, flags | l);
+   }
 
-  if (extIF && (displayID == 0 || displayID >= 4))
-  {
-    if (displayID == 0) 
-      dispID = EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6];
-    else
-      dispID = EnMask[(displayID - 1) % EnMaskSize];
+   if (extIF && (displayID == 0 || displayID >= 4)) {
+      if (displayID == 0)
+	 dispID = EnMask[3] | EnMask[4] | EnMask[5] | EnMask[6];
+      else
+	 dispID = EnMask[(displayID - 1) % EnMaskSize];
 
-    port_out(lptPort, flags | h);
-    hd44780_functions->uPause(2);
-    port_out(lptPort + 2, dispID ^ OUTMASK);
-    hd44780_functions->uPause(4);
-    port_out(lptPort + 2, 0 ^ OUTMASK);
+      port_out (lptPort, flags | h);
+      hd44780_functions->uPause (2);
+      port_out (lptPort + 2, dispID ^ OUTMASK);
+      hd44780_functions->uPause (4);
+      port_out (lptPort + 2, 0 ^ OUTMASK);
 
-    port_out(lptPort, flags | l);
-    port_out(lptPort + 2, dispID ^ OUTMASK);
-    hd44780_functions->uPause(4);
-    port_out(lptPort + 2, 0 ^ OUTMASK);
-  }
+      port_out (lptPort, flags | l);
+      port_out (lptPort + 2, dispID ^ OUTMASK);
+      hd44780_functions->uPause (4);
+      port_out (lptPort + 2, 0 ^ OUTMASK);
+   }
 }

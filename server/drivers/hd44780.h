@@ -17,7 +17,7 @@
 
 #include "port.h"
 
-int HD44780_init(struct lcd_logical_driver *driver, char *args);
+int HD44780_init (struct lcd_logical_driver *driver, char *args);
 /* The following methods can all be hidden. They are used through function ptrs
 void HD44780_close();
 void HD44780_flush();

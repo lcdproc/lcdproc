@@ -23,7 +23,7 @@ extern int backlight_state;
 extern int backlight_brightness;
 extern int backlight_off_brightness;
 extern int output_state;
-int draw_screen(screen *s, int timer);
+int draw_screen (screen * s, int timer);
 
 
 #endif

@@ -16,16 +16,16 @@ extern int PAD;
 // Character for the "..." symbol.
 extern int ELLIPSIS;
 
-int mode_init(mode *sequence);
-void mode_close();
+int mode_init (mode * sequence);
+void mode_close ();
 
-int update_screen(mode *m, int display);
+int update_screen (mode * m, int display);
 
-int credit_screen(int rep, int display);
+int credit_screen (int rep, int display);
 
 
 // These are for the modescreens' use only..
-void reread(int f, char *errmsg);
-int getentry(const char *tag, const char *bufptr);
+void reread (int f, char *errmsg);
+int getentry (const char *tag, const char *bufptr);
 
 #endif
