@@ -9,7 +9,7 @@ AC_ARG_ENABLE(drivers,
   	drivers=[mtxorb,cfontz,curses,text])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,hd44780,joy,irman]
+	drivers=[mtxorb,cfontz,curses,text,hd44780,joy,irman,lircin]
   	AC_MSG_RESULT(all)
 else
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -54,6 +54,12 @@ else
 			DRIVERS="$DRIVERS irmanin.o"
 			AC_DEFINE(IRMANIN_DRV)
 			;;
+		lircin)
+			AC_CHECK_LIB(lirc_client, main, LIBLIRC_CLIENT="-llirc_client",
+				AC_MSG_ERROR([The lirc driver needs the lirc client library]))
+			DRIVERS="$DRIVERS lircin.o"
+			AC_DEFINE(LIRCIN_DRV)
+			;;
 	*) 	
 			AC_MSG_ERROR([Uknown driver $driver])
 			;;
@@ -62,6 +68,7 @@ else
 fi
 AC_SUBST(LIBCURSES)
 AC_SUBST(LIBIRMAN)
+AC_SUBST(LIBLIRC_CLIENT)
 AC_SUBST(DRIVERS)
 ])
 

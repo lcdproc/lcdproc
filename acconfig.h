@@ -15,6 +15,8 @@
    Leave the following blank line there!!  Autoheader needs it.  */
 
 
+#undef LIRCIN_DRV
+
 #undef CFONTZ_DRV
 
 #undef CURSES_DRV

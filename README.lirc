@@ -1,0 +1,70 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+*******************************************************
+LCDd lirc driver README - Harald Klein, linux@chello.at
+*******************************************************
+
+This is the first release of lirc driver for LCDd.
+To use it simply enable it with configure
+
+eg. (Matrix Orbital Display and lirc):
+$ ./configure --enable-drivers=mtxorb,lircin
+
+This driver parses the .lircrc file. remote and mode are
+also supported. You can define a LCDd key with 
+
+- --- snip .lircrc ---
+begin
+        prog = lcdd
+        button = 2
+        config = A
+end
+
+begin
+        prog = lcdd
+        button = 4
+        config = B
+end
+
+begin
+        prog = lcdd
+        button = 6
+        config = C
+end
+
+begin
+        prog = lcdd
+        button = 8
+        config = D
+end
+- --- snip ---
+
+
+Any suggestions? Feel free to write a mail...
+
+Have fun!
+
+PS.: 
+You don't have an infrared receiver? 
+
+1.) visit the Lirc homepage and get lirc. http://fsinfo.cs.uni-sb.de/~columbus/lirc/
+2.) decide for device (irman, animax, home brew receiver, universal remote ...)
+    If you want to build the serial receiver i suggest to ask Infineon for test samples 
+    (sfh5110-36, eg, be sure to get correct freq, i use 36 khz, fits for all my remotes)
+    and USE THE 7805 TO REGULATE THE VOLTAGE !! its cheap, and the circuits with transistors
+    mostly wont work.
+3.) Install lirc 
+
+PPS.: Yes, this also works with IRMAN.
+
+Greets to all open source developers out there!!!
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.1 (GNU/Linux)
+Comment: For info see http://www.gnupg.org
+
+iD8DBQE4gmBNQ8ap3H8sEzkRAqaYAJ93s0joSyPZVeeGKkVn+FqGte5XDgCaAjpA
+drqseag4vCi3Omg5NND7+dw=
+=DJkG
+-----END PGP SIGNATURE-----
