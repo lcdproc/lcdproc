@@ -83,8 +83,8 @@ static inline int port_deny_full (unsigned short int port) {
 }
 
 /*  ------------------------------------------------------------- */
-/*  Use i386_get_ioperm, i386_set_ioperm, inb and outb from <machine/pio.h> (NetBSD) */
-#elif defined HAVE_LIBI386 && defined HAVE_MACHINE_PIO_H && defined HAVE_MACHINE_SYSARCH_H
+/*  Use i386_get_ioperm, i386_set_ioperm, inb and outb from <machine/pio.h> (NetBSD&OpenBSD) */
+#elif defined HAVE_I386_IOPERM_NETBSD && defined HAVE_MACHINE_PIO_H && defined HAVE_MACHINE_SYSARCH_H
 #include <sys/types.h>
 #include <machine/pio.h>
 #include <machine/sysarch.h>
@@ -170,7 +170,45 @@ static inline int port_deny_full (unsigned short int port) {
 	return 0;
 }
 
-/* #endif // defined HAVE_LIBI386 && defined HAVE_SYS_TYPES_H && defined HAVE_MACHINE_PIO_H */
+/*#endif // defined HAVE_I386_IOPERM_NETBSD && defined HAVE_MACHINE_PIO_H && defined HAVE_MACHINE_SYSARCH_H
+-------------------------------------------------------------
+Use i386_get_ioperm, i386_set_ioperm and ASM inb and outb from <machine/sysarch.h> (FreeBSD) */
+#elif defined HAVE_I386_IOPERM_FREEBSD && defined HAVE_MACHINE_SYSARCH_H
+#include <machine/sysarch.h>  
+        
+/* Read a byte from port */
+static inline int port_in (unsigned short int port) {
+        unsigned char value;
+        __asm__ volatile ("inb %1,%0":"=a" (value)
+                        :"d" ((unsigned short) port));
+        return value;
+}
+        
+/* Write a byte 'val' to port */
+static inline void port_out (unsigned short int port, unsigned char val) {
+        __asm__ volatile ("outb %0,%1\n"::"a" (val), "d" (port)
+                 );
+}
+        
+/* Get access to a specific port */
+static inline int port_access (unsigned short int port) {
+        return i386_set_ioperm(port, 1, 1);
+}
+
+/* Get access 3 to ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
+static inline int port_access_full (unsigned short int port) {
+        return i386_set_ioperm(port, 3, 1);
+}
+
+/* Close access to a specific port */
+static inline int port_deny (unsigned short int port) {
+        return i386_set_ioperm(port, 1, 0);
+}
+
+/* Close access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
+static inline int port_deny_full (unsigned short int port) {
+        return i386_set_ioperm(port, 3, 0);
+}
 
 /*  ------------------------------------------------------------- */
 /*  Last chance! Use /dev/io and i386 ASM code (BSD4.3 ?) */
