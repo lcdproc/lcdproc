@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(clients/lcdproc/batt.c)
-AM_INIT_AUTOMAKE(lcdproc, 0.4.2)
+AM_INIT_AUTOMAKE(lcdproc, dev)
 AM_CONFIG_HEADER(config.h)
 
 AC_CANONICAL_HOST
