@@ -14,8 +14,7 @@ and friends installed.
 
 Run:
 
-$ chmod +x ./autogen.sh
-$ ./autogen.sh
+$ sh ./autogen.sh
 
 This produces the configure script and supporting files, and also
 runs configure with defaults. You want to run configure again with
