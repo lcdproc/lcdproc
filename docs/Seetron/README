@@ -1,0 +1,56 @@
+This directory contains the custom character font files (CHARS*.BMP) and
+a splash logo which can be displayed during powerup (vdr-logo-small.bmp).
+Feel free to modify these with your favourite image editor (XV, The GIMP,
+etc.) but make sure the fonts are withing the Seetron specification.
+
+You can compile sgxbmp as follows
+
+cc -o sgxbmp sgxbpm.c -lm
+
+usage: ./sgxbmp port speed file mode
+where...
+  port is the port device name
+  speed is the port speed
+  file is the filename of bitmap image
+  mode is 0 for normal and 1 for reverse
+
+sgxbmp can be found at http://www.seetron.com/lcd_andex.htm
+
+After uploading the bitmaps to the display you need to store
+them permanently in the display as described on the manual page
+http://www.seetron.com/sgxmnl.htm. The display uses EEPROM pages 0 and
+1 as the default character set so you should just store CHARS1.BMP in
+page 1. CHARS0.BMP is unmodified. This way, you can create whatever
+custom characters you like, and just use them as "normal" characters.
+
+Everything is semi-automatized by the supplied Makefile. Set the correct
+port speed on the display (9600) and the serial port in the Makefile,
+run "make", and you're done.
+
+You may also want to write protect the EEPROM afterwards, and set some
+settings valid on startup (backlight, splash screen, etc.). See the
+ESC-W command in the Seetron docs. Basically, you can send all these
+ESC commands to the display using
+
+echo -en "\033..." > <port>
+
+where \033 is the octal representation of the ESC character and <port> is
+the serial device where the display is connected. So - setting backlight
+on, display EEPROM page #2 as splash screen and write protect the EEPROM
+would be
+
+echo -en "\033W7" > <port>
+
+Please mind you need to set the display to the SET position before
+(switch on the back).
+
+The character maps are derived from Seetron's original character maps
+found on their web page (www.seetron.com). The additional characters
+(German umlauts, heartbeat, ellipsis, horizontal and vertical bars)
+were made with The GIMP. You can see the entire set using xv or something. 
+
+
+Harald Milz
+Oct 2002
+
+
