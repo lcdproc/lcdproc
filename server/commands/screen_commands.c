@@ -336,7 +336,7 @@ screen_set_func (Client * c, int argc, char **argv)
 
 				/* set the heartbeat type...*/
 				if (0 == strcmp (argv[i], "off"))
-					s->heartbeat = CURSOR_OFF;
+					s->cursor = CURSOR_OFF;
 				if (0 == strcmp (argv[i], "on"))
 					s->cursor = CURSOR_DEFAULT_ON;
 				if (0 == strcmp (argv[i], "under"))
