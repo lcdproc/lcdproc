@@ -51,7 +51,7 @@ sock_create_inet_socket (char * addr, unsigned int port)
 	sock = socket (PF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
 		perror ("Error creating socket");
-		syslog(LOG_ALERT, "could not create socket", port);
+		syslog(LOG_ALERT, "could not create socket");
 		return -1;
 	}
 
