@@ -5,7 +5,9 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/errno.h>
+
 #include "lcd.h"
+#include "render.h"
 
 // ==================================================
 // LCD library of useful functions for drivers
@@ -98,5 +100,33 @@ insert_chr_framebuf (struct lcd_logical_driver *driver, int x, int y, char c) {
 	if (y < 0) y = 0;
 
 	driver->framebuf[(y * driver->wid) + x] = c;
+}
+
+void
+output_heartbeat (struct lcd_logical_driver *driver, int type) {
+	static int timer = 0;
+	int whichIcon;
+	static int saved_type = HEARTBEAT_ON;
+
+	if (type)
+		saved_type = type;
+
+	if (type == HEARTBEAT_ON) {
+		// Set this to pulsate like a real heart beat...
+		whichIcon = (! ((timer + 4) & 5));
+
+		// This defines a custom character EVERY time...
+		// not efficient... is this necessary?
+		driver->icon (whichIcon, 0);
+
+		// Put character on screen...
+		driver->chr (driver->wid, 1, 0);
+
+		// change display...
+		driver->flush ();
+	}
+
+	timer++;
+	timer &= 0x0f;
 }
 
