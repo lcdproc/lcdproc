@@ -29,6 +29,14 @@ enum ifWidth { IF_4bit, IF_8bit };
 #define KEYPAD_MAXX 5
 #define KEYPAD_MAXY 11
 
+/* Constants for userdefchar_mode */
+#define NUM_UDCs 8 /* number of characters */
+#define UDCMODE_STANDARD 0 /* only char 0 is used for heartbeat */
+#define UDCMODE_VBAR 1
+#define UDCMODE_HBAR 2
+#define UDCMODE_BIGNUM 3
+#define UDCMODE_BIGCHAR 4
+
 typedef struct ConnectionMapping {
 	char *name;
 	int (*init_fn) (Driver *drvthis);
@@ -47,6 +55,10 @@ typedef struct driver_private_data {
 
 	// For incremental updates store last lcd contents
 	char *lcd_contents;
+
+	// The defineable characters
+	char *udc_buf;
+	char *udc_dirty;
 
 	// Connection type data
 	int connectiontype_index;
@@ -88,6 +100,8 @@ typedef struct driver_private_data {
 	int stuckinputs;
 
 	int backlight_bit;
+
+	int udcmode;
 
 } PrivateData;
 

@@ -72,6 +72,7 @@
 #include "shared/str.h"
 #include "lcd.h"
 #include "hd44780.h"
+#include "report.h"
 
 #include "port.h"
 #include "timing.h"
@@ -140,8 +141,9 @@ HD44780_init (Driver * drvthis, char *args)
 
 	// Clear data struct
 	memset( p, 0, sizeof(*p) );
-	p->cellheight = 8;
+	p->cellheight = 8; /* Do not change this !!! This is a controller property, not a display property !!! */
 	p->cellwidth = 5;
+	p->udcmode = UDCMODE_STANDARD;
 
 
 	//// READ THE CONFIG FILE
@@ -229,7 +231,16 @@ HD44780_init (Driver * drvthis, char *args)
 	if (!p->lcd_contents) {
 		return -1;
 	}
-	memset(p->lcd_contents, ' ', p->width * p->height);
+	memset(p->lcd_contents, 0, p->width * p->height);
+
+	// Allocate and clear the buffer for defineable characters
+	p->udc_buf = (unsigned char *) malloc (NUM_UDCs * p->cellheight);
+	p->udc_dirty = (unsigned char *) malloc (NUM_UDCs);
+	if (!p->udc_buf || !p->udc_dirty) {
+		return -1;
+	}
+	memset(p->udc_buf, 0, NUM_UDCs * p->cellheight);
+	memset(p->udc_dirty, 1, NUM_UDCs); /* all udcs dirty */
 
 	// Backlight ?
 	if ( p->have_backlight ) {
@@ -432,8 +443,12 @@ HD44780_flush (Driver *drvthis)
 	int wid = p->width;
 	char ch;
 	char drawing;
+	int row;
+	int i;
+	int count;
 
 	// Update LCD incrementally by comparing with last contents
+	count = 0;
 	for (y=0; y<p->height; y++) {
 		drawing = 0;
 		for (x=0 ; x<wid; x++) {
@@ -446,12 +461,35 @@ HD44780_flush (Driver *drvthis)
 				p->hd44780_functions->senddata (p, p->spanList[y], RS_DATA, HD44780_charmap[(unsigned char)ch]);
 				p->hd44780_functions->uPause (p, 40);  // Minimum exec time for all commands
 				p->lcd_contents[(y*wid)+x] = ch;
+				count ++;
 			}
 			else {
 				drawing = 0;
 			}
 		}
 	}
+	debug( RPT_DEBUG, "HD44780: flushed %d chars", count );
+	
+	/* Check which defineable chars we need to update */
+	count = 0;
+	for( i = 0; i < NUM_UDCs; i ++ ) {
+		if( p->udc_dirty[i] ) {
+
+			/* Tell the HD44780 we will redefine char number i */
+			p->hd44780_functions->senddata (p, 0, RS_INSTR, SETCHAR | i * 8);
+			p->hd44780_functions->uPause (p, 40);  // Minimum exec time for all commands
+
+			/* Send the subsequent rows */
+			for (row = 0; row < p->cellheight; row++) {
+				p->hd44780_functions->senddata (p, 0, RS_DATA, p->udc_buf[i*p->cellheight+row]);
+				p->hd44780_functions->uPause (p, 40);  /* Minimum exec time for all commands */
+			}
+			/* Mark as not dirty anymore */
+			p->udc_dirty[i] = 0;
+			count ++;
+		}
+	}
+	debug( RPT_DEBUG, "HD44780: flushed %d udc's", count );
 }
 
 /////////////////////////////////////////////////////////////////
@@ -462,6 +500,7 @@ HD44780_clear (Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	memset(p->framebuf, ' ', p->width * p->height);
+	p->udcmode = UDCMODE_STANDARD;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -513,7 +552,7 @@ HD44780_backlight (Driver *drvthis, int on)
 MODULE_EXPORT void
 HD44780_init_vbar (Driver *drvthis)
 {
-	//PrivateData *p = (PrivateData *) drvthis->private_data;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	char a[] = {
 		0, 0, 0, 0, 0,
@@ -586,6 +625,18 @@ HD44780_init_vbar (Driver *drvthis)
 		1, 1, 1, 1, 1,
 	};
 
+	if( p->udcmode == UDCMODE_VBAR ) {
+		/* Work already done */
+		return;
+	}
+
+	if( p->udcmode != UDCMODE_STANDARD ) {
+		/* Not supported (yet) */
+		report( RPT_WARNING, "HD44780_init_vbar: Cannot combine two modes using user defined characters" );
+		return;
+	}
+	p->udcmode = UDCMODE_VBAR;
+
 	HD44780_set_char (drvthis, 1, a);
 	HD44780_set_char (drvthis, 2, b);
 	HD44780_set_char (drvthis, 3, c);
@@ -601,7 +652,7 @@ HD44780_init_vbar (Driver *drvthis)
 MODULE_EXPORT void
 HD44780_init_hbar (Driver *drvthis)
 {
-	//PrivateData *p = (PrivateData *) drvthis->private_data;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	char a[] = {
 		1, 0, 0, 0, 0,
@@ -643,6 +694,18 @@ HD44780_init_hbar (Driver *drvthis)
 		1, 1, 1, 1, 0,
 		1, 1, 1, 1, 0,
 	};
+
+	if( p->udcmode == UDCMODE_HBAR ) {
+		/* Work already done */
+		return;
+	}
+
+	if( p->udcmode != UDCMODE_STANDARD ) {
+		/* Not supported (yet) */
+		report( RPT_WARNING, "HD44780_init_hbar: Cannot combine two modes using user defined characters" );
+		return;
+	}
+	p->udcmode = UDCMODE_HBAR;
 
 	HD44780_set_char (drvthis, 1, a);
 	HD44780_set_char (drvthis, 2, b);
@@ -698,7 +761,6 @@ HD44780_hbar (Driver *drvthis, int x, int y, int len)
 MODULE_EXPORT void
 HD44780_init_num (Driver *drvthis)
 {
-
 }
 
 /////////////////////////////////////////////////////////////////
@@ -707,9 +769,6 @@ HD44780_init_num (Driver *drvthis)
 MODULE_EXPORT void
 HD44780_num (Driver *drvthis, int x, int num)
 {
-	PrivateData *p = (PrivateData *) drvthis->private_data;
-	int offset = p->width * ( p->height / 2 );
-	p->framebuf[x+offset] = num + '0';
 }
 
 /////////////////////////////////////////////////////////////
@@ -719,6 +778,7 @@ MODULE_EXPORT void
 HD44780_heartbeat (Driver *drvthis, int type)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+	
 	static int timer = 0;
 	int whichIcon;
 	static int saved_type = HEARTBEAT_ON;
@@ -764,17 +824,16 @@ HD44780_set_char (Driver *drvthis, int n, char *dat)
 	if (!dat)
 		return;
 
-	p->hd44780_functions->senddata (p, 0, RS_INSTR, SETCHAR | n * 8);
-	p->hd44780_functions->uPause (p, 40);  // Minimum exec time for all commands
-
 	for (row = 0; row < p->cellheight; row++) {
 		letter = 0;
 		for (col = 0; col < p->cellwidth; col++) {
 			letter <<= 1;
 			letter |= (dat[(row * p->cellwidth) + col] > 0);
 		}
-		p->hd44780_functions->senddata (p, 0, RS_DATA, letter);
-		p->hd44780_functions->uPause (p, 40);  // Minimum exec time for all commands
+		if( p->udc_buf[n*p->cellheight+row] != letter ) {
+			p->udc_dirty[n] = 1; /* only mark as dirty if really different */
+		}		
+		p->udc_buf[n*p->cellheight+row] = letter;
 	}
 }
 
