@@ -52,8 +52,8 @@ static int width;
 static int height;
 static int cellwidth;
 static int cellheight;
-static char bidirectLPT;
-static char graphicON;
+static short bidirectLPT;
+static short graphicON;
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -104,9 +104,9 @@ t6963_init (Driver *drvthis, char *args)
 		report (RPT_WARNING, "T6963_init: Port value must be between 0x200 and 0x400. Using default value.\n");
 	}
                 /* ---------------------------- Is ECP mode on ----------------------------------*/
-	bidirectLPT = drvthis->config_get_bool ( drvthis->name, "ECPlpt", 0, 0 );
+	bidirectLPT = drvthis->config_get_bool ( drvthis->name, "ECPlpt", 0, 1 );
                 /* ---------------------------- Use graphic -------------------------------------*/
-         graphicON = drvthis->config_get_bool ( drvthis->name, "graphic", 0, 0 );
+        graphicON = drvthis->config_get_bool ( drvthis->name, "graphic", 0, 0 );
 
 
   /* -- Get permission to parallel port --------------------------------------------*/
@@ -167,19 +167,24 @@ t6963_init (Driver *drvthis, char *args)
 
     /* - Test ECP mode -*/
         if(bidirectLPT == 1) {
-        		debug (RPT_DEBUG, "T6963: Testing ECP mode...");
-             i=0; ecp_input=0;
+        		debug (RPT_WARNING, "T6963: Testing ECP mode...");
+            i=0; ecp_input=0;
 	    T6963_DATAIN;
 	    do {
 	    	i++;
-		t6963_low_set_control(1, 0, 1, -1);
+		t6963_low_set_control(1, 1, 1, 1);   // wr, ce, cd, rd
+		t6963_low_set_control(1, 0, 1, 0);
+		t6963_low_set_control(1, 0, 1, 0);
 		t6963_low_set_control(1, 0, 1, 0);
 		ecp_input = port_in(T6963_DATA_PORT);
-		t6963_low_set_control(1, 0, 1, -1);
-	    } while (i < 50000 && (ecp_input & 3)!=3);
+		t6963_low_set_control(1, 1, 1, 1);
+	    } while (i < 100 && (ecp_input & 0x03)!=0x03);
 	    T6963_DATAOUT;
-             if (i >= 50000) debug(RPT_WARNING, "T6963: ECP mode not working!\n -> is now disabled\n");
-             else debug(RPT_DEBUG, "T6963: working!");
+            if (i >= 100) {
+            	debug(RPT_WARNING, "T6963: ECP mode not working!\n -> is now disabled  (STA0: %i, STA1: %i\n", ecp_input & 1, ecp_input & 2);
+            	bidirectLPT = 0;
+            }
+            else debug(RPT_WARNING, "T6963: working!");
         }
 
 		debug (RPT_DEBUG, "T6963:  set graphic/text home adress and area");
@@ -257,8 +262,8 @@ t6963_height (Driver *drvthis)
 MODULE_EXPORT void
 t6963_clear (Driver *drvthis)
 {
-		debug (RPT_DEBUG, "Clearing Display of size %i x %i\n", width, 6);
-	memset (t6963_display_buffer1, ' ', width * 6);
+		debug (RPT_DEBUG, "Clearing Display of size %i x %i\n", width, height);
+	memset (t6963_display_buffer1, ' ', width * height);
 		debug (RPT_DEBUG, "Done\n");
 }
 
@@ -286,8 +291,8 @@ t6963_flush (Driver *drvthis)
 
 	for (i = 0; i < (width * height); i++)
 	{
-		debug (RPT_DEBUG, "%i%i|", t6963_display_buffer1[i], t6963_display_buffer2[i]);
-		if (t6963_display_buffer1[i] != t6963_display_buffer2[i] || bidirectLPT == 0)
+		// debug (RPT_DEBUG, "%i%i|", t6963_display_buffer1[i], t6963_display_buffer2[i]);
+		if (t6963_display_buffer1[i] != t6963_display_buffer2[i])
 		{
 			t6963_low_command_word(SET_ADDRESS_POINTER, TEXT_BASE + i);
 			t6963_low_command_byte(DATA_WRITE, t6963_display_buffer1[i]);
@@ -310,8 +315,7 @@ t6963_string (Driver *drvthis, int x, int y, char string[])
 	x -= 1;							  // Convert 1-based coords to 0-based...
 	y -= 1;
 
-//	t6963_low_command_word(SET_ADDRESS_POINTER,TEXT_BASE+POSITION(x,y));
-	if(y * width + x + strlen(string) <= width * 6);
+	if(y * width + x + strlen(string) <= width * height);
 		memcpy(&t6963_display_buffer1[y * width + x], string, strlen(string));
 
 }
@@ -326,7 +330,7 @@ t6963_chr (Driver *drvthis, int x, int y, char c)
 	debug (RPT_DEBUG, "Char out\n");
 	y--;
 	x--;
-	if ((y * width) + x <= (width * 6))
+	if ((y * width) + x <= (width * height))
 		t6963_display_buffer1[(y * width) + x] = c;
 }
 
@@ -443,31 +447,47 @@ t6963_low_dsp_ready (void)
     int i = 0;
     int input;
 
+    T6963_DATAIN;
     if(bidirectLPT == 1) {
-	    T6963_DATAIN;
 	    do {
 	    	i++;
-		t6963_low_set_control(1, 0, 1, -1);
+/*		t6963_low_set_control(1, 0, 1, -1);
 		t6963_low_set_control(1, 0, 1, 0);
 		input = port_in(T6963_DATA_PORT);
-		t6963_low_set_control(1, 0, 1, -1);
-	    } while (i < 50000 && (input & 3)!=3);
-	    T6963_DATAOUT;
+		t6963_low_set_control(1, 0, 1, -1); */
+		t6963_low_set_control(1, 1, 1, 1);
+		t6963_low_set_control(1, 0, 1, 0);
+		t6963_low_set_control(1, 0, 1, 0);
+		t6963_low_set_control(1, 0, 1, 0);
+                // tacc max 150ns
+		input = port_in(T6963_DATA_PORT);
+		t6963_low_set_control(1, 1, 1, 1);
+
+	    } while (i < 100 && (input & 3)!=3);
     } else {
-    	for(i=0; i<3; i++)
-		port_out(0x80, 0x00);  /* wait 1ms */
-    }
+   // 	for(i=0; i<3; i++)
+		t6963_low_set_control(1, 1, 1, 1);
+		t6963_low_set_control(1, 0, 1, 0);
+		t6963_low_set_control(1, 1, 1, 1);
+		port_out(0x80, 0x00);  // wait 1ms
+    } 
+    T6963_DATAOUT;
 }
 
 void
 t6963_low_data (u8 byte)
 {
     t6963_low_dsp_ready();
+    t6963_low_set_control(1, 1, 0, 1);   // CD down (data)
+    t6963_low_set_control(0, 0, 0, 1);   // CE & WR down
+    port_out(T6963_DATA_PORT, byte);     // present data
+    port_out(0x80, 0x00);
+    t6963_low_set_control(1, 1, 1, 1);   // all up again
 
-    port_out(T6963_DATA_PORT, byte);     // write value to data port
+/*    port_out(T6963_DATA_PORT, byte);     // write value to data port
     t6963_low_set_control(1, 1,  0, 1);
     t6963_low_set_control(0, 0,  0, 1);
-    t6963_low_set_control(1, 1,  1, 1);
+    t6963_low_set_control(1, 1,  1, 1); */
 }
 
 void
@@ -475,11 +495,17 @@ t6963_low_command (u8 byte)
 {
     t6963_low_dsp_ready();
 
+    t6963_low_set_control(1, 1, 1, 1);  // CD up (command)
+    t6963_low_set_control(0, 0, 1, 1);  // CE & WR down
+    port_out(T6963_DATA_PORT, byte);    // present data to LCD on PC's port pins
+    port_out(0x80, 0x00);
+    t6963_low_set_control(1, 1, 0, 1);  // CE & WR up, CD down
+    
+/*
     port_out(T6963_DATA_PORT, byte);  // present data to LCD on PC's port pins
-
     t6963_low_set_control(1, 1, 1, 1);
     t6963_low_set_control(0, 0, 1, 1);
-    t6963_low_set_control(1, 1, 0, 1);
+    t6963_low_set_control(1, 1, 0, 1); */
 }
 
 void
