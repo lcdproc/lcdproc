@@ -1,3 +1,5 @@
+DG: David GLAUDE as added a few comment for discussing this document.
+
 This document describes the driver API of v0.5 of LCDproc.
 At time of this writing, this version is not released and some things might
 be changed.
@@ -24,6 +26,15 @@ the driver will not be loaded. This version number can be found in the define
 API_VERSION.
 
 #define drvthis struct lcd_logical_driver * driver
+DG: This is very C++ and it is meaningfull in C++ to have
+DG: DATA + FUNCTION in the "this" because we have polymorph
+DG: and heritage. But in our case we only need private data
+DG: in order to support multiple instances.
+DG: Or do we want the driver to provide different function
+DG: based on the detected hardware (or something like that)?
+DG: Except for init and close, I don't see why we don't give
+DG: the private data rather than drvthis???
+DG: Please explain (again).
 
 typedef struct lcd_logical_driver {
 
@@ -46,6 +57,9 @@ typedef struct lcd_logical_driver {
 	void (*num)		(drvthis, int x, int num);
 	void (*heartbeat)	(drvthis, int state);
 	char (*set_icon)	(drvthis, int icon);
+DG: I don't like this function...
+DG: I would prefer the following definition (like chr)
+DG:	void (*set_icon)	(drvthis, int x, int y, int icon);
 
 	// Hardware functions
 	int (*contrast)		(drvthis, int contrast);
@@ -81,6 +95,20 @@ typedef struct lcd_logical_driver {
 	// Driver private data
 	int (*store_private_ptr) (void * private_data);
 	void * private_data;	// Filled by server by calling store_private_ptr()
+DG: I think it is the driver that should take care of using the right
+DG: private data.
+DG: The server need to remember two thing about a driver,
+DG: 1) The drvthis wich contain what function to call and is a well define
+DG: structure that we get at init time.
+DG: drvthis should be the same for every instances of the driver.
+DG: 2) private_data wich we remember and receave as a pointer to a black box
+DG: and we give it back to the driver in EVERY call.
+DG: 
+DG: Implicitly the driver knows about wich function is what...
+DG: But the driver need to know only wich instance is currently "active".
+DG: 
+DG: It does not change much, but we don't need store_private_ptr anymore.
+
 				// Driver should cast this to it's own
 				// private structure pointer
 
