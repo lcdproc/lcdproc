@@ -8,6 +8,7 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -25,8 +26,58 @@
 #include "mode.h"
 #include "chrono.h"
 
-#ifdef SOLARIS
+#if HAVE_UTMPX_H
 #include <utmpx.h>
+#endif
+
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
+
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
+#if HAVE_KVM_H
+#include <kvm.h>
+#endif
+
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#if HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+
+#if HAVE_SYS_SYSCTL_H
+#include <sys/sysctl.h>
+#endif
+
+#if HAVE_SYS_SCHED_H
+#include <sys/sched.h>
+#endif
+
+#if HAVE_SYS_DKSTAT_H
+#include <sys/dkstat.h>
+#endif
+
+#if FREEBSD
+/* definitions for indices in the nlist array */
+/* from /usr/src/src.bin/top/machine.c */
+static struct nlist nlst[] = {
+#define X_CCPU      0
+    { "_ccpu" },
+#define X_CP_TIME   1   
+    { "_cp_time" },
+    { 0 }
+};
+#elif OPENBSD
+#define X_CP_TIME   0
+static struct nlist nlst[] = {
+	{ "_cp_time" },     /* 0 */
+	{ 0 }
+};
 #endif
 
 int TwentyFourHour = 1;
@@ -46,30 +97,184 @@ int uptime_fd = 0;
 # endif
 #endif
 
-static double get_uptime (double *up, double *idle);
+#if FREEBSD
+static double freebsd_get_uptime(double *up, double *idle);
+#define get_uptime freebsd_get_uptime
+#elif (NETBSD || OPENBSD)
+static double opennetbsd_get_uptime(double *up, double *idle);
+#define get_uptime opennetbsd_get_uptime
+#elif LINUX
+static double linux_get_uptime(double *up, double *idle);
+#define get_uptime linux_get_uptime
+#elif SOLARIS
+static double solaris_get_uptime(double *up, double *idle);
+#define get_uptime solaris_get_uptime
+#else
+#error "Does not know how to get the uptime."
+#endif
 
-static double
-get_uptime (double *up, double *idle)
-{
+#if FREEBSD
+static double freebsd_get_uptime(double *up, double *idle) {
+	double uptime = 0;
+	struct timeval boottime;
+	time_t now, uuptime;
+	size_t size;
+	long cp_time[CPUSTATES];
+	long iidle = 0;
+	int mib[2];
+	char errbuf[_POSIX2_LINE_MAX];
+	kvm_t *kvmd = NULL;
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_BOOTTIME;
+	size = sizeof(boottime);
+
+	time(&now);
+	if(sysctl(mib, 2, &boottime, &size, NULL, 0) != -1 &&
+				boottime.tv_sec != 0)
+	{
+		uuptime = now - boottime.tv_sec;
+		uuptime += 30;
+
+		uptime = (double) uuptime;
+	}
+
+	/* open kernel virtual memory */
+	kvmd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
+	if(kvmd==NULL)
+	{
+		fprintf(stderr, "kvm_openfiles: %s\n", errbuf);
+		exit(EXIT_FAILURE);
+	}
+	else
+	{
+		/* ask for specified values */
+		if(kvm_nlist(kvmd, nlst) >= 0)
+		{
+			if(nlst[X_CCPU].n_type != 0)
+			{
+				/* read values for cpu time (user, nice, sys, intr, idle) */
+				if(kvm_read(kvmd, nlst[X_CP_TIME].n_value, (char *)&cp_time,
+					sizeof(cp_time))==sizeof(cp_time))
+				{
+					//ZZZ oder besser alle anderen zusammenaddieren und durch
+					// idle dividieren?
+					iidle = cp_time[CP_IDLE];
+				}
+			}
+		}
+		kvm_close(kvmd);
+
+		*idle = (double) (iidle / 100.);
+	}
+	*up = uptime;
+  
+	return uptime; 
+}
+#endif
+
+#if OPENBSD
+static long get_openbsd_idle_time() {
+	kvm_t *kvmd;
+	long cp_time[CPUSTATES];
+	char errbuf[_POSIX2_LINE_MAX];
+
+	cp_time[CP_IDLE] = 0;
+	kvmd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
+	if(kvmd==NULL) {
+		fprintf(stderr, "kvm_openfiles: %s\n", errbuf);
+		return(0);
+	} else{
+		if(kvm_nlist(kvmd, nlst) >= 0) {
+			if(kvm_read(kvmd, nlst[X_CP_TIME].n_value, (char *)cp_time, sizeof(cp_time)) != sizeof(cp_time)) {
+				fprintf(stderr, "kvm_read: %s\n", errbuf);
+			}
+		}
+		kvm_close(kvmd);
+	}
+	return(cp_time[CP_IDLE]);
+}
+#endif
+
+#if (NETBSD || OPENBSD)
+static double opennetbsd_get_uptime(double *up, double *idle) {
+	double uptime = 0;
+	struct timeval boottime;
+	u_int64_t iidle = 0;
+	time_t now, uuptime;
+	size_t size;
+	int mib[2];
+#if NETBSD
+	u_int64_t cp_time[CPUSTATES];
+#endif
+
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_BOOTTIME;
+	size = sizeof(boottime);
+
+	time(&now);
+	if(sysctl(mib, 2, &boottime, &size, NULL, 0) < 0) {
+		fprintf(stderr, "sysctl kern.boottime failed: %s\n",
+				strerror(errno));
+	}
+	else
+		if(boottime.tv_sec != 0) {
+			uuptime = now - boottime.tv_sec;
+			uuptime += 30;
+
+			uptime = (double) uuptime;
+		}
+
+#if OPENBSD
+	iidle = get_openbsd_idle_time();
+#else
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_CP_TIME;
+	size = sizeof(cp_time);
+
+	if(sysctl(mib, 2, cp_time, &size, NULL, 0) < 0)
+	{
+		fprintf(stderr, "sysctl kern.cp_time failed: %s\n",
+				strerror(errno));
+	}
+	else
+		iidle = cp_time[CP_IDLE];
+#endif // __OpenBSD__
+
+	*up = uptime;
+	*idle = (double) (iidle / 100.);
+	return uptime; 
+}
+#endif // NetBSD or OpenBSD
+
+#if LINUX
+static double linux_get_uptime (double *up, double *idle) {
 	double uptime;
 
-#ifndef SOLARIS
 	reread (uptime_fd, "get_uptime:");
 	sscanf (buffer, "%lf %lf", &uptime, idle);
-#else
-	struct utmpx                *u, id;
-
-    id.ut_type = BOOT_TIME;
-    u = getutxid(&id);
-
-
-    uptime=time(0) - u->ut_xtime;
-#endif
 
 	*up = uptime;
 
 	return uptime;
 }
+#endif
+
+#if SOLARIS
+static double solaris_get_uptime (double *up, double *idle) {
+	double uptime;
+	struct utmpx                *u, id;
+
+    id.ut_type = BOOT_TIME;
+    u = getutxid(&id);
+
+    uptime=time(0) - u->ut_xtime;
+   
+	*up = uptime;
+
+	return uptime;
+}
+#endif
 
 // A couple of tables for later use...
 static char *days[] = {
