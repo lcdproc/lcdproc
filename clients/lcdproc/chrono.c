@@ -175,7 +175,9 @@ time_screen (int rep, int display)
 		else
 			sprintf (tmp, "%s%c%s%c%s%s  %2i%% idle", hr, colon, min, colon, sec, ampm, (int) idle);
 		// Center the output line...
-		i = ((lcd_wid - strlen (tmp)) / 2) + 1;
+		i = (lcd_wid > strlen(tmp))
+		    ? ((lcd_wid - strlen (tmp)) / 2) + 1
+		    : 1;
 		sprintf (buffer, "widget_set T three %i 4 {%s}\n", i, tmp);
 		if (display)
 			sock_send_string (sock, buffer);
