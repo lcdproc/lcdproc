@@ -61,7 +61,6 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include <syslog.h>
 
 
 /* Reporting levels */

@@ -29,6 +29,9 @@ int sock_recv_string (int fd, char *dest, size_t maxlen);
 int sock_send (int fd, void *src, size_t size);
 int sock_recv (int fd, void *dest, size_t maxlen);
 
+/* Return error message string for the socket function */
+char *sock_geterror(void);
+
 // Er, ignore the rest of this file.  I'll clean it up sometime...
 
 /*****************************************************************

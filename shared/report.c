@@ -19,10 +19,18 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#ifndef WIN32
 #include <syslog.h>
+#else
+#include <windows.h>
+#endif
 
 int report_level = RPT_INFO;
 int report_dest = RPT_DEST_STORE;
+
+#ifdef WIN32
+HANDLE event_log_handle = NULL;
+#endif
 
 #define MAX_STORED_MSGS 200
 
@@ -55,7 +63,43 @@ void report( const int level, const char *format, .../*args*/ )
 			fprintf( stderr, "\n" );
 			break;
 		  case RPT_DEST_SYSLOG:
+                  {
+#ifndef WIN32
 			vsyslog( LOG_USER|(level+2), format, ap );
+#else
+                        LPTSTR tmpArray[1];
+                        WORD eventType;
+                        switch (level)
+                        {
+                        case RPT_CRIT:
+                        case RPT_ERR:
+                            eventType = EVENTLOG_ERROR_TYPE;
+                            break;
+                        case RPT_WARNING:
+                            eventType = EVENTLOG_WARNING_TYPE;
+                            break;
+                        case RPT_NOTICE:
+                        case RPT_INFO:
+                        case RPT_DEBUG:
+                        default:
+                            eventType = EVENTLOG_INFORMATION_TYPE;
+                            break;
+                        }
+
+                        vsnprintf( buf, sizeof(buf), format, ap );
+                        tmpArray[0] = buf;
+                        ReportEvent(event_log_handle,
+                                    eventType,
+                                    0,        /* category */
+                                    0,        /* event ID */
+                                    NULL,     /* user ID */
+                                    1,        /* number of strings */
+                                    0,         /* binary data size */
+                                    (LPCTSTR*) tmpArray,   /* error string */
+                                    NULL       /* binary data */
+                            );
+#endif
+                  }
 			break;
 		  case RPT_DEST_STORE:
 			vsnprintf( buf, sizeof(buf), format, ap );
@@ -76,10 +120,27 @@ int set_reporting( char *application_name, int new_level, int new_dest )
 	}
 
 	if( report_dest != RPT_DEST_SYSLOG && new_dest == RPT_DEST_SYSLOG ) {
+#ifdef WIN32
+                if (event_log_handle)
+                {
+                        CloseEventLog(event_log_handle);
+                } else {
+                        event_log_handle = RegisterEventSource(NULL, "LcdProc");
+                }
+#else
 		openlog( application_name, 0, LOG_USER );
+#endif
 	}
 	else if( report_dest == RPT_DEST_SYSLOG && new_dest != RPT_DEST_SYSLOG ) {
+#ifdef WIN32
+                if (event_log_handle)
+                {
+                        CloseEventLog(event_log_handle);
+                        event_log_handle = NULL;
+                }                
+#else
 		closelog();
+#endif
 	}
 
 	report_level = new_level;
