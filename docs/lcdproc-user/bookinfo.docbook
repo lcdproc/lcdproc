@@ -1,0 +1,70 @@
+<bookinfo>
+
+<title>LCDproc User's Guide</title>
+<subtitle>The Ultimate Guide to LCDproc 0.4.3</subtitle>
+
+<authorgroup>
+
+<author>
+<firstname>Rene</firstname>
+<surname>Wagner</surname>
+<affiliation><address><email>reenoo@gmx.de</email></address></affiliation>
+</author>
+
+<author>
+<firstname>Guillaume</firstname>
+<surname>Filion</surname>
+<affiliation><address><email>gfk@logidac.com</email></address></affiliation>
+</author>
+
+<author>
+<firstname>William W.</firstname>
+<surname>Ferrell</surname>
+<affiliation><address><email>wwf@splatwerks.org</email></address></affiliation>
+</author>
+
+</authorgroup>
+
+<date>2002-03-01</date>
+<releaseinfo>0.0.1</releaseinfo>
+
+<abstract>
+<para>
+This document is a guide to LCDproc written for users. It covers LCDproc 0.4.3 ONLY.
+Some things may be valid for 0.5 as well, but a lot has changed since 0.4.1 and a lot
+will change for 0.5.
+</para>
+</abstract>
+
+<copyright>
+<year>2002</year>
+<holder>Rene Wagner</holder>
+</copyright>
+<copyright>
+<year>2002</year>
+<holder>Guillaume Filion</holder>
+</copyright>
+<copyright>
+<year>1999</year>
+<holder>William W. Ferrell</holder>
+</copyright>
+
+<legalnotice>
+<para>
+Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License, Version
+1.1 or any later version published by the Free Software Foundation; with
+no Invariant Sections, with no Front-Cover texts, and with no Back-Cover
+Texts. A copy of the license is included in the section entitled "GNU
+Free Documentation License".
+</para>
+</legalnotice>
+
+<keywordset>
+<keyword>documentation</keyword>
+<keyword>LCDproc</keyword>
+<keyword>0.4.3</keyword>
+<keyword>user's guide</keyword>
+</keywordset>
+
+</bookinfo>

@@ -1,0 +1,188 @@
+<chapter id="installation">
+<title>Installation</title>
+
+<sect1 id="build-and-install">
+<title>Build LCDproc</title>
+
+<para>
+Now that you have downloaded the LCDproc distribution you can
+start building it.
+</para>
+
+<note>
+<para>
+If you have installed the debian package with apt-get (or another
+debian tool), you can skip this this chapter.
+</para>
+</note>
+
+<para>
+If you're building this version from CVS, you'll need 
+autoconf, automake, aclocal & autoheader installed.
+</para>
+
+<para>
+If you have autoconf and friends, run:
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>sh autogen.sh</userinput>
+</screen>
+
+<para>
+This produces the configure script and supporting files. It has allready 
+been run if you using the tarball distribution.
+</para>
+
+<para>
+Once the above command has run, the rest is pretty standard:
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>./configure --help</userinput>
+</screen>
+
+<para>
+Read about the options, figure out what to use.
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>./configure --prefix=/usr/local --enable-drivers=ncurses,cfontz</userinput>
+</screen>
+
+<para>
+Be sure to replace /usr/local with the prefixdir you want (e.g. /usr
+for RedHat) and ncurses,cfontz with comma-separated list
+of drivers you want.
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>make</userinput>
+</screen>
+
+<para>
+Congratulations: You have just compiled your version of LCDproc ;)
+</para>
+
+</sect1>
+
+<sect1 id="direct-install">
+<title>Install LCDproc Directly From The Sources  </title>
+
+<para>
+If you want to install LCDproc more or less permanently you
+can run:
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>su</userinput>
+<prompt>Password:</prompt> <userinput>top secret</userinput>
+<prompt>#</prompt> <userinput>make install</userinput>
+</screen>
+
+<note>
+<para>
+make install is absolutely OPTIONAL
+You can also run LCDproc directly from the source directory. See
+<link linkend="lcdd-commandline">below</link> for details.
+</para>
+</note>
+
+</sect1>
+
+<sect1 id="package-install">
+<title>Generate And Install Packages of LCDproc</title>
+
+<para>
+As an alternative (which is actually better ;) to installing
+directly from the sources you can generate packages using the
+packaging tool EPM.
+</para>
+
+<para>
+First of all you may need to download EPM from
+<ulink url="http://www.easysw.com/epm/">http://www.easysw.com/epm/</ulink>
+and install it according to the instructions that are included
+in its source distribution.
+</para>
+<para>
+Debian users (who do not want to download the official debs via apt-get)
+can of course use the debian package of epm:
+</para>
+
+<screen>
+<prompt>#</prompt> <userinput>apt-get install epm</userinput>
+</screen>
+
+<note>
+<para>
+There are of course other and maybe better ways to generate
+packages for your system. The reason for us to choose EPM
+was that it provide the developers with a tool that makes it
+possible to write one list file for all platforms defining
+what the resulting package is meant to look like. This way we
+do not have to learn all the package managing tools of the
+different platforms that are supported by LCDproc.
+</para>
+</note>
+
+<para>
+To generate an LCDproc package follow these instructions:
+</para>
+
+<tip>
+<para>
+It is of certain importance that you have run ./configure with
+the correct pathname settings for your system. Otherwise the
+resulting package will install the files in the wrong directories.
+</para>
+</tip>
+
+<screen>
+<prompt>$</prompt> <userinput>epm -v -f native LCDproc</userinput>
+</screen>
+
+<note>
+<para>
+Generating an RPM package as a non-root user will fail, RPM wants
+to generate the files from the tree under <filename>/usr/src/RPM</filename>,
+which you do not have write access to as a non-root user.
+If you want to generate the package as a non-root user anyway, you may
+want to follow these instructions.
+</para>
+</note>
+
+<para>
+A workaround for the described problem is creating a file named
+<filename>~/.rpmmacros</filename>
+which contains:
+</para>
+
+<screen>
+<![CDATA[
+%_topdir ~/rpm
+]]>
+</screen>
+
+<important>
+<para>
+<filename>~/rpm</filename> must contain the same tree usually found under
+<filename>/usr/src/RPM</filename>
+</para>
+</important>
+
+<para>
+Unfortunately epm does not read <filename>~/.rpmmacros</filename>
+and of course returns warnings.
+Don't worry! That's OK ;)
+</para>
+
+<para>
+In order to actually install the generated package follow the instructions
+in your system's manual.
+</para>
+
+</sect1>
+
+
+</chapter>

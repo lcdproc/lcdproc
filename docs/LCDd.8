@@ -1,21 +1,24 @@
-.TH LCDd 8 "9 September 2001" LCDproc
+.TH LCDd 8 "4 March 2002" LCDproc
 .SH NAME
 LCDd - LCDproc server daemon
 .SH SYNOPSIS
 .B LCDd
-[\-\-help] 
-[\-\-type <\fIsize\fP>] 
-[\-\-driver <\fIdriver\fP> [\fIargs\fP] ]
-[\-\-foreground \fI\fP] 
-[\-\-backlight <\fImode\fP>] 
-[\-\-serverinfo off] 
+[\-hfiws] 
+[\-c <\fIconfig\fP>] 
+[\-d <\fIdriver\fP>] 
+[\-a <\fIaddr\fP>] 
+[\-p <\fIport\fP>] 
+[\-u <\fIuser\fP>] 
+[\-w <\fItime\fP>] 
+[\-r <\fIlevel\fP>] 
 .SH DESCRIPTION
 LCDd is the server portion of LCDproc which listens to a certain port (normally 13666) and displays information on an LCD display.  It works with several types
 and sizes of displays.
 .PP
-LCDd will attempt to open /dev/lcd by default and will error if this
-device is not available.  In most cases, it should be sufficient to
-link /dev/lcd to the appropriate serial or parallel device.
+As of version 0.4.3 of LCDproc most settings are configured through the LCDd configuration
+file, which is normally /etc/LCDd.conf. Before running LCDd you should carefully read through
+that file and modify everything neccessary according to your needs. Otherwise you might encounter
+LCDd not running properly on your system.
 .PP
 To make full use of LCDd, a client such as lcdproc(1) is required.
 .SH OPTIONS
@@ -23,41 +26,52 @@ Available
 .I LCDd
 options are:
 .TP 8
-.B \-h, \-\-help
+.B \-h
 Display this help screen
 .TP 8
-.B \-t, \-\-type <size>
-select an LCD size (20x4, 16x2, etc...)
+.B \-c <config>
+Use a configuration file other than /etc/LCDd.conf
 .TP 8
-.B \-d, \-\-driver <\fIdriver\fP> [\fIargs\fP] 
-Adds (another) driver to use to display information.  Any \fIargs\fP specified will be
-passed to the chosen driver for initialization.
+.B \-d <driver>
+Add a driver to use (output only to first)
 .TP 8
-.B \-f, \-\-foreground
-Run in the foreground (no daemon)
+.B \-f
+Run in the foreground
 .TP 8
-.B \-b\fP,\fB \-\--backlight \fI<mode>\fP
-Set backlight mode (on, off, open)
+.B \-i
+Disable showing of the main LCDproc server screen
 .TP 8
-.B \-i, \-\-serverinfo off
-Set the server screen to low priority
-.PP
-Help on each driver's parameters are obtained upon request:
-"LCDd -d driver --help"
+.B \-w <waittime>
+Time to pause at each screen (in seconds)
+.TP 8
+.B \-a <addr>
+Network IP address to bind to
+.TP 8
+.B \-p <port>
+Network port to listen for connections on
+.TP 8
+.B \-u <user>
+User to run as
+.TP 8
+.B \-s
+Output messages to syslog
+.TP 8
+.B \-r <level>
+Report level (default=2)
 .SS
 Supported Drivers
-Supported display drivers include:
+Currently supported display drivers include:
 .TP
-.B CFontz
+.B CFontz (or CrystalFontz)
 CrystalFontz LCD displays
 .TP
-.B curses
+.B curses (or ncurses)
 Standard video display using the ncurses library
 .TP
 .B HD44780
 Hitachi HD44780 LCD displays
 .TP
-.B BayRad
+.B BayRAD
 EMAC BayRad displays
 .TP
 .B irmanin
@@ -72,14 +86,17 @@ Wirz SLI driver (unknown)
 .B joy
 Joystick driver (input)
 .TP
-.B MtxOrb
+.B MtxOrb (or MatrixOrbital)
 Matrix Orbital displays (not Matrix Orbital GLK displays)
+.TP
+.B glk
+Matrix Orbital GLK graphical LCD displays
 .TP
 .B LB216
 LB216 LCD display
 .TP
-.B glk
-Matrix Orbital GLK graphical LCD displays
+.B lcdm001 (or LCDM001)
+kernelconcepts.de 20x4 serial LCD displays
 .TP
 .B text
 Standard "hard-copy" text display
@@ -88,12 +105,13 @@ Standard "hard-copy" text display
 Undocumented debug driver
 .PP
 Multiple drivers can be used simultaneously; thus, for example, a Matrix Orbital display (MtxOrb driver)
-can be combined with the an infrared driver (irmanin driver).
+can be combined with an infrared driver (irmanin driver).
 .SH INVOCATION
 .TP
-LCDd -d MtxOrb "--device /dev/lcd --contrast 200" -d joy
-Start LCDd with the Matrix Orbital driver and the Joystick input driver,
-with the /dev/lcd device and a contrast value of 200.
+LCDd -d MtxOrb -d joy
+As of version 0.4.3, driver parameters are read from a configuration file (default location /etc/LCDd.conf) rather than being passed on the command line as arguments.
+The invocation example above will start LCDd with the Matrix Orbital driver and the Joystick input driver,
+and attempt to load the driver parameters from the default configuration file.
 .SH SERVER PROTOCOL
 There is a basic sequence:
 .TP 8
@@ -273,7 +291,7 @@ frames per movement; a negative number indicates movements per frame.
 left top right bottom wid hgt dir speed
 .sp
 Frames define a visible "box" on screen,
-from the (\fIleft\fR, \fItop\fR) corner to the
+>from the (\fIleft\fR, \fItop\fR) corner to the
 (\fIright\fR, \fIbottom\fR) corner.  The actual data may be bigger,
 and is defined as \fIwid\fR (width) by \fIhgt\fR (height); if it is
 bigger, then the frame will scroll in the direction (\fIdir\fR)
@@ -284,23 +302,25 @@ check the order of the options and the quoting involved.  Some combinations
 of options will be misread and thus fail.
 .PP
 Try using the -d option last.
+.SH FILES
+.na
+.nf
+\fB/etc/LCDd.conf\fR, LCDd default configuration file
+.Sh SEE ALSO
+.Xr lcdproc 1
 .SH AUTHOR
-LCDd was written by William Ferrell (choadster@earthlink.net) and Scott Scriv
+LCDd was originally written by William Ferrell (wwf@splatwerks.org) and Scott Scriv
 en (scriven@cs.colostate.edu).
+
+Since that time various people have contributed to LCDproc.
 
 The newest version of LCDd should be available from here as part of the lcdproc package:
 
                 http://lcdproc.omnipotent.net/
 
 .SH LEGAL STUFF
-The lcdproc package is released as "WorksForMe-Ware".  In other words, it is free, kinda nea
-t, and we don't guarantee that it will do anything in particular on any machine
-except the ones it was developed on.
+The lcdproc package is released as "WorksForMe-Ware".  In other words, it is free, kinda neat, and we don't guarantee that it will do anything in particular on any machine except the ones it was developed on.
 .PP
-It is technically released under the GNU GPL license (you should have received t
-he file, "COPYING", with LCDproc) (also, look on http://www.fsf.org/ for more in
-formation), so you can distribute and use it for free -- but you must make the s
-ource code freely available to anyone who wants it.
+It is technically released under the GNU GPL license (you should have received the file, "COPYING", with LCDproc) (also, look on http://www.fsf.org/ for more information), so you can distribute and use it for free -- but you must make the source code freely available to anyone who wants it.
 .PP
-For any sort of real legal information, read the GNU GPL (GNU General Public Lic
-ense).  It's worth reading.
+For any sort of real legal information, read the GNU GPL (GNU General Public License).  It's worth reading.

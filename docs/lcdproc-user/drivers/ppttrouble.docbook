@@ -1,0 +1,187 @@
+<sect1 id="ppttrouble">
+<title>Parallel Port Troubleshooting</title>
+
+<para>
+Unfortunately attaching an LCD module to a parallel port is not
+trivial.
+</para>
+<para>
+In most cases it requires soldering abilities and basic knowledge
+of electronics.
+</para>
+<para>
+The following hints might be helpful:
+</para>
+<sect2 id="ppt-check-wiring">
+<title>Check The Wiring</title>
+<para>
+Wiring errors can easily be made. If you are unexperienced
+with the soldering iron better have someone solder it for
+you. Display modules are sensitive to electro static
+discharges, so touch an earthed surface (computer case,
+water pipes...) before you handle these.
+</para>
+</sect2>
+<sect2 id="ppt-power">
+<title>Power Source Unregulated / Noisy</title>
+<para>
+Make sure your power supply delivers steady 5 Volts with-
+out noise or interruptions. The bare wall plug in trans-
+former is not suitable, though you can make it stabilized
+by adding an 7805 and a few capacitors.
+Some noise induced in the supply lines my be tricky to
+track, even if you have an oscilloscope.
+</para>
+</sect2>
+<sect2 id="ppt-GND-lift">
+<title>Ground Lift</title>
+<para>
+The power supply wires and especially the GND wires should
+be a little thicker than the other wires. If GND is not
+thick enough (or not existent, see 1) the resistance of the
+wire may cause differing GND potentials in the circuit.
+This may lead to strange display behaviour. It may also be
+wise to solder a 100nF capacitor directly to the GND and
+VDD pins of the display.
+</para>
+</sect2>
+<sect2 id="ppt-latchup">
+<title>Latchup</title>
+<para>
+Never let the supply voltage get much below the io signal
+voltage. It may lead to a latchup condition which will
+destroy the controller chip on the display.
+</para>
+</sect2>
+<sect2 id="ppt-contrast">
+<title>Contrast</title>
+<para>
+If you don't see anything on your display it may be that
+your contrast voltage is set wrong. Turn your contrast
+potentiometer all the way to the end connected to GND.
+Contrast is highest then.
+</para>
+<note>
+<title>Beware</title>
+<para>
+The module you got so ultra cheap may be an
+enhanced temperature model which needs a negative
+contrast voltage for sufficient contrast - see chapter
+99 on how to make negative voltage.
+</para>
+</note>
+</sect2>
+<sect2 id="ppt-voltage">
+<title>Parallel Port Voltage</title>
+<para>
+Many modern mainboards and especially notebooks will not
+nearly output 5V for a logic H as the older parallel ports
+did, because the operating voltage of computers is lower than
+5V these days. I have measured voltages between 2.5V and 4V
+for logic H, which is barely within specification of the
+HD44780. If you account RCL of your cable, this may not be
+enough and can cause unreliable operation.
+</para>
+</sect2>
+<sect2 id="ppt-signal-rise-timing">
+<title>Enable Signal Rise Time</title>
+<para>
+If you ever read the HD44780 datasheet you will notice that
+somewhere in the 'signal timing' table is written: 'Enable
+Signal Rise Time  max. 20nS'. That means the Voltage on the
+HD44780 pin called 'Enable' has to rise from 0 Volts to 5
+Volts within 20 Nanoseconds and the other way round. They
+should better print that in big fat red letters, because
+most HD44780s are really picky about the enable signal rise
+time.
+</para>
+<para>
+That is a Problem: If you count together the bad driving
+characteristics of the parallel port combined with the
+capacitance of flat ribbon cable you may easily get an
+order of magnitude slower rise time.
+Therefore you should only use really short cable ( shorter
+than 50cm) for connecting the display to the parallel port.
+It may also be useful to use pull-up resistors on the display
+module or a schmitt-trigger.
+</para>
+<note>
+<para>
+The rise time of a digital output can (usually) not be
+altered by Software.
+</para>
+</note>
+</sect2>
+<sect2 id="ppt-emi">
+<title>EMI</title>
+<para>
+The cable from the parallel port to the display may
+be sensible to electromagnetic interference and may emit
+electromagnetic radiation. If you place your cellphone near
+the cable, you may get unexpected display readings, on
+the other hand your house neighbour may not be able to listen
+to his/her favourite radio station any more - so better use
+shielded cable and put the display in a metallic case, perhaps
+a computer case.
+</para>
+</sect2>
+<sect2 id="ppt-black-lines">
+<title>One or Two Black Lines</title>
+<para>
+If you see one or two black lines on the display it means
+nothing more than that the display is powered and contrast
+voltage is present. If one or two black lines appear the
+controller has not been reset properly by the on chip power
+on reset generator. No need to worry - it will be reset by
+the <application>LCDd</application> software. But if the
+black line will not disappear
+although the wiring is working, the controller on the display
+may be defective.
+</para>
+</sect2>
+<sect2 id="ppt-too-fast">
+<title>Software Too Fast</title>
+<para>
+If you have a super GHz computer it may happen that the signal
+timing generated by <application>LCDd</application> is too fast.
+Adjust DELAYMULT in the
+source file to a bigger value. Parallel port wirings usually
+don't permit to read back the busy flag of the controller chip,
+so timing must be adjust so that the controller never is busy.
+</para>
+</sect2>
+<sect2 id="ppt-backlight">
+<title>LED Backlight</title>
+<para>
+Check whether you need a resistor for your LED Backlight and
+which value it should have. If you forget the required resistor
+the backlighting LEDs might become hot and draw excessive
+current.
+</para>
+</sect2>
+<sect2 id="ppt-hd44780-compatible">
+<title>HD44780 Compatible</title>
+<para>
+The original HD44780 controller that we advertise to support
+has become the industry standard for alphanumeric character
+displays. The original HD44780 is out of production. It has
+many successors from many manufactures, which sometimes won't
+tell you that their chips are 'compatible'.
+</para>
+<para>
+To name a few: KS 0066, KS 0070, KS 0076, LC 7985, NT 3881,
+SED 1278, ST 7066 ...
+</para>
+</sect2>
+<sect2 id="ppt-misc">
+<title>Miscellania</title>
+<para>
+This text has originally been taken from a <ulink url="http://lists.omnipotent.net/pipermail/lcdproc/2002-May/005832.html">message</ulink> by
+Robin Adams <email>robin@adams-online.de</email>
+</para>
+<para>
+Converted to docbook and slightly modified May 2002, Rene Wagner <email>reenoo@gmx.de</email>
+</para>
+</sect2>
+
+</sect1>

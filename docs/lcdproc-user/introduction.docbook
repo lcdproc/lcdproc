@@ -1,0 +1,145 @@
+<chapter id="introduction">
+<title>Introduction</title>
+
+<sect1 id="what-is-this">
+<title>About this Document</title>
+
+<para>
+This document was meant as a tutorial for LCDproc users. It tries to introduce
+you into the world of LCDproc giving you an overview of the project.
+After reading this document you will be able to set up your own LCDproc'ed system.
+</para>
+
+<note><para>
+Please note that this document is still "under construction". We hope to finish it
+until the final release of LCDproc, which will probably take place in May or June 2002.
+If you run into any trouble feel free to write to the LCDproc mailing list.
+See <ulink url="http://lcdproc.omnipotent.net/mail.php3">http://lcdproc.omnipotent.net/mail.php3</ulink>
+for details on how to subscribe to the list.
+</para>
+<para>
+Therefore you might want to have a look at <ulink url="http://lcdproc.sourceforge.net/docs/">http://lcdproc.sourceforge.net/docs/</ulink>,
+to get the latest version of this document (, unless you want to generate it yourself from the
+docbook files in the CVS).
+</para></note>
+
+<para>
+This document was written for LCDproc 0.4.3. At the time of writing there had already
+been the "LCDproc User's Guide" written by William W. Ferrel in 1999. His version covered
+an early version of LCDproc and therefore concentrated on Matrix Orbital displays.
+</para>
+
+<para>
+William's document was "recycled" for the description of the Matrix Orbital display driver
+and for other parts of this document.
+</para>
+
+<para>
+In several other places e-mails and other documents have been included in this
+document. The authors of those are listed below every such document.
+</para>
+
+</sect1>
+
+<sect1 id="what-is-lcdproc">
+<title>What is LCDproc?</title>
+
+<para>
+LCDproc is a client/server suite including drivers for all kinds of
+nifty LCD displays.
+</para>
+<para>
+The server 'LCDd' makes it possible to display text and other data on
+an LCD display. As well LCDd can handle certain input devices.
+</para>
+<para>
+Support for devices is added by drivers. We distinguish between output
+and input drivers.
+LCDd currently supports only one single output driver, which may at the
+same time handle input. Nevertheless several input (only) drivers are
+supported.
+</para>
+<para>Currently there are drivers for several serial devices:
+Matrix Orbital, Crystal Fontz, Bayrad, LB216, LCDM001 (kernelconcepts.de),
+Wirz-SLI and PIC-an-LCD; and some devices connected to the LPT port:
+HD44780, STV5730, T6963, SED1520 and SED1330.
+There are input (only) drivers for LIRC and joysticks.
+</para>
+<para>
+Clients can connect to LCDd through common sockets.
+</para>
+<para>
+Various clients are available. The "main" client
+<application>lcdproc</application>, which is shipped with the LCDproc
+distribution, can display things like CPU load, system load, memory
+usage, uptime, and a lot more.
+</para>
+
+</sect1>
+
+<sect1 id="lcdd">
+<title>The LCDproc Server - LCDd</title>
+
+<para>
+<application>LCDd</application> is one of those well known *NIX daemons.
+BUT it's not just *one* daemon. It's the one that is supposed to drive
+your LCD ;)
+</para>
+
+<para>
+<application>LCDd</application> can either be run from the command line
+or automatically by the init scripts shipped with the distribution.
+</para>
+
+<para>
+As other daemons, <application>LCDd</application> has to be configured.
+In this respect a lot has changed since LCDproc 0.4.1. While LCDd retrieved
+all its configuration settings from the command line in 0.4.1, it now has a
+configuration file, which is normally <filename>/etc/LCDd.conf</filename>.
+</para>
+
+</sect1>
+
+<sect1 id="lcdproc">
+<title>The LCDproc "Main" Client - lcdproc</title>
+
+<para>
+While <application>LCDd</application> only offer the functionality of
+displaying text on a display, <application>lcdproc</application> actually
+retrieves data worth displaying.
+</para>
+
+<para>
+<application>lcdproc</application> gets its information from the
+<filename>/proc</filename> filesystem.
+</para>
+
+<para>
+<application>lcdproc</application> can connect to an LCDproc
+server either on the local system or on a remote system as long as it
+is reachable. It extracts the same statistics regardless of where it
+sends this information. The statistics it gathers include CPU
+utilization, memory utilization, disk utilization, network utilization,
+system uptime, time, and date, and so on. It displays this information
+in assorted ways, and can be tailored to taste.
+</para>
+
+</sect1>
+
+<sect1 id="other-clients">
+<title>Other LCDproc Clients</title>
+
+<para>
+As it is rather simple to write an LCDproc client, you can find various
+clients on the Internet.
+</para>
+<para>
+Unfortunately we cannot provide a list of LCDproc clients (yet). So, have
+fun searching <ulink url="http://www.google.com">google</ulink> or
+<ulink url="http://freshmeat.net">freshmeat</ulink>. Simply type 'lcdproc'
+for the keyword.
+</para>
+
+</sect1>
+
+</chapter>

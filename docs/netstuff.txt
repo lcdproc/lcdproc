@@ -159,8 +159,8 @@ screen_set #id [-priority integer] [-name "my_name"] [-duration integer]
 widget_add #screen #id type [-in #id]
 	Add something onscreen
 	Widget types can be any of the following:  "string", "hbar",
-	"vbar", "title", "icon", "scroller", "frame", ... more later?
-	Widgets are drawn in the order you create them.
+	"vbar", "title", "icon", "num"  "scroller", "frame", ... more
+	later? Widgets are drawn in the order you create them.
 
 	You can put a widget inside a frame by adding "-in #id", where
 	#id is the name of a frame.
@@ -181,6 +181,8 @@ widget_set #screen #id data
 		vbar		x y length_in_pixels
 
 		icon		x y binary_data
+
+		num		x number_between_0_and_9
 
 		title		text
 

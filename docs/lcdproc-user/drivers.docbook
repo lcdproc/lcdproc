@@ -1,0 +1,15 @@
+<chapter id="drivers">
+<title>LCDproc Drivers</title>
+
+<para>
+This chapter contains the documentation of each LCDproc driver,
+which may include the installation process of the hardware as
+well as the configuration of LCDd.
+</para>
+
+&hd44780;
+&ppttrouble;
+&mtxorb;
+&lircin;
+
+</chapter>

@@ -1,0 +1,138 @@
+<chapter id="running">
+<title>Running LCDproc</title>
+
+<sect1 id="running-lcdd">
+<title>Running LCDd</title>
+
+<para>
+If you have installed the init-scripts you can simply start, stop
+and restart LCDd with the init-script.
+</para>
+
+<sect2 id="lcdd-commandline">
+<title>Running LCDd from the command line</title>
+
+<para>
+There are several reasons for running LCDd from the command line
+</para>
+
+<itemizedlist>
+<listitem><para>You don't want to install LCDd but run it from the source directory.</para></listitem>
+<listitem><para>You want to do some debugging.</para></listitem>
+<listitem><para>You want to get the output directly on stderr.</para></listitem>
+<listitem><para>...</para></listitem>
+</itemizedlist>
+
+<note>
+<para>
+If you run LCDd as a "normal" user, it will not change to the user
+specified in the config file.
+For parallel port devices you will need root privileges anyway ;)
+</para>
+</note>
+
+<para>
+The simplest command that will run LCDd is the following. It is useful for
+running LCDd from the source directory, e.g. after building.
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>server/LCDd -c LCDd.conf</userinput>
+</screen>
+
+</sect2>
+
+<sect2 id="lcdd-commandline-options">
+<title>The Command Line Options of LCDd</title>
+
+<para>
+Running <command>LCDd -h</command> gives you an overview of the currently available
+command line options, including a list of the compiled in drivers.
+</para>
+
+<example>
+<title><command>LCDd -h</command></title>
+<screen> <![CDATA[
+LCDd Server Daemon (part of lcdproc), 0.4.3dev
+Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors
+This program is freely redistributable under the terms of the GNU Public License
+Usage: LCDd [ -hfiws ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \
+	[ -p <port> ] [ -u <user> ] [ -w <time> ] [ -r <level> ]
+
+Available options are:
+	-h		Display this help screen
+	-c <config>	Use a configuration file other than /etc/LCDd.conf
+	-d <driver>	Add a driver to use (output only to first)
+	-f		Run in the foreground
+	-i		Disable showing of the main LCDproc server screen
+	-w <waittime>	Time to pause at each screen (in seconds)
+	-a <addr>	Network (IP) address to bind to
+	-p <port>	Network port to listen for connections on
+	-u <user>	User to run as
+	-s		Output messages to syslog
+	-r <level>	Report level (default=2)
+
+Currently available drivers:
+	lcdm001, LCDM001, MtxOrb, MatrixOrbital, CFontz, CrystalFontz, LB216, text,
+	curses, ncurses, BayRAD, glk, glc
+
+
+]]>
+</screen>
+</example>
+
+</sect2>
+
+</sect1>
+
+<sect1 id="running-lcdproc">
+<title>Running lcdproc</title>
+
+<para>
+You will probably more often run <command>lcdproc</command> from the command line than
+you will run LCDd.
+</para>
+
+<sect2 id="lcdproc-commandline-options">
+<title>The Command Line Options of lcdproc</title>
+
+<para>
+Running <command>lcdproc -h</command> gives you an overview of the currently available
+command line options.
+</para>
+
+<example>
+<title><command>lcdproc -h</command></title>
+<screen> <![CDATA[
+
+LCDproc, 0.4.3dev
+Usage: lcdproc [-s server] [-p port] [modelist]
+	Options in []'s are optional.
+	modelist is "mode [mode mode ...]"
+	Mode letters: 	[C]pu [G]raph [T]ime [M]emory [X]load [D]isk [B]attery
+			proc_[S]izes [O]ld_time big_cloc[K] [U]ptime CPU_SM[P]
+			[A]bout
+
+	Use "man lcdproc" for more info.
+Example:
+	lcdproc -s my.lcdproc.server.com C M X -p 13666
+
+]]>
+</screen>
+</example>
+
+<note>
+<para>
+You will not be able to connect to a remote server, unless it listens to
+the correct interface and port! See <link linkend="server-section">
+<filename>LCDd.conf</filename>: The [server] Section</link>
+for details on the server setup.
+</para>
+</note>
+
+</sect2>
+
+</sect1>
+
+
+</chapter>

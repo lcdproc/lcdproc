@@ -1,0 +1,32 @@
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+
+  <!ENTITY bookinfo SYSTEM "bookinfo.docbook">
+  <!ENTITY introduction SYSTEM "introduction.docbook">
+  <!ENTITY how-to-obtain SYSTEM "how-to-obtain.docbook">
+  <!ENTITY installation SYSTEM "installation.docbook">
+  <!ENTITY configuration SYSTEM "configuration.docbook">
+  <!ENTITY drivers SYSTEM "drivers.docbook">
+  <!ENTITY running SYSTEM "running.docbook">
+  <!ENTITY contact SYSTEM "contact.docbook">
+  <!ENTITY license SYSTEM "license.docbook">
+
+  <!ENTITY hd44780 SYSTEM "drivers/hd44780.docbook">
+  <!ENTITY ppttrouble SYSTEM "drivers/ppttrouble.docbook">
+  <!ENTITY mtxorb SYSTEM "drivers/mtxorb.docbook">
+  <!ENTITY lircin SYSTEM "drivers/lircin.docbook">
+]>
+
+<book id="lcdproc-user" lang="en">
+
+&bookinfo;
+
+&introduction;
+&how-to-obtain;
+&installation;
+&configuration;
+&drivers;
+&running;
+&contact;
+&license;
+
+</book>
