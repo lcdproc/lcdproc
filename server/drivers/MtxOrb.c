@@ -71,10 +71,6 @@
 #define IS_VFD_DISPLAY	(p->MtxOrb_type == MTXORB_VFD)
 #define IS_VKD_DISPLAY	(p->MtxOrb_type == MTXORB_VKD)
 
-/* TODO: Remove this if not in use anymore...
- * #define NotEnoughArgs (i + 1 > argc)
- */
-
 /*
  NOTE: This does not appear to make use of the
        hbar and vbar functions present in the LKD202-25.
@@ -161,9 +157,6 @@ typedef enum {
 	MTXORB_VKD
 } MtxOrb_type_type;
 
-static int cellwidth = LCD_DEFAULT_CELLWIDTH;
-static int cellheight = LCD_DEFAULT_CELLHEIGHT;
-
 
 /* This is an embrionic Private Date, it need to grow ! */
 typedef struct p {
@@ -188,6 +181,8 @@ typedef struct p {
 	char forward_key;
 	char main_menu_key;
 	int keypad_test_mode;
+        int cellwidth;
+	int cellheight;
         } PrivateData;
 
 /* Vars for the server core */
@@ -273,6 +268,8 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->forward_key = MTXORB_DEFAULT_FORWARD_KEY;
 	p->main_menu_key = MTXORB_DEFAULT_MAIN_MENU_KEY;
 	p->keypad_test_mode = 0;
+	p->cellwidth = LCD_DEFAULT_CELLWIDTH;
+	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
 
 	debug( RPT_INFO, "MtxOrb: init(%p,%s)", drvthis, args );
 
@@ -987,22 +984,22 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 
 	if (len > 0) {
 		for (y = p->height; y > 0 && len > 0; y--) {
-			if (len >= cellheight)
+			if (len >= p->cellheight)
 				MtxOrb_icon (drvthis, x, y, barb);
 			else
 				MtxOrb_icon (drvthis, x, y, mapu[len]);
 
-			len -= cellheight;
+			len -= p->cellheight;
 		}
 	} else {
 		len = -len;
 		for (y = 2; y <= p->height && len > 0; y++) {
-			if (len >= cellheight)
+			if (len >= p->cellheight)
 				MtxOrb_icon (drvthis, x, y, barb);
 			else
 				MtxOrb_icon (drvthis, x, y, mapd[len]);
 
-			len -= cellheight;
+			len -= p->cellheight;
 		}
 	}
 
@@ -1029,23 +1026,23 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 
 	if (len > 0) {
 		for (; x <= p->width && len > 0; x++) {
-			if (len >= cellwidth)
+			if (len >= p->cellwidth)
 				MtxOrb_icon (drvthis, x, y, barb);
 			else
 				MtxOrb_icon (drvthis, x, y, mapr[len]);
 
-			len -= cellwidth;
+			len -= p->cellwidth;
 
 		}
 	} else {
 		len = -len;
 		for (; x > 0 && len > 0; x--) {
-			if (len >= cellwidth)
+			if (len >= p->cellwidth)
 				MtxOrb_icon (drvthis, x, y, barb);
 			else
 				MtxOrb_icon (drvthis, x, y, mapl[len]);
 
-			len -= cellwidth;
+			len -= p->cellwidth;
 
 		}
 	}
@@ -1126,16 +1123,16 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 	snprintf (out, sizeof(out), "\x0FEN%c", n);
 	write (p->fd, out, 3);
 
-	for (row = 0; row < cellheight; row++) {
+	for (row = 0; row < p->cellheight; row++) {
 		letter = 0;
-		for (col = 0; col < cellwidth; col++) {
+		for (col = 0; col < p->cellwidth; col++) {
 			/* shift to make room for new scan line data */
 			letter <<= 1;
 			/* Now read a single bit of data
 			 * -- one entry in dat[] --
 			 * and add it to the binary data in "letter"
 			 */
-			letter |= (dat[(row * cellwidth) + col] > 0);
+			letter |= (dat[(row * p->cellwidth) + col] > 0);
 		}
 		write (p->fd, &letter, 1); /* write one character for each row */
 	}
