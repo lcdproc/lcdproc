@@ -953,6 +953,8 @@ MtxOrb_num (int x, int num)
 
 // TODO: This could be higly optimised if data where to be pre-computed.
 
+#define MAX_CUSTOM_CHARS 7
+
 /////////////////////////////////////////////////////////////////
 // Sets a custom character from 0-7...
 //
@@ -967,7 +969,7 @@ MtxOrb_set_char (int n, char *dat)
 	int row, col;
 	int letter;
 
-	if (n < 0 || n > 7)
+	if (n < 0 || n > MAX_CUSTOM_CHARS)
 		return;
 	if (!dat)
 		return;
@@ -978,10 +980,14 @@ MtxOrb_set_char (int n, char *dat)
 	for (row = 0; row < MtxOrb->cellhgt; row++) {
 		letter = 0;
 		for (col = 0; col < MtxOrb->cellwid; col++) {
+			// shift to make room for new scan line data
 			letter <<= 1;
+
+			// Now read a single bit of data -- one entry in dat[] --
+			// and add it to the binary data in "letter"
 			letter |= (dat[(row * MtxOrb->cellwid) + col] > 0);
 		}
-		write (fd, &letter, 1);
+		write (fd, &letter, 1); // write one character for each row
 	}
 }
 
@@ -1066,9 +1072,13 @@ MtxOrb_draw_frame (char *dat)
 	for (i = 1; i <= MtxOrb->hgt; i++) {
 		for (j = 1; j <= MtxOrb->wid; j++) {
 
-			if ((*p) == (*q))
+			if ((*p == *q) && (*p > 8))
 				mv = 1;
 			else {
+				// Draw characters that have changed, as well
+				// as custom characters.  We know not if a custom
+				// character has changed.
+
 				if (mv == 1) {
 					snprintf(out, sizeof(out), "\x0FEG%c%c", j, i);
 					write (fd, out, 4);
