@@ -268,6 +268,24 @@ sed1520_height (Driver *drvthis)
 }
 
 /////////////////////////////////////////////////////////////////
+// Returns the display width
+//
+MODULE_EXPORT int
+sed1520_cellwidth (Driver *drvthis)
+{
+	return cellwidth;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display height
+//
+MODULE_EXPORT int
+sed1520_cellheight (Driver *drvthis)
+{
+	return cellheight;
+}
+
+/////////////////////////////////////////////////////////////////
 // Clears the LCD screen
 //
 MODULE_EXPORT void
