@@ -333,8 +333,10 @@ lcdm001_clear (Driver *drvthis)
 {
         if (framebuf != NULL)
                 memset (framebuf, ' ', (width * height));
-
-	write (fd, "~C", 2); // instant clear...
+	/* An instant clear is NOT neccessary, it only makes the display
+	 *  flicker
+	 */
+	/*write (fd, "~C", 2);*/ /* instant clear...*/
         clear = 1;
 
 	debug (RPT_DEBUG, "LCDM001: cleared screen");
