@@ -22,7 +22,9 @@ static double
 get_loadavg (void)
 {
 	double load;
+#ifdef HAVE_GETLOADAVG
 	double loadavg[LOADAVG_NSTATS];
+#endif
 
 #ifndef HAVE_GETLOADAVG
 	reread (loadavg_fd, "get_load:");
