@@ -4,6 +4,21 @@
  * Displays LCD screens, one after another; suitable for hard-copy
  * terminals.
  *
+ * Copyright (C) 1998-2004 The LCDproc Team
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  */
 
 #ifdef HAVE_CONFIG_H
@@ -18,6 +33,7 @@
 
 #include "lcd.h"
 #include "text.h"
+#include "report.h"
 //#include "drv_base.h"
 
 
@@ -40,6 +56,8 @@ MODULE_EXPORT char *symbol_prefix = "text_";
 MODULE_EXPORT int
 text_init (Driver *drvthis, char *args)
 {
+	char buf[256];
+
 	// Set display sizes
 	if( drvthis->request_display_width() > 0
 	&& drvthis->request_display_height() > 0 ) {
@@ -48,9 +66,15 @@ text_init (Driver *drvthis, char *args)
 		height = drvthis->request_display_height();
 	}
 	else {
-		// Use default size
-		width = LCD_DEFAULT_WIDTH;
-		height = LCD_DEFAULT_HEIGHT;
+		/* Use our own size from config file */
+		strncpy(buf, drvthis->config_get_string ( drvthis->name , "size" , 0 , TEXTDRV_DEFAULT_SIZE), sizeof(buf));
+		buf[sizeof(buf)-1]=0;
+		if( sscanf(buf , "%dx%d", &width, &height ) != 2
+		|| (width <= 0)
+		|| (height <= 0)) {
+			report (RPT_WARNING, "TEXT: Cannot read size: %s. Using default value: %s\n", buf, TEXTDRV_DEFAULT_SIZE);
+			sscanf( TEXTDRV_DEFAULT_SIZE, "%dx%d", &width, &height );
+		}
 	}
 
 	// Allocate the framebuffer

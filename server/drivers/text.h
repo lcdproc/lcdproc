@@ -14,5 +14,6 @@ MODULE_EXPORT void text_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void text_set_contrast (Driver *drvthis, int promille);
 MODULE_EXPORT void text_backlight (Driver *drvthis, int on);
 
+#define TEXTDRV_DEFAULT_SIZE "20x4"
 
 #endif
