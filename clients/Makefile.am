@@ -1,0 +1,1 @@
+SUBDIRS = examples headlines lcdproc 
