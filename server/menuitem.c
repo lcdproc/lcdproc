@@ -934,7 +934,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 			if (pos >= item->data.alpha.maxlength) {
 				/* We're not allowed to add anything anymore */
 				item->data.alpha.error_code = 2;
-				item->data.numeric.edit_pos = 0;
+				item->data.alpha.edit_pos = 0;
 				return MENURESULT_NONE;
 			}
 			if (str[pos] == 0) {
@@ -955,7 +955,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 			if (pos >= item->data.alpha.maxlength) {
 				/* We're not allowed to add anything anymore */
 				item->data.alpha.error_code = 2;
-				item->data.numeric.edit_pos = 0;
+				item->data.alpha.edit_pos = 0;
 				return MENURESULT_NONE;
 			}
 			if (str[pos] == 0) {
@@ -979,7 +979,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 			if (pos >= item->data.alpha.maxlength) {
 				/* We're not allowed to add anything anymore */
 				item->data.alpha.error_code = 2;
-				item->data.numeric.edit_pos = 0;
+				item->data.alpha.edit_pos = 0;
 				return MENURESULT_NONE;
 			}
 			/* proces other keys */
