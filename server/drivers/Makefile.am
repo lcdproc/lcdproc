@@ -8,7 +8,7 @@ EXTRA_libLCDdrivers_a_SOURCES = MtxOrb.c MtxOrb.h text.c text.h \
 	hd44780-ext8bit.c hd44780-ext8bit.h lcd_sem.c lcd_sem.h \
 	hd44780-serialLpt.c hd44780-serialLpt.h \
 	hd44780-winamp.c hd44780-winamp.h \
-	hd44780-low.h hd44780-drivers.h \
+	hd44780-low.h hd44780-drivers.h hd44780-charmap.h \
 	sed1520.c sed1520.h sed1520fm.c \
 	stv5730.c stv5730.h \
 	port.h joy.c joy.h irmanin.c irmanin.h \
