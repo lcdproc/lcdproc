@@ -1,5 +1,5 @@
 /*
- * Base driver module for Toshiba T6963 based LCD displays ver 2.1
+ * Base driver module for Toshiba T6963 based LCD displays ver 2.2
  *    ( ver 2.* is not at all compatible to 1.* versions!)
  *
  * Parts of this file are based on the kernel driver by Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
@@ -10,7 +10,7 @@
  * Copyright (c)  2001 Manuel Stahl <mythos@xmythos.de>
  *
  * Wiring:
- *  Parallel:              LCD: 
+ *  Parallel:              LCD:
  *  1 (Strobe) ----------- 5 (WR)
  *  2-9 (Data) ----------- 11-18 (Data)
  *  14 (Autofeed) -------- 7 (CE)
