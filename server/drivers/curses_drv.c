@@ -79,14 +79,24 @@ chtype get_color (char *colorstr) {
 // #define DEFAULT_FOREGROUND_COLOR COLOR_WHITE
 // #define DEFAULT_BACKGROUND_COLOR COLOR_RED
 
+chtype
 set_foreground_color (char * buf) {
-	if ((fore_color = get_color(buf)) < 0)
-		fore_color = DEFAULT_FOREGROUND_COLOR;
+	chtype color;
+
+	if ((color = get_color(buf)) < 0)
+		color = DEFAULT_FOREGROUND_COLOR;
+
+	return color;
 }
 
+chtype
 set_background_color (char * buf) {
-	if ((back_color = get_color(buf)) < 0)
-		back_color = DEFAULT_BACKGROUND_COLOR;
+	chtype color;
+
+	if ((color = get_color(buf)) < 0)
+		color = DEFAULT_BACKGROUND_COLOR;
+
+	return color;
 }
 
 /*
