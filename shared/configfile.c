@@ -25,6 +25,7 @@
 #endif /* WITH_LDAP_SUPPORT */
 
 #include "shared/report.h"
+#include "shared/fileio.h"
 
 
 typedef struct key {
@@ -48,7 +49,8 @@ section * find_section( char * sectionname );
 section * add_section( char * sectionname );
 key * find_key( section * s, char * keyname, int skip );
 key * add_key( section * s, char * keyname, char * value );
-int process_config( section ** current_section, char (*get_next_char)(), char modify_section_allowed, char * source_descr );
+char get_next_char_f(buffile * f);
+int process_config( section ** current_section, char (*get_next_char)(), char modify_section_allowed, char * source_descr, buffile * f );
 
 #ifdef WITH_LDAP_SUPPORT
 int connect_to_ldap(void);
@@ -67,14 +69,9 @@ int ldap_port;
 
 /**** EXTERNAL FUNCTIONS ****/
 
-#define FILECHUNKSIZE 10
-
 int config_read_file( char *filename )
 {
-	FILE * f;
-	char buf[FILECHUNKSIZE];
-	int bytesread=0;
-	int pos=0;
+	buffile * f;
 	section * curr_section = NULL;
 
 #ifdef WITH_LDAP_SUPPORT
@@ -112,26 +109,14 @@ int config_read_file( char *filename )
 	}
 #endif /* WITH_LDAP_SUPPORT */ 
 
-	/* We use a nested fuction to transfer the characters from buffer to parser*/
-	char get_next_char() {
-		if( pos>=bytesread ) {
-			if( !( bytesread = fread( buf, 1, FILECHUNKSIZE, f ))) {
-				/* We're at the end*/
-				return 0;
-			}
-			pos = 0;
-		}
-		return buf[pos++];
-	}
-
-	f = fopen( filename, "r" );
+	f = buffile_open( filename, "r" );
 	if( f==NULL ) {
 		return -1;
 	}
 
-	process_config( &curr_section, get_next_char, 1, filename );
+	process_config( &curr_section, get_next_char_f, 1, filename, f );
 
-	fclose( f );
+	buffile_close( f );
 
 	return 0;
 }
@@ -152,7 +137,7 @@ int config_read_string( char *sectionname, char *str )
 		s=add_section( sectionname );
 	}
 
-	process_config( &s, get_next_char, 0, "command line" );
+	process_config( &s, get_next_char, 0, "command line", NULL );
 
 	return 0;
 }
@@ -565,6 +550,10 @@ key * add_key( section * s, char * keyname, char * value )
 	return (*place);
 }
 
+char get_next_char_f(buffile * f) {
+	return ((char) buffile_read(f, 1)[0]);
+}
+
 
 /* Parser states*/
 #define ST_INITIAL 0
@@ -587,7 +576,7 @@ key * add_key( section * s, char * keyname, char * value )
 
 
 
-int process_config( section ** current_section, char (*get_next_char)(), char modify_section_allowed, char * source_descr )
+int process_config( section ** current_section, char (*get_next_char)(), char modify_section_allowed, char * source_descr, buffile * f)
 {
 	char state = ST_INITIAL;
 	char ch;
@@ -603,7 +592,12 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 
 	while( state != ST_END ) {
 
-		ch = get_next_char();
+		if (NULL != f) {
+			ch = get_next_char(f);
+		}
+		else {
+			ch = get_next_char();
+		}
 
 		/* Secretly keep count of the line numbers*/
 		if( ch == '\n' ) {
