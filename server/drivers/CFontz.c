@@ -19,6 +19,7 @@
 /*configfile support added by Rene Wagner (c) 2001*/
 /*backlight support modified by Rene Wagner (c) 2001*/
 /*block patch by Eddie Sheldrake (c) 2001 inserted by Rene Wagner*/
+/*big num patch by Luis Llorente (c) 2002*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -604,8 +605,8 @@ MODULE_EXPORT void
 CFontz_num (Driver * drvthis, int x, int num)
 {
 	char out[5];
-	snprintf (out, sizeof(out), "%c%c%c", 28, x, num);
-	write (fd, out, 3);
+	snprintf (out, sizeof(out), "%c%c%c%c", 28, 0, x-1, num+48);
+	write (fd, out, 4);
 }
 
 /////////////////////////////////////////////////////////////////
