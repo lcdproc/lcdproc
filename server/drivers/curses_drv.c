@@ -17,6 +17,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/errno.h>
+#include <ctype.h>
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
 #else
@@ -113,7 +114,7 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	char *argv[64];
 	int argc;
 	int i;
-	char buf[64];
+	char buf[64], *p;
 
 	// Colors....
 	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
@@ -123,41 +124,75 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	int	screen_begx = TOP_LEFT_X,
 		screen_begy = TOP_LEFT_Y;
 
+	curses_drv = driver;
+
 	memset(&argv, '\0', sizeof(argv));
 	argc = get_args (argv, args, 64);
 
 	for (i = 0; i < argc; i++) {
-		if (0 == strcmp (argv[i], "-f") || 0 == strcmp (argv[i], "--forecolor")) {
-			if (i + 1 >= argc) {
-				fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
-				return -1;
+		p = argv[i];
+		if (*p == '-') {
+			p++;
+			switch (*p) {
+				case 'f':
+					if (i + 1 >= argc) {
+						fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					strncpy(buf, argv[++i], sizeof(buf));
+					fore_color = set_foreground_color(buf);
+					break;
+				case 'b':
+					if (i + 1 >= argc) {
+						fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					strncpy(buf, argv[++i], sizeof(buf));
+					back_color = set_background_color(buf);
+					break;
+				case 'h':
+					printf ("LCDproc [n]curses driver\n"
+							"\t-f\tChange the foreground color\n"
+							"\t-b\tChange the background color\n"
+							"\t-t\tChange the type of screen (20x2, etc.)\n"
+							// "\t-b\t--backcolor\tChange the backlight's \"off\" color\n"
+							// "\t-B\t--backlight\tChange the backlight's \"on\" color\n"
+							"\t-h\t--help\t\tShow this help information\n");
+					return -1;
+					break;
+				case 't':
+					if (i + 1 > argc) {
+						fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
+						return -1;
+					}
+					i++;
+					p = argv[i];
+
+					if (isdigit((unsigned int) *p) && isdigit((unsigned int) *(p+1))) {
+						int wid, hgt;
+
+						wid = ((*p - '0') * 10) + (*(p+1) - '0');
+						p += 2;
+
+						if (*p != 'x')
+							break;
+
+						p++;
+						if (!isdigit((unsigned int) *p))
+							break;
+
+						hgt = (*p - '0');
+
+						curses_drv->wid = wid;
+						curses_drv->hgt = hgt;
+						}
+					break;
+				default:
+					return -1;
+					break;
 			}
-			strncpy(buf, argv[++i], sizeof(buf));
-			fore_color = set_foreground_color(buf);
-		} else if (0 == strcmp (argv[i], "-b") || 0 == strcmp (argv[i], "--backcolor")) {
-			if (i + 1 >= argc) {
-				fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			strncpy(buf, argv[++i], sizeof(buf));
-			back_color = set_background_color(buf);
-		} else if (0 == strcmp (argv[i], "-B") || 0 == strcmp (argv[i], "--backlight")) {
-			if (i + 1 >= argc) {
-				fprintf (stderr, "curses_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			// TODO:  Backlight... backlight? where?
-			printf ("Sorry, backlight not yet implemented...\n");
-		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-			printf ("LCDproc [n]curses driver\n" "\t-f\t--forecolor\tChange the foreground color\n" "\t-b\t--backcolor\tChange the backlight's \"off\" color\n" "\t-B\t--backlight\tChange the backlight's \"on\" color\n" "\t-h\t--help\t\tShow this help information\n");
-			return -1;
-		} else {
-			printf ("Invalid parameter: %s\n", argv[i]);
 		}
-
 	}
-
-	curses_drv = driver;
 
 	// Init curses...
 	initscr ();
