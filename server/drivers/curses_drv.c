@@ -6,6 +6,29 @@
  *
  */
 
+/*
+Different implementations of (n)curses available on:
+OpenBSD: 
+ 	http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libcurses/
+	ncurses
+NetBSD: 
+	http://cvsweb.netbsd.org/bsdweb.cgi/basesrc/lib/libcurses/
+	curses : does not define ACS_S3, ACS_S7, wcolor_set() or redrawwin().
+	it is possible to make a: 
+		#define ACS_S3 (_acs_char['p'])
+		#define ACS_S7 (_acs_char['r'])
+FreeBSD:
+	http://www.freebsd.org/cgi/cvsweb.cgi/src/
+	ncurses
+RedHat, Debian, (most distros) Linux:
+	ncurses
+SunOS (5.5.1):
+	curses : does not define ACS_S3, ACS_S7 or wcolor_set().
+	it is possible to make a: 
+		#define ACS_S3 (acs_map['p'])
+		#define ACS_S7 (acs_map['r'])
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -39,10 +62,27 @@
 // Other systems may very likely support these characters; however,
 // their names were invented for ncurses.
 #ifndef ACS_S3
-#define ACS_S3 (acs_map['p'])
+# ifdef CURSES_HAS_ACS_MAP
+#  define ACS_S3 (acs_map['p'])
+# else
+#  ifdef CURSES_HAS__ACS_CHAR
+#   define ACS_S3 (_acs_char['p'])
+#  else
+#   define ACS_S3 ACS_S1    // Last resort
+#  endif
+# endif 
 #endif
+
 #ifndef ACS_S7
-#define ACS_S7 (acs_map['r'])
+# ifdef CURSES_HAS_ACS_MAP
+#  define ACS_S7 (acs_map['r'])
+# else
+#  ifdef CURSES_HAS__ACS_CHAR
+#   define ACS_S7 (_acs_char['r'])
+#  else
+#   define ACS_S7 ACS_S9    // Last resort
+#  endif
+# endif 
 #endif
 
 lcd_logical_driver *curses_drv;
@@ -336,19 +376,23 @@ curses_drv_wborder (WINDOW *win) {
 	//int x, y;
 	//char buf[128];
 
+#ifdef CURSES_HAS_WCOLOR_SET
 	if (has_colors()) {
 		wcolor_set(win, current_border_pair, NULL);
 		//wattron(win, COLOR_PAIR(current_border_pair) | A_BOLD);
 		wattron(win, A_BOLD);
 	}
+#endif
 
 	box(win, 0, 0);
 
+#ifdef CURSES_HAS_WCOLOR_SET
 	if (has_colors()) {
 		wcolor_set(win, current_color_pair, NULL);
 		//wattron(win, COLOR_PAIR(current_color_pair));
 		wattroff(win, A_BOLD);
 	}
+#endif
 }
 
 void
@@ -681,6 +725,8 @@ void
 curses_drv_restore_screen () {
 	erase();
 	refresh();
+#ifdef CURSES_HAS_REDRAWWIN
 	redrawwin(lcd_win);
+#endif
 	wrefresh(lcd_win);
 }

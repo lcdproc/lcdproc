@@ -26,6 +26,14 @@
 
 #undef CURSES_DRV
 
+#undef CURSES_HAS__ACS_CHAR
+
+#undef CURSES_HAS_ACS_MAP
+
+#undef CURSES_HAS_REDRAWWIN
+
+#undef CURSES_HAS_WCOLOR_SET
+
 #undef DEBUG
 
 #undef DEFINED_ACS

@@ -82,6 +82,28 @@ dnl				else
  					AC_MSG_WARN([The curses driver needs the curses (or ncurses) library.]),
  				)
  			)
+ 			
+ 			AC_CURSES_ACS_ARRAY
+ 			
+ 			AC_CACHE_CHECK([for redrawwin() in curses], ac_cv_curses_redrawwin,
+			[oldlibs="$LIBS"
+			 LIBS="$LIBS $LIBCURSES"
+			 AC_TRY_LINK_FUNC(redrawwin, ac_cv_curses_redrawwin=yes, ac_cv_curses_redrawwin=no)
+			 LIBS="$oldlibs"
+			])
+			if test "$ac_cv_curses_redrawwin" = yes; then
+				AC_DEFINE(CURSES_HAS_REDRAWWIN)
+			fi
+ 						
+			AC_CACHE_CHECK([for wcolor_set() in curses], ac_cv_curses_wcolor_set,
+			[oldlibs="$LIBS"
+			 LIBS="$LIBS $LIBCURSES"
+			 AC_TRY_LINK_FUNC(wcolor_set, ac_cv_curses_wcolor_set=yes, ac_cv_curses_wcolor_set=no)
+			 LIBS="$oldlibs"
+			])
+			if test "$ac_cv_curses_wcolor_set" = yes; then
+				AC_DEFINE(CURSES_HAS_WCOLOR_SET)
+			fi
 			;;
 		text)
 			DRIVERS="$DRIVERS text.o"
@@ -176,7 +198,28 @@ AC_SUBST(DRIVERS)
 ])
 
 
+dnl
+dnl Curses test to check if we use _acs_char* or acs_map*
+dnl
+AC_DEFUN(AC_CURSES_ACS_ARRAY, [
+	AC_CACHE_CHECK([for acs_map in curses.h], ac_cv_curses_acs_map, 
+	[AC_TRY_COMPILE([#include <curses.h>], [ char map = acs_map['p'] ], ac_cv_curses_acs_map=yes, ac_cv_curses_acs_map=no)])
+	
+	if test "$ac_cv_curses_acs_map" = yes
+	then
+		AC_DEFINE(CURSES_HAS_ACS_MAP)
+	else
+	
+		AC_CACHE_CHECK([for _acs_char in curses.h], ac_cv_curses__acs_char, 
+		[AC_TRY_COMPILE([#include <curses.h>], [ char map = _acs_char['p'] ], ac_cv_curses__acs_char=yes, ac_cv_curses__acs_char=no)])
 
+		if test "$ac_cv_curses__acs_char" = yes
+		then
+			AC_DEFINE(CURSES_HAS__ACS_CHAR)
+		fi
+		
+	fi
+])
 
 dnl
 dnl Filesystem information detection
