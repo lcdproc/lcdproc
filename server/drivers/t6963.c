@@ -398,7 +398,7 @@ t6963_heartbeat (int type)
 	if (type)
 		saved_type = type;
 
-	if (type = HEARTBEAT_ON) {
+	if (type == HEARTBEAT_ON) {
 		// Set this to pulsate like a real heartbeat...
 		whichIcon = (! ((timer + 4) & 5));
 		// Put character on screen...
