@@ -1,5 +1,5 @@
 /*
- * Base driver module for Toshiba T6963 based LCD displays ver 2.0
+ * Base driver module for Toshiba T6963 based LCD displays ver 2.1
  *    ( ver 2.* is not at all compatible to 1.* versions!)
  *
  * Parts of this file are based on the kernel driver by Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
@@ -19,6 +19,14 @@
 #define DEFAULT_CELL_HEIGHT 8
 #define DEFAULT_SIZE "20x6"
 #define DEFAULT_PORT 0x378
+#define DEFAULT_WRHI 0x04
+#define DEFAULT_WRLO 0xfb
+#define DEFAULT_CEHI 0xfe
+#define DEFAULT_CELO 0x01
+#define DEFAULT_CDHI 0xf7
+#define DEFAULT_CDLO 0x08
+#define DEFAULT_RDHI 0xfd
+#define DEFAULT_RDLO 0x02
 
 #define SM_UP (1)
 #define SM_DOWN (2)
@@ -29,35 +37,14 @@
 #define CUR_BLOCK 6
 #define CUR_NONE 1
 
-// take PC 1 HI
-#define T6963_CEHI    port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) & 0xfe)
-// take PC 1 LO
-#define T6963_CELO    port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) | 0x01)
-
-// take PC 14 HI
-#define T6963_RDHI    port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) & 0xfd)
-// take PC 14 LO
-#define T6963_RDLO    port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) | 0x02)
-
-// take PC 16 HI
-#define T6963_WRHI    port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) | 0x04)
-// take PC 16 LO
-#define T6963_WRLO    port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) & 0xfb)
-
-// take PC 17 HI
-#define T6963_CDHI    port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) & 0xf7)
-// take PC 17 LO
-#define T6963_CDLO    port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) | 0x08)
-
 // 8bit Data input
 #define T6963_DATAIN  port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) | 0x20)
 // 8bit Data output
 #define T6963_DATAOUT port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) & 0xdf)
 
-#define CHARGEN_BASE 0x0000
-#define TEXT_BASE 0x0800
-#define ATTRIB_BASE 0x1000
-#define ATTRIB_AREA 0x03BF
+#define CHARGEN_BASE 0x1000
+#define TEXT_BASE 0x0000
+#define ATTRIB_BASE 0x0200
 
 #define SET_CURSOR_POINTER 0x21
 #define SET_OFFSET_REGISTER 0x22
@@ -135,6 +122,9 @@ MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
 
 void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
 void t6963_set_nchar (Driver *drvthis, int n, char *dat, int num);
+
+void t6963_low_set_control(char wr, char ce, char cd, char rd);
+void t6963_low_dsp_ready(void);
 
 void t6963_low_data(u8 byte);
 void t6963_low_command (u8 byte);
