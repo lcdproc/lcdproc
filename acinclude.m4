@@ -210,15 +210,15 @@ dnl
 AC_DEFUN([AC_FIND_MTAB_FILE], [
 	AC_CACHE_CHECK([for your mounted filesystem table], ac_cv_mtab_file, [
 		dnl Linux
-		if test -e "/etc/mtab"; then
+		if test -f "/etc/mtab"; then
 			ac_cv_mtab_file=/etc/mtab
 		else
 			dnl Solaris
-			if test -e "/etc/mnttab"; then
+			if test -f "/etc/mnttab"; then
 				ac_cv_mtab_file=/etc/mnttab
 			else
 				dnl BSD
-				if test -e "/etc/fstab"; then
+				if test -f "/etc/fstab"; then
 					ac_cv_mtab_file=/etc/fstab
 				fi
 			fi
