@@ -129,16 +129,16 @@ t6963_init (struct lcd_logical_driver *driver, char *args)
 	driver->string = t6963_string;
 	driver->chr = t6963_chr;
 	driver->vbar = t6963_vbar;
-	driver->init_vbar = NULL;
+	//driver->init_vbar = NULL;
 	driver->hbar = t6963_hbar;
-	driver->init_hbar = NULL;
+	//driver->init_hbar = NULL;
 	driver->num = t6963_num;
 	driver->init_num = t6963_init_num;
 
 	driver->init = t6963_init;
 	driver->close = t6963_close;
 	driver->flush = t6963_flush;
-	driver->flush_box = NULL;
+	//driver->flush_box = NULL;
 	driver->contrast = t6963_contrast;
 	driver->backlight = t6963_backlight;
 	driver->set_char = t6963_set_char;

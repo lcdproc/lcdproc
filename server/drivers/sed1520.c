@@ -251,15 +251,15 @@ sed1520_init (struct lcd_logical_driver *driver, char *args)
     driver->icon = sed1520_icon;
     driver->draw_frame = sed1520_draw_frame;
     // We dont't need init for vbar,hbar and friends.
-    driver->init_hbar = NULL;
-    driver->init_vbar = NULL;
-    driver->init_num = NULL;
+    //driver->init_hbar = NULL;
+    //driver->init_vbar = NULL;
+    //driver->init_num = NULL;
     // Neither contrast nor backlight are controllable.
-    driver->contrast = NULL;
-    driver->backlight = NULL;
+    //driver->contrast = NULL;
+    //driver->backlight = NULL;
     // There are some unused input lines that may be used for input,
     // but nothing is programmed so far.
-    driver->getkey = NULL;
+    //driver->getkey = NULL;
     return 200;			// 200 is arbitrary.  (must be 1 or more)
 }
 

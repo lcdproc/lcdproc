@@ -449,13 +449,13 @@ int bayrad_init(struct lcd_logical_driver *driver, char *args)
   driver->init_vbar = bayrad_init_vbar;
   driver->hbar = bayrad_hbar;
   driver->init_hbar = bayrad_init_hbar;
-  driver->num = NULL; //bayrad_num;
-  driver->init_num = NULL; //bayrad_init_num;
+  //driver->num = NULL; //bayrad_num;
+  //driver->init_num = NULL; //bayrad_init_num;
   driver->init = bayrad_init;
   driver->close = bayrad_close;
   driver->flush = bayrad_flush;
   driver->flush_box = bayrad_flush_box;
-  driver->contrast = NULL;                 
+  //driver->contrast = NULL;                 
   driver->backlight = bayrad_backlight;
   driver->set_char = bayrad_set_char;
   driver->icon = bayrad_icon;

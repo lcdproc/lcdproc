@@ -205,14 +205,14 @@ int LB216_init(lcd_logical_driver *driver, char *args)
    driver->init_vbar =  LB216_init_vbar;
    driver->hbar =       LB216_hbar;
    driver->init_hbar =  LB216_init_hbar;
-   driver->num =        NULL;
-   driver->init_num =   NULL;
+   //driver->num =        NULL;
+   //driver->init_num =   NULL;
 
    driver->init =       LB216_init;
    driver->close =      LB216_close;
    driver->flush =      LB216_flush;
-   driver->flush_box =  NULL;
-   driver->contrast =   NULL;
+   //driver->flush_box =  NULL;
+   //driver->contrast =   NULL;
    driver->backlight =  LB216_backlight;
    driver->set_char =   LB216_set_char;
    driver->icon =       LB216_icon;
