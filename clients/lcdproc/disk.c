@@ -51,10 +51,10 @@ get_fs (mounts fs[])
 	char line[256];
 	int x = 0, y;
 
-#ifdef SOLARIS
-	mtab_fd = fopen ("/etc/mnttab", "r");
+#ifdef MTAB_FILE
+	mtab_fd = fopen(MTAB_FILE, "r");
 #else
-	mtab_fd = fopen ("/etc/mtab", "r");
+#error "Can't find your mounted filesystem table file."
 #endif
 
 	// Get rid of old, unmounted filesystems...
