@@ -242,9 +242,9 @@ int glk_init(struct lcd_logical_driver *driver, char *args)
 
 void glk_close() 
 {
-  if(lcd.framebuf != NULL) free(lcd.framebuf);
+  if(glk->framebuf != NULL) free(glk->framebuf);
 
-  lcd.framebuf = NULL;
+  glk->framebuf = NULL;
 
   glkclose( PortFD ) ;
 }
@@ -259,12 +259,12 @@ void glk_clear_forced()
 //  puts( "REALLY CLEARING the display" );
   clearcount = CLEARCOUNT ;
   glkputl( PortFD, GLKCommand, 0x58, EOF );
-  memset(screen_contents, ' ', lcd.wid*lcd.hgt);
+  memset(screen_contents, ' ', glk->wid*glk->hgt);
 }
 void glk_clear() 
 {
 //  puts( "glk_clear( )" );
-  memset(lcd.framebuf, ' ', lcd.wid*lcd.hgt);
+  memset(glk->framebuf, ' ', glk->wid*glk->hgt);
   if( --clearcount < 0 ) {
     glk_clear_forced( );
   };
@@ -277,7 +277,7 @@ void glk_clear()
 void glk_flush()
 {
 //   puts( "glk_flush( )" );
-   lcd.draw_frame(lcd.framebuf);
+   glk->draw_frame(glk->framebuf);
 }
 
 
@@ -291,11 +291,11 @@ void glk_string(int x, int y, char string[])
 
 //  printf( "glk_string( %d, %d, \"%s\" )\n", x, y, string );
 
-  if( x > lcd.wid || y > lcd.hgt ) {
+  if( x > glk->wid || y > glk->hgt ) {
      return ;
   };
 
-  for( p = string ; *p && x <= lcd.wid ; ++x, ++p ) {
+  for( p = string ; *p && x <= glk->wid ; ++x, ++p ) {
     glk_chr( x, y, *p );
   };
 
@@ -336,7 +336,7 @@ void glk_chr(int x, int y, char c)
     myc = 133 ;
   };
    
-  lcd.framebuf[(y*lcd.wid) + x] = myc;
+  glk->framebuf[(y*glk->wid) + x] = myc;
 
 }
 
@@ -431,7 +431,7 @@ void glk_init_num()
 void glk_num(int x, int num) 
 {
 //  printf("BigNum(%i, %i)\n", x, num);
-  lcd.framebuf[x-1] = num + '0' ;
+  glk->framebuf[x-1] = num + '0' ;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -447,13 +447,13 @@ void glk_set_char(int n, char *dat)
 //
 void glk_vbar(int x, int len) 
 {
-  int  y = lcd.hgt ;
+  int  y = glk->hgt ;
 
 //  printf( "glk_vbar( %d, %d )\n", x, len );
-  while( len > lcd.cellhgt ) {
+  while( len > glk->cellhgt ) {
     glk_chr( x, y, 255 );
     --y ;
-    len -= lcd.cellhgt ;
+    len -= glk->cellhgt ;
   };
 
   if( y >= 0 ) {
@@ -478,13 +478,13 @@ void glk_vbar(int x, int len)
 void glk_hbar(int x, int y, int len) 
 {
 //  printf( "glk_hbar( %d, %d, %d )\n", x, y, len );
-  while( len > lcd.cellwid ) {
+  while( len > glk->cellwid ) {
     glk_chr( x, y, 255 );
     ++x ;
-    len -= lcd.cellwid ;
+    len -= glk->cellwid ;
   };
 
-  if( x <= lcd.wid ) {
+  if( x <= glk->wid ) {
     int  lastc ;
     switch( len ) {
     case 0 :  lastc = ' ' ; break ;
@@ -529,11 +529,11 @@ void glk_icon(int which, char dest)
 
   old = CGRAM[(int)dest] ;
   CGRAM[(int)dest] = new ;
-  p = lcd.framebuf ;
+  p = glk->framebuf ;
   q = screen_contents ;
 
   /* Replace all old icons with new icon in new frame */
-  for( count = lcd.wid * lcd.hgt ; count ; --count ) {
+  for( count = glk->wid * glk->hgt ; count ; --count ) {
     if( *q == old ) {
 //      printf( "icon %d to %d at %d\n", old, new, q - screen_contents );
       *p = new ;
@@ -570,14 +570,14 @@ void glk_draw_frame(char *dat)
   int  xs ;
   char *  ps = NULL ;
 
-//  printf( "glk_draw_frame( %p )  lcd.framebuf = %p\n", dat, lcd.framebuf );
+//  printf( "glk_draw_frame( %p )  glk->framebuf = %p\n", dat, glk->framebuf );
 
-  p = lcd.framebuf ;
+  p = glk->framebuf ;
   q = screen_contents ;
 
-  for( y = 0 ; y < lcd.hgt ; ++y ) {
+  for( y = 0 ; y < glk->hgt ; ++y ) {
     xs = -1 ;  /* XStart not set */
-    for( x = 0 ; x < lcd.wid ; ++x ) {
+    for( x = 0 ; x < glk->wid ; ++x ) {
       if( *q == *p && xs >= 0 ) {
         /* Write accumulated string */
         glkputl( PortFD, GLKCommand, 0x79, xs*6+1, y*8, EOF );
@@ -589,13 +589,13 @@ void glk_draw_frame(char *dat)
         ps = p ;
         xs = x ;
       };
-      *q++ = *p++ ;  /* Update screen_contents from lcd.framebuf */
+      *q++ = *p++ ;  /* Update screen_contents from glk->framebuf */
     };
     if( xs >= 0 ) {
       /* Write accumulated line */
       glkputl( PortFD, GLKCommand, 0x79, xs*6+1, y*8, EOF );
-      glkputa( PortFD, lcd.wid - xs, ps );
-//      printf( "draw_frame: Writing at (%d,%d) for %d\n", xs, y, lcd.wid-xs );
+      glkputa( PortFD, glk->wid - xs, ps );
+//      printf( "draw_frame: Writing at (%d,%d) for %d\n", xs, y, glk->wid-xs );
     };
 
   };  /* For y */
