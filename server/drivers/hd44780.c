@@ -74,7 +74,7 @@
 
 #include "lcd.h"
 #include "hd44780.h"
-#include "drv_base.h"
+// #include "drv_base.h"
 
 #include "hd44780-low.h"
 #include "hd44780-drivers.h"
@@ -126,6 +126,7 @@ void HD44780_close ();
 static void HD44780_linewrap (int on);
 static void HD44780_autoscroll (int on);
 static void HD44780_position (int x, int y);
+static void HD44780_chr (int x, int y, char ch);
 
 static void common_position (int display, int DDaddr);
 static void common_autoscroll (int on);
@@ -226,14 +227,14 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	}
 
 	// default case for when spans aren't indicated
-	// - add a sanity check against lcd.hgt ??
+	// - add a sanity check against HD44780->hgt ??
 	// - this only works if the -t option is specified before -d
 	if (numLines == 0) {
-		if ((spanList = (int *) malloc (sizeof (int) * lcd.hgt))) {
+		if ((spanList = (int *) malloc (sizeof (int) * HD44780->hgt))) {
 			int i;
-			for (i = 0; i < lcd.hgt; ++i) {
+			for (i = 0; i < HD44780->hgt; ++i) {
 				spanList[i] = 1;
-				numLines = lcd.hgt;
+				numLines = HD44780->hgt;
 			}
 		} else
 			fprintf (stderr, "Error mallocing for span list\n");
@@ -241,7 +242,7 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	if (numDisplays == 0) {
 		if ((dispVOffset = (int *) malloc (sizeof (int))) && (dispSizes = (int *) malloc (sizeof (int)))) {
 			dispVOffset[0] = 0;
-			dispSizes[0] = lcd.hgt;
+			dispSizes[0] = HD44780->hgt;
 			numDisplays = 1;
 		} else
 			fprintf (stderr, "Error mallocing for display sizes list\n");
@@ -265,7 +266,7 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	}
 	// Make sure the frame buffer is there...  
 	if (!HD44780->framebuf)
-		HD44780->framebuf = (unsigned char *) malloc (lcd.wid * lcd.hgt);
+		HD44780->framebuf = (unsigned char *) malloc (HD44780->wid * HD44780->hgt);
 
 	if (!HD44780->framebuf) {
 		//HD44780_close();
@@ -393,7 +394,7 @@ HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch
   }
 */
 
-// x and y here are for the virtual lcd.hgt x lcd.wid display
+// x and y here are for the virtual HD44780->hgt x HD44780->wid display
 static void
 HD44780_position (int x, int y)
 {
@@ -402,7 +403,7 @@ HD44780_position (int x, int y)
 	int DDaddr;
 
 	// 16x1 is a special case
-	if (dispSizes[dispID - 1] == 1 && lcd.wid == 16)
+	if (dispSizes[dispID - 1] == 1 && HD44780->wid == 16)
 		if (x >= 8) {
 			x -= 8;
 			relY = 1;
@@ -410,7 +411,7 @@ HD44780_position (int x, int y)
 
 	DDaddr = x + (relY % 2) * 0x40;
 	if ((relY % 4) >= 2)
-		DDaddr += lcd.wid;
+		DDaddr += HD44780->wid;
 
 	hd44780_functions->position (dispID, DDaddr);
 }
@@ -422,10 +423,15 @@ common_position (int display, int DDaddr)
 	hd44780_functions->uPause (40);
 }
 
+void HD44780_chr (int x, int y, char ch)
+{
+	HD44780->framebuf[ (y * HD44780->wid) + x] = ch;
+}
+
 void
 HD44780_flush ()
 {
-	HD44780_draw_frame (lcd.framebuf);
+	HD44780_draw_frame (HD44780->framebuf);
 }
 
 void
@@ -439,9 +445,9 @@ HD44780_flush_box (int lft, int top, int rgt, int bot)
 		HD44780_position (lft, y);
 		//printf("\n%d,%d :",lft,y);
 		for (x = lft; x <= rgt; x++) {
-			HD44780_senddata (spanList[y], RS_DATA, lcd.framebuf[(y * lcd.wid) + x]);
+			HD44780_senddata (spanList[y], RS_DATA, HD44780->framebuf[(y * HD44780->wid) + x]);
 		}
-		//write(fd, lcd.framebuf[(y*lcd.wid)+lft, rgt-lft+1]);
+		//write(fd, HD44780->framebuf[(y*HD44780->wid)+lft, rgt-lft+1]);
 	}
 
 }
@@ -489,7 +495,7 @@ common_autoscroll (int on)
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before lcd.vbar()
+// Sets up for vertical bars.  Call before HD44780->vbar()
 //
 void
 HD44780_init_vbar ()
@@ -638,13 +644,13 @@ HD44780_vbar (int x, int len)
 	char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
 
 	int y;
-	for (y = lcd.hgt; y > 0 && len > 0; y--) {
-		if (len >= lcd.cellhgt)
-			drv_base_chr (x, y, 255);
+	for (y = HD44780->hgt; y > 0 && len > 0; y--) {
+		if (len >= HD44780->cellhgt)
+			HD44780_chr (x, y, 255);
 		else
-			drv_base_chr (x, y, map[len]);
+			HD44780_chr (x, y, map[len]);
 
-		len -= lcd.cellhgt;
+		len -= HD44780->cellhgt;
 	}
 
 }
@@ -657,13 +663,13 @@ HD44780_hbar (int x, int y, int len)
 {
 	char map[6] = { 32, 1, 2, 3, 4, 255 };
 
-	for (; x <= lcd.wid && len > 0; x++) {
-		if (len >= lcd.cellwid)
-			drv_base_chr (x, y, 255);
+	for (; x <= HD44780->wid && len > 0; x++) {
+		if (len >= HD44780->cellwid)
+			HD44780_chr (x, y, 255);
 		else
-			drv_base_chr (x, y, map[len]);
+			HD44780_chr (x, y, map[len]);
 
-		len -= lcd.cellwid;
+		len -= HD44780->cellwid;
 
 	}
 }
@@ -686,6 +692,7 @@ void
 HD44780_num (int x, int num)
 {
 	char out[5];
+	printf("Size of out is %d\n", sizeof(out));
 	snprintf (out, sizeof(out), "%c#%c%c", 254, x, num);
 	//write(fd, out, 4);
 }
@@ -710,11 +717,11 @@ HD44780_set_char (int n, char *dat)
 
 	HD44780_senddata (0, RS_INSTR, SETCHAR | n * 8);
 
-	for (row = 0; row < lcd.cellhgt; row++) {
+	for (row = 0; row < HD44780->cellhgt; row++) {
 		letter = 0;
-		for (col = 0; col < lcd.cellwid; col++) {
+		for (col = 0; col < HD44780->cellwid; col++) {
 			letter <<= 1;
-			letter |= (dat[(row * lcd.cellwid) + col] > 0);
+			letter |= (dat[(row * HD44780->cellwid) + col] > 0);
 		}
 		HD44780_senddata (0, RS_DATA, letter);
 	}
@@ -765,7 +772,7 @@ HD44780_icon (int which, char dest)
 /////////////////////////////////////////////////////////////
 // Blasts a single frame onscreen, to the lcd...
 //
-// Input is a character array, sized lcd.wid*lcd.hgt
+// Input is a character array, sized HD44780->wid*hgt
 //
 void
 HD44780_draw_frame (char *dat)
@@ -775,11 +782,11 @@ HD44780_draw_frame (char *dat)
 	if (!dat)
 		return;
 
-	for (y = 0; y < lcd.hgt; y++) {
+	for (y = 0; y < HD44780->hgt; y++) {
 		HD44780_position (0, y);
 		//printf("\n%d :",y);
-		for (x = 0; x < lcd.wid; x++) {
-			HD44780_senddata (spanList[y], RS_DATA, HD44780_charmap[(unsigned char)dat[(y * lcd.wid) + x]]);
+		for (x = 0; x < HD44780->wid; x++) {
+			HD44780_senddata (spanList[y], RS_DATA, HD44780_charmap[(unsigned char)dat[(y * HD44780->wid) + x]]);
 		}
 	}
 
