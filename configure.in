@@ -25,7 +25,8 @@ AC_MSG_RESULT($debug)
 if test $debug = "yes"; then
 	CFLAGS="-g"
 else
-	CFLAGS="-Wno-unused -O6"
+dnl	CFLAGS="-Wno-unused -O6"
+	CFLAGS="-O6"
 fi
 CFLAGS="-Wall $CFLAGS"
 export CFLAGS
