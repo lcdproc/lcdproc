@@ -288,6 +288,8 @@ lcd_drv_patch_init (struct lcd_logical_driver *driver)
 
 	ChkBaseDrv(getkey, lcd_drv_getkey, "getkey");
 	ChkBaseDrv(getinfo, lcd_drv_getinfo, "getinfo");
+
+	return 0;
 }
 
 /*
@@ -321,24 +323,32 @@ lcd_add_driver (char *driver, char *args)
 	int i;
 	char buf[64];
 	int (*init_driver) ();
+	static lcd_logical_driver *old_driver = NULL;
 
 	lcd_logical_driver *add;
 
 	if ((init_driver = (void *) lcd_find_init(driver)) != NULL) {
 
-		// This creates an instance of the lcd structure specific to the
-		// driver... it is passed to the driver's init routine...
-
-		//if ((add = malloc (sizeof (*add))) == NULL) {
-		//	snprintf (buf, sizeof(buf), "couldn't allocate space for driver \"%s\"", driver);
-		//	syslog (LOG_ERR, buf);
-		//	return -1;
-		//}
-
 		snprintf(buf, sizeof(buf), "adding %s driver", driver);
 		syslog(LOG_INFO, buf);
 
+		// This creates an instance of the lcd structure specific to the
+		// driver... it is passed to the driver's init routine...
+
+		// Notice here that every driver will overwrite the last....!
+		// TODO: handle multiple input drivers cleanly...
 		add = &lcd;
+		//
+		// if (old_driver) {
+		//   add = malloc(); -- with error checking...
+		//   old_driver->nextkey = add;
+		//   add->nextkey = NULL;
+		//   old_driver = add;
+		//   }
+		// else {
+		//   add = &lcd;
+		//   }
+		//
 		memset (add, 0, sizeof (add));
 
 		// Default settings for the driver...
@@ -543,6 +553,26 @@ lcd_drv_getinfo ()
 static char
 lcd_drv_getkey ()
 {
+	return 0;
+}
+
+static char
+lcd_drv_roundrobin_getkey () {
+	lcd_logical_driver *driver;
+	static char (*getkey) ();
+	char c;
+
+	if (getkey == NULL)
+		getkey = lcd.getkey;
+
+	if ((c = getkey()) != 0)
+		return c;
+
+	driver = &lcd;
+	while ((driver = driver->nextkey) != NULL)
+		if ((c = driver->getkey()) > 0)
+			return c;
+
 	return 0;
 }
 

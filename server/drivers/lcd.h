@@ -29,6 +29,10 @@ typedef struct lcd_logical_driver {
 	// Frame buffer...
 	char *framebuf;
 
+	// Pointer to next input function...
+	//lcd_logical_driver *nextkey;
+	void *nextkey;
+
 	// Functions which might be the same for all drivers...
 	void (*clear) ();
 	void (*string) (int x, int y, char lcd[]);
