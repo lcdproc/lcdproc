@@ -209,105 +209,96 @@ dnl not all options have effect at the moment
 AC_SUBST(libusb_libs)
 AC_SUBST(libusb_cflags)
 
-enable_libusb=yes
 AC_MSG_CHECKING([if libusb support has been enabled]);
 AC_ARG_ENABLE(
   libusb,
   [  --enable-libusb         compile with USB support using libusb.  ],
   [ 
-    if test "$enable_libusb" = "yes"; then
-      AC_MSG_RESULT(yes)
-    else
-      AC_MSG_RESULT(no)
+    if test "$enableval" != "no"; then
+      enable_libusb="yes"
     fi
   ],
-  [ 
-    enable_libusb="no";
-    AC_MSG_RESULT(no) 
-  ]
+  [ enable_libusb="yes" ]
 )
-
-AC_PATH_PROG(libusb_config,libusb-config, :)
+AC_MSG_RESULT($enable_libusb) 
 
 if test "$enable_libusb" = "yes"; then
-AC_ARG_WITH(
-  libusb-includes,
-  [  --with-libusb-includes=DIR  
+  AC_PATH_PROG(libusb_config, libusb-config, :)
+
+  AC_ARG_WITH(
+    libusb-includes,
+    [  --with-libusb-includes=DIR  
                           libusb include files are in DIR
                           (default: found by libusb-config).  ],
-  [ 
-    if test "$withval" = "no"; then 
-     libusb_build_dir=""; 
-    else
-      libusb_includepath="$withval" 
-      libusb_cflags="-I$withval" 
-    fi
-  ],
-  [ 
-    AC_MSG_CHECKING(libusb CFLAGS)
-    if test "x$libusb_config" != x ; then
-      libusb_cflags=`$libusb_config --cflags`
-    else
-      for libusb_includepath in /usr/include /usr/local/include \
-          /usr/include/libusb /usr/local/include/libusb \
-          /usr/include/usb /usr/local/include/usb ; do \
-        if test -f "${ibusb_includepath}/libusb.h"; then
-          libusb_cflags="-I$libusb_includepath"
-          break
-        fi
-      done
-    fi
-    AC_MSG_RESULT($libusb_cflags)
-  ]
-)
+    [ 
+      if test "$withval" != "no"; then 
+        libusb_includepath="$withval" 
+        libusb_cflags="-I$withval" 
+      fi
+    ],
+    [ 
+      AC_MSG_CHECKING(libusb CFLAGS)
+      if test "x$libusb_config" != x ; then
+        libusb_cflags=`$libusb_config --cflags`
+      else
+        for libusb_includepath in /usr/include /usr/local/include \
+            /usr/include/libusb /usr/local/include/libusb \
+            /usr/include/usb /usr/local/include/usb ; do \
+          if test -f "${libusb_includepath}/libusb.h" ; then
+            libusb_cflags="-I$libusb_includepath"
+            break
+          fi
+        done
+      fi
+      AC_MSG_RESULT($libusb_cflags)
+    ]
+  )
 
-if test x$libusb_includepath != x ; then
-AC_CHECK_FILE(
-  $libusb_includepath/usb.h,
-  [ : ] ,
-  [ enable_libusb="no" ]
-)
-fi
+  if test x$libusb_includepath != x ; then
+  AC_CHECK_FILE(
+     $libusb_includepath/usb.h,
+    [ : ] ,
+    [ enable_libusb="no" ]
+  )
+  fi
 fi
 
 if test "$enable_libusb" = "yes"; then
-AC_ARG_WITH(
-  libusb-libraries,
-  [  --with-libusb-libraries=DIR 
+  AC_ARG_WITH(
+    libusb-libraries,
+    [  --with-libusb-libraries=DIR 
                           libusb library files are in DIR
                           (default: found by libusb-config).  ],
-  [ 
-    if test "$withval" = "no"; then 
-     libusb_build_dir=""; 
-    else
-      libusb_libs="-L$withval -lusb" 
-    fi
-  ],
-  [ 
-    AC_MSG_CHECKING(libusb library path)
-    if test "x$libusb_config" != x ; then
-      libusb_libs=`$libusb_config --libs`
-    else
-      for libusb_libpath in /lib /usr/lib /usr/local/lib \
-          /lib/libusb /usr/lib/libusb /usr/local/lib/libusb \
-          /lib/usb /usr/lib/usb /usr/local/lib/usb ; do
-        if test -f "${libusb_libpath}/libusb.a" -o -f "${libusb_libpath}/libusb.so"; then
-          libusb_libs="-L$libusb_libpath -lusb"
-          break
-        fi
-      done
-    fi
-    AC_MSG_RESULT($libusb_libs)
-  ]
-)
+    [ 
+      if test "$withval" != "no"; then 
+        libusb_libs="-L$withval -lusb" 
+      fi
+    ],
+    [ 
+      AC_MSG_CHECKING(libusb library path)
+      if test "x$libusb_config" != x ; then
+        libusb_libs=`$libusb_config --libs`
+      else
+        for libusb_libpath in /lib /usr/lib /usr/local/lib \
+            /lib/libusb /usr/lib/libusb /usr/local/lib/libusb \
+            /lib/usb /usr/lib/usb /usr/local/lib/usb ; do
+          if test -f "${libusb_libpath}/libusb.a" -o -f "${libusb_libpath}/libusb.so"; then
+            libusb_libs="-L$libusb_libpath -lusb"
+            break
+          fi
+        done
+      fi
+      AC_MSG_RESULT($libusb_libs)
+    ]
+  )
 
-AC_CHECK_LIB(
-  usb,
-  main,
-  [ : ],
-  [ enable_libusb="no" ],
-  $libusb_libs
-)
+  AC_CHECK_LIB(
+    usb,
+    main,
+    [ : ],
+    [ enable_libusb="no" ],
+    $libusb_libs
+  )
 fi
 
 if test "$enable_libusb" = "yes"; then
