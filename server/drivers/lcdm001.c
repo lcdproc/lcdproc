@@ -180,7 +180,7 @@ lcdm001_init (Driver *drvthis, char *args)
 		}
   		return -1;
 	} else {
-		report (RPT_INFO, "opened LCDM001 display on %s\n", device);
+		report (RPT_INFO, "opened LCDM001 display on %s", device);
 	}
 	tcgetattr(fd, &portset);
 #ifdef HAVE_CFMAKERAW
