@@ -35,6 +35,8 @@ debug_init (struct lcd_logical_driver *driver, char *args)
 
 	debug_clear ();
 
+	driver->daemonize = 0;
+
 	driver->clear = debug_clear;
 	driver->string = debug_string;
 	driver->chr = debug_chr;
