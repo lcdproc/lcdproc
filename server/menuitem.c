@@ -641,6 +641,8 @@ MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, char 
 			item->event_func (item, MENUEVENT_MINUS);
 	  	return MENURESULT_NONE;
 	  case MENUTOKEN_OTHER:
+          default:
+              break;
 	}
 
 	return MENURESULT_ERROR;

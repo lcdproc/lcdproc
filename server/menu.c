@@ -327,6 +327,7 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 			}
 			break;
 		  default:
+                      break;
 		}
 	}
 
