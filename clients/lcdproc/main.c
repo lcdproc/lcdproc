@@ -61,6 +61,7 @@ mode default_sequence[] =
   {  1 , 0,   0,   0,  0,0,},// Modes after this line will not be run by default...
                     // ... all non-default modes must be in here!
                     // ... they will not show up otherwise.
+  { 'P', 1,   2,   0,  0xffff,0,},// [O]ld Timescreen
   { 'O', 4,   64,  0,  0xffff,0,},// [O]ld Timescreen
   { 'K', 4,   64,  0,  0xffff,0,},// big cloc[K] 
   { 'U', 4,   128, 0,  0xffff,0,},// Old [U]ptime Screen
@@ -191,7 +192,7 @@ void HelpScreen()
   printf("Usage: lcdproc [-s server] [-p port] [modelist]\n");
   printf("\tOptions in []'s are optional.\n");
   printf("\tmodelist is \"mode [mode mode ...]\"\n");
-  printf("\tMode letters: \t[C]pu [G]raph [T]ime [M]emory [X]load [D]isk [B]attery\n\t\t\tproc_[S]izes [O]ld_time big_cloc[K] [U]ptime [A]bout\n");
+  printf("\tMode letters: \t[C]pu [G]raph [T]ime [M]emory [X]load [D]isk [B]attery\n\t\t\tproc_[S]izes [O]ld_time big_cloc[K] [U]ptime CPU_SM[P]\n\t\t\t[A]bout\n");
   printf("\n");
   printf("\tUse \"man lcdproc\" for more info.\n");
   printf("Example:\n");

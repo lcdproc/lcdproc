@@ -24,6 +24,7 @@
 #include "batt.h"
 #include "chrono.h"
 #include "cpu.h"
+#include "cpu_smp.h"
 #include "disk.h"
 #include "load.h"
 #include "mem.h"
@@ -113,6 +114,10 @@ int mode_init(mode *sequence)
 	 case 'a':
 	 case 'A': // credit_screen
 	    break;
+	 case 'p':
+	 case 'P': // cpu_smp_screen
+            cpu_smp_init ();
+	    break;
 	 default: break;
       }
    }
@@ -130,7 +135,7 @@ void mode_close()
    disk_close();
    load_close();
    mem_close();
-  
+   cpu_smp_close ();
 }
 
 
@@ -167,6 +172,8 @@ int update_screen(mode *m, int display)
 	 case 'B': status = battery_screen(m->timer, display); break;
 	 case 'a':
 	 case 'A': status = credit_screen(m->timer, display); break;
+         case 'p':
+         case 'P': status = cpu_smp_screen (m->timer, display); break;
 	 default: break;
       }
       /* Debugging tool...
