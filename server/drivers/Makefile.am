@@ -18,9 +18,7 @@ LDFLAGS += @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses glk hd44780 irman icp_a106
-joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730
-svga t6963 text wirz_sli SGX120
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli 
 noinst_LIBRARIES = libLCD.a
 
 CFontz_LDADD =       libLCD.a
@@ -61,6 +59,5 @@ svga_SOURCES =       lcd.h svgalib_drv.c svgalib_drv.h report.h
 t6963_SOURCES =      lcd.h t6963.c t6963.h t6963_font.h report.h
 text_SOURCES =       lcd.h text.h text.c report.h
 wirz_sli_SOURCES =   lcd.h wirz-sli.h wirz-sli.c report.h
-SGX120_SOURCES =     lcd.h SGX120.h SGX120.c
 
 INCLUDES = -I$(top_srcdir)

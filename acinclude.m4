@@ -8,13 +8,13 @@ AC_ARG_ENABLE(drivers,
  	[                    mtxorb,cfontz,cfontz633,curses,text,lb216,]
  	[                    hd44780,joy,irman,lirc,bayrad,glk,,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
-	[                    lcterm,icp_a106,sgx120]
+	[                    lcterm,icp_a106]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
-  	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,text,lb216,bayrad,glk,sgx120])
+  	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,cfontz633,curses,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,sgx120]
+	drivers=[mtxorb,cfontz,cfontz633,curses,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -57,11 +57,6 @@ fi
 		sli)
 			DRIVERS="$DRIVERS wirz-sli${SO}"
 			actdrivers=["$actdrivers sli"]
-			;;
-		sgx120)
-			DRIVERS="$DRIVERS SGX120.o"
-			AC_DEFINE(SGX120_DRV)
-			actdrivers=["$actdrivers sgx120"]
 			;;
 		curses)
 			AC_CHECK_HEADERS(ncurses.h curses.h)

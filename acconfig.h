@@ -48,8 +48,6 @@
 
 #undef MODULE_EXTENSION
 
-#undef SGX120_DRV
-
 #undef SLI_DRV
 
 #undef SOLARIS
