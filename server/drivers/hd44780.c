@@ -155,6 +155,7 @@ HD44780_init (Driver * drvthis, char *args)
 	p->have_output		= drvthis->config_get_bool( drvthis->name, "outputport", 0, 0 );
 	p->delayMult 		= drvthis->config_get_int( drvthis->name, "delaymult", 0, 1 );
 	p->delayBus 		= drvthis->config_get_bool( drvthis->name, "delaybus", 0, 1 );
+	p->lastline 		= drvthis->config_get_bool( drvthis->name, "lastline", 0, 1 );
 
 	// Get and search for the connection type
 	s = drvthis->config_get_string( drvthis->name, "connectiontype", 0, "4bit" );
@@ -974,6 +975,9 @@ HD44780_set_char (Driver *drvthis, int n, char *dat)
 	if (!dat)
 		return;
 
+	if (!p->lastline)
+	    dat[(p->cellheight - 1) * p->cellwidth]=0;
+
 	for (row = 0; row < p->cellheight; row++) {
 		letter = 0;
 		for (col = 0; col < p->cellwidth; col++) {
@@ -1056,11 +1060,21 @@ HD44780_icon (Driver *drvthis, int x, int y, int icon)
 		 1, 0, 1, 0, 1,
 		 1, 1, 1, 1, 1,
 		 0, 0, 0, 0, 0 };
+	char block_filled[] = {
+		 1, 1, 1, 1, 1,
+		 1, 1, 1, 1, 1,
+		 1, 1, 1, 1, 1,
+		 1, 1, 1, 1, 1,
+		 1, 1, 1, 1, 1,
+		 1, 1, 1, 1, 1,
+		 1, 1, 1, 1, 1,
+		 0, 0, 0, 0, 0 };
 
 	/* Yes I know, this is a VERY BAD implementation */
 	switch( icon ) {
 		case ICON_BLOCK_FILLED:
-			HD44780_chr( drvthis, x, y, 255 );
+			HD44780_set_char( drvthis, 6, block_filled );
+			HD44780_chr( drvthis, x, y, 6);
 			break;
 		case ICON_HEART_FILLED:
 			HD44780_set_char( drvthis, 0, heart_filled );

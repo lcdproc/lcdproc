@@ -263,6 +263,9 @@ PrivateData *p;
   p->width = w;
   p->height = h;
 
+  /* special option lastline (some displays need it against the underline effect) */
+  p->lastline = drvthis->config_get_bool(drvthis->name, "lastline", 0, 1);
+  
   /* Contrast of the LCD can be changed by adjusting a trimpot */
 
   /* End of config file parsing */
@@ -1022,6 +1025,9 @@ int row;
   if (dat == NULL)
     return;
 
+  if (!p->lastline)
+    dat[(p->cellheight - 1) * p->cellwidth] = 0;
+
   for (row = 0; row < p->cellheight; row++) {
     int letter = 0;
     int col;
@@ -1106,11 +1112,21 @@ char checkbox_gray[CELLWIDTH*CELLHEIGHT] = {
   1, 0, 1, 0, 1,
   1, 1, 1, 1, 1,
   0, 0, 0, 0, 0 };
+char block_filled[CELLWIDTH*CELLHEIGHT] = {
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  0, 0, 0, 0, 0 };
 
   /* Yes we know, this is a VERY BAD implementation */
   switch(icon) {
     case ICON_BLOCK_FILLED:
-      IOWarrior_chr(drvthis, x, y, 255);
+      IOWarrior_set_char(drvthis, 6, block_filled);
+      IOWarrior_chr(drvthis, x, y, 6);
       break;
     case ICON_HEART_FILLED:
       IOWarrior_set_char(drvthis, 0, heart_filled);

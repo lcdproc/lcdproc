@@ -85,7 +85,10 @@ typedef struct driver_private_data {
 	int delayMult;	 // Delay multiplier for slow displays
 	char delayBus;	 // Delay if the computer can send data too fast over
 				 // its bus to LPT port
-
+        char lastline;   // lastline controls the use of the last line, if pixel addressable (true, default) or
+                         // underline effect (false). To avoid the underline effect, last line is always zeroed
+                         // for whatever redefined character 
+    
 	// keyMapDirect contains an array of the ascii-codes that should be generated
 	// when a directly connected key is pressed (not in matrix).
 	char *keyMapDirect[KEYPAD_MAXX];

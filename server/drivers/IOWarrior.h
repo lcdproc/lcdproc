@@ -98,6 +98,11 @@ typedef struct driver_private_data {
   unsigned int output_mask;
   int output_state;
 
+  /* lastline controls the use of the last line, if pixel addressable (true, default) or */
+  /* underline effect (false). To avoid the underline effect in the latter case, the last */
+  /* line is always zeroed for whatever redefined character */
+  char lastline; 
+
   int brightness;
   int backlight;
 } PrivateData;
