@@ -1,4 +1,4 @@
-/* 
+/*
  * Base driver module for Hitachi HD44780 based LCD displays. This is
  * a modular driver that allows support for alternative HD44780
  * designs to be added in a flexible and maintainable manner.
@@ -9,13 +9,14 @@
  * Copyright (c)  1999, 1995 Benjamin Tse <blt@Comports.com>
  *		  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  1998 Richard Rognlie <rrognlie@gamerz.net>
- *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
+ *
+ 1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
  */
 
 #ifndef HD44780_H
 #define HD44780_H
 
-#include "port.h"
+extern char keypad;		   // non-zero if the keypad code is activated
 
 int HD44780_init (struct lcd_logical_driver *driver, char *args);
 /* The following methods can all be hidden. They are used through function ptrs
