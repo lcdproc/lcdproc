@@ -12,6 +12,7 @@ Coming soon: (?) (my list of stuff to do soon...)
  * Dynamically-loaded driver system
 
 v0.4-pre10:
+ + Linux infrared control (LIRC) driver added.
  + "rotating slash" heartbeat mode (looks weird on CFontz displays)
    Use "screen_set s -heartbeat slash" to use this.
  * Switched to client-server protocol V0.2, so arguments can come in
