@@ -66,10 +66,10 @@
 /* #define CONFIG_FILE Non config file code removed by David GLAUDE */
 /* Above 5 lines added by Joris :( */
 
-#define IS_LCD_DISPLAY	(MtxOrb_type == MTXORB_LCD)
-#define IS_LKD_DISPLAY	(MtxOrb_type == MTXORB_LKD)
-#define IS_VFD_DISPLAY	(MtxOrb_type == MTXORB_VFD)
-#define IS_VKD_DISPLAY	(MtxOrb_type == MTXORB_VKD)
+#define IS_LCD_DISPLAY	(p->MtxOrb_type == MTXORB_LCD)
+#define IS_LKD_DISPLAY	(p->MtxOrb_type == MTXORB_LKD)
+#define IS_VFD_DISPLAY	(p->MtxOrb_type == MTXORB_VFD)
+#define IS_VKD_DISPLAY	(p->MtxOrb_type == MTXORB_VKD)
 
 /* TODO: Remove this if not in use anymore...
  * #define NotEnoughArgs (i + 1 > argc)
@@ -154,17 +154,16 @@ typedef enum {
 	barb          = BLACK
 } bar_type;
 
-static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
+typedef enum {
+	MTXORB_LCD,
+	MTXORB_LKD,
+	MTXORB_VFD,
+	MTXORB_VKD
+} MtxOrb_type_type;
 
 static int cellwidth = LCD_DEFAULT_CELLWIDTH;
 static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 
-static char pause_key = MTXORB_DEFAULT_PAUSE_KEY;
-static char back_key = MTXORB_DEFAULT_BACK_KEY;
-static char forward_key = MTXORB_DEFAULT_FORWARD_KEY;
-static char main_menu_key = MTXORB_DEFAULT_MAIN_MENU_KEY;
-
-static int keypad_test_mode = 0;
 
 /* This is an embrionic Private Date, it need to grow ! */
 typedef struct p {
@@ -182,22 +181,13 @@ typedef struct p {
 	int fd;			/* The LCD file descriptor */
 	int contrast;		/* static data from set/get_contrast */
 	int backlightenabled;
-
-/*
-        int type;
-        int port;
-        char * keymap[MAXKEYS];
-        char * framebuf_text;
-        char * lcd_contents_text;
-        char * framebuf_graph;
-        char * lcd_contents_graph;
-        //int cellwidth, cellheight;
-        int graph_width, graph_height;
-        int cursor_x, cursor_y;
-        char cursor_state;
-        int bytesperline;
-*/
-
+	MtxOrb_type_type MtxOrb_type; 
+	int timer;		/* static data from MtxOrb_heartbeat */
+	char pause_key;
+	char back_key;
+	char forward_key;
+	char main_menu_key;
+	int keypad_test_mode;
         } PrivateData;
 
 /* Vars for the server core */
@@ -276,8 +266,13 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->framebuf = NULL;
 	p->backlightenabled = DEFAULT_BACKLIGHT;
 	p->old = NULL;
-
-	MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
+	p->MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
+	p->timer = 0;		/* static data from MtxOrb_heartbeat */
+	p->pause_key = MTXORB_DEFAULT_PAUSE_KEY;
+	p->back_key = MTXORB_DEFAULT_BACK_KEY;
+	p->forward_key = MTXORB_DEFAULT_FORWARD_KEY;
+	p->main_menu_key = MTXORB_DEFAULT_MAIN_MENU_KEY;
+	p->keypad_test_mode = 0;
 
 	debug( RPT_INFO, "MtxOrb: init(%p,%s)", drvthis, args );
 
@@ -356,13 +351,13 @@ MtxOrb_init (Driver *drvthis, char *args)
 	buf[sizeof(buf)-1]=0;
 
 	if (strncasecmp(buf, "lcd", 3) == 0) {
-		MtxOrb_type = MTXORB_LCD;
+		p->MtxOrb_type = MTXORB_LCD;
 	} else if (strncasecmp(buf, "lkd", 3) == 0) {
-		MtxOrb_type = MTXORB_LKD;
+		p->MtxOrb_type = MTXORB_LKD;
 	} else if (strncasecmp (buf, "vfd", 3) == 0) {
-		MtxOrb_type = MTXORB_VFD;
+		p->MtxOrb_type = MTXORB_VFD;
 	} else if (strncasecmp (buf, "vkd", 3) == 0) {
-		MtxOrb_type = MTXORB_VKD;
+		p->MtxOrb_type = MTXORB_VKD;
 	} else {
 		report (RPT_ERR, "MtxOrb: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd", buf);
 		return (-1);
@@ -373,28 +368,28 @@ MtxOrb_init (Driver *drvthis, char *args)
 	/* keypad test mode? */
 	if (drvthis->config_get_bool( drvthis->name , "keypad_test_mode" , 0 , 0)) {
 		report (RPT_INFO, "MtxOrb: Entering keypad test mode...\n");
-		keypad_test_mode = 1;
+		p->keypad_test_mode = 1;
 	}
 
-	if (!keypad_test_mode) {
+	if (!p->keypad_test_mode) {
 		/* We don't send any chars to the server in keypad test mode.
 		 * So there's no need to get them from the configfile in keypad test mode.
 		 */
 		/* pause_key */
-		pause_key = MtxOrb_parse_keypad_setting (drvthis, "PauseKey", MTXORB_DEFAULT_PAUSE_KEY);
-		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as pause_key.", pause_key);
+		p->pause_key = MtxOrb_parse_keypad_setting (drvthis, "PauseKey", MTXORB_DEFAULT_PAUSE_KEY);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as pause_key.", p->pause_key);
 
 		/* back_key */
-		back_key = MtxOrb_parse_keypad_setting (drvthis, "BackKey", MTXORB_DEFAULT_BACK_KEY);
-		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as back_key", back_key);
+		p->back_key = MtxOrb_parse_keypad_setting (drvthis, "BackKey", MTXORB_DEFAULT_BACK_KEY);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as back_key", p->back_key);
 
 		/* forward_key */
-		forward_key = MtxOrb_parse_keypad_setting (drvthis, "ForwardKey", MTXORB_DEFAULT_FORWARD_KEY);
-		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as forward_key", forward_key);
+		p->forward_key = MtxOrb_parse_keypad_setting (drvthis, "ForwardKey", MTXORB_DEFAULT_FORWARD_KEY);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as forward_key", p->forward_key);
 
 		/* main_menu_key */
-		main_menu_key = MtxOrb_parse_keypad_setting (drvthis, "MainMenuKey", MTXORB_DEFAULT_MAIN_MENU_KEY);
-		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as main_menu_key", main_menu_key);
+		p->main_menu_key = MtxOrb_parse_keypad_setting (drvthis, "MainMenuKey", MTXORB_DEFAULT_MAIN_MENU_KEY);
+		report (RPT_DEBUG, "MtxOrb: Using \"%c\" as main_menu_key", p->main_menu_key);
 	}
 	/* End of config file parsing*/
 
@@ -1313,14 +1308,13 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 MODULE_EXPORT void
 MtxOrb_heartbeat (Driver *drvthis, int type)
 {
-	static int timer = 0;
 	int whichIcon;
 
         PrivateData * p = drvthis->private_data;
 
 	if (type == HEARTBEAT_ON) {
 		/* Set this to pulsate like a real heart beat... */
-		whichIcon = (! ((timer + 4) & 5));
+		whichIcon = (! ((p->timer + 4) & 5));
 
 		/* Ask for the right heartbeat icon... */
 		MtxOrb_icon (drvthis, p->width, 1, whichIcon);
@@ -1329,8 +1323,8 @@ MtxOrb_heartbeat (Driver *drvthis, int type)
 		MtxOrb_flush (drvthis);
 	}
 
-	timer++;
-	timer &= 0x0f;
+	p->timer++;
+	p->timer &= 0x0f;
 }
 
 /******************************
