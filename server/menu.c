@@ -1,17 +1,25 @@
 /*
-  menu.c
-
-  Handles server-supplied menus defined by a table.  Read menu.h for
-  more information.
-
-  Menus are similar to "pull-down" menus, but have some extra features.
-  They can contain "normal" menu items, checkboxes, sliders, "movers",
-  etc..
-  
-  I should probably find a more elegant way of doing this in order
-  to handle dynamically-changing menus such as the client list.  Tcl/Tk
-  has neat ways to do it.  Hmm...
-  
+ * menu.c
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2001, Joris Robijn
+ *
+ *
+ * Handles server-supplied menus defined by a table.  Read menu.h for
+ * more information.
+ *
+ * Menus are similar to "pull-down" menus, but have some extra features.
+ * They can contain "normal" menu items, checkboxes, sliders, "movers",
+ * etc..
+ *
+ * I should probably find a more elegant way of doing this in order
+ * to handle dynamically-changing menus such as the client list.  Tcl/Tk
+ * has neat ways to do it.  Hmm...
+ *
  */
 
 #include <stdlib.h>

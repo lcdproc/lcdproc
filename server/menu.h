@@ -1,3 +1,15 @@
+/*
+ * menu.h
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2001, Joris Robijn
+ *
+ */
+
 #ifndef MENU_H
 #define MENU_H
 
@@ -15,7 +27,7 @@ Each item has three values:
 
 When an item is picked, do_menu() decides what to do based on type.
 --"Menus" will recurse into the "data", assuming it is a child menu.
---"Function"-type items will have their function called.  
+--"Function"-type items will have their function called.
 --CheckBox-type items will have their function called with a "read"
   parameter to get an on/off signal, and called with a "set" signal when
   picked.
@@ -73,7 +85,7 @@ int Contrast_func(int input)
   if(input == MENU_READ) return status;
   if(input == MENU_PLUS) increment_status(); // does something.
   if(input == MENU_MINUS) decrement_status();// does something.
-  return (status | MENU_OK); 
+  return (status | MENU_OK);
 }
 
 =====================================================================

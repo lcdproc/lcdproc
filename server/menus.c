@@ -1,13 +1,21 @@
 /*
-  menus.c
-
-  Defines the default menus the server provides.  Also includes the
-  plug-in functions attached to menu items...
-
-  So far, all menus are static, and not dynamically generated.  I'll
-  have to find a way to fix this, since many menu items will be dynamic.
-  (clients connected, screens available, etc...)
-
+ * menus.c
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2001, Joris Robijn
+ *
+ *
+ * Defines the default menus the server provides.  Also includes the
+ * plug-in functions attached to menu items...
+ *
+ * So far, all menus are static, and not dynamically generated.  I'll
+ * have to find a way to fix this, since many menu items will be dynamic.
+ * (clients connected, screens available, etc...)
+ *
  */
 
 #include <stdlib.h>

@@ -1,20 +1,28 @@
 /*
-  render.c
-
-  Draws screens on the LCD.
-
-  This needs to be greatly expanded and redone for greater flexibility.
-  For example, it should support multiple screen sizes, more flexible
-  widgets, and multiple simultaneous screens.
-
-  This will probably take a while to do.  :(
-
-  THIS FILE IS MESSY!  Anyone care to rewrite it nicely?  Please??  :)
-
-  NOTE: (from David Douthitt) Multiple screen sizes?  Multiple simultaneous
-  screens?  Horrors of horrors... next thing you know it'll be making coffee...
-  Better believe it'll take a while to do...
-
+ * render.c
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2001, Joris Robijn
+ *
+ *
+ * Draws screens on the LCD.
+ *
+ * This needs to be greatly expanded and redone for greater flexibility.
+ * For example, it should support multiple screen sizes, more flexible
+ * widgets, and multiple simultaneous screens.
+ *
+ * This will probably take a while to do.  :(
+ *
+ * THIS FILE IS MESSY!  Anyone care to rewrite it nicely?  Please??  :)
+ *
+ * NOTE: (from David Douthitt) Multiple screen sizes?  Multiple simultaneous
+ * screens?  Horrors of horrors... next thing you know it'll be making coffee...
+ * Better believe it'll take a while to do...
+ *
  */
 
 #include <string.h>

@@ -1,3 +1,20 @@
+/*
+ * sock.c
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2001, Joris Robijn
+ *
+ *
+ * LCDproc sockets code...
+ *
+ * This is messy, and needs to be finished.
+ *
+ */
+
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -23,11 +40,6 @@
 extern char bind_addr[64];
 extern int lcd_port;
 
-/**************************************************
-  LCDproc sockets code...
-
-  This is messy, and needs to be finished.
-**************************************************/
 
 fd_set active_fd_set, read_fd_set;
 int orig_sock;

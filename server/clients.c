@@ -1,14 +1,21 @@
 /*
-
-  clients.c
-
-  Inits/shuts down client system,
-  creates/destroys individual clients,
-  enqueues/dequeues messages from clients,
-  and searches for clients in the list.
-
-  :)
-
+ * clients.c
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2001, Joris Robijn
+ *
+ *
+ * Inits/shuts down client system,
+ * creates/destroys individual clients,
+ * enqueues/dequeues messages from clients,
+ * and searches for clients in the list.
+ *
+ * :)
+ *
  */
 
 #include <stdio.h>

@@ -1,8 +1,18 @@
 /*
+ * input.c
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2001, Joris Robijn
+ *
+ *
+ * Handles keypad (and other?) input from the user.
+ */
 
-  input.c
-
-  Handles keypad (and other?) input from the user.
+/*
 
   Currently, the keys are as follows:
 
@@ -34,11 +44,11 @@
 // #define KEY_ENTER 'H'
 
 // These are the keys for my (possibly) broken LK202-25...
-#define KEY_UP    'I'
-#define KEY_DOWN  'F'
-#define KEY_LEFT  'K'
-#define KEY_RIGHT 'A'
-#define KEY_F1    'N'
+// #define KEY_UP    'I'
+// #define KEY_DOWN  'F'
+// #define KEY_LEFT  'K'
+// #define KEY_RIGHT 'A'
+// #define KEY_F1    'N'
 // #define KEY_F2    'M'
 // #define KEY_ENTER 'H'
 
@@ -51,17 +61,17 @@
 // But then, which driver is active and which screen takes which
 // input and... (sigh).
 //
-#define PAUSE_KEY	KEY_F1
-#define BACK_KEY	KEY_LEFT
-#define FORWARD_KEY	KEY_RIGHT
-#define MAIN_MENU_KEY	KEY_DOWN
+// #define PAUSE_KEY	KEY_F1
+// #define BACK_KEY	KEY_LEFT
+// #define FORWARD_KEY	KEY_RIGHT
+// #define MAIN_MENU_KEY	KEY_DOWN
 
 // This seems somewhat arbitrary, but it IS the original settings:
 //
-// #define PAUSE_KEY	'A'
-// #define BACK_KEY	'B'
-// #define FORWARD_KEY	'C'
-// #define MAIN_MENU_KEY	'D'
+#define PAUSE_KEY	'A'
+#define BACK_KEY	'B'
+#define FORWARD_KEY	'C'
+#define MAIN_MENU_KEY	'D'
 
 #include <stdlib.h>
 #include <stdio.h>

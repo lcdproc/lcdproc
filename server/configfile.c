@@ -1,10 +1,14 @@
 /*
- * Defines routines to read ini-file-like files.
+ * configfile.c
+ * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package
+ * COPYING file distributed with this package.
  *
- * (c) 2001 Joris Robijn
+ * Copyright (c) 2001, Joris Robijn
+ *
+ *
+ * Defines routines to read ini-file-like files.
  */
 
 

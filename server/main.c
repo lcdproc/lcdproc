@@ -1,16 +1,24 @@
 /*
-  main.c for LCDd
-
-  Contains main(), plus signal callback functions and a help screen.
-
-  Program init, command-line handling, and the main loop are
-  implemented here.  Also, minimal data about the program such as
-  the revision number.
-
-  Some of this stuff should probably be move elsewhere eventually,
-  such as command-line handling and the main loop.  main() is supposed
-  to be "dumb".
-
+ * main.c
+ * This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2001, Joris Robijn
+ *
+ *
+ * Contains main(), plus signal callback functions and a help screen.
+ *
+ * Program init, command-line handling, and the main loop are
+ * implemented here.  Also, minimal data about the program such as
+ * the revision number.
+ *
+ * Some of this stuff should probably be move elsewhere eventually,
+ * such as command-line handling and the main loop.  main() is supposed
+ * to be "dumb".
+ *
  */
 
 #include <stdlib.h>
