@@ -1,0 +1,114 @@
+#!/bin/sh
+# This is the lcdproc init-script for RPM based (RedHat, Mandrake) systems
+#
+# Copyright (C) 2001  Rene Wagner <reenoo@gmx.de>
+#               2001  Guillaume Filion <gfk@logidac.com>
+#
+# This script is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# any later version.
+#
+# This script is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this file; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+#
+#
+# chkconfig: 345 71 20
+# description: LCDd(8) is the LCDproc server used for displaying text and other data to LCDs. \
+#	Apart from the main client lcdproc(1) there are various clients. \
+#	See http://lcdproc.omnipotent.net for details.
+# processname: lcdproc
+# pidfile: /var/run/lcdproc.pid
+# config: /etc/sysconfig/lcdproc
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+if [ ${NETWORKING} = "no" ]; then
+        exit 0
+fi
+
+RETVAL=0
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+sbindir=@sbindir@
+etc=@sysconfdir@
+
+lcdproc=${bindir}/lcdproc
+
+[ -x ${lcdproc} ] || exit 0
+
+if [ -f /etc/lcdproc.conf ]; then
+	. /etc/lcdproc.conf
+else
+	SCREENS="C X"
+fi
+
+
+start() {
+	echo -n "Starting up lcdproc: "
+	daemon ${lcdproc} -d $SCREENS
+
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/lcdproc
+	echo
+}
+
+stop() {
+	echo -n "Shutting down lcdproc: "
+	killproc lcdproc
+	RETVAL=$?
+	[ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/lcdproc
+	echo
+}
+
+dostatus() {
+	status lcdproc
+	RETVAL=$?
+}
+
+restart() {
+	stop
+	start
+	RETVAL=$?
+}
+
+condrestart() {
+	[ -e /var/lock/subsys/lcdproc ] && restart || :
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  status)
+	dostatus
+	;;
+  restart)
+	restart
+	;;
+  condrestart)
+	condrestart
+	;;
+  *)
+	echo "Usage: $0 {start|stop|status|restart|condrestart}"
+	exit 1
+esac
+
+exit $RETVAL
