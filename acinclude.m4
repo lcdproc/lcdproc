@@ -27,7 +27,8 @@ else
 			;;
 		curses)
 			AC_CHECK_LIB(curses, main, LIBCURSES="-lcurses",
-				AC_MSG_ERROR([The curses driver needs the curses library]))
+				AC_CHECK_LIB(ncurses, main, LIBCURSES="-lncurses",
+					AC_MSG_ERROR([The curses driver needs the curses library])))
 			DRIVERS="$DRIVERS curses_drv.o"
 			AC_DEFINE(CURSES_DRV)
 			;;
