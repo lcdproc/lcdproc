@@ -15,6 +15,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c)  2001 Guillaume Filion <gfk@logidac.com>
+ *                2001 Joris Robijn <joris@robijn.net>
  *                2000 Charles Steinkuehler <cstein@newtek.com>
  */
 
@@ -47,8 +48,6 @@
 # include <time.h>
 #endif
 
-static int delayMult = 0;	 // Delay multiplier for slow displays
-
 /////////////////////////////////////////////////////////////////
 // Initialisation
 //
@@ -72,7 +71,6 @@ static inline int timing_init() {
 // IO delay to avoid a task switch
 //
 static inline void timing_uPause (int usecs) {
-	int delay = usecs * delayMult;  // To correct for slower displays
 
 #if defined DELAY_GETTIMEOFDAY
 	struct timeval current_time,delay_time,wait_time;
@@ -82,7 +80,7 @@ static inline void timing_uPause (int usecs) {
 
 	// Calculate when delay is over
 	delay_time.tv_sec  = 0;
-	delay_time.tv_usec = delay;
+	delay_time.tv_usec = usecs;
 	timeradd(&current_time,&delay_time,&wait_time);
 
 	do {
@@ -93,7 +91,7 @@ static inline void timing_uPause (int usecs) {
 	struct timespec delay_time,remaining;
 
 	delay_time.tv_sec = 0;
-	delay_time.tv_nsec = delay * 1000;
+	delay_time.tv_nsec = usecs * 1000;
 	while ( nanosleep(&delay_time,&remaining) == -1 )
 	{
 		delay_time.tv_sec  = remaining.tv_sec;
@@ -102,7 +100,7 @@ static inline void timing_uPause (int usecs) {
 #else // using I/O timing
       // Assuming every port I/O takes 1ms, we'll do at least one.
 	int i=0;
-	do { port_in (port); } while (i++ < delay/1000);
+	do { port_in (port); } while (i++ < usecs/1000);
 #endif
 }
 
