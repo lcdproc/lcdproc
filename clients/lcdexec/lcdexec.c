@@ -329,6 +329,7 @@ int exec_command( char * command )
 		return -1;
 	  default:
 		/* We're the parent */
+        break;
 	}
 	return 0;
 }
