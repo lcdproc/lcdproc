@@ -359,6 +359,9 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	return fd;
 }
 
+#define ValidX(a) { if (x > MtxOrb->wid) { x = MtxOrb->wid; } else x < 1 ? 1 : x; }
+#define ValidY(a) { if (y > MtxOrb->hgt) { y = MtxOrb->hgt; } else y < 1 ? 1 : y; }
+
 // TODO: Check this quick hack to detect clear of the screen.
 /////////////////////////////////////////////////////////////////
 // Clear: catch up when the screen get clear to be able to
@@ -394,20 +397,10 @@ MtxOrb_string (int x, int y, char *string)
 {
 	int offset, siz;
 
+	ValidX(x);
+	ValidY(y);
+
 	x--; y--; // Convert 1-based coords to 0-based...
-
-	// Check range of Y
-	if (y > MtxOrb->hgt) {
-		syslog(LOG_WARNING, "lcd height overflow!");
-		return;
-	}
-
-	// Check range of X
-	if (x > MtxOrb->wid) {
-		syslog(LOG_WARNING, "lcd width overflow!");
-		return;
-	}
-
 	offset = (y * MtxOrb->wid) + x;
 	siz = (MtxOrb->wid * MtxOrb->hgt) - offset - 1;
 	siz = siz > strlen(string) ? strlen(string) : siz;
@@ -449,16 +442,8 @@ MtxOrb_chr (int x, int y, char c)
 	// Characters may or may NOT be alphabetic; it appears
 	// that characters 0..4 (or similar) are graphic fonts
 
-	// validate x and y
-	if (x > MtxOrb->wid)
-		x = MtxOrb->wid;
-	if (x < 1)
-		x = 1;
-
-	if (y > MtxOrb->hgt)
-		y = MtxOrb->hgt;
-	if (y < 1)
-		y = 1;
+	ValidX(x);
+	ValidY(y);
 
 	// write immediately to screen... this code was taken
 	// from the LK202-25; should work for others, yes?
@@ -787,6 +772,9 @@ MtxOrb_hbar (int x, int y, int len)
 	unsigned char mapr[6] = { barw, barr1, barr2, barr3, barr4, barb };
 	unsigned char mapl[6] = { barw, barl1, barl2, barl3, barl4, barb };
 
+	ValidX(x);
+	ValidY(y);
+
 	if (len > 0) {
 		for (; x <= MtxOrb->wid && len > 0; x++) {
 			if (len >= MtxOrb->cellwid)
@@ -930,11 +918,11 @@ MtxOrb_draw_frame (char *dat)
 
 	if (!dat)
 		return;
-/*
-        sprintf(out, "%cG%c%c", 254, 1, 1);
-        write(fd, out, 4);
-        write(fd, dat, lcd.wid*lcd.hgt);
-*/
+
+//        sprintf(out, "%cG%c%c", 254, 1, 1);
+//        write(fd, out, 4);
+//        write(fd, dat, lcd.wid*lcd.hgt);
+
 	for (i = 0; i < MtxOrb->hgt; i++) {
 		sprintf (out, "\x0FEG\x001%c", i + 1);
 		write (fd, out, 4);
