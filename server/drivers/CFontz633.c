@@ -173,7 +173,8 @@ CFontz633_init (Driver * drvthis, char *args)
 	else if (tmp == 2400) speed = B2400;
 	else if (tmp == 9600) speed = B9600;
 	else if (tmp == 19200) speed = B19200;
-	else { report (RPT_WARNING, "CFontz633_init: Speed must be 1200, 2400, 9600 or 19200. Using default value.\n", speed);
+	else if (tmp == 115200) speed = B115200;	
+	else { report (RPT_WARNING, "CFontz633_init: Speed must be 1200, 2400, 9600 or 19200. 115200, Using default value.\n", speed);
 	}
 
 	/* New firmware version?
