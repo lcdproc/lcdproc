@@ -1,5 +1,5 @@
 /*
- * Base driver module for Toshiba T6963 based LCD displays. ver 1.0
+ * Base driver module for Toshiba T6963 based LCD displays. ver 1.2
  *
  * Parts of this file are based on the kernel driver by Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
  *
@@ -2310,12 +2310,12 @@ unsigned char fontdata_6x8[FONTDATAMAX] = {
 1,1,1,1,1,0,
 0,0,1,1,1,1,
 /* num: 255 */
-0,1,1,1,1,0,
-1,1,0,0,1,0,
-1,1,0,0,1,0,
-1,1,1,1,1,0,
-0,0,1,1,1,1,
-1,0,0,1,0,0,
-0,1,1,0,0,0,
+0,1,0,0,1,0,
+1,1,1,1,1,1,
+0,1,0,0,1,0,
+0,1,0,0,1,0,
+1,1,1,1,1,1,
+0,1,0,0,1,0,
+0,0,0,0,0,0,
 0,0,0,0,0,0,
 };
