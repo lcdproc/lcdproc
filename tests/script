@@ -1,0 +1,20 @@
+hello
+screen_add_widget one w1 string
+screen_add one
+screen_add two
+screen_add_widget one w1 string
+screen_add_widget one w2 vbar
+screen_add_widget two w1 hbar
+screen_add_widget two w2 scroller
+screen_del two
+screen_add two
+screen_del_widget w1
+screen_del_widget two w1
+screen_del_widget one w2
+screen_add_widget two w1 icon
+screen_add_widget two w2 title
+screen_add three
+screen_add_widget three w1 string
+screen_add_widget three w2 hbar
+screen_add_widget one w2 string
+screen_add_widget one w2 hbar

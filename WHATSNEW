@@ -1,0 +1,108 @@
+Recent changes:
+
+Key:  
+     - Something removed
+     + Something added
+     * Something changed / fixed
+
+Coming soon: (?) (my list of stuff to do soon...)
+ + Client menus
+ + Configuration file support
+ * Better syntax for driver parameters
+ * Dynamically-loaded driver system
+
+V0.4-pre9:
+ * small fixes for irix
+ * Added flag in LCDd to shut off server screen:  
+ 	"-i off" or "--serverinfo off"
+ + Wirz SLI driver
+ + 16x2 support (server only)
+ + MtxOrb generic output support in driver
+ * Misc libc5 fixes
+ + support for arbitrary display sizes; anything 16-80 characters
+   wide, and 2-25 characters tall.  (doesn't work if you try to use
+   a display size bigger than your LCD..  :)
+ * curses driver looks slightly better (titles)
+ * sizes > 20x4 no longer crash
+
+V0.4-pre8:
+ * LCDd gives more updated info in the connect string: 
+	cell size, lcd dimensions.
+ * bargraphs are now the correct length on CFontz displays, in the main
+   lcdproc client.  For other clients, please parse the connect string!
+ * MtxOrb driver supports simultaneous vbars/hbars now, with a
+   mechanism to automatically use custom characters for as many
+   as possible.
+ + 20x2 support in LCDd!  Use "--type 20x2".
+	(LCDd --type 20x2 -d MtxOrb )
+ * LCDd can change backlight brightness instead of shutting it "off"
+ * HD44780 should work again (LCDd forks earlier now.. oops  :)
+ + 20x2 support in lcdproc client for the following screens:
+	C G T M X D B S U A
+   Support will not be added for K and O screens.
+ + BSD support (?)
+ * 20x4 screens should display correctly on 40x4 displays
+
+V0.4-pre7: new driver
+ + CrystalFontz (CFontz) LCD driver added
+ * Backlight control improved
+ + Brightness control added
+
+V0.4-pre6:
+ + Backlight control added.  Modes so far are "on", "off", and "open".
+   Client commands are "on", "off", "toggle", "blink", and "flash".
+ * Main clients' screen titles now include hostname
+ + New sample client: fortune.pl
+ * Added changes from David Glaude:
+ + IRman support
+ + Big Digit support (MtxOrb driver doesn't display it correctly yet)
+ + Big cloc[K] screen
+ * MtxOrb serial speed is configurable with "--speed"
+ * misc bugfixes
+ + ... more
+
+V0.4-pre5:
+ * Fixed bug which could take server down with a dead client
+ * Fixed small scroller bug
+ + Added "frame" widgets..  use "-in <frame_name>" after widget_add
+   to put something in a frame.
+ + The disk screen is back!
+ - Frame rendering isn't finished..  the renderer probably needs a
+   complete rewrite.  Any volunteers?  :)
+
+V0.4-pre4:
+ + Server menus (fairly small so far)
+ + Ability to shut down, reboot, change some options, etc (menu only)
+ * Driver arguments no longer required
+ * Curses driver doesn't start server in background any more...
+ * Argument handling fixed...
+ * Drivers support "--help" for command-line info
+
+V0.4-pre3:
+ + Scroller widgets
+ * Proper errno messages...
+ * "make install" should work now
+ * Joystick driver allows key remapping
+ + Screen "durations" are actually *used* now.  (oops)
+ + Initial support for screen priorities (strict priority queue)
+ * Misc (but annoying!) bugs fixed, which hadn't yet affected anything
+ + Drivers support parameters now (MtxOrb, joy, at least)
+
+
+V0.4-pre2:
+ * Memory leaks fixed
+ + Memory "top" screen (S)
+ + Titles now autoscroll
+ * Fixed small screen-visibility bug  (clients weren't always
+   notified of screen cycles)
+ + Heartbeat modes implemented.  Clients can remove it with
+	     widget_del my_screen heartbeat
+   or turn it back on with
+	     widget_add my_screen heartbeat " "
+   Note that the client only has control over this when the heartbeat
+   is in "open" mode.  (currently, it always is)
+
+
+V0.4-pre1:
+ * Too much to mention...
+

@@ -1,0 +1,13 @@
+Known Bugs:
+--------------
+V0.4-pre1:
+   - The server tends to crash if the joystick driver is the last one loaded.
+     Specifically, if the "E" key is pressed...
+   - The lcdproc client doesn't have a disk screen.
+   - Menus are not implemented.
+   - Scrollers are not implemented.
+   - Dynamic driver adding/removing is not implemented.
+   - LCDproc needs more documentation!
+
+But, it's pretty stable considering I rewrote 400k of source since the
+last release...

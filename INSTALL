@@ -1,0 +1,160 @@
+0. REALLY-QUICK START
+
+Try this, if you're in a hurry:
+	edit Makefile.config   (use your preferred text editor, of course)
+	make
+	su
+	make install
+
+
+1. GETTING STARTED
+
+First read the README if you haven't already.
+
+2. CONNECTING THE DISPLAY TO YOUR SYSTEM
+
+WARNING! Danger, Will Robinson, Danger! This is pretty easy, but if
+by chance you screw up your machine by crossing some wires or by
+pouring water on things with the power turned on, don't blame us!
+Neither we, Matrix Orbital Corporation, or any manufacturer of LCDs
+you're trying to use shall be held responsible for damage incurred
+by following these directions.
+
+These instructions are SPECIFICALLY FOR MATRIX ORBITAL'S DISPLAYS!
+Other displays will quite obviously have different requirements!
+
+2.1. POWER CONNECTION
+
+Matrix Orbital has instructions online for connecting the power
+cable.  It's at http://www.matrix-orbital.com/addendum.htm
+Go there, if you're online.  Or you can just read this:
+
+The LCD takes either +5V or +12V, depending on which model you
+bought.  You should have the +5V model unless you requested
+otherwise.  Either amount can be provided conveniently by a slightly
+modified floppy power cable.
+
+       ************* For +5V, use the RED wire. **************
+       *********** For +12V, use the YELLOW wire. ************
+
+Basically, disconnect the wire you don't need (yellow for +12V, or red
+for +5V) and one of the black wires (they're both grounds so it
+shouldn't matter which one you use).  Then move the two remaining
+wires to the opposite ends of the connector. The power wire goes to the
+clearly marked +5V pin, and the black one goes to the also clearly
+marked GND pin.
+
+Assuming you modified the cable right (we'll have pictures on the
+web site in a few days to show how this connection should be made),
+plug the other end of your modified wire into your system's power
+cables and turn the system on (you don't need to connect the serial
+cable until you know you got the power working). The LCD should light
+up and tell you what version of the BIOS it has in it. If it does,
+you've got it. If it doesn't, uh-oh. Turn the machine off quickly and
+try it again.
+
+2.2. SERIAL CONNECTION
+
+The LCD uses a standard DB9 serial connector. However you want to
+get from your motherboard or add-in card's serial port to the back of
+the LCD is up to you. In one of my machines, I just literally pulled
+one of the DB9 connectors off the back of my machine and plugged it
+straight into the LCD, so it was just running from the motherboard
+right to the LCD. YMMV (your milage may vary). In my new machine, I
+needed a longer cable, so I just went out and bought a 6' external
+serial cable, rolled it up and put it on top of my power supply, and
+everything worked.
+
+By default (at least mine was shipped this way ;) the LCD is
+configured to run at 19,200 baud, 8-N-1. You might want to make sure
+yours is set like this; otherwise you'll need to hack our code which
+you shouldn't have to do for this to work right.
+
+3. BUILDING LCDPROC
+
+As long as you have a working gcc and make, this should work.
+
+ - Edit Makefile.config to configure some options.
+ - Run "make"
+
+LCDproc will build in (hopefully) a few seconds. It's not very big. If
+you want, you can install it (if you're root) by typing:
+
+make install
+
+This will install the binaries and the man page, and will make a link
+called /dev/lcd which points to whatever port you specified in the
+Makefile. It will also change the permissions on the specified port
+to allow all users to write to the port (so users can run LCDproc).
+If you _don't_ want to allow this, change the permissions back after
+installing LCDproc. :)
+
+4. RUNNING LCDPROC / MANUAL INSTALL
+
+First, you'll need to run the LCDd server.  If you're in the LCDproc
+source directory, and have just built it, run...
+
+       server/LCDd -d joy -d MtxOrb
+
+This assumes you want to use the Matrix Orbital LCD driver and a
+joystick.  You can find out what other drivers are available by
+running "LCDd -h".  Note that you can use more than one driver at the
+same time.
+
+Then, you'll need some clients.  LCDproc comes with one:
+
+       clients/lcdproc/lcdproc C M T X &
+
+This will run the main LCDproc client, with the [C]pu, [M]emory,
+[T]ime, and [X]load screens.  The ampersand (&) puts it in the background.
+
+To install manually, you'll want to do something like the following:
+
+	su
+	cp server/LCDd /usr/local/bin
+	cp clients/lcdproc/lcdproc /usr/local/bin
+	cp docs/lcdproc.1.gz /usr/local/man/cat1
+	ln -s /dev/ttyS0 /dev/lcd
+
+Some prereleases or development releases will have broken auto-install
+scripts, so manual installs may be necessary for those versions.
+
+
+5. PUTTING LCDPROC IN SYSTEM STARTUP
+
+It's nice to have LCDproc start when the computer boots, so here's how
+to do it:
+
+In Slackware or RedHat:
+	Add lines to your /etc/rc.d/rc.local, such as the following:
+	  echo "Starting LCDproc..."
+	  /usr/local/bin/lcdproc C M X &
+
+In Debian:
+      - Make a file "/etc/init.d/lcd" which works the same as the
+	other scripts in that directory.  (it should accept "start"
+	and "stop" as parameters...)
+      - To start, run "LCDd" with any necessary parameters.  It will
+	put itself in the background as a daemon.
+      - Also in the "start" section, add "lcdproc" with some
+	parameters.  Be sure to put a "&" on the end, or the system
+	will get stuck there when you boot.
+      - And, put in any other clients you want to run all the time.
+      - For the "stop" section, simply "kill" all the programs you
+	started in the "start" section.  They will shut down and exit.
+	I recommend killing the server after all the clients, but it
+	really doesn't matter much.
+
+      - Now, add symlinks from /etc/rc[2-5].d/S50lcd to /etc/init.d/lcd,
+        and be sure to get /etc/rc[06].d/K50lcd to /etc/init.d/lcd.
+	This will cause LCDproc to shut down when your system does.
+
+That's all the OS`s we've actually done this with so far..
+
+6. OUR WEB SITE
+
+Visit http://lcdproc.omnipotent.net/ for the latest updates and news
+for LCDproc. If you've got comments, suggestions, bug fixes, or 
+problems (related to LCDproc, not women ;), send e-mail to either
+William W. Ferrell (choadster@earthlink.net) or Scott Scriven
+(scriven@cs.colostate.edu).

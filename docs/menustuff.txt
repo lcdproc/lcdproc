@@ -1,0 +1,126 @@
+Allo...  (warning:  this was written as I thought it up :)
+
+Ideas for implementing menus...
+
+We've got a data structure called "Menu_Item", which has (for starters):
+
+	Title		-- Text to display
+	Child		-- Sub-Menu to recurse into, if item is picked
+	Exec Function	-- Function to call if the item is picked
+
+An item must not have both a child and an exec function.
+
+The DoMenu(main_menu) handles all input and either calls ExecFunction,
+if the picked item has one; or recurses into the Child menu.  The
+ExecFunction returns a value to specify whether the menus should go
+away, back up one level, or stay as-is.  Also, a menu title (label)
+can be specified by giving neither a Child nor a Function.
+
+The up/down arrows, blinking, scrolling, etc, are handled by DoMenu().
+
+This gives us the functionality of a standard pull-down menu.
+However, we need more functionality than that.  We need checkboxes,
+sliders, and a way to move items up/down.
+
+So...
+
+The ExecFunction should take a parameter, telling whether the item was
+simply picked, or if it had a +/- pressed on it.  This lets us change
+a value from the menu.
+
+We should also add another function to the MenuItem struct:
+
+	Data Function	-- returns true, false, or 0-255.
+
+This lets us find out if a checkbox should be checked, or where a
+slider should be.  DoMenu() will figure out what widget it's dealing
+with (if any), and adjust its display accordingly.
+
+But we still can't move menu items up/down.
+
+
+...
+
+
+Perhaps...  This might work better:
+
+	Title		-- Text
+	Type		-- menu,  function, checkbox,  slider,   mover
+	Data		-- Child, ExecFunc, CheckFunc, SlidFunc, ???
+
+When an item is picked, DoMenu() decides what to do based on type.
+--"Menus" will recurse into the "data", assuming it's a child menu.
+--"Function"-type items will have their function called.  
+--CheckBox-type items will have their function called with a "read"
+  parameter to get an on/off signal, and called with a "set" signal when
+  picked.
+--Sliders will have the same "read" thing, and the "set" function will
+  take a plus or minus parameter.
+--The Movers will act like a label until picked, and then the +/- keys
+  will both rearrange the menu, and send the item a signal of some sort
+  to indicate what happened.  It'll act like a label again after the
+  user presses Enter again.
+
+The "Data" field will really be a "void *", which is C's "generic"
+data type...
+
+Anyway, this sort of thing would be declared this way:
+
+========================================================================
+
+Menu MainMenu = {
+	"MENU",		NULL,		NULL,	// Title
+	"Options",	MENU_TYPE,	(void *)OptionsMenu,
+	"Kill LCDproc",	FUNC_TYPE,	(void *)Shutdown_func,
+	NULL,		NULL,		NULL,
+};
+
+Menu OptionsMenu = {
+	"OPTIONS",	NULL,		NULL,	// Title
+	"24-hour Time",	CHEK_TYPE,	(void *)Time24_func,
+	"Contrast...",	SLID_TYPE,	(void *)Contrast_func,
+	NULL,		NULL,		NULL,
+};
+
+
+///////////////// Elsewhere, we declare these...
+
+void Shutdown_func()
+{
+  // Do something here...
+  return MENU_KILL;	// or MENU_CLOSE, or MENU_OK, or MENU_ERROR
+}
+
+int Time24_func(int input)
+{
+  if(input == READ) return status;
+  if(input == SELECT) toggle_status();	// does something.
+  return (status | MENU_OK);
+	// The status is "or"-ed with the MENU value to let DoMenu()
+	// know what to do after selecting the item.  (two return
+	// values in one.  :)
+
+	// Also, "MENU_OK" happens to be zero, so it doesn't matter
+	// unless you want something else (like MENU_CLOSE)
+}
+
+int Contrast_func(int input)
+{
+  if(input == READ) return status;
+  if(input == PLUS) increment_status();	// does something.
+  if(input == MINUS) decrement_status();// does something.
+  return (status | MENU_OK); 
+}
+
+
+========================================================================
+
+The main reason I like this is that it completely separates the menu
+definitions from the code which actually handles it.  We have *one*
+function which does everything menu-related.
+
+Also, we'd include a table of some sort to match names to functions,
+so that the user can create their own menus with the functionality
+already provided.  (including user-defined "functions", which will be
+rather limited but still useful)
+

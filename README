@@ -1,0 +1,64 @@
+Warning:  This is a prerelease.  It will probably have some rough edges.
+
+
+INTRODUCTION
+
+LCDproc is a small program that extracts various statistics about your
+machine and displays them on an LCD display.  It works with several types
+and sizes of displays.
+
+Our site is located at http://lcdproc.omnipotent.net/ ... so check
+there first for new versions or updates.  We've got a spot on the web
+site for user's suggestions, and you can e-mail us as well:
+
+choadster@earthlink.net (William W. Ferrell)
+scriven@cs.colostate.edu (Scott Scriven)
+
+INSTALLATION
+
+Refer to the INSTALL file included with this archive for installation
+instructions (including how to connect the LCD to your system).
+
+Also, be sure to EDIT THE Makefile.config before compiling.  It
+contains many configuration options.  (these will be removed as soon
+as LCDproc uses a real config file)
+
+CHANGES
+
+Woow...  a lot.  :)
+
+HELPING OUT
+
+If you get the urge to help out by writing code, feel free to "make todo"
+and find out what needs to be done...  (also, of course, new ideas are
+good too :) 
+
+To add new drivers, read drv_base.h for instructions.
+
+SPECIAL THANKS
+
+We'd like to thank the following people for helping out with this:
+   Everyone at Matrix Orbital Corporation -- you guys are great!
+   Gareth Watts -- Patches, mailing list, ideas, www, etc.  Thanks!
+   Everyone on the mailing list.  :)
+   And... Where's that list of contributors??
+
+LEGAL STUFF
+
+LCDproc is Copyright (C) 1999 William Ferrell and Scott Scriven
+The included file, "COPYING", contains the full GNU license.
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+

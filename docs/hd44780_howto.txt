@@ -1,0 +1,49 @@
+(this text taken from a message by Bill Farrow, more info coming later)
+<bfarrow@arrow.bsee.swin.edu.au>
+
+
+The code in LCDproc for the hd4470 LCD controller chips comes from
+"lcdtext" (by Matthias Prinke) or one of the derivatives ("lcdstat4",
+"lcdtime").
+
+You might like to get those packages down as well and have a play.
+
+LCDproc-0.4 only supports 4 line displays, but LCDproc-0.3.5 runs 2 line
+displays also.  A different maintainer is responsible for this version.
+
+The pinouts are like so : (From lcdtext)
+
+1.1 Connecting the LCD to a printer port
+-----------------------------------------
+
+    LCD                  printer port
+Pin     signal          Pin     signal
+
+1       GND             18..25  GND
+2       +5V             --- *)
+3       Vadj.           --- *)
+4       RS              6       D4
+5       RW              7       D5
+6       EN              8       D6
+11      D4              2       D0
+12      D5              3       D1
+13      D6              4       D2
+14      D7              5       D3      
+
+Getting the supply voltage: 
+   Use a floppy supply connector, get it from the game port, take some
+diodes and a capacitor and get it from the port's data lines, get it
+from the keyboard connector or whatever you like. Be save to avoid
+short circuit. You need only 3mA at 5V! (if you have the same type
+lcd)
+
+Connecting the contrast adjusting pin (Vadj.):
+     
+     (variable resistor)   
+        .------.        
+ Vcc ---|  10k |--- GND
+        `---^--'
+           /|\
+            |
+          Vadj.
+

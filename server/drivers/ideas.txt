@@ -1,0 +1,21 @@
+Hmm...
+
+How to do multiple drivers...
+
+
+lcd_sample_func(parameters)
+{
+	D'oh..
+}
+
+lcd_driver_caller()
+{
+	foreach driver (@drivers)
+	{
+	  if(driver supports function)
+		    call driver's function
+	  else if(driver uses defaults)
+		    call default function
+	  else don't do anything
+	}
+}

@@ -1,0 +1,298 @@
+LCDproc client/server protocol
+---------------------------------------------
+
+
+QUICKSTART
+----------
+ - Open a socket to the LCDproc port (usually 13666).
+ - say "hello"
+ - the server will notify you of a good connection, and some info
+   on the type of display available.
+ - Identify yourself.  "client_set name some_sort_of_name"
+ - Add a new screen.  "screen_add my_screen"
+ - Put a widget on the screen.  
+   "widget_add my_screen my_widget string"
+ - Now, update the widget whenever your status info changes...
+   "widget_set my_screen my_widget 1 1 Booger!"
+
+ - When you're done, just close the socket.
+ - You probably want to read on for more information, once you've
+   gotten the LCDproc server to display something.  :)
+
+
+
+DETAILS
+-------
+
+There are two parts to the spec:
+	A language for client/server to interact with.
+	A protocol guiding interactions.
+
+=================== The protocol ==================================
+
+The protocol is context-free.  So, no commands require responses; and
+responses are simply commands.
+
+The client may send updated info at any time, and the server decides
+whether to display it.  An ideal communication may flow like this:
+	client->server		server->client
+	------------------	-------------------
+	 (idle)			 (nothing)
+	 (idle)			"I'm listening"
+	new stats...		 (nothing; displays updated stats)
+	new stats...		 (nothing...)
+	new stats...		 (nothing...)
+	new stats...		"Okay, be quiet"
+	 (idle)			 (nothing; displays new screen)
+	...			...
+	 (idle)			"Your slider moved up"
+	Set slider value: 43	(nothing; displays updated slider)
+	 (idle)			(nothing)
+	...			...
+But the client could safely continue to send new stats, knowing that
+the server isn't listening and won't display it.  Also, the client could
+ignore the slider change, and the slider onscreen simply wouldn't move.
+
+
+=================== The syntax ==================================
+
+The language is ascii-based, so a human can telnet to a port and talk
+to the server.  This helps with development and debugging.
+
+With that in mind, a commandline-like syntax seems good:
+
+	function arg1 arg2 arg3 ...
+
+The syntax dictates that the first word is a function name, and the
+rest of the line is passed to that function as an argument.
+String-type arguments should always come last.  So, for example:
+
+	set_label 23 3 2 Hey, booger.  What's up?
+
+The first argument is a label id number, the 2nd and 3rd are x,y
+coordinates onscreen, and the rest of the line is a string.
+
+
+=================== The command set ==================================
+
+The naming convention dictates that function names are lower-case,
+with underscores ("_"'s) between words.
+
+The naming convention also requires that function-name words go in
+descending order.  So, "screen_set_priority" would be okay, but
+"set_screen_priority" would not.
+
+Id's are strings.  (the "#id" things)
+
+In general, we're trying to keep the command set small.  Especially the
+server->client functions, so that clients won't have to handle a lot of
+different types of input.
+
+Now, the function list:
+
+client->server functions
+-------------------------
+hello
+	Client init.  You must send this before the server will pay 
+	any attention to you.  You'll get some info about the server
+	in return...  (a "connect" string)
+
+
+client_set [name #id]
+	Set client's name and other info
+
+client_add_key #id
+	Tells the server the client can handle keypresses of type #id.
+	#id is probably just "A", "B", and so on...
+	All keypresses are disabled by default, so you'll have to tell
+	the server which ones you want to accept...
+
+client_del_key #id
+	Tells the server to never send that keypress.
+	All keypresses are disabled by default.
+
+
+screen_add #id
+	Add a new screen
+
+screen_del #id
+	Remove a screen
+
+screen_set #id [priority integer] [name "my_name"] [duration integer]
+	   [wid width] [hgt height]
+	Initialize a screen, or reset its data.
+	Priority values are as follows:
+	    0	You feel like getting kicked off the server, don't you?
+	    1	The world is about to explode
+	   16	Emergency priority
+	   32	Very high priority (important)
+	   64	High priority (normal)
+	  128	Normal (recommended)
+	  192	Low priority (normal)
+	  224	Very low priority (very unimportant)
+	  240	Boring as hell
+	  255	This screen won't show up very much even if there are
+		no other screens queued...
+	An example of using priorities is as follows.
+
+	   Imagine you're making an mp3 player for LCDproc.  When the
+	   song changes, it's nice to display the new name immediately.
+	   So, you could set your screen's priority to 64, wait for
+	   the server to display (or ignore) your screen, then set the
+	   screen back to 128.  This would cause the mp3 screen to
+	   show up as soon as the one onscreen was finished, then
+	   return to normal priority afterward.
+
+	   Or, let's say your client monitors the health of hospital
+	   patients.  If one of the patients has a heart attack, you
+	   could set the screen priority to 16 (emergency), and it
+	   would be displayed immediately.  It wouldn't even wait for
+	   the previous screen to finish.  ... And it would stay there
+	   most of the time until the user did something about it.
+
+	   A priority of 1 would stay onscreen permanently, with
+	   flashing lights and other visual cues if possible.
+	   ... Please *don't* use this priority.  :)
+
+	The duration can be either a positive number, or -1.  A
+	positive number indicates how many display frames the screen
+	should last for.  A 0 or -1 means that the server should use
+	"auto" duration, which is probably a good idea.  This will be
+	whatever the user wants.  It defaults to 4 seconds (32
+	frames), or will be calculated for things such as scrollers.
+
+widget_add #screen #id type [-in #id]
+	Add something onscreen
+	Widget types can be any of the following:  "string", "hbar",
+	"vbar", "title", "icon", "scroller", "frame", ... more later?
+	Widgets are drawn in the order you create them.
+
+	You can put a widget inside a frame by adding "-in #id", where
+	#id is the name of a frame.
+
+widget_del #screen #id
+	Kill something onscreen
+
+widget_set #screen #id data
+	Set (reset) widget's data
+	Note that the "string" type should be used for frame buffers.
+	Strings should not be bigger than the screen.
+	The widgets take these arguments for data:
+
+		string		x y text
+
+		hbar		x y length_in_pixels
+
+		vbar		x y length_in_pixels
+
+		icon		x y binary_data
+
+		title		text
+
+		scroller	left top right bottom direction speed text
+
+			A scroller is a string which scrolls.
+			This is useful for things such as the disk
+			usage screen, which may be very tall.
+			The speed is how many display frames to delay
+			between scrolling.  Each display frame is
+			1/8th of a second, by default.
+			Direction must be "h" or "v".
+			Positive speeds indicate frames per movement.
+			Negative speeds indicate movements per frame.
+
+		frame		 left top right bottom wid hgt dir speed
+
+			Frames occupy the area (left, top)-(right,bottom)
+			onscreen, and the inside area is wid x hgt.
+			The inside may be bigger than the actual size,
+			so that the frame will scroll.
+
+
+server->client functions
+-------------------------
+connect args
+	Verifies connection; gives info about the LCD, etc...
+
+bye
+	Notifies the client of a server shutdown.
+
+huh? [info]
+	Notifies the client of a request error.
+
+listen [#screen [#widget [#widgets...]]]
+	Notifies client that "server is listening for data".
+
+ignore [#screen [#widget [#widgets...]]]
+	Tells the client "shut up".
+
+key #id
+	Sends a keypress to the client.
+
+
+
+
+--- Not implemented yet ---
+The functions below are planned but not completed.
+
+
+client->server functions
+-------------------------
+menu_add #id
+	Add a new menu.  
+
+menu_del #id
+	Get rid of a menu.
+
+menu_set [top] [name my_menu_name]
+	if (top) Gets added to "Client Menus".
+	else Client must insert it into its own menu heirarchy.
+
+menu_item_add #menu #id
+	Add a new, blank menu item.
+
+menu_item_del #menu #id
+	Delete a menu item.
+
+menu_item_set #menu #id type [value] text
+	(re)Set the menu item's data.
+	If type is "checkbox" or "slider" or "menu", [value] should
+	contain appropriate info.  (like true, 43, or #menuid)
+
+
+backlight [on] [off] [blink] [flash] [toggle]
+	Requests that the backlight be toggled...  The backlight
+	command will likely be ignored, but users can enable it if
+	desired.
+
+	The LCDproc server has [will have] several backlight modes:
+	    On	    Stays on all the time
+	    Off	    Stays off all the time
+	    Load?   Turns off when the load average is low
+	    Shell?  Controlled by a user-supplied shell script
+	    Open    Can be controlled by all clients
+	    Vis	    Controlled by the currently visible client
+
+
+driver_add #id? type args
+	Start up a new output driver.
+	Nice if you want to check on your machine remotely with the 
+	curses driver.
+
+driver_del #id? (or type)
+	Stop a running output driver.
+	Good for reclaiming your joystick when you want to play games...
+
+
+
+
+server->client functions
+-------------------------
+menu #menu #item #action
+	Tells the client that a menu item was selected/used/etc...
+	The action can be "click", "up", or "down".  The client should
+	handle this according to what type of menu item has been
+	activated, and should probably send the server a new item
+	definition if the item was a checkbox or slider.
+
+

@@ -1,0 +1,92 @@
+LCDproc suggestion object hierarchy
+
+Tdriver
+	TVirtualDriver
+	TMtxOrbDriver
+	TTextDriver
+	
+Tcomms
+	TSerial
+	TParallel
+	TSCSI
+	
+Tdisplay
+	Tclock_dsp
+	Tmail_dsp
+	Tcpustate_dsp
+	Tcpugraph_dsp
+	Tmeminf_dsp
+	Tuptime_dsp
+	Txload_dsp
+	Tcredits_dsp
+	Theartbeat_dsp
+	Tstub_dsp
+	Tusercfg_dsp
+	
+Tremote
+	Ttcpsockd
+	TUNIXsockd
+
+Tchannel
+	Ttcpsocket
+	TUNIXsocket
+	
+Tconfig
+
+Tfeedback
+	TMtxOrb_keypad
+	Tserial_buttons
+
+Tschedular
+
+---------------------------------------------------
+
+Object brief descriptions
+
+Tdriver (and decendants) provide manipulation of the physical
+LCD panel including backlight, typeface loading, etc.
+Tdriver will provide default methods for tasks such as
+	text centering
+	scrolling
+	screen clearing
+	etc
+  TVirtualDriver could act as a frame buffer / virtual display.
+  This would allow several display objects to access the (virtual)
+  display in a single cycle and then the virtual driver can flush
+  the changes from the last display (delta display) in a single pass.
+  This provides a portable way to implement display objects
+  (like the heartbeat which only changes one character at a time)
+  but overlap a standard full screen display
+  
+  
+ Tcomms (and decendants) transmit and receive all data to and
+ from the communications interfaces.  Tdriver and Tfeedback will
+ use these objects directly.
+ 
+ Tdisplay (and decendants) generate the actual display information
+ by manipulating the Tdriver object which has been given to it.
+ The Tdriver object should usually be a TVirtualDriver descendant.
+ 
+ Tremote (and decendants) create, keep track of and ultimately destroy
+ Tchannel objects.  Each Tchannel can potentitally be an external
+ connection to a remote client.  The remote client can generate
+ either complete screens in a similar style to a Tdisplay object with
+ Tchannel using a Tstub_dsp to generate the screen based on info 
+ supplied to it or it can feed  data into an existing Tdisplay object 
+ (Tchannel will do this by setting Tdisplay properties).
+ 
+ Tconfig is responsible for parsing the command line and reading/re-reading
+ the contents of a configuration file.
+ 
+ Tfeedback (and its descendants) may communicate with a Tcomms object to 
+ retrieve information from a keypad or other input device.
+ 
+ Tschedular is responsible for the overall co-ordination of everything.
+ 
+
+Other notes:
+  I can't decide things like "should scroll stuff be down to Tdriver
+  or Tdisplay?".
+  Some sort of Thash would be a useful way of passing data from 
+  sockets to display objects as well
+  

@@ -1,0 +1,74 @@
+Hello,
+
+In order to compile LCDd (the lcdproc server) with support for IRman,
+you need to put libirman in a neighbor directory.
+Currently I use version 0.4.1b and this is hard coded into makefile and
+#include string. (could do better).
+
+Now for libirman to "work" you need a .irmanrc file with description of
+you infrared "code" and mapping to command in my driver.
+A template of such a file is given in the driver directory. This template
+will only work with my JVC remote control, but you already have configured
+IRman, you should be able to modify it for yours.
+
+David GLAUDE
+
+FINDING THE COMPONENT:
+
+lcdproc: deamon to display information on a lcd screen.
+	version: 0.4-pre5
+	need libirman and my driver to support input from IrMan.
+
+libirman: library in use to read input from IrMan on a serial port.
+	version used: 0.4.1b
+	currently used untouch and just needed to use my driver for lcdproc.
+
+-----------Here stop the currently usefull information------------
+
+lirc: standardize interface to control IR receaver and emetteur.
+	version: 0.5.4
+	currently not used but might be usefull have support for other IR.
+
+cdtools: command line program to control the cdrom and play audio cd.
+	might need some patch to have a better output of cd song information.
+
+Hello,
+
+This file describe the personnal developpement I have made and wich sources
+you need to bring together in order to integrate everything the same way
+I did.
+
+Basicaly, we are talking about a yet another CD player 'yaCDplayer' but
+because the name might already have been in use, it was decided to call it
+'lcdcd'.
+
+This CD player take as input (control) and output (display of the status) the
+lcdproc server. It as thus no user interface on it's own.
+Lcdproc is a server that allow the control of LCD screen over TCP connection.
+Some LCD screen also have support to connect a keypad, it also offer
+input user interface for this program.
+Because lcdproc is a very flexible input/output server, it also support for
+input comming from a joystic, the keyboard (curses output) or even irman.
+It also support multiple driver simultaniously and multiple driver like curses
+and joystic for those without an LCD screen and an irman.
+
+Now irman is an infrared receaver with a build in chip to hash the input
+signal into a unique key that can be readed throught a serial interface.
+
+An other important think about lcdcd it is that in order to communicate with
+lcdproc we use a TCP/IP connection. Lcdproc need to run in background on the
+server where the input/output device are connected. Lcdcd must run on the
+client where the cdrom is located. In between, we need to have a TCP/IP
+network. Now, if you have a firewall, you will let traffic from the client to
+the server on port 13666 wich is the default for lcdproc, be carefull there
+is not security build in lcdproc and anybody can connect to it. If you don't
+have an IP network and the client and the server are located on a single
+computer (with the CDROM, the LCD screen and the IrMan connected) then you
+need to enable IP on this computer. This can be done by putting an IP address
+on a loopback interface (like 127.0.0.1 on lo, try 'ifup lo' it might work
+also on your distribution of Linux).
+
+Currently, this ... ---to be continued---
+
+
+

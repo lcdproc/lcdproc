@@ -1,0 +1,68 @@
+William W. Ferrell (choadster@earthlink.net)
+Scott Scriven (scriven@cs.colostate.edu).
+
+Hello,
+I am the happy new owner of a matrix-orbital LK-204-25 V.
+I also made computer science studies (but currently I only program for fun).
+The reason why I wanted this LCD screen was to build a MAME/MPEG3/DVD player.
+Currently the IR receaver is missing, but I already started to work on my
+project by checking LCDPROC capability and trying to make it work the way I
+want.
+
+I don't know yet if my developpement will be a client of LCDPROC or if I will
+make a stand-alone program (more likely reussing some of your code).
+Currently, feature in LCDPROC don't cover yet my need yet.
+So, my best option is to support you or your team in building the perfect 
+server in order for me to build only a client.
+
+So, I downloaded v0.4-pre5 and started to hack. ;-)
+I was a little bit confuse with your documentation, sometime talking about
+version 0.3.x or about comming feature, but reading the source code (and
+the sgml description that I only founded later) was the best.
+
+I made some "minor" change to a few source file (this is what I remember):
+ * Cleaning the help screen from LCDd.
+ * Adding a speed option to MtxOrb driver.
+ * Updated MtxOrb help screen to indicate those change.
+ * Added some error checking to parameter sended to MtxOrb driver.
+ * Added fake support for big number into curses driver.
+ * Some modification to the debug_driver in order to compile.
+ * Added bignum widget in order to use that feature from the driver.
+ * Added big cloc[K] (24H) to lcdproc to test the new widget. (ugly/blinking)
+ * Added a General Purpose Output function to the MtxOrb driver.
+
+Here is some kind of todo-list one liner only:
+ * Implement a debug/error to a syslog server rather than printf(stderr,...
+ * General Purpose Output support.
+ * Make "LCDproc Server" and "End Screen" (build-in screen) optionnal.
+ * Make HeartBeat working with General Purpose Output (led blinking).
+ * KeyPad support.
+ * Make KeyPad local feedback using General Purpose Output (led blinking).
+ * Make the server port number (listen) a param/config option.
+ * Accept incoming 'telnet' (specific port) as a new i/o device (vt100/ansi).
+ * MtxOrb driver across an outgoing 'telnet' session (access server).
+
+My major todo:
+ * Well, I would like to (one way or another) interconnect IrMan(?) and
+   LCDProc. I will use LCDProc for the ouput of the name of the song, ...
+   and maybe for keyboard input. I will also use IrMan or some infrared
+   library in order to receave remote controle input. Now, I would be nice
+   to be able to connect to LCDProc and 'register' a new input and/or output
+   device.
+   What I am thinking about is to have LCDd be a server with local device
+   to manage, but also have remote device that could attach themself to
+   LCDd. I think, by reading your documentation, that you have somethink like
+   that already in mind. This will allow dynamic addition of new driver without
+   having to recompile LCDd...
+
+Change you should make yourself:
+ * Update the network protocol description with heartbeat function.
+ * Remove reference/out of date description related to 0.3.x
+
+I made many change to a lot of different file... (sorry)
+I don't have the tool/knowledge available to give you a patch with only my
+modification. So, I send you a taz.gz with everything after my change.
+I won't have much time to spend on LCDPROC for about two week (and the
+week-end in between). This give you time to check my change and incorporate
+anything you find interesting.
+

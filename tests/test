@@ -1,0 +1,75 @@
+hello
+
+screen_add one
+
+widget_add one f frame
+widget_set one f 1 2 10 3 20 4 v 2 
+widget_add one g frame -in f
+widget_set one g 5 1 15 3 20 4 v 2
+
+widget_add one s string
+widget_add one s string -in f
+widget_add one s string -in g
+widget_set one s 1 1 "123456789012345678901234567890"
+widget_set one s 1 2 "123456789012345678901234567890"
+widget_set one s 1 3 "123456789012345678901234567890"
+widget_set one s 1 4 "123456789012345678901234567890"
+widget_del one s
+
+widget_add one h hbar
+widget_add one h hbar -in f
+widget_add one h hbar -in g
+widget_set one h 1 2 13
+widget_set one h 1 2 43
+widget_set one h 1 2 83
+widget_del one h
+
+widget_add one t title
+widget_add one t title -in f
+widget_add one t title -in g
+widget_set one t Hello
+widget_set one t "Hello there"
+widget_set one t "Hi, there.  Watch me scroll!"
+widget_del one t
+
+
+------------------------ Disk Screen test...
+hello
+screen_add D
+widget_add D t title
+widget_set D t "Disk Use"
+widget_add D f frame
+widget_set D f 1 2 20 4 20 8 v 8
+widget_add D s1 string -in f
+widget_add D s2 string -in f
+widget_add D s3 string -in f
+widget_add D s4 string -in f
+widget_add D s5 string -in f
+widget_add D s6 string -in f
+widget_add D s7 string -in f
+widget_add D s8 string -in f
+widget_add D h1 hbar -in f
+widget_add D h2 hbar -in f
+widget_add D h3 hbar -in f
+widget_add D h4 hbar -in f
+widget_add D h5 hbar -in f
+widget_add D h6 hbar -in f
+widget_add D h7 hbar -in f
+widget_add D h8 hbar -in f
+widget_set D s1 1 1 /foo
+widget_set D s2 1 2 /bar
+widget_set D s3 1 3 /baz
+widget_set D s4 1 4 /quux
+widget_set D s5 1 5 /foobar
+widget_set D s6 1 6 /tmp
+widget_set D s7 1 7 /snot
+widget_set D s8 1 8 /booger
+widget_set D h1 10 1 3
+widget_set D h2 10 2 6
+widget_set D h3 10 3 9
+widget_set D h4 10 4 12
+widget_set D h5 10 5 15
+widget_set D h6 10 6 18
+widget_set D h7 10 7 21
+widget_set D h8 10 8 24
+---------------------------

@@ -1,0 +1,86 @@
+Stuff planned for future releases...  (in no particular order)
+
+Feel free to help out with any of this stuff!  :)
+
+
+----------------------------------------
+Client driver
+
+An LCDproc client can connect, request the "client" driver, then get
+all screen information sent to it!  This allows things such as logging
+in remotely and starting up a curses display of LCDproc.  It also
+gives another method for writing drivers.  In a sense, it could even
+let you write and link in new drivers without having to recompile and
+restart LCDproc...
+
+Another bonus is that LCDproc will come with a client which can, for
+example, start up a "client" driver to send "keypresses" from the
+command line.  Or, 
+	
+	lcdtool -key A
+
+would have the same result as pressing a key on the keypad.
+
+
+----------------------------------------
+Menus / Client menus
+
+LCDproc will have a "menu" mode, where various options can be
+configured.  You can rearrange the screenlist, change the contrast,
+add/remove drivers, change screen priorities, kick off clients, etc...  
+
+You can also access client menus to configure options in each client.
+
+----------------------------------------
+Config Files...
+
+LCDproc will use a config file for its parameters, like other
+programs; instead of relying upon long command lines.  Keypresses,
+drivers, and other things will be configurable here.  Also, LCDproc
+will have the ability to load/modify/save config files via its menu
+interface, so you don't have to edit it by hand.
+
+Info about particular clients/screens will also be stored in the
+LCDproc config file, so you can (for example) save your preferences
+about screen priorities, etc...
+
+Code will be made generic, so that other programs can use it for their
+own config files.  Clients may want to use this..
+
+----------------------------------------
+Scheduling modes
+
+Instead of the simplistic "round robin" circular screen-scheduling in
+the current release, later versions will offer several different
+algorithms for screen-ordering.
+
+One example: High-priority screens will be shown more often than
+low-priority screens, simply by showing up more often.
+
+----------------------------------------
+Shell Commands
+
+The server will also be able to run arbitrary shell commands from the
+config file.  This will allow you to, for example, shut down the
+machine, get online, or other system tasks.
+
+----------------------------------------
+Improved display driver API
+
+The desirable aspects of what a driver should do has changed somewhat
+since I first read the LCD manual.  The driver spec is based largely
+on the functions MtxOrb's LCDs provide easily, but it is not
+well-suited to other types of display.
+
+So, I'll be working on a new driver spec which is more flexible and
+more powerful.  In addition, I'm looking for ways to better handle
+multiple driver devices.
+
+----------------------------------------
+Anonymous CVS
+
+I want to *really* open up LCDproc development, by giving everyone
+access to the CVS repository.  But, alas, I've got to figure out how
+to set up a CVS server first...  (or convince Gareth to do it..  :)
+
+----------------------------------------

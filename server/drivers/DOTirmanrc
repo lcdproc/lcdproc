@@ -1,0 +1,92 @@
+# example irmanrc file for libirman 0.4.1
+# should be either /usr/local/etc/irmanrc.conf or ~/.irmanrc
+
+# set the default port name
+port /dev/ttyS0
+
+bind jvc-play		7ddfd7fc0000
+bind jvc-pause		7dddd7fc0000
+bind jvc-stop		7ddd7ffc0000
+bind jvc-prev		7ddff5fc0000
+bind jvc-next		7dddf5fc0000
+bind jvc-fwd		7ddf5ffc0000
+bind jvc-rew		7ddd5ffc0000
+bind jvc-1		7ffdff7c0000
+bind jvc-2		7fff7f7c0000
+bind jvc-3		7ffd7f7c0000
+bind jvc-4		7fffdf7c0000
+bind jvc-5		7ffddf7c0000
+bind jvc-6		7fff5f7c0000
+bind jvc-7		7ffd5f7c0000
+bind jvc-8		7ffff77c0000
+bind jvc-9		7ffdf77c0000
+bind jvc-0		7fffff7c0000
+bind jvc-rec		e51000000000
+bind jvc-vol+		b91000000000
+bind jvc-vol-		ad1000000000
+bind jvc-mute		f91000000000
+bind jvc-/|//		f11000000000
+bind jvc-display	151000000000
+bind jvc-search<<	351000000000
+bind jvc-search>>	491000000000
+bind jvc-operate	c91000000000
+
+bind sony-md-power	a9e000000000
+bind sony-md-eject	69e000000000
+bind -cancel		051000000000
+
+alias workman-play	jvc-play
+alias workman-pause	jvc-pause
+alias workman-stop	jvc-stop
+alias workman-prev	jvc-prev
+alias workman-next	jvc-next
+alias workman-rew	jvc-rew
+alias workman-fwd	jvc-fwd
+#alias workman-power	jvc-power
+#alias workman-eject	jvc-eject
+
+alias ircd-play		jvc-play
+alias ircd-pause	jvc-pause
+alias ircd-stop		jvc-stop
+alias ircd-prev		jvc-rew
+alias ircd-next		jvc-fwd
+#alias ircd-power	jvc-power
+#alias ircd-eject	jvc-eject
+
+alias lcdproc-A		jvc-1
+alias lcdproc-B		jvc-2
+alias lcdproc-C		jvc-3
+alias lcdproc-D		jvc-4
+alias lcdproc-E		jvc-5
+alias lcdproc-F		jvc-6
+alias lcdproc-G		jvc-7
+alias lcdproc-H		jvc-8
+alias lcdproc-I		jvc-9
+alias lcdproc-J		jvc-0
+alias lcdproc-K		jvc-play
+alias lcdproc-L		jvc-pause
+alias lcdproc-M		jvc-stop
+alias lcdproc-N		jvc-prev
+alias lcdproc-O		jvc-next
+alias lcdproc-P		jvc-fwd
+alias lcdproc-Q		jvc-rew
+alias lcdproc-R		jvc-rec
+alias lcdproc-S		jvc-vol+
+alias lcdproc-T		jvc-vol-
+alias lcdproc-U		jvc-mute
+alias lcdproc-V		jvc-/|//
+alias lcdproc-W		jvc-display
+alias lcdproc-X		jvc-search<<
+alias lcdproc-Y		jvc-search>>
+alias lcdproc-Z		jvc-operate
+
+
+# just an idea for 0.5
+# assign workman sony-md
+# would be like: alias workman-* sony-md-*
+# this allows remote level control.
+# { "(remote level) control", not "remote (level control)"! }
+# also
+# set REMOTES /usr/local/share/libir/
+# include ${REMOTES}/sony-md
+# include ${REMOTES}/philips-rc5
