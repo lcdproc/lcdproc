@@ -90,6 +90,7 @@ CFontz_init (Driver * drvthis, char *args)
 	struct termios portset;
 	int tmp, w, h;
 	int reboot = 0;
+	int usb = 0;
 
 	int contrast = DEFAULT_CONTRAST;
 	char device[200] = DEFAULT_DEVICE;
@@ -119,10 +120,10 @@ CFontz_init (Driver * drvthis, char *args)
 	}
 
 	/*Which contrast*/
-	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 255) {
+	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 1000) {
 		contrast = drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST);
 	} else {
-		report (RPT_WARNING, "CFontz_init: Contrast must between 0 and 255. Using default value.\n");
+		report (RPT_WARNING, "CFontz_init: Contrast must between 0 and 1000. Using default value.\n");
 	}
 
 	/*Which backlight brightness*/
@@ -145,7 +146,8 @@ CFontz_init (Driver * drvthis, char *args)
 	if (tmp == 1200) speed = B1200;
 	else if (tmp == 2400) speed = B2400;
 	else if (tmp == 9600) speed = B9600;
-	else { report (RPT_WARNING, "CFontz_init: Speed must be 1200, 2400, or 9600. Using default value.\n", speed);
+	else if (tmp == 19200) speed = B19200;
+	else { report (RPT_WARNING, "CFontz_init: Speed must be 1200, 2400, 9600 or 19200. Using default value.\n", speed);
 	}
 
 	/*New firmware version?*/
@@ -159,9 +161,18 @@ CFontz_init (Driver * drvthis, char *args)
 		reboot = 1;
 	}
 
+	/*Am I USB or not?*/
+	if(drvthis->config_get_bool( drvthis->name , "USB" , 0 , 0)) {
+		usb = 1;
+	}
+
 	// Set up io port correctly, and open it...
 	debug( RPT_DEBUG, "CFontz: Opening serial device: %s", device);
-	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+    if ( usb ) {
+        fd = open (device, O_RDWR | O_NOCTTY);
+    } else {
+        fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+    }
 	if (fd == -1) {
 		report (RPT_ERR, "CFontz_init: failed (%s)\n", strerror (errno));
 		return -1;
@@ -169,19 +180,31 @@ CFontz_init (Driver * drvthis, char *args)
 
 	tcgetattr (fd, &portset);
 
-	// We use RAW mode
+    // We use RAW mode
+    if ( usb ) {
+        // The USB way
+        portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+                              | INLCR | IGNCR | ICRNL | IXON );
+        portset.c_oflag &= ~OPOST;
+        portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+        portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+        portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+        portset.c_cc[VMIN] = 1;
+        portset.c_cc[VTIME] = 3;
+    } else {
 #ifdef HAVE_CFMAKERAW
-	// The easy way
-	cfmakeraw( &portset );
+        // The easy way
+        cfmakeraw( &portset );
 #else
-	// The hard way
-	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-	                      | INLCR | IGNCR | ICRNL | IXON );
-	portset.c_oflag &= ~OPOST;
-	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+        // The hard way
+        portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+                           | INLCR | IGNCR | ICRNL | IXON );
+        portset.c_oflag &= ~OPOST;
+        portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+        portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+        portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
+    }
 
 	// Set port speed
 	cfsetospeed (&portset, speed);
@@ -254,12 +277,10 @@ CFontz_flush (Driver * drvthis)
 	int i;
 
 	// Custom characters start at 128, not at 0.
-	/*
 	   for(i=0; i<width*height; i++)
 	   {
 	   if(framebuf[i] < 32  &&  framebuf[i] >= 0) framebuf[i] += 128;
 	   }
-	 */
 
 	for (i = 0; i < height; i++) {
 		snprintf (out, sizeof(out), "%c%c%c", 17, 0, i);
@@ -307,7 +328,7 @@ CFontz_get_contrast (Driver * drvthis)
 }
 
 /////////////////////////////////////////////////////////////////
-// Changes screen contrast (0-255; 140 seems good)
+// Changes screen contrast (0-1000; 400 seems good)
 // Value 0 to 100.
 //
 MODULE_EXPORT void
