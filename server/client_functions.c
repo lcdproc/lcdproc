@@ -9,11 +9,13 @@
   
 */
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <syslog.h>
 
 #include "shared/debug.h"
 #include "shared/sockets.h"
@@ -27,6 +29,9 @@
 #include "screen.h"
 #include "widget.h"
 #include "client_functions.h"
+
+int info_func (client * c, int argc, char **argv);
+int sleep_func (client * c, int argc, char **argv);
 
 client_function commands[] = {
 	{"test_func", test_func_func},
@@ -52,8 +57,18 @@ client_function commands[] = {
 	{"backlight", backlight_func},
 	{"output", output_func},
 	{"noop", noop_func},
+	{"info", info_func},
+	{"sleep", sleep_func},
 	{NULL, NULL},
 };
+
+// Remember: argc counts all arguments, including the command name;
+//     so it will actually be one more than the number of arguments given
+//     to the command...
+
+#define NoArguments		(argc == 1)
+#define AnyArguments		(argc != 1)
+#define MoreArgumentsThan(a)	(argc > (a))
 
 // TODO:  Maybe more error-checking for "->"'s?
 
@@ -67,7 +82,7 @@ test_func_func (client * c, int argc, char **argv)
 	char str[256];
 
 	for (i = 0; i < argc; i++) {
-		sprintf (str, "test_func_func:  %i -> %s\n", i, argv[i]);
+		snprintf (str, sizeof(str), "test_func_func:  %i -> %s\n", i, argv[i]);
 		printf (str);
 		sock_send_string (c->sock, str);
 	}
@@ -79,6 +94,8 @@ test_func_func (client * c, int argc, char **argv)
 //
 // It returns a string of info about the server to the client
 //
+// usage: hello
+//
 int
 hello_func (client * c, int argc, char **argv)
 {
@@ -86,9 +103,20 @@ hello_func (client * c, int argc, char **argv)
 
 	// TODO:  Give *real* info about the server/lcd...
 
+	if (AnyArguments) {
+		sock_send_string (c->sock, "huh? extra parameters ignored\n");
+	}
+
 	debug ("Hello!\n");
 
-	sprintf (str, "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n", version, protocol_version, lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
+	memset(str, '\0', sizeof(str));
+	sprintf (str, "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
+		version, protocol_version, lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
+
+//	lcdproc (client) depends on the above format...
+//	snprintf (str, sizeof(str), "connect LCDproc %s protocol %s LCD %ix%i with cells %ix%i\n",
+//		version, protocol_version, lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
+
 	sock_send_string (c->sock, str);
 
 	if (c->data)
@@ -100,38 +128,76 @@ hello_func (client * c, int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////////
 // sets info about the client, such as its name
 //
+// usage: client_set -name <id>
+//
 int
 client_set_func (client * c, int argc, char **argv)
 {
 	int i;
+	char str[16], buf[80];
 
+	memset(str, '\0', sizeof(str));
 	if (!c->data->ack)
 		return 1;
 
-	for (i = 1; i < argc; i++) {
+	if (argc != 3) {
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh? usage: client_set -name <name>\n");
+				break;
+			case 2:
+				sock_send_string (c->sock, "huh? Not enough parameters\n");
+				break;
+			default:
+				sock_send_string (c->sock, "huh? Too many parameters\n");
+				break;
+		}
+		return 0;
+	}
+
+	i = 1;
+	do {
+		char *p;
+
+		// This bit of code means that "-name" is the same as "name"...
+		p = argv[i];
+		if (*p == '-')
+			p++;
+
 		// Handle the "name" parameter
-		if (0 == strcmp (argv[i], "-name")
-			|| 0 == strcmp (argv[i], "name")) {
-			if (argc > i + 1) {
-				i++;
+		if (strcmp (p, "name") == 0) {
+			i++;
+			if (argv[i] == '\0') {
+				snprintf (buf, sizeof(buf), "huh? internal error: no parameter #%d\n", i);
+				sock_send_string (c->sock, buf);
+				continue;
+			}
+
+			if (strlen(argv[i]) > sizeof(str) -1) {
+				sock_send_string (c->sock, "huh? name too long\n");
+			} else {
+				strncpy(str, argv[i], sizeof(str) - 1);
+
 				debug ("client_set: name=\"%s\"\n", argv[i]);
+
+				syslog(LOG_INFO, "client set name to %s", str);
 
 				// set the name...
 				if (c->data->name)
 					free (c->data->name);
-				c->data->name = strdup (argv[i]);
-				sock_send_string(c->sock, "success\n");
-			} else {
-				sock_send_string (c->sock, "huh? name requires a parameter\n");
+
+				if ((c->data->name = strdup (str)) == NULL) {
+					sock_send_string(c->sock, "huh? error allocating memory!\n");
+				} else {
+					sock_send_string(c->sock, "success\n");
+					i++; // bypass argument (name string)
+				}
 			}
 		} else {
-			sock_send_string (c->sock, "huh? invalid parameter\n");
+			snprintf (buf, sizeof(buf), "huh? invalid parameter (%s)\n", p);
+			sock_send_string (c->sock, buf);
 		}
-	}
-
-	// If there were no parameters...
-	if (argc == 1)
-		sock_send_string (c->sock, "huh? What do you want to set?\n");
+	} while (++i < argc);
 
 	return 0;
 }
@@ -139,6 +205,8 @@ client_set_func (client * c, int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////////
 // Tells the server the client would like to accept keypresses
 // of a particular type
+//
+// usage: client_add_key <keylist>
 //
 int
 client_add_key_func (client * c, int argc, char **argv)
@@ -148,16 +216,20 @@ client_add_key_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh? You must specify a key list\n");
+	if (argc != 2) {
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh? usage: client_add_key <keylist>\n");
+				break;
+			default:
+				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				break;
+		}
 		return 0;
 	}
-	if (argc > 2) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
-		return 0;
-	}
+
 	keys = argv[1];
-	debug ("client_add_key: Adding key(s) %s to client_keys\n", keys);
+	debug ("client_add_key: current client will handle key(s) %s\n", keys);
 
 	if (!c->data->client_keys) {
 		// No keys list, create a new one
@@ -175,13 +247,17 @@ client_add_key_func (client * c, int argc, char **argv)
 		if( new ) {
 			c->data->client_keys = new ;
 			strcat( new, keys );
+		} else {
+			sock_send_string(c->sock, "huh? could not allocate memory for new keys\n");
+			return 0;
 		}
 	}
 
-	if (!c->data->client_keys) {
-		sock_send_string(c->sock, "huh? failed\n");
-	} else
+	if (c->data->client_keys) {
 		sock_send_string(c->sock, "success\n");
+	} else {
+		sock_send_string(c->sock, "huh? failed\n");
+	}
 
 	return 0;
 }
@@ -189,6 +265,8 @@ client_add_key_func (client * c, int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////////
 // Tells the server the client would NOT like to accept keypresses
 // of a particular type
+//
+// usage: client_del_key <keylist>
 //
 int
 client_del_key_func (client * c, int argc, char **argv)
@@ -198,14 +276,16 @@ client_del_key_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh? You must specify a key list\n");
-		return 0;
+	if (argc != 2) {
+		if (argc == 1) {
+			sock_send_string (c->sock, "huh? usage: client_del_key <keylist>\n");
+			return 0;
+		} else {
+			sock_send_string (c->sock, "huh?  Too many parameters...\n");
+			return 0;
+		}
 	}
-	if (argc > 2) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
-		return 0;
-	}
+
 	keys = argv[1] ;
 	debug ("client_del_key: Deleting key(s) %s from client_keys\n", keys);
 
@@ -240,6 +320,8 @@ client_del_key_func (client * c, int argc, char **argv)
 // Tells the server the client would like to accept keypresses
 // of a particular type when the given screen is active on the display
 //
+// screen_add_key <screenid> <keylist>
+//
 int
 screen_add_key_func (client * c, int argc, char **argv)
 {
@@ -251,18 +333,21 @@ screen_add_key_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh? You must specify a screen id\n");
+	if (argc != 3) {
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh? usage: screen_add_key <screenid> <keylist>\n");
+				break;
+			case 2:
+				sock_send_string (c->sock, "huh? You must specify a key list\n");
+				break;
+			default:
+				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				break;
+		}
 		return 0;
 	}
-	if (argc < 3) {
-		sock_send_string (c->sock, "huh? You must specify a key list\n");
-		return 0;
-	}
-	if (argc > 3) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
-		return 0;
-	}
+
 	id = argv[1];
 	keys = argv[2];
 	debug ("screen_add_key: Adding key(s) %s to screen %s\n", keys, id);
@@ -289,6 +374,9 @@ screen_add_key_func (client * c, int argc, char **argv)
 		if( new ) {
 			s->keys = new ;
 			strcat( new, keys );
+		} else {
+			sock_send_string(c->sock, "huh? could not allocate memory for new keys\n");
+			return 0;
 		}
 	}
 
@@ -304,6 +392,8 @@ screen_add_key_func (client * c, int argc, char **argv)
 // Tells the server the client would NOT like to accept keypresses
 // of a particular type when the given screen is active on the display
 //
+// usage: screen_del_key <screenid> <keylist>
+//
 int
 screen_del_key_func (client * c, int argc, char **argv)
 {
@@ -315,27 +405,33 @@ screen_del_key_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh? You must specify a screen id\n");
+	if (argc != 3) {
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh? usage: screen_del_key <screenid> <keylist>\n");
+				break;
+			case 2:
+				sock_send_string (c->sock, "huh? You must specify a key list\n");
+				break;
+			default:
+				sock_send_string (c->sock, "huh? Too many parameters\n");
+				break;
+		}
 		return 0;
 	}
-	if (argc < 3) {
-		sock_send_string (c->sock, "huh? You must specify a key list\n");
-		return 0;
-	}
-	if (argc > 3) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
-		return 0;
-	}
+
 	id = argv[1] ;
 	keys = argv[2] ;
 	debug ("screen_del_key: Deleting key(s) %s from screen %s\n", keys, id);
+
 	// Find the screen
 	s = screen_find (c, id);
+
 	if (!s) {
 		sock_send_string (c->sock, "huh? Invalid screen id\n");
 		return 0;
 	}
+
 	// Do we have keys?
 	if (s->keys) {
 		// Have keys, remove keys from the list
@@ -357,6 +453,7 @@ screen_del_key_func (client * c, int argc, char **argv)
 				*to++ = *from++ ;
 			}
 		}
+		to = '\0';	// terminates the new keys string...
 	}
 
 	sock_send_string(c->sock, "success\n");
@@ -367,68 +464,85 @@ screen_del_key_func (client * c, int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////////
 // Tells the server the client has another screen to offer
 //
+// usage: screen_add <id>
+//
 int
 screen_add_func (client * c, int argc, char **argv)
 {
 	int err = 0;
+	char scr[128];
 
 	if (!c->data->ack)
 		return 1;
 
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh?  Specify a screen #id\n");
-		return 0;
-	}
-	if (argc > 2) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+	if (argc != 2) {
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh?  usage: screen_add <screenid>\n");
+				break;
+			default:
+				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				break;
+		}
 		return 0;
 	}
 
 	debug ("screen_add: Adding screen %s\n", argv[1]);
-	err = screen_add (c, argv[1]);
-	if (err < 0) {
-		fprintf (stderr, "screen_add_func:  Error adding screen\n");
-		sock_send_string (c->sock, "huh? failed to add screen id#\n");
-	}
-	if (err > 0)
-		sock_send_string (c->sock, "huh? You already have a screen with that id#\n");
+
+	memset(scr, '\0', sizeof(scr));
+	strncpy(scr, argv[1], sizeof(scr) - 1);
+
+	err = screen_add (c, scr);
 	if (err == 0)
 		sock_send_string(c->sock, "success\n");
+	else if (err < 0) {
+		fprintf (stderr, "screen_add_func:  Error adding screen\n");
+		sock_send_string (c->sock, "huh? failed to add screen id#\n");
+	} else
+		sock_send_string (c->sock, "huh? You already have a screen with that id#\n");
 
+	syslog(LOG_NOTICE, "added a screen (%s) to the display", scr);
 	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 // Client requests that the server forget about a screen
 //
+// usage: screen_del <screenid>
+//
 int
 screen_del_func (client * c, int argc, char **argv)
 {
 	int err = 0;
+	char scr[128];
 
 	if (!c->data->ack)
 		return 1;
 
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh?  Specify a screen #id\n");
-		return 0;
-	}
-	if (argc > 2) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+	if (argc != 2) {
+		if (NoArguments)
+			sock_send_string (c->sock, "huh? usage: screen_del <screenid>\n");
+		else
+			sock_send_string (c->sock, "huh?  Too many parameters...\n");
 		return 0;
 	}
 
 	debug ("screen_del: Deleting screen %s\n", argv[1]);
-	err = screen_remove (c, argv[1]);
-	if (err < 0) {
-		fprintf (stderr, "screen_del_func:  Error removing screen\n");
-		sock_send_string(c->sock, "huh? failed to remove screen\n");
-	}
-	if (err > 0)
-		sock_send_string (c->sock, "huh? You don't have a screen with that id#\n");
+
+	// Enforce bounds limits on argv[1]
+	memset(scr, '\0', sizeof(scr));
+	strncpy(scr, argv[1], sizeof(scr) - 1);
+
+	err = screen_remove (c, scr);
 	if ( err == 0 )
 		sock_send_string(c->sock, "success\n");
+	else if (err < 0) {
+		fprintf (stderr, "screen_del_func:  Error removing screen\n");
+		sock_send_string(c->sock, "huh? failed to remove screen\n");
+	} else
+		sock_send_string (c->sock, "huh? You don't have a screen with that id#\n");
 
+	syslog(LOG_NOTICE, "removed a screen (%s) from the display", scr);
 	return 0;
 }
 
@@ -436,6 +550,8 @@ screen_del_func (client * c, int argc, char **argv)
 // Configures info about a particular screen, such as its
 //  name, priority, or duration
 //
+// usage: screen_set <id> [ -priority <int> ] [ -name <name> ] [ -duration <int> ]
+//     [ -wid <width> ] [ -hgt <height> ] [ -heartbeat <type> ]
 int
 screen_set_func (client * c, int argc, char **argv)
 {
@@ -448,13 +564,10 @@ screen_set_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	// If there weren't enough parameters...
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh? You must specify a screen id\n");
+	if (NoArguments) {
+		sock_send_string (c->sock, "huh?  usage: screen_set <id> [ -priority <int> ] [ -name <name> ] [ -duration <int> ] [ -wid <width> ] [ -hgt <height> ] [ -heartbeat <type> ]\n");
 		return 0;
-	}
-
-	if (argc == 2) {
+	} else if (argc == 2) {
 		sock_send_string (c->sock, "huh? What do you want to set?\n");
 		return 0;
 	}
@@ -467,9 +580,18 @@ screen_set_func (client * c, int argc, char **argv)
 	}
 	// Handle the rest of the parameters
 	for (i = 2; i < argc; i++) {
+		char *p;
+
+		// The following code allows us to use p for comparisions,
+		// ignoring a (valid) single leading '-' - reduces string comparisons
+		// by half.
+
+		p = argv[i];
+		if (*p == '-')
+			p++;
+
 		// Handle the "name" parameter
-		if (0 == strcmp (argv[i], "-name")
-			|| 0 == strcmp (argv[i], "name")) {
+		if (strcmp (p, "name")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: name=\"%s\"\n", argv[i]);
@@ -484,8 +606,7 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "priority" parameter
-		else if (0 == strcmp (argv[i], "-priority")
-				|| 0 == strcmp (argv[i], "priority")) {
+		else if (strcmp (p, "priority")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: priority=\"%s\"\n", argv[i]);
@@ -500,8 +621,7 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "duration" parameter
-		else if (0 == strcmp (argv[i], "-duration")
-				|| 0 == strcmp (argv[i], "duration")) {
+		else if (strcmp (p, "duration")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: duration=\"%s\"\n", argv[i]);
@@ -516,35 +636,33 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "heartbeat" parameter
-		else if (0 == strcmp (argv[i], "-heartbeat")
-				|| 0 == strcmp (argv[i], "heartbeat")) {
+		else if (strcmp (p, "heartbeat")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: heartbeat=\"%s\"\n", argv[i]);
 
 				// set the heartbeat type...
 				if (0 == strcmp (argv[i], "on"))
-					s->heartbeat = 1;
+					s->heartbeat = HEART_ON;
 				if (0 == strcmp (argv[i], "heart"))
-					s->heartbeat = 1;
+					s->heartbeat = HEART_ON;
 				if (0 == strcmp (argv[i], "normal"))
-					s->heartbeat = 1;
+					s->heartbeat = HEART_ON;
 				if (0 == strcmp (argv[i], "default"))
-					s->heartbeat = 1;
+					s->heartbeat = HEART_ON;
 				if (0 == strcmp (argv[i], "off"))
-					s->heartbeat = 0;
+					s->heartbeat = HEART_OFF;
 				if (0 == strcmp (argv[i], "none"))
-					s->heartbeat = 0;
+					s->heartbeat = HEART_OFF;
 				if (0 == strcmp (argv[i], "slash"))
-					s->heartbeat = 2;
+					s->heartbeat = HEART_OPEN;
 				sock_send_string(c->sock, "success\n");
 			} else {
 				sock_send_string (c->sock, "huh? -heartbeat requires a parameter\n");
 			}
 		}
 		// Handle the "wid" parameter
-		else if (0 == strcmp (argv[i], "-wid")
-				|| 0 == strcmp (argv[i], "wid")) {
+		else if (strcmp (p, "wid")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: wid=\"%s\"\n", argv[i]);
@@ -559,8 +677,7 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "hgt" parameter
-		else if (0 == strcmp (argv[i], "-hgt")
-				|| 0 == strcmp (argv[i], "hgt")) {
+		else if (strcmp (p, "hgt")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: hgt=\"%s\"\n", argv[i]);
@@ -584,6 +701,8 @@ screen_set_func (client * c, int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////////
 // Adds a widget to a screen, but doesn't give it a value
 //
+// usage: widget_add <screenid> <widgetid> <widgettype> [ -in <id> ]
+//
 int
 widget_add_func (client * c, int argc, char **argv)
 {
@@ -598,21 +717,21 @@ widget_add_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	// If there weren't enough parameters...
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh? You must specify a screen id\n");
-		return 0;
-	}
-	if (argc < 3) {
-		sock_send_string (c->sock, "huh? You must specify a widget id\n");
-		return 0;
-	}
-	if (argc < 4) {
-		sock_send_string (c->sock, "huh? You must specify a widget type\n");
-		return 0;
-	}
-	if (argc > 6) {
-		sock_send_string (c->sock, "huh? Too many parameters\n");
+	if ((argc < 4) || (argc > 6)) {
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh? usage: widget_add <screenid> <widgetid> <widgettype> [ -in <id> ]\n");
+				break;
+			case 2:
+				sock_send_string (c->sock, "huh? Widget ID and Widget Type not specified!\n");
+				break;
+			case 3:
+				sock_send_string (c->sock, "huh? Widget Type not specified!\n");
+				break;
+			default:
+				sock_send_string (c->sock, "huh? Too many parameters\n");
+				break;
+		}
 		return 0;
 	}
 
@@ -629,9 +748,14 @@ widget_add_func (client * c, int argc, char **argv)
 
 	// Check for additional flags...
 	if (argc > 4) {
+		char *p;
+
+		p = argv[4];
+		if (*p == '-')
+			p++;
+
 		// Handle the "in" flag to place widgets in a container...
-		if (0 == strcmp (argv[4], "-in")
-			|| 0 == strcmp (argv[4], "in")) {
+		if (strcmp (p, "in")) {
 			if (argc < 6) {
 				sock_send_string (c->sock, "huh? Specify a frame to place widget in\n");
 				return 0;
@@ -639,20 +763,23 @@ widget_add_func (client * c, int argc, char **argv)
 			in = argv[5];
 		}
 	}
+
 	// Add the widget and set its type...
 	err = widget_add (s, wid, type, in, c->sock);
-	if (err < 0) {
+	if (err == 0)
+		sock_send_string(c->sock, "success\n");
+	else {
 		fprintf (stderr, "widget_add_func:  Error adding widget\n");
 		sock_send_string(c->sock, "huh? failed\n");
 	}
-	else
-		sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////
 // Removes a widget from a screen, and forgets about it
+//
+// usage: widget_del <screenid> <widgetid>
 //
 int
 widget_del_func (client * c, int argc, char **argv)
@@ -666,17 +793,18 @@ widget_del_func (client * c, int argc, char **argv)
 	if (!c->data->ack)
 		return 1;
 
-	// Check the number of parameters...
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh?  Specify a screen #id\n");
-		return 0;
-	}
-	if (argc < 3) {
-		sock_send_string (c->sock, "huh?  Specify a widget #id\n");
-		return 0;
-	}
-	if (argc > 3) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+	if (argc != 3) {
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh?  usage: widget_del <screenid> <widgetid>\n");
+				break;
+			case 2:
+				sock_send_string (c->sock, "huh?  Specify a widget #id\n");
+				break;
+			default:
+				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				break;
+		}
 		return 0;
 	}
 
@@ -691,12 +819,12 @@ widget_del_func (client * c, int argc, char **argv)
 	}
 
 	err = widget_remove (s, wid, c->sock);
-	if (err < 0) {
+	if (err == 0)
+		sock_send_string(c->sock, "success\n");
+	else {
 		fprintf (stderr, "widget_del_func:  Error removing widget\n");
 		sock_send_string(c->sock, "huh? failed\n");
 	}
-	else
-		sock_send_string(c->sock, "success\n");
 
 	return 0;
 }
@@ -706,6 +834,9 @@ widget_del_func (client * c, int argc, char **argv)
 //  contents, position, speed, etc...
 //
 // Ack!  This is long!
+//
+// widget_set <screenid> <widgetid> <widget-SPECIFIC-data>
+//
 int
 widget_set_func (client * c, int argc, char **argv)
 {
@@ -724,16 +855,22 @@ widget_set_func (client * c, int argc, char **argv)
 		return 1;
 
 	// If there weren't enough parameters...
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh? You must specify a screen id\n");
-		return 0;
-	}
-	if (argc < 3) {
-		sock_send_string (c->sock, "huh? You must specify a widget id\n");
-		return 0;
-	}
+	// We can't test for too many, since each widget may have a
+	// different number - plus, if the argument count is wrong, what ELSE
+	// could be wrong...?
+
 	if (argc < 4) {
-		sock_send_string (c->sock, "huh? You must send some widget data\n");
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh? usage: widget_set <screenid> <widgetid> <widget-SPECIFIC-data>\n");
+				break;
+			case 2:
+				sock_send_string (c->sock, "huh? You must specify a widget id\n");
+				break;
+			case 3:
+				sock_send_string (c->sock, "huh? You must send some widget data\n");
+				break;
+		}
 		return 0;
 	}
 
@@ -965,6 +1102,8 @@ widget_set_func (client * c, int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////////
 // Adds a menu to the client; handled by the server...
 //
+// usage: menu_add ...?
+//
 int
 menu_add_func (client * c, int argc, char **argv)
 {
@@ -979,6 +1118,8 @@ menu_add_func (client * c, int argc, char **argv)
 
 ///////////////////////////////////////////////////////////////////////////
 // Removes a client's menu and all contents from the server
+//
+// usage: menu_del ...?
 //
 int
 menu_del_func (client * c, int argc, char **argv)
@@ -997,6 +1138,8 @@ menu_del_func (client * c, int argc, char **argv)
 //
 // For example, should the menu be top-level, or buried somewhere?
 //
+// usage: menu_set ...?
+//
 int
 menu_set_func (client * c, int argc, char **argv)
 {
@@ -1011,6 +1154,8 @@ menu_set_func (client * c, int argc, char **argv)
 
 ///////////////////////////////////////////////////////////////////////////
 // Adds an item to a menu
+//
+// usage: menu_add_item ...?
 //
 int
 menu_add_item_func (client * c, int argc, char **argv)
@@ -1027,6 +1172,7 @@ menu_add_item_func (client * c, int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////////
 // Deletes an item from a menu
 //
+// usage: menu_del_item ...?
 int
 menu_del_item_func (client * c, int argc, char **argv)
 {
@@ -1044,6 +1190,8 @@ menu_del_item_func (client * c, int argc, char **argv)
 //
 // For example, text displayed, widget type, value, etc...
 //
+// usage: menu_set_item ...?
+//
 int
 menu_set_item_func (client * c, int argc, char **argv)
 {
@@ -1059,49 +1207,59 @@ menu_set_item_func (client * c, int argc, char **argv)
 ///////////////////////////////////////////////////////////////////////////
 // Toggles the backlight, if enabled.
 //
+// usage: backlight <on|off|toggle|blink|flash>
+//
 int
 backlight_func (client * c, int argc, char **argv)
 {
 	if (!c->data->ack)
 		return 1;
 
-	// Check the number of parameters...
-	if (argc < 2) {
-		sock_send_string (c->sock, "huh?  Specify a screen #id\n");
-		return 0;
-	}
-
-	if (argc > 2) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
+	if (argc != 2) {
+		switch (argc) {
+			case 1:
+				sock_send_string (c->sock, "huh?  usage: backlight <on|off|toggle|blink|flash>\n");
+				break;
+			default:
+				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				break;
+		}
 		return 0;
 	}
 
 	debug ("backlight(%s)\n", argv[1]);
 
-	switch (backlight) {
-	case BACKLIGHT_OPEN:
-		if (0 == strcmp ("on", argv[1])) {
-			backlight_state = BACKLIGHT_ON;
-		}
-		if (0 == strcmp ("off", argv[1])) {
+	// TODO: The following don't seem to be used;
+	// either use them or lose them:
+	//
+	// #define BACKLIGHT_LOAD 3
+	// #define BACKLIGHT_VIS 4
+	//
+	// TODO: The meaning of this one isn't clear; make it so...
+	//
+	// #define BACKLIGHT_OPEN 2
+
+	backlight = (backlight && 1);  // only preserves ON/OFF bit
+
+	if (strcmp ("on", argv[1]) == 0) {
+		backlight_state = BACKLIGHT_ON;
+
+	} else if (strcmp ("off", argv[1]) == 0) {
+		backlight_state = BACKLIGHT_OFF;
+
+	} else if (strcmp ("toggle", argv[1]) == 0) {
+		if (backlight_state == BACKLIGHT_ON)
 			backlight_state = BACKLIGHT_OFF;
-		}
-		if (0 == strcmp ("toggle", argv[1])) {
-			if (backlight_state == BACKLIGHT_ON)
-				backlight_state = BACKLIGHT_OFF;
-			else if (backlight_state == BACKLIGHT_OFF)
-				backlight_state = BACKLIGHT_ON;
-		}
-		if (0 == strcmp ("blink", argv[1])) {
-			backlight_state |= BACKLIGHT_BLINK;
-		}
-		if (0 == strcmp ("flash", argv[1])) {
-			backlight_state |= BACKLIGHT_FLASH;
-		}
-		break;
-	case BACKLIGHT_VIS:
-		break;
+		else if (backlight_state == BACKLIGHT_OFF)
+			backlight_state = BACKLIGHT_ON;
+
+	} else if (strcmp ("blink", argv[1]) == 0) {
+		backlight_state |= BACKLIGHT_BLINK;
+
+	} else if (0 == strcmp ("flash", argv[1])) {
+		backlight_state |= BACKLIGHT_FLASH;
 	}
+
 	sock_send_string(c->sock, "success\n");
 
 	return 0;
@@ -1109,41 +1267,182 @@ backlight_func (client * c, int argc, char **argv)
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// Sets the output port on MtxOrb LCDs
+// Sets the state of the output port (such as on MtxOrb LCDs)
+//
+// usage: output <on|off|int>
+//
+//
+#define ALL_OUTPUTS_ON -1
+#define ALL_OUTPUTS_OFF 0
+
 int
 output_func (client * c, int argc, char **argv)
 {
 	int rc = 0;
-	if (argc != 2) {
-		sock_send_string (c->sock, "huh?  Too many parameters...\n");
-		rc = 1;
-	} else {
-		if (0 == strcmp (argv[1], "on"))
-			/* switch all ouputs on */
-			output_state = -1;
-	        else if (0 == strcmp (argv[1], "off"))
-			/* switch all ouputs off */
-	                output_state = 0;
-		else {
-			long out;
-			char *endptr;
+	char str[128];
 
-			out = strtol(argv[1], &endptr, 0);
-			if ( (out == 0) && (errno != 0) ) {
-				sock_send_string (c->sock,
-					 "huh?  invalid parameter...\n");
-				rc = 1;
-			}
-			else {
-				output_state = out;
-			}
+	if (argc != 2) {
+		if (NoArguments)
+			sock_send_string (c->sock, "huh?  usage: output <on|off|num> -- num may be decimal, hex, or octal\n");
+		else
+			sock_send_string (c->sock, "huh?  Too many parameters...\n");
+		return 0;
+	}
+
+	if (0 == strcmp (argv[1], "on"))
+		output_state = ALL_OUTPUTS_ON;
+	else if (0 == strcmp (argv[1], "off"))
+		output_state = ALL_OUTPUTS_OFF;
+	else {
+		long out;
+		char *endptr, *p;
+
+		// Note that there is no valid range set for
+		// output_state; thus a value in the 12 digits
+		// is not considered out of range.
+
+		errno = 0;
+
+		// errno is set here, because if strtol does not result in
+		// ERANGE (out of range error) it will not set errno (!).
+		// At least, this is the case with glibc 2.1.3 ...
+
+		p = argv[1];
+		out = strtol(p, &endptr, 0);
+
+		// From the man page for strtol(3)
+		//
+		// In particular, if *nptr is not `\0' but **endptr is
+		// `\0' on return, the entire string is valid.
+		//
+		// In this case, argv[1] is *nptr, and &endptr is **endptr.
+
+		if (errno) {
+			int space;
+
+			strcat(str, "huh? number argument: ");
+			space = sizeof(str) - 3 - strlen(str);
+
+			strncat(str, strerror(errno), space);
+			strcat(str, "\n");
+
+			sock_send_string (c->sock, str);
+			return 0;
+		} else if (*p != '\0' && *endptr == '\0') {
+			output_state = out;
+		} else {
+			sock_send_string (c->sock, "huh?  invalid parameter...\n");
+			return 0;
 		}
 	}
 
-	if ( rc == 0 ) {
-		sock_send_string(c->sock, "success\n");
+	sock_send_string(c->sock, "success\n");
+
+	// Makes sense to me to set the output immediately;
+	// however, the outputs are currently set in
+	// draw_screen(screen * s, int timer)
+	// Whatever for?
+
+	// lcd.output (output_state);
+
+	syslog(LOG_NOTICE, "output states changed");
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////
+// info_func
+//
+// usage: info
+//
+int
+info_func (client * c, int argc, char **argv)
+{
+	char str[1024];
+
+	if (! NoArguments) {
+		sock_send_string (c->sock, "huh?  Extra arguments ignored...\n");
 	}
 
+	memset(str, '\0', sizeof(str));
+	snprintf (str, sizeof(str), (char*) lcd.getinfo());
+
+	sock_send_string (c->sock, str);
+
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////
+// sleep_func
+//
+// usage: sleep <seconds>
+//
+int
+sleep_func (client * c, int argc, char **argv)
+{
+	int secs;
+	long out;
+	char *endptr, *p;
+	char str[120];
+
+#define MAX_SECS 60
+#define MIN_SECS 1
+
+	if (argc != 2) {
+		if (NoArguments)
+			sock_send_string (c->sock, "huh?  usage: sleep <secs>\n");
+		else
+			sock_send_string (c->sock, "huh?  Too many parameters...\n");
+		return 0;
+	}
+
+	errno = 0;
+
+	// errno is set here, because if strtol does not result in
+	// ERANGE (out of range error) it will not set errno (!).
+	// At least, this is the case with glibc 2.1.3 ...
+
+	p = argv[1];
+	out = strtol(p, &endptr, 0);
+
+	// From the man page for strtol(3)
+	//
+	// In particular, if *nptr is not `\0' but **endptr is
+	// `\0' on return, the entire string is valid.
+	//
+	// In this case, argv[1] is *nptr, and &endptr is **endptr.
+
+	if (errno) {
+		int space;
+
+		strcat(str, "huh? number argument: ");
+		space = sizeof(str) - 3 - strlen(str);
+
+		strncat(str, strerror(errno), space);
+		strcat(str, "\n");
+
+		sock_send_string (c->sock, str);
+		return 0;
+	} else if (*p != '\0' && *endptr == '\0') {
+		secs = out;
+		out = out > MAX_SECS ? MAX_SECS : out;
+		out = out < MIN_SECS ? MIN_SECS : out;
+	} else {
+		sock_send_string (c->sock, "huh?  invalid parameter...\n");
+		return 0;
+	}
+
+	// Repeat until no more remains - should normally be zero
+	// on exit the first time...
+	sprintf(str, "sleeping %d seconds\n", secs);
+	sock_send_string (c->sock, str);
+
+	// whoops.... if this takes place as planned, ALL screens
+	// will "freeze" for the alloted time...
+	//
+	// while ((secs = sleep(secs)) > 0)
+	//	;
+
+	sock_send_string (c->sock, "huh? ignored (not fully implemented)\n");
 	return 0;
 }
 

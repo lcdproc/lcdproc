@@ -153,7 +153,7 @@ main (int argc, char **argv)
 	usleep (500000);				  // wait for the server to start up
 	sock = sock_connect (server, port);
 	if (sock <= 0) {
-		printf ("Error connecting to server %s on port %i.\n", server, port);
+		printf ("Error connecting to LCD server %s on port %i.\nCheck to see that the server is running and operating normally.\n", server, port);
 		return 0;
 	}
 	sock_send_string (sock, "hello\n");

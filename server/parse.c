@@ -20,21 +20,32 @@
 #include "client_functions.h"
 #include "parse.h"
 
+// This is a big function... TOO big.  How to trim....
+// TODO: Simplify... simplify...
 int
 parse_all_client_messages ()
 {
-	int i, j;
+	int i, j, len;
 	int newtoken, inquote;
 	client *c;
-	char *str;
+	char *str, *p, *q, *s;
 //   char *tok;
 	int argc;
 	char *argv[256];
-	char delimiters[] = " \0";
-	char leftquote[] = "\0\"'`([{\0";
-	char rightquote[] = "\0\"'`)]}\0";
+	char delimiters[] = " ";
+	char leftquote[] = "\"'`([{";
+	char rightquote[] = "\"'`)]}";
 	char errmsg[256];
 	int invalid = 0;
+	int quoteindex;
+
+	for (i = 0; i <= 256; i++) {
+		argv[i] == NULL;
+	}
+
+#define	SEPARATOR_CHAR	' '
+#define	LINE_TERM_CHAR	'\0'
+#define COMMENT_CHAR '#'
 
 	//debug("parse: Rewinding list...\n");
 	LL_Rewind (clients);
@@ -48,76 +59,107 @@ parse_all_client_messages ()
 			for (str = client_get_message (c); str; str = client_get_message (c)) {
 				debug ("parse: ...%s\n", str);
 				// Now, split up the string...
-				//len = strlen(str);
 				argc = 0;
-				newtoken = 1;
-				inquote = 0;
-				for (i = 0; str[i]; i++) {
-					if (inquote)	  // Scan for the end of the quote
-					{
-						if (str[i] == rightquote[inquote]) {	// Found the end of the quote
-							inquote = 0;
-							str[i] = 0;
-							newtoken = 1;
-						}
-					} else			  // Normal operation; split at delimiters
-					{
-						for (j = 1; leftquote[j]; j++) {
-							// Found the beginning of a new quote...
-							if (str[i] == leftquote[j]) {
-								inquote = j;
-								str[i] = 0;
-								continue;
-							}
-						}
-						for (j = 0; delimiters[j]; j++) {
-							// Break into a new string...
-							if (str[i] == delimiters[j]) {
-								str[i] = 0;
-								newtoken = 1;
-								continue;
-							}
-						}
+				i = 0;
+				q = p = str;
+
+				if (*p == COMMENT_CHAR) {
+					continue; // found a comment line - skip it...
+				}
+
+				//fprintf(stderr, "starting string scan...\n");
+
+				do {
+					// bypass initial white space...
+					while ((*p == SEPARATOR_CHAR) && (*p)) {
+						p++;
+						q++;
 					}
-					if (newtoken && str[i]) {
-						newtoken = 0;
-						argv[argc] = str + i;
-						argc++;
+
+					// If (*p) is null here, we reached the end of
+					// an empty parameter... so one of two things
+					// is true:
+					//
+					// 1. There is nothing but white space on this line (odd..)
+					// 2. This is trailing white space (odd... but allowable)
+
+					if (*p == LINE_TERM_CHAR) {
+						break;
+						// if there are no arguments, argc == 0 and will fail
+						// appropriately...
+						//
+						// if this is trailing white space, ignore the argc++ at the
+						// end and claim this as the end...
+					}
+
+					// Handle quoted strings...
+					if ((s = strchr(leftquote, *p)) != NULL) {
+						quoteindex = s - leftquote;
+						//fprintf(stderr, "found <%c> at index [%d] = <%c>\n", *p, quoteindex, leftquote[quoteindex]);
+						q = ++p; // past open quote...
+						while ((rightquote[quoteindex] != *p) && (*p != LINE_TERM_CHAR)) {
+							p++;
+						}
+						if (*p == LINE_TERM_CHAR) {
+							// We just sucked up the rest of the command line: ERROR!!
+							snprintf (errmsg, sizeof(errmsg), "huh? unterminated string! missing ending %c\n",
+								rightquote[quoteindex]);
+							sock_send_string (c->sock, errmsg);
+							continue;
+						} else {
+							*p = LINE_TERM_CHAR;	// terminate string
+							p++;		// bypass to next character
+							// Note that next character could be a EndOfLine (null)
+							// if the string was last on the line, or it could be
+							// something else... is it a blank?
+							if (*p != SEPARATOR_CHAR && *p != LINE_TERM_CHAR) {
+								sock_send_string (c->sock, "huh? improperly terminated string! (missing whitespace)\n");
+								continue;
+							}
+						}
+
+					// Otherwise, normal string...
 					} else {
+						while (*p != SEPARATOR_CHAR && *p != LINE_TERM_CHAR)
+							p++;
 					}
-				}
-				if (inquote) {
-					sprintf (errmsg, "huh? Unterminated string: missing %c\n", rightquote[inquote]);
-					sock_send_string (c->sock, errmsg);
-					continue;
-				}
-/*
-	    for(tok = strtok(str, delimiters);
-		tok;
-		tok=strtok(NULL, delimiters))
-	    {
-	       argv[argc] = tok;
-	       argc++;
-	    }
-*/
+
+					// Not end of line?
+					if (*p) {
+						*p = LINE_TERM_CHAR;
+						//fprintf(stderr, "found new token: %s\n", q);
+						argv[i++] = q;
+						q = ++p;
+					} else {
+						//fprintf(stderr, "found new token: %s\n", q);
+						argv[i++] = q;
+					}
+					// At the end of this statement,
+					// *p will be '\0' if end of input reached;
+					// otherwise, it is the first character of the
+					// next part of the string.
+
+
+					argc++;
+				} while (*p);
+
+				//fprintf(stderr, "exiting string scan...\n");
+
 				argv[argc] = NULL;
 				if (argc < 1)
 					continue;
 
 				// Now find and call the appropriate function...
-//          debug("parse: Finding function...\n");
 				invalid = 1;
 				for (i = 0; commands[i].keyword; i++) {
-//             debug("(checking %s)\n", commands[i].keyword);
 					if (0 == strcmp (argv[0], commands[i].keyword)) {
-//                debug("(FOUND %s)\n", commands[i].keyword);
 						invalid = commands[i].function (c, argc, argv);
-//                debug("parse: Returned %i...\n", err);
+						break; // found our function - don't continue on...
 					}
 				}
+
 				if (invalid) {
-					// FIXME:  Check for buffer overflows here...
-					sprintf (errmsg, "huh? Invalid command \"%s\"\n", argv[0]);
+					snprintf (errmsg, sizeof(errmsg), "huh? Invalid command \"%s\"\n", argv[0]);
 					sock_send_string (c->sock, errmsg);
 				}
 

@@ -15,7 +15,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <syslog.h>
 
+#include "sock.h"
 #include "clients.h"
 #include "client_data.h"
 #include "shared/debug.h"
@@ -40,7 +42,6 @@ client_init ()
 int
 client_shutdown ()
 {
-	// TODO:  Close all connections first...
 	client *c;
 
 	debug ("client_shutdown()\n");
@@ -52,7 +53,7 @@ client_shutdown ()
 		debug ("client_shutdown: ...\n");
 		if (c) {
 			debug ("client_shutdown: ... %i ...\n", c->sock);
-			if (0 != client_destroy (c)) {
+			if (client_destroy (c) != 0) {
 				fprintf (stderr, "client_shutdown: Error freeing client\n");
 			} else {
 				debug ("client_shutdown: Freed client...\n");
@@ -70,6 +71,9 @@ client_shutdown ()
 	return 0;
 }
 
+// A client is identified by the file descriptor
+// associated with it.
+//
 // Create and destroy clients....
 client *
 client_create (int sock)
@@ -117,7 +121,6 @@ client_create (int sock)
 int
 client_destroy (client * c)
 {
-	// TODO:  Close the socket connection here?
 	int err;
 
 	char *str;
@@ -136,16 +139,17 @@ client_destroy (client * c)
 		}
 	}
 
+	// close socket...
+	if (c->sock) {
+		// sock_send_string (c->sock, "bye\n");
+		close(c->sock);
+		syslog(LOG_NOTICE, "closed socket for #%d\n", c->sock);
+	}
+
 	err = LL_Destroy (c->messages);
 
 	// Free client's other data
 	client_data_destroy (c->data);
-
-/*
-   // FIXME?  Should the connection get closed here or elsewhere?
-   if(c->sock) close(c->sock);
-   c->sock = 0;
-*/
 
 	// Remove the client from the clients list...
 	LL_Remove (clients, c);

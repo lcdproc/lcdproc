@@ -303,7 +303,7 @@ slid_func (menu_item * item)
 		value = readfunc (MENU_READ);
 		if (value < 0 || value >= MENU_CLOSE)
 			return value;
-		sprintf (str, "%i", value);
+		snprintf (str, sizeof(str), "%i", value);
 		if (lcd.hgt >= 4) {
 			lcd.string (8, 4, str);
 			value = (lcd.wid * lcd.cellwid * value / 256);

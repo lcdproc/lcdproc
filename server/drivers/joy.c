@@ -1,3 +1,17 @@
+/*
+ * Joystick input driver for LCDd
+ *
+ * Only two unique functions are defined:
+ *
+ * joy_getkey
+ * joy_close
+ *
+ * All others are at their defaults.
+ *
+ * The code here is configured for a Gravis Gamepad (2 axis, 4 button)
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -9,6 +23,9 @@
 #include <sys/types.h>
 
 #include <linux/joystick.h>
+#ifndef JSIOCGNAME
+#define JSIOCGNAME(len)           _IOC(_IOC_READ, 'j', 0x13, len)         /* get identifier string */
+#endif
 
 #include "shared/debug.h"
 #include "shared/str.h"
@@ -17,10 +34,6 @@
 
 #include "lcd.h"
 #include "joy.h"
-
-//////////////////////////////////////////////////////////////////////////
-////////////////////// Base "class" to derive from ///////////////////////
-//////////////////////////////////////////////////////////////////////////
 
 lcd_logical_driver *joy;
 

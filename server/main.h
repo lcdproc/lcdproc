@@ -26,8 +26,8 @@ typedef struct screen_size {
 	int wid, hgt;
 } screen_size;
 
-typedef struct parameter {
-	char *sh, *lg;					  // short and long versions
-} parameter;
+#define DEFAULT_SCREEN_PRIORITY 128
+#define DEFAULT_SCREEN_DURATION 32
+#define DEFAULT_HEARTBEAT 1
 
 #endif

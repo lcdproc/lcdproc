@@ -6,6 +6,7 @@
 
 typedef struct client {
 	int sock;
+	char addr[64];
 	LL *messages;
 	client_data *data;
 

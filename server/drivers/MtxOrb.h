@@ -22,9 +22,11 @@ void MtxOrb_set_char (int n, char *dat);
 void MtxOrb_icon (int which, char dest);
 void MtxOrb_draw_frame (char *dat);
 char MtxOrb_getkey ();
+char * MtxOrb_getinfo ();
 
-void MtxOrb_init_all (int type);
 int MtxOrb_ask_bar (int type);
 void MtxOrb_set_known_char (int car, int type);
 
+// Isn't this function supposed to go away?
+void MtxOrb_init_all (int type);
 #endif

@@ -26,6 +26,11 @@ char one[256] = "";
 char two[256] = "";
 char three[256] = "";
 
+#define WidgetXPos(w,a) (w)->x = (a)
+#define WidgetYPos(w,a) (w)->y = (a)
+#define WidgetText(w,a) (w)->text = (a)
+#define WidgetString(w,a,b,t)	{WidgetXPos(w,a);WidgetYPos(w,b);WidgetText(w,t);}
+
 int
 server_screen_init ()
 {
@@ -44,46 +49,39 @@ server_screen_init ()
 	server_screen->name = name;
 	server_screen->duration = 8; // 1 second, instead of 4...
 
-	// TODO:  Error-checking?
-	widget_add (server_screen, "title", "title", NULL, 1);
-	widget_add (server_screen, "one", "string", NULL, 1);
-	widget_add (server_screen, "two", "string", NULL, 1);
-	widget_add (server_screen, "three", "string", NULL, 1);
+	if (widget_add (server_screen, "title", "title", NULL, 1) != 0) {
+		fprintf (stderr, "server_screen_init: internal error: could not add title widget\n");
+	}
+	if (widget_add (server_screen, "one", "string", NULL, 1) != 0) {
+		fprintf (stderr, "server_screen_init: internal error: could not add title widget\n");
+	}
+	if (widget_add (server_screen, "two", "string", NULL, 1) != 0) {
+		fprintf (stderr, "server_screen_init: internal error: could not add title widget\n");
+	}
+	if (widget_add (server_screen, "three", "string", NULL, 1) != 0) {
+		fprintf (stderr, "server_screen_init: internal error: could not add title widget\n");
+	}
 
 	// Now, initialize all the widgets...
-	w = widget_find (server_screen, "title");
-	if (w) {
-		w->text = title;
-	} else {
+	if ((w = widget_find (server_screen, "title")) != NULL) {
+		WidgetText(w,title);
+	} else
 		fprintf (stderr, "server_screen_init: Can't find title\n");
-	}
 
-	w = widget_find (server_screen, "one");
-	if (w) {
-		w->x = 1;
-		w->y = 2;
-		w->text = one;
-	} else {
+	if ((w = widget_find (server_screen, "one")) != NULL)
+		WidgetString(w,1,2,one)
+	else
 		fprintf (stderr, "server_screen_init: Can't find widget one\n");
-	}
 
-	w = widget_find (server_screen, "two");
-	if (w) {
-		w->x = 1;
-		w->y = 3;
-		w->text = two;
-	} else {
+	if ((w = widget_find (server_screen, "two")) != NULL)
+		WidgetString(w,1,3,two)
+	else
 		fprintf (stderr, "server_screen_init: Can't find widget two\n");
-	}
 
-	w = widget_find (server_screen, "three");
-	if (w) {
-		w->x = 1;
-		w->y = 4;
-		w->text = three;
-	} else {
+	if ((w = widget_find (server_screen, "three")) != NULL)
+		WidgetString(w,1,4,three)
+	else
 		fprintf (stderr, "server_screen_init: Can't find widget three\n");
-	}
 
 	// And enqueue the screen
 	screenlist_add (server_screen);
@@ -91,6 +89,20 @@ server_screen_init ()
 	debug ("server_screen_init done\n");
 
 	return 0;
+}
+
+static int
+screen_count (client *c) {
+	int n;
+
+	n = 0;
+	LL_Rewind (c->data->screenlist);
+	do {
+		if (LL_Get (c->data->screenlist) != NULL)
+			n++;
+	} while (LL_Next (c->data->screenlist) == 0);
+
+	return n;
 }
 
 int
@@ -112,24 +124,31 @@ update_server_screen (int timer)
 		c = LL_Get (clients);
 		if (c) {
 			num_clients++;
-			LL_Rewind (c->data->screenlist);
-			do {
-				s = LL_Get (c->data->screenlist);
-				if (s) {
-					num_screens++;
-				}
-			} while (LL_Next (c->data->screenlist) == 0);
+			num_screens += screen_count(c);
+//			LL_Rewind (c->data->screenlist);
+//			do {
+//				s = LL_Get (c->data->screenlist);
+//				if (s) {
+//					num_screens++;
+//				}
+//			} while (LL_Next (c->data->screenlist) == 0);
 		}
 	} while (LL_Next (clients) == 0);
 
+	// Format strings for the appropriate size display...
+	//
 	if (lcd.hgt >= 3) {
-		sprintf (one, "Clients: %i", num_clients);
-		sprintf (two, "Screens: %i", num_screens);
+		snprintf (one, sizeof(one), "Clients: %i", num_clients);
+		snprintf (two, sizeof(two), "Screens: %i", num_screens);
 	} else {
 		if (lcd.wid >= 20)
-			sprintf (one, "%i Client%s, %i Screen%s", num_clients, (num_clients == 1) ? "" : "s", num_screens, (num_screens == 1) ? "" : "s");
+			snprintf (one, sizeof(one), "%i Client%s, %i Screen%s", num_clients,
+				(num_clients == 1) ? "" : "s", num_screens,
+				(num_screens == 1) ? "" : "s");
 		else							  // 16x2 size
-			sprintf (one, "%i Cli%s, %i Scr%s", num_clients, (num_clients == 1) ? "" : "s", num_screens, (num_screens == 1) ? "" : "s");
+			snprintf (one, sizeof(one), "%i Cli%s, %i Scr%s", num_clients,
+				(num_clients == 1) ? "" : "s", num_screens,
+				(num_screens == 1) ? "" : "s");
 	}
 
 	return 0;
@@ -140,9 +159,7 @@ no_screen_screen (int timer)
 {
 
 	lcd.clear ();
-
 	lcd.string (1, 1, "Error:  No screen!");
-
 	lcd.flush ();
 
 	return 0;

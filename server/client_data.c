@@ -16,6 +16,12 @@
 #include "screen.h"
 #include "screenlist.h"
 
+#define ResetScreenList(a)	LL_Rewind(a)
+#define NewScreen		LL_new
+#define NextScreen(a)		(screen *)LL_Get(a)
+#define MoreScreens(a)		(LL_Next(a) == 0)
+#define DestroyScreenList(a)	LL_Destroy(a)
+
 int
 client_data_init (client_data * d)
 {
@@ -26,7 +32,7 @@ client_data_init (client_data * d)
 	d->name = NULL;
 	d->client_keys = NULL;
 
-	d->screenlist = LL_new ();
+	d->screenlist = NewScreen();
 	if (!d->screenlist) {
 		fprintf (stderr, "client_data_init: Error allocating screenlist\n");
 		return -1;
@@ -64,9 +70,9 @@ client_data_destroy (client_data * d)
 
 	// Clean up the screenlist...
 	debug ("client_data_destroy: Cleaning screenlist\n");
-	LL_Rewind (d->screenlist);
+	ResetScreenList (d->screenlist);
 	do {
-		s = (screen *) LL_Get (d->screenlist);
+		s = NextScreen(d->screenlist);
 		if (s) {
 			debug ("client_data_destroy: removing screen %s\n", s->id);
 
@@ -80,8 +86,8 @@ client_data_destroy (client_data * d)
 			// Free its memory...
 			screen_destroy (s);
 		}
-	} while (LL_Next (d->screenlist) == 0);
-	LL_Destroy (d->screenlist);
+	} while (MoreScreens(d->screenlist));
+	DestroyScreenList(d->screenlist);
 
 	// TODO:  clean up the rest of the data...
 

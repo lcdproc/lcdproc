@@ -112,7 +112,7 @@ screenlist_current ()
 				c = old_s->parent;
 				if (c)				  // Tell the client we're not listening any more...
 				{
-					sprintf (str, "ignore %s\n", old_s->id);
+					snprintf (str, sizeof(str), "ignore %s\n", old_s->id);
 					sock_send_string (c->sock, str);
 				} else				  // The server has the display, so do nothing
 				{
@@ -125,7 +125,7 @@ screenlist_current ()
 			c = s->parent;
 			if (c)					  // Tell the client we're paying attention...
 			{
-				sprintf (str, "listen %s\n", s->id);
+				snprintf (str, sizeof(str), "listen %s\n", s->id);
 				sock_send_string (c->sock, str);
 			} else					  // The server has the display, so do nothing
 			{

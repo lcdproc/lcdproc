@@ -18,6 +18,10 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <syslog.h>
 
 #include "shared/debug.h"
 
@@ -32,10 +36,30 @@
 #include "input.h"
 #include "main.h"
 
+#define MAX_TIMER 0x10000
+#define DEFAULT_USER "nobody"
+
 char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
 char *build_date = __DATE__;
 
+/* Socket to bind to...
+
+   Using loopback is much more secure; it means that this port is
+   accessible only to programs running locally on the same host as LCDd.
+
+   Using variables for these means that (later) we can select which port
+   and which address to bind to at run time. */
+
+char bind_addr[64] = "127.0.0.1";
+int lcd_port = LCDPORT;
+
+// The parameter structure and args[] should
+// be removed when getopt(3) is implemented,
+// as there won't be any need for them then.
+typedef struct parameter {
+	char *sh, *lg;	// short and long versions
+} parameter;
 
 // This is currently only a list of available arguments, but doesn't
 // really *do* anything.  It just helps to figure out which parameters
@@ -54,6 +78,34 @@ static parameter args[] = {
 void exit_program (int val);
 void HelpScreen ();
 
+// At this point, this function will only succeed;
+// all other options will stop the program.
+// However, it may not always be thus; so we prepared
+// for this possibility by making it return an int.
+//
+int drop_privs(char *user) {
+	struct passwd *pwent;
+
+	if (getuid() == 0 || geteuid() == 0) {
+		if ((pwent = getpwnam(user)) == NULL) {
+			if (errno) {
+				perror("LCDd: getpwnam");
+				exit(1);
+			} else {
+				fprintf(stderr, "user %s not a valid user!", user);
+				exit(1);
+			}
+		} else {
+			if (setuid(pwent->pw_uid) < 0) {
+				fprintf(stderr, "unable to switch to user %s\n", user);
+				perror("LCDd: setuid");
+				exit(1);
+			}
+		}
+	}
+	return 0;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -64,6 +116,7 @@ main (int argc, char **argv)
 	int disable_server_screen = 1;
 	screen *s = NULL;
 	char *str, *ing;				  // strings for commandline handling
+	char *user = DEFAULT_USER;
 
 	// Ctrl-C will cause a clean exit...
 	signal (SIGINT, exit_program);
@@ -86,14 +139,31 @@ main (int argc, char **argv)
 
 	// Now, go into daemon mode...
 #ifndef DEBUG
+	openlog("LCDd", LOG_PID, LOG_DAEMON);
+	syslog(LOG_NOTICE, "server version %s starting up (protocol version %s)",
+		version, protocol_version);
+	syslog(LOG_NOTICE, "server built on %s",
+		build_date);
+
 	if (daemon_mode) {
 		int child;
+
+		syslog(LOG_NOTICE, "server forking to background");
+
 		if ((child = fork ()) != 0) {
 			usleep (1500000);		  // Wait for child to initialize
 			exit (0);				  /* PARENT EXITS */
 		}
 		// This line removed because it eats error messages...
 		//setsid();                                       /* RELEASE TTY */
+		//
+		// After this point, as a daemon, no error messages should
+		// go to the console unless drastic; rather, they should go to syslog
+		//
+		// However, option processing is not yet done, nor is any initialization (!)
+		// So we must wait until the main loop.
+	} else {
+		syslog(LOG_NOTICE, "server running in foreground");
 	}
 #endif
 
@@ -195,12 +265,19 @@ main (int argc, char **argv)
 		}
 	}
 
-	// Now init a bunch of required stuff...
+	// switch to a different user for the real work...
+	if (lcd_port >= 1024)
+		drop_privs(user);
 
-	if (sock_create_server () <= 0) {
+	if (sock_create_server (&bind_addr, lcd_port) <= 0) {
 		printf ("Error opening socket.\n");
 		return 1;
 	}
+
+	if (lcd_port > 1024)
+		drop_privs(user);
+
+	// Now init a bunch of required stuff...
 
 	if (client_init () < 0) {
 		printf ("Error initializing client list\n");
@@ -218,29 +295,48 @@ main (int argc, char **argv)
 	} else if (disable_server_screen) {
 		server_screen->priority = 256;
 	}
+
+	// Probably a better place to fork
+	//
 	// Main loop...
+
+	syslog(LOG_NOTICE, "using %dx%d LCD with cells %dx%d",
+		lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
+
 	while (1) {
-		sock_poll_clients ();
-		parse_all_client_messages ();
-		handle_input ();
+		sock_poll_clients ();		// poll clients for input
+		parse_all_client_messages ();	// analyze input from network clients
+		handle_input ();		// handle key input from devices
 
 		// TODO:  Move this code to screenlist.c...
 		// ... it should just say "handle_screens();"
 		// Timer gets reset by screenlist_next()
+
 		timer++;
+
 		// this line's here because s was getting overwritten at one time...
 		//s = screenlist_current();
+
 		if (s && (timer >= s->duration)) {
 			screenlist_next ();
 		}
-		// Just in case it gets out of hand...
-		if (timer >= 0x10000)
-			timer = 0;
-		update_server_screen (timer);
-		s = screenlist_current ();
 
-		// render something here...
-		if (s)
+		// Just in case it gets out of hand...
+		if (timer >= MAX_TIMER)
+			timer = 0;
+
+		// Update server screen with the right number
+		// of clients and screens...
+		//
+		// TODO: Move this call to every client connection
+		//       and every screen add...
+
+		update_server_screen (timer);
+
+		// draw the current scren
+
+		if ((s = screenlist_current ()) != NULL)
+
 			draw_screen (s, timer);
 		else
 			no_screen_screen (timer);
@@ -257,9 +353,22 @@ main (int argc, char **argv)
 void
 exit_program (int val)
 {
+	char buf[64];
+
 	// TODO: These things shouldn't be so interdependent.  The order
 	// things are shut down in shouldn't matter...
 
+	strcpy(buf, "server shutting down on ");
+	switch(val) {
+		case 1: strcat(buf, "SIGHUP"); break;
+		case 2: strcat(buf, "SIGINT"); break;
+		case 15: strcat(buf, "SIGTERM"); break;
+		default: sprintf(buf, "server shutting down on signal %d", val); break;
+			 // Other values should not be seen, but just in case..
+	}
+
+	// Make note in the logs...
+	syslog(LOG_NOTICE, buf);
 	// Say goodbye!
 	goodbye_screen ();
 	// Can go anywhere...

@@ -260,7 +260,7 @@ Server_screen_func (int input)
 		if (server_screen->priority < 256)
 			server_screen->priority = 256;
 		else
-			server_screen->priority = 128;
+			server_screen->priority = DEFAULT_SCREEN_PRIORITY;
 	}
 
 	return (MENU_OK | (server_screen->priority < 256));

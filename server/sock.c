@@ -17,6 +17,10 @@
 #include "sock.h"
 #include "clients.h"
 #include "shared/debug.h"
+#include "syslog.h"
+
+extern char bind_addr[64];
+extern int lcd_port;
 
 /**************************************************
   LCDproc sockets code...
@@ -34,7 +38,7 @@ int read_from_client (int filedes);
 
 // Creates a socket in internet space
 int
-sock_create_inet_socket (unsigned short int port)
+sock_create_inet_socket (char * addr, unsigned int port)
 {
 	struct sockaddr_in name;
 	int sock;
@@ -46,6 +50,7 @@ sock_create_inet_socket (unsigned short int port)
 	sock = socket (PF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
 		perror ("Error creating socket");
+		syslog(LOG_ALERT, "could not create socket", port);
 		return -1;
 	}
 
@@ -53,10 +58,14 @@ sock_create_inet_socket (unsigned short int port)
 	//debug("Binding Inet Socket\n");
 	name.sin_family = AF_INET;
 	name.sin_port = htons (port);
-	name.sin_addr.s_addr = htonl (INADDR_ANY);
+	inet_aton(addr, &name.sin_addr);
+
 	if (bind (sock, (struct sockaddr *) &name, sizeof (name)) < 0) {
 		perror ("Error binding socket");
+		syslog(LOG_ALERT, "could not bind to port %d", port);
 		return -1;
+	} else {
+		syslog(LOG_NOTICE, "listening for queries on port %d", port);
 	}
 
 	return sock;
@@ -65,14 +74,14 @@ sock_create_inet_socket (unsigned short int port)
 
 //int StartSocketServer()
 int
-sock_create_server ()
+sock_create_server (char *bind_addr, int lcd_port)
 {
 	int sock;
 
 	debug ("sock_create_server()\n");
 
 	/* Create the socket and set it up to accept connections. */
-	sock = sock_create_inet_socket (LCDPORT);
+	sock = sock_create_inet_socket (bind_addr, lcd_port);
 	if (sock < 0) {
 		perror ("sock_create_server: Error creating socket");
 		return -1;
@@ -80,6 +89,7 @@ sock_create_server ()
 
 	if (listen (sock, 1) < 0) {
 		perror ("sock_create_server: Listen error");
+		syslog(LOG_ALERT, "error in attempting to listen to port");
 		return -1;
 	}
 
@@ -106,6 +116,8 @@ sock_create_server ()
 
 	return sock;
 }
+
+// Service all clients with input pending...
 
 int
 sock_poll_clients ()
@@ -140,9 +152,12 @@ sock_poll_clients ()
 				new = accept (orig_sock, (struct sockaddr *) &clientname, &size);
 				if (new < 0) {
 					perror ("sock_poll_clients: Accept error");
+					syslog(LOG_WARNING, "error in accepting client");
 					return -1;
 				}
 				debug ("sock_poll_clients: connect from host %s, port %hd.\n", inet_ntoa (clientname.sin_addr), ntohs (clientname.sin_port));
+				syslog(LOG_NOTICE, "connect from host %s:%hd on #%d",
+					inet_ntoa (clientname.sin_addr), ntohs (clientname.sin_port), new);
 				FD_SET (new, &active_fd_set);
 
 				fcntl (new, F_SETFL, O_NONBLOCK);
@@ -168,6 +183,7 @@ sock_poll_clients ()
 							close (i);
 							FD_CLR (i, &active_fd_set);
 							debug ("sock_poll_clients: Closed connection %i\n", i);
+							syslog(LOG_NOTICE, "closed connection #%i", i);
 						} else
 							fprintf (stderr, "sock_poll_clients: Can't find client %i\n", i);
 					}
@@ -186,22 +202,22 @@ read_from_client (int filedes)
 	int nbytes, i;
 	client *c;
 
-//   nbytes = read (filedes, buffer, MAXMSG);
+	//nbytes = read (filedes, buffer, MAXMSG);
 	//debug("read_from_client(%i): reading...\n", filedes);
-	nbytes = sock_recv (filedes, buffer, MAXMSG);
+	//nbytes = sock_recv (filedes, buffer, MAXMSG);
 	//debug("read_from_client(%i): ...done\n", filedes);
-	debug ("read_from_client(%i): %i bytes\n", filedes, nbytes);
+	//debug ("read_from_client(%i): %i bytes\n", filedes, nbytes);
 
-	if (nbytes < 0)				  // Read error?  No data available?
-	{
-		// TODO:  check errno here!
-		//fprintf (stderr,"read_from_client: Read error\n");
+	errno = 0;
+	if ((nbytes = sock_recv (filedes, buffer, MAXMSG)) < 0) {
+		if (errno != EAGAIN)
+			fprintf (stderr, "read_from_client: (fd %d) %s\n", filedes, strerror(errno));
 		return 0;
 	} else if (nbytes == 0)		  // EOF
 		return -1;
 	else if (nbytes > (MAXMSG - (MAXMSG / 8)))	// Very noisy client...
 	{
-		sock_send_string (filedes, "huh? Shut up!\n");
+		sock_send_string (filedes, "huh? Too much data received... quiet down!\n");
 		return -1;
 	} else							  // Data Read
 	{
@@ -229,16 +245,28 @@ read_from_client (int filedes)
 int
 sock_close_all ()
 {
-	int i;
+	int fd;
 
 	debug ("sock_close_all()\n");
 
-	for (i = 0; i < FD_SETSIZE; i++) {
+	for (fd = 0; fd < FD_SETSIZE; fd++) {
 		// TODO:  Destroy a "client" here...?  Nope.
-		sock_send_string (i, "bye\n");
-		close (i);
-		FD_CLR (i, &active_fd_set);
-		debug ("sock_close_all: Closed connection %i\n", i);
+
+		// Instead of using STDIN_FILENO, STDOUT_FILENO,
+		// and STDERR_FILENO, one could use "fd = 4" in the
+		// for() call - but this would probably not be good
+		// practice...
+
+		if (	fd == STDIN_FILENO ||
+			fd == STDOUT_FILENO ||
+			fd == STDERR_FILENO)
+			continue;
+		else {
+			//sock_send_string (fd, "bye\n");
+			close (fd);
+			FD_CLR (fd, &active_fd_set);
+			debug ("sock_close_all: Closed connection %i\n", fd);
+		}
 	}
 
 	return 0;

@@ -1,10 +1,24 @@
+/*
+ * Matrix Orbital driver
+ *
+ * For the Matrix Orbital LCD* LKD* VFD* and VKD* displays
+ *
+ * September 16, 2001
+ *
+ * NOTE: GLK displays have a different driver.
+ *
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <syslog.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -15,6 +29,26 @@
 #include "drv_base.h"
 #include "shared/debug.h"
 #include "shared/str.h"
+
+#define DEFAULT_CONTRAST	140
+#define DEFAULT_DEVICE		"/dev/lcd"
+#define DEFAULT_SPEED		B19200
+#define DEFAULT_LINEWRAP	1
+#define DEFAULT_AUTOSCROLL	1
+#define DEFAULT_CURSORBLINK	0
+
+#define GENERIC (void *) -1
+
+#define IS_LCD_DISPLAY	(MtxOrb_type == MTXORB_LCD)
+#define IS_LKD_DISPLAY	(MtxOrb_type == MTXORB_LKD)
+#define IS_VFD_DISPLAY	(MtxOrb_type == MTXORB_VFD)
+#define IS_VKD_DISPLAY	(MtxOrb_type == MTXORB_VKD)
+
+#define NotEnoughArgs (i + 1 > argc)
+
+// NOTE: This does not appear to make use of the
+//       hbar and vbar functions present in the LKD202-25.
+//       Why I do not know.
 
 static int custom = 0;
 static enum {MTXORB_LCD, MTXORB_LKD, MTXORB_VFD, MTXORB_VKD} MtxOrb_type;
@@ -65,25 +99,102 @@ static void MtxOrb_linewrap (int on);
 static void MtxOrb_autoscroll (int on);
 static void MtxOrb_cursorblink (int on);
 
+int
+MtxOrb_set_type (char * str) {
+	char c;
+	c = str[0];
+
+	if (c == 'l') {
+		if (strcmp(str, "lcd") == 0) {
+			return MTXORB_LCD;
+		} else if (strcmp(str, "lkd") == 0) {
+			return MTXORB_LKD;
+		} else {
+			fprintf (stderr, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
+		}
+	} else if (c == 'v') {
+		if (strcmp (str, "vfd") == 0) {
+			return MTXORB_VFD;
+		} else if (strcmp (str, "vkd") == 0) {
+			return MTXORB_VKD;
+		} else {
+			fprintf (stderr, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
+		}
+	} else {
+		fprintf (stderr, "MtxOrb_init: unknwon display type %s; must be one of lcd, lkd, vfd, or vkd\n", str);
+	}
+	return (-1);
+}
+
+int
+MtxOrb_get_speed (char *arg) {
+	int speed;
+
+	switch (atoi(arg)) {
+		case 1200: speed = B1200; break;
+		case 2400: speed = B2400; break;
+		case 9600: speed = B9600; break;
+		case 19200: speed = B19200; break;
+		default:
+			speed = DEFAULT_SPEED;
+			fprintf (stderr, "MtxOrb_init: argument must be 1200, 2400, 9600 or 19200. Using default value");
+			switch (speed) {
+				case B1200: fprintf(stderr, " of 1200 baud.\n"); break;
+				case B2400: fprintf(stderr, " of 2400 baud.\n"); break;
+				case B9600: fprintf(stderr, " of 9600 baud.\n"); break;
+				case B19200: fprintf(stderr, " of 19200 baud.\n"); break;
+				default: fprintf(stderr, ".\n"); break;
+			}
+		}
+
+	return speed;
+	}
+
+void
+MtxOrb_usage (void) {
+	printf ("LCDproc Matrix-Orbital LCD driver\n"
+		"\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
+//		"\t-t\t--type\t\tSelect the LCD type (size) [20x4]\n"
+//		"\t-b\t--backlight\tSelect the backlight state [on]\n"
+		"\t-c\t--contrast\tSet the initial contrast [140]\n"
+		"\t-s\t--speed\t\tSet the communication speed [19200]\n"
+		"\t-h\t--help\t\tShow this help information\n"
+		"\t-t\t--type\t\tdisplay type: lcd, lkd, vfd, vkd\n");
+}
+
+int
+MtxOrb_set_contrast (char * str) {
+	int contrast;
+
+	contrast = atoi (str);
+	if ((contrast < 0) || (contrast > 255)) {
+		fprintf(stderr, "MtxOrb_init: argument must between 0 and 255 (found %s). Using default contrast value of %d.\n", str, DEFAULT_CONTRAST);
+		contrast = DEFAULT_CONTRAST;
+	}
+	return contrast;
+}
+
 // TODO:  Get rid of this variable?
-lcd_logical_driver *MtxOrb;
+lcd_logical_driver *MtxOrb;	// set by MtxOrb_init(); doesn't seem to be used anywhere
 // TODO:  Get the frame buffers working right
 
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
 //
+// Called to initialize driver settings
+//
 int
 MtxOrb_init (lcd_logical_driver * driver, char *args)
 {
-	char *argv[64];
+	char *argv[64];		// Notice: 64 arguments - overflows?
 	int argc;
 	struct termios portset;
 	int i;
 	int tmp;
 
-	int contrast = 140;
-	char device[256] = "/dev/lcd";
-	int speed = B19200;
+	int contrast = DEFAULT_CONTRAST;
+	char device[256] = DEFAULT_DEVICE;
+	int speed = DEFAULT_SPEED;
 	MtxOrb_type = MTXORB_LKD ;  // Assume it's an LCD w/keypad
 
 	MtxOrb = driver;
@@ -166,10 +277,19 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	// Set up io port correctly, and open it...
 	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1) {
-		fprintf (stderr, "MtxOrb_init: failed (%s)\n", strerror (errno));
-		return -1;
-	}
-	//else fprintf(stderr, "MtxOrb_init: opened device %s\n", device);
+		switch (errno) {
+			case ENOENT: fprintf(stderr, "MtxOrb_init: %s device file missing!\n", device);
+				break;
+			case EACCES: fprintf(stderr, "MtxOrb_init: %s device could not be opened...\n", device);
+				fprintf(stderr, "MtxOrb_init: perhaps you should run LCDd as root?\n");
+				break;
+			default: fprintf (stderr, "MtxOrb_init: failed (%s)\n", strerror (errno));
+				break;
+		}
+  		return -1;
+	} else
+		syslog(LOG_INFO, "opened Matrix Orbital display on %s\n", device);
+
 	tcgetattr (fd, &portset);
 
 	// We use RAW mode
@@ -193,29 +313,32 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	// Do it...
 	tcsetattr (fd, TCSANOW, &portset);
 
-	// Set display-specific stuff..
-	MtxOrb_linewrap (1);
-	MtxOrb_autoscroll (1);
-	MtxOrb_cursorblink (0);
+	/*
+	 * Configure display
+	 */
+
+	MtxOrb_linewrap (DEFAULT_LINEWRAP);
+	MtxOrb_autoscroll (DEFAULT_AUTOSCROLL);
+	MtxOrb_cursorblink (DEFAULT_CURSORBLINK);
+	MtxOrb_contrast (contrast);
 
 	if (!driver->framebuf) {
 		fprintf (stderr, "MtxOrb_init: No frame buffer.\n");
 		driver->close ();
 		return -1;
 	}
-	// Set the functions the driver supports...
 
-//   driver->clear =      (void *)-1;
-	driver->clear = MtxOrb_clear;
-	driver->string = (void *) -1;
-//  driver->chr =        MtxOrb_chr;
-	driver->chr = (void *) -1;
+	/*
+	 * Configure the display functions
+	 */
+
+	driver->clear = MtxOrb_clear;		// was GENERIC
+	driver->string = GENERIC;
+	driver->chr = MtxOrb_chr;		// was GENERIC
 	driver->vbar = MtxOrb_vbar;
-	driver->init_vbar = MtxOrb_init_vbar;
-//   driver->init_vbar =  (void *)-1;
+	driver->init_vbar = MtxOrb_init_vbar;	// was GENERIC
 	driver->hbar = MtxOrb_hbar;
-	driver->init_hbar = MtxOrb_init_hbar;
-//   driver->init_hbar =  (void *)-1;
+	driver->init_hbar = MtxOrb_init_hbar;	// was GENERIC
 	driver->num = MtxOrb_num;
 	driver->init_num = MtxOrb_init_num;
 
@@ -231,8 +354,7 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	driver->draw_frame = MtxOrb_draw_frame;
 
 	driver->getkey = MtxOrb_getkey;
-
-	MtxOrb_contrast (contrast);
+	driver->getinfo = MtxOrb_getinfo;
 
 	return fd;
 }
@@ -243,11 +365,15 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 //  forget bar caracter not in use anymore and reuse the
 //  slot for another bar caracter.
 //
+// Why not just use Matrix Orbital's "clear screen" function or output a "^L"?
+// This reliance on drv_base_clear seems suspicious... especially as
+// using a (void *) -1 in the driver structure does the same thing...
+//
 void
 MtxOrb_clear ()
 {
-// REMOVE:  fprintf(stderr, "GLU: MtxOrb_clear.\n");
-	drv_base_clear ();
+	drv_base_clear ();  // do we need this?
+	write(fd, "\x0FEX", 2);  // instant clear...
 	clear = 1;
 }
 
@@ -280,7 +406,7 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 //  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
 
 	for (y = top; y <= bot; y++) {
-		sprintf (out, "%cG%c%c", 254, lft, y);
+		sprintf (out, "\x0FEG%c%c", lft, y);
 		write (fd, out, 4);
 		write (fd, lcd.framebuf + (y * lcd.wid) + lft, rgt - lft + 1);
 
@@ -295,9 +421,25 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 void
 MtxOrb_chr (int x, int y, char c)
 {
-	y--;
-	x--;
+	char out[10];
 
+	// validate x and y
+	if (y > lcd.hgt)
+		y = lcd.hgt;
+	if (x > lcd.wid)
+		x = lcd.wid;
+	if (y < 1)
+		y = 1;
+	if (x < 1)
+		x = 1;
+
+	// write immediately to screen... this code was taken
+	// from the LK202-25; should work for others, yes?
+	sprintf(out, "\x0FEG%c%c%c", x, y, c);
+	write (fd, out, 4);
+
+	// write to frame buffer
+	y--; x--;
 	lcd.framebuf[(y * lcd.wid) + x] = c;
 }
 
@@ -310,35 +452,49 @@ int
 MtxOrb_contrast (int contrast)
 {
 	char out[4];
-	static int status = 140;
 
-	if ( ((MtxOrb_type == MTXORB_LCD) || (MtxOrb_type == MTXORB_LKD)) &&
-	     (contrast > 0) ) {
-		status = contrast;
-		sprintf (out, "%cP%c", 254, status);
+	// validate contrast value
+	if (contrast > 255)
+		contrast = 255;
+	if (contrast < 0)
+		contrast = 0;
+
+	if (IS_LCD_DISPLAY || IS_LKD_DISPLAY) {
+		sprintf (out, "\x0FEP%c", contrast);
 		write (fd, out, 3);
 	}
-
-	return status;
+	return contrast;
 }
 
 /////////////////////////////////////////////////////////////////
 // Sets the backlight on or off -- can be done quickly for
 // an intermediate brightness...
-// WARN: off switches vfd/vkd displays off
-//	 -> so it's maybe the best to start LCDd with -b on
 //
+// WARNING: off switches vfd/vkd displays off entirely
+//	    so maybe it is best to start LCDd with -b on
+//
+// WARNING: there seems to be a movement afoot to add more
+//          functions than just on/off to this..
+
+#define BACKLIGHT_OFF 0
+#define BACKLIGHT_ON 1
+
 void
 MtxOrb_backlight (int on)
 {
-	char out[4];
-	if (on) {
-		sprintf (out, "%cB%c", 254, 0);
-		write (fd, out, 3);
-	} else {
-		sprintf (out, "%cF", 254);
-		write (fd, out, 2);
-	}
+	switch (on) {
+		case BACKLIGHT_ON: 
+			write (fd, "\x0FE" "F", 2);
+			break;
+		case BACKLIGHT_OFF: 
+			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY)
+				; // turns display off entirely (whoops!)
+			else
+				write (fd, "\x0FE" "B" "\x000", 3);
+			break;
+		default: // ignored...
+			break;
+		}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -350,21 +506,24 @@ void
 MtxOrb_output (int on)
 {
 	char out[5];
-	if ( ((MtxOrb_type == MTXORB_LCD) || (MtxOrb_type == MTXORB_VFD)) ) {
-		if (on) {
-			sprintf (out, "%cW", 254);
-		} else {
-			sprintf (out, "%cV", 254);
-		}
-		write (fd, out, 2);
+
+	if (IS_LCD_DISPLAY || IS_VFD_DISPLAY) {
+		// LCD and VFD displays only have one output port
+		(on) ?
+			write (fd, "\x0FEW", 2) :
+			write (fd, "\x0FEV", 2);
 	} else {
 		int i;
-		for(i=0; i<6; i++) {
-			if ( on & (1 << i) ) {
-				sprintf (out, "%cW%c", 254, i+1);
-			} else {
-				sprintf (out, "%cV%c", 254, i+1);
-			}
+
+		// Other displays have six output ports;
+		// the value "on" is a binary value determining which
+		// ports are turned on (1) and off (0).
+
+		on = on & 077;	// strip to six bits
+		for(i = 0; i < 6; i++) {
+			(on & (1 << i)) ?
+				sprintf (out, "\x0FEW%c", i + 1) :
+				sprintf (out, "\x0FEV%c", i + 1);
 			write (fd, out, 3);
 		}
 	}
@@ -376,12 +535,7 @@ MtxOrb_output (int on)
 static void
 MtxOrb_linewrap (int on)
 {
-	char out[4];
-	if (on)
-		sprintf (out, "%cC", 254);
-	else
-		sprintf (out, "%cD", 254);
-	write (fd, out, 2);
+	(on) ? write (fd, "\x0FE" "C", 2) : write (fd, "\x0FE" "D", 2);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -390,12 +544,7 @@ MtxOrb_linewrap (int on)
 static void
 MtxOrb_autoscroll (int on)
 {
-	char out[4];
-	if (on)
-		sprintf (out, "%cQ", 254);
-	else
-		sprintf (out, "%cR", 254);
-	write (fd, out, 2);
+	(on) ? write (fd, "\x0FEQ", 2) : write (fd, "\x0FER", 2);
 }
 
 // TODO: make sure this doesn't mess up non-VFD displays
@@ -405,12 +554,7 @@ MtxOrb_autoscroll (int on)
 static void
 MtxOrb_cursorblink (int on)
 {
-	char out[4];
-	if (on)
-		sprintf (out, "%cS", 254);
-	else
-		sprintf (out, "%cT", 254);
-	write (fd, out, 2);
+	(on) ?  write (fd, "\x0FES", 2) : write (fd, "\x0FET", 2);
 }
 
 //// TODO: Might not be needed anymore...
@@ -420,6 +564,7 @@ MtxOrb_cursorblink (int on)
 void
 MtxOrb_init_vbar ()
 {
+// Isn't this function supposed to go away?
 	MtxOrb_init_all (vbar);
 }
 
@@ -430,7 +575,130 @@ MtxOrb_init_vbar ()
 void
 MtxOrb_init_hbar ()
 {
+// Isn't this function supposed to go away?
 	MtxOrb_init_all (hbar);
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns string with general information about the display
+//
+char *
+MtxOrb_getinfo (void)
+{
+	char in = 0;
+	static char info[255];
+	char tmp[255], buf[64];
+	int i = 0;
+	fd_set rfds;
+
+	struct timeval tv;
+	int retval;
+
+	memset(info, '\0', sizeof(info));
+	strcpy(info, "Matrix Orbital Driver ");
+
+	/*
+	 * Read type of display
+	 */
+
+	write(fd, "\x0FE" "7", 2);
+
+	/* Watch fd to see when it has input. */
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+
+	/* Wait the specified amount of time. */
+	tv.tv_sec = 0;		// seconds
+	tv.tv_usec = 500;	// microseconds
+
+	retval = select(1, &rfds, NULL, NULL, &tv);
+
+	if (retval) {
+		if (read (fd, &in, 1) < 0) {
+			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
+		} else {
+			switch (in) {
+				case '\x01': strcat(info, "LCD0821 "); break;
+				case '\x03': strcat(info, "LCD2021 "); break;
+				case '\x04': strcat(info, "LCD1641 "); break;
+				case '\x05': strcat(info, "LCD2041 "); break;
+				case '\x06': strcat(info, "LCD4021 "); break;
+				case '\x07': strcat(info, "LCD4041 "); break;
+				case '\x08': strcat(info, "LK202-25 "); break;
+				case '\x09': strcat(info, "LK204-25 "); break;
+				case '\x0A': strcat(info, "LK404-55 "); break;
+				case '\x0B': strcat(info, "VFD2021 "); break;
+				case '\x0C': strcat(info, "VFD2041 "); break;
+				case '\x0D': strcat(info, "VFD4021 "); break;
+				case '\x0E': strcat(info, "VK202-25 "); break;
+				case '\x0F': strcat(info, "VK204-25 "); break;
+				case '\x10': strcat(info, "GLC12232 "); break;
+				case '\x11': strcat(info, "GLC12864 "); break;
+				case '\x12': strcat(info, "GLC128128 "); break;
+				case '\x13': strcat(info, "GLC24064 "); break;
+				case '\x14': strcat(info, "GLK12864-25 "); break;
+				case '\x15': strcat(info, "GLK24064-25 "); break;
+				case '\x21': strcat(info, "GLK128128-25 "); break;
+				case '\x22': strcat(info, "GLK12232-25 "); break;
+				case '\x31': strcat(info, "LK404-AT "); break;
+				case '\x32': strcat(info, "VFD1621 "); break;
+				case '\x33': strcat(info, "LK402-12 "); break;
+				case '\x34': strcat(info, "LK162-12 "); break;
+				case '\x35': strcat(info, "LK204-25PC "); break;
+				default: //sprintf(tmp, "Unknown (%X) ", in); strcat(info, tmp);
+					     break;
+			}
+		}
+	} else
+		syslog(LOG_WARNING, "MatrixOrbital driver: unable to read device type");
+
+	/*
+	 * Read serial number of display
+	 */
+
+	memset(tmp, '\0', sizeof(tmp));
+	write(fd, "\x0FE" "5", 2);
+
+	/* Wait the specified amount of time. */
+	tv.tv_sec = 0;		// seconds
+	tv.tv_usec = 500;	// microseconds
+
+	retval = select(1, &rfds, NULL, NULL, &tv);
+
+	if (retval) {
+		if (read (fd, &tmp, 2) < 0) {
+			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
+		} else {
+			sprintf(buf, "Serial No: %ld ", (long int) tmp);
+			strcat(info, buf);
+		}
+	} else
+		syslog(LOG_WARNING, "MatrixOrbital driver: unable to read device serial number");
+
+	/*
+	 * Read firmware revision number
+	 */
+
+	memset(tmp, '\0', sizeof(tmp));
+	write(fd, "\x0FE" "6", 2);
+
+	/* Wait the specified amount of time. */
+	tv.tv_sec = 0;		// seconds
+	tv.tv_usec = 500;	// microseconds
+
+	retval = select(1, &rfds, NULL, NULL, &tv);
+
+	if (retval) {
+		if (read (fd, &tmp, 2) < 0) {
+			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
+		} else {
+			sprintf(buf, "Firmware Rev. %ld ", (long int) tmp);
+			strcat(info, buf);
+		}
+	} else
+		syslog(LOG_WARNING, "MatrixOrbital driver: unable to read device firmware revision");
+
+	return info;
 }
 
 // TODO: Finish the support for bar growing reverse way.
@@ -447,9 +715,9 @@ MtxOrb_vbar (int x, int len)
 
 	int y;
 
-// TODO: REMOVE THE NEXT LINE FOR TESTING ONLY...
+// REMOVE THE NEXT LINE FOR TESTING ONLY...
 //  len=-len;
-// TODO: REMOVE THE PREVIOUS LINE FOR TESTING ONLY...
+// REMOVE THE PREVIOUS LINE FOR TESTING ONLY...
 
 	if (len > 0) {
 		for (y = lcd.hgt; y > 0 && len > 0; y--) {
@@ -518,10 +786,8 @@ MtxOrb_hbar (int x, int y, int len)
 void
 MtxOrb_init_num ()
 {
-	char out[3];
 	if (custom != bign) {
-		sprintf (out, "%cn", 254);
-		write (fd, out, 2);
+		write (fd, "\x0FEn", 2);
 		custom = bign;
 	}
 }
@@ -535,7 +801,7 @@ void
 MtxOrb_num (int x, int num)
 {
 	char out[5];
-	sprintf (out, "%c#%c%c", 254, x, num);
+	sprintf (out, "\x0FE#%c%c", x, num);
 	write (fd, out, 4);
 }
 
@@ -560,7 +826,7 @@ MtxOrb_set_char (int n, char *dat)
 	if (!dat)
 		return;
 
-	sprintf (out, "%cN%c", 254, n);
+	sprintf (out, "\x0FEN%c", n);
 	write (fd, out, 3);
 
 	for (row = 0; row < lcd.cellhgt; row++) {
@@ -636,7 +902,7 @@ MtxOrb_draw_frame (char *dat)
         write(fd, dat, lcd.wid*lcd.hgt);
 */
 	for (i = 0; i < lcd.hgt; i++) {
-		sprintf (out, "%cG%c%c", 254, 1, i + 1);
+		sprintf (out, "\x0FEG\x001%c", i + 1);
 		write (fd, out, 4);
 		write (fd, dat + (lcd.wid * i), lcd.wid);
 	}
@@ -650,6 +916,7 @@ char
 MtxOrb_getkey ()
 {
 	char in = 0;
+
 	read (fd, &in, 1);
 	return in;
 }
@@ -800,6 +1067,17 @@ MtxOrb_ask_bar (int type)
 	}
 
 	return (pos);
+}
+
+/////////////////////////////////////////////////////////////
+// Does the heartbeat...
+//
+char
+MtxOrb_heartbeat (int timer)
+{
+	MtxOrb_icon (!((timer + 4) & 5), 0);
+	MtxOrb_chr (lcd.wid, 1, 0);
+	return (char) 0;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -1044,6 +1322,8 @@ MtxOrb_set_known_char (int car, int type)
 
 // TODO: Remove this code wich was use for developpement.
 // PS: There might be reference to this code left, so keep it for some time.
+//
+// MtxOrb_init_hbar and MtxOrb_init_vbar use it; it's prototyped in MtxOrb.h ...
 void
 MtxOrb_init_all (int type)
 {

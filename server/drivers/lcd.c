@@ -11,6 +11,7 @@
 #endif
 
 #include "shared/LL.h"
+#include "shared/debug.h"
 
 #include "lcd.h"
 
@@ -68,6 +69,15 @@
 #include "glk.h"
 #endif
 
+// Make program more readable and understandable;
+// hide details...
+#define ResetList(a)		LL_Rewind(a)
+#define GetDriverData(a)	((lcd_logical_driver *)LL_Get(a))
+#define NextDriver(a)		(LL_Next(a))
+#define MoreDrivers(a)		(LL_Next(a) == 0)
+#define DriverPresent(a)	(a)
+#define FunctionPresent(a)	((a) != 0)
+
 // TODO: Make a Windows server, and clients...?
 
 lcd_logical_driver lcd;
@@ -120,7 +130,9 @@ lcd_physical_driver drivers[] = {
 LL *list;
 
 ////////////////////////////////////////////////////////////
-// This sets up which driver to use and initializes stuff.
+// This function initializes a few basics as well as the
+// "base" array.  To initialize a specific driver, use the
+// lcd_add_driver() function.
 // 
 int
 lcd_init (char *args)
@@ -134,8 +146,12 @@ lcd_init (char *args)
 		return -1;
 	}
 
+	// This sets up functions which call all drivers in
+	// round-robin fashion
 	lcd_drv_init (NULL, NULL);
 
+	// "base" driver is a special driver which is always
+	// loaded...
 	err = lcd_add_driver ("base", args);
 
 	lcd.wid = 20;
@@ -162,6 +178,10 @@ lcd_init (char *args)
 
 // TODO:  lcd_remove_driver()
 
+// This initializes the specified driver and sends parameters to
+// it.  This is the function which calls, for example,
+// MtxOrb_init.  The specifics come from the drivers[] array.
+//
 int
 lcd_add_driver (char *driver, char *args)
 {
@@ -177,6 +197,8 @@ lcd_add_driver (char *driver, char *args)
 
 			//printf("Found driver: %s (%s)\n", drivers[i].name, driver);
 
+			// This creates an instance of the lcd structure specific to the
+			// driver... it is passed to the driver's init routine...
 			add = malloc (sizeof (lcd_logical_driver));
 			if (!add) {
 				printf ("Couldn't allocate driver \"%s\".\n", driver);
@@ -204,6 +226,7 @@ lcd_add_driver (char *driver, char *args)
 
 			LL_Push (list, (void *) add);
 
+			// This is where the driver itself is actually called;
 			return drivers[i].init (add, args);
 		}
 	}
@@ -241,6 +264,9 @@ lcd_shutdown ()
 	return 0;
 }
 
+// This sets up all of the "wrapper" driver functions
+// which call all of the drivers in turn.
+//
 int
 lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 {
@@ -290,6 +316,7 @@ lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 	lcd.draw_frame = lcd_drv_draw_frame;
 
 	lcd.getkey = lcd_drv_getkey;
+	lcd.getinfo = lcd_drv_getinfo;
 
 	return 1;						  // 1 is arbitrary.  (must be 1 or more)
 }
@@ -712,4 +739,35 @@ lcd_drv_getkey ()
 	} while (LL_Next (list) == 0);
 
 	return 0;
+}
+
+#define MAX_INFO_BUF 1024
+
+char *
+lcd_drv_getinfo ()
+{
+	static char info[MAX_INFO_BUF];
+	char *p;
+	lcd_logical_driver *driver;
+
+	memset(info, '\0', sizeof(info));
+
+	ResetList(list);
+	do {
+		driver = GetDriverData(list);
+
+		if (DriverPresent(driver)) {
+			if (FunctionPresent(driver->getinfo)) {
+				p = (char *) driver->getinfo ();
+				if (strlen(p) + strlen(info) < (MAX_INFO_BUF - 2)) {
+					strcat(info, p);
+				}
+				strcat(info, "\n");
+			}
+
+		}
+
+	} while (MoreDrivers(list));
+
+	return info;
 }

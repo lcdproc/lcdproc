@@ -52,6 +52,9 @@ typedef struct lcd_logical_driver {
 	// Returns 0 for "no key pressed", or (A-Z).
 	char (*getkey) ();
 
+	// Returns pointer to static string.
+	char * (*getinfo) ();
+
 	// more?
 
 } lcd_logical_driver;
@@ -83,5 +86,6 @@ void lcd_drv_icon (int which, char dest);
 void lcd_drv_flush_box (int lft, int top, int rgt, int bot);
 void lcd_drv_draw_frame ();
 char lcd_drv_getkey ();
+char *lcd_drv_getinfo ();
 
 #endif

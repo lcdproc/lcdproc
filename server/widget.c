@@ -167,6 +167,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 		s->heartbeat = 1;
 		return 0;
 	}
+
 	// Make sure this screen doesn't already exist...
 	w = widget_find (s, id);
 	if (w) {
@@ -193,13 +194,16 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 			}
 		}
 	}
+
 	// Make sure it's a valid widget type
 	for (i = 1; types[i]; i++) {
 		if (0 == strcmp (types[i], type)) {
 			valid = 1;
 			wid_type = i;
+			break; // it's valid: skip out...
 		}
 	}
+
 	if (!valid) {
 		// invalid widget type
 		sock_send_string (sock, "huh? Invalid widget type\n");
@@ -233,6 +237,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 			}
 		}
 	}
+
 	// TODO:  Check for errors here?
 	LL_Push (list, (void *) w);
 
@@ -266,19 +271,17 @@ widget_remove (screen * s, char *id, int sock)
 		return 1;
 	}
 
-/*
-   // TODO:  Check for errors here?
-   // TODO:  Make this work with frames...
-//   LL_Remove(list, (void *)w);
+//	TODO: Check for errors here?
+//	TODO: Make this work with frames...
+//	LL_Remove(list, (void *)w);
 
    
-   // TODO:  Check for errors here?
-//   widget_destroy(w);
-*/
+//	TODO: Check for errors here?
+//	widget_destroy(w);
 
 	return widget_remover (list, w);
 
-//   return 0;
+//	return 0;
 }
 
 int
