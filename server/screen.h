@@ -65,12 +65,16 @@ int screen_remove_widget (Screen * s, Widget * w);
 /* List functions */
 static inline Widget * screen_getfirst_widget (Screen * s)
 {
-	return LL_GetFirst(s->widgetlist);
+	return (Widget *) ((s != NULL)
+			   ? LL_GetFirst(s->widgetlist)
+			   : NULL);
 }
 
 static inline Widget * screen_getnext_widget (Screen * s)
 {
-	return LL_GetNext(s->widgetlist);
+	return (Widget *) ((s != NULL)
+			   ? LL_GetNext(s->widgetlist)
+			   : NULL);
 }
 
 

@@ -64,7 +64,9 @@ static inline MenuItem *menu_getfirst_item (Menu *menu)
  * Retrieves the first item from the list of items in the menu.
  */
 {
-	return (MenuItem*) LL_GetFirst( menu->data.menu.contents );
+	return (MenuItem*) ((menu != NULL)
+			    ? LL_GetFirst(menu->data.menu.contents)
+			    : NULL);
 }
 
 static inline MenuItem *menu_getnext_item (Menu *menu)
@@ -74,15 +76,18 @@ static inline MenuItem *menu_getnext_item (Menu *menu)
  * this function, to keep the list-cursor where it is.
  */
 {
-	return (MenuItem*) LL_GetNext( menu->data.menu.contents );
+	return (MenuItem*) ((menu != NULL)
+			    ? LL_GetNext(menu->data.menu.contents)
+			    : NULL);
 }
 
 static inline MenuItem *menu_get_current_item (Menu *menu)
 /* Retrieves the current item from the list of items in the menu. */
 {
-	return LL_GetByIndex(
-		menu->data.menu.contents,
-		menu->data.menu.selector_pos);
+	return (MenuItem*) ((menu != NULL)
+			    ? LL_GetByIndex(menu->data.menu.contents,
+					    menu->data.menu.selector_pos)
+			    : NULL);
 }
 
 MenuItem *menu_find_item (Menu *menu, char *id, bool recursive);
@@ -90,23 +95,23 @@ MenuItem *menu_find_item (Menu *menu, char *id, bool recursive);
 
 void menu_reset (Menu *menu);
 /* Resets it to initial state.
- * DO NOT CALL THIS FUNCTION, CALL menuitem_build_screen INSTEAD !
+ * DO NOT CALL THIS FUNCTION, CALL menuitem_reset_screen INSTEAD !
  */
 
 void menu_build_screen (Menu *menu, Screen *s);
 /* Builds the selected menuitem on screen using widgets.
- * DO NOT CALL THIS FUNCTION, CALL menuitem_build_screen INSTEAD !
+ * DO NOT CALL THIS FUNCTION, CALL menuitem_rebuild_screen INSTEAD !
  */
 
 void menu_update_screen (Menu *menu, Screen *s);
 /* Updates the widgets of the selected menuitem
- * DO NOT CALL THIS FUNCTION, CALL menuitem_build_screen INSTEAD !
+ * DO NOT CALL THIS FUNCTION, CALL menuitem_update_screen INSTEAD !
  */
 
 MenuResult menu_process_input (Menu *menu, MenuToken token, char * key);
 /* Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
- * DO NOT CALL THIS FUNCTION, CALL menuitem_build_screen INSTEAD !
+ * DO NOT CALL THIS FUNCTION, CALL menuitem_process_input INSTEAD !
  */
 
 #endif

@@ -43,12 +43,15 @@ menu_create (char *id, MenuEventFunc(*event_func),
 {
 	Menu *new_menu;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", association=%p )", __FUNCTION__, id, event_func, text, association);
+	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", association=%p )",
+	       __FUNCTION__, id, event_func, text, association);
 
 	new_menu = menuitem_create (MENUITEM_MENU, id, event_func, text);
 
-	new_menu->data.menu.contents = LL_new();
-	new_menu->data.menu.association = association;
+	if (new_menu != NULL) {
+		new_menu->data.menu.contents = LL_new();
+		new_menu->data.menu.association = association;
+	}	
 
 	return new_menu;
 }
@@ -56,6 +59,9 @@ menu_create (char *id, MenuEventFunc(*event_func),
 void
 menu_destroy (Menu *menu)
 {
+	if (menu == NULL)
+		return;
+
 	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
 
 	menu_destroy_all_items (menu);
@@ -68,9 +74,10 @@ menu_destroy (Menu *menu)
 void
 menu_add_item (Menu *menu, MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__, menu->id, item->id);
+	if ((menu == NULL) || (item == NULL))
+		return;
 
-	if (!menu) return;
+	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__, menu->id, item->id);
 
 	/* Add the item to the menu */
 	LL_Push (menu->data.menu.contents, item);
@@ -83,15 +90,18 @@ menu_remove_item (Menu *menu, MenuItem *item)
 	int i;
 	MenuItem * item2;
 
+	if ((menu == NULL) || (item == NULL))
+		return
+
 	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__, menu->id, item->id);
 
 	/* Find the item */
-	for (item2=LL_GetFirst(menu->data.menu.contents), i=0;
-	  item2;
-	  item2=LL_GetNext(menu->data.menu.contents), i++ ) {
-		if (item==item2) {
+	for (item2 = LL_GetFirst(menu->data.menu.contents), i=0;
+	     item2 != NULL;
+	     item2 = LL_GetNext(menu->data.menu.contents), i++ ) {
+		if (item == item2) {
 			LL_DeleteNode (menu->data.menu.contents);
-			if (menu->data.menu.selector_pos>=i) {
+			if (menu->data.menu.selector_pos >= i) {
 				menu->data.menu.selector_pos--;
 				if (menu->data.menu.scroll > 0)
 					menu->data.menu.scroll--;
@@ -106,9 +116,12 @@ menu_destroy_all_items (Menu *menu)
 {
 	MenuItem * item;
 
+	if (menu == NULL)
+		return;
+
 	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
 
-	for( item = menu_getfirst_item(menu); item; item = menu_getfirst_item(menu) ) {
+	for( item = menu_getfirst_item(menu); item != NULL; item = menu_getfirst_item(menu) ) {
 		menuitem_destroy (item);
 		LL_Remove (menu->data.menu.contents, item);
 	}
@@ -118,9 +131,12 @@ MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
 {
 	MenuItem * item;
 
+	if ((menu == NULL) || (id == NULL))
+		return NULL;
+
 	debug (RPT_DEBUG, "%s( menu=[%s], id=\"%s\", recursive=%d )", __FUNCTION__, menu->id, id, recursive);
 
-	for( item = menu_getfirst_item(menu); item; item = menu_getnext_item(menu) ) {
+	for( item = menu_getfirst_item(menu); item != NULL; item = menu_getnext_item(menu) ) {
 		if ( strcmp(item->id, id) == 0 ) {
 			return item;
 		}
@@ -137,6 +153,9 @@ MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
 
 void menu_reset (Menu *menu)
 {
+	if (menu == NULL)
+		return;
+
 	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__, menu->id);
 
 	menu->data.menu.selector_pos = 0;
@@ -149,6 +168,9 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 	MenuItem * subitem;
 	int itemnr;
 
+	if ((menu == NULL) || (s == NULL))
+		return;
+
 	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__, menu->id, s->id);
 
 	/* TODO: Put menu in a frame to do easy scrolling */
@@ -156,13 +178,15 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 
 	/* Create menu title widget */
 	w = widget_create ("title", WID_TITLE, s);
-	screen_add_widget (s, w);
-	w->text = strdup(menu->text);
-	w->x = 1;
+	if (w != NULL) {
+		screen_add_widget (s, w);
+		w->text = strdup(menu->text);
+		w->x = 1;
+	}	
 
 	/* Create widgets for each subitem in the menu */
 	for (subitem = LL_GetFirst (menu->data.menu.contents), itemnr = 0;
-	     subitem;
+	     subitem != NULL;
 	     subitem = LL_GetNext (menu->data.menu.contents), itemnr ++ )
 	{
 		char buf[10];
@@ -171,72 +195,80 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 		buf[sizeof(buf)-1] = 0;
 		w = widget_create (buf, WID_STRING, s);
 					/* (buf will be copied) */
-		screen_add_widget (s, w);
-		w->x = 2;
-
-		switch (subitem->type) {
-		  case MENUITEM_CHECKBOX:
-
-			/* Limit string length */
-			w->text = strdup (subitem->text);
-			if (strlen(subitem->text) >= display_props->width-2) {
-				(w->text)[display_props->width-2] = 0;
-			}
-
-			/* Add icon for checkbox */
-			snprintf (buf, sizeof(buf)-1, "icon%d", itemnr);
-			buf[sizeof(buf)-1] = 0;
-			w = widget_create (buf, WID_ICON, s);
-						/* (buf will be copied) */
+		if (w != NULL) {
 			screen_add_widget (s, w);
-			w->x = display_props->width - 1;
-			w->length = ICON_CHECKBOX_OFF;
-			break;
-		  case MENUITEM_RING:
-			/* Create string for text + ringtext */
-			w->text = malloc (display_props->width);
-			break;
-		  case MENUITEM_MENU:
-			/* Limit string length */
-			w->text = malloc( strlen(subitem->text) + 4 );
-			strcpy( w->text, subitem->text );
-			strcat( w->text, " >" );
-			if (strlen(subitem->text) >= display_props->width-1) {
-				(w->text)[display_props->width-1] = 0;
+			w->x = 2;
+
+			switch (subitem->type) {
+			  case MENUITEM_CHECKBOX:
+
+				/* Limit string length */
+				w->text = strdup (subitem->text);
+				if (strlen(subitem->text) >= display_props->width-2) {
+					(w->text)[display_props->width-2] = 0;
+				}
+
+				/* Add icon for checkbox */
+				snprintf (buf, sizeof(buf)-1, "icon%d", itemnr);
+				buf[sizeof(buf)-1] = 0;
+				w = widget_create (buf, WID_ICON, s);
+						/* (buf will be copied) */
+				screen_add_widget (s, w);
+				w->x = display_props->width - 1;
+				w->length = ICON_CHECKBOX_OFF;
+				break;
+			  case MENUITEM_RING:
+				/* Create string for text + ringtext */
+				w->text = malloc (display_props->width);
+				break;
+			  case MENUITEM_MENU:
+				/* Limit string length */
+				w->text = malloc( strlen(subitem->text) + 4 );
+				strcpy( w->text, subitem->text );
+				strcat( w->text, " >" );
+				if (strlen(subitem->text) >= display_props->width-1) {
+					(w->text)[display_props->width-1] = '\0';
+				}
+				break;
+			  case MENUITEM_ACTION:
+			  case MENUITEM_SLIDER:
+			  case MENUITEM_NUMERIC:
+			  case MENUITEM_ALPHA:
+				/* Limit string length */
+				w->text = strdup (subitem->text);
+				if (strlen(subitem->text) >= display_props->width-1) {
+					(w->text)[display_props->width-1] = '\0';
+				}
+				break;
 			}
-			break;
-		  case MENUITEM_ACTION:
-		  case MENUITEM_SLIDER:
-		  case MENUITEM_NUMERIC:
-		  case MENUITEM_ALPHA:
-			/* Limit string length */
-			w->text = strdup (subitem->text);
-			if (strlen(subitem->text) >= display_props->width-1) {
-				(w->text)[display_props->width-1] = 0;
-			}
-			break;
 		}
 	}
 
 	/* Add arrow for selection on the left */
 	w = widget_create ("selector", WID_ICON, s);
-	screen_add_widget (s, w);
-	w->length = ICON_SELECTOR_AT_LEFT;
-	w->x = 1;
+	if (w != NULL) {
+		screen_add_widget (s, w);
+		w->length = ICON_SELECTOR_AT_LEFT;
+		w->x = 1;
+	}
 
 	/* Add scrollers on the right side on top and bottom */
 	/* TODO: when menu is in a frame, these can be removed */
 	w = widget_create ("upscroller", WID_ICON, s);
-	screen_add_widget (s, w);
-	w->length = ICON_ARROW_UP;
-	w->x = display_props->width;
-	w->y = 1;
+	if (w != NULL) {
+		screen_add_widget (s, w);
+		w->length = ICON_ARROW_UP;
+		w->x = display_props->width;
+		w->y = 1;
+	}
 
 	w = widget_create ("downscroller", WID_ICON, s);
-	screen_add_widget (s, w);
-	w->length = ICON_ARROW_DOWN;
-	w->x = display_props->width;
-	w->y = display_props->height;
+	if (w != NULL) {
+		screen_add_widget (s, w);
+		w->length = ICON_ARROW_DOWN;
+		w->x = display_props->width;
+		w->y = display_props->height;
+	}
 
 }
 
@@ -245,6 +277,9 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 	Widget * w;
 	MenuItem * subitem;
 	int itemnr;
+
+	if ((menu == NULL) || (s == NULL))
+		return;
 
 	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__, menu->id, s->id);
 
@@ -358,6 +393,9 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
 {
 	MenuItem *subitem;
 
+	if (menu == NULL)
+		return MENURESULT_ERROR;
+	
 	debug (RPT_DEBUG, "%s( menu=[%s], token=%d, key=\"%s\" )", __FUNCTION__, menu->id, token, key);
 
 	switch (token) {
@@ -371,7 +409,8 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
 		  case MENUITEM_ACTION:
 			if (subitem->event_func)
 				subitem->event_func (subitem, MENUEVENT_SELECT);
-			return subitem->data.action.menu_result;				return MENURESULT_QUIT;
+			return subitem->data.action.menu_result;
+			//return MENURESULT_QUIT;
 		  case MENUITEM_CHECKBOX:
 			if (subitem->data.checkbox.allow_gray) {
 				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
