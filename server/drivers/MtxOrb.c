@@ -30,7 +30,15 @@
 #include "lcd_lib.h"
 #include "MtxOrb.h"
 #include "drv_base.h"
+
+// I don't want to break anything here so let's do it step by step
+//#define USE_REPORT
+#ifdef USE_REPORT
 #include "shared/debug.h"
+#else
+#include "shared/report.h"
+#endif
+
 #include "shared/str.h"
 
 #define IS_LCD_DISPLAY	(MtxOrb_type == MTXORB_LCD)
@@ -45,7 +53,10 @@
 //       Why I do not know.
 // RESP: Because software emulated hbar/vbar permit simultaneous use.
 
+#ifdef USE_REPORT
+#else
 extern int debug_level;
+#endif
 
 // TODO: Remove this custom_type if not in use anymore.
 typedef enum {
@@ -459,8 +470,11 @@ MtxOrb_clear ()
 	//write(fd, "\x0FE" "X", 2);  // instant clear...
 	clear = 1;
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: cleared screen");
+#endif
 }
 
 /////////////////////////////////////////////////////////////////
@@ -476,8 +490,11 @@ MtxOrb_close ()
 
 	MtxOrb->framebuf = NULL;
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: closed");
+#endif
 }
 
 static void
@@ -495,8 +512,11 @@ MtxOrb_string (int x, int y, char *string)
 
 	memcpy(MtxOrb->framebuf + offset, string, siz);
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: printed string at (%d,%d)", x, y);
+#endif
 }
 
 static void
@@ -504,8 +524,11 @@ MtxOrb_flush ()
 {
 	MtxOrb_draw_frame (MtxOrb->framebuf);
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: frame buffer flushed");
+#endif
 }
 
 static void
@@ -519,8 +542,11 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 		write (fd, out, 4);
 		write (fd, MtxOrb->framebuf + (y * MtxOrb->wid) + lft, rgt - lft + 1);
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: frame buffer box flushed");
+#endif
 	}
 
 }
@@ -532,7 +558,10 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 static void
 MtxOrb_chr (int x, int y, char c)
 {
+#ifdef USE_REPORT
+#else
 	char buf[64]; // char out[10];
+#endif
 	int offset;
 
 	// Characters may or may NOT be alphabetic; it appears
@@ -551,6 +580,8 @@ MtxOrb_chr (int x, int y, char c)
 	offset = (y * MtxOrb->wid) + x;
 	MtxOrb->framebuf[offset] = c;
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 2) {
 		snprintf(buf, sizeof(buf), "writing character %02X to position (%d,%d)",
 			c, x, y);
@@ -559,6 +590,7 @@ MtxOrb_chr (int x, int y, char c)
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: printed a char at (%d,%d)", x, y);
 	}
+#endif
 }
 
 /////////////////////////////////////////////////////////////////
@@ -581,11 +613,17 @@ MtxOrb_contrast (int contrast)
 		snprintf (out, sizeof(out), "\x0FEP%c", contrast);
 		write (fd, out, 3);
 
+#ifdef USE_REPORT
+#else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: contrast set to %d", contrast);
+#endif
 	} else {
+#ifdef USE_REPORT
+#else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: contrast not set to %d - not LCD or LKD display", contrast);
+#endif
 	}
 
 	return contrast;
@@ -617,23 +655,35 @@ MtxOrb_backlight (int on)
 	switch (on) {
 		case BACKLIGHT_ON: 
 			write (fd, "\x0FE" "F", 2);
+#ifdef USE_REPORT
+#else
 			if (debug_level > 3)
 				syslog(LOG_DEBUG, "MtxOrb: backlight turned on");
+#endif
 			break;
 		case BACKLIGHT_OFF: 
 			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY) {
+#ifdef USE_REPORT
+#else
 				if (debug_level > 3)
 					syslog(LOG_DEBUG, "MtxOrb: backlight ignored - not LCD or LKD display");
+#endif
 				; // turns display off entirely (whoops!)
 			} else {
+#ifdef USE_REPORT
+#else
 				if (debug_level > 3)
 					syslog(LOG_DEBUG, "MtxOrb: backlight turned off");
+#endif
 				write (fd, "\x0FE" "B" "\x000", 3);
 			}
 			break;
 		default: // ignored...
+#ifdef USE_REPORT
+#else
 			if (debug_level > 3)
 				syslog(LOG_DEBUG, "MtxOrb: backlight - invalid setting");
+#endif
 			break;
 		}
 }
@@ -656,8 +706,11 @@ MtxOrb_output (int on)
 
 	output_state = on;
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: output pins set: %04X", on);
+#endif
 
 	if (IS_LCD_DISPLAY || IS_VFD_DISPLAY) {
 		// LCD and VFD displays only have one output port
@@ -689,13 +742,19 @@ MtxOrb_linewrap (int on)
 	if (on) {
 		write (fd, "\x0FE" "C", 2);
 
+#ifdef USE_REPORT
+#else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: linewrap turned on");
+#endif
 	} else {
 		write (fd, "\x0FE" "D", 2);
 
+#ifdef USE_REPORT
+#else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: linewrap turned off");
+#endif
 	}
 }
 
@@ -708,13 +767,19 @@ MtxOrb_autoscroll (int on)
 	if (on) {
 		write (fd, "\x0FEQ", 2);
 
+#ifdef USE_REPORT
+#else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: autoscroll turned on");
+#endif
 	} else {
 		write (fd, "\x0FER", 2);
 
+#ifdef USE_REPORT
+#else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: autoscroll turned off");
+#endif
 	}
 }
 
@@ -728,13 +793,19 @@ MtxOrb_cursorblink (int on)
 	if (on) {
 		write (fd, "\x0FES", 2);
 
+#ifdef USE_REPORT
+#else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: cursorblink turned on");
+#endif
 	} else {
 		write (fd, "\x0FET", 2);
 
+#ifdef USE_REPORT
+#else
 		if (debug_level > 3)
 			syslog(LOG_DEBUG, "MtxOrb: cursorblink turned off");
+#endif
 	}
 }
 
@@ -771,8 +842,11 @@ MtxOrb_getinfo (void)
 	struct timeval tv;
 	int retval;
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: getinfo");
+#endif
 
 	memset(info, '\0', sizeof(info));
 	strcpy(info, "Matrix Orbital Driver ");
@@ -895,8 +969,11 @@ MtxOrb_vbar (int x, int len)
 
 	int y;
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
+#endif
 
 // REMOVE THE NEXT LINE FOR TESTING ONLY...
 //  len=-len;
@@ -939,8 +1016,11 @@ MtxOrb_hbar (int x, int y, int len)
 	ValidX(x);
 	ValidY(y);
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: horizontal bar at %d set to %d", x, len);
+#endif
 
 	if (len > 0) {
 		for (; x <= MtxOrb->wid && len > 0; x++) {
@@ -978,8 +1058,11 @@ MtxOrb_hbar (int x, int y, int len)
 static void
 MtxOrb_init_num ()
 {
+#ifdef USE_REPORT
+#else
 	if (debug_level > 3)
 		syslog(LOG_DEBUG, "MtxOrb: init for big numbers");
+#endif
 
 	if (custom != bign) {
 		write (fd, "\x0FEn", 2);
@@ -1010,8 +1093,11 @@ MtxOrb_num (int x, int num)
 	int y, dx;
 	char out[5];
 
+#ifdef USE_REPORT
+#else
 	if (debug_level > 4)
 		syslog(LOG_DEBUG, "MtxOrb: write big number %d at %d", num, x);
+#endif
 
 	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);
 	write (fd, out, 4);
@@ -1082,46 +1168,9 @@ MtxOrb_set_char (int n, char *dat)
 static void
 MtxOrb_icon (int which, char dest)
 {
-//	char icons[3][5 * 8] = {
-//		{
-//		 1, 1, 1, 1, 1,			  // Empty Heart
-//		 1, 0, 1, 0, 1,
-//		 0, 0, 0, 0, 0,
-//		 0, 0, 0, 0, 0,
-//		 0, 0, 0, 0, 0,
-//		 1, 0, 0, 0, 1,
-//		 1, 1, 0, 1, 1,
-//		 1, 1, 1, 1, 1,
-//		 },
-//
-//		{
-//		 1, 1, 1, 1, 1,			  // Filled Heart
-//		 1, 0, 1, 0, 1,
-//		 0, 1, 0, 1, 0,
-//		 0, 1, 1, 1, 0,
-//		 0, 1, 1, 1, 0,
-//		 1, 0, 1, 0, 1,
-//		 1, 1, 0, 1, 1,
-//		 1, 1, 1, 1, 1,
-//		 },
-//
-//		{
-//		 0, 0, 0, 0, 0,			  // Ellipsis
-//		 0, 0, 0, 0, 0,
-//		 0, 0, 0, 0, 0,
-//		 0, 0, 0, 0, 0,
-//		 0, 0, 0, 0, 0,
-//		 0, 0, 0, 0, 0,
-//		 0, 0, 0, 0, 0,
-//		 1, 0, 1, 0, 1,
-//		 },
-//
-//	};
-
 	if (custom == bign)
 		custom = beat;
 	MtxOrb_set_known_char (dest, START_ICON+which);
-//	MtxOrb_set_char (dest, &icons[which][0]);
 }
 
 /////////////////////////////////////////////////////////////
