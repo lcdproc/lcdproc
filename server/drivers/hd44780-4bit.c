@@ -126,7 +126,16 @@ hd_init_4bit (Driver *drvthis)
 	port_out (p->port, 0x03);
 	if (p->extIF)
 		port_out (p->port + 2, 0 ^ OUTMASK);
-	hd44780_functions->uPause (p, 4100);
+	hd44780_functions->uPause (p, 15000);
+
+	port_out (p->port, enableLines | 0x03);
+	if (p->extIF)
+		port_out (p->port + 2, ALLEXT ^ OUTMASK);
+	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	port_out (p->port, 0x03);
+	if (p->extIF)
+		port_out (p->port + 2, 0 ^ OUTMASK);
+	hd44780_functions->uPause (p, 5000);
 
 	port_out (p->port, enableLines | 0x03);
 	if (p->extIF)
@@ -144,7 +153,7 @@ hd_init_4bit (Driver *drvthis)
 	port_out (p->port, 0x03);
 	if (p->extIF)
 		port_out (p->port + 2, 0 ^ OUTMASK);
-	hd44780_functions->uPause (p, 40);
+	hd44780_functions->uPause (p, 100);
 
 	// now in 8-bit mode...  set 4-bit mode
 	port_out (p->port, 0x02);
@@ -157,7 +166,7 @@ hd_init_4bit (Driver *drvthis)
 	port_out (p->port, 0x02);
 	if (p->extIF)
 		port_out (p->port + 2, 0 ^ OUTMASK);
-	hd44780_functions->uPause (p, 40);
+	hd44780_functions->uPause (p, 100);
 
 	// Set up two-line, small character (5x8) mode
 	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | TWOLINE | SMALLCHAR );
