@@ -1,5 +1,5 @@
 noinst_LIBRARIES = libLCDdrivers.a
-libLCDdrivers_a_SOURCES = lcd.c lcd.h lcd_lib.c
+libLCDdrivers_a_SOURCES = lcd.c lcd.h lcd_lib.c lcd_lib.h
 EXTRA_libLCDdrivers_a_SOURCES = MtxOrb.c MtxOrb.h text.c text.h \
         lcdm001.c lcdm001.h \
         curses_drv.c curses_drv.h drv_base.h \
