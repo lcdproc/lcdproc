@@ -517,8 +517,8 @@ big_clock_screen (int rep, int display)
 		sock_send_string (sock, "widget_add K d3 num\n");
 		sock_send_string (sock, "widget_add K d4 num\n");
 		sock_send_string (sock, "widget_add K d5 num\n");
-		sock_send_string (sock, "widget_add K c0 num\n");
-		sock_send_string (sock, "widget_add K c1 num\n");
+//		sock_send_string (sock, "widget_add K c0 num\n");
+//		sock_send_string (sock, "widget_add K c1 num\n");
 //      sock_send_string(sock, "widget_add K one string\n");
 		sock_send_string (sock, "widget_set K d0 1 0\n");
 		sock_send_string (sock, "widget_set K d1 4 0\n");
@@ -526,8 +526,8 @@ big_clock_screen (int rep, int display)
 		sock_send_string (sock, "widget_set K d3 11 0\n");
 		sock_send_string (sock, "widget_set K d4 15 0\n");
 		sock_send_string (sock, "widget_set K d5 18 0\n");
-		sock_send_string (sock, "widget_set K c0 7 10\n");
-		sock_send_string (sock, "widget_set K c1 14 10\n");
+//		sock_send_string (sock, "widget_set K c0 7 10\n");
+//		sock_send_string (sock, "widget_set K c1 14 10\n");
 		old_fulltxt[0] = '0';
 		old_fulltxt[1] = '0';
 		old_fulltxt[2] = '0';
