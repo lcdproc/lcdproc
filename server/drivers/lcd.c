@@ -106,6 +106,10 @@ static char *lcd_drv_getinfo ();
 #include "glk.h"
 #endif
 
+// -- #ifdef SVGALIB_DRV
+#include "svgalib_drv.h"
+// -- #endif
+
 // Make program more readable and understandable;
 // hide details...
 #define ResetList(a)		LL_Rewind(a)
@@ -172,6 +176,10 @@ lcd_physical_driver drivers[] = {
 #ifdef STV5730_DRV
 	{"stv5730", stv5730_init,},
 #endif
+// -- #ifdef SVGALIB_DRV
+	{"svgalib", svgalib_drv_init,},
+// -- #endif
+
 	{NULL, NULL,},
 
 };
