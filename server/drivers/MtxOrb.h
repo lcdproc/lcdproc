@@ -1,7 +1,6 @@
 #ifndef MTXORB_H
 #define MTXORB_H
 
-
 extern lcd_logical_driver *MtxOrb;
 
 int MtxOrb_init (lcd_logical_driver * driver, char *device);

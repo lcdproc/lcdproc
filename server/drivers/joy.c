@@ -8,23 +8,17 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 
-
 #define __u32 unsigned int
 #define __u8 unsigned char
 #include <linux/joystick.h>
-
 
 #include "../../shared/debug.h"
 #include "../../shared/str.h"
 
 #define NAME_LENGTH 128
 
-
-
 #include "lcd.h"
 #include "joy.h"
-
-
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// Base "class" to derive from ///////////////////////
@@ -44,11 +38,9 @@ char jsname[NAME_LENGTH] = "Unknown";
 int *axis;
 int *button;
 
-
 // Configured for a Gravis Gamepad  (2 axis, 4 button)
 char *axismap = "EFGHIJKLMNOPQRST";
 char *buttonmap = "BDACEFGHIJKLMNOP";
-
 
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
@@ -61,7 +53,6 @@ joy_init (struct lcd_logical_driver *driver, char *args)
    int argc, i, j;
 
    joy = driver;
-
 
    strcpy (device, "/dev/js0");
 
@@ -96,13 +87,8 @@ joy_init (struct lcd_logical_driver *driver, char *args)
 
    }
 
-
-
-
-
    driver->getkey = joy_getkey;
    driver->close = joy_close;
-
 
    /*  FIXME:  This crashes!
       if(args)
@@ -131,7 +117,6 @@ joy_init (struct lcd_logical_driver *driver, char *args)
    return fd;			// 200 is arbitrary.  (must be 1 or more)
 }
 
-
 void
 joy_close ()
 {
@@ -146,7 +131,6 @@ joy_close ()
    //if(button) free(button);
 
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Tries to read a character from an input device...

@@ -46,7 +46,6 @@
   7. Add your driver to the Makefile, and Makefile.config, in the same
      style as the existing ones.
 
-
   Notes:
 
   Don't call lcd.whatever() functions within your driver.  This causes
@@ -114,6 +113,5 @@ void drv_base_icon (int which, char dest);
 void drv_base_flush_box (int lft, int top, int rgt, int bot);
 void drv_base_draw_frame (char *dat);
 char drv_base_getkey ();
-
 
 #endif

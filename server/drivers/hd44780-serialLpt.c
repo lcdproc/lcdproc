@@ -43,10 +43,8 @@ void shiftreg (unsigned char displayID, unsigned char r);
 #define EN1	4
 #define EN2	32
 
-
 static unsigned int lp;
 static char lastkey = 0;
-
 
 // Initialisation
 int
@@ -85,7 +83,6 @@ hd_init_serialLpt (HD44780_functions * hd44780_functions, lcd_logical_driver * d
 
    return 0;
 }
-
 
 void
 lcdserLpt_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)

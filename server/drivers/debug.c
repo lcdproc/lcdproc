@@ -9,14 +9,12 @@
 #include "lcd.h"
 #include "debug.h"
 
-
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// For Debugging Output //////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
 // TODO: somehow allow access to the driver->framebuffer to each
 // function...
-
 
 int
 debug_init (struct lcd_logical_driver *driver, char *args)
@@ -27,7 +25,6 @@ debug_init (struct lcd_logical_driver *driver, char *args)
       printf ("Allocating frame buffer (%ix%i)\n", lcd.wid, lcd.hgt);
       driver->framebuf = malloc (lcd.wid * lcd.hgt);
    }
-
 
    if (!driver->framebuf) {
       debug_close ();
@@ -61,7 +58,6 @@ debug_init (struct lcd_logical_driver *driver, char *args)
 
    driver->getkey = debug_getkey;
 
-
    return 200;			// 200 is arbitrary.  (must be 1 or more)
 }
 
@@ -69,7 +65,6 @@ void
 debug_close ()
 {
 // Ack!  This shouldn't crash the program, but does..  Why??
-
 
    printf ("debug_close()\n");
 
@@ -95,7 +90,6 @@ debug_clear ()
 
 }
 
-
 //////////////////////////////////////////////////////////////////
 // Flushes all output to the lcd...
 //
@@ -106,7 +100,6 @@ debug_flush ()
 
    lcd.draw_frame ();
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The
@@ -119,7 +112,6 @@ debug_string (int x, int y, char string[])
    int i;
 
    printf ("string(%i, %i):%s \n", x, y, string);
-
 
    x -= 1;			// Convert 1-based coords to 0-based...
    y -= 1;
@@ -138,14 +130,11 @@ debug_chr (int x, int y, char c)
 {
    printf ("character(%i, %i):%c\n", x, y, c);
 
-
    y--;
    x--;
 
    lcd.framebuf[(y * lcd.wid) + x] = c;
 }
-
-
 
 void
 debug_contrast (int contrast)
@@ -203,7 +192,6 @@ debug_vbar (int x, int len)
 
    printf ("Vbar(%i, %i)\n", x, len);
 
-
    for (y = lcd.hgt; y > 0 && len > 0; y--) {
       debug_chr (x, y, '|');
 
@@ -220,7 +208,6 @@ debug_hbar (int x, int y, int len)
 {
    printf ("Hbar(%i, %i, %i)\n", x, y, len);
 
-
    for (; x < lcd.wid && len > 0; x++) {
       debug_chr (x, y, '-');
 
@@ -228,7 +215,6 @@ debug_hbar (int x, int y, int len)
    }
 
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
@@ -239,17 +225,14 @@ debug_icon (int which, char dest)
    printf ("Char %i is icon %i\n", dest, which);
 }
 
-
 void
 debug_flush_box (int lft, int top, int rgt, int bot)
 {
    printf ("Flush Box(%i, %i)-(%i, %i)\n", lft, top, rgt, bot);
 
-
    debug_flush ();
 
 }
-
 
 void
 debug_draw_frame (char *dat)
@@ -259,7 +242,6 @@ debug_draw_frame (char *dat)
    char out[LCD_MAX_WIDTH];
 
    printf ("draw_frame()\n");
-
 
    if (!dat)
       return;
@@ -271,7 +253,6 @@ debug_draw_frame (char *dat)
    }
    out[lcd.wid] = 0;
    printf ("+%s+\n", out);
-
 
    for (i = 0; i < lcd.hgt; i++) {
       for (j = 0; j < lcd.wid; j++) {
@@ -289,7 +270,6 @@ debug_draw_frame (char *dat)
    printf ("+%s+\n", out);
 
 }
-
 
 char
 debug_getkey ()

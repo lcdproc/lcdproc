@@ -14,10 +14,8 @@
 #include <sys/types.h>
 #include <errno.h>
 
-
 #define __u32 unsigned int
 #define __u8 unsigned char
-
 
 #include "../../shared/debug.h"
 #include "../../shared/str.h"
@@ -27,7 +25,6 @@
 #include "lcd.h"
 #include "irmanin.h"
 #include "../../../libirman-0.4.1b/irman.h"
-
 
 char *progname = "irmanin";
 
@@ -61,8 +58,6 @@ char *codes[] = {
    /* KeyToLcd */ "lcdproc-Z",
    /* end */ NULL
 };
-
-
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// Base "class" to derive from ///////////////////////
@@ -162,7 +157,6 @@ irmanin_init (struct lcd_logical_driver *driver, char *args)
    return 1;			// 200 is arbitrary.  (must be 1 or more)
 }
 
-
 void
 irmanin_close ()
 {
@@ -174,7 +168,6 @@ irmanin_close ()
    ir_free_commands ();
    ir_finish ();
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Tries to read a character from an input device...

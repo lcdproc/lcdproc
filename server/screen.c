@@ -12,7 +12,6 @@
 #include "screenlist.h"
 #include "screen.h"
 
-
 screen *
 screen_create ()
 {
@@ -60,7 +59,6 @@ screen_destroy (screen * s)
    } while (LL_Next (s->widgets) == 0);
    LL_Destroy (s->widgets);
 
-
    if (s->id)
       free (s->id);
    if (s->name)
@@ -70,7 +68,6 @@ screen_destroy (screen * s)
 
    return 0;
 }
-
 
 screen *
 screen_find (client * c, char *id)
@@ -95,7 +92,6 @@ screen_find (client * c, char *id)
 
    return NULL;
 }
-
 
 int
 screen_add (client * c, char *id)
@@ -128,7 +124,6 @@ screen_add (client * c, char *id)
    }
    // TODO:  Check for errors here?
    LL_Push (c->data->screenlist, (void *) s);
-
 
    // Now, add it to the screenlist...
    if (screenlist_add (s) < 0) {

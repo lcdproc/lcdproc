@@ -32,11 +32,9 @@
 #include "input.h"
 #include "main.h"
 
-
 char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
 char *build_date = __DATE__;
-
 
 /* no longer needed
 static screen_size sizes[] =
@@ -63,10 +61,8 @@ static parameter args[] = {
    {NULL, NULL},
 };
 
-
 void exit_program (int val);
 void HelpScreen ();
-
 
 int
 main (int argc, char **argv)
@@ -81,8 +77,6 @@ main (int argc, char **argv)
    char *str, *ing;		// strings for commandline handling
 //   screen_size *size = &sizes[0]; // No longer needed
 
-
-
    // Ctrl-C will cause a clean exit...
    signal (SIGINT, exit_program);
    // and "kill"...
@@ -91,8 +85,6 @@ main (int argc, char **argv)
    signal (SIGHUP, exit_program);
    // and just in case, "kill -KILL" (which cannot be trapped; but oh well)
    signal (SIGKILL, exit_program);
-
-
 
    // If no paramaters given, give the help screen.
    if (argc == 1)
@@ -116,11 +108,8 @@ main (int argc, char **argv)
    }
 #endif
 
-
-
    // Set up lcd driver base system
    lcd_init ("");
-
 
    // Parse the command line now...
    // TODO:  Move this to a separate function?
@@ -221,8 +210,6 @@ main (int argc, char **argv)
       }
    }
 
-
-
    // Now init a bunch of required stuff...
 
    if (sock_create_server () <= 0) {
@@ -246,9 +233,6 @@ main (int argc, char **argv)
    } else if (disable_server_screen) {
       server_screen->priority = 256;
    }
-
-
-
 
    // Main loop...
    while (1) {
@@ -280,13 +264,11 @@ main (int argc, char **argv)
       usleep (TIME_UNIT);
    }
 
-
    // Quit!
    exit_program (0);
 
    return 0;
 }
-
 
 void
 exit_program (int val)
@@ -309,7 +291,6 @@ exit_program (int val)
    exit (0);
 
 }
-
 
 void
 HelpScreen ()

@@ -21,7 +21,6 @@
 #include "curses_drv.h"
 #include "drv_base.h"
 
-
 lcd_logical_driver *curses_drv;
 
 int PAD = 255;
@@ -33,14 +32,12 @@ int ELLIPSIS = 7;
 
 static char icon_char = '@';
 
-
 int
 curses_drv_init (struct lcd_logical_driver *driver, char *args)
 {
    char *argv[64];
    int argc;
    int i, j;
-
 
    argc = get_args (argv, args, 64);
 
@@ -77,7 +74,6 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
       }
 
    }
-
 
    curses_drv = driver;
 
@@ -145,7 +141,6 @@ curses_drv_clear ()
    clear ();
 
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The
@@ -215,7 +210,6 @@ curses_drv_num (int x, int num)
 	 curses_drv_chr (x + dx, y, c);
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar; erases entire column onscreen.
 //
@@ -254,12 +248,9 @@ curses_drv_hbar (int x, int y, int len)
       len -= lcd.cellwid;
    }
 
-
-
 //  move(y-1, x-1);
 //  hline(0, len/lcd.cellwid);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
@@ -291,13 +282,11 @@ curses_drv_flush ()
    curses_drv_draw_frame (curses_drv->framebuf);
 }
 
-
 void
 curses_drv_flush_box (int lft, int top, int rgt, int bot)
 {
    curses_drv_flush ();
 }
-
 
 void
 curses_drv_draw_frame (char *dat)
@@ -307,8 +296,6 @@ curses_drv_draw_frame (char *dat)
    refresh ();
 
 }
-
-
 
 char
 curses_drv_getkey ()

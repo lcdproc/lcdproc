@@ -20,7 +20,6 @@ static char sysname[SYS_NMLN];
 
 static double get_uptime (double *up, double *idle);
 
-
 static double
 get_uptime (double *up, double *idle)
 {
@@ -33,7 +32,6 @@ get_uptime (double *up, double *idle)
 
    return uptime;
 }
-
 
 // A couple of tables for later use...
 static char *days[] = {
@@ -84,8 +82,6 @@ static char *shortmonths[] = {
    "Dec",
 };
 
-
-
 int
 chrono_init ()
 {
@@ -113,13 +109,10 @@ chrono_init ()
 
       free (unamebuf);
 
-
-
    }
 
    return 0;
 }
-
 
 int
 chrono_close ()
@@ -131,8 +124,6 @@ chrono_close ()
 
    return 0;
 }
-
-
 
 //////////////////////////////////////////////////////////////////////
 // Time Screen displays current time and date, uptime, OS ver...
@@ -158,8 +149,6 @@ time_screen (int rep, int display)
    int i = 0;
    char colon;
 
-
-
    if (first) {
       first = 0;
 
@@ -178,16 +167,13 @@ time_screen (int rep, int display)
       }
    }
 
-
    if (colons)
       colon = ':';
    else
       colon = ' ';
 
-
    time (&thetime);
    rtime = localtime (&thetime);
-
 
    if (TwentyFourHour) {
       sprintf (hr, "%02d", rtime->tm_hour);
@@ -211,11 +197,8 @@ time_screen (int rep, int display)
    sprintf (min, "%02d", rtime->tm_min);
    sprintf (sec, "%02d", rtime->tm_sec);
 
-
    strcpy (day, shortdays[rtime->tm_wday]);
    strcpy (month, shortmonths[rtime->tm_mon]);
-
-
 
    ///////////////////// Write the title bar (os name and version)
 
@@ -225,12 +208,10 @@ time_screen (int rep, int display)
       if (display)
 	 sock_send_string (sock, tmp);
    }
-
    /////////////////////// Display the time...
    if (lcd_hgt >= 4) {
       get_uptime (&uptime, &idle);
       idle = (idle * 100) / uptime;
-
 
       if (TwentyFourHour)
 	 sprintf (tmp, "%s%c%s%c%s   %2i%% idle", hr, colon, min, colon, sec, (int) idle);
@@ -242,13 +223,10 @@ time_screen (int rep, int display)
       if (display)
 	 sock_send_string (sock, buffer);
 
-
-
       sprintf (tmp, "%s %s %d, %d", day, month, rtime->tm_mday, (rtime->tm_year + 1900));
       sprintf (buffer, "widget_set T two 3 3 {%s}\n", tmp);
       if (display)
 	 sock_send_string (sock, buffer);
-
 
       /////////////////////// Display the uptime...
       i = (int) uptime / 86400;
@@ -269,7 +247,6 @@ time_screen (int rep, int display)
       if (display)
 	 sock_send_string (sock, buffer);
 
-
    } else			// 20x2 version of the screen
    {
       sprintf (tmp, "widget_set T one 1 2 {");
@@ -285,14 +262,10 @@ time_screen (int rep, int display)
 	 sock_send_string (sock, tmp);
    }
 
-
-
    colons = colons ^ 1;
 
    return 0;
 }				// End time_screen()
-
-
 
 //////////////////////////////////////////////////////////////////////
 // Clock Screen displays current time and date...
@@ -332,7 +305,6 @@ clock_screen (int rep, int display)
       }
    }
 
-
    if (colons)
       colon = ':';
    else
@@ -365,7 +337,6 @@ clock_screen (int rep, int display)
    }
    strcpy (month, months[rtime->tm_mon]);
 
-
    if (lcd_hgt >= 4)		// 4-line version of the screen
    {
       sprintf (tmp, "widget_set O two 1 3 {");
@@ -376,7 +347,6 @@ clock_screen (int rep, int display)
       sprintf (tmp + strlen (tmp), "}\n");
       if (display)
 	 sock_send_string (sock, tmp);
-
 
       sprintf (tmp, "widget_set O three 2 4 {");
       sprintf (tmp + strlen (tmp), "%s %d, %d", month, rtime->tm_mday, (rtime->tm_year + 1900));
@@ -400,8 +370,6 @@ clock_screen (int rep, int display)
 
    return 0;
 }				// End clock_screen()
-
-
 
 ////////////////////////////////////////////////////////////////////
 // Uptime Screen shows info about system uptime and OS version
@@ -468,7 +436,6 @@ uptime_screen (int rep, int display)
 
    return 0;
 }				// End uptime_screen()
-
 
 //////////////////////////////////////////////////////////////////////
 // Big Clock Screen displays current time...

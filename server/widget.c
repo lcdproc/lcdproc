@@ -8,7 +8,6 @@
 #include "screen.h"
 #include "widget.h"
 
-
 char *types[] = { "none",
    "string",
    "hbar",
@@ -22,10 +21,8 @@ char *types[] = { "none",
    NULL,
 };
 
-
 static widget *widget_finder (LL * list, char *id);
 static int widget_remover (LL * list, widget * w);
-
 
 widget *
 widget_create ()
@@ -179,14 +176,12 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 
    debug ("widget_add(%s, %s, %s)\n", id, type, in);
 
-
    if (!s)
       return -1;
    if (!id)
       return -1;
 
    list = s->widgets;
-
 
    if (0 == strcmp (id, "heartbeat")) {
       s->heartbeat = 1;
@@ -231,9 +226,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
       return 2;
    }
 
-
    debug ("widget_add: making widget\n");
-
 
    // Now, make it...
    w = widget_create ();
@@ -260,10 +253,8 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 	 }
       }
    }
-
    // TODO:  Check for errors here?
    LL_Push (list, (void *) w);
-
 
    return 0;
 }
@@ -282,7 +273,6 @@ widget_remove (screen * s, char *id, int sock)
       return -1;
 
    list = s->widgets;
-
 
    if (0 == strcmp (id, "heartbeat")) {
       s->heartbeat = 0;
@@ -311,7 +301,6 @@ widget_remove (screen * s, char *id, int sock)
 //   return 0;
 }
 
-
 int
 widget_remover (LL * list, widget * w)
 {
@@ -324,7 +313,6 @@ widget_remover (LL * list, widget * w)
       return 0;
    if (!w)
       return 0;
-
 
    // Search through the list...
    LL_Rewind (list);

@@ -1,7 +1,6 @@
 #ifndef CLIENT_FUNCTION_H
 #define CLIENT_FUNCTION_H
 
-
 /*
   The function list for clients is stored in a table, and the items each
   point to a function to call, defined below.
@@ -34,7 +33,5 @@ int backlight_func (client * c, int argc, char **argv);
 int output_func (client * c, int argc, char **argv);
 
 extern client_function commands[];
-
-
 
 #endif

@@ -1,7 +1,6 @@
 #ifndef MENU_H
 #define MENU_H
 
-
 #if 0
 /*************************************************************************
 				Menus!
@@ -47,7 +46,6 @@ menu_item OptionsMenu[] = {
         "Contrast...",  TYPE_SLID,      (void *)Contrast_func,
         0,              0,              0,
 };
-
 
 ///////////////// Elsewhere, we declare these...
 
@@ -96,7 +94,6 @@ and sliders should return 0-255.
 **************************************************************************/
 #endif
 
-
 // Return codes from selected menu items...
 #define MENU_ERROR -0x7FFF0000
 #define MENU_OK 0
@@ -125,18 +122,14 @@ and sliders should return 0-255.
 #define MENU_MINUS 4
 #define MENU_READ 5
 
-
 typedef struct menu_item {
    char *text;
    int type;
    void *data;
 } menu_item;
 
-
 #define Menu menu_item *
 
-
 int do_menu (Menu menu);
-
 
 #endif

@@ -128,7 +128,6 @@ sli_init (lcd_logical_driver * driver, char *args)
    out[1] = 0x001;		/* Clear LCD, not sure if this belongs here */
    write (fd, out, 2);
 
-
    if (!driver->framebuf) {
       fprintf (stderr, "sli_init: No frame buffer.\n");
       driver->close ();
@@ -139,7 +138,6 @@ sli_init (lcd_logical_driver * driver, char *args)
    // Currently, $30 for interface kit and 16x2 non-backlit LCD...
    driver->wid = 15;
    driver->hgt = 2;
-
 
    // Set the functions the driver supports...
 
@@ -168,7 +166,6 @@ sli_init (lcd_logical_driver * driver, char *args)
    return fd;
 }
 
-
 /* Clean-up */
 void
 sli_close ()
@@ -181,13 +178,11 @@ sli_close ()
    sli->framebuf = NULL;
 }
 
-
 void
 sli_flush ()
 {
    sli_draw_frame (lcd.framebuf);
 }
-
 
 /* no bounds checking is done in MtxOrb.c (which I shamelessly ripped)
    this is bad imho, so I added it.. may remove later
@@ -218,7 +213,6 @@ sli_flush_box (int lft, int top, int rgt, int bot)
       write (fd, lcd.framebuf + (y * lcd.wid) + lft, rgt - lft + 1);
    }
 
-
 }
 
 /////////////////////////////////////////////////////////////////
@@ -233,7 +227,6 @@ sli_chr (int x, int y, char c)
 
    lcd.framebuf[(y * lcd.wid) + x] = c;
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before lcd.vbar()
@@ -405,7 +398,6 @@ sli_vbar (int x, int len)
 {
    char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
 
-
    int y;
    for (y = lcd.hgt; y > 0 && len > 0; y--) {
       if (len >= lcd.cellhgt)
@@ -437,7 +429,6 @@ sli_hbar (int x, int y, int len)
    }
 
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets a custom character from 0-7...
@@ -479,7 +470,6 @@ sli_set_char (int n, char *dat)
    out[1] = 0x080;
    write (fd, out, 2);
 }
-
 
 void
 sli_icon (int which, char dest)
@@ -524,7 +514,6 @@ sli_icon (int which, char dest)
       custom = beat;
    sli_set_char (dest, &icons[which][0]);
 }
-
 
 /////////////////////////////////////////////////////////////
 // Blasts a single frame onscreen, to the lcd...

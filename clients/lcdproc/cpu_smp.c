@@ -106,7 +106,6 @@ get_load (struct load *result, int *numcpus)
    }
 }
 
-
 int
 cpu_smp_init ()
 {
@@ -127,7 +126,6 @@ cpu_smp_close ()
 
    return 0;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 // CPU screen shows info about percentage of the CPU being used
@@ -211,7 +209,6 @@ cpu_smp_screen (int rep, int display)
       cpu[z][CPU_BUF_SIZE - 1][3] = ((float) load[z].idle / (float) load[z].total) * 100.0;
 #endif
       cpu[z][CPU_BUF_SIZE - 1][4] = (((float) load[z].user + (float) load[z].system + (float) load[z].nice) / (float) load[z].total) * 100.0;
-
 
       // Average values for final result
       for (i = 4; i < 5; i++) {

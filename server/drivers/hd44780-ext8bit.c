@@ -45,7 +45,6 @@
 
 void lcdtime_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
 
-
 #define nRS 	nSTRB
 #define nRW 	nLF
 #define EN1     INIT
@@ -57,7 +56,6 @@ void lcdtime_HD44780_senddata (unsigned char displayID, unsigned char flags, uns
 
 static unsigned int lptPort;
 static int semid;
-
 
 // initialise the driver
 int
@@ -76,7 +74,6 @@ hd_init_ext8bit (HD44780_functions * hd44780_functions, lcd_logical_driver * dri
    common_init (IF_8bit);
    return 0;
 }
-
 
 // lcdtime_HD44780_senddata
 void

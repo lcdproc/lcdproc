@@ -30,5 +30,4 @@ typedef struct parameter {
    char *sh, *lg;		// short and long versions
 } parameter;
 
-
 #endif

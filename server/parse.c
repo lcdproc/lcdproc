@@ -9,7 +9,6 @@
   
  */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,8 +19,6 @@
 #include "clients.h"
 #include "client_functions.h"
 #include "parse.h"
-
-
 
 int
 parse_all_client_messages ()

@@ -9,7 +9,6 @@
 #include "lcd.h"
 #include "drv_base.h"
 
-
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// Base "class" to derive from ///////////////////////
 //////////////////////////////////////////////////////////////////////////
@@ -17,7 +16,6 @@
 lcd_logical_driver *drv_base;
 
 // TODO: Get lcd.framebuf to properly work as whatever driver is running...
-
 
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
@@ -71,10 +69,8 @@ drv_base_init (struct lcd_logical_driver *driver, char *args)
 
    driver->getkey = drv_base_getkey;
 
-
    return 200;			// 200 is arbitrary.  (must be 1 or more)
 }
-
 
 // Below here, you may use either lcd.framebuf or driver->framebuf..
 // lcd.framebuf will be set to the appropriate buffer before calling
@@ -99,7 +95,6 @@ drv_base_clear ()
 
 }
 
-
 //////////////////////////////////////////////////////////////////
 // Flushes all output to the lcd...
 //
@@ -108,7 +103,6 @@ drv_base_flush ()
 {
    //lcd.draw_frame(lcd.framebuf);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The
@@ -142,7 +136,6 @@ drv_base_chr (int x, int y, char c)
 
    lcd.framebuf[(y * lcd.wid) + x] = c;
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Sets the contrast of the display.  Value is 0-255, where 140 is
@@ -247,7 +240,6 @@ drv_base_hbar (int x, int y, int len)
 
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
@@ -256,7 +248,6 @@ drv_base_icon (int which, char dest)
 {
 //  printf("Char %i set to icon %i\n", dest, which);
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Send a rectangular area to the display.
@@ -313,7 +304,6 @@ drv_base_draw_frame (char *dat)
    printf("+%s+\n", out);
 */
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Tries to read a character from an input device...

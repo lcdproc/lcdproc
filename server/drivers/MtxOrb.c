@@ -56,8 +56,6 @@ static int clear = 1;
 static int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 static int use[9] = { 1, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-
-
 static void MtxOrb_linewrap (int on);
 static void MtxOrb_autoscroll (int on);
 static void MtxOrb_cursorblink (int on);
@@ -82,9 +80,7 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
    char device[256] = "/dev/lcd";
    int speed = B19200;
 
-
    MtxOrb = driver;
-
 
    //debug("MtxOrb_init: Args(all): %s\n", args);
 
@@ -159,19 +155,16 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
    cfsetispeed (&portset, speed);
    tcsetattr (fd, TCSANOW, &portset);
 
-
    // Set display-specific stuff..
    MtxOrb_linewrap (1);
    MtxOrb_autoscroll (1);
    MtxOrb_cursorblink (0);
-
 
    if (!driver->framebuf) {
       fprintf (stderr, "MtxOrb_init: No frame buffer.\n");
       driver->close ();
       return -1;
    }
-
    // Set the functions the driver supports...
 
 //   driver->clear =      (void *)-1;
@@ -206,7 +199,6 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
    return fd;
 }
 
-
 // TODO: Check this quick hack to detect clear of the screen.
 /////////////////////////////////////////////////////////////////
 // Clear: catch up when the screen get clear to be able to
@@ -220,7 +212,6 @@ MtxOrb_clear ()
    drv_base_clear ();
    clear = 1;
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Clean-up
@@ -236,20 +227,17 @@ MtxOrb_close ()
    MtxOrb->framebuf = NULL;
 }
 
-
 void
 MtxOrb_flush ()
 {
    MtxOrb_draw_frame (lcd.framebuf);
 }
 
-
 void
 MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 {
    int y;
    char out[LCD_MAX_WIDTH];
-
 
 //  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
 
@@ -260,9 +248,7 @@ MtxOrb_flush_box (int lft, int top, int rgt, int bot)
 
    }
 
-
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Prints a character on the lcd display, at position (x,y).  The
@@ -276,7 +262,6 @@ MtxOrb_chr (int x, int y, char c)
 
    lcd.framebuf[(y * lcd.wid) + x] = c;
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Changes screen contrast (0-255; 140 seems good)
@@ -296,7 +281,6 @@ MtxOrb_contrast (int contrast)
    return status;
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Sets the backlight on or off -- can be done quickly for
 // an intermediate brightness...
@@ -314,7 +298,6 @@ MtxOrb_backlight (int on)
    }
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Sets output port on or off
 void
@@ -330,7 +313,6 @@ MtxOrb_output (int on)
    }
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Toggle the built-in linewrapping feature
 //
@@ -344,7 +326,6 @@ MtxOrb_linewrap (int on)
       sprintf (out, "%cD", 254);
    write (fd, out, 2);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Toggle the built-in automatic scrolling feature
@@ -360,7 +341,6 @@ MtxOrb_autoscroll (int on)
    write (fd, out, 2);
 }
 
-
 // TODO: make sure this doesn't mess up non-VFD displays
 /////////////////////////////////////////////////////////////////
 // Toggle cursor blink on/off
@@ -375,7 +355,6 @@ MtxOrb_cursorblink (int on)
       sprintf (out, "%cT", 254);
    write (fd, out, 2);
 }
-
 
 //// TODO: Might not be needed anymore...
 /////////////////////////////////////////////////////////////////
@@ -503,7 +482,6 @@ MtxOrb_num (int x, int num)
    write (fd, out, 4);
 }
 
-
 // TODO: This could be higly optimised if data where to be pre-computed.
 
 /////////////////////////////////////////////////////////////////
@@ -537,7 +515,6 @@ MtxOrb_set_char (int n, char *dat)
       write (fd, &letter, 1);
    }
 }
-
 
 void
 MtxOrb_icon (int which, char dest)
@@ -605,8 +582,6 @@ MtxOrb_draw_frame (char *dat)
 
 }
 
-
-
 /////////////////////////////////////////////////////////////
 // returns one character from the keypad...
 // (A-Z) on success, 0 on failure...
@@ -641,7 +616,6 @@ MtxOrb_led (int which, int on)
       write (fd, out, 3);
    }
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Ask for dynamic allocation of a custom caracter to be
@@ -790,7 +764,6 @@ MtxOrb_ask_bar (int type)
 
    return (pos);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets up a well known character for use.
@@ -1030,11 +1003,7 @@ MtxOrb_set_known_char (int car, int type)
    MtxOrb_set_char (car, &all_bar[type][0]);
 }
 
-
-
 /////////////////STOP READING --- TRASH IS AT THE END////////////////
-
-
 
 // TODO: Remove this code wich was use for developpement.
 // PS: There might be reference to this code left, so keep it for some time.

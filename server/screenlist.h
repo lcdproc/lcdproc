@@ -3,7 +3,6 @@
 
 #include "screen.h"
 
-
 #define SCR_HOLD 1
 #define SCR_SKIP 2
 #define SCR_BACK 3
@@ -26,6 +25,5 @@ screen *screenlist_prev ();
 
 int screenlist_remove (screen * s);
 int screenlist_remove_all (screen * s);
-
 
 #endif

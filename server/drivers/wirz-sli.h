@@ -7,7 +7,6 @@
 #ifndef SLI_H
 #define SLI_H
 
-
 extern lcd_logical_driver *sli;
 
 int sli_init (lcd_logical_driver * driver, char *device);
@@ -27,7 +26,5 @@ void sli_set_char (int n, char *dat);
 void sli_icon (int which, char dest);
 void sli_draw_frame (char *dat);
 char sli_getkey ();
-
-
 
 #endif

@@ -51,7 +51,6 @@ server_screen_init ()
    widget_add (server_screen, "two", "string", NULL, 1);
    widget_add (server_screen, "three", "string", NULL, 1);
 
-
    // Now, initialize all the widgets...
    w = widget_find (server_screen, "title");
    if (w) {
@@ -87,8 +86,6 @@ server_screen_init ()
       fprintf (stderr, "server_screen_init: Can't find widget three\n");
    }
 
-
-
    // And enqueue the screen
    screenlist_add (server_screen);
 
@@ -96,7 +93,6 @@ server_screen_init ()
 
    return 0;
 }
-
 
 int
 update_server_screen (int timer)
@@ -106,10 +102,8 @@ update_server_screen (int timer)
    screen *s;
    int num_screens;
 
-
    // Draw a title...
    //strcpy(title, "LCDproc Server");
-
 
    // Now get info on the number of connected clients...
    num_clients = 0;

@@ -24,7 +24,6 @@ get_loadavg (void)
    return load;
 }
 
-
 int
 load_init ()
 {
@@ -45,7 +44,6 @@ load_close ()
    return 0;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////
 // Shows a display very similar to "xload"'s histogram.
 //
@@ -58,7 +56,6 @@ xload_screen (int rep, int display)
    int n, i;
    float loadmax = 0, factor, x;
    int status = 0;
-
 
    if (first)			// Only the first time this is ever called...
    {
@@ -92,8 +89,6 @@ xload_screen (int rep, int display)
       sock_send_string (sock, tmp);
    }
 
-
-
    for (n = 0; n < (lcd_wid - 2); n++)
       loads[n] = loads[n + 1];
    loads[lcd_wid - 2] = get_loadavg ();
@@ -109,7 +104,6 @@ xload_screen (int rep, int display)
    sprintf (tmp, "widget_set X top %i %i %i\n", lcd_wid, (lcd_hgt == 2) ? 1 : 2, n);
    //if(display) sock_send_string(sock, tmp);
    sock_send_string (sock, tmp);
-
 
    if (loadmax < 1.0)
       factor = (float) (lcd_cellhgt) * ((lcd_hgt == 2) ? 2.0 : 3.0);
@@ -140,7 +134,6 @@ xload_screen (int rep, int display)
       sprintf (tmp, "widget_set X title 1 1 {%s %2.2f}\n", host, loads[lcd_wid - 2]);
    //if(display) sock_send_string(sock, tmp);
    sock_send_string (sock, tmp);
-
 
    return status;
 }				// End xload_screen()

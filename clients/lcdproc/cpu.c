@@ -18,7 +18,6 @@ struct load {
 int load_fd = 0;
 static void get_load (struct load *result);
 
-
 static void
 get_load (struct load *result)
 {
@@ -39,8 +38,6 @@ get_load (struct load *result)
    last_load.system = curr_load.system;
    last_load.idle = curr_load.idle;
 }
-
-
 
 int
 cpu_init ()
@@ -63,7 +60,6 @@ cpu_close ()
    return 0;
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // CPU screen shows info about percentage of the CPU being used
 //
@@ -77,7 +73,6 @@ cpu_screen (int rep, int display)
    float value;
    static float cpu[CPU_BUF_SIZE + 1][5];	// last buffer is scratch
    struct load load;
-
 
    if (first) {
       first = 0;
@@ -148,7 +143,6 @@ cpu_screen (int rep, int display)
        */
    }
 
-
    // Average values for final result
    for (i = 0; i < 5; i++) {
       value = 0;
@@ -158,7 +152,6 @@ cpu_screen (int rep, int display)
       value /= CPU_BUF_SIZE;
       cpu[CPU_BUF_SIZE][i] = value;
    }
-
 
    if (lcd_hgt >= 4) {
       value = cpu[CPU_BUF_SIZE][4];
@@ -264,8 +257,6 @@ cpu_screen (int rep, int display)
    return 0;
 }				// End cpu_screen()
 
-
-
 //////////////////////////////////////////////////////////////////////////
 // Cpu Graph Screen shows a quick-moving histogram of CPU use.
 //
@@ -281,7 +272,6 @@ cpu_graph_screen (int rep, int display)
    static int cpu_past[LCD_MAX_WIDTH];
    struct load load;
    int status = 0;
-
 
    if (first) {
       first = 0;
@@ -314,7 +304,6 @@ cpu_graph_screen (int rep, int display)
    // Read new data
    cpu[CPU_BUF_SIZE - 1] = ((float) load.user + (float) load.system + (float) load.nice) / (float) load.total;
 
-
    // Only clear on first display...
    if (!rep) {
       /*
@@ -323,7 +312,6 @@ cpu_graph_screen (int rep, int display)
          cpu[i] = cpu[CPU_BUF_SIZE-1];
        */
    }
-
    // Average values for final result
    value = 0;
    for (j = 0; j < CPU_BUF_SIZE; j++) {
@@ -331,7 +319,6 @@ cpu_graph_screen (int rep, int display)
    }
    value /= (float) CPU_BUF_SIZE;
    cpu[CPU_BUF_SIZE] = value;
-
 
    maxload = 0;
    for (i = 0; i < lcd_wid - 1; i++) {
@@ -356,8 +343,6 @@ cpu_graph_screen (int rep, int display)
    sprintf (tmp, "widget_set G %i %i %i %i\n", lcd_wid, lcd_wid, lcd_hgt, n);
    if (display)
       sock_send_string (sock, tmp);
-
-
 
    if (n > maxload)
       maxload = n;

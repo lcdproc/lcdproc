@@ -23,7 +23,6 @@ int update_screen (mode * m, int display);
 
 int credit_screen (int rep, int display);
 
-
 // These are for the modescreens' use only..
 void reread (int f, char *errmsg);
 int getentry (const char *tag, const char *bufptr);

@@ -8,14 +8,11 @@
 #include "screen.h"
 #include "clients.h"
 
-
-
 int screenlist_action = 0;
 
 int timer = 0;
 
 LL *screenlist;
-
 
 int screenlist_add_end (screen * screen);
 screen *screenlist_next_roll ();
@@ -24,7 +21,6 @@ screen *screenlist_next_priority ();
 
 int compare_priority (void *one, void *two);
 int compare_addresses (void *one, void *two);
-
 
 int
 screenlist_init ()
@@ -95,10 +91,8 @@ screenlist_current ()
    static screen *old_s = NULL;
    client *c;
 
-
    //debug("screenlist_current:\n");
    //LL_dprint(screenlist);
-
 
    s = (screen *) LL_GetFirst (screenlist);
 
@@ -139,8 +133,6 @@ screenlist_current ()
       }
    }
 
-
-
    old_s = s;
 
    //debug("screenlist_current: return %8x\n", s);
@@ -173,7 +165,6 @@ screenlist_next ()
    // Otherwise, reset it to regular operation
    screenlist_action = 0;
 
-
    //debug("Screenlist_next: calling handler...\n");
 
    // Call the selected queuing function...
@@ -202,14 +193,12 @@ screenlist_prev ()
    // Otherwise, reset it no regular operation
    screenlist_action = 0;
 
-
    // Call the selected queuing function...
    // TODO:  Different queueing modes...
    s = screenlist_prev_roll ();
 
    return s;
 }
-
 
 // Adds new screens to the end of the screenlist...
 int
@@ -258,7 +247,6 @@ screenlist_prev_roll ()
 
    return screenlist_current ();
 }
-
 
 int
 compare_priority (void *one, void *two)

@@ -13,11 +13,9 @@ typedef struct client {
 
 extern LL *clients;
 
-
 // Initialize and kill client list...
 int client_init ();
 int client_shutdown ();
-
 
 // Create and destroy clients....
 client *client_create (int sock);
@@ -34,6 +32,5 @@ void *client_get (client * c);
 
 // Search for a client with a particular filedescriptor...
 client *client_find_sock (int sock);
-
 
 #endif

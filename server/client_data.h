@@ -3,7 +3,6 @@
 
 #include "../shared/LL.h"
 
-
 #define CLIENT_NAME_SIZE 256
 
 typedef struct client_data {
@@ -15,7 +14,6 @@ typedef struct client_data {
    LL *menulist;
 
 } client_data;
-
 
 // sets up an existing (empty) client_data struct
 int client_data_init (client_data * d);

@@ -112,7 +112,6 @@ LL_node_DestroyData (LL_node * node)
    return 0;
 }
 
-
 //////////////////////////////////////////////////////////////////////
 // Returns to the beginning of the list...
 int
@@ -186,7 +185,6 @@ LL_Prev (LL * list)
    }
 }
 
-
 //////////////////////////////////////////////////////////////////////
 // Data manipulation
 void *
@@ -214,7 +212,6 @@ LL_Put (LL * list, void *data)
    return 0;
 }
 
-
 //////////////////////////////////////////////////////////////////////
 LL_node *
 LL_GetNode (LL * list)
@@ -239,7 +236,6 @@ LL_PutNode (LL * list, LL_node * node)
 
    return 0;
 }
-
 
 //////////////////////////////////////////////////////////////////////
 void *
@@ -307,7 +303,6 @@ LL_AddNode (LL * list, void *add)	// Adds node AFTER current one
       return -1;
 
    //LL_dprint(list);
-
 
    node = malloc (sizeof (LL_node));
    if (!node)
@@ -408,7 +403,6 @@ LL_DeleteNode (LL * list)
    LL_dprint (list);
 #endif
 
-
    next = list->current->next;
    prev = list->current->prev;
    data = list->current->data;
@@ -456,7 +450,6 @@ LL_Remove (LL * list, void *data)
 
    return NULL;
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Stack operations
@@ -613,8 +606,6 @@ LL_UnRoll (LL * list)		// Roll the other way...
    return 0;
 }
 
-
-
 //////////////////////////////////////////////////////////////////////
 // Add an item to the end of its "priority group"
 // The list is assumed to be sorted already...
@@ -651,8 +642,6 @@ LL_PriorityEnqueue (LL * list, void *add, int compare (void *, void *))
 
    return 0;
 }
-
-
 
 //////////////////////////////////////////////////////////////////////
 int
@@ -693,7 +682,6 @@ LL_SwapNodes (LL_node * one, LL_node * two)	// Switch two nodes positions...
       two->next = one;		// each other...
    if (secondnext == one)
       two->prev = one;
-
 
    return 0;
 
@@ -755,7 +743,6 @@ LL_Find (LL * list, int compare (void *, void *), void *value)
    return NULL;
 }
 
-
 //////////////////////////////////////////////////////////////////////
 // Sorts the list, then rewinds it...
 //
@@ -766,7 +753,6 @@ LL_Sort (LL * list, int compare (void *, void *))
    int numnodes;		// number of nodes in list
    LL_node *best, *last;	// best match and last node in the list
    LL_node *current;
-
 
    if (!list)
       return -1;
@@ -780,7 +766,6 @@ LL_Sort (LL * list, int compare (void *, void *))
 
    if (numnodes < 2)
       return 0;
-
 
    for (i = numnodes - 1; i > 0; i--) {
       LL_Rewind (list);		// get the first node again

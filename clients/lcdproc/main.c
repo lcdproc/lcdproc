@@ -18,9 +18,7 @@
 #include "../../shared/sockets.h"
 #include "../../shared/debug.h"
 
-
 // TODO: Commenting...  Everything!
-
 
 int Quit = 0;
 int sock;
@@ -32,7 +30,6 @@ int lcd_wid;
 int lcd_hgt;
 int lcd_cellwid;
 int lcd_cellhgt;
-
 
 /*
   Mode List:
@@ -46,7 +43,6 @@ void main_loop (mode * sequence);
 #define MAX_SEQUENCE 256
 // 1/8th second is a single time unit...
 #define TIME_UNIT 125000
-
 
 // Contains a list of modes to run
 mode default_sequence[] = {
@@ -75,7 +71,6 @@ mode default_sequence[] = {
 
 // TODO: Config file; not just command line
 
-
 int
 main (int argc, char **argv)
 {
@@ -96,8 +91,6 @@ main (int argc, char **argv)
    signal (SIGHUP, exit_program);
    // and just in case, "kill -KILL" (which cannot be trapped; but oh well)
    signal (SIGKILL, exit_program);
-
-
 
    // Command line
    memcpy (sequence, default_sequence, sizeof (default_sequence));
@@ -157,7 +150,6 @@ main (int argc, char **argv)
       }
    }
 
-
    // Connect to the server...
    usleep (500000);		// wait for the server to start up
    sock = sock_connect (server, port);
@@ -167,7 +159,6 @@ main (int argc, char **argv)
    }
    sock_send_string (sock, "hello\n");
    usleep (500000);		// wait for the server to say hi.
-
 
    // We grab the real values below, from the "connect" line.
    lcd_wid = 20;
@@ -186,7 +177,6 @@ main (int argc, char **argv)
    return 0;
 }
 
-
 void
 HelpScreen ()
 {
@@ -203,7 +193,6 @@ HelpScreen ()
    exit (0);
 }
 
-
 ///////////////////////////////////////////////////////////////////
 // Called upon TERM and INTR signals...
 //
@@ -215,7 +204,6 @@ exit_program (int val)
    mode_close ();
    exit (0);
 }
-
 
 ///////////////////////////////////////////////////////////////////
 // Main program loop...
@@ -229,7 +217,6 @@ main_loop (mode * sequence)
    char *argv[256];
    int argc, newtoken;
    int len;
-
 
    // Main loop
    // Run whatever screen we want, then wait.  Woo-hoo!

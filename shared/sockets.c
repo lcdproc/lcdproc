@@ -16,20 +16,16 @@
 #include "debug.h"
 #include "sockets.h"
 
-
 /**************************************************
   LCDproc client sockets code...
 
   Feel free to use this in your own clients... :)
 **************************************************/
 
-
 // Length of longest transmission allowed at once...
 #define MAXMSG 8192
 
-
 typedef struct sockaddr_in sockaddr_in;
-
 
 static int
 sock_init_sockaddr (sockaddr_in * name, const char *hostname, unsigned short int port)
@@ -57,7 +53,6 @@ sock_connect (char *host, unsigned short int port)
    int sock;
    int err = 0;
 
-
    debug ("sock_connect: Creating socket\n");
    sock = socket (PF_INET, SOCK_STREAM, 0);
    if (sock < 0) {
@@ -76,7 +71,6 @@ sock_connect (char *host, unsigned short int port)
    }
 
    fcntl (sock, F_SETFL, O_NONBLOCK);
-
 
    return sock;
 }

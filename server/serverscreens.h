@@ -3,7 +3,6 @@
 
 #include "screen.h"
 
-
 extern screen *server_screen;
 
 int server_screen_init ();

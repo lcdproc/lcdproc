@@ -21,5 +21,4 @@ void text_set_char (int n, char *dat);
 void text_flush_box (int lft, int top, int rgt, int bot);
 void text_draw_frame (char *dat);
 
-
 #endif

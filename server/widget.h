@@ -31,7 +31,6 @@ typedef struct widget {
 
 extern char *types[];
 
-
 widget *widget_create ();
 int widget_destroy (widget * w);
 
@@ -39,6 +38,5 @@ widget *widget_find (screen * s, char *id);
 
 int widget_add (screen * s, char *id, char *type, char *in, int sock);
 int widget_remove (screen * s, char *id, int sock);
-
 
 #endif

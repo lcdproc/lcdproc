@@ -1,7 +1,6 @@
 #ifndef LCD_CURSES_H
 #define LCD_CURSES_H
 
-
 extern lcd_logical_driver *curses_drv;
 
 int curses_drv_init (struct lcd_logical_driver *driver, char *args);
@@ -19,6 +18,5 @@ void curses_drv_draw_frame (char *dat);
 char curses_drv_getkey ();
 void curses_drv_init_num ();
 void curses_drv_num (int x, int num);
-
 
 #endif

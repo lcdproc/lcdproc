@@ -10,7 +10,6 @@
 #include "text.h"
 #include "drv_base.h"
 
-
 lcd_logical_driver *text;
 
 //////////////////////////////////////////////////////////////////////////
@@ -26,7 +25,6 @@ text_init (lcd_logical_driver * driver, char *args)
       driver->close ();
       return -1;
    }
-
 
    driver->wid = 20;
    driver->hgt = 4;
@@ -55,7 +53,6 @@ text_init (lcd_logical_driver * driver, char *args)
 
    driver->getkey = NULL;
 
-
    return 200;			// 200 is arbitrary.  (must be 1 or more)
 }
 
@@ -75,7 +72,6 @@ text_clear ()
 
 }
 
-
 //////////////////////////////////////////////////////////////////
 // Flushes all output to the lcd...
 //
@@ -84,7 +80,6 @@ text_flush ()
 {
    text_draw_frame (lcd.framebuf);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The
@@ -115,8 +110,6 @@ text_chr (int x, int y, char c)
 
    lcd.framebuf[(y * lcd.wid) + x] = c;
 }
-
-
 
 int
 text_contrast (int contrast)
@@ -199,14 +192,12 @@ text_hbar (int x, int y, int len)
 
 }
 
-
 void
 text_flush_box (int lft, int top, int rgt, int bot)
 {
    text_flush ();
 
 }
-
 
 void
 text_draw_frame (char *dat)
@@ -225,7 +216,6 @@ text_draw_frame (char *dat)
    }
    out[lcd.wid] = 0;
    printf ("+%s+\n", out);
-
 
    for (i = 0; i < lcd.hgt; i++) {
       for (j = 0; j < lcd.wid; j++) {

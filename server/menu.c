@@ -57,21 +57,16 @@ draw_heartbeat ()
 
 static int PAD = 255;
 
-
-
 typedef struct menu_info {
    int selected;
    int length;
 } menu_info;
-
-
 
 static int draw_menu (Menu menu, menu_info * info);
 static int fill_menu_info (Menu menu, menu_info * info);
 static int menu_handle_action (menu_item * item);
 
 static int slid_func (menu_item * item);
-
 
 int
 do_menu (Menu menu)
@@ -84,12 +79,10 @@ do_menu (Menu menu)
    int (*func) ();
    int (*readfunc) (int);
 
-
    if (!menu)
       return MENU_ERROR;
 
    fill_menu_info (menu, &info);
-
 
    while (!done) {
       // Keep the cursor off titles... (?)
@@ -99,7 +92,6 @@ do_menu (Menu menu)
 	 if (!menu[info.selected].text)
 	    info.selected -= 2;
       }
-
 
       draw_menu (menu, &info);
 
@@ -113,7 +105,6 @@ do_menu (Menu menu)
 	 draw_heartbeat ();
 	 // Check for client input...
       }
-
 
       // Handle the key according to the keybindings...
       switch (key) {
@@ -198,12 +189,10 @@ draw_menu (Menu menu, menu_info * info)
    // these should maybe be removed:
    int wid = lcd.wid, hgt = lcd.hgt;
 
-
    if (!menu)
       return MENU_ERROR;
 
    lcd.clear ();
-
 
    // Scroll down until the selected item is centered, if possible...
    top = info->selected - (hgt / 2);
@@ -215,8 +204,6 @@ draw_menu (Menu menu, menu_info * info)
    top = bottom - hgt;
    if (top < 0)
       top = 0;
-
-
 
    // Draw all visible items...
    for (i = top; i < bottom; i++, y++) {
@@ -263,13 +250,11 @@ draw_menu (Menu menu, menu_info * info)
    if (bottom < info->length)
       lcd.chr (1, hgt, 'v');
 
-
    draw_heartbeat ();
    //lcd.flush();
 
    return 0;
 }
-
 
 static int
 fill_menu_info (Menu menu, menu_info * info)
@@ -292,7 +277,6 @@ menu_handle_action (menu_item * item)
 {
    return MENU_OK;
 }
-
 
 static int
 slid_func (menu_item * item)

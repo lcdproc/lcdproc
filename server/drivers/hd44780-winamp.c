@@ -49,7 +49,6 @@ static int EnMaskSize = sizeof (EnMask) / sizeof (unsigned char);
 static unsigned int lptPort;
 static int extIF = 0;		// non-zero if extended interface
 
-
 // initialise the driver
 int
 hd_init_winamp (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)
@@ -77,7 +76,6 @@ hd_init_winamp (HD44780_functions * hd44780_functions, lcd_logical_driver * driv
    common_init (IF_8bit);
    return 0;
 }
-
 
 // lcdwinamp_HD44780_senddata
 void

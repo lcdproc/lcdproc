@@ -40,7 +40,6 @@
 
 #include "input.h"
 
-
 int server_input (int key);
 
 // FIXME!  The server tends to crash when "E" is pressed..  (?!)
@@ -89,8 +88,6 @@ handle_input ()
 
    return 0;
 }
-
-
 
 int
 server_input (int key)

@@ -20,8 +20,6 @@
 #include "client_data.h"
 #include "../shared/debug.h"
 
-
-
 LL *clients;
 
 // Initialize and kill client list...
@@ -46,7 +44,6 @@ client_shutdown ()
    client *c;
 
    debug ("client_shutdown()\n");
-
 
    // Free all client structures...
    // Note that the regular list loop doesn't work here, because
@@ -73,7 +70,6 @@ client_shutdown ()
    return 0;
 }
 
-
 // Create and destroy clients....
 client *
 client_create (int sock)
@@ -92,7 +88,6 @@ client_create (int sock)
    c->sock = 0;
    c->data = NULL;
    c->messages = NULL;
-
 
    c->sock = sock;
 
@@ -234,7 +229,6 @@ client_get (client * c)
 
    return NULL;
 }
-
 
 client *
 client_find_sock (int sock)

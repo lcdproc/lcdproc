@@ -42,14 +42,12 @@
 #include "hd44780-low.h"
 #include "hd44780-drivers.h"
 
-
 // default parallel port address
 #ifndef LPTPORT
 #define LPTPORT 	0x378
 #endif
 
 unsigned int port = LPTPORT;
-
 
 lcd_logical_driver *HD44780;
 HD44780_functions *hd44780_functions;
@@ -70,7 +68,6 @@ static int numDisplays = 0;
 // dispSizes is the vertical size of each display. This is the same as the
 // input span list but is kept to save some cpu cycles.
 static int *dispSizes = NULL;
-
 
 // function declarations
 void HD44780_flush ();
@@ -225,7 +222,6 @@ HD44780_init (lcd_logical_driver * driver, char *args)
       //HD44780_close();
       return -1;
    }
-
    // Set the functions the driver supports...
    // These are the default HD44780 functions
    driver->clear = (void *) -1;
@@ -303,7 +299,6 @@ uPause (int delayCalls)
    //TODO: put in option for nanosleep rather than dummy I/O call
 }
 
-
 // displayID     - ID of display to use (0 = all displays)
 static void
 HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
@@ -311,7 +306,6 @@ HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch
    hd44780_functions->senddata (displayID, flags, ch);
    hd44780_functions->uPause (40);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Clean-up
@@ -358,7 +352,6 @@ HD44780_flush ()
    HD44780_draw_frame (lcd.framebuf);
 }
 
-
 void
 HD44780_flush_box (int lft, int top, int rgt, int bot)
 {
@@ -377,7 +370,6 @@ HD44780_flush_box (int lft, int top, int rgt, int bot)
 
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Changes screen contrast (0-255; 140 seems good)
 //
@@ -395,7 +387,6 @@ void
 HD44780_backlight (int on)
 {
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Toggle the built-in linewrapping feature
@@ -420,7 +411,6 @@ common_autoscroll (int on)
    hd44780_functions->senddata (0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | ((on) ? EDGESCROLL : NOSCROLL));
    hd44780_functions->uPause (1600);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before lcd.vbar()
@@ -602,7 +592,6 @@ HD44780_hbar (int x, int y, int len)
    }
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Sets up for big numbers.
 //
@@ -614,7 +603,6 @@ HD44780_init_num ()
    //write(fd, out, 2);
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Writes a big number.
 //
@@ -625,7 +613,6 @@ HD44780_num (int x, int num)
    sprintf (out, "%c#%c%c", 254, x, num);
    //write(fd, out, 4);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets a custom character from 0-7...
@@ -656,7 +643,6 @@ HD44780_set_char (int n, char *dat)
       HD44780_senddata (0, RS_DATA, letter);
    }
 }
-
 
 void
 HD44780_icon (int which, char dest)
@@ -697,10 +683,8 @@ HD44780_icon (int which, char dest)
 
    };
 
-
    HD44780_set_char (dest, &icons[which][0]);
 }
-
 
 /////////////////////////////////////////////////////////////
 // Blasts a single frame onscreen, to the lcd...

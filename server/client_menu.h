@@ -21,5 +21,4 @@ typedef struct client_menu_item {
    char child[];		// For the "submenu" type
 } client_menu;
 
-
 #endif

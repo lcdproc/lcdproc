@@ -22,8 +22,6 @@ typedef enum {
    beat = 8
 } custom_type;
 
-
-
 static int fd;
 
 static void CFontz_linewrap (int on);
@@ -148,7 +146,6 @@ CFontz_init (lcd_logical_driver * driver, char *args)
    cfsetispeed (&portset, speed);
    tcsetattr (fd, TCSANOW, &portset);
 
-
    // Set display-specific stuff..
    if (reboot) {
       CFontz_reboot ();
@@ -161,13 +158,11 @@ CFontz_init (lcd_logical_driver * driver, char *args)
    CFontz_autoscroll (0);
    CFontz_backlight (backlight_brightness);
 
-
    if (!driver->framebuf) {
       fprintf (stderr, "CFontz_init: No frame buffer.\n");
       driver->close ();
       return -1;
    }
-
    // Set the functions the driver supports...
 
    driver->clear = (void *) -1;
@@ -201,8 +196,6 @@ CFontz_init (lcd_logical_driver * driver, char *args)
    return fd;
 }
 
-
-
 /////////////////////////////////////////////////////////////////
 // Clean-up
 //
@@ -217,21 +210,17 @@ CFontz_close ()
    CFontz->framebuf = NULL;
 }
 
-
 void
 CFontz_flush ()
 {
    CFontz_draw_frame (lcd.framebuf);
 }
 
-
-
 void
 CFontz_flush_box (int lft, int top, int rgt, int bot)
 {
    int y;
    char out[LCD_MAX_WIDTH];
-
 
 //  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
 
@@ -242,9 +231,7 @@ CFontz_flush_box (int lft, int top, int rgt, int bot)
 
    }
 
-
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Prints a character on the lcd display, at position (x,y).  The
@@ -260,7 +247,6 @@ CFontz_chr (int x, int y, char c)
       c += 128;
    lcd.framebuf[(y * lcd.wid) + x] = c;
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Changes screen contrast (0-255; 140 seems good)
@@ -282,7 +268,6 @@ CFontz_contrast (int contrast)
    return status;
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Sets the backlight on or off -- can be done quickly for
 // an intermediate brightness...
@@ -299,7 +284,6 @@ CFontz_backlight (int on)
    }
    write (fd, out, 3);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Toggle the built-in linewrapping feature
@@ -329,7 +313,6 @@ CFontz_autoscroll (int on)
    write (fd, out, 1);
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Get rid of the blinking curson
 //
@@ -351,7 +334,6 @@ CFontz_reboot ()
    sprintf (out, "%c", 26);
    write (fd, out, 1);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before lcd.vbar()
@@ -529,7 +511,6 @@ CFontz_vbar (int x, int len)
 {
    char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
 
-
    int y;
    for (y = lcd.hgt; y > 0 && len > 0; y--) {
       if (len >= lcd.cellhgt)
@@ -562,7 +543,6 @@ CFontz_hbar (int x, int y, int len)
 
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Sets up for big numbers.
 //
@@ -570,7 +550,6 @@ void
 CFontz_init_num ()
 {
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Writes a big number.
@@ -582,7 +561,6 @@ CFontz_num (int x, int num)
    sprintf (out, "%c%c%c", 28, x, num);
    write (fd, out, 3);
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Sets a custom character from 0-7...
@@ -606,7 +584,6 @@ CFontz_set_char (int n, char *dat)
    sprintf (out, "%c%c", 25, n);
    write (fd, out, 2);
 
-
    for (row = 0; row < lcd.cellhgt; row++) {
       letter = 0;
       for (col = 0; col < lcd.cellwid; col++) {
@@ -616,7 +593,6 @@ CFontz_set_char (int n, char *dat)
       write (fd, &letter, 1);
    }
 }
-
 
 void
 CFontz_icon (int which, char dest)
@@ -661,7 +637,6 @@ CFontz_icon (int which, char dest)
       custom = beat;
    CFontz_set_char (dest, &icons[which][0]);
 }
-
 
 /////////////////////////////////////////////////////////////
 // Blasts a single frame onscreen, to the lcd...

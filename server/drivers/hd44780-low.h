@@ -35,7 +35,6 @@ extern HD44780_functions *hd44780_functions;
 #define RS_DATA     0x00
 #define RS_INSTR    0x01
 
-
 #define CLEAR       0x01
 
 #define HOMECURSOR  0x02
@@ -71,7 +70,6 @@ extern HD44780_functions *hd44780_functions;
 #define SETCHAR     0x40
 
 #define POSITION    0x80
-
 
 // Parallel port pin definitions
 // Output lines

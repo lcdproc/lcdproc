@@ -51,7 +51,6 @@
 
 void lcdstat_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
 
-
 #define RS 	0x10
 #define RW 	0x20
 #define EN1 	0x40
@@ -137,7 +136,6 @@ hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver
    common_init (IF_4bit);
    return 0;
 }
-
 
 // lcdstat_HD44780_senddata
 void

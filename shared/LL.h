@@ -1,8 +1,6 @@
 #ifndef LL_H
 #define LL_H
 
-
-
 /***********************************************************************
   Linked Lists!  (Doubly-Linked Lists)
   *******************************************************************
@@ -115,7 +113,6 @@
   That's about it, for now...  Be sure to free the list when you're done!
 ***********************************************************************/
 
-
 // See LL.c for more detailed descriptions of these functions.
 
 typedef struct LL_node {
@@ -127,8 +124,6 @@ typedef struct LL {
    LL_node head, tail;
    LL_node *current;
 } LL;
-
-
 
 // Creates a new list...
 LL *LL_new ();
@@ -188,7 +183,6 @@ int LL_UnRoll (LL * list);	// Roll the other way...
 
 int LL_PriorityEnqueue (LL * list, void *add, int compare (void *, void *));
 
-
 int LL_SwapNodes (LL_node * one, LL_node * two);	// Switch two nodes positions...
 int LL_nSwapNodes (int one, int two);	// Switch two nodes positions...
 
@@ -199,7 +193,6 @@ void *LL_Find (LL * list, int compare (void *, void *), void *value);
 
 // Sorts the list...
 int LL_Sort (LL * list, int compare (void *, void *));
-
 
 // Debugging...
 void LL_dprint (LL * list);

@@ -1,7 +1,6 @@
 #ifndef CFONTZ_H
 #define CFONTZ_H
 
-
 extern lcd_logical_driver *CFontz;
 
 int CFontz_init (lcd_logical_driver * driver, char *device);
@@ -20,7 +19,5 @@ void CFontz_num (int x, int num);
 void CFontz_set_char (int n, char *dat);
 void CFontz_icon (int which, char dest);
 void CFontz_draw_frame (char *dat);
-
-
 
 #endif

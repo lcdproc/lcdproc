@@ -38,7 +38,6 @@ get_mem_info (struct meminfo *result)
    result[1].free = getentry ("SwapFree:", buffer);
 }
 
-
 int
 mem_init ()
 {
@@ -59,7 +58,6 @@ mem_close ()
 
    return 0;
 }
-
 
 /////////////////////////////////////////////////////////////////////////
 // Mem Screen displays info about memory and swap usage...
@@ -121,9 +119,7 @@ mem_screen (int rep, int display)
       //sock_send_string(sock, "\n");
    }
 
-
    get_mem_info (mem);
-
 
    // flip the title back and forth...
    if (lcd_hgt >= 4) {
@@ -133,7 +129,6 @@ mem_screen (int rep, int display)
       } else
 	 sock_send_string (sock, "widget_set M title { MEM -==- SWAP}\n");
       which_title = (which_title + 1) & 7;
-
 
       // Total memory
       sprintf (tmp, "widget_set M memtotl 1 2 {%6dk}\n", mem[0].total);
@@ -154,7 +149,6 @@ mem_screen (int rep, int display)
       sprintf (tmp, "widget_set M swapused 14 3 {%6dk}\n", mem[1].free);
       if (display)
 	 sock_send_string (sock, tmp);
-
 
       // Free memory graph
       n = (int) (35.0 - ((float) mem[0].free + (float) mem[0].buffers + (float) mem[0].cache)
@@ -178,7 +172,6 @@ mem_screen (int rep, int display)
       sprintf (tmp, "widget_set M swaptotl 2 2 {%4dM}\n", (int) (mem[1].total / 1024.0));
       if (display)
 	 sock_send_string (sock, tmp);
-
 
       // Free memory graph
       value = ((float) mem[0].free + (float) mem[0].buffers + (float) mem[0].cache)
@@ -217,15 +210,10 @@ mem_screen (int rep, int display)
       if (display)
 	 sock_send_string (sock, tmp);
 
-
    }
-
-
 
    return 0;
 }				// End mem_screen()
-
-
 
 typedef struct proc_mem_info {
    char name[16];		// Is this really long enough?
@@ -234,7 +222,6 @@ typedef struct proc_mem_info {
    int size, totl;
    int number;
 } proc_mem_info;
-
 
 static int
 sort_procs (void *a, void *b)
@@ -251,7 +238,6 @@ sort_procs (void *a, void *b)
 
    return (two->totl > one->totl);
 }
-
 
 int
 mem_top_screen (int rep, int display)
@@ -270,7 +256,6 @@ mem_top_screen (int rep, int display)
    *NameLine = "Name:", *VmSizeLine = "VmSize:", *VmRSSLine = "VmRSS", *VmDataLine = "VmData", *VmStkLine = "VmStk", *VmExeLine = "VmExe";
    const int
     NameLineLen = strlen (NameLine), VmSizeLineLen = strlen (VmSizeLine), VmDataLineLen = strlen (VmDataLine), VmStkLineLen = strlen (VmStkLine), VmExeLineLen = strlen (VmExeLine), VmRSSLineLen = strlen (VmRSSLine);
-
 
    int threshold = 400, unique;
    int i;
@@ -299,13 +284,11 @@ mem_top_screen (int rep, int display)
       sock_send_string (sock, "widget_set S 1 1 1 Checking...\n");
    }
 
-
    procs = LL_new ();
    if (!procs) {
       fprintf (stderr, "mem_top_screen: Error allocating list\n");
       return -1;
    }
-
 
    if ((proc = opendir ("/proc")) == NULL) {
       fprintf (stderr, "mem_top_screen: unable to open /proc");
@@ -383,7 +366,6 @@ mem_top_screen (int rep, int display)
    }
    closedir (proc);
 
-
    // Now, print some info...
    LL_Rewind (procs);
    LL_Sort (procs, sort_procs);
@@ -408,9 +390,6 @@ mem_top_screen (int rep, int display)
       LL_Next (procs);
    }
 
-
-
-
  end:				// Ack!  I hate using labels!  
    // Now clean it all up...
    LL_Rewind (procs);
@@ -422,7 +401,6 @@ mem_top_screen (int rep, int display)
       }
    } while (LL_Next (procs) == 0);
    LL_Destroy (procs);
-
 
    return 0;
 

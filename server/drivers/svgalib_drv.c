@@ -15,7 +15,6 @@
    
 */
 
-
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -32,8 +31,6 @@
 #include "lcd.h"
 #include "svgalib_drv.h"
 #include "drv_base.h"
-
-
 
 /* Small font */
 
@@ -168,13 +165,10 @@ const unsigned char simple_font5x7[] = {
 /*  ascii '126' (~) */ 31, 27, 23, 0, 23, 27, 31
 };
 
-
-
 // <start user definable!!!>
 #define SVGALIB_FONT_VER 10	/* vertical spacing between lines (pixels) */
 #define SVGALIB_Y_OFFSET 40	/* distance from the top of the screen (pixels) */
 // <end user defineable!!!>
-
 
 // No, I don't understand SVGALIB key mappings or a neat way of doing this
 // Cursor keys manifest themselves as 3 byte excapes in svgalib: 27,91 
@@ -193,7 +187,6 @@ void *SVGALIB_font;		/* normal font   */
 void *SVGALIB_highfont;		/* highlighted font (not used yet) */
 void *SVGALIB_warnfont;		/* warning font (not used yet)    */
 
-
 /*
   Setting SVGALIB_figure_mappings will trap all keypresses and write the 
   vga_getkey() codes out to a file.  You can then mod the getkey() function
@@ -207,10 +200,6 @@ int SVGALIB_figure_mappings = 0;
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// For Output on SVGALIB screen //////////////////////
 //////////////////////////////////////////////////////////////////////////
-
-
-
-
 
 void
 ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, unsigned char *ptr)
@@ -239,7 +228,6 @@ ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, un
 
 }
 
-
 void
 spaced_gl_writen (int x, int y, int count, char *text)
 //
@@ -252,9 +240,7 @@ spaced_gl_writen (int x, int y, int count, char *text)
    }
 }
 
-
 static char icon_char = '@';
-
 
 int
 svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
@@ -290,7 +276,6 @@ svgalib_drv_init (struct lcd_logical_driver *driver, char *args)
    }
 
    gl_clearscreen (gl_rgbcolor (0, 0, 0));
-
 
    // Override output functions...
    driver->clear = svgalib_drv_clear;
@@ -336,7 +321,6 @@ svgalib_drv_clear ()
    vga_waitretrace ();
    gl_clearscreen (gl_rgbcolor (0, 0, 0));
 }
-
 
 /////////////////////////////////////////////////////////////////
 // Prints a string on the lcd display, at position (x,y).  The
@@ -408,7 +392,6 @@ svgalib_drv_num (int x, int num)
 	 svgalib_drv_chr (x + dx, y, c);
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar; erases entire column onscreen.
 //
@@ -444,7 +427,6 @@ svgalib_drv_hbar (int x, int y, int len)
    }
 }
 
-
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
@@ -465,24 +447,20 @@ svgalib_drv_icon (int which, char dest)
       }
 }
 
-
 void
 svgalib_drv_flush ()
 {
 }
-
 
 void
 svgalib_drv_flush_box (int lft, int top, int rgt, int bot)
 {
 }
 
-
 void
 svgalib_drv_draw_frame (char *dat)
 {
 }
-
 
 char
 svgalib_drv_getkey ()

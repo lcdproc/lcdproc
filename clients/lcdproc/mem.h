@@ -7,5 +7,4 @@ int mem_close ();
 int mem_screen (int rep, int display);
 int mem_top_screen (int rep, int display);
 
-
 #endif

@@ -10,7 +10,6 @@
   
  */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -23,7 +22,6 @@
 #include "menus.h"
 #include "render.h"
 #include "serverscreens.h"
-
 
 int Shutdown_func ();
 int System_halt_func ();
@@ -40,7 +38,6 @@ int Backlight_Off_Brightness_func (int input);
 int Backlight_Off_func ();
 int Backlight_On_func ();
 int Backlight_Open_func ();
-
 
 menu_item main_menu[] = {
    {"LCDproc", 0, 0},		// Title
@@ -91,8 +88,6 @@ menu_item Backlight_menu[] = {
    {" - Open", TYPE_FUNC, Backlight_Open_func},
    {0, 0, 0},
 };
-
-
 
 ///////////////////////////////////////////////////////////////////////
 // Plug-in functions for menu items
@@ -166,7 +161,6 @@ OK_func ()
 {
    return MENU_OK;
 }
-
 
 int
 Time24_func (int input)
@@ -294,7 +288,6 @@ Contrast_func (int input)
 
    return (status | MENU_OK);
 }
-
 
 void
 server_menu ()

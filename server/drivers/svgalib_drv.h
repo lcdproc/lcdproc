@@ -1,7 +1,6 @@
 #ifndef LCD_SVGALIB_H
 #define LCD_SVGALIB_H
 
-
 extern lcd_logical_driver *vgalib_drv;
 
 int svgalib_drv_init (struct lcd_logical_driver *driver, char *args);
@@ -19,6 +18,5 @@ void svgalib_drv_draw_frame (char *dat);
 char svgalib_drv_getkey ();
 void svgalib_drv_init_num ();
 void svgalib_drv_num (int x, int num);
-
 
 #endif

@@ -3,7 +3,6 @@
 
 #include "screen.h"
 
-
 #define HEART_OFF 0
 #define HEART_ON 1
 #define HEART_OPEN 2
@@ -24,6 +23,5 @@ extern int backlight_brightness;
 extern int backlight_off_brightness;
 extern int output_state;
 int draw_screen (screen * s, int timer);
-
 
 #endif

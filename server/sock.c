@@ -18,7 +18,6 @@
 #include "clients.h"
 #include "../shared/debug.h"
 
-
 /**************************************************
   LCDproc sockets code...
 
@@ -31,9 +30,7 @@ int orig_sock;
 // Length of longest transmission allowed at once...
 #define MAXMSG 8192
 
-
 int read_from_client (int filedes);
-
 
 // Creates a socket in internet space
 int
@@ -81,7 +78,6 @@ sock_create_server ()
       return -1;
    }
 
-
    if (listen (sock, 1) < 0) {
       perror ("sock_create_server: Listen error");
       return -1;
@@ -110,7 +106,6 @@ sock_create_server ()
 
    return sock;
 }
-
 
 int
 sock_poll_clients ()
@@ -152,7 +147,6 @@ sock_poll_clients ()
 
 	    fcntl (new, F_SETFL, O_NONBLOCK);
 
-
 	    // TODO:  Create new "client" here...  (done?)
 	    if (client_create (new) == NULL) {
 	       fprintf (stderr, "sock_poll_clients: error creating client %i\n", i);
@@ -185,7 +179,6 @@ sock_poll_clients ()
    return 0;
 }
 
-
 int
 read_from_client (int filedes)
 {
@@ -198,7 +191,6 @@ read_from_client (int filedes)
    nbytes = sock_recv (filedes, buffer, MAXMSG);
    //debug("read_from_client(%i): ...done\n", filedes);
    debug ("read_from_client(%i): %i bytes\n", filedes, nbytes);
-
 
    if (nbytes < 0)		// Read error?  No data available?
    {

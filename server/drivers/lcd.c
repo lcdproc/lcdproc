@@ -58,7 +58,6 @@
 
 // TODO: Make a Windows server, and clients...?
 
-
 lcd_logical_driver lcd;
 
 lcd_physical_driver drivers[] = {
@@ -140,7 +139,6 @@ lcd_init (char *args)
 
 }
 
-
 // TODO:  lcd_remove_driver()
 
 int
@@ -198,7 +196,6 @@ lcd_shutdown ()
 {
    lcd_logical_driver *driver;
 
-
    LL_Rewind (list);
    do {
       driver = (lcd_logical_driver *) LL_Get (list);
@@ -222,8 +219,6 @@ lcd_shutdown ()
 
    return 0;
 }
-
-
 
 int
 lcd_drv_init (struct lcd_logical_driver *driver, char *args)
@@ -275,11 +270,8 @@ lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 
    lcd.getkey = lcd_drv_getkey;
 
-
    return 1;			// 1 is arbitrary.  (must be 1 or more)
 }
-
-
 
 //////////////////////////////////////////////////////////////////////
 // All functions below here call their respective driver functions...
@@ -295,7 +287,6 @@ lcd_drv_init (struct lcd_logical_driver *driver, char *args)
 //       driver->func() == NULL means it should not make a call.
 //       driver->func() == -1 means it should call the generic driver.
 //////////////////////////////////////////////////////////////////////
-
 
 void
 lcd_drv_close ()
@@ -342,7 +333,6 @@ lcd_drv_clear ()
 
 }
 
-
 void
 lcd_drv_flush ()
 {
@@ -362,7 +352,6 @@ lcd_drv_flush ()
       }
    } while (LL_Next (list) == 0);
 }
-
 
 void
 lcd_drv_string (int x, int y, char string[])
@@ -403,8 +392,6 @@ lcd_drv_chr (int x, int y, char c)
       }
    } while (LL_Next (list) == 0);
 }
-
-
 
 int
 lcd_drv_contrast (int contrast)
@@ -473,7 +460,6 @@ lcd_drv_output (int on)
       }
    } while (LL_Next (list) == 0);
 }
-
 
 void
 lcd_drv_init_vbar ()
@@ -615,7 +601,6 @@ lcd_drv_hbar (int x, int y, int len)
    } while (LL_Next (list) == 0);
 }
 
-
 void
 lcd_drv_icon (int which, char dest)
 {
@@ -635,7 +620,6 @@ lcd_drv_icon (int which, char dest)
       }
    } while (LL_Next (list) == 0);
 }
-
 
 void
 lcd_drv_flush_box (int lft, int top, int rgt, int bot)
@@ -657,7 +641,6 @@ lcd_drv_flush_box (int lft, int top, int rgt, int bot)
    } while (LL_Next (list) == 0);
 
 }
-
 
 // TODO:  Check whether lcd.draw_frame() should really take a framebuffer
 // TODO:   as an argument, or if it should always use lcd.framebuf
@@ -681,7 +664,6 @@ lcd_drv_draw_frame (char *dat)
    } while (LL_Next (list) == 0);
 
 }
-
 
 char
 lcd_drv_getkey ()

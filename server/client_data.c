@@ -6,7 +6,6 @@
 
  */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,8 +15,6 @@
 #include "client_data.h"
 #include "screen.h"
 #include "screenlist.h"
-
-
 
 int
 client_data_init (client_data * d)

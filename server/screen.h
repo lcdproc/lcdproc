@@ -15,7 +15,6 @@ typedef struct screen {
    client *parent;
 } screen;
 
-
 screen *screen_create ();
 int screen_destroy (screen * s);
 
@@ -23,6 +22,5 @@ screen *screen_find (client * c, char *id);
 
 int screen_add (client * c, char *id);
 int screen_remove (client * c, char *id);
-
 
 #endif

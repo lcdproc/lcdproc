@@ -13,7 +13,6 @@
 
 int batt_fd = 0;
 
-
 static int get_batt_stat (int *acstat, int *battstat, int *battflag, int *percent);
 
 static int
@@ -39,8 +38,6 @@ get_batt_stat (int *acstat, int *battstat, int *battflag, int *percent)
 
 }
 
-
-
 int
 batt_init ()
 {
@@ -64,7 +61,6 @@ batt_close ()
    return 0;
 }
 
-
 ////////////////////////////////////////////////////////////////////////
 // Battery Screen shows apm battery status...
 //
@@ -81,7 +77,6 @@ battery_screen (int rep, int display)
    static int first = 1;
 
    int acstat = 0, battstat = 0, battflag = 0, percent = 0;
-
 
    if (first) {
       first = 0;
@@ -107,7 +102,6 @@ battery_screen (int rep, int display)
 
    get_batt_stat (&acstat, &battstat, &battflag, &percent);
 
-
    if (percent >= 0)
       sprintf (buffer, "%i%%", percent);
    else
@@ -116,7 +110,6 @@ battery_screen (int rep, int display)
 
    if (display)
       sock_send_string (sock, tmp);
-
 
    if (lcd_hgt >= 4)		// 4-line version of the screen
    {
@@ -139,8 +132,6 @@ battery_screen (int rep, int display)
       if (display)
 	 sock_send_string (sock, tmp);
 
-
-
       sprintf (tmp, "widget_set B two 1 3 {");
       if (battflag == 0xff) {
 	 sprintf (tmp + strlen (tmp), "Battery Stat Unknown");
@@ -160,7 +151,6 @@ battery_screen (int rep, int display)
       sprintf (tmp + strlen (tmp), "}\n");
       if (display)
 	 sock_send_string (sock, tmp);
-
 
       if (percent > 0) {
 	 sprintf (tmp, "widget_set B gauge 2 4 %i\n", (percent * ((lcd_wid - 2) * lcd_cellwid) / 100));

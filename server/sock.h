@@ -1,12 +1,9 @@
 #ifndef SOCKETS_H
 #define SOCKETS_H
 
-
 #include "../shared/sockets.h"
 
-
 typedef struct sockaddr_in sockaddr_in;
-
 
 // Server functions...
 int sock_create_server ();

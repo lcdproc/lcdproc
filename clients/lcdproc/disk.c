@@ -27,7 +27,6 @@
 #include <sys/statfs.h>
 #endif
 
-
 #include "../../shared/sockets.h"
 
 #include "main.h"
@@ -36,13 +35,10 @@
 
 FILE *mtab_fd;
 
-
 typedef struct mounts {
    char dev[256], type[64], mpoint[256];
    long bsize, blocks, bfree, files, ffree;
 } mounts;
-
-
 
 static int
 get_fs (mounts fs[])
@@ -115,7 +111,6 @@ disk_close ()
    return 0;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////
 // Gives disk stats. 
 //
@@ -143,7 +138,6 @@ disk_screen (int rep, int display)
 #define huge long long int
    huge size;
 
-
    if (first) {
       first = 0;
 
@@ -162,7 +156,6 @@ disk_screen (int rep, int display)
       sock_send_string (sock, "widget_set D err1 5 2 {  Reading  }\n");
       sock_send_string (sock, "widget_set D err2 5 3 {Filesystems}\n");
    }
-
 
    // Grab disk stats on first display, and fill "table".
    // Get rid of old, unmounted filesystems...
@@ -210,14 +203,11 @@ disk_screen (int rep, int display)
       }
    }
 
-
-
    if (!count) {
       sock_send_string (sock, "widget_set D err1 1 2 {Error Retrieving}\n");
       sock_send_string (sock, "widget_set D err2 1 3 {Filesystem Stats}\n");
       return 0;
    }
-
    // Display stuff...  (show for two seconds, then scroll once per
    //  second, then hold at the end for two seconds)
    sprintf (buffer, "widget_set D f 1 2 %i %i %i %i v 12\n", lcd_wid, lcd_hgt, lcd_wid, count);
@@ -248,7 +238,6 @@ disk_screen (int rep, int display)
       sprintf (tmp, "widget_del D h%i\n", i);
       sock_send_string (sock, tmp);
    }
-
 
    num_disks = count;
 

@@ -9,11 +9,9 @@
 
   This will probably take a while to do.  :(
 
-
   THIS FILE IS MESSY!  Anyone care to rewrite it nicely?  Please??  :)
   
  */
-
 
 #include <string.h>
 #include <stdio.h>
@@ -28,8 +26,6 @@
 #include "widget.h"
 #include "render.h"
 
-
-
 int heartbeat = HEART_OPEN;
 int backlight = BACKLIGHT_OPEN;
 int backlight_state = BACKLIGHT_OPEN;
@@ -42,7 +38,6 @@ static int reset;
 #define BUFSIZE 1024
 
 static int draw_frame (LL * list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, int timer);
-
 
 int
 draw_screen (screen * s, int timer)
@@ -64,10 +59,7 @@ draw_screen (screen * s, int timer)
       reset = 0;
    old_s = s;
 
-
-
    lcd.clear ();
-
 
    switch (backlight_state) {
    case BACKLIGHT_OFF:
@@ -101,9 +93,7 @@ draw_screen (screen * s, int timer)
 
    draw_frame (s->widgets, 'v', 0, 0, lcd.wid, lcd.hgt, s->wid, s->hgt, s->duration / s->hgt, timer);
 
-
    //debug("draw_screen done\n");
-
 
    if (heartbeat) {
       if ((s->heartbeat == 1) || heartbeat == HEART_ON) {
@@ -175,8 +165,6 @@ draw_frame (LL * list, char fscroll, int left, int top, int right, int bottom, i
       return -1;
 
    //debug("draw_frame: %8x, %i\n", frame, timer);
-
-
 
    LL_Rewind (list);
    do {
@@ -446,7 +434,6 @@ draw_frame (LL * list, char fscroll, int left, int top, int right, int bottom, i
 	 break;
       }
    } while (LL_Next (list) == 0);
-
 
    return 0;
 }

@@ -17,7 +17,6 @@
 #define __u32 unsigned int
 #define __u8 unsigned char
 
-
 #include "../../shared/debug.h"
 #include "../../shared/str.h"
 
@@ -26,7 +25,6 @@
 #include "lcd.h"
 #include "lircin.h"
 
-
 char *progname = "lircin";
 
 int fd;
@@ -34,7 +32,6 @@ char buf[256];
 struct sockaddr_un addr;
 
 static struct lirc_config *config;
-
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// Base "class" to derive from ///////////////////////
@@ -55,7 +52,6 @@ lircin_close ()
    lirc_freeconfig (config);
    lirc_deinit ();
 }
-
 
 //////////////////////////////////////////////////////////////////////
 // Tries to read a character from an input device...
@@ -84,7 +80,6 @@ lircin_getkey ()
    return 0;
 }
 
-
 ////////////////////////////////////////////////////////////
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
@@ -100,7 +95,6 @@ lircin_init (struct lcd_logical_driver *driver, char *args)
    driver->close = lircin_close;
 
 /* open socket to lirc */
-
 
    if (-1 == (fd = lirc_init ("lcdd", 1))) {
       fprintf (stderr, "no infrared remote support available\n");

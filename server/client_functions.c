@@ -9,7 +9,6 @@
   
 */
 
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -27,7 +26,6 @@
 #include "screen.h"
 #include "widget.h"
 #include "client_functions.h"
-
 
 client_function commands[] = {
    {"test_func", test_func_func},
@@ -54,9 +52,7 @@ client_function commands[] = {
    {NULL, NULL},
 };
 
-
 // TODO:  Maybe more error-checking for "->"'s?
-
 
 ///////////////////////////////////////////////////////////////////////////
 // Debugging only..  prints out a list of arguments it receives
@@ -74,7 +70,6 @@ test_func_func (client * c, int argc, char **argv)
    }
    return 0;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////
 // The client must say "hello" before doing anything else.
@@ -144,7 +139,6 @@ int
 client_add_key_func (client * c, int argc, char **argv)
 {
 
-
    if (!c->data->ack)
       return 1;
 
@@ -160,7 +154,6 @@ client_add_key_func (client * c, int argc, char **argv)
 int
 client_del_key_func (client * c, int argc, char **argv)
 {
-
 
    if (!c->data->ack)
       return 1;
@@ -189,7 +182,6 @@ screen_add_func (client * c, int argc, char **argv)
       sock_send_string (c->sock, "huh?  Too many parameters...\n");
       return 0;
    }
-
 
    debug ("screen_add: Adding screen %s\n", argv[1]);
    err = screen_add (c, argv[1]);
@@ -221,7 +213,6 @@ screen_del_func (client * c, int argc, char **argv)
       return 0;
    }
 
-
    debug ("screen_del: Deleting screen %s\n", argv[1]);
    err = screen_remove (c, argv[1]);
    if (err < 0)
@@ -248,7 +239,6 @@ screen_set_func (client * c, int argc, char **argv)
    if (!c->data->ack)
       return 1;
 
-
    // If there weren't enough parameters...
    if (argc < 2) {
       sock_send_string (c->sock, "huh? You must specify a screen id\n");
@@ -259,7 +249,6 @@ screen_set_func (client * c, int argc, char **argv)
       sock_send_string (c->sock, "huh? What do you want to set?\n");
       return 0;
    }
-
 
    id = argv[1];
    s = screen_find (c, id);
@@ -385,10 +374,8 @@ widget_add_func (client * c, int argc, char **argv)
    char *in = NULL;
    screen *s;
 
-
    if (!c->data->ack)
       return 1;
-
 
    // If there weren't enough parameters...
    if (argc < 2) {
@@ -407,7 +394,6 @@ widget_add_func (client * c, int argc, char **argv)
       sock_send_string (c->sock, "huh? Too many parameters\n");
       return 0;
    }
-
 
    sid = argv[1];
    wid = argv[2];
@@ -431,7 +417,6 @@ widget_add_func (client * c, int argc, char **argv)
 	 in = argv[5];
       }
    }
-
    // Add the widget and set its type...
    err = widget_add (s, wid, type, in, c->sock);
    if (err < 0)
@@ -468,7 +453,6 @@ widget_del_func (client * c, int argc, char **argv)
       sock_send_string (c->sock, "huh?  Too many parameters...\n");
       return 0;
    }
-
 
    sid = argv[1];
    wid = argv[2];
@@ -509,7 +493,6 @@ widget_set_func (client * c, int argc, char **argv)
    if (!c->data->ack)
       return 1;
 
-
    // If there weren't enough parameters...
    if (argc < 2) {
       sock_send_string (c->sock, "huh? You must specify a screen id\n");
@@ -523,7 +506,6 @@ widget_set_func (client * c, int argc, char **argv)
       sock_send_string (c->sock, "huh? You must send some widget data\n");
       return 0;
    }
-
 
    sid = argv[1];
    wid = argv[2];
@@ -545,7 +527,6 @@ widget_set_func (client * c, int argc, char **argv)
       }
       return 0;
    }
-
    // FIXME?  Shouldn't this be handled in widget.c?
    i = 3;
    switch (w->type) {
@@ -750,7 +731,6 @@ int
 menu_add_func (client * c, int argc, char **argv)
 {
 
-
    if (!c->data->ack)
       return 1;
 
@@ -765,7 +745,6 @@ menu_add_func (client * c, int argc, char **argv)
 int
 menu_del_func (client * c, int argc, char **argv)
 {
-
 
    if (!c->data->ack)
       return 1;
@@ -784,7 +763,6 @@ int
 menu_set_func (client * c, int argc, char **argv)
 {
 
-
    if (!c->data->ack)
       return 1;
 
@@ -800,7 +778,6 @@ int
 menu_item_add_func (client * c, int argc, char **argv)
 {
 
-
    if (!c->data->ack)
       return 1;
 
@@ -815,7 +792,6 @@ menu_item_add_func (client * c, int argc, char **argv)
 int
 menu_item_del_func (client * c, int argc, char **argv)
 {
-
 
    if (!c->data->ack)
       return 1;
@@ -833,7 +809,6 @@ menu_item_del_func (client * c, int argc, char **argv)
 int
 menu_item_set_func (client * c, int argc, char **argv)
 {
-
 
    if (!c->data->ack)
       return 1;
@@ -863,9 +838,7 @@ backlight_func (client * c, int argc, char **argv)
       return 0;
    }
 
-
    debug ("backlight(%s)\n", argv[1]);
-
 
    switch (backlight) {
    case BACKLIGHT_OPEN:
@@ -911,7 +884,6 @@ output_func (client * c, int argc, char **argv)
    }
    return 0;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////

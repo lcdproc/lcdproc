@@ -7,12 +7,9 @@
 #define LCD_MAX_HGT 256
 #define LCD_MAX_HEIGHT 256
 
-
 int lcd_init (char *args);
 int lcd_add_driver (char *driver, char *args);
 int lcd_shutdown ();
-
-
 
 /////////////////////////////////////////////////////////////////
 // Driver functions / info held here...
@@ -64,9 +61,7 @@ typedef struct lcd_physical_driver {
    int (*init) (struct lcd_logical_driver * driver, char *device);
 } lcd_physical_driver;
 
-
 extern lcd_logical_driver lcd;
-
 
 int lcd_drv_init (lcd_logical_driver * driver, char *args);
 void lcd_drv_close ();

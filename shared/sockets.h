@@ -11,15 +11,12 @@
 #define LCDPORT 13666
 #endif
 
-
-
 /*
   Socket functions available to server and clients...
     (ignore the rest of the comments...  I was babbling out random ideas)
 
   This should have stuff to read/write sockets, open/close them, etc...
  */
-
 
 // Client functions...
 int sock_connect (char *host, unsigned short int port);
@@ -31,7 +28,6 @@ int sock_recv_string (int fd, char *dest, size_t maxlen);
 // Send/receive raw data
 int sock_send (int fd, void *src, size_t size);
 int sock_recv (int fd, void *dest, size_t maxlen);
-
 
 // Er, ignore the rest of this file.  I'll clean it up sometime...
 
@@ -84,8 +80,6 @@ int sock_recv (int fd, void *dest, size_t maxlen);
     Key D Next/+
     Key E OtherSequence
 
-
 ******************************************************************/
-
 
 #endif

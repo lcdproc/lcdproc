@@ -29,7 +29,6 @@
 #include "load.h"
 #include "mem.h"
 
-
 int ELLIPSIS = '-';
 
 // TODO: Clean this up...  Support multiple display sizes..
@@ -39,7 +38,6 @@ char host[16];
 
 void reread (int f, char *errmsg);
 int getentry (const char *tag, const char *bufptr);
-
 
 int
 mode_init (mode * sequence)
@@ -120,8 +118,6 @@ mode_init (mode * sequence)
       }
    }
 
-
-
    return 0;
 }
 
@@ -136,7 +132,6 @@ mode_close ()
    mem_close ();
    cpu_smp_close ();
 }
-
 
 int
 update_screen (mode * m, int display)
@@ -224,7 +219,6 @@ update_screen (mode * m, int display)
 
 }
 
-
 void
 reread (int f, char *errmsg)
 {
@@ -255,7 +249,6 @@ getentry (const char *tag, const char *bufptr)
    return -1;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////
 //////////////////////// Let the Modes Begin! /////////////////////////////
 ///////////////////////////////////////////////////////////////////////////
@@ -263,9 +256,6 @@ getentry (const char *tag, const char *bufptr)
 // Er, these have been moved..  :)
 
 char tmp[1024];
-
-
-
 
 ////////////////////////////////////////////////////////////////////////
 // Credit Screen shows who wrote this...

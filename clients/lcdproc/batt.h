@@ -6,5 +6,4 @@ int batt_close ();
 
 int battery_screen (int rep, int display);
 
-
 #endif
