@@ -224,10 +224,15 @@ int parse_message (char * str, Client * c)
 	int argpos = 0;
 
 	void close_arg () {
-		argv[argc][argpos] = 0;
-		argv[argc+1] = argv[argc] + argpos + 1;
-		argc ++;
-		argpos = 0;
+		if( argc == MAX_ARGUMENTS-1 ) {
+			error = 1;
+		}
+		else {
+			argv[argc][argpos] = 0;
+			argv[argc+1] = argv[argc] + argpos + 1;
+			argc ++;
+			argpos = 0;
+		}
 	}
 
 	debug( RPT_DEBUG, "%s( str=\"%.120s\", client=[%d] )", __FUNCTION__, str, c->sock );
@@ -238,7 +243,7 @@ int parse_message (char * str, Client * c)
 	 * the original string str.
 	 */
 
-	while( state != ST_FINAL ) {
+	while( state != ST_FINAL && !error ) {
 		ch = str[pos++];
 		switch( state ) {
 
@@ -280,12 +285,6 @@ int parse_message (char * str, Client * c)
 				}
 				break;
 			  case '\n':
-				if (used_quote) {
-					/* Just ad it */
-					argv[argc][argpos++] = ch;
-					break;
-				}
-				/* else go to case 0 */
 			  case 0:
 				if (used_quote) {
 					error = 2;
@@ -297,7 +296,7 @@ int parse_message (char * str, Client * c)
 			 	if (str[pos]) {
 			 		/* We solve quoted chars here right away */
 			 		char * p;
-					p = strchr( escape_chars, str[pos++] );
+					p = strchr( escape_chars, str[pos] );
 					if (p != NULL) {
 						/* Insert a replacement for the code */
 						argv[argc][argpos++] = escape_trans[(int)*p];
@@ -306,12 +305,14 @@ int parse_message (char * str, Client * c)
 						 /* Copy char litterally */
 						argv[argc][argpos++] = str[pos];
 					}
+					pos++;
 			 	}
 			 	else {
 			 		close_arg();
 			 		error = 2;
 			 		state = ST_FINAL;
 			 	}
+			 	break;
 			  case '\"':
 			  case '{':
 				if (!used_quote) {
@@ -341,7 +342,7 @@ int parse_message (char * str, Client * c)
 	argv[argc] = NULL;
 	if (error) {
 		snprintf (errmsg, sizeof(errmsg), "huh? Could not parse command\n");
-		report( RPT_WARNING, "Could not parse command from client on socket %d: %s", __FUNCTION__, c->sock, str );
+		report( RPT_WARNING, "Could not parse command from client on socket %d: %.40s", c->sock, str );
 		sock_send_string (c->sock, errmsg);
 		free( arg_space  );
 		return 0;
@@ -359,12 +360,12 @@ int parse_message (char * str, Client * c)
 	if (error == 1) {
 		snprintf (errmsg, sizeof(errmsg), "huh? Invalid command \"%.40s\"\n", argv[0]);
 		sock_send_string (c->sock, errmsg);
-		report( RPT_WARNING, "Invalid command from client on socket %d: %s", __FUNCTION__, c->sock, str );
+		report( RPT_WARNING, "Invalid command from client on socket %d: %.40s", c->sock, str );
 	}
 	else if (error) {
 		snprintf (errmsg, sizeof(errmsg), "huh? Function returned error \"%.40s\"\n", argv[0]);
 		sock_send_string (c->sock, errmsg);
-		report( RPT_WARNING, "Command function returned an error after command from client on socket %d: %s", __FUNCTION__, c->sock, str );
+		report( RPT_WARNING, "Command function returned an error after command from client on socket %d: %.40s", c->sock, str );
 	}
 
 	free( arg_space );
