@@ -777,7 +777,7 @@ sed1330_vbar( Driver * drvthis, int x, int y, int len, int promille, int pattern
 {
 	PrivateData * p = drvthis->private_data;
 
-	debug( RPT_INFO, "sed1330_hbar x=%d len=%d", x, len );
+	debug( RPT_INFO, "sed1330_vbar x=%d len=%d", x, len );
 
 	sed1330_rect ( p, (x-1) * CHARWIDTH, y * CHARHEIGHT, x * CHARWIDTH - 1, y * CHARHEIGHT - (long) len * CHARHEIGHT * promille / 1000 - 1, 1 );
 }
