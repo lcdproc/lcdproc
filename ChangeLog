@@ -11,6 +11,12 @@ Coming soon: (?) (my list of stuff to do soon...)
  * Better syntax for driver parameters
  * Dynamically-loaded driver system
 
+v0.4-pre10:
+ * Merged Andrew McMeikan's HD44780 driver changes
+ - Removed WHATSNEW
+ + Added ChangeLog (okay, fine, I renamed WHATSNEW and typed a few
+   entries into it :)
+
 V0.4-pre9:
  * small fixes for irix
  * Added flag in LCDd to shut off server screen:  

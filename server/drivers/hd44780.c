@@ -2,6 +2,18 @@
  * The module is operated in it's 4 bit-mode to be connected to a single
  * 8 bit-port
  *
+ * Modified 16-19 Nov 1999 Andrew McMeikan
+ *	fixed hard coded geometry issues, finished support for split screens
+ *
+ * Modified 10 Nov 1999 Andrew McMeikan
+ *		put back in Benjamin Tse's LCD_Pause to avoid timing errors
+ *		13 Nov, fixed delay times in old 4 bit code
+ * Modified 19-26 Oct 1999 Andrew McMeikan <andrewm@engineer.com>
+ *      to support connection via a shift register with keypad
+ * 	4094 conection details at http://members.xoom.com/andrewmuck/LCD.htm
+ *	TODO: document connections 
+ *	also started mods for two lcd enable lines (40x4) or 2x(2x20)
+ *
  * Copyright (c) 1998 Richard Rognlie       GNU Public License  
  *                    <rrognlie@gamerz.net>
  *
@@ -38,9 +50,39 @@
 
 lcd_logical_driver *HD44780;
 
-#define EN 64
+
+/* shift register code by andrewm@engineer.com   	*
+ * uncomment the next line if you do want to use 	*
+ * a shift register to connect to the LCD 		*/
+//#define USE_SHIFT_REG      
+
+//#define SPLIT_SCREENS
+/* If you are using two LCD Displays or an 8 line or a 			*
+ * 40x4 you want to define SPLIT_SCREENS 				*/
+
+#define FONTSIZE 0
+   // 4= 7line font 0=10 line font  (default was 0=10 line andrewm)
+
 #define RW 32
 #define RS 16
+#ifndef USE_SHIFT_REG
+#define LCDEN 64
+#ifdef SPLIT_SCREENS
+#define SECONDLCDEN 128
+#endif
+#endif
+#ifdef USE_SHIFT_REG
+#define LCDDATA 8
+#define LCDCLOCK 16
+#define LCDEN 4 
+#ifdef SPLIT_SCREENS
+#define SECONDLCDEN 32
+#endif
+#endif
+
+#ifndef SECONDLCDEN
+#define SECONDLCDEN 0
+#endif
 
 #ifndef LPTPORT
 unsigned int port = 0x378;
@@ -56,13 +98,62 @@ static void HD44780_autoscroll(int on);
 
 static int lp;
 
-static void HD44780_senddata(unsigned char flags, unsigned char ch)
+
+// IO delay to avoid a task switch
+        void LCD_Pause(int delayCalls)
+        {
+          int i;
+          for (i = 0; i < delayCalls; ++i)
+            port_in(port);
+//TODO: put in option for nanosleep rather than dummy I/O call
+        }
+
+
+#ifdef USE_SHIFT_REG
+
+static char lastkey=0;
+static char HD44780_getkey();
+
+void rawshift (unsigned char r)	/* this function sends r out  *
+					 	 * onto the shift register	*/
+{
+int i;			
+for (i=7;i>=0;i--)		/* MSB first	*/
+	{
+	port_out(lp,((r>>i)&1)*LCDDATA);		/*set up data	*/
+	port_out(lp,(((r>>i)&1)*LCDDATA)|LCDCLOCK);/*rising edge of clock	*/
+	}
+}
+
+void shiftreg (unsigned char displayID, unsigned char r)
+{				
+
+rawshift(r);
+port_out(lp,displayID);	//latch it, to correct display
+port_out(lp,0);
+}
+#endif
+
+static void HD44780_senddata(unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	unsigned char h = ch >> 4;
 	unsigned char l = ch & 15;
 
-	port_out(lp, 128 | EN | flags | h);	usleep(1); port_out(lp, 128 | flags | h);
-	port_out(lp, 128 | EN | flags | l);	usleep(1); port_out(lp, 128 | flags | l);
+#ifndef USE_SHIFT_REG
+	port_out(lp, displayID | flags | h);LCD_Pause(1);
+ 	port_out(lp,  flags | h);
+	port_out(lp, displayID | flags | l);LCD_Pause(1);
+ 	port_out(lp,  flags | l);
+#else
+
+	shiftreg(displayID,flags|h); 
+	shiftreg(displayID,flags|l); 
+
+	
+/*all actions take at least 40us to execute TODO:instead of delay read keys here */
+#endif
+	LCD_Pause(50);
+
 }
 
 /////////////////////////////////////////////////////////////////
@@ -73,7 +164,7 @@ int HD44780_init(lcd_logical_driver *driver, char *args)
    char *argv[64];
    int argc;
    int i;
-   
+   char displayID = LCDEN|SECONDLCDEN; 
    
    HD44780 = driver;
    
@@ -125,7 +216,7 @@ int HD44780_init(lcd_logical_driver *driver, char *args)
    
    
    // Set up io port correctly, and open it...
-	if ((ioperm(port,1,1)) == -1) {
+	if ((ioperm(port,2,255)) == -1) {
 		fprintf(stderr, "HD44780_init: failed (%s)\n", strerror(errno)); 
 		return -1;
 	}
@@ -133,18 +224,35 @@ int HD44780_init(lcd_logical_driver *driver, char *args)
 	lp = port;
 
 	// init HD44780
-	port_out(lp, 128 | EN | 3);	usleep(1); port_out(lp, 128 | 3);		usleep(5000);
-	port_out(lp, 128 | EN | 3);	usleep(1); port_out(lp, 128 | 3);		usleep(150);
-	port_out(lp, 128 | EN | 3);	usleep(1); port_out(lp, 128 | 3);
+#ifndef USE_SHIFT_REG
+	port_out(lp,displayID | 3);	LCD_Pause(4100);
+	port_out(lp,displayID | 3);	LCD_Pause(100);
+	port_out(lp,displayID | 3);	LCD_Pause(40);
 	// now in 8-bit mode...  set 4-bit mode
-	port_out(lp, 128 | EN | 2);	usleep(1); port_out(lp, 128 | 2);
-	// now in 4-bit mode...   set 2 line, small char mode
-	HD44780_senddata(0, 32 | 8);
+	port_out(lp,displayID | 2);	LCD_Pause(40);
+	
+#else
+shiftreg(displayID,3);
+LCD_Pause(4100);
+
+shiftreg(displayID,3);
+LCD_Pause(100);
+
+shiftreg(displayID,3);
+LCD_Pause(40);
+
+shiftreg(displayID,2);
+LCD_Pause(40);
+
+#endif
+	// now in 4-bit mode... 
+	// set display type function set(32) data8/4 (16) set 2 line(8), small char mode(4)
+	HD44780_senddata(displayID,0, 32 | 8 | FONTSIZE);
 
 	//clear
-	HD44780_senddata(0, 1);
+	HD44780_senddata(displayID,0, 1);LCD_Pause(1600);
 	// set lcd on (4), cursor_on (2), and cursor_blink(1)
-	HD44780_senddata(0, 8 | 4 | 0 | 0);
+	HD44780_senddata(displayID,0, 8 | 4 | 0 | 0);LCD_Pause(1600);
 
 	// Set display-specific stuff..
 	//HD44780_linewrap(1);
@@ -181,8 +289,11 @@ int HD44780_init(lcd_logical_driver *driver, char *args)
 	driver->set_char =   HD44780_set_char;
 	driver->icon =       HD44780_icon;
 	driver->draw_frame = HD44780_draw_frame;
-
-	driver->getkey =     NULL;
+#ifndef USE_SHIFT_REG
+	driver->getkey =     NULL;		
+#else
+	driver->getkey =     HD44780_getkey;
+#endif
 	
 	return lp;
 }
@@ -202,12 +313,27 @@ void HD44780_close()
 static void HD44780_position(int x, int y)
 {
 	int val = x + (y%2) * 0x40;
-	if (y>=2) val += 20;
-
-	HD44780_senddata(0,128|val);
-
+	if ((y%4)>=2) val += lcd.wid;
+	if (lcd.hgt==1) val += (x%8) * (0x40-8);      //cope with 16x1 display
+#ifndef SPLIT_SCREENS
+	HD44780_senddata(LCDEN,0,128|val);
+#else
+	if (y<(lcd.hgt/2))
+		{
+		if (lcd.hgt==2) val += (x%8) * (0x40-8);// two 16x1 displays
+		HD44780_senddata(LCDEN,0,128|val);
+		}
+	else
+		{
+		val = x + ((y-(lcd.hgt/2))%2) * 0x40;
+		if (((y-(lcd.hgt/2))%4)>=2) val += lcd.wid;
+		if (lcd.hgt==2) val += (x%8) * (0x40-8);// two 16x1 displays
+		HD44780_senddata(SECONDLCDEN,0,128|val);
+		}
+#endif
 	lcd_x = x;
 	lcd_y = y;
+
 }
 
 void HD44780_flush()
@@ -224,11 +350,23 @@ void HD44780_flush_box(int lft, int top, int rgt, int bot)
 
 	for (y=top; y<=bot; y++) {
 		HD44780_position(lft,y);
-
+		//printf("\n%d,%d :",lft,y);
 		for (x=lft ; x<=rgt ; x++) {
-			HD44780_senddata(RS,lcd.framebuf[(y*20)+x]);
+		  if ((lcd.hgt==1)&&(x==8)) HD44780_position(x,y);
+			//cope with 16x1 display
+
+#ifdef SPLIT_SCREENS
+		  if ((lcd.hgt==2)&&(x==8)) HD44780_position(x,y); //two 16x1's
+		  if (y<(lcd.hgt/2)) 
+			HD44780_senddata(LCDEN,RS,lcd.framebuf[(y*lcd.wid)+x]);
+		  else
+			HD44780_senddata(SECONDLCDEN,RS,lcd.framebuf[(y*lcd.wid)+x]);
+		  //printf("%c",lcd.framebuf[(y*lcd.wid)+x]);
+#else			
+		  HD44780_senddata(LCDEN,RS,lcd.framebuf[(y*lcd.wid)+x]);
+#endif
 		}
-		//write(fd, lcd.framebuf[(y*20)+lft, rgt-lft+1]);
+		//write(fd, lcd.framebuf[(y*lcd.wid)+lft, rgt-lft+1]);
 	}
 
 }
@@ -263,7 +401,8 @@ static void HD44780_linewrap(int on)
 //
 static void HD44780_autoscroll(int on)
 {
-	HD44780_senddata(0,4 | on * 2);
+	HD44780_senddata(LCDEN|SECONDLCDEN,0,4 | on * 2);
+	LCD_Pause(1600); //this can take time to do on some displays
 }
 
 
@@ -482,7 +621,7 @@ void HD44780_set_char(int n, char *dat)
 	if(n < 0 || n > 7) return;
 	if(!dat) return;
 
-	HD44780_senddata(0, 64 | n*8);
+	HD44780_senddata(LCDEN|SECONDLCDEN,0, 64 | n*8);
 
 	for(row=0; row<lcd.cellhgt; row++) {
 		letter = 0;
@@ -490,7 +629,7 @@ void HD44780_set_char(int n, char *dat)
 			letter <<= 1;
 			letter |= (dat[(row*lcd.cellwid) + col] > 0);
 		}
-		HD44780_senddata(RS, letter);
+		HD44780_senddata(LCDEN|SECONDLCDEN,RS, letter);
 	}
 
 }
@@ -550,13 +689,52 @@ void HD44780_draw_frame(char *dat)
 
 	if (!dat) return;
 
-	for (y=0; y<=3; y++) {
+	for (y=0; y<lcd.hgt; y++) {
 		HD44780_position(0,y);
-
-		for (x=0 ; x<=19 ; x++) {
-			HD44780_senddata(RS,dat[(y*lcd.wid)+x]);
+		//printf("\n%d :",y);
+		for (x=0 ; x<lcd.wid ; x++) {
+		  if ((lcd.hgt==1)&&(x==8)) HD44780_position(x,y);//for  16x1 
+#ifdef SPLIT_SCREENS
+		  if ((lcd.hgt==2)&&(x==8)) HD44780_position(x,y);// two 16x1's
+		  if (y<(lcd.hgt/2)) 
+			HD44780_senddata(LCDEN,RS,dat[(y*lcd.wid)+x]);
+		  else
+			HD44780_senddata(SECONDLCDEN,RS,dat[(y*lcd.wid)+x]);
+		  //printf("%c",dat[(y*lcd.wid)+x]);
+#else			
+		  HD44780_senddata(LCDEN,RS,dat[(y*lcd.wid)+x]);
+#endif
 		}
 	}
-
+	
 }
 
+#ifdef USE_SHIFT_REG
+char HD44780_getkey()
+{
+// TODO: a keypad scan that does not use shift register
+// define a key table 
+char keytr[]="ABCDEFGH";
+int n;
+	rawshift(0);LCD_Pause(1);	//send all line on shift register low
+	if ((port_in(lp+1)&32)==0)	//test if line back is low - if not return(0)
+		{	//else 
+			//start walking a single zero across the eight lines 
+		for(n=7;n>=0;n--)
+			{
+			rawshift(255 - (1<<n));LCD_Pause(1);
+		
+			if ((port_in(lp+1)&32)==0)	// check if line back is low if yes debounce 
+				{
+				if (lastkey==keytr[n])
+					return(0);
+			//	printf("key is %c %d\n",keytr[n],n);
+				lastkey=keytr[n];
+				return(keytr[n]);	//return correct key code.
+				}
+			}
+		}	//else fall out and return(0) [too transient a keypress]
+	lastkey=0;
+	return(0);
+}
+#endif
