@@ -31,7 +31,7 @@
 #define MAX_NUMERIC_LEN 40
 
 char *error_strs[] = {"", "Out of range", "Too long", "Too short", "Invalid Address"};
-char *menuitemtypenames[] = {"menu", "action", "checkbox", "ring", "slider", "numeric", "alpha","ip"};
+char *menuitemtypenames[] = {"menu", "action", "checkbox", "ring", "slider", "numeric", "alpha", "ip"};
 char *menueventtypenames[] = {"select", "update", "plus", "minus", "enter", "leave"};
 
 void menuitem_destroy_action (MenuItem *item);

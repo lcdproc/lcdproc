@@ -83,7 +83,7 @@ int machine_close()
 int machine_get_battstat(int *acstat, int *battflag, int *percent)
 {
 	int apmd;
-	apm_info_t aip;
+	struct apm_info aip;
 
 	*acstat   = LCDP_AC_ON;
 	*battflag = LCDP_BATT_ABSENT;
@@ -101,7 +101,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 		return(FALSE);
 	}
 
-	switch(aip->ai_acline)
+	switch(aip.ai_acline)
 	{
 		case 0:
 			*acstat = LCDP_AC_OFF;
@@ -114,7 +114,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 			break;
 	}
 
-	switch(aip->ai_batt_stat)
+	switch(aip.ai_batt_stat)
 	{
 		case 0:
 			*battflag = LCDP_BATT_HIGH;
@@ -133,7 +133,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 			break;
 	}
 
-	*percent = aip->ai_batt_life;
+	*percent = aip.ai_batt_life;
 	if(*percent == 255)
 		*percent = -1;
 
@@ -310,10 +310,19 @@ int machine_get_procs(LinkedList *procs)
 			kvm_close(kvmd);
 			return(FALSE);
 		}
+#if (__FreeBSD_version > 500000)		
 		strncpy(p->name, kprocs->kp_proc.p_comm, 15);
+#else
+		strncpy(p->name, kprocs->ki_comm, 15);
+#endif
 		p->name[15] = '\0';
+#if (__FreeBSD_version > 500000)
+		p->totl = kprocs->ki_size / 1024;
+		p->number = kprocs->ki_pid;
+#else		
 		p->totl = kprocs->kp_eproc.e_vm.vm_map.size / 1024;
 		p->number = kprocs->kp_proc.p_pid;
+#endif		
 		LL_Push(procs, (void *)p);
 
 		kprocs++;
