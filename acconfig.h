@@ -28,6 +28,8 @@
 
 #undef DEBUG
 
+#undef DEFINED_ACS
+
 #undef GLK_DRV
 
 #undef HD44780_DRV

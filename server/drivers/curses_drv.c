@@ -454,10 +454,14 @@ curses_drv_num (int x, int num)
 void
 curses_drv_vbar (int x, int len)
 {
-	//char map[] = "_.,,ooO8";
-	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
 	int y;
-
+// Some curses.h do not define ACS_S* preprocessor macros, so we take a guess.
+#ifdef DEFINED_ACS
+	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
+#else
+	char map[] = "_.,,ooO8";
+#endif
+	
 	ValidX(x);
 
 #define MAX_LINES (curses_drv->cellhgt * curses_drv->hgt)

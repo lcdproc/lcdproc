@@ -1,3 +1,23 @@
+dnl This test is used by the curses driver.
+dnl Checks if $1 defined the ACS_S* preprocessor macros.
+dnl Example: AC_CHECK_DEFINE_ACS(curses.h)
+AC_DEFUN(AC_CHECK_DEFINE_ACS, [
+	AC_MSG_CHECKING(if $1 defines ACS_S*)
+	AC_TRY_RUN([
+		#include <$1>
+		int main() {
+		[[char map[] = { ACS_S9, ACS_S7, ACS_S3, ACS_S1 };]]
+		return 0;
+		}
+	], [ 
+	dnl then
+		AC_DEFINE(DEFINED_ACS)
+		AC_MSG_RESULT(yes) ], [
+	dnl else
+		AC_MSG_RESULT(no) ],
+	[:])
+])
+
 AC_DEFUN(LCD_DRIVERS_SELECT, [
 AC_MSG_CHECKING(for which drivers to compile)
 
@@ -52,20 +72,35 @@ fi
 			actdrivers=["$actdrivers sli"]
 			;;
 		curses)
+			AC_CHECK_HEADERS(ncurses.h curses.h)
  			AC_CHECK_LIB(ncurses, main, 
- 				LIBCURSES="-lncurses"
- 				DRIVERS="$DRIVERS curses_drv.o"
- 				AC_DEFINE(CURSES_DRV)
- 				actdrivers=["$actdrivers ncurses"]
- 				,
-dnl				else
- 				AC_CHECK_LIB(curses, main, 
- 					LIBCURSES="-lcurses"
+ 				AC_CHECK_HEADER(ncurses.h,
+ 					dnl We have ncurses.h and libncurses, add driver.
+ 					AC_CHECK_DEFINE_ACS(ncurses.h)
+	 				LIBCURSES="-lncurses"
  					DRIVERS="$DRIVERS curses_drv.o"
  					AC_DEFINE(CURSES_DRV)
  					actdrivers=["$actdrivers curses"]
+ 				,
+dnl				else
+					AC_MSG_WARN([Could not find ncurses.h]),
+				)
+ 			,
+dnl			else
+ 				AC_CHECK_LIB(curses, main, 
+ 					AC_CHECK_HEADER(curses.h,
+ 						dnl We have curses.h and libcurses, add driver.
+ 						AC_CHECK_DEFINE_ACS(curses.h)
+ 						LIBCURSES="-lcurses"
+ 						DRIVERS="$DRIVERS curses_drv.o"
+ 						AC_DEFINE(CURSES_DRV)
+ 						actdrivers=["$actdrivers curses"]
  					,
 dnl					else
+						AC_MSG_WARN([Could not find curses.h]),
+					)
+ 				,
+dnl				else
  					AC_MSG_WARN([The curses driver needs the curses (or ncurses) library.]),
  				)
  			)
@@ -156,6 +191,8 @@ AC_SUBST(LIBLIRC_CLIENT)
 AC_SUBST(LIBSVGA)
 AC_SUBST(DRIVERS)
 ])
+
+
 
 
 dnl
