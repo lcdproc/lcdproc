@@ -19,6 +19,49 @@
 #include "text.h"
 #include "drv_base.h"
 
+/* Ugly code extracted by David GLAUDE from lcdm001.c ;)*/
+static char num_icon [10][4][3] = 	{{{' ','_',' '}, /*0*/
+					  {'|',' ','|'},
+					  {'|','_','|'},
+					  {' ',' ',' '}},
+					  {{' ',' ',' '},/*1*/
+					  {' ',' ','|'},
+					  {' ',' ','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*2*/
+					  {' ','_','|'},
+					  {'|','_',' '},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*3*/
+					  {' ','_','|'},
+					  {' ','_','|'},
+					  {' ',' ',' '}},
+					  {{' ',' ',' '},/*4*/
+					  {'|','_','|'},
+					  {' ',' ','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*5*/
+					  {'|','_',' '},
+					  {' ','_','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*6*/
+					  {'|','_',' '},
+					  {'|','_','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*7*/
+					  {' ',' ','|'},
+					  {' ',' ','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*8*/
+					  {'|','_','|'},
+					  {'|','_','|'},
+					  {' ',' ',' '}},
+					  {{' ','_',' '},/*9*/
+					  {'|','_','|'},
+					  {' ','_','|'},
+					  {' ',' ',' '}}};
+/* End of ugly code ;) by Rene Wagner */
+
 lcd_logical_driver *text;
 
 //////////////////////////////////////////////////////////////////////////
@@ -27,11 +70,13 @@ lcd_logical_driver *text;
 
 #define LCD_DEFAULT_WIDTH 20
 #define LCD_DEFAULT_HEIGHT 4
+// The two value below are fake, we don't support custom char.
 #define LCD_DEFAULT_CELL_WIDTH 5
 #define LCD_DEFAULT_CELL_HEIGHT 8
 
 // TODO: When using the text driver, ^C fails to interrupt!
 // Why?  Fix it...
+// DONE??? Are you sure, not in my Konsole. David GLAUDE
 
 int
 text_init (lcd_logical_driver * driver, char *args)
@@ -93,7 +138,6 @@ void
 text_clear ()
 {
 	memset (text->framebuf, ' ', text->wid * text->hgt);
-
 }
 
 //////////////////////////////////////////////////////////////////
@@ -155,35 +199,42 @@ text_backlight (int on)
 */
 }
 
-void
-text_init_vbar ()
-{
-//  printf("Vertical bars.\n");
-}
+//void
+//text_init_vbar ()
+//{
+////  printf("Vertical bars.\n");
+//}
 
-void
-text_init_hbar ()
-{
-//  printf("Horizontal bars.\n");
-}
+//void
+//text_init_hbar ()
+//{
+////  printf("Horizontal bars.\n");
+//}
 
-void
-text_init_num ()
-{
-//  printf("Big Numbers.\n");
-}
+//void
+//text_init_num ()
+//{
+////  printf("Big Numbers.\n");
+//}
 
-void
-text_num (int x, int num)
+/////////////////////////////////////////////////////////////////
+// Writes a big number. (by Rene Wagner from lcdm001.c)
+//
+static void text_num (int x, int num)
 {
+	int y, dx;
+
 //  printf("BigNum(%i, %i)\n", x, num);
+	for (y = 1; y < 5; y++)
+		for (dx = 0; dx < 3; dx++)
+			text_chr (x + dx, y, num_icon[num][y-1][dx]);
 }
 
-void
-text_set_char (int n, char *dat)
-{
-//  printf("Set Character %i\n", n);
-}
+//void
+//text_set_char (int n, char *dat)
+//{
+////  printf("Set Character %i\n", n);
+//}
 
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar; erases entire column onscreen.
@@ -218,7 +269,6 @@ void
 text_flush_box (int lft, int top, int rgt, int bot)
 {
 	text_flush ();
-
 }
 
 void
@@ -255,3 +305,5 @@ text_draw_frame (char *dat)
 	printf ("+%s+\n", out);
 
 }
+
+
