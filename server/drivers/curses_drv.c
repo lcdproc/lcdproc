@@ -298,6 +298,7 @@ curses_drv_close ()
 
 	move (0, 0);
 	endwin ();
+	curs_set(1);
 
 	if (curses_drv->framebuf != NULL)
 		free (curses_drv->framebuf);
