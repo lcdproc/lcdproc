@@ -6,6 +6,18 @@
  *
  */
 
+/*
+ * These drivers don't seem to be in the build process yet;
+ * so here we fake it and define these variables...!
+ *
+ * Not pretty, but it works and its up here so everyone
+ * can see... and you can yank them out of the comments
+ * to make it work.
+ */
+
+// #define SVGALIB_DRV
+// #define T6963_DRV
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -107,13 +119,13 @@ static char *lcd_drv_getinfo ();
 #include "glk.h"
 #endif
 
-// -- #ifdef SVGALIB_DRV
+#ifdef SVGALIB_DRV
 #include "svgalib_drv.h"
-// -- #endif
+#endif
 
-// -- #ifdef T6963_DRV
+#ifdef T6963_DRV
 #include "t6963.h"
-// -- #endif
+#endif
 
 // Make program more readable and understandable;
 // hide details...
@@ -181,12 +193,12 @@ lcd_physical_driver drivers[] = {
 #ifdef STV5730_DRV
 	{"stv5730", stv5730_init,},
 #endif
-// -- #ifdef SVGALIB_DRV
+#ifdef SVGALIB_DRV
 	{"svgalib", svgalib_drv_init,},
-// -- #endif
-// -- #ifdef T6963_DRV
+#endif
+#ifdef T6963_DRV
 	{"t6963", t6963_init,},
-// -- #endif
+#endif
 
 	{NULL, NULL,},
 
