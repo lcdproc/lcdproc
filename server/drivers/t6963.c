@@ -113,7 +113,7 @@ t6963_init (Driver *drvthis, char *args)
 
 		debug (RPT_DEBUG, "T6963: Getting permission to parallel port %d...", t6963_out_port);
 
-        if( port_access_full(t6963_out_port) ) {   //ioperm(t6963_out_port, 3, 1)) {
+        if( port_access_multiple(t6963_out_port,3) ) {   //ioperm(t6963_out_port, 3, 1)) {
 		report (RPT_ERR, "T6963_init: no permission to port %d: (%s)\n", t6963_out_port, strerror (errno));
                	return -1;
         }
@@ -226,7 +226,7 @@ t6963_close (Driver *drvthis)
 	debug (RPT_INFO, "Shutting down!\n");
 	t6963_low_disable_mode (BLINK_ON);
 
-	port_deny_full(t6963_out_port);
+	port_deny_multiple(t6963_out_port,3);
 
 	if (framebuf != NULL)
 		free (framebuf);

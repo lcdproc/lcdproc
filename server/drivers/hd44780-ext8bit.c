@@ -90,9 +90,7 @@ hd_init_ext8bit (Driver *drvthis)
 	semid = sem_get ();
 
 	// Reserve the port registers
-	port_access(p->port);
-	port_access(p->port+1);
-	port_access(p->port+2);
+	port_access_multiple(p->port,3);
 
 	hd44780_functions->senddata = lcdtime_HD44780_senddata;
 	hd44780_functions->backlight = lcdtime_HD44780_backlight;

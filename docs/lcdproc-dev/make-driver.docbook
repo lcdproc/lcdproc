@@ -87,26 +87,27 @@ Of course, these functions will only work if the computer where LCDproc runs has
 
 
 </sect3>
-<sect3 id="port_access_full">
-<title>Get access to three sequential ports</title>
+<sect3 id="port_access_multiple">
+<title>Get access to multiple sequential ports</title>
 
 <funcsynopsis>
-<funcsynopsisinfo>/* port (CONTROL), port+1 (STATUS) and port+2 (DATA) */ </funcsynopsisinfo>
 <funcprototype>
   <funcdef>static inline int <function>port_access_full</function></funcdef>
   <paramdef>unsigned short int <parameter>port</parameter></paramdef>
+  <paramdef>unsigned short int <parameter>count</parameter></paramdef>
 </funcprototype>
 </funcsynopsis>
 <para>Returns 0 if successful, -1 if failed.</para>
 
 </sect3>
-<sect3 id="port_deny_full">
-<title>Close access to three sequential ports</title>
+<sect3 id="port_deny_multiple">
+<title>Close access to multiple sequential ports</title>
 
 <funcsynopsis>
 <funcprototype>
   <funcdef>static inline int <function>port_deny_full</function></funcdef>
   <paramdef>unsigned short int <parameter>port</parameter></paramdef>
+  <paramdef>unsigned short int <parameter>count</parameter></paramdef>
 </funcprototype>
 </funcsynopsis>
 <para>Returns 0 if successful, -1 if failed.</para>
@@ -123,7 +124,7 @@ Of course, these functions will only work if the computer where LCDproc runs has
     0x379 (STATUS) and 
     0x37A (DATA) 
 */
-if ( -1 == port_access_full(0x378) ) {
+if ( -1 == port_access_multiple(0x378,3) ) {
 	/* Access denied, do something */
 }
 
@@ -134,7 +135,7 @@ ort_out(0x378, 'A');
 char status = port_in(0x379);
 
 /* Close the 3 ports */
-port_deny_full(0x378);
+port_deny_multiple(0x378,3);
 </screen>
 
 </sect3>

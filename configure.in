@@ -113,6 +113,7 @@ AC_CHECK_LIB(i386, i386_get_ioperm,
         [])]
 )
 
+AC_CHECK_FUNCS(iopl)
 AC_CHECK_FUNCS(ioperm)
 AC_CHECK_HEADERS(sys/io.h)
 

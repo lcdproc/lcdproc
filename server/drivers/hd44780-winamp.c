@@ -98,9 +98,7 @@ hd_init_winamp (Driver *drvthis)
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
 
 	// Reserve the port registers
-	port_access(p->port);
-	port_access(p->port+1);
-	port_access(p->port+2);
+	port_access_multiple(p->port,3);
 
 	hd44780_functions->senddata = lcdwinamp_HD44780_senddata;
 	hd44780_functions->backlight = lcdwinamp_HD44780_backlight;

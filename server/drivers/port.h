@@ -12,34 +12,40 @@
  * (Better) FreeBSD port by Guillaume Filion, copyright 05/2002
  *
  * Improved support for old Linux (glibc1 and libc5) by Guillaume Filion, 12/2002
+ *
+ * Access to ports over 0x3FF by Joris Robijn, 04/2003
+ *
  */
 
 /*
 This file defines 6 static inline functions for port I/O:
 
-Read a byte from port
-	static inline int port_in (unsigned short int port);
-Returns the content of the byte.
+static inline int port_in (unsigned short port);
+	Read a byte from port
+	Returns the content of the byte.
 
-Write a char(byte) 'val' to port.
-	static inline void port_out (unsigned short int port, unsigned char val);
-Returns nothing.
+static inline void port_out (unsigned short port, unsigned char val);
+	Write a char(byte) 'val' to port.
+	Returns nothing.
 
-Get access to a specific port
-	static inline int port_access (unsigned short int port);
-Returns 0 if successful, -1 if failed
+static inline int port_access (unsigned short port);
+	Get access to a specific port
+	Returns 0 if successful, -1 if failed
 
-Close access to a specific port
-	static inline int port_deny (unsigned short int port);
-Returns 0 if successful, -1 if failed
+static inline int port_deny (unsigned short port);
+	Close access to a specific port
+	Returns 0 if successful, -1 if failed
 
-Get access 3 to ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA)
-	static inline int port_access_full (unsigned short int port);
-Returns 0 if successful, -1 if failed
+static inline int port_access_multiple (unsigned short port, unsigned short count)
+	Get access multiple to ports at once.
+	Returns 0 if successful, -1 if failed
 
-Close access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA)
-	static inline int port_deny_full (unsigned short int port);
-Returns 0 if successful, -1 if failed
+static inline int port_deny_multiple (unsigned short port, unsigned short count)
+	Close access to multiple ports at once.
+	Returns 0 if successful, -1 if failed
+
+If you make modifications to this file: References to the LPT port should
+not be in this file but in lpt-port.h ...
 */
 
 #ifndef PORT_H
@@ -53,6 +59,7 @@ Returns 0 if successful, -1 if failed
 
 /*  ------------------------------------------------------------- */
 /*  Use ioperm, inb and outb in <sys/io.h> (Linux) */
+/*  And iopl for higher addresses of PCI LPT cards */
 #if defined HAVE_IOPERM
 
 /* Glibc2 and Glibc1 */
@@ -66,33 +73,63 @@ Returns 0 if successful, -1 if failed
 # endif
 
 /*  Read a byte from port */
-static inline int port_in (unsigned short int port) {
+static inline int port_in (unsigned short port) {
 	return inb(port);
 }
 
 /*  Write a byte 'val' to port */
-static inline void port_out (unsigned short int port, unsigned char val) {
+static inline void port_out (unsigned short port, unsigned char val) {
 	outb(val, port);
 }
 
 /*  Get access to a specific port */
-static inline int port_access (unsigned short int port) {
-	return ioperm(port, 1, 255);
+static inline int port_access (unsigned short port) {
+	if (port <= 0x3FF) {
+		return ioperm(port, 1, 255);
+	} else {
+#ifdef HAVE_IOPL
+		/* Is there a better way to do this ? */
+		static short int iopl_done = 0;
+		if (iopl_done) return 0;
+		iopl_done = 1;
+		return iopl(1);
+#else
+		return -1; /* Error, can't access the requested port */
+#endif
+	}
 }
 
 /*  Close access to a specific port */
-static inline int port_deny (unsigned short int port) {
-	return ioperm(port, 1, 0);
+static inline int port_deny (unsigned short port) {
+	if (port <= 0x3FF) {
+		return ioperm(port, 1, 0);
+	}
+	/* We can't simply close access acquired with iopl */
+	return 0;
 }
 
-/*  Get access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
-static inline int port_access_full (unsigned short int port) {
-	return ioperm(port, 3, 255);
+/*  Get access to multiple ports at once */
+static inline int port_access_multiple (unsigned short port, int count) {
+	if (port+count-1 <= 0x3FF) {
+		return ioperm(port, count, 255);
+	} else {
+#ifdef HAVE_IOPL
+		return port_access(port+count);
+		/* to use the iopl part there... */
+#else
+		return -1;
+#endif
+	}
+	return 0;
 }
 
-/*  Close access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
-static inline int port_deny_full (unsigned short int port) {
-	return ioperm(port, 3, 0);
+/*  Close access to multiple ports at once */
+static inline int port_deny_multiple (unsigned short port, int count) {
+	if (port+count-1 <= 0x3FF) {
+		return ioperm(port, count, 0);
+	}
+	/* We can't simply close access acquired with iopl */
+	return 0;
 }
 
 /*  ------------------------------------------------------------- */
@@ -103,12 +140,12 @@ static inline int port_deny_full (unsigned short int port) {
 #include <machine/sysarch.h>
 
 /*  Read a byte from port */
-static inline int port_in (unsigned short int port) {
+static inline int port_in (unsigned short port) {
 	return inb(port);
 }
 
 /*  Write a byte 'val' to port */
-static inline void port_out (unsigned short int port, unsigned char val) {
+static inline void port_out (unsigned short port, unsigned char val) {
 	outb(port, val);
 }
 
@@ -128,7 +165,7 @@ static inline void setaccess(u_long * map, u_int bit, int allow) {
 }
 
 /*  Get access to a specific port */
-static inline int port_access (unsigned short int port) {
+static inline int port_access (unsigned short port) {
 	u_long          iomap[32];
 
 	if (i386_get_ioperm(iomap) == -1) return -1;
@@ -141,7 +178,7 @@ static inline int port_access (unsigned short int port) {
 }
 
 /*  Close access to a specific port */
-static inline int port_deny (unsigned short int port) {
+static inline int port_deny (unsigned short port) {
 	u_long          iomap[32];
 
 	if (i386_get_ioperm(iomap) == -1) return -1;
@@ -153,30 +190,32 @@ static inline int port_deny (unsigned short int port) {
 	return 0;
 }
 
-/*  Get access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
-static inline int port_access_full (unsigned short int port) {
+/*  Get access to multiple ports at once */
+static inline int port_access_multiple (unsigned short port, unsigned short count) {
 	u_long          iomap[32];
+	unsigned short  i;
 
 	if (i386_get_ioperm(iomap) == -1) return -1;
 
-	setaccess(iomap, port  , 1);
-	setaccess(iomap, port+1, 1);
-	setaccess(iomap, port+2, 1);
+	for (i=0; i<count; i++) {
+		setaccess(iomap, port + i, 1);
+	}
 
 	if (i386_set_ioperm(iomap) == -1) return -1;
 
 	return 0;
 }
 
-/*  Close access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
-static inline int port_deny_full (unsigned short int port) {
+/*  Close access to multiple ports at once */
+static inline int port_deny_multiple (unsigned short port, unsigned short count) {
 	u_long          iomap[32];
+	unsigned short  i;
 
 	if (i386_get_ioperm(iomap) == -1) return -1;
 
-	setaccess(iomap, port  , 0);
-	setaccess(iomap, port+1, 0);
-	setaccess(iomap, port+2, 0);
+	for (i=0; i<count; i++) {
+		setaccess(iomap, port + i, 0);
+	}
 
 	if (i386_set_ioperm(iomap) == -1) return -1;
 
@@ -192,41 +231,41 @@ Use i386_get_ioperm, i386_set_ioperm from <machine/sysarch.h> and inb and outb f
 #include <machine/sysarch.h>
         
 /* Read a byte from port */
-static inline int port_in (unsigned short int port) {
+static inline int port_in (unsigned short port) {
         return inb(port);
 }
         
 /* Write a byte 'val' to port */
-static inline void port_out (unsigned short int port, unsigned char val) {
+static inline void port_out (unsigned short port, unsigned char val) {
         outb(port,val);
 }
         
 /* Get access to a specific port */
-static inline int port_access (unsigned short int port) {
+static inline int port_access (unsigned short port) {
         return i386_set_ioperm(port, 1, 1);
 }
 
-/* Get access 3 to ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
-static inline int port_access_full (unsigned short int port) {
-        return i386_set_ioperm(port, 3, 1);
+/* Get access to multiple ports at once */
+static inline int port_access_multiple (unsigned short port, unsigned short count) {
+        return i386_set_ioperm(port, count, 1);
 }
 
 /* Close access to a specific port */
-static inline int port_deny (unsigned short int port) {
+static inline int port_deny (unsigned short port) {
         return i386_set_ioperm(port, 1, 0);
 }
 
-/* Close access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
-static inline int port_deny_full (unsigned short int port) {
-        return i386_set_ioperm(port, 3, 0);
+/* Close access to multiple ports at once */
+static inline int port_deny_multiple (unsigned short port, unsigned short count) {
+        return i386_set_ioperm(port, count, 0);
 }
 
+#else
 /*  ------------------------------------------------------------- */
 /*  Last chance! Use /dev/io and i386 ASM code (BSD4.3 ?) */
-#else
 
 /*  Read a byte from port */
-static inline int port_in (unsigned short int port) {
+static inline int port_in (unsigned short port) {
 	unsigned char value;
 	__asm__ volatile ("inb %1,%0":"=a" (value)
 							:"d" ((unsigned short) port));
@@ -234,13 +273,13 @@ static inline int port_in (unsigned short int port) {
 }
 
 /*  Write a byte 'val' to port */
-static inline void port_out (unsigned short int port, unsigned char val) {
+static inline void port_out (unsigned short port, unsigned char val) {
 	__asm__ volatile ("outb %0,%1\n"::"a" (val), "d" (port)
 		 );
 }
 
-/*  Get access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
-static inline int port_access_full (unsigned short int port) {
+/*  Get access to a specific port */
+static inline int port_access (unsigned short port) {
 	static FILE *  port_access_handle = NULL ;
 
 	if( port_access_handle
@@ -253,19 +292,21 @@ static inline int port_access_full (unsigned short int port) {
 	return -1;
 }
 
-/*  Get access to a specific port */
-static inline int port_access (unsigned short int port) {
-	return port_access_full(port); /*  /dev/io gives you access to all ports. */
-}
-
-/*  Close access to 3 ports: port (CONTROL), port+1 (STATUS) and port+2 (DATA) */
-static inline int port_deny_full (unsigned short int port) {
-	/*  Can't close /dev/io... */
-}
-
-/* Close access to a specific port */
-static inline int port_deny (unsigned short int port) {
+/*  Close access to a specific port */
+static inline int port_deny (unsigned short port) {
 	/* Can't close /dev/io... */
+	return 0;
+}
+
+/*  Get access to multiple ports at once */
+static inline int port_access_multiple (unsigned short port, unsigned short count) {
+	return port_access (port); /* /dev/io gives you access to all ports. */
+}
+
+/*  Close access to multiple ports at once */
+static inline int port_deny_multiple (unsigned short port, unsigned short count) {
+	/*  Can't close /dev/io... */
+	return 0;
 }
 
 #endif

@@ -102,9 +102,7 @@ hd_init_4bit (Driver *drvthis)
 	int enableLines = EN1 | EN2;
 
 	// Reserve the port registers
-	port_access(p->port);
-	port_access(p->port+1);
-	port_access(p->port+2);
+	port_access_multiple(p->port,3);
 
 	hd44780_functions->senddata = lcdstat_HD44780_senddata;
 	hd44780_functions->backlight = lcdstat_HD44780_backlight;
