@@ -271,14 +271,15 @@ curses_drv_wborder (WINDOW *win) {
 
 	if (has_colors()) {
 		wcolor_set(win, current_border_pair, NULL);
-		wattron(win, COLOR_PAIR(current_border_pair) | A_BOLD);
+		//wattron(win, COLOR_PAIR(current_border_pair) | A_BOLD);
+		wattron(win, A_BOLD);
 	}
 
 	box(win, 0, 0);
 
 	if (has_colors()) {
 		wcolor_set(win, current_color_pair, NULL);
-		wattron(win, COLOR_PAIR(current_color_pair));
+		//wattron(win, COLOR_PAIR(current_color_pair));
 		wattroff(win, A_BOLD);
 	}
 }
