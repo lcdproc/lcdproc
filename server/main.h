@@ -29,5 +29,6 @@ typedef struct screen_size {
 #define DEFAULT_SCREEN_PRIORITY 128
 #define DEFAULT_SCREEN_DURATION 32
 #define DEFAULT_HEARTBEAT 1
+#define DEFAULT_ADDR "127.0.0.1"
 
 #endif

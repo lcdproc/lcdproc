@@ -46,7 +46,7 @@ extern int optind, optopt, opterr;
 #define DEFAULT_CONFIG_FILE "/etc/LCDd.conf"
 #define DEFAULT_DRIVER "curses"
 
-int debug_level = 3;
+int debug_level = 0;
 char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
 char *build_date = __DATE__;
@@ -59,8 +59,8 @@ char *build_date = __DATE__;
    Using variables for these means that (later) we can select which port
    and which address to bind to at run time. */
 
-char bind_addr[64] = "127.0.0.1";
-int lcd_port = LCDPORT;
+char bind_addr[64];
+int lcd_port = 0;
 
 // The parameter structure and args[] should
 // be removed when getopt(3) is implemented,
@@ -120,7 +120,7 @@ int drop_privs(char *user) {
 int
 main (int argc, char **argv)
 {
-	char cfgfile[256] = DEFAULT_CONFIG_FILE;
+	char cfgfile[256];
 	FILE *config;
 
 	int i, err;
@@ -144,6 +144,27 @@ main (int argc, char **argv)
 	//	HelpScreen ();
 
 	memset(driverlist, '\0', sizeof(driverlist));
+	memset(bind_addr, '\0', sizeof(bind_addr));
+
+	/*
+	 * Settings in order of preference:
+	 *
+	 * 1: Settings specified in command line options...
+	 * 2: Settings specified in configuration file...
+	 * 3: Default settings
+	 *
+	 * Because of this, and because one option (-c) specifies where
+	 * the configuration file is, things are done in this order:
+	 *
+	 * 1. Read and set options.
+	 * 2. Read configuration file; if option is read in configuration
+	 *    file and not already set, then set it.
+	 * 3. Having read configuration file, if parameter is not set,
+	 *    set it to the default value.
+	 *
+	 * It is for this reason that the default values are **NOT** set
+	 * in the variable declaration...
+	 */
 
 	i = 0;
 	// analyze options here..
@@ -204,6 +225,9 @@ main (int argc, char **argv)
 		version, protocol_version);
 	syslog(LOG_NOTICE, "server built on %s",
 		build_date);
+
+	if (!cfgfile)
+		strncpy(cfgfile, DEFAULT_CONFIG_FILE, sizeof(cfgfile));
 
 	if ((config = fopen(cfgfile, "r")) == NULL) {
 		syslog(LOG_WARNING, "no configuration file found... using defaults");
@@ -277,11 +301,46 @@ main (int argc, char **argv)
 						driverlist[list_index] = malloc(MAX_DRIVER_NAME_SIZE);
 						snprintf(driverlist[list_index++], MAX_DRIVER_NAME_SIZE, "%s", linebuf + 7);
 					}
+				} else if (strncasecmp(linebuf, "Bind ", 5) == 0) {
+					if (bind_addr[0] == '\0')
+						strncpy(bind_addr, linebuf + 5, sizeof(bind_addr));
+				} else if (strncasecmp(linebuf, "Port ", 5) == 0) {
+					if (lcd_port == 0)
+						lcd_port = atoi(linebuf + 5);
+				} else if ((strncasecmp(linebuf, "Wait ", 5) == 0) ||
+					   (strncasecmp(linebuf, "WaitTime ", 9) == 0)) {
+					char *p;
+
+					p = linebuf;
+					while (*p != ' ') p++;
+					p++;
+					
+					default_duration = atoi(p);
+					if ( default_duration < 16 || default_duration > 10000 ) {
+						snprintf(buf, sizeof(buf),
+							"wait time should be between 16 and 10000 (in 1/8ths of second), not %s\n", optarg);
+						fprintf(stderr, "%s", buf);
+						HelpScreen ();
+					}
+				} else if (strncasecmp(linebuf, "Debug ", 5) == 0) {
+					debug_level = atoi(linebuf + 5);
 				}
 			}
 		}
 		fclose(config);
 	}
+
+	if (debug_level > 0)
+		syslog(LOG_NOTICE, "debug level set to %d",
+			debug_level);
+
+	// set defaults....
+	if (bind_addr[0] == '\0')
+		strncpy(bind_addr, DEFAULT_ADDR, sizeof(bind_addr));
+	if (lcd_port == 0)
+		lcd_port = LCDPORT;
+	if (default_duration == 0)
+		default_duration = DEFAULT_SCREEN_DURATION;
 
 	// Use default driver
 	if (driverlist[0] == NULL) {
@@ -289,6 +348,7 @@ main (int argc, char **argv)
 		strcpy(driverlist[0], DEFAULT_DRIVER);
 	}
 
+	// Go thru all drivers and initialize all of them
 	for (i = 0; i < MAX_DRIVERS; i++) {
 		if (driverlist[i] == NULL)
 			continue;
