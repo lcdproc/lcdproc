@@ -39,17 +39,12 @@ typedef MenuItem Menu;
 
 Menu *menu_create (char *id, MenuEventFunc(*event_func),
 	char *text, void *association);
-/* Creates a new menu.
- */
-/* Creates a string value box.
- * Association is free to set to anything you want. It's not used by the menu.
- * Generated events: MENUEVENT_ENTER upon entering this menu,
- */
+/* Creates a new menu. */
 
 void menu_destroy (Menu *menu);
 /* Deletes menu from memory.
  * Destructors will be called for all subitems.
- * DO NOT CALL THIS FUNCTION, CALL menuitem_destoy INSTEAD !
+ * DO NOT CALL THIS FUNCTION, CALL menuitem_destroy INSTEAD !
  */
 
 void menu_add_item (Menu *menu, MenuItem *item);

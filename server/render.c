@@ -174,7 +174,7 @@ render_frame (LinkedList * list,
 	int vis_width = right - left;		/* width of visible frame area */
 	int vis_height = bottom - top;		/* height of visible frame area */
 	int x, y;
-	int fx = 0, fy = 0;				/* Scrolling offset for the frame... */
+	int /*fx = 0,*/ fy = 0;			/* Scrolling offset for the frame... */
 	int length, speed;
 	int str_length = BUFSIZE-1;
 	int reset = 1;

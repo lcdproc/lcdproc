@@ -268,7 +268,6 @@ sock_recv (int fd, void *dest, size_t maxlen)
 }
 
 /*****************************************************************************/
-static char retString[256];
 
 char*
 sock_geterror(void)
@@ -276,6 +275,7 @@ sock_geterror(void)
 #ifndef WINSOCK2
     return strerror(errno);
 #else
+    static char retString[256];
     long err;
     char* tmp;
 

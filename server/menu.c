@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "config.h"
 
@@ -252,6 +253,8 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 					(w->text)[display_props->width-1] = '\0';
 				}
 				break;
+ 			 default:
+				assert(!"unexpected menuitem type");
 			}
 		}
 	}
@@ -447,8 +450,6 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool ext
 		  case MENUITEM_NUMERIC:
 		  case MENUITEM_ALPHA:
 		  case MENUITEM_IP:
-			//if (subitem->event_func)
-			//	subitem->event_func (subitem, MENUEVENT_ENTER);
 			return MENURESULT_ENTER;
 		  default:
 			break;

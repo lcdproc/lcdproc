@@ -176,7 +176,8 @@ sock_shutdown ()
           {
           if (clientIt->client)
           {
-          /* destroying a client also closes its socket */
+        */
+        /* destroying a client also closes its socket */
         /*        client_destroy(clientIt->client);
                   }
                   }
