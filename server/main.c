@@ -216,12 +216,13 @@ clear_settings ()
 	int i;
 
 	debug_level = -1;
-	lcd_port = 0;
+	lcd_port = -1;
 	bind_addr[0] = 0;
 	configfile[0] = 0;
 	user[0] = 0;
 	daemon_mode = -1;
 	enable_server_screen = -1;
+	backlight = -1;
 
 	default_duration = -1;
 
@@ -245,7 +246,7 @@ process_command_line (int argc, char **argv)
 	char  buf[64];
 
 	// analyze options here..
-	while ((c = getopt(argc, argv, "a:p:d:hfiw:c:u:")) > 0) {
+	while ((c = getopt(argc, argv, "a:p:d:hfib:w:c:u:")) > 0) {
 		// FIXME: Setting of c in this loop clobbers s!
 		// s is set equivalent to c.
 		switch(c) {
@@ -283,6 +284,23 @@ process_command_line (int argc, char **argv)
 				break;
 			case 'i':
 				enable_server_screen = 0;
+				break;
+			case 'b':
+				if( strcmp( optarg, "on" ) == 0 ) {
+					backlight = BACKLIGHT_ON;
+					backlight_state = backlight;
+				}
+				else if( strcmp( optarg, "off" ) == 0 ) {
+					backlight = BACKLIGHT_OFF;
+					backlight_state = backlight;
+				}
+				else if( strcmp( optarg, "open" ) == 0 ) {
+					backlight = BACKLIGHT_OPEN;
+				}
+				else if( strcmp( optarg, "" ) != 0 ) {
+					fprintf( stderr, "backlight state should be on, off or open\n" );
+					HelpScreen();
+				}
 				break;
 			case 'w':
 				default_duration = atoi(optarg);
@@ -345,11 +363,33 @@ process_configfile ( char *configfile )
 		}
 	}
 
-	if( daemon_mode == -1 )
-		daemon_mode = ! config_get_bool( "server", "foreground", 0, -1 );
+	if( daemon_mode == -1 ) {
+		int fg;
+		fg = config_get_bool( "server", "foreground", 0, -1 );
+		if( fg != -1 )
+			daemon_mode = !fg;
+	}
 
 	if( enable_server_screen == -1 )
 		enable_server_screen = config_get_bool( "server", "serverscreen", 0, -1 );
+
+	if( backlight == -1 ) {
+		s = config_get_string( "server", "backlight", 0, "" );
+		if( strcmp( s, "on" ) == 0 ) {
+			backlight = BACKLIGHT_ON;
+			backlight_state = backlight;
+		}
+		else if( strcmp( s, "off" ) == 0 ) {
+			backlight = BACKLIGHT_OFF;
+			backlight_state = backlight;
+		}
+		else if( strcmp( s, "open" ) == 0 ) {
+			backlight = BACKLIGHT_OPEN;
+		}
+		else if( strcmp( s, "" ) != 0 ) {
+			fprintf( stderr, "backlight state should be on, off or open\n" );
+		}
+	}
 
 	// Read drivers
 
@@ -364,11 +404,11 @@ process_configfile ( char *configfile )
 				break;
 
 			drivernames[num_drivers] = malloc(strlen(s)+1);
-			driverfilenames[num_drivers] = malloc(strlen(s)+1);
+			driverfilenames[num_drivers] = malloc(1);
 			driverargs[num_drivers] = malloc(1);
 
 			strcpy( drivernames[num_drivers], s );
-			strcpy( driverfilenames[num_drivers], s );
+			strcpy( driverfilenames[num_drivers], "" );
 			strcpy( driverargs[num_drivers], "" );
 
 			num_drivers++;
@@ -398,14 +438,15 @@ set_default_settings()
 
 	if (debug_level == -1)
 		debug_level = DEFAULT_DEBUG_LEVEL;
-	if (lcd_port == 0)
+	if (lcd_port == -1)
 		lcd_port = DEFAULT_LCD_PORT;
 	if (bind_addr[0] == 0)
 		strncpy (bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
 	if (configfile[0] == 0)
 		strncpy (configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	if (user[0] == '\0')
+	if (user[0] == 0)
 		strncpy(user, DEFAULT_USER, sizeof(user));
+
 	if (daemon_mode == -1)
 		daemon_mode = DEFAULT_DAEMON_MODE;
 	if (enable_server_screen == -1)
@@ -413,15 +454,19 @@ set_default_settings()
 
 	if (default_duration == -1)
 		default_duration = DEFAULT_SCREEN_DURATION;
+	if (backlight == -1)
+		backlight = BACKLIGHT_OPEN;
 
 	// Use default driver
 	if( num_drivers == 0 ) {
 		drivernames[0] = malloc(strlen(DEFAULT_DRIVER)+1);
-		strcpy(drivernames[0], DEFAULT_DRIVER);
 		driverfilenames[0] = malloc(1);
-		strcpy(driverfilenames[0], DEFAULT_DRIVER);
 		driverargs[0] = malloc(1);
+		strcpy(drivernames[0], DEFAULT_DRIVER);
+		strcpy(driverfilenames[0], "");
 		strcpy(driverargs[0], "");
+
+		num_drivers++;
 	}
 }
 
@@ -498,7 +543,7 @@ init_drivers()
 			  	break;
 			  case 2: // Driver does output in foreground (don't daemonize)
 			  	if ( !output_loaded ) {
-			  		daemon_mode = 1;
+			  		daemon_mode = 0;
 			  	}
 			  	output_loaded = 1;
 			  	break;
