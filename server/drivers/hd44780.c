@@ -66,7 +66,7 @@
 # include <time.h>
 #endif
 
-#include "../../shared/str.h"
+#include "shared/str.h"
 
 #include "lcd.h"
 #include "hd44780.h"

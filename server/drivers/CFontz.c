@@ -5,15 +5,17 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include "lcd.h"
 #include "CFontz.h"
 #include "drv_base.h"
-
-#include "../render.h"
-
-#include "../../shared/debug.h"
-#include "../../shared/str.h"
-#include "../../config.h"
+#include "render.h"
+#include "shared/debug.h"
+#include "shared/str.h"
 
 static int custom = 0;
 typedef enum {

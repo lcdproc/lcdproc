@@ -2,7 +2,7 @@
 #define CLIENTS_H
 
 #include "client_data.h"
-#include "../shared/LL.h"
+#include "shared/LL.h"
 
 typedef struct client {
 	int sock;

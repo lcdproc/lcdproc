@@ -9,7 +9,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/utsname.h>
-
 #include <string.h>
 
 #ifdef HAVE_CONFIG_H

@@ -15,8 +15,8 @@
 #include <ctype.h>
 #include <errno.h>
 
-#include "../shared/debug.h"
-#include "../shared/sockets.h"
+#include "shared/debug.h"
+#include "shared/sockets.h"
 
 #include "drivers/lcd.h"
 
@@ -45,13 +45,13 @@ client_function commands[] = {
 	{"menu_add", menu_add_func},
 	{"menu_del", menu_del_func},
 	{"menu_set", menu_set_func},
-	// TODO:  Adhere these to the naming convention?
-	{"menu_item_add", menu_item_add_func},
-	{"menu_item_del", menu_item_del_func},
-	{"menu_item_set", menu_item_set_func},
+	{"menu_add_item", menu_add_item_func},
+	{"menu_del_item", menu_del_item_func},
+	{"menu_set_item", menu_set_item_func},
 	// Misc stuff...
 	{"backlight", backlight_func},
 	{"output", output_func},
+	{"noop", noop_func},
 	{NULL, NULL},
 };
 
@@ -110,7 +110,8 @@ client_set_func (client * c, int argc, char **argv)
 
 	for (i = 1; i < argc; i++) {
 		// Handle the "name" parameter
-		if (0 == strcmp (argv[i], "-name")) {
+		if (0 == strcmp (argv[i], "-name")
+			|| 0 == strcmp (argv[i], "name")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("client_set: name=\"%s\"\n", argv[i]);
@@ -272,40 +273,26 @@ screen_add_key_func (client * c, int argc, char **argv)
 		sock_send_string (c->sock, "huh? Invalid screen id\n");
 		return 0;
 	}
-	// Find the keys widget
-	w = widget_find( s, KEYS_WIDGETID );
-	if (!w) {
-		int  err ;
-		// No keys widget, create a new one
-		err = widget_add (s, KEYS_WIDGETID, types[WID_KEYS], NULL, c->sock);
-		if (err < 0) {
-			fprintf (stderr, "screen_add_key: Error creating keys widget\n");
-		} else {
-			w = widget_find (s, KEYS_WIDGETID );
-		}
-	};
 
-	if (w) {
-		// Have a widget
-		if (!w->text) {
-			// Save supplied key list
-			w->text = strdup( keys );
-		} else {
-			// Add supplied keys to existing list
-			// NOTE: There could be duplicates in the resulting list
-			//    That's OK, it's the existence of the key in the list
-			//    that's important.  We'll be more careful in the delete
-			//    key function.
-			char *  new ;
-			new = realloc( w->text, strlen(w->text) + strlen(keys) +1 );
-			if( new ) {
-				w->text = new ;
-				strcat( new, keys );
-			}
+	// Save the keys
+	if (!s->keys) {
+		// Save supplied key list
+		s->keys = strdup( keys );
+	} else {
+		// Add supplied keys to existing list
+		// NOTE: There could be duplicates in the resulting list
+		//    That's OK, it's the existence of the key in the list
+		//    that's important.  We'll be more careful in the delete
+		//    key function.
+		char *  new ;
+		new = realloc( s->keys, strlen(s->keys) + strlen(keys) +1 );
+		if( new ) {
+			s->keys = new ;
+			strcat( new, keys );
 		}
 	}
 
-	if (!w) {
+	if (!s->keys) {
 		sock_send_string(c->sock, "huh? failed\n");
 	} else
 		sock_send_string(c->sock, "success\n");
@@ -349,18 +336,17 @@ screen_del_key_func (client * c, int argc, char **argv)
 		sock_send_string (c->sock, "huh? Invalid screen id\n");
 		return 0;
 	}
-	// Find the keys widget
-	w = widget_find( s, KEYS_WIDGETID );
-	if (w && w->text) {
-		// Got the widget, remove keys from the text member
+	// Do we have keys?
+	if (s->keys) {
+		// Have keys, remove keys from the list
 		// NOTE: We let malloc/realloc remember the length
 		//    of the allocated storage.  If keys are later
 		//    added, realloc (in add_key above) will make
-		//    sure there is enough space at w->text
+		//    sure there is enough space at s->keys
 		char *  from ;
 		char *  to ;
 
-		to = from = w->text ;
+		to = from = s->keys ;
 		while( *from ) {
 			//  Is this key to be deleted from the list?
 			if( strchr( keys, *from ) ) {
@@ -482,7 +468,8 @@ screen_set_func (client * c, int argc, char **argv)
 	// Handle the rest of the parameters
 	for (i = 2; i < argc; i++) {
 		// Handle the "name" parameter
-		if (0 == strcmp (argv[i], "-name")) {
+		if (0 == strcmp (argv[i], "-name")
+			|| 0 == strcmp (argv[i], "name")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: name=\"%s\"\n", argv[i]);
@@ -497,7 +484,8 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "priority" parameter
-		else if (0 == strcmp (argv[i], "-priority")) {
+		else if (0 == strcmp (argv[i], "-priority")
+				|| 0 == strcmp (argv[i], "priority")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: priority=\"%s\"\n", argv[i]);
@@ -512,7 +500,8 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "duration" parameter
-		else if (0 == strcmp (argv[i], "-duration")) {
+		else if (0 == strcmp (argv[i], "-duration")
+				|| 0 == strcmp (argv[i], "duration")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: duration=\"%s\"\n", argv[i]);
@@ -527,7 +516,8 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "heartbeat" parameter
-		else if (0 == strcmp (argv[i], "-heartbeat")) {
+		else if (0 == strcmp (argv[i], "-heartbeat")
+				|| 0 == strcmp (argv[i], "heartbeat")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: heartbeat=\"%s\"\n", argv[i]);
@@ -553,7 +543,8 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "wid" parameter
-		else if (0 == strcmp (argv[i], "-wid")) {
+		else if (0 == strcmp (argv[i], "-wid")
+				|| 0 == strcmp (argv[i], "wid")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: wid=\"%s\"\n", argv[i]);
@@ -568,7 +559,8 @@ screen_set_func (client * c, int argc, char **argv)
 			}
 		}
 		// Handle the "hgt" parameter
-		else if (0 == strcmp (argv[i], "-hgt")) {
+		else if (0 == strcmp (argv[i], "-hgt")
+				|| 0 == strcmp (argv[i], "hgt")) {
 			if (argc > i + 1) {
 				i++;
 				debug ("screen_set: hgt=\"%s\"\n", argv[i]);
@@ -637,8 +629,9 @@ widget_add_func (client * c, int argc, char **argv)
 
 	// Check for additional flags...
 	if (argc > 4) {
-		// Handle the "-in" flag to place widgets in a container...
-		if (0 == strcmp (argv[4], "-in")) {
+		// Handle the "in" flag to place widgets in a container...
+		if (0 == strcmp (argv[4], "-in")
+			|| 0 == strcmp (argv[4], "in")) {
 			if (argc < 6) {
 				sock_send_string (c->sock, "huh? Specify a frame to place widget in\n");
 				return 0;
@@ -1020,7 +1013,7 @@ menu_set_func (client * c, int argc, char **argv)
 // Adds an item to a menu
 //
 int
-menu_item_add_func (client * c, int argc, char **argv)
+menu_add_item_func (client * c, int argc, char **argv)
 {
 
 	if (!c->data->ack)
@@ -1035,7 +1028,7 @@ menu_item_add_func (client * c, int argc, char **argv)
 // Deletes an item from a menu
 //
 int
-menu_item_del_func (client * c, int argc, char **argv)
+menu_del_item_func (client * c, int argc, char **argv)
 {
 
 	if (!c->data->ack)
@@ -1052,7 +1045,7 @@ menu_item_del_func (client * c, int argc, char **argv)
 // For example, text displayed, widget type, value, etc...
 //
 int
-menu_item_set_func (client * c, int argc, char **argv)
+menu_set_item_func (client * c, int argc, char **argv)
 {
 
 	if (!c->data->ack)
@@ -1151,6 +1144,19 @@ output_func (client * c, int argc, char **argv)
 		sock_send_string(c->sock, "success\n");
 	}
 
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Does nothing, returns "noop complete" message
+//
+// This is useful for shell scripts or programs that want to talk
+//    with LCDproc and not get deadlocked.  Send a noop after each
+//    command and look for the "noop complete" message.
+int
+noop_func (client * c, int argc, char **argv)
+{
+	sock_send_string (c->sock, "noop complete\n");
 	return 0;
 }
 

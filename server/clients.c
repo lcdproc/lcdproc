@@ -18,7 +18,7 @@
 
 #include "clients.h"
 #include "client_data.h"
-#include "../shared/debug.h"
+#include "shared/debug.h"
 
 LL *clients;
 

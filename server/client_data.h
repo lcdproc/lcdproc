@@ -1,7 +1,7 @@
 #ifndef CLIENT_DATA_H
 #define CLIENT_DATA_H
 
-#include "../shared/LL.h"
+#include "shared/LL.h"
 
 #define CLIENT_NAME_SIZE 256
 

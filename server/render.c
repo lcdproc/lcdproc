@@ -16,8 +16,8 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../shared/debug.h"
-#include "../shared/LL.h"
+#include "shared/debug.h"
+#include "shared/LL.h"
 
 #include "drivers/lcd.h"
 

@@ -49,8 +49,8 @@
 #include <unistd.h>
 #include <ctype.h>
 
-#include "../../shared/sockets.h"
-#include "../../shared/debug.h"
+#include "shared/sockets.h"
+#include "shared/debug.h"
 
 #include "main.h"
 #include "mode.h"

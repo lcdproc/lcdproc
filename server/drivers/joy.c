@@ -10,8 +10,8 @@
 
 #include <linux/joystick.h>
 
-#include "../../shared/debug.h"
-#include "../../shared/str.h"
+#include "shared/debug.h"
+#include "shared/str.h"
 
 #define NAME_LENGTH 128
 

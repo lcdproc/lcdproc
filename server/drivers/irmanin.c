@@ -17,8 +17,8 @@
 #define __u32 unsigned int
 #define __u8 unsigned char
 
-#include "../../shared/debug.h"
-#include "../../shared/str.h"
+#include "shared/debug.h"
+#include "shared/str.h"
 
 #define NAME_LENGTH 128
 

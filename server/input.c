@@ -28,8 +28,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../shared/sockets.h"
-#include "../shared/debug.h"
+#include "shared/sockets.h"
+#include "shared/debug.h"
 
 #include "drivers/lcd.h"
 

@@ -8,8 +8,8 @@
 #include <fcntl.h>
 #include <dirent.h>
 
-#include "../../shared/sockets.h"
-#include "../../shared/LL.h"
+#include "shared/sockets.h"
+#include "shared/LL.h"
 
 #include "main.h"
 #include "mode.h"
@@ -19,7 +19,12 @@
 #include <strings.h>
 #include <sys/stat.h>
 #include <sys/swap.h>
-#include <procfs.h>
+#ifdef HAVE_SYS_PROCFS_H
+# include <sys/procfs.h>
+#endif
+#ifdef HAVE_PROCFS_H
+# include <procfs.h>
+#endif
 #endif
 
 

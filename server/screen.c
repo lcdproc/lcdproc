@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../shared/debug.h"
+#include "shared/debug.h"
 
 #include "drivers/lcd.h"
 
@@ -25,12 +25,12 @@ screen_create ()
 
 	s->id = NULL;
 	s->name = NULL;
-	s->priority = 128;
-	// TODO: Make the screen duration configurable!
-	s->duration = 32;
+	s->priority = 128;  // Default priority
+	s->duration = 32;  // Default duration (~ 8 seconds)
 	s->heartbeat = 1;
 	s->wid = lcd.wid;
 	s->hgt = lcd.hgt;
+	s->keys = NULL;
 	s->parent = NULL;
 	s->widgets = NULL;
 
@@ -63,6 +63,8 @@ screen_destroy (screen * s)
 		free (s->id);
 	if (s->name)
 		free (s->name);
+	if (s->keys)
+		free (s->keys);
 
 	free (s);
 

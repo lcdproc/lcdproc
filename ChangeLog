@@ -11,23 +11,44 @@ Coming soon: (?) (my list of stuff to do soon...)
  * Better syntax for driver parameters
  * Dynamically-loaded driver system
 
-v0.4-????:
+v0.4.1:
+ + Changed protocol to 0.3 because we now accept both -foo and foo
+   as argument introducers.  in 0.4-pre10, these were changed
+   from foo to -foo and this broke many clients.  This change
+   should fix that and be backward/forward compatible.
+ + Added a noop function to the protocol.  This is useful for writing
+   shell script clients of LCDproc.
+ + Changed the shared sock_send_string function to NOT send the
+   ending NUL ('\0') byte with the string.  This was confusing
+   in Perl clients which saw NUL's as the first character of
+   each reply.  WARNING: The LCDPROC client depended on this
+   behavior, your client may too.  Use the newline instead.
+   See the code in clients/lcdproc/main.c (look for "switch(buf[i])")
+   to see one way to handle this.  This should allow new clients
+   to connect to old servers and vice-versa.
+ + Messed with include structure in .c files.  It should no longer
+   be necessary to specify ../.. to get to shared code headers.
+   Also, since we are using automake, the global config.h can be
+   found with just #include "config.h" as it's location is included
+   in a -I to the compilers.  As a result "make distcheck" now works.
  + Added support for client_add_key and friends.  Clients MUST now
    request keys to get notified.  Keys are NO LONGER broadcast to all
-   clients.  Keys are now tied to a SCREEN.  (We should probably rename
-   the command to screen_add_key huh...)  If the current screen is
-   has requested the key just pressed, the client gets the key and no
-   other client gets it.  Clients only get one key notification even
-   if they have multiple screens requesting a given key.
+   clients.  Keys are now tied to a SCREEN and CLIENT.  There are new
+   commands (screen_add_key, screen_del_key) to bind keys to a
+   screen. If the current screen has requested the key just pressed,
+   the client gets the key and no other client gets it.  If the current
+   screen has not requested the current key, then the key is broadcast
+   to all clients who requested that key with client_add_key.  Clients
+   might want to request a "hotkey" with client_add_key so they will
+   be notified of that key no matter what screen is currently on the
+   display, and then request whatever other keys a screen uses with
+   screen_add_key.
  + Added driver for Matrix Orbital GLK12232-25 graphical display.
    Display is run in text mode since there isn't enough information in
    the widgets.  If we knew the max width/height of an hbar/vbar, we
    could use graphical vbar/hbar's.  Oh well.  BigNums' look really
    cool though.  You'll need some additional characters in the "Small Font"
    font (and the BigNumbers font) for this to work.
- + Left the client_add_key routines alone and created new screen_add_key
-   and screen_del_key to allow per screen keystrokes.  If someone else
-   implements a global client_key function, they can do that.
  + Rewrote Big Number Clock function in chrono.c.  Many problems with
    it have been fixed.  It now uses number value 10 to display a colon
    in between the digits.  Don't know what this will do on a the MtxOrb

@@ -355,18 +355,13 @@ int glk_contrast(int contrast)
 //
 void glk_backlight(int on)
 {
-  /*
-  if(on)
-  {
+  if(on) {
 //    printf("Backlight ON\n");
     glkputl( PortFD, GLKCommand, 0x42, 0, EOF );
-  }
-  else
-  {
+  } else {
 //    printf("Backlight OFF\n");
     glkputl( PortFD, GLKCommand, 0x46, EOF );
   }
-  */
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -638,7 +633,7 @@ char glk_getkey()
       msec_diff  = (now.tv_sec - lastkey.tv_sec) * 1000 ;
       msec_diff += (now.tv_usec - lastkey.tv_usec) / 1000 ;
 //      printf( "KEY %c down for %d msec\n", key, msec_diff );
-      if( msec_diff > 2000 ) {
+      if( msec_diff > 1000 ) {
         /* Generate repeat event */
         c = key | 0x20 ;  /* Upper case to lower case */
         ++lastkey.tv_sec ;  /* HACK HACK. repeat at 1 sec intervals */
@@ -656,6 +651,7 @@ char glk_getkey()
   case 'L' : c = 'D' ; break ; /* Menu/Exit */
   case 'U' : c = 'E' ; break ; /* Up */
   case 'K' : c = 'F' ; break ; /* Down */
+
   case 'v' : c = 'N' ; break ;
   case 'p' : c = 'O' ; break ;
   case 'q' : c = 'P' ; break ;

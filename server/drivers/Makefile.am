@@ -14,3 +14,8 @@ EXTRA_libLCDdrivers_a_SOURCES = MtxOrb.c MtxOrb.h text.c text.h \
 	glk.c glk.h glkproto.c glkproto.h
 libLCDdrivers_a_DEPENDENCIES = @DRIVERS@
 libLCDdrivers_a_LIBADD = @DRIVERS@
+# NOTE: $(srcdir)/..  is to get .h files from the server directory
+#       $(top_srcdir)  is to get .h files from shared/...
+# These are necessary because a VPATH build has split source and build
+#    directories and these files are in the VPATH'd source area.
+INCLUDES = -I$(srcdir)/.. -I$(top_srcdir)

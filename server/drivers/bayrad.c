@@ -10,7 +10,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <sys/types.h>
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -26,7 +26,6 @@
 # endif
 #endif
 #ifdef SOLARIS
-#  include <errno.h>
 #  include <strings.h>
 #endif
 #include "lcd.h"

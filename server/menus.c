@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "../shared/debug.h"
+#include "shared/debug.h"
 
 #include "drivers/lcd.h"
 

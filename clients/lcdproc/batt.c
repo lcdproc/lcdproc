@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <sys/utsname.h>
 
-#include "../../shared/sockets.h"
+#include "shared/sockets.h"
 
 #include "main.h"
 #include "mode.h"

@@ -13,9 +13,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../shared/LL.h"
-#include "../shared/sockets.h"
-#include "../shared/debug.h"
+#include "shared/LL.h"
+#include "shared/sockets.h"
+#include "shared/debug.h"
 #include "clients.h"
 #include "client_functions.h"
 #include "parse.h"

@@ -19,7 +19,7 @@
 #include <signal.h>
 #include <unistd.h>
 
-#include "../shared/debug.h"
+#include "shared/debug.h"
 
 #include "drivers/lcd.h"
 #include "sock.h"

@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../shared/sockets.h"
-#include "../shared/debug.h"
+#include "shared/sockets.h"
+#include "shared/debug.h"
 
 #include "screen.h"
 #include "widget.h"
@@ -17,7 +17,6 @@ char *types[] = { "none",
 	"scroller",
 	"frame",
 	"num",
-	"keys",
 	//"",
 	NULL,
 };
@@ -107,26 +106,6 @@ widget_find (screen * s, char *id)
 	debug ("widget_find(%s)\n", id);
 
 	return widget_finder (s->widgets, id);
-/*
-   LL_Rewind(s->widgets);
-   do {
-      w = LL_Get(s->widgets);
-      if( (w)  &&  (0 == strcmp(w->id, id)))
-      {
-	 debug("widget_find:  Found %s\n", id);
-	 return w;
-      }
-      // TODO:  Search kids too!
-      if( w->type == WID_FRAME )
-      {
-	 err = widget_finder(w->kids, id);
-	 if(err) return err;
-      }
-      
-   } while(LL_Next(s->widgets) == 0);
-
-   return NULL;
-*/
 }
 
 widget *

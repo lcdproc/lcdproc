@@ -5,22 +5,23 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#ifdef HAVE_NCURSES_H
-#include <ncurses.h>
-#else
-#include <curses.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
 
-#include "../../shared/str.h"
+#ifdef HAVE_NCURSES_H
+# include <ncurses.h>
+#else
+# include <curses.h>
+#endif
 
+#include "shared/str.h"
+#include "shared/debug.h"
 #include "lcd.h"
 #include "lb216.h"
 #include "drv_base.h"
-
-#include "../render.h"
-
-#include "../../shared/debug.h"
-#include "../../config.h"
+#include "render.h"
 
 static int custom=0;
 typedef enum {

@@ -27,7 +27,7 @@
 #include <sys/statfs.h>
 #endif
 
-#include "../../shared/sockets.h"
+#include "shared/sockets.h"
 
 #include "main.h"
 #include "mode.h"

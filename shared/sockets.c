@@ -8,7 +8,6 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 
@@ -96,7 +95,7 @@ sock_send_string (int fd, char *string)
 	if (!string)
 		return -1;
 
-	len = strlen (string) + 1;
+	len = strlen (string) ;
 	while (offset != len) {
 		// write isn't guaranteed to send the entire string at once,
 		// so we have to sent it in a loop like this

@@ -1,7 +1,7 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
-#include "../shared/LL.h"
+#include "shared/LL.h"
 #include "clients.h"
 
 typedef struct screen {
@@ -11,6 +11,7 @@ typedef struct screen {
 	int priority;
 	int duration;
 	int heartbeat;
+	char *keys;
 	LL *widgets;
 	client *parent;
 } screen;

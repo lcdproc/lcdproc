@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "../shared/LL.h"
-#include "../shared/sockets.h"
-#include "../shared/debug.h"
+#include "shared/LL.h"
+#include "shared/sockets.h"
+#include "shared/debug.h"
 #include "screenlist.h"
 #include "screen.h"
 #include "clients.h"

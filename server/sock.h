@@ -1,7 +1,7 @@
 #ifndef SOCKETS_H
 #define SOCKETS_H
 
-#include "../shared/sockets.h"
+#include "shared/sockets.h"
 
 typedef struct sockaddr_in sockaddr_in;
 

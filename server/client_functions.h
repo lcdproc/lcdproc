@@ -28,11 +28,12 @@ int widget_set_func (client * c, int argc, char **argv);
 int menu_add_func (client * c, int argc, char **argv);
 int menu_del_func (client * c, int argc, char **argv);
 int menu_set_func (client * c, int argc, char **argv);
-int menu_item_add_func (client * c, int argc, char **argv);
-int menu_item_del_func (client * c, int argc, char **argv);
-int menu_item_set_func (client * c, int argc, char **argv);
+int menu_add_item_func (client * c, int argc, char **argv);
+int menu_del_item_func (client * c, int argc, char **argv);
+int menu_set_item_func (client * c, int argc, char **argv);
 int backlight_func (client * c, int argc, char **argv);
 int output_func (client * c, int argc, char **argv);
+int noop_func (client * c, int argc, char **argv);
 
 extern client_function commands[];
 

@@ -39,7 +39,7 @@
 #include "hd44780-4bit.h"
 #include "port.h"
 
-#include "../../shared/str.h"
+#include "shared/str.h"
 #include <sys/perm.h>
 #include <stdio.h>
 #include <string.h>

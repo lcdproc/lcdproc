@@ -81,14 +81,12 @@ GLKDisplay *
     *   framing errors incase the module transmits back
     *   to back with only one stop bit.
     */
-#ifndef IRIX
-#ifndef SOLARIS
-   cfmakeraw( &new );  /* Sets CS8 */
-#endif
-#endif
-   new.c_iflag |= IGNPAR ;  /* Ignore framing/parity errors */
-   new.c_cflag &= ~(CBAUD | CRTSCTS ) ;
-   new.c_cflag |= speed | CREAD | CLOCAL | CSTOPB ;
+   new.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | IGNPAR | ISTRIP
+                     | INLCR | IGNCR | ICRNL | IXON );
+   new.c_oflag &= ~OPOST;
+   new.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+   new.c_cflag &= ~( CBAUD | CSIZE | PARENB | CRTSCTS );
+   new.c_cflag |= speed | CS8 | CREAD | CLOCAL | CSTOPB ;
    new.c_cc[VMIN] = 0 ;
    new.c_cc[VTIME] = GLK_TIMEOUT ;
 

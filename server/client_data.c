@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../shared/debug.h"
+#include "shared/debug.h"
 
 #include "client_data.h"
 #include "screen.h"

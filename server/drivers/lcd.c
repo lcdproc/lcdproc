@@ -10,7 +10,7 @@
 #include "config.h"
 #endif
 
-#include "../../shared/LL.h"
+#include "shared/LL.h"
 
 #include "lcd.h"
 

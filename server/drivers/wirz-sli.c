@@ -15,8 +15,8 @@
 #include "wirz-sli.h"
 #include "drv_base.h"
 
-#include "../../shared/debug.h"
-#include "../../shared/str.h"
+#include "shared/debug.h"
+#include "shared/str.h"
 
 static int custom = 0;
 typedef enum {

@@ -26,7 +26,7 @@
 #include <vga.h>
 #include <vgagl.h>
 
-#include "../../shared/str.h"
+#include "shared/str.h"
 
 #include "lcd.h"
 #include "svgalib_drv.h"

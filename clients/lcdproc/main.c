@@ -230,25 +230,21 @@ main_loop (mode * sequence)
 			argc = 0;
 			newtoken = 1;
 			for (i = 0; i < len; i++) {
-				if (buf[i])			  // For regular letters, keep tokenizing...
-				{
-					switch (buf[i]) {
-					case ' ':
-						newtoken = 1;
-						buf[i] = 0;
-						break;
-					case '\n':
-						buf[i] = 0;
-					default:
-						if (newtoken) {
-							argv[argc] = buf + i;
-							argc++;
-						}
-						newtoken = 0;
-						break;
+				switch (buf[i]) {
+				case ' ':
+					newtoken = 1;
+					buf[i] = 0;
+					break;
+				default:	// regular chars, keep tokenizing
+					if (newtoken) {
+						argv[argc] = buf + i;
+						argc++;
 					}
-				} else				  // If we've got a zero, it's the end of a string...
-				{
+					newtoken = 0;
+					break;
+				case '\0':
+				case '\n':
+					buf[i] = 0;
 					if (argc > 0) {
 						//printf("%s %s\n", argv[0], argv[1]);
 						if (0 == strcmp (argv[0], "listen")) {
@@ -293,9 +289,11 @@ main_loop (mode * sequence)
 						}
 					}
 
+					// Restart tokenizing
 					argc = 0;
 					newtoken = 1;
-				}
+					break ;
+				} // switch( buf[i] )
 			}
 
 			len = sock_recv (sock, buf, 8000);

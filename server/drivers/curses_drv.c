@@ -15,7 +15,7 @@
 #include <curses.h>
 #endif
 
-#include "../../shared/str.h"
+#include "shared/str.h"
 
 #include "lcd.h"
 #include "curses_drv.h"
