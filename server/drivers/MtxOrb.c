@@ -1264,9 +1264,9 @@ MtxOrb_get_key (Driver *drvthis)
 
 	if (!p->keypad_test_mode) {
         if (in==p->left_key) { return "Left";
-		} else if (in==p->right_key) { return "Up";
-		} else if (in==p->up_key) { return "Down";
-		} else if (in==p->down_key) { return "Right";
+		} else if (in==p->right_key) { return "Right";
+		} else if (in==p->up_key) { return "Up";
+		} else if (in==p->down_key) { return "Down";
 		} else if (in==p->enter_key) { return "Enter"; 
 		} else if (in==p->escape_key) { return "Escape";
 		} else {
