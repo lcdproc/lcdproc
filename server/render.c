@@ -41,7 +41,7 @@ static int reset;
 
 #define BUFSIZE 1024
 
-static int draw_frame (LL * list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, int timer);
+static int draw_frame (LinkedList * list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, int timer);
 
 int
 draw_screen (screen * s, int timer)
@@ -145,7 +145,7 @@ draw_screen (screen * s, int timer)
 // Best thing to do is to remove support for frames... but anyway...
 //
 static int
-draw_frame (LL * list,
+draw_frame (LinkedList * list,
 		char fscroll,	// direction of scrolling
 		int left,	// left edge of frame
 		int top,	// top edge of frame

@@ -229,7 +229,7 @@ lcd_physical_driver drivers[] = {
 
 };
 
-LL *list;
+LinkedList *list;
 
 #define CurrentDriver (drivers[i].name)
 #define NextDriver (drivers[i+1].name)

@@ -13,7 +13,7 @@ int screenlist_action = 0;
 
 int timer = 0;
 
-LL *screenlist;
+LinkedList *screenlist;
 
 int screenlist_add_end (screen * screen);
 screen *screenlist_next_roll ();
@@ -76,7 +76,7 @@ screenlist_remove_all (screen * s)
 	return i;
 }
 
-LL *
+LinkedList *
 screenlist_getlist ()
 {
 	debug ("screenlist_getlist()\n");

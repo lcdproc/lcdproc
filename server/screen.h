@@ -12,7 +12,7 @@ typedef struct screen {
 	int duration;
 	int heartbeat;
 	char *keys;
-	LL *widgets;
+	LinkedList *widgets;
 	client *parent;
 } screen;
 

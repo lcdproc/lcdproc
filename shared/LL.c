@@ -11,12 +11,12 @@
 
 //////////////////////////////////////////////////////////////////////
 // Creates a new list...
-LL *
+LinkedList *
 LL_new ()
 {
-	LL *list;
+	LinkedList *list;
 
-	list = malloc (sizeof (LL));
+	list = malloc (sizeof (LinkedList));
 	if (!list)
 		return NULL;
 
@@ -36,7 +36,7 @@ LL_new ()
 // Destroys the entire list
 // Warning!  Does not free the list data! (only the list itself)
 int
-LL_Destroy (LL * list)
+LL_Destroy (LinkedList * list)
 {
 	LL_node *node, *next;
 
@@ -115,7 +115,7 @@ LL_node_DestroyData (LL_node * node)
 //////////////////////////////////////////////////////////////////////
 // Returns to the beginning of the list...
 int
-LL_Rewind (LL * list)
+LL_Rewind (LinkedList * list)
 {
 	if (!list)
 		return -1;
@@ -136,7 +136,7 @@ LL_Rewind (LL * list)
 //////////////////////////////////////////////////////////////////////
 // Goes to the end of the list...
 int
-LL_End (LL * list)
+LL_End (LinkedList * list)
 {
 	if (!list)
 		return -1;
@@ -152,7 +152,7 @@ LL_End (LL * list)
 //////////////////////////////////////////////////////////////////////
 // Go to the next node
 int
-LL_Next (LL * list)
+LL_Next (LinkedList * list)
 {
 	if (!list)
 		return -1;
@@ -170,7 +170,7 @@ LL_Next (LL * list)
 //////////////////////////////////////////////////////////////////////
 // Go to the previous node
 int
-LL_Prev (LL * list)
+LL_Prev (LinkedList * list)
 {
 	if (!list)
 		return -1;
@@ -188,7 +188,7 @@ LL_Prev (LL * list)
 //////////////////////////////////////////////////////////////////////
 // Data manipulation
 void *
-LL_Get (LL * list)
+LL_Get (LinkedList * list)
 {
 	if (!list)
 		return NULL;
@@ -200,7 +200,7 @@ LL_Get (LL * list)
 
 //////////////////////////////////////////////////////////////////////
 int
-LL_Put (LL * list, void *data)
+LL_Put (LinkedList * list, void *data)
 {
 	if (!list)
 		return -1;
@@ -214,7 +214,7 @@ LL_Put (LL * list, void *data)
 
 //////////////////////////////////////////////////////////////////////
 LL_node *
-LL_GetNode (LL * list)
+LL_GetNode (LinkedList * list)
 {
 	if (!list)
 		return NULL;
@@ -225,7 +225,7 @@ LL_GetNode (LL * list)
 //////////////////////////////////////////////////////////////////////
 // Don't use this unless you know what you're doing.
 int
-LL_PutNode (LL * list, LL_node * node)
+LL_PutNode (LinkedList * list, LL_node * node)
 {
 	if (!list)
 		return -1;
@@ -239,7 +239,7 @@ LL_PutNode (LL * list, LL_node * node)
 
 //////////////////////////////////////////////////////////////////////
 void *
-LL_GetFirst (LL * list)			  // gets data from first node
+LL_GetFirst (LinkedList * list)			  // gets data from first node
 {
 	if (!list)
 		return NULL;
@@ -253,7 +253,7 @@ LL_GetFirst (LL * list)			  // gets data from first node
 //////////////////////////////////////////////////////////////////////
 //
 void *
-LL_GetNext (LL * list)			  //            ... next node
+LL_GetNext (LinkedList * list)			  //            ... next node
 {
 	if (!list)
 		return NULL;
@@ -266,7 +266,7 @@ LL_GetNext (LL * list)			  //            ... next node
 
 //////////////////////////////////////////////////////////////////////
 void *
-LL_GetPrev (LL * list)			  //            ... prev node
+LL_GetPrev (LinkedList * list)			  //            ... prev node
 {
 	if (!list)
 		return NULL;
@@ -279,7 +279,7 @@ LL_GetPrev (LL * list)			  //            ... prev node
 
 //////////////////////////////////////////////////////////////////////
 void *
-LL_GetLast (LL * list)			  //            ... last node
+LL_GetLast (LinkedList * list)			  //            ... last node
 {
 	if (!list)
 		return NULL;
@@ -292,7 +292,7 @@ LL_GetLast (LL * list)			  //            ... last node
 
 //////////////////////////////////////////////////////////////////////
 int
-LL_AddNode (LL * list, void *add)	// Adds node AFTER current one
+LL_AddNode (LinkedList * list, void *add)	// Adds node AFTER current one
 {
 	LL_node *node;
 
@@ -348,7 +348,7 @@ LL_AddNode (LL * list, void *add)	// Adds node AFTER current one
 
 //////////////////////////////////////////////////////////////////////
 int
-LL_InsertNode (LL * list, void *add)	// Adds node BEFORE current one
+LL_InsertNode (LinkedList * list, void *add)	// Adds node BEFORE current one
 {
 	LL_node *node;
 
@@ -384,7 +384,7 @@ LL_InsertNode (LL * list, void *add)	// Adds node BEFORE current one
 // Removes a node from the link
 // ... and advances one node forward
 void *
-LL_DeleteNode (LL * list)
+LL_DeleteNode (LinkedList * list)
 {
 	LL_node *next, *prev;
 	void *data;
@@ -434,7 +434,7 @@ LL_DeleteNode (LL * list)
 //////////////////////////////////////////////////////////////////////
 // Removes a specific node...
 void *
-LL_Remove (LL * list, void *data)
+LL_Remove (LinkedList * list, void *data)
 {
 	void *find;
 
@@ -454,7 +454,7 @@ LL_Remove (LL * list, void *data)
 //////////////////////////////////////////////////////////////////////
 // Stack operations
 int
-LL_Push (LL * list, void *add)  // Add node to end of list
+LL_Push (LinkedList * list, void *add)  // Add node to end of list
 {
 	if (!list)
 		return -1;
@@ -470,7 +470,7 @@ LL_Push (LL * list, void *add)  // Add node to end of list
 
 //////////////////////////////////////////////////////////////////////
 void *
-LL_Pop (LL * list)				  // Remove node from end of list
+LL_Pop (LinkedList * list)				  // Remove node from end of list
 {
 	if (!list)
 		return NULL;
@@ -483,14 +483,14 @@ LL_Pop (LL * list)				  // Remove node from end of list
 
 //////////////////////////////////////////////////////////////////////
 void *
-LL_Top (LL * list)				  // Peek at end node
+LL_Top (LinkedList * list)				  // Peek at end node
 {
 	return LL_GetLast (list);
 }
 
 //////////////////////////////////////////////////////////////////////
 void *
-LL_Shift (LL * list)				  // Remove node from start of list
+LL_Shift (LinkedList * list)				  // Remove node from start of list
 {
 	if (!list)
 		return NULL;
@@ -503,14 +503,14 @@ LL_Shift (LL * list)				  // Remove node from start of list
 
 //////////////////////////////////////////////////////////////////////
 void *
-LL_Look (LL * list)				  // Peek at first node
+LL_Look (LinkedList * list)				  // Peek at first node
 {
 	return LL_GetFirst (list);
 }
 
 //////////////////////////////////////////////////////////////////////
 int
-LL_Unshift (LL * list, void *add)	// Add node to beginning of list
+LL_Unshift (LinkedList * list, void *add)	// Add node to beginning of list
 {
 	if (!list)
 		return -1;
@@ -524,7 +524,7 @@ LL_Unshift (LL * list, void *add)	// Add node to beginning of list
 
 //////////////////////////////////////////////////////////////////////
 int
-LL_Roll (LL * list)				  // Make last node first
+LL_Roll (LinkedList * list)				  // Make last node first
 {
 	LL_node *node, *next;
 
@@ -566,7 +566,7 @@ LL_Roll (LL * list)				  // Make last node first
 
 //////////////////////////////////////////////////////////////////////
 int
-LL_UnRoll (LL * list)			  // Roll the other way...
+LL_UnRoll (LinkedList * list)			  // Roll the other way...
 {
 	LL_node *node, *prev;
 
@@ -610,7 +610,7 @@ LL_UnRoll (LL * list)			  // Roll the other way...
 // Add an item to the end of its "priority group"
 // The list is assumed to be sorted already...
 int
-LL_PriorityEnqueue (LL * list, void *add, int compare (void *, void *))
+LL_PriorityEnqueue (LinkedList * list, void *add, int compare (void *, void *))
 {
 	void *data;
 	int i;
@@ -696,7 +696,7 @@ LL_nSwapNodes (int one, int two)	// Switch two nodes positions...
 
 //////////////////////////////////////////////////////////////////////
 int
-LL_Length (LL * list)			  // Returns # of nodes in entire list
+LL_Length (LinkedList * list)			  // Returns # of nodes in entire list
 {
 	LL_node *node;
 	int num = 0;
@@ -722,7 +722,7 @@ LL_Length (LL * list)			  // Returns # of nodes in entire list
 // Note that this does *not* rewind the list first!  You should do
 // it yourself if you want to start from the beginning!
 void *
-LL_Find (LL * list, int compare (void *, void *), void *value)
+LL_Find (LinkedList * list, int compare (void *, void *), void *value)
 {
 	void *data;
 
@@ -747,7 +747,7 @@ LL_Find (LL * list, int compare (void *, void *), void *value)
 // Sorts the list, then rewinds it...
 //
 int
-LL_Sort (LL * list, int compare (void *, void *))
+LL_Sort (LinkedList * list, int compare (void *, void *))
 {
 	int i, j;						  // Junk / loop variables
 	int numnodes;					  // number of nodes in list
@@ -797,7 +797,7 @@ LL_Sort (LL * list, int compare (void *, void *))
 }
 
 void
-LL_dprint (LL * list)
+LL_dprint (LinkedList * list)
 {
 	LL_node *current;
 

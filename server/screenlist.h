@@ -16,7 +16,7 @@ extern int timer;
 int screenlist_init ();
 int screenlist_shutdown ();
 
-LL *screenlist_getlist ();
+LinkedList *screenlist_getlist ();
 screen *screenlist_current ();
 
 int screenlist_add (screen * s);

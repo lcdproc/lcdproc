@@ -25,7 +25,7 @@
 // lcd.h is used for the driver API definition
 
 
-LL * loaded_drivers = NULL;
+LinkedList * loaded_drivers = NULL;
 
 long int empty_function() { return 0; }
 

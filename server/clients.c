@@ -22,7 +22,7 @@
 #include "client_data.h"
 #include "shared/debug.h"
 
-LL *clients;
+LinkedList *clients;
 
 // Initialize and kill client list...
 int

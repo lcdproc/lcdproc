@@ -22,8 +22,8 @@ char *types[] = { "none",
 	NULL,
 };
 
-static widget *widget_finder (LL * list, char *id);
-static int widget_remover (LL * list, widget * w);
+static widget *widget_finder (LinkedList * list, char *id);
+static int widget_remover (LinkedList * list, widget * w);
 
 widget *
 widget_create ()
@@ -59,7 +59,7 @@ widget_create ()
 int
 widget_destroy (widget * w)
 {
-	LL *list;
+	LinkedList *list;
 	widget *foo;
 
 	if (!w)
@@ -110,7 +110,7 @@ widget_find (screen * s, char *id)
 }
 
 widget *
-widget_finder (LL * list, char *id)
+widget_finder (LinkedList * list, char *id)
 {
 	widget *w, *err;
 
@@ -153,7 +153,7 @@ widget_add (screen * s, char *id, char *type, char *in, int sock)
 	int valid = 0;
 	int wid_type = 0;
 	widget *w, *parent;
-	LL *list;
+	LinkedList *list;
 
 	debug ("widget_add(%s, %s, %s)\n", id, type, in);
 
@@ -249,7 +249,7 @@ int
 widget_remove (screen * s, char *id, int sock)
 {
 	widget *w;
-	LL *list;
+	LinkedList *list;
 
 	debug ("widget_remove(%s)\n", id);
 
@@ -286,7 +286,7 @@ widget_remove (screen * s, char *id, int sock)
 }
 
 int
-widget_remover (LL * list, widget * w)
+widget_remover (LinkedList * list, widget * w)
 {
 	widget *foo, *bar;
 	int err;

@@ -7,12 +7,12 @@
 typedef struct client {
 	int sock;
 	char addr[64];
-	LL *messages;
+	LinkedList *messages;
 	client_data *data;
 
 } client;
 
-extern LL *clients;
+extern LinkedList *clients;
 
 // Initialize and kill client list...
 int client_init ();

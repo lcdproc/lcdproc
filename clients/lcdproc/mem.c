@@ -348,7 +348,7 @@ mem_top_screen (int rep, int display)
 	int threshold = 400, unique;
 	int i;
 	proc_mem_info *p;
-	LL *procs;
+	LinkedList *procs;
 	static int first = 1;
 
 	if (first) {

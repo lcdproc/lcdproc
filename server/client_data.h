@@ -9,10 +9,10 @@ typedef struct client_data {
 	int ack;
 	char *name;
 	// and other stuff...  doesn't matter yet
-	LL *screenlist;
+	LinkedList *screenlist;
 	// list of requested keys...
 	char *client_keys ;
-	LL *menulist;
+	LinkedList *menulist;
 
 } client_data;
 
