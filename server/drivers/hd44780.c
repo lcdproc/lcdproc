@@ -1137,7 +1137,7 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 	unsigned int shiftingbit;
 	unsigned int Ypattern;
 	unsigned int Yval;
-	char exp;
+	signed char exp;
 
 	unsigned char scancode = 0;
 
