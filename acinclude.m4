@@ -101,7 +101,7 @@ dnl				else
 			 LIBS="$oldlibs"
 			])
 			if test "$ac_cv_curses_redrawwin" = yes; then
-				AC_DEFINE(CURSES_HAS_REDRAWWIN,[1],[Define to 1 if you have the `redrawwin' function in the curses library])
+				AC_DEFINE(CURSES_HAS_REDRAWWIN,[1],[Define to 1 if you have the redrawwin function in the curses library])
 			fi
 
 			AC_CACHE_CHECK([for wcolor_set() in curses], ac_cv_curses_wcolor_set,
@@ -111,7 +111,7 @@ dnl				else
 			 LIBS="$oldlibs"
 			])
 			if test "$ac_cv_curses_wcolor_set" = yes; then
-				AC_DEFINE(CURSES_HAS_WCOLOR_SET,[1],[Define to 1 if you have the `wcolor_set' function in the curses library])
+				AC_DEFINE(CURSES_HAS_WCOLOR_SET,[1],[Define to 1 if you have the wcolor_set function in the curses library])
 			fi
 			;;
 		cwlnx)
@@ -257,7 +257,7 @@ AC_DEFUN(AC_CURSES_ACS_ARRAY, [
 
 	if test "$ac_cv_curses_acs_map" = yes
 	then
-		AC_DEFINE(CURSES_HAS_ACS_MAP,[1],[Define to 1 if <curses.h> defines the `acs_map' array])
+		AC_DEFINE(CURSES_HAS_ACS_MAP,[1],[Define to 1 if <curses.h> defines the acs_map array])
 	else
 
 		AC_CACHE_CHECK([for _acs_char in curses.h], ac_cv_curses__acs_char,
@@ -265,7 +265,7 @@ AC_DEFUN(AC_CURSES_ACS_ARRAY, [
 
 		if test "$ac_cv_curses__acs_char" = yes
 		then
-			AC_DEFINE(CURSES_HAS__ACS_CHAR,[1],[Define to 1 if <curses.h> defines the `_acs_char' array])
+			AC_DEFINE(CURSES_HAS__ACS_CHAR,[1],[Define to 1 if <curses.h> defines the _acs_char array])
 		fi
 
 	fi
@@ -322,7 +322,7 @@ AC_DEFUN(AC_GET_FS_INFO, [
       AC_CHECK_FUNCS(statvfs)
       if test $ac_cv_func_statvfs = yes; then
         space=yes
-        AC_DEFINE(STAT_STATVFS,[1],[Define to 1 if you have `statvfs'])
+        AC_DEFINE(STAT_STATVFS,[1],[Define to 1 if you have the statvfs function])
       fi
     fi
 
@@ -346,7 +346,7 @@ AC_DEFUN(AC_GET_FS_INFO, [
       AC_MSG_RESULT($fu_cv_sys_stat_statfs3_osf1)
       if test $fu_cv_sys_stat_statfs3_osf1 = yes; then
         space=yes
-        AC_DEFINE(STAT_STATFS3_OSF1,[1],[Define to 1 if you have 3-argument `statfs' (DEC OSF/1)])
+        AC_DEFINE(STAT_STATFS3_OSF1,[1],[Define to 1 if you have the 3-argument statfs function (DEC OSF/1)])
       fi
     fi
 
@@ -376,7 +376,7 @@ AC_DEFUN(AC_GET_FS_INFO, [
       AC_MSG_RESULT($fu_cv_sys_stat_statfs2_bsize)
       if test $fu_cv_sys_stat_statfs2_bsize = yes; then
         space=yes
-        AC_DEFINE(STAT_STATFS2_BSIZE,[1],[Define to 1 if you have two-argument `statfs' with statfs.bsize member (AIX, 4.3BSD)])
+        AC_DEFINE(STAT_STATFS2_BSIZE,[1],[Define to 1 if you have the two-argument statfs function with statfs.bsize member (AIX, 4.3BSD)])
       fi
     fi
 
@@ -397,7 +397,7 @@ AC_DEFUN(AC_GET_FS_INFO, [
       AC_MSG_RESULT($fu_cv_sys_stat_statfs4)
       if test $fu_cv_sys_stat_statfs4 = yes; then
         space=yes
-        AC_DEFINE(STAT_STATFS4,[1],[Define to 1 if you have four-argument `statfs' (AIX-3.2.5, SVR3)])
+        AC_DEFINE(STAT_STATFS4,[1],[Define to 1 if you have the four-argument statfs function (AIX-3.2.5, SVR3)])
       fi
     fi
     if test $space = no; then
@@ -424,7 +424,7 @@ AC_DEFUN(AC_GET_FS_INFO, [
       AC_MSG_RESULT($fu_cv_sys_stat_statfs2_fsize)
       if test $fu_cv_sys_stat_statfs2_fsize = yes; then
         space=yes
-        AC_DEFINE(STAT_STATFS2_FSIZE,[1],[Define to 1 if you have two-argument `statfs' with statfs.fsize member (4.4BSD and NetBSD)])
+        AC_DEFINE(STAT_STATFS2_FSIZE,[1],[Define to 1 if you have the two-argument statfs function with statfs.fsize member (4.4BSD and NetBSD)])
       fi
     fi
 
@@ -456,7 +456,7 @@ AC_DEFUN(AC_GET_FS_INFO, [
       AC_MSG_RESULT($fu_cv_sys_stat_fs_data)
       if test $fu_cv_sys_stat_fs_data = yes; then
         space=yes
-        AC_DEFINE(STAT_STATFS2_FS_DATA,[1],[Define to 1 if you have two-argument `statfs' with struct fs_data (Ultrix)])
+        AC_DEFINE(STAT_STATFS2_FS_DATA,[1],[Define to 1 if you have the two-argument statfs function with struct fs_data (Ultrix)])
       fi
     fi
 
