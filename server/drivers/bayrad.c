@@ -25,6 +25,10 @@
 #  include <time.h>
 # endif
 #endif
+#ifdef SOLARIS
+#  include <errno.h>
+#  include <strings.h>
+#endif
 #include "lcd.h"
 #include "bayrad.h"
 #include "drv_base.h"
