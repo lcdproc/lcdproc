@@ -91,6 +91,7 @@ int sock_close(int fd)
    int err;
    
    err=shutdown(fd, 2);
+   if (!err) close (fd);
 
    return err;
 }
@@ -98,69 +99,112 @@ int sock_close(int fd)
 // Send/receive lines of text
 int sock_send_string(int fd, char *string)
 {
-   int err;
+	int len;
+	int offset=0;
 
-   if(!string) return -1;
-   
-   err = write (fd, string, strlen(string) + 1);
-   if (err < 0)
-   {
-      perror ("sock_send_string: socket write error");
-      printf("Message was: %s\n", string);
-      //shutdown(fd, 2);
-      return err;
-   }
+	if (!string) return -1;
 
-   //printf("sock_send_string: %i bytes\n", err);
-   
-   return err;
+	len = strlen (string) + 1;
+	while (offset != len) {
+		// write isn't guaranteed to send the entire string at once,
+		// so we have to sent it in a loop like this
+		int sent = write (fd, string+offset, len-offset);
+		if (sent == -1) {
+			if (errno != EAGAIN) {
+				perror ("sock_send_string: socket write error");
+				printf("Message was: %s\n", string);
+				//shutdown(fd, 2);
+				return sent;
+			}
+			continue;
+		} else if (sent == 0) {
+			// when this returns zero, it generally means
+			// we got disconnected
+			return sent+offset;
+		}
+
+		offset += sent;
+	}
+
+	return offset;
 }
 
 // Recv gives only one line per call...
 int sock_recv_string(int fd, char *dest, size_t maxlen)
 {
-   char * err;
-   int i;
+	char *ptr = dest;
+	int recv = 0;
 
-   // TODO:  Get this function to work right somehow...
-   return -1;
-   
-   if(!dest) return -1;
-   if(maxlen <= 0) return 0;
+	if (!dest) return -1;
+	if (maxlen <= 0) return 0;
 
-   // Read in characters until the end of the line...
-   for(i=0;
-       i<maxlen && (read(fd, dest+i, 1) > 0);
-       i++)
-      if(dest[i] == 0  ||  dest[i] == '\n') break;
-      
-   if (err == NULL)
-   {
-      perror("sock_recv_string: socket read error");
-      //shutdown(fd, 2);
-      return -1;
-   }
-   printf("sock_recv_string: Got message \"%s\"\n", dest);
-   
-   return strlen(dest);
+	while (1) {
+		int err = read (fd, ptr, 1);
+		if (err == -1) {
+			if (errno == EAGAIN) {
+				if (recv) {
+					// We've begun to read a string, but no bytes are
+					// available.  Loop.
+					continue;
+				}
+				return 0;
+			} else {
+				perror ("sock_recv_string: socket read error");
+				return err;
+			}
+		} else if (err == 0) {
+			return recv;
+		}
+
+		recv++;
+
+		if (recv == maxlen || *ptr == 0 || *ptr == 10) {
+			*ptr = 0;
+			break;
+		}
+		ptr++;
+	}
+
+	if (recv == 1 && dest[0] == 0) {
+		// Don't return a null string
+		return 0;
+	}
+
+	if (recv < maxlen-1) {
+		dest[recv] = 0;
+	}
+
+	return recv;
 }
 
 // Send/receive raw data
 int sock_send(int fd, void *src, size_t size)
 {
-   int err;
-   
-   if(!src) return -1;
-   
-   err = write (fd, src, size);
-   if (err < 0)
-   {
-      perror("sock_send: socket write error");
-      //shutdown(fd, 2);
-      return err;
-   }
+	int offset=0;
 
-   return err;
+	if (!src) return -1;
+
+	while (offset != size) {
+		// write isn't guaranteed to send the entire string at once,
+		// so we have to sent it in a loop like this
+		int sent = write (fd, ((char*)src)+offset, size-offset);
+		if (sent == -1) {
+			if (errno != EAGAIN) {
+				perror ("sock_send: socket write error");
+				//shutdown(fd, 2);
+				return sent;
+			}
+			continue;
+		} else if (sent == 0) {
+			// when this returns zero, it generally means
+			// we got disconnected
+			return sent+offset;
+		}
+
+		offset += sent;
+	}
+
+	return offset;
 }
 
 int sock_recv(int fd, void *dest, size_t maxlen)
