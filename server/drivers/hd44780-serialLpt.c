@@ -161,10 +161,18 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 	unsigned int scancode = 0;
 
 	// While scanning the keypad, the 2-wire version will place the
-	// character 0xFF on the current cursor position. Therefor we fisrt
-	// set the cursor position to -1, so it's harmless.
+	// character 0xFF on the current cursor position. Therefor we first
+	// set the cursor position to home, do the keypad reading and
+	// afterwards restore the first character (on all connected displays).
+	//
 	// I could not prevent this, while staying compatible with both
-	// wiring versions.
+	// wiring versions. Joris.
+	//
+	// (Positioning the cursor out of screen does not work either :( )
+
+	// Set cursor position
+	p->hd44780_functions->senddata (p, 0, RS_INSTR, POSITION | 0 );
+	p->hd44780_functions->uPause (p, 40);
 
 	// Clear the shiftregister, needed for 3-wire version
 	rawshift(p, 0);
@@ -173,11 +181,11 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 	readval = ~ port_in (p->port + 1) ^ INMASK;
 
 	// And convert value back (MSB first).
-	inputs_zero =  (((readval & FAULT) / FAULT <<4) |		/* pin 15 */
-			((readval & SELIN) / SELIN <<3) |		/* pin 13 */
-			((readval & PAPEREND) / PAPEREND <<2) |		/* pin 12 */
-			((readval & BUSY) / BUSY <<1) |			/* pin 11 */
-			((readval & ACK) / ACK ));			/* pin 10 */
+	inputs_zero =  (((readval & FAULT) / FAULT <<4) |	/* pin 15 */
+			((readval & SELIN) / SELIN <<3) |	/* pin 13 */
+			((readval & PAPEREND) / PAPEREND <<2) |	/* pin 12 */
+			((readval & BUSY) / BUSY <<1) |		/* pin 11 */
+			((readval & ACK) / ACK ));		/* pin 10 */
 
 
 	if( inputs_zero == 0 ) {
@@ -188,16 +196,12 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 		return 0;
 	}
 
-	// Set cursor position to -1
-	p->hd44780_functions->senddata (p, 0, RS_INSTR, POSITION | 127);
-	p->hd44780_functions->uPause (p, 40);
-
 	// Scan the keypad while sending the first half of the command (high nibble)
 	for (i = 7; i >= 0; i--) {				/* MSB first  */
 		port_out (p->port, LCDDATA);			/*set up data */
 		port_out (p->port, LCDDATA | LCDCLOCK);		/*rising edge of clock */
 
-		p->hd44780_functions->uPause (p, 2);
+		p->hd44780_functions->uPause (p, 1);
 
 		if( !scancode ) {
 			// Read input line(s)
@@ -230,11 +234,26 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 	// Needed for 2-wire version.
 	rawshift (p, 0xFF);
 
-	// Wait for 2-wire version to clear the latch...
-	p->hd44780_functions->uPause (p, 6);
+	// Wait 6us for 2-wire version to clear the latch and wait for
+	// the data to be processed
+	p->hd44780_functions->uPause (p, 40);
 
-	// Restore line status for backlight.
-	port_out (p->port, p->backlight_bit );
+	// Restore the screen state
+	// Move back to home cursor position
+	p->hd44780_functions->senddata (p, 0, RS_INSTR, POSITION | 0 );
+	p->hd44780_functions->uPause (p, 40);
+
+	// Output the corect byte
+	p->hd44780_functions->senddata (p, 1, RS_DATA,
+				p->framebuf[0] );
+	// ... and second display if connected ...
+	if (p->numDisplays>1) {
+		p->hd44780_functions->senddata (p, 2, RS_DATA,
+				p->framebuf[ p->width * p->dispVOffset[2-1] ] );
+	}
+	p->hd44780_functions->uPause (p, 40);
+
+	// No need to restore the line for backlight, already done by senddata.
 
 	return scancode;
 }

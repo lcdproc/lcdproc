@@ -158,7 +158,7 @@ HD44780_init (Driver * drvthis, char *args)
 	s = drvthis->config_get_string( drvthis->name, "connectiontype", 0, "4bit" );
 	for (i = 0; connectionMapping[i].name != NULL && strcmp (s, connectionMapping[i].name) != 0; i++);
 	if (connectionMapping[i].name == NULL) {
-		fprintf (stderr, "HD44780_init: Unknown connection type: %s\n", s);
+		report (RPT_ERR, "HD44780_init: Unknown connection type: %s", s);
 		return -1; // fatal error
 	} else {
 		p->connectiontype_index = i;
@@ -168,7 +168,7 @@ HD44780_init (Driver * drvthis, char *args)
 	s = drvthis->config_get_string( drvthis->name, "vspan", 0, "" );
 	if( s[0] != 0 ) {
 		if (parse_span_list (&(p->spanList), &(p->numLines), &(p->dispVOffset), &(p->numDisplays), &(p->dispSizes), s) == -1) {
-			fprintf (stderr, "HD44780_init: invalid vspan value: %s\n", s );
+			report (RPT_ERR, "HD44780_init: invalid vspan value: %s", s );
 			return -1;
 		}
 	}
@@ -178,7 +178,7 @@ HD44780_init (Driver * drvthis, char *args)
 	if( sscanf( s, "%dx%d", &(p->width), &(p->height) ) != 2
 	|| (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
 	|| (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
-		fprintf( stderr, "HD44780_init: Cannot read size: %s\n", s );
+		report (RPT_ERR, "HD44780_init: Cannot read size: %s", s );
 	}
 
 	// default case for when spans aren't indicated
@@ -191,7 +191,7 @@ HD44780_init (Driver * drvthis, char *args)
 				p->numLines = p->height;
 			}
 		} else
-			fprintf (stderr, "Error mallocing for span list\n");
+			report (RPT_ERR, "Error mallocing");
 	}
 	if (p->numDisplays == 0) {
 		if ((p->dispVOffset = (int *) malloc (sizeof (int))) && (p->dispSizes = (int *) malloc (sizeof (int)))) {
@@ -199,7 +199,7 @@ HD44780_init (Driver * drvthis, char *args)
 			p->dispSizes[0] = p->height;
 			p->numDisplays = 1;
 		} else
-			fprintf (stderr, "Error mallocing for display sizes list\n");
+			report (RPT_ERR, "Error mallocing");
 	}
 
 	if (timing_init() == -1)
@@ -212,7 +212,7 @@ HD44780_init (Driver * drvthis, char *args)
 		struct sched_param param;
 		param.sched_priority=1;
 		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-			fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
+			report (RPT_ERR, "HD44780_init: failed (%s)", strerror (errno));
 			return -1;
 		}
 	}
@@ -286,7 +286,7 @@ HD44780_init (Driver * drvthis, char *args)
 	}
 
 	if ((p->hd44780_functions = (HD44780_functions *) malloc (sizeof (HD44780_functions))) == NULL) {
-		fprintf (stderr, "Error mallocing for function struct");
+		report (RPT_ERR, "Error mallocing");
 		return -1;
 	}
 	p->hd44780_functions->uPause = uPause;
@@ -1227,11 +1227,9 @@ parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dO
 				// find the next number (\0 is also outside this range)
 				for (++j; spanlist[j] < '1' || spanlist[j] > '9'; ++j);
 			} else {
-				fprintf (stderr, "Error reallocing for span list\n");
 				retVal = -1;
 			}
 		} else {
-			fprintf (stderr, "Error reading spansize\n");
 			retVal = -1;
 		}
 	}
