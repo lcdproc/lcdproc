@@ -247,18 +247,18 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 
 	/*Get color settings*/
 	/*foreground color*/
-	strncpy(buf, config_get_string ( DriverName , "foreground" , 0 , CONF_DEF_FOREGR),200);
-	if (strlen(buf)>199) strncat(buf, "\0", 1);
+	strncpy(buf, config_get_string ( DriverName , "foreground" , 0 , CONF_DEF_FOREGR),sizeof(config_get_string ( DriverName , "foreground" , 0 , CONF_DEF_FOREGR)));
+	buf[sizeof(buf)-1]=0;
 	fore_color = set_foreground_color(buf);
 	debug( RPT_DEBUG, "CURSES: using foreground color: %s", buf);
 	/*background color*/
-	strncpy(buf, config_get_string ( DriverName , "background" , 0 , CONF_DEF_BACKGR),200);
-	if (strlen(buf)>199) strncat(buf, "\0", 1);
+	strncpy(buf, config_get_string ( DriverName , "background" , 0 , CONF_DEF_BACKGR),sizeof(config_get_string ( DriverName , "background" , 0 , CONF_DEF_BACKGR)));
+	buf[sizeof(buf)-1]=0;
 	back_color = set_background_color(buf);
 	debug( RPT_DEBUG, "CURSES: using background color: %s", buf);
 	/*backlight color*/
-	strncpy(buf, config_get_string ( DriverName , "backlight" , 0 , CONF_DEF_BACKLIGHT),200);
-	if (strlen(buf)>199) strncat(buf, "\0", 1);
+	strncpy(buf, config_get_string ( DriverName , "backlight" , 0 , CONF_DEF_BACKLIGHT), sizeof(config_get_string ( DriverName , "backlight" , 0 , CONF_DEF_BACKLIGHT)));
+	buf[sizeof(buf)-1]=0;
 	backlight_color = set_background_color(buf);
 	debug( RPT_DEBUG, "CURSES: using backlight color: %s", buf);
 
@@ -266,8 +266,8 @@ curses_drv_init (struct lcd_logical_driver *driver, char *args)
 	//      Or maybe don't do so? - Rene Wagner
 
 	/*Get size settings*/
-	strncpy(buf, config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE),200);
-	if (strlen(buf)>199) strncat(buf, "\0", 1);
+	strncpy(buf, config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE), sizeof(config_get_string ( DriverName , "size" , 0 , CONF_DEF_SIZE)));
+	buf[sizeof(buf)-1]=0;
 	int wid, hgt;
 	if( sscanf(buf , "%dx%d", &wid, &hgt ) != 2
 	|| (wid <= 0)

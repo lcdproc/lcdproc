@@ -89,13 +89,13 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	/*Read config file*/
 
 	/*Which serial device should be used*/
-	strncpy(device, config_get_string ( DriverName , "Device" , 0 , DEFAULT_DEVICE),200);
-	if (strlen(device)>199) strncat(device, "\0", 1);
+	strncpy(device, config_get_string ( DriverName , "Device" , 0 , DEFAULT_DEVICE),sizeof(config_get_string ( DriverName , "Device" , 0 , DEFAULT_DEVICE)));
+	device[sizeof(device)-1]=0;
 	debug (RPT_INFO,"CFontz: Using device: %s", device);
 
 	/*Which size*/
-	strncpy(size, config_get_string ( DriverName , "Size" , 0 , DEFAULT_SIZE),200);
-	if (strlen(size)>199) strncat(size, "\0", 1);
+	strncpy(size, config_get_string ( DriverName , "Size" , 0 , DEFAULT_SIZE),sizeof(config_get_string ( DriverName , "Size" , 0 , DEFAULT_SIZE)));
+	size[sizeof(size)-1]=0;
 	if( sscanf(size , "%dx%d", &w, &h ) != 2
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {

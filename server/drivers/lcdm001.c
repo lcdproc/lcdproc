@@ -131,23 +131,35 @@ static char num_icon [10][4][3] = 	{{{' ','_',' '}, /*0*/
 
 static void lcdm001_cursorblink (int on);
 static void lcdm001_string (int x, int y, char *string);
-static char parse_lcdm001_keypad_setting ( char *s);
+static char lcdm001_parse_keypad_setting ( char * sectionname, char * keyname, char * default_value );
 
 #define ValidX(x) if ((x) > lcdm001->wid) { (x) = lcdm001->wid; } else (x) = (x) < 1 ? 1 : (x);
 #define ValidY(y) if ((y) > lcdm001->hgt) { (y) = lcdm001->hgt; } else (y) = (y) < 1 ? 1 : (y);
 
 // Parse one key from the configfile
-static char parse_lcdm001_keypad_setting (char * s)
+static char lcdm001_parse_keypad_setting (char * sectionname, char * keyname, char * default_value)
 {
-	char return_val=0;
-	if (strcmp(s, "LeftKey")==0){
+	char return_val = 0;
+
+	if (strcmp( config_get_string ( sectionname, keyname, 0, default_value), "LeftKey")==0) {
 		return_val=LEFT_KEY;
-	} else if (strcmp(s, "RightKey")==0){
+	} else if (strcmp( config_get_string ( sectionname, keyname, 0, default_value), "RightKey")==0) {
 		return_val=RIGHT_KEY;
-	} else if (strcmp(s, "UpKey")==0){
+	} else if (strcmp( config_get_string ( sectionname, keyname, 0, default_value), "UpKey")==0) {
 		return_val=UP_KEY;
-	} else if (strcmp(s, "DownKey")==0) {
+	} else if (strcmp( config_get_string ( sectionname, keyname, 0, default_value), "DownKey")==0) {
 		return_val=DOWN_KEY;
+	} else {
+		report (RPT_WARNING, "LCDM001: Invalid  config file setting for %s. Using default value %s.\n", keyname, default_value);
+		if (strcmp (default_value, "LeftKey")==0) {
+			return_val=LEFT_KEY;
+		} else if (strcmp (default_value, "RightKey")==0) {
+			return_val=RIGHT_KEY;
+		} else if (strcmp (default_value, "UpKey")==0) {
+			return_val=UP_KEY;
+		} else if (strcmp (default_value, "DownKey")==0) {
+			return_val=DOWN_KEY;
+		}
 	}
 	return return_val;
 }
@@ -213,15 +225,16 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	// READ CONFIG FILE:
 
 	// which serial device should be used
-	strncpy(device, config_get_string ( DriverName , "Device" , 0 , "/dev/lcd"),200);
-	if (strlen(device)>199) strncat(device, "\0", 1);
+	strncpy(device, config_get_string ( DriverName , "Device" , 0 , "/dev/lcd"), sizeof(config_get_string ( DriverName , "Device" , 0 , "/dev/lcd")));
+	device[sizeof(device)-1]=0;
 	report (RPT_INFO,"LCDM001: Using device: %s", device);
 
 	// keypad settings
-	pause_key = parse_lcdm001_keypad_setting (config_get_string ( DriverName, "PauseKey", 0, "DownKey"));
-	back_key = parse_lcdm001_keypad_setting (config_get_string ( DriverName, "BackKey", 0, "LeftKey"));
-	forward_key = parse_lcdm001_keypad_setting (config_get_string ( DriverName, "ForwardKey", 0, "RightKey"));
-	main_menu_key = parse_lcdm001_keypad_setting (config_get_string ( DriverName, "MainMenuKey", 0, "UpKey"));
+	pause_key = lcdm001_parse_keypad_setting (DriverName, "PauseKey", "DownKey");
+	back_key = lcdm001_parse_keypad_setting (DriverName, "BackKey", "LeftKey");
+	forward_key = lcdm001_parse_keypad_setting (DriverName, "ForwardKey", "RightKey");
+	main_menu_key = lcdm001_parse_keypad_setting (DriverName, "MainMenuKey", "UpKey");
+
 
 	// Set up io port correctly, and open it...
 	debug( RPT_DEBUG, "LCDM001: Opening serial device: %s", device);
