@@ -120,7 +120,7 @@ int drop_privs(char *user) {
 int
 main (int argc, char **argv)
 {
-	char cfgfile[256];
+	char cfgfile[256] = DEFAULT_CONFIG_FILE;
 	FILE *config;
 
 	int i, err;
@@ -229,9 +229,6 @@ main (int argc, char **argv)
 		version, protocol_version);
 	syslog(LOG_NOTICE, "server built on %s",
 		build_date);
-
-	if (!cfgfile)
-		strncpy(cfgfile, DEFAULT_CONFIG_FILE, sizeof(cfgfile));
 
 	if ((config = fopen(cfgfile, "r")) == NULL) {
 		syslog(LOG_WARNING, "no configuration file found... using defaults");
