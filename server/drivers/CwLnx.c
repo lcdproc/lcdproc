@@ -545,7 +545,7 @@ int CwLnx_init(Driver * drvthis, char *args)
     /* Which size */
     strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
     size[sizeof(size) - 1] = 0;
-    if (sscanf(size, "%dx%d", &w, &h) != 2
+    if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 	report(RPT_WARNING, "CwLnx: Cannot read size: %s. Using default value.\n", size);
@@ -586,13 +586,13 @@ int CwLnx_init(Driver * drvthis, char *args)
 
 
     /* do we have a keypad? */
-    if (drvthis->config_get_bool( drvthis->name , "Keypad" , 0 , 0)) {
+    if (drvthis->config_get_bool( drvthis->name , "Keypad", 0, 0)) {
 	report (RPT_INFO, "CwLnx: Config file tell us we have a keypad...\n");
 	p->have_keypad = 1;
     }
 
     /* keypad test mode? */
-    if (drvthis->config_get_bool( drvthis->name , "keypad_test_mode" , 0 , 0)) {
+    if (drvthis->config_get_bool( drvthis->name , "keypad_test_mode", 0, 0)) {
 	report (RPT_INFO, "CwLnx: Config tell us to test the keypad mapping...\n");
 	p->keypad_test_mode = 1;
 	stay_in_foreground = 1;

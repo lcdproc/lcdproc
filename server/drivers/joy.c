@@ -36,8 +36,11 @@
 #include "report.h"
 #include "shared/str.h"
 
-#define NAME_LENGTH 128
-#define JOY_DEFAULT_DEVICE "/dev/js0"
+#define JOY_NAMELENGTH		128
+#define JOY_DEFAULT_DEVICE	"/dev/js0"
+#define JOY_MAPSIZE		16
+#define JOY_DEFAULT_AXISMAP	"EFGHIJKLMNOPQRST"
+#define JOY_DEFAULT_BUTTONMAP	"BDACEFGHIJKLMNOP"
 
 int fd;
 
@@ -45,15 +48,15 @@ struct js_event js;
 
 char axes = 2;
 char buttons = 2;
-int jsversion = 0x000800;
-char jsname[NAME_LENGTH] = "Unknown";
+int jsversion = 0x000801;
+char jsname[JOY_NAMELENGTH] = "Unknown";
 
 int *axis = NULL;
 int *button = NULL;
 
 // Configured for a Gravis Gamepad  (2 axis, 4 button)
-char *axismap = "EFGHIJKLMNOPQRST";
-char *buttonmap = "BDACEFGHIJKLMNOP";
+char axismap[JOY_MAPSIZE+1] = JOY_DEFAULT_AXISMAP;
+char buttonmap[JOY_MAPSIZE+1] = JOY_DEFAULT_BUTTONMAP;
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -69,42 +72,26 @@ MODULE_EXPORT int
 joy_init (Driver *drvthis, char *args)
 {
 	char device[256];
-	char *argv[64];
-	int argc, i;
 
-	strcpy (device, JOY_DEFAULT_DEVICE);
+	/* Read config file */
 
-	argc = get_args (argv, args, 64);
+	/* What device should be used */
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
+						   JOY_DEFAULT_DEVICE), sizeof(device));
+	device[sizeof(device)-1] = '\0';
 
-	for (i = 0; i < argc; i++) {
-		//printf("Arg(%i): %s\n", i, argv[i]);
-		if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--device")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "joy_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			strcpy (device, argv[++i]);
-		} else if (0 == strcmp (argv[i], "-a") || 0 == strcmp (argv[i], "--axes")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "joy_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			strncpy (axismap, argv[++i], 16);
-		} else if (0 == strcmp (argv[i], "-b") || 0 == strcmp (argv[i], "--buttons")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "joy_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			strncpy (buttonmap, argv[++i], 16);
-		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-			printf ("LCDproc Joystick input driver\n" "\t-d\t--device\tSelect the input device to use [/dev/js0]\n" "\t-a\t--axes\t\tModify the axis map [%s]\n" "\t-b\t--buttons\tModify the button map [%s]\n" "\t-h\t--help\t\tShow this help information\n", axismap, buttonmap);
-			return -1;
-		} else {
-			printf ("Invalid parameter: %s\n", argv[i]);
-		}
+	/* How does the axis map look like */
+	strncpy(axismap, drvthis->config_get_string(drvthis->name, "AxisMap", 0,
+						    JOY_DEFAULT_AXISMAP), sizeof(axismap));
+	axismap[sizeof(axismap)-1] = '\0';
 
-	}
+	/* How does the button map look like */
+	strncpy(buttonmap, drvthis->config_get_string(drvthis->name, "ButtonMap", 0,
+						      JOY_DEFAULT_BUTTONMAP), sizeof(buttonmap));
+	buttonmap[sizeof(buttonmap)-1] = '\0';
 
+	/* End of config file parsing */
+	
 	if ((fd = open (device, O_RDONLY)) < 0)
 		return -1;
 
@@ -112,7 +99,7 @@ joy_init (Driver *drvthis, char *args)
 	ioctl (fd, JSIOCGVERSION, &jsversion);
 	ioctl (fd, JSIOCGAXES, &axes);
 	ioctl (fd, JSIOCGBUTTONS, &buttons);
-	ioctl (fd, JSIOCGNAME (NAME_LENGTH), jsname);
+	ioctl (fd, JSIOCGNAME (JOY_NAMELENGTH), jsname);
 
 	report (RPT_NOTICE, "Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
 		jsname, axes, buttons,

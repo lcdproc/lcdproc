@@ -33,21 +33,21 @@
 #define MS6931_DEF_CELL_HEIGHT 8
 
 
-MODULE_EXPORT int  ms6931_init	(struct lcd_logical_driver *drvthis, char *args);
-MODULE_EXPORT void ms6931_close	(struct lcd_logical_driver *drvthis);
-MODULE_EXPORT int  ms6931_width	(struct lcd_logical_driver *drvthis);
-MODULE_EXPORT int  ms6931_height(struct lcd_logical_driver *drvthis);
-MODULE_EXPORT void ms6931_flush	(struct lcd_logical_driver *drvthis);
+MODULE_EXPORT int  ms6931_init	(Driver *drvthis, char *args);
+MODULE_EXPORT void ms6931_close	(Driver *drvthis);
+MODULE_EXPORT int  ms6931_width	(Driver *drvthis);
+MODULE_EXPORT int  ms6931_height(Driver *drvthis);
+MODULE_EXPORT void ms6931_flush	(Driver *drvthis);
 
-MODULE_EXPORT int  ms6931_get_contrast	(struct lcd_logical_driver *drvthis);
-MODULE_EXPORT void ms6931_set_contrast	(struct lcd_logical_driver *drvthis, int promille);
-MODULE_EXPORT void ms6931_backlight		(struct lcd_logical_driver *drvthis, int on);
+MODULE_EXPORT int  ms6931_get_contrast	(Driver *drvthis);
+MODULE_EXPORT void ms6931_set_contrast	(Driver *drvthis, int promille);
+MODULE_EXPORT void ms6931_backlight		(Driver *drvthis, int on);
 
-MODULE_EXPORT void ms6931_chr		(struct lcd_logical_driver *drvthis, int x, int y, char c);
-MODULE_EXPORT void ms6931_clear 	(struct lcd_logical_driver *drvthis);
-MODULE_EXPORT void ms6931_string	(struct lcd_logical_driver *drvthis, int x, int y, char string[]);
-MODULE_EXPORT char ms6931_get_key	(struct lcd_logical_driver *drvthis);
-MODULE_EXPORT void ms6931_hbar		(struct lcd_logical_driver *drvthis, int x, int y, int len, int promille, int pattern);
-MODULE_EXPORT void ms6931_heartbeat	(struct lcd_logical_driver *drvthis, int state);
+MODULE_EXPORT void ms6931_chr		(Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT void ms6931_clear 	(Driver *drvthis);
+MODULE_EXPORT void ms6931_string	(Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT char ms6931_get_key	(Driver *drvthis);
+MODULE_EXPORT void ms6931_hbar		(Driver *drvthis, int x, int y, int len, int promille, int pattern);
+MODULE_EXPORT void ms6931_heartbeat	(Driver *drvthis, int state);
 
 #endif /* ndef MS6931_H */

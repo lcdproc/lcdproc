@@ -38,6 +38,10 @@
 #include "report.h"
 //#include "drv_base.h"
 
+#define LB216_DEFAULT_DEVICE		"/dev/lcd"
+#define LB216_DEFAULT_SPEED		9600
+#define LB216_DEFAULT_BRIGHTNESS	255
+
 static int custom=0;
 typedef enum {
 	hbar = 1,
@@ -71,106 +75,53 @@ MODULE_EXPORT char *symbol_prefix = "LB216_";
 MODULE_EXPORT int
 LB216_init(Driver * drvthis, char *args)
 {
-   char *argv[64];
-   int argc;
    struct termios portset;
-   int i;
-   int tmp;
    int reboot=0;
-
-   char device[256] = "/dev/lcd";
-   int speed=B9600;
-   int backlight_brightness = 255;
-
-
-   //debug("LB216_init: Args(all): %s\n", args);
-
-   argc = get_args(argv, args, 64);
-
-   /*
-   for(i=0; i<argc; i++)
-   {
-      printf("Arg(%i): %s\n", i, argv[i]);
-   }
-   */
-
-   for(i=0; i<argc; i++)
-   {
-      //printf("Arg(%i): %s\n", i, argv[i]);
-      if(0 == strcmp(argv[i], "-d")  ||
-	 0 == strcmp(argv[i], "--device"))
-      {
-	 if(i + 1 > argc) {
-	    fprintf(stderr, "LB216_init: %s requires an argument\n",
-		    argv[i]);
-	    return -1;
-	 }
-	 strcpy(device, argv[++i]);
-      }
-      else if(0 == strcmp(argv[i], "-b")  ||
-	 0 == strcmp(argv[i], "--brightness"))
-      {
-	 if(i + 1 > argc) {
-	    fprintf(stderr, "LB216_init: %s requires an argument\n",
-		    argv[i]);
-	    return -1;
-	 }
-	 tmp = atoi(argv[++i]);
-         if((tmp < 0) || (tmp > 255)){
-	    fprintf(stderr, "LB216_init: %s argument must between 0 and 255. Using default value.\n",
-		    argv[i]);
-         } else backlight_brightness = tmp;
-      }
-      else if(0 == strcmp(argv[i], "-s")  ||
-	 0 == strcmp(argv[i], "--speed"))
-      {
-	 if(i + 1 > argc) {
-	    fprintf(stderr, "LB216_init: %s requires an argument\n",
-		    argv[i]);
-	    return -1;
-	 }
-	 tmp = atoi(argv[++i]);
-         if(tmp==2400) speed=B2400;
-         else if(tmp==9600) speed=B9600;
-         else {
-	    fprintf(stderr, "LB216_init: %s argument must be 2400, or 9600. Using default value.\n",
-		    argv[i]);
-         }
-      }
-      else if(0 == strcmp(argv[i], "-h")  ||
-	 0 == strcmp(argv[i], "--help"))
-      {
-	 printf("LCDproc LB216 LCD driver\n"
-		"\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
-		"\t-t\t--type\t\tSelect the LCD type (size) [16x2]\n"
-		"\t-b\t--brightness\tSet the initial brightness [255]\n"
-		"\t-s\t--speed\t\tSet the communication speed [9600]\n"
-		"\t-r\t--reboot\tReinitialize the LCD's BIOS\n"
-		"\t-h\t--help\t\tShow this help information\n");
-	 return -1;
-      }
-      else if(0 == strcmp(argv[i], "-r")  ||
-	 0 == strcmp(argv[i], "--reboot"))
-      {
-	 printf("LCDd: rebooting LB216 LCD...\n");
-	 reboot=1;
-      }
-      else
-      {
-	 printf("Invalid parameter: %s\n", argv[i]);
-      }
-
-   }
+   char device[256] = LB216_DEFAULT_DEVICE;
+   int speed = LB216_DEFAULT_SPEED;
+   int backlight_brightness = LB216_DEFAULT_BRIGHTNESS;
 
 
+  /* Read config file */
+
+  /* What device should be used */
+  strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
+					     LB216_DEFAULT_DEVICE), sizeof(device));
+  device[sizeof(device)-1] = '\0';
+
+  /* What speed to use */
+  speed = drvthis->config_get_int(drvthis->name, "Speed", 0, LB216_DEFAULT_SPEED);
+  
+  if (speed == 2400)       speed = B2400;
+  else if (speed == 9600)  speed = B9600;
+  else {
+    report(RPT_WARNING, "lb216_init: Illegal speed: %d. Must be 2400 or 9600. Using default.\n", speed);
+    speed = B9600;
+  }
+
+  /* Which backlight brightness */
+  backlight_brightness = drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , LB216_DEFAULT_BRIGHTNESS);
+  if ((backlight_brightness < 0) || (backlight_brightness > 255)) {
+    report (RPT_WARNING, "lb216_init: Brightness must be between 0 and 255. Using default value.\n");
+    backlight_brightness = LB216_DEFAULT_BRIGHTNESS;
+  }
+      
+  /* Reboot display? */
+  reboot = drvthis->config_get_bool( drvthis->name , "Reboot", 0, 0);
+  if (reboot)
+    report (RPT_INFO, "LCDd: rebooting LB216 LCD...\n");
+
+  /* End of config file parsing */
+      
    // Set up io port correctly, and open it...
    fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
    if (fd == -1)
    {
-      fprintf(stderr, "LB216_init: failed (%s)\n", strerror(errno));
+      report(RPT_ERR, "lb216_init: open(%s) failed (%s)\n", device, strerror(errno));
       return -1;
    }
-   //else fprintf(stderr, "LB216_init: opened device %s\n", device);
+   report(RPT_DEBUG, "lb216_init: opened device %s\n", device);
+
    tcgetattr(fd, &portset);
 
    // We use RAW mode
@@ -195,13 +146,15 @@ LB216_init(Driver * drvthis, char *args)
    tcsetattr(fd, TCSANOW, &portset);
 
    // Make sure the frame buffer is there...
-   if (framebuf)
-      framebuf = (unsigned char *)
-      malloc (width * height);
+   framebuf = (unsigned char *) malloc (width * height);
+   if (framebuf == NULL) {
+      report(RPT_ERR, "lb216_init: unable to create framebuffer.\n");
+      return -1;
+   }
    memset (framebuf, ' ', width * height);
 
    // Set display-specific stuff..
-   if(reboot)
+   if (reboot)
    {
       LB216_reboot();
       sleep(4);
@@ -224,7 +177,8 @@ LB216_close(Driver * drvthis)
 {
   close (fd);
 
-  if(framebuf) free(framebuf);
+  if (framebuf)
+    free(framebuf);
   framebuf = NULL;
 }
 

@@ -56,7 +56,7 @@ typedef struct lcd_logical_driver {
 
 	char * (*getinfo) ();		// get a string of info
 
-} lcd_logical_driver;
+} Driver;
 ------------------------------ lcd_logical_driver ------------------------------
 
 The first thing that is done is that lcd_init (lcd.c) is called.  This function

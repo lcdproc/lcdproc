@@ -195,7 +195,7 @@ else
 	if ((0>=tmp) && (tmp<=1000)) {
 		contrast = tmp;
 	} else {
-		report (RPT_WARNING, "CFontz633_init: Contrast must between 0 and 1000. Using default value.\n");
+		report (RPT_WARNING, "CFontz633_init: Contrast must be between 0 and 1000. Using default value.\n");
 	}
 
 	/* Which backlight brightness */
@@ -204,7 +204,7 @@ else
 	if ((0>=tmp) && (tmp<=100)) {
 		brightness = tmp;
 	} else {
-		report (RPT_WARNING, "CFontz633_init: Brightness must between 0 and 100. Using default value.\n");
+		report (RPT_WARNING, "CFontz633_init: Brightness must be between 0 and 100. Using default value.\n");
 	}
 
 	/* Which backlight-off "brightness" */
@@ -213,7 +213,7 @@ else
 	if ((0<=tmp) && (tmp<=100)) {
 		offbrightness = tmp;
 	} else {
-		report (RPT_WARNING, "CFontz633_init: OffBrightness must between 0 and 100. Using default value.\n");
+		report (RPT_WARNING, "CFontz633_init: OffBrightness must be between 0 and 100. Using default value.\n");
 	}
 
 

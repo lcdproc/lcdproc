@@ -24,6 +24,7 @@
 
 #include "lcd.h"
 #include "irmanin.h"
+#include "report.h"
 #include "../../../libirman-0.4.1b/irman.h"
 
 char *progname = "irmanin";
@@ -76,7 +77,7 @@ lcd_logical_driver *irmanin;
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
 MODULE_EXPORT int
-irmanin_init (struct lcd_logical_driver *driver, char *args)
+irmanin_init (Driver *drvthis, char *args)
 {
 	char device[256];
 	char *ptrdevice;
@@ -85,72 +86,61 @@ irmanin_init (struct lcd_logical_driver *driver, char *args)
 
 	char *portname;
 
-	char *argv[64];
-	int argc, i, j;
+	int i;
 	char *filename;
 
 	ptrconfig = NULL;
 	ptrdevice = NULL;
 
-	irmanin = driver;
+	irmanin = drvthis;
 
-	argc = get_args (argv, args, 64);
+	/* Read config file */
 
-	for (i = 0; i < argc; i++) {
-		//printf("Arg(%i): %s\n", i, argv[i]);
-		if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--device")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "irmanin_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			strcpy (device, argv[++i]);
-			ptrdevice = device;
-		} else if (0 == strcmp (argv[i], "-c") || 0 == strcmp (argv[i], "--config")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "irmanin_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			strcpy (config, argv[++i]);
-			ptrconfig = config;
-		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-			printf ("LCDproc IrMan input driver\n" "\t-d\t--device\tSelect the input device to use\n" "\t-d\t--config\tSelect the configuration file to use\n" "\t-h\t--help\t\tShow this help information\n");
-			return -1;
-		} else {
-			printf ("Invalid parameter: %s\n", argv[i]);
-		}
-	}
+	/* What device should be used */
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
+						   ""), sizeof(device));
+	device[sizeof(device)-1] = '\0';
+	if (*device != '\0')  ptrdevice = device;
+
+	/* What config file should be used */
+	strncpy(config, drvthis->config_get_string(drvthis->name, "Config", 0,
+						   ""), sizeof(config));
+	config[sizeof(config)-1] = '\0';
+	if (*config != '\0')  ptrconfig = config;
+
+	/* End of config file parsing */
 
 	if (ir_init_commands (ptrconfig, 1) < 0) {
-		fprintf (stderr, "error initialising commands: %s\n", strerror (errno));
+		report(RPT_ERR, "error initialising commands: %s\n", strerror (errno));
 		exit (1);
 	}
 
 	portname = ir_default_portname ();
 	if (portname == NULL) {
-		if (ptrdevice == NULL) {
+		if (ptrdevice != NULL) {
 			portname = ptrdevice;
 		} else {
-			fprintf (stderr, "error no device defined\n");
+			report(RPT_ERR, "error no device defined\n");
 			exit (1);
 		}
 	}
 
-	driver->getkey = irmanin_getkey;
-	driver->close = irmanin_close;
+	drvthis->getkey = irmanin_getkey;
+	drvthis->close = irmanin_close;
 
 	for (i = 1; codes[i] != NULL; i++) {
 		if (ir_register_command (codes[i], i) < 0) {
 			if (errno == ENOENT) {
-				fprintf (stderr, "%s: no code set for `%s'\n", progname, codes[i]);
+				report(RPT_WARNING, "%s: no code set for `%s'\n", progname, codes[i]);
 			} else {
-				fprintf (stderr, "error registering `%s': `%s'\n", codes[i], strerror (errno));
+				report(RPT_WARNING, "error registering `%s': `%s'\n", codes[i], strerror (errno));
 			}
 		}
 	}
 
 	errno = 0;
 	if (ir_init (portname) < 0) {
-		fprintf (stderr, "%s: error initialising Irman: `%s'\n", strerror (errno), portname);
+		report(RPT_ERR, "%s: error initialising Irman: `%s'\n", strerror (errno), portname);
 		exit (1);
 	}
 
@@ -184,7 +174,7 @@ irmanin_getkey ()
 	key = (char) 0;
 	switch (cmd = ir_poll_command ()) {
 	case IR_CMD_ERROR:
-		fprintf (stderr, "%s: error reading command: %s\n", progname, strerror (errno));
+		report(RPT_WARNING, "%s: error reading command: %s\n", progname, strerror (errno));
 		break;
 	case IR_CMD_UNKNOWN:
 		break;

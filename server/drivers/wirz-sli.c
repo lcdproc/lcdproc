@@ -19,9 +19,12 @@
 #include "lcd.h"
 #include "wirz-sli.h"
 //#include "drv_base.h"
+#include "report.h"
 
 #include "shared/debug.h"
 #include "shared/str.h"
+
+#define SLI_DEFAULT_DEVICE	"/dev/lcd"
 
 static int custom = 0;
 typedef enum {
@@ -49,74 +52,44 @@ MODULE_EXPORT char *symbol_prefix = "sli_";
 MODULE_EXPORT int
 sli_init (Driver *drvthis, char *args)
 {
-	char *argv[64];
-	int argc;
 	struct termios portset;
-	int i;
-	int tmp;
 	char out[2];
 
-	char device[256] = "/dev/lcd";
+	char device[256] = WIRZ_DEFAULT_DEVICE;
 	int speed = B19200;
 
-	//debug("sli_init: Args(all): %s\n", args);
+	/* Read config file */
 
-	argc = get_args (argv, args, 64);
+	/* What device should be used */
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
+						   SLI_DEFAULT_DEVICE), sizeof(device));
+	device[sizeof(device)-1] = '\0';
 
-	/*
-	   for(i=0; i<argc; i++)
-	   {
-	   printf("Arg(%i): %s\n", i, argv[i]);
-	   }
-	 */
-
-	for (i = 0; i < argc; i++) {
-		//printf("Arg(%i): %s\n", i, argv[i]);
-		if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--device")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "sli_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			strcpy (device, argv[++i]);
-		} else if (0 == strcmp (argv[i], "-s") || 0 == strcmp (argv[i], "--speed")) {
-			if (i + 1 > argc) {
-				fprintf (stderr, "sli_init: %s requires an argument\n", argv[i]);
-				return -1;
-			}
-			tmp = atoi (argv[++i]);
-			if (tmp == 1200)
-				speed = B1200;
-			else if (tmp == 2400)
-				speed = B2400;
-			else if (tmp == 9600)
-				speed = B9600;
-			else if (tmp == 19200)
-				speed = B19200;
-			else if (tmp == 38400)
-				speed = B38400;
-			else if (tmp == 57600)
-				speed = B57600;
-			else if (tmp == 115200)
-				speed = B115200;
-			else {
-				fprintf (stderr, "sli_init: %s argument must be 1200, 2400, 9600, 19200, 38400, 57600, or 115200. Using default value (19200).\n", argv[i]);
-			}
-		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
-			printf ("LCDproc Wirz SLI LCD driver\n" "\t-d\t--device\tSelect the output device to use [/dev/lcd]\n" "\t-s\t--speed\t\tSet the communication speed [19200]\n" "\t-h\t--help\t\tShow this help information\n");
-			return -1;
-		} else {
-			printf ("Invalid parameter: %s\n", argv[i]);
-		}
-
+	/* What speed to use */
+	speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 19200);
+  
+	if (speed == 1200)        speed = B1200;
+	else if (speed == 2400)   speed = B2400;
+	else if (speed == 9600)   speed = B9600;
+	else if (speed == 19200)  speed = B19200;
+	else if (speed == 38400)  speed = B38400;
+	else if (speed == 57600)  speed = B57600;
+	else if (speed == 115200) speed = B115200;
+	else {
+		report(RPT_WARNING, "sli: Illegal speed: %d. Must be one of 1200, 2400, 9600, 19200, 38400, 57600, or 115200. Using default.\n", speed);
+		speed = B19200;
 	}
+
+	/* End of config file parsing */
 
 	// Set up io port correctly, and open it...
 	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1) {
-		fprintf (stderr, "sli_init: failed (%s)\n", strerror (errno));
+		report(RPT_ERR, "sli_init: open(%s) failed (%s)\n", device, strerror (errno));
 		return -1;
 	}
-	//else fprintf(stderr, "sli_init: opened device %s\n", device);
+	report(RPT_DEBUG, "sli_init: opened device %s\n", device);
+	
 	tcgetattr (fd, &portset);
 
 	// We use RAW mode
@@ -142,10 +115,10 @@ sli_init (Driver *drvthis, char *args)
 
 	/* Initialize SLI using autobaud detection, and then turn off cursor
 	   and clear screen */
-	usleep (150000);				  /* 150ms delay to allow SLI to power on */
-	out[0] = 13;					  /* CR for SLI autobaud */
+	usleep (150000);			  /* 150ms delay to allow SLI to power on */
+	out[0] = 13;				  /* CR for SLI autobaud */
 	write (fd, out, 1);
-	usleep (3000);					  /* 3ms delay.. wait for it to autobaud */
+	usleep (3000);				  /* 3ms delay.. wait for it to autobaud */
 	out[0] = 0x0FE;
 	out[1] = 0x00C;				  /* No cursor */
 	write (fd, out, 2);

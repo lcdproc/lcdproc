@@ -41,6 +41,8 @@
 #define CCMODE_HBAR 2
 #define CCMODE_BIGNUM 3
 
+#define BAYRAD_DEFAULT_DEVICE	"/dev/lcd"
+
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// Base "class" to derive from ///////////////////////
 //////////////////////////////////////////////////////////////////////////
@@ -321,16 +323,10 @@ MODULE_EXPORT int
 bayrad_init(Driver *drvthis, char *args)
 {
 
-   char device[256];
-   int speed=B9600;
-   char *argv[64];
-   int argc;
-   int i;
+   char device[256] = BAYRAD_DEFAULT_DEVICE;
+   int speed = B9600;
    struct termios portset;
-   int tmp;
 
-   //debug(RPT_DEBUG,"bayrad_init()\n");
-   strcpy(device, "/dev/lcd");
    width = 20;
    height = 2;
 
@@ -348,68 +344,24 @@ bayrad_init(Driver *drvthis, char *args)
   //cellheight = 5;
   //cellwidth = 8;
 
-  /*-----------------------------------------------------*/
+  /* Read config file */
 
-  //debug(RPT_DEBUG, "bayrad_init: Args(all): %s\n", args);
+  /* What device should be used */
+  strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
+						   BAYRAD_DEFAULT_DEVICE), sizeof(device));
+  device[sizeof(device)-1] = '\0';
 
-   argc = get_args(argv, args, 64);
-
-   /*
-   for(i=0; i<argc; i++)
-   {
-      debug(RPT_DEBUG,"Arg(%i): %s\n", i, argv[i]);
-   }
-   */
-
-   for(i=0; i<argc; i++)
-   {
-      //debug(RPT_DEBUG,"Arg(%i): %s\n", i, argv[i]);
-      if(0 == strcmp(argv[i], "-d")  || 0 == strcmp(argv[i], "--device"))
-	{
-	  if(i + 1 > argc) {
-	    report(RPT_ERR, "bayrad_init: %s requires an argument",
-		    argv[i]);
-	    return -1;
-	  }
-	  strcpy(device, argv[++i]);
-	}
-      else if(0 == strcmp(argv[i], "-s")  || 0 == strcmp(argv[i], "--speed"))
-	{
-	  if(i + 1 > argc)
-	    {
-	      report(RPT_ERR, "bayrad_init: %s requires an argument", argv[i]);
-	      return -1;
-	    }
-	  tmp = atoi(argv[++i]);
-	  if(tmp==1200)
-	    speed=B1200;
-	  else if(tmp==2400)
-	    speed=B2400;
-	  else if(tmp==9600)
-	    speed=B9600;
-	  else if(tmp==19200)
-	    speed=B19200;
-	  else
-	    {
-	      report(RPT_ERR, "bayrad_init: %s argument must be 1200, 2400, 9600 or 19200. Using default value.",
-		      argv[i]);
-	    }
-      }
-      else if(0 == strcmp(argv[i], "-h")  || 0 == strcmp(argv[i], "--help"))
-	{
-	  report(RPT_ERR, "LCDproc EMAC BayRAD LCD driver\n"
-		 "\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
-		 /*"\t-t\t--type\t\tSelect the LCD type (size) [20x2]\n"*/
-		 "\t-s\t--speed\t\tSet the communication speed [19200]\n"
-		 "\t-h\t--help\t\tShow this help information\n");
-	  return -1;
-	}
-      else
-	{
-	  report(RPT_ERR, "bayrad_init: Invalid parameter: %s", argv[i]);
-	}
-
-   }
+  /* What speed to use */
+  speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 9600);
+  
+  if (speed == 1200)       speed = B1200;
+  else if (speed == 2400)  speed = B2400;
+  else if (speed == 9600)  speed = B9600;
+  else if (speed == 19200) speed = B19200;
+  else {
+    report(RPT_WARNING, "bayrad_init: Illegal speed: %d. Must be one of 1200, 2400, 9600 or 19200. Using default.\n", speed);
+    speed = B9600;
+  }
 
    // Set up io port correctly, and open it...
    fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);

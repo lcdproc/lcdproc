@@ -125,7 +125,6 @@ static inline int timing_init() {
 		struct sched_param param;
 		param.sched_priority=1;
 		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-			fprintf (stderr, "timing_init: failed (%s)\n", strerror (errno));
 			return -1;
 		}
 	}

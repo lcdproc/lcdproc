@@ -123,21 +123,21 @@ CFontz_init (Driver * drvthis, char *args)
 	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 1000) {
 		contrast = drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST);
 	} else {
-		report (RPT_WARNING, "CFontz_init: Contrast must between 0 and 1000. Using default value.\n");
+		report (RPT_WARNING, "CFontz_init: Contrast must be between 0 and 1000. Using default value.\n");
 	}
 
 	/*Which backlight brightness*/
 	if (0<=drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS) && drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS) <= 255) {
 		brightness = drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS);
 	} else {
-		report (RPT_WARNING, "CFontz_init: Brightness must between 0 and 255. Using default value.\n");
+		report (RPT_WARNING, "CFontz_init: Brightness must be between 0 and 255. Using default value.\n");
 	}
 
 	/*Which backlight-off "brightness"*/
 	if (0<=drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) && drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) <= 255) {
 		offbrightness = drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS);
 	} else {
-		report (RPT_WARNING, "CFontz_init: OffBrightness must between 0 and 255. Using default value.\n");
+		report (RPT_WARNING, "CFontz_init: OffBrightness must be between 0 and 255. Using default value.\n");
 	}
 
 

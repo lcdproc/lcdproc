@@ -51,6 +51,7 @@
 #include "shared/str.h"
 #include "lcd.h"
 #include "sed1520.h"
+#include "report.h"
 
 
 unsigned int sed1520_lptport = LPTPORT;
@@ -148,67 +149,17 @@ drawchar2fb (int x, int y, unsigned char z)
 MODULE_EXPORT int
 sed1520_init (Driver *drvthis, char *args)
 {
-    char *argv[64], *str;
-    int argc, i;
+    /* Read config file */
 
-    if (args)
-	if ((str = (char *) malloc (strlen (args) + 1)))
-	    strcpy (str, args);
-	else
-	  {
-	      fprintf (stderr, "Error mallocing\n");
-	      return -1;
-	  }
-    else
-	str = NULL;
+    /* What port to use */
+    sed1520_lptport = drvthis->config_get_int(drvthis->name, "Port", 0, LPTPORT);
+  
+    /* End of config file parsing */
 
-    argc = get_args (argv, args, 64);
-    for (i = 0; i < argc; i++)
-      {
-	  if (0 == strcmp (argv[i], "-p")
-	      || 0 == strcmp (argv[i], "--port\0"))
-	    {
-		if (i + 1 >= argc)
-		  {
-		      fprintf (stderr,
-			       "sed1520_init: %s requires an argument\n",
-			       argv[i]);
-		      return -1;
-		  }
-		else
-		  {
-		      int myport;
-		      if (sscanf (argv[i + 1], "%i", &myport) != 1)
-			{
-			    fprintf (stderr,
-				     "sed1520_init: Couldn't read port address -"
-				     " using default value 0x%x\n", sed1520_lptport);
-			    return -1;
-			}
-		      else
-			{
-			    sed1520_lptport = myport;
-			    ++i;
-			}
-		  }
-	    }
-	  else if (0 == strcmp (argv[i], "-h")
-		   || 0 == strcmp (argv[i], "--help"))
-	    {
-		//int i;
-		printf
-		    ("LCDproc sed1520 driver\n\t-p n\t--port n\tSelect the output device to use port n\n");
-		printf ("put the options in quotes like this:  '-p 0x278'\n");
-		printf ("\t-h\t--help\t\tShow this help information\n");
-		return -1;
-	    }
-      }
-
-    // driver->wid = 20;
-    // driver->hgt = 4;
-
-	if (timing_init() == -1)
-		return -1;
+    if (timing_init() == -1) {
+	report(RPT_ERR, "timing_init: failed (%s)\n", strerror(errno));
+	return -1;
+    }
 
     // Allocate our framebuffer
     framebuf = malloc (122 * 4);

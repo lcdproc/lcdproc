@@ -32,7 +32,7 @@
 #define ICP_A106_H
 
 #include "lcd.h"
-MODULE_EXPORT int  icp_a106_init (struct lcd_logical_driver *driver, char *args);
+MODULE_EXPORT int  icp_a106_init (Driver *drvthis, char *args);
 MODULE_EXPORT void icp_a106_close (Driver *drvthis);
 MODULE_EXPORT int  icp_a106_width (Driver *drvthis);
 MODULE_EXPORT int  icp_a106_height (Driver *drvthis);

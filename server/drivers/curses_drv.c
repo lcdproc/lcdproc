@@ -249,12 +249,12 @@ curses_drv_init (Driver *drvthis, char *args)
 	if (0<=drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) && drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) <= 255) {
 		screen_begx = drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X);
 	} else {
-		report (RPT_WARNING, "CURSES: topleftx must between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_X);
+		report (RPT_WARNING, "CURSES: topleftx must be between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_X);
 	}
 	if (0<=drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) && drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) <= 255) {
 		screen_begy = drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y);
 	} else {
-		report (RPT_WARNING, "CURSES: toplefty must between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_Y);
+		report (RPT_WARNING, "CURSES: toplefty must be between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_Y);
 	}
 
 	//debug: sleep(1);

@@ -143,7 +143,7 @@ ms6931_draw_frame (char *dat)
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-ms6931_init (struct lcd_logical_driver *drvthis, char *args)
+ms6931_init (Driver *drvthis, char *args)
 {
 	struct termios portset;
 	int w, h;
@@ -228,7 +228,7 @@ ms6931_init (struct lcd_logical_driver *drvthis, char *args)
 // Clean-up
 //
 MODULE_EXPORT void
-ms6931_close (struct lcd_logical_driver *drvthis)
+ms6931_close (Driver *drvthis)
 {
 	ms6931_clear(drvthis);
 	ms6931_flush(drvthis);
@@ -247,7 +247,7 @@ ms6931_close (struct lcd_logical_driver *drvthis)
 /////////////////////////////////////////////////////////////////
 //
 MODULE_EXPORT void
-ms6931_flush (struct lcd_logical_driver *drvthis)
+ms6931_flush (Driver *drvthis)
 {
 	ms6931_draw_frame (framebuf);
 }
@@ -256,13 +256,13 @@ ms6931_flush (struct lcd_logical_driver *drvthis)
 // Returns the display width/height
 //
 MODULE_EXPORT int
-ms6931_width (struct lcd_logical_driver *drvthis)
+ms6931_width (Driver *drvthis)
 {
 	return width;
 }
 
 MODULE_EXPORT int
-ms6931_height (struct lcd_logical_driver *drvthis)
+ms6931_height (Driver *drvthis)
 {
 	return height;
 }
@@ -272,7 +272,7 @@ ms6931_height (struct lcd_logical_driver *drvthis)
 // upper-left is (1,1), and the lower right should be (16,2).
 //
 MODULE_EXPORT void
-ms6931_chr (struct lcd_logical_driver *drvthis, int x, int y, char c)
+ms6931_chr (Driver *drvthis, int x, int y, char c)
 {
 	if (x>width || y>height)
 		return;
@@ -285,7 +285,7 @@ ms6931_chr (struct lcd_logical_driver *drvthis, int x, int y, char c)
 // switches the backlight on/off
 //
 MODULE_EXPORT void
-ms6931_backlight (struct lcd_logical_driver *drvthis, int on)
+ms6931_backlight (Driver *drvthis, int on)
 {
 	static int saved_state = -1;
 	static char out[3] = { '~', 0x01, 0 };
@@ -309,7 +309,7 @@ ms6931_backlight (struct lcd_logical_driver *drvthis, int on)
 // sets the cursor
 //
 MODULE_EXPORT void
-ms6931_cursor (struct lcd_logical_driver *drvthis, int x, int y, int state)
+ms6931_cursor (Driver *drvthis, int x, int y, int state)
 {
 	static int saved_state = -1;
 	static char out[3] = { '~', 0x23, 0 };
@@ -339,7 +339,7 @@ ms6931_cursor (struct lcd_logical_driver *drvthis, int x, int y, int state)
 // Clears the framebuffer and the display
 //
 MODULE_EXPORT void
-ms6931_clear (struct lcd_logical_driver *drvthis)
+ms6931_clear (Driver *drvthis)
 {
 //	ms6931_write("~\042", 2);
 	memset (framebuf, ' ', width * height);
@@ -350,7 +350,7 @@ ms6931_clear (struct lcd_logical_driver *drvthis)
 // upper-left is (1,1), and the lower right should be (16,2).
 //
 MODULE_EXPORT void
-ms6931_string (struct lcd_logical_driver *drvthis, int x, int y, char string[])
+ms6931_string (Driver *drvthis, int x, int y, char string[])
 {
 	int i;
 
@@ -371,7 +371,7 @@ ms6931_string (struct lcd_logical_driver *drvthis, int x, int y, char string[])
 // draw a horizontal bar (vertical makes no sense on ms-6931
 //
 MODULE_EXPORT void
-ms6931_hbar (struct lcd_logical_driver *drvthis, int x, int y, int len, int promille, int pattern)
+ms6931_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
 {
 	char bar[17];
 	int max = width - x;
@@ -399,7 +399,7 @@ report(RPT_DEBUG, "ms6931_hbar: len=%d, size=%d, promile=%d", len, size, promill
 // Does the heartbeat...
 //
 MODULE_EXPORT void
-ms6931_heartbeat (struct lcd_logical_driver *drvthis, int state)
+ms6931_heartbeat (Driver *drvthis, int state)
 {
 	static int timer = 0;
 	char whichChar;
@@ -423,7 +423,7 @@ ms6931_heartbeat (struct lcd_logical_driver *drvthis, int state)
 //
 
 MODULE_EXPORT char 
-ms6931_get_key (struct lcd_logical_driver *drvthis)
+ms6931_get_key (Driver *drvthis)
 {
 	int ret;
 	char buf;

@@ -190,9 +190,7 @@ text_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 text_set_contrast (Driver *drvthis, int promille)
 {
-	/*
-	printf("Contrast: %d\n", promille);
-	*/
+  debug(RPT_DEBUG, "Contrast: %d\n", promille);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -203,15 +201,11 @@ text_backlight (Driver *drvthis, int on)
 {
 	//PrivateData * p = (PrivateData*) drvthis->private_data;
 
-/*
-  if(on)
-  {
-    printf("Backlight ON\n");
+  if(on) {
+    debug(RPT_DEBUG, "Backlight ON\n");
   }
-  else
-  {
-    printf("Backlight OFF\n");
+  else {
+    debug(RPT_DEBUG, "Backlight OFF\n");
   }
-*/
 }
 

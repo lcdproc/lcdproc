@@ -33,7 +33,7 @@
 /* REMOVE: I don't thing this is actualy needed. */
 /* extern lcd_logical_driver *lcdm001; */
 
-MODULE_EXPORT int  lcdm001_init (struct lcd_logical_driver *driver, char *args);
+MODULE_EXPORT int  lcdm001_init (Driver *drvthis, char *args);
 MODULE_EXPORT void lcdm001_close (Driver *drvthis);
 MODULE_EXPORT int  lcdm001_width (Driver *drvthis);
 MODULE_EXPORT int  lcdm001_height (Driver *drvthis);

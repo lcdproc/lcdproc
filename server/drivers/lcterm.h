@@ -27,7 +27,7 @@
 #define LCTERM_H
 
 #include "lcd.h"
-MODULE_EXPORT int  lcterm_init (struct lcd_logical_driver *driver, char *args);
+MODULE_EXPORT int  lcterm_init (Driver *drvthis, char *args);
 MODULE_EXPORT void lcterm_close (Driver *drvthis);
 MODULE_EXPORT int  lcterm_width (Driver *drvthis);
 MODULE_EXPORT int  lcterm_height (Driver *drvthis);

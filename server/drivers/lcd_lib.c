@@ -19,7 +19,7 @@
 ANY DRIVER SHOULD SIMPLY FREE ITS FRAMEBUFFER AT CLOSE()
 NO CHECKING FOR NULL NEEDED
 void
-free_framebuf (struct lcd_logical_driver *driver) {
+free_framebuf (Driver *driver) {
 	if (!driver)
 		return;
 
@@ -33,7 +33,7 @@ free_framebuf (struct lcd_logical_driver *driver) {
 /*
 NEED TO BE ADAPTED TO NEW SITUATION
 void
-clear_framebuf (struct lcd_logical_driver *driver) {
+clear_framebuf (Driver *driver) {
 	int framebuf_size;
 
 	if (!driver)
@@ -47,7 +47,7 @@ clear_framebuf (struct lcd_logical_driver *driver) {
 /*
 NEED TO BE ADAPTED TO NEW SITUATION
 int
-new_framebuf (struct lcd_logical_driver *driver, char *oldbuf) {
+new_framebuf (Driver *driver, char *oldbuf) {
 	int i;
 
 	if (driver->framebuf == NULL)
@@ -68,7 +68,7 @@ new_framebuf (struct lcd_logical_driver *driver, char *oldbuf) {
 /*
 NEED TO BE ADAPTED TO NEW SITUATION
 void
-insert_str_framebuf (struct lcd_logical_driver *driver, int x, int y, char *string) {
+insert_str_framebuf (Driver *driver, int x, int y, char *string) {
 	//int i;
 	char buf[64];
 	char *pos;
@@ -97,7 +97,7 @@ insert_str_framebuf (struct lcd_logical_driver *driver, int x, int y, char *stri
 /*
 NEED TO BE ADAPTED TO NEW SITUATION
 void
-insert_chr_framebuf (struct lcd_logical_driver *driver, int x, int y, char c) {
+insert_chr_framebuf (Driver *driver, int x, int y, char c) {
 	if (!driver)
 		return;
 

@@ -62,29 +62,12 @@ doing here.
 </warning>
 
 <para>
-The drivers can read their own options from the config file, but most of
-them don't do this yet. They expect 'command-line'-format parameters that
-were previously placed on the command line. These parameters can be
-given to the driver in the following way:
-</para>
-
-<example>
-<title><filename>LCDd.conf</filename>: Compatibility mode for drivers written for 0.4.1</title>
-<programlisting>
-
-Arguments="place arguments here"
-
-</programlisting>
-</example>
-
-<para>
-The arguments between the quotes are passed to the driver.
-As said before these are the same arguments that would have
-been passed to the driver using the old command line format of
+The drivers read their own options from the config file.
+For this purpose they use the config sections that are named like the driver.
 </para>
 
 <para>
-<command>LCDd -d driver "driverargs"</command>
+<command>LCDd -d driver</command>
 </para>
 
 <note>

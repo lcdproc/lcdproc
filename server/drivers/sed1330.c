@@ -466,8 +466,10 @@ sed1330_init( Driver * drvthis, char *args )
 	port_access(p->port+1);
 	port_access(p->port+2);
 
-	if (timing_init() == -1)
+	if (timing_init() == -1) {
+		report(RPT_ERR, "timing_init: failed (%s)\n", strerror(errno));
 		return -1;
+	}	
 
 	// INITIALIZE THE LCD
 	// End reset-state

@@ -1,7 +1,7 @@
 #ifndef LCD_SVGALIB_H
 #define LCD_SVGALIB_H
 
-MODULE_EXPORT int  svgalib_drv_init (Driver *driver, char *args);
+MODULE_EXPORT int  svgalib_drv_init (Driver *drvthis, char *args);
 MODULE_EXPORT void svgalib_drv_close (Driver *drvthis);
 MODULE_EXPORT int  svgalib_drv_width (Driver *drvthis);
 MODULE_EXPORT int  svgalib_drv_height (Driver *drvthis);

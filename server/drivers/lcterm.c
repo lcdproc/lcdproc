@@ -96,33 +96,32 @@ lcterm_init (Driver *drvthis, char *args)
   // which serial device should be used
   strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , DEFAULT_DEVICE),
 	  sizeof(device));
-  device[sizeof(device)-1]=0;
+  device[sizeof(device)-1] = '\0';
   report (RPT_INFO,"LCTERM: Using device: %s", device);
 
+  /* Get and parse size */
   {
-    char *s;
     int w,h;
+    char *s = drvthis->config_get_string( drvthis->name, "size", 0, "16x2" );
 
-    // Get and parse size
-    s = drvthis->config_get_string( drvthis->name, "size", 0, "16x2" );
-    fprintf( stderr, "lcterm_init: size: %s\n", s );
+    debug(RPT_DEBUG, "lcterm_init: reading size: %s\n", s );
 
-    if( sscanf( s, "%dx%d", &w, &h) == 2
-	&& (w > 0) && (w <= LCD_MAX_WIDTH)
-	&& (h > 0) && (h <= LCD_MAX_HEIGHT))
+    if((sscanf( s, "%dx%d", &w, &h) != 2)
+	|| (w <= 0) || (w > LCD_MAX_WIDTH)
+	|| (h <= 0) || (h > LCD_MAX_HEIGHT))
     {
-      p->width  = w;
-      p->height = h;
+      report(RPT_WARNING, "LCDTERM: Cannot read size: %s. Using default value.\n", s);
+      sscanf( "16x2", "%dx%d", &w, &h);
     }
-    else
-      fprintf( stderr, "lcterm_init: Cannot parse size: %s\n", s );
+    p->width  = w;
+    p->height = h;
   }
-  fprintf(stderr,"size: %dx%d\n",p->width, p->height);
+  report (RPT_INFO,"LCTERM: Using size: %dx%d\n",p->width, p->height);
 
   p->framebuf = malloc (p->width * p->height);
   p->last_framebuf = malloc (p->width * p->height);
   if (!p->framebuf || !p->last_framebuf) {
-    report(RPT_ERR, "\nError: unable to create LCTERM framebuffer.\n");
+    report(RPT_ERR, "Error: unable to create LCTERM framebuffer.\n");
     return -1;
   }
   memset (p->framebuf, ' ', p->width * p->height);

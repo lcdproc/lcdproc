@@ -58,7 +58,7 @@
 static int iow_lcd_wcmd(usb_dev_handle *udh, unsigned char data[8])
 {
   return(usb_control_msg(udh, USB_DT_HID, USB_REQ_SET_REPORT, 0, 1,
-                    data, 8, iowTimeout) == 8) ? IOW_OK : IOW_ERROR;
+                         data, 8, iowTimeout) == 8) ? IOW_OK : IOW_ERROR;
 }
 
 

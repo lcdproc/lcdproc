@@ -57,6 +57,9 @@
 //#include "shared/str.h"
 #include "report.h"
 
+#define MTC_DEFAULT_DEVICE	"/dev/lcd"
+#define MTC_DEFAULT_BRIGHTNESS	255
+
 int my_error_handle;
 
 char lcd_open[] = "\xFE\x28";	// From OpenCommPort()
@@ -79,39 +82,6 @@ char lcd_gotoline2[] = "\xFE\xC0";	// First character on the second row
 char lcd_showunderline[] = "\xFE\x0E";	// From Show_UnderLine()
 char lcd_hideunderline[] = "\xFE\x0B";	// From Hide_UnderLine()
 
-
-int
-get_args (char **argv, char *str, int max_args)
-{
-  char *delimiters = " \n\0";
-  char *item;
-  int i = 0;
-
-  if (!argv)
-    return -1;
-  if (!str)
-    return 0;
-  if (max_args < 1)
-    return 0;
-
-  //debug("get_args(%i): string=%s\n", max_args, str);
-
-  // Parse the command line...
-  for (item = strtok (str, delimiters); item;
-       item = strtok (NULL, delimiters))
-    {
-      //debug("get_args: item=%s\n", item);
-      if (i < max_args)
-	{
-	  argv[i] = item;
-	  i++;
-	}
-      else
-	return i;
-    }
-
-  return i;
-}
 
 static int custom = 0;
 
@@ -147,113 +117,50 @@ MODULE_EXPORT char *symbol_prefix = "MTC_S16209X_";
 MODULE_EXPORT int
 MTC_S16209X_init (Driver * drvthis, char *args)
 {
-  char *argv[64];
-  int argc;
   struct termios portset;
-  int i;
+  char device[256] = MTC_DEFAULT_DEVICE;
 
 #ifdef CAN_REBOOT_LCD
   int reboot = 0;
 #endif // CAN_REBOOT_LCD
-
-  char device[256] = "/dev/lcd";
 
 #ifdef CAN_CONTROL_BACKLIGHT
   int tmp;
   int backlight_brightness = 255;
 #endif // CAN_CONTROL_BACKLIGHT
 
-  //debug("MTC_S16209X_init: Args(all): %s\n", args);
+  /* Read config file */
 
-  argc = get_args (argv, args, 64);
+  /* What device should be used */
+  strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
+					     MTC_DEFAULT_DEVICE), sizeof(device));
+  device[sizeof(device)-1] = '\0';
 
-  /*
-     
-     for(i=0; i<argc; i++)
-     {
-     printf("Arg(%i): %s\n", i, argv[i]);
-     }
-     
-   */
-
-  for (i = 0; i < argc; i++)
-    {
-      //printf("Arg(%i): %s\n", i, argv[i]);
-      if (0 == strcmp (argv[i], "-d") || 0 == strcmp (argv[i], "--device"))
-	{
-	  if (i + 1 > argc)
-	    {
-	      fprintf (stderr, "MTC_S16209X_init: %s requires an argument\n",
-		       argv[i]);
-	      return -1;
-	    }
-	  strcpy (device, argv[++i]);
-	}
-      
 #ifdef CAN_CONTROL_BACKLIGHT
-      else if (0 == strcmp (argv[i], "-b") ||
-	       0 == strcmp (argv[i], "--brightness"))
-	{
-	  if (i + 1 > argc)
-	    {
-	      fprintf (stderr, "MTC_S16209X_init: %s requires an argument\n",
-		       argv[i]);
-	      return -1;
-	    }
-	  tmp = atoi (argv[++i]);
-	  if ((tmp < 0) || (tmp > 255))
-	    {
-	      fprintf (stderr,
-		       "MTC_S16209X_init: %s argument must between 0 and 255. Using default value.\n",
-		       argv[i]);
-	    }
-	  else
-	    backlight_brightness = tmp;
-	}
+  /* Which backlight brightness */
+  backlight_brightness = drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , MTC_DEFAULT_BRIGHTNESS);
+  if ((backlight_brightness < 0) || (backlight_brightness > 255)) {
+    report (RPT_WARNING, "MTC_S16209X_init: Brightness must be between 0 and 255. Using default value.\n");
+    backlight_brightness = MTC_DEFAULT_BRIGHTNESS;
+  }
 #endif // CAN_CONTROL_BACKLIGHT
-      
-      else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help"))
-	{
-	  printf ("LCDproc MTC_S16209X LCD driver\n"
-		  "\t-d\t--device\tSelect the output device to use [/dev/lcd]\n"
-		  "\t-t\t--type\t\tSelect the LCD type (size) [16x2]\n"
-                  
-#ifdef CAN_CONTROL_BACKLIGHT
-		  "\t-b\t--brightness\tSet the initial brightness [255]\n"
-#endif // CAN_CONTROL_BACKLIGHT
-                  
-		  "\t-r\t--reboot\tReinitialize the LCD's BIOS\n"
-		  "\t-h\t--help\t\tShow this help information\n");
-	  return -1;
-	}
       
 #ifdef CAN_REBOOT_LCD
-      else if (0 == strcmp (argv[i], "-r") ||
-	       0 == strcmp (argv[i], "--reboot"))
-	{
-	  printf ("LCDd: rebooting MTC_S16209X LCD...\n");
-	  reboot = 1;
-	}
+  /* Reboot display? */
+  reboot = drvthis->config_get_bool( drvthis->name , "Reboot", 0, 0);
+  if (reboot)
+    report (RPT_INFO, "LCDd: rebooting MTC_S16209x LCD...\n");
 #endif // CAN_REBOOT_LCD
       
-      else
-	{
-	  printf ("Invalid parameter: %s\n", argv[i]);
-	}
-
-    }
-
+  /* End of config file parsing */
+  
   // Set up io port correctly, and open it...
   fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
-  if (fd == -1)
-    {
-      fprintf (stderr, "MTC_S16209X_init: failed (%s)\n", strerror (errno));
-      return -1;
-    }
-  /*
-     else
-     fprintf (stderr, "MTC_S16209X_init: opened device %s\n", device);
-   */
+  if (fd == -1) {
+    report(RPT_ERR, "MTC_S16209X_init: open(%s) failed (%s)\n", device, strerror(errno));
+    return -1;
+  }
+  report(RPT_DEBUG, "MTC_S16209X_init: opened device %s\n", device);
 
   fcntl (fd, F_SETFL, 0);	// Set port for reading
   tcgetattr (fd, &portset);	// Get current port attributes
@@ -277,19 +184,14 @@ MTC_S16209X_init (Driver * drvthis, char *args)
   my_error_handle = write (fd, lcd_open, sizeof (lcd_open));	// Send the init string to the LCD
 
   if (my_error_handle < 0)
-    {
-      fprintf (stderr, "MTC_S16209X_init(): write(lcd_open) failed (%s)\n",
-	       strerror (errno));
-    }
+    report(RPT_WARNING, "MTC_S16209X_init(): write(lcd_open) failed (%s)\n",
+	   strerror(errno));
 
   my_error_handle = write (fd, lcd_clearscreen, sizeof (lcd_clearscreen));	// Clear the LCD, unbuffered
 
   if (my_error_handle < 0)
-    {
-      fprintf (stderr,
-	       "MTC_S16209X_init(): write(lcd_clearscreen) failed (%s)\n",
-	       strerror (errno));
-    }
+    report(RPT_WARNING, "MTC_S16209X_init(): write(lcd_clearscreen) failed (%s)\n",
+	   strerror(errno));
 
   return 0;
 }
@@ -308,8 +210,8 @@ MTC_S16209X_close (Driver * drvthis)
   flock (fd, LOCK_UN);
 
   if (my_error_handle < 0)
-    fprintf (stderr,
-	     "MTC_S16209X_close(): Write() failed! (%s)\n", strerror (errno));
+    report(RPT_WARNING, "MTC_S16209X_close(): Write() failed! (%s)\n",
+           strerror(errno));
 
   usleep (10);
 
@@ -362,8 +264,8 @@ MTC_S16209X_flush (Driver * drvthis)
   flock (fd, LOCK_UN);
 
   if (my_error_handle < 0)
-    fprintf (stderr, "MTC_S16209X_flush(): Couldn't write 1st line (%s)\n",
-	     strerror (errno));
+    report(RPT_WARNING, "MTC_S16209X_flush(): Couldn't write 1st line (%s)\n",
+	   strerror(errno));
 
   // 2nd step: flush 2nd line:
   flock (fd, LOCK_EX);
@@ -372,8 +274,8 @@ MTC_S16209X_flush (Driver * drvthis)
   flock (fd, LOCK_UN);
 
   if (my_error_handle < 0)
-    fprintf (stderr, "MTC_S16209X_flush(): Couldn't write 2nd line (%s)\n",
-	     strerror (errno));
+    report(RPT_WARNING, "MTC_S16209X_flush(): Couldn't write 2nd line (%s)\n",
+	   strerror(errno));
 
   // Wait until serial port cache has been emptied (else clients gets
   // the message to bugger off after a while)
@@ -422,8 +324,8 @@ MTC_S16209X_hidecursor ()
   flock (fd, LOCK_UN);
 
   if (my_error_handle < 0)
-    fprintf (stderr, "MTC_S16209X_hidecursor(): Write failed: %s\n",
-	     strerror (errno));
+    report(RPT_WARNING, "MTC_S16209X_hidecursor(): Write failed: %s\n",
+	   strerror(errno));
 
 }
 #endif // THIS_PART_SHOULD_BE_REMOVED

@@ -124,8 +124,6 @@ HD44780_init (Driver * drvthis, char *args)
 {
 	// TODO: remove the two magic numbers below
 	// TODO: single point of return
-	//char *argv[64];
-	//int i;
 	char buf[40];
 	char *s;
 	int i;
@@ -209,8 +207,10 @@ HD44780_init (Driver * drvthis, char *args)
 			report (RPT_ERR, "Error mallocing");
 	}
 
-	if (timing_init() == -1)
+	if (timing_init() == -1) {
+		report(RPT_ERR, "timing_init: failed (%s)\n", strerror(errno));
 		return -1;
+	}	
 
 #if defined DELAY_NANOSLEEP
 	// Change to Round-Robin scheduling for nanosleep

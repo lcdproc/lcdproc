@@ -36,6 +36,7 @@
 #include "shared/str.h"
 #include "lcd.h"
 #include "stv5730.h"
+#include "report.h"
 
 
 #ifndef LPTPORT
@@ -282,77 +283,32 @@ stv5730_drawchar2fb (int x, int y, unsigned char z)
 MODULE_EXPORT int
 stv5730_init (Driver *drvthis, char *args)
 {
-    char *argv[64], *str;
-    int argc, i;
+    int i;
 
-    if (args)
-	if ((str = (char *) malloc (strlen (args) + 1)))
-	    strcpy (str, args);
-	else
-	  {
-	      fprintf (stderr, "Error mallocing\n");
-	      return -1;
-	  }
-    else
-	str = NULL;
+    /* Read config file */
 
-    argc = get_args (argv, args, 64);
-    for (i = 0; i < argc; i++)
-      {
-	  if (0 == strcmp (argv[i], "-p")
-	      || 0 == strcmp (argv[i], "--port\0"))
-	    {
-		if (i + 1 >= argc)
-		  {
-		      fprintf (stderr,
-			       "stv5730_init: %s requires an argument\n",
-			       argv[i]);
-		      return -1;
-		  }
-		else
-		  {
-		      int myport;
-		      if (sscanf (argv[i + 1], "%i", &myport) != 1)
-			{
-			    fprintf (stderr,
-				     "stv5730_init: Couldn't read port address -"
-				     " using default value 0x%x\n",
-				     stv5730_lptport);
-			    return -1;
-			}
-		      else
-			{
-			    stv5730_lptport = myport;
-			    ++i;
-			}
-		  }
-	    }
-	  else if (0 == strcmp (argv[i], "-h")
-		   || 0 == strcmp (argv[i], "--help"))
-	    {
-		//int i;
-		printf
-		    ("LCDproc stv5730 driver\n\t-p n\t--port n\tSelect the output device to use port n\n");
-		printf ("put the options in quotes like this:  '-p 0x278'\n");
-		printf ("\t-h\t--help\t\tShow this help information\n");
-		return -1;
-	    }
-      }
+    /* What port to use */
+    stv5730_lptport = drvthis->config_get_int(drvthis->name, "Port", 0, LPTPORT);
+  
+    /* End of config file parsing */
 
-	if (timing_init() == -1)
-		return -1;
+    if (timing_init() == -1) {
+	report(RPT_ERR, "timing_init: failed (%s)\n", strerror(errno));
+	return -1;
+    }
 
     // Initialize the Port and the stv5730
     if (port_access (stv5730_lptport) || port_access (stv5730_lptport + 1))
       {
-	  printf
-	      ("Couldn't get IO-permission for 0x%X ! Are we running as root ?\n ",
-	       stv5730_lptport); return -1;
+	  report(RPT_ERR,
+	      "Couldn't get IO-permission for 0x%X ! Are we running as root ?\n ",
+	       stv5730_lptport);
+	  return -1;
       };
 
     if (stv5730_detect ())
       {
-	  printf ("No STV5730 hardware found at 0x%X !\n ", stv5730_lptport);
+	  report(RPT_ERR, "No STV5730 hardware found at 0x%X !\n ", stv5730_lptport);
 	  return -1;
       };
 
@@ -371,12 +327,12 @@ stv5730_init (Driver *drvthis, char *args)
     stv5730_write16bit (STV5730_REG_CONTROL);
     stv5730_write16bit (0x1FF4);
 
-    printf ("Detecting Video Signal: ");
+    report(RPT_INFO, "Detecting Video Signal: ");
     usleep (50000);
 
     if (stv5730_is_mute ())
       {
-	  printf ("No Video Signal found, using full page mode.\n");
+	  report(RPT_INFO, "No Video Signal found, using full page mode.\n");
 	  // Setup Mode + Control for full page mode
 	  stv5730_charattrib = STV5730_ATTRIB;
 	  stv5730_write16bit (STV5730_REG_MODE);
@@ -390,11 +346,10 @@ stv5730_init (Driver *drvthis, char *args)
 	  stv5730_write16bit (0x1ED4);
 #endif
 
-
       }
     else
       {
-	  printf ("Video Signal found, using mixed mode (B&W).\n");
+	  report(RPT_INFO, "Video Signal found, using mixed mode (B&W).\n");
 	  // Setup Mode + Control for mixed mode, disable color
 	  stv5730_charattrib = 0;
 	  stv5730_write16bit (STV5730_REG_MODE);
@@ -429,7 +384,7 @@ stv5730_init (Driver *drvthis, char *args)
 	  stv5730_write16bit (0x10C0);
       }
 
-    // Alocate our own framebuffer
+    // Allocate our own framebuffer
     stv5730_framebuf = malloc (STV5730_WID * STV5730_HGT);
     if (!stv5730_framebuf)
       {

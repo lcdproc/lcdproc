@@ -4,6 +4,6 @@
 #include "lcd.h"					  /* for Driver */
 
 // initialise this particular driver
-int hd_init_ext8bit (Driver *driver);
+int hd_init_ext8bit (Driver *drvthis);
 
 #endif

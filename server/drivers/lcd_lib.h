@@ -5,7 +5,7 @@
 #include "lcd.h"
 #endif
 
-int new_framebuf (struct lcd_logical_driver *driver, char *oldbuf);
+int new_framebuf (Driver *driver, char *oldbuf);
 
 void lib_hbar_static (Driver *drvthis, int x, int y, int len, int promille, int options, int cellwidth, int cc_offset);
 void lib_vbar_static (Driver *drvthis, int x, int y, int len, int promille, int options, int cellheight, int cc_offset);
