@@ -33,11 +33,12 @@
 #include "driver.h"
 #include "drivers.h"
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 /* Next include files are needed for settings that we can modify */
 #include "render.h"
-
-/* uncomment this if you want a binary with test menus in it */
-#define TESTMENUS
 
 char * menu_key;
 char * enter_key;
@@ -189,8 +190,9 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 {
 	MenuItem * old_menuitem = active_menuitem;
 
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
-			((new_menuitem != NULL) ? new_menuitem->id : "(null)"));
+	debug (RPT_DEBUG, "%s( item=[%s] ) from active_menuitem=[%s]", __FUNCTION__,
+ 	      ((new_menuitem != NULL) ? new_menuitem->id : "(null)"),
+ 	      ((old_menuitem != NULL) ? old_menuitem->id : "(null)"));
 
 	/* First we do the switch */
 	active_menuitem = new_menuitem;
@@ -214,6 +216,12 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 		}
 		menuitem_rebuild_screen (active_menuitem, menuscreen);
 	}
+
+        if (old_menuitem && old_menuitem->event_func)
+ 	       old_menuitem->event_func(old_menuitem, MENUEVENT_LEAVE);
+        if (new_menuitem && new_menuitem->event_func)
+ 	       new_menuitem->event_func(new_menuitem, MENUEVENT_ENTER);
+
 	return;
 }
 
@@ -295,10 +303,10 @@ void menuscreen_create_menu ()
 	MenuItem * slider;
 	Driver * driver;
 
-#ifdef TESTMENUS
+#ifdef LCDPROC_TESTMENUS
 	MenuItem * test_item;
 	Menu * test_menu;
-#endif /*TESTMENUS*/
+#endif /*LCDPROC_TESTMENUS*/
 
 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
@@ -307,10 +315,10 @@ void menuscreen_create_menu ()
 	options_menu = menu_create ("options", NULL, "Options", NULL);
 	menu_add_item (main_menu, options_menu);
 
-#ifdef TESTMENUS
+#ifdef LCDPROC_TESTMENUS
 	screens_menu = menu_create ("screens", NULL, "Screens", NULL);
 	menu_add_item (main_menu, screens_menu);
-#endif /*TESTMENUS*/
+#endif /*LCDPROC_TESTMENUS*/
 
 	checkbox = menuitem_create_checkbox ("heartbeat", heartbeat_handler, "Heartbeat", true, heartbeat);
 	menu_add_item (options_menu, checkbox);
@@ -347,7 +355,7 @@ void menuscreen_create_menu ()
 		}
 	}
 
-#ifdef TESTMENUS	
+#ifdef LCDPROC_TESTMENUS	
 	test_menu = menu_create ("test", NULL, "Test menu", NULL);
 	menu_add_item (main_menu, test_menu);
 
@@ -385,7 +393,7 @@ void menuscreen_create_menu ()
 	menu_add_item (test_menu, test_item);
 	test_item = menuitem_create_ip ("", NULL, "IPv6", 1, ":::ffff:ffff:ffff:ffff:ffff");
 	menu_add_item (test_menu, test_item);
-#endif /*TESTMENUS*/
+#endif /*LCDPROC_TESTMENUS*/
 }
 
 MenuEventFunc (heartbeat_handler)
@@ -517,17 +525,32 @@ menuscreen_remove_screen (Screen * s)
 	}
 }
 
-
+/**
+ * Transition is allowed if old and new menu are owned by the same
+ * clients. Returns -1 if transition is not allowed and 0 otherwise.
+ */
 int
 menuscreen_goto (Menu * menu)
 {
-	if( !active_menuitem ) {
-		/* OK we can do it */
+	debug (RPT_DEBUG, "%s( m=[%s] ): active_menuitem=[%s]",
+ 	     __FUNCTION__, (menu != NULL) ? menu->id : "(NULL)",
+ 	     (active_menuitem != NULL) ? active_menuitem->id : "(NULL)");
+# ifdef LCDPROC_PERMISSIVE_MENUSCREEN_GOTO
+        menuscreen_switch_item (menu);
+        return 0;
+# else
+        if( !active_menuitem
+ 	   || menuitem_get_client(active_menuitem) == menuitem_get_client(menu))
+        {
 		menuscreen_switch_item (menu);
 		return 0;
 	}
 	else {
-		/* Sorry there is a menu already active. */
+		report(RPT_WARNING, "menuscreen_goto([%s]) not allowed:"
+ 		      " Another client's menu is active",
+ 		      (menu != NULL) ? menu->id : "(NULL)");
 		return -1;
 	}
+# endif /* LCDPROC_PERMISSIVE_MENUSCREEN_GOTO */
+
 }
