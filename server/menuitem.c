@@ -258,8 +258,10 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
 		new_item->data.alpha.allowed_extra = strdup (allowed_extra);
 
 		new_item->data.alpha.value = malloc (maxlength + 1);
-		strncpy (new_item->data.alpha.value, value, maxlength);
-		new_item->data.alpha.value[maxlength] = 0;
+		if (new_item->data.alpha.value != NULL) {
+			strncpy (new_item->data.alpha.value, value, maxlength);
+			new_item->data.alpha.value[maxlength] = 0;
+		}	
 
 		new_item->data.alpha.edit_str = malloc (maxlength + 1);
 	}	

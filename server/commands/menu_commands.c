@@ -348,7 +348,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		{ MENUITEM_NUMERIC,	"minvalue",	INT,		offsetof(MenuItem,data.numeric.minvalue) },
 		{ MENUITEM_NUMERIC,	"maxvalue",	INT,		offsetof(MenuItem,data.numeric.maxvalue) },
 		/*{ MENUITEM_NUMERIC,	"allow_decimals",BOOLEAN,	offsetof(MenuItem,data.numeric.allow_decimals) },*/
-		{ MENUITEM_ALPHA,	"value",	STRING,		offsetof(MenuItem,data.alpha.value) },
+		{ MENUITEM_ALPHA,	"value",	STRING,		-1 /*offsetof(MenuItem,data.alpha.value)*/ },
 		{ MENUITEM_ALPHA,	"minlength",	SHORT,		offsetof(MenuItem,data.alpha.minlength) },
 		{ MENUITEM_ALPHA,	"maxlength",	SHORT,		offsetof(MenuItem,data.alpha.maxlength) },
 		{ MENUITEM_ALPHA,	"password_char",STRING,		-1 },
