@@ -30,43 +30,46 @@ lcd_logical_driver *text;
 #define LCD_DEFAULT_CELL_WIDTH 5
 #define LCD_DEFAULT_CELL_HEIGHT 8
 
+// TODO: When using the text driver, ^C fails to interrupt!
+// Why?  Fix it...
+
 int
 text_init (lcd_logical_driver * driver, char *args)
 {
 	text = driver;
 
-	if (!driver->framebuf) {
+	if (!text->framebuf) {
 		syslog(LOG_ERR, "text: no frame buffer!");
-		driver->close ();
+		text_close ();
 		return -1;
 	}
 
-	driver->wid = LCD_DEFAULT_WIDTH;
-	driver->hgt = LCD_DEFAULT_HEIGHT;
-	driver->cellwid = LCD_DEFAULT_CELL_WIDTH;
-	driver->cellhgt = LCD_DEFAULT_CELL_HEIGHT;
+	text->wid = LCD_DEFAULT_WIDTH;
+	text->hgt = LCD_DEFAULT_HEIGHT;
+	text->cellwid = LCD_DEFAULT_CELL_WIDTH;
+	text->cellhgt = LCD_DEFAULT_CELL_HEIGHT;
 
-	driver->clear = text_clear;
-	driver->string = text_string;
-	driver->chr = text_chr;
-	driver->vbar = text_vbar;
-	//driver->init_vbar = NULL;
-	driver->hbar = text_hbar;
-	//driver->init_hbar = NULL;
-	driver->num = text_num;
-	//driver->init_num = NULL;
+	text->clear = text_clear;
+	text->string = text_string;
+	text->chr = text_chr;
+	text->vbar = text_vbar;
+	//text->init_vbar = NULL;
+	text->hbar = text_hbar;
+	//text->init_hbar = NULL;
+	text->num = text_num;
+	//text->init_num = NULL;
 
-	driver->init = text_init;
-	driver->close = text_close;
-	driver->flush = text_flush;
-	//driver->flush_box = NULL;
-	//driver->contrast = NULL;
-	//driver->backlight = NULL;
-	//driver->set_char = NULL;
-	//driver->icon = NULL;
-	driver->draw_frame = text_draw_frame;
+	text->init = text_init;
+	text->close = text_close;
+	text->flush = text_flush;
+	//text->flush_box = NULL;
+	//text->contrast = NULL;
+	//text->backlight = NULL;
+	//text->set_char = NULL;
+	//text->icon = NULL;
+	text->draw_frame = text_draw_frame;
 
-	//driver->getkey = NULL;
+	//text->getkey = NULL;
 
 	return 200;						  // 200 is arbitrary.  (must be 1 or more)
 }
@@ -74,10 +77,10 @@ text_init (lcd_logical_driver * driver, char *args)
 void
 text_close ()
 {
-	if (lcd.framebuf != NULL)
-		free (lcd.framebuf);
+	if (text->framebuf != NULL)
+		free (text->framebuf);
 
-	lcd.framebuf = NULL;
+	text->framebuf = NULL;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -108,8 +111,7 @@ text_string (int x, int y, char string[])
 {
 	int i;
 
-	x -= 1;							  // Convert 1-based coords to 0-based...
-	y -= 1;
+	x--; y--; // Convert 1-based coords to 0-based...
 
 	for (i = 0; string[i]; i++) {
 		text->framebuf[(y * text->wid) + x + i] = string[i];
@@ -123,8 +125,7 @@ text_string (int x, int y, char string[])
 void
 text_chr (int x, int y, char c)
 {
-	y--;
-	x--;
+	y--; x--;
 
 	text->framebuf[(y * text->wid) + x] = c;
 }
