@@ -158,7 +158,6 @@ typedef enum {
 } MtxOrb_type_type;
 
 
-/* This is an embrionic Private Date, it need to grow ! */
 typedef struct p {
 	int def[9];
 	int use[9];
@@ -190,7 +189,6 @@ MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "MtxOrb_";
-
 
 static int  MtxOrb_ask_bar (Driver *drvthis, int type);
 static void MtxOrb_set_known_char (Driver * drvthis, int car, int type);
@@ -236,18 +234,17 @@ MtxOrb_init (Driver *drvthis, char *args)
 	char size[256] = DEFAULT_SIZE;
 	char buf[256] = "";
 	int tmp, w, h;
+
         PrivateData *p;
 
-/*	int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };	*/
-/*	int use[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };		*/
 	/* Alocate and store private data */
-
         p = (PrivateData *) malloc( sizeof( PrivateData) );
 	if( ! p )
 	        return -1;
 	if( drvthis->store_private_ptr( drvthis, p ) )
 	        return -1;
 
+	/* Initialise the PrivateData structure */
 	memset( p->def, -1, sizeof(p->def) );
 	memset( p->use,  0, sizeof(p->use) );
 	p->circular = -1;	/* static data from MtxOrb_ask_bar */
@@ -272,7 +269,6 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
 
 	debug( RPT_INFO, "MtxOrb: init(%p,%s)", drvthis, args );
-
 
 	/* READ CONFIG FILE */
 
@@ -825,11 +821,6 @@ MtxOrb_cursorblink (Driver *drvthis, int on)
 	}
 }
 
-/* TODO: REMOVE ME */
-MODULE_EXPORT void MtxOrb_init_old_vbar (Driver *drvthis) { }
-
-/* TODO: REMOVE ME */
-MODULE_EXPORT void MtxOrb_init_old_hbar (Driver *drvthis) { }
 
 /******************************
  * Returns string with general information about the display
@@ -967,10 +958,12 @@ MtxOrb_get_info (Driver *drvthis)
 MODULE_EXPORT void
 MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 {
-	/* baru5 = bigfonte ... This is a way the cache can benefit from it. */
-	unsigned char mapu[9] = { barw, baru1, baru2, baru3, baru4, bigfonte, baru6, baru7, barb };
-	/* bard5 = bigfontf ... This is a way the cache can benefit from it. */
-	unsigned char mapd[9] = { barw, bard1, bard2, bard3, bard4, bigfontf, bard6, bard7, barb };
+	/* baru5 = bigfonte ... The cache can benefit from it. */
+	unsigned char mapu[9] =
+	{ barw, baru1, baru2, baru3, baru4, bigfonte, baru6, baru7, barb };
+	/* bard5 = bigfontf ... The cache can benefit from it. */
+	unsigned char mapd[9] = 
+	{ barw, bard1, bard2, bard3, bard4, bigfontf, bard6, bard7, barb };
 
 	int y;
 
@@ -979,7 +972,7 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 	debug(RPT_DEBUG, "MtxOrb: vertical bar at %d set to %d", x, len);
 
 /* REMOVE THE NEXT LINE FOR TESTING ONLY... */
-/*  len=-len; */
+/* len=-len; */ /* This is to test negative len. */
 /* REMOVE THE PREVIOUS LINE FOR TESTING ONLY... */
 
 	if (len > 0) {
@@ -991,6 +984,7 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 
 			len -= p->cellheight;
 		}
+/*
 	} else {
 		len = -len;
 		for (y = 2; y <= p->height && len > 0; y++) {
@@ -1001,9 +995,11 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 
 			len -= p->cellheight;
 		}
+*/
 	}
 
 }
+
 
 /* TODO: Finish the support for bar growing reverse way.
  * TODO: Migrate to the new hbar.
@@ -1034,6 +1030,7 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 			len -= p->cellwidth;
 
 		}
+/*
 	} else {
 		len = -len;
 		for (; x > 0 && len > 0; x--) {
@@ -1045,12 +1042,67 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 			len -= p->cellwidth;
 
 		}
+*/
 	}
 
 }
 
-/* TODO: REMOVE ME */
-MODULE_EXPORT void MtxOrb_init_old_num (Driver *drvthis) { }
+
+/////////////////////////////////////////////////////////////////
+// Draws a vertical bar...
+//
+MODULE_EXPORT void
+MtxOrb_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+{
+	/* x and y are the start position of the bar.
+	 * The bar by default grows in the 'up' direction
+	 * (other direction not yet implemented).
+	 * len is the number of characters that the bar is long at 100%
+	 * promille is the number of promilles (0..1000)
+	 * that the bar should be filled.
+	 */
+
+        PrivateData * p = drvthis->private_data;
+	int total_pixels  = ((long) 2 * len * p->cellwidth + 1 ) * promille / 2000;
+
+	/*
+	 * This function does not fully implement API V0.5
+	 * It is an adaptation layer using the API V0.4 function.
+	 * Ideally it should use the library but then the library
+	 * need to be enhanced with the idea privately exchange
+	 * between David & Joris.
+	 */ 
+
+	MtxOrb_old_vbar (drvthis, x, total_pixels);
+}
+
+/////////////////////////////////////////////////////////////////
+// Draws a horizontal bar to the right.
+//
+MODULE_EXPORT void
+MtxOrb_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+{
+	/* x and y are the start position of the bar.
+	 * The bar by default grows in the 'right' direction
+	 * (other direction not yet implemented).
+	 * len is the number of characters that the bar is long at 100%
+	 * promille is the number of promilles (0..1000)
+	 * that the bar should be filled.
+	 */
+
+        PrivateData * p = drvthis->private_data;
+	int total_pixels  = ((long) 2 * len * p->cellwidth + 1 ) * promille / 2000;
+
+	/*
+	 * This function does not fully implement API V0.5
+	 * It is an adaptation layer using the API V0.4 function.
+	 * Ideally it should use the library but then the library
+	 * need to be enhanced with the idea privately exchange
+	 * between David & Joris.
+	 */ 
+
+	MtxOrb_old_hbar (drvthis, x, y, total_pixels);
+}
 
 
 /* TODO: MtxOrb_set_char is doing the job "real-time" as oppose
