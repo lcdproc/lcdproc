@@ -3,6 +3,10 @@
 #include <string.h>
 #include <time.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "../shared/debug.h"
 
 #include "drivers/lcd.h"

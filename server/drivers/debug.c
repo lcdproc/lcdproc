@@ -6,7 +6,7 @@
 #include <string.h>
 #include <sys/errno.h>
 
-#include "../lcd.h"
+#include "lcd.h"
 #include "debug.h"
 
 

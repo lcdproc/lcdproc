@@ -9,6 +9,10 @@
 #include <signal.h>
 #include <ctype.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "main.h"
 #include "mode.h"
 #include "../../shared/sockets.h"

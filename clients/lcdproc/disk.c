@@ -4,6 +4,10 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef LINUX
 #include <sys/vfs.h>
 #else
@@ -84,57 +88,6 @@ static int get_fs(mounts fs[])
   fclose(mtab_fd);
   return x;
 }
-
-#if 0
-static int get_fs(mounts fs[])
-{
-  struct statfs fsinfo;
-  char line[256];
-  int x = 0, y;
-  
-  mtab_fd = fopen("/etc/mtab", "r");
-
-  // Get rid of old, unmounted filesystems...
-  memset(fs, 0, sizeof(mounts)*256);
-  
-  while (x < 256)
-  {
-    if(fgets(line, 256, mtab_fd) == NULL)
-      {
-	fclose(mtab_fd);
-	return x;
-      }
-    
-    sscanf(line, "%s %s %s", fs[x].dev, fs[x].mpoint, fs[x].type);
-    
-    if(   strcmp(fs[x].type, "proc")
-#ifndef STAT_NFS
-       && strcmp(fs[x].type, "nfs")
-#endif
-#ifndef STAT_SMBFS
-       && strcmp(fs[x].type, "smbfs")
-#endif
-      ) 
-    {
-#ifdef LINUX
-      y = statfs(fs[x].mpoint, &fsinfo); 
-#else
-      y = statfs(fs[x].mpoint, &fsinfo, sizeof(fsinfo), 0); 
-#endif
-      fs[x].bsize = fsinfo.f_bsize; 
-      fs[x].blocks = fsinfo.f_blocks;
-      fs[x].bfree = fsinfo.f_bfree; 
-      fs[x].files = fsinfo.f_files;
-      fs[x].ffree = fsinfo.f_ffree; 
-      x++;
-    }
-  }
-
-  fclose(mtab_fd);
-  return x;
-}
-#endif
-
 
 int disk_init()
 {

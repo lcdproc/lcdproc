@@ -1,6 +1,10 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif 
+
 /*
   contains a few things that other parts of the program might want
   to know about...

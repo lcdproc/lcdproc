@@ -6,7 +6,11 @@
 #include <string.h>
 #include <sys/errno.h>
 
-#include "LL.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "../../shared/LL.h"
 
 #include "lcd.h"
 
