@@ -24,13 +24,23 @@
 #include <string.h>
 #include <errno.h>
 #include <syslog.h>
-#include <time.h>
+# if TIME_WITH_SYS_TIME
+#  include <sys/time.h>
+#  include <time.h>
+# else
+#  if HAVE_SYS_TIME_H
+#   include <sys/time.h>
+#  else
+#   include <time.h>
+#  endif
+# endif
 
 #include "lcd.h"
 #include "lcdm001.h"
-#include "drv_base.h"
-#include "shared/debug.h"
+/*#include "shared/debug.h"*/
 #include "shared/str.h"
+#include "shared/report.h"
+#include "configfile.h"
 #include "render.h"
 
 // Moved here from lcdm001.h to reduce the number of warning.
@@ -111,8 +121,6 @@ static char num_icon [10][4][3] = 	{{{' ','_',' '}, /*0*/
 
 static void lcdm001_cursorblink (int on);
 static void lcdm001_string (int x, int y, char *string);
-static void lcdm001_usage (void);
-
 
 #define ValidX(x) if ((x) > lcdm001->wid) { (x) = lcdm001->wid; } else (x) = (x) < 1 ? 1 : (x);
 #define ValidY(y) if ((y) > lcdm001->hgt) { (y) = lcdm001->hgt; } else (y) = (y) < 1 ? 1 : (y);
@@ -124,23 +132,13 @@ lcdm001_cursorblink (int on)
 {
 	if (on) {
 		write (fd, "~K1", 3);
-
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "LCDM001: cursorblink turned on");
+		debug(RPT_INFO, "LCDM001: cursorblink turned on");
 	} else {
 		write (fd, "~K0", 3);
-
-		if (debug_level > 3)
-			syslog(LOG_DEBUG, "LCDM001: cursorblink turned off");
+		debug(RPT_INFO, "LCDM001: cursorblink turned off");
 	}
 }
 
-static void
-lcdm001_usage (void) {
-	printf ("LCDproc LCDM001 LCD driver\n"
-		"\t-d\t\tSelect the output device to use [/dev/lcd]\n"
-		"\t-h\t\tShow this help information\n");
-}
 
 // TODO: Get lcd.framebuf to properly work as whatever driver is running...
 
@@ -150,29 +148,27 @@ lcdm001_usage (void) {
 int
 lcdm001_init (struct lcd_logical_driver *driver, char *args)
 {
-        char device[256]="/dev/lcd"; 
+        char * device;
         int speed=B38400;
-        char *argv[64];
-        int argc;
-        int i;
         struct termios portset;
-	//char c;
 
 	char out[5]="";
-  //fprintf(stderr,"lcdm001_init()\n");
 
 	lcdm001 = driver;
+
+	debug( RPT_INFO, "LCDM001: init(%p,%s)", driver, args );
 
 	driver->wid = 20;
 	driver->hgt = 4;
 
 	// You must use driver->framebuf here, but may use lcd.framebuf later.
-	if (!driver->framebuf)
+	if (!driver->framebuf) {
 		driver->framebuf = malloc (driver->wid * driver->hgt);
+	}
 
 	if (!driver->framebuf) {
 		lcdm001_close ();
-                fprintf(stderr, "\nError: unable to create LCDM001 framebuffer.\n");
+                report(RPT_ERR, "\nError: unable to create LCDM001 framebuffer.\n");
 		return -1;
 	}
 // Debugging...
@@ -184,75 +180,33 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	driver->cellwid = 5;
 	driver->cellhgt = 8;
 
-	argc = get_args(argv, args, 64);
+	// TODO: replace DriverName with driver->name when that field exists.
+	#define DriverName "lcdm001"
 
-	/*
-	for(i=0; i<argc; i++)
-	{
-		printf("Arg(%i): %s\n", i, argv[i]);
-	}
-	*/
+	//READ CONFIG FILE:
 
-#ifdef USE_GETOPT
-        while ((c = getopt(argc, argv, "d:h")) > 0) {
-		switch(c) {
-			case 'd':
-				strncpy(device, optarg, sizeof(device));
-				break;
-			case 'h':
-				lcdm001_usage();
-				return -1;
-			default:
-				lcdm001_usage();
-				return -1;
-		}
-	}
-#else
-	for (i = 0; i < argc; i++) {
-		char *p;
+	//which serial device should be used
+	device = config_get_string ( DriverName , "Device" , 0 , "/dev/lcd");
+	report (RPT_INFO,"LCDM001: Using device: %s", device);
 
-		p = argv[i];
-		//printf("Arg(%i): %s\n", i, argv[i]);
-
-		if (*p == '-') {
-
-			p++;
-			switch (*p) {
-				case 'd':
-					if (i + 1 > argc) {
-						fprintf (stderr, "lcdm001_init: %s requires an argument\n", argv[i]);
-						return -1;
-					}
-					strcpy (device, argv[++i]);
-					break;
-				case 'h':
-					lcdm001_usage();
-					return -1;
-					break;
-				default:
-					printf ("Invalid parameter: %s\n", argv[i]);
-					break;
-			}
-		}
-	}
-#endif
 	// Set up io port correctly, and open it...
-	fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY); 
-	if (fd == -1) 
+	debug( RPT_DEBUG, "LCDM001: Opening serial device: %s", device);
+	fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
+	if (fd == -1)
 	{
 		switch (errno) {
-			case ENOENT: fprintf(stderr, "lcdm001_init: %s device file missing!\n", device);
+			case ENOENT: report( RPT_ERR, "LCDM001: lcdm001_init() failed: Device file missing: %s\n", device);
 				break;
-			case EACCES: fprintf(stderr, "lcdm001_init: %s device could not be opened...\n", device);
-				fprintf(stderr, "lcdm001_init: make sure you have rw access to %s!\n", device);
+			case EACCES: report( RPT_ERR, "LCDM001: lcdm001_init() failed: Could not open device: %s\n", device);
+				report( RPT_ERR, "LCDM001: lcdm001_init() failed: Make sure you have rw access to %s!\n", device);
 				break;
-			default: fprintf (stderr, "lcdm001_init: failed (%s)\n", strerror (errno));
+			default: report( RPT_ERR, "LCDM001: lcdm001_init() failed (%s)\n", strerror (errno));
 				break;
 		}
   		return -1;
-	} else
-		syslog(LOG_INFO, "opened LCDM001 display on %s\n", device);
-
+	} else {
+		report (RPT_INFO, "opened LCDM001 display on %s\n", device);
+	}
 	tcgetattr(fd, &portset);
 #ifdef HAVE_CFMAKERAW
 	// The easy way
@@ -317,6 +271,8 @@ static void lcdm001_num (int x, int num)
 {
 	int y, dx;
 
+	debug (RPT_DEBUG, "LCDM001: Writing big number \"%d\" at x = %d", num, x);
+
 	for (y = 1; y < 5; y++)
 		for (dx = 0; dx < 3; dx++)
 			lcdm001_chr (x + dx, y, num_icon[num][y-1][dx]);
@@ -364,12 +320,12 @@ lcdm001_close ()
 		free (lcdm001->framebuf);
 
 	lcdm001->framebuf = NULL;
+	//switch off all LEDs
 	snprintf (out, sizeof(out), "\%cL%c%c", 126, 0, 0);
 	write (fd, out, 4);
 	close (fd);
 
-        if (debug_level > 3)
-                syslog(LOG_DEBUG, "LCDM001: closed");
+        report (RPT_INFO, "LCDM001: closed");
 }
 
 /////////////////////////////////////////////////////////////////
@@ -384,8 +340,7 @@ lcdm001_clear ()
 	write (fd, "~C", 2); // instant clear...
         clear = 1;
 
-	if (debug_level > 3)
-		syslog(LOG_DEBUG, "lcdm001: cleared screen");
+	debug (RPT_DEBUG, "LCDM001: cleared screen");
 }
 
 //////////////////////////////////////////////////////////////////
@@ -396,9 +351,7 @@ lcdm001_flush ()
 {
 	lcdm001_draw_frame(lcdm001->framebuf);
 
-        if (debug_level > 4)
-                syslog(LOG_DEBUG, "LCDM001: frame buffer flushed");
-
+        debug (RPT_DEBUG, "LCDM001: frame buffer flushed");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -415,10 +368,8 @@ lcdm001_flush_box (int lft, int top, int rgt, int bot)
 		snprintf (out, sizeof(out), "%cP%c%c", 126, lft, y);
 		write (fd, out, 4);
 		write (fd, lcdm001->framebuf + (y * lcdm001->wid) + lft, rgt - lft + 1);
-
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "LCDM001: frame buffer box flushed");
 	}
+	debug (RPT_DEBUG, "LCDM001: frame buffer box flushed");
 }
 
 /////////////////////////////////////////////////////////////////
@@ -444,14 +395,8 @@ lcdm001_chr (int x, int y, char c)
 	offset = (y * lcdm001->wid) + x;
 	lcdm001->framebuf[offset] = c;
 
-	if (debug_level > 2) {
-		snprintf(buf, sizeof(buf), "writing character %02X to position (%d,%d)",
-			c, x, y);
-		syslog(LOG_DEBUG, buf);
-
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "LCDM001: printed a char at (%d,%d)", x, y);
-	}
+	snprintf(buf, sizeof(buf), "LCDM001: writing character %02X to position (%d,%d)", c, x, y);
+	debug (RPT_DEBUG, buf);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -473,8 +418,7 @@ lcdm001_string (int x, int y, char string[])
 
 	memcpy(lcdm001->framebuf + offset, string, siz);
 
-	if (debug_level > 4)
-		syslog(LOG_DEBUG, "LCDM001: printed string at (%d,%d)", x, y);
+	debug (RPT_DEBUG, "LCDM001: printed string at (%d,%d)", x, y);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -498,8 +442,7 @@ lcdm001_output (int on)
         snprintf (out, sizeof(out), "~L%c%c",one,two);
         write(fd,out,4);
 
-        if (debug_level > 3)
-		syslog(LOG_DEBUG, "LCDM001: current LED state: %d", on);
+        debug (RPT_DEBUG, "LCDM001: current LED state: %d", on);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -531,8 +474,7 @@ lcdm001_vbar(int x, int len)
 {
    int y = 4;
 
-   if (debug_level > 4)
-		syslog(LOG_DEBUG, "LCDM001: vertical bar at %d set to %d", x, len);
+   debug (RPT_DEBUG , "LCDM001: vertical bar at %d set to %d", x, len);
 
    while (len >= 8)
      {
@@ -540,10 +482,10 @@ lcdm001_vbar(int x, int len)
        len -= 8;
        y--;
      }
-   
+
    if(!len)
      return;
-   
+
   //TODO: Distinguish between len>=4 and len<4
 
 }
@@ -552,14 +494,13 @@ lcdm001_vbar(int x, int len)
 // Draws a horizontal bar to the right.
 //
 static void
-lcdm001_hbar(int x, int y, int len) 
+lcdm001_hbar(int x, int y, int len)
 {
 
   ValidX(x);
   ValidY(y);
 
-  if (debug_level > 4)
-		syslog(LOG_DEBUG, "LCDM001: horizontal bar at %d set to %d", x, len);
+  debug (RPT_DEBUG, "LCDM001: horizontal bar at %d set to %d", x, len);
 
   //TODO: Improve this function
 
@@ -575,7 +516,7 @@ lcdm001_hbar(int x, int y, int len)
     len -= lcdm001->cellwid;
     x++;
   }
- 
+
   return;
 }
 
@@ -614,7 +555,7 @@ void
 lcdm001_draw_frame (char *dat)
 {
 
-        //TODO: Check whether this is still correct 
+        //TODO: Check whether this is still correct
 
 	write(fd,lcdm001->framebuf,80);
 }
