@@ -2,6 +2,7 @@ Stuff planned for future releases...  (in no particular order)
 
 Feel free to help out with any of this stuff!  :)
 
+Please send a message to the mailing list if you have any question.
 
 ----------------------------------------
 Client driver
@@ -22,6 +23,40 @@ command line.  Or,
 would have the same result as pressing a key on the keypad.
 
 STATUS: Loadable drivers are working in 0.5 but not loggin in remotely nor key
+----------------------------------------
+Port the lcdproc client screens to *BSD.
+
+Thomas Runge ported the 4.0-pre9 client to *BSD but we forgot to merge it
+in the CVS tree back them.
+The patch is available at: http://core.de/~coto/misc/lcdproc_bsd.diff.gz
+A backup copy is available at: http://lcdproc.sf.net/lcdproc_bsd.diff.gz
+
+The main problem in applying this patch is to make it work with
+autoconf/automake.
+
+I estimate the time to do this to between 1 and 4 hours per screen. The
+person applying to port should have access to at least one BSD account
+(sourceforge compile farm provide a BSD box, ask the mailing list if you
+don't know how to access it).
+
+The port should be tested on FreeBSD, OpenBSD and NetBSD before applying
+it to the CVS tree. Just ask the mailing list for testing.
+
+STATUS: chrono.c, cpu.c, disk.c have been ported.
+----------------------------------------
+Add LibGTop support to the lcdproc client
+
+LibGTop is a library that fetches information about the running system
+such as cpu, memory usage and active processes, and make it available to
+the requesting program.
+
+Adding LibGTop support to the lcdproc client would enable it to work on
+more platforms, including MacOS X.
+
+LibGTop is available at:
+http://ftp.gnome.org/pub/GNOME/stable/sources/libgtop/
+
+STATUS: No work done yet.
 ----------------------------------------
 Menus / Client menus
 
