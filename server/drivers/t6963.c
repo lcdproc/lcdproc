@@ -96,11 +96,11 @@ t6963_init (Driver *drvthis, char *args)
 		
 		/* --------------------------- Which port --------------------------------------*/
 	p = drvthis->config_get_int ( drvthis->name, "Port", 0, DEFAULT_PORT);
-	if(0x300 <= p && p <= 0x400) {
+	if(0x200 <= p && p <= 0x400) {
 		t6963_out_port = p;
 	} else {
 		t6963_out_port = DEFAULT_PORT;
-		report (RPT_WARNING, "T6963_init: Port value must be between 0x300 and 0x400. Using default value.\n");
+		report (RPT_WARNING, "T6963_init: Port value must be between 0x200 and 0x400. Using default value.\n");
 	}	
 
 	
