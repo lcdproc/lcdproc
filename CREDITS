@@ -18,11 +18,11 @@ It's Choadstre's fault that LCDproc exists. He wanted his computer to have
 a heartbeat, like some HP workstations do. So he found a nice LCD, wrote
 some amazingly spiffy software for it, and life was good. 
 
-Scott Scriven (ToyKeeper) <toykeeper@cheerful.com>:
+Scott Scriven (ToyKeeper) <http://toykeeper.net/>:
 	- wrote V0.3 and most of V0.4, and helped procrastinate the rest
 	  of the time...
-ToyKeeper was the main programmer for LCDproc 0.3. He took Choadstre's idea and
-put it in its current form. 
+ToyKeeper was the main programmer for LCDproc 0.2 - 0.4-pre9. He took
+Choadstre's idea and put it in its current form.
 
 Gareth Watts (Xeno42):
 	- Patches, mailing list, ideas, web hosting, CVS, etc.
