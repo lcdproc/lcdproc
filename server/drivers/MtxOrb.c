@@ -71,12 +71,30 @@
 #define IS_VFD_DISPLAY	(p->MtxOrb_type == MTXORB_VFD)
 #define IS_VKD_DISPLAY	(p->MtxOrb_type == MTXORB_VKD)
 
-/*
- NOTE: This does not appear to make use of the
-       hbar and vbar functions present in the LKD202-25.
-       Why I do not know.
- RESP: Because software emulated hbar/vbar permit simultaneous use.
-*/
+/* 
+ * The MtxOrb driver do not use a lot of hardware feature.
+ * We try to replace them by more flexible software version.
+ * That's why vbar/hbar/bignum are using Matrix Orbital build-in function.
+ * It permit simultanious use of those features and custom char.
+ *
+ * The same way we don't use the hardware clear but empty the frame buffer.
+ * The frame buffer hold all the change that are requested,
+ * until the server ask us to flush that to display.
+ * This also permit to do incremental update and reduce the number of
+ * character to be send to the display accross the serial link.
+ *
+ * In order to display graphic widget we use and define our own custom char.
+ * To avoid multiple definition of the same custom character,
+ * we use a caching mechanisme that remember what is currently define.
+ * In order to avoid always redefining the same custom character
+ * wich are at the begining of the table, we rotate the begining of the table.
+ * This is suppose to reduce the number of caracter redefinition
+ * and make the caching more effective. All in all we reduce the number
+ * of caracter we need to send to the display.
+ *
+ * David GLAUDE
+ */
+
 
 /* TODO: Find a better way to deal with the bitmap/name of custom char
  *       Here the value link to the enum and the definition at the end.
@@ -227,8 +245,6 @@ static char MtxOrb_parse_keypad_setting (Driver *drvthis, char * keyname, char d
 MODULE_EXPORT int
 MtxOrb_init (Driver *drvthis, char *args)
 {
-	/* Start of command line parsing*/
-
 	struct termios portset;
 
 	int contrast = DEFAULT_CONTRAST;
@@ -449,12 +465,10 @@ MtxOrb_init (Driver *drvthis, char *args)
 #define ValidX(x) if ((x) > p->width) { (x) = p->width; } else (x) = (x) < 1 ? 1 : (x);
 #define ValidY(y) if ((y) > p->height) { (y) = p->height; } else (y) = (y) < 1 ? 1 : (y);
 
-/*
- * Clear: catch up when the screen get clear to be able to
- * forget bar caracter not in use anymore and reuse the
- * slot for another bar caracter.
- */
 
+/******************************
+ * Clear the screen (the frame buffer)
+ */
 MODULE_EXPORT void
 MtxOrb_clear (Driver *drvthis)
 {
@@ -462,11 +476,7 @@ MtxOrb_clear (Driver *drvthis)
 
 	if (p->framebuf != NULL)
 		memset (p->framebuf, ' ', (p->widthBYheight));
-
-	/* We don't use hardware clear anymore.
-	 * We use incremental update with the frame_buffer. */
-	/* write(fd, "\x0FE" "X", 2); */ /* instant clear... */
-	p->clear = 1;
+	p->clear = 1; /* Remember that custom char are no more visible. */
 
 	debug(RPT_DEBUG, "MtxOrb: cleared screen");
 }
@@ -512,6 +522,9 @@ MtxOrb_height (Driver *drvthis)
 	return p->height;
 }
 
+/******************************
+ * Display a string at x,y
+ */
 MODULE_EXPORT void
 MtxOrb_string (Driver *drvthis, int x, int y, char *string)
 {
@@ -532,6 +545,9 @@ MtxOrb_string (Driver *drvthis, int x, int y, char *string)
 	debug(RPT_DEBUG, "MtxOrb: printed string at (%d,%d)", x, y);
 }
 
+/******************************
+ * Send what we have to the hardware
+ */
 MODULE_EXPORT void
 MtxOrb_flush (Driver *drvthis)
 {
@@ -550,15 +566,6 @@ MtxOrb_flush (Driver *drvthis)
 		strncpy(p->old, p->framebuf, p->widthBYheight);
 
 		return;
-
-	} else {
-		/* CODE TEMPORARY DISABLED (joris)
-		   UNSURE IF IT STILL WORKS NOW
-	David GLAUDE:	It seems to work...
-			But I did not try to understand...
-		if (! new_framebuf(drvthis, old))
-			return;
-		*/
 	}
 
 	xp = p->framebuf;
@@ -587,13 +594,6 @@ MtxOrb_flush (Driver *drvthis)
 		}
 	}
 
-
-	/* for (i = 0; i < height; i++) {
-	 *	snprintf (out, sizeof(out), "\x0FEG\x001%c", i + 1);
-	 *	write (fd, out, 4);
-	 *	write (fd, framebuf + (width * i), width);
-	 * }
-	 */
 
 	strncpy(p->old, p->framebuf, p->widthBYheight);
 
@@ -1118,10 +1118,6 @@ MtxOrb_num (Driver *drvthis, int pos, int val)
 	int c;
 
 	debug(RPT_DEBUG, "MtxOrb: write big number %d at %d", val, pos);
-
-/*	We don't use hardware bignum anymore, so we remove those. 	*/
-/*	snprintf (out, sizeof(out), "\x0FE#%c%c", x, num);        	*/
-/*	write (fd, out, 4);						*/
 
 /* Currently we are bignum but if bigalpha is there remove this line */
   c=val+'0';	/* We transform from 0-9 to 'O' to '9' */
