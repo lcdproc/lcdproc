@@ -33,6 +33,9 @@
  * The LCD is optional front panel for Gigabyte GS-SR104 system from
  * Gigabyte (http://www.gigabyte.com.tw)
  *
+ * Any other implementations are not known. Please let me know if you
+ * have encountered any other implementations.
+ *
  */
 
 #include <stdlib.h>
@@ -66,9 +69,9 @@ char lcd_showcursor[] = "\xFE\x0C";	// From LcdShow()
 
 char lcd_changeline[] = "\xFE\xC0";	// From CHLine()
 
-char lcd_setcursor[] = "\xFE\xC0";	// From Set_Cursor(). Add location to second byte
-char lcd_setcursor_1[] = "\xFE\x80";	// First 16 bytes, add location to second byte. From Set_Cursor1()
-char lcd_setcursor_2[] = "\xFE\xB0";	// Second 16 bytes (17-32), add location to second byte. From Set_Cursor1()
+char lcd_setcursor[] = "\xFE\xC0";	// From Set_Cursor(). Add location to second byte [lcd_setcursor[1] + loc]
+char lcd_setcursor_1[] = "\xFE\x80";	// First 16 bytes, add location to second byte. From Set_Cursor1() [lcd_setcursor_1[1] + loc]
+char lcd_setcursor_2[] = "\xFE\xB0";	// Second 16 bytes (17-32), add location to second byte. From Set_Cursor1() [lcd_setcursor_2[1] + loc]
 
 char lcd_gotoline1[] = "\xFE\x80";	// First character on the first row
 char lcd_gotoline2[] = "\xFE\xC0";	// First character on the second row
@@ -129,7 +132,7 @@ static int height = 2;		//was: LCD_DEFAULT_HEIGHT; (is now hardcoded)
 static int cellwidth = LCD_DEFAULT_CELLWIDTH;
 static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 
-static void MTC_S16209X_hidecursor ();
+//static void MTC_S16209X_hidecursor ();
 static void MTC_S16209X_reboot ();
 
 // Vars for the server core
@@ -148,12 +151,15 @@ MTC_S16209X_init (Driver * drvthis, char *args)
   int argc;
   struct termios portset;
   int i;
-  int tmp;
+
+#ifdef CAN_REBOOT_LCD
   int reboot = 0;
+#endif // CAN_REBOOT_LCD
 
   char device[256] = "/dev/lcd";
 
 #ifdef CAN_CONTROL_BACKLIGHT
+  int tmp;
   int backlight_brightness = 255;
 #endif // CAN_CONTROL_BACKLIGHT
 
