@@ -120,7 +120,7 @@ AC_CHECK_HEADERS(sys/io.h)
 dnl Check if we support this parallel (LPT) port
 dnl IMPORTANT: we must do all the checks used in port.h before doing this test!
 AC_CACHE_CHECK([for a parallel port], ac_cv_port_have_lpt,
-[AC_TRY_COMPILE([#include "server/drivers/port.h"], [char val = port_in(0x350)], ac_cv_port_have_lpt=yes, ac_cv_port_have_lpt=no)])
+[AC_TRY_COMPILE([#include "${srcdir}/server/drivers/port.h"], [char val = port_in(0x350)], ac_cv_port_have_lpt=yes, ac_cv_port_have_lpt=no)])
 
 if test "$ac_cv_port_have_lpt" = yes
 then

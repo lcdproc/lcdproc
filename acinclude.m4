@@ -183,7 +183,7 @@ dnl				else
 				DRIVERS="$DRIVERS sed1520${SO}"
 				actdrivers=["$actdrivers sed1520"]
 			else
-				AC_MSG_WARN([The sed1330 driver needs a parallel port.])
+				AC_MSG_WARN([The sed1520 driver needs a parallel port.])
 			fi
 			;;
 		stv5730)
@@ -192,7 +192,7 @@ dnl				else
 				DRIVERS="$DRIVERS stv5730${SO}"
 				actdrivers=["$actdrivers stv5730"]
 			else
-				AC_MSG_WARN([The sed1330 driver needs a parallel port.])
+				AC_MSG_WARN([The stv5730 driver needs a parallel port.])
 			fi
 			;;
 		svga)
