@@ -146,6 +146,7 @@ main (int argc, char **argv)
 	memset(driverlist, '\0', sizeof(driverlist));
 	memset(bind_addr, '\0', sizeof(bind_addr));
 	memset(user, '\0', sizeof(user));
+	memset(driverargs, '\0', sizeof(driverargs));
 
 	/*
 	 * Settings in order of preference:
