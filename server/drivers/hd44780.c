@@ -9,7 +9,7 @@
  *
  * To add support for additional HD44780 connections:
  *  1. Add a connection type and mapping to hd44780-drivers.h
- *  2. Call your initialisation routine
+ *  2. Call your initialisation roUine
  *  3. Create the low-level driver (use hd44780-ext8bit.c as a starting point)
  *  4. Modify the makefile
  *
@@ -151,6 +151,7 @@ HD44780_init (Driver * drvthis, char *args)
 	p->extIF		= drvthis->config_get_bool( drvthis->name, "extended", 0, 0 );
 	p->have_keypad		= drvthis->config_get_bool( drvthis->name, "keypad", 0, 0 );
 	p->have_backlight	= drvthis->config_get_bool( drvthis->name, "backlight", 0, 0 );
+	p->have_output		= drvthis->config_get_bool( drvthis->name, "outputport", 0, 0 );
 	p->delayMult 		= drvthis->config_get_int( drvthis->name, "delaymult", 0, 1 );
 	p->delayBus 		= drvthis->config_get_bool( drvthis->name, "delaybus", 0, 1 );
 
@@ -285,12 +286,16 @@ HD44780_init (Driver * drvthis, char *args)
 		}
 	}
 
+	// Output latch state - init to a non-valid value
+	p->output_state = 999999;
+
 	if ((p->hd44780_functions = (HD44780_functions *) malloc (sizeof (HD44780_functions))) == NULL) {
 		report (RPT_ERR, "Error mallocing");
 		return -1;
 	}
 	p->hd44780_functions->uPause = uPause;
 	p->hd44780_functions->scankeypad = HD44780_scankeypad;
+	p->hd44780_functions->output = NULL;
 
 	// Do connection type specific display init
 	connectionMapping[p->connectiontype_index].init_fn (drvthis);
@@ -299,7 +304,11 @@ HD44780_init (Driver * drvthis, char *args)
 	HD44780_clear (drvthis);
 	sprintf (buf, "HD44780 %dx%d", p->width, p->height );
 	HD44780_string (drvthis, 1, 1, buf);
-	sprintf (buf, "LPT 0x%x %s %s", p->port, (p->have_backlight?"bl":""), (p->have_keypad?"key":"") );
+	sprintf (buf, "LPT 0x%x%s%s%s", p->port,
+			(p->have_backlight?" bl":""),
+			(p->have_keypad?" key":""),
+			(p->have_output?" out":"")
+		);
 	HD44780_string (drvthis, 1, 2, buf);
 	HD44780_flush (drvthis);
 	sleep (2);
@@ -1183,6 +1192,27 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 		}
 	}
 	return scancode;
+}
+
+
+/////////////////////////////////////////////////////////////
+// Output to the optional output latch(es)
+//
+MODULE_EXPORT void
+HD44780_output (Driver *drvthis, int on)
+{
+	PrivateData *p = drvthis->private_data;
+
+	if (!p->have_output) return; /* output disabled */
+	if (!p->hd44780_functions->output) return; /* unsupported for selected connectiontype */
+
+	// perhaps it is better just to do this every time in case of a glitch
+	// but leaving this in does make sure that any latch-enable line glitches
+	// are more easily seen
+	if (p->output_state == on) return;
+
+	p->output_state = on;
+	p->hd44780_functions->output(p, on);
 }
 
 

@@ -32,6 +32,11 @@
  * Backlight
  * SEL  (17)	  backlight (optional, see documentation)
  *
+ * Additional output latch strobe
+ * Not part of the hd44780 itself - addl '373/4, '574 chip or similar
+ * (optional, see documentation (eventually))
+ * nLF  (14)	  LE
+ *
  * Keypad connection (optional):
  * Some diodes and resistors are needed, see further documentation.
  * printer port   keypad
@@ -41,11 +46,8 @@
  * D3 (5)	  Y3
  * D4 (6)	  Y4
  * D5 (7)	  Y5
- * D6 (7)	  Y6
- * D7 (7)	  Y7
- * nLF    (14)    Y8
- * INIT   (16)    Y9
- * nSEL   (17)    Y10
+ * D6 (8)	  Y6
+ * D7 (9)	  Y7
  * nACK   (10)    X0
  * BUSY   (11)    X1
  * PAPEREND (12)  X2
@@ -76,6 +78,7 @@
 void lcdwinamp_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
 void lcdwinamp_HD44780_backlight (PrivateData *p, unsigned char state);
 unsigned char lcdwinamp_HD44780_readkeypad (PrivateData *p, unsigned int YData);
+void lcdwinamp_HD44780_output(PrivateData *p, int data);
 
 #define EN1	STRB
 #define EN2	SEL
@@ -83,6 +86,7 @@ unsigned char lcdwinamp_HD44780_readkeypad (PrivateData *p, unsigned int YData);
 #define RW	LF
 #define RS	INIT
 #define BL	SEL
+#define LE	LF
 
 static const unsigned char EnMask[] = { EN1, EN2, EN3 };
 
@@ -116,6 +120,9 @@ hd_init_winamp (Driver *drvthis)
 		// Remember which input lines are stuck
 		p->stuckinputs = lcdwinamp_HD44780_readkeypad (p, 0);
 	}
+
+	// Write new value to output port latches
+	hd44780_functions->output = lcdwinamp_HD44780_output;
 
 	return 0;
 }
@@ -183,13 +190,21 @@ unsigned char lcdwinamp_HD44780_readkeypad (PrivateData *p, unsigned int YData)
 	// Read inputs
 	readval = ~ port_in (p->port + 1) ^ INMASK;
 
-	// Set output back to idle state for backlight
-	port_out (p->port + 2, p->backlight_bit ^ OUTMASK );
-
 	// And convert value back (MSB first).
 	return (((readval & FAULT) / FAULT <<4) |		/* pin 15 */
 		((readval & SELIN) / SELIN <<3) |		/* pin 13 */
 		((readval & PAPEREND) / PAPEREND <<2) |		/* pin 12 */
 		((readval & BUSY) / BUSY <<1) |			/* pin 11 */
 		((readval & ACK) / ACK )) & ~p->stuckinputs;	/* pin 10 */
+}
+
+void lcdwinamp_HD44780_output(PrivateData *p, int data)
+{
+	// Setup data bus
+	port_out(p->port, data);
+	// Strobe the latch (374 latches on rising edge, 3/574 on trailing.  No matter)
+	port_out (p->port + 2, (LE | p->backlight_bit) ^ OUTMASK);
+        if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+	port_out (p->port + 2, (p->backlight_bit) ^ OUTMASK);
+        if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 }

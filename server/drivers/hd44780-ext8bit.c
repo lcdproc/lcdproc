@@ -32,8 +32,8 @@
  * D3 (5)	  Y3
  * D4 (6)	  Y4
  * D5 (7)	  Y5
- * D6 (7)	  Y6
- * D7 (7)	  Y7
+ * D6 (8)	  Y6
+ * D7 (9)	  Y7
  * nSTRB  (1)     Y8
  * nSEL   (17)    Y9
  * nACK   (10)    X0
@@ -70,11 +70,13 @@
 void lcdtime_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
 void lcdtime_HD44780_backlight (PrivateData *p, unsigned char state);
 unsigned char lcdtime_HD44780_readkeypad (PrivateData *p, unsigned int YData);
+void lcdtime_HD44780_output(PrivateData *p, int data);
 
 #define RS	STRB
 #define RW	LF
 #define EN1	INIT
 #define BL	SEL
+#define LE	SEL
 
 static int semid;
 
@@ -110,6 +112,8 @@ hd_init_ext8bit (Driver *drvthis)
 		// Remember which input lines are stuck
 		p->stuckinputs = lcdtime_HD44780_readkeypad (p, 0);
 	}
+	// Writes new value to the "bargraph" latches
+	hd44780_functions->output = lcdtime_HD44780_output;
 	return 0;
 }
 
@@ -175,4 +179,15 @@ unsigned char lcdtime_HD44780_readkeypad (PrivateData *p, unsigned int YData)
 		((readval & PAPEREND) / PAPEREND <<2) |		/* pin 12 */
 		((readval & BUSY) / BUSY <<1) |			/* pin 11 */
 		((readval & ACK) / ACK )) & ~p->stuckinputs;	/* pin 10 */
+}
+
+void lcdtime_HD44780_output(PrivateData *p, int data)
+{
+	// Setup data bus
+	port_out(p->port, data);
+	// Strobe the latch (374 latches on rising edge, 3/574 on trailing.  No matter)
+	port_out (p->port + 2, (LE | p->backlight_bit) ^ OUTMASK);
+        if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+	port_out (p->port + 2, (p->backlight_bit) ^ OUTMASK);
+        if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 }

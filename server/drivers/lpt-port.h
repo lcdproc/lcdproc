@@ -60,6 +60,6 @@
 
 #define INMASK	0x84	/* BUSY input and the IRQ indicator are inverted */
 			/* Use this mask only for the control input lines */
-			/* XOR with this mask ( ^ OUTMASK ) */
+			/* XOR with this mask ( ^ INMASK ) */
 
 #endif

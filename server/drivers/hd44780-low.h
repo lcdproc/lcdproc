@@ -81,6 +81,7 @@ typedef struct driver_private_data {
 	char have_keypad;	 // off by default
 	char have_backlight; // off by default
 	char extIF;		 // off by default
+	char have_output;	 // have extra output port (off by default)
 	int delayMult;	 // Delay multiplier for slow displays
 	char delayBus;	 // Delay if the computer can send data too fast over
 				 // its bus to LPT port
@@ -100,6 +101,8 @@ typedef struct driver_private_data {
 	int stuckinputs;
 
 	int backlight_bit;
+
+	int output_state;	// what was most recently output to the output port
 
 	int ccmode;
 
@@ -132,6 +135,8 @@ typedef struct hwDependentFns {
 	// - override scankeypad.
 	unsigned char (*scankeypad) (PrivateData *p);
 
+	// Output "data" to output latch if there is one
+	void (*output) (PrivateData *p, int data);
 
 } HD44780_functions;				  /* for want of a better name :-) */
 
