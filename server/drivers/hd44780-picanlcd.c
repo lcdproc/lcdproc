@@ -105,7 +105,7 @@ hd_init_picanlcd (Driver *drvthis)
 	p->hd44780_functions->backlight = picanlcd_HD44780_backlight;
 	p->hd44780_functions->scankeypad = picanlcd_HD44780_scankeypad;
 
-	common_init (p);
+	common_init (p, IF_8BIT);
 
 	return 0;
 }

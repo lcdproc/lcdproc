@@ -109,10 +109,8 @@ hd_init_winamp (Driver *drvthis)
 	hd44780_functions->uPause (p, 4100);
 	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_8BIT);
 	hd44780_functions->uPause (p, 100);
-	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_8BIT | TWOLINE | SMALLCHAR);
-	hd44780_functions->uPause (p, 40);
 
-	common_init (p);
+	common_init (p, IF_8BIT);
 
 	if (p->have_keypad) {
 		// Remember which input lines are stuck
@@ -139,7 +137,7 @@ lcdwinamp_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned ch
 	portControl |= p->backlight_bit;
 
 	if (displayID == 0)
-		enableLines = EnMask[0] | EnMask[1] | ((p->extIF) ? EnMask[2] : 0);
+		enableLines = EnMask[0] | EnMask[1] | EnMask[2];
 	else
 		enableLines = EnMask[displayID - 1];
 

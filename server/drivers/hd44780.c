@@ -148,7 +148,7 @@ HD44780_init (Driver * drvthis, char *args)
 	//// READ THE CONFIG FILE
 
 	p->port			= drvthis->config_get_int( drvthis->name, "port", 0, LPTPORT );
-	p->extIF		= drvthis->config_get_bool( drvthis->name, "extended", 0, 0 );
+	p->ext_mode		= drvthis->config_get_bool( drvthis->name, "extendedmode", 0, 0 );
 	p->have_keypad		= drvthis->config_get_bool( drvthis->name, "keypad", 0, 0 );
 	p->have_backlight	= drvthis->config_get_bool( drvthis->name, "backlight", 0, 0 );
 	p->have_output		= drvthis->config_get_bool( drvthis->name, "outputport", 0, 0 );
@@ -321,8 +321,17 @@ HD44780_init (Driver * drvthis, char *args)
 // the connectiontype should do this.
 //
 void
-common_init (PrivateData *p)
+common_init (PrivateData *p, unsigned char if_bit)
 {
+	if (p->ext_mode) {
+		// Set up extended mode */
+		p->hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | EXTREG );
+		p->hd44780_functions->uPause (p, 40);
+		p->hd44780_functions->senddata (p, 0, RS_INSTR, EXTMODESET | FOURLINE );
+		p->hd44780_functions->uPause (p, 40);
+	}
+	p->hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR );
+	p->hd44780_functions->uPause (p, 40);
 	p->hd44780_functions->senddata (p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause (p, 40);
 	p->hd44780_functions->senddata (p, 0, RS_INSTR, CLEAR);
@@ -386,18 +395,22 @@ HD44780_position (Driver *drvthis, int x, int y)
 	int relY = y - p->dispVOffset[dispID - 1];
 	int DDaddr;
 
-	// 16x1 is a special case
-	if (p->dispSizes[dispID - 1] == 1 && p->width == 16) {
-		if (x >= 8) {
-			x -= 8;
-			relY = 1;
+	if (p->ext_mode) {
+		// Linear addressing, each line starts 0x20 higher.
+		DDaddr = x + relY * 0x20;
+	} else {
+		// 16x1 is a special case
+		if (p->dispSizes[dispID - 1] == 1 && p->width == 16) {
+			if (x >= 8) {
+				x -= 8;
+				relY = 1;
+			}
 		}
+	
+		DDaddr = x + (relY % 2) * 0x40;
+		if ((relY % 4) >= 2)
+			DDaddr += p->width;
 	}
-
-	DDaddr = x + (relY % 2) * 0x40;
-	if ((relY % 4) >= 2)
-		DDaddr += p->width;
-
 	p->hd44780_functions->senddata (p, dispID, RS_INSTR, POSITION | DDaddr);
 	p->hd44780_functions->uPause (p, 40);  // Minimum exec time for all commands
 }

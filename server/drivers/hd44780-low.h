@@ -78,10 +78,10 @@ typedef struct driver_private_data {
 	int *dispSizes;
 
 	// Keypad, backlight extended interface and delay options
-	char have_keypad;	 // off by default
-	char have_backlight; // off by default
-	char extIF;		 // off by default
-	char have_output;	 // have extra output port (off by default)
+	char have_keypad;	// off by default
+	char have_backlight;	// off by default
+	char have_output;	// have extra output port (off by default)
+	char ext_mode;		// use of extended mode required for some weird controllers
 	int delayMult;	 // Delay multiplier for slow displays
 	char delayBus;	 // Delay if the computer can send data too fast over
 				 // its bus to LPT port
@@ -141,7 +141,7 @@ typedef struct hwDependentFns {
 } HD44780_functions;				  /* for want of a better name :-) */
 
 
-void common_init (PrivateData *p);
+void common_init (PrivateData *p, unsigned char if_bit);
 
 
 // commands for senddata
@@ -158,7 +158,7 @@ void common_init (PrivateData *p);
 #define EDGESCROLL  0x01
 #define NOSCROLL    0x00
 
-#define ONOFFCTRL   0x08
+#define ONOFFCTRL   0x08	/* Only reachable with EXTREG clear */
 #define DISPON      0x04
 #define DISPOFF     0x00
 #define CURSORON    0x02
@@ -166,22 +166,36 @@ void common_init (PrivateData *p);
 #define CURSORBLINK 0x01
 #define CURSORNOBLINK 0x00
 
-#define CURSORSHIFT 0x10
+#define EXTMODESET  0x08	/* Only reachable with EXTREG set */
+#define FONT6WIDE   0x04
+#define INVCURSOR   0x02
+#define FOURLINE    0x01
+
+#define CURSORSHIFT 0x10	/* Only reachable with EXTREG clear */
 #define SCROLLDISP  0x08
 #define MOVECURSOR  0x00
 #define MOVERIGHT   0x04
 #define MOVELEFT    0x00
+
+#define HSCROLLEN   0x10	/* Only reachable with EXTREG set */
 
 #define FUNCSET     0x20
 #define IF_8BIT     0x10
 #define IF_4BIT     0x00
 #define TWOLINE     0x08
 #define ONELINE     0x00
-#define LARGECHAR   0x04		  /* 5x11 characters */
-#define SMALLCHAR   0x00		  /* 5x8 characters */
+#define LARGECHAR   0x04	/* 5x11 characters */
+#define SMALLCHAR   0x00	/* 5x8 characters */
+#define EXTREG      0x04	/* Select ext. registers (Yes, the same bits)*/
+#define SEGBLINK    0x02	/* Only reachable with EXTREG set */
+#define POWERDOWN   0x01	/* Only reachable with EXTREG set */
 
-#define SETCHAR     0x40
+#define SETCHAR     0x40	/* Only reachable with EXTREG clear */
 
-#define POSITION    0x80
+#define SETSEG      0x40	/* Only reachable with EXTREG set */
+
+#define POSITION    0x80	/* Only reachable with EXTREG clear */
+
+#define HSCROLLAMOUNT 0x80	/* Only reachable with EXTREG set */
 
 #endif

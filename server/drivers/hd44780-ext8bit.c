@@ -104,7 +104,7 @@ hd_init_ext8bit (Driver *drvthis)
 	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_8BIT | TWOLINE | SMALLCHAR);
 	hd44780_functions->uPause (p, 40);
 
-	common_init (p);
+	common_init (p, IF_8BIT);
 
 	if (p->have_keypad) {
 		// Remember which input lines are stuck
@@ -156,10 +156,11 @@ unsigned char lcdtime_HD44780_readkeypad (PrivateData *p, unsigned int YData)
 
 	sem_wait (semid);
 
-	// 10 bits output or 8 bits if >=3 displays
+	// 10 bits output or 8 bits if >=2 displays
 	// Convert the positive logic to the negative logic on the LPT port
 	port_out (p->port, ~YData & 0x00FF );
-	if (!p->extIF) {
+	if (p->numDisplays<=2) {
+		// Can't combine >3 displays with >8 keypad output lines
 		port_out (p->port + 2, ( ((~YData & 0x0100) >> 8) | ((~YData & 0x0200) >> 6)) ^ OUTMASK);
 	}
 	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);

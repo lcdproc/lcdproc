@@ -99,7 +99,7 @@ hd_init_4bit (Driver *drvthis)
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
 
-	int enableLines = EN1 | EN2;
+	int enableLines = EN1 | EN2 | EN3;
 
 	// Reserve the port registers
 	port_access_multiple(p->port,3);
@@ -109,47 +109,38 @@ hd_init_4bit (Driver *drvthis)
 	hd44780_functions->readkeypad = lcdstat_HD44780_readkeypad;
 
 	// powerup the lcd now
-	if (p->extIF) {
-		enableLines |= EN3;
-		port_out (p->port + 2, 0 ^ OUTMASK);
-	}
+	port_out (p->port + 2, 0 ^ OUTMASK);
 	port_out (p->port, 0x03);
 	if( p->delayBus ) hd44780_functions->uPause (p, 1);
 
+	/* We'll now send 0x03 a coulpe of times, 
+	 * which is in fact (FUNCSET | IF_8BIT) >> 4 */
 	port_out (p->port, enableLines | 0x03);
-	if (p->extIF)
-		port_out (p->port + 2, ALLEXT ^ OUTMASK);
+	port_out (p->port + 2, ALLEXT ^ OUTMASK);
 	if( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x03);
-	if (p->extIF)
-		port_out (p->port + 2, 0 ^ OUTMASK);
+	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 15000);
 
 	port_out (p->port, enableLines | 0x03);
-	if (p->extIF)
-		port_out (p->port + 2, ALLEXT ^ OUTMASK);
+	port_out (p->port + 2, ALLEXT ^ OUTMASK);
 	if( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x03);
-	if (p->extIF)
-		port_out (p->port + 2, 0 ^ OUTMASK);
+	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 5000);
 
 	port_out (p->port, enableLines | 0x03);
-	if (p->extIF)
-		port_out (p->port + 2, ALLEXT ^ OUTMASK);
+	port_out (p->port + 2, ALLEXT ^ OUTMASK);
 	if( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x03);
-	if (p->extIF)
-		port_out (p->port + 2, 0 ^ OUTMASK);
+	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 100);
 
 	port_out (p->port, enableLines | 0x03);
-	if (p->extIF)
-		port_out (p->port + 2, ALLEXT ^ OUTMASK);
+	port_out (p->port + 2, ALLEXT ^ OUTMASK);
 	if( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x03);
-	if (p->extIF)
-		port_out (p->port + 2, 0 ^ OUTMASK);
+	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 100);
 
 	// now in 8-bit mode...  set 4-bit mode
@@ -157,19 +148,17 @@ hd_init_4bit (Driver *drvthis)
 	if( p->delayBus ) hd44780_functions->uPause (p, 1);
 
 	port_out (p->port, enableLines | 0x02);
-	if (p->extIF)
-		port_out (p->port + 2, ALLEXT ^ OUTMASK);
+	port_out (p->port + 2, ALLEXT ^ OUTMASK);
 	if( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x02);
-	if (p->extIF)
-		port_out (p->port + 2, 0 ^ OUTMASK);
+	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 100);
 
 	// Set up two-line, small character (5x8) mode
-	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | TWOLINE | SMALLCHAR );
+	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR );
 	hd44780_functions->uPause (p, 40);
 
-	common_init (p);
+	common_init (p, IF_4BIT);
 
 	if (p->have_keypad) {
 		// Remember which input lines are stuck
@@ -196,10 +185,7 @@ lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 
 	if (displayID <= 3) {
 		if (displayID == 0) {
-			enableLines = EnMask[0] | EnMask[1];
-			if (p->extIF) {
-				enableLines |= EnMask[2];
-			}
+			enableLines = EnMask[0] | EnMask[1] | EnMask[2];
 		} else {
 			enableLines = EnMask[displayID - 1];
 		}
@@ -217,11 +203,12 @@ lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 		port_out (p->port, portControl | l);
 	}
 
-	if (p->extIF && (displayID == 0 || displayID >= 4)) {
-		if (displayID == 0)
+	if (p->numDisplays > 3) {
+		if (displayID == 0) {
 			enableLines = ALLEXT;
-		else
+		} else {
 			enableLines = EnMask[(displayID - 1)];
+		}
 
 		port_out (p->port, portControl | h);
 		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
@@ -251,7 +238,8 @@ unsigned char lcdstat_HD44780_readkeypad (PrivateData *p, unsigned int YData)
 	// 10 bits output or 6 bits if >=3 displays
 	// Convert the positive logic to the negative logic on the LPT port
 	port_out (p->port, ~YData & 0x003F );
-	if (!p->extIF) {
+	if (p->numDisplays<=3) {
+		// Can't combine >3 displays with >6 keypad output lines
 		port_out (p->port + 2, ( ((~YData & 0x03C0) << 6 )) ^ OUTMASK);
 	}
 	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
