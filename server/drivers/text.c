@@ -13,11 +13,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <termios.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/errno.h>
-#include <syslog.h>
 
 #include "lcd.h"
 #include "text.h"
@@ -132,6 +129,7 @@ text_flush (Driver *drvthis)
 	}
 	out[width] = 0;
 	printf ("+%s+\n", out);
+        fflush(stdin);
 }
 
 /////////////////////////////////////////////////////////////////
