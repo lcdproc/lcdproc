@@ -28,6 +28,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "shared/report.h"
 #include "shared/sockets.h"
@@ -163,6 +164,8 @@ menu_add_item_func (Client * c, int argc, char **argv)
 		item = menuitem_create_ip (item_id, menu_commands_handler, text,
 				0, "192.168.1.245");
 		break;
+ 	 default:
+ 	   assert(!"unexpected menuitem type");
 	}
 	menu_add_item (menu, item);
 	menuscreen_inform_item_modified (menu);
@@ -659,6 +662,8 @@ menu_goto_func (Client * c, int argc, char **argv)
 	char * menu_id;
 	Menu * menu;
 
+	debug (RPT_DEBUG, "%s( Client [%d], %s )",
+	       __FUNCTION__, c->sock, (argc > 1 ? argv[1] : "<null>") );
 	if (!c->ack)
 		return 1;
 
@@ -676,12 +681,14 @@ menu_goto_func (Client * c, int argc, char **argv)
 		/* A specified menu */
 		menu = menu_find_item (c->menu, menu_id, true);
 	}
+
 	if (!menu) {
 		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
 		return 0;
 	}
 	menuscreen_goto (menu);
 	/* Failure is not returned */
+        /* why not? (Volker) */
 	sock_send_string(c->sock, "success\n");
 	return 0;
 }
@@ -695,12 +702,11 @@ MenuEventFunc (menu_commands_handler)
 {
 	char buf[80] = "";
 	Client * c;
-	MenuItem * i;
 
 	/* Compose message */
 	if( event == MENUEVENT_UPDATE
 	|| event == MENUEVENT_MINUS
-	|| event == MENUEVENT_PLUS ) {
+	|| event == MENUEVENT_PLUS) {
 		switch( item->type ) {
 		  case MENUITEM_CHECKBOX:
 			snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s %s\n",
@@ -738,6 +744,13 @@ MenuEventFunc (menu_commands_handler)
 				item->id);
 		}
 	}
+	else if (event == MENUEVENT_ENTER
+ 		|| event == MENUEVENT_LEAVE)
+        {
+ 	 snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s\n",
+ 		   menuitem_eventtype_to_eventtypename(event),
+ 		   item->id);
+	}
 	else {
 		snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s\n",
 			menuitem_eventtype_to_eventtypename(event),
@@ -747,10 +760,10 @@ MenuEventFunc (menu_commands_handler)
 	buf[sizeof(buf)-1] = 0;
 
 	/* Where should the message go to ? */
-	for( i = item; i && i->parent != main_menu; i = i->parent );
-	c = (Client *) i->data.menu.association;
+	c = menuitem_get_client(item);
 	if( !c ) {
-		report( RPT_ERR, "%s: Could not find client of item \"%s\"", __FUNCTION__, item->id );
+		report( RPT_ERR, "%s: Could not find client of item \"%s\"",
+ 		       __FUNCTION__, item->id );
 		return -1;
 	}
 

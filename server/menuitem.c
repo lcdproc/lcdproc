@@ -16,10 +16,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "shared/report.h"
 
 #include "menuitem.h"
+#include "menuscreens.h"
 #include "menu.h"
 #include "drivers.h"
 
@@ -30,7 +32,7 @@
 
 char *error_strs[] = {"", "Out of range", "Too long", "Too short", "Invalid Address"};
 char *menuitemtypenames[] = {"menu", "action", "checkbox", "ring", "slider", "numeric", "alpha","ip"};
-char *menueventtypenames[] = {"select", "update", "plus", "minus"};
+char *menueventtypenames[] = {"select", "update", "plus", "minus", "enter", "leave"};
 
 void menuitem_destroy_action (MenuItem *item);
 void menuitem_destroy_checkbox (MenuItem *item);
@@ -1289,6 +1291,20 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 			return MENURESULT_NONE;
 	}
 	return MENURESULT_ERROR;
+}
+
+/**
+ * get the Client that owns item. extracted from menu_commands_handler().
+ */
+Client * menuitem_get_client(MenuItem * item)
+{
+	MenuItem * i;
+
+        /* not fool prove... */
+	assert(item != NULL);
+	for (i = item; i && i->parent != main_menu; i = i->parent)
+ 	 ;
+        return (Client *) i->data.menu.association;
 }
 
 LinkedList * tablist2linkedlist (char *strings)

@@ -41,7 +41,6 @@
  * Data definitions of the menustuff
  */
 
-#define NUM_ITEMTYPES 8
 typedef enum MenuItemType {	/* These values are used in the */
 	MENUITEM_MENU = 0,	/* function tables in menuitem.c ! */
 	MENUITEM_ACTION = 1,
@@ -51,6 +50,7 @@ typedef enum MenuItemType {	/* These values are used in the */
 	MENUITEM_NUMERIC = 5,
 	MENUITEM_ALPHA = 6,
 	MENUITEM_IP = 7,
+        NUM_ITEMTYPES = 8
 } MenuItemType;
 
 typedef enum CheckboxValue {
@@ -80,16 +80,18 @@ typedef enum MenuResult {
 } MenuResult;
 
 /* Events caused by a menuitem */
-#define NUM_EVENTTYPES 4
 typedef enum MenuEventType {
 	MENUEVENT_SELECT = 0,	/* Item has been selected
 				(action chosen) */
-	MENUEVENT_UPDATE,	/* Item has been modified
+	MENUEVENT_UPDATE = 1,	/* Item has been modified
 				(checkbox, numeric, alphanumeric) */
-	MENUEVENT_PLUS,		/* Item has been modified in positive direction
+	MENUEVENT_PLUS = 2,	/* Item has been modified in positive direction
 				 (slider moved) */
-	MENUEVENT_MINUS,	/* Item has been modified in negative direction
+	MENUEVENT_MINUS = 3,	/* Item has been modified in negative direction
 				(slider moved) */
+	MENUEVENT_ENTER = 4,	/* Menu has been entered */
+	MENUEVENT_LEAVE = 5,    /* Menu has been left */
+        NUM_EVENTTYPES = 6
 } MenuEventType;
 
 #define MenuEventFunc(f) int (f) (struct MenuItem *item, MenuEventType event)
@@ -204,7 +206,7 @@ MenuItem *menuitem_create (MenuItemType type, char *id,
 MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
 	char *text, MenuResult menu_result);
 /* Creates a an action item (a string only).
- * Generated events: MENUEVENT_ENTER when user selects the item.
+ * Generated events: MENUEVENT_SELECT when user selects the item.
  */
 
 MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
@@ -229,7 +231,6 @@ MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
  * at the end positions of the slider.
  * You can set the step size. Make it 0 to disable the automatic value chaning,
  * and update the value yourself.
- * Generated events: MENUEVENT_ENTER upon entering this item,
  * MENUEVENT_PLUS, MENUEVENT_MINUS when slider is moved (immediately).
  */
 
@@ -237,7 +238,6 @@ MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
 	char *text, int minvalue, int maxvalue, int value);
 /* Creates a numeric value box.
  * Value can range from minvalue to maxvalue.
- * Generated events: MENUEVENT_ENTER upon entering this item,
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
 
@@ -250,14 +250,12 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
  * caps, non-caps and numbers are allowed. Also you can alow other characters.
  * If password char is non-zero, you will only see this char, not the actual
  * input.
- * Generated events: MENUEVENT_ENTER upon entering this item,
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
 
 MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
 	char *text, bool v6, char *value);
 /* Creates an ip value box.  can be either v4 or v6
- * Generated events: MENUEVENT_ENTER upon entering this item,
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
 
@@ -295,6 +293,9 @@ MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key, 
 /* Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  */
+
+Client * menuitem_get_client(MenuItem * item);
+/* returns the Client that owns the MenuItem. item must not be null */
 
 LinkedList * tablist2linkedlist (char * strings);
 /* Converts a tab-separated list to a LinkedList. */
