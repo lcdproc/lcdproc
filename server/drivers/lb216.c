@@ -196,15 +196,6 @@ int LB216_init(lcd_logical_driver *driver, char *args)
    LB216_hidecursor();
    LB216_backlight(backlight_brightness);
 
-   
-   if(!driver->framebuf)
-   {
-      fprintf(stderr, "LB216_init: No frame buffer.\n");
-      driver->close();
-      return -1;
-   }
-
-
    // Set the functions the driver supports...
 
    driver->clear =      LB216_clear;

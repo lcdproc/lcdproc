@@ -361,12 +361,6 @@ MtxOrb_init (lcd_logical_driver * driver, char *args)
 	MtxOrb_cursorblink (DEFAULT_CURSORBLINK);
 	MtxOrb_contrast (contrast);
 
-	if (!driver->framebuf) {
-		syslog(LOG_ERR, "no frame buffer! exiting driver init...");
-		MtxOrb_close ();
-		return -1;
-	}
-
 	/*
 	 * Configure the display functions
 	 */

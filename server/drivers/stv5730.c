@@ -447,9 +447,8 @@ stv5730_init (struct lcd_logical_driver *driver, char *args)
     memset (driver->framebuf, 0, STV5730_WID * STV5730_HGT);
 
     driver->cellwid = 4;
-    driver->cellhgt = 6;	// FIXME: stv5730->cellwid always stays 5
-    // regardless what it is set to here. This is
-    // a bug but not inside this driver.
+    driver->cellhgt = 6;
+
     driver->clear = stv5730_clear;
     driver->string = stv5730_string;
     driver->chr = stv5730_chr;

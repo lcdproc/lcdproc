@@ -187,11 +187,6 @@ CFontz_init (lcd_logical_driver * driver, char *args)
 	CFontz_autoscroll (0);
 	CFontz_backlight (backlight_brightness);
 
-	if (!driver->framebuf) {
-		syslog(LOG_ERR, "cfontz_init: no frame buffer!");
-		CFontz_close ();
-		return -1;
-	}
 	// Set the functions the driver supports...
 
 	driver->clear = CFontz_clear;

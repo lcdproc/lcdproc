@@ -148,11 +148,6 @@ sli_init (lcd_logical_driver * driver, char *args)
 	out[1] = 0x001;				  /* Clear LCD, not sure if this belongs here */
 	write (fd, out, 2);
 
-	if (!driver->framebuf) {
-		fprintf (stderr, "sli_init: No frame buffer.\n");
-		sli_close ();
-		return -1;
-	}
 	// Set LCD parameters (I use a 16x2 LCD) -- small but still useful
 	// Its also much cheaper than the higher quality Matrix Orbital modules
 	// Currently, $30 for interface kit and 16x2 non-backlit LCD...

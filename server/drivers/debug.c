@@ -26,13 +26,6 @@ debug_init (struct lcd_logical_driver *driver, char *args)
 
 	debug_drv = driver;
 
-	if (driver->framebuf)
-		syslog(LOG_INFO, "frame buffer at: %010X", (int) driver->framebuf);
-	else {
-		syslog(LOG_ERR, "no frame buffer!");
-		return -1;
-	}
-
 	debug_clear ();
 
 	driver->daemonize = 0;

@@ -217,12 +217,16 @@ sed1520_init (struct lcd_logical_driver *driver, char *args)
     writecommand (0xAF, CS1 + CS2);
     writecommand (0xC0, CS1 + CS2);
     selectpage (3);
+
+    driver->cellwid = 6;
+    driver->cellhgt = 8;
+
     // The Framebuffer LCDproc allocates by default is too small,
-    // so we free() it and allocate one of adequate size.
+    // so we free() it (if it exists) and allocate one of adequate size.
     if (!driver->framebuf)
 	free (driver->framebuf);
 
-    driver->framebuf = malloc (488);
+    driver->framebuf = malloc (122 * 4);
     if (!driver->framebuf)
       {
 	  sed1520_close ();
@@ -232,10 +236,6 @@ sed1520_init (struct lcd_logical_driver *driver, char *args)
     // clear screen
     memset (driver->framebuf, 0, 122 * 4);
 
-    driver->cellwid = 6;
-    driver->cellhgt = 8;	// FIXME: sed1520->cellwid always stays 5
-    // regardless what it is set to here. This is
-    //  a bug but not inside this driver.
     driver->clear = sed1520_clear;
     driver->string = sed1520_string;
     driver->chr = sed1520_chr;

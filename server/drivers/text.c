@@ -38,12 +38,6 @@ text_init (lcd_logical_driver * driver, char *args)
 {
 	text = driver;
 
-	if (!text->framebuf) {
-		syslog(LOG_ERR, "text: no frame buffer!");
-		text_close ();
-		return -1;
-	}
-
 	text->wid = LCD_DEFAULT_WIDTH;
 	text->hgt = LCD_DEFAULT_HEIGHT;
 	text->cellwid = LCD_DEFAULT_CELL_WIDTH;
