@@ -138,9 +138,8 @@ static int clear = 1;
 static int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 static int use[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-/* TODO: Extend this with the White and Black (32 and 255) icon */
 /* This is the char to use for the basic block of bigfont. */
-static int fonttable[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+static int fonttable[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 static char *framebuf = NULL;
 static int width = LCD_DEFAULT_WIDTH;
@@ -457,6 +456,8 @@ MtxOrb_init (Driver *drvthis, char *args)
 	drvthis->output = MtxOrb_output;
 	drvthis->set_char = MtxOrb_set_char;
 	drvthis->old_icon = MtxOrb_old_icon;
+
+	drvthis->icon = MtxOrb_icon; 
 
 	drvthis->getkey = MtxOrb_getkey;
 	drvthis->get_info = MtxOrb_get_info;
@@ -981,7 +982,7 @@ MtxOrb_vbar (Driver *drvthis, int x, int len)
 	if (len > 0) {
 		for (y = height; y > 0 && len > 0; y--) {
 			if (len >= cellheight)
-				MtxOrb_chr (drvthis, x, y, 255);
+				MtxOrb_chr (drvthis, x, y, 255 );
 			else
 				MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapu[len]));
 
@@ -991,7 +992,7 @@ MtxOrb_vbar (Driver *drvthis, int x, int len)
 		len = -len;
 		for (y = 2; y <= height && len > 0; y++) {
 			if (len >= cellheight)
-				MtxOrb_chr (drvthis, x, y, 255);
+				MtxOrb_chr (drvthis, x, y, 255 );
 			else
 				MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapd[len]));
 
@@ -1021,7 +1022,7 @@ MtxOrb_hbar (Driver *drvthis, int x, int y, int len)
 	if (len > 0) {
 		for (; x <= width && len > 0; x++) {
 			if (len >= cellwidth)
-				MtxOrb_chr (drvthis, x, y, 255);
+				MtxOrb_chr (drvthis, x, y, 255 );
 			else
 				MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapr[len]));
 
@@ -1032,7 +1033,7 @@ MtxOrb_hbar (Driver *drvthis, int x, int y, int len)
 		len = -len;
 		for (; x > 0 && len > 0; x--) {
 			if (len >= cellwidth)
-				MtxOrb_chr (drvthis, x, y, 255);
+				MtxOrb_chr (drvthis, x, y, 255 );
 			else
 				MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapl[len]));
 
@@ -1056,18 +1057,20 @@ MtxOrb_init_num (Driver *drvthis)
 {
   debug(RPT_DEBUG, "MtxOrb: init for big numbers");
 
-/* This is NOT good since it bypass the cache */
-/* TODO: Replace this stuff */
+/* TODO: Change so that we don't need init anymore. */
+/* TODO: Remove the dirty trick for u5 and d5. */
 
 /* This is using the custom char cache */
   fonttable[0]=MtxOrb_ask_bar ( drvthis, bigfonta);
   fonttable[1]=MtxOrb_ask_bar ( drvthis, bigfontb);
   fonttable[2]=MtxOrb_ask_bar ( drvthis, bigfontc);
   fonttable[3]=MtxOrb_ask_bar ( drvthis, bigfontd);
-  fonttable[4]=MtxOrb_ask_bar ( drvthis, bigfonte);
-  fonttable[5]=MtxOrb_ask_bar ( drvthis, bigfontf);
+  fonttable[4]=MtxOrb_ask_bar ( drvthis, baru5); /* bigfonte); */
+  fonttable[5]=MtxOrb_ask_bar ( drvthis, bard5); /* bigfontf); */
   fonttable[6]=MtxOrb_ask_bar ( drvthis, bigfontg);
   fonttable[7]=MtxOrb_ask_bar ( drvthis, bigfonth);
+  fonttable[8]=MtxOrb_ask_bar ( drvthis, barw);
+  fonttable[9]=MtxOrb_ask_bar ( drvthis, barb);
 
 /* This was the hardware way of doing it. We keep it for historical reason. */
 /*		write (fd, "\x0FEn", 2); */	
@@ -1104,14 +1107,7 @@ MtxOrb_num (Driver *drvthis, int pos, int val)
 /*  printf("pos: %d char: %d val: %d\n", pos, c, val); */
   for (y=0;y<4;y++) {
     for (x=0;x<3;x++) {
-/* Those if then else compensate that bigfont.h is MtxOrb oriented */
-	    if ( normal[c][x + (y * 3)] == 32)
-      MtxOrb_chr (drvthis, x+pos, y+1, 32);   /* Full White */
-	    else if ( normal[c][x + (y * 3)] == 255)
-      MtxOrb_chr (drvthis, x+pos, y+1, 255);  /* Full Black */
-	    else
       MtxOrb_chr (drvthis, x+pos, y+1, fonttable[normal[c][x + (y * 3)]]); 
-/* The line above is to use the right custom char when needed */
     }
   }
 }
@@ -1173,6 +1169,14 @@ MtxOrb_old_icon (Driver *drvthis, int which, char dest)
 	MtxOrb_set_known_char (drvthis, dest, START_ICON+which);
 }
 
+/* TODO: Replace this emulated icon with the "real" one.
+ */
+MODULE_EXPORT void
+MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
+{
+	MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, icon));
+}
+
 /* TODO: Recover the code for I2C connectivity to MtxOrb
  * and don't query the LCD if it does not support keypad.
  * Otherwise crash of the LCD and/or I2C bus.
@@ -1229,7 +1233,6 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 	
 	/* If the screen was clear then no graphic caracter are in use yet. */
 	if (clear) {					  
-/*	  fprintf(stderr, "GLU: MtxOrb_ask_bar| clear was set.\n"); */
   	  for (pos = 0; pos < 8; pos++) use[pos] = 0;
 	  clear = 0;
 	}
@@ -1296,6 +1299,16 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 		case barl4: pos = '=';  break;
 		case barw:  pos = ' ';  break;
 		case barb:  pos = 255;  break;
+
+		case bigfonta:  pos = '\\';  break;
+		case bigfontb:  pos = '/';  break;
+		case bigfontc:  pos = '\\';  break;
+		case bigfontd:  pos = '\\';  break;
+		case bigfonte:  pos = '-';  break;
+		case bigfontf:  pos = '-';  break;
+		case bigfontg:  pos = '\\';  break;
+		case bigfonth:  pos = '/';  break;
+
 		case play:  pos = 'P'; break;
 		case fforward: pos = '>'; break;
 		case frewind: pos = '<'; break;
@@ -1548,80 +1561,79 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 /* TODO: Some of those are identical to hbar/vbar definition
  *       However the cache does not know that so we need to find
  *       a way to avoid that duplication and replace that ASAP.
- * TODO: It need some editing to make it like above (REMOVE ME WHEN DONE)
  */ 
 		{ /* char a[] */
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		1,0,0,0,0,
-    		1,1,0,0,0,
-    		1,1,1,0,0,
-    		1,1,1,1,0,
-    		1,1,1,1,1,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 0, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 1,
 		}, { /* char b[] */
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		0,0,0,0,1,
-    		0,0,0,1,1,
-    		0,0,1,1,1,
-    		0,1,1,1,1,
-    		1,1,1,1,1,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 1,
+		0, 0, 0, 1, 1,
+		0, 0, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
 		}, { /* char c[] */
-    		1,1,1,1,1,
-    		0,1,1,1,1,
-    		0,0,1,1,1,
-    		0,0,0,1,1,
-    		0,0,0,0,1,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
+    		1, 1, 1, 1, 1,
+    		0, 1, 1, 1, 1,
+    		0, 0, 1, 1, 1,
+    		0, 0, 0, 1, 1,
+    		0, 0, 0, 0, 1,
+    		0, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
 		}, { /* char d[] */
-    		1,1,1,1,1,
-    		1,1,1,1,0,
-    		1,1,1,0,0,
-    		1,1,0,0,0,
-    		1,0,0,0,0,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-		}, { /* char e[] */
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-		}, { /* char f[] */
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
-    		0,0,0,0,0,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 0,
+    		1, 1, 1, 0, 0,
+    		1, 1, 0, 0, 0,
+    		1, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
+		}, { /* char e[] = u5 */
+    		0, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+		}, { /* char f[] = d5 */
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		0, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
+    		0, 0, 0, 0, 0,
 		}, { /* char g[] */
-    		1,0,0,0,0,
-    		1,1,0,0,0,
-    		1,1,1,0,0,
-    		1,1,1,1,0,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
+    		1, 0, 0, 0, 0,
+    		1, 1, 0, 0, 0,
+    		1, 1, 1, 0, 0,
+    		1, 1, 1, 1, 0,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
 		}, { /* char h[] */
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,1,
-    		1,1,1,1,0,
-    		1,1,1,0,0,
-    		1,1,0,0,0,
-    		1,0,0,0,0,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 1,
+    		1, 1, 1, 1, 0,
+    		1, 1, 1, 0, 0,
+    		1, 1, 0, 0, 0,
+    		1, 0, 0, 0, 0,
 		},
 /* Here start 3 standard icon used by heartbear and other. */
 		{
@@ -1654,53 +1666,52 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		},
 /* This is not suppose to be standard icon, just I don't want to lose them.
  * They come directly from the old patch for bignum.
- * TODO: It need some editing to make it like above (REMOVE ME WHEN DONE)
  */
 		{
 		0, 1, 0, 0, 0,  /* Play */
-     		0,1,1,0,0,
-     		0,1,1,1,0,
-     		0,1,1,1,1,
-     		0,1,1,1,0,
-     		0,1,1,0,0,
-     		0,1,0,0,0,
-     		0,0,0,0,0,
+     		0, 1, 1, 0, 0,
+     		0, 1, 1, 1, 0,
+     		0, 1, 1, 1, 1,
+     		0, 1, 1, 1, 0,
+     		0, 1, 1, 0, 0,
+     		0, 1, 0, 0, 0,
+     		0, 0, 0, 0, 0,
    		}, {
 		0, 0, 0, 0, 0,  /* FForward */
-     		1,0,1,0,0,
-     		1,1,0,1,0,
-     		1,1,1,0,1,
-     		1,1,0,1,0,
-     		1,0,1,0,0,
-     		0,0,0,0,0,
-     		0,0,0,0,0,
+     		1, 0, 1, 0, 0,
+     		1, 1, 0, 1, 0,
+     		1, 1, 1, 0, 1,
+     		1, 1, 0, 1, 0,
+     		1, 0, 1, 0, 0,
+     		0, 0, 0, 0, 0,
+     		0, 0, 0, 0, 0,
    		}, {
-     		0,0,0,0,0,  /* FRewind */
-     		0,0,1,0,1,
-     		0,1,0,1,1,
-     		1,0,1,1,1,
-     		0,1,0,1,1,
-     		0,0,1,0,1,
-     		0,0,0,0,0,
-     		0,0,0,0,0,
+     		0, 0, 0, 0, 0,  /* FRewind */
+     		0, 0, 1, 0, 1,
+     		0, 1, 0, 1, 1,
+     		1, 0, 1, 1, 1,
+     		0, 1, 0, 1, 1,
+     		0, 0, 1, 0, 1,
+     		0, 0, 0, 0, 0,
+     		0, 0, 0, 0, 0,
    		}, {
-     		0,0,1,0,0,  /* Up arrow */
-     		0,1,1,1,0,
-     		1,1,1,1,1,
-     		0,0,1,0,0,
-     		0,0,1,0,0,
-     		0,0,1,0,0,
-     		0,0,1,0,0,
-     		0,0,0,0,0,
+     		0, 0, 1, 0, 0,  /* Up arrow */
+     		0, 1, 1, 1, 0,
+     		1, 1, 1, 1, 1,
+     		0, 0, 1, 0, 0,
+     		0, 0, 1, 0, 0,
+     		0, 0, 1, 0, 0,
+     		0, 0, 1, 0, 0,
+     		0, 0, 0, 0, 0,
    		}, {
      		0, 0, 1, 0, 0,  /* Down arrow */
      		0, 0, 1, 0, 0,
-     		0, 0, 1, 0, 0,
-     		0, 0, 1, 0, 0,
-     		1, 1, 1, 1, 1,
-     		0, 1, 1, 1, 0,
-     		0, 0, 1, 0, 0,
-     		0, 0, 0, 0, 0,
+		0, 0, 1, 0, 0,
+		0, 0, 1, 0, 0,
+		1, 1, 1, 1, 1,
+		0, 1, 1, 1, 0,
+		0, 0, 1, 0, 0,
+		0, 0, 0, 0, 0,
    		}
 	};
 
