@@ -823,6 +823,7 @@ MtxOrb_cursorblink (Driver *drvthis, int on)
 
 /******************************
  * Sets up for vertical bars.  Call before lcd.vbar()
+ * TODO: REMOVE ME
  */
 MODULE_EXPORT void
 MtxOrb_init_old_vbar (Driver *drvthis)
@@ -831,6 +832,7 @@ MtxOrb_init_old_vbar (Driver *drvthis)
 
 /******************************
  * Inits horizontal bars...
+ * TODO: REMOVE ME
  */
 MODULE_EXPORT void
 MtxOrb_init_old_hbar (Driver *drvthis)
@@ -985,9 +987,11 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 	if (len > 0) {
 		for (y = height; y > 0 && len > 0; y--) {
 			if (len >= cellheight)
-				MtxOrb_chr (drvthis, x, y, 255 );
+				MtxOrb_icon (drvthis, x, y, barb);
+/* MtxOrb_chr (drvthis, x, y, 255 ); */
 			else
-				MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapu[len]));
+				MtxOrb_icon (drvthis, x, y, mapu[len]);
+/* MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapu[len])); */
 
 			len -= cellheight;
 		}
@@ -995,9 +999,11 @@ MtxOrb_old_vbar (Driver *drvthis, int x, int len)
 		len = -len;
 		for (y = 2; y <= height && len > 0; y++) {
 			if (len >= cellheight)
-				MtxOrb_chr (drvthis, x, y, 255 );
+				MtxOrb_icon (drvthis, x, y, barb);
+/* MtxOrb_chr (drvthis, x, y, 255 ); */
 			else
-				MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapd[len]));
+				MtxOrb_icon (drvthis, x, y, mapd[len]);
+/* MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapd[len])); */
 
 			len -= cellheight;
 		}
@@ -1025,9 +1031,11 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 	if (len > 0) {
 		for (; x <= width && len > 0; x++) {
 			if (len >= cellwidth)
-				MtxOrb_chr (drvthis, x, y, 255 );
+				MtxOrb_icon (drvthis, x, y, barb);
+/* MtxOrb_chr (drvthis, x, y, 255 ); */
 			else
-				MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapr[len]));
+				MtxOrb_icon (drvthis, x, y, mapr[len]);
+/* MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapr[len])); */
 
 			len -= cellwidth;
 
@@ -1036,9 +1044,11 @@ MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len)
 		len = -len;
 		for (; x > 0 && len > 0; x--) {
 			if (len >= cellwidth)
-				MtxOrb_chr (drvthis, x, y, 255 );
+				MtxOrb_icon (drvthis, x, y, barb);
+/* MtxOrb_chr (drvthis, x, y, 255 ); */
 			else
-				MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapl[len]));
+				MtxOrb_icon (drvthis, x, y, mapl[len]);
+/* MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, mapl[len])); */
 
 			len -= cellwidth;
 
@@ -1165,6 +1175,7 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 }
 
 /* TODO: This need to be removed and replaced by the new _icon function.
+ * TODO: REMOVE ME
  */
 MODULE_EXPORT void
 MtxOrb_old_icon (Driver *drvthis, int which, char dest)
@@ -1312,12 +1323,12 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 		case bigfontg:  pos = '\\';  break;
 		case bigfonth:  pos = '/';  break;
 
-		case play:  pos = 'P'; break;
-		case fforward: pos = '>'; break;
-		case frewind: pos = '<'; break;
-		case uparrow: pos = '^'; break;
+		case play:      pos = 'P'; break;
+		case fforward:  pos = '>'; break;
+		case frewind:   pos = '<'; break;
+		case uparrow:   pos = '^'; break;
 		case downarrow: pos = 'v'; break;
-		default:    pos = '?';  break;
+		default:        pos = '?';  break;
 		}
 	}
 
@@ -1584,59 +1595,59 @@ MtxOrb_set_known_char (Driver *drvthis, int car, int type)
 		0, 1, 1, 1, 1,
 		1, 1, 1, 1, 1,
 		}, { /* char c[] */
-    		1, 1, 1, 1, 1,
-    		0, 1, 1, 1, 1,
-    		0, 0, 1, 1, 1,
-    		0, 0, 0, 1, 1,
-    		0, 0, 0, 0, 1,
-    		0, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		0, 0, 1, 1, 1,
+		0, 0, 0, 1, 1,
+		0, 0, 0, 0, 1,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
 		}, { /* char d[] */
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 0,
-    		1, 1, 1, 0, 0,
-    		1, 1, 0, 0, 0,
-    		1, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
 		}, { /* char e[] = u5 */
-    		0, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
 		}, { /* char f[] = d5 */
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		0, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
-    		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
 		}, { /* char g[] */
-    		1, 0, 0, 0, 0,
-    		1, 1, 0, 0, 0,
-    		1, 1, 1, 0, 0,
-    		1, 1, 1, 1, 0,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
+		1, 0, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
 		}, { /* char h[] */
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 1,
-    		1, 1, 1, 1, 0,
-    		1, 1, 1, 0, 0,
-    		1, 1, 0, 0, 0,
-    		1, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 0, 0, 0, 0,
 		},
 /* Here start 3 standard icon used by heartbear and other. */
 		{
