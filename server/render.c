@@ -111,7 +111,7 @@ draw_screen (screen * s, int timer)
 	lcd.output (output_state);
 
 	// Draw a frame...
-	draw_frame (s->widgets, 'v', 0, 0, lcd.wid, lcd.hgt, s->wid, s->hgt, s->duration / s->hgt, timer);
+	draw_frame (s->widgets, 'v', 0, 0, lcd.wid, lcd.hgt, s->wid, s->hgt, (((s->duration / s->hgt) < 1) ? 1 : (s->duration / s->hgt)), timer);
 
 	//debug("draw_screen done\n");
 

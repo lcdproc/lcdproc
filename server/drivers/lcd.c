@@ -65,6 +65,14 @@
 #include "bayrad.h"
 #endif
 
+#ifdef SED1520_DRV
+#include "sed1520.h"
+#endif
+
+#ifdef STV5730_DRV
+#include "stv5730.h"
+#endif
+
 #ifdef GLK_DRV
 #include "glk.h"
 #endif
@@ -122,6 +130,12 @@ lcd_physical_driver drivers[] = {
 #endif
 #ifdef GLK_DRV
 	{"glk", glk_init,},
+#endif
+#ifdef SED1520_DRV
+	{"sed1520", sed1520_init,},
+#endif
+#ifdef STV5730_DRV
+	{"stv5730", stv5730_init,},
 #endif
 	{NULL, NULL,},
 

@@ -9,7 +9,7 @@ AC_ARG_ENABLE(drivers,
   	drivers=[mtxorb,cfontz,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk]
+	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad,glk,stv5730,sed1520]
   	AC_MSG_RESULT(all)
 fi
 
@@ -72,6 +72,14 @@ fi
 				AC_MSG_ERROR([The lirc driver needs the lirc client library]))
 			DRIVERS="$DRIVERS lircin.o"
 			AC_DEFINE(LIRCIN_DRV)
+			;;
+		sed1520)
+			DRIVERS="$DRIVERS sed1520.o"
+			AC_DEFINE(SED1520_DRV)
+			;;
+		stv5730)
+			DRIVERS="$DRIVERS stv5730.o"
+			AC_DEFINE(STV5730_DRV)
 			;;
 	*) 	
 			AC_MSG_ERROR([Unknown driver $driver])
