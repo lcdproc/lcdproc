@@ -20,12 +20,12 @@ fi
   	for driver in $drivers
   	do
 
-    case "$driver" in
-        lcdm001)
+	case "$driver" in
+		lcdm001)
 			DRIVERS="$DRIVERS lcdm001${SO}"
 			actdrivers=["$actdrivers lcdm001"]
 			;;
-        mtxorb)
+		mtxorb)
 			DRIVERS="$DRIVERS MtxOrb${SO}"
 			actdrivers=["$actdrivers mtxorb"]
 			;;
@@ -473,7 +473,6 @@ dnl If your platform does not compile or link the modules correctly, add
 dnl appropriate flags here.
 AC_DEFUN([AC_MODULES_INFO],
 [
-AC_SUBST(SO)
 dnl $SO is the extension of shared libraries (including the dot!)
 dnl It is available in the program code as MODULE_EXTENSION
 AC_MSG_CHECKING(module extension)
@@ -488,9 +487,7 @@ esac
 AC_DEFINE_UNQUOTED(MODULE_EXTENSION,"$SO")
 AC_MSG_RESULT($SO)
 
-AC_SUBST(CCSHARED)
 dnl CCSHARED are the flags used to compile the sources for the shared library
-AC_SUBST(LDSHARED)
 dnl LDSHARED are the flags used to create shared library.
 
 dnl By default assume a GNU compatible build system
@@ -525,21 +522,9 @@ dnl checks for libraries
 AC_CHECK_LIB(dl, dlopen)	# Dynamic linking for Linux, *BSD, SunOS/Solaris and SYSV
 AC_CHECK_LIB(dld, shl_load)	# Dynamic linking for HP-UX
 
+AC_SUBST(SO)
+AC_SUBST(CCSHARED)
+AC_SUBST(LDSHARED)
 dnl End of loadable modules determination
 ]) dnl AC_MODULES_INFO
-
-
-dnl Generate the drivers/Makefile.am file from Makefile.am.pre
-dnl Joris Robijn, 2002
-AC_DEFUN([AC_GENERATE_MAKEFILE_AM],
-[
-echo creating server/drivers/Makefile.am
-( cd $srcdir/server/drivers
-  SO_WO_DOT=`echo $SO|sed 's/[[.]]//'`
-  sed "s/[[!]]SO[[!]]/$SO_WO_DOT/g" < Makefile.am.pre | \
-  sed "s/[[!]]DRIVERS[[!]]/$DRIVERS/g" > Makefile.am
-)
-
-dnl End of Generate drivers Makefile.am
-]) dnl AC_GENERATE_MAKEFILE_AM
 

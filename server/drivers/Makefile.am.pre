@@ -10,7 +10,6 @@ EXTRA_PROGRAMS = bayrad.!SO! CFontz.!SO! CFontz633.!SO! curses.!SO! glk.!SO! hd4
 noinst_LIBRARIES = libLCD.a
 
 EXTRA_DIST = Makefile.am.pre
-nodist_DIST = Makefile.am
 
 ## How to compile the files for the modules:
 CCFLAGS += @CCSHARED@
