@@ -294,8 +294,8 @@ draw_frame (LinkedList * list,
 				if ((w->x > 0) && (w->y > 0)) {
 					if (w->length > 0) {
 						/* Improvised len and promille while we have the old widget language */
-						int full_len = - display_props->height;  /* Yeah negative length because the bar grows in the */
-						int promille = (long) 1000 * w->length / display_props->cellheight / -full_len;
+						int full_len = display_props->height;
+						int promille = (long) 1000 * w->length / display_props->cellheight / full_len;
 						drivers_vbar (w->x, display_props->height, full_len, promille, BAR_PATTERN_FILLED);
 					} else if (w->length < 0) {
 						/* TODO:  Rearrange stuff to get down-extending

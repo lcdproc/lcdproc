@@ -254,7 +254,7 @@ drivers_vbar( int x, int y, int len, int promille, int pattern )
 	 * have different pixels per char
 	 */
 
-	old_len = (long) - display_props->cellheight * len * promille / 1000;
+	old_len = (long) display_props->cellheight * len * promille / 1000;
 
 	ForAllDrivers(drv) {
 		if( drv->old_vbar ) {
