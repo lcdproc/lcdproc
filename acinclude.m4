@@ -116,7 +116,7 @@ dnl				else
 			actdrivers=["$actdrivers lb216"]
 			;;
 		hd44780)
-			DRIVERS="$DRIVERS hd44780.o hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-winamp.o"
+			DRIVERS="$DRIVERS hd44780.o hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-winamp.o hd44780-picanlcd.o"
 			AC_DEFINE(HD44780_DRV)
 			actdrivers=["$actdrivers hd44780"]
 			;;

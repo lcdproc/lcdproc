@@ -47,6 +47,8 @@ typedef struct driver_private_data {
 
 	unsigned int port;
 
+	int fd; /* for picanlcd connection type */
+
 	int width, height;
 	int cellwidth, cellheight;
 

@@ -15,6 +15,7 @@
 #include "hd44780-ext8bit.h"
 #include "hd44780-serialLpt.h"
 #include "hd44780-winamp.h"
+#include "hd44780-picanlcd.h"
 // add new connection type header files here
 
 static const ConnectionMapping connectionMapping[] = {
@@ -22,15 +23,14 @@ static const ConnectionMapping connectionMapping[] = {
 	// string to identify connection on command line
 	// your initialisation function
 	// help string for your particular connection
-	{
-	"4bit", hd_init_4bit, "\tnone\n"}, {
-	"8bit", hd_init_ext8bit, "\tnone\n"}, {
-	"serialLpt", hd_init_serialLpt, "\tnone\n"}, {
-	"winamp", hd_init_winamp, "\tnone\n"},
+	{"4bit", hd_init_4bit, "\tnone\n"},
+	{"8bit", hd_init_ext8bit, "\tnone\n"},
+	{"serialLpt", hd_init_serialLpt, "\tnone\n"},
+	{"winamp", hd_init_winamp, "\tnone\n"},
+	{"picanlcd", hd_init_picanlcd, "\tnone\n"},
 		 // add new connection types and their string specifier here
 		 // default, end of structure element (do not delete)
-	{
-	NULL, NULL, NULL}
+	{NULL, NULL, NULL}
 };
 
 #endif
