@@ -14,17 +14,21 @@
  *  4. Modify the makefile
  *
  * Modular driver created and generic support for multiple displays added 
- * Dec 1999, Benjamin Tse <blt@Comports.com>
+ * Dec 1999, Benjamin Tse <blt@Comports.com>.
  *
  * Modified July 2000 by Charles Steinkuehler to use one of 3 methods for delay
  * timing.  I/O reads, gettimeofday, and nanosleep.  Of the three, nanosleep
  * seems to work best, so that's what is set by default.
  *
+ * Character mapping for correct display of some special ASCII chars added
+ * Sep 2001, Mark Haemmerling <mail@markh.de>.
+ *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
- * Copyright (c)  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
- *		  2000, Charles Steinkuehler <cstein@newtek.com>
+ * Copyright (c)  2001 Mark Haemmerling <mail@markh.de>
+ *		  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
+ *		  2000 Charles Steinkuehler <cstein@newtek.com>
  *		  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  1998 Richard Rognlie <rrognlie@gamerz.net>
  *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
@@ -74,6 +78,7 @@
 
 #include "hd44780-low.h"
 #include "hd44780-drivers.h"
+#include "hd44780-charmap.h"
 
 // default parallel port address
 #ifndef LPTPORT
@@ -774,7 +779,7 @@ HD44780_draw_frame (char *dat)
 		HD44780_position (0, y);
 		//printf("\n%d :",y);
 		for (x = 0; x < lcd.wid; x++) {
-			HD44780_senddata (spanList[y], RS_DATA, dat[(y * lcd.wid) + x]);
+			HD44780_senddata (spanList[y], RS_DATA, HD44780_charmap[(unsigned char)dat[(y * lcd.wid) + x]]);
 		}
 	}
 
