@@ -8,13 +8,13 @@ AC_ARG_ENABLE(drivers,
  	[                    mtxorb,cfontz,cfontz633,curses,text,lb216,]
  	[                    hd44780,joy,irman,lirc,bayrad,glk,,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
-	[                    lcterm,icp_a106]
+	[                    lcterm,icp_a106,ms6931]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,cfontz633,curses,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106]
+	drivers=[mtxorb,cfontz,cfontz633,curses,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -53,6 +53,10 @@ fi
 		icp_a106)
 			DRIVERS="$DRIVERS icp_a106${SO}"
 			actdrivers=["$actdrivers icp_a106"]
+			;;
+		ms6931)
+			DRIVERS="$DRIVERS ms6931${SO}"
+			actdrivers=["$actdrivers ms6931"]
 			;;
 		sli)
 			DRIVERS="$DRIVERS wirz-sli${SO}"
