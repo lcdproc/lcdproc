@@ -267,7 +267,7 @@ clear_settings ()
 int
 process_command_line (int argc, char **argv)
 {
-	signed char c;
+	int c;
 
 	debug( RPT_DEBUG, "%s( argc=%d, argv=...)", __FUNCTION__, argc );
 
