@@ -156,15 +156,6 @@ curses_drv_wborder (WINDOW *win) {
 		wattron(win, COLOR_PAIR(3) | A_BOLD);
 	}
 
-	// TODO: How, HOW, HOW to get the ENTIRE window in color....
-	// Why can't we just set the color and wrefresh() ?
-	//memset(buf, ' ', sizeof(buf));
-	//buf[curses_drv->wid] = '\0';
-
-	//usleep(500);
-	//for (y = 1; y <= curses_drv->hgt; y++)
-	//	mvwaddstr (win, y, 1, buf);
-
 	box(win, 0, 0);
 
 	if (has_colors()) {
@@ -177,8 +168,11 @@ curses_drv_wborder (WINDOW *win) {
 void
 curses_drv_close ()
 {
+	// Note that the program leaves a screen on
+	// the display to be left behind after closing;
+	// so don't clear...
+	//
 	// Close curses
-	wclear (lcd_win);
 	wrefresh (lcd_win);
 	delwin (lcd_win);
 
@@ -198,6 +192,7 @@ curses_drv_close ()
 void
 curses_drv_clear ()
 {
+	wbkgdset(lcd_win, COLOR_PAIR(1) | ' ');
 	curses_drv_wborder (lcd_win);
 	werase (lcd_win);
 }
