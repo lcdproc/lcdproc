@@ -25,6 +25,11 @@ libirman: library in use to read input from IrMan on a serial port.
 
 -----------Here stop the currently usefull information------------
 
+The following text describe a project I never finished: LCDCD.
+If anybody wish to do such an LCDd client, have a look at cdtools.
+
+David GLAUDE
+
 lirc: standardize interface to control IR receaver and emetteur.
 	version: 0.5.4
 	currently not used but might be usefull have support for other IR.
