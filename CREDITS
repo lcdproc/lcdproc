@@ -1,0 +1,36 @@
+LCDproc is a community effort, and as such we'd like to
+recognize everyone's efforts.  If you have helped out but are
+not listed, let us know!
+
+CONTRIBUTORS
+
+William Ferrell - Project founder, wrote 1st version, much
+	documentation, design for V0.4, continued maintenance
+
+Scott Scriven - wrote V0.3 and most of V0.4, and helped
+	procrastinate the rest of the time...
+
+Gareth Watts - Patches, mailing list, ideas, web hosting, CVS,
+	etc.
+
+Matrix Orbital Corporation - Free displays for us developers,
+	and lots of help early on
+
+David Glaude - Lirc driver, IRMAN driver, Big Number support,
+	general-purpose output, dynamic custom char allocation,
+	i2c support, ...
+	
+Todd Porter - Windows 95/98 and NT version
+
+Bjorn Andersson - Autoconf/automake build system
+
+Andrew McMeikan - Awesome hd44780 driver!
+
+Jason Dale Woodward - widget scrolling
+
+Richard Rognlie - GIF driver
+
+
+
+Please let us know if your name is missing, or your credit
+information is incorrect!
