@@ -22,6 +22,9 @@
 
 // This is a big function... TOO big.  How to trim....
 // TODO: Simplify... simplify...
+
+#define MAX_ARGUMENTS 256
+
 int
 parse_all_client_messages ()
 {
@@ -31,7 +34,7 @@ parse_all_client_messages ()
 	char *str, *p, *q, *s;
 //   char *tok;
 	int argc;
-	char *argv[256];
+	char *argv[MAX_ARGUMENTS];
 	//char delimiters[] = " ";
 	char leftquote[] = "\"'`([{";
 	char rightquote[] = "\"'`)]}";
@@ -39,7 +42,7 @@ parse_all_client_messages ()
 	int invalid = 0;
 	int quoteindex;
 
-	for (i = 0; i <= 256; i++) {
+	for (i = 0; i < MAX_ARGUMENTS; i++) {
 		argv[i] = NULL;
 	}
 
