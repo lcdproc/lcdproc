@@ -31,6 +31,7 @@
 #include "drv_base.h"
 #include "shared/debug.h"
 #include "shared/str.h"
+#include "render.h"
 
 // Moved here from lcdm001.h to reduce the number of warning.
 static void lcdm001_close ();
@@ -53,6 +54,7 @@ static void lcdm001_flush_box (int lft, int top, int rgt, int bot);
 static void lcdm001_draw_frame (char *dat);
 static char lcdm001_getkey ();
 // End of extract from lcdm001.h by David GLAUDE.
+static void lcdm001_heartbeat (int type);
 
 #define NotEnoughArgs (i + 1 > argc)
 
@@ -259,6 +261,7 @@ lcdm001_init (struct lcd_logical_driver *driver, char *args)
 	driver->draw_frame = lcdm001_draw_frame;
 
 	driver->getkey = lcdm001_getkey;
+	driver->heartbeat = lcdm001_heartbeat;
 
 	return fd;
 }
@@ -268,6 +271,7 @@ static void lcdm001_num (int x, int num)
 {
         /*TODO: find out what this function is supposed to do*/
 	/*ANSWER: Print a BigNum, see MtxOrb and curses. */
+	/*OK! I'll have a look at the curses driver later ;) */
 }
 
 static void lcdm001_init_num ()
@@ -580,3 +584,34 @@ lcdm001_getkey ()
         return in;
 }
 
+/////////////////////////////////////////////////////////////
+// Does the heartbeat...
+//
+static void
+lcdm001_heartbeat (int type)
+{
+	static int timer = 0;
+	int whichIcon;
+	static int saved_type = HEARTBEAT_ON;
+
+	if (type)
+		saved_type = type;
+
+	if (type == HEARTBEAT_ON) {
+		// Set this to pulsate like a real heart beat...
+		whichIcon = (! ((timer + 4) & 5));
+
+		// This defines a custom character EVERY time...
+		// not efficient... is this necessary?
+		lcdm001_icon (whichIcon, 0);
+
+		// Put character on screen...
+		lcdm001_chr (lcdm001->wid, 1, 0);
+
+		// change display...
+		lcdm001_flush ();
+	}
+
+	timer++;
+	timer &= 0x0f;
+}
