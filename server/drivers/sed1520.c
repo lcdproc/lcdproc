@@ -11,6 +11,9 @@
 // Michael Reinelt / lcd4linux and is (C) 2000 by him.                  //
 // The rest of fontmap.c and this driver is                             //
 //                                                                      //
+// Moved the delay timing code by Charles Steinkuehler to timing.h.     //
+// Guillaume Filion <gfk@logidac.com>, December 2001                    //
+//                                                                      //
 // (C) 2001 Robin Adams ( robin@adams-online.de )                       //
 //                                                                      //
 // This driver is released under the GPL. See file COPYING in this      //
@@ -24,9 +27,10 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/errno.h>
-#include <sched.h>
 #include <time.h>
 #include "port.h"
+#include "timing.h"
+#define uPause timing_uPause
 #include "sed1520fm.c"
 
 #ifdef HAVE_CONFIG_H
@@ -49,8 +53,6 @@
 
 
 unsigned int sed1520_lptport = LPTPORT;
-
-static void uPause (int delayCalls);
 
 lcd_logical_driver *sed1520;
 
@@ -196,16 +198,8 @@ sed1520_init (struct lcd_logical_driver *driver, char *args)
     driver->wid = 20;
     driver->hgt = 4;
 
-    {
-	struct sched_param param;
-	param.sched_priority = 1;
-	if ((sched_setscheduler (0, SCHED_RR, &param)) == -1)
-	  {
-	      fprintf (stderr, "sed1520_init: failed (%s)\n",
-		       strerror (errno));
-	      return -1;
-	  }
-    }
+	if (timing_init() == -1)
+		return -1;
 
     // Initialize the Port and the sed1520s
     if(port_access(sed1520_lptport)) return -1;
@@ -538,22 +532,5 @@ sed1520_draw_frame (char *dat)
 	  selectcolumn (0, CS1) ;
 	  for (j = 61; j < 122; j++)
 	      writedata (dat[j + (i * 122)], CS1);
-      }
-}
-
-/////////////////////////////////////////////////////////////////
-// This function delays a legth given by delayCalls
-// x 10 Nanoseconds
-//
-void
-uPause (int delayCalls)
-{
-    struct timespec delay, remaining;
-    delay.tv_sec = 0;
-    delay.tv_nsec = delayCalls * 10;
-    while (nanosleep (&delay, &remaining) == -1)
-      {
-	  delay.tv_sec = remaining.tv_sec;
-	  delay.tv_nsec = remaining.tv_nsec;
       }
 }

@@ -8,6 +8,9 @@
 // tains a heartbeat icon and some characters that can be used as       //
 // hbars / vbars.                                                       //
 //                                                                      //
+// Moved the delay timing code by Charles Steinkuehler to timing.h.     //
+// Guillaume Filion <gfk@logidac.com>, December 2001                    //
+//                                                                      //
 // (C) 2001 Robin Adams ( robin@adams-online.de )                       //
 //                                                                      //
 // This driver is released under the GPL. See file COPYING in this      //
@@ -22,9 +25,9 @@
 #include <string.h>
 #include <sys/errno.h>
 #include <sys/io.h>
-#include <sched.h>
 #include <time.h>
 #include "port.h"
+#include "timing.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -120,7 +123,8 @@ unsigned char stv5730_to_ascii[256] =
 
 lcd_logical_driver *stv5730;
 
-static void stv5730_upause (int delayCalls);
+//static void stv5730_upause (int delayCalls);
+#define stv5730_upause timing_uPause
 
 /////////////////////////////////////////////////////////////////
 // This function returns true if a powered and working STV5730
@@ -332,16 +336,8 @@ stv5730_init (struct lcd_logical_driver *driver, char *args)
     driver->wid = STV5730_WID;
     driver->hgt = STV5730_HGT;
 
-    {
-	struct sched_param param;
-	param.sched_priority = 1;
-	if ((sched_setscheduler (0, SCHED_RR, &param)) == -1)
-	  {
-	      fprintf (stderr, "stv5730_init: failed (%s)\n",
-		       strerror (errno));
-	      return -1;
-	  }
-    }
+	if (timing_init() == -1)
+		return -1;
 
     // Initialize the Port and the stv5730
     if (port_access (stv5730_lptport) || port_access (stv5730_lptport + 1))
@@ -703,22 +699,5 @@ stv5730_draw_frame (char *dat)
 		    stv5730_write0bit ();
 
 	    };
-      }
-}
-
-/////////////////////////////////////////////////////////////////
-// This function delays a legth given by delayCalls
-// x 10 Nanoseconds
-//
-void
-stv5730_upause (int delayCalls)
-{
-    struct timespec delay, remaining;
-    delay.tv_sec = 0;
-    delay.tv_nsec = delayCalls * 10;
-    while (nanosleep (&delay, &remaining) == -1)
-      {
-	  delay.tv_sec = remaining.tv_sec;
-	  delay.tv_nsec = remaining.tv_nsec;
       }
 }

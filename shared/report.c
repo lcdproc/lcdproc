@@ -3,7 +3,7 @@
  *
  */
 
-#include <malloc.h>
+#include <stdlib.h>
 #include "report.h"
 
 #include <stdarg.h>

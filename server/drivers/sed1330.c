@@ -4,6 +4,9 @@
  * This driver drives the LCD in text mode.
  * Probably the driver can easily be adapted to work for 1335 and 1336 too.
  *
+ * Moved the delay timing code by Charles Steinkuehler to timing.h.
+ * Guillaume Filion <gfk@logidac.com>, December 2001
+ *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
@@ -167,35 +170,12 @@
 #include "shared/str.h"
 #include "shared/report.h"
 #include "configfile.h"
+#include "timing.h"
+#define uPause timing_uPause
 
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-
-// Uncomment one of the lines below to select your desired delay generation
-// mechanism.  If both defines are commented, the original I/O read timing
-// loop is used.  Using DELAY_NANOSLEEP  seems to provide the best performance.
-//#define DELAY_GETTIMEOFDAY
-#define DELAY_NANOSLEEP
-
-# if TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-# else
-#  if HAVE_SYS_TIME_H
-#   include <sys/time.h>
-#  else
-#   include <time.h>
-#  endif
-# endif
-
-// Only one alternate delay method at a time, please ;-)
-#if defined DELAY_GETTIMEOFDAY
-# undef DELAY_NANOSLEEP
-#elif defined DELAY_NANOSLEEP
-# include <sched.h>
-# include <time.h>
-#endif
 
 // LPT lines
 #define A0	SEL
@@ -375,19 +355,8 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 	port_access(data->port+1);
 	port_access(data->port+2);
 
-
-#if defined DELAY_NANOSLEEP
-	// Change to Round-Robin scheduling for nanosleep
-	{
-		// Set priority to 1
-		struct sched_param param;
-		param.sched_priority=1;
-		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-			report( RPT_ERR, "SED1330: init failed (%s)", strerror (errno));
-			return -1;
-		}
-	}
-#endif
+	if (timing_init() == -1)
+		return -1;
 
 	// Set the functions the driver supports...
 	driver->init = sed1330_init;
@@ -452,49 +421,6 @@ sed1330_init( lcd_logical_driver * driver, char *args )
 
 	return 0;
 }
-
-
-/////////////////////////////////////////////////////////////////
-// Pause a specified number of milliseconds
-// INTERNAL
-//
-void
-uPause (int delay)
-{
-
-#if defined DELAY_GETTIMEOFDAY
-	struct timeval current_time,delay_time,wait_time;
-
-	// Get current time first thing
-	gettimeofday(&current_time,NULL);
-
-	// Calculate when delay is over
-	delay_time.tv_sec  = 0;
-	delay_time.tv_usec = delay;
-	timeradd(&current_time,&delay_time,&wait_time);
-
-	do {
-		gettimeofday(&current_time,NULL);
-	} while (timercmp(&current_time,&wait_time,<));
-
-#elif defined DELAY_NANOSLEEP
-	struct timespec delay_time,remaining;
-
-	delay_time.tv_sec = 0;
-	delay_time.tv_nsec = delay * 1000;
-	while ( nanosleep(&delay_time,&remaining) == -1 )
-	{
-		delay_time.tv_sec  = remaining.tv_sec;
-		delay_time.tv_nsec = remaining.tv_nsec;
-	}
-#else // using I/O timing
-      // Assuming every call takes 1us (which can be quite incorrect)
-	int i;
-	for (i = 0; i < delay; ++i)
-		port_in (port);
-#endif
-}
-
 
 /////////////////////////////////////////////////////////////////
 // Send a command and accompanying data
