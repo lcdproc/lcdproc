@@ -6,10 +6,10 @@ AC_ARG_ENABLE(drivers,
 	[                  drivers may be separated with commas.]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval", 
-  	drivers=[mtxorb,cfontz,curses,text,lb216])
+  	drivers=[mtxorb,cfontz,curses,text,lb216,bayrad])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin]
+	drivers=[mtxorb,cfontz,curses,text,lb216,hd44780,joy,irman,lircin,bayrad]
   	AC_MSG_RESULT(all)
 fi
 
@@ -21,6 +21,10 @@ fi
         	mtxorb)
 			DRIVERS="$DRIVERS MtxOrb.o"
 			AC_DEFINE(MTXORB_DRV)
+			;;
+		bayrad)
+			DRIVERS="$DRIVERS bayrad.o"
+			AC_DEFINE(BAYRAD_DRV)
 			;;
 		cfontz)
 			DRIVERS="$DRIVERS CFontz.o"

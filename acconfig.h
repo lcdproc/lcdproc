@@ -17,6 +17,8 @@
 
 #undef LIRCIN_DRV
 
+#undef BAYRAD_DRV
+
 #undef CFONTZ_DRV
 
 #undef CURSES_DRV

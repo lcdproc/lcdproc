@@ -60,6 +60,10 @@
 #include "lircin.h"
 #endif
 
+#ifdef BAYRAD_DRV
+#include "bayrad.h"
+#endif
+
 // TODO: Make a Windows server, and clients...?
 
 lcd_logical_driver lcd;
@@ -98,6 +102,9 @@ lcd_physical_driver drivers[] = {
 #endif
 #ifdef LIRCIN_DRV
 	{"lircin", lircin_init,},
+#endif
+#ifdef BAYRAD_DRV
+	{"BayRAD", bayrad_init,},
 #endif
 	{NULL, NULL,},
 

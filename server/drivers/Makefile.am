@@ -9,6 +9,7 @@ EXTRA_libLCDdrivers_a_SOURCES = MtxOrb.c MtxOrb.h text.c text.h \
 	hd44780-winamp.c hd44780-winamp.h \
 	hd44780-low.h hd44780-drivers.h \
 	port.h joy.c joy.h irmanin.c irmanin.h \
+	bayrad.h bayrad.c \
         CFontz.c CFontz.h lircin.c lircin.h debug.h 
 libLCDdrivers_a_DEPENDENCIES = @DRIVERS@
 libLCDdrivers_a_LIBADD = @DRIVERS@
