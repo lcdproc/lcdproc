@@ -1,4 +1,4 @@
-/* 
+/*
  * Base driver module for Hitachi HD44780 based LCD displays. This is
  * a modular driver that readily allows support for alternative HD44780
  * designs to be added in a flexible and maintainable manner.
@@ -13,12 +13,14 @@
  *  3. Create the low-level driver (use hd44780-ext8bit.c as a starting point)
  *  4. Modify the makefile
  *
- * Modular driver created and generic support for multiple displays added 
- * Dec 1999, Benjamin Tse <blt@Comports.com>.
+ * Modular driver created and generic support for multiple displays added
+ * Dec 1999, Benjamin Tse <blt@Comports.com>
  *
  * Modified July 2000 by Charles Steinkuehler to use one of 3 methods for delay
  * timing.  I/O reads, gettimeofday, and nanosleep.  Of the three, nanosleep
  * seems to work best, so that's what is set by default.
+ *
+ * Modified May 2001 by Joris Robijn to add Keypad support.
  *
  * Character mapping for correct display of some special ASCII chars added
  * Sep 2001, Mark Haemmerling <mail@markh.de>.
@@ -26,8 +28,9 @@
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
- * Copyright (c)  2001 Mark Haemmerling <mail@markh.de>
- *		  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
+ * Copyright (c)  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
+ *		  2001 Joris Robijn <joris@robijn.net>
+ *                2001 Mark Haemmerling <mail@markh.de>
  *		  2000 Charles Steinkuehler <cstein@newtek.com>
  *		  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  1998 Richard Rognlie <rrognlie@gamerz.net>
@@ -51,7 +54,6 @@
 //#define DELAY_GETTIMEOFDAY
 #define DELAY_NANOSLEEP
 
-#if defined DELAY_GETTIMEOFDAY
 # if TIME_WITH_SYS_TIME
 #  include <sys/time.h>
 #  include <time.h>
@@ -64,6 +66,7 @@
 # endif
 
 // Only one alternate delay method at a time, please ;-)
+#if defined DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
 #elif defined DELAY_NANOSLEEP
 # include <sched.h>
@@ -82,7 +85,7 @@
 
 // default parallel port address
 #ifndef LPTPORT
-#define LPTPORT 	0x378
+#define LPTPORT	 0x378
 #endif
 
 unsigned int port = LPTPORT;
@@ -107,10 +110,46 @@ static int numDisplays = 0;
 // input span list but is kept to save some cpu cycles.
 static int *dispSizes = NULL;
 
+// Keypad option
+char keypad = 0;	 // off by default
+			 // This var is not static, so it's accessable from all sub-drivers
+			 // Indeed, this should become cleaner...  later...
+
+// Maximum sizes of the keypad
+// DO NOT CHANGE THESE 2 VALUES, unless you change the functions too
+#define KEYPAD_MAXX 5
+#define KEYPAD_MAXY 11
+// Autorepeat values
+#define KEYPAD_AUTOREPEAT_DELAY 500
+#define KEYPAD_AUTOREPEAT_FREQ 15
+
+// keyMapDirect contains an array of the ascii-codes that should be generated
+// when a directly connected key is pressed (not in matrix).
+static char keyMapDirect[KEYPAD_MAXX] = { 'A', 'B', 'C', 'D', 'E' };
+
+// keyMapMatrix contrains an array with arrays of the ascii-codes that should be generated
+// when a key in the matrix is pressed.
+static char keyMapMatrix[KEYPAD_MAXY][KEYPAD_MAXX] = {
+	{ '1', '2', '3', 'A', 0 },
+	{ '4', '5', '6', 'B', 0 },
+	{ '7', '8', '9', 'C', 0 },
+	{ '*', '0', '#', 'D', 0 },
+	{ 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0 }};
+
+static char pressed_key = 0;
+static int pressed_key_repetitions = 0;
+static struct timeval pressed_key_time;
+
+
 // function declarations
 void HD44780_flush ();
 void HD44780_flush_box (int lft, int top, int rgt, int bot);
-int HD44780_contrast (int contrast);
 void HD44780_backlight (int on);
 void HD44780_init_vbar ();
 void HD44780_init_hbar ();
@@ -132,6 +171,7 @@ static void common_position (int display, int DDaddr);
 static void common_autoscroll (int on);
 static void uPause (int delayCalls);
 static void HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch);
+static char HD44780_getkey ();
 
 static int parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], char *spanlist);
 
@@ -205,6 +245,10 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 				return -1;
 			}
 			++i;
+		} else if (strcmp (argv[i], "-k") == 0 || strcmp (argv[i], "--keypad") == 0) {
+			keypad = 1;
+			printf( "HD44780 keypad extension enabled\n" );
+
 		} else if (0 == strcmp (argv[i], "-h") || 0 == strcmp (argv[i], "--help")) {
 			int i;
 			printf ("LCDproc HD44780 driver\n" "\t-p n\t--port n\tSelect the output device to use port n\n" "\t-c type\t--connect type\tSet the connection type (default 4 bit)\n" "\t\t\t\ttype = %s", connectionMapping[0].connectionTypeStr);
@@ -259,12 +303,7 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 		}
 	}
 #endif
-	// Set up io port correctly, and open it...
-	if (port_access (port)) {
-		fprintf (stderr, "HD44780_init: failed (%s)\n", strerror (errno));
-		return -1;
-	}
-	// Make sure the frame buffer is there...  
+	// Make sure the frame buffer is there...
 	if (!HD44780->framebuf)
 		HD44780->framebuf = (unsigned char *) malloc (HD44780->wid * HD44780->hgt);
 
@@ -288,12 +327,15 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	driver->close = (void *) -1;
 	driver->flush = HD44780_flush;
 	driver->flush_box = HD44780_flush_box;
-	driver->contrast = HD44780_contrast;
+	//driver->contrast = HD44780_contrast; // contrast by potmeter
 	driver->backlight = HD44780_backlight;
 	driver->set_char = HD44780_set_char;
 	driver->icon = HD44780_icon;
 	driver->draw_frame = HD44780_draw_frame;
-	driver->getkey = NULL;
+
+	if( keypad ) {
+		driver->getkey = HD44780_getkey;
+	}
 
 	if ((hd44780_functions = (HD44780_functions *) malloc (sizeof (HD44780_functions))) == NULL) {
 		return -1;
@@ -309,28 +351,14 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	return port;
 }
 
-// common initialisation sequence - sets twoline, small characters (5x8),
-// cursor off and not blinking, clear display and homecursor
+// Common initialisation sequence - sets cursor off and not blinking,
+// clear display and homecursor
+// Does not set twoline mode nor small characters (5x8). The init function of
+// the connectiontype should do this.
+
 void
-common_init (enum ifWidth ifwidth)
+common_init ()
 {
-	if (ifwidth == IF_8bit) {
-		// setup the lcd in 8 bit mode
-		hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT);
-		hd44780_functions->uPause (4100);
-		hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT);
-		hd44780_functions->uPause (100);
-		hd44780_functions->senddata (0, RS_INSTR, FUNCSET | IF_8BIT);
-		hd44780_functions->uPause (40);
-	}
-	// else 4bit
-	//   senddata can't generate the timings to initialise a four bit device
-	//   properly but it might just work properly anyway ....
-
-	// set display type functions
-	hd44780_functions->senddata (0, RS_INSTR, FUNCSET | ((ifwidth == IF_4BIT) ? IF_4BIT : IF_8BIT) | TWOLINE | SMALLCHAR);
-	hd44780_functions->uPause (40);
-
 	hd44780_functions->senddata (0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
 	hd44780_functions->uPause (40);
 	hd44780_functions->senddata (0, RS_INSTR, CLEAR);
@@ -368,11 +396,10 @@ uPause (int delayCalls)
 		delay.tv_sec  = remaining.tv_sec;
 		delay.tv_nsec = remaining.tv_nsec;
 	}
-#else
+#else // using I/O timing
 	int i;
 	for (i = 0; i < delayCalls; ++i)
 		port_in (port);
-	//TODO: put in option for nanosleep rather than dummy I/O call
 #endif
 }
 
@@ -381,14 +408,14 @@ static void
 HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	hd44780_functions->senddata (displayID, flags, ch);
-	hd44780_functions->uPause (40);
+	hd44780_functions->uPause (40);  // Minimum exec time for all commands
 }
 
 /////////////////////////////////////////////////////////////////
 // Clean-up
 //
 /*
-  void HD44780_close() 
+  void HD44780_close()
   {
   drv_base_close();
   }
@@ -420,7 +447,7 @@ void
 common_position (int display, int DDaddr)
 {
 	hd44780_functions->senddata (display, RS_INSTR, POSITION | DDaddr);
-	hd44780_functions->uPause (40);
+	hd44780_functions->uPause (40);  // Minimum exec time for all commands
 }
 
 void HD44780_chr (int x, int y, char ch)
@@ -453,21 +480,12 @@ HD44780_flush_box (int lft, int top, int rgt, int bot)
 }
 
 /////////////////////////////////////////////////////////////////
-// Changes screen contrast (0-255; 140 seems good)
-//
-int
-HD44780_contrast (int contrast)
-{
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////////
-// Sets the backlight on or off -- can be done quickly for
-// an intermediate brightness...
+// Sets the backlight on or off
 //
 void
 HD44780_backlight (int on)
 {
+	//hd44780_functions->backlight (on);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -491,7 +509,7 @@ void
 common_autoscroll (int on)
 {
 	hd44780_functions->senddata (0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | ((on) ? EDGESCROLL : NOSCROLL));
-	hd44780_functions->uPause (1600);
+	hd44780_functions->uPause (40);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -680,9 +698,7 @@ HD44780_hbar (int x, int y, int len)
 void
 HD44780_init_num ()
 {
-	char out[3];
-	snprintf (out, sizeof(out), "%cn", 254);
-	//write(fd, out, 2);
+	
 }
 
 /////////////////////////////////////////////////////////////////
@@ -691,10 +707,8 @@ HD44780_init_num ()
 void
 HD44780_num (int x, int num)
 {
-	char out[5];
-	printf("Size of out is %d\n", sizeof(out));
-	snprintf (out, sizeof(out), "%c#%c%c", 254, x, num);
-	//write(fd, out, 4);
+	int offset = HD44780->wid * ( HD44780->hgt / 2 );
+	HD44780->framebuf[x+offset] = num + '0';
 }
 
 /////////////////////////////////////////////////////////////////
@@ -732,7 +746,7 @@ HD44780_icon (int which, char dest)
 {
 	char icons[3][5 * 8] = {
 		{
-		 1, 1, 1, 1, 1,			  // Empty Heart
+		 1, 1, 1, 1, 1,		   // Empty Heart
 		 1, 0, 1, 0, 1,
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
@@ -743,7 +757,7 @@ HD44780_icon (int which, char dest)
 		 },
 
 		{
-		 1, 1, 1, 1, 1,			  // Filled Heart
+		 1, 1, 1, 1, 1,		   // Filled Heart
 		 1, 0, 1, 0, 1,
 		 0, 1, 0, 1, 0,
 		 0, 1, 1, 1, 0,
@@ -754,7 +768,7 @@ HD44780_icon (int which, char dest)
 		 },
 
 		{
-		 0, 0, 0, 0, 0,			  // Ellipsis
+		 0, 0, 0, 0, 0,		   // Ellipsis
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0,
@@ -794,12 +808,12 @@ HD44780_draw_frame (char *dat)
 
 // Parse the span list
 //      spanListArray   - array to store vertical spans
-//      spLsize         - size of spanListArray
+//      spLsize	 - size of spanListArray
 //      dispOffsets     - array to store display offsets
-//      dOffsize        - size of dispOffsets
+//      dOffsize	- size of dispOffsets
 //      dispSizeArray   - array of display vertical sizes (= spanlist)
-//      spanlist        - null terminated input span list in comma delimited 
-//                        format. All span elements [1-9] e.g. "1,4,2"
+//      spanlist	- null terminated input span list in comma delimited
+//			format. All span elements [1-9] e.g. "1,4,2"
 //      returns number of span elements, -1 on parse error
 
 int
@@ -841,4 +855,92 @@ parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dO
 		}
 	}
 	return retVal;
+}
+
+char HD44780_getkey()
+{
+	unsigned int keybits;
+	unsigned int shiftcount;
+	unsigned int shiftingbit;
+	unsigned int Ypattern;
+	unsigned int Yval;
+	char exp;
+	char ch = 0;
+	char ch_set = 0;
+	struct timeval curr_time, time_diff;
+
+	gettimeofday(&curr_time,NULL);
+
+	// First check if a directly connected key is pressed
+	// Put all zeros on Y of keypad
+	keybits = hd44780_functions->readkeypad (0);
+
+	if (keybits) {
+		// A directly connected key was pressed
+		// Which key was it ?
+		shiftingbit = 1;
+		for (shiftcount=0; shiftcount<KEYPAD_MAXX && !ch; shiftcount++) {
+			if ( keybits & shiftingbit) {
+				// Found !   Return from function.
+				ch = keyMapDirect[shiftcount];
+			}
+			shiftingbit <<= 1;
+		}
+	}
+	else {
+		// Now check the matrix
+		// First check with all 1's
+		Ypattern = (1 << KEYPAD_MAXY) - 1;
+		if( hd44780_functions->readkeypad (Ypattern)) {
+			// Yes, a key on the matrix is pressed
+
+			// OK, now we know a key is pressed.
+			// Determine which one it is
+			// Do a 'binary search' to determine in what row a key is pressed
+			Ypattern = 0;
+			Yval = 0;
+			for (exp=3; exp>=0; exp--) {
+				Ypattern = ((1 << (1 << exp)) - 1) << Yval;
+				keybits = hd44780_functions->readkeypad (Ypattern);
+				if (!keybits) {
+					Yval += (1 << exp);
+				}
+			}
+
+			// Which key is pressed in that row ?
+			keybits = hd44780_functions->readkeypad (1<<Yval);
+			shiftingbit=1;
+			for (shiftcount=0; shiftcount<KEYPAD_MAXX && !ch; shiftcount++) {
+				if ( keybits & shiftingbit) {
+					// Found !
+					ch = keyMapMatrix[Yval][shiftcount];
+				}
+				shiftingbit <<= 1;
+			}
+		}
+	}
+
+	if (ch) {
+		if (ch == pressed_key) {
+			timersub (&curr_time, &pressed_key_time, &time_diff);
+			if (((time_diff.tv_usec / 1000 + time_diff.tv_sec * 1000) - KEYPAD_AUTOREPEAT_DELAY) < 1000 * pressed_key_repetitions / KEYPAD_AUTOREPEAT_FREQ ) {
+				// The key is already pressed quite some time
+				// but it's not yet time to return a repeated keypress
+				return 0;
+			}
+			// Otherwise a keypress will be returned
+			pressed_key_repetitions ++;
+		}
+		else {
+			// It's a new keypress
+			pressed_key_time = curr_time;
+			pressed_key_repetitions = 0;
+			printf( "Key: %c\n", ch );
+		}
+	}
+
+	// Store the key for the next round
+	pressed_key = ch;
+
+	return ch;
 }

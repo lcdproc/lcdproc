@@ -6,7 +6,8 @@
 
 enum ifWidth { IF_4bit, IF_8bit };
 
-void common_init (enum ifWidth ifwidth);
+//void common_init (enum ifWidth ifwidth);
+void common_init ();
 
 // Structures holding pointers to HD44780 specific functions
 typedef struct hwDependentFns {
@@ -16,7 +17,7 @@ typedef struct hwDependentFns {
 	// senddata to the LCD
 	// dispID     - display to send data to (0 = all displays)
 	// flags      - data or instruction command (RS_DATA | RS_INSTR)
-	// ch         - character to display or instruction value
+	// ch	      - character to display or instruction value
 	void (*senddata) (unsigned char dispID, unsigned char flags, unsigned char ch);
 
 	// position the cursor
@@ -25,8 +26,14 @@ typedef struct hwDependentFns {
 	void (*position) (int dispID, int DDaddr);
 
 	// toggle vertical autoscroll on all displays
-	// on         - non-zero turns autoscroll on, zero value turns it off
+	// on	      - non-zero turns autoscroll on, zero value turns it off
 	void (*autoscroll) (int on);
+
+	// read the keypad
+	// Ydata      - the up to 11 bits that should be put on the Y side of the matrix
+	// return     - the up to 5 bits that are read out on the X side of the matrix
+	unsigned char (*readkeypad) (unsigned int Ydata);
+
 } HD44780_functions;				  /* for want of a better name :-) */
 
 extern HD44780_functions *hd44780_functions;
@@ -81,7 +88,7 @@ extern HD44780_functions *hd44780_functions;
 #define nSEL 	0x08
 #define SEL 	0x08
 
-#define OUTMASK	0x0B
+#define OUTMASK	0x0B	/* SEL, LF and STRB are hardware inverted */
 
 // Input lines
 #define nFAULT	0x08
@@ -92,6 +99,6 @@ extern HD44780_functions *hd44780_functions;
 #define ACK	0x40
 #define BUSY	0x80
 
-#define INMASK	0x48
+#define INMASK	0x84	/* BUSY input and the IRQ indicator are inverted */
 
 #endif
