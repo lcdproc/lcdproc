@@ -13,187 +13,8 @@
 
 #include "main.h"
 #include "mode.h"
+#include "machine.h"
 #include "mem.h"
-
-#ifdef SOLARIS
-#include <strings.h>
-#include <sys/stat.h>
-#include <sys/swap.h>
-#ifdef HAVE_PROCFS_H
-# include <procfs.h>
-#endif
-#ifdef HAVE_SYS_PROCFS_H
-# include <sys/procfs.h>
-#endif
-#endif
-#ifdef __NetBSD__
-#include <sys/param.h>  
-#include <sys/sysctl.h>
-#include <uvm/uvm_extern.h>
-#include <errno.h>
-#include <kvm.h>
-static int pageshift;
-#define pagetok(size) ((size) << pageshift)
-#define PROCSIZE(pp) ((pp)->p_vm_tsize + (pp)->p_vm_dsize + (pp)->p_vm_ssize)
-static void netbsd_get_procs(LinkedList *procs);
-#endif
-
-
-struct meminfo {
-	int total, cache, buffers, free, shared;
-};
-
-int meminfo_fd = 0;
-
-static void get_mem_info (struct meminfo *result);
-
-static void
-get_mem_info (struct meminfo *result)
-{
-
-#ifdef SOLARIS
-	#define MAXSTRSIZE 80
-	swaptbl_t	*s=NULL;
-	int            i, n, num;
-	char           *strtab;    /* string table for path names */
-
-	result[0].total = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / 1024;
-	result[0].free = sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE) / 1024;
-	result[0].shared = 0;
-	result[0].buffers = 0;
-	result[0].cache = 0;
-again:
-	if ((num = swapctl(SC_GETNSWP, 0)) == -1) {
-		perror("swapctl: GETNSWP");
-		exit(1);
-	}
-	if (num == 0) {
-		fprintf(stderr, "No Swap Devices Configured\n");
-		exit(2);
-	}
-	/* allocate swaptable for num+1 entries */
-	if ((s = (swaptbl_t *)
-		malloc(num * sizeof(swapent_t) +
-			sizeof(struct swaptable))) ==
-		(void *) 0) {
-		fprintf(stderr, "Malloc Failed\n");
-		exit(3);
-	}
-	/* allocate num+1 string holders */
-	if ((strtab = (char *)
-		malloc((num + 1) * MAXSTRSIZE)) == (void *) 0) {
-		fprintf(stderr, "Malloc Failed\n");
-		exit(3);
-	}
-	/* initialize string pointers */
-	for (i = 0; i < (num + 1); i++) {
-		s->swt_ent[i].ste_path = strtab + (i * MAXSTRSIZE);
-	}
-
-
-	s->swt_n = num + 1;
-	if ((n = swapctl(SC_LIST, s)) < 0) {
-		perror("swapctl");
-		exit(1);
-	}
-	if (n > num) {        /* more were added */
-		free(s);
-		free(strtab);
-		goto again;
-	}
-	result[1].total = 0;
-	result[1].free = 0;
-	for (i = 0; i < n; i++) {
-		result[1].total = result[1].total + s->swt_ent[i].ste_pages * sysconf(_SC_PAGESIZE) / 1024;
-		result[1].free = result[1].free + s->swt_ent[i].ste_free * sysconf(_SC_PAGESIZE) / 1024;
-	}
-#else
-#ifdef __NetBSD__
-	size_t size;
-	int mib[2];
-	struct uvmexp_sysctl uvmexp;
-
-	mib[0] = CTL_VM;
-	mib[1] = VM_UVMEXP2;
-	size = sizeof(uvmexp);
-	if(sysctl(mib, 2, &uvmexp, &size, NULL, 0) < 0)
-	{
-		fprintf(stderr, "sysctl vm.uvmexp2 failed: %s\n",
-					strerror(errno));
-		exit(EXIT_FAILURE);
-	}
-    
-	/* memory */
-	result[0].total		= pagetok(uvmexp.npages);
-	result[0].free		= pagetok(uvmexp.free);
-	/* not really */
-	result[0].shared	= pagetok(uvmexp.wired);
-	result[0].buffers	= pagetok(uvmexp.execpages);
-	result[0].cache		= pagetok(uvmexp.filepages);
-
-	/* swap */
-	result[1].total		= uvmexp.pagesize * uvmexp.swpages;
-	result[1].free		= uvmexp.pagesize * uvmexp.swpginuse;
-	result[1].free		= result[1].total - result[1].free;
-#else
-	reread (meminfo_fd, "get_meminfo:");
-	result[0].total = getentry ("MemTotal:", buffer);
-	result[0].free = getentry ("MemFree:", buffer);
-	result[0].shared = getentry ("MemShared:", buffer);
-	result[0].buffers = getentry ("Buffers:", buffer);
-	result[0].cache = getentry ("Cached:", buffer);
-	result[1].total = getentry ("SwapTotal:", buffer);
-	result[1].free = getentry ("SwapFree:", buffer);
-#endif
-#endif
-}
-
-int
-mem_init ()
-{
-#ifdef SOLARIS
-#else
-#ifdef __NetBSD__
-	/* get the page size with "getpagesize" and calculate pageshift from it */
-	int pagesize = getpagesize();
-	pageshift = 0;
-	while(pagesize > 1)
-	{
-		pageshift++;
-		pagesize >>= 1;
-	}
-
-	/* we only need the amount of log(2)1024 for our conversion */
-	pageshift -= 10;
-#else
-	if (!meminfo_fd) {
-		meminfo_fd = open ("/proc/meminfo", O_RDONLY);
-		if (meminfo_fd < 0) {
-		  perror ("Can't open /proc/meminfo");
-		  exit (1);
-		}
-	}
-#endif
-#endif
-	return 0;
-}
-
-int
-mem_close ()
-{
-#ifdef SOLARIS
-#else
-#ifdef __NetBSD__
-#else
-	if (meminfo_fd)
-		meminfo_fd = open ("/proc/meminfo", O_RDONLY);
-
-	meminfo_fd = 0;
-
-#endif
-#endif
-	return 0;
-}
 
 /////////////////////////////////////////////////////////////////////////
 // Mem Screen displays info about memory and swap usage...
@@ -202,7 +23,7 @@ int
 mem_screen (int rep, int display)
 {
 	int n;
-	struct meminfo mem[2];
+	meminfo_type mem[2];
 	static int first = 1;
 	static int which_title = 0;
 	float value;
@@ -211,7 +32,7 @@ mem_screen (int rep, int display)
 		first = 0;
 
 		sock_send_string (sock, "screen_add M\n");
-		sprintf (buffer, "screen_set M -name {Memory & Swap: %s}\n", host);
+		sprintf (buffer, "screen_set M -name {Memory & Swap: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 
 		if (lcd_hgt >= 4) {
@@ -255,12 +76,12 @@ mem_screen (int rep, int display)
 		//sock_send_string(sock, "\n");
 	}
 
-	get_mem_info (mem);
+	machine_get_meminfo(mem);
 
 	// flip the title back and forth...
 	if (lcd_hgt >= 4) {
 		if (which_title & 4) {
-			sprintf (buffer, "widget_set M title {%s}\n", host);
+			sprintf (buffer, "widget_set M title {%s}\n", get_hostname());
 			sock_send_string (sock, buffer);
 		} else
 			sock_send_string (sock, "widget_set M title { MEM -==- SWAP}\n");
@@ -361,26 +182,18 @@ mem_screen (int rep, int display)
 	return 0;
 }										  // End mem_screen()
 
-typedef struct proc_mem_info {
-	char name[16];					  // Is this really long enough?
-	// Size isn't used any more...
-	// Totl stores the "size" of the program now...
-	int size, totl;
-	int number;
-} proc_mem_info;
-
 static int
 sort_procs (void *a, void *b)
 {
-	proc_mem_info *one, *two;
+	procinfo_type *one, *two;
 
 	if (!a)
 		return 0;
 	if (!b)
 		return 0;
 
-	one = (proc_mem_info *) a;
-	two = (proc_mem_info *) b;
+	one = (procinfo_type *) a;
+	two = (procinfo_type *) b;
 
 	return (two->totl > one->totl);
 }
@@ -388,36 +201,18 @@ sort_procs (void *a, void *b)
 int
 mem_top_screen (int rep, int display)
 {
-#ifndef __NetBSD__
-	// Much of this code was ripped from "gmemusage"
-	char buf[128];
-
-	DIR *proc;
-	FILE *StatusFile;
-	struct dirent *procdir;
-
-	char procName[16];
-	int
-	 procSize, procRSS, procData, procStk, procExe;
-	const char
-	*NameLine = "Name:", *VmSizeLine = "VmSize:", *VmRSSLine = "VmRSS", *VmDataLine = "VmData", *VmStkLine = "VmStk", *VmExeLine = "VmExe";
-	const int
-	 NameLineLen = strlen (NameLine), VmSizeLineLen = strlen (VmSizeLine), VmDataLineLen = strlen (VmDataLine), VmStkLineLen = strlen (VmStkLine), VmExeLineLen = strlen (VmExeLine), VmRSSLineLen = strlen (VmRSSLine);
-	int threshold = 400, unique;
-#endif /* __NetBSD__ */
-
 	int i;
-	proc_mem_info *p;
+	procinfo_type *p;
 	LinkedList *procs;
 	static int first = 1;
 
 	if (first) {
 		first = 0;
 		sock_send_string (sock, "screen_add S\n");
-		sprintf (buffer, "screen_set S -name {Top Memory Use: %s}\n", host);
+		sprintf (buffer, "screen_set S -name {Top Memory Use: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add S title title\n");
-		sprintf (buffer, "widget_set S title {TOP MEM: %s}\n", host);
+		sprintf (buffer, "widget_set S title {TOP MEM: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add S f frame\n");
 		if (lcd_hgt >= 4)
@@ -437,109 +232,7 @@ mem_top_screen (int rep, int display)
 		return -1;
 	}
 
-#ifdef __NetBSD__
-	netbsd_get_procs(procs);
-#else
-	if ((proc = opendir ("/proc")) == NULL) {
-		fprintf (stderr, "mem_top_screen: unable to open /proc");
-		perror ("");
-		return -1;
-	}
-
-	while ((procdir = readdir (proc))) {
-		if (!index ("1234567890", procdir->d_name[0])) {
-			continue;
-		}
-	#ifndef SOLARIS
-		sprintf (buf, "/proc/%s/status", procdir->d_name);
-		if ((StatusFile = fopen (buf, "r")) == NULL) {
-			// Not a serious error; process has finished before we could
-			// examine it:
-			//fprintf ( stderr , "mem_top_screen: cannot open %s for reading" ,
-			//          buf ) ;
-			//perror ( "" ) ;
-			continue;
-		}
-		procRSS = procSize = procData = procStk = procExe = 0;
-		while (fgets (buf, sizeof (buf), StatusFile)) {
-			if (!strncmp (buf, NameLine, NameLineLen)) {
-				/* Name: procName */
-				sscanf (buf, "%*s %s", procName);
-			} else if (!strncmp (buf, VmSizeLine, VmSizeLineLen)) {
-				/* VmSize: procSize kB */
-				sscanf (buf, "%*s %d", &procSize);
-			} else if (!strncmp (buf, VmRSSLine, VmRSSLineLen)) {
-				/* VmRSS: procRSS kB */
-				sscanf (buf, "%*s %d", &procRSS);
-			} else if (!strncmp (buf, VmDataLine, VmDataLineLen)) {
-				/* VmData: procData kB */
-				sscanf (buf, "%*s %d", &procData);
-			} else if (!strncmp (buf, VmStkLine, VmStkLineLen)) {
-				/* VmStk: procStk kB */
-				sscanf (buf, "%*s %d", &procStk);
-			} else if (!strncmp (buf, VmExeLine, VmExeLineLen)) {
-				/* VmExe: procExe kB */
-				sscanf (buf, "%*s %d", &procExe);
-			}
-		}
-	#else
-		sprintf (buf, "/proc/%s/psinfo", procdir->d_name);
-		if ((StatusFile = fopen (buf, "r")) == NULL) {
-			// Not a serious error; process has finished before we could
-			// examine it:
-			//fprintf ( stderr , "mem_top_screen: cannot open %s for reading" ,
-			//          buf ) ;
-			//perror ( "" ) ;
-			continue;
-		}
-		{
-			psinfo_t psinfo;
-			fread(&psinfo,sizeof(psinfo),1,StatusFile);
-			procRSS = procSize = procData = procStk = procExe = 0;
-			strcpy(procName,psinfo.pr_fname);
-			procSize=psinfo.pr_size;
-			procRSS=psinfo.pr_rssize;
-			// Following values not accurate, not sure what needs to be set to
-			procData=psinfo.pr_size;
-			procStk=0;
-			procExe=0;
-		}
-	#endif
-		fclose (StatusFile);
-		if (procSize > threshold) {
-			// Figure out if it's sharing any memory...
-			unique = 1;
-			LL_Rewind (procs);
-			do {
-				p = LL_Get (procs);
-				if (p) {
-					if (0 == strcmp (p->name, procName)) {
-						unique = 0;
-						p->number++;
-						p->totl += procData + procStk + procExe;
-					}
-				}
-			} while (LL_Next (procs) == 0);
-
-			// If this is the first one by this name...
-			if (unique) {
-				p = malloc (sizeof (proc_mem_info));
-				if (!p) {
-					fprintf (stderr, "mem_top_screen: Error allocating process entry\n");
-					goto end;		  // Ack!  I hate goto's!
-				}
-				strcpy (p->name, procName);
-				p->size = procSize;
-				p->totl = procData + procStk + procExe;
-				p->number = 1;
-				// TODO:  Check for errors here?
-				LL_Push (procs, (void *) p);
-			}
-		}
-
-	}
-	closedir (proc);
-#endif /* __NetBSD__ */
+	machine_get_procs(procs);
 
 	// Now, print some info...
 	LL_Rewind (procs);
@@ -566,13 +259,10 @@ mem_top_screen (int rep, int display)
 		LL_Next (procs);
 	}
 
-#ifndef __NetBSD__
- end:								  // Ack!  I hate using labels!  
-#endif
 	// Now clean it all up...
 	LL_Rewind (procs);
 	do {
-		p = (proc_mem_info *) LL_Get (procs);
+		p = (procinfo_type *) LL_Get (procs);
 		if (p) {
 			//printf("Proc: %6ik %s\n", p->size, p->name);
 			free (p);
@@ -583,55 +273,4 @@ mem_top_screen (int rep, int display)
 	return 0;
 
 }
-
-#ifdef __NetBSD__
-static void netbsd_get_procs(LinkedList *procs)
-{
-	kvm_t *kvmd = NULL;
-	struct kinfo_proc2 *kprocs = NULL;
-	struct kinfo_proc2 *pp;
-	int nproc, i;
-	proc_mem_info *p;
-
-	if((kvmd = kvm_open(NULL, NULL, NULL, KVM_NO_FILES, "kvm_open")) == NULL
-)
-	{
-		fprintf(stderr, "kvm_openfiles\n");
-		exit(EXIT_FAILURE);
-	}
-	kprocs = kvm_getproc2(kvmd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2), &nproc);
-
-	if(kprocs == NULL)
-	{
-		fprintf(stderr, "kvm_getproc2\n");
-		exit(EXIT_FAILURE);
-	}
-
-	for(pp = kprocs, i = 0; i < nproc; pp++, i++)
-	{
-		/*
-		printf("proc: %s (%ld)   size: %ld K\n", pp->p_comm,
-													(long) (pp->p_pid),
-													(long) (PROCSIZE(pp) << pageshift));
-		*/
-
-		p = malloc(sizeof(proc_mem_info));
-		if(!p)
-		{
-			fprintf(stderr, "mem_top_screen: Error allocating process entry\n");
-			kvm_close(kvmd);
-			exit(EXIT_FAILURE);
-		}
-		strncpy(p->name, pp->p_comm, 15);
-		p->name[15] = '\0';
-		p->totl = (PROCSIZE(pp) << pageshift);
-		p->number = pp->p_pid;
-		/* TODO:  Check for errors here? */
-		LL_Push(procs, (void *)p);
-
-		kprocs++;
-	}
-	kvm_close(kvmd);
-}
-#endif /* __NetBSD__ */
 

@@ -1,3 +1,5 @@
+#include <sys/types.h>
+#include <sys/param.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,171 +10,12 @@
 #include "config.h"
 #endif
 
-#ifdef HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#ifdef HAVE_SYS_MOUNT_H
-#include <sys/mount.h>
-#endif
-#ifdef HAVE_SYS_VFS_H
-#include <sys/vfs.h>
-#endif
-#ifdef HAVE_SYS_STATVFS_H
-#include <sys/statvfs.h>
-#endif
-#ifdef HAVE_SYS_STATFS_H
-#include <sys/statfs.h>
-#endif
-
 #include "shared/sockets.h"
 
 #include "main.h"
 #include "mode.h"
+#include "machine.h"
 #include "disk.h"
-
-#ifdef __NetBSD__
-#include <sys/param.h>
-#include <sys/ucred.h>
-#include <sys/mount.h>
-#else
-FILE *mtab_fd;
-#endif
-
-typedef struct mounts {
-	char dev[256], type[64], mpoint[256];
-	long bsize, blocks, bfree, files, ffree;
-} mounts;
-
-static int
-get_fs (mounts fs[])
-{
-#ifdef __NetBSD__
-	struct statfs *mntbuf;
-	struct statfs *pp;
-	int statcnt, cnt, i; 
-
-	cnt = getmntinfo(&mntbuf, MNT_WAIT);
-	if(cnt == 0) 
-	{ 
-		perror("getmntinfo");
-		return(0);
-	}
-	for(statcnt = 0, pp = mntbuf, i = 0; i < cnt; pp++, i++)
-	{
-		if(strcmp(pp->f_fstypename, "procfs")
-			&& strcmp(pp->f_fstypename, "kernfs")
-			&& strcmp(pp->f_fstypename, "linprocfs")
-#ifndef STAT_NFS
-			&& strcmp(pp->f_fstypename, "nfs")
-#endif
-#ifndef STAT_SMBFS
-			&& strcmp(pp->f_fstypename, "smbfs")
-#endif
-		)
-		{
-/*
-			printf("mount point: %s\n", pp->f_mntonname);
-			printf("fs name    : %s\n", pp->f_mntfromname);
-			printf("fs type    : %s\n", pp->f_fstypename);
-*/
-			snprintf(fs[statcnt].dev, 255, "%s", pp->f_mntfromname);
-			snprintf(fs[statcnt].mpoint, 255, "%s", pp->f_mntonname);
-			snprintf(fs[statcnt].type, 255, "%s", pp->f_fstypename);
-
-			fs[statcnt].blocks = pp->f_blocks;
-			if(fs[statcnt].blocks > 0)
-			{
-				fs[statcnt].bsize = pp->f_bsize;
-				fs[statcnt].bfree = pp->f_bfree;
-				fs[statcnt].files = pp->f_files;
-				fs[statcnt].ffree = pp->f_ffree;
-
-/*
-				printf("bsize : %ld\n", pp->f_bsize);
-				printf("blocks: %ld\n", pp->f_blocks);
-				printf("free  : %ld\n", pp->f_bfree);
-*/
-			}
-			statcnt++;
-		}
-	}    
-	return(statcnt);
-#else
-#ifdef STAT_STATVFS
-	struct statvfs fsinfo;
-#else
-	struct statfs fsinfo;
-#endif
-	char line[256];
-	int x = 0, y;
-
-#ifdef MTAB_FILE
-	mtab_fd = fopen(MTAB_FILE, "r");
-#else
-#error "Can't find your mounted filesystem table file."
-#endif
-
-	// Get rid of old, unmounted filesystems...
-	memset (fs, 0, sizeof (mounts) * 256);
-
-	while (x < 256) {
-		if (fgets (line, 256, mtab_fd) == NULL) {
-			fclose (mtab_fd);
-			return x;
-		}
-
-		sscanf (line, "%s %s %s", fs[x].dev, fs[x].mpoint, fs[x].type);
-
-		if (strcmp (fs[x].type, "proc")
-#ifndef STAT_NFS
-			 && strcmp (fs[x].type, "nfs")
-#endif
-#ifndef STAT_SMBFS
-			 && strcmp (fs[x].type, "smbfs")
-#endif
-			 ) {
-#ifdef STAT_STATVFS
-			y = statvfs (fs[x].mpoint, &fsinfo);
-#elif STAT_STATFS2_BSIZE
-			y = statfs (fs[x].mpoint, &fsinfo);
-#elif STAT_STATFS4
-			y = statfs (fs[x].mpoint, &fsinfo, sizeof (fsinfo), 0);
-#else
-#error "statfs for this system noy yet supported"
-#endif
-
-			fs[x].blocks = fsinfo.f_blocks;
-			if (fs[x].blocks > 0) {
-				fs[x].bsize = fsinfo.f_bsize;
-				fs[x].bfree = fsinfo.f_bfree;
-				fs[x].files = fsinfo.f_files;
-				fs[x].ffree = fsinfo.f_ffree;
-				x++;
-			}
-		}
-	}
-
-	fclose (mtab_fd);
-	return x;
-#endif
-}
-
-int
-disk_init ()
-{
-
-	return 0;
-}
-
-int
-disk_close ()
-{
-
-	return 0;
-}
 
 ///////////////////////////////////////////////////////////////////////////
 // Gives disk stats. 
@@ -185,7 +28,7 @@ disk_close ()
 int
 disk_screen (int rep, int display)
 {
-	static mounts mnt[256];
+	static mounts_type mnt[256];
 	static int count = 0;
 
 	// Holds info to display (avoid recalculating it)
@@ -205,10 +48,10 @@ disk_screen (int rep, int display)
 		first = 0;
 
 		sock_send_string (sock, "screen_add D\n");
-		sprintf (buffer, "screen_set D -name {Disk Use: %s}\n", host);
+		sprintf (buffer, "screen_set D -name {Disk Use: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add D title title\n");
-		sprintf (buffer, "widget_set D title {DISKS: %s}\n", host);
+		sprintf (buffer, "widget_set D title {DISKS: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add D f frame\n");
 		//sock_send_string(sock, "widget_set D f 1 2 20 4 20 3 v 8\n");
@@ -223,7 +66,7 @@ disk_screen (int rep, int display)
 	// Get rid of old, unmounted filesystems...
 	memset (table, 0, sizeof (struct disp) * 256);
 
-	count = get_fs (mnt);
+	machine_get_fs(mnt, &count);
 	first = 0;
 
 	// Fill the display structure...
@@ -232,7 +75,7 @@ disk_screen (int rep, int display)
 		sock_send_string (sock, "widget_set D err2 30 5 .\n");
 		for (i = 0; i < count; i++) {
 			if (strlen (mnt[i].mpoint) > 6) {
-				sprintf (table[i].dev, "%c%s", ELLIPSIS, (mnt[i].mpoint) + (strlen (mnt[i].mpoint) - 5));
+				sprintf (table[i].dev, "-%s", (mnt[i].mpoint) + (strlen (mnt[i].mpoint) - 5));
 			} else {
 				sprintf (table[i].dev, "%s", mnt[i].mpoint);
 			}

@@ -1,9 +1,14 @@
+#include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/utsname.h>
+#include <limits.h>
+#include <sys/param.h>
+#include <errno.h>
+
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -24,257 +29,10 @@
 
 #include "main.h"
 #include "mode.h"
+#include "machine.h"
 #include "chrono.h"
 
-#if HAVE_UTMPX_H
-#include <utmpx.h>
-#endif
-
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
-
-#if HAVE_LIMITS_H
-#include <limits.h>
-#endif
-
-#if HAVE_KVM_H
-#include <kvm.h>
-#endif
-
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
-#if HAVE_SYS_PARAM_H
-#include <sys/param.h>
-#endif
-
-#if HAVE_SYS_SYSCTL_H
-#include <sys/sysctl.h>
-#endif
-
-#if HAVE_SYS_SCHED_H
-#include <sys/sched.h>
-#endif
-
-#if HAVE_SYS_DKSTAT_H
-#include <sys/dkstat.h>
-#endif
-
-#if FREEBSD
-/* definitions for indices in the nlist array */
-/* from /usr/src/src.bin/top/machine.c */
-static struct nlist nlst[] = {
-#define X_CCPU      0
-    { "_ccpu" },
-#define X_CP_TIME   1   
-    { "_cp_time" },
-    { 0 }
-};
-#elif OPENBSD
-#define X_CP_TIME   0
-static struct nlist nlst[] = {
-	{ "_cp_time" },     /* 0 */
-	{ 0 }
-};
-#endif
-
-int TwentyFourHour = 1;
-int uptime_fd = 0;
-
-#ifdef SYS_NMLN
- static char kver[SYS_NMLN];
- static char sysname[SYS_NMLN];
-#else
-# ifdef _SYS_NAMELEN
-  static char kver[_SYS_NAMELEN];
-  static char sysname[_SYS_NAMELEN];
-# else
-  // Last hope! May segfault!
-  static char *kver;
-  static char *sysname;
-# endif
-#endif
-
-#if FREEBSD
-static double freebsd_get_uptime(double *up, double *idle);
-#define get_uptime freebsd_get_uptime
-#elif (__NetBSD__ || OPENBSD)
-static double opennetbsd_get_uptime(double *up, double *idle);
-#define get_uptime opennetbsd_get_uptime
-#elif LINUX
-static double linux_get_uptime(double *up, double *idle);
-#define get_uptime linux_get_uptime
-#elif SOLARIS
-static double solaris_get_uptime(double *up, double *idle);
-#define get_uptime solaris_get_uptime
-#else
-#error "Does not know how to get the uptime."
-#endif
-
-#if FREEBSD
-static double freebsd_get_uptime(double *up, double *idle) {
-	double uptime = 0;
-	struct timeval boottime;
-	time_t now, uuptime;
-	size_t size;
-	long cp_time[CPUSTATES];
-	long iidle = 0;
-	int mib[2];
-	char errbuf[_POSIX2_LINE_MAX];
-	kvm_t *kvmd = NULL;
-
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_BOOTTIME;
-	size = sizeof(boottime);
-
-	time(&now);
-	if(sysctl(mib, 2, &boottime, &size, NULL, 0) != -1 &&
-				boottime.tv_sec != 0)
-	{
-		uuptime = now - boottime.tv_sec;
-		uuptime += 30;
-
-		uptime = (double) uuptime;
-	}
-
-	/* open kernel virtual memory */
-	kvmd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
-	if(kvmd==NULL)
-	{
-		fprintf(stderr, "kvm_openfiles: %s\n", errbuf);
-		exit(EXIT_FAILURE);
-	}
-	else
-	{
-		/* ask for specified values */
-		if(kvm_nlist(kvmd, nlst) >= 0)
-		{
-			if(nlst[X_CCPU].n_type != 0)
-			{
-				/* read values for cpu time (user, nice, sys, intr, idle) */
-				if(kvm_read(kvmd, nlst[X_CP_TIME].n_value, (char *)&cp_time,
-					sizeof(cp_time))==sizeof(cp_time))
-				{
-					//ZZZ oder besser alle anderen zusammenaddieren und durch
-					// idle dividieren?
-					iidle = cp_time[CP_IDLE];
-				}
-			}
-		}
-		kvm_close(kvmd);
-
-		*idle = (double) (iidle / 100.);
-	}
-	*up = uptime;
-  
-	return uptime; 
-}
-#endif
-
-#if OPENBSD
-static long get_openbsd_idle_time() {
-	kvm_t *kvmd;
-	long cp_time[CPUSTATES];
-	char errbuf[_POSIX2_LINE_MAX];
-
-	cp_time[CP_IDLE] = 0;
-	kvmd = kvm_openfiles(NULL, NULL, NULL, O_RDONLY, errbuf);
-	if(kvmd==NULL) {
-		fprintf(stderr, "kvm_openfiles: %s\n", errbuf);
-		return(0);
-	} else{
-		if(kvm_nlist(kvmd, nlst) >= 0) {
-			if(kvm_read(kvmd, nlst[X_CP_TIME].n_value, (char *)cp_time, sizeof(cp_time)) != sizeof(cp_time)) {
-				fprintf(stderr, "kvm_read: %s\n", errbuf);
-			}
-		}
-		kvm_close(kvmd);
-	}
-	return(cp_time[CP_IDLE]);
-}
-#endif
-
-#if (__NetBSD__ || OPENBSD)
-static double opennetbsd_get_uptime(double *up, double *idle) {
-	double uptime = 0;
-	struct timeval boottime;
-	u_int64_t iidle = 0;
-	time_t now, uuptime;
-	size_t size;
-	int mib[2];
-#if __NetBSD__
-	u_int64_t cp_time[CPUSTATES];
-#endif
-
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_BOOTTIME;
-	size = sizeof(boottime);
-
-	time(&now);
-	if(sysctl(mib, 2, &boottime, &size, NULL, 0) < 0) {
-		fprintf(stderr, "sysctl kern.boottime failed: %s\n",
-				strerror(errno));
-	}
-	else
-		if(boottime.tv_sec != 0) {
-			uuptime = now - boottime.tv_sec;
-			uuptime += 30;
-
-			uptime = (double) uuptime;
-		}
-
-#if OPENBSD
-	iidle = get_openbsd_idle_time();
-#else
-	mib[0] = CTL_KERN;
-	mib[1] = KERN_CP_TIME;
-	size = sizeof(cp_time);
-
-	if(sysctl(mib, 2, cp_time, &size, NULL, 0) < 0)
-	{
-		fprintf(stderr, "sysctl kern.cp_time failed: %s\n",
-				strerror(errno));
-	}
-	else
-		iidle = cp_time[CP_IDLE];
-#endif // __OpenBSD__
-
-	*up = uptime;
-	*idle = (double) (iidle / 100.);
-	return uptime; 
-}
-#endif // NetBSD or OpenBSD
-
-#if LINUX
-static double linux_get_uptime (double *up, double *idle) {
-	double uptime;
-
-	reread (uptime_fd, "get_uptime:");
-	sscanf (buffer, "%lf %lf", &uptime, idle);
-
-	*up = uptime;
-
-	return uptime;
-}
-#endif
-
-#if SOLARIS
-static double solaris_get_uptime (double *up, double *idle) {
-	double uptime;
-	struct utmpx                *u, id;
-
-    id.ut_type = BOOT_TIME;
-    u = getutxid(&id);
-
-    uptime=time(0) - u->ut_xtime;
-   
-	*up = uptime;
-
-	return uptime;
-}
-#endif
+static int TwentyFourHour = 1;
 
 // A couple of tables for later use...
 static char *days[] = {
@@ -325,51 +83,6 @@ static char *shortmonths[] = {
 	"Dec",
 };
 
-int
-chrono_init ()
-{
-	struct utsname *unamebuf;
-
-	if (!uptime_fd) {
-		unamebuf = (struct utsname *) malloc (sizeof (struct utsname));
-		uptime_fd = open ("/proc/uptime", O_RDONLY);
-
-#if 0
-		kversion_fd = open ("/proc/sys/kernel/osrelease", O_RDONLY);
-
-		reread (kversion_fd, "main:");
-		sscanf (buffer, "%s", kver);
-
-		close (kversion_fd);
-#endif
-
-		/* Get OS name and version from uname() */
-		/* Changed to check if eq -1 instead of non-zero */
-		/* since uname may return any non-negative value */
-		if (uname (unamebuf) == -1) {
-			perror ("Error calling uname:");
-		}
-		strcpy (kver, unamebuf->release);
-		strcpy (sysname, unamebuf->sysname);
-
-		free (unamebuf);
-
-	}
-
-	return 0;
-}
-
-int
-chrono_close ()
-{
-	if (uptime_fd)
-		close (uptime_fd);
-
-	uptime_fd = 0;
-
-	return 0;
-}
-
 //////////////////////////////////////////////////////////////////////
 // Time Screen displays current time and date, uptime, OS ver...
 //
@@ -398,7 +111,7 @@ time_screen (int rep, int display)
 		first = 0;
 
 		sock_send_string (sock, "screen_add T\n");
-		sprintf (buffer, "screen_set T -name {Time Screen: %s}\n", host);
+		sprintf (buffer, "screen_set T -name {Time Screen: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add T title title\n");
 		sock_send_string (sock, "widget_set T title {Time Screen}\n");
@@ -407,7 +120,7 @@ time_screen (int rep, int display)
 			sock_send_string (sock, "widget_add T two string\n");
 			sock_send_string (sock, "widget_add T three string\n");
 		} else {
-			sprintf (buffer, "widget_set T title {TIME: %s}\n", host);
+			sprintf (buffer, "widget_set T title {TIME: %s}\n", get_hostname());
 			sock_send_string (sock, buffer);
 		}
 	}
@@ -449,14 +162,13 @@ time_screen (int rep, int display)
 
 	if (lcd_hgt >= 4) {
 		sprintf (tmp, "widget_set T title {");
-		sprintf (tmp + strlen (tmp), "%s %s: %s}\n", sysname, kver, host);
+		sprintf (tmp + strlen (tmp), "%s %s: %s}\n", get_sysname(), get_sysrelease(), get_hostname());
 		if (display)
 			sock_send_string (sock, tmp);
 	}
 	/////////////////////// Display the time...
 	if (lcd_hgt >= 4) {
-		get_uptime (&uptime, &idle);
-		idle = (idle * 100) / uptime;
+		machine_get_uptime(&uptime, &idle);
 
 		if (TwentyFourHour)
 			sprintf (tmp, "%s%c%s%c%s   %2i%% idle", hr, colon, min, colon, sec, (int) idle);
@@ -534,7 +246,7 @@ clock_screen (int rep, int display)
 		first = 0;
 
 		sock_send_string (sock, "screen_add O\n");
-		sprintf (buffer, "screen_set O -name {Clock Screen: %s}\n", host);
+		sprintf (buffer, "screen_set O -name {Clock Screen: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add O title title\n");
 		sock_send_string (sock, "widget_add O one string\n");
@@ -542,10 +254,10 @@ clock_screen (int rep, int display)
 			sock_send_string (sock, "widget_set O title {DATE & TIME}\n");
 			sock_send_string (sock, "widget_add O two string\n");
 			sock_send_string (sock, "widget_add O three string\n");
-			sprintf (buffer, "widget_set O one 3 2 {%s}\n", host);
+			sprintf (buffer, "widget_set O one 3 2 {%s}\n", get_hostname());
 			sock_send_string (sock, buffer);
 		} else {
-			sprintf (buffer, "widget_set O title {TIME: %s}\n", host);
+			sprintf (buffer, "widget_set O title {TIME: %s}\n", get_hostname());
 			sock_send_string (sock, buffer);
 		}
 	}
@@ -633,7 +345,7 @@ uptime_screen (int rep, int display)
 		first = 0;
 
 		sock_send_string (sock, "screen_add U\n");
-		sprintf (buffer, "screen_set U -name {Uptime Screen: %s}\n", host);
+		sprintf (buffer, "screen_set U -name {Uptime Screen: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add U title title\n");
 		if (lcd_hgt >= 4) {
@@ -642,12 +354,12 @@ uptime_screen (int rep, int display)
 			sock_send_string (sock, "widget_add U two string\n");
 			sock_send_string (sock, "widget_add U three string\n");
 
-			sprintf (buffer, "widget_set U one 3 2 {%s}\n", host);
+			sprintf (buffer, "widget_set U one 3 2 {%s}\n", get_hostname());
 			sock_send_string (sock, buffer);
-			sprintf (tmp, "widget_set U three 5 4 {%s %s}\n", sysname, kver);
+			sprintf (tmp, "widget_set U three 5 4 {%s %s}\n", get_sysname(), get_sysrelease());
 			sock_send_string (sock, tmp);
 		} else {
-			sprintf (tmp, "widget_set U title {%s %s: %s}\n", sysname, kver, host);
+			sprintf (tmp, "widget_set U title {%s %s: %s}\n", get_sysname(), get_sysrelease(), get_hostname());
 			sock_send_string (sock, tmp);
 			sock_send_string (sock, "widget_add U one string\n");
 		}
@@ -658,7 +370,7 @@ uptime_screen (int rep, int display)
 	else
 		colon = ' ';
 
-	get_uptime (&uptime, &idle);
+	machine_get_uptime(&uptime, &idle);
 	i = (int) uptime / 86400;
 	sprintf (date, "%d day%s,", i, (i != 1 ? "s" : ""));
 	i = ((int) uptime % 86400) / 60 / 60;
