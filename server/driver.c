@@ -18,10 +18,13 @@
 #include <string.h>
 #include <sys/errno.h>
 #include <dlfcn.h>
+#include <string.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+
+#include "screenlist.h" /* for timer  */
 
 #include "shared/report.h"
 #include "configfile.h"
@@ -295,11 +298,179 @@ request_display_width()
 	return display_props->width;
 }
 
-
 static int
 request_display_height()
 {
 	if( !display_props )
 		return 0;
 	return display_props->height;
+}
+
+void
+driver_alt_vbar( Driver * drv, int x, int y, int len, int promille, int pattern )
+{
+	int pos;
+
+	if (!drv->chr)
+		return;
+	for ( pos=0; pos<len; pos++ ) {
+		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+			drv->chr (drv, x, y-pos, '|');
+		} else {
+			; /* print nothing */
+		}
+	}
+}
+
+void
+driver_alt_hbar( Driver * drv, int x, int y, int len, int promille, int pattern )
+{
+	int pos;
+
+	if (!drv->chr)
+		return;
+
+	for ( pos=0; pos<len; pos++ ) {
+		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+			drv->chr (drv, x+pos, y, '-');
+		} else {
+			; /* print nothing */
+		}
+	}
+}
+
+void
+driver_alt_num( Driver * drv, int x, int num )
+{
+	/* Ugly code extracted by David GLAUDE from lcdm001.c ;)*/
+	/* Moved to driver.c by Joris Robijn */
+	static char num_map [10][4][3] = {
+	{
+		{' ','_',' '}, /*0*/
+		{'|',' ','|'},
+		{'|','_','|'},
+		{' ',' ',' '}},
+	{
+		{' ',' ',' '},/*1*/
+		{' ',' ','|'},
+		{' ',' ','|'},
+		{' ',' ',' '}},
+	{
+		{' ','_',' '},/*2*/
+		{' ','_','|'},
+		{'|','_',' '},
+		{' ',' ',' '}},
+	{
+		{' ','_',' '},/*3*/
+		{' ','_','|'},
+		{' ','_','|'},
+		{' ',' ',' '}},
+	{
+		{' ',' ',' '},/*4*/
+		{'|','_','|'},
+		{' ',' ','|'},
+		{' ',' ',' '}},
+	{
+		{' ','_',' '},/*5*/
+		{'|','_',' '},
+		{' ','_','|'},
+		{' ',' ',' '}},
+	{
+		{' ','_',' '},/*6*/
+		{'|','_',' '},
+		{'|','_','|'},
+		{' ',' ',' '}},
+	{
+		{' ','_',' '},/*7*/
+		{' ',' ','|'},
+		{' ',' ','|'},
+		{' ',' ',' '}},
+	{
+		{' ','_',' '},/*8*/
+		{'|','_','|'},
+		{'|','_','|'},
+		{' ',' ',' '}},
+	{
+		{' ','_',' '},/*9*/
+		{'|','_','|'},
+		{' ','_','|'},
+		{' ',' ',' '}}
+	};
+	/* End of ugly code ;) by Rene Wagner */
+	/* I like this code !  Joris */
+
+	int y, dx;
+
+	if (!drv->chr)
+		return;
+
+	for (y = 1; y < 5; y++)
+		for (dx = 0; dx < 3; dx++)
+			drv->chr (drv, x + dx, y, num_map[num][y-1][dx]);
+}
+
+void
+driver_alt_heartbeat( Driver * drv, int state )
+{
+	int icon;
+
+
+	if (state == HEARTBEAT_OFF)
+		return;
+		/* Don't display anything */
+
+	if (!drv->width)
+		return;
+
+	/* Hmm, is this a good method ?
+	 * Or should we use clock() ? Or ftime ? Or gettimeofday ?
+	 */
+	icon = (timer & 5) ? ICON_HEART_FILLED : ICON_HEART_OPEN;
+
+	if (drv->icon)
+		drv->icon( drv, drv->width(drv), 1, icon);
+	else
+		driver_alt_icon( drv, drv->width(drv), 1, icon);
+}
+
+void
+driver_alt_icon( Driver * drv, int x, int y, int icon )
+{
+	char ch;
+
+	if (!drv->chr)
+		return;
+
+	switch (icon) {
+	  case ICON_HEART_OPEN:
+		ch = '-';
+		break;
+	  case ICON_HEART_FILLED:
+		ch = '#';
+		break;
+	  case ICON_BLOCK_FILLED:
+	  	ch = '#';
+		break;
+	  default:
+		ch = '?';
+	}
+	drv->chr( drv, x, y, ch);
+}
+
+void driver_alt_cursor( Driver * drv, int x, int y, int state )
+{
+	/* Same question about timer in this function... */
+
+	switch( state ) {
+	  case CURSOR_BLOCK:
+	  case CURSOR_DEFAULT_ON:
+		if (timer & 2)
+			driver_alt_icon( drv, x, y, ICON_BLOCK_FILLED );
+		break;
+	  case CURSOR_UNDER:
+		if (timer & 2 && drv->chr)
+			drv->chr( drv, x, y, '_');
+		break;
+	}
+
 }

@@ -112,49 +112,6 @@ void curses_drv_restore_screen (Driver *drvthis);
 static char icon_char = '@';
 static WINDOW *lcd_win;
 
-/*this is really ugly ;) but works ;)*/
-static char num_icon [10][4][3] =	{{{' ','_',' '}, /*0*/
-					  {'|',' ','|'},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ',' ',' '},/*1*/
-					  {' ',' ','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*2*/
-					  {' ','_','|'},
-					  {'|','_',' '},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*3*/
-					  {' ','_','|'},
-					  {' ','_','|'},
-					  {' ',' ',' '}},
-					  {{' ',' ',' '},/*4*/
-					  {'|','_','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*5*/
-					  {'|','_',' '},
-					  {' ','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*6*/
-					  {'|','_',' '},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*7*/
-					  {' ',' ','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*8*/
-					  {'|','_','|'},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*9*/
-					  {'|','_','|'},
-					  {' ','_','|'},
-					  {' ',' ',' '}}};
-/*end of ugly code ;) Rene Wagner*/
-
 chtype get_color (char *colorstr) {
 	if (strcasecmp(colorstr, "red") == 0)
 		return COLOR_RED;
@@ -500,29 +457,6 @@ curses_drv_chr (Driver *drvthis, int x, int y, char c)
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets up for big numbers.
-//
-MODULE_EXPORT void
-curses_drv_init_num (Driver *drvthis)
-{
-	;
-}
-
-/////////////////////////////////////////////////////////////////
-// Writes a big number.
-//
-MODULE_EXPORT void
-curses_drv_num (Driver *drvthis, int x, int num)
-{
-	int y, dx;
-
-	for (y = 1; y < 5; y++)
-		for (dx = 0; dx < 3; dx++)
-			curses_drv_chr (drvthis, x + dx, y, num_icon[num][y-1][dx]);
-//   printf("%1d",num);
-}
-
-/////////////////////////////////////////////////////////////////
 // Draws a vertical bar; erases entire column onscreen.
 //
 MODULE_EXPORT void
@@ -623,35 +557,6 @@ curses_drv_icon (Driver *drvthis, int x, int y, int icon)
 /* There was something with placing PAD
  * What wasthat ever for ?
  */
-}
-
-/////////////////////////////////////////////////////////////
-// Does the heartbeat...
-//
-MODULE_EXPORT void
-curses_drv_heartbeat (Driver *drvthis, int type)
-{
-	static int timer = 0;
-	int whichIcon;
-	static int saved_type = HEARTBEAT_ON;
-
-	if (type)
-		saved_type = type;
-
-	if (type == HEARTBEAT_ON) {
-		// Set this to pulsate like a real heart beat...
-		if ( (timer + 4) & 5 ) {
-			whichIcon = ICON_HEART_OPEN;
-		}
-		else {
-			whichIcon = ICON_HEART_FILLED;
-		}
-		// Place the icon on screen
-		curses_drv_icon (drvthis, width, 1, whichIcon);
-	}
-
-	timer++;
-	timer &= 0x0f;
 }
 
 //////////////////////////////////////////////////////////////////

@@ -233,9 +233,10 @@ drivers_vbar( int x, int y, int len, int promille, int pattern )
 
 
 	ForAllDrivers(drv) {
-		if( drv->vbar ) {
+		if( drv->vbar )
 			drv->vbar( drv, x, y, len, promille, pattern );
-		}
+		else
+			driver_alt_vbar( drv, x, y, len, promille, pattern );
 	}
 }
 
@@ -248,9 +249,10 @@ drivers_hbar( int x, int y, int len, int promille, int pattern )
 	report( RPT_INFO, "drivers_hbar( x=%d, y=%d, len=%d, promille=%d, pattern=%d )", x, y, len, promille, pattern );
 
 	ForAllDrivers(drv) {
-		if( drv->hbar ) {
+		if( drv->hbar )
 			drv->hbar( drv, x, y, len, promille, pattern );
-		}
+		else
+			driver_alt_hbar( drv, x, y, len, promille, pattern );
 	}
 }
 
@@ -265,6 +267,8 @@ drivers_num( int x, int num )
 	ForAllDrivers(drv) {
 		if( drv->num )
 			drv->num( drv, x, num );
+		else
+			driver_alt_num( drv, x, num );
 	}
 }
 
@@ -279,6 +283,8 @@ drivers_heartbeat( int state )
 	ForAllDrivers(drv) {
 		if( drv->heartbeat )
 			drv->heartbeat( drv, state );
+		else
+			driver_alt_heartbeat( drv, state );
 	}
 }
 
@@ -293,57 +299,25 @@ drivers_icon( int x, int y, int icon )
 	ForAllDrivers(drv) {
 		if( drv->icon )
 			drv->icon( drv, x, y, icon );
+		else
+			driver_alt_icon( drv, x, y, icon );
 	}
 }
-
 
 void
-drivers_set_char( char ch, char *dat )
+drivers_cursor( int x, int y, int state )
 {
 	Driver *drv;
 
-	report( RPT_INFO, "drivers_set_char( ch=%d, dat=%p )", ch, dat );
+	report( RPT_INFO, "drivers_cursor( x=%d, y=%d, state=%d )", x, y, state );
 
 	ForAllDrivers(drv) {
-		if( drv->set_char )
-			drv->set_char( drv, ch, dat );
+		if( drv->cursor )
+			drv->cursor( drv, x, y, state );
+		else
+			driver_alt_cursor( drv, x, y, state );
 	}
 }
-
-
-int
-drivers_get_contrast()
-{
-	Driver *drv;
-	int res;
-
-	report( RPT_INFO, "drivers_get_contrast()" );
-
-	ForAllDrivers(drv) {
-		if( drv->get_contrast ) {
-			res = drv->get_contrast( drv );
-			report( RPT_INFO, "Driver [%.40s] gave contrast value %d", drv->name, res );
-			return res;
-		}
-	}
-	report( RPT_INFO, "Did not get any contrast value" );
-	return -1;
-}
-
-
-void
-drivers_set_contrast( int promille )
-{
-	Driver *drv;
-
-	report( RPT_INFO, "drivers_contrast( contrast=%d )", promille );
-
-	ForAllDrivers(drv) {
-		if( drv->set_contrast )
-			drv->set_contrast( drv, promille );
-	}
-}
-
 
 void
 drivers_backlight( int brightness )

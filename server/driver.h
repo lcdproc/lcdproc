@@ -41,4 +41,19 @@ driver_support_multiple( Driver * driver );
 bool
 driver_stay_in_foreground( Driver * driver );
 
+
+/* Alternative functions for all extended functions */
+
+void driver_alt_vbar( Driver * drv, int x, int y, int len, int promille, int pattern );
+
+void driver_alt_hbar( Driver * drv, int x, int y, int len, int promille, int pattern );
+
+void driver_alt_num( Driver * drv, int x, int num );
+
+void driver_alt_heartbeat( Driver * drv, int state );
+
+void driver_alt_icon( Driver * drv, int x, int y, int icon );
+
+void driver_alt_cursor( Driver * drv, int x, int y, int state );
+
 #endif

@@ -23,48 +23,6 @@
 #include "text.h"
 //#include "drv_base.h"
 
-/* Ugly code extracted by David GLAUDE from lcdm001.c ;)*/
-static char num_icon [10][4][3] = 	{{{' ','_',' '}, /*0*/
-					  {'|',' ','|'},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ',' ',' '},/*1*/
-					  {' ',' ','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*2*/
-					  {' ','_','|'},
-					  {'|','_',' '},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*3*/
-					  {' ','_','|'},
-					  {' ','_','|'},
-					  {' ',' ',' '}},
-					  {{' ',' ',' '},/*4*/
-					  {'|','_','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*5*/
-					  {'|','_',' '},
-					  {' ','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*6*/
-					  {'|','_',' '},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*7*/
-					  {' ',' ','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*8*/
-					  {'|','_','|'},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*9*/
-					  {'|','_','|'},
-					  {' ','_','|'},
-					  {' ',' ',' '}}};
-/* End of ugly code ;) by Rene Wagner */
 
 // Variables
 int width;
@@ -233,61 +191,5 @@ text_backlight (Driver *drvthis, int on)
     printf("Backlight OFF\n");
   }
 */
-}
-
-/////////////////////////////////////////////////////////////////
-// Writes a big number. (by Rene Wagner from lcdm001.c)
-//
-MODULE_EXPORT void
-text_num (Driver *drvthis, int x, int num)
-{
-	//PrivateData * p = (PrivateData*) drvthis->private_data;
-
-	int y, dx;
-
-//  printf("BigNum(%i, %i)\n", x, num);
-	for (y = 1; y < 5; y++)
-		for (dx = 0; dx < 3; dx++)
-			text_chr (drvthis, x + dx, y, num_icon[num][y-1][dx]);
-}
-
-//void
-//text_set_char (int n, char *dat)
-//{
-////  printf("Set Character %i\n", n);
-//}
-
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar; erases entire column onscreen.
-//
-MODULE_EXPORT void
-text_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-	int pos;
-
-	for ( pos=0; pos<len; pos++ ) {
-		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
-			text_chr (drvthis, x, y-pos, '|');
-		} else {
-			; /* print nothing */
-		}
-	}
-}
-
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-//
-MODULE_EXPORT void
-text_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-	int pos;
-
-	for ( pos=0; pos<len; pos++ ) {
-		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
-			text_chr (drvthis, x+pos, y, '-');
-		} else {
-			; /* print nothing */
-		}
-	}
 }
 
