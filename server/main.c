@@ -123,7 +123,6 @@ char user[64];		/* The values will be overwritten anyway... */
 
 int foreground_mode = UNSET_INT;
 
-static int report_level = UNSET_INT;
 static int report_to_syslog = UNSET_INT;
 
 /* The drivers and their driver parameters */

@@ -55,7 +55,6 @@ extern char user[];		/* The values will be overwritten anyway... */
 extern int foreground_mode;
 
 extern int report_level;
-extern int report_to_syslog;
 
 /* The drivers and their driver parameters */
 extern char *drivernames[];
