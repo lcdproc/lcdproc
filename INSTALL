@@ -21,8 +21,6 @@ different types of displays are now supported.
 
 As long as you have a working automake, gcc and make, this should work.
 
- - Run the autogen.sh script to create ./configure
-        sh autogen.sh
  - Run the configure script:
         ./configure
  - Run make to build the server and all clients
