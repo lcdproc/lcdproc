@@ -218,14 +218,14 @@ AC_ARG_ENABLE(
   [  --enable-ldap           compile with LDAP support.  ],
   [ 
     if test "$enable_ldap" = "yes"; then
-      AC_MSG_RESULT("yes")
+      AC_MSG_RESULT(yes)
     else
-      AC_MSG_RESULT("no")
+      AC_MSG_RESULT(no)
     fi
   ],
   [ 
     enable_ldap="no";
-    AC_MSG_RESULT("no") 
+    AC_MSG_RESULT(no) 
   ]
 )
 
@@ -311,9 +311,9 @@ if test "$enable_ldap" = "yes"; then
 			#include <ldap.h>],
 		[LDAPURLDesc ludp; 
 		 ludp.lud_exts[0] = NULL;],
-		AC_MSG_RESULT("yes") 
+		AC_MSG_RESULT(yes) 
 		AC_DEFINE(WITH_LDAP_LUD_EXTS, 1, Compile with LDAP lud_exts),
-		AC_MSG_RESULT("no")
+		AC_MSG_RESULT(no)
 AC_MSG_WARN(
 ""
 "************************************************************"
@@ -377,7 +377,7 @@ fi
 if test "$enable_ldap" = "yes"; then
     AC_DEFINE(WITH_LDAP_SUPPORT, 1, Compile in LDAP support)
 else
-    ldab_libs="";
+    ldap_libs="";
     ldap_includes="";
 fi
 
