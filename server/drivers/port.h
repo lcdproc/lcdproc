@@ -229,6 +229,8 @@ Use i386_get_ioperm, i386_set_ioperm from <machine/sysarch.h> and inb and outb f
 #include <sys/types.h>
 #include <machine/cpufunc.h>
 #include <machine/sysarch.h>
+
+static FILE * port_access_handle = NULL;
         
 /* Read a byte from port */
 static inline int port_in (unsigned short port) {
@@ -247,7 +249,16 @@ static inline int port_access (unsigned short port) {
 
 /* Get access to multiple ports at once */
 static inline int port_access_multiple (unsigned short port, unsigned short count) {
+#if (__FreeBSD_version > 500000)	
+	if( port_access_handle
+	    || (port_access_handle = fopen("/dev/io", "rw")) != NULL ) {
+        	return i386_set_ioperm(port, count, 1);
+	} else {
+		return( -1 );  /*  Failure */
+	};
+#else	
         return i386_set_ioperm(port, count, 1);
+#endif	
 }
 
 /* Close access to a specific port */
