@@ -97,7 +97,7 @@ xload_screen (int rep, int display)
 			sock_send_string (sock, tmp);
 		}
 		// And add a title...
-		if (lcd_hgt >= 4) {
+		if (lcd_hgt > 2) {
 			sock_send_string (sock, "widget_add X title title\n");
 			sock_send_string (sock, "widget_set X title {LOAD        }\n");
 		} else {
@@ -109,7 +109,7 @@ xload_screen (int rep, int display)
 		sock_send_string (sock, "widget_add X top string\n");
 		sprintf (tmp, "widget_set X zero %i %i 0\n", lcd_wid, lcd_hgt);
 		sock_send_string (sock, tmp);
-		sprintf (tmp, "widget_set X top %i %i 1\n", lcd_wid, (lcd_hgt == 2) ? 1 : 2);
+		sprintf (tmp, "widget_set X top %i %i 1\n", lcd_wid, (lcd_hgt <= 2) ? 1 : 2);
 		sock_send_string (sock, tmp);
 	}
 
@@ -125,14 +125,11 @@ xload_screen (int rep, int display)
 	if ((float) n < loadmax) {
 		n++;
 	}
-	sprintf (tmp, "widget_set X top %i %i %i\n", lcd_wid, (lcd_hgt == 2) ? 1 : 2, n);
+	sprintf (tmp, "widget_set X top %i %i %i\n", lcd_wid, (lcd_hgt <= 2) ? 1 : 2, n);
 	//if(display) sock_send_string(sock, tmp);
 	sock_send_string (sock, tmp);
 
-	if (loadmax < 1.0)
-		factor = (float) (lcd_cellhgt) * ((lcd_hgt == 2) ? 2.0 : 3.0);
-	else
-		factor = (float) (lcd_cellhgt) * ((lcd_hgt == 2) ? 2.0 : 3.0) / (float) n;
+	factor = (float) (lcd_cellhgt) * ((lcd_hgt <= 2) ? 2.0 : 1.0 * (lcd_hgt-1)) / (float) n;
 
 	for (n = 0; n < lcd_wid - 1; n++) {
 		x = (loads[n] * factor);
@@ -152,7 +149,7 @@ xload_screen (int rep, int display)
 		status = BLINK_ON;
 	}
 	// And now the title...
-	if (lcd_hgt >= 4)
+	if (lcd_hgt > 2)
 		sprintf (tmp, "widget_set X title {LOAD %2.2f: %s}\n", loads[lcd_wid - 2], host);
 	else
 		sprintf (tmp, "widget_set X title 1 1 {%s %2.2f}\n", host, loads[lcd_wid - 2]);
