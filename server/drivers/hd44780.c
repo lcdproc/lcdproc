@@ -71,6 +71,7 @@
 
 #include "shared/str.h"
 #include "lcd.h"
+#include "lcd_lib.h"
 #include "hd44780.h"
 #include "report.h"
 
@@ -143,7 +144,7 @@ HD44780_init (Driver * drvthis, char *args)
 	memset( p, 0, sizeof(*p) );
 	p->cellheight = 8; /* Do not change this !!! This is a controller property, not a display property !!! */
 	p->cellwidth = 5;
-	p->udcmode = UDCMODE_STANDARD;
+	p->ccmode = CCMODE_STANDARD;
 
 
 	//// READ THE CONFIG FILE
@@ -234,13 +235,13 @@ HD44780_init (Driver * drvthis, char *args)
 	memset(p->lcd_contents, 0, p->width * p->height);
 
 	// Allocate and clear the buffer for defineable characters
-	p->udc_buf = (unsigned char *) malloc (NUM_UDCs * p->cellheight);
-	p->udc_dirty = (unsigned char *) malloc (NUM_UDCs);
-	if (!p->udc_buf || !p->udc_dirty) {
+	p->cc_buf = (unsigned char *) malloc (NUM_CCs * p->cellheight);
+	p->cc_dirty = (unsigned char *) malloc (NUM_CCs);
+	if (!p->cc_buf || !p->cc_dirty) {
 		return -1;
 	}
-	memset(p->udc_buf, 0, NUM_UDCs * p->cellheight);
-	memset(p->udc_dirty, 1, NUM_UDCs); /* all udcs dirty */
+	memset(p->cc_buf, 0, NUM_CCs * p->cellheight);
+	memset(p->cc_dirty, 1, NUM_CCs); /* all custom chars dirty */
 
 	// Backlight ?
 	if ( p->have_backlight ) {
@@ -250,7 +251,7 @@ HD44780_init (Driver * drvthis, char *args)
 	if ( p->have_keypad ) {
 		int x, y;
 
-		drvthis->getkey = HD44780_getkey;
+		drvthis->get_key = HD44780_get_key;
 
 		// Read keymap
 		for( x=0; x<KEYPAD_MAXX; x++ ) {
@@ -311,8 +312,8 @@ HD44780_init (Driver * drvthis, char *args)
 	//drvthis->contrast = HD44780_contrast; // contrast is set by potmeter we assume
 
 	//drvthis->output = HD44780_output; // not implemented
-	drvthis->init_vbar = HD44780_init_vbar;
-	drvthis->init_hbar = HD44780_init_hbar;
+	//drvthis->init_vbar = HD44780_init_vbar;
+	//drvthis->init_hbar = HD44780_init_hbar;
 	drvthis->vbar = HD44780_vbar;
 	drvthis->hbar = HD44780_hbar;
 	drvthis->init_num = HD44780_init_num;
@@ -472,8 +473,8 @@ HD44780_flush (Driver *drvthis)
 
 	/* Check which defineable chars we need to update */
 	count = 0;
-	for( i = 0; i < NUM_UDCs; i ++ ) {
-		if( p->udc_dirty[i] ) {
+	for( i = 0; i < NUM_CCs; i ++ ) {
+		if( p->cc_dirty[i] ) {
 
 			/* Tell the HD44780 we will redefine char number i */
 			p->hd44780_functions->senddata (p, 0, RS_INSTR, SETCHAR | i * 8);
@@ -481,15 +482,15 @@ HD44780_flush (Driver *drvthis)
 
 			/* Send the subsequent rows */
 			for (row = 0; row < p->cellheight; row++) {
-				p->hd44780_functions->senddata (p, 0, RS_DATA, p->udc_buf[i*p->cellheight+row]);
+				p->hd44780_functions->senddata (p, 0, RS_DATA, p->cc_buf[i*p->cellheight+row]);
 				p->hd44780_functions->uPause (p, 40);  /* Minimum exec time for all commands */
 			}
 			/* Mark as not dirty anymore */
-			p->udc_dirty[i] = 0;
+			p->cc_dirty[i] = 0;
 			count ++;
 		}
 	}
-	debug( RPT_DEBUG, "HD44780: flushed %d udc's", count );
+	debug( RPT_DEBUG, "HD44780: flushed %d custom chars's", count );
 }
 
 /////////////////////////////////////////////////////////////////
@@ -500,7 +501,7 @@ HD44780_clear (Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	memset(p->framebuf, ' ', p->width * p->height);
-	p->udcmode = UDCMODE_STANDARD;
+	p->ccmode = CCMODE_STANDARD;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -549,7 +550,7 @@ HD44780_backlight (Driver *drvthis, int on)
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before HD44780->vbar()
 //
-MODULE_EXPORT void
+static void
 HD44780_init_vbar (Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -625,17 +626,17 @@ HD44780_init_vbar (Driver *drvthis)
 		1, 1, 1, 1, 1,
 	};
 
-	if( p->udcmode == UDCMODE_VBAR ) {
+	if( p->ccmode == CCMODE_VBAR ) {
 		/* Work already done */
 		return;
 	}
 
-	if( p->udcmode != UDCMODE_STANDARD ) {
+	if( p->ccmode != CCMODE_STANDARD ) {
 		/* Not supported (yet) */
 		report( RPT_WARNING, "HD44780_init_vbar: Cannot combine two modes using user defined characters" );
 		return;
 	}
-	p->udcmode = UDCMODE_VBAR;
+	p->ccmode = CCMODE_VBAR;
 
 	HD44780_set_char (drvthis, 1, a);
 	HD44780_set_char (drvthis, 2, b);
@@ -649,7 +650,7 @@ HD44780_init_vbar (Driver *drvthis)
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-MODULE_EXPORT void
+static void
 HD44780_init_hbar (Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -695,17 +696,17 @@ HD44780_init_hbar (Driver *drvthis)
 		1, 1, 1, 1, 0,
 	};
 
-	if( p->udcmode == UDCMODE_HBAR ) {
+	if( p->ccmode == CCMODE_HBAR ) {
 		/* Work already done */
 		return;
 	}
 
-	if( p->udcmode != UDCMODE_STANDARD ) {
+	if( p->ccmode != CCMODE_STANDARD ) {
 		/* Not supported (yet) */
 		report( RPT_WARNING, "HD44780_init_hbar: Cannot combine two modes using user defined characters" );
 		return;
 	}
-	p->udcmode = UDCMODE_HBAR;
+	p->ccmode = CCMODE_HBAR;
 
 	HD44780_set_char (drvthis, 1, a);
 	HD44780_set_char (drvthis, 2, b);
@@ -720,10 +721,7 @@ HD44780_init_hbar (Driver *drvthis)
 MODULE_EXPORT void
 HD44780_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	//PrivateData *p = (PrivateData *) drvthis->private_data;
-	char map[8] = { 32, 1, 2, 3, 4, 5, 6, 7 };
-	int total_pixels = (long) len * LCD_DEFAULT_CELLHEIGHT * promille / 1000;
-	int pos;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	/* x and y are the start position of the bar.
 	 * The bar by default grows in the 'up' direction
@@ -734,23 +732,7 @@ HD44780_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 
 	HD44780_init_vbar(drvthis);
 
-	for (pos = 0; pos < len; pos ++ ) {
-
-		int pixels = total_pixels - LCD_DEFAULT_CELLHEIGHT * pos;
-
-		if( pixels >= LCD_DEFAULT_CELLHEIGHT ) {
-			/* write a "full" block to the screen... */
-			HD44780_icon (drvthis, x, y-pos, ICON_BLOCK_FILLED);
-		}
-		else if( pixels > 0 ) {
-			/* write a partial block... */
-			HD44780_chr (drvthis, x, y-pos, map[pixels]);
-			break;
-		}
-		else {
-			; // write nothing (not even a space)
-		}
-	}
+	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -759,13 +741,10 @@ HD44780_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT void
 HD44780_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	//PrivateData *p = (PrivateData *) drvthis->private_data;
-	char map[5] = { 32, 1, 2, 3, 4 };
-	int total_pixels = (long) len * LCD_DEFAULT_CELLWIDTH * promille / 1000;
-	int pos;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	/* x and y are the start position of the bar.
-	 * The bar by default grows in the 'up' direction
+	 * The bar by default grows in the 'right' direction
 	 * (other direction not yet implemented).
 	 * len is the number of characters that the bar is long at 100%
 	 * promille is the number of promilles (0..1000) that the bar should be filled.
@@ -773,24 +752,7 @@ HD44780_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 
 	HD44780_init_hbar(drvthis);
 
-	for (pos = 0; pos < len; pos ++ ) {
-
-		int pixels = total_pixels - LCD_DEFAULT_CELLWIDTH * pos;
-
-		if( pixels >= LCD_DEFAULT_CELLWIDTH ) {
-			/* write a "full" block to the screen. */
-			HD44780_icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
-		}
-		else if( pixels > 0 ) {
-			/* write a partial block... */
-			HD44780_chr (drvthis, x+pos, y, map[pixels]);
-			break;
-		}
-		else {
-			; // write nothing (not even a space)
-		}
-	}
-
+	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -802,7 +764,7 @@ HD44780_init_num (Driver *drvthis)
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	int i;
 
-	char bignum_udcs[8][5*8] = {{
+	char bignum_ccs[8][5*8] = {{
 		1, 1, 0, 0, 0,
 		1, 1, 0, 0, 0,
 		1, 1, 0, 0, 0,
@@ -876,20 +838,20 @@ HD44780_init_num (Driver *drvthis)
 		0, 0, 0, 0, 0
 	}};
 
-	if( p->udcmode == UDCMODE_BIGNUM ) {
+	if( p->ccmode == CCMODE_BIGNUM ) {
 		/* Work already done */
 		return;
 	}
 
-	if( p->udcmode != UDCMODE_STANDARD ) {
+	if( p->ccmode != CCMODE_STANDARD ) {
 		/* Not supported (yet) */
 		report( RPT_WARNING, "HD44780_init_num: Cannot combine two modes using user defined characters" );
 		return;
 	}
-	p->udcmode = UDCMODE_BIGNUM;
+	p->ccmode = CCMODE_BIGNUM;
 
 	for( i=0; i<8; i++ ) {
-		HD44780_set_char (drvthis, i, bignum_udcs[i]);
+		HD44780_set_char (drvthis, i, bignum_ccs[i]);
 	}
 }
 
@@ -1052,10 +1014,10 @@ HD44780_set_char (Driver *drvthis, int n, char *dat)
 			letter <<= 1;
 			letter |= (dat[(row * p->cellwidth) + col] > 0);
 		}
-		if( p->udc_buf[n*p->cellheight+row] != letter ) {
-			p->udc_dirty[n] = 1; /* only mark as dirty if really different */
+		if( p->cc_buf[n*p->cellheight+row] != letter ) {
+			p->cc_dirty[n] = 1; /* only mark as dirty if really different */
 		}
-		p->udc_buf[n*p->cellheight+row] = letter;
+		p->cc_buf[n*p->cellheight+row] = letter;
 	}
 }
 
@@ -1105,12 +1067,12 @@ HD44780_icon (Driver *drvthis, int x, int y, int icon)
 /////////////////////////////////////////////////////////////
 // Get a key from the keypad (if there is one)
 //
-MODULE_EXPORT char
-HD44780_getkey(Driver *drvthis)
+MODULE_EXPORT char *
+HD44780_get_key(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	unsigned char scancode;
-	char ch;
+	char * keystr = NULL;
 	struct timeval curr_time, time_diff;
 
 	gettimeofday(&curr_time,NULL);
@@ -1118,23 +1080,20 @@ HD44780_getkey(Driver *drvthis)
 	scancode = p->hd44780_functions->scankeypad(p);
 	if( scancode ) {
 		if( scancode & 0xF0 ) {
-			ch = ( p->keyMapMatrix[((scancode&0xF0)>>4)-1][(scancode&0x0F)-1] )[0];
+			keystr = p->keyMapMatrix[((scancode&0xF0)>>4)-1][(scancode&0x0F)-1];
 		}
 		else {
-			ch = ( p->keyMapDirect[scancode - 1] )[0];
+			keystr = p->keyMapDirect[scancode - 1];
 		}
 	}
-	else {
-		ch = 0;
-	}
 
-	if (ch) {
-		if (ch == p->pressed_key) {
+	if( keystr != NULL ) {
+		if (keystr == p->pressed_key) {
 			timersub (&curr_time, &(p->pressed_key_time), &time_diff);
 			if (((time_diff.tv_usec / 1000 + time_diff.tv_sec * 1000) - KEYPAD_AUTOREPEAT_DELAY) < 1000 * p->pressed_key_repetitions / KEYPAD_AUTOREPEAT_FREQ ) {
 				// The key is already pressed quite some time
 				// but it's not yet time to return a repeated keypress
-				return 0;
+				return NULL;
 			}
 			// Otherwise a keypress will be returned
 			p->pressed_key_repetitions ++;
@@ -1143,14 +1102,14 @@ HD44780_getkey(Driver *drvthis)
 			// It's a new keypress
 			p->pressed_key_time = curr_time;
 			p->pressed_key_repetitions = 0;
-			printf( "Key: %c  (%d,%d)\n", ch, scancode&0x0F, (scancode&0xF0)>>4 );
+			printf( "Key: %s  (%d,%d)\n", keystr, scancode&0x0F, (scancode&0xF0)>>4 );
 		}
 	}
 
 	// Store the key for the next round
-	p->pressed_key = ch;
+	p->pressed_key = keystr;
 
-	return ch;
+	return keystr;
 }
 
 /////////////////////////////////////////////////////////////

@@ -4,8 +4,6 @@
 #ifndef HD_LOW_H
 #define HD_LOW_H
 
-enum ifWidth { IF_4bit, IF_8bit };
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -30,12 +28,12 @@ enum ifWidth { IF_4bit, IF_8bit };
 #define KEYPAD_MAXY 11
 
 /* Constants for userdefchar_mode */
-#define NUM_UDCs 8 /* number of characters */
-#define UDCMODE_STANDARD 0 /* only char 0 is used for heartbeat */
-#define UDCMODE_VBAR 1
-#define UDCMODE_HBAR 2
-#define UDCMODE_BIGNUM 3
-#define UDCMODE_BIGCHAR 4
+#define NUM_CCs 8 /* number of custom characters */
+#define CCMODE_STANDARD 0 /* only char 0 is used for heartbeat */
+#define CCMODE_VBAR 1
+#define CCMODE_HBAR 2
+#define CCMODE_BIGNUM 3
+#define CCMODE_BIGCHAR 4
 
 typedef struct ConnectionMapping {
 	char *name;
@@ -59,8 +57,8 @@ typedef struct driver_private_data {
 	char *lcd_contents;
 
 	// The defineable characters
-	char *udc_buf;
-	char *udc_dirty;
+	char *cc_buf;
+	char *cc_dirty;
 
 	// Connection type data
 	int connectiontype_index;
@@ -95,7 +93,7 @@ typedef struct driver_private_data {
 	// when a key in the matrix is pressed.
 	char *keyMapMatrix[KEYPAD_MAXY][KEYPAD_MAXX];
 
-	char pressed_key;
+	char *pressed_key;
 	int pressed_key_repetitions;
 	struct timeval pressed_key_time;
 
@@ -103,7 +101,7 @@ typedef struct driver_private_data {
 
 	int backlight_bit;
 
-	int udcmode;
+	int ccmode;
 
 } PrivateData;
 
