@@ -150,7 +150,7 @@ sli_init (lcd_logical_driver * driver, char *args)
 
 	if (!driver->framebuf) {
 		fprintf (stderr, "sli_init: No frame buffer.\n");
-		driver->close ();
+		sli_close ();
 		return -1;
 	}
 	// Set LCD parameters (I use a 16x2 LCD) -- small but still useful
@@ -161,27 +161,27 @@ sli_init (lcd_logical_driver * driver, char *args)
 
 	// Set the functions the driver supports...
 
-	driver->clear = (void *) -1;
-	driver->string = (void *) -1;
-	driver->chr = (void *) -1;
+	driver->clear = sli_clear;
+	driver->string = sli_string;
+	driver->chr = sli_chr;
 	driver->vbar = sli_vbar;
 	driver->init_vbar = sli_init_vbar;
 	driver->hbar = sli_hbar;
 	driver->init_hbar = sli_init_hbar;
-	driver->num = (void *) -1;
-	driver->init_num = (void *) -1;
+	//driver->num = NULL;
+	//driver->init_num = NULL;
 
 	driver->init = sli_init;
 	driver->close = sli_close;
 	driver->flush = sli_flush;
 	driver->flush_box = sli_flush_box;
-	driver->contrast = (void *) -1;
-	driver->backlight = (void *) -1;
+	//driver->contrast = NULL;
+	//driver->backlight = NULL;
 	driver->set_char = sli_set_char;
 	driver->icon = sli_icon;
 	driver->draw_frame = sli_draw_frame;
 
-	driver->getkey = (void *) -1;
+	//driver->getkey = NULL;
 
 	return fd;
 }
@@ -201,7 +201,7 @@ sli_close ()
 void
 sli_flush ()
 {
-	sli_draw_frame (lcd.framebuf);
+	sli_draw_frame (sli->framebuf);
 }
 
 /* no bounds checking is done in MtxOrb.c (which I shamelessly ripped)
@@ -215,10 +215,10 @@ sli_flush_box (int lft, int top, int rgt, int bot)
 	char out[2];					  /* Why does the matrix driver allocate so much here? */
 
 	/* simple bounds checking */
-	if ((top > lcd.hgt) | (bot > lcd.hgt))
+	if ((top > sli->hgt) | (bot > sli->hgt))
 		return;
 
-	if ((lft > lcd.wid) | (rgt > lcd.wid))
+	if ((lft > sli->wid) | (rgt > sli->wid))
 		return;
 
 //  printf("Flush (%i,%i)-(%i,%i)\n", lft, top, rgt, bot);
@@ -230,9 +230,39 @@ sli_flush_box (int lft, int top, int rgt, int bot)
 		if (y == 2)
 			snprintf (out, sizeof(out), "%c%c", 0x0FE, 0x0C0 + lft);
 		write (fd, out, 0x002);
-		write (fd, lcd.framebuf + (y * lcd.wid) + lft, rgt - lft + 1);
+		write (fd, sli->framebuf + (y * sli->wid) + lft, rgt - lft + 1);
 	}
 
+}
+
+/////////////////////////////////////////////////////////////////
+// Clears the LCD screen
+//
+void
+sli_clear ()
+{
+	memset (sli->framebuf, ' ', sli->wid * sli->hgt);
+
+}
+
+/////////////////////////////////////////////////////////////////
+// Prints a string on the lcd display, at position (x,y).  The
+// upper-left is (1,1), and the lower right should be (20,4).
+//
+void
+sli_string (int x, int y, char string[])
+{
+	int i;
+
+	x -= 1;							  // Convert 1-based coords to 0-based...
+	y -= 1;
+
+	for (i = 0; string[i]; i++) {
+		// Check for buffer overflows...
+		if ((y * sli->wid) + x + i > (sli->wid * sli->hgt))
+			break;
+		sli->framebuf[(y * sli->wid) + x + i] = string[i];
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -245,11 +275,24 @@ sli_chr (int x, int y, char c)
 	y--;
 	x--;
 
-	lcd.framebuf[(y * lcd.wid) + x] = c;
+	sli->framebuf[(y * sli->wid) + x] = c;
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before lcd.vbar()
+// Prints a character on the lcd display, at position (x,y).  The
+// upper-left is (1,1), and the lower right should be (20,4).
+//
+void
+sli_chr (int x, int y, char c)
+{
+	y--;
+	x--;
+
+	sli->framebuf[(y * sli->wid) + x] = c;
+}
+
+/////////////////////////////////////////////////////////////////
+// Sets up for vertical bars.  Call before sli->vbar()
 //
 
 /* Because of the way we do this (custom characters in CGRAM)
@@ -419,13 +462,13 @@ sli_vbar (int x, int len)
 	char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
 
 	int y;
-	for (y = lcd.hgt; y > 0 && len > 0; y--) {
-		if (len >= lcd.cellhgt)
+	for (y = sli->hgt; y > 0 && len > 0; y--) {
+		if (len >= sli->cellhgt)
 			sli_chr (x, y, 255);
 		else
 			sli_chr (x, y, map[len]);
 
-		len -= lcd.cellhgt;
+		len -= sli->cellhgt;
 	}
 
 }
@@ -438,13 +481,13 @@ sli_hbar (int x, int y, int len)
 {
 	char map[6] = { 32, 1, 2, 3, 4, 255 };
 
-	for (; x <= lcd.wid && len > 0; x++) {
-		if (len >= lcd.cellwid)
+	for (; x <= sli->wid && len > 0; x++) {
+		if (len >= sli->cellwid)
 			sli_chr (x, y, 255);
 		else
 			sli_chr (x, y, map[len]);
 
-		len -= lcd.cellwid;
+		len -= sli->cellwid;
 
 	}
 
@@ -475,11 +518,11 @@ sli_set_char (int n, char *dat)
 	out[1] = 0x040 + 8 * n;
 	write (fd, out, 2);
 
-	for (row = 0; row < lcd.cellhgt; row++) {
+	for (row = 0; row < sli->cellhgt; row++) {
 		letter = 0;
-		for (col = 0; col < lcd.cellwid; col++) {
+		for (col = 0; col < sli->cellwid; col++) {
 			letter <<= 1;
-			letter |= (dat[(row * lcd.cellwid) + col] > 0);
+			letter |= (dat[(row * sli->cellwid) + col] > 0);
 		}
 		letter |= 0x020;			  /* SLI can't accept CR, LF, etc in this character! */
 		write (fd, &letter, 1);
@@ -538,7 +581,7 @@ sli_icon (int which, char dest)
 /////////////////////////////////////////////////////////////
 // Blasts a single frame onscreen, to the lcd...
 //
-// Input is a character array, sized lcd.wid*lcd.hgt
+// Input is a character array, sized sli->wid*sli->hgt
 //
 void
 sli_draw_frame (char *dat)
