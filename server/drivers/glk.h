@@ -12,10 +12,10 @@ MODULE_EXPORT void glk_flush(Driver *drvthis);
 MODULE_EXPORT void glk_string(Driver *drvthis, int x, int y, char string[]);
 MODULE_EXPORT void glk_chr(Driver *drvthis, int x, int y, char c);
 
-MODULE_EXPORT void glk_vbar(Driver *drvthis, int x, int len);
-MODULE_EXPORT void glk_hbar(Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void glk_old_vbar(Driver *drvthis, int x, int len);
+MODULE_EXPORT void glk_old_hbar(Driver *drvthis, int x, int y, int len);
 MODULE_EXPORT void glk_num(Driver *drvthis, int x, int num);
-MODULE_EXPORT void glk_icon(Driver *drvthis, int which, char dest);
+MODULE_EXPORT void glk_old_icon(Driver *drvthis, int which, int dest);
 
 MODULE_EXPORT void glk_set_char(Driver *drvthis, int n, char *dat);
 

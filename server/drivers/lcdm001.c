@@ -78,47 +78,6 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "lcdm001_";
 
-static char num_icon [10][4][3] = 	{{{' ','_',' '}, /*0*/
-					  {'|',' ','|'},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ',' ',' '},/*1*/
-					  {' ',' ','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*2*/
-					  {' ','_','|'},
-					  {'|','_',' '},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*3*/
-					  {' ','_','|'},
-					  {' ','_','|'},
-					  {' ',' ',' '}},
-					  {{' ',' ',' '},/*4*/
-					  {'|','_','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*5*/
-					  {'|','_',' '},
-					  {' ','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*6*/
-					  {'|','_',' '},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*7*/
-					  {' ',' ','|'},
-					  {' ',' ','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*8*/
-					  {'|','_','|'},
-					  {'|','_','|'},
-					  {' ',' ',' '}},
-					  {{' ','_',' '},/*9*/
-					  {'|','_','|'},
-					  {' ','_','|'},
-					  {' ',' ',' '}}};
-
 static void lcdm001_cursorblink (Driver *drvthis, int on);
 static char lcdm001_parse_keypad_setting ( Driver *drvthis, char * keyname, char * default_value );
 
@@ -399,7 +358,7 @@ lcdm001_output (Driver *drvthis, int state)
 // Draws a vertical bar, from the bottom of the screen up.
 //
 MODULE_EXPORT void
-lcdm001_vbar(Driver *drvthis, int x, int len)
+lcdm001_old_vbar(Driver *drvthis, int x, int len)
 {
    int y = 4;
 
@@ -423,7 +382,7 @@ lcdm001_vbar(Driver *drvthis, int x, int len)
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-lcdm001_hbar(Driver *drvthis, int x, int y, int len)
+lcdm001_old_hbar(Driver *drvthis, int x, int y, int len)
 {
 
   ValidX(x);
@@ -450,27 +409,10 @@ lcdm001_hbar(Driver *drvthis, int x, int y, int len)
 }
 
 /////////////////////////////////////////////////////////////////
-// Writes a big number.
-//
-MODULE_EXPORT void
-lcdm001_num (Driver *drvthis, int x, int num)
-{
-	int y, dx;
-
-	debug (RPT_DEBUG, "LCDM001: Writing big number \"%d\" at x = %d", num, x);
-
-	/*This function uses an ASCII emulation of big numbers*/
-
-	for (y = 1; y < 5; y++)
-		for (dx = 0; dx < 3; dx++)
-			lcdm001_chr (drvthis, x + dx, y, num_icon[num][y-1][dx]);
-}
-
-/////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
 MODULE_EXPORT void
-lcdm001_icon (Driver *drvthis, int which, char dest)
+lcdm001_old_icon (Driver *drvthis, int which, char dest)
 {
 
 /*Heartbeat workaround:
@@ -497,6 +439,9 @@ lcdm001_icon (Driver *drvthis, int which, char dest)
 //
 // Return 0 for "nothing available".
 //
+
+/* TODO: write for net API function (get_key) that returns a string */
+
 MODULE_EXPORT char
 lcdm001_getkey (Driver *drvthis)
 {
@@ -513,36 +458,4 @@ lcdm001_getkey (Driver *drvthis)
 	}
 	/*debug: if(in) fprintf(stderr,"key: %c",in); */
         return in;
-}
-
-/////////////////////////////////////////////////////////////
-// Does the heartbeat...
-//
-MODULE_EXPORT void
-lcdm001_heartbeat (Driver *drvthis, int type)
-{
-	static int timer = 0;
-	int whichIcon;
-	static int saved_type = HEARTBEAT_ON;
-
-	if (type)
-		saved_type = type;
-
-	if (type == HEARTBEAT_ON) {
-		// Set this to pulsate like a real heart beat...
-		whichIcon = (! ((timer + 4) & 5));
-
-		// This defines a custom character EVERY time...
-		// not efficient... is this necessary?
-		lcdm001_icon (drvthis, whichIcon, 0);
-
-		// Put character on screen...
-		lcdm001_chr (drvthis, width, 1, 0);
-
-		// change display...
-		lcdm001_flush (drvthis);
-	}
-
-	timer++;
-	timer &= 0x0f;
 }

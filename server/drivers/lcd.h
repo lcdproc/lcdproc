@@ -14,6 +14,10 @@
  * There should be no further interaction between driver and server core
  * other that via this API.
  *
+ * Driver writer notes
+ * ~~~~~~~~~~~~~~~~~~~
+ * See documentation in the docs/lcdproc-devel directory.
+ *
  * DO NOT MIX DRIVER ALLOCATED AND CORE ALLOCATED MEMORY.
  * With this I mean that the server core should NEVER WRITE in memory
  * allocated by the driver, and vice versa. Also the driver resp. core
@@ -42,6 +46,9 @@
 #define BACKLIGHT_WARNING 2
 #define BACKLIGHT_RED_ALERT 3
 
+/* Icons. If a driver does not support an icon, it can return -1 from the
+ * icon function, and let the core place a replacement character.
+ */
 /* Icons below are one character wide */
 #define ICON_BLOCK_FILLED	0x100
 #define ICON_HEART_OPEN		0x108
@@ -50,6 +57,12 @@
 #define ICON_ARROW_DOWN		0x111
 #define ICON_ARROW_LEFT		0x112
 #define ICON_ARROW_RIGHT	0x113
+#define ICON_CHECKBOX_OFF	0x120
+#define ICON_CHECKBOX_ON	0x121
+#define ICON_CHECKBOX_GRAY	0x122
+#define ICON_SELECTOR_AT_LEFT	0x128
+#define ICON_SELECTOR_AT_RIGHT	0x129
+#define ICON_ELLIPSIS		0x130
 
 /* Icons below are two characters wide */
 #define ICON_STOP		0x200	/* should look like  []  */
@@ -62,17 +75,27 @@
 #define ICON_PREV		0x207	/* should look like  |<  */
 #define ICON_REC		0x208	/* should look like  ()  */
 
-/* Heartbeat data, taken from render.h */
-/* ??? What does OPEN mean here ? */
+/* Icon numbers from 0 to 0x0FF could be used for client defined chars.
+ * However this is not implemented and there are no crystalized ideas
+ * about how to do it. get_free_chars and set_char should be used, but a
+ * lot of things in that area might need to be changed.
+ */
+
+/* Heartbeat data */
 #define HEARTBEAT_OFF 0
 #define HEARTBEAT_ON 1
-#define HEARTBEAT_OPEN 2
 
-/* Patterns for hbar / vbar */
-#define BAR_POS			0x001 /* default */
-#define BAR_NEG			0x002
-#define BAR_POS_AND_NEG		0x003
-#define BAR_PATTERN_FILLED	0x000
+/* Patterns for hbar / vbar, mostly (if not all) UNIMPLEMENTED */
+#define BAR_POS		0x001 /* default
+				 Promilles allowed: 0 to 1000
+				 The zero-point is at the left or bottom */
+#define BAR_NEG		0x002 /* the bar grows in negative direction
+				 Promilles allowed: -1000 to 0
+				 The zero-point is at the left or top */
+#define BAR_POS_AND_NEG	0x003 /* the bars can grow in both directions
+				 Promilles allowed: -1000 to 1000
+				 The zero-point is in the center */
+#define BAR_PATTERN_FILLED	0x000 /* default */
 #define BAR_PATTERN_OPEN	0x010
 #define BAR_PATTERN_STRIPED	0x020
 #define BAR_WITH_PERCENTAGE	0x100
@@ -122,7 +145,7 @@ typedef struct lcd_logical_driver {
 	void (*hbar)		(struct lcd_logical_driver* drvthis, int x, int y, int len, int promille, int pattern);
 	void (*num)		(struct lcd_logical_driver* drvthis, int x, int num);
 	void (*heartbeat)	(struct lcd_logical_driver* drvthis, int state);
-	void (*icon)		(struct lcd_logical_driver* drvthis, int x, int y, int icon);
+	int (*icon)		(struct lcd_logical_driver* drvthis, int x, int y, int icon);
 	void (*cursor)		(struct lcd_logical_driver* drvthis, int x, int y, int state);
 
 	/* Userdef characters, are those still supported ? */

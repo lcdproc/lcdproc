@@ -15,7 +15,7 @@ MODULE_EXPORT void debug_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void debug_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void debug_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void debug_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void debug_icon (Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT int  debug_icon (Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void debug_set_char (Driver *drvthis, int n, char *dat);
 

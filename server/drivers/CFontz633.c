@@ -36,7 +36,7 @@
  *
  * THINGS TO DO:
  * + make the caching at least for heartbeat icon
- * + 
+ * +
  *
  */
 
@@ -306,7 +306,7 @@ memcpy(&old[width], &framebuf[width], width);
 }
 
 /*
- * Prints a character on the lcd display, at position (x,y).  
+ * Prints a character on the lcd display, at position (x,y).
  * The upper-left is (1,1), and the lower right should be (16,2).
  */
 MODULE_EXPORT void
@@ -383,7 +383,7 @@ static void
 CFontz633_no_live_report ()
 {
 	char out[2]= {0, 0};
-	
+
 	for (out[0]=0; out[0]<8; out[0]++)
 	    send_bytes_message(fd, 2, CF633_Set_Up_Live_Fan_or_Temperature_Display , out);
 }
@@ -681,7 +681,7 @@ send_bytes_message(fd, 9, CF633_Set_LCD_Special_Character_Data , out);
 /*
  * Places an icon on screen
  */
-MODULE_EXPORT void
+MODULE_EXPORT int
 CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 {
 	char icons[3][6 * 8] = {
@@ -733,8 +733,9 @@ CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 			CFontz633_chr( drvthis, x, y, 0 );
 			break;
 		default:
-			report( RPT_WARNING, "CFontz633_icon: unknown or unsupported icon: %d", icon );
+			return -1; /* Let the core do other icons */
 	}
+	return 0;
 
 }
 
@@ -766,7 +767,7 @@ CFontz633_string (Driver * drvthis, int x, int y, char string[])
 	int i;
 
 	/* Convert 1-based coords to 0-based... */
-	x -= 1;	 
+	x -= 1;
 	y -= 1;
 
 	for (i = 0; string[i]; i++) {
@@ -777,34 +778,3 @@ CFontz633_string (Driver * drvthis, int x, int y, char string[])
 		framebuf[(y * width) + x + i] = string[i];
 	}
 }
-
-/*
- * Does the heartbeat...
- */
-MODULE_EXPORT void
-CFontz633_heartbeat (Driver *drvthis, int type)
-{
-	static int timer = 0;
-	static int saved_type = HEARTBEAT_ON;
-	int whichIcon;
-
-	if (type)
-		saved_type = type;
-
-	if (type == HEARTBEAT_ON) {
-		/* Set this to pulsate like a real heart beat... */
-		if( ((timer + 4) & 5))
-			whichIcon = ICON_HEART_OPEN;
-		else
-			whichIcon = ICON_HEART_FILLED;
-
-		/* place the icon */
-		CFontz633_icon (drvthis, width, 1, whichIcon);
-	}
-
-	timer++;
-	timer &= 0x0f;
-}
-
-
-

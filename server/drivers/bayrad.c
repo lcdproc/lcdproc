@@ -780,14 +780,17 @@ bayrad_hbar(Driver * drvthis, int x, int y, int len, int promille, int options)
 /////////////////////////////////////////////////////////////////
 // Places an icon on screen
 //
-MODULE_EXPORT void
+MODULE_EXPORT int
 bayrad_icon(Driver * drvthis, int x, int y, int icon)
 {
   switch( icon ) {
     case ICON_BLOCK_FILLED:
       bayrad_chr( drvthis, x, y, 0xFF );
       break;
+    default:
+      return -1; /* Let the core do other icons */
   }
+  return 0;
 }
 
 

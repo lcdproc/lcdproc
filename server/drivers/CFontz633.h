@@ -24,8 +24,7 @@ MODULE_EXPORT void CFontz633_chr (Driver * drvthis, int x, int y, char c);
 MODULE_EXPORT void CFontz633_vbar (Driver * drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void CFontz633_hbar (Driver * drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void CFontz633_num (Driver * drvthis, int x, int num);
-MODULE_EXPORT void CFontz633_heartbeat (Driver *drvthis, int type);
-MODULE_EXPORT void CFontz633_icon(Driver * drvthis, int x, int y, int icon);
+MODULE_EXPORT int  CFontz633_icon(Driver * drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void CFontz633_set_char (Driver * drvthis, int n, char *dat);
 

@@ -599,17 +599,6 @@ CFontz_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 
 
 /////////////////////////////////////////////////////////////////
-// Writes a big number.
-//
-MODULE_EXPORT void
-CFontz_num (Driver * drvthis, int x, int num)
-{
-	char out[5];
-	snprintf (out, sizeof(out), "%c%c%c%c", 28, 0, x-1, num+48);
-	write (fd, out, 4);
-}
-
-/////////////////////////////////////////////////////////////////
 // Sets a custom character from 0-7...
 //
 // For input, values > 0 mean "on" and values <= 0 are "off".
@@ -644,7 +633,7 @@ CFontz_set_char (Driver * drvthis, int n, char *dat)
 /////////////////////////////////////////////////////////////////
 // Places an icon on screen
 //
-MODULE_EXPORT void
+MODULE_EXPORT int
 CFontz_icon (Driver * drvthis, int x, int y, int icon)
 {
 	char icons[3][6 * 8] = {
@@ -699,9 +688,9 @@ CFontz_icon (Driver * drvthis, int x, int y, int icon)
 			CFontz_chr( drvthis, x, y, 0 );
 			break;
 		default:
-			report( RPT_WARNING, "CFontz_icon: unknown or unsupported icon: %d", icon );
+			return -1;
 	}
-
+	return 0;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -740,32 +729,4 @@ CFontz_string (Driver * drvthis, int x, int y, char string[])
 			break;
 		framebuf[(y * width) + x + i] = string[i];
 	}
-}
-
-/////////////////////////////////////////////////////////////
-// Does the heartbeat...
-//
-MODULE_EXPORT void
-CFontz_heartbeat (Driver *drvthis, int type)
-{
-	static int timer = 0;
-	int whichIcon;
-	static int saved_type = HEARTBEAT_ON;
-
-	if (type)
-		saved_type = type;
-
-	if (type == HEARTBEAT_ON) {
-		/* Set this to pulsate like a real heart beat... */
-		if( ((timer + 4) & 5))
-			whichIcon = ICON_HEART_OPEN;
-		else
-			whichIcon = ICON_HEART_FILLED;
-
-		/* place the icon */
-		CFontz_icon (drvthis, width, 1, whichIcon);
-	}
-
-	timer++;
-	timer &= 0x0f;
 }

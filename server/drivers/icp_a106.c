@@ -7,7 +7,7 @@
   separate commands. Unfortunately, the device runs at slow 1200bps and the
   LCD does not allow user-defined characters, so the bargraphs do not look
   very nice.
-  
+
   Copyright (C) 2002  Michael Schwingen <michael@schwingen.org>
 
   This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
 
   This driver is mostly based on the HD44780 and the LCDM001 driver.
   (Hopefully I have NOT forgotten any file I have stolen code from.
@@ -218,11 +218,11 @@ icp_a106_flush (Driver *drvthis)
   static struct timeval tv_old; /* time of last update */
   int line;
   static char cmd[] = "\x4D\x0c\x00\x14";
-  
+
   gettimeofday(&tv, 0);
   timersub(&tv, &tv_old, &tv2);
 
-  if (tv2.tv_sec ==0 && tv2.tv_usec < 500000) // less than 0.5s 
+  if (tv2.tv_sec ==0 && tv2.tv_usec < 500000) // less than 0.5s
     return;
   tv_old = tv;
 
@@ -279,7 +279,7 @@ icp_a106_vbar (Driver *drvthis, int x, int y, int len, int promille, int options
   int total_pixels = ((long) 2 * len * LCD_DEFAULT_CELLHEIGHT + 1 ) * promille / 2000;
   int pos;
   static char map[] = " __---=#";
-  
+
   for (pos = 0; pos < len; pos ++ ) {
 
     int pixels = total_pixels - LCD_DEFAULT_CELLHEIGHT * pos;
@@ -353,7 +353,7 @@ icp_a106_num (Driver *drvthis, int x, int num)
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
-MODULE_EXPORT void
+MODULE_EXPORT int
 icp_a106_icon (Driver *drvthis, int x, int y, int icon)
 {
   switch( icon )
@@ -366,16 +366,7 @@ icp_a106_icon (Driver *drvthis, int x, int y, int icon)
     case ICON_HEART_OPEN:
       break;
     default:
-      report( RPT_WARNING, "icp_a106_icon: unknown or unsupported icon: %d", icon );
+      return -1;
   }
+  return 0;
 }
-
-/////////////////////////////////////////////////////////////
-// Does the heartbeat...
-//
-MODULE_EXPORT void
-icp_a106_heartbeat (Driver *drvthis, int type)
-{
-}
-
-

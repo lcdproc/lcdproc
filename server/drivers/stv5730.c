@@ -601,7 +601,7 @@ stv5730_num (Driver *drvthis, int x, int num)
 // framebuffer at 1-based position x. len is given in pixels.
 //
 MODULE_EXPORT void
-stv5730_vbar (Driver *drvthis, int x, int len)
+stv5730_old_vbar (Driver *drvthis, int x, int len)
 {
 
     int i;
@@ -633,7 +633,7 @@ stv5730_vbar (Driver *drvthis, int x, int len)
 // It uses the STV5730 'channel-tuning' chars(0x64-0x68) to do
 // this.
 MODULE_EXPORT void
-stv5730_hbar (Driver *drvthis, int x, int y, int len)
+stv5730_old_hbar (Driver *drvthis, int x, int y, int len)
 {
     int i;
     x--;
@@ -665,7 +665,7 @@ stv5730_hbar (Driver *drvthis, int x, int y, int len)
 // limited, it doesn't even contain a '%' char. But wait...
 // It contains a heartbeat char ! :-)
 MODULE_EXPORT void
-stv5730_icon (Driver *drvthis, int which, char dest)
+stv5730_old_icon (Driver *drvthis, int which, char dest)
 {
     switch (which)
       {

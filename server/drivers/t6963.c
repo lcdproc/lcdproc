@@ -66,7 +66,7 @@ t6963_init (Driver *drvthis, char *args)
 	int w, h, p;
 
 	char size[200] = DEFAULT_SIZE;
-	
+
 		debug(RPT_INFO, "T6963: init(%p,%s)", drvthis, args );
 
 	t6963_display_mode = 0;
@@ -78,7 +78,7 @@ t6963_init (Driver *drvthis, char *args)
 	t6963_graph_line[5] = 0x3F;
 
 		debug(RPT_DEBUG, "T6963: reading config file...");
-	
+
 	/* Read config file */
 
 		/* -------------------------- Which size --------------------------------------*/
@@ -92,8 +92,8 @@ t6963_init (Driver *drvthis, char *args)
 	} else {
 		width = w;
 		height = h;
-	}	
-		
+	}
+
 		/* --------------------------- Which port --------------------------------------*/
 	p = drvthis->config_get_int ( drvthis->name, "Port", 0, DEFAULT_PORT);
 	if(0x200 <= p && p <= 0x400) {
@@ -102,9 +102,9 @@ t6963_init (Driver *drvthis, char *args)
 		t6963_out_port = DEFAULT_PORT;
 		report (RPT_WARNING, "T6963_init: Port value must be between 0x200 and 0x400. Using default value.\n");
 	}
-	
+
 	bidirectLPT = drvthis->config_get_bool ( drvthis->name, "ECPlpt", 0, 0 );
-	
+
 	/* ------------------ Get permission to parallel port --------------------------------------------*/
 
 		debug (RPT_DEBUG, "T6963: Getting permission to parallel port %d...", t6963_out_port);
@@ -151,7 +151,7 @@ t6963_init (Driver *drvthis, char *args)
 		report (RPT_ERR, "T6963: No memory for double buffering!");
 		t6963_close (drvthis);
 		return -1;
-	}	
+	}
 
     /* ------------------- I N I T I A L I Z A T I O N ----------------------- */
 		debug (RPT_DEBUG, "T6963: Sending init to display...");
@@ -181,7 +181,7 @@ t6963_init (Driver *drvthis, char *args)
 	t6963_clear (drvthis);
 	t6963_graphic_clear (drvthis, 0, 0, width, cellheight * height);
 	t6963_flush(drvthis);
-	
+
 		debug (RPT_DEBUG, "T6963: Initialization done!");
 
 	return 0;						  // 200 is arbitrary.  (must be 1 or more)
@@ -377,7 +377,7 @@ t6963_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT void
 t6963_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 220);	
+	lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 220);
 /*	int stop = x + len/cellwidth;
 	DEBUG4 ("Drawing horizontal bar x: %i, y: %i, len:%i, stop: %i...", x, y, len, stop);
 	for (; x < stop; x++)
@@ -392,10 +392,10 @@ t6963_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 /////////////////////////////////////////////////////////////////
 // Sets an icon...
 //
-MODULE_EXPORT void
+MODULE_EXPORT int
 t6963_icon (Driver *drvthis, int x, int y, int icon)
 {
-		debug (RPT_DEBUG, "T6963: set icon %d", icon);
+	debug (RPT_DEBUG, "T6963: set icon %d", icon);
 	switch( icon ) {
 		case ICON_BLOCK_FILLED:
 			t6963_chr( drvthis, x, y, 220 );
@@ -403,36 +403,13 @@ t6963_icon (Driver *drvthis, int x, int y, int icon)
 		case ICON_HEART_FILLED:
 			t6963_chr( drvthis, x, y, 3 );
 			break;
-		case ICON_HEART_OPEN:	
+		case ICON_HEART_OPEN:
 			t6963_chr( drvthis, x, y, 4 );
 			break;
 		default:
-			report (RPT_WARNING, "T6963: icon type not supported!");
+			return -1;
 	}
-}
-
-/////////////////////////////////////////////////////////////////
-// Does the heartbeat
-//
-MODULE_EXPORT void
-t6963_heartbeat (Driver *drvthis, int type)
-{
-	static int timer;
-	int whichIcon;
-	static int saved_type = HEARTBEAT_ON;
-
-	if (type)
-		saved_type = type;
-
-	if (type == HEARTBEAT_ON) {
-		// Set this to pulsate like a real heartbeat...
-		whichIcon = (! ((timer + 4) & 5));
-		// Put character on screen...
-		t6963_chr (drvthis, width, 1, 3+whichIcon);
-	}
-
-	timer++;
-	timer &= 0x0f;
+	return 0;
 }
 
 /* ---------------------- internal functions ------------------------------------- */
@@ -456,8 +433,8 @@ t6963_low_set_control(char wr, char ce, char cd, char rd)
 		status &= 0xf7;
 	else if(rd == 0)
 		status |= 0x08;
-	port_out(T6963_CONTROL_PORT, status);	
-		
+	port_out(T6963_CONTROL_PORT, status);
+
 }
 
 void
@@ -477,7 +454,7 @@ t6963_low_dsp_ready (void)
 	    } while (i < 50000 && (input & 3)!=3);
 	    T6963_DATAOUT;
     } else {
-    	for(i=0; i<3; i++) 
+    	for(i=0; i<3; i++)
 		port_out(0x80, 0x00);  /* wait 1ms */
     }
 }
@@ -500,7 +477,7 @@ t6963_low_command (u8 byte)
 {
     t6963_low_dsp_ready();
 //    port_out(0x80, 0x00);
-    
+
     port_out(T6963_DATA_PORT, byte);  // present data to LCD on PC's port pins
 
     t6963_low_set_control(1, 1, 1, 1);

@@ -13,7 +13,6 @@ MODULE_EXPORT void svgalib_drv_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
 MODULE_EXPORT void svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
 MODULE_EXPORT void svgalib_drv_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void svgalib_drv_icon (Driver *drvthis, int which, char dest);
 
 MODULE_EXPORT char * svgalib_drv_get_key (Driver *drvthis);
 

@@ -42,11 +42,10 @@ MODULE_EXPORT void lcdm001_flush (Driver *drvthis);
 MODULE_EXPORT void lcdm001_string (Driver *drvthis, int x, int y, char *string);
 MODULE_EXPORT void lcdm001_chr (Driver *drvthis, int x, int y, char c);
 
-MODULE_EXPORT void lcdm001_vbar (Driver *drvthis, int x, int len);
-MODULE_EXPORT void lcdm001_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void lcdm001_old_vbar (Driver *drvthis, int x, int len);
+MODULE_EXPORT void lcdm001_old_hbar (Driver *drvthis, int x, int y, int len);
 MODULE_EXPORT void lcdm001_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void lcdm001_icon (Driver *drvthis, int which, char dest);
-MODULE_EXPORT void lcdm001_heartbeat (Driver *drvthis, int type);
+MODULE_EXPORT void lcdm001_old_icon (Driver *drvthis, int which, char dest);
 
 MODULE_EXPORT void lcdm001_output (Driver *drvthis, int on);
 

@@ -460,6 +460,12 @@ driver_alt_icon( Driver * drv, int x, int y, int icon )
 	  case ICON_ARROW_DOWN:		ch1 = 'v'; break;
 	  case ICON_ARROW_LEFT:		ch1 = '<'; break;
 	  case ICON_ARROW_RIGHT:	ch1 = '>'; break;
+	  case ICON_CHECKBOX_OFF:	ch1 = 'N'; break;
+	  case ICON_CHECKBOX_ON:	ch1 = 'Y'; break;
+	  case ICON_CHECKBOX_GRAY:	ch1 = 'o'; break;
+	  case ICON_SELECTOR_AT_LEFT:	ch1 = '>'; break;
+	  case ICON_SELECTOR_AT_RIGHT:	ch1 = '<'; break;
+	  case ICON_ELLIPSIS:		ch1 = '_'; break;
 	  case ICON_STOP:		ch1 = '['; ch2 = ']'; break;
 	  case ICON_PAUSE:		ch1 = '|'; ch2 = '|'; break;
 	  case ICON_PLAY:		ch1 = '>'; ch2 = ' '; break;

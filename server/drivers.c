@@ -297,10 +297,17 @@ drivers_icon( int x, int y, int icon )
 	report( RPT_INFO, "drivers_icon( x=%d, y=%d, icon=ICON_%s )", x, y, widget_icon_to_iconname (icon) );
 
 	ForAllDrivers(drv) {
-		if( drv->icon )
-			drv->icon( drv, x, y, icon );
-		else
+		/* Does the driver have the icon function ? */
+		if( drv->icon ) {
+			/* Try driver call */
+			if (drv->icon( drv, x, y, icon ) == -1) {
+				/* do alternative call if driver's function does not know the icon */
+				driver_alt_icon( drv, x, y, icon );
+			}
+		} else {
+			/* Also do alternative call if the driver does not have icon function */
 			driver_alt_icon( drv, x, y, icon );
+		}
 	}
 }
 

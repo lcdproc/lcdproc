@@ -1,18 +1,18 @@
 /*
-   This is a hack of the curses driver.  It's my first attempt at SVGALIB 
+   This is a hack of the curses driver.  It's my first attempt at SVGALIB
    programming so please send comments to <smh@remove_this@dr.com>.
-   
+
    Simon Harrison.  27 Dec 1999.
 
    IMPORTANT NOTE:  In order to make this work properly LCDd should not be
    allowed to fork (-f option), otherwise k/b input won't work.
-   
+
    Changes:
    9 Jan 2000:  Figured out svgalib driver needs a hack to main.c just like
                 curses.  Maybe this should be fixed with another function call
                 added to the API?
    4 Jan 2000:  Added 5x7 font, fixed flicker.
-   
+
 */
 
 #include <unistd.h>
@@ -170,7 +170,7 @@ const unsigned char simple_font5x7[] = {
 /* <end user defineable!!!> */
 
 /* No, I don't understand SVGALIB key mappings or a neat way of doing this
- * Cursor keys manifest themselves as 3 byte excapes in svgalib: 27,91 
+ * Cursor keys manifest themselves as 3 byte excapes in svgalib: 27,91
  * followed by one of the codes below.
  */
 #define VGAKEY_UP 65
@@ -186,11 +186,11 @@ void *SVGALIB_highfont;			  /* highlighted font (not used yet) */
 void *SVGALIB_warnfont;			  /* warning font (not used yet)    */
 
 /*
-  Setting SVGALIB_figure_mappings will trap all keypresses and write the 
+  Setting SVGALIB_figure_mappings will trap all keypresses and write the
   vga_getkey() codes out to a file.  You can then mod the getkey() function
   at the bottom of the file to your liking.
 
-  Ahem... don't do this unless you can get to another console to kill the 
+  Ahem... don't do this unless you can get to another console to kill the
   process after.
 */
 int SVGALIB_figure_mappings = 0;
@@ -435,26 +435,6 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 }
 
 /******************************************************************************
- * Sets character 0 to an icon...
- */
-MODULE_EXPORT void
-svgalib_drv_icon (Driver *drvthis, int which, char dest)
-{
-	if (dest == 0)
-		switch (which) {
-		case 0:
-			icon_char = '+';
-			break;
-		case 1:
-			icon_char = '*';
-			break;
-		default:
-			icon_char = '#';
-			break;
-		}
-}
-
-/******************************************************************************
  * Return a keypress
  */
 MODULE_EXPORT char *
@@ -492,7 +472,7 @@ svgalib_drv_get_key (Driver *drvthis)
 			}
 			break;
 
-			/* 
+			/*
 			   Change this bit to your liking.  I only set these values because
 			   they tie in with my keypads use of the keyboard controller chip
 			   see http://www.gofree.co.uk/home/smh/mp3 for details.

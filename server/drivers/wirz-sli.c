@@ -435,7 +435,7 @@ sli_init_hbar (Driver *drvthis)
    for me to add                                               */
 
 MODULE_EXPORT void
-sli_vbar (Driver *drvthis, int x, int len)
+sli_old_vbar (Driver *drvthis, int x, int len)
 {
 	char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
 
@@ -455,7 +455,7 @@ sli_vbar (Driver *drvthis, int x, int len)
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-sli_hbar (Driver *drvthis, int x, int y, int len)
+sli_old_hbar (Driver *drvthis, int x, int y, int len)
 {
 	char map[6] = { 32, 1, 2, 3, 4, 255 };
 
@@ -513,7 +513,7 @@ sli_set_char (Driver *drvthis, int n, char *dat)
 }
 
 MODULE_EXPORT void
-sli_icon (Driver *drvthis, int which, char dest)
+sli_old_icon (Driver *drvthis, int x, int y, int icon)
 {
 	char icons[3][5 * 8] = {
 		{
@@ -553,6 +553,20 @@ sli_icon (Driver *drvthis, int which, char dest)
 
 	if (custom == bign)
 		custom = beat;
-	sli_set_char (drvthis, dest, &icons[which][0]);
+	switch( icon ) {
+		case ICON_BLOCK_FILLED:
+			CFontz_chr( drvthis, x, y, 255 );
+			break;
+		case ICON_HEART_FILLED:
+			CFontz_set_char( drvthis, 0, icons[1] );
+			CFontz_chr( drvthis, x, y, 0 );
+			break;
+		case ICON_HEART_OPEN:
+			CFontz_set_char( drvthis, 0, icons[0] );
+			CFontz_chr( drvthis, x, y, 0 );
+			break;
+		default:
+			return -1;
+	}
 }
 

@@ -419,7 +419,7 @@ sed1520_set_char (Driver *drvthis, int n, char *dat)
 // framebuffer at 1-based position x. len is given in pixels.
 //
 MODULE_EXPORT void
-sed1520_vbar (Driver *drvthis, int x, int len)
+sed1520_old_vbar (Driver *drvthis, int x, int len)
 {
     int i, j, k;
     x--;
@@ -452,7 +452,7 @@ sed1520_vbar (Driver *drvthis, int x, int len)
 // x,y into the framebuffer. len is given in pixels.
 //
 MODULE_EXPORT void
-sed1520_hbar (Driver *drvthis, int x, int y, int len)
+sed1520_old_hbar (Driver *drvthis, int x, int y, int len)
 {
     int i;
     x--;
@@ -469,41 +469,45 @@ sed1520_hbar (Driver *drvthis, int x, int y, int len)
 // Reprogrammes character dest to contain an icon given by
 // which. Calls set_char() to do this.
 //
-MODULE_EXPORT void
-sed1520_icon (Driver *drvthis, int which, char dest)
+MODULE_EXPORT int
+sed1520_icon (Driver *drvthis, int x, int y, int icon)
 {
-    char icons[3][6 * 8] = {
-	{
-	 1, 1, 1, 1, 1, 1,	// Empty Heart
-	 1, 0, 1, 0, 1, 1,
-	 0, 0, 0, 0, 0, 1,
-	 0, 0, 0, 0, 0, 1,
-	 0, 0, 0, 0, 0, 1,
-	 1, 0, 0, 0, 1, 1,
-	 1, 1, 0, 1, 1, 1,
-	 1, 1, 1, 1, 1, 1,}
-	,
-	{
-	 1, 1, 1, 1, 1, 1,	// Filled Heart
-	 1, 0, 1, 0, 1, 1,
-	 0, 1, 0, 1, 0, 1,
-	 0, 1, 1, 1, 0, 1,
-	 0, 1, 1, 1, 0, 1,
-	 1, 0, 1, 0, 1, 1,
-	 1, 1, 0, 1, 1, 1,
-	 1, 1, 1, 1, 1, 1,}
-	,
-	{
-	 0, 0, 0, 0, 0, 0,	// Ellipsis
-	 0, 0, 0, 0, 0, 0,
-	 0, 0, 0, 0, 0, 0,
-	 0, 0, 0, 0, 0, 0,
-	 0, 0, 0, 0, 0, 0,
-	 0, 0, 0, 0, 0, 0,
-	 0, 0, 0, 0, 0, 0,
-	 1, 0, 1, 0, 1, 0,}
-	,
-    };
-    sed1520_set_char (drvthis, dest, &icons[which][0]);
+  static char heart_open[] = {
+    1, 1, 1, 1, 1,
+    1, 0, 1, 0, 1,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    1, 0, 0, 0, 1,
+    1, 1, 0, 1, 1,
+    1, 1, 1, 1, 1 };
+
+  static char heart_filled[] = {
+    1, 1, 1, 1, 1,
+    1, 0, 1, 0, 1,
+    0, 1, 0, 1, 0,
+    0, 1, 1, 1, 0,
+    0, 1, 1, 1, 0,
+    1, 0, 1, 0, 1,
+    1, 1, 0, 1, 1,
+    1, 1, 1, 1, 1 };
+
+  switch( icon )
+  {
+    case ICON_BLOCK_FILLED:
+      sed1520_chr( drvthis, x, y, 255 );
+      break;
+    case ICON_HEART_FILLED:
+      sed1520_set_char( drvthis, 0, heart_filled );
+      sed1520_chr( drvthis, x, y, 0 );
+      break;
+    case ICON_HEART_OPEN:
+      sed1520_set_char( drvthis, 0, heart_open );
+      sed1520_chr( drvthis, x, y, 0 );
+      break;
+    default:
+      return -1;
+  }
+  return 0;
 }
 

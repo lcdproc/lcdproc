@@ -2,7 +2,7 @@
 /*
   This is the LCDproc driver for the "LCTerm" serial LCD terminal
   from Helmut Neumark Elektronik, www.neumark.de
-  
+
   Copyright (C) 2002  Michael Schwingen <michael@schwingen.org>
 
   This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
 
   This driver is mostly based on the HD44780 and the LCDM001 driver.
   (Hopefully I have NOT forgotten any file I have stolen code from.
@@ -98,11 +98,11 @@ lcterm_init (Driver *drvthis, char *args)
 	  sizeof(device));
   device[sizeof(device)-1]=0;
   report (RPT_INFO,"LCTERM: Using device: %s", device);
-  
+
   {
     char *s;
     int w,h;
-    
+
     // Get and parse size
     s = drvthis->config_get_string( drvthis->name, "size", 0, "16x2" );
     fprintf( stderr, "lcterm_init: size: %s\n", s );
@@ -241,14 +241,14 @@ lcterm_flush (Driver *drvthis)
 						 escape *every* character */
   dp = buf;
   sp = p->framebuf;
-  
+
   *dp++ = 0x1E;  // cursor home
-   
+
   for(line = p->height; line>0; line--)
   {
     for(i=p->width; i>0; i--)
     {
-      if((c = *sp++) < 0x08) // need to escape used-defined characters 
+      if((c = *sp++) < 0x08) // need to escape used-defined characters
 	*dp++ = 0x1B;
       *dp++ = c;
     }
@@ -718,7 +718,7 @@ lcterm_num (Driver *drvthis, int x, int num)
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
-MODULE_EXPORT void
+MODULE_EXPORT int
 lcterm_icon (Driver *drvthis, int x, int y, int icon)
 {
   static char heart_open[] = {
@@ -755,32 +755,8 @@ lcterm_icon (Driver *drvthis, int x, int y, int icon)
       lcterm_chr( drvthis, x, y, 0 );
       break;
     default:
-      report( RPT_WARNING, "lcterm_icon: unknown or unsupported icon: %d", icon );
+      return -1;
   }
-}
-
-/////////////////////////////////////////////////////////////
-// Does the heartbeat...
-//
-MODULE_EXPORT void
-lcterm_heartbeat (Driver *drvthis, int type)
-{
-  PrivateData *p = (PrivateData *) drvthis->private_data;
-
-  static int timer = 0;
-  int whichIcon;
-
-  if (type == HEARTBEAT_ON)
-  {
-    /* Set this to pulsate like a real heart beat... */
-    if( ((timer + 4) & 5))
-      whichIcon = ICON_HEART_OPEN;
-    else
-      whichIcon = ICON_HEART_FILLED;
-
-    /* place the icon */
-    lcterm_icon (drvthis, p->width, 1, whichIcon);
-  }
-  timer++;
+  return 0;
 }
 

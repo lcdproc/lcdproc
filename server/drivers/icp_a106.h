@@ -6,7 +6,7 @@
   separate commands. Unfortunately, the device runs at slow 1200bps and the
   LCD does not allow user-defined characters, so the bargraphs do not look
   very nice.
-  
+
   Copyright (C) 2002  Michael Schwingen <michael@schwingen.org>
 
   This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
 
   This driver is mostly based on the HD44780 and the LCDM001 driver.
   (Hopefully I have NOT forgotten any file I have stolen code from.
@@ -44,8 +44,7 @@ MODULE_EXPORT void icp_a106_chr (Driver *drvthis, int x, int y, char ch);
 MODULE_EXPORT void icp_a106_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void icp_a106_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void icp_a106_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void icp_a106_heartbeat (Driver *drvthis, int type);
-MODULE_EXPORT void icp_a106_icon (Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT int  icp_a106_icon (Driver *drvthis, int x, int y, int icon);
 
 #define DEFAULT_DEVICE "/dev/lcd"
 

@@ -238,7 +238,7 @@ debug_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 /////////////////////////////////////////////////////////////////
 // Sets character 0 to an icon...
 //
-MODULE_EXPORT void
+MODULE_EXPORT int
 debug_icon (Driver *drvthis, int x, int y, int icon)
 {
 	report (RPT_INFO, "icon(%i,%i,%i)", x, y, icon);

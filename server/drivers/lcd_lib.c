@@ -113,43 +113,6 @@ insert_chr_framebuf (struct lcd_logical_driver *driver, int x, int y, char c) {
 }
 */
 
-void
-output_heartbeat (struct lcd_logical_driver *driver, int type) {
-	static int timer = 0;
-	int whichIcon;
-	static int saved_type = HEARTBEAT_ON;
-
-	if (type)
-		saved_type = type;
-
-	if (type == HEARTBEAT_ON) {
-		// Set this to pulsate like a real heart beat...
-		if ( (timer + 4) & 5 ) {
-			whichIcon = ICON_HEART_OPEN;
-		}
-		else {
-			whichIcon = ICON_HEART_FILLED;
-		}
-
-		driver->icon (driver, driver->width(driver), 1, whichIcon);
-
-		/* OLD CODE
-		// This defines a custom character EVERY time...
-		// not efficient... is this necessary?
-		driver->icon (driver, whichIcon, 0);
-
-		// Put character on screen...
-		driver->chr (driver, driver->wid, 1, 0);
-		*/
-
-		// change display...
-		//driver->flush (driver);
-	}
-
-	timer++;
-	timer &= 0x0f;
-}
-
 
 void
 lib_hbar_static (Driver *drvthis, int x, int y, int len, int promille, int options, int cellwidth, int cc_offset)

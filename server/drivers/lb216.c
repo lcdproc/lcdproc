@@ -601,45 +601,44 @@ LB216_set_char(Driver * drvthis, int n, char *dat)
   }
 }
 
-MODULE_EXPORT void
-LB216_icon(Driver * drvthis, int which, char dest)
+MODULE_EXPORT int
+LB216_icon(Driver * drvthis, int x, int y, int icon)
 {
-  char icons[3][8*8] = {
-   {
-     1,1,1,1,1,  // Empty Heart
-     1,0,1,0,1,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     1,0,0,0,1,
-     1,1,0,1,1,
-     1,1,1,1,1,
-   },
+  static char heart_open[] = {
+    1, 1, 1, 1, 1,
+    1, 0, 1, 0, 1,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0,
+    1, 0, 0, 0, 1,
+    1, 1, 0, 1, 1,
+    1, 1, 1, 1, 1 };
 
-   {
-     1,1,1,1,1,  // Filled Heart
-     1,0,1,0,1,
-     0,1,0,1,0,
-     0,1,1,1,0,
-     0,1,1,1,0,
-     1,0,1,0,1,
-     1,1,0,1,1,
-     1,1,1,1,1,
-   },
+  static char heart_filled[] = {
+    1, 1, 1, 1, 1,
+    1, 0, 1, 0, 1,
+    0, 1, 0, 1, 0,
+    0, 1, 1, 1, 0,
+    0, 1, 1, 1, 0,
+    1, 0, 1, 0, 1,
+    1, 1, 0, 1, 1,
+    1, 1, 1, 1, 1 };
 
-   {
-     0,0,0,0,0,  // Ellipsis
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     1,0,1,0,1,
-   },
-
-  };
-
-  if(custom==bign) custom=beat;
-  LB216_set_char(drvthis, dest, &icons[which][0]);
+  switch( icon )
+  {
+    case ICON_BLOCK_FILLED:
+      LB216_chr( drvthis, x, y, 255 );
+      break;
+    case ICON_HEART_FILLED:
+      LB216_set_char( drvthis, 0, heart_filled );
+      LB216_chr( drvthis, x, y, 0 );
+      break;
+    case ICON_HEART_OPEN:
+      LB216_set_char( drvthis, 0, heart_open );
+      LB216_chr( drvthis, x, y, 0 );
+      break;
+    default:
+      return -1;
+  }
+  return 0;
 }

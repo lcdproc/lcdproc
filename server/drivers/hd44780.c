@@ -921,36 +921,6 @@ HD44780_num (Driver *drvthis, int x, int num)
 	}
 }
 
-/////////////////////////////////////////////////////////////
-// Does the heartbeat...
-//
-MODULE_EXPORT void
-HD44780_heartbeat (Driver *drvthis, int type)
-{
-	PrivateData *p = (PrivateData *) drvthis->private_data;
-
-	static int timer = 0;
-	int whichIcon;
-	static int saved_type = HEARTBEAT_ON;
-
-	if (type)
-		saved_type = type;
-
-	if (type == HEARTBEAT_ON) {
-		/* Set this to pulsate like a real heart beat... */
-		if( ((timer + 4) & 5))
-			whichIcon = ICON_HEART_OPEN;
-		else
-			whichIcon = ICON_HEART_FILLED;
-
-		/* place the icon */
-		HD44780_icon (drvthis, p->width, 1, whichIcon);
-	}
-
-	timer++;
-	timer &= 0x0f;
-}
-
 /////////////////////////////////////////////////////////////////
 // Sets a custom character from 0-7...
 //
@@ -986,7 +956,7 @@ HD44780_set_char (Driver *drvthis, int n, char *dat)
 /////////////////////////////////////////////////////////////
 // Set default icon into a userdef char
 //
-MODULE_EXPORT void
+MODULE_EXPORT int
 HD44780_icon (Driver *drvthis, int x, int y, int icon)
 {
 	char heart_open[] = {
@@ -998,7 +968,6 @@ HD44780_icon (Driver *drvthis, int x, int y, int icon)
 		 1, 0, 0, 0, 1,
 		 1, 1, 0, 1, 1,
 		 1, 1, 1, 1, 1 };
-
 	char heart_filled[] = {
 		 1, 1, 1, 1, 1,
 		 1, 0, 1, 0, 1,
@@ -1008,7 +977,53 @@ HD44780_icon (Driver *drvthis, int x, int y, int icon)
 		 1, 0, 1, 0, 1,
 		 1, 1, 0, 1, 1,
 		 1, 1, 1, 1, 1 };
+	char arrow_up[] = {
+		 0, 0, 1, 0, 0,
+		 0, 1, 1, 1, 0,
+		 1, 0, 1, 0, 1,
+		 0, 0, 1, 0, 0,
+		 0, 0, 1, 0, 0,
+		 0, 0, 1, 0, 0,
+		 0, 0, 1, 0, 0,
+		 0, 0, 0, 0, 0 };
+	char arrow_down[] = {
+		 0, 0, 1, 0, 0,
+		 0, 0, 1, 0, 0,
+		 0, 0, 1, 0, 0,
+		 0, 0, 1, 0, 0,
+		 1, 0, 1, 0, 1,
+		 0, 1, 1, 1, 0,
+		 0, 0, 1, 0, 0,
+		 0, 0, 0, 0, 0 };
+	char checkbox_off[] = {
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 1, 1, 1, 1, 1,
+		 1, 0, 0, 0, 1,
+		 1, 0, 0, 0, 1,
+		 1, 0, 0, 0, 1,
+		 1, 1, 1, 1, 1,
+		 0, 0, 0, 0, 0 };
+	char checkbox_on[] = {
+		 0, 0, 1, 0, 0,
+		 0, 0, 1, 0, 0,
+		 1, 1, 1, 0, 1,
+		 1, 0, 1, 1, 0,
+		 1, 0, 1, 0, 1,
+		 1, 0, 0, 0, 1,
+		 1, 1, 1, 1, 1,
+		 0, 0, 0, 0, 0 };
+	char checkbox_gray[] = {
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 1, 1, 1, 1, 1,
+		 1, 0, 1, 0, 1,
+		 1, 1, 0, 1, 1,
+		 1, 0, 1, 0, 1,
+		 1, 1, 1, 1, 1,
+		 0, 0, 0, 0, 0 };
 
+	/* Yes I know, this is a VERY BAD implementation */
 	switch( icon ) {
 		case ICON_BLOCK_FILLED:
 			HD44780_chr( drvthis, x, y, 255 );
@@ -1021,9 +1036,36 @@ HD44780_icon (Driver *drvthis, int x, int y, int icon)
 			HD44780_set_char( drvthis, 0, heart_open );
 			HD44780_chr( drvthis, x, y, 0 );
 			break;
+		case ICON_ARROW_UP:
+			HD44780_set_char( drvthis, 1, arrow_up );
+			HD44780_chr( drvthis, x, y, 1 );
+			break;
+		case ICON_ARROW_DOWN:
+			HD44780_set_char( drvthis, 2, arrow_down );
+			HD44780_chr( drvthis, x, y, 2 );
+			break;
+		case ICON_ARROW_LEFT:
+			HD44780_chr( drvthis, x, y, 0x7F );
+			break;
+		case ICON_ARROW_RIGHT:
+			HD44780_chr( drvthis, x, y, 0x7E );
+			break;
+		case ICON_CHECKBOX_OFF:
+			HD44780_set_char( drvthis, 3, checkbox_off );
+			HD44780_chr( drvthis, x, y, 3 );
+			break;
+		case ICON_CHECKBOX_ON:
+			HD44780_set_char( drvthis, 4, checkbox_on );
+			HD44780_chr( drvthis, x, y, 4 );
+			break;
+		case ICON_CHECKBOX_GRAY:
+			HD44780_set_char( drvthis, 5, checkbox_gray );
+			HD44780_chr( drvthis, x, y, 5 );
+			break;
 		default:
-			report( RPT_WARNING, "HD44780_icon: unknown or unsupported icon: %d", icon );
+			return -1; /* Let the core do other icons */
 	}
+	return 0;
 }
 
 /////////////////////////////////////////////////////////////

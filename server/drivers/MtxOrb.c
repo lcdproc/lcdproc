@@ -71,7 +71,7 @@
 #define IS_VFD_DISPLAY	(p->MtxOrb_type == MTXORB_VFD)
 #define IS_VKD_DISPLAY	(p->MtxOrb_type == MTXORB_VKD)
 
-/* 
+/*
  * The MtxOrb driver do not use a lot of hardware feature.
  * We try to replace them by more flexible software version.
  * That's why vbar/hbar/bignum are using Matrix Orbital build-in function.
@@ -191,8 +191,7 @@ typedef struct p {
 	int fd;			/* The LCD file descriptor */
 	int contrast;		/* static data from set/get_contrast */
 	int backlightenabled;
-	MtxOrb_type_type MtxOrb_type; 
-	int timer;		/* static data from MtxOrb_heartbeat */
+	MtxOrb_type_type MtxOrb_type;
 	char pause_key;
 	char back_key;
 	char forward_key;
@@ -278,7 +277,6 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->backlightenabled = DEFAULT_BACKLIGHT;
 	p->old = NULL;
 	p->MtxOrb_type = MTXORB_LKD;  /* Assume it's an LCD w/keypad */
-	p->timer = 0;		/* static data from MtxOrb_heartbeat */
 	p->pause_key = MTXORB_DEFAULT_PAUSE_KEY;
 	p->back_key = MTXORB_DEFAULT_BACK_KEY;
 	p->forward_key = MTXORB_DEFAULT_FORWARD_KEY;
@@ -961,7 +959,7 @@ static void MtxOrb_mold_vbar (Driver *drvthis, int x, int y, int len)
 	{ barw, baru1, baru2, baru3, baru4, bigfonte, baru6, baru7, barb };
 	/* bard5 = bigfontf ... The cache can benefit from it. */
 /*
-	unsigned char mapd[9] = 
+	unsigned char mapd[9] =
 	{ barw, bard1, bard2, bard3, bard4, bigfontf, bard6, bard7, barb };
 */
 
@@ -1071,7 +1069,7 @@ MtxOrb_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 	 * Ideally it should use the library but then the library
 	 * need to be enhanced with the idea privately exchange
 	 * between David & Joris.
-	 */ 
+	 */
 
 	MtxOrb_mold_vbar (drvthis, x, y, total_pixels);
 }
@@ -1099,7 +1097,7 @@ MtxOrb_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 	 * Ideally it should use the library but then the library
 	 * need to be enhanced with the idea privately exchange
 	 * between David & Joris.
-	 */ 
+	 */
 
 	MtxOrb_old_hbar (drvthis, x, y, total_pixels);
 }
@@ -1189,10 +1187,15 @@ MtxOrb_set_char (Driver *drvthis, int n, char *dat)
 
 /* TODO: This is not yet my idea of icon frame buffer but it work well.
  */
-MODULE_EXPORT void
+MODULE_EXPORT int
 MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 {
 	MtxOrb_chr (drvthis, x, y, MtxOrb_ask_bar (drvthis, icon));
+
+	return 0;
+	/* We return 0, however many icons are not supported
+	 * TODO...
+	 */
 }
 
 /* TODO: Recover the code for I2C connectivity to MtxOrb
@@ -1203,6 +1206,8 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
  * returns one character from the keypad...
  * (A-Z) on success, 0 on failure...
  */
+
+ /* TODO implement for new API call (get_key) that returns a string */
 
 MODULE_EXPORT char
 MtxOrb_getkey (Driver *drvthis)
@@ -1343,31 +1348,6 @@ MtxOrb_ask_bar (Driver *drvthis, int type)
 	}
 
 	return (pos);
-}
-
-/******************************
- * Does the heartbeat...
- */
-MODULE_EXPORT void
-MtxOrb_heartbeat (Driver *drvthis, int type)
-{
-	int whichIcon;
-
-        PrivateData * p = drvthis->private_data;
-
-	if (type == HEARTBEAT_ON) {
-		/* Set this to pulsate like a real heart beat... */
-		whichIcon = (! ((p->timer + 4) & 5));
-
-		/* Ask for the right heartbeat icon... */
-		MtxOrb_icon (drvthis, p->width, 1, whichIcon);
-
-		/* change display... */
-		MtxOrb_flush (drvthis);
-	}
-
-	p->timer++;
-	p->timer &= 0x0f;
 }
 
 /******************************

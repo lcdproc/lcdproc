@@ -113,8 +113,7 @@ MODULE_EXPORT void t6963_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void t6963_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void t6963_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void t6963_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void t6963_icon (Driver *drvthis, int x, int y, int icon);
-MODULE_EXPORT void t6963_heartbeat (Driver *drvthis, int type);
+MODULE_EXPORT int  t6963_icon (Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
 

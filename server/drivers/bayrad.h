@@ -21,7 +21,7 @@ MODULE_EXPORT void bayrad_chr(Driver * drvthis, int x, int y, char c);
 
 MODULE_EXPORT void bayrad_vbar(Driver * drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void bayrad_hbar(Driver * drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void bayrad_icon(Driver * drvthis, int x, int y, int icon);
+MODULE_EXPORT int  bayrad_icon(Driver * drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void bayrad_set_char(Driver * drvthis, int n, char *dat);
 

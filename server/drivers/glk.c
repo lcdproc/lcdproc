@@ -502,7 +502,7 @@ glk_set_char(Driver *drvthis, int n, char *dat)
 // Draws a vertical bar, from the bottom of the screen up.
 //
 MODULE_EXPORT void
-glk_vbar(Driver *drvthis, int x, int len)
+glk_old_vbar(Driver *drvthis, int x, int len)
 {
   int  y = height ;
 
@@ -533,7 +533,7 @@ glk_vbar(Driver *drvthis, int x, int len)
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-glk_hbar(Driver *drvthis, int x, int y, int len)
+glk_old_hbar(Driver *drvthis, int x, int y, int len)
 {
 //  printf( "glk_hbar( %d, %d, %d )\n", x, y, len );
   while( len > cellwidth ) {
@@ -561,8 +561,11 @@ glk_hbar(Driver *drvthis, int x, int y, int len)
 // Sets character 0 to an icon...
 //
 MODULE_EXPORT void
-glk_icon(Driver *drvthis, int which, char dest)
+glk_old_icon(Driver *drvthis, int which, int dest)
 {
+  /* TODO IMPLEMENTATION OF NEW API */
+  /* any volonteers ? */
+
   unsigned char  old, new ;
   unsigned char *  p ;
   unsigned char *  q ;
@@ -610,8 +613,11 @@ glk_icon(Driver *drvthis, int which, char dest)
 // Return 0 for "nothing available".
 //
 MODULE_EXPORT char
-glk_getkey(Driver *drvthis)
+glk_old_getkey(Driver *drvthis)
 {
+  /* NOTE THAT THIS CODE IS NOT USED IN THE NEW API */
+  /* It uses get_key instead, returning a string */
+
   int  c ;
   static int  key = -1 ;
   static struct timeval  lastkey ;
