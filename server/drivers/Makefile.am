@@ -52,8 +52,4 @@ t6963_SOURCES =      lcd.h t6963.c t6963.h t6963_font.h report.h
 text_SOURCES =       lcd.h text.h text.c report.h
 wirz_sli_SOURCES =   lcd.h wirz-sli.h wirz-sli.c report.h
 
-Makefile.am: Makefile.am.pre
-	@echo Makefile.am.pre has been changed, please rerun configure.
-	@false
-
 INCLUDES = -I$(top_srcdir)
