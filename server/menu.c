@@ -7,7 +7,8 @@
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2002, Joris Robijn
- *
+ *               2004, F5 Networks, Inc. - IP-address input
+ *               2005, Peter Marschall - error checks, ...
  *
  * Handles a menu and all actions that can be performed on it. Note that a
  * menu is itself also a menuitem.
@@ -244,6 +245,7 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 			  case MENUITEM_SLIDER:
 			  case MENUITEM_NUMERIC:
 			  case MENUITEM_ALPHA:
+			  case MENUITEM_IP:
 				/* Limit string length */
 				w->text = strdup (subitem->text);
 				if (strlen(subitem->text) >= display_props->width-1) {
@@ -401,7 +403,7 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "downscroller");
 }
 
-MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
+MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool extended)
 {
 	MenuItem *subitem;
 
@@ -444,6 +446,7 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
 		  case MENUITEM_SLIDER:
 		  case MENUITEM_NUMERIC:
 		  case MENUITEM_ALPHA:
+		  case MENUITEM_IP:
 			//if (subitem->event_func)
 			//	subitem->event_func (subitem, MENUEVENT_ENTER);
 			return MENURESULT_ENTER;
@@ -470,6 +473,64 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key)
 		}
 		if (menu->data.menu.selector_pos - menu->data.menu.scroll + 2 > display_props->height) {
 			menu->data.menu.scroll ++;
+		}
+		return MENURESULT_NONE;
+	  case MENUTOKEN_LEFT:
+		if (!extended)
+			return MENURESULT_NONE;
+		
+		subitem = LL_GetByIndex (menu->data.menu.contents,
+					menu->data.menu.selector_pos);
+		if (subitem == NULL)
+			break;
+		switch (subitem->type) {
+		  case MENUITEM_CHECKBOX:
+			if (subitem->data.checkbox.allow_gray) {
+				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 3;
+			}
+			else {
+				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 2;
+			}
+			if (subitem->event_func)
+				subitem->event_func (subitem, MENUEVENT_UPDATE);
+			return MENURESULT_NONE;
+		  case MENUITEM_RING:
+			subitem->data.ring.value = (subitem->data.ring.value - 1) % LL_Length (subitem->data.ring.strings);
+			if (subitem->event_func)
+				subitem->event_func (subitem, MENUEVENT_UPDATE);
+			return MENURESULT_NONE;
+		  default:
+			break;
+		}
+		return MENURESULT_NONE;
+	  case MENUTOKEN_RIGHT:
+		if (!extended)
+			return MENURESULT_NONE;
+		
+		subitem = LL_GetByIndex (menu->data.menu.contents,
+					menu->data.menu.selector_pos);
+		if (subitem == NULL)
+			break;
+		switch (subitem->type) {
+		  case MENUITEM_CHECKBOX:
+			if (subitem->data.checkbox.allow_gray) {
+				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
+			}
+			else {
+				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
+			}
+			if (subitem->event_func)
+				subitem->event_func (subitem, MENUEVENT_UPDATE);
+			return MENURESULT_NONE;
+		  case MENUITEM_RING:
+			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
+			if (subitem->event_func)
+				subitem->event_func (subitem, MENUEVENT_UPDATE);
+			return MENURESULT_NONE;
+		  case MENUITEM_MENU:
+			return MENURESULT_ENTER;
+		  default:
+			break;
 		}
 		return MENURESULT_NONE;
 	  case MENUTOKEN_OTHER:

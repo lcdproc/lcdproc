@@ -6,6 +6,8 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2004, F5 Networks, Inc. - IP-address input
+ *               2005, Peter Marschall - error checks, ...
  *
  * Defines all the menu data and actions.
  *
@@ -108,7 +110,7 @@ void menu_update_screen (Menu *menu, Screen *s);
  * DO NOT CALL THIS FUNCTION, CALL menuitem_update_screen INSTEAD !
  */
 
-MenuResult menu_process_input (Menu *menu, MenuToken token, char * key);
+MenuResult menu_process_input (Menu *menu, MenuToken token, char * key, bool extended);
 /* Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  * DO NOT CALL THIS FUNCTION, CALL menuitem_process_input INSTEAD !

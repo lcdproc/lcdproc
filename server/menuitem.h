@@ -6,6 +6,8 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2004, F5 Networks, Inc. - IP-address input
+ *               2005, Peter Marschall - error checks, ...
  *
  * Defines all the menuitem data and actions.
  *
@@ -39,7 +41,7 @@
  * Data definitions of the menustuff
  */
 
-#define NUM_ITEMTYPES 7
+#define NUM_ITEMTYPES 8
 typedef enum MenuItemType {	/* These values are used in the */
 	MENUITEM_MENU = 0,	/* function tables in menuitem.c ! */
 	MENUITEM_ACTION = 1,
@@ -48,6 +50,7 @@ typedef enum MenuItemType {	/* These values are used in the */
 	MENUITEM_SLIDER = 4,
 	MENUITEM_NUMERIC = 5,
 	MENUITEM_ALPHA = 6,
+	MENUITEM_IP = 7,
 } MenuItemType;
 
 typedef enum CheckboxValue {
@@ -60,6 +63,8 @@ typedef enum MenuToken {
 	MENUTOKEN_ENTER,
 	MENUTOKEN_UP,
 	MENUTOKEN_DOWN,
+	MENUTOKEN_LEFT,
+	MENUTOKEN_RIGHT,
 	MENUTOKEN_OTHER
 } MenuToken;
 
@@ -127,7 +132,7 @@ typedef struct MenuItem {
 		} checkbox;
 		struct ring {
 			LinkedList *strings;	/* The selectable strings */
-			int value;		/* Current index */
+			short value;		/* Current index */
 		} ring;
 		struct slider {
 			char *mintext;		/* Text at minimal value */
@@ -159,6 +164,14 @@ typedef struct MenuItem {
 			short edit_pos;		/* Position while editing */
 			short error_code;
 		} alpha;
+		struct ip {
+			char *value;		/* Current value */
+			char *edit_str;		/* Value while being edited */
+			short maxlength;
+			bool v6;		/* true if editing ipv6 addr */
+			short edit_pos;		/* Position while editing */
+			short error_code;
+		} ip;
 	} data;
 } MenuItem;
 
@@ -241,6 +254,13 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
 
+MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
+	char *text, bool v6, char *value);
+/* Creates an ip value box.  can be either v4 or v6
+ * Generated events: MENUEVENT_ENTER upon entering this item,
+ * MENUEVENT_UPDATE when user finishes the value (no immediate update).
+ */
+
 void menuitem_destroy (MenuItem *item);
 /* Deletes item from memory.
  * All allocated extra data (like strings) will be freed.
@@ -248,7 +268,7 @@ void menuitem_destroy (MenuItem *item);
 
 static inline MenuItem *menuitem_get_parent (MenuItem *item)
 {
-	return item->parent;
+	return ((item != NULL) ? item->parent : NULL);
 }
 
 void menuitem_reset (MenuItem *item);
@@ -271,7 +291,7 @@ void menuitem_update_screen (MenuItem *item, Screen *s);
  * Fills all widget attributes with the corrrect values.
  */
 
-MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key);
+MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key, bool extended);
 /* Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  */

@@ -6,6 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2004, F5 Networks, Inc. - IP-address verification
  *
  */
 
@@ -21,5 +22,7 @@ int sock_init(char* bind_addr, int bind_port);
 int sock_shutdown();
 int sock_create_inet_socket(char* bind_addr, unsigned int port);
 int sock_poll_clients();
+int verify_ipv4(const char *addr);
+int verify_ipv6(const char *addr);
 
 #endif

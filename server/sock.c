@@ -7,6 +7,8 @@
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2003, Benjamin Tse (blt@ieee.org) - Winsock port
+ *               2004, F5 Networks, Inc. - IP-address input
+ *               2005, Peter Marschall - error checks, ...
  *
  * LCDproc sockets code...
  *
@@ -432,3 +434,28 @@ sock_read_from_client(struct ClientSocketMap* clientSocketMap)
 	}
 	return nbytes;
 }
+
+
+/* return 0 if addr is valid ipv4 */
+int verify_ipv4(const char *addr) 
+{
+	int rsts;
+	struct in_addr a;
+	rsts = inet_pton(AF_INET, addr, &a);
+	/* inet_pton returns  positive value if it worked */
+	if (rsts <=0)
+		return -1;
+	return 0;
+}
+
+/* return 0 if addr is valid ipv4 */
+int verify_ipv6(const char *addr) 
+{
+	int rsts;
+	struct in6_addr a;
+	rsts = inet_pton(AF_INET, addr, &a);
+	/* inet_pton returns  positive value if it worked */
+	if (rsts <=0)
+		return -1;
+	return 0;
+} 

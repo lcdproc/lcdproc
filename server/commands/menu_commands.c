@@ -7,6 +7,8 @@
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2002, Joris Robijn
+ *               2004, F5 Networks, Inc. - IP-address input
+ *               2005, Peter Marschall - error checks, ...
  *
  *
  * This contains definitions for all the functions which clients can run.
@@ -59,6 +61,7 @@ MenuEventFunc(menu_commands_handler);
  * - slider
  * - numeric
  * - alpha
+ * - ip
  */
 int
 menu_add_item_func (Client * c, int argc, char **argv)
@@ -155,6 +158,10 @@ menu_add_item_func (Client * c, int argc, char **argv)
 	  case MENUITEM_ALPHA:
 		item = menuitem_create_alpha (item_id, menu_commands_handler, text,
 				0, 0, 10, true, false, true, "-./", "");
+		break;
+	  case MENUITEM_IP:
+		item = menuitem_create_ip (item_id, menu_commands_handler, text,
+				0, "192.168.1.245");
 		break;
 	}
 	menu_add_item (menu, item);
@@ -305,6 +312,11 @@ menu_del_item_func (Client * c, int argc, char **argv)
  * -allowed_extra <string>	("")
  *	The chars in this string are also allowed.
  *
+ * ip:
+ * -value <string>
+ *	Sets its current value.	("")
+ * -v6 false|true
+ *
  * Hmm, this is getting very big. We might need a some real parser after all.
  */
 int
@@ -356,6 +368,8 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		{ MENUITEM_ALPHA,	"allow_noncaps",BOOLEAN,	offsetof(MenuItem,data.alpha.allow_noncaps) },
 		{ MENUITEM_ALPHA,	"allow_numbers",BOOLEAN,	offsetof(MenuItem,data.alpha.allow_numbers) },
 		{ MENUITEM_ALPHA,	"allowed_extra",STRING,		offsetof(MenuItem,data.alpha.allowed_extra) },
+		{ MENUITEM_IP,		"v6",		BOOLEAN,	offsetof(MenuItem,data.ip.v6) },
+		{ MENUITEM_IP,		"value",	STRING,		-1 /*offsetof(MenuItem,data.ip.value)*/ },
 		{ -1,			NULL,		-1,		-1 }
 	};
 
@@ -483,8 +497,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 			break;
 		  case SHORT:
 			short_value = strtol( argv[argnr+1], &p, 0 );
-			if( argv[argnr+1][0] == 0
-			|| *p != 0 ) {
+			if( argv[argnr+1][0] == '\0' || *p != '\0' ) {
 				error = 1;
 				break;
 			}
@@ -494,8 +507,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 			break;
 		  case INT:
 			int_value = strtol( argv[argnr+1], &p, 0 );
-			if( argv[argnr+1][0] == 0
-			|| *p != 0 ) {
+			if( argv[argnr+1][0] == '\0' || *p != '\0' ) {
 				error = 1;
 				break;
 			}
@@ -505,8 +517,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 			break;
 		  case FLOAT:
 			float_value = strtod( argv[argnr+1], &p );
-			if( argv[argnr+1][0] == 0
-			|| *p != 0 ) {
+			if( argv[argnr+1][0] == '\0' || *p != '\0' ) {
 				error = 1;
 				break;
 			}
@@ -575,16 +586,38 @@ menu_set_item_func (Client * c, int argc, char **argv)
 				}
 				new_buf = malloc( short_value + 1 );
 				strncpy( new_buf, item->data.alpha.value, short_value );
-				new_buf[short_value] = 0; /* terminate */
+				new_buf[short_value] = '\0'; /* terminate */
 				free( item->data.alpha.value );
 				item->data.alpha.value = new_buf;
 				free( item->data.alpha.edit_str );
 				item->data.alpha.edit_str = malloc( short_value + 1 );
-				item->data.alpha.edit_str[0] = 0;
+				item->data.alpha.edit_str[0] = '\0';
 			}
 			else if( strcmp( argv[argnr]+1, "value" ) == 0 ) {
 				strncpy( item->data.alpha.value, string_value, item->data.alpha.maxlength );
 				item->data.alpha.value[ item->data.alpha.maxlength ] = 0; /* terminate */
+			}
+			menuitem_reset (item);
+			break;
+		  case MENUITEM_IP:
+			if( strcmp( argv[argnr]+1, "v6" ) == 0 ) {
+				char * new_buf;
+                		/* set max lenth depending ob boolean option v6 */
+				item->data.ip.maxlength = (bool_value == 0) ? 15 : 39;
+
+				new_buf = malloc(item->data.ip.maxlength + 1 );
+				strncpy( new_buf, item->data.ip.value, item->data.ip.maxlength);
+				
+				new_buf[item->data.ip.maxlength] = '\0'; /* terminate */
+				free( item->data.ip.value );
+				item->data.ip.value = new_buf;
+				free( item->data.ip.edit_str );
+				item->data.ip.edit_str = malloc( item->data.ip.maxlength +1);
+				item->data.ip.edit_str[0] = '\0';
+			}
+			else if( strcmp( argv[argnr]+1, "value" ) == 0 ) {
+				strncpy( item->data.ip.value, string_value, item->data.ip.maxlength );
+				item->data.ip.value[item->data.ip.maxlength] = '\0'; /* terminate */
 			}
 			menuitem_reset (item);
 			break;
@@ -693,6 +726,11 @@ MenuEventFunc (menu_commands_handler)
 			snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s %.40s\n",
 				menuitem_eventtype_to_eventtypename(event),
 				item->id, item->data.alpha.value );
+			break;
+		  case MENUITEM_IP:
+			snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s %.40s\n",
+				menuitem_eventtype_to_eventtypename(event),
+				item->id, item->data.ip.value );
 			break;
 		  default:
 			snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s\n",

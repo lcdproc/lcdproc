@@ -7,6 +7,8 @@
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2002, Joris Robijn
+ *               2004, F5 Networks, Inc. - IP-address input
+ *               2005, Peter Marschall - error checks, ...
  *
  *
  * Creates the server menu screen(s) and creates the menus that should be
@@ -34,10 +36,15 @@
 /* Next include files are needed for settings that we can modify */
 #include "render.h"
 
+/* uncomment this if you want a binary with test menus in it */
+#define TESTMENUS
+
 char * menu_key;
 char * enter_key;
 char * up_key;
 char * down_key;
+char * left_key;
+char * right_key;
 
 Screen * menuscreen = NULL;
 MenuItem * active_menuitem = NULL;
@@ -54,6 +61,8 @@ MenuEventFunc (brightness_handler);
 
 int menuscreens_init()
 {
+	char *tmp;
+
 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Get keys from config file */
@@ -62,11 +71,25 @@ int menuscreens_init()
 	up_key = strdup (config_get_string ("menu", "UpKey", 0, "Up"));
 	down_key = strdup (config_get_string ("menu", "DownKey", 0, "Down"));
 
+	/* if the user has specified in the conf file a left and right key */
+	left_key = right_key = NULL;
+	tmp = config_get_string ("menu", "LeftKey", 0, NULL);
+	if (tmp)
+		left_key = strdup(tmp);
+	tmp = config_get_string ("menu", "RightKey", 0, NULL);
+	if (tmp)
+		right_key = strdup(tmp);
+    
+        
 	/* Now reserve keys */
 	input_reserve_key (menu_key, true, NULL);
 	input_reserve_key (enter_key, false, NULL);
 	input_reserve_key (up_key, false, NULL);
 	input_reserve_key (down_key, false, NULL);
+	if (left_key)
+		input_reserve_key (left_key, false, NULL);
+	if (right_key)
+		input_reserve_key (right_key, false, NULL);
 
 	/* Create screen */
 	menuscreen = screen_create ("_menu_screen", NULL);
@@ -87,10 +110,9 @@ int menuscreens_shutdown()
 {
 	debug (RPT_DEBUG, "%s()", __FUNCTION__ );
 
-	if (!menuscreen) {
-		/* Program shutdown before completed startup */
+	/* Program shutdown before completed startup */
+	if (!menuscreen)
 		return -1;
-	}
 
 	/* Quit menu just to make sure */
 	menuscreen_switch_item (NULL);
@@ -112,6 +134,10 @@ int menuscreens_shutdown()
 	free (enter_key);
 	free (up_key);
 	free (down_key);
+	if (left_key)
+        	free (left_key);
+	if (right_key)
+        	free (right_key);
 
 	return 0;
 }
@@ -173,6 +199,7 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 	if (!old_menuitem && !new_menuitem) {
 		/* Nothing to be done */
 	} else if (old_menuitem && !new_menuitem) {
+		/* leave menu system */
 		menuscreen->priority = PRI_HIDDEN;
 	} else if (!old_menuitem && new_menuitem) {
 		/* Menu is becoming active */
@@ -209,6 +236,12 @@ void menuscreen_key_handler (char *key)
 	else if (strcmp (key, down_key) == 0) {
 		token = MENUTOKEN_DOWN;
 	}
+	else if (left_key && strcmp (key, left_key) == 0) {
+		token = MENUTOKEN_LEFT;
+	}
+	else if (right_key && strcmp (key, right_key) == 0) {
+		token = MENUTOKEN_RIGHT;
+	}
 	else {
 		token = MENUTOKEN_OTHER;
 	}
@@ -220,11 +253,12 @@ void menuscreen_key_handler (char *key)
 		return;
 	}
 
-	res = menuitem_process_input (active_menuitem, token, key);
+	res = menuitem_process_input (active_menuitem, token, key,
+			((left_key || right_key) ? 1 : 0));
 
 	switch (res) {
 	  case MENURESULT_ERROR:
-		report (RPT_ERR, "%s: Error from menu_process_input", __FUNCTION__);
+		report (RPT_ERR, "%s: Error from menuitem_process_input", __FUNCTION__);
 		break;
 	  case MENURESULT_NONE:
 		if (active_menuitem) {
@@ -236,7 +270,7 @@ void menuscreen_key_handler (char *key)
 	  case MENURESULT_ENTER:
 		/* Enter the selected menuitem
 		 * Note: this is not for checkboxes etc that don't have their
-		 *   own screen. The menu_process_input function should do
+		 *   own screen. The menuitem_process_input function should do
 		 *   things like toggling checkboxes !
 		 */
 		debug (RPT_DEBUG, "%s: Entering subitem", __FUNCTION__);
@@ -261,8 +295,10 @@ void menuscreen_create_menu ()
 	MenuItem * slider;
 	Driver * driver;
 
+#ifdef TESTMENUS
 	MenuItem * test_item;
 	Menu * test_menu;
+#endif /*TESTMENUS*/
 
 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 
@@ -271,8 +307,10 @@ void menuscreen_create_menu ()
 	options_menu = menu_create ("options", NULL, "Options", NULL);
 	menu_add_item (main_menu, options_menu);
 
+#ifdef TESTMENUS
 	screens_menu = menu_create ("screens", NULL, "Screens", NULL);
 	menu_add_item (main_menu, screens_menu);
+#endif /*TESTMENUS*/
 
 	checkbox = menuitem_create_checkbox ("heartbeat", heartbeat_handler, "Heartbeat", true, heartbeat);
 	menu_add_item (options_menu, checkbox);
@@ -308,6 +346,8 @@ void menuscreen_create_menu ()
 			}
 		}
 	}
+
+#ifdef TESTMENUS	
 	test_menu = menu_create ("test", NULL, "Test menu", NULL);
 	menu_add_item (main_menu, test_menu);
 
@@ -340,6 +380,12 @@ void menuscreen_create_menu ()
 	menu_add_item (test_menu, test_item);
 	test_item = menuitem_create_alpha ("", NULL, "Alpha, caps only", 0, 3, 12, true, false, false, "-", "LCDPROC");
 	menu_add_item (test_menu, test_item);
+
+	test_item = menuitem_create_ip ("", NULL, "IPv4", 0, "192.168.1.245");
+	menu_add_item (test_menu, test_item);
+	test_item = menuitem_create_ip ("", NULL, "IPv6", 1, ":::ffff:ffff:ffff:ffff:ffff");
+	menu_add_item (test_menu, test_item);
+#endif /*TESTMENUS*/
 }
 
 MenuEventFunc (heartbeat_handler)
@@ -381,13 +427,14 @@ MenuEventFunc (contrast_handler)
 	 * We need to check the menu association to see which driver. */
 	if (event == MENUEVENT_MINUS || event == MENUEVENT_PLUS) {
 
-		/* Determinte the driver */
+		/* Determine the driver */
 		Driver * driver = item->parent->data.menu.association;
 
-		driver->set_contrast (driver, item->data.slider.value);
-		//item->data.slider.value = driver->get_contrast (driver);
-		report (RPT_INFO, "Menu: set contrast of [%.40s] to %d",
-				item->data.checkbox.value);
+		if (driver != NULL) {
+			driver->set_contrast (driver, item->data.slider.value);
+			report (RPT_INFO, "Menu: set contrast of [%.40s] to %d",
+					driver->name, item->data.slider.value);
+		}	
 	}
 	return 0;
 }
@@ -398,18 +445,20 @@ MenuEventFunc (brightness_handler)
 			((item != NULL) ? item->id : "(null)"), event);
 
 	/* This function can be called by one of several drivers that
-	 * support contrast !
+	 * support brightness !
 	 * We need to check the menu association to see which driver. */
 	if (event == MENUEVENT_MINUS || event == MENUEVENT_PLUS) {
 
-		/* Determinte the driver */
+		/* Determine the driver */
 		Driver * driver = item->parent->data.menu.association;
 
-		if ( strcmp (item->id, "onbrightness") == 0) {
-			driver->set_brightness (driver, BACKLIGHT_ON, item->data.slider.value);
-		}
-		else if ( strcmp (item->id, "offbrightness") == 0) {
-			driver->set_brightness (driver, BACKLIGHT_OFF, item->data.slider.value);
+		if (driver != NULL) {
+			if ( strcmp (item->id, "onbrightness") == 0) {
+				driver->set_brightness (driver, BACKLIGHT_ON, item->data.slider.value);
+			}
+			else if ( strcmp (item->id, "offbrightness") == 0) {
+				driver->set_brightness (driver, BACKLIGHT_OFF, item->data.slider.value);
+			}
 		}
 	}
 	return 0;
@@ -453,8 +502,6 @@ menuscreen_add_screen (Screen * s)
 void
 menuscreen_remove_screen (Screen * s)
 {
-	Menu * m;
-
 	debug (RPT_DEBUG, "%s( s=[%s] )", __FUNCTION__,
 			(s != NULL) ? s->id : "(NULL)");
 
@@ -462,9 +509,12 @@ menuscreen_remove_screen (Screen * s)
 	if ((s == NULL) || (s == menuscreen))
 		return;
 
-	m = menu_find_item (screens_menu, s->id, false);
-	menu_remove_item (screens_menu, m);
-	menuitem_destroy (m);
+	if (screens_menu) {
+		Menu * m = menu_find_item (screens_menu, s->id, false);
+
+		menu_remove_item (screens_menu, m);
+		menuitem_destroy (m);
+	}
 }
 
 
