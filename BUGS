@@ -1,5 +1,13 @@
 Known Bugs:
 --------------
+
+V0.4.3:
+   - A client may cause the connection to LCDd to break or even crash
+     LCDd by not reading the replies from LCDd
+	 See one of the example clients (clients/examples) for details.
+   - MtxOrb driver
+       - "lcdproc K" does not display properly in between digit.
+
 V0.4-pre1:
    - The server tends to crash if the joystick driver is the last one loaded.
      Specifically, if the "E" key is pressed...
