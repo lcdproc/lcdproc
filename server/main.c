@@ -37,6 +37,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
@@ -69,7 +71,7 @@ extern int optind, optopt, opterr;
 #define DEFAULT_DRIVER "curses"
 #define DEFAULT_DRIVER_PATH
 #define MAX_DRIVERS 8
-#define DEFAULT_DAEMON_MODE 1
+#define DEFAULT_FOREGROUND_MODE 0
 #define DEFAULT_ROTATE_SERVER_SCREEN 1
 #define DEFAULT_REPORTTOSYSLOG 0
 #define DEFAULT_REPORTLEVEL RPT_WARNING
@@ -97,21 +99,19 @@ char *build_date = __DATE__;
 /* Some variables are settable on the command line. This are variables that
  * change the mode of operation. This includes settings that you can use to
  * enable debugging: driver selection, report settings, bind address etc.
+ * These variables should be in main.h and main.c (below).
+ *
  * All other settings do not need to be settable from the command line. They
  * also do not necesarily need to be read in main.c but can better be read in
  * in the file concerned.
  */
 
-/* All variables are set to 'unset' values*/
-#define UNSET_INT -1
-#define UNSET_STR "\01"
-
-int lcd_port = UNSET_INT;
+unsigned int bind_port = UNSET_INT;
 char bind_addr[64];	/* Do not preinit these strings as they will occupy */
 char configfile[256];	/* a lot of space in the executable. */
 char user[64];		/* The values will be overwritten anyway... */
 
-int daemon_mode = UNSET_INT;
+int foreground_mode = UNSET_INT;
 
 static int report_level = UNSET_INT;
 static int report_to_syslog = UNSET_INT;
@@ -119,10 +119,15 @@ static int report_to_syslog = UNSET_INT;
 /* The drivers and their driver parameters */
 char *drivernames[MAX_DRIVERS];
 int num_drivers = 0;
+
+/* End of configuration variables */
+
+/* Local variables */
 int stored_argc;
 char **stored_argv;
 short got_reload_signal = 0;
 
+/* Local exported variables */
 long int timer = 0;
 
 /**** Local functions ****/
@@ -130,8 +135,10 @@ void clear_settings();
 int process_command_line (int argc, char **argv);
 int process_configfile (char *cfgfile);
 void set_default_settings();
-int daemonize();
-int init_sockets();
+void install_signal_handlers (int allow_reload);
+void child_ok_func (int signal);
+pid_t daemonize();
+int wave_to_parent (pid_t parent_pid);
 int init_drivers();
 int drop_privs(char *user);
 int init_screens();
@@ -150,16 +157,10 @@ int
 main (int argc, char **argv)
 {
 	int e = 0;
+	pid_t parent_pid = 0;
 
 	stored_argc = argc;
 	stored_argv = argv;
-
-	signal (SIGINT, exit_program);		/* Ctrl-C will cause a clean exit...*/
-	signal (SIGTERM, exit_program);		/* and "kill"...*/
-	signal (SIGKILL, exit_program);		/* and just in case, "kill -KILL" (which cannot be trapped; but oh well)*/
-
-	signal (SIGHUP, catch_reload_signal);	/* On SIGHUP reread config and restart the drivers ! */
-	/* Let's see if we can actually get this to work ;) */
 
 	/*
 	 * Settings in order of preference:
@@ -205,27 +206,35 @@ main (int argc, char **argv)
  	report( RPT_INFO, "Set report level to %d, output to %s", report_level, (report_to_syslog?"syslog":"stderr") );
 	CHAIN_END( e, "Critical error while processing settings, abort." );
 
-	/* Startup the server*/
-	CHAIN( e, screenlist_init() );
-	CHAIN( e, init_drivers() );
-	CHAIN( e, init_sockets() );
-	CHAIN( e, input_init() );
-	CHAIN( e, menuscreens_init() );
-	CHAIN( e, server_screen_init() );
-	CHAIN( e, drop_privs(user) );
-	CHAIN_END( e, "Critical error while initializing, abort." );
-
-	/* Now, go into daemon mode...*/
-	/* TODO: do this earlier and let parent process wait until
-	 * child has fully started or reported its errors. */
-	if (daemon_mode) {
+	/* Now, go into daemon mode (if we should)...
+	 * We wait for the child to report it is running OK. This mechanism
+	 * is used because forking after starting the drivers causes the
+	 * child to loose the (LPT) port access. */
+	if (!foreground_mode) {
 		report(RPT_INFO, "Server forking to background");
-		CHAIN( e, daemonize() );
+		CHAIN( e, parent_pid = daemonize() );
 	} else {
 		output_GPL_notice();
 		report(RPT_INFO, "Server running in foreground");
 	}
+	install_signal_handlers (!foreground_mode);
+		/* Only catch SIGHUP if not in foreground mode */
+
+	/* Startup the subparts of the server */
+	CHAIN( e, sock_init() );
+	CHAIN( e, screenlist_init() );
+	CHAIN( e, init_drivers() );
+	CHAIN( e, clients_init() );
+	CHAIN( e, input_init() );
+	CHAIN( e, menuscreens_init() );
+	CHAIN( e, server_screen_init() );
 	CHAIN_END( e, "Critical error while initializing, abort." );
+	if (!foreground_mode) {
+		/* Tell to parent that startup went OK. */
+		wave_to_parent (parent_pid);
+	}
+	drop_privs(user); /* This can't be done before, because sending a
+			signal to a process of a different user will fail */
 
 	do_mainloop();
 	/* This loop never stops; we'll get out only with a signal...*/
@@ -241,11 +250,11 @@ clear_settings ()
 
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
-	lcd_port = UNSET_INT;
+	bind_port = UNSET_INT;
 	strncpy( bind_addr, UNSET_STR, sizeof(bind_addr) );
 	strncpy( configfile, UNSET_STR, sizeof(configfile) );
 	strncpy( user, UNSET_STR, sizeof(user) );
-	daemon_mode = UNSET_INT;
+	foreground_mode = UNSET_INT;
 	rotate_server_screen = UNSET_INT;
 	backlight = UNSET_INT;
 
@@ -303,7 +312,7 @@ process_command_line (int argc, char **argv)
 					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
 					e = -1;
 				} else {
-					daemon_mode = !b;
+					foreground_mode = b;
 				}
 				break;
 			case 'a':
@@ -311,7 +320,7 @@ process_command_line (int argc, char **argv)
 				bind_addr[sizeof(bind_addr)-1] = 0; /* Terminate string */
 				break;
 			case 'p':
-				lcd_port = atoi(optarg);
+				bind_port = atoi(optarg);
 				break;
 			case 'u':
 				strncpy(user, optarg, sizeof(user));
@@ -385,8 +394,8 @@ process_configfile ( char *configfile )
 		report( RPT_WARNING, "Could not read config file: %s", configfile );
 	}
 
-	if( lcd_port == UNSET_INT )
-		lcd_port = config_get_int( "server", "port", 0, UNSET_INT );
+	if( bind_port == UNSET_INT )
+		bind_port = config_get_int( "server", "port", 0, UNSET_INT );
 
 	if( strcmp( bind_addr, UNSET_STR ) == 0 )
 		strncpy( bind_addr, config_get_string( "server", "bind", 0, UNSET_STR ), sizeof(bind_addr));
@@ -404,11 +413,11 @@ process_configfile ( char *configfile )
 		}
 	}
 
-	if( daemon_mode == UNSET_INT ) {
+	if( foreground_mode == UNSET_INT ) {
 		int fg;
 		fg = config_get_bool( "server", "foreground", 0, UNSET_INT );
 		if( fg != UNSET_INT )
-			daemon_mode = !fg;
+			foreground_mode = fg;
 	}
 
 	if( rotate_server_screen == UNSET_INT ) {
@@ -470,15 +479,15 @@ set_default_settings()
 
 	/* Set defaults into unfilled variables....*/
 
-	if (lcd_port == UNSET_INT)
-		lcd_port = DEFAULT_BIND_PORT;
+	if (bind_port == UNSET_INT)
+		bind_port = DEFAULT_BIND_PORT;
 	if (strcmp( bind_addr, UNSET_STR ) == 0)
 		strncpy (bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
 	if (strcmp( user, UNSET_STR ) == 0)
 		strncpy(user, DEFAULT_USER, sizeof(user));
 
-	if (daemon_mode == UNSET_INT)
-		daemon_mode = DEFAULT_DAEMON_MODE;
+	if (foreground_mode == UNSET_INT)
+		foreground_mode = DEFAULT_FOREGROUND_MODE;
 	if (rotate_server_screen == UNSET_INT)
 		rotate_server_screen = DEFAULT_ROTATE_SERVER_SCREEN;
 
@@ -502,52 +511,112 @@ set_default_settings()
 }
 
 
-int
+void
+install_signal_handlers (int allow_reload)
+{
+	/* Installs signal handlers so that the program does clean exit and
+	 * can also receive a reload signal.
+	 * sigaction() is favoured over signal() */
+
+	struct sigaction sa;
+
+	debug( RPT_DEBUG, "%s( allow_reload=%d )", __FUNCTION__, allow_reload );
+
+	sa.sa_handler = exit_program;
+	sigemptyset ( &(sa.sa_mask) );
+	sa.sa_flags = SA_RESTART;
+
+	sigaction (SIGINT, &sa, NULL);		/* Ctrl-C will cause a clean exit...*/
+	sigaction (SIGTERM, &sa, NULL);		/* and "kill"...*/
+
+	if (allow_reload) {
+		sa.sa_handler = catch_reload_signal;
+		/* On SIGHUP reread config and restart the drivers ! */
+	}
+	else {
+		/* Treat this signal just like INT and TERM */
+	}
+	sigaction (SIGHUP, &sa, NULL);
+}
+
+
+void
+child_ok_func (int signal) {
+	/* We only catch this signal to be sure the child runs OK. */
+
+	debug( RPT_INFO, "%s( signal=%d )", __FUNCTION__, signal );
+
+	/* Exit now !    because of bug? in wait() */
+	_exit( 0 ); /* Parent exits normally. */
+}
+
+
+pid_t
 daemonize()
 {
-	int child;
+	pid_t child;
+	pid_t parent;
+	int child_status;
+	struct sigaction sa;
 
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
+	parent = getpid();
+	debug( RPT_INFO, "parent = %d", parent );
+
+	/* Install handler at parent for child's signal */
+	/* sigaction should be more portable than signal, but it does not
+	 * work for some reason. */
+	sa.sa_handler = child_ok_func;
+	sigemptyset ( &(sa.sa_mask) );
+	sa.sa_flags = SA_RESTART;
+	sigaction (SIGUSR1, &sa, NULL);
+
+	/* Do the fork */
 	switch ((child = fork ()) ) {
 	  case -1:
-		report(RPT_ERR, "Could not fork");
+		report( RPT_ERR, "Could not fork" );
 		return -1;
-	  case 0: /* We are the child*/
+	  case 0: /* We are the child */
 		break;
-	  default: /* We are the parent*/
-		usleep (1500000);		  /* Wait for child to initialize*/
-		exit (0);				  /* PARENT EXITS */
+	  default: /* We are the parent */
+		debug( RPT_INFO, "child = %d", child );
+		wait( &child_status );
+		/* BUG? According to the man page wait() should also return
+		 * when a signal comes in that is caught. Instead it
+		 * continues to wait. */
+
+		if( WIFEXITED(child_status) ) {
+			/* Child exited normally, probably because of some
+			 * error. */
+			debug( RPT_INFO, "Child has terminated!" );
+			exit( WEXITSTATUS(child_status) );
+			/* Parent exits with same status as child did... */
+		}
+		/* Child is still running and has signalled it's OK.
+		 * This means the parent can now rest in peace. */
+		debug( RPT_INFO, "Got OK signal from child." );
+		exit( 0 ); /* Parent exits normally. */
 	}
-	/* This line removed because it eats error messages...
-	 * setsid();*/                                       /* RELEASE TTY */
-	/*
-	 * After this point, as a daemon, no error messages should
-	 * go to the console unless drastic; rather, they should go to syslog
-	 *
-	 * However, option processing is not yet done, nor is any initialization (!)
-	 * So we must wait until the main loop.
-	 */
-	return 0;
+	/* At this point we are always the child. */
+	/* Reset signal handler */
+	sa.sa_handler = SIG_DFL;
+	sigaction (SIGUSR1, &sa, NULL);
+
+	setsid();	/* Create a new session because otherwise we'll
+			 * catch a SIGHUP when the shell is closed. */
+
+	return parent;
 }
 
 
 int
-init_sockets ()
+wave_to_parent (pid_t parent_pid)
 {
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug( RPT_DEBUG, "%s( parent_pid=%d )", __FUNCTION__, parent_pid );
 
-	if (sock_create_server (&bind_addr, lcd_port) <= 0) {
-		report(RPT_ERR, "Error opening socket");
-		return -1;
-	}
+	kill( parent_pid, SIGUSR1 );
 
-	/* Now init a bunch of required stuff...*/
-
-	if (clients_init () < 0) {
-		report(RPT_ERR, "Error initializing client list");
-		return -1;
-	}
 	return 0;
 }
 
@@ -574,9 +643,7 @@ init_drivers()
 			  	output_loaded = 1;
 			  	break;
 			  case 2: /* Driver does output in foreground (don't daemonize) */
-			  	if ( !output_loaded ) {
-			  		daemon_mode = 0;
-			  	}
+			  	foreground_mode = 1;
 			  	output_loaded = 1;
 			  	break;
 			}
@@ -782,6 +849,7 @@ exit_program (int val)
 	screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
 	input_shutdown ();		/* shutdown key input part */
 
+	report( RPT_INFO, "Exiting." );
 	_exit (0);
 }
 

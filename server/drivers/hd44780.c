@@ -111,7 +111,7 @@ static int parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets
 
 // Vars for the server core
 MODULE_EXPORT char * api_version = API_VERSION;
-MODULE_EXPORT int stay_in_foreground = 1; // because of port access problems
+MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1; // yes, we have no global variables (except for constants)
 MODULE_EXPORT char *symbol_prefix = "HD44780_";
 

@@ -294,7 +294,7 @@ static char *defaultKeyMapMatrix[KEYPAD_MAXY][KEYPAD_MAXX] = {
 
 // Vars for the server core
 MODULE_EXPORT char * api_version = API_VERSION;
-MODULE_EXPORT int stay_in_foreground = 1;
+MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1; // yes, we have no global variables (except for constants)
 MODULE_EXPORT char *symbol_prefix = "sed1330_";
 

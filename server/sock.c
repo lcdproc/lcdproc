@@ -32,6 +32,7 @@
 #include <string.h>
 
 #include "shared/sockets.h"
+#include "main.h"
 #include "sock.h"
 #include "client.h"
 #include "clients.h"
@@ -39,19 +40,57 @@
 #include "shared/report.h"
 #include "screenlist.h"
 
-extern char bind_addr[64];
-extern int lcd_port;
-
 
 fd_set active_fd_set, read_fd_set;
-int orig_sock;
+int listening_fd;
 
 /* Length of longest transmission allowed at once...*/
 #define MAXMSG 8192
 
-int read_from_client (int filedes);
+int sock_read_from_client (int filedes);
 
-/* Creates a socket in internet space*/
+
+int
+sock_init ()
+{
+	debug (RPT_DEBUG, "%s( bind_addr=\"%s\", port=%d )", __FUNCTION__, bind_addr, bind_port);
+
+	/* Create the socket and set it up to accept connections. */
+	listening_fd = sock_create_inet_socket (bind_addr, bind_port);
+	if (listening_fd < 0) {
+		report (RPT_ERR, "%s: Error creating socket", __FUNCTION__);
+		return -1;
+	}
+	return 0;
+}
+
+/*
+This code gets the send and receive buffer sizes.
+  {
+     int val, len, sock;
+     sock = new;
+
+     len = sizeof(int);
+     getsockopt(sock, SOL_SOCKET, SO_SNDBUF, &val, &len);
+     debug(RPT_DEBUG, "SEND buffer: %i bytes", val);
+
+     len = sizeof(int);
+     getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &val, &len);
+     debug(RPT_DEBUG, "RECV buffer: %i bytes", val);
+  }
+*/
+
+
+int
+sock_shutdown ()
+{
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+
+	close( listening_fd );
+}
+
+
+/* Creates a socket in internet space */
 int
 sock_create_inet_socket (char * addr, unsigned int port)
 {
@@ -61,7 +100,6 @@ sock_create_inet_socket (char * addr, unsigned int port)
 	debug (RPT_DEBUG, "%s( addr=\"%s\", port=%i )", __FUNCTION__, addr, port);
 
 	/* Create the socket. */
-	/*debug(RPT_DEBUG, "Creating Inet Socket");*/
 	sock = socket (PF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
 		report(RPT_ERR, "%s: Could not create socket", __FUNCTION__);
@@ -86,25 +124,6 @@ sock_create_inet_socket (char * addr, unsigned int port)
 		report(RPT_NOTICE, "Listening for queries on %s:%d", addr, port);
 	}
 
-	return sock;
-
-}
-
-/*int StartSocketServer()*/
-int
-sock_create_server (char *bind_addr, int lcd_port)
-{
-	int sock;
-
-	debug (RPT_DEBUG, "%s( bind_addr=\"%s\", port=%d )", __FUNCTION__, bind_addr, lcd_port);
-
-	/* Create the socket and set it up to accept connections. */
-	sock = sock_create_inet_socket (bind_addr, lcd_port);
-	if (sock < 0) {
-		report (RPT_ERR, "%s: Error creating socket", __FUNCTION__);
-		return -1;
-	}
-
 	if (listen (sock, 1) < 0) {
 		report(RPT_ERR, "%s: error in attempting to listen to port", __FUNCTION__);
 		return -1;
@@ -114,28 +133,11 @@ sock_create_server (char *bind_addr, int lcd_port)
 	FD_ZERO (&active_fd_set);
 	FD_SET (sock, &active_fd_set);
 
-	orig_sock = sock;
-
-/*
-  {
-     int val, len, sock;
-     sock = new;
-
-     len = sizeof(int);
-     getsockopt(sock, SOL_SOCKET, SO_SNDBUF, &val, &len);
-     debug(RPT_DEBUG, "SEND buffer: %i bytes", val);
-
-     len = sizeof(int);
-     getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &val, &len);
-     debug(RPT_DEBUG, "RECV buffer: %i bytes", val);
-  }
-*/
-
 	return sock;
 }
 
-/* Service all clients with input pending...*/
 
+/* Service all clients with input pending...*/
 int
 sock_poll_clients ()
 {
@@ -162,11 +164,11 @@ sock_poll_clients ()
 	/* Service all the sockets with input pending. */
 	for (i = 0; i < FD_SETSIZE; ++i) {
 		if (FD_ISSET (i, &read_fd_set)) {
-			if (i == orig_sock) {
+			if (i == listening_fd) {
 				/* Connection request on original socket. */
 				int new_sock;
 				size = sizeof (clientname);
-				new_sock = accept (orig_sock, (struct sockaddr *) &clientname, &size);
+				new_sock = accept (listening_fd, (struct sockaddr *) &clientname, &size);
 				if (new_sock < 0) {
 					report (RPT_ERR, "%s: Accept error", __FUNCTION__);
 					return -1;
@@ -191,7 +193,7 @@ sock_poll_clients ()
 				err = 0;
 				do {
 					debug (RPT_DEBUG, "%s: reading...", __FUNCTION__);
-					err = read_from_client (i);
+					err = sock_read_from_client (i);
 					debug (RPT_DEBUG, "%s: ...done", __FUNCTION__);
 					if (err < 0) {
 						/* Client disconnected, destroy client data */
@@ -203,8 +205,9 @@ sock_poll_clients ()
 							clients_remove_client (c);
 							close (i);
 							FD_CLR (i, &active_fd_set);
-						} else
+						} else {
 							report (RPT_ERR, "%s: Can't find client of socket %i", __FUNCTION__, i);
+						}
 					}
 				} while (err > 0);
 			}
@@ -214,7 +217,7 @@ sock_poll_clients ()
 }
 
 int
-read_from_client (int filedes)
+sock_read_from_client (int filedes)
 {
 	char buffer[MAXMSG];
 	int nbytes, i;

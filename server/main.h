@@ -42,4 +42,29 @@ extern long int timer;
  * If you get an overflow, please mail us and we will fix this personally
  * for you ! */
 
+/**** Configuration variables ****/
+/* Only configuration items that are settable from the command line should
+ * be mentioned here. See main.c.
+ */
+
+extern unsigned int bind_port;
+extern char bind_addr[];	/* Do not preinit these strings as they will occupy */
+extern char configfile[];	/* a lot of space in the executable. */
+extern char user[];		/* The values will be overwritten anyway... */
+
+extern int foreground_mode;
+
+extern int report_level;
+extern int report_to_syslog;
+
+/* The drivers and their driver parameters */
+extern char *drivernames[];
+extern int num_drivers;
+
+/* End of configuration variables */
+
+/* Defines for having 'unset' values*/
+#define UNSET_INT -1
+#define UNSET_STR "\01"
+
 #endif
