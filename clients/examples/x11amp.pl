@@ -1,5 +1,9 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
+#
+# Simple client for LCDproc which controls XMMS/X11AMP MP3 player
+# from the keyboard controlled by LCDproc. It can only rewind to
+# previous song and skip forward to previous one.
 #
 # This is just a test!  It's simple, cheesy, and doesn't do much
 # or even look very nice.
@@ -11,11 +15,32 @@
 use IO::Socket;
 use Fcntl;
 
+############################################################
+# Configurable part. Set it according your setup.
+############################################################
+
+# Host which runs lcdproc daemon (LCDd)
+$HOST = "localhost";
+
+# Port on which LCDd listens to requests
+$PORT = "13666";
+
+# Path to command which controls XMMS/X11AMP
+$XMMS = "xmms";
+
+# Commands to set to previous / next song
+$XMMS_FORWARD = "$XMMS --fwd";
+$XMMS_REWIND = "$XMMS --rew"
+
+############################################################
+# End of user configurable parts
+############################################################
+
 # Connect to the server...
 $remote = IO::Socket::INET->new(
 		Proto     => "tcp",
-		PeerAddr  => "localhost",
-		PeerPort  => "13666",
+		PeerAddr  => $HOST,
+		PeerPort  => $PORT,
 	)
 	|| die "Cannot connect to LCDproc port\n";
 
@@ -55,11 +80,11 @@ while(1)
 		$key = shift @items;
 		if($key eq "E")
 		{
-		    system("x11amp --rew");
+		    system($XMMS_REWIND);
 		}
 		if($key eq "F")
 		{
-		    system("x11amp --fwd");
+		    system($XMMS_FORWARD);
 		}
 	    }
 	    # And ignore everything else

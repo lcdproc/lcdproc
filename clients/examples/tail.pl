@@ -1,7 +1,35 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
+
+#
+# This client for LCDproc displays the tail of a specified file.
+# It's possible to change the visible part of the file with LCDproc
+# controlled keys
+#
 
 use IO::Socket;
 use Fcntl;
+
+############################################################
+# Configurable part. Set it according your setup.
+############################################################
+
+# Host which runs lcdproc daemon (LCDd)
+$HOST = "localhost";
+
+# Port on which LCDd listens to requests
+$PORT = "13666";
+
+# These define the visible part of the file...
+$top = 3;    # How far from the end of the file should we start?
+$lines = 3;  # How many lines to display?
+$left = 1;   # Left/right scrolling position,
+$width = 20; # and number of characters per line to show
+
+############################################################
+# End of user configurable parts
+############################################################
+
+$slow = 1;   # Should we pause after the current frame?
 
 if($#ARGV < 0)
 {
@@ -14,8 +42,8 @@ $filename = shift @ARGV;
 # Connect to the server...
 $remote = IO::Socket::INET->new(
 		Proto     => "tcp",
-		PeerAddr  => "localhost",
-		PeerPort  => "13666",
+		PeerAddr  => $HOST,
+		PeerPort  => $PORT,
 	)
 	|| die "Cannot connect to LCDproc port\n";
 
@@ -34,7 +62,7 @@ fcntl($remote, F_SETFL, O_NONBLOCK);
 
 
 # Set up some screen widgets...
-print $remote "client_set name {Tail ($filename)}\n";
+print $remote "client_set name {Tail}\n";
 print $remote "screen_add tail\n";
 print $remote "screen_set tail name {Tail $filename}\n";
 print $remote "widget_add tail title title\n";
@@ -44,13 +72,6 @@ print $remote "widget_add tail 2 string\n";
 print $remote "widget_add tail 3 string\n";
 
 
-# These define the visible part of the file...
-$top = 3;    # How far from the end of the file should we start?
-$lines = 3;  # How many lines to display?
-$left = 1;   # Left/right scrolling position,
-$width = 20; # and number of characters per line to show
-
-$slow = 1;   # Should we pause after the current frame?
 
 # Forever, we should do stuff...
 while(1)
@@ -58,7 +79,7 @@ while(1)
 	# Handle input...  (spew it to the console)
         # Also, certain keys scroll the display
 	while(defined($input = <$remote>)) {
-	    if ( $input =~ /^success$/ ) next;
+	    if ( $input =~ /^success$/ ) { next; }
 	    print $input;
 
 	    $slow = -10;
@@ -103,9 +124,9 @@ while(1)
 	}
 	else  # If the file is unreadable, show an error
 	{
-	    print $remote "widget_set tail one 1 2 {$filename}\n";
-	    print $remote "widget_set tail two 1 3 {doesn't exist.}\n";
-	    print $remote "widget_set tail three 1 4 { }\n";
+	    print $remote "widget_set tail 1 1 2 {$filename}\n";
+	    print $remote "widget_set tail 2 1 3 {doesn't exist.}\n";
+	    print $remote "widget_set tail 3 1 4 { }\n";
 	}
 
 	# And wait a little while before we show stuff again.

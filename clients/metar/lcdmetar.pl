@@ -23,6 +23,8 @@
 # Chicago: KMDW
 # Graz/Austria (Thalerhof) : LOWG
 #
+# More can be found at http://weather.noaa.gov
+#
 # no warranty - use at your own risc. 
 # DO NOT PLAN FLIGHTS ETC ON THIS INFORMATION!!!!
 #
@@ -31,11 +33,39 @@
 use IO::Socket;
 use Fcntl;
 
+############################################################
+# Configurable part. Set it according your setup.
+############################################################
+
+# Host which runs lcdproc daemon (LCDd)
+$HOST = "localhost";
+
+# Port on which LCDd listens to requests
+$PORT = "13666";
+
+# URL returning weather conditions for specified station code.
+# Note that $site_code gets replaced by the actual site code,
+#   hence the URL must be in single quotes
+$URL = 'http://weather.noaa.gov/cgi-bin/mgetmetar.pl?cccc=$site_code';
+
+# Delay (in seconds) between subsequent checks of metar
+$DELAY = 900;
+
+# Minimum valid size of metar response
+$MIN_METAR_SIZE = 10;
+
+############################################################
+# End of user configurable parts
+############################################################
+
 # Get the site code.
 
 my $site_code = shift @ARGV;
 
-die "Usage: $0 <site_code>\n" unless $site_code;
+die "Usage: $0 <site_code>\n  Learn about site codes at http://weather.noaa.gov\n" unless $site_code;
+
+# replace the string '$site_code' in URL with actual site code
+$URL =~ s/\$site_code/$site_code/;
 
 # Get the modules we need.
 
@@ -46,8 +76,8 @@ use LWP::UserAgent;
 # Connect to the server...
 $remote = IO::Socket::INET->new(
                 Proto     => "tcp",
-                PeerAddr  => "localhost",
-                PeerPort  => "13666",
+                PeerAddr  => $HOST,
+                PeerPort  => $PORT,
         )
         || die "Cannot connect to LCDproc port\n";
 
@@ -77,8 +107,7 @@ print $remote "widget_add metar wind string\n";
 # set metar source
 my $ua = new LWP::UserAgent;
 
-my $req = new HTTP::Request GET =>
-  "http://weather.noaa.gov/cgi-bin/mgetmetar.pl?cccc=$site_code";
+my $req = new HTTP::Request GET => $URL;
 
 # fetch weather information
 while (1==1) {
@@ -105,7 +134,7 @@ while (1==1) {
 
 	    # Sanity check
 
-	    if (length($metar)<10) {
+	    if (length($metar)<$MIN_METAR_SIZE) {
 	        die "METAR is too short! Something went wrong.";
 	    }
 	
@@ -135,8 +164,8 @@ while (1==1) {
 	    next  if ( $input =~ /^success$/ );
 	    #print $input;
 	}
-	print "Sleeping 15 minutes.\n";
-	sleep 900;
+	print "Sleeping " . int ($DELAY / 60) . " minutes.\n";
+	sleep $DELAY;
 }
 
 close($remote);
