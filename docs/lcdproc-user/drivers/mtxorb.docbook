@@ -166,7 +166,7 @@
             <para>
               If the module does not immediately display its initial BIOS screen and light
               up its backlight (or light up the screen if a VFD module is being used),
-              <EMPHASIS>immediately</EMPHASIS> power down the system, disconnect the module
+              <emphasis>immediately</emphasis> power down the system, disconnect the module
 	      and connector, and double-check the modification before trying again. Do NOT
 	      leave the system on if the module does not immediately respond; module or
 	      system damage could result.
