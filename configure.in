@@ -87,11 +87,16 @@ AC_CHECK_HEADERS(sched.h sys/sched.h machine/cpufunc.h sys/types.h machine/pio.h
 ETR_SYSV_IPC
 ETR_UNION_SEMUN
 
+dnl sched_setscheduler on OpenBSD
+AC_CHECK_FUNCS(sched_setscheduler)
+
 dnl i386_get_ioperm on NetBSD&OpenBSD
+AC_CHECK_LIB(i386, i386_get_ioperm)
 AC_CHECK_LIB(i386, i386_get_ioperm,
         AC_DEFINE([HAVE_I386_IOPERM_NETBSD],[1],
         [Define if you have the NetBSD&OpenBSD version of i386_ioperm functions.]),[
         dnl i386_get_ioperm on FreeBSD
+	AC_CHECK_LIB(c, i386_get_ioperm)
         AC_CHECK_LIB(c, i386_get_ioperm,
                 AC_DEFINE([HAVE_I386_IOPERM_FREEBSD],[1],
                 [Define if you have the FreeBSD version of the i386_ioperm functions.]),

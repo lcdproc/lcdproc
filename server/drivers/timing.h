@@ -42,7 +42,7 @@
 
 // Autoselect...  Does this always work well ?
 #ifdef DELAY_AUTOSELECT
-# ifdef HAVE_SCHED_H
+# if defined HAVE_SCHED_H && defined HAVE_SCHED_SETSCHEDULER
 #  define DELAY_NANOSLEEP
 # else
 #  define DELAY_GETTIMEOFDAY
