@@ -1,126 +1,123 @@
-Allo...  (warning:  this was written as I thought it up :)
+Menus
 
-Ideas for implementing menus...
+This file originally described how the menus should become implemented.
+Now that they are implemented, the description is also in the source:
+server/menu.h. The current menu contents can be found in server/menus.c.
+Reading these files it becomes easy to understand the menus.
 
-We've got a data structure called "Menu_Item", which has (for starters):
-
-	Title		-- Text to display
-	Child		-- Sub-Menu to recurse into, if item is picked
-	Exec Function	-- Function to call if the item is picked
-
-An item must not have both a child and an exec function.
-
-The DoMenu(main_menu) handles all input and either calls ExecFunction,
-if the picked item has one; or recurses into the Child menu.  The
-ExecFunction returns a value to specify whether the menus should go
-away, back up one level, or stay as-is.  Also, a menu title (label)
-can be specified by giving neither a Child nor a Function.
-
-The up/down arrows, blinking, scrolling, etc, are handled by DoMenu().
-
-This gives us the functionality of a standard pull-down menu.
-However, we need more functionality than that.  We need checkboxes,
-sliders, and a way to move items up/down.
-
-So...
-
-The ExecFunction should take a parameter, telling whether the item was
-simply picked, or if it had a +/- pressed on it.  This lets us change
-a value from the menu.
-
-We should also add another function to the MenuItem struct:
-
-	Data Function	-- returns true, false, or 0-255.
-
-This lets us find out if a checkbox should be checked, or where a
-slider should be.  DoMenu() will figure out what widget it's dealing
-with (if any), and adjust its display accordingly.
-
-But we still can't move menu items up/down.
+I (Joris) have given the file you are reading a new purpose:
+client-supplied menus.
 
 
-...
+INTERNAL SERVER DATA
+
+In the server dir there is a file named client_menus.h from 3 april 2000
+which describes the data structures that we should probably need.
+
+typedef struct client_menu {
+	char id[];
+	LL *items;
+} client_menu;
+
+(LL is a list)
+
+typedef struct client_menu_item {
+	char id[];
+	int type;						  // Title, function, submenu, slider, checkbox, etc...
+	int value;						  // Holds stuff like "true", 43, etc...
+	char text[];					  // Text to display here...
+	char child[];					  // For the "submenu" type
+} client_menu;
 
 
-Perhaps...  This might work better:
 
-	Title		-- Text
-	Type		-- menu,  function, checkbox,  slider,   mover
-	Data		-- Child, ExecFunc, CheckFunc, SlidFunc, ???
+DEFINING BY CLIENTS
 
-When an item is picked, DoMenu() decides what to do based on type.
---"Menus" will recurse into the "data", assuming it's a child menu.
---"Function"-type items will have their function called.  
---CheckBox-type items will have their function called with a "read"
-  parameter to get an on/off signal, and called with a "set" signal when
-  picked.
---Sliders will have the same "read" thing, and the "set" function will
-  take a plus or minus parameter.
---The Movers will act like a label until picked, and then the +/- keys
-  will both rearrange the menu, and send the item a signal of some sort
-  to indicate what happened.  It'll act like a label again after the
-  user presses Enter again.
+To define a menuitem using the widget language the following functions have
+been defined in the file client_functions.c:
+(In my opinion the menu_add functions can be left away, because a submenu
+is an item as well.)
 
-The "Data" field will really be a "void *", which is C's "generic"
-data type...
+menu_add_item
+menu_del_item
+menu_set_item
 
-Anyway, this sort of thing would be declared this way:
+The functions are not implemented yet, but looking at what we need, the
+parameters could look like this:
 
-========================================================================
+menu_add_item itemname itemstring itemtype [-m menu] -v initvalue
+menu_del_item itemname
+menu_set_item itemname [-v value] [-s itemstring]
 
-Menu MainMenu = {
-	"MENU",		NULL,		NULL,	// Title
-	"Options",	MENU_TYPE,	(void *)OptionsMenu,
-	"Kill LCDproc",	FUNC_TYPE,	(void *)Shutdown_func,
-	NULL,		NULL,		NULL,
-};
+You should not need to define the first menu of a client. The name of the
+client is known and will be used to give the menu a name. The first level
+menu will simply be created automatically when a client defines an item in
+it's menu.
+(Or is there any reason why the client should create its own menu ? A client
+should not be able to create two main menus anyway)
 
-Menu OptionsMenu = {
-	"OPTIONS",	NULL,		NULL,	// Title
-	"24-hour Time",	CHEK_TYPE,	(void *)Time24_func,
-	"Contrast...",	SLID_TYPE,	(void *)Contrast_func,
-	NULL,		NULL,		NULL,
-};
+The following item types exist:
+title		A title to be used on the top of the menu.
+menu		A submenu. Refer to this new menu using the -m option.
+action		An action. The client is notified that the user wants the
+		action to be executed.
+checkbox	A checkbox. The client is notified whenever the state is
+		changed.
+slider		A checkbox. The client is notified whenever the slider is
+		moved.
 
-
-///////////////// Elsewhere, we declare these...
-
-void Shutdown_func()
-{
-  // Do something here...
-  return MENU_KILL;	// or MENU_CLOSE, or MENU_OK, or MENU_ERROR
-}
-
-int Time24_func(int input)
-{
-  if(input == READ) return status;
-  if(input == SELECT) toggle_status();	// does something.
-  return (status | MENU_OK);
-	// The status is "or"-ed with the MENU value to let DoMenu()
-	// know what to do after selecting the item.  (two return
-	// values in one.  :)
-
-	// Also, "MENU_OK" happens to be zero, so it doesn't matter
-	// unless you want something else (like MENU_CLOSE)
-}
-
-int Contrast_func(int input)
-{
-  if(input == READ) return status;
-  if(input == PLUS) increment_status();	// does something.
-  if(input == MINUS) decrement_status();// does something.
-  return (status | MENU_OK); 
-}
+Note that I have changed the 'function' menu type to 'action' here. The name
+'function' was only appropriate internally, because a function was called.
+For clients we only know an action will be performed.
 
 
-========================================================================
 
-The main reason I like this is that it completely separates the menu
-definitions from the code which actually handles it.  We have *one*
-function which does everything menu-related.
+RETURNED DATA
 
-Also, we'd include a table of some sort to match names to functions,
-so that the user can create their own menus with the functionality
-already provided.  (including user-defined "functions", which will be
-rather limited but still useful)
+The server should inform the client on events. It should be able to return 
+strings like:
+
+action itemname
+checkbox itemname newvalue
+slider itemname newvalue
+
+
+EXAMPLE SESSION
+
+We have an M3 player here.
+
+menu_add_item action play "Play"
+menu_add_item action stop "Stop"
+menu_add_item menu tracks "Select Track"
+menu_add_item action track1 "1: Leg"
+menu_add_item action track2 "2: Palomine"
+menu_add_item action track3 "3: Kid's allright"
+menu_add_item action track4 "4: brain-Tag"
+menu_add_item menu CDs "Select CD"
+menu_add_item action cd1 "1: Bettie Serveert - Palomine"
+menu_add_item action cd2 "2: Rammstein - Herzeleid"
+menu_add_item slider volume "Volume"
+
+When you should switch CD using the second submenu, the client will be
+informed with:
+
+action cd2
+
+Then the client knows the user has selected the second CD, and the items of
+the Track menu should be changed according to the contents of the CD:
+
+menu_set_item track1 -s "1: Wollt ihr das bett in flammen sehen"
+menu_set_item track2 -s "2: Der meister"
+menu_set_item track3 -s "3: Weisses fleish"
+
+When the user changes the volume slider, the client will be informed with:
+
+slider volume 40
+
+When it is set at 40%.
+
+
+
+--
+Complete rewrite, Joris Robijn, 20011015
 
