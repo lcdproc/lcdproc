@@ -94,24 +94,20 @@ ETR_UNION_SEMUN
 
 dnl sched_setscheduler on OpenBSD
 AC_CHECK_FUNCS(sched_setscheduler)
-AC_CHECK_LIB(posix4, sched_setscheduler)
 AC_CHECK_LIB(posix4, sched_setscheduler, [
       AC_DEFINE([HAVE_SCHED_SETSCHEDULER],[1],
       [Define if you have the sched_setscheduler function.])
 ])
-AC_CHECK_LIB(rt, sched_setscheduler)
 AC_CHECK_LIB(rt, sched_setscheduler, [
       AC_DEFINE([HAVE_SCHED_SETSCHEDULER],[1],
       [Define if you have the sched_setscheduler function.])
 ])
 
 dnl i386_get_ioperm on NetBSD&OpenBSD
-AC_CHECK_LIB(i386, i386_get_ioperm)
 AC_CHECK_LIB(i386, i386_get_ioperm,
         AC_DEFINE([HAVE_I386_IOPERM_NETBSD],[1],
         [Define if you have the NetBSD&OpenBSD version of i386_ioperm functions.]),[
         dnl i386_get_ioperm on FreeBSD
-	AC_CHECK_LIB(c, i386_get_ioperm)
         AC_CHECK_LIB(c, i386_get_ioperm,
                 AC_DEFINE([HAVE_I386_IOPERM_FREEBSD],[1],
                 [Define if you have the FreeBSD version of the i386_ioperm functions.]),
