@@ -84,8 +84,8 @@ widget_add_func (Client * c, int argc, char **argv)
 			p++;
 
 		/* Handle the "in" flag to place widgets in a container...*/
-		if (strcmp (p, "in")) {
-			char * frame_name;
+		if (strcmp (p, "in")==0) {
+			Widget * frame;
 
 			if (argc < 6) {
 				sock_send_string (c->sock, "huh?  Specify a frame to place widget in\n");
@@ -96,16 +96,13 @@ widget_add_func (Client * c, int argc, char **argv)
 			 * This way it will not be plaed in the normal screen
 			 * but in the framescreen.
 			 */
-			frame_name = malloc (strlen("frame_") + strlen(argv[5]) + 1);
-			strcpy (frame_name, "frame_");
-			strcat (frame_name, argv[5]);
-			s = screen_create (frame_name, c);
-			if (!s) {
-				report(RPT_WARNING, "widget_add_func: Error creating framescreen");
+			frame = screen_find_widget(s, argv[5]);
+			if (!frame) {
+				report(RPT_WARNING, "widget_add_func: Error finding frame ");
 				sock_send_string(c->sock, "huh?  Failed\n");
 				return 0;
 			}
-			free (frame_name);
+			s = frame->frame_screen;
 		}
 	}
 

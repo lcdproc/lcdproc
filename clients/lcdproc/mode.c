@@ -185,7 +185,8 @@ credit_screen(int rep, int display)
 		else
 		{
 			sock_send_string(sock, "widget_add A text scroller\n");
-			sock_send_string(sock, "widget_set A text 1 2 20 2 v 8 { for Linux & *BSD by William Ferrell, Scott Scriven}\n");
+			sprintf(buffer, "widget_set A text 1 2 %d 2 h 8 { for Linux & *BSD by William Ferrell, Scott Scriven}\n", lcd_wid);
+			sock_send_string(sock, buffer);
 		}
 	}
 

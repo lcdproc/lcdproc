@@ -218,7 +218,7 @@ mem_top_screen (int rep, int display)
 		if (lcd_hgt >= 4)
 			sock_send_string (sock, "widget_set S f 1 2 20 4 20 5 v 8\n");
 		else
-			sock_send_string (sock, "widget_set S f 1 2 20 2 20 5 v 16\n");
+			sock_send_string (sock, "widget_set S f 1 2 20 2 20 5 v 12\n");
 		for (i = 1; i <= 5; i++) {
 			sprintf (buffer, "widget_add S %i string -in f\n", i);
 			sock_send_string (sock, buffer);

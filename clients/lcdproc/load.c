@@ -49,7 +49,7 @@ xload_screen (int rep, int display)
 		} else {
 			sock_send_string (sock, "widget_add X title string\n");
 			sock_send_string (sock, "widget_set X title 1 1 {LOAD}\n");
-			sock_send_string (sock, "widget_del X heartbeat\n");
+			sock_send_string (sock, "screen_set X -heartbeat off\n");
 		}
 		sock_send_string (sock, "widget_add X zero string\n");
 		sock_send_string (sock, "widget_add X top string\n");
