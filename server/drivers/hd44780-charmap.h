@@ -7,12 +7,20 @@
  * Initial table taken from lcd.o Linux kernel driver by
  * Nils Faerber <nilsf@users.sourceforge.net>. Thanks!
  *
- * Alternative mappings used:
- * #112 ("p") -> #240 (large "p"), orig. mapped -> #112
- * #113 ("q") -> #241 (large "q"), orig. mapped -> #113
- *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
+ *
+ *
+ * Following translations are being performed:
+ * - maps umlaut accent characters to the corresponding umlaut characters
+ * - maps other accent characters to the characters without accents
+ * - maps beta (=ringel-S), micro and Yen
+ *
+ * Alternative mappings:
+ * - #112 ("p") -> #240 (large "p"), orig. mapped -> #112
+ * - #113 ("q") -> #241 (large "q"), orig. mapped -> #113
+ *
+ * HD44780 misses backslash
  *
  */
 
@@ -44,7 +52,7 @@ const char HD44780_charmap[]={
  84, 85, 86, 87,
  88, 89, 90, 91,
 /* #92 */
- 92, 93, 94, 95,
+ 47, 93, 94, 95,
  96, 97, 98, 99,
 100,101,102,103,
 104,105,106,107,
@@ -63,7 +71,7 @@ const char HD44780_charmap[]={
 152,153,154,155,
 156,157,158,159,
 /* #160 */
-160, 33,236,163,
+160, 33,236,237,
 164, 92,124,167,
  34,169,170,171,
 172,173,174,175,

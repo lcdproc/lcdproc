@@ -73,6 +73,7 @@ You can connect a keypad with all connection types. The maximum supported
 number of keys differs per type. There are several ways to connect the keys
 to the input pins.
 
+
 1.1.2.1  Direct keys
 --------------------
 
@@ -168,10 +169,29 @@ You can buy arrays of keys that are connected like this in the electronics
 shop. They usually call it a matrix keypad. To hook it to lcdproc, you
 would only need to add the resistors and diodes.
 
+If you want to use just one return line, for example with the serialLpt
+wiring, it looks (completely drawn) like this:
+
+                  O 5V
+                  |
+                 .-.
+                 | | 4k7 or 22k
+     diodes      | |
+     1N4148      '-'
+            ___   |
+Y0 o---|<---o o---+
+            ___   |
+Y1 o---|<---o o---+
+            ___   |
+Y2 o---|<---o o---+
+            ___   |
+Y3 o---|<---o o---+----o return line
+
+
 If the driver generates keypresses without that you actually press a key,
 it might be that the unconnected input lines are picking up
-electromagnetic waves from the air. In that case connect the unconnected 
-input lines (pin 10, 11, 12, 13 and 15 of the LPT) to VCC.
+electromagnetic waves from the air. In that case connect the unconnected
+input lines (pin 10, 11, 12, 13 and 15 of the LPT) to VCC = 5V.
 
 
 1.1.3 Backlight
@@ -200,7 +220,7 @@ LPT Sub-D connector         |   4k7          |
                                             === GND
 
 Note: 4k7 means 4,7 kohm and 330E means 330 ohm.
-The BC327 has the following connections:
+The BC327 transistor has the following connections:
 
      _____
     |     |
@@ -215,6 +235,11 @@ Sometimes the backlight connections are not on the 'main' connector, but on
 the side. If that is the case, there is usually NO RESISTOR present to limit
 the current through the LEDs. Therefor you should add a resistor after
 the transistor of 10 ohm.
+
+If you want the backlight to light a bit while it's switched 'off', you can
+add a resistor bypassing the transistor from e to c, with a value of, say
+47ohm or 22ohm. (My 4x20 has an internal resistor of 6ohm, so with 47 ohm
+extra it lights at only 1/9th. I like this. Joris.)
 
 
 1.2  4-bit
@@ -387,11 +412,11 @@ cannot use the backlight control together with the bargraph.
 This interface uses a handful of wires to interface to the
 HD44780. Suitable for high noise, long connections. Designed by
 Andrew McMeikan <andrewm@engineer.com>. The original wiring and
-driver can be found at: 
+driver can be found at:
 http://members.xoom.com/andrewmuck
 
 I (Joris) have extended this driver and the wiring a bit. It now supports
-keys again (it had earlier supported keys, but some time did not). 
+keys again (it had earlier supported keys, but some time did not).
 
 Further I have extended the driver and the wiring to be able to run
 using 2 instead of 3 output pins. That's even one less pin ! :)
@@ -400,7 +425,7 @@ Of course the use of fewer lines than the other wirings can not stay
 without drawbacks. In this case the simplicity of the long feeding wires
 is compensated by some intelligence in the decoding of the data. If you
 have no experience with the soldering iron, I do not recommend to build
-this wiring. 
+this wiring.
 
 OK, so here is the wiring. First of the 'simple' 3 wires version. IC1 is
 the shift register, a 4094. Do not forget to connect the 5V to pin 16 and
@@ -508,7 +533,14 @@ complex. If you do not understand the schematic, do not build it.
                                                          |
                                                         === GND
 
-Also the serialLpt wiring supports a keypad. The 3 wires version supports
+
+1.5.1 Keypad
+------------
+
+To understand this part of the serialLpt documentation, you also need to
+read the keypad section in this document.
+
+serialLpt wiring supports a keypad. The 3 wires version supports
 8 keys, or if you use multiple return lines up to 8 x 5 = 40 lines. The
 2 wires version supports 7 keys, or with multiple return lines
 7 x 5 = 35 keys.
@@ -521,8 +553,30 @@ The return lines are the following:
   SELIN (13)    X3
   nFAULT (15)   X4
 
-To understand some of this keypad documentation, do also read the keypad
-section in this document.
+On lines longer than, say a meter, you should buffer the return line(s).
+If you only have 1 return line, you can buffer it with two remaining
+buffers from the 74HCT14:
+
+               1|\ 2    13|\ 12   ___
+   keypad o-----| >o------| >o---|___|---+---o input pin on LPT port
+   return       |/        |/      220E   |
+                IC1       IC1           ---
+                                        --- 1nF
+                                         |
+                                        ===
+
+Also a backlight is suported. You will also need a port from the 74HCT14 for
+that. The BL output below should be connected to the BL input in paragraph
+1.1.3.
+
+                 ___       3|\ 4
+     Data o-----|___|--+----| >o----o BL output
+   LPT-D3       470k   |    |/
+                      ---   IC1
+                      ---
+                       |100nF
+                       |
+                      ===
 
 
 2. Compiling
@@ -544,7 +598,7 @@ Then as usual, start LCDd with the correct config file:
 for example.
 
 If you want to override the driver selection in LCDd.conf then use:
-      LCDd -c ./LCDd.conf -d HD44780 
+      LCDd -c ./LCDd.conf -d HD44780
 If you use this, the HD44780 driver will read the options from the config
 file.
 
