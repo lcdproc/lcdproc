@@ -120,10 +120,11 @@ dnl				else
 			;;
 		hd44780)
 			if test "$ac_cv_port_have_lpt" = yes ; then
-				DRIVERS="$DRIVERS hd44780.o hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-winamp.o hd44780-picanlcd.o"
+				HD44780_DRIVERS="hd44780-4bit.o hd44780-ext8bit.o lcd_sem.o hd44780-serialLpt.o hd44780-picanlcd.o"
 			else
-				DRIVERS="$DRIVERS hd44780.o hd44780-picanlcd.o"
+				HD44780_DRIVERS="hd44780-picanlcd.o"
 			fi
+			DRIVERS="$DRIVERS hd44780${SO}"
 			actdrivers=["$actdrivers hd44780"]
 			;;
 		joy)
@@ -220,6 +221,7 @@ AC_SUBST(LIBIRMAN)
 AC_SUBST(LIBLIRC_CLIENT)
 AC_SUBST(LIBSVGA)
 AC_SUBST(DRIVERS)
+AC_SUBST(HD44780_DRIVERS)
 ])
 
 
