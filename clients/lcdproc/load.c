@@ -10,6 +10,10 @@
 #include "mode.h"
 #include "load.h"
 
+#ifdef HAVE_GETLOADAVG
+#include <sys/loadavg.h>
+#endif
+
 int loadavg_fd = 0;
 
 static double get_loadavg (void);
@@ -18,9 +22,15 @@ static double
 get_loadavg (void)
 {
 	double load;
+	double loadavg[LOADAVG_NSTATS];
 
+#ifndef HAVE_GETLOADAVG
 	reread (loadavg_fd, "get_load:");
 	sscanf (buffer, "%lf", &load);
+#else
+	getloadavg(loadavg,LOADAVG_NSTATS);
+	load = loadavg[LOADAVG_1MIN];
+#endif
 	return load;
 }
 
@@ -30,7 +40,6 @@ load_init ()
 #ifndef SOLARIS
 	if (!loadavg_fd)
 		loadavg_fd = open ("/proc/loadavg", O_RDONLY);
-
 #endif
 	return 0;
 }

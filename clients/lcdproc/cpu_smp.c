@@ -56,11 +56,24 @@
 #include "mode.h"
 #include "cpu_smp.h"
 
+#ifdef SOLARIS
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/cpuvar.h>
+#endif
+#ifdef HAVE_LIBKSTAT
+#include <kstat.h>
+#endif
+
 #define MAX_CPUS 8
 
 struct load {
 	unsigned long total, user, system, nice, idle;
 };
+
+#ifdef HAVE_LIBKSTAT
+kstat_ctl_t *kc;
+#endif
 
 static int load_fd = 0;
 
@@ -73,6 +86,8 @@ get_load (struct load *result, int *numcpus)
 	static struct load last_load[MAX_CPUS];
 	struct load curr_load[MAX_CPUS];
 
+
+#ifndef HAVE_LIBKSTAT
 	*numcpus = 0;
 
 	reread (load_fd, "get_load");
@@ -104,14 +119,57 @@ get_load (struct load *result, int *numcpus)
 		}
 		token = strtok (NULL, "\n");
 	}
+#else
+	kstat_t	*k_space;
+	void    *val_ptr;
+	int		ncpu=0,count;
+	char	buffer[10];
+
+	*numcpus=sysconf(_SC_NPROCESSORS_CONF);
+	for (count = 0; count < MAX_CPUS;count++) {
+		sprintf (buffer, "cpu_stat%d",count);
+		k_space = kstat_lookup(kc, "cpu_stat", count, buffer);
+		if (k_space == NULL) {
+		} else if (kstat_read(kc, k_space, NULL) == -1) {
+		} else  {
+			struct cpu_stat cinfo;
+			k_space=kstat_lookup(kc, "cpu_stat", -1, buffer);
+			kstat_read(kc,k_space,&cinfo);
+			curr_load[ncpu].idle=cinfo.cpu_sysinfo.cpu[CPU_IDLE];
+			curr_load[ncpu].user=cinfo.cpu_sysinfo.cpu[CPU_USER];
+			curr_load[ncpu].system=cinfo.cpu_sysinfo.cpu[CPU_KERNEL];
+			curr_load[ncpu].nice=cinfo.cpu_sysinfo.cpu[CPU_WAIT];
+			curr_load[ncpu].nice=0;
+			curr_load[ncpu].total = curr_load[ncpu].user + curr_load[ncpu].nice + curr_load[ncpu].system + curr_load[ncpu].idle;
+			result[ncpu].total = curr_load[ncpu].total - last_load[ncpu].total;
+			result[ncpu].user = curr_load[ncpu].user - last_load[ncpu].user;
+			result[ncpu].nice = curr_load[ncpu].nice - last_load[ncpu].nice;
+			result[ncpu].system = curr_load[ncpu].system - last_load[ncpu].system;
+			result[ncpu].idle = curr_load[ncpu].idle - last_load[ncpu].idle;
+			last_load[ncpu].total = curr_load[ncpu].total;
+			last_load[ncpu].user = curr_load[ncpu].user;
+			last_load[ncpu].nice = curr_load[ncpu].nice;
+			last_load[ncpu].system = curr_load[ncpu].system;
+			last_load[ncpu].idle = curr_load[ncpu].idle;
+			ncpu=ncpu++;
+		}
+	}
+#endif
 }
 
 int
 cpu_smp_init ()
 {
+#ifndef HAVE_LIBKSTAT
 	if (!load_fd) {
 		load_fd = open ("/proc/stat", O_RDONLY);
 	}
+#else
+	kc = kstat_open();
+	if (kc == NULL) {
+		exit(1);
+	}
+#endif
 
 	return 0;
 }
@@ -119,8 +177,12 @@ cpu_smp_init ()
 int
 cpu_smp_close ()
 {
+#ifndef HAVE_LIBKSTAT
 	if (load_fd)
 		close (load_fd);
+#else
+	kstat_close(kc);
+#endif
 
 	load_fd = 0;
 

@@ -12,6 +12,10 @@
 #include "mode.h"
 #include "chrono.h"
 
+#ifdef SOLARIS
+#include <utmpx.h>
+#endif
+
 int TwentyFourHour = 1;
 int uptime_fd = 0;
 
@@ -25,8 +29,18 @@ get_uptime (double *up, double *idle)
 {
 	double uptime;
 
+#ifndef SOLARIS
 	reread (uptime_fd, "get_uptime:");
 	sscanf (buffer, "%lf %lf", &uptime, idle);
+#else
+	struct utmpx                *u, id;
+
+    id.ut_type = BOOT_TIME;
+    u = getutxid(&id);
+
+
+    uptime=time(0) - u->ut_xtime;
+#endif
 
 	*up = uptime;
 
@@ -91,14 +105,14 @@ chrono_init ()
 		unamebuf = (struct utsname *) malloc (sizeof (struct utsname));
 		uptime_fd = open ("/proc/uptime", O_RDONLY);
 
-#if 0
+#ifdef 0
 		kversion_fd = open ("/proc/sys/kernel/osrelease", O_RDONLY);
 
 		reread (kversion_fd, "main:");
 		sscanf (buffer, "%s", kver);
 
 		close (kversion_fd);
-# endif
+#endif
 
 		/* Get OS name and version from uname() */
 		/* Changed to check if eq -1 instead of non-zero */

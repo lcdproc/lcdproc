@@ -51,7 +51,11 @@ get_fs (mounts fs[])
 	char line[256];
 	int x = 0, y;
 
+#ifdef SOLARIS
+	mtab_fd = fopen ("/etc/mnttab", "r");
+#else
 	mtab_fd = fopen ("/etc/mtab", "r");
+#endif
 
 	// Get rid of old, unmounted filesystems...
 	memset (fs, 0, sizeof (mounts) * 256);

@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+
 #include "../../shared/sockets.h"
 #include "../../shared/debug.h"
 
@@ -11,9 +12,23 @@
 #include "mode.h"
 #include "cpu.h"
 
+#ifdef SOLARIS
+#include <sys/types.h>
+#include <sys/param.h>
+#include <sys/cpuvar.h>
+#endif
+
+#ifdef HAVE_LIBKSTAT
+#include <kstat.h>
+#endif
+
 struct load {
 	unsigned long total, user, system, nice, idle;
 };
+
+#ifdef HAVE_LIBKSTAT
+kstat_ctl_t *kc;
+#endif
 
 int load_fd = 0;
 static void get_load (struct load *result);
@@ -24,8 +39,31 @@ get_load (struct load *result)
 	static struct load last_load = { 0, 0, 0, 0, 0 };
 	struct load curr_load;
 
+#ifndef HAVE_LIBKSTAT
 	reread (load_fd, "get_load:");
 	sscanf (buffer, "%*s %lu %lu %lu %lu\n", &curr_load.user, &curr_load.nice, &curr_load.system, &curr_load.idle);
+#else
+	kstat_t *k_space;
+	void	*val_ptr;
+	k_space = kstat_lookup(kc, "cpu_stat", 0, "cpu_stat0");
+	if (k_space == NULL) {
+		printf("\nkstat lookup error");
+		exit(1);
+	} else if (kstat_read(kc, k_space, NULL) == -1) {
+		printf("\nkstat read error");
+		exit(1);
+	}
+	k_space=kstat_lookup(kc, "cpu_stat", -1, "cpu_stat0");
+	{
+		struct cpu_stat cinfo;
+		kstat_read(kc,k_space,&cinfo);
+		curr_load.idle=cinfo.cpu_sysinfo.cpu[CPU_IDLE];
+		curr_load.user=cinfo.cpu_sysinfo.cpu[CPU_USER];
+		curr_load.system=cinfo.cpu_sysinfo.cpu[CPU_KERNEL];
+		curr_load.nice=cinfo.cpu_sysinfo.cpu[CPU_WAIT];
+	}
+	curr_load.nice=0;
+#endif
 	curr_load.total = curr_load.user + curr_load.nice + curr_load.system + curr_load.idle;
 	result->total = curr_load.total - last_load.total;
 	result->user = curr_load.user - last_load.user;
@@ -42,9 +80,17 @@ get_load (struct load *result)
 int
 cpu_init ()
 {
+#ifndef HAVE_LIBKSTAT
 	if (!load_fd) {
 		load_fd = open ("/proc/stat", O_RDONLY);
 	}
+#else
+	kc = kstat_open();
+	if (kc == NULL) {
+		exit(1);
+	}
+#endif
+
 
 	return 0;
 }
@@ -52,8 +98,12 @@ cpu_init ()
 int
 cpu_close ()
 {
+#ifndef HAVE_LIBKSTAT
 	if (load_fd)
 		close (load_fd);
+#else
+	kstat_close(kc);
+#endif
 
 	load_fd = 0;
 

@@ -17,6 +17,9 @@
 
 #ifdef SOLARIS
 #include <strings.h>
+#include <sys/stat.h>
+#include <sys/swap.h>
+#include <procfs.h>
 #endif
 
 
@@ -32,7 +35,7 @@ static void
 get_mem_info (struct meminfo *result)
 {
 //  int i, res; char *bufptr;
-	int pagesize,page,i;
+	int pagesize,page;
 
 #ifndef SOLARIS
 	reread (meminfo_fd, "get_meminfo:");
@@ -44,13 +47,61 @@ get_mem_info (struct meminfo *result)
 	result[1].total = getentry ("SwapTotal:", buffer);
 	result[1].free = getentry ("SwapFree:", buffer);
 #else
-	result[0].total = 0;
-	result[0].free = 0;
+	#define MAXSTRSIZE 80
+	swaptbl_t	*s=NULL;
+	int            i, n, num;
+	char           *strtab;    /* string table for path names */
+
+	result[0].total = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / 1024;
+	result[0].free = sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE) / 1024;
 	result[0].shared = 0;
 	result[0].buffers = 0;
 	result[0].cache = 0;
+again:
+	if ((num = swapctl(SC_GETNSWP, 0)) == -1) {
+		perror("swapctl: GETNSWP");
+		exit(1);
+	}
+	if (num == 0) {
+		fprintf(stderr, "No Swap Devices Configured\n");
+		exit(2);
+	}
+	/* allocate swaptable for num+1 entries */
+	if ((s = (swaptbl_t *)
+		malloc(num * sizeof(swapent_t) +
+			sizeof(struct swaptable))) ==
+		(void *) 0) {
+		fprintf(stderr, "Malloc Failed\n");
+		exit(3);
+	}
+	/* allocate num+1 string holders */
+	if ((strtab = (char *)
+		malloc((num + 1) * MAXSTRSIZE)) == (void *) 0) {
+		fprintf(stderr, "Malloc Failed\n");
+		exit(3);
+	}
+	/* initialize string pointers */
+	for (i = 0; i < (num + 1); i++) {
+		s->swt_ent[i].ste_path = strtab + (i * MAXSTRSIZE);
+	}
+
+
+	s->swt_n = num + 1;
+	if ((n = swapctl(SC_LIST, s)) < 0) {
+		perror("swapctl");
+		exit(1);
+	}
+	if (n > num) {        /* more were added */
+		free(s);
+		free(strtab);
+		goto again;
+	}
 	result[1].total = 0;
 	result[1].free = 0;
+	for (i = 0; i < n; i++) {
+		result[1].total = result[1].total + s->swt_ent[i].ste_pages * sysconf(_SC_PAGESIZE) / 1024;
+		result[1].free = result[1].free + s->swt_ent[i].ste_free * sysconf(_SC_PAGESIZE) / 1024;
+	}
 #endif
 }
 
@@ -285,7 +336,6 @@ mem_top_screen (int rep, int display)
 
 	if (first) {
 		first = 0;
-
 		sock_send_string (sock, "screen_add S\n");
 		sprintf (buffer, "screen_set S -name {Top Memory Use: %s}\n", host);
 		sock_send_string (sock, buffer);
@@ -320,6 +370,7 @@ mem_top_screen (int rep, int display)
 		if (!index ("1234567890", procdir->d_name[0])) {
 			continue;
 		}
+	#ifndef SOLARIS
 		sprintf (buf, "/proc/%s/status", procdir->d_name);
 		if ((StatusFile = fopen (buf, "r")) == NULL) {
 			// Not a serious error; process has finished before we could
@@ -351,6 +402,29 @@ mem_top_screen (int rep, int display)
 				sscanf (buf, "%*s %d", &procExe);
 			}
 		}
+	#else
+		sprintf (buf, "/proc/%s/psinfo", procdir->d_name);
+		if ((StatusFile = fopen (buf, "r")) == NULL) {
+			// Not a serious error; process has finished before we could
+			// examine it:
+			//fprintf ( stderr , "mem_top_screen: cannot open %s for reading" ,
+			//          buf ) ;
+			//perror ( "" ) ;
+			continue;
+		}
+		{
+			psinfo_t psinfo;
+			fread(&psinfo,sizeof(psinfo),1,StatusFile);
+			procRSS = procSize = procData = procStk = procExe = 0;
+			strcpy(procName,psinfo.pr_fname);
+			procSize=psinfo.pr_size;
+			procRSS=psinfo.pr_rssize;
+			// Following values not accurate, not sure what needs to be set to
+			procData=psinfo.pr_size;
+			procStk=0;
+			procExe=0;
+		}
+	#endif
 		fclose (StatusFile);
 		if (procSize > threshold) {
 			// Figure out if it's sharing any memory...
@@ -385,7 +459,6 @@ mem_top_screen (int rep, int display)
 
 	}
 	closedir (proc);
-
 	// Now, print some info...
 	LL_Rewind (procs);
 	LL_Sort (procs, sort_procs);
@@ -402,7 +475,8 @@ mem_top_screen (int rep, int display)
 				sock_send_string (sock, buffer);
 		} else {
 			//printf("Mem hog: none?\n");
-			sprintf (buffer, "widget_set S %i 1 %i {}\n", i, i);
+			//sprintf (buffer, "widget_set S %i 1 %i {}\n", i, i);
+			sprintf (buffer, "widget_set S %i 1 %i \" \"\n", i, i);
 			if (display)
 				sock_send_string (sock, buffer);
 		}
