@@ -127,13 +127,15 @@ lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 	else
 		portControl = 0;
 
+	portControl |= backlight_bit;
+
 	if (displayID == 0)
 		enableLines = EnMask[0] | EnMask[1] | ((extIF) ? EnMask[2] : 0);
 	else
 		enableLines = EnMask[displayID - 1];
 
 	// 40 nS setup time for RS valid to EN high, so set RS
-	port_out (lptPort + 2, (portControl|backlight_bit) ^ OUTMASK);
+	port_out (lptPort + 2, portControl ^ OUTMASK);
 
 	// Output the actual data
 	port_out (lptPort, ch);
@@ -141,7 +143,7 @@ lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 	if( delayBus ) hd44780_functions->uPause (1);
 
 	// then set EN high
-	port_out (lptPort + 2, (enableLines|portControl|backlight_bit) ^ OUTMASK);
+	port_out (lptPort + 2, (enableLines|portControl) ^ OUTMASK);
 
 	if( delayBus ) hd44780_functions->uPause (1);
 
@@ -152,7 +154,7 @@ lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsign
 	// ABOVE TEXT ignored now, using delays if delayBus is specified
 
 	// Set EN low and we're done...
-	port_out (lptPort + 2, (portControl|backlight_bit) ^ OUTMASK);
+	port_out (lptPort + 2, portControl ^ OUTMASK);
 
 	// 10 nS data hold time provided by the length of ISA write for EN
 }
@@ -168,10 +170,9 @@ unsigned char lcdwinamp_HD44780_readkeypad (unsigned int YData)
 {
 	unsigned char readval;
 
-	// 10 bits output
+	// 8 bits output
 	// Convert the positive logic to the negative logic on the LPT port
 	port_out (lptPort, ~YData & 0x00FF );
-	port_out (lptPort + 2, ( ((~YData & 0x0100) >> 7) | ((~YData & 0x0200) >> 7 )) ^ OUTMASK);
 
 	if( delayBus ) hd44780_functions->uPause (1);
 
@@ -179,7 +180,7 @@ unsigned char lcdwinamp_HD44780_readkeypad (unsigned int YData)
 	readval = ~ port_in (lptPort + 1) ^ INMASK;
 
 	// Set output back to idle state for backlight
-	port_out (lptPort + 2, backlight_bit ^ INMASK );
+	port_out (lptPort + 2, backlight_bit ^ OUTMASK );
 
 	// And convert value back.
 	return ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) ) & ~stuckinputs;

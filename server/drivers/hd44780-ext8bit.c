@@ -155,7 +155,7 @@ unsigned char lcdtime_HD44780_readkeypad (unsigned int YData)
 
 	sem_wait (semid);
 
-	// 10 bits output
+	// 10 bits output or 8 bits if >=3 displays
 	// Convert the positive logic to the negative logic on the LPT port
 	port_out (lptPort, ~YData & 0x00FF );
 	if (!extIF) {

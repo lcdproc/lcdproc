@@ -244,7 +244,7 @@ unsigned char lcdstat_HD44780_readkeypad (unsigned int YData)
 	readval = ~ port_in (lptPort + 1) ^ INMASK;
 
 	// Put port back into idle state for backlight
-	port_out (lptPort, backlight_bit ^ OUTMASK);
+	port_out (lptPort, backlight_bit);
 
 	// And convert value back.
 	return ( (readval >> 4 & 0x03) | (readval >> 5 & 0x04) | (readval >> 3 & 0x08) | (readval << 1 & 0x10) ) & ~stuckinputs;

@@ -116,7 +116,7 @@ static int *dispSizes = NULL;
 char have_keypad = 0;	 // off by default
 char have_backlight = 0; // off by default
 char extIF = 0;		 // off by default
-int delayMult = 1;	 // Delay multiplier for slow displays
+int delayMult = 0;	 // Delay multiplier for slow displays
 char delayBus = 0;	 // Delay if the computer can send data too fast over
 			 // its bus to LPT port
 
@@ -202,7 +202,7 @@ HD44780_init (lcd_logical_driver * driver, char *args)
 	have_keypad	= driver->config_get_bool( DriverName, "keypad", 0, 0 );
 	have_backlight	= driver->config_get_bool( DriverName, "backlight", 0, 0 );
 	delayMult 	= driver->config_get_int( DriverName, "delaymult", 0, 1 );
-	delayBus 	= driver->config_get_bool( DriverName, "delaybus", 0, 0 );
+	delayBus 	= driver->config_get_bool( DriverName, "delaybus", 0, 1 );
 
 	// Get and search for the connection type
 	s = driver->config_get_string( DriverName, "connectiontype", 0, "4bit" );
