@@ -82,6 +82,8 @@ char *build_date = __DATE__;
 #define UNSET_STR "\01"
 
 int debug_level; // for compatibility with MtxOrb, lcdm001 and joy drivers.
+// I was about to remove the comment in front of this.
+// Now how do we become compatible WITHOUT this debug_level ?
 
 int lcd_port = UNSET_INT;
 char bind_addr[64] = UNSET_STR;
