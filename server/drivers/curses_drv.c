@@ -455,7 +455,17 @@ void
 curses_drv_vbar (int x, int len)
 {
 	int y;
-// Some curses.h do not define ACS_S* preprocessor macros, so we take a guess.
+
+// ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
+// However, ACS_S3 and ACS_S7 are not; these definitions were created to support
+// commonly available graphics found in many terminfo definitions.  The acsc character
+// used for ACS_S3 is 'p'; the acsc character used for ACS_S7 is 'r'.
+//
+// Other systems may very likely support these characters; however,
+// their names were invented for ncurses.
+//
+// Perhaps we could create our own ACS_S7 and ACS_S3?
+
 #ifdef DEFINED_ACS
 	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
 #else
