@@ -218,6 +218,7 @@ int parse_message (char * str, Client * c)
 	int pos = 0;
 	char ch;
 	int i;
+	char * arg_space;
 	int argc =0 ;
 	char *argv[MAX_ARGUMENTS];
 	int argpos = 0;
@@ -229,7 +230,8 @@ int parse_message (char * str, Client * c)
 		argpos = 0;
 	}
 
-	argv[0] = malloc(strlen(str)+1);
+	arg_space = malloc(strlen(str)+1);
+	argv[0] = arg_space;
 	/* We will create a new string that is shorter or equally long as
 	 * the original string str.
 	 */
@@ -338,6 +340,8 @@ int parse_message (char * str, Client * c)
 	if (error) {
 		snprintf (errmsg, sizeof(errmsg), "huh? Could not parse command\n");
 		sock_send_string (c->sock, errmsg);
+		free( arg_space  );
+		return 0;
 	}
 
 	/* Now find and call the appropriate function...*/
@@ -358,5 +362,6 @@ int parse_message (char * str, Client * c)
 		sock_send_string (c->sock, errmsg);
 	}
 
+	free( arg_space );
 	return 0;
 }
