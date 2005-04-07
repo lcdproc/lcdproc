@@ -311,9 +311,9 @@ int machine_get_procs(LinkedList *procs)
 			return(FALSE);
 		}
 #if (__FreeBSD_version > 500000)		
-		strncpy(p->name, kprocs->kp_proc.p_comm, 15);
-#else
 		strncpy(p->name, kprocs->ki_comm, 15);
+#else
+		strncpy(p->name, kprocs->kp_proc.p_comm, 15);
 #endif
 		p->name[15] = '\0';
 #if (__FreeBSD_version > 500000)
