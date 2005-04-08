@@ -241,7 +241,7 @@ if test "$enable_libusb" = "yes"; then
         for libusb_includepath in /usr/include /usr/local/include \
             /usr/include/libusb /usr/local/include/libusb \
             /usr/include/usb /usr/local/include/usb ; do \
-          if test -f "${libusb_includepath}/libusb.h" ; then
+          if test -f "${libusb_includepath}/usb.h" ; then
             libusb_cflags="-I$libusb_includepath"
             break
           fi
