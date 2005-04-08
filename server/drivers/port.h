@@ -227,6 +227,7 @@ static inline int port_deny_multiple (unsigned short port, unsigned short count)
 Use i386_get_ioperm, i386_set_ioperm from <machine/sysarch.h> and inb and outb from <machine/cpufunc.h> (FreeBSD) */
 #elif defined HAVE_I386_IOPERM_FREEBSD && defined HAVE_MACHINE_CPUFUNC_H && defined HAVE_MACHINE_SYSARCH_H && defined HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#include <sys/param.h>
 #include <machine/cpufunc.h>
 #include <machine/sysarch.h>
 
