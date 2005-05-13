@@ -441,7 +441,7 @@ This is originally based on "lcdtext" (by Matthias Prinke).
 </row>
 <row>
 <entry>D5 (7)</entry>
-<entry>RW (5) (LCD3 - 6) (optional - pull all LCD RW low)</entry>
+<entry>RW (5) (LCD3 - 6) (optional - pull all LCD RW low (*) )</entry>
 </row>
 <row>
 <entry>D6 (8)</entry>
@@ -454,6 +454,13 @@ This is originally based on "lcdtext" (by Matthias Prinke).
 </tbody>
 </tgroup>
 </table>
+
+<para>
+(*) on the RW line of the display: this line decides whether the display receives data from the 
+LPT port, or whether it sends data to the LPT port. If grounded, it receives. If High or connected 
+to nothing at all, it "sends" (i.e., will not work as intended). So, if you are not sure that 
+you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
+</para>
 
 <para>
 If you want to connect more than two displays to the parallel port then
@@ -602,13 +609,20 @@ This type of connection should work with winamp.
   D6 (8)        D6 (13)
   D7 (9)        D7 (14)
   nSTRB (1)     EN (6)
-  nLF   (14)    nRW (5) (EN3 6 - LCD 3) (optional)
+  nLF   (14)    nRW (5) (EN3 6 - LCD 3) (optional (*) )
   INIT  (16)    RS (4)
   nSEL  (17)    EN2 (6 - LCD 2) (optional)
 
 ]]>
 </screen>
 </figure>
+
+<para>
+(*) on the RW line of the display: this line decides whether the display receives data from the 
+LPT port, or whether it sends data to the LPT port. If grounded, it receives. If High or connected 
+to nothing at all, it "sends" (i.e., will not work as intended). So, if you are not sure that 
+you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
+</para>
 
 <para>
 If you want the display to work with the Winamp plugin, wire nLF (pin 14)
@@ -700,12 +714,19 @@ The LCD connections are:
   D7 (9)        D7 (14)
   nSEL  (17)    -
   nSTRB (1)     RS (4)
-  nLF   (14)    RW (5) (LCD2 - 6) (optional - pull all LCD RW low)
+  nLF   (14)    RW (5) (LCD2 - 6) (optional - pull all LCD RW low (*))
   INIT  (16)    EN (6)
 
 ]]>
 </screen>
 </figure>
+
+<para>
+(*) on the RW line of the display: this line decides whether the display receives data from the 
+LPT port, or whether it sends data to the LPT port. If grounded, it receives. If High or connected 
+to nothing at all, it "sends" (i.e., will not work as intended). So, if you are not sure that 
+you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
+</para>
 
 <para>
 See the lcdtime tar-ball (above) for full details of the bargraph
