@@ -8,13 +8,13 @@ AC_ARG_ENABLE(drivers,
  	[                    mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,]
  	[                    hd44780,joy,irman,lirc,bayrad,glk,,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
-	[                    lcterm,icp_a106,ms6931,iowarrior]
+	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior]
+	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -230,7 +230,17 @@ dnl			else
 				AC_MSG_WARN([The sed1330 driver needs a parallel port.])
 			fi
 			;;
-	*)
+		glcdlib)
+			AC_CHECK_HEADERS([glcdproclib/glcdprocdriver.h],[
+				LIBGLCD="-lglcddrivers -lglcdgraphics -lglcdprocdriver"
+				DRIVERS="$DRIVERS glcdlib${SO}"
+				actdrivers=["$actdrivers glcdlib"]
+			],[
+dnl			else
+				AC_MSG_WARN([The glcdlib driver needs glcdproclib/glcdprocdriver.h])
+			])			
+			;;
+		*)
 			AC_MSG_ERROR([Unknown driver $driver])
 			;;
   		esac
@@ -245,6 +255,7 @@ AC_SUBST(LIBLIRC_CLIENT)
 AC_SUBST(LIBSVGA)
 AC_SUBST(DRIVERS)
 AC_SUBST(HD44780_DRIVERS)
+AC_SUBST(LIBGLCD)
 ])
 
 
