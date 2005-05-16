@@ -83,29 +83,30 @@ static char *shortmonths[] = {
 	"Dec",
 };
 
+
 //////////////////////////////////////////////////////////////////////
 // Time Screen displays current time and date, uptime, OS ver...
 //
-//+--------------------+
-//|## Linux 2.0.33 ###@|
-//|Up xxx days hh:mm:ss|
-//|  Wed May 17, 1998  |
+//+--------------------+	+--------------------+
+//|## Linux 2.6.11 ###@|	|### TIME: myhost ##@|
+//|Up xxx days hh:mm:ss|	|17.05.2005 11:32:57a|
+//|  Wed May 17, 1998  |	+--------------------+
 //|11:32:57a  100% idle|
 //+--------------------+
 //
-
 int
 time_screen (int rep, int display)
 {
-	char hr[8], min[8], sec[8], ampm[8];
+	char now[20];
 	char day[16], month[16];
+	int xoffs;
+	int days, hour, min, sec;
 	static int first = 1;
-	static int colons = 0;
+	static int heartbeat = 0;
+	static char colon[] = {':', ' '};
 	time_t thetime;
 	struct tm *rtime;
 	double uptime, idle;
-	int i = 0;
-	char colon;
 
 	if (first) {
 		first = 0;
@@ -114,149 +115,131 @@ time_screen (int rep, int display)
 		sprintf (buffer, "screen_set T -name {Time Screen: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add T title title\n");
-		sock_send_string (sock, "widget_set T title {Time Screen}\n");
 		sock_send_string (sock, "widget_add T one string\n");
 		if (lcd_hgt >= 4) {
 			sock_send_string (sock, "widget_add T two string\n");
 			sock_send_string (sock, "widget_add T three string\n");
+
+			sprintf (buffer, "widget_set T title {%s %s: %s}\n",
+				get_sysname(), get_sysrelease(), get_hostname());
+			sock_send_string (sock, buffer);
 		} else {
 			sprintf (buffer, "widget_set T title {TIME: %s}\n", get_hostname());
 			sock_send_string (sock, buffer);
 		}
 	}
 
-	if (colons)
-		colon = ':';
-	else
-		colon = ' ';
+	// toggle colon display
+	heartbeat ^= 1;
 
 	time (&thetime);
 	rtime = localtime (&thetime);
 
 	if (TwentyFourHour) {
-		sprintf (hr, "%02d", rtime->tm_hour);
+		sprintf (now, "%02d%c%02d%c%02d",
+			rtime->tm_hour, colon[heartbeat], rtime->tm_min, colon[heartbeat], rtime->tm_sec);
 	} else {
-		if (rtime->tm_hour > 12) {
-			i = 1;
-			sprintf (hr, "%02d", (rtime->tm_hour - 12));
-		} else if (rtime->tm_hour == 0) {
-			i = 0;
-			sprintf (hr, "12");
-		} else {
-			i = 0;
-			sprintf (hr, "%02d", rtime->tm_hour);
-		}
+		sprintf (now, "%02d%c%02d%c%02d%*s",
+			((rtime->tm_hour + 11) % 12) + 1, colon[heartbeat], rtime->tm_min, colon[heartbeat], rtime->tm_sec,
+			(lcd_wid > 20) ? 2 : 1, (rtime->tm_hour >= 12) ? "pm" : "am");
 	}
-	if (rtime->tm_hour >= 12)
-		sprintf (ampm, "%s", "P");
-	else
-		sprintf (ampm, "%s", "A");
-
-	sprintf (min, "%02d", rtime->tm_min);
-	sprintf (sec, "%02d", rtime->tm_sec);
-
-	strcpy (day, shortdays[rtime->tm_wday]);
-	strcpy (month, shortmonths[rtime->tm_mon]);
 
 	///////////////////// Write the title bar (os name and version)
 
 	if (lcd_hgt >= 4) {
-		sprintf (tmp, "widget_set T title {");
-		sprintf (tmp + strlen (tmp), "%s %s: %s}\n", get_sysname(), get_sysrelease(), get_hostname());
-		if (display)
-			sock_send_string (sock, tmp);
-	}
-	/////////////////////// Display the time...
-	if (lcd_hgt >= 4) {
+		strcpy (day, shortdays[rtime->tm_wday]);
+		strcpy (month, shortmonths[rtime->tm_mon]);
+
 		machine_get_uptime(&uptime, &idle);
 
-		if (TwentyFourHour)
-			sprintf (tmp, "%s%c%s%c%s   %2i%% idle", hr, colon, min, colon, sec, (int) idle);
-		else
-			sprintf (tmp, "%s%c%s%c%s%s  %2i%% idle", hr, colon, min, colon, sec, ampm, (int) idle);
-		// Center the output line...
-		i = (lcd_wid > strlen(tmp))
-		    ? ((lcd_wid - strlen (tmp)) / 2) + 1
-		    : 1;
-		sprintf (buffer, "widget_set T three %i 4 {%s}\n", i, tmp);
-		if (display)
-			sock_send_string (sock, buffer);
-
-		sprintf (tmp, "%s %s %d, %d", day, month, rtime->tm_mday, (rtime->tm_year + 1900));
-		sprintf (buffer, "widget_set T two 3 3 {%s}\n", tmp);
-		if (display)
-			sock_send_string (sock, buffer);
-
 		/////////////////////// Display the uptime...
-		i = (int) uptime / 86400;
-		sprintf (day, "Up %d day%s,", i, (i != 1 ? "s" : ""));
-		i = ((int) uptime % 86400) / 60 / 60;
-		sprintf (hr, "%02i", i);
-		i = (((int) uptime % 86400) % 3600) / 60;
-		sprintf (min, "%02i", i);
-		i = ((int) uptime % 60);
-		sprintf (sec, "%02i", i);
-		if (colons)
-			sprintf (tmp, "%s %s:%s:%s", day, hr, min, sec);
+		days = (int) uptime / 86400;
+		hour = ((int) uptime % 86400) / 60 / 60;
+		min = (((int) uptime % 86400) % 3600) / 60;
+		sec = ((int) uptime % 60);
+		
+		if (lcd_wid >= 20)
+			sprintf (tmp, "Up %3d day%s %02d%c%02d%c%02d",
+				days, ((days != 1) ? "s" : ""), hour, colon[heartbeat], min, colon[heartbeat], sec);
 		else
-			sprintf (tmp, "%s %s %s %s", day, hr, min, sec);
-		//// Center this line automatically...
-		//i = ((lcd_wid - strlen(tmp)) / 2) + 1;
+			sprintf (tmp, "Up %dd %02d%c%02d%c%02d",
+				days, hour, colon[heartbeat], min, colon[heartbeat], sec);
+		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
 		sprintf (buffer, "widget_set T one 1 2 {%s}\n", tmp);
 		if (display)
 			sock_send_string (sock, buffer);
 
-	} else							  // 20x2 version of the screen
-	{
-		sprintf (tmp, "widget_set T one 1 2 {");
-		if (lcd_wid >= 20)
-			sprintf (tmp + strlen (tmp), "%d-%02d-%02d ", rtime->tm_year + 1900, rtime->tm_mon + 1, rtime->tm_mday);
-		else							  // 16x2 version...
-			sprintf (tmp + strlen (tmp), "%02d/%02d ", rtime->tm_mon + 1, rtime->tm_mday);
-		sprintf (tmp + strlen (tmp), "%s%c%s%c%s", hr, colon, min, colon, sec);
-		if (!TwentyFourHour)
-			sprintf (tmp + strlen (tmp), "%s", ampm);
-		sprintf (tmp + strlen (tmp), "}\n");
+		////////// display the date
+		sprintf (tmp, "%s %s %d, %d",
+			day, month, rtime->tm_mday, rtime->tm_year + 1900);
+		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		sprintf (buffer, "widget_set T two %i 3 {%s}\n", xoffs, tmp);
 		if (display)
-			sock_send_string (sock, tmp);
+			sock_send_string (sock, buffer);
+		
+		/////////////////////// Display the time & idle time...
+		sprintf (tmp, "%s %3i%% idle", now, (int) idle);
+		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		sprintf (buffer, "widget_set T three %i 4 {%s}\n", xoffs, tmp);
+		if (display)
+			sock_send_string (sock, buffer);
+	} 
+	else {							// 2 line version of the screen
+		if (lcd_wid >= 20)				// 20+x columns
+			sprintf(tmp, "%02d.%02d.%04d %s",
+				rtime->tm_mday, rtime->tm_mon + 1, rtime->tm_year + 1900, now);
+		else						// <20 columns
+			sprintf(tmp, "%02d.%02d. %s",
+				rtime->tm_mday, rtime->tm_mon + 1, now);
+		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		sprintf(buffer, "widget_set T one %i 2 {%s}\n", xoffs, tmp);
+		if (display)
+			sock_send_string (sock, buffer);
 	}
-
-	colons = colons ^ 1;
 
 	return 0;
 }										  // End time_screen()
 
 //////////////////////////////////////////////////////////////////////
-// Clock Screen displays current time and date...
+// Old Clock Screen displays current time and date...
+//
+//+--------------------+	+--------------------+
+//|## DATE & TIME ####@|	|### TIME: myhost ##@|
+//|       myhost       |	|2005-05-17 11:32:57a|
+//|11:32:75a Wednesday,|	+--------------------+
+//|       May 17, 2005 |
+//+--------------------+
 //
 int
 clock_screen (int rep, int display)
 {
-	char hr[8], min[8], sec[8], ampm[8];
+	char now[20];
 	char day[16], month[16];
+	int xoffs;
 	static int first = 1;
-	static int colons = 0;
+	static int heartbeat = 0;
+	static char colon[] = {':', ' '};
 	time_t thetime;
 	struct tm *rtime;
-	int i = 0;
-	char colon;
-
-	if (lcd_hgt < 4)
-		return 0;
 
 	if (first) {
 		first = 0;
 
 		sock_send_string (sock, "screen_add O\n");
-		sprintf (buffer, "screen_set O -name {Clock Screen: %s}\n", get_hostname());
+		sprintf (buffer, "screen_set O -name {Old Clock Screen: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add O title title\n");
 		sock_send_string (sock, "widget_add O one string\n");
 		if (lcd_hgt >= 4) {
-			sock_send_string (sock, "widget_set O title {DATE & TIME}\n");
 			sock_send_string (sock, "widget_add O two string\n");
 			sock_send_string (sock, "widget_add O three string\n");
-			sprintf (buffer, "widget_set O one 3 2 {%s}\n", get_hostname());
+
+			sprintf (buffer, "widget_set O title {DATE & TIME}\n");
+			sock_send_string (sock, buffer);
+			
+			sprintf (tmp, "%s", get_hostname());
+			xoffs = (lcd_wid > strlen(tmp)) ? (((lcd_wid - strlen(tmp)) / 2) + 1) : 1;
+			sprintf (buffer, "widget_set O one %i 2 {%s}\n", xoffs, tmp);
 			sock_send_string (sock, buffer);
 		} else {
 			sprintf (buffer, "widget_set O title {TIME: %s}\n", get_hostname());
@@ -264,68 +247,51 @@ clock_screen (int rep, int display)
 		}
 	}
 
-	if (colons)
-		colon = ':';
-	else
-		colon = ' ';
+	// toggle colon display
+	heartbeat ^= 1;
 
 	time (&thetime);
 	rtime = localtime (&thetime);
 
-	strcpy (day, days[rtime->tm_wday]);
-
 	if (TwentyFourHour) {
-		sprintf (hr, "%02d", rtime->tm_hour);
+		sprintf (now, "%02d%c%02d%c%02d",
+			rtime->tm_hour, colon[heartbeat], rtime->tm_min, colon[heartbeat], rtime->tm_sec);
 	} else {
-		if (rtime->tm_hour > 12) {
-			i = 1;
-			sprintf (hr, "%02d", (rtime->tm_hour - 12));
-		} else {
-			i = 0;
-			sprintf (hr, "%02d", rtime->tm_hour);
-		}
+		sprintf (now, "%02d%c%02d%c%02d%*s",
+			((rtime->tm_hour + 11) % 12) + 1, colon[heartbeat], rtime->tm_min, colon[heartbeat], rtime->tm_sec,
+			(lcd_wid > 20) ? 2 : 1, (rtime->tm_hour >= 12) ? "pm" : "am");
 	}
-	if (rtime->tm_hour == 12)
-		i = 1;
-	sprintf (min, "%02d", rtime->tm_min);
-	sprintf (sec, "%02d", rtime->tm_sec);
-	if (i == 1) {
-		sprintf (ampm, "%s", "P");
-	} else {
-		sprintf (ampm, "%s", "A");
-	}
-	strcpy (month, months[rtime->tm_mon]);
 
-	if (lcd_hgt >= 4)				  // 4-line version of the screen
+	if (lcd_hgt >= 4)				// 4-line version of the screen
 	{
-		sprintf (tmp, "widget_set O two 1 3 {");
-		if (TwentyFourHour)
-			sprintf (tmp + strlen (tmp), "%s%c%s%c%s  %s", hr, colon, min, colon, sec, day);
-		else
-			sprintf (tmp + strlen (tmp), "%s%c%s%c%s%s %s", hr, colon, min, colon, sec, ampm, day);
-		sprintf (tmp + strlen (tmp), "}\n");
-		if (display)
-			sock_send_string (sock, tmp);
+		strcpy (day, days[rtime->tm_wday]);
+		strcpy (month, months[rtime->tm_mon]);
 
-		sprintf (tmp, "widget_set O three 2 4 {");
-		sprintf (tmp + strlen (tmp), "%s %d, %d", month, rtime->tm_mday, (rtime->tm_year + 1900));
-		sprintf (tmp + strlen (tmp), "}\n");
+		sprintf (tmp, "%s %s", now, day);
+		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		sprintf (buffer, "widget_set O two %i 3 {%s}\n", xoffs, tmp);
 		if (display)
-			sock_send_string (sock, tmp);
-	}									  // end if(lcd_hgt >= 4)
-	else								  // 20x2 version of the screen
-	{
-		sprintf (tmp, "widget_set O one 1 2 {");
-		sprintf (tmp + strlen (tmp), "%d-%02d-%02d ", rtime->tm_year + 1900, rtime->tm_mon + 1, rtime->tm_mday);
-		sprintf (tmp + strlen (tmp), "%s%c%s%c%s", hr, colon, min, colon, sec);
-		if (!TwentyFourHour)
-			sprintf (tmp + strlen (tmp), "%s", ampm);
-		sprintf (tmp + strlen (tmp), "}\n");
+			sock_send_string (sock, buffer);
+
+		sprintf (tmp, "%s %d, %d", month, rtime->tm_mday, rtime->tm_year + 1900);
+		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		sprintf (buffer, "widget_set O three %i 4 {%s}\n", xoffs, tmp);
 		if (display)
-			sock_send_string (sock, tmp);
+			sock_send_string (sock, buffer);
 	}
-
-	colons = colons ^ 1;
+	else						// 2-line version of the screen
+	{
+		if (lcd_wid >= 20)			// 20+x columns
+			sprintf (tmp, "%d-%02d-%02d %s",
+				rtime->tm_year + 1900, rtime->tm_mon + 1, rtime->tm_mday, now);
+		else					// <20 columns
+			sprintf (tmp, "%02d/%02d %s",
+				rtime->tm_mon + 1, rtime->tm_mday, now);
+		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		sprintf(buffer, "widget_set O one %i 2 {%s}\n", xoffs, tmp);
+		if (display)
+			sock_send_string (sock, buffer);
+	}
 
 	return 0;
 }										  // End clock_screen()
@@ -333,15 +299,22 @@ clock_screen (int rep, int display)
 ////////////////////////////////////////////////////////////////////
 // Uptime Screen shows info about system uptime and OS version
 //
+//+--------------------+	+--------------------+
+//|## SYSTEM UPTIME ##@|	|# Linux 2.6.11: my#@|
+//|       myhost       |	| xxx days hh:mm:ss  |
+//| xxx days hh:mm:ss  |	+--------------------+
+//|   Linux 2.6.11     |
+//+--------------------+
+//
 int
 uptime_screen (int rep, int display)
 {
-	int i;
-	char date[16], hour[8], min[8], sec[8];
+	int xoffs;
+	int days, hour, min, sec;
 	double uptime, idle;
 	static int first = 1;
-	static int colons = 0;
-	char colon;
+	static int heartbeat = 0;
+	static char colon[] = {':', ' '};
 
 	if (first) {
 		first = 0;
@@ -351,47 +324,51 @@ uptime_screen (int rep, int display)
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add U title title\n");
 		if (lcd_hgt >= 4) {
-			sock_send_string (sock, "widget_set U title {SYSTEM UPTIME}\n");
 			sock_send_string (sock, "widget_add U one string\n");
 			sock_send_string (sock, "widget_add U two string\n");
 			sock_send_string (sock, "widget_add U three string\n");
 
-			sprintf (buffer, "widget_set U one 3 2 {%s}\n", get_hostname());
+			sock_send_string (sock, "widget_set U title {SYSTEM UPTIME}\n");
+			
+			sprintf (tmp, "%s", get_hostname());
+			xoffs = (lcd_wid > strlen(tmp)) ? (((lcd_wid - strlen(tmp)) / 2) + 1) : 1;
+			sprintf (buffer, "widget_set U one %i 2 {%s}\n", xoffs, tmp);
 			sock_send_string (sock, buffer);
-			sprintf (tmp, "widget_set U three 5 4 {%s %s}\n", get_sysname(), get_sysrelease());
-			sock_send_string (sock, tmp);
+
+			sprintf (tmp, "%s %s", get_sysname(), get_sysrelease());
+			xoffs = (lcd_wid > strlen(tmp)) ? (((lcd_wid - strlen(tmp)) / 2) + 1) : 1;
+			sprintf (buffer, "widget_set U three %i 4 {%s}\n", xoffs, tmp);
+			sock_send_string (sock, buffer);
 		} else {
+			sock_send_string (sock, "widget_add U one string\n");
+			
 			sprintf (tmp, "widget_set U title {%s %s: %s}\n", get_sysname(), get_sysrelease(), get_hostname());
 			sock_send_string (sock, tmp);
-			sock_send_string (sock, "widget_add U one string\n");
 		}
 	}
 
-	if (colons)
-		colon = ':';
-	else
-		colon = ' ';
+	// toggle colon display
+	heartbeat ^= 1;
 
 	machine_get_uptime(&uptime, &idle);
-	i = (int) uptime / 86400;
-	sprintf (date, "%d day%s,", i, (i != 1 ? "s" : ""));
-	i = ((int) uptime % 86400) / 60 / 60;
-	sprintf (hour, "%02i", i);
-	i = (((int) uptime % 86400) % 3600) / 60;
-	sprintf (min, "%02i", i);
-	i = ((int) uptime % 60);
-	sprintf (sec, "%02i", i);
-	sprintf (tmp, "%s %s%c%s%c%s", date, hour, colon, min, colon, sec);
-	i = ((20 - strlen (tmp)) / 2) + 1;
-
-	if (lcd_hgt >= 4)
-		sprintf (buffer, "widget_set U two %i 3 {%s}\n", i, tmp);
+	days = (int) uptime / 86400;
+	hour = ((int) uptime % 86400) / 60 / 60;
+	min = (((int) uptime % 86400) % 3600) / 60;
+	sec = ((int) uptime % 60);
+	if (lcd_wid >= 20)
+		sprintf (tmp, "%d day%s %02d%c%02d%c%02d",
+			days, ((days != 1) ? "s" : ""), hour, colon[heartbeat], min, colon[heartbeat], sec);
 	else
-		sprintf (buffer, "widget_set U one %i 2 {%s}\n", i, tmp);
+		sprintf (tmp, "%dd %02d%c%02d%c%02d",
+			days, hour, colon[heartbeat], min, colon[heartbeat], sec);
+
+	xoffs = (lcd_wid > strlen(tmp)) ? (((lcd_wid - strlen(tmp)) / 2) + 1) : 1;
+	if (lcd_hgt >= 4)
+		sprintf (buffer, "widget_set U two %d 3 {%s}\n", xoffs, tmp);
+	else
+		sprintf (buffer, "widget_set U one %d 2 {%s}\n", xoffs, tmp);
 	if (display)
 		sock_send_string (sock, buffer);
-
-	colons = colons ^ 1;
 
 	return 0;
 }										  // End uptime_screen()
@@ -437,7 +414,7 @@ big_clock_screen (int rep, int display)
 		sock_send_string (sock, "widget_add K d5 num\n");
 //		sock_send_string (sock, "widget_add K c0 num\n");
 //		sock_send_string (sock, "widget_add K c1 num\n");
-//      sock_send_string(sock, "widget_add K one string\n");
+//		sock_send_string(sock, "widget_add K one string\n");
 		sock_send_string (sock, "widget_set K d0 1 0\n");
 		sock_send_string (sock, "widget_set K d1 4 0\n");
 		sock_send_string (sock, "widget_set K d2 8 0\n");
@@ -452,8 +429,8 @@ big_clock_screen (int rep, int display)
 		old_fulltxt[3] = '0';
 		old_fulltxt[4] = '0';
 		old_fulltxt[5] = '0';
-		old_fulltxt[6] = 0;
-//      sock_send_string(sock, "widget_set K one 1 4 {000000}\n");
+		old_fulltxt[6] = '\0';
+//		sock_send_string(sock, "widget_set K one 1 4 {000000}\n");
 	}
 
 	time (&thetime);
@@ -471,33 +448,40 @@ big_clock_screen (int rep, int display)
 	return 0;
 }										  // End big_clock_screen()
 
+
+//////////////////////////////////////////////////////////////////////
+// Essential Clock Screen displays the current time with hours & minutes only
+//
+//+--------------------+	+--------------------+
+//|                    |	|       11:32        |
+//|       11:32        |	|                    |
+//|                    |	+--------------------+
+//|                    |
+//+--------------------+
+//
 int
 essential_clock_screen (int rep, int display)
 {
 	static int first = 1;
 	struct tm *rtime;
 	struct timeval ttime;
-	char  cmdbuf[64];
-	char heartbeat[] = {':', ' '};
-	char fulltxt[6];
+	static char colon[] = {':', ' '};
 
 	if (first) {
 		first = 0;
 
 		sock_send_string (sock, "screen_add E\n");
 		sock_send_string (sock, "screen_set E -name {Essential Clock Screen} -heartbeat off\n");
-		sock_send_string (sock, "widget_add E s0 string\n");
+		sock_send_string (sock, "widget_add E one string\n");
 	}
 
 	gettimeofday(&ttime, NULL);
-
 	rtime = localtime (&ttime.tv_sec);
 
-	sprintf (fulltxt, "%02d%c%02d", rtime->tm_hour, heartbeat[ttime.tv_usec / 500000], rtime->tm_min);
-
-	sprintf (cmdbuf, "widget_set E s0 %d %d \"%s\"\n", ( lcd_wid - 5 ) / 2, lcd_hgt / 2, fulltxt);
-
-	sock_send_string (sock, cmdbuf);
+	sprintf(tmp, "%02d%c%02d", rtime->tm_hour, colon[(ttime.tv_usec / 500000) & 1], rtime->tm_min);
+	sprintf(buffer, "widget_set E one %d %d {%s}\n",
+			((lcd_wid - 5) / 2) + 1, (lcd_hgt / 2), tmp);
+	sock_send_string (sock, buffer);
 
 	return 0;
 }										  // End essential_clock_screen()
