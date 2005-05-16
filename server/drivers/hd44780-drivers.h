@@ -21,6 +21,7 @@
 # include "hd44780-bwct-usb.h"
 #endif
 #include "hd44780-picanlcd.h"
+#include "hd44780-lcdserializer.h"
 // add new connection type header files here
 
 static const ConnectionMapping connectionMapping[] = {
@@ -35,6 +36,7 @@ static const ConnectionMapping connectionMapping[] = {
 	{"winamp", hd_init_winamp, "\tnone\n"},
 #endif
 	{"picanlcd", hd_init_picanlcd, "\tnone\n"},
+	{"lcdserializer", hd_init_lcdserializer, "\tnone\n"},
 #ifdef HAVE_LIBUSB
 	{"bwctusb", hd_init_bwct_usb, "\tnone\n"},
 #endif

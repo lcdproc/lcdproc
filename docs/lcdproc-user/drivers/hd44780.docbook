@@ -1032,6 +1032,65 @@ It does not support a keypad nor backlight switching.
 
 </sect3>
 
+<sect3 id="hd44780-lcdserializer">
+<title>LCD serializer device "lcdserializer"</title>
+
+<para>
+LCD serializer connection is technically the same of PIC-an-LCD with the same advantages,
+it uses the serial making things really simple.
+<link linkend="http://www.mindspring.com/~tcoonan/lcd.html">LCD serializer</link>
+is not a commercial product like PIC-an-LCD, it's just a project found digging on the net freely available.
+You have all the tools and the code to build it yourself and to customize the behaviour of the device.
+</para>
+
+<sect4 id="hd44780-lcdserializer-whatyouneed">
+<title>What you need</title>
+
+<para>
+<itemizedlist>
+<listitem><para>Some electronic knowledge and familiarity with the soldering iron</para></listitem>
+<listitem><para>A PIC16F84 (I used PIC16F84A) or PIC16C54</para></listitem>
+<listitem><para><link linkend="http://jdm.homepage.dk/newpic.htm">JDM PIC programmer</link></para></listitem>
+<listitem><para><link linkend="http://gputils.sf.net">gputils</link> and <link linkend="http://www.iki.fi/hyvatti/pic/picprog.html">picprog</link> installed on your GNU/Linux box</para></listitem>
+</itemizedlist>
+</para>
+</sect4>
+
+<sect4 id="hd44780-lcdserializer-burning">
+<title>Burning the PIC</title>
+
+<para>
+First, you need to download the asm source for your pic and then make the hex:
+<command>
+ wget http://www.mindspring.com/~tcoonan/lcd18f84.asm
+ gpasm lcd18f84_custom.asm
+</command>
+Now the binary is ready to be flashed to the PIC.
+Connect the programmer with the PIC installed and issue the following command to see it burning ;-):
+<command>
+ picprog --erase --burn --input lcd16f84.hex --pic /dev/ttyS0
+</command>
+
+</para>
+</sect4>
+
+<sect4 id="hd44780-lcdserializer-runninglcdproc">
+<title>Running lcdproc</title>
+
+<para>
+It's time to build the <link linkend="http://www.mindspring.com/~tcoonan/lcdpic.html">operating circuit</link> and to power on your new toy.
+You should see OK. on the LCD screen, otherwise, double-check all the connections.
+Now change LCDd.conf to include the following statments in the hd44780 section:
+<command>
+ ConnectionType=lcdserializer
+ Device=/dev/ttyS0
+</command>
+Start the daemon and relax watching lcdproc running.
+</para>
+</sect4>
+</sect3>
+
+
 <sect3 id="hd44780-bwctusb">
 <title>BWCT USB device "bwctusb"</title>
 
@@ -1040,7 +1099,7 @@ The BWCT USB LCD module is also supported. It is not connected to an LPT port
 but to an USB port, which saves you from a lot of potential problems.
 To use it, set the connection type in the config file with the ConnectionType=
 setting to "bwctusb" (without the quotes).
-It does neithert support a keypad nor backlight switching but it supports setting
+It does neither support a keypad nor backlight switching but it supports setting
 the display's contrast using the "Contrast" configuration parameter as well as
 specifying which one (of multiple BWCT LCD devices) is wanted using the
 "SerialNumber" configuration parameter.
