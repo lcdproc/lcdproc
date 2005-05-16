@@ -224,14 +224,14 @@ int h;
 
 PrivateData *p;
 
-  /* Alocate and store private data */
-  p =(PrivateData *) calloc(1, sizeof(PrivateData));
+  /* Allocate and store private data */
+  p = (PrivateData *) calloc(1, sizeof(PrivateData));
   if (p == NULL)
       return -1;
   if (drvthis->store_private_ptr(drvthis, p))
       return -1;
 
-  /* Initialise the PrivateData structure */
+  /* Initialize the PrivateData structure */
 
   p->cellwidth = CELLWIDTH;
   p->cellheight = CELLHEIGHT;
@@ -817,7 +817,7 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 IOWarrior_init_num(Driver *drvthis)
 {
-PrivateData *p =(PrivateData *) drvthis->private_data;
+PrivateData *p = drvthis->private_data;
 
 char bignum_ccs[8][CELLWIDTH*CELLHEIGHT] = {
   { 1, 1, 0, 0, 0,
@@ -917,7 +917,7 @@ char bignum_ccs[8][CELLWIDTH*CELLHEIGHT] = {
 MODULE_EXPORT void
 IOWarrior_num(Driver *drvthis, int x, int num)
 {
-PrivateData *p =(PrivateData *) drvthis->private_data;
+PrivateData *p = drvthis->private_data;
 
 /* each bignum is constructed in a 3 x 4 matrix and consists
  * of only the 8 characters defined above as well as ' '
