@@ -1,6 +1,6 @@
 /*
  * This file driver is going to replace CFontz633.c in order to support
- * CF631 and CF633 simultaniously under a new driver name...
+ * CF631, CF633 and CF635 simultaniously under a new driver name...
  * Currently, to use this version do: "cp CFontzPacket.c CFontz633.c"
  * Be carefull when using CVS, do not overwrite CFontz633.c !!!
  *
@@ -8,14 +8,16 @@
  */
 /*  
  *  This is the LCDproc driver for CrystalFontz LCD using Packet protocol.
- *  It support the CrystalFontz 633 USB/Serial and the 631 USB
+ *  It support the CrystalFontz 633 USB/Serial, the 631 USB and the 635USB
  *  (get yours from http://crystalfontz.com)
  *
  *  Applicable Data Sheets
  *  http://www.crystalfontz.com/products/631/CFA-631_v1.0.pdf
  *  http://www.crystalfontz.com/products/633/CFA_633_0_6.PDF
+ *  http://www.crystalfontz.com/products/635/CFA_635_1_0.pdf
  *
  *  Copyright (C) 2002 David GLAUDE
+ *  Portstions Copyright (C) 2005 Peter Marschall
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,6 +41,7 @@
  * 02/09/2002: KeyPad handeling and return string
  * 03/09/2002: New icon incorporated
  * 27/01/2003: Adapted for CFontz 631
+ * 16/05/2005: Adapted for CFontz 635
  *
  * THINGS NOT DONE:
  * + No checking if right hardware is connected (firmware/hardware)
@@ -79,40 +82,71 @@
 #include "report.h"
 #include "lcd_lib.h"
 
-#define CF633_KEY_UP		1
-#define CF633_KEY_DOWN		2
-#define CF633_KEY_LEFT		3
-#define CF633_KEY_RIGHT		4
-#define CF633_KEY_ENTER		5
-#define CF633_KEY_ESCAPE	6
-#define CF631_KEY_UL_PRESS	13
-#define CF631_KEY_UR_PRESS 	14
-#define CF631_KEY_LL_PRESS 	15
-#define CF631_KEY_LR_PRESS 	16
-#define CF631_KEY_UL_RELEASE	17
-#define CF631_KEY_UR_RELEASE 	18
-#define CF631_KEY_LL_RELEASE 	19
-#define CF631_KEY_LR_RELEASE 	20
+#define CF633_KEY_UP			1
+#define CF633_KEY_DOWN			2
+#define CF633_KEY_LEFT			3
+#define CF633_KEY_RIGHT			4
+#define CF633_KEY_ENTER			5
+#define CF633_KEY_ESCAPE		6
+#define CF633_KEY_UP_RELEASE		7
+#define CF633_KEY_DOWN_RELEASE		8
+#define CF633_KEY_LEFT_RELEASE		9
+#define CF633_KEY_RIGHT_RELEASE		10
+#define CF633_KEY_ENTER_RELEASE		11
+#define CF633_KEY_ESCAPE_RELEASE	12
+#define CF631_KEY_UL_PRESS		13
+#define CF631_KEY_UR_PRESS		14
+#define CF631_KEY_LL_PRESS		15
+#define CF631_KEY_LR_PRESS	 	16
+#define CF631_KEY_UL_RELEASE		17
+#define CF631_KEY_UR_RELEASE		18
+#define CF631_KEY_LL_RELEASE		19
+#define CF631_KEY_LR_RELEASE		20
 
-static int custom = 0;
+#define CELLWIDTH	DEFAULT_CELL_WIDTH
+#define CELLHEIGHT	DEFAULT_CELL_HEIGHT
+
+/* Constants for userdefchar_mode */
+#define NUM_CCs		8 /* max. number of custom characters */
+
 typedef enum {
-	hbar = 1,
-	vbar = 2,
-	cust = 3,
-} custom_type;
+	standard,	/* only char 0 is used for heartbeat */
+	vbar,		/* vertical bars */
+	hbar,		/* horizontaln bars */
+	bignum,		/* big numbers */
+	bigchar		/* big characters */
+} CGmode;
 
-static int fd;
-static char *framebuf = NULL;
-static char *old = NULL;
-static int width = 0;
-static int height = 0;
-static int cellwidth = DEFAULT_CELL_WIDTH;
-static int cellheight = DEFAULT_CELL_HEIGHT;
-static int contrast = DEFAULT_CONTRAST;
-static int brightness = DEFAULT_BRIGHTNESS;
-static int offbrightness = DEFAULT_OFFBRIGHTNESS;
-static int newfirmware = 0;
-static int model = 633;
+
+typedef struct cgram_cache {
+	char cache[DEFAULT_CELL_HEIGHT];
+	int clean;
+} CGram;
+
+typedef struct driver_private_data {
+	char device[200];
+
+	int fd;
+
+	int model;
+	int newfirmware;
+
+	/* dimensions */
+	int width, height;
+	int cellwidth, cellheight;
+
+	/* framebuffer and buffer for backingstore LCD contents */
+	unsigned char *framebuf;
+	unsigned char *backingstore;
+
+	/* defineable characters */
+	CGram cc[NUM_CCs];
+	CGmode ccmode;
+
+	int contrast;
+	int brightness;
+	int offbrightness;
+} PrivateData;
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -123,11 +157,11 @@ MODULE_EXPORT char *symbol_prefix = "CFontz633_";
 /* Internal functions */
 /* static void CFontz633_linewrap (int on); */
 /* static void CFontz633_autoscroll (int on);  */
-static void CFontz633_hidecursor ();
-static void CFontz633_reboot ();
+static void CFontz633_hidecursor (Driver *drvthis);
+static void CFontz633_reboot (Driver *drvthis);
 static void CFontz633_init_vbar (Driver * drvthis);
 static void CFontz633_init_hbar (Driver * drvthis);
-static void CFontz633_no_live_report ();
+static void CFontz633_no_live_report (Driver *drvthis);
 static void CFontz633_hardware_clear (Driver * drvthis);
 
 
@@ -141,11 +175,23 @@ CFontz633_init (Driver * drvthis, char *args)
 	int tmp, w, h;
 	int reboot = 0;
 	int usb = 0;
-
-	int contrast = DEFAULT_CONTRAST;
-	char device[200] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
 	char size[200] = DEFAULT_SIZE_CF633;
+	char *default_size = DEFAULT_SIZE_CF633;
+
+	PrivateData *p;
+
+	/* Allocate and store private data */
+	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	if (p == NULL)
+		return -1;
+	if (drvthis->store_private_ptr(drvthis, p))
+		return -1;
+
+	/* Initialize the PrivateData structure */
+
+	p->cellwidth = DEFAULT_CELL_WIDTH;
+	p->cellheight = DEFAULT_CELL_HEIGHT;
 
 	debug(RPT_INFO, "CFontz633: init(%p,%s)", drvthis, args );
 
@@ -154,68 +200,67 @@ CFontz633_init (Driver * drvthis, char *args)
 
 	/* Read config file */
 	/* Which model is it (CF633 or CF631)? */
-	tmp = drvthis->config_get_int ( drvthis->name , "Model" , 0 , DEFAULT_SPEED);
+	tmp = drvthis->config_get_int ( drvthis->name , "Model" , 0, DEFAULT_SPEED);
 	debug (RPT_INFO,"CFontzPacket_init: Model is '%d'", tmp);
-	if (tmp == 631) model = 631;
-	else if (tmp == 633) model = 633;
-	else { report (RPT_WARNING, "CFontzPacket_init: Model must be 631 or 633. Using default value: %d\n", model);
+	if ((tmp != 631) && (tmp != 633) && (tmp != 635)) {
+		tmp = 633;
+		report (RPT_WARNING, "CFontzPacket_init: Model must be 631, 633 or 635. Using default value: %d\n", tmp);
 	}
-
+	p->model = tmp;
+	
 	/* Which serial device should be used */
-	strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , DEFAULT_DEVICE),sizeof(device));
-	device[sizeof(device)-1]=0;
-	debug (RPT_INFO,"CFontzPacket_init: Device (in config) is '%s'", device);
-
+	strncpy(p->device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , DEFAULT_DEVICE), sizeof(p->device));
+	p->device[sizeof(p->device)-1] = '\0';
+	debug (RPT_INFO,"CFontzPacket_init: Device (in config) is '%s'", p->device);
 
 	/* Which size */
-if (model==633)
-	strncpy(size, drvthis->config_get_string ( drvthis->name , "Size" , 0 , DEFAULT_SIZE_CF633),sizeof(size));
-else
-	strncpy(size, drvthis->config_get_string ( drvthis->name , "Size" , 0 , DEFAULT_SIZE_CF631),sizeof(size));
-
-	size[sizeof(size)-1]=0;
+	if (p->model == 631)
+		default_size = DEFAULT_SIZE_CF631;
+	else if (p->model == 633)
+		default_size = DEFAULT_SIZE_CF633;
+	else if (p->model == 635)
+		default_size = DEFAULT_SIZE_CF635;
+		
+	strncpy(size, drvthis->config_get_string ( drvthis->name , "Size" , 0 , default_size), sizeof(size));
+	size[sizeof(size)-1] = '\0';
 	debug (RPT_INFO,"CFontzPacket_init: Size (in config) is '%s'", size);
 	if( sscanf(size , "%dx%d", &w, &h ) != 2
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "CFontz633_init: Cannot read size: %s. Using default value.\n", size);
-if (model==633)
-		sscanf( DEFAULT_SIZE_CF633 , "%dx%d", &w, &h );
-else
-		sscanf( DEFAULT_SIZE_CF631 , "%dx%d", &w, &h );
-	} else {
-		width = w;
-		height = h;
+		report (RPT_WARNING, "CFontzPacket_init: Cannot read size: %s. Using default value.\n", size);
+		sscanf( default_size, "%dx%d", &w, &h );
 	}
-	debug (RPT_INFO,"CFontzPacket_init: Real size used: %dx%d", width, height);
+	p->width = w;
+	p->height = h;
+
+	debug (RPT_INFO,"CFontzPacket_init: Real size used: %dx%d", p->width, p->height);
 
 	/* Which contrast */
 	tmp = drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST);
 	debug (RPT_INFO,"CFontzPacket_init: Contrast (in config) is '%d'", tmp);
-	if ((0>=tmp) && (tmp<=1000)) {
-		contrast = tmp;
-	} else {
-		report (RPT_WARNING, "CFontz633_init: Contrast must be between 0 and 1000. Using default value.\n");
+	if ((tmp < 0) || (tmp > 1000)) {
+		report (RPT_WARNING, "CFontzPacket_init: Contrast must be between 0 and 1000. Using default value.\n");
+		tmp = DEFAULT_CONTRAST;
 	}
+	p->contrast = tmp;
 
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS);
 	debug (RPT_INFO,"CFontzPacket_init: Brightness (in config) is '%d'", tmp);
-	if ((0>=tmp) && (tmp<=100)) {
-		brightness = tmp;
-	} else {
-		report (RPT_WARNING, "CFontz633_init: Brightness must be between 0 and 100. Using default value.\n");
+	if ((tmp < 0) || (tmp > 100)) {
+		report (RPT_WARNING, "CFontzPacket_init: Brightness must be between 0 and 100. Using default value.\n");
+		tmp = DEFAULT_BRIGHTNESS;
 	}
+	p->brightness = tmp;
 
 	/* Which backlight-off "brightness" */
 	tmp = drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS);
 	debug (RPT_INFO,"CFontzPacket_init: OffBrightness (in config) is '%d'", tmp);
-	if ((0<=tmp) && (tmp<=100)) {
-		offbrightness = tmp;
-	} else {
-		report (RPT_WARNING, "CFontz633_init: OffBrightness must be between 0 and 100. Using default value.\n");
+	if ((tmp < 0) || (tmp > 100)) {
+		report (RPT_WARNING, "CFontzPacket_init: OffBrightness must be between 0 and 100. Using default value.\n");
+		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
-
+	p->offbrightness = tmp;
 
 	/* Which speed CF633 support 19200 only, CF631USB use 115200. */
 	tmp = drvthis->config_get_int ( drvthis->name , "Speed" , 0 , DEFAULT_SPEED);
@@ -229,91 +274,95 @@ else
 	 * I will try to behave differently for firmware 0.6 or above.
 	 * Currently this is not in use.
 	 */
-	if(drvthis->config_get_bool( drvthis->name , "NewFirmware" , 0 , 0)) {
-		newfirmware = 1;
-	}
+	p->newfirmware = drvthis->config_get_bool( drvthis->name , "NewFirmware" , 0 , 0);
 
 	/* Reboot display? */
-	if (drvthis->config_get_bool( drvthis->name , "Reboot" , 0 , 0)) {
-		report (RPT_INFO, "CFontzPacket_init: Reboot is requested (in config).\n");
-		reboot = 1;
-	}
+	reboot = drvthis->config_get_bool( drvthis->name , "Reboot" , 0 , 0);
 
-	/*Am I USB or not?*/
-	if(drvthis->config_get_bool( drvthis->name , "USB" , 0 , 0)) {
+	/* Am I USB or not? */
+	usb = drvthis->config_get_bool( drvthis->name , "USB" , 0 , 0);
+	if (usb)
 		report (RPT_INFO, "CFontzPacket_init: USB is indicated (in config).\n");
-		usb = 1;
-	}
 
 	/* Set up io port correctly, and open it... */
-	debug( RPT_DEBUG, "CFontzPacket_init: Opening the device: %s", device);
-    if ( usb ) {
-        fd = open (device, O_RDWR | O_NOCTTY);
-    } else {
-        fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
-    }
-	if (fd == -1) {
+	debug( RPT_DEBUG, "CFontzPacket_init: Opening the device: %s", p->device);
+        p->fd = open(p->device, (usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
+	if (p->fd == -1) {
 		report (RPT_ERR, "CFontzPacket_init: failed (%s)\n", strerror (errno));
 		return -1;
 	}
 
-	tcgetattr (fd, &portset);
+	tcgetattr (p->fd, &portset);
 
 	/* We use RAW mode */
-    if ( usb ) {
-        // The USB way
-        portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-                              | INLCR | IGNCR | ICRNL | IXON );
-        portset.c_oflag &= ~OPOST;
-        portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-        portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-        portset.c_cflag |= CS8 | CREAD | CLOCAL ;
-        portset.c_cc[VMIN] = 0;
-        portset.c_cc[VTIME] = 0;
-    } else {
+	if (usb) {
+		// The USB way
+		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+					| INLCR | IGNCR | ICRNL | IXON );
+		portset.c_oflag &= ~OPOST;
+		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+		portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+		portset.c_cc[VMIN] = 0;
+		portset.c_cc[VTIME] = 0;
+	} else {
 #ifdef HAVE_CFMAKERAW
 		/* The easy way */
 		cfmakeraw( &portset );
 #else
 		/* The hard way */
 		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-	                      | INLCR | IGNCR | ICRNL | IXON );
+	        			| INLCR | IGNCR | ICRNL | IXON );
 		portset.c_oflag &= ~OPOST;
 		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
 		portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
-    }
+	}
 
 	/* Set port speed */
 	cfsetospeed (&portset, speed);
 	cfsetispeed (&portset, B0);
 
 	/* Do it... */
-	tcsetattr (fd, TCSANOW, &portset);
+	tcsetattr (p->fd, TCSANOW, &portset);
 
 	/* Make sure the frame buffer is there... */
-	framebuf = (unsigned char *) malloc (width * height);
-	memset (framebuf, ' ', width * height);
+	p->framebuf = (unsigned char *) malloc(p->width * p->height);
+	if (p->framebuf == NULL) {
+		report(RPT_ERR, "CFontzPacket_init: unable to create framebuffer.\n");
+		return -1;
+	}
+	memset(p->framebuf, ' ', p->width * p->height);
+
+	/* Make sure the framebuffer backing store is there... */
+	p->backingstore = (unsigned char *) malloc(p->width * p->height);
+	if (p->backingstore == NULL) {
+		report(RPT_ERR, "CFontzPacket_init: unable to create framebuffer backing store.\n");
+		return -1;
+	}
+	memset(p->backingstore, ' ', p->width * p->height);
 
 	/* Set display-specific stuff.. */
 	if (reboot) {
 		debug(RPT_INFO, "CFontz633: reboot requested\n" );
-		CFontz633_reboot ();
+		CFontz633_reboot (drvthis);
 		reboot = 0;
 		sleep (1);
 		debug(RPT_INFO, "CFontz633: reboot done" );
 	}
 	
-	CFontz633_hidecursor ();
+	CFontz633_hidecursor (drvthis);
 	
-	CFontz633_set_contrast (drvthis, contrast);
-	CFontz633_no_live_report ();
+	CFontz633_set_contrast (drvthis, p->contrast);
+	CFontz633_no_live_report (drvthis);
+  	CFontz633_hardware_clear (drvthis);
 
 	report (RPT_DEBUG, "CFontzPacket_init: done\n");
 
 	return 0;
 }
+
 
 /*
  * Clean-up
@@ -321,14 +370,21 @@ else
 MODULE_EXPORT void
 CFontz633_close (Driver * drvthis)
 {
-	close (fd);
+	PrivateData *p = drvthis->private_data;
 
-	if(framebuf) free (framebuf);
-	framebuf = NULL;
+	if (p->framebuf)
+		free(p->framebuf);
+	p->framebuf = NULL;
 
-	if(old) free (old);
-	old = NULL;
+	if (p->backingstore)
+		free(p->backingstore);
+	p->backingstore = NULL;
+
+	if (p != NULL)
+		free(p);
+	drvthis->store_private_ptr(drvthis, NULL);
 }
+
 
 /* OK631
  * Returns the display width
@@ -336,12 +392,11 @@ CFontz633_close (Driver * drvthis)
 MODULE_EXPORT int
 CFontz633_width (Driver *drvthis)
 {
-/*
-        PrivateData *p = (PrivateData *) drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
+
 	return p->width;
-*/
-	return width;
 }
+
 
 /*
  * Returns the display height
@@ -349,12 +404,11 @@ CFontz633_width (Driver *drvthis)
 MODULE_EXPORT int
 CFontz633_height (Driver *drvthis)
 {
-/*
-        PrivateData *p = (PrivateData *) drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
+
 	return p->height;
-*/
-	return height;
 }
+
 
 /*
  * Flushes all output to the lcd...
@@ -362,94 +416,82 @@ CFontz633_height (Driver *drvthis)
 MODULE_EXPORT void
 CFontz633_flush (Driver * drvthis)
 {
-int i,j;
-int diff_length;
-int first_diff;
-char *xp, *xq;
-char out[22];
+  PrivateData *p = drvthis->private_data;
+  int i,j;
 
-/*
- * PrivateData * p = drvthis->private_data;
- */
+  if (p->model == 633) {
+  /*
+   * For CF633 we don't use delta update yet.
+   * The protocol only permit update of full or partial line starting from pos 0.
+   */
+  unsigned char *xp = p->framebuf;
+  unsigned char *xq = p->backingstore;
+    
+    for (i = 0; i < p->width; i++) {
+      if (*xp++ != *xq++) {
+	send_bytes_message(p->fd, 16, CF633_Set_LCD_Contents_Line_One, p->framebuf);
+        memcpy(p->backingstore, p->framebuf, p->width);
+        break;
+      }
+    }
 
-if (old==NULL) {
-  old = (unsigned char *) malloc (width * height);
-  memset (old, ' ', width * height );
-  CFontz633_hardware_clear (drvthis);
+    xp = p->framebuf + p->width;
+    xq = p->backingstore + p->width;
+
+    for (i = 0; i < p->width; i++) {
+      if (*xp++ != *xq++) {
+        send_bytes_message(p->fd, 16, CF633_Set_LCD_Contents_Line_Two, p->framebuf + p->width);
+        memcpy(p->backingstore + p->width, p->framebuf + p->width, p->width);
+        break;
+      }
+    }
   }
+  else { /* (p->model != 633) */
+  /*
+   * CF631 / CF635 protocol is more flexible and we can do real delta update.
+   */
 
-if (model==633) {
-  xp = framebuf;
-  xq = old;
-/*
- * For CF633 we don't use delta update yet.
- * The protocol only permit update of full or partial line starting from pos 0.
- */
-  for (i=0; i<width; i++) {
-    if (*xp != *xq) {
-      send_bytes_message(fd, 16, CF633_Set_LCD_Contents_Line_One, &framebuf[0]);
-      memcpy(old, framebuf, width);
-      break;
-      }
-    xp++; xq++;
-    }
+    for (i = 0; i < p->height; i++) {
+      // set frame buffer & backing store to start of the line
+      unsigned char *xp = p->framebuf + (i * p->width);
+      unsigned char *xq = p->backingstore + (i * p->width);
 
-  xp = &framebuf[width];
-  xq = &old[width];
+      debug (RPT_INFO,"Framebuf: '%.*s'", p->width, xp );
+      debug (RPT_INFO,"     backingstore: '%.*s'", p->width, xq );
 
-  for (i=0; i<width; i++) {
-    if (*xp != *xq) {
-      send_bytes_message(fd, 16, CF633_Set_LCD_Contents_Line_Two, &framebuf[width]);
-      memcpy(&old[width], &framebuf[width], width);
-      break;
-      }
-    xp++; xq++;
-    }
-  } else { /* model!=633 */
-/*
- * CF631 protocol is more flexible and we can do real delta update.
- */
-
-
-
-  first_diff=0;
-
-  for (i = 0; i < height; i++) {
-
-  	xp = framebuf+(i*width);
-  	xq = old+(i*width);
-
-    debug (RPT_INFO,"Framebuf: '%.*s'", width, xp );
-    debug (RPT_INFO,"     old: '%.*s'", width, xq );
-
-    for (j = 0; j < width; ) { 
-
-		// skip over identical portions
-		for ( ; *xp == *xq && j < width; xp++, xq++, j++ );
+      for (j = 0; j < p->width; ) { 
+	// skip over identical portions
+	for ( ; *xp == *xq && j < p->width; xp++, xq++, j++ )
+	  ;
 		
-		// deal with the differences
-		if ( j < width ){
-			first_diff = j;
-			for ( ; *xp != *xq && j < width; xp++, xq++, j++ );
+	// deal with the differences
+	if ( j < p->width ) {
+          char out[23];
+          int diff_length;
+	  int first_diff = j;
+	    
+	  // get length of differing portions
+	  for ( ; *xp != *xq && j < p->width; xp++, xq++, j++ )
+	    ;
 
-			// send the difference to the screen
-			diff_length = j - first_diff;
-			out[0]=i;
-			out[1]=first_diff;
+	  // send the difference to the screen
+	  diff_length = j - first_diff;
+	  out[0] = i;
+	  out[1] = first_diff;
 			
-			debug (RPT_INFO,"WriteDiff: l=%d c=%d count=%d string='%.*s'",
-			 	out[0], out[1], diff_length, diff_length,
-				&framebuf[first_diff+(i*width)] );
+	  debug (RPT_INFO,"WriteDiff: l=%d c=%d count=%d string='%.*s'",
+	 	 out[0], out[1], diff_length, diff_length,
+		 &p->framebuf[first_diff + (i * p->width)] );
 
-			memcpy(&out[2], &framebuf[first_diff+(i*width)], diff_length );
-			send_bytes_message(fd, diff_length+2, CF633_Send_Data_to_LCD, out);
-		}
-	} // j < width
+	  memcpy(&out[2], &p->framebuf[first_diff + (i * p->width)], diff_length );
+	  send_bytes_message(p->fd, diff_length+2, CF633_Send_Data_to_LCD, out);
+	}
+      } // j < p->width
+    }	// i < p->height
+    memcpy(p->backingstore, p->framebuf, p->width * p->height);
+  }
+}
 
-  }	//i < height
-  memcpy(old, framebuf, width*height);
-}
-}
 
 /*
  * Return one char from the KeyRing
@@ -492,11 +534,16 @@ CFontz633_get_key (Driver *drvthis)
 		case CF631_KEY_LR_PRESS:
                         return "Escape";
                         break;
+		case CF633_KEY_UP_RELEASE:
+		case CF633_KEY_DOWN_RELEASE:
+		case CF633_KEY_LEFT_RELEASE:
+		case CF633_KEY_RIGHT_RELEASE:
+		case CF633_KEY_ENTER_RELEASE:
+		case CF633_KEY_ESCAPE_RELEASE:
 		case CF631_KEY_UL_RELEASE:
 		case CF631_KEY_UR_RELEASE:
 		case CF631_KEY_LL_RELEASE:
 		case CF631_KEY_LR_RELEASE:
-			break;
                 //        report( RPT_INFO, "cfontz633: Returning key 0x%2x", akey);
                         return NULL;
                         break;
@@ -506,6 +553,7 @@ CFontz633_get_key (Driver *drvthis)
                         return NULL;
                         break;
         }
+	return NULL;
 }
 
 
@@ -516,11 +564,14 @@ CFontz633_get_key (Driver *drvthis)
 MODULE_EXPORT void
 CFontz633_chr (Driver * drvthis, int x, int y, char c)
 {
+	PrivateData *p = drvthis->private_data;
+
 	y--;
 	x--;
 
-	framebuf[(y * width) + x] = c;
+	p->framebuf[(y * p->width) + x] = c;
 }
+
 
 /*
  * Returns current contrast
@@ -531,8 +582,11 @@ CFontz633_chr (Driver * drvthis, int x, int y, char c)
 MODULE_EXPORT int
 CFontz633_get_contrast (Driver * drvthis)
 {
-	return contrast;
+	PrivateData *p = drvthis->private_data;
+
+	return p->contrast;
 }
+
 
 /*
  *  Changes screen contrast (valid hardware value: 0-50)
@@ -541,20 +595,24 @@ CFontz633_get_contrast (Driver * drvthis)
 MODULE_EXPORT void
 CFontz633_set_contrast (Driver * drvthis, int promille)
 {
+	PrivateData *p = drvthis->private_data;
 	int hardware_contrast;
 
 	/* Check it */
-	if( promille < 0 || promille > 1000 )
+	if (promille < 0 || promille > 1000)
 		return;
 
 	/* Store the software value since there is not get. */
-	contrast = promille;
+	p->contrast = promille;
 
-   // between 0 and 255
-	hardware_contrast = (contrast*255)/1000;
+	// on CF633: 0 - 50, on CF631, CF635: 0 - 255
+	hardware_contrast = (p->model == 633)
+			    ? ((p->contrast * 255) / 1000)
+			    : (p->contrast / 20);
 /* Next line is to be checked $$$ */
-	send_onebyte_message(fd, CF633_Set_LCD_Contrast, hardware_contrast);
+	send_onebyte_message(p->fd, CF633_Set_LCD_Contrast, hardware_contrast);
 }
+
 
 /*
  * Sets the backlight on or off.
@@ -564,22 +622,23 @@ CFontz633_set_contrast (Driver * drvthis, int promille)
 MODULE_EXPORT void
 CFontz633_backlight (Driver * drvthis, int on)
 {
-	if (on) {
+	PrivateData *p = drvthis->private_data;
+
 /* Next line is to be checked $$$ */
-send_onebyte_message(fd, CF633_Set_LCD_And_Keypad_Backlight, brightness);
-	} else {
-/* Next line is to be checked $$$ */
-send_onebyte_message(fd, CF633_Set_LCD_And_Keypad_Backlight, offbrightness);
-	}
+	send_onebyte_message(p->fd, CF633_Set_LCD_And_Keypad_Backlight,
+			     (on) ? p->brightness : p->offbrightness);
 }
+
 
 /* OK631
  * Get rid of the blinking curson
  */
 static void
-CFontz633_hidecursor ()
+CFontz633_hidecursor (Driver *drvthis)
 {
-send_onebyte_message(fd, CF633_Set_LCD_Cursor_Style, 0);
+	PrivateData *p = drvthis->private_data;
+
+	send_onebyte_message(p->fd, CF633_Set_LCD_Cursor_Style, 0);
 }
 
 
@@ -587,46 +646,56 @@ send_onebyte_message(fd, CF633_Set_LCD_Cursor_Style, 0);
  * Stop live reporting of temperature.
  */
 static void
-CFontz633_no_live_report ()
+CFontz633_no_live_report (Driver *drvthis)
 {
-	char out[2]= {0, 0};
+	PrivateData *p = drvthis->private_data;
+	char out[2]= { 0, 0 };
 
-    if (model==633)
-	for (out[0]=0; out[0]<8; out[0]++)
-	    send_bytes_message(fd, 2, CF633_Set_Up_Live_Fan_or_Temperature_Display , out);
+	if (p->model == 633)
+		for (out[0] = 0; out[0] < 8; out[0]++)
+			send_bytes_message(p->fd, 2, CF633_Set_Up_Live_Fan_or_Temperature_Display , out);
 }
+
 
 /*
  * Stop the reporting of any fan.
  */
 static void
-CFontz633_no_fan_report ()
+CFontz633_no_fan_report (Driver *drvthis)
 {
-if (model==633)
-    send_onebyte_message(fd, CF633_Set_Up_Fan_Reporting, 0);
+	PrivateData *p = drvthis->private_data;
+
+	if (p->model == 633)
+		send_onebyte_message(p->fd, CF633_Set_Up_Fan_Reporting, 0);
 }
+
 
 /* KO631
  * Stop the reporting of any temperature.
  */
 static void
-CFontz633_no_temp_report ()
+CFontz633_no_temp_report (Driver *drvthis)
 {
-char out[4]= {0, 0, 0, 0};
-if (model==633)
-    send_bytes_message(fd, 4, CF633_Set_Up_Temperature_Reporting, out);
+	PrivateData *p = drvthis->private_data;
+	char out[4]= { 0, 0, 0, 0 };
+
+	if (p->model == 633)
+		send_bytes_message(p->fd, 4, CF633_Set_Up_Temperature_Reporting, out);
 }
+
 
 /* OK631
  * Reset the display bios
  */
 static void
-CFontz633_reboot ()
+CFontz633_reboot (Driver *drvthis)
 {
+	PrivateData *p = drvthis->private_data;
+	char out[3]= { 8, 18, 99 };
 
-char out[3]= {8, 18, 99};
-send_bytes_message(fd, 3, CF633_Reboot, out);
+	send_bytes_message(p->fd, 3, CF633_Reboot, out);
 }
+
 
 /*
  * Sets up for vertical bars.
@@ -634,6 +703,8 @@ send_bytes_message(fd, 3, CF633_Reboot, out);
 static void
 CFontz633_init_vbar (Driver * drvthis)
 {
+	PrivateData *p = drvthis->private_data;
+
 	char a[] = {
 		0, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0,
@@ -705,8 +776,14 @@ CFontz633_init_vbar (Driver * drvthis)
 		0, 1, 1, 1, 1, 1,
 	};
 
-	if (custom != vbar) {
-	//	printf("+++ vbar +++\n");
+	if (p->ccmode != vbar) {
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "CFontz633_init_vbar: Cannot combine two modes using user defined characters");
+			return;
+		}
+	        p->ccmode = vbar;
+
 		CFontz633_set_char (drvthis, 1, a);
 		CFontz633_set_char (drvthis, 2, b);
 		CFontz633_set_char (drvthis, 3, c);
@@ -714,9 +791,9 @@ CFontz633_init_vbar (Driver * drvthis)
 		CFontz633_set_char (drvthis, 5, e);
 		CFontz633_set_char (drvthis, 6, f);
 		CFontz633_set_char (drvthis, 7, g);
-		custom = vbar;
 	}
 }
+
 
 /*
  * Inits horizontal bars...
@@ -724,6 +801,7 @@ CFontz633_init_vbar (Driver * drvthis)
 static void
 CFontz633_init_hbar (Driver * drvthis)
 {
+	PrivateData *p = drvthis->private_data;
 
 	char a[] = {
 		1, 0, 0, 0, 0, 0,
@@ -786,14 +864,20 @@ CFontz633_init_hbar (Driver * drvthis)
 		1, 1, 1, 1, 1, 1,
 	};
 
-	if (custom != hbar) {
+	if (p->ccmode != hbar) {
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "CFontz633_init_vbar: Cannot combine two modes using user defined characters");
+			return;
+		}
+	        p->ccmode = hbar;
+
 		CFontz633_set_char (drvthis, 1, a);
 		CFontz633_set_char (drvthis, 2, b);
 		CFontz633_set_char (drvthis, 3, c);
 		CFontz633_set_char (drvthis, 4, d);
 		CFontz633_set_char (drvthis, 5, e);
 		CFontz633_set_char (drvthis, 6, f);
-		custom = hbar;
 	}
 }
 
@@ -810,10 +894,10 @@ CFontz633_vbar (Driver * drvthis, int x, int y, int len, int promille, int optio
  * len is the number of characters that the bar is long at 100%
  * promille is the number of promilles (0..1000) that the bar should be filled.
  */
+	PrivateData *p = drvthis->private_data;
 
 	CFontz633_init_vbar(drvthis);
-
-	lib_vbar_static(drvthis, x, y, len, promille, options, cellheight, 0);
+	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
 
 
@@ -829,10 +913,10 @@ CFontz633_hbar (Driver * drvthis, int x, int y, int len, int promille, int optio
  * len is the number of characters that the bar is long at 100%
  * promille is the number of promilles (0..1000) that the bar should be filled.
  */
+	PrivateData *p = drvthis->private_data;
 
 	CFontz633_init_hbar(drvthis);
-
-	lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 0);
+	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }
 
 
@@ -844,14 +928,17 @@ MODULE_EXPORT void
 CFontz633_num (Driver * drvthis, int x, int num)
 {
 /*
+	PrivateData *p = drvthis->private_data;
+
 	char out[5];
 	snprintf (out, sizeof(out), "%c%c%c", 28, x, num);
-	write (fd, out, 3);
+	write (p->fd, out, 3);
 */
 }
 
+
 /*
- * Sets a custom character from 0-7...
+ * Sets a custom character from 0 - (NUM_CCs - 1)
  *
  * For input, values > 0 mean "on" and values <= 0 are "off".
  *
@@ -860,35 +947,29 @@ CFontz633_num (Driver * drvthis, int x, int num)
 MODULE_EXPORT void
 CFontz633_set_char (Driver * drvthis, int n, char *dat)
 {
-	char out[9];
+	PrivateData *p = drvthis->private_data;
+ 	char out[9];
 	int row, col;
-	int letter;
 
-	if (n < 0 || n > 7)
+	if ((n < 0) || (n >= NUM_CCs))
 		return;
 	if (!dat)
 		return;
 
-	out[0]=n;	/* Custom char to define. xxx */
+	out[0] = n;	/* Custom char to define. xxx */
 
-	for (row = 0; row < cellheight; row++) {
-		letter = 0;
-		for (col = 0; col < cellwidth; col++) {
+	for (row = 0; row < p->cellheight; row++) {
+		int letter = 0;
+
+		for (col = 0; col < p->cellwidth; col++) {
 			letter <<= 1;
-			letter |= (dat[(row * cellwidth) + col] > 0);
-		/* I should remove that debug code. */
-		//	if (dat[(row * cellheight) + col] == 0) printf(".");
-		//	if (dat[(row * cellheight) + col] == 1) printf("+");
-		//	if (dat[(row * cellheight) + col] == 2) printf("x");
-		//	if (dat[(row * cellheight) + col] == 3) printf("*");
-		//	printf("'%1d'", dat[(row * cellwidth) + col]);
-		//	printf("%3d ", letter);
+			letter |= (dat[(row * p->cellwidth) + col] > 0);
 		}
-		out[row+1]=letter;
-	//	printf(": %d\n", letter);
+		out[row+1] = letter;
 	}
-send_bytes_message(fd, 9, CF633_Set_LCD_Special_Character_Data , out);
+	send_bytes_message(p->fd, 9, CF633_Set_LCD_Special_Character_Data, out);
 }
+
 
 /*
  * Places an icon on screen
@@ -896,6 +977,7 @@ send_bytes_message(fd, 9, CF633_Set_LCD_Special_Character_Data , out);
 MODULE_EXPORT int
 CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 {
+	PrivateData *p = drvthis->private_data;
 	char icons[8][6 * 8] = {
 	/* Empty Heart */
 		{
@@ -988,60 +1070,53 @@ CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 	};
 
 	/* Yes we know, this is a VERY BAD implementation :-) */
-	switch( icon ) {
+	switch (icon) {
 		case ICON_BLOCK_FILLED:
-			if (model==631)
-				CFontz633_chr( drvthis, x, y, 31 );
+			if (p->model == 633)
+				CFontz633_chr(drvthis, x, y, 255);
 			else
-				CFontz633_chr( drvthis, x, y, 255 );
+				CFontz633_chr(drvthis, x, y, 31);
 			break;
 		case ICON_HEART_FILLED:
-		        custom = cust;
-			CFontz633_set_char( drvthis, 0, icons[1] );
-			CFontz633_chr( drvthis, x, y, 0 );
+			CFontz633_set_char(drvthis, 0, icons[1]);
+			CFontz633_chr(drvthis, x, y, 0);
 			break;
 		case ICON_HEART_OPEN:
-		        custom = cust;
-			CFontz633_set_char( drvthis, 0, icons[0] );
-			CFontz633_chr( drvthis, x, y, 0 );
+			CFontz633_set_char(drvthis, 0, icons[0]);
+			CFontz633_chr(drvthis, x, y, 0);
 			break;
 		case ICON_ARROW_UP:
-		        custom = cust;
-			CFontz633_set_char( drvthis, 1, icons[2] );
-			CFontz633_chr( drvthis, x, y, 1 );
+			CFontz633_set_char(drvthis, 1, icons[2]);
+			CFontz633_chr(drvthis, x, y, 1);
 			break;
 		case ICON_ARROW_DOWN:
-		        custom = cust;
-			CFontz633_set_char( drvthis, 2, icons[3] );
-			CFontz633_chr( drvthis, x, y, 2 );
+			CFontz633_set_char(drvthis, 2, icons[3]);
+			CFontz633_chr(drvthis, x, y, 2);
 			break;
 		case ICON_ARROW_LEFT:
-			CFontz633_chr( drvthis, x, y, 0x7F );
+			CFontz633_chr(drvthis, x, y, 0x7F);
 			break;
 		case ICON_ARROW_RIGHT:
-			CFontz633_chr( drvthis, x, y, 0x7E );
+			CFontz633_chr(drvthis, x, y, 0x7E);
 			break;
 		case ICON_CHECKBOX_OFF:
-		        custom = cust;
-			CFontz633_set_char( drvthis, 3, icons[4] );
-			CFontz633_chr( drvthis, x, y, 3 );
+			CFontz633_set_char(drvthis, 3, icons[4]);
+			CFontz633_chr(drvthis, x, y, 3);
 			break;
 		case ICON_CHECKBOX_ON:
-		        custom = cust;
-			CFontz633_set_char( drvthis, 4, icons[5] );
-			CFontz633_chr( drvthis, x, y, 4 );
+			CFontz633_set_char(drvthis, 4, icons[5]);
+			CFontz633_chr(drvthis, x, y, 4);
 			break;
 		case ICON_CHECKBOX_GRAY:
-		        custom = cust;
-			CFontz633_set_char( drvthis, 5, icons[6] );
-			CFontz633_chr( drvthis, x, y, 5 );
+			CFontz633_set_char(drvthis, 5, icons[6]);
+			CFontz633_chr(drvthis, x, y, 5);
 			break;
 		default:
 			return -1; /* Let the core do other icons */
 	}
 	return 0;
-
 }
+
 
 /* OK631
  * Clears the LCD screen
@@ -1049,8 +1124,13 @@ CFontz633_icon (Driver * drvthis, int x, int y, int icon)
 MODULE_EXPORT void
 CFontz633_clear (Driver * drvthis)
 {
-	memset (framebuf, ' ', width * height);
+	PrivateData *p = drvthis->private_data;
+
+	memset(p->framebuf, ' ', p->width * p->height);
+
+	p->ccmode = standard;
 }
+
 
 /* OK631
  * Hardware clears the LCD screen
@@ -1058,28 +1138,32 @@ CFontz633_clear (Driver * drvthis)
 static void
 CFontz633_hardware_clear (Driver * drvthis)
 {
-	send_zerobyte_message(fd, CF633_Clear_LCD_Screen);
+	PrivateData *p = drvthis->private_data;
+
+	send_zerobyte_message(p->fd, CF633_Clear_LCD_Screen);
 }
+
 
 /* OK631
  * Prints a string on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (16,2).
+ * upper-left is (1,1), and the lower right should be (p->width, p->height).
  */
 MODULE_EXPORT void
 CFontz633_string (Driver * drvthis, int x, int y, char string[])
 {
+	PrivateData *p = drvthis->private_data;
 	int i;
 
 	/* Convert 1-based coords to 0-based... */
-	x -= 1;
-	y -= 1;
+	x--;
+	y--;
 
-	for (i = 0; string[i]; i++) {
-
+	for (i = 0; string[i] != '\0'; i++)
+	{
 		/* Check for buffer overflows... */
-		if ((y * width) + x + i > (width * height))
+		if ((y * p->width) + x + i > (p->width * p->height))
 			break;
-		framebuf[(y * width) + x + i] = string[i];
+		p->framebuf[(y * p->width) + x + i] = string[i];
 	}
 }
 
