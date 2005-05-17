@@ -476,16 +476,16 @@ CFontz633_flush (Driver * drvthis)
 
 	  // send the difference to the screen
 	  diff_length = j - first_diff;
-	  out[0] = i;
-	  out[1] = first_diff;
+	  out[1] = i;		// line
+	  out[0] = first_diff;	// column
 			
 	  debug (RPT_INFO,"WriteDiff: l=%d c=%d count=%d string='%.*s'",
 	 	 out[0], out[1], diff_length, diff_length,
 		 &p->framebuf[first_diff + (i * p->width)] );
 
 	  memcpy(&out[2], &p->framebuf[first_diff + (i * p->width)], diff_length );
-	  send_bytes_message(p->fd, diff_length+2, CF633_Send_Data_to_LCD, out);
-	}
+	  send_bytes_message(p->fd, diff_length + 2, CF633_Send_Data_to_LCD, out);
+	}  
       } // j < p->width
     }	// i < p->height
     memcpy(p->backingstore, p->framebuf, p->width * p->height);
