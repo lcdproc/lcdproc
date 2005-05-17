@@ -54,4 +54,14 @@ const char *get_hostname();
 const char *get_sysname();
 const char *get_sysrelease();
 
+#ifndef min
+# define min(a,b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef max
+# define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+
+
 #endif
