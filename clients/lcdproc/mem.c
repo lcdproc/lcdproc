@@ -59,14 +59,15 @@ mem_screen (int rep, int display)
 	if (first) {
 		first = 0;
 
-		gauge_wid = (lcd_wid >= 18) ? max(2, lcd_wid - 18) : 0;
-		gauge_offs = (lcd_wid - gauge_wid) / 2 + 2;
-		
 		sock_send_string (sock, "screen_add M\n");
 		sprintf (buffer, "screen_set M -name {Memory & Swap: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 
 		if (lcd_hgt >= 4) {
+			gauge_wid = (lcd_wid >= 18)
+				    ? (lcd_wid - 6) / 2		// room for E..F pairs and 2 spaces in between
+				    : (lcd_wid - 4) / 2;	// leave room for the  E...F pairs
+
 			sock_send_string(sock, "widget_add M title title\n");
 			sock_send_string(sock, "widget_set M title { MEM -==- SWAP}\n");
 			sock_send_string(sock, "widget_add M totl string\n");
@@ -76,13 +77,18 @@ mem_screen (int rep, int display)
 			sprintf(buffer, "widget_set M used %i 3 Free\n", lcd_wid/2 - 1);
 			sock_send_string(sock, buffer);
 			sock_send_string(sock, "widget_add M EFmem string\n");
-			sock_send_string(sock, "widget_set M EFmem 1 4 {E       F}\n");
+			sprintf(buffer, "widget_set M EFmem 1 4 {E%*sF}\n", gauge_wid, "");
+			sock_send_string(sock, buffer);
 			sock_send_string(sock, "widget_add M EFswap string\n");
-			sprintf(buffer, "widget_set M EFswap %i 4 {E       F}\n", lcd_wid - 8);
+			sprintf(buffer, "widget_set M EFswap %i 4 {E%*sF}\n",
+				lcd_wid - gauge_wid - 1, gauge_wid, "");
 			sock_send_string(sock, buffer);
 			sock_send_string(sock, "widget_add M memused string\n");
 			sock_send_string(sock, "widget_add M swapused string\n");
 		} else {
+			gauge_wid = (lcd_wid >= 18) ? max(2, lcd_wid - 18) : 0;
+			gauge_offs = (lcd_wid - gauge_wid) / 2 + 2;
+		
 			sock_send_string(sock, "widget_add M m string\n");
 			sock_send_string(sock, "widget_add M s string\n");
 			if (gauge_wid > 0) {
@@ -164,7 +170,7 @@ mem_screen (int rep, int display)
 
 				// printf(".0f", val) only prints the integer part
 				sprintf(buffer, "widget_set M swapgauge %i 4 %.0f\n", 
-					lcd_wid - 7, lcd_cellwid * gauge_wid * value);
+					lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
 				if (display)
 					sock_send_string (sock, buffer);
 			}	
