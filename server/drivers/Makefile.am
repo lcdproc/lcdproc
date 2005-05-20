@@ -48,7 +48,7 @@ CFontz633_SOURCES =  lcd.h CFontz633.c CFontz633.h CFontz633io.c CFontz633io.h r
 curses_SOURCES =     lcd.h curses_drv.h curses_drv.c report.h
 glk_SOURCES =        lcd.h glk.c glk.h glkproto.c glkproto.h report.h
 hd44780_SOURCES =    lcd.h hd44780.h hd44780.c hd44780-drivers.h hd44780-low.h hd44780-charmap.h report.h
-EXTRA_hd44780_SOURCES = hd44780-4bit.c hd44780-4bit.h hd44780-ext8bit.c hd44780-ext8bit.h lcd_sem.c lcd_sem.h hd44780-serialLpt.c hd44780-serialLpt.h hd44780-winamp.c hd44780-winamp.h hd44780-picanlcd.c hd44780-picanlcd.h hd44780-bwct-usb.c hd44780-bwct-usb.h port.h lpt-port.h timing.h
+EXTRA_hd44780_SOURCES = hd44780-4bit.c hd44780-4bit.h hd44780-ext8bit.c hd44780-ext8bit.h lcd_sem.c lcd_sem.h hd44780-serialLpt.c hd44780-serialLpt.h hd44780-winamp.c hd44780-winamp.h hd44780-picanlcd.c hd44780-picanlcd.h hd44780-bwct-usb.c hd44780-bwct-usb.h hd44780-lcdserializer.c hd44780-lcdserializer.h port.h lpt-port.h timing.h
 
 icp_a106_SOURCES =   lcd.h icp_a106.c icp_a106.h report.h
 IOWarrior_SOURCES =  lcd.h lcd_lib.h hd44780-charmap.h IOWarrior.c IOWarrior.h report.h
