@@ -232,9 +232,16 @@ dnl			else
 			;;
 		glcdlib)
 			AC_CHECK_HEADERS([glcdproclib/glcdprocdriver.h],[
-				LIBGLCD="-lglcddrivers -lglcdgraphics -lglcdprocdriver"
-				DRIVERS="$DRIVERS glcdlib${SO}"
-				actdrivers=["$actdrivers glcdlib"]
+				AC_CHECK_LIB(glcdprocdriver, main,[
+					LIBGLCD="-lglcddrivers -lglcdgraphics -lglcdprocdriver"
+					DRIVERS="$DRIVERS glcdlib${SO}"
+					actdrivers=["$actdrivers glcdlib"]
+				],[
+dnl				else
+					AC_MSG_WARN([The glcdlib driver needs the glcdprocdriver library])
+				],
+				[-lglcddrivers -lglcdgraphics -lglcdprocdriver]
+				)
 			],[
 dnl			else
 				AC_MSG_WARN([The glcdlib driver needs glcdproclib/glcdprocdriver.h])
