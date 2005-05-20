@@ -36,10 +36,13 @@
 #include "menu.h"
 #include "menuitem.h"
 #include "menuscreens.h"
+#include "menu_commands.h"
 #include "client.h"
 
 /* Local functions */
 MenuEventFunc(menu_commands_handler);
+int set_parent(Menu *menu, char *parentid, Client *client);
+MenuItem * search_item(char *menu_id);
 
 
 /*************************************************************************
@@ -73,7 +76,10 @@ menu_add_item_func (Client * c, int argc, char **argv)
 	Menu * menu = NULL;
 	MenuItem * item;
 	MenuItemType itemtype;
+	char** argv_set = NULL;
 
+	debug (RPT_DEBUG, "%s( Client [%d], %s, %s )",
+	       __FUNCTION__, c->sock, argv[1], argv[2]);
 	if (!c->ack)
 		return 1;
 
@@ -123,8 +129,8 @@ menu_add_item_func (Client * c, int argc, char **argv)
 		return 0;
 	}
 
-	/* Is a text given ? */
-	if (argc >= 5) {
+	/* Is a text given (options don't count)? */
+	if (argc >= 5 && argv[4][0] != '-') {
 		text = argv[4];
 	}
 	else {
@@ -137,31 +143,31 @@ menu_add_item_func (Client * c, int argc, char **argv)
 		item = menu_create (item_id, menu_commands_handler, text, c);
 		break;
 	  case MENUITEM_ACTION:
-		item = menuitem_create_action (item_id, menu_commands_handler, text,
+		item = menuitem_create_action (item_id, menu_commands_handler, text, c,
 				MENURESULT_NONE);
 		break;
 	  case MENUITEM_CHECKBOX:
-		item = menuitem_create_checkbox (item_id, menu_commands_handler, text,
+		item = menuitem_create_checkbox (item_id, menu_commands_handler, text, c,
 				false, false);
 		break;
 	  case MENUITEM_RING:
-		item = menuitem_create_ring (item_id, menu_commands_handler, text,
+		item = menuitem_create_ring (item_id, menu_commands_handler, text, c,
 				"", 0);
 		break;
 	  case MENUITEM_SLIDER:
-		item = menuitem_create_slider (item_id, menu_commands_handler, text,
+		item = menuitem_create_slider (item_id, menu_commands_handler, text, c,
 				 "", "", 0, 100, 1, 25);
 		break;
 	  case MENUITEM_NUMERIC:
-		item = menuitem_create_numeric (item_id, menu_commands_handler, text,
+		item = menuitem_create_numeric (item_id, menu_commands_handler, text, c,
 				0, 100, 0);
 		break;
 	  case MENUITEM_ALPHA:
-		item = menuitem_create_alpha (item_id, menu_commands_handler, text,
+		item = menuitem_create_alpha (item_id, menu_commands_handler, text, c,
 				0, 0, 10, true, false, true, "-./", "");
 		break;
 	  case MENUITEM_IP:
-		item = menuitem_create_ip (item_id, menu_commands_handler, text,
+		item = menuitem_create_ip (item_id, menu_commands_handler, text, c,
 				0, "192.168.1.245");
 		break;
  	 default:
@@ -170,6 +176,30 @@ menu_add_item_func (Client * c, int argc, char **argv)
 	menu_add_item (menu, item);
 	menuscreen_inform_item_modified (menu);
 	sock_send_string(c->sock, "success\n");
+
+	/* are there any options (starting with '-')?
+	 * - create a temporary argv for menu_set_item() call */
+	if (argc > 5 || argv[4][0] == '-') {
+		// menu_add_item <menuid> <newitemid> <type> [<text>]
+		// menu_set_item <menuid> <itemid> {<option>}+
+		int i, j;
+		argv_set = malloc(argc * sizeof(char*));
+		assert(argv_set);
+		argv_set[0] = "menu_set_item";
+		for (i = j = 1; i < argc; ++i)
+		{
+			/* skip "type" */
+			if (i == 3)
+				continue;
+			/* skip "text" */
+			if (i == 4 && argv[4][0] != '-')
+				continue;
+			
+			argv_set[j++] = argv[i];
+		}
+		menu_set_item_func(c, j, argv_set);
+		free(argv_set);
+	}
 	return 0;
 }
 
@@ -254,6 +284,10 @@ menu_del_item_func (Client * c, int argc, char **argv)
  * For all types:
  * -text "text"			("")
  *	Sets the visible text.
+ * -is_hidden false|true	(false)
+ *	If the item currently should not appear in a menu.
+ * -parent id			()
+ *	Sets the parent of this item.
  *
  * menu:
  * (has no extra settable options)
@@ -348,6 +382,8 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		 * that, use -1 for offset, to process it yourself. */
 	} option_table[] = {
 		{ -1,			"text",		STRING,		offsetof(MenuItem,text) },
+		{ -1,			"is_hidden",	BOOLEAN,	offsetof(MenuItem,is_hidden) },
+		{ -1,			"parent",	STRING,		-1 },
 		{ MENUITEM_ACTION,	"menu_result",	STRING,		-1 },
 		{ MENUITEM_CHECKBOX,	"value",	CHECKBOX_VALUE,	offsetof(MenuItem,data.checkbox.value) },
 		{ MENUITEM_CHECKBOX,	"allow_gray",	BOOLEAN,	offsetof(MenuItem,data.checkbox.allow_gray) },
@@ -376,6 +412,8 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		{ -1,			NULL,		-1,		-1 }
 	};
 
+	debug (RPT_DEBUG, "%s( Client [%d], %s, %s )",
+	       __FUNCTION__, c->sock, argv[1], argv[2]);
 	bool bool_value = false;
 	CheckboxValue checkbox_value = CHECKBOX_OFF;
 	short short_value = 0;
@@ -534,6 +572,9 @@ menu_set_item_func (Client * c, int argc, char **argv)
 				free( *(char**)location );
 				*(char**)location = strdup( string_value );
 			}
+			else if (strcmp(argv[argnr], "-parent") == 0) {
+				set_parent(item, string_value, c);
+			}
 			break;
 		}
 		switch( error ) {
@@ -649,12 +690,12 @@ menu_set_item_func (Client * c, int argc, char **argv)
 }
 
 /***************************************************************
- * Requests the menu system to display the given menu screen.
- * This will only work if the menu is not active at the moment.
- * However, if a valid menu id has been given the function will
- * always return "success".
+ * Requests the menu system to display the given menu screen.  Depending on
+ * the setting of the LCDPROC_PERMISSIVE_MENU_GOTO it is impossible
+ * to go to a menu of another client (or the server menus). Same
+ * restriction applies to the optional parentid
  *
- * usage: menu_goto <id>
+ * usage: menu_goto <id> [<parentid>]
  */
 int
 menu_goto_func (Client * c, int argc, char **argv)
@@ -662,13 +703,108 @@ menu_goto_func (Client * c, int argc, char **argv)
 	char * menu_id;
 	Menu * menu;
 
-	debug (RPT_DEBUG, "%s( Client [%d], %s )",
-	       __FUNCTION__, c->sock, (argc > 1 ? argv[1] : "<null>") );
+	debug (RPT_DEBUG, "%s( Client [%d], %s, %s )",
+	       __FUNCTION__, c->sock, (argc > 1 ? argv[1] : "<null>"),
+	       (argc > 2 ? argv[2] : "<null>") );
 	if (!c->ack)
 		return 1;
 
 	if ((argc < 2 )) {
-		sock_send_string (c->sock, "huh?  Usage: menu_goto <menuid>\n");
+		sock_send_string (c->sock, "huh?  Usage: menu_goto <menuid> [<parentid>]\n");
+		return 0;
+	}
+
+	menu_id = argv[1];
+
+	if ( menu_id[0] == 0 ) {
+		/* No menu specified = client's main menu */
+		menu = c->menu;
+	} else {
+		/* A specified menu */
+		menu = search_item(menu_id);
+	}
+
+	if (!menu) {
+		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
+		return 0;
+	}
+
+	if ((argc > 2 ))
+		set_parent(menu, argv[2], c);
+
+	menuscreen_goto (menu);
+	/* Failure is not returned (Robijn) */
+	sock_send_string(c->sock, "success\n");
+	return 0;
+}
+
+/** Sets the parent of a Menu. Checks if menu's type actually is
+ * MENUITEM_MENU.
+ *
+ * @note neither the menu content of menu nor the new parent menu is
+ * changed. This should be used to set the way back after a menu_goto
+ * (->wizzards!). If there should be a need for menu rearangement a new
+ * menu command should be used (e.g. menuitem_move) Volker
+ *
+ * @return 0 on success and -1 otherwise
+ */
+int set_parent(Menu *menu, char *parentid, Client *client)
+{
+	MenuItem *parent = search_item(parentid);
+	if ( ! parent) {
+		char buf[80];
+		snprintf(buf, sizeof(buf), "huh?  Cannot find parent '%s'"
+			 " for menu '%s'\n", parentid, menu->id);
+		sock_send_string (client->sock, buf);
+		return -1;
+	}
+	if (menu->type != MENUITEM_MENU) {
+		char buf[80];
+		snprintf(buf, sizeof(buf), "huh?  Cannot set parent of '%s':"
+			 " non-menu type '%s'\n", menu->id,
+			 menuitem_type_to_typename(menu->type));
+		sock_send_string (client->sock, buf);
+		return -1;
+	}
+	debug (RPT_DEBUG, "%s( Client [%d], ... ) setting '%s's parent from '%s' to '%s'",
+	       __FUNCTION__, client->sock, menu->id, menu->parent->id, parentid);
+	menu->parent = parent;
+	return 0;
+}
+
+/** Returns the MenuItem with the specified id if found or NULL. The search
+ * for itemid is restricted to the client's menus if the preprocessor macro
+ * LCDPROC_PERMISSIVE_MENU_GOTO is *not* set. */
+MenuItem * search_item(char *menu_id)
+{
+# ifdef LCDPROC_PERMISSIVE_MENU_GOTO
+	MenuItem *top = client->menu;
+# else
+	MenuItem *top = main_menu;
+# endif /* LCDPROC_PERMISSIVE_MENU_GOTO */
+
+	return menu_find_item (top, menu_id, true);
+}
+
+/***************************************************************
+ * Requests the menu system to set the entry point into the menu system. 
+ *
+ * usage: menu_set_main <id>
+ */
+int
+menu_set_main_func (Client * c, int argc, char **argv)
+{
+	char * menu_id;
+	Menu * menu;
+
+	debug (RPT_DEBUG, "%s( Client [%d], %s, %s )",
+	       __FUNCTION__, c->sock, (argc > 1 ? argv[1] : "<null>"),
+	       (argc > 2 ? argv[2] : "<null>") );
+	if (!c->ack)
+		return 1;
+
+	if ((argc < 2 )) {
+		sock_send_string (c->sock, "huh?  Usage: menu_set_main <menuid>\n");
 		return 0;
 	}
 
@@ -686,9 +822,9 @@ menu_goto_func (Client * c, int argc, char **argv)
 		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
 		return 0;
 	}
-	menuscreen_goto (menu);
-	/* Failure is not returned */
-        /* why not? (Volker) */
+
+	menuscreen_set_main(menu);
+
 	sock_send_string(c->sock, "success\n");
 	return 0;
 }
