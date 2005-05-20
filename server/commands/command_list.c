@@ -44,6 +44,7 @@ client_function commands[] = {
 	{"menu_del_item", menu_del_item_func},
 	{"menu_set_item", menu_set_item_func},
 	{"menu_goto", menu_goto_func},
+	{"menu_set_main", menu_set_main_func},
 	/* Misc stuff...*/
 	{"backlight", backlight_func},
 	{"output", output_func},
