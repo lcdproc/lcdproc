@@ -413,10 +413,14 @@
       </varlistentry>
 
       <varlistentry>
-        <term>menu_add_item &lt;menu_id&gt; &lt;new_item_id&gt; &lt;type&gt;</term>
+        <term>menu_add_item &lt;menu_id&gt; &lt;new_item_id&gt; &lt;type&gt; [options]</term>
         <listitem>
           <para>
-	    Adds a new menuitem to a menu. The main menu of a client, will be created automatically as soon as the client adds an item. This main menu has an empty id ("") and the name is identical to the name of the client.
+	    Adds a new menuitem to a menu. The main menu of a client,
+            will be created automatically as soon as the client adds
+            an item. This main menu has an empty id ("") and the name
+            is identical to the name of the client. The options are
+            described under menu_set_item below.
             <variablelist><title>menu item types</title>
               <varlistentry>
                 <term>action</term>
@@ -498,6 +502,31 @@
                       <listitem><para>
 		  	The visible text of the item.
 		      </para></listitem>
+		    </varlistentry>
+                  </variablelist>
+		</para></listitem>
+                <listitem><para>
+                  <variablelist>
+                    <varlistentry>
+                      <term>-is_hidden false|true (false)</term>
+                      <listitem><para>
+		  	If the item currently should not appear in a menu.
+		      </para></listitem>
+		    </varlistentry>
+                  </variablelist>
+		</para></listitem>
+                <listitem><para>
+                  <variablelist>
+                    <varlistentry>
+                      <term>-parent &lt;parentid&gt; ()</term>
+                      <listitem><para> (Re)sets the parent of this
+                      menu. Parentid has to be of type menu. This
+                      function does not change any menu (neither the
+                      old nor the new parent) since this option is
+                      normally used with hidden menus. Otherwise use
+                      menu_add/del_item. Applying this option is
+                      equivalent to second argument of the menu_goto
+                      command. </para></listitem>
 		    </varlistentry>
                   </variablelist>
 		</para></listitem>
@@ -688,13 +717,55 @@
       </varlistentry>
 
       <varlistentry>
-        <term>menuscreen_goto &lt;menu_id&gt;</term>
+        <term>menu_goto &lt;menu_id&gt; [&lt;parent_id&gt;]</term>
         <listitem>
           <para>
 	    Changes current menu to &lt;menu_id&gt;. Depending on the
-	    configure option --enable-permissive-menuscreen-goto the
+	    configure option --enable-permissive-menu-goto the
 	    client may switch to any (if enabled) or his menus only
 	    (if not enabled).
+            <variablelist>
+	      <varlistentry>
+		<term>&lt;menu_id&gt;</term>
+		<listitem><para>
+		    The menuitem to go to (any menu type e.g. an
+		    action or a menu).
+		  </para></listitem>
+	      </varlistentry>
+	      <varlistentry>
+		<term>&lt;parent_id&gt;</term>
+		<listitem><para>
+		    Resets the parent of &lt;menu_id&gt;. This
+		    optional parameter can be used to reuse a menu
+		    from different places (for wizzards etc.). Use it
+		    with caution: This may lead to a messy menu
+		    structure in particular due to the fact that the
+		    menus are not changed !
+		  </para></listitem>
+	      </varlistentry>
+	    </variablelist>
+	  </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>menu_set_main &lt;menu_id&gt;</term>
+        <listitem>
+          <para>
+	    Sets the entry point into the menu system. Use this to
+	    make the server menu invisible. Note that you may only set
+	    the menu to your own clients menus unless the configure
+	    option --permissive-menu-goto is used. (See menuscreens.c
+	    for the menu ids of the server menus.)
+            <variablelist>
+	      <varlistentry>
+		<term>&lt;menu_id&gt;</term>
+		<listitem><para>
+		    The new main menu, restricted to the client's own
+		    menus.
+		  </para></listitem>
+	      </varlistentry>
+	    </variablelist>
 	  </para>
         </listitem>
       </varlistentry>

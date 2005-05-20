@@ -127,7 +127,7 @@ When it is set at 40%.
 
 
 
-fixme: missing description of menuscreen_goto for session control (Volker)
+fixme: missing description of menu_goto for session control (Volker)
 
 
 --
