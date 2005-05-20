@@ -27,31 +27,35 @@ int menuscreens_init();
 
 int menuscreens_shutdown();
 
-bool is_menu_key (char * key);
-/* This function indicates to the input part whether this key was the
+/** This function indicates to the input part whether this key was the
  * reserved menu key.
  */
+bool is_menu_key (char * key);
 
-void menuscreen_inform_item_destruction (MenuItem * item);
-/* Meant for other parts of the program to inform the menuscreen that the
+/** Meant for other parts of the program to inform the menuscreen that the
  * item is about to be removed.
  */
+void menuscreen_inform_item_destruction (MenuItem * item);
 
-void menuscreen_inform_item_modified (MenuItem * item);
-/* Meant for other parts of the program to inform the menuscreen that some
+/** Meant for other parts of the program to inform the menuscreen that some
  * properties of the item have been modified.
  */
+void menuscreen_inform_item_modified (MenuItem * item);
 
-void menuscreen_key_handler (char *key);
-/* This handler handles the keypresses for the menu.
+/** This handler handles the keypresses for the menu.
  */
+void menuscreen_key_handler (char *key);
 
+/** Adds a menu for the given screen */
 void menuscreen_add_screen (Screen * s);
-/* Adds a menu for the given screen */
 
+/** Removes the menu of the given screen */
 void menuscreen_remove_screen (Screen * s);
-/* Removes the menu of the given screen */
 
+/** switches to menu. */
 int menuscreen_goto (Menu * menu);
+
+/** sets custom_main_menu. */
+int menuscreen_set_main (Menu * menu);
 
 #endif

@@ -23,6 +23,7 @@
 
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 
 #include "screen.h"
 #include "screenlist.h"
@@ -49,12 +50,16 @@ char * right_key;
 
 Screen * menuscreen = NULL;
 MenuItem * active_menuitem = NULL;
+/** the "real" main_menu */
 Menu * main_menu = NULL;
+/** customizable entry point into the menu system (see menu_set_main()). */
+Menu * custom_main_menu = NULL;
 Menu * screens_menu = NULL;
 
 /* Local prototypes */
 void menuscreen_switch_item (MenuItem * new_menuitem);
 void menuscreen_create_menu ();
+Menu* menuscreen_get_main ();
 MenuEventFunc (heartbeat_handler);
 MenuEventFunc (backlight_handler);
 MenuEventFunc (contrast_handler);
@@ -126,6 +131,7 @@ int menuscreens_shutdown()
 	/* Destroy all menus */
 	menuitem_destroy (main_menu);
 	main_menu = NULL;
+	custom_main_menu = NULL;
 	screens_menu = NULL;
 
 	/* Forget menu's key reservations */
@@ -257,7 +263,7 @@ void menuscreen_key_handler (char *key)
 	/* Is the menu already active ? */
 	if (!active_menuitem) {
 		debug (RPT_DEBUG, "%s: Activating menu screen", __FUNCTION__);
-		menuscreen_switch_item (main_menu);
+		menuscreen_switch_item(menuscreen_get_main());
 		return;
 	}
 
@@ -286,7 +292,8 @@ void menuscreen_key_handler (char *key)
 		break;
 	  case MENURESULT_CLOSE:
 		debug (RPT_DEBUG, "%s: Closing item", __FUNCTION__);
-		menuscreen_switch_item (active_menuitem->parent);
+		menuscreen_switch_item ((active_menuitem == menuscreen_get_main())
+					? NULL : active_menuitem->parent);
 		break;
 	  case MENURESULT_QUIT:
 		debug (RPT_DEBUG, "%s: Closing menu screen", __FUNCTION__);
@@ -320,10 +327,12 @@ void menuscreen_create_menu ()
 	menu_add_item (main_menu, screens_menu);
 #endif /*LCDPROC_TESTMENUS*/
 
-	checkbox = menuitem_create_checkbox ("heartbeat", heartbeat_handler, "Heartbeat", true, heartbeat);
+	/* menu's client is NULL since we're in the server */
+	checkbox = menuitem_create_checkbox ("heartbeat", heartbeat_handler, "Heartbeat", NULL, true, heartbeat);
 	menu_add_item (options_menu, checkbox);
 
-	checkbox = menuitem_create_checkbox ("backlight", backlight_handler, "Backlight", true, backlight);
+	/* menu's client is NULL since we're in the server */
+	checkbox = menuitem_create_checkbox ("backlight", backlight_handler, "Backlight", NULL, true, backlight);
 	menu_add_item (options_menu, checkbox);
 
 	for (driver = drivers_getfirst(); driver; driver = drivers_getnext()) {
@@ -334,22 +343,26 @@ void menuscreen_create_menu ()
 		brightness_avail = (driver->get_brightness && driver->set_brightness);
 
 		if (contrast_avail || brightness_avail) {
-			driver_menu = menu_create (driver->name, NULL, driver->name, driver);
+			/* menu's client is NULL since we're in the server */
+			driver_menu = menu_create (driver->name, NULL, driver->name, NULL);
+			menu_set_association(driver_menu, driver);
 			menu_add_item (options_menu, driver_menu);
 			if (contrast_avail) {
 				int contrast = driver->get_contrast(driver);
 				
-				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast", "min", "max", 0, 1000, 100, contrast);
+				/* menu's client is NULL since we're in the server */
+				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast", NULL,
+								 "min", "max", 0, 1000, 100, contrast);
 				menu_add_item (driver_menu, slider);
 			}
 			if (brightness_avail) {
 				int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
 				int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
 				
-				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness", "min", "max", 0, 1000, 100, onbrightness);
+				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness", NULL, "min", "max", 0, 1000, 100, onbrightness);
 				menu_add_item (driver_menu, slider);
 
-				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness", "min", "max", 0, 1000, 100, offbrightness);
+				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness", NULL, "min", "max", 0, 1000, 100, offbrightness);
 				menu_add_item (driver_menu, slider);
 			}
 		}
@@ -359,39 +372,40 @@ void menuscreen_create_menu ()
 	test_menu = menu_create ("test", NULL, "Test menu", NULL);
 	menu_add_item (main_menu, test_menu);
 
-	test_item = menuitem_create_action ("", NULL, "Action", MENURESULT_NONE);
+	/* menu's client is NULL since we're in the server */
+	test_item = menuitem_create_action ("", NULL, "Action", NULL, MENURESULT_NONE);
 	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_action ("", NULL, "Action,closing", MENURESULT_CLOSE);
+	test_item = menuitem_create_action ("", NULL, "Action,closing", NULL, MENURESULT_CLOSE);
 	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_action ("", NULL, "Action,quiting", MENURESULT_QUIT);
-	menu_add_item (test_menu, test_item);
-
-	test_item = menuitem_create_checkbox ("", NULL, "Checkbox", false, false);
-	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_checkbox ("", NULL, "Checkbox, gray", true, false);
+	test_item = menuitem_create_action ("", NULL, "Action,quiting", NULL, MENURESULT_QUIT);
 	menu_add_item (test_menu, test_item);
 
-	test_item = menuitem_create_ring ("", NULL, "Ring", "ABC\tDEF\t01234567890\tOr a very long string that will not fit on any display", 1);
+	test_item = menuitem_create_checkbox ("", NULL, "Checkbox", NULL, false, false);
+	menu_add_item (test_menu, test_item);
+	test_item = menuitem_create_checkbox ("", NULL, "Checkbox, gray", NULL, true, false);
 	menu_add_item (test_menu, test_item);
 
-	test_item = menuitem_create_slider ("", NULL, "Slider", "mintext", "maxtext", -20, 20, 1, 0);
-	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_slider ("", NULL, "Slider,step=5", "mintext", "maxtext", -20, 20, 5, 0);
+	test_item = menuitem_create_ring ("", NULL, "Ring", NULL, "ABC\tDEF\t01234567890\tOr a very long string that will not fit on any display", 1);
 	menu_add_item (test_menu, test_item);
 
-	test_item = menuitem_create_numeric ("", NULL, "Numeric", 1, 365, 15);
+	test_item = menuitem_create_slider ("", NULL, "Slider", NULL, "mintext", "maxtext", -20, 20, 1, 0);
 	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_numeric ("", NULL, "Numeric,signed", -20, +20, 15);
-	menu_add_item (test_menu, test_item);
-
-	test_item = menuitem_create_alpha ("", NULL, "Alpha", 0, 3, 12, true, true, true, ".-+@", "LCDproc-v0.5");
-	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_alpha ("", NULL, "Alpha, caps only", 0, 3, 12, true, false, false, "-", "LCDPROC");
+	test_item = menuitem_create_slider ("", NULL, "Slider,step=5", NULL, "mintext", "maxtext", -20, 20, 5, 0);
 	menu_add_item (test_menu, test_item);
 
-	test_item = menuitem_create_ip ("", NULL, "IPv4", 0, "192.168.1.245");
+	test_item = menuitem_create_numeric ("", NULL, "Numeric", NULL, 1, 365, 15);
 	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_ip ("", NULL, "IPv6", 1, ":::ffff:ffff:ffff:ffff:ffff");
+	test_item = menuitem_create_numeric ("", NULL, "Numeric,signed", NULL, -20, +20, 15);
+	menu_add_item (test_menu, test_item);
+
+	test_item = menuitem_create_alpha ("", NULL, "Alpha", NULL, 0, 3, 12, true, true, true, ".-+@", "LCDproc-v0.5");
+	menu_add_item (test_menu, test_item);
+	test_item = menuitem_create_alpha ("", NULL, "Alpha, caps only", NULL, 0, 3, 12, true, false, false, "-", "LCDPROC");
+	menu_add_item (test_menu, test_item);
+
+	test_item = menuitem_create_ip ("", NULL, "IPv4", NULL, 0, "192.168.1.245");
+	menu_add_item (test_menu, test_item);
+	test_item = menuitem_create_ip ("", NULL, "IPv6", NULL, 1, ":::ffff:ffff:ffff:ffff:ffff");
 	menu_add_item (test_menu, test_item);
 #endif /*LCDPROC_TESTMENUS*/
 }
@@ -434,15 +448,13 @@ MenuEventFunc (contrast_handler)
 	 * support contrast !
 	 * We need to check the menu association to see which driver. */
 	if (event == MENUEVENT_MINUS || event == MENUEVENT_PLUS) {
-
 		/* Determine the driver */
 		Driver * driver = item->parent->data.menu.association;
-
 		if (driver != NULL) {
 			driver->set_contrast (driver, item->data.slider.value);
 			report (RPT_INFO, "Menu: set contrast of [%.40s] to %d",
 					driver->name, item->data.slider.value);
-		}	
+		}
 	}
 	return 0;
 }
@@ -456,7 +468,6 @@ MenuEventFunc (brightness_handler)
 	 * support brightness !
 	 * We need to check the menu association to see which driver. */
 	if (event == MENUEVENT_MINUS || event == MENUEVENT_PLUS) {
-
 		/* Determine the driver */
 		Driver * driver = item->parent->data.menu.association;
 
@@ -486,23 +497,25 @@ menuscreen_add_screen (Screen * s)
 		return;
 
 	/* Create a menu entry for the screen */
-	m = menu_create (s->id, NULL, ((s->name != NULL) ? s->name : s->id), s);
+	m = menu_create (s->id, NULL, ((s->name != NULL) ? s->name : s->id), s->client);
+	menu_set_association(m, s);
 	menu_add_item (screens_menu, m);
 
 	/* And add some items for it... */
-	mi = menuitem_create_action ("", NULL, "(don't work yet)", MENURESULT_NONE);
+	mi = menuitem_create_action ("", NULL, "(don't work yet)", s->client, MENURESULT_NONE);
 	menu_add_item (m, mi);
 
-	mi = menuitem_create_action ("", NULL, "To Front", MENURESULT_QUIT);
+	mi = menuitem_create_action ("", NULL, "To Front", s->client, MENURESULT_QUIT);
 	menu_add_item (m, mi);
 
-	mi = menuitem_create_checkbox ("", NULL, "Visible", false, true);
+	mi = menuitem_create_checkbox ("", NULL, "Visible", s->client, false, true);
 	menu_add_item (m, mi);
 
-	mi = menuitem_create_numeric ("", NULL, "Duration", 2, 3600, s->duration);
+	mi = menuitem_create_numeric ("", NULL, "Duration", s->client, 2, 3600, s->duration);
 	menu_add_item (m, mi);
 
-	mi = menuitem_create_ring ("", NULL, "Priority", "Hidden\tBackground\tForeground\tAlert\tInput", s->priority);
+	mi = menuitem_create_ring ("", NULL, "Priority", s->client,
+				   "Hidden\tBackground\tForeground\tAlert\tInput", s->priority);
 	menu_add_item (m, mi);
 }
 
@@ -525,32 +538,27 @@ menuscreen_remove_screen (Screen * s)
 	}
 }
 
-/**
- * Transition is allowed if old and new menu are owned by the same
- * clients. Returns -1 if transition is not allowed and 0 otherwise.
- */
 int
 menuscreen_goto (Menu * menu)
 {
 	debug (RPT_DEBUG, "%s( m=[%s] ): active_menuitem=[%s]",
  	     __FUNCTION__, (menu != NULL) ? menu->id : "(NULL)",
  	     (active_menuitem != NULL) ? active_menuitem->id : "(NULL)");
-# ifdef LCDPROC_PERMISSIVE_MENUSCREEN_GOTO
         menuscreen_switch_item (menu);
         return 0;
-# else
-        if( !active_menuitem
- 	   || menuitem_get_client(active_menuitem) == menuitem_get_client(menu))
-        {
-		menuscreen_switch_item (menu);
-		return 0;
-	}
-	else {
-		report(RPT_WARNING, "menuscreen_goto([%s]) not allowed:"
- 		      " Another client's menu is active",
- 		      (menu != NULL) ? menu->id : "(NULL)");
-		return -1;
-	}
-# endif /* LCDPROC_PERMISSIVE_MENUSCREEN_GOTO */
+}
 
+int
+menuscreen_set_main (Menu * menu)
+{
+	debug (RPT_DEBUG, "%s( m=[%s] )",
+ 	     __FUNCTION__, (menu != NULL) ? menu->id : "(NULL)");
+	custom_main_menu = menu;
+	return 0;
+}
+
+Menu*
+menuscreen_get_main()
+{
+	return custom_main_menu ? custom_main_menu : main_menu;
 }
