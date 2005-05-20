@@ -41,8 +41,9 @@
  * Data definitions of the menustuff
  */
 
-typedef enum MenuItemType {	/* These values are used in the */
-	MENUITEM_MENU = 0,	/* function tables in menuitem.c ! */
+/** These values are used in the function tables in menuitem.c ! */
+typedef enum MenuItemType {
+	MENUITEM_MENU = 0,
 	MENUITEM_ACTION = 1,
 	MENUITEM_CHECKBOX = 2,
 	MENUITEM_RING = 3,
@@ -57,7 +58,7 @@ typedef enum CheckboxValue {
 	CHECKBOX_OFF = 0, CHECKBOX_ON, CHECKBOX_GRAY
 } CheckboxValue;
 
-/* Recognized input token codes */
+/** Recognized input token codes */
 typedef enum MenuToken {
 	MENUTOKEN_MENU,
 	MENUTOKEN_ENTER,
@@ -68,35 +69,35 @@ typedef enum MenuToken {
 	MENUTOKEN_OTHER
 } MenuToken;
 
-/* Return codes from an input handler */
+/** Return codes from an input handler */
 typedef enum MenuResult {
-	MENURESULT_ERROR = -1,	/* Something has gone wrong */
-	MENURESULT_NONE = 0,	/* Token handled OK, no extra action */
-	MENURESULT_ENTER,	/* Token handled OK, enter the selected
+	MENURESULT_ERROR = -1,	/**< Something has gone wrong */
+	MENURESULT_NONE = 0,	/**< Token handled OK, no extra action */
+	MENURESULT_ENTER,	/**< Token handled OK, enter the selected
 				   menuitem now */
-	MENURESULT_CLOSE,	/* Token handled OK, close the current
+	MENURESULT_CLOSE,	/**< Token handled OK, close the current
 				   menuitem now */
-	MENURESULT_QUIT		/* Token handled OK, close ALL menus now */
+	MENURESULT_QUIT		/**< Token handled OK, close ALL menus now */
 } MenuResult;
 
-/* Events caused by a menuitem */
+/** Events caused by a menuitem */
 typedef enum MenuEventType {
-	MENUEVENT_SELECT = 0,	/* Item has been selected
+	MENUEVENT_SELECT = 0,	/**< Item has been selected
 				(action chosen) */
-	MENUEVENT_UPDATE = 1,	/* Item has been modified
+	MENUEVENT_UPDATE = 1,	/**< Item has been modified
 				(checkbox, numeric, alphanumeric) */
-	MENUEVENT_PLUS = 2,	/* Item has been modified in positive direction
+	MENUEVENT_PLUS = 2,	/**< Item has been modified in positive direction
 				 (slider moved) */
-	MENUEVENT_MINUS = 3,	/* Item has been modified in negative direction
+	MENUEVENT_MINUS = 3,	/**< Item has been modified in negative direction
 				(slider moved) */
-	MENUEVENT_ENTER = 4,	/* Menu has been entered */
-	MENUEVENT_LEAVE = 5,    /* Menu has been left */
+	MENUEVENT_ENTER = 4,	/**< Menu has been entered */
+	MENUEVENT_LEAVE = 5,    /**< Menu has been left */
         NUM_EVENTTYPES = 6
 } MenuEventType;
 
 #define MenuEventFunc(f) int (f) (struct MenuItem *item, MenuEventType event)
 
-/* I've used a union in the struct below. Why? And why not for Widget?
+/** I've used a union in the struct below. Why? And why not for Widget?
  *
  * There are different types of menuitems. There are also types of widgets.
  * Menuitems have, just like widgets, different datafields per subtype.
@@ -107,71 +108,73 @@ typedef enum MenuEventType {
  * menuitem. (Joris)
  */
 typedef struct MenuItem {
-	MenuItemType type;	/* Type as defined above */
-	char *id;		/* Internal name for client supplied menus */
-	struct MenuItem *parent; /* Parent of this menuitem */
+	MenuItemType type;	/**< Type as defined above */
+	char *id;		/**< Internal name for client supplied menus */
+	struct MenuItem *parent; /**< Parent of this menuitem */
 	MenuEventFunc (*event_func);
-			/* Defines event_func to be an event function */
-	char *text;	/* Visible name of the item */
+			/**< Defines event_func to be an event function */
+	char *text;	/**< Visible name of the item */
+	void* client;	/**< The owner of this menuitem. */
+	bool is_hidden; /**< If the item currently should not appear in a menu. */
 	union data {
 		struct menu {
-			int selector_pos;	/* At what menuitem is the
+			int selector_pos;	/**< At what menuitem is the
 						   selector (0 for first) */
-			int scroll;		/* How much has the menu been
+			int scroll;		/**< How much has the menu been
 						   scrolled down */
-			void *association;	/* To associate an object
-						   with this menu */
-			LinkedList *contents;	/* What's in this menu */
+			void *association;      /**< To associate an object
+                                                   with this menu */
+			LinkedList *contents;	/**< What's in this menu */
 		} menu;
 		struct action {
 			enum MenuResult menu_result;
-						/* What to do when selected ?
+						/**< What to do when selected ?
 						   Nothing, close or quit ? */
 		} action;
 		struct checkbox {
-			bool allow_gray;	/* Is CHECKBOX_GRAY allowed ? */
-			CheckboxValue value;	/* Current value */
+			bool allow_gray;	/**< Is CHECKBOX_GRAY allowed ? */
+			CheckboxValue value;	/**< Current value */
 		} checkbox;
 		struct ring {
-			LinkedList *strings;	/* The selectable strings */
-			short value;		/* Current index */
+			LinkedList *strings;	/**< The selectable strings */
+			short value;		/**< Current index */
 		} ring;
 		struct slider {
-			char *mintext;		/* Text at minimal value */
-			char *maxtext;		/* Text at minimal value */
+			char *mintext;		/**< Text at minimal value */
+			char *maxtext;		/**< Text at minimal value */
 			int minvalue;
 			int maxvalue;
 			int stepsize;
-			int value;		/* Current value */
+			int value;		/**< Current value */
 		} slider;
 		struct numeric {
 			int maxvalue;
 			int minvalue;
-			//short allowed_decimals;	/* Number of numbers behind dot */
-			int value;		/* Current value */
-			char *edit_str;		/* Value while being edited */
-			short edit_pos;		/* Position while editing */
+			//short allowed_decimals; /**< Number of numbers behind dot */
+			int value;		/**< Current value */
+			char *edit_str;		/**< Value while being edited */
+			short edit_pos;		/**< Position while editing */
 			short error_code;
 		} numeric;
 		struct alpha {
-			char password_char;	/* For passwords */
+			char password_char;	/**< For passwords */
 			short minlength;
 			short maxlength;
-			bool allow_caps;	/* Caps allowed ? */
-			bool allow_noncaps;	/* Non-caps allowed ? */
-			bool allow_numbers;	/* Numbers allowed ? */
-			char *allowed_extra;	/* Allowed extra characters */
-			char *value;		/* Current value */
-			char *edit_str;		/* Value while being edited */
-			short edit_pos;		/* Position while editing */
+			bool allow_caps;	/**< Caps allowed ? */
+			bool allow_noncaps;	/**< Non-caps allowed ? */
+			bool allow_numbers;	/**< Numbers allowed ? */
+			char *allowed_extra;	/**< Allowed extra characters */
+			char *value;		/**< Current value */
+			char *edit_str;		/**< Value while being edited */
+			short edit_pos;		/**< Position while editing */
 			short error_code;
 		} alpha;
 		struct ip {
-			char *value;		/* Current value */
-			char *edit_str;		/* Value while being edited */
+			char *value;		/**< Current value */
+			char *edit_str;		/**< Value while being edited */
 			short maxlength;
-			bool v6;		/* true if editing ipv6 addr */
-			short edit_pos;		/* Position while editing */
+			bool v6;		/**< true if editing ipv6 addr */
+			short edit_pos;		/**< Position while editing */
 			short error_code;
 		} ip;
 	} data;
@@ -184,9 +187,9 @@ typedef struct MenuItem {
  * Functions to use the menustuff
  */
 
+/** YOU SHOULD NOT CALL THIS FUNCTION BUT THE TYPE SPECIFIC ONE INSTEAD */
 MenuItem *menuitem_create (MenuItemType type, char *id,
-		MenuEventFunc(*event_func), char *text);
-/* YOU SHOULD NOT CALL THIS FUNCTION BUT THE TYPE SPECIFIC ONE INSTEAD */
+		MenuEventFunc(*event_func), char *text, Client *client);
 
 /* For all constructor functions below the following:
  *
@@ -203,102 +206,103 @@ MenuItem *menuitem_create (MenuItemType type, char *id,
  * To create a Menu (which is also an ItemType), call menu_create.
  *
  */
-MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
-	char *text, MenuResult menu_result);
-/* Creates a an action item (a string only).
- * Generated events: MENUEVENT_SELECT when user selects the item.
- */
 
-MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
-	char *text, bool allow_gray, bool value);
-/* Creates a checkbox.
+/** Creates a an action item (a string only).  Generated events:
+ * MENUEVENT_SELECT when user selects the item.
+ */
+MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
+	char *text, Client *client, MenuResult menu_result);
+
+/** Creates a checkbox.
  * Generated events: MENUEVENT_UPDATE when user changes value (immediately).
  */
+MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
+	char *text, Client *client, bool allow_gray, bool value);
 
-MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
-	char *text, char *strings, short value);
-/* Creates a ring with the given string, separated by tabs.
+/** Creates a ring with the given string, separated by tabs.
  * value is the (initial) index in the strings.
  * eg: if strings="abc\tdef" the value=1 means that "def" is selected.
  * Generated events: MENUEVENT_UPDATE when user changes value (immediately).
  */
+MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
+	char *text, Client *client, char *strings, short value);
 
-MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
-	char *text, char *mintext, char *maxtext,
-	int minvalue, int maxvalue, int stepsize, int value);
-/* Creates a slider with the given min and max values.
+/** Creates a slider with the given min and max values.
  * If the display is big enough the mintext and maxtext will be placed
  * at the end positions of the slider.
  * You can set the step size. Make it 0 to disable the automatic value chaning,
  * and update the value yourself.
  * MENUEVENT_PLUS, MENUEVENT_MINUS when slider is moved (immediately).
  */
+MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
+	char *text, Client *client, char *mintext, char *maxtext,
+	int minvalue, int maxvalue, int stepsize, int value);
 
-MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
-	char *text, int minvalue, int maxvalue, int value);
-/* Creates a numeric value box.
+/** Creates a numeric value box.
  * Value can range from minvalue to maxvalue.
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
+MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
+	char *text, Client *client, int minvalue, int maxvalue, int value);
 
-MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
-	char *text, char password_char, short minlength, short maxlength,
-	bool allow_caps, bool allow_noncaps, bool allow_numbers,
-	char *allowed_extra, char *value);
-/* Creates a string value box.
+/** Creates a string value box.
  * Value should have given minimal and maximal length. You can set whether
  * caps, non-caps and numbers are allowed. Also you can alow other characters.
  * If password char is non-zero, you will only see this char, not the actual
  * input.
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
+MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
+	char *text, Client *client, char password_char, short minlength, short maxlength,
+	bool allow_caps, bool allow_noncaps, bool allow_numbers,
+	char *allowed_extra, char *value);
 
-MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
-	char *text, bool v6, char *value);
-/* Creates an ip value box.  can be either v4 or v6
+/** Creates an ip value box.  can be either v4 or v6
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
+MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
+	char *text, Client *client, bool v6, char *value);
 
-void menuitem_destroy (MenuItem *item);
-/* Deletes item from memory.
+/** Deletes item from memory.
  * All allocated extra data (like strings) will be freed.
  */
+void menuitem_destroy (MenuItem *item);
 
 static inline MenuItem *menuitem_get_parent (MenuItem *item)
 {
 	return ((item != NULL) ? item->parent : NULL);
 }
 
-void menuitem_reset (MenuItem *item);
-/* Resets the item to the initial state.
+/** Resets the item to the initial state.
  * You should call menuitem_update after this to see the effects.
  * This call is useless on items that have immediate effect, like a slider.
  * Those items do not keep temporary data.
  */
+void menuitem_reset (MenuItem *item);
 
-void menuitem_rebuild_screen (MenuItem *item, Screen *s);
-/* (Re)builds the selected menuitem on screen using widgets.
+/** (Re)builds the selected menuitem on screen using widgets.
  * Should be re-called if menuitem data has been changed.
  * There are a few (logical) exceptions to this:
  * - the values
  * - the menu scroll and menu index
  */
+void menuitem_rebuild_screen (MenuItem *item, Screen *s);
 
-void menuitem_update_screen (MenuItem *item, Screen *s);
-/* Updates the widgets of the selected menuitem
+/** Updates the widgets of the selected menuitem
  * Fills all widget attributes with the corrrect values.
  */
+void menuitem_update_screen (MenuItem *item, Screen *s);
 
-MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key, bool extended);
-/* Does something with the given input.
+/** Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  */
+MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key, bool extended);
 
+/** returns the Client that owns the MenuItem. item must not be null */
 Client * menuitem_get_client(MenuItem * item);
-/* returns the Client that owns the MenuItem. item must not be null */
 
+/** Converts a tab-separated list to a LinkedList. */
 LinkedList * tablist2linkedlist (char * strings);
-/* Converts a tab-separated list to a LinkedList. */
 
 MenuItemType menuitem_typename_to_type (char *name);
 

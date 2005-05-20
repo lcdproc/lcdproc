@@ -125,7 +125,7 @@ MenuResult (*process_input_table[NUM_ITEMTYPES] ) (MenuItem *item, MenuToken tok
 /******** METHODS ********/
 
 MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_func),
-	char *text)
+	char *text, Client *client)
 {
 	MenuItem *new_item;
 
@@ -159,6 +159,8 @@ MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_fun
 		free (new_item);
 		return NULL;
 	}
+	new_item->client = client;
+	new_item->is_hidden = false;
 
 	/* Clear the type specific data part */
 	memset ( &(new_item->data), '\0', sizeof(new_item->data));
@@ -167,14 +169,14 @@ MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_fun
 }
 
 MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
-	char *text, MenuResult menu_result)
+	char *text, Client *client, MenuResult menu_result)
 {
 	MenuItem *new_item;
 
 	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", close_menu=%d )",
 			__FUNCTION__, id, event_func, text, menu_result);
 
-	new_item = menuitem_create (MENUITEM_ACTION, id, event_func, text);
+	new_item = menuitem_create (MENUITEM_ACTION, id, event_func, text, client);
 	if (new_item != NULL)
 		new_item->data.action.menu_result = menu_result;
 
@@ -182,14 +184,14 @@ MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
 }
 
 MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
-	char *text, bool allow_gray, bool value)
+	char *text, Client *client, bool allow_gray, bool value)
 {
 	MenuItem *new_item;
 
 	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", allow_gray=%d, value=%d )",
 			__FUNCTION__, id, event_func, text, allow_gray, value);
 
-	new_item = menuitem_create (MENUITEM_CHECKBOX, id, event_func, text);
+	new_item = menuitem_create (MENUITEM_CHECKBOX, id, event_func, text, client);
 	if (new_item != NULL) {
 		new_item->data.checkbox.allow_gray = allow_gray;
 		new_item->data.checkbox.value = value;
@@ -199,14 +201,14 @@ MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
 }
 
 MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
-	char *text, char *strings, short value)
+	char *text, Client *client, char *strings, short value)
 {
 	MenuItem *new_item;
 
 	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", strings=\"%s\", value=%d )",
 			__FUNCTION__, id, event_func, text, strings, value);
 
-	new_item = menuitem_create (MENUITEM_RING, id, event_func, text);
+	new_item = menuitem_create (MENUITEM_RING, id, event_func, text, client);
 	if (new_item != NULL) {
 		new_item->data.ring.strings = tablist2linkedlist (strings);
 		new_item->data.ring.value = value;
@@ -216,7 +218,7 @@ MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
 }
 
 MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
-	char *text, char *mintext, char *maxtext,
+	char *text, Client *client, char *mintext, char *maxtext,
 	int minvalue, int maxvalue, int stepsize, int value)
 {
 	MenuItem *new_item;
@@ -224,7 +226,7 @@ MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
 	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", mintext=\"%s\", maxtext=\"%s\", minvalue=%d, maxvalue=%d, stepsize=%d, value=%d )",
 			__FUNCTION__, id, event_func, text, mintext, maxtext, minvalue, maxvalue, stepsize, value);
 
-	new_item = menuitem_create (MENUITEM_SLIDER, id, event_func, text);
+	new_item = menuitem_create (MENUITEM_SLIDER, id, event_func, text, client);
 	if (new_item != NULL) {
 		new_item->data.slider.mintext = strdup (mintext);
 		new_item->data.slider.maxtext = strdup (maxtext);
@@ -238,14 +240,14 @@ MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
 }
 
 MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
-	char *text, int minvalue, int maxvalue, int value)
+	char *text, Client *client, int minvalue, int maxvalue, int value)
 {
 	MenuItem *new_item;
 
 	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", minvalue=%d, maxvalue=%d, value=%d )",
 			__FUNCTION__, id, event_func, text, minvalue, minvalue, value);
 
-	new_item = menuitem_create (MENUITEM_NUMERIC, id, event_func, text);
+	new_item = menuitem_create (MENUITEM_NUMERIC, id, event_func, text, client);
 	if (new_item != NULL) {
 		new_item->data.numeric.maxvalue = maxvalue;
 		new_item->data.numeric.minvalue = minvalue;
@@ -257,7 +259,7 @@ MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
 }
 
 MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
-	char *text, char password_char, short minlength, short maxlength,
+	char *text, Client *client, char password_char, short minlength, short maxlength,
 	bool allow_caps, bool allow_noncaps, bool allow_numbers,
 	char *allowed_extra, char *value)
 {
@@ -266,7 +268,7 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
 	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", password_char=%d, maxlength=%d, value=\"%s\" )",
 			__FUNCTION__, id, event_func, text, password_char, maxlength, value);
 
-	new_item = menuitem_create (MENUITEM_ALPHA, id, event_func, text);
+	new_item = menuitem_create (MENUITEM_ALPHA, id, event_func, text, client);
 	if (new_item != NULL) {
 		new_item->data.alpha.password_char = password_char;
 		new_item->data.alpha.minlength = minlength;
@@ -290,14 +292,14 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
 }
 
 MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
-	char *text, bool v6, char *value)
+	char *text, Client *client, bool v6, char *value)
 {
 	MenuItem *new_item;
 
 	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", v6=%d, value=\"%s\" )",
 			__FUNCTION__, id, event_func, text, v6, value);
 
-	new_item = menuitem_create (MENUITEM_IP, id, event_func, text);
+	new_item = menuitem_create (MENUITEM_IP, id, event_func, text, client);
 	new_item->data.ip.v6 = v6;
 	if (v6)
 		new_item->data.ip.maxlength = 39;
@@ -1298,13 +1300,7 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
  */
 Client * menuitem_get_client(MenuItem * item)
 {
-	MenuItem * i;
-
-        /* not fool prove... */
-	assert(item != NULL);
-	for (i = item; i && i->parent != main_menu; i = i->parent)
- 	 ;
-        return (Client *) i->data.menu.association;
+        return item->client;
 }
 
 LinkedList * tablist2linkedlist (char *strings)
