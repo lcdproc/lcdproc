@@ -41,48 +41,43 @@ int   ReceiveBufferTailPeek;
 
 #define KEYRINGSIZE    16
 unsigned char  KeyRing[KEYRINGSIZE];
-int   KeyHead;
-int   KeyTail;
+int   KeyHead = 0;
+int   KeyTail = 0;
 
 /*-OK-----------------------------------------------------------------------*/
 void EmptyKeyRing(void)
-  {
-  KeyHead=KeyTail=0;
-  }
+{
+  KeyHead = KeyTail = 0;
+}
 
 /*-OK-----------------------------------------------------------------------*/
-int AddKeyToKeyRing(unsigned char key) {
-  int oldhead;
+int AddKeyToKeyRing(unsigned char key)
+{
+  if (((KeyHead + 1) % KEYRINGSIZE) != (KeyTail % KEYRINGSIZE)) {
+ 	/*  printf("We add key: %d\n", key); */
 
-/*  printf("We add key: %d\n", key); */
-
-  oldhead=KeyHead;
-  KeyHead++;
-  if (KeyHead==KEYRINGSIZE) KeyHead=0;
-  if (KeyHead!=KeyTail) {
-          KeyRing[oldhead]=key;
-	  return 1;
-  	  }
-  /* We have a KeyRing overflow */
-  /* We do not accept extra key */
-  KeyHead=oldhead; 
+        KeyRing[KeyHead % KEYRINGSIZE] = key;
+  	KeyHead = (KeyHead + 1) % KEYRINGSIZE;
+	return 1;
+  }
+  /* KeyRing overflow: do not accept extra key */
   return 0;
-  }
+}
 
 /*-OK-----------------------------------------------------------------------*/
-unsigned char GetKeyFromKeyRing(void) {
-  int retval=0;
+unsigned char GetKeyFromKeyRing(void)
+{
+  int retval = 0;
 
-  if (KeyHead!=KeyTail) {
-	retval=KeyRing[KeyTail];
-        KeyTail++;
-        if (KeyTail==KEYRINGSIZE) KeyTail=0;
-  	}
+  if ((KeyHead % KEYRINGSIZE) != (KeyTail % KEYRINGSIZE )) {
+	retval = KeyRing[KeyTail % KEYRINGSIZE];
+        KeyTail = (KeyTail + 1) % KEYRINGSIZE;
+  }
 
-/*  if (retval) printf("We remove key: %d\n", retval); */
+  /*  if (retval) printf("We remove key: %d\n", retval); */
 
   return retval;
-  }
+}
 
 
 
