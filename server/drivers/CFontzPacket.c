@@ -345,11 +345,11 @@ CFontz633_init (Driver * drvthis, char *args)
 
 	/* Set display-specific stuff.. */
 	if (reboot) {
-		debug(RPT_INFO, "CFontz633: reboot requested\n" );
+		debug(RPT_INFO, "CFontzPacket: reboot requested\n" );
 		CFontz633_reboot (drvthis);
 		reboot = 0;
-		sleep (1);
-		debug(RPT_INFO, "CFontz633: reboot done" );
+		sleep (2);	
+		debug(RPT_INFO, "CFontzPacket: reboot done" );
 	}
 	
 	CFontz633_hidecursor (drvthis);
