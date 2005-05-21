@@ -189,7 +189,7 @@ Y2 o---|<---o o---+
 Y3 o---|<---o o---+----o return line
 
 
-If the driver generates keypresses without that you actually press a key,
+If the driver generates keypresses without you actually pressing a key,
 it might be that the unconnected input lines are picking up
 electromagnetic waves from the air. In that case connect the unconnected
 input lines (pin 10, 11, 12, 13 and 15 of the LPT) to VCC = 5V.
