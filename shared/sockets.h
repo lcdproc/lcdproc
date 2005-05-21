@@ -4,11 +4,15 @@
 #include <stdlib.h>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #ifndef LCDPORT
-#define LCDPORT 13666
+# define LCDPORT 13666
+#endif
+
+#ifndef SHUT_RDWR
+# define SHUT_RDWR 2
 #endif
 
 /*
@@ -22,6 +26,7 @@
 int sock_connect (char *host, unsigned short int port);
 int sock_close (int fd);
 // Send/receive lines of text
+int sock_printf (int fd, const char *format, .../*args*/);
 int sock_send_string (int fd, char *string);
 // Recv gives only one line per call...
 int sock_recv_string (int fd, char *dest, size_t maxlen);

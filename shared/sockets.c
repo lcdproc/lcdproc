@@ -15,7 +15,7 @@
 #else
 #include <winsock2.h>
 #endif
-
+#include <stdarg.h>
 #include <fcntl.h>
 
 #include "report.h"
@@ -33,11 +33,11 @@
 typedef struct sockaddr_in sockaddr_in;
 
 static int
-sock_init_sockaddr (sockaddr_in * name, const char *hostname, unsigned short int port)
+sock_init_sockaddr (sockaddr_in *name, const char *hostname, unsigned short int port)
 {
 	struct hostent *hostinfo;
 
-	memset (name, 0, sizeof (*name));
+	memset (name, '\0', sizeof (*name));
 	name->sin_family = AF_INET;
 	name->sin_port = htons (port);
 	hostinfo = gethostbyname (hostname);
@@ -71,7 +71,7 @@ sock_connect (char *host, unsigned short int port)
 	}
 	debug (RPT_DEBUG, "sock_connect: Created socket (%i)", sock);
 
-	if( sock_init_sockaddr (&servername, host, port) < 0 )
+	if (sock_init_sockaddr (&servername, host, port) < 0)
 		return -1;
 
 	err = connect (sock, (struct sockaddr *) &servername, sizeof (servername));
@@ -81,7 +81,7 @@ sock_connect (char *host, unsigned short int port)
 	if (err < 0) {
 #endif
 		report (RPT_ERR, "sock_connect: connect failed");
-		shutdown (sock, 2);
+		shutdown (sock, SHUT_RDWR);
 		return 0;					  // Normal exit if server doesn't exist...
 	}
 
@@ -90,10 +90,9 @@ sock_connect (char *host, unsigned short int port)
 #else
         {
                 unsigned long tmp = 1;
+		
                 if (ioctlsocket(sock, FIONBIO, &tmp) == SOCKET_ERROR)
-                {
                         report(RPT_ERR, "sock_connect: Error setting socket to non-blocking");
-                }
         }
 #endif
 
@@ -105,50 +104,41 @@ sock_close (int fd)
 {
 	int err;
 
-	err = shutdown (fd, 2);
+	err = shutdown (fd, SHUT_RDWR);
 	if (!err)
 		close (fd);
 
 	return err;
 }
 
+
+/**  send printf-like formatted output */
+int
+sock_printf(int fd, const char *format, .../*args*/ )
+{
+	char buf[MAXMSG];
+	va_list ap;
+	int size = 0;
+
+	va_start(ap, format);
+	size = vsnprintf(buf, sizeof(buf), format, ap);
+	va_end(ap);
+
+	if (size < 0) {
+		report(RPT_ERR, "sock_printf: vsnprintf failed");
+		return -1;
+	}
+	if (size > sizeof(buf))
+		report(RPT_WARNING, "sock_printf: vsnprintf truncated message");
+	
+	return sock_send_string(fd, buf);
+}
+
 // Send/receive lines of text
 int
 sock_send_string (int fd, char *string)
 {
-	int len;
-	int offset = 0;
-
-	if (!string)
-		return -1;
-
-	len = strlen (string) ;
-	while (offset != len) {
-		// write isn't guaranteed to send the entire string at once,
-		// so we have to sent it in a loop like this
-#ifndef WINSOCK2
-		int sent = write (fd, string + offset, len - offset);
-#else
-                int sent = send(fd, string + offset, len - offset, 0);
-#endif
-		if (sent == -1) {
-			if (errno != EAGAIN) {
-				report (RPT_ERR, "sock_send_string: socket write error");
-				report (RPT_DEBUG, "Message was: %s", string);
-				//shutdown(fd, 2);
-				return sent;
-			}
-			continue;
-		} else if (sent == 0) {
-			// when this returns zero, it generally means
-			// we got disconnected
-			return sent + offset;
-		}
-
-		offset += sent;
-	}
-
-	return offset;
+	return sock_send(fd, string, strlen(string));
 }
 
 // Recv gives only one line per call...
@@ -187,21 +177,20 @@ sock_recv_string (int fd, char *dest, size_t maxlen)
 
 		recvBytes++;
 
-		if (recvBytes == maxlen || *ptr == 0 || *ptr == 10) {
-			*ptr = 0;
+		// stop at max. bytes allowed, at NUL or at LF
+		if (recvBytes == maxlen || *ptr == '\0' || *ptr == '\n') {
+			*ptr = '\0';
 			break;
 		}
 		ptr++;
 	}
 
-	if (recvBytes == 1 && dest[0] == 0) {
-		// Don't return a null string
+	// Don't return an empty string
+	if (recvBytes == 1 && dest[0] == '\0')
 		return 0;
-	}
 
-	if (recvBytes < maxlen - 1) {
-		dest[recvBytes] = 0;
-	}
+	if (recvBytes < maxlen - 1)
+		dest[recvBytes] = '\0';
 
 	return recvBytes;
 }
@@ -226,7 +215,8 @@ sock_send (int fd, void *src, size_t size)
 		if (sent == -1) {
 			if (errno != EAGAIN) {
 				report (RPT_ERR, "sock_send: socket write error");
-				//shutdown(fd, 2);
+				report (RPT_DEBUG, "Message was: '%.*s'", size-offset, (char *) src);
+				//shutdown(fd, SHUT_RDWR);
 				return sent;
 			}
 			continue;
@@ -259,7 +249,7 @@ sock_recv (int fd, void *dest, size_t maxlen)
 #endif
 	if (err < 0) {
 		//report (RPT_DEBUG,"sock_recv: socket read error");
-		//shutdown(fd, 2);
+		//shutdown(fd, SHUT_RDWR);
 		return err;
 	}
 	//debug(RPT_DEBUG, "sock_recv: Got message \"%s\"", (char *)dest);
