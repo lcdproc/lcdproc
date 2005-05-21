@@ -72,7 +72,8 @@ The contents of the [lcdexec] section of this file should be as descriped in the
 In the configfile:
 .PP
 .DS
-
+.ft CW
+.nf
 [lcdexec]
 MenuCommand="Eject CD-ROM, umount /cdrom; cdeject"
 SubMenu="Shutdown menu, sd"
@@ -81,7 +82,8 @@ sd_MenuCommand="Reboot in 5 minutes, shutdown -r +5"
 sd_MenuCommand="Cancel shutdown/reboot, shutdown -c"
 sd_MenuCommand="Shutdown now, shutdown -h now"
 sd_MenuCommand="Reboot now, shutdown -r now"
-
+.ft R
+.fi
 .DE
 
 .PP
