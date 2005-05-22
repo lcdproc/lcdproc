@@ -32,6 +32,7 @@
 #include "machine.h"
 #include "chrono.h"
 
+
 static int TwentyFourHour = 1;
 
 // A couple of tables for later use...
@@ -120,10 +121,12 @@ time_screen (int rep, int display)
 			sock_send_string (sock, "widget_add T two string\n");
 			sock_send_string (sock, "widget_add T three string\n");
 
+			// write title bar: OS name, OS version, hostname
 			sprintf (buffer, "widget_set T title {%s %s: %s}\n",
 				get_sysname(), get_sysrelease(), get_hostname());
 			sock_send_string (sock, buffer);
 		} else {
+			// write title bar: hostname
 			sprintf (buffer, "widget_set T title {TIME: %s}\n", get_hostname());
 			sock_send_string (sock, buffer);
 		}
@@ -144,15 +147,13 @@ time_screen (int rep, int display)
 			(lcd_wid > 20) ? 2 : 1, (rtime->tm_hour >= 12) ? "pm" : "am");
 	}
 
-	///////////////////// Write the title bar (os name and version)
-
 	if (lcd_hgt >= 4) {
 		strcpy (day, shortdays[rtime->tm_wday]);
 		strcpy (month, shortmonths[rtime->tm_mon]);
 
 		machine_get_uptime(&uptime, &idle);
 
-		/////////////////////// Display the uptime...
+		// display the uptime...
 		days = (int) uptime / 86400;
 		hour = ((int) uptime % 86400) / 60 / 60;
 		min = (((int) uptime % 86400) % 3600) / 60;
@@ -169,7 +170,7 @@ time_screen (int rep, int display)
 		if (display)
 			sock_send_string (sock, buffer);
 
-		////////// display the date
+		// display the date
 		sprintf (tmp, "%s %s %d, %d",
 			day, month, rtime->tm_mday, rtime->tm_year + 1900);
 		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
@@ -177,7 +178,7 @@ time_screen (int rep, int display)
 		if (display)
 			sock_send_string (sock, buffer);
 		
-		/////////////////////// Display the time & idle time...
+		// display the time & idle time...
 		sprintf (tmp, "%s %3i%% idle", now, (int) idle);
 		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
 		sprintf (buffer, "widget_set T three %i 4 {%s}\n", xoffs, tmp);
@@ -262,8 +263,7 @@ clock_screen (int rep, int display)
 			(lcd_wid > 20) ? 2 : 1, (rtime->tm_hour >= 12) ? "pm" : "am");
 	}
 
-	if (lcd_hgt >= 4)				// 4-line version of the screen
-	{
+	if (lcd_hgt >= 4) {				// 4-line version of the screen
 		strcpy (day, days[rtime->tm_wday]);
 		strcpy (month, months[rtime->tm_mon]);
 
@@ -279,8 +279,7 @@ clock_screen (int rep, int display)
 		if (display)
 			sock_send_string (sock, buffer);
 	}
-	else						// 2-line version of the screen
-	{
+	else {						// 2-line version of the screen
 		if (lcd_wid >= 20)			// 20+x columns
 			sprintf (tmp, "%d-%02d-%02d %s",
 				rtime->tm_year + 1900, rtime->tm_mon + 1, rtime->tm_mday, now);
@@ -376,14 +375,12 @@ uptime_screen (int rep, int display)
 //////////////////////////////////////////////////////////////////////
 // Big Clock Screen displays current time...
 //
-//Curses display is ugly, but should look nice on Matrix Orbital.
-//
-//+--------------------+
-//|111555 444222 111333|
-//|111555 444222 111333|
-//|111555 444222 111333|
-//|111555 444222 111333|
-//+--------------------+
+// +--------------------+
+// |    _   _      _  _ |
+// |  ||_   _||_|  _|  ||
+// |  ||_|  _|  | |_   ||
+// |                    |
+// +--------------------+
 //
 int
 big_clock_screen (int rep, int display)

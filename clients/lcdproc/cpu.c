@@ -15,21 +15,7 @@
 #include "mode.h"
 #include "machine.h"
 #include "cpu.h"
-
-
-/** print a percentage value to a given string */
-static char *
-sprintf_percent(char *str, double percent)
-{
-	if (str == NULL)
-		return NULL;
-	if (percent > 99.9)
-		strcpy(str, "100%");
-	else
-		sprintf(str, "%.1f%%", (percent >= 0) ? percent : 0);
-
-	return str;
-}
+#include "util.h"
 
 
 //////////////////////////////////////////////////////////////////////////

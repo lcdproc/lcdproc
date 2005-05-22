@@ -91,6 +91,7 @@ battery_screen (int rep, int display)
 			sock_send_string (sock, "widget_add B two string\n");
 			sock_send_string (sock, "widget_add B three string\n");
 			sock_send_string (sock, "widget_add B gauge hbar\n");
+
 			sock_send_string (sock, "widget_set B one 1 2 {AC: Unknown}\n");
 			sock_send_string (sock, "widget_set B two 1 3 {Batt: Unknown}\n");
 			sprintf(buffer, "widget_set B three 1 4 {E%*sF}\n", gauge_wid, "");
@@ -129,10 +130,8 @@ battery_screen (int rep, int display)
 		}
 	}	
 	else {						  // two-line version of the screen
-		if (acstat == LCDP_AC_ON)
-			sprintf(buffer, "widget_set B one 1 2 {AC, Batt: %s}\n", battery_status(battstat));
-		else
-			sprintf(buffer, "widget_set B one 1 2 {Batt: %s}\n", battery_status(battstat));
+		sprintf(buffer, "widget_set B one 1 2 {%sBatt: %s}\n",
+			(acstat == LCDP_AC_ON) ? "AC, " : "", battery_status(battstat));
 		if (display)
 			sock_send_string(sock, buffer);
 	}

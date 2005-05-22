@@ -14,10 +14,17 @@
 #include "machine.h"
 #include "load.h"
 
+
 ///////////////////////////////////////////////////////////////////////////
 // Shows a display very similar to "xload"'s histogram.
 //
-
+// +--------------------+	+--------------------+
+// |## LOAD 0.44: myh #@|	|myhost 0.24        1|
+// |                   1|	|        |||||||||||0|
+// |            ||||||  |	+--------------------+
+// |    ||||  |||||||| 0|
+// +--------------------+
+//
 int
 xload_screen (int rep, int display)
 {
@@ -27,10 +34,9 @@ xload_screen (int rep, int display)
 	double loadmax = 0, factor, x;
 	int status = 0;
 
-	if (first)						  // Only the first time this is ever called...
-	{
+	if (first) {						  // Only the first time this is ever called...
 		first = 0;
-		memset (loads, 0, sizeof (double) * LCD_MAX_WIDTH);
+		memset (loads, '\0', sizeof (double) * LCD_MAX_WIDTH);
 
 		sock_send_string (sock, "screen_add X\n");
 		sprintf (buffer, "screen_set X -name {X-Load: %s}\n", get_hostname());
@@ -68,9 +74,9 @@ xload_screen (int rep, int display)
 			loadmax = loads[n];
 
 	n = (int) loadmax;
-	if ((double) n < loadmax) {
+	if ((double) n < loadmax)
 		n++;
-	}
+
 	sprintf (tmp, "widget_set X top %i %i %i\n", lcd_wid, (lcd_hgt <= 2) ? 1 : 2, n);
 	//if(display) sock_send_string(sock, tmp);
 	sock_send_string (sock, tmp);

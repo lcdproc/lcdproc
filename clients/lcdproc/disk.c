@@ -16,15 +16,21 @@
 #include "mode.h"
 #include "machine.h"
 #include "disk.h"
+#include "util.h"
+
 
 ///////////////////////////////////////////////////////////////////////////
 // Gives disk stats. 
 //
-// Stays onscreen until it is done.
+// Stays onscreen until it is done; rolls over all mounted file systems
+// +--------------------+	+--------------------+
+// |## DISKS: myhost ##@|	|## DISKS: myhost ##@|
+// |/       18.3G E--  F|	|-local  18.3G E--- F|
+// |-local  18.3G E--- F|	+--------------------+
+// |/boot  949.6M E-   F|
+// +--------------------+
 //
-
 // TODO: Disk screen!  Requires virtual pages in the server, though...
-
 int
 disk_screen (int rep, int display)
 {
@@ -58,7 +64,6 @@ disk_screen (int rep, int display)
 		sprintf (buffer, "widget_set D title {DISKS: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add D f frame\n");
-		//sock_send_string(sock, "widget_set D f 1 2 20 4 20 3 v 8\n");
 		sprintf (buffer, "widget_set D f 1 2 %i %i %i %i v 12\n", lcd_wid, lcd_hgt, lcd_wid, lcd_hgt - 1);
 		sock_send_string (sock, buffer);
 		sock_send_string (sock, "widget_add D err1 string\n");
@@ -68,7 +73,6 @@ disk_screen (int rep, int display)
 	}
 	// Grab disk stats on first display, and fill "table".
 	// Get rid of old, unmounted filesystems...
-	memset (table, 0, sizeof (struct disp) * 256);
 
 	machine_get_fs(mnt, &count);
 
@@ -82,41 +86,22 @@ disk_screen (int rep, int display)
 			else
 				sprintf (table[i].dev, "%s", mnt[i].mpoint);
 
-			//table[i].full = (lcd_cellwid * 4);
 			table[i].full = (huge) (lcd_cellwid * gauge_wid)
 				 * (huge) (mnt[i].blocks - mnt[i].bfree)
 				 / (huge) mnt[i].blocks;
 
 			size = (huge) mnt[i].bsize * (huge) mnt[i].blocks;
-			memset (table[i].cap, 0, 8);
+			memset (table[i].cap, '\0', 8);
 
-			// Kilobytes
-			if ((size >= 0) && (size < (huge) 1000 * (huge) 1000))
-				sprintf (table[i].cap, "%3.1fk", (double) (size) / 1024.0);
-			// Megabytes
-			else if ((size >= (huge) 1000 * (huge) 1000) && (size < (huge) 1000 * (huge) 1000 * (huge) 1000))
-				sprintf (table[i].cap, "%3.1fM", (float) (size / (huge) 1024) / 1024.0);
-			// Gigabytes
-			else if ((size >= (huge) 1000 * (huge) 1000 * (huge) 1000) &&
-				 (size < (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000))
-				sprintf (table[i].cap, "%3.1fG", (float) (size / ((huge) 1024 * (huge) 1024)) / 1024.0);
-			// Terabytes
-			else if ((size >= (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000) &&
-				 (size < (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000))
-				sprintf (table[i].cap, "%3.1fT", (float) (size / ((huge) 1024 * (huge) 1024 * (huge) 1024)) / 1024.0);
-			// PectaBytes -- Yeah!  I want some!
-			else if ((size >= (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000) &&
-				 (size < (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000 * (huge) 1000))
-				sprintf (table[i].cap, "%3.1fP", (float) (size / ((huge) 1024 * (huge) 1024 * (huge) 1024 * (huge) 1024)) / 1024.0);
-
+			sprintf_memory(table[i].cap, (double) size, 1);
 		}
 	}
-
-	if (!count) {
+	else {
 		sock_send_string (sock, "widget_set D err1 1 2 {Error Retrieving}\n");
 		sock_send_string (sock, "widget_set D err2 1 3 {Filesystem Stats}\n");
 		return 0;
 	}
+	
 	// Display stuff...  (show for two seconds, then scroll once per
 	//  second, then hold at the end for two seconds)
 	sprintf (buffer, "widget_set D f 1 2 %i %i %i %i v 12\n", lcd_wid, lcd_hgt, lcd_wid, count);
@@ -126,8 +111,8 @@ disk_screen (int rep, int display)
 	for (i = 0; i < count; i++) {
 		if (table[i].dev[0] == '\0')
 			continue;
-		if (i >= num_disks)		  // Make sure we have enough lines...
-		{
+		
+		if (i >= num_disks) {			// Make sure we have enough lines...
 			sprintf (tmp, "widget_add D s%i string -in f\n", i);
 			sock_send_string (sock, tmp);
 			sprintf (tmp, "widget_add D h%i hbar -in f\n", i);
@@ -150,7 +135,7 @@ disk_screen (int rep, int display)
 	}
 
 	// Now remove extra widgets...
-	for (; i < num_disks; i++) {
+	for ( ; i < num_disks; i++) {
 		sprintf (tmp, "widget_del D s%i\n", i);
 		sock_send_string (sock, tmp);
 		sprintf (tmp, "widget_del D h%i\n", i);
@@ -161,11 +146,5 @@ disk_screen (int rep, int display)
 
 #undef huge
 
-/*    
-// ** FILESYSTEMS *****
-// /      543.2M E----F
-// /dos/c   2.1G E----F
-// /stuff   4.3G E----F
-*/
 	return 0;
 }
