@@ -1,0 +1,6 @@
+Makefile
+Makefile.in
+init-LCDd.debian
+init-LCDd.rpm
+init-lcdproc.debian
+init-lcdproc.rpm
