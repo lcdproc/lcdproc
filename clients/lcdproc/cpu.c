@@ -22,7 +22,7 @@
 // CPU screen shows info about percentage of the CPU being used
 //
 // +--------------------+	+--------------------+
-// |## CPU 51.9%: myh #@|	|CPU0[----    ]48.1%@|
+// |## CPU 51.9%: myh #@|	|CPU [----    ]48.1%@|
 // |Usr 46.0% Nice  0.0%|	|U--  S-   N    I--- |
 // |Sys  5.9% Idle 48.1%|	+--------------------+
 // |0%--------      100%|
@@ -72,14 +72,14 @@ cpu_screen(int rep, int display)
 			sock_send_string(sock, "widget_set C bar 3 4 0\n");
 		}
 		else {
-			usni_wid = (lcd_wid - 4)/ 4;	// 4 gauges + 1 letter for each
+			usni_wid = (lcd_wid - 4) / 4;	// 4 gauges + 1 letter for each
 			gauge_wid = lcd_wid - 12;	// room between [...]
 
-			sock_send_string(sock, "widget_add C cpu0 string\n");
-			sprintf(buffer, "widget_set C cpu0 1 1 {CPU0[%*s]}\n", gauge_wid, "");
+			sock_send_string(sock, "widget_add C cpu string\n");
+			sprintf(buffer, "widget_set C cpu 1 1 {CPU [%*s]}\n", gauge_wid, "");
 			sock_send_string(sock, buffer);
-			sock_send_string(sock, "widget_add C cpu0% string\n");
-			sprintf(buffer, "widget_set C cpu0%% 1 %d { 0.0%%}\n", lcd_wid - 5);
+			sock_send_string(sock, "widget_add C cpu% string\n");
+			sprintf(buffer, "widget_set C cpu%% 1 %d { 0.0%%}\n", lcd_wid - 5);
 			sock_send_string(sock, buffer);
 			sock_send_string(sock, "widget_add C usni string\n");
 			sprintf(buffer, "widget_set C usni 1 2 {U%*sS%*sN%*sI%*s}\n",
@@ -159,7 +159,7 @@ cpu_screen(int rep, int display)
 	}
 	else {						// 2-line display
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][4]);
-		sprintf(buffer, "widget_set C cpu0%% %d 1 {%5s}\n", lcd_wid - 5, tmp);
+		sprintf(buffer, "widget_set C cpu%% %d 1 {%5s}\n", lcd_wid - 5, tmp);
 		sock_send_string(sock, buffer);
 
 		n = (int) ((cpu[CPU_BUF_SIZE][4] * lcd_cellwid * gauge_wid) / 100.0);
@@ -206,6 +206,7 @@ cpu_graph_screen(int rep, int display)
 	static int first = TRUE;
 	static float cpu[CPU_BUF_SIZE];
 	static int cpu_past[LCD_MAX_WIDTH];
+	static int gauge_hgt = 0;
 
 	int i, n = 0;
 	float value ;
@@ -213,6 +214,7 @@ cpu_graph_screen(int rep, int display)
 
 	if (first) {
 		first = FALSE;
+		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 
 		sock_send_string(sock, "screen_add G\n");
 		sprintf(buffer, "screen_set G -name {CPU Graph: %s}\n", get_hostname());
@@ -228,9 +230,9 @@ cpu_graph_screen(int rep, int display)
 		sock_send_string(sock, buffer);
 
 		for (i = 1; i <= lcd_wid; i++) {
-			sprintf(buffer, "widget_add G %d vbar\n", i);
+			sprintf(buffer, "widget_add G bar%d vbar\n", i);
 			sock_send_string(sock, buffer);
-			sprintf(buffer, "widget_set G %d %d %d 0\n", i, i, lcd_hgt);
+			sprintf(buffer, "widget_set G bar%d %d %d 0\n", i, i, lcd_hgt);
 			sock_send_string(sock, buffer);
 			cpu_past[i-1] = 0;
 		};
@@ -255,14 +257,14 @@ cpu_graph_screen(int rep, int display)
 	value /= CPU_BUF_SIZE;
 
 	// Scale result to available height (leave 1st line free when height > 2)
-	n = (int) (value * lcd_cellhgt * ((lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt));
+	n = (int) (value * lcd_cellhgt * gauge_hgt);
 
 	// Shift and update display the graph
 	for (i = 0; i < lcd_wid - 1; i++) {
 		cpu_past[i] = cpu_past[i + 1];
 
 		if (display) {
-			sprintf(buffer, "widget_set G %d %d %d %d\n",
+			sprintf(buffer, "widget_set G bar%d %d %d %d\n",
 			              i + 1, i + 1, lcd_hgt, cpu_past[i]);
 			sock_send_string(sock, buffer);
 		}
@@ -271,7 +273,7 @@ cpu_graph_screen(int rep, int display)
 	// Save the newest entry and display it
 	cpu_past[lcd_wid - 1] = n;
 	if (display) {
-		sprintf(buffer, "widget_set G %d %d %d %d\n", lcd_wid, lcd_wid, lcd_hgt, n);
+		sprintf(buffer, "widget_set G bar%d %d %d %d\n", lcd_wid, lcd_wid, lcd_hgt, n);
 		sock_send_string(sock, buffer);
 	}
 
