@@ -64,7 +64,7 @@ battery_status(int status)
 // Battery Screen shows apm battery status...
 //
 // +--------------------+	+--------------------+
-// |## Batt: 100%: an ##|	|## Batt: 100%: an ##|
+// |## AC: 100%: myho #@|	|## AC: 100%: myho #@|
 // |AC: On              |	|AC, Batt: Absent    |
 // |Batt: Absent        |	+--------------------+
 // |E------------------F|
