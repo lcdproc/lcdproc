@@ -200,7 +200,7 @@ send_packet(int fd)
 	for (i = 0; i < outgoing_response.data_length; i++) {
 		SendByte(fd, outgoing_response.data[i]);
 	}
-    
+
 	/* calculate & send the CRC */
 	outgoing_response.CRC.as_word = get_crc((unsigned char *) &outgoing_response,
 						outgoing_response.data_length + 2, 0xFFFF);
@@ -251,10 +251,10 @@ void Sync_Read_Buffer(int fd, unsigned char expected_bytes)
 {
 	unsigned char	Incoming[512];
 	int		BytesRead;
-	
+
 	// ToDo: check that expected_bytes < sizeof(Incoming)
 	BytesRead = read(fd, Incoming, expected_bytes);
-	if (BytesRead == -1){
+	if (BytesRead == -1) {
 		/* printf("~~~Problem reading: %s .\n", strerror(errno)); */
 	}
 	else {
@@ -271,7 +271,7 @@ void Sync_Read_Buffer(int fd, unsigned char expected_bytes)
 			SerialReceiveBuffer[ReceiveBufferHead] = Incoming[i];
 
 			/* increment write pointer (wrap if needed) */
-    			ReceiveBufferHead = (ReceiveBufferHead + 1) % RECEIVEBUFFERSIZE;
+			ReceiveBufferHead = (ReceiveBufferHead + 1) % RECEIVEBUFFERSIZE;
 		}
 		/* printf("\n"); */
 	}
@@ -282,7 +282,7 @@ void Sync_Read_Buffer(int fd, unsigned char expected_bytes)
 int BytesAvail(void)
 {
 	int avail_bytes = ReceiveBufferHead - ReceiveBufferTail;
-	
+
 	if (avail_bytes < 0)
 		avail_bytes += RECEIVEBUFFERSIZE;
 
@@ -305,7 +305,7 @@ unsigned char GetByte(void)
 
 		/* Increment read pointer (wrap if needed) */
 		ReceiveBufferTail = (ReceiveBufferTail + 1) % RECEIVEBUFFERSIZE;
-	}	
+	}
 
 	return(return_byte);
 }
@@ -315,8 +315,7 @@ unsigned char GetByte(void)
 unsigned char DiscardGetByte(void)
 {
 	unsigned char    return_byte = '\0';
-  
-	
+ 
 	/* wrap read pointer to the receive buffer */
 	ReceiveBufferTail %= RECEIVEBUFFERSIZE;
 
@@ -327,7 +326,7 @@ unsigned char DiscardGetByte(void)
 
 		/* Increment read pointer (wrap if needed) */
 		ReceiveBufferTail = (ReceiveBufferTail + 1) % RECEIVEBUFFERSIZE;
-	}	
+	}
 	/* printf("Discarded : /%02x/\n", return_byte); */
 
 	return(return_byte);
@@ -375,7 +374,7 @@ unsigned char PeekByte(void)
 
 		/* Increment the peek pointer (wrap if needed). */
 		ReceiveBufferTailPeek = (ReceiveBufferTailPeek + 1) % RECEIVEBUFFERSIZE;
-	}	
+	}
 
 	return(return_byte);
 }
