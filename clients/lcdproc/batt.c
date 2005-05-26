@@ -108,8 +108,8 @@ battery_screen (int rep, int display)
 		sprintf(tmp, "%d%%", percent);
 	else
 		sprintf(tmp, "??%%");
-	sprintf(buffer, "widget_set B title {%s: %s}\n",
-			(acstat == LCDP_AC_ON && battstat == LCDP_BATT_ABSENT) ? "AC" : "Batt:",
+	sprintf(buffer, "widget_set B title {%s: %s: %s}\n",
+			(acstat == LCDP_AC_ON && battstat == LCDP_BATT_ABSENT) ? "AC" : "Batt",
 			tmp, get_hostname());
 	if(display)
 		sock_send_string (sock, buffer);
