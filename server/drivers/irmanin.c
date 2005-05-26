@@ -25,7 +25,7 @@
 #include "lcd.h"
 #include "irmanin.h"
 #include "report.h"
-#include "../../../libirman-0.4.1b/irman.h"
+#include "irman.h"
 
 char *progname = "irmanin";
 
@@ -64,7 +64,6 @@ char *codes[] = {
 ////////////////////// Base "class" to derive from ///////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-lcd_logical_driver *irmanin;
 
 //void sigterm(int sig)
 //{
@@ -91,8 +90,6 @@ irmanin_init (Driver *drvthis, char *args)
 
 	ptrconfig = NULL;
 	ptrdevice = NULL;
-
-	irmanin = drvthis;
 
 	/* Read config file */
 
@@ -148,12 +145,11 @@ irmanin_init (Driver *drvthis, char *args)
 }
 
 void
-irmanin_close ()
+irmanin_close (Driver *drvthis)
 {
-	if (irmanin->framebuf != NULL)
-		free (irmanin->framebuf);
-
-	irmanin->framebuf = NULL;
+	//if (drvthis->framebuf != NULL)
+	//	free (drvthis->framebuf);
+	//drvthis->framebuf = NULL;
 
 	ir_free_commands ();
 	ir_finish ();
@@ -165,7 +161,7 @@ irmanin_close ()
 // Return 0 for "nothing available".
 //
 char
-irmanin_getkey ()
+irmanin_getkey (Driver *drvthis)
 {
 	int i;
 	int cmd;
