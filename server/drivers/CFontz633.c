@@ -210,16 +210,16 @@ CFontz633_init (Driver *drvthis, char *args)
 	tcgetattr (fd, &portset);
 
 	/* We use RAW mode */
-	if ( usb ) {
-        	// The USB way
+	if (usb) {
+		// The USB way
 		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
 					| INLCR | IGNCR | ICRNL | IXON );
-	        portset.c_oflag &= ~OPOST;
-        	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-	        portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-        	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
-	        portset.c_cc[VMIN] = 0;
-        	portset.c_cc[VTIME] = 0;
+		portset.c_oflag &= ~OPOST;
+		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+		portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+		portset.c_cc[VMIN] = 0;
+		portset.c_cc[VTIME] = 0;
 	} else {
 #ifdef HAVE_CFMAKERAW
 		/* The easy way */
@@ -260,14 +260,14 @@ CFontz633_init (Driver *drvthis, char *args)
 
 	/* Set display-specific stuff.. */
 	if (reboot) {
-		CFontz633_reboot ();
+		CFontz633_reboot (drvthis);
 		reboot = 0;
 	}
 	sleep (2);
-	CFontz633_hidecursor ();
+	CFontz633_hidecursor (drvthis);
 
 	CFontz633_set_contrast (drvthis, contrast);
-	CFontz633_no_live_report ();
+	CFontz633_no_live_report (drvthis);
 	CFontz633_hardware_clear (drvthis);
 
 	report (RPT_DEBUG, "CFontz633_init: done\n");
