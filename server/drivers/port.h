@@ -92,7 +92,7 @@ static inline int port_access (unsigned short port) {
 		static short int iopl_done = 0;
 		if (iopl_done) return 0;
 		iopl_done = 1;
-		return iopl(1);
+		return iopl(3);
 #else
 		return -1; /* Error, can't access the requested port */
 #endif
