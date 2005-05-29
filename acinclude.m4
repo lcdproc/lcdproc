@@ -6,15 +6,15 @@ AC_ARG_ENABLE(drivers,
 	[                  drivers may be separated with commas.]
   	[                  Possible choices are:]
  	[                    mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,]
- 	[                    hd44780,joy,irman,lirc,bayrad,glk,,mtc_s16209x]
+ 	[                    hd44780,joy,irman,lirc,bayrad,glk,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
-	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib]
+	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib]
+	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -247,6 +247,10 @@ dnl			else
 				AC_MSG_WARN([The glcdlib driver needs glcdproclib/glcdprocdriver.h])
 			])			
 			;;
+		imon)
+			DRIVERS="$DRIVERS imon${SO}"
+			actdrivers=["$actdrivers imon"]
+			;;			
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])
 			;;

@@ -18,7 +18,7 @@ AM_LDFLAGS = @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931 IOWarrior glcdlib
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931 IOWarrior glcdlib imon
 noinst_LIBRARIES = libLCD.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@
@@ -39,6 +39,7 @@ lcterm_LDADD =       libLCD.a
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 glcdlib_LDADD =      libLCD.a @LIBGLCD@
+imon_LDADD =         libLCD.a
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
 
@@ -68,6 +69,7 @@ t6963_SOURCES =      lcd.h t6963.c t6963.h t6963_font.h report.h
 text_SOURCES =       lcd.h text.h text.c report.h
 wirz_sli_SOURCES =   lcd.h wirz-sli.h wirz-sli.c report.h
 ms6931_SOURCES =     lcd.h ms6931.h ms6931.c report.h
-glcdlib_SOURCES =     lcd.h glcdlib.h glcdlib.c report.h
+glcdlib_SOURCES =    lcd.h glcdlib.h glcdlib.c report.h
+imon_SOURCES =       lcd.h imon.h imon.c report.h
 
 INCLUDES = -I$(top_srcdir)

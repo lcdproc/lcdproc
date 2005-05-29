@@ -74,7 +74,7 @@ Available options are:
 
 Currently available drivers:
 	lcdm001, LCDM001, MtxOrb, MatrixOrbital, CFontz, CrystalFontz, LB216, text,
-	curses, ncurses, BayRAD, glk, glc, IOWarrior, glcdlib
+	curses, ncurses, BayRAD, glk, glc, IOWarrior, glcdlib, imon
 
 
 ]]>
