@@ -113,6 +113,7 @@ typedef enum {
 	standard,	/* only char 0 is used for heartbeat */
 	vbar,		/* vertical bars */
 	hbar,		/* horizontaln bars */
+	custom,		/* custom settings */
 	bignum,		/* big numbers */
 	bigchar		/* big characters */
 } CGmode;
@@ -505,7 +506,7 @@ CFontz633_get_key (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	unsigned char key;
 
-	key = GetKeyFromKeyRing(&p->keyring);
+	key = GetKeyFromKeyRing();
 
 	switch (key) {
 		case CF633_KEY_LEFT:
