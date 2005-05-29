@@ -23,15 +23,30 @@
 /*#include <string.h>*/
 
 
+#define TRY_AGAIN 0
+#define GOOD_MSG 1
+#define GIVE_UP 2
 
-COMMAND_PACKET  incoming_command;
+
+/* static local fuinctions */
+static void send_packet(int fd);
+static void SendByte(int fd, unsigned char datum);
+static int  get_crc(char * bufptr, int len, int seed);
+static int  check_for_packet(int fd, unsigned char expected_length);
+static void treat_packet(void);
+static void print_packet(COMMAND_PACKET *packet);
+
+
+static COMMAND_PACKET  outgoing_response;
+static COMMAND_PACKET  incoming_command;
+
 
 /* variables for circular receive buffer */
 #define RECEIVEBUFFERSIZE    512
-unsigned char  SerialReceiveBuffer[RECEIVEBUFFERSIZE];
-int   ReceiveBufferHead = 0;
-int   ReceiveBufferTail = 0;
-int   ReceiveBufferTailPeek = 0;
+static unsigned char  SerialReceiveBuffer[RECEIVEBUFFERSIZE];
+static int   ReceiveBufferHead = 0;
+static int   ReceiveBufferTail = 0;
+static int   ReceiveBufferTailPeek = 0;
 
 
 /*
@@ -41,9 +56,9 @@ int   ReceiveBufferTailPeek = 0;
  */
 
 #define KEYRINGSIZE    16
-unsigned char  KeyRing[KEYRINGSIZE];
-int   KeyHead = 0;
-int   KeyTail = 0;
+static unsigned char  KeyRing[KEYRINGSIZE];
+static int   KeyHead = 0;
+static int   KeyTail = 0;
 
 
 /** initialize/empty key ring by resetting its read & write pointers */
@@ -125,8 +140,35 @@ void send_zerobyte_message(int fd, int msg)
 }
 
 
+/** send outgoing_response to the given handle; calc & send CRC when doing so */
+static void
+send_packet(int fd)
+{
+	unsigned char i;
+
+	SendByte(fd, outgoing_response.command);
+	SendByte(fd, outgoing_response.data_length);
+	for (i = 0; i < outgoing_response.data_length; i++) {
+		SendByte(fd, outgoing_response.data[i]);
+	}
+
+	/* calculate & send the CRC */
+	outgoing_response.CRC.as_word = get_crc((unsigned char *) &outgoing_response,
+						outgoing_response.data_length + 2, 0xFFFF);
+	SendByte(fd, outgoing_response.CRC.as_bytes[0]);
+	SendByte(fd, outgoing_response.CRC.as_bytes[1]);
+
+	/**** TEST STUF ****/
+	// print_packet(&outgoing_response);
+
+	/* Every time we send a message, we also check for an incoming one. */
+	test_packet(fd); 
+}
+
+
 /** calculate CRC over given buffer with given length */
-int get_crc(char *buf, int len, int seed)
+static int
+get_crc(char *buf, int len, int seed)
 {
 
 	/* CRC lookup table to avoid bit-shifting loops. */
@@ -178,41 +220,12 @@ int get_crc(char *buf, int len, int seed)
 
 
 /** send one byte to the given handle */
-void
+static void
 SendByte(int fd, unsigned char datum)
 {
 	write(fd, &datum, 1);
 }
 
-
-
-COMMAND_PACKET  outgoing_response;
-
-
-/** send outgoing_response to the given handle; calc & send CRC when doing so */
-void
-send_packet(int fd)
-{
-	unsigned char i;
-
-	SendByte(fd, outgoing_response.command);
-	SendByte(fd, outgoing_response.data_length);
-	for (i = 0; i < outgoing_response.data_length; i++) {
-		SendByte(fd, outgoing_response.data[i]);
-	}
-
-	/* calculate & send the CRC */
-	outgoing_response.CRC.as_word = get_crc((unsigned char *) &outgoing_response,
-						outgoing_response.data_length + 2, 0xFFFF);
-	SendByte(fd, outgoing_response.CRC.as_bytes[0]);
-	SendByte(fd, outgoing_response.CRC.as_bytes[1]);
-
-	/**** TEST STUF ****/
-	// print_packet(&outgoing_response);
-
-	/* Every time we send a message, we also check for an incoming one. */
-	test_packet(fd); 
-}
 
 
 
@@ -311,28 +324,6 @@ unsigned char GetByte(void)
 }
 
 
-/** get byte from receive buffer (or '\0' if buffer is empty) */
-unsigned char DiscardGetByte(void)
-{
-	unsigned char    return_byte = '\0';
- 
-	/* wrap read pointer to the receive buffer */
-	ReceiveBufferTail %= RECEIVEBUFFERSIZE;
-
-	/* See if there are any more bytes available. */
-	if (ReceiveBufferTail != (ReceiveBufferHead % RECEIVEBUFFERSIZE)) {
-		/* There is at least one more ubyte. */
-		return_byte = SerialReceiveBuffer[ReceiveBufferTail];
-
-		/* Increment read pointer (wrap if needed) */
-		ReceiveBufferTail = (ReceiveBufferTail + 1) % RECEIVEBUFFERSIZE;
-	}
-	/* printf("Discarded : /%02x/\n", return_byte); */
-
-	return(return_byte);
-}
-
-
 /** return number of bytes available for peeking in receive buffer */
 int PeekBytesAvail(void)
 {
@@ -380,7 +371,27 @@ unsigned char PeekByte(void)
 }
 
 
-void treat_packet(void)
+/* I should use the value GIVE_UP and not reenter if there is no extra
+ * byte read from the serial port
+ */ 
+int test_packet(int fd)
+{
+	int is_msg;
+
+	is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
+	while (is_msg != GIVE_UP) {
+		if (is_msg == GOOD_MSG)
+			treat_packet();
+
+		is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
+	}
+
+	return 1;
+}
+
+
+static void
+treat_packet(void)
 {
 	if (incoming_command.command == 0x80) {
 		AddKeyToKeyRing(incoming_command.data[0]);
@@ -398,8 +409,6 @@ void treat_packet(void)
  *----------------------------------------------------------------------------
  */
 
-/* This tossed byte is not in use, it's going to be removed. */
-int tossed = 0;
 
 /* Let's return
  * O if we have no message but we should try again immediatly
@@ -408,12 +417,8 @@ int tossed = 0;
  * So a loop should run as long as we have no 0
  * If we have a 2 we should avoid comming back there.
  */
-
-#define TRY_AGAIN 0
-#define GOOD_MSG 1
-#define GIVE_UP 2
-
-unsigned char check_for_packet(int fd, unsigned char expected_length)
+static int
+check_for_packet(int fd, unsigned char expected_length)
 {
 	int i;
 	int testcrc;
@@ -436,8 +441,7 @@ unsigned char check_for_packet(int fd, unsigned char expected_length)
 	/* Only commands 0 through MAX_COMMAND are valid */
 	if (MAX_COMMAND < (0x3F & incoming_command.command)) {
 		/* Throw out one byte of garbage. Next pass through should re-sync. */
-		DiscardGetByte();
-		tossed++;
+		GetByte();
 		/* printf("###: Unknown command.\n"); */
 		return(TRY_AGAIN);
 	}
@@ -448,8 +452,7 @@ unsigned char check_for_packet(int fd, unsigned char expected_length)
   	/* The data length must be within reason. */
   	if (MAX_DATA_LENGTH < incoming_command.data_length) {
 		//Throw out one byte of garbage. Next pass through should re-sync.
-		DiscardGetByte();
-		tossed++;
+		GetByte();
 		/* printf("###: Too long packet: %d.\n", incoming_command.data_length); */
 		return(TRY_AGAIN);
 	}
@@ -490,31 +493,10 @@ unsigned char check_for_packet(int fd, unsigned char expected_length)
 	/* The CRC did not match. Toss out one byte of garbage.
 	* Next pass through should re-sync.
 	*/
-	tossed++;
-	DiscardGetByte();
+	GetByte();
 	/* printf("###: Wrong CheckSum. computed/real %04x:%04x \n",
   		  testcrc, incoming_command.CRC.as_word); */
 	return(TRY_AGAIN);
-}
-
-
-
-/* I should use the value GIVE_UP and not reenter if there is no extra
- * byte read from the serial port
- */ 
-int test_packet(int fd)
-{
-	int is_msg;
-
-	is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
-	while (is_msg != GIVE_UP) {
-		if (is_msg == GOOD_MSG)
-			treat_packet();
-
-		is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
-	}
-
-	return 1;
 }
 
 

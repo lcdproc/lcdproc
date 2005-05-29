@@ -67,19 +67,15 @@ typedef union {
 } WORD_UNION;
 
 /* KeyRing management */
-void EmptyKeyRing(void);
-int AddKeyToKeyRing(unsigned char key);
+void          EmptyKeyRing(void);
+int           AddKeyToKeyRing(unsigned char key);
 unsigned char GetKeyFromKeyRing(void);
 
-
-void send_bytes_message(int fd, int len, int msg, char *framebuf);
-void send_onebyte_message(int fd, int msg, int value);
-void send_zerobyte_message(int fd, int msg);
+void           send_bytes_message(int fd, int len, int msg, char *framebuf);
+void           send_onebyte_message(int fd, int msg, int value);
+void           send_zerobyte_message(int fd, int msg);
 
 void           EmptyReceiveBuffer(void);
-int            Serial_Init(int port, int baud_rate);
-void           Uninit_Serial();
-void           SendByte(int fd, unsigned char datum);
 void           Sync_Read_Buffer(int fd, unsigned char expected_bytes);
 int	       BytesAvail(void);
 unsigned char  GetByte(void);
@@ -87,10 +83,6 @@ int            PeekBytesAvail(void);
 void           Sync_Peek_Pointer(void);
 void           AcceptPeekedData(void);
 unsigned char  PeekByte(void);
-void           Clear_Buffer(void);
-void           Buffer_Character(int fd, unsigned char datum);
-void           Buffer_String(int fd, char *input);
-void           Send_Buffer(int fd);
 
 int            test_packet(int fd);
 
@@ -103,11 +95,6 @@ typedef struct {
     ubyte data[MAX_DATA_LENGTH];
     WORD_UNION CRC;
 } COMMAND_PACKET;
-int get_crc(char * bufptr, int len, int seed);
-extern COMMAND_PACKET incoming_command;
-extern COMMAND_PACKET outgoing_response;
-unsigned char check_for_packet(int fd, unsigned char expected_length);
-void print_packet(COMMAND_PACKET *packet);
-void send_packet(int fd);
 
-#endif
+
+#endif /* CFONTZ633IO_H */
