@@ -418,28 +418,29 @@ IOWarrior_close(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
 
-  /* don't turn display off: keep the logoff message */
-  // iowlcd_display_on_off(p->udh,0,0,0);
+  if (p != NULL) {
+    /* don't turn display off: keep the logoff message */
+    // iowlcd_display_on_off(p->udh,0,0,0);
 
-  /* IOW leave LCD mode */
-  iowlcd_disable(p->udh);
+    /* IOW leave LCD mode */
+    iowlcd_disable(p->udh);
 
-  /* release interface 1 */
-  usb_release_interface(p->udh, 1);
+    /* release interface 1 */
+    usb_release_interface(p->udh, 1);
 
-  /* close USB */
-  usb_close(p->udh);
+    /* close USB */
+    usb_close(p->udh);
 
-  if (p->framebuf != NULL)
-    free(p->framebuf);
-  p->framebuf = NULL;
+    if (p->framebuf != NULL)
+      free(p->framebuf);
+    p->framebuf = NULL;
 
-  if (p->backingstore != NULL)
-    free(p->backingstore);
-  p->backingstore = NULL;
+    if (p->backingstore != NULL)
+      free(p->backingstore);
+    p->backingstore = NULL;
 
-  if (p != NULL)
     free(p);
+  }  
   drvthis->store_private_ptr(drvthis, NULL);
 
   debug(RPT_DEBUG, "IOWarrior: closed");
