@@ -17,10 +17,7 @@
 #include "CFontz633io.h"
 #include <unistd.h>
 #include <stdio.h>
-
-/*#include <errno.h>*/
-/*extern int errono;*/
-/*#include <string.h>*/
+#include <string.h>
 
 
 #define TRY_AGAIN 0
@@ -29,134 +26,122 @@
 
 
 /* static local fuinctions */
-static void send_packet(int fd);
-static void SendByte(int fd, unsigned char datum);
+static void send_packet(int fd, COMMAND_PACKET *out);
 static int  get_crc(char * bufptr, int len, int seed);
 static int  check_for_packet(int fd, unsigned char expected_length);
 static void treat_packet(void);
 static void print_packet(COMMAND_PACKET *packet);
 
 
-static COMMAND_PACKET  outgoing_response;
+/* local variables */
 static COMMAND_PACKET  incoming_command;
 
 
-/* variables for circular receive buffer */
-#define RECEIVEBUFFERSIZE    512
-static unsigned char  SerialReceiveBuffer[RECEIVEBUFFERSIZE];
-static int   ReceiveBufferHead = 0;
-static int   ReceiveBufferTail = 0;
-static int   ReceiveBufferTailPeek = 0;
+/* global variables */
+KeyRing keyring;
+ReceiveBuffer receivebuffer;
+
 
 
 /*
- * KeyRing handling function.
- * This separate the producer from the consumer.
+ * KeyRing handling functions.
+ * This separates the producer from the consumer.
  * It is just a small fifo of unsigned char.
  */
 
-#define KEYRINGSIZE    16
-static unsigned char  KeyRing[KEYRINGSIZE];
-static int   KeyHead = 0;
-static int   KeyTail = 0;
-
-
 /** initialize/empty key ring by resetting its read & write pointers */
-void EmptyKeyRing(void)
+void EmptyKeyRing(KeyRing *kr)
 {
-	KeyHead = KeyTail = 0;
+	kr->head = kr->tail = 0;
 }
 
 
 /** add byte to key ring; return success (byte added) / failure (key ring is full) */
-int AddKeyToKeyRing(unsigned char key)
+int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 {
-	if (((KeyHead + 1) % KEYRINGSIZE) != (KeyTail % KEYRINGSIZE)) {
+	if (((kr->head + 1) % KEYRINGSIZE) != (kr->tail % KEYRINGSIZE)) {
  		/*  printf("We add key: %d\n", key); */
 
-	        KeyRing[KeyHead % KEYRINGSIZE] = key;
-  		KeyHead = (KeyHead + 1) % KEYRINGSIZE;
+	        kr->contents[kr->head % KEYRINGSIZE] = key;
+  		kr->head = (kr->head + 1) % KEYRINGSIZE;
 		return 1;
 	}
+	
 	/* KeyRing overflow: do not accept extra key */
 	return 0;
 }
 
 
 /** get byte from key ring (or '\0' if key ring is empty) */
-unsigned char GetKeyFromKeyRing(void)
+unsigned char GetKeyFromKeyRing(KeyRing *kr)
 {
 	unsigned char retval = '\0';
 
-	KeyTail %= KEYRINGSIZE;
+	kr->tail %= KEYRINGSIZE;
 
-	if ((KeyHead % KEYRINGSIZE) != KeyTail) {
-		retval = KeyRing[KeyTail];
-	        KeyTail = (KeyTail + 1) % KEYRINGSIZE;
+	if ((kr->head % KEYRINGSIZE) != kr->tail) {
+		retval = kr->contents[kr->tail];
+	        kr->tail = (kr->tail + 1) % KEYRINGSIZE;
 	}
 
 	/*  if (retval) printf("We remove key: %d\n", retval); */
-
 	return retval;
 }
 
 
 
 /** send message with arguments to the given handle */
-void send_bytes_message(int fd, int len, int msg, char *framebuf)
+void send_bytes_message(int fd, int len, int msg, unsigned char *data)
 {
-	int i;
+	COMMAND_PACKET out;
 
-	outgoing_response.command = msg;
-	outgoing_response.data_length = len;
-	for (i = 0; i < outgoing_response.data_length; i++)
-		outgoing_response.data[i] = framebuf[i];
+	out.command = msg;
+	out.data_length = len;
+	memcpy(out.data, data, len);
 
 	/* send message & calc CRC */
-	send_packet(fd);
+	send_packet(fd, &out);
 }
 
 
 /** send message with one byte argument to the given handle */
-void send_onebyte_message(int fd, int msg, int value)
+void send_onebyte_message(int fd, int msg, unsigned char value)
 {
-	outgoing_response.command = msg;
-	outgoing_response.data_length = 1;
-	outgoing_response.data[0] = value;
+	COMMAND_PACKET out;
+
+	out.command = msg;
+	out.data_length = 1;
+	out.data[0] = value;
 
 	/* send message & calc CRC */
-	send_packet(fd);
+	send_packet(fd, &out);
 }
 
 
 /** send message without data to the given handle */
 void send_zerobyte_message(int fd, int msg)
 {
-	outgoing_response.command = msg;
-	outgoing_response.data_length = 0;
+	COMMAND_PACKET out;
+
+	out.command = msg;
+	out.data_length = 0;
 
 	/* send message & calc CRC */
-	send_packet(fd);
+	send_packet(fd, &out);
 }
 
 
 /** send outgoing_response to the given handle; calc & send CRC when doing so */
 static void
-send_packet(int fd)
+send_packet(int fd, COMMAND_PACKET *out)
 {
-	unsigned char i;
-
-	SendByte(fd, outgoing_response.command);
-	SendByte(fd, outgoing_response.data_length);
-	for (i = 0; i < outgoing_response.data_length; i++) {
-		SendByte(fd, outgoing_response.data[i]);
-	}
+	write(fd, &out->command, 1);
+	write(fd, &out->data_length, 1);
+	write(fd, out->data, out->data_length);
 
 	/* calculate & send the CRC */
-	outgoing_response.CRC.as_word = get_crc((unsigned char *) &outgoing_response,
-						outgoing_response.data_length + 2, 0xFFFF);
-	SendByte(fd, outgoing_response.CRC.as_bytes[0]);
-	SendByte(fd, outgoing_response.CRC.as_bytes[1]);
+	out->crc.as_word = get_crc((unsigned char *) out, out->data_length + 2, 0xFFFF);
+	write(fd, out->crc.as_bytes, 2);
 
 	/**** TEST STUF ****/
 	// print_packet(&outgoing_response);
@@ -219,14 +204,6 @@ get_crc(char *buf, int len, int seed)
 }
 
 
-/** send one byte to the given handle */
-static void
-SendByte(int fd, unsigned char datum)
-{
-	write(fd, &datum, 1);
-}
-
-
 
 
 /*============================================================================
@@ -239,7 +216,7 @@ SendByte(int fd, unsigned char datum)
 /*---------------------------------------------------------------------------*/
 /* This is some code that kind of makes the windows stuff look a little
  * like the DOS/633 interrupt driven serial stuff. Basically there is a
- * circular buffer, and Sync_Read_Buffer() uses ReadFile() to put data
+ * circular buffer, and SyncReceiveBuffer() uses ReadFile() to put data
  * into the circular buffer much like the DOS stuff uses an ISR to put
  * the data into the buffer. Then the rest of the functions work like
  * the counterparts in the 633,
@@ -253,20 +230,22 @@ SendByte(int fd, unsigned char datum)
 
 
 /** initialize/empty receive buffer by resetting its pointers */
-void EmptyReceiveBuffer(void)
+void EmptyReceiveBuffer(ReceiveBuffer *rb)
 {
-	ReceiveBufferHead = ReceiveBufferTail = ReceiveBufferTailPeek = 0;
+	rb->head = rb->tail = rb->peek = 0;
 }
 
 
 /** read given number of bytes from given file handle into receive buffer */
-void Sync_Read_Buffer(int fd, unsigned char expected_bytes)
+void SyncReceiveBuffer(int fd, ReceiveBuffer *rb, unsigned int number)
 {
-	unsigned char	Incoming[512];
+	unsigned char	buffer[MAX_DATA_LENGTH];
 	int		BytesRead;
 
-	// ToDo: check that expected_bytes < sizeof(Incoming)
-	BytesRead = read(fd, Incoming, expected_bytes);
+	if (number > MAX_DATA_LENGTH)
+		number = MAX_DATA_LENGTH;
+	BytesRead = read(fd, buffer, number);
+
 	if (BytesRead == -1) {
 		/* printf("~~~Problem reading: %s .\n", strerror(errno)); */
 	}
@@ -276,15 +255,15 @@ void Sync_Read_Buffer(int fd, unsigned char expected_bytes)
 		/* printf("Read %d Bytes:", BytesRead); */
 
 		/* wrap write pointer to the receive buffer */
-		ReceiveBufferHead %= RECEIVEBUFFERSIZE;
+		rb->head %= RECEIVEBUFFERSIZE;
 
-		/* Read the incoming byte and store it, */
+		/* store the bytes read */
 		for (i = 0; i < BytesRead; i++) {
-			/* printf(" %02x", Incoming[i]); */
-			SerialReceiveBuffer[ReceiveBufferHead] = Incoming[i];
+			/* printf(" %02x", buffer[i]); */
+			rb->contents[rb->head] = buffer[i];
 
 			/* increment write pointer (wrap if needed) */
-			ReceiveBufferHead = (ReceiveBufferHead + 1) % RECEIVEBUFFERSIZE;
+			rb->head = (rb->head + 1) % RECEIVEBUFFERSIZE;
 		}
 		/* printf("\n"); */
 	}
@@ -292,9 +271,9 @@ void Sync_Read_Buffer(int fd, unsigned char expected_bytes)
 
 
 /** return number of bytes available for reading in receive buffer */
-int BytesAvail(void)
+int BytesAvail(ReceiveBuffer *rb)
 {
-	int avail_bytes = ReceiveBufferHead - ReceiveBufferTail;
+	int avail_bytes = rb->head - rb->tail;
 
 	if (avail_bytes < 0)
 		avail_bytes += RECEIVEBUFFERSIZE;
@@ -304,20 +283,20 @@ int BytesAvail(void)
 
 
 /** get next byte from receive buffer (return '\0' if buffer is empty) */
-unsigned char GetByte(void)
+unsigned char GetByte(ReceiveBuffer *rb)
 {
 	unsigned char    return_byte = '\0';
   
 	/* wrap read pointer to the receive buffer */
-	ReceiveBufferTail %= RECEIVEBUFFERSIZE;
+	rb->tail %= RECEIVEBUFFERSIZE;
 
 	/* See if there are any more bytes available. */
-	if (ReceiveBufferTail != (ReceiveBufferHead % RECEIVEBUFFERSIZE)) {
+	if (rb->tail != (rb->head % RECEIVEBUFFERSIZE)) {
 		/* There is at least one more byte. */
-		return_byte = SerialReceiveBuffer[ReceiveBufferTail];
+		return_byte = rb->contents[rb->tail];
 
 		/* Increment read pointer (wrap if needed) */
-		ReceiveBufferTail = (ReceiveBufferTail + 1) % RECEIVEBUFFERSIZE;
+		rb->tail = (rb->tail + 1) % RECEIVEBUFFERSIZE;
 	}
 
 	return(return_byte);
@@ -325,9 +304,9 @@ unsigned char GetByte(void)
 
 
 /** return number of bytes available for peeking in receive buffer */
-int PeekBytesAvail(void)
+int PeekBytesAvail(ReceiveBuffer *rb)
 {
-	int avail_bytes = ReceiveBufferHead - ReceiveBufferTailPeek;
+	int avail_bytes = rb->head - rb->peek;
 	
 	if (avail_bytes < 0)
 		avail_bytes += RECEIVEBUFFERSIZE;
@@ -337,38 +316,39 @@ int PeekBytesAvail(void)
 
 
 /** sync peek pointer with read pointer */
-void Sync_Peek_Pointer(void)
+void SyncPeekPointer(ReceiveBuffer *rb)
 {
-	ReceiveBufferTailPeek = ReceiveBufferTail;
+	rb->peek = rb->tail;
 }
 
 
 /** accept ppeked data by syncing the read pointer to the peek pointer */
-void AcceptPeekedData(void)
+void AcceptPeekedData(ReceiveBuffer *rb)
 {
-	ReceiveBufferTail = ReceiveBufferTailPeek;
+	rb->tail = rb->peek;
 }
 
 
 /** peek next byte from receive buffer (return '\0' if buffer is empty) */
-unsigned char PeekByte(void)
+unsigned char PeekByte(ReceiveBuffer *rb)
 {
 	unsigned char return_byte = '\0';
 
 	/* wrap peek pointer to the receive buffer */
-	ReceiveBufferTailPeek %= RECEIVEBUFFERSIZE;
+	rb->peek %= RECEIVEBUFFERSIZE;
 
 	/* See if there are any more bytes available. */
-	if (ReceiveBufferTailPeek != (ReceiveBufferHead % RECEIVEBUFFERSIZE)) {
+	if (rb->peek != (rb->head % RECEIVEBUFFERSIZE)) {
 		/* There is at least one more byte. */
-		return_byte = SerialReceiveBuffer[ReceiveBufferTailPeek];
+		return_byte = rb->contents[rb->peek];
 
 		/* Increment the peek pointer (wrap if needed). */
-		ReceiveBufferTailPeek = (ReceiveBufferTailPeek + 1) % RECEIVEBUFFERSIZE;
+		rb->peek = (rb->peek + 1) % RECEIVEBUFFERSIZE;
 	}
 
 	return(return_byte);
 }
+
 
 
 /* I should use the value GIVE_UP and not reenter if there is no extra
@@ -394,7 +374,7 @@ static void
 treat_packet(void)
 {
 	if (incoming_command.command == 0x80) {
-		AddKeyToKeyRing(incoming_command.data[0]);
+		AddKeyToKeyRing(&keyring, incoming_command.data[0]);
 	}
 }
 
@@ -423,43 +403,43 @@ check_for_packet(int fd, unsigned char expected_length)
 	int i;
 	int testcrc;
 
-	Sync_Read_Buffer(fd, expected_length);
+	SyncReceiveBuffer(fd, &receivebuffer, expected_length);
 
 	//First off, there must be at least 4 bytes available in the input stream
 	//for there to be a valid command in it (command, length, no data, CRC).
-	if (BytesAvail() < 4) {
+	if (BytesAvail(&receivebuffer) < 4) {
 		/* printf("Not enough byte available for even the smallest message.\n"); */
 		return(GIVE_UP); /* We don't need to retry before more byte are received */
 	}
 
 	/* Look into the buffer without removing the data. */
-	Sync_Peek_Pointer();
+	SyncPeekPointer(&receivebuffer);
 
 	/* look at potential command byte */
-	incoming_command.command = PeekByte();
+	incoming_command.command = PeekByte(&receivebuffer);
 
 	/* Only commands 0 through MAX_COMMAND are valid */
 	if (MAX_COMMAND < (0x3F & incoming_command.command)) {
 		/* Throw out one byte of garbage. Next pass through should re-sync. */
-		GetByte();
+		GetByte(&receivebuffer);
 		/* printf("###: Unknown command.\n"); */
 		return(TRY_AGAIN);
 	}
 	
   	/* There is a valid command byte. Get the data_length. */
-	incoming_command.data_length = PeekByte();
+	incoming_command.data_length = PeekByte(&receivebuffer);
 	
   	/* The data length must be within reason. */
   	if (MAX_DATA_LENGTH < incoming_command.data_length) {
 		//Throw out one byte of garbage. Next pass through should re-sync.
-		GetByte();
+		GetByte(&receivebuffer);
 		/* printf("###: Too long packet: %d.\n", incoming_command.data_length); */
 		return(TRY_AGAIN);
 	}
 
 	// Now there must be at least incoming_command.data_length + sizeof(CRC) bytes
 	// still available for us to continue.
-	if ((int) PeekBytesAvail() < (incoming_command.data_length + 2)) {
+	if ((int) PeekBytesAvail(&receivebuffer) < (incoming_command.data_length + 2)) {
 		//It looked like a valid start of a packet, but it does not look
 		//like the complete packet has been received yet.
 		/* printf("Not enough read to check the complete message.\n"); */
@@ -468,11 +448,11 @@ check_for_packet(int fd, unsigned char expected_length)
 
 	/* There is enough data to make a packet. Transfer over the data. */
 	for (i = 0; i < incoming_command.data_length; i++)
-		incoming_command.data[i] = PeekByte();
+		incoming_command.data[i] = PeekByte(&receivebuffer);
 
 	//Now move over the CRC.
-	incoming_command.CRC.as_bytes[0] = PeekByte();
-	incoming_command.CRC.as_bytes[1] = PeekByte();
+	incoming_command.crc.as_bytes[0] = PeekByte(&receivebuffer);
+	incoming_command.crc.as_bytes[1] = PeekByte(&receivebuffer);
 	//Now check the CRC.
 
 	//Compute the expected CheckSum
@@ -480,10 +460,10 @@ check_for_packet(int fd, unsigned char expected_length)
 			  incoming_command.data_length+2, 0xFFFF);
 	testcrc = testcrc & 0xFFFF; /* This is TRICKY */
 
-	if (incoming_command.CRC.as_word == testcrc) {
+	if (incoming_command.crc.as_word == testcrc) {
 		//This is a good packet. I'll be horn swaggled. Remove the packet
 		//from the serial buffer.
-		AcceptPeekedData();
+		AcceptPeekedData(&receivebuffer);
 		//Let our caller know that incoming_command has good stuff in it.
 		/* print_packet(&outgoing_response); */
 
@@ -493,9 +473,9 @@ check_for_packet(int fd, unsigned char expected_length)
 	/* The CRC did not match. Toss out one byte of garbage.
 	* Next pass through should re-sync.
 	*/
-	GetByte();
+	GetByte(&receivebuffer);
 	/* printf("###: Wrong CheckSum. computed/real %04x:%04x \n",
-  		  testcrc, incoming_command.CRC.as_word); */
+  		  testcrc, incoming_command.crc.as_word); */
 	return(TRY_AGAIN);
 }
 
@@ -505,7 +485,8 @@ check_for_packet(int fd, unsigned char expected_length)
  * It should be removed or compiled in conditionally.
  * Currently it is still using printf for debugging.
  */
-void print_packet(COMMAND_PACKET *packet)
+static void
+print_packet(COMMAND_PACKET *packet)
 {
 	int i, cmd, top, len; 
 
@@ -519,6 +500,6 @@ void print_packet(COMMAND_PACKET *packet)
 	for (i = 0; i < packet->data_length; i++)
 		printf(" %02x", packet->data[i]);
   
-	printf(" ] %02x %02x .\n", packet->CRC.as_bytes[0], packet->CRC.as_bytes[1]);
+	printf(" ] %02x %02x .\n", packet->crc.as_bytes[0], packet->crc.as_bytes[1]);
 }
 

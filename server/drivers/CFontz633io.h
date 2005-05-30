@@ -61,40 +61,68 @@ typedef unsigned char ubyte;
 typedef signed char sbyte;
 typedef unsigned short word;
 typedef unsigned long dword;
-typedef union {
-    unsigned char as_bytes[2];
-    word as_word;
-} WORD_UNION;
+
 
 /* KeyRing management */
-void          EmptyKeyRing(void);
-int           AddKeyToKeyRing(unsigned char key);
-unsigned char GetKeyFromKeyRing(void);
+#define KEYRINGSIZE	16
 
-void           send_bytes_message(int fd, int len, int msg, char *framebuf);
-void           send_onebyte_message(int fd, int msg, int value);
-void           send_zerobyte_message(int fd, int msg);
+typedef struct {
+	unsigned char contents[KEYRINGSIZE];
+	int head;
+	int tail;
+} KeyRing;
 
-void           EmptyReceiveBuffer(void);
-void           Sync_Read_Buffer(int fd, unsigned char expected_bytes);
-int	       BytesAvail(void);
-unsigned char  GetByte(void);
-int            PeekBytesAvail(void);
-void           Sync_Peek_Pointer(void);
-void           AcceptPeekedData(void);
-unsigned char  PeekByte(void);
 
-int            test_packet(int fd);
+/* receive buffer management */
+#define RECEIVEBUFFERSIZE	512
 
-#define MAX_DATA_LENGTH 16
-#define MAX_COMMAND 32
+typedef struct _reveivebuffer {
+	unsigned char contents[RECEIVEBUFFERSIZE];
+	int head;
+	int tail;
+	int peek;
+}	 ReceiveBuffer;
+
+
+/* command management */
+#define MAX_DATA_LENGTH	22	/* CF635 spec says 0..22 */
+#define MAX_COMMAND	32
 
 typedef struct {
     ubyte command;
     ubyte data_length;
-    ubyte data[MAX_DATA_LENGTH];
-    WORD_UNION CRC;
+    ubyte data[MAX_DATA_LENGTH+1];
+    union {
+        unsigned char as_bytes[2];
+        word as_word;
+    } crc;
 } COMMAND_PACKET;
+
+
+/* KeyRing management */
+void          EmptyKeyRing(KeyRing *kr);
+int           AddKeyToKeyRing(KeyRing *kr, unsigned char key);
+unsigned char GetKeyFromKeyRing(KeyRing *kr);
+
+void          send_bytes_message(int fd, int len, int msg, unsigned char *data);
+void          send_onebyte_message(int fd, int msg, unsigned char value);
+void          send_zerobyte_message(int fd, int msg);
+
+void          EmptyReceiveBuffer(ReceiveBuffer *rb);
+void          SyncReceiveBuffer(int fd, ReceiveBuffer *rb, unsigned int number);
+int	      BytesAvail(ReceiveBuffer *rb);
+unsigned char GetByte(ReceiveBuffer *rb);
+int           PeekBytesAvail(ReceiveBuffer *rb);
+void          SyncPeekPointer(ReceiveBuffer *rb);
+void          AcceptPeekedData(ReceiveBuffer *rb);
+unsigned char PeekByte(ReceiveBuffer *rb);
+
+int            test_packet(int fd);
+
+
+/* global variables */
+extern KeyRing keyring;
+extern ReceiveBuffer receivebuffer;
 
 
 #endif /* CFONTZ633IO_H */

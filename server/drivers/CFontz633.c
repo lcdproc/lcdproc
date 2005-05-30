@@ -93,7 +93,7 @@ typedef struct driver_private_data {
 
 	int fd;
 
-	//int model;
+	int model;
 	int newfirmware;
 
 	/* dimensions */
@@ -160,8 +160,8 @@ CFontz633_init (Driver *drvthis, char *args)
 
 	debug(RPT_INFO, "CFontz633: init(%p,%s)", drvthis, args );
 
-	EmptyKeyRing();
-	EmptyReceiveBuffer();
+	EmptyKeyRing(&keyring);
+	EmptyReceiveBuffer(&receivebuffer);
 
 	/* Read config file */
 	/* Which device should be used */
@@ -362,15 +362,14 @@ CFontz633_flush (Driver *drvthis)
 	int i;
 
 #if defined(CF635_FLUSH)
-	int len = width * height;
-	char out[4];
+	int len = p->width * p->height;
+	unsigned char out[3];
 
 	for (i = 0; i < len; i++) {
 		if (p->framebuf[i] != p->backingstore[i]) {
-			out[1] = i / width;		// line
-			out[0] = i - (out[1] * width);	// column
-			out[2] = p->framebuf[i];	// character
-			out[2] = '\0';
+			out[0] = (unsigned char) (i % p->width);	// column
+			out[1] = (unsigned char) (i / p->width);	// line
+			out[2] = p->framebuf[i];			// character
 			send_bytes_message(fd, 3, CF633_Send_Data_to_LCD, out);
 			p->backingstore[i] = p->framebuf[i];
 		}
@@ -385,19 +384,19 @@ CFontz633_flush (Driver *drvthis)
 
 	for (i = 0; i < p->width; i++) {
 		if (*xp++ != *xq++) {
-			send_bytes_message(p->fd, 16, CF633_Set_LCD_Contents_Line_One, &(p->framebuf[0]));
+			send_bytes_message(p->fd, 16, CF633_Set_LCD_Contents_Line_One, p->framebuf);
 			memcpy(p->backingstore, p->framebuf, p->width);
 			break;
 		}
 	}
 
-	xp = &(p->framebuf[p->width]);
-	xq = &(p->backingstore[p->width]);
+	xp = p->framebuf + p->width;
+	xq = p->backingstore + p->width;
 
 	for (i = 0; i < p->width; i++) {
 		if (*xp++ != *xq++) {
-			send_bytes_message(p->fd, 16, CF633_Set_LCD_Contents_Line_Two, &(p->framebuf[p->width]));
-			memcpy(&(p->backingstore[p->width]), &(p->framebuf[p->width]), p->width);
+			send_bytes_message(p->fd, 16, CF633_Set_LCD_Contents_Line_Two, p->framebuf + p->width);
+			memcpy(p->backingstore + p->width, p->framebuf + p->width, p->width);
 			break;
 		}
 	}
@@ -414,7 +413,7 @@ CFontz633_get_key (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	unsigned char key;
 
-	key = GetKeyFromKeyRing();
+	key = GetKeyFromKeyRing(&keyring);
 
 	switch (key) {
 		case CF633_KEY_LEFT:
@@ -534,7 +533,7 @@ static void
 CFontz633_no_live_report (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[2] = { 0, 0 };
+	unsigned char out[2] = { 0, 0 };
 
 	for (out[0] = 0; out[0] < 8; out[0]++) {
 		send_bytes_message(p->fd, 2, CF633_Set_Up_Live_Fan_or_Temperature_Display, out);
@@ -561,7 +560,7 @@ static void
 CFontz633_no_temp_report (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[4] = { 0, 0, 0, 0 };
+	unsigned char out[4] = { 0, 0, 0, 0 };
 
 	send_bytes_message(p->fd, 4, CF633_Set_Up_Temperature_Reporting, out);
 }
@@ -574,7 +573,7 @@ static void
 CFontz633_reboot (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[3] = { 8, 18, 99 };
+	unsigned char out[3] = { 8, 18, 99 };
 
 	send_bytes_message(p->fd, 3, CF633_Reboot, out);
 	sleep(2);
@@ -811,7 +810,7 @@ CFontz633_num (Driver *drvthis, int x, int num)
 {
 /*
 	PrivateData *p = drvthis->private_data;
-	char out[5];
+	unsigned char out[5];
 
 	snprintf (out, sizeof(out), "%c%c%c", 28, x, num);
 	write (p->fd, out, 3);
@@ -830,7 +829,7 @@ MODULE_EXPORT void
 CFontz633_set_char (Driver *drvthis, int n, char *dat)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[9];
+	unsigned char out[9];
 	int row, col;
 
 	if ((n < 0) || (n >= NUM_CCs))

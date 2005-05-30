@@ -53,6 +53,7 @@
  * + Stopping the live reporting (of temperature)
  * + Stopping the reporting of temp and fan (is it necessary after reboot)
  * + Use of library for hbar and vbar (good but library could be better)
+ * + Support for keypad (Using a KeyRing)
  *
  * THINGS TO DO:
  * + Make the caching at least for heartbeat icon
@@ -112,7 +113,7 @@
 typedef enum {
 	standard,	/* only char 0 is used for heartbeat */
 	vbar,		/* vertical bars */
-	hbar,		/* horizontaln bars */
+	hbar,		/* horizontal bars */
 	custom,		/* custom settings */
 	bignum,		/* big numbers */
 	bigchar		/* big characters */
@@ -197,8 +198,8 @@ CFontz633_init (Driver *drvthis, char *args)
 
 	debug(RPT_INFO, "CFontz633: init(%p,%s)", drvthis, args );
 
-	EmptyKeyRing();
-	EmptyReceiveBuffer();
+	EmptyKeyRing(&keyring);
+	EmptyReceiveBuffer(&receivebuffer);
 
 	/* Read config file */
 	/* Which model is it (CF633 or CF631)? */
@@ -469,8 +470,8 @@ CFontz633_flush (Driver *drvthis)
 	  ;
 		
 	// deal with the differences
-	if ( j < p->width ) {
-          char out[23];
+	if (j < p->width) {
+          unsigned char out[23];
           int diff_length;
 	  int first_diff = j;
 	    
@@ -480,8 +481,8 @@ CFontz633_flush (Driver *drvthis)
 
 	  // send the difference to the screen
 	  diff_length = j - first_diff;
-	  out[1] = i;		// line
 	  out[0] = first_diff;	// column
+	  out[1] = i;		// line
 			
 	  debug (RPT_INFO,"WriteDiff: l=%d c=%d count=%d string='%.*s'",
 	 	 out[0], out[1], diff_length, diff_length,
@@ -506,7 +507,7 @@ CFontz633_get_key (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	unsigned char key;
 
-	key = GetKeyFromKeyRing();
+	key = GetKeyFromKeyRing(&keyring);
 
 	switch (key) {
 		case CF633_KEY_LEFT:
@@ -654,7 +655,7 @@ static void
 CFontz633_no_live_report (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[2] = { 0, 0 };
+	unsigned char out[2] = { 0, 0 };
 
 	if (p->model == 633) {
 		for (out[0] = 0; out[0] < 8; out[0]++)
@@ -683,7 +684,7 @@ static void
 CFontz633_no_temp_report (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[4] = { 0, 0, 0, 0 };
+	unsigned char out[4] = { 0, 0, 0, 0 };
 
 	if (p->model == 633)
 		send_bytes_message(p->fd, 4, CF633_Set_Up_Temperature_Reporting, out);
@@ -697,7 +698,7 @@ static void
 CFontz633_reboot (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[3] = { 8, 18, 99 };
+	unsigned char out[3] = { 8, 18, 99 };
 
 	send_bytes_message(p->fd, 3, CF633_Reboot, out);
 	sleep(2);	
@@ -934,7 +935,7 @@ CFontz633_num (Driver *drvthis, int x, int num)
 {
 /*
 	PrivateData *p = drvthis->private_data;
-	char out[5];
+	unsigned char out[5];
 
 	snprintf (out, sizeof(out), "%c%c%c", 28, x, num);
 	write (p->fd, out, 3);
@@ -953,7 +954,7 @@ MODULE_EXPORT void
 CFontz633_set_char (Driver *drvthis, int n, char *dat)
 {
 	PrivateData *p = drvthis->private_data;
- 	char out[9];
+ 	unsigned char out[9];
 	int row, col;
 
 	if ((n < 0) || (n >= NUM_CCs))
