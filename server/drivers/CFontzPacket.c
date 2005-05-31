@@ -434,7 +434,7 @@ CFontz633_flush (Driver *drvthis)
     
     for (i = 0; i < p->width; i++) {
       if (*xp++ != *xq++) {
-	send_bytes_message(p->fd, 16, CF633_Set_LCD_Contents_Line_One, p->framebuf);
+	send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_One, 16, p->framebuf);
         memcpy(p->backingstore, p->framebuf, p->width);
         break;
       }
@@ -445,7 +445,7 @@ CFontz633_flush (Driver *drvthis)
 
     for (i = 0; i < p->width; i++) {
       if (*xp++ != *xq++) {
-        send_bytes_message(p->fd, 16, CF633_Set_LCD_Contents_Line_Two, p->framebuf + p->width);
+        send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_Two, 16, p->framebuf + p->width);
         memcpy(p->backingstore + p->width, p->framebuf + p->width, p->width);
         break;
       }
@@ -489,7 +489,7 @@ CFontz633_flush (Driver *drvthis)
 		 &p->framebuf[first_diff + (i * p->width)] );
 
 	  memcpy(&out[2], &p->framebuf[first_diff + (i * p->width)], diff_length );
-	  send_bytes_message(p->fd, diff_length + 2, CF633_Send_Data_to_LCD, out);
+	  send_bytes_message(p->fd, CF633_Send_Data_to_LCD, diff_length + 2, out);
 	}  
       } // j < p->width
     }	// i < p->height
@@ -659,7 +659,7 @@ CFontz633_no_live_report (Driver *drvthis)
 
 	if (p->model == 633) {
 		for (out[0] = 0; out[0] < 8; out[0]++)
-			send_bytes_message(p->fd, 2, CF633_Set_Up_Live_Fan_or_Temperature_Display, out);
+			send_bytes_message(p->fd, CF633_Set_Up_Live_Fan_or_Temperature_Display, 2, out);
 	}	
 }
 
@@ -687,7 +687,7 @@ CFontz633_no_temp_report (Driver *drvthis)
 	unsigned char out[4] = { 0, 0, 0, 0 };
 
 	if (p->model == 633)
-		send_bytes_message(p->fd, 4, CF633_Set_Up_Temperature_Reporting, out);
+		send_bytes_message(p->fd, CF633_Set_Up_Temperature_Reporting, 4, out);
 }
 
 
@@ -700,7 +700,7 @@ CFontz633_reboot (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	unsigned char out[3] = { 8, 18, 99 };
 
-	send_bytes_message(p->fd, 3, CF633_Reboot, out);
+	send_bytes_message(p->fd, CF633_Reboot, 3, out);
 	sleep(2);	
 }
 
@@ -973,7 +973,7 @@ CFontz633_set_char (Driver *drvthis, int n, char *dat)
 		}
 		out[row+1] = letter;
 	}
-	send_bytes_message(p->fd, 9, CF633_Set_LCD_Special_Character_Data, out);
+	send_bytes_message(p->fd, CF633_Set_LCD_Special_Character_Data, 9, out);
 }
 
 

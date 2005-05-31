@@ -14,6 +14,7 @@
  * www.crystalfontz.com
  * ===========================================================================
  */
+
 #include "CFontz633io.h"
 #include <unistd.h>
 #include <stdio.h>
@@ -25,11 +26,12 @@
 #define GIVE_UP 2
 
 
-/* static local fuinctions */
+/* static local functions */
 static void send_packet(int fd, COMMAND_PACKET *out);
-static int  get_crc(char * bufptr, int len, int seed);
-static int  check_for_packet(int fd, unsigned char expected_length);
+static int  get_crc(char *buf, int len, int seed);
+static int  test_packet(int fd);
 static void treat_packet(void);
+static int  check_for_packet(int fd, unsigned char expected_length);
 static void print_packet(COMMAND_PACKET *packet);
 
 
@@ -91,13 +93,13 @@ unsigned char GetKeyFromKeyRing(KeyRing *kr)
 
 
 /** send message with arguments to the given handle */
-void send_bytes_message(int fd, int len, int msg, unsigned char *data)
+void send_bytes_message(int fd, unsigned char msg, int len, unsigned char *data)
 {
 	COMMAND_PACKET out;
 
 	out.command = msg;
-	out.data_length = len;
-	memcpy(out.data, data, len);
+	out.data_length = (unsigned char) ((len > MAX_DATA_LENGTH) ? MAX_DATA_LENGTH : len);
+	memcpy(out.data, data, out.data_length);
 
 	/* send message & calc CRC */
 	send_packet(fd, &out);
@@ -105,7 +107,7 @@ void send_bytes_message(int fd, int len, int msg, unsigned char *data)
 
 
 /** send message with one byte argument to the given handle */
-void send_onebyte_message(int fd, int msg, unsigned char value)
+void send_onebyte_message(int fd, unsigned char msg, unsigned char value)
 {
 	COMMAND_PACKET out;
 
@@ -119,7 +121,7 @@ void send_onebyte_message(int fd, int msg, unsigned char value)
 
 
 /** send message without data to the given handle */
-void send_zerobyte_message(int fd, int msg)
+void send_zerobyte_message(int fd, unsigned char msg)
 {
 	COMMAND_PACKET out;
 
@@ -237,7 +239,7 @@ void EmptyReceiveBuffer(ReceiveBuffer *rb)
 
 
 /** read given number of bytes from given file handle into receive buffer */
-void SyncReceiveBuffer(int fd, ReceiveBuffer *rb, unsigned int number)
+void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 {
 	unsigned char	buffer[MAX_DATA_LENGTH];
 	int		BytesRead;
@@ -354,7 +356,8 @@ unsigned char PeekByte(ReceiveBuffer *rb)
 /* I should use the value GIVE_UP and not reenter if there is no extra
  * byte read from the serial port
  */ 
-int test_packet(int fd)
+static int
+test_packet(int fd)
 {
 	int is_msg;
 
@@ -403,7 +406,7 @@ check_for_packet(int fd, unsigned char expected_length)
 	int i;
 	int testcrc;
 
-	SyncReceiveBuffer(fd, &receivebuffer, expected_length);
+	SyncReceiveBuffer(&receivebuffer, fd, expected_length);
 
 	//First off, there must be at least 4 bytes available in the input stream
 	//for there to be a valid command in it (command, length, no data, CRC).

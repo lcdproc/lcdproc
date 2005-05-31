@@ -81,7 +81,7 @@ typedef struct _reveivebuffer {
 	int head;
 	int tail;
 	int peek;
-}	 ReceiveBuffer;
+} ReceiveBuffer;
 
 
 /* command management */
@@ -89,35 +89,32 @@ typedef struct _reveivebuffer {
 #define MAX_COMMAND	32
 
 typedef struct {
-    ubyte command;
-    ubyte data_length;
-    ubyte data[MAX_DATA_LENGTH+1];
-    union {
-        unsigned char as_bytes[2];
-        word as_word;
-    } crc;
+	ubyte command;
+	ubyte data_length;
+	ubyte data[MAX_DATA_LENGTH+1];
+	union {
+		unsigned char as_bytes[2];
+		word as_word;
+	} crc;
 } COMMAND_PACKET;
 
 
-/* KeyRing management */
 void          EmptyKeyRing(KeyRing *kr);
 int           AddKeyToKeyRing(KeyRing *kr, unsigned char key);
 unsigned char GetKeyFromKeyRing(KeyRing *kr);
 
-void          send_bytes_message(int fd, int len, int msg, unsigned char *data);
-void          send_onebyte_message(int fd, int msg, unsigned char value);
-void          send_zerobyte_message(int fd, int msg);
+void          send_bytes_message(int fd, unsigned char msg, int len, unsigned char *data);
+void          send_onebyte_message(int fd, unsigned char msg, unsigned char value);
+void          send_zerobyte_message(int fd, unsigned char msg);
 
 void          EmptyReceiveBuffer(ReceiveBuffer *rb);
-void          SyncReceiveBuffer(int fd, ReceiveBuffer *rb, unsigned int number);
-int	      BytesAvail(ReceiveBuffer *rb);
+void          SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number);
+int           BytesAvail(ReceiveBuffer *rb);
 unsigned char GetByte(ReceiveBuffer *rb);
 int           PeekBytesAvail(ReceiveBuffer *rb);
 void          SyncPeekPointer(ReceiveBuffer *rb);
 void          AcceptPeekedData(ReceiveBuffer *rb);
 unsigned char PeekByte(ReceiveBuffer *rb);
-
-int            test_packet(int fd);
 
 
 /* global variables */
