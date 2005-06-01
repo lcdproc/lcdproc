@@ -503,30 +503,43 @@
 		  	The visible text of the item.
 		      </para></listitem>
 		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-                <listitem><para>
-                  <variablelist>
                     <varlistentry>
                       <term>-is_hidden false|true (false)</term>
                       <listitem><para>
 		  	If the item currently should not appear in a menu.
 		      </para></listitem>
 		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-                <listitem><para>
-                  <variablelist>
                     <varlistentry>
-                      <term>-parent &lt;parentid&gt; ()</term>
-                      <listitem><para> (Re)sets the parent of this
-                      menu. Parentid has to be of type menu. This
-                      function does not change any menu (neither the
-                      old nor the new parent) since this option is
-                      normally used with hidden menus. Otherwise use
-                      menu_add/del_item. Applying this option is
-                      equivalent to second argument of the menu_goto
-                      command. </para></listitem>
+                      <term>-next &lt;successor_id&gt; ()</term>
+                      <listitem><para>
+			Sets the menuitem to show after closing this
+                      	Item. Parentid has to be of a non-menu type that
+                      	has its own screen, e.g., not a
+                        checkbox. Special values are
+			<variablelist>
+			  <varlistentry>
+			    <term>_close_</term>
+			    <listitem><para>
+			      Equivalent to -menu_result close: Close
+			      the menu.
+		            </para></listitem>
+			  </varlistentry>
+			  <varlistentry>
+			    <term>_quit_</term>
+			    <listitem><para>
+			      Equivalent to -menu_result quit: Quit
+			      the menu system.
+		            </para></listitem>
+			  </varlistentry>
+			  <varlistentry>
+			    <term>_none_</term>
+			    <listitem><para>
+			      Equivalent to -menu_result none: Keep
+			      the item open.
+		            </para></listitem>
+			  </varlistentry>
+			</variablelist>
+		      </para></listitem>
 		    </varlistentry>
                   </variablelist>
 		</para></listitem>
@@ -708,7 +721,22 @@
               <varlistentry>
                 <term>menu</term>
                 <listitem><para>
-		  This is a submenu. It is visible as a text, with an appended '>'. When selected, the submenu becomes the active menu.
+		  This is a submenu. It is visible as a text, with an
+                  appended '>'. When selected, the submenu becomes the
+                  active menu.
+                  <variablelist>
+                    <varlistentry>
+                      <term>-parent &lt;parentid&gt; ()</term>
+                      <listitem><para> (Re)sets the parent of this
+                      menu. Parentid has to be of type menu. This
+                      function does not change any menu (neither the
+                      old nor the new parent) since this option is
+                      normally used with hidden menus. Otherwise use
+                      menu_add/del_item. Applying this option is
+                      equivalent to second argument of the menu_goto
+                      command. </para></listitem>
+		    </varlistentry>
+                  </variablelist>
 		</para></listitem>
               </varlistentry>
             </variablelist>
@@ -755,14 +783,28 @@
 	    Sets the entry point into the menu system. Use this to
 	    make the server menu invisible. Note that you may only set
 	    the menu to your own clients menus unless the configure
-	    option --permissive-menu-goto is used. (See menuscreens.c
-	    for the menu ids of the server menus.)
+	    option --enable-permissive-menu-goto is used. (See
+	    menuscreens.c for the menu ids of the server menus.)
             <variablelist>
 	      <varlistentry>
 		<term>&lt;menu_id&gt;</term>
 		<listitem><para>
 		    The new main menu, restricted to the client's own
-		    menus.
+		    menus. Special values:
+		    <variablelist>
+		      <varlistentry>
+		      	<term>""</term>
+		      	<listitem><para>
+		      	    The client's main menu.
+		      	  </para></listitem>
+		      </varlistentry>
+		      <varlistentry>
+		      	<term>"_main_"</term>
+		      	<listitem><para>
+		      	    Resets main to the "real" main menu.
+		      	  </para></listitem>
+		      </varlistentry>
+		    </variablelist>
 		  </para></listitem>
 	      </varlistentry>
 	    </variablelist>
