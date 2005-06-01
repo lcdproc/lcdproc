@@ -42,6 +42,7 @@
 /* Local functions */
 MenuEventFunc(menu_commands_handler);
 int set_parent(Menu *menu, char *parentid, Client *client);
+int set_successor(MenuItem *item, char *itemid, Client *client);
 MenuItem * search_item(char *menu_id);
 
 
@@ -286,11 +287,10 @@ menu_del_item_func (Client * c, int argc, char **argv)
  *	Sets the visible text.
  * -is_hidden false|true	(false)
  *	If the item currently should not appear in a menu.
- * -parent id			()
- *	Sets the parent of this item.
  *
  * menu:
- * (has no extra settable options)
+ * -parent id			()
+ *	Sets the parent of this item.
  *
  * action:
  * -menu_result none|close|quit	(none)
@@ -383,7 +383,8 @@ menu_set_item_func (Client * c, int argc, char **argv)
 	} option_table[] = {
 		{ -1,			"text",		STRING,		offsetof(MenuItem,text) },
 		{ -1,			"is_hidden",	BOOLEAN,	offsetof(MenuItem,is_hidden) },
-		{ -1,			"parent",	STRING,		-1 },
+		{ MENUITEM_MENU,	"parent",	STRING,		-1 },
+		{ -1,			"next",		STRING,		-1 },
 		{ MENUITEM_ACTION,	"menu_result",	STRING,		-1 },
 		{ MENUITEM_CHECKBOX,	"value",	CHECKBOX_VALUE,	offsetof(MenuItem,data.checkbox.value) },
 		{ MENUITEM_CHECKBOX,	"allow_gray",	BOOLEAN,	offsetof(MenuItem,data.checkbox.allow_gray) },
@@ -574,6 +575,9 @@ menu_set_item_func (Client * c, int argc, char **argv)
 			}
 			else if (strcmp(argv[argnr], "-parent") == 0) {
 				set_parent(item, string_value, c);
+			}
+			else if (strcmp(argv[argnr], "-next") == 0) {
+				set_successor(item, string_value, c);
 			}
 			break;
 		}
@@ -772,6 +776,51 @@ int set_parent(Menu *menu, char *parentid, Client *client)
 	return 0;
 }
 
+/** Sets the successor of a MenuItem (for wizzards). Checks that a matching
+ * menu item can be found. Checks if menu's type actually fulfills the
+ * restriction that it is not a menu and has its own screen.
+ *
+ * @return 0 on success and -1 otherwise
+ */
+int set_successor(MenuItem *item, char *itemid, Client *client)
+{
+	MenuItem *successor = search_item(itemid);
+	if ( ! successor
+	     && strcmp("_quit_", itemid) != 0
+	     && strcmp("_close_", itemid) != 0
+	     && strcmp("_none_", itemid) != 0)
+	{
+		char buf[80];
+		snprintf(buf, sizeof(buf), "huh?  Cannot find successor '%s'"
+			 " for item '%s'\n", itemid, item->id);
+		sock_send_string (client->sock, buf);
+		return -1;
+	}
+	switch (item->type) {
+		case MENUITEM_ACTION: break;
+		case MENUITEM_RING: break;
+		case MENUITEM_SLIDER: break;
+		case MENUITEM_NUMERIC: break;
+		case MENUITEM_ALPHA: break;
+		case MENUITEM_IP: break;
+		default:
+		{
+			char buf[80];
+			snprintf(buf, sizeof(buf), "huh?  Cannot set successor of '%s':"
+				 " wrong type '%s'\n", item->id,
+				 menuitem_type_to_typename(item->type));
+			sock_send_string (client->sock, buf);
+			return -1;
+		}
+	}
+	debug (RPT_DEBUG, "%s( Client [%d], ... ) setting '%s's successor from '%s' to '%s'",
+	       __FUNCTION__, client->sock, item->id, item->successor_id, itemid);
+	if (item->successor_id)
+		free(item->successor_id);
+	item->successor_id = strdup(itemid);
+	return 0;
+}
+
 /** Returns the MenuItem with the specified id if found or NULL. The search
  * for itemid is restricted to the client's menus if the preprocessor macro
  * LCDPROC_PERMISSIVE_MENU_GOTO is *not* set. */
@@ -813,14 +862,17 @@ menu_set_main_func (Client * c, int argc, char **argv)
 	if ( menu_id[0] == 0 ) {
 		/* No menu specified = client's main menu */
 		menu = c->menu;
-	} else {
+	}
+	else if (strcmp(menu_id, "_main_") == 0) {
+		menu = NULL;
+	}
+	else {
 		/* A specified menu */
 		menu = menu_find_item (c->menu, menu_id, true);
-	}
-
-	if (!menu) {
-		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
-		return 0;
+		if ( ! menu) {
+			sock_send_string (c->sock, "huh?  Cannot find menu id\n");
+			return 0;
+		}
 	}
 
 	menuscreen_set_main(menu);
