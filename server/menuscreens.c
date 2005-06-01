@@ -187,12 +187,12 @@ bool is_menu_key (char * key)
 		return false;
 }
 
-void menuscreen_switch_item (MenuItem * new_menuitem)
-/* This function changes the menuitem to the given one, and does necesary
+/** This function changes the menuitem to the given one, and does necesary
  * actions.
  * To leave the menu system, specify NULL for new_menuitem.
  * The item will not be reset when the new item is a child of the last one.
  */
+void menuscreen_switch_item (MenuItem * new_menuitem)
 {
 	MenuItem * old_menuitem = active_menuitem;
 
@@ -229,6 +229,58 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
  	       new_menuitem->event_func(new_menuitem, MENUEVENT_ENTER);
 
 	return;
+}
+
+static void handle_quit()
+{
+	debug (RPT_DEBUG, "%s: Closing menu screen", __FUNCTION__);
+	menuscreen_switch_item(NULL);
+}
+
+static void handle_close()
+{
+	debug (RPT_DEBUG, "%s: Closing item", __FUNCTION__);
+	menuscreen_switch_item(
+		(active_menuitem == menuscreen_get_main())
+		? NULL : active_menuitem->parent);
+}
+
+static void handle_none()
+{
+	if (active_menuitem)
+	{
+		menuitem_update_screen (active_menuitem, menuscreen);
+		/* No rebuild needed, only value can be changed */
+	}
+	/* Nothing extra to be done */
+}
+
+/** Enter the selected menuitem
+ * Note: this is not for checkboxes etc that don't have their
+ *   own screen. The menuitem_process_input function should do
+ *   things like toggling checkboxes !
+ */
+static void handle_enter()
+{
+	debug (RPT_DEBUG, "%s: Entering subitem", __FUNCTION__);
+	menuscreen_switch_item (menu_get_current_item (active_menuitem));
+}
+
+static void handle_successor()
+{
+	debug (RPT_DEBUG, "%s: Switching to succeeding item %s.",
+	       __FUNCTION__, active_menuitem->successor_id);
+	// FIXME: code duplication: see menu_commands:search_item()
+# ifdef LCDPROC_PERMISSIVE_MENU_GOTO
+	MenuItem *top = ((Client*)active_menuitem->client)->menu;
+# else
+	MenuItem *top = main_menu;
+# endif /* LCDPROC_PERMISSIVE_MENU_GOTO */
+	MenuItem *item = menu_find_item(top, active_menuitem->successor_id, true);
+	if (item == NULL)
+		report (RPT_ERR, "%s: cannot find successor %s.", __FUNCTION__,
+			active_menuitem->successor_id);
+	menuscreen_switch_item(item);
 }
 
 void menuscreen_key_handler (char *key)
@@ -275,29 +327,28 @@ void menuscreen_key_handler (char *key)
 		report (RPT_ERR, "%s: Error from menuitem_process_input", __FUNCTION__);
 		break;
 	  case MENURESULT_NONE:
-		if (active_menuitem) {
-			menuitem_update_screen (active_menuitem, menuscreen);
-			/* No rebuild needed, only value can be changed */
-		}
-		/* Nothing extra to be done */
+		handle_none();
 		break;
 	  case MENURESULT_ENTER:
-		/* Enter the selected menuitem
-		 * Note: this is not for checkboxes etc that don't have their
-		 *   own screen. The menuitem_process_input function should do
-		 *   things like toggling checkboxes !
-		 */
-		debug (RPT_DEBUG, "%s: Entering subitem", __FUNCTION__);
-		menuscreen_switch_item (menu_get_current_item (active_menuitem));
+		handle_enter();
 		break;
 	  case MENURESULT_CLOSE:
-		debug (RPT_DEBUG, "%s: Closing item", __FUNCTION__);
-		menuscreen_switch_item ((active_menuitem == menuscreen_get_main())
-					? NULL : active_menuitem->parent);
+		if (active_menuitem->successor_id != NULL)
+		{
+			if (strcmp("_quit_", active_menuitem->successor_id) == 0)
+				handle_quit();
+			else if (strcmp("_close_", active_menuitem->successor_id) == 0)
+				handle_close();
+			else if (strcmp("_none_", active_menuitem->successor_id) == 0)
+				handle_none();
+			else
+				handle_successor();
+		}
+		else
+			handle_close();
 		break;
 	  case MENURESULT_QUIT:
-		debug (RPT_DEBUG, "%s: Closing menu screen", __FUNCTION__);
-		menuscreen_switch_item (NULL);
+		handle_quit();
 		break;
 	}
 }
@@ -548,6 +599,8 @@ menuscreen_goto (Menu * menu)
         return 0;
 }
 
+/** sets custom main menu. Use NULL pointer to reset it to the "real" main
+ * menu. */
 int
 menuscreen_set_main (Menu * menu)
 {
