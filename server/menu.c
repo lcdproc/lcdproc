@@ -64,7 +64,6 @@ menu_get_subitem(Menu * menu, int index)
 	return NULL;
 }
 
-
 static int
 menu_visible_item_count(Menu * menu)
 {
@@ -176,6 +175,13 @@ menu_destroy_all_items (Menu *menu)
 		menuitem_destroy (item);
 		LL_Remove (menu->data.menu.contents, item);
 	}
+}
+
+MenuItem *menu_get_current_item (Menu *menu)
+{
+	return (MenuItem*) ((menu != NULL)
+			    ? menu_get_subitem(menu, menu->data.menu.selector_pos)
+			    : NULL);
 }
 
 MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
@@ -420,6 +426,7 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 			else {
 				/* Limit string length and add ringstring */
 				p = LL_GetByIndex (subitem->data.ring.strings, subitem->data.ring.value);
+				assert(p != NULL);
 				if (strlen(p) > display_props->width - 3) {
 					short a = display_props->width - 3;
 					/* We need to limit the ring string and DON'T

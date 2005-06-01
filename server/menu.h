@@ -78,14 +78,9 @@ static inline MenuItem *menu_getnext_item (Menu *menu)
 			    : NULL);
 }
 
-/** Retrieves the current item from the list of items in the menu. */
-static inline MenuItem *menu_get_current_item (Menu *menu)
-{
-	return (MenuItem*) ((menu != NULL)
-			    ? LL_GetByIndex(menu->data.menu.contents,
-					    menu->data.menu.selector_pos)
-			    : NULL);
-}
+/** Retrieves the current (non-hidden) item from the list of items in the
+ * menu. */
+MenuItem *menu_get_current_item (Menu *menu);
 
 /** Finds an item in the menu by the given id. */
 MenuItem *menu_find_item (Menu *menu, char *id, bool recursive);
