@@ -110,6 +110,9 @@ typedef enum MenuEventType {
 typedef struct MenuItem {
 	MenuItemType type;	/**< Type as defined above */
 	char *id;		/**< Internal name for client supplied menus */
+	char *successor_id;	/**< next menuitem after closing this
+				 * one. (A string to allow special values
+				 * "_quit_", "_close_", "_none_"). */
 	struct MenuItem *parent; /**< Parent of this menuitem */
 	MenuEventFunc (*event_func);
 			/**< Defines event_func to be an event function */
@@ -271,6 +274,11 @@ void menuitem_destroy (MenuItem *item);
 static inline MenuItem *menuitem_get_parent (MenuItem *item)
 {
 	return ((item != NULL) ? item->parent : NULL);
+}
+
+static inline char *menuitem_get_successor (MenuItem *item)
+{
+	return ((item != NULL) ? item->successor_id : NULL);
 }
 
 /** Resets the item to the initial state.

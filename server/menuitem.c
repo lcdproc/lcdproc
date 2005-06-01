@@ -150,6 +150,7 @@ MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_fun
 		free (new_item);
 		return NULL;
 	}
+	new_item->successor_id = NULL;
 	new_item->parent = NULL;
 	new_item->event_func = event_func;
 	new_item->text = strdup (text);
