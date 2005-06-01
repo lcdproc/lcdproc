@@ -492,7 +492,7 @@ AC_ARG_ENABLE(testmenus,
 )
 
 AC_ARG_ENABLE(permissive_menu_goto,
-  [  --enable-permissive-menuscreen-goto allow transitions]
+  [  --enable-permissive-menu-goto allow transitions]
   [                        between different client's menus],
   if [[[ "$enableval" = "yes" ]]]; then
         AC_DEFINE(LCDPROC_PERMISSIVE_MENU_GOTO,[1],
