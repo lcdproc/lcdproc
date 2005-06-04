@@ -391,8 +391,8 @@ CFontz633_close (Driver *drvthis)
 }
 
 
-/* OK631
- * Returns the display width
+/*
+ * Returns the display width in characters
  */
 MODULE_EXPORT int
 CFontz633_width (Driver *drvthis)
@@ -404,7 +404,7 @@ CFontz633_width (Driver *drvthis)
 
 
 /*
- * Returns the display height
+ * Returns the display height in characters
  */
 MODULE_EXPORT int
 CFontz633_height (Driver *drvthis)
@@ -412,6 +412,30 @@ CFontz633_height (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	return p->height;
+}
+
+
+/*
+ * Returns the width of a character in pixels
+ */
+MODULE_EXPORT int
+CFontz633_cellwidth (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return p->cellwidth;
+}
+
+
+/*
+ * Returns the height of a character in pixels
+ */
+MODULE_EXPORT int
+CFontz633_cellheight (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return p->cellheight;
 }
 
 

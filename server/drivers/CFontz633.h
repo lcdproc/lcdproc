@@ -20,6 +20,8 @@ MODULE_EXPORT int  CFontz633_init (Driver *drvthis, char *device);
 MODULE_EXPORT void CFontz633_close (Driver *drvthis);
 MODULE_EXPORT int  CFontz633_width (Driver *drvthis);
 MODULE_EXPORT int  CFontz633_height (Driver *drvthis);
+MODULE_EXPORT int  CFontz633_cellwidth (Driver *drvthis);
+MODULE_EXPORT int  CFontz633_cellheight (Driver *drvthis);
 MODULE_EXPORT void CFontz633_clear (Driver *drvthis);
 MODULE_EXPORT void CFontz633_flush (Driver *drvthis);
 MODULE_EXPORT void CFontz633_string (Driver *drvthis, int x, int y, char string[]);
