@@ -133,7 +133,11 @@ lib_hbar_static (Driver *drvthis, int x, int y, int len, int promille, int optio
 
 		if( pixels >= cellwidth ) {
 			/* write a "full" block to the screen... */
+#if defined(SEAMLESS_HBARS)			
+			drvthis->chr (drvthis, x+pos, y, cellwidth + cc_offset);
+#else
 			drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
+#endif
 		}
 		else if( pixels > 0 ) {
 			/* write a partial block... */
