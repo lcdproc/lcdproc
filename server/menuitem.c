@@ -62,6 +62,29 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * key, bool extended);
 
 
+/* information about string representation of IP addresses */
+typedef struct {
+	int  maxlen;		// max length of the string represenation;
+	char sep;		// separators between numeric strings
+	int  base;		// numeric base
+	int  width;		// width of each numeric string
+	int  limit;		// upper limit of each numeric string
+	int  posValue[5];	// digit-value of the digits at the approp. position in the numeric string
+	char format[5];		// printf-format string to print a numeric string
+	int (*verify)(const char *);	// verify function
+	char dummy[16];		// dummy value (if provided value is no IP address)
+} IpSstringProperties;
+
+
+const IpSstringProperties IPinfo[] = {
+	// IPv4: 15 char long ':'-separated sequence of 4-digit hex strings
+	{ 15, '.', 10, 3,   255, {  100,  10,  1, 0, 0 }, "%03d", verify_ipv4, "0.0.0.0" },
+	// IPv6: 39 char long ':'-separated sequence of 4-digit hex strings
+	{ 39, ':', 16, 4, 65535, { 4096, 256, 16, 1, 0 }, "%04x", verify_ipv6, "0:0:0:0:0:0:0:0" }
+};
+	
+
+
 /******** FUNCTION TABLES ********/
 /* Tables with functions to call for all different item types */
 
@@ -296,20 +319,25 @@ MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, bool v6, char *value)
 {
 	MenuItem *new_item;
+	const IpSstringProperties *ipinfo;
 
 	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", v6=%d, value=\"%s\" )",
 			__FUNCTION__, id, event_func, text, v6, value);
 
 	new_item = menuitem_create (MENUITEM_IP, id, event_func, text, client);
 	new_item->data.ip.v6 = v6;
-	if (v6)
-		new_item->data.ip.maxlength = 39;
-	else
-		new_item->data.ip.maxlength = 15;
-    
+	ipinfo = (v6) ? &IPinfo[1] : &IPinfo[0];
+	
+	new_item->data.ip.maxlength = ipinfo->maxlen;;
 	new_item->data.ip.value = malloc (new_item->data.ip.maxlength + 1);
-	strncpy (new_item->data.ip.value, value, new_item->data.ip.maxlength);
-	new_item->data.ip.value[new_item->data.ip.maxlength] = 0;
+	if (ipinfo->verify(value)) {
+		strncpy(new_item->data.ip.value, value, new_item->data.ip.maxlength);
+		new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
+	}
+	else {
+		strncpy(new_item->data.ip.value, ipinfo->dummy, new_item->data.ip.maxlength);
+		new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
+	}
 
 	new_item->data.ip.edit_str = malloc (new_item->data.ip.maxlength + 1);
 
@@ -452,30 +480,32 @@ void menuitem_reset_alpha (MenuItem *item)
 
 void menuitem_reset_ip (MenuItem *item)
 {
-    char    *s;
-    int     count,index,i,j;
+	char *start = item->data.ip.value;
+	const IpSstringProperties *ipinfo = (item->data.ip.v6) ? &IPinfo[1] : &IPinfo[0];
 
 	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	item->data.ip.edit_pos = 0;
 	memset (item->data.ip.edit_str, '\0', item->data.ip.maxlength+1);
-//	strcpy (item->data.ip.edit_str, item->data.ip.value);
-	index = 0;
-	s = item->data.ip.value;
-	for (j = 0; j < 4; j++) { 
-		count = strcspn (s, ".");
-		for (i = 3; i > 0; i--) {
-			if (i == count) {
-				item->data.ip.edit_str[index++] = *s++;
-				count--;
-			} else  {
-				item->data.ip.edit_str[index++] = ' ';
-			}
-	        }
-        	/* copy period or null */
-	        item->data.ip.edit_str[index++] = *s++;
-	}
+
+	// normalize IP address string to 010.002.250.002 / 00:01:02:04:05:06:07:08:09:0a:0b:0c:0e:0f
+	while (start != NULL)
+	{
+		char *end;
+    		char tmpstr[5];
+		int num = (int) strtol(start, (char **) NULL, ipinfo->base);
+
+		snprintf(tmpstr, 5, ipinfo->format, num);
+		strcat(item->data.ip.edit_str, tmpstr);
+		end = strchr(start, ipinfo->sep);
+		start = (end != NULL) ? (end + 1) : NULL;
+		if (start != NULL) {
+			tmpstr[0] = ipinfo->sep;
+			tmpstr[1] = '\0';
+			strcat(item->data.ip.edit_str, tmpstr);
+		}	
+	}	
 }
 
 
@@ -1173,40 +1203,15 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 	return MENURESULT_ERROR;
 }
 
-typedef struct valueProperties {
-    int     start;              /* index of first digit of this number */
-    int     place;              /* is this the 1s, 10s or 100s digit */
-} tValueProperties;
 
 MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * key, bool extended)
 {
-	char * p;
-	tValueProperties    valueProperties[] = {
-		{0, 100 },
-		{0, 10 },
-		{0, 1 },
-		{0, 0 },
-
-		{4, 100 },
-		{4, 10 },
-		{4, 1 },
-		{0, 0 },
-
-		{8, 100 },
-		{8, 10 },
-		{8, 1 },
-		{0, 0 },
-
-		{12, 100 },
-		{12, 10 },
-		{12, 1 },
-	};
-
 	/* To make life easy... */
 	char *str = item->data.ip.edit_str;
-	char numstr[4];
+	char numstr[5];
 	int  num;
 	int pos = item->data.ip.edit_pos;
+	const IpSstringProperties *ipinfo = (item->data.ip.v6) ? &IPinfo[1] : &IPinfo[0];
 
 	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), token, key);
@@ -1228,66 +1233,74 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 			}
 			return MENURESULT_NONE;
 		case MENUTOKEN_ENTER:
-			/* remove the spaces */
-			p = str;
-			while (*p) {
-				if (*p == ' ') {
-					memccpy(p, p+1, '\0', item->data.ip.maxlength + 1);
-				} else  {
-					p++;
+			if (extended || (pos >= item->data.ip.maxlength - 1)) {
+				/* remove the loading spaces/zeros in each octet-representing string */
+				char *start = str;
+				
+				while (start != NULL) {
+					char *skip = start;
+
+					while ((*skip == ' ') || ((*skip == '0') && (skip[1] != ipinfo->sep) && (skip[1] != '\0')))
+						skip++;
+					memccpy(start, skip, '\0', item->data.ip.maxlength + 1);
+					skip = strchr(start, ipinfo->sep);
+					start = (skip != NULL) ? (skip + 1) : NULL;
 				}
-			}
                   
-			if (item->data.ip.v6) {
-				if (verify_ipv6(item->data.ip.edit_str)) {
+				if (ipinfo->verify(item->data.ip.edit_str)) {
 					item->data.ip.error_code = 4;
 					return MENURESULT_NONE;
 				}
-			} else {
-				if (verify_ipv4(item->data.ip.edit_str)) {
-					item->data.ip.error_code = 4;
-					return MENURESULT_NONE;
-				}
-			}
         
-			/* Store value */
-			strcpy (item->data.ip.value, item->data.ip.edit_str);
+				/* Store value */
+				strcpy (item->data.ip.value, item->data.ip.edit_str);
 
-			/* Inform client */
-			if (item->event_func)
-				item->event_func (item, MENUEVENT_UPDATE);
+				/* Inform client */
+				if (item->event_func)
+					item->event_func (item, MENUEVENT_UPDATE);
 
-			return MENURESULT_CLOSE;
+				return MENURESULT_CLOSE;
+			}
+			else {
+				item->data.ip.edit_pos++;
+				if (str[item->data.ip.edit_pos] == ipinfo->sep)
+					item->data.ip.edit_pos++;
+				return MENURESULT_NONE;
+			}
 		case MENUTOKEN_UP:
-			num = atoi(&str[(valueProperties[pos].start)]);
-			num += valueProperties[pos].place;
-			if (num <= 255) {
-				sprintf(numstr,"%3d", num);
-				memcpy(&str[valueProperties[pos].start], numstr, 3);
+			// convert string starting at the beginning / previous dot into a number
+			num = (int) strtol(&str[pos - (pos % (ipinfo->width + 1))], (char **) NULL, ipinfo->base);
+			// increase the number depending on the position
+			num += ipinfo->posValue[(pos - (pos / (ipinfo->width + 1))) % ipinfo->width];
+			if (num <= ipinfo->limit) {
+				snprintf(numstr, 5, ipinfo->format, num);
+				memcpy(&str[pos - (pos % (ipinfo->width + 1))], numstr, ipinfo->width);
 			}             
 
 			return MENURESULT_NONE;
 		case MENUTOKEN_DOWN:
-			num = atoi(&str[valueProperties[pos].start]);
-			num -= valueProperties[pos].place;
+			// convert string starting at the beginning / previous dot into a number
+			num = (int) strtol(&str[pos - (pos % (ipinfo->width + 1))], (char **) NULL, ipinfo->base);
+			// decrease the number depending on the position
+			num -= ipinfo->posValue[(pos - (pos / (ipinfo->width + 1))) % ipinfo->width];
 			if (num >= 0) {
-				sprintf(numstr,"%3d", num);
-				memcpy(&str[valueProperties[pos].start], numstr, 3);
+				snprintf(numstr, 5, ipinfo->format, num);
+				memcpy(&str[pos - (pos % (ipinfo->width + 1))], numstr, ipinfo->width);
 			}             
 			return MENURESULT_NONE;
 		case MENUTOKEN_RIGHT:
 			if (pos < item->data.ip.maxlength - 1) {
-				item->data.ip.edit_pos ++;
-				if (str[item->data.ip.edit_pos] == '.')
-					item->data.ip.edit_pos ++;
+				item->data.ip.edit_pos++;
+				if (str[item->data.ip.edit_pos] == ipinfo->sep)
+					item->data.ip.edit_pos++;
 			}
 			return MENURESULT_NONE;
 		case MENUTOKEN_LEFT:
 			/* The user wants to go to back a digit */
 			if (pos > 0) {
-				item->data.ip.edit_pos --;
-				if (str[item->data.ip.edit_pos] == '.')
-					item->data.ip.edit_pos --;
+				item->data.ip.edit_pos--;
+				if (str[item->data.ip.edit_pos] == ipinfo->sep)
+					item->data.ip.edit_pos--;
 			}
 			return MENURESULT_NONE;
 		case MENUTOKEN_OTHER:
