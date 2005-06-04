@@ -81,6 +81,7 @@
 #include "CFontz633io.h"
 #include "report.h"
 #include "lcd_lib.h"
+#include "CFontz-charmap.h"
 
 #define CF633_KEY_UP			1
 #define CF633_KEY_DOWN			2
@@ -599,6 +600,24 @@ CFontz633_chr (Driver *drvthis, int x, int y, char c)
 	y--;
 	x--;
 
+	p->framebuf[(y * p->width) + x] = (p->model == 633)
+		                          ? c
+					  : CFontz_charmap[(unsigned) c];
+}
+
+
+/*
+ * Prints a character on the lcd display, at position (x,y).
+ * The upper-left is (1,1), and the lower right should be (16,2).
+ */
+static void
+CFontz633_raw_chr (Driver *drvthis, int x, int y, unsigned char c)
+{
+	PrivateData *p = drvthis->private_data;
+
+	y--;
+	x--;
+
 	p->framebuf[(y * p->width) + x] = c;
 }
 
@@ -1105,7 +1124,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 			if (p->model == 633)
 				CFontz633_chr(drvthis, x, y, 255);
 			else
-				CFontz633_chr(drvthis, x, y, 31);
+				CFontz633_raw_chr(drvthis, x, y, 31);
 			break;
 		case ICON_HEART_FILLED:
 			CFontz633_set_char(drvthis, 0, icons[1]);
@@ -1116,18 +1135,32 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 			CFontz633_chr(drvthis, x, y, 0);
 			break;
 		case ICON_ARROW_UP:
-			CFontz633_set_char(drvthis, 1, icons[2]);
-			CFontz633_chr(drvthis, x, y, 1);
+			if (p->model == 633) {
+				CFontz633_set_char(drvthis, 1, icons[2]);
+				CFontz633_chr(drvthis, x, y, 1);
+			}
+			else
+				CFontz633_raw_chr(drvthis, x, y, 0xDE);
 			break;
 		case ICON_ARROW_DOWN:
-			CFontz633_set_char(drvthis, 2, icons[3]);
-			CFontz633_chr(drvthis, x, y, 2);
+			if (p->model == 633) {
+				CFontz633_set_char(drvthis, 2, icons[3]);
+				CFontz633_chr(drvthis, x, y, 2);
+			}
+			else
+				CFontz633_raw_chr(drvthis, x, y, 0xE0);
 			break;
 		case ICON_ARROW_LEFT:
-			CFontz633_chr(drvthis, x, y, 0x7F);
+			if (p->model == 633)
+				CFontz633_raw_chr(drvthis, x, y, 0x7F);
+			else
+				CFontz633_raw_chr(drvthis, x, y, 0xE1);
 			break;
 		case ICON_ARROW_RIGHT:
-			CFontz633_chr(drvthis, x, y, 0x7E);
+			if (p->model == 633)
+				CFontz633_raw_chr(drvthis, x, y, 0x7E);
+			else
+				CFontz633_raw_chr(drvthis, x, y, 0xDF);
 			break;
 		case ICON_CHECKBOX_OFF:
 			CFontz633_set_char(drvthis, 3, icons[4]);
@@ -1140,6 +1173,16 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		case ICON_CHECKBOX_GRAY:
 			CFontz633_set_char(drvthis, 5, icons[6]);
 			CFontz633_chr(drvthis, x, y, 5);
+			break;
+		case ICON_SELECTOR_AT_LEFT:
+			if (p->model == 633)
+				return -1;
+			CFontz633_raw_chr(drvthis, x, y, 0x10);
+			break;
+		case ICON_SELECTOR_AT_RIGHT:
+			if (p->model == 633)
+				return -1;
+			CFontz633_raw_chr(drvthis, x, y, 0x11);
 			break;
 		default:
 			return -1; /* Let the core do other icons */
@@ -1191,7 +1234,9 @@ CFontz633_string (Driver *drvthis, int x, int y, char string[])
 		/* Check for buffer overflows... */
 		if ((y * p->width) + x + i > (p->width * p->height))
 			break;
-		p->framebuf[(y * p->width) + x + i] = string[i];
+		p->framebuf[(y * p->width) + x + i] = (p->model == 633)
+						      ? c
+						      : CFontz_charmap[(unsigned) string[i]];
 	}
 }
 
