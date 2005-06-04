@@ -581,7 +581,7 @@ void menuitem_rebuild_screen_slider (MenuItem *item, Screen *s)
 		 */
 		w->x = 2;
 		w->y = display_props->height / 2 + 1;
-		w->length = display_props->width - 2;
+		w->width = display_props->width - 2;
 	}
 
 	w = widget_create ("min", WID_STRING, s);
