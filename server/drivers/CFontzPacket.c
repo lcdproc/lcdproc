@@ -613,8 +613,8 @@ CFontz633_set_contrast (Driver *drvthis, int promille)
 
 	// on CF633: 0 - 50, on CF631, CF635: 0 - 255
 	hardware_contrast = (p->model == 633)
-			    ? ((p->contrast * 255) / 1000)
-			    : (p->contrast / 20);
+			    ? (p->contrast / 20)
+			    : ((p->contrast * 255) / 1000);
 	/* Next line is to be checked $$$ */
 	send_onebyte_message(p->fd, CF633_Set_LCD_Contrast, hardware_contrast);
 }

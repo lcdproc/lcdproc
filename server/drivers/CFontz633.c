@@ -39,7 +39,7 @@
  *
  * THINGS TO DO:
  * + Make the caching at least for heartbeat icon
- * + Create and use the library (for custom char handeling)
+ * + Create and use the library (for custom char handling)
  *
  */
 
