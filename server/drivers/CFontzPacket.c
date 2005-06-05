@@ -266,7 +266,7 @@ CFontz633_init (Driver *drvthis, char *args)
 	}
 	p->offbrightness = tmp;
 
-	/* Which speed CF633 support 19200 only, CF631USB use 115200. */
+	/* Which speed ? CF633 support 19200 only, CF631 & CF635 USB use 115200. */
 	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
 	debug (RPT_INFO,"CFontzPacket_init: Speed (in config) is '%d'", tmp);
 	if (tmp == 19200) speed = B19200;
@@ -679,7 +679,7 @@ CFontz633_backlight (Driver *drvthis, int on)
 }
 
 
-/* OK631
+/*
  * Get rid of the blinking curson
  */
 static void
@@ -720,7 +720,7 @@ CFontz633_no_fan_report (Driver *drvthis)
 }
 
 
-/* KO631
+/*
  * Stop the reporting of any temperature.
  */
 static void
@@ -734,7 +734,7 @@ CFontz633_no_temp_report (Driver *drvthis)
 }
 
 
-/* OK631
+/*
  * Reset the display bios
  */
 static void
@@ -970,19 +970,197 @@ CFontz633_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 
 
 /*
+ * Inits big numbers
+ */
+void
+CFontz633_init_num(Driver *drvthis)
+{
+PrivateData *p = drvthis->private_data;
+
+char bignum_ccs[8][CELLWIDTH*CELLHEIGHT] = {
+  { 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0 },
+
+  { 0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0 },
+
+  { 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0 },
+
+  { 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0 },
+
+  { 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1 },
+
+  { 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1 },
+
+  { 1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0,
+    1, 1, 1, 0, 0, 0 },
+
+  { 0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1,
+    0, 0, 0, 1, 1, 1,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0 }
+};
+
+	if (p->ccmode != bignum) {
+		int i;
+
+		if (p->ccmode != standard) {
+			/* Not supported (yet) */
+			report(RPT_WARNING, "CFontz633_init_num: Cannot combine two modes using user defined characters");
+			return;
+		}
+
+		p->ccmode = bignum;
+
+		for (i = 0; i < NUM_CCs; i++)
+			CFontz633_set_char(drvthis, i, bignum_ccs[i]);
+	}
+}
+
+
+/*
  * Writes a big number.
- * This is not supported on 633 because we only have 2 lines...
+ * Only works on 4-line displays
  */
 MODULE_EXPORT void
-CFontz633_num (Driver *drvthis, int x, int num)
+CFontz633_num(Driver *drvthis, int x, int num)
 {
-/*
-	PrivateData *p = drvthis->private_data;
-	unsigned char out[5];
+PrivateData *p = drvthis->private_data;
 
-	snprintf (out, sizeof(out), "%c%c%c", 28, x, num);
-	write (p->fd, out, 3);
-*/
+/* each bignum is constructed in a 3 x 4 matrix and consists
+ * of only the 8 characters defined above as well as ' '
+ *
+ * The following table defines the 11 big numbers '0'-'9', ':'
+ * and the custom base characters they consist of
+ */
+char bignum_map[11][4][3] = {
+  { /* 0: */
+    {  1,  2,  3 },
+    {  6, 32,  6 },
+    {  6, 32,  6 },
+    {  7,  2, 32 } },
+  { /* 1: */
+    {  7,  6, 32 },
+    { 32,  6, 32 },
+    { 32,  6, 32 },
+    {  7,  2, 32 } },
+  { /* 2: */
+    {  1,  2,  3 },
+    { 32,  5,  0 },
+    {  1, 32, 32 },
+    {  2,  2,  0 } },
+  { /* 3: */
+    {  1,  2,  3 },
+    { 32,  5,  0 },
+    {  3, 32,  6 },
+    {  7,  2, 32 } },
+  { /* 4: */
+    { 32,  3,  6 },
+    {  1, 32,  6 },
+    {  2,  2,  6 },
+    { 32, 32,  0 } },
+  { /* 5: */
+    {  1,  2,  0 },
+    {  2,  2,  3 },
+    {  3, 32,  6 },
+    {  7,  2, 32 } },
+  { /* 6: */
+    {  1,  2, 32 },
+    {  6,  5, 32 },
+    {  6, 32,  6 },
+    {  7,  2, 32 } },
+  { /* 7: */
+    {  2,  2,  6 },
+    { 32,  1, 32 },
+    { 32,  6, 32 },
+    { 32,  0, 32 } },
+  { /* 8: */
+    {  1,  2,  3 },
+    {  4,  5,  0 },
+    {  6, 32,  6 },
+    {  7,  2, 32 } },
+  { /* 9: */
+    {  1,  2,  3 },
+    {  4,  3,  6 },
+    { 32,  1, 32 },
+    {  7, 32, 32 } },
+  { /* colon: */
+    { 32, 32, 32 },
+    {  0, 32, 32 },
+    {  0, 32, 32 },
+    { 32, 32, 32 } }
+};
+
+	if (num < 0 || num > 11)
+		return;
+
+	if ((p->width >= 20) && (p->height >= 4)) {
+		int y = (p->height - 2) / 2;	/* center vertically */
+		int x2, y2;
+
+		CFontz633_init_num(drvthis);
+
+		for (x2 = 0; x2 <= 2; x2++) {
+			for (y2 = 0; y2 <= 3; y2++) {
+				CFontz633_chr(drvthis, x+x2, y+y2, bignum_map[num][y2][x2]);
+			}
+			if (num == 10)
+				x2 = 2; /* = break, for colon only */
+		}
+	}
+	else {
+		CFontz633_chr(drvthis, x, p->height / 2, (num >= 11) ? ':' : (num + '0'));
+	}
 }
 
 
@@ -1191,7 +1369,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 }
 
 
-/* OK631
+/*
  * Clears the LCD screen
  */
 MODULE_EXPORT void
@@ -1204,7 +1382,7 @@ CFontz633_clear (Driver *drvthis)
 }
 
 
-/* OK631
+/*
  * Hardware clears the LCD screen
  */
 static void
@@ -1216,7 +1394,7 @@ CFontz633_hardware_clear (Driver *drvthis)
 }
 
 
-/* OK631
+/*
  * Prints a string on the lcd display, at position (x,y).  The
  * upper-left is (1,1), and the lower right should be (p->width, p->height).
  */
@@ -1235,7 +1413,7 @@ CFontz633_string (Driver *drvthis, int x, int y, char string[])
 		if ((y * p->width) + x + i > (p->width * p->height))
 			break;
 		p->framebuf[(y * p->width) + x + i] = (p->model == 633)
-						      ? c
+						      ? string[i]
 						      : CFontz_charmap[(unsigned) string[i]];
 	}
 }
