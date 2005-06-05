@@ -1,6 +1,6 @@
-/*  This is the LCDproc driver for IO-Warrior devices(http://www.codemercs.de)
+/*  This is the LCDproc driver for IO-Warrior devices (http://www.codemercs.de)
 
-      Copyright(C) 2004, Peter Marschall <peter@adpm.de>
+      Copyright(C) 2004,2005 Peter Marschall <peter@adpm.de>
 
    based on GPL'ed code:
 
@@ -977,14 +977,14 @@ char bignum_map[11][4][3] = {
     {  4,  3,  6 },
     { 32,  1, 32 },
     {  7, 32, 32 } },
-  { /* colon: */
+  { /* colon: (only 1st column used) */
     { 32, 32, 32 },
     {  0, 32, 32 },
     {  0, 32, 32 },
     { 32, 32, 32 } }
 };
 
-  if ((num < 0) || (num > 11))
+  if ((num < 0) || (num > 10))
     return;
 
   IOWarrior_init_num(drvthis);
@@ -993,17 +993,17 @@ char bignum_map[11][4][3] = {
     int y = (p->height - 2) / 2;	/* center vertically */
     int x2, y2;
 
-    for (x2 = 0; x2 <= 2; x2++) {
-      for (y2 = 0; y2 <= 3; y2++) {
+    for (x2 = 0; x2 < 3; x2++) {
+      for (y2 = 0; y2 < 4; y2++) {
         IOWarrior_chr(drvthis, x+x2, y+y2, bignum_map[num][y2][x2]);
       }
       if (num == 10)
         x2 = 2; /* = break, for colon only */
     }
   }
-  else {
-    IOWarrior_chr(drvthis, x, p->height / 2, (num >= 11) ? ':' : (num + '0'));
-  }
+  else
+    IOWarrior_chr(drvthis, x, 1 + (p->height - 1)/ 2,
+		  (num == 10) ? ':' : (num + '0'));
 }
 
 

@@ -686,31 +686,26 @@ lcterm_num (Driver *drvthis, int x, int num)
       {32}
     }};
 
-  if( num < 0 || num > 10 ) return;
+  if ((num < 0) || (num > 10))
+	  return;
 
-  lcterm_init_num(drvthis);
-
-  if( p->width >= 16 && p->height >= 4 )
-  {
-    int y = 1 + ( p->height - 2 ) / 2;
+  if ((p->width >= 20) && (p->height >= 4)) {
+    int y = ( p->height - 2 ) / 2;
     int x2, y2;
 
-    for( x2 = 0; x2 <= 2; x2 ++ )
-    {
-      for( y2 = 0; y2 <= 3; y2 ++ )
+    lcterm_init_num(drvthis);
+
+    for (x2 = 0; x2 <= 2; x2++) {
+      for (y2 = 0; y2 <= 3; y2++) {
 	lcterm_chr( drvthis, x+x2, y+y2, bignum_map[num][y2][x2] );
-      if( num == 10 )
+      }	
+      if (num == 10)
 	x2 = 2; /* =break, for colon only */
     }
   }
   else
-  {
-    int y = ( p->height - 1 ) / 2 + 1;
-    if( num == 11 )
-      lcterm_chr( drvthis, x, y, ':' );
-    else
-      lcterm_chr( drvthis, x, y, num + '0' );
-  }
+    lcterm_chr(drvthis, x, 1 + (p->height - 1) / 2,
+	       (num == 10) ? ':' : (num + '0'));
 }
 
 

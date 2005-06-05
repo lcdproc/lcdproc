@@ -203,7 +203,7 @@ CFontz633_init (Driver *drvthis, char *args)
 	EmptyReceiveBuffer(&receivebuffer);
 
 	/* Read config file */
-	/* Which model is it (CF633 or CF631)? */
+	/* Which model is it (CF633, CF631 or CF635)? */
 	tmp = drvthis->config_get_int (drvthis->name, "Model", 0, DEFAULT_SPEED);
 	debug (RPT_INFO,"CFontzPacket_init: Model is '%d'", tmp);
 	if ((tmp != 631) && (tmp != 633) && (tmp != 635)) {
@@ -658,7 +658,7 @@ CFontz633_set_contrast (Driver *drvthis, int promille)
 	hardware_contrast = (p->model == 633)
 			    ? (p->contrast / 20)
 			    : ((p->contrast * 255) / 1000);
-	/* Next line is to be checked $$$ */
+
 	send_onebyte_message(p->fd, CF633_Set_LCD_Contrast, hardware_contrast);
 }
 
@@ -673,7 +673,6 @@ CFontz633_backlight (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 
-	/* Next line is to be checked $$$ */
 	send_onebyte_message(p->fd, CF633_Set_LCD_And_Keypad_Backlight,
 			     (on) ? p->brightness : p->offbrightness);
 }
@@ -1134,14 +1133,14 @@ char bignum_map[11][4][3] = {
     {  4,  3,  6 },
     { 32,  1, 32 },
     {  7, 32, 32 } },
-  { /* colon: */
+  { /* colon: (only 1st column used) */
     { 32, 32, 32 },
     {  0, 32, 32 },
     {  0, 32, 32 },
     { 32, 32, 32 } }
 };
 
-	if (num < 0 || num > 11)
+	if ((num < 0) || (num > 10))
 		return;
 
 	if ((p->width >= 20) && (p->height >= 4)) {
@@ -1150,8 +1149,8 @@ char bignum_map[11][4][3] = {
 
 		CFontz633_init_num(drvthis);
 
-		for (x2 = 0; x2 <= 2; x2++) {
-			for (y2 = 0; y2 <= 3; y2++) {
+		for (x2 = 0; x2 < 3; x2++) {
+			for (y2 = 0; y2 < 4; y2++) {
 				CFontz633_chr(drvthis, x+x2, y+y2, bignum_map[num][y2][x2]);
 			}
 			if (num == 10)
@@ -1159,7 +1158,8 @@ char bignum_map[11][4][3] = {
 		}
 	}
 	else {
-		CFontz633_chr(drvthis, x, p->height / 2, (num >= 11) ? ':' : (num + '0'));
+		CFontz633_chr(drvthis, x, 1 + (p->height - 1) / 2,
+			      (num == 10) ? ':' : (num + '0'));
 	}
 }
 
@@ -1396,7 +1396,7 @@ CFontz633_hardware_clear (Driver *drvthis)
 
 /*
  * Prints a string on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (p->width, p->height).
+ * upper-left is (1,1), and the lower right is (p->width, p->height).
  */
 MODULE_EXPORT void
 CFontz633_string (Driver *drvthis, int x, int y, char string[])

@@ -338,15 +338,11 @@ icp_a106_num (Driver *drvthis, int x, int num)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
 
-  if( num < 0 || num > 10 ) return;
+  if ((num < 0) || (num > 10))
+    return;
 
-  {
-    int y = ( p->height - 1 ) / 2 + 1;
-    if( num == 11 )
-      icp_a106_chr( drvthis, x, y, ':' );
-    else
-      icp_a106_chr( drvthis, x, y, num + '0' );
-  }
+  icp_a106_chr(drvthis, x, 1 + (p->height - 1) / 2,
+	       (num == 10) ? ':' : (num + '0'));
 }
 
 

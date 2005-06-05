@@ -759,7 +759,6 @@ MODULE_EXPORT void
 HD44780_init_num (Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
-	int i;
 
 	char bignum_ccs[8][5*8] = {{
 		1, 1, 0, 0, 0,
@@ -835,20 +834,18 @@ HD44780_init_num (Driver *drvthis)
 		0, 0, 0, 0, 0
 	}};
 
-	if( p->ccmode == CCMODE_BIGNUM ) {
-		/* Work already done */
-		return;
-	}
+	if (p->ccmode != CCMODE_BIGNUM) {
+		int i;
 
-	if( p->ccmode != CCMODE_STANDARD ) {
-		/* Not supported (yet) */
-		report( RPT_WARNING, "HD44780_init_num: Cannot combine two modes using user defined characters" );
-		return;
-	}
-	p->ccmode = CCMODE_BIGNUM;
+		if( p->ccmode != CCMODE_STANDARD ) {
+			/* Not supported (yet) */
+			report( RPT_WARNING, "HD44780_init_num: Cannot combine two modes using user defined characters" );
+			return;
+		}
+		p->ccmode = CCMODE_BIGNUM;
 
-	for( i=0; i<8; i++ ) {
-		HD44780_set_char (drvthis, i, bignum_ccs[i]);
+		for (i = 0; i < 8; i++)
+			HD44780_set_char (drvthis, i, bignum_ccs[i]);
 	}
 }
 
@@ -862,98 +859,82 @@ HD44780_num (Driver *drvthis, int x, int num)
 
 	char bignum_map[11][4][3] = {
 	{ /* 0: */
-		{1,2,3},
-		{6,32,6},
-		{6,32,6},
-		{7,2,32}
-	},
+		{  1,  2,  3 }, 
+		{  6, 32,  6 }, 
+		{  6, 32,  6 }, 
+		{  7,  2, 32 } }, 
 	{ /* 1: */
-		{7,6,32},
-		{32,6,32},
-		{32,6,32},
-		{7,2,32},
-	},
+		{  7,  6, 32 }, 
+		{ 32,  6, 32 }, 
+		{ 32,  6, 32 }, 
+		{  7,  2, 32 } }, 
 	{ /* 2: */
-		{1,2,3},
-		{32,5,0},
-		{1,32,32},
-		{2,2,0},
-	},
+		{  1,  2,  3 }, 
+		{ 32,  5,  0 }, 
+		{  1, 32, 32 }, 
+		{  2,  2,  0 } }, 
 	{ /* 3: */
-		{1,2,3},
-		{32,5,0},
-		{3,32,6},
-		{7,2,32}
-	},
+		{  1,  2,  3 }, 
+		{ 32,  5,  0 }, 
+		{  3, 32,  6 }, 
+		{  7,  2, 32 } }, 
 	{ /* 4: */
-		{32,3,6},
-		{1,32,6},
-		{2,2,6},
-		{32,32,0}
-	},
+		{ 32,  3, 6 }, 
+		{  1, 32, 6 }, 
+		{  2,  2, 6 }, 
+		{ 32, 32, 0 } }, 
 	{ /* 5: */
-		{1,2,0},
-		{2,2,3},
-		{3,32,6},
-		{7,2,32}
-	},
+		{  1,  2,  0 }, 
+		{  2,  2,  3 }, 
+		{  3, 32,  6 }, 
+		{  7,  2, 32 } }, 
 	{ /* 6: */
-		{1,2,32},
-		{6,5,32},
-		{6,32,6},
-		{7,2,32}
-	},
+		{  1,  2, 32 }, 
+		{  6,  5, 32 }, 
+		{  6, 32,  6 }, 
+		{  7,  2, 32 } }, 
 	{ /* 7: */
-		{2,2,6},
-		{32,1,32},
-		{32,6,32},
-		{32,0,32}
-	},
+		{  2,  2,  6 }, 
+		{ 32,  1, 32 }, 
+		{ 32,  6, 32 }, 
+		{ 32,  0, 32 } }, 
 	{ /* 8: */
-		{1,2,3},
-		{4,5,0},
-		{6,32,6},
-		{7,2,32}
-	},
+		{  1,  2,  3 }, 
+		{  4,  5,  0 }, 
+		{  6, 32,  6 }, 
+		{  7,  2, 32 } }, 
 	{ /* 9: */
-		{1,2,3},
-		{4,3,6},
-		{32,1,32},
-		{7,32,32}
-	},
-	{ /* colon: */
-		{32},
-		{7},
-		{7},
-		{32}
-	}};
+		{  1,  2,  3 }, 
+		{  4,  3,  6 }, 
+		{ 32,  1, 32 }, 
+		{  7, 32, 32 } }, 
+	{ /* colon: (only 1st column used) */
+		{ 32, 32, 32 },
+		{  7, 32, 32 },
+		{  7, 32, 32 },
+		{ 32, 32, 32 } }
+	};
 
-	if( num < 0 || num > 10 ) return;
+	if ((num < 0) || (num > 10))
+		return;
 
-	HD44780_init_num(drvthis);
-
-	if( p->width >= 20 && p->height >= 4 ) {
-
-		int y = ( p->height - 2 ) / 2;
+	if ((p->width >= 20) && (p->height >= 4)) {
+		int y = (p->height - 2) / 2;
 		int x2, y2;
 
-		for( x2 = 0; x2 <= 2; x2 ++ ) {
-			for( y2 = 0; y2 <= 3; y2 ++ ) {
+		HD44780_init_num(drvthis);
+
+		for (x2 = 0; x2 < 3; x2++) {
+			for (y2 = 0; y2 < 4; y2++) {
 				HD44780_chr( drvthis, x+x2, y+y2, bignum_map[num][y2][x2] );
 			}
-			if( num == 10 ) {
+			if (num == 10)
 				x2 = 2; /* =break, for colon only */
-			}
 		}
 	}
-	else {
-		int y = ( p->height - 1 ) / 2;
-		if( num == 11 ) {
-			HD44780_chr( drvthis, x, y, ':' );
-		} else {
-			HD44780_chr( drvthis, x, y, num + '0' );
-		}
-	}
+	else
+		HD44780_chr(drvthis, x, 1 + (p->height - 1) / 2,
+			    (num == 10) ? ':' : (num + '0'));
 }
 
 /////////////////////////////////////////////////////////////////
