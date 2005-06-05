@@ -550,8 +550,8 @@ PrivateData *p = drvthis->private_data;
 
 
 /*******************************************************************
- * API: Prints a character on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (20,4).
+ * API: Prints a character on the lcd display, at position (x,y).
+ * The upper-left is (1,1), and the lower right is (p->width,p->height).
  */
 MODULE_EXPORT void
 IOWarrior_chr(Driver *drvthis, int x, int y, char c)
@@ -571,7 +571,7 @@ PrivateData *p = drvthis->private_data;
 
 /*****************************************************************
  * API: Prints a string on the lcd display, at position (x,y).
- * The upper-left is (1,1), and the lower right should be (20,4).
+ * The upper-left is (1,1), and the lower right is (p->width,p->height).
  */
 MODULE_EXPORT void
 IOWarrior_string(Driver *drvthis, int x, int y, char *string)
@@ -979,17 +979,17 @@ char bignum_map[11][4][3] = {
     {  7, 32, 32 } },
   { /* colon: */
     { 32, 32, 32 },
-    {  7, 32, 32 },
-    {  7, 32, 32 },
+    {  0, 32, 32 },
+    {  0, 32, 32 },
     { 32, 32, 32 } }
 };
 
-  if (num < 0 || num > 11)
+  if ((num < 0) || (num > 11))
     return;
 
   IOWarrior_init_num(drvthis);
 
-  if (p->width >= 20 && p->height >= 4) {
+  if ((p->width >= 20) && (p->height >= 4)) {
     int y = (p->height - 2) / 2;	/* center vertically */
     int x2, y2;
 
@@ -1008,7 +1008,7 @@ char bignum_map[11][4][3] = {
 
 
 /*********************************************************************
- * API: Sets a custom character from 0 - 7
+ * API: Sets a custom character from 0 - (NUM_CCs-1)
  *
  * The API only permit setting to off=0 and on<>0
  * For input is just an array of characters:
@@ -1112,6 +1112,33 @@ char checkbox_gray[CELLWIDTH*CELLHEIGHT] = {
   1, 0, 1, 0, 1,
   1, 1, 1, 1, 1,
   0, 0, 0, 0, 0 };
+char selector_left[CELLWIDTH*CELLHEIGHT] = {
+  0, 1, 0, 0, 0,
+  0, 1, 1, 0, 0,
+  0, 1, 1, 1, 0,
+  0, 1, 1, 1, 1,
+  0, 1, 1, 1, 0,
+  0, 1, 1, 0, 0,
+  0, 1, 0, 0, 0,
+  0, 0, 0, 0, 0 };
+char selector_right[CELLWIDTH*CELLHEIGHT] = {
+  0, 0, 0, 1, 0,
+  0, 0, 1, 1, 0,
+  0, 1, 1, 1, 0,
+  1, 1, 1, 1, 0,
+  0, 1, 1, 1, 0,
+  0, 0, 1, 1, 0,
+  0, 0, 0, 1, 0,
+  0, 0, 0, 0, 0 };
+char ellipsis[CELLWIDTH*CELLHEIGHT] = {
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0,
+  1, 0, 1, 0, 1,
+  0, 0, 0, 0, 0 };
 char block_filled[CELLWIDTH*CELLHEIGHT] = {
   1, 1, 1, 1, 1,
   1, 1, 1, 1, 1,
@@ -1170,7 +1197,7 @@ char block_filled[CELLWIDTH*CELLHEIGHT] = {
 
 
 /*********************************************************************
- * API: Palces an icon on screen
+ * API: Places an icon on screen
  */
 MODULE_EXPORT void
 IOWarrior_output(Driver *drvthis, int on)
