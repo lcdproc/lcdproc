@@ -145,8 +145,12 @@ send_packet(int fd, COMMAND_PACKET *out)
 	out->crc.as_word = get_crc((unsigned char *) out, out->data_length + 2, 0xFFFF);
 	write(fd, out->crc.as_bytes, 2);
 
-	/**** TEST STUF ****/
+	/**** TEST STUFF ****/
 	// print_packet(&outgoing_response);
+
+#if defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0)
+	usleep(CFONTZ633_WRITE_DELAY);
+#endif	
 
 	/* Every time we send a message, we also check for an incoming one. */
 	test_packet(fd); 
