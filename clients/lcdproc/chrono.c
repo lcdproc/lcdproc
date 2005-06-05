@@ -377,8 +377,8 @@ uptime_screen (int rep, int display)
 //
 // +--------------------+
 // |    _   _      _  _ |
-// |  ||_   _||_|  _|  ||
-// |  ||_|  _|  | |_   ||
+// |  ||_ . _||_|. _|  ||
+// |  ||_|. _|  |.|_   ||
 // |                    |
 // +--------------------+
 //
@@ -390,13 +390,15 @@ big_clock_screen (int rep, int display)
 	struct tm *rtime;
 	int pos[] = { 1, 4, 8, 11, 15, 18 };
 	char  cmdbuf[64] ;
-	//  int i=0;
-
 	char fulltxt[16], old_fulltxt[16];
+	static int heartbeat = 0;
 	int j = 0;
 
 	if (lcd_hgt < 4)
 		return 0;
+
+	// toggle colon display
+	heartbeat ^= 1;
 
 	if (first) {
 		first = 0;
@@ -409,25 +411,17 @@ big_clock_screen (int rep, int display)
 		sock_send_string (sock, "widget_add K d3 num\n");
 		sock_send_string (sock, "widget_add K d4 num\n");
 		sock_send_string (sock, "widget_add K d5 num\n");
-//		sock_send_string (sock, "widget_add K c0 num\n");
-//		sock_send_string (sock, "widget_add K c1 num\n");
-//		sock_send_string(sock, "widget_add K one string\n");
+		sock_send_string (sock, "widget_add K c0 num\n");
+		sock_send_string (sock, "widget_add K c1 num\n");
+
 		sock_send_string (sock, "widget_set K d0 1 0\n");
 		sock_send_string (sock, "widget_set K d1 4 0\n");
 		sock_send_string (sock, "widget_set K d2 8 0\n");
 		sock_send_string (sock, "widget_set K d3 11 0\n");
 		sock_send_string (sock, "widget_set K d4 15 0\n");
 		sock_send_string (sock, "widget_set K d5 18 0\n");
-//		sock_send_string (sock, "widget_set K c0 7 10\n");
-//		sock_send_string (sock, "widget_set K c1 14 10\n");
-		old_fulltxt[0] = '0';
-		old_fulltxt[1] = '0';
-		old_fulltxt[2] = '0';
-		old_fulltxt[3] = '0';
-		old_fulltxt[4] = '0';
-		old_fulltxt[5] = '0';
-		old_fulltxt[6] = '\0';
-//		sock_send_string(sock, "widget_set K one 1 4 {000000}\n");
+
+		strcpy(old_fulltxt, "000000");
 	}
 
 	time (&thetime);
@@ -441,6 +435,15 @@ big_clock_screen (int rep, int display)
 			old_fulltxt[j] = fulltxt[j];
 		}
 	}
+
+	if (heartbeat) {	// 10 means: colon
+		sock_send_string (sock, "widget_set K c0 7 10\n");
+		sock_send_string (sock, "widget_set K c1 14 10\n");
+	}
+	else {			// kludge: use illegal number to clear colon display
+		sock_send_string (sock, "widget_set K c0 7 11\n");
+		sock_send_string (sock, "widget_set K c1 14 11\n");
+	}	
 
 	return 0;
 }										  // End big_clock_screen()
