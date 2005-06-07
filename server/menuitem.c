@@ -1272,21 +1272,22 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 			num = (int) strtol(&str[pos - (pos % (ipinfo->width + 1))], (char **) NULL, ipinfo->base);
 			// increase the number depending on the position
 			num += ipinfo->posValue[(pos - (pos / (ipinfo->width + 1))) % ipinfo->width];
-			if (num <= ipinfo->limit) {
-				snprintf(numstr, 5, ipinfo->format, num);
-				memcpy(&str[pos - (pos % (ipinfo->width + 1))], numstr, ipinfo->width);
-			}             
-
+			// wrap around upper limit
+			if (num > ipinfo->limit)
+				num = 0;
+			snprintf(numstr, 5, ipinfo->format, num);
+			memcpy(&str[pos - (pos % (ipinfo->width + 1))], numstr, ipinfo->width);
 			return MENURESULT_NONE;
 		case MENUTOKEN_DOWN:
 			// convert string starting at the beginning / previous dot into a number
 			num = (int) strtol(&str[pos - (pos % (ipinfo->width + 1))], (char **) NULL, ipinfo->base);
 			// decrease the number depending on the position
 			num -= ipinfo->posValue[(pos - (pos / (ipinfo->width + 1))) % ipinfo->width];
-			if (num >= 0) {
-				snprintf(numstr, 5, ipinfo->format, num);
-				memcpy(&str[pos - (pos % (ipinfo->width + 1))], numstr, ipinfo->width);
-			}             
+			// wrap around lower limit 0
+			if (num < 0)
+				num = ipinfo->limit;
+			snprintf(numstr, 5, ipinfo->format, num);
+			memcpy(&str[pos - (pos % (ipinfo->width + 1))], numstr, ipinfo->width);
 			return MENURESULT_NONE;
 		case MENUTOKEN_RIGHT:
 			if (pos < item->data.ip.maxlength - 1) {
