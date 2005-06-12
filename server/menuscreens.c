@@ -390,9 +390,6 @@ void menuscreen_create_menu ()
 		int contrast_avail = (driver->get_contrast && driver->set_contrast) ? 1 : 0;
 		int brightness_avail = (driver->get_brightness && driver->set_brightness) ? 1 : 0;
 
-		contrast_avail = (driver->get_contrast && driver->set_contrast);
-		brightness_avail = (driver->get_brightness && driver->set_brightness);
-
 		if (contrast_avail || brightness_avail) {
 			/* menu's client is NULL since we're in the server */
 			driver_menu = menu_create (driver->name, NULL, driver->name, NULL);
@@ -402,18 +399,20 @@ void menuscreen_create_menu ()
 				int contrast = driver->get_contrast(driver);
 				
 				/* menu's client is NULL since we're in the server */
-				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast", NULL,
-								 "min", "max", 0, 1000, 100, contrast);
+				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast",
+								 NULL, "min", "max", 0, 1000, 50, contrast);
 				menu_add_item (driver_menu, slider);
 			}
 			if (brightness_avail) {
 				int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
 				int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
 				
-				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness", NULL, "min", "max", 0, 1000, 100, onbrightness);
+				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness",
+								 NULL, "min", "max", 0, 1000, 50, onbrightness);
 				menu_add_item (driver_menu, slider);
 
-				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness", NULL, "min", "max", 0, 1000, 100, offbrightness);
+				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness",
+								 NULL, "min", "max", 0, 1000, 50, offbrightness);
 				menu_add_item (driver_menu, slider);
 			}
 		}
