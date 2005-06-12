@@ -20,6 +20,7 @@
 /*backlight support modified by Rene Wagner (c) 2001*/
 /*block patch by Eddie Sheldrake (c) 2001 inserted by Rene Wagner*/
 /*big num patch by Luis Llorente (c) 2002*/
+/*adaptions to other CFontz* dirvers Peter Marschall (c) 2005*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -99,80 +100,73 @@ CFontz_init (Driver * drvthis, char *args)
 
 	debug(RPT_INFO, "CFontz: init(%p,%s)", drvthis, args );
 
-	/*Read config file*/
+	/* Read config file */
 
-	/*Which serial device should be used*/
-	strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , DEFAULT_DEVICE),sizeof(device));
-	device[sizeof(device)-1]=0;
+	/* Which serial device should be used */
+	strncpy(device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
+	device[sizeof(device)-1] = '\0';
 	debug (RPT_INFO,"CFontz: Using device: %s", device);
 
-	/*Which size*/
-	strncpy(size, drvthis->config_get_string ( drvthis->name , "Size" , 0 , DEFAULT_SIZE),sizeof(size));
-	size[sizeof(size)-1]=0;
-	if( sscanf(size , "%dx%d", &w, &h ) != 2
-	|| (w <= 0) || (w > LCD_MAX_WIDTH)
-	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
+	/* Which size */
+	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
+	size[sizeof(size)-1] = '\0';
+	if ((sscanf(size, "%dx%d", &w, &h) != 2)
+	    || (w <= 0) || (w > LCD_MAX_WIDTH)
+	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 		report (RPT_WARNING, "CFontz_init: Cannot read size: %s. Using default value.\n", size);
-		sscanf( DEFAULT_SIZE , "%dx%d", &w, &h );
-	} else {
-		width = w;
-		height = h;
+		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
+	width = w;
+	height = h;
 
-	/*Which contrast*/
-	if (0<=drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) && drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST) <= 1000) {
-		contrast = drvthis->config_get_int ( drvthis->name , "Contrast" , 0 , DEFAULT_CONTRAST);
-	} else {
+	/* Which contrast */
+	tmp = drvthis->config_get_int (drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
+	if ((tmp < 0) || (tmp > 1000)) {
 		report (RPT_WARNING, "CFontz_init: Contrast must be between 0 and 1000. Using default value.\n");
+		tmp = DEFAULT_CONTRAST;
 	}
+	contrast = tmp;
 
 	/*Which backlight brightness*/
-	if (0<=drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS) && drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS) <= 255) {
-		brightness = drvthis->config_get_int ( drvthis->name , "Brightness" , 0 , DEFAULT_BRIGHTNESS);
-	} else {
+	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	if ((tmp < 0) || (tmp > 255)) {
 		report (RPT_WARNING, "CFontz_init: Brightness must be between 0 and 255. Using default value.\n");
+		tmp = DEFAULT_BRIGHTNESS;
 	}
+	brightness = tmp;
 
-	/*Which backlight-off "brightness"*/
-	if (0<=drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) && drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS) <= 255) {
-		offbrightness = drvthis->config_get_int ( drvthis->name , "OffBrightness" , 0 , DEFAULT_OFFBRIGHTNESS);
-	} else {
+	/* Which backlight-off "brightness" */
+	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	if ((tmp < 0) || (tmp > 255)) {
 		report (RPT_WARNING, "CFontz_init: OffBrightness must be between 0 and 255. Using default value.\n");
+		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
+	offbrightness = tmp;
 
-
-	/*Which speed*/
-	tmp = drvthis->config_get_int ( drvthis->name , "Speed" , 0 , DEFAULT_SPEED);
+	/* Which speed */
+	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
 	if (tmp == 1200) speed = B1200;
 	else if (tmp == 2400) speed = B2400;
 	else if (tmp == 9600) speed = B9600;
 	else if (tmp == 19200) speed = B19200;
-	else { report (RPT_WARNING, "CFontz_init: Speed must be 1200, 2400, 9600 or 19200. Using default value.\n", speed);
+	else if (tmp == 115200) speed = B115200;
+	else {
+		report (RPT_WARNING, "CFontz_init: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default value.\n");
+		speed = DEFAULT_SPEED;
 	}
 
-	/*New firmware version?*/
-	if(drvthis->config_get_bool( drvthis->name , "NewFirmware" , 0 , 0)) {
-		newfirmware = 1;
-	}
+	/* New firmware version? */
+	newfirmware = drvthis->config_get_bool(drvthis->name, "NewFirmware", 0, 0);
 
-	/*Reboot display?*/
-	if (drvthis->config_get_bool( drvthis->name , "Reboot" , 0 , 0)) {
-		report (RPT_INFO, "LCDd: rebooting CrystalFontz LCD...\n");
-		reboot = 1;
-	}
+	/* Reboot display? */
+	reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
 
-	/*Am I USB or not?*/
-	if(drvthis->config_get_bool( drvthis->name , "USB" , 0 , 0)) {
-		usb = 1;
-	}
+	/* Am I USB or not? */
+	usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
 
-	// Set up io port correctly, and open it...
-	debug( RPT_DEBUG, "CFontz: Opening serial device: %s", device);
-    if ( usb ) {
-        fd = open (device, O_RDWR | O_NOCTTY);
-    } else {
-        fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
-    }
+	/* Set up io port correctly, and open it... */
+	debug( RPT_DEBUG, "CFontz: Opening device: %s", device);
+	fd = open (device, (usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
 	if (fd == -1) {
 		report (RPT_ERR, "CFontz_init: failed (%s)\n", strerror (errno));
 		return -1;
@@ -180,48 +174,51 @@ CFontz_init (Driver * drvthis, char *args)
 
 	tcgetattr (fd, &portset);
 
-    // We use RAW mode
-    if ( usb ) {
-        // The USB way
-        portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-                              | INLCR | IGNCR | ICRNL | IXON );
-        portset.c_oflag &= ~OPOST;
-        portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-        portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-        portset.c_cflag |= CS8 | CREAD | CLOCAL ;
-        portset.c_cc[VMIN] = 1;
-        portset.c_cc[VTIME] = 3;
-    } else {
+	/* We use RAW mode */
+	if (usb) {
+		/* The USB way */
+		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+					| INLCR | IGNCR | ICRNL | IXON );
+		portset.c_oflag &= ~OPOST;
+		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+		portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+		portset.c_cc[VMIN] = 1;
+		portset.c_cc[VTIME] = 3;
+	} else {
 #ifdef HAVE_CFMAKERAW
-        // The easy way
-        cfmakeraw( &portset );
+		/* The easy way */
+		cfmakeraw(&portset);
 #else
-        // The hard way
-        portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-                           | INLCR | IGNCR | ICRNL | IXON );
-        portset.c_oflag &= ~OPOST;
-        portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-        portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-        portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+		/* The hard way */
+		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+					| INLCR | IGNCR | ICRNL | IXON );
+		portset.c_oflag &= ~OPOST;
+		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+		portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
-    }
+	}
 
-	// Set port speed
+	/* Set port speed */
 	cfsetospeed (&portset, speed);
 	cfsetispeed (&portset, B0);
 
 	// Do it...
 	tcsetattr (fd, TCSANOW, &portset);
 
-	// Make sure the frame buffer is there...
+	/* Make sure the frame buffer is there... */
 	framebuf = (unsigned char *) malloc (width * height);
+	if (framebuf == NULL) {
+		report(RPT_ERR, "CFontz_init: unable to create framebuffer.\n");
+		return -1;
+	}
 	memset (framebuf, ' ', width * height);
 
 	// Set display-specific stuff..
 	if (reboot) {
+		report (RPT_INFO, "LCDd: rebooting CrystalFontz LCD...\n");
 		CFontz_reboot ();
-		sleep (4);
-		reboot = 0;
 	}
 	sleep (1);
 	CFontz_hidecursor ();
@@ -230,7 +227,6 @@ CFontz_init (Driver * drvthis, char *args)
 	//CFontz_backlight (drvthis, backlight_brightness);  // render.c variables should not be used in drivers !
 
 	CFontz_set_contrast (drvthis, contrast);
-
 
 	report (RPT_DEBUG, "CFontz_init: done\n");
 
@@ -245,7 +241,8 @@ CFontz_close (Driver * drvthis)
 {
 	close (fd);
 
-	if(framebuf) free (framebuf);
+	if (framebuf)
+		free (framebuf);
 	framebuf = NULL;
 }
 
@@ -277,10 +274,10 @@ CFontz_flush (Driver * drvthis)
 	int i;
 
 	// Custom characters start at 128, not at 0.
-	   for(i=0; i<width*height; i++)
-	   {
-	   if(framebuf[i] < 32  &&  framebuf[i] >= 0) framebuf[i] += 128;
-	   }
+	for (i = 0; i < width * height; i++) {
+		if (framebuf[i] < 32  &&  framebuf[i] >= 0)
+			framebuf[i] += 128;
+	}
 
 	for (i = 0; i < height; i++) {
 		snprintf (out, sizeof(out), "%c%c%c", 17, 0, i);
@@ -308,8 +305,8 @@ CFontz_chr (Driver * drvthis, int x, int y, char c)
 		c += 128;
 
 	// For V2 of the firmware to get the block to display right
-	if (newfirmware && c==-1) {
-		c=214;
+	if (newfirmware && c == -1) {
+		c = 214;
 	}
 
 	framebuf[(y * width) + x] = c;
@@ -337,7 +334,7 @@ CFontz_set_contrast (Driver * drvthis, int promille)
 	char out[4];
 
 	// Check it
-	if( promille < 0 || promille > 1000 )
+	if (promille < 0 || promille > 1000)
 		return;
 
 	// Store it
@@ -371,10 +368,8 @@ static void
 CFontz_linewrap (int on)
 {
 	char out[4];
-	if (on)
-		snprintf (out, sizeof(out), "%c", 23);
-	else
-		snprintf (out, sizeof(out), "%c", 24);
+
+	snprintf (out, sizeof(out), "%c", (on) ? 23 : 24);
 	write (fd, out, 1);
 }
 
@@ -385,15 +380,12 @@ static void
 CFontz_autoscroll (int on)
 {
 	char out[4];
-	if (on)
-		snprintf (out, sizeof(out), "%c", 19);
-	else
-		snprintf (out, sizeof(out), "%c", 20);
+	snprintf (out, sizeof(out), "%c", (on) ? 19 : 20);
 	write (fd, out, 1);
 }
 
 /////////////////////////////////////////////////////////////////
-// Get rid of the blinking curson
+// Get rid of the blinking cursor
 //
 static void
 CFontz_hidecursor ()
@@ -412,6 +404,7 @@ CFontz_reboot ()
 	char out[4];
 	snprintf (out, sizeof(out), "%c", 26);
 	write (fd, out, 1);
+	sleep(4);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -596,7 +589,6 @@ CFontz_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 	 */
 
 	CFontz_init_vbar(drvthis);
-
 	lib_vbar_static(drvthis, x, y, len, promille, options, cellheight, 0);
 }
 
@@ -614,7 +606,6 @@ CFontz_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 	 */
 
 	CFontz_init_hbar(drvthis);
-
 	lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 0);
 }
 
@@ -633,7 +624,7 @@ CFontz_set_char (Driver * drvthis, int n, char *dat)
 	int row, col;
 	int letter;
 
-	if (n < 0 || n > 7)
+	if ((n < 0) || (n > 7))
 		return;
 	if (!dat)
 		return;
@@ -658,8 +649,9 @@ MODULE_EXPORT int
 CFontz_icon (Driver * drvthis, int x, int y, int icon)
 {
 	char icons[3][6 * 8] = {
+	// Empty Heart
 		{
-		 1, 1, 1, 1, 1, 1,		  // Empty Heart
+		 1, 1, 1, 1, 1, 1,
 		 1, 0, 1, 0, 1, 1,
 		 0, 0, 0, 0, 0, 1,
 		 0, 0, 0, 0, 0, 1,
@@ -668,9 +660,9 @@ CFontz_icon (Driver * drvthis, int x, int y, int icon)
 		 1, 1, 0, 1, 1, 1,
 		 1, 1, 1, 1, 1, 1,
 		 },
-
+	// Filled Heart
 		{
-		 1, 1, 1, 1, 1, 1,		  // Filled Heart
+		 1, 1, 1, 1, 1, 1,
 		 1, 0, 1, 0, 1, 1,
 		 0, 1, 0, 1, 0, 1,
 		 0, 1, 1, 1, 0, 1,
@@ -679,9 +671,9 @@ CFontz_icon (Driver * drvthis, int x, int y, int icon)
 		 1, 1, 0, 1, 1, 1,
 		 1, 1, 1, 1, 1, 1,
 		 },
-
+	// Ellipsis
 		{
-		 0, 0, 0, 0, 0, 0,		  // Ellipsis
+		 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0,
@@ -698,15 +690,15 @@ CFontz_icon (Driver * drvthis, int x, int y, int icon)
 
 	switch( icon ) {
 		case ICON_BLOCK_FILLED:
-			CFontz_chr( drvthis, x, y, 255 );
+			CFontz_chr(drvthis, x, y, 255 );
 			break;
 		case ICON_HEART_FILLED:
-			CFontz_set_char( drvthis, 0, icons[1] );
-			CFontz_chr( drvthis, x, y, 0 );
+			CFontz_set_char(drvthis, 0, icons[1] );
+			CFontz_chr(drvthis, x, y, 0 );
 			break;
 		case ICON_HEART_OPEN:
-			CFontz_set_char( drvthis, 0, icons[0] );
-			CFontz_chr( drvthis, x, y, 0 );
+			CFontz_set_char(drvthis, 0, icons[0] );
+			CFontz_chr(drvthis, x, y, 0 );
 			break;
 		default:
 			return -1;
@@ -721,7 +713,6 @@ MODULE_EXPORT void
 CFontz_clear (Driver * drvthis)
 {
 	memset (framebuf, ' ', width * height);
-
 }
 
 /////////////////////////////////////////////////////////////////
@@ -733,17 +724,16 @@ CFontz_string (Driver * drvthis, int x, int y, char string[])
 {
 	int i;
 
-	x -= 1;							  // Convert 1-based coords to 0-based...
-	y -= 1;
+	// Convert 1-based coords to 0-based...
+	x--;
+	y--;
 
-	for (i = 0; string[i]; i++) {
-
+	for (i = 0; string[i] != '\0'; i++) {
 
 		// For V2 of the firmware to get the block to display right
-		if (newfirmware && string[i]==-1) {
-		string[i]=214;
+		if (newfirmware && string[i] == -1) {
+			string[i] = 214;
 		}
-
 
 		// Check for buffer overflows...
 		if ((y * width) + x + i > (width * height))
@@ -751,3 +741,4 @@ CFontz_string (Driver * drvthis, int x, int y, char string[])
 		framebuf[(y * width) + x + i] = string[i];
 	}
 }
+
