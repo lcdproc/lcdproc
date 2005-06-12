@@ -40,11 +40,9 @@
 #include "render.h"
 
 int heartbeat = HEARTBEAT_OPEN;
-int heartbeat_fallback = HEARTBEAT_ON; /* If no heartbeat setting has been set at all */
+static int heartbeat_fallback = HEARTBEAT_ON; /* If no heartbeat setting has been set at all */
 int backlight = BACKLIGHT_OPEN;
-int backlight_fallback = BACKLIGHT_ON; /* If no backlight setting has been set at all */
-int backlight_brightness = 255;
-int backlight_off_brightness = 0;
+static int backlight_fallback = BACKLIGHT_ON; /* If no backlight setting has been set at all */
 int output_state = 0;
 char * server_msg_text;
 int server_msg_expire = 0;
