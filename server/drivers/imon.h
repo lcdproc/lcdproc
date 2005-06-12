@@ -48,8 +48,8 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 //MODULE_EXPORT int  imon_get_free_chars (Driver *drvthis);
 //MODULE_EXPORT void imon_set_char (Driver *drvthis, int n, char *dat);
 //MODULE_EXPORT void imon_num (Driver *drvthis, int x, int num);
-//MODULE_EXPORT int  imon_get_brightness(Driver *drvthis);
-//MODULE_EXPORT void imon_set_brightness(Driver *drvthis, int promille);
+//MODULE_EXPORT int  imon_get_brightness(Driver *drvthis, int state);
+//MODULE_EXPORT void imon_set_brightness(Driver *drvthis, int state, int promille);
 //MODULE_EXPORT void imon_backlight(Driver *drvthis, int on);
 
 #endif

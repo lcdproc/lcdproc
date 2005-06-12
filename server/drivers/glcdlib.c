@@ -347,23 +347,27 @@ glcdlib_get_free_chars (Driver *drvthis)
 }
 
 /////////////////////////////////////////////////////////////////
-// Retrieves brightness (in promille ??????)
+// Retrieves brightness (in promille)
 //
 MODULE_EXPORT int
-glcdlib_get_brightness(Driver *drvthis)
+glcdlib_get_brightness(Driver *drvthis, int state)
 {
 	glcdlibPD * pPD = drvthis->private_data;
-	return 10 * glcddriverGetBrightness(pPD->glcdDriver);
+	if (state == BACKLIGHT_ON)
+		return 10 * glcddriverGetBrightness(pPD->glcdDriver);
+	else
+		return 0;
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets brightness (in promille ??????)
+// Sets brightness (in promille)
 //
 MODULE_EXPORT void
-glcdlib_set_brightness(Driver *drvthis, int promille)
+glcdlib_set_brightness(Driver *drvthis, int state, int promille)
 {
 	glcdlibPD * pPD = drvthis->private_data;
-	glcddriverSetBrightness(pPD->glcdDriver, promille/10);
+	if (state == BACKLIGHT_ON)
+		glcddriverSetBrightness(pPD->glcdDriver, promille/10);
 }
 
 /////////////////////////////////////////////////////////////////

@@ -922,7 +922,7 @@ CwLnx_backlight(Driver * drvthis, int on)
  * API: Get the backlight brightness
  */
 MODULE_EXPORT int 
-CwLnx_get_brightness(Driver * drvthis)
+CwLnx_get_brightness(Driver * drvthis, int state)
 {
         PrivateData * p = drvthis->private_data;
 
@@ -934,7 +934,7 @@ CwLnx_get_brightness(Driver * drvthis)
  * API: Set the backlight brightness
  */
 MODULE_EXPORT void
-CwLnx_set_brightness(Driver * drvthis, int promille)
+CwLnx_set_brightness(Driver * drvthis, int state, int promille)
 {
         PrivateData * p = drvthis->private_data;
 
