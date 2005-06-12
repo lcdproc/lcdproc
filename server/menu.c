@@ -392,7 +392,7 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 		if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, buf);
 		w->y = 2 + itemnr - hidden_count - menu->data.menu.scroll;
 
-		/* TODO: remove next 5 limes when rendering is safe */
+		/* TODO: remove next 5 lines when rendering is safe */
 		if (w->y > 0 && w->y <= display_props->height) {
 			w->type = WID_STRING;
 		} else {
@@ -410,7 +410,7 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 			w->y = 2 + itemnr - menu->data.menu.scroll;
 			w->length = ((int[]){ICON_CHECKBOX_OFF,ICON_CHECKBOX_ON,ICON_CHECKBOX_GRAY})[subitem->data.checkbox.value];
 
-			/* TODO: remove next 5 limes when rendering is safe */
+			/* TODO: remove next 5 lines when rendering is safe */
 			if (w->y > 0 && w->y <= display_props->height) {
 				w->type = WID_ICON;
 			} else {
@@ -524,23 +524,26 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool ext
 	  case MENUTOKEN_UP:
 		if (menu->data.menu.selector_pos > 0) {
 			menu->data.menu.selector_pos --;
-			if (menu->data.menu.selector_pos + 1 < menu->data.menu.scroll) {
+			if (menu->data.menu.selector_pos + 1 < menu->data.menu.scroll)
 				menu->data.menu.scroll --;
-			}
 		}
 		else if (menu->data.menu.selector_pos == 0) {
-			if (menu->data.menu.selector_pos < menu->data.menu.scroll) {
-				menu->data.menu.scroll --;
-			}
+			// wrap around to last menu entry
+			menu->data.menu.selector_pos = menu_visible_item_count(menu) - 1;
+			menu->data.menu.scroll = menu->data.menu.selector_pos + 2 - display_props->height;
 		}
 		return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 		if (menu->data.menu.selector_pos < menu_visible_item_count(menu) - 1) {
 			menu->data.menu.selector_pos ++;
+			if (menu->data.menu.selector_pos - menu->data.menu.scroll + 2 > display_props->height)
+				menu->data.menu.scroll ++;
 		}
-		if (menu->data.menu.selector_pos - menu->data.menu.scroll + 2 > display_props->height) {
-			menu->data.menu.scroll ++;
-		}
+		else {
+			// wrap araound to 1st menu entry
+			menu->data.menu.selector_pos = 0;
+			menu->data.menu.scroll = 0;
+		}	
 		return MENURESULT_NONE;
 	  case MENUTOKEN_LEFT:
 		if (!extended)
