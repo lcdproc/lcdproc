@@ -8,7 +8,7 @@
  */
 /*  
  *  This is the LCDproc driver for CrystalFontz LCD using Packet protocol.
- *  It support the CrystalFontz 633 USB/Serial, the 631 USB and the 635USB
+ *  It support the CrystalFontz 633 USB/Serial, the 631 USB and the 635 USB
  *  (get yours from http://crystalfontz.com)
  *
  *  Applicable Data Sheets
@@ -57,7 +57,7 @@
  *
  * THINGS TO DO:
  * + Make the caching at least for heartbeat icon
- * + Create and use the library (for custom char handeling)
+ * + Create and use the library (for custom char handling)
  *
  */
 
@@ -251,8 +251,8 @@ CFontz633_init (Driver *drvthis, char *args)
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	debug (RPT_INFO,"CFontzPacket_init: Brightness (in config) is '%d'", tmp);
-	if ((tmp < 0) || (tmp > 100)) {
-		report (RPT_WARNING, "CFontzPacket_init: Brightness must be between 0 and 100. Using default value.\n");
+	if ((tmp < 0) || (tmp > 1000)) {
+		report (RPT_WARNING, "CFontzPacket_init: Brightness must be between 0 and 1000. Using default value.\n");
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
@@ -260,8 +260,8 @@ CFontz633_init (Driver *drvthis, char *args)
 	/* Which backlight-off "brightness" */
 	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
 	debug (RPT_INFO,"CFontzPacket_init: OffBrightness (in config) is '%d'", tmp);
-	if ((tmp < 0) || (tmp > 100)) {
-		report (RPT_WARNING, "CFontzPacket_init: OffBrightness must be between 0 and 100. Using default value.\n");
+	if ((tmp < 0) || (tmp > 1000)) {
+		report (RPT_WARNING, "CFontzPacket_init: OffBrightness must be between 0 and 1000. Using default value.\n");
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
@@ -354,12 +354,12 @@ CFontz633_init (Driver *drvthis, char *args)
 		reboot = 0;
 		debug(RPT_INFO, "CFontzPacket: reboot done" );
 	}
-	
+
 	CFontz633_hidecursor (drvthis);
-	
+
 	CFontz633_set_contrast (drvthis, p->contrast);
 	CFontz633_no_live_report (drvthis);
-  	CFontz633_hardware_clear (drvthis);
+	CFontz633_hardware_clear (drvthis);
 
 	report (RPT_DEBUG, "CFontzPacket_init: done\n");
 
@@ -387,7 +387,7 @@ CFontz633_close (Driver *drvthis)
 		p->backingstore = NULL;
 
 		free(p);
-	}	
+	}
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
@@ -623,10 +623,9 @@ CFontz633_raw_chr (Driver *drvthis, int x, int y, unsigned char c)
 
 
 /*
- * Returns current contrast
+ * Returns current contrast (in promille)
  * This is only the locally stored contrast, the contrast value
  * cannot be retrieved from the LCD.
- * Value 0 to 1000.
  */
 MODULE_EXPORT int
 CFontz633_get_contrast (Driver *drvthis)
@@ -638,8 +637,7 @@ CFontz633_get_contrast (Driver *drvthis)
 
 
 /*
- *  Changes screen contrast (valid hardware value: 0-50)
- *  Value 0 to 1000.
+ *  Changes screen contrast (in promille)
  */
 MODULE_EXPORT void
 CFontz633_set_contrast (Driver *drvthis, int promille)
@@ -651,10 +649,11 @@ CFontz633_set_contrast (Driver *drvthis, int promille)
 	if (promille < 0 || promille > 1000)
 		return;
 
-	/* Store the software value since there is not get. */
+	/* store the software value since there is not get */
 	p->contrast = promille;
 
-	// on CF633: 0 - 50, on CF631, CF635: 0 - 255
+	/* map range [0, 1000] to a range that the hardware understands */
+	/* on CF633: [0, 50], on CF631 & CF635: [0, 255] */
 	hardware_contrast = (p->model == 633)
 			    ? (p->contrast / 20)
 			    : ((p->contrast * 255) / 1000);
@@ -664,22 +663,61 @@ CFontz633_set_contrast (Driver *drvthis, int promille)
 
 
 /*
+ * Retrieves brightness (in promille)
+ */
+MODULE_EXPORT int
+CFontz633_get_brightness(Driver *drvthis, int state)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/*
+ * Sets on/off brightness (in promille)
+ */
+MODULE_EXPORT void
+CFontz633_set_brightness(Driver *drvthis, int state, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+	
+	/* store the software value since there is not get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+		//CFontz633_backlight(drvthis, BACKLIGHT_ON);
+	}	
+	else {
+		p->offbrightness = promille;
+		//CFontz633_backlight(drvthis, BACKLIGHT_OFF);
+	}
+}
+
+
+/*
  * Sets the backlight on or off.
  * The hardware support any value between 0 and 100.
- * Need to find out if we have support for intermediate value.
  */
 MODULE_EXPORT void
 CFontz633_backlight (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
-
-	send_onebyte_message(p->fd, CF633_Set_LCD_And_Keypad_Backlight,
-			     (on) ? p->brightness : p->offbrightness);
+	int hardware_value = (on == BACKLIGHT_ON)
+			     ? p->brightness
+			     : p->offbrightness;
+	
+	/* map range [0, 1000] -> [0, 100] that the hardware understands */
+	hardware_value /= 10;
+	send_onebyte_message(p->fd, CF633_Set_LCD_And_Keypad_Backlight, hardware_value);
 }
 
 
 /*
- * Get rid of the blinking curson
+ * Get rid of the blinking cursor
  */
 static void
 CFontz633_hidecursor (Driver *drvthis)
@@ -743,7 +781,7 @@ CFontz633_reboot (Driver *drvthis)
 	unsigned char out[3] = { 8, 18, 99 };
 
 	send_bytes_message(p->fd, CF633_Reboot, 3, out);
-	sleep(2);	
+	sleep(2);
 }
 
 
@@ -831,7 +869,7 @@ CFontz633_init_vbar (Driver *drvthis)
 			report(RPT_WARNING, "CFontz633_init_vbar: Cannot combine two modes using user defined characters");
 			return;
 		}
-	        p->ccmode = vbar;
+		p->ccmode = vbar;
 
 		CFontz633_set_char (drvthis, 1, a);
 		CFontz633_set_char (drvthis, 2, b);
@@ -918,7 +956,7 @@ CFontz633_init_hbar (Driver *drvthis)
 			report(RPT_WARNING, "CFontz633_init_hbar: Cannot combine two modes using user defined characters");
 			return;
 		}
-	        p->ccmode = hbar;
+		p->ccmode = hbar;
 
 		CFontz633_set_char (drvthis, 1, a);
 		CFontz633_set_char (drvthis, 2, b);
@@ -1175,7 +1213,7 @@ MODULE_EXPORT void
 CFontz633_set_char (Driver *drvthis, int n, char *dat)
 {
 	PrivateData *p = drvthis->private_data;
- 	unsigned char out[9];
+	unsigned char out[9];
 	int row, col;
 
 	if ((n < 0) || (n >= NUM_CCs))
@@ -1219,7 +1257,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		 },
 	/* Filled Heart */
 		{
-		 1, 1, 1, 1, 1, 1,		  
+		 1, 1, 1, 1, 1, 1,
 		 1, 1, 0, 1, 0, 1,
 		 1, 0, 1, 0, 1, 0,
 		 1, 0, 1, 1, 1, 0,
@@ -1285,7 +1323,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		 },
 	 /* Ellipsis */
 		{
-		 0, 0, 0, 0, 0, 0,		 
+		 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0,
 		 0, 0, 0, 0, 0, 0,

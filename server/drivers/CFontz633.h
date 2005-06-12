@@ -8,7 +8,7 @@
 #define DEFAULT_CONTRAST	560
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_SPEED		B19200
-#define DEFAULT_BRIGHTNESS	100
+#define DEFAULT_BRIGHTNESS	1000
 #define DEFAULT_OFFBRIGHTNESS	0
 #define DEFAULT_SIZE		"16x2"
 #define	DEFAULT_SIZE_CF635	"20x4"
@@ -35,7 +35,9 @@ MODULE_EXPORT int  CFontz633_icon(Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT void CFontz633_set_char (Driver *drvthis, int n, char *dat);
 
 MODULE_EXPORT int  CFontz633_get_contrast (Driver *drvthis);
-MODULE_EXPORT void CFontz633_set_contrast (Driver *drvthis, int contrast);
+MODULE_EXPORT void CFontz633_set_contrast (Driver *drvthis, int promille);
+MODULE_EXPORT int  CFontz633_get_brightness (Driver *drvthis, int state);
+MODULE_EXPORT void CFontz633_set_brightness (Driver *drvthis, int state, int promille);
 MODULE_EXPORT void CFontz633_backlight (Driver *drvthis, int on);
 
 #endif /* CFONTZ633_H */

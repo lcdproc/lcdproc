@@ -191,16 +191,16 @@ CFontz633_init (Driver *drvthis, char *args)
 	
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	if ((tmp < 0) || (tmp > 100)) {
-		report (RPT_WARNING, "CFontz633_init: Brightness must be between 0 and 100. Using default value.\n");
+	if ((tmp < 0) || (tmp > 1000)) {
+		report (RPT_WARNING, "CFontz633_init: Brightness must be between 0 and 1000. Using default value.\n");
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
 
 	/* Which backlight-off "brightness" */
 	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	if ((tmp < 0) || (tmp > 100)) {
-		report (RPT_WARNING, "CFontz633_init: OffBrightness must be between 0 and 100. Using default value.\n");
+	if ((tmp < 0) || (tmp > 1000)) {
+		report (RPT_WARNING, "CFontz633_init: OffBrightness must be between 0 and 1000. Using default value.\n");
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
@@ -477,7 +477,7 @@ MODULE_EXPORT void
 CFontz633_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	y--;
 	x--;
 
@@ -486,10 +486,9 @@ CFontz633_chr (Driver *drvthis, int x, int y, char c)
 
 
 /*
- * Returns current contrast
+ * Returns current contrast (in promille)
  * This is only the locally stored contrast, the contrast value
  * cannot be retrieved from the LCD.
- * Value 0 to 1000.
  */
 MODULE_EXPORT int
 CFontz633_get_contrast (Driver *drvthis)
@@ -501,8 +500,7 @@ CFontz633_get_contrast (Driver *drvthis)
 
 
 /*
- *  Changes screen contrast (valid hardware value: 0-50)
- *  Value 0 to 1000.
+ *  Changes screen contrast (in promille)
  */
 MODULE_EXPORT void
 CFontz633_set_contrast (Driver *drvthis, int promille)
@@ -514,33 +512,71 @@ CFontz633_set_contrast (Driver *drvthis, int promille)
 	if (promille < 0 || promille > 1000)
 		return;
 
-	/* Store the software value since there is not get. */
+	/* store the software value since there is not get */
 	p->contrast = promille;
 
-	hardware_contrast = p->contrast/20;
-	/* Next line is to be checked $$$ */
+	/* map range [0, 1000] -> [0, 50] that the hardware understands */
+	hardware_contrast = p->contrast / 20;
 	send_onebyte_message(p->fd, CF633_Set_LCD_Contrast, hardware_contrast);
+}
+
+
+/*
+ * Retrieves brightness (in promille)
+ */
+MODULE_EXPORT int
+CFontz633_get_brightness(Driver *drvthis, int state)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/*
+ * Sets on/off brightness (in promille)
+ */
+MODULE_EXPORT void
+CFontz633_set_brightness(Driver *drvthis, int state, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+	
+	/* store the software value since there is not get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+		//CFontz633_backlight(drvthis, BACKLIGHT_ON);
+	}	
+	else {
+		p->offbrightness = promille;
+		//CFontz633_backlight(drvthis, BACKLIGHT_OFF);
+	}
 }
 
 
 /*
  * Sets the backlight on or off.
  * The hardware support any value between 0 and 100.
- * Need to find out if we have support for intermediate value.
  */
 MODULE_EXPORT void
 CFontz633_backlight (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
-
-	/* Next line is to be checked $$$ */
-	send_onebyte_message(p->fd, CF633_Set_LCD_And_Keypad_Backlight,
-			     (on) ? p->brightness : p->offbrightness);
+	int hardware_value = (on == BACKLIGHT_ON)
+			     ? p->brightness
+			     : p->offbrightness;
+	
+	/* map range [0, 1000] -> [0, 100] that the hardware understands */
+	hardware_value /= 10;
+	send_onebyte_message(p->fd, CF633_Set_LCD_And_Keypad_Backlight, hardware_value);
 }
 
 
 /*
- * Get rid of the blinking curson
+ * Get rid of the blinking cursor
  */
 static void
 CFontz633_hidecursor (Driver *drvthis)
