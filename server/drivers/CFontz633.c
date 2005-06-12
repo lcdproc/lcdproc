@@ -145,7 +145,7 @@ CFontz633_init (Driver *drvthis, char *args)
 	char size[200] = DEFAULT_SIZE;
 
 	PrivateData *p;
-	
+
 	/* Allocate and store private data */
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL)
@@ -172,11 +172,11 @@ CFontz633_init (Driver *drvthis, char *args)
 	/* Which size */
 	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
 	size[sizeof(size)-1] = '\0';
-	if ((sscanf(size, "%dx%d", &w, &h ) != 2)
+	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 		report (RPT_WARNING, "CFontz633_init: Cannot read size: %s. Using default value.\n", size);
-		sscanf( DEFAULT_SIZE, "%dx%d", &w, &h );
+		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
@@ -188,7 +188,7 @@ CFontz633_init (Driver *drvthis, char *args)
 		tmp = DEFAULT_CONTRAST;
 	}
 	p->contrast = tmp;
-	
+
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	if ((tmp < 0) || (tmp > 1000)) {
@@ -212,7 +212,9 @@ CFontz633_init (Driver *drvthis, char *args)
 	else if (tmp == 9600) speed = B9600;
 	else if (tmp == 19200) speed = B19200;
 	else if (tmp == 115200) speed = B115200;
-	else { report (RPT_WARNING, "CFontz633_init: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default value.\n", speed);
+	else {
+		report (RPT_WARNING, "CFontz633_init: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default value.\n");
+		speed = DEFAULT_SPEED;
 	}
 
 	/* New firmware version?
@@ -251,7 +253,7 @@ CFontz633_init (Driver *drvthis, char *args)
 	} else {
 #ifdef HAVE_CFMAKERAW
 		/* The easy way */
-		cfmakeraw( &portset );
+		cfmakeraw(&portset);
 #else
 		/* The hard way */
 		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -461,7 +463,7 @@ CFontz633_get_key (Driver *drvthis)
 			break;
 		default:
 			if (key != '\0')
-				report( RPT_INFO, "cfontz633: Untreated key 0x%2x", key); 
+				report( RPT_INFO, "cfontz633: Untreated key 0x%2x", key);
 			return NULL;
 			break;
 	}
@@ -544,12 +546,12 @@ CFontz633_set_brightness(Driver *drvthis, int state, int promille)
 	/* Check it */
 	if (promille < 0 || promille > 1000)
 		return;
-	
+
 	/* store the software value since there is not get */
 	if (state == BACKLIGHT_ON) {
 		p->brightness = promille;
 		//CFontz633_backlight(drvthis, BACKLIGHT_ON);
-	}	
+	}
 	else {
 		p->offbrightness = promille;
 		//CFontz633_backlight(drvthis, BACKLIGHT_OFF);
@@ -568,7 +570,7 @@ CFontz633_backlight (Driver *drvthis, int on)
 	int hardware_value = (on == BACKLIGHT_ON)
 			     ? p->brightness
 			     : p->offbrightness;
-	
+
 	/* map range [0, 1000] -> [0, 100] that the hardware understands */
 	hardware_value /= 10;
 	send_onebyte_message(p->fd, CF633_Set_LCD_And_Keypad_Backlight, hardware_value);
@@ -813,7 +815,7 @@ CFontz633_init_hbar (Driver *drvthis)
 		//	return;
 		//}
 		p->ccmode = hbar;
-		
+
 		CFontz633_set_char (drvthis, 1, a);
 		CFontz633_set_char (drvthis, 2, b);
 		CFontz633_set_char (drvthis, 3, c);

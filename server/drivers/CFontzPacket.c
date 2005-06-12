@@ -6,7 +6,7 @@
  *
  * -- David GLAUDE
  */
-/*  
+/*
  *  This is the LCDproc driver for CrystalFontz LCD using Packet protocol.
  *  It support the CrystalFontz 633 USB/Serial, the 631 USB and the 635 USB
  *  (get yours from http://crystalfontz.com)
@@ -31,7 +31,7 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  */
 
 /*
@@ -211,7 +211,7 @@ CFontz633_init (Driver *drvthis, char *args)
 		report (RPT_WARNING, "CFontzPacket_init: Model must be 631, 633 or 635. Using default value: %d\n", tmp);
 	}
 	p->model = tmp;
-	
+
 	/* Which device should be used */
 	strncpy(p->device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 	p->device[sizeof(p->device)-1] = '\0';
@@ -224,15 +224,15 @@ CFontz633_init (Driver *drvthis, char *args)
 		default_size = DEFAULT_SIZE_CF633;
 	else if (p->model == 635)
 		default_size = DEFAULT_SIZE_CF635;
-		
+
 	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, default_size), sizeof(size));
 	size[sizeof(size)-1] = '\0';
 	debug (RPT_INFO,"CFontzPacket_init: Size (in config) is '%s'", size);
-	if ((sscanf(size, "%dx%d", &w, &h ) != 2)
+	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 		report (RPT_WARNING, "CFontzPacket_init: Cannot read size: %s. Using default value.\n", size);
-		sscanf( default_size, "%dx%d", &w, &h );
+		sscanf(default_size, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
@@ -271,7 +271,9 @@ CFontz633_init (Driver *drvthis, char *args)
 	debug (RPT_INFO,"CFontzPacket_init: Speed (in config) is '%d'", tmp);
 	if (tmp == 19200) speed = B19200;
 	else if (tmp == 115200) speed = B115200;
-	else { report (RPT_WARNING, "CFontz633_init: Speed must be 19200 or 11500. Using default value.\n", speed);
+	else {
+		report (RPT_WARNING, "CFontz633_init: Speed must be 19200 or 11500. Using default value.\n");
+		speed = DEFAULT_SPEED;
 	}
 
 	/* New firmware version?
@@ -312,7 +314,7 @@ CFontz633_init (Driver *drvthis, char *args)
 	} else {
 #ifdef HAVE_CFMAKERAW
 		/* The easy way */
-		cfmakeraw( &portset );
+		cfmakeraw(&portset);
 #else
 		/* The hard way */
 		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -456,7 +458,7 @@ CFontz633_flush (Driver *drvthis)
    */
   unsigned char *xp = p->framebuf;
   unsigned char *xq = p->backingstore;
-    
+
     for (i = 0; i < p->width; i++) {
       if (*xp++ != *xq++) {
 	send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_One, 16, p->framebuf);
@@ -489,17 +491,17 @@ CFontz633_flush (Driver *drvthis)
       debug (RPT_INFO,"Framebuf: '%.*s'", p->width, xp );
       debug (RPT_INFO,"     backingstore: '%.*s'", p->width, xq );
 
-      for (j = 0; j < p->width; ) { 
+      for (j = 0; j < p->width; ) {
 	// skip over identical portions
 	for ( ; *xp == *xq && j < p->width; xp++, xq++, j++ )
 	  ;
-		
+
 	// deal with the differences
 	if (j < p->width) {
           unsigned char out[23];
           int diff_length;
 	  int first_diff = j;
-	    
+
 	  // get length of differing portions
 	  for ( ; *xp != *xq && j < p->width; xp++, xq++, j++ )
 	    ;
@@ -508,14 +510,14 @@ CFontz633_flush (Driver *drvthis)
 	  diff_length = j - first_diff;
 	  out[0] = first_diff;	// column
 	  out[1] = i;		// line
-			
+
 	  debug (RPT_INFO,"WriteDiff: l=%d c=%d count=%d string='%.*s'",
 	 	 out[0], out[1], diff_length, diff_length,
 		 &p->framebuf[first_diff + (i * p->width)] );
 
 	  memcpy(&out[2], &p->framebuf[first_diff + (i * p->width)], diff_length );
 	  send_bytes_message(p->fd, CF633_Send_Data_to_LCD, diff_length + 2, out);
-	}  
+	}
       } // j < p->width
     }	// i < p->height
     memcpy(p->backingstore, p->framebuf, p->width * p->height);
@@ -685,12 +687,12 @@ CFontz633_set_brightness(Driver *drvthis, int state, int promille)
 	/* Check it */
 	if (promille < 0 || promille > 1000)
 		return;
-	
+
 	/* store the software value since there is not get */
 	if (state == BACKLIGHT_ON) {
 		p->brightness = promille;
 		//CFontz633_backlight(drvthis, BACKLIGHT_ON);
-	}	
+	}
 	else {
 		p->offbrightness = promille;
 		//CFontz633_backlight(drvthis, BACKLIGHT_OFF);
@@ -709,7 +711,7 @@ CFontz633_backlight (Driver *drvthis, int on)
 	int hardware_value = (on == BACKLIGHT_ON)
 			     ? p->brightness
 			     : p->offbrightness;
-	
+
 	/* map range [0, 1000] -> [0, 100] that the hardware understands */
 	hardware_value /= 10;
 	send_onebyte_message(p->fd, CF633_Set_LCD_And_Keypad_Backlight, hardware_value);
@@ -740,7 +742,7 @@ CFontz633_no_live_report (Driver *drvthis)
 	if (p->model == 633) {
 		for (out[0] = 0; out[0] < 8; out[0]++)
 			send_bytes_message(p->fd, CF633_Set_Up_Live_Fan_or_Temperature_Display, 2, out);
-	}	
+	}
 }
 
 
