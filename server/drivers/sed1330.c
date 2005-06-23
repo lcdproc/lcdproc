@@ -375,7 +375,7 @@ sed1330_init( Driver * drvthis, char *args )
 		p->graph_height = 192;
 	} else if( strcmp( s, "G2446" ) == 0 ) {
 		p->type = TYPE_G2446;
-		p->graph_width = 256;
+		p->graph_width = 240;
 		p->graph_height = 64;
 
 	} else {
