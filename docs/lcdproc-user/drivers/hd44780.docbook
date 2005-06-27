@@ -1037,9 +1037,9 @@ It does not support a keypad nor backlight switching.
 
 <para>
 LCD serializer connection is technically the same of PIC-an-LCD with the same advantages,
-it uses the serial making things really simple.
+it uses the serial port making things really simple.
 <ulink url="http://www.mindspring.com/~tcoonan/lcd.html">LCD serializer</ulink>
-is not a commercial product like PIC-an-LCD, it's just a project found digging on the net freely available.
+is not a commercial product like PIC-an-LCD, it's just a project found digging on the net and freely available.
 You have all the tools and the code to build it yourself and to customize the behaviour of the device.
 </para>
 
@@ -1061,22 +1061,20 @@ You have all the tools and the code to build it yourself and to customize the be
 
 <para>
 First, you need to download the asm source for your pic and then make the hex:
+</para>
+<para>
 <command>
-<para>
-wget http://www.mindspring.com/~tcoonan/lcd18f84.asm
-</para>
-<para>
-gpasm lcd18f84_custom.asm
-</para>
+gpasm lcd16f84_custom.asm
 </command>
+</para>
+<para>
 Now the binary is ready to be flashed to the PIC.
 Connect the programmer with the PIC installed and issue the following command to see it burning ;-):
-<command>
-<para>
-picprog --erase --burn --input lcd16f84.hex --pic /dev/ttyS0
 </para>
+<para>
+<command>
+picprog --erase --burn --input lcd16f84.hex --pic /dev/ttyS0
 </command>
-
 </para>
 </sect4>
 
@@ -1084,18 +1082,126 @@ picprog --erase --burn --input lcd16f84.hex --pic /dev/ttyS0
 <title>Running lcdproc</title>
 
 <para>
-It's time to build the <ulink url="http://www.mindspring.com/~tcoonan/lcdpic.html">operating circuit</ulink> and power on your new toy.
-You should see OK. on the LCD screen, otherwise, double-check all the connections.
-Now change LCDd.conf to include the following statments in the hd44780 section:
-<command>
+It's time to build the <ulink url="http://www.mindspring.com/~tcoonan/lcdpic.html">operating circuit</ulink>,
+remember this driver uses a baud rate of 9600, so JP2 need to be closed.
+</para>
+
 <para>
+Now power on the board. You should see OK. on the LCD screen, otherwise, double-check all the connections.
+</para>
+
+<para>
+Change LCDd.conf to include the following statments in the hd44780 section:
+</para>
+
+<para>
+<screen>
 ConnectionType=lcdserializer
-</para>
-<para>
 Device=/dev/ttyS0
+</screen>
 </para>
-</command>
-Start the daemon and relax watching lcdproc running.
+
+<para>
+Finally, start the daemon and relax watching lcdproc running.
+</para>
+</sect4>
+
+<sect4 id="hd44780-lcdserializer-customizemsg">
+<title>Customizing startup message</title>
+
+<para>
+If want to change the default startup message (OK.), you can edit the asm source
+and write anything you want.
+Open the asm source with your preferred editor and look for this:
+</para>
+
+<para>
+<programlisting>
+<![CDATA[
+;******* START Main Loop Here **************
+
+; This is where we should insert any little startup LCD messages...
+;   Print "OK." on startup...
+                        movlw   0x4F
+                        movwf   ARG1
+                        call    SendLCDData
+                        call    InitDelay200MS
+                        movlw   0x4B
+                        movwf   ARG1
+                        call    SendLCDData
+                        call    InitDelay200MS
+                        movlw   0x2E
+                        movwf   ARG1
+                        call    SendLCDData
+                        call    InitDelay200MS
+]]>
+</programlisting>
+</para>
+
+<para>
+This piece of code sends three characters to the LCD.
+The first line sets the value of w register (working register, aka accumulator) to 0x4F ('O' in ascii). The second line copies this
+value to ARG1, then the value is sent to the LCD. The fourth line delays the execution.
+</para>
+
+<para>
+You don't have to write the ascii values in your modification, gpasm does the translation for you, so
+if you want to see Booting... at startup, change the code above to look like this:
+</para>
+
+<para>
+<programlisting>
+<![CDATA[
+;******* START Main Loop Here **************
+
+; This is where we should insert any little startup LCD messages...
+;   Print "Booting..." on startup...
+			movlw   'B'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   'o'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   'o'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   't'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   'i'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   'n'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   'g'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   '.'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   '.'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+			movlw   '.'
+			movwf   ARG1
+			call    SendLCDData
+			call    InitDelay200MS
+]]>
+</programlisting>
+</para>
+
+<para>
+Refer to <link linkend="hd44780-lcdserializer-burning">burning section</link> in order to compile and reflash the new firmware.
 </para>
 </sect4>
 </sect3>
@@ -1134,7 +1240,7 @@ can be done by specifying "--enable-drivers=all" or by
 <title>Configuration</title>
 
 <para>
-Since LCDproc 0.4.3 the HD44780 driver can be cnfigured from the configfile.
+Since LCDproc 0.4.3 the HD44780 driver can be configured from the configfile.
 </para>
 
 <para>
