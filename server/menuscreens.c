@@ -427,7 +427,7 @@ void menuscreen_create_menu ()
 	menu_add_item (test_menu, test_item);
 	test_item = menuitem_create_action ("", NULL, "Action,closing", NULL, MENURESULT_CLOSE);
 	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_action ("", NULL, "Action,quiting", NULL, MENURESULT_QUIT);
+	test_item = menuitem_create_action ("", NULL, "Action,quitting", NULL, MENURESULT_QUIT);
 	menu_add_item (test_menu, test_item);
 
 	test_item = menuitem_create_checkbox ("", NULL, "Checkbox", NULL, false, false);
@@ -455,7 +455,7 @@ void menuscreen_create_menu ()
 
 	test_item = menuitem_create_ip ("", NULL, "IPv4", NULL, 0, "192.168.1.245");
 	menu_add_item (test_menu, test_item);
-	test_item = menuitem_create_ip ("", NULL, "IPv6", NULL, 1, ":::ffff:ffff:ffff:ffff:ffff");
+	test_item = menuitem_create_ip ("", NULL, "IPv6", NULL, 1, "1080:0:0:0:8:800:200C:417A");
 	menu_add_item (test_menu, test_item);
 #endif /*LCDPROC_TESTMENUS*/
 }

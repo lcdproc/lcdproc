@@ -16,6 +16,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <assert.h>
 
 #include "shared/report.h"
@@ -71,15 +72,15 @@ typedef struct {
 	int  limit;		// upper limit of each numeric string
 	int  posValue[5];	// digit-value of the digits at the approp. position in the numeric string
 	char format[5];		// printf-format string to print a numeric string
-	int (*verify)(const char *);	// verify function
+	int (*verify)(const char *);	// verify function: returns 1 = OK, 0 = error
 	char dummy[16];		// dummy value (if provided value is no IP address)
 } IpSstringProperties;
 
 
 const IpSstringProperties IPinfo[] = {
-	// IPv4: 15 char long ':'-separated sequence of 4-digit hex strings
+	// IPv4: 15 char long '.'-separated sequence of 3-digit decimal strings in range 000 - 255
 	{ 15, '.', 10, 3,   255, {  100,  10,  1, 0, 0 }, "%03d", verify_ipv4, "0.0.0.0" },
-	// IPv6: 39 char long ':'-separated sequence of 4-digit hex strings
+	// IPv6: 39 char long ':'-separated sequence of 4-digit hex strings in range 0000 - ffff
 	{ 39, ':', 16, 4, 65535, { 4096, 256, 16, 1, 0 }, "%04x", verify_ipv6, "0:0:0:0:0:0:0:0" }
 };
 	
@@ -455,6 +456,7 @@ void menuitem_reset_numeric (MenuItem *item)
 
 	if (item != NULL) {
 		item->data.numeric.edit_pos = 0;
+		item->data.numeric.edit_offs = 0;
 		memset (item->data.numeric.edit_str, '\0', MAX_NUMERIC_LEN);
 		if (item->data.numeric.minvalue < 0) {
 			snprintf (item->data.numeric.edit_str, MAX_NUMERIC_LEN,
@@ -473,6 +475,7 @@ void menuitem_reset_alpha (MenuItem *item)
 
 	if (item != NULL) {
 		item->data.alpha.edit_pos = 0;
+		item->data.alpha.edit_offs = 0;
 		memset (item->data.alpha.edit_str, '\0', item->data.alpha.maxlength+1);
 		strcpy (item->data.alpha.edit_str, item->data.alpha.value);
 	}	
@@ -487,9 +490,10 @@ void menuitem_reset_ip (MenuItem *item)
 			((item != NULL) ? item->id : "(null)"));
 
 	item->data.ip.edit_pos = 0;
+	item->data.ip.edit_offs = 0;
 	memset (item->data.ip.edit_str, '\0', item->data.ip.maxlength+1);
 
-	// normalize IP address string to 010.002.250.002 / 00:01:02:04:05:06:07:08:09:0a:0b:0c:0e:0f
+	// normalize IP address string to e.g. 010.002.250.002 / 00:01:02:04:05:06:07:08:09:0a:0b:0c:0e:0f
 	while (start != NULL)
 	{
 		char *end;
@@ -794,10 +798,10 @@ void menuitem_update_screen_numeric (MenuItem *item, Screen *s)
 		return;
 	
 	w = screen_find_widget (s, "value");
-	strcpy (w->text, item->data.numeric.edit_str);
+	strcpy (w->text, item->data.numeric.edit_str + item->data.numeric.edit_offs);
 
 	s->cursor = CURSOR_DEFAULT_ON;
-	s->cursor_x = w->x + item->data.numeric.edit_pos;
+	s->cursor_x = w->x + item->data.numeric.edit_pos - item->data.numeric.edit_offs;
 	s->cursor_y = w->y;
 
 	/* Only display error string if enough space... */
@@ -821,14 +825,16 @@ void menuitem_update_screen_alpha (MenuItem *item, Screen *s)
 	
 	w = screen_find_widget (s, "value");
 	if (item->data.alpha.password_char == '\0') {
-		strcpy (w->text, item->data.alpha.edit_str);
+		strcpy (w->text, item->data.alpha.edit_str + item->data.alpha.edit_offs);
 	} else {
-		memset (w->text, item->data.alpha.password_char, strlen (item->data.alpha.edit_str));
-		w->text[ strlen (item->data.alpha.edit_str) ] = '\0';
+		int len = strlen(item->data.alpha.edit_str) - item->data.alpha.edit_offs;
+
+		memset (w->text, item->data.alpha.password_char, len);
+		w->text[len] = '\0';
 	}
 
 	s->cursor = CURSOR_DEFAULT_ON;
-	s->cursor_x = w->x + item->data.alpha.edit_pos;
+	s->cursor_x = w->x + item->data.alpha.edit_pos - item->data.alpha.edit_offs;
 	s->cursor_y = w->y;
 
 	/* Only display error string if enough space... */
@@ -852,10 +858,10 @@ void menuitem_update_screen_ip (MenuItem *item, Screen *s)
 	
 	w = screen_find_widget (s, "value");
 	if (w != NULL)
-		strcpy (w->text, item->data.ip.edit_str);
+		strcpy (w->text, item->data.ip.edit_str + item->data.ip.edit_offs);
 
 	s->cursor = CURSOR_DEFAULT_ON;
-	s->cursor_x = w->x + item->data.ip.edit_pos;
+	s->cursor_x = w->x + item->data.ip.edit_pos - item->data.ip.edit_offs;
 	s->cursor_y = w->y;
 
 	/* Only display error string if enough space... */
@@ -954,9 +960,7 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 			}
 			else {
 				/* Reset data */
-				item->data.numeric.edit_pos = 0;
-				memset (str, '\0', MAX_NUMERIC_LEN);
-				snprintf (str, MAX_NUMERIC_LEN, format_str, item->data.numeric.value);
+				menuitem_reset_numeric(item);
 			}
 			return MENURESULT_NONE;
 		  case MENUTOKEN_ENTER:
@@ -976,6 +980,7 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 					 */
 					item->data.numeric.error_code = 1;
 					item->data.numeric.edit_pos = 0;
+					item->data.numeric.edit_offs = 0;
 					return MENURESULT_NONE;
 				}
 
@@ -991,7 +996,9 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 			else {
 				/* The user wants to go to next digit */
 				if (pos < max_len) {
-					item->data.numeric.edit_pos ++;
+					item->data.numeric.edit_pos++;
+					if (pos >= display_props->width - 2)
+						item->data.numeric.edit_offs++;
 				}
 			}
 			return MENURESULT_NONE;
@@ -1000,6 +1007,7 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 				/* We're not allowed to add anything anymore */
 				item->data.numeric.error_code = 2;
 				item->data.numeric.edit_pos = 0;
+				item->data.numeric.edit_offs = 0;
 				return MENURESULT_NONE;
 			}
 			if (allow_signed && pos == 0) {
@@ -1021,6 +1029,7 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 				/* We're not allowed to add anything anymore */
 				item->data.numeric.error_code = 2;
 				item->data.numeric.edit_pos = 0;
+				item->data.numeric.edit_offs = 0;
 				return MENURESULT_NONE;
 			}
 			if (allow_signed && pos == 0) {
@@ -1040,13 +1049,17 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 		  case MENUTOKEN_RIGHT:
 			/* The user wants to go to next digit */
 			if (str[pos] != '\0' && pos < max_len) {
-				item->data.numeric.edit_pos ++;
+				item->data.numeric.edit_pos++;
+				if (pos >= display_props->width - 2)
+					item->data.numeric.edit_offs++;
 			}
 			return MENURESULT_NONE;
 		  case MENUTOKEN_LEFT:
 			/* The user wants to go to back a digit */
 			if (pos > 0) {
-				item->data.numeric.edit_pos --;
+				item->data.numeric.edit_pos--;
+				if (item->data.numeric.edit_offs > item->data.numeric.edit_pos)
+					item->data.numeric.edit_offs = item->data.numeric.edit_pos;
 			}
 			return MENURESULT_NONE;
 		  case MENUTOKEN_OTHER:
@@ -1054,12 +1067,15 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 				/* We're not allowed to add anything anymore */
 				item->data.numeric.error_code = 2;
 				item->data.numeric.edit_pos = 0;
+				item->data.numeric.edit_offs = 0;
 				return MENURESULT_NONE;
 			}
 			/* process numeric keys */
-  			if ( strlen(key) == 1 && key[0] >= '0' && key[0] <= '9') {
+  			if ((strlen(key) == 1) && isdigit(key[0])) {
 				str[pos] = key[0];
-				item->data.numeric.edit_pos ++;
+				item->data.numeric.edit_pos++;
+				if (pos >= display_props->width - 2)
+					item->data.numeric.edit_offs++;
 			}
 			return MENURESULT_NONE;
 		}
@@ -1082,7 +1098,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 
 		/* Create list of allowed chars */
 		chars = realloc (chars, 26 + 26 + 10 + strlen(item->data.alpha.allowed_extra) + 1);
-		chars[0] = 0; /* clear string */
+		chars[0] = '\0'; /* clear string */
 		if (item->data.alpha.allow_caps)
 			strcat (chars, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 		if (item->data.alpha.allow_noncaps)
@@ -1101,9 +1117,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 			}
 			else {
 				/* Reset data */
-				item->data.alpha.edit_pos = 0;
-				memset (str, '\0', item->data.alpha.maxlength+1);
-				strcpy (str, item->data.alpha.value);
+				menuitem_reset_alpha(item);
 			}
 			return MENURESULT_NONE;
 		  case MENUTOKEN_ENTER:
@@ -1128,7 +1142,9 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 			else {
 				/* The user wants to go to next digit */
 				if (pos < item->data.alpha.maxlength) {
-					item->data.alpha.edit_pos ++;
+					item->data.alpha.edit_pos++;
+					if (pos >= display_props->width - 2)
+						item->data.alpha.edit_offs++;
 				}
 			}
 			return MENURESULT_NONE;
@@ -1137,6 +1153,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 				/* We're not allowed to add anything anymore */
 				item->data.alpha.error_code = 2;
 				item->data.alpha.edit_pos = 0;
+				item->data.alpha.edit_offs = 0;
 				return MENURESULT_NONE;
 			}
 			if (str[pos] == '\0') {
@@ -1158,6 +1175,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 				/* We're not allowed to add anything anymore */
 				item->data.alpha.error_code = 2;
 				item->data.alpha.edit_pos = 0;
+				item->data.alpha.edit_offs = 0;
 				return MENURESULT_NONE;
 			}
 			if (str[pos] == '\0') {
@@ -1177,25 +1195,33 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 			/* The user wants to go to next digit */
 			if (str[item->data.alpha.edit_pos] != '\0' &&
 			    pos < item->data.alpha.maxlength - 1) {
-				item->data.alpha.edit_pos ++;
+				item->data.alpha.edit_pos++;
+				if (pos >= display_props->width - 2)
+					item->data.alpha.edit_offs++;
 			}
 			return MENURESULT_NONE;
 		  case MENUTOKEN_LEFT:
 			/* The user wants to go to back a digit */
-			if (pos > 0)
-				item->data.alpha.edit_pos --;
+			if (pos > 0) {
+				item->data.alpha.edit_pos--;
+				if (item->data.alpha.edit_offs > item->data.alpha.edit_pos)
+					item->data.alpha.edit_offs = item->data.alpha.edit_pos;
+			}	
 			return MENURESULT_NONE;
 		  case MENUTOKEN_OTHER:
 			if (pos >= item->data.alpha.maxlength) {
 				/* We're not allowed to add anything anymore */
 				item->data.alpha.error_code = 2;
 				item->data.alpha.edit_pos = 0;
+				item->data.alpha.edit_offs = 0;
 				return MENURESULT_NONE;
 			}
-			/* proces other keys */
-  			if ( strlen(key) == 1 && key[0] >= ' ' && key[0] <= 'Z') {
+			/* process other keys */
+  			if ((strlen(key) == 1) && (key[0] >= ' ') && (strchr(chars, key[0]) != NULL)) {
 				str[pos] = key[0];
-				item->data.alpha.edit_pos ++;
+				item->data.alpha.edit_pos++;
+				if (pos >= display_props->width - 2)
+					item->data.alpha.edit_offs++;
 			}
 			return MENURESULT_NONE;
 		}	
@@ -1227,14 +1253,12 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 			else {
 				/* Reset data */
 				menuitem_reset_ip(item);
-//				item->data.ip.edit_pos = 0;
-//				memset (str, '\0', item->data.ip.maxlength+1);
-//				strcpy (str, item->data.ip.value);
 			}
 			return MENURESULT_NONE;
 		case MENUTOKEN_ENTER:
 			if (extended || (pos >= item->data.ip.maxlength - 1)) {
-				/* remove the loading spaces/zeros in each octet-representing string */
+				/* ** we do not need this; the verify function is clever enough **
+				// remove the leading spaces/zeros in each octet-representing string
 				char *start = str;
 				
 				while (start != NULL) {
@@ -1246,16 +1270,18 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 					skip = strchr(start, ipinfo->sep);
 					start = (skip != NULL) ? (skip + 1) : NULL;
 				}
+				*/
                   
-				if (ipinfo->verify(item->data.ip.edit_str)) {
+				// check IP address entered
+				if (!ipinfo->verify(item->data.ip.edit_str)) {
 					item->data.ip.error_code = 4;
 					return MENURESULT_NONE;
 				}
         
-				/* Store value */
+				// store value
 				strcpy (item->data.ip.value, item->data.ip.edit_str);
 
-				/* Inform client */
+				// Inform client
 				if (item->event_func)
 					item->event_func (item, MENUEVENT_UPDATE);
 
@@ -1265,6 +1291,8 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 				item->data.ip.edit_pos++;
 				if (str[item->data.ip.edit_pos] == ipinfo->sep)
 					item->data.ip.edit_pos++;
+				while (item->data.ip.edit_pos - item->data.ip.edit_offs > display_props->width - 2)
+					item->data.ip.edit_offs++;
 				return MENURESULT_NONE;
 			}
 		case MENUTOKEN_UP:
@@ -1294,6 +1322,8 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 				item->data.ip.edit_pos++;
 				if (str[item->data.ip.edit_pos] == ipinfo->sep)
 					item->data.ip.edit_pos++;
+				while (item->data.ip.edit_pos - item->data.ip.edit_offs > display_props->width - 2)
+					item->data.ip.edit_offs++;
 			}
 			return MENURESULT_NONE;
 		case MENUTOKEN_LEFT:
@@ -1302,9 +1332,23 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 				item->data.ip.edit_pos--;
 				if (str[item->data.ip.edit_pos] == ipinfo->sep)
 					item->data.ip.edit_pos--;
+				if (item->data.ip.edit_offs > item->data.ip.edit_pos)
+					item->data.ip.edit_offs = item->data.ip.edit_pos;
 			}
 			return MENURESULT_NONE;
 		case MENUTOKEN_OTHER:
+			/* process other keys */
+  			if ((strlen(key) == 1) &&
+			    ((item->data.ip.v6) ? isxdigit(key[0]) : isdigit(key[0]))) {
+				str[pos] = tolower(key[0]);
+				if (pos < item->data.ip.maxlength - 1) {
+					item->data.ip.edit_pos++;
+					if (str[item->data.ip.edit_pos] == ipinfo->sep)
+						item->data.ip.edit_pos++;
+					while (item->data.ip.edit_pos - item->data.ip.edit_offs > display_props->width - 2)
+						item->data.ip.edit_offs++;
+				}
+			}
 			return MENURESULT_NONE;
 	}
 	return MENURESULT_ERROR;

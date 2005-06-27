@@ -437,26 +437,30 @@ sock_read_from_client(struct ClientSocketMap* clientSocketMap)
 }
 
 
-/* return 0 if addr is valid ipv4 */
+/* return 1 if addr is valid IPv4 */
 int verify_ipv4(const char *addr) 
 {
-	int rsts;
-	struct in_addr a;
-	rsts = inet_pton(AF_INET, addr, &a);
-	/* inet_pton returns  positive value if it worked */
-	if (rsts <=0)
-		return -1;
-	return 0;
+	int result = -1;
+
+	if (addr != NULL) {
+		struct in_addr a;
+
+		/* inet_pton returns  positive value if it worked */
+		result = inet_pton(AF_INET, addr, &a);
+	}
+	return (result > 0) ? 1 : 0;
 }
 
-/* return 0 if addr is valid ipv4 */
+/* return 1 if addr is valid IPv6 */
 int verify_ipv6(const char *addr) 
 {
-	int rsts;
-	struct in6_addr a;
-	rsts = inet_pton(AF_INET, addr, &a);
-	/* inet_pton returns  positive value if it worked */
-	if (rsts <=0)
-		return -1;
-	return 0;
+	int result = 0;
+
+	if (addr != NULL) {
+		struct in6_addr a;
+
+		/* inet_pton returns  positive value if it worked */
+		result = inet_pton(AF_INET6, addr, &a);
+	}	
+	return (result > 0) ? 1 : 0;
 } 

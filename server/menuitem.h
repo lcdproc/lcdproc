@@ -157,6 +157,7 @@ typedef struct MenuItem {
 			int value;		/**< Current value */
 			char *edit_str;		/**< Value while being edited */
 			short edit_pos;		/**< Position while editing */
+			short edit_offs;	/**< Offset while editing */
 			short error_code;
 		} numeric;
 		struct alpha {
@@ -170,6 +171,7 @@ typedef struct MenuItem {
 			char *value;		/**< Current value */
 			char *edit_str;		/**< Value while being edited */
 			short edit_pos;		/**< Position while editing */
+			short edit_offs;	/**< Offset while editing */
 			short error_code;
 		} alpha;
 		struct ip {
@@ -178,6 +180,7 @@ typedef struct MenuItem {
 			short maxlength;
 			bool v6;		/**< true if editing ipv6 addr */
 			short edit_pos;		/**< Position while editing */
+			short edit_offs;	/**< Offset while editing */
 			short error_code;
 		} ip;
 	} data;
