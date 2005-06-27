@@ -41,6 +41,9 @@
 #define CF633_Read_Reporting_and_Status				30
 #define CF633_Send_Data_to_LCD					31
 #define CF633_Key_Legends					32
+#define CF633_Set_Baud_Rate					33
+#define CF633_Set_GPIO_Pin					34
+#define CF633_Read_GPIO_Pin					35
 
 /* Those are all the possible keys we know off */
 #define KEY_UP_PRESS		1
@@ -86,7 +89,7 @@ typedef struct _reveivebuffer {
 
 /* command management */
 #define MAX_DATA_LENGTH	22	/* CF635 spec says 0..22 */
-#define MAX_COMMAND	32
+#define MAX_COMMAND	35	/* CF635 spec says 0..35 */
 
 typedef struct {
 	ubyte command;

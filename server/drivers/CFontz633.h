@@ -26,6 +26,7 @@ MODULE_EXPORT void CFontz633_clear (Driver *drvthis);
 MODULE_EXPORT void CFontz633_flush (Driver *drvthis);
 MODULE_EXPORT void CFontz633_string (Driver *drvthis, int x, int y, char string[]);
 MODULE_EXPORT void CFontz633_chr (Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT char *CFontz633_get_key (Driver *drvthis);
 
 MODULE_EXPORT void CFontz633_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void CFontz633_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
@@ -39,5 +40,6 @@ MODULE_EXPORT void CFontz633_set_contrast (Driver *drvthis, int promille);
 MODULE_EXPORT int  CFontz633_get_brightness (Driver *drvthis, int state);
 MODULE_EXPORT void CFontz633_set_brightness (Driver *drvthis, int state, int promille);
 MODULE_EXPORT void CFontz633_backlight (Driver *drvthis, int on);
+MODULE_EXPORT void CFontz633_output (Driver *drvthis, int state);
 
 #endif /* CFONTZ633_H */

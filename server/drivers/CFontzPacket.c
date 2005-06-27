@@ -17,7 +17,8 @@
  *  http://www.crystalfontz.com/products/635/CFA_635_1_0.pdf
  *
  *  Copyright (C) 2002 David GLAUDE
- *  Portstions Copyright (C) 2005 Peter Marschall
+ *  Portions Copyright (C) 2005 Peter Marschall
+ *  Portions Copyright (C) 2005 Nicolas Croiset <ncroiset@vdldiffusion.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,7 +46,6 @@
  *
  * THINGS NOT DONE:
  * + No checking if right hardware is connected (firmware/hardware)
- * + No BigNum (but screen is too small ???)
  * + No support for multiple instance (require private structure)
  * + No cache of custom char usage (like in MtxOrb)
  *
@@ -54,6 +54,8 @@
  * + Stopping the reporting of temp and fan (is it necessary after reboot)
  * + Use of library for hbar and vbar (good but library could be better)
  * + Support for keypad (Using a KeyRing)
+ * + BigNum (for CF635 only: it is a 4-line display)
+ * + Output support (LED control on a CF635 only)
  *
  * THINGS TO DO:
  * + Make the caching at least for heartbeat icon
@@ -108,6 +110,9 @@
 #define CELLHEIGHT	DEFAULT_CELL_HEIGHT
 
 
+/* LEDs dispatch */
+#define CF635_NUM_LEDs	8
+
 /* Constants for userdefchar_mode */
 #define NUM_CCs		8 /* max. number of custom characters */
 
@@ -133,6 +138,7 @@ typedef struct driver_private_data {
 
 	int model;
 	int newfirmware;
+	int usb;
 
 	/* dimensions */
 	int width, height;
@@ -149,6 +155,7 @@ typedef struct driver_private_data {
 	int contrast;
 	int brightness;
 	int offbrightness;
+	unsigned int LEDstate;
 } PrivateData;
 
 
@@ -178,7 +185,6 @@ CFontz633_init (Driver *drvthis, char *args)
 	struct termios portset;
 	int tmp, w, h;
 	int reboot = 0;
-	int usb = 0;
 	int speed = DEFAULT_SPEED;
 	char size[200] = DEFAULT_SIZE_CF633;
 	char *default_size = DEFAULT_SIZE_CF633;
@@ -196,6 +202,7 @@ CFontz633_init (Driver *drvthis, char *args)
 	p->cellwidth = DEFAULT_CELL_WIDTH;
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = standard;
+	p->LEDstate = 0xFFFF;
 
 	debug(RPT_INFO, "CFontz633: init(%p,%s)", drvthis, args );
 
@@ -286,13 +293,13 @@ CFontz633_init (Driver *drvthis, char *args)
 	reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
 
 	/* Am I USB or not? */
-	usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
-	if (usb)
+	p->usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
+	if (p->usb)
 		report (RPT_INFO, "CFontzPacket_init: USB is indicated (in config).\n");
 
 	/* Set up io port correctly, and open it... */
 	debug( RPT_DEBUG, "CFontzPacket_init: Opening device: %s", p->device);
-	p->fd = open(p->device, (usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
+	p->fd = open(p->device, (p->usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
 	if (p->fd == -1) {
 		report (RPT_ERR, "CFontzPacket_init: failed (%s)\n", strerror (errno));
 		return -1;
@@ -301,7 +308,7 @@ CFontz633_init (Driver *drvthis, char *args)
 	tcgetattr (p->fd, &portset);
 
 	/* We use RAW mode */
-	if (usb) {
+	if (p->usb) {
 		// The USB way
 		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
 					| INLCR | IGNCR | ICRNL | IXON );
@@ -362,6 +369,9 @@ CFontz633_init (Driver *drvthis, char *args)
 	CFontz633_set_contrast (drvthis, p->contrast);
 	CFontz633_no_live_report (drvthis);
 	CFontz633_hardware_clear (drvthis);
+
+	/* turn LEDs off on a CF635 */
+	CFontz633_output(drvthis, 0);
 
 	report (RPT_DEBUG, "CFontzPacket_init: done\n");
 
@@ -1456,5 +1466,36 @@ CFontz633_string (Driver *drvthis, int x, int y, char string[])
 						      ? string[i]
 						      : CFontz_charmap[(unsigned) string[i]];
 	}
+}
+
+
+/*
+ * Output values using the LEDs of a CF635
+ */
+MODULE_EXPORT void
+CFontz633_output(Driver *drvthis, int state)
+{
+	static const unsigned char CFontz635_LEDs[CF635_NUM_LEDs] = {
+		11, 9, 7, 5,	// Green LEDs first, Top first
+		12,10, 8, 6,	// Red LEDs next, Top first
+	};
+	PrivateData *p = drvthis->private_data;
+	unsigned char out[2];
+	int lednum;
+
+	if (p->model != 635)
+		return;
+
+	for (lednum = 0; lednum < CF635_NUM_LEDs; lednum++) {
+		unsigned int mask = (1 << lednum);
+		int on_off = (state & mask);
+		
+		if ((p->LEDstate & mask) != on_off) {
+			out[0] = CFontz635_LEDs[lednum];
+			out[1] = (on_off == 0) ? 0 : 100;
+			send_bytes_message(p->fd, CF633_Set_GPIO_Pin, 2, out);
+		}
+	}
+	p->LEDstate = state;
 }
 
