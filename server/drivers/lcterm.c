@@ -470,6 +470,16 @@ lcterm_init_hbar (Driver *drvthis)
     1, 1, 1, 1, 0,
     1, 1, 1, 1, 0,
   };
+  static char hbar_5[] = {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+  };
 
   if( p->last_ccmode == CCMODE_HBAR ) /* Work already done */
     return;
@@ -486,6 +496,7 @@ lcterm_init_hbar (Driver *drvthis)
   lcterm_set_char (drvthis, 2, hbar_2);
   lcterm_set_char (drvthis, 3, hbar_3);
   lcterm_set_char (drvthis, 4, hbar_4);
+  lcterm_set_char (drvthis, 5, hbar_5);
 }
 
 

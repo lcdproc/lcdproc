@@ -752,6 +752,15 @@ char d[CELLWIDTH*CELLHEIGHT] = {
   1, 1, 1, 1, 0,
   1, 1, 1, 1, 0,
   1, 1, 1, 1, 0 };
+char e[CELLWIDTH*CELLHEIGHT] = {
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1 };
 
   if (p->ccmode != hbar) {
     if (p->ccmode != standard) {
@@ -766,6 +775,7 @@ char d[CELLWIDTH*CELLHEIGHT] = {
     IOWarrior_set_char(drvthis, 2, b);
     IOWarrior_set_char(drvthis, 3, c);
     IOWarrior_set_char(drvthis, 4, d);
+    IOWarrior_set_char(drvthis, 5, e);
   }
 }
 

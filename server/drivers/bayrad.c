@@ -193,7 +193,7 @@ char bar_down[7][5*8] = {  /* Presently, this is not used */
 	 0,0,0,0,0,
       },};
 
-char bar_right[4][5*8] = {
+char bar_right[5][5*8] = {
   {
 	 1,0,0,0,0, //  char r1[] =
 	 1,0,0,0,0,
@@ -230,9 +230,18 @@ char bar_right[4][5*8] = {
 	 1,1,1,1,0,
 	 1,1,1,1,0,
 	 1,1,1,1,0,
+      },{
+	 1,1,1,1,1, //  char r5[] =
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
       },};
 
-char bar_left[4][5*8] = {  /* Presently, this is not used. */
+char bar_left[5][5*8] = {  /* Presently, this is not used. */
   {
 	 0,0,0,0,1, //  char l1[] =
 	 0,0,0,0,1,
@@ -269,6 +278,15 @@ char bar_left[4][5*8] = {  /* Presently, this is not used. */
 	 0,1,1,1,1,
 	 0,1,1,1,1,
 	 0,1,1,1,1,
+      },{
+	 1,1,1,1,1, //  char l5[] =
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
+	 1,1,1,1,1,
       },};
 
 
@@ -624,6 +642,7 @@ bayrad_init_hbar(Driver * drvthis)
   bayrad_set_char(drvthis, 2, bar_right[1]);
   bayrad_set_char(drvthis, 3, bar_right[2]);
   bayrad_set_char(drvthis, 4, bar_right[3]);
+  bayrad_set_char(drvthis, 5, bar_right[4]);
 
 return;
 }

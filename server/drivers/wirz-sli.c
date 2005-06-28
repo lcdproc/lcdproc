@@ -388,12 +388,23 @@ sli_init_hbar (Driver *drvthis)
 		1, 1, 1, 1, 0,
 		1, 1, 1, 1, 0,
 	};
+	char e[] = {
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+	};
 
 	if (custom != hbar) {
 		sli_set_char (drvthis, 1, a);
 		sli_set_char (drvthis, 2, b);
 		sli_set_char (drvthis, 3, c);
 		sli_set_char (drvthis, 4, d);
+		sli_set_char (drvthis, 5, e);
 		custom = hbar;
 	}
 }

@@ -692,6 +692,16 @@ HD44780_init_hbar (Driver *drvthis)
 		1, 1, 1, 1, 0,
 		1, 1, 1, 1, 0,
 	};
+	char e[] = {
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+	};
 
 	if( p->ccmode == CCMODE_HBAR ) {
 		/* Work already done */
@@ -709,6 +719,7 @@ HD44780_init_hbar (Driver *drvthis)
 	HD44780_set_char (drvthis, 2, b);
 	HD44780_set_char (drvthis, 3, c);
 	HD44780_set_char (drvthis, 4, d);
+	HD44780_set_char (drvthis, 5, e);
 
 }
 
