@@ -25,31 +25,49 @@
 #include "menu_commands.h"
 
 #include <stdlib.h>
+#include <string.h>
 
-client_function commands[] = {
-	{"test_func", test_func_func},
-	{"hello", hello_func},
-	{"client_set", client_set_func},
-	{"client_add_key", client_add_key_func},
-	{"client_del_key", client_del_key_func},
-/*	{"screen_add_key", screen_add_key_func}, */
-/*	{"screen_del_key", screen_del_key_func}, */
-	{"screen_add", screen_add_func},
-	{"screen_del", screen_del_func},
-	{"screen_set", screen_set_func},
-	{"widget_add", widget_add_func},
-	{"widget_del", widget_del_func},
-	{"widget_set", widget_set_func},
-	{"menu_add_item", menu_add_item_func},
-	{"menu_del_item", menu_del_item_func},
-	{"menu_set_item", menu_set_item_func},
-	{"menu_goto", menu_goto_func},
-	{"menu_set_main", menu_set_main_func},
+static client_function commands[] = {
+	{ "test_func",      test_func_func      },
+	{ "hello",          hello_func          },
+	{ "client_set",     client_set_func     },
+	{ "client_add_key", client_add_key_func },
+	{ "client_del_key", client_del_key_func },
+/*	{ "screen_add_key", screen_add_key_func }, */
+/*	{ "screen_del_key", screen_del_key_func }, */
+	{ "screen_add",     screen_add_func     },
+	{ "screen_del",     screen_del_func     },
+	{ "screen_set",     screen_set_func     },
+	{ "widget_add",     widget_add_func     },
+	{ "widget_del",     widget_del_func     },
+	{ "widget_set",     widget_set_func     },
+	{ "menu_add_item",  menu_add_item_func  },
+	{ "menu_del_item",  menu_del_item_func  },
+	{ "menu_set_item",  menu_set_item_func  },
+	{ "menu_goto",      menu_goto_func      },
+	{ "menu_set_main",  menu_set_main_func  },
 	/* Misc stuff...*/
-	{"backlight", backlight_func},
-	{"output", output_func},
-	{"noop", noop_func},
-	{"info", info_func},
-	{"sleep", sleep_func},
-	{NULL, NULL},
+	{ "backlight",      backlight_func      },
+	{ "output",         output_func         },
+	{ "noop",           noop_func           },
+	{ "info",           info_func           },
+	{ "sleep",          sleep_func          },
+	{ NULL,             NULL},
 };
+
+
+CommandFunc get_command_function(char *cmd)
+{
+	int i;
+
+	if (cmd == NULL)
+		return NULL;
+
+	for (i = 0; commands[i].keyword != NULL; i++) {
+		if (0 == strcmp(cmd, commands[i].keyword))
+			return commands[i].function;
+	}
+
+	return NULL;
+}
+

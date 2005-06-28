@@ -19,13 +19,14 @@
   point to a function to call, defined below.
  */
 
+typedef int (*CommandFunc) (Client * c, int argc, char **argv);
+
 typedef struct client_function {
 	char *keyword;
-	int (*function) (Client * c, int argc, char **argv);
+	CommandFunc function;
 } client_function;
 
-/* FIXME?  Do these really need to be visible from other sources?*/
 
-extern client_function commands[];
+CommandFunc get_command_function(char *cmd);
 
 #endif
