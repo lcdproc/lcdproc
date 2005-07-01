@@ -139,7 +139,8 @@ send_packet(int fd, COMMAND_PACKET *out)
 {
 	write(fd, &out->command, 1);
 	write(fd, &out->data_length, 1);
-	write(fd, out->data, out->data_length);
+	if (out->data_length > 0)
+		write(fd, out->data, out->data_length);
 
 	/* calculate & send the CRC */
 	out->crc.as_word = get_crc((unsigned char *) out, out->data_length + 2, 0xFFFF);
