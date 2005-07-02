@@ -89,12 +89,12 @@ static int driver_store_private_ptr(Driver * driver, void * private_data);
 
 
 Driver *
-driver_load( char * name, char * filename, char * args )
+driver_load( char * name, char * filename )
 {
 	Driver * driver = NULL;
 	int res;
 
-	report( RPT_DEBUG, "%s( name=\"%.40s\", filename=\"%.80s\", args=\"%.80s\")", __FUNCTION__, name, filename, args );
+	report( RPT_DEBUG, "%s( name=\"%.40s\", filename=\"%.80s\")", __FUNCTION__, name, filename );
 
 	/* Allocate memory for new driver struct */
 	driver = malloc( sizeof( Driver ));
@@ -127,7 +127,7 @@ driver_load( char * name, char * filename, char * args )
 
 	/* Call the init function */
 	debug( RPT_DEBUG, "%s: Calling driver [%.40s] init function", __FUNCTION__, driver->name );
-	res = driver->init( driver, args );
+	res = driver->init( driver );
 	if( res < 0 ) {
 		report( RPT_ERR, "Driver [%.40s] init failed, return code < 0", driver->name );
 		/* Driver load failed, driver should not be added to list

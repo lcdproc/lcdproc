@@ -57,7 +57,7 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "glcdlib_";
 
 
-MODULE_EXPORT int glcdlib_init (Driver *drvthis, char *args)
+MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 {
 	glcdlibPD * pPD;
 

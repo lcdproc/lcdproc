@@ -10,7 +10,7 @@
 
 #include "lcd.h"
 
-MODULE_EXPORT int  bayrad_init(Driver * drvthis, char *args);
+MODULE_EXPORT int  bayrad_init(Driver * drvthis);
 MODULE_EXPORT void bayrad_close(Driver * drvthis);
 MODULE_EXPORT int  bayrad_width(Driver * drvthis);
 MODULE_EXPORT int  bayrad_height(Driver * drvthis);

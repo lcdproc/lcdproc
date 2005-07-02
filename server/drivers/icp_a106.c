@@ -69,7 +69,7 @@ MODULE_EXPORT char *symbol_prefix = "icp_a106_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-icp_a106_init (Driver *drvthis, char *args)
+icp_a106_init (Driver *drvthis)
 {
   char device[200];
   int speed=B1200;
@@ -77,7 +77,7 @@ icp_a106_init (Driver *drvthis, char *args)
 
   PrivateData *p;
 
-  debug( RPT_INFO, "ICP_A106: init(%p,%s)", drvthis, args );
+  debug( RPT_INFO, "ICP_A106: init(%p)", drvthis );
 
   // Alocate and store private data
   p = (PrivateData *) calloc( 1, sizeof( PrivateData) );

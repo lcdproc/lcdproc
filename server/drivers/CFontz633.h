@@ -16,7 +16,7 @@
 #define	DEFAULT_SIZE_CF631	"20x2"
 
 
-MODULE_EXPORT int  CFontz633_init (Driver *drvthis, char *device);
+MODULE_EXPORT int  CFontz633_init (Driver *drvthis);
 MODULE_EXPORT void CFontz633_close (Driver *drvthis);
 MODULE_EXPORT int  CFontz633_width (Driver *drvthis);
 MODULE_EXPORT int  CFontz633_height (Driver *drvthis);

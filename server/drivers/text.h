@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-MODULE_EXPORT int  text_init (Driver * drvthis, char *args);
+MODULE_EXPORT int  text_init (Driver * drvthis);
 MODULE_EXPORT void text_close (Driver *drvthis);
 MODULE_EXPORT int  text_width (Driver *drvthis);
 MODULE_EXPORT int  text_height (Driver *drvthis);

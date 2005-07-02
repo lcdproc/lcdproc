@@ -13,7 +13,7 @@
 #define DEFAULT_SIZE "20x4"
 
 
-MODULE_EXPORT int  CFontz_init (Driver *drvthis, char *device);
+MODULE_EXPORT int  CFontz_init (Driver *drvthis);
 MODULE_EXPORT void CFontz_close (Driver *drvthis);
 MODULE_EXPORT int  CFontz_width (Driver *drvthis);
 MODULE_EXPORT int  CFontz_height (Driver *drvthis);

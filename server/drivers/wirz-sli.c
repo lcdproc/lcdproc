@@ -50,7 +50,7 @@ MODULE_EXPORT char *symbol_prefix = "sli_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-sli_init (Driver *drvthis, char *args)
+sli_init (Driver *drvthis)
 {
 	struct termios portset;
 	char out[2];

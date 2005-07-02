@@ -252,7 +252,7 @@ MODULE_EXPORT char *symbol_prefix = "svgalib_drv_";
  * Init driver
  */
 MODULE_EXPORT int
-svgalib_drv_init (Driver *drvthis, char *args)
+svgalib_drv_init (Driver *drvthis)
 {
 	int VGAMODE;
 

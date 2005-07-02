@@ -250,7 +250,7 @@ static char MtxOrb_parse_keypad_setting (Driver *drvthis, char * keyname, char d
  * Called to initialize driver settings
  */
 MODULE_EXPORT int
-MtxOrb_init (Driver *drvthis, char *args)
+MtxOrb_init (Driver *drvthis)
 {
 	struct termios portset;
 
@@ -295,7 +295,7 @@ MtxOrb_init (Driver *drvthis, char *args)
 	p->cellwidth = LCD_DEFAULT_CELLWIDTH;
 	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
 
-	debug( RPT_INFO, "MtxOrb: init(%p,%s)", drvthis, args );
+	debug( RPT_INFO, "MtxOrb: init(%p)", drvthis );
 
 	/* READ CONFIG FILE */
 

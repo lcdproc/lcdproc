@@ -62,13 +62,13 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "t6963_";
 
 MODULE_EXPORT int
-t6963_init (Driver *drvthis, char *args)
+t6963_init (Driver *drvthis)
 {
 	int w, h, p, i, ecp_input;
 
 	char size[200] = DEFAULT_SIZE;
 
-		debug(RPT_INFO, "T6963: init(%p,%s)", drvthis, args );
+		debug(RPT_INFO, "T6963: init(%p)", drvthis );
 
 	t6963_display_mode = 0;
 	t6963_graph_line[0] = 0x20;

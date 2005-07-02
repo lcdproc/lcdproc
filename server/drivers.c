@@ -46,7 +46,6 @@ drivers_load_driver( char * name )
 	char * s;
 	char * driverpath;
 	char * filename;
-	char * args;
 
 	debug( RPT_DEBUG, "%s( name=\"%.40s\")", __FUNCTION__, name );
 
@@ -77,18 +76,13 @@ drivers_load_driver( char * name )
 		strcat( filename, MODULE_EXTENSION );
 	}
 
-	s = config_get_string( name, "arguments", 0, "" );
-	args = malloc( strlen(s)+1 );
-	strcpy( args, s );
-
 	/* Load the module */
-	driver = driver_load( name, filename, args );
+	driver = driver_load( name, filename );
 	if( driver == NULL ) {
 		/* It failed. The message has already been given by driver_load() */
 		report( RPT_INFO, "Module %.40s could not be loaded", filename );
 		free( driverpath );
 		free( filename );
-		free( args );
 		return -1;
 	}
 
@@ -97,7 +91,6 @@ drivers_load_driver( char * name )
 
 	free( driverpath );
 	free( filename );
-	free( args );
 
 	/* If first driver, store display properties */
 	if( driver_does_output(driver) && !display_props ) {

@@ -27,7 +27,7 @@
 
 #include "lcd.h"
 
-MODULE_EXPORT int  imon_init (Driver *drvthis, char *args);
+MODULE_EXPORT int  imon_init (Driver *drvthis);
 MODULE_EXPORT void imon_close (Driver *drvthis);
 MODULE_EXPORT int  imon_width (Driver *drvthis);
 MODULE_EXPORT int  imon_height (Driver *drvthis);

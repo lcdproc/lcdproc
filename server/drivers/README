@@ -36,7 +36,7 @@ typedef struct lcd_logical_driver {
 	// Functions which should probably be implemented in each driver...
 
 	int (*init)			// initialize driver
-		(struct lcd_logical_driver * driver, char *args);
+		(struct lcd_logical_driver * driver);
 	void (*close) ();		// close
 	void (*flush) ();		// flush
 	void (*flush_box)		// flush box

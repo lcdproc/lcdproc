@@ -69,7 +69,7 @@ MODULE_EXPORT char *symbol_prefix = "glk_";
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
 MODULE_EXPORT int
-glk_init(Driver *drvthis, char *args)
+glk_init(Driver *drvthis)
 {
    char device[256] = GLK_DEFAULT_DEVICE;
    speed_t  speed = GLK_DEFAULT_SPEED;

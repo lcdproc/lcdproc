@@ -211,7 +211,7 @@ int iowled_on_off(usb_dev_handle *udh,int type, unsigned int pattern)
 /*****************************************************
  * API: Open USB device and initialize it ...
  */
-int IOWarrior_init(Driver *drvthis, char *args)
+int IOWarrior_init(Driver *drvthis)
 {
 char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
 char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
@@ -238,7 +238,7 @@ PrivateData *p;
 
   p->backlight = DEFAULT_BACKLIGHT;
 
-  debug(RPT_INFO, "IOWarrior: init(%p,%s)", drvthis, args);
+  debug(RPT_INFO, "IOWarrior: init(%p)", drvthis);
 
   /* Read config file */
 

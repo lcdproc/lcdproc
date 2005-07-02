@@ -76,7 +76,7 @@ char *codes[] = {
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
 MODULE_EXPORT int
-irmanin_init (Driver *drvthis, char *args)
+irmanin_init (Driver *drvthis)
 {
 	char device[256];
 	char *ptrdevice;

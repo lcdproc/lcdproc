@@ -40,7 +40,7 @@
 
 #include "lcd.h"
 
-MODULE_EXPORT int  MTC_S16209X_init(Driver * drvthis, char *device);
+MODULE_EXPORT int  MTC_S16209X_init(Driver * drvthis);
 MODULE_EXPORT void MTC_S16209X_close(Driver * drvthis);
 MODULE_EXPORT int  MTC_S16209X_width (Driver *drvthis);
 MODULE_EXPORT int  MTC_S16209X_height (Driver *drvthis);

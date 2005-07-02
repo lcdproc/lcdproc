@@ -129,7 +129,7 @@ typedef struct lcd_logical_driver {
 	/* The driver loader will look for symbols with these names ! */
 
 	/* Basic functions */
-	int (*init)		(struct lcd_logical_driver* drvthis, char *args);
+	int (*init)		(struct lcd_logical_driver* drvthis);
 	void (*close)		(struct lcd_logical_driver* drvthis);
 	int (*width)		(struct lcd_logical_driver* drvthis);
 	int (*height)		(struct lcd_logical_driver* drvthis);

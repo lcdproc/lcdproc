@@ -54,7 +54,7 @@ MODULE_EXPORT char *symbol_prefix = "text_";
 
 
 MODULE_EXPORT int
-text_init (Driver *drvthis, char *args)
+text_init (Driver *drvthis)
 {
 	char buf[256];
 

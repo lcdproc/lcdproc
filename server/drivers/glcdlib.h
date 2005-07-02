@@ -29,7 +29,7 @@ typedef unsigned char u8;
 // ****************************************************************************************
 
 
-MODULE_EXPORT int  glcdlib_init (Driver *drvthis, char *args);
+MODULE_EXPORT int  glcdlib_init (Driver *drvthis);
 MODULE_EXPORT void glcdlib_close (Driver *drvthis);
 MODULE_EXPORT int  glcdlib_width (Driver *drvthis);
 MODULE_EXPORT int  glcdlib_height (Driver *drvthis);

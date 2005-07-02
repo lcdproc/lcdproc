@@ -313,13 +313,13 @@ unsigned char sed1330_readkeypad (PrivateData *p, unsigned int YData);
 // Init the driver and display
 //
 MODULE_EXPORT int
-sed1330_init( Driver * drvthis, char *args )
+sed1330_init( Driver * drvthis )
 {
 	char * s;
 	PrivateData * p;
 	char data[8];
 
-	debug( RPT_DEBUG, "%s( %p, args=\"%s\" )", __FUNCTION__, drvthis, args );
+	debug( RPT_DEBUG, "%s( %p )", __FUNCTION__, drvthis );
 
 
 	// Alocate and store private p

@@ -71,7 +71,7 @@ typedef struct {
 /** 
  * driver initialization
  */
-MODULE_EXPORT int imon_init (Driver *drvthis, char *args)
+MODULE_EXPORT int imon_init (Driver *drvthis)
 {
 	imonPD * pPD = 0;
 

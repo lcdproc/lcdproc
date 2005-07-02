@@ -120,7 +120,7 @@ MODULE_EXPORT char *symbol_prefix = "HD44780_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-HD44780_init (Driver * drvthis, char *args)
+HD44780_init (Driver * drvthis)
 {
 	// TODO: remove the two magic numbers below
 	// TODO: single point of return

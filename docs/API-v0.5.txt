@@ -53,7 +53,7 @@ API_VERSION in the code.
 
 All these Basic functions should be implemented !
 
-	int (*init)		(drvthis, char *args);
+	int (*init)		(drvthis);
 	void (*close)		(drvthis);
 	int (*width)		(drvthis);
 	int (*height)		(drvthis);

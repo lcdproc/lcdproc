@@ -33,7 +33,7 @@
 #define MS6931_DEF_CELL_HEIGHT 8
 
 
-MODULE_EXPORT int  ms6931_init	(Driver *drvthis, char *args);
+MODULE_EXPORT int  ms6931_init	(Driver *drvthis);
 MODULE_EXPORT void ms6931_close	(Driver *drvthis);
 MODULE_EXPORT int  ms6931_width	(Driver *drvthis);
 MODULE_EXPORT int  ms6931_height(Driver *drvthis);

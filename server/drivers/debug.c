@@ -37,7 +37,7 @@ MODULE_EXPORT char *symbol_prefix = "debug_";
 // function...
 
 MODULE_EXPORT int
-debug_init (Driver *drvthis, char *args)
+debug_init (Driver *drvthis)
 {
 	report (RPT_INFO, "debug_init()");
 

@@ -74,14 +74,14 @@ MODULE_EXPORT char *symbol_prefix = "lcterm_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-lcterm_init (Driver *drvthis, char *args)
+lcterm_init (Driver *drvthis)
 {
   char device[200];
   int speed=B9600;
   struct termios portset;
   PrivateData *p;
 
-  debug( RPT_INFO, "LCTERM: init(%p,%s)", drvthis, args );
+  debug( RPT_INFO, "LCTERM: init(%p)", drvthis );
 
   // Alocate and store private data
   p = (PrivateData *) calloc( 1, sizeof( PrivateData) );

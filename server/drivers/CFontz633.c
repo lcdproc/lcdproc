@@ -135,7 +135,7 @@ static void CFontz633_hardware_clear (Driver *drvthis);
  * Opens com port and sets baud correctly...
  */
 MODULE_EXPORT int
-CFontz633_init (Driver *drvthis, char *args)
+CFontz633_init (Driver *drvthis)
 {
 	struct termios portset;
 	int tmp, w, h;
@@ -158,7 +158,7 @@ CFontz633_init (Driver *drvthis, char *args)
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = standard;
 
-	debug(RPT_INFO, "CFontz633: init(%p,%s)", drvthis, args );
+	debug(RPT_INFO, "CFontz633: init(%p)", drvthis );
 
 	EmptyKeyRing(&keyring);
 	EmptyReceiveBuffer(&receivebuffer);

@@ -107,7 +107,7 @@ static void CFontz_init_hbar (Driver *drvthis);
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-CFontz_init (Driver *drvthis, char *args)
+CFontz_init (Driver *drvthis)
 {
 	struct termios portset;
 	int tmp, w, h;
@@ -130,7 +130,7 @@ CFontz_init (Driver *drvthis, char *args)
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = standard;
 
-	debug(RPT_INFO, "CFontz: init(%p,%s)", drvthis, args );
+	debug(RPT_INFO, "CFontz: init(%p)", drvthis );
 
 	/* Read config file */
 	/* Which device should be used */

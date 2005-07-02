@@ -21,7 +21,7 @@
 #endif
 
 Driver *
-driver_load( char * name, char * filename, char * args );
+driver_load( char * name, char * filename );
 
 int
 driver_unload( Driver * driver );

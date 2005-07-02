@@ -143,14 +143,14 @@ ms6931_draw_frame (char *dat)
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-ms6931_init (Driver *drvthis, char *args)
+ms6931_init (Driver *drvthis)
 {
 	struct termios portset;
 	int w, h;
 	char device[200] = MS6931_DEF_DEVICE;
 	char size[200] = MS6931_DEF_SIZE;
 
-	debug(RPT_INFO, "ms6931_init: init(%p,%s)", drvthis, args );
+	debug(RPT_INFO, "ms6931_init: init(%p)", drvthis );
 
 	/*Which serial device should be used*/
 	strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , MS6931_DEF_DEVICE),sizeof(device));

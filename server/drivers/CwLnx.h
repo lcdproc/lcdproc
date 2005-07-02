@@ -52,7 +52,7 @@
 #define DEFAULT_FORWARD_KEY	CWLNX_KEY_RIGHT
 #define DEFAULT_MAIN_MENU_KEY	CWLNX_KEY_DOWN
 
-MODULE_EXPORT int  CwLnx_init(Driver * drvthis, char *device);
+MODULE_EXPORT int  CwLnx_init(Driver * drvthis);
 MODULE_EXPORT void CwLnx_close(Driver * drvthis);
 /* */ MODULE_EXPORT int  CwLnx_width (Driver * drvthis);
 /* */ MODULE_EXPORT int  CwLnx_height (Driver * drvthis);

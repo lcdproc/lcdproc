@@ -338,7 +338,7 @@ MODULE_EXPORT char *symbol_prefix = "bayrad_";
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
 MODULE_EXPORT int
-bayrad_init(Driver *drvthis, char *args)
+bayrad_init(Driver *drvthis)
 {
 
    char device[256] = BAYRAD_DEFAULT_DEVICE;

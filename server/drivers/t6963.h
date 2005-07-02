@@ -112,7 +112,7 @@ typedef unsigned char u8;
 // ****************************************************************************************
 
 
-MODULE_EXPORT int  t6963_init (Driver *drvthis, char *args);
+MODULE_EXPORT int  t6963_init (Driver *drvthis);
 MODULE_EXPORT void t6963_close (Driver *drvthis);
 MODULE_EXPORT int  t6963_width (Driver *drvthis);
 MODULE_EXPORT int  t6963_height (Driver *drvthis);

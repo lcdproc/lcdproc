@@ -115,7 +115,7 @@ MODULE_EXPORT int supports_multiple = 1;
 MODULE_EXPORT char *symbol_prefix = "IOWarrior_";
 
 /* API: functions for the server core */
-MODULE_EXPORT int  IOWarrior_init(Driver *drvthis, char *device);
+MODULE_EXPORT int  IOWarrior_init(Driver *drvthis);
 MODULE_EXPORT void IOWarrior_close(Driver *drvthis);
 MODULE_EXPORT int  IOWarrior_width(Driver *drvthis);
 MODULE_EXPORT int  IOWarrior_height(Driver *drvthis);

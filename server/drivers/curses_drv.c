@@ -190,7 +190,7 @@ MODULE_EXPORT char *symbol_prefix = "curses_drv_";
 
 
 MODULE_EXPORT int
-curses_drv_init (Driver *drvthis, char *args)
+curses_drv_init (Driver *drvthis)
 {
 	char buf[256];
 

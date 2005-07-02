@@ -147,7 +147,7 @@ drawchar2fb (int x, int y, unsigned char z)
 // a command line argument.
 //
 MODULE_EXPORT int
-sed1520_init (Driver *drvthis, char *args)
+sed1520_init (Driver *drvthis)
 {
     /* Read config file */
 

@@ -281,7 +281,7 @@ stv5730_drawchar2fb (int x, int y, unsigned char z)
 // a command line argument.
 //
 MODULE_EXPORT int
-stv5730_init (Driver *drvthis, char *args)
+stv5730_init (Driver *drvthis)
 {
     int i;
 

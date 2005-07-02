@@ -61,7 +61,7 @@ MODULE_EXPORT char *symbol_prefix = "lircin_";
  * point all the function pointers.
  */
 MODULE_EXPORT int
-lircin_init (Driver *drvthis, char *args)
+lircin_init (Driver *drvthis)
 {
 	char s[200]="";
 	char *lircrc, *prog;

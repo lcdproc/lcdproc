@@ -115,7 +115,7 @@ MODULE_EXPORT char *symbol_prefix = "MTC_S16209X_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-MTC_S16209X_init (Driver * drvthis, char *args)
+MTC_S16209X_init (Driver * drvthis)
 {
   struct termios portset;
   char device[256] = MTC_DEFAULT_DEVICE;

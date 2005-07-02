@@ -21,7 +21,7 @@
 #ifndef LCD_LIRCIN_H
 #define LCD_LIRCIN_H
 
-MODULE_EXPORT int lircin_init (Driver *drvthis, char *args);
+MODULE_EXPORT int lircin_init (Driver *drvthis);
 MODULE_EXPORT void lircin_close (Driver *drvthis);
 MODULE_EXPORT char * lircin_get_key (Driver *drvthis);
 

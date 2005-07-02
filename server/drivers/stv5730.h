@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-MODULE_EXPORT int stv5730_init (Driver *drvthis, char *args);
+MODULE_EXPORT int stv5730_init (Driver *drvthis);
 MODULE_EXPORT void stv5730_close (Driver *drvthis);
 MODULE_EXPORT int stv5730_width (Driver *drvthis);
 MODULE_EXPORT int stv5730_height (Driver *drvthis);

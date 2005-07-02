@@ -69,7 +69,7 @@ MODULE_EXPORT char *symbol_prefix = "joy_";
 // init() should set up any device-specific stuff, and
 // point all the function pointers.
 MODULE_EXPORT int
-joy_init (Driver *drvthis, char *args)
+joy_init (Driver *drvthis)
 {
 	char device[256];
 

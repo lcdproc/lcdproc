@@ -489,7 +489,7 @@ int Write_Line_LCD(int fd, char *buf)
 /*****************************************************
  * API: Opens com port and sets baud correctly...
  */
-int CwLnx_init(Driver * drvthis, char *args)
+int CwLnx_init(Driver * drvthis)
 {
     struct termios portset_save;
 
@@ -532,7 +532,7 @@ int CwLnx_init(Driver * drvthis, char *args)
     p->saved_heartbeat = -1;
     p->heartbeat = 0;
 
-    debug(RPT_INFO, "CwLnx: init(%p,%s)", drvthis, args);
+    debug(RPT_INFO, "CwLnx: init(%p)", drvthis);
 
     /* Read config file */
 

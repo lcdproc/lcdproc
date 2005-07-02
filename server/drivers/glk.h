@@ -3,7 +3,7 @@
 
 #include "lcd.h"
 
-MODULE_EXPORT int glk_init(Driver *drvthis, char *args);
+MODULE_EXPORT int glk_init(Driver *drvthis);
 MODULE_EXPORT void glk_close(Driver *drvthis);
 MODULE_EXPORT int  glk_width(Driver *drvthis);
 MODULE_EXPORT int  glk_height(Driver *drvthis);

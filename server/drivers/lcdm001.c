@@ -133,7 +133,7 @@ lcdm001_cursorblink (Driver *drvthis, int on)
  * point all the function pointers.
  */
 MODULE_EXPORT int
-lcdm001_init (Driver *drvthis, char *args)
+lcdm001_init (Driver *drvthis)
 {
         char device[200];
 	int speed=B38400;
@@ -141,7 +141,7 @@ lcdm001_init (Driver *drvthis, char *args)
 
 	char out[5]="";
 
-	debug( RPT_INFO, "LCDM001: init(%p,%s)", drvthis, args );
+	debug( RPT_INFO, "LCDM001: init(%p)", drvthis );
 
 	framebuf = malloc (width * height);
 
