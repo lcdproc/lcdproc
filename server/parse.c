@@ -31,33 +31,22 @@
 #define MAX_ARGUMENTS 40
 
 
-
-static int parse_message (const char *str, Client *c);
-
-int
-parse_all_client_messages ()
-{
-	Client * c;
-
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
-
-	for (c = clients_getfirst(); c != NULL; c = clients_getnext()) {
-		char * str;
-
-		/* And parse all its messages...*/
-		/*debug(RPT_DEBUG, "parse: Getting messages...");*/
-		for (str = client_get_message (c); str != NULL; str = client_get_message (c)) {
-			parse_message (str, c);
-			free (str);
-		}
-	}
-	return 0;
+static inline int is_whitespace(char x)	{
+	return ((x == ' ') || (x == '\t') || (x == '\r'));
 }
 
-#define is_whitespace(x)	(((x) == ' ') || ((x) == '\t') || ((x) == '\r'))
-#define is_final(x)		(((x) == '\n') || ((x) == '\0'))
-#define is_opening_quote(x,q)   (((q) == '\0') && (((x) == '\"') || ((x) == '{')))
-#define is_closing_quote(x,q)   ((((q) == '{') && ((x) == '}')) || (((q) == '\"') && ((x) == '\"')))
+static inline int is_final(char x) {
+	return ((x == '\n') || (x == '\0'));
+}
+
+static inline int is_opening_quote(char x, char q) {
+	return ((q == '\0') && ((x == '\"') || (x == '{')));
+}
+
+static inline int is_closing_quote(char x, char q) {
+	return (((q == '{') && (x == '}')) || ((q == '\"') && (x == '\"')));
+}
+
 
 static int parse_message (const char *str, Client *c)
 {
@@ -72,6 +61,7 @@ static int parse_message (const char *str, Client *c)
 	int argc = 0;
 	char *argv[MAX_ARGUMENTS];
 	int argpos = 0;
+	CommandFunc function = NULL;
 
 	void close_arg() {
 		if (argc >= MAX_ARGUMENTS-1) {
@@ -180,8 +170,15 @@ static int parse_message (const char *str, Client *c)
 		return 0;
 	}
 
+#if 0 /* show what we have parsed */
+	int i;
+	for (i = 0; i < argc; i++) {
+		printf("%s%c", argv[i], (i == argc-1) ? '\n' : ' ');
+	}	
+#endif
+
 	/* Now find and call the appropriate function...*/
-	CommandFunc function = get_command_function(argv[0]);
+	function = get_command_function(argv[0]);
 
 	if (function != NULL) {
 		error = function (c, argc, argv);
@@ -200,4 +197,26 @@ static int parse_message (const char *str, Client *c)
 	free( arg_space );
 	return 0;
 }
+
+
+int
+parse_all_client_messages ()
+{
+	Client * c;
+
+	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+
+	for (c = clients_getfirst(); c != NULL; c = clients_getnext()) {
+		char * str;
+
+		/* And parse all its messages...*/
+		/*debug(RPT_DEBUG, "parse: Getting messages...");*/
+		for (str = client_get_message (c); str != NULL; str = client_get_message (c)) {
+			parse_message (str, c);
+			free (str);
+		}
+	}
+	return 0;
+}
+
 
