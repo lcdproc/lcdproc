@@ -204,7 +204,7 @@ CFontz633_init (Driver *drvthis)
 	p->ccmode = standard;
 	p->LEDstate = 0xFFFF;
 
-	debug(RPT_INFO, "CFontz633: init(%p)", drvthis );
+	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis );
 
 	EmptyKeyRing(&keyring);
 	EmptyReceiveBuffer(&receivebuffer);
@@ -212,17 +212,17 @@ CFontz633_init (Driver *drvthis)
 	/* Read config file */
 	/* Which model is it (CF633, CF631 or CF635)? */
 	tmp = drvthis->config_get_int (drvthis->name, "Model", 0, DEFAULT_SPEED);
-	debug (RPT_INFO,"CFontzPacket_init: Model is '%d'", tmp);
+	debug (RPT_INFO,"%s: Model is '%d'", __FUNCTION__, tmp);
 	if ((tmp != 631) && (tmp != 633) && (tmp != 635)) {
 		tmp = 633;
-		report (RPT_WARNING, "CFontzPacket_init: Model must be 631, 633 or 635. Using default value: %d\n", tmp);
+		report (RPT_WARNING, "%s: Model must be 631, 633 or 635. Using default value: %d\n", __FUNCTION__, tmp);
 	}
 	p->model = tmp;
 
 	/* Which device should be used */
 	strncpy(p->device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 	p->device[sizeof(p->device)-1] = '\0';
-	debug (RPT_INFO,"CFontzPacket_init: Device (in config) is '%s'", p->device);
+	debug (RPT_INFO,"%s: Device (in config) is '%s'", __FUNCTION__, p->device);
 
 	/* Which size */
 	if (p->model == 631)
@@ -234,52 +234,52 @@ CFontz633_init (Driver *drvthis)
 
 	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, default_size), sizeof(size));
 	size[sizeof(size)-1] = '\0';
-	debug (RPT_INFO,"CFontzPacket_init: Size (in config) is '%s'", size);
+	debug (RPT_INFO,"%s: Size (in config) is '%s'", __FUNCTION__, size);
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "CFontzPacket_init: Cannot read size: %s. Using default value.\n", size);
+		report (RPT_WARNING, "%s: Cannot read size: %s. Using default value.\n", __FUNCTION__, size);
 		sscanf(default_size, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
 
-	debug (RPT_INFO,"CFontzPacket_init: Real size used: %dx%d", p->width, p->height);
+	debug (RPT_INFO,"%s: Real size used: %dx%d", __FUNCTION__, p->width, p->height);
 
 	/* Which contrast */
 	tmp = drvthis->config_get_int (drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
-	debug (RPT_INFO,"CFontzPacket_init: Contrast (in config) is '%d'", tmp);
+	debug (RPT_INFO,"%s: Contrast (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "CFontzPacket_init: Contrast must be between 0 and 1000. Using default value.\n");
+		report (RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default value.\n", __FUNCTION__);
 		tmp = DEFAULT_CONTRAST;
 	}
 	p->contrast = tmp;
 
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	debug (RPT_INFO,"CFontzPacket_init: Brightness (in config) is '%d'", tmp);
+	debug (RPT_INFO,"%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "CFontzPacket_init: Brightness must be between 0 and 1000. Using default value.\n");
+		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default value.\n", __FUNCTION__);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
 
 	/* Which backlight-off "brightness" */
 	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	debug (RPT_INFO,"CFontzPacket_init: OffBrightness (in config) is '%d'", tmp);
+	debug (RPT_INFO,"%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "CFontzPacket_init: OffBrightness must be between 0 and 1000. Using default value.\n");
+		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default value.\n", __FUNCTION__);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
 
 	/* Which speed ? CF633 support 19200 only, CF631 & CF635 USB use 115200. */
 	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
-	debug (RPT_INFO,"CFontzPacket_init: Speed (in config) is '%d'", tmp);
+	debug (RPT_INFO,"%s: Speed (in config) is '%d'", __FUNCTION__, tmp);
 	if (tmp == 19200) speed = B19200;
 	else if (tmp == 115200) speed = B115200;
 	else {
-		report (RPT_WARNING, "CFontz633_init: Speed must be 19200 or 11500. Using default value.\n");
+		report (RPT_WARNING, "%s: Speed must be 19200 or 11500. Using default value.\n", __FUNCTION__);
 		speed = DEFAULT_SPEED;
 	}
 
@@ -295,13 +295,13 @@ CFontz633_init (Driver *drvthis)
 	/* Am I USB or not? */
 	p->usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
 	if (p->usb)
-		report (RPT_INFO, "CFontzPacket_init: USB is indicated (in config).\n");
+		report (RPT_INFO, "%s: USB is indicated (in config)", __FUNCTION__);
 
 	/* Set up io port correctly, and open it... */
-	debug( RPT_DEBUG, "CFontzPacket_init: Opening device: %s", p->device);
+	debug( RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
 	p->fd = open(p->device, (p->usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
 	if (p->fd == -1) {
-		report (RPT_ERR, "CFontzPacket_init: failed (%s)\n", strerror (errno));
+		report (RPT_ERR, "%s: open() failed (%s)\n", __FUNCTION__, strerror (errno));
 		return -1;
 	}
 
@@ -343,7 +343,7 @@ CFontz633_init (Driver *drvthis)
 	/* make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
-		report(RPT_ERR, "CFontzPacket_init: unable to create framebuffer.\n");
+		report(RPT_ERR, "%s: unable to create framebuffer.\n", __FUNCTION__);
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
@@ -351,7 +351,7 @@ CFontz633_init (Driver *drvthis)
 	/* make sure the framebuffer backing store is there... */
 	p->backingstore = (unsigned char *) malloc(p->width * p->height);
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "CFontzPacket_init: unable to create framebuffer backing store.\n");
+		report(RPT_ERR, "%s: unable to create framebuffer backing store.\n", __FUNCTION__);
 		return -1;
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
@@ -373,7 +373,7 @@ CFontz633_init (Driver *drvthis)
 	/* turn LEDs off on a CF635 */
 	CFontz633_output(drvthis, 0);
 
-	report (RPT_DEBUG, "CFontzPacket_init: done\n");
+	report (RPT_DEBUG, "%s: done\n", __FUNCTION__);
 
 	return 0;
 }

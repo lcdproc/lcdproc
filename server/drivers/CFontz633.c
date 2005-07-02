@@ -95,6 +95,7 @@ typedef struct driver_private_data {
 
 	int model;
 	int newfirmware;
+	int usb;
 
 	/* dimensions */
 	int width, height;
@@ -140,7 +141,6 @@ CFontz633_init (Driver *drvthis)
 	struct termios portset;
 	int tmp, w, h;
 	int reboot = 0;
-	int usb = 0;
 	int speed = DEFAULT_SPEED;
 	char size[200] = DEFAULT_SIZE;
 
@@ -158,7 +158,7 @@ CFontz633_init (Driver *drvthis)
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = standard;
 
-	debug(RPT_INFO, "CFontz633: init(%p)", drvthis );
+	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis );
 
 	EmptyKeyRing(&keyring);
 	EmptyReceiveBuffer(&receivebuffer);
@@ -175,7 +175,7 @@ CFontz633_init (Driver *drvthis)
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "CFontz633_init: Cannot read size: %s. Using default value.\n", size);
+		report (RPT_WARNING, "%s: Cannot read size: %s. Using default value.\n", __FUNCTION__, size);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
@@ -184,7 +184,7 @@ CFontz633_init (Driver *drvthis)
 	/* Which contrast */
 	tmp = drvthis->config_get_int (drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "CFontz633_init: Contrast must be between 0 and 1000. Using default value.\n");
+		report (RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default value.\n", __FUNCTION__);
 		tmp = DEFAULT_CONTRAST;
 	}
 	p->contrast = tmp;
@@ -192,7 +192,7 @@ CFontz633_init (Driver *drvthis)
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "CFontz633_init: Brightness must be between 0 and 1000. Using default value.\n");
+		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default value.\n", __FUNCTION__);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
@@ -200,7 +200,7 @@ CFontz633_init (Driver *drvthis)
 	/* Which backlight-off "brightness" */
 	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "CFontz633_init: OffBrightness must be between 0 and 1000. Using default value.\n");
+		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default value.\n", __FUNCTION__);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
@@ -213,7 +213,7 @@ CFontz633_init (Driver *drvthis)
 	else if (tmp == 19200) speed = B19200;
 	else if (tmp == 115200) speed = B115200;
 	else {
-		report (RPT_WARNING, "CFontz633_init: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default value.\n");
+		report (RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default value.\n", __FUNCTION__);
 		speed = DEFAULT_SPEED;
 	}
 
@@ -227,20 +227,20 @@ CFontz633_init (Driver *drvthis)
 	reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
 
 	/* Am I USB or not? */
-	usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
+	p->usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
 
 	/* Set up io port correctly, and open it... */
-	debug( RPT_DEBUG, "CFontz633: Opening device: %s", p->device);
-	p->fd = open(p->device, (usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
+	debug( RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
+	p->fd = open(p->device, (p->usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
 	if (p->fd == -1) {
-		report (RPT_ERR, "CFontz633_init: failed (%s)\n", strerror (errno));
+		report (RPT_ERR, "%s: open() failed (%s)\n", __FUNCTION__, strerror (errno));
 		return -1;
 	}
 
 	tcgetattr (p->fd, &portset);
 
 	/* We use RAW mode */
-	if (usb) {
+	if (p->usb) {
 		// The USB way
 		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
 					| INLCR | IGNCR | ICRNL | IXON );
@@ -275,7 +275,7 @@ CFontz633_init (Driver *drvthis)
 	/* make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
-		report(RPT_ERR, "CFontz633_init: unable to create framebuffer.\n");
+		report(RPT_ERR, "%s: unable to create framebuffer.\n", __FUNCTION__);
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
@@ -283,7 +283,7 @@ CFontz633_init (Driver *drvthis)
 	/* make sure the framebuffer backing store is there... */
 	p->backingstore = (unsigned char *) malloc(p->width * p->height);
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "CFontz633_init: unable to create framebuffer backing store.\n");
+		report(RPT_ERR, "%s: unable to create framebuffer backing store.\n", __FUNCTION__);
 		return -1;
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
@@ -300,7 +300,7 @@ CFontz633_init (Driver *drvthis)
 	CFontz633_no_live_report (drvthis);
 	CFontz633_hardware_clear (drvthis);
 
-	report (RPT_DEBUG, "CFontz633_init: done\n");
+	report (RPT_DEBUG, "%s: done\n", __FUNCTION__);
 
 	return 0;
 }
