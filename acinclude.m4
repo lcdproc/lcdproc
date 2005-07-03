@@ -45,6 +45,11 @@ fi
 		cfontz633)
 			DRIVERS="$DRIVERS CFontz633${SO}"
 			actdrivers=["$actdrivers cfontz633"]
+			AC_CHECK_FUNCS(select, [
+				AC_CHECK_HEADERS(sys/select.h)
+			],[
+				AC_MSG_WARN([The CFontz633 driver needs the select() function])
+			])	
 			;;
 		lcterm)
 			DRIVERS="$DRIVERS lcterm${SO}"

@@ -15,10 +15,20 @@
  * ===========================================================================
  */
 
-#include "CFontz633io.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "config.h"
+
+#if defined(HAVE_SYS_SELECT_H)
+# include <sys/select.h>
+#else
+# include <sys/time.h>
+# include <sys/types.h>
+#endif /* defined(HAVE_SYS_SELECT_H) */
+
+#include "CFontz633io.h"
 
 
 #define TRY_AGAIN 0
@@ -29,7 +39,7 @@
 /* static local functions */
 static void send_packet(int fd, COMMAND_PACKET *out);
 static int  get_crc(char *buf, int len, int seed);
-static int  test_packet(int fd);
+static int  test_packet(int fd, unsigned char response);
 static void treat_packet(void);
 static int  check_for_packet(int fd, unsigned char expected_length);
 static void print_packet(COMMAND_PACKET *packet);
@@ -133,7 +143,7 @@ void send_zerobyte_message(int fd, unsigned char msg)
 }
 
 
-/** send outgoing_response to the given handle; calc & send CRC when doing so */
+/** send out to the given handle; calc & send CRC when doing so */
 static void
 send_packet(int fd, COMMAND_PACKET *out)
 {
@@ -147,14 +157,10 @@ send_packet(int fd, COMMAND_PACKET *out)
 	write(fd, out->crc.as_bytes, 2);
 
 	/**** TEST STUFF ****/
-	// print_packet(&outgoing_response);
-
-#if defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0)
-	usleep(CFONTZ633_WRITE_DELAY);
-#endif
+	// print_packet(out);
 
 	/* Every time we send a message, we also check for an incoming one. */
-	test_packet(fd); 
+	test_packet(fd, 0x40 | out->command); 
 }
 
 
@@ -249,6 +255,21 @@ void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 	unsigned char buffer[MAX_DATA_LENGTH];
 	int BytesRead;
 	
+#if defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0)
+	fd_set rfds;
+	struct timeval timeout;
+	int retval;
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+	timeout.tv_sec = 0;
+	timeout.tv_usec = CFONTZ633_WRITE_DELAY;
+	retval = select(fd + 1, &rfds, NULL, NULL, &timeout);
+
+	if (!retval)
+		return;
+#endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */	
+
 	if (number > MAX_DATA_LENGTH)
 		number = MAX_DATA_LENGTH;
 	BytesRead = read(fd, buffer, number);
@@ -362,17 +383,35 @@ unsigned char PeekByte(ReceiveBuffer *rb)
  * byte read from the serial port
  */ 
 static int
-test_packet(int fd)
+test_packet(int fd, unsigned char response)
 {
 	int is_msg;
 
+#if defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0)
+	int response_received = 0;
+
+	while (!response_received) {
+		is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
+		while (is_msg != GIVE_UP) {
+			if (is_msg == GOOD_MSG) {
+				treat_packet();
+				// do we need treat_packet at all ?
+				if (incoming_command.command == response)
+        	                        response_received = 1;
+			}	
+
+			is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
+		}
+	}
+#else
 	is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
 	while (is_msg != GIVE_UP) {
 		if (is_msg == GOOD_MSG)
 			treat_packet();
-
+	
 		is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
-	}	
+	}
+#endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */
 
 	return 1;
 }
