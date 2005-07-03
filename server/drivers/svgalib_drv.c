@@ -32,7 +32,7 @@
 #include "report.h"
 #include "svgalib_drv.h"
 
-#define DEBUG
+
 
 /* Small font */
 
@@ -256,7 +256,7 @@ svgalib_drv_init (Driver *drvthis)
 {
 	int VGAMODE;
 
-	report (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	vga_init ();
 	VGAMODE = G320x200x256;		  /* Default mode. */
@@ -301,7 +301,7 @@ svgalib_drv_init (Driver *drvthis)
 MODULE_EXPORT void
 svgalib_drv_close (Driver *drvthis)
 {
-	report (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	vga_setmode (TEXT);
 }
@@ -330,7 +330,7 @@ svgalib_drv_height (Driver *drvthis)
 MODULE_EXPORT void
 svgalib_drv_clear (Driver * drvthis)
 {
-	report (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	vga_waitretrace ();
 	gl_clearscreen (gl_rgbcolor (0, 0, 0));
@@ -354,7 +354,7 @@ svgalib_drv_string (Driver *drvthis, int x, int y, char string[])
 {
 	int i;
 	
-	report (RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
+	debug (RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
 
 	for (i = 0; string[i] != '\0'; i++) {
 		unsigned char *c = &string[i];
@@ -380,7 +380,7 @@ svgalib_drv_chr (Driver *drvthis, int x, int y, char c)
 {
 	char buffer[2];
 
-	report (RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
+	debug (RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
 
 	switch ((unsigned char) c) {
 	case '\0':
@@ -405,7 +405,7 @@ svgalib_drv_num (Driver *drvthis, int x, int num)
 	char c;
 	int y, dx;
 
-	report (RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
+	debug (RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
 
 	c = '0' + num;
 
@@ -422,7 +422,7 @@ svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 {
 	int pos;
 
-	report (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+	debug (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
@@ -441,7 +441,7 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 {
 	int pos;
 
-	report (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+	debug (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
@@ -461,7 +461,7 @@ svgalib_drv_get_key (Driver *drvthis)
 	static char buf[2] = " ";
 	int key = vga_getkey ();
 
-	report (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	if (key <= 0)	/* no key */
 		return NULL;
