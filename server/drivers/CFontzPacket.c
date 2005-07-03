@@ -139,6 +139,7 @@ typedef struct driver_private_data {
 	int model;
 	int newfirmware;
 	int usb;
+	int speed;
 
 	/* dimensions */
 	int width, height;
@@ -185,9 +186,9 @@ CFontz633_init (Driver *drvthis)
 	struct termios portset;
 	int tmp, w, h;
 	int reboot = 0;
-	int speed = DEFAULT_SPEED;
-	char size[200] = DEFAULT_SIZE_CF633;
-	char *default_size = DEFAULT_SIZE_CF633;
+	char size[200] = DEFAULT_SIZE;
+	int default_speed = DEFAULT_SPEED;
+	char *default_size = DEFAULT_SIZE;
 
 	PrivateData *p;
 
@@ -211,11 +212,12 @@ CFontz633_init (Driver *drvthis)
 
 	/* Read config file */
 	/* Which model is it (CF633, CF631 or CF635)? */
-	tmp = drvthis->config_get_int (drvthis->name, "Model", 0, DEFAULT_SPEED);
-	debug (RPT_INFO,"%s: Model is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int (drvthis->name, "Model", 0, 633);
+	debug (RPT_INFO,"%s: Model (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp != 631) && (tmp != 633) && (tmp != 635)) {
 		tmp = 633;
-		report (RPT_WARNING, "%s: Model must be 631, 633 or 635. Using default value: %d\n", __FUNCTION__, tmp);
+		report (RPT_WARNING, "%s: Model must be 631, 633 or 635. Using default %d.\n",
+			__FUNCTION__, tmp);
 	}
 	p->model = tmp;
 
@@ -225,12 +227,16 @@ CFontz633_init (Driver *drvthis)
 	debug (RPT_INFO,"%s: Device (in config) is '%s'", __FUNCTION__, p->device);
 
 	/* Which size */
-	if (p->model == 631)
+	if (p->model == 631) {
 		default_size = DEFAULT_SIZE_CF631;
-	else if (p->model == 633)
+		default_speed = DEFAULT_SPEED_CF631;
+	} else if (p->model == 633) {
 		default_size = DEFAULT_SIZE_CF633;
-	else if (p->model == 635)
+		default_speed = DEFAULT_SPEED_CF633;
+	} else if (p->model == 635) {
 		default_size = DEFAULT_SIZE_CF635;
+		default_speed = DEFAULT_SPEED_CF635;
+	}	
 
 	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, default_size), sizeof(size));
 	size[sizeof(size)-1] = '\0';
@@ -238,19 +244,21 @@ CFontz633_init (Driver *drvthis)
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "%s: Cannot read size: %s. Using default value.\n", __FUNCTION__, size);
+		report (RPT_WARNING, "%s: Cannot parse size: %s. Using default %s.\n",
+			__FUNCTION__, size, default_size);
 		sscanf(default_size, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
 
-	debug (RPT_INFO,"%s: Real size used: %dx%d", __FUNCTION__, p->width, p->height);
+	debug (RPT_INFO,"%s: Size used: %dx%d", __FUNCTION__, p->width, p->height);
 
 	/* Which contrast */
 	tmp = drvthis->config_get_int (drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
 	debug (RPT_INFO,"%s: Contrast (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default value.\n", __FUNCTION__);
+		report (RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default %d.\n",
+			__FUNCTION__, DEFAULT_CONTRAST);
 		tmp = DEFAULT_CONTRAST;
 	}
 	p->contrast = tmp;
@@ -259,7 +267,8 @@ CFontz633_init (Driver *drvthis)
 	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	debug (RPT_INFO,"%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default value.\n", __FUNCTION__);
+		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
+			__FUNCTION__, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
@@ -268,20 +277,21 @@ CFontz633_init (Driver *drvthis)
 	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
 	debug (RPT_INFO,"%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default value.\n", __FUNCTION__);
+		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d.\n",
+			__FUNCTION__, DEFAULT_OFFBRIGHTNESS);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
 
 	/* Which speed ? CF633 support 19200 only, CF631 & CF635 USB use 115200. */
-	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
+	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, default_speed);
 	debug (RPT_INFO,"%s: Speed (in config) is '%d'", __FUNCTION__, tmp);
-	if (tmp == 19200) speed = B19200;
-	else if (tmp == 115200) speed = B115200;
-	else {
-		report (RPT_WARNING, "%s: Speed must be 19200 or 11500. Using default value.\n", __FUNCTION__);
-		speed = DEFAULT_SPEED;
+	if ((tmp != 19200) && (tmp != 115200)) {
+		report (RPT_WARNING, "%s: Speed must be 19200 or 11500. Using default %d.\n",
+			__FUNCTION__, default_speed);
+		tmp = default_speed;
 	}
+	p->speed = (tmp == 19200) ? B19200 : B115200;
 
 	/* New firmware version?
 	 * I will try to behave differently for firmware 0.6 or above.
@@ -334,7 +344,7 @@ CFontz633_init (Driver *drvthis)
 	}
 
 	/* Set port speed */
-	cfsetospeed (&portset, speed);
+	cfsetospeed (&portset, p->speed);
 	cfsetispeed (&portset, B0);
 
 	/* Do it... */
@@ -494,16 +504,21 @@ CFontz633_flush (Driver *drvthis)
    */
 
     for (i = 0; i < p->height; i++) {
-      // set frame buffer & backing store to start of the line
-      unsigned char *xp = p->framebuf + (i * p->width);
-      unsigned char *xq = p->backingstore + (i * p->width);
+      // set  pointers to start of the line in frame buffer & backing store
+      unsigned char *sp = p->framebuf + (i * p->width);
+      unsigned char *sq = p->backingstore + (i * p->width);
 
-      debug (RPT_INFO,"Framebuf: '%.*s'", p->width, xp );
-      debug (RPT_INFO,"     backingstore: '%.*s'", p->width, xq );
+      debug (RPT_INFO,"Framebuf: '%.*s'", p->width, sp );
+      debug (RPT_INFO,"     backingstore: '%.*s'", p->width, sq );
 
+#if defined(CFONTZPACKET_OLD_OPTIMATION)       
+      /* Strategy:
+       * - one update command per chunk of modified data
+       */
+      
       for (j = 0; j < p->width; ) {
 	// skip over identical portions
-	for ( ; *xp == *xq && j < p->width; xp++, xq++, j++ )
+	for ( ; *sp == *sq && j < p->width; sp++, sq++, j++ )
 	  ;
 
 	// deal with the differences
@@ -513,7 +528,7 @@ CFontz633_flush (Driver *drvthis)
 	  int first_diff = j;
 
 	  // get length of differing portions
-	  for ( ; *xp != *xq && j < p->width; xp++, xq++, j++ )
+	  for ( ; *sp != *sq && j < p->width; sp++, sq++, j++ )
 	    ;
 
 	  // send the difference to the screen
@@ -521,7 +536,7 @@ CFontz633_flush (Driver *drvthis)
 	  out[0] = first_diff;	// column
 	  out[1] = i;		// line
 
-	  debug (RPT_INFO,"WriteDiff: l=%d c=%d count=%d string='%.*s'",
+	  debug (RPT_INFO,"%s: l=%d c=%d count=%d string='%.*s'",
 	 	 out[0], out[1], diff_length, diff_length,
 		 &p->framebuf[first_diff + (i * p->width)] );
 
@@ -529,6 +544,40 @@ CFontz633_flush (Driver *drvthis)
 	  send_bytes_message(p->fd, CF633_Send_Data_to_LCD, diff_length + 2, out);
 	}
       } // j < p->width
+#else
+      /* Strategy:
+       * - not more than one update command per line
+       * - leave out leading and trailing parts that are identical
+       */
+      
+      // set  pointers to end of the line in frame buffer & backing store
+      unsigned char *ep = sp + (p->width - 1);
+      unsigned char *eq = sq + (p->width - 1);
+      int length = 0;
+
+      // skip over leading identical portions of the line
+      for (j = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, j++)
+	;
+	  
+      // skip over trailing identical portions of the line
+      for (length = p->width - j; (length > 0) && (*ep == *eq); ep--, eq--, length--)
+	;
+
+      /* there are differences, ... */
+      if (length > 0) {
+        unsigned char out[23];
+	      
+	/* ... send then to the LCD */
+	out[0] = j;	// column
+	out[1] = i;	// line
+
+	debug (RPT_INFO,"%s: l=%d c=%d count=%d string='%.*s'",
+	 	 out[0], out[1], length, length, sp);
+
+	memcpy(&out[2], sp, length);
+	send_bytes_message(p->fd, CF633_Send_Data_to_LCD, length + 2, out);
+      }      
+#endif      
     }	// i < p->height
     memcpy(p->backingstore, p->framebuf, p->width * p->height);
   }

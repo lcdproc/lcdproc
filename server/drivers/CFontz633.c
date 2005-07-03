@@ -96,6 +96,7 @@ typedef struct driver_private_data {
 	int model;
 	int newfirmware;
 	int usb;
+	int speed;
 
 	/* dimensions */
 	int width, height;
@@ -141,7 +142,6 @@ CFontz633_init (Driver *drvthis)
 	struct termios portset;
 	int tmp, w, h;
 	int reboot = 0;
-	int speed = DEFAULT_SPEED;
 	char size[200] = DEFAULT_SIZE;
 
 	PrivateData *p;
@@ -167,7 +167,7 @@ CFontz633_init (Driver *drvthis)
 	/* Which device should be used */
 	strncpy(p->device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 	p->device[sizeof(p->device)-1] = '\0';
-	debug (RPT_INFO,"CFontz633: Using device: %s", p->device);
+	debug (RPT_INFO,"%s: Device (in config) is: '%s'", __FUNCTION__, p->device);
 
 	/* Which size */
 	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
@@ -175,7 +175,8 @@ CFontz633_init (Driver *drvthis)
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "%s: Cannot read size: %s. Using default value.\n", __FUNCTION__, size);
+		report (RPT_WARNING, "%s: Cannot parse size: %s. Using default %s.\n",
+			__FUNCTION__, size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
@@ -184,7 +185,8 @@ CFontz633_init (Driver *drvthis)
 	/* Which contrast */
 	tmp = drvthis->config_get_int (drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default value.\n", __FUNCTION__);
+		report (RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default %d.\n",
+			__FUNCTION__, DEFAULT_CONTRAST);
 		tmp = DEFAULT_CONTRAST;
 	}
 	p->contrast = tmp;
@@ -192,7 +194,8 @@ CFontz633_init (Driver *drvthis)
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default value.\n", __FUNCTION__);
+		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
+			__FUNCTION__, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
@@ -200,22 +203,24 @@ CFontz633_init (Driver *drvthis)
 	/* Which backlight-off "brightness" */
 	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default value.\n", __FUNCTION__);
+		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d.\n",
+			__FUNCTION__, DEFAULT_OFFBRIGHTNESS);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
 
 	/* Which speed */
 	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
-	if (tmp == 1200) speed = B1200;
-	else if (tmp == 2400) speed = B2400;
-	else if (tmp == 9600) speed = B9600;
-	else if (tmp == 19200) speed = B19200;
-	else if (tmp == 115200) speed = B115200;
-	else {
-		report (RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default value.\n", __FUNCTION__);
-		speed = DEFAULT_SPEED;
+	if ((tmp != 1200) && (tmp != 2400) && (tmp != 9600) && (tmp != 19200) && (tmp != 115200)) {
+		report (RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default %d.\n",
+			__FUNCTION__, DEFAULT_SPEED);
+		tmp = DEFAULT_SPEED;
 	}
+	if (tmp == 1200) p->speed = B1200;
+	else if (tmp == 2400) p->speed = B2400;
+	else if (tmp == 9600) p->speed = B9600;
+	else if (tmp == 19200) p->speed = B19200;
+	else if (tmp == 115200) p->speed = B115200;
 
 	/* New firmware version?
 	 * I will try to behave differently for firmware 0.6 or above.
@@ -266,7 +271,7 @@ CFontz633_init (Driver *drvthis)
 	}
 
 	/* Set port speed */
-	cfsetospeed (&portset, speed);
+	cfsetospeed (&portset, p->speed);
 	cfsetispeed (&portset, B0);
 
 	/* Do it... */
