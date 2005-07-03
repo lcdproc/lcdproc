@@ -132,21 +132,20 @@ cpu_smp_screen (int rep, int display)
 			for (j = 4; j < 5; j++)
 				cpu[z][i][j] = cpu[z][i + 1][j];
 
-		if (load[z].total == 0) {
-			continue;
-		}
 		// Read new data
 #if 0									  // we're only using 4 right now
-		cpu[z][CPU_BUF_SIZE - 1][0] = ((float) load[z].user / (float) load[z].total) * 100.0;
-		cpu[z][CPU_BUF_SIZE - 1][1] = ((float) load[z].system / (float) load[z].total) * 100.0;
-		cpu[z][CPU_BUF_SIZE - 1][2] = ((float) load[z].nice / (float) load[z].total) * 100.0;
-		cpu[z][CPU_BUF_SIZE - 1][3] = ((float) load[z].idle / (float) load[z].total) * 100.0;
+		cpu[z][CPU_BUF_SIZE-1][0] = ((float) load[z].user / (float) load[z].total) * 100.0;
+		cpu[z][CPU_BUF_SIZE-1][1] = ((float) load[z].system / (float) load[z].total) * 100.0;
+		cpu[z][CPU_BUF_SIZE-1][2] = ((float) load[z].nice / (float) load[z].total) * 100.0;
+		cpu[z][CPU_BUF_SIZE-1][3] = ((float) load[z].idle / (float) load[z].total) * 100.0;
 #endif
-		cpu[z][CPU_BUF_SIZE - 1][4] = (((float) load[z].user + (float) load[z].system + (float) load[z].nice) / (float) load[z].total) * 100.0;
+		cpu[z][CPU_BUF_SIZE-1][4] = (load[z].total > 0L)
+					    ? (((float) load[z].user + (float) load[z].system + (float) load[z].nice) / (float) load[z].total) * 100.0
+					    : 0.0;
 
 		// Average values for final result
 		for (i = 4; i < 5; i++) {
-			value = 0;
+			value = 0.0;
 			for (j = 0; j < CPU_BUF_SIZE; j++) {
 				value += cpu[z][j][i];
 			}

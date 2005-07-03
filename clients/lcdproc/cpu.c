@@ -34,12 +34,12 @@ cpu_screen(int rep, int display)
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 4
 	static int first = TRUE;
-	static float cpu[CPU_BUF_SIZE + 1][5];	// last buffer is scratch
+	static double cpu[CPU_BUF_SIZE + 1][5];	// last buffer is scratch
 	static int gauge_wid = 0;
 	static int usni_wid = 0;
 
 	int i, j, n;
-	float value;
+	double value;
 	load_type load;
 
 	if (first) {
@@ -104,11 +104,20 @@ cpu_screen(int rep, int display)
 			cpu[i][j] = cpu[i + 1][j];
 
 	// Read new data
-	cpu[CPU_BUF_SIZE - 1][0] = ((float) load.user / (float) load.total) * 100.0;
-	cpu[CPU_BUF_SIZE - 1][1] = ((float) load.system / (float) load.total) * 100.0;
-	cpu[CPU_BUF_SIZE - 1][2] = ((float) load.nice / (float) load.total) * 100.0;
-	cpu[CPU_BUF_SIZE - 1][3] = ((float) load.idle / (float) load.total) * 100.0;
-	cpu[CPU_BUF_SIZE - 1][4] = (((float) load.user + (float) load.system + (float) load.nice) / (float) load.total) * 100.0;
+	if (load.total > 0L) {
+	  cpu[CPU_BUF_SIZE - 1][0] = 100.0 * ((double) load.user / (double) load.total);
+ 	  cpu[CPU_BUF_SIZE - 1][1] = 100.0 * ((double) load.system / (double) load.total);
+	  cpu[CPU_BUF_SIZE - 1][2] = 100.0 * ((double) load.nice / (double) load.total);
+	  cpu[CPU_BUF_SIZE - 1][3] = 100.0 * ((double) load.idle / (double) load.total);
+	  cpu[CPU_BUF_SIZE - 1][4] = 100.0 * (((double) load.user + (double) load.system + (double) load.nice) / (double) load.total);
+	}
+	else {
+	  cpu[CPU_BUF_SIZE - 1][0] = 0.0;
+ 	  cpu[CPU_BUF_SIZE - 1][1] = 0.0;
+	  cpu[CPU_BUF_SIZE - 1][2] = 0.0;
+	  cpu[CPU_BUF_SIZE - 1][3] = 0.0;
+	  cpu[CPU_BUF_SIZE - 1][4] = 0.0;
+	}	
 
 	/*
 	// Only clear on first display...
@@ -204,12 +213,12 @@ cpu_graph_screen(int rep, int display)
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 2
 	static int first = TRUE;
-	static float cpu[CPU_BUF_SIZE];
+	static double cpu[CPU_BUF_SIZE];
 	static int cpu_past[LCD_MAX_WIDTH];
 	static int gauge_hgt = 0;
 
 	int i, n = 0;
-	float value ;
+	double value ;
 	load_type load;
 
 	if (first) {
@@ -248,7 +257,9 @@ cpu_graph_screen(int rep, int display)
 
 	// Read and save new data
 	machine_get_load(&load);
-	cpu[CPU_BUF_SIZE-1] = ((float) load.user + (float) load.system + (float) load.nice) / (float) load.total;
+	cpu[CPU_BUF_SIZE-1] = (load.total > 0L)
+			      ? ((double) load.user + (double) load.system + (double) load.nice) / (double) load.total
+			      : 0;
 
 	// Average values for final result
 	value = 0.0;
