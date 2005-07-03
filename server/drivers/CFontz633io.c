@@ -62,7 +62,7 @@ void EmptyKeyRing(KeyRing *kr)
 int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 {
 	if (((kr->head + 1) % KEYRINGSIZE) != (kr->tail % KEYRINGSIZE)) {
- 		/*  printf("We add key: %d\n", key); */
+ 		/* fprintf(stderr, "We add key: %d\n", key); */
 
 	        kr->contents[kr->head % KEYRINGSIZE] = key;
   		kr->head = (kr->head + 1) % KEYRINGSIZE;
@@ -86,7 +86,7 @@ unsigned char GetKeyFromKeyRing(KeyRing *kr)
 	        kr->tail = (kr->tail + 1) % KEYRINGSIZE;
 	}
 
-	/*  if (retval) printf("We remove key: %d\n", retval); */
+	/*  if (retval) fprintf(stderr, "We remove key: %d\n", retval); */
 	return retval;
 }
 
@@ -151,7 +151,7 @@ send_packet(int fd, COMMAND_PACKET *out)
 
 #if defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0)
 	usleep(CFONTZ633_WRITE_DELAY);
-#endif	
+#endif
 
 	/* Every time we send a message, we also check for an incoming one. */
 	test_packet(fd); 
@@ -246,33 +246,33 @@ void EmptyReceiveBuffer(ReceiveBuffer *rb)
 /** read given number of bytes from given file handle into receive buffer */
 void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 {
-	unsigned char	buffer[MAX_DATA_LENGTH];
-	int		BytesRead;
-
+	unsigned char buffer[MAX_DATA_LENGTH];
+	int BytesRead;
+	
 	if (number > MAX_DATA_LENGTH)
 		number = MAX_DATA_LENGTH;
 	BytesRead = read(fd, buffer, number);
 
 	if (BytesRead == -1) {
-		/* printf("~~~Problem reading: %s .\n", strerror(errno)); */
+		/* fprintf(stderr, "~~~Problem reading: %s .\n", strerror(errno)); */
 	}
 	else {
 		int	i;
 
-		/* printf("Read %d Bytes:", BytesRead); */
+		/* fprintf(stderr, "Read %d Bytes:", BytesRead); */
 
 		/* wrap write pointer to the receive buffer */
 		rb->head %= RECEIVEBUFFERSIZE;
 
 		/* store the bytes read */
 		for (i = 0; i < BytesRead; i++) {
-			/* printf(" %02x", buffer[i]); */
+			/* fprintf(stderr, " %02x", buffer[i]); */
 			rb->contents[rb->head] = buffer[i];
 
 			/* increment write pointer (wrap if needed) */
 			rb->head = (rb->head + 1) % RECEIVEBUFFERSIZE;
 		}
-		/* printf("\n"); */
+		/* fprintf(stderr, "\n"); */
 	}
 }
 
@@ -292,7 +292,7 @@ int BytesAvail(ReceiveBuffer *rb)
 /** get next byte from receive buffer (return '\0' if buffer is empty) */
 unsigned char GetByte(ReceiveBuffer *rb)
 {
-	unsigned char    return_byte = '\0';
+	unsigned char return_byte = '\0';
   
 	/* wrap read pointer to the receive buffer */
 	rb->tail %= RECEIVEBUFFERSIZE;
@@ -372,7 +372,7 @@ test_packet(int fd)
 			treat_packet();
 
 		is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
-	}
+	}	
 
 	return 1;
 }
@@ -416,7 +416,7 @@ check_for_packet(int fd, unsigned char expected_length)
 	//First off, there must be at least 4 bytes available in the input stream
 	//for there to be a valid command in it (command, length, no data, CRC).
 	if (BytesAvail(&receivebuffer) < 4) {
-		/* printf("Not enough byte available for even the smallest message.\n"); */
+		/* fprintf(stderr, "Not enough bytes available for even the smallest message.\n"); */
 		return(GIVE_UP); /* We don't need to retry before more byte are received */
 	}
 
@@ -430,7 +430,7 @@ check_for_packet(int fd, unsigned char expected_length)
 	if (MAX_COMMAND < (0x3F & incoming_command.command)) {
 		/* Throw out one byte of garbage. Next pass through should re-sync. */
 		GetByte(&receivebuffer);
-		/* printf("###: Unknown command.\n"); */
+		/* fprintf(stderr, "###: Unknown command.\n"); */
 		return(TRY_AGAIN);
 	}
 	
@@ -441,7 +441,7 @@ check_for_packet(int fd, unsigned char expected_length)
   	if (MAX_DATA_LENGTH < incoming_command.data_length) {
 		//Throw out one byte of garbage. Next pass through should re-sync.
 		GetByte(&receivebuffer);
-		/* printf("###: Too long packet: %d.\n", incoming_command.data_length); */
+		/* fprintf(stderr, "###: Too long packet: %d.\n", incoming_command.data_length); */
 		return(TRY_AGAIN);
 	}
 
@@ -450,7 +450,7 @@ check_for_packet(int fd, unsigned char expected_length)
 	if ((int) PeekBytesAvail(&receivebuffer) < (incoming_command.data_length + 2)) {
 		//It looked like a valid start of a packet, but it does not look
 		//like the complete packet has been received yet.
-		/* printf("Not enough read to check the complete message.\n"); */
+		/* fprintf(stderr, "Not enough read to check the complete message.\n"); */
 		return(GIVE_UP); /* Let's not return until more byte are available */
 	}
 
@@ -482,8 +482,8 @@ check_for_packet(int fd, unsigned char expected_length)
 	* Next pass through should re-sync.
 	*/
 	GetByte(&receivebuffer);
-	/* printf("###: Wrong CheckSum. computed/real %04x:%04x \n",
-  		  testcrc, incoming_command.crc.as_word); */
+	/* fprintf(stderr, "###: Wrong CheckSum. computed/real %04x:%04x \n",
+  		   testcrc, incoming_command.crc.as_word); */
 	return(TRY_AGAIN);
 }
 
@@ -502,12 +502,12 @@ print_packet(COMMAND_PACKET *packet)
 	cmd = (0x3F & (packet->command));
 	len = packet->data_length;
 
-	printf("Message (%d,%d) %d [", top, cmd, len);
+	fprintf(stderr, "Message (%d,%d) %d [", top, cmd, len);
 
 	//There is enough data to make a packet. Transfer over the data.
 	for (i = 0; i < packet->data_length; i++)
-		printf(" %02x", packet->data[i]);
+		fprintf(stderr, " %02x", packet->data[i]);
   
-	printf(" ] %02x %02x .\n", packet->crc.as_bytes[0], packet->crc.as_bytes[1]);
+	fprintf(stderr, " ] %02x %02x .\n", packet->crc.as_bytes[0], packet->crc.as_bytes[1]);
 }
 
