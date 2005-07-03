@@ -589,42 +589,34 @@ curses_drv_flush (Driver *drvthis)
 MODULE_EXPORT char *
 curses_drv_get_key (Driver *drvthis)
 {
-	int i;
 	static char ret_val[2] = {0,0};
+	int key = getch ();
 
-	i = getch ();
-
-	switch(i) {
+	switch(key) {
 		case 0x0C:
+			/* internal: ^L restores screen */
 			curses_drv_restore_screen(drvthis);
-			return 0;
+			return NULL;
 			break;
 		case KEY_LEFT:
 			return "Left";
-			break;
 		case KEY_UP:
 			return "Up";
-			break;
 		case KEY_DOWN:
 			return "Down";
-			break;
 		case KEY_RIGHT:
 			return "Right";
-			break;
 		case ERR:
 			return NULL;
-			break;
 		case KEY_ENTER:
 		case 0x0D:
 			return "Enter"; /* Is this correct ? */
-			break;
 		case 0x1B:
 			return "Escape";
-			break;
 		default:
-			report( RPT_INFO, "curses_drv: Unknown key 0x%4x", i );
-			ret_val[0] = (char) i & 0xFF;
-			return ret_val;
+			report( RPT_INFO, "curses_drv: Unknown key 0x%4x", key );
+			ret_val[0] = (char) key & 0xFF;
+			return (ret_val[0] != '\0') ? ret_val : NULL;
 			break;
 	}
 }

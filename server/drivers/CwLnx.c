@@ -1471,26 +1471,21 @@ CwLnx_string(Driver * drvthis, int x, int y, char *string)
 MODULE_EXPORT char *
 CwLnx_get_key(Driver * drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+	PrivateData * p = drvthis->private_data;
+	char key = '\0';
 
-	char akey = 0;
-	char * keystr = NULL;
+	read (p->fd, &key, 1);
 
-	read (p->fd, &akey, 1);
-
-	if (akey != 0) 
-	{
-		if ((akey>='A')&&(akey<='F'))
-		{
-			keystr = p->KeyMap[akey-'A'];
+	if (key != '\0') {
+		if ((key >= 'A') && (key <= 'F')) {
+			return p->KeyMap[key-'A'];
 		}
-		else
-		{
-                        report( RPT_INFO, "CwLnx: Untreated key 0x%2x", akey);
+		else {
+			report( RPT_INFO, "CwLnx: Untreated key 0x%2x", key);
 		}
 	}
 
-	return keystr;
+	return NULL;
 }
 
 /*****************************************************

@@ -1230,11 +1230,9 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
  * Otherwise crash of the LCD and/or I2C bus.
  *
  ******************************
- * returns one character from the keypad...
+ * returns a string for the function characters from the keypad...
  * (A-Z) on success, 0 on failure...
  */
-
- /* TODO implement for new API call (get_key) that returns a string */
 
 /*
  * Return one char from the KeyRing
@@ -1263,19 +1261,24 @@ MtxOrb_get_key (Driver *drvthis)
 	}
 
 	if (!p->keypad_test_mode) {
-        if (in==p->left_key) { return "Left";
-		} else if (in==p->right_key) { return "Right";
-		} else if (in==p->up_key) { return "Up";
-		} else if (in==p->down_key) { return "Down";
-		} else if (in==p->enter_key) { return "Enter"; 
-		} else if (in==p->escape_key) { return "Escape";
-		} else {
-            report( RPT_INFO, "MtxOrb Untreated key 0x%2x", in);
+	        if (in == p->left_key)
+			return "Left";
+		else if (in == p->right_key)
+			return "Right";
+		else if (in == p->up_key)
+			return "Up";
+		else if (in == p->down_key)
+			return "Down";
+		else if (in == p->enter_key)
+			return "Enter"; 
+		else if (in == p->escape_key)
+			return "Escape";
+		else {
+        		report( RPT_INFO, "MtxOrb Untreated key 0x%2x", in);
 			return NULL;
-        }
+	        }
 	} else {
 		fprintf (stdout, "MtxOrb: Received character %c\n", in);
-		in = 0;
 		fprintf (stdout, "MtxOrb: Press another key of your device.\n");
 	}
 	return NULL;

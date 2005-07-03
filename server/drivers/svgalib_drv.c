@@ -29,7 +29,10 @@
 #include "config.h"
 
 #include "lcd.h"
+#include "report.h"
 #include "svgalib_drv.h"
+
+#define DEBUG
 
 /* Small font */
 
@@ -205,23 +208,20 @@ void
 ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, unsigned char *ptr)
 /* Expand groovy 5x7 font into an area of memory */
 {
-	int x, n, y;
-	unsigned char mask;
-	unsigned char base;
-	unsigned char *p;
-	p = ptr;
+	int n;
+	unsigned char *p = ptr;
+
 	for (n = 0; n < 127; n++) {
+		int y;
+
 		for (y = 0; y < ht; y++) {
-			mask = 1;
-			base = fnt[n * ht + y];
+			unsigned char mask = 1;
+			unsigned char base = fnt[n * ht + y];
+			int x;
+
 			for (x = 0; x < w; x++) {
-				if (base & mask) {
-					*p = 0;
-				} else {
-					*p = col;
-				}
-				p++;
-				mask *= 2;
+				*p++ = (base & mask) ? 0 : col;
+				mask <<= 1;
 			}
 		}
 	}
@@ -256,11 +256,13 @@ svgalib_drv_init (Driver *drvthis)
 {
 	int VGAMODE;
 
+	report (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+
 	vga_init ();
 	VGAMODE = G320x200x256;		  /* Default mode. */
 
 	if (!vga_hasmode (VGAMODE)) {
-		printf ("320x200x256 Mode not available.\n");
+		report(RPT_ERR, "320x200@256 Mode not available.");
 		return -1;
 	} else {
 		vga_setmode (VGAMODE);
@@ -269,7 +271,7 @@ svgalib_drv_init (Driver *drvthis)
 
 		/* get the font */
 		SVGALIB_font = malloc (256 * 8 * 8 * 1);
-		ExpandGroovyFont (5, 7, gl_rgbcolor (0, 255, 0), simple_font5x7, SVGALIB_font);
+		ExpandGroovyFont (5, 7, gl_rgbcolor (255, 255, 255), simple_font5x7, SVGALIB_font);
 		gl_setfont (5, 7, SVGALIB_font);
 
 	}
@@ -288,6 +290,7 @@ svgalib_drv_init (Driver *drvthis)
 		width = LCD_DEFAULT_WIDTH;
 		height = LCD_DEFAULT_HEIGHT;
 	}
+	report(RPT_INFO, "%s: Using size %dx%d", __FUNCTION__, width, height);
 
 	return 0;
 }
@@ -298,6 +301,8 @@ svgalib_drv_init (Driver *drvthis)
 MODULE_EXPORT void
 svgalib_drv_close (Driver *drvthis)
 {
+	report (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+
 	vga_setmode (TEXT);
 }
 
@@ -325,6 +330,8 @@ svgalib_drv_height (Driver *drvthis)
 MODULE_EXPORT void
 svgalib_drv_clear (Driver * drvthis)
 {
+	report (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+
 	vga_waitretrace ();
 	gl_clearscreen (gl_rgbcolor (0, 0, 0));
 }
@@ -346,11 +353,13 @@ MODULE_EXPORT void
 svgalib_drv_string (Driver *drvthis, int x, int y, char string[])
 {
 	int i;
-	unsigned char *c;
-	for (i = 0; string[i]; i++) {
-		c = &string[i];
+	
+	report (RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
+
+	for (i = 0; string[i] != '\0'; i++) {
+		unsigned char *c = &string[i];
 		switch (*c) {
-		case 0:
+		case '\0':
 			*c = icon_char;
 			break;
 		case 255:
@@ -370,11 +379,14 @@ MODULE_EXPORT void
 svgalib_drv_chr (Driver *drvthis, int x, int y, char c)
 {
 	char buffer[2];
-	switch (c) {
-	case 0:
+
+	report (RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
+
+	switch ((unsigned char) c) {
+	case '\0':
 		c = icon_char;
 		break;
-	case -1:
+	case 255:
 		c = '#';
 		break;
 	}
@@ -393,6 +405,8 @@ svgalib_drv_num (Driver *drvthis, int x, int num)
 	char c;
 	int y, dx;
 
+	report (RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
+
 	c = '0' + num;
 
 	for (y = 1; y < 5; y++)
@@ -408,8 +422,10 @@ svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 {
 	int pos;
 
-	for ( pos=0; pos<len; pos++ ) {
-		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+	report (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+
+	for (pos = 0; pos < len; pos++) {
+		if (2 * pos < ((long) promille * len / 500 + 1)) {
 			svgalib_drv_chr (drvthis, x, y-pos, '|');
 		} else {
 			; /* print nothing */
@@ -425,8 +441,10 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 {
 	int pos;
 
-	for ( pos=0; pos<len; pos++ ) {
-		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+	report (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+
+	for (pos = 0; pos < len; pos++) {
+		if (2 * pos < ((long) promille * len / 500 + 1)) {
 			svgalib_drv_chr (drvthis, x+pos, y, '-');
 		} else {
 			; /* print nothing */
@@ -440,37 +458,36 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 MODULE_EXPORT char *
 svgalib_drv_get_key (Driver *drvthis)
 {
-	int i;
-	char *s;
-	static char buf[2];
+	static char buf[2] = " ";
+	int key = vga_getkey ();
 
-	s = "";
+	report (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
-	i = vga_getkey ();
-	if (i) {
-		switch (i) {
-			/* map the cursor keys to something sensible. */
-		case 27:
-			i = vga_getkey ();
-			if (i == 91) {
-				i = vga_getkey ();
-				switch (i) {
-				case VGAKEY_LEFT:
-					s = "ArrowLeft";
-					break;
-				case VGAKEY_UP:
-					s = "ArrowUp";
-					break;
-				case VGAKEY_DOWN:
-					s = "ArrowDown";
-					break;
-				case VGAKEY_RIGHT:
-					s = "ArrowRight";
-					break;
-				/* otherwise key not recognised */
+	if (key <= 0)	/* no key */
+		return NULL;
+
+	switch (key) {
+		case 0x1B:	/* ESC may introduce special key sequence */
+			key = vga_getkey ();
+
+			if (key == 0)	/* alone it is "Escape" */
+				return "Escape";
+
+			if (key == 0x5B) {	/* 0x1B 0x5B 0x??: cursor keys */
+				key = vga_getkey ();
+				switch (key) {
+					case VGAKEY_LEFT:
+						return "Left";
+					case VGAKEY_UP:
+						return "Up";
+					case VGAKEY_DOWN:
+						return "Down";
+					case VGAKEY_RIGHT:
+						return "Right";
 				}
 			}
-			break;
+			/* otherwise key not recognised; ignore it */
+			return NULL;
 
 			/*
 			   Change this bit to your liking.  I only set these values because
@@ -480,14 +497,15 @@ svgalib_drv_get_key (Driver *drvthis)
 			   be able to quit LCDproc from the emulation.
 
 			 */
-		case 13:
-			s = "Enter";
-			break;
+		case '\t':	/* TAB, LF and CR serve as "Enter" */
+		case 0x0A:	
+		case 0x0D:	
+			return "Enter";
 		default:
-			buf[0] = i;
-			buf[1] = 0;
-			s = buf;
-		}
+			buf[0] = (char) key & 0xFF;	/* make sure it fits into a char */
+			buf[1] = '\0';
+			return (buf[0] != '\0') ? buf : NULL;
 	}
-	return s;
+	return NULL;
 }
+
