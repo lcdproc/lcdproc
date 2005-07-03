@@ -213,7 +213,7 @@ CFontz633_init (Driver *drvthis)
 	/* Read config file */
 	/* Which model is it (CF633, CF631 or CF635)? */
 	tmp = drvthis->config_get_int (drvthis->name, "Model", 0, 633);
-	debug (RPT_INFO,"%s: Model (in config) is '%d'", __FUNCTION__, tmp);
+	debug (RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp != 631) && (tmp != 633) && (tmp != 635)) {
 		tmp = 633;
 		report (RPT_WARNING, "%s: Model must be 631, 633 or 635. Using default %d.\n",
@@ -224,7 +224,7 @@ CFontz633_init (Driver *drvthis)
 	/* Which device should be used */
 	strncpy(p->device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 	p->device[sizeof(p->device)-1] = '\0';
-	debug (RPT_INFO,"%s: Device (in config) is '%s'", __FUNCTION__, p->device);
+	debug (RPT_INFO, "%s: Device (in config) is '%s'", __FUNCTION__, p->device);
 
 	/* Which size */
 	if (p->model == 631) {
@@ -240,7 +240,7 @@ CFontz633_init (Driver *drvthis)
 
 	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, default_size), sizeof(size));
 	size[sizeof(size)-1] = '\0';
-	debug (RPT_INFO,"%s: Size (in config) is '%s'", __FUNCTION__, size);
+	debug (RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
@@ -251,11 +251,11 @@ CFontz633_init (Driver *drvthis)
 	p->width = w;
 	p->height = h;
 
-	debug (RPT_INFO,"%s: Size used: %dx%d", __FUNCTION__, p->width, p->height);
+	debug (RPT_INFO, "%s: Size used: %dx%d", __FUNCTION__, p->width, p->height);
 
 	/* Which contrast */
 	tmp = drvthis->config_get_int (drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
-	debug (RPT_INFO,"%s: Contrast (in config) is '%d'", __FUNCTION__, tmp);
+	debug (RPT_INFO, "%s: Contrast (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
 		report (RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default %d.\n",
 			__FUNCTION__, DEFAULT_CONTRAST);
@@ -265,7 +265,7 @@ CFontz633_init (Driver *drvthis)
 
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	debug (RPT_INFO,"%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
+	debug (RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
 		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
 			__FUNCTION__, DEFAULT_BRIGHTNESS);
@@ -275,7 +275,7 @@ CFontz633_init (Driver *drvthis)
 
 	/* Which backlight-off "brightness" */
 	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	debug (RPT_INFO,"%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
+	debug (RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
 		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d.\n",
 			__FUNCTION__, DEFAULT_OFFBRIGHTNESS);
@@ -285,7 +285,7 @@ CFontz633_init (Driver *drvthis)
 
 	/* Which speed ? CF633 support 19200 only, CF631 & CF635 USB use 115200. */
 	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, default_speed);
-	debug (RPT_INFO,"%s: Speed (in config) is '%d'", __FUNCTION__, tmp);
+	debug (RPT_INFO, "%s: Speed (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp != 19200) && (tmp != 115200)) {
 		report (RPT_WARNING, "%s: Speed must be 19200 or 11500. Using default %d.\n",
 			__FUNCTION__, default_speed);
@@ -508,8 +508,8 @@ CFontz633_flush (Driver *drvthis)
       unsigned char *sp = p->framebuf + (i * p->width);
       unsigned char *sq = p->backingstore + (i * p->width);
 
-      debug (RPT_INFO,"Framebuf: '%.*s'", p->width, sp );
-      debug (RPT_INFO,"     backingstore: '%.*s'", p->width, sq );
+      debug (RPT_INFO, "Framebuf: '%.*s'", p->width, sp );
+      debug (RPT_INFO, "     backingstore: '%.*s'", p->width, sq );
 
 #if defined(CFONTZPACKET_OLD_OPTIMATION)       
       /* Strategy:
@@ -536,8 +536,8 @@ CFontz633_flush (Driver *drvthis)
 	  out[0] = first_diff;	// column
 	  out[1] = i;		// line
 
-	  debug (RPT_INFO,"%s: l=%d c=%d count=%d string='%.*s'",
-	 	 out[0], out[1], diff_length, diff_length,
+	  debug (RPT_INFO, "%s: l=%d c=%d count=%d string='%.*s'",
+	 	 __FUNCTION__, out[0], out[1], diff_length, diff_length,
 		 &p->framebuf[first_diff + (i * p->width)] );
 
 	  memcpy(&out[2], &p->framebuf[first_diff + (i * p->width)], diff_length );
@@ -571,8 +571,8 @@ CFontz633_flush (Driver *drvthis)
 	out[0] = j;	// column
 	out[1] = i;	// line
 
-	debug (RPT_INFO,"%s: l=%d c=%d count=%d string='%.*s'",
-	 	 out[0], out[1], length, length, sp);
+	debug (RPT_INFO, "%s: l=%d c=%d count=%d string='%.*s'",
+	       __FUNCTION__, out[0], out[1], length, length, sp);
 
 	memcpy(&out[2], sp, length);
 	send_bytes_message(p->fd, CF633_Send_Data_to_LCD, length + 2, out);
