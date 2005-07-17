@@ -74,10 +74,14 @@ typedef enum MenuResult {
 	MENURESULT_ERROR = -1,	/**< Something has gone wrong */
 	MENURESULT_NONE = 0,	/**< Token handled OK, no extra action */
 	MENURESULT_ENTER,	/**< Token handled OK, enter the selected
-				   menuitem now */
+				 * menuitem now */
 	MENURESULT_CLOSE,	/**< Token handled OK, close the current
-				   menuitem now */
-	MENURESULT_QUIT		/**< Token handled OK, close ALL menus now */
+				 * menuitem now */
+	MENURESULT_QUIT,	/**< Token handled OK, close ALL menus now */
+	MENURESULT_PREDECESSOR, /**< Token handled OK, goto registered
+				 * predecessor */
+	MENURESULT_SUCCESSOR    /**< Token handled OK, goto registered
+				 * successor */
 } MenuResult;
 
 /** Events caused by a menuitem */
@@ -110,9 +114,12 @@ typedef enum MenuEventType {
 typedef struct MenuItem {
 	MenuItemType type;	/**< Type as defined above */
 	char *id;		/**< Internal name for client supplied menus */
-	char *successor_id;	/**< next menuitem after closing this
-				 * one. (A string to allow special values
-				 * "_quit_", "_close_", "_none_"). */
+	char *successor_id;	/**< next menuitem after hitting "Enter" on
+				 * this one. (Special values are "_quit_",
+				 * "_close_", "_none_"). */
+	char *predecessor_id;	/**< next menuitem after hitting "Escape" on
+				 * this one. (Special values are "_quit_",
+				 * "_close_", "_none_"). */
 	struct MenuItem *parent; /**< Parent of this menuitem */
 	MenuEventFunc (*event_func);
 			/**< Defines event_func to be an event function */
@@ -130,9 +137,7 @@ typedef struct MenuItem {
 			LinkedList *contents;	/**< What's in this menu */
 		} menu;
 		struct action {
-			enum MenuResult menu_result;
-						/**< What to do when selected ?
-						   Nothing, close or quit ? */
+			/* nothing */
 		} action;
 		struct checkbox {
 			bool allow_gray;	/**< Is CHECKBOX_GRAY allowed ? */
@@ -193,6 +198,14 @@ typedef struct MenuItem {
  * Functions to use the menustuff
  */
 
+/** translates a predecessor_id into a MenuResult. */
+MenuResult menuitem_predecessor2menuresult(char *predecessor_id, MenuResult default_result);
+
+/** translates a successor_id into a MenuResult. */
+MenuResult menuitem_successor2menuresult(char *successor_id, MenuResult default_result);
+
+MenuItem * menuitem_search(char *menu_id, Client *client);
+
 /** YOU SHOULD NOT CALL THIS FUNCTION BUT THE TYPE SPECIFIC ONE INSTEAD */
 MenuItem *menuitem_create (MenuItemType type, char *id,
 		MenuEventFunc(*event_func), char *text, Client *client);
@@ -202,12 +215,12 @@ MenuItem *menuitem_create (MenuItemType type, char *id,
  * id:		internal name of the item. Never visible. String will be
  *		copied.
  * event_func:	the event function that should be called upon actions on this
- *		item. see event.h.
+ *		item.
  * text:	the displayed text.
  *
  * All strings will be copied !
  *
- * Return value: the new item, of NULL on error.
+ * Return value: the new item, or NULL on error.
  *
  * To create a Menu (which is also an ItemType), call menu_create.
  *
@@ -273,16 +286,6 @@ MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
  * All allocated extra data (like strings) will be freed.
  */
 void menuitem_destroy (MenuItem *item);
-
-static inline MenuItem *menuitem_get_parent (MenuItem *item)
-{
-	return ((item != NULL) ? item->parent : NULL);
-}
-
-static inline char *menuitem_get_successor (MenuItem *item)
-{
-	return ((item != NULL) ? item->successor_id : NULL);
-}
 
 /** Resets the item to the initial state.
  * You should call menuitem_update after this to see the effects.

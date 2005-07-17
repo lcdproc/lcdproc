@@ -85,6 +85,53 @@ const IpSstringProperties IPinfo[] = {
 };
 	
 
+/******** MENU UTILITY FUNCTIONS ********/
+
+/** returns default_result if predecessor_id is NULL or the respective value
+ * otherwise. */
+MenuResult menuitem_predecessor2menuresult(char *predecessor_id, MenuResult default_result)
+{
+	if (predecessor_id == NULL)
+		return default_result;
+	if (strcmp("_quit_", predecessor_id) == 0)
+		return MENURESULT_QUIT;
+	else if (strcmp("_close_", predecessor_id) == 0)
+		return MENURESULT_CLOSE;
+	else if (strcmp("_none_", predecessor_id) == 0)
+		return MENURESULT_NONE;
+	else
+		return MENURESULT_PREDECESSOR;
+}
+
+/** returns default_result if successor_id is NULL or the respective value
+ * otherwise. */
+MenuResult menuitem_successor2menuresult(char *successor_id, MenuResult default_result)
+{
+	if (successor_id == NULL)
+		return default_result;
+	if (strcmp("_quit_", successor_id) == 0)
+		return MENURESULT_QUIT;
+	else if (strcmp("_close_", successor_id) == 0)
+		return MENURESULT_CLOSE;
+	else if (strcmp("_none_", successor_id) == 0)
+		return MENURESULT_NONE;
+	else
+		return MENURESULT_SUCCESSOR;
+}
+
+/** Returns the MenuItem with the specified id if found or NULL. The search
+ * for itemid is restricted to the client's menus if the preprocessor macro
+ * LCDPROC_PERMISSIVE_MENU_GOTO is *not* set. */
+MenuItem *menuitem_search(char *menu_id, Client *client)
+{
+# ifdef LCDPROC_PERMISSIVE_MENU_GOTO
+	MenuItem *top = main_menu;
+# else
+	MenuItem *top = client->menu;
+# endif /* LCDPROC_PERMISSIVE_MENU_GOTO */
+
+	return menu_find_item (top, menu_id, true);
+}
 
 /******** FUNCTION TABLES ********/
 /* Tables with functions to call for all different item types */
@@ -175,6 +222,7 @@ MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_fun
 		return NULL;
 	}
 	new_item->successor_id = NULL;
+	new_item->predecessor_id = NULL;
 	new_item->parent = NULL;
 	new_item->event_func = event_func;
 	new_item->text = strdup (text);
@@ -193,6 +241,7 @@ MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_fun
 	return new_item;
 }
 
+// fixme: the menu_result arg is obsoleted (use char* successor_id)
 MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, MenuResult menu_result)
 {
@@ -203,7 +252,22 @@ MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
 
 	new_item = menuitem_create (MENUITEM_ACTION, id, event_func, text, client);
 	if (new_item != NULL)
-		new_item->data.action.menu_result = menu_result;
+	{
+		switch (menu_result)
+		{
+		case MENURESULT_NONE:
+			new_item->successor_id = strdup("_none_");
+			break;
+		case MENURESULT_CLOSE:
+			new_item->successor_id = strdup("_close_");
+			break;
+		case MENURESULT_QUIT:
+			new_item->successor_id = strdup("_quit_");
+			break;
+		default:
+			assert(!"unexpected MENURESULT");
+		}
+	}
 
 	return new_item;
 }
@@ -431,6 +495,7 @@ void menuitem_destroy_ip (MenuItem *item)
 	free (item->data.ip.value);
 	free (item->data.ip.edit_str);
 }
+
 
 /******** MENU ITEM RESET FUNCTIONS ********/
 
@@ -904,8 +969,11 @@ MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, char 
 
 	switch (token) {
 	  case MENUTOKEN_MENU:
+		return menuitem_predecessor2menuresult(
+			item->predecessor_id, MENURESULT_CLOSE);
 	  case MENUTOKEN_ENTER:
-		return MENURESULT_CLOSE;
+		return menuitem_successor2menuresult(
+			item->successor_id, MENURESULT_CLOSE);
 	  case MENUTOKEN_UP:
 	  case MENUTOKEN_RIGHT:
 	  	item->data.slider.value = min (item->data.slider.maxvalue,
@@ -956,7 +1024,8 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 		switch (token) {
 		  case MENUTOKEN_MENU:
 		  	if (pos == 0) {
-				return MENURESULT_CLOSE;
+				return menuitem_predecessor2menuresult(
+					item->predecessor_id, MENURESULT_CLOSE);
 			}
 			else {
 				/* Reset data */
@@ -991,7 +1060,8 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 				if (item->event_func)
 					item->event_func (item, MENUEVENT_UPDATE);
 
-				return MENURESULT_CLOSE;
+				return menuitem_successor2menuresult(
+					item->successor_id, MENURESULT_CLOSE);
 			}
 			else {
 				/* The user wants to go to next digit */
@@ -1113,7 +1183,8 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 		switch (token) {
 		  case MENUTOKEN_MENU:
 	  		if (pos == 0) {
-				return MENURESULT_CLOSE;
+				return menuitem_predecessor2menuresult(
+					item->predecessor_id, MENURESULT_CLOSE);
 			}
 			else {
 				/* Reset data */
@@ -1137,7 +1208,8 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 				if (item->event_func)
 					item->event_func (item, MENUEVENT_UPDATE);
 
-				return MENURESULT_CLOSE;
+				return menuitem_successor2menuresult(
+					item->successor_id, MENURESULT_CLOSE);
 			}
 			else {
 				/* The user wants to go to next digit */
@@ -1248,7 +1320,8 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 	switch (token) {
 		  case MENUTOKEN_MENU:
 		  	if (pos == 0) {
-				return MENURESULT_CLOSE;
+				return menuitem_predecessor2menuresult(
+					item->predecessor_id, MENURESULT_CLOSE);
 			}
 			else {
 				/* Reset data */
@@ -1285,7 +1358,8 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 				if (item->event_func)
 					item->event_func (item, MENUEVENT_UPDATE);
 
-				return MENURESULT_CLOSE;
+				return menuitem_successor2menuresult(
+					item->successor_id, MENURESULT_CLOSE);
 			}
 			else {
 				item->data.ip.edit_pos++;
