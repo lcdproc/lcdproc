@@ -48,9 +48,9 @@ output_func (Client * c, int argc, char **argv)
 
 	if (argc != 2) {
 		if (argc == 1)
-			sock_send_string (c->sock, "huh?  usage: output <on|off|num> -- num may be decimal, hex, or octal\n");
+			sock_send_error(c->sock, "usage: output <on|off|num> -- num may be decimal, hex, or octal\n");
 		else
-			sock_send_string (c->sock, "huh?  Too many parameters...\n");
+			sock_send_error(c->sock, "Too many parameters...\n");
 		return 0;
 	}
 
@@ -88,18 +88,18 @@ output_func (Client * c, int argc, char **argv)
 		if (errno) {
 			int space;
 
-			strcat(str, "huh? number argument: ");
+			strcat(str, "number argument: ");
 			space = sizeof(str) - 3 - strlen(str);
 
 			strncat(str, strerror(errno), space);
 			strcat(str, "\n");
 
-			sock_send_string (c->sock, str);
+			sock_send_error(c->sock, str);
 			return 0;
 		} else if (*p != '\0' && *endptr == '\0') {
 			output_state = out;
 		} else {
-			sock_send_string (c->sock, "huh?  invalid parameter...\n");
+			sock_send_error(c->sock, "invalid parameter...\n");
 			return 0;
 		}
 	}
@@ -135,9 +135,9 @@ sleep_func (Client * c, int argc, char **argv)
 
 	if (argc != 2) {
 		if (argc == 1)
-			sock_send_string (c->sock, "huh?  usage: sleep <secs>\n");
+			sock_send_error(c->sock, "usage: sleep <secs>\n");
 		else
-			sock_send_string (c->sock, "huh?  Too many parameters...\n");
+			sock_send_error(c->sock, "Too many parameters...\n");
 		return 0;
 	}
 
@@ -162,20 +162,20 @@ sleep_func (Client * c, int argc, char **argv)
 	if (errno) {
 		int space;
 
-		strcat(str, "huh? number argument: ");
+		strcat(str, "number argument: ");
 		space = sizeof(str) - 3 - strlen(str);
 
 		strncat(str, strerror(errno), space);
 		strcat(str, "\n");
 
-		sock_send_string (c->sock, str);
+		sock_send_error(c->sock, str);
 		return 0;
 	} else if (*p != '\0' && *endptr == '\0') {
 		secs = out;
 		out = out > MAX_SECS ? MAX_SECS : out;
 		out = out < MIN_SECS ? MIN_SECS : out;
 	} else {
-		sock_send_string (c->sock, "huh?  invalid parameter...\n");
+		sock_send_error(c->sock, "invalid parameter...\n");
 		return 0;
 	}
 
@@ -190,7 +190,7 @@ sleep_func (Client * c, int argc, char **argv)
 	 * while ((secs = sleep(secs)) > 0)
 	 */	;
 
-	sock_send_string (c->sock, "huh? ignored (not fully implemented)\n");
+	sock_send_error(c->sock, "ignored (not fully implemented)\n");
 	return 0;
 }
 

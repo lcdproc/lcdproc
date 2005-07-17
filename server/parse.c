@@ -53,7 +53,6 @@ static int parse_message (const char *str, Client *c)
 	typedef enum { ST_INITIAL, ST_WHITESPACE, ST_ARGUMENT, ST_FINAL } State;
 	State state = ST_INITIAL;
 
-	char errmsg[256];
 	int error = 0;
 	char quote = '\0';	/* The quote used to open a quote string */
 	int pos = 0;
@@ -83,7 +82,7 @@ static int parse_message (const char *str, Client *c)
 	arg_space = malloc(strlen(str)+1);
 	if (arg_space == NULL) {
 		report (RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
-		sock_send_string(c->sock, "huh? error allocating memory!\n");
+		sock_send_error(c->sock, "error allocating memory!\n");
 	}
 
 	argv[0] = arg_space;
@@ -163,9 +162,7 @@ static int parse_message (const char *str, Client *c)
 		error = 1;
 
 	if (error) {
-		report( RPT_WARNING, "Could not parse command from client on socket %d: %.40s", c->sock, str );
-		snprintf (errmsg, sizeof(errmsg), "huh? Could not parse command\n");
-		sock_send_string (c->sock, errmsg);
+		sock_send_error(c->sock, "Could not parse command\n");
 		free( arg_space  );
 		return 0;
 	}
@@ -183,14 +180,12 @@ static int parse_message (const char *str, Client *c)
 	if (function != NULL) {
 		error = function (c, argc, argv);
 		if (error) {
-			snprintf (errmsg, sizeof(errmsg), "huh? Function returned error \"%.40s\"\n", argv[0]);
-			sock_send_string (c->sock, errmsg);
+			sock_printf_error(c->sock, "Function returned error \"%.40s\"\n", argv[0]);
 			report( RPT_WARNING, "Command function returned an error after command from client on socket %d: %.40s", c->sock, str );
 		}	
 	}
 	else {
-		snprintf (errmsg, sizeof(errmsg), "huh? Invalid command \"%.40s\"\n", argv[0]);
-		sock_send_string (c->sock, errmsg);
+		sock_printf_error(c->sock, "Invalid command \"%.40s\"\n", argv[0]);
 		report( RPT_WARNING, "Invalid command from client on socket %d: %.40s", c->sock, str );
 	}
 		

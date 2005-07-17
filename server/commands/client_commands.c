@@ -66,7 +66,7 @@ hello_func (Client * c, int argc, char **argv)
 	/* TODO:  Give *real* info about the server/lcd...*/
 
 	if (argc > 1) {
-		sock_send_string (c->sock, "huh? extra parameters ignored\n");
+		sock_send_error(c->sock, "extra parameters ignored\n");
 	}
 
 	debug(RPT_INFO, "Hello!");
@@ -96,7 +96,7 @@ int
 client_set_func (Client * c, int argc, char **argv)
 {
 	int i;
-	char str[16], buf[80];
+	char str[16];
 
 	memset(str, '\0', sizeof(str));
 	if (!c->ack)
@@ -105,13 +105,13 @@ client_set_func (Client * c, int argc, char **argv)
 	if (argc != 3) {
 		switch (argc) {
 			case 1:
-				sock_send_string (c->sock, "huh? usage: client_set -name <name>\n");
+				sock_send_error(c->sock, "usage: client_set -name <name>\n");
 				break;
 			case 2:
-				sock_send_string (c->sock, "huh? Not enough parameters\n");
+				sock_send_error(c->sock, "Not enough parameters\n");
 				break;
 			default:
-				sock_send_string (c->sock, "huh? Too many parameters\n");
+				sock_send_error(c->sock, "Too many parameters\n");
 				break;
 		}
 		return 0;
@@ -130,13 +130,12 @@ client_set_func (Client * c, int argc, char **argv)
 		if (strcmp (p, "name") == 0) {
 			i++;
 			if (argv[i] == '\0') {
-				snprintf (buf, sizeof(buf), "huh? internal error: no parameter #%d\n", i);
-				sock_send_string (c->sock, buf);
+				sock_printf_error(c->sock, "internal error: no parameter #%d\n", i);
 				continue;
 			}
 
 			if (strlen(argv[i]) > sizeof(str) -1) {
-				sock_send_string (c->sock, "huh? name too long\n");
+				sock_send_error(c->sock, "name too long\n");
 			} else {
 				strncpy(str, argv[i], sizeof(str) - 1);
 
@@ -147,15 +146,14 @@ client_set_func (Client * c, int argc, char **argv)
 					free (c->name);
 
 				if ((c->name = strdup (str)) == NULL) {
-					sock_send_string(c->sock, "huh? error allocating memory!\n");
+					sock_send_error(c->sock, "error allocating memory!\n");
 				} else {
 					sock_send_string(c->sock, "success\n");
 					i++; /* bypass argument (name string)*/
 				}
 			}
 		} else {
-			snprintf (buf, sizeof(buf), "huh? invalid parameter (%s)\n", p);
-			sock_send_string (c->sock, buf);
+			sock_printf_error(c->sock, "invalid parameter (%s)\n", p);
 		}
 	} while (++i < argc);
 
@@ -174,7 +172,6 @@ client_add_key_func (Client * c, int argc, char **argv)
 {
 	int exclusively = 0;
 	int argnr;
-	char errmsg[BUFLEN];
 
 	if (!c->ack)
 		return 1;
@@ -182,7 +179,7 @@ client_add_key_func (Client * c, int argc, char **argv)
 	if (argc < 2) {
 		switch (argc) {
 			case 1:
-				sock_send_string (c->sock, "huh?  Usage: client_add_key [-exclusively|-shared] {<key>}+\n");
+				sock_send_error(c->sock, "Usage: client_add_key [-exclusively|-shared] {<key>}+\n");
 				break;
 		}
 		return 0;
@@ -197,17 +194,13 @@ client_add_key_func (Client * c, int argc, char **argv)
 			exclusively = 1;
 		}
 		else {
-			snprintf( errmsg, BUFLEN-1, "huh?  Invalid option: %s\n", argv[argnr] );
-			errmsg[BUFLEN-1] = 0;
-			sock_send_string( c->sock, errmsg );
+			sock_printf_error(c->sock, "Invalid option: %s\n", argv[argnr]);
 		}
 		argnr ++;
 	}
 	for ( ; argnr < argc; argnr++ ) {
 		if( input_reserve_key( argv[argnr], exclusively, c ) < 0 ) {
-			snprintf( errmsg, BUFLEN-1, "huh?  Could not reserve key \"%s\"\n", argv[argnr] );
-			errmsg[BUFLEN-1] = 0;
-			sock_send_string( c->sock, errmsg );
+			sock_printf_error(c->sock, "Could not reserve key \"%s\"\n", argv[argnr]);
 		}
 	}
 	sock_send_string(c->sock, "success\n");
@@ -230,7 +223,7 @@ client_del_key_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if (argc < 2) {
-		sock_send_string (c->sock, "huh?  Usage: client_del_key {<key>}+\n");
+		sock_send_error(c->sock, "Usage: client_del_key {<key>}+\n");
 		return 0;
 	}
 
@@ -256,10 +249,10 @@ backlight_func (Client * c, int argc, char **argv)
 	if (argc != 2) {
 		switch (argc) {
 			case 1:
-				sock_send_string (c->sock, "huh?  usage: backlight <on|off|toggle|blink|flash>\n");
+				sock_send_error(c->sock, "usage: backlight <on|off|toggle|blink|flash>\n");
 				break;
 			default:
-				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				sock_send_error(c->sock, "Too many parameters...\n");
 				break;
 		}
 		return 0;
@@ -306,7 +299,7 @@ info_func (Client * c, int argc, char **argv)
 	char str[1024];
 
 	if (argc > 1) {
-		sock_send_string (c->sock, "huh?  Extra arguments ignored...\n");
+		sock_send_error(c->sock, "Extra arguments ignored...\n");
 	}
 
 	memset(str, '\0', sizeof(str));

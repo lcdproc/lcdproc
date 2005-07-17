@@ -292,3 +292,47 @@ sock_geterror(void)
 #endif
 }
 
+/** prints error to logfile and sends it to the client.
+ * @param fd socket
+ * @param message the message to send (without the "huh? ") */
+int sock_send_error(int fd, char* message)
+{
+	// simple: performance penalty isn't worth more work...
+	return sock_printf_error(fd, message);
+}
+
+/** prints printf-like formatted output to logfile and sends it to the
+ * client.
+ * @param fd socket
+ * @param message the message to send (without the "huh? ") */
+int
+sock_printf_error(int fd, const char *format, .../*args*/ )
+{
+	char buf[MAXMSG];
+	static const int huhsize = sizeof("huh? ") - 1;
+	char *p = buf + huhsize;
+
+	va_list ap;
+	int size = 0;
+
+	va_start(ap, format);
+	size = vsnprintf(buf, sizeof(buf), format, ap);
+	va_end(ap);
+
+	if (size < 0) {
+		report(RPT_ERR, "sock_printf_error: vsnprintf failed");
+		return -1;
+	}
+	if (size > sizeof(buf))
+		report(RPT_WARNING, "sock_printf_error: vsnprintf truncated message");
+
+	/* prepend the "huh? " */
+	if (size > sizeof(buf) - huhsize)
+		size = sizeof(buf) - huhsize;
+
+	memmove(p, buf, size);
+	memcpy(buf, "huh? ", huhsize);
+
+	report(RPT_ERR, "error: %s", buf);
+	return sock_send_string(fd, buf);
+}

@@ -55,7 +55,7 @@ widget_add_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if ((argc < 4) || (argc > 6)) {
-		sock_send_string (c->sock, "huh?  Usage: widget_add <screenid> <widgetid> <widgettype> [ -in <id> ]\n");
+		sock_send_error(c->sock, "Usage: widget_add <screenid> <widgetid> <widgettype> [ -in <id> ]\n");
 		return 0;
 	}
 
@@ -64,14 +64,14 @@ widget_add_func (Client * c, int argc, char **argv)
 
 	s = client_find_screen (c, sid);
 	if (!s) {
-		sock_send_string (c->sock, "huh? Invalid screen id\n");
+		sock_send_error(c->sock, "Invalid screen id\n");
 		return 0;
 	}
 
 	/* Find widget type */
 	wtype = widget_typename_to_type (argv[3]);
 	if (wtype == WID_NONE) {
-		sock_send_string (c->sock, "huh? Invalid widget type\n");
+		sock_send_error(c->sock, "Invalid widget type\n");
 		return 0;
 	}
 
@@ -88,7 +88,7 @@ widget_add_func (Client * c, int argc, char **argv)
 			Widget * frame;
 
 			if (argc < 6) {
-				sock_send_string (c->sock, "huh?  Specify a frame to place widget in\n");
+				sock_send_error(c->sock, "Specify a frame to place widget in\n");
 				return 0;
 			}
 
@@ -98,8 +98,7 @@ widget_add_func (Client * c, int argc, char **argv)
 			 */
 			frame = screen_find_widget(s, argv[5]);
 			if (!frame) {
-				report(RPT_WARNING, "widget_add_func: Error finding frame ");
-				sock_send_string(c->sock, "huh?  Failed\n");
+				sock_send_error(c->sock, "Error finding frame\n");
 				return 0;
 			}
 			s = frame->frame_screen;
@@ -109,8 +108,7 @@ widget_add_func (Client * c, int argc, char **argv)
 	/* Create the widget */
 	w = widget_create (wid, wtype, s);
 	if (!w) {
-		report(RPT_WARNING, "widget_add_func: Error adding widget");
-		sock_send_string(c->sock, "huh?  Failed\n");
+		sock_send_error(c->sock, "Error adding widget\n");
 		return 0;
 	}
 
@@ -119,8 +117,7 @@ widget_add_func (Client * c, int argc, char **argv)
 	if (err == 0)
 		sock_send_string(c->sock, "success\n");
 	else {
-		report(RPT_WARNING, "widget_add_func: Error adding widget");
-		sock_send_string(c->sock, "huh?  Failed\n");
+		sock_send_error(c->sock, "Error adding widget\n");
 	}
 
 	return 0;
@@ -147,13 +144,13 @@ widget_del_func (Client * c, int argc, char **argv)
 	if (argc != 3) {
 		switch (argc) {
 			case 1:
-				sock_send_string (c->sock, "huh?  Usage: widget_del <screenid> <widgetid>\n");
+				sock_send_error(c->sock, "Usage: widget_del <screenid> <widgetid>\n");
 				break;
 			case 2:
-				sock_send_string (c->sock, "huh?  Specify a widget #id\n");
+				sock_send_error(c->sock, "Specify a widget #id\n");
 				break;
 			default:
-				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				sock_send_error(c->sock, "Too many parameters...\n");
 				break;
 		}
 		return 0;
@@ -166,13 +163,13 @@ widget_del_func (Client * c, int argc, char **argv)
 
 	s = client_find_screen (c, sid);
 	if (!s) {
-		sock_send_string (c->sock, "huh?  Invalid screen id\n");
+		sock_send_error(c->sock, "Invalid screen id\n");
 		return 0;
 	}
 
 	w = screen_find_widget (s, wid);
 	if (!w) {
-		sock_send_string (c->sock, "huh?  Invalid widget id\n");
+		sock_send_error(c->sock, "Invalid widget id\n");
 		return 0;
 	}
 
@@ -180,8 +177,7 @@ widget_del_func (Client * c, int argc, char **argv)
 	if (err == 0)
 		sock_send_string(c->sock, "success\n");
 	else {
-		report( RPT_WARNING, "widget_del_func: Error removing widget");
-		sock_send_string(c->sock, "huh?  Failed\n");
+		sock_send_error(c->sock, "Error removing widget\n");
 	}
 
 	return 0;
@@ -220,7 +216,7 @@ widget_set_func (Client * c, int argc, char **argv)
 	 */
 
 	if (argc < 4) {
-		sock_send_string (c->sock, "huh?  Usage: widget_set <screenid> <widgetid> <widget-SPECIFIC-data>\n");
+		sock_send_error(c->sock, "Usage: widget_set <screenid> <widgetid> <widget-SPECIFIC-data>\n");
 		return 0;
 	}
 
@@ -228,18 +224,18 @@ widget_set_func (Client * c, int argc, char **argv)
 	sid = argv[1];
 	s = client_find_screen (c, sid);
 	if (!s) {
-		sock_send_string (c->sock, "huh?  Unknown screen id\n");
+		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 	/* Find widget */
 	wid = argv[2];
 	w = screen_find_widget (s, wid);
 	if (!w) {
-		sock_send_string (c->sock, "huh?  Unknown widget id\n");
+		sock_send_error(c->sock, "Unknown widget id\n");
 		/* Client Debugging...*/
 		{
 			int i;
-			report( RPT_WARNING, "huh?  Unknown widget id (%s)", argv[2]);
+			report( RPT_WARNING, "Unknown widget id (%s)", argv[2]);
 			for (i = 0; i < argc; i++)
 				report( RPT_WARNING, "    %.40s ", argv[i]);
 		}
@@ -249,11 +245,11 @@ widget_set_func (Client * c, int argc, char **argv)
 	switch (w->type) {
 	case WID_STRING:				  /* String takes "x y text"*/
 		if (argc != i + 3)
-			sock_send_string (c->sock, "huh?  Wrong number of arguments\n");
+			sock_send_error(c->sock, "Wrong number of arguments\n");
 		else {
 			if ((!isdigit ((unsigned int) argv[i][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
-				sock_send_string (c->sock, "huh?  Invalid coordinates\n");
+				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else					  /* Set all the data...*/
 			{
 				x = atoi (argv[i]);
@@ -275,11 +271,11 @@ widget_set_func (Client * c, int argc, char **argv)
 		break;
 	case WID_HBAR:				  /* Hbar takes "x y length"*/
 		if (argc != i + 3)
-			sock_send_string (c->sock, "huh?  Wrong number of arguments\n");
+			sock_send_error(c->sock, "Wrong number of arguments\n");
 		else {
 			if ((!isdigit ((unsigned int) argv[i][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
-				sock_send_string (c->sock, "huh?  Invalid coordinates\n");
+				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else {
 				x = atoi (argv[i]);
 				y = atoi (argv[i + 1]);
@@ -294,11 +290,11 @@ widget_set_func (Client * c, int argc, char **argv)
 		break;
 	case WID_VBAR:				  /* Vbar takes "x y length"*/
 		if (argc != i + 3)
-			sock_send_string (c->sock, "huh? Wrong number of arguments\n");
+			sock_send_error(c->sock, "Wrong number of arguments\n");
 		else {
 			if ((!isdigit ((unsigned int) argv[i][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
-				sock_send_string (c->sock, "huh?  Invalid coordinates\n");
+				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else {
 				x = atoi (argv[i]);
 				y = atoi (argv[i + 1]);
@@ -313,18 +309,18 @@ widget_set_func (Client * c, int argc, char **argv)
 		break;
 	case WID_ICON:				  /* Icon takes "x y icon"*/
 		if (argc != i + 3)
-			sock_send_string (c->sock, "huh?  Wrong number of arguments\n");
+			sock_send_error(c->sock, "Wrong number of arguments\n");
 		else {
 			if ((!isdigit ((unsigned int) argv[i][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 1][0]))) {
-				sock_send_string (c->sock, "huh?  Invalid coordinates\n");
+				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else {
 				int icon;
 				x = atoi (argv[i]);
 				y = atoi (argv[i + 1]);
 				icon = widget_iconname_to_icon (argv[i + 2]);
 				if (icon == -1) {
-					sock_send_string (c->sock, "huh?  Invalid icon name\n");
+					sock_send_error(c->sock, "Invalid icon name\n");
 				} else {
 					w->x = x;
 					w->y = y;
@@ -336,7 +332,7 @@ widget_set_func (Client * c, int argc, char **argv)
 		break;
 	case WID_TITLE:				  /* title takes "text"*/
 		if (argc != i + 1)
-			sock_send_string (c->sock, "huh?  Wrong number of arguments\n");
+			sock_send_error(c->sock, "Wrong number of arguments\n");
 		else {
 			if (w->text)
 				free (w->text);
@@ -353,13 +349,13 @@ widget_set_func (Client * c, int argc, char **argv)
 		break;
 	case WID_SCROLLER:			  /* Scroller takes "left top right bottom direction speed text"*/
 		if (argc != i + 7) {
-			sock_send_string (c->sock, "huh?  Wrong number of arguments\n");
+			sock_send_error(c->sock, "Wrong number of arguments\n");
 		} else {
 			if ((!isdigit ((unsigned int) argv[i][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 1][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 2][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 3][0]))) {
-				sock_send_string (c->sock, "huh?  Invalid coordinates\n");
+				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else {
 				left = atoi (argv[i]);
 				/*debug("left: %d",left);*/
@@ -376,7 +372,7 @@ widget_set_func (Client * c, int argc, char **argv)
 				/* Direction must be m, v or h*/
 				if (((char) direction != 'h') && ((char) direction != 'v') &&
 				    ((char) direction != 'm')) {
-					sock_send_string (c->sock, "huh?  Invalid direction\n");
+					sock_send_error(c->sock, "Invalid direction\n");
 				} else {
 					w->left = left;
 					w->top = top;
@@ -388,8 +384,7 @@ widget_set_func (Client * c, int argc, char **argv)
 						free (w->text);
 					w->text = strdup (argv[i + 6]);
 					if (!w->text) {
-						sock_send_string(c->sock, "huh?  Failed\n");
-						report( RPT_WARNING, "widget_set_func: Allocation error");
+						sock_send_error(c->sock, "Allocation error\n");
 						return -1;
 					}
 					debug (RPT_DEBUG, "Widget %s set to %s", wid, w->text);
@@ -400,7 +395,7 @@ widget_set_func (Client * c, int argc, char **argv)
 		break;
 	case WID_FRAME:				  /* Frame takes "left top right bottom wid hgt direction speed"*/
 		if (argc != i + 8) {
-			sock_send_string (c->sock, "huh?  Wrong number of arguments\n");
+			sock_send_error(c->sock, "Wrong number of arguments\n");
 		} else {
 			if ((!isdigit ((unsigned int) argv[i][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 1][0])) ||
@@ -408,7 +403,7 @@ widget_set_func (Client * c, int argc, char **argv)
 			    (!isdigit ((unsigned int) argv[i + 3][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 4][0])) ||
 			    (!isdigit ((unsigned int) argv[i + 5][0]))) {
-				sock_send_string (c->sock, "huh?  Invalid coordinates\n");
+				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else {
 				left = atoi (argv[i]);
 				/*debug("left: %d",left);*/
@@ -428,7 +423,7 @@ widget_set_func (Client * c, int argc, char **argv)
 				/*debug("speed: %d",speed);*/
 				/* Direction must be v or h*/
 				if (((char) direction != 'h') && ((char) direction != 'v')) {
-					sock_send_string (c->sock, "huh?  Invalid direction\n");
+					sock_send_error(c->sock, "Invalid direction\n");
 				} else {
 					w->left = left;
 					w->top = top;
@@ -446,12 +441,12 @@ widget_set_func (Client * c, int argc, char **argv)
 		break;
 	case WID_NUM:					  /* Num takes "x num"*/
 		if (argc != i + 2)
-			sock_send_string (c->sock, "huh?  Wrong number of arguments\n");
+			sock_send_error(c->sock, "Wrong number of arguments\n");
 		else {
 			if (!isdigit ((unsigned int) argv[i][0])) {
-				sock_send_string (c->sock, "huh?  Invalid coordinates\n");
+				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else if (!isdigit ((unsigned int) argv[i + 1][0])) {
-				sock_send_string (c->sock, "huh?  Invalid number\n");
+				sock_send_error(c->sock, "Invalid number\n");
 			} else {
 				x = atoi (argv[i]);
 				y = atoi (argv[i + 1]);
@@ -464,7 +459,7 @@ widget_set_func (Client * c, int argc, char **argv)
 		break;
 	case WID_NONE:
 	default:
-		sock_send_string (c->sock, "huh?  Widget has no type\n");
+		sock_send_error(c->sock, "Widget has no type\n");
 		break;
 	}
 

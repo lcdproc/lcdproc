@@ -409,9 +409,7 @@ sock_read_from_client(struct ClientSocketMap* clientSocketMap)
 		return -1;
 	} else if (nbytes > (MAXMSG - (MAXMSG / 8)))	/* Very noisy client...*/
 	{
-		sock_send_string(clientSocketMap->socket, "huh? Too much data received... quiet down!\n");
-		report(RPT_WARNING, "%s: Too much data received on socket %d", 
-                       __FUNCTION__, clientSocketMap->socket);
+		sock_send_error(clientSocketMap->socket, "Too much data received... quiet down!\n");
 		return -1;
 	} else							  /* Data Read*/
 	{

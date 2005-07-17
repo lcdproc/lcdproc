@@ -50,10 +50,10 @@ screen_add_func (Client * c, int argc, char **argv)
 	if (argc != 2) {
 		switch (argc) {
 			case 1:
-				sock_send_string (c->sock, "huh?  Usage: screen_add <screenid>\n");
+				sock_send_error(c->sock, "Usage: screen_add <screenid>\n");
 				break;
 			default:
-				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				sock_send_error(c->sock, "Too many parameters...\n");
 				break;
 		}
 		return 0;
@@ -63,14 +63,13 @@ screen_add_func (Client * c, int argc, char **argv)
 
 	s = client_find_screen (c, argv[1]);
 	if (s) {
-		sock_send_string(c->sock, "huh?  Screen already exists\n");
+		sock_send_error(c->sock, "Screen already exists\n");
 		return 0;
 	}
 
 	s = screen_create (argv[1], c);
 	if (!s) {
-		report(RPT_ERR, "screen_add_func: Error creating screen");
-		sock_send_string (c->sock, "huh?  failed to create screen\n");
+		sock_send_error(c->sock, "failed to create screen\n");
 		return 0;
 	}
 
@@ -79,8 +78,7 @@ screen_add_func (Client * c, int argc, char **argv)
 	if (err == 0) {
 		sock_send_string(c->sock, "success\n");
 	} else {
-		report(RPT_WARNING, "screen_add_func: Error adding screen");
-		sock_send_string (c->sock, "huh?  Failed to add screen\n");
+		sock_send_error(c->sock, "failed to add screen\n");
 	}
 	report(RPT_INFO, "Client on socket %d added added screen \"%s\"", c->sock, s->id);
 	return 0;
@@ -102,9 +100,9 @@ screen_del_func (Client * c, int argc, char **argv)
 
 	if (argc != 2) {
 		if (argc == 1)
-			sock_send_string (c->sock, "huh?  Usage: screen_del <screenid>\n");
+			sock_send_error(c->sock, "Usage: screen_del <screenid>\n");
 		else
-			sock_send_string (c->sock, "huh?  Too many parameters...\n");
+			sock_send_error(c->sock, "Too many parameters...\n");
 		return 0;
 	}
 
@@ -112,7 +110,7 @@ screen_del_func (Client * c, int argc, char **argv)
 
 	s = client_find_screen (c, argv[1]);
 	if (!s) {
-		sock_send_string(c->sock, "huh?  Unknown screen id\n");
+		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 
@@ -120,10 +118,9 @@ screen_del_func (Client * c, int argc, char **argv)
 	if ( err == 0 )
 		sock_send_string(c->sock, "success\n");
 	else if (err < 0) {
-		report(RPT_WARNING, "screen_del_func:  Error removing screen");
-		sock_send_string(c->sock, "huh?  Failed to remove screen\n");
+		sock_send_error(c->sock, "failed to remove screen\n");
 	} else
-		sock_send_string (c->sock, "huh?  Unknown screen id\n");
+		sock_send_error(c->sock, "Unknown screen id\n");
 
 	report(RPT_INFO, "Client on socket %d removed screen \"%s\"", c->sock, s->id);
 
@@ -152,17 +149,19 @@ screen_set_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if (argc == 1) {
-		sock_send_string (c->sock, "huh?  Usage: screen_set <id> [ -priority <int> ] [ -name <name> ] [ -duration <int> ] [ -wid <width> ] [ -hgt <height> ] [ -heartbeat <type> ]\n");
+		sock_send_error(c->sock, "Usage: screen_set <id> [ -priority <int> ]"
+			       " [ -name <name> ] [ -duration <int> ] [ -wid <width> ]"
+			       " [ -hgt <height> ] [ -heartbeat <type> ]\n");
 		return 0;
 	} else if (argc == 2) {
-		sock_send_string (c->sock, "huh?  What do you want to set?\n");
+		sock_send_error(c->sock, "What do you want to set?\n");
 		return 0;
 	}
 
 	id = argv[1];
 	s = client_find_screen (c, id);
 	if (!s) {
-		sock_send_string (c->sock, "huh?  Unknown screen id\n");
+		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 	/* Handle the rest of the parameters*/
@@ -190,7 +189,7 @@ screen_set_func (Client * c, int argc, char **argv)
 				s->name = strdup (argv[i]);
 				sock_send_string(c->sock, "success\n");
 			} else {
-				sock_send_string (c->sock, "huh?  -name requires a parameter\n");
+				sock_send_error(c->sock, "-name requires a parameter\n");
 			}
 		}
 		/* Handle the "priority" parameter*/
@@ -217,10 +216,10 @@ screen_set_func (Client * c, int argc, char **argv)
 					s->priority = number;
 					sock_send_string(c->sock, "success\n");
 				} else {
-					sock_send_string(c->sock, "huh?  invalid argument at -priority\n");
+					sock_send_error(c->sock, "invalid argument at -priority\n");
 				}
 			} else {
-				sock_send_string (c->sock, "huh?  -priority requires a parameter\n");
+				sock_send_error(c->sock, "-priority requires a parameter\n");
 			}
 		}
 		/* Handle the "duration" parameter*/
@@ -235,7 +234,7 @@ screen_set_func (Client * c, int argc, char **argv)
 					s->duration = number;
 				sock_send_string(c->sock, "success\n");
 			} else {
-				sock_send_string (c->sock, "huh?  -duration requires a parameter\n");
+				sock_send_error(c->sock, "-duration requires a parameter\n");
 			}
 		}
 		/* Handle the "heartbeat" parameter*/
@@ -253,7 +252,7 @@ screen_set_func (Client * c, int argc, char **argv)
 					s->heartbeat = HEARTBEAT_OPEN;
 				sock_send_string(c->sock, "success\n");
 			} else {
-				sock_send_string (c->sock, "huh?  -heartbeat requires a parameter\n");
+				sock_send_error(c->sock, "-heartbeat requires a parameter\n");
 			}
 		}
 		/* Handle the "wid" parameter*/
@@ -268,7 +267,7 @@ screen_set_func (Client * c, int argc, char **argv)
 					s->width = number;
 				sock_send_string(c->sock, "success\n");
 			} else {
-				sock_send_string (c->sock, "huh?  -wid requires a parameter\n");
+				sock_send_error(c->sock, "-wid requires a parameter\n");
 			}
 
 		}
@@ -284,7 +283,7 @@ screen_set_func (Client * c, int argc, char **argv)
 					s->height = number;
 				sock_send_string(c->sock, "success\n");
 			} else {
-				sock_send_string (c->sock, "huh?  -hgt requires a parameter\n");
+				sock_send_error(c->sock, "-hgt requires a parameter\n");
 			}
 		}
 		/* Handle the "timeout" parameter*/
@@ -303,7 +302,7 @@ screen_set_func (Client * c, int argc, char **argv)
 				}
 				sock_send_string(c->sock, "success\n");
 			} else {
-				sock_send_string (c->sock, "huh?  -timeout requires a parameter\n");
+				sock_send_error(c->sock, "-timeout requires a parameter\n");
 			}
 		}
 		/* Handle the "backlight" parameter*/
@@ -340,7 +339,7 @@ screen_set_func (Client * c, int argc, char **argv)
 				}
 				sock_send_string(c->sock, "success\n");
 			} else {
-				sock_send_string (c->sock, "huh?  -backlight requires a parameter\n");
+				sock_send_error(c->sock, "-backlight requires a parameter\n");
 			}
 		}
 		/* Handle the "cursor" parameter */
@@ -360,7 +359,7 @@ screen_set_func (Client * c, int argc, char **argv)
 					s->cursor = CURSOR_BLOCK;
 				sock_send_string(c->sock, "success\n");
 			} else {
-				sock_send_string (c->sock, "huh?  -cursor requires a parameter\n");
+				sock_send_error(c->sock, "-cursor requires a parameter\n");
 			}
 		}
 		/* Handle the "cursor_x" parameter */
@@ -376,10 +375,10 @@ screen_set_func (Client * c, int argc, char **argv)
 					sock_send_string(c->sock, "success\n");
 				}
 				else {
-					sock_send_string(c->sock, "huh?  Cursor position outside screen\n");
+					sock_send_error(c->sock, "Cursor position outside screen\n");
 				}
 			} else {
-				sock_send_string (c->sock, "huh?  -cursor_x requires a parameter\n");
+				sock_send_error(c->sock, "-cursor_x requires a parameter\n");
 			}
 		}
 		/* Handle the "cursor_y" parameter */
@@ -395,14 +394,14 @@ screen_set_func (Client * c, int argc, char **argv)
 					sock_send_string(c->sock, "success\n");
 				}
 				else {
-					sock_send_string(c->sock, "huh?  Cursor position outside screen\n");
+					sock_send_error(c->sock, "Cursor position outside screen\n");
 				}
 			} else {
-				sock_send_string (c->sock, "huh?  -cursor_y requires a parameter\n");
+				sock_send_error(c->sock, "-cursor_y requires a parameter\n");
 			}
 		}
 
-		else sock_send_string (c->sock, "huh?  invalid parameter\n");
+		else sock_send_error(c->sock, "invalid parameter\n");
 	}/* done checking argv*/
 	return 0;
 }
@@ -427,13 +426,13 @@ screen_add_key_func (Client * c, int argc, char **argv)
 	if (argc != 3) {
 		switch (argc) {
 			case 1:
-				sock_send_string (c->sock, "huh?  Usage: screen_add_key <screenid> <keylist>\n");
+				sock_send_error(c->sock, "Usage: screen_add_key <screenid> <keylist>\n");
 				break;
 			case 2:
-				sock_send_string (c->sock, "huh?  You must specify a key list\n");
+				sock_send_error(c->sock, "You must specify a key list\n");
 				break;
 			default:
-				sock_send_string (c->sock, "huh?  Too many parameters...\n");
+				sock_send_error(c->sock, "Too many parameters...\n");
 				break;
 		}
 		return 0;
@@ -446,7 +445,7 @@ screen_add_key_func (Client * c, int argc, char **argv)
 	/* Find the screen*/
 	s = client_find_screen (c, id);
 	if (!s) {
-		sock_send_string (c->sock, "huh?  Unknown screen id\n");
+		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 
@@ -469,14 +468,13 @@ screen_add_key_func (Client * c, int argc, char **argv)
 			free (s->keys);
 			s->keys = new_keys;
 		} else {
-			report (RPT_WARNING, "screen_add_key: Allocation error");
-			sock_send_string(c->sock, "huh?  Could not add new keys\n");
+			sock_send_error(c->sock, "Could not add new keys\n");
 			return 0;
 		}
 	}
 
 	if (!s->keys) {
-		sock_send_string(c->sock, "huh? failed\n");
+		sock_send_error(c->sock, "failed\n");
 	} else
 		sock_send_string(c->sock, "success\n");
 
@@ -503,13 +501,13 @@ screen_del_key_func (Client * c, int argc, char **argv)
 	if (argc != 3) {
 		switch (argc) {
 			case 1:
-				sock_send_string (c->sock, "huh?  Usage: screen_del_key <screenid> <keylist>\n");
+				sock_send_error(c->sock, "Usage: screen_del_key <screenid> <keylist>\n");
 				break;
 			case 2:
-				sock_send_string (c->sock, "huh?  You must specify a key list\n");
+				sock_send_error(c->sock, "You must specify a key list\n");
 				break;
 			default:
-				sock_send_string (c->sock, "huh?  Too many parameters\n");
+				sock_send_error(c->sock, "Too many parameters\n");
 				break;
 		}
 		return 0;
@@ -523,7 +521,7 @@ screen_del_key_func (Client * c, int argc, char **argv)
 	s = client_find_screen (c, id);
 
 	if (!s) {
-		sock_send_string (c->sock, "huh?  Unknown screen id\n");
+		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 

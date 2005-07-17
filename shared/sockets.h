@@ -36,6 +36,8 @@ int sock_recv (int fd, void *dest, size_t maxlen);
 
 /* Return error message string for the socket function */
 char *sock_geterror(void);
+int sock_send_error(int fd, char* message);
+int sock_printf_error(int fd, const char *format, .../*args*/);
 
 // Er, ignore the rest of this file.  I'll clean it up sometime...
 
