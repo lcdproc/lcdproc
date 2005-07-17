@@ -103,10 +103,28 @@ void menu_build_screen (Menu *menu, Screen *s);
  */
 void menu_update_screen (Menu *menu, Screen *s);
 
+/**
+ * For predecessor-Check: returns selected subitem of menu if this subitem
+ * has no own screen (action, checkbox, ...) and this subitem has a
+ * predecessor and menu otherwise.
+ *
+ * @return NULL on error. */
+MenuItem * menu_get_item_for_predecessor_check(Menu *menu);
+
+/**
+ * For successor-Check: returns selected subitem of menu if
+ * this subitem has no own screen (action, checkbox, ...) or menu
+ * otherwise.
+ *
+ * @return NULL on error. */
+MenuItem * menu_get_item_for_successor_check(Menu *menu);
+
 /** Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  * DO NOT CALL THIS FUNCTION, CALL menuitem_process_input INSTEAD !
  */
 MenuResult menu_process_input (Menu *menu, MenuToken token, char * key, bool extended);
 
+/** positions current item pointer on subitem subitem_id. */
+void menu_select_subitem(Menu *menu, char * subitem_id);
 #endif

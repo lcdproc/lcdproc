@@ -57,6 +57,11 @@ Menu * custom_main_menu = NULL;
 Menu * screens_menu = NULL;
 
 /* Local prototypes */
+static void handle_quit();
+static void handle_close();
+static void handle_none();
+static void handle_enter();
+static void handle_successor();
 void menuscreen_switch_item (MenuItem * new_menuitem);
 void menuscreen_create_menu ();
 Menu* menuscreen_get_main ();
@@ -242,11 +247,13 @@ static void handle_close()
 	debug (RPT_DEBUG, "%s: Closing item", __FUNCTION__);
 	menuscreen_switch_item(
 		(active_menuitem == menuscreen_get_main())
-		? NULL : active_menuitem->parent);
+		? NULL
+		: active_menuitem->parent);
 }
 
 static void handle_none()
 {
+	debug (RPT_DEBUG, "%s: Staying in item", __FUNCTION__);
 	if (active_menuitem)
 	{
 		menuitem_update_screen (active_menuitem, menuscreen);
@@ -266,21 +273,86 @@ static void handle_enter()
 	menuscreen_switch_item (menu_get_current_item (active_menuitem));
 }
 
+static void handle_predecessor()
+{
+	MenuItem* item = (active_menuitem->type == MENUITEM_MENU)
+		? menu_get_item_for_predecessor_check(active_menuitem)
+		: active_menuitem;
+	assert(item != NULL);
+	debug (RPT_DEBUG, "%s: Switching to registered predecessor '%s' of '%s'.",
+	       __FUNCTION__, item->predecessor_id, item->id);
+	MenuItem *predecessor = menuitem_search(
+		item->predecessor_id, (Client*)active_menuitem->client);
+	if (predecessor == NULL)
+	{
+		// note: if _quit_, _close_, _none_ get here this
+		// would be an implementation error - they should
+		// have been handled via different MENURESULT codes.
+		report (RPT_ERR, "%s: cannot find predecessor '%s' of '%s'.",
+			__FUNCTION__, item->predecessor_id, item->id);
+		return;
+	}
+	switch (predecessor->type) {
+	case MENUITEM_ACTION:
+	case MENUITEM_CHECKBOX:
+	case MENUITEM_RING:
+		if (active_menuitem != predecessor->parent)
+			menuscreen_switch_item(predecessor->parent);
+		// this won't work for hidden subitems
+		menu_select_subitem(active_menuitem, item->predecessor_id);
+		menuitem_update_screen(active_menuitem, menuscreen);
+		break;
+	default:
+		if (predecessor->parent != NULL
+		    && predecessor->parent->type == MENUITEM_MENU)
+		{
+			// update parent menu too
+			menu_select_subitem(predecessor->parent, predecessor->id);
+		}
+		menuscreen_switch_item(predecessor);
+		break;
+	}
+}
+
 static void handle_successor()
 {
-	debug (RPT_DEBUG, "%s: Switching to succeeding item %s.",
-	       __FUNCTION__, active_menuitem->successor_id);
-	// FIXME: code duplication: see menu_commands:search_item()
-# ifdef LCDPROC_PERMISSIVE_MENU_GOTO
-	MenuItem *top = ((Client*)active_menuitem->client)->menu;
-# else
-	MenuItem *top = main_menu;
-# endif /* LCDPROC_PERMISSIVE_MENU_GOTO */
-	MenuItem *item = menu_find_item(top, active_menuitem->successor_id, true);
-	if (item == NULL)
-		report (RPT_ERR, "%s: cannot find successor %s.", __FUNCTION__,
-			active_menuitem->successor_id);
-	menuscreen_switch_item(item);
+	MenuItem* item = (active_menuitem->type == MENUITEM_MENU)
+		? menu_get_item_for_successor_check(active_menuitem)
+		: active_menuitem;
+	assert(item != NULL);
+	debug (RPT_DEBUG, "%s: Switching to registered successor '%s' of '%s'.",
+	       __FUNCTION__, item->successor_id, item->id);
+	MenuItem *successor = menuitem_search(
+		item->successor_id, (Client*)active_menuitem->client);
+	if (successor == NULL)
+	{
+		// note: if _quit_, _close_, _none_ get here this
+		// would be an implementation error - they should
+		// have been handled via different MENURESULT codes.
+		report (RPT_ERR, "%s: cannot find successor '%s' of '%s'.",
+			__FUNCTION__, item->successor_id, item->id);
+		return;
+	}
+	switch (successor->type) {
+	case MENUITEM_ACTION:
+	case MENUITEM_CHECKBOX:
+	case MENUITEM_RING:
+		if (active_menuitem != successor->parent)
+			menuscreen_switch_item(successor->parent);
+		// this won't work for hidden subitems
+		menu_select_subitem(active_menuitem, item->successor_id);
+		menuitem_update_screen(active_menuitem, menuscreen);
+		break;
+	default:
+		if (successor->parent != NULL
+		    && successor->parent->type == MENUITEM_MENU)
+		{
+			// update parent menu too
+			menu_select_subitem(successor->parent, successor->id);
+		}
+		menuscreen_switch_item(successor);
+		break;
+	}
 }
 
 void menuscreen_key_handler (char *key)
@@ -333,22 +405,19 @@ void menuscreen_key_handler (char *key)
 		handle_enter();
 		break;
 	  case MENURESULT_CLOSE:
-		if (active_menuitem->successor_id != NULL)
-		{
-			if (strcmp("_quit_", active_menuitem->successor_id) == 0)
-				handle_quit();
-			else if (strcmp("_close_", active_menuitem->successor_id) == 0)
-				handle_close();
-			else if (strcmp("_none_", active_menuitem->successor_id) == 0)
-				handle_none();
-			else
-				handle_successor();
-		}
-		else
-			handle_close();
+		handle_close();
 		break;
 	  case MENURESULT_QUIT:
 		handle_quit();
+		break;
+	  case MENURESULT_PREDECESSOR:
+		handle_predecessor();
+		break;
+	  case MENURESULT_SUCCESSOR:
+		handle_successor();
+		break;
+	  default:
+		assert(!"unexpected menuresult");
 		break;
 	}
 }

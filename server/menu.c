@@ -64,6 +64,34 @@ menu_get_subitem(Menu * menu, int index)
 	return NULL;
 }
 
+/**
+ * Searches for a subitem with id item_id. This function ignores hidden
+ * entries completely.
+ *
+ * @return index of subitem if found and -1 otherwise. */
+static int
+menu_get_index_of(Menu * menu, char * item_id)
+{
+	MenuItem * item;
+	int i = 0;
+
+	debug (RPT_DEBUG, "%s( menu=[%s], item_id=%s )", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"), item_id);
+	for (item = LL_GetFirst(menu->data.menu.contents);
+	     item != NULL;
+	     item = LL_GetNext(menu->data.menu.contents))
+	{
+		if ( ! item->is_hidden)
+		{
+			if (strcmp(item_id, item->id) == 0)
+				return i;
+			/* hidden items don't count at all... */
+			++i;
+		}
+	}
+	return -1;
+}
+
 static int
 menu_visible_item_count(Menu * menu)
 {
@@ -473,10 +501,57 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "downscroller");
 }
 
-MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool extended)
+MenuItem * menu_get_item_for_predecessor_check(Menu *menu)
+{
+	MenuItem *subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
+	if ( ! subitem)
+		return NULL;
+	switch (subitem->type) {
+	case MENUITEM_ACTION:
+	case MENUITEM_CHECKBOX:
+	case MENUITEM_RING:
+		// for types without own screen: look for menu's
+		// predecessor if its subitem doesn't have one. (Since
+		// menus can't have successors this problem arises
+		// only for predecessors.)
+		if (subitem->predecessor_id == NULL)
+			return menu;
+		return subitem;
+	case MENUITEM_MENU:
+	case MENUITEM_SLIDER:
+	case MENUITEM_NUMERIC:
+	case MENUITEM_ALPHA:
+	case MENUITEM_IP:
+		return menu;
+	default:
+		return NULL;
+	}
+}
+
+MenuItem * menu_get_item_for_successor_check(Menu *menu)
+{
+	MenuItem *subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
+	if ( ! subitem)
+		return NULL;
+	switch (subitem->type) {
+	case MENUITEM_ACTION:
+	case MENUITEM_CHECKBOX:
+	case MENUITEM_RING:
+		return subitem;
+	case MENUITEM_MENU:
+	case MENUITEM_SLIDER:
+	case MENUITEM_NUMERIC:
+	case MENUITEM_ALPHA:
+	case MENUITEM_IP:
+		return menu;
+	default:
+		return NULL;
+	}
+}
+
+MenuResult menu_process_input(Menu *menu, MenuToken token, char * key, bool extended)
 {
 	MenuItem *subitem;
-
 	debug (RPT_DEBUG, "%s( menu=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"), token, key);
 
@@ -485,7 +560,11 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool ext
 
 	switch (token) {
 	  case MENUTOKEN_MENU:
-		return MENURESULT_CLOSE;
+		subitem = menu_get_item_for_predecessor_check(menu);
+		if ( ! subitem)
+			return MENURESULT_ERROR;
+		return menuitem_predecessor2menuresult(
+			subitem->predecessor_id, MENURESULT_CLOSE);
 	  case MENUTOKEN_ENTER:
 		subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
 		if (!subitem)
@@ -494,8 +573,8 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool ext
 		  case MENUITEM_ACTION:
 			if (subitem->event_func)
 				subitem->event_func (subitem, MENUEVENT_SELECT);
-			return subitem->data.action.menu_result;
-			//return MENURESULT_QUIT;
+			return menuitem_successor2menuresult(
+				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_CHECKBOX:
 			if (subitem->data.checkbox.allow_gray) {
 				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
@@ -505,12 +584,14 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool ext
 			}
 			if (subitem->event_func)
 				subitem->event_func (subitem, MENUEVENT_UPDATE);
-			return MENURESULT_NONE;
+			return menuitem_successor2menuresult(
+				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_RING:
 			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
 			if (subitem->event_func)
 				subitem->event_func (subitem, MENUEVENT_UPDATE);
-			return MENURESULT_NONE;
+			return menuitem_successor2menuresult(
+				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_MENU:
 		  case MENUITEM_SLIDER:
 		  case MENUITEM_NUMERIC:
@@ -554,6 +635,8 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool ext
 			break;
 		switch (subitem->type) {
 		  case MENUITEM_CHECKBOX:
+			/* note: this dangerous looking code works since
+			 * CheckboxValue is an enum >= 0. */
 			if (subitem->data.checkbox.allow_gray) {
 				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 3;
 			}
@@ -564,7 +647,10 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool ext
 				subitem->event_func (subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  case MENUITEM_RING:
-			subitem->data.ring.value = (subitem->data.ring.value - 1) % LL_Length (subitem->data.ring.strings);
+			/* ring: jump to the end if beginning is reached */
+			subitem->data.ring.value = (subitem->data.ring.value < 1)
+				? LL_Length (subitem->data.ring.strings) - 1
+				: (subitem->data.ring.value - 1) % LL_Length (subitem->data.ring.strings);
 			if (subitem->event_func)
 				subitem->event_func (subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
@@ -606,4 +692,27 @@ MenuResult menu_process_input	(Menu *menu, MenuToken token, char * key, bool ext
 		return MENURESULT_NONE;
 	}
 	return MENURESULT_ERROR;
+}
+
+/** positions current item pointer on subitem subitem_id. If subitem_id is
+ * hidden or not valid subitem of menu this function does nothing. */
+void menu_select_subitem(Menu *menu, char * subitem_id)
+{
+	assert(menu != NULL);
+	debug(RPT_DEBUG, "%s( menu=[%s], subitem_id=\"%s\" )", __FUNCTION__,
+	       menu->id, subitem_id);
+	int position = menu_get_index_of(menu, subitem_id);
+	if (position < 0)
+	{
+		debug(RPT_DEBUG, "%s: subitem \"%s\" not found"
+		      " or hidden in \"%s\", ignored",
+		      __FUNCTION__, subitem_id, menu->id);
+		return;
+	}
+	// debug(RPT_DEBUG, "%s: %s->%s is at position %d,"
+	//       " current item is at menu position: %d, scroll: %d",
+	//       __FUNCTION__, menu->id, subitem_id, position,
+	//       menu->data.menu.selector_pos, menu->data.menu.scroll);
+	menu->data.menu.selector_pos = position;
+	menu->data.menu.scroll = position;
 }
