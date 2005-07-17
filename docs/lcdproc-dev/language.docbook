@@ -43,810 +43,951 @@
   </sect1>
 
   <sect1 id="language-commands">
-    <title>The various command</title>
+    <title>Command reference</title>
     <para>
-      The commands and their parameters are listed below, along with the
-      responses you can expect. If you need a space or a special char in a
-      string, you should quote the string with double quotes. If you need
-      to use a double quote, escape it with a backslash.
+      In this section all commands and their parameters are listed,
+      along with the responses you can expect. If you need a space or
+      a special char in a string, you should quote the string with
+      double quotes. If you need to use a double quote, escape it with
+      a backslash. The listing is divided into subsections for
+      <orderedlist>
+	<listitem>
+	  <para><link linkend="language-basic">Basic stuff</link></para>
+	</listitem>
+	<listitem>
+	  <para><link linkend="language-screens">Screens and widgets</link></para>
+	</listitem>
+	<listitem>
+	  <para><link linkend="language-menus">Menu stuff</link></para>
+	</listitem>
+	<listitem>
+	  <para><link linkend="language-misc">Miscellaneous</link></para>
+	</listitem>
+      </orderedlist>
     </para>
 
-    <variablelist><title>The LCDproc commands</title>
-      <varlistentry>
-        <term>hello</term>
-        <listitem>
-          <para>
-            Opens the session with the LCDd server program. This command is
-	    required before other commands can be issued. The response will be
-	    a string in the format:
-            <screen>
-              connect &lt;name&gt; &lt;value&gt; &lt;name&gt; &lt;value&gt; ...
-            </screen>
-            Every name will be followed by a value. The client should read all
-	    parameters it needs and store their values. The following
-	    parameters are in use:
-            <variablelist><title>hello response parameters</title>
-              <varlistentry>
-                <term>LCDproc</term>
-                <listitem><para>
-		  Indicates the version number of LCDd.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>protocol</term>
-                <listitem><para>
-		  Indicates the widget language version number. This number is
-		  only changed when the language of a newer version has become
-		  incompatible with the previous version.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>wid</term>
-                <listitem><para>
-		  Tells the client the width of the attached display device.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>hgt</term>
-                <listitem><para>
-		  Tells the client the height of the attached display device.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>cellwid</term>
-                <listitem><para>
-		  How many pixels is a character wide (space between character
-		  cells not included)
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>cellhgt</term>
-                <listitem><para>
-		  How many pixels is a character high (space between character
-		  cells not included)
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>lcd</term>
-                <listitem><para>
-		  This word is NOT followed by a value !
-		  Hey do we really need this word in the response string ?
-		</para></listitem>
-              </varlistentry>
-            </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+    <sect2 id="language-basic">
+      <title>Basic stuff</title>
+      <variablelist>
+	<varlistentry>
+	  <term>hello</term>
+	  <listitem>
+	    <para>
+	      Opens the session with the LCDd server program. This command is
+	      required before other commands can be issued. The response will be
+	      a string in the format:
+	      <screen>
+		connect &lt;name&gt; &lt;value&gt; &lt;name&gt; &lt;value&gt; ...
+	      </screen>
+	      Every name will be followed by a value. The client should read all
+	      parameters it needs and store their values. The following
+	      parameters are in use:
+	      <variablelist><title>hello response parameters</title>
+		<varlistentry>
+		  <term>LCDproc</term>
+		  <listitem><para>
+		      Indicates the version number of LCDd.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>protocol</term>
+		  <listitem><para>
+		      Indicates the widget language version number. This number is
+		      only changed when the language of a newer version has become
+		      incompatible with the previous version.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>wid</term>
+		  <listitem><para>
+		      Tells the client the width of the attached display device.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>hgt</term>
+		  <listitem><para>
+		      Tells the client the height of the attached display device.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>cellwid</term>
+		  <listitem><para>
+		      How many pixels is a character wide (space between character
+		      cells not included)
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>cellhgt</term>
+		  <listitem><para>
+		      How many pixels is a character high (space between character
+		      cells not included)
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>lcd</term>
+		  <listitem><para>
+		      This word is NOT followed by a value !
+		      Hey do we really need this word in the response string ?
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>client_set &lt;attributes&gt;
-	</term>
-        <listitem>
-          <para>
-	    Sets attributes for the current client.
-	    The current client is the one from the connection that you send
-	    this command on, in other words: yourself.
-            <variablelist><title>client_set attributes</title>
-              <varlistentry>
-                <term>-name &lt;name&gt;</term>
-                <listitem><para>
-		  Sets the client's name as visible to a user.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>-heartbeat on|off|open</term>
-                <listitem><para>
-		  Sets the client's heartbeat setting. This setting overrides the screen's setting, so you can enable the heartbeat for all your screens at once. If "open", which is the default, the screen's setting will be used.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>-backlight on|off|toggle|open|blink|flash</term>
-                <listitem><para>
-		  Sets the client's backlight setting. This setting overrides the screen's setting, so you can enable the backlight for all your screens at once. If "open", which is the default, the screen's setting will be used. See screen_set attribute for details on the backlight modes.
-		</para></listitem>
-              </varlistentry>
-	    </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>client_set &lt;attributes&gt;
+	  </term>
+	  <listitem>
+	    <para>
+	      Sets attributes for the current client.
+	      The current client is the one from the connection that you send
+	      this command on, in other words: yourself.
+	      <variablelist><title>client_set attributes</title>
+		<varlistentry>
+		  <term>-name &lt;name&gt;</term>
+		  <listitem><para>
+		      Sets the client's name as visible to a user.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>-heartbeat on|off|open</term>
+		  <listitem><para>
+		      Sets the client's heartbeat setting. This setting overrides the screen's setting, so you can enable the heartbeat for all your screens at once. If "open", which is the default, the screen's setting will be used.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>-backlight on|off|toggle|open|blink|flash</term>
+		  <listitem><para>
+		      Sets the client's backlight setting. This setting overrides the screen's setting, so you can enable the backlight for all your screens at once. If "open", which is the default, the screen's setting will be used. See screen_set attribute for details on the backlight modes.
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </sect2>
 
-      <varlistentry>
-        <term>screen_add &lt;new_screen_id&gt;</term>
-        <listitem>
-          <para>
-	    Adds a screen to be displayed. The screen will be identified
-	    by &lt;new_screen_id&gt;. Later you will need this id to add widgets to
-	    this screen.
-	  </para>
-        </listitem>
-      </varlistentry>
+    <sect2 id="language-screens">
+      <title>Screens and widgets</title>
 
-      <varlistentry>
-        <term>screen_del &lt;screen_id&gt;</term>
-        <listitem>
-          <para>
-	    Removes the given screen.
-	  </para>
-        </listitem>
-      </varlistentry>
+      <variablelist>
+	<varlistentry>
+	  <term>screen_add &lt;new_screen_id&gt;</term>
+	  <listitem>
+	    <para>
+	      Adds a screen to be displayed. The screen will be identified
+	      by &lt;new_screen_id&gt;. Later you will need this id to add widgets to
+	      this screen.
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>screen_set &lt;screen_id&gt; &lt;attributes&gt;</term>
-        <listitem>
-          <para>
-	    Sets attributes for the given screen. The following attributes
-	    exist:
-            <variablelist><title>screen_set attributes</title>
-              <varlistentry>
-                <term>-name &lt;name&gt;</term>
-                <listitem><para>
-		  Sets the screen's name as visible to a user.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>-wid &lt;int&gt;</term>
-                <term>-hgt &lt;int&gt;</term>
-                <listitem><para>
-	          Sets the size of the screen in characters. If unset, the full display size is assumed.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>-priority &lt;pri-class&gt;</term>
-                <listitem><para>
-	          priority: The following priority classes exist: hidden (screen will never be visible), background (only visible when no normal info screens exist), info (normal info screen, default priority), foreground (an active client), alert (screen has an important message for you), input (the client is doing interactive input).  LCDd will only show screens with the highest priority at that moment. So when there are 3 info screens and 1 foreground screen, only the foreground screen will be visible.  Only background, info and foreground screens will rotate. Higher classes do not rotate because their function is not suitable for rotation.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>-heartbeat on|off|open</term>
-                <term>-backlight on|off|toggle|open|blink|flash</term>
-                <listitem><para>
-	          If "open" (which is default), the state will be determined by the client's setting. "blink" is a moderately striking backlight variation, "flash" is VERY strinking.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>-duration &lt;seconds*8&gt;</term>
-                <listitem><para>
-	          A screen will be visible for this amount of time every rotation. The value is in eights of a second.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>
-	          -timeout &lt;seconds*8&gt;
-		</term>
-                <listitem><para>
-	          After the screen has been visible for a total of this amount of time, it will be deleted. The value is in eights of a second. Currently the client will not be informed of the deletion (TODO?).
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>
-	          -cursor on|off|under|block
-		</term>
-                <listitem><para>
-	          If on, a cursor will be visible. Depending on your hardware, this will be a hardware or software cursor. The specified cursor shape (block or under) might not be available in which case an other cursor shape will be used instead.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>-cursor_x &lt;int&gt;</term>
-		<term>-cursor_y &lt;int&gt;</term>
-                <listitem><para>
-	          Coordinates are always 1-based. So top-left is (1,1). 
-		</para></listitem>
-              </varlistentry>
-	    </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>screen_del &lt;screen_id&gt;</term>
+	  <listitem>
+	    <para>
+	      Removes the given screen.
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>widget_add &lt;screen_id&gt; &lt;new_widget_id&gt; &lt;widgettype&gt;
-	  [-in &lt;frame_id&gt;]</term>
-        <listitem>
-          <para>
-	    Adds a widget to the given screen. The &lt;widgetid&gt; sets the
-	    new identifier for this widget. The following widget types exist:
-            <variablelist><title>widget types</title>
-              <varlistentry>
-                <term>string</term>
-                <listitem><para>
-		  A simple text.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>title</term>
-                <listitem><para>
-		  A title bar for above the screen.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>hbar</term>
-                <listitem><para>
-		  A horizontal bar.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>vbar</term>
-                <listitem><para>
-		  A vertical bar.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>icon</term>
-                <listitem><para>
-		  A predefined or client-defined icon.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>scroller</term>
-                <listitem><para>
-		  A variation of the string type that scrolls the text 
-		  horizontally or vertically.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>frame</term>
-                <listitem><para>
-		  A frame with that can contain widgets itself. In fact a
-		  frame displays an other screen in it.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>num</term>
-                <listitem><para>
-		  A big number. They have a size of 3x4 characters. The special number 10 is a colon, that you can use for a clock. This character is 1x4.
-		</para></listitem>
-              </varlistentry>
-            </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>screen_set &lt;screen_id&gt; &lt;attributes&gt;</term>
+	  <listitem>
+	    <para>
+	      Sets attributes for the given screen. The following attributes
+	      exist:
+	      <variablelist><title>screen_set attributes</title>
+		<varlistentry>
+		  <term>-name &lt;name&gt;</term>
+		  <listitem><para>
+		      Sets the screen's name as visible to a user.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>-wid &lt;int&gt;</term>
+		  <term>-hgt &lt;int&gt;</term>
+		  <listitem><para>
+		      Sets the size of the screen in characters. If unset, the full display size is assumed.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>-priority &lt;pri-class&gt;</term>
+		  <listitem><para>
+		      priority: The following priority classes exist: hidden (screen will never be visible), background (only visible when no normal info screens exist), info (normal info screen, default priority), foreground (an active client), alert (screen has an important message for you), input (the client is doing interactive input).  LCDd will only show screens with the highest priority at that moment. So when there are 3 info screens and 1 foreground screen, only the foreground screen will be visible.  Only background, info and foreground screens will rotate. Higher classes do not rotate because their function is not suitable for rotation.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>-heartbeat on|off|open</term>
+		  <term>-backlight on|off|toggle|open|blink|flash</term>
+		  <listitem><para>
+		      If "open" (which is default), the state will be determined by the client's setting. "blink" is a moderately striking backlight variation, "flash" is VERY strinking.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>-duration &lt;seconds*8&gt;</term>
+		  <listitem><para>
+		      A screen will be visible for this amount of time every rotation. The value is in eights of a second.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>
+		    -timeout &lt;seconds*8&gt;
+		  </term>
+		  <listitem><para>
+		      After the screen has been visible for a total of this amount of time, it will be deleted. The value is in eights of a second. Currently the client will not be informed of the deletion (TODO?).
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>
+		    -cursor on|off|under|block
+		  </term>
+		  <listitem><para>
+		      If on, a cursor will be visible. Depending on your hardware, this will be a hardware or software cursor. The specified cursor shape (block or under) might not be available in which case an other cursor shape will be used instead.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>-cursor_x &lt;int&gt;</term>
+		  <term>-cursor_y &lt;int&gt;</term>
+		  <listitem><para>
+		      Coordinates are always 1-based. So top-left is (1,1). 
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>widget_del &lt;screen_id&gt; &lt;widget_id&gt;</term>
-        <listitem>
-          <para>
-	    Deletes the given widget from the screen.
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>widget_add &lt;screen_id&gt; &lt;new_widget_id&gt; &lt;widgettype&gt;
+	    [-in &lt;frame_id&gt;]</term>
+	  <listitem>
+	    <para>
+	      Adds a widget to the given screen. The &lt;widgetid&gt; sets the
+	      new identifier for this widget. The following widget types exist:
+	      <variablelist><title>widget types</title>
+		<varlistentry>
+		  <term>string</term>
+		  <listitem><para>
+		      A simple text.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>title</term>
+		  <listitem><para>
+		      A title bar for above the screen.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>hbar</term>
+		  <listitem><para>
+		      A horizontal bar.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>vbar</term>
+		  <listitem><para>
+		      A vertical bar.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>icon</term>
+		  <listitem><para>
+		      A predefined or client-defined icon.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>scroller</term>
+		  <listitem><para>
+		      A variation of the string type that scrolls the text 
+		      horizontally or vertically.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>frame</term>
+		  <listitem><para>
+		      A frame with that can contain widgets itself. In fact a
+		      frame displays an other screen in it.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>num</term>
+		  <listitem><para>
+		      A big number. They have a size of 3x4 characters. The special number 10 is a colon, that you can use for a clock. This character is 1x4.
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>widget_set &lt;screen_id&gt; &lt;widget_id&gt; &lt;widget specific
-	  parameters&gt;</term>
-        <listitem>
-          <para>
-	    Sets parameters for a widget. Because not all widgets are created equal,
-	    the various widget types require different attributes.
-            <variablelist><title>widget_set required parameters per widget type</title>
-              <varlistentry>
-                <term>string</term>
-                <listitem><para>
-		  &lt;x&gt; &lt;y&gt; &lt;text&gt;
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>title</term>
-                <listitem><para>
-		  &lt;text&gt;
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>hbar</term>
-                <term>vbar</term>
-                <listitem><para>
-		  &lt;x&gt; &lt;y&gt; &lt;length&gt;
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>icon</term>
-                <listitem><para>
-		  &lt;x&gt; &lt;y&gt; &lt;iconname&gt;
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>scroller</term>
-                <listitem><para>
-		  &lt;left&gt; &lt;top&gt; &lt;right&gt; &lt;bottom&gt; &lt;direction&gt; &lt;speed&gt; &lt;text&gt;
-	        </para>
-	        <para>
-                  direction can be "h", "m" or "v".
-	        </para>
-	        <para>
-                  speed is the number of movements per rendering stroke (8 times/second).
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>frame</term>
-                <listitem><para>
-		  &lt;left&gt; &lt;top&gt; &lt;right&gt; &lt;bottom&gt; &lt;width&gt; &lt;height&gt; &lt;direction&gt; &lt;speed&gt;
-	        </para>
-	        <para>
-                  direction can be "h" or "v".
-	        </para>
-	        <para>
-                  speed is the number of movements per rendering stroke (8 times/second).
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>num</term>
-                <listitem><para>
-		  &lt;x&gt; &lt;int&gt;
-	        </para>
-	        <para>
-		  x is the normal character x coordinate on the display.
-	        </para>
-	        <para>
-		  int is the number to display, 0 to 9. Number 10 is a special number that will place a colon.
-		</para></listitem>
-              </varlistentry>
-	    </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>widget_del &lt;screen_id&gt; &lt;widget_id&gt;</term>
+	  <listitem>
+	    <para>
+	      Deletes the given widget from the screen.
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>client_add_key [-excl|-shared] {&lt;key&gt;}+</term>
-        <listitem>
-          <para>
-	    Tells the server that the current client wants to make use of the
-	    given key(s). If you reserve the key(s) in shared mode, other
-	    clients can still reserve these keys too. If you reserve the key(s)
-	    in exclusive mode no other client can reserve them again.
-	    Key(s) reserved in shared mode will only be returned when a screen
-	    of the current client is active. These keys can be used for
-	    interaction with a visible screen (default). 
-	    Key(s) reserved in exclusive mode will be returned regardless of
-	    which screen is active. They can be used to trigger a special
-	    feature or to make a screen come to foreground.
-	    Note that you cannot reserve a key in exclusive mode when an
-	    other client has reserved it in shared mode.
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>widget_set &lt;screen_id&gt; &lt;widget_id&gt; &lt;widget specific
+	    parameters&gt;</term>
+	  <listitem>
+	    <para>
+	      Sets parameters for a widget. Because not all widgets are created equal,
+	      the various widget types require different attributes.
+	      <variablelist><title>widget_set required parameters per widget type</title>
+		<varlistentry>
+		  <term>string</term>
+		  <listitem><para>
+		      &lt;x&gt; &lt;y&gt; &lt;text&gt;
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>title</term>
+		  <listitem><para>
+		      &lt;text&gt;
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>hbar</term>
+		  <term>vbar</term>
+		  <listitem><para>
+		      &lt;x&gt; &lt;y&gt; &lt;length&gt;
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>icon</term>
+		  <listitem><para>
+		      &lt;x&gt; &lt;y&gt; &lt;iconname&gt;
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>scroller</term>
+		  <listitem><para>
+		      &lt;left&gt; &lt;top&gt; &lt;right&gt; &lt;bottom&gt; &lt;direction&gt; &lt;speed&gt; &lt;text&gt;
+		    </para>
+		    <para>
+		      direction can be "h", "m" or "v".
+		    </para>
+		    <para>
+		      speed is the number of movements per rendering stroke (8 times/second).
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>frame</term>
+		  <listitem><para>
+		      &lt;left&gt; &lt;top&gt; &lt;right&gt; &lt;bottom&gt; &lt;width&gt; &lt;height&gt; &lt;direction&gt; &lt;speed&gt;
+		    </para>
+		    <para>
+		      direction can be "h" or "v".
+		    </para>
+		    <para>
+		      speed is the number of movements per rendering stroke (8 times/second).
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>num</term>
+		  <listitem><para>
+		      &lt;x&gt; &lt;int&gt;
+		    </para>
+		    <para>
+		      x is the normal character x coordinate on the display.
+		    </para>
+		    <para>
+		      int is the number to display, 0 to 9. Number 10 is a special number that will place a colon.
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </sect2>
 
-      <varlistentry>
-        <term>client_del_key {&lt;key&gt;}+</term>
-        <listitem>
-          <para>
-	    Ends the reservation of the given key(s).
-	  </para>
-        </listitem>
-      </varlistentry>
+    <sect2 id="language-menus">
+      <title>Menu stuff</title>
 
-      <varlistentry>
-        <term>menu_add_item &lt;menu_id&gt; &lt;new_item_id&gt; &lt;type&gt; [options]</term>
-        <listitem>
-          <para>
-	    Adds a new menuitem to a menu. The main menu of a client,
-            will be created automatically as soon as the client adds
-            an item. This main menu has an empty id ("") and the name
-            is identical to the name of the client. The options are
-            described under menu_set_item below.
-            <variablelist><title>menu item types</title>
-              <varlistentry>
-                <term>action</term>
-                <listitem><para>
-		  This item should trigger an action. It consists of simple text.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>checkbox</term>
-                <listitem><para>
-		  Consists of a text and a status indicator. The status can be on (Y), off (N) or gray (o). 
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>ring</term>
-                <listitem><para>
-		  Consists of a text and a status indicator. The status can be one of the strings specified for the item. 
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>slider</term>
-                <listitem><para>
-		  Is visible as a text. When selected, a screen comes up that shows a slider. You can set the slider using the cursor keys. When Enter is pressed, the menu returns.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>numeric</term>
-                <listitem><para>
-		  Allows the user to input an integer value. Is visible as a text. When selected, a screen comes up that shows the current numeric value, that you can edit with the cursor keys and Enter. The number is ended by selecting a 'null' input digit. After that the menu returns.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>alpha</term>
-                <listitem><para>
-		  Is visible as a text. When selected, a screen comes up that shows the current string value, that you can edit with the cursor keys and Enter. The string is ended by selecting a 'null' input character. After that the menu returns.
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>ip</term>
-                <listitem><para>
-		  Allows the user to input an ip number (v4 or
-                v6). When selected, a screen comes up that shows an ip
-                number that can be edited - digit by digit - via
-                left/right (switch digit) and up/down keys (increase/decrease).
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>menu</term>
-                <listitem><para>
-		  This is a submenu. It is visible as a text, with an appended '>'. When selected, the submenu becomes the active menu.
-		</para></listitem>
-              </varlistentry>
-            </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+      <para>
+	In this section all commands for creation, modification of
+	menus and for interaction with them are described. Although
+	keys may be used for other tasks they are listed here too.
+      </para>
+      <para>
+	TODO: example for normal (static) menu structure.
+      </para>
+      <para>
+	Menus may be even be used for wizzards (the user is
+	automatically guided through a number of configuration
+	options) by virtue of the options -next and -prev. Here a
+	complete example:
+	<programlisting>
+	  client_set name Parenttest
+	  # to be entered on escape from test_menu (but overwritten
+	  # for test_{checkbox,ring})
+	  menu_add_item "" ask menu "Leave menus?" -is_hidden true
+	    menu_add_item "ask" ask_yes action "Yes" -next _quit_
+	    menu_add_item "ask" ask_no action "No" -next _close_
 
-      <varlistentry>
-        <term>menu_del_item &lt;menu_id&gt; &lt;item_id&gt;</term>
-        <listitem>
-          <para>
-	    Removes a menuitem &lt;item_id&gt; from menu &lt;menu_id&gt;. The menu named "" is the client's main menu.
-	  </para>
-        </listitem>
-      </varlistentry>
+	  menu_add_item "" test menu "Test"
+	    menu_add_item "test" test_action action "Action"
+	    menu_add_item "test" test_checkbox checkbox "Checkbox"
+	    menu_add_item "test" test_ring ring "Ring" -strings "one\ttwo\tthree"
+	    menu_add_item "test" test_slider slider "Slider" -mintext "&lt;" -maxtext "&gt;" -value "50"
+	    menu_add_item "test" test_numeric numeric "Numeric" -value "42"
+	    menu_add_item "test" test_alpha alpha "Alpha" -value "abc"
+	    menu_add_item "test" test_ip ip "IP" -v6 false -value "192.168.1.1"
+	    menu_add_item "test" test_menu menu "Menu"
+	    menu_add_item "test_menu" test_menu_action action "Submenu's action"
 
-      <varlistentry>
-        <term>menu_set_item &lt;menu_id&gt; &lt;item_id&gt; &lt;item_specific_options&gt;</term>
-        <listitem>
-          <para>
-	    Sets parameters for the menuitem(s). Each item type knows different parameters.
-            <variablelist><title>options for the various menu items</title>
-              <varlistentry>
-                <term>for all item types</term>
-                <listitem><para>
-                  <variablelist>
-                    <varlistentry>
-                      <term>-text &lt;string&gt;</term>
-                      <listitem><para>
-		  	The visible text of the item.
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-is_hidden false|true (false)</term>
-                      <listitem><para>
-		  	If the item currently should not appear in a menu.
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-next &lt;successor_id&gt; ()</term>
-                      <listitem><para>
-			Sets the menuitem to show after closing this
-                      	Item. Parentid has to be of a non-menu type that
-                      	has its own screen, e.g., not a
-                        checkbox. Special values are
-			<variablelist>
-			  <varlistentry>
-			    <term>_close_</term>
-			    <listitem><para>
-			      Equivalent to -menu_result close: Close
-			      the menu.
-		            </para></listitem>
-			  </varlistentry>
-			  <varlistentry>
-			    <term>_quit_</term>
-			    <listitem><para>
-			      Equivalent to -menu_result quit: Quit
-			      the menu system.
-		            </para></listitem>
-			  </varlistentry>
-			  <varlistentry>
-			    <term>_none_</term>
-			    <listitem><para>
-			      Equivalent to -menu_result none: Keep
-			      the item open.
-		            </para></listitem>
-			  </varlistentry>
-			</variablelist>
-		      </para></listitem>
-		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>action</term>
-                <listitem><para>
-                  <variablelist>
-		    <varlistentry>
-                      <term>-menu_result none|close|quit (none)</term>
-                      <listitem><para>
-		  	Sets what to do with the menu when this action is selected:
-		        none: the menu stays as it is;
-		        close: the menu closes and returns to a higher level;
-		        quit: quits the menu completely so you can foreground your app.
-		      </para></listitem>
-		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>checkbox</term>
-                <listitem><para>
-                  <variablelist>
-                    <varlistentry>
-                      <term>-value &lt;value&gt;</term>
-                      <listitem><para>
-		  	Set the value of the item. Can be off, on or gray. 
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-allow_gray false|true (false)</term>
-                      <listitem><para>
-		        Sets if a grayed checkbox is allowed.
-		      </para></listitem>
-		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>ring</term>
-                <listitem><para>
-                  <variablelist>
-                    <varlistentry>
-                      <term>-value &lt;int&gt; (0)</term>
-                      <listitem><para>
-		        Sets the index in the stringlist that is currently selected.
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-strings &lt;string&gt; (empty)</term>
-                      <listitem><para>
-			This single string should contain the strings that can be selected. They should be tab-separated (\t).
-		      </para></listitem>
-		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>slider</term>
-                <listitem><para>
-                  <variablelist>
-                    <varlistentry>
-                      <term>-value &lt;int&gt; (0)</term>
-                      <listitem><para>
-		        Sets its current value.
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-mintext &lt;string&gt; ("")</term>
-                      <term>-maxtext &lt;string&gt; ("")</term>
-                      <listitem><para>
-		        The texts at the left and right side of the slider.
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-minvalue &lt;int&gt; (0)</term>
-                      <term>-maxvalue &lt;int&gt; (100)</term>
-                      <listitem><para>
-		        The minimum and maximum values of the slider.
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-stepsize &lt;int&gt; (1)</term>
-                      <listitem><para>
-		        The stepsize of the slider. If you use 0, you can control the movement completely from your client.
-		      </para></listitem>
-		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>numeric</term>
-                <listitem><para>
-                  <variablelist>
-                    <varlistentry>
-                      <term>-value &lt;int&gt; (0)</term>
-                      <listitem><para>
-		        Sets its current value.
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-minvalue &lt;int&gt; (0)</term>
-                      <term>-maxvalue &lt;int&gt; (100)</term>
-                      <listitem><para>
-		        The minimum and maximum values that are allowed. If one
-			of them is negative, the user will be able to enter
-			negative numbers too.
-		      </para>
-		      <para>
-		        TODO: floats!
-		      </para></listitem>
-		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>alpha</term>
-                <listitem><para>
-                  <variablelist>
-                    <varlistentry>
-                      <term>-value &lt;string&gt; ("")</term>
-                      <listitem><para>
-		        Sets its current value.
-		      </para></listitem>
-                    </varlistentry>
-                    <varlistentry>
-                      <term>-password_char &lt;string&gt; ("")</term>
-                      <listitem><para>
-		        If used, instead of the typed characters, this
-			character will be visible.
-		      </para></listitem>
-                    </varlistentry>
-                    <varlistentry>
-                      <term>-minlength &lt;int&gt; (0)</term>
-                      <term>-maxlength &lt;int&gt; (10)</term>
-                      <listitem><para>
-		        Sets the minimum and maximum allowed lengths.
-		      </para></listitem>
-                    </varlistentry>
-                    <varlistentry>
-                      <term>-allow_caps false|true (true)</term>
-                      <term>-allow_noncaps false|true (false)</term>
-                      <term>-allow_numbers false|true (false)</term>
-                      <listitem><para>
-		        (Dis)allow these groups of characters.
-		      </para></listitem>
-                    </varlistentry>
-                    <varlistentry>
-                      <term>-allowed_extra &lt;string&gt; ("")</term>
-                      <listitem><para>
-		        The chars in this string are also allowed.
-		      </para></listitem>
-                    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>ip</term>
-                <listitem><para>
-                  <variablelist>
-                    <varlistentry>
-                      <term>-value &lt;string&gt; ("192.168.1.245")</term>
-                      <listitem><para>
-		  	Set the value of the item,
-                      e.g. "192.168.1.245" (v4) or
-                      ":::ffff:ffff:ffff:ffff:ffff" (v6).
-		      </para></listitem>
-		    </varlistentry>
-                    <varlistentry>
-                      <term>-v6 false|true (false)</term>
-                      <listitem><para>
-		        Changes IP version from default v4.
-		      </para></listitem>
-		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-              <varlistentry>
-                <term>menu</term>
-                <listitem><para>
-		  This is a submenu. It is visible as a text, with an
-                  appended '>'. When selected, the submenu becomes the
-                  active menu.
-                  <variablelist>
-                    <varlistentry>
-                      <term>-parent &lt;parentid&gt; ()</term>
-                      <listitem><para> (Re)sets the parent of this
-                      menu. Parentid has to be of type menu. This
-                      function does not change any menu (neither the
-                      old nor the new parent) since this option is
-                      normally used with hidden menus. Otherwise use
-                      menu_add/del_item. Applying this option is
-                      equivalent to second argument of the menu_goto
-                      command. </para></listitem>
-		    </varlistentry>
-                  </variablelist>
-		</para></listitem>
-              </varlistentry>
-            </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+	  # no successor for menus. Since test_checkbox and test_ring have their
+	  # own predecessors defined the "ask" rule will not work for them
+	  menu_set_item "" test -prev "ask"
 
-      <varlistentry>
-        <term>menu_goto &lt;menu_id&gt; [&lt;parent_id&gt;]</term>
-        <listitem>
-          <para>
-	    Changes current menu to &lt;menu_id&gt;. Depending on the
-	    configure option --enable-permissive-menu-goto the
-	    client may switch to any (if enabled) or his menus only
-	    (if not enabled).
-            <variablelist>
-	      <varlistentry>
-		<term>&lt;menu_id&gt;</term>
-		<listitem><para>
-		    The menuitem to go to (any menu type e.g. an
-		    action or a menu).
-		  </para></listitem>
-	      </varlistentry>
-	      <varlistentry>
-		<term>&lt;parent_id&gt;</term>
-		<listitem><para>
-		    Resets the parent of &lt;menu_id&gt;. This
-		    optional parameter can be used to reuse a menu
-		    from different places (for wizzards etc.). Use it
-		    with caution: This may lead to a messy menu
-		    structure in particular due to the fact that the
-		    menus are not changed !
-		  </para></listitem>
-	      </varlistentry>
-	    </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+	  menu_set_item "test" test_action -next "test_checkbox"
+	  menu_set_item "test" test_checkbox -next "test_ring" -prev "test_action"
+	  menu_set_item "test" test_ring -next "test_slider" -prev "test_checkbox"
+	  menu_set_item "test" test_slider -next "test_numeric" -prev "test_ring"
+	  menu_set_item "test" test_numeric -next "test_alpha" -prev "test_slider"
+	  menu_set_item "test" test_alpha -next "test_ip" -prev "test_numeric"
+	  menu_set_item "test" test_ip -next "test_menu" -prev "test_alpha"
+	  menu_set_item "test" test_menu_action -next "_close_"
 
-      <varlistentry>
-        <term>menu_set_main &lt;menu_id&gt;</term>
-        <listitem>
-          <para>
-	    Sets the entry point into the menu system. Use this to
-	    make the server menu invisible. Note that you may only set
-	    the menu to your own clients menus unless the configure
-	    option --enable-permissive-menu-goto is used. (See
-	    menuscreens.c for the menu ids of the server menus.)
-            <variablelist>
-	      <varlistentry>
-		<term>&lt;menu_id&gt;</term>
-		<listitem><para>
-		    The new main menu, restricted to the client's own
-		    menus. Special values:
-		    <variablelist>
-		      <varlistentry>
-		      	<term>""</term>
-		      	<listitem><para>
-		      	    The client's main menu.
-		      	  </para></listitem>
-		      </varlistentry>
-		      <varlistentry>
-		      	<term>"_main_"</term>
-		      	<listitem><para>
-		      	    Resets main to the "real" main menu.
-		      	  </para></listitem>
-		      </varlistentry>
-		    </variablelist>
-		  </para></listitem>
-	      </varlistentry>
-	    </variablelist>
-	  </para>
-        </listitem>
-      </varlistentry>
+	  menu_set_main ""
+	</programlisting>
+      </para>
+      <variablelist>
+	<varlistentry>
+	  <term>client_add_key [-excl|-shared] {&lt;key&gt;}+</term>
+	  <listitem>
+	    <para>
+	      Tells the server that the current client wants to make use of the
+	      given key(s). If you reserve the key(s) in shared mode, other
+	      clients can still reserve these keys too. If you reserve the key(s)
+	      in exclusive mode no other client can reserve them again.
+	      Key(s) reserved in shared mode will only be returned when a screen
+	      of the current client is active. These keys can be used for
+	      interaction with a visible screen (default). 
+	      Key(s) reserved in exclusive mode will be returned regardless of
+	      which screen is active. They can be used to trigger a special
+	      feature or to make a screen come to foreground.
+	      Note that you cannot reserve a key in exclusive mode when an
+	      other client has reserved it in shared mode.
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>backlight on|off|toggle|blink|flash</term>
-        <listitem>
-          <para>
-	    Set's the client's backlight state.
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>client_del_key {&lt;key&gt;}+</term>
+	  <listitem>
+	    <para>
+	      Ends the reservation of the given key(s).
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>output on|off|&lt;int&gt;</term>
-        <listitem>
-          <para>
-	    Sets the general purpose output on some display modules to
-	    this value. Use "on" to set all outputs to high state, and
-	    "off" to set all to low state. The meaning of the integer value
-	    is dependent on your specific device, usually it is a bitpattern
-	    describing the state of each output line.
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>menu_add_item &lt;menu_id&gt; &lt;new_item_id&gt; &lt;type&gt; [options]</term>
+	  <listitem>
+	    <para>
+	      Adds a new menuitem to a menu. The main menu of a client,
+	      will be created automatically as soon as the client adds
+	      an item. This main menu has an empty id ("") and the name
+	      is identical to the name of the client. The options are
+	      described under menu_set_item below.
+	    </para>
+	    <para>
+	      <emphasis role="bold">Note:</emphasis> Menu commands
+	      (menu_goto) and options (-prev, -next) assume that
+	      menu ids are <emphasis>unique</emphasis> (at least
+	      within a clients menu hierarchy).
+	      <variablelist><title>menu item types</title>
+		<varlistentry>
+		  <term>action</term>
+		  <listitem><para>
+		      This item should trigger an action. It consists of simple text.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>checkbox</term>
+		  <listitem><para>
+		      Consists of a text and a status indicator. The
+		      status can be on (Y), off (N) or gray (o).
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>ring</term>
+		  <listitem><para>
+		      Consists of a text and a status indicator. The
+		      status can be one of the strings specified for the
+		      item.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>slider</term>
+		  <listitem><para>
+		      Is visible as a text. When selected, a screen comes
+		      up that shows a slider. You can set the slider using
+		      the cursor keys. When Enter is pressed, the menu
+		      returns.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>numeric</term>
+		  <listitem><para>
+		      Allows the user to input an integer value. Is
+		      visible as a text. When selected, a screen comes up
+		      that shows the current numeric value, that you can
+		      edit with the cursor keys and Enter. The number is
+		      ended by selecting a 'null' input digit. After that
+		      the menu returns.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>alpha</term>
+		  <listitem><para>
+		      Is visible as a text. When selected, a screen comes
+		      up that shows the current string value, that you can
+		      edit with the cursor keys and Enter. The string is
+		      ended by selecting a 'null' input character. After
+		      that the menu returns.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>ip</term>
+		  <listitem><para>
+		      Allows the user to input an ip number (v4 or
+		      v6). When selected, a screen comes up that shows an ip
+		      number that can be edited - digit by digit - via
+		      left/right (switch digit) and up/down keys
+		      (increase/decrease).
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>menu</term>
+		  <listitem><para>
+		      This is a submenu. It is visible as a text, with an
+		      appended '>'. When selected, the submenu becomes the
+		      active menu.
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-      <varlistentry>
-        <term>noop</term>
-        <listitem>
-          <para>
-	    This command does nothing and is always successful.
-	    Can be useful to be sent at regular intervals to make sure your
-	    connection is still alive.
-	  </para>
-        </listitem>
-      </varlistentry>
+	<varlistentry>
+	  <term>menu_del_item &lt;menu_id&gt; &lt;item_id&gt;</term>
+	  <listitem>
+	    <para>
+	      Removes a menuitem &lt;item_id&gt; from menu
+	      &lt;menu_id&gt;. The menu named "" is the client's main
+	      menu.
+	    </para>
+	  </listitem>
+	</varlistentry>
 
-    </variablelist>
+	<varlistentry>
+	  <term>menu_set_item &lt;menu_id&gt; &lt;item_id&gt; &lt;item_specific_options&gt;</term>
+	  <listitem>
+	    <para>
+	      Sets parameters for the menuitem(s). Each item type knows different parameters.
+	      <variablelist><title>options for the various menu items</title>
+		<varlistentry>
+		  <term>for all item types</term>
+		  <listitem><para>
+		      <variablelist>
+			<varlistentry>
+			  <term>-text &lt;string&gt;</term>
+			  <listitem><para>
+			      The visible text of the item.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-is_hidden false|true (false)</term>
+			  <listitem><para>
+			      If the item currently should not appear in a menu.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-next &lt;successor_id&gt; ()</term>
+			  <listitem>
+			    <para>
+			      Sets the menuitem to show after hitting
+			      the ENTER key when this Item is
+			      active. This works for
+			      <emphasis>all</emphasis> menu item types
+			      <emphasis>except menus</emphasis>
+			      i.e. also for menu item types without an
+			      own screen e.g., checkbox, ring and
+			      action.
+			      <variablelist>
+				<title>Special values</title>
+				<varlistentry>
+				  <term>_close_</term>
+				  <listitem><para>
+				      Equivalent to -menu_result close: Close
+				      the menu.
+				    </para></listitem>
+				</varlistentry>
+				<varlistentry>
+				  <term>_quit_</term>
+				  <listitem><para>
+				      Equivalent to -menu_result quit: Quit
+				      the menu system.
+				    </para></listitem>
+				</varlistentry>
+				<varlistentry>
+				  <term>_none_</term>
+				  <listitem><para>
+				      Equivalent to -menu_result none: Keep
+				      the item open.
+				    </para></listitem>
+				</varlistentry>
+			      </variablelist>
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-prev &lt;predecessor_id&gt; ()</term>
+			  <listitem>
+			    <para>
+			      Sets the menuitem to show after hitting
+			      the ESCAPE key when this Item is
+			      active. This works for
+			      <emphasis>all</emphasis> menu item types
+			      i.e. also for menu item types without an
+			      own screen e.g., checkbox, ring and
+			      action.
+			    </para>
+			    <para>
+			      <emphasis role="bold">Note:</emphasis>
+			      If you define a predecessor for e.g., a
+			      checkbox and its parent menu too, the
+			      menu's predecessor is ignored in favor
+			      of the checkboxes one.
+			    </para>
+			    <para>
+			      This option respects the same special
+			      values as the -next option.
+			    </para>
+			  </listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>action</term>
+		  <listitem><para>
+		      <variablelist>
+			<varlistentry>
+			  <term>-menu_result none|close|quit (none)</term>
+			  <listitem><para>
+			      Sets what to do with the menu when this action is selected:
+			      none: the menu stays as it is;
+			      close: the menu closes and returns to a higher level;
+			      quit: quits the menu completely so you can foreground your app.
+			    </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>checkbox</term>
+		  <listitem><para>
+		      <variablelist>
+			<varlistentry>
+			  <term>-value &lt;value&gt;</term>
+			  <listitem><para>
+			      Set the value of the item. Can be off, on or gray. 
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-allow_gray false|true (false)</term>
+			  <listitem><para>
+			      Sets if a grayed checkbox is allowed.
+			    </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>ring</term>
+		  <listitem><para>
+		      <variablelist>
+			<varlistentry>
+			  <term>-value &lt;int&gt; (0)</term>
+			  <listitem><para>
+			      Sets the index in the stringlist that is currently selected.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-strings &lt;string&gt; (empty)</term>
+			  <listitem><para>
+			      This single string should contain the strings that can be selected. They should be tab-separated (\t).
+			    </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>slider</term>
+		  <listitem><para>
+		      <variablelist>
+			<varlistentry>
+			  <term>-value &lt;int&gt; (0)</term>
+			  <listitem><para>
+			      Sets its current value.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-mintext &lt;string&gt; ("")</term>
+			  <term>-maxtext &lt;string&gt; ("")</term>
+			  <listitem><para>
+			      The texts at the left and right side of the slider.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-minvalue &lt;int&gt; (0)</term>
+			  <term>-maxvalue &lt;int&gt; (100)</term>
+			  <listitem><para>
+			      The minimum and maximum values of the slider.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-stepsize &lt;int&gt; (1)</term>
+			  <listitem><para>
+			      The stepsize of the slider. If you use 0, you can control the movement completely from your client.
+			    </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>numeric</term>
+		  <listitem><para>
+		      <variablelist>
+			<varlistentry>
+			  <term>-value &lt;int&gt; (0)</term>
+			  <listitem><para>
+			      Sets its current value.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-minvalue &lt;int&gt; (0)</term>
+			  <term>-maxvalue &lt;int&gt; (100)</term>
+			  <listitem><para>
+			      The minimum and maximum values that are allowed. If one
+			      of them is negative, the user will be able to enter
+			      negative numbers too.
+			    </para>
+			    <para>
+			      TODO: floats!
+			    </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>alpha</term>
+		  <listitem><para>
+		      <variablelist>
+			<varlistentry>
+			  <term>-value &lt;string&gt; ("")</term>
+			  <listitem><para>
+			      Sets its current value.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-password_char &lt;string&gt; ("")</term>
+			  <listitem><para>
+			      If used, instead of the typed characters, this
+			      character will be visible.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-minlength &lt;int&gt; (0)</term>
+			  <term>-maxlength &lt;int&gt; (10)</term>
+			  <listitem><para>
+			      Sets the minimum and maximum allowed lengths.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-allow_caps false|true (true)</term>
+			  <term>-allow_noncaps false|true (false)</term>
+			  <term>-allow_numbers false|true (false)</term>
+			  <listitem><para>
+			      (Dis)allow these groups of characters.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-allowed_extra &lt;string&gt; ("")</term>
+			  <listitem><para>
+			      The chars in this string are also allowed.
+			    </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>ip</term>
+		  <listitem><para>
+		      <variablelist>
+			<varlistentry>
+			  <term>-value &lt;string&gt; ("192.168.1.245")</term>
+			  <listitem><para>
+			      Set the value of the item,
+			      e.g. "192.168.1.245" (v4) or
+			      ":::ffff:ffff:ffff:ffff:ffff" (v6).
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>-v6 false|true (false)</term>
+			  <listitem><para>
+			      Changes IP version from default v4.
+			    </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>menu</term>
+		  <listitem><para>
+		      This is a submenu. It is visible as a text, with an
+		      appended '>'. When selected, the submenu becomes the
+		      active menu.
+		      <variablelist>
+			<varlistentry>
+			  <term>-parent &lt;parentid&gt; ()</term>
+			  <listitem><para> (Re)sets the parent of this
+			      menu. Parentid has to be of type menu. This
+			      function does not change any menu (neither the
+			      old nor the new parent) since this option is
+			      normally used with hidden menus. Otherwise use
+			      menu_add/del_item. Applying this option is
+			      equivalent to second argument of the menu_goto
+			      command. </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>menu_goto &lt;menu_id&gt; [&lt;parent_id&gt;]</term>
+	  <listitem>
+	    <para>
+	      Changes current menu to &lt;menu_id&gt;. Depending on the
+	      configure option --enable-permissive-menu-goto the
+	      client may switch to any (if enabled) or his menus only
+	      (if not enabled).
+	      <variablelist>
+		<varlistentry>
+		  <term>&lt;menu_id&gt;</term>
+		  <listitem><para>
+		      The menuitem to go to (any menu type e.g. an
+		      action or a menu).
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>&lt;parent_id&gt;</term>
+		  <listitem><para>
+		      Resets the parent of &lt;menu_id&gt;. This
+		      optional parameter can be used to reuse a menu
+		      from different places (for wizzards etc.). Use it
+		      with caution: This may lead to a messy menu
+		      structure in particular due to the fact that the
+		      menus are not changed !
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>menu_set_main &lt;menu_id&gt;</term>
+	  <listitem>
+	    <para>
+	      Sets the entry point into the menu system. Use this to
+	      make the server menu invisible. Note that you may only set
+	      the menu to your own clients menus unless the configure
+	      option --enable-permissive-menu-goto is used. (See
+	      menuscreens.c for the menu ids of the server menus.)
+	      <variablelist>
+		<varlistentry>
+		  <term>&lt;menu_id&gt;</term>
+		  <listitem><para>
+		      The new main menu, restricted to the client's own
+		      menus. Special values:
+		      <variablelist>
+			<varlistentry>
+			  <term>""</term>
+			  <listitem><para>
+			      The client's main menu.
+			    </para></listitem>
+			</varlistentry>
+			<varlistentry>
+			  <term>"_main_"</term>
+			  <listitem><para>
+			      Resets main to the "real" main menu.
+			    </para></listitem>
+			</varlistentry>
+		      </variablelist>
+		    </para></listitem>
+		</varlistentry>
+	      </variablelist>
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </sect2>
+
+    <sect2 id="language-misc">
+      <title>Miscellaneous</title>
+
+      <variablelist>
+	<varlistentry>
+	  <term>backlight on|off|toggle|blink|flash</term>
+	  <listitem>
+	    <para>
+	      Set's the client's backlight state.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>output on|off|&lt;int&gt;</term>
+	  <listitem>
+	    <para>
+	      Sets the general purpose output on some display modules to
+	      this value. Use "on" to set all outputs to high state, and
+	      "off" to set all to low state. The meaning of the integer value
+	      is dependent on your specific device, usually it is a bitpattern
+	      describing the state of each output line.
+	    </para>
+	  </listitem>
+	</varlistentry>
+
+	<varlistentry>
+	  <term>noop</term>
+	  <listitem>
+	    <para>
+	      This command does nothing and is always successful.
+	      Can be useful to be sent at regular intervals to make sure your
+	      connection is still alive.
+	    </para>
+	  </listitem>
+	</varlistentry>
+      </variablelist>
+    </sect2>
   </sect1>
+
   <sect1 id="language-messages">
     <title>LCDd messages</title>
     <para>
