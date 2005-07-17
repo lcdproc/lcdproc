@@ -41,9 +41,27 @@
 
 /* Local functions */
 MenuEventFunc(menu_commands_handler);
-int set_parent(Menu *menu, char *parentid, Client *client);
+int set_predecessor(MenuItem *item, char *itemid, Client *client);
 int set_successor(MenuItem *item, char *itemid, Client *client);
-MenuItem * search_item(char *menu_id);
+
+
+/** small utility for debug output of command line. */
+static char *argv2string(int argc, char **argv)
+{
+	char *rtn = NULL;
+	int len;
+	int i;
+	for (i = len = 0; i < argc; ++i)
+		len += strlen(argv[i]) + 1;
+	rtn = malloc(len + 1);
+	rtn[0] = '\0';
+	for (i = len = 0; i < argc; ++i)
+	{
+		strcat(rtn, argv[i]);
+		strcat(rtn, " ");
+	}
+	return rtn;
+}
 
 
 /*************************************************************************
@@ -85,12 +103,12 @@ menu_add_item_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if (!c->name) {
-		sock_send_string (c->sock, "huh?  You need to give your client a name first\n");
+		sock_send_error(c->sock, "You need to give your client a name first\n");
 		return 0;
 	}
 
 	if ((argc < 4 )) {
-		sock_send_string (c->sock, "huh?  Usage: menu_add_item <menuid> <newitemid> <type> [<text>]\n");
+		sock_send_error(c->sock, "Usage: menu_add_item <menuid> <newitemid> <type> [<text>]\n");
 		return 0;
 	}
 
@@ -113,20 +131,20 @@ menu_add_item_func (Client * c, int argc, char **argv)
 		menu = menu_find_item (c->menu, menu_id, true);
 	}
 	if (!menu) {
-		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
+		sock_send_error(c->sock, "Cannot find menu id\n");
 		return 0;
 	}
 
 	item = menu_find_item (c->menu, item_id, true);
 	if (item) {
-		sock_send_string (c->sock, "huh?  Item id already in use\n");
+		sock_send_error(c->sock, "Item id already in use\n");
 		return 0;
 	}
 
 	/* Find menuitem type */
 	itemtype = menuitem_typename_to_type (argv[3]);
 	if (itemtype == -1) {
-		sock_send_string (c->sock, "huh?  Invalid menuitem type\n");
+		sock_send_error(c->sock, "Invalid menuitem type\n");
 		return 0;
 	}
 
@@ -225,7 +243,7 @@ menu_del_item_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if ((argc < 3 )) {
-		sock_send_string (c->sock, "huh?  Usage: menu_del_item <menuid> <itemid>\n");
+		sock_send_error(c->sock, "Usage: menu_del_item <menuid> <itemid>\n");
 		return 0;
 	}
 
@@ -234,7 +252,7 @@ menu_del_item_func (Client * c, int argc, char **argv)
 
 	/* Does the client have a menu already ? */
 	if (!c->menu) {
-		sock_send_string (c->sock, "huh?  Client has no menu\n");
+		sock_send_error(c->sock, "Client has no menu\n");
 		return 0;
 	}
 
@@ -246,13 +264,13 @@ menu_del_item_func (Client * c, int argc, char **argv)
 		menu = menu_find_item (c->menu, menu_id, true);
 	}
 	if (!menu) {
-		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
+		sock_send_error(c->sock, "Cannot find menu id\n");
 		return 0;
 	}
 
 	item = menu_find_item (c->menu, item_id, true);
 	if (!item) {
-		sock_send_string (c->sock, "huh?  Cannot find item\n");
+		sock_send_error(c->sock, "Cannot find item\n");
 		return 0;
 	}
 	menuscreen_inform_item_destruction (item);
@@ -287,10 +305,12 @@ menu_del_item_func (Client * c, int argc, char **argv)
  *	Sets the visible text.
  * -is_hidden false|true	(false)
  *	If the item currently should not appear in a menu.
+ * -prev id			()
+ *	Sets the predecessor of this item (what happens after "Escape")
  *
- * menu:
- * -parent id			()
- *	Sets the parent of this item.
+ * For all except menus:
+ * -next id			()
+ *	Sets the successor of this item (what happens after "Enter")
  *
  * action:
  * -menu_result none|close|quit	(none)
@@ -383,7 +403,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 	} option_table[] = {
 		{ -1,			"text",		STRING,		offsetof(MenuItem,text) },
 		{ -1,			"is_hidden",	BOOLEAN,	offsetof(MenuItem,is_hidden) },
-		{ MENUITEM_MENU,	"parent",	STRING,		-1 },
+		{ -1,			"prev",	STRING,		-1 },
 		{ -1,			"next",		STRING,		-1 },
 		{ MENUITEM_ACTION,	"menu_result",	STRING,		-1 },
 		{ MENUITEM_CHECKBOX,	"value",	CHECKBOX_VALUE,	offsetof(MenuItem,data.checkbox.value) },
@@ -413,8 +433,8 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		{ -1,			NULL,		-1,		-1 }
 	};
 
-	debug (RPT_DEBUG, "%s( Client [%d], %s, %s )",
-	       __FUNCTION__, c->sock, argv[1], argv[2]);
+	debug (RPT_DEBUG, "%s( Client [%d]: %s)",
+	       __FUNCTION__, c->sock, argv2string(argc, argv));
 	bool bool_value = false;
 	CheckboxValue checkbox_value = CHECKBOX_OFF;
 	short short_value = 0;
@@ -427,13 +447,12 @@ menu_set_item_func (Client * c, int argc, char **argv)
 	char * menu_id;
 	char * item_id;
 	int argnr;
-	char buf[80];
 
 	if (!c->ack)
 		return 1;
 
 	if ((argc < 4 )) {
-		sock_send_string (c->sock, "huh?  Usage: menu_set_item <menuid> <itemid> {<option>}+\n");
+		sock_send_error(c->sock, "Usage: menu_set_item <menuid> <itemid> {<option>}+\n");
 		return 0;
 	}
 
@@ -448,13 +467,13 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		menu = menu_find_item (c->menu, menu_id, true);
 	}
 	if (!menu) {
-		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
+		sock_send_error(c->sock, "Cannot find menu id\n");
 		return 0;
 	}
 
 	item = menu_find_item (c->menu, item_id, true);
 	if (!item) {
-		sock_send_string (c->sock, "huh?  Cannot find item\n");
+		sock_send_error(c->sock, "Cannot find item\n");
 		return 0;
 	}
 
@@ -480,17 +499,15 @@ menu_set_item_func (Client * c, int argc, char **argv)
 			}
 		}
 		else {
-			snprintf( buf, sizeof(buf), "huh?  Found non-option: \"%.40s\"\n", argv[argnr] );
-			sock_send_string (c->sock, buf);
+			sock_printf_error(c->sock, "Found non-option: \"%.40s\"\n", argv[argnr]);
 			continue; /* Skip to next arg */
 		}
 		if( option_nr == -1 ) {
 			if( found_option_name ) {
-				snprintf( buf, sizeof(buf), "huh?  Option not valid for menuitem type: \"%.40s\"\n", argv[argnr] );
+				sock_printf_error(c->sock, "Option not valid for menuitem type: \"%.40s\"\n", argv[argnr]);
 			} else {
-				snprintf( buf, sizeof(buf), "huh?  Unknown option: \"%.40s\"\n", argv[argnr] );
+				sock_printf_error(c->sock, "Unknown option: \"%.40s\"\n", argv[argnr]);
 			}
-			sock_send_string (c->sock, buf);
 			continue; /* Skip to next arg */
 		}
 
@@ -499,8 +516,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		/* Check for value */
 		if( option_table[option_nr].attr_type != NOVALUE ) {
 			if( argnr + 1 >= argc ) {
-				snprintf( buf, sizeof(buf), "huh?  Missing value at option: \"%.40s\"\n", argv[argnr] );
-				sock_send_string (c->sock, buf);
+				sock_printf_error(c->sock, "Missing value at option: \"%.40s\"\n", argv[argnr]);
 				continue; /* Skip to next arg (probably is not existing :) */
 			}
 		}
@@ -573,8 +589,8 @@ menu_set_item_func (Client * c, int argc, char **argv)
 				free( *(char**)location );
 				*(char**)location = strdup( string_value );
 			}
-			else if (strcmp(argv[argnr], "-parent") == 0) {
-				set_parent(item, string_value, c);
+			else if (strcmp(argv[argnr], "-prev") == 0) {
+				set_predecessor(item, string_value, c);
 			}
 			else if (strcmp(argv[argnr], "-next") == 0) {
 				set_successor(item, string_value, c);
@@ -583,8 +599,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		}
 		switch( error ) {
 		  case 1:
-			snprintf( buf, sizeof(buf), "huh?  Could not interpret value at option: \"%.40s\"\n", argv[argnr] );
-			sock_send_string (c->sock, buf);
+			sock_printf_error(c->sock, "Could not interpret value at option: \"%.40s\"\n", argv[argnr]);
 			argnr ++;
 			continue; /* Skip current option and the invalid value */
 		}
@@ -595,11 +610,11 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		  case MENUITEM_ACTION:
 			if( strcmp( argv[argnr]+1, "menu_result" ) == 0 ) {
 				if( strcmp( argv[argnr+1], "none" ) == 0 ) {
-					item->data.action.menu_result = MENURESULT_NONE;
+					set_successor(item, "_none_", c);
 				} else if( strcmp( argv[argnr+1], "close" ) == 0 ) {
-					item->data.action.menu_result = MENURESULT_CLOSE;
+					set_successor(item, "_close_", c);
 				} else if( strcmp( argv[argnr+1], "quit" ) == 0 ) {
-					item->data.action.menu_result = MENURESULT_QUIT;
+					set_successor(item, "_quit_", c);
 				} else {
 					error = 1;
 				}
@@ -674,12 +689,10 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		}
 		switch( error ) {
 		  case 1:
-			snprintf( buf, sizeof(buf), "huh?  Could not interpret value at option: \"%.40s\"\n", argv[argnr] );
-			sock_send_string (c->sock, buf);
+			sock_printf_error(c->sock, "Could not interpret value at option: \"%.40s\"\n", argv[argnr]);
 			continue; /* Skip to next arg and retry it as an option */
 		  case 2:
-			snprintf( buf, sizeof(buf), "huh?  Value out of range at option: \"%.40s\"\n", argv[argnr] );
-			sock_send_string (c->sock, buf);
+			sock_printf_error(c->sock, "Value out of range at option: \"%.40s\"\n", argv[argnr]);
 			argnr ++;
 			continue; /* Skip current option and the invalid value */
 		}
@@ -697,9 +710,9 @@ menu_set_item_func (Client * c, int argc, char **argv)
  * Requests the menu system to display the given menu screen.  Depending on
  * the setting of the LCDPROC_PERMISSIVE_MENU_GOTO it is impossible
  * to go to a menu of another client (or the server menus). Same
- * restriction applies to the optional parentid
+ * restriction applies to the optional predecessor_id
  *
- * usage: menu_goto <id> [<parentid>]
+ * usage: menu_goto <id> [<predecessor_id>]
  */
 int
 menu_goto_func (Client * c, int argc, char **argv)
@@ -714,7 +727,7 @@ menu_goto_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if ((argc < 2 )) {
-		sock_send_string (c->sock, "huh?  Usage: menu_goto <menuid> [<parentid>]\n");
+		sock_send_error(c->sock, "Usage: menu_goto <menuid> [<predecessor_id>]\n");
 		return 0;
 	}
 
@@ -725,16 +738,16 @@ menu_goto_func (Client * c, int argc, char **argv)
 		menu = c->menu;
 	} else {
 		/* A specified menu */
-		menu = search_item(menu_id);
+		menu = menuitem_search(menu_id, c);
 	}
 
 	if (!menu) {
-		sock_send_string (c->sock, "huh?  Cannot find menu id\n");
+		sock_send_error(c->sock, "Cannot find menu id\n");
 		return 0;
 	}
 
 	if ((argc > 2 ))
-		set_parent(menu, argv[2], c);
+		set_predecessor(menu, argv[2], c);
 
 	menuscreen_goto (menu);
 	/* Failure is not returned (Robijn) */
@@ -742,97 +755,82 @@ menu_goto_func (Client * c, int argc, char **argv)
 	return 0;
 }
 
-/** Sets the parent of a Menu. Checks if menu's type actually is
- * MENUITEM_MENU.
- *
- * @note neither the menu content of menu nor the new parent menu is
- * changed. This should be used to set the way back after a menu_goto
- * (->wizzards!). If there should be a need for menu rearangement a new
- * menu command should be used (e.g. menuitem_move) Volker
+/** Sets the predecessor of a Menuitem item to itemid (for wizzards)
+ * i.e. the menuitem to go to after hitting "Enter" on item.
  *
  * @return 0 on success and -1 otherwise
  */
-int set_parent(Menu *menu, char *parentid, Client *client)
+int set_predecessor(MenuItem *item, char *itemid, Client *c)
 {
-	MenuItem *parent = search_item(parentid);
-	if ( ! parent) {
-		char buf[80];
-		snprintf(buf, sizeof(buf), "huh?  Cannot find parent '%s'"
-			 " for menu '%s'\n", parentid, menu->id);
-		sock_send_string (client->sock, buf);
-		return -1;
-	}
-	if (menu->type != MENUITEM_MENU) {
-		char buf[80];
-		snprintf(buf, sizeof(buf), "huh?  Cannot set parent of '%s':"
-			 " non-menu type '%s'\n", menu->id,
-			 menuitem_type_to_typename(menu->type));
-		sock_send_string (client->sock, buf);
-		return -1;
-	}
-	debug (RPT_DEBUG, "%s( Client [%d], ... ) setting '%s's parent from '%s' to '%s'",
-	       __FUNCTION__, client->sock, menu->id, menu->parent->id, parentid);
-	menu->parent = parent;
-	return 0;
-}
-
-/** Sets the successor of a MenuItem (for wizzards). Checks that a matching
- * menu item can be found. Checks if menu's type actually fulfills the
- * restriction that it is not a menu and has its own screen.
- *
- * @return 0 on success and -1 otherwise
- */
-int set_successor(MenuItem *item, char *itemid, Client *client)
-{
-	MenuItem *successor = search_item(itemid);
-	if ( ! successor
-	     && strcmp("_quit_", itemid) != 0
-	     && strcmp("_close_", itemid) != 0
-	     && strcmp("_none_", itemid) != 0)
+	// no sense to call this function on a null item
+	assert(item != NULL);
+	debug(RPT_DEBUG, "%s(%s, %s, %d)", __FUNCTION__,
+	      item->id, itemid, c->sock);
+	// handle these special
+	if (strcmp("_quit_", itemid) != 0
+	    && strcmp("_close_", itemid) != 0
+	    && strcmp("_none_", itemid) != 0)
 	{
-		char buf[80];
-		snprintf(buf, sizeof(buf), "huh?  Cannot find successor '%s'"
-			 " for item '%s'\n", itemid, item->id);
-		sock_send_string (client->sock, buf);
-		return -1;
-	}
-	switch (item->type) {
-		case MENUITEM_ACTION: break;
-		case MENUITEM_RING: break;
-		case MENUITEM_SLIDER: break;
-		case MENUITEM_NUMERIC: break;
-		case MENUITEM_ALPHA: break;
-		case MENUITEM_IP: break;
-		default:
+		MenuItem *predecessor = menuitem_search(itemid, c);
+		if ( ! predecessor)
 		{
-			char buf[80];
-			snprintf(buf, sizeof(buf), "huh?  Cannot set successor of '%s':"
-				 " wrong type '%s'\n", item->id,
-				 menuitem_type_to_typename(item->type));
-			sock_send_string (client->sock, buf);
+			sock_printf_error(c->sock, "Cannot find predecessor '%s'"
+				 " for item '%s'\n", itemid, item->id);
 			return -1;
 		}
 	}
-	debug (RPT_DEBUG, "%s( Client [%d], ... ) setting '%s's successor from '%s' to '%s'",
-	       __FUNCTION__, client->sock, item->id, item->successor_id, itemid);
+	debug(RPT_DEBUG, "%s( Client [%d], ... )"
+	      " setting '%s's predecessor from '%s' to '%s'",
+	      __FUNCTION__, c->sock, item->id,
+	      item->predecessor_id, itemid);
+	if (item->predecessor_id)
+		free(item->predecessor_id);
+	item->predecessor_id = strdup(itemid);
+	return 0;
+}
+
+/** Sets the successor of a Menuitem item to itemid (for wizzards) i.e. the
+ * menuitem to go to after hitting "Enter" on item. Checks that a matching
+ * menu item can be found. Checks if item is not a menu. (If you would
+ * redefine the meaning of "Enter" for a menu it would not be useful
+ * anymore.)
+ *
+ * @return 0 on success and -1 otherwise
+ */
+int set_successor(MenuItem *item, char *itemid, Client *c)
+{
+	// no sense to call this function on a null item
+	assert(item != NULL);
+	debug(RPT_DEBUG, "%s(%s, %s, %d)", __FUNCTION__,
+	      item->id, itemid, c->sock);
+	// handle these special
+	if (strcmp("_quit_", itemid) != 0
+	    && strcmp("_close_", itemid) != 0
+	    && strcmp("_none_", itemid) != 0)
+	{
+		MenuItem *successor = menuitem_search(itemid, c);
+		if ( ! successor)
+		{
+			sock_printf_error(c->sock, "Cannot find successor '%s'"
+				 " for item '%s'\n", itemid, item->id);
+			return -1;
+		}
+	}
+	if (item->type == MENUITEM_MENU)
+	{
+		sock_printf_error(c->sock, "Cannot set successor of '%s':"
+			    " wrong type '%s'\n", item->id,
+			    menuitem_type_to_typename(item->type));
+		return -1;
+	}
+	debug (RPT_DEBUG, "%s( Client [%d], ... )"
+	       " setting '%s's successor from '%s' to '%s'",
+	       __FUNCTION__, c->sock, item->id,
+	       item->successor_id, itemid);
 	if (item->successor_id)
 		free(item->successor_id);
 	item->successor_id = strdup(itemid);
 	return 0;
-}
-
-/** Returns the MenuItem with the specified id if found or NULL. The search
- * for itemid is restricted to the client's menus if the preprocessor macro
- * LCDPROC_PERMISSIVE_MENU_GOTO is *not* set. */
-MenuItem * search_item(char *menu_id)
-{
-# ifdef LCDPROC_PERMISSIVE_MENU_GOTO
-	MenuItem *top = client->menu;
-# else
-	MenuItem *top = main_menu;
-# endif /* LCDPROC_PERMISSIVE_MENU_GOTO */
-
-	return menu_find_item (top, menu_id, true);
 }
 
 /***************************************************************
@@ -853,7 +851,7 @@ menu_set_main_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if ((argc < 2 )) {
-		sock_send_string (c->sock, "huh?  Usage: menu_set_main <menuid>\n");
+		sock_send_error(c->sock, "Usage: menu_set_main <menuid>\n");
 		return 0;
 	}
 
@@ -870,7 +868,7 @@ menu_set_main_func (Client * c, int argc, char **argv)
 		/* A specified menu */
 		menu = menu_find_item (c->menu, menu_id, true);
 		if ( ! menu) {
-			sock_send_string (c->sock, "huh?  Cannot find menu id\n");
+			sock_send_error(c->sock, "Cannot find menu id\n");
 			return 0;
 		}
 	}
