@@ -38,6 +38,8 @@ static int fd;
 static char *framebuf = NULL;
 static int width = 0;
 static int height = 0;
+static int cellwidth = LCD_DEFAULT_CELLWIDTH;
+static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -419,40 +421,22 @@ sli_init_hbar (Driver *drvthis)
    for me to add                                               */
 
 MODULE_EXPORT void
-sli_old_vbar (Driver *drvthis, int x, int len)
+sli_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
+	sli_init_vbar(drvthis);
 
-	int y;
-	for (y = height; y > 0 && len > 0; y--) {
-		if (len >= LCD_DEFAULT_CELLHEIGHT)
-			sli_chr (drvthis, x, y, 255);
-		else
-			sli_chr (drvthis, x, y, map[len]);
-
-		len -= LCD_DEFAULT_CELLHEIGHT;
-	}
-
+	lib_vbar_static(drvthis, x, y, len, promille, options, cellheight, 0);
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-sli_old_hbar (Driver *drvthis, int x, int y, int len)
+sli_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	char map[6] = { 32, 1, 2, 3, 4, 255 };
+	sli_init_hbar(drvthis);
 
-	for (; x <= width && len > 0; x++) {
-		if (len >= LCD_DEFAULT_CELLWIDTH)
-			sli_chr (drvthis, x, y, 255);
-		else
-			sli_chr (drvthis, x, y, map[len]);
-
-		len -= LCD_DEFAULT_CELLWIDTH;
-
-	}
-
+	lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 0);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -496,8 +480,8 @@ sli_set_char (Driver *drvthis, int n, char *dat)
 	write (fd, out, 2);
 }
 
-MODULE_EXPORT void
-sli_old_icon (Driver *drvthis, int x, int y, int icon)
+MODULE_EXPORT int
+sli_icon (Driver *drvthis, int x, int y, int icon)
 {
 	char icons[3][5 * 8] = {
 		{
@@ -552,5 +536,6 @@ sli_old_icon (Driver *drvthis, int x, int y, int icon)
 		default:
 			return -1;
 	}
+	return 0;
 }
 

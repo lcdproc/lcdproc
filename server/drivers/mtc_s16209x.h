@@ -48,20 +48,14 @@ MODULE_EXPORT void MTC_S16209X_clear (Driver * drvthis);
 MODULE_EXPORT void MTC_S16209X_flush(Driver * drvthis);
 MODULE_EXPORT void MTC_S16209X_string (Driver * drvthis, int x, int y, char string[]);
 MODULE_EXPORT void MTC_S16209X_chr(Driver * drvthis, int x, int y, char c) ;
-int MTC_S16209X_gotoxy(int x, int y);
 
-MODULE_EXPORT void MTC_S16209X_old_vbar(Driver * drvthis, int x, int len);
-MODULE_EXPORT void MTC_S16209X_old_hbar(Driver * drvthis, int x, int y, int len);
-MODULE_EXPORT void MTC_S16209X_num(Driver * drvthis, int x, int num);
+MODULE_EXPORT void MTC_S16209X_vbar(Driver * drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void MTC_S16209X_hbar(Driver * drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT int  MTC_S16209X_icon(Driver * drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void MTC_S16209X_set_char(Driver * drvthis, int n, char *dat);
 
 MODULE_EXPORT void MTC_S16209X_backlight(Driver * drvthis, int on);
-
-MODULE_EXPORT void MTC_S16209X_init_vbar(Driver * drvthis);
-MODULE_EXPORT void MTC_S16209X_init_hbar(Driver * drvthis);
-MODULE_EXPORT void MTC_S16209X_init_num(Driver * drvthis);
 
 #endif
 

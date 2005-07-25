@@ -1100,6 +1100,8 @@ MtxOrb_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 	 */
 
 	MtxOrb_mold_vbar (drvthis, x, y, total_pixels);
+	// this is what's in the library for it:
+	// lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -1128,6 +1130,8 @@ MtxOrb_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 	 */
 
 	MtxOrb_old_hbar (drvthis, x, y, total_pixels);
+	// this is what's in the library for it:
+	// lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }
 
 

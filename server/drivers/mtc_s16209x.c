@@ -53,8 +53,8 @@
 #endif
 
 #include "lcd.h"
+#include "lcd_lib.h"
 #include "mtc_s16209x.h"
-//#include "shared/str.h"
 #include "report.h"
 
 #define MTC_DEFAULT_DEVICE	"/dev/lcd"
@@ -103,7 +103,9 @@ static int cellwidth = LCD_DEFAULT_CELLWIDTH;
 static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 
 //static void MTC_S16209X_hidecursor ();
+#ifdef CAN_REBOOT_LCD
 static void MTC_S16209X_reboot ();
+#endif // CAN_REBOOT_LCD
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -186,6 +188,11 @@ MTC_S16209X_init (Driver * drvthis)
   if (my_error_handle < 0)
     report(RPT_WARNING, "MTC_S16209X_init(): write(lcd_open) failed (%s)\n",
 	   strerror(errno));
+
+#ifdef CAN_REBOOT_LCD
+  if (reboot)
+	  MTC_S16209X_reboot();
+#endif // CAN_REBOOT_LCD
 
   my_error_handle = write (fd, lcd_clearscreen, sizeof (lcd_clearscreen));	// Clear the LCD, unbuffered
 
@@ -330,6 +337,7 @@ MTC_S16209X_hidecursor ()
 }
 #endif // THIS_PART_SHOULD_BE_REMOVED
 
+#ifdef CAN_REBOOT_LCD
 /////////////////////////////////////////////////////////////////
 // Reset the display bios
 //
@@ -342,6 +350,7 @@ MTC_S16209X_reboot ()
   flock (fd, LOCK_UN);
 
 }
+#endif // CAN_REBOOT_LCD
 
 MODULE_EXPORT void
 MTC_S16209X_string (Driver * drvthis, int x, int y, char string[])
@@ -360,7 +369,7 @@ MTC_S16209X_string (Driver * drvthis, int x, int y, char string[])
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before MTC_S16209X->vbar()
 //
-MODULE_EXPORT void
+static void
 MTC_S16209X_init_vbar (Driver * drvthis)
 {
   char a[] = {
@@ -456,7 +465,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-MODULE_EXPORT void
+static void
 MTC_S16209X_init_hbar (Driver * drvthis)
 {
 
@@ -526,45 +535,22 @@ MTC_S16209X_init_hbar (Driver * drvthis)
 // Draws a vertical bar...
 //
 MODULE_EXPORT void
-MTC_S16209X_vbar (Driver * drvthis, int x, int len)
+MTC_S16209X_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 {
-  char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
+  MTC_S16209X_init_vbar(drvthis);
 
-
-  int y;
-  for (y = height; y > 0 && len > 0; y--)
-    {
-      if (len >= cellheight)
-	MTC_S16209X_chr (drvthis, x, y, 0xFF);
-      else
-	MTC_S16209X_chr (drvthis, x, y, map[len]);
-
-      len -= cellheight;
-    }
-
+  lib_vbar_static(drvthis, x, y, len, promille, options, cellheight, 0);
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-MTC_S16209X_hbar (Driver * drvthis, int x, int y, int len)
+MTC_S16209X_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 {
-  char map[7] = { 32, 1, 2, 3, 4, 5 };
+  MTC_S16209X_init_hbar(drvthis);
 
-  for (; x <= width && len > 0; x++)
-    {
-      if (len >= cellwidth)
-	MTC_S16209X_chr (drvthis, x, y, map[5]);
-      else
-	MTC_S16209X_chr (drvthis, x, y, map[len]);
-
-      //printf ("%d,",len);
-      len -= cellwidth;
-
-    }
-//      printf ("\n");
-
+  lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 0);
 }
 
 
