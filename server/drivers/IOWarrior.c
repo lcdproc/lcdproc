@@ -211,7 +211,8 @@ int iowled_on_off(usb_dev_handle *udh,int type, unsigned int pattern)
 /*****************************************************
  * API: Open USB device and initialize it ...
  */
-int IOWarrior_init(Driver *drvthis)
+MODULE_EXPORT int
+IOWarrior_init(Driver *drvthis)
 {
 char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
 char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
@@ -622,7 +623,8 @@ PrivateData *p = drvthis->private_data;
  * NOTAPI: Inits vertical bars...
  * This was part of API in 0.4 and removed in 0.5
  */
-void IOWarrior_init_vbar(Driver *drvthis)
+static void
+IOWarrior_init_vbar(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
 
@@ -712,7 +714,8 @@ char g[CELLWIDTH*CELLHEIGHT] = {
  * NOTAPI: Inits horizontal bars...
  * This was part of API in 0.4 and removed in 0.5
  */
-void IOWarrior_init_hbar(Driver *drvthis)
+static void
+IOWarrior_init_hbar(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
 
@@ -825,7 +828,7 @@ PrivateData *p = drvthis->private_data;
 /*******************************************************************
  * API: Sets up for big numbers
  */
-MODULE_EXPORT void
+static void
 IOWarrior_init_num(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;

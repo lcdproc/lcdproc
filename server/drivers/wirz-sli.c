@@ -255,7 +255,7 @@ sli_chr (Driver *drvthis, int x, int y, char c)
    characters, so that you can do both bar types at once.. maybe I
    will release a new version of the SLI driver that attempts this */
 
-MODULE_EXPORT void
+static void
 sli_init_vbar (Driver *drvthis)
 {
 	char a[] = {
@@ -344,7 +344,7 @@ sli_init_vbar (Driver *drvthis)
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-MODULE_EXPORT void
+static void
 sli_init_hbar (Driver *drvthis)
 {
 

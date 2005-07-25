@@ -128,7 +128,6 @@ MODULE_EXPORT int  t6963_icon (Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
 
-//MODULE_EXPORT char t6963_getkey (Driver *drvthis);
 
 void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
 void t6963_set_nchar (Driver *drvthis, int n, char *dat, int num);

@@ -1253,7 +1253,7 @@ MtxOrb_get_key (Driver *drvthis)
 	if (fds[0].revents == 0) { return NULL; }
 
 	(void) read (p->fd, &in, 1);
-	report(RPT_INFO, "MtxOrb: getkey: key X %i", in);
+	report(RPT_INFO, "MtxOrb: get_key: key X %i", in);
 
 	if ( 0 == in ) {
 		debug( RPT_INFO, "MtxOrb_get_key: in=>%d\n", in );

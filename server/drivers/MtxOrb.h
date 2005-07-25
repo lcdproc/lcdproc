@@ -19,7 +19,7 @@ MODULE_EXPORT void MtxOrb_set_contrast (Driver *drvthis, int promille);
 MODULE_EXPORT void MtxOrb_backlight (Driver *drvthis, int on);
 MODULE_EXPORT void MtxOrb_output (Driver *drvthis, int on);
 
-MODULE_EXPORT char MtxOrb_getkey (Driver *drvthis);
+MODULE_EXPORT char * MtxOrb_get_key (Driver *drvthis);
 MODULE_EXPORT char * MtxOrb_get_info (Driver *drvthis);
 
 MODULE_EXPORT void MtxOrb_num (Driver *drvthis, int x, int num);
