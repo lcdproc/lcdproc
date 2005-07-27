@@ -8,13 +8,14 @@ AC_ARG_ENABLE(drivers,
  	[                    mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,]
  	[                    hd44780,joy,irman,lirc,bayrad,glk,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
-	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon]
+	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd]
+	[                    xosd]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon]
+	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -256,6 +257,21 @@ dnl			else
 			DRIVERS="$DRIVERS imon${SO}"
 			actdrivers=["$actdrivers imon"]
 			;;			
+		xosd)
+			AC_CHECK_HEADERS([xosd.h],[
+				AC_CHECK_LIB(xosd, main,[
+					LIBXOSD=`xosd-config --libs`
+					DRIVERS="$DRIVERS xosd${SO}"
+					actdrivers=["$actdrivers xosd"]
+ 				],[
+dnl				else
+					AC_MSG_WARN([The xosd driver needs the xosd library])
+				])
+			],[
+dnl			else
+				AC_MSG_WARN([The xosd driver needs xosd.h])
+			])
+			;;
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])
 			;;
@@ -272,6 +288,7 @@ AC_SUBST(LIBSVGA)
 AC_SUBST(DRIVERS)
 AC_SUBST(HD44780_DRIVERS)
 AC_SUBST(LIBGLCD)
+AC_SUBST(LIBXOSD)
 ])
 
 
