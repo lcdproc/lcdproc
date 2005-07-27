@@ -165,6 +165,16 @@ send_packet(int fd, COMMAND_PACKET *out)
 
 
 /** calculate CRC over given buffer with given length */
+/* According to the "Painless Guide to CRC error dectectin algorithmsi
+ * (http://www.repairfaq.org/filipg/LINK/F_crc_v3.html) this is the table driven
+ * implementation of a CRC with the following parameters:
+ * - WIDTH:  16		(16 bit CRC)
+ * - POLY:   0x1021	(generating polynomial)
+ * - INIT:   0xFFFF	(seed value for the register when starting the algorithm)
+ * - REFIN:  TRUE	(reflect [i.e. bit-swap] each input byte before being processed) 
+ * - REFOUT: TRUE	(reflect [i.e. bit-swap] the result before the XOROUT phase)
+ * - XOROUT: 0xFFFF	(value to xor the result before returning it as crc)
+ */ 
 static int
 get_crc(char *buf, int len, int seed)
 {
@@ -210,10 +220,10 @@ get_crc(char *buf, int len, int seed)
 
 	/* This algorithm is based on the IrDA LAP example */
 	while (len-- > 0)
-		newCrc = (newCrc >> 8) ^ crcLookupTable[(newCrc ^ *buf++) & 0xff];
+		newCrc = (newCrc >> 8) ^ crcLookupTable[(newCrc ^ *buf++) & 0xFF];
 
 	/* Make this crc match the one's complement that is sent in the packet */
-	return (~newCrc);
+	return ((~newCrc) & 0xFFFF);
 }
 
 
@@ -395,7 +405,7 @@ test_packet(int fd, unsigned char response)
 		while (is_msg != GIVE_UP) {
 			if (is_msg == GOOD_MSG) {
 				treat_packet();
-				// do we need treat_packet at all ?
+				// do we need treat_packet as separate function ?
 				if (incoming_command.command == response)
         	                        response_received = 1;
 			}	
@@ -505,7 +515,6 @@ check_for_packet(int fd, unsigned char expected_length)
 	//Compute the expected CheckSum
 	testcrc = get_crc((unsigned char *) &incoming_command,
 			  incoming_command.data_length+2, 0xFFFF);
-	testcrc = testcrc & 0xFFFF; /* This is TRICKY */
 
 	if (incoming_command.crc.as_word == testcrc) {
 		//This is a good packet. I'll be horn swaggled. Remove the packet

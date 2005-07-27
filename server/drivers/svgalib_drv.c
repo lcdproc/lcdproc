@@ -307,7 +307,7 @@ svgalib_drv_init (Driver *drvthis)
 
 	/* initialize svgalib library */
 	if (vga_init() != 0) {
-		report(RPT_ERR, "svga: ivga_niti() failed.");
+		report(RPT_ERR, "svga: vga_init() failed.");
 		return -1;
 	}	
 

@@ -402,7 +402,7 @@ CFontz633_flush (Driver *drvthis)
 			out[0] = (unsigned char) (i % p->width);	// column
 			out[1] = (unsigned char) (i / p->width);	// line
 			out[2] = p->framebuf[i];			// character
-			send_bytes_message(fd, CF633_Send_Data_to_LCD, 3, out);
+			send_bytes_message(p->fd, CF633_Send_Data_to_LCD, 3, out);
 			p->backingstore[i] = p->framebuf[i];
 		}
 	}
