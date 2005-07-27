@@ -1,6 +1,31 @@
 #ifndef LCD_SVGALIB_H
 #define LCD_SVGALIB_H
 
+#define DEFAULT_MODESTR		"G320x200x256"
+#define DEFAULT_SIZE		"20x4"
+#define DEFAULT_CONTRAST	500
+#define DEFAULT_BRIGHTNESS	1000
+#define DEFAULT_OFFBRIGHTNESS	500
+#define DEFAULT_BACKLIGHT	0
+
+#define CELLWIDTH	6
+#define CELLHEIGHT	8
+
+typedef struct driver_private_data {
+	int mode;
+
+	int width, height;
+	int cellwidth, cellheight;
+	int xoffs, yoffs;
+
+	void *font;
+
+	int contrast;
+	int brightness;
+	int offbrightness;
+} PrivateData;
+
+
 MODULE_EXPORT int  svgalib_drv_init (Driver *drvthis);
 MODULE_EXPORT void svgalib_drv_close (Driver *drvthis);
 MODULE_EXPORT int  svgalib_drv_width (Driver *drvthis);
@@ -15,5 +40,11 @@ MODULE_EXPORT void svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int
 MODULE_EXPORT void svgalib_drv_num (Driver *drvthis, int x, int num);
 
 MODULE_EXPORT char * svgalib_drv_get_key (Driver *drvthis);
+
+MODULE_EXPORT int  svgalib_drv_get_contrast (Driver *drvthis);
+MODULE_EXPORT void svgalib_drv_set_contrast (Driver *drvthis, int promille);
+MODULE_EXPORT int  svgalib_drv_get_brightness(Driver *drvthis, int state);
+MODULE_EXPORT void svgalib_drv_set_brightness(Driver *drvthis, int state, int promille);
+MODULE_EXPORT void svgalib_drv_backlight (Driver *drvthis, int on);
 
 #endif

@@ -12,6 +12,9 @@
                 curses.  Maybe this should be fixed with another function call
                 added to the API?
    4 Jan 2000:  Added 5x7 font, fixed flicker.
+   26 Jul 2005: adapted better to 0.5 API; changed font from 5x7 to 6x8;
+   		take options from the config file: mode, size, brightness,
+		contrast, ...
 
 */
 
@@ -36,177 +39,154 @@
 
 /* Small font */
 
-const unsigned char simple_font5x7[] = {
-/*  ascii '0' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '1' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '2' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '3' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '4' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '5' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '6' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '7' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '8' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '9' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '10' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '11' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '12' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '13' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '14' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '15' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '16' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '17' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '18' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '19' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '20' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '21' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '22' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '23' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '24' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '25' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '26' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '27' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '28' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '29' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '30' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '31' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-
-/*  ascii '32' ( ) */ 31, 31, 31, 31, 31, 31, 31,
-/*  ascii '33' (!) */ 27, 27, 27, 27, 31, 31, 27,
-/*  ascii '34' (") */ 21, 21, 21, 31, 31, 31, 31,
-/*  ascii '35' (#) */ 21, 21, 0, 21, 0, 21, 21,
-/*  ascii '36' ($) */ 27, 1, 26, 17, 11, 16, 27,
-/*  ascii '37' (%) */ 28, 12, 23, 27, 29, 6, 7,
-/*  ascii '38' (&) */ 25, 22, 26, 29, 10, 22, 9,
-/*  ascii '39' (') */ 25, 27, 29, 31, 31, 31, 31,
-/*  ascii '40' (() */ 23, 27, 29, 29, 29, 27, 23,
-/*  ascii '41' ()) */ 29, 27, 23, 23, 23, 27, 29,
-/*  ascii '42' (*) */ 31, 27, 10, 17, 10, 27, 31,
-/*  ascii '43' (+) */ 31, 27, 27, 0, 27, 27, 31,
-/*  ascii '44' (,) */ 31, 31, 31, 31, 25, 27, 29,
-/*  ascii '45' (-) */ 31, 31, 31, 0, 31, 31, 31,
-/*  ascii '46' (.) */ 31, 31, 31, 31, 31, 25, 25,
-/*  ascii '47' (/) */ 31, 15, 23, 27, 29, 30, 31,
-/*  ascii '48' (0) */ 17, 14, 6, 10, 12, 14, 17,
-/*  ascii '49' (1) */ 27, 25, 27, 27, 27, 27, 17,
-/*  ascii '50' (2) */ 17, 14, 15, 23, 27, 29, 0,
-/*  ascii '51' (3) */ 0, 23, 27, 23, 15, 14, 17,
-/*  ascii '52' (4) */ 23, 19, 21, 22, 0, 23, 23,
-/*  ascii '53' (5) */ 0, 30, 16, 15, 15, 14, 17,
-/*  ascii '54' (6) */ 19, 29, 30, 16, 14, 14, 17,
-/*  ascii '55' (7) */ 0, 15, 23, 27, 29, 29, 29,
-/*  ascii '56' (8) */ 17, 14, 14, 17, 14, 14, 17,
-/*  ascii '57' (9) */ 17, 14, 14, 1, 15, 23, 25,
-/*  ascii '58' (:) */ 31, 25, 25, 31, 25, 25, 31,
-/*  ascii '59' (;) */ 31, 25, 25, 31, 25, 27, 29,
-/*  ascii '60' (<) */ 23, 27, 29, 30, 29, 27, 23,
-/*  ascii '61' (=) */ 31, 31, 0, 31, 0, 31, 31,
-/*  ascii '62' (>) */ 29, 27, 23, 15, 23, 27, 29,
-/*  ascii '63' (?) */ 17, 14, 15, 23, 27, 31, 27,
-/*  ascii '64' (@) */ 17, 14, 15, 9, 10, 10, 17,
-/*  ascii '65' (A) */ 17, 14, 14, 14, 0, 14, 14,
-/*  ascii '66' (B) */ 16, 14, 14, 16, 14, 14, 16,
-/*  ascii '67' (C) */ 16, 14, 30, 30, 30, 14, 16,
-/*  ascii '68' (D) */ 24, 22, 14, 14, 14, 22, 24,
-/*  ascii '69' (E) */ 0, 30, 30, 16, 30, 30, 0,
-/*  ascii '70' (F) */ 0, 30, 30, 16, 30, 30, 30,
-/*  ascii '71' (G) */ 17, 14, 30, 2, 14, 14, 1,
-/*  ascii '72' (H) */ 14, 14, 14, 0, 14, 14, 14,
-/*  ascii '73' (I) */ 17, 27, 27, 27, 27, 27, 17,
-/*  ascii '74' (J) */ 3, 23, 23, 23, 23, 22, 25,
-/*  ascii '75' (K) */ 14, 22, 26, 28, 26, 22, 14,
-/*  ascii '76' (L) */ 30, 30, 30, 30, 30, 30, 0,
-/*  ascii '77' (M) */ 14, 4, 10, 10, 14, 14, 14,
-/*  ascii '78' (N) */ 14, 14, 12, 10, 6, 14, 14,
-/*  ascii '79' (O) */ 17, 14, 14, 14, 14, 14, 17,
-/*  ascii '80' (P) */ 16, 14, 14, 16, 30, 30, 30,
-/*  ascii '81' (Q) */ 17, 14, 14, 14, 10, 22, 9,
-/*  ascii '82' (R) */ 16, 14, 14, 16, 26, 22, 14,
-/*  ascii '83' (S) */ 1, 30, 30, 17, 15, 15, 16,
-/*  ascii '84' (T) */ 0, 27, 27, 27, 27, 27, 27,
-/*  ascii '85' (U) */ 14, 14, 14, 14, 14, 14, 17,
-/*  ascii '86' (V) */ 14, 14, 14, 14, 14, 21, 27,
-/*  ascii '87' (W) */ 14, 14, 14, 14, 10, 10, 21,
-/*  ascii '88' (X) */ 14, 14, 21, 27, 21, 14, 14,
-/*  ascii '89' (Y) */ 14, 14, 14, 21, 27, 27, 27,
-/*  ascii '90' (Z) */ 0, 15, 23, 27, 29, 30, 0,
-/*  ascii '91' ([) */ 17, 29, 29, 29, 29, 29, 17,
-/*  ascii '92' (\) */ 31, 30, 29, 27, 23, 15, 31,
-/*  ascii '93' (]) */ 17, 23, 23, 23, 23, 23, 17,
-/*  ascii '94' (^) */ 27, 21, 14, 31, 31, 31, 31,
-/*  ascii '95' (_) */ 31, 31, 31, 31, 31, 31, 0,
-/*  ascii '96' (`) */ 29, 27, 23, 31, 31, 31, 31,
-/*  ascii '97' (a) */ 31, 31, 17, 15, 1, 14, 1,
-/*  ascii '98' (b) */ 30, 30, 18, 12, 14, 14, 16,
-/*  ascii '99' (c) */ 31, 31, 17, 30, 30, 14, 17,
-/*  ascii '100' (d) */ 15, 15, 9, 6, 14, 14, 1,
-/*  ascii '101' (e) */ 31, 31, 17, 14, 0, 30, 17,
-/*  ascii '102' (f) */ 19, 13, 29, 24, 29, 29, 29,
-/*  ascii '103' (g) */ 31, 1, 14, 14, 1, 15, 17,
-/*  ascii '104' (h) */ 30, 30, 18, 12, 14, 14, 14,
-/*  ascii '105' (i) */ 27, 31, 25, 27, 27, 27, 17,
-/*  ascii '106' (j) */ 23, 31, 19, 23, 23, 22, 25,
-/*  ascii '107' (k) */ 30, 30, 22, 26, 28, 26, 22,
-/*  ascii '108' (l) */ 25, 27, 27, 27, 27, 27, 17,
-/*  ascii '109' (m) */ 31, 31, 20, 10, 10, 14, 14,
-/*  ascii '110' (n) */ 31, 31, 18, 12, 14, 14, 14,
-/*  ascii '111' (o) */ 31, 31, 17, 14, 14, 14, 17,
-/*  ascii '112' (p) */ 31, 31, 16, 14, 16, 30, 30,
-/*  ascii '113' (q) */ 31, 31, 9, 6, 1, 15, 15,
-/*  ascii '114' (r) */ 31, 31, 18, 12, 30, 30, 30,
-/*  ascii '115' (s) */ 31, 31, 17, 30, 17, 15, 16,
-/*  ascii '116' (t) */ 29, 29, 24, 29, 29, 13, 19,
-/*  ascii '117' (u) */ 31, 31, 14, 14, 14, 6, 9,
-/*  ascii '118' (v) */ 31, 31, 14, 14, 14, 21, 27,
-/*  ascii '119' (w) */ 31, 31, 14, 14, 10, 10, 21,
-/*  ascii '120' (x) */ 31, 31, 14, 21, 27, 21, 14,
-/*  ascii '121' (y) */ 31, 31, 14, 14, 1, 15, 17,
-/*  ascii '122' (z) */ 31, 31, 0, 23, 27, 29, 0,
-/*  ascii '123' ({) */ 23, 27, 27, 29, 27, 27, 23,
-/*  ascii '124' (|) */ 27, 27, 27, 27, 27, 27, 27,
-/*  ascii '125' (}) */ 29, 27, 27, 23, 27, 27, 29,
-/*  ascii '126' (~) */ 31, 27, 23, 0, 23, 27, 31
+const unsigned char simple_font6x8[] = {
+/* ASCII   0 (NUL) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   1 (SOH) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   2 (STX) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   3 (ETX) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   4 (EOT) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   5 (ENQ) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   6 (ACK) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   7 (BEL) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   8 (BS)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII   9 (HT)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  10 (LF)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  11 (VT)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  12 (FF)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  13 (CR)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  14 (SO)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  15 (SI)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  16 (DLE) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  17 (DC1) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  18 (DC2) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  19 (DC3) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  20 (DC4) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  21 (NAK) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  22 (SYN) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  23 (ETB) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  24 (CAN) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  25 (EM)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  26 (SUB) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  27 (ESC) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  28 (FS)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  29 (GS)) */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  30 (RS)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  31 (US)  */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  32 (' ') */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  33 ('!') */	0x04, 0x04, 0x04, 0x04, 0x00, 0x00, 0x04, 0x00,
+/* ASCII  34 ('"') */	0x0A, 0x0A, 0x0A, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  35 ('#') */	0x0A, 0x0A, 0x1F, 0x0A, 0x1F, 0x0A, 0x0A, 0x00,
+/* ASCII  36 ('$') */	0x04, 0x1E, 0x05, 0x0E, 0x14, 0x0F, 0x04, 0x00,
+/* ASCII  37 ('%') */	0x03, 0x13, 0x08, 0x04, 0x02, 0x19, 0x18, 0x00,
+/* ASCII  38 ('&') */	0x06, 0x09, 0x05, 0x02, 0x15, 0x09, 0x16, 0x00,
+/* ASCII  39 (''') */	0x06, 0x04, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  40 ('(') */	0x08, 0x04, 0x02, 0x02, 0x02, 0x04, 0x08, 0x00,
+/* ASCII  41 (')') */	0x02, 0x04, 0x08, 0x08, 0x08, 0x04, 0x02, 0x00,
+/* ASCII  42 ('*') */	0x00, 0x04, 0x15, 0x0E, 0x15, 0x04, 0x00, 0x00,
+/* ASCII  43 ('+') */	0x00, 0x04, 0x04, 0x1F, 0x04, 0x04, 0x00, 0x00,
+/* ASCII  44 (',') */	0x00, 0x00, 0x00, 0x00, 0x06, 0x04, 0x02, 0x00,
+/* ASCII  45 ('-') */	0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  46 ('.') */	0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x06, 0x00,
+/* ASCII  47 ('/') */	0x00, 0x10, 0x08, 0x04, 0x02, 0x01, 0x00, 0x00,
+/* ASCII  48 ('0') */	0x0E, 0x11, 0x19, 0x15, 0x13, 0x11, 0x0E, 0x00,
+/* ASCII  49 ('1') */	0x04, 0x06, 0x04, 0x04, 0x04, 0x04, 0x0E, 0x00,
+/* ASCII  50 ('2') */	0x0E, 0x11, 0x10, 0x08, 0x04, 0x02, 0x1F, 0x00,
+/* ASCII  51 ('3') */	0x1F, 0x08, 0x04, 0x08, 0x10, 0x11, 0x0E, 0x00,
+/* ASCII  52 ('4') */	0x08, 0x0C, 0x0A, 0x09, 0x1F, 0x08, 0x08, 0x00,
+/* ASCII  53 ('5') */	0x1F, 0x01, 0x0F, 0x10, 0x10, 0x11, 0x0E, 0x00,
+/* ASCII  54 ('6') */	0x0C, 0x02, 0x01, 0x0F, 0x11, 0x11, 0x0E, 0x00,
+/* ASCII  55 ('7') */	0x1F, 0x10, 0x08, 0x04, 0x02, 0x02, 0x02, 0x00,
+/* ASCII  56 ('8') */	0x0E, 0x11, 0x11, 0x0E, 0x11, 0x11, 0x0E, 0x00,
+/* ASCII  57 ('9') */	0x0E, 0x11, 0x11, 0x1E, 0x10, 0x08, 0x06, 0x00,
+/* ASCII  58 (':') */	0x00, 0x06, 0x06, 0x00, 0x06, 0x06, 0x00, 0x00,
+/* ASCII  59 (';') */	0x00, 0x06, 0x06, 0x00, 0x06, 0x04, 0x02, 0x00,
+/* ASCII  60 ('<') */	0x08, 0x04, 0x02, 0x01, 0x02, 0x04, 0x08, 0x00,
+/* ASCII  61 ('=') */	0x00, 0x00, 0x1F, 0x00, 0x1F, 0x00, 0x00, 0x00,
+/* ASCII  62 ('>') */	0x02, 0x04, 0x08, 0x10, 0x08, 0x04, 0x02, 0x00,
+/* ASCII  63 ('?') */	0x0E, 0x11, 0x10, 0x08, 0x04, 0x00, 0x04, 0x00,
+/* ASCII  64 ('@') */	0x0E, 0x11, 0x10, 0x16, 0x15, 0x15, 0x0E, 0x00,
+/* ASCII  65 ('A') */	0x0E, 0x11, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x00,
+/* ASCII  66 ('B') */	0x0F, 0x11, 0x11, 0x0F, 0x11, 0x11, 0x0F, 0x00,
+/* ASCII  67 ('C') */	0x0E, 0x11, 0x01, 0x01, 0x01, 0x11, 0x0E, 0x00,
+/* ASCII  68 ('D') */	0x07, 0x09, 0x11, 0x11, 0x11, 0x09, 0x07, 0x00,
+/* ASCII  69 ('E') */	0x1F, 0x01, 0x01, 0x0F, 0x01, 0x01, 0x1F, 0x00,
+/* ASCII  70 ('F') */	0x1F, 0x01, 0x01, 0x0F, 0x01, 0x01, 0x01, 0x00,
+/* ASCII  71 ('G') */	0x0E, 0x11, 0x01, 0x1D, 0x11, 0x11, 0x1E, 0x00,
+/* ASCII  72 ('H') */	0x11, 0x11, 0x11, 0x1F, 0x11, 0x11, 0x11, 0x00,
+/* ASCII  73 ('I') */	0x0E, 0x04, 0x04, 0x04, 0x04, 0x04, 0x0E, 0x00,
+/* ASCII  74 ('J') */	0x1C, 0x08, 0x08, 0x08, 0x08, 0x09, 0x06, 0x00,
+/* ASCII  75 ('K') */	0x11, 0x09, 0x05, 0x03, 0x05, 0x09, 0x11, 0x00,
+/* ASCII  76 ('L') */	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x1F, 0x00,
+/* ASCII  77 ('M') */	0x11, 0x1B, 0x15, 0x15, 0x11, 0x11, 0x11, 0x00,
+/* ASCII  78 ('N') */	0x11, 0x11, 0x13, 0x15, 0x19, 0x11, 0x11, 0x00,
+/* ASCII  79 ('O') */	0x0E, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E, 0x00,
+/* ASCII  80 ('P') */	0x0F, 0x11, 0x11, 0x0F, 0x01, 0x01, 0x01, 0x00,
+/* ASCII  81 ('Q') */	0x0E, 0x11, 0x11, 0x11, 0x15, 0x09, 0x16, 0x00,
+/* ASCII  82 ('R') */	0x0F, 0x11, 0x11, 0x0F, 0x05, 0x09, 0x11, 0x00,
+/* ASCII  83 ('S') */	0x1E, 0x01, 0x01, 0x0E, 0x10, 0x10, 0x0F, 0x00,
+/* ASCII  84 ('T') */	0x1F, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x00,
+/* ASCII  85 ('U') */	0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x0E, 0x00,
+/* ASCII  86 ('V') */	0x11, 0x11, 0x11, 0x11, 0x11, 0x0A, 0x04, 0x00,
+/* ASCII  87 ('W') */	0x11, 0x11, 0x11, 0x11, 0x15, 0x15, 0x0A, 0x00,
+/* ASCII  88 ('X') */	0x11, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x11, 0x00,
+/* ASCII  89 ('Y') */	0x11, 0x11, 0x11, 0x0A, 0x04, 0x04, 0x04, 0x00,
+/* ASCII  90 ('Z') */	0x1F, 0x10, 0x08, 0x04, 0x02, 0x01, 0x1F, 0x00,
+/* ASCII  91 ('[') */	0x0E, 0x02, 0x02, 0x02, 0x02, 0x02, 0x0E, 0x00,
+/* ASCII  92 ('\') */	0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x00, 0x00,
+/* ASCII  93 (']') */	0x0E, 0x08, 0x08, 0x08, 0x08, 0x08, 0x0E, 0x00,
+/* ASCII  94 ('^') */	0x04, 0x0A, 0x11, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  95 ('_') */	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x00,
+/* ASCII  96 ('`') */	0x02, 0x04, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00,
+/* ASCII  97 ('a') */	0x00, 0x00, 0x0E, 0x10, 0x1E, 0x11, 0x1E, 0x00,
+/* ASCII  98 ('b') */	0x01, 0x01, 0x0D, 0x13, 0x11, 0x11, 0x0F, 0x00,
+/* ASCII  99 ('c') */	0x00, 0x00, 0x0E, 0x01, 0x01, 0x11, 0x0E, 0x00,
+/* ASCII 100 ('d') */	0x10, 0x10, 0x16, 0x19, 0x11, 0x11, 0x1E, 0x00,
+/* ASCII 101 ('e') */	0x00, 0x00, 0x0E, 0x11, 0x1F, 0x01, 0x0E, 0x00,
+/* ASCII 102 ('f') */	0x0C, 0x12, 0x02, 0x07, 0x02, 0x02, 0x02, 0x00,
+/* ASCII 103 ('g') */	0x00, 0x00, 0x1E, 0x11, 0x11, 0x1E, 0x10, 0x0E,
+/* ASCII 104 ('h') */	0x01, 0x01, 0x0D, 0x13, 0x11, 0x11, 0x11, 0x00,
+/* ASCII 105 ('i') */	0x04, 0x00, 0x06, 0x04, 0x04, 0x04, 0x0E, 0x00,
+/* ASCII 106 ('j') */	0x08, 0x00, 0x0C, 0x08, 0x08, 0x08, 0x09, 0x06,
+/* ASCII 107 ('k') */	0x01, 0x01, 0x09, 0x05, 0x03, 0x05, 0x09, 0x00,
+/* ASCII 108 ('l') */	0x06, 0x04, 0x04, 0x04, 0x04, 0x04, 0x0E, 0x00,
+/* ASCII 109 ('m') */	0x00, 0x00, 0x0B, 0x15, 0x15, 0x11, 0x11, 0x00,
+/* ASCII 110 ('n') */	0x00, 0x00, 0x0D, 0x13, 0x11, 0x11, 0x11, 0x00,
+/* ASCII 111 ('o') */	0x00, 0x00, 0x0E, 0x11, 0x11, 0x11, 0x0E, 0x00,
+/* ASCII 112 ('p') */	0x00, 0x00, 0x0F, 0x11, 0x11, 0x0F, 0x01, 0x01,
+/* ASCII 113 ('q') */	0x00, 0x00, 0x16, 0x19, 0x19, 0x1E, 0x10, 0x10,
+/* ASCII 114 ('r') */	0x00, 0x00, 0x0D, 0x13, 0x01, 0x01, 0x01, 0x00,
+/* ASCII 115 ('s') */	0x00, 0x00, 0x0E, 0x01, 0x0E, 0x10, 0x0F, 0x00,
+/* ASCII 116 ('t') */	0x02, 0x02, 0x07, 0x02, 0x02, 0x12, 0x0C, 0x00,
+/* ASCII 117 ('u') */	0x00, 0x00, 0x11, 0x11, 0x11, 0x19, 0x16, 0x00,
+/* ASCII 118 ('v') */	0x00, 0x00, 0x11, 0x11, 0x11, 0x0A, 0x04, 0x00,
+/* ASCII 119 ('w') */	0x00, 0x00, 0x11, 0x11, 0x15, 0x15, 0x0A, 0x00,
+/* ASCII 120 ('x') */	0x00, 0x00, 0x11, 0x0A, 0x04, 0x0A, 0x11, 0x00,
+/* ASCII 121 ('y') */	0x00, 0x00, 0x11, 0x11, 0x11, 0x1E, 0x10, 0x0E,
+/* ASCII 122 ('z') */	0x00, 0x00, 0x1F, 0x08, 0x04, 0x02, 0x1F, 0x00,
+/* ASCII 123 ('{') */	0x08, 0x04, 0x04, 0x02, 0x04, 0x04, 0x08, 0x00,
+/* ASCII 124 ('|') */	0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x00,
+/* ASCII 125 ('}') */	0x02, 0x04, 0x04, 0x08, 0x04, 0x04, 0x02, 0x00,
+/* ASCII 126 ('~') */	0x00, 0x04, 0x08, 0x1F, 0x08, 0x04, 0x00, 0x00,
 };
 
-/* <start user definable!!!> */
-#define SVGALIB_FONT_VER 10	  /* vertical spacing between lines (pixels) */
-#define SVGALIB_Y_OFFSET 40	  /* distance from the top of the screen (pixels) */
-/* <end user defineable!!!> */
 
 /* No, I don't understand SVGALIB key mappings or a neat way of doing this
  * Cursor keys manifest themselves as 3 byte excapes in svgalib: 27,91
  * followed by one of the codes below.
  */
-#define VGAKEY_UP 65
-#define VGAKEY_DOWN 66
-#define VGAKEY_RIGHT 67
-#define VGAKEY_LEFT 68
+#define VGAKEY_UP	65
+#define VGAKEY_DOWN	66
+#define VGAKEY_RIGHT	67
+#define VGAKEY_LEFT	68
 
-int SVGALIB_PAD = 255;
-int SVGALIB_ELLIPSIS = 7;
-
-void *SVGALIB_font;				  /* normal font   */
-void *SVGALIB_highfont;			  /* highlighted font (not used yet) */
-void *SVGALIB_warnfont;			  /* warning font (not used yet)    */
-
-/*
-  Setting SVGALIB_figure_mappings will trap all keypresses and write the
-  vga_getkey() codes out to a file.  You can then mod the getkey() function
-  at the bottom of the file to your liking.
-
-  Ahem... don't do this unless you can get to another console to kill the
-  process after.
-*/
-int SVGALIB_figure_mappings = 0;
-
-int width, height;
 
 /*************************************************************************
 ********************** For Output on SVGALIB screen **********************
 *************************************************************************/
 
-void
+static void
 ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, unsigned char *ptr)
-/* Expand groovy 5x7 font into an area of memory */
+/* Expand groovy 6x8 font into an area of memory */
 {
 	int n;
 	unsigned char *p = ptr;
@@ -220,24 +200,13 @@ ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, un
 			int x;
 
 			for (x = 0; x < w; x++) {
-				*p++ = (base & mask) ? 0 : col;
+				*p++ = (base & mask) ? col : 0;
 				mask <<= 1;
 			}
 		}
 	}
 }
 
-void
-spaced_gl_writen (int x, int y, int count, char *text)
-/*
- * Like gl_write but this one gets the spacing correct.
- */
-{
-	int i;
-	for (i = 0; i < count; i++) {
-		gl_writen (20 + x + i * 6, y, 1, &text[i]);
-	}
-}
 
 static char icon_char = '@';
 
@@ -248,83 +217,224 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "svgalib_drv_";
 
 
-/******************************************************************************
+/**
  * Init driver
  */
 MODULE_EXPORT int
 svgalib_drv_init (Driver *drvthis)
 {
-	int VGAMODE;
+	char modestr[LCD_MAX_WIDTH+1] = DEFAULT_MODESTR;
+	char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
+	vga_modeinfo *modeinfo;
+	int tmp;
+
+	PrivateData *p;
+
+	/* Allocate and store private data */
+	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	if (p == NULL)
+		return -1;
+	if (drvthis->store_private_ptr(drvthis, p))
+		return -1;
+
+	/* Initialize the PrivateData structure */
+
+	p->cellwidth = CELLWIDTH;
+	p->cellheight = CELLHEIGHT;
+	p->contrast = DEFAULT_CONTRAST;
+	p->brightness = DEFAULT_BRIGHTNESS;
+	p->offbrightness = DEFAULT_OFFBRIGHTNESS;
 
 	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
-	vga_init ();
-	VGAMODE = G320x200x256;		  /* Default mode. */
+	/* Read config file */
 
-	if (!vga_hasmode (VGAMODE)) {
-		report(RPT_ERR, "320x200@256 Mode not available.");
-		return -1;
-	} else {
-		vga_setmode (VGAMODE);
-		gl_setcontextvga (VGAMODE);	/* Physical screen context. */
-		gl_setrgbpalette ();
-
-		/* get the font */
-		SVGALIB_font = malloc (256 * 8 * 8 * 1);
-		ExpandGroovyFont (5, 7, gl_rgbcolor (255, 255, 255), simple_font5x7, SVGALIB_font);
-		gl_setfont (5, 7, SVGALIB_font);
-
+	/* Which size */
+	if (drvthis->config_has_key(drvthis->name, "Size")) {
+		int w;
+		int h;
+		
+		strncpy(size, drvthis->config_get_string(drvthis->name, "Size",
+							 0, DEFAULT_SIZE), sizeof(size));
+		size[sizeof(size) - 1] = '\0';
+		debug (RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
+		if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
+		    (w <= 0) || (w > LCD_MAX_WIDTH) ||
+		    (h <= 0) || (h > LCD_MAX_HEIGHT)) {
+			report(RPT_WARNING, "svga: Cannot read size: %s. Using default value.\n", size);
+			sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
+		}
+		p->width = w;
+		p->height = h;
 	}
+	else {
+		/* Determine the size of the screen */
+		p->width = drvthis->request_display_width();
+		p->height = drvthis->request_display_height();
+		if ((p->width <= 0) || (p->width >= LCD_MAX_WIDTH) ||
+		    (p->height <= 0) || (p->height >= LCD_MAX_HEIGHT)) {
+			p->width = LCD_DEFAULT_WIDTH;
+			p->height = LCD_DEFAULT_HEIGHT;
+		}
+	}
+	report(RPT_INFO, "%s: Using size %dx%d", __FUNCTION__, p->width, p->height);
+		
+	/* Which backlight brightness */
+	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	debug (RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
+			__FUNCTION__, DEFAULT_BRIGHTNESS);
+		tmp = DEFAULT_BRIGHTNESS;
+	}
+	p->brightness = tmp;
+
+	/* Which backlight-off "brightness" */
+	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	debug (RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d.\n",
+			__FUNCTION__, DEFAULT_OFFBRIGHTNESS);
+		tmp = DEFAULT_OFFBRIGHTNESS;
+	}
+	p->offbrightness = tmp;
+
+	/* which mode */
+	strncpy(modestr, drvthis->config_get_string(drvthis->name, "Mode",
+						    0, DEFAULT_MODESTR), sizeof(modestr));
+	modestr[sizeof(modestr) - 1] = '\0';
+	debug (RPT_INFO, "%s: Mode (in config) is '%s'", __FUNCTION__, modestr);
+
+	/* initialize svgalib library */
+	if (vga_init() != 0) {
+		report(RPT_ERR, "svga: ivga_niti() failed.");
+		return -1;
+	}	
+
+	/* check for legal VGA mode */
+	tmp = vga_getmodenumber(modestr);
+	if (tmp <= 0) {
+		report(RPT_ERR, "svga: illegal VGA mode %s.", modestr);
+		return -1;
+	}		
+	p->mode = tmp;
+
+	/* switch to selected VGA mode if it is available */
+	if (!vga_hasmode (p->mode)) {
+		report(RPT_ERR, "svga: VGA mode %s not available.", modestr);
+		return -1;
+	}
+
+	modeinfo = vga_getmodeinfo(p->mode);
+
+	/* make sure width and height fit into selected resolution */
+	if (p->width * p->cellwidth > modeinfo->width)
+		p->width = modeinfo->width / p->cellwidth;
+	if (p->height * p->cellheight > modeinfo->height)
+		p->height = modeinfo->height / p->cellheight;
+
+	/* center display on screen */
+	p->xoffs = p->cellwidth + (modeinfo->width - p->width * p->cellwidth) / 2;
+	p->yoffs = p->cellheight + (modeinfo->height - p->height * p->cellheight) / 2;
+
+	if (vga_setmode (p->mode) < 0) {
+		report(RPT_ERR, "svga: unable to switch to mode %s", modestr);
+		return -1;
+	}	
+	gl_setcontextvga (p->mode);	/* Physical screen context. */
+	gl_setrgbpalette ();
+
+	/* allocate space, expand and install the font */
+	p->font = malloc (256 * p->cellheight * p->cellwidth * modeinfo->bytesperpixel);
+	if (p->font == NULL) {
+		report(RPT_ERR, "svga: unable to allocate font memory");
+		return -1;
+	}	
+		
+	tmp = (p->brightness * 255) / 1000;
+	if (tmp <= 0)
+		tmp = 1;
+	ExpandGroovyFont (p->cellwidth, p->cellheight, gl_rgbcolor(tmp, tmp, tmp), simple_font6x8, p->font);
+	gl_setfont (p->cellwidth, p->cellheight, p->font);
 
 	gl_clearscreen (gl_rgbcolor (0, 0, 0));
-
-	/* Change the character used for padding the title bars... */
-	SVGALIB_PAD = '#';
-	/* Change the character used for "..." */
-	SVGALIB_ELLIPSIS = '~';
-
-	/* Determine the size of the screen */
-	width = drvthis->request_display_width();
-	height = drvthis->request_display_height();
-	if( width <= 0 || height <= 0 ) {
-		width = LCD_DEFAULT_WIDTH;
-		height = LCD_DEFAULT_HEIGHT;
-	}
-	report(RPT_INFO, "%s: Using size %dx%d", __FUNCTION__, width, height);
 
 	return 0;
 }
 
-/******************************************************************************
+
+/**
  * Close down driver
  */
 MODULE_EXPORT void
 svgalib_drv_close (Driver *drvthis)
 {
+	PrivateData *p = drvthis->private_data;
+
 	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+
+	if (p != NULL) {
+		if (p->font != NULL)
+			free(p->font);
+		p->font = NULL;
+
+		free(p);
+	}	
+	drvthis->store_private_ptr(drvthis, NULL);
 
 	vga_setmode (TEXT);
 }
 
-/******************************************************************************
+
+/**
  * Return width
  */
 MODULE_EXPORT int
 svgalib_drv_width (Driver *drvthis)
 {
-	return width;
+	PrivateData *p = drvthis->private_data;
+
+	return p->width;
 }
 
-/******************************************************************************
+
+/**
  * Return height
  */
 MODULE_EXPORT int
 svgalib_drv_height (Driver *drvthis)
 {
-	return height;
+	PrivateData *p = drvthis->private_data;
+
+	return p->height;
 }
 
-/******************************************************************************
+
+/**
+ * Return cellwidth
+ */
+MODULE_EXPORT int
+svgalib_drv_cellwidth (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return p->cellwidth;
+}
+
+
+/**
+ * Return cellheight
+ */
+MODULE_EXPORT int
+svgalib_drv_cellheight (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return p->cellheight;
+}
+
+
+/**
  * Clear screen
  */
 MODULE_EXPORT void
@@ -332,26 +442,29 @@ svgalib_drv_clear (Driver * drvthis)
 {
 	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
-	vga_waitretrace ();
+	//vga_waitretrace ();
 	gl_clearscreen (gl_rgbcolor (0, 0, 0));
 }
 
-/******************************************************************************
+
+/**
  * Flush framebuffer to screen
  */
 MODULE_EXPORT void
 svgalib_drv_flush (Driver *drvthis)
 {
-	/* It's already in screen ! */
+	/* It's already on the screen ! */
 }
 
-/******************************************************************************
+
+/**
  * Prints a string on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (20,4).
+ * upper-left is (1,1), and the lower right should be (p->width,p->height).
  */
 MODULE_EXPORT void
 svgalib_drv_string (Driver *drvthis, int x, int y, char string[])
 {
+	PrivateData *p = drvthis->private_data;
 	int i;
 	
 	debug (RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
@@ -367,17 +480,18 @@ svgalib_drv_string (Driver *drvthis, int x, int y, char string[])
 			break;
 		}
 	}
-	gl_setfont (5, 7, SVGALIB_font);
-	spaced_gl_writen (x * 8, y * SVGALIB_FONT_VER + SVGALIB_Y_OFFSET, i, string);
+	gl_writen (x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, i, string);
 }
 
-/******************************************************************************
+
+/**
  * Prints a character on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (20,4).
+ * upper-left is (1,1), and the lower right should be (p->width,p->height).
  */
 MODULE_EXPORT void
 svgalib_drv_chr (Driver *drvthis, int x, int y, char c)
 {
+	PrivateData *p = drvthis->private_data;
 	char buffer[2];
 
 	debug (RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
@@ -391,12 +505,12 @@ svgalib_drv_chr (Driver *drvthis, int x, int y, char c)
 		break;
 	}
 	buffer[0] = c;
-	buffer[1] = 0;
-	gl_setfont (5, 7, SVGALIB_font);
-	spaced_gl_writen (x * 8, y * SVGALIB_FONT_VER + SVGALIB_Y_OFFSET, 1, buffer);
+	buffer[1] = '\0';
+	gl_writen (x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, 1, buffer);
 }
 
-/******************************************************************************
+
+/**
  * Writes a big number, but not.  A bit like the curses driver.
  */
 MODULE_EXPORT void
@@ -414,7 +528,8 @@ svgalib_drv_num (Driver *drvthis, int x, int num)
 			svgalib_drv_chr (drvthis, x + dx, y, c);
 }
 
-/******************************************************************************
+
+/**
  * Draws a vertical bar; erases entire column onscreen.
  */
 MODULE_EXPORT void
@@ -433,7 +548,8 @@ svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 	}
 }
 
-/******************************************************************************
+
+/**
  * Draws a horizontal bar to the right.
  */
 MODULE_EXPORT void
@@ -452,7 +568,8 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 	}
 }
 
-/******************************************************************************
+
+/**
  * Return a keypress
  */
 MODULE_EXPORT char *
@@ -488,15 +605,6 @@ svgalib_drv_get_key (Driver *drvthis)
 			}
 			/* otherwise key not recognised; ignore it */
 			return NULL;
-
-			/*
-			   Change this bit to your liking.  I only set these values because
-			   they tie in with my keypads use of the keyboard controller chip
-			   see http://www.gofree.co.uk/home/smh/mp3 for details.
-			   Having said that try to make sure four keys map to D,B,C,A so you'll
-			   be able to quit LCDproc from the emulation.
-
-			 */
 		case '\t':	/* TAB, LF and CR serve as "Enter" */
 		case 0x0A:	
 		case 0x0D:	
@@ -507,5 +615,95 @@ svgalib_drv_get_key (Driver *drvthis)
 			return (buf[0] != '\0') ? buf : NULL;
 	}
 	return NULL;
+}
+
+
+/**
+ * Returns current contrast (in promille)
+ * This is only the locally stored contrast.
+ */
+MODULE_EXPORT int
+svgalib_drv_get_contrast (Driver *drvthis)
+{
+        PrivateData *p = drvthis->private_data;
+
+        return p->contrast;
+}
+
+
+/**
+ *  Changes screen contrast (in promille)
+ */
+MODULE_EXPORT void
+svgalib_drv_set_contrast (Driver *drvthis, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+	int contrast;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is not get */
+	p->contrast = promille;
+
+	/* map range [0, 1000] to [0, 255] */
+	contrast = (p->contrast * 255) / 1000;
+
+	/* What to do with it ? */
+}
+
+
+/**
+ * Retrieves brightness (in promille)
+ */
+MODULE_EXPORT int
+svgalib_drv_get_brightness(Driver *drvthis, int state)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/**
+ * Sets on/off brightness (in promille)
+ */
+MODULE_EXPORT void
+svgalib_drv_set_brightness(Driver *drvthis, int state, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is no get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+	}
+	else {
+		p->offbrightness = promille;
+	}
+}
+
+
+/**
+ * Sets the backlight on or off.
+ * The hardware support any value between 0 and 100.
+ */
+MODULE_EXPORT void
+svgalib_drv_backlight (Driver *drvthis, int on)
+{
+	PrivateData *p = drvthis->private_data;
+	int value = (on == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+
+	/* map range [0, 1000] -> [1, 255] */
+	value = value * 255 / 1000;
+	if (value <= 0)
+		value = 1;
+
+	/* set font color */
+	gl_colorfont(p->cellwidth, p->cellheight, gl_rgbcolor(value, value, value), p->font);
 }
 
