@@ -551,7 +551,10 @@ key * add_key( section * s, char * keyname, char * value )
 }
 
 char get_next_char_f(buffile * f) {
-	return ((char) buffile_read(f, 1)[0]);
+	char * buf = buffile_read(f, 1);
+	char c = buf[0];
+	free(buf);
+	return c;
 }
 
 
