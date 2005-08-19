@@ -27,6 +27,7 @@ buffile *buffile_open( const char *path, const char *mode ) {
 	
 	file->pos=0;
 	file->bytesread=0;
+	file->buf=NULL;
 	
 	file->f = fopen( path, mode );
 	if( NULL == file->f ) {
@@ -76,7 +77,7 @@ char * buffile_read ( buffile * file, size_t n ) {
 		}
 		file->pos = 0;
 	}
-	strncpy(returnbuf, file->buf + (file->pos++), sizeof(returnbuf));
+	strncpy(returnbuf, file->buf + (file->pos++), n);
 	return returnbuf;
 }
 
