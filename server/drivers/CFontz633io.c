@@ -37,16 +37,11 @@
 
 
 /* static local functions */
-static void send_packet(int fd, COMMAND_PACKET *out);
-static int  get_crc(char *buf, int len, int seed);
-static int  test_packet(int fd, unsigned char response);
-static void treat_packet(void);
-static int  check_for_packet(int fd, unsigned char expected_length);
+static void send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in);
+static int  get_crc(unsigned char *buf, int len, int seed);
+static int  test_packet(int fd, unsigned char response, COMMAND_PACKET *in);
+static int  check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length);
 static void print_packet(COMMAND_PACKET *packet);
-
-
-/* local variables */
-static COMMAND_PACKET  incoming_command;
 
 
 /* global variables */
@@ -106,13 +101,14 @@ unsigned char GetKeyFromKeyRing(KeyRing *kr)
 void send_bytes_message(int fd, unsigned char msg, int len, unsigned char *data)
 {
 	COMMAND_PACKET out;
+	COMMAND_PACKET in;
 
 	out.command = msg;
 	out.data_length = (unsigned char) ((len > MAX_DATA_LENGTH) ? MAX_DATA_LENGTH : len);
 	memcpy(out.data, data, out.data_length);
 
 	/* send message & calc CRC */
-	send_packet(fd, &out);
+	send_packet(fd, &out, &in);
 }
 
 
@@ -120,13 +116,14 @@ void send_bytes_message(int fd, unsigned char msg, int len, unsigned char *data)
 void send_onebyte_message(int fd, unsigned char msg, unsigned char value)
 {
 	COMMAND_PACKET out;
+	COMMAND_PACKET in;
 
 	out.command = msg;
 	out.data_length = 1;
 	out.data[0] = value;
 
 	/* send message & calc CRC */
-	send_packet(fd, &out);
+	send_packet(fd, &out, &in);
 }
 
 
@@ -134,18 +131,19 @@ void send_onebyte_message(int fd, unsigned char msg, unsigned char value)
 void send_zerobyte_message(int fd, unsigned char msg)
 {
 	COMMAND_PACKET out;
+	COMMAND_PACKET in;
 
 	out.command = msg;
 	out.data_length = 0;
 
 	/* send message & calc CRC */
-	send_packet(fd, &out);
+	send_packet(fd, &out, &in);
 }
 
 
 /** send out to the given handle; calc & send CRC when doing so */
 static void
-send_packet(int fd, COMMAND_PACKET *out)
+send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in)
 {
 	write(fd, &out->command, 1);
 	write(fd, &out->data_length, 1);
@@ -160,7 +158,7 @@ send_packet(int fd, COMMAND_PACKET *out)
 	// print_packet(out);
 
 	/* Every time we send a message, we also check for an incoming one. */
-	test_packet(fd, 0x40 | out->command); 
+	test_packet(fd, 0x40 | out->command, in); 
 }
 
 
@@ -176,7 +174,7 @@ send_packet(int fd, COMMAND_PACKET *out)
  * - XOROUT: 0xFFFF	(value to xor the result before returning it as crc)
  */ 
 static int
-get_crc(char *buf, int len, int seed)
+get_crc(unsigned char *buf, int len, int seed)
 {
 
 	/* CRC lookup table to avoid bit-shifting loops. */
@@ -393,7 +391,7 @@ unsigned char PeekByte(ReceiveBuffer *rb)
  * byte read from the serial port
  */ 
 static int
-test_packet(int fd, unsigned char response)
+test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 {
 	int is_msg;
 
@@ -401,39 +399,33 @@ test_packet(int fd, unsigned char response)
 	int response_received = 0;
 
 	while (!response_received) {
-		is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
+		is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 		while (is_msg != GIVE_UP) {
 			if (is_msg == GOOD_MSG) {
-				treat_packet();
-				// do we need treat_packet as separate function ?
-				if (incoming_command.command == response)
+				if (in->command == 0x80)
+					AddKeyToKeyRing(&keyring, in->data[0]);
+				else if (in->command == response)
         	                        response_received = 1;
 			}	
 
-			is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
+			is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 		}
 	}
 #else
-	is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
+	is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 	while (is_msg != GIVE_UP) {
-		if (is_msg == GOOD_MSG)
-			treat_packet();
+		if (is_msg == GOOD_MSG) {
+			if (in->command == 0x80)
+				AddKeyToKeyRing(&keyring, in->data[0]);
+		}
 	
-		is_msg = check_for_packet(fd, MAX_DATA_LENGTH);
+		is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 	}
 #endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */
 
 	return 1;
 }
 
-
-static void
-treat_packet(void)
-{
-	if (incoming_command.command == 0x80) {
-		AddKeyToKeyRing(&keyring, incoming_command.data[0]);
-	}
-}
 
 
 /*============================================================================
@@ -455,7 +447,7 @@ treat_packet(void)
  * If we have a 2 we should avoid comming back there.
  */
 static int
-check_for_packet(int fd, unsigned char expected_length)
+check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 {
 	int i;
 	int testcrc;
@@ -473,10 +465,10 @@ check_for_packet(int fd, unsigned char expected_length)
 	SyncPeekPointer(&receivebuffer);
 
 	/* look at potential command byte */
-	incoming_command.command = PeekByte(&receivebuffer);
+	in->command = PeekByte(&receivebuffer);
 
 	/* Only commands 0 through MAX_COMMAND are valid */
-	if (MAX_COMMAND < (0x3F & incoming_command.command)) {
+	if (MAX_COMMAND < (0x3F & in->command)) {
 		/* Throw out one byte of garbage. Next pass through should re-sync. */
 		GetByte(&receivebuffer);
 		/* fprintf(stderr, "###: Unknown command.\n"); */
@@ -484,19 +476,19 @@ check_for_packet(int fd, unsigned char expected_length)
 	}
 	
   	/* There is a valid command byte. Get the data_length. */
-	incoming_command.data_length = PeekByte(&receivebuffer);
+	in->data_length = PeekByte(&receivebuffer);
 	
   	/* The data length must be within reason. */
-  	if (MAX_DATA_LENGTH < incoming_command.data_length) {
+  	if (MAX_DATA_LENGTH < in->data_length) {
 		//Throw out one byte of garbage. Next pass through should re-sync.
 		GetByte(&receivebuffer);
-		/* fprintf(stderr, "###: Too long packet: %d.\n", incoming_command.data_length); */
+		/* fprintf(stderr, "###: Too long packet: %d.\n", in->data_length); */
 		return(TRY_AGAIN);
 	}
 
-	// Now there must be at least incoming_command.data_length + sizeof(CRC) bytes
+	// Now there must be at least in->data_length + sizeof(CRC) bytes
 	// still available for us to continue.
-	if ((int) PeekBytesAvail(&receivebuffer) < (incoming_command.data_length + 2)) {
+	if ((int) PeekBytesAvail(&receivebuffer) < (in->data_length + 2)) {
 		//It looked like a valid start of a packet, but it does not look
 		//like the complete packet has been received yet.
 		/* fprintf(stderr, "Not enough read to check the complete message.\n"); */
@@ -504,19 +496,18 @@ check_for_packet(int fd, unsigned char expected_length)
 	}
 
 	/* There is enough data to make a packet. Transfer over the data. */
-	for (i = 0; i < incoming_command.data_length; i++)
-		incoming_command.data[i] = PeekByte(&receivebuffer);
+	for (i = 0; i < in->data_length; i++)
+		in->data[i] = PeekByte(&receivebuffer);
 
 	//Now move over the CRC.
-	incoming_command.crc.as_bytes[0] = PeekByte(&receivebuffer);
-	incoming_command.crc.as_bytes[1] = PeekByte(&receivebuffer);
+	in->crc.as_bytes[0] = PeekByte(&receivebuffer);
+	in->crc.as_bytes[1] = PeekByte(&receivebuffer);
 	//Now check the CRC.
 
 	//Compute the expected CheckSum
-	testcrc = get_crc((unsigned char *) &incoming_command,
-			  incoming_command.data_length+2, 0xFFFF);
+	testcrc = get_crc((unsigned char *) in, in->data_length+2, 0xFFFF);
 
-	if (incoming_command.crc.as_word == testcrc) {
+	if (in->crc.as_word == testcrc) {
 		//This is a good packet. I'll be horn swaggled. Remove the packet
 		//from the serial buffer.
 		AcceptPeekedData(&receivebuffer);
