@@ -5,7 +5,7 @@ devices. The server works with different display sizes and supports several
 serial devices: Matrix Orbital, Crystal Fontz, Bayrad, LB216, LCDM001
 (kernelconcepts.de), Wirz-SLI and PIC-an-LCD; some devices connected to
 the parallel port: HD44780, STV5730, T6963, SED1520 and SED1330; and also
-some displays connected via USB: CFonz633, CwLnx, USBLCD, IOWarrior and
+some displays connected via USB: CFonz633, CwLnx, USBLCD, IOWarrior, LIS2 and
 HD44780 (ConnectionType=bwctusb).
 Various clients are available that display things like CPU load, system load,
 memory usage, uptime, and a lot more.

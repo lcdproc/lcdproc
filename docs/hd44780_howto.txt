@@ -544,6 +544,77 @@ To use it, specify the device to which you have connected the module in the
 config file with the Device= setting. The default is /dev/lcd.
 It does not support a keypad nor backlight switching.
 
+1.7 LIS2 Usb device
+===================
+
+LIS2 from VLSystem (http://www.vlsys.co.kr) is a full featured usb vfd module 
+with four channel fan controls. This device can be access as a serial device with
+help of the kernel modules ftdi_sio wich map the usb port to a serial port (/dev/ttyUSBx).
+
+To use LIS2 with LCDproc, you will need a few settings in the config file :
+
+[server]
+        Driver=hd44780
+
+[hd44780]
+        size=20x2
+        ConnectionType=lis2
+        #Device=/dev/ttyUSB0
+        extendedmode=false
+
+Size of the display (size=20x2), driver to use in ConnectionType: lis2, the serial Usb 
+device as device settings (default is /dev/ttyUSB0), and extendedmode should be left to false,
+as this device don't seems to support hd44780 extended mode.
+
+The device support only a subset of the hd44780 specification. For now, I find this function:
+
+Function #1 : Clear Screen
+
+Send char(0)
+Send char(160)
+Send char(0)
+Send char(167)
+
+Function #2 : Cursors move: (x,y)
+
+Send char(0)
+Send char(160 + y)
+Send char(x)
+Send char(167)
+
+Function #3 : Write a char 
+
+Send char(asciiCode) : asciiCode 0 to 7 can be redefine to user charset (see below).
+
+Function #4 : Redefine a char
+
+Send char(0)
+Send char(171)
+Send char(matriceNum) : Ascii code of char to refine, from 0 to 7
+Send char(line) : the line to change
+Send char(pixel) : define wich pixel of the line is on or off. 
+There's 5 pixels by line, adresse by power of 2, from right to left (16, 8, 4, 2, 1).
+
+Function #5 : Fan Control
+
+Send char(0)
+Send char(174)
+Send char(0)
+Send char(0)
+Send char(fan1)
+Send char(0)
+Send char(fan2)
+Send char(0)
+Send char(fan3)
+Send char(0)
+Send char(fan4)
+Send char(0)
+Send char(0)
+
+fanX is a value from 0 to 255, 0 is fan off, 255 is fan full speed.
+
+
+  
 
 1.5.1 Keypad
 ------------
