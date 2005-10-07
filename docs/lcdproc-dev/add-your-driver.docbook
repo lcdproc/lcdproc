@@ -160,7 +160,7 @@ myDriver_SOURCES =  lcd.h myDriver.c myDriver.h report.h
 <sect2 id="autoconfautomake-test">
 <title>Test your setup</title>
 
-<para>You're almost done! You only need to check out if you didn't made any mistake. Just run sh autogen.sh to regenerate the configure script and Makefiles, then run ./configure --enable-driver=myDriver and type make. If your driver compiles without error, then congratulations, you've just added your driver to LCDproc! Remember to submit a patch to the mailing list so that we can add it to the standard distribution.</para>
+<para>You're almost done! You only need to check out if you didn't made any mistake. Just run sh autogen.sh to regenerate the configure script and Makefiles, then run ./configure --enable-drivers=myDriver and type make. If your driver compiles without error, then congratulations, you've just added your driver to LCDproc! Remember to submit a patch to the mailing list so that we can add it to the standard distribution.</para>
 
 <para>If you had an error, just send us an email describing it to the mailing list and we'll try to help you.</para>
 
