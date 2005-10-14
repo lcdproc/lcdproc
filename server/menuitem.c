@@ -400,6 +400,8 @@ MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
 		new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
 	}
 	else {
+		report(RPT_WARNING, "%s(id=\"%s\") ip address not verified: \"%s\"",
+		       __FUNCTION__, id, value);
 		strncpy(new_item->data.ip.value, ipinfo->dummy, new_item->data.ip.maxlength);
 		new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
 	}
@@ -1347,6 +1349,8 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
                   
 				// check IP address entered
 				if (!ipinfo->verify(item->data.ip.edit_str)) {
+					report(RPT_WARNING, "%s(id=\"%s\") ip address not verified: \"%s\"",
+					       __FUNCTION__, item->id, item->data.ip.edit_str);
 					item->data.ip.error_code = 4;
 					return MENURESULT_NONE;
 				}
