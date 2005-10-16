@@ -1,9 +1,15 @@
 #!/bin/sh
 # Run this to generate all the initial makefiles, etc.
 
+# set default values for variables
+: ${AUTOCONF:=autoconf}
+: ${AUTOHEADER:=autoheader}
+: ${AUTOMAKE:=automake}
+: ${ACLOCAL:=aclocal}
+
 DIE=0
 
-(autoconf --version) < /dev/null > /dev/null 2>&1 || {
+($AUTOCONF --version) < /dev/null > /dev/null 2>&1 || {
   echo
   echo "**Error**: You must have \`autoconf' installed."
   echo "Download the appropriate package for your distribution,"
@@ -11,7 +17,7 @@ DIE=0
   DIE=1
 }
 
-(automake --version) < /dev/null > /dev/null 2>&1 || {
+($AUTOMAKE --version) < /dev/null > /dev/null 2>&1 || {
   echo
   echo "**Error**: You must have \`automake' installed."
   echo "Get ftp://ftp.gnu.org/pub/gnu/automake-1.3.tar.gz"
@@ -21,7 +27,7 @@ DIE=0
 }
 
 # if no automake, don't bother testing for aclocal
-test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
+test -n "$NO_AUTOMAKE" || ($ACLOCAL --version) < /dev/null > /dev/null 2>&1 || {
   echo
   echo "**Error**: Missing \`aclocal'.  The version of \`automake'"
   echo "installed doesn't appear recent enough."
@@ -35,13 +41,13 @@ if test "$DIE" -eq 1; then
 fi
 
 echo "Running aclocal ..."
-aclocal 
+$ACLOCAL
 if grep "^A[CM]_CONFIG_HEADER" configure.in >/dev/null; then
   echo "Running autoheader..."
-  autoheader
+  $AUTOHEADER
 fi
 
 echo "Running automake  ..."
-automake --add-missing  --copy
+$AUTOMAKE --add-missing  --copy
 echo "Running autoconf ..."
-autoconf
+$AUTOCONF
