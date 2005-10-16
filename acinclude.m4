@@ -8,14 +8,15 @@ AC_ARG_ENABLE(drivers,
  	[                    mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,]
  	[                    hd44780,joy,irman,lirc,bayrad,glk,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
-	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd]
-	[                    xosd]
+	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,]
+	[                    noritakevfd]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
-	drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd]
+	
+drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,noritakevfd]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -51,6 +52,10 @@ fi
 			],[
 				AC_MSG_WARN([The CFontz633 driver needs the select() function])
 			])	
+			;;
+		noritakevfd)
+			DRIVERS="$DRIVERS NoritakeVFD${SO}"
+			actdrivers=["$actdrivers noritakevfd"]
 			;;
 		lcterm)
 			DRIVERS="$DRIVERS lcterm${SO}"

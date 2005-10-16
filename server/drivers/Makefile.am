@@ -18,7 +18,7 @@ AM_LDFLAGS = @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931 IOWarrior glcdlib imon xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 NoritakeVFD curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931 IOWarrior glcdlib imon xosd
 noinst_LIBRARIES = libLCD.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@
@@ -26,6 +26,7 @@ hd44780_CFLAGS =     @libusb_cflags@
 
 CFontz_LDADD =       libLCD.a
 CFontz633_LDADD =    libLCD.a
+NoritakeVFD_LDADD =  libLCD.a
 curses_LDADD =       @LIBCURSES@
 CwLnx_LDADD =        libLCD.a
 CwLnx_SOURCES =      lcd.h CwLnx.c CwLnx.h report.h
@@ -47,6 +48,7 @@ libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
 bayrad_SOURCES =     lcd.h bayrad.h bayrad.c report.h
 CFontz_SOURCES =     lcd.h CFontz.c CFontz.h CFontz-charmap.h report.h
 CFontz633_SOURCES =  lcd.h CFontz633.c CFontz633.h CFontz-charmap.h CFontz633io.c CFontz633io.h report.h
+NoritakeVFD_SOURCES = lcd.h NoritakeVFD.c NoritakeVFD.h report.h
 curses_SOURCES =     lcd.h curses_drv.h curses_drv.c report.h
 glk_SOURCES =        lcd.h glk.c glk.h glkproto.c glkproto.h report.h
 hd44780_SOURCES =    lcd.h hd44780.h hd44780.c hd44780-drivers.h hd44780-low.h hd44780-charmap.h report.h
