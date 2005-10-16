@@ -24,6 +24,8 @@ and displays them via LCDproc (http://lcdproc.omnipotent.net/)
 
 =head1 OPTIONS
 
+=over 4
+
 =item B<METAR-Code>
 
 The METAR code related of the city you want weather observations. 
@@ -39,7 +41,11 @@ For fun, here are some example METAR codes:
 More informations about METAR codes is available at:
 http://www.nws.noaa.gov/oso/oso1/oso12/metar.htm
 
+=back
+
 =head1 DIAGNOSTICS
+
+=over 4
 
 =item Cannot connect to LCDproc port
 
@@ -56,6 +62,8 @@ The METAR data we received is not what we expected, check out NOOA's web site
 
 lcdMetar tried to fetch weather observations from NOAA's web site and failed. It 
 will retry in 15 minutes.
+
+=back
 
 =head1 REQUIRES
 
