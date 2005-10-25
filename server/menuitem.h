@@ -240,7 +240,7 @@ MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
 
 /** Creates a ring with the given string, separated by tabs.
  * value is the (initial) index in the strings.
- * eg: if strings="abc\tdef" the value=1 means that "def" is selected.
+ * eg: if strings="abc\\tdef" the value=1 means that "def" is selected.
  * Generated events: MENUEVENT_UPDATE when user changes value (immediately).
  */
 MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),

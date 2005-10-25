@@ -303,8 +303,10 @@ int sock_send_error(int fd, char* message)
 
 /** prints printf-like formatted output to logfile and sends it to the
  * client.
+ * @note don't add a the "huh? " to the message. This is done by this
+ *   method
  * @param fd socket
- * @param message the message to send (without the "huh? ") */
+ * @param format a printf format */
 int
 sock_printf_error(int fd, const char *format, .../*args*/ )
 {

@@ -79,7 +79,7 @@ int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 }
 
 
-/** get byte from key ring (or '\0' if key ring is empty) */
+/** get byte from key ring (or '\\0' if key ring is empty) */
 unsigned char GetKeyFromKeyRing(KeyRing *kr)
 {
 	unsigned char retval = '\0';
@@ -318,7 +318,7 @@ int BytesAvail(ReceiveBuffer *rb)
 }
 
 
-/** get next byte from receive buffer (return '\0' if buffer is empty) */
+/** get next byte from receive buffer (return '\\0' if buffer is empty) */
 unsigned char GetByte(ReceiveBuffer *rb)
 {
 	unsigned char return_byte = '\0';
@@ -365,7 +365,7 @@ void AcceptPeekedData(ReceiveBuffer *rb)
 }
 
 
-/** peek next byte from receive buffer (return '\0' if buffer is empty) */
+/** peek next byte from receive buffer (return '\\0' if buffer is empty) */
 unsigned char PeekByte(ReceiveBuffer *rb)
 {
 	unsigned char return_byte = '\0';
