@@ -442,7 +442,7 @@ CFontz633_flush (Driver *drvthis)
 MODULE_EXPORT char *
 CFontz633_get_key (Driver *drvthis)
 {
-	PrivateData *p = drvthis->private_data;
+	// PrivateData *p = drvthis->private_data;
 	unsigned char key;
 
 	key = GetKeyFromKeyRing(&keyring);

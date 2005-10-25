@@ -50,7 +50,7 @@ static unsigned char *  screen_contents = NULL ;
 static int  fontselected = 0 ;
 static int  gpo_count = 0 ;
 
-static char *framebuf = NULL;
+static unsigned char * framebuf = NULL;
 static int width = 0;
 static int height = 0;
 static int cellwidth = LCD_DEFAULT_CELLWIDTH;
@@ -241,11 +241,11 @@ MODULE_EXPORT void
 glk_flush(Driver *drvthis)
 {
 //   puts( "glk_flush( )" );
-  char *  p ;
-  char *  q ;
+  unsigned char *  p ;
+  unsigned char *  q ;
   int  x, y ;
   int  xs ;
-  char *  ps = NULL ;
+  unsigned char *  ps = NULL ;
 
   debug(RPT_DEBUG, "flush()\n" );
 

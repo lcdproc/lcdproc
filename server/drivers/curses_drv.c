@@ -399,13 +399,12 @@ curses_drv_backlight (Driver *drvthis, int promille)
 MODULE_EXPORT void
 curses_drv_string (Driver *drvthis, int x, int y, char *string)
 {
-	//int i;
 	unsigned char *p;
 
 	ValidX(x);
 	ValidY(y);
 
-	p = string;
+	p = (unsigned char *) string;
 
 	// Convert NULLs and 0xFF in string to
 	// valid printables...

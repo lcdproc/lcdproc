@@ -78,7 +78,7 @@ text_init (Driver *drvthis)
 	}
 
 	// Allocate the framebuffer
-	framebuf = (unsigned char *) malloc (width * height);
+	framebuf = malloc (width * height);
 	memset (framebuf, ' ', width * height);
 
 	return 0;

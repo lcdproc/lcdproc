@@ -469,7 +469,7 @@ MtxOrb_init (Driver *drvthis)
 
 	/* Make sure the frame buffer is there... */
 	if (!p->framebuf)
-		p->framebuf = (unsigned char *)
+		p->framebuf = (char *)
 			malloc (p->widthBYheight);
 	memset (p->framebuf, ' ', p->widthBYheight);
 

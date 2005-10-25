@@ -146,7 +146,7 @@ LB216_init(Driver * drvthis)
    tcsetattr(fd, TCSANOW, &portset);
 
    // Make sure the frame buffer is there...
-   framebuf = (unsigned char *) malloc (width * height);
+   framebuf = malloc (width * height);
    if (framebuf == NULL) {
       report(RPT_ERR, "lb216_init: unable to create framebuffer.\n");
       return -1;
