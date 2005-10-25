@@ -52,14 +52,19 @@ else
 dnl Maximum optimisation
 	CFLAGS="-O3"
 fi
-CFLAGS="-Wall $CFLAGS"
-export CFLAGS
 
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+
+dnl Avoid unused static function warnings
+CFLAGS="-Wall $CFLAGS"
+if test "x$GCC" = "xyes"; then
+	CFLAGS="$CFLAGS -Wno-unused-function"
+fi
+export CFLAGS
 
 dnl Solaris
 AC_CHECK_FUNC(gethostbyname,,[AC_CHECK_LIB(nsl,gethostbyname)])
@@ -500,6 +505,9 @@ AC_ARG_ENABLE(permissive_menu_goto,
   fi,
 )
 
+# check for doxygen
+BB_ENABLE_DOXYGEN
+
 AC_CONFIG_FILES([Makefile
 	shared/Makefile
 	server/Makefile
@@ -512,6 +520,7 @@ AC_CONFIG_FILES([Makefile
 	clients/headlines/Makefile
 	clients/metar/Makefile
 	docs/Makefile
+	docs/Doxyfile
 	docs/lcdproc-dev/Makefile
 	docs/lcdproc-user/Makefile
 	docs/lcdproc-user/drivers/Makefile
