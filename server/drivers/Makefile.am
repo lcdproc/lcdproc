@@ -18,7 +18,7 @@ AM_LDFLAGS = @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 NoritakeVFD curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text wirz_sli ms6931 IOWarrior glcdlib imon xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 NoritakeVFD curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text tyan wirz_sli ms6931 IOWarrior glcdlib imon xosd
 noinst_LIBRARIES = libLCD.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@
@@ -70,6 +70,7 @@ stv5730_SOURCES =    lcd.h stv5730.c stv5730.h report.h
 svga_SOURCES =       lcd.h svgalib_drv.c svgalib_drv.h report.h
 t6963_SOURCES =      lcd.h t6963.c t6963.h t6963_font.h report.h
 text_SOURCES =       lcd.h text.h text.c report.h
+tyan_SOURCES =       lcd.h tyan_lcdm.h tyan_lcdm.c report.h
 wirz_sli_SOURCES =   lcd.h wirz-sli.h wirz-sli.c report.h
 ms6931_SOURCES =     lcd.h ms6931.h ms6931.c report.h
 glcdlib_SOURCES =    lcd.h glcdlib.h glcdlib.c report.h

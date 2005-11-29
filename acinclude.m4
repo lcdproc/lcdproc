@@ -9,14 +9,14 @@ AC_ARG_ENABLE(drivers,
  	[                    hd44780,joy,irman,lirc,bayrad,glk,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
 	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,]
-	[                    noritakevfd]
+	[                    noritakevfd,tyan]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
   	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk])
 
 if test "$drivers" = "all"; then
 	
-drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,noritakevfd]
+drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,noritakevfd,tyan]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -276,6 +276,10 @@ dnl				else
 dnl			else
 				AC_MSG_WARN([The xosd driver needs xosd.h])
 			])
+			;;
+		tyan)
+			DRIVERS="$DRIVERS tyan${SO}"
+			actdrivers=["$actdrivers tyan"]
 			;;
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])
