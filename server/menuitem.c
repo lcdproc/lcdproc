@@ -395,15 +395,17 @@ MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
 	
 	new_item->data.ip.maxlength = ipinfo->maxlen;;
 	new_item->data.ip.value = malloc (new_item->data.ip.maxlength + 1);
-	if (ipinfo->verify(value)) {
-		strncpy(new_item->data.ip.value, value, new_item->data.ip.maxlength);
-		new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
-	}
-	else {
-		report(RPT_WARNING, "%s(id=\"%s\") ip address not verified: \"%s\"",
-		       __FUNCTION__, id, value);
-		strncpy(new_item->data.ip.value, ipinfo->dummy, new_item->data.ip.maxlength);
-		new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
+	if (ipinfo->verify) {
+		if (ipinfo->verify(value)) {
+			strncpy(new_item->data.ip.value, value, new_item->data.ip.maxlength);
+			new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
+		}
+		else {
+			report(RPT_WARNING, "%s(id=\"%s\") ip address not verified: \"%s\"",
+					    __FUNCTION__, id, value);
+			strncpy(new_item->data.ip.value, ipinfo->dummy, new_item->data.ip.maxlength);
+			new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
+		}	
 	}
 
 	new_item->data.ip.edit_str = malloc (new_item->data.ip.maxlength + 1);
@@ -1332,9 +1334,11 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 			return MENURESULT_NONE;
 		case MENUTOKEN_ENTER:
 			if (extended || (pos >= item->data.ip.maxlength - 1)) {
-				/* ** we do not need this; the verify function is clever enough **
 				// remove the leading spaces/zeros in each octet-representing string
-				char *start = str;
+				char tmp[40];	// 40 = max. length of IPv4 & IPv6 addresses incl. '\0'
+				char *start = tmp;
+
+				memccpy(tmp, str, '\0', sizeof(tmp));
 				
 				while (start != NULL) {
 					char *skip = start;
@@ -1345,18 +1349,17 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 					skip = strchr(start, ipinfo->sep);
 					start = (skip != NULL) ? (skip + 1) : NULL;
 				}
-				*/
                   
 				// check IP address entered
-				if (!ipinfo->verify(item->data.ip.edit_str)) {
+				if ((ipinfo->verify) && (!ipinfo->verify(tmp))) {
 					report(RPT_WARNING, "%s(id=\"%s\") ip address not verified: \"%s\"",
-					       __FUNCTION__, item->id, item->data.ip.edit_str);
+					       __FUNCTION__, item->id, tmp);
 					item->data.ip.error_code = 4;
 					return MENURESULT_NONE;
 				}
         
 				// store value
-				strcpy (item->data.ip.value, item->data.ip.edit_str);
+				strcpy (item->data.ip.value, tmp);
 
 				// Inform client
 				if (item->event_func)
