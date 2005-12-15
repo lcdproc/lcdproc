@@ -18,7 +18,7 @@ AM_LDFLAGS = @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 NoritakeVFD curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb sed1330 sed1520 stv5730 svga t6963 text tyan wirz_sli ms6931 IOWarrior glcdlib imon xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 NoritakeVFD curses CwLnx glk hd44780 irman icp_a106 joy lb216 mtc_s16209x lcdm001 lcterm lirc MtxOrb pylcd sed1330 sed1520 stv5730 svga t6963 text tyan wirz_sli ms6931 IOWarrior glcdlib imon xosd
 noinst_LIBRARIES = libLCD.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@

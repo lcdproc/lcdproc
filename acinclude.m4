@@ -9,14 +9,14 @@ AC_ARG_ENABLE(drivers,
  	[                    hd44780,joy,irman,lirc,bayrad,glk,mtc_s16209x]
  	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
 	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,]
-	[                    noritakevfd,tyan]
+	[                    noritakevfd,tyan,pylcd]
 	[                  \"all\" compiles all drivers],
   	drivers="$enableval",
-  	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk])
+  	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk,pylcd])
 
 if test "$drivers" = "all"; then
-	
-drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,noritakevfd,tyan]
+
+drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,noritakevfd,tyan,pylcd]
 fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -27,6 +27,10 @@ fi
 		lcdm001)
 			DRIVERS="$DRIVERS lcdm001${SO}"
 			actdrivers=["$actdrivers lcdm001"]
+			;;
+		pylcd)
+			DRIVERS="$DRIVERS pylcd${SO}"
+			actdrivers=["$actdrivers pylcd"]
 			;;
 		mtxorb)
 			DRIVERS="$DRIVERS MtxOrb${SO}"
@@ -51,7 +55,7 @@ fi
 				AC_CHECK_HEADERS(sys/select.h)
 			],[
 				AC_MSG_WARN([The CFontz633 driver needs the select() function])
-			])	
+			])
 			;;
 		noritakevfd)
 			DRIVERS="$DRIVERS NoritakeVFD${SO}"
@@ -256,12 +260,12 @@ dnl				else
 			],[
 dnl			else
 				AC_MSG_WARN([The glcdlib driver needs glcdproclib/glcdprocdriver.h])
-			])			
+			])
 			;;
 		imon)
 			DRIVERS="$DRIVERS imon${SO}"
 			actdrivers=["$actdrivers imon"]
-			;;			
+			;;
 		xosd)
 			AC_CHECK_HEADERS([xosd.h],[
 				AC_CHECK_LIB(xosd, main,[
@@ -643,12 +647,12 @@ dnl stolen from cppunit project (http://cppunit.sourceforge.net/)
 AC_DEFUN(BB_ENABLE_DOXYGEN,
 [
 AC_ARG_ENABLE(doxygen, [  --enable-doxygen        enable documentation generation with doxygen (auto)])
-AC_ARG_ENABLE(dot, [  --enable-dot            use 'dot' to generate graphs in doxygen (auto)])              
-AC_ARG_ENABLE(html-dox, [  --enable-html-dox      enable HTML generation with doxygen (yes)], [], [ enable_html_dox=yes])              
-AC_ARG_ENABLE(latex-dox, [  --enable-latex-dox     enable LaTeX documentation generation with doxygen (no)], [], [ enable_latex_dox=no])              
+AC_ARG_ENABLE(dot, [  --enable-dot            use 'dot' to generate graphs in doxygen (auto)])
+AC_ARG_ENABLE(html-dox, [  --enable-html-dox      enable HTML generation with doxygen (yes)], [], [ enable_html_dox=yes])
+AC_ARG_ENABLE(latex-dox, [  --enable-latex-dox     enable LaTeX documentation generation with doxygen (no)], [], [ enable_latex_dox=no])
 if test "x$enable_doxygen" = xno; then
         enable_dox=no
-else 
+else
         AC_PATH_PROG(DOXYGEN, doxygen, , $PATH)
         if test "x$DOXYGEN" = x; then
                 if test "x$enable_doxygen" = xyes; then
