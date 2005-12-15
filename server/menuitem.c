@@ -395,12 +395,24 @@ MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
 	
 	new_item->data.ip.maxlength = ipinfo->maxlen;;
 	new_item->data.ip.value = malloc (new_item->data.ip.maxlength + 1);
-	if (ipinfo->verify) {
-		if (ipinfo->verify(value)) {
-			strncpy(new_item->data.ip.value, value, new_item->data.ip.maxlength);
-			new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
+
+	strncpy(new_item->data.ip.value, value, new_item->data.ip.maxlength);
+	new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
+
+	if (ipinfo->verify != NULL) {
+		char *start = new_item->data.ip.value;
+
+		while (start != NULL) {
+			char *skip = start;
+
+			while ((*skip == ' ') || ((*skip == '0') && (skip[1] != ipinfo->sep) && (skip[1] != '\0')))
+				skip++;
+			memccpy(start, skip, '\0', new_item->data.ip.maxlength + 1);
+			skip = strchr(start, ipinfo->sep);
+			start = (skip != NULL) ? (skip + 1) : NULL;
 		}
-		else {
+
+		if (!ipinfo->verify(new_item->data.ip.value)) {
 			report(RPT_WARNING, "%s(id=\"%s\") ip address not verified: \"%s\"",
 					    __FUNCTION__, id, value);
 			strncpy(new_item->data.ip.value, ipinfo->dummy, new_item->data.ip.maxlength);
@@ -562,9 +574,8 @@ void menuitem_reset_ip (MenuItem *item)
 	item->data.ip.edit_offs = 0;
 	memset (item->data.ip.edit_str, '\0', item->data.ip.maxlength+1);
 
-	// normalize IP address string to e.g. 010.002.250.002 / 00:01:02:04:05:06:07:08:09:0a:0b:0c:0e:0f
-	while (start != NULL)
-	{
+	// normalize IP address string to e.g. 010.002.250.002 / 0001:0203:0405:0607:0809:0a0b:0c0d:0e0f
+	while (start != NULL) {
 		char *end;
     		char tmpstr[5];
 		int num = (int) strtol(start, (char **) NULL, ipinfo->base);
@@ -1351,7 +1362,7 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * ke
 				}
                   
 				// check IP address entered
-				if ((ipinfo->verify) && (!ipinfo->verify(tmp))) {
+				if ((ipinfo->verify != NULL) && (!ipinfo->verify(tmp))) {
 					report(RPT_WARNING, "%s(id=\"%s\") ip address not verified: \"%s\"",
 					       __FUNCTION__, item->id, tmp);
 					item->data.ip.error_code = 4;
