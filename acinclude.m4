@@ -2,44 +2,27 @@ AC_DEFUN(LCD_DRIVERS_SELECT, [
 AC_CHECKING(for which drivers to compile)
 
 AC_ARG_ENABLE(drivers,
-  	[  --enable-drivers=<list> compile driver for LCDs in <list>.]
+	[  --enable-drivers=<list> compile driver for LCDs in <list>.]
 	[                  drivers may be separated with commas.]
-  	[                  Possible choices are:]
- 	[                    mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,]
- 	[                    hd44780,joy,irman,lirc,bayrad,glk,mtc_s16209x]
- 	[                    stv5730,sed1330,sed1520,svga,lcdm001,t6963]
-	[                    lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,]
-	[                    noritakevfd,tyan,pylcd]
+	[                  Possible choices are:]
+	[                    bayrad,cfontz,cfontz633,curses,cwlnx,glcdlib,glk,]
+	[                    hd44780,icp_a106,imon,iowarrior,irman,joy,lb216,]
+	[                    lcdm001,lcterm,lirc,ms6931,mtc_s16209x,mtxorb,]
+	[                    noritakevfd,pylcd,sed1330,sed1520,sli,stv5730,svga,]
+	[                    t6963,text,tyan,xosd]
 	[                  \"all\" compiles all drivers],
-  	drivers="$enableval",
-  	drivers=[lcdm001,mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,bayrad,glk,pylcd])
+	drivers="$enableval",
+	drivers=[bayrad,cfontz,cfontz633,curses,cwlnx,glk,lb216,lcdm001,mtxorb,pylcd,text])
 
-if test "$drivers" = "all"; then
-
-drivers=[mtxorb,cfontz,cfontz633,curses,cwlnx,text,lb216,mtc_s16209x,hd44780,joy,irman,lirc,bayrad,glk,stv5730,sed1330,sed1520,svga,lcdm001,t6963,lcterm,icp_a106,ms6931,iowarrior,glcdlib,imon,xosd,noritakevfd,tyan,pylcd]
-fi
+	if test "$drivers" = "all"; then
+		drivers=[bayrad,cfontz,cfontz633,curses,cwlnx,glcdlib,glk,hd44780,icp_a106,imon,iowarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,mtxorb,noritakevfd,pylcd,sed1330,sed1520,sli,stv5730,svga,t6963,text,tyan,xosd]
+	fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
   	for driver in $drivers
   	do
 
 	case "$driver" in
-		lcdm001)
-			DRIVERS="$DRIVERS lcdm001${SO}"
-			actdrivers=["$actdrivers lcdm001"]
-			;;
-		pylcd)
-			DRIVERS="$DRIVERS pylcd${SO}"
-			actdrivers=["$actdrivers pylcd"]
-			;;
-		mtxorb)
-			DRIVERS="$DRIVERS MtxOrb${SO}"
-			actdrivers=["$actdrivers mtxorb"]
-			;;
-		glk)
-			DRIVERS="$DRIVERS glk${SO}"
-			actdrivers=["$actdrivers glk"]
-			;;
 		bayrad)
 			DRIVERS="$DRIVERS bayrad${SO}"
 			actdrivers=["$actdrivers bayrad"]
@@ -56,26 +39,6 @@ fi
 			],[
 				AC_MSG_WARN([The CFontz633 driver needs the select() function])
 			])
-			;;
-		noritakevfd)
-			DRIVERS="$DRIVERS NoritakeVFD${SO}"
-			actdrivers=["$actdrivers noritakevfd"]
-			;;
-		lcterm)
-			DRIVERS="$DRIVERS lcterm${SO}"
-			actdrivers=["$actdrivers lcterm"]
-			;;
-		icp_a106)
-			DRIVERS="$DRIVERS icp_a106${SO}"
-			actdrivers=["$actdrivers icp_a106"]
-			;;
-		ms6931)
-			DRIVERS="$DRIVERS ms6931${SO}"
-			actdrivers=["$actdrivers ms6931"]
-			;;
-		sli)
-			DRIVERS="$DRIVERS wirz-sli${SO}"
-			actdrivers=["$actdrivers sli"]
 			;;
 		curses)
 			AC_CHECK_HEADERS(ncurses.h curses.h)
@@ -133,17 +96,26 @@ dnl				else
 			DRIVERS="$DRIVERS CwLnx${SO}"
 			actdrivers=["$actdrivers cwlnx"]
 			;;
-		text)
-			DRIVERS="$DRIVERS text${SO}"
-			actdrivers=["$actdrivers text"]
+		glcdlib)
+			AC_CHECK_HEADERS([glcdproclib/glcdprocdriver.h],[
+				AC_CHECK_LIB(glcdprocdriver, main,[
+					LIBGLCD="-lglcddrivers -lglcdgraphics -lglcdprocdriver"
+					DRIVERS="$DRIVERS glcdlib${SO}"
+					actdrivers=["$actdrivers glcdlib"]
+				],[
+dnl				else
+					AC_MSG_WARN([The glcdlib driver needs the glcdprocdriver library])
+				],
+				[-lglcddrivers -lglcdgraphics -lglcdprocdriver]
+				)
+			],[
+dnl			else
+				AC_MSG_WARN([The glcdlib driver needs glcdproclib/glcdprocdriver.h])
+			])
 			;;
-		lb216)
-			DRIVERS="$DRIVERS lb216${SO}"
-			actdrivers=["$actdrivers lb216"]
-			;;
-		mtc_s16209x)
-			DRIVERS="$DRIVERS mtc_s16209x${SO}"
-			actdrivers=["$actdrivers mtc_s16209x"]
+		glk)
+			DRIVERS="$DRIVERS glk${SO}"
+			actdrivers=["$actdrivers glk"]
 			;;
 		hd44780)
 			if test "$ac_cv_port_have_lpt" = yes ; then
@@ -157,14 +129,13 @@ dnl				else
 			DRIVERS="$DRIVERS hd44780${SO}"
 			actdrivers=["$actdrivers hd44780"]
 			;;
-		joy)
-			AC_CHECK_HEADER(linux/joystick.h, [
-				DRIVERS="$DRIVERS joy${SO}"
-				actdrivers=["$actdrivers joy"]
-				],[
-dnl				else
- 				AC_MSG_WARN([The joy driver needs header file linux/joystick.h.])
- 			])
+		icp_a106)
+			DRIVERS="$DRIVERS icp_a106${SO}"
+			actdrivers=["$actdrivers icp_a106"]
+			;;
+		imon)
+			DRIVERS="$DRIVERS imon${SO}"
+			actdrivers=["$actdrivers imon"]
 			;;
 		iowarrior)
  			if test "$enable_libusb" = yes ; then
@@ -184,6 +155,27 @@ dnl				else
  				AC_MSG_WARN([The irman driver needs the irman library.])
  			])
 			;;
+		joy)
+			AC_CHECK_HEADER(linux/joystick.h, [
+				DRIVERS="$DRIVERS joy${SO}"
+				actdrivers=["$actdrivers joy"]
+				],[
+dnl				else
+ 				AC_MSG_WARN([The joy driver needs header file linux/joystick.h.])
+ 			])
+			;;
+		lb216)
+			DRIVERS="$DRIVERS lb216${SO}"
+			actdrivers=["$actdrivers lb216"]
+			;;
+		lcdm001)
+			DRIVERS="$DRIVERS lcdm001${SO}"
+			actdrivers=["$actdrivers lcdm001"]
+			;;
+		lcterm)
+			DRIVERS="$DRIVERS lcterm${SO}"
+			actdrivers=["$actdrivers lcterm"]
+			;;
 		lirc)
 			AC_CHECK_LIB(lirc_client, main,[
 				LIBLIRC_CLIENT="-llirc_client"
@@ -193,6 +185,26 @@ dnl				else
 dnl				else
 				AC_MSG_WARN([The lirc driver needs the lirc client library])
 			])
+			;;
+		ms6931)
+			DRIVERS="$DRIVERS ms6931${SO}"
+			actdrivers=["$actdrivers ms6931"]
+			;;
+		mtc_s16209x)
+			DRIVERS="$DRIVERS mtc_s16209x${SO}"
+			actdrivers=["$actdrivers mtc_s16209x"]
+			;;
+		mtxorb)
+			DRIVERS="$DRIVERS MtxOrb${SO}"
+			actdrivers=["$actdrivers mtxorb"]
+			;;
+		noritakevfd)
+			DRIVERS="$DRIVERS NoritakeVFD${SO}"
+			actdrivers=["$actdrivers noritakevfd"]
+			;;
+		pylcd)
+			DRIVERS="$DRIVERS pylcd${SO}"
+			actdrivers=["$actdrivers pylcd"]
 			;;
 		sed1330)
 			if test "$ac_cv_port_have_lpt" = yes
@@ -211,6 +223,10 @@ dnl				else
 			else
 				AC_MSG_WARN([The sed1520 driver needs a parallel port.])
 			fi
+			;;
+		sli)
+			DRIVERS="$DRIVERS wirz_sli${SO}"
+			actdrivers=["$actdrivers sli"]
 			;;
 		stv5730)
 			if test "$ac_cv_port_have_lpt" = yes
@@ -245,26 +261,13 @@ dnl			else
 				AC_MSG_WARN([The sed1330 driver needs a parallel port.])
 			fi
 			;;
-		glcdlib)
-			AC_CHECK_HEADERS([glcdproclib/glcdprocdriver.h],[
-				AC_CHECK_LIB(glcdprocdriver, main,[
-					LIBGLCD="-lglcddrivers -lglcdgraphics -lglcdprocdriver"
-					DRIVERS="$DRIVERS glcdlib${SO}"
-					actdrivers=["$actdrivers glcdlib"]
-				],[
-dnl				else
-					AC_MSG_WARN([The glcdlib driver needs the glcdprocdriver library])
-				],
-				[-lglcddrivers -lglcdgraphics -lglcdprocdriver]
-				)
-			],[
-dnl			else
-				AC_MSG_WARN([The glcdlib driver needs glcdproclib/glcdprocdriver.h])
-			])
+		text)
+			DRIVERS="$DRIVERS text${SO}"
+			actdrivers=["$actdrivers text"]
 			;;
-		imon)
-			DRIVERS="$DRIVERS imon${SO}"
-			actdrivers=["$actdrivers imon"]
+		tyan)
+			DRIVERS="$DRIVERS tyan${SO}"
+			actdrivers=["$actdrivers tyan"]
 			;;
 		xosd)
 			AC_CHECK_HEADERS([xosd.h],[
@@ -280,10 +283,6 @@ dnl				else
 dnl			else
 				AC_MSG_WARN([The xosd driver needs xosd.h])
 			])
-			;;
-		tyan)
-			DRIVERS="$DRIVERS tyan${SO}"
-			actdrivers=["$actdrivers tyan"]
 			;;
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])

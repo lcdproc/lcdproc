@@ -21,7 +21,7 @@
 //#include "drv_base.h"
 #include "report.h"
 
-#include "shared/debug.h"
+//#include "shared/debug.h"
 #include "shared/str.h"
 
 #define SLI_DEFAULT_DEVICE	"/dev/lcd"
@@ -57,7 +57,7 @@ sli_init (Driver *drvthis)
 	struct termios portset;
 	char out[2];
 
-	char device[256] = WIRZ_DEFAULT_DEVICE;
+	char device[256] = SLI_DEFAULT_DEVICE;
 	int speed = B19200;
 
 	/* Read config file */
@@ -523,15 +523,15 @@ sli_icon (Driver *drvthis, int x, int y, int icon)
 		custom = beat;
 	switch( icon ) {
 		case ICON_BLOCK_FILLED:
-			CFontz_chr( drvthis, x, y, 255 );
+			sli_chr( drvthis, x, y, 255 );
 			break;
 		case ICON_HEART_FILLED:
-			CFontz_set_char( drvthis, 0, icons[1] );
-			CFontz_chr( drvthis, x, y, 0 );
+			sli_set_char( drvthis, 0, icons[1] );
+			sli_chr( drvthis, x, y, 0 );
 			break;
 		case ICON_HEART_OPEN:
-			CFontz_set_char( drvthis, 0, icons[0] );
-			CFontz_chr( drvthis, x, y, 0 );
+			sli_set_char( drvthis, 0, icons[0] );
+			sli_chr( drvthis, x, y, 0 );
 			break;
 		default:
 			return -1;
