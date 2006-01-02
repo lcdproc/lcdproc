@@ -62,5 +62,5 @@ pdf: @PACKAGE@.pdf
 	ln -s ./latex/refman.pdf @PACKAGE@.pdf
 
 clean-local:
-	$(RM) -r latex
-	$(RM) -r html man @PACKAGE@.ps @PACKAGE@.pdf
+	rm -f -r latex
+	rm -f -r html man @PACKAGE@.ps @PACKAGE@.pdf

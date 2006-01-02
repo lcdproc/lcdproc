@@ -365,7 +365,12 @@ dnl
 AC_DEFUN(AC_GET_FS_INFO, [
     AC_CHECK_HEADERS(fcntl.h sys/dustat.h sys/param.h sys/statfs.h sys/fstyp.h)
     AC_CHECK_HEADERS(mnttab.h mntent.h utime.h sys/statvfs.h sys/vfs.h)
-    AC_CHECK_HEADERS(sys/mount.h sys/filsys.h sys/fs_types.h)
+    AC_CHECK_HEADERS(sys/filsys.h sys/fs_types.h)
+    AC_CHECK_HEADERS(sys/mount.h, [], [], 
+        [#if HAVE_SYS_PARAM_H
+         #include <sys/param.h>
+        #endif
+        ])
     AC_CHECK_FUNCS(getmntinfo)
 
     AC_CHECKING(how to get filesystem space usage)
