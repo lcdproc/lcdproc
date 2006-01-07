@@ -53,6 +53,10 @@
 #include <machine/apmvar.h>
 #include <errno.h>
 
+#if (__NetBSD_Version__ >= 300000000)
+#include <sys/statvfs.h>
+#endif
+
 #include "machine.h"
 #include "main.h"
 #include "config.h"
@@ -130,8 +134,13 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 
 int machine_get_fs(mounts_type fs[], int *cnt)
 {
+#if (__NetBSD_Version__ >= 300000000)
+	struct statvfs *mntbuf;
+	struct statvfs *pp;
+#else	
 	struct statfs *mntbuf;
 	struct statfs *pp;
+#endif
 	int statcnt, fscnt, i; 
 
 	fscnt = getmntinfo(&mntbuf, MNT_WAIT);
@@ -252,8 +261,8 @@ int machine_get_meminfo(meminfo_type *result)
 	result[0].cache		= pagetok(uvmexp.filepages);
 
 	/* swap */
-	result[1].total		= uvmexp.pagesize * uvmexp.swpages;
-	result[1].free		= uvmexp.pagesize * uvmexp.swpginuse;
+	result[1].total		= pagetok(uvmexp.swpages);
+	result[1].free		= pagetok(uvmexp.swpginuse);
 	result[1].free		= result[1].total - result[1].free;
 
 	return(TRUE);
