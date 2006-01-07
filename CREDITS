@@ -162,6 +162,10 @@ Peter Marschall:
 	- bwctusb connection type to the HD44780 drivr
 	- various fixes in preparation of 0.5
 
+Markus Dolze:
+	- various fixes (especially for *BSD)
+
+
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min
 Andre Burton            andreb
