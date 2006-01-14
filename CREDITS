@@ -165,6 +165,8 @@ Peter Marschall:
 Markus Dolze:
 	- various fixes (especially for *BSD)
 
+Matthias Goebl <matthias.goebl@goebl.net>:
+	- HD44780 I2C driver
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min

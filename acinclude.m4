@@ -5,17 +5,17 @@ AC_ARG_ENABLE(drivers,
 	[  --enable-drivers=<list> compile driver for LCDs in <list>.]
 	[                  drivers may be separated with commas.]
 	[                  Possible choices are:]
-	[                    bayrad,cfontz,cfontz633,curses,cwlnx,glcdlib,glk,]
-	[                    hd44780,icp_a106,imon,iowarrior,irman,joy,lb216,]
-	[                    lcdm001,lcterm,lirc,ms6931,mtc_s16209x,mtxorb,]
-	[                    noritakevfd,pylcd,sed1330,sed1520,sli,stv5730,svga,]
-	[                    t6963,text,tyan,xosd]
+	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,]
+	[                    glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
+	[                    joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,]
+	[                    MtxOrb,noritakevfd,pylcd,sed1330,sed1520,sli,stv5730,]
+	[                    isvga,t6963,text,tyan,xosd]
 	[                  \"all\" compiles all drivers],
 	drivers="$enableval",
-	drivers=[bayrad,cfontz,cfontz633,curses,cwlnx,glk,lb216,lcdm001,mtxorb,pylcd,text])
+	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pylcd,text])
 
 	if test "$drivers" = "all"; then
-		drivers=[bayrad,cfontz,cfontz633,curses,cwlnx,glcdlib,glk,hd44780,icp_a106,imon,iowarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,mtxorb,noritakevfd,pylcd,sed1330,sed1520,sli,stv5730,svga,t6963,text,tyan,xosd]
+		drivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,sli,stv5730,svga,t6963,text,tyan,xosd]
 	fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -27,17 +27,26 @@ AC_ARG_ENABLE(drivers,
 			DRIVERS="$DRIVERS bayrad${SO}"
 			actdrivers=["$actdrivers bayrad"]
 			;;
-		cfontz)
+		CFontz)
 			DRIVERS="$DRIVERS CFontz${SO}"
-			actdrivers=["$actdrivers cfontz"]
+			actdrivers=["$actdrivers CFontz"]
 			;;
-		cfontz633)
+		CFontz633)
 			DRIVERS="$DRIVERS CFontz633${SO}"
-			actdrivers=["$actdrivers cfontz633"]
+			actdrivers=["$actdrivers CFontz633"]
 			AC_CHECK_FUNCS(select, [
 				AC_CHECK_HEADERS(sys/select.h)
 			],[
 				AC_MSG_WARN([The CFontz633 driver needs the select() function])
+			])
+			;;
+		CFontzPacket)
+			DRIVERS="$DRIVERS CFontzPacket${SO}"
+			actdrivers=["$actdrivers CFontzPacket"]
+			AC_CHECK_FUNCS(select, [
+				AC_CHECK_HEADERS(sys/select.h)
+			],[
+				AC_MSG_WARN([The CFontzPacket driver needs the select() function])
 			])
 			;;
 		curses)
@@ -92,9 +101,9 @@ dnl				else
 				AC_DEFINE(CURSES_HAS_WCOLOR_SET,[1],[Define to 1 if you have the wcolor_set function in the curses library])
 			fi
 			;;
-		cwlnx)
+		CwLnx)
 			DRIVERS="$DRIVERS CwLnx${SO}"
-			actdrivers=["$actdrivers cwlnx"]
+			actdrivers=["$actdrivers CwLnx"]
 			;;
 		glcdlib)
 			AC_CHECK_HEADERS([glcdproclib/glcdprocdriver.h],[
@@ -125,6 +134,10 @@ dnl			else
 			if test "$enable_libusb" = yes ; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-bwct-usb.o"
 			fi
+ 			AC_CHECK_HEADER(linux/i2c-dev.h,
+ 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-i2c.o"
+ 				AC_DEFINE(HAVE_I2C,[1],[Define to 1 if you have the i2c headers])
+  			)
 			DRIVERS="$DRIVERS hd44780${SO}"
 			actdrivers=["$actdrivers hd44780"]
 			;;
@@ -136,12 +149,12 @@ dnl			else
 			DRIVERS="$DRIVERS imon${SO}"
 			actdrivers=["$actdrivers imon"]
 			;;
-		iowarrior)
+		IOWarrior)
  			if test "$enable_libusb" = yes ; then
 				DRIVERS="$DRIVERS IOWarrior${SO}"
-				actdrivers=["$actdrivers iowarrior"]
+				actdrivers=["$actdrivers IOWarrior"]
 			else
- 				AC_MSG_WARN([The iowarrior driver needs the libusb library.])
+ 				AC_MSG_WARN([The IOWarrior driver needs the libusb library.])
 			fi
 			;;
 		irman)
@@ -193,13 +206,13 @@ dnl				else
 			DRIVERS="$DRIVERS mtc_s16209x${SO}"
 			actdrivers=["$actdrivers mtc_s16209x"]
 			;;
-		mtxorb)
+		MtxOrb)
 			DRIVERS="$DRIVERS MtxOrb${SO}"
-			actdrivers=["$actdrivers mtxorb"]
+			actdrivers=["$actdrivers MtxOrb"]
 			;;
-		noritakevfd)
+		NoritakeVFD)
 			DRIVERS="$DRIVERS NoritakeVFD${SO}"
-			actdrivers=["$actdrivers noritakevfd"]
+			actdrivers=["$actdrivers NoritakeVFD"]
 			;;
 		pylcd)
 			DRIVERS="$DRIVERS pylcd${SO}"

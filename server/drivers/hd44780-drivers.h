@@ -23,6 +23,9 @@
 #include "hd44780-picanlcd.h"
 #include "hd44780-lcdserializer.h"
 #include "hd44780-lis2.h"
+#ifdef HAVE_I2C
+# include "hd44780-i2c.h"
+#endif
 // add new connection type header files here
 
 static const ConnectionMapping connectionMapping[] = {
@@ -41,6 +44,9 @@ static const ConnectionMapping connectionMapping[] = {
 	{"lis2", hd_init_lis2, "\tnone\n"},
 #ifdef HAVE_LIBUSB
 	{"bwctusb", hd_init_bwct_usb, "\tnone\n"},
+#endif
+#ifdef HAVE_I2C
+	{"i2c", hd_init_i2c, "\tnone\n"},
 #endif
 		 // add new connection types and their string specifier here
 		 // default, end of structure element (do not delete)
