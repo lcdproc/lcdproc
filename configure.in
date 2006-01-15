@@ -46,16 +46,16 @@ AC_ARG_ENABLE(debug,
 AC_MSG_RESULT($debug)
 
 if test $debug = "yes"; then
-dnl Enable debugging information with minimal optimisation
-	if ! echo "$CFLAGS" | grep -q -- "-g" ; then
-		CFLAGS="$CFLAGS -g"
-	fi
-	if ! echo "$CFLAGS" | grep -q -- "-O" ; then
+dnl Enable debugging information with minimal optimisation if not set differently
+dnl (the spaces before $CFLAGS and -O are significant)
+	CFLAGS="$CFLAGS -g"
+	if ! echo " $CFLAGS" | grep -q -- " -O" ; then
 		CFLAGS="$CFLAGS -O"
 	fi
 else
-dnl Maximum optimisation
-	if ! echo "$CFLAGS" | grep -q -- "-O" ; then
+dnl Maximum optimisation if not already set
+dnl (the spaces before $CFLAGS and -O are significant)
+	if ! echo " $CFLAGS" | grep -q -- " -O" ; then
 		CFLAGS="$CFLAGS -O3"
 	fi
 fi
