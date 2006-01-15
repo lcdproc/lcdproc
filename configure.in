@@ -47,10 +47,17 @@ AC_MSG_RESULT($debug)
 
 if test $debug = "yes"; then
 dnl Enable debugging information with minimal optimisation
-	CFLAGS="-g -O"
+	if ! echo "$CFLAGS" | grep -q -- "-g" ; then
+		CFLAGS="$CFLAGS -g"
+	fi
+	if ! echo "$CFLAGS" | grep -q -- "-O" ; then
+		CFLAGS="$CFLAGS -O"
+	fi
 else
 dnl Maximum optimisation
-	CFLAGS="-O3"
+	if ! echo "$CFLAGS" | grep -q -- "-O" ; then
+		CFLAGS="$CFLAGS -O3"
+	fi
 fi
 
 dnl Checks for programs.
