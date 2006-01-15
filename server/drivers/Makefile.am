@@ -9,7 +9,7 @@
 EXEEXT = @SO@
 
 ## How to compile the files for the modules:
-AM_CCFLAGS = @CCSHARED@
+AM_CFLAGS = @CCSHARED@
 
 ## And how to build them
 AM_LDFLAGS = @LDSHARED@
@@ -21,8 +21,8 @@ pkglib_PROGRAMS = @DRIVERS@
 EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc ms6931 mtc_s16209x MtxOrb NoritakeVFD pylcd sed1330 sed1520 stv5730 svga t6963 text tyan wirz_sli xosd
 noinst_LIBRARIES = libLCD.a
 
-IOWarrior_CFLAGS =   @libusb_cflags@
-hd44780_CFLAGS =     @libusb_cflags@
+IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
+hd44780_CFLAGS =     @libusb_cflags@ $(AM_CFLAGS)
 
 CFontz_LDADD =       libLCD.a
 CFontz633_LDADD =    libLCD.a

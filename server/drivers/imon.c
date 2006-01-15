@@ -224,7 +224,8 @@ MODULE_EXPORT void imon_vbar (Driver *drvthis, int x, int y, int len, int promil
 		if ( pixels >= VFD_DEFAULT_CELL_HEIGHT )
 		{
 			/* write a "full" block to the screen... */
-			drvthis->icon (drvthis, x, y-pos, ICON_BLOCK_FILLED);
+			//drvthis->icon (drvthis, x, y-pos, ICON_BLOCK_FILLED);
+			imon_chr (drvthis, x, y-pos, '#');
 		}
 		else if (pixels > 0)
 		{
@@ -256,7 +257,8 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 		if ( pixels >= VFD_DEFAULT_CELL_WIDTH )
 		{
 			/* write a "full" block to the screen... */
-			drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
+			//drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
+			imon_chr (drvthis, x+xpos, y, '#');
 		}
 		else if (pixels > 0)
 		{
