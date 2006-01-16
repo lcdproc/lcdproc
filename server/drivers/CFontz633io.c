@@ -283,6 +283,7 @@ void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 	BytesRead = read(fd, buffer, number);
 
 	if (BytesRead == -1) {
+		/* this shouldnot happen with the select() above */
 		/* fprintf(stderr, "~~~Problem reading: %s .\n", strerror(errno)); */
 	}
 	else {
@@ -393,15 +394,17 @@ unsigned char PeekByte(ReceiveBuffer *rb)
 static int
 test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 {
-	int is_msg;
-
 #if defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0)
 	int response_received = 0;
+	int loop;
 
-	while (!response_received) {
-		is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
+	/* wait for answer packet but forever (LCDs should answer within max. 250ms) */
+	for (loop = 250000/CFONTZ633_WRITE_DELAY; !response_received && loop > 0; loop--) {
+		int is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
+		
 		while (is_msg != GIVE_UP) {
 			if (is_msg == GOOD_MSG) {
+				/* key activity ? */
 				if (in->command == 0x80)
 					AddKeyToKeyRing(&keyring, in->data[0]);
 				else if (in->command == response)
@@ -411,8 +414,9 @@ test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 			is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 		}
 	}
+	return(response_received);
 #else
-	is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
+	int is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 	while (is_msg != GIVE_UP) {
 		if (is_msg == GOOD_MSG) {
 			if (in->command == 0x80)
@@ -421,9 +425,9 @@ test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 	
 		is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 	}
-#endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */
 
 	return 1;
+#endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */
 }
 
 
