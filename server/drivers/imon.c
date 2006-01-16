@@ -258,7 +258,7 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 		{
 			/* write a "full" block to the screen... */
 			//drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
-			imon_chr (drvthis, x+xpos, y, '#');
+			imon_chr (drvthis, x+pos, y, '#');
 		}
 		else if (pixels > 0)
 		{
