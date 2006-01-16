@@ -88,7 +88,7 @@ i2c_out (PrivateData *p, unsigned char val)
 {
 	__u8 data[2];
 	int datalen;
-	data[0];
+
 	if(p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs a 2-byte command
 		data[0]=1; // command: read/write output port register
 		data[1]=val;
