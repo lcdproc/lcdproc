@@ -360,10 +360,10 @@ CFontzPacket_init (Driver *drvthis)
 
 	/* Set display-specific stuff.. */
 	if (reboot) {
-		debug(RPT_INFO, "CFontzPacket: reboot requested\n" );
+		debug(RPT_INFO, "CFontzPacket: reboot requested (in config)\n" );
 		CFontzPacket_reboot (drvthis);
 		reboot = 0;
-		debug(RPT_INFO, "CFontzPacket: reboot done" );
+		debug(RPT_DEBUG, "CFontzPacket: reboot done" );
 	}
 
 	CFontzPacket_hidecursor (drvthis);
@@ -500,8 +500,8 @@ CFontzPacket_flush (Driver *drvthis)
       unsigned char *sp = p->framebuf + (i * p->width);
       unsigned char *sq = p->backingstore + (i * p->width);
 
-      debug (RPT_INFO, "Framebuf: '%.*s'", p->width, sp );
-      debug (RPT_INFO, "     backingstore: '%.*s'", p->width, sq );
+      debug (RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp );
+      debug (RPT_DEBUG, "     backingstore: '%.*s'", p->width, sq );
 
 #if defined(CFONTZPACKET_OLD_OPTIMATION)       
       /* Strategy:
@@ -528,7 +528,7 @@ CFontzPacket_flush (Driver *drvthis)
 	  out[0] = first_diff;	// column
 	  out[1] = i;		// line
 
-	  debug (RPT_INFO, "%s: l=%d c=%d count=%d string='%.*s'",
+	  debug (RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
 	 	 __FUNCTION__, out[0], out[1], diff_length, diff_length,
 		 &p->framebuf[first_diff + (i * p->width)] );
 
@@ -563,7 +563,7 @@ CFontzPacket_flush (Driver *drvthis)
 	out[0] = j;	// column
 	out[1] = i;	// line
 
-	debug (RPT_INFO, "%s: l=%d c=%d count=%d string='%.*s'",
+	debug (RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
 	       __FUNCTION__, out[0], out[1], length, length, sp);
 
 	memcpy(&out[2], sp, length);
