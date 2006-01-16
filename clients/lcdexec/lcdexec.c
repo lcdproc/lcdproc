@@ -24,6 +24,8 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "getopt.h"
+
 #include "shared/str.h"
 #include "shared/report.h"
 #include "shared/configfile.h"

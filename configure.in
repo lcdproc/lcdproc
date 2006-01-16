@@ -166,6 +166,24 @@ AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(select socket strdup strerror strtol uname cfmakeraw snprintf)
 
+dnl Many people on non-GNU/Linux systems don't have getopt
+AC_CONFIG_LIBOBJ_DIR(shared)
+AC_CHECK_FUNC(getopt_long,
+  [
+    AC_ARG_WITH(included-getopt,
+      [  --with-included-getopt  Use the included getopt rather than glibc's],
+      with_getopt=$withval,
+      with_getopt=$no)
+    if test "x$with_getopt" = xyes; then
+      AC_LIBOBJ(getopt)
+      AC_LIBOBJ(getopt1)
+    fi
+  ],
+  [
+    AC_LIBOBJ(getopt)
+    AC_LIBOBJ(getopt1)
+  ])
+
 dnl Check for various defines and features
 
 AC_FIND_MTAB_FILE

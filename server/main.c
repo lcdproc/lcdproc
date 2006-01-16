@@ -35,15 +35,16 @@
 #ifndef WIN32
 # include <pwd.h>
 # include <sys/wait.h>
-#else
-# include "getopt.h"
 #endif
+
 #include <errno.h>
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/types.h>
+
+#include "getopt.h"
 
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
@@ -69,6 +70,7 @@ extern int optind, optopt, opterr;
 #include "shared/configfile.h"
 #include "drivers.h"
 #include "main.h"
+
 
 #define DEFAULT_BIND_ADDR		"127.0.0.1"
 #define DEFAULT_BIND_PORT		LCDPORT
