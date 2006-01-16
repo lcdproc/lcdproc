@@ -1,3 +1,5 @@
+## Process this file with automake to produce Makefile.in
+
 man_MANS = lcdproc.1 lcdexec.1 LCDd.8
 SUBDIRS = lcdproc-user lcdproc-dev
 doxygen_input = header.html footer.html
@@ -64,3 +66,5 @@ pdf: @PACKAGE@.pdf
 clean-local:
 	rm -f -r latex
 	rm -f -r html man @PACKAGE@.ps @PACKAGE@.pdf
+
+## EOF

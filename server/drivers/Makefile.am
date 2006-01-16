@@ -1,9 +1,10 @@
+## Process this file with automake to produce Makefile.in
+
 ## We use bin_ to generate the shared libraries, because automake only
 ## supports libtool shared libraries. But we don't want to use libtool...
 ##
 ## configure replaces all occurrences of so to the appropriate extension
 ## (without dot!)
-##
 
 ## Fill in loadable module extension
 EXEEXT = @SO@
@@ -80,5 +81,6 @@ tyan_SOURCES =       lcd.h tyan_lcdm.h tyan_lcdm.c report.h
 wirz_sli_SOURCES =   lcd.h wirz-sli.h wirz-sli.c report.h
 xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h
 
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
+## EOF
