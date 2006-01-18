@@ -160,7 +160,6 @@ int process_command_line( int argc, char **argv )
 				error = -1;
 			}
 			break;
-			break;
 		  case 's':
 			temp_int = strtol( optarg, &p, 0 );
 			if( *optarg != 0 && *p == 0 ) {
