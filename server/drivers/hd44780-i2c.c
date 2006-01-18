@@ -39,7 +39,7 @@
  *
  * When using this driver, DON'T load the i2c chip module (e.g. pcf8574),
  * you only need the i2c bus driver module!
-
+ *
  *
  * Based mostly on the hd44780-4bit module, see there for a complete history.
  * Suggestions for PCA9554 support from Tonu Samuel <tonu@jes.ee>.
@@ -88,7 +88,7 @@ i2c_out (PrivateData *p, unsigned char val)
 {
 	__u8 data[2];
 	int datalen;
-
+	static int no_more_errormsgs=0;
 	if(p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs a 2-byte command
 		data[0]=1; // command: read/write output port register
 		data[1]=val;
@@ -97,8 +97,10 @@ i2c_out (PrivateData *p, unsigned char val)
 		data[0]=val;
 		datalen=1;
 	}
-	if (write(p->fd,data,datalen) != datalen) {
-		report( RPT_ERR, "HD44780: I2C: i2c write data %u to address %u failed: %s", val, p->fd, strerror(errno));
+	if ( write(p->fd,data,datalen) != datalen ) {
+		report( no_more_errormsgs?RPT_DEBUG:RPT_ERR, "HD44780: I2C: i2c write data %u to address %u failed: %s",
+			val, p->port & I2C_ADDR_MASK, strerror(errno));
+		no_more_errormsgs=1;
 	}
 }
 
@@ -120,17 +122,19 @@ hd_init_i2c (Driver *drvthis)
 	/* Get serial device to use */
 	strncpy(device, drvthis->config_get_string ( drvthis->name , "device" , 0 , DEFAULT_DEVICE),sizeof(device));
 	device[sizeof(device)-1]=0;
-	report (RPT_INFO,"HD44780: I2C: Using device '%s' and address %u", device, p->port & I2C_ADDR_MASK);
+	report (RPT_INFO,"HD44780: I2C: Using device '%s' and address %u for a %s", device, (p->port & I2C_ADDR_MASK)?"PCA9554(A)":"PCF8574(A)");
 
 	// Open the I2C device
 	p->fd = open(device,O_RDWR);
 	if (p->fd<0) {
-		report( RPT_CRIT, "HD44780: I2C: open i2c device '%s' failed: %s", device, strerror(errno));
+		report( RPT_ERR, "HD44780: I2C: open i2c device '%s' failed: %s", device, strerror(errno));
+		return(-1);
 	}
 
 	// Set I2C address
 	if (ioctl(p->fd,I2C_SLAVE, p->port & I2C_ADDR_MASK) < 0) {
-		report( RPT_CRIT, "HD44780: I2C: set address to '%i': %s", p->port & I2C_ADDR_MASK, strerror(errno));
+		report( RPT_ERR, "HD44780: I2C: set address to '%i': %s", p->port & I2C_ADDR_MASK, strerror(errno));
+		return(-1);
 	}
 
 
