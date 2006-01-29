@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <termios.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
@@ -174,7 +175,9 @@ int initTTY(int FD)
 
     if (tcgetattr(FD, &tty_mode) == 0) {
         cfmakeraw(&tty_mode);
+#ifdef CBAUDEX /* CBAUDEX not defined in FreeBSD */
         tty_mode.c_cflag |= CBAUDEX;
+#endif
         cfsetospeed(&tty_mode, B115200);
         cfsetispeed(&tty_mode, 0);
         tty_mode.c_cc[VMIN] = 1;
