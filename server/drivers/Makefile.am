@@ -43,6 +43,7 @@ lcterm_LDADD =       libLCD.a
 NoritakeVFD_LDADD =  libLCD.a
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
+tyan_LDADD =         libLCD.a
 xosd_LDADD =         @LIBXOSD@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
