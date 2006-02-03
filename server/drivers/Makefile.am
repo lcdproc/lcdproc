@@ -19,8 +19,8 @@ AM_LDFLAGS = @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc ms6931 mtc_s16209x MtxOrb NoritakeVFD pylcd sed1330 sed1520 stv5730 svga t6963 text tyan wirz_sli xosd
-noinst_LIBRARIES = libLCD.a
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc ms6931 mtc_s16209x MtxOrb NoritakeVFD pylcd sed1330 sed1520 serialVFD stv5730 svga t6963 text tyan wirz_sli xosd
+noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
 hd44780_CFLAGS =     @libusb_cflags@ $(AM_CFLAGS)
@@ -41,12 +41,14 @@ irman_LDADD =        @LIBIRMAN@
 lirc_LDADD =         @LIBLIRC_CLIENT@
 lcterm_LDADD =       libLCD.a
 NoritakeVFD_LDADD =  libLCD.a
+serialVFD_LDADD =    libLCD.a libbignum.a
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 tyan_LDADD =         libLCD.a
 xosd_LDADD =         @LIBXOSD@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
+libbignum_a_SOURCES = adv_bignum.h  adv_bignum.c 
 
 bayrad_SOURCES =     lcd.h bayrad.h bayrad.c report.h
 CFontz_SOURCES =     lcd.h CFontz.c CFontz.h CFontz-charmap.h report.h
@@ -74,6 +76,7 @@ NoritakeVFD_SOURCES = lcd.h NoritakeVFD.c NoritakeVFD.h report.h
 pylcd_SOURCES =      lcd.h pylcd.c pylcd.h
 sed1330_SOURCES =    lcd.h sed1330.h sed1330.c port.h lpt-port.h timing.h report.h
 sed1520_SOURCES =    lcd.h sed1520.c sed1520.h sed1520fm.c sed1520fm.h port.h report.h
+serialVFD_SOURCES =  lcd.h serialVFD.c serialVFD.h report.h adv_bignum.h
 stv5730_SOURCES =    lcd.h stv5730.c stv5730.h report.h
 svga_SOURCES =       lcd.h svgalib_drv.c svgalib_drv.h report.h
 t6963_SOURCES =      lcd.h t6963.c t6963.h t6963_font.h report.h

@@ -1,0 +1,113 @@
+	The serialVFD-driver should work with all NEC FIPC8367 based VFDs:
+	NEC FC20X2JA
+	NEC FM20X2KB-AB
+	NEC FC20X1SA-AB/AA
+	...
+	Tested only on: NEC FM20X2KB-AB
+	The driver also works (tested) on "KD Rev 2.1" (an ATMEL AT90S....
+	based FM20X2KB-AB replacement).
+	Note: Above char. 128 the FIPC-displays and KD's charactersets
+	are different.
+
+	The driver may work or will be easy to get working on the following
+	Displays / Controllers (not tested!).
+	Display:		Controller:
+	FUTABA M204SD01AA	FUTABA 5P00A016
+	Noritake CU20026SCPB-T	(microcontroller)
+	Noritake CU20045SCPB-T28A	?
+	... or compatible.
+	(most Futaba/Noritake 7x5 dot VFDs with serial(rs232) interface
+	(including  serial(rs232)/parallel types))
+	Maybe there are little changes in the commands to do to get all
+	functions to work correctly. But because of the similarity of the
+	protocols, it wont be much work.
+
+	If you want to add a new device to the driver add a new section
+	to the displaytype-switch-case in the init-function and fill it
+	with the corrrect commands for the display.
+	(Try wich displaytype works best with your display, copy and modify
+	it's section that is the easiest way I guess.)
+
+
+        On this page I found pictures and datasheets from the VFD's:
+	http://www.maltepoeggel.de/html/vfd/index.html
+
+
+
+
+	To enable the bignumbers on 2-line displays (only this driver supports
+	this yet) you have to edit "/clientchrono.c" before compiling.
+	In function "big_clock_screen" you have to replace the "4" by a "2" in
+	this line: "if (lcd_hgt < 4)"
+
+
+
+	This driver uses the serial mode of the displays.
+	It is NOT possible to connect most of the displays directly to the
+	serialport. The signal has to be inverted. I use the following
+	circuit to do that job.
+
+	Computer                                          Display
+	                                                  (signal)
+	HDD Powerconnector
+	color(Voltage)
+
+	red(+5V)    --------------------------------o----- +5V
+	                                            |
+	black(GND)  --------------------o           |
+	                                |           R
+	                                |           R 10k
+	Serial(SUB-D 9Pin female)       V*          R
+	pin(signal)                                 |
+	                                            |
+	3(TxD)  --RRRR--o--o      o-----------------o----- RxD
+	          10k   |  |      |
+	                |  |     C|
+	                |  |   -----  BC547c (or similar NPN)
+	                R  | B|  /  |
+	            10k R  o--|-|   |
+	                R     |  \  |
+	                |      --->-    A*
+	                |         E|    |
+	                |          |    |
+	5(GND)  --------o----------o----o----------------- GND
+
+	Shield  ------------------------------------------
+	optional
+
+	*connect near display
+
+
+	The pins on the different displays vary.
+
+
+
+	FM20X2KB-AB:
+
+	CN1:
+	Pin 33 <--- RxD
+	(Testmode: connect pins 25 & 26 then power up)
+
+	CN2:
+	Pin 1  <--- +5V
+	Pin 2  ---- GND
+
+
+
+	KD Rev 2.1:
+
+	blue connector (6pin in a row) (the important one!):
+	--------------------------------
+	| +5V  +5V  RxD  GND  GND  GND |
+	--------------------------------
+	NOTE: hold the display in that position where you can read
+	the "KD Rev 2.1" marking normally!
+
+	gray connector (10pin 2 rows):
+	Do not use. (the ATMEL ISP connector I guess)
+
+	The two jumpers next to the gray connector:
+	Normally not used.
+	You can activate two different testmodes with them.
+
+

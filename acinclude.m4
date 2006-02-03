@@ -8,14 +8,14 @@ AC_ARG_ENABLE(drivers,
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,]
 	[                    glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,]
-	[                    MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,sli,stv5730,]
-	[                    svga,t6963,text,tyan,xosd]
+	[                    MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,]
+	[                    sli,stv5730,svga,t6963,text,tyan,xosd]
 	[                  \"all\" compiles all drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pylcd,text])
 
 	if test "$drivers" = "all"; then
-		drivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,sli,stv5730,svga,t6963,text,tyan,xosd]
+		drivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,xosd]
 	fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -235,6 +235,10 @@ dnl				else
 			else
 				AC_MSG_WARN([The sed1520 driver needs a parallel port.])
 			fi
+			;;
+		serialVFD)
+			DRIVERS="$DRIVERS serialVFD${SO}"
+			actdrivers=["$actdrivers serialVFD"]
 			;;
 		sli)
 			DRIVERS="$DRIVERS wirz_sli${SO}"
