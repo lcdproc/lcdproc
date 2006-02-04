@@ -651,6 +651,9 @@ case "$host" in
   BSD/OS*/4*)
 	CCSHARED="-fpic"
 	;;
+  *darwin*)
+      	LDSHARED="-bundle -flat_namespace -undefined suppress"
+	;;
 esac
 
 dnl checks for libraries

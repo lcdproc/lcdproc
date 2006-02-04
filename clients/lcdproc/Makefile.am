@@ -6,6 +6,10 @@ lcdproc_SOURCES = main.c main.h mode.c mode.h batt.c batt.h chrono.c chrono.h cp
 
 lcdproc_LDADD = @ldap_libs@ ../../shared/libLCDstuff.a
 
+if DARWIN
+AM_LDFLAGS = -framework CoreFoundation -framework IOKit
+endif
+
 AM_CPPFLAGS = -I$(top_srcdir)
 
 ## EOF
