@@ -19,7 +19,7 @@ AM_LDFLAGS = @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc ms6931 mtc_s16209x MtxOrb NoritakeVFD pylcd sed1330 sed1520 serialVFD stv5730 svga t6963 text tyan wirz_sli xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc ms6931 mtc_s16209x MtxOrb NoritakeVFD pylcd sed1330 sed1520 serialVFD stv5730 svga t6963 text tyan wirz_sli ula200 xosd
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
@@ -45,6 +45,7 @@ serialVFD_LDADD =    libLCD.a libbignum.a
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 tyan_LDADD =         libLCD.a
+ula200_LDADD =       libLCD.a @LIBFTDI@
 xosd_LDADD =         @LIBXOSD@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
@@ -82,6 +83,7 @@ svga_SOURCES =       lcd.h svgalib_drv.c svgalib_drv.h report.h
 t6963_SOURCES =      lcd.h t6963.c t6963.h t6963_font.h report.h
 text_SOURCES =       lcd.h text.h text.c report.h
 tyan_SOURCES =       lcd.h tyan_lcdm.h tyan_lcdm.c report.h
+ula200_SOURCES =     lcd.h ula200.h ula200.c report.h
 wirz_sli_SOURCES =   lcd.h wirz-sli.h wirz-sli.c report.h
 xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h
 

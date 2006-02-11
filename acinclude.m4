@@ -9,13 +9,13 @@ AC_ARG_ENABLE(drivers,
 	[                    glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,]
 	[                    MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,]
-	[                    sli,stv5730,svga,t6963,text,tyan,xosd]
+	[                    sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 	[                  \"all\" compiles all drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pylcd,text])
 
 	if test "$drivers" = "all"; then
-		drivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,xosd]
+		drivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 	fi
 
   	drivers=`echo $drivers | sed 's/,/ /g'`
@@ -285,6 +285,21 @@ dnl			else
 			DRIVERS="$DRIVERS tyan${SO}"
 			actdrivers=["$actdrivers tyan"]
 			;;
+		ula200)
+			AC_CHECK_HEADERS([usb.h ftdi.h],[
+				AC_CHECK_LIB(ftdi, main,[
+					LIBFTDI="-lusb -lftdi"
+					DRIVERS="$DRIVERS ula200${SO}"
+					actdrivers=["$actdrivers ula200"]
+ 				],[
+dnl				else
+					AC_MSG_WARN([The ula200 driver needs the ftdi library])
+				])
+			],[
+dnl			else
+				AC_MSG_WARN([The ula200 driver needs ftdi.h and usb.h])
+			])
+			;;
 		xosd)
 			AC_CHECK_HEADERS([xosd.h],[
 				AC_CHECK_LIB(xosd, main,[
@@ -316,6 +331,7 @@ AC_SUBST(LIBSVGA)
 AC_SUBST(DRIVERS)
 AC_SUBST(HD44780_DRIVERS)
 AC_SUBST(LIBGLCD)
+AC_SUBST(LIBFTDI)
 AC_SUBST(LIBXOSD)
 ])
 
