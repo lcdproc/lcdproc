@@ -17,8 +17,12 @@ parallel port:
 <listitem><para>serial LPT</para></listitem>
 </itemizedlist>
 <para>
-And supports a PIC-an-LCD or LCD serializer connected to a serial port.
+It also supports the following connections:
 </para>
+<itemizedlist>
+<listitem><para>A PIC-an-LCD or LCD serializer connected to a serial port</para></listitem>
+<listitem><para>A I2C port expander connected to an I2C port</para></listitem>
+</itemizedlist>
 <para>
 The driver also lets you use multiple displays as a single virtual
 display.  For example, a 4, 2 and 1 line display can be used to form a
@@ -1220,6 +1224,112 @@ the display's contrast using the "Contrast" configuration parameter as well as
 specifying which one (of multiple BWCT LCD devices) is wanted using the
 "SerialNumber" configuration parameter.
 </para>
+
+</sect3>
+
+
+<sect3 id="hd44780-i2c">
+<title>I2C with Port-Expander</title>
+
+<para>
+If you have an I2C port available that is supported by your kernel (through /dev/i2c*),
+you can add a I2C port expander there (PCF8574P in this example).
+</para>
+
+<figure>
+<title>HD44780: PCF8574P port expander on I2C bus</title>
+<screen>
+<![CDATA[
+                                       IC1
+                                   -----------
+                                  | PCF8574P  |
+                                  | I2C-Port- |                            HD44780
+                                  | Expander  |                            display
+                                  |           |4
+                                  |         P0|----------------------------o 11 D4
+                                  |           |5
+           I2C-Bus              14|         P1|----------------------------o 12 D5
+    SCL o-------------------------|SCL        |6
+                                  |         P2|----------------------------o 13 D6
+                                15|           |7
+    SDA o-------------------------|SDA      P3|----------------------------o 14 D7
+                                  |           |9
+                                  |1        P4|----------------------------o 4  RS
+           Set I2C-Address  +-----|A0         |10
+           here:            |     |2        P5|----------------------------o 5  RW
+           GND: Bit:=0      +-----|A1         |11
+           VCC: Bit:=1      |     |3        P6|----------------------------o 6  EN
+                            +-----|A1         |                      ___
+           Here: 0x00       |     |           |                 +---|___|--o 15 backlight
+                           ===    |           |                 |c   10R
+                                  |           |12    ___       b|/ 
+                                  |13       P7|-----|___|-----|
+                                 -|INT        |      1k       |\
+                                  |           |           bc557 |e
+                                   -----------                  |
+                                                                |
+    +5V o-----------+------------------+---------------------+--+----------o 2  VCC
+                    |                  |                     |
+                    |                  |                     |
+                    |10uF              O 16                 .-.
+                   ---                IC1                   | |<-----------o 3  Vlcd
+                   ---                 O 8                  | |10k
+                    |                  |                    '-'
+                    |                  |                     |
+    GND o-----------+-------+----------+---------------------+-------+-----o 1  GND
+                            |                                        |
+                           === GND                                   +-----o 16 GND Backlight
+]]>
+</screen>
+</figure>
+
+<sect4 id="hd44780-i2c-config">
+<title>Configuration</title> 
+
+<figure>
+<title>HD44780: Configuration for I2C with port expander</title>
+<screen>
+<![CDATA[
+[HD44780]
+ConnectionType=i2c
+Device=/dev/i2c-0
+Port=0x20
+Backlight=yes
+Size=40x2
+DelayBus=false
+DelayMult=1
+Keypad=no
+]]>
+</screen>
+</figure>
+
+<para>
+Device is the device file for your I2C bus (here /dev/i2c-0).
+You have to load the kernel standard module i2c-dev and
+the bus driver, but NO i2c chip modules (e.g. pcf8574)!
+</para>
+
+<para>
+Port contains the i2c address of the i2c port expander
+(here 0x20, the PCF8574 from the example above, with all address bits set to 0).
+Bit 8 of the address (normally 0 in I2C addresses) given in port is special:
+It tells the driver to treat the device as PCA9554 or similar,
+a device that needs a 2-byte command, and it will be stripped
+off the address.
+</para>
+
+<figure>
+<title>HD44780: Examples of I2C port expander adresses</title>
+<screen>
+<![CDATA[
+port=0x20..0x27   PCF8574  with A[012]=0..7
+port=0x38..0x3f   PCF8574A with A[012]=0..7
+port=0xa0..0xa7   PCA9554  with A[012]=0..7
+port=0xa0..0xa7   PCA9554A with A[012]=0..7
+]]>
+</screen>
+</figure>
+</sect4>
 
 </sect3>
 
