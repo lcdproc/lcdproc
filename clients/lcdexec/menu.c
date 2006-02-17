@@ -34,6 +34,8 @@ Menu * menu_read( char * menu_id, char * progname )
 	report( RPT_DEBUG, "Reading menu: [%s]", menu_id );
 
 	menu = malloc( sizeof(Menu) );
+	menu->num_menucmds = 0;
+	menu->num_submenus = 0;
 
 	/* Read the commands */
 	str = "";
