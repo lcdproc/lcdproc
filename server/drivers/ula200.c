@@ -20,6 +20,17 @@
 //  - bars are NOT supported
 //
 //
+// Configuration options (the values are the default values):
+//
+//  - Size=20x4
+//  - KeyMap_A=Up
+//  - KeyMap_B=Down
+//  - KeyMap_C=Left
+//  - KeyMap_D=Right
+//  - KeyMap_E=Enter
+//  - KeyMap_F=Escape
+//
+//
 // Known problems:
 //
 // Sometimes the display hangs (the ACK response is not received) on shutdown.
@@ -123,12 +134,8 @@ MODULE_EXPORT char *symbol_prefix = "ula200_";
 #define CH_DC2  0x12
 #define CH_DC3  0x13
 
-#define ULA200_KEY_UP	    (1 << 0)
-#define ULA200_KEY_DOWN	    (1 << 1)
-#define ULA200_KEY_LEFT     (1 << 2)
-#define ULA200_KEY_RIGHT    (1 << 3)
-#define ULA200_KEY_ENTER    (1 << 4)
-#define ULA200_KEY_ESCAPE   (1 << 5)
+#define MAX_KEY_MAP 6
+static char *default_key_map[MAX_KEY_MAP] = { "Up", "Down", "Left", "Right", "Enter", "Escape" };
 
 #define CELLWIDTH  5
 #define CELLHEIGHT 8
@@ -231,6 +238,8 @@ typedef struct {
     // the keyring
     KeyRing keyring;
     
+	// the keymap
+	char *key_map[MAX_KEY_MAP];
     
 } PrivateData;
 
@@ -624,7 +633,7 @@ MODULE_EXPORT int
 ula200_init(Driver *drvthis)
 {
 	PrivateData *p;
-    int err;
+    int err, i;
     char *s;
 
 	// Alocate and store private data
@@ -650,6 +659,29 @@ ula200_init(Driver *drvthis)
     {
 		report(RPT_ERR, "ULA-200: Cannot read size: %s", s );
 	}
+
+	// read the keymap
+	for (i = 0; i < MAX_KEY_MAP; i++)
+	{
+		char buf[40];
+
+		// First fill with default value 
+		p->key_map[i] = default_key_map[i];
+
+		// Read config value 
+		sprintf( buf, "KeyMap_%c", i+'A' );
+		s = drvthis->config_get_string( drvthis->name, buf, 0, NULL );
+
+		// Was a key specified in the config file ? 
+		if (s)
+		{
+			p->key_map[i] = strdup(s);
+			report( RPT_INFO, "ula_200: Key '%c' to \"%s\"", i+'A', s );
+		}
+	}
+
+    /* End of config file parsing */
+
     
 	// Allocate framebuffer
 	p->framebuf = (unsigned char *)malloc(p->width * p->height);
@@ -732,7 +764,6 @@ MODULE_EXPORT void
 ula200_close(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
-    char buffer[150];
 
     ftdi_usb_purge_buffers(&p->ftdic);
     ftdi_usb_close(&p->ftdic);
@@ -948,36 +979,29 @@ ula200_get_key (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char key;
+	int i;
+
+	// The libftdi has no non-blocking read (`select' system call), so we force
+	// a read that could not block by updating one character on the display.
+	// As long as lcdproc is single-threaded, we can write to the display because
+	// we're not inside a read here.
+	ula200_ftdi_position(drvthis, 0, 0);
+	ula200_ftdi_string(drvthis, p->lcd_contents, 1);
 
 	key = GetKeyFromKeyRing(&p->keyring);
 
-	switch (key) 
-    {
-		case ULA200_KEY_LEFT:
-			return "Left";
-			break;
-		case ULA200_KEY_UP:
-			return "Up";
-			break;
-		case ULA200_KEY_DOWN:
-			return "Down";
-			break;
-		case ULA200_KEY_RIGHT:
-			return "Right";
-			break;
-		case ULA200_KEY_ENTER:
-			return "Enter"; /* Is this correct ? */
-			break;
-		case ULA200_KEY_ESCAPE:
-			return "Escape";
-			break;
-		default:
-			if (key != '\0')
-            {
-				report( RPT_INFO, "ula200: Untreated key 0x%2x", key);
-            }
-			return NULL;
-			break;
+	// search the bit that was set by the hardware
+	for (i = 0; i < MAX_KEY_MAP; i++)
+	{
+		if (key & (1 << i))
+		{
+			return p->key_map[i];
+		}
+	}
+	
+	if (key != '\0')
+	{
+		report( RPT_INFO, "ula200: Untreated key 0x%2x", key);
 	}
 	return NULL;
 }
