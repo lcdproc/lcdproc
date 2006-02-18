@@ -2,11 +2,11 @@
 
 	Copyright (C) 2006 Stefan Herdler
 
-	This driver is based on drv_base.c, wirz-sli.c and hd44780 from LCDproc
-	and the NoritakeVFD driver from this package.
+	This driver is based on wirz-sli.c, hd44780.c, drv_base.c and NoritakeVFD
+	driver.
 	It may contain parts of other drivers of this package too.
 
-	2006-01-26 Version 0.1: everything should work (not all hardware tested!)
+	2006-02-13 Version 0.2: everything should work (not all hardware tested!)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -55,16 +55,16 @@
 	it's section that is the easiest way I guess.)
 
 
-        On this page I found pictures and datasheets from the VFD's:
+        On this page I found pictures and datasheets of the VFD's:
 	http://www.maltepoeggel.de/html/vfd/index.html
 
 
 
 
 	To enable the bignumbers on 2-line displays (only this driver supports
-	this yet) you have to edit "/clientchrono.c" before compiling.
+	this yet) you have to edit "/clients/lcdproc/chrono.c" before compiling.
 	In function "big_clock_screen" you have to replace the "4" by a "2" in
-	this line: "if (lcd_hgt < 4)"
+	this line: "if (lcd_hgt < 4)".
 
 
 
@@ -192,23 +192,12 @@ get_info	Implemented.
 #include "lcd_lib.h"
 #include "adv_bignum.h"
 
-#define pos1_cursor	4
-#define mv_cursor	5 //moves cursor to position (next byte).
-#define reset		6
-#define init_cmds	7
-#define set_user_char	8
+#define pos1_cursor	4 //moves cursor to top left character.
+#define mv_cursor	5 //moves cursor to position specified by the next byte.
+#define reset		6 //reset
+#define init_cmds	7 //commands needed to initialize the display.
+#define set_user_char	8 //set user character.
 #define hor_tab		9 //moves cursor 1 chr right
-
-/* Constants for userdefchar_mode */
-//#define NUM_CCs		8 /* max. number of custom characters */
-
-//typedef enum {
-//	standard,	/* only char 0 is used for heartbeat */
-//	vbar,		/* vertical bars */
-//	hbar,		/* horizontal bars */
-//	custom,		/* custom settings */
-//	bignum,
-//	} CGmode;
 
 typedef struct driver_private_data {
 	char device[200];
@@ -225,6 +214,7 @@ typedef struct driver_private_data {
 	int brightness;
 	int customchars;
 	int ISO_8859_1;
+	unsigned int refresh_timer;
 	unsigned char charmap[128];
 	int display_type;
 	char custom_char[31][7]; 	// used for "KD Rev 2.1" only
@@ -245,10 +235,11 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "serialVFD_";
 
 /* Internal functions */
-static void serialVFD_init_vbar (Driver *drvthis);
-static void serialVFD_init_hbar (Driver *drvthis);
-static void serialVFD_draw_frame (Driver *drvthis, char *dat);
-
+void serialVFD_init_vbar (Driver *drvthis);
+void serialVFD_init_hbar (Driver *drvthis);
+void serialVFD_draw_frame (Driver *drvthis, char *dat);
+void serialVFD_put_brightness (Driver *drvthis);
+void serialVFD_put_char (Driver *drvthis, int n);
 
 // Opens com port and sets baud correctly...
 //
@@ -257,7 +248,6 @@ serialVFD_init (Driver *drvthis)
 {
 	struct termios portset;
 	int tmp, w, h, brightness;
-//	int reboot = 0;
 	char size[200] = DEFAULT_SIZE;
 
 	PrivateData *p;
@@ -274,6 +264,7 @@ serialVFD_init (Driver *drvthis)
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = CCMODE_STANDARD;
 	p->ISO_8859_1 = 1;
+	p->refresh_timer = 0;
 
 	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis );
 	
@@ -664,27 +655,36 @@ serialVFD_init (Driver *drvthis)
 
 
 /////////////////////////////////////////////////////////////////
-// Changes screen brightness (0-255; 140 seems good)
+// Changes screen brightness (0 min ... 255 max ... 1000 also max)
 //
 MODULE_EXPORT void
 serialVFD_set_brightness (Driver *drvthis, int state, int brightness)
-{
+{	// set p->brightness
 	PrivateData *p = drvthis->private_data;
-	int realbrightness = -1;
 
-	if (brightness > 0) {
+
+	if (brightness > 0)
+	{
 		if (brightness > 255)
 			brightness = 255;
 		if (p->brightness != brightness)
-			{
-			realbrightness = (int) (brightness / 64);
-			write (p->fd, &p->hw_cmd[realbrightness][1],\
-				p->hw_cmd[realbrightness][0]);
-			}
-	p->brightness=brightness;
+		{
+			p->brightness=brightness;
+			serialVFD_put_brightness (drvthis);
+		}
 	}
 }
 
+void
+serialVFD_put_brightness (Driver *drvthis)
+{	// set hardware brightness
+	PrivateData *p = drvthis->private_data;
+	int realbrightness = (int) (p->brightness / 64);
+	//(4 steps 0-64, 65-128, 129-192, 193-1000)
+
+	write (p->fd, &p->hw_cmd[realbrightness][1],\
+		p->hw_cmd[realbrightness][0]);
+}
 
 
 /////////////////////////////////////////////////////////////////
@@ -723,7 +723,7 @@ serialVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 //
 MODULE_EXPORT void
 serialVFD_set_char (Driver *drvthis, int n, char *dat)
-{
+{	//set char in p->custom_char
 	PrivateData *p = drvthis->private_data;
 	int letter=0;
 	unsigned int byte, bit;
@@ -734,40 +734,35 @@ serialVFD_set_char (Driver *drvthis, int n, char *dat)
 		return;
 
 
-	if(p->display_type==1)
+	for (byte = 0;byte  < p->usr_chr_dot_assignment[0]; byte++)
 	{
-		for (byte = 0;byte  < p->usr_chr_dot_assignment[0]; byte++)
+		for (bit = 0;bit  < 8; bit++)
 		{
-			for (bit = 0;bit  < 8; bit++)
-			{
-				if((int)p->usr_chr_dot_assignment[bit+8*byte+1] != 0)
-					letter |= (dat[(int)p->usr_chr_dot_assignment[bit+8*byte+1]-1] << bit);
-			}
-			p->custom_char[n][byte] = letter;
-			letter = 0;
+			if((int)p->usr_chr_dot_assignment[bit+8*byte+1] != 0)
+				letter |= (dat[(int)p->usr_chr_dot_assignment[bit+8*byte+1]-1] << bit);
 		}
+		p->custom_char[n][byte] = letter;
+		letter = 0;
 	}
-	else
-	{
-		write (p->fd, &p->hw_cmd[set_user_char][1],\
-			p->hw_cmd[set_user_char][0]);
 
-		write (p->fd, &p->usr_chr_mapping[n], 1);
+	if (p->display_type != 1) //not KD Rev 2.1
+		serialVFD_put_char (drvthis, n);
 
-		for (byte = 0;byte  < p->usr_chr_dot_assignment[0]; byte++)
-		{
-			for (bit = 0;bit  < 8; bit++)
-			{
-				if((int)p->usr_chr_dot_assignment[bit+8*byte+1] != 0)
-					letter |= (dat[(int)p->usr_chr_dot_assignment[bit+8*byte+1]-1] << bit);
-			}
-			write (p->fd, &letter, 1);
-			letter = 0;
-		}
-	}
 	if (p->need_refresh == 1)
 		p->custom_char_changed[n]=1;
 }
+
+void
+serialVFD_put_char (Driver *drvthis, int n)
+{	// put char in display
+	PrivateData *p = drvthis->private_data;
+	write (p->fd, &p->hw_cmd[set_user_char][1],\
+		p->hw_cmd[set_user_char][0]);// substitute and select Character to overwrite
+	write (p->fd, &p->usr_chr_mapping[n], 1);
+	write (p->fd, &p->custom_char[n][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
+}
+
+
 
 /////////////////////////////////////////////////////////////
 // Blasts a single frame onscreen, to the lcd...
@@ -782,6 +777,30 @@ serialVFD_draw_frame (Driver *drvthis, char *dat)
 
 	if (!dat)
 		return;
+	if (p->refresh_timer > 500) // Do a full refresh every 500 refreshs.
+	// With this it is possible to switch display on and off while lcdproc is running
+		{
+		write (p->fd, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
+		serialVFD_put_brightness (drvthis); // restore brightness
+
+		for (i = 0; i < (p->height * p->width); i++)
+			p->backingstore[i]=0; // clear Backing-store
+
+		if (p->display_type != 1) //not KD Rev 2.1
+			{
+			for(i=0;i<p->customchars;i++) // refresh all customcharacters
+				serialVFD_put_char (drvthis, i);
+/*				{
+					write (p->fd, &p->hw_cmd[set_user_char][1],\
+					p->hw_cmd[set_user_char][0]);// substitute and select character to overwrite
+					write (p->fd, &p->usr_chr_mapping[i], 1);
+					write (p->fd, &p->custom_char[(int)dat[i]][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
+				}*/
+			}
+		p->refresh_timer = 0;
+	}
+	p->refresh_timer++;
+
 
 	for (i = 0; i < (p->height * p->width); i++)
 	{
@@ -809,20 +828,20 @@ serialVFD_draw_frame (Driver *drvthis, char *dat)
 				}
 			}
 
-			if(dat[i] >= 0 && dat[i] <= 30)
+			if(dat[i] >= 0 && dat[i] <= 30) // custom character
 			{
 				if (p->display_type == 1) // KD Rev 2.1 only
 				{
-					write (p->fd, "\x1A\xDB", 2);		// substitute and select Character to overwrite (237)
-					write (p->fd, &p->custom_char[(int)dat[i]][0], 7);// overwrite selected Character
-					write (p->fd, "\xDB", 1);			// Write Character
+					write (p->fd, "\x1A\xDB", 2);		// substitute and select character to overwrite (237)
+					write (p->fd, &p->custom_char[(int)dat[i]][0], 7);// overwrite selected character
+					write (p->fd, "\xDB", 1);			// write character
 				}
 				else	// all other displays
 				{
 					write (p->fd, &p->usr_chr_mapping[(int)dat[i]], 1);
 				}
 			}
-			else if(dat[i] < 0 && (p->ISO_8859_1 != 0))
+			else if(dat[i] < 0 && (p->ISO_8859_1 != 0)) // ISO_8859_1 translation for 129 ... 255
 			{
 				write (p->fd, &p->charmap[dat[i] + 128], 1);
 			}
@@ -835,11 +854,11 @@ serialVFD_draw_frame (Driver *drvthis, char *dat)
 		}
 	}
 
-	if (last_chr != -10)
+	if (last_chr != -10) // update backingstore if something changed
 		{
 		memcpy(p->backingstore, dat, p->height * p->width);
 			int i;
-			for(i=0;i<32;i++)
+			for(i=0;i<p->customchars;i++)
 				p->custom_char_changed[i]=0;
 		}
 
@@ -854,11 +873,12 @@ serialVFD_num( Driver * drvthis, int x, int num )
 	PrivateData *p = drvthis->private_data;
 
 
-	if (p->ccmode != CCMODE_BIGNUM)
+	if (p->ccmode != CCMODE_BIGNUM) // Are the customcharacters set up correctly? If not:
 	{
-		do_init=1;
-		p->ccmode = CCMODE_BIGNUM;
+		do_init=1;	// Lib_adv_bignum has to set the customcharacters.
+		p->ccmode = CCMODE_BIGNUM; // Switch customcharactermode to bignum.
 	}
+	// Lib_adv_bignum does everything needed to show the bignumbers.
 	lib_adv_bignum(drvthis, x, num, p->height, do_init, p->customchars);
 }
 
@@ -906,7 +926,6 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 		        p->ccmode = CCMODE_STANDARD;
 			serialVFD_set_char(drvthis, 0, icons[0]);
 			serialVFD_chr(drvthis, x, y, 0);
-//			serialVFD_chr(drvthis, x, y, 127 );
 			break;
 		default:
 			return -1; // Let the core do other icons
@@ -1196,6 +1215,6 @@ MODULE_EXPORT char *
 serialVFD_get_info (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	strcpy(p->info, "Driver for many serialVFDs from NEC(all FIPC based), Noritake, Futaba and the \"KD Rev2.1\"VFD");
+	strcpy(p->info, "Driver for many serialVFDs from NEC(all FIPC based), Noritake, Futaba and the \"KD Rev2.1\"VFD.");
 	return p->info;
 }

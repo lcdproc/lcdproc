@@ -2,11 +2,11 @@
 
 	Copyright (C) 2006 Stefan Herdler
 
-	This driver is based on drv_base.c, wirz-sli.c and hd44780 from LCDproc
-	0.4.5 and the NoritakeVFD driver from this package.
+	This driver is based on wirz-sli.c, hd44780.c, drv_base.c and NoritakeVFD
+	driver.
 	It may contain parts of other drivers of this package too.
 
-	2006-01-26 Version 0.1: everything should work (not all hardware tested!)
+	2006-02-13 Version 0.2: everything should work (not all hardware tested!)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by

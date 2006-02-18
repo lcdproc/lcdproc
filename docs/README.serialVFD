@@ -24,8 +24,8 @@
 
 	If you want to add a new device to the driver add a new section
 	to the displaytype-switch-case in the init-function and fill it
-	with the corrrect commands for the display.
-	(Try wich displaytype works best with your display, copy and modify
+	with the correct commands for the display.
+	(Try which displaytype works best with your display, copy and modify
 	it's section that is the easiest way I guess.)
 
 
@@ -33,10 +33,13 @@
 	http://www.maltepoeggel.de/html/vfd/index.html
 
 
+	It is possible to switch the display off and back on while the server is
+	running. It may take a few minutes untill the next full refresh makes
+	the display show everything correctly.
 
 
 	To enable the bignumbers on 2-line displays (only this driver supports
-	this yet) you have to edit "/clientchrono.c" before compiling.
+	this yet) you have to edit "/clients/lcdproc/chrono.c" before compiling.
 	In function "big_clock_screen" you have to replace the "4" by a "2" in
 	this line: "if (lcd_hgt < 4)"
 
