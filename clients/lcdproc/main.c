@@ -22,6 +22,15 @@
 #include "shared/sockets.h"
 #include "shared/debug.h"
 
+#include "batt.h"
+#include "chrono.h"
+#include "cpu.h"
+#include "cpu_smp.h"
+#include "disk.h"
+#include "load.h"
+#include "mem.h"
+#include "machine.h"
+
 // TODO: Commenting...  Everything!
 
 int Quit = 0;
@@ -55,20 +64,20 @@ mode sequence[] =
 {
 	// flags default ACTIVE will run by default
 	// longname    which on  off inv  timer   flags  
-	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE,},	// [C]PU
-	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE,},	// [M]emory
-	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE,},	// [L]oad (load histogram)
-	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE,},	// [T]ime/Date
-	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE,},	// [A]bout (credits)
-	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,},	// CPU_SM[P]
-	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,},	// [O]ld Timescreen
-	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,},	// big cloc[K] 
-	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,},	// Old [U]ptime Screen
-	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,},	// [B]attery Status
-	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,},	// CPU histogram [G]raph
-	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,},	// [S]ize of biggest processes
-	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,},	// [D]isk stats
-	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,},	// Mi[n]i clock 
+	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen },    // [C]PU
+	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen },    // [M]emory
+	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen },  // [L]oad (load histogram)
+	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen },   // [T]ime/Date
+	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen }, // [A]bout (credits)
+	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0, cpu_smp_screen },     // CPU_SM[P]
+	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0, clock_screen },       // [O]ld Timescreen
+	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0, big_clock_screen },   // big cloc[K] 
+	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0, uptime_screen },      // Old [U]ptime Screen
+	{ "Battery",   'B',  32,  256, 1, 0xffff, 0, battery_screen },     // [B]attery Status
+	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0, cpu_graph_screen },   // CPU histogram [G]raph
+	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0, mem_top_screen },     // [S]ize of biggest processes
+	{ "Disk",      'D', 256,  256, 1, 0xffff, 0, disk_screen },        // [D]isk stats
+	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0, mini_clock_screen },  // Mi[n]i clock 
 	{  NULL, 0, 0, 0, 0, 0,},		// No more..  all done.
 };
 

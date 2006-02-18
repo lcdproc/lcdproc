@@ -39,6 +39,7 @@ typedef struct mode
 	int show_invisible;	// Send stats while not visible?
 	int timer;		// Time since last update
 	int flags;		// bit 1 visible, bit 2 selected for display, bit 3 first
+	int (*func)(int,int,int *)	// function pointer
 } mode;
 
 //mode flags
