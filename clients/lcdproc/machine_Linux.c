@@ -53,20 +53,20 @@ int machine_init()
 	loadavg_fd	= -1;
 	meminfo_fd	= -1;
 
-	if(uptime_fd == -1)
+	if (uptime_fd == -1)
 	{
 		uptime_fd = open("/proc/uptime", O_RDONLY);
-		if(uptime_fd < 0)
+		if (uptime_fd < 0)
 		{
 			perror("open /proc/uptime");
 			return(FALSE);
 		}
 	}
 
-	if(load_fd == -1)
+	if (load_fd == -1)
 	{
 		load_fd = open("/proc/stat", O_RDONLY);
-		if(load_fd < 0)
+		if (load_fd < 0)
 		{
 			perror("open /proc/stat");
 			return(FALSE);
@@ -74,10 +74,10 @@ int machine_init()
 	}
 
 #ifndef USE_GETLOADAVG
-	if(loadavg_fd == -1)
+	if (loadavg_fd == -1)
 	{
 		loadavg_fd = open("/proc/loadavg", O_RDONLY);
-		if(loadavg_fd < 0)
+		if (loadavg_fd < 0)
 		{
 			perror("open /proc/loadavg");
 			return(FALSE);
@@ -85,20 +85,20 @@ int machine_init()
 	}
 #endif
 
-	if(meminfo_fd == -1)
+	if (meminfo_fd == -1)
 	{
 		meminfo_fd = open("/proc/meminfo", O_RDONLY);
-		if(meminfo_fd < 0)
+		if (meminfo_fd < 0)
 		{
 			perror("open /proc/meminfo");
 			return(FALSE);
 		}
 	}
 
-	if(batt_fd == -1)
+	if (batt_fd == -1)
 	{
 		batt_fd = open("/proc/apm", O_RDONLY);
-		if(batt_fd < 0)
+		if (batt_fd < 0)
 		{
 			//perror("open /proc/apm");
 			batt_fd = -1;
@@ -110,25 +110,25 @@ int machine_init()
 
 int machine_close()
 {
-	if(batt_fd != -1)
+	if (batt_fd != -1)
 		close(batt_fd);
 	batt_fd = -1;
 
-	if(load_fd != -1)
+	if (load_fd != -1)
 		close(load_fd);
 	load_fd = -1;
 
 #ifndef USE_GETLOADAVG
-	if(loadavg_fd != -1)
+	if (loadavg_fd != -1)
 		close(loadavg_fd);
 	loadavg_fd = -1;
 #endif
 
-	if(meminfo_fd != -1)
+	if (meminfo_fd != -1)
 		close(meminfo_fd);
 	meminfo_fd = -1;
 
-	if(uptime_fd != -1)
+	if (uptime_fd != -1)
 		close(uptime_fd);
 	uptime_fd = -1;
 
@@ -170,7 +170,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 	char str[64];
 	int battstat;
 
-	if(batt_fd == -1)
+	if (batt_fd == -1)
 	{
 		*acstat   = LCDP_AC_ON;
 		*battflag = LCDP_BATT_ABSENT;
@@ -178,28 +178,28 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 		return(TRUE);
 	}
 
-	if(lseek(batt_fd, 0, 0) != 0)
+	if (lseek(batt_fd, 0, 0) != 0)
 		return(FALSE);
 
-	if(read(batt_fd, str, sizeof(str) - 1) < 0)
+	if (read(batt_fd, str, sizeof(str) - 1) < 0)
 		return(FALSE);
 
-	if(3 > sscanf(str + 13, "0x%x 0x%x 0x%x %d", acstat, &battstat, battflag, percent))
+	if (3 > sscanf(str + 13, "0x%x 0x%x 0x%x %d", acstat, &battstat, battflag, percent))
 		return(FALSE);
 
-	if(*battflag == 0xff)
+	if (*battflag == 0xff)
 		*battflag = LCDP_BATT_UNKNOWN;
 	else
 	{
-		if(*battflag & 1)
+		if (*battflag & 1)
 			*battflag = LCDP_BATT_HIGH;
-		if(*battflag & 2)
+		if (*battflag & 2)
 			*battflag = LCDP_BATT_LOW;
-		if(*battflag & 4)
+		if (*battflag & 4)
 			*battflag = LCDP_BATT_CRITICAL;
-		if(*battflag & 8 || battstat == 3)
+		if (*battflag & 8 || battstat == 3)
 			*battflag = LCDP_BATT_CHARGING;
-		if(*battflag & 128)
+		if (*battflag & 128)
 			*battflag = LCDP_BATT_ABSENT;
 	}
 
@@ -241,9 +241,9 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 	// Get rid of old, unmounted filesystems...
 	memset(fs, 0, sizeof(mounts_type) * 256);
 
-	while(x < 256)
+	while (x < 256)
 	{
-		if(fgets(line, 256, mtab_fd) == NULL)
+		if (fgets(line, 256, mtab_fd) == NULL)
 		{
 			fclose (mtab_fd);
 			*cnt = x;
@@ -273,7 +273,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 #endif
 
 			fs[x].blocks = fsinfo.f_blocks;
-			if(fs[x].blocks > 0)
+			if (fs[x].blocks > 0)
 			{
 				fs[x].bsize = fsinfo.f_bsize;
 				fs[x].bfree = fsinfo.f_bfree;
@@ -313,7 +313,7 @@ int machine_get_loadavg(double *load)
 #ifdef USE_GETLOADAVG
 	double loadavg[LOADAVG_NSTATS];
 
-	if(getloadavg(loadavg, LOADAVG_NSTATS) < 0)
+	if (getloadavg(loadavg, LOADAVG_NSTATS) < 0)
 	{
 		perror("getloadavg");
 		*load = 1.;
@@ -368,19 +368,19 @@ int machine_get_procs(LinkedList *procs)
 			VmRSSLineLen	= strlen(VmRSSLine);
 	int threshold = 400, unique;
 
-	if((proc = opendir("/proc")) == NULL)
+	if ((proc = opendir("/proc")) == NULL)
 	{
 		perror("mem_top_screen: unable to open /proc");
 		return(FALSE);
 	}
 
-	while((procdir = readdir(proc)))
+	while ((procdir = readdir(proc)))
 	{
-		if(!index("1234567890", procdir->d_name[0]))
+		if (!index("1234567890", procdir->d_name[0]))
 			continue;
 
 		sprintf(buf, "/proc/%s/status", procdir->d_name);
-		if((StatusFile = fopen(buf, "r")) == NULL)
+		if ((StatusFile = fopen(buf, "r")) == NULL)
 		{
 			// Not a serious error; process has finished before we could
 			// examine it:
@@ -388,29 +388,29 @@ int machine_get_procs(LinkedList *procs)
 		}
 
 		procRSS = procSize = procData = procStk = procExe = 0;
-		while(fgets(buf, sizeof(buf), StatusFile))
+		while (fgets(buf, sizeof(buf), StatusFile))
 		{
-			if(!strncmp(buf, NameLine, NameLineLen))
+			if (!strncmp(buf, NameLine, NameLineLen))
 			{
 				/* Name: procName */
 				sscanf(buf, "%*s %s", procName);
-			} else if(!strncmp(buf, VmSizeLine, VmSizeLineLen))
+			} else if (!strncmp(buf, VmSizeLine, VmSizeLineLen))
 			{
 				/* VmSize: procSize kB */
 				sscanf(buf, "%*s %d", &procSize);
-			} else if(!strncmp (buf, VmRSSLine, VmRSSLineLen))
+			} else if (!strncmp (buf, VmRSSLine, VmRSSLineLen))
 			{
 				/* VmRSS: procRSS kB */
 				sscanf(buf, "%*s %d", &procRSS);
-			} else if(!strncmp(buf, VmDataLine, VmDataLineLen))
+			} else if (!strncmp(buf, VmDataLine, VmDataLineLen))
 			{
 				/* VmData: procData kB */
 				sscanf(buf, "%*s %d", &procData);
-			} else if(!strncmp(buf, VmStkLine, VmStkLineLen))
+			} else if (!strncmp(buf, VmStkLine, VmStkLineLen))
 			{
 				/* VmStk: procStk kB */
 				sscanf(buf, "%*s %d", &procStk);
-			} else if(!strncmp(buf, VmExeLine, VmExeLineLen))
+			} else if (!strncmp(buf, VmExeLine, VmExeLineLen))
 			{
 				/* VmExe: procExe kB */
 				sscanf(buf, "%*s %d", &procExe);
@@ -418,7 +418,7 @@ int machine_get_procs(LinkedList *procs)
 		}
 		fclose(StatusFile);
 
-		if(procSize > threshold)
+		if (procSize > threshold)
 		{
 			// Figure out if it's sharing any memory...
 			unique = 1;
@@ -426,22 +426,22 @@ int machine_get_procs(LinkedList *procs)
 			do
 			{
 				p = LL_Get (procs);
-				if(p)
+				if (p)
 				{
-					if(0 == strcmp(p->name, procName))
+					if (0 == strcmp(p->name, procName))
 					{
 						unique = 0;
 						p->number++;
 						p->totl += procData + procStk + procExe;
 					}
 				}
-			} while(LL_Next(procs) == 0);
+			} while (LL_Next(procs) == 0);
 
 			// If this is the first one by this name...
-			if(unique)
+			if (unique)
 			{
 				p = malloc(sizeof(procinfo_type));
-				if(!p)
+				if (!p)
 				{
 					perror("mem_top_screen: Error allocating process entry");
 					break;
@@ -471,9 +471,9 @@ int machine_get_smpload(load_type *result, int *numcpus)
 
 	// Look for lines starting with "cpu0", "cpu1", etc.
 	token = strtok(procbuf, "\n");
-	while(token)
+	while (token)
 	{
-		if((strlen(token) > 3) && (!strncmp(token, "cpu", 3)) && isdigit(token[3]))
+		if ((strlen(token) > 3) && (!strncmp(token, "cpu", 3)) && isdigit(token[3]))
 		{
 			sscanf(token, "%*s %lu %lu %lu %lu", &curr_load[*numcpus].user, &curr_load[*numcpus].nice, &curr_load[*numcpus].system, &curr_load[*numcpus].idle);
 

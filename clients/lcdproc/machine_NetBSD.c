@@ -71,7 +71,7 @@ int machine_init()
 	/* get the page size with "getpagesize" and calculate pageshift from it */
 	int pagesize = getpagesize();
 	pageshift = 0;
-	while(pagesize > 1)
+	while (pagesize > 1)
 	{
 		pageshift++;
 		pagesize >>= 1;
@@ -93,7 +93,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 	int apmd;
 	struct apm_power_info apmi;
    
-	if((apmd = open("/dev/apm", O_RDONLY)) == -1)
+	if ((apmd = open("/dev/apm", O_RDONLY)) == -1)
 	{
 		*acstat   = LCDP_AC_ON;
 		*battflag = LCDP_BATT_ABSENT;
@@ -102,7 +102,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 	}
    
 	memset(&apmi, 0, sizeof(apmi));
-	if(ioctl(apmd, APM_IOC_GETPOWER, &apmi) == -1)
+	if (ioctl(apmd, APM_IOC_GETPOWER, &apmi) == -1)
 	{   
 		perror("APM_IOC_GETPOWER failed in get_batt_stat()");
 		return(FALSE);
@@ -144,14 +144,14 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 	int statcnt, fscnt, i; 
 
 	fscnt = getmntinfo(&mntbuf, MNT_WAIT);
-	if(fscnt == 0) 
+	if (fscnt == 0) 
 	{ 
 		perror("getmntinfo");
 		return(FALSE);
 	}
-	for(statcnt = 0, pp = mntbuf, i = 0; i < fscnt; pp++, i++)
+	for (statcnt = 0, pp = mntbuf, i = 0; i < fscnt; pp++, i++)
 	{
-		if(strcmp(pp->f_fstypename, "procfs")
+		if (strcmp(pp->f_fstypename, "procfs")
 			&& strcmp(pp->f_fstypename, "kernfs")
 			&& strcmp(pp->f_fstypename, "linprocfs")
 #ifndef STAT_NFS
@@ -167,7 +167,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 			snprintf(fs[statcnt].type, 255, "%s", pp->f_fstypename);
 
 			fs[statcnt].blocks = pp->f_blocks;
-			if(fs[statcnt].blocks > 0)
+			if (fs[statcnt].blocks > 0)
 			{
 				fs[statcnt].bsize = pp->f_bsize;
 				fs[statcnt].bfree = pp->f_bfree;
@@ -194,7 +194,7 @@ int machine_get_load(load_type *curr_load)
 	mib[0] = CTL_KERN;
 	mib[1] = KERN_CP_TIME;
 	size = sizeof(cp_time);
-	if(sysctl(mib, 2, cp_time, &size, NULL, 0) < 0)
+	if (sysctl(mib, 2, cp_time, &size, NULL, 0) < 0)
 	{
 		perror("sysctl kern.cp_time failed");
 		return(FALSE);
@@ -206,7 +206,7 @@ int machine_get_load(load_type *curr_load)
 	load.idle   = (unsigned long) (cp_time[CP_IDLE]);
 	load.total  = load.user + load.nice + load.system + load.idle;
 
-	if(load.total != last_load.total)
+	if (load.total != last_load.total)
 	{
 		curr_load->user   = load.user   - last_load.user;
 		curr_load->nice   = load.nice   - last_load.nice;
@@ -228,7 +228,7 @@ int machine_get_loadavg(double *load)
 {
 	double loadavg[1];
 
-	if(getloadavg(loadavg, 1) == -1)
+	if (getloadavg(loadavg, 1) == -1)
 		return(FALSE);
 
 	*load = loadavg[0];
@@ -245,7 +245,7 @@ int machine_get_meminfo(meminfo_type *result)
 	mib[0] = CTL_VM;
 	mib[1] = VM_UVMEXP2;
 	size = sizeof(uvmexp);
-	if(sysctl(mib, 2, &uvmexp, &size, NULL, 0) < 0)
+	if (sysctl(mib, 2, &uvmexp, &size, NULL, 0) < 0)
 	{
 		perror("sysctl vm.uvmexp2 failed");
 		return(FALSE);
@@ -276,23 +276,23 @@ int machine_get_procs(LinkedList *procs)
 	procinfo_type *p;
 
 	kprocs = NULL;
-	if((kvmd = kvm_open(NULL, NULL, NULL, KVM_NO_FILES, "kvm_open")) == NULL)
+	if ((kvmd = kvm_open(NULL, NULL, NULL, KVM_NO_FILES, "kvm_open")) == NULL)
 	{
 		perror("kvm_openfiles");
 		return(FALSE);
 	}
 
 	kprocs = kvm_getproc2(kvmd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc2), &nproc);
-	if(kprocs == NULL)
+	if (kprocs == NULL)
 	{
 		perror("kvm_getproc2");
 		return(FALSE);
 	}
 
-	for(i = 0; i < nproc; i++)
+	for (i = 0; i < nproc; i++)
 	{
 		p = malloc(sizeof(procinfo_type));
-		if(!p)
+		if (!p)
 		{
 			perror("mem_top_malloc");
 			kvm_close(kvmd);
@@ -322,19 +322,19 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	mib[1] = HW_NCPU;
 	size = sizeof(int);
 
-	if(sysctl(mib, 2, &num, &size, NULL, 0) < 0)
+	if (sysctl(mib, 2, &num, &size, NULL, 0) < 0)
 	{
 		perror("sysctl hw.ncpu");
 		return(FALSE);
 	}
 
-	if(machine_get_load(&curr_load) == FALSE)
+	if (machine_get_load(&curr_load) == FALSE)
 		return(FALSE);
 
 	*numcpus = num;
 	num = num > 8 ? 8 : num;
 	/* Don't know how to get per-cpu-load values */
-	for(i = 0; i < num; i++)
+	for (i = 0; i < num; i++)
 	{
 		result[i] = curr_load;
 	}
@@ -354,7 +354,7 @@ int machine_get_uptime(double *up, double *idle)
 	mib[1] = KERN_BOOTTIME;
 	size = sizeof(boottime);
 	time(&now);
-	if(sysctl(mib, 2, &boottime, &size, NULL, 0) < 0)
+	if (sysctl(mib, 2, &boottime, &size, NULL, 0) < 0)
 	{
 		perror("sysctl kern.boottime failed");
 		return(FALSE);
@@ -362,7 +362,7 @@ int machine_get_uptime(double *up, double *idle)
 
 	*up = (double)(now - boottime.tv_sec);
 
-	if(machine_get_load(&curr_load) == FALSE)
+	if (machine_get_load(&curr_load) == FALSE)
 		*idle = 100.;
 	else
 		*idle = 100.*curr_load.idle/curr_load.total;

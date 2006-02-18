@@ -29,11 +29,14 @@
 // +--------------------+
 //
 int
+#ifdef LCDPROC_MENUS
+cpu_screen(int rep, int display, int * flags_ptr)
+#else
 cpu_screen(int rep, int display)
+#endif
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 4
-	static int first = TRUE;
 	static double cpu[CPU_BUF_SIZE + 1][5];	// last buffer is scratch
 	static int gauge_wid = 0;
 	static int usni_wid = 0;
@@ -41,9 +44,16 @@ cpu_screen(int rep, int display)
 	int i, j, n;
 	double value;
 	load_type load;
+#ifdef LCDPROC_MENUS
+
+	if ((*flags_ptr & INITIALIZED) == 0) {
+		*flags_ptr |= INITIALIZED;
+#else
+	static int first = TRUE;
 
 	if (first) {
 		first = FALSE;
+#endif
 
 		sock_send_string(sock, "screen_add C\n");
 		sprintf(buffer, "screen_set C -name {CPU Use: %s}\n", get_hostname());
@@ -121,27 +131,27 @@ cpu_screen(int rep, int display)
 
 	/*
 	// Only clear on first display...
-	if(!rep){
-		   // Make all the same, if this is the first time...
-		   for(i=0; i<CPU_BUF_SIZE-1; i++)
-		   for(j=0; j<5; j++)
-		   cpu[i][j] = cpu[CPU_BUF_SIZE-1][j];
+	if (!rep) {
+		// Make all the same, if this is the first time...
+		for (i=0; i < CPU_BUF_SIZE-1; i++)
+			for (j=0; j < 5; j++)
+				cpu[i][j] = cpu[CPU_BUF_SIZE-1][j];
 	}
 	*/
 
 	// Average values for final result
-	for(i = 0; i < 5; i++) {
+	for (i = 0; i < 5; i++) {
 		value = 0.0;
-		for(j = 0; j < CPU_BUF_SIZE; j++)
+		for (j = 0; j < CPU_BUF_SIZE; j++)
 			value += cpu[j][i];
 		value /= CPU_BUF_SIZE;
 		cpu[CPU_BUF_SIZE][i] = value;
 	}
 
-	if(!display)
+	if (!display)
 		return(0);
 
-	if(lcd_hgt >= 4) {				// 4-line display
+	if (lcd_hgt >= 4) {				// 4-line display
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][4]);
 		sprintf(buffer, "widget_set C title {CPU %5s: %s}\n", tmp, get_hostname());
 		sock_send_string(sock, buffer);
@@ -208,11 +218,14 @@ cpu_screen(int rep, int display)
 // +--------------------+
 //
 int
+#ifdef LCDPROC_MENUS
+cpu_graph_screen(int rep, int display, int * flags_ptr)
+#else
 cpu_graph_screen(int rep, int display)
+#endif
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 2
-	static int first = TRUE;
 	static double cpu[CPU_BUF_SIZE];
 	static int cpu_past[LCD_MAX_WIDTH];
 	static int gauge_hgt = 0;
@@ -220,15 +233,22 @@ cpu_graph_screen(int rep, int display)
 	int i, n = 0;
 	double value ;
 	load_type load;
+#ifdef LCDPROC_MENUS
+
+	if ((*flags_ptr & INITIALIZED) == 0) {
+		*flags_ptr |= INITIALIZED;
+#else
+	static int first = TRUE;
 
 	if (first) {
 		first = FALSE;
+#endif
 		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 
 		sock_send_string(sock, "screen_add G\n");
 		sprintf(buffer, "screen_set G -name {CPU Graph: %s}\n", get_hostname());
 		sock_send_string(sock, buffer);
-		if(lcd_hgt >= 4) {
+		if (lcd_hgt >= 4) {
 			sock_send_string(sock, "widget_add G title title\n");
 			sprintf(buffer, "widget_set G title {CPU: %s}\n", get_hostname());
 		}

@@ -32,7 +32,11 @@
 //
 // TODO: Disk screen!  Requires virtual pages in the server, though...
 int
+#ifdef LCDPROC_MENUS
+disk_screen (int rep, int display, int * flags_ptr)
+#else
 disk_screen (int rep, int display)
+#endif
 {
 	static mounts_type mnt[256];
 	static int count = 0;
@@ -45,15 +49,21 @@ disk_screen (int rep, int display)
 	} table[256];
 	int i;
 	static int num_disks = 0;
-	static int first = 1;		  // First line to display, sort of.
 	static int dev_wid = 6;
 	static int gauge_wid = 6;
 
 #define huge long long int
 	huge size;
+#ifdef LCDPROC_MENUS
+
+	if ((*flags_ptr & INITIALIZED) == 0) {
+		*flags_ptr |= INITIALIZED;
+#else
+	static int first = TRUE;
 
 	if (first) {
-		first = 0;
+		first = FALSE;
+#endif
 		dev_wid = (lcd_wid >= 20) ? (lcd_wid - 8) / 2 : (lcd_wid / 2) - 1;
 		gauge_wid = (lcd_wid >= 20) ? (lcd_wid - dev_wid - 10) : (lcd_wid - dev_wid - 3);
 

@@ -63,7 +63,7 @@ int machine_init()
 	/* get the page size with "getpagesize" and calculate pageshift from it */
 	int pagesize = getpagesize();
 	pageshift = 0;
-	while(pagesize > 1)
+	while (pagesize > 1)
 	{
 		pageshift++;
 		pagesize >>= 1;
@@ -89,13 +89,13 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 	*battflag = LCDP_BATT_ABSENT;
 	*percent  = 100;
 
-	if((apmd = open("/dev/apm", O_RDONLY)) == -1)
+	if ((apmd = open("/dev/apm", O_RDONLY)) == -1)
 	{
 		perror("get_battstat_open");
 		return(TRUE);
 	}
 
-	if(ioctl(apmd, APMIO_GETINFO, &aip) == -1)
+	if (ioctl(apmd, APMIO_GETINFO, &aip) == -1)
 	{
 		perror("get_battstat_ioctl");
 		return(FALSE);
@@ -134,7 +134,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 	}
 
 	*percent = aip.ai_batt_life;
-	if(*percent == 255)
+	if (*percent == 255)
 		*percent = -1;
 
 	close(apmd);
@@ -149,14 +149,14 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 	int statcnt, fscnt, i; 
 
 	fscnt = getmntinfo(&mntbuf, MNT_WAIT);
-	if(fscnt == 0) 
+	if (fscnt == 0) 
 	{ 
 		perror("getmntinfo");
 		return(FALSE);
 	}
-	for(statcnt = 0, pp = mntbuf, i = 0; i < fscnt; pp++, i++)
+	for (statcnt = 0, pp = mntbuf, i = 0; i < fscnt; pp++, i++)
 	{
-		if(    strcmp(pp->f_fstypename, "procfs")
+		if (    strcmp(pp->f_fstypename, "procfs")
 			&& strcmp(pp->f_fstypename, "kernfs")
 			&& strcmp(pp->f_fstypename, "linprocfs")
 #ifndef STAT_NFS
@@ -172,7 +172,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 			snprintf(fs[statcnt].type,   255, "%s", pp->f_fstypename);
 
 			fs[statcnt].blocks = pp->f_blocks;
-			if(fs[statcnt].blocks > 0)
+			if (fs[statcnt].blocks > 0)
 			{
 				fs[statcnt].bsize = pp->f_bsize;
 				fs[statcnt].bfree = pp->f_bfree;
@@ -197,7 +197,7 @@ int machine_get_load(load_type *curr_load)
 	size_t size;
 
 	size = sizeof(cp_time);
-	if(sysctlbyname("kern.cp_time", cp_time, &size, NULL, 0) < 0)
+	if (sysctlbyname("kern.cp_time", cp_time, &size, NULL, 0) < 0)
 	{
 		perror("sysctl kern.cp_time failed");
 		return(FALSE);
@@ -209,7 +209,7 @@ int machine_get_load(load_type *curr_load)
 	load.idle   = (unsigned long) (cp_time[CP_IDLE]);
 	load.total  = load.user + load.nice + load.system + load.idle;
 
-	if(load.total != last_load.total)
+	if (load.total != last_load.total)
 	{
 		curr_load->user   = load.user   - last_load.user;
 		curr_load->nice   = load.nice   - last_load.nice;
@@ -231,7 +231,7 @@ int machine_get_loadavg(double *load)
 {
 	double loadavg[1];
 
-	if(getloadavg(loadavg, 1) == -1)
+	if (getloadavg(loadavg, 1) == -1)
 		return(FALSE);
 
 	*load = loadavg[0];
@@ -246,13 +246,13 @@ int machine_get_meminfo(meminfo_type *result)
 
 	size = sizeof(int);
 
-	if(sysctlbyname("vm.stats.vm.v_page_count", &total_pages, &size, NULL, 0) < 0)
+	if (sysctlbyname("vm.stats.vm.v_page_count", &total_pages, &size, NULL, 0) < 0)
 	{
 		perror("sysctl vm.stats.vm.v_page_count");
 		return(FALSE);
 	}
 
-	if(sysctlbyname("vm.stats.vm.v_free_count", &free_pages, &size, NULL, 0) < 0)
+	if (sysctlbyname("vm.stats.vm.v_free_count", &free_pages, &size, NULL, 0) < 0)
 	{
 		perror("sysctl vm.stats.vm.v_free_count");
 		return(FALSE);
@@ -271,7 +271,7 @@ int machine_get_meminfo(meminfo_type *result)
 	result[1].total   = 0;
 	result[1].free    = 0;
 
-	if(swapmode(&total_pages, &free_pages) != -1)
+	if (swapmode(&total_pages, &free_pages) != -1)
 	{
 		result[1].total = total_pages;
 		result[1].free  = free_pages;
@@ -287,24 +287,24 @@ int machine_get_procs(LinkedList *procs)
 	procinfo_type *p;
 	kvm_t *kvmd;
 
-	if((kvmd = kvm_open(NULL, NULL, NULL, O_RDONLY, "kvm_open")) == NULL)
+	if ((kvmd = kvm_open(NULL, NULL, NULL, O_RDONLY, "kvm_open")) == NULL)
 	{
 		perror("kvm_open");
 		return(FALSE);
 	}
 
 	kprocs = kvm_getprocs(kvmd, KERN_PROC_ALL, 0, &nproc);
-	if(kprocs == NULL)
+	if (kprocs == NULL)
 	{   
 		perror("kvm_getprocs");
 		kvm_close(kvmd);
 		return(FALSE);
 	}
 
-	for(i = 0; i < nproc; i++)
+	for (i = 0; i < nproc; i++)
 	{
 		p = malloc(sizeof(procinfo_type));
-		if(!p)
+		if (!p)
 		{
 			perror("mem_top_malloc");
 			kvm_close(kvmd);
@@ -340,19 +340,19 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	load_type curr_load;
 
 	size = sizeof(int);
-	if(sysctlbyname("hw.ncpu", &num, &size, NULL, 0) < 0)
+	if (sysctlbyname("hw.ncpu", &num, &size, NULL, 0) < 0)
 	{
 		perror("sysctl hw.ncpu");
 		return(FALSE);
 	}
 
-	if(machine_get_load(&curr_load) == FALSE)
+	if (machine_get_load(&curr_load) == FALSE)
 		return(FALSE);
 
 	*numcpus = num;
 	num = num > 8 ? 8 : num;
 	/* Don't know how to get per-cpu-load values */
-	for(i = 0; i < num; i++)
+	for (i = 0; i < num; i++)
 	{
 		result[i] = curr_load;
 	}
@@ -369,7 +369,7 @@ int machine_get_uptime(double *up, double *idle)
 
 	size = sizeof(boottime);
 	time(&now);
-	if(sysctlbyname("kern.boottime", &boottime, &size, NULL, 0) < 0)
+	if (sysctlbyname("kern.boottime", &boottime, &size, NULL, 0) < 0)
 	{
 		perror("sysctl kern.cp_time failed");
 		return(FALSE);
@@ -377,7 +377,7 @@ int machine_get_uptime(double *up, double *idle)
 
 	*up = (double)(now - boottime.tv_sec);
 
-	if(machine_get_load(&curr_load) == FALSE)
+	if (machine_get_load(&curr_load) == FALSE)
 		*idle = 100.;
 	else
 		*idle = 100.*curr_load.idle/curr_load.total;
@@ -394,14 +394,14 @@ static int swapmode(int *retavail, int *retfree)
 	*retavail = 0;
 	*retfree = 0;
 
-	if((kvmd = kvm_open(NULL, NULL, NULL, O_RDONLY, "kvm_open")) == NULL)
+	if ((kvmd = kvm_open(NULL, NULL, NULL, O_RDONLY, "kvm_open")) == NULL)
 	{
 		perror("read kvm");
 		return(-1);
 	}
 
 	n = kvm_getswapinfo(kvmd, swapary, 1, 0);
-	if(n < 0 || swapary[0].ksw_total == 0)
+	if (n < 0 || swapary[0].ksw_total == 0)
 	{
 		/* strange */
 	}

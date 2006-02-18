@@ -8,6 +8,10 @@
 #define LOAD_MIN 0.5
 #endif
 
+#ifdef LCDPROC_MENUS
+int xload_screen (int rep, int display, int * flags_ptr);
+#else
 int xload_screen (int rep, int display);
+#endif
 
 #endif

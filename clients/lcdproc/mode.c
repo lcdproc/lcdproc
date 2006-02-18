@@ -36,13 +36,13 @@ char *buffer = NULL;
 int
 mode_init()
 {
-	if((buffer = malloc(1024)) == NULL)
+	if ((buffer = malloc(1024)) == NULL)
 	{
 		perror("malloc buffer");
 		return(0);
 	}
 
-	if((tmp = malloc(1024)) == NULL)
+	if ((tmp = malloc(1024)) == NULL)
 	{
 		perror("malloc tmp");
 		return(0);
@@ -58,13 +58,13 @@ mode_close()
 {
 	machine_close();
 
-	if(tmp != NULL)
+	if (tmp != NULL)
 	{
 		free(tmp);
 		tmp = NULL;
 	}
 
-	if(buffer != NULL)
+	if (buffer != NULL)
 	{
 		free(buffer);
 		buffer = NULL;
@@ -77,10 +77,68 @@ update_screen(mode *m, int display)
 	static int status = -1;
 	int old_status = status;
 
-	if(m)
+	if (m)
 	{
 		switch(m->which)
 		{
+#ifdef LCDPROC_MENUS
+			case 'g':
+			case 'G':
+				status = cpu_graph_screen(m->timer, display, &(m->flags));
+				break;
+			case 'c':
+			case 'C':
+				status = cpu_screen(m->timer, display, &(m->flags));
+				break;
+			case 'o':
+			case 'O':
+				status = clock_screen(m->timer, display, &(m->flags));
+				break;
+			case 'k':
+			case 'K':
+				status = big_clock_screen(m->timer, display, &(m->flags));
+				break;
+			case 'm':
+			case 'M':
+				status = mem_screen(m->timer, display, &(m->flags));
+				break;
+			case 's':
+			case 'S':
+				status = mem_top_screen(m->timer, display, &(m->flags));
+				break;
+			case 'u':
+			case 'U':
+				status = uptime_screen(m->timer, display, &(m->flags));
+				break;
+			case 't':
+			case 'T':
+				status = time_screen(m->timer, display, &(m->flags));
+				break;
+			case 'd':
+			case 'D':
+				status = disk_screen(m->timer, display, &(m->flags));
+				break;
+			case 'x':
+			case 'X':
+				status = xload_screen(m->timer, display, &(m->flags));
+				break;
+			case 'b':
+			case 'B':
+				status = battery_screen(m->timer, display, &(m->flags));
+				break;
+			case 'a':
+			case 'A':
+				status = credit_screen(m->timer, display, &(m->flags));
+				break;
+			case 'p':
+			case 'P':
+				status = cpu_smp_screen(m->timer, display, &(m->flags));
+				break;
+			case 'e':
+			case 'E':
+				status = essential_clock_screen(m->timer, display, &(m->flags));
+				break;
+#else
 			case 'g':
 			case 'G':
 				status = cpu_graph_screen(m->timer, display);
@@ -137,18 +195,19 @@ update_screen(mode *m, int display)
 			case 'E':
 				status = essential_clock_screen(m->timer, display);
 				break;
+#endif
 			default:
 				break;
 		}
 	}
 
-	if(status != old_status)
+	if (status != old_status)
 	{
-		if(status == BACKLIGHT_OFF)
+		if (status == BACKLIGHT_OFF)
 			sock_send_string(sock, "backlight off\n");
-		if(status == BACKLIGHT_ON)
+		if (status == BACKLIGHT_ON)
 			sock_send_string(sock, "backlight on\n");
-		if(status == BLINK_ON)
+		if (status == BLINK_ON)
 			sock_send_string(sock, "backlight blink\n");
 	}
 
@@ -164,11 +223,15 @@ update_screen(mode *m, int display)
 // Credit Screen shows who wrote this...
 //
 int
+#ifdef LCDPROC_MENUS
+credit_screen(int rep, int display, int * flags_ptr)
+#else
 credit_screen(int rep, int display)
+#endif
 {
 	static int first = 1;
 
-	if(first)
+	if (first)
 	{
 		first = 0;
 
@@ -177,7 +240,7 @@ credit_screen(int rep, int display)
 		sock_send_string(sock, "widget_add A title title\n");
 		sprintf(buffer, "widget_set A title {LCDPROC %s}\n", version);
 		sock_send_string(sock, buffer);
-		if(lcd_hgt >= 4)
+		if (lcd_hgt >= 4)
 		{
 			sock_send_string(sock, "widget_add A one string\n");
 			sock_send_string(sock, "widget_add A two string\n");

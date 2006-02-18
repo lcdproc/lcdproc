@@ -29,16 +29,26 @@
 // +--------------------+
 //
 int
+#ifdef LCDPROC_MENUS
+mem_screen (int rep, int display, int * flags_ptr)
+#else
 mem_screen (int rep, int display)
+#endif
 {
-	static int first = 1;
 	static int which_title = 0;
 	static int gauge_wid = 0;
 	static int gauge_offs = 0;
 	meminfo_type mem[2];
+#ifdef LCDPROC_MENUS
+
+	if ((*flags_ptr & INITIALIZED) == 0) {
+		*flags_ptr |= INITIALIZED;
+#else
+	static int first = TRUE;
 
 	if (first) {
-		first = 0;
+		first = FALSE;
+#endif
 
 		sock_send_string(sock, "screen_add M\n");
 		sprintf(buffer, "screen_set M -name {Memory & Swap: %s}\n", get_hostname());
@@ -136,7 +146,7 @@ mem_screen (int rep, int display)
 				double value = 1.0 - (double) (mem[0].free + mem[0].buffers + mem[0].cache)
 	                	                         / (double) mem[0].total;
 
-				// printf(".0f", val) only prints the integer part
+				//printf(".0f", val) only prints the integer part
 				sprintf(buffer, "widget_set M memgauge 2 4 %.0f\n",
 						lcd_cellwid * gauge_wid * value);
 				if (display)
@@ -147,7 +157,7 @@ mem_screen (int rep, int display)
 			if (mem[1].total > 0) {
 				double value = 1.0 - ((double) mem[1].free / (double) mem[1].total);
 
-				// printf(".0f", val) only prints the integer part
+				//printf(".0f", val) only prints the integer part
 				sprintf(buffer, "widget_set M swapgauge %i 4 %.0f\n", 
 					lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
 				if (display)
@@ -175,7 +185,7 @@ mem_screen (int rep, int display)
 					 / (double) mem[0].total;
 
 			if (gauge_wid > 0) {
-				// printf(".0f", val) only prints the integer part
+				//printf(".0f", val) only prints the integer part
 				sprintf(buffer, "widget_set M memgauge %i 1 %.0f\n",
 					gauge_offs, lcd_cellwid * gauge_wid * value);
 				if (display)
@@ -194,7 +204,7 @@ mem_screen (int rep, int display)
 			double value = 1.0 - ((double) mem[1].free / (double) mem[1].total);
 
 			if (gauge_wid > 0) {
-				// printf(".0f", val) only prints the integer part
+				//printf(".0f", val) only prints the integer part
 				sprintf(buffer, "widget_set M swapgauge %i 2 %.0f\n", 
 					gauge_offs, lcd_cellwid * gauge_wid * value);
 				if (display)
@@ -238,14 +248,24 @@ sort_procs (void *a, void *b)
 // +--------------------+
 //
 int
+#ifdef LCDPROC_MENUS
+mem_top_screen (int rep, int display, int * flags_ptr)
+#else
 mem_top_screen (int rep, int display)
+#endif
 {
-	static int first = 1;
 	LinkedList *procs;
 	int i;
+#ifdef LCDPROC_MENUS
+
+	if ((*flags_ptr & INITIALIZED) == 0) {
+		*flags_ptr |= INITIALIZED;
+#else
+	static int first = TRUE;
 
 	if (first) {
-		first = 0;
+		first = FALSE;
+#endif
 		
 		sock_send_string(sock, "screen_add S\n");
 		sprintf(buffer, "screen_set S -name {Top Memory Use: %s}\n", get_hostname());
@@ -297,8 +317,8 @@ mem_top_screen (int rep, int display)
 			if (display)
 				sock_send_string(sock, buffer);
 		} else {
-			// printf("Mem hog: none?\n");
-			// sprintf(buffer, "widget_set S %i 1 %i {}\n", i, i);
+			//printf("Mem hog: none?\n");
+			//sprintf(buffer, "widget_set S %i 1 %i {}\n", i, i);
 			sprintf(buffer, "widget_set S %i 1 %i { }\n", i, i);
 			if (display)
 				sock_send_string(sock, buffer);

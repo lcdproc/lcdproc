@@ -71,14 +71,24 @@ battery_status(int status)
 // +--------------------+
 //
 int
+#ifdef LCDPROC_MENUS
+battery_screen (int rep, int display, int * flags_ptr)
+#else
 battery_screen (int rep, int display)
+#endif
 {
-	static int first = TRUE;
 	int acstat = 0, battstat = 0, percent = 0;
 	int gauge_wid = lcd_wid - 2;
+#ifdef LCDPROC_MENUS
 
-	if (first == TRUE) {
+	if ((*flags_ptr & INITIALIZED) == 0) {
+		*flags_ptr |= INITIALIZED;
+#else
+	static int first = TRUE;
+
+	if (first) {
 		first = FALSE;
+#endif
 
 		sock_send_string (sock, "screen_add B\n");
 		sprintf (buffer, "screen_set B -name {APM stats: %s}\n", get_hostname());
@@ -111,10 +121,10 @@ battery_screen (int rep, int display)
 	sprintf(buffer, "widget_set B title {%s: %s: %s}\n",
 			(acstat == LCDP_AC_ON && battstat == LCDP_BATT_ABSENT) ? "AC" : "Batt",
 			tmp, get_hostname());
-	if(display)
+	if (display)
 		sock_send_string (sock, buffer);
 
-	if(lcd_hgt >= 4) {				  // 4-line version of the screen
+	if (lcd_hgt >= 4) {				  // 4-line version of the screen
 		sprintf(buffer, "widget_set B one 1 2 {AC: %s}\n", ac_status(acstat));
 		if (display)
 			sock_send_string (sock, buffer);
@@ -125,7 +135,7 @@ battery_screen (int rep, int display)
 
 		if (percent > 0) {
 			sprintf(buffer, "widget_set B gauge 2 4 %d\n", (percent * gauge_wid * lcd_cellwid) / 100);
-			if(display)
+			if (display)
 				sock_send_string(sock, buffer);
 		}
 	}	

@@ -26,17 +26,27 @@
 // +--------------------+
 //
 int
+#ifdef LCDPROC_MENUS
+xload_screen (int rep, int display, int * flags_ptr)
+#else
 xload_screen (int rep, int display)
+#endif
 {
-	static int first = 1;
 	static int gauge_hgt = 0;
 	static double loads[LCD_MAX_WIDTH];
 	int loadtop, i;
 	double loadmax = 0, factor;
 	int status = 0;
+#ifdef LCDPROC_MENUS
 
-	if (first) {						  // Only the first time this is ever called...
-		first = 0;
+	if ((*flags_ptr & INITIALIZED) == 0) {
+		*flags_ptr |= INITIALIZED;
+#else
+	static int first = TRUE;
+
+	if (first) {
+		first = FALSE;
+#endif
 		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 		memset (loads, '\0', sizeof (double) * LCD_MAX_WIDTH);
 

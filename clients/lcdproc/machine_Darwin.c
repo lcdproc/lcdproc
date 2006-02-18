@@ -76,7 +76,7 @@ int machine_init()
 	lcdproc_port = mach_host_self();
 	host_page_size(lcdproc_port, &pagesize);
 		
-	while(pagesize > 1)
+	while (pagesize > 1)
 	{
 		pageshift++;
 		pagesize >>= 1;
@@ -108,10 +108,10 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 	
 	if (CFArrayGetCount(sources) == 0) return(FALSE);
 
-	for(i = 0; i < CFArrayGetCount(sources); i++)
+	for (i = 0; i < CFArrayGetCount(sources); i++)
 	{
 		pSource = IOPSGetPowerSourceDescription(blob, CFArrayGetValueAtIndex(sources, i));
-		if(!pSource) break;
+		if (!pSource) break;
 
 		psValue = (CFStringRef)CFDictionaryGetValue(pSource, CFSTR(kIOPSNameKey));
 		
@@ -179,14 +179,14 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 	int statcnt, fscnt, i; 
 
 	fscnt = getmntinfo(&mntbuf, MNT_WAIT);
-	if(fscnt == 0) 
+	if (fscnt == 0) 
 	{ 
 		perror("getmntinfo");
 		return(FALSE);
 	}
-	for(statcnt = 0, pp = mntbuf, i = 0; i < fscnt; pp++, i++)
+	for (statcnt = 0, pp = mntbuf, i = 0; i < fscnt; pp++, i++)
 	{
-		if(    strcmp(pp->f_fstypename, "procfs")
+		if (    strcmp(pp->f_fstypename, "procfs")
 			&& strcmp(pp->f_fstypename, "kernfs")
 			&& strcmp(pp->f_fstypename, "linprocfs")
 #ifndef STAT_NFS
@@ -202,7 +202,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 			snprintf(fs[statcnt].type,   255, "%s", pp->f_fstypename);
 
 			fs[statcnt].blocks = pp->f_blocks;
-			if(fs[statcnt].blocks > 0)
+			if (fs[statcnt].blocks > 0)
 			{
 				fs[statcnt].bsize = pp->f_bsize;
 				fs[statcnt].bfree = pp->f_bfree;
@@ -240,7 +240,7 @@ int machine_get_load(load_type *curr_load)
 	load.idle   = (unsigned long) (load_info.cpu_ticks[CPU_STATE_IDLE]);
 	load.total  = load.user + load.nice + load.system + load.idle;
 
-	if(load.total != last_load.total)
+	if (load.total != last_load.total)
 	{
 		curr_load->user   = load.user   - last_load.user;
 		curr_load->nice   = load.nice   - last_load.nice;
@@ -263,7 +263,7 @@ int machine_get_loadavg(double *load)
 {
 	double loadavg[1];
 
-	if(getloadavg(loadavg, 1) == -1)
+	if (getloadavg(loadavg, 1) == -1)
 		return(FALSE);
 
 	*load = loadavg[0];
@@ -296,7 +296,7 @@ int machine_get_meminfo(meminfo_type *result)
 	result[1].total   = 0;
 	result[1].free    = 0;
 
-	if(swapmode(&total_pages, &free_pages) != -1)
+	if (swapmode(&total_pages, &free_pages) != -1)
 	{
 		result[1].total = total_pages;
 		result[1].free  = free_pages;
@@ -324,7 +324,7 @@ int machine_get_procs(LinkedList *procs)
 		return(FALSE);
 	}
 
-	for(i = 0; i < nproc; i++)
+	for (i = 0; i < nproc; i++)
 	{
 		if (host_processor_set_priv(lcdproc_port, psets[i], &pset))
 		{
@@ -333,7 +333,7 @@ int machine_get_procs(LinkedList *procs)
 		}
 		
 		p = malloc(sizeof(procinfo_type));
-		if(!p)
+		if (!p)
 		{
 			perror("mem_top_malloc");
 			return(FALSE);
@@ -350,19 +350,19 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	load_type curr_load;
 
 	size = sizeof(int);
-	if(sysctlbyname("hw.ncpu", &num, &size, NULL, 0) < 0)
+	if (sysctlbyname("hw.ncpu", &num, &size, NULL, 0) < 0)
 	{
 		perror("sysctl hw.ncpu");
 		return(FALSE);
 	}
 
-	if(machine_get_load(&curr_load) == FALSE)
+	if (machine_get_load(&curr_load) == FALSE)
 		return(FALSE);
 
 	*numcpus = num;
 	num = num > 8 ? 8 : num;
 	/* Don't know how to get per-cpu-load values */
-	for(i = 0; i < num; i++)
+	for (i = 0; i < num; i++)
 	{
 		result[i] = curr_load;
 	}
@@ -383,12 +383,12 @@ int machine_get_uptime(double *up, double *idle)
 	size = sizeof(boottime);
 
 	time(&now);
-	if(sysctl(mib, 2, &boottime, &size, NULL, 0) != -1 &&
+	if (sysctl(mib, 2, &boottime, &size, NULL, 0) != -1 &&
                                 boottime.tv_sec != 0)
 
 		*up = (double)(now - boottime.tv_sec);
 
-	if(machine_get_load(&curr_load) == FALSE)
+	if (machine_get_load(&curr_load) == FALSE)
 		*idle = 100.;
 	else
 		*idle = 100.*curr_load.idle/curr_load.total;

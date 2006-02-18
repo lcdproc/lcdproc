@@ -38,8 +38,16 @@ typedef struct mode
 	int off_time;			  // How often to get stats while not visible?
 	int show_invisible;		  // Send stats while not visible?
 	int timer;			  // Time since last update
+#ifdef LCDPROC_MENUS //struct mode flags
+	int flags;			//bit 1 visible, bit 2 selected for display, bit 3 first
+#else
 	int visible;			  // Can we be seen right now?
+#endif //LCDPROC_MENUS
 } mode;
+//mode flags
+#define VISIBLE 	0x00000001		//currently visible
+#define ACTIVE 		0x00000002		//selected for display
+#define INITIALIZED	0x00000004		//replaces the first variable to indicate whether the update screens are initialized
 
 #define BLINK_ON	0x10
 #define BLINK_OFF	0x11

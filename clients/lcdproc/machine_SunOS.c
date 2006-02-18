@@ -37,7 +37,7 @@ int machine_init()
 	kc = NULL;
 
 	kc = kstat_open();
-	if(kc == NULL)
+	if (kc == NULL)
 	{
 		perror("kstat_open");
 		return(FALSE);
@@ -48,7 +48,7 @@ int machine_init()
 
 int machine_close()
 {
-	if(kc != NULL)
+	if (kc != NULL)
 	{
 		kstat_close(kc);
 		kc = NULL;
@@ -87,9 +87,9 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 	// Get rid of old, unmounted filesystems...
 	memset(fs, 0, sizeof(mounts_type) * 256);
 
-	while(x < 256)
+	while (x < 256)
 	{
-		if(fgets(line, 256, mtab_fd) == NULL)
+		if (fgets(line, 256, mtab_fd) == NULL)
 		{
 			fclose(mtab_fd);
 			*cnt = x;
@@ -98,7 +98,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 
 		sscanf(line, "%s %s %s", fs[x].dev, fs[x].mpoint, fs[x].type);
 
-		if(	    strcmp(fs[x].type, "proc")
+		if (	    strcmp(fs[x].type, "proc")
 #ifndef STAT_NFS
 			 && strcmp(fs[x].type, "nfs")
 #endif
@@ -118,7 +118,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 #endif
 
 			fs[x].blocks = fsinfo.f_blocks;
-			if(fs[x].blocks > 0)
+			if (fs[x].blocks > 0)
 			{
 				fs[x].bsize = fsinfo.f_bsize;
 				fs[x].bfree = fsinfo.f_bfree;
@@ -144,25 +144,25 @@ int machine_get_load(load_type *curr_load)
 	struct cpu_stat cinfo;
 
 	k_space = kstat_lookup(kc, "cpu_stat", 0, "cpu_stat0");
-	if(k_space == NULL)
+	if (k_space == NULL)
 	{
 		fprintf(stderr, "kstat lookup error\n");
 		return(FALSE);
 	}
 
-	if(kstat_read(kc, k_space, NULL) == -1)
+	if (kstat_read(kc, k_space, NULL) == -1)
 	{
 		fprintf(stderr, "kstat read error\n");
 		return(FALSE);
 	}
 
 	k_space = kstat_lookup(kc, "cpu_stat", -1, "cpu_stat0");
-	if(k_space == NULL)
+	if (k_space == NULL)
 	{
 		fprintf(stderr, "kstat lookup error\n");
 		return(FALSE);
 	}
-	if(kstat_read(kc, k_space, &cinfo) == -1)
+	if (kstat_read(kc, k_space, &cinfo) == -1)
 	{
 		fprintf(stderr, "kstat read error\n");
 		return(FALSE);
@@ -173,7 +173,7 @@ int machine_get_load(load_type *curr_load)
 	load.nice   = cinfo.cpu_sysinfo.cpu[CPU_WAIT];
 	load.total  = load.user + load.nice + load.system + load.idle;
 
-	if(load.total != last_load.total)
+	if (load.total != last_load.total)
 	{
 		curr_load->user   = load.user   - last_load.user;
 		curr_load->nice   = load.nice   - last_load.nice;
@@ -195,7 +195,7 @@ int machine_get_loadavg(double *load)
 {
 	double loadavg[1];
 
-	if(getloadavg(loadavg, 1) == -1)
+	if (getloadavg(loadavg, 1) == -1)
 		return(FALSE);
 
 	*load = loadavg[0];
@@ -219,47 +219,47 @@ int machine_get_meminfo(meminfo_type *result)
 	result[0].cache		= 0;
 
 again:
-	if((num = swapctl(SC_GETNSWP, 0)) == -1)
+	if ((num = swapctl(SC_GETNSWP, 0)) == -1)
 	{
 		perror("swapctl: GETNSWP");
 		return(FALSE);
 	}
 
-	if(num == 0)
+	if (num == 0)
 	{
 		fprintf(stderr, "No Swap Devices Configured\n");
 		return(FALSE);
 	}
 
 	/* allocate swaptable for num+1 entries */
-	if((s = (swaptbl_t*)malloc(num * sizeof(swapent_t) + sizeof(struct swaptable))) == NULL)	
+	if ((s = (swaptbl_t*)malloc(num * sizeof(swapent_t) + sizeof(struct swaptable))) == NULL)	
 	{
 		perror("malloc swap");
 		return(FALSE);
 	}
 
 	/* allocate num+1 string holders */
-	if((strtab = (char*)malloc((num + 1) * MAXSTRSIZE)) == NULL)
+	if ((strtab = (char*)malloc((num + 1) * MAXSTRSIZE)) == NULL)
 	{
 		perror("malloc string holder");
 		return(FALSE);
 	}
 
 	/* initialize string pointers */
-	for(i = 0; i < (num + 1); i++)
+	for (i = 0; i < (num + 1); i++)
 	{
 		s->swt_ent[i].ste_path = strtab + (i * MAXSTRSIZE);
 	}
 
 	s->swt_n = num + 1;
-	if((n = swapctl(SC_LIST, s)) < 0)
+	if ((n = swapctl(SC_LIST, s)) < 0)
 	{
 		perror("swapctl");
 		return(FALSE);
 	}
 
 	/* more were added */
-	if(n > num)
+	if (n > num)
 	{
 		free(s);
 		free(strtab);
@@ -269,7 +269,7 @@ again:
 	result[1].total = 0;
 	result[1].free  = 0;
 
-	for(i = 0; i < n; i++)
+	for (i = 0; i < n; i++)
 	{
 		result[1].total = result[1].total + s->swt_ent[i].ste_pages * sysconf(_SC_PAGESIZE) / 1024;
 		result[1].free  = result[1].free + s->swt_ent[i].ste_free * sysconf(_SC_PAGESIZE) / 1024;
@@ -290,21 +290,21 @@ int machine_get_procs(LinkedList *procs)
 	int procSize, procRSS, procData, procStk, procExe;
 	int threshold = 400, unique;
 
-	if((proc = opendir("/proc")) == NULL)
+	if ((proc = opendir("/proc")) == NULL)
 	{
 		perror("open /proc");
 		return(FALSE);
 	}
 
-	while((procdir = readdir(proc)))
+	while ((procdir = readdir(proc)))
 	{
 		psinfo_t psinfo;
 
-		if(!index("1234567890", procdir->d_name[0]))
+		if (!index("1234567890", procdir->d_name[0]))
 			continue;
 
 		sprintf(buf, "/proc/%s/psinfo", procdir->d_name);
-		if((StatusFile = fopen(buf, "r")) == NULL)
+		if ((StatusFile = fopen(buf, "r")) == NULL)
 		{
 			// Not a serious error; process has finished before we could
 			// examine it:
@@ -324,7 +324,7 @@ int machine_get_procs(LinkedList *procs)
 
 		fclose(StatusFile);
 
-		if(procSize > threshold)
+		if (procSize > threshold)
 		{
 			// Figure out if it's sharing any memory...
 			unique = 1;
@@ -332,22 +332,22 @@ int machine_get_procs(LinkedList *procs)
 			do
 			{
 				p = LL_Get(procs);
-				if(p)
+				if (p)
 				{
-					if(0 == strcmp(p->name, procName))
+					if (0 == strcmp(p->name, procName))
 					{
 						unique = 0;
 						p->number++;
 						p->totl += procData + procStk + procExe;
 					}
 				}
-			}while(LL_Next(procs) == 0);
+			} while (LL_Next(procs) == 0);
 
 			// If this is the first one by this name...
-			if(unique)
+			if (unique)
 			{
 				p = malloc(sizeof(procinfo_type));
-				if(p == NULL)
+				if (p == NULL)
 				{
 					perror("allocating process entry");
 					goto end;		  // Ack!  I hate goto's!
@@ -376,12 +376,12 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	char buffer[16];
 
 	*numcpus = sysconf(_SC_NPROCESSORS_CONF);
-	for(count = 0; count < MAX_CPUS; count++)
+	for (count = 0; count < MAX_CPUS; count++)
 	{
 		sprintf(buffer, "cpu_stat%d", count);
 
 		k_space = kstat_lookup(kc, "cpu_stat", count, buffer);
-		if((k_space != NULL) && (kstat_read(kc, k_space, NULL) != -1))
+		if ((k_space != NULL) && (kstat_read(kc, k_space, NULL) != -1))
 		{
 			struct cpu_stat cinfo;
 
@@ -426,12 +426,12 @@ int machine_get_uptime(double *up, double *idle)
 	id.ut_type = BOOT_TIME;
 
 	u = getutxid(&id);
-	if(u == NULL)
+	if (u == NULL)
 		return(FALSE);
 
 	*up = time(0) - u->ut_xtime;
 
-	if(machine_get_load(&curr_load) == FALSE)
+	if (machine_get_load(&curr_load) == FALSE)
 		*idle = 100.;
 	else
 		*idle = 100.*curr_load.idle/curr_load.total;
