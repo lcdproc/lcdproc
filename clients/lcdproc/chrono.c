@@ -96,11 +96,7 @@ static char *shortmonths[] = {
 //+--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-time_screen (int rep, int display, int * flags_ptr)
-#else
-time_screen (int rep, int display)
-#endif
+time_screen (int rep, int display, int *flags_ptr)
 {
 	char now[20];
 	char day[16], month[16];
@@ -111,16 +107,9 @@ time_screen (int rep, int display)
 	time_t thetime;
 	struct tm *rtime;
 	double uptime, idle;
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-#endif
 
 		sock_send_string (sock, "screen_add T\n");
 		sprintf (buffer, "screen_set T -name {Time Screen: %s}\n", get_hostname());
@@ -222,11 +211,7 @@ time_screen (int rep, int display)
 //+--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-clock_screen (int rep, int display, int * flags_ptr)
-#else
-clock_screen (int rep, int display)
-#endif
+clock_screen (int rep, int display, int *flags_ptr)
 {
 	char now[20];
 	char day[16], month[16];
@@ -235,16 +220,9 @@ clock_screen (int rep, int display)
 	static char colon[] = {':', ' '};
 	time_t thetime;
 	struct tm *rtime;
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-#endif
 
 		sock_send_string (sock, "screen_add O\n");
 		sprintf (buffer, "screen_set O -name {Old Clock Screen: %s}\n", get_hostname());
@@ -326,27 +304,16 @@ clock_screen (int rep, int display)
 //+--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-uptime_screen (int rep, int display, int * flags_ptr)
-#else
-uptime_screen (int rep, int display)
-#endif
+uptime_screen (int rep, int display, int *flags_ptr)
 {
 	int xoffs;
 	int days, hour, min, sec;
 	double uptime, idle;
 	static int heartbeat = 0;
 	static char colon[] = {':', ' '};
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-#endif
 
 		sock_send_string (sock, "screen_add U\n");
 		sprintf (buffer, "screen_set U -name {Uptime Screen: %s}\n", get_hostname());
@@ -413,11 +380,7 @@ uptime_screen (int rep, int display)
 // +--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-big_clock_screen (int rep, int display, int * flags_ptr)
-#else
-big_clock_screen (int rep, int display)
-#endif
+big_clock_screen (int rep, int display, int *flags_ptr)
 {
 	time_t thetime;
 	struct tm *rtime;
@@ -432,16 +395,9 @@ big_clock_screen (int rep, int display)
 
 	// toggle colon display
 	heartbeat ^= 1;
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-#endif
 
 		sock_send_string (sock, "screen_add K\n");
 		sock_send_string (sock, "screen_set K -name {Big Clock Screen} -heartbeat off\n");
@@ -490,7 +446,7 @@ big_clock_screen (int rep, int display)
 
 
 //////////////////////////////////////////////////////////////////////
-// Essential Clock Screen displays the current time with hours & minutes only
+// Mini Clock Screen displays the current time with hours & minutes only
 //
 //+--------------------+	+--------------------+
 //|                    |	|       11:32        |
@@ -500,38 +456,27 @@ big_clock_screen (int rep, int display)
 //+--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-essential_clock_screen (int rep, int display, int * flags_ptr)
-#else
-essential_clock_screen (int rep, int display)
-#endif
+mini_clock_screen (int rep, int display, int *flags_ptr)
 {
 	struct tm *rtime;
 	struct timeval ttime;
 	static char colon[] = {':', ' '};
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
 
-	if (first) {
-		first = FALSE;
-#endif
-
-		sock_send_string (sock, "screen_add E\n");
-		sock_send_string (sock, "screen_set E -name {Essential Clock Screen} -heartbeat off\n");
-		sock_send_string (sock, "widget_add E one string\n");
+		sock_send_string (sock, "screen_add N\n");
+		sock_send_string (sock, "screen_set N -name {Essential Clock Screen} -heartbeat off\n");
+		sock_send_string (sock, "widget_add N one string\n");
 	}
 
 	gettimeofday(&ttime, NULL);
 	rtime = localtime (&ttime.tv_sec);
 
 	sprintf(tmp, "%02d%c%02d", rtime->tm_hour, colon[(ttime.tv_usec / 500000) & 1], rtime->tm_min);
-	sprintf(buffer, "widget_set E one %d %d {%s}\n",
+	sprintf(buffer, "widget_set N one %d %d {%s}\n",
 			((lcd_wid - 5) / 2) + 1, (lcd_hgt / 2), tmp);
 	sock_send_string (sock, buffer);
 
 	return 0;
-}										  // End essential_clock_screen()
+}										  // End mini_clock_screen()

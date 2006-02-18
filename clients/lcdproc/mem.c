@@ -29,26 +29,15 @@
 // +--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-mem_screen (int rep, int display, int * flags_ptr)
-#else
-mem_screen (int rep, int display)
-#endif
+mem_screen (int rep, int display, int *flags_ptr)
 {
 	static int which_title = 0;
 	static int gauge_wid = 0;
 	static int gauge_offs = 0;
 	meminfo_type mem[2];
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-#endif
 
 		sock_send_string(sock, "screen_add M\n");
 		sprintf(buffer, "screen_set M -name {Memory & Swap: %s}\n", get_hostname());
@@ -248,24 +237,13 @@ sort_procs (void *a, void *b)
 // +--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-mem_top_screen (int rep, int display, int * flags_ptr)
-#else
-mem_top_screen (int rep, int display)
-#endif
+mem_top_screen (int rep, int display, int *flags_ptr)
 {
 	LinkedList *procs;
 	int i;
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-#endif
 		
 		sock_send_string(sock, "screen_add S\n");
 		sprintf(buffer, "screen_set S -name {Top Memory Use: %s}\n", get_hostname());

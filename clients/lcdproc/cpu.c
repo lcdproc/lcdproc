@@ -29,11 +29,7 @@
 // +--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-cpu_screen(int rep, int display, int * flags_ptr)
-#else
-cpu_screen(int rep, int display)
-#endif
+cpu_screen(int rep, int display, int *flags_ptr)
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 4
@@ -44,16 +40,9 @@ cpu_screen(int rep, int display)
 	int i, j, n;
 	double value;
 	load_type load;
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-#endif
 
 		sock_send_string(sock, "screen_add C\n");
 		sprintf(buffer, "screen_set C -name {CPU Use: %s}\n", get_hostname());
@@ -218,11 +207,7 @@ cpu_screen(int rep, int display)
 // +--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-cpu_graph_screen(int rep, int display, int * flags_ptr)
-#else
-cpu_graph_screen(int rep, int display)
-#endif
+cpu_graph_screen(int rep, int display, int *flags_ptr)
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 2
@@ -233,16 +218,10 @@ cpu_graph_screen(int rep, int display)
 	int i, n = 0;
 	double value ;
 	load_type load;
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
 
-	if (first) {
-		first = FALSE;
-#endif
 		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 
 		sock_send_string(sock, "screen_add G\n");

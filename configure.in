@@ -539,6 +539,13 @@ AC_ARG_ENABLE(permissive_menu_goto,
   fi,
 )
 
+AC_ARG_ENABLE(lcdproc-menus,
+  [  --enable-lcdproc-menus  enable menu support in lcdproc client],
+  if [[[ "$enableval" = "yes" ]]]; then
+        AC_DEFINE(LCDPROC_MENUS,[1],[Define to 1 to enable menu support in lcdproc client])
+  fi,
+)
+
 # check for doxygen
 BB_ENABLE_DOXYGEN
 

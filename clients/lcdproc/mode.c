@@ -36,14 +36,12 @@ char *buffer = NULL;
 int
 mode_init()
 {
-	if ((buffer = malloc(1024)) == NULL)
-	{
+	if ((buffer = malloc(1024)) == NULL) {
 		perror("malloc buffer");
 		return(0);
 	}
 
-	if ((tmp = malloc(1024)) == NULL)
-	{
+	if ((tmp = malloc(1024)) == NULL) {
 		perror("malloc tmp");
 		return(0);
 	}
@@ -58,14 +56,12 @@ mode_close()
 {
 	machine_close();
 
-	if (tmp != NULL)
-	{
+	if (tmp != NULL) {
 		free(tmp);
 		tmp = NULL;
 	}
 
-	if (buffer != NULL)
-	{
+	if (buffer != NULL) {
 		free(buffer);
 		buffer = NULL;
 	}
@@ -81,7 +77,6 @@ update_screen(mode *m, int display)
 	{
 		switch(m->which)
 		{
-#ifdef LCDPROC_MENUS
 			case 'g':
 			case 'G':
 				status = cpu_graph_screen(m->timer, display, &(m->flags));
@@ -118,8 +113,8 @@ update_screen(mode *m, int display)
 			case 'D':
 				status = disk_screen(m->timer, display, &(m->flags));
 				break;
-			case 'x':
-			case 'X':
+			case 'l':
+			case 'L':
 				status = xload_screen(m->timer, display, &(m->flags));
 				break;
 			case 'b':
@@ -134,68 +129,10 @@ update_screen(mode *m, int display)
 			case 'P':
 				status = cpu_smp_screen(m->timer, display, &(m->flags));
 				break;
-			case 'e':
-			case 'E':
-				status = essential_clock_screen(m->timer, display, &(m->flags));
+			case 'n':
+			case 'N':
+				status = mini_clock_screen(m->timer, display, &(m->flags));
 				break;
-#else
-			case 'g':
-			case 'G':
-				status = cpu_graph_screen(m->timer, display);
-				break;
-			case 'c':
-			case 'C':
-				status = cpu_screen(m->timer, display);
-				break;
-			case 'o':
-			case 'O':
-				status = clock_screen(m->timer, display);
-				break;
-			case 'k':
-			case 'K':
-				status = big_clock_screen(m->timer, display);
-				break;
-			case 'm':
-			case 'M':
-				status = mem_screen(m->timer, display);
-				break;
-			case 's':
-			case 'S':
-				status = mem_top_screen(m->timer, display);
-				break;
-			case 'u':
-			case 'U':
-				status = uptime_screen(m->timer, display);
-				break;
-			case 't':
-			case 'T':
-				status = time_screen(m->timer, display);
-				break;
-			case 'd':
-			case 'D':
-				status = disk_screen(m->timer, display);
-				break;
-			case 'x':
-			case 'X':
-				status = xload_screen(m->timer, display);
-				break;
-			case 'b':
-			case 'B':
-				status = battery_screen(m->timer, display);
-				break;
-			case 'a':
-			case 'A':
-				status = credit_screen(m->timer, display);
-				break;
-			case 'p':
-			case 'P':
-				status = cpu_smp_screen(m->timer, display);
-				break;
-			case 'e':
-			case 'E':
-				status = essential_clock_screen(m->timer, display);
-				break;
-#endif
 			default:
 				break;
 		}
@@ -223,17 +160,10 @@ update_screen(mode *m, int display)
 // Credit Screen shows who wrote this...
 //
 int
-#ifdef LCDPROC_MENUS
-credit_screen(int rep, int display, int * flags_ptr)
-#else
-credit_screen(int rep, int display)
-#endif
+credit_screen(int rep, int display, int *flags_ptr)
 {
-	static int first = 1;
-
-	if (first)
-	{
-		first = 0;
+        if ((*flags_ptr & INITIALIZED) == 0) {
+                *flags_ptr |= INITIALIZED;
 
 		sock_send_string(sock, "screen_add A\n");
 		sock_send_string(sock, "screen_set A -name {Credits for LCDproc}\n");

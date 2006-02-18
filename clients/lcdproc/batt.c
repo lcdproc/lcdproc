@@ -71,24 +71,13 @@ battery_status(int status)
 // +--------------------+
 //
 int
-#ifdef LCDPROC_MENUS
-battery_screen (int rep, int display, int * flags_ptr)
-#else
-battery_screen (int rep, int display)
-#endif
+battery_screen (int rep, int display, int *flags_ptr)
 {
 	int acstat = 0, battstat = 0, percent = 0;
 	int gauge_wid = lcd_wid - 2;
-#ifdef LCDPROC_MENUS
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-#else
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-#endif
 
 		sock_send_string (sock, "screen_add B\n");
 		sprintf (buffer, "screen_set B -name {APM stats: %s}\n", get_hostname());
