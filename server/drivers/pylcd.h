@@ -57,6 +57,7 @@ typedef struct
     int C_x;
     int C_y;
     int C_state;
+    char led[7];
 } pylcd_private_data;
 
 #endif

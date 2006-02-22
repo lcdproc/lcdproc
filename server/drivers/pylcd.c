@@ -4,7 +4,8 @@
  This is the LCDproc driver for the "pylcd" device from Pyramid.
 
  Copyright (C) 2005 Silvan Marco Fin <silvan@kernelconcepts.de>
-
+ Copyright (C) 2006 coresystems GmbH <info@coresystems.de>
+ 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
@@ -19,6 +20,19 @@
  along with this program; if not, write to the Free Software
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
 
+ */
+
+/* 
+ * This driver controls the programmable LC-Display from 
+ * Pyramid Computer GmbH. For more information see
+ * http://www.pyramid.de/e/produkte/server/pyramid-lcd.php
+ * 
+ * Contact Thomas Riewe <thomas.riewe@pyramid.de> for further
+ * information on the LCD.
+ *
+ * Changes:
+ *  2006-02-20 Stefan Reinauer <stepan@coresystems.de>
+ *   - add support for onboard LEDs via "output" command
  */
 
 #include <sys/types.h>
@@ -195,6 +209,22 @@ int initTTY(int FD)
     return 0;
 }
 
+/* This function sets all LEDs according to the private data structure */
+
+int set_leds(pylcd_private_data *status)
+{
+    int i;
+    char tele[3]="L00";
+
+    for (i=0; i<7; i++) {
+      tele[1]=i+'1';
+      tele[2]=status->led[i]?'1':'0';
+      send_tele(status, tele);
+    }
+
+    return 0;
+}
+
 /* Driver functions according to current API-Version */
 
 /* Basic functions */
@@ -239,7 +269,6 @@ MODULE_EXPORT int  pylcd_init (Driver *drvthis, char *args)
     status->last_key_time = timestamp(status);
     status->last_buf_time = timestamp(status);
 
-
     /* Acknowledge all telegramms, the device may yet be sending.
        (Reset doesn't clear telegramms, darn protocol ... )
        */
@@ -264,6 +293,10 @@ MODULE_EXPORT int  pylcd_init (Driver *drvthis, char *args)
     send_tele(status, "M3");
     strcpy(status->framebuffer, "D                                ");
     status->FB_modified=1;
+
+    for (i=0; i<7; i++)
+    	status->led[i]=0;
+    set_leds(status);
 
     return 0;
 };
@@ -382,8 +415,18 @@ MODULE_EXPORT void mydriver_set_contrast (Driver *drvthis, int promille){};
 MODULE_EXPORT int  mydriver_get_brightness (Driver *drvthis, int state){return 0;};
 MODULE_EXPORT void mydriver_set_brightness (Driver *drvthis, int state, int promille){};
 MODULE_EXPORT void mydriver_backlight (Driver *drvthis, int on)
-MODULE_EXPORT void mydriver_output (Driver *drvthis, int state){};
 */
+
+MODULE_EXPORT void pylcd_output (Driver *drvthis, int state)
+{
+    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    int i;
+
+    for (i = 0; i < 7; i++) 
+      status->led[i] = state & (1 << i);
+    
+    set_leds(status);
+};
 
 /* Key functions */
 
