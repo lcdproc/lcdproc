@@ -1,0 +1,28 @@
+What do these patches do ?
+==========================
+
+1. HKEY - Hybrid Right/Left Key option in LCDd.conf
+
+If selected, the same config works on 4 or 6 key pads, any key wakes up 
+the menus, the keys behave a bit more intuitively and if you have a menu 
+w/ only ring or slider you can't get stuck in them on a 4 key system. 
+Ultimately, I wonder if the key processing could be simplified a bit, it 
+currently has 3 levels, that might be able to be flattened, I've been 
+pondering it and don't have a simple sol'n yet, but feel like there's 
+one there, so I'll keep thinking on it for now.
+
+2. OPT - adds options to the LCDd.conf for;
+storing the default display string on the CFontz633.c, we use this to 
+put up a "starting" message for reboot for example.
+setting the main menu name - which show's up on the LCD menu list, we 
+give it a more meaningful name like "admin" for the menus, instead of 
+"lcdproc"
+setting the goodbye msg - which we set to "shutting down", instead of 
+"Thanks for using lcdproc+linux"
+
+3. SEG - adds the ability to get a stack trace for the LCDd daemon. I 
+didn't actually catch a useful trace w/ it, but might be a nice 
+diagnostic ability or not worth the trouble, maybe gdb's just easier 
+when you need?
+
+

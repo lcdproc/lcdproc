@@ -1,0 +1,547 @@
+diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/menu.c server.HKEY/menu.c
+--- server/menu.c	2006-01-26 19:47:59.000000000 -0800
++++ server.HKEY/menu.c	2006-02-21 09:21:25.000000000 -0800
+@@ -39,6 +39,13 @@
+ #include "screen.h"
+ #include "widget.h"
+ 
++#ifndef HKEY //hybrid keys
++#include "shared/configfile.h"
++
++extern int hybrid_left_key;
++extern int hybrid_right_key;
++#endif //HKEY
++
+ /** Basicly a patched version of LL_GetByIndex() that ignores hidden
+  * entries completely. (But it takes a menu as an argument.) */
+ static void *
+@@ -559,12 +566,86 @@ MenuResult menu_process_input(Menu *menu
+ 		return MENURESULT_ERROR;
+ 
+ 	switch (token) {
++	  case MENUTOKEN_LEFT:
++		if (!extended)
++			return MENURESULT_NONE;
++#ifndef HKEY	//hybrid key left
++		/*
++		 * hybrid left key just fall through to menu key
++		 */
++		if (!hybrid_left_key) {
++			subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
++			if (subitem == NULL)
++				break;
++			switch (subitem->type) {
++			  case MENUITEM_CHECKBOX:
++				/* note: this dangerous looking code works since
++				 * CheckboxValue is an enum >= 0. */
++				if (subitem->data.checkbox.allow_gray) {
++					subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 3;
++				}
++				else {
++					subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 2;
++				}
++				if (subitem->event_func)
++					subitem->event_func (subitem, MENUEVENT_UPDATE);
++				return MENURESULT_NONE;
++			  case MENUITEM_RING:
++				/* ring: jump to the end if beginning is reached */
++				subitem->data.ring.value = (subitem->data.ring.value < 1)
++					? LL_Length (subitem->data.ring.strings) - 1
++					: (subitem->data.ring.value - 1) % LL_Length (subitem->data.ring.strings);
++				if (subitem->event_func)
++					subitem->event_func (subitem, MENUEVENT_UPDATE);
++				return MENURESULT_NONE;
++			  default:
++				break;
++			}
++			return MENURESULT_NONE;
++		}
++#endif //HKEY
+ 	  case MENUTOKEN_MENU:
+ 		subitem = menu_get_item_for_predecessor_check(menu);
+ 		if ( ! subitem)
+ 			return MENURESULT_ERROR;
+ 		return menuitem_predecessor2menuresult(
+ 			subitem->predecessor_id, MENURESULT_CLOSE);
++	  case MENUTOKEN_RIGHT:
++#ifndef HKEY //hybrid key right
++		/*
++		 * hybrid right key just fall through to enter key
++		 */
++		if (!hybrid_right_key) {
++			if (!extended) /* Can you get a MENUTOKEN_RIGHT w/o a RightKey defined, this code maybe be unecessary */
++				return MENURESULT_NONE;
++		
++			subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
++			if (subitem == NULL)
++				break;
++			switch (subitem->type) {
++		  	case MENUITEM_CHECKBOX:
++				if (subitem->data.checkbox.allow_gray) {
++					subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
++				}
++				else {
++					subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
++				}
++				if (subitem->event_func)
++					subitem->event_func (subitem, MENUEVENT_UPDATE);
++				return MENURESULT_NONE;
++		  	case MENUITEM_RING:
++				subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
++				if (subitem->event_func)
++					subitem->event_func (subitem, MENUEVENT_UPDATE);
++				return MENURESULT_NONE;
++		  	case MENUITEM_MENU:
++				return MENURESULT_ENTER;
++		  	default:
++				break;
++			}
++			return MENURESULT_NONE;
++		}
++#endif //HKEY
+ 	  case MENUTOKEN_ENTER:
+ 		subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
+ 		if (!subitem)
+@@ -609,6 +690,18 @@ MenuResult menu_process_input(Menu *menu
+ 				menu->data.menu.scroll --;
+ 		}
+ 		else if (menu->data.menu.selector_pos == 0) {
++#ifndef HKEY //hybrid key left
++			if ( hybrid_left_key ) {
++				/*
++		 		* If this menu has only checkbox's and/or rings
++		 		*  need a key to get back from this menu on a 4 key pad
++		 		*/
++				subitem = menu_get_item_for_predecessor_check(menu);
++				if ( subitem && ((subitem->type == MENUITEM_CHECKBOX) || (subitem->type == MENUITEM_RING)))
++					return menuitem_predecessor2menuresult(
++						subitem->predecessor_id, MENURESULT_CLOSE);
++				}
++#endif // HKEY
+ 			// wrap around to last menu entry
+ 			menu->data.menu.selector_pos = menu_visible_item_count(menu) - 1;
+ 			menu->data.menu.scroll = menu->data.menu.selector_pos + 2 - display_props->height;
+@@ -626,67 +719,6 @@ MenuResult menu_process_input(Menu *menu
+ 			menu->data.menu.scroll = 0;
+ 		}	
+ 		return MENURESULT_NONE;
+-	  case MENUTOKEN_LEFT:
+-		if (!extended)
+-			return MENURESULT_NONE;
+-		
+-		subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
+-		if (subitem == NULL)
+-			break;
+-		switch (subitem->type) {
+-		  case MENUITEM_CHECKBOX:
+-			/* note: this dangerous looking code works since
+-			 * CheckboxValue is an enum >= 0. */
+-			if (subitem->data.checkbox.allow_gray) {
+-				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 3;
+-			}
+-			else {
+-				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 2;
+-			}
+-			if (subitem->event_func)
+-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+-			return MENURESULT_NONE;
+-		  case MENUITEM_RING:
+-			/* ring: jump to the end if beginning is reached */
+-			subitem->data.ring.value = (subitem->data.ring.value < 1)
+-				? LL_Length (subitem->data.ring.strings) - 1
+-				: (subitem->data.ring.value - 1) % LL_Length (subitem->data.ring.strings);
+-			if (subitem->event_func)
+-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+-			return MENURESULT_NONE;
+-		  default:
+-			break;
+-		}
+-		return MENURESULT_NONE;
+-	  case MENUTOKEN_RIGHT:
+-		if (!extended)
+-			return MENURESULT_NONE;
+-		
+-		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
+-		if (subitem == NULL)
+-			break;
+-		switch (subitem->type) {
+-		  case MENUITEM_CHECKBOX:
+-			if (subitem->data.checkbox.allow_gray) {
+-				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
+-			}
+-			else {
+-				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
+-			}
+-			if (subitem->event_func)
+-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+-			return MENURESULT_NONE;
+-		  case MENUITEM_RING:
+-			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
+-			if (subitem->event_func)
+-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+-			return MENURESULT_NONE;
+-		  case MENUITEM_MENU:
+-			return MENURESULT_ENTER;
+-		  default:
+-			break;
+-		}
+-		return MENURESULT_NONE;
+ 	  case MENUTOKEN_OTHER:
+ 		/* TODO: move to the selected number and enter it */
+ 		return MENURESULT_NONE;
+diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/menuitem.c server.HKEY/menuitem.c
+--- server/menuitem.c	2006-01-26 19:47:59.000000000 -0800
++++ server.HKEY/menuitem.c	2006-02-21 09:22:53.000000000 -0800
+@@ -84,6 +84,10 @@ const IpSstringProperties IPinfo[] = {
+ 	{ 39, ':', 16, 4, 65535, { 4096, 256, 16, 1, 0 }, "%04x", verify_ipv6, "0:0:0:0:0:0:0:0" }
+ };
+ 	
++#ifndef HKEY // hybrid keys
++extern int hybrid_left_key;
++extern int hybrid_right_key;
++#endif //HKEY
+ 
+ /******** MENU UTILITY FUNCTIONS ********/
+ 
+@@ -983,26 +987,38 @@ MenuResult menuitem_process_input_slider
+ 		return MENURESULT_ERROR;
+ 
+ 	switch (token) {
+-	  case MENUTOKEN_MENU:
+-		return menuitem_predecessor2menuresult(
+-			item->predecessor_id, MENURESULT_CLOSE);
+-	  case MENUTOKEN_ENTER:
+-		return menuitem_successor2menuresult(
+-			item->successor_id, MENURESULT_CLOSE);
+ 	  case MENUTOKEN_UP:
+ 	  case MENUTOKEN_RIGHT:
+-	  	item->data.slider.value = min (item->data.slider.maxvalue,
++#ifndef HKEY //hybrid key right
++		if ( !hybrid_right_key || token == MENUTOKEN_UP )  {
++#endif /*HKEY*/
++	  		item->data.slider.value = min (item->data.slider.maxvalue,
+ 	  			item->data.slider.value + item->data.slider.stepsize);
+-		if (item->event_func)
+-			item->event_func (item, MENUEVENT_PLUS);
+-	  	return MENURESULT_NONE;
++			if (item->event_func)
++				item->event_func (item, MENUEVENT_PLUS);
++	  		return MENURESULT_NONE;
++#ifndef HKEY //hybrid key right
++		} /* hybrid right key fall through to enter */
++#endif /*HKEY*/
++	  case MENUTOKEN_ENTER:
++		return menuitem_successor2menuresult(
++			item->successor_id, MENURESULT_CLOSE);
+ 	  case MENUTOKEN_DOWN:
+ 	  case MENUTOKEN_LEFT:
+-	  	item->data.slider.value = max (item->data.slider.minvalue,
++#ifndef HKEY //hybrid key left
++		if ( !hybrid_left_key || token == MENUTOKEN_DOWN )  {
++#endif /*HKEY*/
++	  		item->data.slider.value = max (item->data.slider.minvalue,
+ 	  			item->data.slider.value - item->data.slider.stepsize);
+-		if (item->event_func)
+-			item->event_func (item, MENUEVENT_MINUS);
+-	  	return MENURESULT_NONE;
++			if (item->event_func)
++				item->event_func (item, MENUEVENT_MINUS);
++	  		return MENURESULT_NONE;
++#ifndef HKEY //hybrid key left
++		} /* hybrid left key fall through to menu */
++#endif /*HKEY*/
++	  case MENUTOKEN_MENU:
++		return menuitem_predecessor2menuresult(
++			item->predecessor_id, MENURESULT_CLOSE);
+ 	  case MENUTOKEN_OTHER:
+           default:
+ 		break;
+@@ -1037,6 +1053,21 @@ MenuResult menuitem_process_input_numeri
+ 		item->data.numeric.error_code = 0;
+ 
+ 		switch (token) {
++		  case MENUTOKEN_LEFT:
++			/* The user wants to go to back a digit */
++			if (pos > 0) {
++				item->data.numeric.edit_pos--;
++				if (item->data.numeric.edit_offs > item->data.numeric.edit_pos)
++					item->data.numeric.edit_offs = item->data.numeric.edit_pos;
++#ifndef HKEY //hybrid key left
++				if( hybrid_left_key ) return MENURESULT_NONE;
++			}
++			if( !hybrid_left_key ) return MENURESULT_NONE;
++			/* fall through to MENU */
++#else
++			}	
++			return MENURESULT_NONE;
++#endif /*HKEY*/
+ 		  case MENUTOKEN_MENU:
+ 		  	if (pos == 0) {
+ 				return menuitem_predecessor2menuresult(
+@@ -1047,6 +1078,21 @@ MenuResult menuitem_process_input_numeri
+ 				menuitem_reset_numeric(item);
+ 			}
+ 			return MENURESULT_NONE;
++		  case MENUTOKEN_RIGHT:
++			/* The user wants to go to next digit */
++			if (str[pos] != '\0' && pos < max_len) {
++				item->data.numeric.edit_pos++;
++				if (pos >= display_props->width - 2)
++					item->data.numeric.edit_offs++;
++#ifndef HKEY //hybrid key right
++				if( hybrid_right_key ) return MENURESULT_NONE;
++			}
++			if( !hybrid_right_key ) return MENURESULT_NONE;
++			/* fall through to ENTER */
++#else
++			}
++			return MENURESULT_NONE;
++#endif /*HKEY*/
+ 		  case MENUTOKEN_ENTER:
+ 			if ((extended) || (str[pos] == '\0')) {
+ 				int value;
+@@ -1131,22 +1177,6 @@ MenuResult menuitem_process_input_numeri
+ 				}
+ 			}
+ 			return MENURESULT_NONE;
+-		  case MENUTOKEN_RIGHT:
+-			/* The user wants to go to next digit */
+-			if (str[pos] != '\0' && pos < max_len) {
+-				item->data.numeric.edit_pos++;
+-				if (pos >= display_props->width - 2)
+-					item->data.numeric.edit_offs++;
+-			}
+-			return MENURESULT_NONE;
+-		  case MENUTOKEN_LEFT:
+-			/* The user wants to go to back a digit */
+-			if (pos > 0) {
+-				item->data.numeric.edit_pos--;
+-				if (item->data.numeric.edit_offs > item->data.numeric.edit_pos)
+-					item->data.numeric.edit_offs = item->data.numeric.edit_pos;
+-			}
+-			return MENURESULT_NONE;
+ 		  case MENUTOKEN_OTHER:
+ 			if (pos >= max_len) {
+ 				/* We're not allowed to add anything anymore */
+@@ -1196,6 +1226,21 @@ MenuResult menuitem_process_input_alpha 
+ 		item->data.alpha.error_code = 0;
+ 
+ 		switch (token) {
++		  case MENUTOKEN_LEFT:
++			/* The user wants to go to back a digit */
++			if (pos > 0) {
++				item->data.alpha.edit_pos--;
++				if (item->data.alpha.edit_offs > item->data.alpha.edit_pos)
++					item->data.alpha.edit_offs = item->data.alpha.edit_pos;
++#ifndef HKEY //hybrid key left
++				if( hybrid_left_key ) return MENURESULT_NONE;
++			}
++			if( !hybrid_left_key ) return MENURESULT_NONE;
++			/* fall through to MENU */
++#else
++			}	
++			return MENURESULT_NONE;
++#endif /*HKEY*/
+ 		  case MENUTOKEN_MENU:
+ 	  		if (pos == 0) {
+ 				return menuitem_predecessor2menuresult(
+@@ -1206,6 +1251,22 @@ MenuResult menuitem_process_input_alpha 
+ 				menuitem_reset_alpha(item);
+ 			}
+ 			return MENURESULT_NONE;
++		  case MENUTOKEN_RIGHT:
++			/* The user wants to go to next digit */
++			if (str[item->data.alpha.edit_pos] != '\0' &&
++			    pos < item->data.alpha.maxlength - 1) {
++				item->data.alpha.edit_pos++;
++				if (pos >= display_props->width - 2)
++					item->data.alpha.edit_offs++;
++#ifndef HKEY //hybrid key right
++				if( hybrid_right_key ) return MENURESULT_NONE;
++			}
++			if( !hybrid_right_key ) return MENURESULT_NONE;
++			/* fall through to ENTER */
++#else
++			}
++			return MENURESULT_NONE;
++#endif /*HKEY*/
+ 		  case MENUTOKEN_ENTER:
+ 			if ((extended) || (str[item->data.alpha.edit_pos] == '\0')) {
+ 				/* The user completed his input */
+@@ -1278,23 +1339,6 @@ MenuResult menuitem_process_input_alpha 
+ 				}
+ 			}
+ 			return MENURESULT_NONE;
+-		  case MENUTOKEN_RIGHT:
+-			/* The user wants to go to next digit */
+-			if (str[item->data.alpha.edit_pos] != '\0' &&
+-			    pos < item->data.alpha.maxlength - 1) {
+-				item->data.alpha.edit_pos++;
+-				if (pos >= display_props->width - 2)
+-					item->data.alpha.edit_offs++;
+-			}
+-			return MENURESULT_NONE;
+-		  case MENUTOKEN_LEFT:
+-			/* The user wants to go to back a digit */
+-			if (pos > 0) {
+-				item->data.alpha.edit_pos--;
+-				if (item->data.alpha.edit_offs > item->data.alpha.edit_pos)
+-					item->data.alpha.edit_offs = item->data.alpha.edit_pos;
+-			}	
+-			return MENURESULT_NONE;
+ 		  case MENUTOKEN_OTHER:
+ 			if (pos >= item->data.alpha.maxlength) {
+ 				/* We're not allowed to add anything anymore */
+@@ -1333,7 +1377,24 @@ MenuResult menuitem_process_input_ip (Me
+ 	item->data.ip.error_code = 0;
+ 
+ 	switch (token) {
+-		  case MENUTOKEN_MENU:
++		case MENUTOKEN_LEFT:
++			/* The user wants to go to back a digit */
++			if (pos > 0) {
++				item->data.ip.edit_pos--;
++				if (str[item->data.ip.edit_pos] == ipinfo->sep)
++					item->data.ip.edit_pos--;
++				if (item->data.ip.edit_offs > item->data.ip.edit_pos)
++					item->data.ip.edit_offs = item->data.ip.edit_pos;
++#ifndef HKEY //hybrid key left
++				if( hybrid_left_key ) return MENURESULT_NONE;
++			}
++			if( !hybrid_left_key ) return MENURESULT_NONE;
++			/* fall through to MENU */
++#else
++			}
++			return MENURESULT_NONE;
++#endif /*HKEY*/
++		case MENUTOKEN_MENU:
+ 		  	if (pos == 0) {
+ 				return menuitem_predecessor2menuresult(
+ 					item->predecessor_id, MENURESULT_CLOSE);
+@@ -1343,6 +1404,22 @@ MenuResult menuitem_process_input_ip (Me
+ 				menuitem_reset_ip(item);
+ 			}
+ 			return MENURESULT_NONE;
++		case MENUTOKEN_RIGHT:
++			if (pos < item->data.ip.maxlength - 1) {
++				item->data.ip.edit_pos++;
++				if (str[item->data.ip.edit_pos] == ipinfo->sep)
++					item->data.ip.edit_pos++;
++				while (item->data.ip.edit_pos - item->data.ip.edit_offs > display_props->width - 2)
++					item->data.ip.edit_offs++;
++#ifndef HKEY //hybrid key right
++				if( hybrid_right_key ) return MENURESULT_NONE;
++			}
++			if( !hybrid_right_key ) return MENURESULT_NONE;
++			/* fall through to ENTER */
++#else
++			}
++			return MENURESULT_NONE;
++#endif /*HKEY*/
+ 		case MENUTOKEN_ENTER:
+ 			if (extended || (pos >= item->data.ip.maxlength - 1)) {
+ 				// remove the leading spaces/zeros in each octet-representing string
+@@ -1409,25 +1486,6 @@ MenuResult menuitem_process_input_ip (Me
+ 			snprintf(numstr, 5, ipinfo->format, num);
+ 			memcpy(&str[pos - (pos % (ipinfo->width + 1))], numstr, ipinfo->width);
+ 			return MENURESULT_NONE;
+-		case MENUTOKEN_RIGHT:
+-			if (pos < item->data.ip.maxlength - 1) {
+-				item->data.ip.edit_pos++;
+-				if (str[item->data.ip.edit_pos] == ipinfo->sep)
+-					item->data.ip.edit_pos++;
+-				while (item->data.ip.edit_pos - item->data.ip.edit_offs > display_props->width - 2)
+-					item->data.ip.edit_offs++;
+-			}
+-			return MENURESULT_NONE;
+-		case MENUTOKEN_LEFT:
+-			/* The user wants to go to back a digit */
+-			if (pos > 0) {
+-				item->data.ip.edit_pos--;
+-				if (str[item->data.ip.edit_pos] == ipinfo->sep)
+-					item->data.ip.edit_pos--;
+-				if (item->data.ip.edit_offs > item->data.ip.edit_pos)
+-					item->data.ip.edit_offs = item->data.ip.edit_pos;
+-			}
+-			return MENURESULT_NONE;
+ 		case MENUTOKEN_OTHER:
+ 			/* process other keys */
+   			if ((strlen(key) == 1) &&
+diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/menuscreens.c server.HKEY/menuscreens.c
+--- server/menuscreens.c	2006-01-26 19:47:59.000000000 -0800
++++ server.HKEY/menuscreens.c	2006-02-21 09:33:21.000000000 -0800
+@@ -48,6 +48,15 @@ char * down_key;
+ char * left_key;
+ char * right_key;
+ 
++#ifndef HKEY //hybrid keys
++/*
++ * hybrid left becomes menu key at left edge of screen
++ * hybrid right becomes enter key at right edge of screen
++ */
++int hybrid_left_key = 0;
++int hybrid_right_key = 0;
++#endif //HKEY
++
+ Screen * menuscreen = NULL;
+ MenuItem * active_menuitem = NULL;
+ /** the "real" main_menu */
+@@ -91,6 +100,11 @@ int menuscreens_init()
+ 	if (tmp)
+ 		right_key = strdup(tmp);
+     
++#ifndef HKEY //get hybrid keys from config file
++	hybrid_right_key = config_get_bool ("menu", "HybridRightKey", 0, 0);
++	hybrid_left_key = config_get_bool ("menu", "HybridLeftKey", 0, 0);
++#endif
++
+         
+ 	/* Now reserve keys */
+ 	input_reserve_key (menu_key, true, NULL);
+@@ -186,6 +200,11 @@ void menuscreen_inform_item_modified (Me
+ 
+ bool is_menu_key (char * key)
+ {
++#ifndef HKEY //hybrid keys, any key wake-up menus
++	/* any key wakes up menus */
++	if (key && ( hybrid_left_key || hybrid_right_key ))
++		return true;
++#endif //HKEY
+ 	if (menu_key && key && strcmp (key, menu_key) == 0)
+ 		return true;
+ 	else
+@@ -466,28 +485,28 @@ void menuscreen_create_menu ()
+ 			menu_add_item (options_menu, driver_menu);
+ 			if (contrast_avail) {
+ 				int contrast = driver->get_contrast(driver);
+-				
++
+ 				/* menu's client is NULL since we're in the server */
+ 				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast",
+-								 NULL, "min", "max", 0, 1000, 25, contrast);
++							 	NULL, "min", "max", 0, 1000, 25, contrast);
+ 				menu_add_item (driver_menu, slider);
+ 			}
+ 			if (brightness_avail) {
+ 				int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
+ 				int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
+-				
++
+ 				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness",
+-								 NULL, "min", "max", 0, 1000, 25, onbrightness);
++							 	NULL, "min", "max", 0, 1000, 25, onbrightness);
+ 				menu_add_item (driver_menu, slider);
+ 
+ 				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness",
+-								 NULL, "min", "max", 0, 1000, 25, offbrightness);
++							 	NULL, "min", "max", 0, 1000, 25, offbrightness);
+ 				menu_add_item (driver_menu, slider);
+ 			}
+ 		}
+ 	}
+ 
+-#ifdef LCDPROC_TESTMENUS	
++#ifdef LCDPROC_TESTMENUS
+ 	test_menu = menu_create ("test", NULL, "Test menu", NULL);
+ 	menu_add_item (main_menu, test_menu);
+ 
