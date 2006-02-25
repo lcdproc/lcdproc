@@ -157,16 +157,39 @@ Mike Patnode:
 	- Crystal Fontz
 	- Various 0.4.3 changes
 
-Peter Marschall:
-	- IOWarrior driver
-	- bwctusb connection type to the HD44780 drivr
+Peter Marschall: (current maintainer)
+	- new drivers: IOWarrior, xosdlib
+	- bwctusb connectiontype for the HD44780 driver
+	- extensions to CFontz* drivers: support CF631 & CF635
 	- various fixes in preparation of 0.5
 
 Markus Dolze:
 	- various fixes (especially for *BSD)
 
+Volker Boerchers:
+	- fixes and extensions to the menu system
+
+Lucian Muresan:
+	- glcdlib meta driver
+
+Matteo Pillon:
+	- lcdserializer connectiontype to the hd44780 driver
+
+Laurent Arnal:
+	- connectiontype for LIS2 displays from VLSystem (http://www.vlsys.co.kr)
+
+Simon Funke:
+	- driver for Noritake VFD
+
 Matthias Goebl <matthias.goebl@goebl.net>:
-	- HD44780 I2C driver
+	- I2C connectiontype for the HD44780 driver
+
+Stefan Herdler:
+	- serialVFD driver
+
+Bernd Walle:
+	- driver for the ULA-200 device from ELV (http://www.elv.de)
+
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min
