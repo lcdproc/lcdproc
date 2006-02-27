@@ -394,7 +394,7 @@ main_loop()
 								for (j = 0; sequence[j].which; j++) {
 									if (sequence[j].which == argv[1][0]) {
 										sequence[j].flags |= VISIBLE;
-										//debug("Listen %s\n", argv[1]);
+										//debug(RPT_DEBUG, "Listen %s\n", argv[1]);
 									}
 								}
 							}
@@ -402,12 +402,12 @@ main_loop()
 								for (j = 0; sequence[j].which; j++) {
 									if (sequence[j].which == argv[1][0]) {
 										sequence[j].flags &= ~VISIBLE;
-										//debug("Ignore %s\n", argv[1]);
+										//debug(RPT_DEBUG, "Ignore %s\n", argv[1]);
 									}
 								}
 							}
 							else if (0 == strcmp(argv[0], "key")) {
-								debug("Key %s\n", argv[1]);
+								debug(RPT_DEBUG, "Key %s\n", argv[1]);
 							}
 #ifdef LCDPROC_MENUS
 							else if (0 == strcmp(argv[0], "menuevent")) {
