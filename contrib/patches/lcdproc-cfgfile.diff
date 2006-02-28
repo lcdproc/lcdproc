@@ -1,0 +1,373 @@
+diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' --exclude lcdproc -Nuarp lcdproc/lcdproc.conf lcdproc-cfgfile/lcdproc.conf
+--- lcdproc/lcdproc.conf	1969-12-31 16:00:00.000000000 -0800
++++ lcdproc-cfgfile/lcdproc.conf	2006-02-27 05:15:00.000000000 -0800
+@@ -0,0 +1,69 @@
++# LCDproc client configuration file
++
++## Options for lcdproc ##
++[lcdproc]
++# address of the LCDd server to connect to
++Server=localhost
++
++# Port of the server to connect to
++Port=13666
++
++# set reporting level
++ReportLevel=2
++
++# report to to syslog ?
++ReportToSyslog=false
++
++# stay in foreground ?
++Foreground=false
++
++# slow down initial announcement of modes (in 1/100s)
++#delay=2
++
++# screen specific configuration options
++[CPU]
++# Show screen
++Active = True
++OnTime = 1
++OffTime = 2
++ShowInvisible = false
++[Memory]
++# Show screen
++Active = True
++[Load]
++# Show screen
++Active = True
++[TimeDate]
++# Show screen
++Active = True
++[About]
++# Show screen
++Active = false
++[SMP-CPU]
++# Show screen
++Active = false
++[OldTime]
++# Show screen
++Active = false
++[BigClock]
++# Show screen
++Active = false
++[Uptime]
++# Show screen
++Active = false
++[Battery]
++# Show screen
++Active = false
++[CPUGraph]
++# Show screen
++Active = false
++[ProcSize]
++# Show screen
++Active = false
++[Disk]
++# Show screen
++Active = false
++[MiniClock]
++# Show screen
++Active = True
++# EOF
+diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' --exclude lcdproc -Nuarp lcdproc/main.c lcdproc-cfgfile/main.c
+--- lcdproc/main.c	2006-02-19 00:00:11.000000000 -0800
++++ lcdproc-cfgfile/main.c	2006-02-27 05:13:14.000000000 -0800
+@@ -21,6 +21,8 @@
+ #include "mode.h"
+ #include "shared/sockets.h"
+ #include "shared/debug.h"
++#include "shared/configfile.h"
++#include "shared/report.h"
+ 
+ #include "batt.h"
+ #include "chrono.h"
+@@ -53,6 +55,10 @@ static struct utsname unamebuf;
+ static void HelpScreen(int exit_state);
+ static void exit_program(int val);
+ static void main_loop();
++static int process_command_line(int argc, char **argv);
++static int process_configfile(char *cfgfile);
++#define CHAIN(e,f) { if( e>=0 ) { e=(f); }}
++#define CHAIN_END(e,msg) { if( e<0 ) { report( RPT_CRIT,(msg)); exit(e); }}
+ 
+ static int islow = -1;
+ 
+@@ -64,26 +70,39 @@ mode sequence[] =
+ {
+ 	// flags default ACTIVE will run by default
+ 	// longname    which on  off inv  timer   flags  
+-	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen },    // [C]PU
+-	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen },    // [M]emory
+-	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen },  // [L]oad (load histogram)
+-	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen },   // [T]ime/Date
+-	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen }, // [A]bout (credits)
+-	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0, cpu_smp_screen },     // CPU_SM[P]
+-	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0, clock_screen },       // [O]ld Timescreen
+-	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0, big_clock_screen },   // big cloc[K] 
+-	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0, uptime_screen },      // Old [U]ptime Screen
+-	{ "Battery",   'B',  32,  256, 1, 0xffff, 0, battery_screen },     // [B]attery Status
+-	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0, cpu_graph_screen },   // CPU histogram [G]raph
+-	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0, mem_top_screen },     // [S]ize of biggest processes
+-	{ "Disk",      'D', 256,  256, 1, 0xffff, 0, disk_screen },        // [D]isk stats
+-	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0, mini_clock_screen },  // Mi[n]i clock 
+-	{  NULL, 0, 0, 0, 0, 0,},		// No more..  all done.
++	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE,	cpu_screen },    	// [C]PU
++	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE,	mem_screen },    	// [M]emory
++	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE,	xload_screen },  	// [L]oad (load histogram)
++	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE,	time_screen },   	// [T]ime/Date
++	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE,	credit_screen }, 	// [A]bout (credits)
++	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0, 		cpu_smp_screen },   // CPU_SM[P]
++	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,		clock_screen },     // [O]ld Timescreen
++	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,		big_clock_screen }, // big cloc[K] 
++	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,		uptime_screen },    // Old [U]ptime Screen
++	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,		battery_screen },   // [B]attery Status
++	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,		cpu_graph_screen }, // CPU histogram [G]raph
++	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,		mem_top_screen },   // [S]ize of biggest processes
++	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,		disk_screen },      // [D]isk stats
++	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,		mini_clock_screen },// Mi[n]i clock 
++	{  NULL, 0, 0, 0, 0, 0, 0, 0},									   		// No more..  all done.
+ };
+ 
+ 
+ 
+ // TODO: Config file; not just command line
++/* All variables are set to 'unset' values*/
++#define UNSET_INT -1	 
++#define UNSET_STR "\01"
++#define DEFAULT_SERVER		"127.0.0.1"
++#define DEFAULT_CONFIGFILE	"/usr/local/etc/lcdproc.conf"
++char * progname = "lcdproc";
++char * server 	= NULL;
++int port 		= LCDPORT;
++int daemonize 	= FALSE;
++static int report_level = UNSET_INT;
++static int report_dest 	= UNSET_INT;
++char configfile[256];		/* a lot of space in the executable. */
++
+ 
+ const char *get_hostname()
+ {
+@@ -134,11 +153,7 @@ void clear_modes()
+ int
+ main(int argc, char **argv)
+ {
+-	int i, j;
+-	int c;
+-	char *server = NULL;
+-	int port = LCDPORT;
+-	int daemonize = FALSE;
++	int error = 0;
+ 
+ 	/* get uname information */
+ 	if (uname(&unamebuf) == -1) {
+@@ -152,12 +167,77 @@ main(int argc, char **argv)
+ 	signal(SIGHUP, exit_program);	// kill -HUP
+ 	signal(SIGKILL, exit_program);	// kill -9 [cannot be trapped; but ...]
+ 
++	/* Set default config file, command line may overwrite */
++	strncpy(configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
++
++	/* Read command line*/
++	CHAIN( error, process_command_line(argc, argv) );
++
++	/* Read config file*/
++	if (strcmp(configfile, UNSET_STR)!=0)
++		CHAIN( error, process_configfile(configfile) );
++
++	CHAIN_END( error, "Error in config file or command line\n" );
++
++	if (server == NULL)
++		server = DEFAULT_SERVER;
++
++	// Connect to the server...
++	usleep(500000);		// wait for the server to start up
++	sock = sock_connect(server, port);
++	if (sock <= 0) {
++		fprintf(stderr, "Error connecting to LCD server %s on port %d.\n"
++		                "Check to see that the server is running and operating normally.\n",
++				server, port);
++		return(EXIT_FAILURE);
++	}
++
++	sock_send_string(sock, "hello\n");
++	usleep(500000);			// wait for the server to say hi.
++
++	// We grab the real values below, from the "connect" line.
++	lcd_wid = 20;
++	lcd_hgt = 4;
++	lcd_cellwid = 5;
++	lcd_cellhgt = 8;
++
++	if (daemonize) {
++		if (daemon(1,0) != 0) {
++			fprintf(stderr, "Error: daemonize failed");
++			return(EXIT_FAILURE);
++		}
++	}	
++
++	// Init the status gatherers...
++	mode_init();
++
++	// And spew stuff!
++	main_loop();
++
++	// Clean up
++	exit_program(EXIT_SUCCESS);
++
++	return(0);
++}
++
++/* parses arguments given on command line */
++static int
++process_command_line(int argc, char **argv)
++{
++	int i;
++	int c;
++
+ 	/* No error output from getopt */
+ 	opterr = 0;
+ 
+ 	/* get options */
+-	while ((c = getopt( argc, argv, "s:p:e:dhv")) > 0) {
++	while ((c = getopt( argc, argv, "s:p:e:c:dhv")) > 0) {
+ 		switch (c) {
++			// c is for config file
++			case 'c':
++				strncpy(configfile, optarg, sizeof(configfile));
++				configfile[sizeof(configfile)-1] = 0; /* Terminate string */
++				break;
+ 			// s is for server
+ 			case 's':
+ 				if (server == NULL)
+@@ -203,50 +283,71 @@ main(int argc, char **argv)
+ 		int found = set_mode(shortname, argv[i], 1);
+ 		
+ 		if (!found) {
+-			fprintf(stderr, "Invalid Mode: %c, ignoring\n", argv[i][0]);
++			fprintf(stderr, "Invalid Mode: %c\n", argv[i][0]);
+ 			return(EXIT_FAILURE);
+ 		}
+ 	}
++	return 0;
++}
+ 
+-	if (server == NULL)
+-		server = "localhost";
++/* reads and parses configuration file */
++static int
++process_configfile(char *configfile)
++{
++	int k;
+ 
+-	// Connect to the server...
+-	usleep(500000);		// wait for the server to start up
+-	sock = sock_connect(server, port);
+-	if (sock <= 0) {
+-		fprintf(stderr, "Error connecting to LCD server %s on port %d.\n"
+-		                "Check to see that the server is running and operating normally.\n",
+-				server, port);
+-		return(EXIT_FAILURE);
+-	}
++	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+ 
+-	sock_send_string(sock, "hello\n");
+-	usleep(500000);			// wait for the server to say hi.
++	/* Read server settings*/
+ 
+-	// We grab the real values below, from the "connect" line.
+-	lcd_wid = 20;
+-	lcd_hgt = 4;
+-	lcd_cellwid = 5;
+-	lcd_cellhgt = 8;
++	if( strcmp( configfile, UNSET_STR ) == 0 ) {
++		configfile = DEFAULT_CONFIGFILE;
++	}
++	if( config_read_file( configfile ) != 0 ) {
++		report( RPT_CRIT, "Could not read config file: %s", configfile );
++		return -1;
++		//report( RPT_WARNING, "Could not read config file: %s", configfile );
++	}
+ 
+-	if (daemonize) {
+-		if (daemon(1,0) != 0) {
+-			fprintf(stderr, "Error: daemonize failed");
+-			return(EXIT_FAILURE);
++	if( server == NULL ) {
++		server = strdup( config_get_string( progname, "Server", 0, DEFAULT_SERVER ));
++	}
++	if( port == UNSET_INT ) {
++		port = config_get_int( progname, "Port", 0, LCDPORT );
++	}
++	if( report_level == UNSET_INT ) {
++		report_level = config_get_int( progname, "ReportLevel", 0, RPT_WARNING );
++	}
++	if( report_dest == UNSET_INT ) {
++		if( config_get_bool( progname, "ReportToSyslog", 0, 0 )) {
++			report_dest = RPT_DEST_SYSLOG;
++		} else {
++			report_dest = RPT_DEST_STDERR;
+ 		}
+-	}	
+-
+-	// Init the status gatherers...
+-	mode_init();
+-
+-	// And spew stuff!
+-	main_loop();
++	}
++	if( daemonize == UNSET_INT ) {
++		daemonize = config_get_bool( progname, "Foreground", 0, 1 );
++	}
++	if( islow < 0 ) {
++		islow = config_get_int( progname, "delay", 0, -1 );
++	}
+ 
+-	// Clean up
+-	exit_program(EXIT_SUCCESS);
++	/*
++	 * check for config file variables to override all the sequence defaults
++	 */
++	for ( k = 0; sequence[k].which ; k++) {
++		if (sequence[k].longname) {
++			sequence[k].on_time = config_get_int( sequence[k].longname, "OnTime", 0, sequence[k].on_time );
++			sequence[k].off_time = config_get_int( sequence[k].longname, "OffTime", 0, sequence[k].off_time );
++			sequence[k].show_invisible = config_get_bool( sequence[k].longname, "ShowInvisible", 0, sequence[k].show_invisible );
++			if ( config_get_bool( sequence[k].longname, "Active", 0, sequence[k].flags & ACTIVE ) )
++				sequence[k].flags |= ACTIVE;
++			else
++				sequence[k].flags &= (~ACTIVE);
++		}
++	}
+ 
+-	return(0);
++	return 0;
+ }
+ 
+ void
+@@ -259,6 +360,7 @@ HelpScreen (int exit_state)
+ 		"    -p <port>               connect to LCDd daemon using <port>\n"
+ 		"    -d                      daemonize\n"
+ 		"    -e <delay>              slow down initial announcement of modes (in 1/100s)\n"
++		"    -c <config>        	Use a configuration file other than %s\n"
+ 		"    -h                      show this help screen\n"
+ 		"    -v                      display program version\n"
+ 		"  and <modes> are\n"
+@@ -272,14 +374,14 @@ HelpScreen (int exit_state)
+ 		"    B Battery               battery status\n"
+ 		"    T TimeDate              time & date information\n"
+ 		"    O OldTime               old time screen\n"
+-		"    U Uptime                old uptime screen\n"
++		"    U Uptime                uptime screen\n"
+ 		"    K BigClock              big clock\n"
+ 		"    N MiniClock             minimal clock\n"
+ 		"    A About                 credits page\n"
+ 		"\n"
+ 		"Example:\n"
+ 		"    lcdproc -s my.lcdproc.server.com p 13666 C M X\n"
+-		);
++		, DEFAULT_CONFIGFILE);
+ 
+ 	exit(exit_state);
+ }

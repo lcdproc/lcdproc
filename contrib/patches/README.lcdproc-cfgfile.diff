@@ -1,0 +1,16 @@
+Here's a patch for lcdproc to add a config file, as promised, it applies 
+to the 20060226 version from CVS.
+
+It covers the basics and get's the infrastructure to add more, like on 
+the process size screen, we may want an option not to add up the sizes 
+of each of the procs, since in a shared mem app, the answer is 
+incorrectly large.
+
+I realize in doing it that I'm not entirely clear on the purpose of "on 
+time" "off time" and "show invisible" in the sequence structure, so 
+they're now settable, but I could use some help putting more descriptive 
+helpful text in the lcdproc.conf file to describe them for folks.
+
+thanks,
+andrew
+
