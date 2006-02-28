@@ -190,6 +190,9 @@ Stefan Herdler:
 Bernd Walle:
 	- driver for the ULA-200 device from ELV (http://www.elv.de)
 
+Andrew Foss:
+	- menu support for lcdproc client
+
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min
