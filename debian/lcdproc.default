@@ -1,9 +1,0 @@
-# /etc/default/lcdproc -- config file for lcdproc startup
-
-# shall lcdproc be started (yes/no)
-START=no
-
-# options for lcdproc startup
-#OPTIONS="C G"
-
-# EOF
