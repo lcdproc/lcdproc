@@ -21,6 +21,7 @@
 #include "mode.h"
 #include "shared/sockets.h"
 #include "shared/debug.h"
+#include "shared/report.h"
 
 #include "batt.h"
 #include "chrono.h"
@@ -134,7 +135,7 @@ void clear_modes()
 int
 main(int argc, char **argv)
 {
-	int i, j;
+	int i;
 	int c;
 	char *server = NULL;
 	int port = LCDPORT;
