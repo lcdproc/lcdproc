@@ -1,0 +1,9 @@
+# /etc/default/LCDd -- config file for LCDd startup
+
+# shall LCDd be started (yes/no)
+START=no
+
+# options for LCDd startup
+OPTIONS="-c /etc/LCDd.conf"
+
+# EOF

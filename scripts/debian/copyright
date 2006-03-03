@@ -1,0 +1,13 @@
+This package was debianized by
+Brian Bassett <brian@butterfly.ml.org> on Wed, 3 Jun 1998 22:15:03 -0700
+Adopted by Noel Koethe <noel@debian.org> on Fri, 18 Jan 2002 19:03:47 +0100
+Adopted by Jonathan Oxer <jon@debian.org> on Mon,  8 Dec 2003 16:30:05 +1100
+
+It was downloaded from https://sf.net/projects/lcdproc/
+
+Upstream Author: William W. Ferrell <willfe@yahoo.com> and others
+
+Copyright:
+
+Released under the terms of the GPL; see 
+/usr/share/common-licenses/GPL.
