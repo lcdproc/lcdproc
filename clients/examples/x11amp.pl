@@ -13,6 +13,7 @@
 #               2001, Jarda Benkovsky
 #               2002, Jonathan Oxer
 #               2002, Rene Wagner <reenoo@gmx.de>
+#               2006, Peter Marschall
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,6 +57,7 @@ $XMMS = "xmms";
 # Commands to set to previous / next song
 $XMMS_FORWARD = "$XMMS --fwd";
 $XMMS_REWIND = "$XMMS --rew";
+$XMMS_PLAY_PAUSE = "$XMMS --play-pause";
 
 ############################################################
 # End of user configurable parts
@@ -95,17 +97,19 @@ print $remote "screen_set x11amp name {X11AMP test}\n";
 $lcdresponse = <$remote>;
 print $remote "widget_add x11amp title title\n";
 $lcdresponse = <$remote>;
-print $remote "widget_set x11amp title {X11AMP test}\n";
+print $remote "widget_set x11amp title {$XMMS test}\n";
 $lcdresponse = <$remote>;
 print $remote "widget_add x11amp one string\n";
 $lcdresponse = <$remote>;
-print $remote "widget_set x11amp one 1 2 {  <-: E ; F :->}\n";
+print $remote "widget_set x11amp one 1 2 {[<<]  [>|]  [>>]}\n";
 $lcdresponse = <$remote>;
 
 # NOTE: You have to ask LCDd to send you keys you want to handle
-print $remote "client_add_key E\n";
+print $remote "client_add_key Left\n";
 $lcdresponse = <$remote>;
-print $remote "client_add_key F\n";
+print $remote "client_add_key Right\n";
+$lcdresponse = <$remote>;
+print $remote "client_add_key Enter\n";
 $lcdresponse = <$remote>;
 
 
@@ -116,30 +120,27 @@ while(1)
 	    @items = split(" ", $line);
 	    $command = shift @items;
 	    # Use input to change songs...
-	    if($command eq "key")
-	    {
-		$key = shift @items;
-		if($key eq "E")
-		{
+	    if($command eq "key") {
+		my $key = shift @items;
+
+		if($key eq "Left") {
 		    system($XMMS_REWIND);
 		}
-		if($key eq "F")
-		{
+		elsif($key eq "Right") {
 		    system($XMMS_FORWARD);
+		}
+		elsif($key eq "Enter") {
+		    system($XMMS_PLAY_PAUSE);
 		}
 	    }
 	    # And ignore everything else
-	    elsif($command eq "connect")
-	    {
+	    elsif($command eq "connect") {
 	    }
-	    elsif($command eq "listen")
-	    {
+	    elsif($command eq "listen") {
 	    }
-	    elsif($command eq "ignore")
-	    {
+	    elsif($command eq "ignore") {
 	    }
-	    elsif($command eq "success")
-	    {
+	    elsif($command eq "success") {
 	    }
 	    else {
 		if($line =~ /\S/) {print "Huh?  $line\n";}
@@ -150,5 +151,59 @@ while(1)
 
 }
 
-close ($remote)            || die "close: $!";
+close ($remote)  ||  die "close: $!";
 exit;
+
+
+__END__
+
+=pod
+
+=head1 NAME
+
+x11amp - LCDproc client controlling XMMS/X11AMP
+
+=head1 SYNOPSIS
+
+B<x11amp.pl>
+
+=head1 DESCRIPTION
+
+x11amp is a simple client for LCDproc which controls an XMMS/X11AMP
+MP3 player from the keyboard controlled by LCDproc.
+It can only rewind to the previous song previous song, skip forward
+to the next song and switch between pause and play.
+
+=head1 REQUIRES
+
+Perl >= 5.005, IO::Socket, Fcntl
+
+These are all available on CPAN: http://www.cpan.org/.
+
+=head1 DISCLAMER
+
+This program is free software; you can redistribute it and/or modify 
+it under the terms of the GNU General Public License version 2 as 
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+for more details.
+
+You should have received a copy of the GNU General Public License along 
+with this program; if not, write to the Free Software Foundation, Inc., 
+59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+=head1 BUGS
+
+Yes, there might be some. Please report any one you find to LCDproc's mailing list.
+See the website for more information.
+
+=head1 WEBSITE
+
+Visit B<http://www.lcdproc.org/> for more infos and the lastest version.
+
+=cut
+
+# EOF
