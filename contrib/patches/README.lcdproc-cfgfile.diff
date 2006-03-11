@@ -1,10 +1,27 @@
 Here's a patch for lcdproc to add a config file, as promised, it applies 
-to the 20060226 version from CVS.
+to the 20060R307 version from CVS.
 
 It covers the basics and get's the infrastructure to add more, like on 
 the process size screen, we may want an option not to add up the sizes 
 of each of the procs, since in a shared mem app, the answer is 
-incorrectly large.
+incorrectly largoe.
+
+This patch just makes lcdproc client like the LCDd server for processing 
+config options;
+
+moves command line argument processing to process_command_line()
+
+add process_config_file()
+
+creates a default lcdproc.conf file, w/ default location 
+/usr/local/etc/, same general format as LCDd.conf.
+
+[LCDPROC]
+#general lcdproc client settings port, server, etc.
+
+[CPU]
+#subsections for each screen for specific options
+[BATT]
 
 I realize in doing it that I'm not entirely clear on the purpose of "on 
 time" "off time" and "show invisible" in the sequence structure, so 

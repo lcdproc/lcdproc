@@ -1,6 +1,6 @@
 diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' --exclude lcdproc -Nuarp lcdproc/lcdproc.conf lcdproc-cfgfile/lcdproc.conf
 --- lcdproc/lcdproc.conf	1969-12-31 16:00:00.000000000 -0800
-+++ lcdproc-cfgfile/lcdproc.conf	2006-02-27 05:15:00.000000000 -0800
++++ lcdproc-cfgfile/lcdproc.conf	2006-03-07 07:30:30.000000000 -0800
 @@ -0,0 +1,69 @@
 +# LCDproc client configuration file
 +
@@ -72,18 +72,17 @@ diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile -
 +Active = True
 +# EOF
 diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' --exclude lcdproc -Nuarp lcdproc/main.c lcdproc-cfgfile/main.c
---- lcdproc/main.c	2006-02-19 00:00:11.000000000 -0800
-+++ lcdproc-cfgfile/main.c	2006-02-27 05:13:14.000000000 -0800
-@@ -21,6 +21,8 @@
- #include "mode.h"
+--- lcdproc/main.c	2006-03-02 14:16:11.000000000 -0800
++++ lcdproc-cfgfile/main.c	2006-03-07 07:40:56.000000000 -0800
+@@ -22,6 +22,7 @@
  #include "shared/sockets.h"
  #include "shared/debug.h"
+ #include "shared/report.h"
 +#include "shared/configfile.h"
-+#include "shared/report.h"
  
  #include "batt.h"
  #include "chrono.h"
-@@ -53,6 +55,10 @@ static struct utsname unamebuf;
+@@ -54,6 +55,10 @@ static struct utsname unamebuf;
  static void HelpScreen(int exit_state);
  static void exit_program(int val);
  static void main_loop();
@@ -94,7 +93,7 @@ diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile -
  
  static int islow = -1;
  
-@@ -64,26 +70,39 @@ mode sequence[] =
+@@ -65,26 +70,39 @@ mode sequence[] =
  {
  	// flags default ACTIVE will run by default
  	// longname    which on  off inv  timer   flags  
@@ -149,20 +148,20 @@ diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile -
  
  const char *get_hostname()
  {
-@@ -134,11 +153,7 @@ void clear_modes()
+@@ -135,11 +153,10 @@ void clear_modes()
  int
  main(int argc, char **argv)
  {
--	int i, j;
+-	int i;
 -	int c;
--	char *server = NULL;
--	int port = LCDPORT;
--	int daemonize = FALSE;
-+	int error = 0;
+ 	char *server = NULL;
+ 	int port = LCDPORT;
+ 	int daemonize = FALSE;
++	int error=0;
  
  	/* get uname information */
  	if (uname(&unamebuf) == -1) {
-@@ -152,12 +167,77 @@ main(int argc, char **argv)
+@@ -153,12 +170,77 @@ main(int argc, char **argv)
  	signal(SIGHUP, exit_program);	// kill -HUP
  	signal(SIGKILL, exit_program);	// kill -9 [cannot be trapped; but ...]
  
@@ -241,7 +240,7 @@ diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile -
  			// s is for server
  			case 's':
  				if (server == NULL)
-@@ -203,50 +283,71 @@ main(int argc, char **argv)
+@@ -204,50 +286,71 @@ main(int argc, char **argv)
  		int found = set_mode(shortname, argv[i], 1);
  		
  		if (!found) {
@@ -346,7 +345,7 @@ diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile -
  }
  
  void
-@@ -259,6 +360,7 @@ HelpScreen (int exit_state)
+@@ -260,6 +363,7 @@ HelpScreen (int exit_state)
  		"    -p <port>               connect to LCDd daemon using <port>\n"
  		"    -d                      daemonize\n"
  		"    -e <delay>              slow down initial announcement of modes (in 1/100s)\n"
@@ -354,7 +353,7 @@ diff --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile -
  		"    -h                      show this help screen\n"
  		"    -v                      display program version\n"
  		"  and <modes> are\n"
-@@ -272,14 +374,14 @@ HelpScreen (int exit_state)
+@@ -273,14 +377,14 @@ HelpScreen (int exit_state)
  		"    B Battery               battery status\n"
  		"    T TimeDate              time & date information\n"
  		"    O OldTime               old time screen\n"
