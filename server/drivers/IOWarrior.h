@@ -105,6 +105,8 @@ typedef struct driver_private_data {
 
   int brightness;
   int backlight;
+
+  char info[255];
 } PrivateData;
 
 
@@ -130,6 +132,7 @@ MODULE_EXPORT void IOWarrior_num(Driver *drvthis, int x, int num);
 MODULE_EXPORT void IOWarrior_set_char(Driver *drvthis, int n, char *dat);
 MODULE_EXPORT int  IOWarrior_icon(Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT void IOWarrior_output(Driver *drvthis, int on);
+MODULE_EXPORT char *IOWarrior_get_info(Driver *drvthis);
 
 #endif	/* IOWARRIOR_H */
 

@@ -44,5 +44,6 @@ MODULE_EXPORT int  CFontzPacket_get_brightness (Driver *drvthis, int state);
 MODULE_EXPORT void CFontzPacket_set_brightness (Driver *drvthis, int state, int promille);
 MODULE_EXPORT void CFontzPacket_backlight (Driver *drvthis, int on);
 MODULE_EXPORT void CFontzPacket_output (Driver *drvthis, int state);
+MODULE_EXPORT char *CFontzPacket_get_info (Driver *drvthis);
 
 #endif /* CFONTZPACKET_H */

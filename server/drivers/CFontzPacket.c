@@ -149,6 +149,8 @@ typedef struct driver_private_data {
 	int brightness;
 	int offbrightness;
 	unsigned int LEDstate;
+
+	char info[255];
 } PrivateData;
 
 
@@ -1540,3 +1542,18 @@ CFontzPacket_output(Driver *drvthis, int state)
 	p->LEDstate = state;
 }
 
+
+/*
+ * Provide some info about this driver
+ */
+MODULE_EXPORT char *
+CFontzPacket_get_info(Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+  
+	snprintf(p->info, sizeof(p->info)-1, "CrystalFontz Driver: CFA-%d",
+		 p->model);
+	return p->info;
+}
+
+/* EOF */

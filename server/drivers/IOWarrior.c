@@ -1227,4 +1227,17 @@ IOWarrior_output(Driver *drvthis, int on)
 }
 
 
+/*********************************************************************
+ * API: provides some info about this driver
+ */
+MODULE_EXPORT char *
+IOWarrior_get_info (Driver *drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+  
+  snprintf(p->info, sizeof(p->info)-1, "IOWarrior Driver: %s %s (0x%0x) S/N: %s",
+           p->manufacturer, p->product, p->productID, p->serial);
+  return p->info;
+}
+
 /* EOF */
