@@ -1,4 +1,4 @@
-AC_DEFUN(LCD_DRIVERS_SELECT, [
+AC_DEFUN([LCD_DRIVERS_SELECT], [
 AC_CHECKING(for which drivers to compile)
 
 AC_ARG_ENABLE(drivers,
@@ -339,7 +339,7 @@ AC_SUBST(LIBXOSD)
 dnl
 dnl Curses test to check if we use _acs_char* or acs_map*
 dnl
-AC_DEFUN(AC_CURSES_ACS_ARRAY, [
+AC_DEFUN([AC_CURSES_ACS_ARRAY], [
 	AC_CACHE_CHECK([for acs_map in curses.h], ac_cv_curses_acs_map,
 	[AC_TRY_COMPILE([#include <curses.h>], [ char map = acs_map['p'] ], ac_cv_curses_acs_map=yes, ac_cv_curses_acs_map=no)])
 
@@ -394,7 +394,7 @@ dnl This code is stolen from mc-4.5.41, which in turn has stolen it
 dnl from GNU fileutils-3.12.
 dnl
 
-AC_DEFUN(AC_GET_FS_INFO, [
+AC_DEFUN([AC_GET_FS_INFO], [
     AC_CHECK_HEADERS(fcntl.h sys/dustat.h sys/param.h sys/statfs.h sys/fstyp.h)
     AC_CHECK_HEADERS(mnttab.h mntent.h utime.h sys/statvfs.h sys/vfs.h)
     AC_CHECK_HEADERS(sys/filsys.h sys/fs_types.h)
@@ -683,7 +683,7 @@ dnl End of loadable modules determination
 ]) dnl AC_MODULES_INFO
 
 dnl stolen from cppunit project (http://cppunit.sourceforge.net/)
-AC_DEFUN(BB_ENABLE_DOXYGEN,
+AC_DEFUN([BB_ENABLE_DOXYGEN],
 [
 AC_ARG_ENABLE(doxygen, [  --enable-doxygen        enable documentation generation with doxygen (auto)])
 AC_ARG_ENABLE(dot, [  --enable-dot            use 'dot' to generate graphs in doxygen (auto)])
