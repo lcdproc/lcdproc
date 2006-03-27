@@ -1,0 +1,27 @@
+By Andréss Trapanotto <mail@andrestrapanotto.com.ar>:
+
+And then, the explanation of how it works:
+
+Up to now, LCDd access right to the parallel port thru io functions
+(port_in, port_out, etc...). This way needs root permission and the
+known of the parallel port io configuration... And this functions are
+included in-line from port.h to the driver.
+
+I've written another set some functions (pp_init, pp_bye,
+pp_write_data, etc.) in port.c that are not in-line compiled, has a new
+struct pp_driver as argument allowing to pass them more parameters (now
+we need to tell which port, register and data we want to use, read or
+write).
+
+And there is something else that is a wrapper to get old functions
+(port_in, port_out, etc) supported for such drivers that are not
+modified to use new parallel port functions.
+				        
+So, if you have an LCD attached to your parallel port (like my hd44780)
+without keys attached to it, you can apply this patch and just forget
+the io access to the parallel port :)
+
+Well, I hope these could be useful to the project. The patch itself has
+some in-line comments but ask me for any doubt.
+
+Best regards, Andrés!

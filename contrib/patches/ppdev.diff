@@ -1,0 +1,345 @@
+--- server/drivers/port.h
++++ server/drivers/port.h	2006-03-26 19:45:58.416006888 -0300
+@@ -15,6 +15,8 @@
+  *
+  * Access to ports over 0x3FF by Joris Robijn, 04/2003
+  *
++ * ppdev support by Andrés Trapanotto 03/2006
++ *
+  */
+ 
+ /*
+@@ -57,10 +59,75 @@
+ 
+ #include <stdio.h>
+ 
++struct pp_driver
++{
++#ifdef __linux__
++  int fd,mode;
++#else
++  int base_addr;
++#endif
++  unsigned char data,control,status;
++} ;
++
++/*  ------------------------------------------------------------- */
++/*  Use ppdev <linux/ppdev.h> (Linux)                             */
++#if defined HAVE_PPDEV
++#include <fcntl.h>
++#include <sys/ioctl.h>
++#include <linux/parport.h>
++#include <linux/ppdev.h>
++
++/* Libc5 */
++# ifdef HAVE_UNISTD_H
++#  include <unistd.h>
++# endif
++
++extern int pp_read_data     ( struct pp_driver * );
++extern int pp_read_status   ( struct pp_driver * );
++extern int pp_read_control  ( struct pp_driver * );
++extern int pp_write_data    ( struct pp_driver * );
++extern int pp_write_status  ( struct pp_driver * ); /* Obsolete */
++extern int pp_write_control ( struct pp_driver * );
++extern int pp_init  ( struct pp_driver * , char * );
++extern int pp_bye   ( struct pp_driver * );
++extern int pp_port  ( unsigned short , unsigned char , unsigned char );
++
++/* The following 6 functions are used by the drivers that don't use ppdev natively */
++static inline int  port_in ( unsigned short port )
++{
++  return pp_port ( port, 0, 0);
++}
++
++static inline void port_out    ( unsigned short port, unsigned char val)
++{
++ pp_port ( port, 1, val);
++ return;
++}
++
++static inline int  port_access ( unsigned short port )
++{
++ return pp_port ( port, 2, 0);
++}
++
++static inline int  port_deny ( unsigned short port )
++{
++ return pp_port ( port, 3, 0);
++}
++
++static inline int  port_access_multiple ( unsigned short port, int val)
++{
++ return pp_port ( port, 2, 0);
++}
++
++static inline int  port_deny_multiple   ( unsigned short port, int val)
++{
++ return pp_port ( port, 3, 0);
++}
++
+ /*  ------------------------------------------------------------- */
+ /*  Use ioperm, inb and outb in <sys/io.h> (Linux) */
+ /*  And iopl for higher addresses of PCI LPT cards */
+-#if defined HAVE_IOPERM
++#elif defined HAVE_IOPERM
+ 
+ /* Glibc2 and Glibc1 */
+ # ifdef HAVE_SYS_IO_H 
+--- server/drivers/port.c
++++ server/drivers/port.c	2006-03-26 19:45:58.416006888 -0300
+@@ -0,0 +1,254 @@
++/* $id$
++ * Low level ppdev based I/O functions
++ *
++ * This file is released under the GPL. See file COPYING in this
++ * package for further details.
++ *
++ * ppdev support by Andrés Trapanotto 03/2005
++ */
++
++/*
++This file defines 8 functions for port I/O (2 obsolete ones):
++
++int pp_read_data ( struct pp_driver * driver );         -- NOT IMPLEMENTED --
++        Read a byte from data port
++        Returns 0 if successful, -1 if failed
++
++int pp_read_status ( struct pp_driver * driver );
++        Read a byte from status port
++        Returns 0 if successful, -1 if failed
++
++int pp_read_control ( struct pp_driver * driver );
++        Read a byte from control port
++        Returns 0 if successful, -1 if failed
++
++int pp_write_data ( struct pp_driver * driver );
++        Write a byte to data port
++        Returns 0 if successful, -1 if failed
++
++int pp_write_status ( struct pp_driver * driver );      -- Obsolete --
++        Write a byte to status port
++        Returns 0 if successful, -1 if failed
++
++int pp_write_control ( struct pp_driver * driver );
++        Write a byte to control port
++        Returns 0 if successful, -1 if failed
++
++int  pp_init ( struct pp_driver * driver, char * device )
++        Get access to a specific port (/dev/parport0,1,2)
++        Returns 0 if successful, -1 if failed
++
++int  pp_bye  ( struct pp_driver * driver)
++        Close access to a specific port
++        Returns 0 if successful, -1 if failed
++
++ppdev support:
++- If the drivers is writted to work with ppdev, it has to have a pp_driver where the ppdev data and descriptors will be
++  stored. I can be part of private_data :)
++  Then, the driver have to use pp_* functions to open/close/write/read the parallel port
++
++- If the driver isn't writted to work woth ppdev, you can compile the project using USE_PPDEV and it will use ppdev
++  anyway :)
++
++- The idea is that drivers can be modified to use ppdev, and then port_* functions can be removed.
++*/
++
++#include <port.h>
++
++#if defined HAVE_PPDEV
++#include <string.h>
++
++/*
++// I think that it is useless by now
++int  pp_read_data ( struct pp_driver * driver)
++{
++  return (-1);
++//  return ioctl (driver->fd, PPRDATA, &(driver->data));
++}
++*/
++
++int  pp_read_status ( struct pp_driver * driver)
++{
++  return ioctl (driver->fd, PPRSTATUS, &(driver->status));
++}
++
++int  pp_read_control ( struct pp_driver * driver)
++{
++  return ioctl (driver->fd, PPRCONTROL, &(driver->control));
++}
++
++int pp_write_data ( struct pp_driver * driver)
++{
++  return ioctl (driver->fd, PPWDATA, &(driver->data));
++}
++
++/*
++int pp_write_status ( struct pp_driver * driver)                -- Obsolete --
++  return (-1);
++//  return ioctl (driver->fd, PPWSTATUS, driver->status);
++}
++*/
++
++int pp_write_control ( struct pp_driver * driver)
++{
++  return ioctl (driver->fd, PPWCONTROL, &(driver->control));
++}
++
++int  pp_init ( struct pp_driver * driver, char * device )
++{
++   int retval=0,modes,dir;
++
++   driver->fd=open (device,O_RDWR);
++   if (driver->fd<0) {
++      fprintf (stderr, "Error opening %s",device);
++      exit (-1);
++      return -1;
++   }
++
++   retval=ioctl (driver->fd, PPCLAIM);
++   if (retval<0) {
++      fprintf (stderr, "I can't get %s",device);
++      return retval;
++   }
++
++/* Is mandatory to set the data direction  */
++ dir=0;  /* Data Forward */
++ retval=ioctl (driver->fd, PPDATADIR, &dir);
++ if (retval<0) {
++    fprintf (stderr,"\nError setting the data direction on %s ",device);
++    close (driver->fd);
++    return (-1);
++    }
++
++return 0;
++}
++
++int  pp_bye  ( struct pp_driver * driver)
++{
++ int retval;
++
++ retval=ioctl (driver->fd, PPRELEASE);
++ if (retval<0)
++    fprintf (stderr,"\nI can't free the parallel port.");
++
++ close (driver->fd);
++
++ return retval;
++}
++
++/* The following function is used by the drivers that don't use ppdev natively */
++int  pp_port (unsigned short port, unsigned char arg, unsigned char val )
++{
++  static struct pp_driver driver;
++  static int init=-1;
++  int retval=0;
++  char device[200];
++
++  switch (arg) {
++     case 0:   // Read Port
++     case 1:   // Write Port
++     case 3:   // Close Parallel Port
++       if (!init){
++          fprintf (stderr, "You must initialize the parallel port before using it!\n");
++          exit (-1);
++       }
++       break;  // Doesn't matters
++     case 2:
++       if (init>0) return 0;  //Already initializated
++       break;  // Doesn't matters
++     default:
++       fprintf (stderr,"HEY! Programmer! What are you doing?\n");
++       exit (-1);
++  }
++
++  switch (arg) {
++     case 0:   // Read Parallel Port
++       switch (port&0x03) {
++          case 0x00:
++             return (-1);
++/*             retval=pp_read_data (&driver);                                   -- NOT IMPLEMENTED --
++             if (retval<0) fprintf (stderr, "ERROR: Reading data bus.\n");
++             retval=driver.data;
++*/
++             break;
++
++          case 0x01:
++             retval=pp_read_status (&driver);
++             if (retval<0) fprintf (stderr, "ERROR: Reading status lines.\n");
++             retval=driver.status;
++             break;
++
++          case 0x02:
++             retval=pp_read_control (&driver);
++             if (retval<0) fprintf (stderr, "ERROR: Reading control lines.\n");
++             retval=driver.control;
++             break;
++          default:
++             fprintf (stderr,"HEY! Programmer! ¿What are you doing?\n");
++             exit (-1);
++       }
++       break;
++
++     case 1:   // Write Parallel Port
++       switch (port&0x03) {
++          case 0x00:
++             driver.data=val;
++             retval=pp_write_data (&driver);
++             if (retval<0) fprintf (stderr, "ERROR: Writing data bus.\n");
++             break;
++
++          case 0x01:
++             return (-1);
++/*             driver.status=val;                                               -- Obsolete --
++             retval=pp_write_status (&driver);
++             if (retval<0) fprintf (stderr, "ERROR: Writing status lines.\n");
++*/
++             break;
++
++          case 0x02:
++             driver.control=val;
++             retval=pp_write_control (&driver);
++             if (retval<0) fprintf (stderr, "ERROR: Writing control lines.\n");
++             break;
++          default:
++             fprintf (stderr,"HEY! Programmer! ¿What are you doing?\n");
++             exit (-1);
++       }
++       break;
++       
++     case 2:   // Init Parallel Port
++               // It's possible to add a selection of which parallel port you want
++               // to use but is easier to implement use of pp_* in your driver and
++               // select the parallel port there. :)
++
++/* Sick code...
++       switch (port) {
++          case 0x378:
++             strcpy (device, "/dev/parport0");
++             break;
++          case 0x278:
++             strcpy (device, "/dev/parport1");
++             break;
++          case 0x3BC:
++             strcpy (device, "/dev/parport2");
++             break;
++          default:
++             strcpy (device, "/dev/parport0");
++       }
++*/
++       strcpy (device, "/dev/parport0");
++       retval=pp_init (&driver, device);
++       if (retval==0) init=1;
++       break;
++       
++     case 3:   // Close Parallel Port
++       retval=pp_bye (&driver);
++       if (retval==0) init=-1;
++       break;
++  }
++
++ return retval;
++}
++
++#endif /*  HAVE_PPDEV */
++
