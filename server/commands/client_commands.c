@@ -96,7 +96,7 @@ int
 client_set_func (Client * c, int argc, char **argv)
 {
 	int i;
-	char str[16];
+	char str[256];
 
 	memset(str, '\0', sizeof(str));
 	if (!c->ack)
