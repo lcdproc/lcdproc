@@ -338,9 +338,31 @@
 		          <term><replaceable>int</replaceable></term>
 			  <listitem><para>
 			      a positive integer that maps to priority classes above
-			      using the usual logic for priorities:
-			      the lower the number the higher the priority.
-			    </para></listitem>
+			      according to the mapping given in the table below.
+			    </para>
+			    <informaltable frame="all"><tgroup cols="2" colsep="1" rowsep="1">
+			      <thead>
+			        <row>
+				  <entry>range</entry>
+				  <entry>priority</entry>
+				</row>
+			      </thead>
+			      <tbody>
+			        <row>
+				  <entry>1 - 64</entry>
+				  <entry>foreground</entry>
+			        </row>
+			        <row>
+				  <entry>65 - 192</entry>
+				  <entry>info</entry>
+			        </row>
+			        <row>
+				  <entry>193 - &#8734;</entry>
+				  <entry>background</entry>
+			        </row>
+			      </tbody>
+			    </tgroup></informaltable>
+			  </listitem>
 		        </varlistentry>
 		      </variablelist>
 		    </para>
@@ -1597,11 +1619,11 @@
           <term>
 	    <cmdsynopsis>
 	      <command>huh?</command>
-	      <arg choice="plain"><replaceable>errorr_description</replaceable></arg>
+	      <arg choice="plain"><replaceable>error_description</replaceable></arg>
 	    </cmdsynopsis>
 	  </term>
           <listitem><para>
-            This is the reponse to a command in case something has gone wrong.
+            This is the response to a command in case something has gone wrong.
 	    The description is not meant to be parsed, it's only meant for
 	    the programmer of the client. It might be that your command has
 	    only been partially executed, for example if you try to reserve 3
@@ -1623,8 +1645,9 @@
 	    </cmdsynopsis>
 	  </term>
           <listitem><para>
-            The given screen is now visible on the display (listen) or it is
-	    not visible anymore on the display (ignore).
+            The screen with the <replaceable>screen_id</replaceable> given is now
+	    visible on the display (<literal>listen</literal>) or it is not visible
+	    anymore on the display (<literal>ignore</literal>).
 	  </para></listitem>
 	</varlistentry>
         <varlistentry>
