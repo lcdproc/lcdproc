@@ -5,7 +5,7 @@ Key:
      + Something added
      * Something changed / fixed
 
-v0.5
+v0.5 (unreleased)
 This version has split off from unstable-0.4.3. Includes major changes.
  + LCDd now does dynamic loading of driver modules
  * New API in use
@@ -25,6 +25,25 @@ This version has split off from unstable-0.4.3. Includes major changes.
    to 32Hz.
  * Priority scheme changed. Priority classes are now used, that indicate what
    kind of a screen we're dealing with. More useful for interactive clients.
+ * better support for operating systems other than Linux: *BSD, Darwin
+ + Added CFontz633 driver for CrytalFontz CFA633
+ + Added CFontzPacket driver fro CrystalFontz CFA-633, CFA-631, CFA-635
+ + Added glcdlib meta-driver for all LCDs supported by graphlcd-base
+ + Added icp_a106 driver for A106 alarm/LCD boards in 19" racks by ICP
+ + Added imon driver for iMON IR/VFD Modules from Silverstone, Uneed, ...
+ + Added IOWarrior driver for IOWarrior USB controllers
+ + Added lcterm driver for serial LCD terminal from Neumark Elektronik
+ + Added ms6931 driver for MSI-6931 displays in 1U rack servers by MSI
+ + Added mtc_s16209x driver for MTC-S16209x by Microtips Technology Inc
+ + Added NoritakeVFD driver for Noritake VFD Device CU20045SCPB-T28A
+ + Added pylcd driver for Pyramid LC-Displays
+ + Added serialVFD driver for NEC FIPC8367 based VFDs
+ + Added tyan driver for LCDs in Tyan Barebone GS series
+ + Added xosd driver for On Screen Display on X
+ + Added HD44780 subdriver bwctusb for USB-to-LCD converters from BWCT
+ + Added HD44780 subdriver lcdserializer for an serial-LCD converter
+ + Added HD44780 subdriver i2c to conned LCDs using the I2C bus
+ + Added HD44780 subdriver lis2 for the LIS2 serial-to-USB converter
 
 v0.4.3
  - Removed possibility of passing arguments to the drivers from the
