@@ -36,6 +36,7 @@ config.status: configure
 	       --sysconfdir=/etc \
 	       --enable-stat-nfs \
 	       --enable-stat-smbfs \
+	       --enable-lcdproc-menus \
 	       --enable-drivers=all
 
 
