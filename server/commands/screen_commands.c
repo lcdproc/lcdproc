@@ -132,7 +132,7 @@ screen_del_func (Client * c, int argc, char **argv)
  * Configures info about a particular screen, such as its
  *  name, priority, or duration
  *
- * usage: screen_set <id> [ -priority <int> ] [ -name <name> ] [ -duration <int> ]
+ * usage: screen_set <id> [ -priority <prio> ] [ -name <name> ] [ -duration <int> ]
  *     [ -wid <width> ] [ -hgt <height> ] [ -heartbeat <type> ] [ -cursor <type> ]
  *     [ -cursor_x <xpos> ] [ -cursor_y <ypos> ]
  */
