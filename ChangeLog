@@ -25,7 +25,8 @@ This version has split off from unstable-0.4.3. Includes major changes.
    to 32Hz.
  * Priority scheme changed. Priority classes are now used, that indicate what
    kind of a screen we're dealing with. More useful for interactive clients.
- * better support for operating systems other than Linux: *BSD, Darwin
+ + better support for operating systems other than Linux: *BSD, Darwin
+ + menu support for lcdproc client (configure option)
  + Added CFontz633 driver for CrytalFontz CFA633
  + Added CFontzPacket driver fro CrystalFontz CFA-633, CFA-631, CFA-635
  + Added glcdlib meta-driver for all LCDs supported by graphlcd-base

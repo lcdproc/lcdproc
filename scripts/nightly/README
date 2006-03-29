@@ -1,9 +1,10 @@
 
-lcdproc-finish-nightly.sh sit on the sourceforge server located at lcdproc.sf.net
+lcdproc-finish-nightly.sh sits on the sourceforge server located at lcdproc.sf.net
 
-The two other scripts (generate-nightlies.sh and make-nightly.sh) sit on a local server and are run every night. 
+The two other scripts (generate-nightlies.sh and make-nightly.sh) sit on a
+local server and are run every night. 
 generate-nightlies.sh calls make-nightly.sh for each cvs branch.
 
-At the time of writing the nightly are generated on a PC running debian linux maintained by Guillaume Filion 
-<guillaume@filion.org>
+At the time of writing the nightly are generated on a PC running Debian Linux
+maintained by Guillaume Filion <guillaume@filion.org>
 
