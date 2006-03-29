@@ -1,18 +1,46 @@
-/* This file should be release under the GPL,
- * However most of this is translation from the windows code
- * from Brent A. Crosby.
- * So I have to check with him.
- */
-/*
- * ===========================================================================
- * 633 Test code for linux.
- * Copyright 2002, David GLAUDE
- * Partial copyright
- * 2001 Crystalfontz America, Inc. 
- * brent@crystalfontz.com
- * Written by Brent A. Crosby 
- * www.crystalfontz.com
- * ===========================================================================
+/* interfacing routines for the CrystalFontz CFA-631, CFA-633 and CFA-635 LCDs
+
+  ===========================================================================
+  633 Test code for linux.
+  Copyright 2002, David GLAUDE
+  Partial copyright
+  2001 Crystalfontz America, Inc. 
+  brent@crystalfontz.com
+  Written by Brent A. Crosby 
+  www.crystalfontz.com
+  ===========================================================================
+
+  Partial copyright (C) 2005-2006 Peter Marschall
+
+  Most of the code in this file is based on the translation from the windows
+  code.
+
+  Intensive code analysis performed by Peter Marschall showed that,
+  at the time of the release of the GPL'ed interfacing code for the
+  CF631/633 from CrystalFontz by Brent A. Crosby in 2004, the code
+  in this file was either written by David Glaude for LCDproc or
+  identical to the GPL'ed code or so close to it that the differences
+  are negligible.
+    
+  For detailed information about the code analysis, please
+  contact the LCDproc maintainer, Peter Marschall <peter@adpm.de>
+    
+  This file is hereby released under the terms below:
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
+ 
  */
 
 #include <unistd.h>
@@ -225,29 +253,10 @@ get_crc(unsigned char *buf, int len, int seed)
 }
 
 
-
-
-/*============================================================================
- * 635 WinTest Code.
- * Copyright 2001, Crystalfontz America, Inc. Written by Brent A. Crosby
- * www.crystalfontz.com, brent@crystalfontz.com
- *============================================================================
- */
-
-/*---------------------------------------------------------------------------*/
-/* This is some code that kind of makes the windows stuff look a little
- * like the DOS/633 interrupt driven serial stuff. Basically there is a
- * circular buffer, and SyncReceiveBuffer() uses ReadFile() to put data
- * into the circular buffer much like the DOS stuff uses an ISR to put
- * the data into the buffer. Then the rest of the functions work like
- * the counterparts in the 633,
- */
-
-
-
-/*                  v TailPeek                        */
+/* circular buffer: */
+/*                  v peek                            */
 /* -------------------------------------------------- */
-/*           ^ Tail              ^ Head               */
+/*           ^ tail              ^ head               */
 
 
 /** initialize/empty receive buffer by resetting its pointers */
