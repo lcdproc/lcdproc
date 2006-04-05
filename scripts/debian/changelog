@@ -2,12 +2,32 @@ lcdproc (0.4.99+cvs20050101) unstable; urgency=low
 
   * NMU
     - New upstream snapshot from CVS
+    - better support for operating systems other than Linux: *BSD, Darwin
     - /etc/default/LCDd to configure /etc/init.d/LCDd
     - use original man pages
-    - new drivers for USB displays:
-      + Code Mercenaries IOWarrior
-      + BWCT USB LCD
-    - licence problem for CFonz633 solved  
+    - licence problem for CFontz* solved  
+    - various fixes
+    - new drivers:
+      + CFontz633: for CrytalFontz CFA633
+      + CFontzPacket: fro CrystalFontz CFA-633, CFA-631, CFA-635
+      + glcdlib meta-driver for all LCDs supported by graphlcd-base
+      + icp_a106: for A106 alarm/LCD boards in 19" racks by ICP
+      + imon: for iMON IR/VFD Modules from Silverstone, Uneed,
+      + IOWarrior: for IOWarrior USB controllers
+      + lcterm: for serial LCD terminal from Neumark Elektronik
+      + ms6931: for MSI-6931 displays in 1U rack servers by MSI
+      + mtc_s16209x: for MTC-S16209x by Microtips Technology Inc
+      + NoritakeVFD: for Noritake VFD Device CU20045SCPB-T28A
+      + pylcd: for Pyramid LC-Displays
+      + serialVFD: for NEC FIPC8367 based serial VFDs
+      + tyan: for LCDs in Tyan Barebone GS series
+      + ula200: for the USB board ULA-200 from ELV
+      + xosd: for On Screen Display on X
+    - new HD44780 subdrivers:
+      + bwctusb: for USB-to-LCD converters from BWCT
+      + lcdserializer: for an serial-LCD converter
+      + i2c: to conned LCDs using the I2C bus
+      + lis2: for the LIS2 serial-to-USB converter
 
  -- Peter Marschall <peter@adpm.de>  Fri, 31 Dec 2004 23:21:28 +0100
 
