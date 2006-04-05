@@ -362,12 +362,12 @@ MtxOrb_init (Driver *drvthis)
 
 
 	/* Get backlight setting*/
-	if(drvthis->config_get_bool( drvthis->name , "enablebacklight" , 0 , DEFAULT_BACKLIGHT)) {
+	if(drvthis->config_get_bool( drvthis->name , "Backlight" , 0 , DEFAULT_BACKLIGHT)) {
 		p->backlightenabled = 1;
 	}
 
 	/* Get display type */
-	strncpy(buf, drvthis->config_get_string ( drvthis->name , "type" , 0 , DEFAULT_TYPE),sizeof(buf));
+	strncpy(buf, drvthis->config_get_string ( drvthis->name , "Type" , 0 , DEFAULT_TYPE),sizeof(buf));
 	buf[sizeof(buf)-1]=0;
 
 	if (strncasecmp(buf, "lcd", 3) == 0) {
