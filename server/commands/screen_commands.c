@@ -132,9 +132,10 @@ screen_del_func (Client * c, int argc, char **argv)
  * Configures info about a particular screen, such as its
  *  name, priority, or duration
  *
- * usage: screen_set <id> [ -priority <prio> ] [ -name <name> ] [ -duration <int> ]
- *     [ -wid <width> ] [ -hgt <height> ] [ -heartbeat <type> ] [ -cursor <type> ]
- *     [ -cursor_x <xpos> ] [ -cursor_y <ypos> ]
+ * usage: screen_set <id> [ -name <name> ] [ -wid <width> ] [ -hgt <height> ]
+ *     [ -priority <prio> ] [ -duration <int> ] [ -timeout <int> ] 
+ *     [ -heartbeat <type> ] [ -backlight <type> ]
+ *     [ -cursor <type> ] [ -cursor_x <xpos> ] [ -cursor_y <ypos> ] 
  */
 int
 screen_set_func (Client * c, int argc, char **argv)
@@ -149,9 +150,12 @@ screen_set_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if (argc == 1) {
-		sock_send_error(c->sock, "Usage: screen_set <id> [ -priority <int> ]"
-			       " [ -name <name> ] [ -duration <int> ] [ -wid <width> ]"
-			       " [ -hgt <height> ] [ -heartbeat <type> ]\n");
+		sock_send_error(c->sock, "Usage: screen_set <id> [ -name <name> ]"
+				" [ -wid <width> ] [ -hgt <height> [ -priority <int> ]"
+				" [ -duration <int> ] [ -timeout <int> ]"
+				" [ -heartbeat <type> ] [ -backlight <type> ]"
+				" [ -cursor <type> ]"
+				" [ -cursor_x <xpos> ] [ -cursor_y <ypos> ]\n");
 		return 0;
 	} else if (argc == 2) {
 		sock_send_error(c->sock, "What do you want to set?\n");
