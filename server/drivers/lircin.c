@@ -46,10 +46,12 @@
 #include "report.h"
 
 typedef struct lircin_private_data {
-	char *progname;
+	char *lircrc;
+	char *prog;
 	int lircin_fd;
 	struct lirc_config *lircin_irconfig;
-        } PrivateData;
+} PrivateData;
+
 
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
@@ -63,8 +65,7 @@ MODULE_EXPORT char *symbol_prefix = "lircin_";
 MODULE_EXPORT int
 lircin_init (Driver *drvthis)
 {
-	char s[200]="";
-	char *lircrc, *prog;
+	char s[256] = "";
 
 	PrivateData *p;
 
@@ -80,92 +81,64 @@ lircin_init (Driver *drvthis)
 	}
 
 	/* Initialise the PrivateData structure */
-	p->progname=NULL;
-	strncpy( s, "lircin", sizeof( s) );
-
-	p->progname = malloc( strlen( s) + 1 );
-	if( p->progname == NULL ) {
-		report( RPT_ERR, "%s: Could not allocate new memory.", drvthis->name );
-		return -1;
-	}
-	strcpy( p->progname, s );
-
-	/* Initialise local pointers */
-	lircrc=NULL;
-	prog=NULL;
+	p->lircrc = NULL;
+	p->prog = NULL;
+	p->lircin_irconfig = NULL;
+	p->lircin_fd = -1;
 
 	/* READ CONFIG FILE:*/
 
 	/* Get location of lircrc to be used */
-	strcpy(s, "");
 	if (drvthis->config_get_string ( drvthis->name , "lircrc" , 0 , NULL) != NULL)
 		strncpy(s, drvthis->config_get_string ( drvthis->name , "lircrc" , 0 , ""), sizeof(s));
 
-	if (strcmp(s, "") != 0) {
-		s[sizeof(s)-1]=0;
-		lircrc=malloc(strlen(s)+1);
-		if( lircrc == NULL ) {
+	if (*s != '\0') {
+		s[sizeof(s)-1] = '\0';
+		p->lircrc = malloc(strlen(s) + 1);
+		if( p->lircrc == NULL ) {
 			report( RPT_ERR, "%s: Could not allocate new memory.", drvthis->name );
 			return -1;
 		}
-		strcpy(lircrc,s);
-		report  (RPT_INFO,"%s: Using lircrc: %s", drvthis->name, lircrc);
+		strcpy(p->lircrc, s);
+		report  (RPT_INFO,"%s: Using lircrc: %s", drvthis->name, p->lircrc);
 	}
 	else {
 		report (RPT_INFO,"%s: Using default lircrc: ~/.lircrc", drvthis->name);
 	}
 
-	/* FIXME: This shouldn't be neccessary */
-	strcpy(s, "");
-
 	/* Get program identifier "prog=..." to be used */
-	if (drvthis->config_get_string ( drvthis->name , "prog" , 0 , NULL) != NULL)
-		strncpy(s, drvthis->config_get_string ( drvthis->name , "prog" , 0 , ""), sizeof(s));
+	strncpy(s, drvthis->config_get_string ( drvthis->name , "Prog" , 0 , LIRCIN_DEF_PROG), sizeof(s));
 
-	if (strcmp(s, "") != 0) {
-		s[sizeof(s)-1]=0;
-		report  (RPT_INFO,"%s: Using prog: %s", drvthis->name, prog);
-	}
-	else {
-		strcpy(s, LIRCIN_DEF_PROG);
-	}
-	prog=malloc(strlen(s)+1);
-	if( prog == NULL ) {
+	p->prog = malloc(strlen(s) + 1);
+	if( p->prog == NULL ) {
 		report( RPT_ERR, "%s: Could not allocate new memory.", drvthis->name );
 		return -1;
 	}
-	strcpy(prog,s);
-	report  (RPT_INFO,"%s: Using prog: %s", drvthis->name, prog);
+	strcpy(p->prog, s);
+	report  (RPT_INFO, "%s: Using prog: %s", drvthis->name, p->prog);
 
 	/* End of config file parsing */
 
 	/* open socket to lirc */
-
-	if (-1 == (p->lircin_fd = lirc_init (prog, LIRCIN_VERBOSELY))) {
-		if (p->progname)
-			free (p->progname);
-		p->progname = NULL;
+	if (-1 == (p->lircin_fd = lirc_init (p->prog, LIRCIN_VERBOSELY))) {
 		report( RPT_ERR, "%s: Could not connect to lircd.", drvthis->name );
+
+		lircin_close( drvthis);
 		return -1;
 	}
 
-	if (0 != lirc_readconfig (lircrc, &p->lircin_irconfig, NULL)) {
-		lirc_deinit ();
-
-		close (p->lircin_fd);
-
-		if (p->progname)
-			free (p->progname);
-		p->progname = NULL;
+	if (0 != lirc_readconfig (p->lircrc, &p->lircin_irconfig, NULL)) {
 		report( RPT_ERR, "%s: lirc_readconfig() failed.", drvthis->name );
+
+		lircin_close( drvthis);
 		return -1;
 	}
 
 	/* socket shouldn't block lcdd */
-
 	if (fcntl(p->lircin_fd, F_SETFL, O_NONBLOCK) < 0){
                 report(RPT_ERR, "%s: Unable to change lircin_fd(%d) to O_NONBLOCK: %s",
 			drvthis->name, p->lircin_fd, strerror(errno));
+
 		lircin_close( drvthis);
 		return -1;
 		}
@@ -183,14 +156,27 @@ lircin_close (Driver *drvthis)
 {
         PrivateData * p = drvthis->private_data;
 
-	lirc_freeconfig (p->lircin_irconfig);
-	lirc_deinit ();
+	if (p != NULL) {
+		if (p->lircrc != NULL)
+			free(p->lircrc);
+		p->lircrc = NULL;
 
-	close (p->lircin_fd);
+		if (p->prog != NULL)
+			free(p->prog);
+		p->prog = NULL;
+		
+		if (p->lircin_irconfig != NULL)
+			lirc_freeconfig (p->lircin_irconfig);
+		p->lircin_irconfig = NULL;
+		
+		if (p->lircin_fd >= 0)
+			lirc_deinit ();
+			close (p->lircin_fd);
+		p->lircin_fd = -1;
 
-	if (p->progname)
-		free (p->progname);
-	p->progname = NULL;
+		free(p);
+	}
+	drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /*********************************************************************
@@ -203,9 +189,9 @@ lircin_get_key (Driver *drvthis)
 {
         PrivateData * p = drvthis->private_data;
 
-	char *code=NULL, *cmd=NULL;
+	char *code = NULL, *cmd = NULL;
 
-	if ( (lirc_nextcode(&code)==0) && (code!=NULL) ) {
+	if ( (lirc_nextcode(&code) == 0) && (code != NULL) ) {
 		if ( (lirc_code2char(p->lircin_irconfig,code,&cmd)==0) && (cmd!=NULL) ) {
 			report (RPT_DEBUG, "%s: \"%s\"", drvthis->name, cmd);
 		}

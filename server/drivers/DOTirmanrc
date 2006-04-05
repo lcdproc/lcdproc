@@ -53,6 +53,13 @@ alias ircd-next		jvc-fwd
 #alias ircd-power	jvc-power
 #alias ircd-eject	jvc-eject
 
+alias lcdproc-Up	jvc-1
+alias lcdproc-Down	jvc-2
+alias lcdproc-Left	jvc-3
+alias lcdproc-Right	jvc-4
+alias lcdproc-Enter	jvc-5
+alias lcdproc-Escape	jvc-6
+
 alias lcdproc-A		jvc-1
 alias lcdproc-B		jvc-2
 alias lcdproc-C		jvc-3
