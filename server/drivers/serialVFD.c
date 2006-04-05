@@ -298,16 +298,10 @@ serialVFD_init (Driver *drvthis)
 
 
 	/* ISO 8859 1 */
-	tmp = drvthis->config_get_int (drvthis->name, "ISO_8859_1", 0, 1);
-	if ((tmp < 0) || (tmp > 1)) {
-		report (RPT_WARNING, "%s: ISO_8859_1 must be 0 or 1000. Using default %d.\n",
-			__FUNCTION__, 1);
-		tmp = 1;
-	}
-	p->ISO_8859_1 = tmp;
+	p->ISO_8859_1 = drvthis->config_get_bool (drvthis->name, "ISO_8859_1", 0, 1);
 
 	/* Which displaytype */
-	tmp = drvthis->config_get_int (drvthis->name, "Displaytype", 0, DEFAULT_DISPLAYTYPE);
+	tmp = drvthis->config_get_int (drvthis->name, "Type", 0, DEFAULT_DISPLAYTYPE);
 	if ((tmp < 0) || (tmp > 3)) {
 		report (RPT_WARNING, "%s: Displaytype must be between 0 and 3. Using default %d.\n",
 			__FUNCTION__, DEFAULT_DISPLAYTYPE);
