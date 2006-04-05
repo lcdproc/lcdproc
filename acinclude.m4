@@ -10,18 +10,36 @@ AC_ARG_ENABLE(drivers,
 	[                    joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,]
 	[                    MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,]
 	[                    sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
-	[                  \"all\" compiles all drivers],
+	[                  'all' compiles all drivers;]
+	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pylcd,text])
 
-	if test "$drivers" = "all"; then
-		drivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
-	fi
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
-  	drivers=`echo $drivers | sed 's/,/ /g'`
-  	for driver in $drivers
-  	do
+drivers=`echo $drivers | sed -e 's/,/ /g'`
 
+dnl replace special keyword "all" in a secure manner
+drivers=[" $drivers "]
+drivers=`echo " $drivers " | sed -e "s/ all / ${allDrivers} /"`
+drivers=`echo $drivers | sed -e 's/,/ /g'`
+
+dnl ignore unwanted drivers
+selectdrivers=" "
+for driver in $drivers ; do
+	case $driver in
+		!*)
+			driver=`echo $driver | sed -e 's/^.//'`
+			selectdrivers=[`echo $selectdrivers | sed -r -e "s/ $driver / /"`]
+			;;
+		*)
+			selectdrivers=["$selectdrivers $driver "]
+			;;
+	esac		
+done
+
+dnl check for wanted drivers and their dependencies
+for driver in $selectdrivers ; do
 	case "$driver" in
 		bayrad)
 			DRIVERS="$DRIVERS bayrad${SO}"
@@ -318,10 +336,10 @@ dnl			else
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])
 			;;
-  		esac
-  	done
+	esac
+done
 
-actdrivers=`echo $actdrivers | sed 's/ /,/g'`
+actdrivers=`echo $actdrivers | sed -e 's/ /,/g'`
 AC_MSG_RESULT([Will compile drivers: $actdrivers])
 
 AC_SUBST(LIBCURSES)
