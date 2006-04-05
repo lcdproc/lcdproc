@@ -258,7 +258,7 @@ PrivateData *p;
   if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
       (w <= 0) || (w > LCD_MAX_WIDTH) ||
       (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-    report(RPT_WARNING, "IOWarrior: Cannot read size: %s. Using default value.\n", size);
+    report(RPT_WARNING, "IOWarrior: Cannot read size: %s. Using default value.", size);
     sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
   }
   p->width = w;
@@ -274,14 +274,14 @@ PrivateData *p;
   /* Allocate framebuffer memory */
   p->framebuf =(unsigned char *) calloc(p->width * p->height, 1);
   if (p->framebuf == NULL) {
-    report(RPT_ERR, "IOWarrior: unable to create framebuffer.\n");
+    report(RPT_ERR, "IOWarrior: unable to create framebuffer.");
     return -1;
   }
 
   /* Allocate and clear the buffer for incremental updates */
   p->backingstore =(unsigned char *) calloc(p->width * p->height, 1);
   if (p->backingstore == NULL) {
-    report(RPT_ERR, "IOWarrior: unable to create lcd_buffer.\n");
+    report(RPT_ERR, "IOWarrior: unable to create lcd_buffer.");
     return -1;
   }
 
@@ -349,7 +349,7 @@ PrivateData *p;
   done:
 
   if (p->udh != NULL) {
-    debug(RPT_DEBUG, "IOWarrior: opening device succeeded\n");
+    debug(RPT_DEBUG, "IOWarrior: opening device succeeded");
 
     if (usb_set_configuration(p->udh, 1) < 0) {
       usb_close(p->udh);
@@ -387,7 +387,7 @@ PrivateData *p;
   if (iowlcd_display_on_off(p->udh, 1, 0, 0) == IOW_ERROR)
     return -1;
 
-  report(RPT_DEBUG, "IOWarrior_init: done\n");
+  report(RPT_DEBUG, "IOWarrior_init: done");
 
   /* clear screen */
   IOWarrior_clear(drvthis);
