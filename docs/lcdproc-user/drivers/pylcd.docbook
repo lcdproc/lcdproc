@@ -1,0 +1,109 @@
+<sect1 id="pylcd-howto">
+<title>The pylcd Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+pylcd chipset.
+</para>
+
+<sect2 id="pylcd-connections">
+<title>Connections</title>
+
+</sect2>
+
+
+<sect2 id="pylcd-ledoutput">
+<title>LED output</title>
+
+<para>
+I've added support for the LEDs on the Pyramid LC-Display to the
+pylcd driver of lcdproc. 
+</para>
+
+<para>
+Since it seems that LEDs on an LCD are not directly supported by the
+lcdproc API I've used the "output" command of the server to trigger the
+LEDs, similar to what the IOWarrior driver does.
+</para>
+
+<para>
+The Pyramid LC-Display exists in two different versions, with 3 and with
+9 LEDs. 2 of these LEDs can not be controlled by software but are
+usually hard wired to power and HDD. The other 1 or 7 LEDs can now be
+controlled by sending an "output" command to the server. The one
+argument to the output command is a bitmask that controls the LEDs.
+</para>
+
+<screen>
+bit 0: LED3
+bit 1: LED4
+bit 2: LED5
+bit 3: LED6
+bit 4: LED7
+bit 5: LED8
+bit 6: LED9
+</screen>
+
+<para>
+There's no way of finding out whether 3 or 9 LEDs are available, so it
+is up to the software to do the right thing.
+</para>
+
+<example>
+<title>How to use the LCED output from the lcient</title>
+<programlisting>
+telnet localhost 13666
+hello
+output 67
+</programlisting>
+
+will light up LEDs 3, 4 and 9.
+
+<programlisting>
+output 0
+</programlisting>
+
+will clear all LEDs.
+</example>
+
+<para>
+More information on the Pyramid LC-Display can be found here:
+<ulink url="http://www.pyramid.de/e/produkte/server/pyramid-lcd.php"></ulink>
+</para>
+
+</sect2>
+
+Author
+<author>
+  <firstname>Stefan</firstname>
+  <surname>Reinauer</surname>
+</author>
+
+coresystems GmbH · Brahmsstr. 16 · D-79104 Freiburg i. Br.
+Tel.: +49 761 7668825 · Fax: +49 761 7664613
+Email: info@coresystems.de  · http://www.coresystems.de/
+
+<!-- ## Pyramid pylcd driver ## -->
+<sect2 id="pylcd-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[pylcd]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+  Device to connect to. Default: <filename>/dev/lcd</filename>
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

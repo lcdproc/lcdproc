@@ -1,0 +1,72 @@
+<sect1 id="imon-howto">
+<title>The imon Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+imon chipset.
+</para>
+
+<sect2 id="imon-general">
+<title>General</title>
+
+Driver for Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD Module
+
+<para>
+In order to be able to use it, you have to get and install one of
+the following kernel modules:
+ - standalone iMON VFD driver from http://venky.ws/projects/imon/
+ - the iMON module included with LIRC ver. 0.7.1 or newer
+   from http://www.lirc.org/
+</para>
+
+<para>
+Adjust the 'Device' key in the [imon] section of /etc/LCDd.conf as
+necessary, depending on what device is file created by the kernel module
+when loaded (this may depend on your system configuration).
+</para>
+
+<para>
+For further details, please consult the page and the forum at
+<ulink url="http://venky.ws/projects/imon/"></ulink>.
+</para>
+
+</sect2>
+
+<!-- ## Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON driver ## -->
+<sect2 id="imon-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[imon]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    set display size [default: 20x4]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the output device to use [default: <filename>/dev/lcd</filename>]
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

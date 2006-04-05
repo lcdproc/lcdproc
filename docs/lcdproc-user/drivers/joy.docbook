@@ -1,0 +1,51 @@
+<sect1 id="joy-howto">
+<title>The Joystick Input Driver</title>
+
+<para>
+This section covers the joystick input driver for LCDd.
+</para>
+
+<!-- ## Joystick driver ## -->
+<sect2 id="joy-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[joy]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the input device to use [default: <filename>/dev/js0</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>AxisMap=</command>
+    <arg choice="plain"><replaceable>MAP-LIST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Modify the axis mapa [default: EFGHIJKLMNOPQRST]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ButtonMap=</command>
+    <arg choice="plain"><replaceable>MAP-LIST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Modify the button map [default: BDACEFGHIJKLMNOP]
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

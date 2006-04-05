@@ -1,0 +1,95 @@
+<sect1 id="lb216-howto">
+<title>The lb216 Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+lb216 chipset.
+</para>
+
+<sect2 id="lb216-connections">
+<title>Connections</title>
+
+</sect2>
+
+<firstname>Chris</firstname>
+<surname>Debenham</surname>
+eSun Systems Engineer
+<email>chris.debenham@aus.sun.com</email>
+
+<screen>
+Heres a bit more info on the display.
+It is the LB216 and is made by R.T.N. Australia
+The web page for it is http://www.nollet.com.au/
+It is a serial 16x2 LCD with software controllable backlight.
+They also make 40x4 displays (which I'll be getting one of soon :-) )
+3 wire connection (5V,0V and serial), 2400 or 9600 bps.
+8 custom characters
+40*83.5MM size
+made in australia :-)
+</screen>
+
+<!-- ## LB216 driver ## -->
+<sect2 id="lb216-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[lb216]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the output device to use [default: <filename>/dev/lcd</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial brightness [default: 255; legal: 0 - 255]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>2400</literal></arg>
+      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate to use when communicating with the LCD.
+    If not given, the default is <literal>9600</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Reboot=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Reinitialize the LCD's BIOS [default: no; legal: yes, no]
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

@@ -1,0 +1,185 @@
+<sect1 id="CwLnx-howto">
+<title>The CwLnx Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+CwLnx chipset.
+</para>
+
+<!-- ## Cwlinux driver ## -->
+<sect2 id="CwLnx-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[CwLnx]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the output device to use [default: <filename>/dev/lcd</filename>]
+    May be serial device or USB device in serial emulation mode.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Select the LCD size [default: 20x4]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>9600</literal></arg>
+      <arg choice="plain"><literal><emphasis>19200</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate for communication with the LCD.
+    If not given, the default is <literal>19200</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Reboot=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Reinitialize the LCD's BIOS [default: no; legal: yes, no]
+    normally you shouldn't need this
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Keypad=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Tells if you have a keypad connected. Keypad layout is currently not
+    configureable from the config file.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>KeyMap_A=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_B=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_C=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_D=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_E=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_F=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    If you have a non standard keypad you can associate any keystrings to keys.
+    There are 6 input key in the CwLnx hardware that generate characters
+    from '<literal>A</literal>' to '<literal>F</literal>'.
+    Legal values for <replaceable>KEY</replaceable> are <literal>Up</literal>,
+    <literal>Down</literal>, <literal>Left</literal>, <literal>Right</literal>,
+    <literal>Enter</literal> and <literal>Escape</literal>.
+    </para>
+    <para>
+    The following it the built-in default mapping hardcoded in the driver.
+    </para>
+    <informaltable>
+    <tgroup cols="2">
+      <tbody>
+        <row>
+	  <entry>KeyMap_A</entry>
+	  <entry><literal>Up</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_B</entry>
+	  <entry><literal>Down</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_C</entry>
+	  <entry><literal>Left</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_D</entry>
+	  <entry><literal>Right</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_E</entry>
+	  <entry><literal>Enter</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_F</entry>
+	  <entry><literal>Escape</literal></entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </informaltable>
+    <para>
+    You may leave it unchanged if you have a standard keypad.
+    You can change it if you want to report other keystrings or have a non
+    standard keypad.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>keypad_test_mode=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    keypad_test_mode permit to test keypad assignement
+    Default value is no
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

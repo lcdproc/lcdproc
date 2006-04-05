@@ -111,6 +111,53 @@ The prog=... line must be the same as in your <filename>~/.lircrc</filename>
 
 </sect3>
 
+<!-- ## LIRC input driver ## -->
+<sect2 id="lirc-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[lirc]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>lircrc=</command>
+    <arg choice="plain"><replaceable>FILENAME</replaceable></arg>
+  </term>
+  <listitem>
+    <para>
+    Normally all LIRC clients scan the file <filename>~/.lircrc</filename>.
+    However, you might want to have a separate file to configure the LCDproc lircin driver only. 
+    </para>
+    <para>
+    This option enables you to specify the file you want the lircin driver to scan.
+    If not given it defaults to <filename>~/.lircrc</filename>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Prog=</command>
+    <arg choice="plain"><replaceable>PROGRAM</replaceable></arg>
+  </term>
+  <listitem>
+    <para>
+    All LIRC keys are assigned to a program using the prog=... option
+    in the lirc configuration file.
+    </para>
+    <para>
+    <replaceable>PROGRAM</replaceable> must be the same as in iyour lirc
+    configuration file.
+    </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
 </sect2>
 
 <sect2 id="lircrc">
@@ -128,31 +175,44 @@ lines to the file:
 </para>
 
 <example>
-<title><filename>~/.lircrc</filename>: Specify the keys for the lircin driver</title>
+<title><filename>~/.lircrc</filename>: Specify the associations from buttons to keysi
+for the lircin driver</title>
 <programlisting>
 
 begin
         prog = lcdd
         button = 2
-        config = A
+        config = Up
 end
 
 begin
         prog = lcdd
         button = 4
-        config = B
+        config = Left
 end
 
 begin
         prog = lcdd
         button = 6
-        config = C
+        config = Right
 end
 
 begin
         prog = lcdd
         button = 8
-        config = D
+        config = Down
+end
+
+begin
+        prog = lcdd
+        button = 1
+        config = Escape
+end
+
+begin
+        prog = lcdd
+        button = 0
+        config = Enter
 end
 
 
@@ -161,7 +221,18 @@ end
 
 <para>
 Which buttons you specify here depends on your RC and your LIRC configuration.
-Anyways, config=A/B/C/D is neccessary to control the server menu of LCDd.
+</para>
+
+<para>
+The <literal>config</literal> values need to be one of <literal>Up</literal>,
+<literal>Down</literal>, <literal>Left</literal>, <literal>Right</literal>,
+<literal>Escape</literal> or <literal>Enter</literal>.
+For LCDd's server menu at least the keys <literal>Up</literal>, <literal>Escape</literal>
+and <literal>Enter</literal> are necessary.
+</para>
+
+<para>
+<!-- TOTO: is this still true with 0.5 ? -->
 Of course you can define other keys. Those keys will not be handled by the
 server but sent to a client. Refer to the documentation of the client you want
 to use, to find out which keys are neccessary for that client.

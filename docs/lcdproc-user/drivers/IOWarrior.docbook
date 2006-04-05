@@ -1,0 +1,64 @@
+<sect1 id="IOWarrior-howto">
+<title>The IOWarrior Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+IOWarrior chipset.
+</para>
+
+<!-- ## Code Mercenaries IO-Warrior driver ## -->
+<sect2 id="IOWarrior-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[IOWarrior]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    display dimensions
+    Default: <literal>20x4</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>SerialNumber=</command>
+    <arg choice="plain"><replaceable>SERIALNO</replaceable></arg>
+  </term>
+  <listitem><para>
+    serial number [exactly as listed by usbview]
+  (if not given, the 1st IOWarrior found gets used)
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Lastline=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Specifies if the last line is pixel addressable or it controls an
+    underline effect. [default: yes (= pixel addressable); legal: yes, no]
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

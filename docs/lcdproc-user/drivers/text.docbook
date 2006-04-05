@@ -1,0 +1,36 @@
+<sect1 id="text-howto">
+<title>The text Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+text chipset.
+</para>
+
+<!-- ## Text driver ## -->
+<sect2 id="text-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[text]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the display size [default: 20x4]
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

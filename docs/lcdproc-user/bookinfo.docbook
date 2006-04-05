@@ -6,6 +6,12 @@
 <authorgroup>
 
 <author>
+<firstname>Peter</firstname>
+<surname>Marschall</surname>
+<affiliation><address><email>peter@adpm.de</email></address></affiliation>
+</author>
+
+<author>
 <firstname>Rene</firstname>
 <surname>Wagner</surname>
 <affiliation><address><email>reenoo@gmx.de</email></address></affiliation>
@@ -25,17 +31,19 @@
 
 </authorgroup>
 
-<date>2002-03-01</date>
+<date>2006-04-01</date>
 <releaseinfo>0.0.1</releaseinfo>
 
 <abstract>
 <para>
-This document is a guide to LCDproc written for users. It covers LCDproc 0.4.3 ONLY.
-Some things may be valid for 0.5 as well, but a lot has changed since 0.4.1 and a lot
-will change for 0.5.
+This document is a guide to LCDproc written for users. It covers LCDproc 0.5.x
 </para>
 </abstract>
 
+<copyright>
+<year>2006</year>
+<holder>Peter Marschall</holder>
+</copyright>
 <copyright>
 <year>2002</year>
 <holder>Rene Wagner</holder>
@@ -63,7 +71,7 @@ Free Documentation License".
 <keywordset>
 <keyword>documentation</keyword>
 <keyword>LCDproc</keyword>
-<keyword>0.4.3</keyword>
+<keyword>0.5.0</keyword>
 <keyword>user's guide</keyword>
 </keywordset>
 

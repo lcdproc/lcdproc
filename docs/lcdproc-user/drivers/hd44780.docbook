@@ -21,7 +21,7 @@ It also supports the following connections:
 </para>
 <itemizedlist>
 <listitem><para>A PIC-an-LCD or LCD serializer connected to a serial port</para></listitem>
-<listitem><para>A I2C port expander connected to an I2C port</para></listitem>
+<listitem><para>A I<superscript>2</superscript>C port expander connected to an I<superscript>2</superscript>C port</para></listitem>
 </itemizedlist>
 <para>
 The driver also lets you use multiple displays as a single virtual
@@ -90,19 +90,25 @@ There are several ways to get 5V:
 </para>
 
 <itemizedlist>
-<listitem><para>Connect to a 5V line intented for disk drives (the red
-wire is 5V, black is GND).</para></listitem>
-<listitem><para>Get it from a joystick port (pin 1 and 9 are 5V, 4, 5
-and 12 are GND). It seems that some soundcards can use these lines for
-communication, so if you want to use this first check wether it really
-gives a 'clean' 5V.</para></listitem>
-<listitem><para>If you don't have a backlight, you can sometimes get
-the needed mA's from the LPT port itself. Connect a few diodes from the
-data pins to a capacitor and you have the 5V. If it's strong enough is
-another question...</para></listitem>
-<listitem><para>Get it from the keyboard connector. I do not recommend
-to use this with a backlight, as the keyboard connector is often protected
-with a fuse of 100mA or 200mA.</para></listitem>
+<listitem><para>
+Connect to a 5V line intented for disk drives (the red wire is 5V,
+black is GND).
+</para></listitem>
+<listitem><para>
+Get it from a joystick port (pin 1 and 9 are 5V, 4, 5 and 12 are GND).
+It seems that some soundcards can use these lines for communication,
+so if you want to use this first check wether it really gives a 'clean' 5V.
+</para></listitem>
+<listitem><para>
+If you don't have a backlight, you can sometimes get the needed mA's
+from the LPT port itself. Connect a few diodes from the data pins to
+a capacitor and you have the 5V. If it's strong enough is another question...
+</para></listitem>
+<listitem><para>
+Get it from the keyboard connector. I do not recommend to use this with
+a backlight, as the keyboard connector is often protected with a fuse
+of 100mA or 200mA.
+</para></listitem>
 </itemizedlist>
 
 <figure>
@@ -266,21 +272,48 @@ connected, with X and Y lines connected as show. To be more precise, it
 assumes this:
 </para>
 
-<figure>
+<table>
 <title>HD44780: Keypad Layout</title>
-<screen>
-<![CDATA[
-
-      X0 X1 X2 X3
-
-Y0    1  2  3  A
-Y1    4  5  6  B
-Y2    7  8  9  C
-Y3    *  0  #  D
-
-]]>
-</screen>
-</figure>
+<tgroup cols="5">
+  <tbody>
+    <row>
+      <entry></entry>
+      <entry><emphasis>X0</emphasis></entry>
+      <entry><emphasis>X1</emphasis></entry>
+      <entry><emphasis>X2</emphasis></entry>
+      <entry><emphasis>X3</emphasis></entry>
+    </row>
+    <row>
+      <entry><emphasis>Y0</emphasis></entry>
+      <entry>1</entry>
+      <entry>2</entry>
+      <entry>3</entry>
+      <entry>A</entry>
+    </row>
+    <row>
+      <entry><emphasis>Y1</emphasis></entry>
+      <entry>4</entry>
+      <entry>5</entry>
+      <entry>6</entry>
+      <entry>B</entry>
+    </row>
+    <row>
+      <entry><emphasis>Y2</emphasis></entry>
+      <entry>7</entry>
+      <entry>8</entry>
+      <entry>9</entry>
+      <entry>C</entry>
+    </row>
+    <row>
+      <entry><emphasis>Y3</emphasis></entry>
+      <entry>*</entry>
+      <entry>0</entry>
+      <entry>#</entry>
+      <entry>D</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
 
 <para>
 If you only need 10 keys, leave the rest away. However, the lcdproc menu is
@@ -359,7 +392,7 @@ LPT Sub-D connector              |   4k7     |
                           ___    |       b |/
      BL pin o------------|___|---+---------|
                           1k               |\
-                                       bc327 |c
+                                       BC327 |c
                                              |        LCD connector
                                              |
                                              +--------o 15 backlight
@@ -373,7 +406,7 @@ The BC327 transistor has the following connections:
 
      _____
     |     |
-    |bc327|
+    |BC327|
     |_____|
      | | |
      | | |
@@ -416,46 +449,46 @@ This is originally based on "lcdtext" (by Matthias Prinke).
 <table>
 <title>HD44780: 4-bit Pinouts (1)</title>
 <tgroup cols="2">
-<thead>
-<row>
-<entry>printer port</entry>
-<entry>LCD</entry>
-</row>
-</thead>
-<tbody>
-<row>
-<entry>D0 (2)</entry>
-<entry>D4 (11)</entry>
-</row>
-<row>
-<entry>D1 (3)</entry>
-<entry>D5 (12)</entry>
-</row>
-<row>
-<entry>D2 (4)</entry>
-<entry>D6 (13)</entry>
-</row>
-<row>
-<entry>D3 (5)</entry>
-<entry>D7 (14)</entry>
-</row>
-<row>
-<entry>D4 (6)</entry>
-<entry>RS (4)</entry>
-</row>
-<row>
-<entry>D5 (7)</entry>
-<entry>RW (5) (LCD3 - 6) (optional - pull all LCD RW low (*) )</entry>
-</row>
-<row>
-<entry>D6 (8)</entry>
-<entry>EN (6)</entry>
-</row>
-<row>
-<entry>D7 (9)</entry>
-<entry>EN2 (LCD2 - 6) (optional)</entry>
-</row>
-</tbody>
+  <thead>
+    <row>
+      <entry>printer port</entry>
+      <entry>LCD</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0 (2)</entry>
+      <entry>D4 (11)</entry>
+    </row>
+    <row>
+      <entry>D1 (3)</entry>
+      <entry>D5 (12)</entry>
+    </row>
+    <row>
+      <entry>D2 (4)</entry>
+      <entry>D6 (13)</entry>
+    </row>
+    <row>
+      <entry>D3 (5)</entry>
+      <entry>D7 (14)</entry>
+    </row>
+    <row>
+      <entry>D4 (6)</entry>
+      <entry>RS (4)</entry>
+    </row>
+    <row>
+      <entry>D5 (7)</entry>
+      <entry>RW (5) (LCD3 - 6) (optional - pull all LCD RW low (*) )</entry>
+    </row>
+    <row>
+      <entry>D6 (8)</entry>
+      <entry>EN (6)</entry>
+    </row>
+    <row>
+      <entry>D7 (9)</entry>
+      <entry>EN2 (LCD2 - 6) (optional)</entry>
+    </row>
+  </tbody>
 </tgroup>
 </table>
 
@@ -475,30 +508,30 @@ displays four to seven use:
 <table>
 <title>HD44780: 4-bit Pinouts (2)</title>
 <tgroup cols="2">
-<thead>
-<row>
-<entry>printer port</entry>
-<entry>LCD</entry>
-</row>
-</thead>
-<tbody>
-<row>
-<entry>STR (1)</entry>
-<entry>EN4</entry>
-</row>
-<row>
-<entry>LF (14)</entry>
-<entry>EN5</entry>
-</row>
-<row>
-<entry>INIT (16)</entry>
-<entry>EN6</entry>
-</row>
-<row>
-<entry>SEL (17)</entry>
-<entry>EN7</entry>
-</row>
-</tbody>
+  <thead>
+    <row>
+      <entry>printer port</entry>
+      <entry>LCD</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>STR (1)</entry>
+      <entry>EN4</entry>
+    </row>
+    <row>
+      <entry>LF (14)</entry>
+      <entry>EN5</entry>
+    </row>
+    <row>
+      <entry>INIT (16)</entry>
+      <entry>EN6</entry>
+    </row>
+    <row>
+      <entry>SEL (17)</entry>
+      <entry>EN7</entry>
+    </row>
+  </tbody>
 </tgroup>
 </table>
 
@@ -509,78 +542,74 @@ The optional keypad can be connected as follows:
 <table>
 <title>HD44780: 4-bit Keypad Pinouts</title>
 <tgroup cols="2">
-<thead>
-<row>
-<entry>printer port</entry>
-<entry>LCD</entry>
-</row>
-</thead>
-<tbody>
-<row>
-<entry>D0 (2)</entry>
-<entry>Y0</entry>
-</row>
-<row>
-<entry>D1 (3)</entry>
-<entry>Y1</entry>
-</row>
-<row>
-<entry>D2 (4)</entry>
-<entry>Y2</entry>
-</row>
-<row>
-<entry>D3 (5)</entry>
-<entry>Y3</entry>
-</row>
-<row>
-<entry>D4 (6)</entry>
-<entry>Y4</entry>
-</row>
-<row>
-<entry>D5 (7)</entry>
-<entry>Y5</entry>
-</row>
-<row>
-<entry>nSTRB (1)</entry>
-<entry>Y6</entry>
-</row>
-<row>
-<entry>nLF  (14)</entry>
-<entry>Y7</entry>
-</row>
-<row>
-<entry>INIT (16)</entry>
-<entry>Y8</entry>
-</row>
-<row>
-<entry>nSEL (17)</entry>
-<entry>Y9</entry>
-</row>
-<row>
-<entry></entry>
-<entry></entry>
-</row>
-<row>
-<entry>nACK (10)</entry>
-<entry>X0</entry>
-</row>
-<row>
-<entry>BUSY (11)</entry>
-<entry>X1</entry>
-</row>
-<row>
-<entry>PAPEREND (12)</entry>
-<entry>X2</entry>
-</row>
-<row>
-<entry>SELIN (13)</entry>
-<entry>X3</entry>
-</row>
-<row>
-<entry>nFAULT (15)</entry>
-<entry>X4</entry>
-</row>
-</tbody>
+  <thead>
+    <row>
+      <entry>printer port</entry>
+      <entry>LCD</entry>
+  </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0 (2)</entry>
+      <entry>Y0</entry>
+    </row>
+    <row>
+      <entry>D1 (3)</entry>
+      <entry>Y1</entry>
+    </row>
+    <row>
+      <entry>D2 (4)</entry>
+      <entry>Y2</entry>
+    </row>
+    <row>
+      <entry>D3 (5)</entry>
+      <entry>Y3</entry>
+    </row>
+    <row>
+      <entry>D4 (6)</entry>
+      <entry>Y4</entry>
+    </row>
+    <row>
+      <entry>D5 (7)</entry>
+      <entry>Y5</entry>
+    </row>
+    <row>
+      <entry>nSTRB (1)</entry>
+      <entry>Y6</entry>
+    </row>
+    <row>
+      <entry>nLF  (14)</entry>
+      <entry>Y7</entry>
+    </row>
+    <row>
+      <entry>INIT (16)</entry>
+      <entry>Y8</entry>
+    </row>
+    <row>
+      <entry>nSEL (17)</entry>
+      <entry>Y9</entry>
+    </row>
+    <row>
+      <entry>nACK (10)</entry>
+      <entry>X0</entry>
+    </row>
+    <row>
+      <entry>BUSY (11)</entry>
+      <entry>X1</entry>
+    </row>
+    <row>
+      <entry>PAPEREND (12)</entry>
+      <entry>X2</entry>
+    </row>
+    <row>
+      <entry>SELIN (13)</entry>
+      <entry>X3</entry>
+    </row>
+    <row>
+      <entry>nFAULT (15)</entry>
+      <entry>X4</entry>
+    </row>
+  </tbody>
 </tgroup>
 </table>
 
@@ -597,29 +626,67 @@ The optional backlight wiring should be connected to D5, pin 7.
 This type of connection should work with winamp.
 </para>
 
-<figure>
+<table>
 <title>HD44780: "Winamp" wiring</title>
-<screen>
-<![CDATA[
-
-  printer port  LCD
-
-  D0 (2)        D0 (7)
-  D1 (3)        D1 (8)
-  D2 (4)        D2 (9)
-  D3 (5)        D3 (10)
-  D4 (6)        D4 (11)
-  D5 (7)        D5 (12)
-  D6 (8)        D6 (13)
-  D7 (9)        D7 (14)
-  nSTRB (1)     EN (6)
-  nLF   (14)    nRW (5) (EN3 6 - LCD 3) (optional (*) )
-  INIT  (16)    RS (4)
-  nSEL  (17)    EN2 (6 - LCD 2) (optional)
-
-]]>
-</screen>
-</figure>
+<tgroup cols="2">
+  <thead>
+    <row>
+      <entry>printer port</entry>
+      <entry>LCD</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0 (2)</entry>
+      <entry>D0 (7)</entry>
+    </row>
+    <row>
+      <entry>D1 (3)</entry>
+      <entry>D1 (8)</entry>
+    </row>
+    <row>
+      <entry>D2 (4)</entry>
+      <entry>D2 (9)</entry>
+    </row>
+    <row>
+      <entry>D3 (5)</entry>
+      <entry>D3 (10)</entry>
+    </row>
+    <row>
+      <entry>D4 (6)</entry>
+      <entry>D4 (11)</entry>
+    </row>
+    <row>
+      <entry>D5 (7)</entry>
+      <entry>D5 (12)</entry>
+    </row>
+    <row>
+      <entry>D6 (8)</entry>
+      <entry>D6 (13)</entry>
+    </row>
+    <row>
+      <entry>D7 (9)</entry>
+      <entry>D7 (14)</entry>
+    </row>
+    <row>
+      <entry>nSTRB (1)</entry>
+      <entry>EN (6)</entry>
+    </row>
+    <row>
+      <entry>nLF (14)</entry>
+      <entry>nRW (5) (EN3 6 - LCD 3) (optional (*) )</entry>
+    </row>
+    <row>
+      <entry>INIT (16)</entry>
+      <entry>RS (4)</entry>
+    </row>
+    <row>
+      <entry>nSEL (17)</entry>
+      <entry>EN2 (6 - LCD 2) (optional)</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
 
 <para>
 (*) on the RW line of the display: this line decides whether the display receives data from the 
@@ -640,33 +707,80 @@ connected to this line.
 The optional keypad can be connected as follows:
 </para>
 
-<figure>
+<table>
 <title>HD44780: "Winamp" wiring - Keypad</title>
-<screen>
-<![CDATA[
+<tgroup cols="2">
+  <thead>
+    <row>
+      <entry>printer port</entry>
+      <entry>keypad</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0 (2)</entry>
+      <entry>Y0</entry>
+    </row>
+    <row>
+      <entry>D1 (3)</entry>
+      <entry>Y1</entry>
+    </row>
+    <row>
+      <entry>D2 (4)</entry>
+      <entry>Y2</entry>
+    </row>
+    <row>
+      <entry>D3 (5)</entry>
+      <entry>Y3</entry>
+    </row>
+    <row>
+      <entry>D4 (6)</entry>
+      <entry>Y4</entry>
+    </row>
+    <row>
+      <entry>D5 (7)</entry>
+      <entry>Y5</entry>
+    </row>
+    <row>
+      <entry>D6 (8)</entry>
+      <entry>Y6</entry>
+    </row>
+    <row>
+      <entry>D7 (9)</entry>
+      <entry>Y7</entry>
+    </row>
+    <row>
+      <entry>nLF (14)</entry>
+      <entry>Y8</entry>
+    </row>
+    <row>
+      <entry>INIT (16)</entry>
+      <entry>Y9</entry>
+    </row>
 
-  printer port  keypad
-
-  D0 (2)        Y0
-  D1 (3)        Y1
-  D2 (4)        Y2
-  D3 (5)        Y3
-  D4 (6)        Y4
-  D5 (7)        Y5
-  D6 (8)        Y6
-  D7 (9)        Y7
-  nLF  (14)     Y8
-  INIT (16)     Y9
-
-  nACK (10)     X0
-  BUSY (11)     X1
-  PAPEREND (12) X2
-  SELIN (13)    X3
-  nFAULT (15)   X4
-
-]]>
-</screen>
-</figure>
+    <row>
+      <entry>nACK (10)</entry>
+      <entry>X0</entry>
+    </row>
+    <row>
+      <entry>BUSY (11)</entry>
+      <entry>X1</entry>
+    </row>
+    <row>
+      <entry>PAPEREND (12)</entry>
+      <entry>X2</entry>
+    </row>
+    <row>
+      <entry>SELIN (13)</entry>
+      <entry>X3</entry>
+    </row>
+    <row>
+      <entry>nFAULT (15)</entry>
+      <entry>X4</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
 
 <para>
 The optional backlight wiring should be connected to nSEL, pin 17.
@@ -701,29 +815,67 @@ winamp or ext8bit wirings, because it only sends 4 bits at a time.
 The LCD connections are:
 </para>
 
-<figure>
+<table>
 <title>HD44780: "lcdtime" wiring</title>
-<screen>
-<![CDATA[
-
-  printer port  LCD
-
-  D0 (2)        D0 (7)
-  D1 (3)        D1 (8)
-  D2 (4)        D2 (9)
-  D3 (5)        D3 (10)
-  D4 (6)        D4 (11)
-  D5 (7)        D5 (12)
-  D6 (8)        D6 (13)
-  D7 (9)        D7 (14)
-  nSEL  (17)    -
-  nSTRB (1)     RS (4)
-  nLF   (14)    RW (5) (LCD2 - 6) (optional - pull all LCD RW low (*))
-  INIT  (16)    EN (6)
-
-]]>
-</screen>
-</figure>
+<tgroup cols="2">
+  <thead>
+    <row>
+      <entry>printer port</entry>
+      <entry>LCD</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0 (2)</entry>
+      <entry>D0 (7)</entry>
+    </row>
+    <row>
+      <entry>D1 (3)</entry>
+      <entry>D1 (8)</entry>
+    </row>
+    <row>
+      <entry>D2 (4)</entry>
+      <entry>D2 (9)</entry>
+    </row>
+    <row>
+      <entry>D3 (5)</entry>
+      <entry>D3 (10)</entry>
+    </row>
+    <row>
+      <entry>D4 (6)</entry>
+      <entry>D4 (11)</entry>
+    </row>
+    <row>
+      <entry>D5 (7)</entry>
+      <entry>D5 (12)</entry>
+    </row>
+    <row>
+      <entry>D6 (8)</entry>
+      <entry>D6 (13)</entry>
+    </row>
+    <row>
+      <entry>D7 (9)</entry>
+      <entry>D7 (14)</entry>
+    </row>
+    <row>
+      <entry>nSEL (17)</entry>
+      <entry>-</entry>
+    </row>
+    <row>
+      <entry>nSTRB (1)</entry>
+      <entry>RS (4)</entry>
+    </row>
+    <row>
+      <entry>nLF (14)</entry>
+      <entry>RW (5) (LCD2 - 6) (optional - pull all LCD RW low (*))</entry>
+    </row>
+    <row>
+      <entry>INIT (16)</entry>
+      <entry>EN (6)</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
 
 <para>
 (*) on the RW line of the display: this line decides whether the display receives data from the 
@@ -741,33 +893,80 @@ connections.
 The optional keypad can be connected as follows:
 </para>
 
-<figure>
+<table>
 <title>HD44780: "lcdtime" wiring - keypad</title>
-<screen>
-<![CDATA[
+<tgroup cols="2">
+  <thead>
+    <row>
+      <entry>printer port</entry>
+      <entry>keypad</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0 (2)</entry>
+      <entry>Y0</entry>
+    </row>
+    <row>
+      <entry>D1 (3)</entry>
+      <entry>Y1</entry>
+    </row>
+    <row>
+      <entry>D2 (4)</entry>
+      <entry>Y2</entry>
+    </row>
+    <row>
+      <entry>D3 (5)</entry>
+      <entry>Y3</entry>
+    </row>
+    <row>
+      <entry>D4 (6)</entry>
+      <entry>Y4</entry>
+    </row>
+    <row>
+      <entry>D5 (7)</entry>
+      <entry>Y5</entry>
+    </row>
+    <row>
+      <entry>D6 (8)</entry>
+      <entry>Y6</entry>
+    </row>
+    <row>
+      <entry>D7 (9)</entry>
+      <entry>Y7</entry>
+    </row>
+    <row>
+      <entry>nSTRB (1)</entry>
+      <entry>Y8</entry>
+    </row>
+    <row>
+      <entry>nSEL (17)</entry>
+      <entry>Y9</entry>
+    </row>
 
-  printer port  keypad
-
-  D0 (2)        Y0
-  D1 (3)        Y1
-  D2 (4)        Y2
-  D3 (5)        Y3
-  D4 (6)        Y4
-  D5 (7)        Y5
-  D6 (8)        Y6
-  D7 (9)        Y7
-  nSTRB (1)     Y8
-  nSEL (17)     Y9
-
-  nACK (10)     X0
-  BUSY (11)     X1
-  PAPEREND (12) X2
-  SELIN (13)    X3
-  nFAULT (15)   X4
-
-]]>
-</screen>
-</figure>
+    <row>
+      <entry>nACK (10)</entry>
+      <entry>X0</entry>
+    </row>
+    <row>
+      <entry>BUSY (11)</entry>
+      <entry>X1</entry>
+    </row>
+    <row>
+      <entry>PAPEREND (12)</entry>
+      <entry>X2</entry>
+    </row>
+    <row>
+      <entry>SELIN (13)</entry>
+      <entry>X3</entry>
+    </row>
+    <row>
+      <entry>nFAULT (15)</entry>
+      <entry>X4</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
 
 <para>
 The backlight wiring should be attached to nSEL, pin 17. Because the portato
@@ -846,7 +1045,6 @@ GND to pin 8 of the IC.
                                   |         QS|--              ===
                                   |           |
                                    -----------
-
 
    D2 4 o----------------------------------------------------------o 6 EN
 
@@ -951,20 +1149,33 @@ serialLpt wiring supports a keypad. The 3 wires version supports
 7 x 5 = 35 keys.
 </para>
 
-<figure>
+<table>
 <title>HD44780: Serial LPT - Keypad return lines</title>
-<screen>
-<![CDATA[
-
-  nACK (10)     X0
-  BUSY (11)     X1
-  PAPEREND (12) X2
-  SELIN (13)    X3
-  nFAULT (15)   X4
-
-]]>
-</screen>
-</figure>
+<tgroup cols="2">
+  <tbody>
+    <row>
+      <entry>nACK (10)</entry>
+      <entry>X0</entry>
+    </row>
+    <row>
+      <entry>BUSY (11)</entry>
+      <entry>X1</entry>
+    </row>
+    <row>
+      <entry>PAPEREND (12)</entry>
+      <entry>X2</entry>
+    </row>
+    <row>
+      <entry>SELIN (13)</entry>
+      <entry>X3</entry>
+    </row>
+    <row>
+      <entry>nFAULT (15)</entry>
+      <entry>X4</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
 
 <para>
 On lines longer than, say a meter, you should buffer the return line(s).
@@ -1160,46 +1371,46 @@ if you want to see Booting... at startup, change the code above to look like thi
 
 ; This is where we should insert any little startup LCD messages...
 ;   Print "Booting..." on startup...
-			movlw   'B'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   'o'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   'o'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   't'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   'i'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   'n'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   'g'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   '.'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   '.'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
-			movlw   '.'
-			movwf   ARG1
-			call    SendLCDData
-			call    InitDelay200MS
+                       movlw   'B'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   'o'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   'o'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   't'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   'i'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   'n'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   'g'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   '.'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   '.'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
+                       movlw   '.'
+                       movwf   ARG1
+                       call    SendLCDData
+                       call    InitDelay200MS
 ]]>
 </programlisting>
 </para>
@@ -1229,11 +1440,12 @@ specifying which one (of multiple BWCT LCD devices) is wanted using the
 
 
 <sect3 id="hd44780-i2c">
-<title>I2C with Port-Expander</title>
+<title>I<superscript>2</superscript>C with Port-Expander</title>
 
 <para>
-If you have an I2C port available that is supported by your kernel (through /dev/i2c*),
-you can add a I2C port expander there (PCF8574P in this example).
+If you have an I<superscript>2</superscript>C port available that is supported by your kernel
+(through /dev/i2c*), you can add a I<superscript>2</superscript>C port expander there
+(PCF8574P in this example).
 </para>
 
 <figure>
@@ -1287,7 +1499,7 @@ you can add a I2C port expander there (PCF8574P in this example).
 <title>Configuration</title> 
 
 <figure>
-<title>HD44780: Configuration for I2C with port expander</title>
+<title>HD44780: Configuration for I<superscript>2</superscript>C with port expander</title>
 <screen>
 <![CDATA[
 [HD44780]
@@ -1304,7 +1516,7 @@ Keypad=no
 </figure>
 
 <para>
-Device is the device file for your I2C bus (here /dev/i2c-0).
+Device is the device file for your I<superscript>2</superscript>C bus (here /dev/i2c-0).
 You have to load the kernel standard module i2c-dev and
 the bus driver, but NO i2c chip modules (e.g. pcf8574)!
 </para>
@@ -1319,7 +1531,7 @@ off the address.
 </para>
 
 <figure>
-<title>HD44780: Examples of I2C port expander adresses</title>
+<title>HD44780: Examples of I<superscript>2</superscript>C port expander adresses</title>
 <screen>
 <![CDATA[
 port=0x20..0x27   PCF8574  with A[012]=0..7
@@ -1346,68 +1558,295 @@ can be done by specifying "--enable-drivers=all" or by
 
 </sect2>
 
+<!-- ## Hitachi HD44780 driver ## -->
+<sect2 id="hd44780-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[hd44780]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Port=</command>
+    <arg choice="plain"><replaceable>PORT</replaceable></arg>
+  </term>
+  <listitem><para>
+    Specify the address of the parallel port the LCD is connected to.
+    Common values for <replaceable>PORT</replaceable> are <literal>0x278</literal>,
+    <literal>0x378</literal> and <literal>0x3BC</literal>.
+    If not given, the default is <literal>0x378</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ConnectionType=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>4bit</emphasis></literal></arg>
+      <arg choice="plain"><literal>8bit</literal></arg>
+      <arg choice="plain"><literal>serialLpt</literal></arg>
+      <arg choice="plain"><literal>winamp</literal></arg>
+      <arg choice="plain"><literal>picanlcd</literal></arg>
+      <arg choice="plain"><literal>bwctusb</literal></arg>
+      <arg choice="plain"><literal>lcdserializer</literal></arg>
+      <arg choice="plain"><literal>lis2</literal></arg>
+      <arg choice="plain"><literal>i2c</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem>
+    <para>
+    Select the type of the wiring / display connection.
+    </para>
+    <informaltable>
+    <tgroup cols="2">
+      <thead>
+        <row>
+          <entry>ConnectionType</entry>
+          <entry>Wiring / Display Type</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry><literal>4bit</literal></entry>
+          <entry>HD44780 4bit Wiring (default)</entry>
+        </row>
+        <row>
+          <entry><literal>8bit</literal></entry>
+          <entry>HD44780 8bit Wiring ("lcdtime")</entry>
+        </row>
+        <row>
+          <entry><literal>serialLpt</literal></entry>
+          <entry>HD44780 Serial LPT Wiring</entry>
+        </row>
+        <row>
+          <entry><literal>winamp</literal></entry>
+          <entry>HD44780 8bit Wiring "winamp" Style</entry>
+        </row>
+        <row>
+          <entry><literal>picanlcd</literal></entry>
+          <entry>PIC-an-LCD serial device "picanlcd"</entry>
+        </row>
+        <row>
+          <entry><literal>bwctusb</literal></entry>
+          <entry>BWCT USB device "bwctusb"</entry>
+        </row>
+        <row>
+          <entry><literal>lcdserializer</literal></entry>
+          <entry>LCD serializer "lcdserializer"</entry>
+        </row>
+        <row>
+          <entry><literal>lis2</literal></entry>
+          <entry>LIS2 from VLSystem (http://www.vlsys.co.kr)</entry>
+        </row>
+        <row>
+          <entry><literal>i2c</literal></entry>
+          <entry>LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C</entry>
+        </row>
+      </tbody>
+    </tgroup>
+    </informaltable>
+
+    <tip>
+      <para>
+      The above table might be outdated, when you read this.
+      If you suspect the table above to be outdated, you might want to have a look at
+      <filename>server/drivers/hd44780-drivers.h</filename>
+      which contains the actual translation code.
+      </para>
+    </tip>
+
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Keypad=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Tell whether you have a keypad connected.
+    You may also need to configure the keypad layout further on in this file.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Contrast=</command>
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial contrast for the <literal>bwctusb</literal> connection type.
+    Legal values for <replaceable>CONTRAST</replaceable> are <literal>0</literal> - <literal>1000</literal>.
+    If not given, it defaults to <literal>300</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Backlight=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Specifiy if you have a switchable backlight.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>OutputPort=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Tell if you have the additional output port ("bargraph") and you want to
+    be able to control it with the lcdproc OUTPUT command
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Lastline=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Specifies if the last line is pixel addressable or it controls an
+    underline effect. [default: yes (= pixel addressable); legal: yes, no]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Specifies the size of the LCD.
+    Default: <literal>20x4</literal>
+    In case of multiple combined displays, this should be the total size.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>vspan=</command>
+    <arg choice="plain">
+      <replaceable>HEIGHT</replaceable>
+      <literal>,</literal>&hellip;
+    </arg>
+  </term>
+  <listitem><para>
+    For multiple combined displays: how many lines does each display have.
+    E.g. <literal>Vrspan=2,2</literal> means you have two displays and
+    each has two lines.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ExtendedMode=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    If you have a KS0073 or an other 'almost HD44780-compatible', set this
+    flag to get into extended mode (4-line linear).
+    This flag is NOT the old obsolete Extended option.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>DelayMult=</command>
+    <arg choice="plain"><replaceable>DELAY</replaceable></arg>
+  </term>
+  <listitem><para>
+    If your display is slow and cannot keep up with the flow of data from
+    LCDd, garbage can appear on the LCDd. Set this delay factor to 2 or 4
+    to increase the delays. Default: 1.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>DelayBus=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    You can reduce the inserted delays by setting this to <literal>no</literal>.
+    On fast PCs it is possible your LCD does not respond correctly.
+    Default: <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>KeyMatrix_4_1=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMatrix_4_2=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMatrix_4_3=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMatrix_4_4=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    If you have a keypad you can assign keystrings to the keys.
+    See documentation for used terms and how to wire it.
+    For example to give directly connected key 4 the string "Enter", use:
+    KeyDirect_4=Enter
+    For matrix keys use the X and Y coordinates of the key:
+    KeyMatrix_1_3=Enter
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
 <sect2 id="hd44780-configuration">
 <title>Configuration</title>
-
-<para>
-Since LCDproc 0.4.3 the HD44780 driver can be configured from the configfile.
-</para>
-
-<para>
-The [HD44780] section is more or less self-explanatory. Yet, a list of the
-possible connection types has proved useful. The following table should make
-it clear, how the ConnectionType is to be set.
-</para>
-
-<table>
-<title>HD44780: Connection Types</title>
-<tgroup cols="2">
-<thead>
-<row>
-<entry>Wiring / Display Type</entry>
-<entry>ConnectionType=</entry>
-</row>
-</thead>
-<tbody>
-<row>
-<entry>HD44780 4bit Wiring</entry>
-<entry>4bit</entry>
-</row>
-<row>
-<entry>HD44780 8bit Wiring ("lcdtime")</entry>
-<entry>8bit</entry>
-</row>
-<row>
-<entry>HD44780 Serial LPT Wiring</entry>
-<entry>serialLpt</entry>
-</row>
-<row>
-<entry>HD44780 8bit Wiring "winamp" Style</entry>
-<entry>winamp</entry>
-</row>
-<row>
-<entry>PIC-an-LCD serial device "picanlcd"</entry>
-<entry>picanlcd</entry>
-</row>
-<row>
-<entry>BWCT USB device "bwctusb"</entry>
-<entry>bwctusb</entry>
-</row>
-<row>
-<entry>LCD serializer "lcdserializer"</entry>
-<entry>lcdserializer</entry>
-</row>
-</tbody>
-</tgroup>
-</table>
-
-<tip>
-<para>
-The above table might be outdated, when you read this.
-If you suspect this is the case, you might want to have a look at server/drivers/hd44780-drivers.h
-which contains the actual translation code.
-</para>
-</tip>
 
 </sect2>
 
@@ -1462,5 +1901,10 @@ Converted to docbook March 2002, Rene Wagner <email>reenoo@gmx.de</email>
 Updated April 2002, Rene Wagner <email>reenoo@gmx.de</email>
 </para>
 
+<para>
+Updated and extended April 200r62, Peter Marschall <email>peter@adpm.de</email>
+</para>
+
 </sect2>
+
 </sect1>

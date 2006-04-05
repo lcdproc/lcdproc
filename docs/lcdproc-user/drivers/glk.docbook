@@ -1,0 +1,61 @@
+<sect1 id="glk-howto">
+<title>The glk Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+glk chipset.
+</para>
+
+<!-- ## Matrix Orbital GLK driver ## -->
+<sect2 id="glk-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[glk]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    select the serial device to use [default: <filename>/dev/lcd</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Contrast=</command>
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial contrast.
+    Legal values for <replaceable>CONTRAST</replaceable> are <literal>0</literal> - <literal>1000</literal>.
+    If not given, it defaults to <literal>560</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>9600</literal></arg>
+      <arg choice="plain"><literal><emphasis>19200</emphasis></literal></arg>
+      <arg choice="plain"><literal>38400</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate for communication with the LCD.
+    The default is <literal>19200</literal>.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

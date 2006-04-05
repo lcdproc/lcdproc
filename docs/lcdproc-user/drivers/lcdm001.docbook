@@ -1,0 +1,94 @@
+<sect1 id="lcdm001-howto">
+<title>The lcdm001 Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+lcdm001 chipset.
+</para>
+
+<!-- ## LCDM001 driver ## -->
+<sect2 id="lcdm001-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[lcdm001]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+  Default: <filename>/dev/lcd</filename>
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>PauseKey=<replaceable>LeftKey</replaceable></command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>BackKey=<replaceable>UpKey</replaceable></command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>ForwardKey=<replaceable>DownKey</replaceable></command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>MainMenuKey=<replaceable>RightKey</replaceable></command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem>
+    <para>
+    keypad settings
+    </para>
+    <informaltable>
+    <tgroup cols="3">
+      <thead>
+        <row>
+	  <entry>key name</entry>
+	  <entry>function (normal context)</entry>
+	  <entry>function (menu context)</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry>PauseKey</entry>
+          <entry>Pause/Continue</entry>
+          <entry>Enter/select</entry>
+        </row>
+        <row>
+          <entry>BackKey</entry>
+          <entry>Back(Go to previous screen)</entry>
+          <entry>Up/Left</entry>
+        </row>
+        <row>
+          <entry>ForwardKey</entry>
+          <entry>Forward(Go to next screen)</entry>
+          <entry>Down/Right</entry>
+        </row>
+        <row>
+          <entry>MainMenuKey</entry>
+          <entry>Open main menu</entry>
+          <entry>Exit/Cancel</entry>
+        </row>
+     </tbody> 
+    </tgroup>
+    </informaltable>
+    <para>
+      You can rearrange the settings here.
+    </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+
+    If your device is broken, have a look at server/drivers/lcdm001.h
+
+</sect3>
+
+</sect2>
+
+</sect1>

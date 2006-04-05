@@ -1,0 +1,90 @@
+<sect1 id="NoritakeVFD-howto">
+<title>The NoritakeVFD Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+NoritakeVFD chipset.
+</para>
+
+<!-- ## Noritake VFD driver ## -->
+<sect2 id="NoritakeVFD-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[NoritakeVFD]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Port where the VFD is. Usual values are <filename>/dev/ttyS0</filename> and <filename>/dev/ttyS1</filename>
+    Default: <filename>/dev/lcd</filename>
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Specifies the size of the LCD.
+    Default: <literal>20x4</literal>
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>1200</literal></arg>
+      <arg choice="plain"><literal>2400</literal></arg>
+      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
+      <arg choice="plain"><literal>19200</literal></arg>
+      <arg choice="plain"><literal>115200</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate to use when communicating with the VFD.
+    If not specified, it defaults to <literal>9600</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Reboot=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

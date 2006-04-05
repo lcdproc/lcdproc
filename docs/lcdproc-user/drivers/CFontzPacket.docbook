@@ -1,0 +1,149 @@
+<sect1 id="CFontzPacket-howto">
+<title>The CFontzPacket Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+CFontzPacket chipset.
+</para>
+
+<!-- ## CrystalFontz packet driver (for CF631, CF633 &amp; CF635) ## -->
+<sect2 id="CFontzPacket-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[CFontzPacket]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Model=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>631</literal></arg>
+      <arg choice="plain"><literal><emphasis>633</emphasis></literal></arg>
+      <arg choice="plain"><literal>635</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Select the LCD model [default: 633; legal: 631, 633, 635]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the output device to use [default: <filename>/dev/lcd</filename>]
+    May be a serial device or a USB device in serial emulation mode.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Select the LCD size [default: depending on model: 635: 20x4, 631 &amp; 633: 16x2]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Contrast=</command>
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial contrast.
+    Legal values for <replaceable>CONTRAST</replaceable> are <literal>0</literal> - <literal>1000</literal>.
+    If not specified, it defaults to <literal>560</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial brightness [default: 1000; legal: 0 - 1000]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>OffBrightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial off-brightness [default: 0; legal: 0 - 1000]
+    This value is used when the display is normally
+    switched off in case LCDd is inactive
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>1200</literal></arg>
+      <arg choice="plain"><literal>2400</literal></arg>
+      <arg choice="plain"><literal>9600</literal></arg>
+      <arg choice="plain"><literal>19200</literal></arg>
+      <arg choice="plain"><literal>115200</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate for communication with the LCD.
+    If not specified, the default depends on the model: it is <literal>9600</literal>
+    for the CFA633 and <literal>115200</literal> for the CFA631 and CFA635.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>NewFirmware=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the firmware version (New means >= 2.0) [default: no; legal: yes, no]
+    Currently this flag is not in use, there is no such thing as NewFirmware. ;=)
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Reboot=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Reinitialize the LCD's BIOS [default: no; legal: yes, no]
+    I want to reboot the LCD to make sure we start from a known state
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

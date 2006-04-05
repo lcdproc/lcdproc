@@ -1,0 +1,307 @@
+<sect1 id="serialVFD-howto">
+<title>The serialVFD Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+serialVFD chipset.
+</para>
+
+<sect2 id="serialVFD-connections">
+<title>Connections</title>
+
+
+The serialVFD-driver should work with all NEC FIPC8367 based VFDs:
+NEC FC20X2JA
+NEC FM20X2KB-AB
+NEC FC20X1SA-AB/AA
+...
+Tested only on: NEC FM20X2KB-AB
+The driver also works (tested) on "KD Rev 2.1" (an ATMEL AT90S....
+based FM20X2KB-AB replacement).
+Note: Above char. 128 the FIPC-displays and KD's charactersets
+are different.
+
+The driver may work or will be easy to get working on the following
+Displays / Controllers (not tested!).
+
+<table>
+<tgroup cols="2">
+  <thead>
+    <row>
+      <entry>Display</entry>
+      <entry>Controller</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>FUTABA M204SD01AA</entry>
+      <entry>FUTABA 5P00A016</entry>
+    </row>
+    <row>
+      <entry>Noritake CU20026SCPB-T</entry>
+      <entry>(microcontroller)</entry>
+    </row>
+    <row>
+      <entry>Noritake CU20045SCPB-T28A</entry>
+      <entry>?</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+
+... or compatible.
+(most Futaba/Noritake 7x5 dot VFDs with serial(rs232) interface
+(including  serial(rs232)/parallel types))
+
+<para>
+Maybe there are little changes in the commands to do to get all
+functions to work correctly. But because of the similarity of the
+protocols, it wont be much work.
+</para>
+
+<para>
+If you want to add a new device to the driver add a new section
+to the displaytype-switch-case in the init-function and fill it
+with the correct commands for the display.
+(Try which displaytype works best with your display, copy and modify
+it's section that is the easiest way I guess.)
+</para>
+
+<para>
+On this page you may find pictures and datasheets of the VFDs:
+<ulink url="http://www.maltepoeggel.de/html/vfd/index.html"></ulink>
+</para>
+
+<para>
+It is possible to switch the display off and back on while the server is
+running. It may take a few minutes until the next full refresh makes
+the display show everything correctly.
+</para>
+
+<para>
+To enable the bignumbers on 2-line displays (only this driver supports
+this yet) you have to edit <filename>clients/lcdproc/chrono.c</filename>
+before compiling.
+In function <function>big_clock_screen</function> you have to replace the
+<literal>4</literal> by a <literal>2</literal> in this line:
+<code>if (lcd_hgt &lt; 4)</code>
+</para>
+
+<para>
+This driver uses the serial mode of the displays.
+It is NOT possible to connect most of the displays directly to the
+serialport. The signal has to be inverted. I use the following
+circuit to do that job.
+</para>
+
+<figure>
+<title>serialVFD: Connecting the display</title>
+<screen>
+<![CDATA[
+Computer                                          Display
+						  (signal)
+HDD Powerconnector
+color(Voltage)
+
+red(+5V)    --------------------------------o----- +5V
+					    |
+black(GND)  --------------------o           |
+				|           R
+				|           R 10k
+Serial(SUB-D 9Pin female)       V*          R
+pin(signal)                                 |
+					    |
+3(TxD)  --RRRR--o--o      o-----------------o----- RxD
+	  10k   |  |      |
+		|  |     C|
+		|  |   -----  BC547c (or similar NPN)
+		R  | B|  /  |
+	    10k R  o--|-|   |
+		R     |  \  |
+		|      --->-    A*
+		|         E|    |
+		|          |    |
+5(GND)  --------o----------o----o----------------- GND
+
+Shield  ------------------------------------------
+optional
+
+*connect near display
+]]>
+</screen>
+</figure>
+
+The pins on the different displays vary.
+
+
+FM20X2KB-AB:
+
+CN1:
+Pin 33 &lt;--- RxD
+(Testmode: connect pins 25 and 26, then power up)
+
+CN2:
+Pin 1  &lt;--- +5V
+Pin 2  &lt;--- GND
+
+
+
+KD Rev 2.1:
+
+blue connector (6pin in a row) (the important one!):
+
+<screen>
+<![CDATA[
+--------------------------------
+| +5V  +5V  RxD  GND  GND  GND |
+--------------------------------
+]]>
+</screen>
+
+<tip>
+  <para>
+  Hold the display in that position where you can read
+  the "KD Rev 2.1" marking normally!
+  </para>
+</tip>  
+
+gray connector (10pin 2 rows):
+Do not use. (the ATMEL ISP connector I guess)
+
+The two jumpers next to the gray connector:
+Normally not used.
+You can activate two different testmodes with them.
+
+</sect2>
+
+<!-- ## Serial VFD driver ## -->
+<sect2 id="serialVFD-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[serialVFD]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Device where the VFD is. Usual values are <filename>/dev/ttyS0</filename> and <filename>/dev/ttyS1</filename>
+    Default: <filename>/dev/lcd</filename>
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Specifies the size of the VFD.
+    default: <literal>20x2</literal>
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Type=</command>
+    <arg choice="plain"><replaceable>CODE</replaceable></arg>
+  </term>
+  <listitem>
+    <para>
+    Specifies the display type.[default: 0]
+    The following type codes are available:
+    </para>
+    <informaltable>
+    <tgroup cols="2">
+      <thead>
+        <row>
+	  <entry><replaceable>CODE</replaceable></entry>
+	  <entry>VFD model</entry>
+	</row>
+      </thead>
+      <tbody>
+        <row>
+	  <entry><literal><emphasis>0</emphasis></literal></entry>
+	  <entry>NEC (FIPC8367 based) VFDs</entry>
+	</row>
+        <row>
+	  <entry><literal>1</literal></entry>
+	  <entry>KD Rev 2.1</entry>
+	</row>
+        <row>
+	  <entry><literal>2</literal></entry>
+	  <entry>Noritake VFDs</entry>
+	</row>
+        <row>
+	  <entry><literal>3</literal></entry>
+	  <entry>Futaba VFDs</entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </informaltable>
+    <note><para>
+      Options 3 and 4 should work, but have not been tested yet. Feedback is welcome.
+    </para></note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Display brightness [default: 255].
+  0 min ... 255 max ... 1000 also max
+  (4 steps 0-64, 65-128, 129-192, 193-1000)
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>1200</literal></arg>
+      <arg choice="plain"><literal>2400</literal></arg>
+      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
+      <arg choice="plain"><literal>19200</literal></arg>
+      <arg choice="plain"><literal>115200</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate communication with the VFD.
+    If not given, it defaults to <literal>9600</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ISO_8859_1=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Enable ISO-8859-1 compatibility. Ddefault is <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>
+

@@ -218,4 +218,166 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
 </para>
 </sect2>
 
+<!-- ## Matrix Orbital driver ## -->
+<sect2 id="MtxOrb-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[MtxOrb]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the output device to use [default: <filename>/dev/lcd</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the display size [default: 20x4]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Backlight=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Switch on the backlight? [default: yes]
+    </para>
+    <note><para>
+      The driver will ignore this setting if the display
+      is a VFD or VKD as they crash if the backlight is turned off.
+    </para></note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Contrast=</command>
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial contrast.
+    Legal values for <replaceable>CONTRAST</replaceable> are <literal>0</literal> - <literal>1000</literal>.
+    If not given, the default value is <literal>480</literal>.
+    </para>
+    <note><para>
+      The driver will ignore this setting if the display
+      is a VFD or VKD as they do not support this feature.
+    </para></note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>1200</literal></arg>
+      <arg choice="plain"><literal>2400</literal></arg>
+      <arg choice="plain"><literal>9600</literal></arg>
+      <arg choice="plain"><literal><emphasis>19200</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate to use when communicating with the LCD.
+    If not specified, it defaults to <literal>19200</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Type=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>lcd</emphasis></literal></arg>
+      <arg choice="plain"><literal>lkd</literal></arg>
+      <arg choice="plain"><literal>vfd</literal></arg>
+      <arg choice="plain"><literal>vkd</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the display type [default: lcd; legal: lcd, lkd, vfd, vkd]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>LeftKey=</command>
+    <arg choice="plain"><replaceable>MTX-KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>RightKey=</command>
+    <arg choice="plain"><replaceable>MTX-KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>EnterKey=</command>
+    <arg choice="plain"><replaceable>MTX-KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>UpKey=</command>
+    <arg choice="plain"><replaceable>MTX-KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>DownKey=</command>
+    <arg choice="plain"><replaceable>MTX-KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>EscapeKey=</command>
+    <arg choice="plain"><replaceable>MTX-KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    The following table translate from MtxOrb Key to Logical Key.
+    See [input] section for an explanation of the key mappings
+    This is a new implementation in 0.5
+    Legal values for <replaceable>MTX-KEY</replaceable> are the letters
+    <literal>A</literal> - <literal>F</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>keypad_test_mode=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    You can find out which key of your display sends which
+    character by setting keypad_test_mode to yes and running
+    LCDd. LCDd will output all characters it receives.
+    Afterwards you can modify the settings above and set
+    keypad_set_mode to no again.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
 </sect1>

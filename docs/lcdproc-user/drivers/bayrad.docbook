@@ -1,0 +1,51 @@
+<sect1 id="bayrad-howto">
+<title>The bayrad Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+bayrad chipset.
+</para>
+
+<!-- ## EMAC BayRAD driver ## -->
+<sect2 id="bayrad-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[bayrad]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the serial output device to use.
+    If not given, default is <filename>/dev/lcd</filename>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>1200</literal></arg>
+      <arg choice="plain"><literal>2400</literal></arg>
+      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
+      <arg choice="plain"><literal>19200</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate to use when communicating with the LCD.
+    <literal>9600</literal> is the default, if not specified.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

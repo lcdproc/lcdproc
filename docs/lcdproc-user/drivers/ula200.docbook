@@ -1,0 +1,110 @@
+<sect1 id="ula200-howto">
+<title>The ula200 Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+ula200 chipset.
+</para>
+
+<!-- ## ELV ULA200 driver ## -->
+<sect2 id="ula200-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[ula200]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Select the LCD size [default: 20x4]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>KeyMap_A=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_B=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_C=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_D=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_E=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <term>
+    <command>KeyMap_F=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    If you have a non standard keypad you can associate any keystrings to keys.
+    There are 6 input key in the CwLnx hardware that generate characters
+    from '<literal>A</literal>' to '<literal>F</literal>'.
+    Legal values for <replaceable>KEY</replaceable> are <literal>Up</literal>,
+    <literal>Down</literal>, <literal>Left</literal>, <literal>Right</literal>,
+    <literal>Enter</literal> and <literal>Escape</literal>.
+    </para>
+    <para>
+    The following it the built-in default mapping hardcoded in the driver.
+    </para>
+    <informaltable>
+    <tgroup cols="2">
+      <tbody>
+        <row>
+	  <entry>KeyMap_A</entry>
+	  <entry><literal>Up</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_B</entry>
+	  <entry><literal>Down</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_C</entry>
+	  <entry><literal>Left</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_D</entry>
+	  <entry><literal>Right</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_E</entry>
+	  <entry><literal>Enter</literal></entry>
+	</row>
+        <row>
+	  <entry>KeyMap_F</entry>
+	  <entry><literal>Escape</literal></entry>
+	</row>
+      </tbody>
+    </tgroup>
+    </informaltable>
+    <para>
+    You may leave it unchanged if you have a standard keypad.
+    You can change it if you want to report other keystrings or have a non
+    standard keypad.
+    </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

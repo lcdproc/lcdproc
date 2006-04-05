@@ -1,0 +1,83 @@
+<sect1 id="curses-howto">
+<title>The curses Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+curses chipset.
+</para>
+
+<!-- ## Curses driver ## -->
+<sect2 id="curses-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[curses]</title>
+
+<variablelist>
+    color settings
+
+<varlistentry>
+  <term>
+    <command>Foreground=</command>
+    <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
+  </term>
+  <listitem><para>
+    foreground color [default: blue]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Background=</command>
+    <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
+  </term>
+  <listitem><para>
+    background color [default: cyan]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Backlight=</command>
+    <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
+  </term>
+  <listitem><para>
+    backlight color [default: red]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    display size [default: 20x4]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>TopLeftx=</command>
+    <arg choice="plain"><replaceable>X-OFFSET</replaceable></arg>
+  </term>
+  <term>
+    <command>TopLefty=</command>
+    <arg choice="plain"><replaceable>Y-OFFSET</replaceable></arg>
+  </term>
+  <listitem><para>
+    What position (X,Y) to start the left top corner at.
+    Default: (7,7)
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

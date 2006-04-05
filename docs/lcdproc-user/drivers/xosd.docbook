@@ -1,0 +1,46 @@
+<sect1 id="xosd-howto">
+<title>The xosd Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+xosd chipset.
+</para>
+
+<!-- ## OnScreen Display using libxosd ## -->
+<sect2 id="xosd-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[xosd]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    set display size [default: 20x4]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Font=</command>
+    <arg choice="plain"><replaceable>FONT</replaceable></arg>
+  </term>
+  <listitem><para>
+    font to use, e.g. <literal>-*-terminus-*-r-*-*-*-320-*-*-*-*-*</literal>.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

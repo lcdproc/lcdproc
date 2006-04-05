@@ -1,0 +1,58 @@
+<sect1 id="sed1330-howto">
+<title>The sed1330 Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+sed1330 chipset.
+</para>
+
+<!-- ## Seiko Epson 1330 driver ## -->
+<sect2 id="sed1330-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[sed1330]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Port=</command>
+    <arg choice="plain"><replaceable>PORT</replaceable></arg>
+  </term>
+  <listitem><para>
+    Specify the address of the parallel port the LCD is connected to.
+    Common values for <replaceable>PORT</replaceable> are <literal>0x278</literal>,
+    <literal>0x378</literal> and <literal>0x3BC</literal>.
+    If not given, it defaults to <literal>0x278</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Type=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>G321D</literal></arg>
+      <arg choice="plain"><literal>G121C</literal></arg>
+      <arg choice="plain"><literal>G242C</literal></arg>
+      <arg choice="plain"><literal>G191D</literal></arg>
+      <arg choice="plain"><literal>G2446</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem>
+    <para>
+    Type of LCD module.
+    </para>
+    <note><para>
+      The G321D is the only one that is tested currently.
+    </para></note>  
+  </listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

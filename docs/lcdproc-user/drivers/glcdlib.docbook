@@ -1,0 +1,272 @@
+<sect1 id="glcdlib-howto">
+<title>The glcdlib Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+glcdlib chipset.
+</para>
+
+<sect2 id="glcdlib-connections">
+<title>Connections</title>
+
+<para>
+The so-called "meta-driver" glcdlib extends LCDproc's supported drivers by
+all the drivers supported by graphlcd-base, which you can get from
+<ulink url="http://graphlcd.berlios.de"></ulink>.
+</para>
+<para>
+In order to be able to use it, you have to get and install the glcdprocdriver
+from <ulink url="http://www.muresan.de/graphlcd/lcdproc"></ulink>
+before configuring the LCDproc build process --enable-drivers=glcdlib.
+</para>
+
+Author
+<author>
+<firstname>Lucian</firstname>
+<surname>Muresan</surname>
+</author>
+
+</sect2>
+
+<!-- ## glcdlib meta driver for graphical LCDs ## -->
+<sect2 id="glcdlib-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[glcdlib]</title>
+
+## mandatory:
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Driver=</command>
+    <arg choice="plain"><replaceable>GRAPHLCD-DRIVER</replaceable></arg>
+  </term>
+  <listitem><para>
+    Specify which graphical display supported by graphlcd-base to use.
+    Legal values for <replaceable>GRAPHLCD-DRIVER</replaceable> are
+    specified in graphlcd's configuration file <filename>/etc/graphlcd.conf</filename>.
+    For graphlcd 0.13 they comprise <literal>avrctl</literal>, <literal>framebuffer</literal>,
+    <literal>gu140x32f</literal>, <literal>gu256x64-372</literal>, <literal>gu256x64C-3xx0</literal>,
+    <literal>hd61830</literal>, <literal>image</literal>, <literal>ks0108</literal>,
+    <literal>noritake800</literal>, <literal>sed1330</literal>, <literal>sed1520</literal>,
+    <literal>serdisp</literal>, <literal>simlcd</literal>, and <literal>t6963c</literal>.
+    If not specified it defaluts to <literal>image</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>UseFT2=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Tell whether to use FreeType2 or not.
+    If set to <literal>no</literal> use graphlcd's bitmap fonts, which is only one size/font file.
+    If set to to the default value <literal>yes</literal> use the fonts that FreeType2 provides.
+    </para>
+    <note><para>
+      Setting it to <literal>yes</literal> requires Freetype2 support in libglcdprocdriver and its dependants.
+    </para></note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>TextResolution=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Give text resolution in fixed width characters. If it won't fit according
+    to the available physical pixel resolution and the minimum available font
+    face size in pixels, 'DebugBorder' will automatically be turned on.
+    If not specified, it defaults to <literal>16x4</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>FontFile=</command>
+    <arg choice="plain"><replaceable>FILENAME</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set path to font file to use, e.g. <filename>/usr/share/fonts/corefonts/courbd.ttf</filename>.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+
+The following parameters only apply if <command>UseFT2=</command><literal>yes</literal>:
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>CharEncoding=</command>
+    <arg choice="plain"><replaceable>CHARSET</replaceable></arg>
+  </term>
+  <listitem><para>
+    Specify character encoding to use, e.g. <literal>iso8859-2</literal>.
+    If not given, use the default <literal>ISO8859-1</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>MinFontFaceSize=</command>
+    <arg choice="plain">
+      <replaceable>COLUMNS</replaceable>
+      <literal>x</literal>
+      <replaceable>ROWS</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    minumum size in pixels in which fonts should be rendered
+  </para></listitem>
+</varlistentry>
+
+
+## optional:
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Brightness (in %) if applicable
+    Legal values are <literal>0</literal> - <literal>100</literal>.
+    If not specified, the default is <literal>50</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Contrast=</command>
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the contrast (in %) if applicable.
+    Legal values are <literal>0</literal> - <literal>100</literal>,
+    with <literal>50</literal> being the default when not specified.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Backlight=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Backlight if applicable
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>UpsideDown=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    flip image upside down
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Invert=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    invert light/dark pixels
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ShowDebugFrame=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    turns on/off 1 pixel thick debugging
+    border whithin the usable text area,
+    for setting up TextResolution and
+    MinFontFaceSize (if using FT2);
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ShowBigBorder=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    border around the unused area
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ShowThinBorder=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    border around the unused area
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>PixelShiftX=<replaceable>0</replaceable></command>
+  </term>
+  <term>
+    <command>PixelShiftY=<replaceable>2</replaceable></command>
+  </term>
+  <listitem><para>
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

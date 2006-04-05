@@ -1,0 +1,87 @@
+<sect1 id="svga-howto">
+<title>The svga Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+svga chipset.
+</para>
+
+<!-- ## SVGAlib driver ## -->
+<sect2 id="svga-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[svga]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Mode=</command>
+    <arg choice="plain"><replaceable>SCGALIB-MODE</replaceable></arg>
+  </term>
+  <listitem><para>
+    svgalib mode to use [default: G320x240x256]
+    <replaceable>SCGALIB-MODE</replaceable> can be any legal mode string for svgalib.
+    See the <citerefentry><refentrytitle>cwsvgalib</refentrytitle>
+    <manvolnum>7</manvolnum></citerefentry> manual page for legal mode strings.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    set display size [default: 20x4]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Contrast=</command>
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial contrast.
+    Legal values for <replaceable>CONTRAST</replaceable> are <literal>0</literal> - <literal>1000</literal>.
+    If not given, the default value is <literal>500</literal>.
+    </para>
+    <note><para>
+      This parameter can be set but it does not change anything in the driver.
+    </para></note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial brightness [default: 1000; legal: 1 - 1000]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>OffBrightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial off-brightness [default: 500; legal: 1 - 1000]
+    This value is used when the display is normally
+    switched off in case LCDd is inactive
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

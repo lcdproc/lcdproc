@@ -11,11 +11,42 @@
   <!ENTITY contact SYSTEM "contact.docbook">
   <!ENTITY license SYSTEM "license.docbook">
 
-  <!ENTITY hd44780 SYSTEM "drivers/hd44780.docbook">
-  <!ENTITY t6963 SYSTEM "drivers/t6963.docbook">
   <!ENTITY ppttrouble SYSTEM "drivers/ppttrouble.docbook">
-  <!ENTITY mtxorb SYSTEM "drivers/mtxorb.docbook">
-  <!ENTITY lircin SYSTEM "drivers/lircin.docbook">
+  
+  <!ENTITY bayrad SYSTEM "drivers/bayrad.docbook">
+  <!ENTITY CFontz SYSTEM "drivers/CFontz.docbook">
+  <!ENTITY CFontz633 SYSTEM "drivers/CFontz633.docbook">
+  <!ENTITY CFontzPacket SYSTEM "drivers/CFontzPacket.docbook">
+  <!ENTITY curses SYSTEM "drivers/curses.docbook">
+  <!ENTITY CwLnx SYSTEM "drivers/CwLnx.docbook">
+  <!ENTITY glcdlib SYSTEM "drivers/glcdlib.docbook">
+  <!ENTITY glk SYSTEM "drivers/glk.docbook">
+  <!ENTITY hd44780 SYSTEM "drivers/hd44780.docbook">
+  <!ENTITY icp_a106 SYSTEM "drivers/icp_a106.docbook">
+  <!ENTITY imon SYSTEM "drivers/imon.docbook">
+  <!ENTITY IOWarrior SYSTEM "drivers/IOWarrior.docbook">
+  <!ENTITY irman SYSTEM "drivers/irman.docbook">
+  <!ENTITY joy SYSTEM "drivers/joy.docbook">
+  <!ENTITY lb216 SYSTEM "drivers/lb216.docbook">
+  <!ENTITY lcdm001 SYSTEM "drivers/lcdm001.docbook">
+  <!ENTITY lcterm SYSTEM "drivers/lcterm.docbook">
+  <!ENTITY lirc SYSTEM "drivers/lircin.docbook">
+  <!ENTITY ms6931 SYSTEM "drivers/ms6931.docbook">
+  <!ENTITY mtc_s16209x SYSTEM "drivers/mtc_s16209x.docbook">
+  <!ENTITY MtxOrb SYSTEM "drivers/mtxorb.docbook">
+  <!ENTITY NoritakeVFD SYSTEM "drivers/NoritakeVFD.docbook">
+  <!ENTITY pylcd SYSTEM "drivers/pylcd.docbook">
+  <!ENTITY sed1330 SYSTEM "drivers/sed1330.docbook">
+  <!ENTITY sed1520 SYSTEM "drivers/sed1520.docbook">
+  <!ENTITY serialVFD SYSTEM "drivers/serialVFD.docbook">
+  <!ENTITY sli SYSTEM "drivers/sli.docbook">
+  <!ENTITY stv5730 SYSTEM "drivers/stv5730.docbook">
+  <!ENTITY svga SYSTEM "drivers/svga.docbook">
+  <!ENTITY t6963 SYSTEM "drivers/t6963.docbook">
+  <!ENTITY text SYSTEM "drivers/text.docbook">
+  <!ENTITY tyan SYSTEM "drivers/tyan.docbook">
+  <!ENTITY ula200 SYSTEM "drivers/ula200.docbook">
+  <!ENTITY xosd SYSTEM "drivers/xosd.docbook">
 ]>
 
 <book id="lcdproc-user" lang="en">

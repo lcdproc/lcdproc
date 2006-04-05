@@ -1,0 +1,53 @@
+<sect1 id="sli-howto">
+<title>The sli Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+sli chipset.
+</para>
+
+<!-- ## Wirz SLI LCD driver ## -->
+<sect2 id="Wirz-sli-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[Wirz-sli]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the output device to use [default: <filename>/dev/lcd</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>1200</literal></arg>
+      <arg choice="plain"><literal>2400</literal></arg>
+      <arg choice="plain"><literal>9600</literal></arg>
+      <arg choice="plain"><literal><emphasis>19200</emphasis></literal></arg>
+      <arg choice="plain"><literal>38400</literal></arg>
+      <arg choice="plain"><literal>57600</literal></arg>
+      <arg choice="plain"><literal>115200</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate communication with the LCD.
+    If not specified, the default is <literal>19200</literal>.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>
