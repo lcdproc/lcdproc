@@ -1,127 +1,214 @@
-.TH LCDd 8 "4 March 2002" LCDproc
+.TH LCDd 8 "29 March 2006" LCDproc
 .SH NAME
 LCDd - LCDproc server daemon
 .SH SYNOPSIS
 .B LCDd
-[\-hfiws] 
-[\-c <\fIconfig\fP>] 
-[\-d <\fIdriver\fP>] 
-[\-a <\fIaddr\fP>] 
-[\-p <\fIport\fP>] 
-[\-u <\fIuser\fP>] 
-[\-w <\fItime\fP>] 
-[\-r <\fIlevel\fP>] 
+[\-hfis] 
+[\-c \fIconfig\fP] 
+[\-d \fIdriver\fP] 
+[\-a \fIaddr\fP] 
+[\-p \fIport\fP] 
+[\-u \fIuser\fP] 
+[\-w \fItime\fP] 
+[\-r \fIlevel\fP] 
+
 .SH DESCRIPTION
-LCDd is the server portion of LCDproc which listens to a certain port (normally 13666) and displays information on an LCD display.  It works with several types
+LCDd is the server portion of LCDproc which listens to a certain port (normally 13666)
+and displays information on an LCD display.  It works with several types
 and sizes of displays.
 .PP
-As of version 0.4.3 of LCDproc most settings are configured through the LCDd configuration
-file, which is normally /etc/LCDd.conf. Before running LCDd you should carefully read through
-that file and modify everything neccessary according to your needs. Otherwise you might encounter
-LCDd not running properly on your system.
+Most settings of LCDproc are configured through the LCDd configuration file,
+which is normally /etc/LCDd.conf. Before running LCDd you should carefully
+read through that file and modify everything neccessary according to your needs.
+Otherwise you might encounter LCDd not running properly on your system.
 .PP
 To make full use of LCDd, a client such as lcdproc(1) is required.
+
 .SH OPTIONS
-Available
-.I LCDd
-options are:
-.TP 8
+Available LCDd options are:
+.TP
 .B \-h
 Display this help screen
-.TP 8
-.B \-c <config>
+.TP
+.B \-c \fIconfig\fP
 Use a configuration file other than /etc/LCDd.conf
-.TP 8
-.B \-d <driver>
+.TP
+.B \-d \fIdriver\fP
 Add a driver to use (output only to first)
-.TP 8
+.TP
 .B \-f
 Run in the foreground
-.TP 8
+.TP
 .B \-i
-Disable showing of the main LCDproc server screen
-.TP 8
-.B \-w <waittime>
+Disable showing of the main LCDproc server screen in rotation
+.TP
+.B \-w \fIwaittime\fP
 Time to pause at each screen (in seconds)
-.TP 8
-.B \-a <addr>
+.TP
+.B \-a \fIaddr\fP
 Network IP address to bind to
-.TP 8
-.B \-p <port>
+.TP
+.B \-p \fIport\fP
 Network port to listen for connections on
-.TP 8
-.B \-u <user>
+.TP
+.B \-u \fIuser\fP
 User to run as
-.TP 8
+.TP
 .B \-s
 Output messages to syslog
-.TP 8
-.B \-r <level>
+.TP
+.B \-r \fIlevel\fP
 Report level (default=2)
-.SS
-Supported Drivers
+
+.SS Supported Drivers
 Currently supported display drivers include:
 .TP
-.B CFontz (or CrystalFontz)
-CrystalFontz LCD displays
+.B bayrad
+EMAC BayRad displays
 .TP
-.B curses (or ncurses)
-Standard video display using the ncurses library
+.B CFontz
+CrystalFontz CFA-632 and CFA-634 serial LCD displays
+.TP
+.B CFontz633
+CrystalFontz CFA-633 serial/USB LCD displays
+.TP
+.B CFontzPacket
+CrystalFontz CFA-631, CFA-633 and CFA-635 serial/USB LCD displays
+.TP
+.B curses
+Standard video display using the (n)curses library
+.TP
+.B CwLnx
+serial/USB displays by Cwlinux (http://www.cwlinux.com)
 .TP
 .B glcdlib
 graphical LCDs supported by graphlcd-base
 .TP
-.B HD44780
-Hitachi HD44780 LCD displays
+.B glk
+Matrix Orbital GLK Graphic Displays
+.TP
+.B hd44780
+Hitachi HD44780 LCD displays.
+This driver supports the following sub-drivers (a.k.a. \fIconnection types\fP):
+.RS
+.TP
+.B 4bit
+LCD 4bit-mode, connected to a PC parallel port
+.TP
+.B 8bit
+LCD 8bit-mode, connected to a PC parallel port
+.TP
+.B serialLpt
+LCD in 4bit-mode through a 4094 shift register
+.TP
+.B winamp
+LCD in 8bit-mode using \fIWinAmp\fP-wiring, connected to a PC parallel port
+.TP
+.B picanlcd
+LCD driven by a PIC-an-LCD chip/board by Dale Wheat, connected to a serial port
+.TP
+.B lcdserializer
+LCD driven by a PIC16C54-based piggy-back board, connected to a serial port
+.TP
+.B lis2
+LIS2 from VLSystem (http://www.vlsys.co.kr), connected to USB
+.TP
+.B bwctusb
+USB-to-HD44780 converter by BWCT (http://www.bwct.de)
+.TP
+.B i2c
+LCD in 4-bit mode driven by PCF8574(A) / PCA9554(A), connected via I2C bus
+.RE
+.TP
+.B icp_a106
+ICP A106 alarm/LCD board in 19" rack cases by ICP
+.TP
+.B imon
+iMON IR/VFDamodules in cases by Soundgraph/Ahanix/Silverstone/Uneed/Accent
 .TP
 .B IOWarrior
 Code Mercenaries IOWarrior
 .TP
-.B BayRAD
-EMAC BayRad displays
-.TP
-.B imon
-iMON VFD (Soundgraph/Ahanix/Silverstone/Uneed/Accent) display
-.TP
-.B irmanin
+.B irman
 IrMan infrared (input)
-.TP
-.B lircin
-Infrared (input)
-.TP
-.B sli
-Wirz SLI driver (unknown)
 .TP
 .B joy
 Joystick driver (input)
 .TP
-.B MtxOrb (or MatrixOrbital)
-Matrix Orbital displays (not Matrix Orbital GLK displays)
+.B lb216
+LB216 LCD displays
 .TP
-.B glk
-Matrix Orbital GLK graphical LCD displays
-.TP
-.B LB216
-LB216 LCD display
-.TP
-.B lcdm001 (or LCDM001)
+.B lcdm001
 kernelconcepts.de 20x4 serial LCD displays
+.TP
+.B lcterm
+serial LCD terminal from Helmut Neumark Elektronik (http://www.neumark.de)
+.TP
+.B lirc
+Infrared (input)
+.TP
+.B ms6931
+MSI-6931 displays in 1U rack servers by MSI
+.TP
+.B mtc_s16209x
+MTC_S16209x LCD displays by Microtips Technology Inc
+.TP
+.B MtxOrb
+Matrix Orbital displays (except Matrix Orbital GLK displays)
+.TP
+.B NoritakeVFD
+Noritake VFD Device CU20045SCPB-T28A
+.TP
+.B pylcd
+LCD displays from Pyramid (http://www.pyramid.de) 
+.TP
+.B sed1330
+SED1330/SED1335 (aka S1D13300/S1D13305) based graphical displays
+.TP
+.B sed1520
+122x32 pixel graphic displays based on SED1520 controllers
+.TP
+.B serialVFD
+NEC FIPC8367 based serial VFDs
+.TP
+.B sli
+Wirz SLI driver (unknown)
+.TP
+.B stv5730
+STV5730A on-screen display chip
+.TP
+.B svga
+VGA monitors using svgalib 
+.TP
+.B t6963
+Toshiba T6963 based LCD displays
 .TP
 .B text
 Standard "hard-copy" text display
 .TP
-.B debug
-Undocumented debug driver
+.B tyan
+LCDi module in Tyan Barebone GS series
+.TP
+.B ula200
+ULA-200 device from ELV (http://www.elv.de)
+.TP
+.B xosd
+On Screen Display on X11
 .PP
 Multiple drivers can be used simultaneously; thus, for example, a Matrix Orbital display (MtxOrb driver)
 can be combined with an infrared driver (irmanin driver).
+
 .SH INVOCATION
-.TP
-LCDd -d MtxOrb -d joy
-As of version 0.4.3, driver parameters are read from a configuration file (default location /etc/LCDd.conf) rather than being passed on the command line as arguments.
-The invocation example above will start LCDd with the Matrix Orbital driver and the Joystick input driver,
-and attempt to load the driver parameters from the default configuration file.
-.SH SERVER PROTOCOL
+.R LCDd -d MtxOrb -d joy
+.PP
+As of version 0.4.3, driver parameters are read from a configuration file
+(default location /etc/LCDd.conf) rather than being passed on the command
+line as arguments.
+The invocation example above will start LCDd with the Matrix Orbital driver
+and the Joystick input driver,and attempt to load the driver parameters
+from the default configuration file.
+
+.SH LCDPROC CLIENT-SERVER PROTOCOL
 There is a basic sequence:
 .TP 8
 1. Open a TCP connection to the LCDd server port (usually 13666).
@@ -142,20 +229,20 @@ This starts a client-server session with the LCDd server; the
 server will return a data string detailing the type of display
 and its size.
 .TP 8
-.B client_set [-name #id]
-Set the client's name, etc.
+.B client_set -name \fIname\fP
+Set the client's name.
 .TP 8
-.B screen_add #id
+.B screen_add \fI#id\fP
 Add a new screen to the display.
 .TP 8
-.B screen_del #id
+.B screen_del \fI#id\fP
 Remove a screen from the display.
 .TP 8
-.B screen_set \fI#id\fP [\fB-priority\fI number\fP] [\fB-name\fI "my_name"\fP] [\fB-duration\fI integer\fP] [\fB-wid\fI width\fP] [\fB-hgt\fI height\fP] [\fB-heartbeat\fI mode\fP]
+.B screen_set \fI#id\fP [\fB-name\fI "name"\fP] [\fB-wid\fI width\fP] [\fB-hgt\fI height\fP] [\fB-priority\fI prio\fP] [\fB-duration\fI int\fP] [\fB-timeout\fI int\fP] [\fB-heartbeat\fI mode\fP] [\fB-backlight\fI mode\fP] [\fB-cursor\fI mode\fP] [\fB-cursor_x\fI xpos\fP] [\fB-cursor_y\fI ypos\fP]
 Initialize a screen, or reset its data.
 .TP 8
-.B widget_add \fI#screen #id type\fR [\fB-in \fI#id\fR]
-Add a widget to screen \fI#screen\fR.
+.B widget_add \fI#screen #id type\fR [\fB-in \fI#frame\fR]
+Add a widget of type \fItype\fPto screen \fI#screen\fR.
 .TP
 .B widget_del \fI#screen #id\fR
 Delete widget \fI#id\fR from screen \fI#screen\fR.
@@ -163,86 +250,91 @@ Delete widget \fI#id\fR from screen \fI#screen\fR.
 .B widget_set \fI#screen #id data\fR
 Set the data used to define a particular widget \fI#id\fR on screen
 \fI#screen\fR.
-.SS
-Heartbeat Modes
+
+.SS Heartbeat Modes
 Valid heartbeat mode values (for the \fBscreen_set\fR command) are:
 .TP
-.BR on , " heart"
-Display heart symbol.
+.BR on
+Display pulsing heart symbol.
 .TP
-.BR normal , " default"
-Normal display.
-.TP
-.BR off , " none"
+.BR off
 No heartbeat display.
 .TP
-.B slash
-Display rotating slash display.
-.SS
-Priorities
-Valid priority values (used in the \fBscreen_set\fR command) are as follows:
+.BR open
+Use client's heartbeat setting. This is the default.
+
+.SS Backlight Modes
+Valid heartbeat mode values (for the \fBscreen_set\fR command) are:
 .TP
-.B 0
-This is rather extreme; \fIdon't do this!\fR
+.B on
+Turn backlight on.
 .TP
-.B 1
-Extremely important!
+.B off
+Turn backlight off
 .TP
-.B 16
-Emergency priority
+.B toggle
+Turn backlight off when it is on and vice versa.
 .TP
-.B 32
-Very high priority (important)
+.B open
+Use client's backlight setting. This is the default.
 .TP
-.B 64
-High priority (normal)
+.B blink
+Blinking backlight
 .TP
-.B 128
-Normal (recommended)
+.B flash
+Flashing blacklight
+
+.SS Priorities
+Valid priority settings (used in the \fBscreen_set\fR command) are as follows:
 .TP
-.B 192
-Low priority (normal)
+.B input
+The client is doing interactive input.
 .TP
-.B 224
-Very low priority (very unimportant)
+.B alert
+The screen has an important message for the user.
 .TP
-.B 240
-Extremely low priority
+.B foreground
+an active client
 .TP
-.B 255
-This screen won't show up very much even if there are
-no other screens queued...
+.B info
+Normal info screen, default priority.
+.TP
+.B background
+The screen is only visible when no normal info screens exists.
+.TP
+.B hidden
+The screen will never be visible.
+.PP
+For compatibility with oldr versions of clients a mapping of numeric
+priority values is also supported:
+.TP
+.B 1 - 64
+foreground
+.TP
+.B 65 - 192
+normal
+.TP
+.B 193 - (infinity)
+background
 .PP
 An example of how to properly use priorities is as follows:
 .PP
 Imagine you're making an mp3 player for lcdproc.  When the
 song changes, it's nice to display the new name immediately.
-So, you could set your screen's priority to 64, wait for
+So, you could set your screen's priority to \fBforeground\fP, wait for
 the server to display (or ignore) your screen, then set the
-screen back to 128.  This would cause the mp3 screen to
+screen back to i\fBnormal\fP.  This would cause the mp3 screen to
 show up as soon as the one onscreen was finished, then
 return to normal priority afterward.
 .PP
 Or, let's say your client monitors the health of hospital
 patients.  If one of the patients has a heart attack, you
-could set the screen priority to 16 (emergency), and it
+could set the screen priority to \fBalert\fP, and it
 would be displayed immediately.  It wouldn't even wait for
 the previous screen to finish.  Also, the display would stay
 on screen most of the time until the user did something about it.
-.PP
-A priority of 1 would stay onscreen permanently, with
-flashing lights and other visual cues if possible.
-Using this priority is \fInot\fR recommended.
-.PP
-The duration can be either a positive number, or -1.  A
-positive number (greater than zero) indicates how many
-display frames the screen should last.  A 0 (zero) or -1 means
-that the server should use "auto" duration, which is
-probably a good idea.  This will be
-whatever the user wants.  It defaults to 4 seconds (32
-frames), or will be a calculated value for things such as scrollers.
-.SS
-Widget Types
+
+.SS Widget Types
 Widgets can be any of the following:
 .TP
 .B string
@@ -273,50 +365,63 @@ Widgets are drawn on the screen in the order they are created.
 In the \fBwidget_set\fR command, the \fIdata\fR argument depends on which widget is being
 set.  Each widget takes a particular set of arguments which defines its form and behavior:
 .TP
-.B string
-x y text
+.B string \fIx y text\fP
+.sp
+Displays \fItext\fP at position (\fIx\fP,\fIy\fP).
 .TP
-.B hbar
-x y length_in_pixels
+.B title \fItext
+.sp
+Uses \fItext\fP as title to display.
 .TP
-.B vbar
-x y length_in_pixels
+.B hbar \fIx y length\fP
+.sp
+Displays a horizontal bar starting at position (\fIx\fP,\fIy\fP) that is \fIlength\fP pixels wide.
 .TP
-.B icon
-x y binary_data
+.B vbar \fIx y length\fP
+.sp
+Displays a vertical bar starting at position (\fIx\fP,\fIy\fP) that is \fIlength\fP pixels high.
 .TP
-.B title
-text
+.B icon \fIx y name\fP
+.sp
+Displays the icon \fIname\fP at position (\fIx\fP,\fIy\fP).
 .TP
-.B scroller
-left top right bottom direction speed text
+.B scroller \fIleft top right bottom direction speed text\fP
 .sp
 The \fItext\fR defined will scroll in the direction defined.  Valid directions
 are \fBh\fR (horizontal) and \fBv\fR (vertical).  The speed defines how many
 "movements" (or changes) will occur per frame.  A positive number indicates
 frames per movement; a negative number indicates movements per frame.
 .TP
-.B frame
-left top right bottom wid hgt dir speed
+.B frame \fIleft top right bottom wid hgt dir speed\fP
 .sp
 Frames define a visible "box" on screen,
->from the (\fIleft\fR, \fItop\fR) corner to the
+from the (\fIleft\fR, \fItop\fR) corner to the
 (\fIright\fR, \fIbottom\fR) corner.  The actual data may be bigger,
 and is defined as \fIwid\fR (width) by \fIhgt\fR (height); if it is
 bigger, then the frame will scroll in the direction (\fIdir\fR)
 and \fIspeed\fR defined.
+.TP
+.B num \fIx int\fP
+.sp
+Displays large decimal digit \fIint\fP at the horizontal position \fIx\fP,
+which is a normal character x coordinate on the display.
+The special value 10 for \fIint\fP displays a colon.
+
 .SH BUGS
 If LCDd seems to quietly disappear upon invocation or other similar problems,
 check the order of the options and the quoting involved.  Some combinations
 of options will be misread and thus fail.
 .PP
 Try using the -d option last.
+
 .SH FILES
 .na
 .nf
 \fB/etc/LCDd.conf\fR, LCDd default configuration file
+
 .Sh SEE ALSO
 .Xr lcdproc 1
+
 .SH AUTHOR
 LCDd was originally written by William Ferrell (wwf@splatwerks.org) and Scott Scriv
 en (scriven@cs.colostate.edu).
@@ -325,11 +430,19 @@ Since that time various people have contributed to LCDproc.
 
 The newest version of LCDd should be available from here as part of the lcdproc package:
 
-                http://lcdproc.omnipotent.net/
+                http://www.lcdproc.org/
 
 .SH LEGAL STUFF
-The lcdproc package is released as "WorksForMe-Ware".  In other words, it is free, kinda neat, and we don't guarantee that it will do anything in particular on any machine except the ones it was developed on.
+The lcdproc package is released as "WorksForMe-Ware".
+In other words, it is free, kinda neat, and we don't guarantee that it will do
+anything in particular on any machine except the ones it was developed on.
 .PP
-It is technically released under the GNU GPL license (you should have received the file, "COPYING", with LCDproc) (also, look on http://www.fsf.org/ for more information), so you can distribute and use it for free -- but you must make the source code freely available to anyone who wants it.
+It is technically released under the GNU GPL license (you should have received the file,
+"COPYING", with LCDproc) (also, look on http://www.fsf.org/ for more information),
+so you can distribute and use it for free -- but you must make the source code freely
+available to anyone who wants it.
 .PP
-For any sort of real legal information, read the GNU GPL (GNU General Public License).  It's worth reading.
+For any sort of real legal information, read the GNU GPL (GNU General Public License).
+It's worth reading.
+
+
