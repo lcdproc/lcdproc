@@ -15,7 +15,7 @@ This chapter will explain you the major steps and few gotchas of adding your own
 </sect1>
 
 <sect1 id="autoconfautomake">
-<title>Autoconf, automake, b&ouml;rk b&ouml;rk b&ouml;rk!</title>
+<title>Autoconf, automake, and Everything!</title>
 
 <para>How I Learned to Stop Worrying and Love the Configure Script</para>
 
@@ -148,7 +148,11 @@ myDriver_LDADD = @SOMESTRANGELIB@
 <sect3 id="automake-step3">
 <title>Step 3</title>
 
-<para>Last but not least, you need to specify which source files should be associated with your driver. You put your driver name followed by _SOURCES and egal this to a space separated list of the source and header files. See below for an example.</para>
+<para>
+Last but not least, you need to specify which source files should be
+associated with your driver. You put your driver name followed by
+<literal>_SOURCES</literal> and egal this to a space separated list
+of the source and header files. See below for an example.</para>
 
 <screen>
 myDriver_SOURCES =  lcd.h myDriver.c myDriver.h report.h
@@ -161,9 +165,151 @@ myDriver_SOURCES =  lcd.h myDriver.c myDriver.h report.h
 <sect2 id="autoconfautomake-test">
 <title>Test your setup</title>
 
-<para>You're almost done! You only need to check out if you didn't made any mistake. Just run sh autogen.sh to regenerate the configure script and Makefiles, then run ./configure --enable-drivers=myDriver and type make. If your driver compiles without error, then congratulations, you've just added your driver to LCDproc! Remember to submit a patch to the mailing list so that we can add it to the standard distribution.</para>
+<para>
+You're almost done! You only need to check out if you didn't made any mistake.
+Just run sh autogen.sh to regenerate the configure script and Makefiles,
+then run ./configure --enable-drivers=myDriver and type make.
+If your driver compiles without error, then congratulations, you've just added
+your driver to LCDproc! Remember to submit a patch to the mailing list so that
+we can add it to the standard distribution, but do not forget the documentation.
+</para>
 
-<para>If you had an error, just send us an email describing it to the mailing list and we'll try to help you.</para>
+<para>
+If you had an error, just send us an email describing it to the mailing list and we'll try to help you.
+</para>
+
+</sect2>
+
+</sect1>
+
+<sect1 id="documentation">
+<title>It's all about documentation</title>
+
+<para>
+Please do not forget to also add the required documentation,
+so that your driver can be used from others as well.
+</para>
+
+<sect2 id="documentation-LCDd.conf">
+<title>The configuration file, LCDd.conf</title>
+
+<para>
+Extend the LCDproc server's configuration file with a section that holds
+a standard configuration for your driver together with short descriptions
+of the options used.
+</para>
+
+<screen>
+&hellip;
+<emphasis>
+## MyDriver for MyDevice ##
+[MyDriver]
+
+# Select the output device to use [default: /dev/lcd]
+Device=/dev/ttyS0
+
+# Set the display size [default: 20x4]
+Size=20x4
+</emphasis>
+&hellip;
+</screen>
+
+</sect2>
+
+
+<sect2 id="documentation-manpage">
+<title>The daemon's manual page, LCDd.8</title>
+
+<para>
+Append your driver to the list of drivers in <filename>docs/LCDd.conf</filename>,
+the manual page of LCD, so that users can find your driver when doing <userinput>man LCDd</userinput>.
+</para>
+
+<screen>
+&hellip;
+.TP
+.B ms6931
+MSI-6931 displays in 1U rack servers by MSI
+.TP
+.B mtc_s16209x
+MTC_S16209x LCD displays by Microtips Technology Inc
+.TP
+.B MtxOrb
+Matrix Orbital displays (except Matrix Orbital GLK displays)
+<emphasis>.TP</emphasis>
+<emphasis>.B MyDriver</emphasis>
+<emphasis>displays connected using MyDevice</emphasis>
+.TP
+.B NoritakeVFD
+Noritake VFD Device CU20045SCPB-T28A
+.TP
+.B pylcd
+LCD displays from Pyramid (http://www.pyramid.de)
+.TP
+.B sed1330
+SED1330/SED1335 (aka S1D13300/S1D13305) based graphical displays
+&hellip;
+</screen>
+
+</sect2>
+
+<sect2 id="documentation-userdocbook">
+<title>The user guide</title>
+
+<sect3 id="userdocbook-file">
+<title>Step 1</title>
+
+<para>
+Please add a file <filename><emphasis>myDriver</emphasis>.docbook</filename>,
+that describes the configuration of your driver and the hard/software needed,
+to the directory <filename>docs/lcdproc-user/drivers/</filename>.
+</para>
+
+</sect3>
+
+<sect3 id="userdocbook-defentity">
+<title>Step 2</title>
+
+<para>
+Define a Docbook entity for your driverfile in <filename>lcdproc-user.docbook</filename>.
+</para>
+
+<screen>
+&hellip;
+&lt;!ENTITY ms6931 SYSTEM "drivers/ms6931.docbook"&gt;
+&lt;!ENTITY mtc_s16209x SYSTEM "drivers/mtc_s16209x.docbook"&gt;
+&lt;!ENTITY MtxOrb SYSTEM "drivers/mtxorb.docbook"&gt;
+<emphasis>&lt;!ENTITY MyDriver SYSTEM "drivers/MyDriver.docbook"&gt;</emphasis>
+&lt;!ENTITY NoritakeVFD SYSTEM "drivers/NoritakeVFD.docbook"&gt;
+&lt;!ENTITY pylcd SYSTEM "drivers/pylcd.docbook"&gt;
+&lt;!ENTITY sed1330 SYSTEM "drivers/sed1330.docbook"&gt;
+&hellip;
+</screen>
+
+</sect3>
+
+<sect3 id="userdocbook-useentity">
+<title>Step 3</title>
+
+<para>
+Add the freshly defined entity to <filename>drivers.docbook</filename>
+to include the documentation of your driver into the
+<emphasis>LCDproc User's Guide</emphasis>.
+</para>
+
+<screen>
+&hellip;
+&amp;ms6931;
+&amp;mtc_s16209x;
+&amp;MtxOrb;
+<emphasis>&amp;MyDriver;</emphasis>
+&amp;NoritakeVFD;
+&amp;pylcd;
+&amp;sed1330;
+&hellip;
+</screen>
+
+</sect3>
 
 </sect2>
 

@@ -301,13 +301,13 @@
 		        <varlistentry>
 		          <term><literal>hidden</literal></term>
 			  <listitem><para>
-			      screen will never be visible
+			      The screen will never be visible
 			    </para></listitem>
 		        </varlistentry>
 		        <varlistentry>
 		          <term><literal>background</literal></term>
 			  <listitem><para>
-			      only visible when no normal info screens exist
+			      The screen is only visible when no normal info screens exists
 			    </para></listitem>
 		        </varlistentry>
 		        <varlistentry>
@@ -325,13 +325,13 @@
 		        <varlistentry>
 		          <term><literal>alert</literal></term>
 			  <listitem><para>
-			      screen has an important message for the user
+			      The screen has an important message for the user.
 			    </para></listitem>
 		        </varlistentry>
 		        <varlistentry>
 		          <term><literal>input</literal></term>
 			  <listitem><para>
-			      the client is doing interactive input
+			      The client is doing interactive input.
 			    </para></listitem>
 		        </varlistentry>
 		        <varlistentry>
@@ -388,7 +388,7 @@
 		  </term>
 		  <listitem><para>
 		      Changes the heartbeat setting for this screen.
-		      If the to <literal>open</literal>, the default,r
+		      If set to <literal>open</literal>, the default,
 		      the client's heartbeat setting will be used.
 		    </para></listitem>
 		</varlistentry>
@@ -480,7 +480,7 @@
 	      <arg choice="plain"><replaceable>screen_id</replaceable></arg>
 	      <arg choice="plain"><replaceable>new_widget_id</replaceable></arg>
 	      <arg choice="plain"><replaceable>widgettype</replaceable></arg>
-	      <arg>-in <replaceable>frame_id</replaceable></arg>]
+	      <arg>-in <replaceable>frame_id</replaceable></arg>
 	    </cmdsynopsis>
 	  </term>
 	  <listitem>

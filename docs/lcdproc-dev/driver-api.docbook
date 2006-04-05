@@ -256,70 +256,72 @@ typedef struct my_driver_private {
 <sect1 id="function-details">
   <title>FUNCTIONS IN DETAIL</title>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>(*init)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  The init function
-  Starts up the LCD, initializes all vars. Allocates private data space
+  The init() function.
+  It starts up the LCD, initializes all variables, allocates private data space
   and stores the pointer by calling store_private_ptr();
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*close)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Shuts down the connection with the LCD.
+  Shut down the connection with the LCD.
   Called just before unloading the driver.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>(*width)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Get the screen width.
+  Get the screen width in characters.
+  The result is 1-based.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>(*height)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Get the screen height.
+  Get the screen height in lines.
+  The result is 1-based.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*clear)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Clears the framebuffer
+  Clear the framebuffer.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*flush)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Flushes the framebuffer to the LCD.
+  Flush the framebuffer to the LCD.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*string)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
@@ -327,14 +329,17 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>y</parameter></paramdef>
 	<paramdef>char *<parameter>str</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Places a string in the framebuffer
-  All coordinates are 1-based, (1,1) is top left.
-  Driver should check for overflows
+  Place string <replaceable>str</replaceable> into position
+  (<replaceable>x</replaceable>,<replaceable>y</replaceable>) in the framebuffer.
+  All coordinates are 1-based, i.e. (1,1) is top left.
+  The driver should check for overflows, i.e. that the positional parameters
+  are within the screen's boundaries and cut off the part of the string
+  that is out of bounds.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*chr)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
@@ -342,13 +347,16 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>y</parameter></paramdef>
 	<paramdef>char <parameter>c</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Places a char in the framebuffer
-  Driver should check for overflows
+  Place a single character <replaceable>c</replaceable> into position
+  (<replaceable>x</replaceable>,<replaceable>y</replaceable>) in the framebuffer.
+  The driver should check for overflows, i.e. that the positional parameters
+  are within the screen's boundaries and ignore the request if 
+  the character is out of bounds.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*vbar)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
@@ -358,12 +366,14 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>promille</parameter></paramdef>
 	<paramdef>int <parameter>options</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Draws a vertical bar at horizontal position x and with length len.
+  Draw a vertical bar at position (<replaceable>x</replaceable>,<replaceable>y</replaceable>)
+  that has maximal length <replaceable>len</replaceable>, where a fraction of
+  (<replaceable>promille</replaceable> / 1000) is filled.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*hbar)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
@@ -373,30 +383,32 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>promille</parameter></paramdef>
 	<paramdef>int <parameter>options</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Draws a horizontal bar at position x,y and with length len.
+  Draw a horizontal bar at position (<replaceable>x</replaceable>,<replaceable>y</replaceable>)
+  that has maximal length <replaceable>len</replaceable>, where a fraction of
+  (<replaceable>promille</replaceable> / 1000) is filled.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*num)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
 	<paramdef>int <parameter>x</parameter></paramdef>
 	<paramdef>int <parameter>num</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
-  Displays a big number at position x.
+  Display big number <replaceable>num</replaceable> at horizontal position <replaceable>x</replaceable>.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*heartbeat)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
 	<paramdef>int <parameter>state</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Sets the heartbeat to the indicated state.
   0=off 1=graph1 2=graph2
@@ -406,7 +418,7 @@ typedef struct my_driver_private {
   The driver choose how to do it. See MtxOrb.c"
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*icon)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
@@ -414,110 +426,110 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>y</parameter></paramdef>
 	<paramdef>int <parameter>icon</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*set_char)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
 	<paramdef>char <parameter>ch</parameter></paramdef>
 	<paramdef>char *<parameter>dat</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>(*get_free_chars)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>(*cellwidth)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>(*cellheight)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>(*contrast)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
 	<paramdef>int <parameter>contrast</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Sets the contrast to the given value. Values should be 0 to 255.
   Many displays do not support software setting of contrast.
   Use -1 to get the current value returned.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*backlight)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
 	<paramdef>int <parameter>brightness</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Sets the backlight to brightness 'on'.
   Often hardware can only support on and off, in that case any value
   of on>0 will switch the backlight on.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*output)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
 	<paramdef>int <parameter>state</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Sets the output value. Some displays/wirings have a general purpose
   output, which can be controlled by calling this function. See the
   'output' command in the 'widget language'.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>char *<function>(*get_key)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Checks if a key has been pressed on the device.
   Returns NULL for "no key pressed", or a string describing the pressd key.
   These characters should match the keypad-layout.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>char *<function>(*get_info)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Returns a string describing the driver and its features.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>char <function>(*config_get_bool)</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
@@ -525,7 +537,7 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>skip</parameter></paramdef>
 	<paramdef>char <parameter>default_value</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Call to server. Retrieve a bool from the config file.
   Sectionname should be the name of the driver (as in the struct).
@@ -534,7 +546,7 @@ typedef struct my_driver_private {
   identical keys, then increase skip to get every next value.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>(*config_get_int)</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
@@ -542,12 +554,12 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>skip</parameter></paramdef>
 	<paramdef>int <parameter>default_value</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Call to server. Retrieve an integer from the config file.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>double <function>(*config_get_float)</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
@@ -555,12 +567,12 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>skip</parameter></paramdef>
 	<paramdef>double <parameter>default_value</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Call to server. Retrieve a float from the config file.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>char *<function>(*config_get_string)</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
@@ -568,7 +580,7 @@ typedef struct my_driver_private {
 	<paramdef>int <parameter>skip</parameter></paramdef>
 	<paramdef>char *<parameter>default</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Call to server. Retrieve a string from the config file.
   Fill result with a pointer to some available space. You can fill it
@@ -579,24 +591,24 @@ typedef struct my_driver_private {
   next call.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>config_has_section</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Returns wether a section exists. Does not need to be called prior
   to a call to a config_get_* function.
 </para>
 
-<funcsynopsis>	
+<funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>config_has_key</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
 	<paramdef>char *<parameter>keyname</parameter></paramdef>
   </funcprototype>
-</funcsynopsis>	
+</funcsynopsis>
 <para>
   Returns the number of times a key exists. Does not need to be called
   prior to a call to a config_get_* function.
