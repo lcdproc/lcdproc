@@ -239,7 +239,7 @@ PrivateData *p;
 
   p->backlight = DEFAULT_BACKLIGHT;
 
-  debug(RPT_INFO, "IOWarrior: init(%p)", drvthis);
+  debug(RPT_INFO, "%s: init(%p)", drvthis->name, drvthis);
 
   /* Read config file */
 
@@ -248,7 +248,7 @@ PrivateData *p;
                                              0, DEFAULT_SERIALNO), sizeof(serial));
   serial[sizeof(serial)-1] = '\0';
   if (*serial != '\0') {
-    report(RPT_INFO, "IOWarrior: Using serial number: %s", serial);
+    report(RPT_INFO, "%s: Using serial number: %s", drvthis->name, serial);
   }
 
   /* Which size */
@@ -258,7 +258,7 @@ PrivateData *p;
   if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
       (w <= 0) || (w > LCD_MAX_WIDTH) ||
       (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-    report(RPT_WARNING, "IOWarrior: Cannot read size: %s. Using default value.", size);
+    report(RPT_WARNING, "%s: cannot read size: %s; using default value", drvthis->name, size);
     sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
   }
   p->width = w;
@@ -274,14 +274,14 @@ PrivateData *p;
   /* Allocate framebuffer memory */
   p->framebuf =(unsigned char *) calloc(p->width * p->height, 1);
   if (p->framebuf == NULL) {
-    report(RPT_ERR, "IOWarrior: unable to create framebuffer.");
+    report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
     return -1;
   }
 
   /* Allocate and clear the buffer for incremental updates */
   p->backingstore =(unsigned char *) calloc(p->width * p->height, 1);
   if (p->backingstore == NULL) {
-    report(RPT_ERR, "IOWarrior: unable to create lcd_buffer.");
+    report(RPT_ERR, "%s: unable to create backingstore", drvthis->name);
     return -1;
   }
 
@@ -312,7 +312,7 @@ PrivateData *p;
         /* IO-Warrior found; try to find it's description and serial number */
         p->udh = usb_open(dev);
         if (p->udh == NULL) {
-          report(RPT_WARNING, "IOWarrior: unable to open device");
+          report(RPT_WARNING, "%s: unable to open device", drvthis->name);
           // return -1;		/* it's better to continue */
         }
         else {
@@ -331,7 +331,7 @@ PrivateData *p;
             *p->serial = '\0';
           p->serial[sizeof(p->serial)-1] = '\0';
           if ((*serial != '\0') && (*p->serial == '\0')) {
-            report(RPT_ERR, "IOWarrior: unable to get device's serial number");
+            report(RPT_ERR, "%s: unable to get device's serial number", drvthis->name);
             usb_close(p->udh);
             return -1;
           }
@@ -349,11 +349,11 @@ PrivateData *p;
   done:
 
   if (p->udh != NULL) {
-    debug(RPT_DEBUG, "IOWarrior: opening device succeeded");
+    debug(RPT_DEBUG, "%s: opening device succeeded", drvthis->name);
 
     if (usb_set_configuration(p->udh, 1) < 0) {
       usb_close(p->udh);
-      report(RPT_ERR, "IOWarrior: unable to set configuration");
+      report(RPT_ERR, "%s: unable to set configuration", drvthis->name);
       return -1;
     }
 
@@ -362,18 +362,18 @@ PrivateData *p;
       if ((usb_detach_kernel_driver_np(p->udh, 1) < 0) ||
           (usb_claim_interface(p->udh, 1) < 0)) {
         usb_close(p->udh);
-        report(RPT_ERR, "IOWarrior: unable to re-claim interface");
+        report(RPT_ERR, "%s: unable to re-claim interface", drvthis->name);
         return -1;
       }
 #else
       usb_close(p->udh);
-      report(RPT_ERR, "IOWarrior: unable to claim interface");
+      report(RPT_ERR, "%s: unable to claim interface", drvthis->name);
       return -1;
 #endif
     }
   }
   else {
-    report(RPT_ERR, "IOWarrior: no (matching) IO-Warrior device found");
+    report(RPT_ERR, "%s: no (matching) IO-Warrior device found", drvthis->name);
     return -1;
   }
 
@@ -387,7 +387,7 @@ PrivateData *p;
   if (iowlcd_display_on_off(p->udh, 1, 0, 0) == IOW_ERROR)
     return -1;
 
-  report(RPT_DEBUG, "IOWarrior_init: done");
+  report(RPT_DEBUG, "%s: init(): done", drvthis->name);
 
   /* clear screen */
   IOWarrior_clear(drvthis);
@@ -444,7 +444,7 @@ PrivateData *p = drvthis->private_data;
   }  
   drvthis->store_private_ptr(drvthis, NULL);
 
-  debug(RPT_DEBUG, "IOWarrior: closed");
+  debug(RPT_DEBUG, "%s: closed", drvthis->name);
 }
 
 /******************************************************
@@ -455,7 +455,7 @@ IOWarrior_width(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
 
-  debug(RPT_DEBUG, "IOWarrior: returning width");
+  debug(RPT_DEBUG, "%s: returning width", drvthis->name);
 
   return p->width;
 }
@@ -468,7 +468,7 @@ IOWarrior_height(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
 
-  debug(RPT_DEBUG, "IOWarrior: returning height");
+  debug(RPT_DEBUG, "%s: returning height", drvthis->name);
 
   return p->height;
 }
@@ -500,7 +500,8 @@ int count;
           p->backingstore[offset+count] = p->framebuf[offset+count];
         }
         iowlcd_set_text(p->udh, 0, y, count, buffer);
-        debug(RPT_DEBUG, "IOWarrior: flushed %d chars at (%d,%d)", count, 0, y);
+        debug(RPT_DEBUG, "%s: flushed %d chars at (%d,%d)",
+			drvthis->name, count, 0, y);
 
 //		/* Alternative: update the LCD in chunks of max 6 bytes
 //		 * since IOWarrior needs only one command for it
@@ -514,7 +515,8 @@ int count;
 //		    p->backingstore[offset+x+i] = p->framebuf[offset+x+i];
 //		}
 //		iowlcd_set_text(p->udh, x, y, count, buffer);
-//		debug(RPT_DEBUG, "IOWarrior: flushed %d chars at (%d,%d)", count, x, y);
+//		debug(RPT_DEBUG, "%s: flushed %d chars at (%d,%d)",
+//			drvthis->name, count, x, y);
 
         x += count-1;
       }
@@ -530,7 +532,7 @@ int count;
       count++;
     }
   }
-  debug(RPT_DEBUG, "IOWarrior: flushed %d custom chars", count);
+  debug(RPT_DEBUG, "%s: flushed %d custom chars", drvthis->name, count);
 }
 
 
@@ -546,7 +548,7 @@ PrivateData *p = drvthis->private_data;
 
   p->ccmode = standard;
   
-  debug(RPT_DEBUG, "IOWarrior: cleared framebuffer");
+  debug(RPT_DEBUG, "%s: cleared framebuffer", drvthis->name);
 }
 
 
@@ -567,7 +569,8 @@ PrivateData *p = drvthis->private_data;
 
   p->framebuf[(y * p->width) + x] = c;
 
-  debug(RPT_DEBUG, "IOWarrior: writing char 0x%02hhX at (%d,%d)", (unsigned) c, x, y);
+  debug(RPT_DEBUG, "%s: writing char 0x%02hhX at (%d,%d)",
+		  drvthis->name, (unsigned) c, x, y);
 }
 
 /*****************************************************************
@@ -594,7 +597,8 @@ int offset, siz;
 
   memcpy(p->framebuf + offset, string, siz);
 
-  debug(RPT_DEBUG, "IOWarrior: writing string \"%s\" at (%d,%d)", string, x, y);
+  debug(RPT_DEBUG, "%s: writing string \"%s\" at (%d,%d)",
+		  drvthis->name, string, x, y);
 }
 
 
@@ -695,7 +699,8 @@ char g[CELLWIDTH*CELLHEIGHT] = {
   if (p->ccmode != vbar) {
     if (p->ccmode != standard) {
       /* Not supported(yet) */
-      report(RPT_WARNING, "IOWarrior_init_vbar: Cannot combine two modes using user defined characters");
+      report(RPT_WARNING, "%s: init_vbar: Cannot combine two modes using user defined characters",
+		      drvthis->name);
       return;
     }
     p->ccmode = vbar;
@@ -768,7 +773,8 @@ char e[CELLWIDTH*CELLHEIGHT] = {
   if (p->ccmode != hbar) {
     if (p->ccmode != standard) {
       /* Not supported(yet) */
-      report(RPT_WARNING, "IOWarrior_init_hbar: Cannot combine two modes using user defined characters");
+      report(RPT_WARNING, "%s: init_hbar: Cannot combine two modes using user defined characters",
+		      drvthis->name);
       return;
     }
 
@@ -912,7 +918,8 @@ char bignum_ccs[8][CELLWIDTH*CELLHEIGHT] = {
 
     if (p->ccmode != standard) {
       /* Not supported (yet) */
-      report(RPT_WARNING, "IOWarrior_init_num: Cannot combine two modes using user defined characters");
+      report(RPT_WARNING, "%s: init_num: Cannot combine two modes using user defined characters",
+		      drvthis->name);
       return;
     }
 
