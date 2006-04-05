@@ -961,7 +961,7 @@ output_GPL_notice(void)
 	 */
 	fprintf (stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
 	fprintf (stderr, "Part of LCDproc\n");
-	fprintf (stderr, "Copyright (C) 1998-2003 William Ferrell, Scott Scriven\n");
+	fprintf (stderr, "Copyright (C) 1998-2006 William Ferrell, Scott Scriven\n");
 	fprintf (stderr, "                        and many other contributors\n\n");
 	fprintf (stderr, "This program is free software; you can redistribute it and/or\n");
 	fprintf (stderr, "modify it under the terms of the GNU General Public License\n");
@@ -989,12 +989,10 @@ output_help_screen(void)
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	fprintf (stdout, "LCDd: LCDproc Server Daemon, %s\n", version);
-	fprintf (stdout, "Copyright (c) 1999-2003 Scott Scriven, William Ferrell, and misc contributors\n");
+	fprintf (stdout, "Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc contributors\n");
 	fprintf (stdout, "This program is freely redistributable under the terms of the GNU Public License\n\n");
-	fprintf (stdout, "Usage: LCDd [ -h ] [ -c <config> ] [ -d <driver> ] [ -f <bool> ] \\\n");
-	fprintf (stdout, "\t[-a <addr> ] [ -p <port> ] [ -u <user> ] [ -w <time> ]\\\n");
-	fprintf (stdout, "\t[ -r <level> ] [ -s <bool> ] [ -i <bool> ]\n\n");
-	fprintf (stdout, "Available options are:\n");
+	fprintf (stdout, "Usage: LCDd [<options>]\n");
+	fprintf (stdout, "  where <options> are:\n");
 	fprintf (stdout, "\t-h\t\tDisplay this help screen\n");
 	fprintf (stdout, "\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
 	fprintf (stdout, "\t-d <driver>\tAdd a driver to use (overrides drivers in config file) [%s]\n", DEFAULT_DRIVER);
