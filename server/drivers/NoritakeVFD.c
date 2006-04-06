@@ -76,7 +76,7 @@ static void NoritakeVFD_hidecursor (Driver *drvthis);
 static void NoritakeVFD_reboot (Driver *drvthis);
 static void NoritakeVFD_init_vbar (Driver *drvthis);
 static void NoritakeVFD_init_hbar (Driver *drvthis);
-static void NoritakeVFD_draw_frame (Driver *drvthis, char *dat);
+static void NoritakeVFD_draw_frame (Driver *drvthis, unsigned char *dat);
 //static void NoritakeVFD_heartbeat (Driver *drvthis, int type);
 
 
@@ -541,7 +541,6 @@ NoritakeVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int opti
 
 		len -= p->cellheight;
 	}*/
-	PrivateData *p = drvthis->private_data;
 
 	NoritakeVFD_init_vbar(drvthis);
 	//lib_vbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
@@ -565,7 +564,6 @@ NoritakeVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int opti
 		len -= p->cellwidth;
 
 	}*/
-	PrivateData *p = drvthis->private_data;
 
 	NoritakeVFD_init_hbar(drvthis);
 	//lib_hbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
@@ -660,11 +658,11 @@ NoritakeVFD_icon (Driver *drvthis, int x, int y, int icon)
 // Input is a character array, sized NoritakeVFD->width*NoritakeVFD->height
 //
 void
-NoritakeVFD_draw_frame (Driver *drvthis, char *dat)
+NoritakeVFD_draw_frame (Driver *drvthis, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
 	char out[p->width * p->height];
-	char *row, *b_row;
+	unsigned char *row, *b_row;
 	int i;
 
 	if (!dat)
@@ -683,7 +681,7 @@ NoritakeVFD_draw_frame (Driver *drvthis, char *dat)
 
         /* else, write out the entire row */
 		memcpy(b_row, row, p->width);
-		int pos = i*p->width;
+		int pos = i * p->width;
 		snprintf (out, sizeof(out), "%c%c%c", 0x1B, 'H', pos);
 		write (p->fd, out, 3);
 		write (p->fd, row, p->width);
@@ -699,7 +697,6 @@ NoritakeVFD_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	memset (p->framebuf, ' ', p->width * p->height);
-
 }
 
 
