@@ -428,7 +428,7 @@ ms6931_get_key (Driver *drvthis)
 	const char *key = NULL;
 
 	if ((ret = select(FD_SETSIZE, &fdset, NULL, NULL, &selectTimeout)) < 0) {
-		report(RPT_DEBUG, "ms6931_getkey: select() failed (%s)", strerror(errno));
+		report(RPT_DEBUG, "ms6931_get_key: select() failed (%s)", strerror(errno));
 		return NULL;
 	}
 	if (!ret) {
@@ -440,7 +440,7 @@ ms6931_get_key (Driver *drvthis)
 		return NULL;
 
 	if ((ret = read(fd, &buf, 1)) < 0) {
-		report(RPT_DEBUG, "ms6931_getkey: read() failed (%s)", strerror(errno));
+		report(RPT_DEBUG, "ms6931_get_key: read() failed (%s)", strerror(errno));
 		return NULL;
 	}
 	if (ret == 1) {
@@ -455,11 +455,11 @@ ms6931_get_key (Driver *drvthis)
 			key = "Down";
 			break;
 		default:
-			report(RPT_DEBUG, "ms6931_getkey: illegal key 0x%02x", (int)buf);
+			report(RPT_DEBUG, "ms6931_get_key: illegal key 0x%02x", (int)buf);
 			return NULL;
 		}
 
-		report(RPT_DEBUG, "ms6931_getkey: returning %s", key);
+		report(RPT_DEBUG, "ms6931_get_key: returning %s", key);
 		return key;
 	}
 
