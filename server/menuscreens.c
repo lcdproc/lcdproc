@@ -184,7 +184,7 @@ void menuscreen_inform_item_modified (MenuItem * item)
 	}
 }
 
-bool is_menu_key (char * key)
+bool is_menu_key (const char * key)
 {
 	if (menu_key && key && strcmp (key, menu_key) == 0)
 		return true;
@@ -355,7 +355,7 @@ static void handle_successor()
 	}
 }
 
-void menuscreen_key_handler (char *key)
+void menuscreen_key_handler (const char *key)
 {
 	char token = 0;
 	MenuResult res;

@@ -58,8 +58,6 @@ static struct timeval selectTimeout = { 0, 0 };
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT int stay_in_foreground = 0;
-MODULE_EXPORT int does_input = 1;
-MODULE_EXPORT int does_output = 1;
 MODULE_EXPORT char *symbol_prefix = "ms6931_";
 
 
@@ -422,49 +420,50 @@ ms6931_heartbeat (Driver *drvthis, int state)
 // controls the keys
 //
 
-MODULE_EXPORT char 
+MODULE_EXPORT const char *
 ms6931_get_key (Driver *drvthis)
 {
 	int ret;
 	char buf;
+	const char *key = NULL;
 
-	if ((ret = select (FD_SETSIZE, &fdset, NULL, NULL, &selectTimeout)) < 0) {
+	if ((ret = select(FD_SETSIZE, &fdset, NULL, NULL, &selectTimeout)) < 0) {
 		report(RPT_DEBUG, "ms6931_getkey: select() failed (%s)", strerror(errno));
-		return 0;
+		return NULL;
 	}
 	if (!ret) {
 		FD_SET(fd, &fdset);
-		return 0;
+		return NULL;
 	}
 	
 	if (!FD_ISSET(fd, &fdset))
-		return 0;
+		return NULL;
 
 	if ((ret = read(fd, &buf, 1)) < 0) {
 		report(RPT_DEBUG, "ms6931_getkey: read() failed (%s)", strerror(errno));
-		return 0;
+		return NULL;
 	}
 	if (ret == 1) {
 		switch (buf) {
 		case 'L':
-			buf = 'B';
+			key = "Escape";
 			break;
 		case 'M':
-			buf = 'A';
+			key = "Enter";
 			break;
 		case 'R':
-			buf = 'C';
+			key = "Down";
 			break;
 		default:
 			report(RPT_DEBUG, "ms6931_getkey: illegal key 0x%02x", (int)buf);
-			return 0;
+			return NULL;
 		}
 
-		report(RPT_DEBUG, "ms6931_getkey: returning %c", buf);
-		return buf;
+		report(RPT_DEBUG, "ms6931_getkey: returning %s", key);
+		return key;
 	}
 
-	return 0;
+	return NULL;
 }
 
 

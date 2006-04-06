@@ -770,7 +770,7 @@ bayrad_icon(Driver * drvthis, int x, int y, int icon)
 //
 // Return 0 for "nothing available".
 //
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 bayrad_get_key(Driver * drvthis)
 {
   fd_set brfdset;

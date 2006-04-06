@@ -41,7 +41,7 @@ MODULE_EXPORT void svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int
 MODULE_EXPORT void svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
 MODULE_EXPORT void svgalib_drv_num (Driver *drvthis, int x, int num);
 
-MODULE_EXPORT char * svgalib_drv_get_key (Driver *drvthis);
+MODULE_EXPORT const char * svgalib_drv_get_key (Driver *drvthis);
 
 MODULE_EXPORT int  svgalib_drv_get_contrast (Driver *drvthis);
 MODULE_EXPORT void svgalib_drv_set_contrast (Driver *drvthis, int promille);

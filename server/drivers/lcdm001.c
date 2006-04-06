@@ -288,7 +288,6 @@ lcdm001_flush (Driver *drvthis)
 MODULE_EXPORT void
 lcdm001_chr (Driver *drvthis, int x, int y, char c)
 {
-	char buf[64]; // char out[10];
 	int offset;
 
 	ValidX(x);
@@ -304,8 +303,7 @@ lcdm001_chr (Driver *drvthis, int x, int y, char c)
 	offset = (y * width) + x;
 	framebuf[offset] = c;
 
-	snprintf(buf, sizeof(buf), "LCDM001: writing character %02X to position (%d,%d)", c, x, y);
-	debug (RPT_DEBUG, buf);
+	debug (RPT_DEBUG, "LCDM001: writing character %02X to position (%d,%d)", c, x, y);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -437,25 +435,27 @@ lcdm001_old_icon (Driver *drvthis, int which, char dest)
 //////////////////////////////////////////////////////////////////////
 // Tries to read a character from an input device...
 //
-// Return 0 for "nothing available".
+// Return NULL for "nothing available".
 //
 
-/* TODO: write for net API function (get_key) that returns a string */
-
-MODULE_EXPORT char
-lcdm001_getkey (Driver *drvthis)
+MODULE_EXPORT const char *
+lcdm001_get_key (Driver *drvthis)
 {
-        char in = 0;
+        char in = '\0';
+	const char *key = NULL;
+
         read (fd, &in, 1);
 	if (in == pause_key) {
-		in='A';
+		key = "Escape";
 	} else if (in == back_key) {
-		in='B';
+		key = "Left";
 	} else if (in == forward_key) {
-		in='C';
+		key = "Right";
 	} else if (in == main_menu_key) {
-		in='D';
+		key = "Enter";
 	}
-	/*debug: if(in) fprintf(stderr,"key: %c",in); */
-        return in;
+	debug(RPT_DEBUG, "%s, get_key: %s",
+			drvthis->name, (key != NULL) ? key : "<null>");
+        return key;
 }
+

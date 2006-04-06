@@ -14,6 +14,6 @@ typedef struct driver_private_data {
 
 MODULE_EXPORT int irmanin_init (Driver *drvthis);
 MODULE_EXPORT void irmanin_close (Driver *drvthis);
-MODULE_EXPORT char *irmanin_get_key (Driver *drvthis);
+MODULE_EXPORT const char *irmanin_get_key (Driver *drvthis);
 
 #endif

@@ -958,7 +958,7 @@ sed1330_icon( Driver * drvthis, int x, int y, int icon )
 /////////////////////////////////////////////////////////////
 // Get a key from the keypad (if there is one)
 //
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 sed1330_get_key(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;

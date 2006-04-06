@@ -161,7 +161,7 @@ typedef struct lcd_logical_driver {
 	void (*output)		(struct lcd_logical_driver* drvthis, int state);
 
 	/* Key functions */
-	char *(*get_key)	(struct lcd_logical_driver* drvthis);
+	const char *(*get_key)	(struct lcd_logical_driver* drvthis);
 				/* Returns a string. Server cannot modify
 				  this string. */
 

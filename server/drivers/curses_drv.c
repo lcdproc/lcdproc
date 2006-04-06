@@ -585,7 +585,7 @@ curses_drv_flush (Driver *drvthis)
 }
 
 
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 curses_drv_get_key (Driver *drvthis)
 {
 	static char ret_val[2] = {0,0};

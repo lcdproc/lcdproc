@@ -1110,7 +1110,7 @@ HD44780_icon (Driver *drvthis, int x, int y, int icon)
 /////////////////////////////////////////////////////////////
 // Get a key from the keypad (if there is one)
 //
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 HD44780_get_key(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;

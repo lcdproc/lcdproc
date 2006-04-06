@@ -30,7 +30,7 @@ int menuscreens_shutdown();
 /** This function indicates to the input part whether this key was the
  * reserved menu key.
  */
-bool is_menu_key (char * key);
+bool is_menu_key (const char * key);
 
 /** Meant for other parts of the program to inform the menuscreen that the
  * item is about to be removed.
@@ -44,7 +44,7 @@ void menuscreen_inform_item_modified (MenuItem * item);
 
 /** This handler handles the keypresses for the menu.
  */
-void menuscreen_key_handler (char *key);
+void menuscreen_key_handler (const char *key);
 
 /** Adds a menu for the given screen */
 void menuscreen_add_screen (Screen * s);

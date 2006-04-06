@@ -258,7 +258,7 @@ for (i=0; i<width; i++) {
 /*
  * Return one char from the KeyRing
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 tyan_lcdm_get_key (Driver *drvthis)
 {
         unsigned char akey;

@@ -581,7 +581,7 @@ CFontzPacket_flush (Driver *drvthis)
 /*
  * Return one char from the KeyRing
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 CFontzPacket_get_key (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;

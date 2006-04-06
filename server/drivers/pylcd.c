@@ -430,7 +430,7 @@ MODULE_EXPORT void pylcd_output (Driver *drvthis, int state)
 
 /* Key functions */
 
-MODULE_EXPORT char *pylcd_get_key (Driver *drvthis)
+MODULE_EXPORT const char *pylcd_get_key (Driver *drvthis)
 {
     /* supports only one key at a time */
 

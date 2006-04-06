@@ -185,7 +185,7 @@ lircin_close (Driver *drvthis)
  *
  * Return NULL for "nothing available".
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 lircin_get_key (Driver *drvthis)
 {
         PrivateData * p = drvthis->private_data;

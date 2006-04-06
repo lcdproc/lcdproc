@@ -23,7 +23,7 @@
 
 MODULE_EXPORT int lircin_init (Driver *drvthis);
 MODULE_EXPORT void lircin_close (Driver *drvthis);
-MODULE_EXPORT char * lircin_get_key (Driver *drvthis);
+MODULE_EXPORT const char * lircin_get_key (Driver *drvthis);
 
 #define LIRCIN_VERBOSELY 0
 

@@ -348,12 +348,12 @@ drivers_output( int state )
 }
 
 
-char *
+const char *
 drivers_get_key()
 {
 	/* Find the first input keystroke, if any */
 	Driver *drv;
-	char * keystroke;
+	const char * keystroke;
 
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 

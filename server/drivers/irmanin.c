@@ -129,7 +129,7 @@ irmanin_init (Driver *drvthis)
 	return 1;						  // return success
 }
 
-void
+MODULE_EXPORT void
 irmanin_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -147,7 +147,7 @@ irmanin_close (Driver *drvthis)
 //
 // Return NULL for "nothing available".
 //
-char *
+MODULE_EXPORT const char *
 irmanin_get_key (Driver *drvthis)
 {
 	int cmd;

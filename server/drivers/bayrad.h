@@ -27,7 +27,7 @@ MODULE_EXPORT void bayrad_set_char(Driver * drvthis, int n, char *dat);
 
 MODULE_EXPORT void bayrad_backlight(Driver * drvthis, int promille);
 
-MODULE_EXPORT char *bayrad_get_key(Driver * drvthis);
+MODULE_EXPORT const char *bayrad_get_key(Driver * drvthis);
 
 MODULE_EXPORT void bayrad_init_vbar(Driver * drvthis);
 MODULE_EXPORT void bayrad_init_hbar(Driver * drvthis);

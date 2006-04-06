@@ -1468,7 +1468,7 @@ CwLnx_string(Driver * drvthis, int x, int y, char *string)
 /*********************************************************
  * API: Get a key translated into a string.
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 CwLnx_get_key(Driver * drvthis)
 {
 	PrivateData * p = drvthis->private_data;

@@ -247,7 +247,7 @@ debug_icon (Driver *drvthis, int x, int y, int icon)
 /////////////////////////////////////////////////////////////////
 // Return a keypress
 //
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 debug_get_key (Driver *drvthis)
 {
 	report (RPT_INFO, "get_key()");

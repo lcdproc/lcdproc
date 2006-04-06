@@ -1241,7 +1241,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 /*
  * Return one char from the KeyRing
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 MtxOrb_get_key (Driver *drvthis)
 {
 	char in = 0;

@@ -46,7 +46,7 @@ MODULE_EXPORT void ms6931_backlight		(Driver *drvthis, int on);
 MODULE_EXPORT void ms6931_chr		(Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void ms6931_clear 	(Driver *drvthis);
 MODULE_EXPORT void ms6931_string	(Driver *drvthis, int x, int y, char string[]);
-MODULE_EXPORT char ms6931_get_key	(Driver *drvthis);
+MODULE_EXPORT const char *ms6931_get_key	(Driver *drvthis);
 MODULE_EXPORT void ms6931_hbar		(Driver *drvthis, int x, int y, int len, int promille, int pattern);
 MODULE_EXPORT void ms6931_heartbeat	(Driver *drvthis, int state);
 

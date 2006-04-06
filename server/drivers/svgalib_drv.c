@@ -572,7 +572,7 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 /**
  * Return a keypress
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 svgalib_drv_get_key (Driver *drvthis)
 {
 	static char buf[2] = " ";

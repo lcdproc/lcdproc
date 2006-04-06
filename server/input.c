@@ -41,8 +41,8 @@ char * scroll_down_key;
 
 /* Local functions */
 int server_input (int key);
-void input_send_to_client (Client * c, char * key);
-void input_internal_key (char * key);
+void input_send_to_client (Client * c, const char * key);
+void input_internal_key (const char * key);
 
 
 int input_init()
@@ -84,7 +84,7 @@ int input_shutdown()
 int
 handle_input ()
 {
-	char * key;
+	const char * key;
 	Screen * current_screen;
 	Client * current_client;
 	Client * target;
@@ -125,7 +125,7 @@ handle_input ()
 }
 
 
-void input_send_to_client (Client * c, char * key)
+void input_send_to_client (Client * c, const char * key)
 {
 	char * s;
 
@@ -140,7 +140,7 @@ void input_send_to_client (Client * c, char * key)
 
 
 void
-input_internal_key (char * key)
+input_internal_key (const char * key)
 {
 	if( is_menu_key(key) || screenlist_current() == menuscreen ) {
 		menuscreen_key_handler(key);
@@ -170,7 +170,7 @@ input_internal_key (char * key)
 	}
 }
 
-int input_reserve_key (char * key, bool exclusive, Client * client)
+int input_reserve_key (const char * key, bool exclusive, Client * client)
 {
 	KeyReservation * kr;
 
@@ -200,7 +200,7 @@ int input_reserve_key (char * key, bool exclusive, Client * client)
 	return 0;
 }
 
-void input_release_key (char * key, Client * client)
+void input_release_key (const char * key, Client * client)
 {
 	KeyReservation * kr;
 
@@ -238,7 +238,7 @@ void input_release_client_keys (Client * client)
 	}
 }
 
-KeyReservation * input_find_key (char * key, Client * client)
+KeyReservation * input_find_key (const char * key, Client * client)
 {
 	KeyReservation * kr;
 

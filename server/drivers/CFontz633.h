@@ -29,7 +29,7 @@ MODULE_EXPORT void CFontz633_clear (Driver *drvthis);
 MODULE_EXPORT void CFontz633_flush (Driver *drvthis);
 MODULE_EXPORT void CFontz633_string (Driver *drvthis, int x, int y, char string[]);
 MODULE_EXPORT void CFontz633_chr (Driver *drvthis, int x, int y, char c);
-MODULE_EXPORT char *CFontz633_get_key (Driver *drvthis);
+MODULE_EXPORT const char *CFontz633_get_key (Driver *drvthis);
 
 MODULE_EXPORT void CFontz633_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void CFontz633_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);

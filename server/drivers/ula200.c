@@ -974,7 +974,7 @@ ula200_icon (Driver *drvthis, int x, int y, int icon)
 ///////////////////////////////////////////////////////////////////////////////
 // Set default icon into a userdef char
 //
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 ula200_get_key (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;

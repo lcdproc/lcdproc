@@ -20,7 +20,7 @@ MODULE_EXPORT int  curses_drv_icon (Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void curses_drv_backlight (Driver *drvthis, int on);
 
-MODULE_EXPORT char *curses_drv_get_key (Driver *drvthis);
+MODULE_EXPORT const char *curses_drv_get_key (Driver *drvthis);
 
 MODULE_EXPORT void curses_drv_init_num (Driver *drvthis);
 

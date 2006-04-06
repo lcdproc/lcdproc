@@ -22,7 +22,7 @@ MODULE_EXPORT void debug_set_char (Driver *drvthis, int n, char *dat);
 MODULE_EXPORT void debug_set_contrast (Driver *drvthis, int promille);
 MODULE_EXPORT void debug_backlight (Driver *drvthis, int promille);
 
-MODULE_EXPORT char *debug_get_key (Driver *drvthis);
+MODULE_EXPORT const char *debug_get_key (Driver *drvthis);
 
 MODULE_EXPORT void debug_init_vbar (Driver *drvthis);
 MODULE_EXPORT void debug_init_hbar (Driver *drvthis);
