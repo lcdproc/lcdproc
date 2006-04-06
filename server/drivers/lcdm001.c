@@ -446,13 +446,13 @@ lcdm001_get_key (Driver *drvthis)
 
         read (fd, &in, 1);
 	if (in == pause_key) {
-		key = "Escape";
+		key = "Enter";
 	} else if (in == back_key) {
 		key = "Left";
 	} else if (in == forward_key) {
 		key = "Right";
 	} else if (in == main_menu_key) {
-		key = "Enter";
+		key = "Escape";
 	}
 	debug(RPT_DEBUG, "%s, get_key: %s",
 			drvthis->name, (key != NULL) ? key : "<null>");
