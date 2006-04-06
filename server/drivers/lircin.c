@@ -169,9 +169,10 @@ lircin_close (Driver *drvthis)
 			lirc_freeconfig (p->lircin_irconfig);
 		p->lircin_irconfig = NULL;
 		
-		if (p->lircin_fd >= 0)
+		if (p->lircin_fd >= 0) {
 			lirc_deinit ();
 			close (p->lircin_fd);
+		}	
 		p->lircin_fd = -1;
 
 		free(p);
