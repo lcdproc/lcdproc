@@ -43,7 +43,7 @@ MODULE_EXPORT void MtxOrb_hbar (Driver * drvthis, int x, int y, int len, int pro
 #define KEY_RIGHT 'A'
 #define KEY_F1    'N'
 /* TODO: add more if you've got any more ;) or correct the settings
- * the actual translation is done in MtxOrb_getkey()
+ * the actual translation is done in MtxOrb_get_key()
  */
 
 #endif
