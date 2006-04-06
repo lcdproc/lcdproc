@@ -119,7 +119,7 @@ int does_output = 1;	    // But only output
 	void (*output)		(drvthis, int on);
 
 	// Key functions
-	char *(*get_key)	(drvthis);
+	const char *(*get_key)	(drvthis);
 
   Returns a string. This string is withing driver's memory space and the server
   should therefor never try to modify this string.
@@ -509,7 +509,7 @@ typedef struct my_driver_private {
 
 <funcsynopsis>
   <funcprototype>
-	<funcdef>char *<function>(*get_key)</function></funcdef>
+	<funcdef>const char *<function>(*get_key)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>

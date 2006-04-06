@@ -111,7 +111,7 @@ with 1 byte for each pixel-line. So that is 8 bytes for a 5x8 char.
 
 
 	// Key functions
-	char *(*get_key)	(drvthis);
+	const char *(*get_key)	(drvthis);
 
 Returns a string. This string is withing driver's memory space and the server
 should therefor never try to modify this string.
