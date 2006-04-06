@@ -168,7 +168,7 @@ glk_init(Driver *drvthis)
 
   // Enable auto-transmit of up/down key events
   // This allows us to generate REPEAT keys distinct from
-  //   normal keys using timeouts.  (see glk_getkey)
+  //   normal keys using timeouts.  (see glk_get_key)
   glkputl( PortFD, GLKCommand, 0x7e, 1, GLKCommand, 0x41, EOF );
 
   // Set contrast
@@ -576,18 +576,16 @@ glk_old_icon(Driver *drvthis, int which, int dest)
 //////////////////////////////////////////////////////////////////////
 // Tries to read a character from an input device...
 //
-// Return 0 for "nothing available".
+// Return NULL for "nothing available".
 //
-MODULE_EXPORT char
-glk_old_getkey(Driver *drvthis)
+MODULE_EXPORT const char *
+glk_get_key(Driver *drvthis)
 {
-  /* NOTE THAT THIS CODE IS NOT USED IN THE NEW API */
-  /* It uses get_key instead, returning a string */
-
-  int  c ;
-  static int  key = -1 ;
+  int c;
+  static int keycode = -1 ;
   static struct timeval  lastkey ;
   struct timeval  now ;
+  const char *key = NULL;
 
   debug(RPT_DEBUG, "glk_getkey()" );
 
@@ -595,27 +593,27 @@ glk_old_getkey(Driver *drvthis)
 
   if( c >= 'A' && c <= 'Z' ) {
     /* Key down event */
-    key = c ;
+    keycode = c ;
     gettimeofday( &lastkey, NULL );
     debug(RPT_DEBUG, "KEY %c at %ld.%06ld\n", c, lastkey.tv_sec, lastkey.tv_usec );
   } else if( c >= 'a' && c <= 'z' ) {
     /* Key up event */
     debug(RPT_DEBUG, "KEY %c UP\n", c );
-    key = -1 ;
+    keycode = -1 ;
     c = 0 ;
   } else {
     /* Assume timeout */
     c = 0 ;
-    if( key > 0 ) {
+    if( keycode > 0 ) {
       int  msec_diff ;
       /* A key is down */
       gettimeofday( &now, NULL );
       msec_diff  = (now.tv_sec - lastkey.tv_sec) * 1000 ;
       msec_diff += (now.tv_usec - lastkey.tv_usec) / 1000 ;
-      debug(RPT_DEBUG, "KEY %c down for %d msec\n", key, msec_diff );
+      debug(RPT_DEBUG, "KEY %c down for %d msec\n", keycode, msec_diff );
       if( msec_diff > 1000 ) {
         /* Generate repeat event */
-        c = key | 0x20 ;  /* Upper case to lower case */
+        c = keycode | 0x20 ;  /* Upper case to lower case */
         ++lastkey.tv_sec ;  /* HACK HACK. repeat at 1 sec intervals */
         debug(RPT_DEBUG, "KEY %c REPEAT\n", c );
       };
@@ -623,26 +621,31 @@ glk_old_getkey(Driver *drvthis)
   };
 
   /* Remap keys according to what LCDproc expects */
-  switch( c ) {
-  default :  break ;
-  case 'V' : c = 'A' ; break ; /* Hold/Select */
-  case 'P' : c = 'B' ; break ; /* Left  -- Minus */
-  case 'Q' : c = 'C' ; break ; /* Right -- Plus */
-  case 'L' : c = 'D' ; break ; /* Menu/Exit */
-  case 'U' : c = 'E' ; break ; /* Up */
-  case 'K' : c = 'F' ; break ; /* Down */
+  switch ( c ) {
+    case 'V' : key = "Enter";
+	       break;
+    case 'P' : key = "Left";
+	       break;
+    case 'Q' : key = "Right";
+	       break;
+    case 'L' : key = "Escape";
+	       break;
+    case 'U' : key = "Up";
+	       break;
+    case 'K' : key = "Down";
+	       break;
+    default :  break;
 
-  case 'v' : c = 'N' ; break ;
-  case 'p' : c = 'O' ; break ;
-  case 'q' : c = 'P' ; break ;
-  case 'l' : c = 'Q' ; break ;
-  case 'u' : c = 'R' ; break ;
-  case 'k' : c = 'S' ; break ;
+    // What to do with repeated keys? We currently ignore them.
+    //case 'v' : c = 'N' ; break ;
+    //case 'p' : c = 'O' ; break ;
+    //case 'q' : c = 'P' ; break ;
+    //case 'l' : c = 'Q' ; break ;
+    //case 'u' : c = 'R' ; break ;
+    //case 'k' : c = 'S' ; break ;
   };
 
-//  if( c ) {
-//    printf( "KEY %c\n", c );
-//  };
+  debug(RPT_DEBUG, "%s_ get_key() returns %s", drvthis->name, (key != NULL) ? key : "<null>");
 
-  return( c );
+  return key;
 }

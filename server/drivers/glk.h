@@ -24,7 +24,7 @@ MODULE_EXPORT void glk_set_contrast(Driver *drvthis, int promille);
 MODULE_EXPORT void glk_backlight(Driver *drvthis, int on);
 MODULE_EXPORT void glk_output(Driver *drvthis, int on);
 
-MODULE_EXPORT char glk_getkey(Driver *drvthis);
+MODULE_EXPORT const char *glk_get_key(Driver *drvthis);
 
 MODULE_EXPORT void glk_init_vbar(Driver *drvthis);
 MODULE_EXPORT void glk_init_hbar(Driver *drvthis);
