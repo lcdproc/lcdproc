@@ -194,31 +194,32 @@ CFontzPacket_init (Driver *drvthis)
 		return -1;
 
 	/* Initialize the PrivateData structure */
+	p->fd = -1;
 	p->cellwidth = DEFAULT_CELL_WIDTH;
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = standard;
 	p->LEDstate = 0xFFFF;
 
-	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis );
+	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis);
 
 	EmptyKeyRing(&keyring);
 	EmptyReceiveBuffer(&receivebuffer);
 
 	/* Read config file */
 	/* Which model is it (CF633, CF631 or CF635)? */
-	tmp = drvthis->config_get_int (drvthis->name, "Model", 0, 633);
-	debug (RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "Model", 0, 633);
+	debug(RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp != 631) && (tmp != 633) && (tmp != 635)) {
 		tmp = 633;
-		report (RPT_WARNING, "%s: Model must be 631, 633 or 635. Using default %d.\n",
-			__FUNCTION__, tmp);
+		report(RPT_WARNING, "%s: Model must be 631, 633 or 635; using default %d",
+			drvthis->name, tmp);
 	}
 	p->model = tmp;
 
 	/* Which device should be used */
-	strncpy(p->device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
+	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 	p->device[sizeof(p->device)-1] = '\0';
-	debug (RPT_INFO, "%s: Device (in config) is '%s'", __FUNCTION__, p->device);
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
 	/* Which size */
 	if (p->model == 631) {
@@ -232,57 +233,57 @@ CFontzPacket_init (Driver *drvthis)
 		default_speed = DEFAULT_SPEED_CF635;
 	}	
 
-	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, default_size), sizeof(size));
+	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, default_size), sizeof(size));
 	size[sizeof(size)-1] = '\0';
-	debug (RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
+	debug(RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "%s: Cannot parse size: %s. Using default %s.\n",
-			__FUNCTION__, size, default_size);
+		report(RPT_WARNING, "%s: cannot parse Size: %s; using default %s",
+			drvthis->name, size, default_size);
 		sscanf(default_size, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
 
-	debug (RPT_INFO, "%s: Size used: %dx%d", __FUNCTION__, p->width, p->height);
+	debug(RPT_INFO, "%s: Size used: %dx%d", __FUNCTION__, p->width, p->height);
 
 	/* Which contrast */
-	tmp = drvthis->config_get_int (drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
-	debug (RPT_INFO, "%s: Contrast (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
+	debug(RPT_INFO, "%s: Contrast (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_CONTRAST);
+		report(RPT_WARNING, "%s: Contrast must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_CONTRAST);
 		tmp = DEFAULT_CONTRAST;
 	}
 	p->contrast = tmp;
 
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	debug (RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_BRIGHTNESS);
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
 
 	/* Which backlight-off "brightness" */
-	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	debug (RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_OFFBRIGHTNESS);
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_OFFBRIGHTNESS);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
 
 	/* Which speed ? CF633 support 19200 only, CF631 & CF635 USB use 115200. */
-	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, default_speed);
-	debug (RPT_INFO, "%s: Speed (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, default_speed);
+	debug(RPT_INFO, "%s: Speed (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp != 19200) && (tmp != 115200)) {
-		report (RPT_WARNING, "%s: Speed must be 19200 or 11500. Using default %d.\n",
-			__FUNCTION__, default_speed);
+		report(RPT_WARNING, "%s: Speed must be 19200 or 11500; using default %d",
+			drvthis->name, default_speed);
 		tmp = default_speed;
 	}
 	p->speed = (tmp == 19200) ? B19200 : B115200;
@@ -299,13 +300,13 @@ CFontzPacket_init (Driver *drvthis)
 	/* Am I USB or not? */
 	p->usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
 	if (p->usb)
-		report (RPT_INFO, "%s: USB is indicated (in config)", __FUNCTION__);
+		report(RPT_INFO, "%s: USB is indicated (in config)", drvthis->name);
 
 	/* Set up io port correctly, and open it... */
-	debug( RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
+	debug(RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
 	p->fd = open(p->device, (p->usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
 	if (p->fd == -1) {
-		report (RPT_ERR, "%s: open() failed (%s)\n", __FUNCTION__, strerror (errno));
+		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, p->device, strerror(errno));
 		return -1;
 	}
 
@@ -319,7 +320,7 @@ CFontzPacket_init (Driver *drvthis)
 		portset.c_oflag &= ~OPOST;
 		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-		portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+		portset.c_cflag |= CS8 | CREAD | CLOCAL;
 		portset.c_cc[VMIN] = 0;
 		portset.c_cc[VTIME] = 0;
 	} else {
@@ -333,7 +334,7 @@ CFontzPacket_init (Driver *drvthis)
 		portset.c_oflag &= ~OPOST;
 		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-		portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+		portset.c_cflag |= CS8 | CREAD | CLOCAL;
 #endif
 	}
 
@@ -347,7 +348,7 @@ CFontzPacket_init (Driver *drvthis)
 	/* make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer.\n", __FUNCTION__);
+		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
@@ -355,29 +356,29 @@ CFontzPacket_init (Driver *drvthis)
 	/* make sure the framebuffer backing store is there... */
 	p->backingstore = (unsigned char *) malloc(p->width * p->height);
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer backing store.\n", __FUNCTION__);
+		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
 		return -1;
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
 
 	/* Set display-specific stuff.. */
 	if (reboot) {
-		debug(RPT_INFO, "CFontzPacket: reboot requested (in config)\n" );
-		CFontzPacket_reboot (drvthis);
+		report(RPT_INFO, "%s: rebooting LCD...", drvthis->name);
+		CFontzPacket_reboot(drvthis);
 		reboot = 0;
-		debug(RPT_DEBUG, "CFontzPacket: reboot done" );
+		debug(RPT_DEBUG, "%s: reboot done", __FUNCTION__);
 	}
 
-	CFontzPacket_hidecursor (drvthis);
+	CFontzPacket_hidecursor(drvthis);
 
-	CFontzPacket_set_contrast (drvthis, p->contrast);
-	CFontzPacket_no_live_report (drvthis);
-	CFontzPacket_hardware_clear (drvthis);
+	CFontzPacket_set_contrast(drvthis, p->contrast);
+	CFontzPacket_no_live_report(drvthis);
+	CFontzPacket_hardware_clear(drvthis);
 
 	/* turn LEDs off on a CF635 */
 	CFontzPacket_output(drvthis, 0);
 
-	report (RPT_DEBUG, "%s: done\n", __FUNCTION__);
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
 }
@@ -392,7 +393,8 @@ CFontzPacket_close (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	if (p != NULL) {
-		close(p->fd);
+		if (p->fd >= 0)
+			close(p->fd);
 
 		if (p->framebuf)
 			free(p->framebuf);
@@ -502,8 +504,8 @@ CFontzPacket_flush (Driver *drvthis)
       unsigned char *sp = p->framebuf + (i * p->width);
       unsigned char *sq = p->backingstore + (i * p->width);
 
-      debug (RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp );
-      debug (RPT_DEBUG, "     backingstore: '%.*s'", p->width, sq );
+      debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
+      debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
 
 #if defined(CFONTZPACKET_OLD_OPTIMATION)       
       /* Strategy:
@@ -512,7 +514,7 @@ CFontzPacket_flush (Driver *drvthis)
       
       for (j = 0; j < p->width; ) {
 	// skip over identical portions
-	for ( ; *sp == *sq && j < p->width; sp++, sq++, j++ )
+	for ( ; *sp == *sq && j < p->width; sp++, sq++, j++)
 	  ;
 
 	// deal with the differences
@@ -522,7 +524,7 @@ CFontzPacket_flush (Driver *drvthis)
 	  int first_diff = j;
 
 	  // get length of differing portions
-	  for ( ; *sp != *sq && j < p->width; sp++, sq++, j++ )
+	  for ( ; *sp != *sq && j < p->width; sp++, sq++, j++)
 	    ;
 
 	  // send the difference to the screen
@@ -530,11 +532,11 @@ CFontzPacket_flush (Driver *drvthis)
 	  out[0] = first_diff;	// column
 	  out[1] = i;		// line
 
-	  debug (RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
+	  debug(RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
 	 	 __FUNCTION__, out[0], out[1], diff_length, diff_length,
-		 &p->framebuf[first_diff + (i * p->width)] );
+		 &p->framebuf[first_diff + (i * p->width)]);
 
-	  memcpy(&out[2], &p->framebuf[first_diff + (i * p->width)], diff_length );
+	  memcpy(&out[2], &p->framebuf[first_diff + (i * p->width)], diff_length);
 	  send_bytes_message(p->fd, CF633_Send_Data_to_LCD, diff_length + 2, out);
 	}
       } // j < p->width
@@ -565,7 +567,7 @@ CFontzPacket_flush (Driver *drvthis)
 	out[0] = j;	// column
 	out[1] = i;	// line
 
-	debug (RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
+	debug(RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
 	       __FUNCTION__, out[0], out[1], length, length, sp);
 
 	memcpy(&out[2], sp, length);
@@ -584,10 +586,8 @@ CFontzPacket_flush (Driver *drvthis)
 MODULE_EXPORT const char *
 CFontzPacket_get_key (Driver *drvthis)
 {
-	PrivateData *p = drvthis->private_data;
-	unsigned char key;
-
-	key = GetKeyFromKeyRing(&keyring);
+	//PrivateData *p = drvthis->private_data;
+	unsigned char key = GetKeyFromKeyRing(&keyring);
 
 	switch (key) {
 		case CFP_KEY_LEFT:
@@ -630,12 +630,12 @@ CFontzPacket_get_key (Driver *drvthis)
 		case CFP_KEY_UR_RELEASE:
 		case CFP_KEY_LL_RELEASE:
 		case CFP_KEY_LR_RELEASE:
-			// report( RPT_INFO, "CFontzPacket: Returning key release 0x%2x", key);
+			// report(RPT_INFO, "%s: Ignoring key release 0x%02X", drvthis->name, key);
 			return NULL;
 			break;
 		default:
 			if (key != '\0')
-				report( RPT_INFO, "CFontzPacket: Untreated unknown key 0x%2x", key);
+				report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
 			return NULL;
 			break;
 	}
@@ -655,9 +655,10 @@ CFontzPacket_chr (Driver *drvthis, int x, int y, char c)
 	y--;
 	x--;
 
-	p->framebuf[(y * p->width) + x] = (p->model == 633)
-		                          ? c
-					  : CFontz_charmap[(unsigned) c];
+	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+		p->framebuf[(y * p->width) + x] = (p->model == 633)
+			                          ? c
+						  : CFontz_charmap[(unsigned) c];
 }
 
 
@@ -673,7 +674,8 @@ CFontzPacket_raw_chr (Driver *drvthis, int x, int y, unsigned char c)
 	y--;
 	x--;
 
-	p->framebuf[(y * p->width) + x] = c;
+	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+		p->framebuf[(y * p->width) + x] = c;
 }
 
 
@@ -921,18 +923,19 @@ CFontzPacket_init_vbar (Driver *drvthis)
 	if (p->ccmode != vbar) {
 		if (p->ccmode != standard) {
 			/* Not supported(yet) */
-			report(RPT_WARNING, "CFontzPacket_init_vbar: Cannot combine two modes using user defined characters");
+			report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user defined characters",
+					drvthis->name);
 			return;
 		}
 		p->ccmode = vbar;
 
-		CFontzPacket_set_char (drvthis, 1, a);
-		CFontzPacket_set_char (drvthis, 2, b);
-		CFontzPacket_set_char (drvthis, 3, c);
-		CFontzPacket_set_char (drvthis, 4, d);
-		CFontzPacket_set_char (drvthis, 5, e);
-		CFontzPacket_set_char (drvthis, 6, f);
-		CFontzPacket_set_char (drvthis, 7, g);
+		CFontzPacket_set_char(drvthis, 1, a);
+		CFontzPacket_set_char(drvthis, 2, b);
+		CFontzPacket_set_char(drvthis, 3, c);
+		CFontzPacket_set_char(drvthis, 4, d);
+		CFontzPacket_set_char(drvthis, 5, e);
+		CFontzPacket_set_char(drvthis, 6, f);
+		CFontzPacket_set_char(drvthis, 7, g);
 	}
 }
 
@@ -1008,17 +1011,18 @@ CFontzPacket_init_hbar (Driver *drvthis)
 	if (p->ccmode != hbar) {
 		if (p->ccmode != standard) {
 			/* Not supported(yet) */
-			report(RPT_WARNING, "CFontzPacket_init_hbar: Cannot combine two modes using user defined characters");
+			report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user defined characters",
+					drvthis->name);
 			return;
 		}
 		p->ccmode = hbar;
 
-		CFontzPacket_set_char (drvthis, 1, a);
-		CFontzPacket_set_char (drvthis, 2, b);
-		CFontzPacket_set_char (drvthis, 3, c);
-		CFontzPacket_set_char (drvthis, 4, d);
-		CFontzPacket_set_char (drvthis, 5, e);
-		CFontzPacket_set_char (drvthis, 6, f);
+		CFontzPacket_set_char(drvthis, 1, a);
+		CFontzPacket_set_char(drvthis, 2, b);
+		CFontzPacket_set_char(drvthis, 3, c);
+		CFontzPacket_set_char(drvthis, 4, d);
+		CFontzPacket_set_char(drvthis, 5, e);
+		CFontzPacket_set_char(drvthis, 6, f);
 	}
 }
 
@@ -1148,7 +1152,8 @@ char bignum_ccs[8][CELLWIDTH*CELLHEIGHT] = {
 
 		if (p->ccmode != standard) {
 			/* Not supported (yet) */
-			report(RPT_WARNING, "CFontzPacket_init_num: Cannot combine two modes using user defined characters");
+			report(RPT_WARNING, "%s: init_num: cannot combine two modes using user defined characters",
+					drvthis->name);
 			return;
 		}
 
@@ -1501,13 +1506,16 @@ CFontzPacket_string (Driver *drvthis, int x, int y, char string[])
 	x--;
 	y--;
 
-	for (i = 0; string[i] != '\0'; i++) {
+	if ((y < 0) || (y >= p->height))
+		return;
+
+	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
 		/* Check for buffer overflows... */
-		if ((y * p->width) + x + i > (p->width * p->height))
-			break;
-		p->framebuf[(y * p->width) + x + i] = (p->model == 633)
-						      ? string[i]
-						      : CFontz_charmap[(unsigned) string[i]];
+		if (x >= 0)
+			p->framebuf[(y * p->width) + x] =
+				(p->model == 633)
+				? string[i]
+				: CFontz_charmap[(unsigned) string[i]];
 	}
 }
 
