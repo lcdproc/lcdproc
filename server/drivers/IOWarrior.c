@@ -45,9 +45,6 @@
 #include "report.h"
 #include "lcd_lib.h"
 
-#define ValidX(x) if ((x) > p->width) { (x) = p->width; } else (x) = (x) < 1 ? 1 : (x);
-#define ValidY(y) if ((y) > p->height) { (y) = p->height; } else (y) = (y) < 1 ? 1 :(y);
-
 
 
 /* ===================== IOWarrior low level routines ====================== */
@@ -562,15 +559,13 @@ IOWarrior_chr(Driver *drvthis, int x, int y, char c)
 {
 PrivateData *p = drvthis->private_data;
 
-  ValidX(x);
-  ValidY(y);
-
   y--;
   x--;
 
-  p->framebuf[(y * p->width) + x] = c;
+  if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+    p->framebuf[(y * p->width) + x] = c;
 
-  debug(RPT_DEBUG, "%s: writing char 0x%02hhX at (%d,%d)",
+  debug(RPT_DEBUG, "%s: writing char 0x%02X at (%d,%d)",
 		  drvthis->name, (unsigned) c, x, y);
 }
 
@@ -582,21 +577,18 @@ MODULE_EXPORT void
 IOWarrior_string(Driver *drvthis, int x, int y, char *string)
 {
 PrivateData *p = drvthis->private_data;
-
-int offset, siz;
-
-  ValidX(x);
-  ValidY(y);
+int i;
 
   x--;
   y--;
 
-  offset =(y * p->width) + x;
+  if ((y < 0) || (y >= p->height))
+	  return;
 
-  siz = (p->width * p->height) - offset;
-  siz = siz > strlen(string) ? strlen(string) : siz;
-
-  memcpy(p->framebuf + offset, string, siz);
+  for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
+    if (x >= 0)     // no write left of left border
+      p->framebuf[(y * p->width) + x] = string[i];
+  }
 
   debug(RPT_DEBUG, "%s: writing string \"%s\" at (%d,%d)",
 		  drvthis->name, string, x, y);
