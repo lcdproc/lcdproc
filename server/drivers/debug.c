@@ -39,11 +39,15 @@ MODULE_EXPORT char *symbol_prefix = "debug_";
 MODULE_EXPORT int
 debug_init (Driver *drvthis)
 {
-	report (RPT_INFO, "debug_init()");
+	report(RPT_INFO, "%s()", __FUNCTION__);
 
-	framebuf = malloc (width * height);
+	framebuf = malloc(width * height);
+	if (framebuf == NULL) {
+		report(RPT_INFO, "%s: unable to allocate framebuffer", drvthis->name);
+		return -1;
+	}	
 
-	debug_clear (drvthis);
+	debug_clear(drvthis);
 
 	return 0;
 }
@@ -54,9 +58,10 @@ debug_init (Driver *drvthis)
 MODULE_EXPORT void
 debug_close (Driver *drvthis)
 {
-	report (RPT_INFO, "debug_close()");
+	report(RPT_INFO, "%s()", __FUNCTION__);
 
-	if(framebuf) free (framebuf);
+	if (framebuf != NULL)
+		free(framebuf);
 	framebuf = NULL;
 }
 
@@ -66,6 +71,8 @@ debug_close (Driver *drvthis)
 MODULE_EXPORT int
 debug_width (Driver *drvthis)
 {
+	report(RPT_INFO, "%s()", __FUNCTION__);
+	
 	return width;
 }
 
@@ -75,6 +82,8 @@ debug_width (Driver *drvthis)
 MODULE_EXPORT int
 debug_height (Driver *drvthis)
 {
+	report(RPT_INFO, "%s()", __FUNCTION__);
+	
 	return height;
 }
 
@@ -84,7 +93,7 @@ debug_height (Driver *drvthis)
 MODULE_EXPORT void
 debug_clear (Driver *drvthis)
 {
-	report (RPT_INFO, "clear()");
+	report(RPT_INFO, "%s()", __FUNCTION__);
 
 	memset (framebuf, ' ', width * height);
 
@@ -99,20 +108,20 @@ debug_flush (Driver *drvthis)
 	int i, j;
 	char out[LCD_MAX_WIDTH];
 
-	report (RPT_INFO, "flush()");
+	report(RPT_INFO, "%s()", __FUNCTION__);
 
 	for (i = 0; i < width; i++) {
 		out[i] = '-';
 	}
 	out[width] = 0;
-	//report (RPT_DEBUG, "+%s+", out);
+	//report(RPT_DEBUG, "+%s+", out);
 
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
 			out[j] = framebuf[j + (i * width)];
 		}
 		out[width] = 0;
-		//report (RPT_DEBUG, "|%s|", out);
+		//report(RPT_DEBUG, "|%s|", out);
 
 	}
 
@@ -120,7 +129,7 @@ debug_flush (Driver *drvthis)
 		out[i] = '-';
 	}
 	out[width] = 0;
-	//report (RPT_DEBUG, "+%s+", out);
+	//report(RPT_DEBUG, "+%s+", out);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -130,14 +139,18 @@ debug_flush (Driver *drvthis)
 MODULE_EXPORT void
 debug_string (Driver *drvthis, int x, int y, char string[])
 {
-
 	int i;
 
-	report(RPT_INFO, "string(%i,%i,%.40s)", x, y, string);
+	report(RPT_INFO, "%s(%i,%i,%.40s)", __FUNCTION__, x, y, string);
 
 	y --; x --;  // Convert 1-based coords to 0-based...
 
-	for (i = 0; string[i]; i++) {
+	if ((x < 0) || (y < 0) || (x >= width) || (y >= height))
+		return;
+		
+	for (i = 0; string[i] != '\0'; i++) {
+		if (x + i >= width)
+			break;
 		framebuf[(y * width) + x + i] = string[i];
 	}
 }
@@ -149,52 +162,54 @@ debug_string (Driver *drvthis, int x, int y, char string[])
 MODULE_EXPORT void
 debug_chr (Driver *drvthis, int x, int y, char c)
 {
-	report (RPT_DEBUG, "char(%i,%i,%c)", x, y, c);
+	report(RPT_DEBUG, "%s(%i,%i,%c)", __FUNCTION__, x, y, c);
 
 	x--; y--;
-	framebuf[(y * width) + x] = c;
+	
+	if ((x >= 0) && (y >= 0) && (x < width) && (y < height))
+		framebuf[(y * width) + x] = c;
 }
 
 MODULE_EXPORT void
 debug_set_contrast (Driver *drvthis, int promille)
 {
-	report (RPT_INFO, "set_contrast(%i)", promille);
+	report(RPT_INFO, "%s(%i)", __FUNCTION__, promille);
 }
 
 MODULE_EXPORT void
 debug_backlight (Driver *drvthis, int on)
 {
-	report (RPT_INFO, "backlight(%i)", on);
+	report(RPT_INFO, "%s(%i)", __FUNCTION__, on);
 }
 
 MODULE_EXPORT void
 debug_init_vbar (Driver *drvthis)
 {
-	report (RPT_INFO, "init_vbar()");
+	report(RPT_INFO, "%s()", __FUNCTION__);
 }
 
 MODULE_EXPORT void
 debug_init_hbar (Driver *drvthis)
 {
-	report (RPT_INFO, "init_hbar()");
+	report(RPT_INFO, "%s()", __FUNCTION__);
 }
 
 MODULE_EXPORT void
 debug_init_num (Driver *drvthis)
 {
-	report (RPT_INFO, "init_bignum()");
+	report(RPT_INFO, "%s()", __FUNCTION__);
 }
 
 MODULE_EXPORT void
 debug_num (Driver *drvthis, int x, int num)
 {
-	report (RPT_INFO, "big number(%i,%i)", x, num);
+	report(RPT_INFO, "%s(%i,%i)", __FUNCTION__, x, num);
 }
 
 MODULE_EXPORT void
 debug_set_char (Driver *drvthis, int n, char *dat)
 {
-	report (RPT_INFO, "set_char(%i,data)", n);
+	report(RPT_INFO, "%s(%i,data)", __FUNCTION__, n);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -205,11 +220,11 @@ debug_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	int pos;
 
-	report (RPT_INFO, "vbar(%i,%i,%i,%i,%i)", x, y, len, promille, options);
+	report(RPT_INFO, "%s(%i,%i,%i,%i,%i)", __FUNCTION__, x, y, len, promille, options);
 
-	for ( pos=0; pos<len; pos++ ) {
-		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
-			debug_chr (drvthis, x, y-pos, '|');
+	for (pos = 0; pos < len; pos++) {
+		if (2 * pos < ((long) promille * len / 500 + 1)) {
+			debug_chr(drvthis, x, y-pos, '|');
 		} else {
 			; /* print nothing */
 		}
@@ -224,10 +239,10 @@ debug_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	int pos;
 
-	report (RPT_INFO, "hbar(%i,%i,%i,%i,%i)", x, y, len, promille, options);
+	report(RPT_INFO, "%s(%i,%i,%i,%i,%i)", __FUNCTION__, x, y, len, promille, options);
 
-	for ( pos=0; pos<len; pos++ ) {
-		if( 2 * pos < ((long) promille * len / 500 + 1) ) {
+	for (pos = 0; pos < len; pos++) {
+		if (2 * pos < ((long) promille * len / 500 + 1)) {
 			debug_chr (drvthis, x+pos, y, '-');
 		} else {
 			; /* print nothing */
@@ -241,7 +256,9 @@ debug_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT int
 debug_icon (Driver *drvthis, int x, int y, int icon)
 {
-	report (RPT_INFO, "icon(%i,%i,%i)", x, y, icon);
+	report(RPT_INFO, "%s(%i,%i,%i)", __FUNCTION__, x, y, icon);
+
+	return -1;	/* let the core do all the icon stuff */
 }
 
 /////////////////////////////////////////////////////////////////
@@ -250,6 +267,7 @@ debug_icon (Driver *drvthis, int x, int y, int icon)
 MODULE_EXPORT const char *
 debug_get_key (Driver *drvthis)
 {
-	report (RPT_INFO, "get_key()");
+	report(RPT_INFO, "%s()", __FUNCTION__);
 	return NULL;
 }
+
