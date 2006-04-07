@@ -18,6 +18,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -42,7 +43,7 @@
 #define JOY_DEFAULT_AXISMAP	"EFGHIJKLMNOPQRST"
 #define JOY_DEFAULT_BUTTONMAP	"BDACEFGHIJKLMNOP"
 
-int fd;
+int fd = -1;
 
 struct js_event js;
 
@@ -79,6 +80,7 @@ joy_init (Driver *drvthis)
 	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
 						   JOY_DEFAULT_DEVICE), sizeof(device));
 	device[sizeof(device)-1] = '\0';
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
 	/* How does the axis map look like */
 	strncpy(axismap, drvthis->config_get_string(drvthis->name, "AxisMap", 0,
@@ -92,28 +94,33 @@ joy_init (Driver *drvthis)
 
 	/* End of config file parsing */
 	
-	if ((fd = open (device, O_RDONLY)) < 0)
+	if ((fd = open(device, O_RDONLY)) < 0) {
+		report(RPT_ERR, "%s: open(%s) failed (%s)", 
+				drvthis->name, device, strerror(errno));
 		return -1;
+	}
 
-	fcntl (fd, F_SETFL, O_NONBLOCK);
-	ioctl (fd, JSIOCGVERSION, &jsversion);
-	ioctl (fd, JSIOCGAXES, &axes);
-	ioctl (fd, JSIOCGBUTTONS, &buttons);
-	ioctl (fd, JSIOCGNAME (JOY_NAMELENGTH), jsname);
+	fcntl(fd, F_SETFL, O_NONBLOCK);
+	ioctl(fd, JSIOCGVERSION, &jsversion);
+	ioctl(fd, JSIOCGAXES, &axes);
+	ioctl(fd, JSIOCGBUTTONS, &buttons);
+	ioctl(fd, JSIOCGNAME(JOY_NAMELENGTH), jsname);
 
-	report (RPT_NOTICE, "Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d.\n",
-		jsname, axes, buttons,
+	report(RPT_NOTICE, "%s: Joystick (%s) has %d axes and %d buttons. Driver version is %d.%d.%d",
+		drvthis->name, jsname, axes, buttons,
 		jsversion >> 16, (jsversion >> 8) & 0xff, jsversion & 0xff);
 
-	if ((axis = calloc (axes, sizeof (int))) == NULL) {
-		report (RPT_ERR, "joystick: could not allocate memory for axes");
+	if ((axis = calloc(axes, sizeof (int))) == NULL) {
+		report(RPT_ERR, "%s: could not allocate memory for axes", drvthis->name);
 		return -1;
 	}
 
-	if ((button = calloc (buttons, sizeof (char))) == NULL) {
-		report (RPT_ERR, "joystick: could not allocate memory for buttons");
+	if ((button = calloc(buttons, sizeof (char))) == NULL) {
+		report(RPT_ERR, "%s: could not allocate memory for buttons", drvthis->name);
 		return -1;
 	}
+
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
 }
@@ -121,13 +128,16 @@ joy_init (Driver *drvthis)
 MODULE_EXPORT void
 joy_close (Driver *drvthis)
 {
-	close (fd);
+	if (fd >= 0)
+		close(fd);
 
 	// Why do I have so much trouble getting memory freed without segfaults??
 	// Use gdb and find out :) In preliminary testing, this seemed to work...
 
-	if(axis) free(axis);
-	if(button) free(button);
+	if (axis != NULL)
+		free(axis);
+	if (button != NULL)
+		free(button);
 
 }
 
@@ -142,15 +152,15 @@ joy_getkey (Driver *drvthis)
 	int i;
 	int err;
 
-	if ((err = read (fd, &js, sizeof (struct js_event))) <= 0) {
+	if ((err = read(fd, &js, sizeof(struct js_event))) <= 0) {
 		return 0;
 	} else
-		if (err != sizeof (struct js_event)) {
-			report(RPT_ERR, "error reading joystick input");
+		if (err != sizeof(struct js_event)) {
+			report(RPT_ERR, "%s: error reading joystick input", drvthis->name);
 			return 0;
 		}
 
-//   if(js.type & JS_EVENT_INIT) return 0;
+//   if (js.type & JS_EVENT_INIT) return 0;
 
 	switch (js.type & ~JS_EVENT_INIT) {
 		case JS_EVENT_BUTTON:
@@ -183,3 +193,4 @@ joy_getkey (Driver *drvthis)
 
 	return 0;
 }
+
