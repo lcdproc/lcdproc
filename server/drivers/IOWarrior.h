@@ -68,7 +68,7 @@ typedef enum {
  
 
 typedef struct cgram_cache {
-  char cache[LCD_DEFAULT_CELLHEIGHT];
+  unsigned char cache[LCD_DEFAULT_CELLHEIGHT];
   int clean;
 } CGram;
 
@@ -85,10 +85,10 @@ typedef struct driver_private_data {
   int cellwidth, cellheight;
 
   /* The framebuffer */
-  char *framebuf;
+  unsigned char *framebuf;
 
   /* last LCD contents (for incremental updates) */
-  char *backingstore;
+  unsigned char *backingstore;
 
   /* defineable characters */
   CGram cc[NUM_CCs];

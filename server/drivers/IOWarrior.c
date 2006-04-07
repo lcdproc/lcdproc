@@ -58,7 +58,7 @@
 static int iow_lcd_wcmd(usb_dev_handle *udh, unsigned char data[8])
 {
   return(usb_control_msg(udh, USB_DT_HID, USB_REQ_SET_REPORT, 0, 1,
-                         data, 8, iowTimeout) == 8) ? IOW_OK : IOW_ERROR;
+                         (char *) data, 8, iowTimeout) == 8) ? IOW_OK : IOW_ERROR;
 }
 
 
@@ -68,7 +68,7 @@ static int iow_lcd_wcmd(usb_dev_handle *udh, unsigned char data[8])
 static int iow_led_wcmd(usb_dev_handle *udh,int len,unsigned char *data)
 {
   return (usb_control_msg(udh, USB_DT_HID, USB_REQ_SET_REPORT, 2, 0,
-                          data, len, iowTimeout) == len) ? IOW_OK : IOW_ERROR;
+                          (char *) data, len, iowTimeout) == len) ? IOW_OK : IOW_ERROR;
 }
 
 
@@ -248,7 +248,7 @@ PrivateData *p;
                                              0, DEFAULT_SERIALNO), sizeof(serial));
   serial[sizeof(serial)-1] = '\0';
   if (*serial != '\0') {
-    report(RPT_INFO, "%s: Using serial number: %s", drvthis->name, serial);
+    report(RPT_INFO, "%s: using serial number: %s", drvthis->name, serial);
   }
 
   /* Which size */
@@ -258,7 +258,8 @@ PrivateData *p;
   if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
       (w <= 0) || (w > LCD_MAX_WIDTH) ||
       (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-    report(RPT_WARNING, "%s: cannot read size: %s; using default value", drvthis->name, size);
+    report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+		    drvthis->name, size, DEFAULT_SIZE);
     sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
   }
   p->width = w;
@@ -272,14 +273,14 @@ PrivateData *p;
   /* End of config file parsing */
 
   /* Allocate framebuffer memory */
-  p->framebuf =(unsigned char *) calloc(p->width * p->height, 1);
+  p->framebuf = (unsigned char *) calloc(p->width * p->height, 1);
   if (p->framebuf == NULL) {
     report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
     return -1;
   }
 
   /* Allocate and clear the buffer for incremental updates */
-  p->backingstore =(unsigned char *) calloc(p->width * p->height, 1);
+  p->backingstore = (unsigned char *) calloc(p->width * p->height, 1);
   if (p->backingstore == NULL) {
     report(RPT_ERR, "%s: unable to create backingstore", drvthis->name);
     return -1;
@@ -387,7 +388,7 @@ PrivateData *p;
   if (iowlcd_display_on_off(p->udh, 1, 0, 0) == IOW_ERROR)
     return -1;
 
-  report(RPT_DEBUG, "%s: init(): done", drvthis->name);
+  report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
   /* clear screen */
   IOWarrior_clear(drvthis);
@@ -493,7 +494,7 @@ int count;
     for (x = 0; x < p->width; x++) {
       if (p->backingstore[offset+x] != p->framebuf[offset+x]) {
         /* always flush a full line */
-        char buffer[LCD_MAX_WIDTH];
+        unsigned char buffer[LCD_MAX_WIDTH];
 
         for (count = 0; count < p->width; count++) {
           buffer[count] = HD44780_charmap[(unsigned char) p->framebuf[offset+count]];
@@ -699,7 +700,7 @@ char g[CELLWIDTH*CELLHEIGHT] = {
   if (p->ccmode != vbar) {
     if (p->ccmode != standard) {
       /* Not supported(yet) */
-      report(RPT_WARNING, "%s: init_vbar: Cannot combine two modes using user defined characters",
+      report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user defined characters",
 		      drvthis->name);
       return;
     }
@@ -773,7 +774,7 @@ char e[CELLWIDTH*CELLHEIGHT] = {
   if (p->ccmode != hbar) {
     if (p->ccmode != standard) {
       /* Not supported(yet) */
-      report(RPT_WARNING, "%s: init_hbar: Cannot combine two modes using user defined characters",
+      report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user defined characters",
 		      drvthis->name);
       return;
     }
@@ -918,7 +919,7 @@ char bignum_ccs[8][CELLWIDTH*CELLHEIGHT] = {
 
     if (p->ccmode != standard) {
       /* Not supported (yet) */
-      report(RPT_WARNING, "%s: init_num: Cannot combine two modes using user defined characters",
+      report(RPT_WARNING, "%s: init_num: cannot combine two modes using user defined characters",
 		      drvthis->name);
       return;
     }
@@ -1170,7 +1171,7 @@ char block_filled[CELLWIDTH*CELLHEIGHT] = {
   1, 1, 1, 1, 1 };
 
   /* Yes we know, this is a VERY BAD implementation */
-  switch(icon) {
+  switch (icon) {
     case ICON_BLOCK_FILLED:
       IOWarrior_set_char(drvthis, 6, block_filled);
       IOWarrior_chr(drvthis, x, y, 6);
