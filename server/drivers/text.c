@@ -38,9 +38,9 @@
 
 
 // Variables
-int width;
-int height;
-char * framebuf;
+static int width;
+static int height;
+static char * framebuf;
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -59,29 +59,37 @@ text_init (Driver *drvthis)
 	char buf[256];
 
 	// Set display sizes
-	if( drvthis->request_display_width() > 0
-	&& drvthis->request_display_height() > 0 ) {
+	if ((drvthis->request_display_width() > 0)
+	    && (drvthis->request_display_height() > 0)) {
 		// Use size from primary driver
 		width = drvthis->request_display_width();
 		height = drvthis->request_display_height();
 	}
 	else {
 		/* Use our own size from config file */
-		strncpy(buf, drvthis->config_get_string ( drvthis->name , "size" , 0 , TEXTDRV_DEFAULT_SIZE), sizeof(buf));
-		buf[sizeof(buf)-1]=0;
-		if( sscanf(buf , "%dx%d", &width, &height ) != 2
-		|| (width <= 0)
-		|| (height <= 0)) {
-			report (RPT_WARNING, "TEXT: Cannot read size: %s. Using default value: %s\n", buf, TEXTDRV_DEFAULT_SIZE);
-			sscanf( TEXTDRV_DEFAULT_SIZE, "%dx%d", &width, &height );
+		strncpy(buf, drvthis->config_get_string(drvthis->name, "Size", 0, TEXTDRV_DEFAULT_SIZE), sizeof(buf));
+		buf[sizeof(buf)-1] = '\0';
+		if ((sscanf(buf , "%dx%d", &width, &height) != 2)
+		    || (width <= 0) || (width > LCD_MAX_WIDTH)
+		    || (height <= 0) || (height > LCD_MAX_HEIGHT)) {
+			report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+					drvthis->name, buf, TEXTDRV_DEFAULT_SIZE);
+			sscanf(TEXTDRV_DEFAULT_SIZE, "%dx%d", &width, &height);
 		}
 	}
 
 	// Allocate the framebuffer
-	framebuf = malloc (width * height);
-	memset (framebuf, ' ', width * height);
+	framebuf = malloc(width * height);
+	if (framebuf == NULL) {
+		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
+		return -1;
+	}
+	
+	memset(framebuf, ' ', width * height);
 
-	return 0;
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+
+	return 1;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -91,7 +99,7 @@ MODULE_EXPORT void
 text_close (Driver *drvthis)
 {
 	if (framebuf != NULL)
-		free (framebuf);
+		free(framebuf);
 
 	framebuf = NULL;
 }
@@ -120,7 +128,7 @@ text_height (Driver *drvthis)
 MODULE_EXPORT void
 text_clear (Driver *drvthis)
 {
-	memset (framebuf, ' ', width * height);
+	memset(framebuf, ' ', width * height);
 }
 
 //////////////////////////////////////////////////////////////////
@@ -137,22 +145,21 @@ text_flush (Driver *drvthis)
 		out[i] = '-';
 	}
 	out[width] = 0;
-	printf ("+%s+\n", out);
+	printf("+%s+\n", out);
 
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
 			out[j] = framebuf[j + (i * width)];
 		}
 		out[width] = 0;
-		printf ("|%s|\n", out);
-
+		printf("|%s|\n", out);
 	}
 
 	for (i = 0; i < width; i++) {
 		out[i] = '-';
 	}
 	out[width] = 0;
-	printf ("+%s+\n", out);
+	printf("+%s+\n", out);
         fflush(stdin);
 }
 
@@ -167,7 +174,12 @@ text_string (Driver *drvthis, int x, int y, char string[])
 
 	x--; y--; // Convert 1-based coords to 0-based...
 
-	for (i = 0; string[i]; i++) {
+	if ((x < 0) || (y < 0) || (x >= width) || (y >= height))
+                return;
+
+	for (i = 0; string[i] != '\0'; i++) {
+		if (x + i >= width)	// no write over right border
+			break;
 		framebuf[(y * width) + x + i] = string[i];
 	}
 }
@@ -190,7 +202,7 @@ text_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 text_set_contrast (Driver *drvthis, int promille)
 {
-  debug(RPT_DEBUG, "Contrast: %d\n", promille);
+	debug(RPT_DEBUG, "Contrast: %d", promille);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -201,11 +213,6 @@ text_backlight (Driver *drvthis, int on)
 {
 	//PrivateData * p = (PrivateData*) drvthis->private_data;
 
-  if(on) {
-    debug(RPT_DEBUG, "Backlight ON\n");
-  }
-  else {
-    debug(RPT_DEBUG, "Backlight OFF\n");
-  }
+	debug(RPT_DEBUG, "Backlight %s", (on) ? "ON" : "OFF");
 }
 
