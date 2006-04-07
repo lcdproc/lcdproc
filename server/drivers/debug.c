@@ -145,13 +145,12 @@ debug_string (Driver *drvthis, int x, int y, char string[])
 
 	y --; x --;  // Convert 1-based coords to 0-based...
 
-	if ((x < 0) || (y < 0) || (x >= width) || (y >= height))
+	if ((y < 0) || (y >= height))
 		return;
 		
-	for (i = 0; string[i] != '\0'; i++) {
-		if (x + i >= width)
-			break;
-		framebuf[(y * width) + x + i] = string[i];
+	for (i = 0; (string[i] != '\0') && (x < width); i++, x++) {
+		if (x >= 0)	// no write left of left border
+			framebuf[(y * width) + x] = string[i];
 	}
 }
 
