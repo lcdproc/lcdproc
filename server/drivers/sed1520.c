@@ -54,8 +54,8 @@
 #include "report.h"
 
 
-static unsigned int sed1520_lptport = LPTPORT;
-static char *framebuf = NULL;
+static unsigned int port = LPTPORT;
+static unsigned char *framebuf = NULL;
 static int width = LCD_DEFAULT_WIDTH;
 static int height = LCD_DEFAULT_HEIGHT;
 static int cellwidth = LCD_DEFAULT_CELLWIDTH;
@@ -72,13 +72,13 @@ MODULE_EXPORT char *symbol_prefix = "sed1520_";
 // writes command value to one or both sed1520 selected by chip
 //
 void
-writecommand (int value, int chip)
+writecommand (unsigned int port, int value, int chip)
 {
-    port_out(sed1520_lptport,value);
-    port_out(sed1520_lptport + 2,WR + CS1 - (chip & CS1) + (chip & CS2));
-    port_out(sed1520_lptport + 2,CS1 - (chip & CS1) + (chip & CS2));
+    port_out(port, value);
+    port_out(port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
+    port_out(port + 2, CS1 - (chip & CS1) + (chip & CS2));
     uPause(IODELAY);
-    port_out(sed1520_lptport + 2,WR + CS1 - (chip & CS1) + (chip & CS2));
+    port_out(port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
     uPause(IODELAY);
 }
 
@@ -86,13 +86,13 @@ writecommand (int value, int chip)
 // writes data value to one or both sed 1520 selected by chip
 //
 void
-writedata (int value, int chip)
+writedata (unsigned int port, int value, int chip)
 {
-    port_out(sed1520_lptport,value);
-    port_out(sed1520_lptport + 2,A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
-    port_out(sed1520_lptport + 2,A0 + CS1 - (chip & CS1) + (chip & CS2));
+    port_out(port, value);
+    port_out(port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
+    port_out(port + 2, A0 + CS1 - (chip & CS1) + (chip & CS2));
     uPause(IODELAY);
-    port_out(sed1520_lptport + 2,A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
+    port_out(port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
     uPause(IODELAY);
 }
 
@@ -100,18 +100,18 @@ writedata (int value, int chip)
 // selects a page (=row) on both sed1520s
 //
 void
-selectpage (int page)
+selectpage (unsigned int port, int page)
 {
-    writecommand(0xB8 + (page & 3), CS1 + CS2);
+    writecommand(port, 0xB8 + (page & 0x03), CS1 + CS2);
 }
 
 /////////////////////////////////////////////////////////////////
 // selects a column on the sed1520s specified by chip
 //
 void
-selectcolumn (int column, int chip)
+selectcolumn (unsigned int port, int column, int chip)
 {
-    writecommand((column & 0x7F), chip);
+    writecommand(port, (column & 0x7F), chip);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ selectcolumn (int column, int chip)
 // in columns, so we need a little conversion.
 //
 void
-drawchar2fb (int x, int y, unsigned char z)
+drawchar2fb (unsigned char *framebuf, int x, int y, unsigned char z)
 {
     int i, j;
 
@@ -150,7 +150,7 @@ sed1520_init (Driver *drvthis)
     /* Read config file */
 
     /* What port to use */
-    sed1520_lptport = drvthis->config_get_int(drvthis->name, "Port", 0, LPTPORT);
+    port = drvthis->config_get_int(drvthis->name, "Port", 0, LPTPORT);
   
     /* End of config file parsing */
 
@@ -160,7 +160,7 @@ sed1520_init (Driver *drvthis)
     }
 
     // Allocate our framebuffer
-    framebuf = malloc(122 * 4);
+    framebuf = (unsigned char *) calloc(122 * 4, sizeof(unsigned char));
     if (framebuf == NULL) {
 	report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
 	// sed1520_close ();
@@ -168,20 +168,20 @@ sed1520_init (Driver *drvthis)
       }
 
     // clear screen
-    memset (framebuf, 0, 122 * 4);
+    memset (framebuf, '\0', 122 * 4);
 
     // Initialize the Port and the sed1520s
-    if ((port_access(sed1520_lptport)) || (port_access(sed1520_lptport+2))) {
-	report(RPT_ERR, "%s: unable to access port 0x%03X", drvthis->name, sed1520_lptport);
+    if (port_access(port) || port_access(port+2)) {
+	report(RPT_ERR, "%s: unable to access port 0x%03X", drvthis->name, port);
 	return -1;
     }
 
-    port_out(sed1520_lptport,0);
-    port_out(sed1520_lptport +2,WR + CS2);
-    writecommand(0xE2, CS1 + CS2);
-    writecommand(0xAF, CS1 + CS2);
-    writecommand(0xC0, CS1 + CS2);
-    selectpage(3);
+    port_out(port,0);
+    port_out(port +2, WR + CS2);
+    writecommand(port, 0xE2, CS1 + CS2);
+    writecommand(port, 0xAF, CS1 + CS2);
+    writecommand(port, 0xC0, CS1 + CS2);
+    selectpage(port, 3);
 
     cellwidth = 6;
     cellheight = 8;
@@ -208,7 +208,7 @@ sed1520_close (Driver *drvthis)
 MODULE_EXPORT int
 sed1520_width (Driver *drvthis)
 {
-	return width;
+    return width;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -217,7 +217,7 @@ sed1520_width (Driver *drvthis)
 MODULE_EXPORT int
 sed1520_height (Driver *drvthis)
 {
-	return height;
+    return height;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -226,7 +226,7 @@ sed1520_height (Driver *drvthis)
 MODULE_EXPORT int
 sed1520_cellwidth (Driver *drvthis)
 {
-	return cellwidth;
+    return cellwidth;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -235,7 +235,7 @@ sed1520_cellwidth (Driver *drvthis)
 MODULE_EXPORT int
 sed1520_cellheight (Driver *drvthis)
 {
-	return cellheight;
+    return cellheight;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -257,15 +257,15 @@ sed1520_flush (Driver *drvthis)
     int i, j;
 
     for (i = 0; i < 4; i++) {
-	  selectpage(i);
+	  selectpage(port, i);
 	  
-	  selectcolumn(0, CS2) ;
+	  selectcolumn(port, 0, CS2) ;
 	  for (j = 0; j < 61; j++)
-	      writedata(framebuf[j + (i * 122)], CS2);
+	      writedata(port, framebuf[j + (i * 122)], CS2);
 
-	  selectcolumn(0, CS1) ;
+	  selectcolumn(port, 0, CS1) ;
 	  for (j = 61; j < 122; j++)
-	      writedata(framebuf[j + (i * 122)], CS1);
+	      writedata(port, framebuf[j + (i * 122)], CS1);
       }
 }
 
@@ -278,12 +278,11 @@ sed1520_string (Driver *drvthis, int x, int y, char string[])
 {
     int i;
 
-    x--;			// Convert 1-based coords to 0-based...
+    x--;			// Convert 1-based coords to 0-based
     y--;
 
-    for (i = 0; string[i] != '\0'; i++) {
-	drawchar2fb(x + i, y, string[i]);
-    }
+    for (i = 0; string[i] != '\0'; i++)
+	drawchar2fb(framebuf, x + i, y, string[i]);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -295,7 +294,7 @@ sed1520_chr (Driver *drvthis, int x, int y, char c)
 {
     y--;
     x--;
-    drawchar2fb(x, y, c);
+    drawchar2fb(framebuf, x, y, c);
 }
 
 /////////////////////////////////////////////////////////////////
