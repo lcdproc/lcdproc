@@ -154,26 +154,27 @@ void CwLnx_draw_frame(Driver *drvthis, char *dat);
 #define SETUP_DELAY		1	/* 2 sec */
 
 /* Parse one key from the configfile */
-static char CwLnx_parse_keypad_setting (Driver *drvthis, char * keyname, char default_value)
+static char CwLnx_parse_keypad_setting(Driver *drvthis, char * keyname, char default_value)
 {
-	char return_val = 0;
-	char * s;
-	char buf [255];
+    char return_val = 0;
+    char * s;
+    char buf[255];
 
-	s = drvthis->config_get_string ( drvthis->name, keyname, 0, NULL);
-	if (s != NULL){
-		strncpy (buf, s, sizeof(buf));
-		buf[sizeof(buf)-1]=0;
-		return_val = buf[0];
-	} else {
-		return_val=default_value;
-	}
-	return return_val;
+    s = drvthis->config_get_string(drvthis->name, keyname, 0, NULL);
+    if (s != NULL) {
+	strncpy(buf, s, sizeof(buf));
+	buf[sizeof(buf)-1] = '\0';
+	return_val = buf[0];
+    } else {
+	return_val = default_value;
+    }
+    return return_val;
 }
 
 int Read_LCD(int fd, char *c, int size)
 {
     int rc;
+
     rc = read(fd, c, size);
 /*    usleep(DELAY); */
     return rc;
@@ -182,19 +183,19 @@ int Read_LCD(int fd, char *c, int size)
 int Write_LCD(int fd, char *c, int size)
 {
     int rc;
+
     rc = write(fd, c, size);
 /* Debuging code to be cleaned when very stable */
 /* 
-    if (size==1) {
-	    if (*c>=0) 
-		    printf("%3d ", *c);
-          else
-              {
-		    if (*c+256==254)
-
-		    printf("\n%3d ", *c+256);
-		    else printf("%3d ", *c+256);
-	      }
+    if (size == 1) {
+	if (*c >= 0) 
+	    printf("%3d ", *c);
+	else {
+	    if (*c+256==254)
+		printf("\n%3d ", *c+256);
+	    else
+		printf("%3d ", *c+256);
+	}
     }
 */
 /*    usleep(DELAY); */
@@ -497,7 +498,6 @@ int CwLnx_init(Driver * drvthis)
     int speed = DEFAULT_SPEED;
     char size[200] = DEFAULT_SIZE;
 
-    char buf[256] = "";
     int tmp;
     int w;
     int h;
@@ -506,19 +506,19 @@ int CwLnx_init(Driver * drvthis)
     PrivateData *p;
 
     /* Alocate and store private data */
-    p = (PrivateData *) malloc( sizeof( PrivateData) );
-    if( ! p )
+    p = (PrivateData *) malloc(sizeof(PrivateData));
+    if (p == NULL)
         return -1;
-    if( drvthis->store_private_ptr( drvthis, p ) )
+    if (drvthis->store_private_ptr(drvthis, p))
         return -1;
 
     /* Initialise the PrivateData structure */
-
     p->framebuf = NULL;
+    p->backingstore = NULL;
 
-/* height and width are computed from DEFAULT_SIZE */
-/*    p->width = DEFAULT_WIDTH;	*/
-/*    p->height = DEFAULT_HEIGHT; */
+    /* height and width are computed from DEFAULT_SIZE */
+    /* p->width = DEFAULT_WIDTH; */
+    /* p->height = DEFAULT_HEIGHT; */
     p->cellwidth = DEFAULT_CELLWIDTH;
     p->cellheight = DEFAULT_CELLHEIGHT;
 
@@ -532,23 +532,23 @@ int CwLnx_init(Driver * drvthis)
     p->saved_heartbeat = -1;
     p->heartbeat = 0;
 
-    debug(RPT_INFO, "CwLnx: init(%p)", drvthis);
+    debug(RPT_INFO, "%s: init(%p)", drvthis->name, drvthis);
 
     /* Read config file */
-
     
     /* Which serial device should be used */
     strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
-    device[sizeof(device) - 1] = 0;
-    report(RPT_INFO, "CwLnx: Using device: %s", device);
+    device[sizeof(device) - 1] = '\0';
+    report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
     /* Which size */
     strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
-    size[sizeof(size) - 1] = 0;
+    size[sizeof(size) - 1] = '\0';
     if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-	report(RPT_WARNING, "CwLnx: Cannot read size: %s. Using default value.\n", size);
+	report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+			drvthis->name, size, DEFAULT_SIZE);
 	sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
     }
     p->width = w;
@@ -560,98 +560,83 @@ int CwLnx_init(Driver * drvthis)
     tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
 
     switch (tmp) {
-    case 9600:
-	speed = B9600;
-	break;
-    case 19200:
-	speed = B19200;
-	break;
-    default:
-	speed = DEFAULT_SPEED;
-
-	switch (speed) {
-	case B9600:
-	    strncpy(buf, "9600", sizeof(buf));
+	case 9600:
+	    speed = B9600;
 	    break;
-	case B19200:
-	    strncpy(buf, "19200", sizeof(buf));
+	case 19200:
+	    speed = B19200;
 	    break;
-	}
-
-	report(RPT_WARNING,
-	       "CwLnx: Speed must be 9600 or 19200. Using default value of %s baud!",
-	       buf);
-	strncpy(buf, "", sizeof(buf));
-    }
-
-
+	default:
+	    speed = B19200;
+	    report(RPT_WARNING, "%s: Speed must be 9600 or 19200. Using default %d",
+			    drvthis->name, DEFAULT_SPEED);
+    }	    
+	    
     /* do we have a keypad? */
-    if (drvthis->config_get_bool( drvthis->name , "Keypad", 0, 0)) {
-	report (RPT_INFO, "CwLnx: Config file tell us we have a keypad...\n");
+    if (drvthis->config_get_bool(drvthis->name , "Keypad", 0, 0)) {
+	report(RPT_INFO, "%s: Config tells us we have a keypad", drvthis->name);
 	p->have_keypad = 1;
     }
 
     /* keypad test mode? */
-    if (drvthis->config_get_bool( drvthis->name , "keypad_test_mode", 0, 0)) {
-	report (RPT_INFO, "CwLnx: Config tell us to test the keypad mapping...\n");
+    if (drvthis->config_get_bool(drvthis->name , "keypad_test_mode", 0, 0)) {
+	report(RPT_INFO, "%s: Config tells us to test the keypad mapping", drvthis->name);
 	p->keypad_test_mode = 1;
 	stay_in_foreground = 1;
     }
 
     /* read the keypad mapping only if we have a keypad. */
-    if (p->have_keypad) 
-    	{
+    if (p->have_keypad) {
 	int x;
 
 	/* Read keymap */
-	for(x=0; x<MaxKeyMap; x++ ) 
-		{
-		char buf[40];
+	for (x = 0; x < MaxKeyMap; x++) {
+	    char buf[40];
 
-		/* First fill with default value */
+	    /* First fill with default value */
 
-		p->KeyMap[x] = defaultKeyMap[x];
+	    p->KeyMap[x] = defaultKeyMap[x];
 /* The line above make a warning... the code is comming from hd44780.c */
 
 /* printf("%s-%s\n", defaultKeyMap[x], p->KeyMap[x]);     */
 
-		/* Read config value */
-		sprintf( buf, "KeyMap_%c", x+'A' );
-		s = drvthis->config_get_string( drvthis->name, buf, 0, NULL );
+	    /* Read config value */
+	    sprintf(buf, "KeyMap_%c", x+'A');
+	    s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
 
-		/* Was a key specified in the config file ? */
-		if( s ) {
-			p->KeyMap[x] = strdup( s );     
-/* printf("CwLnx: Key '%c' to \"%s\"\n", x+'A', s );      */
-			report( RPT_INFO, "CwLnx: Key '%c' to \"%s\"", x+'A', s );
-			}
-		}
-
+	    /* Was a key specified in the config file ? */
+	    if (s != NULL) {
+		p->KeyMap[x] = strdup(s);
+		report(RPT_INFO, "%s: Key '%c' to \"%s\"", drvthis->name, x+'A', s);
+	    }
 	}
+    }
 
     /* End of config file parsing */
 
     /* Allocate framebuffer memory */
-    if (!p->framebuf) {
-	p->framebuf = malloc(p->width * p->height);
-	p->backingstore = calloc(p->width * p->height, 1);
-        memset(p->backingstore, ' ', p->width * p->height);
-    }
-
-    if (!p->framebuf) {
-	report(RPT_ERR, "CwLnx: Error: unable to create framebuffer.\n");
+    p->framebuf = malloc(p->width * p->height);
+    if (p->framebuf == NULL) {
+	report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 	return -1;
     }
+
+    p->backingstore = malloc(p->width * p->height);
+    if (p->backingstore == NULL) {
+	report(RPT_ERR, "%s: unable to create backingstore", drvthis->name);
+	return -1;
+    }
+    memset(p->backingstore, ' ', p->width * p->height);
+
 
     /* Set up io port correctly, and open it... */
-    debug(RPT_DEBUG, "CwLnx: Opening serial device: %s", device);
+    debug(RPT_DEBUG, "%s: Opening serial device: %s", drvthis->name, device);
     p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (p->fd == -1) {
-	report(RPT_ERR, "CwLnx: init() failed (%s)\n", strerror(errno));
+	report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
 	return -1;
-    } else {
-	report(RPT_INFO, "CwLnx: Opened display on %s", device);
     }
+    report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
 
     Init_Port(p->fd);
     tcgetattr(p->fd, &portset_save);
@@ -662,11 +647,11 @@ int CwLnx_init(Driver * drvthis)
 
     p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (p->fd == -1) {
-	report(RPT_ERR, "CwLnx: init() failed (%s)\n", strerror(errno));
+	report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
 	return -1;
-    } else {
-	report(RPT_INFO, "CwLnx: Opened display on %s", device);
     }
+    report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
+
     Init_Port(p->fd);
     speed = B9600; 
     Setup_Port(p->fd, speed);
@@ -676,19 +661,13 @@ int CwLnx_init(Driver * drvthis)
     CwLnx_backlight(drvthis, 1); /* WHY force the backlight to on ? */
     /* What is the default brightness ? */
 
-    /* Set the functions the driver supports... */
-
-    /* TODO: WHY this ??? $$$ */
-/*    drvthis->daemonize = 1;	*/	/* make the server daemonize after initialization */
-    /* no daemonize in Driver ??? */
-
-    report(RPT_DEBUG, "CwLnx_init: done\n");
-
     Clear_Screen(p->fd);
     CwLnx_clear(drvthis);
     usleep(SETUP_DELAY);
 
-    return p->fd;
+    report(RPT_DEBUG, "%s: init() done", drvthis->name);
+
+    return 1;
 }
 
 /******************************************************
@@ -699,19 +678,19 @@ CwLnx_close(Driver *drvthis)
 {
     PrivateData * p = drvthis->private_data;
 
-    close(p->fd);
+    if (p != NULL) {
+   	close(p->fd);
 
-    if (p->framebuf)
-	free(p->framebuf);
+	if (p->framebuf != NULL)
+	    free(p->framebuf);
+	p->framebuf = NULL;
 
-    if (p->backingstore)
-	free(p->backingstore);
+	if (p->backingstore != NULL)
+	    free(p->backingstore);
+	p->backingstore = NULL;
 
-    p->framebuf = NULL;
-    p->backingstore = NULL;
-
-    free(p);
-
+	free(p);
+    }
     debug(RPT_DEBUG, "CwLnx: closed");
 }
 
@@ -754,22 +733,18 @@ CwLnx_flushtime_backlight(Driver *drvthis)
 
     int bright;
 
-    if (   ( (p->saved_backlight)&&(!p->backlight) )
-	|| ( (p->backlight)&&(!p->saved_backlight) ) )
-	{
+    if (((p->saved_backlight) && (!p->backlight))
+	|| ((p->backlight) && (!p->saved_backlight))) {
 	p->backlight = p->saved_backlight;
-	if (p->backlight)
-		{
-		Enable_Backlight(p->fd);
-		}
-	else
-		{
-		Disable_Backlight(p->fd);
-		}
+	if (p->backlight) {
+	    Enable_Backlight(p->fd);
 	}
+	else {
+	    Disable_Backlight(p->fd);
+	}
+    }
 
-    if ( p->brightness != p->saved_brightness )
-    {
+    if (p->brightness != p->saved_brightness) {
 	p->brightness = p->saved_brightness;
 	Backlight_Brightness(p->fd, p->brightness)
     }
@@ -783,11 +758,11 @@ CwLnx_flushtime_backlight(Driver *drvthis)
  * It make a pixel blink at calling rate independently of flush call.
  */
 MODULE_EXPORT void
-CwLnx_flushtime_heartbeat( Driver * drvthis )
+CwLnx_flushtime_heartbeat(Driver * drvthis)
 {
     PrivateData * p = drvthis->private_data;
 
-    if ( p->heartbeat != p->saved_heartbeat ) {
+    if (p->heartbeat != p->saved_heartbeat) {
         p->saved_heartbeat=p->heartbeat;
         if (p->heartbeat) {
             Enable_Pixel(p->fd, 121, 0);
@@ -822,20 +797,18 @@ void Set_Insert(int fd, int row, int col)
 
     c = LCD_CMD;
     rc = Write_LCD(fd, &c, 1);
-    if (row==0 && col==0) 
-    	{
+    if (row == 0 && col == 0) {
     	c = LCD_INIT_INSERT;
     	rc = Write_LCD(fd, &c, 1);
-    	}
-    else
-    	{
-    c = LCD_SET_INSERT;
-    rc = Write_LCD(fd, &c, 1);
-    c = col;
-    rc = Write_LCD(fd, &c, 1);
-    c = row;
-    rc = Write_LCD(fd, &c, 1);
-    	}
+    }
+    else {
+	c = LCD_SET_INSERT;
+	rc = Write_LCD(fd, &c, 1);
+	c = col;
+	rc = Write_LCD(fd, &c, 1);
+	c = row;
+	rc = Write_LCD(fd, &c, 1);
+    }
     c = LCD_CMD_END;
     rc = Write_LCD(fd, &c, 1);
 }
@@ -848,7 +821,7 @@ void CwLnx_flush_box(int lft, int top, int rgt, int bot)
 {
     int y;
 
-    debug(RPT_DEBUG, "CwLnx: flush_box (%i,%i)-(%i,%i)\n", lft, top, rgt,
+    debug(RPT_DEBUG, "CwLnx: flush_box (%i,%i)-(%i,%i)", lft, top, rgt,
 	  bot);
     for (y = top; y <= bot; y++) {
 	Set_Insert(fd, top, lft);
@@ -945,7 +918,7 @@ CwLnx_set_brightness(Driver * drvthis, int state, int promille)
 /*********************************************************
  * Toggle the built-in linewrapping feature
  */
-static void CwLnx_linewrap (int fd, int on)
+static void CwLnx_linewrap(int fd, int on)
 {
     if (on)
 	    Enable_Wrap(fd);
@@ -1197,7 +1170,7 @@ CwLnx_set_char(Driver * drvthis, int n, char *dat)
 	    letter <<= 1;
 	    letter |= (dat[(col * p->cellheight) + row] > 0);
 	}
-	c=letter;
+	c = letter;
 	Write_LCD(p->fd, &c, 1);
     }
     c = LCD_CMD_END;
@@ -1309,46 +1282,46 @@ CwLnx_icon(Driver * drvthis, int x, int y, int icon)
        
 
 /* Yes we know, this is a VERY BAD implementation */
-	switch( icon ) {
+	switch (icon) {
 		case ICON_HEART_FILLED:
-			CwLnx_set_char( drvthis, 8, heart_filled );
-			CwLnx_chr( drvthis, x, y, 8 );
+			CwLnx_set_char(drvthis, 8, heart_filled);
+			CwLnx_chr(drvthis, x, y, 8);
 			break;
 		case ICON_HEART_OPEN:
-			CwLnx_set_char( drvthis, 8, heart_open );
-			CwLnx_chr( drvthis, x, y, 8 );
+			CwLnx_set_char(drvthis, 8, heart_open);
+			CwLnx_chr(drvthis, x, y, 8);
 			break;
 		case ICON_CHECKBOX_GRAY:
-			CwLnx_set_char( drvthis, 9, checkbox_gray );
-			CwLnx_chr( drvthis, x, y, 9 );
+			CwLnx_set_char(drvthis, 9, checkbox_gray);
+			CwLnx_chr(drvthis, x, y, 9);
 			break;
 		case ICON_BLOCK_FILLED:
-			CwLnx_set_char( drvthis, 10, block_filled );
-			CwLnx_chr( drvthis, x, y, 10 );
+			CwLnx_set_char(drvthis, 10, block_filled);
+			CwLnx_chr(drvthis, x, y, 10);
 			break;
 		case ICON_ARROW_UP:
-			CwLnx_set_char( drvthis, 11, arrow_up );
-			CwLnx_chr( drvthis, x, y, 11 );
+			CwLnx_set_char(drvthis, 11, arrow_up);
+			CwLnx_chr(drvthis, x, y, 11);
 			break;
 		case ICON_ARROW_DOWN:
-			CwLnx_set_char( drvthis, 12, arrow_down );
-			CwLnx_chr( drvthis, x, y, 12 );
+			CwLnx_set_char(drvthis, 12, arrow_down);
+			CwLnx_chr(drvthis, x, y, 12);
 			break;
 		case ICON_ARROW_LEFT:
-			CwLnx_set_char( drvthis, 13, arrow_left );
-			CwLnx_chr( drvthis, x, y, 13 );
+			CwLnx_set_char(drvthis, 13, arrow_left);
+			CwLnx_chr(drvthis, x, y, 13);
 			break;
 		case ICON_ARROW_RIGHT:
-			CwLnx_set_char( drvthis, 14, arrow_right );
-			CwLnx_chr( drvthis, x, y, 14 );
+			CwLnx_set_char(drvthis, 14, arrow_right);
+			CwLnx_chr(drvthis, x, y, 14);
 			break;
 		case ICON_CHECKBOX_OFF:
-			CwLnx_set_char( drvthis, 15, checkbox_off );
-			CwLnx_chr( drvthis, x, y, 15 );
+			CwLnx_set_char(drvthis, 15, checkbox_off);
+			CwLnx_chr(drvthis, x, y, 15);
 			break;
 		case ICON_CHECKBOX_ON:
-			CwLnx_set_char( drvthis, 16, checkbox_on );
-			CwLnx_chr( drvthis, x, y, 16 );
+			CwLnx_set_char(drvthis, 16, checkbox_on);
+			CwLnx_chr(drvthis, x, y, 16);
 			break;
 		default:
 			return -1; /* Let the core do other icons */
@@ -1381,34 +1354,27 @@ void CwLnx_draw_frame(Driver *drvthis, char *dat)
 
 /*    printf("\n_draw_frame: %d\n", count);   */
 
-    for (i = 0; i < p->height; i++) 
-            {
-	    for (j = 0; j < p->width; j++) 
-	            {
-		    if ( (*q == *r) && !( (0<*q) && (*q<16) ) )
-		    	{
-				mv = 1;
+    for (i = 0; i < p->height; i++) {
+	for (j = 0; j < p->width; j++) {
+	    if ((*q == *r) && !((0 < *q) && (*q < 16))) {
+		mv = 1;
 /*         count++; if (count==COUNT) exit(0);       */
-			}
-		    else
-		        {
-			    /* Draw characters that have changed, as well
-			     * as custom characters.  We know not if a custom
-			     * character has changed.
-			     */ 
-		        if (mv == 1) 
-			    {
-			    Set_Insert(p->fd, i, j);
-			    mv = 0;
-		   	    }
-                        rc = Write_LCD(p->fd, q, 1);
-		        }
-		    q++;
-		    r++; 
-	            }
-            }
-  strncpy(p->backingstore, dat, p->width * p->height);
-
+	    }
+	    else {
+		/* Draw characters that have changed, as well
+		 * as custom characters.  We know not if a custom
+		 * character has changed.  */ 
+		if (mv == 1) {
+		    Set_Insert(p->fd, i, j);
+		    mv = 0;
+		}
+		rc = Write_LCD(p->fd, q, 1);
+	    }
+	    q++;
+	    r++; 
+	}
+    }
+    strncpy(p->backingstore, dat, p->width * p->height);
 }
 
 /*********************************************************
@@ -1474,14 +1440,14 @@ CwLnx_get_key(Driver * drvthis)
 	PrivateData * p = drvthis->private_data;
 	char key = '\0';
 
-	read (p->fd, &key, 1);
+	read(p->fd, &key, 1);
 
 	if (key != '\0') {
 		if ((key >= 'A') && (key <= 'F')) {
 			return p->KeyMap[key-'A'];
 		}
 		else {
-			report( RPT_INFO, "CwLnx: Untreated key 0x%2x", key);
+			report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
 		}
 	}
 
@@ -1503,21 +1469,21 @@ CwLnx_get_key(Driver * drvthis)
 /*I*/ int heartbeat_state;
 
 MODULE_EXPORT void
-CwLnx_heartbeat( Driver * drvthis, int type )
+CwLnx_heartbeat(Driver * drvthis, int type)
 {
     PrivateData * p = drvthis->private_data;
 
     if (type) {
         if (p->heartbeat_state) {
-	    p->heartbeat=1;
+	    p->heartbeat = 1;
             p->heartbeat_state = 0;
 	} else {
-	    p->heartbeat=0;
+	    p->heartbeat = 0;
             p->heartbeat_state = 1;
 	}
     } else {
         if (p->heartbeat_state) {
-	    p->heartbeat=0;
+	    p->heartbeat = 0;
             p->heartbeat_state = 0;
 	}
     }
@@ -1525,7 +1491,7 @@ CwLnx_heartbeat( Driver * drvthis, int type )
 
 /*
 MODULE_EXPORT void
-CwLnx_heartbeat( Driver * drvthis, int type )
+CwLnx_heartbeat(Driver * drvthis, int type)
 {
     PrivateData * p = drvthis->private_data;
 
