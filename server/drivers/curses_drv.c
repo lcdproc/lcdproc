@@ -175,8 +175,8 @@ set_background_color (char * buf) {
 #define TOP_LEFT_X 7
 #define TOP_LEFT_Y 7
 
-#define ValidX(x) { if ((x) > width  || (x) < 1) { report(RPT_ERR, "curses_drv: Invalid X"); return; } }
-#define ValidY(y) { if ((y) > height || (y) < 1) { report(RPT_ERR, "curses_drv: Invalid Y"); return; } }
+#define ValidX(x) { if ((x) > width  || (x) < 1) { report(RPT_ERR, "%s: Invalid X", drvthis->name); return; } }
+#define ValidY(y) { if ((y) > height || (y) < 1) { report(RPT_ERR, "%s: Invalid Y", drvthis->name); return; } }
 
 static int current_color_pair, current_border_pair, curses_backlight_state = 0;
 static int width, height;
@@ -193,6 +193,7 @@ MODULE_EXPORT int
 curses_drv_init (Driver *drvthis)
 {
 	char buf[256];
+	int tmp;
 
 	// Colors....
 	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
@@ -206,77 +207,85 @@ curses_drv_init (Driver *drvthis)
 	/*Get settings from config file*/
 
 	/*Get color settings*/
+
 	/*foreground color*/
-	strncpy(buf, drvthis->config_get_string ( drvthis->name , "foreground" , 0 , CONF_DEF_FOREGR),sizeof(buf));
-	buf[sizeof(buf)-1]=0;
+	strncpy(buf, drvthis->config_get_string(drvthis->name, "Foreground", 0, CONF_DEF_FOREGR), sizeof(buf));
+	buf[sizeof(buf)-1] = '\0';
 	fore_color = set_foreground_color(buf);
-	debug( RPT_DEBUG, "CURSES: using foreground color: %s", buf);
+	debug(RPT_DEBUG, "%s: using foreground color %s", drvthis->name, buf);
+	
 	/*background color*/
-	strncpy(buf, drvthis->config_get_string ( drvthis->name , "background" , 0 , CONF_DEF_BACKGR),sizeof(buf));
-	buf[sizeof(buf)-1]=0;
+	strncpy(buf, drvthis->config_get_string(drvthis->name, "Background", 0, CONF_DEF_BACKGR), sizeof(buf));
+	buf[sizeof(buf)-1] = '\0';
 	back_color = set_background_color(buf);
-	debug( RPT_DEBUG, "CURSES: using background color: %s", buf);
+	debug(RPT_DEBUG, "%s: using background color %s", drvthis->name, buf);
+
 	/*backlight color*/
-	strncpy(buf, drvthis->config_get_string ( drvthis->name , "backlight" , 0 , CONF_DEF_BACKLIGHT), sizeof(buf));
-	buf[sizeof(buf)-1]=0;
+	strncpy(buf, drvthis->config_get_string(drvthis->name, "Backlight", 0, CONF_DEF_BACKLIGHT), sizeof(buf));
+	buf[sizeof(buf)-1] = '\0';
 	backlight_color = set_background_color(buf);
-	debug( RPT_DEBUG, "CURSES: using backlight color: %s", buf);
+	debug(RPT_DEBUG, "%s: using backlight color %s", drvthis->name, buf);
 
 	//TODO: Make it possible to configure the backlight's "off" color and its "on" color
 	//      Or maybe don't do so? - Rene Wagner
 
 	/* Get size settings */
-	if( drvthis->request_display_width() > 0
-	&& drvthis->request_display_height() > 0 ) {
-		/* If this driver is secondairy driver, use size from primary driver */
+	if ((drvthis->request_display_width() > 0)
+	    && (drvthis->request_display_height() > 0)) {
+		/* If this driver is secondary driver, use size from primary driver */
 		width = drvthis->request_display_width();
 		height = drvthis->request_display_height();
 	}
 	else {
 		/* Use our own size from config file */
-		strncpy(buf, drvthis->config_get_string ( drvthis->name , "size" , 0 , CONF_DEF_SIZE), sizeof(buf));
-		buf[sizeof(buf)-1]=0;
-		if( sscanf(buf , "%dx%d", &width, &height ) != 2
-		|| (width <= 0)
-		|| (height <= 0)) {
-			report (RPT_WARNING, "CURSES: Cannot read size: %s. Using default value: %s\n", buf, CONF_DEF_SIZE);
-			sscanf( CONF_DEF_SIZE , "%dx%d", &width, &height );
+		strncpy(buf, drvthis->config_get_string(drvthis->name, "Size", 0, CONF_DEF_SIZE), sizeof(buf));
+		buf[sizeof(buf)-1] = '\0';
+		if ((sscanf(buf , "%dx%d", &width, &height) != 2)
+		    || (width <= 0) || (width > LCD_MAX_WIDTH)
+		    || (height <= 0) || (height > LCD_MAX_HEIGHT)) {
+			report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+					drvthis->name, buf, CONF_DEF_SIZE);
+			sscanf(CONF_DEF_SIZE, "%dx%d", &width, &height);
 		}
 	}
 
-
 	/*Get position settings*/
-	if (0<=drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) && drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X) <= 255) {
-		screen_begx = drvthis->config_get_int ( drvthis->name , "topleftx" , 0 , CONF_DEF_TOP_LEFT_X);
-	} else {
-		report (RPT_WARNING, "CURSES: topleftx must be between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_X);
+	tmp = drvthis->config_get_int(drvthis->name, "TopLeftX", 0, CONF_DEF_TOP_LEFT_X);
+	if ((tmp < 0) || (tmp > 255)) {
+		report(RPT_WARNING, "%s: TopLeftX must be between 0 and 255; using default %d",
+				drvthis->name, CONF_DEF_TOP_LEFT_X);
+		tmp = CONF_DEF_TOP_LEFT_X;
 	}
-	if (0<=drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) && drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y) <= 255) {
-		screen_begy = drvthis->config_get_int ( drvthis->name , "toplefty" , 0 , CONF_DEF_TOP_LEFT_Y);
-	} else {
-		report (RPT_WARNING, "CURSES: toplefty must be between 0 and 255. Using default value %d.\n",CONF_DEF_TOP_LEFT_Y);
+	screen_begx = tmp;
+
+	tmp = drvthis->config_get_int(drvthis->name, "TopLeftY", 0, CONF_DEF_TOP_LEFT_Y);
+	if ((tmp < 0) || (tmp > 255)) {
+		report(RPT_WARNING, "%s: TopLeftY must be between 0 and 255; using default %d",
+				drvthis->name, CONF_DEF_TOP_LEFT_Y);
+		tmp = CONF_DEF_TOP_LEFT_Y;
 	}
+	screen_begy = tmp;
 
 	//debug: sleep(1);
 
 	// Init curses...
-	initscr ();
-	cbreak ();
-	noecho ();
-	nonl ();
+	initscr();
+	cbreak();
+	noecho();
+	nonl();
 
-	nodelay (stdscr, TRUE);
-	intrflush (stdscr, FALSE);
-	keypad (stdscr, TRUE);
+	nodelay(stdscr, TRUE);
+	intrflush(stdscr, FALSE);
+	keypad(stdscr, TRUE);
 
 	lcd_win = newwin(height + 2,
 			 width + 2,
 			 screen_begy,
 			 screen_begx);
 
-	//nodelay (lcd_win, TRUE);
-	//intrflush (lcd_win, FALSE);
-	//keypad (lcd_win, TRUE);
+	//nodelay(lcd_win, TRUE);
+	//intrflush(lcd_win, FALSE);
+	//keypad(lcd_win, TRUE);
 
 	curs_set(0);
 
@@ -292,10 +301,12 @@ curses_drv_init (Driver *drvthis)
 		current_border_pair = 3;
 	}
 
-	curses_drv_clear (drvthis);
+	curses_drv_clear(drvthis);
 
 	// Change the character used for "..."
 	ELLIPSIS = '~';
+
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
 }
@@ -332,11 +343,11 @@ curses_drv_close (Driver *drvthis)
 	// so don't clear...
 	//
 	// Close curses
-	wrefresh (lcd_win);
-	delwin (lcd_win);
+	wrefresh(lcd_win);
+	delwin(lcd_win);
 
-	move (0, 0);
-	endwin ();
+	move(0, 0);
+	endwin();
 	curs_set(1);
 }
 
@@ -365,8 +376,8 @@ MODULE_EXPORT void
 curses_drv_clear (Driver *drvthis)
 {
 	wbkgdset(lcd_win, COLOR_PAIR(current_color_pair) | ' ');
-	curses_drv_wborder (lcd_win);
-	werase (lcd_win);
+	curses_drv_wborder(lcd_win);
+	werase(lcd_win);
 }
 
 MODULE_EXPORT void
@@ -420,7 +431,7 @@ curses_drv_string (Driver *drvthis, int x, int y, char *string)
 		p++;
 	}
 
-	mvwaddstr (lcd_win, y, x, string);
+	mvwaddstr(lcd_win, y, x, string);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -446,13 +457,13 @@ curses_drv_chr (Driver *drvthis, int x, int y, char c)
 		//	normal character...
 	}
 
-	if ((ch = getch ()) != ERR)
+	if ((ch = getch()) != ERR)
 		if (ch == 0x0C) {
 			curses_drv_restore_screen(drvthis);
 			ungetch(ch);
 		}
 
-	mvwaddch (lcd_win, y, x, c);
+	mvwaddch(lcd_win, y, x, c);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -463,7 +474,7 @@ curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 {
 	char map[] = { ACS_S9, ACS_S9, ACS_S7, ACS_S7, ACS_S3, ACS_S3, ACS_S1, ACS_S1 };
 	int pos;
-	int total_pixels = ((long) 2 * len * LCD_DEFAULT_CELLHEIGHT + 1 ) * promille / 2000;
+	int total_pixels = ((long) 2 * len * LCD_DEFAULT_CELLHEIGHT + 1) * promille / 2000;
 
 	ValidX(x);
 	ValidY(y);
@@ -475,19 +486,19 @@ curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 	 * promille is the number of promilles (0..1000) that the bar should be filled.
 	 */
 
-	for (pos = 0; pos < len; pos ++ ) {
+	for (pos = 0; pos < len; pos ++) {
 
 		int pixels = total_pixels - LCD_DEFAULT_CELLHEIGHT * pos;
 
 		ValidY(y-pos);
 
-		if( pixels >= LCD_DEFAULT_CELLHEIGHT ) {
+		if (pixels >= LCD_DEFAULT_CELLHEIGHT) {
 			/* write a "full" block to the screen... */
-			curses_drv_chr (drvthis, x, y-pos, ACS_BLOCK);
+			curses_drv_chr(drvthis, x, y-pos, ACS_BLOCK);
 		}
-		else if( pixels > 0 ) {
+		else if (pixels > 0) {
 			// write a partial block...
-			curses_drv_chr (drvthis, x, y-pos, map[len-1]);
+			curses_drv_chr(drvthis, x, y-pos, map[len-1]);
 			break;
 		}
 		else {
@@ -503,7 +514,7 @@ MODULE_EXPORT void
 curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	int pos;
-	int total_pixels  = ((long) 2 * len * LCD_DEFAULT_CELLWIDTH + 1 ) * promille / 2000;
+	int total_pixels = ((long) 2 * len * LCD_DEFAULT_CELLWIDTH + 1) * promille / 2000;
 
 	ValidX(x);
 	ValidY(y);
@@ -515,19 +526,19 @@ curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 	 * promille is the number of promilles (0..1000) that the bar should be filled.
 	 */
 
-	for (pos = 0; pos < len; pos ++ ) {
+	for (pos = 0; pos < len; pos ++) {
 
 		int pixels = total_pixels - LCD_DEFAULT_CELLWIDTH * pos;
 
 		ValidX(x+pos);
 
-		if( pixels >= LCD_DEFAULT_CELLHEIGHT * 2/3 ) {
+		if (pixels >= LCD_DEFAULT_CELLHEIGHT * 2/3) {
 			/* write a "full" block to the screen... */
-			curses_drv_chr (drvthis, x+pos, y, '=');
+			curses_drv_chr(drvthis, x+pos, y, '=');
 		}
-		else if( pixels > LCD_DEFAULT_CELLHEIGHT * 1/3 ) {
+		else if (pixels > LCD_DEFAULT_CELLHEIGHT * 1/3) {
 			/* write a partial block... */
-			curses_drv_chr (drvthis, x+pos, y, '-');
+			curses_drv_chr(drvthis, x+pos, y, '-');
 			break;
 		}
 		else {
@@ -555,9 +566,9 @@ curses_drv_icon (Driver *drvthis, int x, int y, int icon)
 	  case ICON_ARROW_RIGHT:        ch1 = ACS_RARROW; break;
 	  default:			return -1; /* Let the core do it */
 	}
-	curses_drv_chr( drvthis, x, y, ch1);
+	curses_drv_chr(drvthis, x, y, ch1);
 	if (ch2) {
-		curses_drv_chr( drvthis, x+1, y, ch2);
+		curses_drv_chr(drvthis, x+1, y, ch2);
 	}
 
 /* There was something with placing PAD
@@ -574,14 +585,14 @@ curses_drv_flush (Driver *drvthis)
 {
 	int c;
 
-	if ((c = getch ()) != ERR)
+	if ((c = getch()) != ERR)
 		if (c == 0x0C) {
 			curses_drv_restore_screen(drvthis);
-			ungetch (c);
+			ungetch(c);
 		}
 
-	curses_drv_wborder (lcd_win);
-	wrefresh (lcd_win);
+	curses_drv_wborder(lcd_win);
+	wrefresh(lcd_win);
 }
 
 
@@ -589,9 +600,9 @@ MODULE_EXPORT const char *
 curses_drv_get_key (Driver *drvthis)
 {
 	static char ret_val[2] = {0,0};
-	int key = getch ();
+	int key = getch();
 
-	switch(key) {
+	switch (key) {
 		case 0x0C:
 			/* internal: ^L restores screen */
 			curses_drv_restore_screen(drvthis);
@@ -613,7 +624,7 @@ curses_drv_get_key (Driver *drvthis)
 		case 0x1B:
 			return "Escape";
 		default:
-			report( RPT_INFO, "curses_drv: Unknown key 0x%4x", key );
+			report(RPT_INFO, "%s: Unknown key 0x%02X", drvthis->name, key);
 			ret_val[0] = (char) key & 0xFF;
 			return (ret_val[0] != '\0') ? ret_val : NULL;
 			break;
