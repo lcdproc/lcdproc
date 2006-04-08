@@ -245,7 +245,7 @@ svgalib_drv_init (Driver *drvthis)
 	p->brightness = DEFAULT_BRIGHTNESS;
 	p->offbrightness = DEFAULT_OFFBRIGHTNESS;
 
-	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	/* Read config file */
 
@@ -257,11 +257,12 @@ svgalib_drv_init (Driver *drvthis)
 		strncpy(size, drvthis->config_get_string(drvthis->name, "Size",
 							 0, DEFAULT_SIZE), sizeof(size));
 		size[sizeof(size) - 1] = '\0';
-		debug (RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
+		debug(RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
 		if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
 		    (w <= 0) || (w > LCD_MAX_WIDTH) ||
 		    (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-			report(RPT_WARNING, "svga: Cannot read size: %s. Using default value.\n", size);
+			report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+					drvthis->name, size, DEFAULT_SIZE);
 			sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 		}
 		p->width = w;
@@ -277,24 +278,24 @@ svgalib_drv_init (Driver *drvthis)
 			p->height = LCD_DEFAULT_HEIGHT;
 		}
 	}
-	report(RPT_INFO, "%s: Using size %dx%d", __FUNCTION__, p->width, p->height);
+	report(RPT_INFO, "%s: using Size %dx%d", drvthis->name, p->width, p->height);
 		
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	debug (RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_BRIGHTNESS);
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
 
 	/* Which backlight-off "brightness" */
-	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	debug (RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_OFFBRIGHTNESS);
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d",
+			drvthis->name, DEFAULT_OFFBRIGHTNESS);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
@@ -303,25 +304,25 @@ svgalib_drv_init (Driver *drvthis)
 	strncpy(modestr, drvthis->config_get_string(drvthis->name, "Mode",
 						    0, DEFAULT_MODESTR), sizeof(modestr));
 	modestr[sizeof(modestr) - 1] = '\0';
-	debug (RPT_INFO, "%s: Mode (in config) is '%s'", __FUNCTION__, modestr);
+	debug(RPT_INFO, "%s: Mode (in config) is '%s'", __FUNCTION__, modestr);
 
 	/* initialize svgalib library */
 	if (vga_init() != 0) {
-		report(RPT_ERR, "svga: vga_init() failed.");
+		report(RPT_ERR, "%s: vga_init() failed", drvthis->name);
 		return -1;
 	}	
 
 	/* check for legal VGA mode */
 	tmp = vga_getmodenumber(modestr);
 	if (tmp <= 0) {
-		report(RPT_ERR, "svga: illegal VGA mode %s.", modestr);
+		report(RPT_ERR, "%s: illegal VGA mode %s", drvthis->name, modestr);
 		return -1;
 	}		
 	p->mode = tmp;
 
 	/* switch to selected VGA mode if it is available */
 	if (!vga_hasmode (p->mode)) {
-		report(RPT_ERR, "svga: VGA mode %s not available.", modestr);
+		report(RPT_ERR, "%s: VGA mode %s not available.", drvthis->name, modestr);
 		return -1;
 	}
 
@@ -338,26 +339,28 @@ svgalib_drv_init (Driver *drvthis)
 	p->yoffs = p->cellheight + (modeinfo->height - p->height * p->cellheight) / 2;
 
 	if (vga_setmode (p->mode) < 0) {
-		report(RPT_ERR, "svga: unable to switch to mode %s", modestr);
+		report(RPT_ERR, "%s: unable to switch to mode %s", drvthis->name, modestr);
 		return -1;
 	}	
-	gl_setcontextvga (p->mode);	/* Physical screen context. */
-	gl_setrgbpalette ();
+	gl_setcontextvga(p->mode);	/* Physical screen context. */
+	gl_setrgbpalette();
 
 	/* allocate space, expand and install the font */
-	p->font = malloc (256 * p->cellheight * p->cellwidth * modeinfo->bytesperpixel);
+	p->font = malloc(256 * p->cellheight * p->cellwidth * modeinfo->bytesperpixel);
 	if (p->font == NULL) {
-		report(RPT_ERR, "svga: unable to allocate font memory");
+		report(RPT_ERR, "%s: unable to allocate font memory", drvthis->name);
 		return -1;
 	}	
 		
 	tmp = (p->brightness * 255) / 1000;
 	if (tmp <= 0)
 		tmp = 1;
-	ExpandGroovyFont (p->cellwidth, p->cellheight, gl_rgbcolor(tmp, tmp, tmp), simple_font6x8, p->font);
-	gl_setfont (p->cellwidth, p->cellheight, p->font);
+	ExpandGroovyFont(p->cellwidth, p->cellheight, gl_rgbcolor(tmp, tmp, tmp), simple_font6x8, p->font);
+	gl_setfont(p->cellwidth, p->cellheight, p->font);
 
-	gl_clearscreen (gl_rgbcolor (0, 0, 0));
+	gl_clearscreen(gl_rgbcolor (0, 0, 0));
+
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
 }
@@ -371,7 +374,7 @@ svgalib_drv_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	if (p != NULL) {
 		if (p->font != NULL)
@@ -382,7 +385,7 @@ svgalib_drv_close (Driver *drvthis)
 	}	
 	drvthis->store_private_ptr(drvthis, NULL);
 
-	vga_setmode (TEXT);
+	vga_setmode(TEXT);
 }
 
 
@@ -440,10 +443,10 @@ svgalib_drv_cellheight (Driver *drvthis)
 MODULE_EXPORT void
 svgalib_drv_clear (Driver * drvthis)
 {
-	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	//vga_waitretrace ();
-	gl_clearscreen (gl_rgbcolor (0, 0, 0));
+	gl_clearscreen(gl_rgbcolor(0, 0, 0));
 }
 
 
@@ -467,20 +470,21 @@ svgalib_drv_string (Driver *drvthis, int x, int y, char string[])
 	PrivateData *p = drvthis->private_data;
 	int i;
 	
-	debug (RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
 
 	for (i = 0; string[i] != '\0'; i++) {
 		unsigned char *c = &string[i];
+
 		switch (*c) {
-		case '\0':
-			*c = icon_char;
-			break;
-		case 255:
-			*c = '#';
-			break;
+			case '\0':
+				*c = icon_char;
+				break;
+			case 255:
+				*c = '#';
+				break;
 		}
 	}
-	gl_writen (x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, i, string);
+	gl_writen(x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, i, string);
 }
 
 
@@ -494,19 +498,19 @@ svgalib_drv_chr (Driver *drvthis, int x, int y, char c)
 	PrivateData *p = drvthis->private_data;
 	char buffer[2];
 
-	debug (RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
 
 	switch ((unsigned char) c) {
-	case '\0':
-		c = icon_char;
-		break;
-	case 255:
-		c = '#';
-		break;
+		case '\0':
+			c = icon_char;
+			break;
+		case 255:
+			c = '#';
+			break;
 	}
 	buffer[0] = c;
 	buffer[1] = '\0';
-	gl_writen (x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, 1, buffer);
+	gl_writen(x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, 1, buffer);
 }
 
 
@@ -519,13 +523,13 @@ svgalib_drv_num (Driver *drvthis, int x, int num)
 	char c;
 	int y, dx;
 
-	debug (RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
+	debug(RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
 
 	c = '0' + num;
 
 	for (y = 1; y < 5; y++)
 		for (dx = 0; dx < 3; dx++)
-			svgalib_drv_chr (drvthis, x + dx, y, c);
+			svgalib_drv_chr(drvthis, x + dx, y, c);
 }
 
 
@@ -537,11 +541,11 @@ svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 {
 	int pos;
 
-	debug (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
-			svgalib_drv_chr (drvthis, x, y-pos, '|');
+			svgalib_drv_chr(drvthis, x, y-pos, '|');
 		} else {
 			; /* print nothing */
 		}
@@ -557,11 +561,11 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 {
 	int pos;
 
-	debug (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
-			svgalib_drv_chr (drvthis, x+pos, y, '-');
+			svgalib_drv_chr(drvthis, x+pos, y, '-');
 		} else {
 			; /* print nothing */
 		}
@@ -578,20 +582,20 @@ svgalib_drv_get_key (Driver *drvthis)
 	static char buf[2] = " ";
 	int key = vga_getkey ();
 
-	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	if (key <= 0)	/* no key */
 		return NULL;
 
 	switch (key) {
 		case 0x1B:	/* ESC may introduce special key sequence */
-			key = vga_getkey ();
+			key = vga_getkey();
 
 			if (key == 0)	/* alone it is "Escape" */
 				return "Escape";
 
 			if (key == 0x5B) {	/* 0x1B 0x5B 0x??: cursor keys */
-				key = vga_getkey ();
+				key = vga_getkey();
 				switch (key) {
 					case VGAKEY_LEFT:
 						return "Left";
@@ -641,7 +645,7 @@ svgalib_drv_set_contrast (Driver *drvthis, int promille)
 	int contrast;
 
 	/* Check it */
-	if (promille < 0 || promille > 1000)
+	if ((promille < 0) || (promille > 1000))
 		return;
 
 	/* store the software value since there is not get */
@@ -675,7 +679,7 @@ svgalib_drv_set_brightness(Driver *drvthis, int state, int promille)
 	PrivateData *p = drvthis->private_data;
 
 	/* Check it */
-	if (promille < 0 || promille > 1000)
+	if ((promille < 0) || (promille > 1000))
 		return;
 
 	/* store the software value since there is no get */
