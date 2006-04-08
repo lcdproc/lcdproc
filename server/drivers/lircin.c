@@ -70,13 +70,13 @@ lircin_init (Driver *drvthis)
 	PrivateData *p;
 
 	/* Alocate and store private data */
-        p = (PrivateData *) malloc( sizeof( PrivateData) );
-	if( ! p ) {
-		report( RPT_ERR, "%s: Could not allocate private data.", drvthis->name );
+        p = (PrivateData *) malloc(sizeof(PrivateData));
+	if (p == NULL) {
+		report(RPT_ERR, "%s: Could not allocate private data.", drvthis->name);
 	        return -1;
 	}
-	if( drvthis->store_private_ptr( drvthis, p ) ) {
-		report( RPT_ERR, "%s: Could not store private data.", drvthis->name );
+	if (drvthis->store_private_ptr(drvthis, p)) {
+		report(RPT_ERR, "%s: Could not store private data.", drvthis->name);
 	        return -1;
 	}
 
@@ -89,48 +89,49 @@ lircin_init (Driver *drvthis)
 	/* READ CONFIG FILE:*/
 
 	/* Get location of lircrc to be used */
-	if (drvthis->config_get_string ( drvthis->name , "lircrc" , 0 , NULL) != NULL)
-		strncpy(s, drvthis->config_get_string ( drvthis->name , "lircrc" , 0 , ""), sizeof(s));
+	if (drvthis->config_get_string(drvthis->name, "lircrc", 0 , NULL) != NULL) {
+		strncpy(s, drvthis->config_get_string(drvthis->name, "lircrc", 0, ""), sizeof(s));
+		s[sizeof(s)-1] = '\0';
+	}	
 
 	if (*s != '\0') {
-		s[sizeof(s)-1] = '\0';
 		p->lircrc = malloc(strlen(s) + 1);
-		if( p->lircrc == NULL ) {
-			report( RPT_ERR, "%s: Could not allocate new memory.", drvthis->name );
+		if (p->lircrc == NULL) {
+			report(RPT_ERR, "%s: Could not allocate new memory.", drvthis->name);
 			return -1;
 		}
 		strcpy(p->lircrc, s);
-		report  (RPT_INFO,"%s: Using lircrc: %s", drvthis->name, p->lircrc);
+		report(RPT_INFO,"%s: Using lircrc: %s", drvthis->name, p->lircrc);
 	}
 	else {
-		report (RPT_INFO,"%s: Using default lircrc: ~/.lircrc", drvthis->name);
+		report(RPT_INFO,"%s: Using default lircrc: ~/.lircrc", drvthis->name);
 	}
 
 	/* Get program identifier "prog=..." to be used */
-	strncpy(s, drvthis->config_get_string ( drvthis->name , "Prog" , 0 , LIRCIN_DEF_PROG), sizeof(s));
+	strncpy(s, drvthis->config_get_string(drvthis->name, "Prog", 0, LIRCIN_DEF_PROG), sizeof(s));
 
 	p->prog = malloc(strlen(s) + 1);
-	if( p->prog == NULL ) {
-		report( RPT_ERR, "%s: Could not allocate new memory.", drvthis->name );
+	if (p->prog == NULL) {
+		report(RPT_ERR, "%s: Could not allocate new memory.", drvthis->name);
 		return -1;
 	}
 	strcpy(p->prog, s);
-	report  (RPT_INFO, "%s: Using prog: %s", drvthis->name, p->prog);
+	report(RPT_INFO, "%s: Using prog: %s", drvthis->name, p->prog);
 
 	/* End of config file parsing */
 
 	/* open socket to lirc */
-	if (-1 == (p->lircin_fd = lirc_init (p->prog, LIRCIN_VERBOSELY))) {
-		report( RPT_ERR, "%s: Could not connect to lircd.", drvthis->name );
+	if (-1 == (p->lircin_fd = lirc_init(p->prog, LIRCIN_VERBOSELY))) {
+		report(RPT_ERR, "%s: Could not connect to lircd.", drvthis->name);
 
-		lircin_close( drvthis);
+		lircin_close(drvthis);
 		return -1;
 	}
 
-	if (0 != lirc_readconfig (p->lircrc, &p->lircin_irconfig, NULL)) {
-		report( RPT_ERR, "%s: lirc_readconfig() failed.", drvthis->name );
+	if (0 != lirc_readconfig(p->lircrc, &p->lircin_irconfig, NULL)) {
+		report(RPT_ERR, "%s: lirc_readconfig() failed.", drvthis->name);
 
-		lircin_close( drvthis);
+		lircin_close(drvthis);
 		return -1;
 	}
 
@@ -139,12 +140,13 @@ lircin_init (Driver *drvthis)
                 report(RPT_ERR, "%s: Unable to change lircin_fd(%d) to O_NONBLOCK: %s",
 			drvthis->name, p->lircin_fd, strerror(errno));
 
-		lircin_close( drvthis);
+		lircin_close(drvthis);
 		return -1;
 		}
 	fcntl (p->lircin_fd, F_SETFD, FD_CLOEXEC);
 
-
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+	
 	return 0;
 }
 
@@ -192,11 +194,11 @@ lircin_get_key (Driver *drvthis)
 
 	char *code = NULL, *cmd = NULL;
 
-	if ( (lirc_nextcode(&code) == 0) && (code != NULL) ) {
-		if ( (lirc_code2char(p->lircin_irconfig,code,&cmd)==0) && (cmd!=NULL) ) {
-			report (RPT_DEBUG, "%s: \"%s\"", drvthis->name, cmd);
+	if ((lirc_nextcode(&code) == 0) && (code != NULL)) {
+		if ((lirc_code2char(p->lircin_irconfig,code,&cmd)==0) && (cmd!=NULL)) {
+			report(RPT_DEBUG, "%s: \"%s\"", drvthis->name, cmd);
 		}
-		free (code);
+		free(code);
 	}
 
 	return cmd;
