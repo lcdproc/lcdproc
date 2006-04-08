@@ -37,12 +37,6 @@
 #include "glcdlib.h"
 
 
-#define DEBUG3 if(debug_level > 2) printf
-#define DEBUG4 if(debug_level > 3) printf
-#define debug_level 2
-
-//extern int debug_level;
-
 // our private data
 typedef struct {
 	GlcdDriver * glcdDriver;
@@ -62,19 +56,17 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 	glcdlibPD * pPD;
 
 	// Alocate, initialize and store private p
-	pPD = (glcdlibPD *) malloc( sizeof(glcdlibPD) );
-	if(!pPD)
-	{
-		debug(RPT_ERR, "glcdlib_init: failed to allocate private data");
+	pPD = (glcdlibPD *) malloc(sizeof(glcdlibPD));
+	if (pPD == NULL) {
+		report(RPT_ERR, "%s: failed to allocate private data", drvthis->name);
 		return -1;
 	}
 
-	pPD->glcdDriver = 0;
+	pPD->glcdDriver = NULL;
 	memset(pPD->info, '\0', sizeof(pPD->info));
 
-	if( drvthis->store_private_ptr( drvthis, pPD ) )
-	{
-		debug(RPT_ERR, "glcdlib_init: failed to store private data pointer");
+	if (drvthis->store_private_ptr(drvthis, pPD)) {
+		report(RPT_ERR, "%s: failed to store private data pointer", drvthis->name);
 		return -1;
 	}
 
@@ -90,42 +82,39 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 	// which driver
 	char strCfgDriver[30];
 	strncpy(strCfgDriver,
-		drvthis->config_get_string ( drvthis->name, "Driver", 0, "image"),
+		drvthis->config_get_string(drvthis->name, "Driver", 0, "image"),
 		sizeof(strCfgDriver));
+	strCfgDriver[sizeof(strCfgDriver)-1] = '\0';
 		
 	// use or not FreeType2
-	bool bCfgUseFT2 = drvthis->config_get_bool( drvthis->name, "UseFT2", 0, true);
+	bool bCfgUseFT2 = drvthis->config_get_bool(drvthis->name, "UseFT2", 0, true);
 	
 	// which text resolution
-	char strTextResDefault[] = "16x4";
+	const char strTextResDefault[] = "16x4";
 	char strTextRes[7];
 	int nCfgTextWidth = 0;
 	int nCfgTextRows = 0;
 	strncpy(strTextRes,
-		drvthis->config_get_string (	drvthis->name,
-						"TextResolution",
-						0,
-						strTextResDefault),
+		drvthis->config_get_string(drvthis->name, "TextResolution", 0, strTextResDefault),
 		sizeof(strTextRes));
-	strTextRes[sizeof(strTextRes)-1]=0;
-	if(	sscanf(strTextRes, "%dx%d", &nCfgTextWidth, &nCfgTextRows ) != 2
-		|| (nCfgTextWidth <= 0) || (nCfgTextWidth > LCD_MAX_WIDTH)
-		|| (nCfgTextRows <= 0) || (nCfgTextRows > LCD_MAX_HEIGHT))
+	strTextRes[sizeof(strTextRes)-1] = '\0';
+	if ((sscanf(strTextRes, "%dx%d", &nCfgTextWidth, &nCfgTextRows) != 2)
+	    || (nCfgTextWidth <= 0) || (nCfgTextWidth > LCD_MAX_WIDTH)
+	    || (nCfgTextRows <= 0) || (nCfgTextRows > LCD_MAX_HEIGHT))
 	{
-		report(	RPT_WARNING,
-			"GLCDLIB: Cannot read or invalid TextResolution: %s, Using default value.\n",
-			strTextResDefault);
-		sscanf( strTextResDefault, "%dx%d", &nCfgTextWidth, &nCfgTextRows );
+		report(RPT_WARNING,
+			"%s: cannot read or invalid TextResolution: %s; using default %s", 
+			drvthis->name, strTextRes, strTextResDefault);
+		sscanf(strTextResDefault, "%dx%d", &nCfgTextWidth, &nCfgTextRows);
 	}
 	
 	// which font file
+	const char strCfgFontFileDef[] = "/usr/share/fonts/corefonts/courbd.ttf";
 	char strCfgFontFile[256];
 	strncpy(strCfgFontFile,
-		drvthis->config_get_string (	drvthis->name,
-						"FontFile",
-						0,
-						"/usr/share/fonts/corefonts/courbd.ttf"),
+		drvthis->config_get_string(drvthis->name, "FontFile", 0, strCfgFontFileDef),
 		sizeof(strCfgFontFile));
+	strCfgFontFile[sizeof(strCfgFontFile)-1] = '\0';
 
 	//##################################################################
 	//	these only apply if bCfgUseFT2 = yes:
@@ -133,56 +122,53 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 	// character encoding
 	char strCfgEncoding[25];
 	strncpy(strCfgEncoding,
-		drvthis->config_get_string ( drvthis->name, "CharEncoding", 0, "ISO8859-1"),
+		drvthis->config_get_string(drvthis->name, "CharEncoding", 0, "ISO8859-1"),
 		sizeof(strCfgEncoding));
+	strCfgEncoding[sizeof(strCfgEncoding)-1] = '\0';
 
 	// minimum font face pixel resolution
-	char strMinFaceSizeDef[] = "6x8";
+	const char strMinFaceSizeDef[] = "6x8";
 	char strMinFontFaceSize[7];
 	int nCfgMinFontFaceWidth = 0;
 	int nCfgMinFontFaceHeight = 0;
 	strncpy(strMinFontFaceSize,
-		drvthis->config_get_string (	drvthis->name,
-						"MinFontFaceSize",
-						0,
-						strMinFaceSizeDef),
+		drvthis->config_get_string(drvthis->name, "MinFontFaceSize", 0, strMinFaceSizeDef),
 		sizeof(strMinFontFaceSize));
-	strTextRes[sizeof(strMinFontFaceSize)-1]=0;
-	if(	sscanf(strMinFontFaceSize, "%dx%d", &nCfgMinFontFaceWidth, &nCfgMinFontFaceHeight ) != 2
-		|| (nCfgMinFontFaceWidth <= 0) || (nCfgMinFontFaceWidth > LCD_MAX_WIDTH)
-		|| (nCfgMinFontFaceHeight <= 0) || (nCfgMinFontFaceHeight > LCD_MAX_HEIGHT))
+	strMinFontFaceSize[sizeof(strMinFontFaceSize)-1] = '\0';
+	if ((sscanf(strMinFontFaceSize, "%dx%d", &nCfgMinFontFaceWidth, &nCfgMinFontFaceHeight) != 2)
+	    || (nCfgMinFontFaceWidth <= 0) || (nCfgMinFontFaceWidth > LCD_MAX_WIDTH)
+	    || (nCfgMinFontFaceHeight <= 0) || (nCfgMinFontFaceHeight > LCD_MAX_HEIGHT))
 	{
-		report(	RPT_WARNING,
-			"GLCDLIB: Cannot read or invalid TextResolution: %s, Using default value.\n",
-			strMinFaceSizeDef);
-		sscanf( strMinFaceSizeDef, "%dx%d", &nCfgMinFontFaceWidth, &nCfgMinFontFaceHeight );
+		report(RPT_WARNING,
+			"%s: cannot read or invalid MinFontFaceSize: %s; using default %s",
+			drvthis->name, strMinFontFaceSize, strMinFaceSizeDef);
+		sscanf(strMinFaceSizeDef, "%dx%d", &nCfgMinFontFaceWidth, &nCfgMinFontFaceHeight);
 	}		
 		
 	// show debugging frame?
-	bool bShowDbgFrame = drvthis->config_get_bool( drvthis->name, "ShowDebugFrame", 0, true);
+	bool bShowDbgFrame = drvthis->config_get_bool(drvthis->name, "ShowDebugFrame", 0, true);
 	// show big border?
-	bool bShowBigBorder = drvthis->config_get_bool( drvthis->name, "ShowBigBorder", 0, true);
+	bool bShowBigBorder = drvthis->config_get_bool(drvthis->name, "ShowBigBorder", 0, true);
 	// show thin border?
-	bool bShowThinBorder = drvthis->config_get_bool( drvthis->name, "ShowThinBorder", 0, true);
+	bool bShowThinBorder = drvthis->config_get_bool(drvthis->name, "ShowThinBorder", 0, true);
 
 	// pixel shift
-	int nPixShiftX = drvthis->config_get_int( drvthis->name, "PixelShiftX", 0, 0);
-	int nPixShiftY = drvthis->config_get_int( drvthis->name, "PixelShiftY", 0, 0);
+	int nPixShiftX = drvthis->config_get_int(drvthis->name, "PixelShiftX", 0, 0);
+	int nPixShiftY = drvthis->config_get_int(drvthis->name, "PixelShiftY", 0, 0);
 
 	//##################################################################
 	// these are optional and override graphlcd-base library's own settings
 	// before on startup only:
 
-	int nContrast = drvthis->config_get_int( drvthis->name, "Contrast", 0, 50);
-	bool bBacklight =  drvthis->config_get_bool( drvthis->name, "Backlight", 0, false);
-	bool bUpsideDown =  drvthis->config_get_bool( drvthis->name, "UpsideDown", 0, false);
+	int nContrast = drvthis->config_get_int(drvthis->name, "Contrast", 0, 50);
+	bool bBacklight = drvthis->config_get_bool(drvthis->name, "Backlight", 0, false);
+	bool bUpsideDown = drvthis->config_get_bool(drvthis->name, "UpsideDown", 0, false);
 
 	// instantiate driver in the wrapper library
 	pPD->glcdDriver = glcddriverCreate();
 
-	if( !pPD->glcdDriver )
-	{
-		debug(RPT_ERR, "glcdlib_init: failed to instantiate glcdlib wrapper");
+	if (pPD->glcdDriver == NULL) {
+		report(RPT_ERR, "%s: failed to instantiate glcdlib wrapper", drvthis->name);
 		return -1;
 	}
 
@@ -202,23 +188,31 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 			nContrast);
 	
 	// apply supplemental settings
-	int nBrightness = drvthis->config_get_int( drvthis->name, "Brightness", 0, 50);
+	int nBrightness = drvthis->config_get_int(drvthis->name, "Brightness", 0, 50);
 	glcddriverSetBrightness(pPD->glcdDriver, nBrightness);
-	bool bInvert =  drvthis->config_get_bool( drvthis->name, "Invert", 0, false);
+	bool bInvert = drvthis->config_get_bool(drvthis->name, "Invert", 0, false);
 	glcddriverInvert(pPD->glcdDriver, bInvert);
 
-	debug (RPT_INFO, "GLCDLIB: Initialization done!");
-	return 0;
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+
+	return 1;
 }
 
 
 MODULE_EXPORT void
 glcdlib_close (Driver *drvthis)
 {
-	debug (RPT_INFO, "Shutting down!\n");
+	debug(RPT_INFO, "Shutting down!");
 	glcdlibPD * pPD = drvthis->private_data;
-	glcddriverDestroy(pPD->glcdDriver);
-	pPD->glcdDriver = 0;
+
+	if (pPD != NULL) {
+		if (pPD->glcdDriver != NULL)
+			glcddriverDestroy(pPD->glcdDriver);
+		pPD->glcdDriver = NULL;
+
+		free(pPD);
+	}	
+	drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -247,7 +241,7 @@ glcdlib_height (Driver *drvthis)
 MODULE_EXPORT void
 glcdlib_clear (Driver *drvthis)
 {
-	debug (RPT_DEBUG, "Clearing screen\n");
+	debug(RPT_DEBUG, "Clearing screen");
 	glcdlibPD * pPD = drvthis->private_data;
 	glcddriverClear(pPD->glcdDriver);
 }
@@ -258,7 +252,7 @@ glcdlib_clear (Driver *drvthis)
 MODULE_EXPORT void
 glcdlib_flush (Driver *drvthis)
 {
-	debug (RPT_DEBUG, "glcdlib_flush: Flushing pixbuffer(s)\n");
+	debug(RPT_DEBUG, "glcdlib_flush: Flushing pixbuffer(s)");
 	glcdlibPD * pPD = drvthis->private_data;
 	glcddriverRefresh(pPD->glcdDriver, false);
 }
@@ -270,7 +264,7 @@ glcdlib_flush (Driver *drvthis)
 MODULE_EXPORT void
 glcdlib_string (Driver *drvthis, int x, int y, char string[])
 {
-	debug (RPT_DEBUG, "String out\n");
+	debug(RPT_DEBUG, "String out");
 	y--;
 	x--;
 	glcdlibPD * pPD = drvthis->private_data;
@@ -284,7 +278,7 @@ glcdlib_string (Driver *drvthis, int x, int y, char string[])
 MODULE_EXPORT void
 glcdlib_chr (Driver *drvthis, int x, int y, char c)
 {
-	debug (RPT_DEBUG, "Char out\n");
+	debug(RPT_DEBUG, "Char out");
 	y--;
 	x--;
 	glcdlibPD * pPD = drvthis->private_data;
@@ -297,7 +291,7 @@ glcdlib_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT int
 glcdlib_icon (Driver *drvthis, int x, int y, int icon)
 {
-	debug (RPT_DEBUG, "GLCDLIB: set icon %d", icon);
+	debug(RPT_DEBUG, "GLCDLIB: set icon %d", icon);
 	y--;
 	x--;
 	glcdlibPD * pPD = drvthis->private_data;
@@ -311,7 +305,7 @@ MODULE_EXPORT char *
 glcdlib_get_info (Driver *drvthis)
 {
 	glcdlibPD * pPD = drvthis->private_data;
-	strcpy(pPD->info, "Meta driver which adds support for displays supported by graphlcd-base ");
+	strcpy(pPD->info, "Meta driver which adds support for displays supported by graphlcd-base");
 	return pPD->info;
 }
 
