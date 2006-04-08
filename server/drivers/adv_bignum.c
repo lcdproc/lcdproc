@@ -108,16 +108,16 @@ lib_adv_bignum(Driver *drvthis, int x, int num, int height, int do_init, int cus
 	switch (height) { // Display heigth:
 		case 2: // 2 lines
 		case 3: // are 3 line displays really existing?
-			if(customchars == 0){// 2 lines and customchars = 0
+			if (customchars == 0){// 2 lines and customchars = 0
 				adv_bignum_num_2_0 (drvthis, x, num, height, do_init);
 				}
-			else if(customchars ==1 ){// 2 lines and customchars = 1
+			else if (customchars ==1 ){// 2 lines and customchars = 1
 				adv_bignum_num_2_1 (drvthis, x, num, height, do_init);
 				}
-			else if(customchars < 5){// 2 lines and customchars = 2 ... 4
+			else if (customchars < 5){// 2 lines and customchars = 2 ... 4
 				adv_bignum_num_2_2 (drvthis, x, num, height, do_init);
 				}
-			else if(customchars < 28){ // 2 lines and customchars = 5 ... 27
+			else if (customchars < 28){ // 2 lines and customchars = 5 ... 27
 				adv_bignum_num_2_5 (drvthis, x, num, height, do_init);
 				}
 			else { // 2 lines and customchars >= 28
@@ -125,7 +125,7 @@ lib_adv_bignum(Driver *drvthis, int x, int num, int height, int do_init, int cus
 				}
 			break;
 		case 4: // 4 lines
-			if(customchars < 3){// 4 lines and customchars < 3
+			if (customchars < 3){// 4 lines and customchars < 3
 				adv_bignum_num_4_0 (drvthis, x, num, height, do_init);
 				}
 			else { // 4 lines and customchars >= 3
@@ -146,7 +146,7 @@ static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][4], i
 	int y, dx;
 	for (y = 0; y < height; y++)
 	{
-		if(num == 10) // ":" is only 1 character wide.
+		if (num == 10) // ":" is only 1 character wide.
 				drvthis->chr (drvthis, x, y+1, write_num_map[num][y][0]);
 		else
 			for (dx = 0; dx <3; dx++)
