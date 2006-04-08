@@ -25,7 +25,7 @@
 #define DEFAULT_CELL_WIDTH 5
 #define DEFAULT_CELL_HEIGHT 8
 #define DEFAULT_DEVICE "/dev/lcd"
-#define DEFAULT_SPEED B9600
+#define DEFAULT_SPEED 9600
 #define DEFAULT_SIZE "16x2"
 
 MODULE_EXPORT int  tyan_lcdm_init (Driver * drvthis, char *device);
