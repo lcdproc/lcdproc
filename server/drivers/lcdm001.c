@@ -64,7 +64,7 @@
 //#include "configfile.h"
 
 
-int fd;
+int fd = -1;
 static int clear = 1;
 static char icon_char = '@';
 static char pause_key = DOWN_KEY, back_key = LEFT_KEY, forward_key = RIGHT_KEY, main_menu_key = UP_KEY;
@@ -78,35 +78,36 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "lcdm001_";
 
-static void lcdm001_cursorblink (Driver *drvthis, int on);
-static char lcdm001_parse_keypad_setting ( Driver *drvthis, char * keyname, char * default_value );
+static void lcdm001_cursorblink(Driver *drvthis, int on);
+static char lcdm001_parse_keypad_setting(Driver *drvthis, char * keyname, char * default_value);
 
 #define ValidX(x) if ((x) > width) { (x) = width; } else (x) = (x) < 1 ? 1 : (x);
 #define ValidY(y) if ((y) > height) { (y) = height; } else (y) = (y) < 1 ? 1 : (y);
 
 // Parse one key from the configfile
-static char lcdm001_parse_keypad_setting (Driver *drvthis, char * keyname, char * default_value)
+static char lcdm001_parse_keypad_setting(Driver *drvthis, char * keyname, char * default_value)
 {
 	char return_val = 0;
 
-	if (strcmp( drvthis->config_get_string ( drvthis->name, keyname, 0, default_value), "LeftKey")==0) {
-		return_val=LEFT_KEY;
-	} else if (strcmp( drvthis->config_get_string ( drvthis->name, keyname, 0, default_value), "RightKey")==0) {
-		return_val=RIGHT_KEY;
-	} else if (strcmp( drvthis->config_get_string ( drvthis->name, keyname, 0, default_value), "UpKey")==0) {
-		return_val=UP_KEY;
-	} else if (strcmp( drvthis->config_get_string ( drvthis->name, keyname, 0, default_value), "DownKey")==0) {
-		return_val=DOWN_KEY;
+	if (strcmp(drvthis->config_get_string(drvthis->name, keyname, 0, default_value), "LeftKey") == 0) {
+		return_val = LEFT_KEY;
+	} else if (strcmp(drvthis->config_get_string(drvthis->name, keyname, 0, default_value), "RightKey") == 0) {
+		return_val = RIGHT_KEY;
+	} else if (strcmp(drvthis->config_get_string(drvthis->name, keyname, 0, default_value), "UpKey") == 0) {
+		return_val = UP_KEY;
+	} else if (strcmp(drvthis->config_get_string(drvthis->name, keyname, 0, default_value), "DownKey") == 0) {
+		return_val = DOWN_KEY;
 	} else {
-		report (RPT_WARNING, "LCDM001: Invalid  config file setting for %s. Using default value %s.\n", keyname, default_value);
-		if (strcmp (default_value, "LeftKey")==0) {
-			return_val=LEFT_KEY;
-		} else if (strcmp (default_value, "RightKey")==0) {
-			return_val=RIGHT_KEY;
-		} else if (strcmp (default_value, "UpKey")==0) {
-			return_val=UP_KEY;
-		} else if (strcmp (default_value, "DownKey")==0) {
-			return_val=DOWN_KEY;
+		report(RPT_WARNING, "%s: invalid config setting for %s; using default %s",
+				drvthis->name, keyname, default_value);
+		if (strcmp(default_value, "LeftKey") == 0) {
+			return_val = LEFT_KEY;
+		} else if (strcmp(default_value, "RightKey") == 0) {
+			return_val = RIGHT_KEY;
+		} else if (strcmp(default_value, "UpKey") == 0) {
+			return_val = UP_KEY;
+		} else if (strcmp(default_value, "DownKey") == 0) {
+			return_val = DOWN_KEY;
 		}
 	}
 	return return_val;
@@ -114,14 +115,14 @@ static char lcdm001_parse_keypad_setting (Driver *drvthis, char * keyname, char 
 
 /* Set cursorblink on/off */
 static void
-lcdm001_cursorblink (Driver *drvthis, int on)
+lcdm001_cursorblink(Driver *drvthis, int on)
 {
 	if (on) {
-		write (fd, "~K1", 3);
-		debug(RPT_INFO, "LCDM001: cursorblink turned on");
+		write(fd, "~K1", 3);
+		debug(RPT_INFO, "%s: cursorblink turned on", drvthis->name);
 	} else {
-		write (fd, "~K0", 3);
-		debug(RPT_INFO, "LCDM001: cursorblink turned off");
+		write(fd, "~K0", 3);
+		debug(RPT_INFO, "%s: cursorblink turned off", drvthis->name);
 	}
 }
 
@@ -136,56 +137,50 @@ MODULE_EXPORT int
 lcdm001_init (Driver *drvthis)
 {
         char device[200];
-	int speed=B38400;
+	int speed = B38400;
         struct termios portset;
 
-	char out[5]="";
+	char out[5] = "";
 
-	debug( RPT_INFO, "LCDM001: init(%p)", drvthis );
+	debug(RPT_INFO, "LCDM001: init(%p)", drvthis);
 
-	framebuf = malloc (width * height);
-
-	if (!framebuf) {
-                report(RPT_ERR, "\nError: unable to create LCDM001 framebuffer.\n");
+	framebuf = malloc(width * height);
+	if (framebuf == NULL) {
+                report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 		return -1;
 	}
-	memset (framebuf, ' ', width * height);
+	memset(framebuf, ' ', width * height);
 
 	// READ CONFIG FILE:
 
 	// which serial device should be used
-	strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , "/dev/lcd"),sizeof(device));
-	device[sizeof(device)-1]=0;
-	report (RPT_INFO,"LCDM001: Using device: %s", device);
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(device));
+	device[sizeof(device)-1] = '\0';
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
 	// keypad settings
-	pause_key =      lcdm001_parse_keypad_setting (drvthis, "PauseKey", "DownKey");
-	back_key =       lcdm001_parse_keypad_setting (drvthis, "BackKey", "LeftKey");
-	forward_key =    lcdm001_parse_keypad_setting (drvthis, "ForwardKey", "RightKey");
-	main_menu_key =  lcdm001_parse_keypad_setting (drvthis, "MainMenuKey", "UpKey");
+	pause_key =      lcdm001_parse_keypad_setting(drvthis, "PauseKey", "DownKey");
+	back_key =       lcdm001_parse_keypad_setting(drvthis, "BackKey", "LeftKey");
+	forward_key =    lcdm001_parse_keypad_setting(drvthis, "ForwardKey", "RightKey");
+	main_menu_key =  lcdm001_parse_keypad_setting(drvthis, "MainMenuKey", "UpKey");
 
 	// Set up io port correctly, and open it...
-	debug( RPT_DEBUG, "LCDM001: Opening serial device: %s", device);
+	debug(RPT_DEBUG, "%s: Opening serial device: %s", __FUNCTION__, device);
 	fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-	if (fd == -1)
-	{
-		switch (errno) {
-			case ENOENT: report( RPT_ERR, "LCDM001: lcdm001_init() failed: Device file missing: %s\n", device);
-				break;
-			case EACCES: report( RPT_ERR, "LCDM001: lcdm001_init() failed: Could not open device: %s\n", device);
-				report( RPT_ERR, "LCDM001: lcdm001_init() failed: Make sure you have rw access to %s!\n", device);
-				break;
-			default: report( RPT_ERR, "LCDM001: lcdm001_init() failed (%s)\n", strerror (errno));
-				break;
-		}
+	if (fd == -1) {
+		report(RPT_ERR, "%s: open(%d) failed (%s)",
+				drvthis->name, device, strerror(errno));
+		if (errno == EACCES)
+			report(RPT_ERR, "%s: make sure you have rw access to %s!",
+					drvthis->name, device);
   		return -1;
-	} else {
-		report (RPT_INFO, "opened LCDM001 display on %s", device);
 	}
+	report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
+
 	tcgetattr(fd, &portset);
 #ifdef HAVE_CFMAKERAW
 	/* The easy way: */
-	cfmakeraw( &portset );
+	cfmakeraw(&portset);
 #else
 	/* The hard way: */
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -193,7 +188,7 @@ lcdm001_init (Driver *drvthis)
 	portset.c_oflag &= ~OPOST;
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+	portset.c_cflag |= CS8 | CREAD | CLOCAL;
 #endif
 	cfsetospeed(&portset, speed);
 	cfsetispeed(&portset, speed);
@@ -201,14 +196,16 @@ lcdm001_init (Driver *drvthis)
 	tcflush(fd, TCIOFLUSH);
 
 	// Reset and clear the LCDM001
-	write (fd, "~C", 2);
+	write(fd, "~C", 2);
 	//Set cursorblink default
-	lcdm001_cursorblink (drvthis, DEFAULT_CURSORBLINK);
+	lcdm001_cursorblink(drvthis, DEFAULT_CURSORBLINK);
 	// Turn all LEDs off
-	snprintf (out, sizeof(out), "\%cL%c%c", 126, 0, 0);
-	write (fd, out, 4);
+	snprintf(out, sizeof(out), "\%cL%c%c", 126, 0, 0);
+	write(fd, out, 4);
 
-	return 0;
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+
+	return 1;
 }
 
 /* Below here, you may use either lcd.framebuf or driver->framebuf..
@@ -219,16 +216,21 @@ lcdm001_init (Driver *drvthis)
 MODULE_EXPORT void
 lcdm001_close (Driver *drvthis)
 {
-	char out[5];
-	if(framebuf) free (framebuf);
+	if (framebuf != NULL)
+		free(framebuf);
 	framebuf = NULL;
 
-	//switch off all LEDs
-	snprintf (out, sizeof(out), "\%cL%c%c", 126, 0, 0);
-	write (fd, out, 4);
-	close (fd);
+	if (fd >= 0) {
+		char out[5];
 
-        report (RPT_INFO, "LCDM001: closed");
+		//switch off all LEDs
+		snprintf(out, sizeof(out), "\%cL%c%c", 126, 0, 0);
+		write(fd, out, 4);
+		close(fd);
+	}	
+	fd = -1;
+
+        report(RPT_INFO, "%s: closed", drvthis->name);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -256,14 +258,14 @@ MODULE_EXPORT void
 lcdm001_clear (Driver *drvthis)
 {
         if (framebuf != NULL)
-                memset (framebuf, ' ', (width * height));
+                memset(framebuf, ' ', (width * height));
 	/* An instant clear is NOT neccessary, it only makes the display
 	 *  flicker
 	 */
-	/*write (fd, "~C", 2);*/ /* instant clear...*/
+	/*write(fd, "~C", 2);*/ /* instant clear...*/
         clear = 1;
 
-	debug (RPT_DEBUG, "LCDM001: cleared screen");
+	debug(RPT_DEBUG, "LCDM001: cleared screen");
 }
 
 //////////////////////////////////////////////////////////////////
@@ -276,9 +278,9 @@ lcdm001_flush (Driver *drvthis)
 
         //TODO: Check whether this is still correct
 
-	write(fd,framebuf,80);
+	write(fd, framebuf, 80);
 
-        debug (RPT_DEBUG, "LCDM001: frame buffer flushed");
+        debug(RPT_DEBUG, "LCDM001: frame buffer flushed");
 }
 
 /////////////////////////////////////////////////////////////////
@@ -293,9 +295,8 @@ lcdm001_chr (Driver *drvthis, int x, int y, char c)
 	ValidX(x);
 	ValidY(y);
 
-        if (c==0) {
+        if (c == '\0')
                 c = icon_char;   //heartbeat workaround
-        }
 
 	// write to frame buffer
 	y--; x--; // translate to 0-coords
@@ -303,7 +304,7 @@ lcdm001_chr (Driver *drvthis, int x, int y, char c)
 	offset = (y * width) + x;
 	framebuf[offset] = c;
 
-	debug (RPT_DEBUG, "LCDM001: writing character %02X to position (%d,%d)", c, x, y);
+	debug(RPT_DEBUG, "LCDM001: writing character %02X to position (%d,%d)", c, x, y);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -321,11 +322,11 @@ lcdm001_string (Driver *drvthis, int x, int y, char *string)
 	x--; y--; // Convert 1-based coords to 0-based...
 	offset = (y * width) + x;
 	siz = (width * height) - offset - 1;
-	siz = siz > strlen(string) ? strlen(string) : siz;
+	siz = (siz > strlen(string)) ? strlen(string) : siz;
 
 	memcpy(framebuf + offset, string, siz);
 
-	debug (RPT_DEBUG, "LCDM001: printed string at (%d,%d)", x, y);
+	debug(RPT_DEBUG, "LCDM001: printed string at (%d,%d)", x, y);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -336,20 +337,18 @@ lcdm001_output (Driver *drvthis, int state)
 	char out[5];
 	int one = 0, two = 0;
 
-	if (state<=255)
-	{
-		one=state;
-		two=0;
+	if (state <= 255) {
+		one = state;
+		two = 0;
 	}
-	else
-	{
+	else {
 		one = state & 0xff;
 		two = (state >> 8) & 0xff;
 	}
-        snprintf (out, sizeof(out), "~L%c%c",one,two);
-        write(fd,out,4);
+        snprintf(out, sizeof(out), "~L%c%c", one, two);
+        write(fd, out, 4);
 
-        debug (RPT_DEBUG, "LCDM001: current LED state: %d", state);
+        debug(RPT_DEBUG, "LCDM001: current LED state %d", state);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -358,22 +357,20 @@ lcdm001_output (Driver *drvthis, int state)
 MODULE_EXPORT void
 lcdm001_old_vbar(Driver *drvthis, int x, int len)
 {
-   int y = 4;
+	int y = 4;
 
-   debug (RPT_DEBUG , "LCDM001: vertical bar at %d set to %d", x, len);
+	debug(RPT_DEBUG , "LCDM001: vertical bar at %d set to %d", x, len);
 
-   while (len >= LCD_DEFAULT_CELLHEIGHT)
-     {
-       lcdm001_chr(drvthis, x, y, 0xFF);
-       len -= LCD_DEFAULT_CELLHEIGHT;
-       y--;
-     }
+	while (len >= LCD_DEFAULT_CELLHEIGHT) {
+		lcdm001_chr(drvthis, x, y, 0xFF);
+		len -= LCD_DEFAULT_CELLHEIGHT;
+		y--;
+	}
 
-   if(!len)
-     return;
+	if (!len)
+ 		return;
 
-  //TODO: Distinguish between len>=4 and len<4
-
+	//TODO: Distinguish between len>=4 and len<4
 }
 
 /////////////////////////////////////////////////////////////////
@@ -382,28 +379,25 @@ lcdm001_old_vbar(Driver *drvthis, int x, int len)
 MODULE_EXPORT void
 lcdm001_old_hbar(Driver *drvthis, int x, int y, int len)
 {
+	ValidX(x);
+	ValidY(y);
 
-  ValidX(x);
-  ValidY(y);
+	debug(RPT_DEBUG, "LCDM001: horizontal bar at %d set to %d", x, len);
 
-  debug (RPT_DEBUG, "LCDM001: horizontal bar at %d set to %d", x, len);
+	//TODO: Improve this function
 
-  //TODO: Improve this function
+	while ((x <= width) && (len > 0)) {
+		if (len < LCD_DEFAULT_CELLWIDTH) {
+			//lcdm001_chr(x, y, 0x98 + len);
+			break;
+		}
 
-  while((x <= width) && (len > 0))
-  {
-    if(len < LCD_DEFAULT_CELLWIDTH)
-      {
-	//lcdm001_chr(x, y, 0x98 + len);
-	break;
-      }
+		lcdm001_chr(drvthis, x, y, 0xFF);
+		len -= LCD_DEFAULT_CELLWIDTH;
+		x++;
+	}
 
-    lcdm001_chr(drvthis, x, y, 0xFF);
-    len -= LCD_DEFAULT_CELLWIDTH;
-    x++;
-  }
-
-  return;
+	return;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -444,7 +438,7 @@ lcdm001_get_key (Driver *drvthis)
         char in = '\0';
 	const char *key = NULL;
 
-        read (fd, &in, 1);
+        read(fd, &in, 1);
 	if (in == pause_key) {
 		key = "Enter";
 	} else if (in == back_key) {
