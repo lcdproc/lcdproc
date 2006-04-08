@@ -54,6 +54,8 @@
 # include "config.h"
 #endif
 
+#include "report.h"
+
 #define min(a, b) ((a)<(b) ? (a) : (b))
 #define True 1
 #define False 0
@@ -121,7 +123,7 @@ int read_tele(pylcd_private_data *status, char *buffer)
         && (zeichen==cc))
     {
         buffer[len]=0x00;
-        if (DEBUG) printf("DEBUG: read %s\n", buffer);
+	debug(RPT_DEBUG, "%s: read %s", __FUNCTION__, buffer);
         return True;
     }
     else
@@ -160,7 +162,7 @@ int send_tele(pylcd_private_data *status, char *buffer)
 
     write(status->FD, buffer2, len+1);
     /* tcflush (status->FD, TCIFLUSH); */
-    if (DEBUG) printf("DEBUG: sent: %s\n", buffer);
+    debug(RPT_DEBUG, "%s: sent %s", __FUNCTION__, buffer);
 
     return 0;
 }
@@ -183,7 +185,7 @@ unsigned long long timestamp(pylcd_private_data *status)
 
 /* Sets the serial device, used for communication with the LCD, into raw mode
  */
-int initTTY(int FD)
+int initTTY(Driver *drvthis, int FD)
 {
     struct termios tty_mode;
 
@@ -198,11 +200,11 @@ int initTTY(int FD)
         tty_mode.c_cc[VTIME] = 1;
 
         if (tcsetattr(FD, TCSANOW, &tty_mode) != 0) {
-            perror("Setting TTY failed");
+            report(RPT_ERR, "%s: setting TTY failed: %s", drvthis->name, strerror(errno));
             return -1;
         }
     } else {
-        perror("Reading TTY faild");
+        report(RPT_ERR, "%s: reading TTY failed: %s", drvthis->name, strerror(errno));
         return -1;
     }
 
@@ -235,36 +237,35 @@ MODULE_EXPORT int  pylcd_init (Driver *drvthis, char *args)
     int i;
     pylcd_private_data *status;
 
-    status=(pylcd_private_data *) malloc(sizeof(pylcd_private_data));
-    if ((status==NULL) || (drvthis->store_private_ptr(drvthis, status)<0))
+    status = (pylcd_private_data *) malloc(sizeof(pylcd_private_data));
+    if ((status == NULL) || (drvthis->store_private_ptr(drvthis, status) < 0))
     {
-        printf("Error allocating memory for modules private data\n");
+        report(RPT_ERR, "%s: error allocating memory for modules private data", drvthis->name);
         return -1;
     }
 
     /* Read config file: */
 
     /* Which serial device should be used? */
-    strncpy(status->devicename, drvthis->config_get_string ( drvthis->name , "Device" , 0 , "/dev/lcd"),sizeof(status->devicename));
-    status->devicename[sizeof(status->devicename)-1]=0;
-    printf("pylcd: Using device: %s\n", status->devicename);
+    strncpy(status->devicename, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(status->devicename));
+    status->devicename[sizeof(status->devicename)-1] = '\0';
+    report(RPT_INFO, "%s: using Device %s", drvthis->name, status->devicename);
 
     /* open and initialize serial device */
-    status->FD=open(status->devicename, O_RDWR);
+    status->FD = open(status->devicename, O_RDWR);
 
-    if (status->FD==-1)
-    {
-        perror("Opening device failed");
+    if (status->FD == -1) {
+        report(RPT_ERR, "%s: opening device failed: %s", drvthis->name, strerror(errno));
         return -1;
     }
-    if (initTTY(status->FD)!=0)
+    if (initTTY(drvthis, status->FD) != 0)
         return -1;
 
-    status->timeout.tv_sec=0;
-    status->timeout.tv_usec=MICROTIMEOUT;
-    status->width=WIDTH;
-    status->height=HEIGHT;
-    status->LEDtoggle=0;
+    status->timeout.tv_sec = 0;
+    status->timeout.tv_usec = MICROTIMEOUT;
+    status->width = WIDTH;
+    status->height = HEIGHT;
+    status->LEDtoggle = 0;
     strcpy(status->last_key_pressed, NOKEY);
     status->last_key_time = timestamp(status);
     status->last_buf_time = timestamp(status);
@@ -273,11 +274,10 @@ MODULE_EXPORT int  pylcd_init (Driver *drvthis, char *args)
        (Reset doesn't clear telegramms, darn protocol ... )
        */
 
-    tcflush (status->FD, TCIFLUSH); /* clear everything */
-    while (1)
-    {
-        i=read_tele(status, buffer);
-        if (i==True)
+    tcflush(status->FD, TCIFLUSH); /* clear everything */
+    while (1) {
+        i = read_tele(status, buffer);
+        if (i == True)
             send_ACK(status);
         else
             break;
@@ -292,11 +292,13 @@ MODULE_EXPORT int  pylcd_init (Driver *drvthis, char *args)
     send_tele(status, "C0101");
     send_tele(status, "M3");
     strcpy(status->framebuffer, "D                                ");
-    status->FB_modified=1;
+    status->FB_modified = 1;
 
-    for (i=0; i<7; i++)
-    	status->led[i]=0;
+    for (i = 0; i < 7; i++)
+    	status->led[i] = 0;
     set_leds(status);
+
+    report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
     return 0;
 };
@@ -359,11 +361,11 @@ MODULE_EXPORT void pylcd_string (Driver *drvthis, int x, int y, char *args)
     int len;
     pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
 
-    status->FB_modified=True;
-    x=min(status->width, x);
-    y=min(status->height, y);
-    offset=(x)+status->width*(y-1);
-    len=min(strlen(args), status->width*status->height-offset+1);
+    status->FB_modified = True;
+    x = min(status->width, x);
+    y = min(status->height, y);
+    offset = (x)+status->width*(y-1);
+    len = min(strlen(args), status->width*status->height-offset+1);
     memcpy(&status->framebuffer[offset], args, len);
 };
 
@@ -371,11 +373,10 @@ MODULE_EXPORT void pylcd_chr (Driver *drvthis, int x, int y, char c)
 {
     pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
 
-    status->FB_modified=True;
-    x=min(status->width, x);
-    y=min(status->height, y);
+    status->FB_modified = True;
+    x = min(status->width, x);
+    y = min(status->height, y);
     status->framebuffer[x+status->width*(y-1)]=c;
-
 };
 
 
@@ -393,9 +394,9 @@ MODULE_EXPORT void pylcd_cursor (Driver *drvthis, int x, int y, int state)
 {
     pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
 
-    status->C_x=x;
-    status->C_y=y;
-    status->C_state=state;
+    status->C_x = x;
+    status->C_y = y;
+    status->C_state = state;
 };
 
 /* Userdef characters, are those still supported ? */
@@ -423,7 +424,7 @@ MODULE_EXPORT void pylcd_output (Driver *drvthis, int state)
     int i;
 
     for (i = 0; i < 7; i++) 
-      status->led[i] = state & (1 << i);
+        status->led[i] = state & (1 << i);
     
     set_leds(status);
 };
@@ -440,52 +441,51 @@ MODULE_EXPORT const char *pylcd_get_key (Driver *drvthis)
     pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
 
     /* Now we read everything from the display and as long as we got ACKs, we ignore them. */
-    while (1)
-    {
-        retval=read_tele(status, buffer);
-        if ((retval==False) || (buffer[0]!='Q')) break;
+    while (1) {
+        retval = read_tele(status, buffer);
+        if ((retval == False) || (buffer[0] != 'Q')) break;
     }
-    if (retval==False)
+    if (retval == False)
         strcpy(buffer, status->last_key_pressed);
     else
         send_ACK(status);
 
     /* If a key wasn't released yet it may be released now. */
-    if (buffer[0]=='K')
+    if (buffer[0] == 'K')
     {
         /* test if its a release event */
-        if (   (strcmp(buffer, "K0003")==0)
-            || (strcmp(buffer, "K0030")==0)
-            || (strcmp(buffer, "K0300")==0)
-            || (strcmp(buffer, "K3000")==0))
+        if (   (strcmp(buffer, "K0003") == 0)
+            || (strcmp(buffer, "K0030") == 0)
+            || (strcmp(buffer, "K0300") == 0)
+            || (strcmp(buffer, "K3000") == 0))
         {
-            if (DEBUG) printf("DEBUG: Key released: %s\n", status->last_key_pressed);
+            debug(RPT_DEBUG, "%s: Key released: %s", __FUNCTION__, status->last_key_pressed);
             strcpy(status->last_key_pressed, NOKEY);
             return NULL;
         }
         else /* It must be a new key event */
         {
             strcpy(status->last_key_pressed, buffer);
-            if (DEBUG) printf("DEBUG: Key pressed: %s\n", status->last_key_pressed);
+            debug(RPT_DEBUG, "%s: Key pressed: %s", __FUNCTION__, status->last_key_pressed);
         }
     }
     /* If no keys are pressed at this time, we are done. */
-    if (status->last_key_pressed[0]==NOKEY[0])
+    if (status->last_key_pressed[0] == NOKEY[0])
         return NULL;
 
     current_time = timestamp(status);
-    if (current_time>status->last_key_time+500000) /* (buffer[0]=='K' ? 500000 : 250000)) */
-        status->last_key_time=current_time;
+    if (current_time > status->last_key_time + 500000) /* (buffer[0]=='K' ? 500000 : 250000)) */
+        status->last_key_time = current_time;
     else
         return NULL;
 
-    if (strcmp(status->last_key_pressed, "K0001")==0) /* first from left */
+    if (strcmp(status->last_key_pressed, "K0001") == 0) /* first from left */
         return "Up";
-    if (strcmp(status->last_key_pressed, "K0010")==0) /* second from left */
+    if (strcmp(status->last_key_pressed, "K0010") == 0) /* second from left */
         return "Down";
-    if (strcmp(status->last_key_pressed, "K0100")==0) /* third from left */
+    if (strcmp(status->last_key_pressed, "K0100") == 0) /* third from left */
         return "Enter";
-    if (strcmp(status->last_key_pressed, "K1000")==0) /* last from left */
+    if (strcmp(status->last_key_pressed, "K1000") == 0) /* last from left */
         return "Escape";
 
     return NULL;
