@@ -20,6 +20,7 @@
 #include "wirz-sli.h"
 //#include "drv_base.h"
 #include "report.h"
+#include "lcd_lib.h"
 
 //#include "shared/debug.h"
 #include "shared/str.h"
@@ -34,7 +35,7 @@ typedef enum {
 	beat = 8
 } custom_type;
 
-static int fd;
+static int fd = -1;
 static char *framebuf = NULL;
 static int width = 0;
 static int height = 0;
@@ -66,6 +67,7 @@ sli_init (Driver *drvthis)
 	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
 						   SLI_DEFAULT_DEVICE), sizeof(device));
 	device[sizeof(device)-1] = '\0';
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
 	/* What speed to use */
 	speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 19200);
@@ -78,26 +80,27 @@ sli_init (Driver *drvthis)
 	else if (speed == 57600)  speed = B57600;
 	else if (speed == 115200) speed = B115200;
 	else {
-		report(RPT_WARNING, "sli: Illegal speed: %d. Must be one of 1200, 2400, 9600, 19200, 38400, 57600, or 115200. Using default.\n", speed);
+		report(RPT_WARNING, "%s: illegal Speed: %d; must be one of 1200, 2400, 9600, 19200, 38400, 57600, or 115200; using default %d",
+				drvthis->name, speed);
 		speed = B19200;
 	}
 
 	/* End of config file parsing */
 
 	// Set up io port correctly, and open it...
-	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+	fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1) {
-		report(RPT_ERR, "sli_init: open(%s) failed (%s)\n", device, strerror (errno));
+		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
 		return -1;
 	}
-	report(RPT_DEBUG, "sli_init: opened device %s\n", device);
+	report(RPT_DEBUG, "%s: opened device %s", drvthis->name, device);
 	
-	tcgetattr (fd, &portset);
+	tcgetattr(fd, &portset);
 
 	// We use RAW mode
 #ifdef HAVE_CFMAKERAW
 	// The easy way
-	cfmakeraw( &portset );
+	cfmakeraw(&portset);
 #else
 	// The hard way
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -109,24 +112,24 @@ sli_init (Driver *drvthis)
 #endif
 
 	// Set port speed
-	cfsetospeed (&portset, speed);
-	cfsetispeed (&portset, B0);
+	cfsetospeed(&portset, speed);
+	cfsetispeed(&portset, B0);
 
 	// Do it...
-	tcsetattr (fd, TCSANOW, &portset);
+	tcsetattr(fd, TCSANOW, &portset);
 
 	/* Initialize SLI using autobaud detection, and then turn off cursor
 	   and clear screen */
-	usleep (150000);			  /* 150ms delay to allow SLI to power on */
-	out[0] = 13;				  /* CR for SLI autobaud */
-	write (fd, out, 1);
-	usleep (3000);				  /* 3ms delay.. wait for it to autobaud */
+	usleep(150000);			  /* 150ms delay to allow SLI to power on */
+	out[0] = 13;			  /* CR for SLI autobaud */
+	write(fd, out, 1);
+	usleep(3000);			  /* 3ms delay.. wait for it to autobaud */
 	out[0] = 0x0FE;
-	out[1] = 0x00C;				  /* No cursor */
-	write (fd, out, 2);
+	out[1] = 0x00C;			  /* No cursor */
+	write(fd, out, 2);
 	out[0] = 0x0FE;
-	out[1] = 0x001;				  /* Clear LCD, not sure if this belongs here */
-	write (fd, out, 2);
+	out[1] = 0x001;			  /* Clear LCD, not sure if this belongs here */
+	write(fd, out, 2);
 
 	// Set LCD parameters (I use a 16x2 LCD) -- small but still useful
 	// Its also much cheaper than the higher quality Matrix Orbital modules
@@ -134,7 +137,9 @@ sli_init (Driver *drvthis)
 	width = 15;
 	height = 2;
 
-	return fd;
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+
+	return 1;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -143,11 +148,11 @@ sli_init (Driver *drvthis)
 MODULE_EXPORT void
 sli_close (Driver *drvthis)
 {
-	close (fd);
+	if (fd >= 0)
+		close(fd);
 
 	if (framebuf)
-		free (framebuf);
-
+		free(framebuf);
 	framebuf = NULL;
 }
 
@@ -178,8 +183,8 @@ sli_flush (Driver *drvthis)
 	char out[2];					  /* Again, why does the Matrix driver allocate so much here? */
 
 	/*
-	   out[0]=0x0FE;
-	   out[1]=0x001;
+	   out[0] = 0x0FE;
+	   out[1] = 0x001;
 	   write(fd, out, 2);
 	 */
 
@@ -193,10 +198,10 @@ sli_flush (Driver *drvthis)
 	/* Do the actual refresh */
 	out[0] = 0x0FE;
 	out[1] = 0x080;
-	write (fd, out, 2);
-	write (fd, &framebuf[0], 16);
-	usleep (10);
-	write (fd, &framebuf[16], 15);
+	write(fd, out, 2);
+	write(fd, &framebuf[0], 16);
+	usleep(10);
+	write(fd, &framebuf[16], 15);
 
 	//   strncpy(lastframe,dat,32); // Update lastframe...
 }
@@ -207,7 +212,7 @@ sli_flush (Driver *drvthis)
 MODULE_EXPORT void
 sli_clear (Driver *drvthis)
 {
-	memset (framebuf, ' ', width * height);
+	memset(framebuf, ' ', width * height);
 
 }
 
@@ -220,8 +225,8 @@ sli_string (Driver *drvthis, int x, int y, char string[])
 {
 	int i;
 
-	x -= 1;							  // Convert 1-based coords to 0-based...
-	y -= 1;
+	x--;				  // Convert 1-based coords to 0-based...
+	y--;
 
 	for (i = 0; string[i]; i++) {
 		// Check for buffer overflows...
@@ -332,13 +337,13 @@ sli_init_vbar (Driver *drvthis)
 	};
 
 	if (custom != vbar) {
-		sli_set_char (drvthis, 1, a);
-		sli_set_char (drvthis, 2, b);
-		sli_set_char (drvthis, 3, c);
-		sli_set_char (drvthis, 4, d);
-		sli_set_char (drvthis, 5, e);
-		sli_set_char (drvthis, 6, f);
-		sli_set_char (drvthis, 7, g);
+		sli_set_char(drvthis, 1, a);
+		sli_set_char(drvthis, 2, b);
+		sli_set_char(drvthis, 3, c);
+		sli_set_char(drvthis, 4, d);
+		sli_set_char(drvthis, 5, e);
+		sli_set_char(drvthis, 6, f);
+		sli_set_char(drvthis, 7, g);
 		custom = vbar;
 	}
 }
@@ -402,11 +407,11 @@ sli_init_hbar (Driver *drvthis)
 	};
 
 	if (custom != hbar) {
-		sli_set_char (drvthis, 1, a);
-		sli_set_char (drvthis, 2, b);
-		sli_set_char (drvthis, 3, c);
-		sli_set_char (drvthis, 4, d);
-		sli_set_char (drvthis, 5, e);
+		sli_set_char(drvthis, 1, a);
+		sli_set_char(drvthis, 2, b);
+		sli_set_char(drvthis, 3, c);
+		sli_set_char(drvthis, 4, d);
+		sli_set_char(drvthis, 5, e);
 		custom = hbar;
 	}
 }
@@ -451,10 +456,9 @@ sli_set_char (Driver *drvthis, int n, char *dat)
 {
 	char out[2];
 	int row, col;
-	int letter;
 
 	/* SLI also has 8 user definable characters */
-	if (n < 0 || n > 7)
+	if ((n < 0) || (n > 7))
 		return;
 	if (!dat)
 		return;
@@ -462,22 +466,23 @@ sli_set_char (Driver *drvthis, int n, char *dat)
 	/* Move cursor to CGRAM */
 	out[0] = 0x0FE;
 	out[1] = 0x040 + 8 * n;
-	write (fd, out, 2);
+	write(fd, out, 2);
 
 	for (row = 0; row < LCD_DEFAULT_CELLHEIGHT; row++) {
-		letter = 0;
+		int letter = 0;
+
 		for (col = 0; col < LCD_DEFAULT_CELLWIDTH; col++) {
 			letter <<= 1;
 			letter |= (dat[(row * LCD_DEFAULT_CELLWIDTH) + col] > 0);
 		}
-		letter |= 0x020;			  /* SLI can't accept CR, LF, etc in this character! */
-		write (fd, &letter, 1);
+		letter |= 0x020;	  /* SLI can't accept CR, LF, etc in this character! */
+		write(fd, &letter, 1);
 	}
 
 	/* Move cursor back to DDRAM */
 	out[0] = 0x0FE;
 	out[1] = 0x080;
-	write (fd, out, 2);
+	write(fd, out, 2);
 }
 
 MODULE_EXPORT int
@@ -521,17 +526,17 @@ sli_icon (Driver *drvthis, int x, int y, int icon)
 
 	if (custom == bign)
 		custom = beat;
-	switch( icon ) {
+	switch ( icon ) {
 		case ICON_BLOCK_FILLED:
-			sli_chr( drvthis, x, y, 255 );
+			sli_chr(drvthis, x, y, 255);
 			break;
 		case ICON_HEART_FILLED:
-			sli_set_char( drvthis, 0, icons[1] );
-			sli_chr( drvthis, x, y, 0 );
+			sli_set_char( drvthis, 0, icons[1]);
+			sli_chr(drvthis, x, y, 0);
 			break;
 		case ICON_HEART_OPEN:
-			sli_set_char( drvthis, 0, icons[0] );
-			sli_chr( drvthis, x, y, 0 );
+			sli_set_char( drvthis, 0, icons[0]);
+			sli_chr(drvthis, x, y, 0);
 			break;
 		default:
 			return -1;
