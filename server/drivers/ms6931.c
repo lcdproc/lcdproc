@@ -46,7 +46,7 @@
 #include "server/configfile.h"
 */
 
-static int fd;
+static int fd = -1;
 static char *framebuf = NULL;
 static unsigned char heartbeatCharacter;
 static fd_set fdset;
@@ -148,50 +148,50 @@ ms6931_init (Driver *drvthis)
 	char device[200] = MS6931_DEF_DEVICE;
 	char size[200] = MS6931_DEF_SIZE;
 
-	debug(RPT_INFO, "ms6931_init: init(%p)", drvthis );
+	debug(RPT_INFO, "ms6931_init: init(%p)", drvthis);
 
 	/*Which serial device should be used*/
-	strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , MS6931_DEF_DEVICE),sizeof(device));
-	device[sizeof(device)-1]=0;
-	report (RPT_INFO,"ms6931_init: Using device: %s", device);
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, MS6931_DEF_DEVICE), sizeof(device));
+	device[sizeof(device)-1] = '\0';
+	report(RPT_INFO,"%s: using Device %s", drvthis->name, device);
 
 	/*Which size*/
-	strncpy(size, drvthis->config_get_string ( drvthis->name , "Size" , 0 , MS6931_DEF_SIZE),sizeof(size));
-	size[sizeof(size)-1]=0;
-	if( sscanf(size , "%dx%d", &w, &h ) != 2
-	|| (w <= 0) || (w > LCD_MAX_WIDTH)
-	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "ms6931_init: Cannot read size: %s. Using default value.", size);
-		sscanf( MS6931_DEF_SIZE , "%dx%d", &w, &h );
+	strncpy(size, drvthis->config_get_string(drvthis->name , "Size", 0, MS6931_DEF_SIZE), sizeof(size));
+	size[sizeof(size)-1] = '\0';
+	if ((sscanf(size, "%dx%d", &w, &h) != 2)
+	    || (w <= 0) || (w > LCD_MAX_WIDTH)
+	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
+		report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+				drvthis->name, size, MS6931_DEF_SIZE);
+		sscanf(MS6931_DEF_SIZE, "%dx%d", &w, &h);
 	}
 	width = w;
 	height = h;
 
 	/* get the character to use for heartbeat */
-	heartbeatCharacter = (unsigned char)(drvthis->config_get_int (drvthis->name, "HeartbeatCharacter", 0, (int)'*') & 0xff);
-	if (!heartbeatCharacter
-		|| heartbeatCharacter > 127
-		|| charTable[heartbeatCharacter] == ' ')
-	{
+	heartbeatCharacter = (unsigned char)(drvthis->config_get_int(drvthis->name, "HeartbeatCharacter", 0, (int)'*') & 0xff);
+	if ((heartbeatCharacter == '\0')
+	    || (heartbeatCharacter > 127)
+	    || (charTable[heartbeatCharacter] == ' ')) {
 		heartbeatCharacter = '*';
 	}
 
 	/* Set up io port correctly, and open it...*/
-	debug( RPT_DEBUG, "ms6931_init: Opening serial device: %s", device);
-	fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+	debug(RPT_DEBUG, "%s: Opening serial device: %s", drvthis->name, device);
+	fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1) {
-		report (RPT_ERR, "ms6931_init: open() failed (%s)", strerror (errno));
+		report(RPT_ERR, "%s: open() failed (%s)", drvthis->name, strerror(errno));
 		return -1;
 	} else {
 		fcntl(fd, F_SETOWN, getpid());
-		report (RPT_INFO, "ms6931_init: opened display on %s", device);
+		report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
 	}
 
-	FD_ZERO (&fdset);
-	FD_SET (fd, &fdset);
+	FD_ZERO(&fdset);
+	FD_SET(fd, &fdset);
 
 	// set terminal
-	tcgetattr (fd, &portset);
+	tcgetattr(fd, &portset);
 #ifdef HAVE_CFMAKERAW
 	cfmakeraw( &portset );
 #else
@@ -201,25 +201,29 @@ ms6931_init (Driver *drvthis)
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
 	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
-	cfsetospeed (&portset, B9600);
-//	cfsetispeed (&portset, B0);
+	cfsetospeed(&portset, B9600);
+//	cfsetispeed(&portset, B0);
 
-	tcsetattr (fd, TCSANOW, &portset);
+	tcsetattr(fd, TCSANOW, &portset);
 
 	// set display to comunications mode 
 	ms6931_write("~\040", 2);
 	sleep(1);
 
 	// create framebuffer and clear display
-	framebuf = (unsigned char *) malloc (width * height);
+	framebuf = (unsigned char *) malloc(width * height);
+	if (framebuf == NULL) {
+		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
+		return -1;
+	}
 	ms6931_clear(drvthis);
 
 	selectTimeout.tv_sec = 0;
 	selectTimeout.tv_usec = 0;
 
-	report (RPT_DEBUG, "ms6931_init: done");
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return fd;
+	return 1;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -232,14 +236,14 @@ ms6931_close (Driver *drvthis)
 	ms6931_flush(drvthis);
 	ms6931_backlight (drvthis, BACKLIGHT_OFF);
        
-	close (fd);
+	if (fd >= 0)
+		close(fd);
 
-	if (framebuf) {
-		free (framebuf);
-		framebuf = NULL;
-	}
+	if (framebuf != NULL)
+		free(framebuf);
+	framebuf = NULL;
 
-	report (RPT_DEBUG, "ms6931_close: done");
+	report(RPT_DEBUG, "%s: close() done", drvthis->name);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -247,7 +251,7 @@ ms6931_close (Driver *drvthis)
 MODULE_EXPORT void
 ms6931_flush (Driver *drvthis)
 {
-	ms6931_draw_frame (framebuf);
+	ms6931_draw_frame(framebuf);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -272,11 +276,11 @@ ms6931_height (Driver *drvthis)
 MODULE_EXPORT void
 ms6931_chr (Driver *drvthis, int x, int y, char c)
 {
-	if (x>width || y>height)
+	if ((x > width) || (y > height))
 		return;
 	y--;
 	x--;
-	framebuf[(y * width) + x] = charTable[(unsigned char)c];
+	framebuf[(y * width) + x] = charTable[(unsigned char) c];
 }
 
 /////////////////////////////////////////////////////////////////
@@ -290,15 +294,15 @@ ms6931_backlight (Driver *drvthis, int on)
 
 	if (on != saved_state) {
 		switch (on) {
-		case BACKLIGHT_OFF:
-			out[2] = 0x00;
-			break;
-		case BACKLIGHT_ON:
-		default:
-			out[2] = 0x01;
+			case BACKLIGHT_OFF:
+				out[2] = 0x00;
+				break;
+			case BACKLIGHT_ON:
+			default:
+				out[2] = 0x01;
 		}
-		ms6931_write (out, 3);
-		report (RPT_DEBUG, "ms6931_backlight: switched to %d", on);
+		ms6931_write(out, 3);
+		report(RPT_DEBUG, "%s: backlight: switched to %d", drvthis->name, on);
 	}
 	saved_state = on;
 }
@@ -316,19 +320,19 @@ ms6931_cursor (Driver *drvthis, int x, int y, int state)
 
 	if (state != saved_state) {
 		switch (state) {
-		case CURSOR_OFF:
-			out[2] = 0;
-			break;
-		case CURSOR_UNDER:
-			out[2] = 2;
-			break;
-		case CURSOR_DEFAULT_ON:
-		case CURSOR_BLOCK:
-		default:
-			out[2] = 3;
+			case CURSOR_OFF:
+				out[2] = 0;
+				break;
+			case CURSOR_UNDER:
+				out[2] = 2;
+				break;
+			case CURSOR_DEFAULT_ON:
+			case CURSOR_BLOCK:
+			default:
+				out[2] = 3;
 		}
-		ms6931_write (out, 3);
-		report (RPT_DEBUG, "ms6931_cursor: switched to %d", state);
+		ms6931_write(out, 3);
+		report(RPT_DEBUG, "%s: cursor: switched to %d", drvthis->name, state);
 	}
 	saved_state = state;
 }
@@ -340,7 +344,7 @@ MODULE_EXPORT void
 ms6931_clear (Driver *drvthis)
 {
 //	ms6931_write("~\042", 2);
-	memset (framebuf, ' ', width * height);
+	memset(framebuf, ' ', width * height);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -355,13 +359,15 @@ ms6931_string (Driver *drvthis, int x, int y, char string[])
 	x--;
 	y--;
 
-	for (i = 0; string[i]; i++) {
-		if (string[i] == -1) {
-			string[i] = ' ';
-		}
+	for (i = 0; string[i] != '\0'; i++) {
+		unsigned char c = (unsigned char) string[i];
+
+		if (c == 255)
+			c = ' ';
+
 		if ((y * width) + x + i > (width * height))
 			break;
-		framebuf[(y * width) + x + i] = charTable[(unsigned char)string[i]];
+		framebuf[(y * width) + x + i] = charTable[c];
 	}
 }
 
@@ -384,10 +390,11 @@ ms6931_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
 	if ((len * promille) % 1000 > 500)
 		size++;
 
-report(RPT_DEBUG, "ms6931_hbar: len=%d, size=%d, promile=%d", len, size, promille);
+	report(RPT_DEBUG, "%s: hbar: len=%d, size=%d, promile=%d",
+			drvthis->name, len, size, promille);
 
-	memset (bar, ' ', len);
-	memset (bar, '*', size);
+	memset(bar, ' ', len);
+	memset(bar, '*', size);
 	bar[len] = '\0';
 
 	ms6931_string(drvthis, x, y, bar);
@@ -403,14 +410,14 @@ ms6931_heartbeat (Driver *drvthis, int state)
 	char whichChar;
 	static int saved_state = HEARTBEAT_ON;
 
-	report (RPT_DEBUG, "ms6931_heartbeat: state=%d", state);
+	report(RPT_DEBUG, "%s: heartbeat: state=%d", drvthis->name, state);
 
 	if (state)
 		saved_state = state;
 	if (state == HEARTBEAT_ON) {
 		whichChar = ((timer + 4) & 5) ? heartbeatCharacter : ' ';
-		ms6931_chr (drvthis, width, 1, whichChar);
-		ms6931_flush (drvthis);
+		ms6931_chr(drvthis, width, 1, whichChar);
+		ms6931_flush(drvthis);
 	}
 	timer++;
 	timer &= 0x0f;
@@ -428,7 +435,8 @@ ms6931_get_key (Driver *drvthis)
 	const char *key = NULL;
 
 	if ((ret = select(FD_SETSIZE, &fdset, NULL, NULL, &selectTimeout)) < 0) {
-		report(RPT_DEBUG, "ms6931_get_key: select() failed (%s)", strerror(errno));
+		report(RPT_DEBUG, "%s: get_key: select() failed (%s)",
+				drvthis->name, strerror(errno));
 		return NULL;
 	}
 	if (!ret) {
@@ -440,7 +448,8 @@ ms6931_get_key (Driver *drvthis)
 		return NULL;
 
 	if ((ret = read(fd, &buf, 1)) < 0) {
-		report(RPT_DEBUG, "ms6931_get_key: read() failed (%s)", strerror(errno));
+		report(RPT_DEBUG, "%s: get_key: read() failed (%s)",
+				drvthis->name, strerror(errno));
 		return NULL;
 	}
 	if (ret == 1) {
@@ -455,11 +464,12 @@ ms6931_get_key (Driver *drvthis)
 			key = "Down";
 			break;
 		default:
-			report(RPT_DEBUG, "ms6931_get_key: illegal key 0x%02x", (int)buf);
+			report(RPT_DEBUG, "%s get_key: illegal key 0x%02X", 
+					drvthis->name, buf);
 			return NULL;
 		}
 
-		report(RPT_DEBUG, "ms6931_get_key: returning %s", key);
+		report(RPT_DEBUG, "%s: get_key: returns %s", drvthis->name, key);
 		return key;
 	}
 
