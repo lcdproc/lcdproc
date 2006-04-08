@@ -75,7 +75,7 @@ xosdlib_drv_init (Driver *drvthis)
 	p->brightness = DEFAULT_BRIGHTNESS;
 	p->offbrightness = DEFAULT_OFFBRIGHTNESS;
 
-	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	/* Read config file */
 
@@ -87,11 +87,12 @@ xosdlib_drv_init (Driver *drvthis)
 		strncpy(size, drvthis->config_get_string(drvthis->name, "Size",
 							 0, DEFAULT_SIZE), sizeof(size));
 		size[sizeof(size) - 1] = '\0';
-		debug (RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
+		debug(RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
 		if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
 		    (w <= 0) || (w > LCD_MAX_WIDTH) ||
 		    (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-			report(RPT_WARNING, "svga: Cannot read size: %s. Using default value.\n", size);
+			report(RPT_WARNING, "%s: cannot read Size: %s. using default %s",
+					drvthis->name, size, DEFAULT_SIZE);
 			sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 		}
 		p->width = w;
@@ -107,24 +108,24 @@ xosdlib_drv_init (Driver *drvthis)
 			p->height = LCD_DEFAULT_HEIGHT;
 		}
 	}
-	report(RPT_INFO, "%s: Using size %dx%d", __FUNCTION__, p->width, p->height);
+	report(RPT_INFO, "%s: using size %dx%d", drvthis->name, p->width, p->height);
 		
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	debug (RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_BRIGHTNESS);
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
 
 	/* Which backlight-off "brightness" */
-	tmp = drvthis->config_get_int (drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	debug (RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
+	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_OFFBRIGHTNESS);
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_OFFBRIGHTNESS);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
 	p->offbrightness = tmp;
@@ -133,25 +134,25 @@ xosdlib_drv_init (Driver *drvthis)
 	strncpy(p->font, drvthis->config_get_string(drvthis->name, "Font",
 						    0, DEFAULT_FONT), sizeof(p->font));
 	p->font[sizeof(p->font) - 1] = '\0';
-	debug (RPT_INFO, "%s: Font (in config) is '%s'", __FUNCTION__, p->font);
+	debug(RPT_INFO, "%s: Font (in config) is '%s'", __FUNCTION__, p->font);
 
 	/* initialize xosdlib library */
 	p->osd = xosd_create(p->height);
 	if (p->osd == NULL) {
-		report(RPT_ERR, "xosd: xosd_create() failed.");
+		report(RPT_ERR, "%s: xosd_create() failed", drvthis->name);
 		return -1;
 	}	
 
 	/* set font */
 	if (xosd_set_font(p->osd, p->font) == -1) {
-		report(RPT_ERR, "xosd: xosd_set_font() failed.");
+		report(RPT_ERR, "%s: xosd_set_font() failed", drvthis->name);
 		return -1;
 	}	
 
         /* make sure the frame buffer is there... */
         p->framebuf = (unsigned char *) malloc(p->width * p->height);
         if (p->framebuf == NULL) {
-                report(RPT_ERR, "%s: unable to create framebuffer.\n", __FUNCTION__);
+                report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
                 return -1;
         }
         memset(p->framebuf, ' ', p->width * p->height);
@@ -159,10 +160,12 @@ xosdlib_drv_init (Driver *drvthis)
         /* make sure the framebuffer backing store is there... */
         p->backingstore = (unsigned char *) malloc(p->width * p->height);
         if (p->backingstore == NULL) {
-                report(RPT_ERR, "%s: unable to create framebuffer backing store.\n", __FUNCTION__);
+                report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
                 return -1;
         }
         memset(p->backingstore, ' ', p->width * p->height);
+
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
 }
@@ -176,7 +179,7 @@ xosdlib_drv_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	if (p != NULL) {
 		if (p->osd)
@@ -229,7 +232,7 @@ xosdlib_drv_clear (Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	memset(p->framebuf, ' ', p->width * p->height);
 }
@@ -245,7 +248,7 @@ xosdlib_drv_flush (Driver *drvthis)
 	int i;
 	char buffer[LCD_MAX_WIDTH];
 
-	debug (RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
+	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
 	for (i = 0; i < p->height; i++) {
 		memcpy(buffer, p->framebuf + (i * p->width), p->width);
@@ -267,7 +270,7 @@ xosdlib_drv_string (Driver *drvthis, int x, int y, char string[])
 	PrivateData *p = drvthis->private_data;
 	int i;
 	
-	debug (RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
 
 	x--;
 	y--;
@@ -291,7 +294,7 @@ xosdlib_drv_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
-	debug (RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
 
 	x--;
 	y--;
@@ -317,7 +320,7 @@ xosdlib_drv_old_num (Driver *drvthis, int x, int num)
 	char c;
 	int y, dx;
 
-	debug (RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
+	debug(RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
 
 	c = '0' + num;
 
@@ -335,7 +338,7 @@ xosdlib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 {
 	int pos;
 
-	debug (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
@@ -355,7 +358,7 @@ xosdlib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 {
 	int pos;
 
-	debug (RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
