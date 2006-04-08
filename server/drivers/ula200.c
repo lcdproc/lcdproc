@@ -254,12 +254,10 @@ ula200_ftdi_usb_read(PrivateData *p)
     
     while ((err = ftdi_read_data(&p->ftdic, buffer, 1)) == 0);
 
-    if (err < 0)
-    {
+    if (err < 0) {
         return -1;
     }
-    else
-    {
+    else {
         return buffer[0];
     }
 }
@@ -283,16 +281,14 @@ ula200_ftdi_read_response(Driver *drvthis)
     {
         /* wait until STX */
         while (((ret = ula200_ftdi_usb_read(p)) != CH_STX) && (ret > 0));
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return false;
         }
 
         /* read next char */
         ch = ula200_ftdi_usb_read(p);
 
-        switch (ch)
-        {
+        switch (ch) {
             case 't':
                 ch = ula200_ftdi_usb_read(p);
                 AddKeyToKeyRing(&p->keyring, (unsigned char)(ch - 0x40));
@@ -309,13 +305,12 @@ ula200_ftdi_read_response(Driver *drvthis)
 
             default:
                 answer_read = true;
-                report(RPT_INFO, "Read invalid answer (0x%x)", ch);
+                report(RPT_INFO, "%s: read invalid answer (0x%02X)", drvthis->name, ch);
         }
 
         /* wait until ETX */
         while (((ret = ula200_ftdi_usb_read(p)) != CH_ETX) && (ret > 0));
-        if (ret < 0)
-        {
+        if (ret < 0) {
             return false;
         }
     }
@@ -342,51 +337,41 @@ ula200_ftdi_write_command(Driver *drvthis, unsigned char *data, int length, bool
     int pos = 0;
     unsigned char buffer[1024];
 
-    if (length > 512)
-    {
+    if (length > 512) {
         return -EINVAL;
     }
 
     /* fill the array */
     buffer[pos++] = CH_STX;
-    for (i = 0;  i < length; i++)
-    {
-        if (escape)
-        {
-            if (data[i] == CH_STX) 
-            {
+    for (i = 0;  i < length; i++) {
+        if (escape) {
+            if (data[i] == CH_STX) {
                 buffer[pos++] = CH_ENQ;
                 buffer[pos++] = CH_DC2;
             }
-            else if (data[i] == CH_ETX)
-            {
+            else if (data[i] == CH_ETX) {
                 buffer[pos++] = CH_ENQ;
                 buffer[pos++] = CH_DC3;
             }
-            else if (data[i] == CH_ENQ)
-            {
+            else if (data[i] == CH_ENQ) {
                 buffer[pos++] = CH_ENQ;
                 buffer[pos++] = CH_NAK;
             }
-            else
-            {
+            else {
                 buffer[pos++] = data[i];
             }
         }
-        else
-        {
+        else {
             buffer[pos++] = data[i];
         }
     }
     buffer[pos++] = CH_ETX;
 
-    do 
-    {
+    do {
         /* bytes */
         err = ftdi_write_data(&p->ftdic, buffer, pos);
-        if (err < 0)
-        {
-            report(RPT_WARNING, "ftdi_write_data failed");
+        if (err < 0) {
+            report(RPT_WARNING, "%s: ftdi_write_data failed", drvthis->name);
             return -1;
         }
     }
@@ -407,10 +392,9 @@ ula200_ftdi_clear(Driver *drvthis)
 
     command[0] = 'l';
     err = ula200_ftdi_write_command(drvthis, command, 1, true);
-    if (err < 0)
-    {
-        report(RPT_WARNING, "ula200_ftdi_clear: "
-                            "ula200_ftdi_write_command failed");
+    if (err < 0) {
+        report(RPT_WARNING, "%s: ula200_ftdi_clear: "
+                            "ula200_ftdi_write_command failed", drvthis->name);
     }
 
     return err;
@@ -423,12 +407,11 @@ ula200_ftdi_clear(Driver *drvthis)
 static int
 ula200_ftdi_position(Driver *drvthis, int x, int y)
 {
-	PrivateData *p = (PrivateData *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
     unsigned char command[5];
     int err;
 
-    if (y >= 2)
-    {
+    if (y >= 2) {
         y -= 2;
         x += p->width;
     }
@@ -437,10 +420,10 @@ ula200_ftdi_position(Driver *drvthis, int x, int y)
     command[1] = x;
     command[2] = y;
     err = ula200_ftdi_write_command(drvthis, command, 3, true);
-    if (err < 0)
-    {
-        report(RPT_WARNING, "ula200_ftdi_position(%d,%d): "
-                            "ula200_ftdi_write_command failed", x, y);
+    if (err < 0) {
+        report(RPT_WARNING, "%s: ula200_ftdi_position(%d,%d): "
+                            "ula200_ftdi_write_command failed",
+			    drvthis->name, x, y);
     }
 
     return err;
@@ -453,17 +436,16 @@ ula200_ftdi_position(Driver *drvthis, int x, int y)
 static int
 ula200_ftdi_rawdata(Driver *drvthis, unsigned char flags, unsigned char ch)
 {
+    //PrivateData *p = (PrivateData *) drvthis->private_data;
     unsigned char command[3];
     unsigned int err;
-	//PrivateData *p = (PrivateData *) drvthis->private_data;
 
     command[0] = 'R';
-    command[1] = flags == RS_DATA ? '2' : '0';
+    command[1] = flags == (RS_DATA) ? '2' : '0';
     command[2] = ch;
     err = ula200_ftdi_write_command(drvthis, command, 3, false);
-    if (err < 0)
-    {
-		report(RPT_ERR, "ULA-200: Cannot read size: %s");
+    if (err < 0) {
+		report(RPT_ERR, "%s: ftdi_write_command() failed", drvthis->name);
     }
 
     return err;
@@ -476,28 +458,25 @@ ula200_ftdi_rawdata(Driver *drvthis, unsigned char flags, unsigned char ch)
 static int
 ula200_ftdi_string(Driver *drvthis, unsigned char *string, int len)
 {
-	//PrivateData *p = (PrivateData *) drvthis->private_data;
+    //PrivateData *p = (PrivateData *) drvthis->private_data;
     unsigned char buffer[128];
     int err;
     int i;
 
-    if (len > 80)
-    {
+    if (len > 80) {
         return -EINVAL;
     }
 
     buffer[0] = 's';
     buffer[1] = len;
-    for (i = 0; i < len; i++)
-    {
+    for (i = 0; i < len; i++) {
         buffer[i+2] = HD44780_charmap[(unsigned char)string[i]];
     }
     
     err = ula200_ftdi_write_command(drvthis, buffer, len+2, true);
-    if (err < 0)
-    {
-        report(RPT_WARNING, "ula200_ftdi_string: "
-                            "ula200_ftdi_write_command failed");
+    if (err < 0) {
+        report(RPT_WARNING, "%s: ula200_ftdi_string: "
+                            "ula200_ftdi_write_command() failed", drvthis->name);
     }
 
     return err;
@@ -512,7 +491,7 @@ ula200_ftdi_enable_raw_mode(Driver *drvthis)
 {
     unsigned char command[3];
 
-    report(RPT_DEBUG, "Enable the raw mode");
+    report(RPT_DEBUG, "%s: enable raw mode", drvthis->name);
 
     command[0] = 'R';
     command[1] = 'E';
@@ -598,25 +577,22 @@ ula200_load_curstom_chars(Driver *drvthis)
     {
         /* Tell the HD44780 we will redefine char number i */
         ula200_ftdi_rawdata(drvthis, RS_INSTR, SETCHAR | i * 8);
-        if (err < 0)
-        {
-            report(RPT_WARNING, "ula200_ftdi_rawdata failed");
+        if (err < 0) {
+            report(RPT_WARNING, "%s: ula200_ftdi_rawdata failed", drvthis->name);
             break;
         }
 
         /* Send the subsequent rows */
-        for (row = 0; row < CELLHEIGHT; row++)
-        {
+        for (row = 0; row < CELLHEIGHT; row++) {
             int value = 0;
-            for (col = 0; col < CELLWIDTH; col++)
-            {
-				value <<= 1;
-				value |= (custom_chars[i][(row * CELLWIDTH) + col] > 0) ? 1 : 0;
+	    
+            for (col = 0; col < CELLWIDTH; col++) {
+		value <<= 1;
+		value |= (custom_chars[i][(row * CELLWIDTH) + col] > 0) ? 1 : 0;
             }
             err = ula200_ftdi_rawdata(drvthis, RS_DATA, value);
-            if (err < 0)
-            {
-                report(RPT_WARNING, "ula200_ftdi_rawdata failed");
+            if (err < 0) {
+                report(RPT_WARNING, "%s: ula200_ftdi_rawdata failed", drvthis->name);
                 break;
             }
         }
@@ -633,128 +609,122 @@ MODULE_EXPORT int
 ula200_init(Driver *drvthis)
 {
 	PrivateData *p;
-    int err, i;
-    char *s;
+	int err, i;
+	char *s;
 
 	// Alocate and store private data
 	p = (PrivateData *) malloc( sizeof( PrivateData) );
-	if (!p)
-    {
+	if (p == NULL) {
 		return -1;
-    }
-	if (drvthis->store_private_ptr(drvthis, p))
-    {
+	}
+	if (drvthis->store_private_ptr(drvthis, p)) {
 		return -1;
-    }
+	}
 
-    p->backlight = -1;
-    p->all_dirty = 1;
-    EmptyKeyRing(&p->keyring);
+	p->backlight = -1;
+	p->all_dirty = 1;
+	EmptyKeyRing(&p->keyring);
 
 	// Get and parse size
 	s = drvthis->config_get_string( drvthis->name, "size", 0, "20x4");
-	if (sscanf( s, "%dx%d", &(p->width), &(p->height) ) != 2
-        || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
-        || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT))
-    {
-		report(RPT_ERR, "ULA-200: Cannot read size: %s", s );
+	if ((sscanf(s, "%dx%d", &(p->width), &(p->height)) != 2)
+	    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
+	    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
+		report(RPT_ERR, "%s: cannot read Size %s", drvthis->name, s);
+		return -1;
 	}
 
 	// read the keymap
-	for (i = 0; i < MAX_KEY_MAP; i++)
-	{
+	for (i = 0; i < MAX_KEY_MAP; i++) {
 		char buf[40];
 
 		// First fill with default value 
 		p->key_map[i] = default_key_map[i];
 
 		// Read config value 
-		sprintf( buf, "KeyMap_%c", i+'A' );
-		s = drvthis->config_get_string( drvthis->name, buf, 0, NULL );
+		sprintf(buf, "KeyMap_%c", i+'A');
+		s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
 
 		// Was a key specified in the config file ? 
-		if (s)
-		{
+		if (s != NULL) {
 			p->key_map[i] = strdup(s);
-			report( RPT_INFO, "ula_200: Key '%c' to \"%s\"", i+'A', s );
+			report(RPT_INFO, "%s: Key '%c' mapped to \"%s\"",
+					drvthis->name, i+'A', s );
 		}
 	}
 
-    /* End of config file parsing */
+	/* End of config file parsing */
 
     
 	// Allocate framebuffer
-	p->framebuf = (unsigned char *)malloc(p->width * p->height);
-	if (!p->framebuf) 
-    {
-        goto err_begin;
+	p->framebuf = (unsigned char *) malloc(p->width * p->height);
+	if (p->framebuf == NULL) {
+		report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
+		goto err_begin;
 	}
 
 	// Allocate and clear the buffer for incremental updates
-	p->lcd_contents = (unsigned char *) malloc (p->width * p->height);
-	if (!p->lcd_contents) 
-    {
+	p->lcd_contents = (unsigned char *) malloc(p->width * p->height);
+	if (p->lcd_contents == NULL) {
+		report(RPT_ERR, "%s: unable to allocate framebuffer backing store", drvthis->name);
 		goto err_framebuf;
 	}
 	memset(p->lcd_contents, 0, p->width * p->height);
 
-    // open the FTDI library
-    ftdi_init(&p->ftdic);
-    (&p->ftdic)->usb_write_timeout = 20;
-    (&p->ftdic)->usb_read_timeout = 20;
+	// open the FTDI library
+	ftdi_init(&p->ftdic);
+	(&p->ftdic)->usb_write_timeout = 20;
+	(&p->ftdic)->usb_read_timeout = 20;
 
-    // open the device
-    err = ftdi_usb_open(&p->ftdic, DISPLAY_VENDOR_ID, DISPLAY_PRODUCT_ID);
-    if (err < 0)
-    {
-		report(RPT_ERR, "Couldn't open USB device");
-        goto err_lcd;
-    }
+	// open the device
+	err = ftdi_usb_open(&p->ftdic, DISPLAY_VENDOR_ID, DISPLAY_PRODUCT_ID);
+	if (err < 0) {
+		report(RPT_ERR, "%s: cannot open USB device", drvthis->name);
+		goto err_lcd;
+	}
 
-    // set the baudrate
-    err = ftdi_set_baudrate(&p->ftdic, 19200);
-    if (err < 0)
-    {
-		report(RPT_ERR, "ULA-200: Cannot set baudrate");
-        goto err_ftdi;
-    }
+	// set the baudrate
+	err = ftdi_set_baudrate(&p->ftdic, 19200);
+	if (err < 0) {
+		report(RPT_ERR, "%s: cannot set baudrate", drvthis->name);
+		goto err_ftdi;
+	}
 
-    // set communication parameters
-    err = ftdi_set_line_property(&p->ftdic, BITS_8, STOP_BIT_1, EVEN);
-    if (err < 0)
-    {
-		report(RPT_ERR, "ULA-200: Cannot set line properties");
-        goto err_ftdi;
-    }
+	// set communication parameters
+	err = ftdi_set_line_property(&p->ftdic, BITS_8, STOP_BIT_1, EVEN);
+	if (err < 0) {
+		report(RPT_ERR, "%s: cannot set line properties", drvthis->name);
+		goto err_ftdi;
+	}
 
-    // user is able to write commands
-    err = ula200_ftdi_enable_raw_mode(drvthis);
-    if (err < 0)
-    {
-        report(RPT_ERR, "Was not able to enable the raw mode");
-        goto err_ftdi;
-    }
+	// user is able to write commands
+	err = ula200_ftdi_enable_raw_mode(drvthis);
+	if (err < 0) {
+		report(RPT_ERR, "%s: unable to enable the raw mode", drvthis->name);
+		goto err_ftdi;
+	}
 
-    // load the chars
-    err = ula200_load_curstom_chars(drvthis);
-    if (err < 0)
-    {
-        report(RPT_ERR, "Was not able to write the custom characters");
-        goto err_ftdi;
-    }
+	// load the chars
+	err = ula200_load_curstom_chars(drvthis);
+	if (err < 0) {
+		report(RPT_ERR, "%s: unable to write the custom characters", drvthis->name);
+		goto err_ftdi;
+	}
+
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
         
-    return 0;
+	return 0;
 
 err_ftdi:
-    ftdi_usb_close(&p->ftdic);
-    ftdi_deinit(&p->ftdic);
+	ftdi_usb_close(&p->ftdic);
+	ftdi_deinit(&p->ftdic);
 err_framebuf:
-    free(p->framebuf);
+	free(p->framebuf);
 err_lcd:
-    free(p->lcd_contents);
+	free(p->lcd_contents);
 err_begin:
 
-    return -1;
+	return -1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -765,21 +735,19 @@ ula200_close(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    ftdi_usb_purge_buffers(&p->ftdic);
-    ftdi_usb_close(&p->ftdic);
-    ftdi_deinit(&p->ftdic);
+	if (p != NULL) {
+		ftdi_usb_purge_buffers(&p->ftdic);
+		ftdi_usb_close(&p->ftdic);
+		ftdi_deinit(&p->ftdic);
 
-	if (p->framebuf)
-    {
-        free(p->framebuf);
-    }
+		if (p->framebuf != NULL)
+        		free(p->framebuf);
     
-	if (p->lcd_contents)
-    {
-        free(p->lcd_contents);
-    }
+		if (p->lcd_contents != NULL)
+        		free(p->lcd_contents);
 
-	free(p);
+		free(p);
+	}
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
@@ -853,23 +821,22 @@ MODULE_EXPORT void
 ula200_backlight (Driver *drvthis, int on)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
-    unsigned char command[2];
-    int err;
+	unsigned char command[2];
+	int err;
 
-    if (p->backlight != on)
-    {
-        p->backlight = on;
+	if (p->backlight != on) {
+        	p->backlight = on;
 
-        command[0] = 'h';
-        command[1] = on ? '1' : '0';
-        err = ula200_ftdi_write_command(drvthis, command, 2, false);
-        if (err < 0)
-        {
-            report(RPT_WARNING, "ula200_backlight: Error in ula200_ftdi_write_command");
-        }
-
-        report(RPT_INFO, "Turn backlight on");
-    }
+        	command[0] = 'h';
+	        command[1] = (on) ? '1' : '0';
+	        err = ula200_ftdi_write_command(drvthis, command, 2, false);
+        	if (err < 0)
+			report(RPT_WARNING, "%s: error in ula200_ftdi_write_command",
+					drvthis->name);
+		else
+			report(RPT_INFO, "%s: turn backlight %s",
+					drvthis->name, (on) ? "on" : "off");
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -884,42 +851,36 @@ ula200_flush(Driver *drvthis)
 	char ch;
 	char drawing;
 	int count;
-    int firstdiff;
-    int lastdiff;
+	int firstdiff;
+	int lastdiff;
 
-    if (p->all_dirty)
-    {
-        ula200_ftdi_clear(drvthis);
-        p->all_dirty = 0;
-    }
+	if (p->all_dirty) {
+		ula200_ftdi_clear(drvthis);
+		p->all_dirty = 0;
+	}
 
 	// Update LCD incrementally by comparing with last contents
 	count = 0;
-	for (y = 0; y < p->height; y++) 
-    {
+	for (y = 0; y < p->height; y++) {
 		drawing = 0;
-        firstdiff = -1;
-        lastdiff = 0;
-		for (x = 0 ; x < wid; x++) 
-        {
+		firstdiff = -1;
+		lastdiff = 0;
+		for (x = 0 ; x < wid; x++) {
 			ch = p->framebuf[(y * wid) + x];
-			if (ch != p->lcd_contents[(y*wid)+x])
-            {
-                p->lcd_contents[(y*wid)+x] = ch;
-                if (firstdiff == -1)
-                {
-                    firstdiff = x;
-                }
-                lastdiff = x;
-            }
-        }
+			if (ch != p->lcd_contents[(y*wid)+x]) {
+                		p->lcd_contents[(y*wid)+x] = ch;
+                		if (firstdiff == -1) {
+                    			firstdiff = x;
+				}
+				lastdiff = x;
+			}
+		}
 
-        if (firstdiff >= 0)
-        {
-            ula200_ftdi_position(drvthis, firstdiff, y);
-            ula200_ftdi_string(drvthis, p->framebuf + (y*wid) + firstdiff, 
+		if (firstdiff >= 0) {
+			ula200_ftdi_position(drvthis, firstdiff, y);
+			ula200_ftdi_string(drvthis, p->framebuf + (y*wid) + firstdiff, 
                                lastdiff - firstdiff + 1);
-        }
+		}
 	}
 }
 
@@ -930,39 +891,37 @@ ula200_flush(Driver *drvthis)
 MODULE_EXPORT int
 ula200_icon (Driver *drvthis, int x, int y, int icon)
 {
-
 	/* Yes I know, this is a VERY BAD implementation */
-	switch( icon ) 
-    {
+	switch (icon) {
 		case ICON_BLOCK_FILLED:
-			ula200_chr( drvthis, x, y, 0xff);
+			ula200_chr(drvthis, x, y, 0xff);
 			break;
 		case ICON_HEART_FILLED:
-			ula200_chr( drvthis, x, y, 2);
+			ula200_chr(drvthis, x, y, 2);
 			break;
 		case ICON_HEART_OPEN:
-			ula200_chr( drvthis, x, y, 1);
+			ula200_chr(drvthis, x, y, 1);
 			break;
 		case ICON_ARROW_UP:
-			ula200_chr( drvthis, x, y, 3);
+			ula200_chr(drvthis, x, y, 3);
 			break;
 		case ICON_ARROW_DOWN:
-			ula200_chr( drvthis, x, y, 4);
+			ula200_chr(drvthis, x, y, 4);
 			break;
 		case ICON_ARROW_LEFT:
-			ula200_chr( drvthis, x, y, 0x7F);
+			ula200_chr(drvthis, x, y, 0x7F);
 			break;
 		case ICON_ARROW_RIGHT:
-			ula200_chr( drvthis, x, y, 0x7E);
+			ula200_chr(drvthis, x, y, 0x7E);
 			break;
 		case ICON_CHECKBOX_OFF:
-			ula200_chr( drvthis, x, y, 5);
+			ula200_chr(drvthis, x, y, 5);
 			break;
 		case ICON_CHECKBOX_ON:
-			ula200_chr( drvthis, x, y, 6);
+			ula200_chr(drvthis, x, y, 6);
 			break;
 		case ICON_CHECKBOX_GRAY:
-			ula200_chr( drvthis, x, y, 7);
+			ula200_chr(drvthis, x, y, 7);
 			break;
 		default:
 			return -1; /* Let the core do other icons */
@@ -991,20 +950,15 @@ ula200_get_key (Driver *drvthis)
 	key = GetKeyFromKeyRing(&p->keyring);
 
 	// search the bit that was set by the hardware
-	for (i = 0; i < MAX_KEY_MAP; i++)
-	{
+	for (i = 0; i < MAX_KEY_MAP; i++) {
 		if (key & (1 << i))
-		{
 			return p->key_map[i];
-		}
 	}
 	
-	if (key != '\0')
-	{
-		report( RPT_INFO, "ula200: Untreated key 0x%2x", key);
+	if (key != '\0') {
+		report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
 	}
 	return NULL;
 }
 
 
-/* vim: set sw=4 ts=4 et: */
