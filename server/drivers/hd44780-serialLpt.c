@@ -186,7 +186,7 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 			((readval & ACK) / ACK ));		/* pin 10 */
 
 
-	if( inputs_zero == 0 ) {
+	if ( inputs_zero == 0 ) {
 		// No keys were pressed
 
 		// Restore line status for backlight.
@@ -201,7 +201,7 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 
 		p->hd44780_functions->uPause (p, 1);
 
-		if( !scancode ) {
+		if ( !scancode ) {
 			// Read input line(s)
 			readval = ~ port_in (p->port + 1) ^ INMASK;
 
@@ -212,7 +212,7 @@ unsigned char lcdserLpt_HD44780_scankeypad (PrivateData *p)
 				((readval & BUSY) / BUSY <<1) |			/* pin 11 */
 				((readval & ACK) / ACK ));			/* pin 10 */
 
-			if( keybits != inputs_zero ) {
+			if ( keybits != inputs_zero ) {
 				shiftingbit = 1;
 				for (shiftcount=0; shiftcount<KEYPAD_MAXX && !scancode; shiftcount++) {
 					if ( (keybits ^ inputs_zero ) & shiftingbit) {

@@ -111,45 +111,45 @@ hd_init_4bit (Driver *drvthis)
 	// powerup the lcd now
 	port_out (p->port + 2, 0 ^ OUTMASK);
 	port_out (p->port, 0x03);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
 
 	/* We'll now send 0x03 a coulpe of times, 
 	 * which is in fact (FUNCSET | IF_8BIT) >> 4 */
 	port_out (p->port, enableLines | 0x03);
 	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x03);
 	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 15000);
 
 	port_out (p->port, enableLines | 0x03);
 	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x03);
 	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 5000);
 
 	port_out (p->port, enableLines | 0x03);
 	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x03);
 	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 100);
 
 	port_out (p->port, enableLines | 0x03);
 	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x03);
 	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 100);
 
 	// now in 8-bit mode...  set 4-bit mode
 	port_out (p->port, 0x02);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
 
 	port_out (p->port, enableLines | 0x02);
 	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
 	port_out (p->port, 0x02);
 	port_out (p->port + 2, 0 ^ OUTMASK);
 	hd44780_functions->uPause (p, 100);
@@ -191,15 +191,15 @@ lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 		}
 
 		port_out (p->port, portControl | h);
-		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 		port_out (p->port, enableLines | portControl | h);
-		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 		port_out (p->port, portControl | h);
 
 		port_out (p->port, portControl | l);
-		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 		port_out (p->port, enableLines | portControl | l);
-		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 		port_out (p->port, portControl | l);
 	}
 
@@ -211,15 +211,15 @@ lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 		}
 
 		port_out (p->port, portControl | h);
-		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 		port_out (p->port + 2, enableLines ^ OUTMASK);
-		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 		port_out (p->port + 2, 0 ^ OUTMASK);
 
 		port_out (p->port, portControl | l);
-		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 		port_out (p->port + 2, enableLines ^ OUTMASK);
-		if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 		port_out (p->port + 2, 0 ^ OUTMASK);
 	}
 }
@@ -242,7 +242,7 @@ unsigned char lcdstat_HD44780_readkeypad (PrivateData *p, unsigned int YData)
 		// Can't combine >3 displays with >6 keypad output lines
 		port_out (p->port + 2, ( ((~YData & 0x03C0) << 6 )) ^ OUTMASK);
 	}
-	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 
 	// Read inputs
 	readval = ~ port_in (p->port + 1) ^ INMASK;

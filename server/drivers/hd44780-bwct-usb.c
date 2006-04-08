@@ -141,7 +141,7 @@ hd_init_bwct_usb (Driver *drvthis)
 
   done:
   if (bwct_usb != NULL) {
-    debug(RPT_DEBUG, "hd_init_bwct_usb: opening device succeeded\n");
+    debug(RPT_DEBUG, "hd_init_bwct_usb: opening device succeeded");
 
     if (usb_claim_interface(bwct_usb, bwct_usb_i) < 0) {
 #if defined(LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP)
@@ -170,9 +170,9 @@ hd_init_bwct_usb (Driver *drvthis)
     int res = usb_control_msg(bwct_usb, USB_TYPE_VENDOR, VENDOR_LCD_CONTRAST,
                               (contrast * 255) / 1000, bwct_usb_i, NULL, 0, 1000);
     if (res < 0)
-      report(RPT_WARNING, "hd_init_bwct_usb: setting contrast failed.\n");
+      report(RPT_WARNING, "hd_init_bwct_usb: setting contrast failed");
   } else {
-    report(RPT_WARNING, "hd_init_bwct_usb: Using default contrast value.\n");
+    report(RPT_INFO, "hd_init_bwct_usb: Using default contrast value");
   }
 
   return 0;

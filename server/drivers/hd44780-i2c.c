@@ -89,7 +89,7 @@ i2c_out (PrivateData *p, unsigned char val)
 	__u8 data[2];
 	int datalen;
 	static int no_more_errormsgs=0;
-	if(p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs a 2-byte command
+	if (p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs a 2-byte command
 		data[0]=1; // command: read/write output port register
 		data[1]=val;
 		datalen=2;
@@ -120,35 +120,36 @@ hd_init_i2c (Driver *drvthis)
 	/* READ CONFIG FILE */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string ( drvthis->name , "device" , 0 , DEFAULT_DEVICE),sizeof(device));
-	device[sizeof(device)-1]=0;
-	report (RPT_INFO,"HD44780: I2C: Using device '%s' and address %u for a %s", device, (p->port & I2C_ADDR_MASK)?"PCA9554(A)":"PCF8574(A)");
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
+	device[sizeof(device)-1] = '\0';
+	report(RPT_INFO,"HD44780: I2C: Using device '%s' and address %u for a %s",
+			device, (p->port & I2C_ADDR_MASK) ? "PCA9554(A)" : "PCF8574(A)");
 
 	// Open the I2C device
-	p->fd = open(device,O_RDWR);
-	if (p->fd<0) {
-		report( RPT_ERR, "HD44780: I2C: open i2c device '%s' failed: %s", device, strerror(errno));
+	p->fd = open(device, O_RDWR);
+	if (p->fd < 0) {
+		report(RPT_ERR, "HD44780: I2C: open i2c device '%s' failed: %s", device, strerror(errno));
 		return(-1);
 	}
 
 	// Set I2C address
 	if (ioctl(p->fd,I2C_SLAVE, p->port & I2C_ADDR_MASK) < 0) {
-		report( RPT_ERR, "HD44780: I2C: set address to '%i': %s", p->port & I2C_ADDR_MASK, strerror(errno));
+		report(RPT_ERR, "HD44780: I2C: set address to '%i': %s", p->port & I2C_ADDR_MASK, strerror(errno));
 		return(-1);
 	}
 
 
-	if(p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs special config
+	if (p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs special config
 		__u8 data[2];
-		data[0]=2; // command: set polarity inversion
-		data[1]=0; // -> no polarity inversion
+		data[0] = 2; // command: set polarity inversion
+		data[1] = 0; // -> no polarity inversion
 		if (write(p->fd,data,2) != 2) {
-			report( RPT_ERR, "HD44780: I2C: i2c set polarity inversion failed: %s", strerror(errno));
+			report(RPT_ERR, "HD44780: I2C: i2c set polarity inversion failed: %s", strerror(errno));
 		}
-		data[0]=3; // command: set output direction
-		data[1]=0; // -> all pins are outputs
+		data[0] = 3; // command: set output direction
+		data[1] = 0; // -> all pins are outputs
 		if (write(p->fd,data,2) != 2) {
-			report( RPT_ERR, "HD44780: I2C: i2c set output direction failed: %s", strerror(errno));
+			report(RPT_ERR, "HD44780: I2C: i2c set output direction failed: %s", strerror(errno));
 		}
 	}
 
@@ -160,42 +161,49 @@ hd_init_i2c (Driver *drvthis)
 	/* We'll now send 0x03 a couple of times,
 	 * which is in fact (FUNCSET | IF_8BIT) >> 4 */
 	i2c_out (p, 0x03);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	if (p->delayBus)
+		hd44780_functions->uPause(p, 1);
 
-	i2c_out (p, enableLines | 0x03);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
-	i2c_out (p, 0x03);
-	hd44780_functions->uPause (p, 15000);
+	i2c_out(p, enableLines | 0x03);
+	if (p->delayBus)
+		hd44780_functions->uPause(p, 1);
+	i2c_out(p, 0x03);
+	hd44780_functions->uPause(p, 15000);
 
-	i2c_out (p, enableLines | 0x03);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
-	i2c_out (p, 0x03);
-	hd44780_functions->uPause (p, 5000);
+	i2c_out(p, enableLines | 0x03);
+	if (p->delayBus)
+		hd44780_functions->uPause(p, 1);
+	i2c_out(p, 0x03);
+	hd44780_functions->uPause(p, 5000);
 
-	i2c_out (p, enableLines | 0x03);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
-	i2c_out (p, 0x03);
-	hd44780_functions->uPause (p, 100);
+	i2c_out(p, enableLines | 0x03);
+	if (p->delayBus)
+		hd44780_functions->uPause(p, 1);
+	i2c_out(p, 0x03);
+	hd44780_functions->uPause(p, 100);
 
-	i2c_out (p, enableLines | 0x03);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
-	i2c_out (p, 0x03);
-	hd44780_functions->uPause (p, 100);
+	i2c_out(p, enableLines | 0x03);
+	if (p->delayBus)
+		hd44780_functions->uPause(p, 1);
+	i2c_out(p, 0x03);
+	hd44780_functions->uPause(p, 100);
 
 	// now in 8-bit mode...  set 4-bit mode
-	i2c_out (p, 0x02);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
+	i2c_out(p, 0x02);
+	if (p->delayBus)
+		hd44780_functions->uPause(p, 1);
 
-	i2c_out (p, enableLines | 0x02);
-	if( p->delayBus ) hd44780_functions->uPause (p, 1);
-	i2c_out (p, 0x02);
-	hd44780_functions->uPause (p, 100);
+	i2c_out(p, enableLines | 0x02);
+	if (p->delayBus)
+		hd44780_functions->uPause(p, 1);
+	i2c_out(p, 0x02);
+	hd44780_functions->uPause(p, 100);
 
 	// Set up two-line, small character (5x8) mode
-	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR );
-	hd44780_functions->uPause (p, 40);
+	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR );
+	hd44780_functions->uPause(p, 40);
 
-	common_init (p, IF_4BIT);
+	common_init(p, IF_4BIT);
 
 	return 0;
 }
@@ -217,22 +225,26 @@ i2c_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char fla
 
 	enableLines = EN;
 
-	i2c_out (p, portControl | h);
-	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-	i2c_out (p, enableLines | portControl | h);
-	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-	i2c_out (p, portControl | h);
+	i2c_out(p, portControl | h);
+	if (p->delayBus)
+		p->hd44780_functions->uPause(p, 1);
+	i2c_out(p, enableLines | portControl | h);
+	if (p->delayBus)
+		p->hd44780_functions->uPause(p, 1);
+	i2c_out(p, portControl | h);
 
-	i2c_out (p, portControl | l);
-	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-	i2c_out (p, enableLines | portControl | l);
-	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-	i2c_out (p, portControl | l);
+	i2c_out(p, portControl | l);
+	if (p->delayBus)
+		p->hd44780_functions->uPause(p, 1);
+	i2c_out(p, enableLines | portControl | l);
+	if (p->delayBus)
+		p->hd44780_functions->uPause(p, 1);
+	i2c_out(p, portControl | l);
 }
 
 void i2c_HD44780_backlight (PrivateData *p, unsigned char state)
 {
-	p->backlight_bit = ((!p->have_backlight||state)?0:BL);
+	p->backlight_bit = ((!p->have_backlight||state) ? 0 : BL);
 
-	i2c_out (p, p->backlight_bit);
+	i2c_out(p, p->backlight_bit);
 }

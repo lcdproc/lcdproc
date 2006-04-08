@@ -65,14 +65,15 @@ int hd_init_lis2 (Driver *drvthis)
 	/* READ CONFIG FILE */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string ( drvthis->name , "device" , 0 , DEFAULT_DEVICE),sizeof(device));
-	device[sizeof(device)-1]=0;
-	printf("HD44780: LCD Serializer: Using device: %s", device);
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
+	device[sizeof(device)-1] = '\0';
+	report(RPT_INFO, "HD44780: LCD Serializer: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
 	p->fd = open(device, O_RDWR | O_NOCTTY);
 	if (p->fd == -1) {
-		printf("HD44780: LCD Serializer: could not open device %s (%s)\n", device, strerror(errno));
+		report(RPT_ERR, "HD44780: LCD Serializer: could not open device %s (%s)",
+				device, strerror(errno));
 		return -1;
 	}
 
@@ -90,12 +91,10 @@ int hd_init_lis2 (Driver *drvthis)
 
 	/* Set port speed to 9600 baud */
 	cfsetospeed(&portset, B19200);
-	cfsetispeed (&portset, B0);
+	cfsetispeed(&portset, B0);
 
 	/* Set TCSANOW mode of serial device */
 	tcsetattr(p->fd, TCSANOW, &portset);
-
-
 
 	p->hd44780_functions->senddata = lis2_HD44780_senddata;
 	p->hd44780_functions->backlight = lis2_HD44780_backlight;

@@ -68,14 +68,15 @@ hd_init_picanlcd (Driver *drvthis)
 	/* READ CONFIG FILE */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string ( drvthis->name , "device" , 0 , DEFAULT_DEVICE),sizeof(device));
-	device[sizeof(device)-1]=0;
-	report (RPT_INFO,"HD44780: PIC-an-LCD: Using device: %s", device);
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
+	device[sizeof(device)-1] = '\0';
+	report(RPT_INFO,"HD44780: PIC-an-LCD: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
 	p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (p->fd == -1) {
-		report(RPT_ERR, "HD44780: PIC-an-LCD: could not open device %s (%s)\n", device, strerror(errno));
+		report(RPT_ERR, "HD44780: PIC-an-LCD: could not open device %s (%s)",
+				device, strerror(errno));
 		return -1;
 	}
 
@@ -85,7 +86,7 @@ hd_init_picanlcd (Driver *drvthis)
 	/* We use RAW mode */
 #ifdef HAVE_CFMAKERAW
 	/* The easy way */
-	cfmakeraw( &portset );
+	cfmakeraw(&portset);
 #else
 	/* The hard way */
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -119,14 +120,14 @@ picanlcd_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned cha
 
 	if (flags == RS_DATA) {
 		// Do we need a DATA indicator byte ?
-		if( ch < 32 ) {
-			write( p->fd, &data_byte, 1 );
+		if (ch < 32) {
+			write(p->fd, &data_byte, 1);
 		}
 		write( p->fd, &ch, 1 );
 	}
 	else {
-		write( p->fd, &instr_byte, 1 );
-		write( p->fd, &ch, 1 );
+		write(p->fd, &instr_byte, 1);
+		write(p->fd, &ch, 1);
 	}
 }
 

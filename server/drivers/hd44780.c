@@ -131,10 +131,10 @@ HD44780_init (Driver * drvthis)
 	PrivateData *p;
 
 	// Alocate and store private data
-	p = (PrivateData *) malloc( sizeof( PrivateData) );
-	if( ! p )
+	p = (PrivateData *) malloc(sizeof(PrivateData));
+	if (p == NULL)
 		return -1;
-	if( drvthis->store_private_ptr( drvthis, p ) )
+	if (drvthis->store_private_ptr( drvthis, p))
 		return -1;
 
 	// Clear data struct
@@ -156,10 +156,10 @@ HD44780_init (Driver * drvthis)
 	p->lastline 		= drvthis->config_get_bool( drvthis->name, "lastline", 0, 1 );
 
 	// Get and search for the connection type
-	s = drvthis->config_get_string( drvthis->name, "connectiontype", 0, "4bit" );
+	s = drvthis->config_get_string( drvthis->name, "ConnectionType", 0, "4bit" );
 	for (i = 0; connectionMapping[i].name != NULL && strcmp (s, connectionMapping[i].name) != 0; i++);
 	if (connectionMapping[i].name == NULL) {
-		report (RPT_ERR, "HD44780_init: Unknown connection type: %s", s);
+		report(RPT_ERR, "%s: unknown ConnectionType: %s", drvthis->name, s);
 		return -1; // fatal error
 	} else {
 		p->connectiontype_index = i;
@@ -171,44 +171,45 @@ HD44780_init (Driver * drvthis)
 
 	// Get and parse vspan only when specified
 	s = drvthis->config_get_string( drvthis->name, "vspan", 0, "" );
-	if( s[0] != 0 ) {
+	if ( s[0] != 0 ) {
 		if (parse_span_list (&(p->spanList), &(p->numLines), &(p->dispVOffset), &(p->numDisplays), &(p->dispSizes), s) == -1) {
-			report (RPT_ERR, "HD44780_init: invalid vspan value: %s", s );
+			report(RPT_ERR, "%s: invalid vspan value: %s", drvthis->name, s);
 			return -1;
 		}
 	}
 
 	// Get and parse size
 	s = drvthis->config_get_string( drvthis->name, "size", 0, "20x4" );
-	if( sscanf( s, "%dx%d", &(p->width), &(p->height) ) != 2
+	if ( sscanf( s, "%dx%d", &(p->width), &(p->height) ) != 2
 	|| (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
 	|| (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
-		report (RPT_ERR, "HD44780_init: Cannot read size: %s", s );
+		report(RPT_ERR, "%s: cannot read Size %s", drvthis->name, s);
 	}
 
 	// default case for when spans aren't indicated
 	// - add a sanity check against p->height ??
 	if (p->numLines == 0) {
-		if ((p->spanList = (int *) malloc (sizeof (int) * p->height))) {
+		if ((p->spanList = (int *) malloc(sizeof(int) * p->height))) {
 			int i;
 			for (i = 0; i < p->height; ++i) {
 				p->spanList[i] = 1;
 				p->numLines = p->height;
 			}
 		} else
-			report (RPT_ERR, "Error mallocing");
+			report(RPT_ERR, "%s: error mallocing", drvthis->name);
 	}
 	if (p->numDisplays == 0) {
-		if ((p->dispVOffset = (int *) malloc (sizeof (int))) && (p->dispSizes = (int *) malloc (sizeof (int)))) {
+		if ((p->dispVOffset = (int *) malloc(sizeof(int))) &&
+	            (p->dispSizes = (int *) malloc(sizeof(int)))) {
 			p->dispVOffset[0] = 0;
 			p->dispSizes[0] = p->height;
 			p->numDisplays = 1;
 		} else
-			report (RPT_ERR, "Error mallocing");
+			report(RPT_ERR, "%s: error mallocing", drvthis->name);
 	}
 
 	if (timing_init() == -1) {
-		report(RPT_ERR, "timing_init: failed (%s)\n", strerror(errno));
+		report(RPT_ERR, "%s: timing_init() failed (%s)", drvthis->name, strerror(errno));
 		return -1;
 	}	
 
@@ -217,43 +218,47 @@ HD44780_init (Driver * drvthis)
 	{
 		// Set priority to 1
 		struct sched_param param;
-		param.sched_priority=1;
-		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-			report (RPT_ERR, "HD44780_init: failed (%s)", strerror (errno));
+		param.sched_priority = 1;
+		if ((sched_setscheduler(0, SCHED_RR, &param)) == -1) {
+			report(RPT_ERR, "%s: sched_setscheduler() failed (%s)",
+					drvthis->name, strerror(errno));
 			return -1;
 		}
 	}
 #endif
 
 	// Allocate framebuffer
-	p->framebuf = (unsigned char *) malloc (p->width * p->height);
-	if (!p->framebuf) {
+	p->framebuf = (unsigned char *) malloc(p->width * p->height);
+	if (p->framebuf == NULL) {
+		report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
 		//HD44780_close();
 		return -1;
 	}
 
 	// Allocate and clear the buffer for incremental updates
 	p->lcd_contents = (unsigned char *) malloc (p->width * p->height);
-	if (!p->lcd_contents) {
+	if (p->lcd_contents == NULL) {
+		report(RPT_ERR, "%s: unable to allocate framebuffer backing store", drvthis->name);
 		return -1;
 	}
 	memset(p->lcd_contents, 0, p->width * p->height);
 
 	// Allocate and clear the buffer for defineable characters
-	p->cc_buf = (unsigned char *) malloc (NUM_CCs * p->cellheight);
-	p->cc_dirty = (unsigned char *) malloc (NUM_CCs);
+	p->cc_buf = (unsigned char *) malloc(NUM_CCs * p->cellheight);
+	p->cc_dirty = (unsigned char *) malloc(NUM_CCs);
 	if (!p->cc_buf || !p->cc_dirty) {
+		report(RPT_ERR, "%s: error mallocing", drvthis->name);
 		return -1;
 	}
 	memset(p->cc_buf, 0, NUM_CCs * p->cellheight);
 	memset(p->cc_dirty, 1, NUM_CCs); /* all custom chars dirty */
 
 	// Keypad ?
-	if ( p->have_keypad ) {
+	if (p->have_keypad) {
 		int x, y;
 
 		// Read keymap
-		for( x=0; x<KEYPAD_MAXX; x++ ) {
+		for ( x=0; x<KEYPAD_MAXX; x++ ) {
 			char buf[40];
 
 			// First fill with default value
@@ -264,14 +269,14 @@ HD44780_init (Driver * drvthis)
 			s = drvthis->config_get_string( drvthis->name, buf, 0, NULL );
 
 			// Was a key specified in the config file ?
-			if( s ) {
+			if ( s ) {
 				p->keyMapDirect[x] = strdup( s );
-				report( RPT_INFO, "HD44780: Direct key %d: \"%s\"", x, s );
+				report(RPT_INFO, "HD44780: Direct key %d: \"%s\"", x, s );
 			}
 		}
 
-		for( x=0; x<KEYPAD_MAXX; x++ ) {
-			for( y=0; y<KEYPAD_MAXY; y++ ) {
+		for ( x=0; x<KEYPAD_MAXX; x++ ) {
+			for ( y=0; y<KEYPAD_MAXY; y++ ) {
 				char buf[40];
 
 				// First fill with default value
@@ -282,9 +287,9 @@ HD44780_init (Driver * drvthis)
 				s = drvthis->config_get_string( drvthis->name, buf, 0, NULL );
 
 				// Was a key specified in the config file ?
-				if( s ) {
+				if ( s ) {
 					p->keyMapMatrix[y][x] = strdup( s );
-					report( RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x, y, s );
+					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x, y, s );
 				}
 			}
 		}
@@ -293,8 +298,8 @@ HD44780_init (Driver * drvthis)
 	// Output latch state - init to a non-valid value
 	p->output_state = 999999;
 
-	if ((p->hd44780_functions = (HD44780_functions *) malloc (sizeof (HD44780_functions))) == NULL) {
-		report (RPT_ERR, "Error mallocing");
+	if ((p->hd44780_functions = (HD44780_functions *) malloc(sizeof(HD44780_functions))) == NULL) {
+		report(RPT_ERR, "%s: error mallocing", drvthis->name);
 		return -1;
 	}
 	p->hd44780_functions->uPause = uPause;
@@ -309,18 +314,16 @@ HD44780_init (Driver * drvthis)
 	sprintf (buf, "HD44780 %dx%d", p->width, p->height );
 	HD44780_string (drvthis, 1, 1, buf);
 	if (usb) {
-		sprintf (buf, "USB %s%s%s",
-				(p->have_backlight?" bl":""),
-				(p->have_keypad?" key":""),
-				(p->have_output?" out":"")
-			);
+		sprintf(buf, "USB %s%s%s",
+				(p->have_backlight ? " bl" : ""),
+				(p->have_keypad ? " key" : ""),
+				(p->have_output ? " out" : ""));
 	}
 	else {
-	sprintf (buf, "LPT 0x%x%s%s%s", p->port,
-			(p->have_backlight?" bl":""),
-			(p->have_keypad?" key":""),
-			(p->have_output?" out":"")
-		);
+		sprintf(buf, "LPT 0x%03X%s%s%s", p->port,
+				(p->have_backlight ? " bl" : ""),
+				(p->have_keypad ? " key" : ""),
+				(p->have_output ? " out" : ""));
 	}
 	HD44780_string (drvthis, 1, 2, buf);
 	HD44780_flush (drvthis);
@@ -372,10 +375,16 @@ HD44780_close(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	if(p->framebuf) free( p->framebuf );
-	if(p->lcd_contents) free( p->lcd_contents );
-	free( p );
-	drvthis->store_private_ptr( drvthis, NULL );
+	if (p != NULL) {
+		if (p->framebuf)
+			free(p->framebuf);
+		
+		if (p->lcd_contents)
+			free(p->lcd_contents);
+
+		free(p);
+	}	
+	drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -451,8 +460,8 @@ HD44780_flush (Driver *drvthis)
 		drawing = 0;
 		for (x=0 ; x<wid; x++) {
 			ch = p->framebuf[(y * wid) + x];
-			if( ch != p->lcd_contents[(y*wid)+x] ) {
-				if( !drawing || x % 8 == 0 ) { // x%8 is for 16x1 displays !
+			if ( ch != p->lcd_contents[(y*wid)+x] ) {
+				if ( !drawing || x % 8 == 0 ) { // x%8 is for 16x1 displays !
 					drawing = 1;
 					HD44780_position(drvthis,x,y);
 				}
@@ -466,12 +475,12 @@ HD44780_flush (Driver *drvthis)
 			}
 		}
 	}
-	debug( RPT_DEBUG, "HD44780: flushed %d chars", count );
+	debug(RPT_DEBUG, "HD44780: flushed %d chars", count );
 
 	/* Check which defineable chars we need to update */
 	count = 0;
-	for( i = 0; i < NUM_CCs; i ++ ) {
-		if( p->cc_dirty[i] ) {
+	for ( i = 0; i < NUM_CCs; i ++ ) {
+		if ( p->cc_dirty[i] ) {
 
 			/* Tell the HD44780 we will redefine char number i */
 			p->hd44780_functions->senddata (p, 0, RS_INSTR, SETCHAR | i * 8);
@@ -487,7 +496,7 @@ HD44780_flush (Driver *drvthis)
 			count ++;
 		}
 	}
-	debug( RPT_DEBUG, "HD44780: flushed %d custom chars's", count );
+	debug(RPT_DEBUG, "HD44780: flushed %d custom chars's", count );
 }
 
 /////////////////////////////////////////////////////////////////
@@ -623,14 +632,14 @@ HD44780_init_vbar (Driver *drvthis)
 		1, 1, 1, 1, 1,
 	};
 
-	if( p->ccmode == CCMODE_VBAR ) {
+	if ( p->ccmode == CCMODE_VBAR ) {
 		/* Work already done */
 		return;
 	}
 
-	if( p->ccmode != CCMODE_STANDARD ) {
+	if ( p->ccmode != CCMODE_STANDARD ) {
 		/* Not supported (yet) */
-		report( RPT_WARNING, "HD44780_init_vbar: Cannot combine two modes using user defined characters" );
+		report(RPT_WARNING, "HD44780_init_vbar: Cannot combine two modes using user defined characters" );
 		return;
 	}
 	p->ccmode = CCMODE_VBAR;
@@ -703,14 +712,14 @@ HD44780_init_hbar (Driver *drvthis)
 		1, 1, 1, 1, 0,
 	};
 
-	if( p->ccmode == CCMODE_HBAR ) {
+	if ( p->ccmode == CCMODE_HBAR ) {
 		/* Work already done */
 		return;
 	}
 
-	if( p->ccmode != CCMODE_STANDARD ) {
+	if ( p->ccmode != CCMODE_STANDARD ) {
 		/* Not supported (yet) */
-		report( RPT_WARNING, "HD44780_init_hbar: Cannot combine two modes using user defined characters" );
+		report(RPT_WARNING, "HD44780_init_hbar: Cannot combine two modes using user defined characters" );
 		return;
 	}
 	p->ccmode = CCMODE_HBAR;
@@ -848,9 +857,9 @@ HD44780_init_num (Driver *drvthis)
 	if (p->ccmode != CCMODE_BIGNUM) {
 		int i;
 
-		if( p->ccmode != CCMODE_STANDARD ) {
+		if ( p->ccmode != CCMODE_STANDARD ) {
 			/* Not supported (yet) */
-			report( RPT_WARNING, "HD44780_init_num: Cannot combine two modes using user defined characters" );
+			report(RPT_WARNING, "HD44780_init_num: Cannot combine two modes using user defined characters" );
 			return;
 		}
 		p->ccmode = CCMODE_BIGNUM;
@@ -975,7 +984,7 @@ HD44780_set_char (Driver *drvthis, int n, char *dat)
 				letter |= (dat[(row * p->cellwidth) + col] > 0) ? 1 : 0;
 			}
 		}	
-		if( p->cc_buf[n*p->cellheight+row] != letter ) {
+		if ( p->cc_buf[n*p->cellheight+row] != letter ) {
 			p->cc_dirty[n] = 1; /* only mark as dirty if really different */
 		}
 		p->cc_buf[n*p->cellheight+row] = letter;
@@ -1062,7 +1071,7 @@ HD44780_icon (Driver *drvthis, int x, int y, int icon)
 		 1, 1, 1, 1, 1 };
 
 	/* Yes I know, this is a VERY BAD implementation */
-	switch( icon ) {
+	switch ( icon ) {
 		case ICON_BLOCK_FILLED:
 			HD44780_set_char( drvthis, 6, block_filled );
 			HD44780_chr( drvthis, x, y, 6);
@@ -1118,13 +1127,13 @@ HD44780_get_key(Driver *drvthis)
 	char * keystr = NULL;
 	struct timeval curr_time, time_diff;
 
-	if( ! p->have_keypad ) return NULL;
+	if ( ! p->have_keypad ) return NULL;
 
 	gettimeofday(&curr_time,NULL);
 
 	scancode = p->hd44780_functions->scankeypad(p);
-	if( scancode ) {
-		if( scancode & 0xF0 ) {
+	if ( scancode ) {
+		if ( scancode & 0xF0 ) {
 			keystr = p->keyMapMatrix[((scancode&0xF0)>>4)-1][(scancode&0x0F)-1];
 		}
 		else {
@@ -1132,7 +1141,7 @@ HD44780_get_key(Driver *drvthis)
 		}
 	}
 
-	if( keystr != NULL ) {
+	if ( keystr != NULL ) {
 		if (keystr == p->pressed_key) {
 			timersub (&curr_time, &(p->pressed_key_time), &time_diff);
 			if (((time_diff.tv_usec / 1000 + time_diff.tv_sec * 1000) - KEYPAD_AUTOREPEAT_DELAY) < 1000 * p->pressed_key_repetitions / KEYPAD_AUTOREPEAT_FREQ ) {
@@ -1147,7 +1156,8 @@ HD44780_get_key(Driver *drvthis)
 			// It's a new keypress
 			p->pressed_key_time = curr_time;
 			p->pressed_key_repetitions = 0;
-			report( RPT_INFO, "HD44780_get_key: Key pressed: %s  (%d,%d)\n", keystr, scancode&0x0F, (scancode&0xF0)>>4 );
+			report(RPT_INFO, "HD44780_get_key: Key pressed: %s (%d,%d)",
+					keystr, scancode&0x0F, (scancode&0xF0)>>4 );
 		}
 	}
 
@@ -1191,7 +1201,7 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 		// Now check the matrix
 		// First check with all 1's
 		Ypattern = (1 << KEYPAD_MAXY) - 1;
-		if( p->hd44780_functions->readkeypad (p, Ypattern)) {
+		if ( p->hd44780_functions->readkeypad (p, Ypattern)) {
 			// Yes, a key on the matrix is pressed
 
 			// OK, now we know a key is pressed.

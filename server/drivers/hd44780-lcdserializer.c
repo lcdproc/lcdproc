@@ -64,14 +64,14 @@ hd_init_lcdserializer (Driver *drvthis)
 	/* READ CONFIG FILE */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string ( drvthis->name , "device" , 0 , DEFAULT_DEVICE),sizeof(device));
-	device[sizeof(device)-1]=0;
-	report (RPT_INFO,"HD44780: LCD Serializer: Using device: %s", device);
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
+	device[sizeof(device)-1] = '\0';
+	report(RPT_INFO, "HD44780: LCD Serializer: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
 	p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (p->fd == -1) {
-		report(RPT_ERR, "HD44780: LCD Serializer: could not open device %s (%s)\n", device, strerror(errno));
+		report(RPT_ERR, "HD44780: LCD Serializer: could not open device %s (%s)", device, strerror(errno));
 		return -1;
 	}
 
@@ -81,7 +81,7 @@ hd_init_lcdserializer (Driver *drvthis)
 	/* We use RAW mode */
 #ifdef HAVE_CFMAKERAW
 	/* The easy way */
-	cfmakeraw( &portset );
+	cfmakeraw(&portset);
 #else
 	/* The hard way */
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -101,7 +101,7 @@ hd_init_lcdserializer (Driver *drvthis)
 	p->hd44780_functions->backlight = lcdserializer_HD44780_backlight;
 	p->hd44780_functions->scankeypad = lcdserializer_HD44780_scankeypad;
 
-	common_init (p, IF_8BIT);
+	common_init(p, IF_8BIT);
 
 	return 0;
 }
@@ -112,11 +112,11 @@ lcdserializer_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigne
 	static const char instr_byte = LCDSERIALIZER_LCDI;
 
 	if (flags == RS_DATA) {
-		write( p->fd, &ch, 1 );
+		write(p->fd, &ch, 1);
 	}
 	else {
-		write( p->fd, &instr_byte, 1 );
-		write( p->fd, &ch, 1 );
+		write(p->fd, &instr_byte, 1);
+		write(p->fd, &ch, 1);
 	}
 }
 

@@ -134,9 +134,9 @@ lcdtime_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 	sem_wait (semid);
 	port_out (p->port + 2, portControl ^ OUTMASK);
 	port_out (p->port, ch);
-	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 	port_out (p->port + 2, (enableLines|portControl) ^ OUTMASK);
-	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 	port_out (p->port + 2, portControl ^ OUTMASK);
 	sem_signal (semid);
 }
@@ -163,7 +163,7 @@ unsigned char lcdtime_HD44780_readkeypad (PrivateData *p, unsigned int YData)
 		// Can't combine >3 displays with >8 keypad output lines
 		port_out (p->port + 2, ( ((~YData & 0x0100) >> 8) | ((~YData & 0x0200) >> 6)) ^ OUTMASK);
 	}
-	if( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+	if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
 
 	// Read inputs
 	readval = ~ port_in (p->port + 1) ^ INMASK;
