@@ -54,12 +54,12 @@
 #include "report.h"
 
 
-unsigned int sed1520_lptport = LPTPORT;
-char *framebuf = NULL;
-int width = LCD_DEFAULT_WIDTH;
-int height = LCD_DEFAULT_HEIGHT;
-int cellwidth = LCD_DEFAULT_CELLWIDTH;
-int cellheight = LCD_DEFAULT_CELLHEIGHT;
+static unsigned int sed1520_lptport = LPTPORT;
+static char *framebuf = NULL;
+static int width = LCD_DEFAULT_WIDTH;
+static int height = LCD_DEFAULT_HEIGHT;
+static int cellwidth = LCD_DEFAULT_CELLWIDTH;
+static int cellheight = LCD_DEFAULT_CELLHEIGHT;
 
 
 // Vars for the server core
@@ -123,18 +123,16 @@ selectcolumn (int column, int chip)
 void
 drawchar2fb (int x, int y, unsigned char z)
 {
-    int i, j, k;
+    int i, j;
 
-    if (x < 0 || x > 19 || y < 0 || y > 3)
+    if ((x < 0) || (x > 19) || (y < 0) || (y > 3))
 	return;
 
-    for (i = 6; i > 0; i--)
-      {
-	  k = 0;
-	  for (j = 0; j < 7; j++)
-	    {
-		k = k +
-		    (((fontmap[(int) z][j] * 2) & (1 << i)) / (1 << i)) *
+    for (i = 6; i > 0; i--) {
+	  int k = 0;
+
+	  for (j = 0; j < 7; j++) {
+		k += (((fontmap[(int) z][j] * 2) & (1 << i)) / (1 << i)) *
 		    (1 << j);
 	    }
 	  framebuf[(y * 122) + (x * 6) + (6 - i)] = k;
@@ -313,7 +311,7 @@ sed1520_num (Driver *drvthis, int x, int num)
     int z, c, i, s;
     x--;
 
-    if (x < 0 || x > 19 || num < 0 || num > 10)
+    if ((x < 0) || (x > 19) || (num < 0) || (num > 10))
 	return;
     if (num != 10 && (x < 0 || x > 17))
 	return;
@@ -391,7 +389,6 @@ sed1520_old_vbar (Driver *drvthis, int x, int len)
     x--;
 
     for (j = 0; j < 3; j++) {
-	  i = 0;
 	  k = 0;
 	  for (i = 0; i < 8; i++) {
 		if (len > i)
@@ -421,7 +418,7 @@ sed1520_old_hbar (Driver *drvthis, int x, int y, int len)
     x--;
     y--;
 
-    if (y < 0 || y > 3 || x < 0 || len < 0 || (x + (len / 6)) > 19)
+    if ((y < 0) || (y > 3) || (x < 0) || (len < 0) || ((x + (len / 6)) > 19))
 	return;
 
     for (i = 0; i < len; i++)
