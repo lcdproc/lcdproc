@@ -44,7 +44,7 @@
 
 #include "imon.h"
 
-#define PAD				'#'
+#define PAD		'#'
 #define DEFAULT_DEVICE	"/dev/usb/lcd"
 #define DEFAULT_SIZE	"16x2"
 /* The two value below are only used internally, we don't support custom char. */
@@ -62,7 +62,7 @@ MODULE_EXPORT char *symbol_prefix = "imon_";
 typedef struct {
 	char info[255];
 	int imon_fd;
-	unsigned char * framebuf;
+	unsigned char *framebuf;
 	int height;
 	int width;
 } imonPD;
@@ -73,64 +73,62 @@ typedef struct {
  */
 MODULE_EXPORT int imon_init (Driver *drvthis)
 {
-	imonPD * pPD = 0;
+	imonPD * pPD = NULL;
 
 	// Alocate, initialize and store private p
-	pPD = (imonPD *) malloc( sizeof(imonPD) );
-	if(!pPD)
-	{
-		debug(RPT_ERR, "imon_init: failed to allocate private data");
+	pPD = (imonPD *) calloc(1, sizeof(imonPD));
+	if (pPD == NULL) {
+		debug(RPT_ERR, "%s: failed to allocate private data", drvthis->name);
 		return -1;
 	}
 
-	memset(pPD->info, '\0', sizeof(pPD->info));
-
-	if( drvthis->store_private_ptr( drvthis, pPD ) )
-	{
-		debug(RPT_ERR, "imon_init: failed to store private data pointer");
+	if (drvthis->store_private_ptr(drvthis, pPD)) {
+		debug(RPT_ERR, "%s: failed to store private data pointer", drvthis->name);
 		return -1;
 	}
 
 	char buf[256];
+	pPD->imon_fd = -1;
 	pPD->width = 0;
 	pPD->height = 0;
-
-	/* some variables for the server core.*/
-	drvthis->name = "imon";
-	drvthis->filename = "imon.so";
 
 	/* Get settings from config file*/
 
 	/* Get device */
-	strncpy (buf, drvthis->config_get_string (drvthis->name, "device", 0, DEFAULT_DEVICE), sizeof (buf));
-	buf [sizeof(buf)-1] = 0;
-	report (RPT_INFO, "imon_init: using device %s", buf);
+	strncpy(buf, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(buf));
+	buf[sizeof(buf)-1] = '\0';
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, buf);
 
 	/* Open device for writing */
-	if ((pPD->imon_fd = open (buf, O_WRONLY)) < 0)
-	{
-		report (RPT_ERR, "imon_init: ERROR opening %s (%s).", buf, strerror (errno));
-		report (RPT_ERR, "imon_init: Did you load the iMON VFD kernel module?");
-		report (RPT_ERR, "imon_init: More info in lcdproc/docs/README.imon");
+	if ((pPD->imon_fd = open(buf, O_WRONLY)) < 0) {
+		report(RPT_ERR, "%s: ERROR opening %s (%s).", drvthis->name, buf, strerror(errno));
+		report(RPT_ERR, "%s: Did you load the iMON VFD kernel module?", drvthis->name);
+		report(RPT_ERR, "%s: More info in lcdproc/docs/README.imon", drvthis->name);
 		return -1;
 	}
 
 	/* Get size settings*/
-	strncpy (buf, drvthis->config_get_string (drvthis->name , "Size" , 0 , DEFAULT_SIZE), sizeof(buf));
-	buf[sizeof(buf)-1] = 0;
-	if (sscanf(buf , "%dx%d", &pPD->width, &pPD->height ) != 2 || (pPD->width <= 0) || (pPD->height <= 0))
-	{
-		report (RPT_WARNING, "imon: cannot read size: %s. Using default value %s.\n", 
-				buf, DEFAULT_SIZE);
-		sscanf (DEFAULT_SIZE , "%dx%d", &pPD->width, &pPD->height );
+	strncpy(buf, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(buf));
+	buf[sizeof(buf)-1] = '\0';
+	if ((sscanf(buf , "%dx%d", &pPD->width, &pPD->height) != 2)
+	    || (pPD->width <= 0) || (pPD->width > LCD_MAX_WIDTH)
+	    || (pPD->height <= 0) || (pPD->height > LCD_MAX_HEIGHT)) {
+		report(RPT_WARNING, "%s: cannot read Size: %s; using default %s", 
+				drvthis->name, buf, DEFAULT_SIZE);
+		sscanf(DEFAULT_SIZE , "%dx%d", &pPD->width, &pPD->height);
 	}
 
 	/* Make sure the frame buffer is there... */
-	if (!pPD->framebuf)
-		pPD->framebuf = (unsigned char *) malloc (pPD->width * pPD->height);
-	memset (pPD->framebuf, ' ', pPD->width * pPD->height);
+	pPD->framebuf = (unsigned char *) malloc(pPD->width * pPD->height);
+	if (pPD->framebuf == NULL) {
+		report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
+		return -1;
+	}
+	memset(pPD->framebuf, ' ', pPD->width * pPD->height);
 
-	return !0;		 
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+	
+	return 1;		 
 }
 
 /** 
@@ -139,7 +137,7 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 MODULE_EXPORT char * imon_get_info (Driver *drvthis)
 {
 	imonPD * pPD = drvthis->private_data;
-	strcpy(pPD->info, "Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD driver ");
+	strcpy(pPD->info, "Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD driver");
 	return pPD->info;
 }
 
@@ -149,11 +147,18 @@ MODULE_EXPORT char * imon_get_info (Driver *drvthis)
 MODULE_EXPORT void imon_close (Driver *drvthis)
 {
 	imonPD * pPD = drvthis->private_data;
-	if (pPD->framebuf != NULL)
-		free (pPD->framebuf);
 
-	pPD->framebuf = NULL;
-	close (pPD->imon_fd);
+	if (pPD != NULL) {
+		if (pPD->imon_fd >= 0)
+			close(pPD->imon_fd);
+
+		if (pPD->framebuf != NULL)
+			free(pPD->framebuf);
+		pPD->framebuf = NULL;
+
+		free(pPD);
+	}
+	drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /** 
@@ -162,7 +167,7 @@ MODULE_EXPORT void imon_close (Driver *drvthis)
 MODULE_EXPORT void imon_clear (Driver *drvthis)
 {
 	imonPD * pPD = drvthis->private_data;
-	memset (pPD->framebuf, ' ', pPD->width * pPD->height);
+	memset(pPD->framebuf, ' ', pPD->width * pPD->height);
 }
 
 /**
@@ -171,7 +176,7 @@ MODULE_EXPORT void imon_clear (Driver *drvthis)
 MODULE_EXPORT void imon_flush (Driver *drvthis)
 {
 	imonPD * pPD = drvthis->private_data;
-	write (pPD->imon_fd, pPD->framebuf, pPD->width * pPD->height);
+	write(pPD->imon_fd, pPD->framebuf, pPD->width * pPD->height);
 }
 
 /**
@@ -182,8 +187,8 @@ MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, char string[])
 {
 	int i;
 
-	for (i = 0; string[i]; i++)
-		imon_chr (drvthis, x+i, y, string [i]);
+	for (i = 0; string[i] != '\0'; i++)
+		imon_chr(drvthis, x+i, y, string[i]);
 }
 
 /**
@@ -195,10 +200,12 @@ MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char ch)
 	imonPD * pPD = drvthis->private_data;
 	y--; x--;
 
-	switch (ch)
-	{
-		case 0:
-		case -1:	
+	if ((x < 0) || (y < 0) || (x >= pPD->width) || (y >= pPD->height))
+		return;
+
+	switch (ch) {
+		case '\0':
+		case -1:	/* ugly: this is 255 unsigned */
 			ch = PAD;
 			break;
 		default:
@@ -216,25 +223,21 @@ MODULE_EXPORT void imon_vbar (Driver *drvthis, int x, int y, int len, int promil
 {
 	int pos;
 	int pixels;
-	int total_pixels = ((long) 2 * len * VFD_DEFAULT_CELL_HEIGHT + 1 ) * promille / 2000;
+	int total_pixels = ((long) 2 * len * VFD_DEFAULT_CELL_HEIGHT + 1) * promille / 2000;
 
-	for (pos = 0; pos < len; pos++ )
-	{
+	for (pos = 0; pos < len; pos++) {
 		pixels = total_pixels - VFD_DEFAULT_CELL_HEIGHT * pos;
-		if ( pixels >= VFD_DEFAULT_CELL_HEIGHT )
-		{
+		if (pixels >= VFD_DEFAULT_CELL_HEIGHT) {
 			/* write a "full" block to the screen... */
 			//drvthis->icon (drvthis, x, y-pos, ICON_BLOCK_FILLED);
-			imon_chr (drvthis, x, y-pos, '#');
+			imon_chr(drvthis, x, y-pos, '#');
 		}
-		else if (pixels > 0)
-		{
+		else if (pixels > 0) {
 			/* write a "partial" block to the screen... */
-			imon_chr (drvthis, x, y-pos, '|');
+			imon_chr(drvthis, x, y-pos, '|');
 			break;
 		}
-		else
-		{
+		else {
 			; // write nothing (not even a space) 
 		}
 	}
@@ -249,25 +252,21 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 {
 	int pos;
 	int pixels;
-	int total_pixels = ((long) 2 * len * VFD_DEFAULT_CELL_WIDTH + 1 ) * promille / 2000;
+	int total_pixels = ((long) 2 * len * VFD_DEFAULT_CELL_WIDTH + 1) * promille / 2000;
 
-	for (pos = 0; pos < len; pos++ )
-	{
+	for (pos = 0; pos < len; pos++) {
 		pixels = total_pixels - VFD_DEFAULT_CELL_WIDTH * pos;
-		if ( pixels >= VFD_DEFAULT_CELL_WIDTH )
-		{
+		if (pixels >= VFD_DEFAULT_CELL_WIDTH) {
 			/* write a "full" block to the screen... */
 			//drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
 			imon_chr (drvthis, x+pos, y, '#');
 		}
-		else if (pixels > 0)
-		{
+		else if (pixels > 0) {
 			/* write a "partial" block to the screen... */
 			imon_chr (drvthis, x+pos, y, '-');
 			break;
 		}
-		else
-		{
+		else {
 			; // write nothing (not even a space) 
 		}
 	}
@@ -276,7 +275,7 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 /** 
  * returns the display's width
  */
-MODULE_EXPORT int  imon_width (Driver *drvthis)
+MODULE_EXPORT int imon_width (Driver *drvthis)
 {
 	imonPD * pPD = drvthis->private_data;
 	return pPD->width;
