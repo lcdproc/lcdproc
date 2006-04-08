@@ -34,11 +34,6 @@
 #include "port.h"
 
 
-#define DEBUG3 if (debug_level > 2) printf
-#define DEBUG4 if (debug_level > 3) printf
-
-#define debug_level 2
-
 //extern int debug_level;
 
 static u16 t6963_out_port;
