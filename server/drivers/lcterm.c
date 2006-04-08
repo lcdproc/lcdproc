@@ -60,7 +60,7 @@ typedef struct
   int width;
   int height;
   int fd;
-}PrivateData;
+} PrivateData;
 
 
 // Vars for the server core
@@ -81,75 +81,70 @@ lcterm_init (Driver *drvthis)
   struct termios portset;
   PrivateData *p;
 
-  debug( RPT_INFO, "LCTERM: init(%p)", drvthis );
+  debug(RPT_INFO, "LCTERM: init(%p)", drvthis);
 
   // Alocate and store private data
-  p = (PrivateData *) calloc( 1, sizeof( PrivateData) );
-  if( ! p )
+  p = (PrivateData *) calloc(1, sizeof(PrivateData));
+  if (p == NULL)
     return -1;
-  if( drvthis->store_private_ptr( drvthis, p ) )
+  if (drvthis->store_private_ptr(drvthis, p))
     return -1;
 
+  // initialize private data
+  p->fd = -1;
   p->ccmode = p->last_ccmode = CCMODE_STANDARD;
 
   // READ CONFIG FILE:
   // which serial device should be used
-  strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , DEFAULT_DEVICE),
+  strncpy(device, drvthis->config_get_string(drvthis->name , "Device" , 0 , DEFAULT_DEVICE),
 	  sizeof(device));
   device[sizeof(device)-1] = '\0';
-  report (RPT_INFO,"LCTERM: Using device: %s", device);
+  report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
   /* Get and parse size */
   {
-    int w,h;
-    char *s = drvthis->config_get_string( drvthis->name, "size", 0, "16x2" );
+    int w, h;
+    char *s = drvthis->config_get_string(drvthis->name, "Size", 0, "16x2");
 
-    debug(RPT_DEBUG, "lcterm_init: reading size: %s\n", s );
+    debug(RPT_DEBUG, "%s: reading size: %s", __FUNCTION__, s);
 
-    if((sscanf( s, "%dx%d", &w, &h) != 2)
+    if ((sscanf(s, "%dx%d", &w, &h) != 2)
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT))
     {
-      report(RPT_WARNING, "LCDTERM: Cannot read size: %s. Using default value.\n", s);
-      sscanf( "16x2", "%dx%d", &w, &h);
+      report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+		      drvthis->name, s, "16x2");
+      sscanf("16x2", "%dx%d", &w, &h);
     }
     p->width  = w;
     p->height = h;
   }
-  report (RPT_INFO,"LCTERM: Using size: %dx%d\n",p->width, p->height);
+  report(RPT_INFO, "%s: using Size: %dx%d", drvthis->name, p->width, p->height);
 
-  p->framebuf = malloc (p->width * p->height);
-  p->last_framebuf = malloc (p->width * p->height);
-  if (!p->framebuf || !p->last_framebuf) {
-    report(RPT_ERR, "Error: unable to create LCTERM framebuffer.\n");
+  p->framebuf = malloc(p->width * p->height);
+  p->last_framebuf = malloc(p->width * p->height);
+  if ((p->framebuf == NULL) || (p->last_framebuf == NULL)) {
+    report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
     return -1;
   }
-  memset (p->framebuf, ' ', p->width * p->height);
-  memset (p->last_framebuf, ' ', p->width * p->height);
+  memset(p->framebuf, ' ', p->width * p->height);
+  memset(p->last_framebuf, ' ', p->width * p->height);
 
   // Set up io port correctly, and open it...
-  debug( RPT_DEBUG, "LCTERM: Opening serial device: %s", device);
+  debug(RPT_DEBUG, "%s: Opening serial device: %s", drvthis->name, device);
   p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-  if (p->fd == -1)
-  {
-    switch (errno)
-    {
-      case ENOENT: report( RPT_ERR, "LCTERM: lcterm_init() failed: Device file missing: %s\n", device);
-	break;
-      case EACCES: report( RPT_ERR, "LCTERM: lcterm_init() failed: Could not open device: %s\n", device);
-	report( RPT_ERR, "LCTERM: lcterm_init() failed: Make sure you have rw access to %s!\n", device);
-	break;
-      default: report( RPT_ERR, "LCTERM: lcterm_init() failed (%s)\n", strerror (errno));
-	break;
-    }
+  if (p->fd == -1) {
+    report(RPT_ERR, "%s: open(%) failed (%s)", drvthis->name, device, strerror(errno));
+    if (errno == EACCES)
+	report(RPT_ERR, "%s: make sure you have rw access to %s!", drvthis->name, device);
     return -1;
-  } else {
-    report (RPT_INFO, "opened LCTERM display on %s\n", device);
   }
+  report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
+
   tcgetattr(p->fd, &portset);
 #ifdef HAVE_CFMAKERAW
   /* The easy way: */
-  cfmakeraw( &portset );
+  cfmakeraw(&portset);
 #else
   /* The hard way: */
   portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -165,8 +160,11 @@ lcterm_init (Driver *drvthis)
   tcflush(p->fd, TCIOFLUSH);
 
   // clear the display, disable cursor, disable key scanning
-  write (p->fd, "\x1a\x16\x1bK", 4);
-  return 0;
+  write(p->fd, "\x1a\x16\x1bK", 4);
+
+  report(RPT_DEBUG, "%s: init() done", drvthis->name);
+
+  return 1;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -177,19 +175,22 @@ lcterm_close (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
 
-  if(p->framebuf)
-    free (p->framebuf);
-  if(p->last_framebuf)
-    free (p->last_framebuf);
+  if (p != NULL) {
+    if (p->framebuf != NULL)
+      free(p->framebuf);
+    if (p->last_framebuf != NULL)
+      free(p->last_framebuf);
 
-  // clear the display, disable key scanning
-  if (p->fd)
-  {
-    write (p->fd, "\x1a\x1bK", 3);
-    close (p->fd);
+    // clear the display, disable key scanning
+    if (p->fd >= 0) {
+      write(p->fd, "\x1a\x1bK", 3);
+      close(p->fd);
+    }
+
+    free(p);
   }
-  drvthis->store_private_ptr( drvthis, NULL );
-  report (RPT_INFO, "LCTERM: closed");
+  drvthis->store_private_ptr(drvthis, NULL);
+  report(RPT_INFO, "%s: closed", drvthis->name);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -199,6 +200,7 @@ MODULE_EXPORT int
 lcterm_width (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
+
   return p->width;
 }
 
@@ -209,6 +211,7 @@ MODULE_EXPORT int
 lcterm_height (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
+
   return p->height;
 }
 
@@ -219,6 +222,7 @@ MODULE_EXPORT void
 lcterm_clear (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
+
   memset(p->framebuf, ' ', p->width * p->height);
   p->ccmode = CCMODE_STANDARD;
 }
@@ -230,10 +234,10 @@ MODULE_EXPORT void
 lcterm_flush (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-  int i,line;
+  int i, line;
   unsigned char *buf, *sp, *dp, c;
 
-  if(memcmp(p->framebuf, p->last_framebuf, p->width * p->height) == 0)
+  if (memcmp(p->framebuf, p->last_framebuf, p->width * p->height) == 0)
     return;
 
   buf = alloca(p->width * p->height * 2 + 5); /* worst case: we need to
@@ -243,18 +247,18 @@ lcterm_flush (Driver *drvthis)
 
   *dp++ = 0x1E;  // cursor home
 
-  for(line = p->height; line>0; line--)
+  for (line = p->height; line > 0; line--)
   {
-    for(i=p->width; i>0; i--)
+    for (i = p->width; i > 0; i--)
     {
-      if((c = *sp++) < 0x08) // need to escape used-defined characters
+      if ((c = *sp++) < 0x08) // need to escape used-defined characters
 	*dp++ = 0x1B;
       *dp++ = c;
     }
     *dp++ = 0x0a;
     *dp++ = 0x0d;
   }
-  write(p->fd,buf,dp-buf);
+  write(p->fd, buf, dp-buf);
   memcpy(p->last_framebuf, p->framebuf, p->width * p->height);
 }
 
@@ -268,9 +272,9 @@ lcterm_chr (Driver *drvthis, int x, int y, char ch)
   PrivateData *p = (PrivateData *) drvthis->private_data;
   y--;
   x--;
-  //debug (RPT_DEBUG, "lcterm_chr: x=%d, y=%d, chr=%x", x,y,ch);
-  if (x >= 0 && x < p->width && y >= 0 && y < p->height)
-    p->framebuf[ y * p->width + x] = ch;
+  //debug(RPT_DEBUG, "lcterm_chr: x=%d, y=%d, chr=%x", x,y,ch);
+  if ((x >= 0) && (x < p->width) && (y >= 0) && (y < p->height))
+    p->framebuf[y * p->width + x] = ch;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -284,7 +288,7 @@ lcterm_string (Driver *drvthis, int x, int y, char *s)
   x --;  // Convert 1-based coords to 0-based
   y --;
 
-  for (; *s && x < p->width; x++)
+  for ( ; (*s != '\0') && (x < p->width); x++)
     p->framebuf[y * p->width + x] = *s++;
 }
 
@@ -304,23 +308,21 @@ lcterm_set_char (Driver *drvthis, int n, char *dat)
   int data;
   unsigned char buf[11];
 
-  if (n < 0 || n > 7 || !dat)
+  if ((n < 0) || (n > 7) || (!dat))
     return;
 
   buf[0] = 0x1F;
-  buf[1] = 8*n;   // CG RAM address */
-  for (row = 0; row < 8; row++)
-  {
+  buf[1] = 8 * n;   // CG RAM address */
+  for (row = 0; row < 8; row++) {
     data = 0;
-    for (col = 0; col < 5; col++)
-    {
+    for (col = 0; col < 5; col++) {
       data <<= 1;
       data |= (*dat++ != 0);
     }
     buf[2+row] = data | 0x80;
   }
   buf[10] = 0x1E; // Cursor Home - exit CG-RAM mode
-  write(p->fd,buf,11);
+  write(p->fd, buf, 11);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -402,24 +404,25 @@ lcterm_init_vbar (Driver *drvthis)
     1, 1, 1, 1, 1,
   };
 
-  if( p->last_ccmode == CCMODE_VBAR )    /* Work already done */
+  if (p->last_ccmode == CCMODE_VBAR)    /* Work already done */
     return;
 
-  if( p->ccmode != CCMODE_STANDARD )
-  {
+  if (p->ccmode != CCMODE_STANDARD) {
     /* Not supported (yet) */
-    report( RPT_WARNING, "lcterm_init_vbar: Cannot combine two modes using user defined characters" );
+    report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user defined characters",
+		    drvthis->name);
     return;
   }
+
   p->ccmode = p->last_ccmode = CCMODE_VBAR;
 
-  lcterm_set_char (drvthis, 1, vbar_1);
-  lcterm_set_char (drvthis, 2, vbar_2);
-  lcterm_set_char (drvthis, 3, vbar_3);
-  lcterm_set_char (drvthis, 4, vbar_4);
-  lcterm_set_char (drvthis, 5, vbar_5);
-  lcterm_set_char (drvthis, 6, vbar_6);
-  lcterm_set_char (drvthis, 7, vbar_7);
+  lcterm_set_char(drvthis, 1, vbar_1);
+  lcterm_set_char(drvthis, 2, vbar_2);
+  lcterm_set_char(drvthis, 3, vbar_3);
+  lcterm_set_char(drvthis, 4, vbar_4);
+  lcterm_set_char(drvthis, 5, vbar_5);
+  lcterm_set_char(drvthis, 6, vbar_6);
+  lcterm_set_char(drvthis, 7, vbar_7);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -481,22 +484,23 @@ lcterm_init_hbar (Driver *drvthis)
     1, 1, 1, 1, 1,
   };
 
-  if( p->last_ccmode == CCMODE_HBAR ) /* Work already done */
+  if (p->last_ccmode == CCMODE_HBAR) /* Work already done */
     return;
 
-  if( p->ccmode != CCMODE_STANDARD )
-  {
+  if (p->ccmode != CCMODE_STANDARD) {
     /* Not supported (yet) */
-    report( RPT_WARNING, "lcterm_init_hbar: Cannot combine two modes using user defined characters" );
+    report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user defined characters",
+		    drvthis->name);
     return;
   }
+  
   p->ccmode = p->last_ccmode = CCMODE_HBAR;
 
-  lcterm_set_char (drvthis, 1, hbar_1);
-  lcterm_set_char (drvthis, 2, hbar_2);
-  lcterm_set_char (drvthis, 3, hbar_3);
-  lcterm_set_char (drvthis, 4, hbar_4);
-  lcterm_set_char (drvthis, 5, hbar_5);
+  lcterm_set_char(drvthis, 1, hbar_1);
+  lcterm_set_char(drvthis, 2, hbar_2);
+  lcterm_set_char(drvthis, 3, hbar_3);
+  lcterm_set_char(drvthis, 4, hbar_4);
+  lcterm_set_char(drvthis, 5, hbar_5);
 }
 
 
@@ -605,20 +609,22 @@ lcterm_init_num (Driver *drvthis)
     0, 0, 0, 0, 0
   }};
 
-  if( p->last_ccmode == CCMODE_BIGNUM ) {
+  if (p->last_ccmode == CCMODE_BIGNUM) {
     /* Work already done */
     return;
   }
 
-  if( p->ccmode != CCMODE_STANDARD ) {
+  if (p->ccmode != CCMODE_STANDARD) {
     /* Not supported (yet) */
-    report( RPT_WARNING, "lcterm_init_num: Cannot combine two modes using user defined characters" );
+    report(RPT_WARNING, "%s: init_num: cannot combine two modes using user defined characters",
+		    drvthis->name);
     return;
   }
 
-  for( i=0; i<8; i++ )
-    lcterm_set_char (drvthis, i, bignum_ccs[i]);
   p->ccmode = p->last_ccmode = CCMODE_BIGNUM;
+
+  for (i = 0; i < 8; i++)
+    lcterm_set_char(drvthis, i, bignum_ccs[i]);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -698,17 +704,17 @@ lcterm_num (Driver *drvthis, int x, int num)
     }};
 
   if ((num < 0) || (num > 10))
-	  return;
+    return;
 
   if ((p->width >= 20) && (p->height >= 4)) {
-    int y = ( p->height - 2 ) / 2;
+    int y = (p->height - 2) / 2;
     int x2, y2;
 
     lcterm_init_num(drvthis);
 
     for (x2 = 0; x2 <= 2; x2++) {
       for (y2 = 0; y2 <= 3; y2++) {
-	lcterm_chr( drvthis, x+x2, y+y2, bignum_map[num][y2][x2] );
+	lcterm_chr(drvthis, x+x2, y+y2, bignum_map[num][y2][x2]);
       }	
       if (num == 10)
 	x2 = 2; /* =break, for colon only */
@@ -746,18 +752,18 @@ lcterm_icon (Driver *drvthis, int x, int y, int icon)
     1, 1, 0, 1, 1,
     1, 1, 1, 1, 1 };
 
-  switch( icon )
+  switch (icon)
   {
     case ICON_BLOCK_FILLED:
-      lcterm_chr( drvthis, x, y, 255 );
+      lcterm_chr(drvthis, x, y, 255);
       break;
     case ICON_HEART_FILLED:
-      lcterm_set_char( drvthis, 0, heart_filled );
-      lcterm_chr( drvthis, x, y, 0 );
+      lcterm_set_char(drvthis, 0, heart_filled);
+      lcterm_chr(drvthis, x, y, 0);
       break;
     case ICON_HEART_OPEN:
-      lcterm_set_char( drvthis, 0, heart_open );
-      lcterm_chr( drvthis, x, y, 0 );
+      lcterm_set_char(drvthis, 0, heart_open);
+      lcterm_chr(drvthis, x, y, 0);
       break;
     default:
       return -1;
