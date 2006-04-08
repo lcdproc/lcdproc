@@ -270,51 +270,51 @@ serialVFD_init (Driver *drvthis)
 	
 	/* Read config file */
 	/* Which device should be used */
-	strncpy(p->device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
+	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 	p->device[sizeof(p->device)-1] = '\0';
-	debug (RPT_INFO,"%s: Device (in config) is: '%s'", __FUNCTION__, p->device);
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
 	/* Which size */
-	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
+	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
 	size[sizeof(size)-1] = '\0';
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "%s: Cannot parse size: %s. Using default %s.\n",
-			__FUNCTION__, size, DEFAULT_SIZE);
+		report(RPT_WARNING, "%s: cannot parse Size: %s; using default %s",
+			drvthis->name, size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
 
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_BRIGHTNESS);
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	brightness = tmp;
 
 
 	/* ISO 8859 1 */
-	p->ISO_8859_1 = drvthis->config_get_bool (drvthis->name, "ISO_8859_1", 0, 1);
+	p->ISO_8859_1 = drvthis->config_get_bool(drvthis->name, "ISO_8859_1", 0, 1);
 
 	/* Which displaytype */
-	tmp = drvthis->config_get_int (drvthis->name, "Type", 0, DEFAULT_DISPLAYTYPE);
+	tmp = drvthis->config_get_int(drvthis->name, "Type", 0, DEFAULT_DISPLAYTYPE);
 	if ((tmp < 0) || (tmp > 3)) {
-		report (RPT_WARNING, "%s: Displaytype must be between 0 and 3. Using default %d.\n",
-			__FUNCTION__, DEFAULT_DISPLAYTYPE);
+		report(RPT_WARNING, "%s: Type must be between 0 and 3; using default %d",
+			drvthis->name, DEFAULT_DISPLAYTYPE);
 		tmp = DEFAULT_DISPLAYTYPE;
 	}
 	p->display_type = tmp;
 
 
 	/* Which speed */
-	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
+	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
 	if ((tmp != 1200) && (tmp != 2400) && (tmp != 9600) && (tmp != 19200) && (tmp != 115200)) {
-		report (RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default %d.\n",
-			__FUNCTION__, DEFAULT_SPEED);
+		report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200; using default %d",
+			drvthis->name, DEFAULT_SPEED);
 		tmp = DEFAULT_SPEED;
 	}
 	if (tmp == 1200) p->speed = B1200;
@@ -326,20 +326,19 @@ serialVFD_init (Driver *drvthis)
 
 
 	/* Set up io port correctly, and open it...*/
-	debug( RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
-	p->fd = open (p->device, O_RDWR | O_NOCTTY | O_NDELAY);
-
+	debug(RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
+	p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (p->fd == -1) {
-		report (RPT_ERR, "%s: open() of %s failed (%s)\n", __FUNCTION__, p->device, strerror (errno));
+		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, p->device, strerror(errno));
 		return -1;
 	}
 
-	tcgetattr (p->fd, &portset);
+	tcgetattr(p->fd, &portset);
 
 	// We use RAW mode
 #ifdef HAVE_CFMAKERAW
 	// The easy way
-	cfmakeraw( &portset );
+	cfmakeraw(&portset);
 #else
 		// The hard way
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -351,16 +350,16 @@ serialVFD_init (Driver *drvthis)
 #endif
 
 	// Set port speed
-	cfsetospeed (&portset, p->speed);
+	cfsetospeed(&portset, p->speed);
 	cfsetispeed (&portset, B0);
 
 	// Do it...
-	tcsetattr (p->fd, TCSANOW, &portset);
+	tcsetattr(p->fd, TCSANOW, &portset);
 
 	/* make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer.\n", __FUNCTION__);
+		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
@@ -368,20 +367,19 @@ serialVFD_init (Driver *drvthis)
 	/* make sure the framebuffer backing store is there... */
 	p->backingstore = (unsigned char *) malloc(p->width * p->height);
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer backing store.\n", __FUNCTION__);
+		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
 		return -1;
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
 
 //setup displayspecific data
-	switch (p->display_type)
-		{
+	switch (p->display_type) {
 //nec_fipc
 		case 0: 		//nec_fipc
-			p->need_refresh=0; 	// 1 if displays need refresh after changing custonchars
-			p->customchars=1;	// number of customchaaracters the display provides
-			p->vbar_cc_offset=5;	// character offset of the bars
-			p->hbar_cc_offset=12;	// character offset of the bars
+			p->need_refresh = 0; 	// 1 if displays need refresh after changing custonchars
+			p->customchars = 1;	// number of customchaaracters the display provides
+			p->vbar_cc_offset = 5;	// character offset of the bars
+			p->hbar_cc_offset = 12;	// character offset of the bars
 
 			// hardwarespecific commands:
 			//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
@@ -397,9 +395,9 @@ serialVFD_init (Driver *drvthis)
 						{2	,0x14, 0x11},  	// init
 						{1	,0x1A}, 	// set user char
 						{1	,0x09}}; 	// tab
-			for (tmp=0;tmp < (10) ;tmp++)
-				for (w=0;w < (4) ;w++)
-					p->hw_cmd[tmp][w]=hw_cmd_0[tmp][w];
+			for (tmp = 0; tmp < 10; tmp++)
+				for (w = 0; w < 4  ;w++)
+					p->hw_cmd[tmp][w] = hw_cmd_0[tmp][w];
 
 			// Translates ISO 8859-1 to display charset.
 			const unsigned char charmap_0[] = {
@@ -424,8 +422,8 @@ serialVFD_init (Driver *drvthis)
 				'o',   'n',  'o',  'o',  'o',  'o', 0xA6, 0x8E,
 				'0',   'u',  'u',  'u', 0xA7,  'y',  'p',  'y'
 				};
-			for (tmp=0;tmp < 128 ;tmp++)
-			p->charmap[tmp]=charmap_0[tmp];
+			for (tmp = 0; tmp < 128 ; tmp++)
+				p->charmap[tmp] = charmap_0[tmp];
 
 			//{bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
 			const int usr_chr_dot_assignment_0[57]={7,	 1, 2, 3, 4, 5, 0, 0, 0,
@@ -435,16 +433,16 @@ serialVFD_init (Driver *drvthis)
 								21,22,23,24,25, 0, 0, 0,
 								26,27,28,29,30, 0, 0, 0,
 								31,32,33,34,35, 0, 0, 0};
-			for (tmp=0;tmp < 57 ;tmp++)
-				p->usr_chr_dot_assignment[tmp]=usr_chr_dot_assignment_0[tmp];
+			for (tmp = 0; tmp < 57 ;tmp++)
+				p->usr_chr_dot_assignment[tmp] = usr_chr_dot_assignment_0[tmp];
 
 			//Where to place the usercharacters (0..30) in the asciicode.
 			//Also used to map standardcharacters in the usercharacterspace(0..30)
 			//(useful for displays with less then 30 usercharacters and predefined bars)
 			const unsigned int usr_chr_mapping_0[31]=
 			{0xAF,0,0,0,0,0, 0x5F, 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0, 0x5F, 0xE1, 0xE3, 0xE4};
-			for (tmp=0;tmp < 31 ;tmp++)
-				p->usr_chr_mapping[tmp]=usr_chr_mapping_0[tmp];
+			for (tmp = 0; tmp < 31; tmp++)
+				p->usr_chr_mapping[tmp] = usr_chr_mapping_0[tmp];
 			break;
 
 //KD Rev2.1
@@ -468,9 +466,9 @@ serialVFD_init (Driver *drvthis)
 						{2	,0x14, 0x11},  	// init
 						{1	,0x1A}, 	// set user char
 						{1	,0x09}}; 	// tab
-			for (tmp=0;tmp < (10) ;tmp++)
-				for (w=0;w < (4) ;w++)
-					p->hw_cmd[tmp][w]=hw_cmd_1[tmp][w];
+			for (tmp = 0; tmp < 10; tmp++)
+				for (w = 0; w < 4; w++)
+					p->hw_cmd[tmp][w] = hw_cmd_1[tmp][w];
 
 			const unsigned char charmap_1[] = {
 				/* #128  = 0x80 */
@@ -494,8 +492,8 @@ serialVFD_init (Driver *drvthis)
 				'o',  0xCF, 0xD1, 0xD0, 0xCE,  'o', 0xA6, 0xBB,
 				0xD0, 0xD7, 0xD6, 0xD8, 0xA7,  'y',  'p',  'y'
 				};
-			for (tmp=0;tmp < 128 ;tmp++)
-			p->charmap[tmp]=charmap_1[tmp];
+			for (tmp = 0; tmp < 128; tmp++)
+				p->charmap[tmp] = charmap_1[tmp];
 
 
 			//{bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
@@ -506,16 +504,16 @@ serialVFD_init (Driver *drvthis)
 								21,22,23,24,25, 0, 0, 0,
 								26,27,28,29,30, 0, 0, 0,
 								31,32,33,34,35, 0, 0, 0};
-			for (tmp=0;tmp < 57 ;tmp++)
-				p->usr_chr_dot_assignment[tmp]=usr_chr_dot_assignment_1[tmp];
+			for (tmp = 0; tmp < 57; tmp++)
+				p->usr_chr_dot_assignment[tmp] = usr_chr_dot_assignment_1[tmp];
 
 			//Where to place the usercharacters (0..30) in the asciicode.
 			//Also used to map standardcharacters in the usercharacterspace(0..30)
 			//(useful for displays with less then 30 usercharacters and predefined bars)
 			const unsigned int usr_chr_mapping_1[31]=
 			{0xAF};
-			for (tmp=0;tmp < 31 ;tmp++)
-				p->usr_chr_mapping[tmp]=usr_chr_mapping_1[tmp];
+			for (tmp = 0; tmp < 31; tmp++)
+				p->usr_chr_mapping[tmp] = usr_chr_mapping_1[tmp];
 			break;
 
 //Noritake
@@ -539,13 +537,13 @@ serialVFD_init (Driver *drvthis)
 						{2	,0x14, 0x11},  	// init
 						{2	,0x1B, 0x43}, 	// set user char
 						{1	,0x09}}; 	// tab
-			for (tmp=0;tmp < (10) ;tmp++)
-				for (w=0;w < (4) ;w++)
-					p->hw_cmd[tmp][w]=hw_cmd_2[tmp][w];
+			for (tmp = 0; tmp < 10; tmp++)
+				for (w = 0; w < 4; w++)
+					p->hw_cmd[tmp][w] = hw_cmd_2[tmp][w];
 
 			// no charmap needed
-			for (tmp=128;tmp <= 255 ;tmp++)
-			p->charmap[tmp]=tmp;
+			for (tmp = 128; tmp <= 255; tmp++)
+				p->charmap[tmp]=tmp;
 
 			//{bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
 			const int usr_chr_dot_assignment_2[57]={5,	 1, 2, 3, 4, 5, 6, 7, 8,
@@ -613,9 +611,8 @@ serialVFD_init (Driver *drvthis)
 				'o',  0xA4, 0x95, 0xA9, 0x93,  'o', 0x94,  '/',
 				'0',  0x97, 0xA3, 0x96, 0x81,  'y',  'p', 0x89
 				};
-			for (tmp=0;tmp < 128 ;tmp++)
-			p->charmap[tmp]=charmap_3[tmp];
-
+			for (tmp = 0; tmp < 128; tmp++)
+				p->charmap[tmp] = charmap_3[tmp];
 
 			//{bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
 			const int usr_chr_dot_assignment_3[57]={5,	 8, 7, 6, 5, 4, 3, 2, 1,
@@ -631,18 +628,18 @@ serialVFD_init (Driver *drvthis)
 			//(useful for displays with less then 30 usercharacters and predefined bars)
 			const unsigned int usr_chr_mapping_3[31]=
 			{0xCD, 0xCE, 0xCF};
-			for (tmp=0;tmp < 31 ;tmp++)
-				p->usr_chr_mapping[tmp]=usr_chr_mapping_3[tmp];
+			for (tmp = 0; tmp < 31; tmp++)
+				p->usr_chr_mapping[tmp] = usr_chr_mapping_3[tmp];
 			break;
 		}
 
 	//initialise display
-	write (p->fd, &p->hw_cmd[reset][1],p->hw_cmd[reset][0]);
-	write (p->fd, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
-	serialVFD_set_brightness (drvthis, 1, brightness);
+	write(p->fd, &p->hw_cmd[reset][1],p->hw_cmd[reset][0]);
+	write(p->fd, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
+	serialVFD_set_brightness(drvthis, 1, brightness);
 
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	report (RPT_DEBUG, "%s: done\n", __FUNCTION__);
 	return 0;
 
 }
@@ -656,15 +653,12 @@ serialVFD_set_brightness (Driver *drvthis, int state, int brightness)
 {	// set p->brightness
 	PrivateData *p = drvthis->private_data;
 
-
-	if (brightness > 0)
-	{
+	if (brightness > 0) {
 		if (brightness > 255)
 			brightness = 255;
-		if (p->brightness != brightness)
-		{
-			p->brightness=brightness;
-			serialVFD_put_brightness (drvthis);
+		if (p->brightness != brightness) {
+			p->brightness = brightness;
+			serialVFD_put_brightness(drvthis);
 		}
 	}
 }
@@ -674,9 +668,9 @@ serialVFD_put_brightness (Driver *drvthis)
 {	// set hardware brightness
 	PrivateData *p = drvthis->private_data;
 	int realbrightness = (int) (p->brightness / 64);
-	//(4 steps 0-64, 65-128, 129-192, 193-1000)
 
-	write (p->fd, &p->hw_cmd[realbrightness][1],\
+	//(4 steps 0-64, 65-128, 129-192, 193-1000)
+	write(p->fd, &p->hw_cmd[realbrightness][1],\
 		p->hw_cmd[realbrightness][0]);
 }
 
@@ -719,41 +713,39 @@ MODULE_EXPORT void
 serialVFD_set_char (Driver *drvthis, int n, char *dat)
 {	//set char in p->custom_char
 	PrivateData *p = drvthis->private_data;
-	int letter=0;
 	unsigned int byte, bit;
 
-	if (n < 0 || n > p->customchars-1)
+	if ((n < 0) || (n > p->customchars-1))
 		return;
 	if (!dat)
 		return;
 
+	for (byte = 0; byte < p->usr_chr_dot_assignment[0]; byte++) {
+		int letter = 0;
 
-	for (byte = 0;byte  < p->usr_chr_dot_assignment[0]; byte++)
-	{
-		for (bit = 0;bit  < 8; bit++)
-		{
-			if((int)p->usr_chr_dot_assignment[bit+8*byte+1] != 0)
+		for (bit = 0; bit < 8; bit++) {
+			if ((int) p->usr_chr_dot_assignment[bit+8*byte+1] != 0)
 				letter |= (dat[(int)p->usr_chr_dot_assignment[bit+8*byte+1]-1] << bit);
 		}
 		p->custom_char[n][byte] = letter;
-		letter = 0;
 	}
 
 	if (p->display_type != 1) //not KD Rev 2.1
-		serialVFD_put_char (drvthis, n);
+		serialVFD_put_char(drvthis, n);
 
 	if (p->need_refresh == 1)
-		p->custom_char_changed[n]=1;
+		p->custom_char_changed[n] = 1;
 }
 
 void
 serialVFD_put_char (Driver *drvthis, int n)
 {	// put char in display
 	PrivateData *p = drvthis->private_data;
-	write (p->fd, &p->hw_cmd[set_user_char][1],\
+
+	write(p->fd, &p->hw_cmd[set_user_char][1],
 		p->hw_cmd[set_user_char][0]);// substitute and select Character to overwrite
-	write (p->fd, &p->usr_chr_mapping[n], 1);
-	write (p->fd, &p->custom_char[n][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
+	write(p->fd, &p->usr_chr_mapping[n], 1);
+	write(p->fd, &p->custom_char[n][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
 }
 
 
@@ -767,109 +759,92 @@ void
 serialVFD_draw_frame (Driver *drvthis, char *dat)
 {
 	PrivateData *p = drvthis->private_data;
-	int i,j, last_chr=-10;
+	int i, j, last_chr = -10;
 
 	if (!dat)
 		return;
-	if (p->refresh_timer > 500) // Do a full refresh every 500 refreshs.
+	if (p->refresh_timer > 500) { // Do a full refresh every 500 refreshs.
 	// With this it is possible to switch display on and off while lcdproc is running
-		{
-		write (p->fd, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
-		serialVFD_put_brightness (drvthis); // restore brightness
+		write(p->fd, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
+		serialVFD_put_brightness(drvthis); // restore brightness
 
 		for (i = 0; i < (p->height * p->width); i++)
-			p->backingstore[i]=0; // clear Backing-store
+			p->backingstore[i] = '\0'; // clear Backing-store
 
-		if (p->display_type != 1) //not KD Rev 2.1
-			{
-			for(i=0;i<p->customchars;i++) // refresh all customcharacters
-				serialVFD_put_char (drvthis, i);
+		if (p->display_type != 1) {//not KD Rev 2.1
+			for (i = 0; i < p->customchars; i++) // refresh all customcharacters
+				serialVFD_put_char(drvthis, i);
 /*				{
-					write (p->fd, &p->hw_cmd[set_user_char][1],\
+					write(p->fd, &p->hw_cmd[set_user_char][1],\
 					p->hw_cmd[set_user_char][0]);// substitute and select character to overwrite
-					write (p->fd, &p->usr_chr_mapping[i], 1);
-					write (p->fd, &p->custom_char[(int)dat[i]][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
+					write(p->fd, &p->usr_chr_mapping[i], 1);
+					write(p->fd, &p->custom_char[(int)dat[i]][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
 				}*/
-			}
+		}
 		p->refresh_timer = 0;
 	}
 	p->refresh_timer++;
 
-
-	for (i = 0; i < (p->height * p->width); i++)
-	{
-
+	for (i = 0; i < (p->height * p->width); i++) {
 		/* Backing-store implementation.  If it's already
 		 * on the screen, don't put it there again
 		 */
 
-		if(dat[i] != p->backingstore[i] || (dat[i] <=30 && p->custom_char_changed[(int)dat[i]]))
+		if (dat[i] != p->backingstore[i] || (dat[i] <=30 && p->custom_char_changed[(int)dat[i]]))
 		{
-			if (last_chr < i-1) // if not last char written cursor has to be moved.
-			{
-				if(last_chr < i-2-p->hw_cmd[mv_cursor][0])
-					{
-					write (p->fd, &p->hw_cmd[mv_cursor][1],\
+			if (last_chr < i-1) { // if not last char written cursor has to be moved.
+				if (last_chr < i-2-p->hw_cmd[mv_cursor][0]) {
+					write(p->fd, &p->hw_cmd[mv_cursor][1],
 						p->hw_cmd[mv_cursor][0]);
-					write (p->fd, &i, 1);
-					}
-				else
-				{
-					for (j = last_chr; j < (i-1); j++)
-					{
-						write (p->fd, &p->hw_cmd[hor_tab][1], p->hw_cmd[hor_tab][0]);
+					write(p->fd, &i, 1);
+				}
+				else {
+					for (j = last_chr; j < (i-1); j++) {
+						write(p->fd, &p->hw_cmd[hor_tab][1], p->hw_cmd[hor_tab][0]);
 					}
 				}
 			}
 
-			if(dat[i] >= 0 && dat[i] <= 30) // custom character
-			{
-				if (p->display_type == 1) // KD Rev 2.1 only
-				{
-					write (p->fd, "\x1A\xDB", 2);		// substitute and select character to overwrite (237)
-					write (p->fd, &p->custom_char[(int)dat[i]][0], 7);// overwrite selected character
-					write (p->fd, "\xDB", 1);			// write character
+			if (dat[i] >= 0 && dat[i] <= 30) {// custom character
+				if (p->display_type == 1) {// KD Rev 2.1 only
+					write(p->fd, "\x1A\xDB", 2);		// substitute and select character to overwrite(237)
+					write(p->fd, &p->custom_char[(int)dat[i]][0], 7);// overwrite selected character
+					write(p->fd, "\xDB", 1);			// write character
 				}
-				else	// all other displays
-				{
-					write (p->fd, &p->usr_chr_mapping[(int)dat[i]], 1);
+				else {	// all other displays
+					write(p->fd, &p->usr_chr_mapping[(int)dat[i]], 1);
 				}
 			}
-			else if(dat[i] < 0 && (p->ISO_8859_1 != 0)) // ISO_8859_1 translation for 129 ... 255
-			{
-				write (p->fd, &p->charmap[dat[i] + 128], 1);
+			else if (dat[i] < 0 && (p->ISO_8859_1 != 0)) { // ISO_8859_1 translation for 129 ... 255
+				write(p->fd, &p->charmap[dat[i] + 128], 1);
 			}
-			else
-			{
-				write (p->fd, &dat[i], 1);
+			else {
+				write(p->fd, &dat[i], 1);
 			}
 
-			last_chr=i;
+			last_chr = i;
 		}
 	}
 
-	if (last_chr != -10) // update backingstore if something changed
-		{
+	if (last_chr != -10) { // update backingstore if something changed
+		int i;
+
 		memcpy(p->backingstore, dat, p->height * p->width);
-			int i;
-			for(i=0;i<p->customchars;i++)
-				p->custom_char_changed[i]=0;
-		}
 
-
+		for (i = 0; i < p->customchars; i++)
+			p->custom_char_changed[i] = '\0';
+	}
 }
 
 
 MODULE_EXPORT void
 serialVFD_num( Driver * drvthis, int x, int num )
 {
-	int do_init=0;
 	PrivateData *p = drvthis->private_data;
+	int do_init = 0;
 
-
-	if (p->ccmode != CCMODE_BIGNUM) // Are the customcharacters set up correctly? If not:
-	{
-		do_init=1;	// Lib_adv_bignum has to set the customcharacters.
+	if (p->ccmode != CCMODE_BIGNUM) { // Are the customcharacters set up correctly? If not:
+		do_init = 1;	// Lib_adv_bignum has to set the customcharacters.
 		p->ccmode = CCMODE_BIGNUM; // Switch customcharactermode to bignum.
 	}
 	// Lib_adv_bignum does everything needed to show the bignumbers.
@@ -909,7 +884,7 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 	// Yes we know, this is a VERY BAD implementation :-)
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
-			serialVFD_chr(drvthis, x, y, 127 );
+			serialVFD_chr(drvthis, x, y, 127);
 			break;
 		case ICON_HEART_FILLED:
 		        p->ccmode = CCMODE_STANDARD;
@@ -993,12 +968,12 @@ serialVFD_init_vbar (Driver *drvthis)
 
 	if (p->ccmode != CCMODE_VBAR) {
 		p->ccmode = CCMODE_VBAR;
-		serialVFD_set_char (drvthis, 1, a);
-		serialVFD_set_char (drvthis, 2, b);
-		serialVFD_set_char (drvthis, 3, c);
-		serialVFD_set_char (drvthis, 4, d);
-		serialVFD_set_char (drvthis, 5, e);
-		serialVFD_set_char (drvthis, 6, f);
+		serialVFD_set_char(drvthis, 1, a);
+		serialVFD_set_char(drvthis, 2, b);
+		serialVFD_set_char(drvthis, 3, c);
+		serialVFD_set_char(drvthis, 4, d);
+		serialVFD_set_char(drvthis, 5, e);
+		serialVFD_set_char(drvthis, 6, f);
 	}
 }
 
@@ -1048,10 +1023,10 @@ serialVFD_init_hbar (Driver *drvthis)
 
 	if (p->ccmode != CCMODE_HBAR) {
 		p->ccmode = CCMODE_HBAR;
-		serialVFD_set_char (drvthis, 1, a);
-		serialVFD_set_char (drvthis, 2, b);
-		serialVFD_set_char (drvthis, 3, c);
-		serialVFD_set_char (drvthis, 4, d);
+		serialVFD_set_char(drvthis, 1, a);
+		serialVFD_set_char(drvthis, 2, b);
+		serialVFD_set_char(drvthis, 3, c);
+		serialVFD_set_char(drvthis, 4, d);
 	}
 }
 
@@ -1066,7 +1041,7 @@ MODULE_EXPORT void
 serialVFD_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	memset (p->framebuf, ' ', p->width * p->height);
+	memset(p->framebuf, ' ', p->width * p->height);
 
 }
 
@@ -1079,10 +1054,11 @@ MODULE_EXPORT void
 serialVFD_string (Driver *drvthis, int x, int y, char string[])
 {
 	PrivateData *p = drvthis->private_data;
+	int i;
+
 	x--;
 	y--;
-	int i;
-	for (i = 0; string[i]; i++) {
+	for (i = 0; string[i] != '\0'; i++) {
 		// Check for buffer overflows...
 		if ((y * p->width) + x + i > (p->width * p->height))
 			break;
@@ -1097,15 +1073,16 @@ MODULE_EXPORT void
 serialVFD_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
+
 	if (p != NULL) {
-		close (p->fd);
+		close(p->fd);
 
 		if (p->framebuf)
-			free (p->framebuf);
+			free(p->framebuf);
 
 		if (p->backingstore)
-			free (p->backingstore);
-	free(p);
+			free(p->backingstore);
+		free(p);
 	}
 	drvthis->store_private_ptr(drvthis, NULL);
 }
@@ -1141,6 +1118,7 @@ MODULE_EXPORT int
 serialVFD_get_free_chars (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
+
 	return p->customchars;
 }
 /*
@@ -1171,7 +1149,8 @@ MODULE_EXPORT void
 serialVFD_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	serialVFD_draw_frame (drvthis, p->framebuf);
+	
+	serialVFD_draw_frame(drvthis, p->framebuf);
 }
 
 
@@ -1184,9 +1163,9 @@ MODULE_EXPORT void
 serialVFD_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
+
 	y--;
 	x--;
-
 	p->framebuf[(y * p->width) + x ] = c;
 }
 
@@ -1209,6 +1188,7 @@ MODULE_EXPORT char *
 serialVFD_get_info (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
+
 	strcpy(p->info, "Driver for many serialVFDs from NEC(all FIPC based), Noritake, Futaba and the \"KD Rev2.1\"VFD.");
 	return p->info;
 }
