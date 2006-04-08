@@ -55,7 +55,7 @@ typedef struct
   int width;
   int height;
   int fd;
-}PrivateData;
+} PrivateData;
 
 
 // Vars for the server core
@@ -77,57 +77,51 @@ icp_a106_init (Driver *drvthis)
 
   PrivateData *p;
 
-  debug( RPT_INFO, "ICP_A106: init(%p)", drvthis );
+  debug(RPT_INFO, "ICP_A106: init(%p)", drvthis );
 
   // Alocate and store private data
-  p = (PrivateData *) calloc( 1, sizeof( PrivateData) );
-  if( ! p )
+  p = (PrivateData *) calloc(1, sizeof(PrivateData));
+  if (p == NULL)
     return -1;
-  if( drvthis->store_private_ptr( drvthis, p ) )
+  if (drvthis->store_private_ptr(drvthis, p))
     return -1;
 
+  // initialize PrivateData
+  p->fd = -1;
   p->width = 20;
   p->height = 2;
 
   // READ CONFIG FILE:
   // which serial device should be used
-  strncpy(device, drvthis->config_get_string ( drvthis->name , "Device" , 0 , DEFAULT_DEVICE),
+  strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE),
 	  sizeof(device));
-  device[sizeof(device)-1]=0;
-  report (RPT_INFO,"ICP_A106: Using device: %s", device);
+  device[sizeof(device)-1] = '\0';
+  report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
-  p->framebuf = malloc (p->width * p->height);
-  p->last_framebuf = malloc (p->width * p->height);
-  if (!p->framebuf || !p->last_framebuf) {
-    report(RPT_ERR, "\nError: unable to create ICP_A106 framebuffer.\n");
+  p->framebuf = malloc(p->width * p->height);
+  p->last_framebuf = malloc(p->width * p->height);
+  if ((p->framebuf == NULL) || (p->last_framebuf == NULL)) {
+    report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
     return -1;
   }
-  memset (p->framebuf, ' ', p->width * p->height);
-  memset (p->last_framebuf, ' ', p->width * p->height);
+  memset(p->framebuf, ' ', p->width * p->height);
+  memset(p->last_framebuf, ' ', p->width * p->height);
 
   // Set up io port correctly, and open it...
-  debug( RPT_DEBUG, "ICP_A106: Opening serial device: %s", device);
+  debug(RPT_DEBUG, "%s: opening serial device: %s", __FUNCTION__, device);
   p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-  if (p->fd == -1)
-  {
-    switch (errno)
-    {
-      case ENOENT: report( RPT_ERR, "ICP_A106: icp_a106_init() failed: Device file missing: %s\n", device);
-	break;
-      case EACCES: report( RPT_ERR, "ICP_A106: icp_a106_init() failed: Could not open device: %s\n", device);
-	report( RPT_ERR, "ICP_A106: icp_a106_init() failed: Make sure you have rw access to %s!\n", device);
-	break;
-      default: report( RPT_ERR, "ICP_A106: icp_a106_init() failed (%s)\n", strerror (errno));
-	break;
-    }
+  if (p->fd == -1) {
+    report(RPT_ERR, "%s: init() failed (%s)", drvthis->name, strerror(errno));
+    if (errno == EACCES)
+	report(RPT_ERR, "%s: make sure you have rw access to %s!", drvthis->name, device);
     return -1;
-  } else {
-    report (RPT_INFO, "opened ICP_A106 display on %s\n", device);
   }
+  report(RPT_INFO, "%: opened display on %s", drvthis->name, device);
+
   tcgetattr(p->fd, &portset);
 #ifdef HAVE_CFMAKERAW
   /* The easy way: */
-  cfmakeraw( &portset );
+  cfmakeraw(&portset);
 #else
   /* The hard way: */
   portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -143,8 +137,11 @@ icp_a106_init (Driver *drvthis)
   tcflush(p->fd, TCIOFLUSH);
 
   // stop auto clock display, clear display
-  write (p->fd, "\x4D\x28\x4D\x0D", 4);
-  return 0;
+  write(p->fd, "\x4D\x28\x4D\x0D", 4);
+
+  report(RPT_DEBUG, "%s: init() done", drvthis->name);
+
+  return 1;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -155,19 +152,22 @@ icp_a106_close (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
 
-  if(p->framebuf)
-    free (p->framebuf);
-  if(p->last_framebuf)
-    free (p->last_framebuf);
+  if (p != NULL) {
+    if (p->framebuf != NULL)
+      free(p->framebuf);
+    if (p->last_framebuf != NULL)
+      free(p->last_framebuf);
 
-  // clear display, start auto display
-  if (p->fd)
-  {
-    write (p->fd, "\x4D\x0D\x4D\x29", 4);
-    close (p->fd);
-  }
-  drvthis->store_private_ptr( drvthis, NULL );
-  report (RPT_INFO, "ICP_A106: closed");
+    // clear display, start auto display
+    if (p->fd >= 0) {
+      write(p->fd, "\x4D\x0D\x4D\x29", 4);
+      close(p->fd);
+    }
+    free(p);
+  }	    
+  drvthis->store_private_ptr(drvthis, NULL);
+
+  report(RPT_INFO, "%s: closed", drvthis->name);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -177,6 +177,7 @@ MODULE_EXPORT int
 icp_a106_width (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
+  
   return p->width;
 }
 
@@ -187,6 +188,7 @@ MODULE_EXPORT int
 icp_a106_height (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
+  
   return p->height;
 }
 
@@ -197,6 +199,7 @@ MODULE_EXPORT void
 icp_a106_clear (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
+  
   memset(p->framebuf, ' ', p->width * p->height);
 }
 
@@ -222,15 +225,13 @@ icp_a106_flush (Driver *drvthis)
   gettimeofday(&tv, 0);
   timersub(&tv, &tv_old, &tv2);
 
-  if (tv2.tv_sec ==0 && tv2.tv_usec < 500000) // less than 0.5s
+  if ((tv2.tv_sec ==0) && (tv2.tv_usec < 500000)) // less than 0.5s
     return;
   tv_old = tv;
 
-  for(line=0; line < p->height; line++)
-  {
-    if(memcmp(p->framebuf + line * p->width,
-	      p->last_framebuf + line * p->width, p->width) != 0)
-    {
+  for (line = 0; line < p->height; line++) {
+    if (memcmp(p->framebuf + line * p->width,
+	       p->last_framebuf + line * p->width, p->width) != 0) {
       cmd[2] = line;
       write(p->fd, cmd, 4);
       write(p->fd, p->framebuf + line * p->width, 20);
@@ -247,10 +248,11 @@ MODULE_EXPORT void
 icp_a106_chr (Driver *drvthis, int x, int y, char ch)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
+  
   y--;
   x--;
-  //debug (RPT_DEBUG, "icp_a106_chr: x=%d, y=%d, chr=%x", x,y,ch);
-  if (x >= 0 && x < p->width && y >= 0 && y < p->height)
+  //debug(RPT_DEBUG, "icp_a106_chr: x=%d, y=%d, chr=%x", x,y,ch);
+  if ((x >= 0) && (x < p->width) && (y >= 0) && (y < p->height))
     p->framebuf[ y * p->width + x] = ch;
 }
 
@@ -262,11 +264,16 @@ MODULE_EXPORT void
 icp_a106_string (Driver *drvthis, int x, int y, char *s)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-  x --;  // Convert 1-based coords to 0-based
-  y --;
+  
+  x--;  // Convert 1-based coords to 0-based
+  y--;
 
-  for (; *s && x < p->width; x++)
-    p->framebuf[y * p->width + x] = *s++;
+  if ((y < 0) || (y >= p->height))
+    return;
+
+  for ( ; (*s != '\0') && (x < p->width); s++, x++)
+    if (x >= 0)
+      p->framebuf[y * p->width + x] = *s;
 }
 
 
@@ -280,19 +287,16 @@ icp_a106_vbar (Driver *drvthis, int x, int y, int len, int promille, int options
   int pos;
   static char map[] = " __---=#";
 
-  for (pos = 0; pos < len; pos ++ ) {
-
+  for (pos = 0; pos < len; pos ++) {
     int pixels = total_pixels - LCD_DEFAULT_CELLHEIGHT * pos;
 
-    if( pixels >= LCD_DEFAULT_CELLHEIGHT )
-    {
+    if (pixels >= LCD_DEFAULT_CELLHEIGHT) {
       /* write a "full" block to the screen... */
-      icp_a106_icon (drvthis, x, y-pos, ICON_BLOCK_FILLED);
+      icp_a106_icon(drvthis, x, y-pos, ICON_BLOCK_FILLED);
     }
-    else
-    {
+    else {
       /* write a partial block... */
-      icp_a106_chr (drvthis, x, y-pos, map[pixels]);
+      icp_a106_chr(drvthis, x, y-pos, map[pixels]);
       break;
     }
   }
@@ -308,17 +312,14 @@ icp_a106_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
   int total_pixels  = ((long) 2 * len * LCD_DEFAULT_CELLWIDTH + 1 ) * promille / 2000;
   int pos;
 
-  for (pos = 0; pos < len; pos ++ )
-  {
+  for (pos = 0; pos < len; pos ++) {
     int pixels = total_pixels - LCD_DEFAULT_CELLWIDTH * pos;
 
-    if( pixels >= LCD_DEFAULT_CELLWIDTH )
-    {
+    if (pixels >= LCD_DEFAULT_CELLWIDTH) {
       /* write a "full" block to the screen... */
       icp_a106_icon(drvthis, x+pos, y, ICON_BLOCK_FILLED);
     }
-    else if( pixels > 0 )
-    {
+    else if (pixels > 0) {
       /* write a partial block... */
       icp_a106_chr(drvthis, x+pos, y, '|');
       break;
@@ -352,10 +353,9 @@ icp_a106_num (Driver *drvthis, int x, int num)
 MODULE_EXPORT int
 icp_a106_icon (Driver *drvthis, int x, int y, int icon)
 {
-  switch( icon )
-  {
+  switch (icon) {
     case ICON_BLOCK_FILLED:
-      icp_a106_chr( drvthis, x, y, 255 );
+      icp_a106_chr(drvthis, x, y, 255);
       break;
     case ICON_HEART_FILLED:
       break;
