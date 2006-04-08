@@ -100,46 +100,47 @@ NoritakeVFD_init (Driver *drvthis)
 		return -1;
 
 	/* Initialize the PrivateData structure */
+	p->fd = -1;
 	p->cellwidth = DEFAULT_CELL_WIDTH;
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = standard;
 
-	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis );
+	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis);
 	
 	/* Read config file */
 	/* Which device should be used */
-	strncpy(p->device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
+	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 	p->device[sizeof(p->device)-1] = '\0';
-	debug (RPT_INFO,"%s: Device (in config) is: '%s'", __FUNCTION__, p->device);
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
 	/* Which size */
-	strncpy(size, drvthis->config_get_string (drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
+	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
 	size[sizeof(size)-1] = '\0';
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report (RPT_WARNING, "%s: Cannot parse size: %s. Using default %s.\n",
-			__FUNCTION__, size, DEFAULT_SIZE);
+		report(RPT_WARNING, "%s: cannot parse Size: %s; using default %s",
+			drvthis->name, size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
 
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int (drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	if ((tmp < 0) || (tmp > 1000)) {
-		report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d.\n",
-			__FUNCTION__, DEFAULT_BRIGHTNESS);
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = tmp;
 
 	
 	/* Which speed */
-	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
+	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
 	if ((tmp != 1200) && (tmp != 2400) && (tmp != 9600) && (tmp != 19200) && (tmp != 115200)) {
-		report (RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default %d.\n",
-			__FUNCTION__, DEFAULT_SPEED);
+		report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200; using default %d",
+			drvthis->name, DEFAULT_SPEED);
 		tmp = DEFAULT_SPEED;
 	}
 	if (tmp == 1200) p->speed = B1200;
@@ -153,41 +154,41 @@ NoritakeVFD_init (Driver *drvthis)
 	reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
 
 	/* Set up io port correctly, and open it...*/
-	debug( RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
+	debug(RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
 	p->fd = open (p->device, O_RDWR | O_NOCTTY | O_NDELAY);
 
 	if (p->fd == -1) {
-		report (RPT_ERR, "%s: open() of %s failed (%s)\n", __FUNCTION__, p->device, strerror (errno));
+		report(RPT_ERR, "%s: open() of %s failed (%s)", drvthis->name, p->device, strerror(errno));
 		return -1;
 	}
 	
-	tcgetattr (p->fd, &portset);
+	tcgetattr(p->fd, &portset);
 
 	// We use RAW mode
 #ifdef HAVE_CFMAKERAW
 	// The easy way
-	cfmakeraw( &portset );
+	cfmakeraw(&portset);
 #else
-		// The hard way
+	// The hard way
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
    	                   | INLCR | IGNCR | ICRNL | IXON );
 	portset.c_oflag &= ~OPOST;
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+	portset.c_cflag |= CS8 | CREAD | CLOCAL;
 #endif
 
 	// Set port speed
-	cfsetospeed (&portset, p->speed);
-	cfsetispeed (&portset, B0);
+	cfsetospeed(&portset, p->speed);
+	cfsetispeed(&portset, B0);
 
 	// Do it...
-	tcsetattr (p->fd, TCSANOW, &portset);
+	tcsetattr(p->fd, TCSANOW, &portset);
 	
 	/* make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer.\n", __FUNCTION__);
+		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
@@ -195,7 +196,7 @@ NoritakeVFD_init (Driver *drvthis)
 	/* make sure the framebuffer backing store is there... */
 	p->backingstore = (unsigned char *) malloc(p->width * p->height);
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer backing store.\n", __FUNCTION__);
+		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
 		return -1;
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
@@ -203,15 +204,15 @@ NoritakeVFD_init (Driver *drvthis)
 
 	/* Set display-specific stuff..*/
 	if (reboot) {
-		NoritakeVFD_reboot (drvthis);
-		sleep (4);
-		reboot = 0;
+		NoritakeVFD_reboot(drvthis);
+		sleep(4);
 	}
-	NoritakeVFD_hidecursor (drvthis);
-	NoritakeVFD_set_brightness (drvthis, 1, p->brightness);
-	NoritakeVFD_autoscroll (drvthis, 0);
+	NoritakeVFD_hidecursor(drvthis);
+	NoritakeVFD_set_brightness(drvthis, 1, p->brightness);
+	NoritakeVFD_autoscroll(drvthis, 0);
 	
-	report (RPT_DEBUG, "%s: done\n", __FUNCTION__);
+	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+
 	return 0;
 
 }
@@ -224,14 +225,15 @@ NoritakeVFD_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	if (p != NULL) {
-		close (p->fd);
+		if (p->fd >= 0)
+			close(p->fd);
 
 		if (p->framebuf)
-			free (p->framebuf);
+			free(p->framebuf);
 
 		if (p->backingstore)
-			free (p->backingstore);
-	free(p);
+			free(p->backingstore);
+		free(p);
 	}
 	drvthis->store_private_ptr(drvthis, NULL);
 }
@@ -288,7 +290,7 @@ MODULE_EXPORT void
 NoritakeVFD_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	NoritakeVFD_draw_frame (drvthis, p->framebuf);
+	NoritakeVFD_draw_frame(drvthis, p->framebuf);
 }
 
 
@@ -299,13 +301,13 @@ NoritakeVFD_flush_box (Driver *drvthis, int lft, int top, int rgt, int bot)
 	int y;
 	char out[LCD_MAX_WIDTH];
 
-	debug (RPT_DEBUG, "%s: flush_box (%i,%i)-(%i,%i)\n", __FUNCTION__, lft, top, rgt, bot);
+	debug(RPT_DEBUG, "%s: flush_box(%i,%i)-(%i,%i)", __FUNCTION__, lft, top, rgt, bot);
 
 	for (y = top; y <= bot; y++) {
 		int pos = y*p->width;
-		snprintf (out, sizeof(out), "%c%c%c", 0x1B, 'H', pos+lft);
-		write (p->fd, out, 3);
-		write (p->fd, p->framebuf + (y * p->width) + lft, rgt - lft + 1);
+		snprintf(out, sizeof(out), "%c%c%c", 0x1B, 'H', pos+lft);
+		write(p->fd, out, 3);
+		write(p->fd, p->framebuf + (y * p->width) + lft, rgt - lft + 1);
 	}
 
 }
@@ -318,9 +320,9 @@ MODULE_EXPORT void
 NoritakeVFD_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
+
 	y--;
 	x--;
-
 	/*if (c < 32 && (int)c >= 0)
 		c += 128;*/
 	p->framebuf[(y * p->width) + x ] = c;
@@ -351,10 +353,10 @@ NoritakeVFD_set_brightness (Driver *drvthis, int state, int brightness)
 
 	if (brightness > 0) {
 		realbrightness = (int) (140 * 100 / 255);
-		snprintf (out, sizeof(out), "%c%c%c", 0x1B, 'L', brightness);
-		write (p->fd, out, 3);
+		snprintf(out, sizeof(out), "%c%c%c", 0x1B, 'L', brightness);
+		write(p->fd, out, 3);
 	}
-	p->brightness=brightness;
+	p->brightness = brightness;
 }
 
 
@@ -366,11 +368,9 @@ NoritakeVFD_autoscroll (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 	char out[4];
-	if (on)
-		snprintf (out, sizeof(out), "%c", 0x12);
-	else
-		snprintf (out, sizeof(out), "%c", 0x11);
-	write (p->fd, out, 1);
+
+	snprintf(out, sizeof(out), "%c", (on) ? 0x12 : 0x11);
+	write(p->fd, out, 1);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -381,8 +381,9 @@ NoritakeVFD_hidecursor (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	char out[4];
-	snprintf (out, sizeof(out), "%c", 0x14);
-	write (p->fd, out, 1);
+	
+	snprintf(out, sizeof(out), "%c", 0x14);
+	write(p->fd, out, 1);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -393,8 +394,9 @@ NoritakeVFD_reboot (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	char out[4];
-	snprintf (out, sizeof(out), "%c%c", 0x1B, 'I');
-	write (p->fd, out, 2);
+
+	snprintf(out, sizeof(out), "%c%c", 0x1B, 'I');
+	write(p->fd, out, 2);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -461,12 +463,12 @@ NoritakeVFD_init_vbar (Driver *drvthis)
 
 	if (p->ccmode != hbar) {
 		p->ccmode = hbar;
-		NoritakeVFD_set_char (drvthis, 2, a);
-		NoritakeVFD_set_char (drvthis, 3, b);
-		NoritakeVFD_set_char (drvthis, 4, c);
-		NoritakeVFD_set_char (drvthis, 5, d);
-		NoritakeVFD_set_char (drvthis, 6, e);
-		NoritakeVFD_set_char (drvthis, 7, f);
+		NoritakeVFD_set_char(drvthis, 2, a);
+		NoritakeVFD_set_char(drvthis, 3, b);
+		NoritakeVFD_set_char(drvthis, 4, c);
+		NoritakeVFD_set_char(drvthis, 5, d);
+		NoritakeVFD_set_char(drvthis, 6, e);
+		NoritakeVFD_set_char(drvthis, 7, f);
 	}
 }
 
@@ -516,10 +518,10 @@ NoritakeVFD_init_hbar (Driver *drvthis)
 
 	if (p->ccmode != hbar) {
 		p->ccmode = hbar;
-		NoritakeVFD_set_char (drvthis, 2, a);
-		NoritakeVFD_set_char (drvthis, 3, b);
-		NoritakeVFD_set_char (drvthis, 4, c);
-		NoritakeVFD_set_char (drvthis, 5, d);
+		NoritakeVFD_set_char(drvthis, 2, a);
+		NoritakeVFD_set_char(drvthis, 3, b);
+		NoritakeVFD_set_char(drvthis, 4, c);
+		NoritakeVFD_set_char(drvthis, 5, d);
 	}
 }
 
@@ -567,7 +569,6 @@ NoritakeVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int opti
 
 	NoritakeVFD_init_hbar(drvthis);
 	//lib_hbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
-
 }
 
 
@@ -591,8 +592,8 @@ NoritakeVFD_set_char (Driver *drvthis, int n, char *dat)
 	if (!dat)
 		return;
 
-	snprintf (out, sizeof(out), "%c%c%c", 0x1B, 'C', n);
-	write (p->fd, out, 3);
+	snprintf(out, sizeof(out), "%c%c%c", 0x1B, 'C', n);
+	write(p->fd, out, 3);
 
 	for (byte = 0; byte < 5; byte++) {
 		letter = dat[(byte+1) * 8 - 1];
@@ -601,7 +602,7 @@ NoritakeVFD_set_char (Driver *drvthis, int n, char *dat)
 			if ((byte * 8) + bit < 36)
 				letter |= dat[(byte * 8) - 1 + bit];
 		}
-		write (p->fd, &letter, 1);
+		write(p->fd, &letter, 1);
 	}
 }
 
@@ -669,7 +670,6 @@ NoritakeVFD_draw_frame (Driver *drvthis, unsigned char *dat)
 		return;
 
 	for (i = 0; i < p->height; i++) {
-
 		row = dat + (p->width * i);
 		b_row = p->backingstore + (p->width * i);
 
@@ -677,14 +677,14 @@ NoritakeVFD_draw_frame (Driver *drvthis, unsigned char *dat)
 		 * on the screen, don't put it there again
 		 */
 		if (memcmp(b_row, row, p->width) == 0)
-		    continue;
+			continue;
 
-        /* else, write out the entire row */
+        	/* else, write out the entire row */
 		memcpy(b_row, row, p->width);
 		int pos = i * p->width;
-		snprintf (out, sizeof(out), "%c%c%c", 0x1B, 'H', pos);
-		write (p->fd, out, 3);
-		write (p->fd, row, p->width);
+		snprintf(out, sizeof(out), "%c%c%c", 0x1B, 'H', pos);
+		write(p->fd, out, 3);
+		write(p->fd, row, p->width);
 	}
 
 }
@@ -696,7 +696,8 @@ MODULE_EXPORT void
 NoritakeVFD_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	memset (p->framebuf, ' ', p->width * p->height);
+
+	memset(p->framebuf, ' ', p->width * p->height);
 }
 
 
@@ -708,10 +709,11 @@ MODULE_EXPORT void
 NoritakeVFD_string (Driver *drvthis, int x, int y, char string[])
 {
 	PrivateData *p = drvthis->private_data;
+	int i;
+
 	x--;
 	y--;
-	int i;
-	for (i = 0; string[i]; i++) {
+	for (i = 0; string[i] != '\0'; i++) {
 		// Check for buffer overflows...
 		if ((y * p->width) + x + i > (p->width * p->height))
 			break;
@@ -730,8 +732,8 @@ NoritakeVFD_heartbeat (Driver *drvthis, int type)
 	int whichIcon;
 	static int saved_type = HEARTBEAT_ON;
 
-	NoritakeVFD_icon (drvthis, 0, 0);
-	NoritakeVFD_icon (drvthis, 1, 1);
+	NoritakeVFD_icon(drvthis, 0, 0);
+	NoritakeVFD_icon(drvthis, 1, 1);
 	
 	if (type)
 		saved_type = type;
@@ -741,7 +743,7 @@ NoritakeVFD_heartbeat (Driver *drvthis, int type)
 		whichIcon = (! ((timer + 4) & 5));
 	
 		// Put character on screen...
-		NoritakeVFD_chr (p->width, 1, whichIcon);
+		NoritakeVFD_chr(p->width, 1, whichIcon);
 
 		// change display...
 		NoritakeVFD_flush ();
