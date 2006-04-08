@@ -31,7 +31,7 @@ MODULE_EXPORT void MtxOrb_hbar (Driver * drvthis, int x, int y, int len, int pro
 
 #define DEFAULT_CONTRAST	480
 #define DEFAULT_DEVICE		"/dev/lcd"
-#define DEFAULT_SPEED		B19200
+#define DEFAULT_SPEED		19200
 #define DEFAULT_LINEWRAP	1
 #define DEFAULT_AUTOSCROLL	1
 #define DEFAULT_CURSORBLINK	0
