@@ -24,7 +24,7 @@ free_framebuf (Driver *driver) {
 		return;
 
 	if (driver->framebuf != NULL)
-		free (driver->framebuf);
+		free(driver->framebuf);
 
 	driver->framebuf = NULL;
 }
@@ -40,7 +40,7 @@ clear_framebuf (Driver *driver) {
 		return;
 
 	framebuf_size = driver->wid * driver->hgt;
-	memset (driver->framebuf, ' ', framebuf_size);
+	memset(driver->framebuf, ' ', framebuf_size);
 }
 */
 
@@ -131,7 +131,7 @@ lib_hbar_static (Driver *drvthis, int x, int y, int len, int promille, int optio
 
 		int pixels = total_pixels - cellwidth * pos;
 
-		if( pixels >= cellwidth ) {
+		if ( pixels >= cellwidth ) {
 			/* write a "full" block to the screen... */
 #if defined(SEAMLESS_HBARS)			
 			drvthis->chr (drvthis, x+pos, y, cellwidth + cc_offset);
@@ -139,7 +139,7 @@ lib_hbar_static (Driver *drvthis, int x, int y, int len, int promille, int optio
 			drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
 #endif
 		}
-		else if( pixels > 0 ) {
+		else if ( pixels > 0 ) {
 			/* write a partial block... */
 			drvthis->chr (drvthis, x+pos, y, pixels + cc_offset);
 			break;
@@ -168,11 +168,11 @@ lib_vbar_static (Driver *drvthis, int x, int y, int len, int promille, int optio
 
 		int pixels = total_pixels - cellheight * pos;
 
-		if( pixels >= cellheight ) {
+		if ( pixels >= cellheight ) {
 			/* write a "full" block to the screen... */
 			drvthis->icon (drvthis, x, y-pos, ICON_BLOCK_FILLED);
 		}
-		else if( pixels > 0 ) {
+		else if ( pixels > 0 ) {
 			/* write a partial block... */
 			drvthis->chr (drvthis, x, y-pos, pixels + cc_offset);
 			break;
