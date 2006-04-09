@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////////////////////
 // This is a driver for the STV5730A on-screen display chip in con-     //
 // junction with a parallel port interface. Check                       //
-// www.adams-online.de/lcd/stv5730.html for where to buy                //
-// and how to build the hardware.                                       //
+// http://www.usblcd.de/lcdproc/ for where to buy iand how to build     //
+// the hardware.                                                        //
 // The STV3730 displays 11 rows with 28 characters. The characters are  //
 // fixed and can not be reprogrammed. Luckily the chraracter set con-   //
 // tains a heartbeat icon and some characters that can be used as       //
