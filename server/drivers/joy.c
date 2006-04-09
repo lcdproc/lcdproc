@@ -135,15 +135,21 @@ joy_init (Driver *drvthis)
 		char mapkey[50];
 		char *mapval;
 
-		snprintf(mapkey, sizeof(mapkey), "Map_Axis%d-", i+1);
+		snprintf(mapkey, sizeof(mapkey), "Map_Axis%dneg", i+1);
 		mapval = drvthis->config_get_string(drvthis->name, mapkey, 0, NULL);
-		if (mapval != NULL)
+		if (mapval != NULL) {
 			p->axismap[2*i] = strdup(mapval);
+			report(RPT_DEBUG, "%s: map Axis%dneg to %s",
+					drvthis->name, i+1, p->axismap[2*i]);
+		}	
 
-		snprintf(mapkey, sizeof(mapkey), "Map_Axis%d+", i+1);
+		snprintf(mapkey, sizeof(mapkey), "Map_Axis%dpos", i+1);
 		mapval = drvthis->config_get_string(drvthis->name, mapkey, 0, NULL);
-		if (mapval != NULL)
+		if (mapval != NULL) {
 			p->axismap[2*i + 1] = strdup(mapval);
+			report(RPT_DEBUG, "%s: map Axis%dpos to %s",
+					drvthis->name, i+1, p->axismap[2*i + 1]);
+		}	
 	}
 	
 	for (i = 0; i < p->buttons; i++) {
@@ -152,8 +158,11 @@ joy_init (Driver *drvthis)
 
 		snprintf(mapkey, sizeof(mapkey), "Map_Button%d", i+1);
 		mapval = drvthis->config_get_string(drvthis->name, mapkey, 0, NULL);
-		if (mapval != NULL)
+		if (mapval != NULL) {
 			p->buttonmap[i] = strdup(mapval);
+			report(RPT_DEBUG, "%s: map Button%d to %s",
+					drvthis->name, i+1, p->buttonmap[i]);
+		}	
 	}
 	
 	/* End of config file parsing (2nd part) */
@@ -162,6 +171,7 @@ joy_init (Driver *drvthis)
 
 	return 0;
 }
+
 
 MODULE_EXPORT void
 joy_close (Driver *drvthis)
@@ -182,6 +192,7 @@ joy_close (Driver *drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
+
 //////////////////////////////////////////////////////////////////////
 // Tries to read a character from an input device...
 //
@@ -201,9 +212,6 @@ joy_get_key (Driver *drvthis)
 		report(RPT_ERR, "%s: error reading joystick input", drvthis->name);
 		return NULL;
 	}
-
-	//if (js.type & JS_EVENT_INIT)
-	//	return NULL;
 
 	switch (js.type & ~JS_EVENT_INIT) {
 		case JS_EVENT_BUTTON:
