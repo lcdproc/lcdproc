@@ -65,7 +65,6 @@
 
 
 int fd = -1;
-static int clear = 1;
 static char icon_char = '@';
 static char pause_key = DOWN_KEY, back_key = LEFT_KEY, forward_key = RIGHT_KEY, main_menu_key = UP_KEY;
 static char *framebuf = NULL;
@@ -259,11 +258,8 @@ lcdm001_clear (Driver *drvthis)
 {
         if (framebuf != NULL)
                 memset(framebuf, ' ', (width * height));
-	/* An instant clear is NOT neccessary, it only makes the display
-	 *  flicker
-	 */
-	/*write(fd, "~C", 2);*/ /* instant clear...*/
-        clear = 1;
+	/* instant clear is NOT neccessary, it only makes the display flicker */
+	//write(fd, "~C", 2);
 
 	debug(RPT_DEBUG, "LCDM001: cleared screen");
 }
