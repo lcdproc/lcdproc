@@ -14,6 +14,8 @@ MODULE_EXPORT int  bayrad_init(Driver * drvthis);
 MODULE_EXPORT void bayrad_close(Driver * drvthis);
 MODULE_EXPORT int  bayrad_width(Driver * drvthis);
 MODULE_EXPORT int  bayrad_height(Driver * drvthis);
+MODULE_EXPORT int  bayrad_cellwidth(Driver * drvthis);
+MODULE_EXPORT int  bayrad_cellheight(Driver * drvthis);
 MODULE_EXPORT void bayrad_clear(Driver * drvthis);
 MODULE_EXPORT void bayrad_flush(Driver * drvthis);
 MODULE_EXPORT void bayrad_string(Driver * drvthis, int x, int y, char string[]);
