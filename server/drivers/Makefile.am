@@ -39,12 +39,14 @@ IOWarrior_LDADD =    @libusb_libs@ libLCD.a
 irman_LDADD =        @LIBIRMAN@
 lirc_LDADD =         @LIBLIRC_CLIENT@
 lcterm_LDADD =       libLCD.a
+mtc_s16209x_LDADD =  libLCD.a
 NoritakeVFD_LDADD =  libLCD.a
 serialVFD_LDADD =    libLCD.a libbignum.a
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 tyan_LDADD =         libLCD.a
 ula200_LDADD =       libLCD.a @LIBFTDI@
+wirz_sli_LDADD =     libLCD.a
 xosd_LDADD =         @LIBXOSD@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
