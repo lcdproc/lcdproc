@@ -696,7 +696,6 @@ MODULE_EXPORT const char *
 bayrad_get_key(Driver * drvthis)
 {
   PrivateData *p = drvthis->private_data;
-
   fd_set brfdset;
   struct timeval twait;
   char readchar;
