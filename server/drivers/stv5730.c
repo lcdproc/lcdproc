@@ -80,18 +80,19 @@
 #define STV5730_COL_SBACK	2
 
 
+typedef struct driver_private_data {
+    unsigned int port;
+    unsigned int charattrib;
+    unsigned int flags;
+    char *framebuf;
+} PrivateData;
 
-unsigned int stv5730_lptport = LPTPORT;
-unsigned int stv5730_charattrib = STV5730_ATTRIB;
-unsigned int stv5730_flags = 0;
-char * stv5730_framebuf = NULL;
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "stv5730_";
-
 
 
 // Translation map ascii->stv5730 charset
@@ -132,28 +133,27 @@ unsigned char stv5730_to_ascii[256] =
 
 
 
-//static void stv5730_upause (int delayCalls);
+//static void stv5730_upause(int delayCalls);
 #define stv5730_upause timing_uPause
 
 /////////////////////////////////////////////////////////////////
 // This function returns true if a powered and working STV5730
-// hardware is present at stv5730_lptport
+// hardware is present at p->port
 
-int
-stv5730_detect (void)
+static int
+stv5730_detect (unsigned int port)
 {
     int i;
 
-    for (i = 0; i < 10; i++)
-      {
-	  port_out (stv5730_lptport, STV5730_TEST_O);
-	  stv5730_upause (IODELAY);
-	  if ((port_in (stv5730_lptport + 1) & STV5730_TEST_I) == 0)
-	      return -1;
-	  port_out (stv5730_lptport, 0);
-	  stv5730_upause (IODELAY);
-	  if ((port_in (stv5730_lptport + 1) & STV5730_TEST_I) != 0)
-	      return -1;
+    for (i = 0; i < 10; i++) {
+	port_out(port, STV5730_TEST_O);
+	stv5730_upause(IODELAY);
+	if ((port_in(port + 1) & STV5730_TEST_I) == 0)
+	    return -1;
+	port_out(port, 0);
+	stv5730_upause(IODELAY);
+	if ((port_in(port + 1) & STV5730_TEST_I) != 0)
+	    return -1;
       }
     return 0;
 }
@@ -161,11 +161,11 @@ stv5730_detect (void)
 /////////////////////////////////////////////////////////////////
 // returns 0 if a valid video signal is connected to the video
 // input
-int
-stv5730_is_mute (void)
+static int
+stv5730_is_mute (unsigned int port)
 {
-    stv5730_upause (IODELAY);
-    return ((port_in (stv5730_lptport + 1) & STV5730_MUTE) ? 0 : 1);
+    stv5730_upause(IODELAY);
+    return ((port_in(port + 1) & STV5730_MUTE) ? 0 : 1);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -174,90 +174,92 @@ stv5730_is_mute (void)
 // 8 bit writes repeat the high byte, 0 byte writes repeat the last
 // written word
 
-void
-stv5730_write16bit (unsigned int value)
+static void
+stv5730_write16bit (unsigned int port, unsigned int flags, unsigned int value)
 {
-    char i, databit;
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + STV5730_CLK + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CLK + stv5730_flags);
+    int i;
 
-    for (i = 15; i >= 0; i--)
-      {
-	  (value & (1 << i)) != 0 ? (databit = STV5730_DATA) : (databit = 0);
-	  port_out (stv5730_lptport, databit + STV5730_CLK + stv5730_flags);
-	  stv5730_upause (IODELAY);
-	  port_out (stv5730_lptport, databit + stv5730_flags);
-	  stv5730_upause (IODELAY);
-	  port_out (stv5730_lptport, databit + STV5730_CLK + stv5730_flags);
-	  stv5730_upause (IODELAY);
-      }
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + STV5730_CLK + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CLK + flags);
 
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + STV5730_CLK + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + stv5730_flags);
-    stv5730_upause (IODELAY);
+    for (i = 15; i >= 0; i--) {
+	char databit = ((value & (1 << i)) != 0) ? STV5730_DATA : 0;
+
+	port_out(port, databit + STV5730_CLK + flags);
+	stv5730_upause(IODELAY);
+	port_out(port, databit + flags);
+	stv5730_upause(IODELAY);
+	port_out(port, databit + STV5730_CLK + flags);
+	stv5730_upause(IODELAY);
+    }
+
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + STV5730_CLK + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + flags);
+    stv5730_upause(IODELAY);
 }
 
-void
-stv5730_write8bit (unsigned int value)
+static void
+stv5730_write8bit (unsigned int port, unsigned int flags, unsigned int value)
 {
-    char i, databit;
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + STV5730_CLK + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CLK + stv5730_flags);
+    int i;
 
-    for (i = 7; i >= 0; i--)
-      {
-	  (value & (1 << i)) != 0 ? (databit = STV5730_DATA) : (databit = 0);
-	  port_out (stv5730_lptport, databit + STV5730_CLK + stv5730_flags);
-	  stv5730_upause (IODELAY);
-	  port_out (stv5730_lptport, databit + stv5730_flags);
-	  stv5730_upause (IODELAY);
-	  port_out (stv5730_lptport, databit + STV5730_CLK + stv5730_flags);
-	  stv5730_upause (IODELAY);
-      }
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + STV5730_CLK + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CLK + flags);
 
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + STV5730_CLK + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + stv5730_flags);
+    for (i = 7; i >= 0; i--) {
+	char databit = ((value & (1 << i)) != 0) ? STV5730_DATA : 0;
+
+	port_out(port, databit + STV5730_CLK + flags);
+	stv5730_upause(IODELAY);
+	port_out(port, databit + flags);
+	stv5730_upause(IODELAY);
+	port_out(port, databit + STV5730_CLK + flags);
+	stv5730_upause(IODELAY);
+    }
+
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + STV5730_CLK + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + flags);
 }
 
-void
-stv5730_write0bit (void)
+static void
+stv5730_write0bit (unsigned int port, unsigned int flags)
 {
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + STV5730_CLK + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CLK + stv5730_flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + STV5730_CLK + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CLK + flags);
 
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + STV5730_CLK + stv5730_flags);
-    stv5730_upause (IODELAY);
-    port_out (stv5730_lptport, STV5730_CSN + stv5730_flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + STV5730_CLK + flags);
+    stv5730_upause(IODELAY);
+    port_out(port, STV5730_CSN + flags);
 }
 
 
 /////////////////////////////////////////////////////////////////
 // sets the memory pointer inside the stv5730 to the position
 // row, col.
-void
-stv5730_locate (int row, int col)
+static void
+stv5730_locate (unsigned int port, unsigned int flags, int row, int col)
 {
     if (row < 0 || row >= STV5730_HGT || col < 0 || col >= STV5730_WID)
 	return;
 
-    stv5730_write16bit ((row << 8) + col);
+    stv5730_write16bit(port, flags, (row << 8) + col);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -266,13 +268,14 @@ stv5730_locate (int row, int col)
 // We need a conversion map to translate from ascii to the
 // non-standard STV5730 charset.
 //
-void
-stv5730_drawchar2fb (int x, int y, unsigned char z)
+static void
+stv5730_drawchar2fb (Driver *drvthis, int x, int y, unsigned char z)
 {
+    PrivateData *p = drvthis->private_data;
 
     if (x < 0 || x >= STV5730_WID || y < 0 || y >= STV5730_HGT)
 	return;
-    stv5730_framebuf[(y * STV5730_WID) + x] = stv5730_to_ascii[(unsigned int) z];
+    p->framebuf[(y * STV5730_WID) + x] = stv5730_to_ascii[(unsigned int) z];
 
 }
 
@@ -283,12 +286,26 @@ stv5730_drawchar2fb (int x, int y, unsigned char z)
 MODULE_EXPORT int
 stv5730_init (Driver *drvthis)
 {
+    PrivateData *p;
     int i;
+
+    /* Allocate and store private data */
+    p = (PrivateData *) calloc(1, sizeof(PrivateData));
+    if (p == NULL)
+   	return -1;
+    if (drvthis->store_private_ptr(drvthis, p))
+	return -1;
+
+    /* initialize private data */
+    p->port = LPTPORT;
+    p->charattrib = STV5730_ATTRIB;
+    p->flags = 0;
+    p->framebuf = NULL;
 
     /* Read config file */
 
     /* What port to use */
-    stv5730_lptport = drvthis->config_get_int(drvthis->name, "Port", 0, LPTPORT);
+    p->port = drvthis->config_get_int(drvthis->name, "Port", 0, LPTPORT);
   
     /* End of config file parsing */
 
@@ -298,102 +315,102 @@ stv5730_init (Driver *drvthis)
     }
 
     // Initialize the Port and the stv5730
-    if (port_access(stv5730_lptport) || port_access(stv5730_lptport + 1)) {
+    if (port_access(p->port) || port_access(p->port + 1)) {
 	  report(RPT_ERR,
 	      "%s: cannot get IO-permission for 0x%03X! Are we running as root?",
-	       drvthis->name, stv5730_lptport);
+	       drvthis->name, p->port);
 	  return -1;
     }
 
-    if (stv5730_detect()) {
+    if (stv5730_detect(p->port)) {
 	  report(RPT_ERR, "%s: no STV5730 hardware found at 0x%03X ",
-			  drvthis->name, stv5730_lptport);
+			  drvthis->name, p->port);
 	  return -1;
     }
 
-    port_out(stv5730_lptport, 0);
+    port_out(p->port, 0);
 
     // Reset the STV5730
-    stv5730_write16bit(0x3000);
-    stv5730_write16bit(0x3000);
-    stv5730_write16bit(0x00db);
-    stv5730_write16bit(0x1000);
+    stv5730_write16bit(p->port, p->flags, 0x3000);
+    stv5730_write16bit(p->port, p->flags, 0x3000);
+    stv5730_write16bit(p->port, p->flags, 0x00db);
+    stv5730_write16bit(p->port, p->flags, 0x1000);
 
     // Setup Mode + Control Register for video detection
-    stv5730_write16bit(STV5730_REG_MODE);
-    stv5730_write16bit(0x1576);
+    stv5730_write16bit(p->port, p->flags, STV5730_REG_MODE);
+    stv5730_write16bit(p->port, p->flags, 0x1576);
 
-    stv5730_write16bit(STV5730_REG_CONTROL);
-    stv5730_write16bit(0x1FF4);
+    stv5730_write16bit(p->port, p->flags, STV5730_REG_CONTROL);
+    stv5730_write16bit(p->port, p->flags, 0x1FF4);
 
     report(RPT_INFO, "%s: detecting video signal: ", drvthis->name);
     usleep (50000);
 
-    if (stv5730_is_mute()) {
+    if (stv5730_is_mute(p->port)) {
 	  report(RPT_INFO, "%s: no video signal found; using full page mode", drvthis->name);
 	  // Setup Mode + Control for full page mode
-	  stv5730_charattrib = STV5730_ATTRIB;
-	  stv5730_write16bit(STV5730_REG_MODE);
-	  stv5730_write16bit(0x15A6);
+	  p->charattrib = STV5730_ATTRIB;
+	  stv5730_write16bit(p->port, p->flags, STV5730_REG_MODE);
+	  stv5730_write16bit(p->port, p->flags, 0x15A6);
 
-	  stv5730_write16bit(STV5730_REG_CONTROL);
+	  stv5730_write16bit(p->port, p->flags, STV5730_REG_CONTROL);
 #ifdef PAL
-	  stv5730_write16bit(0x1FD5);
+	  stv5730_write16bit(p->port, p->flags, 0x1FD5);
 #endif
 #ifdef NTSC
-	  stv5730_write16bit(0x1ED4);
+	  stv5730_write16bit(p->port, p->flags, 0x1ED4);
 #endif
 
     }
     else {
 	  report(RPT_INFO, "%s: video signal found, using mixed mode (B&W)", drvthis->name);
 	  // Setup Mode + Control for mixed mode, disable color
-	  stv5730_charattrib = 0;
-	  stv5730_write16bit(STV5730_REG_MODE);
-	  stv5730_write16bit(0x1576);
+	  p->charattrib = 0;
+	  stv5730_write16bit(p->port, p->flags, STV5730_REG_MODE);
+	  stv5730_write16bit(p->port, p->flags, 0x1576);
 
-	  stv5730_write16bit(STV5730_REG_CONTROL);
+	  stv5730_write16bit(p->port, p->flags, STV5730_REG_CONTROL);
 #ifdef PAL
-	  stv5730_write16bit(0x1DD4);
+	  stv5730_write16bit(p->port, p->flags, 0x1DD4);
 #endif
 #ifdef NTSC
-	  stv5730_write16bit(0x1CF4);
+	  stv5730_write16bit(p->port, p->flags, 0x1CF4);
 #endif
       }
 
     // Position Register
-    stv5730_write16bit(STV5730_REG_POSITION);
-    stv5730_write16bit(0x1000 + 64 * 30 + 30);
+    stv5730_write16bit(p->port, p->flags, STV5730_REG_POSITION);
+    stv5730_write16bit(p->port, p->flags, 0x1000 + 64 * 30 + 30);
 
     // Color Register
-    stv5730_write16bit(STV5730_REG_COLOR);
-    stv5730_write16bit(0x1000 + (STV5730_COL_SBACK << 9) +
+    stv5730_write16bit(p->port, p->flags, STV5730_REG_COLOR);
+    stv5730_write16bit(p->port, p->flags, 0x1000 + (STV5730_COL_SBACK << 9) +
 			(STV5730_COL_CBORD << 6) + STV5730_COL_CBACK);
 
     // Zoom Register: Zoom first line
-    stv5730_write16bit(STV5730_REG_ZOOM);
-    stv5730_write16bit(0x1000 + 4);
+    stv5730_write16bit(p->port, p->flags, STV5730_REG_ZOOM);
+    stv5730_write16bit(p->port, p->flags, 0x1000 + 4);
 
     // Set the Row Attributes
     for (i = 0; i <= 10; i++) {
-	  stv5730_write16bit(0x00C0 + i);
-	  stv5730_write16bit(0x10C0);
+	  stv5730_write16bit(p->port, p->flags, 0x00C0 + i);
+	  stv5730_write16bit(p->port, p->flags, 0x10C0);
     }
 
     // Allocate our own framebuffer
-    stv5730_framebuf = malloc(STV5730_WID * STV5730_HGT);
-    if (stv5730_framebuf == NULL) {
+    p->framebuf = malloc(STV5730_WID * STV5730_HGT);
+    if (p->framebuf == NULL) {
 	  report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
 	  stv5730_close(drvthis);
 	  return -1;
     }
 
     // clear screen
-    memset(stv5730_framebuf, 0, STV5730_WID * STV5730_HGT);
+    memset(p->framebuf, 0, STV5730_WID * STV5730_HGT);
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-    return 0;
+    return 1;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -402,9 +419,15 @@ stv5730_init (Driver *drvthis)
 MODULE_EXPORT void
 stv5730_close (Driver *drvthis)
 {
-    if (stv5730_framebuf != NULL)
-	free(stv5730_framebuf);
-    stv5730_framebuf = NULL;
+    PrivateData *p = drvthis->private_data;
+
+    if (p != NULL) {
+	if (p->framebuf != NULL)
+	    free(p->framebuf);
+
+	free(p);
+    }
+    drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -453,7 +476,9 @@ stv5730_cellheight (Driver *drvthis)
 MODULE_EXPORT void
 stv5730_clear (Driver *drvthis)
 {
-    memset(stv5730_framebuf, 0x0B, STV5730_WID * STV5730_HGT);
+    PrivateData *p = drvthis->private_data;
+
+    memset(p->framebuf, 0x0B, STV5730_WID * STV5730_HGT);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -463,25 +488,25 @@ stv5730_clear (Driver *drvthis)
 MODULE_EXPORT void
 stv5730_flush (Driver *drvthis)
 {
+    PrivateData *p = drvthis->private_data;
     int i, j, atr;
 
-    stv5730_locate(0, 0);
+    stv5730_locate(p->port, p->flags, 0, 0);
 
     for (i = 0; i < STV5730_HGT; i++) {
-	  if (i == 0)
-	      atr = (STV5730_COL_FLINE << 8);
-	  else
-	      atr = (STV5730_COL_TEXT << 8);
-	  stv5730_write16bit (0x1000 + atr + stv5730_framebuf[i * STV5730_WID] +
-			      stv5730_charattrib);
-	  for (j = 1; j < STV5730_WID; j++) {
-		if (stv5730_framebuf[j + (i * STV5730_WID) - 1] !=
-		    stv5730_framebuf[j + (i * STV5730_WID)])
-		    stv5730_write8bit (stv5730_framebuf[j + (i * STV5730_WID)]);
-		else
-		    stv5730_write0bit();
-
-	  }
+	if (i == 0)
+	    atr = (STV5730_COL_FLINE << 8);
+	else
+	    atr = (STV5730_COL_TEXT << 8);
+	stv5730_write16bit(p->port, p->flags, 0x1000 + atr + p->framebuf[i * STV5730_WID] +
+			      p->charattrib);
+	for (j = 1; j < STV5730_WID; j++) {
+	    if (p->framebuf[j + (i * STV5730_WID) - 1] !=
+		p->framebuf[j + (i * STV5730_WID)])
+		stv5730_write8bit(p->port, p->flags, p->framebuf[j + (i * STV5730_WID)]);
+	    else
+		stv5730_write0bit(p->port, p->flags);
+	}
     }
 }
 
@@ -492,14 +517,14 @@ stv5730_flush (Driver *drvthis)
 MODULE_EXPORT void
 stv5730_string (Driver *drvthis, int x, int y, char string[])
 {
+    //PrivateData *p = drvthis->private_data;
     int i;
 
     x--;			// Convert 1-based coords to 0-based...
     y--;
 
-    for (i = 0; string[i] != '\0'; i++) {
-	  stv5730_drawchar2fb(x + i, y, string[i]);
-    }
+    for (i = 0; string[i] != '\0'; i++)
+	stv5730_drawchar2fb(drvthis, x + i, y, string[i]);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -509,9 +534,11 @@ stv5730_string (Driver *drvthis, int x, int y, char string[])
 MODULE_EXPORT void
 stv5730_chr (Driver *drvthis, int x, int y, char c)
 {
+    //PrivateData *p = drvthis->private_data;
+
     y--;
     x--;
-    stv5730_drawchar2fb(x, y, c);
+    stv5730_drawchar2fb(drvthis, x, y, c);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -521,7 +548,9 @@ stv5730_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 stv5730_num (Driver *drvthis, int x, int num)
 {
+    //PrivateData *p = drvthis->private_data;
     int i, j;
+
     x--;
 
     if (x < 0 || x > 19 || num < 0 || num > 10)
@@ -532,13 +561,13 @@ stv5730_num (Driver *drvthis, int x, int num)
 	return;
 
     for (j = 1; j < 10; j++) {
-	  if (num != 10) {
-		for (i = 0; i < 3; i++)
-		    stv5730_drawchar2fb (x + i, j, '0' + num);
-	  }
-	  else {
-		stv5730_drawchar2fb (x, j, ':');
-	  }
+	if (num != 10) {
+	    for (i = 0; i < 3; i++)
+		stv5730_drawchar2fb(drvthis, x + i, j, '0' + num);
+	}
+	else {
+	    stv5730_drawchar2fb(drvthis, x, j, ':');
+	}
     }
 }
 
@@ -549,20 +578,19 @@ stv5730_num (Driver *drvthis, int x, int num)
 MODULE_EXPORT void
 stv5730_old_vbar (Driver *drvthis, int x, int len)
 {
+    PrivateData *p = drvthis->private_data;
     int i;
+
     x--;
 
     if (x < 0 || len < 0 || (len / 6) >= STV5730_WID)
 	return;
 
     for (i = 0; i <= len; i += 6) {
-	  if (len >= (i + 6)) {
-		stv5730_framebuf[((10 - (i / 6)) * STV5730_WID) + x] = 0x77;
-	  }
-	  else {
-		stv5730_framebuf[((10 - (i / 6)) * STV5730_WID) + x] =
-		    0x72 + (len % 6);
-	  }
+	if (len >= (i + 6))		/* 6 = cellheight */
+		p->framebuf[((10 - (i / 6)) * STV5730_WID) + x] = 0x77;
+	else
+		p->framebuf[((10 - (i / 6)) * STV5730_WID) + x] = 0x72 + (len % 6);
     }
 }
 
@@ -575,7 +603,9 @@ stv5730_old_vbar (Driver *drvthis, int x, int len)
 MODULE_EXPORT void
 stv5730_old_hbar (Driver *drvthis, int x, int y, int len)
 {
+    PrivateData *p = drvthis->private_data;
     int i;
+
     x--;
     y--;
 
@@ -584,13 +614,10 @@ stv5730_old_hbar (Driver *drvthis, int x, int y, int len)
 	return;
 
     for (i = 0; i <= len; i += 5) {
-	  if (len >= (i + 4)) {
-		stv5730_framebuf[(y * STV5730_WID) + x + (i / 5)] = 0x64;
-	  }
-	  else {
-		stv5730_framebuf[(y * STV5730_WID) + x + (i / 5)] =
-		    0x65 + (len % 5);
-	  }
+	if (len >= (i + 4))		/* 4 = cellwidth */
+	    p->framebuf[(y * STV5730_WID) + x + (i / 5)] = 0x64;
+	else
+	    p->framebuf[(y * STV5730_WID) + x + (i / 5)] = 0x65 + (len % 5);
     }
 }
 
@@ -603,6 +630,8 @@ stv5730_old_hbar (Driver *drvthis, int x, int y, int len)
 MODULE_EXPORT void
 stv5730_old_icon (Driver *drvthis, int which, char dest)
 {
+    //PrivateData *p = drvthis->private_data;
+
     switch (which) {
       case 0:			// 0:empty Heart
 	  stv5730_to_ascii[(int) dest] = 0x71;
