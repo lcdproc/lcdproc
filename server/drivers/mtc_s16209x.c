@@ -82,28 +82,30 @@ char lcd_showunderline[] = "\xFE\x0E";	// From Show_UnderLine()
 char lcd_hideunderline[] = "\xFE\x0B";	// From Hide_UnderLine()
 
 
-static int custom = 0;
-
-typedef enum
-{
+typedef enum {
+  normal = 1,
   hbar = 1,
   vbar = 2,
   bign = 4,
   beat = 8
-}
-custom_type;
+} custom_type;
 
 
-static int fd = -1;
-char framebuf[2][16];
-static int width = 16;		//was: LCD_DEFAULT_WIDTH; (is now hardcoded)
-static int height = 2;		//was: LCD_DEFAULT_HEIGHT; (is now hardcoded)
-static int cellwidth = LCD_DEFAULT_CELLWIDTH;
-static int cellheight = LCD_DEFAULT_CELLHEIGHT;
+typedef struct driver_private_data {
+  char device[256];
+  int fd;
+  char framebuf[2][16];
+  int width;
+  int height;
+  int cellwidth;
+  int cellheight;
+  custom_type custom;
+} PrivateData;
 
-//static void MTC_S16209X_hidecursor ();
+
+//static void MTC_S16209X_hidecursor (Driver *drvthis);
 #ifdef CAN_REBOOT_LCD
-static void MTC_S16209X_reboot ();
+static void MTC_S16209X_reboot (Driver *drvthis);
 #endif // CAN_REBOOT_LCD
 
 // Vars for the server core
@@ -118,8 +120,8 @@ MODULE_EXPORT char *symbol_prefix = "MTC_S16209X_";
 MODULE_EXPORT int
 MTC_S16209X_init (Driver * drvthis)
 {
+  PrivateData *p;
   struct termios portset;
-  char device[256] = MTC_DEFAULT_DEVICE;
   int result;
 
 #ifdef CAN_REBOOT_LCD
@@ -131,13 +133,28 @@ MTC_S16209X_init (Driver * drvthis)
   int backlight_brightness = 255;
 #endif // CAN_CONTROL_BACKLIGHT
 
+  /* Allocate and store private data */
+  p = (PrivateData *) calloc(1, sizeof(PrivateData));
+  if (p == NULL)
+    return -1;
+  if (drvthis->store_private_ptr(drvthis, p))
+    return -1;
+
+  /* initialize private data */
+  p->fd = -1;
+  p->width = 16;		//was: LCD_DEFAULT_WIDTH; (is now hardcoded)
+  p->height = 2;		//was: LCD_DEFAULT_HEIGHT; (is now hardcoded)
+  p->cellwidth = LCD_DEFAULT_CELLWIDTH;
+  p->cellheight = LCD_DEFAULT_CELLHEIGHT;
+  p->custom = normal;
+
   /* Read config file */
 
   /* What device should be used */
-  strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
-					     MTC_DEFAULT_DEVICE), sizeof(device));
-  device[sizeof(device)-1] = '\0';
-  report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
+  strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0,
+					     MTC_DEFAULT_DEVICE), sizeof(p->device));
+  p->device[sizeof(p->device)-1] = '\0';
+  report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
 #ifdef CAN_CONTROL_BACKLIGHT
   /* Which backlight brightness */
@@ -157,15 +174,15 @@ MTC_S16209X_init (Driver * drvthis)
   /* End of config file parsing */
   
   // Set up io port correctly, and open it...
-  fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-  if (fd == -1) {
-    report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
+  p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
+  if (p->fd == -1) {
+    report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, p->device, strerror(errno));
     return -1;
   }
-  report(RPT_DEBUG, "%s: opened device %s", drvthis->name, device);
+  report(RPT_DEBUG, "%s: opened device %s", drvthis->name, p->device);
 
-  fcntl(fd, F_SETFL, 0);	// Set port for reading
-  tcgetattr(fd, &portset);	// Get current port attributes
+  fcntl(p->fd, F_SETFL, 0);	// Set port for reading
+  tcgetattr(p->fd, &portset);	// Get current port attributes
   cfsetispeed(&portset, B2400);	// Speed is hardcoded, seems like being the only speed setting it likes
   cfsetospeed(&portset, B2400);	// Speed is hardcoded, seems like being the only speed setting it likes
   portset.c_cflag |= CS8;
@@ -180,10 +197,10 @@ MTC_S16209X_init (Driver * drvthis)
   portset.c_cc[VMIN] = 1;
   portset.c_cc[VTIME] = 0;
 
-  tcflush(fd, TCIFLUSH);	// Clear the port buffer
-  tcsetattr(fd, TCSANOW, &portset);	// Apply the new settings
+  tcflush(p->fd, TCIFLUSH);	// Clear the port buffer
+  tcsetattr(p->fd, TCSANOW, &portset);	// Apply the new settings
 
-  result = write(fd, lcd_open, sizeof(lcd_open));	// Send the init string to the LCD
+  result = write(p->fd, lcd_open, sizeof(lcd_open));	// Send the init string to the LCD
   if (result < 0)
     report(RPT_WARNING, "%s: write(lcd_open) failed (%s)",
 	   drvthis->name, strerror(errno));
@@ -195,14 +212,14 @@ MTC_S16209X_init (Driver * drvthis)
   }  
 #endif // CAN_REBOOT_LCD
 
-  result = write(fd, lcd_clearscreen, sizeof(lcd_clearscreen));	// Clear the LCD, unbuffered
+  result = write(p->fd, lcd_clearscreen, sizeof(lcd_clearscreen));	// Clear the LCD, unbuffered
   if (result < 0)
     report(RPT_WARNING, "%s: write(lcd_clearscreen) failed (%s)",
 	   drvthis->name, strerror(errno));
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-  return 0;
+  return 1;
 }
 
 
@@ -213,22 +230,28 @@ MTC_S16209X_init (Driver * drvthis)
 MODULE_EXPORT void
 MTC_S16209X_close (Driver * drvthis)
 {
+  PrivateData *p = drvthis->private_data;
 
-  if (fd >= 0) {
-    int result;
+  if (p != NULL) {
+    if (p->fd >= 0) {
+      int result;
 
-    flock(fd, LOCK_EX);
-    result = write(fd, lcd_close, sizeof (lcd_close));	// Send the close code to LCD
-    flock(fd, LOCK_UN);
+      flock(p->fd, LOCK_EX);
+      result = write(p->fd, lcd_close, sizeof(lcd_close));	// Send the close code to LCD
+      flock(p->fd, LOCK_UN);
 
-    if (result < 0)
-      report(RPT_WARNING, "%s: write(lcd_close) failed! (%s)",
-             drvthis->name, strerror(errno));
+      if (result < 0)
+        report(RPT_WARNING, "%s: write(lcd_close) failed! (%s)",
+               drvthis->name, strerror(errno));
 
-    usleep(10);
+      usleep(10);
 
-    close(fd);
+      close(p->fd);
+    }
+
+    free(p);
   }
+  drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -237,7 +260,9 @@ MTC_S16209X_close (Driver * drvthis)
 MODULE_EXPORT int
 MTC_S16209X_width (Driver * drvthis)
 {
-  return width;
+  PrivateData *p = drvthis->private_data;
+
+  return p->width;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -246,7 +271,31 @@ MTC_S16209X_width (Driver * drvthis)
 MODULE_EXPORT int
 MTC_S16209X_height (Driver * drvthis)
 {
-  return height;
+  PrivateData *p = drvthis->private_data;
+
+  return p->height;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display's cell width
+//
+MODULE_EXPORT int
+MTC_S16209X_cellwidth (Driver * drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+
+  return p->cellwidth;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display's cell height
+//
+MODULE_EXPORT int
+MTC_S16209X_cellheight (Driver * drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+
+  return p->cellheight;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -255,7 +304,9 @@ MTC_S16209X_height (Driver * drvthis)
 MODULE_EXPORT void
 MTC_S16209X_clear (Driver * drvthis)
 {
-  memset(framebuf, ' ', sizeof(framebuf));	// Buffered clearscreen
+  PrivateData *p = drvthis->private_data;
+
+  memset(p->framebuf, ' ', sizeof(p->framebuf));	// Buffered clearscreen
 }
 
 
@@ -268,23 +319,24 @@ MTC_S16209X_flush (Driver * drvthis)
 /* TODO: Do we really have a flush for this thing? Do we need to? How do we do it? */
 /* TODO Update: yes, we need to buffer and flush - else the LCD looks slow, and flicker a lot */
 
+  PrivateData *p = drvthis->private_data;
   int result;
 
   // 1st step: flush 1st line:
-  flock(fd, LOCK_EX);
-  result = write(fd, lcd_gotoline1, sizeof(lcd_gotoline1));	// Go to the first row
-  result = write(fd, framebuf[0], sizeof(framebuf[0]));	// Send the first row data to LCD
-  flock(fd, LOCK_UN);
+  flock(p->fd, LOCK_EX);
+  result = write(p->fd, lcd_gotoline1, sizeof(lcd_gotoline1));	// Go to the first row
+  result = write(p->fd, p->framebuf[0], sizeof(p->framebuf[0]));	// Send the first row data to LCD
+  flock(p->fd, LOCK_UN);
 
   if (result < 0)
     report(RPT_WARNING, "%s: Couldn't write 1st line (%s)",
 	   drvthis->name, strerror(errno));
 
   // 2nd step: flush 2nd line:
-  flock(fd, LOCK_EX);
-  result = write(fd, lcd_gotoline2, sizeof(lcd_gotoline2));	// Go to the second row
-  result = write(fd, framebuf[1], sizeof(framebuf[1]));	// Send the second row data to LCD
-  flock(fd, LOCK_UN);
+  flock(p->fd, LOCK_EX);
+  result = write(p->fd, lcd_gotoline2, sizeof(lcd_gotoline2));	// Go to the second row
+  result = write(p->fd, p->framebuf[1], sizeof(p->framebuf[1]));	// Send the second row data to LCD
+  flock(p->fd, LOCK_UN);
 
   if (result < 0)
     report(RPT_WARNING, "%s: Couldn't write 2nd line (%s)",
@@ -292,8 +344,7 @@ MTC_S16209X_flush (Driver * drvthis)
 
   // Wait until serial port cache has been emptied (else clients gets
   // the message to bugger off after a while)
-  tcdrain(fd);
-
+  tcdrain(p->fd);
 }
 
 
@@ -304,10 +355,13 @@ MTC_S16209X_flush (Driver * drvthis)
 MODULE_EXPORT void
 MTC_S16209X_chr (Driver * drvthis, int x, int y, char c)
 {
-  x--;				// Computers like to count from 0, not 1
-  y--;				// Computers like to count from 0, not 1
+  PrivateData *p = drvthis->private_data;
 
-  framebuf[y][x] = c;
+  x--;		// convert 1-based coords to 0-based
+  y--;
+
+  if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+    p->framebuf[y][x] = c;
 }
 
 
@@ -320,6 +374,7 @@ MODULE_EXPORT void
 MTC_S16209X_backlight (Driver * drvthis, int on)
 {
 /* TODO: Can the backlights be controlled? Can't find anything in the docs */
+  //PrivateData *p = drvthis->private_data;
 }
 #endif //CAN_CONTROL_BACKLIGHT
 
@@ -329,13 +384,14 @@ MTC_S16209X_backlight (Driver * drvthis, int on)
 // Get rid of the blinking cursor
 //
 static void
-MTC_S16209X_hidecursor ()
+MTC_S16209X_hidecursor (Driver * drvthis)
 {
+  PrivateData *p = drvthis->private_data;
   int result;
 
-  flock(fd, LOCK_EX);
-  result = write(fd, lcd_hidecursor, sizeof(lcd_hidecursor));
-  flock(fd, LOCK_UN);
+  flock(p->fd, LOCK_EX);
+  result = write(p->fd, lcd_hidecursor, sizeof(lcd_hidecursor));
+  flock(p->fd, LOCK_UN);
 
   if (result < 0)
     report(RPT_WARNING, "%s: write(lcd_hidecursor) failed: %s",
@@ -350,27 +406,32 @@ MTC_S16209X_hidecursor ()
 // Reset the display bios
 //
 static void
-MTC_S16209X_reboot ()
+MTC_S16209X_reboot (Driver * drvthis)
 {
+  PrivateData *p = drvthis->private_data;
   int result;
 
-  flock(fd, LOCK_EX);
-  write(fd, lcd_open, sizeof(lcd_open));	// TODO: Will this acctually reboot the LCD? Don't know
-  flock(fd, LOCK_UN);
-
+  flock(p->fd, LOCK_EX);
+  write(p->fd, lcd_open, sizeof(lcd_open));	// TODO: Will this acctually reboot the LCD? Don't know
+  flock(p->fd, LOCK_UN);
 }
 #endif // CAN_REBOOT_LCD
 
 MODULE_EXPORT void
 MTC_S16209X_string (Driver * drvthis, int x, int y, char string[])
 {
+  PrivateData *p = drvthis->private_data;
   int i;
 
-  x--;				// Computers like to count from 0, not 1
-  y--;				// Computers like to count from 0, not 1
+  x--;		// convert 1-based coords to 0-based
+  y--;
 
-  for (i = 0; i < strlen(string); i++) {
-    framebuf[y][x + i] = string[i];
+  if ((y < 0) || (y >= p->height))
+    return;
+  
+  for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
+    if (x >= 0)
+      p->framebuf[y][x] = string[i];
   }
 }
 
@@ -380,7 +441,8 @@ MTC_S16209X_string (Driver * drvthis, int x, int y, char string[])
 static void
 MTC_S16209X_init_vbar (Driver * drvthis)
 {
-  char a[] = {
+  PrivateData *p = drvthis->private_data;
+  static char a[] = {
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
@@ -390,8 +452,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
     0, 0, 0, 0, 0,
     1, 1, 1, 1, 1,
   };
-
-  char b[] = {
+  static char b[] = {
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
@@ -401,8 +462,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
     1, 1, 1, 1, 1,
     1, 1, 1, 1, 1,
   };
-
-  char c[] = {
+  static char c[] = {
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
@@ -412,8 +472,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
     1, 1, 1, 1, 1,
     1, 1, 1, 1, 1,
   };
-
-  char d[] = {
+  static char d[] = {
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
@@ -423,8 +482,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
     1, 1, 1, 1, 1,
     1, 1, 1, 1, 1,
   };
-
-  char e[] = {
+  static char e[] = {
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
@@ -434,8 +492,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
     1, 1, 1, 1, 1,
     1, 1, 1, 1, 1,
   };
-
-  char f[] = {
+  static char f[] = {
     0, 0, 0, 0, 0,
     0, 0, 0, 0, 0,
     1, 1, 1, 1, 1,
@@ -445,8 +502,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
     1, 1, 1, 1, 1,
     1, 1, 1, 1, 1,
   };
-
-  char g[] = {
+  static char g[] = {
     0, 0, 0, 0, 0,
     1, 1, 1, 1, 1,
     1, 1, 1, 1, 1,
@@ -457,7 +513,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
     1, 1, 1, 1, 1,
   };
 
-  if (custom != vbar) {
+  if (p->custom != vbar) {
     MTC_S16209X_set_char(drvthis, 1, a);
     MTC_S16209X_set_char(drvthis, 2, b);
     MTC_S16209X_set_char(drvthis, 3, c);
@@ -465,7 +521,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
     MTC_S16209X_set_char(drvthis, 5, e);
     MTC_S16209X_set_char(drvthis, 6, f);
     MTC_S16209X_set_char(drvthis, 7, g);
-    custom = vbar;
+    p->custom = vbar;
   }
 }
 
@@ -475,65 +531,65 @@ MTC_S16209X_init_vbar (Driver * drvthis)
 static void
 MTC_S16209X_init_hbar (Driver * drvthis)
 {
+  PrivateData *p = drvthis->private_data;
+  static char a[] = {
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+    1, 0, 0, 0, 0,
+  };
+  static char b[] = {
+    1, 1, 0, 0, 0,
+    1, 1, 0, 0, 0,
+    1, 1, 0, 0, 0,
+    1, 1, 0, 0, 0,
+    1, 1, 0, 0, 0,
+    1, 1, 0, 0, 0,
+    1, 1, 0, 0, 0,
+    1, 1, 0, 0, 0,
+  };
+  static char c[] = {
+    1, 1, 1, 0, 0,
+    1, 1, 1, 0, 0,
+    1, 1, 1, 0, 0,
+    1, 1, 1, 0, 0,
+    1, 1, 1, 0, 0,
+    1, 1, 1, 0, 0,
+    1, 1, 1, 0, 0,
+    1, 1, 1, 0, 0,
+  };
+  static char d[] = {
+    1, 1, 1, 1, 0,
+    1, 1, 1, 1, 0,
+    1, 1, 1, 1, 0,
+    1, 1, 1, 1, 0,
+    1, 1, 1, 1, 0,
+    1, 1, 1, 1, 0,
+    1, 1, 1, 1, 0,
+    1, 1, 1, 1, 0,
+  };
+  static char e[] = {
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1,
+  };
 
-  char a[] = {
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-  };
-  char b[] = {
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-  };
-  char c[] = {
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-  };
-  char d[] = {
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-  };
-  char e[] = {
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-
-  if (custom != hbar) {
+  if (p->custom != hbar) {
     MTC_S16209X_set_char(drvthis, 1, a);
     MTC_S16209X_set_char(drvthis, 2, b);
     MTC_S16209X_set_char(drvthis, 3, c);
     MTC_S16209X_set_char(drvthis, 4, d);
     MTC_S16209X_set_char(drvthis, 5, e);
-    custom = hbar;
+    p->custom = hbar;
   }
 }
 
@@ -543,9 +599,11 @@ MTC_S16209X_init_hbar (Driver * drvthis)
 MODULE_EXPORT void
 MTC_S16209X_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 {
+  PrivateData *p = drvthis->private_data;
+
   MTC_S16209X_init_vbar(drvthis);
 
-  lib_vbar_static(drvthis, x, y, len, promille, options, cellheight, 0);
+  lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -554,9 +612,11 @@ MTC_S16209X_vbar (Driver * drvthis, int x, int y, int len, int promille, int opt
 MODULE_EXPORT void
 MTC_S16209X_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
 {
+  PrivateData *p = drvthis->private_data;
+
   MTC_S16209X_init_hbar(drvthis);
 
-  lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 0);
+  lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }
 
 
@@ -570,6 +630,7 @@ MTC_S16209X_hbar (Driver * drvthis, int x, int y, int len, int promille, int opt
 MODULE_EXPORT void
 MTC_S16209X_set_char (Driver * drvthis, int n, char *dat)
 {
+  PrivateData *p = drvthis->private_data;
   char out[4];
   int row, col;
   int letter;
@@ -582,29 +643,30 @@ MTC_S16209X_set_char (Driver * drvthis, int n, char *dat)
     return;
 
   snprintf(out, sizeof(out), "%c%c", 0xFE, 64 + (8 * n));
-  flock(fd, LOCK_EX);
-  write(fd, out, 2);
-  flock(fd, LOCK_UN);
+  flock(p->fd, LOCK_EX);
+  write(p->fd, out, 2);
+  flock(p->fd, LOCK_UN);
 
-  for (row = 0; row < cellheight; row++) {
+  for (row = 0; row < p->cellheight; row++) {
     letter = 1;
 
-    for (col = 0; col < cellwidth; col++) {
+    for (col = 0; col < p->cellwidth; col++) {
       letter <<= 1;
-      letter |= (dat[(row * cellwidth) + col] > 0);
+      letter |= (dat[(row * p->cellwidth) + col] > 0);
     }
 
     snprintf(out, sizeof (out), "%c", letter);
 
-    flock(fd, LOCK_EX);
-    write(fd, out, 1);
-    flock(fd, LOCK_UN);
+    flock(p->fd, LOCK_EX);
+    write(p->fd, out, 1);
+    flock(p->fd, LOCK_UN);
   }
 }
 
 MODULE_EXPORT int
 MTC_S16209X_icon (Driver * drvthis, int x, int y, int icon)
 {
+  //PrivateData *p = drvthis->private_data;
   static char heart_open[] = {
     1, 1, 1, 1, 1,
     1, 0, 1, 0, 1,
@@ -615,7 +677,6 @@ MTC_S16209X_icon (Driver * drvthis, int x, int y, int icon)
     1, 1, 0, 1, 1,
     1, 1, 1, 1, 1
   };
-
   static char heart_filled[] = {
     1, 1, 1, 1, 1,
     1, 0, 1, 0, 1,
