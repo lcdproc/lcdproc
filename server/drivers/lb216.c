@@ -42,23 +42,30 @@
 #define LB216_DEFAULT_SPEED		9600
 #define LB216_DEFAULT_BRIGHTNESS	255
 
-static int custom=0;
 typedef enum {
+	normal = 0,
 	hbar = 1,
 	vbar = 2,
 	bign = 4,
-        beat = 8 } custom_type;
+        beat = 8
+} custom_type;
+
+typedef struct driver_private_data {
+	char device[256];
+	int speed;
+	int fd;
+	char *framebuf;
+	int width;
+	int height;
+	int cellwidth;
+	int cellheight;
+   	int backlight_brightness;
+	custom_type custom;
+} PrivateData;
 
 
-static int fd = -1;
-static char *framebuf = NULL;
-static int width = LCD_DEFAULT_WIDTH;
-static int height = LCD_DEFAULT_HEIGHT;
-static int cellwidth = LCD_DEFAULT_CELLWIDTH;
-static int cellheight = LCD_DEFAULT_CELLHEIGHT;
-
-static void LB216_hidecursor();
-static void LB216_reboot();
+static void LB216_hidecursor(Driver * drvthis);
+static void LB216_reboot(Driver * drvthis);
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -75,38 +82,52 @@ MODULE_EXPORT char *symbol_prefix = "LB216_";
 MODULE_EXPORT int
 LB216_init(Driver * drvthis)
 {
-   struct termios portset;
-   int reboot = 0;
-   char device[256] = LB216_DEFAULT_DEVICE;
-   int speed = LB216_DEFAULT_SPEED;
-   int backlight_brightness = LB216_DEFAULT_BRIGHTNESS;
+  PrivateData *p;
+  struct termios portset;
+  int reboot = 0;
 
+  /* Allocate and store private data */
+  p = (PrivateData *) calloc(1, sizeof(PrivateData));
+  if (p == NULL)
+    return -1;
+  if (drvthis->store_private_ptr(drvthis, p))
+    return -1;
+
+  /* initialize private data */
+  p->speed = LB216_DEFAULT_SPEED;
+  p->fd = -1;
+  p->framebuf = NULL;
+  p->width = LCD_DEFAULT_WIDTH;
+  p->height = LCD_DEFAULT_HEIGHT;
+  p->cellwidth = LCD_DEFAULT_CELLWIDTH;
+  p->cellheight = LCD_DEFAULT_CELLHEIGHT;
+  p->custom = normal;
 
   /* Read config file */
 
   /* What device should be used */
-  strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
-					     LB216_DEFAULT_DEVICE), sizeof(device));
-  device[sizeof(device)-1] = '\0';
-  report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
+  strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0,
+					     LB216_DEFAULT_DEVICE), sizeof(p->device));
+  p->device[sizeof(p->device)-1] = '\0';
+  report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
   /* What speed to use */
-  speed = drvthis->config_get_int(drvthis->name, "Speed", 0, LB216_DEFAULT_SPEED);
+  p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, LB216_DEFAULT_SPEED);
   
-  if (speed == 2400)       speed = B2400;
-  else if (speed == 9600)  speed = B9600;
+  if (p->speed == 2400)       p->speed = B2400;
+  else if (p->speed == 9600)  p->speed = B9600;
   else {
     report(RPT_WARNING, "%s: illegal Speed: %d; must be 2400 or 9600; using default %d",
-		    drvthis->name, speed, LB216_DEFAULT_SPEED);
-    speed = B9600;
+		    drvthis->name, p->speed, LB216_DEFAULT_SPEED);
+    p->speed = B9600;
   }
 
   /* Which backlight brightness */
-  backlight_brightness = drvthis->config_get_int(drvthis->name, "Brightness", 0, LB216_DEFAULT_BRIGHTNESS);
-  if ((backlight_brightness < 0) || (backlight_brightness > 255)) {
+  p->backlight_brightness = drvthis->config_get_int(drvthis->name, "Brightness", 0, LB216_DEFAULT_BRIGHTNESS);
+  if ((p->backlight_brightness < 0) || (p->backlight_brightness > 255)) {
     report(RPT_WARNING, "%s: Brightness must be between 0 and 255; using default %d",
-		    drvthis->name, backlight_brightness);
-    backlight_brightness = LB216_DEFAULT_BRIGHTNESS;
+		    drvthis->name, LB216_DEFAULT_BRIGHTNESS);
+    p->backlight_brightness = LB216_DEFAULT_BRIGHTNESS;
   }
       
   /* Reboot display? */
@@ -115,14 +136,14 @@ LB216_init(Driver * drvthis)
   /* End of config file parsing */
       
   // Set up io port correctly, and open it...
-  fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-  if (fd == -1) {
-    report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
+  p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
+  if (p->fd == -1) {
+    report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, p->device, strerror(errno));
     return -1;
   }
-  report(RPT_DEBUG, "%s: opened device %s", drvthis->name, device);
+  report(RPT_DEBUG, "%s: opened device %s", drvthis->name, p->device);
 
-  tcgetattr(fd, &portset);
+  tcgetattr(p->fd, &portset);
 
   // We use RAW mode
 #ifdef HAVE_CFMAKERAW
@@ -139,30 +160,30 @@ LB216_init(Driver * drvthis)
 #endif
 
   // Set port speed
-  cfsetospeed(&portset, speed);
+  cfsetospeed(&portset, p->speed);
   cfsetispeed(&portset, B0);
 
   // Do it...
-  tcsetattr(fd, TCSANOW, &portset);
+  tcsetattr(p->fd, TCSANOW, &portset);
 
   // Make sure the frame buffer is there...
-  framebuf = malloc(width * height);
-  if (framebuf == NULL) {
+  p->framebuf = malloc(p->width * p->height);
+  if (p->framebuf == NULL) {
      report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
      return -1;
   }
-  memset (framebuf, ' ', width * height);
+  memset(p->framebuf, ' ', p->width * p->height);
 
   // Set display-specific stuff..
   if (reboot) {
     report(RPT_INFO, "%s: rebooting LCD...", drvthis->name);
-    LB216_reboot();
+    LB216_reboot(drvthis);
     sleep(4);
     reboot = 0;
   }
   sleep(1);
-  LB216_hidecursor();
-  LB216_backlight(drvthis, backlight_brightness);
+  LB216_hidecursor(drvthis);
+  LB216_backlight(drvthis, p->backlight_brightness);
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -177,12 +198,18 @@ LB216_init(Driver * drvthis)
 MODULE_EXPORT void
 LB216_close(Driver * drvthis)
 {
-  if (fd >= 0)
-    close(fd);
+  PrivateData *p = drvthis->private_data;
 
-  if (framebuf)
-    free(framebuf);
-  framebuf = NULL;
+  if (p != NULL) {
+    if (p->fd >= 0)
+      close(p->fd);
+
+    if (p->framebuf)
+      free(p->framebuf);
+
+    free(p);
+  }
+  drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -191,7 +218,9 @@ LB216_close(Driver * drvthis)
 MODULE_EXPORT int
 LB216_width (Driver *drvthis)
 {
-  return width;
+  PrivateData *p = drvthis->private_data;
+
+  return p->width;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -200,8 +229,34 @@ LB216_width (Driver *drvthis)
 MODULE_EXPORT int
 LB216_height (Driver *drvthis)
 {
-  return height;
+  PrivateData *p = drvthis->private_data;
+
+  return p->height;
 }
+
+
+/////////////////////////////////////////////////////////////////
+// Returns the display's cell width
+//
+MODULE_EXPORT int
+LB216_cellwidth (Driver *drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+
+  return p->cellwidth;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display's cell height
+//
+MODULE_EXPORT int
+LB216_cellheight (Driver *drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+
+  return p->cellheight;
+}
+
 
 /////////////////////////////////////////////////////////////////
 // Clears the LCD screen
@@ -209,7 +264,9 @@ LB216_height (Driver *drvthis)
 MODULE_EXPORT void
 LB216_clear (Driver * drvthis)
 {
-  memset(framebuf, ' ', width * height);
+  PrivateData *p = drvthis->private_data;
+
+  memset(p->framebuf, ' ', p->width * p->height);
 }
 
 
@@ -219,24 +276,24 @@ LB216_clear (Driver * drvthis)
 MODULE_EXPORT void
 LB216_flush(Driver * drvthis)
 {
+  PrivateData *p = drvthis->private_data;
   char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
   int i, j;
 
   snprintf(out, sizeof(out), "%c%c", 254, 80);
-  write(fd, out, 2);
+  write(p->fd, out, 2);
 
-  for (j = 0; j < height; j++) {
+  for (j = 0; j < p->height; j++) {
     if (j >= 2)
       snprintf(out, sizeof(out), "%c%c", 254, 148 + (64 * (j - 2)));
     else
       snprintf(out, sizeof(out), "%c%c", 254, 128 + (64 * j));
-    write(fd, out, 2);
+    write(p->fd, out, 2);
 
-    for (i = 0; i < width; i++)
-      write(fd, &framebuf[i + (j * width)], 1);
+    for (i = 0; i < p->width; i++)
+      write(p->fd, &p->framebuf[i + (j * p->width)], 1);
   }
 }
-
 
 
 /////////////////////////////////////////////////////////////////
@@ -246,20 +303,16 @@ LB216_flush(Driver * drvthis)
 MODULE_EXPORT void
 LB216_chr(Driver * drvthis, int x, int y, char c)
 {
-  //y--;
- // x--;
+  PrivateData *p = drvthis->private_data;
 
-//if (c < 32  &&  c >= 0) c += 128;
-//  framebuf[(y*width) + x] = c;
+  y--;
+  x--;
 
-//	char chr[1];
-//	snprintf(chr, sizeof(chr), "%c", c);
-// Above two lines are incorrect (Joris)
-
-	char chr[2];
-	chr[0] = c;
-	chr[1] = 0;
-	LB216_string(drvthis, x, y, chr);
+  if ((unsigned char) c == 254) 	/* protect command starting char */
+    c= '#';
+    
+  if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+    p->framebuf[(y * p->width) + x] = c;
 }
 
 
@@ -270,49 +323,60 @@ LB216_chr(Driver * drvthis, int x, int y, char c)
 MODULE_EXPORT void
 LB216_backlight(Driver * drvthis, int on)
 {
+  PrivateData *p = drvthis->private_data;
+
   char out[4];
 
   snprintf(out, sizeof(out), "%c%c", 254, (on) ? 253 : 252);
-  write(fd, out, 2);
+  write(p->fd, out, 2);
 }
 
 
 /////////////////////////////////////////////////////////////////
 // Get rid of the blinking curson
 //
-static void LB216_hidecursor()
+static void LB216_hidecursor(Driver * drvthis)
 {
+  PrivateData *p = drvthis->private_data;
   char out[4];
 
   snprintf(out, sizeof(out), "%c%c", 254, 12);
-  write(fd, out, 2);
+  write(p->fd, out, 2);
 }
 
 /////////////////////////////////////////////////////////////////
 // Reset the display bios
 //
-static void LB216_reboot()
+static void LB216_reboot(Driver * drvthis)
 {
+  PrivateData *p = drvthis->private_data;
   char out[4];
   
   snprintf(out, sizeof(out), "%c%c", 254, 1);
-  write(fd, out, 2);
+  write(p->fd, out, 2);
 }
 
 
 MODULE_EXPORT void
 LB216_string (Driver * drvthis, int x, int y, char string[])
 {
+  PrivateData *p = drvthis->private_data;
   int i;
 
-//printf("%d,%d:%s\n",x,y,string);
-  y--;x--;
-  for (i = 0; string[i] != '\0'; i++) {
-    char c = string[i];
+  y--;
+  x--;
 
-    if (c == '\254') 	/* is this correct ? */
+  if ((y < 0) || (y >= p->height))
+    return;
+  
+  for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
+    unsigned char c = string[i];
+
+    if (c == 254) 	/* protect command starting char */
       c= '#';
-    framebuf[(y * width) + x + i] = c;
+    
+    if (x >= 0)
+      p->framebuf[(y * p->width) + x] = c;
   }
 }
 
@@ -322,6 +386,7 @@ LB216_string (Driver * drvthis, int x, int y, char string[])
 MODULE_EXPORT void
 LB216_init_vbar(Driver * drvthis)
 {
+  PrivateData *p = drvthis->private_data;
   char a[] = {
     0,0,0,0,0,
     0,0,0,0,0,
@@ -393,7 +458,7 @@ LB216_init_vbar(Driver * drvthis)
     1,1,1,1,1,
   };
 
-  if (custom != vbar) {
+  if (p->custom != vbar) {
     LB216_set_char(drvthis, 1, a);
     LB216_set_char(drvthis, 2, b);
     LB216_set_char(drvthis, 3, c);
@@ -401,7 +466,7 @@ LB216_init_vbar(Driver * drvthis)
     LB216_set_char(drvthis, 5, e);
     LB216_set_char(drvthis, 6, f);
     LB216_set_char(drvthis, 7, g);
-    custom = vbar;
+    p->custom = vbar;
   }
 }
 
@@ -411,7 +476,7 @@ LB216_init_vbar(Driver * drvthis)
 MODULE_EXPORT void
 LB216_init_hbar(Driver * drvthis)
 {
-
+  PrivateData *p = drvthis->private_data;
   char a[] = {
     1,0,0,0,0,
     1,0,0,0,0,
@@ -463,13 +528,13 @@ LB216_init_hbar(Driver * drvthis)
     1,1,1,1,1,
   };
 
-  if (custom != hbar) {
+  if (p->custom != hbar) {
     LB216_set_char(drvthis, 1, a);
     LB216_set_char(drvthis, 2, b);
     LB216_set_char(drvthis, 3, c);
     LB216_set_char(drvthis, 4, d);
     LB216_set_char(drvthis, 5, e);
-    custom = hbar;
+    p->custom = hbar;
   }
 }
 
@@ -479,16 +544,17 @@ LB216_init_hbar(Driver * drvthis)
 MODULE_EXPORT void
 LB216_vbar(Driver * drvthis, int x, int len)
 {
+  PrivateData *p = drvthis->private_data;
   char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
   int y;
   
-  for (y = height; y > 0 && len > 0; y--) {
-    if (len >= cellheight)
+  for (y = p->height; (y > 0) && (len > 0); y--) {
+    if (len >= p->cellheight)
       LB216_chr(drvthis, x, y, map[8]);
     else
       LB216_chr(drvthis, x, y, map[len]);
 
-    len -= cellheight;
+    len -= p->cellheight;
   }
 }
 
@@ -498,15 +564,16 @@ LB216_vbar(Driver * drvthis, int x, int len)
 MODULE_EXPORT void
 LB216_hbar(Driver * drvthis, int x, int y, int len)
 {
+  PrivateData *p = drvthis->private_data;
   char map[7] = { 32, 1, 2, 3, 4, 5 };
 
-  for ( ; x <= width && len > 0; x++) {
-    if (len >= cellwidth)
+  for ( ; (x <= p->width) && (len > 0); x++) {
+    if (len >= p->cellwidth)
       LB216_chr(drvthis, x, y, map[5]);
     else
       LB216_chr(drvthis, x, y, map[len]);
 
-    len -= cellwidth;
+    len -= p->cellwidth;
   }
 }
 
@@ -521,6 +588,7 @@ LB216_hbar(Driver * drvthis, int x, int y, int len)
 MODULE_EXPORT void
 LB216_set_char(Driver * drvthis, int n, char *dat)
 {
+  PrivateData *p = drvthis->private_data;
   char out[4];
   int row, col;
 
@@ -530,17 +598,17 @@ LB216_set_char(Driver * drvthis, int n, char *dat)
     return;
 
   snprintf(out, sizeof(out), "%c%c", 254, 64 + (8 * n));
-  write(fd, out, 2);
+  write(p->fd, out, 2);
 
-  for (row = 0; row < cellheight; row++) {
+  for (row = 0; row < p->cellheight; row++) {
     int letter = 1;
 
-    for (col = 0; col < cellwidth; col++) {
+    for (col = 0; col < p->cellwidth; col++) {
       letter <<= 1;
-      letter |= (dat[(row * cellwidth) + col] > 0);
+      letter |= (dat[(row * p->cellwidth) + col] > 0);
     }
     snprintf(out, sizeof(out), "%c", letter);
-    write(fd, out, 1);
+    write(p->fd, out, 1);
   }
 }
 
@@ -548,6 +616,7 @@ LB216_set_char(Driver * drvthis, int n, char *dat)
 MODULE_EXPORT int
 LB216_icon(Driver * drvthis, int x, int y, int icon)
 {
+  //PrivateData *p = drvthis->private_data;
   static char heart_open[] = {
     1, 1, 1, 1, 1,
     1, 0, 1, 0, 1,

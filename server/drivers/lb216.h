@@ -7,6 +7,8 @@ MODULE_EXPORT int  LB216_init(Driver * drvthis);
 MODULE_EXPORT void LB216_close(Driver * drvthis);
 MODULE_EXPORT int  LB216_width (Driver *drvthis);
 MODULE_EXPORT int  LB216_height (Driver *drvthis);
+MODULE_EXPORT int  LB216_cellwidth (Driver *drvthis);
+MODULE_EXPORT int  LB216_cellheight (Driver *drvthis);
 MODULE_EXPORT void LB216_clear (Driver * drvthis);
 MODULE_EXPORT void LB216_flush(Driver * drvthis);
 MODULE_EXPORT void LB216_string (Driver * drvthis, int x, int y, char string[]);
