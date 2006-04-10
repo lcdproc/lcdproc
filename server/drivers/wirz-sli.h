@@ -13,6 +13,8 @@ MODULE_EXPORT int  sli_init (Driver *drvthis);
 MODULE_EXPORT void sli_close (Driver *drvthis);
 MODULE_EXPORT int  sli_width (Driver *drvthis);
 MODULE_EXPORT int  sli_height (Driver *drvthis);
+MODULE_EXPORT int  sli_cellwidth (Driver *drvthis);
+MODULE_EXPORT int  sli_cellheight (Driver *drvthis);
 MODULE_EXPORT void sli_clear (Driver *drvthis);
 MODULE_EXPORT void sli_flush (Driver *drvthis);
 MODULE_EXPORT void sli_string (Driver *drvthis, int x, int y, char *string);
