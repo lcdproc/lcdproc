@@ -36,19 +36,20 @@
 
 //extern int debug_level;
 
-static u16 t6963_out_port;
-static u16 t6963_display_mode;
-static u8  *t6963_display_buffer1;
-static u8  *t6963_display_buffer2;
-static u8  t6963_graph_line[6];
+typedef struct driver_private_data {
+	u16 port;
+	u16 display_mode;
+	u8  *display_buffer1;
+	u8  *display_buffer2;
+	u8  graph_line[6];
 
-static char *framebuf = NULL;
-static int width;
-static int height;
-static int cellwidth;
-static int cellheight;
-static short bidirectLPT;
-static short graphicON;
+	int width;
+	int height;
+	int cellwidth;
+	int cellheight;
+	short bidirectLPT;
+	short graphicON;
+} PrivateData;
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -59,19 +60,30 @@ MODULE_EXPORT char *symbol_prefix = "t6963_";
 MODULE_EXPORT int
 t6963_init (Driver *drvthis)
 {
-	int w, h, p, i, ecp_input;
-
+	PrivateData *p;
+	int w, h, i, ecp_input;
 	char size[200] = DEFAULT_SIZE;
 
-		debug(RPT_INFO, "T6963: init(%p)", drvthis );
+	debug(RPT_INFO, "T6963: init(%p)", drvthis );
 
-	t6963_display_mode = 0;
-	t6963_graph_line[0] = 0x20;
-	t6963_graph_line[1] = 0x30;
-	t6963_graph_line[2] = 0x38;
-	t6963_graph_line[3] = 0x3C;
-	t6963_graph_line[4] = 0x3E;
-	t6963_graph_line[5] = 0x3F;
+	/* Allocate and store private data */
+	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	if (p == NULL)
+		return -1;
+	if (drvthis->store_private_ptr(drvthis, p))
+		return -1;
+
+	/* initialize private data */
+	p->display_mode = 0;
+	p->graph_line[0] = 0x20;
+	p->graph_line[1] = 0x30;
+	p->graph_line[2] = 0x38;
+	p->graph_line[3] = 0x3C;
+	p->graph_line[4] = 0x3E;
+	p->graph_line[5] = 0x3F;
+	p->cellwidth = 6;
+	p->cellheight = 8;
+
 
 	debug(RPT_DEBUG, "T6963: reading config file...");
 
@@ -87,30 +99,29 @@ t6963_init (Driver *drvthis)
 				drvthis->name, size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
-	width = w;
-	height = h;
+	p->width = w;
+	p->height = h;
 
 	/* --------------------------- Which port --------------------------------------*/
-	p = drvthis->config_get_int(drvthis->name, "Port", 0, DEFAULT_PORT);
-	if ((p < 0x200) || (p > 0x400)) {
-		p = DEFAULT_PORT;
+	p->port = drvthis->config_get_int(drvthis->name, "Port", 0, DEFAULT_PORT);
+	if ((p->port < 0x200) || (p->port > 0x400)) {
+		p->port = DEFAULT_PORT;
 		report(RPT_WARNING, "%s: Port value must be between 0x200 and 0x400. Using default 0x%03X",
 				drvthis->name, DEFAULT_PORT);
 	}
-	t6963_out_port = p;
 
 	/* ---------------------------- Is ECP mode on ----------------------------------*/
-	bidirectLPT = drvthis->config_get_bool(drvthis->name, "ECPlpt", 0, 1);
+	p->bidirectLPT = drvthis->config_get_bool(drvthis->name, "ECPlpt", 0, 1);
 	/* ---------------------------- Use graphic -------------------------------------*/
-        graphicON = drvthis->config_get_bool(drvthis->name, "graphic", 0, 0);
+        p->graphicON = drvthis->config_get_bool(drvthis->name, "graphic", 0, 0);
 
 
 	/* -- Get permission to parallel port --------------------------------------------*/
-	debug(RPT_DEBUG, "T6963: Getting permission to parallel port %d...", t6963_out_port);
+	debug(RPT_DEBUG, "T6963: Getting permission to parallel port %d...", p->port);
 
-        if (port_access_multiple(t6963_out_port, 3)) {   //ioperm(t6963_out_port, 3, 1)) {
-		report(RPT_ERR, "%s: no permission to port %d: (%s)",
-				drvthis->name, t6963_out_port, strerror(errno));
+        if (port_access_multiple(p->port, 3)) {   //ioperm(p->port, 3, 1)) {
+		report(RPT_ERR, "%s: no permission to port 0x%03X: (%s)",
+				drvthis->name, p->port, strerror(errno));
                	return -1;
         }
 
@@ -122,60 +133,45 @@ t6963_init (Driver *drvthis)
 	debug(RPT_DEBUG, "T6963:   cool, got 'em!");
 
 
-	/* -- Set charakter size --*/
-	cellwidth = 6;
-	cellheight = 8;
-
-	/* -- Allocate framebuffer --*/
-	debug(RPT_DEBUG, "T6963: Allocate framebuffer...");
-	framebuf = malloc(width * height);
-	if (framebuf == NULL) {
-		report(RPT_ERR, "%s: No memory for framebuffer", drvthis->name);
-		t6963_close(drvthis);
-		return -1;
-	}
-	debug(RPT_DEBUG, "T6963:    done!");
-
-
 	/* -- Allocate memory for double buffering --*/
 
 	debug(RPT_DEBUG, "T6963: Allocating double buffering...");
-	t6963_display_buffer1 = malloc(width * height);
-	t6963_display_buffer2 = malloc(width * height);
-	if ((t6963_display_buffer1 == NULL) || (t6963_display_buffer2 == NULL)) {
+	p->display_buffer1 = malloc(p->width * p->height);
+	p->display_buffer2 = malloc(p->width * p->height);
+	if ((p->display_buffer1 == NULL) || (p->display_buffer2 == NULL)) {
 		report(RPT_ERR, "%s: No memory for double buffering", drvthis->name);
 		t6963_close(drvthis);
 		return -1;
 	}
   	/* - Clear front and back buffer -*/
-	memset(t6963_display_buffer1, ' ', width * height);
-	memset(t6963_display_buffer2, ' ', width * height);
+	memset(p->display_buffer1, ' ', p->width * p->height);
+	memset(p->display_buffer2, ' ', p->width * p->height);
 	debug(RPT_DEBUG, "T6963:     done!");
 
 	/* ------------------- I N I T I A L I Z A T I O N ----------------------- */
 	debug(RPT_DEBUG, "T6963: Sending init to display...");
 
-        t6963_low_set_control(1, 1, 1, 1);
-        T6963_DATAOUT; // make 8-bit parallel port an output port
+        t6963_low_set_control(drvthis, 1, 1, 1, 1);
+        T6963_DATAOUT(p->port); // make 8-bit parallel port an output port
 
 	/* - Test ECP mode -*/
-        if (bidirectLPT == 1) {
+        if (p->bidirectLPT == 1) {
         	debug(RPT_WARNING, "T6963: Testing ECP mode...");
        		i=0; ecp_input=0;
-		T6963_DATAIN;
+		T6963_DATAIN(p->port);
 		do {
 		    	i++;
-			t6963_low_set_control(1, 1, 1, 1);   // wr, ce, cd, rd
-			t6963_low_set_control(1, 0, 1, 0);
-			t6963_low_set_control(1, 0, 1, 0);
-			t6963_low_set_control(1, 0, 1, 0);
-			ecp_input = port_in(T6963_DATA_PORT);
-			t6963_low_set_control(1, 1, 1, 1);
+			t6963_low_set_control(drvthis, 1, 1, 1, 1);   // wr, ce, cd, rd
+			t6963_low_set_control(drvthis, 1, 0, 1, 0);
+			t6963_low_set_control(drvthis, 1, 0, 1, 0);
+			t6963_low_set_control(drvthis, 1, 0, 1, 0);
+			ecp_input = port_in(T6963_DATA_PORT(p->port));
+			t6963_low_set_control(drvthis, 1, 1, 1, 1);
 		} while (i < 100 && (ecp_input & 0x03)!=0x03);
-		T6963_DATAOUT;
+		T6963_DATAOUT(p->port);
 		if (i >= 100) {
 			debug(RPT_WARNING, "T6963: ECP mode not working!\n -> is now disabled  (STA0: %i, STA1: %i\n", ecp_input & 1, ecp_input & 2);
-			bidirectLPT = 0;
+			p->bidirectLPT = 0;
 		}
 		else
 			debug(RPT_WARNING, "T6963: working!");
@@ -183,28 +179,28 @@ t6963_init (Driver *drvthis)
 
 	debug(RPT_DEBUG, "T6963:  set graphic/text home adress and area");
 
-        t6963_low_command_word(SET_GRAPHIC_HOME_ADDRESS, ATTRIB_BASE);
-        t6963_low_command_word(SET_GRAPHIC_AREA,         width);
-        t6963_low_command_word(SET_TEXT_HOME_ADDRESS,    TEXT_BASE);
-        t6963_low_command_word(SET_TEXT_AREA,            width);
+        t6963_low_command_word(drvthis, SET_GRAPHIC_HOME_ADDRESS, ATTRIB_BASE);
+        t6963_low_command_word(drvthis, SET_GRAPHIC_AREA,         p->width);
+        t6963_low_command_word(drvthis, SET_TEXT_HOME_ADDRESS,    TEXT_BASE);
+        t6963_low_command_word(drvthis, SET_TEXT_AREA,            p->width);
 
-        t6963_low_command         (SET_MODE | OR_MODE | EXTERNAL_CG);
-        t6963_low_command_2_bytes (SET_OFFSET_REGISTER, CHARGEN_BASE>>11, 0);
-        t6963_low_command         (SET_CURSOR_PATTERN | 7); // cursor is 8 lines high
-        t6963_low_command_2_bytes (SET_CURSOR_POINTER, 0, 0);
+        t6963_low_command         (drvthis, SET_MODE | OR_MODE | EXTERNAL_CG);
+        t6963_low_command_2_bytes (drvthis, SET_OFFSET_REGISTER, CHARGEN_BASE>>11, 0);
+        t6963_low_command         (drvthis, SET_CURSOR_PATTERN | 7); // cursor is 8 lines high
+        t6963_low_command_2_bytes (drvthis, SET_CURSOR_POINTER, 0, 0);
 
         t6963_set_nchar(drvthis, 0, fontdata_6x8, 256);
 
-        t6963_low_enable_mode(TEXT_ON);
-        if (graphicON == 0)
-		t6963_low_disable_mode(GRAPHIC_ON);
+        t6963_low_enable_mode(drvthis, TEXT_ON);
+        if (p->graphicON == 0)
+		t6963_low_disable_mode(drvthis, GRAPHIC_ON);
         else
-		t6963_low_enable_mode(GRAPHIC_ON);
-        t6963_low_disable_mode(CURSOR_ON);
-        t6963_low_disable_mode(BLINK_ON);
+		t6963_low_enable_mode(drvthis, GRAPHIC_ON);
+        t6963_low_disable_mode(drvthis, CURSOR_ON);
+        t6963_low_disable_mode(drvthis, BLINK_ON);
 
         t6963_clear(drvthis);
-        t6963_graphic_clear(drvthis, 0, 0, width, cellheight * height);
+        t6963_graphic_clear(drvthis, 0, 0, p->width, p->cellheight * p->height);
         t6963_flush(drvthis);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
@@ -219,22 +215,24 @@ t6963_init (Driver *drvthis)
 MODULE_EXPORT void
 t6963_close (Driver *drvthis)
 {
+	PrivateData *p = drvthis->private_data;
+	
 	debug(RPT_INFO, "Shutting down!");
-	t6963_low_disable_mode(BLINK_ON);
 
-	port_deny_multiple(t6963_out_port,3);
+	if (p != NULL) {
+		t6963_low_disable_mode(drvthis, BLINK_ON);
 
-	if (framebuf != NULL)
-		free(framebuf);
-	framebuf = NULL;
+		port_deny_multiple(p->port,3);
+
+		if (p->display_buffer1 != NULL)
+			free(p->display_buffer1);
 	
-	if (t6963_display_buffer1 != NULL)
-		free(t6963_display_buffer1);
-	t6963_display_buffer1 = NULL;
-	
-	if (t6963_display_buffer2 != NULL)
-		free(t6963_display_buffer2);
-	t6963_display_buffer2 = NULL;
+		if (p->display_buffer2 != NULL)
+			free(p->display_buffer2);
+
+		free(p);
+	}
+	drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -243,7 +241,9 @@ t6963_close (Driver *drvthis)
 MODULE_EXPORT int
 t6963_width (Driver *drvthis)
 {
-	return width;
+	PrivateData *p = drvthis->private_data;
+	
+	return p->width;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -252,7 +252,9 @@ t6963_width (Driver *drvthis)
 MODULE_EXPORT int
 t6963_height (Driver *drvthis)
 {
-	return height;
+	PrivateData *p = drvthis->private_data;
+	
+	return p->height;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -261,21 +263,24 @@ t6963_height (Driver *drvthis)
 MODULE_EXPORT void
 t6963_clear (Driver *drvthis)
 {
-	debug(RPT_DEBUG, "Clearing Display of size %d x %d", width, height);
-	memset(t6963_display_buffer1, ' ', width * height);
+	PrivateData *p = drvthis->private_data;
+	
+	debug(RPT_DEBUG, "Clearing Display of size %d x %d", p->width, p->height);
+	memset(p->display_buffer1, ' ', p->width * p->height);
 	debug(RPT_DEBUG, "Done");
 }
 
 void
 t6963_graphic_clear(Driver *drvthis, int x1, int y1, int x2, int y2)
 {
+	PrivateData *p = drvthis->private_data;
 	int x;
 
 	debug(RPT_DEBUG, "Clearing Graphic %d bytes", (x2-x1)*(y2-y1));
 	for ( ; y1 < y2; y1++) {
-		t6963_low_command_word(SET_ADDRESS_POINTER, ATTRIB_BASE + y1 * width + x1);
+		t6963_low_command_word(drvthis, SET_ADDRESS_POINTER, ATTRIB_BASE + y1 * p->width + x1);
 		for (x = x1; x < x2; x++)
-			t6963_low_command_byte(DATA_WRITE_INC, 0);
+			t6963_low_command_byte(drvthis, DATA_WRITE_INC, 0);
 	}
 }
 
@@ -285,18 +290,20 @@ t6963_graphic_clear(Driver *drvthis, int x1, int y1, int x2, int y2)
 MODULE_EXPORT void
 t6963_flush (Driver *drvthis)
 {
+	PrivateData *p = drvthis->private_data;
 	int i;
-	debug(RPT_DEBUG, "Flushing %d x %d", width, height);
+	
+	debug(RPT_DEBUG, "Flushing %d x %d", p->width, p->height);
 
-	for (i = 0; i < (width * height); i++) {
-		// debug(RPT_DEBUG, "%i%i|", t6963_display_buffer1[i], t6963_display_buffer2[i]);
-		if (t6963_display_buffer1[i] != t6963_display_buffer2[i]) {
-			t6963_low_command_word(SET_ADDRESS_POINTER, TEXT_BASE + i);
-			t6963_low_command_byte(DATA_WRITE, t6963_display_buffer1[i]);
+	for (i = 0; i < (p->width * p->height); i++) {
+		// debug(RPT_DEBUG, "%i%i|", p->display_buffer1[i], p->display_buffer2[i]);
+		if (p->display_buffer1[i] != p->display_buffer2[i]) {
+			t6963_low_command_word(drvthis, SET_ADDRESS_POINTER, TEXT_BASE + i);
+			t6963_low_command_byte(drvthis, DATA_WRITE, p->display_buffer1[i]);
 		}
 	}
 	debug(RPT_DEBUG, "Done");
-	t6963_swap_buffers();
+	t6963_swap_buffers(drvthis);
 	t6963_clear(drvthis);
 }
 
@@ -307,13 +314,15 @@ t6963_flush (Driver *drvthis)
 MODULE_EXPORT void
 t6963_string (Driver *drvthis, int x, int y, char string[])
 {
+	PrivateData *p = drvthis->private_data;
+
 	debug(RPT_DEBUG, "String out");
 
-	x -= 1;							  // Convert 1-based coords to 0-based...
-	y -= 1;
+	x--;				  // Convert 1-based coords to 0-based...
+	y--;
 
-	if ((y * width + x + strlen(string)) <= (width * height));
-		memcpy(&t6963_display_buffer1[y * width + x], string, strlen(string));
+	if ((y * p->width + x + strlen(string)) <= (p->width * p->height));
+		memcpy(&p->display_buffer1[y * p->width + x], string, strlen(string));
 
 }
 
@@ -324,11 +333,14 @@ t6963_string (Driver *drvthis, int x, int y, char string[])
 MODULE_EXPORT void
 t6963_chr (Driver *drvthis, int x, int y, char c)
 {
+	PrivateData *p = drvthis->private_data;
+
 	debug(RPT_DEBUG, "Char out");
+
 	y--;
 	x--;
-	if ((y * width) + x <= (width * height))
-		t6963_display_buffer1[(y * width) + x] = c;
+	if ((y * p->width) + x <= (p->width * p->height))
+		p->display_buffer1[(y * p->width) + x] = c;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -346,6 +358,7 @@ t6963_num (Driver *drvthis, int x, int num)
 void
 t6963_set_nchar (Driver *drvthis, int n, char *dat, int num)
 {
+	PrivateData *p = drvthis->private_data;
 	int row, col;
 	char letter;
 
@@ -354,15 +367,15 @@ t6963_set_nchar (Driver *drvthis, int n, char *dat, int num)
         if ((!dat) || (n + num > 256))
                 return;
 
-	t6963_low_command_word(SET_ADDRESS_POINTER, CHARGEN_BASE + n*8);
-        for (row = 0; row < cellheight * num; row++) {
+	t6963_low_command_word(drvthis, SET_ADDRESS_POINTER, CHARGEN_BASE + n*8);
+        for (row = 0; row < p->cellheight * num; row++) {
                 letter = 0;
-                for (col = 0; col < cellwidth; col++) {
+                for (col = 0; col < p->cellwidth; col++) {
                         letter <<= 1;
-                        letter |= (dat[(row * cellwidth) + col] > 0);
+                        letter |= (dat[(row * p->cellwidth) + col] > 0);
                 }
 
-		t6963_low_command_byte(DATA_WRITE_INC, letter);
+		t6963_low_command_byte(drvthis, DATA_WRITE_INC, letter);
         }
 }
 
@@ -378,7 +391,9 @@ t6963_set_char (Driver *drvthis, int n, char *dat)
 MODULE_EXPORT void
 t6963_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	lib_vbar_static(drvthis, x, y, len, promille, options, cellheight, 212);
+	PrivateData *p = drvthis->private_data;
+
+	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 212);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -387,7 +402,9 @@ t6963_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT void
 t6963_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	lib_hbar_static(drvthis, x, y, len, promille, options, cellwidth, 220);
+	PrivateData *p = drvthis->private_data;
+
+	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 220);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -399,13 +416,13 @@ t6963_icon (Driver *drvthis, int x, int y, int icon)
 	debug(RPT_DEBUG, "T6963: set icon %d", icon);
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
-			t6963_chr( drvthis, x, y, 219 );
+			t6963_chr(drvthis, x, y, 219 );
 			break;
 		case ICON_HEART_FILLED:
-			t6963_chr( drvthis, x, y, 3 );
+			t6963_chr(drvthis, x, y, 3 );
 			break;
 		case ICON_HEART_OPEN:
-			t6963_chr( drvthis, x, y, 4 );
+			t6963_chr(drvthis, x, y, 4 );
 			break;
 		default:
 			return -1;
@@ -413,11 +430,14 @@ t6963_icon (Driver *drvthis, int x, int y, int icon)
 	return 0;
 }
 
+
 /* ---------------------- internal functions ------------------------------------- */
 void
-t6963_low_set_control(char wr, char ce, char cd, char rd)
+t6963_low_set_control(Driver *drvthis, char wr, char ce, char cd, char rd)
 {
-	unsigned char status = port_in(T6963_CONTROL_PORT); /* TODO: support multiple wirings! */
+	PrivateData *p = drvthis->private_data;
+
+	unsigned char status = port_in(T6963_CONTROL_PORT(p->port)); /* TODO: support multiple wirings! */
 	if (wr == 1)  /* WR = HI */
 		status &= 0xfe;
 	else if (wr == 0)
@@ -434,120 +454,135 @@ t6963_low_set_control(char wr, char ce, char cd, char rd)
 		status &= 0xf7;
 	else if (rd == 0)
 		status |= 0x08;
-	port_out(T6963_CONTROL_PORT, status);
-
+	port_out(T6963_CONTROL_PORT(p->port), status);
 }
 
 void
-t6963_low_dsp_ready (void)
+t6963_low_dsp_ready (Driver *drvthis)
 {
+    PrivateData *p = drvthis->private_data;
     int i = 0;
     int input;
 
-    T6963_DATAIN;
-    if (bidirectLPT == 1) {
+    T6963_DATAIN(p->port);
+    if (p->bidirectLPT == 1) {
 	    do {
 	    	i++;
-/*		t6963_low_set_control(1, 0, 1, -1);
-		t6963_low_set_control(1, 0, 1, 0);
-		input = port_in(T6963_DATA_PORT);
-		t6963_low_set_control(1, 0, 1, -1); */
-		t6963_low_set_control(1, 1, 1, 1);
-		t6963_low_set_control(1, 0, 1, 0);
-		t6963_low_set_control(1, 0, 1, 0);
-		t6963_low_set_control(1, 0, 1, 0);
+/*		t6963_low_set_control(drvthis, 1, 0, 1, -1);
+		t6963_low_set_control(drvthis, 1, 0, 1, 0);
+		input = port_in(T6963_DATA_PORT(p->port));
+		t6963_low_set_control(drvthis, 1, 0, 1, -1); */
+		t6963_low_set_control(drvthis, 1, 1, 1, 1);
+		t6963_low_set_control(drvthis, 1, 0, 1, 0);
+		t6963_low_set_control(drvthis, 1, 0, 1, 0);
+		t6963_low_set_control(drvthis, 1, 0, 1, 0);
                 // tacc max 150ns
-		input = port_in(T6963_DATA_PORT);
-		t6963_low_set_control(1, 1, 1, 1);
+		input = port_in(T6963_DATA_PORT(p->port));
+		t6963_low_set_control(drvthis, 1, 1, 1, 1);
 
 	    } while (i < 100 && (input & 3)!=3);
     } else {
    // 	for (i=0; i<3; i++)
-		t6963_low_set_control(1, 1, 1, 1);
-		t6963_low_set_control(1, 0, 1, 0);
-		t6963_low_set_control(1, 1, 1, 1);
+		t6963_low_set_control(drvthis, 1, 1, 1, 1);
+		t6963_low_set_control(drvthis, 1, 0, 1, 0);
+		t6963_low_set_control(drvthis, 1, 1, 1, 1);
 		port_out(0x80, 0x00);  // wait 1ms
     } 
-    T6963_DATAOUT;
+    T6963_DATAOUT(p->port);
 }
 
 void
-t6963_low_data (u8 byte)
+t6963_low_data (Driver *drvthis, u8 byte)
 {
-    t6963_low_dsp_ready();
-    t6963_low_set_control(1, 1, 0, 1);   // CD down (data)
-    t6963_low_set_control(0, 0, 0, 1);   // CE & WR down
-    port_out(T6963_DATA_PORT, byte);     // present data
+    PrivateData *p = drvthis->private_data;
+    
+    t6963_low_dsp_ready(drvthis);
+    t6963_low_set_control(drvthis, 1, 1, 0, 1);   // CD down (data)
+    t6963_low_set_control(drvthis, 0, 0, 0, 1);   // CE & WR down
+    port_out(T6963_DATA_PORT(p->port), byte);     // present data
     port_out(0x80, 0x00);
-    t6963_low_set_control(1, 1, 1, 1);   // all up again
+    t6963_low_set_control(drvthis, 1, 1, 1, 1);   // all up again
 
-/*    port_out(T6963_DATA_PORT, byte);     // write value to data port
-    t6963_low_set_control(1, 1,  0, 1);
-    t6963_low_set_control(0, 0,  0, 1);
-    t6963_low_set_control(1, 1,  1, 1); */
+/*    port_out(T6963_DATA_PORT(p->port), byte);     // write value to data port
+    t6963_low_set_control(drvthis, 1, 1,  0, 1);
+    t6963_low_set_control(drvthis, 0, 0,  0, 1);
+    t6963_low_set_control(drvthis, 1, 1,  1, 1); */
 }
 
 void
-t6963_low_command (u8 byte)
+t6963_low_command (Driver *drvthis, u8 byte)
 {
-    t6963_low_dsp_ready();
-
-    t6963_low_set_control(1, 1, 1, 1);  // CD up (command)
-    t6963_low_set_control(0, 0, 1, 1);  // CE & WR down
-    port_out(T6963_DATA_PORT, byte);    // present data to LCD on PC's port pins
+    PrivateData *p = drvthis->private_data;
+    
+    t6963_low_dsp_ready(drvthis);
+    t6963_low_set_control(drvthis, 1, 1, 1, 1);  // CD up (command)
+    t6963_low_set_control(drvthis, 0, 0, 1, 1);  // CE & WR down
+    port_out(T6963_DATA_PORT(p->port), byte);    // present data to LCD on PC's port pins
     port_out(0x80, 0x00);
-    t6963_low_set_control(1, 1, 0, 1);  // CE & WR up, CD down
+    t6963_low_set_control(drvthis, 1, 1, 0, 1);  // CE & WR up, CD down
     
 /*
-    port_out(T6963_DATA_PORT, byte);  // present data to LCD on PC's port pins
-    t6963_low_set_control(1, 1, 1, 1);
-    t6963_low_set_control(0, 0, 1, 1);
-    t6963_low_set_control(1, 1, 0, 1); */
+    port_out(T6963_DATA_PORT(p->port), byte);  // present data to LCD on PC's port pins
+    t6963_low_set_control(drvthis, 1, 1, 1, 1);
+    t6963_low_set_control(drvthis, 0, 0, 1, 1);
+    t6963_low_set_control(drvthis, 1, 1, 0, 1); */
 }
 
 void
-t6963_low_command_byte(u8 cmd, u8 byte)
+t6963_low_command_byte(Driver *drvthis, u8 cmd, u8 byte)
 {
-    t6963_low_data(byte);
-    t6963_low_command(cmd);
+    //PrivateData *p = drvthis->private_data;
+    
+    t6963_low_data(drvthis, byte);
+    t6963_low_command(drvthis, cmd);
 }
 
 void
-t6963_low_command_2_bytes(u8 cmd, u8 byte1, u8 byte2)
+t6963_low_command_2_bytes(Driver *drvthis, u8 cmd, u8 byte1, u8 byte2)
 {
-    t6963_low_data(byte1);
-    t6963_low_data(byte2);
-    t6963_low_command(cmd);
+    //PrivateData *p = drvthis->private_data;
+    
+    t6963_low_data(drvthis, byte1);
+    t6963_low_data(drvthis, byte2);
+    t6963_low_command(drvthis, cmd);
 }
 
 void
-t6963_low_command_word(u8 cmd, u16 word)
+t6963_low_command_word(Driver *drvthis, u8 cmd, u16 word)
 {
-    t6963_low_data(word%256);
-    t6963_low_data(word>>8);
-    t6963_low_command(cmd);
+    //PrivateData *p = drvthis->private_data;
+    
+    t6963_low_data(drvthis, word%256);
+    t6963_low_data(drvthis, word>>8);
+    t6963_low_command(drvthis, cmd);
 }
 
 void
-t6963_low_enable_mode (u8 mode)
+t6963_low_enable_mode (Driver *drvthis, u8 mode)
 {
-	t6963_display_mode |= mode;
-	t6963_low_command(SET_DISPLAY_MODE | t6963_display_mode);
+	PrivateData *p = drvthis->private_data;
+
+	p->display_mode |= mode;
+	t6963_low_command(drvthis, SET_DISPLAY_MODE | p->display_mode);
 }
 
 void
-t6963_low_disable_mode (u8 mode)
+t6963_low_disable_mode (Driver *drvthis, u8 mode)
 {
-	t6963_display_mode &= ~mode;
-	t6963_low_command(SET_DISPLAY_MODE | t6963_display_mode);
+	PrivateData *p = drvthis->private_data;
+
+	p->display_mode &= ~mode;
+	t6963_low_command(drvthis, SET_DISPLAY_MODE | p->display_mode);
 }
 
 void
-t6963_swap_buffers ()
+t6963_swap_buffers (Driver *drvthis)
 {
+	PrivateData *p = drvthis->private_data;
+
 	u8 *tmp_buffer;
-	tmp_buffer = t6963_display_buffer1;
-	t6963_display_buffer1 = t6963_display_buffer2;
-	t6963_display_buffer2 = tmp_buffer;
+	tmp_buffer = p->display_buffer1;
+	p->display_buffer1 = p->display_buffer2;
+	p->display_buffer2 = tmp_buffer;
 	tmp_buffer = NULL;
 }

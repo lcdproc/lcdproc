@@ -49,9 +49,9 @@
 #define CUR_NONE 1
 
 // 8bit Data input
-#define T6963_DATAIN  port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) | 0x20)
+#define T6963_DATAIN(p)  port_out(T6963_CONTROL_PORT(p), port_in(T6963_CONTROL_PORT(p)) | 0x20)
 // 8bit Data output
-#define T6963_DATAOUT port_out(T6963_CONTROL_PORT, port_in(T6963_CONTROL_PORT) & 0xdf)
+#define T6963_DATAOUT(p) port_out(T6963_CONTROL_PORT(p), port_in(T6963_CONTROL_PORT(p)) & 0xdf)
 
 #define TEXT_BASE 0x0000
 #define ATTRIB_BASE 0x7000
@@ -95,9 +95,9 @@
 
 #define POSITION(x,y)  ((y)*lcd.wid + (x))
 
-#define T6963_DATA_PORT (t6963_out_port)
-#define T6963_STATUS_PORT (t6963_out_port+1)
-#define T6963_CONTROL_PORT (t6963_out_port+2)
+#define T6963_DATA_PORT(p) (p)
+#define T6963_STATUS_PORT(p) ((p)+1)
+#define T6963_CONTROL_PORT(p) ((p)+2)
 
 
 // ****************************************************************************************
@@ -132,19 +132,19 @@ MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
 void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
 void t6963_set_nchar (Driver *drvthis, int n, char *dat, int num);
 
-void t6963_low_set_control(char wr, char ce, char cd, char rd);
-void t6963_low_dsp_ready(void);
+void t6963_low_set_control(Driver *drvthis, char wr, char ce, char cd, char rd);
+void t6963_low_dsp_ready(Driver *drvthis);
 
-void t6963_low_data(u8 byte);
-void t6963_low_command (u8 byte);
+void t6963_low_data(Driver *drvthis, u8 byte);
+void t6963_low_command (Driver *drvthis, u8 byte);
 
-void t6963_low_command_byte(u8 cmd, u8 byte);
-void t6963_low_command_2_bytes(u8 cmd, u8 byte1, u8 byte2);
-void t6963_low_command_word(u8 cmd, u16 word);
+void t6963_low_command_byte(Driver *drvthis, u8 cmd, u8 byte);
+void t6963_low_command_2_bytes(Driver *drvthis, u8 cmd, u8 byte1, u8 byte2);
+void t6963_low_command_word(Driver *drvthis, u8 cmd, u16 word);
 
-void t6963_low_enable_mode (u8 mode);
-void t6963_low_disable_mode (u8 mode);
+void t6963_low_enable_mode (Driver *drvthis, u8 mode);
+void t6963_low_disable_mode (Driver *drvthis, u8 mode);
 
-void t6963_swap_buffers();
+void t6963_swap_buffers(Driver *drvthis);
 
 #endif
