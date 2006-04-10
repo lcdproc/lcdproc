@@ -38,24 +38,30 @@
 #define GLK_DEFAULT_CONTRAST	560
 
 
-static GLKDisplay * PortFD = NULL;
-/*  Initialize pseudo-CGRAM to empty */
-static unsigned char  CGRAM[8] = { '\0', '\0', '\0', '\0', '\0', '\0', '\0', '\0' };
-
 //////////////////////////////////////////////////////////////////////////
 //////////////////// Matrix Orbital Graphical Driver /////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-static unsigned char *  screen_contents = NULL;
-static int  fontselected = 0;
-static int  gpo_count = 0;
+typedef struct driver_private_data {
+  char device[256];
+  GLKDisplay *PortFD;
+  speed_t speed;
 
-static unsigned char * framebuf = NULL;
-static int width = 0;
-static int height = 0;
-static int cellwidth = LCD_DEFAULT_CELLWIDTH;
-static int cellheight = LCD_DEFAULT_CELLHEIGHT;
-static int contrast;
+  unsigned char *screen_contents;
+  int fontselected;
+  int gpo_count;
+
+  unsigned char *framebuf;
+  int width;
+  int height;
+  int cellwidth;
+  int cellheight;
+  int contrast;
+
+  int clearcount;
+  unsigned char CGRAM[8];
+} PrivateData;
+
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -71,51 +77,68 @@ MODULE_EXPORT char *symbol_prefix = "glk_";
 MODULE_EXPORT int
 glk_init(Driver *drvthis)
 {
-   char device[256] = GLK_DEFAULT_DEVICE;
-   speed_t speed = GLK_DEFAULT_SPEED;
-   int contrast = GLK_DEFAULT_CONTRAST;
-   int i;
+  PrivateData *p;
+  int i;
+
+  /* Allocate and store private data */
+  p = (PrivateData *) calloc(1, sizeof(PrivateData));
+  if (p == NULL)
+    return -1;
+  if (drvthis->store_private_ptr(drvthis, p))
+    return -1;
+
+  /* initialize private data */
+  p->PortFD = NULL;
+  p->speed = GLK_DEFAULT_SPEED;
+  p->screen_contents = NULL;
+  p->fontselected = -1;		// No font selected
+  p->gpo_count = 0;
+  p->framebuf = NULL;
+  p->cellwidth = LCD_DEFAULT_CELLWIDTH;
+  p->cellheight = LCD_DEFAULT_CELLHEIGHT;
+  p->contrast = GLK_DEFAULT_SPEED;
+  p->clearcount = 0;
 
   /* Read config file */
 
   /* What device should be used */
-  strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
-					     GLK_DEFAULT_DEVICE), sizeof(device));
-  device[sizeof(device)-1] = '\0';
-  report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
+  strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0,
+					     GLK_DEFAULT_DEVICE), sizeof(p->device));
+  p->device[sizeof(p->device)-1] = '\0';
+  report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
   /* What speed to use */
-  speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 19200);
+  p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 19200);
   
-  if (speed == 9600)       speed = B9600;
-  else if (speed == 19200) speed = B19200;
-  else if (speed == 38400) speed = B38400;
+  if (p->speed == 9600)       p->speed = B9600;
+  else if (p->speed == 19200) p->speed = B19200;
+  else if (p->speed == 38400) p->speed = B38400;
   else {
     report(RPT_WARNING, "%s: illegal Speed: %d; must be one of 9600, 19200 or 38400; using default %d",
-		    drvthis->name, 19200);
-    speed = B19200;
+		    drvthis->name, p->speed, 19200);
+    p->speed = B19200;
   }
 
-  /* Which contrast */
-  contrast = drvthis->config_get_int(drvthis->name, "Contrast" , 0 , GLK_DEFAULT_CONTRAST);
-  if ((contrast < 0) || (contrast > 1000)) {
+  /* Which p->contrast */
+  p->contrast = drvthis->config_get_int(drvthis->name, "Contrast" , 0 , GLK_DEFAULT_CONTRAST);
+  if ((p->contrast < 0) || (p->contrast > 1000)) {
     report(RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default %d",
 		    drvthis->name, GLK_DEFAULT_CONTRAST);
-    contrast = GLK_DEFAULT_CONTRAST;
+    p->contrast = GLK_DEFAULT_CONTRAST;
   }
 
   /* End of config file parsing */
 
   /* open device */
-  PortFD = glkopen(device, speed);
-  if (PortFD == NULL) {
-    report(RPT_ERR, "%s: unable to open device %s", drvthis->name, device);
+  p->PortFD = glkopen(p->device, p->speed);
+  if (p->PortFD == NULL) {
+    report(RPT_ERR, "%s: unable to open device %s", drvthis->name, p->device);
     return -1;
   }
 
   // Query the module for a device type
-  glkputl(PortFD, GLKCommand, 0x37, EOF);
-  i = glkget(PortFD);
+  glkputl(p->PortFD, GLKCommand, 0x37, EOF);
+  i = glkget(p->PortFD);
   if (i < 0) {
     report(RPT_ERR, "%s: GLK did not respond to READ MODULE TYPE", drvthis->name);
     return -1;
@@ -123,34 +146,34 @@ glk_init(Driver *drvthis)
   else {
     switch (i) {
       case 0x10 :  // GLC12232
-	width = 20; height = 4;
+	p->width = 20; p->height = 4;
 	break;
       case 0x11 :  // GLC12864
-	width = 20; height = 8;
+	p->width = 20; p->height = 8;
 	break;
       case 0x12 :  // GLC128128
-	width = 20; height = 16;
+	p->width = 20; p->height = 16;
 	break;
       case 0x13 :  // GLC24064
-	width = 40; height = 8; gpo_count = 1;
+	p->width = 40; p->height = 8; p->gpo_count = 1;
 	break;
       case 0x14 :  // GLK12864-25
-	width = 20; height = 8;
+	p->width = 20; p->height = 8;
 	break;
       case 0x15 :  // GLK24064-25
-	width = 40; height = 8; gpo_count = 1;
+	p->width = 40; p->height = 8; p->gpo_count = 1;
 	break;
       case 0x21 :  // GLK128128-25
-	width = 20; height = 16;
+	p->width = 20; p->height = 16;
 	break;
       case 0x22 :  // GLK12232-25
-	width = 20; height = 4; gpo_count = 2;
+	p->width = 20; p->height = 4; p->gpo_count = 2;
 	break;
       case 0x23 :  // GLK12232-25SM
-	width = 20; height = 4; gpo_count = 2;
+	p->width = 20; p->height = 4; p->gpo_count = 2;
 	break;
       case 0x24 :  // GLK12232-25SM-Penguin
-	width = 20; height = 4; gpo_count = 2;
+	p->width = 20; p->height = 4; p->gpo_count = 2;
 	break;
       default :
 	report(RPT_ERR, "%s: unrecognized module type: 0x%02X", drvthis->name, i);
@@ -158,36 +181,34 @@ glk_init(Driver *drvthis)
     }
   }
 
-  framebuf = malloc(width * height);
-  screen_contents = malloc(width * height);
+  p->framebuf = malloc(p->width * p->height);
+  p->screen_contents = malloc(p->width * p->height);
 
-  if (framebuf == NULL || screen_contents == NULL) {
+  if (p->framebuf == NULL || p->screen_contents == NULL) {
     report(RPT_ERR, "%s: Unable to allocate memory for screen buffers", drvthis->name);
     glk_close(drvthis);
     return -1;
   }
 
-  memset(framebuf, ' ', width*height);
+  memset(p->framebuf, ' ', p->width * p->height);
 
 //  glk_clear();
-//  glkputl(PortFD, GLKCommand, 0x58, EOF);
+//  glkputl(p->PortFD, GLKCommand, 0x58, EOF);
 
-  // No font selected
-  fontselected = -1;
 
   // Enable flow control
-  glkflow(PortFD, 40, 2);
+  glkflow(p->PortFD, 40, 2);
 
   // Set read character timeout to 0
-  glktimeout(PortFD, 0);
+  glktimeout(p->PortFD, 0);
 
   // Enable auto-transmit of up/down key events
   // This allows us to generate REPEAT keys distinct from
   //   normal keys using timeouts.  (see glk_get_key)
-  glkputl(PortFD, GLKCommand, 0x7e, 1, GLKCommand, 0x41, EOF);
+  glkputl(p->PortFD, GLKCommand, 0x7e, 1, GLKCommand, 0x41, EOF);
 
-  // Set contrast
-  glk_set_contrast(drvthis, contrast);
+  // Set p->contrast
+  glk_set_contrast(drvthis, p->contrast);
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -201,17 +222,21 @@ glk_init(Driver *drvthis)
 MODULE_EXPORT void
 glk_close(Driver *drvthis)
 {
-  if (PortFD != NULL)
-    glkclose(PortFD);
-  PortFD = NULL;
+  PrivateData *p = drvthis->private_data;
 
-  if (framebuf != NULL)
-    free(framebuf);
-  framebuf = NULL;
+  if (p != NULL) {
+    if (p->PortFD != NULL)
+      glkclose(p->PortFD);
 
-  if (screen_contents != NULL)
-    free(screen_contents);
-  screen_contents = NULL;
+    if (p->framebuf != NULL)
+      free(p->framebuf);
+
+    if (p->screen_contents != NULL)
+      free(p->screen_contents);
+
+    free(p);
+  }
+  drvthis->store_private_ptr(drvthis, NULL);
 }
 
 
@@ -221,7 +246,9 @@ glk_close(Driver *drvthis)
 MODULE_EXPORT int
 glk_width (Driver *drvthis)
 {
-  return width;
+  PrivateData *p = drvthis->private_data;
+
+  return p->width;
 }
 
 
@@ -231,7 +258,33 @@ glk_width (Driver *drvthis)
 MODULE_EXPORT int
 glk_height (Driver *drvthis)
 {
-  return height;
+  PrivateData *p = drvthis->private_data;
+
+  return p->height;
+}
+
+
+/////////////////////////////////////////////////////////////////
+// Returns the display's cell width
+//
+MODULE_EXPORT int
+glk_cellwidth (Driver *drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+
+  return p->cellwidth;
+}
+
+
+/////////////////////////////////////////////////////////////////
+// Returns the display's cell height
+//
+MODULE_EXPORT int
+glk_cellheight (Driver *drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+
+  return p->cellheight;
 }
 
 
@@ -239,23 +292,24 @@ glk_height (Driver *drvthis)
 // Clears the LCD screen
 //
 #define CLEARCOUNT  (1000000)
-static int  clearcount = 0;
 
 void glk_clear_forced(Driver *drvthis)
 {
-//  puts("REALLY CLEARING the display");
-  clearcount = CLEARCOUNT;
-  glkputl(PortFD, GLKCommand, 0x58, EOF);
-  memset(screen_contents, ' ', width*height);
+  PrivateData *p = drvthis->private_data;
+
+  p->clearcount = CLEARCOUNT;
+  glkputl(p->PortFD, GLKCommand, 0x58, EOF);
+  memset(p->screen_contents, ' ', p->width * p->height);
 }
 
 
 MODULE_EXPORT void
 glk_clear(Driver *drvthis)
 {
-//  puts("glk_clear()");
-  memset(framebuf, ' ', width * height);
-  if (--clearcount < 0)
+  PrivateData *p = drvthis->private_data;
+
+  memset(p->framebuf, ' ', p->width * p->height);
+  if (--p->clearcount < 0)
     glk_clear_forced(drvthis);
 }
 
@@ -266,41 +320,39 @@ glk_clear(Driver *drvthis)
 MODULE_EXPORT void
 glk_flush(Driver *drvthis)
 {
+  PrivateData *p = drvthis->private_data;
+
 //   puts("glk_flush()");
-  unsigned char * p;
-  unsigned char * q;
+  unsigned char *pf = p->framebuf;
+  unsigned char *qf = p->screen_contents;
   int x, y;
-  int xs;
-  unsigned char * ps = NULL;
+  unsigned char *ps= NULL;
 
   debug(RPT_DEBUG, "flush()");
 
-  p = framebuf;
-  q = screen_contents;
-
-  for (y = 0; y < height; ++y) {
-    xs = -1;  /* XStart not set */
-    for (x = 0; x < width; ++x) {
-      if ((*q == *p) && (xs >= 0)) {
+  for (y = 0; y < p->height; ++y) {
+    int xs = -1;  /* XStart not set */
+    
+    for (x = 0; x < p->width; ++x) {
+      if ((*qf == *pf) && (xs >= 0)) {
         /* Write accumulated string */
-        glkputl(PortFD, GLKCommand, 0x79, xs * 6 + 1, y * 8, EOF);
-        glkputa(PortFD, x - xs, ps);
+        glkputl(p->PortFD, GLKCommand, 0x79, xs * 6 + 1, y * 8, EOF);
+        glkputa(p->PortFD, x - xs, ps);
         debug(RPT_DEBUG, "draw_frame: Writing at (%d,%d) for %d", xs, y, x - xs);
         xs = -1;
-      } else if ((*q != *p) && (xs < 0)) {
+      } else if ((*qf != *pf) && (xs < 0)) {
         /* Start new string of changes */
-        ps = p;
+        ps = pf;
         xs = x;
       }
-      *q++ = *p++;  /* Update screen_contents from framebuf */
+      *qf++ = *pf++;  /* Update screen_contents from framebuf */
     }
     if (xs >= 0) {
       /* Write accumulated line */
-      glkputl(PortFD, GLKCommand, 0x79, xs * 6 + 1, y * 8, EOF);
-      glkputa(PortFD, width - xs, ps);
-      debug(RPT_DEBUG, "draw_frame: Writing at (%d,%d) for %d", xs, y, width - xs);
+      glkputl(p->PortFD, GLKCommand, 0x79, xs * 6 + 1, y * 8, EOF);
+      glkputa(p->PortFD, p->width - xs, ps);
+      debug(RPT_DEBUG, "draw_frame: Writing at (%d,%d) for %d", xs, y, p->width - xs);
     }
-
   }  /* For y */
 }
 
@@ -312,16 +364,16 @@ glk_flush(Driver *drvthis)
 MODULE_EXPORT void
 glk_string(Driver *drvthis, int x, int y, char string[])
 {
-  char * p;
+  PrivateData *p = drvthis->private_data;
+  char *s;
 
   debug(RPT_DEBUG, "glk_string(%d, %d, \"%s\")", x, y, string);
 
-  if ((x > width) || (y > height)) {
+  if ((y <= 0) || (y > p->height))
      return;
-  }
 
-  for (p = string; (*p != '\0') && (x <= width); ++x, ++p) {
-    glk_chr(drvthis, x, y, *p);
+  for (s = string; (*s != '\0') && (x <= p->width); s++, x++) {
+    glk_chr(drvthis, x, y, *s);
   }
 }
 
@@ -333,25 +385,27 @@ glk_string(Driver *drvthis, int x, int y, char string[])
 MODULE_EXPORT void
 glk_chr(Driver *drvthis, int x, int y, char c)
 {
+  PrivateData *p = drvthis->private_data;
   int  myc = (unsigned char) c;
-  x -= 1;  // Convert 1-based coords to 0-based...
-  y -= 1;
 
-  if (fontselected != 2) {
+  x--;  // Convert 1-based coords to 0-based...
+  y--;
+
+  if (p->fontselected != 2) {
     debug(RPT_DEBUG, "Switching to font 2");
     /* Select font 2 */
-    glkputl(PortFD, GLKCommand, 0x31, 2, EOF);
-    fontselected = 2;
+    glkputl(p->PortFD, GLKCommand, 0x31, 2, EOF);
+    p->fontselected = 2;
     /* Set font metrics */
-    glkputl(PortFD, GLKCommand, 0x32, 1, 0, 1, 1, 32, EOF);
+    glkputl(p->PortFD, GLKCommand, 0x32, 1, 0, 1, 1, 32, EOF);
     /* Clear the screen */
     glk_clear_forced(drvthis);
   }
 
   if ((myc >= 0) && (myc <= 15)) {
     /* CGRAM */
-    debug(RPT_DEBUG, "CGRAM changing %d => %d", myc, CGRAM[myc & 7]);
-    myc = CGRAM[myc & 7];
+    debug(RPT_DEBUG, "CGRAM changing %d => %d", myc, p->CGRAM[myc & 7]);
+    myc = p->CGRAM[myc & 7];
   } else if ((myc == 255) || (myc == -1)) {
     /* Solid block */
     myc = 133;
@@ -360,12 +414,13 @@ glk_chr(Driver *drvthis, int x, int y, char c)
     myc = 133;
   }
 
-  framebuf[(y * width) + x] = myc;
+  if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+    p->framebuf[(y * p->width) + x] = myc;
 }
 
 
 /////////////////////////////////////////////////////////////////
-// Returns current contrast
+// Returns current p->contrast
 // This is only the locally stored contrast, the contrast value
 // cannot be retrieved from the LCD.
 // Value 0 to 1000.
@@ -373,27 +428,31 @@ glk_chr(Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT int
 glk_get_contrast(Driver *drvthis)
 {
-  return contrast;
+  PrivateData *p = drvthis->private_data;
+
+  return p->contrast;
 }
 
 
 //////////////////////////////////////////////////////////////////////
-// Sets the contrast of the display.  Value is 0-255, where 140 is
+// Sets the p->contrast of the display.  Value is 0-255, where 140 is
 // what I consider "just right".
 //
 MODULE_EXPORT void
 glk_set_contrast(Driver *drvthis, int promille)
 {
+  PrivateData *p = drvthis->private_data;
+
   // Check it
   if ((promille < 0) || (promille > 1000))
     return;
 
   // Store it
-  contrast = promille;
+  p->contrast = promille;
 
-  // Do it
-  debug(RPT_DEBUG, "Contrast: %d", contrast);
-  glkputl(PortFD, GLKCommand, 0x50, (int) ((long) promille * 255 / 1000), EOF);
+  // Do it: map logical [0, 1000] -> physical [0, 255] for the hardware
+  debug(RPT_DEBUG, "Contrast: %d", p->contrast);
+  glkputl(p->PortFD, GLKCommand, 0x50, (int) ((long) promille * 255 / 1000), EOF);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -402,12 +461,15 @@ glk_set_contrast(Driver *drvthis, int promille)
 MODULE_EXPORT void
 glk_backlight(Driver *drvthis, int on)
 {
+  PrivateData *p = drvthis->private_data;
+
   if (on) {
     debug(RPT_DEBUG, "Backlight ON");
-    glkputl(PortFD, GLKCommand, 0x42, 0, EOF);
-  } else {
+    glkputl(p->PortFD, GLKCommand, 0x42, 0, EOF);
+  }
+  else {
     debug(RPT_DEBUG, "Backlight OFF");
-    glkputl(PortFD, GLKCommand, 0x46, EOF);
+    glkputl(p->PortFD, GLKCommand, 0x46, EOF);
   }
 }
 
@@ -416,14 +478,16 @@ glk_backlight(Driver *drvthis, int on)
 MODULE_EXPORT void
 glk_output(Driver *drvthis, int on)
 {
-  if (gpo_count < 2) {
-    glkputl(PortFD, GLKCommand, ((on) ? 'W' : 'V'), EOF);
+  PrivateData *p = drvthis->private_data;
+
+  if (p->gpo_count < 2) {
+    glkputl(p->PortFD, GLKCommand, ((on) ? 'W' : 'V'), EOF);
   }
   else {
     int  i;
 
-    for (i = 1; i <= gpo_count; ++i, on >>= 1) {
-      glkputl(PortFD, GLKCommand, ((on & 1) ? 'W' : 'V'), i, EOF);
+    for (i = 1; i <= p->gpo_count; ++i, on >>= 1) {
+      glkputl(p->PortFD, GLKCommand, ((on & 1) ? 'W' : 'V'), i, EOF);
     }
   }
 }
@@ -434,6 +498,8 @@ glk_output(Driver *drvthis, int on)
 MODULE_EXPORT void
 glk_init_vbar(Driver *drvthis)
 {
+  //PrivateData *p = drvthis->private_data;
+
   debug(RPT_DEBUG, "glk_init_vbar()");
 }
 
@@ -443,6 +509,8 @@ glk_init_vbar(Driver *drvthis)
 MODULE_EXPORT void
 glk_init_hbar(Driver *drvthis)
 {
+  //PrivateData *p = drvthis->private_data;
+
   debug(RPT_DEBUG, "glk_init_hbar()");
 }
 
@@ -452,13 +520,15 @@ glk_init_hbar(Driver *drvthis)
 MODULE_EXPORT void
 glk_init_num(Driver *drvthis)
 {
+  PrivateData *p = drvthis->private_data;
+
   debug(RPT_DEBUG, "glk_init_num()");
-  if (fontselected != 3) {
+  if (p->fontselected != 3) {
     /* Select Big Numbers font */
-    glkputl(PortFD, GLKCommand, 0x31, 3, EOF);
-    fontselected = 3;
+    glkputl(p->PortFD, GLKCommand, 0x31, 3, EOF);
+    p->fontselected = 3;
     /* Set font metrics */
-    glkputl(PortFD, GLKCommand, 0x32, 1, 0, 1, 1, 32, EOF);
+    glkputl(p->PortFD, GLKCommand, 0x32, 1, 0, 1, 1, 32, EOF);
     /* Clear the screen */
     glk_clear_forced(drvthis);
   }
@@ -470,8 +540,12 @@ glk_init_num(Driver *drvthis)
 MODULE_EXPORT void
 glk_num(Driver *drvthis, int x, int num)
 {
+  PrivateData *p = drvthis->private_data;
+
   debug(RPT_DEBUG, "glk_num(%d, %d)", x, num);
-  framebuf[x-1] = num + '0';
+
+  if ((x > 0) && (x <= p->width))
+    p->framebuf[x-1] = num + '0';
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -480,6 +554,8 @@ glk_num(Driver *drvthis, int x, int num)
 MODULE_EXPORT void
 glk_set_char(Driver *drvthis, int n, char *dat)
 {
+  //PrivateData *p = drvthis->private_data;
+
   debug(RPT_DEBUG, "glk_set_char(%d)", n);
 }
 
@@ -489,14 +565,15 @@ glk_set_char(Driver *drvthis, int n, char *dat)
 MODULE_EXPORT void
 glk_old_vbar(Driver *drvthis, int x, int len)
 {
-  int y = height;
+  PrivateData *p = drvthis->private_data;
+  int y = p->height;
 
   debug(RPT_DEBUG, "glk_old_vbar(%d, %d)", x, len);
 
-  while (len > cellheight) {
+  while (len > p->cellheight) {
     glk_chr(drvthis, x, y, 255);
     --y;
-    len -= cellheight;
+    len -= p->cellheight;
   }
 
   if (y >= 0) {
@@ -522,15 +599,17 @@ glk_old_vbar(Driver *drvthis, int x, int len)
 MODULE_EXPORT void
 glk_old_hbar(Driver *drvthis, int x, int y, int len)
 {
+  PrivateData *p = drvthis->private_data;
+
   debug(RPT_DEBUG, "glk_old_hbar(%d, %d, %d)", x, y, len);
   
-  while (len > cellwidth) {
+  while (len > p->cellwidth) {
     glk_chr(drvthis, x, y, 255);
     ++x;
-    len -= cellwidth;
+    len -= p->cellwidth;
   }
 
-  if (x <= width) {
+  if (x <= p->width) {
     int lastc;
 
     switch (len) {
@@ -555,9 +634,10 @@ glk_old_icon(Driver *drvthis, int which, int dest)
   /* TODO IMPLEMENTATION OF NEW API */
   /* any volonteers ? */
 
+  PrivateData *p = drvthis->private_data;
   unsigned char old, new;
-  unsigned char * p;
-  unsigned char * q;
+  unsigned char *pf = p->framebuf;
+  unsigned char *qf = p->screen_contents;
   int count;
 
   debug(RPT_DEBUG, "glk_old_icon(%i, %i)", which, dest);
@@ -578,18 +658,16 @@ glk_old_icon(Driver *drvthis, int which, int dest)
     default:  return;  /* ERROR */
   }
 
-  old = CGRAM[(int) dest];
-  CGRAM[(int) dest] = new;
-  p = framebuf;
-  q = screen_contents;
+  old = p->CGRAM[(int) dest];
+  p->CGRAM[(int) dest] = new;
 
   /* Replace all old icons with new icon in new frame */
-  for (count = width * height; count > 0; --count) {
-    if (*q == old) {
-      debug(RPT_DEBUG, "icon %d to %d at %d", old, new, q - screen_contents);
-      *p = new;
+  for (count = p->width * p->height; count > 0; count--) {
+    if (*qf == old) {
+      debug(RPT_DEBUG, "icon %d to %d at %d", old, new, qf - p->screen_contents);
+      *pf = new;
     }
-    ++q; ++p;
+    ++qf; ++pf;
   }
 }
 
@@ -602,6 +680,7 @@ glk_old_icon(Driver *drvthis, int which, int dest)
 MODULE_EXPORT const char *
 glk_get_key(Driver *drvthis)
 {
+  PrivateData *p = drvthis->private_data;
   int c;
   static int keycode = -1;
   static struct timeval lastkey;
@@ -610,7 +689,7 @@ glk_get_key(Driver *drvthis)
 
   debug(RPT_DEBUG, "glk_get_key()");
 
-  c = glkgetc(PortFD);
+  c = glkgetc(p->PortFD);
 
   if ((c >= 'A') && (c <= 'Z')) {
     /* Key down event */

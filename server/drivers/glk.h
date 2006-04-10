@@ -7,6 +7,8 @@ MODULE_EXPORT int glk_init(Driver *drvthis);
 MODULE_EXPORT void glk_close(Driver *drvthis);
 MODULE_EXPORT int  glk_width(Driver *drvthis);
 MODULE_EXPORT int  glk_height(Driver *drvthis);
+MODULE_EXPORT int  glk_cellwidth(Driver *drvthis);
+MODULE_EXPORT int  glk_cellheight(Driver *drvthis);
 MODULE_EXPORT void glk_clear(Driver *drvthis);
 MODULE_EXPORT void glk_flush(Driver *drvthis);
 MODULE_EXPORT void glk_string(Driver *drvthis, int x, int y, char string[]);
