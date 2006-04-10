@@ -38,9 +38,11 @@
 
 
 // Variables
-static int width;
-static int height;
-static char * framebuf;
+typedef struct driver_private_data {
+	int width;
+	int height;
+	char *framebuf;
+} PrivateData;
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -56,36 +58,45 @@ MODULE_EXPORT char *symbol_prefix = "text_";
 MODULE_EXPORT int
 text_init (Driver *drvthis)
 {
+	PrivateData *p;
 	char buf[256];
+
+	/* Allocate and store private data */
+	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	if (p == NULL)
+		return -1;
+	if (drvthis->store_private_ptr(drvthis, p))
+		return -1;
+
+	/* initialize private data */
 
 	// Set display sizes
 	if ((drvthis->request_display_width() > 0)
 	    && (drvthis->request_display_height() > 0)) {
 		// Use size from primary driver
-		width = drvthis->request_display_width();
-		height = drvthis->request_display_height();
+		p->width = drvthis->request_display_width();
+		p->height = drvthis->request_display_height();
 	}
 	else {
 		/* Use our own size from config file */
 		strncpy(buf, drvthis->config_get_string(drvthis->name, "Size", 0, TEXTDRV_DEFAULT_SIZE), sizeof(buf));
 		buf[sizeof(buf)-1] = '\0';
-		if ((sscanf(buf , "%dx%d", &width, &height) != 2)
-		    || (width <= 0) || (width > LCD_MAX_WIDTH)
-		    || (height <= 0) || (height > LCD_MAX_HEIGHT)) {
+		if ((sscanf(buf , "%dx%d", &p->width, &p->height) != 2)
+		    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
+		    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
 			report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
 					drvthis->name, buf, TEXTDRV_DEFAULT_SIZE);
-			sscanf(TEXTDRV_DEFAULT_SIZE, "%dx%d", &width, &height);
+			sscanf(TEXTDRV_DEFAULT_SIZE, "%dx%d", &p->width, &p->height);
 		}
 	}
 
 	// Allocate the framebuffer
-	framebuf = malloc(width * height);
-	if (framebuf == NULL) {
+	p->framebuf = malloc(p->width * p->height);
+	if (p->framebuf == NULL) {
 		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 		return -1;
 	}
-	
-	memset(framebuf, ' ', width * height);
+	memset(p->framebuf, ' ', p->width * p->height);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -98,10 +109,15 @@ text_init (Driver *drvthis)
 MODULE_EXPORT void
 text_close (Driver *drvthis)
 {
-	if (framebuf != NULL)
-		free(framebuf);
+	PrivateData *p = drvthis->private_data;
 
-	framebuf = NULL;
+	if (p != NULL) {
+		if (p->framebuf != NULL)
+			free(p->framebuf);
+
+		free(p);
+	}	
+	drvthis->store_private_ptr(drvthis, NULL);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -110,7 +126,9 @@ text_close (Driver *drvthis)
 MODULE_EXPORT int
 text_width (Driver *drvthis)
 {
-	return width;
+	PrivateData *p = drvthis->private_data;
+
+	return p->width;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -119,7 +137,9 @@ text_width (Driver *drvthis)
 MODULE_EXPORT int
 text_height (Driver *drvthis)
 {
-	return height;
+	PrivateData *p = drvthis->private_data;
+
+	return p->height;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -128,7 +148,9 @@ text_height (Driver *drvthis)
 MODULE_EXPORT void
 text_clear (Driver *drvthis)
 {
-	memset(framebuf, ' ', width * height);
+	PrivateData *p = drvthis->private_data;
+
+	memset(p->framebuf, ' ', p->width * p->height);
 }
 
 //////////////////////////////////////////////////////////////////
@@ -137,29 +159,24 @@ text_clear (Driver *drvthis)
 MODULE_EXPORT void
 text_flush (Driver *drvthis)
 {
-	int i, j;
-
+	PrivateData *p = drvthis->private_data;
 	char out[LCD_MAX_WIDTH];
+	int i;
 
-	for (i = 0; i < width; i++) {
-		out[i] = '-';
-	}
-	out[width] = 0;
+	memset(out, '-', p->width);
+	out[p->width] = '\0';
 	printf("+%s+\n", out);
 
-	for (i = 0; i < height; i++) {
-		for (j = 0; j < width; j++) {
-			out[j] = framebuf[j + (i * width)];
-		}
-		out[width] = 0;
+	for (i = 0; i < p->height; i++) {
+		memcpy(out, p->framebuf + (i * p->width), p->width);
+		out[p->width] = '\0';
 		printf("|%s|\n", out);
 	}
 
-	for (i = 0; i < width; i++) {
-		out[i] = '-';
-	}
-	out[width] = 0;
+	memset(out, '-', p->width);
+	out[p->width] = '\0';
 	printf("+%s+\n", out);
+	
         fflush(stdin);
 }
 
@@ -170,16 +187,17 @@ text_flush (Driver *drvthis)
 MODULE_EXPORT void
 text_string (Driver *drvthis, int x, int y, char string[])
 {
+	PrivateData *p = drvthis->private_data;
 	int i;
 
 	x--; y--; // Convert 1-based coords to 0-based...
 
-	if ((y < 0) || (y >= height))
+	if ((y < 0) || (y >= p->height))
                 return;
 
-	for (i = 0; (string[i] != '\0') && (x < width); i++, x++) {
+	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
 		if (x >= 0)	// no write left of left border
-			framebuf[(y * width) + x] = string[i];
+			p->framebuf[(y * p->width) + x] = string[i];
 	}
 }
 
@@ -190,10 +208,12 @@ text_string (Driver *drvthis, int x, int y, char string[])
 MODULE_EXPORT void
 text_chr (Driver *drvthis, int x, int y, char c)
 {
+	PrivateData *p = drvthis->private_data;
+
 	y--; x--;
 
-	if ((x >= 0) && (y >= 0) && (x < width) && (y < height))
-		framebuf[(y * width) + x] = c;
+	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+		p->framebuf[(y * p->width) + x] = c;
 }
 
 /////////////////////////////////////////////////////////////////
@@ -202,6 +222,8 @@ text_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 text_set_contrast (Driver *drvthis, int promille)
 {
+	//PrivateData *p = drvthis->private_data;
+
 	debug(RPT_DEBUG, "Contrast: %d", promille);
 }
 
@@ -211,7 +233,7 @@ text_set_contrast (Driver *drvthis, int promille)
 MODULE_EXPORT void
 text_backlight (Driver *drvthis, int on)
 {
-	//PrivateData * p = (PrivateData*) drvthis->private_data;
+	//PrivateData *p = drvthis->private_data;
 
 	debug(RPT_DEBUG, "Backlight %s", (on) ? "ON" : "OFF");
 }
