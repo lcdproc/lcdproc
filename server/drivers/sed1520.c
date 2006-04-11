@@ -342,10 +342,7 @@ sed1520_num (Driver *drvthis, int x, int num)
     x--;
 
     // return on illegal char or illegal position
-    if ((x < 0) || (x >= WIDTH) || (num < 0) || (num > 10))
-	return;
-    // when char isn't colon, restrict the position even further
-    if ((num != 10) && (x >= WIDTH-2))
+    if ((x >= WIDTH) || (num < 0) || (num > 10))
 	return;
 
     if (num == 10) {		// colon
@@ -357,7 +354,8 @@ sed1520_num (Driver *drvthis, int x, int num)
 		    if (*(fontbigdp[(z * 8) + i] + c) == '.')
 			s |= 0x80;
 		}
-		p->framebuf[((z + 1) * PIXELWIDTH) + (x * CELLWIDTH) + c] = s;
+		if ((x * CELLWIDTH + c >= 0) && (x * CELLWIDTH + c < PIXELWIDTH))
+		    p->framebuf[((z + 1) * PIXELWIDTH) + (x * CELLWIDTH) + c] = s;
 	    }
 	}
     }
@@ -370,7 +368,8 @@ sed1520_num (Driver *drvthis, int x, int num)
 		    if (*(fontbignum[num][z * 8 + i] + c) == '.')
 			s |= 0x80;
 		}
-		p->framebuf[((z + 1) * PIXELWIDTH) + (x * CELLWIDTH) + c] = s;
+		if ((x * CELLWIDTH + c >= 0) && (x * CELLWIDTH + c < PIXELWIDTH))
+		    p->framebuf[((z + 1) * PIXELWIDTH) + (x * CELLWIDTH) + c] = s;
 	    }
 	}
     }

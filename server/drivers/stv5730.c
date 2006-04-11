@@ -273,10 +273,8 @@ stv5730_drawchar2fb (Driver *drvthis, int x, int y, unsigned char z)
 {
     PrivateData *p = drvthis->private_data;
 
-    if (x < 0 || x >= STV5730_WID || y < 0 || y >= STV5730_HGT)
-	return;
-    p->framebuf[(y * STV5730_WID) + x] = stv5730_to_ascii[(unsigned int) z];
-
+    if ((x >= 0) && (x < STV5730_WID) && (y >= 0) && (y < STV5730_HGT))
+      p->framebuf[(y * STV5730_WID) + x] = stv5730_to_ascii[(unsigned int) z];
 }
 
 /////////////////////////////////////////////////////////////////
@@ -553,11 +551,7 @@ stv5730_num (Driver *drvthis, int x, int num)
 
     x--;
 
-    if (x < 0 || x > 19 || num < 0 || num > 10)
-	return;
-    if (num != 10 && (x < 0 || x > 17))
-	return;
-    if (num == 10 && (x < 0 || x > 19))
+    if ((x >= STV5730_WID) || (num < 0) || (num > 10))
 	return;
 
     for (j = 1; j < 10; j++) {

@@ -382,9 +382,8 @@ glcdlib_set_char (Driver *drvthis, int n, char *dat)
 MODULE_EXPORT void
 glcdlib_num (Driver *drvthis, int x, int num)
 {
-	x--;
 	glcdlibPD * pPD = drvthis->private_data;
-	glcddriverDrawBigNum(pPD->glcdDriver, x, num);
+	glcddriverDrawBigNum(pPD->glcdDriver, x - 1, num);
 }
 
 /////////////////////////////////////////////////////////////////

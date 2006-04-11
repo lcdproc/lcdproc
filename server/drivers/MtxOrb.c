@@ -1127,6 +1127,9 @@ MtxOrb_num (Driver *drvthis, int pos, int val)
 	int x, y;
 	int c;
 
+	if ((val < 0) || (val > 10))
+		return;
+
 	debug(RPT_DEBUG, "MtxOrb: write big number %d at %d", val, pos);
 
 	/* Currently we are bignum but if bigalpha is there remove this line */

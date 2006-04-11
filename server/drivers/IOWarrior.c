@@ -1002,7 +1002,7 @@ char bignum_map[11][4][3] = {
 
   IOWarrior_init_num(drvthis);
 
-  if ((p->width >= 20) && (p->height >= 4)) {
+  if (p->height >= 4) {
     int y = (p->height - 2) / 2;	/* center vertically */
     int x2, y2;
 

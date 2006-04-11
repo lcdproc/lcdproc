@@ -544,8 +544,11 @@ glk_num(Driver *drvthis, int x, int num)
 
   debug(RPT_DEBUG, "glk_num(%d, %d)", x, num);
 
+  if ((num < 0) || (num > 10))
+      return;
+
   if ((x > 0) && (x <= p->width))
-    p->framebuf[x-1] = num + '0';
+    p->framebuf[x-1] = (num >= 10) ? ':' : (num + '0');
 }
 
 //////////////////////////////////////////////////////////////////////

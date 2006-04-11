@@ -884,6 +884,9 @@ CFontz633_num (Driver *drvthis, int x, int num)
 	PrivateData *p = drvthis->private_data;
 	unsigned char out[5];
 
+	if ((x <= 0) || (x > p->width))
+		return;
+
 	snprintf(out, sizeof(out), "%c%c%c", 28, x, num);
 	write(p->fd, out, 3);
 */

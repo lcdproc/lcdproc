@@ -317,16 +317,19 @@ xosdlib_drv_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 xosdlib_drv_old_num (Driver *drvthis, int x, int num)
 {
-	char c;
 	int y, dx;
+	char c;
 
 	debug(RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
 
-	c = '0' + num;
+	if ((num < 0) || (num > 10))
+		return;
+
+	c = (num >= 10) ? ':' : ('0' + num);
 
 	for (y = 1; y < 5; y++)
 		for (dx = 0; dx < 3; dx++)
-			xosdlib_drv_chr (drvthis, x + dx, y, c);
+			xosdlib_drv_chr(drvthis, x + dx, y, c);
 }
 
 
