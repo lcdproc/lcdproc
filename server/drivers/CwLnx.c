@@ -513,12 +513,9 @@ int CwLnx_init(Driver * drvthis)
         return -1;
 
     /* Initialise the PrivateData structure */
+    p->fd = -1;
     p->framebuf = NULL;
     p->backingstore = NULL;
-
-    /* height and width are computed from DEFAULT_SIZE */
-    /* p->width = DEFAULT_WIDTH; */
-    /* p->height = DEFAULT_HEIGHT; */
     p->cellwidth = DEFAULT_CELLWIDTH;
     p->cellheight = DEFAULT_CELLHEIGHT;
 
@@ -679,18 +676,19 @@ CwLnx_close(Driver *drvthis)
     PrivateData * p = drvthis->private_data;
 
     if (p != NULL) {
-   	close(p->fd);
+	if (p->fd >= 0)
+ 	    close(p->fd);
 
 	if (p->framebuf != NULL)
 	    free(p->framebuf);
-	p->framebuf = NULL;
 
 	if (p->backingstore != NULL)
 	    free(p->backingstore);
-	p->backingstore = NULL;
 
 	free(p);
     }
+    drvthis->store_private_ptr(drvthis, NULL);
+
     debug(RPT_DEBUG, "CwLnx: closed");
 }
 
