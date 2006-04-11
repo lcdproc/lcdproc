@@ -312,7 +312,8 @@ curses_drv_init (Driver *drvthis)
 }
 
 static void
-curses_drv_wborder (WINDOW *win) {
+curses_drv_wborder (WINDOW *win)
+{
 	//int x, y;
 	//char buf[128];
 
@@ -458,7 +459,7 @@ curses_drv_chr (Driver *drvthis, int x, int y, char c)
 	}
 
 	if ((ch = getch()) != ERR)
-		if (ch == 0x0C) {
+		if (ch == 0x0C) {	/* ^L restores screen */
 			curses_drv_restore_screen(drvthis);
 			ungetch(ch);
 		}
@@ -487,7 +488,6 @@ curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 	 */
 
 	for (pos = 0; pos < len; pos ++) {
-
 		int pixels = total_pixels - LCD_DEFAULT_CELLHEIGHT * pos;
 
 		ValidY(y-pos);
@@ -527,7 +527,6 @@ curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 	 */
 
 	for (pos = 0; pos < len; pos ++) {
-
 		int pixels = total_pixels - LCD_DEFAULT_CELLWIDTH * pos;
 
 		ValidX(x+pos);
@@ -586,7 +585,7 @@ curses_drv_flush (Driver *drvthis)
 	int c;
 
 	if ((c = getch()) != ERR)
-		if (c == 0x0C) {
+		if (c == 0x0C) {	/* ^L restores screen */
 			curses_drv_restore_screen(drvthis);
 			ungetch(c);
 		}
@@ -632,8 +631,8 @@ curses_drv_get_key (Driver *drvthis)
 }
 
 void
-curses_drv_restore_screen (Driver *drvthis) {
-
+curses_drv_restore_screen (Driver *drvthis)
+{
 	erase();
 	refresh();
 #ifdef CURSES_HAS_REDRAWWIN
