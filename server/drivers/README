@@ -1,62 +1,18 @@
 UNDERSTANDING LCDPROC DRIVERS
 
-All of the drivers may be activated and compiled in; which is
-activated and used depends on what parameters are given at the command
-line.
+LCDproc drivers are compiled as modules that will be loaded by the 
+LCDd daemon's core on request.
 
-One can better understand how drivers work by reading the comments
-and documentation in drv_base.h.
+To understand how to write a driver see docs/API-0.5.txt and the
+section about the driver API in the Admin Guide.
 
-There is a structure which is used to define all of the command functions
-available from each driver.  This command structure is lcd_logical_driver.
-The main use of this structure is for the lcd structure, which contains
-all of the current drivers functions.
 
------------------------------- lcd_logical_driver ------------------------------
-typedef struct lcd_logical_driver {
-	int wid, hgt;			// size of the LCD in characters
-	int cellwid, cellhgt;		// size of each LCD char cell in pixels
-	char *framebuf;			// storage space for display
+-------- 8< snip >8 ------------------
+The remainder of this file may be horribly outdated.
+Treat the information contained herein with caution.
+You have been warned.
 
-	// Functions which might be the same for all drivers...
 
-	void (*clear) ();		// clear screen;
-	void (*string)			// string at (x,y)
-		(int x, int y, char lcd[]);
-
-	void (*chr)			// character at (x,y)
-		(int x, int y, char c);
-	void (*vbar)			// vertical bar at (x,y)
-		(int x, int y, int len);
-	void (*hbar)			// horizontal bar at (x,y)
-		(int x, int y, int len);
-	void (*init_num) ();		//
-	void (*num) (int x, int num);	// display number
-
-	// Functions which should probably be implemented in each driver...
-
-	int (*init)			// initialize driver
-		(struct lcd_logical_driver * driver);
-	void (*close) ();		// close
-	void (*flush) ();		// flush
-	void (*flush_box)		// flush box
-		(int lft, int top, int rgt, int bot);
-	int (*contrast) (int contrast);	// set contrast
-	void (*backlight) (int on);	// set backlight
-	void (*output) (int on);	// set outputs
-	void (*set_char)		// set special characters
-		(int n, char *dat);
-	void (*icon)			// set up special icon
-		(int which, char dest);
-	void (*init_vbar) ();		// initialize vertical bar
-	void (*init_hbar) ();		// initialize horizontal bar
-	void (*draw_frame) ();		// draw frame
-
-	char (*getkey) ();		// get a key (or 0)
-
-	char * (*getinfo) ();		// get a string of info
-
-} Driver;
 ------------------------------ lcd_logical_driver ------------------------------
 
 The first thing that is done is that lcd_init (lcd.c) is called.  This function

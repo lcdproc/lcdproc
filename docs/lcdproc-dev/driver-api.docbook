@@ -35,119 +35,154 @@
 </para>
 
 <screen>
+
 typedef struct lcd_logical_driver {
 
-	//////// Variables in the driver module
+	//////// Variables to be provided by the driver module
 	// The driver loader will look for symbols with these names !
+
+	// pointer to a string describing the API version
 	char *api_version;
-	int *stay_in_foreground;	// Does this driver require to be in foreground ?
-	int *does_input;	// Does this driver do output ?
-	int *does_output;	// Does this driver do output ?
 
-  The programmer should define the following symbols:
+	// Does this driver require to be in foreground ?
+	int *stay_in_foreground;// Does this driver require to be in foreground ?
 
-char * api_version = API_VERSION;  // &lt;-- this symbol is defined by make
-int stay_in_foreground = 0; // This driver does not need to be in foreground
-int does_input = 0;	    // This driver does not do input
-int does_output = 1;	    // But only output
+	/ Does this driver support multiple instances ?
+	int *supports_multiple;
 
-  And fill these values with the correct values. Upon loading the driver module,
-  the server will locate these symbols and store pointers to them in the
-  driver struct.
+	// What should alternatively be prepended to the function names ?
+	char **symbol_prefix;
 
-  Because the drivers are loadable, some kind of version checking should be
-  done. Therefor the server expects the correct version number to be found in
-  the api_version symbol (a string). For the v0.5 version this should be "0.5".
-  If the version is incompatible, the driver will not be loaded. The current
-  API version can always be determined by inserting the compiler define
-  API_VERSION in the code.
+/*
+The programmer should define the following symbols:
+char * api_version = API_VERSION;	// &lt;-- this symbol is defined by make
+int stay_in_foreground = 0;		// This driver does not need to be in foreground
+int supports_multiple = 0;		// This driver does not c$support multiple instances
+char *symbol_prefix = "MyDriver_";	// Driver functions start with MyDriver_
+And fill these values with the correct values. Upon loading the driver module,
+the server will locate these symbols and store pointers to them in the
+driver struct.
 
-	///// Functions in the driver module
-	// Basic functions
- 	// All these Basic functions should be implemented !
-	int (*init)		(drvthis);
-	void (*close)		(drvthis);
-	int (*width)		(drvthis);
-	int (*height)		(drvthis);
-	void (*clear)		(drvthis);
-	void (*flush)		(drvthis);
-	void (*string)		(drvthis, int x, int y, char *str);
-	void (*chr)		(drvthis, int x, int y, char c);
+Because the drivers are loadable, some kind of version checking should be
+done. Therefor the server expects the correct version number to be found in
+the api_version symbol (a string). For the v0.5 version this should be "0.5".
+If the version is incompatible, the driver will not be loaded. The current
+API version can always be determined by inserting the compiler define
+API_VERSION in the code.
+*/
 
-	// Extended functions
-	void (*vbar)		(drvthis, int x, int y, int len, int promille, int options);
-	void (*hbar)		(drvthis, int x, int y, int len, int promille, int options);
+	//////// Functions to be provided by the driver module
 
-  These functions have been extended since v0.4. They now now expext complete
-  coordinates, a length (in chars, not pixels!) a promillage (0 to 1000) and an
-  option.
-
-	void (*num)		(drvthis, int x, int num);
-
-  Draw big numbers on your display. Only 6 positions exist, 1 to 6.
-  David GLAUDE:
-    "I don't think this is valid... There are as many position as wanted.
-    A BigNum could be at any column from 1 to end of the LCD.
-    It could also be at -1 and -2 (where only the end is visible).
-    Optionaly it could be on a specific raw from -3 to end of the LCD.
-    This permit scrolling of BIGNUM or in the futur BIGFONT."
-
-	void (*heartbeat)	(drvthis, int state);
-
-  Should be called to animate the heartbeat. The driver should therefore
-  probably call the icon function below.
-
-	void (*icon)		(drvthis, int x, int y, int icon);
-
-  Tells to place a certain icon at a position.
+	//// Mandatory functions (necessary for all drivers)
+	
+	// initialize driver: returns &gt;= 0 on success
+	int (*init)		(Driver *drvthis);
+	
+	// close driver
+	void (*close)		(Driver *drvthis);
 
 
-	// Userdef character functions
+	//// Essential output functions (necessary for output drivers)
+	
+	// get display width / height (in characters; 1-based)
+	int (*width)		(Driver *drvthis);
+	int (*height)		(Driver *drvthis);
 
-	void (*set_char)	(drvthis, char ch, char *dat)
-	int (*get_free_chars)	(drvthis)
-	int (*cellwidth)	(drvthis)
-	int (*cellheight)	(drvthis)
+	// clear screen
+	void (*clear)		(Driver *drvthis);
 
-  Functions to define a character. It is currently unclear how this system
-  should exactly work. The set_char function expects a simple block of data
-  with 1 byte for each pixel-line. So that is 8 bytes for a 5x8 char.
+	// flush screen contents to LCD
+	void (*flush)		(Driver *drvthis);
 
-	// Hardware functions
-	int (*contrast)		(drvthis, int contrast);
-	void (*backlight)	(drvthis, int on);
-	void (*output)		(drvthis, int on);
+	// write string s at position (x,y)
+	void (*string)		(Driver *drvthis, int x, int y, char *str);
 
-	// Key functions
-	const char *(*get_key)	(drvthis);
+	// write char c at position (x,y)
+	void (*chr)		(Driver *drvthis, int x, int y, char c);
 
-  Returns a string. This string is withing driver's memory space and the server
-  should therefor never try to modify this string.
 
-	char *(*get_info)	(drvthis);
+	//// essential input functions (necessary for input drivers)
 
-  Returns a string describing the driver and it's features.
+	// get key from driver: returns a string denoting the key pressed
+	const char *(*get_key)	(Driver *drvthis);
 
-	//////// Variables in server core available for drivers
+	
+	//// Extended output functions (optional; core provides alternatives)
 
-	char * name;		// Name of this driver.
+	// draw a bar from pos (x,y) upward / to the right filling promille of len chars
+	void (*vbar)		(Driver *drvthis, int x, int y, int len, int promille, int options);
+	void (*hbar)		(Driver *drvthis, int x, int y, int len, int promille, int options);
+
+	// display (big) number num at horizontal position x
+	void (*num)		(Driver *drvthis, int x, int num);
+
+	// set heartbeat state; animalte heartbeat
+	void (*heartbeat)	(Driver *drvthis, int state);
+
+	// draw named icon at position (x,y)
+	void (*icon)		(Driver *drvthis, int x, int y, int icon);
+
+
+	//// User-defined character functions
+
+	// set special character / get free characters
+	// - It is currently unclear how this system should work exactly
+	// - The set_char function expects a simple block of data with 1 byte for each pixel-line.
+	//   (So that is 8 bytes for a 5x8 char)
+	void (*set_char)	(Driver *drvthis, char ch, char *dat);
+	int (*get_free_chars)	(Driver *drvthis);
+
+	// get width / height of a character cell (in pixels)
+	// - necessary to provide info about cell size to clients
+	// - if not defined, the core will provide alternatives returning default values
+	int (*cellwidth)	(Driver *drvthis);
+	int (*cellheight)	(Driver *drvthis);
+
+
+	//// Hardware functions
+
+	// get / set the display's contrast
+	int (*get_contrast)	(Driver *drvthis);
+	int (*set_contrast)	(Driver *drvthis, int promille);
+
+	// get / set brightness for given backlight state
+	int (*get_brightness)	(Driver *drvthis, int state);
+	int (*set_brightness)	(Driver *drvthis, int state, int promille);
+
+	// set backlight state
+	void (*backlight)	(Driver *drvthis, int state);
+
+	// set output
+	void (*output)		(Driver *drvthis, int state);
+
+
+	//// Informational functions
+	// get a string describing the driver and it's features
+	char * (*get_info) (Driver *drvthis);
+
+
+
+	//////// Variables in server core, available for drivers
+
+	// name of the driver instance (name of the config file section)
+	// - do not change from the driver; consider it read-only
+	// - to be used to access the driver's own section in the config file
+	char * name;	
+
+	// pointer to the driver instance's private data
+	// - filled by the server by calling store_private_ptr()
+	// - the driver should cast this to it's own private structure pointer
 	void * private_data;
 
-These variables should be taken read-only for the drivers. The name variable
-should be used to access the driver's own section in the config file.
-The private_data pointer is the pointer to the driver's own data block. This
-pointer should be stored using the store_private_ptr function below. The
-driver should cast this to it's own private structure pointer.
 
+	//////// Functions in server core, available for drivers
 
-	//////// Functions in server core available for drivers
-
+	// store a pointer to the driver instance's private data
 	int (*store_private_ptr) (struct lcd_logical_driver * driver, void * private_data);
 
-Store the driver's private data:
-
-
-	// Config file functions, filled by server
+	// Config file functions, cwprovided by the server
+	// - see configfile.h on how to use these functions
+	// - as sectionname, always use the driver name: drvthis->name
 	char (*config_get_bool)	(char * sectionname, char * keyname,
 				int skip, char default_value);
 	int (*config_get_int)	(char * sectionname, char * keyname,
@@ -161,32 +196,17 @@ Store the driver's private data:
 	int config_has_section	(char *sectionname);
 	int config_has_key	(char *sectionname, char *keyname);
 
-See configfile.h on how to use these functions. As sectionname, always use the
-driver name: drvthis->name
-
-
-	// Reporting function
+	// error reporting function
+	// - see drivers/report.h for details
 	void (*report)			( const int level, const char *format, .../*args*/ );
 
-Easily usable report functions by including drivers/report.h. See that file
-for details.
-
-
 	// Display properties functions (for drivers that adapt to other loaded drivers)
+	// - the return the size of another already loaded driver
+	// - if no driver is loaded yet, the return values will be 0
 	int (*get_display_width) ();
 	int (*get_display_height) ();
-
-If you have a driver that can adapt its size to the size of an other driver,
-it should read these values. If there is no other driver loaded yet, the
-returned values will be 0.
-
-
-	// Driver private data
-	void * private_data;	// Filled by server by calling store_private_ptr()
-
 } Driver;
 
-The flush_box and draw_frame functions have been removed for v0.5.
 </screen>
 
 </sect1>
@@ -208,13 +228,10 @@ The flush_box and draw_frame functions have been removed for v0.5.
 
 <screen>
 typedef struct my_driver_private {
-
-        // Size in cells of the LCD
-        int width, height;
-        // Size of each LCD cell, in pixels
-        int cellwidth, cellheight;
-        // Frame buffer...
-        char *framebuf;
+	int fd;				// file descriptor for the LCD device
+        int width, height;		// dimension of the LCD (in characters, 1-based
+        int cellwidth, cellheight;	// Size of each LCD cell, in pixels
+        unsigned char *framebuf;	// Frame buffer...
 } PrivateData;
 </screen>
 
@@ -223,15 +240,20 @@ typedef struct my_driver_private {
 </para>
 
 <screen>
-	PrivateData * p;
+	PrivateData *p;
 
 	// Allocate and store private data
-	p = (PrivateData *) malloc( sizeof(PrivateData) );
-	if( p == NULL )
+	p = (PrivateData *) malloc(sizeof(PrivateData));
+	if (p == NULL)
 		return -1;
-	if( drvthis->store_private_ptr( drvthis, p ) &lt; 0 )
+	if (drvthis->store_private_ptr( drvthis, p ) &lt; 0)
 		return -1;
 
+	// initialize private data
+	p->fd = -1;
+	p->cellheight = 8;
+	p->cellwidth = 6;
+	
 	(... continue with the rest of your init routine)
 </screen>
 
@@ -241,7 +263,7 @@ typedef struct my_driver_private {
 </para>
 
 <screen>
-	PrivateData * p = (PrivateData*) drvthis->private_data;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
 </screen>
 
 <para>
@@ -470,28 +492,75 @@ typedef struct my_driver_private {
 
 <funcsynopsis>
   <funcprototype>
-	<funcdef>int <function>(*contrast)</function></funcdef>
+	<funcdef>int <function>(*get_contrast)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
-	<paramdef>int <parameter>contrast</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 <para>
-  Sets the contrast to the given value. Values should be 0 to 255.
+  Get the contrast value from the driver.
+  The return value is an integer in the range from 0 to 1000.
+  Many displays do not support getting or setting contrast
+  using software.
+</para>
+
+<funcsynopsis>
+  <funcprototype>
+	<funcdef>int <function>(*set_contrast)</function></funcdef>
+	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
+	<paramdef>int <parameter>promille</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<para>
+  Sets the contrast to the given value, which is an integer in the range from 0 to 1000.
+  It is up to the driver to map the logical interval [0, 1000] into the
+  interval that the hardware supports.
   Many displays do not support software setting of contrast.
-  Use -1 to get the current value returned.
+</para>
+
+<funcsynopsis>
+  <funcprototype>
+	<funcdef>int <function>(*get_brightness)</function></funcdef>
+	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
+	<paramdef>int <parameter>state</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<para>
+  Get the brightness value from the driver for the given backlight state.
+  The parameter <parameter>state</parameter> determnies which one
+  is returned.
+  The return value is an integer in the range from 0 to 1000.
+  Many displays do not support getting or setting brightness
+  using software.
+</para>
+
+<funcsynopsis>
+  <funcprototype>
+	<funcdef>int <function>(*set_brightness)</function></funcdef>
+	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
+	<paramdef>int <parameter>state</parameter></paramdef>
+	<paramdef>int <parameter>promille</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<para>
+  Set the brightness for the given backlight state to the value given.
+  Value must be an integer in the range from 0 to 1000.
+  It is up to the driver to map the logical interval [0, 1000] into the
+  interval that the hardware supports.
+  Many displays do not support software setting of brightness.
 </para>
 
 <funcsynopsis>
   <funcprototype>
 	<funcdef>void <function>(*backlight)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
-	<paramdef>int <parameter>brightness</parameter></paramdef>
+	<paramdef>int <parameter>state</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 <para>
-  Sets the backlight to brightness 'on'.
-  Often hardware can only support on and off, in that case any value
-  of on>0 will switch the backlight on.
+  Sets the backlight to the given brightness state.
+  Often hardware can only support two values for the backlight:
+  on and off.
+  In that case any value of state &gt; 0 will switch the backlight on.
 </para>
 
 <funcsynopsis>
