@@ -112,8 +112,6 @@
 
 typedef struct lcd_logical_driver {
 
-	/* Ancient variables */
-
 	/* For explanation of variables and functions see docs/API-v0.5.txt */
 
 	/******** Variables in the driver module ********/
@@ -128,9 +126,11 @@ typedef struct lcd_logical_driver {
 	/******** Functions in the driver module ********/
 	/* The driver loader will look for symbols with these names ! */
 
-	/* Basic functions */
+	/* mandatory functions (necessary for all drivers) */
 	int (*init)		(struct lcd_logical_driver* drvthis);
 	void (*close)		(struct lcd_logical_driver* drvthis);
+
+	/* essential output functions (necessary for output drivers) */
 	int (*width)		(struct lcd_logical_driver* drvthis);
 	int (*height)		(struct lcd_logical_driver* drvthis);
 	void (*clear)		(struct lcd_logical_driver* drvthis);
@@ -138,15 +138,18 @@ typedef struct lcd_logical_driver {
 	void (*string)		(struct lcd_logical_driver* drvthis, int x, int y, char *str);
 	void (*chr)		(struct lcd_logical_driver* drvthis, int x, int y, char c);
 
-	/* Extended functions */
+	/* essential input functions (necessary for all input drivers) */
+	const char *(*get_key)	(struct lcd_logical_driver* drvthis);
+
+	/* extended output functions (optional; core provides alternatives) */
 	void (*vbar)		(struct lcd_logical_driver* drvthis, int x, int y, int len, int promille, int pattern);
 	void (*hbar)		(struct lcd_logical_driver* drvthis, int x, int y, int len, int promille, int pattern);
 	void (*num)		(struct lcd_logical_driver* drvthis, int x, int num);
 	void (*heartbeat)	(struct lcd_logical_driver* drvthis, int state);
 	int (*icon)		(struct lcd_logical_driver* drvthis, int x, int y, int icon);
-	void (*cursor)		(struct lcd_logical_driver* drvthis, int x, int y, int state);
+	void (*cursor)		(struct lcd_logical_driver* drvthis, int x, int y, int type);
 
-	/* Userdef characters, are those still supported ? */
+	/* user-defined character functions, are those still supported ? */
 	void (*set_char)	(struct lcd_logical_driver* drvthis, int n, char *dat);
 	int (*get_free_chars)	(struct lcd_logical_driver* drvthis);
 	int (*cellwidth)	(struct lcd_logical_driver* drvthis);
@@ -160,16 +163,8 @@ typedef struct lcd_logical_driver {
 	void (*backlight)	(struct lcd_logical_driver* drvthis, int on);
 	void (*output)		(struct lcd_logical_driver* drvthis, int state);
 
-	/* Key functions */
-	const char *(*get_key)	(struct lcd_logical_driver* drvthis);
-				/* Returns a string. Server cannot modify
-				  this string. */
-
-	char * (*get_info) ();
-
-	/* Returns 0 for "no key pressed", or (A-Z). */
-	char (*getkey) ();
-	/* TO BE REMOVED, IS RENAMED AND CHANGED */
+	/* informational functions */
+	char * (*get_info) (struct lcd_logical_driver* drvthis);
 
 
 	/******** Variables in server core available for drivers ********/
