@@ -242,9 +242,6 @@ curses_drv_init (Driver *drvthis)
 	p->useACS = drvthis->config_get_bool(drvthis->name, "UseACS", 0, 0);
 	debug(RPT_DEBUG, "%s: using ACS %s", drvthis->name, (p->useACS) ? "ON" : "OFF");
 
-	//TODO: Make it possible to configure the backlight's "off" color and its "on" color
-	//      Or maybe don't do so? - Rene Wagner
-
 	/* Get size settings */
 	if ((drvthis->request_display_width() > 0)
 	    && (drvthis->request_display_height() > 0)) {
