@@ -3,7 +3,7 @@
  *
  * Only two unique functions are defined:
  *
- * joy_getkey
+ * joy_get_key
  * joy_close
  *
  * All others are at their defaults.
