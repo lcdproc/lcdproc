@@ -288,15 +288,14 @@ driver_does_output( Driver * driver )
 		|| driver->height != NULL
 		|| driver->clear != NULL
 		|| driver->string != NULL
-		|| driver->chr != NULL ) ? 1 : 0;
+		|| driver->chr != NULL) ? 1 : 0;
 }
 
 
 bool
 driver_does_input( Driver * driver )
 {
-	return (driver->getkey != NULL
-		|| driver->get_key != NULL ) ? 1 : 0;
+	return (driver->get_key != NULL) ? 1 : 0;
 }
 
 
