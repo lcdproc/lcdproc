@@ -21,9 +21,20 @@ curses chipset.
     <command>Foreground=</command>
     <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
   </term>
-  <listitem><para>
-    foreground color [default: blue]
-  </para></listitem>
+  <listitem>
+    <para>
+    Set the foreground color.
+    If not given, it defaults to <literal>blue</literal>.
+    </para>
+
+    <para>
+    Legal values for <replaceable>COLOUR</replaceable> are 
+    <literal>red</literal>, <literal>black</literal>,
+    <literal>green</literal>, <literal>yellow</literal>,
+    <literal>blue</literal>, <literal>magenta</literal>,
+    <literal>cyan</literal> and <literal>white</literal>.
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
@@ -31,9 +42,17 @@ curses chipset.
     <command>Background=</command>
     <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
   </term>
-  <listitem><para>
-    background color [default: cyan]
-  </para></listitem>
+  <listitem>
+    <para>
+    Set the background color.
+    The default is <literal>cyan</literal>.
+    </para>
+
+    <para>
+    The legal values for <replaceable>COLOUR</replaceable> are 
+    the same as for the <command>Foreground</command> setting.
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
@@ -41,9 +60,17 @@ curses chipset.
     <command>Backlight=</command>
     <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
   </term>
-  <listitem><para>
-    backlight color [default: red]
-  </para></listitem>
+  <listitem>
+    <para>
+    Set the background color that is to be used when backlight is set on.
+    backlight color. If not given, the default is <literal>red</literal>.
+    </para>
+
+    <para>
+    The legal values for <replaceable>COLOUR</replaceable> are 
+    the same as for the <command>Foreground</command> setting.
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
@@ -72,6 +99,22 @@ curses chipset.
   <listitem><para>
     What position (X,Y) to start the left top corner at.
     Default: (7,7)
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>UseACS=</command>
+    <arg choice ="plain">
+      <group choice="req">
+        <arg choice="plain"><literal>yes</literal></arg>
+        <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+      </group>
+    </arg>  
+  </term>
+  <listitem><para>
+  Tell whether to use ACS (alternative character set) symbols ifor icons and bars
+  instead of  simple ASCII characters.
   </para></listitem>
 </varlistentry>
 </variablelist>
