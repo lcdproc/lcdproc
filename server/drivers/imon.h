@@ -31,11 +31,13 @@ MODULE_EXPORT int  imon_init (Driver *drvthis);
 MODULE_EXPORT void imon_close (Driver *drvthis);
 MODULE_EXPORT int  imon_width (Driver *drvthis);
 MODULE_EXPORT int  imon_height (Driver *drvthis);
+MODULE_EXPORT int  imon_cellwidth (Driver *drvthis);
+MODULE_EXPORT int  imon_cellheight (Driver *drvthis);
 MODULE_EXPORT void imon_clear (Driver *drvthis);
 MODULE_EXPORT void imon_flush (Driver *drvthis);
 MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, char string[]);
 MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char c);
-MODULE_EXPORT char * imon_get_info (Driver *drvthis);
+MODULE_EXPORT char *imon_get_info (Driver *drvthis);
 MODULE_EXPORT void imon_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 
