@@ -1,7 +1,6 @@
-lcdproc (0.4.99+cvs20050101) unstable; urgency=low
+lcdproc (0.4.99+cvs20060412) unstable; urgency=low
 
-  * NMU
-    - New upstream snapshot from CVS
+  * New snapshot from upstream CVS
     - better support for operating systems other than Linux: *BSD, Darwin
     - /etc/default/LCDd to configure /etc/init.d/LCDd
     - use original man pages
