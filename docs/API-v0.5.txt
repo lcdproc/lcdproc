@@ -101,11 +101,14 @@ API_VERSION in the code.
 	// display (big) number num at horizontal position x
 	void (*num)		(Driver *drvthis, int x, int num);
 
-	// set heartbeat state; animalte heartbeat
+	// set heartbeat state; animate heartbeat
 	void (*heartbeat)	(Driver *drvthis, int state);
 
 	// draw named icon at position (x,y)
 	void (*icon)		(Driver *drvthis, int x, int y, int icon);
+
+	// set cursor type and move it to position (x,y)
+	void (*cursor)		(Driver *drvthis, int x, int y, int type);
 
 
 	//// User-defined character functions
@@ -289,6 +292,12 @@ void (*heartbeat)	(Driver *drvthis, int type);
 // Sets the heartbeat to the indicated type: 0=off 1=graph1 2=graph2
 //HEARTBEAT_ON to say that we want to display/refresh the heartbeat.
 //The driver choose how to do it. See MtxOrb.c"
+
+void (*icon)		(Driver *drvthis, int x, int y, int icon);
+// draw named icon at position (x,y)
+
+void (*cursor)		(Driver *drvthis, int x, int y, int type);
+// set cursor type and move it to position (x,y)
 
 int (*get_contrast)		(Driver *drvthis);
 // Gets the contrast from the driver.

@@ -116,11 +116,14 @@ API_VERSION in the code.
 	// display (big) number num at horizontal position x
 	void (*num)		(Driver *drvthis, int x, int num);
 
-	// set heartbeat state; animalte heartbeat
+	// set heartbeat state; animate heartbeat
 	void (*heartbeat)	(Driver *drvthis, int state);
 
 	// draw named icon at position (x,y)
 	void (*icon)		(Driver *drvthis, int x, int y, int icon);
+
+	// set cursor type and move it to position (x,y)
+	void (*cursor)		(Driver *drvthis, int x, int y, int type);
 
 
 	//// User-defined character functions
@@ -319,7 +322,7 @@ typedef struct my_driver_private {
   </funcprototype>
 </funcsynopsis>
 <para>
-  Get the screen height in lines.
+  Get the screen height in character lines.
   The result is 1-based.
 </para>
 
@@ -432,12 +435,9 @@ typedef struct my_driver_private {
   </funcprototype>
 </funcsynopsis>
 <para>
-  Sets the heartbeat to the indicated state.
-  0=off 1=graph1 2=graph2
-  David GLAUDE:
-  "state is apparently type and it could have the value
+  Sets the heartbeat to the indicated state: 0=off 1=graph1 2=graph2
   HEARTBEAT_ON to say that we want to display/refresh the heartbeat.
-  The driver choose how to do it. See MtxOrb.c"
+  The driver choose how to do it. See MtxOrb.c
 </para>
 
 <funcsynopsis>
@@ -450,6 +450,22 @@ typedef struct my_driver_private {
   </funcprototype>
 </funcsynopsis>
 <para>
+  Draw named icon <replaceable>icon</replaceable> at position
+  (<replaceable>x</replaceable>,<replaceable>y</replaceable>).
+</para>
+
+<funcsynopsis>
+  <funcprototype>
+	<funcdef>void <function>(*cursor)</function></funcdef>
+	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
+	<paramdef>int <parameter>x</parameter></paramdef>
+	<paramdef>int <parameter>y</parameter></paramdef>
+	<paramdef>int <parameter>type</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<para>
+  Move cursor to position (<replaceable>x</replaceable>,<replaceable>y</replaceable>),
+  setting its type to <replaceable>type</replaceable>.
 </para>
 
 <funcsynopsis>
@@ -479,6 +495,8 @@ typedef struct my_driver_private {
   </funcprototype>
 </funcsynopsis>
 <para>
+  Return the width of a character cell in pixels.
+  The result is 1-based.
 </para>
 
 <funcsynopsis>
@@ -488,6 +506,8 @@ typedef struct my_driver_private {
   </funcprototype>
 </funcsynopsis>
 <para>
+  Return the height of a character cell in pixels.
+  The result is 1-based.
 </para>
 
 <funcsynopsis>
@@ -499,8 +519,7 @@ typedef struct my_driver_private {
 <para>
   Get the contrast value from the driver.
   The return value is an integer in the range from 0 to 1000.
-  Many displays do not support getting or setting contrast
-  using software.
+  Many displays do not support getting or setting contrast using software.
 </para>
 
 <funcsynopsis>
@@ -529,8 +548,7 @@ typedef struct my_driver_private {
   The parameter <parameter>state</parameter> determnies which one
   is returned.
   The return value is an integer in the range from 0 to 1000.
-  Many displays do not support getting or setting brightness
-  using software.
+  Many displays do not support getting or setting brightness using software.
 </para>
 
 <funcsynopsis>
