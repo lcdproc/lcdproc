@@ -301,7 +301,7 @@ glcdlib_icon (Driver *drvthis, int x, int y, int icon)
 /////////////////////////////////////////////////////////////////
 // provides some info about this driver
 //
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 glcdlib_get_info (Driver *drvthis)
 {
 	glcdlibPD * pPD = drvthis->private_data;

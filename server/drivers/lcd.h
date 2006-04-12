@@ -164,7 +164,7 @@ typedef struct lcd_logical_driver {
 	void (*output)		(struct lcd_logical_driver* drvthis, int state);
 
 	/* informational functions */
-	char * (*get_info) (struct lcd_logical_driver* drvthis);
+	const char * (*get_info) (struct lcd_logical_driver* drvthis);
 
 
 	/******** Variables in server core available for drivers ********/

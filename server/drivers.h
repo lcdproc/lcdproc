@@ -41,7 +41,7 @@ drivers_load_driver( char * name );
 int
 drivers_unload_all();
 
-char *
+const char *
 drivers_get_info();
 
 void

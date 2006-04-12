@@ -1554,7 +1554,7 @@ CFontzPacket_output(Driver *drvthis, int state)
 /*
  * Provide some info about this driver
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 CFontzPacket_get_info(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;

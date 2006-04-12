@@ -830,7 +830,7 @@ MtxOrb_cursorblink (Driver *drvthis, int on)
 /******************************
  * Returns string with general information about the display
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 MtxOrb_get_info (Driver *drvthis)
 {
 	char in = 0;

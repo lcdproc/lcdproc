@@ -158,7 +158,7 @@ API_VERSION in the code.
 
 	//// Informational functions
 	// get a string describing the driver and it's features
-	char * (*get_info) (Driver *drvthis);
+	const char * (*get_info) (Driver *drvthis);
 
 
 
@@ -590,7 +590,7 @@ typedef struct my_driver_private {
 
 <funcsynopsis>
   <funcprototype>
-	<funcdef>char *<function>(*get_info)</function></funcdef>
+	<funcdef>const char *<function>(*get_info)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>

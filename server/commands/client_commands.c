@@ -303,7 +303,8 @@ info_func (Client * c, int argc, char **argv)
 	}
 
 	memset(str, '\0', sizeof(str));
-	snprintf (str, sizeof(str)-1, (char*) drivers_get_info());
+	snprintf (str, sizeof(str)-1, "%s\n", drivers_get_info());
+	str[sizeof(str)-1] = '\0';
 
 	sock_send_string (c->sock, str);
 

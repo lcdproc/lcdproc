@@ -37,7 +37,7 @@ MODULE_EXPORT void imon_clear (Driver *drvthis);
 MODULE_EXPORT void imon_flush (Driver *drvthis);
 MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, char string[]);
 MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char c);
-MODULE_EXPORT char *imon_get_info (Driver *drvthis);
+MODULE_EXPORT const char *imon_get_info (Driver *drvthis);
 MODULE_EXPORT void imon_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 

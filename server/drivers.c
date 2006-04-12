@@ -141,7 +141,7 @@ drivers_unload_all()
 }
 
 
-char *
+const char *
 drivers_get_info()
 {
 	Driver *drv;

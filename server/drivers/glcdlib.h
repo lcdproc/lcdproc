@@ -41,7 +41,7 @@ MODULE_EXPORT int  glcdlib_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT int  glcdlib_cellwidth (Driver *drvthis);
 MODULE_EXPORT int  glcdlib_cellheight (Driver *drvthis);
 MODULE_EXPORT int  glcdlib_get_free_chars (Driver *drvthis);
-MODULE_EXPORT char * glcdlib_get_info (Driver *drvthis);
+MODULE_EXPORT const char * glcdlib_get_info (Driver *drvthis);
 MODULE_EXPORT int  glcdlib_get_brightness(Driver *drvthis, int state);
 MODULE_EXPORT void glcdlib_set_brightness(Driver *drvthis, int state, int promille);
 MODULE_EXPORT void glcdlib_set_char (Driver *drvthis, int n, char *dat);

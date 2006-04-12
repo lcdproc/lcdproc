@@ -143,7 +143,7 @@ API_VERSION in the code.
 
 	//// Informational functions
 	// get a string describing the driver and it's features
-	char * (*get_info) (Driver *drvthis);
+	const char * (*get_info) (Driver *drvthis);
 
 
 
@@ -305,7 +305,7 @@ int (*get_brightness)		(Driver *drvthis, int state);
 // Many displays do not support software setting of contrast.
 
 void (*set_brightness)		(Driver *drvthis, int state, int int brightness);
-// Sets the contrast to the given value. Values should be 0 to 255.
+// Sets the contrast to the given value. Values should be 0 to 1000.
 // Many displays do not support software setting of contrast.
 // Use -1 to get the current value returned.
 
@@ -319,12 +319,12 @@ void (*output)		(Driver *drvthis, int state);
 // output, which can be controlled by calling this function. See the
 // 'output' command in the 'widget language'.
 
-char *(*get_key) (Driver *drvthis);
+const char *(*get_key) (Driver *drvthis);
 // Checks if a key has been pressed on the device.
 // Returns NULL for "no key pressed", or a string describing the pressd key.
 // These characters should match the keypad-layout.
 
-char *(*get_info) (Driver *drvthis);
+const char *(*get_info) (Driver *drvthis);
 // Returns a string describing the driver and its features.
 
 

@@ -495,7 +495,7 @@ MODULE_EXPORT const char *pylcd_get_key (Driver *drvthis)
 /* Returns a string. Server cannot modify this string. */
 
 /*
-MODULE_EXPORT char *mydriver_get_info (){return NULL;};
+MODULE_EXPORT const char *mydriver_get_info (){return NULL;};
 */
 
 

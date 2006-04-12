@@ -1230,7 +1230,7 @@ IOWarrior_output(Driver *drvthis, int on)
 /*********************************************************************
  * API: provides some info about this driver
  */
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 IOWarrior_get_info (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;

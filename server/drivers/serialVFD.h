@@ -66,5 +66,5 @@ MODULE_EXPORT void serialVFD_set_brightness (Driver *drvthis, int state, int pro
 MODULE_EXPORT void serialVFD_output (Driver *drvthis, int state);
 MODULE_EXPORT void serialVFD_num (Driver * drvthis, int x, int num);
 MODULE_EXPORT int serialVFD_get_free_chars (Driver *drvthis);
-MODULE_EXPORT char * serialVFD_get_info( Driver *drvthis );
+MODULE_EXPORT const char * serialVFD_get_info( Driver *drvthis );
 #endif

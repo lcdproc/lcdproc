@@ -1184,7 +1184,7 @@ serialVFD_get_brightness(Driver *drvthis, int state)
 /////////////////////////////////////////////////////////////////
 // provides some info about this driver
 //
-MODULE_EXPORT char *
+MODULE_EXPORT const char *
 serialVFD_get_info (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;

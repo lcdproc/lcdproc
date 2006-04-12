@@ -139,7 +139,7 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 /** 
  * provides some info about this driver
  */
-MODULE_EXPORT char * imon_get_info (Driver *drvthis)
+MODULE_EXPORT const char * imon_get_info (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	strcpy(p->info, "Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD driver");
