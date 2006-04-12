@@ -133,10 +133,10 @@ typedef struct driver_private_data {
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 1;
 MODULE_EXPORT int supports_multiple = 0;
-MODULE_EXPORT char *symbol_prefix = "curses_drv_";
+MODULE_EXPORT char *symbol_prefix = "curses_";
 
 
-void curses_drv_restore_screen (Driver *drvthis);
+void curses_restore_screen (Driver *drvthis);
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// For Curses Terminal Output ////////////////////////
@@ -185,7 +185,7 @@ set_background_color (char * buf) {
 }
 
 MODULE_EXPORT int
-curses_drv_init (Driver *drvthis)
+curses_init (Driver *drvthis)
 {
 	PrivateData *p;
 	char buf[256];
@@ -311,7 +311,7 @@ curses_drv_init (Driver *drvthis)
 		init_pair(5, COLOR_WHITE, backlight_color);
 	}
 
-	curses_drv_clear(drvthis);
+	curses_clear(drvthis);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -319,7 +319,7 @@ curses_drv_init (Driver *drvthis)
 }
 
 static void
-curses_drv_wborder (Driver *drvthis)
+curses_wborder (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -343,7 +343,7 @@ curses_drv_wborder (Driver *drvthis)
 }
 
 MODULE_EXPORT void
-curses_drv_close (Driver *drvthis)
+curses_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	
@@ -369,7 +369,7 @@ curses_drv_close (Driver *drvthis)
 // Returns the display width
 //
 MODULE_EXPORT int
-curses_drv_width (Driver *drvthis)
+curses_width (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -380,7 +380,7 @@ curses_drv_width (Driver *drvthis)
 // Returns the display height
 //
 MODULE_EXPORT int
-curses_drv_height (Driver *drvthis)
+curses_height (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -391,17 +391,17 @@ curses_drv_height (Driver *drvthis)
 // Clears the LCD screen
 //
 MODULE_EXPORT void
-curses_drv_clear (Driver *drvthis)
+curses_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
 	wbkgdset(p->win, COLOR_PAIR(p->current_color_pair) | ' ');
-	curses_drv_wborder(drvthis);
+	curses_wborder(drvthis);
 	werase(p->win);
 }
 
 MODULE_EXPORT void
-curses_drv_backlight (Driver *drvthis, int on)
+curses_backlight (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -422,7 +422,7 @@ curses_drv_backlight (Driver *drvthis, int on)
 		p->current_border_pair = 3;
 	}
 
-	curses_drv_clear(drvthis);
+	curses_clear(drvthis);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -430,7 +430,7 @@ curses_drv_backlight (Driver *drvthis, int on)
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-curses_drv_string (Driver *drvthis, int x, int y, char *string)
+curses_string (Driver *drvthis, int x, int y, char *string)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -445,7 +445,7 @@ curses_drv_string (Driver *drvthis, int x, int y, char *string)
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-curses_drv_chr (Driver *drvthis, int x, int y, char c)
+curses_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -459,7 +459,7 @@ curses_drv_chr (Driver *drvthis, int x, int y, char c)
 // Draws a vertical bar; erases entire column onscreen.
 //
 MODULE_EXPORT void
-curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+curses_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
 	// map 
@@ -487,11 +487,11 @@ curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 
 		if (pixels >= p->cellheight) {
 			/* write a "full" block to the screen... */
-			curses_drv_chr(drvthis, x, y-pos, (p->useACS) ? ACS_BLOCK : '#');
+			curses_chr(drvthis, x, y-pos, (p->useACS) ? ACS_BLOCK : '#');
 		}
 		else if (pixels > 0) {
 			// write a partial block...
-			curses_drv_chr(drvthis, x, y-pos, map[len-1]);
+			curses_chr(drvthis, x, y-pos, map[len-1]);
 			break;
 		}
 		else {
@@ -506,7 +506,7 @@ curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+curses_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
 	int pixels = ((long) 2 * len * p->cellwidth) * promille / 2000;
@@ -529,11 +529,11 @@ curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 
 		if (pixels >= p->cellwidth * 2/3) {
 			/* write a "full" block to the screen... */
-			curses_drv_chr(drvthis, x+pos, y, '=');
+			curses_chr(drvthis, x+pos, y, '=');
 		}
 		else if (pixels > p->cellwidth * 1/3) {
 			/* write a partial block... */
-			curses_drv_chr(drvthis, x+pos, y, '-');
+			curses_chr(drvthis, x+pos, y, '-');
 			break;
 		}
 		else {
@@ -548,7 +548,7 @@ curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int optio
 // Sets character 0 to an icon...
 //
 MODULE_EXPORT int
-curses_drv_icon (Driver *drvthis, int x, int y, int icon)
+curses_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
 	char ch = '?';
@@ -581,7 +581,7 @@ curses_drv_icon (Driver *drvthis, int x, int y, int icon)
 		default:
 			return -1; /* Let the core do it */
 	}
-	curses_drv_chr(drvthis, x, y, ch);
+	curses_chr(drvthis, x, y, ch);
 
 	return 0;
 }
@@ -590,24 +590,24 @@ curses_drv_icon (Driver *drvthis, int x, int y, int icon)
 // Flushes all output to the lcd...
 //
 MODULE_EXPORT void
-curses_drv_flush (Driver *drvthis)
+curses_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	int c;
 
 	if ((c = getch()) != ERR)
 		if (c == 0x0C) {	/* ^L restores screen */
-			curses_drv_restore_screen(drvthis);
+			curses_restore_screen(drvthis);
 			ungetch(c);
 		}
 
-	curses_drv_wborder(drvthis);
+	curses_wborder(drvthis);
 	wrefresh(p->win);
 }
 
 
 MODULE_EXPORT const char *
-curses_drv_get_key (Driver *drvthis)
+curses_get_key (Driver *drvthis)
 {
 	//PrivateData *p = drvthis->private_data;
 	static char ret_val[2] = {0,0};
@@ -618,7 +618,7 @@ curses_drv_get_key (Driver *drvthis)
 			return NULL;
 		case 0x0C:
 			/* internal: ^L restores screen */
-			curses_drv_restore_screen(drvthis);
+			curses_restore_screen(drvthis);
 			return NULL;
 			break;
 		case KEY_LEFT:
@@ -643,7 +643,7 @@ curses_drv_get_key (Driver *drvthis)
 }
 
 void
-curses_drv_restore_screen (Driver *drvthis)
+curses_restore_screen (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 

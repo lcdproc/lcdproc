@@ -26,27 +26,27 @@ typedef struct driver_private_data {
 } PrivateData;
 
 
-MODULE_EXPORT int  svgalib_drv_init (Driver *drvthis);
-MODULE_EXPORT void svgalib_drv_close (Driver *drvthis);
-MODULE_EXPORT int  svgalib_drv_width (Driver *drvthis);
-MODULE_EXPORT int  svgalib_drv_height (Driver *drvthis);
-MODULE_EXPORT int  svgalib_drv_cellwidth (Driver *drvthis);
-MODULE_EXPORT int  svgalib_drv_cellheight (Driver *drvthis);
-MODULE_EXPORT void svgalib_drv_clear (Driver *drvthis);
-MODULE_EXPORT void svgalib_drv_flush (Driver *drvthis);
-MODULE_EXPORT void svgalib_drv_string (Driver *drvthis, int x, int y, char string[]);
-MODULE_EXPORT void svgalib_drv_chr (Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT int  svga_init (Driver *drvthis);
+MODULE_EXPORT void svga_close (Driver *drvthis);
+MODULE_EXPORT int  svga_width (Driver *drvthis);
+MODULE_EXPORT int  svga_height (Driver *drvthis);
+MODULE_EXPORT int  svga_cellwidth (Driver *drvthis);
+MODULE_EXPORT int  svga_cellheight (Driver *drvthis);
+MODULE_EXPORT void svga_clear (Driver *drvthis);
+MODULE_EXPORT void svga_flush (Driver *drvthis);
+MODULE_EXPORT void svga_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void svga_chr (Driver *drvthis, int x, int y, char c);
 
-MODULE_EXPORT void svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
-MODULE_EXPORT void svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
-MODULE_EXPORT void svgalib_drv_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void svga_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
+MODULE_EXPORT void svga_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
+MODULE_EXPORT void svga_num (Driver *drvthis, int x, int num);
 
-MODULE_EXPORT const char * svgalib_drv_get_key (Driver *drvthis);
+MODULE_EXPORT const char * svga_get_key (Driver *drvthis);
 
-MODULE_EXPORT int  svgalib_drv_get_contrast (Driver *drvthis);
-MODULE_EXPORT void svgalib_drv_set_contrast (Driver *drvthis, int promille);
-MODULE_EXPORT int  svgalib_drv_get_brightness(Driver *drvthis, int state);
-MODULE_EXPORT void svgalib_drv_set_brightness(Driver *drvthis, int state, int promille);
-MODULE_EXPORT void svgalib_drv_backlight (Driver *drvthis, int on);
+MODULE_EXPORT int  svga_get_contrast (Driver *drvthis);
+MODULE_EXPORT void svga_set_contrast (Driver *drvthis, int promille);
+MODULE_EXPORT int  svga_get_brightness(Driver *drvthis, int state);
+MODULE_EXPORT void svga_set_brightness(Driver *drvthis, int state, int promille);
+MODULE_EXPORT void svga_backlight (Driver *drvthis, int on);
 
 #endif

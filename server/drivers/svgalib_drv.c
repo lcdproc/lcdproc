@@ -214,14 +214,14 @@ static char icon_char = '@';
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 1;
 MODULE_EXPORT int supports_multiple = 0;
-MODULE_EXPORT char *symbol_prefix = "svgalib_drv_";
+MODULE_EXPORT char *symbol_prefix = "svga_";
 
 
 /**
  * Init driver
  */
 MODULE_EXPORT int
-svgalib_drv_init (Driver *drvthis)
+svga_init (Driver *drvthis)
 {
 	char modestr[LCD_MAX_WIDTH+1] = DEFAULT_MODESTR;
 	char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
@@ -370,7 +370,7 @@ svgalib_drv_init (Driver *drvthis)
  * Close down driver
  */
 MODULE_EXPORT void
-svgalib_drv_close (Driver *drvthis)
+svga_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -393,7 +393,7 @@ svgalib_drv_close (Driver *drvthis)
  * Return width
  */
 MODULE_EXPORT int
-svgalib_drv_width (Driver *drvthis)
+svga_width (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -405,7 +405,7 @@ svgalib_drv_width (Driver *drvthis)
  * Return height
  */
 MODULE_EXPORT int
-svgalib_drv_height (Driver *drvthis)
+svga_height (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -417,7 +417,7 @@ svgalib_drv_height (Driver *drvthis)
  * Return cellwidth
  */
 MODULE_EXPORT int
-svgalib_drv_cellwidth (Driver *drvthis)
+svga_cellwidth (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -429,7 +429,7 @@ svgalib_drv_cellwidth (Driver *drvthis)
  * Return cellheight
  */
 MODULE_EXPORT int
-svgalib_drv_cellheight (Driver *drvthis)
+svga_cellheight (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -441,7 +441,7 @@ svgalib_drv_cellheight (Driver *drvthis)
  * Clear screen
  */
 MODULE_EXPORT void
-svgalib_drv_clear (Driver * drvthis)
+svga_clear (Driver * drvthis)
 {
 	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
@@ -454,7 +454,7 @@ svgalib_drv_clear (Driver * drvthis)
  * Flush framebuffer to screen
  */
 MODULE_EXPORT void
-svgalib_drv_flush (Driver *drvthis)
+svga_flush (Driver *drvthis)
 {
 	/* It's already on the screen ! */
 }
@@ -465,7 +465,7 @@ svgalib_drv_flush (Driver *drvthis)
  * upper-left is (1,1), and the lower right should be (p->width,p->height).
  */
 MODULE_EXPORT void
-svgalib_drv_string (Driver *drvthis, int x, int y, char string[])
+svga_string (Driver *drvthis, int x, int y, char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -493,7 +493,7 @@ svgalib_drv_string (Driver *drvthis, int x, int y, char string[])
  * upper-left is (1,1), and the lower right should be (p->width,p->height).
  */
 MODULE_EXPORT void
-svgalib_drv_chr (Driver *drvthis, int x, int y, char c)
+svga_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 	char buffer[2];
@@ -518,7 +518,7 @@ svgalib_drv_chr (Driver *drvthis, int x, int y, char c)
  * Writes a big number, but not.  A bit like the curses driver.
  */
 MODULE_EXPORT void
-svgalib_drv_num (Driver *drvthis, int x, int num)
+svga_num (Driver *drvthis, int x, int num)
 {
 	int y, dx;
 	char c;
@@ -532,7 +532,7 @@ svgalib_drv_num (Driver *drvthis, int x, int num)
 
 	for (y = 1; y < 5; y++)
 		for (dx = 0; dx < 3; dx++)
-			svgalib_drv_chr(drvthis, x + dx, y, c);
+			svga_chr(drvthis, x + dx, y, c);
 }
 
 
@@ -540,7 +540,7 @@ svgalib_drv_num (Driver *drvthis, int x, int num)
  * Draws a vertical bar; erases entire column onscreen.
  */
 MODULE_EXPORT void
-svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
+svga_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
 {
 	int pos;
 
@@ -548,7 +548,7 @@ svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
-			svgalib_drv_chr(drvthis, x, y-pos, '|');
+			svga_chr(drvthis, x, y-pos, '|');
 		} else {
 			; /* print nothing */
 		}
@@ -560,7 +560,7 @@ svgalib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int patt
  * Draws a horizontal bar to the right.
  */
 MODULE_EXPORT void
-svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
+svga_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
 {
 	int pos;
 
@@ -568,7 +568,7 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
-			svgalib_drv_chr(drvthis, x+pos, y, '-');
+			svga_chr(drvthis, x+pos, y, '-');
 		} else {
 			; /* print nothing */
 		}
@@ -580,7 +580,7 @@ svgalib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
  * Return a keypress
  */
 MODULE_EXPORT const char *
-svgalib_drv_get_key (Driver *drvthis)
+svga_get_key (Driver *drvthis)
 {
 	static char buf[2] = " ";
 	int key = vga_getkey ();
@@ -630,7 +630,7 @@ svgalib_drv_get_key (Driver *drvthis)
  * This is only the locally stored contrast.
  */
 MODULE_EXPORT int
-svgalib_drv_get_contrast (Driver *drvthis)
+svga_get_contrast (Driver *drvthis)
 {
         PrivateData *p = drvthis->private_data;
 
@@ -642,7 +642,7 @@ svgalib_drv_get_contrast (Driver *drvthis)
  *  Changes screen contrast (in promille)
  */
 MODULE_EXPORT void
-svgalib_drv_set_contrast (Driver *drvthis, int promille)
+svga_set_contrast (Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
 	int contrast;
@@ -665,7 +665,7 @@ svgalib_drv_set_contrast (Driver *drvthis, int promille)
  * Retrieves brightness (in promille)
  */
 MODULE_EXPORT int
-svgalib_drv_get_brightness(Driver *drvthis, int state)
+svga_get_brightness(Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -677,7 +677,7 @@ svgalib_drv_get_brightness(Driver *drvthis, int state)
  * Sets on/off brightness (in promille)
  */
 MODULE_EXPORT void
-svgalib_drv_set_brightness(Driver *drvthis, int state, int promille)
+svga_set_brightness(Driver *drvthis, int state, int promille)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -700,7 +700,7 @@ svgalib_drv_set_brightness(Driver *drvthis, int state, int promille)
  * The hardware support any value between 0 and 100.
  */
 MODULE_EXPORT void
-svgalib_drv_backlight (Driver *drvthis, int on)
+svga_backlight (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 	int value = (on == BACKLIGHT_ON) ? p->brightness : p->offbrightness;

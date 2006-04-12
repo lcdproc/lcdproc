@@ -3,26 +3,24 @@
 
 #include "lcd.h"
 
-MODULE_EXPORT int  curses_drv_init (Driver * drvthis);
-MODULE_EXPORT void curses_drv_close (Driver *drvthis);
-MODULE_EXPORT int  curses_drv_width (Driver *drvthis);
-MODULE_EXPORT int  curses_drv_height (Driver *drvthis);
-MODULE_EXPORT void curses_drv_clear (Driver *drvthis);
-MODULE_EXPORT void curses_drv_flush (Driver *drvthis);
-MODULE_EXPORT void curses_drv_string (Driver *drvthis, int x, int y, char string[]);
-MODULE_EXPORT void curses_drv_chr (Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT int  curses_init (Driver * drvthis);
+MODULE_EXPORT void curses_close (Driver *drvthis);
+MODULE_EXPORT int  curses_width (Driver *drvthis);
+MODULE_EXPORT int  curses_height (Driver *drvthis);
+MODULE_EXPORT void curses_clear (Driver *drvthis);
+MODULE_EXPORT void curses_flush (Driver *drvthis);
+MODULE_EXPORT void curses_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void curses_chr (Driver *drvthis, int x, int y, char c);
 
-MODULE_EXPORT void curses_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void curses_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void curses_drv_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT void curses_drv_heartbeat (Driver *drvthis, int type);
-MODULE_EXPORT int  curses_drv_icon (Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT void curses_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void curses_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void curses_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT void curses_heartbeat (Driver *drvthis, int type);
+MODULE_EXPORT int  curses_icon (Driver *drvthis, int x, int y, int icon);
 
-MODULE_EXPORT void curses_drv_backlight (Driver *drvthis, int on);
+MODULE_EXPORT void curses_backlight (Driver *drvthis, int on);
 
-MODULE_EXPORT const char *curses_drv_get_key (Driver *drvthis);
-
-MODULE_EXPORT void curses_drv_init_num (Driver *drvthis);
+MODULE_EXPORT const char *curses_get_key (Driver *drvthis);
 
 /*Default settings for config file parsing*/
 #define CONF_DEF_FOREGR "blue"
