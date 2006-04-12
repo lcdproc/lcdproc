@@ -294,24 +294,6 @@ NoritakeVFD_flush (Driver *drvthis)
 }
 
 
-MODULE_EXPORT void
-NoritakeVFD_flush_box (Driver *drvthis, int lft, int top, int rgt, int bot)
-{
-	PrivateData *p = drvthis->private_data;
-	int y;
-	char out[LCD_MAX_WIDTH];
-
-	debug(RPT_DEBUG, "%s: flush_box(%i,%i)-(%i,%i)", __FUNCTION__, lft, top, rgt, bot);
-
-	for (y = top; y <= bot; y++) {
-		int pos = y*p->width;
-		snprintf(out, sizeof(out), "%c%c%c", 0x1B, 'H', pos+lft);
-		write(p->fd, out, 3);
-		write(p->fd, p->framebuf + (y * p->width) + lft, rgt - lft + 1);
-	}
-
-}
-
 /////////////////////////////////////////////////////////////////
 // Prints a character on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,4).
@@ -402,7 +384,7 @@ NoritakeVFD_reboot (Driver *drvthis)
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before NoritakeVFD->vbar()
 //
-void
+static void
 NoritakeVFD_init_vbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -475,7 +457,7 @@ NoritakeVFD_init_vbar (Driver *drvthis)
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-void
+static void
 NoritakeVFD_init_hbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -658,7 +640,7 @@ NoritakeVFD_icon (Driver *drvthis, int x, int y, int icon)
 //
 // Input is a character array, sized NoritakeVFD->width*NoritakeVFD->height
 //
-void
+static void
 NoritakeVFD_draw_frame (Driver *drvthis, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;

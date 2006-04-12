@@ -23,8 +23,4 @@ MODULE_EXPORT void LB216_set_char(Driver * drvthis, int n, char *dat);
 
 MODULE_EXPORT void LB216_backlight(Driver * drvthis, int on);
 
-MODULE_EXPORT void LB216_init_vbar(Driver * drvthis);
-MODULE_EXPORT void LB216_init_hbar(Driver * drvthis);
-MODULE_EXPORT void LB216_init_num(Driver * drvthis);
-
 #endif

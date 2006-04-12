@@ -124,7 +124,7 @@ static void CwLnx_linewrap(int fd, int on);
 static void CwLnx_autoscroll(int fd, int on);
 static void CwLnx_hidecursor(int fd);
 
-void CwLnx_draw_frame(Driver *drvthis, char *dat);
+static void CwLnx_draw_frame(Driver *drvthis, char *dat);
 
 #define LCD_CMD			254
 #define LCD_CMD_END		253
@@ -815,7 +815,8 @@ void Set_Insert(int fd, int row, int col)
  *
  * _flush_box is not an API entry anymore.
  * 
-void CwLnx_flush_box(int lft, int top, int rgt, int bot)
+static void
+CwLnx_flush_box(int lft, int top, int rgt, int bot)
 {
     int y;
 
@@ -916,7 +917,8 @@ CwLnx_set_brightness(Driver * drvthis, int state, int promille)
 /*********************************************************
  * Toggle the built-in linewrapping feature
  */
-static void CwLnx_linewrap(int fd, int on)
+static void
+CwLnx_linewrap(int fd, int on)
 {
     if (on)
 	    Enable_Wrap(fd);
@@ -928,7 +930,8 @@ static void CwLnx_linewrap(int fd, int on)
 /****************************************************************
  * Toggle the built-in automatic scrolling feature
  */
-static void CwLnx_autoscroll(int fd, int on)
+static void
+CwLnx_autoscroll(int fd, int on)
 {
     if (on)
 	    Enable_Scroll(fd);
@@ -940,7 +943,8 @@ static void CwLnx_autoscroll(int fd, int on)
 /*******************************************************************
  * Get rid of the blinking curson
  */
-static void CwLnx_hidecursor(int fd)
+static void
+CwLnx_hidecursor(int fd)
 {
 	Disable_Cursor(fd);
 }
@@ -950,7 +954,8 @@ static void CwLnx_hidecursor(int fd)
  * NOTAPI: Inits vertical bars...
  * This was part of API in 0.4 and removed in 0.5
  */
-void CwLnx_init_vbar(Driver * drvthis)
+static void
+CwLnx_init_vbar(Driver * drvthis)
 {
     PrivateData * p = drvthis->private_data;
 
@@ -1027,7 +1032,8 @@ void CwLnx_init_vbar(Driver * drvthis)
  * NOTAPI: Inits horizontal bars...
  * This was part of API in 0.4 and removed in 0.5
  */
-void CwLnx_init_hbar(Driver * drvthis)
+static void
+CwLnx_init_hbar(Driver * drvthis)
 {
     PrivateData * p = drvthis->private_data;
 
@@ -1334,7 +1340,8 @@ CwLnx_icon(Driver * drvthis, int x, int y, int icon)
  *
  * Input is a character array, sized CwLnx->wid*CwLnx->hgt
  */
-void CwLnx_draw_frame(Driver *drvthis, char *dat)
+static void
+CwLnx_draw_frame(Driver *drvthis, char *dat)
 {
     PrivateData * p = drvthis->private_data;
 

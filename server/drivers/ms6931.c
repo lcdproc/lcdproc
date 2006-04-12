@@ -117,7 +117,7 @@ ms6931_attn(int fd, int len)
 //
 // Input is a character array, sized width*height
 //
-void
+static void
 ms6931_draw_frame (Driver *drvthis, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;

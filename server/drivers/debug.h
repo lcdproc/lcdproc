@@ -24,8 +24,4 @@ MODULE_EXPORT void debug_backlight (Driver *drvthis, int promille);
 
 MODULE_EXPORT const char *debug_get_key (Driver *drvthis);
 
-MODULE_EXPORT void debug_init_vbar (Driver *drvthis);
-MODULE_EXPORT void debug_init_hbar (Driver *drvthis);
-MODULE_EXPORT void debug_init_num (Driver *drvthis);
-
 #endif

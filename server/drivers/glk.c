@@ -338,7 +338,7 @@ glk_flush(Driver *drvthis)
         /* Write accumulated string */
         glkputl(p->PortFD, GLKCommand, 0x79, xs * 6 + 1, y * 8, EOF);
         glkputa(p->PortFD, x - xs, ps);
-        debug(RPT_DEBUG, "draw_frame: Writing at (%d,%d) for %d", xs, y, x - xs);
+        debug(RPT_DEBUG, "flush: Writing at (%d,%d) for %d", xs, y, x - xs);
         xs = -1;
       } else if ((*qf != *pf) && (xs < 0)) {
         /* Start new string of changes */
@@ -351,7 +351,7 @@ glk_flush(Driver *drvthis)
       /* Write accumulated line */
       glkputl(p->PortFD, GLKCommand, 0x79, xs * 6 + 1, y * 8, EOF);
       glkputa(p->PortFD, p->width - xs, ps);
-      debug(RPT_DEBUG, "draw_frame: Writing at (%d,%d) for %d", xs, y, p->width - xs);
+      debug(RPT_DEBUG, "flush: Writing at (%d,%d) for %d", xs, y, p->width - xs);
     }
   }  /* For y */
 }
@@ -495,7 +495,7 @@ glk_output(Driver *drvthis, int on)
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for vertical bargraphs.
 //
-MODULE_EXPORT void
+static void
 glk_init_vbar(Driver *drvthis)
 {
   //PrivateData *p = drvthis->private_data;
@@ -506,7 +506,7 @@ glk_init_vbar(Driver *drvthis)
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for horizontal bargraphs.
 //
-MODULE_EXPORT void
+static void
 glk_init_hbar(Driver *drvthis)
 {
   //PrivateData *p = drvthis->private_data;
@@ -517,7 +517,7 @@ glk_init_hbar(Driver *drvthis)
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for big numbers, if possible.
 //
-MODULE_EXPORT void
+static void
 glk_init_num(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;

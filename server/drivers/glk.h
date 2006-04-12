@@ -28,8 +28,4 @@ MODULE_EXPORT void glk_output(Driver *drvthis, int on);
 
 MODULE_EXPORT const char *glk_get_key(Driver *drvthis);
 
-MODULE_EXPORT void glk_init_vbar(Driver *drvthis);
-MODULE_EXPORT void glk_init_hbar(Driver *drvthis);
-MODULE_EXPORT void glk_init_num(Driver *drvthis);
-
 #endif

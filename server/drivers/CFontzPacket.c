@@ -1068,7 +1068,7 @@ CFontzPacket_hbar (Driver *drvthis, int x, int y, int len, int promille, int opt
 /*
  * Inits big numbers
  */
-void
+static void
 CFontzPacket_init_num(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;

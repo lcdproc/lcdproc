@@ -383,7 +383,7 @@ LB216_string (Driver * drvthis, int x, int y, char string[])
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before LB216->vbar()
 //
-MODULE_EXPORT void
+static void
 LB216_init_vbar(Driver * drvthis)
 {
   PrivateData *p = drvthis->private_data;
@@ -473,7 +473,7 @@ LB216_init_vbar(Driver * drvthis)
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-MODULE_EXPORT void
+static void
 LB216_init_hbar(Driver * drvthis)
 {
   PrivateData *p = drvthis->private_data;

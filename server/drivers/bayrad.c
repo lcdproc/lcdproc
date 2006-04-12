@@ -43,6 +43,7 @@
 
 #define BAYRAD_DEFAULT_DEVICE	"/dev/lcd"
 
+
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// Base "class" to derive from ///////////////////////
 //////////////////////////////////////////////////////////////////////////
@@ -362,7 +363,7 @@ bayrad_backlight(Driver * drvthis, int on)
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for vertical bargraphs.
 //
-void
+static void
 bayrad_init_vbar(Driver * drvthis)
 {
   PrivateData *p = drvthis->private_data;
@@ -460,7 +461,7 @@ bayrad_init_vbar(Driver * drvthis)
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for horizontal bargraphs.
 //
-void
+static void
 bayrad_init_hbar(Driver * drvthis)
 {
   PrivateData *p = drvthis->private_data;
@@ -538,7 +539,7 @@ bayrad_init_hbar(Driver * drvthis)
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for big numbers, if possible.
 //
-void
+static void
 bayrad_init_num(Driver * drvthis)
 {
   //PrivateData *p = drvthis->private_data;

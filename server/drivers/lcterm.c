@@ -529,7 +529,7 @@ lcterm_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 /////////////////////////////////////////////////////////////////
 // Sets up for big numbers.
 //
-MODULE_EXPORT void
+static void
 lcterm_init_num (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;

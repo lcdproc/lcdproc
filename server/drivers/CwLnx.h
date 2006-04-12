@@ -54,8 +54,8 @@
 
 MODULE_EXPORT int  CwLnx_init(Driver * drvthis);
 MODULE_EXPORT void CwLnx_close(Driver * drvthis);
-/* */ MODULE_EXPORT int  CwLnx_width (Driver * drvthis);
-/* */ MODULE_EXPORT int  CwLnx_height (Driver * drvthis);
+MODULE_EXPORT int  CwLnx_width (Driver * drvthis);
+MODULE_EXPORT int  CwLnx_height (Driver * drvthis);
 MODULE_EXPORT void CwLnx_clear (Driver * drvthis);
 MODULE_EXPORT void CwLnx_flush(Driver * drvthis);
 MODULE_EXPORT void CwLnx_string(Driver * drvthis, int x, int y, char string[]);
@@ -69,12 +69,6 @@ MODULE_EXPORT int  CwLnx_get_contrast(Driver * drvthis);
 MODULE_EXPORT void CwLnx_set_contrast(Driver * drvthis, int contrast);
 MODULE_EXPORT void CwLnx_clear(Driver * drvthis);
 MODULE_EXPORT void CwLnx_backlight(Driver * drvthis, int on);
-
-// MODULE_EXPORT void CwLnx_flush_box(Driver * drvthis, int lft, int top, int rgt, int bot);
-// MODULE_EXPORT void CwLnx_init_vbar( Driver * drvthis);
-// MODULE_EXPORT void CwLnx_init_hbar( Driver * drvthis);
-// MODULE_EXPORT void CwLnx_init_num( Driver * drvthis);
-// MODULE_EXPORT void CwLnx_draw_frame(Driver * drvthis, char *dat);
 
 #endif
 

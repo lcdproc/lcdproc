@@ -307,8 +307,6 @@ lcdm001_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	// Next 4 lines are moved from draw_frame (Joris)
-
         //TODO: Check whether this is still correct
 
 	write(p->fd, p->framebuf, p->width * p->height);

@@ -235,11 +235,11 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "serialVFD_";
 
 /* Internal functions */
-void serialVFD_init_vbar (Driver *drvthis);
-void serialVFD_init_hbar (Driver *drvthis);
-void serialVFD_draw_frame (Driver *drvthis, char *dat);
-void serialVFD_put_brightness (Driver *drvthis);
-void serialVFD_put_char (Driver *drvthis, int n);
+static void serialVFD_init_vbar (Driver *drvthis);
+static void serialVFD_init_hbar (Driver *drvthis);
+static void serialVFD_draw_frame (Driver *drvthis, char *dat);
+static void serialVFD_put_brightness (Driver *drvthis);
+static void serialVFD_put_char (Driver *drvthis, int n);
 
 // Opens com port and sets baud correctly...
 //
@@ -663,7 +663,7 @@ serialVFD_set_brightness (Driver *drvthis, int state, int brightness)
 	}
 }
 
-void
+static void
 serialVFD_put_brightness (Driver *drvthis)
 {	// set hardware brightness
 	PrivateData *p = drvthis->private_data;
@@ -737,7 +737,7 @@ serialVFD_set_char (Driver *drvthis, int n, char *dat)
 		p->custom_char_changed[n] = 1;
 }
 
-void
+static void
 serialVFD_put_char (Driver *drvthis, int n)
 {	// put char in display
 	PrivateData *p = drvthis->private_data;
@@ -755,7 +755,7 @@ serialVFD_put_char (Driver *drvthis, int n)
 //
 // Input is a character array, sized serialVFD->width*serialVFD->height
 //
-void
+static void
 serialVFD_draw_frame (Driver *drvthis, char *dat)
 {
 	PrivateData *p = drvthis->private_data;
@@ -907,7 +907,7 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 /////////////////////////////////////////////////////////////////
 // Sets up for vertical bars.  Call before serialVFD->vbar()
 //
-void
+static void
 serialVFD_init_vbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -980,7 +980,7 @@ serialVFD_init_vbar (Driver *drvthis)
 /////////////////////////////////////////////////////////////////
 // Inits horizontal bars...
 //
-void
+static void
 serialVFD_init_hbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
