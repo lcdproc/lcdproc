@@ -61,7 +61,7 @@ for dir in debian scripts/debian ; do
   if [ -d i"$dir" ] && [ -e "$dir/changelog" ; then 
     cp $dir/changelog $dir/changelog.temp
     ${PERL} -MPOSIX -i -p -e '$date = strftime("%Y%m%d", localtime);
-                              s/\(0\.4\.99\+cvs\d{8}\)/(0.4.99+cvs$date)/i if ($. == 1);' \
+                              s/\((\d\.\d\.\d{1,2})\+cvs\d{8}\)/($1+cvs$date)/i if ($. == 1);' \
             $dir/changelog
   fi
 done 
