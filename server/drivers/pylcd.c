@@ -383,11 +383,11 @@ MODULE_EXPORT void pylcd_chr (Driver *drvthis, int x, int y, char c)
 /* Extended functions */
 
 /*
-MODULE_EXPORT void mydriver_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
-MODULE_EXPORT void mydriver_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
-MODULE_EXPORT void mydriver_num (Driver *drvthis, int x, int num){};
-MODULE_EXPORT void mydriver_heartbeat (Driver *drvthis, int state){};
-MODULE_EXPORT void mydriver_icon (Driver *drvthis, int x, int y, int icon){};
+MODULE_EXPORT void pylcd_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
+MODULE_EXPORT void pylcd_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
+MODULE_EXPORT void pylcd_num (Driver *drvthis, int x, int num){};
+MODULE_EXPORT void pylcd_heartbeat (Driver *drvthis, int state){};
+MODULE_EXPORT void pylcd_icon (Driver *drvthis, int x, int y, int icon){};
 */
 
 MODULE_EXPORT void pylcd_cursor (Driver *drvthis, int x, int y, int state)
@@ -402,20 +402,20 @@ MODULE_EXPORT void pylcd_cursor (Driver *drvthis, int x, int y, int state)
 /* Userdef characters, are those still supported ? */
 
 /*
-MODULE_EXPORT void mydriver_set_char (Driver *drvthis, int n, char *dat){};
-MODULE_EXPORT int  mydriver_get_free_chars (Driver *drvthis){return 0;};
-MODULE_EXPORT int  mydriver_cellwidth (Driver *drvthis){return 0;};
-MODULE_EXPORT int  mydriver_cellheight (Driver *drvthis){return 0;};
+MODULE_EXPORT void pylcd_set_char (Driver *drvthis, int n, char *dat){};
+MODULE_EXPORT int  pylcd_get_free_chars (Driver *drvthis){return 0;};
+MODULE_EXPORT int  pylcd_cellwidth (Driver *drvthis){return 0;};
+MODULE_EXPORT int  pylcd_cellheight (Driver *drvthis){return 0;};
 */
 
 /* Hardware functions */
 
 /*
-MODULE_EXPORT int  mydriver_get_contrast (Driver *drvthis){return 0;};
-MODULE_EXPORT void mydriver_set_contrast (Driver *drvthis, int promille){};
-MODULE_EXPORT int  mydriver_get_brightness (Driver *drvthis, int state){return 0;};
-MODULE_EXPORT void mydriver_set_brightness (Driver *drvthis, int state, int promille){};
-MODULE_EXPORT void mydriver_backlight (Driver *drvthis, int on)
+MODULE_EXPORT int  pylcd_get_contrast (Driver *drvthis){return 0;};
+MODULE_EXPORT void pylcd_set_contrast (Driver *drvthis, int promille){};
+MODULE_EXPORT int  pylcd_get_brightness (Driver *drvthis, int state){return 0;};
+MODULE_EXPORT void pylcd_set_brightness (Driver *drvthis, int state, int promille){};
+MODULE_EXPORT void pylcd_backlight (Driver *drvthis, int on)
 */
 
 MODULE_EXPORT void pylcd_output (Driver *drvthis, int state)
@@ -495,7 +495,7 @@ MODULE_EXPORT const char *pylcd_get_key (Driver *drvthis)
 /* Returns a string. Server cannot modify this string. */
 
 /*
-MODULE_EXPORT const char *mydriver_get_info (){return NULL;};
+MODULE_EXPORT const char *pylcd_get_info (){return NULL;};
 */
 
 
