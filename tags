@@ -1,1008 +1,1157 @@
-!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
-!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted/
-!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/darren@hiebert.com/
-!_TAG_PROGRAM_NAME	Exuberant Ctags	//
-!_TAG_PROGRAM_URL	http://darren.hiebert.com/ctags/	/official site/
-!_TAG_PROGRAM_VERSION	3.2.4	/with C, C++, Eiffel, Fortran, and Java  support/
-ACK	./server/drivers/hd44780-low.h	92;"	d
-BACKLIGHT_BLINK	./server/render.h	16;"	d
-BACKLIGHT_FLASH	./server/render.h	17;"	d
-BACKLIGHT_LOAD	./server/render.h	13;"	d
-BACKLIGHT_OFF	./clients/lcdproc/main.h	25;"	d
-BACKLIGHT_OFF	./server/render.h	10;"	d
-BACKLIGHT_ON	./clients/lcdproc/main.h	26;"	d
-BACKLIGHT_ON	./server/render.h	11;"	d
-BACKLIGHT_OPEN	./server/render.h	12;"	d
-BACKLIGHT_VIS	./server/render.h	14;"	d
-BATT_H	./clients/lcdproc/batt.h	2;"	d
-BLINK_OFF	./clients/lcdproc/main.h	24;"	d
-BLINK_ON	./clients/lcdproc/main.h	23;"	d
-BUFSIZE	./server/render.c	38;"	d	file:
-BUSY	./server/drivers/hd44780-low.h	93;"	d
-Backlight_Brightness_func	./server/menus.c	/^Backlight_Brightness_func (int input)$/;"	f
-Backlight_Off_Brightness_func	./server/menus.c	/^Backlight_Off_Brightness_func (int input)$/;"	f
-Backlight_Off_func	./server/menus.c	/^Backlight_Off_func ()$/;"	f
-Backlight_On_func	./server/menus.c	/^Backlight_On_func ()$/;"	f
-Backlight_Open_func	./server/menus.c	/^Backlight_Open_func ()$/;"	f
-Backlight_func	./server/menus.c	/^Backlight_func (int input)$/;"	f
-Backlight_menu	./server/menus.c	/^menu_item Backlight_menu[] = {$/;"	v
-CFONTZ_DRV	./acconfig.h	19;"	d
-CFONTZ_H	./server/drivers/CFontz.h	2;"	d
-CFontz	./server/drivers/CFontz.c	/^lcd_logical_driver *CFontz;$/;"	v
-CFontz_autoscroll	./server/drivers/CFontz.c	/^CFontz_autoscroll (int on)$/;"	f	file:
-CFontz_backlight	./server/drivers/CFontz.c	/^CFontz_backlight (int on)$/;"	f
-CFontz_chr	./server/drivers/CFontz.c	/^CFontz_chr (int x, int y, char c)$/;"	f
-CFontz_close	./server/drivers/CFontz.c	/^CFontz_close ()$/;"	f
-CFontz_contrast	./server/drivers/CFontz.c	/^CFontz_contrast (int contrast)$/;"	f
-CFontz_draw_frame	./server/drivers/CFontz.c	/^CFontz_draw_frame (char *dat)$/;"	f
-CFontz_flush	./server/drivers/CFontz.c	/^CFontz_flush ()$/;"	f
-CFontz_flush_box	./server/drivers/CFontz.c	/^CFontz_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-CFontz_hbar	./server/drivers/CFontz.c	/^CFontz_hbar (int x, int y, int len)$/;"	f
-CFontz_hidecursor	./server/drivers/CFontz.c	/^CFontz_hidecursor ()$/;"	f	file:
-CFontz_icon	./server/drivers/CFontz.c	/^CFontz_icon (int which, char dest)$/;"	f
-CFontz_init	./server/drivers/CFontz.c	/^CFontz_init (lcd_logical_driver * driver, char *args)$/;"	f
-CFontz_init_hbar	./server/drivers/CFontz.c	/^CFontz_init_hbar ()$/;"	f
-CFontz_init_num	./server/drivers/CFontz.c	/^CFontz_init_num ()$/;"	f
-CFontz_init_vbar	./server/drivers/CFontz.c	/^CFontz_init_vbar ()$/;"	f
-CFontz_linewrap	./server/drivers/CFontz.c	/^CFontz_linewrap (int on)$/;"	f	file:
-CFontz_num	./server/drivers/CFontz.c	/^CFontz_num (int x, int num)$/;"	f
-CFontz_reboot	./server/drivers/CFontz.c	/^CFontz_reboot ()$/;"	f	file:
-CFontz_set_char	./server/drivers/CFontz.c	/^CFontz_set_char (int n, char *dat)$/;"	f
-CFontz_vbar	./server/drivers/CFontz.c	/^CFontz_vbar (int x, int len)$/;"	f
-CHAR	./server/drivers/hd44780-ext8bit.c	55;"	d	file:
-CHRONO_H	./clients/lcdproc/chrono.h	2;"	d
-CLEAR	./server/drivers/hd44780-low.h	38;"	d
-CLIENTS_H	./server/clients.h	2;"	d
-CLIENT_CHEK	./server/menu.h	114;"	d
-CLIENT_DATA_H	./server/client_data.h	2;"	d
-CLIENT_FUNC	./server/menu.h	113;"	d
-CLIENT_FUNCTION_H	./server/client_functions.h	2;"	d
-CLIENT_MENU	./server/menu.h	112;"	d
-CLIENT_MENU_H	./server/client_menu.h	2;"	d
-CLIENT_MOVE	./server/menu.h	116;"	d
-CLIENT_NAME_SIZE	./server/client_data.h	6;"	d
-CLIENT_SLID	./server/menu.h	115;"	d
-CONTINUE	./clients/lcdproc/main.h	28;"	d
-CPU_BUF_SIZE	./clients/lcdproc/cpu.c	268;"	d	file:
-CPU_BUF_SIZE	./clients/lcdproc/cpu.c	269;"	d	file:
-CPU_BUF_SIZE	./clients/lcdproc/cpu.c	69;"	d	file:
-CPU_BUF_SIZE	./clients/lcdproc/cpu.c	70;"	d	file:
-CPU_BUF_SIZE	./clients/lcdproc/cpu_smp.c	136;"	d	file:
-CPU_BUF_SIZE	./clients/lcdproc/cpu_smp.c	137;"	d	file:
-CPU_H	./clients/lcdproc/cpu.h	2;"	d
-CPU_SMP_H	./clients/lcdproc/cpu_smp.h	2;"	d
-CTRL	./server/drivers/hd44780-ext8bit.c	54;"	d	file:
-CURSES_DRV	./acconfig.h	21;"	d
-CURSORBLINK	./server/drivers/hd44780-low.h	53;"	d
-CURSORNOBLINK	./server/drivers/hd44780-low.h	54;"	d
-CURSOROFF	./server/drivers/hd44780-low.h	52;"	d
-CURSORON	./server/drivers/hd44780-low.h	51;"	d
-CURSORSHIFT	./server/drivers/hd44780-low.h	56;"	d
-Close_func	./server/menus.c	/^Close_func ()$/;"	f
-ConnectionMapping	./server/drivers/hd44780-drivers.h	/^static struct ConnectionMapping {$/;"	s
-Contrast_func	./server/menus.c	/^Contrast_func (int input)$/;"	f
-DEBUG	./acconfig.h	23;"	d
-DEBUG	./shared/LL.c	6;"	d	file:
-DEBUG_H	./shared/debug.h	2;"	d
-DISK_H	./clients/lcdproc/disk.h	2;"	d
-DISPOFF	./server/drivers/hd44780-low.h	50;"	d
-DISPON	./server/drivers/hd44780-low.h	49;"	d
-EDGESCROLL	./server/drivers/hd44780-low.h	45;"	d
-ELLIPSIS	./clients/lcdproc/mode.c	/^int ELLIPSIS = '-';$/;"	v
-ELLIPSIS	./server/drivers/curses_drv.c	/^int ELLIPSIS = 7;$/;"	v
-EN1	./server/drivers/hd44780-4bit.c	56;"	d	file:
-EN1	./server/drivers/hd44780-ext8bit.c	50;"	d	file:
-EN1	./server/drivers/hd44780-serialLpt.c	43;"	d	file:
-EN1	./server/drivers/hd44780-winamp.c	41;"	d	file:
-EN2	./server/drivers/hd44780-4bit.c	57;"	d	file:
-EN2	./server/drivers/hd44780-serialLpt.c	44;"	d	file:
-EN2	./server/drivers/hd44780-winamp.c	42;"	d	file:
-EN3	./server/drivers/hd44780-4bit.c	58;"	d	file:
-EN3	./server/drivers/hd44780-winamp.c	43;"	d	file:
-ENTRYMODE	./server/drivers/hd44780-low.h	42;"	d
-E_MOVELEFT	./server/drivers/hd44780-low.h	44;"	d
-E_MOVERIGHT	./server/drivers/hd44780-low.h	43;"	d
-EnMask	./server/drivers/hd44780-4bit.c	/^static unsigned char EnMask[] = { EN1, EN2, EN3, STRB, LF, INIT, SEL };$/;"	v	file:
-EnMask	./server/drivers/hd44780-winamp.c	/^static unsigned char EnMask[] = { EN1, EN2, EN3 };$/;"	v	file:
-EnMaskSize	./server/drivers/hd44780-4bit.c	/^static int EnMaskSize = sizeof (EnMask) \/ sizeof (unsigned char);$/;"	v	file:
-EnMaskSize	./server/drivers/hd44780-winamp.c	/^static int EnMaskSize = sizeof (EnMask) \/ sizeof (unsigned char);$/;"	v	file:
-ExpandGroovyFont	./server/drivers/svgalib_drv.c	/^ExpandGroovyFont (int w, int ht, unsigned char col, const unsigned char *fnt, unsigned char *ptr)$/;"	f
-FAULT	./server/drivers/hd44780-low.h	88;"	d
-FUNCSET	./server/drivers/hd44780-low.h	62;"	d
-HD44780	./server/drivers/hd44780.c	/^lcd_logical_driver *HD44780;$/;"	v
-HD44780_DRIVERS_H	./server/drivers/hd44780-drivers.h	11;"	d
-HD44780_DRV	./acconfig.h	25;"	d
-HD44780_H	./server/drivers/hd44780.h	16;"	d
-HD44780_autoscroll	./server/drivers/hd44780.c	/^HD44780_autoscroll (int on)$/;"	f	file:
-HD44780_backlight	./server/drivers/hd44780.c	/^HD44780_backlight (int on)$/;"	f
-HD44780_contrast	./server/drivers/hd44780.c	/^HD44780_contrast (int contrast)$/;"	f
-HD44780_draw_frame	./server/drivers/hd44780.c	/^HD44780_draw_frame (char *dat)$/;"	f
-HD44780_flush	./server/drivers/hd44780.c	/^HD44780_flush ()$/;"	f
-HD44780_flush_box	./server/drivers/hd44780.c	/^HD44780_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-HD44780_functions	./server/drivers/hd44780-low.h	/^} HD44780_functions;				  \/* for want of a better name :-) *\/$/;"	t
-HD44780_hbar	./server/drivers/hd44780.c	/^HD44780_hbar (int x, int y, int len)$/;"	f
-HD44780_icon	./server/drivers/hd44780.c	/^HD44780_icon (int which, char dest)$/;"	f
-HD44780_init	./server/drivers/hd44780.c	/^HD44780_init (lcd_logical_driver * driver, char *args)$/;"	f
-HD44780_init_hbar	./server/drivers/hd44780.c	/^HD44780_init_hbar ()$/;"	f
-HD44780_init_num	./server/drivers/hd44780.c	/^HD44780_init_num ()$/;"	f
-HD44780_init_vbar	./server/drivers/hd44780.c	/^HD44780_init_vbar ()$/;"	f
-HD44780_linewrap	./server/drivers/hd44780.c	/^HD44780_linewrap (int on)$/;"	f	file:
-HD44780_num	./server/drivers/hd44780.c	/^HD44780_num (int x, int num)$/;"	f
-HD44780_position	./server/drivers/hd44780.c	/^HD44780_position (int x, int y)$/;"	f	file:
-HD44780_senddata	./server/drivers/hd44780.c	/^HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)$/;"	f	file:
-HD44780_set_char	./server/drivers/hd44780.c	/^HD44780_set_char (int n, char *dat)$/;"	f
-HD44780_vbar	./server/drivers/hd44780.c	/^HD44780_vbar (int x, int len)$/;"	f
-HD_4bit	./server/drivers/hd44780-drivers.h	/^enum connectionType { HD_4bit, HD_8bit, HD_serialLpt, HD_winamp,$/;"	e	enum:connectionType
-HD_8bit	./server/drivers/hd44780-drivers.h	/^enum connectionType { HD_4bit, HD_8bit, HD_serialLpt, HD_winamp,$/;"	e	enum:connectionType
-HD_EXT8BIT_H	./server/drivers/hd44780-ext8bit.h	2;"	d
-HD_LCDSTAT_H	./server/drivers/hd44780-4bit.h	2;"	d
-HD_LOW_H	./server/drivers/hd44780-low.h	5;"	d
-HD_SERIALLPT_H	./server/drivers/hd44780-serialLpt.h	2;"	d
-HD_WINAMP_H	./server/drivers/hd44780-winamp.h	2;"	d
-HD_serialLpt	./server/drivers/hd44780-drivers.h	/^enum connectionType { HD_4bit, HD_8bit, HD_serialLpt, HD_winamp,$/;"	e	enum:connectionType
-HD_unknown	./server/drivers/hd44780-drivers.h	/^	HD_unknown$/;"	e	enum:connectionType
-HD_winamp	./server/drivers/hd44780-drivers.h	/^enum connectionType { HD_4bit, HD_8bit, HD_serialLpt, HD_winamp,$/;"	e	enum:connectionType
-HEART_OFF	./server/render.h	6;"	d
-HEART_ON	./server/render.h	7;"	d
-HEART_OPEN	./server/render.h	8;"	d
-HOLD_SCREEN	./clients/lcdproc/main.h	27;"	d
-HOMECURSOR	./server/drivers/hd44780-low.h	40;"	d
-Heartbeat_func	./server/menus.c	/^Heartbeat_func (int input)$/;"	f
-HelpScreen	./clients/lcdproc/main.c	/^HelpScreen ()$/;"	f
-HelpScreen	./server/main.c	/^HelpScreen ()$/;"	f
-IF_4BIT	./server/drivers/hd44780-low.h	64;"	d
-IF_4bit	./server/drivers/hd44780-low.h	/^enum ifWidth { IF_4bit, IF_8bit };$/;"	e	enum:ifWidth
-IF_8BIT	./server/drivers/hd44780-low.h	63;"	d
-IF_8bit	./server/drivers/hd44780-low.h	/^enum ifWidth { IF_4bit, IF_8bit };$/;"	e	enum:ifWidth
-INIT	./server/drivers/hd44780-low.h	80;"	d
-INMASK	./server/drivers/hd44780-low.h	95;"	d
-INPUT_H	./server/input.h	2;"	d
-IRMANIN_DRV	./acconfig.h	27;"	d
-JOY_DRV	./acconfig.h	29;"	d
-LARGECHAR	./server/drivers/hd44780-low.h	67;"	d
-LCDCLOCK	./server/drivers/hd44780-serialLpt.c	42;"	d	file:
-LCDDATA	./server/drivers/hd44780-serialLpt.c	41;"	d	file:
-LCDPORT	./acconfig.h	31;"	d
-LCDPORT	./shared/sockets.h	11;"	d
-LCD_CURSES_H	./server/drivers/curses_drv.h	2;"	d
-LCD_DEBUG_H	./server/drivers/debug.h	2;"	d
-LCD_DRV_BASE_H	./server/drivers/drv_base.h	2;"	d
-LCD_H	./server/drivers/lcd.h	2;"	d
-LCD_IRMANIN_H	./server/drivers/irmanin.h	2;"	d
-LCD_JOY_H	./server/drivers/joy.h	2;"	d
-LCD_LIRCIN_H	./server/drivers/lircin.h	2;"	d
-LCD_MAX_HEIGHT	./clients/lcdproc/main.h	31;"	d
-LCD_MAX_HEIGHT	./server/drivers/lcd.h	8;"	d
-LCD_MAX_HGT	./server/drivers/lcd.h	7;"	d
-LCD_MAX_WID	./server/drivers/lcd.h	5;"	d
-LCD_MAX_WIDTH	./clients/lcdproc/main.h	30;"	d
-LCD_MAX_WIDTH	./server/drivers/lcd.h	6;"	d
-LCD_SEM_H	./server/drivers/lcd_sem.h	6;"	d
-LCD_SVGALIB_H	./server/drivers/svgalib_drv.h	2;"	d
-LCD_TEXT_H	./server/drivers/text.h	2;"	d
-LF	./server/drivers/hd44780-low.h	79;"	d
-LINUX	./acconfig.h	33;"	d
-LIRCIN_DRV	./acconfig.h	17;"	d
-LL	./shared/LL.h	/^typedef struct LL {$/;"	s
-LL	./shared/LL.h	/^} LL;$/;"	t
-LL_AddNode	./shared/LL.c	/^LL_AddNode (LL * list, void *add)	\/\/ Adds node AFTER current one$/;"	f
-LL_DeleteNode	./shared/LL.c	/^LL_DeleteNode (LL * list)$/;"	f
-LL_Dequeue	./shared/LL.h	182;"	d
-LL_Destroy	./shared/LL.c	/^LL_Destroy (LL * list)$/;"	f
-LL_End	./shared/LL.c	/^LL_End (LL * list)$/;"	f
-LL_Enqueue	./shared/LL.h	180;"	d
-LL_Find	./shared/LL.c	/^LL_Find (LL * list, int compare (void *, void *), void *value)$/;"	f
-LL_Get	./shared/LL.c	/^LL_Get (LL * list)$/;"	f
-LL_GetFirst	./shared/LL.c	/^LL_GetFirst (LL * list)			  \/\/ gets data from first node$/;"	f
-LL_GetLast	./shared/LL.c	/^LL_GetLast (LL * list)			  \/\/            ... last node$/;"	f
-LL_GetNext	./shared/LL.c	/^LL_GetNext (LL * list)			  \/\/            ... next node$/;"	f
-LL_GetNode	./shared/LL.c	/^LL_GetNode (LL * list)$/;"	f
-LL_GetPrev	./shared/LL.c	/^LL_GetPrev (LL * list)			  \/\/            ... prev node$/;"	f
-LL_H	./shared/LL.h	2;"	d
-LL_InsertNode	./shared/LL.c	/^LL_InsertNode (LL * list, void *add)	\/\/ Adds node BEFORE current one$/;"	f
-LL_Length	./shared/LL.c	/^LL_Length (LL * list)			  \/\/ Returns # of nodes in entire list$/;"	f
-LL_Look	./shared/LL.c	/^LL_Look (LL * list)				  \/\/ Peek at first node$/;"	f
-LL_Next	./shared/LL.c	/^LL_Next (LL * list)$/;"	f
-LL_Pop	./shared/LL.c	/^LL_Pop (LL * list)				  \/\/ Remove node from end of list$/;"	f
-LL_Prev	./shared/LL.c	/^LL_Prev (LL * list)$/;"	f
-LL_PriorityEnqueue	./shared/LL.c	/^LL_PriorityEnqueue (LL * list, void *add, int compare (void *, void *))$/;"	f
-LL_Push	./shared/LL.c	/^LL_Push (LL * list, void *add)  \/\/ Add node to end of list$/;"	f
-LL_Put	./shared/LL.c	/^LL_Put (LL * list, void *data)$/;"	f
-LL_PutNode	./shared/LL.c	/^LL_PutNode (LL * list, LL_node * node)$/;"	f
-LL_Remove	./shared/LL.c	/^LL_Remove (LL * list, void *data)$/;"	f
-LL_Rewind	./shared/LL.c	/^LL_Rewind (LL * list)$/;"	f
-LL_Roll	./shared/LL.c	/^LL_Roll (LL * list)				  \/\/ Make last node first$/;"	f
-LL_Shift	./shared/LL.c	/^LL_Shift (LL * list)				  \/\/ Remove node from start of list$/;"	f
-LL_Sort	./shared/LL.c	/^LL_Sort (LL * list, int compare (void *, void *))$/;"	f
-LL_SwapNodes	./shared/LL.c	/^LL_SwapNodes (LL_node * one, LL_node * two)	\/\/ Switch two nodes positions...$/;"	f
-LL_Top	./shared/LL.c	/^LL_Top (LL * list)				  \/\/ Peek at end node$/;"	f
-LL_UnRoll	./shared/LL.c	/^LL_UnRoll (LL * list)			  \/\/ Roll the other way...$/;"	f
-LL_Unshift	./shared/LL.c	/^LL_Unshift (LL * list, void *add)	\/\/ Add node to beginning of list$/;"	f
-LL_dprint	./shared/LL.c	/^LL_dprint (LL * list)$/;"	f
-LL_nSwapNodes	./shared/LL.c	/^LL_nSwapNodes (int one, int two)	\/\/ Switch two nodes positions...$/;"	f
-LL_new	./shared/LL.c	/^LL_new ()$/;"	f
-LL_node	./shared/LL.h	/^typedef struct LL_node {$/;"	s
-LL_node	./shared/LL.h	/^} LL_node;$/;"	t
-LL_node_Destroy	./shared/LL.c	/^LL_node_Destroy (LL_node * node)$/;"	f
-LL_node_DestroyData	./shared/LL.c	/^LL_node_DestroyData (LL_node * node)$/;"	f
-LL_node_Unlink	./shared/LL.c	/^LL_node_Unlink (LL_node * node)$/;"	f
-LOAD_H	./clients/lcdproc/load.h	2;"	d
-LOAD_MAX	./acconfig.h	35;"	d
-LOAD_MAX	./clients/lcdproc/load.h	5;"	d
-LOAD_MIN	./acconfig.h	37;"	d
-LOAD_MIN	./clients/lcdproc/load.h	8;"	d
-LPTPORT	./server/drivers/hd44780.c	47;"	d	file:
-MAIN_H	./clients/lcdproc/main.h	2;"	d
-MAIN_H	./server/main.h	2;"	d
-MAXMSG	./server/sock.c	31;"	d	file:
-MAXMSG	./shared/sockets.c	26;"	d	file:
-MAX_CPUS	./clients/lcdproc/cpu_smp.c	59;"	d	file:
-MAX_SEQUENCE	./clients/lcdproc/main.c	43;"	d	file:
-MEM_H	./clients/lcdproc/mem.h	2;"	d
-MENUS_H	./server/menus.h	2;"	d
-MENU_CHECK	./server/menu.h	120;"	d
-MENU_CLOSE	./server/menu.h	100;"	d
-MENU_ERROR	./server/menu.h	98;"	d
-MENU_H	./server/menu.h	2;"	d
-MENU_KILL	./server/menu.h	102;"	d
-MENU_MINUS	./server/menu.h	122;"	d
-MENU_OK	./server/menu.h	99;"	d
-MENU_PLUS	./server/menu.h	121;"	d
-MENU_QUIT	./server/menu.h	101;"	d
-MENU_READ	./server/menu.h	123;"	d
-MENU_SELECT	./server/menu.h	119;"	d
-METER_OFF	./server/drivers/hd44780-ext8bit.c	51;"	d	file:
-MODE_H	./clients/lcdproc/mode.h	2;"	d
-MOVECURSOR	./server/drivers/hd44780-low.h	58;"	d
-MOVELEFT	./server/drivers/hd44780-low.h	60;"	d
-MOVERIGHT	./server/drivers/hd44780-low.h	59;"	d
-MTXORB_DRV	./acconfig.h	39;"	d
-MTXORB_H	./server/drivers/MtxOrb.h	2;"	d
-Menu	./server/menu.h	131;"	d
-MtxOrb	./server/drivers/MtxOrb.c	/^lcd_logical_driver *MtxOrb;$/;"	v
-MtxOrb_ask_bar	./server/drivers/MtxOrb.c	/^MtxOrb_ask_bar (int type)$/;"	f
-MtxOrb_autoscroll	./server/drivers/MtxOrb.c	/^MtxOrb_autoscroll (int on)$/;"	f	file:
-MtxOrb_backlight	./server/drivers/MtxOrb.c	/^MtxOrb_backlight (int on)$/;"	f
-MtxOrb_chr	./server/drivers/MtxOrb.c	/^MtxOrb_chr (int x, int y, char c)$/;"	f
-MtxOrb_clear	./server/drivers/MtxOrb.c	/^MtxOrb_clear ()$/;"	f
-MtxOrb_close	./server/drivers/MtxOrb.c	/^MtxOrb_close ()$/;"	f
-MtxOrb_contrast	./server/drivers/MtxOrb.c	/^MtxOrb_contrast (int contrast)$/;"	f
-MtxOrb_cursorblink	./server/drivers/MtxOrb.c	/^MtxOrb_cursorblink (int on)$/;"	f	file:
-MtxOrb_draw_frame	./server/drivers/MtxOrb.c	/^MtxOrb_draw_frame (char *dat)$/;"	f
-MtxOrb_flush	./server/drivers/MtxOrb.c	/^MtxOrb_flush ()$/;"	f
-MtxOrb_flush_box	./server/drivers/MtxOrb.c	/^MtxOrb_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-MtxOrb_getkey	./server/drivers/MtxOrb.c	/^MtxOrb_getkey ()$/;"	f
-MtxOrb_hbar	./server/drivers/MtxOrb.c	/^MtxOrb_hbar (int x, int y, int len)$/;"	f
-MtxOrb_icon	./server/drivers/MtxOrb.c	/^MtxOrb_icon (int which, char dest)$/;"	f
-MtxOrb_init	./server/drivers/MtxOrb.c	/^MtxOrb_init (lcd_logical_driver * driver, char *args)$/;"	f
-MtxOrb_init_all	./server/drivers/MtxOrb.c	/^MtxOrb_init_all (int type)$/;"	f
-MtxOrb_init_hbar	./server/drivers/MtxOrb.c	/^MtxOrb_init_hbar ()$/;"	f
-MtxOrb_init_num	./server/drivers/MtxOrb.c	/^MtxOrb_init_num ()$/;"	f
-MtxOrb_init_vbar	./server/drivers/MtxOrb.c	/^MtxOrb_init_vbar ()$/;"	f
-MtxOrb_led	./server/drivers/MtxOrb.c	/^MtxOrb_led (int which, int on)$/;"	f
-MtxOrb_linewrap	./server/drivers/MtxOrb.c	/^MtxOrb_linewrap (int on)$/;"	f	file:
-MtxOrb_num	./server/drivers/MtxOrb.c	/^MtxOrb_num (int x, int num)$/;"	f
-MtxOrb_output	./server/drivers/MtxOrb.c	/^MtxOrb_output (int on)$/;"	f
-MtxOrb_set_char	./server/drivers/MtxOrb.c	/^MtxOrb_set_char (int n, char *dat)$/;"	f
-MtxOrb_set_known_char	./server/drivers/MtxOrb.c	/^MtxOrb_set_known_char (int car, int type)$/;"	f
-MtxOrb_vbar	./server/drivers/MtxOrb.c	/^MtxOrb_vbar (int x, int len)$/;"	f
-NAME_LENGTH	./server/drivers/irmanin.c	23;"	d	file:
-NAME_LENGTH	./server/drivers/joy.c	18;"	d	file:
-NAME_LENGTH	./server/drivers/lircin.c	23;"	d	file:
-NOSCROLL	./server/drivers/hd44780-low.h	46;"	d
-OK_func	./server/menus.c	/^OK_func ()$/;"	f
-ONELINE	./server/drivers/hd44780-low.h	66;"	d
-ONOFFCTRL	./server/drivers/hd44780-low.h	48;"	d
-OUTMASK	./server/drivers/hd44780-low.h	84;"	d
-PACKAGE	./acconfig.h	42;"	d
-PAD	./server/drivers/curses_drv.c	/^int PAD = 255;$/;"	v
-PAD	./server/menu.c	/^static int PAD = 255;$/;"	v	file:
-PAPEREND	./server/drivers/hd44780-low.h	90;"	d
-PARSE_H	./server/parse.h	2;"	d
-PORT_H	./server/drivers/port.h	14;"	d
-POSITION	./server/drivers/hd44780-low.h	72;"	d
-PROTOCOL_VERSION	./acconfig.h	45;"	d
-Quit	./clients/lcdproc/main.c	/^int Quit = 0;$/;"	v
-RENDER_BACK	./server/screenlist.h	11;"	d
-RENDER_H	./server/render.h	2;"	d
-RENDER_HOLD	./server/screenlist.h	9;"	d
-RENDER_SKIP	./server/screenlist.h	10;"	d
-RS	./server/drivers/hd44780-4bit.c	54;"	d	file:
-RS	./server/drivers/hd44780-serialLpt.c	40;"	d	file:
-RS	./server/drivers/hd44780-winamp.c	44;"	d	file:
-RS_DATA	./server/drivers/hd44780-low.h	35;"	d
-RS_INSTR	./server/drivers/hd44780-low.h	36;"	d
-RW	./server/drivers/hd44780-4bit.c	55;"	d	file:
-Reboot_func	./server/menus.c	/^Reboot_func ()$/;"	f
-SCREENLIST_H	./server/screenlist.h	2;"	d
-SCREEN_H	./server/screen.h	2;"	d
-SCROLLDISP	./server/drivers/hd44780-low.h	57;"	d
-SCR_BACK	./server/screenlist.h	8;"	d
-SCR_HOLD	./server/screenlist.h	6;"	d
-SCR_SKIP	./server/screenlist.h	7;"	d
-SEL	./server/drivers/hd44780-low.h	82;"	d
-SELIN	./server/drivers/hd44780-low.h	89;"	d
-SEMAPHORE	./server/drivers/lcd_sem.c	33;"	d	file:
-SEMCOUNT	./server/drivers/lcd_sem.c	35;"	d	file:
-SEMKEY	./server/drivers/lcd_sem.c	34;"	d	file:
-SEM_SIGNAL	./server/drivers/lcd_sem.c	38;"	d	file:
-SEM_WAIT	./server/drivers/lcd_sem.c	39;"	d	file:
-SETCHAR	./server/drivers/hd44780-low.h	70;"	d
-SETUPLCD	./server/drivers/hd44780-ext8bit.c	53;"	d	file:
-SLI_DRV	./acconfig.h	47;"	d
-SLI_H	./server/drivers/wirz-sli.h	8;"	d
-SMALLCHAR	./server/drivers/hd44780-low.h	68;"	d
-SOCKETS_H	./server/sock.h	2;"	d
-SOCKETS_H	./shared/sockets.h	2;"	d
-SRVSTATS_H	./server/serverscreens.h	2;"	d
-STAT_NFS	./acconfig.h	49;"	d
-STAT_SMBFS	./acconfig.h	51;"	d
-STAT_STATFS2_BSIZE	./acconfig.h	54;"	d
-STAT_STATFS2_FSIZE	./acconfig.h	57;"	d
-STAT_STATFS2_FS_DATA	./acconfig.h	60;"	d
-STAT_STATFS3_OSF1	./acconfig.h	63;"	d
-STAT_STATFS4	./acconfig.h	66;"	d
-STAT_STATVFS	./acconfig.h	69;"	d
-STRB	./server/drivers/hd44780-low.h	77;"	d
-STR_H	./shared/str.h	2;"	d
-SVGALIB_ELLIPSIS	./server/drivers/svgalib_drv.c	/^int SVGALIB_ELLIPSIS = 7;$/;"	v
-SVGALIB_FONT_VER	./server/drivers/svgalib_drv.c	169;"	d	file:
-SVGALIB_PAD	./server/drivers/svgalib_drv.c	/^int SVGALIB_PAD = 255;$/;"	v
-SVGALIB_Y_OFFSET	./server/drivers/svgalib_drv.c	170;"	d	file:
-SVGALIB_figure_mappings	./server/drivers/svgalib_drv.c	/^int SVGALIB_figure_mappings = 0;$/;"	v
-SVGALIB_font	./server/drivers/svgalib_drv.c	/^void *SVGALIB_font;				  \/* normal font   *\/$/;"	v
-SVGALIB_highfont	./server/drivers/svgalib_drv.c	/^void *SVGALIB_highfont;			  \/* highlighted font (not used yet) *\/$/;"	v
-SVGALIB_warnfont	./server/drivers/svgalib_drv.c	/^void *SVGALIB_warnfont;			  \/* warning font (not used yet)    *\/$/;"	v
-Server_screen_func	./server/menus.c	/^Server_screen_func (int input)$/;"	f
-Shutdown_func	./server/menus.c	/^Shutdown_func ()$/;"	f
-System_halt_func	./server/menus.c	/^System_halt_func ()$/;"	f
-TEXT_DRV	./acconfig.h	71;"	d
-TIME_UNIT	./clients/lcdproc/main.c	45;"	d	file:
-TIME_UNIT	./server/main.h	20;"	d
-TWOLINE	./server/drivers/hd44780-low.h	65;"	d
-TYPE_CHEK	./server/menu.h	108;"	d
-TYPE_FUNC	./server/menu.h	107;"	d
-TYPE_MENU	./server/menu.h	106;"	d
-TYPE_MOVE	./server/menu.h	110;"	d
-TYPE_SLID	./server/menu.h	109;"	d
-TYPE_TITL	./server/menu.h	105;"	d
-Time24_func	./server/menus.c	/^Time24_func (int input)$/;"	f
-TwentyFourHour	./clients/lcdproc/chrono.c	/^int TwentyFourHour = 1;$/;"	v
-VERSION	./acconfig.h	74;"	d
-VGAKEY_DOWN	./server/drivers/svgalib_drv.c	177;"	d	file:
-VGAKEY_LEFT	./server/drivers/svgalib_drv.c	179;"	d	file:
-VGAKEY_RIGHT	./server/drivers/svgalib_drv.c	178;"	d	file:
-VGAKEY_UP	./server/drivers/svgalib_drv.c	176;"	d	file:
-WIDGET_H	./server/widget.h	2;"	d
-WID_FRAME	./server/widget.h	27;"	d
-WID_HBAR	./server/widget.h	22;"	d
-WID_ICON	./server/widget.h	24;"	d
-WID_MAX_DIR	./server/widget.h	30;"	d
-WID_NONE	./server/widget.h	20;"	d
-WID_NUM	./server/widget.h	28;"	d
-WID_SCROLLER	./server/widget.h	26;"	d
-WID_STRING	./server/widget.h	21;"	d
-WID_TITLE	./server/widget.h	25;"	d
-WID_VBAR	./server/widget.h	23;"	d
-WMODE	./server/drivers/lcd_sem.c	36;"	d	file:
-__u32	./server/drivers/irmanin.c	17;"	d	file:
-__u32	./server/drivers/joy.c	11;"	d	file:
-__u32	./server/drivers/lircin.c	17;"	d	file:
-__u8	./server/drivers/irmanin.c	18;"	d	file:
-__u8	./server/drivers/joy.c	12;"	d	file:
-__u8	./server/drivers/lircin.c	18;"	d	file:
-ack	./server/client_data.h	/^	int ack;$/;"	m	struct:client_data
-active_fd_set	./server/sock.c	/^fd_set active_fd_set, read_fd_set;$/;"	v
-addr	./server/drivers/lircin.c	/^struct sockaddr_un addr;$/;"	v
-args	./server/main.c	/^static parameter args[] = {$/;"	v	file:
-autoscroll	./server/drivers/hd44780-low.h	/^	void (*autoscroll) (int on);$/;"	m	struct:hwDependentFns
-axes	./server/drivers/joy.c	/^char axes = 2;$/;"	v
-axis	./server/drivers/joy.c	/^int *axis;$/;"	v
-axismap	./server/drivers/joy.c	/^char *axismap = "EFGHIJKLMNOPQRST";$/;"	v
-backlight	./server/drivers/lcd.h	/^	void (*backlight) (int on);$/;"	m	struct:lcd_logical_driver
-backlight	./server/render.c	/^int backlight = BACKLIGHT_OPEN;$/;"	v
-backlight_brightness	./server/render.c	/^int backlight_brightness = 255;$/;"	v
-backlight_func	./server/client_functions.c	/^backlight_func (client * c, int argc, char **argv)$/;"	f
-backlight_off_brightness	./server/render.c	/^int backlight_off_brightness = 0;$/;"	v
-backlight_state	./server/render.c	/^int backlight_state = BACKLIGHT_OPEN;$/;"	v
-bar_type	./server/drivers/MtxOrb.c	/^} bar_type;$/;"	t	file:
-barb	./server/drivers/MtxOrb.c	/^	barb = 255$/;"	e	file:
-bard1	./server/drivers/MtxOrb.c	/^	bard1 = 7,$/;"	e	file:
-bard2	./server/drivers/MtxOrb.c	/^	bard2 = 8,$/;"	e	file:
-bard3	./server/drivers/MtxOrb.c	/^	bard3 = 9,$/;"	e	file:
-bard4	./server/drivers/MtxOrb.c	/^	bard4 = 10,$/;"	e	file:
-bard5	./server/drivers/MtxOrb.c	/^	bard5 = 11,$/;"	e	file:
-bard6	./server/drivers/MtxOrb.c	/^	bard6 = 12,$/;"	e	file:
-bard7	./server/drivers/MtxOrb.c	/^	bard7 = 13,$/;"	e	file:
-barl1	./server/drivers/MtxOrb.c	/^	barl1 = 18,$/;"	e	file:
-barl2	./server/drivers/MtxOrb.c	/^	barl2 = 19,$/;"	e	file:
-barl3	./server/drivers/MtxOrb.c	/^	barl3 = 20,$/;"	e	file:
-barl4	./server/drivers/MtxOrb.c	/^	barl4 = 21,$/;"	e	file:
-barr1	./server/drivers/MtxOrb.c	/^	barr1 = 14,$/;"	e	file:
-barr2	./server/drivers/MtxOrb.c	/^	barr2 = 15,$/;"	e	file:
-barr3	./server/drivers/MtxOrb.c	/^	barr3 = 16,$/;"	e	file:
-barr4	./server/drivers/MtxOrb.c	/^	barr4 = 17,$/;"	e	file:
-baru1	./server/drivers/MtxOrb.c	/^	baru1 = 0,$/;"	e	file:
-baru2	./server/drivers/MtxOrb.c	/^	baru2 = 1,$/;"	e	file:
-baru3	./server/drivers/MtxOrb.c	/^	baru3 = 2,$/;"	e	file:
-baru4	./server/drivers/MtxOrb.c	/^	baru4 = 3,$/;"	e	file:
-baru5	./server/drivers/MtxOrb.c	/^	baru5 = 4,$/;"	e	file:
-baru6	./server/drivers/MtxOrb.c	/^	baru6 = 5,$/;"	e	file:
-baru7	./server/drivers/MtxOrb.c	/^	baru7 = 6,$/;"	e	file:
-barw	./server/drivers/MtxOrb.c	/^	barw = 32,$/;"	e	file:
-batt_close	./clients/lcdproc/batt.c	/^batt_close ()$/;"	f
-batt_fd	./clients/lcdproc/batt.c	/^int batt_fd = 0;$/;"	v
-batt_init	./clients/lcdproc/batt.c	/^batt_init ()$/;"	f
-battery_screen	./clients/lcdproc/batt.c	/^battery_screen (int rep, int display)$/;"	f
-beat	./server/drivers/CFontz.c	/^	beat = 8$/;"	e	file:
-beat	./server/drivers/MtxOrb.c	/^	beat = 8$/;"	e	file:
-beat	./server/drivers/wirz-sli.c	/^	beat = 8$/;"	e	file:
-bfree	./clients/lcdproc/disk.c	/^	long bsize, blocks, bfree, files, ffree;$/;"	m	struct:mounts
-big_clock_screen	./clients/lcdproc/chrono.c	/^big_clock_screen (int rep, int display)$/;"	f
-bign	./server/drivers/CFontz.c	/^	bign = 4,$/;"	e	file:
-bign	./server/drivers/MtxOrb.c	/^	bign = 4,$/;"	e	file:
-bign	./server/drivers/wirz-sli.c	/^	bign = 4,$/;"	e	file:
-blocks	./clients/lcdproc/disk.c	/^	long bsize, blocks, bfree, files, ffree;$/;"	m	struct:mounts
-bottom	./server/widget.h	/^	int left, top, right, bottom;	\/\/ bounding rectangle$/;"	m	struct:widget
-bsize	./clients/lcdproc/disk.c	/^	long bsize, blocks, bfree, files, ffree;$/;"	m	struct:mounts
-buf	./server/drivers/lircin.c	/^char buf[256];$/;"	v
-buffer	./clients/lcdproc/mode.c	/^char buffer[1024];$/;"	v
-buffers	./clients/lcdproc/mem.c	/^	int total, cache, buffers, free, shared;$/;"	m	struct:meminfo
-build_date	./clients/lcdproc/main.c	/^char *build_date = __DATE__;$/;"	v
-build_date	./server/main.c	/^char *build_date = __DATE__;$/;"	v
-button	./server/drivers/joy.c	/^int *button;$/;"	v
-buttonmap	./server/drivers/joy.c	/^char *buttonmap = "BDACEFGHIJKLMNOP";$/;"	v
-buttons	./server/drivers/joy.c	/^char buttons = 2;$/;"	v
-cache	./clients/lcdproc/mem.c	/^	int total, cache, buffers, free, shared;$/;"	m	struct:meminfo
-cellhgt	./server/drivers/lcd.h	/^	int cellwid, cellhgt;$/;"	m	struct:lcd_logical_driver
-cellwid	./server/drivers/lcd.h	/^	int cellwid, cellhgt;$/;"	m	struct:lcd_logical_driver
-child	./server/client_menu.h	/^	char child[];					  \/\/ For the "submenu" type$/;"	m	struct:client_menu_item
-chr	./server/drivers/lcd.h	/^	void (*chr) (int x, int y, char c);$/;"	m	struct:lcd_logical_driver
-chrono_close	./clients/lcdproc/chrono.c	/^chrono_close ()$/;"	f
-chrono_init	./clients/lcdproc/chrono.c	/^chrono_init ()$/;"	f
-clear	./server/drivers/MtxOrb.c	/^static int clear = 1;$/;"	v	file:
-clear	./server/drivers/lcd.h	/^	void (*clear) ();$/;"	m	struct:lcd_logical_driver
-client	./server/clients.h	/^typedef struct client {$/;"	s
-client	./server/clients.h	/^} client;$/;"	t
-client_add_key_func	./server/client_functions.c	/^client_add_key_func (client * c, int argc, char **argv)$/;"	f
-client_add_message	./server/clients.c	/^client_add_message (client * c, char *message)$/;"	f
-client_create	./server/clients.c	/^client_create (int sock)$/;"	f
-client_data	./server/client_data.h	/^typedef struct client_data {$/;"	s
-client_data	./server/client_data.h	/^} client_data;$/;"	t
-client_data_destroy	./server/client_data.c	/^client_data_destroy (client_data * d)$/;"	f
-client_data_init	./server/client_data.c	/^client_data_init (client_data * d)$/;"	f
-client_del_key_func	./server/client_functions.c	/^client_del_key_func (client * c, int argc, char **argv)$/;"	f
-client_destroy	./server/clients.c	/^client_destroy (client * c)$/;"	f
-client_find_sock	./server/clients.c	/^client_find_sock (int sock)$/;"	f
-client_function	./server/client_functions.h	/^typedef struct client_function {$/;"	s
-client_function	./server/client_functions.h	/^} client_function;$/;"	t
-client_get	./server/clients.c	/^client_get (client * c)$/;"	f
-client_get_message	./server/clients.c	/^client_get_message (client * c)$/;"	f
-client_init	./server/clients.c	/^client_init ()$/;"	f
-client_menu	./server/client_menu.h	/^typedef struct client_menu {$/;"	s
-client_menu	./server/client_menu.h	/^} client_menu;$/;"	t
-client_menu_item	./server/client_menu.h	/^typedef struct client_menu_item {$/;"	s
-client_set	./server/clients.c	/^client_set (client * c, void *data)$/;"	f
-client_set_func	./server/client_functions.c	/^client_set_func (client * c, int argc, char **argv)$/;"	f
-client_shutdown	./server/clients.c	/^client_shutdown ()$/;"	f
-clients	./server/clients.c	/^LL *clients;$/;"	v
-clock_screen	./clients/lcdproc/chrono.c	/^clock_screen (int rep, int display)$/;"	f
-close	./server/drivers/lcd.h	/^	void (*close) ();$/;"	m	struct:lcd_logical_driver
-codes	./server/drivers/irmanin.c	/^char *codes[] = {$/;"	v
-commands	./server/client_functions.c	/^client_function commands[] = {$/;"	v
-common_autoscroll	./server/drivers/hd44780.c	/^common_autoscroll (int on)$/;"	f
-common_init	./server/drivers/hd44780.c	/^common_init (enum ifWidth ifwidth)$/;"	f
-common_position	./server/drivers/hd44780.c	/^common_position (int display, int DDaddr)$/;"	f
-compare_addresses	./server/screenlist.c	/^compare_addresses (void *one, void *two)$/;"	f
-compare_priority	./server/screenlist.c	/^compare_priority (void *one, void *two)$/;"	f
-config	./server/drivers/lircin.c	/^static struct lirc_config *config;$/;"	v	file:
-connIdx	./server/drivers/hd44780.c	/^static int connIdx = 0;$/;"	v	file:
-connection	./server/drivers/hd44780.c	/^static enum connectionType connection = HD_4bit;$/;"	v	file:
-connectionMapping	./server/drivers/hd44780-drivers.h	/^} connectionMapping[] = {$/;"	v
-connectionType	./server/drivers/hd44780-drivers.h	/^enum connectionType { HD_4bit, HD_8bit, HD_serialLpt, HD_winamp,$/;"	g
-connectionTypeStr	./server/drivers/hd44780-drivers.h	/^	char *connectionTypeStr;$/;"	m	struct:ConnectionMapping
-contrast	./server/drivers/lcd.h	/^	int (*contrast) (int contrast);$/;"	m	struct:lcd_logical_driver
-cpu_close	./clients/lcdproc/cpu.c	/^cpu_close ()$/;"	f
-cpu_graph_screen	./clients/lcdproc/cpu.c	/^cpu_graph_screen (int rep, int display)$/;"	f
-cpu_init	./clients/lcdproc/cpu.c	/^cpu_init ()$/;"	f
-cpu_screen	./clients/lcdproc/cpu.c	/^cpu_screen (int rep, int display)$/;"	f
-cpu_smp_close	./clients/lcdproc/cpu_smp.c	/^cpu_smp_close ()$/;"	f
-cpu_smp_init	./clients/lcdproc/cpu_smp.c	/^cpu_smp_init ()$/;"	f
-cpu_smp_screen	./clients/lcdproc/cpu_smp.c	/^cpu_smp_screen (int rep, int display)$/;"	f
-credit_screen	./clients/lcdproc/mode.c	/^credit_screen (int rep, int display)$/;"	f
-current	./shared/LL.h	/^	LL_node *current;$/;"	m	struct:LL
-curses_drv	./server/drivers/curses_drv.c	/^lcd_logical_driver *curses_drv;$/;"	v
-curses_drv_chr	./server/drivers/curses_drv.c	/^curses_drv_chr (int x, int y, char c)$/;"	f
-curses_drv_clear	./server/drivers/curses_drv.c	/^curses_drv_clear ()$/;"	f
-curses_drv_close	./server/drivers/curses_drv.c	/^curses_drv_close ()$/;"	f
-curses_drv_draw_frame	./server/drivers/curses_drv.c	/^curses_drv_draw_frame (char *dat)$/;"	f
-curses_drv_flush	./server/drivers/curses_drv.c	/^curses_drv_flush ()$/;"	f
-curses_drv_flush_box	./server/drivers/curses_drv.c	/^curses_drv_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-curses_drv_getkey	./server/drivers/curses_drv.c	/^curses_drv_getkey ()$/;"	f
-curses_drv_hbar	./server/drivers/curses_drv.c	/^curses_drv_hbar (int x, int y, int len)$/;"	f
-curses_drv_icon	./server/drivers/curses_drv.c	/^curses_drv_icon (int which, char dest)$/;"	f
-curses_drv_init	./server/drivers/curses_drv.c	/^curses_drv_init (struct lcd_logical_driver *driver, char *args)$/;"	f
-curses_drv_init_num	./server/drivers/curses_drv.c	/^curses_drv_init_num ()$/;"	f
-curses_drv_num	./server/drivers/curses_drv.c	/^curses_drv_num (int x, int num)$/;"	f
-curses_drv_string	./server/drivers/curses_drv.c	/^curses_drv_string (int x, int y, char string[])$/;"	f
-curses_drv_vbar	./server/drivers/curses_drv.c	/^curses_drv_vbar (int x, int len)$/;"	f
-custom	./server/drivers/CFontz.c	/^static int custom = 0;$/;"	v	file:
-custom	./server/drivers/MtxOrb.c	/^static int custom = 0;$/;"	v	file:
-custom	./server/drivers/wirz-sli.c	/^static int custom = 0;$/;"	v	file:
-custom_type	./server/drivers/CFontz.c	/^} custom_type;$/;"	t	file:
-custom_type	./server/drivers/MtxOrb.c	/^} custom_type;$/;"	t	file:
-custom_type	./server/drivers/wirz-sli.c	/^} custom_type;$/;"	t	file:
-data	./server/clients.h	/^	client_data *data;$/;"	m	struct:client
-data	./server/menu.h	/^	void *data;$/;"	m	struct:menu_item
-data	./shared/LL.h	/^	void *data;$/;"	m	struct:LL_node
-days	./clients/lcdproc/chrono.c	/^static char *days[] = {$/;"	v	file:
-debug	./shared/debug.h	10;"	d
-debug	./shared/debug.h	6;"	d
-debug_backlight	./server/drivers/debug.c	/^debug_backlight (int on)$/;"	f
-debug_chr	./server/drivers/debug.c	/^debug_chr (int x, int y, char c)$/;"	f
-debug_clear	./server/drivers/debug.c	/^debug_clear ()$/;"	f
-debug_close	./server/drivers/debug.c	/^debug_close ()$/;"	f
-debug_contrast	./server/drivers/debug.c	/^debug_contrast (int contrast)$/;"	f
-debug_draw_frame	./server/drivers/debug.c	/^debug_draw_frame (char *dat)$/;"	f
-debug_flush	./server/drivers/debug.c	/^debug_flush ()$/;"	f
-debug_flush_box	./server/drivers/debug.c	/^debug_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-debug_getkey	./server/drivers/debug.c	/^debug_getkey ()$/;"	f
-debug_hbar	./server/drivers/debug.c	/^debug_hbar (int x, int y, int len)$/;"	f
-debug_icon	./server/drivers/debug.c	/^debug_icon (int which, char dest)$/;"	f
-debug_init	./server/drivers/debug.c	/^debug_init (struct lcd_logical_driver *driver, char *args)$/;"	f
-debug_init_hbar	./server/drivers/debug.c	/^debug_init_hbar ()$/;"	f
-debug_init_num	./server/drivers/debug.c	/^debug_init_num ()$/;"	f
-debug_init_vbar	./server/drivers/debug.c	/^debug_init_vbar ()$/;"	f
-debug_num	./server/drivers/debug.c	/^debug_num (int x, int num)$/;"	f
-debug_set_char	./server/drivers/debug.c	/^debug_set_char (int n, char *dat)$/;"	f
-debug_string	./server/drivers/debug.c	/^debug_string (int x, int y, char string[])$/;"	f
-debug_vbar	./server/drivers/debug.c	/^debug_vbar (int x, int len)$/;"	f
-def	./server/drivers/MtxOrb.c	/^static int def[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };$/;"	v	file:
-default_sequence	./clients/lcdproc/main.c	/^mode default_sequence[] = {$/;"	v
-dev	./clients/lcdproc/disk.c	/^	char dev[256], type[64], mpoint[256];$/;"	m	struct:mounts
-disk_close	./clients/lcdproc/disk.c	/^disk_close ()$/;"	f
-disk_init	./clients/lcdproc/disk.c	/^disk_init ()$/;"	f
-disk_screen	./clients/lcdproc/disk.c	/^disk_screen (int rep, int display)$/;"	f
-dispSizes	./server/drivers/hd44780.c	/^static int *dispSizes = NULL;$/;"	v	file:
-dispVOffset	./server/drivers/hd44780.c	/^static int *dispVOffset = NULL;$/;"	v	file:
-do_menu	./server/menu.c	/^do_menu (Menu menu)$/;"	f
-draw_frame	./server/drivers/lcd.h	/^	void (*draw_frame) ();$/;"	m	struct:lcd_logical_driver
-draw_frame	./server/render.c	/^draw_frame (LL * list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, int timer)$/;"	f	file:
-draw_heartbeat	./server/menu.c	/^draw_heartbeat ()$/;"	f	file:
-draw_menu	./server/menu.c	/^draw_menu (Menu menu, menu_info * info)$/;"	f	file:
-draw_screen	./server/render.c	/^draw_screen (screen * s, int timer)$/;"	f
-drivers	./server/drivers/lcd.c	/^lcd_physical_driver drivers[] = {$/;"	v
-drv_base	./server/drivers/drv_base.c	/^lcd_logical_driver *drv_base;$/;"	v
-drv_base_backlight	./server/drivers/drv_base.c	/^drv_base_backlight (int on)$/;"	f
-drv_base_chr	./server/drivers/drv_base.c	/^drv_base_chr (int x, int y, char c)$/;"	f
-drv_base_clear	./server/drivers/drv_base.c	/^drv_base_clear ()$/;"	f
-drv_base_close	./server/drivers/drv_base.c	/^drv_base_close ()$/;"	f
-drv_base_contrast	./server/drivers/drv_base.c	/^drv_base_contrast (int contrast)$/;"	f
-drv_base_draw_frame	./server/drivers/drv_base.c	/^drv_base_draw_frame (char *dat)$/;"	f
-drv_base_flush	./server/drivers/drv_base.c	/^drv_base_flush ()$/;"	f
-drv_base_flush_box	./server/drivers/drv_base.c	/^drv_base_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-drv_base_getkey	./server/drivers/drv_base.c	/^drv_base_getkey ()$/;"	f
-drv_base_hbar	./server/drivers/drv_base.c	/^drv_base_hbar (int x, int y, int len)$/;"	f
-drv_base_icon	./server/drivers/drv_base.c	/^drv_base_icon (int which, char dest)$/;"	f
-drv_base_init	./server/drivers/drv_base.c	/^drv_base_init (struct lcd_logical_driver *driver, char *args)$/;"	f
-drv_base_init_hbar	./server/drivers/drv_base.c	/^drv_base_init_hbar ()$/;"	f
-drv_base_init_num	./server/drivers/drv_base.c	/^drv_base_init_num ()$/;"	f
-drv_base_init_vbar	./server/drivers/drv_base.c	/^drv_base_init_vbar ()$/;"	f
-drv_base_num	./server/drivers/drv_base.c	/^drv_base_num (int x, int num)$/;"	f
-drv_base_set_char	./server/drivers/drv_base.c	/^drv_base_set_char (int n, char *dat)$/;"	f
-drv_base_string	./server/drivers/drv_base.c	/^drv_base_string (int x, int y, char string[])$/;"	f
-drv_base_vbar	./server/drivers/drv_base.c	/^drv_base_vbar (int x, int len)$/;"	f
-duration	./server/screen.h	/^	int duration;$/;"	m	struct:screen
-exit_program	./clients/lcdproc/main.c	/^exit_program (int val)$/;"	f
-exit_program	./server/main.c	/^exit_program (int val)$/;"	f
-extIF	./server/drivers/hd44780-4bit.c	/^static int extIF = 0;			  \/\/ non-zero if extended interface$/;"	v	file:
-extIF	./server/drivers/hd44780-winamp.c	/^static int extIF = 0;			  \/\/ non-zero if extended interface$/;"	v	file:
-fd	./server/drivers/CFontz.c	/^static int fd;$/;"	v	file:
-fd	./server/drivers/MtxOrb.c	/^static int fd;$/;"	v	file:
-fd	./server/drivers/joy.c	/^int fd;$/;"	v
-fd	./server/drivers/lircin.c	/^int fd;$/;"	v
-fd	./server/drivers/wirz-sli.c	/^static int fd;$/;"	v	file:
-ffree	./clients/lcdproc/disk.c	/^	long bsize, blocks, bfree, files, ffree;$/;"	m	struct:mounts
-files	./clients/lcdproc/disk.c	/^	long bsize, blocks, bfree, files, ffree;$/;"	m	struct:mounts
-fill_menu_info	./server/menu.c	/^fill_menu_info (Menu menu, menu_info * info)$/;"	f	file:
-flush	./server/drivers/lcd.h	/^	void (*flush) ();$/;"	m	struct:lcd_logical_driver
-flush_box	./server/drivers/lcd.h	/^	void (*flush_box) (int lft, int top, int rgt, int bot);$/;"	m	struct:lcd_logical_driver
-framebuf	./server/drivers/lcd.h	/^	char *framebuf;$/;"	m	struct:lcd_logical_driver
-framedelay	./server/menu.c	/^framedelay ()$/;"	f
-free	./clients/lcdproc/mem.c	/^	int total, cache, buffers, free, shared;$/;"	m	struct:meminfo
-function	./server/client_functions.h	/^	int (*function) (client * c, int argc, char **argv);$/;"	m	struct:client_function
-get_args	./shared/str.c	/^get_args (char **argv, char *str, int max_args)$/;"	f
-get_batt_stat	./clients/lcdproc/batt.c	/^get_batt_stat (int *acstat, int *battstat, int *battflag, int *percent)$/;"	f	file:
-get_fs	./clients/lcdproc/disk.c	/^get_fs (mounts fs[])$/;"	f	file:
-get_load	./clients/lcdproc/cpu.c	/^get_load (struct load *result)$/;"	f	file:
-get_load	./clients/lcdproc/cpu_smp.c	/^get_load (struct load *result, int *numcpus)$/;"	f	file:
-get_loadavg	./clients/lcdproc/load.c	/^get_loadavg (void)$/;"	f	file:
-get_mem_info	./clients/lcdproc/mem.c	/^get_mem_info (struct meminfo *result)$/;"	f	file:
-get_uptime	./clients/lcdproc/chrono.c	/^get_uptime (double *up, double *idle)$/;"	f	file:
-getentry	./clients/lcdproc/mode.c	/^getentry (const char *tag, const char *bufptr)$/;"	f
-getkey	./server/drivers/lcd.h	/^	char (*getkey) ();$/;"	m	struct:lcd_logical_driver
-getkey	./server/drivers/lcd_sem.c	/^getkey (register char *p)$/;"	f	file:
-goodbye_screen	./server/serverscreens.c	/^goodbye_screen ()$/;"	f
-handle_input	./server/input.c	/^handle_input ()$/;"	f
-hbar	./server/drivers/CFontz.c	/^	hbar = 1,$/;"	e	file:
-hbar	./server/drivers/MtxOrb.c	/^	hbar = 1,$/;"	e	file:
-hbar	./server/drivers/lcd.h	/^	void (*hbar) (int x, int y, int len);$/;"	m	struct:lcd_logical_driver
-hbar	./server/drivers/wirz-sli.c	/^	hbar = 1,$/;"	e	file:
-hd44780_functions	./server/drivers/hd44780.c	/^HD44780_functions *hd44780_functions;$/;"	v
-hd_init_4bit	./server/drivers/hd44780-4bit.c	/^hd_init_4bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)$/;"	f
-hd_init_ext8bit	./server/drivers/hd44780-ext8bit.c	/^hd_init_ext8bit (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)$/;"	f
-hd_init_serialLpt	./server/drivers/hd44780-serialLpt.c	/^hd_init_serialLpt (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)$/;"	f
-hd_init_winamp	./server/drivers/hd44780-winamp.c	/^hd_init_winamp (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port)$/;"	f
-head	./shared/LL.h	/^	LL_node head, tail;$/;"	m	struct:LL
-heartbeat	./server/render.c	/^int heartbeat = HEART_OPEN;$/;"	v
-heartbeat	./server/screen.h	/^	int heartbeat;$/;"	m	struct:screen
-hello_func	./server/client_functions.c	/^hello_func (client * c, int argc, char **argv)$/;"	f
-helpMsg	./server/drivers/hd44780-drivers.h	/^	const char *helpMsg;$/;"	m	struct:ConnectionMapping
-hgt	./server/drivers/lcd.h	/^	int wid, hgt;$/;"	m	struct:lcd_logical_driver
-hgt	./server/main.h	/^	int wid, hgt;$/;"	m	struct:screen_size
-hgt	./server/screen.h	/^	int wid, hgt;$/;"	m	struct:screen
-hgt	./server/widget.h	/^	int wid, hgt;					  \/\/ Size$/;"	m	struct:widget
-host	./clients/lcdproc/mode.c	/^char host[16];$/;"	v
-huge	./clients/lcdproc/disk.c	138;"	d	file:
-huge	./clients/lcdproc/disk.c	243;"	d	file:
-hwDependentFns	./server/drivers/hd44780-low.h	/^typedef struct hwDependentFns {$/;"	s
-icon	./server/drivers/lcd.h	/^	void (*icon) (int which, char dest);$/;"	m	struct:lcd_logical_driver
-icon_char	./server/drivers/curses_drv.c	/^static char icon_char = '@';$/;"	v	file:
-icon_char	./server/drivers/svgalib_drv.c	/^static char icon_char = '@';$/;"	v	file:
-id	./server/client_menu.h	/^	char id[];$/;"	m	struct:client_menu
-id	./server/client_menu.h	/^	char id[];$/;"	m	struct:client_menu_item
-id	./server/screen.h	/^	char *id;$/;"	m	struct:screen
-id	./server/serverscreens.c	/^char *id = "ClientList";$/;"	v
-id	./server/widget.h	/^	char *id;$/;"	m	struct:widget
-idle	./clients/lcdproc/cpu.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-idle	./clients/lcdproc/cpu_smp.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-ifWidth	./server/drivers/hd44780-low.h	/^enum ifWidth { IF_4bit, IF_8bit };$/;"	g
-init	./server/drivers/lcd.h	/^	int (*init) (struct lcd_logical_driver * driver, char *args);$/;"	m	struct:lcd_logical_driver
-init	./server/drivers/lcd.h	/^	int (*init) (struct lcd_logical_driver * driver, char *device);$/;"	m	struct:lcd_physical_driver
-init_fn	./server/drivers/hd44780-drivers.h	/^	int (*init_fn) (HD44780_functions * hd44780_functions, lcd_logical_driver * driver, char *args, unsigned int port);$/;"	m	struct:ConnectionMapping
-init_hbar	./server/drivers/lcd.h	/^	void (*init_hbar) ();$/;"	m	struct:lcd_logical_driver
-init_num	./server/drivers/lcd.h	/^	void (*init_num) ();$/;"	m	struct:lcd_logical_driver
-init_vbar	./server/drivers/lcd.h	/^	void (*init_vbar) ();$/;"	m	struct:lcd_logical_driver
-irmanin	./server/drivers/irmanin.c	/^lcd_logical_driver *irmanin;$/;"	v
-irmanin_close	./server/drivers/irmanin.c	/^irmanin_close ()$/;"	f
-irmanin_getkey	./server/drivers/irmanin.c	/^irmanin_getkey ()$/;"	f
-irmanin_init	./server/drivers/irmanin.c	/^irmanin_init (struct lcd_logical_driver *driver, char *args)$/;"	f
-items	./server/client_menu.h	/^	LL *items;$/;"	m	struct:client_menu
-joy	./server/drivers/joy.c	/^lcd_logical_driver *joy;$/;"	v
-joy_close	./server/drivers/joy.c	/^joy_close ()$/;"	f
-joy_getkey	./server/drivers/joy.c	/^joy_getkey ()$/;"	f
-joy_init	./server/drivers/joy.c	/^joy_init (struct lcd_logical_driver *driver, char *args)$/;"	f
-js	./server/drivers/joy.c	/^struct js_event js;$/;"	v
-jsname	./server/drivers/joy.c	/^char jsname[NAME_LENGTH] = "Unknown";$/;"	v
-jsversion	./server/drivers/joy.c	/^int jsversion = 0x000800;$/;"	v
-keyword	./server/client_functions.h	/^	char *keyword;$/;"	m	struct:client_function
-kids	./server/widget.h	/^	LL *kids;						  \/\/ Frames can contain more widgets...$/;"	m	struct:widget
-kver	./clients/lcdproc/chrono.c	/^static char kver[SYS_NMLN];$/;"	v	file:
-lastframe	./server/drivers/wirz-sli.c	/^static char lastframe[32];$/;"	v	file:
-lastkey	./server/drivers/hd44780-serialLpt.c	/^static char lastkey = 0;$/;"	v	file:
-lcd	./server/drivers/lcd.c	/^lcd_logical_driver lcd;$/;"	v
-lcd_add_driver	./server/drivers/lcd.c	/^lcd_add_driver (char *driver, char *args)$/;"	f
-lcd_cellhgt	./clients/lcdproc/main.c	/^int lcd_cellhgt;$/;"	v
-lcd_cellwid	./clients/lcdproc/main.c	/^int lcd_cellwid;$/;"	v
-lcd_drv_backlight	./server/drivers/lcd.c	/^lcd_drv_backlight (int on)$/;"	f
-lcd_drv_chr	./server/drivers/lcd.c	/^lcd_drv_chr (int x, int y, char c)$/;"	f
-lcd_drv_clear	./server/drivers/lcd.c	/^lcd_drv_clear ()$/;"	f
-lcd_drv_close	./server/drivers/lcd.c	/^lcd_drv_close ()$/;"	f
-lcd_drv_contrast	./server/drivers/lcd.c	/^lcd_drv_contrast (int contrast)$/;"	f
-lcd_drv_draw_frame	./server/drivers/lcd.c	/^lcd_drv_draw_frame (char *dat)$/;"	f
-lcd_drv_flush	./server/drivers/lcd.c	/^lcd_drv_flush ()$/;"	f
-lcd_drv_flush_box	./server/drivers/lcd.c	/^lcd_drv_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-lcd_drv_getkey	./server/drivers/lcd.c	/^lcd_drv_getkey ()$/;"	f
-lcd_drv_hbar	./server/drivers/lcd.c	/^lcd_drv_hbar (int x, int y, int len)$/;"	f
-lcd_drv_icon	./server/drivers/lcd.c	/^lcd_drv_icon (int which, char dest)$/;"	f
-lcd_drv_init	./server/drivers/lcd.c	/^lcd_drv_init (struct lcd_logical_driver *driver, char *args)$/;"	f
-lcd_drv_init_hbar	./server/drivers/lcd.c	/^lcd_drv_init_hbar ()$/;"	f
-lcd_drv_init_num	./server/drivers/lcd.c	/^lcd_drv_init_num ()$/;"	f
-lcd_drv_init_vbar	./server/drivers/lcd.c	/^lcd_drv_init_vbar ()$/;"	f
-lcd_drv_num	./server/drivers/lcd.c	/^lcd_drv_num (int x, int num)$/;"	f
-lcd_drv_output	./server/drivers/lcd.c	/^lcd_drv_output (int on)$/;"	f
-lcd_drv_set_char	./server/drivers/lcd.c	/^lcd_drv_set_char (int n, char *dat)$/;"	f
-lcd_drv_string	./server/drivers/lcd.c	/^lcd_drv_string (int x, int y, char string[])$/;"	f
-lcd_drv_vbar	./server/drivers/lcd.c	/^lcd_drv_vbar (int x, int len)$/;"	f
-lcd_hgt	./clients/lcdproc/main.c	/^int lcd_hgt;$/;"	v
-lcd_init	./server/drivers/lcd.c	/^lcd_init (char *args)$/;"	f
-lcd_logical_driver	./server/drivers/lcd.h	/^typedef struct lcd_logical_driver {$/;"	s
-lcd_logical_driver	./server/drivers/lcd.h	/^} lcd_logical_driver;$/;"	t
-lcd_physical_driver	./server/drivers/lcd.h	/^typedef struct lcd_physical_driver {$/;"	s
-lcd_physical_driver	./server/drivers/lcd.h	/^} lcd_physical_driver;$/;"	t
-lcd_shutdown	./server/drivers/lcd.c	/^lcd_shutdown ()$/;"	f
-lcd_wid	./clients/lcdproc/main.c	/^int lcd_wid;$/;"	v
-lcdserLpt_HD44780_getkey	./server/drivers/hd44780-serialLpt.c	/^lcdserLpt_HD44780_getkey ()$/;"	f
-lcdserLpt_HD44780_senddata	./server/drivers/hd44780-serialLpt.c	/^lcdserLpt_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)$/;"	f
-lcdstat_HD44780_senddata	./server/drivers/hd44780-4bit.c	/^lcdstat_HD44780_senddata (unsigned char displayID, unsigned char iflags, unsigned char ch)$/;"	f
-lcdtime_HD44780_senddata	./server/drivers/hd44780-ext8bit.c	/^lcdtime_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)$/;"	f
-lcdwinamp_HD44780_senddata	./server/drivers/hd44780-winamp.c	/^lcdwinamp_HD44780_senddata (unsigned char displayID, unsigned char flags, unsigned char ch)$/;"	f
-left	./server/widget.h	/^	int left, top, right, bottom;	\/\/ bounding rectangle$/;"	m	struct:widget
-length	./server/menu.c	/^	int length;$/;"	m	struct:menu_info
-length	./server/widget.h	/^	int length;						  \/\/ size or direction$/;"	m	struct:widget
-lg	./server/main.h	/^	char *sh, *lg;					  \/\/ short and long versions$/;"	m	struct:parameter
-lircin	./server/drivers/lircin.c	/^lcd_logical_driver *lircin;$/;"	v
-lircin_close	./server/drivers/lircin.c	/^lircin_close ()$/;"	f
-lircin_getkey	./server/drivers/lircin.c	/^lircin_getkey ()$/;"	f
-lircin_init	./server/drivers/lircin.c	/^lircin_init (struct lcd_logical_driver *driver, char *args)$/;"	f
-list	./server/drivers/lcd.c	/^LL *list;$/;"	v
-load	./clients/lcdproc/cpu.c	/^struct load {$/;"	s	file:
-load	./clients/lcdproc/cpu_smp.c	/^struct load {$/;"	s	file:
-load_close	./clients/lcdproc/load.c	/^load_close ()$/;"	f
-load_fd	./clients/lcdproc/cpu.c	/^int load_fd = 0;$/;"	v
-load_fd	./clients/lcdproc/cpu_smp.c	/^static int load_fd = 0;$/;"	v	file:
-load_init	./clients/lcdproc/load.c	/^load_init ()$/;"	f
-loadavg_fd	./clients/lcdproc/load.c	/^int loadavg_fd = 0;$/;"	v
-lp	./server/drivers/hd44780-serialLpt.c	/^static unsigned int lp;$/;"	v	file:
-lptPort	./server/drivers/hd44780-4bit.c	/^static unsigned int lptPort;$/;"	v	file:
-lptPort	./server/drivers/hd44780-ext8bit.c	/^static unsigned int lptPort;$/;"	v	file:
-lptPort	./server/drivers/hd44780-winamp.c	/^static unsigned int lptPort;$/;"	v	file:
-main	./clients/lcdproc/main.c	/^main (int argc, char **argv)$/;"	f
-main	./server/main.c	/^main (int argc, char **argv)$/;"	f
-main_loop	./clients/lcdproc/main.c	/^main_loop (mode * sequence)$/;"	f
-main_menu	./server/menus.c	/^menu_item main_menu[] = {$/;"	v
-mem_close	./clients/lcdproc/mem.c	/^mem_close ()$/;"	f
-mem_init	./clients/lcdproc/mem.c	/^mem_init ()$/;"	f
-mem_screen	./clients/lcdproc/mem.c	/^mem_screen (int rep, int display)$/;"	f
-mem_top_screen	./clients/lcdproc/mem.c	/^mem_top_screen (int rep, int display)$/;"	f
-meminfo	./clients/lcdproc/mem.c	/^struct meminfo {$/;"	s	file:
-meminfo_fd	./clients/lcdproc/mem.c	/^int meminfo_fd = 0;$/;"	v
-menu_add_func	./server/client_functions.c	/^menu_add_func (client * c, int argc, char **argv)$/;"	f
-menu_del_func	./server/client_functions.c	/^menu_del_func (client * c, int argc, char **argv)$/;"	f
-menu_handle_action	./server/menu.c	/^menu_handle_action (menu_item * item)$/;"	f	file:
-menu_info	./server/menu.c	/^typedef struct menu_info {$/;"	s	file:
-menu_info	./server/menu.c	/^} menu_info;$/;"	t	file:
-menu_item	./server/menu.h	/^typedef struct menu_item {$/;"	s
-menu_item	./server/menu.h	/^} menu_item;$/;"	t
-menu_item_add_func	./server/client_functions.c	/^menu_item_add_func (client * c, int argc, char **argv)$/;"	f
-menu_item_del_func	./server/client_functions.c	/^menu_item_del_func (client * c, int argc, char **argv)$/;"	f
-menu_item_set_func	./server/client_functions.c	/^menu_item_set_func (client * c, int argc, char **argv)$/;"	f
-menu_set_func	./server/client_functions.c	/^menu_set_func (client * c, int argc, char **argv)$/;"	f
-menulist	./server/client_data.h	/^	LL *menulist;$/;"	m	struct:client_data
-messages	./server/clients.h	/^	LL *messages;$/;"	m	struct:client
-mode	./clients/lcdproc/main.h	/^typedef struct mode {$/;"	s
-mode	./clients/lcdproc/main.h	/^} mode;$/;"	t
-mode_close	./clients/lcdproc/mode.c	/^mode_close ()$/;"	f
-mode_init	./clients/lcdproc/mode.c	/^mode_init (mode * sequence)$/;"	f
-months	./clients/lcdproc/chrono.c	/^static char *months[] = {$/;"	v	file:
-mounts	./clients/lcdproc/disk.c	/^typedef struct mounts {$/;"	s	file:
-mounts	./clients/lcdproc/disk.c	/^} mounts;$/;"	t	file:
-mpoint	./clients/lcdproc/disk.c	/^	char dev[256], type[64], mpoint[256];$/;"	m	struct:mounts
-mtab_fd	./clients/lcdproc/disk.c	/^FILE *mtab_fd;$/;"	v
-nACK	./server/drivers/hd44780-low.h	91;"	d
-nFAULT	./server/drivers/hd44780-low.h	87;"	d
-nLF	./server/drivers/hd44780-low.h	78;"	d
-nRS	./server/drivers/hd44780-ext8bit.c	48;"	d	file:
-nRW	./server/drivers/hd44780-ext8bit.c	49;"	d	file:
-nSEL	./server/drivers/hd44780-low.h	81;"	d
-nSTRB	./server/drivers/hd44780-low.h	76;"	d
-name	./clients/lcdproc/mem.c	/^	char name[16];					  \/\/ Is this really long enough?$/;"	m	struct:proc_mem_info
-name	./server/client_data.h	/^	char *name;$/;"	m	struct:client_data
-name	./server/drivers/lcd.h	/^	char *name;$/;"	m	struct:lcd_physical_driver
-name	./server/screen.h	/^	char *name;$/;"	m	struct:screen
-name	./server/serverscreens.c	/^char *name = "Client List";$/;"	v
-next	./shared/LL.h	/^	struct LL_node *next, *prev;$/;"	m	struct:LL_node
-nice	./clients/lcdproc/cpu.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-nice	./clients/lcdproc/cpu_smp.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-no_screen_screen	./server/serverscreens.c	/^no_screen_screen (int timer)$/;"	f
-num	./server/drivers/lcd.h	/^	void (*num) (int x, int num);$/;"	m	struct:lcd_logical_driver
-numDisplays	./server/drivers/hd44780.c	/^static int numDisplays = 0;$/;"	v	file:
-numLines	./server/drivers/hd44780.c	/^static int numLines = 0;$/;"	v	file:
-number	./clients/lcdproc/mem.c	/^	int number;$/;"	m	struct:proc_mem_info
-numnames	./clients/lcdproc/cpu_smp.c	/^static char *numnames[MAX_CPUS] = { "one", "two", "three", "four", "five", "six", "seven", "eight" };$/;"	v	file:
-off_time	./clients/lcdproc/main.h	/^	int off_time;					  \/\/ How often to get stats while not visible?$/;"	m	struct:mode
-on_time	./clients/lcdproc/main.h	/^	int on_time;					  \/\/ How often to update while visible?$/;"	m	struct:mode
-one	./server/serverscreens.c	/^char one[256] = "";$/;"	v
-options_menu	./server/menus.c	/^menu_item options_menu[] = {$/;"	v
-orig_sock	./server/sock.c	/^int orig_sock;$/;"	v
-output	./server/drivers/lcd.h	/^	void (*output) (int on);$/;"	m	struct:lcd_logical_driver
-output_func	./server/client_functions.c	/^output_func (client * c, int argc, char **argv)$/;"	f
-output_state	./server/render.c	/^int output_state = 0;$/;"	v
-parameter	./server/main.h	/^typedef struct parameter {$/;"	s
-parameter	./server/main.h	/^} parameter;$/;"	t
-parent	./server/screen.h	/^	client *parent;$/;"	m	struct:screen
-parse_all_client_messages	./server/parse.c	/^parse_all_client_messages ()$/;"	f
-parse_span_list	./server/drivers/hd44780.c	/^parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], char *spanlist)$/;"	f
-port	./server/drivers/hd44780.c	/^unsigned int port = LPTPORT;$/;"	v
-port_in	./server/drivers/port.h	/^port_in (int port)$/;"	f
-port_out	./server/drivers/port.h	/^port_out (unsigned int port, unsigned char val)$/;"	f
-port_out	./server/drivers/port.h	/^port_out (unsigned short int port, unsigned char val)$/;"	f
-position	./server/drivers/hd44780-low.h	/^	void (*position) (int dispID, int DDaddr);$/;"	m	struct:hwDependentFns
-prev	./shared/LL.h	/^	struct LL_node *next, *prev;$/;"	m	struct:LL_node
-priority	./server/screen.h	/^	int priority;$/;"	m	struct:screen
-proc_mem_info	./clients/lcdproc/mem.c	/^typedef struct proc_mem_info {$/;"	s	file:
-proc_mem_info	./clients/lcdproc/mem.c	/^} proc_mem_info;$/;"	t	file:
-progname	./server/drivers/irmanin.c	/^char *progname = "irmanin";$/;"	v
-progname	./server/drivers/lircin.c	/^char *progname = "lircin";$/;"	v
-protocol_version	./server/main.c	/^char *protocol_version = PROTOCOL_VERSION;$/;"	v
-rawshift	./server/drivers/hd44780-serialLpt.c	/^rawshift (unsigned char r)$/;"	f
-rcsId	./server/drivers/lcd_sem.c	/^static char rcsId[] = "$Id$";$/;"	v	file:
-read_fd_set	./server/sock.c	/^fd_set active_fd_set, read_fd_set;$/;"	v
-read_from_client	./server/sock.c	/^read_from_client (int filedes)$/;"	f
-reread	./clients/lcdproc/mode.c	/^reread (int f, char *errmsg)$/;"	f
-reset	./server/render.c	/^static int reset;$/;"	v	file:
-right	./server/widget.h	/^	int left, top, right, bottom;	\/\/ bounding rectangle$/;"	m	struct:widget
-screen	./server/screen.h	/^typedef struct screen {$/;"	s
-screen	./server/screen.h	/^} screen;$/;"	t
-screen_add	./server/screen.c	/^screen_add (client * c, char *id)$/;"	f
-screen_add_func	./server/client_functions.c	/^screen_add_func (client * c, int argc, char **argv)$/;"	f
-screen_create	./server/screen.c	/^screen_create ()$/;"	f
-screen_del_func	./server/client_functions.c	/^screen_del_func (client * c, int argc, char **argv)$/;"	f
-screen_destroy	./server/screen.c	/^screen_destroy (screen * s)$/;"	f
-screen_find	./server/screen.c	/^screen_find (client * c, char *id)$/;"	f
-screen_remove	./server/screen.c	/^screen_remove (client * c, char *id)$/;"	f
-screen_set_func	./server/client_functions.c	/^screen_set_func (client * c, int argc, char **argv)$/;"	f
-screen_size	./server/main.h	/^typedef struct screen_size {$/;"	s
-screen_size	./server/main.h	/^} screen_size;$/;"	t
-screenlist	./server/client_data.h	/^	LL *screenlist;$/;"	m	struct:client_data
-screenlist	./server/screenlist.c	/^LL *screenlist;$/;"	v
-screenlist_action	./server/screenlist.c	/^int screenlist_action = 0;$/;"	v
-screenlist_add	./server/screenlist.c	/^screenlist_add (screen * s)$/;"	f
-screenlist_add_end	./server/screenlist.c	/^screenlist_add_end (screen * screen)$/;"	f
-screenlist_current	./server/screenlist.c	/^screenlist_current ()$/;"	f
-screenlist_getlist	./server/screenlist.c	/^screenlist_getlist ()$/;"	f
-screenlist_init	./server/screenlist.c	/^screenlist_init ()$/;"	f
-screenlist_next	./server/screenlist.c	/^screenlist_next ()$/;"	f
-screenlist_next_priority	./server/screenlist.c	/^screenlist_next_priority ()$/;"	f
-screenlist_next_roll	./server/screenlist.c	/^screenlist_next_roll ()$/;"	f
-screenlist_prev	./server/screenlist.c	/^screenlist_prev ()$/;"	f
-screenlist_prev_roll	./server/screenlist.c	/^screenlist_prev_roll ()$/;"	f
-screenlist_remove	./server/screenlist.c	/^screenlist_remove (screen * s)$/;"	f
-screenlist_remove_all	./server/screenlist.c	/^screenlist_remove_all (screen * s)$/;"	f
-screenlist_shutdown	./server/screenlist.c	/^screenlist_shutdown ()$/;"	f
-screens_menu	./server/menus.c	/^menu_item screens_menu[] = {$/;"	v
-selected	./server/menu.c	/^	int selected;$/;"	m	struct:menu_info
-sem_get	./server/drivers/lcd_sem.c	/^sem_get (void)$/;"	f
-sem_remove	./server/drivers/lcd_sem.c	/^sem_remove (int sid)$/;"	f
-sem_signal	./server/drivers/lcd_sem.c	/^sem_signal (int sid)$/;"	f
-sem_wait	./server/drivers/lcd_sem.c	/^sem_wait (int sid)$/;"	f
-semaphore_signal	./server/drivers/lcd_sem.c	/^static struct sembuf semaphore_signal = { SEM_SIGNAL };$/;"	v	file:
-semaphore_wait	./server/drivers/lcd_sem.c	/^static struct sembuf semaphore_wait = { SEM_WAIT };$/;"	v	file:
-semid	./server/drivers/hd44780-ext8bit.c	/^static int semid;$/;"	v	file:
-senddata	./server/drivers/hd44780-low.h	/^	void (*senddata) (unsigned char dispID, unsigned char flags, unsigned char ch);$/;"	m	struct:hwDependentFns
-server_input	./server/input.c	/^server_input (int key)$/;"	f
-server_menu	./server/menus.c	/^server_menu ()$/;"	f
-server_screen	./server/serverscreens.c	/^screen *server_screen;$/;"	v
-server_screen_init	./server/serverscreens.c	/^server_screen_init ()$/;"	f
-set_char	./server/drivers/lcd.h	/^	void (*set_char) (int n, char *dat);$/;"	m	struct:lcd_logical_driver
-sh	./server/main.h	/^	char *sh, *lg;					  \/\/ short and long versions$/;"	m	struct:parameter
-shared	./clients/lcdproc/mem.c	/^	int total, cache, buffers, free, shared;$/;"	m	struct:meminfo
-shiftreg	./server/drivers/hd44780-serialLpt.c	/^shiftreg (unsigned char displayID, unsigned char r)$/;"	f
-shortdays	./clients/lcdproc/chrono.c	/^static char *shortdays[] = {$/;"	v	file:
-shortmonths	./clients/lcdproc/chrono.c	/^static char *shortmonths[] = {$/;"	v	file:
-show_invisible	./clients/lcdproc/main.h	/^	int show_invisible;			  \/\/ Send stats while not visible?$/;"	m	struct:mode
-shutdown_menu	./server/menus.c	/^menu_item shutdown_menu[] = {$/;"	v
-simple_font5x7	./server/drivers/svgalib_drv.c	/^const unsigned char simple_font5x7[] = {$/;"	v
-size	./clients/lcdproc/mem.c	/^	int size, totl;$/;"	m	struct:proc_mem_info
-size	./server/main.h	/^	char *size;$/;"	m	struct:screen_size
-sli	./server/drivers/wirz-sli.c	/^lcd_logical_driver *sli;$/;"	v
-sli_chr	./server/drivers/wirz-sli.c	/^sli_chr (int x, int y, char c)$/;"	f
-sli_close	./server/drivers/wirz-sli.c	/^sli_close ()$/;"	f
-sli_draw_frame	./server/drivers/wirz-sli.c	/^sli_draw_frame (char *dat)$/;"	f
-sli_flush	./server/drivers/wirz-sli.c	/^sli_flush ()$/;"	f
-sli_flush_box	./server/drivers/wirz-sli.c	/^sli_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-sli_hbar	./server/drivers/wirz-sli.c	/^sli_hbar (int x, int y, int len)$/;"	f
-sli_icon	./server/drivers/wirz-sli.c	/^sli_icon (int which, char dest)$/;"	f
-sli_init	./server/drivers/wirz-sli.c	/^sli_init (lcd_logical_driver * driver, char *args)$/;"	f
-sli_init_hbar	./server/drivers/wirz-sli.c	/^sli_init_hbar ()$/;"	f
-sli_init_vbar	./server/drivers/wirz-sli.c	/^sli_init_vbar ()$/;"	f
-sli_set_char	./server/drivers/wirz-sli.c	/^sli_set_char (int n, char *dat)$/;"	f
-sli_vbar	./server/drivers/wirz-sli.c	/^sli_vbar (int x, int len)$/;"	f
-slid_func	./server/menu.c	/^slid_func (menu_item * item)$/;"	f	file:
-sock	./clients/lcdproc/main.c	/^int sock;$/;"	v
-sock	./server/clients.h	/^	int sock;$/;"	m	struct:client
-sock_close	./shared/sockets.c	/^sock_close (int fd)$/;"	f
-sock_close_all	./server/sock.c	/^sock_close_all ()$/;"	f
-sock_connect	./shared/sockets.c	/^sock_connect (char *host, unsigned short int port)$/;"	f
-sock_create_inet_socket	./server/sock.c	/^sock_create_inet_socket (unsigned short int port)$/;"	f
-sock_create_server	./server/sock.c	/^sock_create_server ()$/;"	f
-sock_init_sockaddr	./shared/sockets.c	/^sock_init_sockaddr (sockaddr_in * name, const char *hostname, unsigned short int port)$/;"	f	file:
-sock_poll_clients	./server/sock.c	/^sock_poll_clients ()$/;"	f
-sock_recv	./shared/sockets.c	/^sock_recv (int fd, void *dest, size_t maxlen)$/;"	f
-sock_recv_string	./shared/sockets.c	/^sock_recv_string (int fd, char *dest, size_t maxlen)$/;"	f
-sock_send	./shared/sockets.c	/^sock_send (int fd, void *src, size_t size)$/;"	f
-sock_send_string	./shared/sockets.c	/^sock_send_string (int fd, char *string)$/;"	f
-sockaddr_in	./server/sock.h	/^typedef struct sockaddr_in sockaddr_in;$/;"	t
-sockaddr_in	./shared/sockets.c	/^typedef struct sockaddr_in sockaddr_in;$/;"	t	file:
-sort_procs	./clients/lcdproc/mem.c	/^sort_procs (void *a, void *b)$/;"	f	file:
-spaced_gl_writen	./server/drivers/svgalib_drv.c	/^spaced_gl_writen (int x, int y, int count, char *text)$/;"	f
-spanList	./server/drivers/hd44780.c	/^static int *spanList = NULL;$/;"	v	file:
-speed	./server/widget.h	/^	int speed;						  \/\/ For scroller...$/;"	m	struct:widget
-string	./server/drivers/lcd.h	/^	void (*string) (int x, int y, char lcd[]);$/;"	m	struct:lcd_logical_driver
-svgalib_drv	./server/drivers/svgalib_drv.c	/^lcd_logical_driver *svgalib_drv;$/;"	v
-svgalib_drv_chr	./server/drivers/svgalib_drv.c	/^svgalib_drv_chr (int x, int y, char c)$/;"	f
-svgalib_drv_clear	./server/drivers/svgalib_drv.c	/^svgalib_drv_clear ()$/;"	f
-svgalib_drv_close	./server/drivers/svgalib_drv.c	/^svgalib_drv_close ()$/;"	f
-svgalib_drv_draw_frame	./server/drivers/svgalib_drv.c	/^svgalib_drv_draw_frame (char *dat)$/;"	f
-svgalib_drv_flush	./server/drivers/svgalib_drv.c	/^svgalib_drv_flush ()$/;"	f
-svgalib_drv_flush_box	./server/drivers/svgalib_drv.c	/^svgalib_drv_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-svgalib_drv_getkey	./server/drivers/svgalib_drv.c	/^svgalib_drv_getkey ()$/;"	f
-svgalib_drv_hbar	./server/drivers/svgalib_drv.c	/^svgalib_drv_hbar (int x, int y, int len)$/;"	f
-svgalib_drv_icon	./server/drivers/svgalib_drv.c	/^svgalib_drv_icon (int which, char dest)$/;"	f
-svgalib_drv_init	./server/drivers/svgalib_drv.c	/^svgalib_drv_init (struct lcd_logical_driver *driver, char *args)$/;"	f
-svgalib_drv_init_num	./server/drivers/svgalib_drv.c	/^svgalib_drv_init_num ()$/;"	f
-svgalib_drv_num	./server/drivers/svgalib_drv.c	/^svgalib_drv_num (int x, int num)$/;"	f
-svgalib_drv_string	./server/drivers/svgalib_drv.c	/^svgalib_drv_string (int x, int y, char string[])$/;"	f
-svgalib_drv_vbar	./server/drivers/svgalib_drv.c	/^svgalib_drv_vbar (int x, int len)$/;"	f
-sysname	./clients/lcdproc/chrono.c	/^static char sysname[SYS_NMLN];$/;"	v	file:
-system	./clients/lcdproc/cpu.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-system	./clients/lcdproc/cpu_smp.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-tail	./shared/LL.h	/^	LL_node head, tail;$/;"	m	struct:LL
-test_func_func	./server/client_functions.c	/^test_func_func (client * c, int argc, char **argv)$/;"	f
-text	./server/client_menu.h	/^	char text[];					  \/\/ Text to display here...$/;"	m	struct:client_menu_item
-text	./server/drivers/text.c	/^lcd_logical_driver *text;$/;"	v
-text	./server/menu.h	/^	char *text;$/;"	m	struct:menu_item
-text	./server/widget.h	/^	char *text;						  \/\/ text or binary data$/;"	m	struct:widget
-text_backlight	./server/drivers/text.c	/^text_backlight (int on)$/;"	f
-text_chr	./server/drivers/text.c	/^text_chr (int x, int y, char c)$/;"	f
-text_clear	./server/drivers/text.c	/^text_clear ()$/;"	f
-text_close	./server/drivers/text.c	/^text_close ()$/;"	f
-text_contrast	./server/drivers/text.c	/^text_contrast (int contrast)$/;"	f
-text_draw_frame	./server/drivers/text.c	/^text_draw_frame (char *dat)$/;"	f
-text_flush	./server/drivers/text.c	/^text_flush ()$/;"	f
-text_flush_box	./server/drivers/text.c	/^text_flush_box (int lft, int top, int rgt, int bot)$/;"	f
-text_hbar	./server/drivers/text.c	/^text_hbar (int x, int y, int len)$/;"	f
-text_init	./server/drivers/text.c	/^text_init (lcd_logical_driver * driver, char *args)$/;"	f
-text_init_hbar	./server/drivers/text.c	/^text_init_hbar ()$/;"	f
-text_init_num	./server/drivers/text.c	/^text_init_num ()$/;"	f
-text_init_vbar	./server/drivers/text.c	/^text_init_vbar ()$/;"	f
-text_num	./server/drivers/text.c	/^text_num (int x, int num)$/;"	f
-text_set_char	./server/drivers/text.c	/^text_set_char (int n, char *dat)$/;"	f
-text_string	./server/drivers/text.c	/^text_string (int x, int y, char string[])$/;"	f
-text_vbar	./server/drivers/text.c	/^text_vbar (int x, int len)$/;"	f
-three	./server/serverscreens.c	/^char three[256] = "";$/;"	v
-time_screen	./clients/lcdproc/chrono.c	/^time_screen (int rep, int display)$/;"	f
-timer	./clients/lcdproc/main.h	/^	int timer;						  \/\/ Time since last update$/;"	m	struct:mode
-timer	./server/screenlist.c	/^int timer = 0;$/;"	v
-title	./server/serverscreens.c	/^char title[256] = "LCDproc Server";$/;"	v
-tmp	./clients/lcdproc/mode.c	/^char tmp[1024];$/;"	v
-top	./server/widget.h	/^	int left, top, right, bottom;	\/\/ bounding rectangle$/;"	m	struct:widget
-total	./clients/lcdproc/cpu.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-total	./clients/lcdproc/cpu_smp.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-total	./clients/lcdproc/mem.c	/^	int total, cache, buffers, free, shared;$/;"	m	struct:meminfo
-totl	./clients/lcdproc/mem.c	/^	int size, totl;$/;"	m	struct:proc_mem_info
-two	./server/serverscreens.c	/^char two[256] = "";$/;"	v
-type	./clients/lcdproc/disk.c	/^	char dev[256], type[64], mpoint[256];$/;"	m	struct:mounts
-type	./server/client_menu.h	/^	int type;						  \/\/ Title, function, submenu, slider, checkbox, etc...$/;"	m	struct:client_menu_item
-type	./server/drivers/hd44780-drivers.h	/^	enum connectionType type;$/;"	m	struct:ConnectionMapping
-type	./server/menu.h	/^	int type;$/;"	m	struct:menu_item
-type	./server/widget.h	/^	int type;$/;"	m	struct:widget
-types	./server/widget.c	/^char *types[] = { "none",$/;"	v
-uPause	./server/drivers/hd44780-low.h	/^	void (*uPause) (int microSecondsTenths);$/;"	m	struct:hwDependentFns
-uPause	./server/drivers/hd44780.c	/^uPause (int delayCalls)$/;"	f
-update_screen	./clients/lcdproc/mode.c	/^update_screen (mode * m, int display)$/;"	f
-update_server_screen	./server/serverscreens.c	/^update_server_screen (int timer)$/;"	f
-uptime_fd	./clients/lcdproc/chrono.c	/^int uptime_fd = 0;$/;"	v
-uptime_screen	./clients/lcdproc/chrono.c	/^uptime_screen (int rep, int display)$/;"	f
-use	./server/drivers/MtxOrb.c	/^static int use[9] = { 1, 0, 0, 0, 0, 0, 0, 0, 0 };$/;"	v	file:
-user	./clients/lcdproc/cpu.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-user	./clients/lcdproc/cpu_smp.c	/^	unsigned long total, user, system, nice, idle;$/;"	m	struct:load
-value	./server/client_menu.h	/^	int value;						  \/\/ Holds stuff like "true", 43, etc...$/;"	m	struct:client_menu_item
-vbar	./server/drivers/CFontz.c	/^	vbar = 2,$/;"	e	file:
-vbar	./server/drivers/MtxOrb.c	/^	vbar = 2,$/;"	e	file:
-vbar	./server/drivers/lcd.h	/^	void (*vbar) (int x, int len);$/;"	m	struct:lcd_logical_driver
-vbar	./server/drivers/wirz-sli.c	/^	vbar = 2,$/;"	e	file:
-version	./clients/lcdproc/main.c	/^char *version = VERSION;$/;"	v
-version	./server/main.c	/^char *version = VERSION;$/;"	v
-visible	./clients/lcdproc/main.h	/^	int visible;					  \/\/ Can we be seen right now?$/;"	m	struct:mode
-which	./clients/lcdproc/main.h	/^	char which;						  \/\/ Which screen is it?$/;"	m	struct:mode
-wid	./server/drivers/lcd.h	/^	int wid, hgt;$/;"	m	struct:lcd_logical_driver
-wid	./server/main.h	/^	int wid, hgt;$/;"	m	struct:screen_size
-wid	./server/screen.h	/^	int wid, hgt;$/;"	m	struct:screen
-wid	./server/widget.h	/^	int wid, hgt;					  \/\/ Size$/;"	m	struct:widget
-widget	./server/widget.h	/^typedef struct widget {$/;"	s
-widget	./server/widget.h	/^} widget;$/;"	t
-widget_add	./server/widget.c	/^widget_add (screen * s, char *id, char *type, char *in, int sock)$/;"	f
-widget_add_func	./server/client_functions.c	/^widget_add_func (client * c, int argc, char **argv)$/;"	f
-widget_create	./server/widget.c	/^widget_create ()$/;"	f
-widget_del_func	./server/client_functions.c	/^widget_del_func (client * c, int argc, char **argv)$/;"	f
-widget_destroy	./server/widget.c	/^widget_destroy (widget * w)$/;"	f
-widget_find	./server/widget.c	/^widget_find (screen * s, char *id)$/;"	f
-widget_finder	./server/widget.c	/^widget_finder (LL * list, char *id)$/;"	f
-widget_remove	./server/widget.c	/^widget_remove (screen * s, char *id, int sock)$/;"	f
-widget_remover	./server/widget.c	/^widget_remover (LL * list, widget * w)$/;"	f
-widget_set_func	./server/client_functions.c	/^widget_set_func (client * c, int argc, char **argv)$/;"	f
-widgets	./server/screen.h	/^	LL *widgets;$/;"	m	struct:screen
-x	./server/widget.h	/^	int x, y;						  \/\/ Position$/;"	m	struct:widget
-xload_screen	./clients/lcdproc/load.c	/^xload_screen (int rep, int display)$/;"	f
-y	./server/widget.h	/^	int x, y;						  \/\/ Position$/;"	m	struct:widget
+AcceptPeekedData	CFontz633io.c	/^void AcceptPeekedData(ReceiveBuffer *rb)$/
+ac_status	batt.c	/^ac_status(int status)$/
+add_key	configfile.c	/^key * add_key( section * s, char * keyname, char */
+AddKeyToKeyRing	ula200.c	/^int AddKeyToKeyRing(KeyRing *kr, unsigned char key/
+add_section	configfile.c	/^section * add_section( char * sectionname )$/
+adv_bignum_num_2_0	adv_bignum.c	/^static void adv_bignum_num_2_0 (Driver *drvthis, i/
+adv_bignum_num_2_1	adv_bignum.c	/^static void adv_bignum_num_2_1 (Driver *drvthis, i/
+adv_bignum_num_2_28	adv_bignum.c	/^static void adv_bignum_num_2_28 (Driver *drvthis, /
+adv_bignum_num_2_2	adv_bignum.c	/^static void adv_bignum_num_2_2 (Driver *drvthis, i/
+adv_bignum_num_2_5	adv_bignum.c	/^static void adv_bignum_num_2_5 (Driver *drvthis, i/
+adv_bignum_num_4_0	adv_bignum.c	/^static void adv_bignum_num_4_0 (Driver *drvthis, i/
+adv_bignum_num_4_3	adv_bignum.c	/^static void adv_bignum_num_4_3 (Driver *drvthis, i/
+adv_bignum_write_num	adv_bignum.c	/^static void adv_bignum_write_num (Driver *drvthis,/
+argv2string	menu_commands.c	/^static char *argv2string(int argc, char **argv)$/
+asnprintf	snprintf.c	/^int asnprintf (char **ptr, size_t str_m, const cha/
+asprintf	snprintf.c	/^int asprintf(char **ptr, const char *fmt, \/*args*\//
+Backlight_Brightness	CwLnx.c	/^void Backlight_Brightness(int fd, int brightness)$/
+backlight_func	client_commands.c	/^backlight_func (Client * c, int argc, char **argv)/
+battery_screen	batt.c	/^battery_screen (int rep, int display, int *flags_p/
+battery_status	batt.c	/^battery_status(int status)$/
+bayrad_backlight	bayrad.c	/^bayrad_backlight(Driver * drvthis, int on)$/
+bayrad_cellheight	bayrad.c	/^bayrad_cellheight(Driver * drvthis)$/
+bayrad_cellwidth	bayrad.c	/^bayrad_cellwidth(Driver * drvthis)$/
+bayrad_chr	bayrad.c	/^bayrad_chr(Driver * drvthis, int x, int y, char c)/
+bayrad_clear	bayrad.c	/^bayrad_clear(Driver * drvthis)$/
+bayrad_close	bayrad.c	/^bayrad_close(Driver * drvthis)$/
+bayrad_flush	bayrad.c	/^bayrad_flush(Driver * drvthis)$/
+bayrad_get_key	bayrad.c	/^bayrad_get_key(Driver * drvthis)$/
+bayrad_hbar	bayrad.c	/^bayrad_hbar(Driver * drvthis, int x, int y, int le/
+bayrad_height	bayrad.c	/^bayrad_height(Driver * drvthis)$/
+bayrad_icon	bayrad.c	/^bayrad_icon(Driver * drvthis, int x, int y, int ic/
+bayrad_init	bayrad.c	/^bayrad_init(Driver *drvthis)$/
+bayrad_init_hbar	bayrad.c	/^bayrad_init_hbar(Driver * drvthis)$/
+bayrad_init_num	bayrad.c	/^bayrad_init_num(Driver * drvthis)$/
+bayrad_init_vbar	bayrad.c	/^bayrad_init_vbar(Driver * drvthis)$/
+bayrad_num	bayrad.c	/^bayrad_num(Driver * drvthis, int x, int num)$/
+bayrad_set_char	bayrad.c	/^bayrad_set_char(Driver * drvthis, int n, char *dat/
+bayrad_string	bayrad.c	/^bayrad_string(Driver * drvthis, int x, int y, char/
+bayrad_vbar	bayrad.c	/^bayrad_vbar(Driver * drvthis, int x, int y, int le/
+bayrad_width	bayrad.c	/^bayrad_width(Driver * drvthis)$/
+big_clock_screen	chrono.c	/^big_clock_screen (int rep, int display, int *flags/
+buffile_close	fileio.c	/^int buffile_close ( buffile * file ) {$/
+buffile_open	fileio.c	/^buffile *buffile_open( const char *path, const cha/
+buffile_read	fileio.c	/^char * buffile_read ( buffile * file, size_t n ) {/
+bwct_usb_HD44780_backlight	hd44780-bwct-usb.c	/^bwct_usb_HD44780_backlight(PrivateData *p, unsigne/
+bwct_usb_HD44780_scankeypad	hd44780-bwct-usb.c	/^bwct_usb_HD44780_scankeypad(PrivateData *p)$/
+bwct_usb_HD44780_senddata	hd44780-bwct-usb.c	/^bwct_usb_HD44780_senddata(PrivateData *p, unsigned/
+BytesAvail	CFontz633io.c	/^int BytesAvail(ReceiveBuffer *rb)$/
+catch_reload_signal	main.c	/^catch_reload_signal(int val)$/
+CFontz633_backlight	CFontz633.c	/^CFontz633_backlight (Driver *drvthis, int on)$/
+CFontz633_cellheight	CFontz633.c	/^CFontz633_cellheight (Driver *drvthis)$/
+CFontz633_cellwidth	CFontz633.c	/^CFontz633_cellwidth (Driver *drvthis)$/
+CFontz633_chr	CFontz633.c	/^CFontz633_chr (Driver *drvthis, int x, int y, char/
+CFontz633_clear	CFontz633.c	/^CFontz633_clear (Driver *drvthis)$/
+CFontz633_close	CFontz633.c	/^CFontz633_close (Driver *drvthis)$/
+CFontz633_flush	CFontz633.c	/^CFontz633_flush (Driver *drvthis)$/
+CFontz633_get_brightness	CFontz633.c	/^CFontz633_get_brightness(Driver *drvthis, int stat/
+CFontz633_get_contrast	CFontz633.c	/^CFontz633_get_contrast (Driver *drvthis)$/
+CFontz633_get_key	CFontz633.c	/^CFontz633_get_key (Driver *drvthis)$/
+CFontz633_hardware_clear	CFontz633.c	/^CFontz633_hardware_clear (Driver *drvthis)$/
+CFontz633_hbar	CFontz633.c	/^CFontz633_hbar (Driver *drvthis, int x, int y, int/
+CFontz633_height	CFontz633.c	/^CFontz633_height (Driver *drvthis)$/
+CFontz633_hidecursor	CFontz633.c	/^CFontz633_hidecursor (Driver *drvthis)$/
+CFontz633_icon	CFontz633.c	/^CFontz633_icon (Driver *drvthis, int x, int y, int/
+CFontz633_init	CFontz633.c	/^CFontz633_init (Driver *drvthis)$/
+CFontz633_init_hbar	CFontz633.c	/^CFontz633_init_hbar (Driver *drvthis)$/
+CFontz633_init_vbar	CFontz633.c	/^CFontz633_init_vbar (Driver *drvthis)$/
+CFontz633_no_fan_report	CFontz633.c	/^CFontz633_no_fan_report (Driver *drvthis)$/
+CFontz633_no_live_report	CFontz633.c	/^CFontz633_no_live_report (Driver *drvthis)$/
+CFontz633_no_temp_report	CFontz633.c	/^CFontz633_no_temp_report (Driver *drvthis)$/
+CFontz633_num	CFontz633.c	/^CFontz633_num (Driver *drvthis, int x, int num)$/
+CFontz633_reboot	CFontz633.c	/^CFontz633_reboot (Driver *drvthis)$/
+CFontz633_set_brightness	CFontz633.c	/^CFontz633_set_brightness(Driver *drvthis, int stat/
+CFontz633_set_char	CFontz633.c	/^CFontz633_set_char (Driver *drvthis, int n, char */
+CFontz633_set_contrast	CFontz633.c	/^CFontz633_set_contrast (Driver *drvthis, int promi/
+CFontz633_string	CFontz633.c	/^CFontz633_string (Driver *drvthis, int x, int y, c/
+CFontz633_vbar	CFontz633.c	/^CFontz633_vbar (Driver *drvthis, int x, int y, int/
+CFontz633_width	CFontz633.c	/^CFontz633_width (Driver *drvthis)$/
+CFontz_autoscroll	CFontz.c	/^CFontz_autoscroll (Driver *drvthis, int on)$/
+CFontz_backlight	CFontz.c	/^CFontz_backlight (Driver *drvthis, int on)$/
+CFontz_chr	CFontz.c	/^CFontz_chr (Driver *drvthis, int x, int y, unsigne/
+CFontz_clear	CFontz.c	/^CFontz_clear (Driver *drvthis)$/
+CFontz_close	CFontz.c	/^CFontz_close (Driver *drvthis)$/
+CFontz_flush	CFontz.c	/^CFontz_flush (Driver *drvthis)$/
+CFontz_get_contrast	CFontz.c	/^CFontz_get_contrast (Driver *drvthis)$/
+CFontz_hbar	CFontz.c	/^CFontz_hbar (Driver *drvthis, int x, int y, int le/
+CFontz_height	CFontz.c	/^CFontz_height (Driver *drvthis)$/
+CFontz_hidecursor	CFontz.c	/^CFontz_hidecursor (Driver *drvthis)$/
+CFontz_icon	CFontz.c	/^CFontz_icon (Driver *drvthis, int x, int y, int ic/
+CFontz_init	CFontz.c	/^CFontz_init (Driver *drvthis)$/
+CFontz_init_hbar	CFontz.c	/^CFontz_init_hbar (Driver *drvthis)$/
+CFontz_init_vbar	CFontz.c	/^CFontz_init_vbar (Driver *drvthis)$/
+CFontz_linewrap	CFontz.c	/^CFontz_linewrap (Driver *drvthis, int on)$/
+CFontzPacket_backlight	CFontzPacket.c	/^CFontzPacket_backlight (Driver *drvthis, int on)$/
+CFontzPacket_cellheight	CFontzPacket.c	/^CFontzPacket_cellheight (Driver *drvthis)$/
+CFontzPacket_cellwidth	CFontzPacket.c	/^CFontzPacket_cellwidth (Driver *drvthis)$/
+CFontzPacket_chr	CFontzPacket.c	/^CFontzPacket_chr (Driver *drvthis, int x, int y, c/
+CFontzPacket_clear	CFontzPacket.c	/^CFontzPacket_clear (Driver *drvthis)$/
+CFontzPacket_close	CFontzPacket.c	/^CFontzPacket_close (Driver *drvthis)$/
+CFontzPacket_flush	CFontzPacket.c	/^CFontzPacket_flush (Driver *drvthis)$/
+CFontzPacket_get_brightness	CFontzPacket.c	/^CFontzPacket_get_brightness(Driver *drvthis, int s/
+CFontzPacket_get_contrast	CFontzPacket.c	/^CFontzPacket_get_contrast (Driver *drvthis)$/
+CFontzPacket_get_info	CFontzPacket.c	/^CFontzPacket_get_info(Driver *drvthis)$/
+CFontzPacket_get_key	CFontzPacket.c	/^CFontzPacket_get_key (Driver *drvthis)$/
+CFontzPacket_hardware_clear	CFontzPacket.c	/^CFontzPacket_hardware_clear (Driver *drvthis)$/
+CFontzPacket_hbar	CFontzPacket.c	/^CFontzPacket_hbar (Driver *drvthis, int x, int y, /
+CFontzPacket_height	CFontzPacket.c	/^CFontzPacket_height (Driver *drvthis)$/
+CFontzPacket_hidecursor	CFontzPacket.c	/^CFontzPacket_hidecursor (Driver *drvthis)$/
+CFontzPacket_icon	CFontzPacket.c	/^CFontzPacket_icon (Driver *drvthis, int x, int y, /
+CFontzPacket_init	CFontzPacket.c	/^CFontzPacket_init (Driver *drvthis)$/
+CFontzPacket_init_hbar	CFontzPacket.c	/^CFontzPacket_init_hbar (Driver *drvthis)$/
+CFontzPacket_init_num	CFontzPacket.c	/^CFontzPacket_init_num(Driver *drvthis)$/
+CFontzPacket_init_vbar	CFontzPacket.c	/^CFontzPacket_init_vbar (Driver *drvthis)$/
+CFontzPacket_no_fan_report	CFontzPacket.c	/^CFontzPacket_no_fan_report (Driver *drvthis)$/
+CFontzPacket_no_live_report	CFontzPacket.c	/^CFontzPacket_no_live_report (Driver *drvthis)$/
+CFontzPacket_no_temp_report	CFontzPacket.c	/^CFontzPacket_no_temp_report (Driver *drvthis)$/
+CFontzPacket_num	CFontzPacket.c	/^CFontzPacket_num(Driver *drvthis, int x, int num)$/
+CFontzPacket_output	CFontzPacket.c	/^CFontzPacket_output(Driver *drvthis, int state)$/
+CFontzPacket_raw_chr	CFontzPacket.c	/^CFontzPacket_raw_chr (Driver *drvthis, int x, int /
+CFontzPacket_reboot	CFontzPacket.c	/^CFontzPacket_reboot (Driver *drvthis)$/
+CFontzPacket_set_brightness	CFontzPacket.c	/^CFontzPacket_set_brightness(Driver *drvthis, int s/
+CFontzPacket_set_char	CFontzPacket.c	/^CFontzPacket_set_char (Driver *drvthis, int n, cha/
+CFontzPacket_set_contrast	CFontzPacket.c	/^CFontzPacket_set_contrast (Driver *drvthis, int pr/
+CFontzPacket_string	CFontzPacket.c	/^CFontzPacket_string (Driver *drvthis, int x, int y/
+CFontzPacket_vbar	CFontzPacket.c	/^CFontzPacket_vbar (Driver *drvthis, int x, int y, /
+CFontzPacket_width	CFontzPacket.c	/^CFontzPacket_width (Driver *drvthis)$/
+CFontz_reboot	CFontz.c	/^CFontz_reboot (Driver *drvthis)$/
+CFontz_set_char	CFontz.c	/^CFontz_set_char (Driver *drvthis, int n, char *dat/
+CFontz_set_contrast	CFontz.c	/^CFontz_set_contrast (Driver *drvthis, int promille/
+CFontz_string	CFontz.c	/^CFontz_string (Driver *drvthis, int x, int y, unsi/
+CFontz_vbar	CFontz.c	/^CFontz_vbar (Driver *drvthis, int x, int y, int le/
+CFontz_width	CFontz.c	/^CFontz_width (Driver *drvthis)$/
+CHAIN_END	lcdexec.c	/^#define CHAIN_END(e) { if( e<0 ) { report( RPT_CRI/
+CHAIN_END	main.c	/^#define CHAIN_END(e,msg) { if( e<0 ) { report( RPT/
+CHAIN	lcdexec.c	/^#define CHAIN(e,f) { if( e>=0 ) { e=(f); }}$/
+CHAIN	main.c	/^#define CHAIN(e,f) { if( e>=0 ) { e=(f); }}$/
+check_for_packet	CFontz633io.c	/^check_for_packet(int fd, COMMAND_PACKET *in, unsig/
+child_ok_func	main.c	/^child_ok_func(int signal)$/
+Clear_Screen	CwLnx.c	/^void Clear_Screen(int fd)$/
+clear_settings	main.c	/^clear_settings(void)$/
+client_add_key_func	client_commands.c	/^client_add_key_func (Client * c, int argc, char **/
+client_add_message	client.c	/^client_add_message (Client * c, char *message)$/
+client_add_screen	client.c	/^client_add_screen (Client * c, Screen * s)$/
+client_create	client.c	/^Client * client_create (int sock)$/
+client_del_key_func	client_commands.c	/^client_del_key_func (Client * c, int argc, char **/
+client_destroy	client.c	/^client_destroy (Client * c)$/
+client_find_screen	client.c	/^client_find_screen (Client * c, char *id)$/
+client_get_message	client.c	/^client_get_message (Client * c)$/
+client_remove_screen	client.c	/^client_remove_screen (Client * c, Screen * s)$/
+clients_add_client	clients.c	/^clients_add_client (Client *c)$/
+clients_client_count	clients.c	/^clients_client_count ()$/
+client_screen_count	client.c	/^int client_screen_count (Client * c)$/
+client_set_func	client_commands.c	/^client_set_func (Client * c, int argc, char **argv/
+clients_find_client_by_sock	clients.c	/^clients_find_client_by_sock (int sock)$/
+clients_getfirst	clients.c	/^clients_getfirst ()$/
+clients_getnext	clients.c	/^clients_getnext ()$/
+clients_init	clients.c	/^clients_init ()$/
+clients_remove_client	clients.c	/^clients_remove_client (Client *c)$/
+clients_shutdown	clients.c	/^clients_shutdown ()$/
+clock_screen	chrono.c	/^clock_screen (int rep, int display, int *flags_ptr/
+common_init	hd44780.c	/^common_init (PrivateData *p, unsigned char if_bit)/
+compare_priority	screenlist.c	/^compare_priority (void *one, void *two)$/
+config_clear	configfile.c	/^void config_clear()$/
+config_get_bool	configfile.c	/^short config_get_bool( char *sectionname, char *ke/
+config_get_float	configfile.c	/^double config_get_float( char *sectionname, char */
+config_get_int	configfile.c	/^long int config_get_int( char *sectionname, char */
+config_get_string	configfile.c	/^char *config_get_string( char * sectionname, char /
+config_has_key	configfile.c	/^int config_has_key( char *sectionname, char *keyna/
+config_has_section	configfile.c	/^int config_has_section( char *sectionname )$/
+config_read_file	configfile.c	/^int config_read_file( char *filename )$/
+config_read_string	configfile.c	/^int config_read_string( char *sectionname, char *s/
+connect_and_setup	lcdexec.c	/^int connect_and_setup ()$/
+connect_to_ldap	configfile.c	/^connect_to_ldap (void)$/
+cpu_graph_screen	cpu.c	/^cpu_graph_screen(int rep, int display, int *flags_/
+cpu_screen	cpu.c	/^cpu_screen(int rep, int display, int *flags_ptr)$/
+cpu_smp_screen	cpu_smp.c	/^cpu_smp_screen (int rep, int display, int *flags_p/
+credit_screen	mode.c	/^credit_screen(int rep, int display, int *flags_ptr/
+curses_backlight	curses_drv.c	/^curses_backlight (Driver *drvthis, int on)$/
+curses_chr	curses_drv.c	/^curses_chr (Driver *drvthis, int x, int y, char c)/
+curses_clear	curses_drv.c	/^curses_clear (Driver *drvthis)$/
+curses_close	curses_drv.c	/^curses_close (Driver *drvthis)$/
+curses_flush	curses_drv.c	/^curses_flush (Driver *drvthis)$/
+curses_get_key	curses_drv.c	/^curses_get_key (Driver *drvthis)$/
+curses_hbar	curses_drv.c	/^curses_hbar (Driver *drvthis, int x, int y, int le/
+curses_height	curses_drv.c	/^curses_height (Driver *drvthis)$/
+curses_icon	curses_drv.c	/^curses_icon (Driver *drvthis, int x, int y, int ic/
+curses_init	curses_drv.c	/^curses_init (Driver *drvthis)$/
+curses_restore_screen	curses_drv.c	/^curses_restore_screen (Driver *drvthis)$/
+curses_string	curses_drv.c	/^curses_string (Driver *drvthis, int x, int y, char/
+curses_vbar	curses_drv.c	/^curses_vbar (Driver *drvthis, int x, int y, int le/
+curses_wborder	curses_drv.c	/^curses_wborder (Driver *drvthis)$/
+curses_width	curses_drv.c	/^curses_width (Driver *drvthis)$/
+CwLnx_autoscroll	CwLnx.c	/^CwLnx_autoscroll(int fd, int on)$/
+CwLnx_backlight	CwLnx.c	/^CwLnx_backlight(Driver * drvthis, int on)$/
+CwLnx_chr	CwLnx.c	/^CwLnx_chr(Driver *drvthis, int x, int y, char c)$/
+CwLnx_clear	CwLnx.c	/^CwLnx_clear(Driver *drvthis)$/
+CwLnx_close	CwLnx.c	/^CwLnx_close(Driver *drvthis)$/
+CwLnx_draw_frame	CwLnx.c	/^CwLnx_draw_frame(Driver *drvthis, char *dat)$/
+CwLnx_flush	CwLnx.c	/^CwLnx_flush(Driver *drvthis)$/
+CwLnx_flushtime_heartbeat	CwLnx.c	/^CwLnx_flushtime_heartbeat(Driver * drvthis)$/
+CwLnx_get_brightness	CwLnx.c	/^CwLnx_get_brightness(Driver * drvthis, int state)$/
+CwLnx_get_key	CwLnx.c	/^CwLnx_get_key(Driver * drvthis)$/
+CwLnx_hbar	CwLnx.c	/^CwLnx_hbar(Driver * drvthis, int x, int y, int len/
+CwLnx_heartbeat	CwLnx.c	/^CwLnx_heartbeat(Driver * drvthis, int type)$/
+CwLnx_height	CwLnx.c	/^CwLnx_height(Driver *drvthis)$/
+CwLnx_hidecursor	CwLnx.c	/^CwLnx_hidecursor(int fd)$/
+CwLnx_icon	CwLnx.c	/^CwLnx_icon(Driver * drvthis, int x, int y, int ico/
+CwLnx_init	CwLnx.c	/^int CwLnx_init(Driver * drvthis)$/
+CwLnx_init_hbar	CwLnx.c	/^CwLnx_init_hbar(Driver * drvthis)$/
+CwLnx_init_vbar	CwLnx.c	/^CwLnx_init_vbar(Driver * drvthis)$/
+CwLnx_linewrap	CwLnx.c	/^CwLnx_linewrap(int fd, int on)$/
+CwLnx_parse_keypad_setting	CwLnx.c	/^static char CwLnx_parse_keypad_setting(Driver *drv/
+CwLnx_set_brightness	CwLnx.c	/^CwLnx_set_brightness(Driver * drvthis, int state, /
+CwLnx_set_char	CwLnx.c	/^CwLnx_set_char(Driver * drvthis, int n, char *dat)/
+CwLnx_string	CwLnx.c	/^CwLnx_string(Driver * drvthis, int x, int y, char /
+CwLnx_vbar	CwLnx.c	/^CwLnx_vbar(Driver * drvthis, int x, int y, int len/
+CwLnx_width	CwLnx.c	/^CwLnx_width(Driver *drvthis)$/
+daemonize	main.c	/^daemonize(void)$/
+data_ready	pylcd.c	/^int data_ready(pylcd_private_data *status)$/
+debug	debug.h	/^static inline void debug(const char *format, ...\/*/
+Disable_Backlight	CwLnx.c	/^void Disable_Backlight(int fd)$/
+Disable_Cursor	CwLnx.c	/^void Disable_Cursor(int fd)$/
+Disable_Pixel	CwLnx.c	/^void Disable_Pixel(int fd, int x, int y)$/
+Disable_Scroll	CwLnx.c	/^void Disable_Scroll(int fd)$/
+Disable_Wrap	CwLnx.c	/^void Disable_Wrap(int fd)$/
+disk_screen	disk.c	/^disk_screen (int rep, int display, int *flags_ptr)/
+do_mainloop	main.c	/^do_mainloop(void)$/
+dont_report	report.h	/^static inline void dont_report( const int level, c/
+do_reload	main.c	/^do_reload(void)$/
+drawchar2fb	sed1520.c	/^drawchar2fb (unsigned char *framebuf, int x, int y/
+driver_alt_cursor	driver.c	/^void driver_alt_cursor( Driver * drv, int x, int y/
+driver_alt_hbar	driver.c	/^driver_alt_hbar( Driver * drv, int x, int y, int l/
+driver_alt_heartbeat	driver.c	/^driver_alt_heartbeat( Driver * drv, int state )$/
+driver_alt_icon	driver.c	/^driver_alt_icon( Driver * drv, int x, int y, int i/
+driver_alt_num	driver.c	/^driver_alt_num( Driver * drv, int x, int num )$/
+driver_alt_vbar	driver.c	/^driver_alt_vbar( Driver * drv, int x, int y, int l/
+driver_bind_module	driver.c	/^driver_bind_module( Driver * driver )$/
+driver_does_input	driver.c	/^driver_does_input( Driver * driver )$/
+driver_does_output	driver.c	/^driver_does_output( Driver * driver )$/
+driver_load	driver.c	/^driver_load( char * name, char * filename )$/
+drivers_backlight	drivers.c	/^drivers_backlight( int brightness )$/
+drivers_chr	drivers.c	/^drivers_chr( int x, int y, char c )$/
+drivers_clear	drivers.c	/^drivers_clear()$/
+drivers_cursor	drivers.c	/^drivers_cursor( int x, int y, int state )$/
+drivers_flush	drivers.c	/^drivers_flush()$/
+drivers_getfirst	drivers.h	/^static inline Driver * drivers_getfirst ()$/
+drivers_get_info	drivers.c	/^drivers_get_info()$/
+drivers_get_key	drivers.c	/^drivers_get_key()$/
+drivers_getnext	drivers.h	/^static inline Driver * drivers_getnext ()$/
+drivers_hbar	drivers.c	/^drivers_hbar( int x, int y, int len, int promille,/
+drivers_heartbeat	drivers.c	/^drivers_heartbeat( int state )$/
+drivers_icon	drivers.c	/^drivers_icon( int x, int y, int icon )$/
+drivers_load_driver	drivers.c	/^drivers_load_driver( char * name )$/
+drivers_num	drivers.c	/^drivers_num( int x, int num )$/
+drivers_output	drivers.c	/^drivers_output( int state )$/
+drivers_string	drivers.c	/^drivers_string( int x, int y, char * string )$/
+driver_stay_in_foreground	driver.c	/^driver_stay_in_foreground( Driver * driver )$/
+driver_store_private_ptr	driver.c	/^driver_store_private_ptr(Driver * driver, void * p/
+drivers_unload_all	drivers.c	/^drivers_unload_all()$/
+driver_supports_multiple	driver.c	/^driver_supports_multiple( Driver * driver )$/
+drivers_vbar	drivers.c	/^drivers_vbar( int x, int y, int len, int promille,/
+driver_unbind_module	driver.c	/^driver_unbind_module( Driver * driver )$/
+driver_unload	driver.c	/^driver_unload( Driver * driver )$/
+drop_privs	main.c	/^drop_privs(char *user)$/
+EmptyKeyRing	ula200.c	/^void EmptyKeyRing(KeyRing *kr)$/
+EmptyReceiveBuffer	CFontz633io.c	/^void EmptyReceiveBuffer(ReceiveBuffer *rb)$/
+Enable_Backlight	CwLnx.c	/^void Enable_Backlight(int fd)$/
+Enable_Pixel	CwLnx.c	/^void Enable_Pixel(int fd, int x, int y)$/
+Enable_Scroll	CwLnx.c	/^void Enable_Scroll(int fd)$/
+Enable_Wrap	CwLnx.c	/^void Enable_Wrap(int fd)$/
+exec_command	lcdexec.c	/^int exec_command( char * command )$/
+exit_program	main.c	/^exit_program(int val)$/
+ExpandGroovyFont	svgalib_drv.c	/^ExpandGroovyFont (int w, int ht, unsigned char col/
+fast_memcpy	snprintf.c	/^#define fast_memcpy(d,s,n) \\$/
+fast_memset	snprintf.c	/^#define fast_memset(d,c,n) \\$/
+find_key	configfile.c	/^key * find_key( section * s, char * keyname, int s/
+find_section	configfile.c	/^section * find_section( char * sectionname )$/
+flush_messages	report.c	/^static void flush_messages()$/
+ForAllDrivers	drivers.c	/^#define ForAllDrivers(drv) for( drv = LL_GetFirst(/
+get_args	str.c	/^get_args (char **argv, char *str, int max_args)$/
+GetByte	CFontz633io.c	/^unsigned char GetByte(ReceiveBuffer *rb)$/
+get_color	curses_drv.c	/^chtype get_color (char *colorstr) {$/
+get_command_function	command_list.c	/^CommandFunc get_command_function(char *cmd)$/
+get_crc	CFontz633io.c	/^get_crc(unsigned char *buf, int len, int seed)$/
+get_credits_snprintf	snprintf.c	/^inline const char* get_credits_snprintf(const char/
+getentry	machine_Linux.c	/^getentry (const char *tag, const char *bufptr)$/
+GetKeyFromKeyRing	ula200.c	/^unsigned char GetKeyFromKeyRing(KeyRing *kr)$/
+getkey	lcd_sem.c	/^getkey (register char *p)$/
+get_next_char_f	configfile.c	/^char get_next_char_f(buffile * f) {$/
+glcdlib_cellheight	glcdlib.c	/^glcdlib_cellheight (Driver *drvthis)$/
+glcdlib_cellwidth	glcdlib.c	/^glcdlib_cellwidth (Driver *drvthis)$/
+glcdlib_chr	glcdlib.c	/^glcdlib_chr (Driver *drvthis, int x, int y, char c/
+glcdlib_clear	glcdlib.c	/^glcdlib_clear (Driver *drvthis)$/
+glcdlib_close	glcdlib.c	/^glcdlib_close (Driver *drvthis)$/
+glcdlib_flush	glcdlib.c	/^glcdlib_flush (Driver *drvthis)$/
+glcdlib_get_brightness	glcdlib.c	/^glcdlib_get_brightness(Driver *drvthis, int state)/
+glcdlib_get_free_chars	glcdlib.c	/^glcdlib_get_free_chars (Driver *drvthis)$/
+glcdlib_get_info	glcdlib.c	/^glcdlib_get_info (Driver *drvthis)$/
+glcdlib_hbar	glcdlib.c	/^glcdlib_hbar (Driver *drvthis, int x, int y, int l/
+glcdlib_height	glcdlib.c	/^glcdlib_height (Driver *drvthis)$/
+glcdlib_icon	glcdlib.c	/^glcdlib_icon (Driver *drvthis, int x, int y, int i/
+glcdlib_init	glcdlib.c	/^MODULE_EXPORT int glcdlib_init (Driver *drvthis)$/
+glcdlib_num	glcdlib.c	/^glcdlib_num (Driver *drvthis, int x, int num)$/
+glcdlib_set_brightness	glcdlib.c	/^glcdlib_set_brightness(Driver *drvthis, int state,/
+glcdlib_set_char	glcdlib.c	/^glcdlib_set_char (Driver *drvthis, int n, char *da/
+glcdlib_string	glcdlib.c	/^glcdlib_string (Driver *drvthis, int x, int y, cha/
+glcdlib_vbar	glcdlib.c	/^glcdlib_vbar (Driver *drvthis, int x, int y, int l/
+glcdlib_width	glcdlib.c	/^glcdlib_width (Driver *drvthis)$/
+glk_backlight	glk.c	/^glk_backlight(Driver *drvthis, int on)$/
+glk_cellheight	glk.c	/^glk_cellheight (Driver *drvthis)$/
+glk_cellwidth	glk.c	/^glk_cellwidth (Driver *drvthis)$/
+glk_chr	glk.c	/^glk_chr(Driver *drvthis, int x, int y, char c)$/
+glk_clear_forced	glk.c	/^void glk_clear_forced(Driver *drvthis)$/
+glk_clear	glk.c	/^glk_clear(Driver *drvthis)$/
+glk_close	glk.c	/^glk_close(Driver *drvthis)$/
+glkclose	glkproto.c	/^glkclose(GLKDisplay *fd)$/
+glkflow	glkproto.c	/^glkflow(GLKDisplay *fd, int full, int empty)$/
+glk_flush	glk.c	/^glk_flush(Driver *drvthis)$/
+glkgetc	glkproto.c	/^glkgetc(GLKDisplay *fd)$/
+glk_get_contrast	glk.c	/^glk_get_contrast(Driver *drvthis)$/
+glkget	glkproto.c	/^glkget(GLKDisplay *fd)$/
+glk_get_key	glk.c	/^glk_get_key(Driver *drvthis)$/
+glk_height	glk.c	/^glk_height (Driver *drvthis)$/
+glk_init	glk.c	/^glk_init(Driver *drvthis)$/
+glk_init_hbar	glk.c	/^glk_init_hbar(Driver *drvthis)$/
+glk_init_num	glk.c	/^glk_init_num(Driver *drvthis)$/
+glk_init_vbar	glk.c	/^glk_init_vbar(Driver *drvthis)$/
+glk_num	glk.c	/^glk_num(Driver *drvthis, int x, int num)$/
+glk_old_hbar	glk.c	/^glk_old_hbar(Driver *drvthis, int x, int y, int le/
+glk_old_icon	glk.c	/^glk_old_icon(Driver *drvthis, int which, int dest)/
+glk_old_vbar	glk.c	/^glk_old_vbar(Driver *drvthis, int x, int len)$/
+glkopen	glkproto.c	/^GLKDisplay *glkopen(char *name, tcflag_t speed)$/
+glk_output	glk.c	/^glk_output(Driver *drvthis, int on)$/
+glkpoll	glkproto.c	/^glkpoll(GLKDisplay *fd, int timeout)$/
+glkputa_confirm	glkproto.c	/^glkputa_confirm(GLKDisplay *fd, int len, unsigned /
+glkputa	glkproto.c	/^glkputa(GLKDisplay *fd, int len, unsigned char *st/
+glkput_confirm	glkproto.c	/^glkput_confirm(GLKDisplay *fd, int c)$/
+glkput_echo	glkproto.c	/^glkput_echo(GLKDisplay *fd, int c)$/
+glkput	glkproto.c	/^glkput(GLKDisplay *fd, int c)$/
+glkputl	glkproto.c	/^glkputl(GLKDisplay *fd, ...)$/
+glkputs	glkproto.c	/^glkputs(GLKDisplay *fd, char *str)$/
+glk_set_char	glk.c	/^glk_set_char(Driver *drvthis, int n, char *dat)$/
+glk_set_contrast	glk.c	/^glk_set_contrast(Driver *drvthis, int promille)$/
+glk_string	glk.c	/^glk_string(Driver *drvthis, int x, int y, char str/
+glktimeout	glkproto.c	/^glktimeout(GLKDisplay *fd, int timeout)$/
+glkunget	glkproto.c	/^glkunget(GLKDisplay *fd, int c)$/
+glk_width	glk.c	/^glk_width (Driver *drvthis)$/
+goodbye_screen	serverscreens.c	/^goodbye_screen ()$/
+gotoXY	hd44780-lis2.c	/^void gotoXY(int fd, int x, int y)$/
+handle_close	menuscreens.c	/^static void handle_close()$/
+handle_enter	menuscreens.c	/^static void handle_enter()$/
+handle_input	input.c	/^handle_input ()$/
+handle_none	menuscreens.c	/^static void handle_none()$/
+handle_predecessor	menuscreens.c	/^static void handle_predecessor()$/
+handle_quit	menuscreens.c	/^static void handle_quit()$/
+handle_successor	menuscreens.c	/^static void handle_successor()$/
+HD44780_backlight	hd44780.c	/^HD44780_backlight (Driver *drvthis, int on)$/
+HD44780_chr	hd44780.c	/^HD44780_chr (Driver *drvthis, int x, int y, char c/
+HD44780_clear	hd44780.c	/^HD44780_clear (Driver *drvthis)$/
+HD44780_close	hd44780.c	/^HD44780_close(Driver *drvthis)$/
+HD44780_flush	hd44780.c	/^HD44780_flush (Driver *drvthis)$/
+HD44780_get_key	hd44780.c	/^HD44780_get_key(Driver *drvthis)$/
+HD44780_hbar	hd44780.c	/^HD44780_hbar (Driver *drvthis, int x, int y, int l/
+HD44780_height	hd44780.c	/^HD44780_height (Driver *drvthis)$/
+HD44780_icon	hd44780.c	/^HD44780_icon (Driver *drvthis, int x, int y, int i/
+HD44780_init_hbar	hd44780.c	/^HD44780_init_hbar (Driver *drvthis)$/
+HD44780_init	hd44780.c	/^HD44780_init (Driver * drvthis)$/
+HD44780_init_num	hd44780.c	/^HD44780_init_num (Driver *drvthis)$/
+HD44780_init_vbar	hd44780.c	/^HD44780_init_vbar (Driver *drvthis)$/
+HD44780_num	hd44780.c	/^HD44780_num (Driver *drvthis, int x, int num)$/
+HD44780_output	hd44780.c	/^HD44780_output (Driver *drvthis, int on)$/
+HD44780_position	hd44780.c	/^HD44780_position (Driver *drvthis, int x, int y)$/
+HD44780_scankeypad	hd44780.c	/^unsigned char HD44780_scankeypad(PrivateData *p)$/
+HD44780_set_char	hd44780.c	/^HD44780_set_char (Driver *drvthis, int n, char *da/
+HD44780_string	hd44780.c	/^HD44780_string (Driver *drvthis, int x, int y, cha/
+HD44780_vbar	hd44780.c	/^HD44780_vbar (Driver *drvthis, int x, int y, int l/
+HD44780_width	hd44780.c	/^HD44780_width (Driver *drvthis)$/
+hd_init_4bit	hd44780-4bit.c	/^hd_init_4bit (Driver *drvthis)$/
+hd_init_bwct_usb	hd44780-bwct-usb.c	/^hd_init_bwct_usb (Driver *drvthis)$/
+hd_init_ext8bit	hd44780-ext8bit.c	/^hd_init_ext8bit (Driver *drvthis)$/
+hd_init_i2c	hd44780-i2c.c	/^hd_init_i2c (Driver *drvthis)$/
+hd_init_lcdserializer	hd44780-lcdserializer.c	/^hd_init_lcdserializer (Driver *drvthis)$/
+hd_init_lis2	hd44780-lis2.c	/^int hd_init_lis2 (Driver *drvthis)$/
+hd_init_picanlcd	hd44780-picanlcd.c	/^hd_init_picanlcd (Driver *drvthis)$/
+hd_init_serialLpt	hd44780-serialLpt.c	/^hd_init_serialLpt (Driver *drvthis)$/
+hd_init_winamp	hd44780-winamp.c	/^hd_init_winamp (Driver *drvthis)$/
+hello_func	client_commands.c	/^hello_func (Client * c, int argc, char **argv)$/
+i2c_HD44780_backlight	hd44780-i2c.c	/^void i2c_HD44780_backlight (PrivateData *p, unsign/
+i2c_HD44780_senddata	hd44780-i2c.c	/^i2c_HD44780_senddata (PrivateData *p, unsigned cha/
+i2c_out	hd44780-i2c.c	/^i2c_out (PrivateData *p, unsigned char val)$/
+icp_a106_chr	icp_a106.c	/^icp_a106_chr (Driver *drvthis, int x, int y, char /
+icp_a106_clear	icp_a106.c	/^icp_a106_clear (Driver *drvthis)$/
+icp_a106_close	icp_a106.c	/^icp_a106_close (Driver *drvthis)$/
+icp_a106_flush	icp_a106.c	/^icp_a106_flush (Driver *drvthis)$/
+icp_a106_hbar	icp_a106.c	/^icp_a106_hbar(Driver *drvthis, int x, int y, int l/
+icp_a106_height	icp_a106.c	/^icp_a106_height (Driver *drvthis)$/
+icp_a106_icon	icp_a106.c	/^icp_a106_icon (Driver *drvthis, int x, int y, int /
+icp_a106_init	icp_a106.c	/^icp_a106_init (Driver *drvthis)$/
+icp_a106_num	icp_a106.c	/^icp_a106_num (Driver *drvthis, int x, int num)$/
+icp_a106_string	icp_a106.c	/^icp_a106_string (Driver *drvthis, int x, int y, ch/
+icp_a106_vbar	icp_a106.c	/^icp_a106_vbar (Driver *drvthis, int x, int y, int /
+icp_a106_width	icp_a106.c	/^icp_a106_width (Driver *drvthis)$/
+imon_cellheight	imon.c	/^MODULE_EXPORT int  imon_cellheight (Driver *drvthi/
+imon_cellwidth	imon.c	/^MODULE_EXPORT int imon_cellwidth (Driver *drvthis)/
+imon_chr	imon.c	/^MODULE_EXPORT void imon_chr (Driver *drvthis, int /
+imon_clear	imon.c	/^MODULE_EXPORT void imon_clear (Driver *drvthis)$/
+imon_close	imon.c	/^MODULE_EXPORT void imon_close (Driver *drvthis)$/
+imon_flush	imon.c	/^MODULE_EXPORT void imon_flush (Driver *drvthis)$/
+imon_get_info	imon.c	/^MODULE_EXPORT const char * imon_get_info (Driver */
+imon_hbar	imon.c	/^MODULE_EXPORT void imon_hbar (Driver *drvthis, int/
+imon_height	imon.c	/^MODULE_EXPORT int  imon_height (Driver *drvthis)$/
+imon_init	imon.c	/^MODULE_EXPORT int imon_init (Driver *drvthis)$/
+imon_string	imon.c	/^MODULE_EXPORT void imon_string (Driver *drvthis, i/
+imon_vbar	imon.c	/^MODULE_EXPORT void imon_vbar (Driver *drvthis, int/
+imon_width	imon.c	/^MODULE_EXPORT int imon_width (Driver *drvthis)$/
+info_func	client_commands.c	/^info_func (Client * c, int argc, char **argv)$/
+init_drivers	main.c	/^init_drivers(void)$/
+Init_Port	CwLnx.c	/^void Init_Port(fd)$/
+init_screens	main.c	/^init_screens(void)$/
+initTTY	pylcd.c	/^int initTTY(Driver *drvthis, int FD)$/
+input_find_key	input.c	/^KeyReservation * input_find_key (const char * key,/
+input_init	input.c	/^int input_init()$/
+input_internal_key	input.c	/^input_internal_key (const char * key)$/
+input_release_client_keys	input.c	/^void input_release_client_keys (Client * client)$/
+input_release_key	input.c	/^void input_release_key (const char * key, Client */
+input_send_to_client	input.c	/^void input_send_to_client (Client * c, const char /
+input_shutdown	input.c	/^int input_shutdown()$/
+install_signal_handlers	main.c	/^install_signal_handlers(int allow_reload)$/
+interpret_boolean_arg	main.c	/^interpret_boolean_arg(char *s)$/
+IOWarrior_backlight	IOWarrior.c	/^IOWarrior_backlight(Driver *drvthis, int on)$/
+IOWarrior_chr	IOWarrior.c	/^IOWarrior_chr(Driver *drvthis, int x, int y, char /
+IOWarrior_clear	IOWarrior.c	/^IOWarrior_clear(Driver *drvthis)$/
+IOWarrior_close	IOWarrior.c	/^IOWarrior_close(Driver *drvthis)$/
+IOWarrior_flush	IOWarrior.c	/^IOWarrior_flush(Driver *drvthis)$/
+IOWarrior_get_info	IOWarrior.c	/^IOWarrior_get_info (Driver *drvthis)$/
+IOWarrior_hbar	IOWarrior.c	/^IOWarrior_hbar(Driver *drvthis, int x, int y, int /
+IOWarrior_height	IOWarrior.c	/^IOWarrior_height(Driver *drvthis)$/
+IOWarrior_icon	IOWarrior.c	/^IOWarrior_icon(Driver *drvthis, int x, int y, int /
+IOWarrior_init_hbar	IOWarrior.c	/^IOWarrior_init_hbar(Driver *drvthis)$/
+IOWarrior_init	IOWarrior.c	/^IOWarrior_init(Driver *drvthis)$/
+IOWarrior_init_num	IOWarrior.c	/^IOWarrior_init_num(Driver *drvthis)$/
+IOWarrior_init_vbar	IOWarrior.c	/^IOWarrior_init_vbar(Driver *drvthis)$/
+IOWarrior_num	IOWarrior.c	/^IOWarrior_num(Driver *drvthis, int x, int num)$/
+IOWarrior_output	IOWarrior.c	/^IOWarrior_output(Driver *drvthis, int on)$/
+IOWarrior_set_char	IOWarrior.c	/^IOWarrior_set_char(Driver *drvthis, int n, char *d/
+IOWarrior_string	IOWarrior.c	/^IOWarrior_string(Driver *drvthis, int x, int y, ch/
+IOWarrior_vbar	IOWarrior.c	/^IOWarrior_vbar(Driver *drvthis, int x, int y, int /
+IOWarrior_width	IOWarrior.c	/^IOWarrior_width(Driver *drvthis)$/
+iowlcd_disable	IOWarrior.c	/^int iowlcd_disable(usb_dev_handle *udh)$/
+iowlcd_display_clear	IOWarrior.c	/^int iowlcd_display_clear(usb_dev_handle *udh)$/
+iowlcd_display_on_off	IOWarrior.c	/^int iowlcd_display_on_off(usb_dev_handle *udh,int /
+iowlcd_enable	IOWarrior.c	/^int iowlcd_enable(usb_dev_handle *udh)$/
+iowlcd_load_chars	IOWarrior.c	/^int iowlcd_load_chars(usb_dev_handle *udh,int offs/
+iowlcd_set_cgram_addr	IOWarrior.c	/^int iowlcd_set_cgram_addr(usb_dev_handle *udh,int /
+iowlcd_set_ddram_addr	IOWarrior.c	/^int iowlcd_set_ddram_addr(usb_dev_handle *udh,int /
+iowlcd_set_function	IOWarrior.c	/^int iowlcd_set_function(usb_dev_handle *udh,int ei/
+iowlcd_set_pos	IOWarrior.c	/^int iowlcd_set_pos(usb_dev_handle *udh,int x,int y/
+iowlcd_set_text	IOWarrior.c	/^int iowlcd_set_text(usb_dev_handle *udh,int x,int /
+iow_lcd_wcmd	IOWarrior.c	/^static int iow_lcd_wcmd(usb_dev_handle *udh, unsig/
+iowlcd_write_data	IOWarrior.c	/^int iowlcd_write_data(usb_dev_handle *udh,int len,/
+iowled_on_off	IOWarrior.c	/^int iowled_on_off(usb_dev_handle *udh,int type, un/
+iow_led_wcmd	IOWarrior.c	/^static int iow_led_wcmd(usb_dev_handle *udh,int le/
+irmanin_close	irmanin.c	/^irmanin_close (Driver *drvthis)$/
+irmanin_get_key	irmanin.c	/^irmanin_get_key (Driver *drvthis)$/
+irmanin_init	irmanin.c	/^irmanin_init (Driver *drvthis)$/
+is_closing_quote	parse.c	/^static inline int is_closing_quote(char x, char q)/
+isdigit	snprintf.c	/^#define isdigit(c) ((c) >= '0' && (c) <= '9')$/
+is_final	parse.c	/^static inline int is_final(char x) {$/
+is_menu_key	menuscreens.c	/^bool is_menu_key (const char * key)$/
+is_opening_quote	parse.c	/^static inline int is_opening_quote(char x, char q)/
+is_whitespace	parse.c	/^static inline int is_whitespace(char x)	{$/
+joy_close	joy.c	/^joy_close (Driver *drvthis)$/
+joy_get_key	joy.c	/^joy_get_key (Driver *drvthis)$/
+joy_init	joy.c	/^joy_init (Driver *drvthis)$/
+JSIOCGNAME	joy.c	/^#define JSIOCGNAME(len)           _IOC(_IOC_READ, /
+LB216_backlight	lb216.c	/^LB216_backlight(Driver * drvthis, int on)$/
+LB216_cellheight	lb216.c	/^LB216_cellheight (Driver *drvthis)$/
+LB216_cellwidth	lb216.c	/^LB216_cellwidth (Driver *drvthis)$/
+LB216_chr	lb216.c	/^LB216_chr(Driver * drvthis, int x, int y, char c)$/
+LB216_clear	lb216.c	/^LB216_clear (Driver * drvthis)$/
+LB216_close	lb216.c	/^LB216_close(Driver * drvthis)$/
+LB216_flush	lb216.c	/^LB216_flush(Driver * drvthis)$/
+LB216_hbar	lb216.c	/^LB216_hbar(Driver * drvthis, int x, int y, int len/
+LB216_height	lb216.c	/^LB216_height (Driver *drvthis)$/
+LB216_hidecursor	lb216.c	/^static void LB216_hidecursor(Driver * drvthis)$/
+LB216_icon	lb216.c	/^LB216_icon(Driver * drvthis, int x, int y, int ico/
+LB216_init_hbar	lb216.c	/^LB216_init_hbar(Driver * drvthis)$/
+LB216_init	lb216.c	/^LB216_init(Driver * drvthis)$/
+LB216_init_vbar	lb216.c	/^LB216_init_vbar(Driver * drvthis)$/
+LB216_reboot	lb216.c	/^static void LB216_reboot(Driver * drvthis)$/
+LB216_set_char	lb216.c	/^LB216_set_char(Driver * drvthis, int n, char *dat)/
+LB216_string	lb216.c	/^LB216_string (Driver * drvthis, int x, int y, char/
+LB216_vbar	lb216.c	/^LB216_vbar(Driver * drvthis, int x, int len)$/
+LB216_width	lb216.c	/^LB216_width (Driver *drvthis)$/
+lcdm001_chr	lcdm001.c	/^lcdm001_chr (Driver *drvthis, int x, int y, char c/
+lcdm001_clear	lcdm001.c	/^lcdm001_clear (Driver *drvthis)$/
+lcdm001_close	lcdm001.c	/^lcdm001_close (Driver *drvthis)$/
+lcdm001_cursorblink	lcdm001.c	/^lcdm001_cursorblink(Driver *drvthis, int on)$/
+lcdm001_flush	lcdm001.c	/^lcdm001_flush (Driver *drvthis)$/
+lcdm001_get_key	lcdm001.c	/^lcdm001_get_key (Driver *drvthis)$/
+lcdm001_height	lcdm001.c	/^lcdm001_height (Driver *drvthis)$/
+lcdm001_init	lcdm001.c	/^lcdm001_init (Driver *drvthis)$/
+lcdm001_old_hbar	lcdm001.c	/^lcdm001_old_hbar(Driver *drvthis, int x, int y, in/
+lcdm001_old_icon	lcdm001.c	/^lcdm001_old_icon (Driver *drvthis, int which, char/
+lcdm001_old_vbar	lcdm001.c	/^lcdm001_old_vbar(Driver *drvthis, int x, int len)$/
+lcdm001_output	lcdm001.c	/^lcdm001_output (Driver *drvthis, int state)$/
+lcdm001_parse_keypad_setting	lcdm001.c	/^static char lcdm001_parse_keypad_setting(Driver *d/
+lcdm001_string	lcdm001.c	/^lcdm001_string (Driver *drvthis, int x, int y, cha/
+lcdm001_width	lcdm001.c	/^lcdm001_width (Driver *drvthis)$/
+lcdserializer_HD44780_backlight	hd44780-lcdserializer.c	/^lcdserializer_HD44780_backlight (PrivateData *p, u/
+lcdserializer_HD44780_scankeypad	hd44780-lcdserializer.c	/^lcdserializer_HD44780_scankeypad (PrivateData *p)$/
+lcdserializer_HD44780_senddata	hd44780-lcdserializer.c	/^lcdserializer_HD44780_senddata (PrivateData *p, un/
+lcdserLpt_HD44780_backlight	hd44780-serialLpt.c	/^lcdserLpt_HD44780_backlight (PrivateData *p, unsig/
+lcdserLpt_HD44780_scankeypad	hd44780-serialLpt.c	/^unsigned char lcdserLpt_HD44780_scankeypad (Privat/
+lcdserLpt_HD44780_senddata	hd44780-serialLpt.c	/^lcdserLpt_HD44780_senddata (PrivateData *p, unsign/
+lcdstat_HD44780_backlight	hd44780-4bit.c	/^void lcdstat_HD44780_backlight (PrivateData *p, un/
+lcdstat_HD44780_readkeypad	hd44780-4bit.c	/^unsigned char lcdstat_HD44780_readkeypad (PrivateD/
+lcdstat_HD44780_senddata	hd44780-4bit.c	/^lcdstat_HD44780_senddata (PrivateData *p, unsigned/
+lcdtime_HD44780_backlight	hd44780-ext8bit.c	/^void lcdtime_HD44780_backlight (PrivateData *p, un/
+lcdtime_HD44780_output	hd44780-ext8bit.c	/^void lcdtime_HD44780_output(PrivateData *p, int da/
+lcdtime_HD44780_readkeypad	hd44780-ext8bit.c	/^unsigned char lcdtime_HD44780_readkeypad (PrivateD/
+lcdtime_HD44780_senddata	hd44780-ext8bit.c	/^lcdtime_HD44780_senddata (PrivateData *p, unsigned/
+lcdwinamp_HD44780_backlight	hd44780-winamp.c	/^void lcdwinamp_HD44780_backlight (PrivateData *p, /
+lcdwinamp_HD44780_output	hd44780-winamp.c	/^void lcdwinamp_HD44780_output(PrivateData *p, int /
+lcdwinamp_HD44780_readkeypad	hd44780-winamp.c	/^unsigned char lcdwinamp_HD44780_readkeypad (Privat/
+lcdwinamp_HD44780_senddata	hd44780-winamp.c	/^lcdwinamp_HD44780_senddata (PrivateData *p, unsign/
+lcterm_chr	lcterm.c	/^lcterm_chr (Driver *drvthis, int x, int y, char ch/
+lcterm_clear	lcterm.c	/^lcterm_clear (Driver *drvthis)$/
+lcterm_close	lcterm.c	/^lcterm_close (Driver *drvthis)$/
+lcterm_flush	lcterm.c	/^lcterm_flush (Driver *drvthis)$/
+lcterm_hbar	lcterm.c	/^lcterm_hbar(Driver *drvthis, int x, int y, int len/
+lcterm_height	lcterm.c	/^lcterm_height (Driver *drvthis)$/
+lcterm_icon	lcterm.c	/^lcterm_icon (Driver *drvthis, int x, int y, int ic/
+lcterm_init_hbar	lcterm.c	/^lcterm_init_hbar (Driver *drvthis)$/
+lcterm_init	lcterm.c	/^lcterm_init (Driver *drvthis)$/
+lcterm_init_num	lcterm.c	/^lcterm_init_num (Driver *drvthis)$/
+lcterm_init_vbar	lcterm.c	/^lcterm_init_vbar (Driver *drvthis)$/
+lcterm_num	lcterm.c	/^lcterm_num (Driver *drvthis, int x, int num)$/
+lcterm_set_char	lcterm.c	/^lcterm_set_char (Driver *drvthis, int n, char *dat/
+lcterm_string	lcterm.c	/^lcterm_string (Driver *drvthis, int x, int y, char/
+lcterm_vbar	lcterm.c	/^lcterm_vbar (Driver *drvthis, int x, int y, int le/
+lcterm_width	lcterm.c	/^lcterm_width (Driver *drvthis)$/
+lib_adv_bignum	adv_bignum.c	/^lib_adv_bignum(Driver *drvthis, int x, int num, in/
+lib_hbar_static	lcd_lib.c	/^lib_hbar_static (Driver *drvthis, int x, int y, in/
+lib_vbar_static	lcd_lib.c	/^lib_vbar_static (Driver *drvthis, int x, int y, in/
+lircin_close	lircin.c	/^lircin_close (Driver *drvthis)$/
+lircin_get_key	lircin.c	/^lircin_get_key (Driver *drvthis)$/
+lircin_init	lircin.c	/^lircin_init (Driver *drvthis)$/
+lis2_HD44780_backlight	hd44780-lis2.c	/^void lis2_HD44780_backlight (PrivateData *p, unsig/
+lis2_HD44780_scankeypad	hd44780-lis2.c	/^unsigned char lis2_HD44780_scankeypad (PrivateData/
+lis2_HD44780_senddata	hd44780-lis2.c	/^void lis2_HD44780_senddata (PrivateData *p, unsign/
+LL_AddNode	LL.c	/^LL_AddNode (LinkedList * list, void *add)	\/\/ Adds /
+LL_DeleteNode	LL.c	/^LL_DeleteNode (LinkedList * list)$/
+LL_Dequeue	LL.h	/^#define LL_Dequeue(list) LL_Shift(list)$/
+LL_Destroy	LL.c	/^LL_Destroy (LinkedList * list)$/
+LL_dprint	LL.c	/^LL_dprint (LinkedList * list)$/
+LL_End	LL.c	/^LL_End (LinkedList * list)$/
+LL_Enqueue	LL.h	/^#define LL_Enqueue(list,add) LL_Push(list,add)$/
+LL_Find	LL.c	/^LL_Find (LinkedList * list, int compare (void *, v/
+LL_GetByIndex	LL.c	/^LL_GetByIndex (LinkedList * list, int index)$/
+LL_GetFirst	LL.c	/^LL_GetFirst (LinkedList * list)			  \/\/ gets data f/
+LL_GetLast	LL.c	/^LL_GetLast (LinkedList * list)			  \/\/            ./
+LL_Get	LL.c	/^LL_Get (LinkedList * list)$/
+LL_GetNext	LL.c	/^LL_GetNext (LinkedList * list)			  \/\/            ./
+LL_GetNode	LL.c	/^LL_GetNode (LinkedList * list)$/
+LL_GetPrev	LL.c	/^LL_GetPrev (LinkedList * list)			  \/\/            ./
+LL_InsertNode	LL.c	/^LL_InsertNode (LinkedList * list, void *add)	\/\/ Ad/
+LL_Length	LL.c	/^LL_Length (LinkedList * list)			  \/\/ Returns # of /
+LL_Look	LL.c	/^LL_Look (LinkedList * list)				  \/\/ Peek at first /
+LL_new	LL.c	/^LL_new ()$/
+LL_Next	LL.c	/^LL_Next (LinkedList * list)$/
+LL_node_DestroyData	LL.c	/^LL_node_DestroyData (LL_node * node)$/
+LL_node_Destroy	LL.c	/^LL_node_Destroy (LL_node * node)$/
+LL_node_Unlink	LL.c	/^LL_node_Unlink (LL_node * node)$/
+LL_nSwapNodes	LL.c	/^LL_nSwapNodes (int one, int two)	\/\/ Switch two nod/
+LL_Pop	LL.c	/^LL_Pop (LinkedList * list)				  \/\/ Remove node fro/
+LL_Prev	LL.c	/^LL_Prev (LinkedList * list)$/
+LL_PriorityEnqueue	LL.c	/^LL_PriorityEnqueue (LinkedList * list, void *add, /
+LL_Push	LL.c	/^LL_Push (LinkedList * list, void *add)  \/\/ Add nod/
+LL_Put	LL.c	/^LL_Put (LinkedList * list, void *data)$/
+LL_PutNode	LL.c	/^LL_PutNode (LinkedList * list, LL_node * node)$/
+LL_Remove	LL.c	/^LL_Remove (LinkedList * list, void *data)$/
+LL_Rewind	LL.c	/^LL_Rewind (LinkedList * list)$/
+LL_Roll	LL.c	/^LL_Roll (LinkedList * list)				  \/\/ Make last node/
+LL_Shift	LL.c	/^LL_Shift (LinkedList * list)				  \/\/ Remove node f/
+LL_Sort	LL.c	/^LL_Sort (LinkedList * list, int compare (void *, v/
+LL_SwapNodes	LL.c	/^LL_SwapNodes (LL_node * one, LL_node * two)	\/\/ Swi/
+LL_Top	LL.c	/^LL_Top (LinkedList * list)				  \/\/ Peek at end nod/
+LL_UnRoll	LL.c	/^LL_UnRoll (LinkedList * list)			  \/\/ Roll the othe/
+LL_Unshift	LL.c	/^LL_Unshift (LinkedList * list, void *add)	\/\/ Add n/
+machine_close	machine_NetBSD.c	/^int machine_close()$/
+machine_get_battstat	machine_NetBSD.c	/^int machine_get_battstat(int *acstat, int *battfla/
+machine_get_fs	machine_NetBSD.c	/^int machine_get_fs(mounts_type fs[], int *cnt)$/
+machine_get_loadavg	machine_NetBSD.c	/^int machine_get_loadavg(double *load)$/
+machine_get_load	machine_NetBSD.c	/^int machine_get_load(load_type *curr_load)$/
+machine_get_meminfo	machine_NetBSD.c	/^int machine_get_meminfo(meminfo_type *result)$/
+machine_get_procs	machine_NetBSD.c	/^int machine_get_procs(LinkedList *procs)$/
+machine_get_smpload	machine_NetBSD.c	/^int machine_get_smpload(load_type *result, int *nu/
+machine_get_uptime	machine_NetBSD.c	/^int machine_get_uptime(double *up, double *idle)$/
+machine_init	machine_NetBSD.c	/^int machine_init()$/
+main_loop	lcdexec.c	/^int main_loop ()$/
+max	menuitem.h	/^#define max(a,b) (((a) > (b)) ? (a) : (b))$/
+max	sed1330.c	/^#define max(a,b) (((a) > (b)) ? (a) : (b))$/
+mem_screen	mem.c	/^mem_screen (int rep, int display, int *flags_ptr)$/
+mem_top_screen	mem.c	/^mem_top_screen (int rep, int display, int *flags_p/
+menu_add_item_func	menu_commands.c	/^menu_add_item_func (Client * c, int argc, char **a/
+menu_add_item	menu.c	/^menu_add_item (Menu *menu, MenuItem *item)$/
+menu_build_screen	menu.c	/^void menu_build_screen (MenuItem *menu, Screen *s)/
+menu_create	menu.c	/^menu_create (char *id, MenuEventFunc(*event_func),/
+menu_del_item_func	menu_commands.c	/^menu_del_item_func (Client * c, int argc, char **a/
+menu_destroy_all_items	menu.c	/^menu_destroy_all_items (Menu *menu)$/
+menu_destroy	menu.c	/^menu_destroy (Menu *menu)$/
+MenuEventFunc	menu_commands.c	/^MenuEventFunc (menu_commands_handler)$/
+MenuEventFunc	menuitem.h	/^#define MenuEventFunc(f) int (f) (struct MenuItem /
+menu_find_item	menu.c	/^MenuItem *menu_find_item (Menu *menu, char *id, bo/
+menu_get_current_item	menu.c	/^MenuItem *menu_get_current_item (Menu *menu)$/
+menu_getfirst_item	menu.h	/^static inline MenuItem *menu_getfirst_item (Menu */
+menu_get_index_of	menu.c	/^menu_get_index_of(Menu * menu, char * item_id)$/
+menu_get_item_for_predecessor_check	menu.c	/^MenuItem * menu_get_item_for_predecessor_check(Men/
+menu_get_item_for_successor_check	menu.c	/^MenuItem * menu_get_item_for_successor_check(Menu /
+menu_getnext_item	menu.h	/^static inline MenuItem *menu_getnext_item (Menu *m/
+menu_get_subitem	menu.c	/^menu_get_subitem(Menu * menu, int index)$/
+menu_goto_func	menu_commands.c	/^menu_goto_func (Client * c, int argc, char **argv)/
+menuitem_create_action	menuitem.c	/^MenuItem *menuitem_create_action (char *id, MenuEv/
+menuitem_create_alpha	menuitem.c	/^MenuItem *menuitem_create_alpha (char *id, MenuEve/
+menuitem_create_checkbox	menuitem.c	/^MenuItem *menuitem_create_checkbox (char *id, Menu/
+menuitem_create_ip	menuitem.c	/^MenuItem *menuitem_create_ip (char *id, MenuEventF/
+menuitem_create	menuitem.c	/^MenuItem *menuitem_create (MenuItemType type, char/
+menuitem_create_numeric	menuitem.c	/^MenuItem *menuitem_create_numeric (char *id, MenuE/
+menuitem_create_ring	menuitem.c	/^MenuItem *menuitem_create_ring (char *id, MenuEven/
+menuitem_create_slider	menuitem.c	/^MenuItem *menuitem_create_slider (char *id, MenuEv/
+menuitem_destroy_alpha	menuitem.c	/^void menuitem_destroy_alpha (MenuItem *item)$/
+menuitem_destroy_ip	menuitem.c	/^void menuitem_destroy_ip (MenuItem *item)$/
+menuitem_destroy	menuitem.c	/^void menuitem_destroy (MenuItem *item)$/
+menuitem_destroy_numeric	menuitem.c	/^void menuitem_destroy_numeric (MenuItem *item)$/
+menuitem_destroy_ring	menuitem.c	/^void menuitem_destroy_ring (MenuItem *item)$/
+menuitem_destroy_slider	menuitem.c	/^void menuitem_destroy_slider (MenuItem *item)$/
+menuitem_eventtypename_to_eventtype	menuitem.c	/^MenuEventType menuitem_eventtypename_to_eventtype /
+menuitem_eventtype_to_eventtypename	menuitem.c	/^char *menuitem_eventtype_to_eventtypename (MenuEve/
+menuitem_get_client	menuitem.c	/^Client * menuitem_get_client(MenuItem * item)$/
+menuitem_predecessor2menuresult	menuitem.c	/^MenuResult menuitem_predecessor2menuresult(char *p/
+menuitem_process_input_alpha	menuitem.c	/^MenuResult menuitem_process_input_alpha (MenuItem /
+menuitem_process_input_ip	menuitem.c	/^MenuResult menuitem_process_input_ip (MenuItem *it/
+menuitem_process_input	menuitem.c	/^MenuResult menuitem_process_input (MenuItem *item,/
+menuitem_process_input_numeric	menuitem.c	/^MenuResult menuitem_process_input_numeric (MenuIte/
+menuitem_process_input_slider	menuitem.c	/^MenuResult menuitem_process_input_slider (MenuItem/
+menuitem_rebuild_screen_alpha	menuitem.c	/^void menuitem_rebuild_screen_alpha (MenuItem *item/
+menuitem_rebuild_screen_ip	menuitem.c	/^void menuitem_rebuild_screen_ip (MenuItem *item, S/
+menuitem_rebuild_screen	menuitem.c	/^void menuitem_rebuild_screen (MenuItem *item, Scre/
+menuitem_rebuild_screen_numeric	menuitem.c	/^void menuitem_rebuild_screen_numeric (MenuItem *it/
+menuitem_rebuild_screen_slider	menuitem.c	/^void menuitem_rebuild_screen_slider (MenuItem *ite/
+menuitem_reset_alpha	menuitem.c	/^void menuitem_reset_alpha (MenuItem *item)$/
+menuitem_reset_ip	menuitem.c	/^void menuitem_reset_ip (MenuItem *item)$/
+menuitem_reset	menuitem.c	/^void menuitem_reset (MenuItem *item)$/
+menuitem_reset_numeric	menuitem.c	/^void menuitem_reset_numeric (MenuItem *item)$/
+menuitem_search	menuitem.c	/^MenuItem *menuitem_search(char *menu_id, Client *c/
+menuitem_successor2menuresult	menuitem.c	/^MenuResult menuitem_successor2menuresult(char *suc/
+menuitem_typename_to_type	menuitem.c	/^MenuItemType menuitem_typename_to_type (char *name/
+menuitem_type_to_typename	menuitem.c	/^char *menuitem_type_to_typename (MenuItemType type/
+menuitem_update_screen_alpha	menuitem.c	/^void menuitem_update_screen_alpha (MenuItem *item,/
+menuitem_update_screen_ip	menuitem.c	/^void menuitem_update_screen_ip (MenuItem *item, Sc/
+menuitem_update_screen	menuitem.c	/^void menuitem_update_screen (MenuItem *item, Scree/
+menuitem_update_screen_numeric	menuitem.c	/^void menuitem_update_screen_numeric (MenuItem *ite/
+menuitem_update_screen_slider	menuitem.c	/^void menuitem_update_screen_slider (MenuItem *item/
+menu_process_input	menu.c	/^MenuResult menu_process_input(Menu *menu, MenuToke/
+menu_remove_item	menu.c	/^menu_remove_item (Menu *menu, MenuItem *item)$/
+menu_reset	menu.c	/^void menu_reset (Menu *menu)$/
+menuscreen_add_screen	menuscreens.c	/^menuscreen_add_screen (Screen * s)$/
+menuscreen_create_menu	menuscreens.c	/^void menuscreen_create_menu ()$/
+menuscreen_get_main	menuscreens.c	/^menuscreen_get_main()$/
+menuscreen_goto	menuscreens.c	/^menuscreen_goto (Menu * menu)$/
+menuscreen_inform_item_destruction	menuscreens.c	/^void menuscreen_inform_item_destruction (MenuItem /
+menuscreen_inform_item_modified	menuscreens.c	/^void menuscreen_inform_item_modified (MenuItem * i/
+menuscreen_key_handler	menuscreens.c	/^void menuscreen_key_handler (const char *key)$/
+menuscreen_remove_screen	menuscreens.c	/^menuscreen_remove_screen (Screen * s)$/
+menuscreen_set_main	menuscreens.c	/^menuscreen_set_main (Menu * menu)$/
+menuscreens_init	menuscreens.c	/^int menuscreens_init()$/
+menuscreens_shutdown	menuscreens.c	/^int menuscreens_shutdown()$/
+menuscreen_switch_item	menuscreens.c	/^void menuscreen_switch_item (MenuItem * new_menuit/
+menu_select_subitem	menu.c	/^void menu_select_subitem(Menu *menu, char * subite/
+menu_set_association	menu.c	/^void menu_set_association(Menu *menu, void *assoc)/
+menu_set_item_func	menu_commands.c	/^menu_set_item_func (Client * c, int argc, char **a/
+menu_set_main_func	menu_commands.c	/^menu_set_main_func (Client * c, int argc, char **a/
+menu_update_screen	menu.c	/^void menu_update_screen (MenuItem *menu, Screen *s/
+menu_visible_item_count	menu.c	/^menu_visible_item_count(Menu * menu)$/
+mini_clock_screen	chrono.c	/^mini_clock_screen (int rep, int display, int *flag/
+min	menu.h	/^#define min(a,b) (((a) < (b)) ? (a) : (b))$/
+min	pylcd.c	/^#define min(a, b) ((a)<(b) ? (a) : (b))$/
+Mlcdexec	lcdexec.c	/^int main( int argc, char **argv )$/
+Mmain	main.c	/^main(int argc, char **argv)$/
+mode_close	mode.c	/^mode_close()$/
+mode_init	mode.c	/^mode_init()$/
+ms6931_attn	ms6931.c	/^ms6931_attn(int fd, int len)$/
+ms6931_backlight	ms6931.c	/^ms6931_backlight (Driver *drvthis, int on)$/
+ms6931_chr	ms6931.c	/^ms6931_chr (Driver *drvthis, int x, int y, char c)/
+ms6931_clear	ms6931.c	/^ms6931_clear (Driver *drvthis)$/
+ms6931_close	ms6931.c	/^ms6931_close (Driver *drvthis)$/
+ms6931_cursor	ms6931.c	/^ms6931_cursor (Driver *drvthis, int x, int y, int /
+ms6931_draw_frame	ms6931.c	/^ms6931_draw_frame (Driver *drvthis, unsigned char /
+ms6931_flush	ms6931.c	/^ms6931_flush (Driver *drvthis)$/
+ms6931_get_key	ms6931.c	/^ms6931_get_key (Driver *drvthis)$/
+ms6931_hbar	ms6931.c	/^ms6931_hbar (Driver *drvthis, int x, int y, int le/
+ms6931_heartbeat	ms6931.c	/^ms6931_heartbeat (Driver *drvthis, int state)$/
+ms6931_height	ms6931.c	/^ms6931_height (Driver *drvthis)$/
+ms6931_init	ms6931.c	/^ms6931_init (Driver *drvthis)$/
+ms6931_setpos	ms6931.c	/^ms6931_setpos(int fd, int pos)$/
+ms6931_string	ms6931.c	/^ms6931_string (Driver *drvthis, int x, int y, char/
+ms6931_width	ms6931.c	/^ms6931_width (Driver *drvthis)$/
+ms6931_write	ms6931.c	/^ms6931_write(int fd, void *str, int len)$/
+MTC_S16209X_backlight	mtc_s16209x.c	/^MTC_S16209X_backlight (Driver * drvthis, int on)$/
+MTC_S16209X_cellheight	mtc_s16209x.c	/^MTC_S16209X_cellheight (Driver * drvthis)$/
+MTC_S16209X_cellwidth	mtc_s16209x.c	/^MTC_S16209X_cellwidth (Driver * drvthis)$/
+MTC_S16209X_chr	mtc_s16209x.c	/^MTC_S16209X_chr (Driver * drvthis, int x, int y, c/
+MTC_S16209X_clear	mtc_s16209x.c	/^MTC_S16209X_clear (Driver * drvthis)$/
+MTC_S16209X_close	mtc_s16209x.c	/^MTC_S16209X_close (Driver * drvthis)$/
+MTC_S16209X_flush	mtc_s16209x.c	/^MTC_S16209X_flush (Driver * drvthis)$/
+MTC_S16209X_hbar	mtc_s16209x.c	/^MTC_S16209X_hbar (Driver * drvthis, int x, int y, /
+MTC_S16209X_height	mtc_s16209x.c	/^MTC_S16209X_height (Driver * drvthis)$/
+MTC_S16209X_hidecursor	mtc_s16209x.c	/^MTC_S16209X_hidecursor (Driver * drvthis)$/
+MTC_S16209X_icon	mtc_s16209x.c	/^MTC_S16209X_icon (Driver * drvthis, int x, int y, /
+MTC_S16209X_init_hbar	mtc_s16209x.c	/^MTC_S16209X_init_hbar (Driver * drvthis)$/
+MTC_S16209X_init	mtc_s16209x.c	/^MTC_S16209X_init (Driver * drvthis)$/
+MTC_S16209X_init_vbar	mtc_s16209x.c	/^MTC_S16209X_init_vbar (Driver * drvthis)$/
+MTC_S16209X_reboot	mtc_s16209x.c	/^MTC_S16209X_reboot (Driver * drvthis)$/
+MTC_S16209X_set_char	mtc_s16209x.c	/^MTC_S16209X_set_char (Driver * drvthis, int n, cha/
+MTC_S16209X_string	mtc_s16209x.c	/^MTC_S16209X_string (Driver * drvthis, int x, int y/
+MTC_S16209X_vbar	mtc_s16209x.c	/^MTC_S16209X_vbar (Driver * drvthis, int x, int y, /
+MTC_S16209X_width	mtc_s16209x.c	/^MTC_S16209X_width (Driver * drvthis)$/
+MtxOrb_ask_bar	MtxOrb.c	/^MtxOrb_ask_bar (Driver *drvthis, int type)$/
+MtxOrb_autoscroll	MtxOrb.c	/^MtxOrb_autoscroll (Driver *drvthis, int on)$/
+MtxOrb_backlight	MtxOrb.c	/^MtxOrb_backlight (Driver *drvthis, int on)$/
+MtxOrb_chr	MtxOrb.c	/^MtxOrb_chr (Driver *drvthis, int x, int y, char c)/
+MtxOrb_clear	MtxOrb.c	/^MtxOrb_clear (Driver *drvthis)$/
+MtxOrb_close	MtxOrb.c	/^MtxOrb_close (Driver *drvthis)$/
+MtxOrb_cursorblink	MtxOrb.c	/^MtxOrb_cursorblink (Driver *drvthis, int on)$/
+MtxOrb_flush	MtxOrb.c	/^MtxOrb_flush (Driver *drvthis)$/
+MtxOrb_get_contrast	MtxOrb.c	/^MtxOrb_get_contrast (Driver *drvthis)$/
+MtxOrb_get_info	MtxOrb.c	/^MtxOrb_get_info (Driver *drvthis)$/
+MtxOrb_get_key	MtxOrb.c	/^MtxOrb_get_key (Driver *drvthis)$/
+MtxOrb_hbar	MtxOrb.c	/^MtxOrb_hbar (Driver * drvthis, int x, int y, int l/
+MtxOrb_height	MtxOrb.c	/^MtxOrb_height (Driver *drvthis)$/
+MtxOrb_icon	MtxOrb.c	/^MtxOrb_icon (Driver *drvthis, int x, int y, int ic/
+MtxOrb_init	MtxOrb.c	/^MtxOrb_init (Driver *drvthis)$/
+MtxOrb_linewrap	MtxOrb.c	/^MtxOrb_linewrap (Driver *drvthis, int on)$/
+MtxOrb_mold_vbar	MtxOrb.c	/^static void MtxOrb_mold_vbar (Driver *drvthis, int/
+MtxOrb_num	MtxOrb.c	/^MtxOrb_num (Driver *drvthis, int pos, int val)$/
+MtxOrb_old_hbar	MtxOrb.c	/^static void MtxOrb_old_hbar (Driver *drvthis, int /
+MtxOrb_output	MtxOrb.c	/^MtxOrb_output (Driver *drvthis, int on)$/
+MtxOrb_parse_keypad_setting	MtxOrb.c	/^static char MtxOrb_parse_keypad_setting (Driver *d/
+MtxOrb_set_char	MtxOrb.c	/^MtxOrb_set_char (Driver *drvthis, int n, char *dat/
+MtxOrb_set_contrast	MtxOrb.c	/^MtxOrb_set_contrast (Driver *drvthis, int promille/
+MtxOrb_set_known_char	MtxOrb.c	/^MtxOrb_set_known_char (Driver *drvthis, int car, i/
+MtxOrb_string	MtxOrb.c	/^MtxOrb_string (Driver *drvthis, int x, int y, char/
+MtxOrb_vbar	MtxOrb.c	/^MtxOrb_vbar (Driver * drvthis, int x, int y, int l/
+MtxOrb_width	MtxOrb.c	/^MtxOrb_width (Driver *drvthis)$/
+noop_func	server_commands.c	/^noop_func (Client * c, int argc, char **argv)$/
+NoritakeVFD_autoscroll	NoritakeVFD.c	/^NoritakeVFD_autoscroll (Driver *drvthis, int on)$/
+NoritakeVFD_cellheight	NoritakeVFD.c	/^NoritakeVFD_cellheight (Driver *drvthis)$/
+NoritakeVFD_cellwidth	NoritakeVFD.c	/^NoritakeVFD_cellwidth (Driver *drvthis)$/
+NoritakeVFD_chr	NoritakeVFD.c	/^NoritakeVFD_chr (Driver *drvthis, int x, int y, ch/
+NoritakeVFD_clear	NoritakeVFD.c	/^NoritakeVFD_clear (Driver *drvthis)$/
+NoritakeVFD_close	NoritakeVFD.c	/^NoritakeVFD_close (Driver *drvthis)$/
+NoritakeVFD_draw_frame	NoritakeVFD.c	/^NoritakeVFD_draw_frame (Driver *drvthis, unsigned /
+NoritakeVFD_flush	NoritakeVFD.c	/^NoritakeVFD_flush (Driver *drvthis)$/
+NoritakeVFD_get_brightness	NoritakeVFD.c	/^NoritakeVFD_get_brightness(Driver *drvthis, int st/
+NoritakeVFD_hbar	NoritakeVFD.c	/^NoritakeVFD_hbar (Driver *drvthis, int x, int y, i/
+NoritakeVFD_height	NoritakeVFD.c	/^NoritakeVFD_height (Driver *drvthis)$/
+NoritakeVFD_hidecursor	NoritakeVFD.c	/^NoritakeVFD_hidecursor (Driver *drvthis)$/
+NoritakeVFD_icon	NoritakeVFD.c	/^NoritakeVFD_icon (Driver *drvthis, int x, int y, i/
+NoritakeVFD_init_hbar	NoritakeVFD.c	/^NoritakeVFD_init_hbar (Driver *drvthis)$/
+NoritakeVFD_init	NoritakeVFD.c	/^NoritakeVFD_init (Driver *drvthis)$/
+NoritakeVFD_init_vbar	NoritakeVFD.c	/^NoritakeVFD_init_vbar (Driver *drvthis)$/
+NoritakeVFD_reboot	NoritakeVFD.c	/^NoritakeVFD_reboot (Driver *drvthis)$/
+NoritakeVFD_set_brightness	NoritakeVFD.c	/^NoritakeVFD_set_brightness (Driver *drvthis, int s/
+NoritakeVFD_set_char	NoritakeVFD.c	/^NoritakeVFD_set_char (Driver *drvthis, int n, char/
+NoritakeVFD_string	NoritakeVFD.c	/^NoritakeVFD_string (Driver *drvthis, int x, int y,/
+NoritakeVFD_vbar	NoritakeVFD.c	/^NoritakeVFD_vbar (Driver *drvthis, int x, int y, i/
+NoritakeVFD_width	NoritakeVFD.c	/^NoritakeVFD_width (Driver *drvthis)$/
+output_func	server_commands.c	/^output_func (Client * c, int argc, char **argv)$/
+output_GPL_notice	main.c	/^output_GPL_notice(void)$/
+output_help_screen	main.c	/^output_help_screen(void)$/
+pagetok	machine_NetBSD.c	/^#define pagetok(size) ((size) << pageshift)$/
+parse_all_client_messages	parse.c	/^parse_all_client_messages ()$/
+parse_message	parse.c	/^static int parse_message (const char *str, Client /
+parse_span_list	hd44780.c	/^parse_span_list (int *spanListArray[], int *spLsiz/
+PeekByte	CFontz633io.c	/^unsigned char PeekByte(ReceiveBuffer *rb)$/
+PeekBytesAvail	CFontz633io.c	/^int PeekBytesAvail(ReceiveBuffer *rb)$/
+picanlcd_HD44780_backlight	hd44780-picanlcd.c	/^picanlcd_HD44780_backlight (PrivateData *p, unsign/
+picanlcd_HD44780_scankeypad	hd44780-picanlcd.c	/^picanlcd_HD44780_scankeypad (PrivateData *p)$/
+picanlcd_HD44780_senddata	hd44780-picanlcd.c	/^picanlcd_HD44780_senddata (PrivateData *p, unsigne/
+portable_snprintf	snprintf.c	/^int portable_snprintf(char *str, size_t str_m, con/
+port_access_multiple	port.h	/^static inline int port_access_multiple (unsigned s/
+port_access	port.h	/^static inline int port_access (unsigned short port/
+port_deny_multiple	port.h	/^static inline int port_deny_multiple (unsigned sho/
+port_deny	port.h	/^static inline int port_deny (unsigned short port) /
+port_in	port.h	/^static inline int port_in (unsigned short port) {$/
+port_out	port.h	/^static inline void port_out (unsigned short port, /
+POSITION	t6963.h	/^#define POSITION(x,y)  ((y)*lcd.wid + (x))$/
+print_packet	CFontz633io.c	/^print_packet(COMMAND_PACKET *packet)$/
+process_command_line	lcdexec.c	/^int process_command_line( int argc, char **argv )$/
+process_command_line	main.c	/^process_command_line(int argc, char **argv)$/
+process_config	configfile.c	/^int process_config( section ** current_section, ch/
+process_configfile	lcdexec.c	/^int process_configfile( char * configfile )$/
+process_configfile	main.c	/^process_configfile(char *configfile)$/
+process_response	lcdexec.c	/^int process_response( char * str )$/
+PROCSIZE	machine_NetBSD.c	/^#define PROCSIZE(pp) ((pp)->p_vm_tsize + (pp)->p_v/
+pylcd_chr	pylcd.c	/^MODULE_EXPORT void pylcd_chr (Driver *drvthis, int/
+pylcd_clear	pylcd.c	/^MODULE_EXPORT void pylcd_clear (Driver *drvthis)$/
+pylcd_close	pylcd.c	/^MODULE_EXPORT void pylcd_close (Driver *drvthis)$/
+pylcd_cursor	pylcd.c	/^MODULE_EXPORT void pylcd_cursor (Driver *drvthis, /
+pylcd_flush	pylcd.c	/^MODULE_EXPORT void pylcd_flush (Driver *drvthis)$/
+pylcd_get_key	pylcd.c	/^MODULE_EXPORT const char *pylcd_get_key (Driver *d/
+pylcd_height	pylcd.c	/^MODULE_EXPORT int  pylcd_height (Driver *drvthis)$/
+pylcd_init	pylcd.c	/^MODULE_EXPORT int  pylcd_init (Driver *drvthis, ch/
+pylcd_output	pylcd.c	/^MODULE_EXPORT void pylcd_output (Driver *drvthis, /
+pylcd_string	pylcd.c	/^MODULE_EXPORT void pylcd_string (Driver *drvthis, /
+pylcd_width	pylcd.c	/^MODULE_EXPORT int  pylcd_width (Driver *drvthis)$/
+rawshift	hd44780-serialLpt.c	/^rawshift (PrivateData *p, unsigned char r)$/
+read_ACK	pylcd.c	/^int read_ACK(pylcd_private_data *status)$/
+Read_LCD	CwLnx.c	/^int Read_LCD(int fd, char *c, int size)$/
+read_tele	pylcd.c	/^int read_tele(pylcd_private_data *status, char *bu/
+render_frame	render.c	/^render_frame (LinkedList * list,$/
+render_screen	render.c	/^render_screen (Screen * s, long int timer)$/
+report	report.c	/^void report( const int level, const char *format, /
+request_display_height	driver.c	/^request_display_height()$/
+request_display_width	driver.c	/^request_display_width()$/
+reread	machine_Linux.c	/^reread (int f, char *errmsg)$/
+screen_add_func	screen_commands.c	/^screen_add_func (Client * c, int argc, char **argv/
+screen_add_key_func	screen_commands.c	/^screen_add_key_func (Client * c, int argc, char **/
+screen_add_widget	screen.c	/^screen_add_widget (Screen * s, Widget * w)$/
+screen_create	screen.c	/^screen_create (char * id, Client * client)$/
+screen_del_func	screen_commands.c	/^screen_del_func (Client * c, int argc, char **argv/
+screen_del_key_func	screen_commands.c	/^screen_del_key_func (Client * c, int argc, char **/
+screen_destroy	screen.c	/^screen_destroy (Screen * s)$/
+screen_find_widget	screen.c	/^screen_find_widget (Screen * s, char *id)$/
+screen_getfirst_widget	screen.h	/^static inline Widget * screen_getfirst_widget (Scr/
+screen_getnext_widget	screen.h	/^static inline Widget * screen_getnext_widget (Scre/
+screenlist_add	screenlist.c	/^screenlist_add (Screen * s)$/
+screenlist_current	screenlist.c	/^screenlist_current ()$/
+screenlist_goto_next	screenlist.c	/^screenlist_goto_next ()$/
+screenlist_goto_prev	screenlist.c	/^screenlist_goto_prev ()$/
+screenlist_init	screenlist.c	/^screenlist_init ()$/
+screenlist_process	screenlist.c	/^screenlist_process ()$/
+screenlist_remove	screenlist.c	/^screenlist_remove (Screen * s)$/
+screenlist_shutdown	screenlist.c	/^screenlist_shutdown ()$/
+screenlist_switch	screenlist.c	/^screenlist_switch (Screen * s)$/
+screen_pri_name_to_pri	screen.c	/^screen_pri_name_to_pri (char * priname)$/
+screen_pri_to_pri_name	screen.c	/^screen_pri_to_pri_name (Priority pri)$/
+screen_remove_widget	screen.c	/^screen_remove_widget (Screen * s, Widget * w)$/
+screen_set_func	screen_commands.c	/^screen_set_func (Client * c, int argc, char **argv/
+sed1330_backlight	sed1330.c	/^sed1330_backlight( Driver * drvthis, int on )$/
+sed1330_chr	sed1330.c	/^sed1330_chr( Driver * drvthis, int x, int y, char /
+sed1330_clear	sed1330.c	/^sed1330_clear( Driver * drvthis )$/
+sed1330_close	sed1330.c	/^sed1330_close( Driver * drvthis )$/
+sed1330_command	sed1330.c	/^sed1330_command( PrivateData * p, char command, in/
+sed1330_flush	sed1330.c	/^sed1330_flush( Driver * drvthis )$/
+sed1330_get_key	sed1330.c	/^sed1330_get_key(Driver *drvthis)$/
+sed1330_hbar	sed1330.c	/^sed1330_hbar( Driver * drvthis, int x, int y, int /
+sed1330_heartbeat	sed1330.c	/^sed1330_heartbeat( Driver * drvthis, int type )$/
+sed1330_height	sed1330.c	/^sed1330_height( Driver * drvthis )$/
+sed1330_icon	sed1330.c	/^sed1330_icon( Driver * drvthis, int x, int y, int /
+sed1330_init	sed1330.c	/^sed1330_init( Driver * drvthis )$/
+sed1330_line	sed1330.c	/^sed1330_line ( PrivateData * p, int x1, int y1, in/
+sed1330_num	sed1330.c	/^sed1330_num( Driver * drvthis, int x, int y, int n/
+sed1330_readkeypad	sed1330.c	/^unsigned char sed1330_readkeypad (PrivateData *p, /
+sed1330_rect	sed1330.c	/^sed1330_rect ( PrivateData * p, int x1, int y1, in/
+sed1330_scankeypad	sed1330.c	/^unsigned char sed1330_scankeypad(PrivateData *p)$/
+sed1330_set_pixel	sed1330.c	/^sed1330_set_pixel( PrivateData * p, int x, int y, /
+sed1330_string	sed1330.c	/^sed1330_string( Driver * drvthis, int x, int y, ch/
+sed1330_vbar	sed1330.c	/^sed1330_vbar( Driver * drvthis, int x, int y, int /
+sed1330_width	sed1330.c	/^sed1330_width( Driver * drvthis )$/
+sed1520_cellheight	sed1520.c	/^sed1520_cellheight (Driver *drvthis)$/
+sed1520_cellwidth	sed1520.c	/^sed1520_cellwidth (Driver *drvthis)$/
+sed1520_chr	sed1520.c	/^sed1520_chr (Driver *drvthis, int x, int y, char c/
+sed1520_clear	sed1520.c	/^sed1520_clear (Driver *drvthis)$/
+sed1520_close	sed1520.c	/^sed1520_close (Driver *drvthis)$/
+sed1520_flush	sed1520.c	/^sed1520_flush (Driver *drvthis)$/
+sed1520_height	sed1520.c	/^sed1520_height (Driver *drvthis)$/
+sed1520_icon	sed1520.c	/^sed1520_icon (Driver *drvthis, int x, int y, int i/
+sed1520_init	sed1520.c	/^sed1520_init (Driver *drvthis)$/
+sed1520_num	sed1520.c	/^sed1520_num (Driver *drvthis, int x, int num)$/
+sed1520_old_hbar	sed1520.c	/^sed1520_old_hbar (Driver *drvthis, int x, int y, i/
+sed1520_old_vbar	sed1520.c	/^sed1520_old_vbar (Driver *drvthis, int x, int len)/
+sed1520_set_char	sed1520.c	/^sed1520_set_char (Driver *drvthis, int n, char *da/
+sed1520_string	sed1520.c	/^sed1520_string (Driver *drvthis, int x, int y, cha/
+sed1520_width	sed1520.c	/^sed1520_width (Driver *drvthis)$/
+selectcolumn	sed1520.c	/^selectcolumn (unsigned int port, int column, int c/
+selectpage	sed1520.c	/^selectpage (unsigned int port, int page)$/
+sem_get	lcd_sem.c	/^sem_get (void)$/
+sem_remove	lcd_sem.c	/^sem_remove (int sid)$/
+sem_signal	lcd_sem.c	/^sem_signal (int sid)$/
+sem_wait	lcd_sem.c	/^sem_wait (int sid)$/
+send_ACK	pylcd.c	/^int send_ACK(pylcd_private_data *status)$/
+send_bytes_message	CFontz633io.c	/^void send_bytes_message(int fd, unsigned char msg,/
+send_onebyte_message	CFontz633io.c	/^void send_onebyte_message(int fd, unsigned char ms/
+send_packet	CFontz633io.c	/^send_packet(int fd, COMMAND_PACKET *out, COMMAND_P/
+send_tele	pylcd.c	/^int send_tele(pylcd_private_data *status, char *bu/
+send_zerobyte_message	CFontz633io.c	/^void send_zerobyte_message(int fd, unsigned char m/
+serialVFD_cellheight	serialVFD.c	/^serialVFD_cellheight (Driver *drvthis)$/
+serialVFD_cellwidth	serialVFD.c	/^serialVFD_cellwidth (Driver *drvthis)$/
+serialVFD_chr	serialVFD.c	/^serialVFD_chr (Driver *drvthis, int x, int y, char/
+serialVFD_clear	serialVFD.c	/^serialVFD_clear (Driver *drvthis)$/
+serialVFD_close	serialVFD.c	/^serialVFD_close (Driver *drvthis)$/
+serialVFD_draw_frame	serialVFD.c	/^serialVFD_draw_frame (Driver *drvthis, char *dat)$/
+serialVFD_flush	serialVFD.c	/^serialVFD_flush (Driver *drvthis)$/
+serialVFD_get_brightness	serialVFD.c	/^serialVFD_get_brightness(Driver *drvthis, int stat/
+serialVFD_get_free_chars	serialVFD.c	/^serialVFD_get_free_chars (Driver *drvthis)$/
+serialVFD_get_info	serialVFD.c	/^serialVFD_get_info (Driver *drvthis)$/
+serialVFD_hbar	serialVFD.c	/^serialVFD_hbar (Driver *drvthis, int x, int y, int/
+serialVFD_height	serialVFD.c	/^serialVFD_height (Driver *drvthis)$/
+serialVFD_icon	serialVFD.c	/^serialVFD_icon (Driver *drvthis, int x, int y, int/
+serialVFD_init_hbar	serialVFD.c	/^serialVFD_init_hbar (Driver *drvthis)$/
+serialVFD_init	serialVFD.c	/^serialVFD_init (Driver *drvthis)$/
+serialVFD_init_vbar	serialVFD.c	/^serialVFD_init_vbar (Driver *drvthis)$/
+serialVFD_num	serialVFD.c	/^serialVFD_num( Driver * drvthis, int x, int num )$/
+serialVFD_put_brightness	serialVFD.c	/^serialVFD_put_brightness (Driver *drvthis)$/
+serialVFD_put_char	serialVFD.c	/^serialVFD_put_char (Driver *drvthis, int n)$/
+serialVFD_set_brightness	serialVFD.c	/^serialVFD_set_brightness (Driver *drvthis, int sta/
+serialVFD_set_char	serialVFD.c	/^serialVFD_set_char (Driver *drvthis, int n, char */
+serialVFD_string	serialVFD.c	/^serialVFD_string (Driver *drvthis, int x, int y, c/
+serialVFD_vbar	serialVFD.c	/^serialVFD_vbar (Driver *drvthis, int x, int y, int/
+serialVFD_width	serialVFD.c	/^serialVFD_width (Driver *drvthis)$/
+server_msg	render.c	/^server_msg( const char * text, int expire )$/
+server_screen_init	serverscreens.c	/^server_screen_init ()$/
+server_screen_shutdown	serverscreens.c	/^server_screen_shutdown ()$/
+Set_19200	CwLnx.c	/^void Set_19200(int fd)$/
+Set_9600	CwLnx.c	/^void Set_9600(int fd)$/
+setaccess	port.h	/^static inline void setaccess(u_long * map, u_int b/
+set_background_color	curses_drv.c	/^set_background_color (char * buf) {$/
+set_default_settings	main.c	/^set_default_settings(void)$/
+SetFan	hd44780-lis2.c	/^void SetFan(int fd, int fan1, int fan2, int fan3, /
+set_foreground_color	curses_drv.c	/^set_foreground_color (char * buf) {$/
+Set_Insert	CwLnx.c	/^void Set_Insert(int fd, int row, int col)$/
+set_leds	pylcd.c	/^int set_leds(pylcd_private_data *status)$/
+SetMatrice	hd44780-lis2.c	/^void SetMatrice(PrivateData *p, int fd, int matric/
+set_predecessor	menu_commands.c	/^int set_predecessor(MenuItem *item, char *itemid, /
+set_reporting	report.c	/^int set_reporting( char *application_name, int new/
+set_successor	menu_commands.c	/^int set_successor(MenuItem *item, char *itemid, Cl/
+Setup_Port	CwLnx.c	/^void Setup_Port(int fd, speed_t speed)$/
+shiftreg	hd44780-serialLpt.c	/^shiftreg (PrivateData *p, unsigned char enableLine/
+sleep_func	server_commands.c	/^sleep_func (Client * c, int argc, char **argv)$/
+sli_cellheight	wirz-sli.c	/^sli_cellheight (Driver *drvthis)$/
+sli_cellwidth	wirz-sli.c	/^sli_cellwidth (Driver *drvthis)$/
+sli_chr	wirz-sli.c	/^sli_chr (Driver *drvthis, int x, int y, char c)$/
+sli_clear	wirz-sli.c	/^sli_clear (Driver *drvthis)$/
+sli_close	wirz-sli.c	/^sli_close (Driver *drvthis)$/
+sli_flush	wirz-sli.c	/^sli_flush (Driver *drvthis)$/
+sli_hbar	wirz-sli.c	/^sli_hbar (Driver *drvthis, int x, int y, int len, /
+sli_height	wirz-sli.c	/^sli_height (Driver *drvthis)$/
+sli_icon	wirz-sli.c	/^sli_icon (Driver *drvthis, int x, int y, int icon)/
+sli_init_hbar	wirz-sli.c	/^sli_init_hbar (Driver *drvthis)$/
+sli_init_vbar	wirz-sli.c	/^sli_init_vbar (Driver *drvthis)$/
+sli_init	wirz-sli.c	/^sli_init (Driver *drvthis)$/
+sli_set_char	wirz-sli.c	/^sli_set_char (Driver *drvthis, int n, char *dat)$/
+sli_string	wirz-sli.c	/^sli_string (Driver *drvthis, int x, int y, char st/
+sli_vbar	wirz-sli.c	/^sli_vbar (Driver *drvthis, int x, int y, int len, /
+sli_width	wirz-sli.c	/^sli_width (Driver *drvthis)$/
+sock_close	sockets.c	/^sock_close (int fd)$/
+sock_connect	sockets.c	/^sock_connect (char *host, unsigned short int port)/
+sock_create_inet_socket	sock.c	/^sock_create_inet_socket (char * addr, unsigned int/
+sock_geterror	sockets.c	/^sock_geterror(void)$/
+sock_init_sockaddr	sockets.c	/^sock_init_sockaddr (sockaddr_in *name, const char /
+sock_init	sock.c	/^sock_init(char* bind_addr, int bind_port)$/
+sock_poll_clients	sock.c	/^sock_poll_clients ()$/
+sock_printf_error	sockets.c	/^sock_printf_error(int fd, const char *format, ...\//
+sock_printf	sockets.c	/^sock_printf(int fd, const char *format, ...\/*args*/
+sock_read_from_client	sock.c	/^sock_read_from_client(struct ClientSocketMap* clie/
+sock_recv	sockets.c	/^sock_recv (int fd, void *dest, size_t maxlen)$/
+sock_recv_string	sockets.c	/^sock_recv_string (int fd, char *dest, size_t maxle/
+sock_send_error	sockets.c	/^int sock_send_error(int fd, char* message)$/
+sock_send	sockets.c	/^sock_send (int fd, void *src, size_t size)$/
+sock_send_string	sockets.c	/^sock_send_string (int fd, char *string)$/
+sock_shutdown	sock.c	/^sock_shutdown ()$/
+sort_procs	mem.c	/^sort_procs (void *a, void *b)$/
+sprintf_memory	util.c	/^sprintf_memory(char *dst, double value, double rou/
+sprintf_percent	util.c	/^sprintf_percent(char *dst, double percent)$/
+store_report_message	report.c	/^static void store_report_message( int level, const/
+stv5730_cellheight	stv5730.c	/^stv5730_cellheight (Driver *drvthis)$/
+stv5730_cellwidth	stv5730.c	/^stv5730_cellwidth (Driver *drvthis)$/
+stv5730_chr	stv5730.c	/^stv5730_chr (Driver *drvthis, int x, int y, char c/
+stv5730_clear	stv5730.c	/^stv5730_clear (Driver *drvthis)$/
+stv5730_close	stv5730.c	/^stv5730_close (Driver *drvthis)$/
+stv5730_detect	stv5730.c	/^stv5730_detect (unsigned int port)$/
+stv5730_drawchar2fb	stv5730.c	/^stv5730_drawchar2fb (Driver *drvthis, int x, int y/
+stv5730_flush	stv5730.c	/^stv5730_flush (Driver *drvthis)$/
+stv5730_height	stv5730.c	/^stv5730_height (Driver *drvthis)$/
+stv5730_init	stv5730.c	/^stv5730_init (Driver *drvthis)$/
+stv5730_is_mute	stv5730.c	/^stv5730_is_mute (unsigned int port)$/
+stv5730_locate	stv5730.c	/^stv5730_locate (unsigned int port, unsigned int fl/
+stv5730_num	stv5730.c	/^stv5730_num (Driver *drvthis, int x, int num)$/
+stv5730_old_hbar	stv5730.c	/^stv5730_old_hbar (Driver *drvthis, int x, int y, i/
+stv5730_old_icon	stv5730.c	/^stv5730_old_icon (Driver *drvthis, int which, char/
+stv5730_old_vbar	stv5730.c	/^stv5730_old_vbar (Driver *drvthis, int x, int len)/
+stv5730_string	stv5730.c	/^stv5730_string (Driver *drvthis, int x, int y, cha/
+stv5730_width	stv5730.c	/^stv5730_width (Driver *drvthis)$/
+stv5730_write0bit	stv5730.c	/^stv5730_write0bit (unsigned int port, unsigned int/
+stv5730_write16bit	stv5730.c	/^stv5730_write16bit (unsigned int port, unsigned in/
+stv5730_write8bit	stv5730.c	/^stv5730_write8bit (unsigned int port, unsigned int/
+svga_backlight	svgalib_drv.c	/^svga_backlight (Driver *drvthis, int on)$/
+svga_cellheight	svgalib_drv.c	/^svga_cellheight (Driver *drvthis)$/
+svga_cellwidth	svgalib_drv.c	/^svga_cellwidth (Driver *drvthis)$/
+svga_chr	svgalib_drv.c	/^svga_chr (Driver *drvthis, int x, int y, char c)$/
+svga_clear	svgalib_drv.c	/^svga_clear (Driver * drvthis)$/
+svga_close	svgalib_drv.c	/^svga_close (Driver *drvthis)$/
+svga_flush	svgalib_drv.c	/^svga_flush (Driver *drvthis)$/
+svga_get_brightness	svgalib_drv.c	/^svga_get_brightness(Driver *drvthis, int state)$/
+svga_get_contrast	svgalib_drv.c	/^svga_get_contrast (Driver *drvthis)$/
+svga_get_key	svgalib_drv.c	/^svga_get_key (Driver *drvthis)$/
+svga_hbar	svgalib_drv.c	/^svga_hbar (Driver *drvthis, int x, int y, int len,/
+svga_height	svgalib_drv.c	/^svga_height (Driver *drvthis)$/
+svga_init	svgalib_drv.c	/^svga_init (Driver *drvthis)$/
+svga_num	svgalib_drv.c	/^svga_num (Driver *drvthis, int x, int num)$/
+svga_set_brightness	svgalib_drv.c	/^svga_set_brightness(Driver *drvthis, int state, in/
+svga_set_contrast	svgalib_drv.c	/^svga_set_contrast (Driver *drvthis, int promille)$/
+svga_string	svgalib_drv.c	/^svga_string (Driver *drvthis, int x, int y, char s/
+svga_vbar	svgalib_drv.c	/^svga_vbar (Driver *drvthis, int x, int y, int len,/
+svga_width	svgalib_drv.c	/^svga_width (Driver *drvthis)$/
+swapmode	machine_FreeBSD.c	/^static int swapmode(int *retavail, int *retfree)$/
+SyncPeekPointer	CFontz633io.c	/^void SyncPeekPointer(ReceiveBuffer *rb)$/
+SyncReceiveBuffer	CFontz633io.c	/^void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, /
+t6963_chr	t6963.c	/^t6963_chr (Driver *drvthis, int x, int y, char c)$/
+t6963_clear	t6963.c	/^t6963_clear (Driver *drvthis)$/
+t6963_close	t6963.c	/^t6963_close (Driver *drvthis)$/
+T6963_CONTROL_PORT	t6963.h	/^#define T6963_CONTROL_PORT(p) ((p)+2)$/
+T6963_DATAIN	t6963.h	/^#define T6963_DATAIN(p)  port_out(T6963_CONTROL_PO/
+T6963_DATAOUT	t6963.h	/^#define T6963_DATAOUT(p) port_out(T6963_CONTROL_PO/
+T6963_DATA_PORT	t6963.h	/^#define T6963_DATA_PORT(p) (p)$/
+t6963_flush	t6963.c	/^t6963_flush (Driver *drvthis)$/
+t6963_graphic_clear	t6963.c	/^t6963_graphic_clear(Driver *drvthis, int x1, int y/
+t6963_hbar	t6963.c	/^t6963_hbar (Driver *drvthis, int x, int y, int len/
+t6963_height	t6963.c	/^t6963_height (Driver *drvthis)$/
+t6963_icon	t6963.c	/^t6963_icon (Driver *drvthis, int x, int y, int ico/
+t6963_init	t6963.c	/^t6963_init (Driver *drvthis)$/
+t6963_low_command_2_bytes	t6963.c	/^t6963_low_command_2_bytes(Driver *drvthis, u8 cmd,/
+t6963_low_command_byte	t6963.c	/^t6963_low_command_byte(Driver *drvthis, u8 cmd, u8/
+t6963_low_command	t6963.c	/^t6963_low_command (Driver *drvthis, u8 byte)$/
+t6963_low_command_word	t6963.c	/^t6963_low_command_word(Driver *drvthis, u8 cmd, u1/
+t6963_low_data	t6963.c	/^t6963_low_data (Driver *drvthis, u8 byte)$/
+t6963_low_disable_mode	t6963.c	/^t6963_low_disable_mode (Driver *drvthis, u8 mode)$/
+t6963_low_dsp_ready	t6963.c	/^t6963_low_dsp_ready (Driver *drvthis)$/
+t6963_low_enable_mode	t6963.c	/^t6963_low_enable_mode (Driver *drvthis, u8 mode)$/
+t6963_low_set_control	t6963.c	/^t6963_low_set_control(Driver *drvthis, char wr, ch/
+t6963_num	t6963.c	/^t6963_num (Driver *drvthis, int x, int num)$/
+t6963_set_char	t6963.c	/^t6963_set_char (Driver *drvthis, int n, char *dat)/
+t6963_set_nchar	t6963.c	/^t6963_set_nchar (Driver *drvthis, int n, char *dat/
+T6963_STATUS_PORT	t6963.h	/^#define T6963_STATUS_PORT(p) ((p)+1)$/
+t6963_string	t6963.c	/^t6963_string (Driver *drvthis, int x, int y, char /
+t6963_swap_buffers	t6963.c	/^t6963_swap_buffers (Driver *drvthis)$/
+t6963_vbar	t6963.c	/^t6963_vbar (Driver *drvthis, int x, int y, int len/
+t6963_width	t6963.c	/^t6963_width (Driver *drvthis)$/
+tablist2linkedlist	menuitem.c	/^LinkedList * tablist2linkedlist (char *strings)$/
+test_func_func	client_commands.c	/^test_func_func (Client * c, int argc, char **argv)/
+test_packet	CFontz633io.c	/^test_packet(int fd, unsigned char response, COMMAN/
+text_backlight	text.c	/^text_backlight (Driver *drvthis, int on)$/
+text_chr	text.c	/^text_chr (Driver *drvthis, int x, int y, char c)$/
+text_clear	text.c	/^text_clear (Driver *drvthis)$/
+text_close	text.c	/^text_close (Driver *drvthis)$/
+text_flush	text.c	/^text_flush (Driver *drvthis)$/
+text_height	text.c	/^text_height (Driver *drvthis)$/
+text_init	text.c	/^text_init (Driver *drvthis)$/
+text_set_contrast	text.c	/^text_set_contrast (Driver *drvthis, int promille)$/
+text_string	text.c	/^text_string (Driver *drvthis, int x, int y, char s/
+text_width	text.c	/^text_width (Driver *drvthis)$/
+timeradd	timing.h	/^# define timeradd(a, b, result)                   /
+timerclear	timing.h	/^# define timerclear(tvp)        ((tvp)->tv_sec = (/
+timercmp	timing.h	/^# define timercmp(a, b, CMP)                      /
+timerisset	timing.h	/^# define timerisset(tvp)        ((tvp)->tv_sec || /
+timersub	timing.h	/^# define timersub(a, b, result)                   /
+time_screen	chrono.c	/^time_screen (int rep, int display, int *flags_ptr)/
+timestamp	pylcd.c	/^unsigned long long timestamp(pylcd_private_data *s/
+timing_init	timing.h	/^static inline int timing_init() {$/
+timing_uPause	timing.h	/^static inline void timing_uPause (int usecs) {$/
+tyan_lcdm_backlight	tyan_lcdm.c	/^tyan_lcdm_backlight (Driver * drvthis, int on)$/
+tyan_lcdm_chr	tyan_lcdm.c	/^tyan_lcdm_chr (Driver * drvthis, int x, int y, cha/
+tyan_lcdm_clear	tyan_lcdm.c	/^tyan_lcdm_clear (Driver * drvthis)$/
+tyan_lcdm_close	tyan_lcdm.c	/^tyan_lcdm_close (Driver * drvthis)$/
+tyan_lcdm_flush	tyan_lcdm.c	/^tyan_lcdm_flush (Driver * drvthis)$/
+tyan_lcdm_get_key	tyan_lcdm.c	/^tyan_lcdm_get_key (Driver *drvthis)$/
+tyan_lcdm_hardware_clear	tyan_lcdm.c	/^tyan_lcdm_hardware_clear(int fd)$/
+tyan_lcdm_hbar	tyan_lcdm.c	/^tyan_lcdm_hbar (Driver * drvthis, int x, int y, in/
+tyan_lcdm_height	tyan_lcdm.c	/^tyan_lcdm_height (Driver *drvthis)$/
+tyan_lcdm_icon	tyan_lcdm.c	/^tyan_lcdm_icon (Driver * drvthis, int x, int y, in/
+tyan_lcdm_init_hbar	tyan_lcdm.c	/^tyan_lcdm_init_hbar (Driver * drvthis)$/
+tyan_lcdm_init	tyan_lcdm.c	/^tyan_lcdm_init (Driver * drvthis, char *args)$/
+tyan_lcdm_init_vbar	tyan_lcdm.c	/^tyan_lcdm_init_vbar (Driver * drvthis)$/
+tyan_lcdm_num	tyan_lcdm.c	/^tyan_lcdm_num (Driver * drvthis, int x, int num)$/
+tyan_lcdm_read_key	tyan_lcdm.c	/^unsigned char tyan_lcdm_read_key(int fd)$/
+tyan_lcdm_set_char	tyan_lcdm.c	/^tyan_lcdm_set_char (Driver * drvthis, int n, char /
+tyan_lcdm_set_cursor	tyan_lcdm.c	/^void tyan_lcdm_set_cursor(int fd, unsigned char st/
+tyan_lcdm_set_rampos	tyan_lcdm.c	/^void tyan_lcdm_set_rampos(int fd, unsigned char po/
+tyan_lcdm_string	tyan_lcdm.c	/^tyan_lcdm_string (Driver * drvthis, int x, int y, /
+tyan_lcdm_switch_mode	tyan_lcdm.c	/^tyan_lcdm_switch_mode(int fd)$/
+tyan_lcdm_vbar	tyan_lcdm.c	/^tyan_lcdm_vbar (Driver * drvthis, int x, int y, in/
+tyan_lcdm_width	tyan_lcdm.c	/^tyan_lcdm_width (Driver *drvthis)$/
+tyan_lcdm_write_str	tyan_lcdm.c	/^void tyan_lcdm_write_str(int fd, unsigned char *st/
+ula200_backlight	ula200.c	/^ula200_backlight (Driver *drvthis, int on)$/
+ula200_chr	ula200.c	/^ula200_chr (Driver *drvthis, int x, int y, char ch/
+ula200_clear	ula200.c	/^ula200_clear (Driver *drvthis)$/
+ula200_close	ula200.c	/^ula200_close(Driver *drvthis)$/
+ula200_flush	ula200.c	/^ula200_flush(Driver *drvthis)$/
+ula200_ftdi_clear	ula200.c	/^ula200_ftdi_clear(Driver *drvthis)$/
+ula200_ftdi_enable_raw_mode	ula200.c	/^ula200_ftdi_enable_raw_mode(Driver *drvthis)$/
+ula200_ftdi_position	ula200.c	/^ula200_ftdi_position(Driver *drvthis, int x, int y/
+ula200_ftdi_rawdata	ula200.c	/^ula200_ftdi_rawdata(Driver *drvthis, unsigned char/
+ula200_ftdi_read_response	ula200.c	/^ula200_ftdi_read_response(Driver *drvthis)$/
+ula200_ftdi_string	ula200.c	/^ula200_ftdi_string(Driver *drvthis, unsigned char /
+ula200_ftdi_usb_read	ula200.c	/^ula200_ftdi_usb_read(PrivateData *p)$/
+ula200_ftdi_write_command	ula200.c	/^ula200_ftdi_write_command(Driver *drvthis, unsigne/
+ula200_get_key	ula200.c	/^ula200_get_key (Driver *drvthis)$/
+ula200_height	ula200.c	/^ula200_height (Driver *drvthis)$/
+ula200_icon	ula200.c	/^ula200_icon (Driver *drvthis, int x, int y, int ic/
+ula200_init	ula200.c	/^ula200_init(Driver *drvthis)$/
+ula200_load_curstom_chars	ula200.c	/^ula200_load_curstom_chars(Driver *drvthis)$/
+ula200_string	ula200.c	/^ula200_string (Driver *drvthis, int x, int y, char/
+ula200_width	ula200.c	/^ula200_width (Driver *drvthis)$/
+uPause	hd44780.c	/^uPause (PrivateData *p, int usecs)$/
+update_screen	mode.c	/^update_screen(mode *m, int display)$/
+update_server_screen	serverscreens.c	/^update_server_screen ()$/
+uptime_screen	chrono.c	/^uptime_screen (int rep, int display, int *flags_pt/
+ValidX	CwLnx.c	/^#define ValidX(x) if ((x) > p->width) { (x) = p->w/
+ValidY	CwLnx.c	/^#define ValidY(y) if ((y) > p->height) { (y) = p->/
+vasnprintf	snprintf.c	/^int vasnprintf (char **ptr, size_t str_m, const ch/
+vasprintf	snprintf.c	/^int vasprintf(char **ptr, const char *fmt, va_list/
+verify_ipv4	sock.c	/^int verify_ipv4(const char *addr) $/
+verify_ipv6	sock.c	/^int verify_ipv6(const char *addr) $/
+wave_to_parent	main.c	/^wave_to_parent(pid_t parent_pid)$/
+widget_add_func	widget_commands.c	/^widget_add_func (Client * c, int argc, char **argv/
+widget_create	widget.c	/^widget_create (char *id, WidgetType type, Screen */
+widget_del_func	widget_commands.c	/^widget_del_func (Client * c, int argc, char **argv/
+widget_destroy	widget.c	/^widget_destroy (Widget * w)$/
+widget_iconname_to_icon	widget.c	/^int widget_iconname_to_icon (char *iconname)$/
+widget_icon_to_iconname	widget.c	/^char *widget_icon_to_iconname (int icon)$/
+widget_search_subs	widget.c	/^widget_search_subs (Widget * w, char * id)$/
+widget_set_func	widget_commands.c	/^widget_set_func (Client * c, int argc, char **argv/
+widget_typename_to_type	widget.c	/^widget_typename_to_type (char * typename)$/
+widget_type_to_typename	widget.c	/^widget_type_to_typename (WidgetType t)$/
+writeChar	hd44780-lis2.c	/^void writeChar(int fd, int code)$/
+writecommand	sed1520.c	/^writecommand (unsigned int port, int value, int ch/
+writedata	sed1520.c	/^writedata (unsigned int port, int value, int chip)/
+Write_LCD	CwLnx.c	/^int Write_LCD(int fd, char *c, int size)$/
+xload_screen	load.c	/^xload_screen (int rep, int display, int *flags_ptr/
+xosdlib_drv_backlight	xosdlib_drv.c	/^xosdlib_drv_backlight (Driver *drvthis, int on)$/
+xosdlib_drv_chr	xosdlib_drv.c	/^xosdlib_drv_chr (Driver *drvthis, int x, int y, ch/
+xosdlib_drv_clear	xosdlib_drv.c	/^xosdlib_drv_clear (Driver * drvthis)$/
+xosdlib_drv_close	xosdlib_drv.c	/^xosdlib_drv_close (Driver *drvthis)$/
+xosdlib_drv_flush	xosdlib_drv.c	/^xosdlib_drv_flush (Driver *drvthis)$/
+xosdlib_drv_get_brightness	xosdlib_drv.c	/^xosdlib_drv_get_brightness(Driver *drvthis, int st/
+xosdlib_drv_get_contrast	xosdlib_drv.c	/^xosdlib_drv_get_contrast (Driver *drvthis)$/
+xosdlib_drv_hbar	xosdlib_drv.c	/^xosdlib_drv_hbar (Driver *drvthis, int x, int y, i/
+xosdlib_drv_height	xosdlib_drv.c	/^xosdlib_drv_height (Driver *drvthis)$/
+xosdlib_drv_init	xosdlib_drv.c	/^xosdlib_drv_init (Driver *drvthis)$/
+xosdlib_drv_old_num	xosdlib_drv.c	/^xosdlib_drv_old_num (Driver *drvthis, int x, int n/
+xosdlib_drv_set_brightness	xosdlib_drv.c	/^xosdlib_drv_set_brightness(Driver *drvthis, int st/
+xosdlib_drv_set_contrast	xosdlib_drv.c	/^xosdlib_drv_set_contrast (Driver *drvthis, int pro/
+xosdlib_drv_string	xosdlib_drv.c	/^xosdlib_drv_string (Driver *drvthis, int x, int y,/
+xosdlib_drv_vbar	xosdlib_drv.c	/^xosdlib_drv_vbar (Driver *drvthis, int x, int y, i/
+xosdlib_drv_width	xosdlib_drv.c	/^xosdlib_drv_width (Driver *drvthis)$/
