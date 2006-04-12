@@ -310,30 +310,25 @@ int sock_send_error(int fd, char* message)
 int
 sock_printf_error(int fd, const char *format, .../*args*/ )
 {
+	static const char huh[] = "huh? ";
 	char buf[MAXMSG];
-	static const int huhsize = sizeof("huh? ") - 1;
-	char *p = buf + huhsize;
-
 	va_list ap;
 	int size = 0;
 
+	strcpy(buf, huh);
+	
+reort(RPT_ERR, "sizeof(buf) = %d, sizeof(huh) = %d, sizeof(buf) - (sizeof(huh)-1) = %d, buf = %p, buf + (sizeof(huh)-1) = %p", sizeof(buf), sizeof(huh), sizeof(buf) - (sizeof(huh)-1), buf, buf + (sizeof(huh)-1));
 	va_start(ap, format);
-	size = vsnprintf(buf, sizeof(buf), format, ap);
+	size = vsnprintf(buf + (sizeof(huh)-1), sizeof(buf) - (sizeof(huh)-1), format, ap);
+	buf[sizeof(buf)-1] = '\0';
 	va_end(ap);
 
 	if (size < 0) {
 		report(RPT_ERR, "sock_printf_error: vsnprintf failed");
 		return -1;
 	}
-	if (size > sizeof(buf))
+	if (size >= sizeof(buf) - (sizeof(huh)-1))
 		report(RPT_WARNING, "sock_printf_error: vsnprintf truncated message");
-
-	/* prepend the "huh? " */
-	if (size > sizeof(buf) - huhsize)
-		size = sizeof(buf) - huhsize;
-
-	memmove(p, buf, size);
-	memcpy(buf, "huh? ", huhsize);
 
 	report(RPT_ERR, "error: %s", buf);
 	return sock_send_string(fd, buf);
