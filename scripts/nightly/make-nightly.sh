@@ -10,7 +10,7 @@ CVS2CL=/home/gfk/lcdproc/cvs2cl.pl
 SCP=/usr/bin/scp
 RSYNC=/usr/bin/rsync
 #####
-# Branch, can be stable-0-4-x or current
+# Branch, can be stable-0-4-x, stable-0-5-x or current
 BRANCH=$1
 
 cd ${NIGHTLYDIR}/${BRANCH}/
