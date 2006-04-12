@@ -1,7 +1,7 @@
 Dear lcdproc community,
 
 I've added support for the LEDs on the Pyramid LC-Display to the
-pylcd driver of lcdproc. 
+"pyramid" driver of lcdproc. 
 
 Since it seems that LEDs on an LCD are not directly supported by the
 lcdproc API I've used the "output" command of the server to trigger the

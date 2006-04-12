@@ -18,7 +18,7 @@ lcdproc (0.4.99+cvs20050101) unstable; urgency=low
       + ms6931: for MSI-6931 displays in 1U rack servers by MSI
       + mtc_s16209x: for MTC-S16209x by Microtips Technology Inc
       + NoritakeVFD: for Noritake VFD Device CU20045SCPB-T28A
-      + pylcd: for Pyramid LC-Displays
+      + pyramid: for Pyramid LC-Displays
       + serialVFD: for NEC FIPC8367 based serial VFDs
       + tyan: for LCDs in Tyan Barebone GS series
       + ula200: for the USB board ULA-200 from ELV

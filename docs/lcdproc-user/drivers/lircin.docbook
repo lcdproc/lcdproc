@@ -41,7 +41,7 @@ Then simply run make.
 
 </sect2>
 
-<sect2 id="lirc-config">
+<sect2 id="lirc-configuration">
 <title>Configure LCDd to Use the lirc Driver</title>
 
 <para>

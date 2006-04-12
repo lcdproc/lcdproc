@@ -2,7 +2,7 @@
 
 /*
  This is the header file of the LCDproc driver for
- the "pylcd" device from Pyramid.
+ the "pyramid" LCD device from Pyramid.
 
  Copyright (C) 2005 Silvan Marco Fin <silvan@kernelconcepts.de>
 
@@ -35,15 +35,11 @@
 #define WIDTH 16
 #define HEIGHT 2
 
-MODULE_EXPORT char *api_version = API_VERSION;
-MODULE_EXPORT int stay_in_foreground = 0;
-MODULE_EXPORT int supports_multiple = 0;
-MODULE_EXPORT char *symbol_prefix = "pylcd_";
 
 typedef struct
 {
     int FD;
-    char devicename[255];
+    char device[255];
     int width;
     int height;
     fd_set rdfs;
@@ -58,7 +54,7 @@ typedef struct
     int C_y;
     int C_state;
     char led[7];
-} pylcd_private_data;
+} PrivateData;
 
 #endif
 

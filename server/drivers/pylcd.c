@@ -1,7 +1,7 @@
 /* pylcd.c */
 
 /*
- This is the LCDproc driver for the "pylcd" device from Pyramid.
+ This is the LCDproc driver for the "pyramid" LCD device from Pyramid.
 
  Copyright (C) 2005 Silvan Marco Fin <silvan@kernelconcepts.de>
  Copyright (C) 2006 coresystems GmbH <info@coresystems.de>
@@ -60,25 +60,33 @@
 #define True 1
 #define False 0
 
-#define DEBUG 0
 
 #define MICROTIMEOUT 50000
 #define NOKEY "00000"
 
+
+/* variables for the server core */
+MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 0;
+MODULE_EXPORT int supports_multiple = 0;
+MODULE_EXPORT char *symbol_prefix = "pyramid_";
+
+
 /* Prototypes: */
 
-int send_ACK(pylcd_private_data *);
+int send_ACK(PrivateData *);
 
 /* local functions for pylcd.c */
 
 /* Performs an select on the device used. Returns if no data is available at the
  moment. Used to keep reading-operations from blocking the driver.
  */
-int data_ready(pylcd_private_data *status)
+int
+data_ready(PrivateData *p)
 {
-    FD_ZERO(&status->rdfs);
-    FD_SET(status->FD, &status->rdfs);
-    return select(status->FD+1, &status->rdfs, NULL, NULL, &status->timeout)>0;
+    FD_ZERO(&p->rdfs);
+    FD_SET(p->FD, &p->rdfs);
+    return select(p->FD+1, &p->rdfs, NULL, NULL, &p->timeout)>0;
 }
 
 /* Reads one telegramm, stores the telegramm without ETX/STX in buffer
@@ -86,14 +94,15 @@ int data_ready(pylcd_private_data *status)
  or the telegramm didn't match its CC or if MAXCOUNT was exeeded without
  reading a complete telegramm.
  */
-int read_tele(pylcd_private_data *status, char *buffer)
+int
+read_tele(PrivateData *p, char *buffer)
 {
     char zeichen=0;
     int len=0;
     char cc=0x00;
 
-    while (data_ready(status)
-           && (read(status->FD, &zeichen, 1)>0)
+    while (data_ready(p)
+           && (read(p->FD, &zeichen, 1)>0)
            && (zeichen!=0x02)
            && (len<MAXCOUNT))
         len++;
@@ -107,8 +116,8 @@ int read_tele(pylcd_private_data *status, char *buffer)
     cc ^= zeichen;
     len=0;
 
-    while (data_ready(status)
-           && (read(status->FD, &zeichen, 1)>0)
+    while (data_ready(p)
+           && (read(p->FD, &zeichen, 1)>0)
            && (len<MAXCOUNT+1))
     {
         buffer[len]=zeichen;
@@ -117,8 +126,8 @@ int read_tele(pylcd_private_data *status, char *buffer)
         len++;
     }
 
-    if (data_ready(status)
-        && (read(status->FD, &zeichen, 1)>0)
+    if (data_ready(p)
+        && (read(p->FD, &zeichen, 1)>0)
         && (buffer[len]==0x03)
         && (zeichen==cc))
     {
@@ -135,10 +144,11 @@ int read_tele(pylcd_private_data *status, char *buffer)
 
 /* Wrapper for reading an acknowledge telegramm.
  */
-int read_ACK(pylcd_private_data *status)
+int
+read_ACK(PrivateData *p)
 {
     char buffer[6];
-    int retval=read_tele(status, buffer);
+    int retval=read_tele(p, buffer);
 
     return (retval && buffer[0]=='Q');
 }
@@ -147,7 +157,8 @@ int read_ACK(pylcd_private_data *status)
  this routine waits for an ACK and retransmitts till an ACK is received or
  doesn't expect an ACK.
  */
-int send_tele(pylcd_private_data *status, char *buffer)
+int
+send_tele(PrivateData *p, char *buffer)
 {
     char cc=0x00;
     int i, len;
@@ -160,8 +171,8 @@ int send_tele(pylcd_private_data *status, char *buffer)
 
     buffer2[len]=cc;
 
-    write(status->FD, buffer2, len+1);
-    /* tcflush (status->FD, TCIFLUSH); */
+    write(p->FD, buffer2, len+1);
+    /* tcflush (p->FD, TCIFLUSH); */
     debug(RPT_DEBUG, "%s: sent %s", __FUNCTION__, buffer);
 
     return 0;
@@ -169,12 +180,14 @@ int send_tele(pylcd_private_data *status, char *buffer)
 
 /* Wrapper for sending ACKs via real_send_tele
  */
-int send_ACK(pylcd_private_data *status)
+int
+send_ACK(PrivateData *p)
 {
-    return send_tele(status, "Q");
+    return send_tele(p, "Q");
 }
 
-unsigned long long timestamp(pylcd_private_data *status)
+unsigned long long
+timestamp(PrivateData *p)
 {
     struct timeval tv;
 
@@ -185,7 +198,8 @@ unsigned long long timestamp(pylcd_private_data *status)
 
 /* Sets the serial device, used for communication with the LCD, into raw mode
  */
-int initTTY(Driver *drvthis, int FD)
+int
+initTTY(Driver *drvthis, int FD)
 {
     struct termios tty_mode;
 
@@ -213,15 +227,16 @@ int initTTY(Driver *drvthis, int FD)
 
 /* This function sets all LEDs according to the private data structure */
 
-int set_leds(pylcd_private_data *status)
+int
+set_leds(PrivateData *p)
 {
     int i;
     char tele[3]="L00";
 
     for (i=0; i<7; i++) {
       tele[1]=i+'1';
-      tele[2]=status->led[i]?'1':'0';
-      send_tele(status, tele);
+      tele[2]=p->led[i]?'1':'0';
+      send_tele(p, tele);
     }
 
     return 0;
@@ -231,14 +246,15 @@ int set_leds(pylcd_private_data *status)
 
 /* Basic functions */
 
-MODULE_EXPORT int  pylcd_init (Driver *drvthis, char *args)
+MODULE_EXPORT int  
+pyramid_init (Driver *drvthis, char *args)
 {
     char buffer[6]="";
     int i;
-    pylcd_private_data *status;
+    PrivateData *p;
 
-    status = (pylcd_private_data *) malloc(sizeof(pylcd_private_data));
-    if ((status == NULL) || (drvthis->store_private_ptr(drvthis, status) < 0))
+    p = (PrivateData *) malloc(sizeof(PrivateData));
+    if ((p == NULL) || (drvthis->store_private_ptr(drvthis, p) < 0))
     {
         report(RPT_ERR, "%s: error allocating memory for modules private data", drvthis->name);
         return -1;
@@ -247,38 +263,38 @@ MODULE_EXPORT int  pylcd_init (Driver *drvthis, char *args)
     /* Read config file: */
 
     /* Which serial device should be used? */
-    strncpy(status->devicename, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(status->devicename));
-    status->devicename[sizeof(status->devicename)-1] = '\0';
-    report(RPT_INFO, "%s: using Device %s", drvthis->name, status->devicename);
+    strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(p->device));
+    p->device[sizeof(p->device)-1] = '\0';
+    report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
     /* open and initialize serial device */
-    status->FD = open(status->devicename, O_RDWR);
+    p->FD = open(p->device, O_RDWR);
 
-    if (status->FD == -1) {
-        report(RPT_ERR, "%s: opening device failed: %s", drvthis->name, strerror(errno));
+    if (p->FD == -1) {
+        report(RPT_ERR, "%s: open(%s) failed: %s", drvthis->name, p->device, strerror(errno));
         return -1;
     }
-    if (initTTY(drvthis, status->FD) != 0)
+    if (initTTY(drvthis, p->FD) != 0)
         return -1;
 
-    status->timeout.tv_sec = 0;
-    status->timeout.tv_usec = MICROTIMEOUT;
-    status->width = WIDTH;
-    status->height = HEIGHT;
-    status->LEDtoggle = 0;
-    strcpy(status->last_key_pressed, NOKEY);
-    status->last_key_time = timestamp(status);
-    status->last_buf_time = timestamp(status);
+    p->timeout.tv_sec = 0;
+    p->timeout.tv_usec = MICROTIMEOUT;
+    p->width = WIDTH;
+    p->height = HEIGHT;
+    p->LEDtoggle = 0;
+    strcpy(p->last_key_pressed, NOKEY);
+    p->last_key_time = timestamp(p);
+    p->last_buf_time = timestamp(p);
 
     /* Acknowledge all telegramms, the device may yet be sending.
        (Reset doesn't clear telegramms, darn protocol ... )
        */
 
-    tcflush(status->FD, TCIFLUSH); /* clear everything */
+    tcflush(p->FD, TCIFLUSH); /* clear everything */
     while (1) {
-        i = read_tele(status, buffer);
+        i = read_tele(p, buffer);
         if (i == True)
-            send_ACK(status);
+            send_ACK(p);
         else
             break;
         usleep(600000);
@@ -286,169 +302,193 @@ MODULE_EXPORT int  pylcd_init (Driver *drvthis, char *args)
 
     /* Now Reset and clear */
 
-    send_tele(status, "R");
-    send_tele(status, "C0101");
-    send_tele(status, "D                                ");
-    send_tele(status, "C0101");
-    send_tele(status, "M3");
-    strcpy(status->framebuffer, "D                                ");
-    status->FB_modified = 1;
+    send_tele(p, "R");
+    send_tele(p, "C0101");
+    send_tele(p, "D                                ");
+    send_tele(p, "C0101");
+    send_tele(p, "M3");
+    strcpy(p->framebuffer, "D                                ");
+    p->FB_modified = 1;
 
     for (i = 0; i < 7; i++)
-    	status->led[i] = 0;
-    set_leds(status);
+    	p->led[i] = 0;
+    set_leds(p);
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
     return 0;
 };
 
-MODULE_EXPORT void pylcd_close (Driver *drvthis)
+MODULE_EXPORT void 
+pyramid_close (Driver *drvthis)
 {
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    close(status->FD);
+    close(p->FD);
 };
 
-MODULE_EXPORT int  pylcd_width (Driver *drvthis)
+MODULE_EXPORT int  
+pyramid_width (Driver *drvthis)
 {
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    return status->width;
+    return p->width;
 };
 
-MODULE_EXPORT int  pylcd_height (Driver *drvthis)
+MODULE_EXPORT int  
+pyramid_height (Driver *drvthis)
 {
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    return status->height;
+    return p->height;
 };
 
-MODULE_EXPORT void pylcd_clear (Driver *drvthis)
+MODULE_EXPORT void 
+pyramid_clear (Driver *drvthis)
 {
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    status->FB_modified=1;
-    strcpy(status->framebuffer, "D                                ");
+    p->FB_modified=1;
+    strcpy(p->framebuffer, "D                                ");
 };
 
 /* flushed the content of the framebuffer to the display.
- status->FB_modified tells if the content was modified. If not,
+ p->FB_modified tells if the content was modified. If not,
  that means, nothing has to be done
  */
-MODULE_EXPORT void pylcd_flush (Driver *drvthis)
+MODULE_EXPORT void 
+pyramid_flush (Driver *drvthis)
 {
     static char mesg[16];
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
-    unsigned long long current_time=timestamp(status);
+    PrivateData *p = (PrivateData *) drvthis->private_data;
+    unsigned long long current_time=timestamp(p);
 
-    if ((status->FB_modified==True) && (current_time>(status->last_buf_time+40000)))
+    if ((p->FB_modified==True) && (current_time>(p->last_buf_time+40000)))
     {
-        send_tele(status, "C0101");
-        send_tele(status, status->framebuffer); /* We do not wait for the ACK here*/
-        status->FB_modified=False;
-        status->last_buf_time=current_time;
-        sprintf(mesg, "C%02d%02d", status->C_x, status->C_y);
-        send_tele(status, mesg);
-        sprintf(mesg, "M%d", status->C_state);
-        send_tele(status, mesg);
+        send_tele(p, "C0101");
+        send_tele(p, p->framebuffer); /* We do not wait for the ACK here*/
+        p->FB_modified=False;
+        p->last_buf_time=current_time;
+        sprintf(mesg, "C%02d%02d", p->C_x, p->C_y);
+        send_tele(p, mesg);
+        sprintf(mesg, "M%d", p->C_state);
+        send_tele(p, mesg);
     }
 }
 
-MODULE_EXPORT void pylcd_string (Driver *drvthis, int x, int y, char *args)
+MODULE_EXPORT void 
+pyramid_string (Driver *drvthis, int x, int y, char *args)
 {
     int offset;
     int len;
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    status->FB_modified = True;
-    x = min(status->width, x);
-    y = min(status->height, y);
-    offset = (x)+status->width*(y-1);
-    len = min(strlen(args), status->width*status->height-offset+1);
-    memcpy(&status->framebuffer[offset], args, len);
+    p->FB_modified = True;
+    x = min(p->width, x);
+    y = min(p->height, y);
+    offset = (x)+p->width*(y-1);
+    len = min(strlen(args), p->width*p->height-offset+1);
+    memcpy(&p->framebuffer[offset], args, len);
 };
 
-MODULE_EXPORT void pylcd_chr (Driver *drvthis, int x, int y, char c)
+MODULE_EXPORT void 
+pyramid_chr (Driver *drvthis, int x, int y, char c)
 {
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    status->FB_modified = True;
-    x = min(status->width, x);
-    y = min(status->height, y);
-    status->framebuffer[x+status->width*(y-1)]=c;
+    p->FB_modified = True;
+    x = min(p->width, x);
+    y = min(p->height, y);
+    p->framebuffer[x+p->width*(y-1)]=c;
 };
 
 
 /* Extended functions */
 
 /*
-MODULE_EXPORT void pylcd_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
-MODULE_EXPORT void pylcd_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
-MODULE_EXPORT void pylcd_num (Driver *drvthis, int x, int num){};
-MODULE_EXPORT void pylcd_heartbeat (Driver *drvthis, int state){};
-MODULE_EXPORT void pylcd_icon (Driver *drvthis, int x, int y, int icon){};
+MODULE_EXPORT void 
+pyramid_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
+MODULE_EXPORT void 
+pyramid_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
+MODULE_EXPORT void 
+pyramid_num (Driver *drvthis, int x, int num){};
+MODULE_EXPORT void 
+pyramid_heartbeat (Driver *drvthis, int state){};
+MODULE_EXPORT void 
+pyramid_icon (Driver *drvthis, int x, int y, int icon){};
 */
 
-MODULE_EXPORT void pylcd_cursor (Driver *drvthis, int x, int y, int state)
+MODULE_EXPORT void 
+pyramid_cursor (Driver *drvthis, int x, int y, int state)
 {
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    status->C_x = x;
-    status->C_y = y;
-    status->C_state = state;
+    p->C_x = x;
+    p->C_y = y;
+    p->C_state = state;
 };
 
 /* Userdef characters, are those still supported ? */
 
 /*
-MODULE_EXPORT void pylcd_set_char (Driver *drvthis, int n, char *dat){};
-MODULE_EXPORT int  pylcd_get_free_chars (Driver *drvthis){return 0;};
-MODULE_EXPORT int  pylcd_cellwidth (Driver *drvthis){return 0;};
-MODULE_EXPORT int  pylcd_cellheight (Driver *drvthis){return 0;};
+MODULE_EXPORT void 
+pyramid_set_char (Driver *drvthis, int n, char *dat){};
+MODULE_EXPORT int  
+pyramid_get_free_chars (Driver *drvthis){return 0;};
+MODULE_EXPORT int  
+pyramid_cellwidth (Driver *drvthis){return 0;};
+MODULE_EXPORT int  
+pyramid_cellheight (Driver *drvthis){return 0;};
 */
 
 /* Hardware functions */
 
 /*
-MODULE_EXPORT int  pylcd_get_contrast (Driver *drvthis){return 0;};
-MODULE_EXPORT void pylcd_set_contrast (Driver *drvthis, int promille){};
-MODULE_EXPORT int  pylcd_get_brightness (Driver *drvthis, int state){return 0;};
-MODULE_EXPORT void pylcd_set_brightness (Driver *drvthis, int state, int promille){};
-MODULE_EXPORT void pylcd_backlight (Driver *drvthis, int on)
+MODULE_EXPORT int  
+pyramid_get_contrast (Driver *drvthis){return 0;};
+MODULE_EXPORT void 
+pyramid_set_contrast (Driver *drvthis, int promille){};
+MODULE_EXPORT int  
+pyramid_get_brightness (Driver *drvthis, int state){return 0;};
+MODULE_EXPORT void 
+pyramid_set_brightness (Driver *drvthis, int state, int promille){};
+MODULE_EXPORT void 
+pyramid_backlight (Driver *drvthis, int on)
 */
 
-MODULE_EXPORT void pylcd_output (Driver *drvthis, int state)
+MODULE_EXPORT void 
+pyramid_output (Driver *drvthis, int state)
 {
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
     int i;
 
     for (i = 0; i < 7; i++) 
-        status->led[i] = state & (1 << i);
+        p->led[i] = state & (1 << i);
     
-    set_leds(status);
+    set_leds(p);
 };
 
 /* Key functions */
 
-MODULE_EXPORT const char *pylcd_get_key (Driver *drvthis)
+MODULE_EXPORT const char *
+pyramid_get_key (Driver *drvthis)
 {
     /* supports only one key at a time */
 
     static char buffer[MAXCOUNT];
     unsigned long long current_time;
     int retval;
-    pylcd_private_data *status = (pylcd_private_data *) drvthis->private_data;
+    PrivateData *p = (PrivateData *) drvthis->private_data;
 
     /* Now we read everything from the display and as long as we got ACKs, we ignore them. */
     while (1) {
-        retval = read_tele(status, buffer);
+        retval = read_tele(p, buffer);
         if ((retval == False) || (buffer[0] != 'Q')) break;
     }
     if (retval == False)
-        strcpy(buffer, status->last_key_pressed);
+        strcpy(buffer, p->last_key_pressed);
     else
-        send_ACK(status);
+        send_ACK(p);
 
     /* If a key wasn't released yet it may be released now. */
     if (buffer[0] == 'K')
@@ -459,33 +499,33 @@ MODULE_EXPORT const char *pylcd_get_key (Driver *drvthis)
             || (strcmp(buffer, "K0300") == 0)
             || (strcmp(buffer, "K3000") == 0))
         {
-            debug(RPT_DEBUG, "%s: Key released: %s", __FUNCTION__, status->last_key_pressed);
-            strcpy(status->last_key_pressed, NOKEY);
+            debug(RPT_DEBUG, "%s: Key released: %s", __FUNCTION__, p->last_key_pressed);
+            strcpy(p->last_key_pressed, NOKEY);
             return NULL;
         }
         else /* It must be a new key event */
         {
-            strcpy(status->last_key_pressed, buffer);
-            debug(RPT_DEBUG, "%s: Key pressed: %s", __FUNCTION__, status->last_key_pressed);
+            strcpy(p->last_key_pressed, buffer);
+            debug(RPT_DEBUG, "%s: Key pressed: %s", __FUNCTION__, p->last_key_pressed);
         }
     }
     /* If no keys are pressed at this time, we are done. */
-    if (status->last_key_pressed[0] == NOKEY[0])
+    if (p->last_key_pressed[0] == NOKEY[0])
         return NULL;
 
-    current_time = timestamp(status);
-    if (current_time > status->last_key_time + 500000) /* (buffer[0]=='K' ? 500000 : 250000)) */
-        status->last_key_time = current_time;
+    current_time = timestamp(p);
+    if (current_time > p->last_key_time + 500000) /* (buffer[0]=='K' ? 500000 : 250000)) */
+        p->last_key_time = current_time;
     else
         return NULL;
 
-    if (strcmp(status->last_key_pressed, "K0001") == 0) /* first from left */
+    if (strcmp(p->last_key_pressed, "K0001") == 0) /* first from left */
         return "Up";
-    if (strcmp(status->last_key_pressed, "K0010") == 0) /* second from left */
+    if (strcmp(p->last_key_pressed, "K0010") == 0) /* second from left */
         return "Down";
-    if (strcmp(status->last_key_pressed, "K0100") == 0) /* third from left */
+    if (strcmp(p->last_key_pressed, "K0100") == 0) /* third from left */
         return "Enter";
-    if (strcmp(status->last_key_pressed, "K1000") == 0) /* last from left */
+    if (strcmp(p->last_key_pressed, "K1000") == 0) /* last from left */
         return "Escape";
 
     return NULL;
@@ -495,7 +535,8 @@ MODULE_EXPORT const char *pylcd_get_key (Driver *drvthis)
 /* Returns a string. Server cannot modify this string. */
 
 /*
-MODULE_EXPORT const char *pylcd_get_info (){return NULL;};
+MODULE_EXPORT const char *
+pyramid_get_info (){return NULL;};
 */
 
 

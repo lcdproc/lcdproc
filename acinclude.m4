@@ -8,14 +8,14 @@ AC_ARG_ENABLE(drivers,
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,]
 	[                    glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,]
-	[                    MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,]
+	[                    MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,]
 	[                    sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
-	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pylcd,text])
+	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pylcd,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -232,9 +232,9 @@ dnl				else
 			DRIVERS="$DRIVERS NoritakeVFD${SO}"
 			actdrivers=["$actdrivers NoritakeVFD"]
 			;;
-		pylcd)
-			DRIVERS="$DRIVERS pylcd${SO}"
-			actdrivers=["$actdrivers pylcd"]
+		pyramid)
+			DRIVERS="$DRIVERS pyramid${SO}"
+			actdrivers=["$actdrivers pyramid"]
 			;;
 		sed1330)
 			if test "$ac_cv_port_have_lpt" = yes
@@ -259,7 +259,7 @@ dnl				else
 			actdrivers=["$actdrivers serialVFD"]
 			;;
 		sli)
-			DRIVERS="$DRIVERS wirz_sli${SO}"
+			DRIVERS="$DRIVERS sli${SO}"
 			actdrivers=["$actdrivers sli"]
 			;;
 		stv5730)

@@ -1,6 +1,6 @@
 /* lib-mylcd.h
 
- used by interfacedemo for pylcd device.
+ used by interfacedemo for "pyramid" LCD device.
  */
 
 /*

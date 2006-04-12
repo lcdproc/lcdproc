@@ -1,23 +1,37 @@
-<sect1 id="pylcd-howto">
-<title>The pylcd Driver</title>
+<sect1 id="pyramid-howto">
+<title>The pyramid Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-pylcd chipset.
+This section talks about using LCDproc with programmable LC displays
+sold by <ulink url="http://www.pyramid.de/">Pyramid Ccomputer</ulink>.
 </para>
 
-<sect2 id="pylcd-connections">
-<title>Connections</title>
+<para>
+Pyramid Computer builds these LC displays into its thriving server products
+to show system data, and to allow the user to change important parameters or
+shut down the appliance in a controlled manner.
+The LCD module, accessible via USB, can be integrated by Pyramid’s BTO server
+and appliance manufacturing division at the customer's request or it can be
+made available separately for self-integration, e.g. as a 5.25" module. 
+</para>
+
+<sect2 id="pyramid-features">
+<title>Features</title>
+
+<para>
+The displays are 16 characters wide and 2 lines high. They have 4 programmable
+buttons as well as 3 (or 9) LEDs which can also be software controlled.
+</para>
 
 </sect2>
 
 
-<sect2 id="pylcd-ledoutput">
+<sect2 id="pyramid-ledoutput">
 <title>LED output</title>
 
 <para>
 I've added support for the LEDs on the Pyramid LC-Display to the
-pylcd driver of lcdproc. 
+"pyramid" driver of lcdproc. 
 </para>
 
 <para>
@@ -50,7 +64,7 @@ is up to the software to do the right thing.
 </para>
 
 <example>
-<title>How to use the LCED output from the lcient</title>
+<title>How to use the LED output from the client</title>
 <programlisting>
 telnet localhost 13666
 hello
@@ -83,12 +97,12 @@ coresystems GmbH · Brahmsstr. 16 · D-79104 Freiburg i. Br.
 Tel.: +49 761 7668825 · Fax: +49 761 7664613
 Email: info@coresystems.de  · http://www.coresystems.de/
 
-<!-- ## Pyramid pylcd driver ## -->
-<sect2 id="pylcd-config">
+<!-- ## Pyramid LCD driver ## -->
+<sect2 id="pyramid-config">
 <title>Configuration in LCDd.conf</title>
 
 <sect3>
-<title>[pylcd]</title>
+<title>[pyramid]</title>
 
 <variablelist>
 <varlistentry>

@@ -19,7 +19,7 @@ AM_LDFLAGS = @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc ms6931 mtc_s16209x MtxOrb NoritakeVFD pylcd sed1330 sed1520 serialVFD stv5730 svga t6963 text tyan wirz_sli ula200 xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc ms6931 mtc_s16209x MtxOrb NoritakeVFD pyramid sed1330 sed1520 serialVFD stv5730 svga t6963 text tyan sli ula200 xosd
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
@@ -46,7 +46,7 @@ svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 tyan_LDADD =         libLCD.a
 ula200_LDADD =       libLCD.a @LIBFTDI@
-wirz_sli_LDADD =     libLCD.a
+sli_LDADD =     libLCD.a
 xosd_LDADD =         @LIBXOSD@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
@@ -76,7 +76,7 @@ ms6931_SOURCES =     lcd.h lcd_lib.h ms6931.h ms6931.c report.h
 mtc_s16209x_SOURCES =  lcd.h lcd_lib.h mtc_s16209x.c mtc_s16209x.h report.h
 MtxOrb_SOURCES =     lcd.h lcd_lib.h MtxOrb.c MtxOrb.h report.h bigfont.h
 NoritakeVFD_SOURCES = lcd.h lcd_lib.h NoritakeVFD.c NoritakeVFD.h report.h
-pylcd_SOURCES =      lcd.h pylcd.c pylcd.h
+pyramid_SOURCES =    lcd.h pylcd.c pylcd.h
 sed1330_SOURCES =    lcd.h sed1330.h sed1330.c port.h lpt-port.h timing.h report.h
 sed1520_SOURCES =    lcd.h sed1520.c sed1520.h sed1520fm.c sed1520fm.h port.h report.h
 serialVFD_SOURCES =  lcd.h lcd_lib.h serialVFD.c serialVFD.h report.h adv_bignum.h
@@ -86,7 +86,7 @@ t6963_SOURCES =      lcd.h lcd_lib.h t6963.c t6963.h t6963_font.h report.h
 text_SOURCES =       lcd.h text.h text.c report.h
 tyan_SOURCES =       lcd.h lcd_lib.h tyan_lcdm.h tyan_lcdm.c report.h
 ula200_SOURCES =     lcd.h lcd_lib.h ula200.h ula200.c report.h
-wirz_sli_SOURCES =   lcd.h lcd_lib.h wirz-sli.h wirz-sli.c report.h
+sli_SOURCES =        lcd.h lcd_lib.h wirz-sli.h wirz-sli.c report.h
 xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h
 
 AM_CPPFLAGS = -I$(top_srcdir)

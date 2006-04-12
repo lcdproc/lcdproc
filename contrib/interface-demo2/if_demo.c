@@ -1,6 +1,6 @@
 /* if_demo.c
 
- interfacedemo for pylcd device.
+ interfacedemo for "pyramid" LCD device.
  */
 
 /*

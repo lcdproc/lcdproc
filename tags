@@ -216,7 +216,7 @@ CwLnx_string	CwLnx.c	/^CwLnx_string(Driver * drvthis, int x, int y, char /
 CwLnx_vbar	CwLnx.c	/^CwLnx_vbar(Driver * drvthis, int x, int y, int len/
 CwLnx_width	CwLnx.c	/^CwLnx_width(Driver *drvthis)$/
 daemonize	main.c	/^daemonize(void)$/
-data_ready	pylcd.c	/^int data_ready(pylcd_private_data *status)$/
+data_ready	pylcd.c	/^int data_ready(PrivateData *p)$/
 debug	debug.h	/^static inline void debug(const char *format, ...\/*/
 Disable_Backlight	CwLnx.c	/^void Disable_Backlight(int fd)$/
 Disable_Cursor	CwLnx.c	/^void Disable_Cursor(int fd)$/
@@ -804,21 +804,21 @@ process_configfile	lcdexec.c	/^int process_configfile( char * configfile )$/
 process_configfile	main.c	/^process_configfile(char *configfile)$/
 process_response	lcdexec.c	/^int process_response( char * str )$/
 PROCSIZE	machine_NetBSD.c	/^#define PROCSIZE(pp) ((pp)->p_vm_tsize + (pp)->p_v/
-pylcd_chr	pylcd.c	/^MODULE_EXPORT void pylcd_chr (Driver *drvthis, int/
-pylcd_clear	pylcd.c	/^MODULE_EXPORT void pylcd_clear (Driver *drvthis)$/
-pylcd_close	pylcd.c	/^MODULE_EXPORT void pylcd_close (Driver *drvthis)$/
-pylcd_cursor	pylcd.c	/^MODULE_EXPORT void pylcd_cursor (Driver *drvthis, /
-pylcd_flush	pylcd.c	/^MODULE_EXPORT void pylcd_flush (Driver *drvthis)$/
-pylcd_get_key	pylcd.c	/^MODULE_EXPORT const char *pylcd_get_key (Driver *d/
-pylcd_height	pylcd.c	/^MODULE_EXPORT int  pylcd_height (Driver *drvthis)$/
-pylcd_init	pylcd.c	/^MODULE_EXPORT int  pylcd_init (Driver *drvthis, ch/
-pylcd_output	pylcd.c	/^MODULE_EXPORT void pylcd_output (Driver *drvthis, /
-pylcd_string	pylcd.c	/^MODULE_EXPORT void pylcd_string (Driver *drvthis, /
-pylcd_width	pylcd.c	/^MODULE_EXPORT int  pylcd_width (Driver *drvthis)$/
+pyramid_chr	pylcd.c	/^MODULE_EXPORT void pyramid_chr (Driver *drvthis, int/
+pyramid_clear	pylcd.c	/^MODULE_EXPORT void pyramid_clear (Driver *drvthis)$/
+pyramid_close	pylcd.c	/^MODULE_EXPORT void pyramid_close (Driver *drvthis)$/
+pyramid_cursor	pylcd.c	/^MODULE_EXPORT void pyramid_cursor (Driver *drvthis, /
+pyramid_flush	pylcd.c	/^MODULE_EXPORT void pyramid_flush (Driver *drvthis)$/
+pyramid_get_key	pylcd.c	/^MODULE_EXPORT const char *pyramid_get_key (Driver *d/
+pyramid_height	pylcd.c	/^MODULE_EXPORT int  pyramid_height (Driver *drvthis)$/
+pyramid_init	pylcd.c	/^MODULE_EXPORT int  pyramid_init (Driver *drvthis, ch/
+pyramid_output	pylcd.c	/^MODULE_EXPORT void pyramid_output (Driver *drvthis, /
+pyramid_string	pylcd.c	/^MODULE_EXPORT void pyramid_string (Driver *drvthis, /
+pyramid_width	pylcd.c	/^MODULE_EXPORT int  pyramid_width (Driver *drvthis)$/
 rawshift	hd44780-serialLpt.c	/^rawshift (PrivateData *p, unsigned char r)$/
-read_ACK	pylcd.c	/^int read_ACK(pylcd_private_data *status)$/
+read_ACK	pylcd.c	/^int read_ACK(PrivateData *p)$/
 Read_LCD	CwLnx.c	/^int Read_LCD(int fd, char *c, int size)$/
-read_tele	pylcd.c	/^int read_tele(pylcd_private_data *status, char *bu/
+read_tele	pylcd.c	/^int read_tele(PrivateData *p, char *bu/
 render_frame	render.c	/^render_frame (LinkedList * list,$/
 render_screen	render.c	/^render_screen (Screen * s, long int timer)$/
 report	report.c	/^void report( const int level, const char *format, /
@@ -890,11 +890,11 @@ sem_get	lcd_sem.c	/^sem_get (void)$/
 sem_remove	lcd_sem.c	/^sem_remove (int sid)$/
 sem_signal	lcd_sem.c	/^sem_signal (int sid)$/
 sem_wait	lcd_sem.c	/^sem_wait (int sid)$/
-send_ACK	pylcd.c	/^int send_ACK(pylcd_private_data *status)$/
+send_ACK	pylcd.c	/^int send_ACK(PrivateData *p)$/
 send_bytes_message	CFontz633io.c	/^void send_bytes_message(int fd, unsigned char msg,/
 send_onebyte_message	CFontz633io.c	/^void send_onebyte_message(int fd, unsigned char ms/
 send_packet	CFontz633io.c	/^send_packet(int fd, COMMAND_PACKET *out, COMMAND_P/
-send_tele	pylcd.c	/^int send_tele(pylcd_private_data *status, char *bu/
+send_tele	pylcd.c	/^int send_tele(PrivateData *p, char *bu/
 send_zerobyte_message	CFontz633io.c	/^void send_zerobyte_message(int fd, unsigned char m/
 serialVFD_cellheight	serialVFD.c	/^serialVFD_cellheight (Driver *drvthis)$/
 serialVFD_cellwidth	serialVFD.c	/^serialVFD_cellwidth (Driver *drvthis)$/
@@ -931,7 +931,7 @@ set_default_settings	main.c	/^set_default_settings(void)$/
 SetFan	hd44780-lis2.c	/^void SetFan(int fd, int fan1, int fan2, int fan3, /
 set_foreground_color	curses_drv.c	/^set_foreground_color (char * buf) {$/
 Set_Insert	CwLnx.c	/^void Set_Insert(int fd, int row, int col)$/
-set_leds	pylcd.c	/^int set_leds(pylcd_private_data *status)$/
+set_leds	pylcd.c	/^int set_leds(PrivateData *p)$/
 SetMatrice	hd44780-lis2.c	/^void SetMatrice(PrivateData *p, int fd, int matric/
 set_predecessor	menu_commands.c	/^int set_predecessor(MenuItem *item, char *itemid, /
 set_reporting	report.c	/^int set_reporting( char *application_name, int new/
@@ -1067,7 +1067,7 @@ timercmp	timing.h	/^# define timercmp(a, b, CMP)                      /
 timerisset	timing.h	/^# define timerisset(tvp)        ((tvp)->tv_sec || /
 timersub	timing.h	/^# define timersub(a, b, result)                   /
 time_screen	chrono.c	/^time_screen (int rep, int display, int *flags_ptr)/
-timestamp	pylcd.c	/^unsigned long long timestamp(pylcd_private_data *s/
+timestamp	pylcd.c	/^unsigned long long timestamp(PrivateData *s/
 timing_init	timing.h	/^static inline int timing_init() {$/
 timing_uPause	timing.h	/^static inline void timing_uPause (int usecs) {$/
 tyan_lcdm_backlight	tyan_lcdm.c	/^tyan_lcdm_backlight (Driver * drvthis, int on)$/

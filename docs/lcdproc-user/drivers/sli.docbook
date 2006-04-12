@@ -11,7 +11,7 @@ sli chipset.
 <title>Configuration in LCDd.conf</title>
 
 <sect3>
-<title>[Wirz-sli]</title>
+<title>[sli]</title>
 
 <variablelist>
 <varlistentry>
