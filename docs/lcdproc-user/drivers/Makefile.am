@@ -17,7 +17,6 @@ EXTRA_DIST =	bayrad.docbook \
 		lb216.docbook \
 		lcdm001.docbook \
 		lcterm.docbook \
-		lirc.docbook \
 		lircin.docbook \
 		ms6931.docbook \
 		mtc_s16209x.docbook \
