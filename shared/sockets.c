@@ -317,7 +317,6 @@ sock_printf_error(int fd, const char *format, .../*args*/ )
 
 	strcpy(buf, huh);
 	
-reort(RPT_ERR, "sizeof(buf) = %d, sizeof(huh) = %d, sizeof(buf) - (sizeof(huh)-1) = %d, buf = %p, buf + (sizeof(huh)-1) = %p", sizeof(buf), sizeof(huh), sizeof(buf) - (sizeof(huh)-1), buf, buf + (sizeof(huh)-1));
 	va_start(ap, format);
 	size = vsnprintf(buf + (sizeof(huh)-1), sizeof(buf) - (sizeof(huh)-1), format, ap);
 	buf[sizeof(buf)-1] = '\0';
