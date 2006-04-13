@@ -5,7 +5,7 @@ Key:
      + Something added
      * Something changed / fixed
 
-v0.5 (unreleased)
+v0.5.0 (unreleased)
 This version has split off from unstable-0.4.3. Includes major changes.
  + LCDd now does dynamic loading of driver modules
  * New API in use
