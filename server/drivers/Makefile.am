@@ -41,6 +41,7 @@ lirc_LDADD =         @LIBLIRC_CLIENT@
 lcterm_LDADD =       libLCD.a
 mtc_s16209x_LDADD =  libLCD.a
 NoritakeVFD_LDADD =  libLCD.a
+pyramid_LDADD =      libLCD.a
 serialVFD_LDADD =    libLCD.a libbignum.a
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a

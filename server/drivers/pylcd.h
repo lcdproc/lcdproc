@@ -5,6 +5,7 @@
  the "pyramid" LCD device from Pyramid.
 
  Copyright (C) 2005 Silvan Marco Fin <silvan@kernelconcepts.de>
+ Copyright (C) 2006 coresystems GmbH <info@coresystems.de>
 
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -35,25 +36,52 @@
 #define WIDTH 16
 #define HEIGHT 2
 
+#define CUSTOMCHARS 16
+#define CELLHEIGHT  8
+#define CELLWIDTH   5
+
+
+typedef enum {
+    normal = 0,
+    hbar = 1,
+    vbar = 2,
+    bign = 4,
+    beat = 8
+} custom_type;
 
 typedef struct
 {
+    /* device io */
     int FD;
     char device[255];
-    int width;
-    int height;
     fd_set rdfs;
     struct timeval timeout;
+
+    /* device description */
+    int width;
+    int height;
+    int customchars;
+    int cellwidth;
+    int cellheight;
+
+    /* output handling */
     char framebuffer[WIDTH*HEIGHT+2];
     int FB_modified;
-    int LEDtoggle;
+    custom_type custom;
+
+    /* button handling */
     char last_key_pressed[6];
     unsigned long long last_key_time;
     unsigned long long last_buf_time;
+
+    /* cursor handling */
     int C_x;
     int C_y;
     int C_state;
+
+    /* led handling */
     char led[7];
+
 } PrivateData;
 
 #endif

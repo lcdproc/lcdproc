@@ -33,6 +33,10 @@
  * Changes:
  *  2006-02-20 Stefan Reinauer <stepan@coresystems.de>
  *   - add support for onboard LEDs via "output" command
+ *  2006-04-12 Stefan Reinauer <stepan@coresystems.de>
+ *   - add support for user defined characters (set_char/get_free_chars)
+ *   - add support for vbars/hbars, get_info, reorganize pyramid_init()
+ *   - fixed a timing bug and implemented escaping in (real_)send_tele()
  */
 
 #include <sys/types.h>
@@ -54,6 +58,7 @@
 # include "config.h"
 #endif
 
+#include "lcd_lib.h"
 #include "report.h"
 
 #define min(a, b) ((a)<(b) ? (a) : (b))
@@ -70,7 +75,6 @@ MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "pyramid_";
-
 
 /* Prototypes: */
 
@@ -153,29 +157,68 @@ read_ACK(PrivateData *p)
     return (retval && buffer[0]=='Q');
 }
 
-/* Send the input as telegramm. Depending on value for wfack
- this routine waits for an ACK and retransmitts till an ACK is received or
- doesn't expect an ACK.
+/* Send the input as telegramm. 
+ * 
+ * The telegram buffer just contains the raw telegram data
+ *  - It shall not contain <STX> and <ETX> marks
+ *  - It may contain bytes below 0x20, they are automatically escaped by
+ *    real_sent_tele
+ *    
+ * NOTE: This function does not wait for any ACKs.
  */
 int
-send_tele(PrivateData *p, char *buffer)
+real_send_tele(PrivateData *p, char *buffer, int len)
 {
     char cc=0x00;
-    int i, len;
+    int i, j;
     char buffer2[255];
 
-    sprintf(buffer2,"\2%s\3", buffer);
-    len=strlen(buffer2);
+    i=0; j=0; 
+    buffer2[j++]=2; // emit <STX>
+
+    /* copy the whole telegram package and escape
+     * characters below 0x20.
+     * ie. 0x8 --> <ESC> 0x28
+     */
+    
+    while (len--) {
+        if (buffer[i]<0x20) {
+            buffer2[j++]=0x1b;
+            buffer2[j++]=buffer[i++]+0x20;
+        } else {
+            buffer2[j++]=buffer[i++];
+        }
+    }
+    buffer2[j++]=3; // emit <ETX> 
+    len=j;	    // new package length
+    
+    /* calculate <BCC> over all bytes */
     for (i=0; i<len; i++)
         cc ^= buffer2[i];
 
-    buffer2[len]=cc;
+    buffer2[len++]=cc;
 
-    write(p->FD, buffer2, len+1);
+    write(p->FD, buffer2, len);
     /* tcflush (p->FD, TCIFLUSH); */
+
+    /* Take a little nap. This works as a pacemaker */
+    usleep(50);
+    
     debug(RPT_DEBUG, "%s: sent %s", __FUNCTION__, buffer);
 
     return 0;
+}
+
+/* If we know what our telegrams look like, we may use
+ * send_tele instead of real_send_tele.
+ * NOTE: This only works when there are no NULL bytes
+ * in the telegram
+ */
+
+int
+send_tele(PrivateData *p, char *buffer)
+{
+    return real_send_tele(p, buffer, strlen(buffer));
 }
 
 /* Wrapper for sending ACKs via real_send_tele
@@ -253,6 +296,8 @@ pyramid_init (Driver *drvthis, char *args)
     int i;
     PrivateData *p;
 
+    /* get memory for private data */
+    
     p = (PrivateData *) malloc(sizeof(PrivateData));
     if ((p == NULL) || (drvthis->store_private_ptr(drvthis, p) < 0))
     {
@@ -260,13 +305,35 @@ pyramid_init (Driver *drvthis, char *args)
         return -1;
     }
 
-    /* Read config file: */
+    /* fill static elements of private data */
+    p->width = WIDTH;
+    p->height = HEIGHT;
+    p->customchars=CUSTOMCHARS;
+    p->cellwidth=CELLWIDTH;
+    p->cellheight=CELLHEIGHT;
+    p->custom = normal;
+    
+    strcpy(p->last_key_pressed, NOKEY);
+    p->last_key_time = timestamp(p);
+    p->last_buf_time = timestamp(p);
+
+    p->timeout.tv_sec = 0;
+    p->timeout.tv_usec = MICROTIMEOUT;
+    
+    strcpy(p->framebuffer, "D                                ");
+    p->FB_modified = 1;
+
+    /* read config file, fill configuration 
+     * dependent elements of private data
+     */
 
     /* Which serial device should be used? */
     strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(p->device));
     p->device[sizeof(p->device)-1] = '\0';
     report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
+    /* Initialize connection to the LCD  */
+    
     /* open and initialize serial device */
     p->FD = open(p->device, O_RDWR);
 
@@ -274,23 +341,16 @@ pyramid_init (Driver *drvthis, char *args)
         report(RPT_ERR, "%s: open(%s) failed: %s", drvthis->name, p->device, strerror(errno));
         return -1;
     }
+    
     if (initTTY(drvthis, p->FD) != 0)
         return -1;
-
-    p->timeout.tv_sec = 0;
-    p->timeout.tv_usec = MICROTIMEOUT;
-    p->width = WIDTH;
-    p->height = HEIGHT;
-    p->LEDtoggle = 0;
-    strcpy(p->last_key_pressed, NOKEY);
-    p->last_key_time = timestamp(p);
-    p->last_buf_time = timestamp(p);
-
+    
     /* Acknowledge all telegramms, the device may yet be sending.
-       (Reset doesn't clear telegramms, darn protocol ... )
-       */
+     * (Reset doesn't clear telegramms, darn protocol ... )
+     */
 
     tcflush(p->FD, TCIFLUSH); /* clear everything */
+    
     while (1) {
         i = read_tele(p, buffer);
         if (i == True)
@@ -300,19 +360,27 @@ pyramid_init (Driver *drvthis, char *args)
         usleep(600000);
     }
 
-    /* Now Reset and clear */
+    /* Initialize the display hardware: reset, clear and set cursor shape */
 
     send_tele(p, "R");
     send_tele(p, "C0101");
     send_tele(p, "D                                ");
     send_tele(p, "C0101");
     send_tele(p, "M3");
-    strcpy(p->framebuffer, "D                                ");
-    p->FB_modified = 1;
 
-    for (i = 0; i < 7; i++)
-    	p->led[i] = 0;
-    set_leds(p);
+    /* hardware selftest + clear all LEDs */
+    for (i = 0; i < 7; i++) {
+    	p->led[i?i-1:0] = 0;
+	p->led[i] = 1;
+    	set_leds(p);
+	usleep(10000);
+    }
+    for (i = 6; i >= 0; i--) {
+    	p->led[i+1] = 0;
+	p->led[i] = 1;
+    	set_leds(p);
+	usleep(10000);
+    }
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -352,9 +420,9 @@ pyramid_clear (Driver *drvthis)
     strcpy(p->framebuffer, "D                                ");
 };
 
-/* flushed the content of the framebuffer to the display.
- p->FB_modified tells if the content was modified. If not,
- that means, nothing has to be done
+/* flush the content of the framebuffer to the display.
+ * p->FB_modified tells if the content was modified. If not,
+ * that means, nothing has to be done
  */
 MODULE_EXPORT void 
 pyramid_flush (Driver *drvthis)
@@ -366,7 +434,7 @@ pyramid_flush (Driver *drvthis)
     if ((p->FB_modified==True) && (current_time>(p->last_buf_time+40000)))
     {
         send_tele(p, "C0101");
-        send_tele(p, p->framebuffer); /* We do not wait for the ACK here*/
+        real_send_tele(p, p->framebuffer, 33); /* We do not wait for the ACK here*/
         p->FB_modified=False;
         p->last_buf_time=current_time;
         sprintf(mesg, "C%02d%02d", p->C_x, p->C_y);
@@ -403,19 +471,323 @@ pyramid_chr (Driver *drvthis, int x, int y, char c)
 };
 
 
-/* Extended functions */
+/* User defined characters */
+
+MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
+{
+	char tele[10] = "G@ABCDEFGH";
+	int row, column, pixels;
+	
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	
+
+	if (n<0 && n>15) {
+		debug(RPT_DEBUG, "only characters 0-15 can be changed.\n");
+		return;
+	}
+	
+	if (!dat) {
+		debug(RPT_DEBUG, "no character data\n");
+		return;
+	}
+
+	// which character?
+	tele[1]=n+0x40;
+	
+	for (row = 0; row < p->cellheight; row++) {
+		pixels=0; 
+		for (column = 0; column < p->cellwidth; column++) {
+			pixels <<= 1;
+			pixels |= (dat[(row * p->cellwidth) + column] != 0);
+		}
+		pixels |= 0x40; // pixel information is transferred with
+				// an offset of 40h
+		
+		tele[row+2]=pixels;
+	}
+        real_send_tele(p, tele, 10);
+};
+
+MODULE_EXPORT int  pyramid_get_free_chars (Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	return (p->customchars);
+};
+
+
+MODULE_EXPORT int  pyramid_cellwidth (Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	return (p->cellwidth);
+};
+
+MODULE_EXPORT int  pyramid_cellheight (Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	return (p->cellheight);
+};
+
+
+
+// Sets up for vertical bars.  Call before pyramid->vbar()
+
+static void
+pyramid_init_vbar (Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	char a[] = {
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+	};
+	char b[] = {
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+	};
+	char c[] = {
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+	};
+	char d[] = {
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+	};
+	char e[] = {
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+	};
+	char f[] = {
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+	};
+	char g[] = {
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+	};
+
+	if (p->custom != vbar) {
+		pyramid_set_char (drvthis, 1, a);
+		pyramid_set_char (drvthis, 2, b);
+		pyramid_set_char (drvthis, 3, c);
+		pyramid_set_char (drvthis, 4, d);
+		pyramid_set_char (drvthis, 5, e);
+		pyramid_set_char (drvthis, 6, f);
+		pyramid_set_char (drvthis, 7, g);
+		p->custom = vbar;
+	}
+}
+
+// Inits horizontal bars...
+static void
+pyramid_init_hbar (Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	char a[] = {
+		1, 0, 0, 0, 0,
+		1, 0, 0, 0, 0,
+		1, 0, 0, 0, 0,
+		1, 0, 0, 0, 0,
+		1, 0, 0, 0, 0,
+		1, 0, 0, 0, 0,
+		1, 0, 0, 0, 0,
+		1, 0, 0, 0, 0,
+	};
+	char b[] = {
+		1, 1, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 0, 0, 0,
+	};
+	char c[] = {
+		1, 1, 1, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 0, 0,
+	};
+	char d[] = {
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 0,
+	};
+	char e[] = {
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1,
+	};
+
+	if (p->custom != hbar) {
+		pyramid_set_char (drvthis, 1, a);
+		pyramid_set_char (drvthis, 2, b);
+		pyramid_set_char (drvthis, 3, c);
+		pyramid_set_char (drvthis, 4, d);
+		pyramid_set_char (drvthis, 5, e);
+		p->custom = hbar;
+	}
+}
+
+// Draws a vertical bar...
+
+MODULE_EXPORT void
+pyramid_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+
+	pyramid_init_vbar(drvthis);
+
+	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
+}
+
+// Draws a horizontal bar to the right.
+
+MODULE_EXPORT void
+pyramid_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+
+	pyramid_init_hbar(drvthis);
+
+	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
+}
+
+
+MODULE_EXPORT int
+pyramid_icon (Driver *drvthis, int x, int y, int icon)
+{
+	char icons[3][5 * 8] = {
+		{
+		 1, 1, 1, 1, 1,			  // Empty Heart
+		 1, 0, 1, 0, 1,
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 1, 0, 0, 0, 1,
+		 1, 1, 0, 1, 1,
+		 1, 1, 1, 1, 1,
+		 },
+
+		{
+		 1, 1, 1, 1, 1,			  // Filled Heart
+		 1, 0, 1, 0, 1,
+		 0, 1, 0, 1, 0,
+		 0, 1, 1, 1, 0,
+		 0, 1, 1, 1, 0,
+		 1, 0, 1, 0, 1,
+		 1, 1, 0, 1, 1,
+		 1, 1, 1, 1, 1,
+		 },
+
+		{
+		 0, 0, 0, 0, 0,			  // Ellipsis
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 0, 0, 0, 0, 0,
+		 1, 0, 1, 0, 1,
+		 },
+
+	};
+
+#if 0
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+
+	// notify the others that we messed up their character set.
+	// Unused for heartbeats as we should always leave that icon alone.
+	// 
+	// Leaving this in the code as notification for other similar cases
+	if (p->custom == bign) {
+		printf("Switching to beat\n");
+		p->custom = beat;
+	}
+#endif
+
+	switch( icon ) {
+		case ICON_BLOCK_FILLED:
+			pyramid_chr( drvthis, x, y, 255 );
+			break;
+
+		case ICON_HEART_FILLED:
+			pyramid_set_char( drvthis, 0, icons[0] );
+			pyramid_chr( drvthis, x, y, 0 );
+			break;
+
+		case ICON_HEART_OPEN:
+			pyramid_set_char( drvthis, 0, icons[1] );
+			pyramid_chr( drvthis, x, y, 0 );
+			break;
+
+		default:
+			printf("x=%d, y=%d, icon=%x\n", x,y,icon);
+			return -1;
+	}
+	return 0;
+}
 
 /*
-MODULE_EXPORT void 
-pyramid_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
-MODULE_EXPORT void 
-pyramid_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern){};
 MODULE_EXPORT void 
 pyramid_num (Driver *drvthis, int x, int num){};
 MODULE_EXPORT void 
 pyramid_heartbeat (Driver *drvthis, int state){};
-MODULE_EXPORT void 
-pyramid_icon (Driver *drvthis, int x, int y, int icon){};
 */
 
 MODULE_EXPORT void 
@@ -428,22 +800,10 @@ pyramid_cursor (Driver *drvthis, int x, int y, int state)
     p->C_state = state;
 };
 
-/* Userdef characters, are those still supported ? */
-
-/*
-MODULE_EXPORT void 
-pyramid_set_char (Driver *drvthis, int n, char *dat){};
-MODULE_EXPORT int  
-pyramid_get_free_chars (Driver *drvthis){return 0;};
-MODULE_EXPORT int  
-pyramid_cellwidth (Driver *drvthis){return 0;};
-MODULE_EXPORT int  
-pyramid_cellheight (Driver *drvthis){return 0;};
-*/
-
 /* Hardware functions */
 
-/*
+#if 0
+// all of these are not supported by the display (data sheet)
 MODULE_EXPORT int  
 pyramid_get_contrast (Driver *drvthis){return 0;};
 MODULE_EXPORT void 
@@ -454,7 +814,7 @@ MODULE_EXPORT void
 pyramid_set_brightness (Driver *drvthis, int state, int promille){};
 MODULE_EXPORT void 
 pyramid_backlight (Driver *drvthis, int on)
-*/
+#endif
 
 MODULE_EXPORT void 
 pyramid_output (Driver *drvthis, int state)
@@ -480,7 +840,11 @@ pyramid_get_key (Driver *drvthis)
     int retval;
     PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    /* Now we read everything from the display and as long as we got ACKs, we ignore them. */
+    /* Now we read everything from the display,
+     * and as long as we got ACKs, we ignore them. 
+     * (eat up all pending ACKs)
+     */
+    
     while (1) {
         retval = read_tele(p, buffer);
         if ((retval == False) || (buffer[0] != 'Q')) break;
@@ -533,10 +897,12 @@ pyramid_get_key (Driver *drvthis)
 
 
 /* Returns a string. Server cannot modify this string. */
-
-/*
 MODULE_EXPORT const char *
-pyramid_get_info (){return NULL;};
-*/
+pylcd_get_info (Driver *drvthis)
+{
+    static char *pylcd_info_string="Pyramid LCD driver";
+
+    return pylcd_info_string;
+};
 
 
