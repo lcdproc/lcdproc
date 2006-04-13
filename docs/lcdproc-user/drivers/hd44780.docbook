@@ -1229,7 +1229,6 @@ that. The BL output below should be connected to the BL input in the
 </screen>
 </figure>
 
-
 </sect4>
 
 </sect3>
@@ -1243,6 +1242,24 @@ but to a serial port, which saves you from a lot of potential problems.
 To use it, specify the device to which you have connected the module in the
 config file with the Device= setting. The default is /dev/lcd.
 It does not support a keypad nor backlight switching.
+</para>
+
+<para>
+For more information see the
+<ulink url="http://dalewheat.com/pdf/PIC-an-LCD.pdf">PIC-an-LCD User Manual</ulink>
+by Dale Wheat.
+</para>
+
+</sect3>
+
+
+<sect3 id="hd44780-lis2">
+<title>LIS2 USB device "lis2"</title>
+
+<para>
+LIS2 from VLSystem (http://www.vlsys.co.kr) is a full featured usb vfd module
+with four channel fan controls. This device can be access as a serial device with
+help of the kernel modules ftdi_sio which map the USB port to a serial port (/dev/ttyUSBx).
 </para>
 
 </sect3>

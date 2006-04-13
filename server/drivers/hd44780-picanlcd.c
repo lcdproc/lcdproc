@@ -13,7 +13,7 @@
  *
  * See the PIC-an-LCD documentation for data on how it should be connected
  * to the computer.
- * http://dalewheat.com/products/PIC-an-LCD/index.html
+ * http://dalewheat.com/pdf/PIC-an-LCD.pdf
  *
  */
 
