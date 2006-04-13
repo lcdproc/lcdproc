@@ -228,7 +228,7 @@ HD44780_init (Driver * drvthis)
 #endif
 
 	// Allocate framebuffer
-	p->framebuf = (unsigned char *) malloc(p->width * p->height);
+	p->framebuf = (char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
 		report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
 		//HD44780_close();
@@ -236,7 +236,7 @@ HD44780_init (Driver * drvthis)
 	}
 
 	// Allocate and clear the buffer for incremental updates
-	p->lcd_contents = (unsigned char *) malloc (p->width * p->height);
+	p->lcd_contents = (char *) malloc (p->width * p->height);
 	if (p->lcd_contents == NULL) {
 		report(RPT_ERR, "%s: unable to allocate framebuffer backing store", drvthis->name);
 		return -1;
@@ -244,8 +244,8 @@ HD44780_init (Driver * drvthis)
 	memset(p->lcd_contents, 0, p->width * p->height);
 
 	// Allocate and clear the buffer for defineable characters
-	p->cc_buf = (unsigned char *) malloc(NUM_CCs * p->cellheight);
-	p->cc_dirty = (unsigned char *) malloc(NUM_CCs);
+	p->cc_buf = (char *) malloc(NUM_CCs * p->cellheight);
+	p->cc_dirty = (char *) malloc(NUM_CCs);
 	if (!p->cc_buf || !p->cc_dirty) {
 		report(RPT_ERR, "%s: error mallocing", drvthis->name);
 		return -1;

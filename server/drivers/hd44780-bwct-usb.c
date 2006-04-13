@@ -43,7 +43,7 @@ hd_init_bwct_usb (Driver *drvthis)
   PrivateData *p = (PrivateData*) drvthis->private_data;
   struct usb_bus *busses;
   struct usb_bus *bus;
-  char device_manufacturer[LCD_MAX_WIDTH+1] = "";
+  //char device_manufacturer[LCD_MAX_WIDTH+1] = "";
   char device_serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
   char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
   int contrast = -1;	/* illegal contrast value (to detect errors) */

@@ -57,8 +57,6 @@ static key_t getkey (register char *p);
 static struct sembuf semaphore_wait = { SEM_WAIT };
 static struct sembuf semaphore_signal = { SEM_SIGNAL };
 
-static char rcsId[] = "$Id$";
-
 /*
  * getkey  returns the key for the semaphore
  */

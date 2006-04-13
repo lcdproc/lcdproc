@@ -237,7 +237,7 @@ MODULE_EXPORT char *symbol_prefix = "serialVFD_";
 /* Internal functions */
 static void serialVFD_init_vbar (Driver *drvthis);
 static void serialVFD_init_hbar (Driver *drvthis);
-static void serialVFD_draw_frame (Driver *drvthis, char *dat);
+static void serialVFD_draw_frame (Driver *drvthis, unsigned char *dat);
 static void serialVFD_put_brightness (Driver *drvthis);
 static void serialVFD_put_char (Driver *drvthis, int n);
 
@@ -756,7 +756,7 @@ serialVFD_put_char (Driver *drvthis, int n)
 // Input is a character array, sized serialVFD->width*serialVFD->height
 //
 static void
-serialVFD_draw_frame (Driver *drvthis, char *dat)
+serialVFD_draw_frame (Driver *drvthis, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
 	int i, j, last_chr = -10;
@@ -805,7 +805,7 @@ serialVFD_draw_frame (Driver *drvthis, char *dat)
 				}
 			}
 
-			if (dat[i] >= 0 && dat[i] <= 30) {// custom character
+			if (dat[i] <= 30) {// custom character
 				if (p->display_type == 1) {// KD Rev 2.1 only
 					write(p->fd, "\x1A\xDB", 2);		// substitute and select character to overwrite(237)
 					write(p->fd, &p->custom_char[(int)dat[i]][0], 7);// overwrite selected character
@@ -815,7 +815,7 @@ serialVFD_draw_frame (Driver *drvthis, char *dat)
 					write(p->fd, &p->usr_chr_mapping[(int)dat[i]], 1);
 				}
 			}
-			else if (dat[i] < 0 && (p->ISO_8859_1 != 0)) { // ISO_8859_1 translation for 129 ... 255
+			else if (dat[i] > 127 && (p->ISO_8859_1 != 0)) { // ISO_8859_1 translation for 129 ... 255
 				write(p->fd, &p->charmap[dat[i] + 128], 1);
 			}
 			else {

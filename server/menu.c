@@ -549,7 +549,7 @@ MenuItem * menu_get_item_for_successor_check(Menu *menu)
 	}
 }
 
-MenuResult menu_process_input(Menu *menu, MenuToken token, char * key, bool extended)
+MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, bool extended)
 {
 	MenuItem *subitem;
 	debug (RPT_DEBUG, "%s( menu=[%s], token=%d, key=\"%s\" )", __FUNCTION__,

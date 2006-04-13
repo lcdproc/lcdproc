@@ -473,16 +473,10 @@ svga_string (Driver *drvthis, int x, int y, char string[])
 	debug(RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
 
 	for (i = 0; string[i] != '\0'; i++) {
-		unsigned char *c = &string[i];
+		char *c = &string[i];
 
-		switch (*c) {
-			case '\0':
-				*c = icon_char;
-				break;
-			case 255:
-				*c = '#';
-				break;
-		}
+		if ((unsigned char) *c == 255)	// TODO: Is this still necessary ?
+			*c = '#';
 	}
 	gl_writen(x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, i, string);
 }
@@ -500,7 +494,7 @@ svga_chr (Driver *drvthis, int x, int y, char c)
 
 	debug(RPT_DEBUG, "%s(%p, %d, %d, \'%c\')", __FUNCTION__, drvthis, x, y, c);
 
-	switch ((unsigned char) c) {
+	switch ((unsigned char) c) {		// TODO: is this still necessary ?
 		case '\0':
 			c = icon_char;
 			break;

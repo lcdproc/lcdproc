@@ -1125,6 +1125,16 @@ char checkbox_gray[CELLWIDTH*CELLHEIGHT] = {
   1, 0, 1, 0, 1,
   1, 1, 1, 1, 1,
   0, 0, 0, 0, 0 };
+char block_filled[CELLWIDTH*CELLHEIGHT] = {
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1 };
+/*
 char selector_left[CELLWIDTH*CELLHEIGHT] = {
   0, 1, 0, 0, 0,
   0, 1, 1, 0, 0,
@@ -1152,15 +1162,7 @@ char ellipsis[CELLWIDTH*CELLHEIGHT] = {
   0, 0, 0, 0, 0,
   1, 0, 1, 0, 1,
   0, 0, 0, 0, 0 };
-char block_filled[CELLWIDTH*CELLHEIGHT] = {
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
+*/
 
   /* Yes we know, this is a VERY BAD implementation */
   switch (icon) {

@@ -356,7 +356,7 @@ t6963_num (Driver *drvthis, int x, int num)
 // Changes the font data of character n.
 //
 void
-t6963_set_nchar (Driver *drvthis, int n, char *dat, int num)
+t6963_set_nchar (Driver *drvthis, int n, unsigned char *dat, int num)
 {
 	PrivateData *p = drvthis->private_data;
 	int row, col;
@@ -382,7 +382,7 @@ t6963_set_nchar (Driver *drvthis, int n, char *dat, int num)
 MODULE_EXPORT void
 t6963_set_char (Driver *drvthis, int n, char *dat)
 {
-	t6963_set_nchar(drvthis, n, dat, 1);
+	t6963_set_nchar(drvthis, n, (unsigned char *) dat, 1);
 }
 
 /////////////////////////////////////////////////////////////////

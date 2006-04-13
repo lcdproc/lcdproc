@@ -130,7 +130,7 @@ MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
 
 
 void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
-void t6963_set_nchar (Driver *drvthis, int n, char *dat, int num);
+void t6963_set_nchar (Driver *drvthis, int n, unsigned char *dat, int num);
 
 void t6963_low_set_control(Driver *drvthis, char wr, char ce, char cd, char rd);
 void t6963_low_dsp_ready(Driver *drvthis);

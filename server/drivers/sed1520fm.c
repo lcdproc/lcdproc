@@ -836,7 +836,7 @@ unsigned char fontmap[256][8] = {
 
 //FIXME: make big chars use less memory
 
-unsigned char *fontbignum[10][24] = {
+char *fontbignum[10][24] = {
     {
      "++++++++++++++++++",
      "++++++++++++++++++",
@@ -1089,7 +1089,7 @@ unsigned char *fontbignum[10][24] = {
      "++++++++++++++++++"}
 };
 
-unsigned char *fontbigdp[] = {
+char *fontbigdp[] = {
     "++++++",
     "++++++",
     "++++++",

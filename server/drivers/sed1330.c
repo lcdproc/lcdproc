@@ -300,7 +300,7 @@ MODULE_EXPORT char *symbol_prefix = "sed1330_";
 
 // Local functions
 //void uPause (int usecs);
-void sed1330_command( PrivateData * p, char command, int datacount, char * data );
+void sed1330_command( PrivateData * p, char command, int datacount, unsigned char * data );
 void sed1330_rect( PrivateData * p, int x1, int y1, int x2, int y2, char pattern );
 void sed1330_line ( PrivateData * p, int x1, int y1, int x2, int y2, char pattern );
 inline void sed1330_set_pixel( PrivateData * p, int x, int y, int value );
@@ -316,7 +316,7 @@ sed1330_init( Driver * drvthis )
 {
 	char * s;
 	PrivateData * p;
-	char data[8];
+	unsigned char data[8];
 
 	debug(RPT_DEBUG, "%s( %p )", __FUNCTION__, drvthis);
 
@@ -526,15 +526,15 @@ sed1330_init( Driver * drvthis )
 	sed1330_command(p, CMD_SYSTEM_SET, 8, data);
 
 	// TODO: The memory locations need to be calculated !
-	sed1330_command(p, CMD_SCROLL, 6, ((char[6]) {SCR1_L,SCR1_H,0xC7,SCR2_L,SCR2_H,0xC7})); // screen1 and screen2 memory locations
+	sed1330_command(p, CMD_SCROLL, 6, ((unsigned char[6]) {SCR1_L,SCR1_H,0xC7,SCR2_L,SCR2_H,0xC7})); // screen1 and screen2 memory locations
 
 	data[0] = p->cellwidth-1;
 	data[1] = 7;
 	sed1330_command(p, CMD_CSR_FORM, 2, data);		// set cursor size
 
-	sed1330_command(p, CMD_HDOT_SCR, 1, ((char[1]) {0x00}));	// horizontal pixel shift=0
-	sed1330_command(p, CMD_OVLAY, 1, ((char[1]) {0x01}));		// XOR mode, screen1 text, screen3 text (screen2 and screen4 are always graph)
-	sed1330_command(p, CMD_DISP_DIS, 1, ((char[1]) {0x14}));	// display off,set cursor off, screen1 on, screen2 on, screen3 off
+	sed1330_command(p, CMD_HDOT_SCR, 1, ((unsigned char[1]) {0x00}));	// horizontal pixel shift=0
+	sed1330_command(p, CMD_OVLAY, 1, ((unsigned char[1]) {0x01}));		// XOR mode, screen1 text, screen3 text (screen2 and screen4 are always graph)
+	sed1330_command(p, CMD_DISP_DIS, 1, ((unsigned char[1]) {0x14}));	// display off,set cursor off, screen1 on, screen2 on, screen3 off
 	sed1330_command(p, CMD_CSR_DIR_R, 0, NULL);			// cursor move right
 
 	sed1330_flush(drvthis); 	// Clear the contents of the LCD
@@ -551,7 +551,7 @@ sed1330_init( Driver * drvthis )
 // INTERNAL
 //
 void
-sed1330_command( PrivateData * p, char command, int datacount, char * data )
+sed1330_command( PrivateData * p, char command, int datacount, unsigned char * data )
 {
 	int i;
 	int port = p->port;
@@ -709,7 +709,7 @@ sed1330_flush( Driver * drvthis )
 {
 	PrivateData * p = drvthis->private_data;
 	unsigned int pos, start_pos, nr_equal, fblen, len, cursor_pos;
-	char csrloc[2];
+	unsigned char csrloc[2];
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 

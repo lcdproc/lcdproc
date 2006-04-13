@@ -310,7 +310,7 @@ void menuitem_update_screen (MenuItem *item, Screen *s);
 /** Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  */
-MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key, bool extended);
+MenuResult menuitem_process_input (MenuItem *item, MenuToken token, const char * key, bool extended);
 
 /** returns the Client that owns the MenuItem. item must not be null */
 Client * menuitem_get_client(MenuItem * item);

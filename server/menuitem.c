@@ -57,10 +57,10 @@ void menuitem_update_screen_numeric (MenuItem *item, Screen *s);
 void menuitem_update_screen_alpha (MenuItem *item, Screen *s);
 void menuitem_update_screen_ip (MenuItem *item, Screen *s);
 
-MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, char * key, bool extended);
-MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char * key, bool extended);
-MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char * key, bool extended);
-MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * key, bool extended);
+MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, const char * key, bool extended);
+MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, const char * key, bool extended);
+MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const char * key, bool extended);
+MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const char * key, bool extended);
 
 
 /* information about string representation of IP addresses */
@@ -181,7 +181,7 @@ void (*update_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
 	menuitem_update_screen_ip
 };
 
-MenuResult (*process_input_table[NUM_ITEMTYPES] ) (MenuItem *item, MenuToken token, char *key, bool extended) =
+MenuResult (*process_input_table[NUM_ITEMTYPES] ) (MenuItem *item, MenuToken token, const char *key, bool extended) =
 {
 	menu_process_input,
 	NULL,
@@ -954,9 +954,9 @@ void menuitem_update_screen_ip (MenuItem *item, Screen *s)
 
 /******** MENU SCREEN INPUT HANDLING FUNCTIONS ********/
 
-MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key, bool extended)
+MenuResult menuitem_process_input (MenuItem *item, MenuToken token, const char * key, bool extended)
 {
-	MenuResult (*process_input) (MenuItem *item, MenuToken token, char * key, bool extended);
+	MenuResult (*process_input) (MenuItem *item, MenuToken token, const char * key, bool extended);
 
 	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), token, key);
@@ -974,7 +974,7 @@ MenuResult menuitem_process_input (MenuItem *item, MenuToken token, char * key, 
 	}
 }
 
-MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, char * key, bool extended)
+MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, const char * key, bool extended)
 {
 	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), token, key);
@@ -1011,7 +1011,7 @@ MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, char 
 	return MENURESULT_ERROR;
 }
 
-MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char * key, bool extended)
+MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, const char * key, bool extended)
 {
 	char buf1[MAX_NUMERIC_LEN];
 	char buf2[MAX_NUMERIC_LEN];
@@ -1168,7 +1168,7 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, char
 	return MENURESULT_ERROR;
 }
 
-MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char * key, bool extended)
+MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const char * key, bool extended)
 {
 	char * p;
 	static char * chars = NULL;
@@ -1317,7 +1317,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, char *
 }
 
 
-MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, char * key, bool extended)
+MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const char * key, bool extended)
 {
 	/* To make life easy... */
 	char *str = item->data.ip.edit_str;

@@ -300,7 +300,7 @@ sock_poll_clients ()
 				/* Connection request on original socket. */
                                 Client* c;
 				int new_sock;
-				size_t size = sizeof(clientname);
+				socklen_t size = sizeof(clientname);
 				new_sock = accept (listening_fd, (struct sockaddr *) &clientname, &size);
 #ifdef WINSOCK2
                                 if (new_sock == INVALID_SOCKET)
