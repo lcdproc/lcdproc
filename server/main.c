@@ -316,7 +316,7 @@ process_command_line(int argc, char **argv)
 					}	
 					else {
 						report(RPT_ERR, "alloc error storing driver name: %s", optarg);
-						e = -1
+						e = -1;
 					}	
 				} else {
 					report( RPT_ERR, "Too many drivers!" );
