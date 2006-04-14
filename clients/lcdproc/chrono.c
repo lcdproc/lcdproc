@@ -147,7 +147,7 @@ time_screen (int rep, int display, int *flags_ptr)
 
 	if (lcd_hgt >= 4) {
 		char *day = shortdays[rtime->tm_wday];
-		char *month = shortdays[rtime->tm_wday];
+		char *month = shortmonths[rtime->tm_mon];
 
 		machine_get_uptime(&uptime, &idle);
 
@@ -213,7 +213,6 @@ int
 clock_screen (int rep, int display, int *flags_ptr)
 {
 	char now[20];
-	char day[16], month[16];
 	int xoffs;
 	static int heartbeat = 0;
 	static char colon[] = {':', ' '};
@@ -261,8 +260,8 @@ clock_screen (int rep, int display, int *flags_ptr)
 	}
 
 	if (lcd_hgt >= 4) {				// 4-line version of the screen
-		strcpy (day, days[rtime->tm_wday]);
-		strcpy (month, months[rtime->tm_mon]);
+		char *day = days[rtime->tm_wday];
+		char *month = months[rtime->tm_mon];
 
 		sprintf (tmp, "%s %s", now, day);
 		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
