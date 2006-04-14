@@ -310,9 +310,14 @@ process_command_line(int argc, char **argv)
 	 		case 'd':
 				/* Add to a list of drivers to be initialized later...*/
 				if (num_drivers < MAX_DRIVERS) {
-					drivernames[num_drivers] = malloc( strlen(optarg)+1 );
-					strcpy( drivernames[num_drivers], optarg );
-					num_drivers ++;
+					drivernames[num_drivers] = strdup(optarg);
+					if (drivernames[num_drivers] != NULL) {
+						num_drivers ++;
+					}	
+					else {
+						report(RPT_ERR, "alloc error storing driver name: %s", optarg);
+						e = -1
+					}	
 				} else {
 					report( RPT_ERR, "Too many drivers!" );
 					e = -1;

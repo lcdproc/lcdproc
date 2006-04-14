@@ -315,7 +315,7 @@ sock_printf_error(int fd, const char *format, .../*args*/ )
 	va_list ap;
 	int size = 0;
 
-	strcpy(buf, huh);
+	strncpy(buf, huh, sizeof(huh)); // note: sizeof(huh) < MAXMSG
 	
 	va_start(ap, format);
 	size = vsnprintf(buf + (sizeof(huh)-1), sizeof(buf) - (sizeof(huh)-1), format, ap);
