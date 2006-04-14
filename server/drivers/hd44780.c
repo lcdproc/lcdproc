@@ -307,7 +307,8 @@ HD44780_init (Driver * drvthis)
 	p->hd44780_functions->output = NULL;
 
 	// Do connection type specific display init
-	connectionMapping[p->connectiontype_index].init_fn (drvthis);
+	if (connectionMapping[p->connectiontype_index].init_fn (drvthis) != 0)
+		return -1;
 
 	// Display startup parameters on the LCD
 	HD44780_clear (drvthis);
