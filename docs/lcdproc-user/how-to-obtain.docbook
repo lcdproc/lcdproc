@@ -5,107 +5,33 @@
 <title>Versioning</title>
 
 <para>
-At the time of writing there were four versions of LCDproc floating around on the
+At the time of writing there were two majors versions of LCDproc floating around on the
 Internet.
 </para>
 
 <variablelist>
 
 <varlistentry>
-<term>LCDproc 0.4.1</term>
+<term>LCDproc 0.4.3 to 0.4.5</term>
 <listitem>
 <para>
-LCDproc 0.4.1 was the last "stable" release of LCDproc. It still uses the old
-command line configuration.
-</para>
-<warning>
-<para>
-There are known security problems with LCDproc 0.4.1. A remote exploit is possible.
-An attacker can make use of some buffer-overflows in the client communication
-code of LCDd, in order to get root access to your system.
-Therefore running LCDproc 0.4.1 is NOT RECOMMENDED!
-</para>
-</warning>
-</listitem>
-</varlistentry>
-
-<varlistentry>
-<term>LCDproc 0.4.2</term>
-<listitem>
-<para>
-LCDproc 0.4.2 was meant to be the next stable release of LCDproc. As 0.4.1 
-it uses the old command line configuration.
-</para>
-<note>
-<para>
-The known issues about 0.4.1 had been fixed. Unfortunately the guy who had the last pending
-patches on his box kind of "vanished" from the LCDproc mailing list.
-Of course you can get 0.4.2 from CVS. BUT its current state is unknown.
-</para>
-</note>
-</listitem>
-</varlistentry>
-
-<varlistentry>
-<term>LCDproc 0.4.3</term>
-<listitem>
-<para>
-LCDproc 0.4.3 is the current stable release of LCDproc. It no longer uses the old
+LCDproc 0.4.5 was the last stable release of LCDproc. It no longer uses the old
 command line configuration, but introduces the configuration file <filename>/etc/LCDd.conf</filename>.
 As well the driver API has slightly changed, which should not
 make older drivers incompatible, but might cause some trouble. As well the way
 <application>LCDd</application> reports messages (including error messages) has changed.
 </para>
 <note>
-<para>
-Even though LCDproc 0.4.3 is the most stable version we can offer, it is still not perfect.
-</para>
 </note>
 </listitem>
 </varlistentry>
 
 <varlistentry>
-<term>LCDproc 0.4.4</term>
+<term>LCDproc 0.5.0</term>
 <listitem>
 <para>
-LCDproc 0.4.4 will be the next stable release of LCDproc.
+LCDproc 0.5.0 is the current stable version of LCDproc. It's recommended that you use this version.
 </para>
-<note>
-<para>
-The 0.4.x branch will only be slightly updated. E.g. we plan better support
-of lcdproc (the client) for *BSD. Yet, the active development will move to
-0.5 now.
-</para>
-<para>
-As 0.5 will not be stable in the near future, we may also work on porting drivers
-from 0.4.1 to 0.4.4 on demand. We do not have all the hardware LCDd supports. So, we
-only work on drivers that can be tested by YOU.
-</para>
-<para>
-As well, the development and inclusion of new drivers is possible.
-</para>
-</note>
-</listitem>
-
-</varlistentry>
-
-<varlistentry>
-<term>LCDproc 0.5</term>
-<listitem>
-<para>
-LCDproc 0.5 is the developement version of LCDproc. Everything is possible ;) Drivers can already be
-loaded at runtime. We will also work on client supplied menus and other nifty stuff.
-</para>
-<warning>
-<para>
-From time to time LCDproc 0.5 might not even compile due to drastic changes.
-You have been warned!
-</para>
-<para>
-Furthermore older drivers will NOT work with LCDproc 0.5 AT ALL!
-Feel free to port a driver that has not been ported to 0.5 yet ;)
-</para>
-</warning>
 </listitem>
 </varlistentry>
 
@@ -147,15 +73,6 @@ Of course you can download the latest stuff from CVS via anonymous login.
 </para>
 
 <para>
-Create a "cvs" directory somewhere on your machine (not really neccessary but useful):
-</para>
-
-<screen>
-<prompt>$</prompt> <userinput>mkdir ~/cvs</userinput>
-<prompt>$</prompt> <userinput>cd ~/cvs</userinput>
-</screen>
-
-<para>
 Login to CVS:
 </para>
 
@@ -172,29 +89,22 @@ Get the files from CVS:
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@cvs.lcdproc.sourceforge.net:/cvsroot/lcdproc checkout -r stable-0-4-3 lcdproc</userinput>
+<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@cvs.lcdproc.sourceforge.net:/cvsroot/lcdproc checkout -r stable-0-5-x lcdproc</userinput>
 </screen>
 
 <para>
 Once you've done that and want to update the downloaded files to the latest stuff
-you can use the "update" command of CVS (Make sure you have logged in to CVS first.):
+you can use the "update" command of CVS (Make sure to be in the lcdproc directory.):
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@cvs.lcdproc.sourceforge.net:/cvsroot/lcdproc update -r stable-0-4-3 lcdproc</userinput>
+<prompt>$</prompt> <userinput>cvs update -d</userinput>
 </screen>
 
 <para>
 Now that you have downloaded the files you can prepare them for compiling, but first
 you should (you don't have to) copy them to another place on your machine:
 </para>
-
-<screen>
-<prompt>$</prompt> <userinput>mkdir ~/lcdproc-cvs</userinput>
-<prompt>$</prompt> <userinput>cp -f -R ~/cvs/lcdproc ~/lcdproc-cvs/`date +%Y%m%d`</userinput>
-<prompt>$</prompt> <userinput>cd ~/lcdproc-cvs/`date +%Y%m%d`</userinput>
-</screen>
-
 
 </sect1>
 

@@ -128,14 +128,19 @@ handle_input ()
 void input_send_to_client (Client * c, const char * key)
 {
 	char * s;
+	size_t size = strlen(key) + sizeof("key %s\n"); // this is large enough
 
 	debug (RPT_DEBUG, "%s( client=[%d], key=\"%.40s\" )", __FUNCTION__, c->sock, key);
 
 	/* Allocate just as much as we need */
-	s = malloc (strlen(key) + strlen("key \n") + 1);
-	sprintf(s, "key %s\n", key);
-	sock_send_string(c->sock, s);
-	free (s);
+	s = calloc (1, size);
+	if (s != NULL) {
+		snprintf(s, size, "key %s\n", key);
+		sock_send_string(c->sock, s);
+		free (s);
+	}	
+	else
+		report(RPT_ERR, "%s: malloc failure", __FUNCTION__);
 }
 
 

@@ -136,7 +136,7 @@ read_tele(PrivateData *p, char *buffer)
         && (zeichen==cc))
     {
         buffer[len]=0x00;
-	debug(RPT_DEBUG, "%s: read %s", __FUNCTION__, buffer);
+	/*debug(RPT_DEBUG, "%s: read %s", __FUNCTION__, buffer)*/;
         return True;
     }
     else
@@ -204,7 +204,7 @@ real_send_tele(PrivateData *p, char *buffer, int len)
     /* Take a little nap. This works as a pacemaker */
     usleep(50);
     
-    debug(RPT_DEBUG, "%s: sent %s", __FUNCTION__, buffer);
+    /*debug(RPT_DEBUG, "%s: sent %s", __FUNCTION__, buffer);*/
 
     return 0;
 }

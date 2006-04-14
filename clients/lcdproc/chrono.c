@@ -99,7 +99,6 @@ int
 time_screen (int rep, int display, int *flags_ptr)
 {
 	char now[20];
-	char day[16], month[16];
 	int xoffs;
 	int days, hour, min, sec;
 	static int heartbeat = 0;
@@ -147,8 +146,8 @@ time_screen (int rep, int display, int *flags_ptr)
 	}
 
 	if (lcd_hgt >= 4) {
-		strcpy (day, shortdays[rtime->tm_wday]);
-		strcpy (month, shortmonths[rtime->tm_mon]);
+		char *day = shortdays[rtime->tm_wday];
+		char *month = shortdays[rtime->tm_wday];
 
 		machine_get_uptime(&uptime, &idle);
 
@@ -458,9 +457,13 @@ big_clock_screen (int rep, int display, int *flags_ptr)
 int
 mini_clock_screen (int rep, int display, int *flags_ptr)
 {
+	time_t thetime;
 	struct tm *rtime;
-	struct timeval ttime;
 	static char colon[] = {':', ' '};
+	static int heartbeat = 0;
+
+	// toggle colon display
+	heartbeat ^= 1;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
@@ -470,10 +473,10 @@ mini_clock_screen (int rep, int display, int *flags_ptr)
 		sock_send_string (sock, "widget_add N one string\n");
 	}
 
-	gettimeofday(&ttime, NULL);
-	rtime = localtime (&ttime.tv_sec);
+	time (&thetime);
+	rtime = localtime (&thetime);
 
-	sprintf(tmp, "%02d%c%02d", rtime->tm_hour, colon[(ttime.tv_usec / 500000) & 1], rtime->tm_min);
+	sprintf(tmp, "%02d%c%02d", rtime->tm_hour, colon[heartbeat & 0x01], rtime->tm_min);
 	sprintf(buffer, "widget_set N one %d %d {%s}\n",
 			((lcd_wid - 5) / 2) + 1, (lcd_hgt / 2), tmp);
 	sock_send_string (sock, buffer);

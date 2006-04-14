@@ -75,11 +75,8 @@ AC_PROG_RANLIB
 
 dnl Avoid unused static function warnings
 CFLAGS="-Wall $CFLAGS"
-if test "x$GCC" = "xyes"; then
-	# this may produce a harmless warning with older GCC's:
-	#   unrecognized option '-Wno-unused-function'
-	CFLAGS="$CFLAGS -Wno-unused-function"
-fi
+AX_CFLAGS_GCC_OPTION(-Wno-unused-function)
+AX_CFLAGS_GCC_OPTION(-ftrampolines)
 export CFLAGS
 
 dnl Solaris

@@ -645,7 +645,7 @@ bayrad_hbar(Driver * drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT int
 bayrad_icon(Driver * drvthis, int x, int y, int icon)
 {
-  //PrivateData *p = drvthis->private_data;
+  /*PrivateData *p = drvthis->private_data;
   static char icons[3][5*8] = {
    {
      1,1,1,1,1,  // Empty Heart
@@ -675,7 +675,7 @@ bayrad_icon(Driver * drvthis, int x, int y, int icon)
      0,0,0,0,0,
      1,0,1,0,1,
    }
-  };
+  };*/
 
   switch (icon) {
     case ICON_BLOCK_FILLED:
