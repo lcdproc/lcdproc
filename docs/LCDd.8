@@ -13,7 +13,7 @@ LCDd - LCDproc server daemon
 [\-r \fIlevel\fP] 
 
 .SH DESCRIPTION
-LCDd is the server portion of LCDproc which listens to a certain port (normally 13666)
+LCDd is the server part of LCDproc, a deamon which listens to a certain port (normally 13666)
 and displays information on an LCD display.  It works with several types
 and sizes of displays.
 .PP
@@ -40,7 +40,7 @@ Add a driver to use (output only to first)
 Run in the foreground
 .TP
 .B \-i
-Disable showing of the main LCDproc server screen in rotation
+Disable showing the main LCDproc server screen in rotation
 .TP
 .B \-w \fIwaittime\fP
 Time to pause at each screen (in seconds)
@@ -305,7 +305,7 @@ The screen is only visible when no normal info screens exists.
 .B hidden
 The screen will never be visible.
 .PP
-For compatibility with oldr versions of clients a mapping of numeric
+For compatibility with older versions of clients a mapping of numeric
 priority values is also supported:
 .TP
 .B 1 - 64
