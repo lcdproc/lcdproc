@@ -18,7 +18,6 @@
  * GNU's GPL. In particular, this program is free software and comes WITHOUT
  * ANY WARRANTY.
  * 
- * $Id$
  */
 
 #include <config.h>
