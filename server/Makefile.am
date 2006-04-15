@@ -12,6 +12,6 @@ if !DARWIN
 AM_LDFLAGS = -rdynamic -uget_args
 endif
 
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir)\"
 
 ## EOF

@@ -72,9 +72,13 @@ extern int optind, optopt, opterr;
 #include "main.h"
 
 
+#if !defined(SYSCONFDIR)
+# define SYSCONFDIR "/etc"
+#endif
+
 #define DEFAULT_BIND_ADDR		"127.0.0.1"
 #define DEFAULT_BIND_PORT		LCDPORT
-#define DEFAULT_CONFIGFILE		"/etc/LCDd.conf"
+#define DEFAULT_CONFIGFILE		SYSCONFDIR "/LCDd.conf"
 #define DEFAULT_USER			"nobody"
 #define DEFAULT_DRIVER			"curses"
 #define DEFAULT_DRIVER_PATH		""	/* not needed */

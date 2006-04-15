@@ -23,7 +23,7 @@ lcdexec connects to LCDd (the LCDproc server) and adds a submenu to the LCDd mai
 understands the following options, with corresponding configfile settings between {} brackets:
 .TP 8
 .B \-c \fIfilename\fP
-Set the name of the config file to read, /etc/LCDclients.conf by default
+Set the name of the config file to read, /etc/lcdexec.conf by default
 .TP 8
 .B \-a \fIaddress\fP
 Set the address of the host which LCDd is running on, localhost by default
@@ -63,7 +63,7 @@ All configfile settings should be put in the [lcdexec] section. You can use a qu
 
 .SH FILES
 .TP
-.B LCDclients.conf
+.B lcdexec.conf
 This file should have a "ini-file"-like format, with sections that are preceded by a [section] header and lines that consist of key=value pairs. Strings with characters other than [a-za-Z0-9_] should be quoted with double quotes. If you want a quote or a backslash in the string, escape it by preceding it by a backslash.
 .TP
 The contents of the [lcdexec] section of this file should be as descriped in the options section.
@@ -88,7 +88,7 @@ sd_MenuCommand="Reboot now, shutdown -r now"
 
 .PP
 Start lcdexec with:
-lcdexec -c /usr/local/etc/LCDclients.conf
+lcdexec -c /usr/local/etc/lcdexec.conf
 
 .PP
 This will allow you to eject the CD-ROM by opening the LCDd menu, selecting "lcdexec" and selecting "Eject CD-ROM". Further it allows you to do various shutdowns, among others the "Shutdown in 5 minutes" by opening the LCDd menu, selecting "lcdexec", selecting "Shutdown" and selecting "Shutdown in 5 minutes".

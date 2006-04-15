@@ -2,6 +2,6 @@
 
 bin_SCRIPTS = lcdheadlines
 
-EXTRA_DIST = lcdheadlines
+EXTRA_DIST = $(bin_SCRIPTS)
 
 ## EOF

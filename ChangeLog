@@ -6,6 +6,9 @@ Key:
      * Something changed / fixed
 
 v.0.5dev (ongoing development)
+ + config file support in lcdproc client (thanks Andrew Foss)
+ * install server & client config files n $(sysconfdir)
+
 
 v0.5.0
 This version has split off from unstable-0.4.3. Includes major changes.

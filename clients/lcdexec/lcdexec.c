@@ -33,7 +33,12 @@
 
 #include "menu.h"
 
-#define DEFAULT_CONFIGFILE "/etc/LCDclients.conf"
+#if !defined(SYSCONFDIR)
+# define SYSCONFDIR	"/etc"
+#endif
+
+#define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdexec.conf"
+
 
 char * help_text =
 "lcdexec - LCDproc client to execute commands from the LCDd menu.\n"

@@ -5,7 +5,10 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = shared clients server docs scripts
 
-EXTRA_DIST = LCDd.conf LCDclients.conf CREDITS README.IRman contrib
+sysconf_DATA = LCDd.conf
+
+EXTRA_DIST = $(sysconf_DATA) CREDITS README.IRman contrib
+
 
 dox:
 	$(MAKE) -C docs $@

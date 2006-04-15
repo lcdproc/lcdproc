@@ -57,13 +57,23 @@ static void exit_program(int val);
 static void main_loop();
 static int process_command_line(int argc, char **argv);
 static int process_configfile(char *cfgfile);
+
+
 #define CHAIN(e,f) { if (e>=0 ) { e=(f); }}
 #define CHAIN_END(e,msg) { if (e<0 ) { report( RPT_CRIT,(msg)); exit(e); }}
 
-static int islow = -1;
-
 // 1/8th second is a single time unit...
 #define TIME_UNIT 125000
+
+#if !defined(SYSCONFDIR)
+# define SYSCONFDIR "/etc"
+#endif
+
+#define UNSET_INT -1	 
+#define UNSET_STR "\01"
+#define DEFAULT_SERVER		"127.0.0.1"
+#define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdproc.conf"
+
 
 /* list of modes to run */
 mode sequence[] =
@@ -89,12 +99,8 @@ mode sequence[] =
 
 
 
-// TODO: Config file; not just command line
 /* All variables are set to 'unset' values*/
-#define UNSET_INT -1	 
-#define UNSET_STR "\01"
-#define DEFAULT_SERVER		"127.0.0.1"
-#define DEFAULT_CONFIGFILE	"/usr/local/etc/lcdproc.conf"
+static int islow = -1;
 char * progname = "lcdproc";
 char * server 	= NULL;
 int port	= LCDPORT;
