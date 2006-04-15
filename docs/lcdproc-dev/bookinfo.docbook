@@ -6,6 +6,12 @@
 <authorgroup>
 
 <author>
+<firstname>Peter</firstname>
+<surname>Marschall</surname>
+<affiliation><address><email>peter@adpm.de</email></address></affiliation>
+</author>
+
+<author>
 <firstname>Guillaume</firstname>
 <surname>Filion</surname>
 <affiliation><address><email>gfk@logidac.com</email></address></affiliation>
@@ -13,15 +19,20 @@
 
 </authorgroup>
 
-<date>2002-10-01</date>
-<releaseinfo>0.0.1</releaseinfo>
+<date>2006-04-14</date>
+<releaseinfo>0.0.2</releaseinfo>
 
 <abstract>
 <para>
-This document is a guide to LCDproc written for developers. It covers LCDproc 0.5. Users should read the user guide.
+This document is a guide to LCDproc written for developers.
+It covers LCDproc 0.5.x. Users should read the user guide.
 </para>
 </abstract>
 
+<copyright>
+<year>2006</year>
+<holder>Peter Marschall</holder>
+</copyright>
 <copyright>
 <year>2002</year>
 <holder>Guillaume Filion</holder>
