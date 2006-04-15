@@ -1,3 +1,13 @@
+CAUTION:
+This file may contain outdated information.
+In order to find current information about the LCDproc client-server
+protocol see the LCDproc Administrator's Guide in docs/lcdproc-dev/
+
+
+
+========================================================================
+
+
 LCDproc client/server protocol, V0.2
 ---------------------------------------------
 
