@@ -388,9 +388,6 @@ big_clock_screen (int rep, int display, int *flags_ptr)
 	static int heartbeat = 0;
 	int j = 0;
 
-	if (lcd_hgt < 4)
-		return 0;
-
 	// toggle colon display
 	heartbeat ^= 1;
 
