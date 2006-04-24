@@ -73,7 +73,8 @@ static int process_configfile(char *cfgfile);
 #define UNSET_STR "\01"
 #define DEFAULT_SERVER		"127.0.0.1"
 #define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdproc.conf"
-
+#define DEFAULT_REPORTDEST	RPT_DEST_STDERR
+#define DEFAULT_REPORTLEVEL	RPT_WARNING
 
 /* list of modes to run */
 mode sequence[] =
@@ -104,7 +105,7 @@ static int islow = -1;
 char * progname = "lcdproc";
 char * server 	= NULL;
 int port	= LCDPORT;
-int daemonize 	= FALSE;
+int daemonize 	= UNSET_INT;
 static int report_level = UNSET_INT;
 static int report_dest 	= UNSET_INT;
 char configfile[256];		/* a lot of space in the executable. */
@@ -159,7 +160,6 @@ void clear_modes()
 int
 main(int argc, char **argv)
 {
-	int daemonize = FALSE;
 	int error = 0;
 
 	/* get uname information */
@@ -183,6 +183,15 @@ main(int argc, char **argv)
 	/* Read config file*/
 	if (strcmp(configfile, UNSET_STR) != 0)
 		CHAIN( error, process_configfile(configfile) );
+
+	/* Set default options */
+	if (report_dest == UNSET_INT )
+		report_dest = DEFAULT_REPORTDEST;
+	if( report_level == UNSET_INT )
+		report_level = DEFAULT_REPORTLEVEL;
+
+	/* Set reporting settings */
+	set_reporting("lcdproc", report_level, report_dest);
 
 	CHAIN_END( error, "Error in config file or command line\n" );
 
@@ -333,7 +342,7 @@ process_configfile(char *configfile)
 		}
 	}
 	if (daemonize == UNSET_INT) {
-		daemonize = config_get_bool(progname, "Foreground", 0, 1);
+		daemonize = config_get_bool(progname, "Daemonize", 0, 1);
 	}
 	if (islow < 0) {
 		islow = config_get_int(progname, "delay", 0, -1);
