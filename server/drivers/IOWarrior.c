@@ -1,6 +1,6 @@
 /*  This is the LCDproc driver for IO-Warrior devices (http://www.codemercs.de)
 
-      Copyright(C) 2004,2005 Peter Marschall <peter@adpm.de>
+      Copyright(C) 2004-2006 Peter Marschall <peter@adpm.de>
 
    based on GPL'ed code:
 
