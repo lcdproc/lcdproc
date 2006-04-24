@@ -1091,7 +1091,7 @@ pyramid_get_key (Driver *drvthis)
     if (strcmp(p->last_key_pressed, "K1000") == 0) /* last from left */
         return "Escape";
     
-#ifdef DEFAULT_NAMES_FOR_COMBINED_KEYPRESSES
+#ifdef PYRAMID_DECODE_COMBINED_KEYPRESSES
     /* Do we really want to type that much */
     if (strcmp(p->last_key_pressed, "K0012") == 0) /* A+B */
         return "Up+Down";
@@ -1120,14 +1120,9 @@ pyramid_get_key (Driver *drvthis)
         return "Enter+Escape";
     if (strcmp(p->last_key_pressed, "K0021") == 0) /* D+C */
         return "Escape+Enter";
-#else
-    /* Why try to convert all key codes. We're
-     * getting pretty nice information already.
-     * The other drivers don't know about combined keys anyways.
-     */
-    return p->last_key_pressed;
-    //return NULL; // Ignore combined key events
 #endif
+
+    return NULL; // Ignore combined key events
 };
 
 
