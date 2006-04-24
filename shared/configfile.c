@@ -625,16 +625,16 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case '[':
 				/* It's a section name*/
 				state = ST_SECTIONNAME;
-				sectionname[0] = 0;
+				sectionname[0] = '\0';
 				sectionname_pos = 0;
 				break;
-			  case 0:
+			  case '\0':
 				break;
 			  default:
 				/* It's a keyname*/
 				state = ST_KEYNAME;
 				keyname[0] = ch;
-				keyname[1] = 0;
+				keyname[1] = '\0';
 				keyname_pos = 1;
 			}
 			break;
@@ -665,13 +665,13 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 				}
 				state = ST_INITIAL;
 				break;
-			  case 0:
+			  case '\0':
 				report( RPT_WARNING, "Section name incorrectly closed on line %d of %s: %s", line_nr, source_descr, sectionname );
 				break;
 			  default:
-				if( sectionname_pos<MAXSECTIONNAMELENGTH ) {
+				if( sectionname_pos < MAXSECTIONNAMELENGTH ) {
 					sectionname[sectionname_pos++] = ch;
-					sectionname[sectionname_pos] = 0;
+					sectionname[sectionname_pos] = '\0';
 				} else {
 					report( RPT_WARNING, "Section name too long on line %d of %s: %s", line_nr, source_descr, sectionname );
 					state = ST_INVALID_SECTIONNAME;
@@ -688,7 +688,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			break;
 		  case ST_KEYNAME:
 			switch( ch ) {
-			  case 0:
+			  case '\0':
 			  case '\n':
 			  case '\r':
 			  case '\t':
@@ -704,7 +704,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 				break;
 			  case '=':
 				state = ST_VALUE;
-				value[0] = 0;
+				value[0] = '\0';
 				value_pos = 0;
 				break;
 			  default:
@@ -713,7 +713,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 					state = ST_INVALID_KEYNAME;
 				} else {
 					keyname[keyname_pos++] = ch;
-					keyname[keyname_pos] = 0;
+					keyname[keyname_pos] = '\0';
 				}
 			}
 			break;
@@ -737,7 +737,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  case '"':
 				state = ST_QUOTEDVALUE;
 				break;
-			  case 0:
+			  case '\0':
 			  case '\n':
 			  case '\r':
 			  case '\t':
@@ -756,7 +756,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			  default:
 				if( value_pos<MAXVALUELENGTH ) {
 					value[value_pos++] = ch;
-					value[value_pos] = 0;
+					value[value_pos] = '\0';
 				} else {
 					report( RPT_WARNING, "Value key is too long on line %d of %s, at key: %s", line_nr, source_descr, keyname );
 					state = ST_INVALID_KEYNAME;
@@ -774,7 +774,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			break;
 		  case ST_QUOTEDVALUE:
 			switch( ch ) {
-			  case 0:
+			  case '\0':
 			  case '\n':
 				report( RPT_WARNING, "String is incorrectly terminated on line %d of %s: %s", line_nr, source_descr, keyname );
 				state = ST_INITIAL;
@@ -800,7 +800,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 					quote = 0;
 				}
 				value[value_pos++] = ch;
-				value[value_pos] = 0;
+				value[value_pos] = '\0';
 			}
 			break;
 		  case ST_INVALID_QUOTEDVALUE:
@@ -813,7 +813,7 @@ int process_config( section ** current_section, char (*get_next_char)(), char mo
 			}
 			break;
 		}
-		if( ch == 0 ) {
+		if( ch == '\0' ) {
 			state = ST_END;
 		}
 	}
