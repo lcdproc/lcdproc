@@ -37,6 +37,11 @@
  *   - add support for user defined characters (set_char/get_free_chars)
  *   - add support for vbars/hbars, get_info, reorganize pyramid_init()
  *   - fixed a timing bug and implemented escaping in (real_)send_tele()
+ *  2006-04-18 Stefan Reinauer <stepan@coresystems.de>
+ *   - support combined key events
+ *   - add more custom characters
+ *   - fix german umlauts
+ *   - fix cursor handling
  */
 
 #include <sys/types.h>
@@ -381,6 +386,10 @@ pyramid_init (Driver *drvthis, char *args)
     	set_leds(p);
 	usleep(10000);
     }
+    for (i = 0; i < 7; i++) {
+    	p->led[i] = 0;
+    	set_leds(p);
+    }
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -427,20 +436,39 @@ pyramid_clear (Driver *drvthis)
 MODULE_EXPORT void 
 pyramid_flush (Driver *drvthis)
 {
-    static char mesg[16];
+    static char mesg[33];
     PrivateData *p = (PrivateData *) drvthis->private_data;
     unsigned long long current_time=timestamp(p);
+    int i;
 
     if ((p->FB_modified==True) && (current_time>(p->last_buf_time+40000)))
     {
+	memcpy(mesg, p->framebuffer, 33);
+
+	// we got the japanese HD44780U, so convert the german umlauts and
+	// other stuff
+	for (i=1; i<33; i++) {
+		switch ((unsigned char)mesg[i]) {
+		// assume input is iso_8859-1
+		case 0xe4: mesg[i]=0xe1; break; // ä
+		case 0xf6: mesg[i]=0xef; break; // ö
+		case 0xfc: mesg[i]=0xf5; break; // ü
+		// This makes the display show nothing
+		// though it is correct according the HD44780U DS
+		//case 0xdf: mesg[i]=0xe2; break; // ß
+		case 0xb7: mesg[i]=0xa5; break; // ·
+		case 0xb0: mesg[i]=0xdf; break; // °
+		}
+	}
+	
         send_tele(p, "C0101");
-        real_send_tele(p, p->framebuffer, 33); /* We do not wait for the ACK here*/
+        real_send_tele(p, mesg, 33); /* We do not wait for the ACK here*/
         p->FB_modified=False;
         p->last_buf_time=current_time;
         sprintf(mesg, "C%02d%02d", p->C_x, p->C_y);
-        send_tele(p, mesg);
+        real_send_tele(p, mesg,5);
         sprintf(mesg, "M%d", p->C_state);
-        send_tele(p, mesg);
+        real_send_tele(p, mesg,2);
     }
 }
 
@@ -684,6 +712,65 @@ pyramid_init_hbar (Driver *drvthis)
 	}
 }
 
+static void
+pyramid_init_custom1 (Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	char a[] = {
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+	};
+
+	char b[] = {
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 0, 0, 0, 0,
+	};
+	
+	char c[] = {
+		0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		0, 1, 1, 1, 1,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+	};
+
+	char d[] = {
+		1, 0, 0, 0, 0,
+		1, 1, 0, 0, 0,
+		1, 1, 1, 0, 0,
+		1, 1, 1, 1, 0,
+		1, 1, 1, 1, 1,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0,
+	};
+	
+	if (p->custom != custom1) {
+		pyramid_set_char (drvthis, 1, a);
+		pyramid_set_char (drvthis, 2, b);
+		pyramid_set_char (drvthis, 3, c);
+		pyramid_set_char (drvthis, 4, d);
+		p->custom = custom1;
+	}
+}
+
+
+
 // Draws a vertical bar...
 
 MODULE_EXPORT void
@@ -712,7 +799,7 @@ pyramid_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT int
 pyramid_icon (Driver *drvthis, int x, int y, int icon)
 {
-	char icons[3][5 * 8] = {
+	char icons[8][5 * 8] = {
 		{
 		 1, 1, 1, 1, 1,			  // Empty Heart
 		 1, 0, 1, 0, 1,
@@ -734,7 +821,62 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		 1, 1, 0, 1, 1,
 		 1, 1, 1, 1, 1,
 		 },
-
+		
+		{
+                 0, 0, 1, 0, 0, 		  // Arrow up 
+                 0, 1, 1, 1, 0,
+                 1, 0, 1, 0, 1,
+                 0, 0, 1, 0, 0,
+                 0, 0, 1, 0, 0,
+                 0, 0, 1, 0, 0,
+                 0, 0, 1, 0, 0,
+                 0, 0, 0, 0, 0,
+                 },
+		
+                {
+                 0, 0, 1, 0, 0, 		  // Arrow Down
+                 0, 0, 1, 0, 0,
+                 0, 0, 1, 0, 0,
+                 0, 0, 1, 0, 0,
+                 1, 0, 1, 0, 1,
+                 0, 1, 1, 1, 0,
+                 0, 0, 1, 0, 0,
+                 0, 0, 0, 0, 0,
+                 },
+		
+                {
+                 0, 0, 0, 0, 0,			  // Checkbox off 
+                 0, 0, 0, 0, 0,
+                 1, 1, 1, 1, 1,
+                 1, 0, 0, 0, 1,
+                 1, 0, 0, 0, 1,
+                 1, 0, 0, 0, 1,
+                 1, 1, 1, 1, 1,
+                 0, 0, 0, 0, 0,
+                 },
+		
+                {
+                 0, 0, 1, 0, 0, 		  // Checkbox on
+                 0, 0, 1, 0, 0,
+                 1, 1, 1, 0, 1,
+                 1, 0, 1, 1, 0,
+                 1, 0, 1, 0, 1,
+                 1, 0, 0, 0, 1,
+                 1, 1, 1, 1, 1,
+                 0, 0, 0, 0, 0,
+                 },
+		
+                {
+                 0, 0, 0, 0, 0,			  // Checkbox gray 
+                 0, 0, 0, 0, 0,
+                 1, 1, 1, 1, 1,
+                 1, 0, 1, 0, 1,
+                 1, 1, 0, 1, 1,
+                 1, 0, 1, 0, 1,
+                 1, 1, 1, 1, 1,
+                 0, 0, 0, 0, 0,
+                 },
+		
 		{
 		 0, 0, 0, 0, 0,			  // Ellipsis
 		 0, 0, 0, 0, 0,
@@ -745,11 +887,10 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		 0, 0, 0, 0, 0,
 		 1, 0, 1, 0, 1,
 		 },
-
 	};
 
-#if 0
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+#if 0
 
 	// notify the others that we messed up their character set.
 	// Unused for heartbeats as we should always leave that icon alone.
@@ -765,15 +906,55 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		case ICON_BLOCK_FILLED:
 			pyramid_chr( drvthis, x, y, 255 );
 			break;
-
-		case ICON_HEART_FILLED:
+			
+		case ICON_HEART_OPEN:
 			pyramid_set_char( drvthis, 0, icons[0] );
 			pyramid_chr( drvthis, x, y, 0 );
 			break;
 
-		case ICON_HEART_OPEN:
+		case ICON_HEART_FILLED:
 			pyramid_set_char( drvthis, 0, icons[1] );
 			pyramid_chr( drvthis, x, y, 0 );
+			break;
+			
+		case ICON_ARROW_UP:
+			pyramid_set_char( drvthis, 2, icons[2] );
+			pyramid_chr( drvthis, x, y, 2 );
+			p->custom = icon;
+			break;
+			
+		case ICON_ARROW_DOWN:
+			pyramid_set_char( drvthis, 3, icons[3] );
+			pyramid_chr( drvthis, x, y, 3 );
+			p->custom = icon;
+			break;
+
+		case ICON_ARROW_LEFT:
+			pyramid_chr( drvthis, x, y, '\177' );
+			break;
+			
+		case ICON_ARROW_RIGHT:
+			pyramid_chr( drvthis, x, y, '\176' );
+			break;
+
+		case ICON_CHECKBOX_ON:
+			pyramid_set_char( drvthis, 10, icons[4] );
+			pyramid_chr( drvthis, x, y, 10 );
+			break;
+
+		case ICON_CHECKBOX_OFF:
+			pyramid_set_char( drvthis, 11, icons[5] );
+			pyramid_chr( drvthis, x, y, 11 );
+			break;
+			
+		case ICON_CHECKBOX_GRAY:
+			pyramid_set_char( drvthis, 12, icons[6] );
+			pyramid_chr( drvthis, x, y, 12 );
+			break;
+			
+		case ICON_ELLIPSIS:
+			pyramid_set_char( drvthis, 13, icons[7] );
+			pyramid_chr( drvthis, x, y, 13 );
 			break;
 
 		default:
@@ -797,6 +978,20 @@ pyramid_cursor (Driver *drvthis, int x, int y, int state)
 
     p->C_x = x;
     p->C_y = y;
+    switch (state) {
+    case CURSOR_OFF:
+	state=0;
+	break;
+    case CURSOR_DEFAULT_ON:
+	state=3;
+	break;
+    case CURSOR_UNDER:
+	state=1;
+	break;
+    case CURSOR_BLOCK:
+	state=2;
+	break;
+    }
     p->C_state = state;
 };
 
@@ -826,6 +1021,10 @@ pyramid_output (Driver *drvthis, int state)
         p->led[i] = state & (1 << i);
     
     set_leds(p);
+
+    if(state & (1 << 8)) {
+	    pyramid_init_custom1(drvthis);
+    }
 };
 
 /* Key functions */
@@ -891,8 +1090,44 @@ pyramid_get_key (Driver *drvthis)
         return "Enter";
     if (strcmp(p->last_key_pressed, "K1000") == 0) /* last from left */
         return "Escape";
+    
+#ifdef DEFAULT_NAMES_FOR_COMBINED_KEYPRESSES
+    /* Do we really want to type that much */
+    if (strcmp(p->last_key_pressed, "K0012") == 0) /* A+B */
+        return "Up+Down";
+    if (strcmp(p->last_key_pressed, "K0021") == 0) /* B+A */
+        return "Down+Up";
 
-    return NULL;
+    if (strcmp(p->last_key_pressed, "K0102") == 0) /* A+C */
+        return "Up+Enter";
+    if (strcmp(p->last_key_pressed, "K0201") == 0) /* C+A */
+        return "Enter+Up";
+    if (strcmp(p->last_key_pressed, "K1002") == 0) /* A+D */
+        return "Up+Escape";
+    if (strcmp(p->last_key_pressed, "K2001") == 0) /* D+A */
+        return "Escape+Up";
+    
+    if (strcmp(p->last_key_pressed, "K0120") == 0) /* B+C */
+        return "Down+Enter";
+    if (strcmp(p->last_key_pressed, "K0210") == 0) /* C+B */
+        return "Enter+Down";
+    if (strcmp(p->last_key_pressed, "K1020") == 0) /* B+D */
+        return "Down+Escape";
+    if (strcmp(p->last_key_pressed, "K2010") == 0) /* D+B */
+        return "Escape+Down";
+ 
+    if (strcmp(p->last_key_pressed, "K0012") == 0) /* C+D */
+        return "Enter+Escape";
+    if (strcmp(p->last_key_pressed, "K0021") == 0) /* D+C */
+        return "Escape+Enter";
+#else
+    /* Why try to convert all key codes. We're
+     * getting pretty nice information already.
+     * The other drivers don't know about combined keys anyways.
+     */
+    return p->last_key_pressed;
+    //return NULL; // Ignore combined key events
+#endif
 };
 
 

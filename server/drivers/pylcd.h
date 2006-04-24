@@ -36,7 +36,10 @@
 #define WIDTH 16
 #define HEIGHT 2
 
-#define CUSTOMCHARS 16
+//Pyramid DS says 16, HD44780U DS says 8
+//#define CUSTOMCHARS 16
+#define CUSTOMCHARS 8
+
 #define CELLHEIGHT  8
 #define CELLWIDTH   5
 
@@ -45,8 +48,9 @@ typedef enum {
     normal = 0,
     hbar = 1,
     vbar = 2,
-    bign = 4,
-    beat = 8
+    beat = 4,
+    icon = 8,
+    custom1 = 16
 } custom_type;
 
 typedef struct
