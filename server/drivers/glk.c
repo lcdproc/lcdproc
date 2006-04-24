@@ -515,26 +515,6 @@ glk_init_hbar(Driver *drvthis)
 }
 
 //////////////////////////////////////////////////////////////////////
-// Tells the driver to get ready for big numbers, if possible.
-//
-static void
-glk_init_num(Driver *drvthis)
-{
-  PrivateData *p = drvthis->private_data;
-
-  debug(RPT_DEBUG, "glk_init_num()");
-  if (p->fontselected != 3) {
-    /* Select Big Numbers font */
-    glkputl(p->PortFD, GLKCommand, 0x31, 3, EOF);
-    p->fontselected = 3;
-    /* Set font metrics */
-    glkputl(p->PortFD, GLKCommand, 0x32, 1, 0, 1, 1, 32, EOF);
-    /* Clear the screen */
-    glk_clear_forced(drvthis);
-  }
-}
-
-//////////////////////////////////////////////////////////////////////
 // Draws a big (4-row) number.
 //
 MODULE_EXPORT void
@@ -546,6 +526,17 @@ glk_num(Driver *drvthis, int x, int num)
 
   if ((num < 0) || (num > 10))
       return;
+
+  if (p->fontselected != 3) {
+    debug(RPT_DEBUG, "Switching to font 3");
+    /* Select Big Numbers font */
+    glkputl(p->PortFD, GLKCommand, 0x31, 3, EOF);
+    p->fontselected = 3;
+    /* Set font metrics */
+    glkputl(p->PortFD, GLKCommand, 0x32, 1, 0, 1, 1, 32, EOF);
+    /* Clear the screen */
+    glk_clear_forced(drvthis);
+  }
 
   if ((x > 0) && (x <= p->width))
     p->framebuf[x-1] = (num >= 10) ? ':' : (num + '0');
