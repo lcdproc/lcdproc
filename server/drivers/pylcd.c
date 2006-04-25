@@ -388,8 +388,8 @@ pyramid_init (Driver *drvthis, char *args)
     }
     for (i = 0; i < 7; i++) {
     	p->led[i] = 0;
-    	set_leds(p);
     }
+    set_leds(p);
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
