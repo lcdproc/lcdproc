@@ -59,7 +59,7 @@ MODULE_EXPORT void serialVFD_vbar (Driver *drvthis, int x, int y, int len, int p
 MODULE_EXPORT void serialVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT int  serialVFD_icon(Driver *drvthis, int x, int y, int icon);
 
-MODULE_EXPORT void serialVFD_set_char (Driver *drvthis, int n, char *dat);
+MODULE_EXPORT void serialVFD_set_char (Driver *drvthis, int n, unsigned char *dat);
 
 MODULE_EXPORT int  serialVFD_get_brightness (Driver *drvthis, int state);
 MODULE_EXPORT void serialVFD_set_brightness (Driver *drvthis, int state, int promille);

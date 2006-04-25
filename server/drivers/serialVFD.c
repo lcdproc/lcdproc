@@ -426,13 +426,14 @@ serialVFD_init (Driver *drvthis)
 				p->charmap[tmp] = charmap_0[tmp];
 
 			//{bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
-			const int usr_chr_dot_assignment_0[57]={7,	 1, 2, 3, 4, 5, 0, 0, 0,
-								6, 7, 8, 9,10, 0, 0, 0,
+			const int usr_chr_dot_assignment_0[57]={ 7,
+								 1, 2, 3, 4, 5, 0, 0, 0,
+								 6, 7, 8, 9,10, 0, 0, 0,
 								11,12,13,14,15, 0, 0, 0,
 								16,17,18,19,20, 0, 0, 0,
 								21,22,23,24,25, 0, 0, 0,
 								26,27,28,29,30, 0, 0, 0,
-								31,32,33,34,35, 0, 0, 0};
+								31,32,33,34,35, 0, 0, 0 };
 			for (tmp = 0; tmp < 57 ;tmp++)
 				p->usr_chr_dot_assignment[tmp] = usr_chr_dot_assignment_0[tmp];
 
@@ -497,8 +498,9 @@ serialVFD_init (Driver *drvthis)
 
 
 			//{bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
-			const int usr_chr_dot_assignment_1[57]={7,	 1, 2, 3, 4, 5, 0, 0, 0,
-								6, 7, 8, 9,10, 0, 0, 0,
+			const int usr_chr_dot_assignment_1[57]={ 7,
+								 1, 2, 3, 4, 5, 0, 0, 0,
+								 6, 7, 8, 9,10, 0, 0, 0,
 								11,12,13,14,15, 0, 0, 0,
 								16,17,18,19,20, 0, 0, 0,
 								21,22,23,24,25, 0, 0, 0,
@@ -546,12 +548,13 @@ serialVFD_init (Driver *drvthis)
 				p->charmap[tmp]=tmp;
 
 			//{bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
-			const int usr_chr_dot_assignment_2[57]={5,	 1, 2, 3, 4, 5, 6, 7, 8,
+			const int usr_chr_dot_assignment_2[57]={ 5,
+								 1, 2, 3, 4, 5, 6, 7, 8,
 								 9,10,11,12,13,14,15,16,
 								17,18,19,20,21,22,23,24,
 								25,26,27,28,29,30,31,32,
 								33,34,35, 0, 0, 0, 0, 0};
-			for (tmp=0;tmp < 57 ;tmp++)
+			for (tmp=0; tmp < 57; tmp++)
 				p->usr_chr_dot_assignment[tmp]=usr_chr_dot_assignment_2[tmp];
 
 			//Where to place the usercharacters (0..30) in the asciicode.
@@ -615,11 +618,12 @@ serialVFD_init (Driver *drvthis)
 				p->charmap[tmp] = charmap_3[tmp];
 
 			//{bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
-			const int usr_chr_dot_assignment_3[57]={5,	 8, 7, 6, 5, 4, 3, 2, 1,
+			const int usr_chr_dot_assignment_3[57]={ 5,
+								 8, 7, 6, 5, 4, 3, 2, 1,
 								16,15,14,13,12,11,10, 9,
 								24,23,22,21,20,19,18,17,
 								32,31,30,29,28,27,26,25,
-								0, 0, 0, 0, 0,35,34,33};
+								 0, 0, 0, 0, 0,35,34,33};
 			for (tmp=0;tmp < 57 ;tmp++)
 				p->usr_chr_dot_assignment[tmp]=usr_chr_dot_assignment_3[tmp];
 
@@ -710,7 +714,7 @@ serialVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 // The input is just an array of characters...
 //
 MODULE_EXPORT void
-serialVFD_set_char (Driver *drvthis, int n, char *dat)
+serialVFD_set_char (Driver *drvthis, int n, unsigned char *dat)
 {	//set char in p->custom_char
 	PrivateData *p = drvthis->private_data;
 	unsigned int byte, bit;
@@ -724,8 +728,14 @@ serialVFD_set_char (Driver *drvthis, int n, char *dat)
 		int letter = 0;
 
 		for (bit = 0; bit < 8; bit++) {
-			if ((int) p->usr_chr_dot_assignment[bit+8*byte+1] != 0)
-				letter |= (dat[(int)p->usr_chr_dot_assignment[bit+8*byte+1]-1] << bit);
+			int pos = (int) p->usr_chr_dot_assignment[bit+8*byte+1];
+			
+			if (pos > 0) {
+				int posbyte = (pos-1) / 5;
+				int posbit = 4 - ((pos-1) % 5);
+					
+				letter |= ((dat[posbyte] >> posbit) & 1) << bit;;
+			}	
 		}
 		p->custom_char[n][byte] = letter;
 	}
@@ -848,7 +858,7 @@ serialVFD_num( Driver * drvthis, int x, int num )
 		p->ccmode = CCMODE_BIGNUM; // Switch customcharactermode to bignum.
 	}
 	// Lib_adv_bignum does everything needed to show the bignumbers.
-	lib_adv_bignum(drvthis, x, num, p->height, do_init, p->customchars);
+	lib_adv_bignum(drvthis, x, num, do_init, p->customchars);
 }
 
 
@@ -860,27 +870,25 @@ MODULE_EXPORT int
 serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
-	char icons[2][5 * 7] = {
-		{
-		 1, 1, 1, 1, 1,			  // Empty Heart
-		 1, 0, 1, 0, 1,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 0, 0, 0, 1,
-		 1, 1, 0, 1, 1,
-		 },
+	static unsigned char heart_open[] = 
+		{ b__XXXXX,
+		  b__X_X_X,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b__X___X,
+		  b__XX_XX,
+		  b__XXXXX };
+	static unsigned char heart_filled[] = 
+		{ b__XXXXX,
+		  b__X_X_X,
+		  b___X_X_,
+		  b___XXX_,
+		  b___XXX_,
+		  b__X_X_X,
+		  b__XX_XX,
+		  b__XXXXX };
 
-		{
-		 1, 1, 1, 1, 1,			  // Filled Heart
-		 1, 0, 1, 0, 1,
-		 0, 1, 0, 1, 0,
-		 0, 1, 1, 1, 0,
-		 0, 1, 1, 1, 0,
-		 1, 0, 1, 0, 1,
-		 1, 1, 0, 1, 1,
-		 },
-	};
 	// Yes we know, this is a VERY BAD implementation :-)
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
@@ -888,12 +896,12 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 			break;
 		case ICON_HEART_FILLED:
 		        p->ccmode = CCMODE_STANDARD;
-			serialVFD_set_char(drvthis, 0, icons[1]);
+			serialVFD_set_char(drvthis, 0, heart_filled);
 			serialVFD_chr(drvthis, x, y, 0);
 			break;
 		case ICON_HEART_OPEN:
 		        p->ccmode = CCMODE_STANDARD;
-			serialVFD_set_char(drvthis, 0, icons[0]);
+			serialVFD_set_char(drvthis, 0, heart_open);
 			serialVFD_chr(drvthis, x, y, 0);
 			break;
 		default:
@@ -911,69 +919,20 @@ static void
 serialVFD_init_vbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-	};
-	char b[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char c[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char d[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char e[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char f[] = {
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
 
 	if (p->ccmode != CCMODE_VBAR) {
+		unsigned char vBar[p->cellheight];
+		int i;
+
 		p->ccmode = CCMODE_VBAR;
-		serialVFD_set_char(drvthis, 1, a);
-		serialVFD_set_char(drvthis, 2, b);
-		serialVFD_set_char(drvthis, 3, c);
-		serialVFD_set_char(drvthis, 4, d);
-		serialVFD_set_char(drvthis, 5, e);
-		serialVFD_set_char(drvthis, 6, f);
+
+		memset(vBar, 0x00, sizeof(vBar));
+
+		for (i = 1; i < p->cellheight; i++) {
+			// add pixel line per pixel line ...
+			vBar[p->cellheight - i] = 0xFF;
+			serialVFD_set_char(drvthis, i, vBar);
+		}
 	}
 }
 
@@ -984,49 +943,18 @@ static void
 serialVFD_init_hbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-	};
-	char b[] = {
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-	};
-	char c[] = {
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-	};
-	char d[] = {
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-	};
 
 	if (p->ccmode != CCMODE_HBAR) {
+		unsigned char hBar[p->cellheight];
+		int i;
+
 		p->ccmode = CCMODE_HBAR;
-		serialVFD_set_char(drvthis, 1, a);
-		serialVFD_set_char(drvthis, 2, b);
-		serialVFD_set_char(drvthis, 3, c);
-		serialVFD_set_char(drvthis, 4, d);
+
+		for (i = 1; i < p->cellwidth; i++) {
+			// fill pixel columns from left to right.
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
+			serialVFD_set_char(drvthis, i, hBar);
+		}
 	}
 }
 

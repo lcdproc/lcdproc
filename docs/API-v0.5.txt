@@ -117,7 +117,7 @@ API_VERSION in the code.
 	// - It is currently unclear how this system should work exactly
 	// - The set_char function expects a simple block of data with 1 byte for each pixel-line.
 	//   (So that is 8 bytes for a 5x8 char)
-	void (*set_char)	(Driver *drvthis, char ch, char *dat);
+	void (*set_char)	(Driver *drvthis, char ch, unsigned char *dat);
 	int (*get_free_chars)	(Driver *drvthis);
 
 	// get width & height of a character cell (in pixels)

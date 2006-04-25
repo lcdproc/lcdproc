@@ -9,6 +9,8 @@ v.0.5dev (ongoing development)
  + config file support in lcdproc client (thanks Andrew Foss)
  * install server & client config files in $(sysconfdir)
  + new client lcdvc: virtual console on LCD
+ * convert adv_bignum library to bitwise set_char()
+ * adapt IOWarrior, CFontzPacket, seriaVFD to modified bignum library
 
 v0.5.0
 This version has split off from unstable-0.4.3. Includes major changes.

@@ -44,27 +44,7 @@
 #include "IOWarrior.h"
 #include "report.h"
 #include "lcd_lib.h"
-
-#define  b_______	0x00
-#define  b_____X_	0x03
-#define  b_____XX	0x03
-#define  b____X__	0x04
-#define  b____XX_	0x06
-#define  b___X___	0x08
-#define  b___XX__	0x09
-#define  b___X_X_	0x0A
-#define  b___XXX_	0x0E
-#define  b___XXXX	0x0F
-#define  b__X____	0x10
-#define  b__X___X	0x11
-#define  b__X_X_X	0x15
-#define  b__X_XX_	0x16
-#define  b__XX___	0x18
-#define  b__XX_XX	0x1B
-#define  b__XXX__	0x1C
-#define  b__XXX_X	0x1D
-#define  b__XXXX_	0x1E
-#define  b__XXXXX	0x1F
+#include "adv_bignum.h"
 
 
 
@@ -748,199 +728,32 @@ PrivateData *p = drvthis->private_data;
 
 
 /*******************************************************************
- * API: Sets up for big numbers
- */
-static void
-IOWarrior_init_num(Driver *drvthis)
-{
-PrivateData *p = drvthis->private_data;
-
-unsigned char bignum_ccs[8][CELLHEIGHT] = {
-	[0]
-	{ b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b_______,
-	  b_______,
-	  b_______,
-	  b_______ },
-	[1]
-	{ b_____XX,
-	  b_____XX,
-	  b_____XX,
-	  b_____XX,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___ },
-	[2]
-	{ b__XX_XX,
-	  b__XX_XX,
-	  b__XX_XX,
-	  b__XX_XX,
-	  b_______,
-	  b_______,
-	  b_______,
-	  b_______ },
-	[3]
-	{ b_______,
-	  b_______,
-	  b_______,
-	  b_______,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___ },
-	[4]
-	{ b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b_____XX,
-	  b_____XX,
-	  b_____XX,
-	  b_____XX },
-	[5]
-	{ b_______,
-	  b_______,
-	  b_______,
-	  b_______,
-	  b__XX_XX,
-	  b__XX_XX,
-	  b__XX_XX,
-	  b__XX_XX },
-	[6]
-	{ b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___,
-	  b__XX___ },
-	[7]
-	{ b_____XX,
-	  b_____XX,
-	  b_____XX,
-	  b_____XX,
-	  b_______,
-	  b_______,
-	  b_______,
-	  b_______ }
-};
-
-  if (p->ccmode != bignum) {
-    int i;
-
-    if (p->ccmode != standard) {
-      /* Not supported (yet) */
-      report(RPT_WARNING, "%s: init_num: cannot combine two modes using user defined characters",
-		      drvthis->name);
-      return;
-    }
-
-    p->ccmode = bignum;
-
-    for (i = 0; i < NUM_CCs; i++) {
-      IOWarrior_set_char(drvthis, i, bignum_ccs[i]);
-    }
-  }
-}
-
-
-/*******************************************************************
  * API: Writes a big number.
  */
 MODULE_EXPORT void
 IOWarrior_num(Driver *drvthis, int x, int num)
 {
 PrivateData *p = drvthis->private_data;
+int do_init = 0;
 
-/* each bignum is constructed in a 3 x 4 matrix and consists
- * of only the 8 characters defined above as well as ' '
- *
- * The following table defines the 11 big numbers '0'-'9', ':'
- * and the custom base characters they consist of
- */
-char bignum_map[11][4][3] = {
-  { /* 0: */
-    {  1,  2,  3 },
-    {  6, 32,  6 },
-    {  6, 32,  6 },
-    {  7,  2, 32 } },
-  { /* 1: */
-    {  7,  6, 32 },
-    { 32,  6, 32 },
-    { 32,  6, 32 },
-    {  7,  2, 32 } },
-  { /* 2: */
-    {  1,  2,  3 },
-    { 32,  5,  0 },
-    {  1, 32, 32 },
-    {  2,  2,  0 } },
-  { /* 3: */
-    {  1,  2,  3 },
-    { 32,  5,  0 },
-    {  3, 32,  6 },
-    {  7,  2, 32 } },
-  { /* 4: */
-    { 32,  3,  6 },
-    {  1, 32,  6 },
-    {  2,  2,  6 },
-    { 32, 32,  0 } },
-  { /* 5: */
-    {  1,  2,  0 },
-    {  2,  2,  3 },
-    {  3, 32,  6 },
-    {  7,  2, 32 } },
-  { /* 6: */
-    {  1,  2, 32 },
-    {  6,  5, 32 },
-    {  6, 32,  6 },
-    {  7,  2, 32 } },
-  { /* 7: */
-    {  2,  2,  6 },
-    { 32,  1, 32 },
-    { 32,  6, 32 },
-    { 32,  0, 32 } },
-  { /* 8: */
-    {  1,  2,  3 },
-    {  4,  5,  0 },
-    {  6, 32,  6 },
-    {  7,  2, 32 } },
-  { /* 9: */
-    {  1,  2,  3 },
-    {  4,  3,  6 },
-    { 32,  1, 32 },
-    {  7, 32, 32 } },
-  { /* colon: (only 1st column used) */
-    { 32, 32, 32 },
-    {  0, 32, 32 },
-    {  0, 32, 32 },
-    { 32, 32, 32 } }
-};
+	if ((num < 0) || (num > 10))
+		return;
 
-  if ((num < 0) || (num > 10))
-    return;
+	if (p->ccmode != bignum) {
+		if (p->ccmode != standard) {
+			/* Not supported (yet) */
+			report(RPT_WARNING, "%s: num: cannot combine two modes using user defined characters",
+					drvthis->name);
+			return;
+		}
 
-  IOWarrior_init_num(drvthis);
+		p->ccmode = bignum;
 
-  if (p->height >= 4) {
-    int y = (p->height - 2) / 2;	/* center vertically */
-    int x2, y2;
+		do_init = 1;
+	}
 
-    for (x2 = 0; x2 < 3; x2++) {
-      for (y2 = 0; y2 < 4; y2++) {
-        IOWarrior_chr(drvthis, x+x2, y+y2, bignum_map[num][y2][x2]);
-      }
-      if (num == 10)
-        x2 = 2; /* = break, for colon only */
-    }
-  }
-  else
-    IOWarrior_chr(drvthis, x, 1 + (p->height - 1)/ 2,
-		  (num == 10) ? ':' : (num + '0'));
+	// Lib_adv_bignum does everything needed to show the bignumbers.
+	lib_adv_bignum(drvthis, x, num, do_init, NUM_CCs);
 }
 
 

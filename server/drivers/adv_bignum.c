@@ -84,7 +84,6 @@
 
 
 
-
 static void adv_bignum_num_2_0 (Driver *drvthis, int x, int num, int height, int do_init);
 static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int do_init);
 static void adv_bignum_num_2_2 (Driver *drvthis, int x, int num, int height, int do_init);
@@ -93,6 +92,7 @@ static void adv_bignum_num_2_28 (Driver *drvthis, int x, int num, int height, in
 
 static void adv_bignum_num_4_0 (Driver *drvthis, int x, int num, int height, int do_init);
 static void adv_bignum_num_4_3 (Driver *drvthis, int x, int num, int height, int do_init);
+static void adv_bignum_num_4_8 (Driver *drvthis, int x, int num, int height, int do_init);
 
 static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][4], int x, int num, int height);
 
@@ -102,34 +102,38 @@ static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][4], i
 // The called bignumberfunction is depending on the display's height and the
 // number of customcharacters.
 void
-lib_adv_bignum(Driver *drvthis, int x, int num, int height, int do_init, int customchars)
+lib_adv_bignum(Driver *drvthis, int x, int num, int do_init, int customchars)
 {
-
+int height = drvthis->height(drvthis);
+	
 	switch (height) { // Display heigth:
 		case 2: // 2 lines
 		case 3: // are 3 line displays really existing?
-			if (customchars == 0){// 2 lines and customchars = 0
+			if (customchars == 0) {		// 2 lines and customchars = 0
 				adv_bignum_num_2_0 (drvthis, x, num, height, do_init);
 				}
-			else if (customchars ==1 ){// 2 lines and customchars = 1
+			else if (customchars == 1) {	// 2 lines and customchars = 1
 				adv_bignum_num_2_1 (drvthis, x, num, height, do_init);
 				}
-			else if (customchars < 5){// 2 lines and customchars = 2 ... 4
+			else if (customchars < 5) {	// 2 lines and customchars = 2 ... 4
 				adv_bignum_num_2_2 (drvthis, x, num, height, do_init);
 				}
-			else if (customchars < 28){ // 2 lines and customchars = 5 ... 27
+			else if (customchars < 28) {	// 2 lines and customchars = 5 ... 27
 				adv_bignum_num_2_5 (drvthis, x, num, height, do_init);
 				}
-			else { // 2 lines and customchars >= 28
+			else {				// 2 lines and customchars >= 28
 				adv_bignum_num_2_28 (drvthis, x, num, height, do_init);
 				}
 			break;
 		case 4: // 4 lines
-			if (customchars < 3){// 4 lines and customchars < 3
+			if (customchars == 0) {		// 4 lines and customchars < 3
 				adv_bignum_num_4_0 (drvthis, x, num, height, do_init);
 				}
-			else { // 4 lines and customchars >= 3
+			else if (customchars < 8) {	// 4 lines and customchars < 8
 				adv_bignum_num_4_3 (drvthis, x, num, height, do_init);
+				}
+			else {				// 4 lines and customchars >= 8
+				adv_bignum_num_4_8 (drvthis, x, num, height, do_init);
 				}
 			break;
 		default:
@@ -139,18 +143,19 @@ lib_adv_bignum(Driver *drvthis, int x, int num, int height, int do_init, int cus
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// This function writes the selected type of bignumber by calling the drivers_char function.
-// It is called by displaydepending bignumber function to write the numbers.
+// This function writes the selected type of bignumber by calling the driver's chr function.
+// It is called by display-depending bignumber functions to write the numbers.
 static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][4], int x, int num, int height)
 {
 	int y, dx;
-	for (y = 0; y < height; y++)
-	{
-		if (num == 10) // ":" is only 1 character wide.
-				drvthis->chr (drvthis, x, y+1, write_num_map[num][y][0]);
-		else
-			for (dx = 0; dx <3; dx++)
-				drvthis->chr (drvthis, x + dx, y+1, write_num_map[num][y][dx]);
+
+	for (y = 0; y < height; y++) {
+		if (num == 10)	// ":" is only 1 character wide.
+			drvthis->chr(drvthis, x, y+1, write_num_map[num][y][0]);
+		else {
+			for (dx = 0; dx < 3; dx++)
+				drvthis->chr(drvthis, x + dx, y+1, write_num_map[num][y][dx]);
+		}	
 	}
 
 
@@ -294,21 +299,22 @@ static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int
 			{" "},
 			{" "} }
 		}; // Defines the character placing inside the bignumber.
-	if (do_init) // Set customcharacters if needed.
-		{
-		static char bignum[1][5 * 8] = { // stored customcharacter
-		{
-			1, 1, 1, 1, 1,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-		}};
-		drvthis->set_char (drvthis, 0, &bignum[0][0]); // put the customcharacter into the display
-		}
+
+	if (do_init) {	// Set customcharacters if needed.
+		static unsigned char bignum[1][8] = {	// stored customcharacter
+		[0] {
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______, }
+		};
+		drvthis->set_char (drvthis, 0, bignum[0]); // put the customcharacter into the display
+	}
+
 	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
 
 }
@@ -376,34 +382,34 @@ static void adv_bignum_num_2_2 (Driver *drvthis, int x, int num, int height, int
 			" ",
 			" " }
 		}; // Defines the character placing inside the bignumber.
-	if (do_init) // Set customcharacters if needed.
-		{
-		static char bignum[2][5 * 8] = { // stored customcharacters
-		{
-			1, 1, 1, 1, 1,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-		},
-			{
-			1, 1, 1, 1, 1,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1,
-		}};
+
+	if (do_init) {	// Set customcharacters if needed.
+		static unsigned char bignum[2][8] = { // stored customcharacters
+		[0] {
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______, },
+		[1] {
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b__XXXXX,
+			b__XXXXX, }
+		};
 		int i;
-		for (i = 0; i <= 2 ; i++) { // put the customcharacters into the display
-			drvthis->set_char (drvthis, i, &bignum[i][0]);
-			}
+		for (i = 0; i < 2; i++) { // put the customcharacters into the display
+			drvthis->set_char (drvthis, i, bignum[i]);
 		}
+	}
+
 	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
 }
 
@@ -458,65 +464,63 @@ static void adv_bignum_num_2_5 (Driver *drvthis, int x, int num, int height, int
 		{'.'},
 		{"   "},
 		{"   "}}}; // Defines the character placing inside the bignumber.
-	if (do_init) // Set customcharacters if needed.
-		{
-		static char bignum[5][5 * 8] = { // stored customcharacters
-		{
-			1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-		},
-			{
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1,
-		},
-			{
-			1, 1, 1, 0, 0,
-			1, 1, 1, 0, 0,
-			1, 1, 1, 0, 0,
-			1, 1, 1, 0, 0,
-			1, 1, 1, 0, 0,
-			1, 1, 1, 0, 0,
-			1, 1, 1, 0, 0,
-			1, 1, 1, 0, 0,
-		},
-			{
-			0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1,
-			0, 0, 1, 1, 1,
-		},
-		{
-			1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0,
-			1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1,
-			1, 1, 1, 1, 1,
-		}};
+	
+	if (do_init) {	// Set customcharacters if needed.
+		static unsigned char bignum[5][8] = { // stored customcharacters
+		[0] {
+			b__XXXXX,
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______, },
+		[1] {
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b__XXXXX,
+			b__XXXXX,
+			b__XXXXX, },
+		[2] {
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__, },
+		[3] {
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX, },
+		[4] {
+			b__XXXXX,
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b__XXXXX,
+			b__XXXXX,
+			b__XXXXX, }
+		};
 		int i;
-		for (i = 0; i <= 5 ; i++) { // put the customcharacters into the display
-			drvthis->set_char (drvthis, i, &bignum[i][0]);
-			}
+		
+		for (i = 0; i < 5 ; i++) { // put the customcharacters into the display
+			drvthis->set_char (drvthis, i, bignum[i]);
 		}
-		adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
+	}
+
+	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
 }
 
 
@@ -571,296 +575,268 @@ static void adv_bignum_num_2_28 (Driver *drvthis, int x, int num, int height, in
 		{"   "},
 		{"   "}}}; // Defines the character placing inside the bignumber.
 
-	if (do_init) // Set customcharacters if needed.
-		{
-
-		static char bignum[28][5 * 8] = { // stored customcharacters
-			{			//0
-				0, 0, 0, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-			},
-			{			//1
-				0, 0, 0, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-			},
-			{			//2
-				1, 1, 0, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0
-			},
-			{			//3
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 0, 1, 1,
-				0, 0, 0, 1, 1,
-			},
-			{			//4
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-			},
-			{			//5
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 0, 0, 0,
-				1, 0, 0, 0, 0,
-			},
-			{			//6
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-			},
-			{			//7
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-			},
-			{			//8
-				0, 0, 1, 1, 1,
-				0, 1, 1, 1, 1,
-				1, 1, 1, 1, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-			},
-			{			//9
-				1, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-			},
-			{			//10
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-			},
-			{			//11
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-			},
-			{			//12
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-			},
-			{			//13
-				1, 1, 1, 1, 1,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-			},
-			{			//14
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 0, 1, 1,
-				0, 0, 0, 1, 1,
-			},
-			{			//15
-				0, 0, 0, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-			},
-			{			//16
-				1, 1, 0, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-			},
-			{			//17
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-			},
-			{			//18
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 1, 1,
-				0, 0, 0, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-			},
-			{			//19
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-			},
-			{			//20
-				0, 1, 1, 1, 0,
-				0, 1, 1, 1, 0,
-				1, 1, 1, 1, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-			},
-			{			//21
-				0, 0, 0, 0, 1,
-				0, 0, 0, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 0, 1,
-				1, 1, 0, 0, 1,
-				1, 1, 0, 0, 1,
-			},
-			{			//22
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				0, 0, 0, 0, 1,
-				0, 0, 0, 0, 1,
-				0, 0, 0, 0, 1,
-				0, 0, 0, 0, 1,
-				0, 0, 0, 0, 1,
-			},
-			{			//23
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-			},
-			{			//24
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 1, 1, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-				1, 0, 0, 0, 0,
-			},
-			{			//25
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 1,
-				0, 0, 0, 0, 1,
-			},
-			{			//26
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 1, 1, 1, 1,
-				1, 1, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-				0, 0, 1, 1, 1,
-			},
-			{			//27
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 1, 1, 0,
-				0, 0, 1, 1, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-				0, 0, 0, 0, 0,
-			}
+	if (do_init) {	// Set customcharacters if needed.
+		static unsigned char bignum[28][8] = { // stored customcharacters
+			[0] {			//0
+				b_____XX,
+				b____XXX,
+				b____XXX,
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b_______, },
+			[1] {			//1
+				b_____XX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b_______,
+				b_______,
+				b_______,
+				b_______, },
+			[2] {			//2
+				b__XX___,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__, },
+			[3] {			//3
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b____XXX,
+				b____XXX,
+				b_____XX,
+				b_____XX, },
+			[4] {			//4
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX, },
+			[5] {			//5
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XX___,
+				b__X____, },
+			[6] {			//6
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX,
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b_______, },
+			[7] {			//7
+				b_______,
+				b_______,
+				b_______,
+				b______X,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX, },
+			[8] {			//8
+				b____XXX,
+				b___XXXX,
+				b__XXXX_,
+				b__XXX__,
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX, },
+			[9] {			//9
+				b__X____,
+				b_______,
+				b_______,
+				b_______,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__, },
+			[10] {			//10
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX, },
+			[11] {			//11
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX,
+				b_______,
+				b_______,
+				b_______,
+				b__XXXXX,
+				b__XXXXX, },
+			[12] {			//12
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b_______, },
+			[13] {			//13
+				b__XXXXX,
+				b_______,
+				b_______,
+				b_______,
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX, },
+			[14] {			//14
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b_____XX,
+				b_____XX, },
+			[15] {			//15
+				b_____XX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX, },
+			[16] {			//16
+				b__XX___,
+				b__XXX__,
+				b__XXX__,
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b_______, },
+			[17] {			//17
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b_______, },
+			[18] {			//18
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX,
+				b_______,
+				b_____XX,
+				b_____XX,
+				b____XXX,
+				b____XXX, },
+			[19] {			//19
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XX___,
+				b__X____,
+				b_______,
+				b_______, },
+			[20] {			//20
+				b___XXX_,
+				b___XXX_,
+				b__XXXX_,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__XXX__, },
+			[21] {			//21
+				b______X,
+				b_____XX,
+				b____XXX,
+				b___XXXX,
+				b__XXXXX,
+				b__XXX_X,
+				b__XX__X,
+				b__XX__X, },
+			[22] {			//22
+				b__XXXXX,
+				b__XXXXX,
+				b__XXXXX,
+				b______X,
+				b______X,
+				b______X,
+				b______X,
+				b______X, },
+			[23] {			//23
+				b__X____,
+				b__X____,
+				b__X____,
+				b__X____,
+				b__X____,
+				b__X____,
+				b__X____,
+				b__X____, },
+			[24] {			//24
+				b__XXX__,
+				b__XXX__,
+				b__XXX__,
+				b__X____,
+				b__X____,
+				b__X____,
+				b__X____,
+				b__X____, },
+			[25] {			//25
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b_______,
+				b______X,
+				b______X, },
+			[26] {			//26
+				b____XXX,
+				b____XXX,
+				b___XXXX,
+				b__XXXXX,
+				b____XXX,
+				b____XXX,
+				b____XXX,
+				b____XXX, },
+			[27] {			//27
+				b_______,
+				b_______,
+				b_______,
+				b____XX_,
+				b____XX_,
+				b_______,
+				b_______,
+				b_______, }
 			};
 		int i;
-		for (i = 0; i <= 28 ; i++) { // put the customcharacters into the display
-			drvthis->set_char (drvthis, i, &bignum[i][0]);
-			}
+
+		for (i = 0; i < 28 ; i++) { // put the customcharacters into the display
+			drvthis->set_char (drvthis, i, bignum[i]);
 		}
+	}
+
 	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
 }
 
@@ -931,100 +907,246 @@ static char num_map[][4][4] = {
 		" " }
 	}; // Defines the character placing inside the bignumber.
 
-	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
+	adv_bignum_write_num(drvthis, num_map, x, num, height); // write the number
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// This function is usable for a 4 line display with 5 or more custom characters.
+// This function is usable for a 4 line display with 3 or more custom characters.
 // (nice bignumbers)
 static void adv_bignum_num_4_3 (Driver *drvthis, int x, int num, int height, int do_init)
 {
 static char num_map[][4][4] =
 	{{{3	,1	,3}, /*0*/
-	{3	,' '	,3},
-	{3	,' '	,3},
-	{3	,2	,3}},
-	{{' '	,' '	,3},/*1*/
-	{' '	,' '	,3},
-	{' '	,' '	,3},
-	{' '	,' '	,3}},
-	{{' '	,1	,3},/*2*/
-	{' '	,2	,3},
-	{3	,' '	,3},
-	{3	,2	,3}},
-	{{' '	,1	,3},/*3*/
-	{' '	,' '	,3},
-	{' '	,2	,3},
-	{' '	,' '	,3}},
-	{{3	,2	,3},/*4*/
-	{3	,2	,3},
-	{' '	,' '	,3},
-	{' '	,' '	,3}},
-	{{3	,1	,3},/*5*/
-	{3	,2	,3},
-	{' '	,' '	,3},
-	{' '	,2	,3}},
-	{{3	,1	,3},/*6*/
-	{3	,' '	,3},
-	{3	,1	,3},
-	{3	,2	,3}},
-	{{' '	,1	,3},/*7*/
-	{' '	,' '	,3},
-	{' '	,' '	,3},
-	{' '	,' '	,3}},
-	{{3	,1	,3},/*8*/
-	{3	,2	,3},
-	{3	,' '	,3},
-	{3	,2	,3}},
-	{{3	,1	,3},/*9*/
-	{3	,2	,3},
-	{' '	,' '	,3},
-	{' '	,2	,3}},
-	{{" "},/*:*/
-	{'.'},
-	{'.'},
-	{" "}}}; // Defines the character placing inside the bignumber.
-if (do_init) // Set customcharacters if needed.
-	{
-	static char bignum[5][5 * 8] = { // stored customcharacters
-	{
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-	},
-		{
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	},
-		{
-		0, 1, 1, 1, 0,
-		0, 1, 1, 1, 0,
-		0, 1, 1, 1, 0,
-		0, 1, 1, 1, 0,
-		0, 1, 1, 1, 0,
-		0, 1, 1, 1, 0,
-		0, 1, 1, 1, 0,
-		0, 1, 1, 1, 0,
-	}
-	};
+	  {3	,' '	,3},
+	  {3	,' '	,3},
+	  {3	,2	,3}},
+	 {{' '	,' '	,3},/*1*/
+	  {' '	,' '	,3},
+	  {' '	,' '	,3},
+	  {' '	,' '	,3}},
+	 {{' '	,1	,3},/*2*/
+	  {' '	,2	,3},
+	  {3	,' '	,' '},
+	  {3	,2	,' '}},
+	 {{' '	,1	,3},/*3*/
+	  {' '	,2	,3},
+	  {' '	,'  '	,3},
+	  {' '	,2	,3}},
+	 {{3	,' '	,3},/*4*/
+	  {3	,2	,3},
+	  {' '	,' '	,3},
+	  {' '	,' '	,3}},
+	 {{3	,1	,' '},/*5*/
+	  {3	,2	,' '},
+	  {' '	,' '	,3},
+	  {' '	,2	,3}},
+	 {{3	,1	,' '},/*6*/
+	  {3	,2	,' '},
+	  {3	,' '	,3},
+	  {3	,2	,3}},
+	 {{' '	,1	,3},/*7*/
+	  {' '	,' '	,3},
+	  {' '	,' '	,3},
+	  {' '	,' '	,3}},
+	 {{3	,1	,3},/*8*/
+	  {3	,2	,3},
+	  {3	,' '	,3},
+	  {3	,2	,3}},
+	 {{3	,1	,3},/*9*/
+	  {3	,2	,3},
+	  {' '	,' '	,3},
+	  {' '	,2	,3}},
+	 {{" "},/*:*/
+	  {'.'},
+	  {'.'},
+	  {" "}}}; // Defines the character placing inside the bignumber.
+
+	if (do_init) {	// Set customcharacters if needed.
+		static unsigned char bignum[3][8] = { // stored customcharacters
+		[0] {
+			b__XXXXX,
+			b__XXXXX,
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______, },
+		[1] {
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b__XXXXX,
+			b__XXXXX,
+			b__XXXXX,
+			b__XXXXX, },
+		[2] {
+			b___XXX_,
+			b___XXX_,
+			b___XXX_,
+			b___XXX_,
+			b___XXX_,
+			b___XXX_,
+			b___XXX_,
+			b___XXX_, }
+		};
 		int i;
-	for (i = 0; i <= 3 ; i++) { // put the customcharacters into the display
-		drvthis->set_char (drvthis, i, &bignum[i][0]);
+		
+		for (i = 0; i < 3; i++) { // put the customcharacters into the display
+			drvthis->set_char(drvthis, i+1, bignum[i]);
+		}
 	}
+	
+	adv_bignum_write_num(drvthis, num_map, x, num, height); // write the number
 }
-	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////
+// This function is usable for a 4 line display with 8 or more custom characters.
+// (nice bignumbers)
+static void adv_bignum_num_4_8 (Driver *drvthis, int x, int num, int height, int do_init)
+{
+static char num_map[][4][4] = {
+	{ /* 0: */
+		{  1,  2,  3 },
+		{  6, 32,  6 },
+		{  6, 32,  6 },
+		{  7,  2, 32 } },
+	{ /* 1: */
+		{  7,  6, 32 },
+		{ 32,  6, 32 },
+		{ 32,  6, 32 },
+		{  7,  2, 32 } },
+	{ /* 2: */
+		{  1,  2,  3 },
+		{ 32,  5,  0 },
+		{  1, 32, 32 },
+		{  2,  2,  0 } },
+	{ /* 3: */
+		{  1,  2,  3 },
+		{ 32,  5,  0 },
+		{  3, 32,  6 },
+		{  7,  2, 32 } },
+	{ /* 4: */
+		{ 32,  3,  6 },
+		{  1, 32,  6 },
+		{  2,  2,  6 },
+		{ 32, 32,  0 } },
+	{ /* 5: */
+		{  1,  2,  0 },
+		{  2,  2,  3 },
+		{  3, 32,  6 },
+		{  7,  2, 32 } },
+	{ /* 6: */
+		{  1,  2, 32 },
+		{  6,  5, 32 },
+		{  6, 32,  6 },
+		{  7,  2, 32 } },
+	{ /* 7: */
+		{  2,  2,  6 },
+		{ 32,  1, 32 },
+		{ 32,  6, 32 },
+		{ 32,  0, 32 } },
+	{ /* 8: */
+		{  1,  2,  3 },
+		{  4,  5,  0 },
+		{  6, 32,  6 },
+		{  7,  2, 32 } },
+	{ /* 9: */
+		{  1,  2,  3 },
+		{  4,  3,  6 },
+		{ 32,  1, 32 },
+		{  7, 32, 32 } },
+	{ /* colon: (only 1st column used) */
+		{ 32, 32, 32 },
+		{  0, 32, 32 },
+		{  0, 32, 32 },
+		{ 32, 32, 32 } }
+};	// Defines the character placing inside the bignumber.
+
+	if (do_init) {	// Set customcharacters if needed.
+		static unsigned char bignum[8][8] = { // stored customcharacters
+		[0] {
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b_______,
+			b_______,
+			b_______,
+			b_______, },
+		[1] {
+			b_____XX,
+			b_____XX,
+			b_____XX,
+			b_____XX,
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___, },
+		[2] {
+			b__XX_XX,
+			b__XX_XX,
+			b__XX_XX,
+			b__XX_XX,
+			b_______,
+			b_______,
+			b_______,
+			b_______, },
+		[3] {
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___, },
+		[4] {
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b_____XX,
+			b_____XX,
+			b_____XX,
+			b_____XX, },
+		[5] {
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b__XX_XX,
+			b__XX_XX,
+			b__XX_XX,
+			b__XX_XX, },
+		[6] {
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___,
+			b__XX___, },
+		[7] {
+			b_____XX,
+			b_____XX,
+			b_____XX,
+			b_____XX,
+			b_______,
+			b_______,
+			b_______,
+			b_______, }
+		};
+		int i;
+		
+		for (i = 0; i < 8 ; i++) { // put the customcharacters into the display
+			drvthis->set_char(drvthis, i, bignum[i]);
+		}
+	}
+	
+	adv_bignum_write_num(drvthis, num_map, x, num, height); // write the number
 }

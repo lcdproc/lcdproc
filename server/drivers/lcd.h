@@ -150,7 +150,7 @@ typedef struct lcd_logical_driver {
 	void (*cursor)		(struct lcd_logical_driver* drvthis, int x, int y, int type);
 
 	/* user-defined character functions, are those still supported ? */
-	void (*set_char)	(struct lcd_logical_driver* drvthis, int n, char *dat);
+	void (*set_char)	(struct lcd_logical_driver* drvthis, int n, unsigned char *dat);
 	int (*get_free_chars)	(struct lcd_logical_driver* drvthis);
 	int (*cellwidth)	(struct lcd_logical_driver* drvthis);
 	int (*cellheight)	(struct lcd_logical_driver* drvthis);
