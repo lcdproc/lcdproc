@@ -668,14 +668,20 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/*********************************************************
- * NOTAPI: Inits vertical bars...
- * This was part of API in 0.4 and removed in 0.5
+/*************************************************************
+ * API: Draws a vertical bar...
  */
-static void
-IOWarrior_init_vbar(Driver *drvthis)
+MODULE_EXPORT void
+IOWarrior_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 PrivateData *p = drvthis->private_data;
+
+  /* x and y are the start position of the bar.
+   * The bar by default grows in the 'up' direction
+   *(other direction not yet implemented).
+   * len is the number of characters that the bar is long at 100%
+   * promille is the number of promilles(0..1000) that the bar should be filled.
+   */
 
   if (p->ccmode != vbar) {
     unsigned char vBar[p->cellheight];
@@ -683,7 +689,7 @@ PrivateData *p = drvthis->private_data;
 
     if (p->ccmode != standard) {
       /* Not supported(yet) */
-      report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user defined characters",
+      report(RPT_WARNING, "%s: vbar: cannot combine two modes using user defined characters",
 		      drvthis->name);
       return;
     }
@@ -697,55 +703,6 @@ PrivateData *p = drvthis->private_data;
       IOWarrior_set_char(drvthis, i, vBar);
     }
   }
-}
-
-/*********************************************************
- * NOTAPI: Inits horizontal bars...
- * This was part of API in 0.4 and removed in 0.5
- */
-static void
-IOWarrior_init_hbar(Driver *drvthis)
-{
-PrivateData *p = drvthis->private_data;
-
-  if (p->ccmode != hbar) {
-    unsigned char hBar[p->cellheight];
-    int i;
-
-    if (p->ccmode != standard) {
-      /* Not supported(yet) */
-      report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user defined characters",
-		      drvthis->name);
-      return;
-    }
-
-    p->ccmode = hbar;
-
-    for (i = 1; i <= p->cellwidth; i++) {
-      // fill pixel columns from left to right.
-      memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
-      IOWarrior_set_char(drvthis, i, hBar);
-    }
-  }
-}
-
-
-/*************************************************************
- * API: Draws a vertical bar...
- */
-MODULE_EXPORT void
-IOWarrior_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-PrivateData *p = drvthis->private_data;
-
-  IOWarrior_init_vbar(drvthis);
-
-  /* x and y are the start position of the bar.
-   * The bar by default grows in the 'up' direction
-   *(other direction not yet implemented).
-   * len is the number of characters that the bar is long at 100%
-   * promille is the number of promilles(0..1000) that the bar should be filled.
-   */
 
   lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
@@ -759,14 +716,32 @@ IOWarrior_hbar(Driver *drvthis, int x, int y, int len, int promille, int options
 {
 PrivateData *p = drvthis->private_data;
 
-  IOWarrior_init_hbar(drvthis);
-
   /* x and y are the start position of the bar.
    * The bar by default grows in the 'cwrightup' direction
    *(other direction not yet implemented).
    * len is the number of characters that the bar is long at 100%
    * promille is the number of promilles(0..1000) that the bar should be filled.
    */
+
+  if (p->ccmode != hbar) {
+    unsigned char hBar[p->cellheight];
+    int i;
+
+    if (p->ccmode != standard) {
+      /* Not supported(yet) */
+      report(RPT_WARNING, "%s: hbar: cannot combine two modes using user defined characters",
+		      drvthis->name);
+      return;
+    }
+
+    p->ccmode = hbar;
+
+    for (i = 1; i <= p->cellwidth; i++) {
+      // fill pixel columns from left to right.
+      memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
+      IOWarrior_set_char(drvthis, i, hBar);
+    }
+  }
 
   lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }

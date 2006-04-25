@@ -189,8 +189,6 @@ MODULE_EXPORT char *symbol_prefix = "CFontzPacket_";
 /* static void CFontzPacket_autoscroll (int on);  */
 static void CFontzPacket_hidecursor (Driver *drvthis);
 static void CFontzPacket_reboot (Driver *drvthis);
-static void CFontzPacket_init_vbar (Driver *drvthis);
-static void CFontzPacket_init_hbar (Driver *drvthis);
 static void CFontzPacket_no_live_report (Driver *drvthis);
 static void CFontzPacket_hardware_clear (Driver *drvthis);
 
@@ -867,68 +865,6 @@ CFontzPacket_reboot (Driver *drvthis)
 
 
 /*
- * Sets up for vertical bars.
- */
-static void
-CFontzPacket_init_vbar (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-
-	if (p->ccmode != vbar) {
-		unsigned char vBar[p->cellheight];
-		int i;
-
-		if (p->ccmode != standard) {
-			/* Not supported(yet) */
-			report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user defined characters",
-					drvthis->name);
-			return;
-		}
-		p->ccmode = vbar;
-
-		memset(vBar, 0x00, sizeof(vBar));
-
-		for (i = 1; i < p->cellheight; i++) {
-			// add pixel line per pixel line ...
-			vBar[p->cellheight - i] = 0xFF;
-			CFontzPacket_set_char(drvthis, i, vBar);
-		}
-	}
-}
-
-
-/*
- * Inits horizontal bars...
- */
-static void
-CFontzPacket_init_hbar (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-
-	if (p->ccmode != hbar) {
-		unsigned char hBar[p->cellheight];
-		int i;
-
-		if (p->ccmode != standard) {
-			/* Not supported(yet) */
-			report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user defined characters",
-					drvthis->name);
-			return;
-		}
-		p->ccmode = hbar;
-
-		memset(hBar, 0x00, sizeof(hBar));
-
-		for (i = 1; i <= p->cellwidth; i++) {
-			// fill pixel columns from left to right.
-			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar)-1);
-			CFontzPacket_set_char(drvthis, i, hBar);
-		}
-	}
-}
-
-
-/*
  * Draws a vertical bar...
  */
 MODULE_EXPORT void
@@ -942,7 +878,27 @@ CFontzPacket_vbar (Driver *drvthis, int x, int y, int len, int promille, int opt
  */
 	PrivateData *p = drvthis->private_data;
 
-	CFontzPacket_init_vbar(drvthis);
+	if (p->ccmode != vbar) {
+		unsigned char vBar[p->cellheight];
+		int i;
+
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user defined characters",
+					drvthis->name);
+			return;
+		}
+		p->ccmode = vbar;
+
+		memset(vBar, 0x00, sizeof(vBar));
+
+		for (i = 1; i < p->cellheight; i++) {
+			// add pixel line per pixel line ...
+			vBar[p->cellheight - i] = 0xFF;
+			CFontzPacket_set_char(drvthis, i, vBar);
+		}
+	}
+
 	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
 
@@ -961,7 +917,27 @@ CFontzPacket_hbar (Driver *drvthis, int x, int y, int len, int promille, int opt
  */
 	PrivateData *p = drvthis->private_data;
 
-	CFontzPacket_init_hbar(drvthis);
+	if (p->ccmode != hbar) {
+		unsigned char hBar[p->cellheight];
+		int i;
+
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user defined characters",
+					drvthis->name);
+			return;
+		}
+		p->ccmode = hbar;
+
+		memset(hBar, 0x00, sizeof(hBar));
+
+		for (i = 1; i <= p->cellwidth; i++) {
+			// fill pixel columns from left to right.
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar)-1);
+			CFontzPacket_set_char(drvthis, i, hBar);
+		}
+	}
+
 	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }
 
