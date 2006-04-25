@@ -1467,6 +1467,44 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 
 
 /*
+ * * Sets cursor position and state
+ */
+MODULE_EXPORT void 
+CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+
+	if (p->model != 633) {
+		unsigned char cpos[2] = { 0, 0 };
+		
+		/* set cursor state */
+		switch (state) {
+			case CURSOR_OFF:	// no cursor
+				send_onebyte_message(p->fd, CF633_Set_LCD_Cursor_Style, 0);
+				break;
+			case CURSOR_UNDER:	// underline cursor
+				send_onebyte_message(p->fd, CF633_Set_LCD_Cursor_Style, 2);
+				break;
+			case CURSOR_BLOCK:	// inverting blinking block
+				send_onebyte_message(p->fd, CF633_Set_LCD_Cursor_Style, 4);
+				break;
+			case CURSOR_DEFAULT_ON:	// blinking block
+			default:
+				send_onebyte_message(p->fd, CF633_Set_LCD_Cursor_Style, 1);
+				break;
+		}
+
+		/* set cursor position */
+		if ((x > 0) && (x <= p->width))
+			cpos[0] = x - 1;
+		if ((y > 0) && (y <= p->height))
+			cpos[1] = y - 1;
+		send_bytes_message(p->fd, CF633_Set_LCD_Cursor_Position, 2, cpos);
+	}
+}
+
+
+/*
  * Clears the LCD screen
  */
 MODULE_EXPORT void
