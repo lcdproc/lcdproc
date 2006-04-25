@@ -129,6 +129,7 @@ MODULE_EXPORT void IOWarrior_backlight(Driver *drvthis, int on);
 MODULE_EXPORT void IOWarrior_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void IOWarrior_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void IOWarrior_num(Driver *drvthis, int x, int num);
+MODULE_EXPORT int  IOWarrior_get_free_chars(Driver *drvthis);
 MODULE_EXPORT void IOWarrior_set_char(Driver *drvthis, int n, char *dat);
 MODULE_EXPORT int  IOWarrior_icon(Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT void IOWarrior_output(Driver *drvthis, int on);

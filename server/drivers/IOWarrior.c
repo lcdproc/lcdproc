@@ -1021,6 +1021,46 @@ char bignum_map[11][4][3] = {
 
 
 /*********************************************************************
+ * API: set cursor position and state
+ */
+/* not yet tested (needs input)
+ * maybe better: set only variables here and update when flushing
+MODULE_EXPORT void
+IOWarrior_cursor (Driver *drvthis, int x, int y, int state)
+{
+PrivateData *p = drvthis->private_data;
+
+  iowlcd_set_pos(p->udh, x, y);
+
+  switch (state) {
+    case CURSOR_OFF:
+      iowlcd_display_on_off(p->udh, 1, 0, 0);
+      break;
+    case CURSOR_UNDER:
+      iowlcd_display_on_off(p->udh, 1, 1, 0);
+      break;
+    case CURSOR_BLOCK:
+    case CURSOR_DEFAULT_ON:
+    default:
+      iowlcd_display_on_off(p->udh, 1, 1, 1);
+      break;
+  }    
+}
+*/
+
+/*********************************************************************
+ * API: get number of custom chars (always NUM_CCs)
+ */
+MODULE_EXPORT int
+IOWarrior_get_free_chars (Driver *drvthis)
+{
+//PrivateData *p = drvthis->private_data;
+
+  return NUM_CCs;
+}
+
+
+/*********************************************************************
  * API: Sets a custom character from 0 - (NUM_CCs-1)
  *
  * The API only permit setting to off=0 and on<>0

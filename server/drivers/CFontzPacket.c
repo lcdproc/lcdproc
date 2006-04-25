@@ -1262,6 +1262,18 @@ char bignum_map[11][4][3] = {
 
 
 /*
+ * Gets number of custom chars (always NUM_CCs)
+ */
+MODULE_EXPORT int
+CFontzPacket_get_free_chars (Driver *drvthis)
+{
+//PrivateData *p = drvthis->private_data;
+
+  return NUM_CCs;
+}
+
+
+/*
  * Sets a custom character from 0 - (NUM_CCs-1)
  *
  * For input, values > 0 mean "on" and values <= 0 are "off".

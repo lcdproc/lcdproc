@@ -35,7 +35,9 @@ MODULE_EXPORT void CFontzPacket_vbar (Driver *drvthis, int x, int y, int len, in
 MODULE_EXPORT void CFontzPacket_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void CFontzPacket_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  CFontzPacket_icon(Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT void CFontzPacket_cursor (Driver *drvthis, int x, int y, int state);
 
+MODULE_EXPORT int  CFontzPacket_get_free_chars (Driver *drvthis);
 MODULE_EXPORT void CFontzPacket_set_char (Driver *drvthis, int n, char *dat);
 
 MODULE_EXPORT int  CFontzPacket_get_contrast (Driver *drvthis);
