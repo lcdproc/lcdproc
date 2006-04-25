@@ -45,6 +45,27 @@
 #include "report.h"
 #include "lcd_lib.h"
 
+#define  b______	0x00
+#define  b____X_	0x03
+#define  b____XX	0x03
+#define  b___X__	0x04
+#define  b___XX_	0x06
+#define  b__X___	0x08
+#define  b__XX__	0x09
+#define  b__X_X_	0x0A
+#define  b__XXX_	0x0E
+#define  b__XXXX	0x0F
+#define  b_X____	0x10
+#define  b_X___X	0x11
+#define  b_X_X_X	0x15
+#define  b_X_XX_	0x16
+#define  b_XX___	0x18
+#define  b_XX_XX	0x1B
+#define  b_XXX__	0x1C
+#define  b_XXX_X	0x1D
+#define  b_XXXX_	0x1E
+#define  b_XXXXX	0x1F
+
 
 
 /* ===================== IOWarrior low level routines ====================== */
@@ -625,71 +646,10 @@ IOWarrior_init_vbar(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
 
-char a[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1 };
-char b[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
-char c[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
-char d[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
-char e[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
-char f[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
-char g[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
-
   if (p->ccmode != vbar) {
+    unsigned char vBar[CELLHEIGHT];
+    int i;
+
     if (p->ccmode != standard) {
       /* Not supported(yet) */
       report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user defined characters",
@@ -698,13 +658,12 @@ char g[CELLWIDTH*CELLHEIGHT] = {
     }
     p->ccmode = vbar;
 
-    IOWarrior_set_char(drvthis, 1, a);
-    IOWarrior_set_char(drvthis, 2, b);
-    IOWarrior_set_char(drvthis, 3, c);
-    IOWarrior_set_char(drvthis, 4, d);
-    IOWarrior_set_char(drvthis, 5, e);
-    IOWarrior_set_char(drvthis, 6, f);
-    IOWarrior_set_char(drvthis, 7, g);
+    memset(vBar, 0x00, sizeof(vBar));
+
+    for (i = 1; i < 8; i++) {
+      vBar[8-i] = 0xFF;
+      IOWarrior_set_char(drvthis, i, vBar);
+    }
   }
 }
 
@@ -717,53 +676,10 @@ IOWarrior_init_hbar(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
 
-char a[CELLWIDTH*CELLHEIGHT] = {
-  1, 0, 0, 0, 0,
-  1, 0, 0, 0, 0,
-  1, 0, 0, 0, 0,
-  1, 0, 0, 0, 0,
-  1, 0, 0, 0, 0,
-  1, 0, 0, 0, 0,
-  1, 0, 0, 0, 0,
-  1, 0, 0, 0, 0 };
-char b[CELLWIDTH*CELLHEIGHT] = {
-  1, 1, 0, 0, 0,
-  1, 1, 0, 0, 0,
-  1, 1, 0, 0, 0,
-  1, 1, 0, 0, 0,
-  1, 1, 0, 0, 0,
-  1, 1, 0, 0, 0,
-  1, 1, 0, 0, 0,
-  1, 1, 0, 0, 0 };
-char c[CELLWIDTH*CELLHEIGHT] = {
-  1, 1, 1, 0, 0,
-  1, 1, 1, 0, 0,
-  1, 1, 1, 0, 0,
-  1, 1, 1, 0, 0,
-  1, 1, 1, 0, 0,
-  1, 1, 1, 0, 0,
-  1, 1, 1, 0, 0,
-  1, 1, 1, 0, 0 };
-char d[CELLWIDTH*CELLHEIGHT] = {
-  1, 1, 1, 1, 0,
-  1, 1, 1, 1, 0,
-  1, 1, 1, 1, 0,
-  1, 1, 1, 1, 0,
-  1, 1, 1, 1, 0,
-  1, 1, 1, 1, 0,
-  1, 1, 1, 1, 0,
-  1, 1, 1, 1, 0 };
-char e[CELLWIDTH*CELLHEIGHT] = {
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
-
   if (p->ccmode != hbar) {
+    unsigned char hBar[CELLHEIGHT];
+    int i;
+
     if (p->ccmode != standard) {
       /* Not supported(yet) */
       report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user defined characters",
@@ -773,11 +689,10 @@ char e[CELLWIDTH*CELLHEIGHT] = {
 
     p->ccmode = hbar;
 
-    IOWarrior_set_char(drvthis, 1, a);
-    IOWarrior_set_char(drvthis, 2, b);
-    IOWarrior_set_char(drvthis, 3, c);
-    IOWarrior_set_char(drvthis, 4, d);
-    IOWarrior_set_char(drvthis, 5, e);
+    for (i = 1; i <= CELLWIDTH; i++) {
+      memset(hBar, 0xFF & ~((1 << (CELLWIDTH-i)) - 1), sizeof(hBar));
+      IOWarrior_set_char(drvthis, i, hBar);
+    }
   }
 }
 
@@ -831,79 +746,79 @@ static void
 IOWarrior_init_num(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
-
-char bignum_ccs[8][CELLWIDTH*CELLHEIGHT] = {
-  { 1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0 },
-
-  { 0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0 },
-
-  { 1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0 },
-
-  { 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0 },
-
-  { 1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1 },
-
-  { 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1 },
-
-  { 1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0 },
-
-  { 0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0 }
+unsigned char bignum_ccs[8][CELLHEIGHT] = {
+	[0]
+	{ b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b______,
+	  b______,
+	  b______,
+	  b______ },
+	[1]
+	{ b____XX,
+	  b____XX,
+	  b____XX,
+	  b____XX,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___ },
+	[2]
+	{ b_XX_XX,
+	  b_XX_XX,
+	  b_XX_XX,
+	  b_XX_XX,
+	  b______,
+	  b______,
+	  b______,
+	  b______ },
+	[3]
+	{ b______,
+	  b______,
+	  b______,
+	  b______,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___ },
+	[4]
+	{ b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b____XX,
+	  b____XX,
+	  b____XX,
+	  b____XX },
+	[5]
+	{ b______,
+	  b______,
+	  b______,
+	  b______,
+	  b_XX_XX,
+	  b_XX_XX,
+	  b_XX_XX,
+	  b_XX_XX },
+	[6]
+	{ b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___,
+	  b_XX___ },
+	[7]
+	{ b____XX,
+	  b____XX,
+	  b____XX,
+	  b____XX,
+	  b______,
+	  b______,
+	  b______,
+	  b______ }
 };
 
   if (p->ccmode != bignum) {
@@ -1068,7 +983,7 @@ IOWarrior_get_free_chars (Driver *drvthis)
  *  values > 0 mean "on" and values <= 0 are "off".
  */
 MODULE_EXPORT void
-IOWarrior_set_char(Driver *drvthis, int n, char *dat)
+IOWarrior_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
 PrivateData *p = drvthis->private_data;
 
@@ -1081,14 +996,10 @@ int row;
 
   for (row = 0; row < p->cellheight; row++) {
     int letter = 0;
-    int col;
 
-    if (p->lastline || (row < p->cellheight - 1)) {
-      for (col = 0; col < p->cellwidth; col++) {
-        letter <<= 1;
-        letter |= (dat[(row * p->cellwidth) + col] > 0) ? 1 : 0;
-      }
-    }  
+    if (p->lastline || (row < p->cellheight - 1))
+      letter = dat[row] & 0x1F;
+
     if (p->cc[n].cache[row] != letter)
       p->cc[n].clean = 0;	 /* only mark dirty if really different */
     p->cc[n].cache[row] = letter;
@@ -1102,107 +1013,123 @@ int row;
 MODULE_EXPORT int 
 IOWarrior_icon(Driver *drvthis, int x, int y, int icon)
 {
-char heart_open[CELLWIDTH*CELLHEIGHT] = {
-  1, 1, 1, 1, 1,
-  1, 0, 1, 0, 1,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 0, 0, 0, 1,
-  1, 1, 0, 1, 1,
-  1, 1, 1, 1, 1 };
-char heart_filled[CELLWIDTH*CELLHEIGHT] = {
-  1, 1, 1, 1, 1,
-  1, 0, 1, 0, 1,
-  0, 1, 0, 1, 0,
-  0, 1, 1, 1, 0,
-  0, 1, 1, 1, 0,
-  1, 0, 1, 0, 1,
-  1, 1, 0, 1, 1,
-  1, 1, 1, 1, 1 };
-char arrow_up[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 1, 0, 0,
-  0, 1, 1, 1, 0,
-  1, 0, 1, 0, 1,
-  0, 0, 1, 0, 0,
-  0, 0, 1, 0, 0,
-  0, 0, 1, 0, 0,
-  0, 0, 1, 0, 0,
-  0, 0, 0, 0, 0 };
-char arrow_down[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 1, 0, 0,
-  0, 0, 1, 0, 0,
-  0, 0, 1, 0, 0,
-  0, 0, 1, 0, 0,
-  1, 0, 1, 0, 1,
-  0, 1, 1, 1, 0,
-  0, 0, 1, 0, 0,
-  0, 0, 0, 0, 0 };
-char checkbox_off[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1,
-  1, 0, 0, 0, 1,
-  1, 0, 0, 0, 1,
-  1, 0, 0, 0, 1,
-  1, 1, 1, 1, 1,
-  0, 0, 0, 0, 0 };
-char checkbox_on[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 1, 0, 0,
-  0, 0, 1, 0, 0,
-  1, 1, 1, 0, 1,
-  1, 0, 1, 1, 0,
-  1, 0, 1, 0, 1,
-  1, 0, 0, 0, 1,
-  1, 1, 1, 1, 1,
-  0, 0, 0, 0, 0 };
-char checkbox_gray[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1,
-  1, 0, 1, 0, 1,
-  1, 1, 0, 1, 1,
-  1, 0, 1, 0, 1,
-  1, 1, 1, 1, 1,
-  0, 0, 0, 0, 0 };
-char block_filled[CELLWIDTH*CELLHEIGHT] = {
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1 };
-/*
-char selector_left[CELLWIDTH*CELLHEIGHT] = {
-  0, 1, 0, 0, 0,
-  0, 1, 1, 0, 0,
-  0, 1, 1, 1, 0,
-  0, 1, 1, 1, 1,
-  0, 1, 1, 1, 0,
-  0, 1, 1, 0, 0,
-  0, 1, 0, 0, 0,
-  0, 0, 0, 0, 0 };
-char selector_right[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 1, 0,
-  0, 0, 1, 1, 0,
-  0, 1, 1, 1, 0,
-  1, 1, 1, 1, 0,
-  0, 1, 1, 1, 0,
-  0, 0, 1, 1, 0,
-  0, 0, 0, 1, 0,
-  0, 0, 0, 0, 0 };
-char ellipsis[CELLWIDTH*CELLHEIGHT] = {
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0,
-  1, 0, 1, 0, 1,
-  0, 0, 0, 0, 0 };
-*/
+static unsigned char block_filled[] = 
+	{ b_XXXXX,
+	  b_XXXXX,
+	  b_XXXXX,
+	  b_XXXXX,
+	  b_XXXXX,
+	  b_XXXXX,
+	  b_XXXXX,
+	  b_XXXXX };
+static unsigned char heart_open[] = 
+	{ b_XXXXX,
+	  b_X_X_X,
+	  b______,
+	  b______,
+	  b______,
+	  b_X___X,
+	  b_XX_XX,
+	  b_XXXXX };
+static unsigned char heart_filled[] = 
+	{ b_XXXXX,
+	  b_X_X_X,
+	  b__X_X_,
+	  b__XXX_,
+	  b__XXX_,
+	  b_X_X_X,
+	  b_XX_XX,
+	  b_XXXXX };
+static unsigned char arrow_up[] = 
+	{ b___X__,
+	  b__XXX_,
+	  b_X_X_X,
+	  b___X__,
+	  b___X__,
+	  b___X__,
+	  b___X__,
+	  b______ };
+static unsigned char arrow_down[] = 
+	{ b___X__,
+	  b___X__,
+	  b___X__,
+	  b___X__,
+	  b_X_X_X,
+	  b__XXX_,
+	  b___X__,
+	  b______ };
+static unsigned char arrow_left[] = 
+	{ b______,
+	  b___X__,
+	  b__X___,
+	  b_XXXXX,
+	  b__X___,
+	  b___X__,
+	  b______,
+	  b______ };
+static unsigned char arrow_right[] = 
+	{ b______,
+	  b___X__,
+	  b____X_,
+	  b_XXXXX,
+	  b____X_,
+	  b___X__,
+	  b______,
+	  b______ };
+static unsigned char checkbox_off[] = 
+	{ b______,
+	  b______,
+	  b_XXXXX,
+	  b_X___X,
+	  b_X___X,
+	  b_X___X,
+	  b_XXXXX,
+	  b______ };
+static unsigned char checkbox_on[] = 
+	{ b___X__,
+	  b___X__,
+	  b_XXX_X,
+	  b_X_XX_,
+	  b_X_X_X,
+	  b_X___X,
+	  b_XXXXX,
+	  b______ };
+static unsigned char checkbox_gray[] = 
+	{ b______,
+	  b______,
+	  b_XXXXX,
+	  b_X_X_X,
+	  b_XX_XX,
+	  b_X_X_X,
+	  b_XXXXX,
+	  b______ };
+static unsigned char selector_left[] = 
+	{ b__X___,
+	  b__XX__,
+	  b__XXX_,
+	  b__XXXX,
+	  b__XXX_,
+	  b__XX__,
+	  b__X___,
+	  b______ };
+static unsigned char selector_right[] = 
+	{ b____X_,
+	  b___XX_,
+	  b__XXX_,
+	  b_XXXX_,
+	  b__XXX_,
+	  b___XX_,
+	  b____X_,
+	  b______ };
+static unsigned char ellipsis[] = 
+	{ b______,
+	  b______,
+	  b______,
+	  b______,
+	  b______,
+	  b______,
+	  b_X_X_X,
+	  b______ };
 
   /* Yes we know, this is a VERY BAD implementation */
   switch (icon) {
