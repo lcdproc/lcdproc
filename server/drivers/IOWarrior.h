@@ -120,6 +120,8 @@ MODULE_EXPORT char *symbol_prefix = "IOWarrior_";
 MODULE_EXPORT int  IOWarrior_init(Driver *drvthis);
 MODULE_EXPORT void IOWarrior_close(Driver *drvthis);
 MODULE_EXPORT int  IOWarrior_width(Driver *drvthis);
+MODULE_EXPORT int  IOWarrior_cellheight(Driver *drvthis);
+MODULE_EXPORT int  IOWarrior_cellwidth(Driver *drvthis);
 MODULE_EXPORT int  IOWarrior_height(Driver *drvthis);
 MODULE_EXPORT void IOWarrior_clear(Driver *drvthis);
 MODULE_EXPORT void IOWarrior_chr(Driver *drvthis, int x, int y, char c);

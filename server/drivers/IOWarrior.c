@@ -45,26 +45,26 @@
 #include "report.h"
 #include "lcd_lib.h"
 
-#define  b______	0x00
-#define  b____X_	0x03
-#define  b____XX	0x03
-#define  b___X__	0x04
-#define  b___XX_	0x06
-#define  b__X___	0x08
-#define  b__XX__	0x09
-#define  b__X_X_	0x0A
-#define  b__XXX_	0x0E
-#define  b__XXXX	0x0F
-#define  b_X____	0x10
-#define  b_X___X	0x11
-#define  b_X_X_X	0x15
-#define  b_X_XX_	0x16
-#define  b_XX___	0x18
-#define  b_XX_XX	0x1B
-#define  b_XXX__	0x1C
-#define  b_XXX_X	0x1D
-#define  b_XXXX_	0x1E
-#define  b_XXXXX	0x1F
+#define  b_______	0x00
+#define  b_____X_	0x03
+#define  b_____XX	0x03
+#define  b____X__	0x04
+#define  b____XX_	0x06
+#define  b___X___	0x08
+#define  b___XX__	0x09
+#define  b___X_X_	0x0A
+#define  b___XXX_	0x0E
+#define  b___XXXX	0x0F
+#define  b__X____	0x10
+#define  b__X___X	0x11
+#define  b__X_X_X	0x15
+#define  b__X_XX_	0x16
+#define  b__XX___	0x18
+#define  b__XX_XX	0x1B
+#define  b__XXX__	0x1C
+#define  b__XXX_X	0x1D
+#define  b__XXXX_	0x1E
+#define  b__XXXXX	0x1F
 
 
 
@@ -430,6 +430,7 @@ PrivateData *p;
   return 0;
 }
 
+
 /******************************************************
  * API: Clean-up
  */
@@ -466,6 +467,7 @@ PrivateData *p = drvthis->private_data;
   debug(RPT_DEBUG, "%s: closed", drvthis->name);
 }
 
+
 /******************************************************
  * API: Returns the display's width
  */
@@ -479,6 +481,7 @@ PrivateData *p = drvthis->private_data;
   return p->width;
 }
 
+
 /******************************************************
  * API: Returns the display's height
  */
@@ -490,6 +493,34 @@ PrivateData *p = drvthis->private_data;
   debug(RPT_DEBUG, "%s: returning height", drvthis->name);
 
   return p->height;
+}
+
+
+/******************************************************
+ * API: Returns the display's character cell width
+ */
+MODULE_EXPORT int 
+IOWarrior_cellwidth(Driver *drvthis)
+{
+PrivateData *p = drvthis->private_data;
+
+  debug(RPT_DEBUG, "%s: returning cellwidth", drvthis->name);
+
+  return p->cellwidth;
+}
+
+
+/******************************************************
+ * API: Returns the display's character cell height
+ */
+MODULE_EXPORT int 
+IOWarrior_cellheight(Driver *drvthis)
+{
+PrivateData *p = drvthis->private_data;
+
+  debug(RPT_DEBUG, "%s: returning cellheight", drvthis->name);
+
+  return p->cellheight;
 }
 
 
@@ -647,7 +678,7 @@ IOWarrior_init_vbar(Driver *drvthis)
 PrivateData *p = drvthis->private_data;
 
   if (p->ccmode != vbar) {
-    unsigned char vBar[CELLHEIGHT];
+    unsigned char vBar[p->cellheight];
     int i;
 
     if (p->ccmode != standard) {
@@ -660,8 +691,9 @@ PrivateData *p = drvthis->private_data;
 
     memset(vBar, 0x00, sizeof(vBar));
 
-    for (i = 1; i < 8; i++) {
-      vBar[8-i] = 0xFF;
+    for (i = 1; i < p->cellheight; i++) {
+      // add pixel line per pixel line ...
+      vBar[p->cellheight - i] = 0xFF;
       IOWarrior_set_char(drvthis, i, vBar);
     }
   }
@@ -677,7 +709,7 @@ IOWarrior_init_hbar(Driver *drvthis)
 PrivateData *p = drvthis->private_data;
 
   if (p->ccmode != hbar) {
-    unsigned char hBar[CELLHEIGHT];
+    unsigned char hBar[p->cellheight];
     int i;
 
     if (p->ccmode != standard) {
@@ -689,8 +721,9 @@ PrivateData *p = drvthis->private_data;
 
     p->ccmode = hbar;
 
-    for (i = 1; i <= CELLWIDTH; i++) {
-      memset(hBar, 0xFF & ~((1 << (CELLWIDTH-i)) - 1), sizeof(hBar));
+    for (i = 1; i <= p->cellwidth; i++) {
+      // fill pixel columns from left to right.
+      memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
       IOWarrior_set_char(drvthis, i, hBar);
     }
   }
@@ -746,79 +779,80 @@ static void
 IOWarrior_init_num(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
+
 unsigned char bignum_ccs[8][CELLHEIGHT] = {
 	[0]
-	{ b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b______,
-	  b______,
-	  b______,
-	  b______ },
+	{ b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______ },
 	[1]
-	{ b____XX,
-	  b____XX,
-	  b____XX,
-	  b____XX,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___ },
+	{ b_____XX,
+	  b_____XX,
+	  b_____XX,
+	  b_____XX,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___ },
 	[2]
-	{ b_XX_XX,
-	  b_XX_XX,
-	  b_XX_XX,
-	  b_XX_XX,
-	  b______,
-	  b______,
-	  b______,
-	  b______ },
+	{ b__XX_XX,
+	  b__XX_XX,
+	  b__XX_XX,
+	  b__XX_XX,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______ },
 	[3]
-	{ b______,
-	  b______,
-	  b______,
-	  b______,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___ },
+	{ b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___ },
 	[4]
-	{ b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b____XX,
-	  b____XX,
-	  b____XX,
-	  b____XX },
+	{ b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b_____XX,
+	  b_____XX,
+	  b_____XX,
+	  b_____XX },
 	[5]
-	{ b______,
-	  b______,
-	  b______,
-	  b______,
-	  b_XX_XX,
-	  b_XX_XX,
-	  b_XX_XX,
-	  b_XX_XX },
+	{ b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b__XX_XX,
+	  b__XX_XX,
+	  b__XX_XX,
+	  b__XX_XX },
 	[6]
-	{ b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___,
-	  b_XX___ },
+	{ b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___,
+	  b__XX___ },
 	[7]
-	{ b____XX,
-	  b____XX,
-	  b____XX,
-	  b____XX,
-	  b______,
-	  b______,
-	  b______,
-	  b______ }
+	{ b_____XX,
+	  b_____XX,
+	  b_____XX,
+	  b_____XX,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______ }
 };
 
   if (p->ccmode != bignum) {
@@ -986,7 +1020,7 @@ MODULE_EXPORT void
 IOWarrior_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
 PrivateData *p = drvthis->private_data;
-
+unsigned char mask = (1 << p->cellwidth) - 1;
 int row;
 
   if ((n < 0) || (n >= NUM_CCs))
@@ -998,7 +1032,7 @@ int row;
     int letter = 0;
 
     if (p->lastline || (row < p->cellheight - 1))
-      letter = dat[row] & 0x1F;
+      letter = dat[row] & mask;	
 
     if (p->cc[n].cache[row] != letter)
       p->cc[n].clean = 0;	 /* only mark dirty if really different */
@@ -1013,123 +1047,127 @@ int row;
 MODULE_EXPORT int 
 IOWarrior_icon(Driver *drvthis, int x, int y, int icon)
 {
-static unsigned char block_filled[] = 
-	{ b_XXXXX,
-	  b_XXXXX,
-	  b_XXXXX,
-	  b_XXXXX,
-	  b_XXXXX,
-	  b_XXXXX,
-	  b_XXXXX,
-	  b_XXXXX };
 static unsigned char heart_open[] = 
-	{ b_XXXXX,
-	  b_X_X_X,
-	  b______,
-	  b______,
-	  b______,
-	  b_X___X,
-	  b_XX_XX,
-	  b_XXXXX };
+	{ b__XXXXX,
+	  b__X_X_X,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b__X___X,
+	  b__XX_XX,
+	  b__XXXXX };
 static unsigned char heart_filled[] = 
-	{ b_XXXXX,
-	  b_X_X_X,
-	  b__X_X_,
-	  b__XXX_,
-	  b__XXX_,
-	  b_X_X_X,
-	  b_XX_XX,
-	  b_XXXXX };
+	{ b__XXXXX,
+	  b__X_X_X,
+	  b___X_X_,
+	  b___XXX_,
+	  b___XXX_,
+	  b__X_X_X,
+	  b__XX_XX,
+	  b__XXXXX };
 static unsigned char arrow_up[] = 
-	{ b___X__,
-	  b__XXX_,
-	  b_X_X_X,
-	  b___X__,
-	  b___X__,
-	  b___X__,
-	  b___X__,
-	  b______ };
+	{ b____X__,
+	  b___XXX_,
+	  b__X_X_X,
+	  b____X__,
+	  b____X__,
+	  b____X__,
+	  b____X__,
+	  b_______ };
 static unsigned char arrow_down[] = 
-	{ b___X__,
-	  b___X__,
-	  b___X__,
-	  b___X__,
-	  b_X_X_X,
-	  b__XXX_,
-	  b___X__,
-	  b______ };
+	{ b____X__,
+	  b____X__,
+	  b____X__,
+	  b____X__,
+	  b__X_X_X,
+	  b___XXX_,
+	  b____X__,
+	  b_______ };
+/*
 static unsigned char arrow_left[] = 
-	{ b______,
-	  b___X__,
-	  b__X___,
-	  b_XXXXX,
-	  b__X___,
-	  b___X__,
-	  b______,
-	  b______ };
+	{ b_______,
+	  b____X__,
+	  b___X___,
+	  b__XXXXX,
+	  b___X___,
+	  b____X__,
+	  b_______,
+	  b_______ };
 static unsigned char arrow_right[] = 
-	{ b______,
-	  b___X__,
-	  b____X_,
-	  b_XXXXX,
-	  b____X_,
-	  b___X__,
-	  b______,
-	  b______ };
+	{ b_______,
+	  b____X__,
+	  b_____X_,
+	  b__XXXXX,
+	  b_____X_,
+	  b____X__,
+	  b_______,
+	  b_______ };
+*/
 static unsigned char checkbox_off[] = 
-	{ b______,
-	  b______,
-	  b_XXXXX,
-	  b_X___X,
-	  b_X___X,
-	  b_X___X,
-	  b_XXXXX,
-	  b______ };
+	{ b_______,
+	  b_______,
+	  b__XXXXX,
+	  b__X___X,
+	  b__X___X,
+	  b__X___X,
+	  b__XXXXX,
+	  b_______ };
 static unsigned char checkbox_on[] = 
-	{ b___X__,
-	  b___X__,
-	  b_XXX_X,
-	  b_X_XX_,
-	  b_X_X_X,
-	  b_X___X,
-	  b_XXXXX,
-	  b______ };
+	{ b____X__,
+	  b____X__,
+	  b__XXX_X,
+	  b__X_XX_,
+	  b__X_X_X,
+	  b__X___X,
+	  b__XXXXX,
+	  b_______ };
 static unsigned char checkbox_gray[] = 
-	{ b______,
-	  b______,
-	  b_XXXXX,
-	  b_X_X_X,
-	  b_XX_XX,
-	  b_X_X_X,
-	  b_XXXXX,
-	  b______ };
+	{ b_______,
+	  b_______,
+	  b__XXXXX,
+	  b__X_X_X,
+	  b__XX_XX,
+	  b__X_X_X,
+	  b__XXXXX,
+	  b_______ };
+/*
 static unsigned char selector_left[] = 
-	{ b__X___,
-	  b__XX__,
-	  b__XXX_,
-	  b__XXXX,
-	  b__XXX_,
-	  b__XX__,
-	  b__X___,
-	  b______ };
+	{ b___X___,
+	  b___XX__,
+	  b___XXX_,
+	  b___XXXX,
+	  b___XXX_,
+	  b___XX__,
+	  b___X___,
+	  b_______ };
 static unsigned char selector_right[] = 
-	{ b____X_,
-	  b___XX_,
-	  b__XXX_,
-	  b_XXXX_,
-	  b__XXX_,
-	  b___XX_,
-	  b____X_,
-	  b______ };
+	{ b_____X_,
+	  b____XX_,
+	  b___XXX_,
+	  b__XXXX_,
+	  b___XXX_,
+	  b____XX_,
+	  b_____X_,
+	  b_______ };
 static unsigned char ellipsis[] = 
-	{ b______,
-	  b______,
-	  b______,
-	  b______,
-	  b______,
-	  b______,
-	  b_X_X_X,
-	  b______ };
+	{ b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b__X_X_X,
+	  b_______ };
+*/	  
+static unsigned char block_filled[] = 
+	{ b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX };
 
   /* Yes we know, this is a VERY BAD implementation */
   switch (icon) {
