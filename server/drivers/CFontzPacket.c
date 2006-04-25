@@ -76,6 +76,31 @@
 #include "lcd_lib.h"
 #include "CFontz-charmap.h"
 
+#define  b_______	0x00
+#define  b_____X_	0x03
+#define  b_____XX	0x03
+#define  b____X__	0x04
+#define  b____XX_	0x06
+#define  b____XXX	0x07
+#define  b___X___	0x08
+#define  b___XX__	0x09
+#define  b___X_X_	0x0A
+#define  b___XXX_	0x0E
+#define  b___XXXX	0x0F
+#define  b__X____	0x10
+#define  b__X___X	0x11
+#define  b__X_X_X	0x15
+#define  b__X_XX_	0x16
+#define  b__XX___	0x18
+#define  b__XX_XX	0x1B
+#define  b__XXX__	0x1C
+#define  b__XXX_X	0x1D
+#define  b__XXXX_	0x1E
+#define  b__XXXXX	0x1F
+#define  b_XXX___       0x38
+#define  b_XXXXXX       0x3F
+
+
 #define CFP_KEY_UP		1
 #define CFP_KEY_DOWN		2
 #define CFP_KEY_LEFT		3
@@ -848,78 +873,11 @@ static void
 CFontzPacket_init_vbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-	};
-	char b[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char c[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char d[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char e[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char f[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char g[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
 
 	if (p->ccmode != vbar) {
+		unsigned char vBar[p->cellheight];
+		int i;
+
 		if (p->ccmode != standard) {
 			/* Not supported(yet) */
 			report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user defined characters",
@@ -928,13 +886,13 @@ CFontzPacket_init_vbar (Driver *drvthis)
 		}
 		p->ccmode = vbar;
 
-		CFontzPacket_set_char(drvthis, 1, a);
-		CFontzPacket_set_char(drvthis, 2, b);
-		CFontzPacket_set_char(drvthis, 3, c);
-		CFontzPacket_set_char(drvthis, 4, d);
-		CFontzPacket_set_char(drvthis, 5, e);
-		CFontzPacket_set_char(drvthis, 6, f);
-		CFontzPacket_set_char(drvthis, 7, g);
+		memset(vBar, 0x00, sizeof(vBar));
+
+		for (i = 1; i < p->cellheight; i++) {
+			// add pixel line per pixel line ...
+			vBar[p->cellheight - i] = 0xFF;
+			CFontzPacket_set_char(drvthis, i, vBar);
+		}
 	}
 }
 
@@ -946,68 +904,11 @@ static void
 CFontzPacket_init_hbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-	};
-	char b[] = {
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-	};
-	char c[] = {
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-	};
-	char d[] = {
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-	};
-	char e[] = {
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-	};
-	char f[] = {
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-	};
 
 	if (p->ccmode != hbar) {
+		unsigned char hBar[p->cellheight];
+		int i;
+
 		if (p->ccmode != standard) {
 			/* Not supported(yet) */
 			report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user defined characters",
@@ -1016,12 +917,13 @@ CFontzPacket_init_hbar (Driver *drvthis)
 		}
 		p->ccmode = hbar;
 
-		CFontzPacket_set_char(drvthis, 1, a);
-		CFontzPacket_set_char(drvthis, 2, b);
-		CFontzPacket_set_char(drvthis, 3, c);
-		CFontzPacket_set_char(drvthis, 4, d);
-		CFontzPacket_set_char(drvthis, 5, e);
-		CFontzPacket_set_char(drvthis, 6, f);
+		memset(hBar, 0x00, sizeof(hBar));
+
+		for (i = 1; i <= p->cellwidth; i++) {
+			// fill pixel columns from left to right.
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar)-1);
+			CFontzPacket_set_char(drvthis, i, hBar);
+		}
 	}
 }
 
@@ -1072,78 +974,79 @@ CFontzPacket_init_num(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
 
-char bignum_ccs[8][CELLWIDTH*CELLHEIGHT] = {
-  { 1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0 },
-
-  { 0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0 },
-
-  { 1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0 },
-
-  { 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0 },
-
-  { 1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1 },
-
-  { 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1, 1 },
-
-  { 1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0,
-    1, 1, 1, 0, 0, 0 },
-
-  { 0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1,
-    0, 0, 0, 1, 1, 1,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0 }
+unsigned char bignum_ccs[8][CELLHEIGHT] = {
+	[0]
+	{ b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______ },
+	[1]
+	{ b____XXX,
+	  b____XXX,
+	  b____XXX,
+	  b____XXX,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___ },
+	[2]
+	{ b_XXXXXX,
+	  b_XXXXXX,
+	  b_XXXXXX,
+	  b_XXXXXX,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______ },
+	[3]
+	{ b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___ },
+	[4]
+	{ b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b____XXX,
+	  b____XXX,
+	  b____XXX,
+	  b____XXX },
+	[5]
+	{ b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_XXXXXX,
+	  b_XXXXXX,
+	  b_XXXXXX,
+	  b_XXXXXX },
+	[6]
+	{ b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___,
+	  b_XXX___ },
+	[7]
+	{ b____XXX,
+	  b____XXX,
+	  b____XXX,
+	  b____XXX,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______ }
 };
 
 	if (p->ccmode != bignum) {
@@ -1281,11 +1184,12 @@ CFontzPacket_get_free_chars (Driver *drvthis)
  * The input is just an array of characters...
  */
 MODULE_EXPORT void
-CFontzPacket_set_char (Driver *drvthis, int n, char *dat)
+CFontzPacket_set_char (Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char out[9];
-	int row, col;
+	unsigned char mask = (1 << p->cellwidth) - 1;
+	int row;
 
 	if ((n < 0) || (n >= NUM_CCs))
 		return;
@@ -1295,13 +1199,7 @@ CFontzPacket_set_char (Driver *drvthis, int n, char *dat)
 	out[0] = n;	/* Custom char to define. xxx */
 
 	for (row = 0; row < p->cellheight; row++) {
-		int letter = 0;
-
-		for (col = 0; col < p->cellwidth; col++) {
-			letter <<= 1;
-			letter |= (dat[(row * p->cellwidth) + col] > 0);
-		}
-		out[row+1] = letter;
+		out[row+1] = dat[row] & mask;
 	}
 	send_bytes_message(p->fd, CF633_Set_LCD_Special_Character_Data, 9, out);
 }
@@ -1314,96 +1212,128 @@ MODULE_EXPORT int
 CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
-	char icons[8][6 * 8] = {
-	/* Empty Heart */
-		{
-		 0, 1, 1, 1, 1, 1,
-		 0, 1, 0, 1, 0, 1,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 1, 0, 0, 0, 1,
-		 0, 1, 1, 0, 1, 1,
-		 0, 1, 1, 1, 1, 1,
-		 },
-	/* Filled Heart */
-		{
-		 0, 1, 1, 1, 1, 1,
-		 0, 1, 0, 1, 0, 1,
-		 0, 0, 1, 0, 1, 0,
-		 0, 0, 1, 1, 1, 0,
-		 0, 0, 1, 1, 1, 0,
-		 0, 1, 0, 1, 0, 1,
-		 0, 1, 1, 0, 1, 1,
-		 0, 1, 1, 1, 1, 1,
-		 },
-	/* arrow_up */
-		{
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 1, 1, 1, 0,
-		 0, 1, 0, 1, 0, 1,
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 },
-	/* arrow_down */
-		{
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 1, 0, 0,
-		 0, 1, 0, 1, 0, 1,
-		 0, 0, 1, 1, 1, 0,
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 },
-	/* checkbox_off */
-		{
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 1, 1, 1, 1, 1,
-		 0, 1, 0, 0, 0, 1,
-		 0, 1, 0, 0, 0, 1,
-		 0, 1, 0, 0, 0, 1,
-		 0, 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0, 0,
-		 },
-	/* checkbox_on */
-		{
-		 0, 0, 0, 1, 0, 0,
-		 0, 0, 0, 1, 0, 0,
-		 0, 1, 1, 1, 0, 1,
-		 0, 1, 0, 1, 1, 0,
-		 0, 1, 0, 1, 0, 1,
-		 0, 1, 0, 0, 0, 1,
-		 0, 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0, 0,
-		 },
-	/* checkbox_gray */
-		{
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 1, 1, 1, 1, 1,
-		 0, 1, 0, 1, 0, 1,
-		 0, 1, 1, 0, 1, 1,
-		 0, 1, 0, 1, 0, 1,
-		 0, 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0, 0,
-		 },
-	 /* Ellipsis */
-		{
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 1, 0, 1, 0, 1,
-		 },
-	};
+
+static unsigned char heart_open[] = 
+	{ b__XXXXX,
+	  b__X_X_X,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b__X___X,
+	  b__XX_XX,
+	  b__XXXXX };
+static unsigned char heart_filled[] = 
+	{ b__XXXXX,
+	  b__X_X_X,
+	  b___X_X_,
+	  b___XXX_,
+	  b___XXX_,
+	  b__X_X_X,
+	  b__XX_XX,
+	  b__XXXXX };
+static unsigned char arrow_up[] = 
+	{ b____X__,
+	  b___XXX_,
+	  b__X_X_X,
+	  b____X__,
+	  b____X__,
+	  b____X__,
+	  b____X__,
+	  b_______ };
+static unsigned char arrow_down[] = 
+	{ b____X__,
+	  b____X__,
+	  b____X__,
+	  b____X__,
+	  b__X_X_X,
+	  b___XXX_,
+	  b____X__,
+	  b_______ };
+/*
+static unsigned char arrow_left[] = 
+	{ b_______,
+	  b____X__,
+	  b___X___,
+	  b__XXXXX,
+	  b___X___,
+	  b____X__,
+	  b_______,
+	  b_______ };
+static unsigned char arrow_right[] = 
+	{ b_______,
+	  b____X__,
+	  b_____X_,
+	  b__XXXXX,
+	  b_____X_,
+	  b____X__,
+	  b_______,
+	  b_______ };
+*/
+static unsigned char checkbox_off[] = 
+	{ b_______,
+	  b_______,
+	  b__XXXXX,
+	  b__X___X,
+	  b__X___X,
+	  b__X___X,
+	  b__XXXXX,
+	  b_______ };
+static unsigned char checkbox_on[] = 
+	{ b____X__,
+	  b____X__,
+	  b__XXX_X,
+	  b__X_XX_,
+	  b__X_X_X,
+	  b__X___X,
+	  b__XXXXX,
+	  b_______ };
+static unsigned char checkbox_gray[] = 
+	{ b_______,
+	  b_______,
+	  b__XXXXX,
+	  b__X_X_X,
+	  b__XX_XX,
+	  b__X_X_X,
+	  b__XXXXX,
+	  b_______ };
+/*
+static unsigned char selector_left[] = 
+	{ b___X___,
+	  b___XX__,
+	  b___XXX_,
+	  b___XXXX,
+	  b___XXX_,
+	  b___XX__,
+	  b___X___,
+	  b_______ };
+static unsigned char selector_right[] = 
+	{ b_____X_,
+	  b____XX_,
+	  b___XXX_,
+	  b__XXXX_,
+	  b___XXX_,
+	  b____XX_,
+	  b_____X_,
+	  b_______ };
+static unsigned char ellipsis[] = 
+	{ b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b_______,
+	  b__X_X_X,
+	  b_______ };
+static unsigned char block_filled[] = 
+	{ b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX,
+	  b__XXXXX };
+*/
 
 	/* Yes we know, this is a VERY BAD implementation :-) */
 	switch (icon) {
@@ -1414,16 +1344,16 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 				CFontzPacket_raw_chr(drvthis, x, y, 31);
 			break;
 		case ICON_HEART_FILLED:
-			CFontzPacket_set_char(drvthis, 0, icons[1]);
+			CFontzPacket_set_char(drvthis, 0, heart_filled);
 			CFontzPacket_chr(drvthis, x, y, 0);
 			break;
 		case ICON_HEART_OPEN:
-			CFontzPacket_set_char(drvthis, 0, icons[0]);
+			CFontzPacket_set_char(drvthis, 0, heart_open);
 			CFontzPacket_chr(drvthis, x, y, 0);
 			break;
 		case ICON_ARROW_UP:
 			if (p->model == 633) {
-				CFontzPacket_set_char(drvthis, 1, icons[2]);
+				CFontzPacket_set_char(drvthis, 1, arrow_up);
 				CFontzPacket_chr(drvthis, x, y, 1);
 			}
 			else
@@ -1431,7 +1361,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 			break;
 		case ICON_ARROW_DOWN:
 			if (p->model == 633) {
-				CFontzPacket_set_char(drvthis, 2, icons[3]);
+				CFontzPacket_set_char(drvthis, 2, arrow_down);
 				CFontzPacket_chr(drvthis, x, y, 2);
 			}
 			else
@@ -1450,15 +1380,15 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 				CFontzPacket_raw_chr(drvthis, x, y, 0xDF);
 			break;
 		case ICON_CHECKBOX_OFF:
-			CFontzPacket_set_char(drvthis, 3, icons[4]);
+			CFontzPacket_set_char(drvthis, 3, checkbox_off);
 			CFontzPacket_chr(drvthis, x, y, 3);
 			break;
 		case ICON_CHECKBOX_ON:
-			CFontzPacket_set_char(drvthis, 4, icons[5]);
+			CFontzPacket_set_char(drvthis, 4, checkbox_on);
 			CFontzPacket_chr(drvthis, x, y, 4);
 			break;
 		case ICON_CHECKBOX_GRAY:
-			CFontzPacket_set_char(drvthis, 5, icons[6]);
+			CFontzPacket_set_char(drvthis, 5, checkbox_gray);
 			CFontzPacket_chr(drvthis, x, y, 5);
 			break;
 		case ICON_SELECTOR_AT_LEFT:
