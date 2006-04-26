@@ -33,7 +33,7 @@ config.status: configure
 	       --build=$(DEB_BUILD_GNU_TYPE) \
 	       --prefix=/usr \
 	       --mandir=\$${prefix}/share/man \
-	       --sysconfdir=/etc \
+	       --sysconfdir=/etc/lcdproc \
 	       --enable-stat-nfs \
 	       --enable-stat-smbfs \
 	       --enable-lcdproc-menus \
