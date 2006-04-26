@@ -26,7 +26,7 @@ IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
 hd44780_CFLAGS =     @libusb_cflags@ $(AM_CFLAGS)
 
 CFontz_LDADD =       libLCD.a
-CFontz633_LDADD =    libLCD.a
+CFontz633_LDADD =    libLCD.a libbignum.a
 CFontzPacket_LDADD = libLCD.a libbignum.a
 curses_LDADD =       @LIBCURSES@
 CwLnx_LDADD =        libLCD.a
@@ -55,7 +55,7 @@ libbignum_a_SOURCES = adv_bignum.h  adv_bignum.c
 
 bayrad_SOURCES =     lcd.h lcd_lib.h bayrad.h bayrad.c report.h
 CFontz_SOURCES =     lcd.h lcd_lib.h CFontz.c CFontz.h CFontz-charmap.h report.h
-CFontz633_SOURCES =  lcd.h lcd_lib.h CFontz633.c CFontz633.h CFontz-charmap.h CFontz633io.c CFontz633io.h report.h
+CFontz633_SOURCES =  lcd.h lcd_lib.h CFontz633.c CFontz633.h CFontz-charmap.h CFontz633io.c CFontz633io.h report.h adv_bignum.h
 CFontzPacket_SOURCES = lcd.h lcd_lib.h CFontzPacket.c CFontzPacket.h CFontz-charmap.h CFontz633io.c CFontz633io.h report.h adv_bignum.h
 curses_SOURCES =     lcd.h curses_drv.h curses_drv.c report.h
 CwLnx_SOURCES =      lcd.h lcd_lib.h CwLnx.c CwLnx.h report.h
