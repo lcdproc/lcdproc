@@ -409,6 +409,26 @@ HD44780_height (Driver *drvthis)
 }
 
 /////////////////////////////////////////////////////////////////
+// Returns the display's character cell width
+//
+MODULE_EXPORT int
+HD44780_cellwidth (Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	return p->cellwidth;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display's character cell height
+//
+MODULE_EXPORT int
+HD44780_cellheight (Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	return p->cellheight;
+}
+
+/////////////////////////////////////////////////////////////////
 // Set position (not part of API)
 //
 // x and y here are for the virtual p->height x p->width display

@@ -22,6 +22,8 @@ MODULE_EXPORT int  HD44780_init (Driver *drvthis);
 MODULE_EXPORT void HD44780_close (Driver *drvthis);
 MODULE_EXPORT int  HD44780_width (Driver *drvthis);
 MODULE_EXPORT int  HD44780_height (Driver *drvthis);
+MODULE_EXPORT int  HD44780_cellwidth (Driver *drvthis);
+MODULE_EXPORT int  HD44780_cellheight (Driver *drvthis);
 MODULE_EXPORT void HD44780_clear (Driver *drvthis);
 MODULE_EXPORT void HD44780_flush (Driver *drvthis);
 MODULE_EXPORT void HD44780_string (Driver *drvthis, int x, int y, char *s);
