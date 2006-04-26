@@ -29,11 +29,19 @@
 
 /* Constants for userdefchar_mode */
 #define NUM_CCs 8 /* number of custom characters */
-#define CCMODE_STANDARD 0 /* only char 0 is used for heartbeat */
-#define CCMODE_VBAR 1
-#define CCMODE_HBAR 2
-#define CCMODE_BIGNUM 3
-#define CCMODE_BIGCHAR 4
+
+typedef enum {
+	standard,	/* only char 0 is used for heartbeat */
+	vbar,		/* vertical bars */
+	hbar,		/* horizontaln bars */
+	bignum,		/* big numbers */
+	bigchar		/* big characters */
+} CGmode;
+ 
+typedef struct cgram_cache {
+	unsigned char cache[LCD_DEFAULT_CELLHEIGHT];
+	int clean;
+} CGram;
 
 typedef struct ConnectionMapping {
 	char *name;
@@ -57,8 +65,8 @@ typedef struct driver_private_data {
 	char *lcd_contents;
 
 	// The defineable characters
-	char *cc_buf;
-	char *cc_dirty;
+	CGram cc[NUM_CCs];
+	CGmode ccmode;
 
 	// Connection type data
 	int connectiontype_index;
@@ -106,9 +114,6 @@ typedef struct driver_private_data {
 	int backlight_bit;
 
 	int output_state;	// what was most recently output to the output port
-
-	int ccmode;
-
 } PrivateData;
 
 // Structures holding pointers to HD44780 specific functions

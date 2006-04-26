@@ -34,7 +34,7 @@ MODULE_EXPORT void HD44780_hbar (Driver *drvthis, int x, int y, int len, int pro
 MODULE_EXPORT void HD44780_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  HD44780_icon (Driver *drvthis, int x, int y, int icon);
 
-MODULE_EXPORT void HD44780_set_char (Driver *drvthis, int n, char *dat);
+MODULE_EXPORT void HD44780_set_char (Driver *drvthis, int n, unsigned char *dat);
 
 MODULE_EXPORT void HD44780_backlight (Driver *drvthis, int on);
 MODULE_EXPORT void HD44780_output (Driver *drvthis, int state);
