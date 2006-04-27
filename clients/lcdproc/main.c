@@ -32,6 +32,7 @@
 #include "load.h"
 #include "mem.h"
 #include "machine.h"
+#include "iface.h"
 
 // TODO: Commenting...  Everything!
 
@@ -82,6 +83,7 @@ mode sequence[] =
 	// flags default ACTIVE will run by default
 	// longname    which on  off inv  timer   flags  
 	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen        },	// [C]PU
+	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen      }, 	// [I]face
 	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen        },	// [M]emory
 	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen      },	// [L]oad (load histogram)
 	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen       },	// [T]ime/Date
@@ -105,7 +107,7 @@ static int islow = -1;
 char * progname = "lcdproc";
 char * server 	= NULL;
 int port	= LCDPORT;
-int daemonize 	= UNSET_INT;
+int foreground 	= UNSET_INT;
 static int report_level = UNSET_INT;
 static int report_dest 	= UNSET_INT;
 char configfile[256];		/* a lot of space in the executable. */
@@ -217,7 +219,7 @@ main(int argc, char **argv)
 	lcd_cellwid = 5;
 	lcd_cellhgt = 8;
 
-	if (daemonize) {
+	if (foreground == 0) {
 		if (daemon(1,0) != 0) {
 			fprintf(stderr, "Error: daemonize failed");
 			return(EXIT_FAILURE);
@@ -247,7 +249,7 @@ process_command_line(int argc, char **argv)
 	opterr = 0;
 
 	/* get options */
-	while ((c = getopt( argc, argv, "s:p:e:c:dhv")) > 0) {
+	while ((c = getopt( argc, argv, "s:p:e:c:fhv")) > 0) {
 		switch (c) {
 			// c is for config file
 			case 'c':
@@ -272,8 +274,8 @@ process_command_line(int argc, char **argv)
 			case 'e':
 				islow = atoi(optarg);
 				break;
-			case 'd':
-				daemonize = TRUE;
+			case 'f':
+				foreground = TRUE;
 				break;
 			case 'h':
 				HelpScreen(EXIT_SUCCESS);
@@ -341,8 +343,8 @@ process_configfile(char *configfile)
 			report_dest = RPT_DEST_STDERR;
 		}
 	}
-	if (daemonize == UNSET_INT) {
-		daemonize = config_get_bool(progname, "Daemonize", 0, 1);
+	if (foreground == UNSET_INT) {
+		foreground = config_get_bool(progname, "Foreground", 0, 0);
 	}
 	if (islow < 0) {
 		islow = config_get_int(progname, "delay", 0, -1);
@@ -374,7 +376,7 @@ HelpScreen (int exit_state)
 		"  where <options> are\n"
 		"    -s <host>               connect to LCDd daemon on <host>\n"
 		"    -p <port>               connect to LCDd daemon using <port>\n"
-		"    -d                      daemonize\n"
+		"    -f                      run in foreground\n"
 		"    -e <delay>              slow down initial announcement of modes (in 1/100s)\n"
 		"    -c <config>             use a configuration file other than %s\n"
 		"    -h                      show this help screen\n"
@@ -387,6 +389,7 @@ HelpScreen (int exit_state)
 		"    M Memory                memory & swap usage\n"
 		"    S ProcSize              biggest processes size\n"
 		"    D Disk                  disk usage\n"
+		"    I Iface                 network interface usage\n"
 		"    B Battery               battery status\n"
 		"    T TimeDate              time & date information\n"
 		"    O OldTime               old time screen\n"
@@ -415,6 +418,7 @@ exit_program(int val)
 	exit(val);
 }
 
+#define LCDPROC_MENUS
 #ifdef LCDPROC_MENUS
 int
 menus_init ()
