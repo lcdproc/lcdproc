@@ -293,11 +293,11 @@ process_command_line(int argc, char **argv)
 	/* parse arguments */
 	if (argc > optind)		//user specified some modes, so clear all defaults
 		clear_modes();
-	
+
 	for (i = max(optind, 1); i < argc; i++) {
 		int shortname = (strlen(argv[i]) == 1) ? toupper(argv[i][0]) : '\0';
 		int found = set_mode(shortname, argv[i], 1);
-		
+
 		if (!found) {
 			fprintf(stderr, "Invalid Mode: %c\n", argv[i][0]);
 			return(EXIT_FAILURE);
@@ -491,7 +491,7 @@ main_loop()
 			//for (i=0; i<argc; i++) argv[i]=NULL; // Get rid of old tokens
 			argc = 0;
 			newtoken = 1;
-			
+
 			for (i = 0; i < len; i++) {
 				switch (buf[i]) {
 					case ' ':

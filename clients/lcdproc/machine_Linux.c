@@ -499,7 +499,7 @@ int machine_get_smpload(load_type *result, int *numcpus)
 int machine_get_uptime(double *up, double *idle)
 {
 	double local_up, local_idle;
-	
+
 	reread(uptime_fd, "get_uptime:");
 	sscanf(procbuf, "%lf %lf", &local_up, &local_idle);
 	if (up != NULL)

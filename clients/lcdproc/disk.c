@@ -101,7 +101,7 @@ disk_screen (int rep, int display, int *flags_ptr)
 		sock_send_string (sock, "widget_set D err2 1 3 {Filesystem Stats}\n");
 		return 0;
 	}
-	
+
 	// Display stuff...  (show for two seconds, then scroll once per
 	//  second, then hold at the end for two seconds)
 	sprintf (buffer, "widget_set D f 1 2 %i %i %i %i v 12\n", lcd_wid, lcd_hgt, lcd_wid, count);
@@ -111,7 +111,7 @@ disk_screen (int rep, int display, int *flags_ptr)
 	for (i = 0; i < count; i++) {
 		if (table[i].dev[0] == '\0')
 			continue;
-		
+
 		if (i >= num_disks) {			// Make sure we have enough lines...
 			sprintf (tmp, "widget_add D s%i string -in f\n", i);
 			sock_send_string (sock, tmp);

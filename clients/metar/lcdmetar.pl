@@ -197,14 +197,14 @@ while (1) {
 
 	    # Sanity check
 		die "METAR is too short! Something went wrong." if (length($metar)<1);
-	
+
 	    # pass the data to the METAR module.
 	    # print("$metar\n");
 	    $m->metar($metar);
 
 	    # ask for the temperature(s)
 	    my $temp; my $temp_u; my $dew; my $dew_u; my $wind; my $wind_u; my $wind_dir;
-	    
+
 	    if ($datasystem eq "nautical") {
 	    	$temp = $m->C_TEMP;
 	    	$temp_u = "C";
@@ -231,18 +231,18 @@ while (1) {
 	    	$wind_u = "km/h";
 	    	$wind_dir = $m->WIND_DIR_ENG;
 	    }
-	    
+
 	    my $metartime = $m->TIME;
 	    my $sky = $m->SKY;
 	    my $visibility = $m->VISIBILITY;
-	    
+
 	    print $remote sprintf("widget_set metar title {Weather %s %s}\n", $site_code, $metartime);
 	    print $remote sprintf("widget_set metar temp 1 2 {Temp %i%s (%i%s Dew)}\n", $temp, $temp_u, $dew, $dew_u) if ($temp and $dew);
 	    print $remote sprintf("widget_set metar wind 1 3 {Wind %i%s, %s}\n", $wind, $wind_u, $wind_dir) if ($wind_dir and $wind);
 	    print $remote sprintf("widget_set metar visib 1 %i %i %i h 3 {Visibility %s}\n", $lcdheight, $lcdwidth, $lcdheight, $visibility ) if ($visibility);
 	    print $remote sprintf("widget_set metar cloud 1 4 {Sky %s}\n", join(',', @{$m->{sky}}) ) if ($m->{sky} and ($lcdheight>4));
 	} # end else
-	
+
 	# eat all input from LCDd
 	while(defined(my $input = <$remote>)) { }
 

@@ -59,16 +59,16 @@ API_VERSION in the code.
 	//////// Functions to be provided by the driver module
 
 	//// Mandatory functions (necessary for all drivers)
-	
+
 	// initialize driver: return >= 0 on success
 	int (*init)		(Driver *drvthis);
-	
+
 	// close driver
 	void (*close)		(Driver *drvthis);
 
 
 	//// Essential output functions (necessary for output drivers)
-	
+
 	// get display width & height (in characters)
 	int (*width)		(Driver *drvthis);
 	int (*height)		(Driver *drvthis);
@@ -91,7 +91,7 @@ API_VERSION in the code.
 	// get key from driver: returns a string denoting the key pressed
 	const char *(*get_key)	(Driver *drvthis);
 
-	
+
 	//// Extended output functions (optional; core provides alternatives)
 
 	// draw a bar from pos (x,y) upward / to the right filling promille of len chars

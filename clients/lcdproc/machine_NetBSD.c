@@ -92,7 +92,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 {
 	int apmd;
 	struct apm_power_info apmi;
-   
+
 	if ((apmd = open("/dev/apm", O_RDONLY)) == -1)
 	{
 		*acstat   = LCDP_AC_ON;
@@ -100,14 +100,14 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 		*percent  = 100;
 		return(TRUE);
 	}
-   
+
 	memset(&apmi, 0, sizeof(apmi));
 	if (ioctl(apmd, APM_IOC_GETPOWER, &apmi) == -1)
 	{   
 		perror("APM_IOC_GETPOWER failed in get_batt_stat()");
 		return(FALSE);
 	}
-    
+
 	switch(apmi.ac_state)
 	{
 		case APM_AC_OFF:
@@ -177,7 +177,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 			statcnt++;
 		}
 	}
-	
+
 	*cnt = statcnt;
 	return(TRUE);
 }
@@ -250,7 +250,7 @@ int machine_get_meminfo(meminfo_type *result)
 		perror("sysctl vm.uvmexp2 failed");
 		return(FALSE);
 	}
-    
+
 	/* memory */
 	result[0].total		= pagetok(uvmexp.npages);
 	result[0].free		= pagetok(uvmexp.free);

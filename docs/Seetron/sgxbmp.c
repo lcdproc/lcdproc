@@ -50,14 +50,14 @@ int main(int ac,char **av) {
   } else {
     fd=openRawSerialLine(av[1],atoi(av[2]),FLOW_NONE,O_RDWR);
   }
-  
+
   filein=open(av[3], O_RDWR);
 
   read(filein, bmpin, 62);
-  
+
   read(filein, bmpin, 512);
   close(filein);
-  
+
   idx=0;
   for(j=31;j>-1;j--) {
      for(i=0;i<16;i++) {
@@ -72,9 +72,9 @@ int main(int ac,char **av) {
 	idx++;
      }
   }
-    
+
   sprintf(str,"%cDG", 27);
-  
+
   if(atoi(av[4])==0) {
     for (idx=0;idx<480;idx++) {
        gxbits[idx]=gxbits[idx] ^ 255;

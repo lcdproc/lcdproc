@@ -23,7 +23,7 @@
 /*
 Different implementations of (n)curses available on:
 OpenBSD:
- 	http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libcurses/
+	http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libcurses/
 	ncurses
 NetBSD:
 	http://cvsweb.netbsd.org/bsdweb.cgi/basesrc/lib/libcurses/

@@ -86,7 +86,7 @@ int config_read_file(char *filename)
 #ifdef WITH_LDAP_SUPPORT
 	if (ldap_is_ldap_url(filename)) {
 		use_ldap = 1;
-		
+
 		if (0 != (retval = ldap_url_parse(filename, &url))) {
 			report(RPT_ERR, "Errors parsing LDAP URL %s: %s", filename, ldap_err2string(retval));
 			ldap_free_urldesc(url);
@@ -302,7 +302,7 @@ connect_to_ldap(void)
  *	}
  *	fprintf(stderr, "LDAP login successful on %s:%d\n", ldap_host, ldap_port);
  ********************************************************/
- 
+
 	/* check for the existence of the config object... */
 	if (LDAP_SUCCESS != (retval = ldap_search_s(ld, ldap_base_dn, LDAP_SCOPE_BASE, "objectClass=lcdprocConfig", NULL, 0, &res))) {
 		report(RPT_ERR, "Could not access LDAP server on %s:%d", ldap_host, ldap_port);
@@ -441,12 +441,12 @@ key * find_key(section * s, char * keyname, int skip)
 			return NULL;
 		}
 
-		
+
 		strcpy(buf, "lcdproc");
 		strncat(buf, keyname, BUFSIZE);
 		/* debug(RPT_DEBUG, "Key name translated to attribute name: %s", buf); */
 		vals = ldap_get_values(ld, entry, buf);
-		
+
 		if (skip+1 > ldap_count_values(vals)) {
 			debug(RPT_DEBUG, "No such entry found.");
 			if (NULL != buf) {
@@ -474,14 +474,14 @@ key * find_key(section * s, char * keyname, int skip)
 			buf=strdup(vals[skip]);
 			debug(RPT_DEBUG, "Entry found. Value is: %s", buf);
 			ldap_value_free(vals);
-						
+
 			k = (key *) malloc(sizeof(key));
 			if ( k != NULL) {
 				k->name = strdup(keyname);
 				k->value = strdup(buf);
 				k->next_key = NULL;
 			}	
-			
+
 			if (NULL != buf) {
 				free(buf);
 				buf = NULL;

@@ -68,7 +68,7 @@ mem_screen (int rep, int display, int *flags_ptr)
 		} else {
 			gauge_wid = (lcd_wid >= 18) ? max(2, lcd_wid - 18) : 0;
 			gauge_offs = (lcd_wid - gauge_wid) / 2 + 2;
-		
+
 			sock_send_string(sock, "widget_add M m string\n");
 			sock_send_string(sock, "widget_add M s string\n");
 			if (gauge_wid > 0) {
@@ -244,20 +244,20 @@ mem_top_screen (int rep, int display, int *flags_ptr)
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-		
+
 		sock_send_string(sock, "screen_add S\n");
 		sprintf(buffer, "screen_set S -name {Top Memory Use: %s}\n", get_hostname());
 		sock_send_string(sock, buffer);
 		sock_send_string(sock, "widget_add S title title\n");
 		sprintf(buffer, "widget_set S title {TOP MEM: %s}\n", get_hostname());
 		sock_send_string(sock, buffer);
-		
+
 		// frame from (2nd line, left) to (last line, right)
 		sock_send_string(sock, "widget_add S f frame\n");
 		sprintf(buffer, "widget_set S f 1 2 %i %i %i 5 v %i\n",
 			lcd_wid, lcd_hgt, lcd_wid, ((lcd_hgt >= 4) ? 8 : 12));
 		sock_send_string(sock, buffer);
-		
+
 		// frame contents
 		for (i = 1; i <= 5; i++) {
 			sprintf(buffer, "widget_add S %i string -in f\n", i);

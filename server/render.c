@@ -344,7 +344,7 @@ render_frame (LinkedList * list,
 							drivers_string (w->left, w->top, w->text);
 						} else {
 							int necessaryTimeUnits = 0;
-							
+
 							if (w->speed > 0) {
 								necessaryTimeUnits = length * w->speed;
 								offset = (timer % (length * w->speed)) / w->speed;
@@ -422,7 +422,7 @@ render_frame (LinkedList * list,
 					case 'v':
 						{
 							int i = 0;
-							
+
 							length = strlen (w->text);
 							if (length <= screen_width) {
 								/* no scrolling required... */
@@ -431,7 +431,7 @@ render_frame (LinkedList * list,
 								int lines_required = (length / screen_width)
 									 + (length % screen_width ? 1 : 0);
 								int available_lines = (w->bottom - w->top + 1);
-								
+
 								if (lines_required <= available_lines) {
 									/* easy...*/
 									for (i = 0; i < lines_required; i++) {

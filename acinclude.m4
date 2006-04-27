@@ -69,37 +69,37 @@ for driver in $selectdrivers ; do
 			;;
 		curses)
 			AC_CHECK_HEADERS(ncurses.h curses.h)
- 			AC_CHECK_LIB(ncurses, main, [
- 				AC_CHECK_HEADER(ncurses.h, [
- 					dnl We have ncurses.h and libncurses, add driver.
+			AC_CHECK_LIB(ncurses, main, [
+				AC_CHECK_HEADER(ncurses.h, [
+					dnl We have ncurses.h and libncurses, add driver.
 	 				LIBCURSES="-lncurses"
- 					DRIVERS="$DRIVERS curses${SO}"
- 					actdrivers=["$actdrivers curses"]
- 				],[
+					DRIVERS="$DRIVERS curses${SO}"
+					actdrivers=["$actdrivers curses"]
+				],[
 dnl				else
 					AC_MSG_WARN([Could not find ncurses.h])],
 				[])
- 			],[
+			],[
 dnl			else
- 				AC_CHECK_LIB(curses, main, [
- 					AC_CHECK_HEADER(curses.h, [
- 						dnl We have curses.h and libcurses, add driver.
- 						LIBCURSES="-lcurses"
- 						DRIVERS="$DRIVERS curses${SO}"
- 						actdrivers=["$actdrivers curses"]
- 					],[
+				AC_CHECK_LIB(curses, main, [
+					AC_CHECK_HEADER(curses.h, [
+						dnl We have curses.h and libcurses, add driver.
+						LIBCURSES="-lcurses"
+						DRIVERS="$DRIVERS curses${SO}"
+						actdrivers=["$actdrivers curses"]
+					],[
 dnl					else
 						AC_MSG_WARN([Could not find curses.h])],
 					[])
- 				],[
+				],[
 dnl				else
- 					AC_MSG_WARN([The curses driver needs the curses (or ncurses) library.])],
- 				[])
- 			])
+					AC_MSG_WARN([The curses driver needs the curses (or ncurses) library.])],
+				[])
+			])
 
- 			AC_CURSES_ACS_ARRAY
+			AC_CURSES_ACS_ARRAY
 
- 			AC_CACHE_CHECK([for redrawwin() in curses], ac_cv_curses_redrawwin,
+			AC_CACHE_CHECK([for redrawwin() in curses], ac_cv_curses_redrawwin,
 			[oldlibs="$LIBS"
 			 LIBS="$LIBS $LIBCURSES"
 			 AC_TRY_LINK_FUNC(redrawwin, ac_cv_curses_redrawwin=yes, ac_cv_curses_redrawwin=no)
@@ -152,10 +152,10 @@ dnl			else
 			if test "$enable_libusb" = yes ; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-bwct-usb.o"
 			fi
- 			AC_CHECK_HEADER(linux/i2c-dev.h,
- 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-i2c.o"
- 				AC_DEFINE(HAVE_I2C,[1],[Define to 1 if you have the i2c headers])
-  			)
+			AC_CHECK_HEADER(linux/i2c-dev.h,
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-i2c.o"
+				AC_DEFINE(HAVE_I2C,[1],[Define to 1 if you have the i2c headers])
+			)
 			DRIVERS="$DRIVERS hd44780${SO}"
 			actdrivers=["$actdrivers hd44780"]
 			;;
@@ -168,22 +168,22 @@ dnl			else
 			actdrivers=["$actdrivers imon"]
 			;;
 		IOWarrior)
- 			if test "$enable_libusb" = yes ; then
+			if test "$enable_libusb" = yes ; then
 				DRIVERS="$DRIVERS IOWarrior${SO}"
 				actdrivers=["$actdrivers IOWarrior"]
 			else
- 				AC_MSG_WARN([The IOWarrior driver needs the libusb library.])
+				AC_MSG_WARN([The IOWarrior driver needs the libusb library.])
 			fi
 			;;
 		irman)
- 			AC_CHECK_LIB(irman, main,[
- 				LIBIRMAN="-lirman"
- 				DRIVERS="$DRIVERS irman${SO}"
- 				actdrivers=["$actdrivers irman"]
- 				],[
+			AC_CHECK_LIB(irman, main,[
+				LIBIRMAN="-lirman"
+				DRIVERS="$DRIVERS irman${SO}"
+				actdrivers=["$actdrivers irman"]
+				],[
 dnl				else
- 				AC_MSG_WARN([The irman driver needs the irman library.])
- 			])
+				AC_MSG_WARN([The irman driver needs the irman library.])
+			])
 			;;
 		joy)
 			AC_CHECK_HEADER(linux/joystick.h, [
@@ -191,8 +191,8 @@ dnl				else
 				actdrivers=["$actdrivers joy"]
 				],[
 dnl				else
- 				AC_MSG_WARN([The joy driver needs header file linux/joystick.h.])
- 			])
+				AC_MSG_WARN([The joy driver needs header file linux/joystick.h.])
+			])
 			;;
 		lb216)
 			DRIVERS="$DRIVERS lb216${SO}"
@@ -277,7 +277,7 @@ dnl				else
 					LIBSVGA="-lvga -lvgagl"
 					DRIVERS="$DRIVERS svga${SO}"
 					actdrivers=["$actdrivers svga"]
- 				],[
+				],[
 dnl				else
 					AC_MSG_WARN([The svga driver needs the vga library])
 				])
@@ -309,7 +309,7 @@ dnl			else
 					LIBFTDI="-lusb -lftdi"
 					DRIVERS="$DRIVERS ula200${SO}"
 					actdrivers=["$actdrivers ula200"]
- 				],[
+				],[
 dnl				else
 					AC_MSG_WARN([The ula200 driver needs the ftdi library])
 				])
@@ -324,7 +324,7 @@ dnl			else
 					LIBXOSD=`xosd-config --libs`
 					DRIVERS="$DRIVERS xosd${SO}"
 					actdrivers=["$actdrivers xosd"]
- 				],[
+				],[
 dnl				else
 					AC_MSG_WARN([The xosd driver needs the xosd library])
 				])

@@ -114,7 +114,7 @@ static int parse_message (const char *str, Client *c)
 					const char escape_chars[] = "nrt";
 					const char escape_trans[] = "\n\r\t";
 			 		char *p = strchr( escape_chars, str[pos] );
-					
+
 					/* Is it wise to have the characters \n, \r & \t expanded ?
 					 * Can the displays deal with them ?
 					 */
@@ -188,7 +188,7 @@ static int parse_message (const char *str, Client *c)
 		sock_printf_error(c->sock, "Invalid command \"%.40s\"\n", argv[0]);
 		report( RPT_WARNING, "Invalid command from client on socket %d: %.40s", c->sock, str );
 	}
-		
+
 	free( arg_space );
 	return 0;
 }

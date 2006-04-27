@@ -24,11 +24,11 @@ buffile *buffile_open( const char *path, const char *mode ) {
 	file = malloc(sizeof(*file));
 	if ( NULL == file )
 		return NULL;
-	
+
 	file->pos=0;
 	file->bytesread=0;
 	file->buf=NULL;
-	
+
 	file->f = fopen( path, mode );
 	if( NULL == file->f ) {
 		free(file);

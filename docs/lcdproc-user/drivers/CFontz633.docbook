@@ -22,7 +22,7 @@ CFontz633 chipset.
   <listitem><para>
     Select the output device to use [default: <filename>/dev/lcd</filename>]
     may be serial device or USB device in serial emulation mode.
-    
+
   </para></listitem>
 </varlistentry>
 

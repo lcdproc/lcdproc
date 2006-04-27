@@ -54,7 +54,7 @@ server_screen_init ()
 	}
 	server_screen->name = "Server screen";
 	server_screen->duration = 8; /* 1 second, instead of 4...*/
-	
+
 	if ((rotate_server_screen == UNSET_INT ) || (rotate_server_screen == 1)) {
 		server_screen->priority = PRI_INFO;
 	} else {

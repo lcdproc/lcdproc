@@ -90,7 +90,7 @@ sock_connect (char *host, unsigned short int port)
 #else
         {
                 unsigned long tmp = 1;
-		
+
                 if (ioctlsocket(sock, FIONBIO, &tmp) == SOCKET_ERROR)
                         report(RPT_ERR, "sock_connect: Error setting socket to non-blocking");
         }
@@ -130,7 +130,7 @@ sock_printf(int fd, const char *format, .../*args*/ )
 	}
 	if (size > sizeof(buf))
 		report(RPT_WARNING, "sock_printf: vsnprintf truncated message");
-	
+
 	return sock_send_string(fd, buf);
 }
 
@@ -316,7 +316,7 @@ sock_printf_error(int fd, const char *format, .../*args*/ )
 	int size = 0;
 
 	strncpy(buf, huh, sizeof(huh)); // note: sizeof(huh) < MAXMSG
-	
+
 	va_start(ap, format);
 	size = vsnprintf(buf + (sizeof(huh)-1), sizeof(buf) - (sizeof(huh)-1), format, ap);
 	buf[sizeof(buf)-1] = '\0';

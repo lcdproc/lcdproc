@@ -83,7 +83,7 @@ const IpSstringProperties IPinfo[] = {
 	// IPv6: 39 char long ':'-separated sequence of 4-digit hex strings in range 0000 - ffff
 	{ 39, ':', 16, 4, 65535, { 4096, 256, 16, 1, 0 }, "%04x", verify_ipv6, "0:0:0:0:0:0:0:0" }
 };
-	
+
 
 /******** MENU UTILITY FUNCTIONS ********/
 
@@ -207,7 +207,7 @@ MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_fun
 		// report (RPT_ERR, "%s: illegal id or text", __FUNCTION__);
 		return NULL;
 	}
-	
+
 	/* Allocate space and fill struct */
 	new_item = malloc (sizeof(MenuItem));
 	if (!new_item) {
@@ -392,7 +392,7 @@ MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
 	new_item = menuitem_create (MENUITEM_IP, id, event_func, text, client);
 	new_item->data.ip.v6 = v6;
 	ipinfo = (v6) ? &IPinfo[1] : &IPinfo[0];
-	
+
 	new_item->data.ip.maxlength = ipinfo->maxlen;;
 	new_item->data.ip.value = malloc (new_item->data.ip.maxlength + 1);
 
@@ -646,7 +646,7 @@ void menuitem_rebuild_screen_slider (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	if (display_props->height >= 2 ) {
 		/* Only add a title if enough space... */
 		w = widget_create ("text", WID_STRING, s);
@@ -699,7 +699,7 @@ void menuitem_rebuild_screen_numeric (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	if (display_props->height >= 2 ) {
 		/* Only add a title if enough space... */
 		w = widget_create ("text", WID_STRING, s);
@@ -735,7 +735,7 @@ void menuitem_rebuild_screen_alpha (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	if (display_props->height >= 2 ) {
 		/* Only add a title if enough space... */
 		w = widget_create ("text", WID_STRING, s);
@@ -771,7 +771,7 @@ void menuitem_rebuild_screen_ip (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	if (display_props->height >= 2 ) {
 		/* Only add a title if enough space... */
 		w = widget_create ("text", WID_STRING, s);
@@ -809,7 +809,7 @@ void menuitem_update_screen (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	/* Disable the cursor by default */
 	s->cursor = CURSOR_OFF;
 
@@ -834,7 +834,7 @@ void menuitem_update_screen_slider (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	/* Calculate the bar position and length by filling buffers */
 	min_len = strlen (item->data.slider.mintext);
 	max_len = strlen (item->data.slider.maxtext);
@@ -876,7 +876,7 @@ void menuitem_update_screen_numeric (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	w = screen_find_widget (s, "value");
 	strcpy (w->text, item->data.numeric.edit_str + item->data.numeric.edit_offs);
 
@@ -902,7 +902,7 @@ void menuitem_update_screen_alpha (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	w = screen_find_widget (s, "value");
 	if (item->data.alpha.password_char == '\0') {
 		strcpy (w->text, item->data.alpha.edit_str + item->data.alpha.edit_offs);
@@ -935,7 +935,7 @@ void menuitem_update_screen_ip (MenuItem *item, Screen *s)
 
 	if ((item == NULL) || (s == NULL))
 		return;
-	
+
 	w = screen_find_widget (s, "value");
 	if (w != NULL)
 		strcpy (w->text, item->data.ip.edit_str + item->data.ip.edit_offs);
@@ -1350,7 +1350,7 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const cha
 				char *start = tmp;
 
 				memccpy(tmp, str, '\0', sizeof(tmp));
-				
+
 				while (start != NULL) {
 					char *skip = start;
 
@@ -1360,7 +1360,7 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const cha
 					skip = strchr(start, ipinfo->sep);
 					start = (skip != NULL) ? (skip + 1) : NULL;
 				}
-                  
+
 				// check IP address entered
 				if ((ipinfo->verify != NULL) && (!ipinfo->verify(tmp))) {
 					report(RPT_WARNING, "%s(id=\"%s\") ip address not verified: \"%s\"",
@@ -1368,7 +1368,7 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const cha
 					item->data.ip.error_code = 4;
 					return MENURESULT_NONE;
 				}
-        
+
 				// store value
 				strcpy (item->data.ip.value, tmp);
 
@@ -1464,7 +1464,7 @@ LinkedList * tablist2linkedlist (char *strings)
 	if (strings != NULL) {
 		char *p = strings;
 		char *tabptr, *new_s;
-	
+
 		while ((tabptr = strchr(p, '\t')) != NULL) {
 			int len = (int)(tabptr - p);
 
@@ -1490,7 +1490,7 @@ MenuItemType menuitem_typename_to_type (char *name)
 {
 	if (name != NULL) {
 		MenuItemType type;
-		
+
 		for (type = 0; type < NUM_ITEMTYPES; type ++) {
 			if (strcmp (menuitemtypenames[type], name) == 0) {
 				return type;
@@ -1511,7 +1511,7 @@ MenuEventType menuitem_eventtypename_to_eventtype (char *name)
 {
 	if (name != NULL) {
 		MenuEventType type;
-		
+
 		for (type = 0; type < NUM_EVENTTYPES; type ++) {
 			if (strcmp (menueventtypenames[type], name) == 0) {
 				return type;

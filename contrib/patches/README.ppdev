@@ -16,7 +16,7 @@ write).
 And there is something else that is a wrapper to get old functions
 (port_in, port_out, etc) supported for such drivers that are not
 modified to use new parallel port functions.
-				        
+
 So, if you have an LCD attached to your parallel port (like my hd44780)
 without keys attached to it, you can apply this patch and just forget
 the io access to the parallel port :)

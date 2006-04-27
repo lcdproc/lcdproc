@@ -189,8 +189,8 @@ menu_add_item_func (Client * c, int argc, char **argv)
 		item = menuitem_create_ip (item_id, menu_commands_handler, text, c,
 				0, "192.168.1.245");
 		break;
- 	 default:
- 	   assert(!"unexpected menuitem type");
+	 default:
+	   assert(!"unexpected menuitem type");
 	}
 	menu_add_item (menu, item);
 	menuscreen_inform_item_modified (menu);
@@ -213,7 +213,7 @@ menu_add_item_func (Client * c, int argc, char **argv)
 			/* skip "text" */
 			if (i == 4 && argv[4][0] != '-')
 				continue;
-			
+
 			argv_set[j++] = argv[i];
 		}
 		menu_set_item_func(c, j, argv_set);
@@ -670,7 +670,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 
 				new_buf = malloc(item->data.ip.maxlength + 1 );
 				strncpy( new_buf, item->data.ip.value, item->data.ip.maxlength);
-				
+
 				new_buf[item->data.ip.maxlength] = '\0'; /* terminate */
 				free( item->data.ip.value );
 				item->data.ip.value = new_buf;
@@ -931,11 +931,11 @@ MenuEventFunc (menu_commands_handler)
 		}
 	}
 	else if (event == MENUEVENT_ENTER
- 		|| event == MENUEVENT_LEAVE)
+		|| event == MENUEVENT_LEAVE)
         {
- 	 snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s\n",
- 		   menuitem_eventtype_to_eventtypename(event),
- 		   item->id);
+	 snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s\n",
+		   menuitem_eventtype_to_eventtypename(event),
+		   item->id);
 	}
 	else {
 		snprintf (buf, sizeof(buf)-1, "menuevent %s %.40s\n",
@@ -949,7 +949,7 @@ MenuEventFunc (menu_commands_handler)
 	c = menuitem_get_client(item);
 	if( !c ) {
 		report( RPT_ERR, "%s: Could not find client of item \"%s\"",
- 		       __FUNCTION__, item->id );
+		       __FUNCTION__, item->id );
 		return -1;
 	}
 

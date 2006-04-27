@@ -195,7 +195,7 @@ sock_shutdown ()
             retVal = -1;
         }
 #endif
-    
+
         return retVal;
 }
 

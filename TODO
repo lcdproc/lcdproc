@@ -29,7 +29,7 @@ restart LCDproc...
 Another bonus is that LCDproc will come with a client which can, for
 example, start up a "client" driver to send "keypresses" from the
 command line.  Or, 
-	
+
 	lcdtool -key A
 
 would have the same result as pressing a key on the keypad.

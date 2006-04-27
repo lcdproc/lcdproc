@@ -52,7 +52,7 @@ sprintf_memory(char *dst, double value, double roundlimit)
 			format = "%.2f%s";
 		if (value < 10)
 			format = "%.3f%s";
-		
+
 		sprintf(dst, format, value, units[offs]);
 	}	
 	return dst;	

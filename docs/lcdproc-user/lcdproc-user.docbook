@@ -12,7 +12,7 @@
   <!ENTITY license SYSTEM "license.docbook">
 
   <!ENTITY ppttrouble SYSTEM "drivers/ppttrouble.docbook">
-  
+
   <!ENTITY bayrad SYSTEM "drivers/bayrad.docbook">
   <!ENTITY CFontz SYSTEM "drivers/CFontz.docbook">
   <!ENTITY CFontz633 SYSTEM "drivers/CFontz633.docbook">

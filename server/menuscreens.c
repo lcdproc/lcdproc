@@ -90,8 +90,8 @@ int menuscreens_init()
 	tmp = config_get_string ("menu", "RightKey", 0, NULL);
 	if (tmp)
 		right_key = strdup(tmp);
-    
-        
+
+
 	/* Now reserve keys */
 	input_reserve_key (menu_key, true, NULL);
 	input_reserve_key (enter_key, false, NULL);
@@ -202,8 +202,8 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 	MenuItem * old_menuitem = active_menuitem;
 
 	debug (RPT_DEBUG, "%s( item=[%s] ) from active_menuitem=[%s]", __FUNCTION__,
- 	      ((new_menuitem != NULL) ? new_menuitem->id : "(null)"),
- 	      ((old_menuitem != NULL) ? old_menuitem->id : "(null)"));
+	      ((new_menuitem != NULL) ? new_menuitem->id : "(null)"),
+	      ((old_menuitem != NULL) ? old_menuitem->id : "(null)"));
 
 	/* First we do the switch */
 	active_menuitem = new_menuitem;
@@ -229,9 +229,9 @@ void menuscreen_switch_item (MenuItem * new_menuitem)
 	}
 
         if (old_menuitem && old_menuitem->event_func)
- 	       old_menuitem->event_func(old_menuitem, MENUEVENT_LEAVE);
+	       old_menuitem->event_func(old_menuitem, MENUEVENT_LEAVE);
         if (new_menuitem && new_menuitem->event_func)
- 	       new_menuitem->event_func(new_menuitem, MENUEVENT_ENTER);
+	       new_menuitem->event_func(new_menuitem, MENUEVENT_ENTER);
 
 	return;
 }
@@ -466,7 +466,7 @@ void menuscreen_create_menu ()
 			menu_add_item (options_menu, driver_menu);
 			if (contrast_avail) {
 				int contrast = driver->get_contrast(driver);
-				
+
 				/* menu's client is NULL since we're in the server */
 				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast",
 								 NULL, "min", "max", 0, 1000, 25, contrast);
@@ -475,7 +475,7 @@ void menuscreen_create_menu ()
 			if (brightness_avail) {
 				int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
 				int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
-				
+
 				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness",
 								 NULL, "min", "max", 0, 1000, 25, onbrightness);
 				menu_add_item (driver_menu, slider);
@@ -661,8 +661,8 @@ int
 menuscreen_goto (Menu * menu)
 {
 	debug (RPT_DEBUG, "%s( m=[%s] ): active_menuitem=[%s]",
- 	     __FUNCTION__, (menu != NULL) ? menu->id : "(NULL)",
- 	     (active_menuitem != NULL) ? active_menuitem->id : "(NULL)");
+	     __FUNCTION__, (menu != NULL) ? menu->id : "(NULL)",
+	     (active_menuitem != NULL) ? active_menuitem->id : "(NULL)");
         menuscreen_switch_item (menu);
         return 0;
 }
@@ -673,7 +673,7 @@ int
 menuscreen_set_main (Menu * menu)
 {
 	debug (RPT_DEBUG, "%s( m=[%s] )",
- 	     __FUNCTION__, (menu != NULL) ? menu->id : "(NULL)");
+	     __FUNCTION__, (menu != NULL) ? menu->id : "(NULL)");
 	custom_main_menu = menu;
 	return 0;
 }

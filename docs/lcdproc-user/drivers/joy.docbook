@@ -43,7 +43,7 @@ This section covers the joystick input driver for LCDd.
     <literal>pos</literal> determining the direction.
     The exact numbering of the axes depends on the hardware used.
     </para>
-    
+
     <para>
     <replaceable>KEY</replaceable> can be one of the keys that LCDd recognizes
     (<literal>Left</literal>, <literal>Right</literal>, <literal>Up</literal>, 
@@ -68,7 +68,7 @@ This section covers the joystick input driver for LCDd.
     that represents each button. The exact numbering of the buttons depends on the
     hardware used.
     </para>
-    
+
     <para>
     <replaceable>KEY</replaceable> can be one of the keys that LCDd recognizes
     (<literal>Left</literal>, <literal>Right</literal>, <literal>Up</literal>, 

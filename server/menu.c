@@ -339,7 +339,7 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 					(w->text)[display_props->width-1] = '\0';
 				}
 				break;
- 			 default:
+			 default:
 				assert(!"unexpected menuitem type");
 			}
 		}
@@ -491,7 +491,7 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 		w->type = (menu->data.menu.scroll > 0) ? WID_ICON : WID_NONE;
 	else
 		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "upscroller");
-	
+
 	/* Enable downscroller (if necessary) */
 	w = screen_find_widget (s, "downscroller");
 	if (w != NULL)
@@ -629,7 +629,7 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, boo
 	  case MENUTOKEN_LEFT:
 		if (!extended)
 			return MENURESULT_NONE;
-		
+
 		subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
 		if (subitem == NULL)
 			break;
@@ -661,7 +661,7 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, boo
 	  case MENUTOKEN_RIGHT:
 		if (!extended)
 			return MENURESULT_NONE;
-		
+
 		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
 		if (subitem == NULL)
 			break;

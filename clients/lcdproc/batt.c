@@ -34,7 +34,7 @@ ac_status(int status)
 	for (i = 0; ac_table[i].name != NULL; i++)
 		if (status == ac_table[i].status)
 			return ac_table[i].name;
-			
+
 	return ac_table[LCDP_AC_UNKNOWN].name;
 }	
 
@@ -55,7 +55,7 @@ battery_status(int status)
 	for (i = 0; batt_table[i].name != NULL; i++)
 		if (status == batt_table[i].status)
 			return batt_table[i].name;
-			
+
 	return batt_table[LCDP_AC_UNKNOWN].name;
 }
 

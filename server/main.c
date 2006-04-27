@@ -219,7 +219,7 @@ main(int argc, char **argv)
 
 	/* Set reporting settings (will also flush delayed reports) */
 	set_reporting("LCDd", report_level, report_dest);
- 	report(RPT_INFO, "Set report level to %d, output to %s", report_level,
+	report(RPT_INFO, "Set report level to %d, output to %s", report_level,
 			((report_dest == RPT_DEST_SYSLOG) ? "syslog" : "stderr"));
 	CHAIN_END( e, "Critical error while processing settings, abort." );
 
@@ -464,7 +464,7 @@ process_configfile(char *configfile)
 
 	if (report_dest == UNSET_INT) {
 		int rs = config_get_bool("server", "reportToSyslog", 0, UNSET_INT);
-		
+
 		if (rs != UNSET_INT)
 			report_dest = (rs) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
 	}
@@ -781,7 +781,7 @@ do_reload(void)
 
 	/* Set reporting values */
 	CHAIN( e, set_reporting("LCDd", report_level, report_dest) );
- 	CHAIN( e, ( report(RPT_INFO, "Set report level to %d, output to %s", report_level,
+	CHAIN( e, ( report(RPT_INFO, "Set report level to %d, output to %s", report_level,
 			((report_dest == RPT_DEST_SYSLOG) ? "syslog" : "stderr")), 0 ) );
 
 	/* And restart the drivers */

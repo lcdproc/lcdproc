@@ -147,7 +147,7 @@ if ($twentyfour > 0) {
         if ($time[2] > 11) {
                 $ampmstring = "PM";
         }
-        
+
         if ($time[2] > 12) {
                 $time[2] = $time[2] - 12;
         }
@@ -197,9 +197,9 @@ $i = 0;
 my $flag = 0;
 while (defined($line = <SOCK>)) {
         $i++;
-        
+
         if ($line =~ /^%%/) { $i = 1; $flag = 1; }
-        
+
         if ($flag > 0) {
                 if ($i == 2) {
                         chop($line);
@@ -229,10 +229,10 @@ close(TMPFILE);
 # compare tmpfile with current menufile and possibly update it.
 if (-e $menufile) {
         my ($tmpline, $menuline, $linecount);
-        
+
         open(MENUFILE, $menufile);
         open(TMPFILE, $tmpfile);
-        
+
         # read in the first 'headline' menu entry from each file.
         if ($frontpage eq "top") {
                 $linecount = 3;
@@ -243,7 +243,7 @@ if (-e $menufile) {
         for ($i = 0; $i < $linecount; $i++) {
                 if (eof(TMPFILE)) {
                         if ($forceupdate == 0) {
-                        
+
                                 close(MENUFILE);
                                 close(TMPFILE);
                                 unlink($tmpfile);
@@ -258,12 +258,12 @@ if (-e $menufile) {
                         $menuline = <MENUFILE>;
                 }
         }
-        
+
         if (($forceupdate == 0) && (($tmpline =~ /^"$sitename Headlines/) || ($tmpline =~ /^"$sitename Frontpage/) || ($tmpline eq $menuline))) {
                 close(MENUFILE);
                 close(TMPFILE);
                 unlink($tmpfile);
-                
+
                 exit();
         }
 }
@@ -280,11 +280,11 @@ sub wmdie {
 	if ($string ne "") {
 		print "$string\n";
 	}
-	
+
 	close(SOCK);
 	close(TMPFILE);
 	unlink($tmpfile);
-	
+
 	if ($string eq "") {
 		exit(0);
 	} else {

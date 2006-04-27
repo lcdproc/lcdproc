@@ -49,7 +49,7 @@ cpu_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, buffer);
 		if (lcd_hgt >= 4) {
 			gauge_wid = lcd_wid - 6;		// room between 0%...100%
-			
+
 			sock_send_string(sock, "widget_add C title title\n");
 			sock_send_string(sock, "widget_set C title {CPU LOAD}\n");
 			sock_send_string(sock, "widget_add C one string\n");
@@ -105,14 +105,14 @@ cpu_screen(int rep, int display, int *flags_ptr)
 	// Read new data
 	if (load.total > 0L) {
 	  cpu[CPU_BUF_SIZE - 1][0] = 100.0 * ((double) load.user / (double) load.total);
- 	  cpu[CPU_BUF_SIZE - 1][1] = 100.0 * ((double) load.system / (double) load.total);
+	  cpu[CPU_BUF_SIZE - 1][1] = 100.0 * ((double) load.system / (double) load.total);
 	  cpu[CPU_BUF_SIZE - 1][2] = 100.0 * ((double) load.nice / (double) load.total);
 	  cpu[CPU_BUF_SIZE - 1][3] = 100.0 * ((double) load.idle / (double) load.total);
 	  cpu[CPU_BUF_SIZE - 1][4] = 100.0 * (((double) load.user + (double) load.system + (double) load.nice) / (double) load.total);
 	}
 	else {
 	  cpu[CPU_BUF_SIZE - 1][0] = 0.0;
- 	  cpu[CPU_BUF_SIZE - 1][1] = 0.0;
+	  cpu[CPU_BUF_SIZE - 1][1] = 0.0;
 	  cpu[CPU_BUF_SIZE - 1][2] = 0.0;
 	  cpu[CPU_BUF_SIZE - 1][3] = 0.0;
 	  cpu[CPU_BUF_SIZE - 1][4] = 0.0;

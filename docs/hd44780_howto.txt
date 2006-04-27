@@ -614,7 +614,7 @@ Send char(0)
 fanX is a value from 0 to 255, 0 is fan off, 255 is fan full speed.
 
 
-  
+
 
 1.5.1 Keypad
 ------------

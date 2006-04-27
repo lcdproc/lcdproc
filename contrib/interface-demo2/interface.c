@@ -219,7 +219,7 @@ char *get_name(char *name, char *p)
 	    break;
 	if (*p == ':') {	/* could be an alias */
 		char *dot = p++;
- 		while (*p && isdigit(*p)) p++;
+		while (*p && isdigit(*p)) p++;
 		if (*p == ':') {
 			/* Yes it is, backup and copy it. */
 			p = dot;

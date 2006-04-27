@@ -122,7 +122,7 @@ Rene Wagner <reenoo@gmx.de>:
 
 Andre Breiler:
 	- Matrix Orbital driver
-	
+
 Joris Robijn:
 	- HD44780 driver maintenance and enhancement
 	- Config file stuff

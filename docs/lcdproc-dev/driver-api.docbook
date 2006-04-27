@@ -1,6 +1,6 @@
 <chapter id="driver-api">
   <title>The LCDproc driver API</title>
-  
+
 <para>
   This chapter describes the driver API of v0.5 of LCDproc.
   At time of this writing, this version is not released and some things might
@@ -74,16 +74,16 @@ API_VERSION in the code.
 	//////// Functions to be provided by the driver module
 
 	//// Mandatory functions (necessary for all drivers)
-	
+
 	// initialize driver: returns &gt;= 0 on success
 	int (*init)		(Driver *drvthis);
-	
+
 	// close driver
 	void (*close)		(Driver *drvthis);
 
 
 	//// Essential output functions (necessary for output drivers)
-	
+
 	// get display width / height (in characters; 1-based)
 	int (*width)		(Driver *drvthis);
 	int (*height)		(Driver *drvthis);
@@ -106,7 +106,7 @@ API_VERSION in the code.
 	// get key from driver: returns a string denoting the key pressed
 	const char *(*get_key)	(Driver *drvthis);
 
-	
+
 	//// Extended output functions (optional; core provides alternatives)
 
 	// draw a bar from pos (x,y) upward / to the right filling promille of len chars
@@ -256,7 +256,7 @@ typedef struct my_driver_private {
 	p->fd = -1;
 	p->cellheight = 8;
 	p->cellwidth = 6;
-	
+
 	(... continue with the rest of your init routine)
 </screen>
 

@@ -72,16 +72,16 @@ int machine_init()
 	/* get the page size with "getpagesize" and calculate pageshift from it */
 	int pagesize = 0;
 	pageshift = 0;
-	
+
 	lcdproc_port = mach_host_self();
 	host_page_size(lcdproc_port, &pagesize);
-		
+
 	while (pagesize > 1)
 	{
 		pageshift++;
 		pagesize >>= 1;
 	}
-	
+
 	/* we only need the amount of log(2)1024 for our conversion */
 	pageshift -= 10;
 
@@ -101,11 +101,11 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 	int i;
 	CFDictionaryRef pSource = NULL;
 	const void *psValue;
-	
+
 	*acstat = LCDP_AC_ON;
 	*battflag = LCDP_BATT_ABSENT;
 	*percent  = 100;
-	
+
 	if (CFArrayGetCount(sources) == 0) return(FALSE);
 
 	for (i = 0; i < CFArrayGetCount(sources); i++)
@@ -114,11 +114,11 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 		if (!pSource) break;
 
 		psValue = (CFStringRef)CFDictionaryGetValue(pSource, CFSTR(kIOPSNameKey));
-		
+
 		if (CFDictionaryGetValueIfPresent(pSource, CFSTR(kIOPSIsPresentKey), &psValue) && (CFBooleanGetValue(psValue) > 0))
 		{
 			psValue = (CFStringRef)CFDictionaryGetValue(pSource, CFSTR(kIOPSPowerSourceStateKey));
-		
+
 			if (CFStringCompare(psValue,CFSTR(kIOPSBatteryPowerValue),0)==kCFCompareEqualTo)
 			{
 				/* We are running on a battery power source. */
@@ -135,20 +135,20 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 				else
 					*battflag = LCDP_BATT_UNKNOWN;
 			}
-			
+
 			if (*battflag != LCDP_BATT_ABSENT)
 			{
 				int curCapacity = 0;
 				int maxCapacity = 0;
-			
+
 				psValue = CFDictionaryGetValue(pSource, CFSTR(kIOPSCurrentCapacityKey));
 				CFNumberGetValue(psValue, kCFNumberSInt32Type, &curCapacity);
-				
+
 				psValue = CFDictionaryGetValue(pSource, CFSTR(kIOPSMaxCapacityKey));
 				CFNumberGetValue(psValue, kCFNumberSInt32Type, &maxCapacity);
-				
+
 				*percent = (int)((double)curCapacity/(double)maxCapacity * 100);
-				
+
 				/*	There is a way to check this through the IOKit, 
 					but I am not sure what gets for kIOPSLowWarnLevelKey and kIOPSDeadWarnLevelKey, and this is easier.
 				*/
@@ -161,14 +161,14 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 						*battflag = LCDP_BATT_CRITICAL;
 				}
 				/* printf ("powerSource %d of %d: percent: %d/%d %d\n", i, CFArrayGetCount(sources), curCapacity, maxCapacity, *percent);*/
-				
+
 			}
 		}
 	}
-	
+
 	CFRelease(blob);
 	CFRelease(sources);
-	
+
 	return(TRUE);
 }
 
@@ -212,7 +212,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 			statcnt++;
 		}
 	}
-	
+
 	*cnt = statcnt;
 
 	return(TRUE);
@@ -223,7 +223,7 @@ int machine_get_load(load_type *curr_load)
 	static load_type last_load = { 0, 0, 0, 0, 0 };
 	static load_type last_ret_load;
 	load_type load;
-	
+
 	host_cpu_load_info_data_t	load_info;
 	mach_msg_type_number_t		info_count;
 
@@ -233,7 +233,7 @@ int machine_get_load(load_type *curr_load)
 		perror("host_statistics");
 		return(FALSE);
 	}
-	
+
 	load.user   = (unsigned long) (load_info.cpu_ticks[CPU_STATE_USER]);
 	load.nice   = (unsigned long) (load_info.cpu_ticks[CPU_STATE_NICE]);
 	load.system = (unsigned long) (load_info.cpu_ticks[CPU_STATE_SYSTEM]);
@@ -277,14 +277,14 @@ int machine_get_meminfo(meminfo_type *result)
 
 	vm_statistics_data_t	vm_info;
 	mach_msg_type_number_t	info_count;
-	
+
 	info_count = HOST_VM_INFO_COUNT;
 	if (host_statistics(lcdproc_port, HOST_VM_INFO, (host_info_t)&vm_info, &info_count))
 	{
 		perror("host_statistics");
 		return(FALSE);
 	}
-	
+
 	result[0].total		= pagetok(vm_info.active_count + vm_info.inactive_count +
 								vm_info.free_count + vm_info.wire_count);
 	result[0].free		= pagetok(vm_info.free_count);
@@ -312,7 +312,7 @@ int machine_get_procs(LinkedList *procs)
 	/* FIX ME */
 	/* This needs to be finished. */
 	procinfo_type	*p;
-	
+
 	processor_set_t *psets, pset;
 	task_t          *tasks;
 
@@ -331,14 +331,14 @@ int machine_get_procs(LinkedList *procs)
 			perror("host_processor_set_priv");
 			return(FALSE);
 		}
-		
+
 		p = malloc(sizeof(procinfo_type));
 		if (!p)
 		{
 			perror("mem_top_malloc");
 			return(FALSE);
 		}
-		
+
 	}
 	return(TRUE);
 }
@@ -406,25 +406,25 @@ static int swapmode(int *rettotal, int *retfree)
 	mib[0] = CTL_VM;
 	mib[1] = VM_SWAPUSAGE;
 	size = sizeof(xsu);
-	
+
 	*rettotal = 0;
 	*retfree = 0;
-	
+
 	if (sysctl(mib, 2, &xsu, &size, NULL, 0) != 0)
 	{
 		perror("sysctl");
 		return(FALSE);
 	}
-	
+
 	*rettotal = (xsu.xsu_total/1024);
 	*retfree  = ((xsu.xsu_total-xsu.xsu_used)/1024);
 
 	return(TRUE);	
 	#endif
-	
+
 	*rettotal = 0;
 	*retfree = 0;
-	
+
 	return(FALSE);
 }
 

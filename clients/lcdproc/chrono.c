@@ -156,7 +156,7 @@ time_screen (int rep, int display, int *flags_ptr)
 		hour = ((int) uptime % 86400) / 60 / 60;
 		min = (((int) uptime % 86400) % 3600) / 60;
 		sec = ((int) uptime % 60);
-		
+
 		if (lcd_wid >= 20)
 			sprintf (tmp, "Up %3d day%s %02d%c%02d%c%02d",
 				days, ((days != 1) ? "s" : ""), hour, colon[heartbeat], min, colon[heartbeat], sec);
@@ -175,7 +175,7 @@ time_screen (int rep, int display, int *flags_ptr)
 		sprintf (buffer, "widget_set T two %i 3 {%s}\n", xoffs, tmp);
 		if (display)
 			sock_send_string (sock, buffer);
-		
+
 		// display the time & idle time...
 		sprintf (tmp, "%s %3i%% idle", now, (int) idle);
 		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
@@ -233,7 +233,7 @@ clock_screen (int rep, int display, int *flags_ptr)
 
 			sprintf (buffer, "widget_set O title {DATE & TIME}\n");
 			sock_send_string (sock, buffer);
-			
+
 			sprintf (tmp, "%s", get_hostname());
 			xoffs = (lcd_wid > strlen(tmp)) ? (((lcd_wid - strlen(tmp)) / 2) + 1) : 1;
 			sprintf (buffer, "widget_set O one %i 2 {%s}\n", xoffs, tmp);
@@ -323,7 +323,7 @@ uptime_screen (int rep, int display, int *flags_ptr)
 			sock_send_string (sock, "widget_add U three string\n");
 
 			sock_send_string (sock, "widget_set U title {SYSTEM UPTIME}\n");
-			
+
 			sprintf (tmp, "%s", get_hostname());
 			xoffs = (lcd_wid > strlen(tmp)) ? (((lcd_wid - strlen(tmp)) / 2) + 1) : 1;
 			sprintf (buffer, "widget_set U one %i 2 {%s}\n", xoffs, tmp);
@@ -335,7 +335,7 @@ uptime_screen (int rep, int display, int *flags_ptr)
 			sock_send_string (sock, buffer);
 		} else {
 			sock_send_string (sock, "widget_add U one string\n");
-			
+
 			sprintf (tmp, "widget_set U title {%s %s: %s}\n", get_sysname(), get_sysrelease(), get_hostname());
 			sock_send_string (sock, tmp);
 		}

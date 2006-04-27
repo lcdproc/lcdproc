@@ -185,7 +185,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 			statcnt++;
 		}
 	}
-	
+
 	*cnt = statcnt;
 	return(TRUE);
 }
