@@ -91,7 +91,7 @@ sli_init (Driver *drvthis)
 
 	/* What speed to use */
 	p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 19200);
-  
+
 	if (p->speed == 1200)        p->speed = B1200;
 	else if (p->speed == 2400)   p->speed = B2400;
 	else if (p->speed == 9600)   p->speed = B9600;
@@ -114,7 +114,7 @@ sli_init (Driver *drvthis)
 		return -1;
 	}
 	report(RPT_DEBUG, "%s: opened device %s", drvthis->name, p->device);
-	
+
 	tcgetattr(p->fd, &portset);
 
 	// We use RAW mode
@@ -144,7 +144,7 @@ sli_init (Driver *drvthis)
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
-				
+
 	/* Initialize SLI using autobaud detection, and then turn off cursor
 	   and clear screen */
 	usleep(150000);			  /* 150ms delay to allow SLI to power on */

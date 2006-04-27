@@ -161,7 +161,7 @@ ms6931_init (Driver *drvthis)
 	/* initialize private data */
 	p->fd = -1;
 	p->framebuf = NULL;
-	      
+
 
 	debug(RPT_INFO, "ms6931_init: init(%p)", drvthis);
 
@@ -248,7 +248,7 @@ ms6931_close (Driver *drvthis)
 			ms6931_flush(drvthis);
 			ms6931_backlight (drvthis, BACKLIGHT_OFF);
 		}	
-       
+
 		if (p->fd >= 0)
 			close(p->fd);
 
@@ -302,7 +302,7 @@ ms6931_chr (Driver *drvthis, int x, int y, char c)
 
 	y--;
 	x--;
-	
+
 	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
 		p->framebuf[(y * p->width) + x] = charTable[(unsigned char) c];
 }
@@ -390,7 +390,7 @@ ms6931_string (Driver *drvthis, int x, int y, char string[])
 
 	if ((y < 0) || (y >= p->height))
 		return;
-	
+
 	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
 		unsigned char c = (unsigned char) string[i];
 
@@ -479,7 +479,7 @@ ms6931_get_key (Driver *drvthis)
 		FD_SET(p->fd, &fdset);
 		return NULL;
 	}
-	
+
 	if (!FD_ISSET(p->fd, &fdset))
 		return NULL;
 

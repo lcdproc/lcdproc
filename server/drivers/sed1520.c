@@ -66,7 +66,7 @@
 
 typedef struct driver_private_data {
     unsigned int port;
-    
+
     unsigned char *framebuf;
 } PrivateData;
 
@@ -168,7 +168,7 @@ sed1520_init (Driver *drvthis)
 
     /* What port to use */
     p->port = drvthis->config_get_int(drvthis->name, "Port", 0, DEFAULT_PORT);
-  
+
     /* End of config file parsing */
 
     if (timing_init() == -1) {
@@ -285,7 +285,7 @@ sed1520_flush (Driver *drvthis)
 
     for (i = 0; i < HEIGHT; i++) {
 	  selectpage(p->port, i);
-	  
+
 	  selectcolumn(p->port, 0, CS2) ;
 	  for (j = 0; j < PIXELWIDTH/2; j++)
 	      writedata(p->port, p->framebuf[j + (i * PIXELWIDTH)], CS2);

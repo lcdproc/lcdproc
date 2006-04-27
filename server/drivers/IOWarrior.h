@@ -65,7 +65,7 @@ typedef enum {
   bignum,	/* big numbers */
   bigchar	/* big characters */
 } CGmode;
- 
+
 
 typedef struct cgram_cache {
   unsigned char cache[LCD_DEFAULT_CELLHEIGHT];

@@ -165,14 +165,14 @@ MTC_S16209X_init (Driver * drvthis)
     backlight_brightness = MTC_DEFAULT_BRIGHTNESS;
   }
 #endif // CAN_CONTROL_BACKLIGHT
-      
+
 #ifdef CAN_REBOOT_LCD
   /* Reboot display? */
   reboot = drvthis->config_get_bool(drvthis->name , "Reboot", 0, 0);
 #endif // CAN_REBOOT_LCD
-      
+
   /* End of config file parsing */
-  
+
   // Set up io port correctly, and open it...
   p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
   if (p->fd == -1) {
@@ -428,7 +428,7 @@ MTC_S16209X_string (Driver * drvthis, int x, int y, char string[])
 
   if ((y < 0) || (y >= p->height))
     return;
-  
+
   for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
     if (x >= 0)
       p->framebuf[y][x] = string[i];

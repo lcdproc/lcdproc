@@ -105,7 +105,7 @@ void
 lib_adv_bignum(Driver *drvthis, int x, int num, int do_init, int customchars)
 {
 int height = drvthis->height(drvthis);
-	
+
 	switch (height) { // Display heigth:
 		case 2: // 2 lines
 		case 3: // are 3 line displays really existing?
@@ -464,7 +464,7 @@ static void adv_bignum_num_2_5 (Driver *drvthis, int x, int num, int height, int
 		{'.'},
 		{"   "},
 		{"   "}}}; // Defines the character placing inside the bignumber.
-	
+
 	if (do_init) {	// Set customcharacters if needed.
 		static unsigned char bignum[5][8] = { // stored customcharacters
 		[0] {
@@ -514,7 +514,7 @@ static void adv_bignum_num_2_5 (Driver *drvthis, int x, int num, int height, int
 			b__XXXXX, }
 		};
 		int i;
-		
+
 		for (i = 0; i < 5 ; i++) { // put the customcharacters into the display
 			drvthis->set_char (drvthis, i, bignum[i]);
 		}
@@ -993,12 +993,12 @@ static char num_map[][4][4] =
 			b___XXX_, }
 		};
 		int i;
-		
+
 		for (i = 0; i < 3; i++) { // put the customcharacters into the display
 			drvthis->set_char(drvthis, i+1, bignum[i]);
 		}
 	}
-	
+
 	adv_bignum_write_num(drvthis, num_map, x, num, height); // write the number
 }
 
@@ -1142,11 +1142,11 @@ static char num_map[][4][4] = {
 			b_______, }
 		};
 		int i;
-		
+
 		for (i = 0; i < 8 ; i++) { // put the customcharacters into the display
 			drvthis->set_char(drvthis, i, bignum[i]);
 		}
 	}
-	
+
 	adv_bignum_write_num(drvthis, num_map, x, num, height); // write the number
 }

@@ -177,7 +177,7 @@ MODULE_EXPORT int
 icp_a106_width (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-  
+
   return p->width;
 }
 
@@ -188,7 +188,7 @@ MODULE_EXPORT int
 icp_a106_height (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-  
+
   return p->height;
 }
 
@@ -199,7 +199,7 @@ MODULE_EXPORT void
 icp_a106_clear (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-  
+
   memset(p->framebuf, ' ', p->width * p->height);
 }
 
@@ -248,7 +248,7 @@ MODULE_EXPORT void
 icp_a106_chr (Driver *drvthis, int x, int y, char ch)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-  
+
   y--;
   x--;
   //debug(RPT_DEBUG, "icp_a106_chr: x=%d, y=%d, chr=%x", x,y,ch);
@@ -264,7 +264,7 @@ MODULE_EXPORT void
 icp_a106_string (Driver *drvthis, int x, int y, char *s)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-  
+
   x--;  // Convert 1-based coords to 0-based
   y--;
 

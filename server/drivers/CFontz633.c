@@ -1024,7 +1024,7 @@ CFontz633_string (Driver *drvthis, int x, int y, char string[])
 
 	if ((y < 0) || (y >= p->height))
 		return;
-		
+
 	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
 		/* Check for buffer overflows... */
 		if (x >= 0)

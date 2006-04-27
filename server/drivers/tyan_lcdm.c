@@ -1,5 +1,5 @@
 /*  This is the LCDproc driver for tyan lcd module (tyan Barebone GS series)
-    
+
     Author: yhlu@tyan.com
 
     Copyright (C) 2004 Tyan Corp
@@ -157,7 +157,7 @@ tyan_lcdm_init (Driver * drvthis, char *args)
 
 	/* Set up io port correctly, and open it... */
 	debug(RPT_DEBUG, "tyan_lcdm: Opening serial device: %s", p->device);
-    
+
         p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (p->fd == -1) {
 		report(RPT_ERR, "%s: open(%s) failed (%s)",
@@ -202,7 +202,7 @@ tyan_lcdm_init (Driver * drvthis, char *args)
 		return -1;
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
-	
+
 	/* Set display-specific stuff.. */
 	tyan_lcdm_switch_mode(p->fd);
 	tyan_lcdm_hardware_clear(p->fd);
@@ -859,7 +859,7 @@ void tyan_lcdm_write_str(int fd, unsigned char *str,unsigned char start_addr, in
 //if Line 2: start_addr = 0xc0
 // 1<= length <=16
 	unsigned char cmd_str[20] = { TYAN_LCDM_CMD_BEGIN, 0x70, 0x02 };
-	
+
 	tyan_lcdm_set_rampos(fd, start_addr);
 	memset(cmd_str, ' ', 20);
 	cmd_str[0] = TYAN_LCDM_CMD_BEGIN;

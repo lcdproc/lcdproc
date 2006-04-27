@@ -1,5 +1,5 @@
 /*  This is the LCDproc driver header for ULA-200 (http://www.elv.de)
-    
+
     Author: bernhard.walle@gmx.de
 
     Copyright (C) 2006, Bernhard Walle

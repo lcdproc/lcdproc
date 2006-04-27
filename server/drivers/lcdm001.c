@@ -75,7 +75,7 @@ typedef struct driver_private_data {
 	char back_key;
 	char forward_key;
 	char main_menu_key;
-	
+
 	char *framebuf;
 
 	int width;
@@ -353,7 +353,7 @@ lcdm001_string (Driver *drvthis, int x, int y, char *string)
 		if (x >= 0)     // no write left of left border
 			p->framebuf[(y * p->width) + x] = string[i];
 	}
-    
+
 	debug(RPT_DEBUG, "LCDM001: printed string at (%d,%d)", x, y);
 }
 
@@ -391,7 +391,7 @@ lcdm001_old_vbar(Driver *drvthis, int x, int len)
 	}
 
 	if (!len)
- 		return;
+		return;
 
 	//TODO: Distinguish between len>=4 and len<4
 }
@@ -465,7 +465,7 @@ lcdm001_get_key (Driver *drvthis)
         char in = '\0';
 	const char *key = NULL;
 
- 	read(p->fd, &in, 1);
+	read(p->fd, &in, 1);
 	if (in == p->pause_key) {
 		key = "Enter";
 	} else if (in == p->back_key) {

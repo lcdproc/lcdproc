@@ -2,7 +2,7 @@
 
     Copyright (C) 2005 Simon Funke
     This source Code is based on CFontz Driver of this package.
-    
+
     2005-08-01 Version 0.1: mostly everything should work (vbar, hbar never tested)
 
     This program is free software; you can redistribute it and/or modify
@@ -106,7 +106,7 @@ NoritakeVFD_init (Driver *drvthis)
 	p->ccmode = standard;
 
 	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis);
-	
+
 	/* Read config file */
 	/* Which device should be used */
 	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
@@ -135,7 +135,7 @@ NoritakeVFD_init (Driver *drvthis)
 	}
 	p->brightness = tmp;
 
-	
+
 	/* Which speed */
 	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
 	if ((tmp != 1200) && (tmp != 2400) && (tmp != 9600) && (tmp != 19200) && (tmp != 115200)) {
@@ -161,7 +161,7 @@ NoritakeVFD_init (Driver *drvthis)
 		report(RPT_ERR, "%s: open() of %s failed (%s)", drvthis->name, p->device, strerror(errno));
 		return -1;
 	}
-	
+
 	tcgetattr(p->fd, &portset);
 
 	// We use RAW mode
@@ -184,7 +184,7 @@ NoritakeVFD_init (Driver *drvthis)
 
 	// Do it...
 	tcsetattr(p->fd, TCSANOW, &portset);
-	
+
 	/* make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
@@ -210,7 +210,7 @@ NoritakeVFD_init (Driver *drvthis)
 	NoritakeVFD_hidecursor(drvthis);
 	NoritakeVFD_set_brightness(drvthis, 1, p->brightness);
 	NoritakeVFD_autoscroll(drvthis, 0);
-	
+
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
@@ -363,7 +363,7 @@ NoritakeVFD_hidecursor (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	char out[4];
-	
+
 	snprintf(out, sizeof(out), "%c", 0x14);
 	write(p->fd, out, 1);
 }
@@ -716,14 +716,14 @@ NoritakeVFD_heartbeat (Driver *drvthis, int type)
 
 	NoritakeVFD_icon(drvthis, 0, 0);
 	NoritakeVFD_icon(drvthis, 1, 1);
-	
+
 	if (type)
 		saved_type = type;
 
 	if (type == HEARTBEAT_ON) {
 		// Set this to pulsate like a real heart beat...
 		whichIcon = (! ((timer + 4) & 5));
-	
+
 		// Put character on screen...
 		NoritakeVFD_chr(p->width, 1, whichIcon);
 

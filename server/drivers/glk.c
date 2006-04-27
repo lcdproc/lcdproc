@@ -109,7 +109,7 @@ glk_init(Driver *drvthis)
 
   /* What speed to use */
   p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 19200);
-  
+
   if (p->speed == 9600)       p->speed = B9600;
   else if (p->speed == 19200) p->speed = B19200;
   else if (p->speed == 38400) p->speed = B38400;
@@ -332,7 +332,7 @@ glk_flush(Driver *drvthis)
 
   for (y = 0; y < p->height; ++y) {
     int xs = -1;  /* XStart not set */
-    
+
     for (x = 0; x < p->width; ++x) {
       if ((*qf == *pf) && (xs >= 0)) {
         /* Write accumulated string */
@@ -572,7 +572,7 @@ glk_old_vbar(Driver *drvthis, int x, int len)
 
   if (y >= 0) {
     int lastc;
-    
+
     switch (len) {
       case 0 :  return; break;  /* Don't output a char */
       case 1 :  lastc = 138; break;  /* One bar */
@@ -596,7 +596,7 @@ glk_old_hbar(Driver *drvthis, int x, int y, int len)
   PrivateData *p = drvthis->private_data;
 
   debug(RPT_DEBUG, "glk_old_hbar(%d, %d, %d)", x, y, len);
-  
+
   while (len > p->cellwidth) {
     glk_chr(drvthis, x, y, 255);
     ++x;

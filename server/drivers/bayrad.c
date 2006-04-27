@@ -105,7 +105,7 @@ bayrad_init(Driver *drvthis)
 
   /* What speed to use */
   p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 9600);
-  
+
   if (p->speed == 1200)       p->speed = B1200;
   else if (p->speed == 2400)  p->speed = B2400;
   else if (p->speed == 9600)  p->speed = B9600;

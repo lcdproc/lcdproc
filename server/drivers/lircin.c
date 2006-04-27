@@ -146,7 +146,7 @@ lircin_init (Driver *drvthis)
 	fcntl (p->lircin_fd, F_SETFD, FD_CLOEXEC);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
-	
+
 	return 0;
 }
 
@@ -166,11 +166,11 @@ lircin_close (Driver *drvthis)
 		if (p->prog != NULL)
 			free(p->prog);
 		p->prog = NULL;
-		
+
 		if (p->lircin_irconfig != NULL)
 			lirc_freeconfig (p->lircin_irconfig);
 		p->lircin_irconfig = NULL;
-		
+
 		if (p->lircin_fd >= 0) {
 			lirc_deinit ();
 			close (p->lircin_fd);

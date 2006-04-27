@@ -112,16 +112,16 @@ SunOS (5.5.1):
 
 typedef struct driver_private_data {
 	WINDOW *win;
-	
+
 	int current_color_pair;
 	int current_border_pair;
 	int curses_backlight_state;
-	
+
 	int width;
 	int height;
 	int cellwidth;
 	int cellheight;
-	
+
 	int xoffs;
 	int yoffs;
 
@@ -225,7 +225,7 @@ curses_init (Driver *drvthis)
 	buf[sizeof(buf)-1] = '\0';
 	fore_color = set_foreground_color(buf);
 	debug(RPT_DEBUG, "%s: using foreground color %s", drvthis->name, buf);
-	
+
 	/* background color */
 	strncpy(buf, drvthis->config_get_string(drvthis->name, "Background", 0, CONF_DEF_BACKGR), sizeof(buf));
 	buf[sizeof(buf)-1] = '\0';
@@ -346,11 +346,11 @@ MODULE_EXPORT void
 curses_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	// Note that the program leaves a screen on
 	// the display to be left behind after closing;
 	// so don't clear...
-	
+
 	if (p != NULL) {
 		// Close curses
 		wrefresh(p->win);

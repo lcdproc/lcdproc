@@ -2,7 +2,7 @@
 
 /*
 List of driver entry point:
-   
+
 init		Work in progress...
 close		Implemented.
 width		If this is a variable, then implemented.
@@ -532,7 +532,7 @@ int CwLnx_init(Driver * drvthis)
     debug(RPT_INFO, "%s: init(%p)", drvthis->name, drvthis);
 
     /* Read config file */
-    
+
     /* Which serial device should be used */
     strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
     device[sizeof(device) - 1] = '\0';
@@ -568,7 +568,7 @@ int CwLnx_init(Driver * drvthis)
 	    report(RPT_WARNING, "%s: Speed must be 9600 or 19200. Using default %d",
 			    drvthis->name, DEFAULT_SPEED);
     }	    
-	    
+
     /* do we have a keypad? */
     if (drvthis->config_get_bool(drvthis->name , "Keypad", 0, 0)) {
 	report(RPT_INFO, "%s: Config tells us we have a keypad", drvthis->name);
@@ -677,7 +677,7 @@ CwLnx_close(Driver *drvthis)
 
     if (p != NULL) {
 	if (p->fd >= 0)
- 	    close(p->fd);
+	    close(p->fd);
 
 	if (p->framebuf != NULL)
 	    free(p->framebuf);
@@ -1263,7 +1263,7 @@ CwLnx_icon(Driver * drvthis, int x, int y, int icon)
 	 1,1,1,1,1,1,1,1,
 	 1,1,1,1,1,1,1,1
 	 };
-       
+
     char arrow_left[] = 
 	{
 	 0,0,0,1,1,0,0,0,
@@ -1283,7 +1283,7 @@ CwLnx_icon(Driver * drvthis, int x, int y, int icon)
 	 0,0,1,1,1,1,0,0,
 	 0,0,0,1,1,0,0,0
 	 };
-       
+
 
 /* Yes we know, this is a VERY BAD implementation */
 	switch (icon) {
@@ -1395,7 +1395,7 @@ CwLnx_clear(Driver *drvthis)
         memset(p->framebuf, ' ', p->width * p->height);
 
     /* We could remember the custom char are not in use anymore. $$$ */
-    
+
     debug(RPT_DEBUG, "CwLnx: cleared framebuffer");
 }
 
@@ -1425,7 +1425,7 @@ CwLnx_string(Driver * drvthis, int x, int y, char *string)
 
 /*
     This is another way to check for buffer overflow
-  
+
     for (int i = 0; string[i]; i++) {
 	if ((y * p->width) + x + i > (p->width * p->height))
 	    break;

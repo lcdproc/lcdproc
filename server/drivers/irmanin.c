@@ -73,7 +73,7 @@ irmanin_init (Driver *drvthis)
 		return -1;
 	if (drvthis->store_private_ptr(drvthis, p))
 		return -1;
-	
+
 	/* Read config file */
 
 	/* What device should be used */
@@ -141,7 +141,7 @@ irmanin_close (Driver *drvthis)
 	if (p != NULL)
 		free(p);
 	drvthis->store_private_ptr(drvthis, NULL);
-	
+
 	ir_free_commands();
 	ir_finish();
 }

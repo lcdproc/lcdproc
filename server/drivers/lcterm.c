@@ -493,7 +493,7 @@ lcterm_init_hbar (Driver *drvthis)
 		    drvthis->name);
     return;
   }
-  
+
   p->ccmode = p->last_ccmode = CCMODE_HBAR;
 
   lcterm_set_char(drvthis, 1, hbar_1);

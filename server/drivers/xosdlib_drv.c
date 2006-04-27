@@ -83,7 +83,7 @@ xosdlib_drv_init (Driver *drvthis)
 	if (drvthis->config_has_key(drvthis->name, "Size")) {
 		int w;
 		int h;
-		
+
 		strncpy(size, drvthis->config_get_string(drvthis->name, "Size",
 							 0, DEFAULT_SIZE), sizeof(size));
 		size[sizeof(size) - 1] = '\0';
@@ -109,7 +109,7 @@ xosdlib_drv_init (Driver *drvthis)
 		}
 	}
 	report(RPT_INFO, "%s: using size %dx%d", drvthis->name, p->width, p->height);
-		
+
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
@@ -185,7 +185,7 @@ xosdlib_drv_close (Driver *drvthis)
 		if (p->osd)
 			xosd_destroy(p->osd);
 		p->osd = NULL;
-		
+
 		if (p->framebuf != NULL)
 			free(p->framebuf);
 		p->framebuf = NULL;
@@ -253,7 +253,7 @@ xosdlib_drv_flush (Driver *drvthis)
 	for (i = 0; i < p->height; i++) {
 		memcpy(buffer, p->framebuf + (i * p->width), p->width);
 		buffer[p->width] = '\0';
-		
+
 		debug(RPT_DEBUG, "xosd: flushed string \"%s\" at (%d,%d)", buffer, 0, i);
 		xosd_display(p->osd, i, XOSD_string, buffer);
 	}	
@@ -269,7 +269,7 @@ xosdlib_drv_string (Driver *drvthis, int x, int y, char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
-	
+
 	debug(RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
 
 	x--;

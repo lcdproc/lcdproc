@@ -21,10 +21,10 @@
   in this file was either written by David Glaude for LCDproc or
   identical to the GPL'ed code or so close to it that the differences
   are negligible.
-    
+
   For detailed information about the code analysis, please
   contact the LCDproc maintainer, Peter Marschall <peter@adpm.de>
-    
+
   This file is hereby released under the terms below:
 
     This program is free software; you can redistribute it and/or modify
@@ -40,7 +40,7 @@
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
- 
+
  */
 
 #include <unistd.h>
@@ -95,13 +95,13 @@ void EmptyKeyRing(KeyRing *kr)
 int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 {
 	if (((kr->head + 1) % KEYRINGSIZE) != (kr->tail % KEYRINGSIZE)) {
- 		/* fprintf(stderr, "We add key: %d\n", key); */
+		/* fprintf(stderr, "We add key: %d\n", key); */
 
 	        kr->contents[kr->head % KEYRINGSIZE] = key;
   		kr->head = (kr->head + 1) % KEYRINGSIZE;
 		return 1;
 	}
-	
+
 	/* KeyRing overflow: do not accept extra key */
 	return 0;
 }
@@ -271,7 +271,7 @@ void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 {
 	unsigned char buffer[MAX_DATA_LENGTH];
 	int BytesRead;
-	
+
 #if defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0)
 	fd_set rfds;
 	struct timeval timeout;
@@ -332,7 +332,7 @@ int BytesAvail(ReceiveBuffer *rb)
 unsigned char GetByte(ReceiveBuffer *rb)
 {
 	unsigned char return_byte = '\0';
-  
+
 	/* wrap read pointer to the receive buffer */
 	rb->tail %= RECEIVEBUFFERSIZE;
 
@@ -353,7 +353,7 @@ unsigned char GetByte(ReceiveBuffer *rb)
 int PeekBytesAvail(ReceiveBuffer *rb)
 {
 	int avail_bytes = rb->head - rb->peek;
-	
+
 	if (avail_bytes < 0)
 		avail_bytes += RECEIVEBUFFERSIZE;
 
@@ -410,7 +410,7 @@ test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 	/* wait for answer packet but forever (LCDs should answer within max. 250ms) */
 	for (loop = 250000/CFONTZ633_WRITE_DELAY; !response_received && loop > 0; loop--) {
 		int is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
-		
+
 		while (is_msg != GIVE_UP) {
 			if (is_msg == GOOD_MSG) {
 				/* key activity ? */
@@ -431,7 +431,7 @@ test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 			if (in->command == 0x80)
 				AddKeyToKeyRing(&keyring, in->data[0]);
 		}
-	
+
 		is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 	}
 
@@ -487,10 +487,10 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 		/* fprintf(stderr, "###: Unknown command.\n"); */
 		return(TRY_AGAIN);
 	}
-	
+
   	/* There is a valid command byte. Get the data_length. */
 	in->data_length = PeekByte(&receivebuffer);
-	
+
   	/* The data length must be within reason. */
   	if (MAX_DATA_LENGTH < in->data_length) {
 		//Throw out one byte of garbage. Next pass through should re-sync.
@@ -559,7 +559,7 @@ print_packet(COMMAND_PACKET *packet)
 	//There is enough data to make a packet. Transfer over the data.
 	for (i = 0; i < packet->data_length; i++)
 		fprintf(stderr, " %02x", packet->data[i]);
-  
+
 	fprintf(stderr, " ] %02x %02x .\n", packet->crc.as_bytes[0], packet->crc.as_bytes[1]);
 }
 

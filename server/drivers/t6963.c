@@ -216,7 +216,7 @@ MODULE_EXPORT void
 t6963_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	debug(RPT_INFO, "Shutting down!");
 
 	if (p != NULL) {
@@ -226,7 +226,7 @@ t6963_close (Driver *drvthis)
 
 		if (p->display_buffer1 != NULL)
 			free(p->display_buffer1);
-	
+
 		if (p->display_buffer2 != NULL)
 			free(p->display_buffer2);
 
@@ -242,7 +242,7 @@ MODULE_EXPORT int
 t6963_width (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	return p->width;
 }
 
@@ -253,7 +253,7 @@ MODULE_EXPORT int
 t6963_height (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	return p->height;
 }
 
@@ -264,7 +264,7 @@ MODULE_EXPORT void
 t6963_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	debug(RPT_DEBUG, "Clearing Display of size %d x %d", p->width, p->height);
 	memset(p->display_buffer1, ' ', p->width * p->height);
 	debug(RPT_DEBUG, "Done");
@@ -292,7 +292,7 @@ t6963_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
-	
+
 	debug(RPT_DEBUG, "Flushing %d x %d", p->width, p->height);
 
 	for (i = 0; i < (p->width * p->height); i++) {
@@ -495,7 +495,7 @@ void
 t6963_low_data (Driver *drvthis, u8 byte)
 {
     PrivateData *p = drvthis->private_data;
-    
+
     t6963_low_dsp_ready(drvthis);
     t6963_low_set_control(drvthis, 1, 1, 0, 1);   // CD down (data)
     t6963_low_set_control(drvthis, 0, 0, 0, 1);   // CE & WR down
@@ -513,14 +513,14 @@ void
 t6963_low_command (Driver *drvthis, u8 byte)
 {
     PrivateData *p = drvthis->private_data;
-    
+
     t6963_low_dsp_ready(drvthis);
     t6963_low_set_control(drvthis, 1, 1, 1, 1);  // CD up (command)
     t6963_low_set_control(drvthis, 0, 0, 1, 1);  // CE & WR down
     port_out(T6963_DATA_PORT(p->port), byte);    // present data to LCD on PC's port pins
     port_out(0x80, 0x00);
     t6963_low_set_control(drvthis, 1, 1, 0, 1);  // CE & WR up, CD down
-    
+
 /*
     port_out(T6963_DATA_PORT(p->port), byte);  // present data to LCD on PC's port pins
     t6963_low_set_control(drvthis, 1, 1, 1, 1);
@@ -532,7 +532,7 @@ void
 t6963_low_command_byte(Driver *drvthis, u8 cmd, u8 byte)
 {
     //PrivateData *p = drvthis->private_data;
-    
+
     t6963_low_data(drvthis, byte);
     t6963_low_command(drvthis, cmd);
 }
@@ -541,7 +541,7 @@ void
 t6963_low_command_2_bytes(Driver *drvthis, u8 cmd, u8 byte1, u8 byte2)
 {
     //PrivateData *p = drvthis->private_data;
-    
+
     t6963_low_data(drvthis, byte1);
     t6963_low_data(drvthis, byte2);
     t6963_low_command(drvthis, cmd);
@@ -551,7 +551,7 @@ void
 t6963_low_command_word(Driver *drvthis, u8 cmd, u16 word)
 {
     //PrivateData *p = drvthis->private_data;
-    
+
     t6963_low_data(drvthis, word%256);
     t6963_low_data(drvthis, word>>8);
     t6963_low_command(drvthis, cmd);

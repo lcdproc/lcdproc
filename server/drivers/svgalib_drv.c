@@ -253,7 +253,7 @@ svga_init (Driver *drvthis)
 	if (drvthis->config_has_key(drvthis->name, "Size")) {
 		int w;
 		int h;
-		
+
 		strncpy(size, drvthis->config_get_string(drvthis->name, "Size",
 							 0, DEFAULT_SIZE), sizeof(size));
 		size[sizeof(size) - 1] = '\0';
@@ -279,7 +279,7 @@ svga_init (Driver *drvthis)
 		}
 	}
 	report(RPT_INFO, "%s: using Size %dx%d", drvthis->name, p->width, p->height);
-		
+
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
@@ -351,7 +351,7 @@ svga_init (Driver *drvthis)
 		report(RPT_ERR, "%s: unable to allocate font memory", drvthis->name);
 		return -1;
 	}	
-		
+
 	tmp = (p->brightness * 255) / 1000;
 	if (tmp <= 0)
 		tmp = 1;
@@ -469,7 +469,7 @@ svga_string (Driver *drvthis, int x, int y, char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
-	
+
 	debug(RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
 
 	for (i = 0; string[i] != '\0'; i++) {

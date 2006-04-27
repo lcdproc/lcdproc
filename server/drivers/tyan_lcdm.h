@@ -1,5 +1,5 @@
 /*  This is the LCDproc driver header for tyan lcd module (tyan Barebone GS series)
-    
+
     Author: yhlu@tyan.com
 
     Copyright (C) 2004 Tyan Corp

@@ -2,7 +2,7 @@
 
     Copyright (C) 2005 Simon Funke
     This source Code is based on CFontz Driver of this package.
-    
+
     2005-08-01 Version 0.1: mostly everything should work (vbar, hbar never tested)
 
     This program is free software; you can redistribute it and/or modify

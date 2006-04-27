@@ -113,7 +113,7 @@ LB216_init(Driver * drvthis)
 
   /* What speed to use */
   p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, LB216_DEFAULT_SPEED);
-  
+
   if (p->speed == 2400)       p->speed = B2400;
   else if (p->speed == 9600)  p->speed = B9600;
   else {
@@ -129,12 +129,12 @@ LB216_init(Driver * drvthis)
 		    drvthis->name, LB216_DEFAULT_BRIGHTNESS);
     p->backlight_brightness = LB216_DEFAULT_BRIGHTNESS;
   }
-      
+
   /* Reboot display? */
   reboot = drvthis->config_get_bool(drvthis->name , "Reboot", 0, 0);
 
   /* End of config file parsing */
-      
+
   // Set up io port correctly, and open it...
   p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
   if (p->fd == -1) {
@@ -310,7 +310,7 @@ LB216_chr(Driver * drvthis, int x, int y, char c)
 
   if ((unsigned char) c == 254) 	/* protect command starting char */
     c= '#';
-    
+
   if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
     p->framebuf[(y * p->width) + x] = c;
 }
@@ -351,7 +351,7 @@ static void LB216_reboot(Driver * drvthis)
 {
   PrivateData *p = drvthis->private_data;
   char out[4];
-  
+
   snprintf(out, sizeof(out), "%c%c", 254, 1);
   write(p->fd, out, 2);
 }
@@ -368,13 +368,13 @@ LB216_string (Driver * drvthis, int x, int y, char string[])
 
   if ((y < 0) || (y >= p->height))
     return;
-  
+
   for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
     unsigned char c = string[i];
 
     if (c == 254) 	/* protect command starting char */
       c= '#';
-    
+
     if (x >= 0)
       p->framebuf[(y * p->width) + x] = c;
   }
@@ -547,7 +547,7 @@ LB216_vbar(Driver * drvthis, int x, int len)
   PrivateData *p = drvthis->private_data;
   char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
   int y;
-  
+
   for (y = p->height; (y > 0) && (len > 0); y--) {
     if (len >= p->cellheight)
       LB216_chr(drvthis, x, y, map[8]);

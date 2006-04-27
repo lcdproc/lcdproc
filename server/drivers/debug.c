@@ -72,7 +72,7 @@ MODULE_EXPORT int
 debug_width (Driver *drvthis)
 {
 	report(RPT_INFO, "%s()", __FUNCTION__);
-	
+
 	return width;
 }
 
@@ -83,7 +83,7 @@ MODULE_EXPORT int
 debug_height (Driver *drvthis)
 {
 	report(RPT_INFO, "%s()", __FUNCTION__);
-	
+
 	return height;
 }
 
@@ -147,7 +147,7 @@ debug_string (Driver *drvthis, int x, int y, char string[])
 
 	if ((y < 0) || (y >= height))
 		return;
-		
+
 	for (i = 0; (string[i] != '\0') && (x < width); i++, x++) {
 		if (x >= 0)	// no write left of left border
 			framebuf[(y * width) + x] = string[i];
@@ -164,7 +164,7 @@ debug_chr (Driver *drvthis, int x, int y, char c)
 	report(RPT_DEBUG, "%s(%i,%i,%c)", __FUNCTION__, x, y, c);
 
 	x--; y--;
-	
+
 	if ((x >= 0) && (y >= 0) && (x < width) && (y < height))
 		framebuf[(y * width) + x] = c;
 }

@@ -267,7 +267,7 @@ serialVFD_init (Driver *drvthis)
 	p->refresh_timer = 0;
 
 	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis );
-	
+
 	/* Read config file */
 	/* Which device should be used */
 	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
@@ -562,7 +562,7 @@ serialVFD_init (Driver *drvthis)
 			//(useful for displays with less then 30 usercharacters and predefined bars)
 			const unsigned int usr_chr_mapping_2[31]=
 			{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,\
- 	 		0x0F, 0x10, 0x13 , 0x14, 0x1C, 0x1D, 0x1E, 0x1F};
+	 		0x0F, 0x10, 0x13 , 0x14, 0x1C, 0x1D, 0x1E, 0x1F};
 			for (tmp=0;tmp < 31 ;tmp++)
 				p->usr_chr_mapping[tmp]=usr_chr_mapping_2[tmp];
 			break;
@@ -729,11 +729,11 @@ serialVFD_set_char (Driver *drvthis, int n, unsigned char *dat)
 
 		for (bit = 0; bit < 8; bit++) {
 			int pos = (int) p->usr_chr_dot_assignment[bit+8*byte+1];
-			
+
 			if (pos > 0) {
 				int posbyte = (pos-1) / 5;
 				int posbit = 4 - ((pos-1) % 5);
-					
+
 				letter |= ((dat[posbyte] >> posbit) & 1) << bit;;
 			}	
 		}
@@ -1077,7 +1077,7 @@ MODULE_EXPORT void
 serialVFD_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	serialVFD_draw_frame(drvthis, p->framebuf);
 }
 

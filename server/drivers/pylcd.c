@@ -5,7 +5,7 @@
 
  Copyright (C) 2005 Silvan Marco Fin <silvan@kernelconcepts.de>
  Copyright (C) 2006 coresystems GmbH <info@coresystems.de>
- 
+
  This program is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
@@ -185,7 +185,7 @@ real_send_tele(PrivateData *p, char *buffer, int len)
      * characters below 0x20.
      * ie. 0x8 --> <ESC> 0x28
      */
-    
+
     while (len--) {
         if (buffer[i]<0x20) {
             buffer2[j++]=0x1b;
@@ -196,7 +196,7 @@ real_send_tele(PrivateData *p, char *buffer, int len)
     }
     buffer2[j++]=3; // emit <ETX> 
     len=j;	    // new package length
-    
+
     /* calculate <BCC> over all bytes */
     for (i=0; i<len; i++)
         cc ^= buffer2[i];
@@ -208,7 +208,7 @@ real_send_tele(PrivateData *p, char *buffer, int len)
 
     /* Take a little nap. This works as a pacemaker */
     usleep(50);
-    
+
     /*debug(RPT_DEBUG, "%s: sent %s", __FUNCTION__, buffer);*/
 
     return 0;
@@ -302,7 +302,7 @@ pyramid_init (Driver *drvthis, char *args)
     PrivateData *p;
 
     /* get memory for private data */
-    
+
     p = (PrivateData *) malloc(sizeof(PrivateData));
     if ((p == NULL) || (drvthis->store_private_ptr(drvthis, p) < 0))
     {
@@ -317,14 +317,14 @@ pyramid_init (Driver *drvthis, char *args)
     p->cellwidth=CELLWIDTH;
     p->cellheight=CELLHEIGHT;
     p->custom = normal;
-    
+
     strcpy(p->last_key_pressed, NOKEY);
     p->last_key_time = timestamp(p);
     p->last_buf_time = timestamp(p);
 
     p->timeout.tv_sec = 0;
     p->timeout.tv_usec = MICROTIMEOUT;
-    
+
     strcpy(p->framebuffer, "D                                ");
     p->FB_modified = 1;
 
@@ -338,7 +338,7 @@ pyramid_init (Driver *drvthis, char *args)
     report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
     /* Initialize connection to the LCD  */
-    
+
     /* open and initialize serial device */
     p->FD = open(p->device, O_RDWR);
 
@@ -346,16 +346,16 @@ pyramid_init (Driver *drvthis, char *args)
         report(RPT_ERR, "%s: open(%s) failed: %s", drvthis->name, p->device, strerror(errno));
         return -1;
     }
-    
+
     if (initTTY(drvthis, p->FD) != 0)
         return -1;
-    
+
     /* Acknowledge all telegramms, the device may yet be sending.
      * (Reset doesn't clear telegramms, darn protocol ... )
      */
 
     tcflush(p->FD, TCIFLUSH); /* clear everything */
-    
+
     while (1) {
         i = read_tele(p, buffer);
         if (i == True)
@@ -460,7 +460,7 @@ pyramid_flush (Driver *drvthis)
 		case 0xb0: mesg[i]=0xdf; break; // °
 		}
 	}
-	
+
         send_tele(p, "C0101");
         real_send_tele(p, mesg, 33); /* We do not wait for the ACK here*/
         p->FB_modified=False;
@@ -505,15 +505,15 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 {
 	char tele[10] = "G@ABCDEFGH";
 	int row, column, pixels;
-	
+
 	PrivateData *p = (PrivateData *) drvthis->private_data;
-	
+
 
 	if (n<0 && n>15) {
 		debug(RPT_DEBUG, "only characters 0-15 can be changed.\n");
 		return;
 	}
-	
+
 	if (!dat) {
 		debug(RPT_DEBUG, "no character data\n");
 		return;
@@ -521,7 +521,7 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 
 	// which character?
 	tele[1]=n+0x40;
-	
+
 	for (row = 0; row < p->cellheight; row++) {
 		pixels=0; 
 		for (column = 0; column < p->cellwidth; column++) {
@@ -530,7 +530,7 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 		}
 		pixels |= 0x40; // pixel information is transferred with
 				// an offset of 40h
-		
+
 		tele[row+2]=pixels;
 	}
         real_send_tele(p, tele, 10);
@@ -737,7 +737,7 @@ pyramid_init_custom1 (Driver *drvthis)
 		1, 1, 0, 0, 0,
 		1, 0, 0, 0, 0,
 	};
-	
+
 	char c[] = {
 		0, 1, 1, 1, 1,
 		0, 1, 1, 1, 1,
@@ -759,7 +759,7 @@ pyramid_init_custom1 (Driver *drvthis)
 		0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0,
 	};
-	
+
 	if (p->custom != custom1) {
 		pyramid_set_char (drvthis, 1, a);
 		pyramid_set_char (drvthis, 2, b);
@@ -821,7 +821,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		 1, 1, 0, 1, 1,
 		 1, 1, 1, 1, 1,
 		 },
-		
+
 		{
                  0, 0, 1, 0, 0, 		  // Arrow up 
                  0, 1, 1, 1, 0,
@@ -832,7 +832,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
                  0, 0, 1, 0, 0,
                  0, 0, 0, 0, 0,
                  },
-		
+
                 {
                  0, 0, 1, 0, 0, 		  // Arrow Down
                  0, 0, 1, 0, 0,
@@ -843,7 +843,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
                  0, 0, 1, 0, 0,
                  0, 0, 0, 0, 0,
                  },
-		
+
                 {
                  0, 0, 0, 0, 0,			  // Checkbox off 
                  0, 0, 0, 0, 0,
@@ -854,7 +854,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
                  1, 1, 1, 1, 1,
                  0, 0, 0, 0, 0,
                  },
-		
+
                 {
                  0, 0, 1, 0, 0, 		  // Checkbox on
                  0, 0, 1, 0, 0,
@@ -865,7 +865,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
                  1, 1, 1, 1, 1,
                  0, 0, 0, 0, 0,
                  },
-		
+
                 {
                  0, 0, 0, 0, 0,			  // Checkbox gray 
                  0, 0, 0, 0, 0,
@@ -876,7 +876,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
                  1, 1, 1, 1, 1,
                  0, 0, 0, 0, 0,
                  },
-		
+
 		{
 		 0, 0, 0, 0, 0,			  // Ellipsis
 		 0, 0, 0, 0, 0,
@@ -906,7 +906,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		case ICON_BLOCK_FILLED:
 			pyramid_chr( drvthis, x, y, 255 );
 			break;
-			
+
 		case ICON_HEART_OPEN:
 			pyramid_set_char( drvthis, 0, icons[0] );
 			pyramid_chr( drvthis, x, y, 0 );
@@ -916,13 +916,13 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 			pyramid_set_char( drvthis, 0, icons[1] );
 			pyramid_chr( drvthis, x, y, 0 );
 			break;
-			
+
 		case ICON_ARROW_UP:
 			pyramid_set_char( drvthis, 2, icons[2] );
 			pyramid_chr( drvthis, x, y, 2 );
 			p->custom = icon;
 			break;
-			
+
 		case ICON_ARROW_DOWN:
 			pyramid_set_char( drvthis, 3, icons[3] );
 			pyramid_chr( drvthis, x, y, 3 );
@@ -932,7 +932,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		case ICON_ARROW_LEFT:
 			pyramid_chr( drvthis, x, y, '\177' );
 			break;
-			
+
 		case ICON_ARROW_RIGHT:
 			pyramid_chr( drvthis, x, y, '\176' );
 			break;
@@ -946,12 +946,12 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 			pyramid_set_char( drvthis, 11, icons[5] );
 			pyramid_chr( drvthis, x, y, 11 );
 			break;
-			
+
 		case ICON_CHECKBOX_GRAY:
 			pyramid_set_char( drvthis, 12, icons[6] );
 			pyramid_chr( drvthis, x, y, 12 );
 			break;
-			
+
 		case ICON_ELLIPSIS:
 			pyramid_set_char( drvthis, 13, icons[7] );
 			pyramid_chr( drvthis, x, y, 13 );
@@ -1019,7 +1019,7 @@ pyramid_output (Driver *drvthis, int state)
 
     for (i = 0; i < 7; i++) 
         p->led[i] = state & (1 << i);
-    
+
     set_leds(p);
 
     if(state & (1 << 8)) {
@@ -1043,7 +1043,7 @@ pyramid_get_key (Driver *drvthis)
      * and as long as we got ACKs, we ignore them. 
      * (eat up all pending ACKs)
      */
-    
+
     while (1) {
         retval = read_tele(p, buffer);
         if ((retval == False) || (buffer[0] != 'Q')) break;
@@ -1090,7 +1090,7 @@ pyramid_get_key (Driver *drvthis)
         return "Enter";
     if (strcmp(p->last_key_pressed, "K1000") == 0) /* last from left */
         return "Escape";
-    
+
 #ifdef PYRAMID_DECODE_COMBINED_KEYPRESSES
     /* Do we really want to type that much */
     if (strcmp(p->last_key_pressed, "K0012") == 0) /* A+B */
@@ -1106,7 +1106,7 @@ pyramid_get_key (Driver *drvthis)
         return "Up+Escape";
     if (strcmp(p->last_key_pressed, "K2001") == 0) /* D+A */
         return "Escape+Up";
-    
+
     if (strcmp(p->last_key_pressed, "K0120") == 0) /* B+C */
         return "Down+Enter";
     if (strcmp(p->last_key_pressed, "K0210") == 0) /* C+B */
@@ -1115,7 +1115,7 @@ pyramid_get_key (Driver *drvthis)
         return "Down+Escape";
     if (strcmp(p->last_key_pressed, "K2010") == 0) /* D+B */
         return "Escape+Down";
- 
+
     if (strcmp(p->last_key_pressed, "K0012") == 0) /* C+D */
         return "Enter+Escape";
     if (strcmp(p->last_key_pressed, "K0021") == 0) /* D+C */

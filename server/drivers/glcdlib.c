@@ -74,8 +74,8 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 	//##################################################################
 	//	Read config file
 	//##################################################################
-	
-	
+
+
 	//##################################################################
 	//	mandatory entries:
 
@@ -85,10 +85,10 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 		drvthis->config_get_string(drvthis->name, "Driver", 0, "image"),
 		sizeof(strCfgDriver));
 	strCfgDriver[sizeof(strCfgDriver)-1] = '\0';
-		
+
 	// use or not FreeType2
 	bool bCfgUseFT2 = drvthis->config_get_bool(drvthis->name, "UseFT2", 0, true);
-	
+
 	// which text resolution
 	const char strTextResDefault[] = "16x4";
 	char strTextRes[7];
@@ -107,7 +107,7 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 			drvthis->name, strTextRes, strTextResDefault);
 		sscanf(strTextResDefault, "%dx%d", &nCfgTextWidth, &nCfgTextRows);
 	}
-	
+
 	// which font file
 	const char strCfgFontFileDef[] = "/usr/share/fonts/corefonts/courbd.ttf";
 	char strCfgFontFile[256];
@@ -144,7 +144,7 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 			drvthis->name, strMinFontFaceSize, strMinFaceSizeDef);
 		sscanf(strMinFaceSizeDef, "%dx%d", &nCfgMinFontFaceWidth, &nCfgMinFontFaceHeight);
 	}		
-		
+
 	// show debugging frame?
 	bool bShowDbgFrame = drvthis->config_get_bool(drvthis->name, "ShowDebugFrame", 0, true);
 	// show big border?
@@ -186,7 +186,7 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 			bUpsideDown,
 			bBacklight,
 			nContrast);
-	
+
 	// apply supplemental settings
 	int nBrightness = drvthis->config_get_int(drvthis->name, "Brightness", 0, 50);
 	glcddriverSetBrightness(pPD->glcdDriver, nBrightness);

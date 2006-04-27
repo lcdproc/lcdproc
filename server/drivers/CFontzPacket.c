@@ -510,7 +510,7 @@ CFontzPacket_flush (Driver *drvthis)
       /* Strategy:
        * - one update command per chunk of modified data
        */
-      
+
       for (j = 0; j < p->width; ) {
 	// skip over identical portions
 	for ( ; *sp == *sq && j < p->width; sp++, sq++, j++)
@@ -544,7 +544,7 @@ CFontzPacket_flush (Driver *drvthis)
        * - not more than one update command per line
        * - leave out leading and trailing parts that are identical
        */
-      
+
       // set  pointers to end of the line in frame buffer & backing store
       unsigned char *ep = sp + (p->width - 1);
       unsigned char *eq = sq + (p->width - 1);
@@ -553,7 +553,7 @@ CFontzPacket_flush (Driver *drvthis)
       // skip over leading identical portions of the line
       for (j = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, j++)
 	;
-	  
+
       // skip over trailing identical portions of the line
       for (length = p->width - j; (length > 0) && (*ep == *eq); ep--, eq--, length--)
 	;
@@ -561,7 +561,7 @@ CFontzPacket_flush (Driver *drvthis)
       /* there are differences, ... */
       if (length > 0) {
         unsigned char out[23];
-	      
+
 	/* ... send then to the LCD */
 	out[0] = j;	// column
 	out[1] = i;	// line
@@ -1203,7 +1203,7 @@ CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
 
 	if (p->model != 633) {
 		unsigned char cpos[2] = { 0, 0 };
-		
+
 		/* set cursor state */
 		switch (state) {
 			case CURSOR_OFF:	// no cursor
@@ -1304,7 +1304,7 @@ CFontzPacket_output(Driver *drvthis, int state)
 	for (lednum = 0; lednum < CF635_NUM_LEDs; lednum++) {
 		unsigned int mask = (1 << lednum);
 		int on_off = (state & mask);
-		
+
 		if ((p->LEDstate & mask) != on_off) {
 			out[0] = CFontz635_LEDs[lednum];
 			out[1] = (on_off == 0) ? 0 : 100;
@@ -1322,7 +1322,7 @@ MODULE_EXPORT const char *
 CFontzPacket_get_info(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-  
+
 	snprintf(p->info, sizeof(p->info)-1, "CrystalFontz Driver: CFA-%d",
 		 p->model);
 	return p->info;

@@ -356,7 +356,7 @@ CFontz_chr (Driver *drvthis, int x, int y, unsigned char c)
 
 	if ((x < 0) || (y < 0) || (x >= p->width) || (y >= p->height))
                 return;
-	
+
 	if (c < 32)
 		c += 128;
 

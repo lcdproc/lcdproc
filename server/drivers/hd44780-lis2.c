@@ -104,12 +104,12 @@ int hd_init_lis2 (Driver *drvthis)
 
 	return 0;
 }
- 	
+
 
 void SetMatrice(PrivateData *p, int fd, int matriceNum, int ligne, int point)
 {
- 	// char from 0 to 7
- 	// line from 0 to 7 from top to bottom
+	// char from 0 to 7
+	// line from 0 to 7 from top to bottom
 	// pixel 0/1 is 5 bit coding from 0 to 31 from right to left (16/8/4/2/1)
 	writeChar(p->fd,0);
 	writeChar(p->fd,171);
@@ -146,7 +146,7 @@ void gotoXY(int fd, int x, int y)
 void writeChar(int fd, int code)
 {
 	char buf = code;
-	
+
 	write(fd, &buf, 1);
 }
 
@@ -183,9 +183,9 @@ void lis2_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned ch
 			int x = 0;
 			int y = 0;
 			int pos = 0;
-			
+
 			pos = (ch & ~POSITION);
-	
+
 			if (p->ext_mode) {				
 				y = pos/0x20;
 				x = pos-(y*0x20);
@@ -194,12 +194,12 @@ void lis2_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned ch
 				y = pos/0x40;
 				x = pos-(y*0x40);
 			}
-			
+
 			writeChar( p->fd, 0);
 			writeChar( p->fd, 161 + y);
 			writeChar( p->fd, x);
 			writeChar( p->fd, 167);
-			
+
 		}
 		else if ((ch & SETCHAR)!=0)		
 		{
@@ -209,7 +209,7 @@ void lis2_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned ch
 		}
 	 	else write( p->fd, &ch, 1 );
 	}
-	
+
 }
 
 void lis2_HD44780_backlight (PrivateData *p, unsigned char state)

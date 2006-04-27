@@ -6,7 +6,7 @@
 
    * IOWarrior LCD routines 
        Copyright (c) 2004  Christian Vogelgsang <chris@lallafa.de>
-	
+
    * misc. files from LCDproc source tree
 
   This program is free software; you can redistribute it and/or modify
@@ -196,7 +196,7 @@ int iowled_on_off(usb_dev_handle *udh,int type, unsigned int pattern)
     led_cmd[i] = (unsigned char) (0xFF & pattern);
     pattern >>= 8;
   }  
-  
+
   return iow_led_wcmd(udh, (type == iowProd40) ? 4 : 2, led_cmd);
 }
 
@@ -217,7 +217,7 @@ char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
 
 struct usb_bus *busses;
 struct usb_bus *bus;
-  
+
 int w;
 int h;
 
@@ -265,7 +265,7 @@ PrivateData *p;
 
   /* special option lastline (some displays need it against the underline effect) */
   p->lastline = drvthis->config_get_bool(drvthis->name, "lastline", 0, 1);
-  
+
   /* Contrast of the LCD can be changed by adjusting a trimpot */
 
   /* End of config file parsing */
@@ -511,7 +511,7 @@ MODULE_EXPORT void
 IOWarrior_flush(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
-   
+
 int x, y;
 int i;
 int count;
@@ -577,7 +577,7 @@ PrivateData *p = drvthis->private_data;
   memset(p->framebuf, ' ', p->width * p->height);
 
   p->ccmode = standard;
-  
+
   debug(RPT_DEBUG, "%s: cleared framebuffer", drvthis->name);
 }
 
@@ -1017,7 +1017,7 @@ IOWarrior_output(Driver *drvthis, int on)
      return;
 
   p->output_state = on;
-  
+
   iowled_on_off(p->udh, p->productID, (on) ? p->output_mask : 0);
 }
 
@@ -1029,7 +1029,7 @@ MODULE_EXPORT const char *
 IOWarrior_get_info (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
-  
+
   snprintf(p->info, sizeof(p->info)-1, "IOWarrior Driver: %s %s (0x%0x) S/N: %s",
            p->manufacturer, p->product, p->productID, p->serial);
   return p->info;

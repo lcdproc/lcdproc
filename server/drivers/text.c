@@ -176,7 +176,7 @@ text_flush (Driver *drvthis)
 	memset(out, '-', p->width);
 	out[p->width] = '\0';
 	printf("+%s+\n", out);
-	
+
         fflush(stdin);
 }
 

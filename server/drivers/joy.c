@@ -101,7 +101,7 @@ joy_init (Driver *drvthis)
 	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
 	/* End of config file parsing (1st part) */
-	
+
 	if ((p->fd = open(p->device, O_RDONLY)) < 0) {
 		report(RPT_ERR, "%s: open(%s) failed (%s)", 
 				drvthis->name, p->device, strerror(errno));
@@ -151,7 +151,7 @@ joy_init (Driver *drvthis)
 					drvthis->name, i+1, p->axismap[2*i + 1]);
 		}	
 	}
-	
+
 	for (i = 0; i < p->buttons; i++) {
 		char mapkey[50];
 		char *mapval;
@@ -164,9 +164,9 @@ joy_init (Driver *drvthis)
 					drvthis->name, i+1, p->buttonmap[i]);
 		}	
 	}
-	
+
 	/* End of config file parsing (2nd part) */
-	
+
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
@@ -177,7 +177,7 @@ MODULE_EXPORT void
 joy_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	if (p != NULL) {
 		if (p->fd >= 0)
 			close(p->fd);

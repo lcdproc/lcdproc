@@ -234,17 +234,17 @@ Use i386_get_ioperm, i386_set_ioperm from <machine/sysarch.h> and inb and outb f
 #if (__FreeBSD_version > 500000)
 static FILE * port_access_handle = NULL;
 #endif
-        
+
 /* Read a byte from port */
 static inline int port_in (unsigned short port) {
         return inb(port);
 }
-        
+
 /* Write a byte 'val' to port */
 static inline void port_out (unsigned short port, unsigned char val) {
         outb(port,val);
 }
-        
+
 /* Get access to a specific port */
 static inline int port_access (unsigned short port) {
 #if (__FreeBSD_version > 500000)

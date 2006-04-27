@@ -176,13 +176,13 @@ void EmptyKeyRing(KeyRing *kr)
 int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 {
 	if (((kr->head + 1) % KEYRINGSIZE) != (kr->tail % KEYRINGSIZE)) {
- 		/* fprintf(stderr, "We add key: %d\n", key); */
+		/* fprintf(stderr, "We add key: %d\n", key); */
 
 	        kr->contents[kr->head % KEYRINGSIZE] = key;
   		kr->head = (kr->head + 1) % KEYRINGSIZE;
 		return 1;
 	}
-	
+
 	/* KeyRing overflow: do not accept extra key */
 	return 0;
 }
@@ -237,10 +237,10 @@ typedef struct {
 
     // the keyring
     KeyRing keyring;
-    
+
 	// the keymap
 	char *key_map[MAX_KEY_MAP];
-    
+
 } PrivateData;
 
 
@@ -251,7 +251,7 @@ ula200_ftdi_usb_read(PrivateData *p)
 {
     unsigned char buffer[1];
     int err;
-    
+
     while ((err = ftdi_read_data(&p->ftdic, buffer, 1)) == 0);
 
     if (err < 0) {
@@ -276,7 +276,7 @@ ula200_ftdi_read_response(Driver *drvthis)
     bool answer_read = false;
     int ret;
     int ch;
-    
+
     while (!answer_read)
     {
         /* wait until STX */
@@ -415,7 +415,7 @@ ula200_ftdi_position(Driver *drvthis, int x, int y)
         y -= 2;
         x += p->width;
     }
-    
+
     command[0] = 'p';
     command[1] = x;
     command[2] = y;
@@ -472,7 +472,7 @@ ula200_ftdi_string(Driver *drvthis, unsigned char *string, int len)
     for (i = 0; i < len; i++) {
         buffer[i+2] = HD44780_charmap[(unsigned char)string[i]];
     }
-    
+
     err = ula200_ftdi_write_command(drvthis, buffer, len+2, true);
     if (err < 0) {
         report(RPT_WARNING, "%s: ula200_ftdi_string: "
@@ -585,7 +585,7 @@ ula200_load_curstom_chars(Driver *drvthis)
         /* Send the subsequent rows */
         for (row = 0; row < CELLHEIGHT; row++) {
             int value = 0;
-	    
+
             for (col = 0; col < CELLWIDTH; col++) {
 		value <<= 1;
 		value |= (custom_chars[i][(row * CELLWIDTH) + col] > 0) ? 1 : 0;
@@ -655,7 +655,7 @@ ula200_init(Driver *drvthis)
 
 	/* End of config file parsing */
 
-    
+
 	// Allocate framebuffer
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
@@ -712,7 +712,7 @@ ula200_init(Driver *drvthis)
 	}
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
-        
+
 	return 0;
 
 err_ftdi:
@@ -742,7 +742,7 @@ ula200_close(Driver *drvthis)
 
 		if (p->framebuf != NULL)
         		free(p->framebuf);
-    
+
 		if (p->lcd_contents != NULL)
         		free(p->lcd_contents);
 
@@ -954,7 +954,7 @@ ula200_get_key (Driver *drvthis)
 		if (key & (1 << i))
 			return p->key_map[i];
 	}
-	
+
 	if (key != '\0') {
 		report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
 	}

@@ -132,7 +132,7 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 	memset(p->framebuf, ' ', p->width * p->height);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
-	
+
 	return 1;		 
 }
 
@@ -297,7 +297,7 @@ MODULE_EXPORT int imon_width (Driver *drvthis)
 MODULE_EXPORT int  imon_height (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	return p->height;
 }
 
@@ -307,7 +307,7 @@ MODULE_EXPORT int  imon_height (Driver *drvthis)
 MODULE_EXPORT int imon_cellwidth (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	return p->cellwidth;
 }
 
@@ -317,7 +317,7 @@ MODULE_EXPORT int imon_cellwidth (Driver *drvthis)
 MODULE_EXPORT int  imon_cellheight (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	return p->cellheight;
 }
 
