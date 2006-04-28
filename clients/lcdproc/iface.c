@@ -51,13 +51,13 @@ char *program_name;  /* the name the program was run with */
 int port = 13666;  /* default port */
 char server[256] = "localhost";  /* default server */
 int daemon_mode = 0;  /* by default, no daemon mode */
+int sock = 0;  /* socket handler */
 #endif //NETLCDCLIENT
 
 int iface_count = 0;  /* number of interfaces */
 
 char unit_label[10] = "B";  /* default unit label is Bytes */
 int transfer_screen = 0;  /* by default, transfer screen is not shown */
-int sock = 0;  /* socket handler */
 
 /* command line parameters, used by getopt_long() */
 static struct option const long_options[] =
@@ -326,22 +326,13 @@ usage (int status)
 
 /* reads and parses configuration file */
 static int
-iface_process_configfile(char *configfile)
+iface_process_configfile()
 {
 	char *unit;
 
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
 	/* Read config settings */
-
-#if 0	/* this should be unnecessary */
-	if ( strcmp(configfile, UNSET_STR) == 0 ||  config_read_file(configfile) != 0 ) {
-		report(RPT_CRIT, "Could not read config file: %s", configfile);
-		return -1;
-		printf("Could not read config file: %s", configfile);
-		//report( RPT_WARNING, "Could not read config file: %s", configfile );
-	}
-#endif	
 
 	for (iface_count = 0; iface_count < MAX_INTERFACES; iface_count++) {
 		char iface_label[12];
@@ -410,7 +401,7 @@ iface_screen(int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 		
 		/* get configuration options */
-		iface_process_configfile(configfile);
+		iface_process_configfile();
 
 		/* set initial speed screen with widgets */
 		initialize_speed_screen();
