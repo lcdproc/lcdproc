@@ -38,7 +38,7 @@ char * help_text =
 "  -c <file>\tSpecify a configfile to load ["DEFAULT_CONFIGFILE"]\n"
 "  -a <address>\tDNS name or IP address of the LCDd server [localhost]\n"
 "  -p <port>\tPort of the LCDd server [13666]\n"
-"  -f <0|1>\tRun in 1=foreground or 0=background\n"
+"  -f \tRun in foreground\n"
 "  -r <level>\tSet reporting level (0-5) [2: errors and warnings]\n"
 "  -s <0|1>\tReport to 1=syslog or 0=stderr\n"
 "  -h\t\tShow this help\n";
@@ -95,14 +95,15 @@ int main( int argc, char ** argv )
 int process_command_line( int argc, char ** argv )
 {
 	char c;
-	char * p;
-	int temp_int;
 	int error = 0;
 
 	/* No error output from getopt */
 	opterr = 0;
 
-	while ((c = getopt(argc, argv, "hc:a:p:f:r:s:")) > 0) {
+	while ((c = getopt(argc, argv, "hc:a:p:fr:s:")) > 0) {
+		char *end;
+		int temp_int;
+
 		switch (c) {
 		  case 'h':
 			fprintf(stderr, "%s", help_text);
@@ -114,38 +115,33 @@ int process_command_line( int argc, char ** argv )
 			address = strdup(optarg);
 			break;
 		  case 'p':
-			temp_int = strtol(optarg, &p, 0);
-			if ( *optarg != 0 && *p == 0) {
+			temp_int = strtol(optarg, &end, 0);
+			if ((*optarg != '\0') && (*end == '\0') &&
+			     (temp_int > 0) && (temp_int <= 0xFFFF)) {
 				port = temp_int;
 			} else {
-				report(RPT_ERR, "Could not interpret value for -%c", c);
+				report(RPT_ERR, "Illegal port value %s", optarg);
 				error = -1;
 			}
 			break;
 		  case 'f':
-			temp_int = strtol(optarg, &p, 0);
-			if (*optarg != 0 && *p == 0) {
-				foreground_mode = temp_int;
-			} else {
-				report(RPT_ERR, "Could not interpret value for -%c", c);
-				error = -1;
-			}
+			foreground_mode = 1;
 			break;
 		  case 'r':
-			temp_int = strtol(optarg, &p, 0);
-			if (*optarg != 0 && *p == 0 ) {
+			temp_int = strtol(optarg, &end, 0);
+			if ((*optarg != '\0') && (*end == '\0') && (temp_int >= 0)) {
 				report_level = temp_int;
 			} else {
-				report(RPT_ERR, "Could not interpret value for -%c", c);
+				report(RPT_ERR, "Illegal report level value %s", optarg);
 				error = -1;
 			}
 			break;
 		  case 's':
-			temp_int = strtol( optarg, &p, 0 );
-			if (*optarg != 0 && *p == 0 ) {
-				report_dest = (temp_int?RPT_DEST_SYSLOG:RPT_DEST_STDERR);
+			temp_int = strtol(optarg, &end, 0);
+			if ((*optarg != '\0') && (*end == '\0') && (temp_int >= 0)) {
+				report_dest = (temp_int ? RPT_DEST_SYSLOG : RPT_DEST_STDERR);
 			} else {
-				report(RPT_ERR, "Could not interpret value for -%c", c);
+				report(RPT_ERR, "Illegal log destination value %s", optarg);
 				error = -1;
 			}
 			break;
@@ -154,6 +150,7 @@ int process_command_line( int argc, char ** argv )
 			error = -1;
 			break;
 		  case '?':
+		  default:
 			report(RPT_ERR, "Unknown option: %c", optopt);
 			error = -1;
 			break;
@@ -188,7 +185,7 @@ int process_configfile( char * configfile )
 		}
 	}
 	if (foreground_mode == UNSET_INT) {
-		foreground_mode = config_get_bool(progname, "Foreground", 0, 1);
+		foreground_mode = config_get_bool(progname, "Foreground", 0, 0);
 	}
 	vcs_device = strdup(config_get_string(progname, "vcsDevice", 0, "/dev/vcs"));
 	vcsa_device = strdup(config_get_string(progname, "vcsaDevice", 0, "/dev/vcsa"));
@@ -235,7 +232,7 @@ int main_loop()
 {
 	int num_bytes;
 	char buf[80];
-	short w;
+	short w = 0;
 
 	/* Continuously check if we get a menu event... */
 

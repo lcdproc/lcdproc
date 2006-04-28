@@ -60,9 +60,6 @@ static void main_loop();
 static int process_configfile(char *cfgfile);
 
 
-#define CHAIN(e,f) { if (e>=0 ) { e=(f); }}
-#define CHAIN_END(e,msg) { if (e<0 ) { report( RPT_CRIT,(msg)); exit(e); }}
-
 // 1/8th second is a single time unit...
 #define TIME_UNIT 125000
 
@@ -190,6 +187,8 @@ main(int argc, char **argv)
 
 	/* get options from command line */
 	while ((c = getopt( argc, argv, "s:p:e:c:fhv")) > 0) {
+		char *end;
+
 		switch (c) {
 			// c is for config file
 			case 'c':
@@ -197,21 +196,23 @@ main(int argc, char **argv)
 				break;
 			// s is for server
 			case 's':
-				if (server == NULL)
-					server = optarg;
-				else
-					fprintf(stderr, "Ignoring additional server: %s\n", optarg);
+				server = optarg;
 				break;
 			// p is for port
 			case 'p':
-				port = atoi(optarg);
-				if ((port < 1) && (port > 0xFFFF)) {
-					fprintf(stderr, "Warning:  Port %d outside of legal range\n", port);
+				port = strtol(optarg, &end, 0);
+				if ((*optarg == '\0') || (*end != '\0') ||
+				    (port <= 0) || (port >= 0xFFFF)) {
+					fprintf(stderr, "Illegal port value %s\n", optarg);
 					exit(EXIT_FAILURE);
-				}	
+				}
 				break;
 			case 'e':
-				islow = atoi(optarg);
+				islow = strtol(optarg, &end, 0);
+				if ((*optarg == '\0') || (*end != '\0') || (islow < 0)) {
+					fprintf(stderr, "Illegal delay value %s\n", optarg);
+					exit(EXIT_FAILURE);
+				}
 				break;
 			case 'f':
 				foreground = TRUE;
@@ -264,7 +265,7 @@ fprintf(stderr, "%s%s\n", (state) ? "" : "!", name);
 			int found = set_mode(shortname, name, state);
 
 			if (!found) {
-				fprintf(stderr, "Invalid Mode: %c\n", name);
+				fprintf(stderr, "Invalid Mode: %s\n", name);
 				return(EXIT_FAILURE);
 			}
 		}	
@@ -433,7 +434,6 @@ exit_program(int val)
 	exit(val);
 }
 
-#define LCDPROC_MENUS
 #ifdef LCDPROC_MENUS
 int
 menus_init ()

@@ -120,6 +120,7 @@ int read_connect_string()
 		report(RPT_ERR, "Received invalid LCDd connect response.");
 		return -1;
 	}
+	return 0;
 }
 
 int read_response(char * buf, int maxsize)
