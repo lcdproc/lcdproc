@@ -108,6 +108,7 @@ int foreground 	= UNSET_INT;
 static int report_level = UNSET_INT;
 static int report_dest 	= UNSET_INT;
 char *configfile = NULL;
+char *displayname = NULL;
 
 
 const char *get_hostname()
@@ -322,6 +323,7 @@ static int
 process_configfile(char *configfile)
 {
 	int k;
+	char *tmp;
 
 	debug(RPT_DEBUG, "%s(%s)", __FUNCTION__, (configfile) ? configfile : "<null>");
 
@@ -349,6 +351,7 @@ process_configfile(char *configfile)
 	if (port == UNSET_INT) {
 		port = config_get_int(progname, "Port", 0, LCDPORT);
 	}
+
 	if(report_level == UNSET_INT) {
 		report_level = config_get_int(progname, "ReportLevel", 0, RPT_WARNING);
 	}
@@ -363,8 +366,11 @@ process_configfile(char *configfile)
 		foreground = config_get_bool(progname, "Foreground", 0, 0);
 	}
 	if (islow < 0) {
-		islow = config_get_int(progname, "delay", 0, -1);
+		islow = config_get_int(progname, "Delay", 0, -1);
 	}
+
+	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
+		displayname = strdup(tmp);
 
 	/*
 	 * check for config file variables to override all the sequence defaults
@@ -569,7 +575,10 @@ main_loop()
 										lcd_cellhgt = atoi(argv[++a]);
 								}
 								connected = 1;
-								sock_printf(sock, "client_set -name {LCDproc %s}\n", get_hostname());
+								if (displayname != NULL)
+									sock_printf(sock, "client_set -name \"%s\"\n", displayname);
+								else
+									sock_printf(sock, "client_set -name {LCDproc %s}\n", get_hostname());
 #ifdef LCDPROC_MENUS
 								menus_init();
 #endif
