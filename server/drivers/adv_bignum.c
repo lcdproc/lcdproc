@@ -94,7 +94,7 @@ static void adv_bignum_num_4_0 (Driver *drvthis, int x, int num, int height, int
 static void adv_bignum_num_4_3 (Driver *drvthis, int x, int num, int height, int do_init);
 static void adv_bignum_num_4_8 (Driver *drvthis, int x, int num, int height, int do_init);
 
-static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][4], int x, int num, int height);
+static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][3], int x, int num, int height);
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ int height = drvthis->height(drvthis);
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function writes the selected type of bignumber by calling the driver's chr function.
 // It is called by display-depending bignumber functions to write the numbers.
-static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][4], int x, int num, int height)
+static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][3], int x, int num, int height)
 {
 	int y, dx;
 
@@ -174,7 +174,7 @@ static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][4], i
 // (pretty ugly looking)
 static void adv_bignum_num_2_0 (Driver *drvthis, int x, int num, int height, int do_init)
 {
-	static char num_map[][4][4] = {
+	static char num_map[][4][3] = {
 		{ /* 0 */
 			" ||",
 			" ||",
@@ -242,9 +242,9 @@ static void adv_bignum_num_2_0 (Driver *drvthis, int x, int num, int height, int
 // (not a beauty, but useable)
 static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int do_init)
 {
-	static char num_map[][4][4] = {
+	static char num_map[][4][3] = {
 		{ /* 0 */
-			{'|' , 0 , '|',0},
+			{'|',0,'|'},
 			{"|_|"},
 			{"   "},
 			{"   "} },
@@ -254,12 +254,12 @@ static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int
 			{"   "},
 			{"   "} },
 		{ /* 2 */
-			{' ',0,']',0},
+			{' ',0,']'},
 			{" [_"},
 			{"   "},
 			{"   "} },
 		{ /* 3 */
-			{' ',0,']',0},
+			{' ',0,']'},
 			{" _]"},
 			{"   "},
 			{"   "} },
@@ -269,17 +269,17 @@ static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int
 			{"   "},
 			{"   "} },
 		{ /* 5 */
-			{' ','[',0,0},
+			{' ','[',0},
 			{" _]"},
 			{"   "},
 			{"   " }},
 		{ /* 6 */
-			{' ','[',0,0},
+			{' ','[',0},
 			{" []"},
 			{"   "},
 			{"   "} },
 		{ /* 7 */
-			{' ',0,'|',0},
+			{' ',0,'|'},
 			{"  |"},
 			{"   "},
 			{"   "} },
@@ -325,7 +325,7 @@ static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int
 // (o.k.)
 static void adv_bignum_num_2_2 (Driver *drvthis, int x, int num, int height, int do_init)
 {
-	static char num_map[][4][4] ={
+	static char num_map[][4][3] ={
 		{ /* 0 */
 			{'|',0,'|'},
 			"|_|",
@@ -419,7 +419,7 @@ static void adv_bignum_num_2_2 (Driver *drvthis, int x, int num, int height, int
 // (nice bignumbers)
 static void adv_bignum_num_2_5 (Driver *drvthis, int x, int num, int height, int do_init)
 {
-	static char num_map[][4][4] =
+	static char num_map[][4][3] =
 		{{{3	,0	,2}, /*0*/
 		{3	,1	,2},
 		{"   "},
@@ -529,7 +529,7 @@ static void adv_bignum_num_2_5 (Driver *drvthis, int x, int num, int height, int
 // (Wow, allmost graphical)
 static void adv_bignum_num_2_28 (Driver *drvthis, int x, int num, int height, int do_init)
 {
-	static char num_map[][4][4] =
+	static char num_map[][4][3] =
 		{{{15	,6	,2}, /*0*/
 		{14	,4	,5},
 		{"   "},
@@ -849,7 +849,7 @@ static void adv_bignum_num_4_0 (Driver *drvthis, int x, int num, int height, int
 	/* Ugly code extracted by David GLAUDE from lcdm001.c ;)*/
 	/* Moved to driver.c by Joris Robijn */
 	// Moved to adv_bignum.c by Stefan Herdler
-static char num_map[][4][4] = {
+static char num_map[][4][3] = {
 	{ /* 0 */
 		" _ ",
 		"| |",
@@ -916,7 +916,7 @@ static char num_map[][4][4] = {
 // (nice bignumbers)
 static void adv_bignum_num_4_3 (Driver *drvthis, int x, int num, int height, int do_init)
 {
-static char num_map[][4][4] =
+static char num_map[][4][3] =
 	{{{3	,1	,3}, /*0*/
 	  {3	,' '	,3},
 	  {3	,' '	,3},
@@ -931,7 +931,7 @@ static char num_map[][4][4] =
 	  {3	,2	,' '}},
 	 {{' '	,1	,3},/*3*/
 	  {' '	,2	,3},
-	  {' '	,'  '	,3},
+	  {' '	,' '	,3},
 	  {' '	,2	,3}},
 	 {{3	,' '	,3},/*4*/
 	  {3	,2	,3},
@@ -1008,7 +1008,7 @@ static char num_map[][4][4] =
 // (nice bignumbers)
 static void adv_bignum_num_4_8 (Driver *drvthis, int x, int num, int height, int do_init)
 {
-static char num_map[][4][4] = {
+static char num_map[][4][3] = {
 	{ /* 0: */
 		{  1,  2,  3 },
 		{  6, 32,  6 },
