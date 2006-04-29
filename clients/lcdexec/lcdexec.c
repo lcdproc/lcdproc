@@ -116,16 +116,13 @@ int process_command_line(int argc, char **argv)
 	/* No error output from getopt */
 	opterr = 0;
 
-	while ((c = getopt(argc, argv, "c:O:a:p:fr:s:h")) > 0) {
+	while ((c = getopt(argc, argv, "c:a:p:fr:s:h")) > 0) {
 		char *end;
 		int temp_int;
 
 		switch(c) {
 		  case 'c':
 			configfile = strdup(optarg);
-			break;
-		  case 'O':
-			config_read_string(progname, optarg);
 			break;
 		  case 'a':
 			address = strdup(optarg);
