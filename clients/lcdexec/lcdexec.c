@@ -6,23 +6,13 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 2002, Joris Robijn
- *
- */
-
-/*
- * How to use submenus in the config file:
- *	[lcdexec]
- *	MenuCommand="Shut down,shutdown -h now"
- *	SubMenu="Internet,inet"
- *	# The inet submenu is filled as follows:
- *	inet_MenuCommand="open,inet open"
- *	inet_MenuCommand="close,inet close"
- *
+ * Copyright (c) 2006, Peter Marschall
  */
 
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <sys/utsname.h>
 
 #include "getopt.h"
 
@@ -62,15 +52,15 @@ extern int optind, optopt, opterr;
 /* Variables set by config */
 #define UNSET_INT -1
 #define UNSET_STR "\01"
-char * configfile = UNSET_STR;
-char * address = UNSET_STR;
+char * configfile = NULL;
+char * address = NULL;
 int port = UNSET_INT;
 int foreground_mode = UNSET_INT;
-char * appname = UNSET_STR;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
+char *displayname = NULL;
 
-Menu * main_menu;
+MenuEntry *main_menu;
 
 /* Other variables */
 int sock = -1;
@@ -78,11 +68,10 @@ int sock = -1;
 /* Function prototypes */
 int process_command_line(int argc, char **argv);
 int process_configfile(char * configfile);
-int split(char * str, char delim, char * parts[], int maxparts);
-int connect_and_setup ();
+int connect_and_setup();
 int process_response(char * str);
-int exec_command(char * command);
-int main_loop ();
+int exec_command(MenuEntry *cmd);
+int main_loop();
 
 
 #define CHAIN(e,f) { if (e>=0) { e=(f); }}
@@ -191,14 +180,16 @@ int process_command_line(int argc, char **argv)
 
 int process_configfile(char * configfile)
 {
-	if (strcmp(configfile, UNSET_STR) == 0) {
+	char * tmp;
+
+	if (configfile == NULL)
 		configfile = DEFAULT_CONFIGFILE;
-	}
+
 	if (config_read_file(configfile) < 0) {
 		report(RPT_WARNING, "Could not read config file: %s", configfile);
 	}
 
-	if (strcmp(address, UNSET_STR) == 0) {
+	if (address == NULL) {
 		address = strdup(config_get_string(progname, "Address", 0, "localhost"));
 	}
 	if (port == UNSET_INT) {
@@ -216,17 +207,24 @@ int process_configfile(char * configfile)
 		foreground_mode = config_get_bool(progname, "Foreground", 0, 0);
 	}
 
-	main_menu = menu_read("", progname);
+	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
+		displayname = strdup(tmp);
 
-	if (main_menu->num_menucmds == 0 && main_menu->num_submenus == 0) {
-		main_menu->menucmd_name[0] = "echo test";
-		main_menu->menucmd_exec[0] = "echo \"This is a test using the echo command.\"";
-		main_menu->num_menucmds ++;
-	}
+	main_menu = menu_read(NULL, "MainMenu");
+#if defined(DEBUG)
+	menu_dump(main_menu);
+#endif
+
+	// fail on non-existent main menu;
+	if (main_menu == NULL) {
+		report(RPT_ERR, "no main menu found in configuration");
+		return -1;
+	}	
+
 	return 0;
 }
 
-int connect_and_setup ()
+int connect_and_setup()
 {
 	report(RPT_INFO, "Connecting to %s:%d", address, port);
 
@@ -235,20 +233,31 @@ int connect_and_setup ()
 		return -1;
 	}
 
-	/* Create our menu */
+	/* init connection and set client name */
 	sock_send_string(sock, "hello\n");
-	sock_printf(sock, "client_set -name \"%s\"\n", progname);
+	if (displayname != NULL) {
+		sock_printf(sock, "client_set -name {%s}\n", displayname);
+	}
+	else {
+		struct utsname unamebuf;
+	
+		if (uname(&unamebuf) == 0)
+			sock_printf(sock, "client_set -name {%s %s}\n", progname, unamebuf.nodename);
+		else		
+			sock_printf(sock, "client_set -name {%s}\n", progname);
+	}	
 
-	if (menu_send_to_LCDd(main_menu, "", sock) < 0) {
+	/* Create our menu */
+	if (menu_sock_send(main_menu, NULL, sock) < 0) {
 		return -1;
 	}
 
 	return 0;
 }
 
-int process_response(char * str)
+int process_response(char *str)
 {
-	char *argv[10];
+	char *argv[15];
 	int argc;
 	char *str2 = strdup(str); /* get_args modifies str2 */
 
@@ -270,7 +279,7 @@ int process_response(char * str)
 			return -1;
 		}
 		if (strcmp(argv[1], "select") == 0) {
-			char *exec;
+			MenuEntry *exec;
 			
 			if (argc < 3) {
 				report(RPT_WARNING, "Server gave invalid response");
@@ -279,8 +288,8 @@ int process_response(char * str)
 			}
 
 			/* Find the id */
-			exec = menu_find_cmd_of_id(main_menu, argv[2]);
-			if (!exec) {
+			exec = menu_find_by_id(main_menu, atoi(argv[2]));
+			if (exec == NULL) {
 				report(RPT_WARNING, "Could not find the item id given by the server");
 				free(str2);
 				return -1;
@@ -303,42 +312,46 @@ int process_response(char * str)
 	return 0;
 }
 
-int exec_command(char * command)
+int exec_command(MenuEntry *cmd)
 {
-	char *argv[4];
+	if ((cmd != NULL)  && (menu_command(cmd) != NULL)) {
+		const char *command = menu_command(cmd);
+		const char *argv[4];
 
-	report(RPT_NOTICE, "Executing: %s", command);
+		report(RPT_NOTICE, "Executing: %s", command);
 
-	argv[0] = getenv("SHELL");
-	argv[1] = "-c";
-	argv[2] = command;
-	argv[3] = NULL;
+		argv[0] = getenv("SHELL");
+		argv[1] = "-c";
+		argv[2] = command;
+		argv[3] = NULL;
 
-	if (!argv[0]) {
-		report(RPT_ERR, "SHELL environment variable not set.");
-		return -1;
+		if (!argv[0]) {
+			report(RPT_ERR, "SHELL environment variable not set.");
+			return -1;
+		}
+
+		switch (fork()) {
+		  case 0:
+			/* We're the child. Execute the command. */
+			execv(argv[0], argv);
+			exit(0);
+			break;
+		  case -1:
+			report(RPT_ERR, "Could not fork");
+			return -1;
+		  default:
+			/* We're the parent */
+	        	break;
+		}
+		return 0;
 	}
-
-	switch (fork()) {
-	  case 0:
-		/* We're the child. Execute the command. */
-		execv(argv[0], argv);
-		exit(0);
-		break;
-	  case -1:
-		report(RPT_ERR, "Could not fork");
-		return -1;
-	  default:
-		/* We're the parent */
-        	break;
-	}
-	return 0;
+	return -1;
 }
 
 int main_loop ()
 {
 	int num_bytes;
-	char buf[80];
+	char buf[100];
 	int w = 0;
 
 	/* Continuously check if we get a menu event... */

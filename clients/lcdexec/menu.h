@@ -18,21 +18,32 @@
 #include "shared/configfile.h"
 #include "shared/sockets.h"
 
-#define MAX_NUM_MENUCMDS 40
-#define MAX_NUM_SUBMENUS 20
 
-typedef struct Menu {
-	char * menucmd_name[MAX_NUM_MENUCMDS];
-	char * menucmd_exec[MAX_NUM_MENUCMDS];
-	int num_menucmds;
-	char * submenu_name[MAX_NUM_SUBMENUS];
-	char * submenu_id[MAX_NUM_SUBMENUS];
-	struct Menu * submenu[MAX_NUM_SUBMENUS];
-	int num_submenus;
-} Menu;
+typedef enum {
+	unknown = 0,
+	menu = 1,
+	exec = 2,
+} MenuType;	
 
-Menu *	menu_read (char * menu_id, char * progname);
-int	menu_send_to_LCDd( Menu * menu, char * id, int sock );
-char *	menu_find_cmd_of_id( Menu * menu, char * id );
 
-int split( char * str, char delim, char * parts[], int maxparts );
+typedef struct menu_entry {
+	char *name;
+	char *displayname;
+	int id;
+	MenuType type;
+
+	// variables necessary for type menu
+	struct menu_entry *entries;
+	struct menu_entry *next;
+
+	// variables necessary for type exec
+	char *command;
+} MenuEntry;
+
+
+MenuEntry *menu_read(MenuEntry *parent, char *name);
+int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock);
+MenuEntry *menu_find_by_id(MenuEntry *me, int id);
+const char *menu_command(MenuEntry *me);
+void menu_free(MenuEntry *me);
+
