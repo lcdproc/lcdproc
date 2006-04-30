@@ -79,7 +79,7 @@ install: build
 	# install config file (with some corrections
 	sed -e '/^DriverPath=/s,server/drivers,/usr/lib/lcdproc,' \
 	    < $(CURDIR)/LCDd.conf > $(CURDIR)/LCDd.conf.debian
-	install -m644 $(CURDIR)/LCDd.conf.debian $(CURDIR)/debian/lcdproc/etc/LCDd.conf
+	install -m644 $(CURDIR)/LCDd.conf.debian $(CURDIR)/debian/lcdproc/etc/lcdproc/LCDd.conf
 
 	# trick: move samples into the correct directory
 	# this saves us from patching Makefile.in files
