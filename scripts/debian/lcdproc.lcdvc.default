@@ -1,0 +1,9 @@
+# /etc/default/lcdvc -- config file for lcdvc startup
+
+# shall lcdvc be started (yes/no)
+START=no
+
+# options for lcdvc startup
+#OPTIONS=""
+
+# EOF

@@ -1,0 +1,9 @@
+# /etc/default/lcdexec -- config file for lcdexec startup
+
+# shall lcdexec be started (yes/no)
+START=no
+
+# options for lcdexec startup
+#OPTIONS=""
+
+# EOF
