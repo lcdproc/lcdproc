@@ -38,6 +38,9 @@
 #       (although it seems buggy..  oops!  :)
 
 
+use 5.005;
+use strict;
+use Getopt::Std;
 use IO::Socket;
 use Fcntl;
 
@@ -46,27 +49,58 @@ use Fcntl;
 ############################################################
 
 # Host which runs lcdproc daemon (LCDd)
-$HOST = "localhost";
+my $SERVER = "localhost";
 
 # Port on which LCDd listens to requests
-$PORT = "13666";
+my $PORT = "13666";
 
 # Path to command which controls XMMS/X11AMP
-$XMMS = "xmms";
+my $XMMS = "xmms";
 
 # Commands to set to previous / next song
-$XMMS_FORWARD = "$XMMS --fwd";
-$XMMS_REWIND = "$XMMS --rew";
-$XMMS_PLAY_PAUSE = "$XMMS --play-pause";
+my $XMMS_FORWARD = "$XMMS --fwd";
+my $XMMS_REWIND = "$XMMS --rew";
+my $XMMS_PLAY_PAUSE = "$XMMS --play-pause";
 
 ############################################################
 # End of user configurable parts
 ############################################################
 
+my $progname = $0;
+   $progname =~ s#.*/(.*?)$#$1#;
+
+# declare functions
+sub error($@);
+sub usage($);
+
+
+## main routine ##
+my %opt = ();
+
+# get options #
+if (getopts('s:p:hV', \%opt) == 0) {
+  usage(1);
+}
+
+# check options
+usage(0)  if ($opt{h});
+if ($opt{V}) {
+  print STDERR $progname ." version 1.1\n";
+  exit(0);
+}
+
+# check number of arguments 
+usage(1)  if ($#ARGV >= 0);
+
+
+# set variables
+$SERVER = defined($opt{s}) ? $opt{s} : $SERVER;
+$PORT = defined($opt{p}) ? $opt{p} : $PORT;
+
 # Connect to the server...
-$remote = IO::Socket::INET->new(
-		Proto     => "tcp",
-		PeerAddr  => $HOST,
+my $remote = IO::Socket::INET->new(
+		Proto     => 'tcp',
+		PeerAddr  => $SERVER,
 		PeerPort  => $PORT,
 	)
 	|| die "Cannot connect to LCDproc port\n";
@@ -83,13 +117,11 @@ print $remote "hello\n";
 my $lcdresponse = <$remote>;
 #print $lcdresponse;
 
-
 # Turn off blocking mode...
 fcntl($remote, F_SETFL, O_NONBLOCK);
 
-
 # Set up some screen widgets...
-print $remote "client_set name {X11AMP test}\n";
+print $remote "client_set name {X11AMP}\n";
 $lcdresponse = <$remote>;
 print $remote "screen_add x11amp\n";
 $lcdresponse = <$remote>;
@@ -113,46 +145,83 @@ print $remote "client_add_key Enter\n";
 $lcdresponse = <$remote>;
 
 
-while(1)
-{
+while(1) {
 	# Handle input...
-	while(defined($line = <$remote>)) {
-	    @items = split(" ", $line);
-	    $command = shift @items;
+	while (defined(my $line = <$remote>)) {
+	    my @items = split(/ /, $line);
+	    my $command = shift @items;
+
 	    # Use input to change songs...
-	    if($command eq "key") {
+	    if ($command eq 'key') {
 		my $key = shift @items;
 
-		if($key eq "Left") {
+		if ($key eq 'Left') {
 		    system($XMMS_REWIND);
 		}
-		elsif($key eq "Right") {
+		elsif ($key eq 'Right') {
 		    system($XMMS_FORWARD);
 		}
-		elsif($key eq "Enter") {
+		elsif ($key eq 'Enter') {
 		    system($XMMS_PLAY_PAUSE);
 		}
 	    }
 	    # And ignore everything else
-	    elsif($command eq "connect") {
+	    elsif ($command eq 'connect') {
 	    }
-	    elsif($command eq "listen") {
+	    elsif ($command eq 'listen') {
 	    }
-	    elsif($command eq "ignore") {
+	    elsif ($command eq 'ignore') {
 	    }
-	    elsif($command eq "success") {
+	    elsif ($command eq 'success') {
 	    }
 	    else {
-		if($line =~ /\S/) {print "Huh?  $line\n";}
+		error(0, "Huh?",  $line)
+		    if ($line !~ /^\s*$/o);
 	    }
 	}
 
+	# wait a bit
 	sleep 1;
-
 }
 
-close ($remote)  ||  die "close: $!";
+close ($remote)  or  error(1, "close() error");
 exit;
+
+
+## print out error message and eventually exit ##
+# Synopsis:  error($status, $message)
+sub error($@)
+{
+my $status = shift;
+my @msg = @_;
+
+  print STDERR $progname . ": " . join(" ", @msg) . "\n";
+
+  exit($status)  if ($status);
+}
+
+
+## print out usage message and exit ##
+# Synopsis:  usage($status)
+sub usage($)
+{
+my $status = shift;
+
+  print STDERR "Usage: $progname [<options>]\n";
+  if (!$status) {
+    print STDERR "  where <options> are\n" .
+                 "    -s <server>                connect to <server> (default: $SERVER)\n" .
+                 "    -p <port>                  connect to <port> on <server> (default: $PORT)\n" .
+		 "    -h                         show this help page\n" .
+		 "    -V                         display version number\n";
+  }
+  else {
+    print STDERR "For help, type: $progname -h\n";
+  }  
+
+  exit($status);
+}
+
 
 
 __END__
@@ -161,44 +230,65 @@ __END__
 
 =head1 NAME
 
-x11amp - LCDproc client controlling XMMS/X11AMP
+x11amp.pl - LCDproc client controlling XMMS/X11AMP
 
 =head1 SYNOPSIS
 
 B<x11amp.pl>
+[B<-s> I<server>]
+[B<-p> I<port>]
+[B<-h>]
+[B<-V>]
+
 
 =head1 DESCRIPTION
 
-x11amp is a simple client for LCDproc which controls an XMMS/X11AMP
+B<x11amp.pl> is a simple client for LCDproc which controls an XMMS/X11AMP
 MP3 player from the keyboard controlled by LCDproc.
 It can only rewind to the previous song previous song, skip forward
 to the next song and switch between pause and play.
 
-=head1 REQUIRES
+=head1 OPTIONS
 
-Perl >= 5.005, IO::Socket, Fcntl
+=over 4
 
-These are all available on CPAN: http://www.cpan.org/.
+=item B<-s> I<server>
 
-=head1 DISCLAMER
+Connect to the LCDd daemon at host I<server> instead of the default C<localhost>.
 
-This program is free software; you can redistribute it and/or modify 
-it under the terms of the GNU General Public License version 2 as 
-published by the Free Software Foundation.
+=item B<-p> I<port>
 
-This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
-for more details.
+Use port I<port> when connecting to the LCDd server instead of the default
+LCDd port C<13666>.
 
-You should have received a copy of the GNU General Public License along 
-with this program; if not, write to the Free Software Foundation, Inc., 
-59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+=item B<-h>
+
+Display a short help page and exit.
+
+=item B<-V>
+
+Display x11amp's version number and exit.
+
+=back
+
+
+=head1 SEE ALSO
+
+L<xmms(6)>,
+L<LCDd(8)>
+
+
+=head1 AUTHORS
+
+x11amp.pl was written by various members of the LCDproc project team;
+this manual page was written by Peter Marschall.
+
 
 =head1 BUGS
 
 Yes, there might be some. Please report any one you find to LCDproc's mailing list.
 See the website for more information.
+
 
 =head1 WEBSITE
 
