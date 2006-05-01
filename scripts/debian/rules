@@ -83,7 +83,7 @@ install: build
 
 	# trick: move samples into the correct directory
 	# this saves us from patching Makefile.in files
-	for i in fortune.pl iosock.pl lcdheadlines lcdmetar.pl tail.pl x11amp.pl ; do \
+	for i in fortune.pl iosock.pl lcdmetar.pl tail.pl x11amp.pl ; do \
 	  mv $(CURDIR)/debian/lcdproc/usr/bin/$$i $(CURDIR)/debian/lcdproc/usr/share/doc/lcdproc/examples; \
 	done
 
