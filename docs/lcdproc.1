@@ -33,6 +33,7 @@ Show help screen.
 .B \-v
 Print the version of the program and exit.
 .TP 8
+
 .B \fImode\fP
 is one of the following:
 .TP 16
@@ -56,6 +57,9 @@ show memory usage of 5 biggest processes
 .TP 16
 .B D Disk
 disk usage
+.TP 16
+.B I Iface
+show network interface usage
 .TP 16
 .B B Battery
 battery status
@@ -95,9 +99,9 @@ connects to the LCDproc server running on the default port 13666 on the local ma
 .RE
 .PP
 
-
 .SH SEE ALSO
 .Xr LCDd 8
+
 .SH AUTHOR
 LCDproc was originally written by William Ferrell (wwf@splatwerks.org) and Scott Scriven (scriven@cs.colostate.edu).
 

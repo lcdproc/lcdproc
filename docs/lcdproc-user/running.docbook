@@ -27,7 +27,8 @@ There are several reasons for running LCDd from the command line
 <para>
 If you run LCDd as a "normal" user, it will not change to the user
 specified in the config file.
-For parallel port devices you will need root privileges anyway ;)
+For some devices, mostly parallel port devices but also some USB devices,
+you will need root privileges anyway ;)
 </para>
 </note>
 
@@ -53,29 +54,25 @@ command line options, including a list of the compiled in drivers.
 <example>
 <title><command>LCDd -h</command></title>
 <screen> <![CDATA[
-LCDd Server Daemon (part of lcdproc), 0.4.3dev
-Copyright (c) 1999 Scott Scriven, William Ferrell, and misc contributors
+
+LCDd: LCDproc Server Daemon, 0.5dev
+Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc contributors
 This program is freely redistributable under the terms of the GNU Public License
-Usage: LCDd [ -hfiws ] [ -c <config> ] [ -d <driver> ] [ -a <addr> ] \
-	[ -p <port> ] [ -u <user> ] [ -w <time> ] [ -r <level> ]
 
-Available options are:
-	-h		Display this help screen
-	-c <config>	Use a configuration file other than /etc/LCDd.conf
-	-d <driver>	Add a driver to use (output only to first)
-	-f		Run in the foreground
-	-i		Disable showing of the main LCDproc server screen
-	-w <waittime>	Time to pause at each screen (in seconds)
-	-a <addr>	Network (IP) address to bind to
-	-p <port>	Network port to listen for connections on
-	-u <user>	User to run as
-	-s		Output messages to syslog
-	-r <level>	Report level (default=2)
-
-Currently available drivers:
-	lcdm001, LCDM001, MtxOrb, MatrixOrbital, CFontz, CrystalFontz, LB216, text,
-	curses, ncurses, BayRAD, glk, glc, IOWarrior, glcdlib, imon
-
+Usage: LCDd [<options>]
+  where <options> are:
+    -h              Display this help screen
+    -c <config>     Use a configuration file other than /etc/LCDd.conf
+    -d <driver>     Add a driver to use (overrides drivers in config file) [curses]
+    -f <bool>       Whether to run in the foreground
+    -a <addr>       Network (IP) address to bind to [127.0.0.1]
+    -p <port>       Network port to listen for connections on [13666]
+    -u <user>       User to run as [nobody]
+    -w <waittime>   Time to pause at each screen (in seconds) [32]
+    -s <bool>       If set, reporting will be done using syslog
+    -r <level>      Report level [2]
+    -i <bool>       Whether to rotate the server info screen
+											  
 
 ]]>
 </screen>
@@ -105,17 +102,34 @@ command line options.
 <title><command>lcdproc -h</command></title>
 <screen> <![CDATA[
 
-LCDproc, 0.4.3dev
-Usage: lcdproc [-s server] [-p port] [modelist]
-	Options in []'s are optional.
-	modelist is "mode [mode mode ...]"
-	Mode letters: 	[C]pu [G]raph [T]ime [M]emory [X]load [D]isk [B]attery
-			proc_[S]izes [O]ld_time big_cloc[K] [U]ptime CPU_SM[P]
-			[A]bout
-
-	Use "man lcdproc" for more info.
+Usage: lcdproc [<options>] [<modes> ...]
+  where <options> are
+    -s <host>               connect to LCDd daemon on <host>
+    -p <port>               connect to LCDd daemon using <port>
+    -f                      run in foreground
+    -e <delay>              slow down initial announcement of modes (in 1/100s)
+    -c <config>             use a configuration file other than /etc/lcdproc.conf
+    -h                      show this help screen
+    -v                      display program version
+  and <modes> are
+    C CPU                   detailed CPU usage
+    P SMP-CPU               CPU usage overview (one line per CPU)
+    G CPUGraph              CPU usage histogram
+    L Load                  load histogram
+    M Memory                memory & swap usage
+    S ProcSize              biggest processes size
+    D Disk                  disk usage
+    I Iface                 network interface usage
+    B Battery               battery status
+    T TimeDate              time & date information
+    O OldTime               old time screen
+    U Uptime                uptime screen
+    K BigClock              big clock
+    N MiniClock             minimal clock
+    A About                 credits page
+      
 Example:
-	lcdproc -s my.lcdproc.server.com C M X -p 13666
+    lcdproc -s my.lcdproc.server.com -p 13666 C M X
 
 ]]>
 </screen>
