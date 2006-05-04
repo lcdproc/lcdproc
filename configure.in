@@ -556,7 +556,6 @@ AC_CONFIG_FILES([Makefile
 	clients/lcdexec/Makefile
 	clients/lcdvc/Makefile
 	clients/examples/Makefile
-	clients/headlines/Makefile
 	clients/metar/Makefile
 	docs/Makefile
 	docs/Doxyfile
