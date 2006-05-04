@@ -546,7 +546,7 @@ get_iface_stats (IfaceInfo *interface)
 				break;
 			}
 			/* check if its interface name matches */
-			if (strcmp(ifmd.ifmd_name, iface_name) == 0) {
+			if (strcmp(ifmd.ifmd_name, interface->name) == 0) {
 				interface->last_online = time(NULL);	/* save actual time */
 
 				if ((ifmd.ifmd_flags & IFF_UP) == IFF_UP)
@@ -568,7 +568,7 @@ get_iface_stats (IfaceInfo *interface)
 			}
 		}
 		/* if we are here there is no interface with the given name */
-		fprintf(stderr, "There is no interface named %s\n", iface_name);
+		fprintf(stderr, "There is no interface named %s\n", interface->name);
 		return 0;
 	} else {
 		perror("get_iface_stats");
