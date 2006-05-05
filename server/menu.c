@@ -39,6 +39,9 @@
 #include "screen.h"
 #include "widget.h"
 
+
+extern Menu * custom_main_menu;
+
 /** Basicly a patched version of LL_GetByIndex() that ignores hidden
  * entries completely. (But it takes a menu as an argument.) */
 static void *
@@ -136,6 +139,9 @@ menu_destroy (Menu *menu)
 
 	if (menu == NULL)
 		return;
+
+	if (custom_main_menu == menu)
+		custom_main_menu = NULL;
 
 	menu_destroy_all_items (menu);
 	LL_Destroy (menu->data.menu.contents);
