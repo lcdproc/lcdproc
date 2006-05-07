@@ -15,7 +15,7 @@
  * 3. Neither the name of the author nor the names of its contributors
  *    may be used to endorse or promote products derived from this
  *    software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -127,7 +127,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 			}
 			else if (CFDictionaryGetValueIfPresent(pSource, CFSTR(kIOPSIsChargingKey), &psValue))
 			{
-				/* We are running on an AC power source, 
+				/* We are running on an AC power source,
 				but we also have a battery power source present. */
 
 				if (CFBooleanGetValue(psValue) > 0)
@@ -149,7 +149,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 
 				*percent = (int)((double)curCapacity/(double)maxCapacity * 100);
 
-				/*	There is a way to check this through the IOKit, 
+				/*	There is a way to check this through the IOKit,
 					but I am not sure what gets for kIOPSLowWarnLevelKey and kIOPSDeadWarnLevelKey, and this is easier.
 				*/
 				if (*battflag == LCDP_BATT_UNKNOWN) {
@@ -176,11 +176,11 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 {
 	struct statfs *mntbuf;
 	struct statfs *pp;
-	int statcnt, fscnt, i; 
+	int statcnt, fscnt, i;
 
 	fscnt = getmntinfo(&mntbuf, MNT_WAIT);
-	if (fscnt == 0) 
-	{ 
+	if (fscnt == 0)
+	{
 		perror("getmntinfo");
 		return(FALSE);
 	}
@@ -393,7 +393,7 @@ int machine_get_uptime(double *up, double *idle)
 	else
 		*idle = 100.*curr_load.idle/curr_load.total;
 
-	return(TRUE); 
+	return(TRUE);
 }
 
 static int swapmode(int *rettotal, int *retfree)

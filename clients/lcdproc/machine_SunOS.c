@@ -436,7 +436,7 @@ int machine_get_uptime(double *up, double *idle)
 	else
 		*idle = 100.*curr_load.idle/curr_load.total;
 
-	return(TRUE); 
+	return(TRUE);
 }
 
 #endif /* sun */

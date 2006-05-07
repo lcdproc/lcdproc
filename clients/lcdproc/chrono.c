@@ -182,7 +182,7 @@ time_screen (int rep, int display, int *flags_ptr)
 		sprintf (buffer, "widget_set T three %i 4 {%s}\n", xoffs, tmp);
 		if (display)
 			sock_send_string (sock, buffer);
-	} 
+	}
 	else {							// 2 line version of the screen
 		if (lcd_wid >= 20)				// 20+x columns
 			sprintf(tmp, "%02d.%02d.%04d %s",

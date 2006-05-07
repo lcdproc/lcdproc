@@ -1,7 +1,7 @@
-/* 
+/*
    netlcdclient - Client for LCDproc which shows networks statistics
 
-   Copyright (C) 2002 Luis Llorente Campo <luisllorente@luisllorente.com>   
+   Copyright (C) 2002 Luis Llorente Campo <luisllorente@luisllorente.com>
    Multiinterface Extension by Stephan Skrodzki <skrodzki@stevekist.de>
    Adaptions to lcdproc by Andrew Foss with fixes by M. Dolze
    Cleanup, reorganization by Peter Marschall
@@ -18,7 +18,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 */
 
@@ -30,29 +30,17 @@
 #include <string.h>
 #include <time.h>
 
-#include "iface.h"
-#ifdef NETLCDCLIENT
-#include "sockets.h"
-#else
 #include "shared/sockets.h"
 #include "shared/debug.h"
 #include "shared/report.h"
 #include "shared/configfile.h"
 #include "main.h"
-#define UNSET_INT -1	 
+#include "util.h"
+#include "iface.h"
+
+#define UNSET_INT -1
 #define UNSET_STR "\01"
-#endif //NETLCDCLIENT
 
-
-#ifdef NETLCDCLIENT
-/* Option flags and global variables */
-
-char *program_name;  /* the name the program was run with */
-int port = 13666;  /* default port */
-char server[256] = "localhost";  /* default server */
-int daemon_mode = 0;  /* by default, no daemon mode */
-int sock = 0;  /* socket handler */
-#endif //NETLCDCLIENT
 
 int iface_count = 0;  /* number of interfaces */
 
@@ -73,255 +61,6 @@ static struct option const long_options[] =
 	{"version", no_argument, 0, 'V'},
 	{NULL, 0, NULL, 0}
 };
-
-
-#ifdef NETLCDCLIENT
-/*************************************************************************
- * MAIN PROGRAM FUNCTION
- *************************************************************************
- */
-
-int
-main (int argc, char **argv)
-{
-
-	IfaceInfo iface[MAX_INTERFACES];  /* interface info */
-
-	int len;  /* bytes read from server */
-
-	char readbuff[MAXMSG];  /* read buffer from server */
-
-	unsigned int sleep_time = 1;  /* interval between updates (1 second) */
-
-	int pid; /* child process identificator for daemon mode */
-
-	int iface_nmbr; /* loop variable for the interface */
-
-	/* Capture signals to exit program cleanly */
-	signal(SIGINT, exit_program);	/* Ctrl-C */
-	signal(SIGTERM, exit_program);	/* kill */
-	signal(SIGHUP, exit_program);	/* kill -HUP */
-	signal(SIGKILL, exit_program);	/* kill -KILL */
-
-	/* get program name from command line */
-	program_name = argv[0];
-
-	/* parse command line parameters */
-	decode_switches (argc, argv);
-
-	/* check if any interface name has been introduced */
-
-	if (iface_count == 0) {
-		/* no one has been introduced, so exit the program showing help */
-		printf("No interface selected, please, use --interface option\n");
-		usage (1);
-	}
-
-	/* check if we go to daemon mode */
-	if (daemon_mode) {
-		signal(SIGTTOU, SIG_IGN);
-		signal(SIGTTIN, SIG_IGN);
-		signal(SIGTSTP, SIG_IGN);
-
-		/* create child process */
-		pid = fork();
-		/* create new session */
-		setsid();
-		signal(SIGHUP, SIG_IGN);
-
-    		if (pid != 0) { /* we are the parent process and exit */
-        		exit(0);
-    		}
-    		/* from here, we are the child process */
-	}
-
-	/* Try to connect to server */
-	sock = sock_connect(server, port);
-
-	if (sock < 0) {  /* there was some error and exit */
-		fprintf(stderr, "Error: Could not connect to %s:%d\n", server, port);
-		exit(0);
-	}
-
-	/* Say "hello" to server */
-	sock_send_string(sock, "hello\n");
-
-	/* Wait the server to be prepared */
-	usleep(500000);
-
-	/* Read server response */
-	len = sock_recv(sock, readbuff, MAXMSG);
-
-	/* Now we are ready to send commands to server */
-
-	/* set initial speed screen with widgets */
-	initialize_speed_screen();
-
-	/* set initial transfer screen if needed */
-	if (transfer_screen) {
-		initialize_transfer_screen();
-	}
-
-	/* initialize all interface structs */
-	for (iface_nmbr = 0; iface_nmbr < iface_count; iface_nmbr++) {
-		iface[iface_nmbr].last_online = 0;
-		iface[iface_nmbr].status = down;
-	}
-
-
-	/* main loop */
-	while (1) {
-		/* read server responses */
-		len = sock_recv(sock, readbuff, MAXMSG);
-	  
-		/* for each interface do */
-		for (iface_nmbr = 0; iface_nmbr < iface_count; iface_nmbr++) {
-			/*read iface_parameter stats */
-			if (!get_iface_stats(&iface[iface_nmbr])) {
-				/* there was an error, so we exit the loop */
-		    		break;
-		    	}
-
-			/* actualize speed values in display */
-			actualize_speed_screen(&iface[iface_nmbr], sleep_time, iface_nmbr);
-	    
-			/* if needed, actualize transfer values in display */
-			if (transfer_screen)
-				actualize_transfer_screen(&iface[iface_nmbr], iface_nmbr);
-	  
-			/* Actual values are the old ones in the next loop */
-			iface[iface_nmbr].rc_byte_old = iface[iface_nmbr].rc_byte;
-			iface[iface_nmbr].tr_byte_old = iface[iface_nmbr].tr_byte;
-			iface[iface_nmbr].rc_pkt_old = iface[iface_nmbr].rc_pkt;
-			iface[iface_nmbr].tr_pkt_old = iface[iface_nmbr].tr_pkt;
-		}
-
-		/* Wait some time to do the main loop again */
-		sleep(sleep_time);
-	}
-
-	/* Before exit the program, close the socket */
-	sock_close(sock);
-
-	exit (0);
-
-} /* main() */
-
-/*************************************************************************
- * END MAIN PROGRAM FUNCTION
- **************************************************************************/
-
-
-/*************************************************************************
- * Set all the option flags according to the switches specified.
- * Return the index of the first non-option argument.
- *************************************************************************
- */
-
-static int
-decode_switches (int argc, char **argv)
-{
-	int c;
-
-	while ((c = getopt_long (argc, argv, "i:a:s:p:u:tdhV", \
-								long_options, (int *) 0)) != EOF) {
-    
-    	switch (c) {
-			case 'i':
-				/* Check number of interfaces introduced */
-				if (iface_count >= MAX_INTERFACES) {
-					fprintf(stderr, "Too many interfaces introduced. " 
-							"Only %d are supported.\n", MAX_INTERFACES);
-					exit(0);
-				}
-				iface[iface_count].name = strdup(optarg);
-				// make alias point to the same string as the interface name
-				iface[iface_count].alias = iface[iface_count].name;
-				iface_count++;
-				break;
-			case 'a':
-				iface[iface_count-1].alias = strdup(optarg);
-				break;
-			case 's':
-				strncpy(server, optarg, sizeof(server));
-				server[sizeof(server)-1] = '\0';
-				break;
-			case 'p':
-				port = atoi(optarg);
-				break;
-			case 'u':
-				/* check for valid values */
-				if (strstr(optarg, "byte"))
-					strncpy(unit_label, "B", sizeof(unit_label));
-				else if (strstr(optarg, "bit"))
-					strncpy(unit_label, "b", sizeof(unit_label));
-				else if (strstr(optarg, "packet"))
-					strncpy(unit_label, "pkt", sizeof(unit_label));
-				else {
-					fprintf(stderr, "netlcdclient: argument '%s' for -u parameter is not valid\n", optarg);
-					usage(0);
-				}
-				unit_label[sizeof(unit_label)-1] = '\0';
-				break;
-			case 't':
-				transfer_screen = 1;  /* show transfer screen */
-				break;  
-			case 'd':
-				daemon_mode = 1;  /* go to daemon mode */
-				break;
-			case 'V':  /* show version */
-				fprintf(stdout, "netlcdclient v%s\n", VERSION);
-				exit(0);
-			case 'h': /* show help */
-				usage(0);
-				exit(0);
-		}
-	}
-
-	return optind;
-	
-} /* decode_switches() */
-
-
-/************************************************************************* 
- * Show program help and exit.
- ************************************************************************* 
- */
-
-static void
-usage (int status)
-{
-	printf ("\n"
-"netlcdclient v%s for LCDproc, by Luis Llorente\n", VERSION);
-	printf ("\n"
-"Usage: %s -i <interface> [-a alias] [ -tdhV ] [ -s server ] [ -p port ] [-u unit]\n", program_name);
-	printf ("\n"
-"Options in []'s are optional.\n"
-"  -i , --interface=INTERFACE         show INTERFACE statistics\n"
-"  -a , --alias=ALIAS                 alias name for the interface (-a has to \n"
-"                                       follow -i)\n"
-"  -s, --server=SERVER                connect to SERVER (default is localhost)\n"
-"  -p, --port=NUMBER                  connect to specified port number (default\n"
-"                                       is 13666)\n"
-"  -u, --unit=TYPE                    speed measure unit. Available units are:\n"
-"                                       byte (default)\n"
-"                                       bit\n"
-"                                       packet\n"
-"  -t, --transfer                     add screen with transferred traffic\n"
-"  -d, --daemon                       run in the background\n"
-"  -h, --help                         display this help and exit\n"
-"  -V, --version                      output version information and exit\n"
-);
-	printf("\n"
-"Example:\n"
-"  %s -s my.server.org -p 2300 -u bit -i eth0 -a LAN\n", program_name);
-		
-	exit (status);
-
-} /* usage() */
-
-
-#else
 
 
 /* reads and parses configuration file */
@@ -429,11 +168,11 @@ iface_screen(int rep, int display, int *flags_ptr)
 
 		/* actualize speed values in display */
 	    	actualize_speed_screen(&iface[iface_nmbr], interval, iface_nmbr);
-    
+
 		/* if needed, actualize transfer values in display */
 		if (transfer_screen)
 			actualize_transfer_screen(&iface[iface_nmbr], iface_nmbr);
-  
+
 		/* Actual values are the old ones in the next loop */
 		iface[iface_nmbr].rc_byte_old = iface[iface_nmbr].rc_byte;
 		iface[iface_nmbr].tr_byte_old = iface[iface_nmbr].tr_byte;
@@ -444,13 +183,12 @@ iface_screen(int rep, int display, int *flags_ptr)
 	return 0;
 }	  // End iface_screen()
 
-#endif //NETLCDCLIENT
 
 /*************************************************************************
- * Read interface statistics from system and  store in the struct 
- * passed as a pointer. If there are no errors, it returns 1. If errors, 
+ * Read interface statistics from system and  store in the struct
+ * passed as a pointer. If there are no errors, it returns 1. If errors,
  * returns 0.
- ************************************************************************* 
+ *************************************************************************
  */
 
 int
@@ -491,8 +229,8 @@ get_iface_stats (IfaceInfo *interface)
 					&interface->tr_byte,
 					&interface->tr_pkt);
 
-				/* if is the first time we call this function, 
-				 * old values are the same as new so we don't 
+				/* if is the first time we call this function,
+				 * old values are the same as new so we don't
 				 * get big speeds when calculating
 				 */
 				if (first_time) {
@@ -510,7 +248,7 @@ get_iface_stats (IfaceInfo *interface)
 
 	}
 	else {  /* error when opening the file */
-		fprintf(stderr,"Error: Could not open %s\n", DEVFILE);
+		report(RPT_CRIT, "Error: Could not open %s\n", DEVFILE);
 		return 0; /* something went wrong */
 	}
 #endif
@@ -542,7 +280,7 @@ get_iface_stats (IfaceInfo *interface)
 			name[4] = rows; /* set the interface index */
 			/* retrive the ifmibdata for the current index */
 			if (sysctl(name, 6, &ifmd, &len, NULL, 0) == -1) {
-				perror("sysctl_read");
+				report(RPT_ERR, "Reading ifmibdata failed");
 				break;
 			}
 			/* check if its interface name matches */
@@ -568,10 +306,10 @@ get_iface_stats (IfaceInfo *interface)
 			}
 		}
 		/* if we are here there is no interface with the given name */
-		fprintf(stderr, "There is no interface named %s\n", interface->name);
+		report(RPT_CRIT, "There is no interface named %s", interface->name);
 		return 0;
 	} else {
-		perror("get_iface_stats");
+		report(RPT_CRIT, "Reading interface count via sysctl failed");
 		return 0;
 	}
 
@@ -600,7 +338,7 @@ initialize_speed_screen(void)
 	if ((iface_count == 1) && (lcd_hgt >= 4 )) { /* Single interface mode */
 		/* Set title */
 		sock_printf(sock, "widget_set I title {Net Load: %s}\n", iface[0].alias);
-  
+
 		/* Add and set download, upload and total string widgets */
 		sock_send_string(sock, "widget_add I dl string\n");
 		sock_send_string(sock, "widget_set I dl 1 2 {DL:}\n");
@@ -637,7 +375,7 @@ initialize_speed_screen(void)
 						iface_nmbr, iface_nmbr+1, iface[iface_nmbr].alias);
 		}
 	}
-  
+
 } /* initialize_speed_screen() */
 
 /*************************************************************************
@@ -646,75 +384,25 @@ initialize_speed_screen(void)
  * variable 'buff' passed as pointer.
  *************************************************************************
  */
-void 
+void
 format_value (char *buff, double value, char *unit)
 {
-	float formated_value;
-
-	/* if the measure unit is in 'b' (bits), the value passed must
-	 * be converted to bits (from bytes)
-	 */
-	if (strstr(unit, "b")) {
+	/* Convert bytes to bits, if necessary */
+	if (strstr(unit, "b"))
 		value *= 8;
-	}
 
-	/* bytes, bits or packets */
-	if (value < 1024) {
-		sprintf(buff, "%8ld %s",(long)value, unit);
-		return;
-	}
-	
-	/* Kilobytes, Kilobits of Kilopackets */
-	if (value < 1000000.0f) {
-		if (strstr(unit, "B")) { /* 1 KB = 1024 */
-			formated_value = (float) value / 1024.0f;
-		}
-		else { /* 1 K = 1000 */
-			formated_value = (float) value / 1000.0f;
-		}
+	/* If units are bytes, then divide by 2^10, otherwise by 10^3 */
+	char *mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
 
-		sprintf(buff, "%8.3f K%s", formated_value, unit);
-		return;
-	}
+	/* Formatting rules:
+	 * - if original value was < 1000, output decimal value only
+	 * - otherwise format with 3 precision
+	 */
+	if (mag[0] == 0)
+		sprintf(buff, "%8ld %s", (long) value, unit);
+	else
+		sprintf(buff, "%7.3f %s%s", value, mag, unit);
 
-	/* Megabytes, Megabits or Megapackets */
-	if (value < 1000000000.0f) {
-		if (strstr(unit, "B")) { /* 1 MB = 1024 KB */
-			formated_value = (float) value / 1048576.0f; /* 1024 ^ 2 */
-		}
-		else { /* 1 M = 1000 K */
-			formated_value = (float) value / 1000000.0f; /* 1000 ^ 2 */
-		}
-			
-		sprintf(buff, "%8.3f M%s", formated_value, unit);
-		return;
-	}
-
-	/* Gigabytes, Gigabits or Gigapackets */
-	if (value < 1000000000000.0f) {
-		if (strstr(unit, "B")) { /* 1 GB = 1024 MB */
-			formated_value = (float) value / 1073741824.0f; /* 1024 ^ 3 */
-		}
-		else { /* 1 G = 1000 M */
-			formated_value = (float) value / 1000000000.0f; /* 1000 ^ 3 */
-		}
-			
-		sprintf(buff, "%8.3f G%s", formated_value, unit);
-		return;
-	}
-
-	/* Terabytes, Terabits or Terapackets */
-	if (value >= 1000000000000.0f) {
-		if (strstr(unit, "B")) { /* 1 TB = 1024 GB */
-			formated_value = (float) value / 1099511627776.0f; /* 1024 ^ 4 */
-		}
-		else { /* 1 T = 1000 G */
-			formated_value = (float) value / 1000000000000.0f; /* 1000 ^ 4 */
-		}
-			
-		sprintf(buff, "%8.3f T%s", formated_value, unit);
-		return;
-	}
 } /* format_value() */
 
 /*************************************************************************
@@ -723,107 +411,33 @@ format_value (char *buff, double value, char *unit)
  * variable 'buff' passed as pointer. Version for multi-interfaces mode
  *************************************************************************
  */
-void 
+void
 format_value_multi_interface (char *buff, double value, char *unit)
 {
-	char mybuff[20];  /* temp buffer */
-	float formated_value;
-
-	/* if the measure unit is in 'b' (bits), the value passed must
-	 * be converted to bits (from bytes)
-	 */
-	if (strstr(unit, "b")) {
+	if (strstr(unit, "b"))
 		value *= 8;
-	}
 
-	/* bytes, bits or packets */
-	if (value < 1000) {
-		sprintf(buff, "%3ld ", (long)value);
-		return;
-	}
-	
-	/* Kilobytes, Kilobits of Kilopackets */
-	if (value < 1000000) {
-		if (strstr(unit, "B")) { /* 1 KB = 1024 */
-			formated_value = (float) value / 1024.0f;
-		}
-		else { /* 1 K = 1000 */
-			formated_value = (float) value / 1000.0f;
-		}
+	char *mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
 
-		sprintf(mybuff, "%3.1f", formated_value);
-		if (mybuff[2] != '.') {
-			sprintf(buff, "%.3sK", mybuff);
-		}
-		else {
-			sprintf(buff, " %.2sK", mybuff);
-		}
-		return;
-	}
+	/* Formatting rules:
+	 * - if original value was < 1000, output decimal value only
+	 * - with 1 precision if <10
+	 * - decimal value with magnitude otherwise
+	 */
+	if (mag[0] == 0)
+		sprintf(buff, "%4ld", (long) value);
+	else if (value < 10)
+		sprintf(buff, "%3.1f%s", value, mag);
+	else
+		sprintf(buff, "%3.f%s", value, mag);
 
-	/* Megabytes, Megabits or Megapackets */
-	if (value < 1000000000.0f) {
-		if (strstr(unit, "B")) { /* 1 MB = 1024 KB */
-			formated_value = (float) value / 1048576.0f; /* 1024 ^ 2 */
-		}
-		else { /* 1 M = 1000 K */
-			formated_value = (float) value / 1000000.0f; /* 1000 ^ 2 */
-		}
-			
-		sprintf(mybuff, "%3.1f", formated_value);
-		if (mybuff[2] != '.') {
-			sprintf(buff, "%.3sM", mybuff);
-		}
-		else {
-			sprintf(buff, " %.2sM", mybuff);
-		}
-		return;
-	}
-
-	/* Gigabytes, Gigabits or Gigapackets */
-	if (value < 1000000000000.0f) {
-		if (strstr(unit, "B")) { /* 1 GB = 1024 MB */
-			formated_value = (float) value / 1073741824.0f; /* 1024 ^ 3 */
-		}
-		else { /* 1 G = 1000 M */
-			formated_value = (float) value / 1000000000.0f; /* 1000 ^ 3 */
-		}
-			
-		sprintf(mybuff, "%3.1f", formated_value);
-		if (mybuff[2] != '.') {
-			sprintf(buff, "%.3sG", mybuff);
-		}
-		else {
-			sprintf(buff, " %.2sG", mybuff);
-		}
-		return;
-	}
-
-	/* Terabytes, Terabits or Terapackets */
-	if (value >= 1000000000000.0f) {
-		if (strstr(unit, "B")) { /* 1 TB = 1024 GB */
-			formated_value = (float) value / 1099511627776.0f; /* 1024 ^ 4 */
-		}
-		else { /* 1 T = 1000 G */
-			formated_value = (float) value / 1000000000000.0f; /* 1000 ^ 4 */
-		}
-			
-		sprintf(mybuff, "%3.1f", formated_value);
-		if (mybuff[2] != '.') {
-			sprintf(buff, "%.3sT", mybuff);
-		}
-		else {
-			sprintf(buff, " %.2sT", mybuff);
-		}
-		return;
-	}
 } /* format_value_multi_interface() */
 
 /*************************************************************************
  * Format the time in ASCII, depending on the elapsed time
  *************************************************************************
  */
-void 
+void
 get_time_string (char *buff, time_t last_online)
 {
 
@@ -854,7 +468,7 @@ get_time_string (char *buff, time_t last_online)
 
 /*************************************************************************
  * Actualize values in display, calculating speeds in the defined interval
- * of time and sending proper commands to server. If measure unit is 
+ * of time and sending proper commands to server. If measure unit is
  * 'pkt', we don't format this speed. Is always XXXX pkt/s
  *************************************************************************
  */
@@ -970,7 +584,7 @@ initialize_transfer_screen(void)
 		/* Set title (transfer screen is always in "bytes") */
 		sock_send_string(sock, "widget_set NT title {Net Transfer (bytes)}\n");
 		sock_send_string(sock, "widget_add NT f frame\n");
-  
+
 		// frame from (2, left) to (width, height) that is iface_count lines high
 		sock_printf(sock, "widget_set NT f 1 2 %d %d %d %d v 16\n",
 				lcd_wid, lcd_hgt, lcd_wid, iface_count,
@@ -986,7 +600,7 @@ initialize_transfer_screen(void)
 } /* initialize_transfer_screen() */
 
 /*************************************************************************
- * Actualize values in display, formatting transfer measures and sending 
+ * Actualize values in display, formatting transfer measures and sending
  * proper commands to server. Traffic is shown in "bytes" unit
  *************************************************************************
  */
@@ -1028,27 +642,7 @@ actualize_transfer_screen(IfaceInfo *iface, int index)
 		else { /* Interface is down */
 			get_time_string(transfer, iface->last_online);
 			sock_printf(sock, "widget_set NT i%1d 1 %1d {%5.5s NA (%s)}\n",
-					index, index+1, iface[index].alias, transfer);	    
+					index, index+1, iface[index].alias, transfer);
 		}
 	}
 } /* actualize_transfer_screen() */
-
-#ifdef NETLCDCLIENT
-/*************************************************************************
- * Exit the program in a clean way
- *************************************************************************
- */
-void
-exit_program (int val)
-{
-	/* check if socket is open and close it */
-	if (sock != 0) {
-		sock_close(sock);
-	}
-	
-	fprintf(stderr, "\nExiting netlcdclient....\n");
-
-	exit(0);
-	
-} /* exit_program() */
-#endif //NETLCDCLIENT

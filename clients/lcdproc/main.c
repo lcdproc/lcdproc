@@ -61,14 +61,14 @@ static int process_configfile(char *cfgfile);
 
 
 // 1/8th second is a single time unit...
-#define TIME_UNIT 125000
+#define TIME_UNIT	125000
 
 #if !defined(SYSCONFDIR)
-# define SYSCONFDIR "/etc"
+# define SYSCONFDIR	"/etc"
 #endif
 
-#define UNSET_INT -1	 
-#define UNSET_STR "\01"
+#define UNSET_INT		-1
+#define UNSET_STR		"\01"
 #define DEFAULT_SERVER		"127.0.0.1"
 #define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdproc.conf"
 #define DEFAULT_REPORTDEST	RPT_DEST_STDERR
@@ -78,7 +78,7 @@ static int process_configfile(char *cfgfile);
 mode sequence[] =
 {
 	// flags default ACTIVE will run by default
-	// longname    which on  off inv  timer   flags  
+	// longname    which on  off inv  timer   flags
 	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen        },	// [C]PU
 	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen      }, 	// [I]face
 	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen        },	// [M]emory
@@ -87,13 +87,13 @@ mode sequence[] =
 	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen     },	// [A]bout (credits)
 	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen    },	// CPU_SM[P]
 	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen      },	// [O]ld Timescreen
-	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen  },	// big cloc[K] 
+	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen  },	// big cloc[K]
 	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen     },	// Old [U]ptime Screen
 	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen    },	// [B]attery Status
 	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen  },	// CPU histogram [G]raph
 	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen    },	// [S]ize of biggest processes
 	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen       },	// [D]isk stats
-	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen },	// Mi[n]i clock 
+	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen },	// Mi[n]i clock
 	{  NULL, 0, 0, 0, 0, 0, 0, NULL},			  	// No more..  all done.
 };
 
@@ -136,12 +136,12 @@ int set_mode(int shortname, char *longname, int state)
 	/* ignore already selected modes */
 	for (k = 0; sequence[k].which != 0; k++) {
 		if (((sequence[k].longname != NULL) &&
-		     (0 == strcasecmp(longname, sequence[k].longname))) || 
+		     (0 == strcasecmp(longname, sequence[k].longname))) ||
 		    (toupper(shortname) == sequence[k].which)) {
 			if (!state) {
-				/* clean both the active and inititialized bits since we delete the screen */
+				/* clean both the active and initialized bits since we delete the screen */
 				sequence[k].flags &= (~ACTIVE & ~INITIALIZED);
-				/* delte the screen if we are connected */
+				/* delete the screen if we are connected */
 				if (sock >= 0) {
 					sock_printf(sock, "screen_del %c\n", sequence[k].which);
 				}	
@@ -262,7 +262,7 @@ main(int argc, char **argv)
 			int state = (*argv[i] == '!') ? 0 : 1;
 			char *name = (state) ? argv[i] : argv[i]+1;
 			int shortname = (strlen(name) == 1) ? name[0] : '\0';
-fprintf(stderr, "%s%s\n", (state) ? "" : "!", name);
+			// debug: fprintf(stderr, "%s%s\n", (state) ? "" : "!", name);
 			int found = set_mode(shortname, name, state);
 
 			if (!found) {

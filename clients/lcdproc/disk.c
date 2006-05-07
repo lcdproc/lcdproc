@@ -20,7 +20,7 @@
 
 
 ///////////////////////////////////////////////////////////////////////////
-// Gives disk stats. 
+// Gives disk stats.
 //
 // Stays onscreen until it is done; rolls over all mounted file systems
 // +--------------------+	+--------------------+

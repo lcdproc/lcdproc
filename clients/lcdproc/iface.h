@@ -61,12 +61,6 @@ IfaceInfo iface[MAX_INTERFACES];  /* interface info */
 /* Functions prototipes */
 /************************/
 
-/* show usage options */
-static void usage (int status);
-
-/* parse command line parameters */
-static int decode_switches (int argc, char **argv);
-
 /* read interface stats from /proc/net/dev */
 int get_iface_stats (IfaceInfo *interface);
 
@@ -91,10 +85,5 @@ void actualize_speed_screen (IfaceInfo *iface, unsigned int interval, int index)
 
 /* actualize widgets values in transfer screen */
 void actualize_transfer_screen (IfaceInfo *iface, int index);
-
-#ifdef NETLCDCLIENT
-/* exit the program cleanly */
-void exit_program (int val);
-#endif //NETLCDCLIENT
 
 #endif

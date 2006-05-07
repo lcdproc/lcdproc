@@ -147,7 +147,7 @@ mem_screen (int rep, int display, int *flags_ptr)
 				double value = 1.0 - ((double) mem[1].free / (double) mem[1].total);
 
 				//printf(".0f", val) only prints the integer part
-				sprintf(buffer, "widget_set M swapgauge %i 4 %.0f\n", 
+				sprintf(buffer, "widget_set M swapgauge %i 4 %.0f\n",
 					lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
 				if (display)
 					sock_send_string(sock, buffer);
@@ -194,7 +194,7 @@ mem_screen (int rep, int display, int *flags_ptr)
 
 			if (gauge_wid > 0) {
 				//printf(".0f", val) only prints the integer part
-				sprintf(buffer, "widget_set M swapgauge %i 2 %.0f\n", 
+				sprintf(buffer, "widget_set M swapgauge %i 2 %.0f\n",
 					gauge_offs, lcd_cellwid * gauge_wid * value);
 				if (display)
 					sock_send_string(sock, buffer);

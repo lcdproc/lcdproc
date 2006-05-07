@@ -86,7 +86,7 @@ xload_screen (int rep, int display, int *flags_ptr)
 
 	factor = (double) (lcd_cellhgt * gauge_hgt) / (double) loadtop;
 
-	// display load 
+	// display load
 	sprintf (tmp, "widget_set X top %i %i %i\n", lcd_wid, (lcd_hgt + 1 - gauge_hgt), loadtop);
 	sock_send_string (sock, tmp);
 
