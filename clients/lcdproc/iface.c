@@ -138,7 +138,7 @@ main (int argc, char **argv)
 	/* Try to connect to server */
 	sock = sock_connect(server, port);
 
-	if (sock <= 0) {  /* there was some error and exit */
+	if (sock < 0) {  /* there was some error and exit */
 		fprintf(stderr, "Error: Could not connect to %s:%d\n", server, port);
 		exit(0);
 	}

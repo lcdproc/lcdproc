@@ -278,7 +278,7 @@ fprintf(stderr, "%s%s\n", (state) ? "" : "!", name);
 	// Connect to the server...
 	usleep(500000);		// wait for the server to start up
 	sock = sock_connect(server, port);
-	if (sock <= 0) {
+	if (sock < 0) {
 		fprintf(stderr, "Error connecting to LCD server %s on port %d.\n"
 		                "Check to see that the server is running and operating normally.\n",
 				server, port);

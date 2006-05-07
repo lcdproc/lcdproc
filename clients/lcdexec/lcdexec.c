@@ -226,7 +226,7 @@ int connect_and_setup()
 	report(RPT_INFO, "Connecting to %s:%d", address, port);
 
 	sock = sock_connect(address, port);
-	if (sock <= 0) {
+	if (sock < 0) {
 		return -1;
 	}
 

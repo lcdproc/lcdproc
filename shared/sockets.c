@@ -82,7 +82,7 @@ sock_connect (char *host, unsigned short int port)
 #endif
 		report (RPT_ERR, "sock_connect: connect failed");
 		shutdown (sock, SHUT_RDWR);
-		return 0;					  // Normal exit if server doesn't exist...
+		return -1;
 	}
 
 #ifndef WINSOCK2        
