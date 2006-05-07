@@ -52,6 +52,7 @@ static client_function commands[] = {
 	{ "noop",           noop_func           },
 	{ "info",           info_func           },
 	{ "sleep",          sleep_func          },
+	{ "bye",            bye_func            },
 	{ NULL,             NULL},
 };
 

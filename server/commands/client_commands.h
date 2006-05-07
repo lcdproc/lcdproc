@@ -14,6 +14,7 @@
 #define COMMANDS_CLIENT_H
 
 int hello_func (Client * c, int argc, char **argv);
+int bye_func (Client * c, int argc, char **argv);
 int client_set_func (Client * c, int argc, char **argv);
 int client_add_key_func (Client * c, int argc, char **argv);
 int client_del_key_func (Client * c, int argc, char **argv);

@@ -56,7 +56,7 @@ test_func_func (Client * c, int argc, char **argv)
  *
  * It returns a string of info about the server to the client
  *
- * usage: hello
+ * Usage: hello
  */
 int
 hello_func (Client * c, int argc, char **argv)
@@ -72,13 +72,10 @@ hello_func (Client * c, int argc, char **argv)
 	debug(RPT_INFO, "Hello!");
 
 	memset(str, '\0', sizeof(str));
-	snprintf (str, sizeof(str), "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
-		VERSION, PROTOCOL_VERSION, display_props->width, display_props->height, display_props->cellwidth, display_props->cellheight);
-
-/*	lcdproc (client) depends on the above format...
- *	snprintf (str, sizeof(str), "connect LCDproc %s protocol %s LCD %ix%i with cells %ix%i\n",
- *		version, protocol_version, lcd.wid, lcd.hgt, lcd.cellwid, lcd.cellhgt);
- */
+	snprintf(str, sizeof(str), "connect LCDproc %s protocol %s lcd wid %i hgt %i cellwid %i cellhgt %i\n",
+		VERSION, PROTOCOL_VERSION,
+		display_props->width, display_props->height,
+		display_props->cellwidth, display_props->cellheight);
 
 	sock_send_string (c->sock, str);
 
@@ -87,10 +84,28 @@ hello_func (Client * c, int argc, char **argv)
 	return 0;
 }
 
+/*****************************************************************************
+ * The client should say "bye" before disconnecting
+ *
+ * The function does not respond to the client: it simply cuts connection
+ *
+ * Usage: bye
+ */
+int
+bye_func (Client * c, int argc, char **argv)
+{
+	if (c != NULL) {
+		debug(RPT_INFO, "Bye, %s!", (c->name != NULL) ? c->name : "unknown client");
+
+		sock_send_error(c->sock, "\"bye\" is currently ignored\n");
+	}	
+	return 0;
+}
+
 /***************************************************
  * sets info about the client, such as its name
  *
- * usage: client_set -name <id>
+ * Usage: client_set -name <id>
  */
 int
 client_set_func (Client * c, int argc, char **argv)
@@ -103,17 +118,7 @@ client_set_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if (argc != 3) {
-		switch (argc) {
-			case 1:
-				sock_send_error(c->sock, "usage: client_set -name <name>\n");
-				break;
-			case 2:
-				sock_send_error(c->sock, "Not enough parameters\n");
-				break;
-			default:
-				sock_send_error(c->sock, "Too many parameters\n");
-				break;
-		}
+		sock_send_error(c->sock, "Usage: client_set -name <name>\n");
 		return 0;
 	}
 
@@ -164,7 +169,7 @@ client_set_func (Client * c, int argc, char **argv)
  * Tells the server the client would like to accept keypresses
  * of a particular type
  *
- * usage: client_add_key [-exclusively|-shared] {<key>}+
+ * Usage: client_add_key [-exclusively|-shared] {<key>}+
  */
 #define BUFLEN 80
 int
@@ -177,11 +182,7 @@ client_add_key_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if (argc < 2) {
-		switch (argc) {
-			case 1:
-				sock_send_error(c->sock, "Usage: client_add_key [-exclusively|-shared] {<key>}+\n");
-				break;
-		}
+		sock_send_error(c->sock, "Usage: client_add_key [-exclusively|-shared] {<key>}+\n");
 		return 0;
 	}
 
@@ -212,7 +213,7 @@ client_add_key_func (Client * c, int argc, char **argv)
  * Tells the server the client would NOT like to accept keypresses
  * of a particular type
  *
- * usage: client_del_key {<key>}+
+ * Usage: client_del_key {<key>}+
  */
 int
 client_del_key_func (Client * c, int argc, char **argv)
@@ -238,7 +239,7 @@ client_del_key_func (Client * c, int argc, char **argv)
 /***************************************************************************
  * Toggles the backlight, if enabled.
  *
- * usage: backlight <on|off|toggle|blink|flash>
+ * Usage: backlight {on|off|toggle|blink|flash}
  */
 int
 backlight_func (Client * c, int argc, char **argv)
@@ -247,14 +248,7 @@ backlight_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if (argc != 2) {
-		switch (argc) {
-			case 1:
-				sock_send_error(c->sock, "usage: backlight <on|off|toggle|blink|flash>\n");
-				break;
-			default:
-				sock_send_error(c->sock, "Too many parameters...\n");
-				break;
-		}
+		sock_send_error(c->sock, "Usage: backlight {on|off|toggle|blink|flash}\n");
 		return 0;
 	}
 
@@ -291,7 +285,7 @@ backlight_func (Client * c, int argc, char **argv)
 /****************************************************************************
  * info_func
  *
- * usage: info
+ * Usage: info
  */
 int
 info_func (Client * c, int argc, char **argv)

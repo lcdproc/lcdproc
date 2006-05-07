@@ -35,7 +35,7 @@
 /****************************************************************************
  * Sets the state of the output port (such as on MtxOrb LCDs)
  *
- * usage: output <on|off|int>
+ * Usage: output <on|off|int>
  */
 #define ALL_OUTPUTS_ON -1
 #define ALL_OUTPUTS_OFF 0
@@ -47,10 +47,7 @@ output_func (Client * c, int argc, char **argv)
 	char str[128];
 
 	if (argc != 2) {
-		if (argc == 1)
-			sock_send_error(c->sock, "usage: output <on|off|num> -- num may be decimal, hex, or octal\n");
-		else
-			sock_send_error(c->sock, "Too many parameters...\n");
+		sock_send_error(c->sock, "Usage: output {on|off|<num>}\n");
 		return 0;
 	}
 
@@ -120,7 +117,7 @@ output_func (Client * c, int argc, char **argv)
 /*******************************************************************************
  * sleep_func
  *
- * usage: sleep <seconds>
+ * Usage: sleep <seconds>
  */
 int
 sleep_func (Client * c, int argc, char **argv)
@@ -134,10 +131,7 @@ sleep_func (Client * c, int argc, char **argv)
 #define MIN_SECS 1
 
 	if (argc != 2) {
-		if (argc == 1)
-			sock_send_error(c->sock, "usage: sleep <secs>\n");
-		else
-			sock_send_error(c->sock, "Too many parameters...\n");
+		sock_send_error(c->sock, "Usage: sleep <secs>\n");
 		return 0;
 	}
 

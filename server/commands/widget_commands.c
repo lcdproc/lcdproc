@@ -39,7 +39,7 @@
 /*************************************************************************
  * Adds a widget to a screen, but doesn't give it a value
  *
- * usage: widget_add <screenid> <widgetid> <widgettype> [ -in <id> ]
+ * Usage: widget_add <screenid> <widgetid> <widgettype> [-in <id>]
  */
 int
 widget_add_func (Client * c, int argc, char **argv)
@@ -55,7 +55,7 @@ widget_add_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if ((argc < 4) || (argc > 6)) {
-		sock_send_error(c->sock, "Usage: widget_add <screenid> <widgetid> <widgettype> [ -in <id> ]\n");
+		sock_send_error(c->sock, "Usage: widget_add <screenid> <widgetid> <widgettype> [-in <id>]\n");
 		return 0;
 	}
 
@@ -126,7 +126,7 @@ widget_add_func (Client * c, int argc, char **argv)
 /*******************************************************************
  * Removes a widget from a screen, and forgets about it
  *
- * usage: widget_del <screenid> <widgetid>
+ * Usage: widget_del <screenid> <widgetid>
  */
 int
 widget_del_func (Client * c, int argc, char **argv)
@@ -142,17 +142,7 @@ widget_del_func (Client * c, int argc, char **argv)
 		return 1;
 
 	if (argc != 3) {
-		switch (argc) {
-			case 1:
-				sock_send_error(c->sock, "Usage: widget_del <screenid> <widgetid>\n");
-				break;
-			case 2:
-				sock_send_error(c->sock, "Specify a widget #id\n");
-				break;
-			default:
-				sock_send_error(c->sock, "Too many parameters...\n");
-				break;
-		}
+		sock_send_error(c->sock, "Usage: widget_del <screenid> <widgetid>\n");
 		return 0;
 	}
 

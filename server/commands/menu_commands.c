@@ -242,7 +242,7 @@ menu_del_item_func (Client * c, int argc, char **argv)
 	if (!c->ack)
 		return 1;
 
-	if ((argc < 3 )) {
+	if (argc != 3 ) {
 		sock_send_error(c->sock, "Usage: menu_del_item <menuid> <itemid>\n");
 		return 0;
 	}
@@ -451,7 +451,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
 	if (!c->ack)
 		return 1;
 
-	if ((argc < 4 )) {
+	if (argc < 4 ) {
 		sock_send_error(c->sock, "Usage: menu_set_item <menuid> <itemid> {<option>}+\n");
 		return 0;
 	}
@@ -712,7 +712,7 @@ menu_set_item_func (Client * c, int argc, char **argv)
  * to go to a menu of another client (or the server menus). Same
  * restriction applies to the optional predecessor_id
  *
- * usage: menu_goto <id> [<predecessor_id>]
+ * Usage: menu_goto <id> [<predecessor_id>]
  */
 int
 menu_goto_func (Client * c, int argc, char **argv)
@@ -726,7 +726,7 @@ menu_goto_func (Client * c, int argc, char **argv)
 	if (!c->ack)
 		return 1;
 
-	if ((argc < 2 )) {
+	if ((argc < 2 ) || (argc > 3)) {
 		sock_send_error(c->sock, "Usage: menu_goto <menuid> [<predecessor_id>]\n");
 		return 0;
 	}
@@ -746,7 +746,7 @@ menu_goto_func (Client * c, int argc, char **argv)
 		return 0;
 	}
 
-	if ((argc > 2 ))
+	if (argc > 2 )
 		set_predecessor(menu, argv[2], c);
 
 	menuscreen_goto (menu);
@@ -836,7 +836,7 @@ int set_successor(MenuItem *item, char *itemid, Client *c)
 /***************************************************************
  * Requests the menu system to set the entry point into the menu system. 
  *
- * usage: menu_set_main <id>
+ * Usage: menu_set_main <id>
  */
 int
 menu_set_main_func (Client * c, int argc, char **argv)
@@ -850,7 +850,7 @@ menu_set_main_func (Client * c, int argc, char **argv)
 	if (!c->ack)
 		return 1;
 
-	if ((argc < 2 )) {
+	if (argc != 2 ) {
 		sock_send_error(c->sock, "Usage: menu_set_main <menuid>\n");
 		return 0;
 	}
