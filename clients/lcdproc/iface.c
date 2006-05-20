@@ -161,7 +161,7 @@ iface_screen(int rep, int display, int *flags_ptr)
 	/* for each interface do */
 	for (iface_nmbr = 0; iface_nmbr < iface_count; iface_nmbr++) {
 		/*read iface_parameter stats */
-		if (!get_iface_stats(&iface[iface_nmbr])) {
+		if (!machine_get_iface_stats(&iface[iface_nmbr])) {
 			/* there was an error, so we exit the loop */
 	    		break;
 	    	}
@@ -184,138 +184,6 @@ iface_screen(int rep, int display, int *flags_ptr)
 }	  // End iface_screen()
 
 
-/*************************************************************************
- * Read interface statistics from system and  store in the struct
- * passed as a pointer. If there are no errors, it returns 1. If errors,
- * returns 0.
- *************************************************************************
- */
-
-int
-get_iface_stats (IfaceInfo *interface)
-{
-#ifdef linux
-	FILE *file;   /* file handler */
-	char buffer[1024];  /* buffer to work with the file */
-	static int first_time = 1;  /* is it first time we call this function? */
-	char *ch_pointer = NULL;  /* pointer to where interface values are in file */
-
-	/* Open the file in read-only mode and parse */
-
-	if ((file = fopen(DEVFILE, "r")) != NULL) {
-		/* Skip first 2 header lines of file */
-		fgets(buffer, sizeof(buffer), file);
-		fgets(buffer, sizeof(buffer), file);
-		
-		/* By default, treat interface as down */
-		interface->status = down;
-		
-		/* Search iface_name and scan values */
-		while ((fgets(buffer, sizeof(buffer), file) != NULL)) {
-			if (strstr(buffer, interface->name)) {
-				/* interface exists */
-				interface->status = up; /* is up */
-				interface->last_online = time(NULL); /* save actual time */
-				
-				/* search ':' and skip over it */
-				ch_pointer = strchr(buffer, ':');
-				ch_pointer++;
-				
-				/* Now ch_pointer points to values of iface_name */
-				/* Scan values from here */
-				sscanf(ch_pointer, "%lf %lf %*s %*s %*s %*s %*s %*s %lf %lf",
-					&interface->rc_byte,
-					&interface->rc_pkt,
-					&interface->tr_byte,
-					&interface->tr_pkt);
-
-				/* if is the first time we call this function,
-				 * old values are the same as new so we don't
-				 * get big speeds when calculating
-				 */
-				if (first_time) {
-					interface->rc_byte_old = interface->rc_byte;
-					interface->tr_byte_old = interface->tr_byte;
-					interface->rc_pkt_old = interface->rc_pkt;
-					interface->tr_pkt_old = interface->tr_pkt;
-					first_time = 0;  /* now it isn't first time */
-				}
-			}
-		} /* while */
-
-		fclose(file);  /* close file */
-		return 1;  /* everything went OK */
-
-	}
-	else {  /* error when opening the file */
-		report(RPT_CRIT, "Error: Could not open %s\n", DEVFILE);
-		return 0; /* something went wrong */
-	}
-#endif
-
-#ifdef __FreeBSD__
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/sysctl.h>
-#include <net/if.h>
-#include <net/if_mib.h>
-#include <string.h>
-#include <stdio.h>
-
-	static int      first_time = 1;	/* is it first time we call this function? */
-	int             rows;
-	int             name[6] = {CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_IFDATA, 0, IFDATA_GENERAL};
-	size_t          len;
-	struct ifmibdata ifmd; /* ifmibdata contains the network statistics */
-
-	len = sizeof(rows);
-	/* get number of interfaces */
-	if (sysctlbyname("net.link.generic.system.ifcount", &rows, &len, NULL, 0) == 0) {
-		interface->status = down; /* set status down by default */
-
-		len = sizeof(ifmd);
-		/* walk through all interfaces in the ifmib table from last to first */
-		for ( ; rows > 0; rows--) {
-			name[4] = rows; /* set the interface index */
-			/* retrive the ifmibdata for the current index */
-			if (sysctl(name, 6, &ifmd, &len, NULL, 0) == -1) {
-				report(RPT_ERR, "Reading ifmibdata failed");
-				break;
-			}
-			/* check if its interface name matches */
-			if (strcmp(ifmd.ifmd_name, interface->name) == 0) {
-				interface->last_online = time(NULL);	/* save actual time */
-
-				if ((ifmd.ifmd_flags & IFF_UP) == IFF_UP)
-					interface->status = up;	/* is up */
-
-				interface->rc_byte = ifmd.ifmd_data.ifi_ibytes;
-				interface->tr_byte = ifmd.ifmd_data.ifi_obytes;
-				interface->rc_pkt = ifmd.ifmd_data.ifi_ipackets;
-				interface->tr_pkt = ifmd.ifmd_data.ifi_opackets;
-
-				if (first_time) {
-					interface->rc_byte_old = interface->rc_byte;
-					interface->tr_byte_old = interface->tr_byte;
-					interface->rc_pkt_old = interface->rc_pkt;
-					interface->tr_pkt_old = interface->tr_pkt;
-					first_time = 0;	/* now it isn't first time */
-				}
-				return 1;
-			}
-		}
-		/* if we are here there is no interface with the given name */
-		report(RPT_CRIT, "There is no interface named %s", interface->name);
-		return 0;
-	} else {
-		report(RPT_CRIT, "Reading interface count via sysctl failed");
-		return 0;
-	}
-
-#endif				/* __FreeBSD__ */
-
-} /* get_iface_stats() */
 
 /*************************************************************************
  * Send commands to server to add speed screen with all required widgets

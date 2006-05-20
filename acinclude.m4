@@ -21,6 +21,7 @@ drivers=`echo $drivers | sed -e 's/,/ /g'`
 
 dnl replace special keyword "all" in a secure manner
 drivers=[" $drivers "]
+drivers=`echo " $drivers " | sed -e "s/ all,/ ${allDrivers} /"`
 drivers=`echo " $drivers " | sed -e "s/ all / ${allDrivers} /"`
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -29,8 +30,8 @@ selectdrivers=" "
 for driver in $drivers ; do
 	case $driver in
 		!*)
-			driver=`echo $driver | sed -e 's/^.//'`
-			selectdrivers=[`echo $selectdrivers | sed -r -e "s/ $driver / /g"`]
+			driver=`echo "$driver" | sed -e 's/^.//'`
+			selectdrivers=[`echo " $selectdrivers " | sed -r -e "s/ $driver / /g"`]
 			;;
 		*)
 			selectdrivers=["$selectdrivers $driver "]

@@ -52,6 +52,9 @@
 #include <uvm/uvm_extern.h>
 #include <machine/apmvar.h>
 #include <errno.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <ifaddrs.h>
 
 #if (__NetBSD_Version__ >= 300000000)
 #include <sys/statvfs.h>
@@ -137,7 +140,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 #if (__NetBSD_Version__ >= 300000000)
 	struct statvfs *mntbuf;
 	struct statvfs *pp;
-#else	
+#else
 	struct statfs *mntbuf;
 	struct statfs *pp;
 #endif
@@ -368,6 +371,52 @@ int machine_get_uptime(double *up, double *idle)
 		*idle = 100.*curr_load.idle/curr_load.total;
 
 	return(TRUE);
+}
+
+/* Get network statistics */
+int machine_get_iface_stats (IfaceInfo *interface)
+{
+	static int     first_time = 1;	/* is it first time we call this function? */
+	struct ifaddrs *ifa, *ifa_ptr;
+	struct if_data *ifd;
+
+	/* get first interface */
+	if (getifaddrs(&ifa) == -1)
+		perror("getifaddr failed");
+
+	/* loop through all interfaces */
+	for (ifa_ptr = ifa; ifa_ptr != NULL; ifa_ptr = ifa_ptr->ifa_next) {
+		interface->status = down; /* set status down by default */
+
+		/* check if we got the right interface and if it is Link type */
+		if ((strcmp(ifa_ptr->ifa_name, interface->name) == 0) &&
+			(ifa_ptr->ifa_addr->sa_family == AF_LINK)) {
+
+			ifd = (struct if_data *)ifa_ptr->ifa_data;
+			interface->last_online = time(NULL);	/* save actual time */
+
+			if ((ifa_ptr->ifa_flags & IFF_UP) == IFF_UP)
+				interface->status = up;	/* is up */
+
+			interface->rc_byte = ifd->ifi_ibytes;
+			interface->tr_byte = ifd->ifi_obytes;
+			interface->rc_pkt = ifd->ifi_ipackets;
+			interface->tr_pkt = ifd->ifi_opackets;
+
+			if (first_time) {
+				interface->rc_byte_old = interface->rc_byte;
+				interface->tr_byte_old = interface->tr_byte;
+				interface->rc_pkt_old = interface->rc_pkt;
+				interface->tr_pkt_old = interface->tr_pkt;
+				first_time = 0;	/* now it isn't first time */
+			}
+			return 1;
+		}
+	}
+	freeifaddrs(ifa);
+
+	/* if we are here there is no interface with the given name */
+	return 0;
 }
 
 #endif /* __NetBSD__ */

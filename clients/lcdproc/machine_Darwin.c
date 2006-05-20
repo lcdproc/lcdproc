@@ -428,4 +428,11 @@ static int swapmode(int *rettotal, int *retfree)
 	return(FALSE);
 }
 
+/* Get network statistics */
+int machine_get_iface_stats (IfaceInfo *interface)
+{
+	/* Implementation missing */
+	return 0;
+}
+
 #endif /* __APPLE__ */

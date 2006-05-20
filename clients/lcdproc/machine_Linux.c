@@ -34,6 +34,7 @@
 #include "shared/LL.h"
 
 #define MAX_CPUS 8
+#define DEVFILE "/proc/net/dev"  /* file to read network statistics from */
 
 static int batt_fd;
 static int load_fd;
@@ -511,5 +512,72 @@ int machine_get_uptime(double *up, double *idle)
 
 	return(TRUE);
 }
+
+
+/*************************************************************************
+ * Read interface statistics from system and  store in the struct 
+ * passed as a pointer. If there are no errors, it returns 1. If errors, 
+ * returns 0.
+ ************************************************************************* 
+ */
+int machine_get_iface_stats (IfaceInfo *interface)
+{
+	FILE *file;   /* file handler */
+	char buffer[1024];  /* buffer to work with the file */
+	static int first_time = 1;  /* is it first time we call this function? */
+	char *ch_pointer = NULL;  /* pointer to where interface values are in file */
+
+	/* Open the file in read-only mode and parse */
+
+	if ((file = fopen(DEVFILE, "r")) != NULL) {
+		/* Skip first 2 header lines of file */
+		fgets(buffer, sizeof(buffer), file);
+		fgets(buffer, sizeof(buffer), file);
+		
+		/* By default, treat interface as down */
+		interface->status = down;
+		
+		/* Search iface_name and scan values */
+		while ((fgets(buffer, sizeof(buffer), file) != NULL)) {
+			if (strstr(buffer, interface->name)) {
+				/* interface exists */
+				interface->status = up; /* is up */
+				interface->last_online = time(NULL); /* save actual time */
+				
+				/* search ':' and skip over it */
+				ch_pointer = strchr(buffer, ':');
+				ch_pointer++;
+				
+				/* Now ch_pointer points to values of iface_name */
+				/* Scan values from here */
+				sscanf(ch_pointer, "%lf %lf %*s %*s %*s %*s %*s %*s %lf %lf",
+					&interface->rc_byte,
+					&interface->rc_pkt,
+					&interface->tr_byte,
+					&interface->tr_pkt);
+
+				/* if is the first time we call this function, 
+				 * old values are the same as new so we don't 
+				 * get big speeds when calculating
+				 */
+				if (first_time) {
+					interface->rc_byte_old = interface->rc_byte;
+					interface->tr_byte_old = interface->tr_byte;
+					interface->rc_pkt_old = interface->rc_pkt;
+					interface->tr_pkt_old = interface->tr_pkt;
+					first_time = 0;  /* now it isn't first time */
+				}
+			}
+		} /* while */
+
+		fclose(file);  /* close file */
+		return 1;  /* everything went OK */
+
+	}
+	else {  /* error when opening the file */
+		perror("Error: Could not open DEVFILE");
+		return 0; /* something went wrong */
+	}
+} /* get_iface_stats() */
 
 #endif /* linux */

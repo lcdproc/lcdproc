@@ -12,47 +12,9 @@
 		  
 
 #include <time.h>
-
-#define DEVFILE "/proc/net/dev"  /* file to read statistics from */
-
-/* status definitions */
-
-typedef enum {
-	down = 0,
-	up = 1,
-} IfaceStatus;
+#include "machine.h"
 
 #define MAX_INTERFACES 3  /* max number of interfaces in multi-interface mode */
-
-/* Struct for interface values (transmision, reception, etc..) */
-
-typedef struct iface_info
-{
-	/* interface name and alias (=display name) */
-	char *name;
-	char *alias;
-
-	IfaceStatus status;
-
-	time_t last_online;
-
-	/* received bytes */
-	double rc_byte;
-	double rc_byte_old;
-
-	/* transmited bytes */
-	double tr_byte;
-	double tr_byte_old;
-
-	/* received packets */
-	double rc_pkt;
-	double rc_pkt_old;
-
-	/* transmited packets */
-	double tr_pkt;
-	double tr_pkt_old;
-} IfaceInfo;
-
 
 int iface_screen (int rep, int display, int *flags_ptr);
 IfaceInfo iface[MAX_INTERFACES];  /* interface info */

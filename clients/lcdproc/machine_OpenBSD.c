@@ -378,4 +378,11 @@ int machine_get_uptime(double *up, double *idle)
 	return(TRUE);
 }
 
+/* Get network statistics */
+int machine_get_iface_stats (IfaceInfo *interface)
+{
+	/* Implementation missing */
+	return 0;
+}
+
 #endif /* __OpenBSD__ */
