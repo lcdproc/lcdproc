@@ -7,7 +7,7 @@ AC_ARG_ENABLE(drivers,
 	[                  Possible choices are:]
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,]
 	[                    glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
-	[                    joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,]
+	[                    joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,]
 	[                    MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,]
 	[                    sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 	[                  'all' compiles all drivers;]
@@ -15,7 +15,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -30,7 +30,7 @@ for driver in $drivers ; do
 	case $driver in
 		!*)
 			driver=`echo $driver | sed -e 's/^.//'`
-			selectdrivers=[`echo $selectdrivers | sed -r -e "s/ $driver / /"`]
+			selectdrivers=[`echo $selectdrivers | sed -r -e "s/ $driver / /g"`]
 			;;
 		*)
 			selectdrivers=["$selectdrivers $driver "]
@@ -215,6 +215,10 @@ dnl				else
 dnl				else
 				AC_MSG_WARN([The lirc driver needs the lirc client library])
 			])
+			;;
+		MD8800)
+			DRIVERS="$DRIVERS MD8800${SO}"
+			actdrivers=["$actdrivers MD8800"]
 			;;
 		ms6931)
 			DRIVERS="$DRIVERS ms6931${SO}"
