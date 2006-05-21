@@ -1,5 +1,7 @@
 etc
 etc/init.d
+etc/default
+etc/lcdproc
 usr/bin
 usr/sbin
 usr/share/doc/lcdproc/examples
