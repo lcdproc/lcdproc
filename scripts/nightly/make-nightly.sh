@@ -58,7 +58,7 @@ ${PERL} -MPOSIX -i -p -e '$version = "CVS-".$ENV{BRANCH}."-".strftime("%Y%m%d", 
 # Debian-specific stuff
 for dir in debian scripts/debian ; do
   # Increase version number in debian/changelog accordingly
-  if [ -d "$dir" ] && [ -e "$dir/changelog" ; then 
+  if [ -d "$dir" ] && [ -e "$dir/changelog" ]; then 
     ${PERL} -MPOSIX -i -p -e '$date = strftime("%Y%m%d", localtime);
                               s/\((\d\.\d\.\d{1,2})\+cvs\d{8}(.*?)\)/($1+cvs${date}$2)/i if ($. == 1);' \
             $dir/changelog
