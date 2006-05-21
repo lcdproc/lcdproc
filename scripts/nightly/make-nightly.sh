@@ -55,21 +55,18 @@ ${PERL} -MPOSIX -i -p -e '$version = "CVS-".$ENV{BRANCH}."-".strftime("%Y%m%d", 
                           s/(AC_INIT\s*)\(\s*(\[?lcdproc\]?)\s*,\s*[\w\d.-]+(\s*[^)]+)\s*\)/$1($2, $version$3)/;' \
         configure.in
 
-# Increase version number in debian/changelog accordingly
-# use 0.4.99+cvs.... for 0.5pre nightlies to be able to stay in the epoch when moving to 0.5
+# Debian-specific stuff
 for dir in debian scripts/debian ; do
-  if [ -d i"$dir" ] && [ -e "$dir/changelog" ; then 
-    cp $dir/changelog $dir/changelog.temp
+  # Increase version number in debian/changelog accordingly
+  if [ -d "$dir" ] && [ -e "$dir/changelog" ; then 
     ${PERL} -MPOSIX -i -p -e '$date = strftime("%Y%m%d", localtime);
-                              s/\((\d\.\d\.\d{1,2})\+cvs\d{8}\)/($1+cvs$date)/i if ($. == 1);' \
+                              s/\((\d\.\d\.\d{1,2})\+cvs\d{8}(.*?)\)/($1+cvs${date}$2)/i if ($. == 1);' \
             $dir/changelog
   fi
-done 
 
-# Make debian/rules executable
-for dir in debian scripts/debian ; do
+  # Make debian/rules executable
   test -e $dir/rules  &&  chmod +x $dir/rules
-done
+done 
 
 # Re-generate the autotools files
 sh autogen.sh >/dev/null
@@ -97,9 +94,6 @@ mv README.temp README
 mv ChangeLog.temp ChangeLog
 rm -f nightly-ChangeLog
 rm -f nightly-cvsChanges.txt
-for dir in debian scripts/debian ; do
-  test -e $dir/changelog.temp && mv $dir/changelog.temp $dir/changelog
-done  
 #mv lcdproc-CVS-${BRANCH}.tar.bz2 ../
 mv lcdproc-CVS-${BRANCH}.tar.gz ../
 sh autogen.sh >/dev/null
