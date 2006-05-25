@@ -4,6 +4,6 @@
 START=no
 
 # options for LCDd startup
-OPTIONS="-c /etc/LCDd.conf"
+OPTIONS="-c /etc/lcdproc/LCDd.conf"
 
 # EOF

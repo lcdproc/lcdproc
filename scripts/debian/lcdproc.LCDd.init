@@ -21,7 +21,7 @@ fi
 
 # if no OPTIONS are defined use default options
 if [ -z "${OPTIONS}" ]; then
-  OPTIONS="-c /etc/LCDd.conf"
+  OPTIONS="-c /etc/lcdproc/LCDd.conf"
 fi
 
 test -x $DAEMON || exit 0
