@@ -1,7 +1,7 @@
 /etc/lcdproc/LCDd.conf
 /etc/lcdproc/lcdproc.conf
 /etc/lcdproc/lcdexec.conf
-/etc/lcdproc/lcdpvc.conf
+/etc/lcdproc/lcdvc.conf
 /etc/init.d/LCDd
 /etc/init.d/lcdproc
 /etc/init.d/lcdexec
