@@ -871,7 +871,8 @@ CFontzPacket_vbar (Driver *drvthis, int x, int y, int len, int promille, int opt
 
 		for (i = 1; i < p->cellheight; i++) {
 			// add pixel line per pixel line ...
-			vBar[p->cellheight - i] = 0xFF;
+			// NOTE: cellwidth != bar width: 0x1F = 0xFF & ((1 << (p->cellwidth - 1)) - 1)
+			vBar[p->cellheight - i] = 0x1F;
 			CFontzPacket_set_char(drvthis, i, vBar);
 		}
 	}
