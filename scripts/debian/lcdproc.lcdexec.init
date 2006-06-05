@@ -6,7 +6,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/bin/lcdexec
 NAME=lcdexec
-DESC="lcdexec progam starter daemon"
+DESC="lcdexec program starter daemon"
 DEFAULTS=/etc/default/$NAME
 
 # Source defaults file; edit that file to configure this script.
