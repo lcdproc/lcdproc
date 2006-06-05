@@ -5,7 +5,7 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/bin/lcdexec
-NAME=lcdpexec
+NAME=lcdexec
 DESC="lcdexec progam starter daemon"
 DEFAULTS=/etc/default/$NAME
 
