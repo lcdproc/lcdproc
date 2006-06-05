@@ -96,17 +96,18 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 	if ((me != NULL) && (sock > 0)) {
 		char parent_id[12];
 
-		if (parent == NULL)
-			strcpy(parent_id, "");
+		// set parent_id depending on the parent given
+		if ((parent != NULL) && (parent->id != 0))
+			sprintf(parent_id, "%d", parent->id);
 		else
-			sprintf(parent_id, "%d", parent->id);	
+			strcpy(parent_id, "");
 
 		switch (me->type) {
 			MenuEntry *entry;
 
 			case menu:
-				// don't create a separate entry fro the main menu
-				if (parent != NULL) {
+				// don't create a separate entry for the main menu
+				if ((parent != NULL) && (me->id != 0)) {
 					if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" menu \"%s\"\n",
 							parent_id, me->id, me->displayname) < 0)
 						return -1;
@@ -114,7 +115,7 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 				
 				// recursively do it for the menu's sub-menus
 				for (entry = me->entries; entry != NULL; entry = entry->next) {
-					if (menu_sock_send(entry, (parent != NULL) ? me : NULL, sock) < 0)
+					if (menu_sock_send(entry, me, sock) < 0)
 						return -1;
 				}	
 				break;
@@ -215,6 +216,7 @@ void menu_free(MenuEntry *me)
 void menu_dump(MenuEntry *me)
 {
 	if (me != NULL) {
+		report(RPT_DEBUG, "# menu ID: %d", me->id);
 		report(RPT_DEBUG, "[%s]", me->name);
 		if (me->displayname != NULL)
 			report(RPT_DEBUG, "DisplayName=\"%s\"", me->displayname);
