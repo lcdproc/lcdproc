@@ -1,0 +1,77 @@
+<sect1 id="MD8800-howto">
+<title>The MD8800 Driver</title>
+
+<para>
+This section talks about using LCDproc with VFD displays in Medion MD8800 PCs.
+</para>
+
+<sect2 id="MD8800-features">
+<title>Features</title>
+
+<para>
+You may find more information about the LCD on Martin Moeller's homepage
+<ulink url="http://www.martinm-76.dk/md8800/LCD/">Martin Moeller's homepage</ulink>.
+</para>
+</sect2>
+
+
+<!-- The driver for the VFD of the Medion MD8800 PC ## -->
+<sect2 id="MD8800-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3>
+<title>[MD8800]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    device to use [default: <filename>/dev/ttyS1</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    display size [default: 16x2]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial brightness [default: 1000; legal: 0 - 1000]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>OffBrightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial off-brightness [default: 0; legal: 0 - 1000]
+    This value is used when the display is normally
+    switched off in case LCDd is inactive
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

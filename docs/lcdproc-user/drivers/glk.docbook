@@ -3,7 +3,7 @@
 
 <para>
 This section talks about using LCDproc with LCD displays that use the
-glk chipset.
+Matrix Orbital GLK chipset.
 </para>
 
 <!-- ## Matrix Orbital GLK driver ## -->

@@ -2,9 +2,31 @@
 <title>The bayrad Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-bayrad chipset.
+This section talks about using LCDproc with the BayRAD LCD modules by EMAC, Inc.
 </para>
+
+<sect2 id="bayrad-features">
+<title>Features</title>
+
+<para>
+The BayRAD LCD modules are designed to fit into 5,25" drive bays.
+They contain an LCD display that is 20 characters wide and 2 lines high
+surrounded by 4 buttons labeled <literal>Menu</literal>, <literal>Select</literal>,
+<literal>+/Yes</literal>, and <literal>-/No</literal>.
+</para>
+
+<para>
+BayRAD modules are connected to the PC using a serial RS232 connection getting
+operating power using the standard floppy drive power connector.
+</para>
+
+<para>
+For more information see the 
+<ulink url="http://www.emacinc.com/bay_rad.htm">BayRAD home page</ulink>
+</para>
+
+</sect2>
+
 
 <!-- ## EMAC BayRAD driver ## -->
 <sect2 id="bayrad-config">

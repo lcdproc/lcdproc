@@ -25,6 +25,7 @@ well as the configuration of LCDd.
 &lcdm001;
 &lcterm;
 &lirc;
+&MD8800;
 &ms6931;
 &mtc_s16209x;
 &MtxOrb;

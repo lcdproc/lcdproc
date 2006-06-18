@@ -9,7 +9,8 @@ This section talks about using LCDproc with VFD character-displays build by NEC,
 <para>
 The serialVFD-driver is working with NEC FIPC8367 based VFDs
 and the "KD Rev 2.1" (an ATMEL AT90S.... based FM20X2KB-AB replacement).
- It is also known to work on FUTABA VFDs.</para>
+It is also known to work on FUTABA VFDs.
+</para>
 
 <para>
 The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
@@ -56,8 +57,7 @@ The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
     </row>
     <row>
       <entry>KD Rev 2.1</entry>
-      <entry>AT90S....
- microcontroller</entry>
+      <entry>AT90S.... microcontroller</entry>
       <entry>Ok</entry>
       <entry>Ok</entry>
       <entry>Yes</entry>
@@ -106,6 +106,7 @@ The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
 </table>
 () feature not tested.
 </para>
+
 <para>
 If your display isn't working 100% satisfactorily you can add a new device with modified hardware
 commands to the driver if you want. To do that you have to add a new section to the display-
@@ -128,14 +129,24 @@ the display show everything correctly.
 
 <sect2 id="serialVFD-connections">
 <title>Connecting The Display</title>
+
 <para>The Connections shown have been tested successfully.</para>
-<warning><para>Always cross-check with your datasheet, before connecting your display!
- Displays of same manufacturer may have different pin assignments!</para></warning>
-<para>With this example connections it will be easy to connect displays with different connector
- pin-layouts, the pins are commonly named equal in the datasheet.<para>
+
+<warning>
+<para>
+Always cross-check with your datasheet, before connecting your display!
+Displays of same manufacturer may have different pin assignments!
+</para></warning>
+
+<para>
+With this example connections it will be easy to connect displays with
+different connector pin-layouts, the pins are commonly named equal in
+the datasheet.
+</para>
 
 <sect3 id="serialVFD-serial-connections">
 <title>Serial Connections</title>
+
 <para>
 It is NOT possible to connect most of the displays directly to the
 serialport. The signal has to be inverted. I use the following
@@ -181,7 +192,8 @@ optional
 
 <para>The pins on the different displays vary.</para>
 
-<para><title>NEC Displays (FM20X2KB-AB):</title></para>
+<sect4 id="serialVFD-serial-connections-NEC">
+<title>NEC Displays (FM20X2KB-AB):</title>
 
 <para>CN1:</para>
 <screen><![CDATA[
@@ -194,9 +206,10 @@ Pin 33 &lt;--- RxD
 Pin 1  &lt;--- +5V
 Pin 2  &lt;--- GND
 ]]></screen>
+</sect4>
 
-
-<para><title>KD Rev 2.1:</title></para>
+<sect4 id="serialVFD-serial-connections-KD">
+<title>KD Rev 2.1:</title>
 <para>
 The blue connector (6pin in a row) (the important one!):
 </para>
@@ -226,6 +239,8 @@ The blue connector (6pin in a row) (the important one!):
 You can activate two different testmodes with them.
 ]]>
 </screen>
+</sect4>
+
 
 </sect3>
 
@@ -233,7 +248,8 @@ You can activate two different testmodes with them.
 <title>Parallel Connections</title>
 
 
-<para><title>NEC Displays (FM20X2KB-AB):</title></para>
+<sect4 id="serialVFD-parallel-connections-NEC">
+<title>NEC Displays (FM20X2KB-AB):</title>
 
 <para>CN1:</para>
 <screen><![CDATA[
@@ -267,8 +283,10 @@ optional
 Pin 1  &lt;--- +5V
 Pin 2  &lt;--- GND
 ]]></screen>
+</sect4>
 
-<para><title>FUTABA Displays (M402SD06GJ):</title></para>
+<sect4 id="serialVFD-parallel-connections-FUTABA">
+<title>FUTABA Displays (M402SD06GJ):</title>
 <screen><![CDATA[
 parallel Port:			Display (FUTABA):
 Pin: 	Name:			Name:   Pin:
@@ -298,6 +316,7 @@ optional
 
 *connect near display
 ]]></screen>
+</sect4>
 
 </sect3>
 </sect2>
