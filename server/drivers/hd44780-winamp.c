@@ -137,7 +137,9 @@ lcdwinamp_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned ch
 	portControl |= p->backlight_bit;
 
 	if (displayID == 0)
-		enableLines = EnMask[0] | EnMask[1] | (p->numDisplays==3 ? EnMask[2] : 0);
+		enableLines = EnMask[0] 
+		| ((p->have_backlight) ? 0 : EnMask[1])
+		| ((p->numDisplays == 3) ? EnMask[2] : 0);
 	else
 		enableLines = EnMask[displayID - 1];
 
