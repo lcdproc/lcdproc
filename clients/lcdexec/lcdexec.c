@@ -39,7 +39,7 @@ char * help_text =
 "  -c <file>\tSpecify configuration file ["DEFAULT_CONFIGFILE"]\n"
 "  -a <address>\tDNS name or IP address of the LCDd server [localhost]\n"
 "  -p <port>\tport of the LCDd server [13666]\n"
-"  -f \tRun in foreground\n"
+"  -f \t\tRun in foreground\n"
 "  -r <level>\tSet reporting level (0-5) [2: errors and warnings]\n"
 "  -s <0|1>\tReport to syslog (1) or stderr (0, default)\n"
 "  -h\t\tShow this help\n";
