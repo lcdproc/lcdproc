@@ -1,6 +1,6 @@
 .TH lcdexec 1 "18 June 2006" LCDproc "LCDproc suite"
 .SH NAME
-lcdexec - allows user to execute commands from LCDproc server (LCDd(8))
+lcdexec - LCDproc client to execute commands from the LCDd menu
 .SH SYNOPSIS
 .B lcdexec
 [\fB\-hf\fP] 
@@ -12,7 +12,7 @@ lcdexec - allows user to execute commands from LCDproc server (LCDd(8))
 
 .SH DESCRIPTION
 lcdexec connects to LCDd (the LCDproc server) and adds a submenu to the LCDd main menu
-that allows the user to select commands to be executed upon selection.
+that allows the user to select commands to be executed.
 You can access the menu by pressing the menu key configured for LCDd.
 
 .SH OPTIONS
@@ -94,8 +94,10 @@ is the hostname of the system \fIlcdexec\fP is running on.
 The \fB[MainMenu]\fP section and the sections it refers to define the menu hierarchy
 to be displayed.
 Each menu and each menu entry in the menu hierarchy is defined as its own section.
+Whether a given section is a sub-menu or a command entry is defined by the
+option keys occuring in the section.
 .PP
-Menu sections may contain the following options:
+Menu / menu entry sections may contain the following options:
 .TP 8
 .B Entry=\fIentry\fP
 Defines a menu entry \fIentry\fP which is further specified in the section \fB[\fP\fIentry\fP\fB]\fP.
