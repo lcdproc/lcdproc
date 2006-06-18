@@ -302,32 +302,34 @@ tyan_lcdm_get_key (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-        unsigned char key = tyan_lcdm_read_key(p->fd);
+       	unsigned char key = tyan_lcdm_read_key(p->fd);
 
-        switch (key) {
-                case TYAN_LCDM_KEY_LEFT:
-                        return "Left";
-                        break;
-                case TYAN_LCDM_KEY_UP:
-                        return "Up";
-                        break;
-                case TYAN_LCDM_KEY_DOWN:
-                        return "Down";
-                        break;
-                case TYAN_LCDM_KEY_RIGHT:
-                        return "Right";
-                        break;
-                case TYAN_LCDM_KEY_ENTER:
-                        return "Enter"; 
-                        break;
-                case TYAN_LCDM_KEY_ESCAPE:
-                        return "Escape";
-                        break;
-                default:
-                        report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
-                        return NULL;
-                        break;
-        }
+	report(RPT_DEBUG, "%s: get_key(): raw key code: 0x%02X", drvthis->name, key);
+
+	switch (key) {
+		case TYAN_LCDM_KEY_LEFT:
+			return "Left";
+			break;
+		case TYAN_LCDM_KEY_UP:
+			return "Up";
+			break;
+		case TYAN_LCDM_KEY_DOWN:
+			return "Down";
+			break;
+		case TYAN_LCDM_KEY_RIGHT:
+			return "Right";
+			break;
+		case TYAN_LCDM_KEY_ENTER:
+			return "Enter"; 
+			break;
+		case TYAN_LCDM_KEY_ESCAPE:
+			return "Escape";
+			break;
+		default:
+			report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
+			return NULL;
+			break;
+	}
 }
 
 
