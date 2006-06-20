@@ -688,26 +688,28 @@ MODULE_EXPORT void
 CFontz_set_char (Driver *drvthis, int n, char *dat)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[4];
+	unsigned char out[4 + p->cellheight];
 	int row, col;
-	int letter;
 
 	if ((n < 0) || (n >= NUM_CCs))
 		return;
 	if (!dat)
 		return;
 
-	snprintf(out, sizeof(out), "%c%c", 25, n);
-	write(p->fd, out, 2);
+	/* define the n'th custom character */
+	out[0] = 0x19;
+	out[1] = n;
 
 	for (row = 0; row < p->cellheight; row++) {
-		letter = 0;
+		int letter = 0;
+
 		for (col = 0; col < p->cellwidth; col++) {
 			letter <<= 1;
 			letter |= (dat[(row * p->cellheight) + col] > 0);
 		}
-		write(p->fd, &letter, 1);
+		out[2+row] = (unsigned char) letter;
 	}
+	write(p->fd, out, 2 + p->cellheight);
 }
 
 /////////////////////////////////////////////////////////////////
