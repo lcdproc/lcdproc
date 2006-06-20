@@ -800,9 +800,10 @@ IOWarrior_get_free_chars (Driver *drvthis)
 /*********************************************************************
  * API: Sets a custom character from 0 - (NUM_CCs-1)
  *
- * The API only permit setting to off=0 and on<>0
- * For input is just an array of characters:
- *  values > 0 mean "on" and values <= 0 are "off".
+ * The input is an array of bytes, each representing a pixel row
+ * starting from the top to bottom.
+ * The bits in each byte represent the pixels where the LSB
+ * (least significant bit) is the rightmost pixel in each pixel row
  */
 MODULE_EXPORT void
 IOWarrior_set_char(Driver *drvthis, int n, unsigned char *dat)

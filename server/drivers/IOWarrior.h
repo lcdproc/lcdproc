@@ -63,7 +63,8 @@ typedef enum {
   vbar,		/* vertical bars */
   hbar,		/* horizontaln bars */
   bignum,	/* big numbers */
-  bigchar	/* big characters */
+  bigchar,	/* big characters */
+  custom	/* custom icons */
 } CGmode;
 
 
