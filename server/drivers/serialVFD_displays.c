@@ -67,7 +67,7 @@ serialVFD_load_NEC_FIPC (Driver *drvthis)
 			int tmp, w;
 
 			if (p->customchars == -83)
-				p->customchars=1;	// number of customchaaracters the display provides
+				p->customchars=1;	// number of custom characters the display provides
 			p->vbar_cc_offset=5;	// character offset of the bars
 			p->hbar_cc_offset=12;	// character offset of the bars
 
@@ -142,7 +142,7 @@ serialVFD_load_KD (Driver *drvthis)
 			int tmp, w;
 
 			if (p->customchars == -83)
-				p->customchars=31;	// number of customchaaracters the display provides
+				p->customchars=31;	// number of custom characters the display provides
 			p->vbar_cc_offset=0;	// character offset of the bars
 			p->hbar_cc_offset=0;	// character offset of the bars
 
@@ -217,7 +217,7 @@ serialVFD_load_Noritake (Driver *drvthis)
 			int tmp, w;
 
 			if (p->customchars == -83)
-				p->customchars=16;	// number of customchaaracters the display provides
+				p->customchars=16;	// number of custom characters the display provides
 			p->vbar_cc_offset=0;	// character offset of the bars
 			p->hbar_cc_offset=0;	// character offset of the bars
 
@@ -268,7 +268,7 @@ serialVFD_load_Futaba (Driver *drvthis)
 			int tmp, w;
 
 			if (p->customchars == -83)
-				p->customchars=3;	// number of customchaaracters the display provides
+				p->customchars=3;	// number of custom characters the display provides
 			p->vbar_cc_offset=0x30;	// character offset of the bars
 			p->hbar_cc_offset=0x30;	// character offset of the bars
 

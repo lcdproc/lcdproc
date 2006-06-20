@@ -133,28 +133,28 @@ serialVFD_init (Driver *drvthis)
 	
 /* Read config file */
 
-	p->use_parallel		= drvthis->config_get_bool( drvthis->name, "use_parallel", 0, 0 );
-	if (p->use_parallel){
-	p->port			= drvthis->config_get_int( drvthis->name, "port", 0, LPTPORT );
+	p->use_parallel	= drvthis->config_get_bool( drvthis->name, "use_parallel", 0, 0 );
+	if (p->use_parallel) {
+		p->port	= drvthis->config_get_int( drvthis->name, "port", 0, LPTPORT );
 	}
 	else {
-	/* Which device should be used */
-	strncpy(p->device, drvthis->config_get_string (drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
-	p->device[sizeof(p->device)-1] = '\0';
-	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+		/* Which device should be used */
+		strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
+		p->device[sizeof(p->device)-1] = '\0';
+		report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
-	/* Which speed */
-	tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
-	if ((tmp != 1200) && (tmp != 2400) && (tmp != 9600) && (tmp != 19200) && (tmp != 115200)) {
-		report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default %d.\n",
-			drvthis->name, DEFAULT_SPEED);
-		tmp = DEFAULT_SPEED;
-	}
-	if (tmp == 1200) p->speed = B1200;
-	else if (tmp == 2400) p->speed = B2400;
-	else if (tmp == 9600) p->speed = B9600;
-	else if (tmp == 19200) p->speed = B19200;
-	else if (tmp == 115200) p->speed = B115200;
+		/* Which speed */
+		tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
+		if ((tmp != 1200) && (tmp != 2400) && (tmp != 9600) && (tmp != 19200) && (tmp != 115200)) {
+			report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default %d.\n",
+				drvthis->name, DEFAULT_SPEED);
+			tmp = DEFAULT_SPEED;
+		}
+		if (tmp == 1200) p->speed = B1200;
+		else if (tmp == 2400) p->speed = B2400;
+		else if (tmp == 9600) p->speed = B9600;
+		else if (tmp == 19200) p->speed = B19200;
+		else if (tmp == 115200) p->speed = B115200;
 	}
 //	report(RPT_ERR, "%s: Port: %X\n", __FUNCTION__, p->port, strerror (errno));
 
@@ -216,7 +216,7 @@ serialVFD_init (Driver *drvthis)
 //	report (RPT_ERR, "%s: Port: %X\n", __FUNCTION__, p->port, strerror (errno));
 
 // Do connection type specific io-port init
-	if (Port_Function[p->use_parallel].init_fkt (drvthis)==-1) {
+	if (Port_Function[p->use_parallel].init_fkt (drvthis) == -1) {
 		report(RPT_ERR, "%s: unable to initialize io-port.", drvthis->name);
 		return -1;
 	}
