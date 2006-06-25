@@ -11,17 +11,20 @@ v.0.5dev (ongoing development)
  + new client lcdvc: virtual console on LCD
  * convert adv_bignum library to bitwise set_char()
  * adapt drivers to modified bignum library:
+   + CFontz
    + CFontz633
    + CFontzPacket
    + hd44780
    + IOWarrior
    + serialVFD
+   + tyan
  + add iface screen(s) to lcdproc client (Andrew Foss/Markus Dolze)
  * update sample Perl clients
  * fix LCDd crash on shutdown of clients using "menu_set_main" (Andrew Foss)
  * fix sock_connect() to allow 0 as legal socket (Frederick Nacino)
  * improve serialVFD driver (Stefan Herdler)
  + add MD8800 driver for LCDs in Medion MD8800 PCs (Stefan Herdler/Martin Møller)
+ * make bigclock client screen more flexible: centered, require only 14 chars
 
 v0.5.0
 This version has split off from unstable-0.4.3. Includes major changes.
