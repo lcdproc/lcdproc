@@ -7,10 +7,10 @@
  * Refer to the COPYING file distributed with this package.
  *
  * The following translations are being performed:
- * - mas umlaut characters to the corresponding umlaut characters
+ * - map umlaut characters to the corresponding umlaut characters
  * - map other accented characters to the corresponding accented characters
  * - map unmappable accented characters to their base characters
- * - map beta (=sharp s),  micro and various currency symbols
+ * - map beta (=sharp s), micro and various currency symbols
  * - back-quote simulated by single quote
  * - diaeresis simulated by double quote
  * - degree simulated by superscript zero
