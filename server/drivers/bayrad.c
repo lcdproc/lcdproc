@@ -570,7 +570,7 @@ bayrad_set_char(Driver * drvthis, int n, char *dat)
 
   //debug(RPT_DEBUG, "Set char %i", n);
 
-  if ((n < 0) || (n > 7)) /* Do we want to the aliased indexes as well (0x98 - 0x9F?) */
+  if ((n < 0) || (n >= NUM_CCs)) /* Do we want to the aliased indexes as well (0x98 - 0x9F?) */
     return;
 
   if (!dat)
