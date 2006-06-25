@@ -44,49 +44,10 @@
 #include "tyan_lcdm.h"
 #include "report.h"
 #include "lcd_lib.h"
+#include "adv_bignum.h"
 
-#define TYAN_LCDM_KEY_ENTER    0xF2
-#define TYAN_LCDM_KEY_ESCAPE   0xF3
-#define TYAN_LCDM_KEY_RIGHT    0xF5
-#define TYAN_LCDM_KEY_LEFT     0xF6
-#define TYAN_LCDM_KEY_UP       0xF7
-#define TYAN_LCDM_KEY_DOWN     0xF8
-
-#define TYAN_LCDM_CMD_BEGIN 0xF1
-#define TYAN_LCDM_CMD_END 0xF2
-
-
-
-typedef enum {
-	normal = 0,
-	hbar = 1,
-	vbar = 2,
-	cust = 3,
-} custom_type;
-
-typedef struct driver_private_data {
-	char device[200];
-	int speed;
-	int fd;
-	unsigned char *framebuf;
-	unsigned char *backingstore;
-	int width;
-	int height;
-	int cellwidth;
-	int cellheight;
-	custom_type custom;
-} PrivateData;	
-
-/* Vars for the server core */
-MODULE_EXPORT char *api_version = API_VERSION;
-MODULE_EXPORT int stay_in_foreground = 0;
-MODULE_EXPORT int supports_multiple = 0;
-MODULE_EXPORT char *symbol_prefix = "tyan_lcdm_";
 
 /* Internal functions */
-static void tyan_lcdm_init_vbar(Driver *drvthis);
-static void tyan_lcdm_init_hbar(Driver *drvthis);
-
 static void tyan_lcdm_switch_mode(int fdfd);
 static void tyan_lcdm_hardware_clear(int fd);
 
@@ -96,6 +57,7 @@ static void tyan_lcdm_write_str(int fd, unsigned char *str, unsigned char start_
 static void tyan_lcdm_set_cursor(int fd, unsigned char start_addr, int pos);
 #endif
 static unsigned char tyan_lcdm_read_key(int fd);
+
 
 /*
  * Opens com port and sets baud correctly...
@@ -117,7 +79,7 @@ tyan_lcdm_init (Driver * drvthis, char *args)
 
 	/* initialize private data */
 	p->speed = DEFAULT_SPEED;
-	p->custom = normal;
+	p->ccmode = standard;
 	p->fd = -1;
 	p->framebuf = NULL;
 	p->backingstore = NULL;
@@ -212,6 +174,7 @@ tyan_lcdm_init (Driver * drvthis, char *args)
 	return 1;
 }
 
+
 /*
  * Clean-up
  */
@@ -235,6 +198,7 @@ tyan_lcdm_close (Driver * drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
+
 /*
  * Returns the display width
  */
@@ -246,6 +210,7 @@ tyan_lcdm_width (Driver *drvthis)
 	return p->width;
 }
 
+
 /*
  * Returns the display height
  */
@@ -256,6 +221,31 @@ tyan_lcdm_height (Driver *drvthis)
 
 	return p->height;
 }
+
+
+/*
+ * Returns the display's character cell width
+ */
+MODULE_EXPORT int 
+tyan_lcmd_cellwidth(Driver *drvthis)
+{
+PrivateData *p = drvthis->private_data;
+
+  return p->cellwidth;
+}
+
+
+/*
+ * Returns the display's character cell height
+ */
+MODULE_EXPORT int 
+tyan_lcmd_cellheight(Driver *drvthis)
+{
+PrivateData *p = drvthis->private_data;
+
+  return p->cellheight;
+}
+
 
 /*
  * Flushes all output to the lcd...
@@ -293,6 +283,7 @@ tyan_lcdm_flush (Driver * drvthis)
 		xp++; xq++;
 	}
 }
+
 
 /*
  * Return one char from the KeyRing
@@ -349,6 +340,7 @@ tyan_lcdm_chr (Driver * drvthis, int x, int y, char c)
 		p->framebuf[(y * p->width) + x] = c;
 }
 
+
 /*
  * Sets the backlight on or off.
  * The hardware support any value between 0 and 100.
@@ -357,176 +349,6 @@ tyan_lcdm_chr (Driver * drvthis, int x, int y, char c)
 MODULE_EXPORT void
 tyan_lcdm_backlight (Driver * drvthis, int on)
 {
-}
-
-
-/*
- * Sets up for vertical bars.
- */
-static void
-tyan_lcdm_init_vbar (Driver * drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-	};
-	char b[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char c[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char d[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char e[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char f[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char g[] = {
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-
-	if (p->custom != vbar) {
-		tyan_lcdm_set_char(drvthis, 1, a);
-		tyan_lcdm_set_char(drvthis, 2, b);
-		tyan_lcdm_set_char(drvthis, 3, c);
-		tyan_lcdm_set_char(drvthis, 4, d);
-		tyan_lcdm_set_char(drvthis, 5, e);
-		tyan_lcdm_set_char(drvthis, 6, f);
-		tyan_lcdm_set_char(drvthis, 7, g);
-		p->custom = vbar;
-	}
-}
-
-/*
- * Inits horizontal bars...
- */
-static void
-tyan_lcdm_init_hbar (Driver * drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-	};
-	char b[] = {
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-	};
-	char c[] = {
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-		1, 1, 0, 0, 0,
-	};
-	char d[] = {
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-		1, 1, 1, 0, 0,
-	};
-	char e[] = {
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-		1, 1, 1, 1, 0,
-	};
-	char f[] = {
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-
-	if (p->custom != hbar) {
-		tyan_lcdm_set_char(drvthis, 1, a);
-		tyan_lcdm_set_char(drvthis, 2, b);
-		tyan_lcdm_set_char(drvthis, 3, c);
-		tyan_lcdm_set_char(drvthis, 4, d);
-		tyan_lcdm_set_char(drvthis, 5, e);
-		tyan_lcdm_set_char(drvthis, 6, f);
-		p->custom = hbar;
-	}
 }
 
 
@@ -544,7 +366,26 @@ tyan_lcdm_vbar (Driver * drvthis, int x, int y, int len, int promille, int optio
  */
 	PrivateData *p = drvthis->private_data;
 
-	tyan_lcdm_init_vbar(drvthis);
+	if (p->ccmode != vbar) {
+		unsigned char vBar[p->cellheight];
+		int i;
+
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user defined characters",
+				drvthis->name);
+			return;
+		}
+		p->ccmode = vbar;
+
+		memset(vBar, 0x00, sizeof(vBar));
+
+		for (i = 1; i < p->cellheight; i++) {
+			// add pixel line per pixel line ...
+			vBar[p->cellheight - i] = 0xFF;
+			tyan_lcdm_set_char(drvthis, i, vBar);
+		}
+	}
 
 	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
@@ -564,7 +405,24 @@ tyan_lcdm_hbar (Driver * drvthis, int x, int y, int len, int promille, int optio
  */
 	PrivateData *p = drvthis->private_data;
 
-	tyan_lcdm_init_hbar(drvthis);
+	if (p->ccmode != hbar) {
+		unsigned char hBar[p->cellheight];
+		int i;
+
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user defined characters",
+				drvthis->name);
+			return;
+		}
+		p->ccmode = hbar;
+
+		for (i = 1; i <= p->cellwidth; i++) {
+			// fill pixel columns from left to right.
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
+			tyan_lcdm_set_char(drvthis, i, hBar);
+		}
+	}
 
 	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }
@@ -572,55 +430,75 @@ tyan_lcdm_hbar (Driver * drvthis, int x, int y, int len, int promille, int optio
 
 /*
  * Writes a big number.
- * This is not supported on 633 because we only have 2 lines...
  */
 MODULE_EXPORT void
 tyan_lcdm_num (Driver * drvthis, int x, int num)
 {
-	//PrivateData *p = drvthis->private_data;
-/*
-	char out[5];
+	PrivateData *p = drvthis->private_data;
+	int do_init = 0;
 
-	snprintf(out, sizeof(out), "%c%c%c", 28, x, num);
-	write(fd, out, 3);
-*/
+	if ((num < 0) || (num > 10))
+		return;
+
+	if (p->ccmode != bignum) {
+		if (p->ccmode != standard) {
+			/* Not supported (yet) */
+			report(RPT_WARNING, "%s: num: cannot combine two modes using user defined characters",
+					drvthis->name);
+			return;
+		}
+
+		p->ccmode = bignum;
+
+		do_init = 1;
+	}
+
+	// Lib_adv_bignum does everything needed to show the bignumbers.
+	lib_adv_bignum(drvthis, x, num, do_init, NUM_CCs);
 }
 
+
 /*
- * Sets a custom character from 0-7...
+ * Gets number of custom chars (always NUM_CCs)
+ */
+MODULE_EXPORT int
+tyan_lcdm_get_free_chars(Driver *drvthis)
+{
+//PrivateData *p = drvthis->private_data;
+
+  return NUM_CCs;
+}
+
+
+/*
+ * Sets a custom character from 0 - (NUM_CCs-1)...
  *
- * For input, values > 0 mean "on" and values <= 0 are "off".
- *
- * The input is just an array of characters...
+ * The input is an array of bytes, each representing a pixel row
+ * starting from the top to bottom.
+ * The bits in each byte represent the pixels where the LSB
+ * (least significant bit) is the rightmost pixel in each pixel row
  */
 MODULE_EXPORT void
-tyan_lcdm_set_char (Driver * drvthis, int n, char *dat)
+tyan_lcdm_set_char (Driver * drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
-	unsigned char out[8];
-	int row, col;
+	unsigned char mask = (1 << p->cellwidth) - 1;
+	unsigned char out[p->cellheight + 1];
+	int row;
 
-	if ((n < 0) || (n > 7))
+	if ((n < 0) || (n >= NUM_CCs))
 		return;
-	if (!dat)
+	if (dat == NULL)
 		return;
 
 	for (row = 0; row < p->cellheight; row++) {
-		int letter = 0;
+		int letter = dat[row] & mask;
 
-		for (col = 0; col < p->cellwidth; col++) {
-			letter <<= 1;
-			letter |= (dat[(row * p->cellwidth) + col] > 0);
-			/* I should remove that debug code. */
-			//if (dat[(row * cellheight) + col] == 0) printf(".");
-			//if (dat[(row * cellheight) + col] == 1) printf("+");
-			//if (dat[(row * cellheight) + col] == 2) printf("x");
-			//if (dat[(row * cellheight) + col] == 3) printf("*");
-			//printf("'%1d'", dat[(row * cellwidth) + col]);
-			//printf("%3d ", letter);
-		}
+		if (p->cc[n].cache[row] != letter)
+			p->cc[n].clean = 0;        /* only mark dirty if really different */
+		p->cc[n].cache[row] = letter;
+
 		out[row+1] = letter;
-		//printf(": %d\n", letter);
 	}
 	tyan_lcdm_write_str(p->fd, out, (unsigned char) (0x40 + n * 8), 8);
 }
@@ -632,120 +510,151 @@ MODULE_EXPORT int
 tyan_lcdm_icon (Driver * drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
-	char icons[8][5 * 8] = {
-	/* Empty Heart */
-		{
-		 1, 1, 1, 1, 1,
-		 1, 0, 1, 0, 1,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 0, 0, 0, 1,
-		 1, 1, 0, 1, 1,
-		 1, 1, 1, 1, 1,
-		 },
-	/* Filled Heart */
-		{
-		 1, 1, 1, 1, 1,		  
-		 1, 0, 1, 0, 1,
-		 0, 1, 0, 1, 0,
-		 0, 1, 1, 1, 0,
-		 0, 1, 1, 1, 0,
-		 1, 0, 1, 0, 1,
-		 1, 1, 0, 1, 1,
-		 1, 1, 1, 1, 1,
-		 },
-	/* arrow_up */
-		{
-		 0, 0, 1, 0, 0,
-		 0, 1, 1, 1, 0,
-		 1, 0, 1, 0, 1,
-		 0, 0, 1, 0, 0,
-		 0, 0, 1, 0, 0,
-		 0, 0, 1, 0, 0,
-		 0, 0, 1, 0, 0,
-		 0, 0, 0, 0, 0,
-		 },
-	/* arrow_down */
-		{
-		 0, 0, 1, 0, 0,
-		 0, 0, 1, 0, 0,
-		 0, 0, 1, 0, 0,
-		 0, 0, 1, 0, 0,
-		 1, 0, 1, 0, 1,
-		 0, 1, 1, 1, 0,
-		 0, 0, 1, 0, 0,
-		 0, 0, 0, 0, 0,
-		 },
-	/* checkbox_off */
-		{
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 1, 1, 1, 1,
-		 1, 0, 0, 0, 1,
-		 1, 0, 0, 0, 1,
-		 1, 0, 0, 0, 1,
-		 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0,
-		 },
-	/* checkbox_on */
-		{
-		 0, 0, 1, 0, 0,
-		 0, 0, 1, 0, 0,
-		 1, 1, 1, 0, 1,
-		 1, 0, 1, 1, 0,
-		 1, 0, 1, 0, 1,
-		 1, 0, 0, 0, 1,
-		 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0,
-		 },
-	/* checkbox_gray */
-		{
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 1, 1, 1, 1,
-		 1, 0, 1, 0, 1,
-		 1, 1, 0, 1, 1,
-		 1, 0, 1, 0, 1,
-		 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0,
-		 },
-	 /* Ellipsis */
-		{
-		 0, 0, 0, 0, 0,		 
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 1, 0, 1, 0,
-		 },
-	};
+	static unsigned char heart_open[] = 
+		{ b__XXXXX,
+		  b__X_X_X,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b__X___X,
+		  b__XX_XX,
+		  b__XXXXX };
+	static unsigned char heart_filled[] = 
+		{ b__XXXXX,
+		  b__X_X_X,
+		  b___X_X_,
+		  b___XXX_,
+		  b___XXX_,
+		  b__X_X_X,
+		  b__XX_XX,
+		  b__XXXXX };
+	static unsigned char arrow_up[] = 
+		{ b____X__,
+		  b___XXX_,
+		  b__X_X_X,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b_______ };
+	static unsigned char arrow_down[] = 
+		{ b____X__,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b__X_X_X,
+		  b___XXX_,
+		  b____X__,
+		  b_______ };
+	/*
+	static unsigned char arrow_left[] = 
+		{ b_______,
+		  b____X__,
+		  b___X___,
+		  b__XXXXX,
+		  b___X___,
+		  b____X__,
+		  b_______,
+		  b_______ };
+	static unsigned char arrow_right[] = 
+		{ b_______,
+		  b____X__,
+		  b_____X_,
+		  b__XXXXX,
+		  b_____X_,
+		  b____X__,
+		  b_______,
+		  b_______ };
+	*/
+	static unsigned char checkbox_off[] = 
+		{ b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__X___X,
+		  b__X___X,
+		  b__X___X,
+		  b__XXXXX,
+		  b_______ };
+	static unsigned char checkbox_on[] = 
+		{ b____X__,
+		  b____X__,
+		  b__XXX_X,
+		  b__X_XX_,
+		  b__X_X_X,
+		  b__X___X,
+		  b__XXXXX,
+		  b_______ };
+	static unsigned char checkbox_gray[] = 
+		{ b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__X_X_X,
+		  b__XX_XX,
+		  b__X_X_X,
+		  b__XXXXX,
+		  b_______ };
+	/*
+	static unsigned char selector_left[] = 
+		{ b___X___,
+		  b___XX__,
+		  b___XXX_,
+		  b___XXXX,
+		  b___XXX_,
+		  b___XX__,
+		  b___X___,
+		  b_______ };
+	static unsigned char selector_right[] = 
+		{ b_____X_,
+		  b____XX_,
+		  b___XXX_,
+		  b__XXXX_,
+		  b___XXX_,
+		  b____XX_,
+		  b_____X_,
+		  b_______ };
+	static unsigned char ellipsis[] = 
+		{ b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b__X_X_X,
+		  b_______ };
+	static unsigned char block_filled[] = 
+		{ b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX };
+	*/	  
 
 	/* Yes we know, this is a VERY BAD implementation :-) */
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
 			tyan_lcdm_chr(drvthis, x, y, 255);
-			break;
-		case ICON_HEART_FILLED:
-		        p->custom = cust;
-			tyan_lcdm_set_char(drvthis, 0, icons[1]);
-			tyan_lcdm_chr(drvthis, x, y, 0);
+			//tyan_lcdm_set_char(drvthis, 6, block_filled);
+			//tyan_lcdm_chr(drvthis, x, y, 0);
 			break;
 		case ICON_HEART_OPEN:
-		        p->custom = cust;
-			tyan_lcdm_set_char(drvthis, 0, icons[0]);
+			tyan_lcdm_set_char(drvthis, 0, heart_open);
+			tyan_lcdm_chr(drvthis, x, y, 0);
+			break;
+		case ICON_HEART_FILLED:
+			tyan_lcdm_set_char(drvthis, 0, heart_filled);
 			tyan_lcdm_chr(drvthis, x, y, 0);
 			break;
 		case ICON_ARROW_UP:
-		        p->custom = cust;
-			tyan_lcdm_set_char(drvthis, 1, icons[2]);
+			p->ccmode = custom;
+			tyan_lcdm_set_char(drvthis, 1, arrow_up);
 			tyan_lcdm_chr(drvthis, x, y, 1);
 			break;
 		case ICON_ARROW_DOWN:
-		        p->custom = cust;
-			tyan_lcdm_set_char(drvthis, 2, icons[3]);
+			p->ccmode = custom;
+			tyan_lcdm_set_char(drvthis, 2, arrow_down);
 			tyan_lcdm_chr(drvthis, x, y, 2);
 			break;
 		case ICON_ARROW_LEFT:
@@ -755,18 +664,18 @@ tyan_lcdm_icon (Driver * drvthis, int x, int y, int icon)
 			tyan_lcdm_chr(drvthis, x, y, 0x7E);
 			break;
 		case ICON_CHECKBOX_OFF:
-		        p->custom = cust;
-			tyan_lcdm_set_char(drvthis, 3, icons[4]);
+			p->ccmode = custom;
+			tyan_lcdm_set_char(drvthis, 3, checkbox_off);
 			tyan_lcdm_chr(drvthis, x, y, 3);
 			break;
 		case ICON_CHECKBOX_ON:
-		        p->custom = cust;
-			tyan_lcdm_set_char(drvthis, 4, icons[5]);
+			p->ccmode = custom;
+			tyan_lcdm_set_char(drvthis, 4, checkbox_on);
 			tyan_lcdm_chr(drvthis, x, y, 4);
 			break;
 		case ICON_CHECKBOX_GRAY:
-		        p->custom = cust;
-			tyan_lcdm_set_char(drvthis, 5, icons[6]);
+			p->ccmode = custom;
+			tyan_lcdm_set_char(drvthis, 5, checkbox_gray);
 			tyan_lcdm_chr(drvthis, x, y, 5);
 			break;
 		default:
@@ -774,6 +683,7 @@ tyan_lcdm_icon (Driver * drvthis, int x, int y, int icon)
 	}
 	return 0;
 }
+
 
 /*
  * Clears the LCD screen
@@ -785,6 +695,7 @@ tyan_lcdm_clear (Driver * drvthis)
 
 	memset(p->framebuf, ' ', p->width * p->height);
 }
+
 
 /*
  * Prints a string on the lcd display, at position (x,y).  The
@@ -872,6 +783,7 @@ void tyan_lcdm_write_str(int fd, unsigned char *str,unsigned char start_addr, in
         write(fd, cmd_str, 20);
 }      
 
+
 #if 0   	 
 static 
 void tyan_lcdm_set_cursor(int fd, unsigned char start_addr, int pos)
@@ -882,6 +794,7 @@ void tyan_lcdm_set_cursor(int fd, unsigned char start_addr, int pos)
 	write(fd,cmd_str,5);       
 }	     
 #endif
+
 
 static 
 unsigned char tyan_lcdm_read_key(int fd)
@@ -899,3 +812,4 @@ unsigned char tyan_lcdm_read_key(int fd)
 	}
 	return 0xF4;  //error
 }
+

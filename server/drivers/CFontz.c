@@ -39,6 +39,8 @@
 #include "CFontz.h"
 #include "report.h"
 #include "lcd_lib.h"
+#include "CFontz-charmap.h"
+#include "adv_bignum.h"
 
 
 /* Constants for userdefchar_mode */
@@ -93,12 +95,12 @@ MODULE_EXPORT char *symbol_prefix = "CFontz_";
 
 
 // Internal functions
-static void CFontz_linewrap (Driver *drvthis, int on);
-static void CFontz_autoscroll (Driver *drvthis, int on);
-static void CFontz_hidecursor (Driver *drvthis);
-static void CFontz_reboot (Driver *drvthis);
-static void CFontz_init_vbar (Driver *drvthis);
-static void CFontz_init_hbar (Driver *drvthis);
+static void CFontz_linewrap(Driver *drvthis, int on);
+static void CFontz_autoscroll(Driver *drvthis, int on);
+static void CFontz_hidecursor(Driver *drvthis);
+static void CFontz_reboot(Driver *drvthis);
+static void CFontz_cursor_goto(Driver *drvthis, int x, int y);
+static void CFontz_raw_chr(Driver *drvthis, int x, int y, unsigned char c);
 
 
 // TODO:  Get the frame buffers working right
@@ -107,7 +109,7 @@ static void CFontz_init_hbar (Driver *drvthis);
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-CFontz_init (Driver *drvthis)
+CFontz_init(Driver *drvthis)
 {
 	struct termios portset;
 	int tmp, w, h;
@@ -275,7 +277,7 @@ CFontz_init (Driver *drvthis)
 // Clean-up
 //
 MODULE_EXPORT void
-CFontz_close (Driver *drvthis)
+CFontz_close(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -293,10 +295,10 @@ CFontz_close (Driver *drvthis)
 }
 
 /////////////////////////////////////////////////////////////////
-// Returns the display p->width
+// Returns the display's character width
 //
 MODULE_EXPORT int
-CFontz_width (Driver *drvthis)
+CFontz_width(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -304,42 +306,91 @@ CFontz_width (Driver *drvthis)
 }
 
 /////////////////////////////////////////////////////////////////
-// Returns the display p->height
+// Returns the display's character height
 //
 MODULE_EXPORT int
-CFontz_height (Driver *drvthis)
+CFontz_height(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
 	return p->height;
 }
 
+/////////////////////////////////////////////////////////////////
+// Returns the display's cell width
+//
+MODULE_EXPORT int
+CFontz_cellwidth(Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return p->cellwidth;
+}
+
+/////////////////////////////////////////////////////////////////
+// Returns the display's cell height
+//
+MODULE_EXPORT int
+CFontz_cellheight(Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return p->cellheight;
+}
+
 //////////////////////////////////////////////////////////////////
 // Flushes all output to the lcd...
 //
 MODULE_EXPORT void
-CFontz_flush (Driver *drvthis)
+CFontz_flush(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
+	unsigned char out[3 * LCD_MAX_WIDTH];
 	int i;
 
-	// Custom characters start at 128, not at 0.
-	for (i = 0; i < p->width * p->height; i++) {
-		if (p->framebuf[i] < 32)
-			p->framebuf[i] += 128;
-	}
+	if (p->newfirmware) {
+		unsigned char *ptr = out;
 
-	for (i = 0; i < p->height; i++) {
-		snprintf(out, sizeof(out), "%c%c%c", 17, 0, i);
-		write(p->fd, out, 3);
-		write(p->fd, p->framebuf + (p->width * i), p->width);
+		for (i = 0; i < p->height; i++) {
+			int j;
+
+			/* move cursor to start of (i+1)'th line */
+			CFontz_cursor_goto(drvthis, 1, i+1);
+			
+			for (j = 0; j < p->width; j++) {
+				unsigned char c = p->framebuf[(i * p->width) + j];
+
+				/* characters that need to be treated special */
+				if ((c < 0x20) || ((c >= 0xF0) && (c < 0xF8))) {
+					if (c < 0x08) {
+						// custom chars are at position 0xF0 - 0xF7
+						c += 0xF0;
+					}
+					else {
+						// send data directly to LCD
+						*ptr++ = CFONTZ_Send_Data_Directly_To_LCD;
+						*ptr++ = 0x01;
+					}
+				}		
+				*ptr++ = c;
+			}	
+			write(p->fd, out, (ptr - out));
+		}
 	}
-	/*
-	   snprintf(out, sizeof(out), "%c", 1);
-	   write(p->fd, out, 1);
-	   write(p->fd, p->framebuf, p->width*p->height);
-	 */
+	else {
+		// Custom characters start at 0xF0, not at 0.
+		for (i = 0; i < p->width * p->height; i++) {
+			if (p->framebuf[i] < 32)
+				p->framebuf[i] += 128;
+		}
+
+		for (i = 0; i < p->height; i++) {
+			/* move cursor to start of (i+1)'th line */
+			CFontz_cursor_goto(drvthis, 1, i+1);
+
+			write(p->fd, p->framebuf + (p->width * i), p->width);
+		}
+	}	
 }
 
 /////////////////////////////////////////////////////////////////
@@ -347,34 +398,44 @@ CFontz_flush (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-CFontz_chr (Driver *drvthis, int x, int y, unsigned char c)
+CFontz_chr(Driver *drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
 
 	y--;
 	x--;
 
-	if ((x < 0) || (y < 0) || (x >= p->width) || (y >= p->height))
-                return;
-
-	if (c < 32)
-		c += 128;
-
-	// For V2 of the firmware to get the block to display right
-	if (p->newfirmware && (c == 255))
-		c = 214;
-
-	p->framebuf[(y * p->width) + x] = c;
+	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+		p->framebuf[(y * p->width) + x] = (p->newfirmware)
+						  ? CFontz_charmap[(unsigned) c]
+						  : c;
 }
+
+/*
+ * Prints a character on the lcd display, at position (x,y).
+ * The upper-left is (1,1), and the lower right should be (20,4).
+ */
+static void
+CFontz_raw_chr(Driver *drvthis, int x, int y, unsigned char c)
+{
+	PrivateData *p = drvthis->private_data;
+
+	y--;
+	x--;
+
+	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+		p->framebuf[(y * p->width) + x] = c;
+}
+
 
 /////////////////////////////////////////////////////////////////
 // Returns current p->contrast
-// This is only the locally stored p->contrast, the p->contrast value
+// This is only the locally stored p->contrast, the contrast value
 // cannot be retrieved from the LCD.
 // Value 0 to 1000.
 //
 MODULE_EXPORT int
-CFontz_get_contrast (Driver *drvthis)
+CFontz_get_contrast(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -386,10 +447,10 @@ CFontz_get_contrast (Driver *drvthis)
 // Value 0 to 100.
 //
 MODULE_EXPORT void
-CFontz_set_contrast (Driver *drvthis, int promille)
+CFontz_set_contrast(Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[4];
+	char out[4] = { CFONTZ_Contrast_Control, 0 };
 
 	// Check it
 	if ((promille < 0) || (promille > 1000))
@@ -398,9 +459,9 @@ CFontz_set_contrast (Driver *drvthis, int promille)
 	// Store it
 	p->contrast = promille;
 
-	// And do it
-	snprintf(out, sizeof(out), "%c%c", 15, (unsigned char) (promille / 10)); // converted to be 0 to 100
-	write(p->fd, out, 3);
+	// And do it (converted from [0,1000] - > [0,100])
+	out[1] = (unsigned char) (promille / 10);
+	write(p->fd, out, 2);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -408,25 +469,25 @@ CFontz_set_contrast (Driver *drvthis, int promille)
 // an intermediate p->brightness...
 //
 MODULE_EXPORT void
-CFontz_backlight (Driver *drvthis, int on)
+CFontz_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[4];
+	char out[4] = { CFONTZ_Backlight_Control, 0 };
 
-	snprintf(out, sizeof(out), "%c%c", 14, (on) ? p->brightness : p->offbrightness);
-	write(p->fd, out, 3);
+	out[1] = (on) ? p->brightness : p->offbrightness;
+	write(p->fd, out, 2);
 }
 
 /////////////////////////////////////////////////////////////////
 // Toggle the built-in linewrapping feature
 //
 static void
-CFontz_linewrap (Driver *drvthis, int on)
+CFontz_linewrap(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 	char out[4];
 
-	snprintf(out, sizeof(out), "%c", (on) ? 23 : 24);
+	out[0] = (on) ? CFONTZ_Wrap_On : CFONTZ_Wrap_Off;
 	write(p->fd, out, 1);
 }
 
@@ -434,12 +495,12 @@ CFontz_linewrap (Driver *drvthis, int on)
 // Toggle the built-in automatic scrolling feature
 //
 static void
-CFontz_autoscroll (Driver *drvthis, int on)
+CFontz_autoscroll(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 	char out[4];
 
-	snprintf(out, sizeof(out), "%c", (on) ? 19 : 20);
+	out[0] = (on) ? CFONTZ_Scroll_On : CFONTZ_Scroll_Off;
 	write(p->fd, out, 1);
 }
 
@@ -447,12 +508,11 @@ CFontz_autoscroll (Driver *drvthis, int on)
 // Get rid of the blinking cursor
 //
 static void
-CFontz_hidecursor (Driver *drvthis)
+CFontz_hidecursor(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[4];
+	char out[4] = { CFONTZ_Hide_Cursor };
 
-	snprintf(out, sizeof(out), "%c", 4);
 	write(p->fd, out, 1);
 }
 
@@ -460,191 +520,37 @@ CFontz_hidecursor (Driver *drvthis)
 // Reset the display bios
 //
 static void
-CFontz_reboot (Driver *drvthis)
+CFontz_reboot(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[4];
+	char out[4] = { CFONTZ_Reboot, CFONTZ_Reboot };
 
-	snprintf(out, sizeof(out), "%c", 26);
-	write(p->fd, out, 1);
+	write(p->fd, out, 2);
 	sleep(4);
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.
+// Toggle the built-in automatic scrolling feature
 //
 static void
-CFontz_init_vbar (Driver *drvthis)
+CFontz_cursor_goto(Driver *drvthis, int x, int y)
 {
 	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-	};
-	char b[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char c[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char d[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char e[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char f[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
-	char g[] = {
-		0, 0, 0, 0, 0, 0,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-		0, 1, 1, 1, 1, 1,
-	};
+	unsigned char out[4] = { CFONTZ_Set_Cursor_Position, 0, 0 };
 
-	if (p->ccmode != vbar) {
-		CFontz_set_char(drvthis, 1, a);
-		CFontz_set_char(drvthis, 2, b);
-		CFontz_set_char(drvthis, 3, c);
-		CFontz_set_char(drvthis, 4, d);
-		CFontz_set_char(drvthis, 5, e);
-		CFontz_set_char(drvthis, 6, f);
-		CFontz_set_char(drvthis, 7, g);
-		p->ccmode = vbar;
-	}
-}
-
-/////////////////////////////////////////////////////////////////
-// Inits horizontal bars...
-//
-static void
-CFontz_init_hbar (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-
-	char a[] = {
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 0,
-	};
-	char b[] = {
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-		1, 1, 0, 0, 0, 0,
-	};
-	char c[] = {
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-		1, 1, 1, 0, 0, 0,
-	};
-	char d[] = {
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-		1, 1, 1, 1, 0, 0,
-	};
-	char e[] = {
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-		1, 1, 1, 1, 1, 0,
-	};
-	char f[] = {
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1, 1,
-	};
-
-	if (p->ccmode != hbar) {
-		CFontz_set_char(drvthis, 1, a);
-		CFontz_set_char(drvthis, 2, b);
-		CFontz_set_char(drvthis, 3, c);
-		CFontz_set_char(drvthis, 4, d);
-		CFontz_set_char(drvthis, 5, e);
-		CFontz_set_char(drvthis, 6, f);
-		p->ccmode = hbar;
-	}
+	/* set cursor position */
+	if ((x > 0) && (x <= p->width))
+		out[1] = x - 1;
+	if ((y > 0) && (y <= p->height))
+		out[2] = y - 1;
+	write(p->fd, out, 3);
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a vertical bar...
 //
 MODULE_EXPORT void
-CFontz_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+CFontz_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	/* x and y are the start position of the bar.
 	 * The bar by default grows in the 'up' direction
@@ -654,7 +560,28 @@ CFontz_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 	 */
 	PrivateData *p = drvthis->private_data;
 
-	CFontz_init_vbar(drvthis);
+	if (p->ccmode != vbar) {
+		unsigned char vBar[p->cellheight];
+		int i;
+
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user defined characters",
+					drvthis->name);
+			return;
+		}
+		p->ccmode = vbar;
+
+		memset(vBar, 0x00, sizeof(vBar));
+
+		for (i = 1; i < p->cellheight; i++) {
+			// add pixel line per pixel line ...
+			// NOTE: cellwidth != bar width: 0x1F = 0xFF & ((1 << (p->cellwidth - 1)) - 1)
+			vBar[p->cellheight - i] = 0x1F;
+			CFontz_set_char(drvthis, i, vBar);
+		}
+	}
+
 	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
 
@@ -662,7 +589,7 @@ CFontz_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-CFontz_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+CFontz_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	/* x and y are the start position of the bar.
 	 * The bar by default grows in the 'right' direction
@@ -672,8 +599,70 @@ CFontz_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 	 */
 	PrivateData *p = drvthis->private_data;
 
-	CFontz_init_hbar(drvthis);
+	if (p->ccmode != hbar) {
+		unsigned char hBar[p->cellheight];
+		int i;
+
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user defined characters",
+					drvthis->name);
+			return;
+		}
+		p->ccmode = hbar;
+
+		memset(hBar, 0x00, sizeof(hBar));
+
+		for (i = 1; i <= p->cellwidth; i++) {
+			// fill pixel columns from left to right.
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar)-1);
+			CFontz_set_char(drvthis, i, hBar);
+		}
+	}
+
 	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
+}
+
+
+/*
+ * Writes a big number.
+ */
+MODULE_EXPORT void
+CFontz_num(Driver *drvthis, int x, int num)
+{
+PrivateData *p = drvthis->private_data;
+int do_init = 0;
+
+	if ((num < 0) || (num > 10))
+		return;
+
+	if (p->ccmode != bignum) {
+		if (p->ccmode != standard) {
+			/* Not supported (yet) */
+			report(RPT_WARNING, "%s: num: cannot combine two modes using user defined characters",
+					drvthis->name);
+			return;
+		}
+
+		p->ccmode = bignum;
+
+		do_init = 1;
+	}
+
+	// Lib_adv_bignum does everything needed to show the bignumbers.
+	lib_adv_bignum(drvthis, x, num, do_init, NUM_CCs);
+}
+
+
+/*
+ * Gets number of custom chars (always NUM_CCs)
+ */
+MODULE_EXPORT int
+CFontz_get_free_chars(Driver *drvthis)
+{
+//PrivateData *p = drvthis->private_data;
+
+  return NUM_CCs;
 }
 
 
@@ -685,11 +674,12 @@ CFontz_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 // The input is just an array of characters...
 //
 MODULE_EXPORT void
-CFontz_set_char (Driver *drvthis, int n, char *dat)
+CFontz_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char out[4 + p->cellheight];
-	int row, col;
+	unsigned char mask = (1 << p->cellwidth) - 1;
+	int row;
 
 	if ((n < 0) || (n >= NUM_CCs))
 		return;
@@ -697,17 +687,11 @@ CFontz_set_char (Driver *drvthis, int n, char *dat)
 		return;
 
 	/* define the n'th custom character */
-	out[0] = 0x19;
+	out[0] = CFONTZ_Set_Custom_Char;
 	out[1] = n;
 
 	for (row = 0; row < p->cellheight; row++) {
-		int letter = 0;
-
-		for (col = 0; col < p->cellwidth; col++) {
-			letter <<= 1;
-			letter |= (dat[(row * p->cellheight) + col] > 0);
-		}
-		out[2+row] = (unsigned char) letter;
+		out[2+row] = dat[row] & mask;
 	}
 	write(p->fd, out, 2 + p->cellheight);
 }
@@ -716,72 +700,213 @@ CFontz_set_char (Driver *drvthis, int n, char *dat)
 // Places an icon on screen
 //
 MODULE_EXPORT int
-CFontz_icon (Driver *drvthis, int x, int y, int icon)
+CFontz_icon(Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
-	char icons[3][6 * 8] = {
-	// Empty Heart
-		{
-		 1, 1, 1, 1, 1, 1,
-		 1, 1, 0, 1, 0, 1,
-		 1, 0, 0, 0, 0, 0,
-		 1, 0, 0, 0, 0, 0,
-		 1, 0, 0, 0, 0, 0,
-		 1, 1, 0, 0, 0, 1,
-		 1, 1, 1, 0, 1, 1,
-		 1, 1, 1, 1, 1, 1,
-		 },
-	// Filled Heart
-		{
-		 1, 1, 1, 1, 1, 1,
-		 1, 1, 0, 1, 0, 1,
-		 1, 0, 1, 0, 1, 0,
-		 1, 0, 1, 1, 1, 0,
-		 1, 0, 1, 1, 1, 0,
-		 1, 1, 0, 1, 0, 1,
-		 1, 1, 1, 0, 1, 1,
-		 1, 1, 1, 1, 1, 1,
-		 },
-	// Ellipsis
-		{
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0, 0,
-		 1, 0, 1, 0, 1, 0,
-		 },
 
-	};
+	static unsigned char heart_open[] = 
+		{ b__XXXXX,
+		  b__X_X_X,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b__X___X,
+		  b__XX_XX,
+		  b__XXXXX };
+	static unsigned char heart_filled[] = 
+		{ b__XXXXX,
+		  b__X_X_X,
+		  b___X_X_,
+		  b___XXX_,
+		  b___XXX_,
+		  b__X_X_X,
+		  b__XX_XX,
+		  b__XXXXX };
+	/*
+	static unsigned char arrow_up[] = 
+		{ b____X__,
+		  b___XXX_,
+		  b__X_X_X,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b_______ };
+	static unsigned char arrow_down[] = 
+		{ b____X__,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b__X_X_X,
+		  b___XXX_,
+		  b____X__,
+		  b_______ };
+	static unsigned char arrow_left[] = 
+		{ b_______,
+		  b____X__,
+		  b___X___,
+		  b__XXXXX,
+		  b___X___,
+		  b____X__,
+		  b_______,
+		  b_______ };
+	static unsigned char arrow_right[] = 
+		{ b_______,
+		  b____X__,
+		  b_____X_,
+		  b__XXXXX,
+		  b_____X_,
+		  b____X__,
+		  b_______,
+		  b_______ };
+	*/
+	static unsigned char checkbox_off[] = 
+		{ b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__X___X,
+		  b__X___X,
+		  b__X___X,
+		  b__XXXXX,
+		  b_______ };
+	static unsigned char checkbox_on[] = 
+		{ b____X__,
+		  b____X__,
+		  b__XXX_X,
+		  b__X_XX_,
+		  b__X_X_X,
+		  b__X___X,
+		  b__XXXXX,
+		  b_______ };
+	static unsigned char checkbox_gray[] = 
+		{ b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__X_X_X,
+		  b__XX_XX,
+		  b__X_X_X,
+		  b__XXXXX,
+		  b_______ };
+	/*
+	static unsigned char selector_left[] = 
+		{ b___X___,
+		  b___XX__,
+		  b___XXX_,
+		  b___XXXX,
+		  b___XXX_,
+		  b___XX__,
+		  b___X___,
+		  b_______ };
+	static unsigned char selector_right[] = 
+		{ b_____X_,
+		  b____XX_,
+		  b___XXX_,
+		  b__XXXX_,
+		  b___XXX_,
+		  b____XX_,
+		  b_____X_,
+		  b_______ };
+	static unsigned char ellipsis[] = 
+		{ b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b__X_X_X,
+		  b_______ };
+	static unsigned char block_filled[] = 
+		{ b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX };
+	*/
 
-	if (p->ccmode == bignum)
-		p->ccmode = standard;
-
+	/* Yes we know, this is a VERY BAD implementation :-) */
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
-			CFontz_chr(drvthis, x, y, 255);
+			CFontz_raw_chr(drvthis, x, y, (p->newfirmware) ? 214 : 255);
 			break;
 		case ICON_HEART_FILLED:
-			CFontz_set_char(drvthis, 0, icons[1]);
-			CFontz_chr(drvthis, x, y, 0);
+			CFontz_set_char(drvthis, 0, heart_filled);
+			CFontz_raw_chr(drvthis, x, y, 0);
 			break;
 		case ICON_HEART_OPEN:
-			CFontz_set_char(drvthis, 0, icons[0]);
-			CFontz_chr(drvthis, x, y, 0);
+			CFontz_set_char(drvthis, 0, heart_open);
+			CFontz_raw_chr(drvthis, x, y, 0);
+			break;
+		case ICON_ARROW_UP:
+			CFontz_raw_chr(drvthis, x, y, 0xDE);
+			break;
+		case ICON_ARROW_DOWN:
+			CFontz_raw_chr(drvthis, x, y, 0xE0);
+			break;
+		case ICON_ARROW_LEFT:
+			CFontz_raw_chr(drvthis, x, y, 0xE1);
+			break;
+		case ICON_ARROW_RIGHT:
+			CFontz_raw_chr(drvthis, x, y, 0xDF);
+			break;
+		case ICON_CHECKBOX_OFF:
+			CFontz_set_char(drvthis, 3, checkbox_off);
+			CFontz_raw_chr(drvthis, x, y, 3);
+			break;
+		case ICON_CHECKBOX_ON:
+			CFontz_set_char(drvthis, 4, checkbox_on);
+			CFontz_raw_chr(drvthis, x, y, 4);
+			break;
+		case ICON_CHECKBOX_GRAY:
+			CFontz_set_char(drvthis, 5, checkbox_gray);
+			CFontz_raw_chr(drvthis, x, y, 5);
 			break;
 		default:
-			return -1;
+			return -1; /* Let the core do other icons */
 	}
 	return 0;
 }
+
+
+/*
+ * Sets cursor position and state
+ */
+MODULE_EXPORT void 
+CFontz_cursor(Driver *drvthis, int x, int y, int state)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	unsigned char stylecmd[1];
+
+	/* set cursor state */
+	switch (state) {
+		case CURSOR_OFF:	// no cursor
+			stylecmd[0] = CFONTZ_Hide_Cursor;
+			break;
+		case CURSOR_UNDER:	// underline cursor
+			stylecmd[0] = CFONTZ_Show_Underline_Cursor;
+			break;
+		case CURSOR_BLOCK:	// inverting blinking block
+			stylecmd[0] = CFONTZ_Show_Inverting_Block_Cursor;
+			break;
+		case CURSOR_DEFAULT_ON:	// blinking block
+		default:
+			stylecmd[0] = CFONTZ_Show_Block_Cursor;
+			break;
+	}
+	write(p->fd, stylecmd, 1);
+
+	/* set cursor position */
+	CFontz_cursor_goto(drvthis, x, y);
+}
+
 
 /////////////////////////////////////////////////////////////////
 // Clears the LCD screen
 //
 MODULE_EXPORT void
-CFontz_clear (Driver *drvthis)
+CFontz_clear(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -793,12 +918,12 @@ CFontz_clear (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-CFontz_string (Driver *drvthis, int x, int y, unsigned char string[])
+CFontz_string(Driver *drvthis, int x, int y, unsigned char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
 
-	// Convert 1-based coords to 0-based...
+	/* Convert 1-based coords to 0-based... */
 	x--;
 	y--;
 
@@ -806,15 +931,11 @@ CFontz_string (Driver *drvthis, int x, int y, unsigned char string[])
 		return;
 
 	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
-		unsigned char c = string[i];
-
-		// For V2 of the firmware to get the block to display right
-		if (p->newfirmware && (c == 255))
-			c = 214;
-
-		// Check for buffer overflows...
+		/* Check for buffer overflows... */
 		if (x >= 0)
-			p->framebuf[(y * p->width) + x] = c;
+			p->framebuf[(y * p->width) + x] = (p->newfirmware)
+							  ? CFontz_charmap[(unsigned) string[i]]
+							  : string[i];
 	}
 }
 
