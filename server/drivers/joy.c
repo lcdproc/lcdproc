@@ -221,7 +221,7 @@ joy_get_key (Driver *drvthis)
 			return p->buttonmap[js.number];
 		case JS_EVENT_AXIS:
 			/* ignore noise */
-			if ((js.value > -20000) && (js.value < 20000)
+			if (((js.value > -20000) && (js.value < 20000))
 			    || (js.number >= 2 * p->axes))
 				return NULL;
 			return p->axismap[js.number];
