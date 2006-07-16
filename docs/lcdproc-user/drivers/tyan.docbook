@@ -2,11 +2,34 @@
 <title>The tyan Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-tyan chipset.
+This section talks about using LCDproc with LCD modules used in Tyan GS10 and GS12
+barebones.
 </para>
 
-<!-- ## Tyan Barebones LCD driver (GS series; others too?) ## -->
+<sect2 id="tyan-features">
+<title>Features</title>
+
+<para>
+The LCD modules used on the front side of the Tyan GS10 and GS12 series
+barebones consist of an LCD display by Winstar Display Co. LTD
+that is 16 characters wide and 2 lines. high.
+To the right of the display there is a 6 button keypad:
+4 array buttons and two buttons labeled <literal>C</literal> and <literal>S</literal>.
+</para>
+
+<para>
+For more information see the 
+<ulink url="ftp://ftp.tyan.com/barebone_support/GS10-GS12%20LCD-Pack.zip">LCD pack</ulink>
+from the Tyan support page.
+Besides a useless old version of LCDproc it contains some
+documentation about the panel itself including a PDF specification
+of the LCD display by its manufacturer.
+</para>
+
+</sect2>
+
+
+<!-- ## Tyan Barebones LCD driver (GS series) ## -->
 <sect2 id="tyan-config">
 <title>Configuration in LCDd.conf</title>
 
