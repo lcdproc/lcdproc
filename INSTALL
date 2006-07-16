@@ -107,6 +107,28 @@ specified in configure.
 You may have to copy the configuration file (LCDd.conf) to /etc   
 (or /usr/local/etc) manually.
 
+-- CREATING DISTRIBUTION SPECIFIC PACKAGES --------------------------
+
+Instead of manually configuring, compiling and installing LCDproc you
+may use the support files in the LCDproc source tree to create an
+installation package specific to your distribution
+
+Debian:
+      -	Rename the .tgz file with the sources to lcdproc_VERSION.orig.tar.gz
+          cp lcdproc-VERSION.tgz lcdproc_VERSION.orig.tar.gz
+      -	Extract the source tar ball
+      	  tar xvzf lcdproc_VERSION.orig.tar.gz
+      -	Copy the debian/ directory below scripts/ to the rouut of the
+        source tree
+	  cp -a lcdproc-VERSION/scripts/debian lcdproc-VERSION/
+      -	Generate .deb debian package
+	  cd lcdproc-VERSION/
+	  dpkg-buildpackage -rfakleroot -sd
+	  cd ..
+	This creates a file named lcdproc_VERSION-RELEASE_ARCH.deb
+	that contains the LCDproc suite as a regular Debian package.
+      
+
 -- PLATFORM SPECIFIC ------------------------------------------------
 
 The lcdproc crew has tried to support a number of platforms. Platforms
@@ -117,14 +139,16 @@ porting. Here's are the prerequistes for both:
 --- Client ---
 The client should run on any POSIX compliant system.
 It has been sucessfully tested on:
-Linux 2.2.x, Linux 2.4.x, NetBSD 1.5, OpenBSD 3.0
+Linux 2.2.x - 2.6.x, FreeBSD 4.x & 5.x, NetBSD 1.5 & 3.x, OpenBSD 3.0,
+Darwin and Solaris.
 In the future, we want it to run on Windows, MacOS and others.
 
 --- Server ---
 The server needs to talk to the LCD display. At this time, it works
 on very little more than on the Intel i386 (PC Compatible)
 architecture. It has been sucessfully tested on:
-Linux 2.2.x, Linux 2.4.x, NetBSD 1.5, OpenBSD 3.0
+Linux 2.2.x - 2.6.x, FreeBSD 4.x & 5.x, NetBSD 1.5 & 3.x, OpenBSD 3.0,
+Darwin and Solaris.
 
 Here are some comments specific to each platform that LCDproc has been
 tested on.
@@ -188,11 +212,11 @@ configuration file.
 
 Then, you'll need some clients. LCDproc comes with a few, of which the
 'lcdproc' client is the main client:
-    clients/lcdproc/lcdproc C M T X &
+    clients/lcdproc/lcdproc -d C M T L
 
 This will run the LCDproc client, with the [C]pu, [M]emory,
-[T]ime, and [X]load screens.  The ampersand (&) puts it in the
-background.
+[T]ime, and [L]oad screens.  The option "-d" icauses it to daemonize right
+after startup.
 
 By default, the client tries to connect to a server located on localhost
 and listening to port 13666. To change this, use the -s and -p options.
@@ -213,19 +237,23 @@ Slackware:
 	  echo "Starting lcdproc..."
 	  /usr/local/bin/lcdproc C M X &
 
-Debian:
+Debian: (the hard way)
       - Copy (as root) the debian init script from the scripts/ direcory of the
 	sources to /etc/init.d
-	(cp scripts/init-lcdd.debian /etc/init.d/lcdd && \
+	(cp scripts/init-LCDd.debian /etc/init.d/LCDd && \
 	 cp scripts/init-lcdproc.debian /etc/init.d/lcdproc)
-      - Run (as root): update-rc.d lcdd defaults
+      - Run (as root): update-rc.d LCDd defaults
 	This will create symlinks to start and stop the daemon, resp.
-	from /etc/rc[2-5].d/S50lcd to /etc/init.d/lcd, and from
-	/etc/rc[016].d/K50lcd to /etc/init.d/lcd.
+	from /etc/rc[2-5].d/S50LCDd to /etc/init.d/LCDd, and from
+	/etc/rc[016].d/K50LCDd to /etc/init.d/LCDd.
       - Run (as root): update-rc.d lcdproc defaults
 	This will create symlinks to start and stop the lcdproc client, resp.
 	from /etc/rc[2-5].d/S50lcdproc to /etc/init.d/lcdproc, and from
 	/etc/rc[016].d/K50lcdproc to /etc/init.d/lcdproc.
+
+Debian: (the easy way)
+      - Install the previously created .deb package (as root)
+	  dpkg -i lcdproc_VERSION-RELEASE_ARCH.deb        
 
 Redhat / Mandrake:
       - Copy the scripts:
