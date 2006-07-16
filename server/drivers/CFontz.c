@@ -345,13 +345,13 @@ MODULE_EXPORT void
 CFontz_flush(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	unsigned char out[3 * LCD_MAX_WIDTH];
 	int i;
 
 	if (p->newfirmware) {
-		unsigned char *ptr = out;
+		unsigned char out[3 * LCD_MAX_WIDTH];
 
 		for (i = 0; i < p->height; i++) {
+			unsigned char *ptr = out;
 			int j;
 
 			/* move cursor to start of (i+1)'th line */
@@ -540,9 +540,9 @@ CFontz_cursor_goto(Driver *drvthis, int x, int y)
 
 	/* set cursor position */
 	if ((x > 0) && (x <= p->width))
-		out[1] = x - 1;
+		out[1] = (unsigned char) (x - 1);
 	if ((y > 0) && (y <= p->height))
-		out[2] = y - 1;
+		out[2] = (unsigned char) (y - 1);
 	write(p->fd, out, 3);
 }
 
