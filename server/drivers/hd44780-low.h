@@ -33,7 +33,7 @@
 typedef enum {
 	standard,	/* only char 0 is used for heartbeat */
 	vbar,		/* vertical bars */
-	hbar,		/* horizontaln bars */
+	hbar,		/* horizontal bars */
 	bignum,		/* big numbers */
 	bigchar		/* big characters */
 } CGmode;
