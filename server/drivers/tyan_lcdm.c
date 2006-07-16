@@ -18,6 +18,10 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 */
 
+/*
+ * See ftp://ftp.tyan.com/barebone_support/GS10-GS12%20LCD-Pack.zip
+ * for documentation */
+
 
 /*
  * Driver status
@@ -796,6 +800,9 @@ void tyan_lcdm_set_cursor(int fd, unsigned char start_addr, int pos)
 #endif
 
 
+/* Note: this implementation works although it differs from the documentation
+ * available at ftp://ftp.tyan.com/barebone_support/GS10-GS12%20LCD-Pack.zip
+ * (i.e. with respect to this the docs are wrong) */
 static 
 unsigned char tyan_lcdm_read_key(int fd)
 {
