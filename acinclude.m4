@@ -6,7 +6,7 @@ AC_ARG_ENABLE(drivers,
 	[                  drivers may be separated with commas.]
 	[                  Possible choices are:]
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,]
-	[                    glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
+	[                    g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,]
 	[                    MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,]
 	[                    sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
@@ -15,7 +15,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -123,6 +123,36 @@ dnl				else
 		CwLnx)
 			DRIVERS="$DRIVERS CwLnx${SO}"
 			actdrivers=["$actdrivers CwLnx"]
+			;;
+		g15)
+			AC_CHECK_HEADERS([g15daemon_client.h],[
+				AC_CHECK_LIB(g15daemon_client, new_g15_screen,[
+					LIBG15="-lg15daemon_client"
+				],[
+dnl				else
+					AC_MSG_WARN([The g15 driver needs libg15daemon_client-1.2 or better])
+				],
+				[-lg15daemon_client]
+				)
+			],[
+dnl			else
+				AC_MSG_WARN([The g15 driver needs g15daemon_client.h])
+			])
+			AC_CHECK_HEADERS([libg15render.h],[
+				AC_CHECK_LIB(g15render, g15r_initCanvas,[
+					LIBG15="$LIBG15 -lg15render"
+					DRIVERS="$DRIVERS g15${SO}"
+					actdrivers=["$actdrivers g15"]
+				],[
+dnl				else
+					AC_MSG_WARN([the g15 driver needs libg15render])
+				],
+				[-lg15render]
+				)
+			],[
+dnl			else
+				AC_MSG_WARN([The g15driver needs libg15render.h])
+			])
 			;;
 		glcdlib)
 			AC_CHECK_HEADERS([glcdproclib/glcdprocdriver.h],[
@@ -353,6 +383,7 @@ AC_SUBST(LIBLIRC_CLIENT)
 AC_SUBST(LIBSVGA)
 AC_SUBST(DRIVERS)
 AC_SUBST(HD44780_DRIVERS)
+AC_SUBST(LIBG15)
 AC_SUBST(LIBGLCD)
 AC_SUBST(LIBFTDI)
 AC_SUBST(LIBXOSD)

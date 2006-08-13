@@ -19,17 +19,19 @@ AM_LDFLAGS = @LDSHARED@
 LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD pyramid sed1330 sed1520 serialVFD stv5730 svga t6963 text tyan sli ula200 xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD pyramid sed1330 sed1520 serialVFD stv5730 svga t6963 text tyan sli ula200 xosd
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
 hd44780_CFLAGS =     @libusb_cflags@ $(AM_CFLAGS)
+g15_CFLAGS =         @libusb_cflags@ $(AM_CFLAGS)
 
 CFontz_LDADD =       libLCD.a libbignum.a
 CFontz633_LDADD =    libLCD.a libbignum.a
 CFontzPacket_LDADD = libLCD.a libbignum.a
 curses_LDADD =       @LIBCURSES@
 CwLnx_LDADD =        libLCD.a
+g15_LDADD =          libLCD.a @LIBG15@
 glcdlib_LDADD =      libLCD.a @LIBGLCD@
 hd44780_LDADD =      libLCD.a @HD44780_DRIVERS@ @libusb_libs@ libbignum.a
 hd44780_DEPENDENCIES = @HD44780_DRIVERS@
@@ -60,6 +62,7 @@ CFontz633_SOURCES =  lcd.h lcd_lib.h CFontz633.c CFontz633.h CFontz-charmap.h CF
 CFontzPacket_SOURCES = lcd.h lcd_lib.h CFontzPacket.c CFontzPacket.h CFontz-charmap.h CFontz633io.c CFontz633io.h report.h adv_bignum.h
 curses_SOURCES =     lcd.h curses_drv.h curses_drv.c report.h
 CwLnx_SOURCES =      lcd.h lcd_lib.h CwLnx.c CwLnx.h report.h
+g15_SOURCES = 	      lcd.h lcd_lib.h g15.h g15-num.c g15.c report.h
 glcdlib_SOURCES =    lcd.h lcd_lib.h glcdlib.h glcdlib.c report.h
 glk_SOURCES =        lcd.h glk.c glk.h glkproto.c glkproto.h report.h
 hd44780_SOURCES =    lcd.h lcd_lib.h hd44780.h hd44780.c hd44780-drivers.h hd44780-low.h hd44780-charmap.h report.h adv_bignum.h
