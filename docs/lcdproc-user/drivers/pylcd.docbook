@@ -26,6 +26,21 @@ buttons as well as 3 (or 9) LEDs which can also be software controlled.
 </sect2>
 
 
+<sect2 id="pyramid-requirements">
+<title>Requirements</title>
+
+<para>
+For Linux the driver depends on features of the <filename>ftdi_sio.ko</filename>
+that have only been added to quite recent version of the 2.6 kernel series.
+For older Linux kernels of the 2.6 series (or even the 2.4 series) that patch
+to <filename>ftdi_sio.c</filename> might help: 
+<ulink url="http://www.pyramid.de/d/downloads/patch-4-linux-2.6.13-14.txt">
+http://www.pyramid.de/d/downloads/patch-4-linux-2.6.13-14.txt</ulink>.
+</para>
+
+</sect2>
+
+
 <sect2 id="pyramid-ledoutput">
 <title>LED output</title>
 
