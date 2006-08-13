@@ -20,8 +20,7 @@
 #ifdef HAVE_LIBUSB
 # include "hd44780-bwct-usb.h"
 #endif
-#include "hd44780-picanlcd.h"
-#include "hd44780-lcdserializer.h"
+#include "hd44780-serial.h"
 #include "hd44780-lis2.h"
 #ifdef HAVE_I2C
 # include "hd44780-i2c.h"
@@ -39,8 +38,12 @@ static const ConnectionMapping connectionMapping[] = {
 	{"serialLpt", hd_init_serialLpt, "\tnone\n"},
 	{"winamp", hd_init_winamp, "\tnone\n"},
 #endif
-	{"picanlcd", hd_init_picanlcd, "\tnone\n"},
-	{"lcdserializer", hd_init_lcdserializer, "\tnone\n"},
+	/* Serial connectiontypes */
+	{"picanlcd", hd_init_serial, "\tnone\n"},
+	{"lcdserializer", hd_init_serial, "\tnone\n"},
+	{"los-panel", hd_init_serial, "\tnone\n"},
+	{"vdr-lcd", hd_init_serial, "\tnone\n"},
+	/* End serial connectiontypes */
 	{"lis2", hd_init_lis2, "\tnone\n"},
 #ifdef HAVE_LIBUSB
 	{"bwctusb", hd_init_bwct_usb, "\tnone\n"},

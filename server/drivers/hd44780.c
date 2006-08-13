@@ -27,6 +27,9 @@
  *
  * Modified October 2001 to read the configfile.
  *
+ * Modified August 2006 by Pillon Matteo <matteo.pillon@email.it> to
+ * allow user selecting charmaps
+ *
  * Moved the delay timing code by Charles Steinkuehler to timing.h.
  * Guillaume Filion <gfk@logidac.com>, December 2001
  *
@@ -116,6 +119,9 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1; // yes, we have no global variables (except for constants)
 MODULE_EXPORT char *symbol_prefix = "HD44780_";
 
+#define IF_TYPE_PARPORT  0
+#define IF_TYPE_USB      1
+#define IF_TYPE_SERIAL   2
 
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
@@ -128,7 +134,7 @@ HD44780_init (Driver * drvthis)
 	char buf[40];
 	char *s;
 	int i;
-	int usb = 0;
+	int if_type = IF_TYPE_PARPORT;
 	PrivateData *p;
 
 	// Alocate and store private data
@@ -163,10 +169,16 @@ HD44780_init (Driver * drvthis)
 		return -1; // fatal error
 	} else {
 		p->connectiontype_index = i;
-		/* check if ConnectionType contains the string "USB" or "usb" */
-		if ((strstr(connectionMapping[i].name, "usb") != NULL) ||
-		    (strstr(connectionMapping[i].name, "USB") != NULL))
-			usb = 1;
+		/* check if ConnectionType contains the string "usb" or "USB" */
+		if ((strstr(connectionMapping[p->connectiontype_index].name, "usb") != NULL) ||
+		    (strstr(connectionMapping[p->connectiontype_index].name, "USB") != NULL))
+			if_type = IF_TYPE_USB;
+		/* check if it is the serial driver */
+		for (i = 0; i < (sizeof(serial_interfaces)/sizeof(SerialInterface)); i++) {
+			if (strcasecmp(connectionMapping[p->connectiontype_index].name,
+				       serial_interfaces[i].name)==0)
+			    if_type = IF_TYPE_SERIAL;
+		}
 	}
 
 	// Get and parse vspan only when specified
@@ -284,6 +296,28 @@ HD44780_init (Driver * drvthis)
 		}
 	}
 
+	// Get configured charmap
+	char conf_charmap[MAX_CHARMAP_NAME_LENGHT];
+
+	strncpy(conf_charmap, drvthis->config_get_string(drvthis->name, "charmap", 0, "hd44780_default"), MAX_CHARMAP_NAME_LENGHT);
+	conf_charmap[MAX_CHARMAP_NAME_LENGHT-1]='\0';
+	p->charmap=0;
+	for (i=0; i<(sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
+		if (strcasecmp(conf_charmap, available_charmaps[i].name) == 0) {
+			p->charmap=i;
+			break;
+		}
+	}
+	if (p->charmap != i) {
+		report(RPT_ERR, "%s: Charmap %s is unknown", drvthis->name, conf_charmap);
+		report(RPT_ERR, "%s: Available charmaps:", drvthis->name);
+		for (i=0; i<(sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
+			report(RPT_ERR, " %s", available_charmaps[i].name);
+		}
+		return -1;
+	}
+	report(RPT_INFO, "%s: Using %s charmap", drvthis->name, available_charmaps[p->charmap].name);
+
 	// Output latch state - init to a non-valid value
 	p->output_state = 999999;
 
@@ -303,18 +337,28 @@ HD44780_init (Driver * drvthis)
 	HD44780_clear (drvthis);
 	sprintf (buf, "HD44780 %dx%d", p->width, p->height );
 	HD44780_string (drvthis, 1, 1, buf);
-	if (usb) {
-		sprintf(buf, "USB %s%s%s",
-				(p->have_backlight ? " bl" : ""),
-				(p->have_keypad ? " key" : ""),
-				(p->have_output ? " out" : ""));
-	}
-	else {
-		sprintf(buf, "LPT 0x%03X%s%s%s", p->port,
-				(p->have_backlight ? " bl" : ""),
-				(p->have_keypad ? " key" : ""),
-				(p->have_output ? " out" : ""));
-	}
+ 	switch(if_type) {
+ 	case IF_TYPE_USB:
+  		sprintf (buf, "USB %s%s%s",
+ 			 (p->have_backlight?" bl":""),
+ 			 (p->have_keypad?" key":""),
+ 			 (p->have_output?" out":"")
+ 			);
+ 		break;
+ 	case IF_TYPE_SERIAL:
+ 		sprintf (buf, "SERIAL %s%s%s",
+ 			 (p->have_backlight?" bl":""),
+ 			 (p->have_keypad?" key":""),
+ 			 (p->have_output?" out":"")
+ 			);
+ 		break;
+ 	default:
+ 		sprintf (buf, "LPT 0x%x%s%s%s", p->port,
+ 			 (p->have_backlight?" bl":""),
+ 			 (p->have_keypad?" key":""),
+ 			 (p->have_output?" out":"")
+  			);
+  	}
 	HD44780_string (drvthis, 1, 2, buf);
 	HD44780_flush (drvthis);
 	sleep (2);
@@ -475,7 +519,7 @@ HD44780_flush (Driver *drvthis)
 					drawing = 1;
 					HD44780_position(drvthis,x,y);
 				}
-				p->hd44780_functions->senddata (p, p->spanList[y], RS_DATA, HD44780_charmap[(unsigned char)ch]);
+				p->hd44780_functions->senddata (p, p->spanList[y], RS_DATA, available_charmaps[p->charmap].charmap[(unsigned char)ch]);
 				p->hd44780_functions->uPause (p, 40);  // Minimum exec time for all commands
 				p->lcd_contents[(y*wid)+x] = ch;
 				count++;

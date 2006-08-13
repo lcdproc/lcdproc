@@ -53,7 +53,11 @@ typedef struct driver_private_data {
 
 	unsigned int port;
 
-	int fd; /* for picanlcd connection type */
+	/* for serial connection type */
+	int fd;
+	int serial_type;
+
+	int charmap;
 
 	int width, height;
 	int cellwidth, cellheight;

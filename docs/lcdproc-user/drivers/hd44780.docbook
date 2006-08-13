@@ -1233,6 +1233,40 @@ that. The BL output below should be connected to the BL input in the
 
 </sect3>
 
+<sect3 id="hd44780-lis2">
+<title>LIS2 USB device "lis2"</title>
+
+<para>
+LIS2 from VLSystem (http://www.vlsys.co.kr) is a full featured usb vfd module
+with four channel fan controls. This device can be access as a serial device with
+help of the kernel modules ftdi_sio which map the USB port to a serial port (/dev/ttyUSBx).
+</para>
+
+</sect3>
+
+<sect3 id="hd44780-los-panel">
+<title>LCD on Serial panel device "cwlos-panel"</title>
+
+<para>
+See <ulink url="http://www.xs4all.nl/~mlf/los/">http://www.xs4all.nl/~mlf/los/</ulink>
+for information on this device.
+</para>
+
+</sect3>
+
+<sect3 id="hd44780-vdr-lcd">
+<title>VDR LCD iserial device "vdr-lcd"</title>
+
+<para>
+ ... to b documented ...
+</para>
+
+<para>
+Please address Matteo Pillon for further information.
+</para>
+
+</sect3>
+
 <sect3 id="hd44780-picanlcd">
 <title>PIC-an-LCD serial device "picanlcd"</title>
 
@@ -1252,17 +1286,6 @@ by Dale Wheat.
 
 </sect3>
 
-
-<sect3 id="hd44780-lis2">
-<title>LIS2 USB device "lis2"</title>
-
-<para>
-LIS2 from VLSystem (http://www.vlsys.co.kr) is a full featured usb vfd module
-with four channel fan controls. This device can be access as a serial device with
-help of the kernel modules ftdi_sio which map the USB port to a serial port (/dev/ttyUSBx).
-</para>
-
-</sect3>
 
 <sect3 id="hd44780-lcdserializer">
 <title>LCD serializer device "lcdserializer"</title>
@@ -1598,6 +1621,19 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    If you are using a serial connection, you must
+    set this parameter to the device your lcd is connected to. For
+    example, if it's connected to the first serial port, you have to
+    set Device to /dev/ttyS0. The default value is /dev/lcd.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>ConnectionType=</command>
     <arg choice="plain">
     <group choice="req">
@@ -1676,6 +1712,37 @@ can be done by specifying "--enable-drivers=all" or by
     </tip>
 
   </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain"><replaceable>BITRATE</replaceable></arg>
+  </term>
+  <listitem><para>
+      For a serial connection, set to the serial port bitrate. To use
+      the default value for the chosen interface, just set to 0.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Charmap=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>hd44780_default</emphasis></literal></arg>
+      <arg choice="plain"><literal>ea_ks0073</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+      You need to set this parameter only if you don't have a standard
+      hd44780 display. ea_ks0073 is the charmap for Electronic
+      Assembly's KS0073 based displays. These devices have a richer
+      charset, including many icons and many more characters of the
+      ISO-8859-1 than standard hd44780s. Refer to hd44780-charset.h
+      for more informations.
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>

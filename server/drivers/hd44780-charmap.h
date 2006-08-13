@@ -1,14 +1,21 @@
 /*
  * Character mapping for HD44780 devices by Mark Haemmerling <mail@markh.de>.
  *
- * Translates ISO 8859-1 to HD44780 charset.
- * HD44780 charset reference: http://markh.de/hd44780-charset.png
+ * Translates ISO 8859-1 to any HD44780 charset.
+ *
+ * Charmap selector (C) 2006 Pillon Matteo <matteo.pillon@email.it>
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
+/*
+ * HD44780 table
  *
  * Initial table taken from lcd.o Linux kernel driver by
  * Nils Faerber <nilsf@users.sourceforge.net>. Thanks!
  *
- * This file is released under the GNU General Public License.
- * Refer to the COPYING file distributed with this package.
+ * HD44780 charset reference: http://markh.de/hd44780-charset.png
  *
  * The following translations are being performed:
  * - map umlaut accent characters to the corresponding umlaut characters
@@ -64,4 +71,82 @@ const unsigned char HD44780_charmap[] = {
   101, 101, 101, 101, 105, 105, 105, 105,
   111, 110, 111, 111, 111, 111, 239, 253,
    48, 117, 117, 117, 245, 121, 240, 255
+};
+
+/*
+ * Electronic Assembly's KS0073 based LCDs table
+ * http://www.lcd-module.de/eng/pdf/doma/dip204-4e.pdf
+ *
+ * This map is more similar to a ISO-8859-15, but with fractions from
+ * ISO-8859-1 (0xBC, 0xBD).
+ *
+ * ~ (126) is mapped to right arrow, even though it exists, for
+ * compatibility with some clients. 127 is left arrow.
+ *
+ * There's no backtick, substituded with '.
+ *
+ * | is substituted with another similar charachter as the code is
+ * used by some serial drivers.
+ *
+ * Charset of the display offers a nice set of icons, they are mapped
+ * from 128 to 159. I mapped these intervals to, in order: 16-28,
+ * 140-151, 180-182, 187, 207, 222, 224.
+ *
+ * (C) 2006 Pillon Matteo <matteo.pillon@email.it>
+ *
+ */
+
+const unsigned char EA_KS0073_charmap[] = {
+  /* #0 */
+    0,   1,   2,   3,   4,   5,   6,   7,
+    8,   9,  10,  11,  12,  13,  14,  15,
+   16,  17,  18,  19,  20,  21,  22,  23,
+   24,  25,  26,  27,  28,  29,  30,  31,
+  /* #32 */
+   32,  33,  34,  35,  36,  37,  38,  39,
+   40,  41,  42,  43,  44,  45,  46,  47,
+   48,  49,  50,  51,  52,  53,  54,  55,
+   56,  57,  58,  59,  60,  61,  62,  63,
+  /* #64 */
+   64,  65,  66,  67,  68,  69,  70,  71,
+   72,  73,  74,  75,  76,  77,  78,  79,
+   80,  81,  82,  83,  84,  85,  86,  87,
+   88,  89,  90, 250, 251, 252,  29, 196,
+  /* #96 */
+   39,  97,  98,  99, 100, 101, 102, 103,
+  104, 105, 106, 107, 108, 109, 110, 111,
+  112, 113, 114, 115, 116, 117, 118, 119,
+  120, 121, 122, 253, 218, 255, 223, 225,
+  /* #128 */
+   16,  17,  18,  19,  20,  21,  22,  23,
+   24,  25,  26,  27,  28, 140, 141, 142,
+  143, 144, 145, 146, 147, 148, 149, 150,
+  151, 180, 181, 182, 187, 207, 222, 224,
+  /* #160 */
+  160,  64, 177, 161,  36, 163, 243,  95,
+  248,  67, 170,  20, 172, 173,  82, 175,
+  128, 140, 130, 131, 249, 143, 182, 221,
+  244, 129, 128,  21, 139, 138, 190,  96,
+  /* #192 */
+  174, 226, 174, 174,  91, 174, 188, 169,
+  197, 191, 198,  69,  73,  73,  73,  73,
+   68,  93, 168, 228, 236,  79,  92, 120,
+  171, 238, 229, 238,  94, 230, 178, 190,
+  /* #224 */
+  127, 231, 175, 175, 123, 175, 189, 200,
+  164, 165, 199, 101, 167, 232, 105, 105,
+  111, 125, 168, 233, 237, 111, 124,  58,
+  172, 166, 234, 239, 126, 235, 178, 255
+};
+
+#define MAX_CHARMAP_NAME_LENGHT 16
+
+struct charmap {
+	char name[MAX_CHARMAP_NAME_LENGHT];
+	const unsigned char *charmap;
+};
+
+const struct charmap available_charmaps[] = {
+	{"hd44780_default", HD44780_charmap},
+	{"ea_ks0073", EA_KS0073_charmap}
 };
