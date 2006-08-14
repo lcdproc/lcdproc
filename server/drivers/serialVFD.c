@@ -320,8 +320,13 @@ serialVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int option
 {
 	PrivateData *p = drvthis->private_data;
 
-	serialVFD_init_vbar(drvthis);
-	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, p->vbar_cc_offset);
+	if (p->customchars >= p->cellheight || p->predefined_vbar == 1){
+		serialVFD_init_vbar(drvthis);
+		lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, p->vbar_cc_offset);
+	}
+	else{
+		lib_vbar_static(drvthis, x, y, len, promille, options, 2, 0x5E);
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -333,9 +338,13 @@ serialVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 {
 	PrivateData *p = drvthis->private_data;
 
-	serialVFD_init_hbar(drvthis);
-	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, p->hbar_cc_offset);
-
+	if (p->customchars >= p->cellwidth || p->predefined_hbar == 1){
+		serialVFD_init_hbar(drvthis);
+		lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, p->hbar_cc_offset);
+	}
+	else{
+		lib_hbar_static(drvthis, x, y, len, promille, options, 2, 0x2C);
+	}
 }
 
 
@@ -534,14 +543,22 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 			serialVFD_chr(drvthis, x, y, 127);
 			break;
 		case ICON_HEART_FILLED:
-		        p->ccmode = CCMODE_STANDARD;
-			serialVFD_set_char(drvthis, 0, heart_filled);
-			serialVFD_chr(drvthis, x, y, 0);
+			if (p->customchars > 0){
+		        	p->ccmode = CCMODE_STANDARD;
+				serialVFD_set_char(drvthis, 0, heart_filled);
+				serialVFD_chr(drvthis, x, y, 0);
+			}
+			else
+				serialVFD_icon(drvthis, x, y, ICON_BLOCK_FILLED);
 			break;
 		case ICON_HEART_OPEN:
-		        p->ccmode = CCMODE_STANDARD;
-			serialVFD_set_char(drvthis, 0, heart_open);
-			serialVFD_chr(drvthis, x, y, 0);
+			if (p->customchars > 0){
+				p->ccmode = CCMODE_STANDARD;
+				serialVFD_set_char(drvthis, 0, heart_open);
+				serialVFD_chr(drvthis, x, y, 0);
+			}
+			else
+				serialVFD_chr(drvthis, x, y, 0x23);
 			break;
 		default:
 			return -1; // Let the core do other icons

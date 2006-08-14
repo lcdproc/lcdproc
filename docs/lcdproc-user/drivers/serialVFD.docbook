@@ -82,7 +82,15 @@ The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
       <entry>No</entry>
       <entry> </entry>
     </row>
-
+  <row>
+      <entry>Samsung 20S204DA2</entry>
+      <entry>?</entry>
+      <entry>Ok</entry>
+      <entry>Ok</entry>
+      <entry>Yes</entry>
+      <entry>The display is FUTABA compatible (hard and software). Set <command>Custom-Characters=0</command>
+ in <filename>LCDd.conf.</filename> </entry>
+    </row>
 
     <row>
       <entry>Noritake CU20026SCPB-T</entry>
@@ -197,14 +205,14 @@ optional
 
 <para>CN1:</para>
 <screen><![CDATA[
-Pin 33 &lt;--- RxD
+Pin 33 ------- RxD
 (Testmode: connect pins 25 and 26, then power up)
 ]]></screen>
 
 <para>CN2:</para>
 <screen><![CDATA[
-Pin 1  &lt;--- +5V
-Pin 2  &lt;--- GND
+Pin 1  ------- +5V
+Pin 2  ------- GND
 ]]></screen>
 </sect4>
 
@@ -241,6 +249,20 @@ You can activate two different testmodes with them.
 </screen>
 </sect4>
 
+<sect4 id="serialVFD-serial-connections-FUTABA">
+<title>FUTABA Displays (M402SD06GJ):</title>
+<screen><![CDATA[Pin 2   ------ +5V
+Pin 4   ------ +5V
+Pin 6   ------ +5V
+
+Pin 10  ------ GND
+Pin 12  ------ GND
+Pin 14  ------ GND
+
+Pin 19  ------ RxD
+]]></screen>
+</sect4>
+
 
 </sect3>
 
@@ -256,7 +278,7 @@ You can activate two different testmodes with them.
 parallel Port:			Display (NEC):
 Pin: 	Name:			Name:   Pin:
 
-1	/STROBE --------------	/WR	1
+1	/STROBE --------------	/WR	17
 2	D0      --------------	D0	15
 3	D1      --------------	D1	13
 4	D2      --------------	D2	11
@@ -280,8 +302,8 @@ optional
 ]]></screen>
 <para>CN2:</para>
 <screen><![CDATA[
-Pin 1  &lt;--- +5V
-Pin 2  &lt;--- GND
+Pin 1  ------ +5V
+Pin 2  ------ GND
 ]]></screen>
 </sect4>
 
@@ -291,7 +313,7 @@ Pin 2  &lt;--- GND
 parallel Port:			Display (FUTABA):
 Pin: 	Name:			Name:   Pin:
 
-1	/STROBE --------------	/WR	1
+1	/STROBE --------------	/WR	17
 2	D0      --------------	D0	15
 3	D1      --------------	D1	13
 4	D2      --------------	D2	11

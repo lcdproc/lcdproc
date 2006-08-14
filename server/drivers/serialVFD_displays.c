@@ -70,6 +70,8 @@ serialVFD_load_NEC_FIPC (Driver *drvthis)
 				p->customchars=1;	// number of custom characters the display provides
 			p->vbar_cc_offset=5;	// character offset of the bars
 			p->hbar_cc_offset=12;	// character offset of the bars
+			p->predefined_hbar=1;   // the display has predefined hbar-characters
+			p->predefined_vbar=1;   // the display has predefined vbar-characters
 
 			// hardwarespecific commands:
 			//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
@@ -145,6 +147,8 @@ serialVFD_load_KD (Driver *drvthis)
 				p->customchars=31;	// number of custom characters the display provides
 			p->vbar_cc_offset=0;	// character offset of the bars
 			p->hbar_cc_offset=0;	// character offset of the bars
+			p->predefined_hbar=0;   // the display has predefined hbar-characters
+			p->predefined_vbar=0;   // the display has predefined vbar-characters
 
 			// hardwarespecific commands:
 			//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
@@ -220,6 +224,8 @@ serialVFD_load_Noritake (Driver *drvthis)
 				p->customchars=16;	// number of custom characters the display provides
 			p->vbar_cc_offset=0;	// character offset of the bars
 			p->hbar_cc_offset=0;	// character offset of the bars
+			p->predefined_hbar=0;   // the display has predefined hbar-characters
+			p->predefined_vbar=0;   // the display has predefined vbar-characters
 
 			// hardwarespecific commands:
 			//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
@@ -269,8 +275,10 @@ serialVFD_load_Futaba (Driver *drvthis)
 
 			if (p->customchars == -83)
 				p->customchars=3;	// number of custom characters the display provides
-			p->vbar_cc_offset=0x30;	// character offset of the bars
-			p->hbar_cc_offset=0x30;	// character offset of the bars
+			p->vbar_cc_offset=0;	// character offset of the bars
+			p->hbar_cc_offset=0;	// character offset of the bars
+			p->predefined_hbar=0;   // the display has predefined hbar-characters
+			p->predefined_vbar=0;   // the display has predefined vbar-characters
 
 			// hardwarespecific commands:
 			//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
@@ -283,7 +291,7 @@ serialVFD_load_Futaba (Driver *drvthis)
 						{2	,0x10, 0x00},	// pos1
 						{1	,0x10,},	// move cursor
 						{1	,0x1F},		// reset
-						{1	,0x11},  	// init
+						{2	,0x11,0x14},  	// init
 						{1	,0x03}, 	// set user char
 						{1	,0x09}}; 	// tab
 			for (tmp=0;tmp < (10) ;tmp++)

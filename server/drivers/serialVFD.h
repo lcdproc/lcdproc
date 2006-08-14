@@ -89,6 +89,8 @@ typedef struct driver_private_data {
 	int off_brightness;
 	int hw_brightness;
 	int customchars;
+	int predefined_hbar;
+	int predefined_vbar;
 	int ISO_8859_1;
 	unsigned int refresh_timer;
 	unsigned char charmap[128];
