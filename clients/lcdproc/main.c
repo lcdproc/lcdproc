@@ -34,6 +34,9 @@
 #include "mem.h"
 #include "machine.h"
 #include "iface.h"
+#ifdef LCDPROC_EYEBOXONE
+# include "eyebox.h"
+#endif
 
 // TODO: Commenting...  Everything!
 
@@ -433,6 +436,12 @@ HelpScreen (int exit_state)
 void
 exit_program(int val)
 {
+#ifdef LCDPROC_EYEBOXONE
+	/*
+	 * Clear Eyebox Leds
+	 */
+	eyebox_clear();
+#endif
 	//printf("exit program\n");
 	Quit = 1;
 	sock_close(sock);

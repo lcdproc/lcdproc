@@ -13,6 +13,7 @@ well as the configuration of LCDd.
 &CFontzPacket;
 &curses;
 &CwLnx;
+&EyeboxOne;
 &g15;
 &glcdlib;
 &glk;
