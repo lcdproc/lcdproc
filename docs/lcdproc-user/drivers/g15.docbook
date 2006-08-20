@@ -1,0 +1,34 @@
+<sect1 id="G15-howto">
+<title>The G15 Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays on Logitech G15 
+gaming keyboards.
+</para>
+
+<sect2 id="G15-features">
+<title>Features</title>
+
+<para>
+This driver uses g15daemon's virtual screen capabilities to enable 
+multiple LCDd instances to display on the LCD of the Logitech G15
+gaming keyboard.  Text and other rendering services are provided by
+libg15render from the g15tools project.  Input is provided by g15daemon, 
+enabling use of the L1-L5 and G1 keys.  The required libraries are
+available from the g15daemon and g15tools projects at sourceforge.net.
+</para>
+
+<sect3 id="G15-config">
+<title>Configuration in LCDd.conf</title>
+
+<para>
+Currently there aren't really any configuration options to be set.
+The width and height are hardcoded based on the font currently used.
+In the future, now that libg15render has FreeType2 support, there may
+be options to adjust the font used and the display size.
+</para>
+
+</sect3>
+</sect2>
+</sect1>
+
