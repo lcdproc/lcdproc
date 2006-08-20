@@ -70,13 +70,16 @@ update_screen(mode *m, int display)
 
 	if (m && m->func) {
 #ifdef LCDPROC_EYEBOXONE
+		int init_flag = (m->flags & INITIALIZED);
+#endif  
+		status = m->func(m->timer, display, &(m->flags));
+#ifdef LCDPROC_EYEBOXONE
 		/* Eyebox Init */
-		if((m->flags & INITIALIZED) == 0)
+		if (init_flag == 0)
 			eyebox_screen(m->which,0);
 		/* Eyebox Flush */
 		eyebox_screen(m->which,1);
 #endif  
-		status = m->func(m->timer, display, &(m->flags));
 	}
 
 	if (status != old_status)
