@@ -16,7 +16,7 @@ AM_CFLAGS = @CCSHARED@
 AM_LDFLAGS = @LDSHARED@
 
 ## Forget the libs that the server core requires
-LIBS =
+#LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
 EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD pyramid sed1330 sed1520 serialVFD stv5730 svga t6963 text tyan sli ula200 xosd
