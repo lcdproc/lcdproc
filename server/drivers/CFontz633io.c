@@ -173,14 +173,18 @@ void send_zerobyte_message(int fd, unsigned char msg)
 static void
 send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in)
 {
+	unsigned char CRC[2];
+
 	write(fd, &out->command, 1);
 	write(fd, &out->data_length, 1);
 	if (out->data_length > 0)
 		write(fd, out->data, out->data_length);
 
-	/* calculate & send the CRC */
-	out->crc.as_word = get_crc((unsigned char *) out, out->data_length + 2, 0xFFFF);
-	write(fd, out->crc.as_bytes, 2);
+	/* calculate & send the CRC: convert to bytes manually to avoid endianess issues */
+	out->crc = get_crc((unsigned char *) out, out->data_length + 2, 0xFFFF);
+	CRC[0] = out->crc & 0xFF;
+	CRC[1] = (out->crc >> 8) & 0xFF;
+	write(fd, CRC, 2);
 
 	/**** TEST STUFF ****/
 	// print_packet(out);
@@ -512,17 +516,16 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 	for (i = 0; i < in->data_length; i++)
 		in->data[i] = PeekByte(&receivebuffer);
 
-	//Now move over the CRC.
-	in->crc.as_bytes[0] = PeekByte(&receivebuffer);
-	in->crc.as_bytes[1] = PeekByte(&receivebuffer);
-	//Now check the CRC.
+	//Now move over the CRC: convert CRC bytes to CRC manually to avoid endianness issues
+	in->crc = PeekByte(&receivebuffer);
+	in->crc |= PeekByte(&receivebuffer) << 8;
 
 	//Compute the expected CheckSum
 	testcrc = get_crc((unsigned char *) in, in->data_length+2, 0xFFFF);
 
-	if (in->crc.as_word == testcrc) {
-		//This is a good packet. I'll be horn swaggled. Remove the packet
-		//from the serial buffer.
+	//Now check the CRC.
+	if (in->crc == testcrc) {
+		//This is a good packet. Remove the packet from the serial buffer.
 		AcceptPeekedData(&receivebuffer);
 		//Let our caller know that incoming_command has good stuff in it.
 		/* print_packet(&outgoing_response); */
@@ -535,7 +538,7 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 	*/
 	GetByte(&receivebuffer);
 	/* fprintf(stderr, "###: Wrong CheckSum. computed/real %04x:%04x \n",
-  		   testcrc, incoming_command.crc.as_word); */
+  		   testcrc, incoming_command.crc); */
 	return(TRY_AGAIN);
 }
 
@@ -560,6 +563,6 @@ print_packet(COMMAND_PACKET *packet)
 	for (i = 0; i < packet->data_length; i++)
 		fprintf(stderr, " %02x", packet->data[i]);
 
-	fprintf(stderr, " ] %02x %02x .\n", packet->crc.as_bytes[0], packet->crc.as_bytes[1]);
+	fprintf(stderr, " ] %02x %02x .\n", packet->crc & 0xFF, (packet->crc >> 8) & 0xFF);
 }
 

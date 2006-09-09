@@ -95,10 +95,7 @@ typedef struct {
 	ubyte command;
 	ubyte data_length;
 	ubyte data[MAX_DATA_LENGTH+1];
-	union {
-		unsigned char as_bytes[2];
-		word as_word;
-	} crc;
+	word crc;
 } COMMAND_PACKET;
 
 
