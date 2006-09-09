@@ -198,6 +198,7 @@ hd_init_serial (Driver *drvthis)
 #ifdef HAVE_CFMAKERAW
 	/* The easy way */
 	cfmakeraw( &portset );
+	portset.c_cflag |= CLOCAL;
 #else
 	/* The hard way */
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
