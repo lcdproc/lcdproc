@@ -25,7 +25,6 @@
 #endif /* WITH_LDAP_SUPPORT */
 
 #include "shared/report.h"
-#include "shared/fileio.h"
 
 
 typedef struct key {
@@ -49,8 +48,8 @@ section * find_section(char * sectionname);
 section * add_section(char * sectionname);
 key * find_key(section * s, char * keyname, int skip);
 key * add_key(section * s, char * keyname, char * value);
-char get_next_char_f(buffile * f);
-int process_config(section ** current_section, char(*get_next_char)(), char modify_section_allowed, char * source_descr, buffile * f);
+char get_next_char_f(FILE *f);
+int process_config(section ** current_section, char(*get_next_char)(), char modify_section_allowed, char * source_descr, FILE *f);
 
 
 #ifdef WITH_LDAP_SUPPORT
@@ -73,7 +72,7 @@ int ldap_port;
 
 int config_read_file(char *filename)
 {
-	buffile *f;
+	FILE *f;
 	section *curr_section = NULL;
 
 #ifdef WITH_LDAP_SUPPORT
@@ -111,14 +110,14 @@ int config_read_file(char *filename)
 	}
 #endif /* WITH_LDAP_SUPPORT */ 
 
-	f = buffile_open(filename, "r");
+	f = fopen(filename, "r");
 	if (f == NULL) {
 		return -1;
 	}
 
 	process_config(&curr_section, get_next_char_f, 1, filename, f);
 
-	buffile_close(f);
+	fclose(f);
 
 	return 0;
 }
@@ -536,13 +535,11 @@ key * add_key(section * s, char * keyname, char * value)
 	return NULL;
 }
 
-char get_next_char_f(buffile * f)
+char get_next_char_f(FILE *f)
 {
-	char * buf = buffile_read(f, 1);
-	char c = buf[0];
+	int c = fgetc(f);
 
-	free(buf);
-	return c;
+	return((c == EOF) ? '\0' : c);
 }
 
 
@@ -567,7 +564,7 @@ char get_next_char_f(buffile * f)
 
 
 
-int process_config(section ** current_section, char(*get_next_char)(), char modify_section_allowed, char * source_descr, buffile * f)
+int process_config(section ** current_section, char(*get_next_char)(), char modify_section_allowed, char * source_descr, FILE *f)
 {
 	char state = ST_INITIAL;
 	char ch;
@@ -577,7 +574,7 @@ int process_config(section ** current_section, char(*get_next_char)(), char modi
 	int keyname_pos = 0;
 	char value[MAXVALUELENGTH+1];
 	int value_pos = 0;
-	int quote = 0;
+	int escape = 0;
 	key *k;
 	int line_nr = 1;
 
@@ -762,24 +759,26 @@ int process_config(section ** current_section, char(*get_next_char)(), char modi
 				state = ST_INITIAL;
 				break;
 			  case '\\':
-				if (!quote) {
-					quote = 1;
+				if (!escape) {
+					escape = 1;
 					break;
 				}
+				/* fall though */
 			  case '"':
-				if (!quote) {
+				if (!escape) {
 					state = ST_VALUE;
 					break;
 				}
+				/* fall though */
 			  default:
-				if (quote) {
+				if (escape) {
 					switch (ch) {
 					  case 'n': ch = '\n'; break;
 					  case 'r': ch = '\r'; break;
 					  case 't': ch = '\t'; break;
-					  /* default: litteral*/
+					  /* default: literal char  (i.e. ignore \) */
 					}
-					quote = 0;
+					escape = 0;
 				}
 				value[value_pos++] = ch;
 				value[value_pos] = '\0';
