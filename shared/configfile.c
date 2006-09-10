@@ -174,11 +174,13 @@ short config_get_bool(char *sectionname, char *keyname,
 		return default_value;
 
 	if (strcasecmp(k->value, "0") == 0 || strcasecmp(k->value, "false") == 0
-	|| strcasecmp(k->value, "n") == 0 || strcasecmp(k->value, "no") == 0) {
+	|| strcasecmp(k->value, "n") == 0 || strcasecmp(k->value, "no") == 0 
+	|| strcasecmp(k->value, "off") == 0) {
 		return 0;
 	}
 	if (strcasecmp(k->value, "1") == 0 || strcasecmp(k->value, "true") == 0
-	|| strcasecmp(k->value, "y") == 0 || strcasecmp(k->value, "yes") == 0) {
+	|| strcasecmp(k->value, "y") == 0 || strcasecmp(k->value, "yes") == 0
+	|| strcasecmp(k->value, "on") == 0) {
 		return 1;
 	}
 	return default_value;
@@ -195,7 +197,7 @@ long int config_get_int(char *sectionname, char *keyname,
 		long int v = strtol(k->value, &end, 0);
 
 		if ((end != NULL) && (end != k->value) && (*end == '\0'))
-			/* Conversion succesful*/
+			/* Conversion succesful */
 			return v;
 	}
 	return default_value;
@@ -776,7 +778,7 @@ int process_config(section ** current_section, char(*get_next_char)(), char modi
 					  case 'n': ch = '\n'; break;
 					  case 'r': ch = '\r'; break;
 					  case 't': ch = '\t'; break;
-					  /* default: literal char  (i.e. ignore \) */
+					  /* default: literal char  (i.e. ignore '\') */
 					}
 					escape = 0;
 				}
