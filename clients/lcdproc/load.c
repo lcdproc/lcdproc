@@ -8,6 +8,7 @@
 # include "config.h"
 #endif
 
+#include "shared/configfile.h"
 #include "shared/sockets.h"
 #include "main.h"
 #include "mode.h"
@@ -30,12 +31,18 @@ xload_screen (int rep, int display, int *flags_ptr)
 {
 	static int gauge_hgt = 0;
 	static double loads[LCD_MAX_WIDTH];
+	static double lowLoad = LOAD_MIN;
+	static double highLoad = LOAD_MAX;
 	int loadtop, i;
 	double loadmax = 0, factor;
-	int status = 0;
+	int status = BACKLIGHT_ON;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
+
+		/* get config values */
+		lowLoad = config_get_float("Load", "LowLoad", 0, LOAD_MIN);
+		highLoad = config_get_float("Load", "HighLoad", 0, LOAD_MAX);
 
 		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 		memset (loads, '\0', sizeof (double) * LCD_MAX_WIDTH);
@@ -105,9 +112,11 @@ xload_screen (int rep, int display, int *flags_ptr)
 	sock_send_string (sock, tmp);
 
 	// set return status depending on max & current load
-	status = (loadmax >  LOAD_MIN) ? BACKLIGHT_ON : BACKLIGHT_OFF;
-	if (loads[lcd_wid - 2] > LOAD_MAX)
-		status = BLINK_ON;
+	if (lowLoad < highLoad) {
+		status = (loadmax > lowLoad) ? BACKLIGHT_ON : BACKLIGHT_OFF;
+		if (loads[lcd_wid - 2] > highLoad)
+			status = BLINK_ON;
+	}		
 
 	return status;
 }										  // End xload_screen()

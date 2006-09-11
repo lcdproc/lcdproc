@@ -225,22 +225,6 @@ AC_DEFINE_UNQUOTED(PROTOCOL_VERSION, "0.3", [Define version of lcdproc client-se
 AC_DEFINE_UNQUOTED(API_VERSION, "0.5", [Define version of lcdproc API])
 
 
-AC_ARG_WITH(loadmax,
-  [  --with-loadmax=<load>   Max Load Avg at which the backlight will]
-  [                        start blinking [1.3]],
-  LOAD_MAX=$withval,
-  LOAD_MAX=1.3
-)
-AC_DEFINE_UNQUOTED(LOAD_MAX, $LOAD_MAX, [Define max Load Avg at which the backlight will start blinking])
-
-AC_ARG_WITH(loadmin,
-  [  --with-loadmin=<load>   Min Load Avg at which the backlight will]
-  [                        turn off (asleep) [0.05]],
-  LOAD_MIN=$withval,
-  LOAD_MIN=0.05
-)
-AC_DEFINE_UNQUOTED(LOAD_MIN, $LOAD_MIN, [Define min Load Avg at which the backlight will turn off])
-
 AC_MODULES_INFO
 
 dnl ######################################################################
