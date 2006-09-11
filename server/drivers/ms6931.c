@@ -37,6 +37,10 @@
 # include "config.h"
 #endif
 
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+#endif
+
 #include "lcd.h"
 #include "ms6931.h"
 #include "report.h"
