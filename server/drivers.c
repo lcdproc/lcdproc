@@ -43,7 +43,7 @@ int
 drivers_load_driver( char * name )
 {
 	Driver * driver;
-	char * s;
+	const char * s;
 	char * driverpath;
 	char * filename;
 

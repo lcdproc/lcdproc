@@ -610,7 +610,7 @@ ula200_init(Driver *drvthis)
 {
 	PrivateData *p;
 	int err, i;
-	char *s;
+	const char *s;
 
 	// Alocate and store private data
 	p = (PrivateData *) malloc( sizeof( PrivateData) );

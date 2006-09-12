@@ -111,7 +111,7 @@ static char *defaultKeyMapMatrix[KEYPAD_MAXY][KEYPAD_MAXX] = {
 void HD44780_position (Driver *drvthis, int x, int y);
 static void uPause (PrivateData *p, int usecs);
 unsigned char HD44780_scankeypad(PrivateData *p);
-static int parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], char *spanlist);
+static int parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], const char *spanlist);
 
 // Vars for the server core
 MODULE_EXPORT char * api_version = API_VERSION;
@@ -132,7 +132,7 @@ HD44780_init (Driver * drvthis)
 	// TODO: remove the two magic numbers below
 	// TODO: single point of return
 	char buf[40];
-	char *s;
+	const char *s;
 	int i;
 	int if_type = IF_TYPE_PARPORT;
 	PrivateData *p;
@@ -1072,7 +1072,7 @@ HD44780_output (Driver *drvthis, int on)
 //      returns number of span elements, -1 on parse error
 
 int
-parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], char *spanlist)
+parse_span_list (int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], const char *spanlist)
 {
 	int j = 0, retVal = 0;
 

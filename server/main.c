@@ -404,7 +404,7 @@ process_command_line(int argc, char **argv)
 static int
 process_configfile(char *configfile)
 {
-	char * s;
+	const char *s;
 	/*char buf[64];*/
 
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );

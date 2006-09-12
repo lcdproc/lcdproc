@@ -229,7 +229,7 @@ static void MtxOrb_old_hbar (Driver *drvthis, int x, int y, int len);
 static char MtxOrb_parse_keypad_setting (Driver *drvthis, char * keyname, char default_value)
 {
 	char return_val = 0;
-	char * s;
+	const char *s;
 	char buf[255];
 
 	s = drvthis->config_get_string(drvthis->name, keyname, 0, NULL);

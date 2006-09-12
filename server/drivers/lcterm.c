@@ -104,7 +104,7 @@ lcterm_init (Driver *drvthis)
   /* Get and parse size */
   {
     int w, h;
-    char *s = drvthis->config_get_string(drvthis->name, "Size", 0, "16x2");
+    const char *s = drvthis->config_get_string(drvthis->name, "Size", 0, "16x2");
 
     debug(RPT_DEBUG, "%s: reading size: %s", __FUNCTION__, s);
 

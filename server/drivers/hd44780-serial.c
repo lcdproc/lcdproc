@@ -258,8 +258,7 @@ void
 serial_HD44780_backlight (PrivateData *p, unsigned char state)
 {
 	/* TODO */
-	if(p->have_backlight);
-	return 0;
+	//if (p->have_backlight) ....
 }
 
 unsigned char

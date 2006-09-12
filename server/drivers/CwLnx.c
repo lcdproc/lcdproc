@@ -157,7 +157,7 @@ static void CwLnx_draw_frame(Driver *drvthis, char *dat);
 static char CwLnx_parse_keypad_setting(Driver *drvthis, char * keyname, char default_value)
 {
     char return_val = 0;
-    char * s;
+    const char *s;
     char buf[255];
 
     s = drvthis->config_get_string(drvthis->name, keyname, 0, NULL);
@@ -501,7 +501,7 @@ int CwLnx_init(Driver * drvthis)
     int tmp;
     int w;
     int h;
-    char *s;
+    const char *s;
 
     PrivateData *p;
 

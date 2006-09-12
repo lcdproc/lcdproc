@@ -40,25 +40,25 @@ typedef struct section {
 } section;
 
 
-static section * first_section = NULL;
+static section *first_section = NULL;
 /* Yes there is a static. It's C after all :)*/
 
 
-section * find_section(char * sectionname);
-section * add_section(char * sectionname);
-key * find_key(section * s, char * keyname, int skip);
-key * add_key(section * s, char * keyname, char * value);
+section *find_section(const char *sectionname);
+section *add_section(const char *sectionname);
+key *find_key(section *s, const char *keyname, int skip);
+key *add_key(section *s, const char *keyname, const char *value);
 char get_next_char_f(FILE *f);
-int process_config(section ** current_section, char(*get_next_char)(), char modify_section_allowed, char * source_descr, FILE *f);
+int process_config(section **current_section, char(*get_next_char)(), char modify_section_allowed, const char *source_descr, FILE *f);
 
 
 #ifdef WITH_LDAP_SUPPORT
 int connect_to_ldap(void);
 
-static LDAP * ld = NULL;
+static LDAP *ld = NULL;
 int use_ldap = 0;
 
-static char * ldap_host = NULL, * ldap_base_dn = NULL;
+static char *ldap_host = NULL, *ldap_base_dn = NULL;
 int ldap_port;
 
 /* not supported for now
@@ -70,7 +70,7 @@ int ldap_port;
 
 /**** EXTERNAL FUNCTIONS ****/
 
-int config_read_file(char *filename)
+int config_read_file(const char *filename)
 {
 	FILE *f;
 	section *curr_section = NULL;
@@ -123,7 +123,7 @@ int config_read_file(char *filename)
 }
 
 
-int config_read_string(char *sectionname, char *str)
+int config_read_string(const char *sectionname, const char *str)
 /* All the config parameters are placed in the given section in memory.*/
 {
 	int pos = 0;
@@ -143,8 +143,8 @@ int config_read_string(char *sectionname, char *str)
 }
 
 
-char *config_get_string(char * sectionname, char * keyname,
-		int skip, char * default_value)
+const char *config_get_string(const char *sectionname, const char *keyname,
+		int skip, const char *default_value)
 {
 	key *k = find_key(find_section(sectionname), keyname, skip);
 
@@ -165,7 +165,7 @@ char *config_get_string(char * sectionname, char * keyname,
 }
 
 
-short config_get_bool(char *sectionname, char *keyname,
+short config_get_bool(const char *sectionname, const char *keyname,
 		int skip, short default_value)
 {
 	key *k = find_key(find_section(sectionname), keyname, skip);
@@ -187,7 +187,7 @@ short config_get_bool(char *sectionname, char *keyname,
 }
 
 
-long int config_get_int(char *sectionname, char *keyname,
+long int config_get_int(const char *sectionname, const char *keyname,
 		int skip, long int default_value)
 {
 	key *k = find_key(find_section(sectionname), keyname, skip);
@@ -204,7 +204,7 @@ long int config_get_int(char *sectionname, char *keyname,
 }
 
 
-double config_get_float(char *sectionname, char *keyname,
+double config_get_float(const char *sectionname, const char *keyname,
 		int skip, double default_value)
 {
 	key *k = find_key(find_section(sectionname), keyname, skip);
@@ -221,13 +221,13 @@ double config_get_float(char *sectionname, char *keyname,
 }
 
 
-int config_has_section(char *sectionname)
+int config_has_section(const char *sectionname)
 {
 	return (find_section(sectionname) != NULL) ? 1 : 0;
 }
 
 
-int config_has_key(char *sectionname, char *keyname)
+int config_has_key(const char *sectionname, const char *keyname)
 {
 	section *s = find_section(sectionname);
 	int count = 0;
@@ -320,7 +320,7 @@ connect_to_ldap(void)
 #define BUFSIZE 255
 #endif /* WITH_LDAP_SUPPORT */
 
-section * find_section(char * sectionname)
+section *find_section(const char *sectionname)
 {
 	section *s;
 
@@ -374,7 +374,7 @@ section * find_section(char * sectionname)
 	return NULL; /* not found */
 }
 
-section * add_section(char * sectionname)
+section *add_section(const char *sectionname)
 {
 	section *s;
 	section **place = &first_section;
@@ -392,7 +392,7 @@ section * add_section(char * sectionname)
 	return(*place);
 }
 
-key * find_key(section * s, char * keyname, int skip)
+key *find_key(section *s, const char *keyname, int skip)
 {
 	key *k;
 	int count = 0;
@@ -516,7 +516,7 @@ key * find_key(section * s, char * keyname, int skip)
 	return NULL; /* not found*/
 }
 
-key * add_key(section * s, char * keyname, char * value)
+key *add_key(section *s, const char *keyname, const char *value)
 {
 	if (s != NULL) {
 		key *k;
@@ -566,7 +566,7 @@ char get_next_char_f(FILE *f)
 
 
 
-int process_config(section ** current_section, char(*get_next_char)(), char modify_section_allowed, char * source_descr, FILE *f)
+int process_config(section **current_section, char(*get_next_char)(), char modify_section_allowed, const char *source_descr, FILE *f)
 {
 	char state = ST_INITIAL;
 	char ch;

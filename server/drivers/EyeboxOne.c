@@ -102,7 +102,7 @@ static void EyeboxOne_use_led(int fd, int led, int color);
 static char EyeboxOne_parse_keypad_setting (Driver *drvthis, char * keyname, char default_value)
 {
 	char return_val = 0;
-	char * s;
+	const char *s;
 	char buf[255];
 
 	s = drvthis->config_get_string(drvthis->name, keyname, 0, NULL);

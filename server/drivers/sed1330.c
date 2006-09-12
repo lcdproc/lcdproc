@@ -314,7 +314,7 @@ unsigned char sed1330_readkeypad (PrivateData *p, unsigned int YData);
 MODULE_EXPORT int
 sed1330_init( Driver * drvthis )
 {
-	char * s;
+	const char *s;
 	PrivateData * p;
 	unsigned char data[8];
 

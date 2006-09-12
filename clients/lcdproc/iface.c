@@ -67,7 +67,7 @@ static struct option const long_options[] =
 static int
 iface_process_configfile()
 {
-	char *unit;
+	const char *unit;
 
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 

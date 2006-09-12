@@ -175,9 +175,9 @@ int process_command_line(int argc, char **argv)
 	return error;
 }
 
-int process_configfile(char * configfile)
+int process_configfile(char *configfile)
 {
-	char * tmp;
+	const char *tmp;
 
 	if (configfile == NULL)
 		configfile = DEFAULT_CONFIGFILE;

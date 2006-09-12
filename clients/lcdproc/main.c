@@ -330,7 +330,7 @@ static int
 process_configfile(char *configfile)
 {
 	int k;
-	char *tmp;
+	const char *tmp;
 
 	debug(RPT_DEBUG, "%s(%s)", __FUNCTION__, (configfile) ? configfile : "<null>");
 

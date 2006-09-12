@@ -72,7 +72,7 @@ MenuEventFunc (brightness_handler);
 
 int menuscreens_init()
 {
-	char *tmp;
+	const char *tmp;
 
 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
 

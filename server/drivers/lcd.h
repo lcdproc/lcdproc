@@ -169,13 +169,13 @@ typedef struct lcd_logical_driver {
 
 	/******** Variables in server core available for drivers ********/
 
-	char * name;		/* Name of this driver */
-	char * filename;	/* Filename of the shared module */
+	char *name;		/* Name of this driver */
+	char *filename;		/* Filename of the shared module */
 
 	MODULE_HANDLE module_handle;	/* The handle of the loaded shared module
 					   Is platform specific */
 
-	void * private_data;	/* Filled by server by calling store_private_ptr()
+	void *private_data;	/* Filled by server by calling store_private_ptr()
 				   Driver should cast this to it's own
 				   private structure pointer */
 
@@ -188,16 +188,16 @@ typedef struct lcd_logical_driver {
 	/* Configfile functions */
 	/* See configfile.h for descriptions and usage. */
 
-	short (*config_get_bool)( char *sectionname, char *keyname, int skip, short default_value );
-	long int (*config_get_int)	( char *sectionname, char *keyname, int skip, long int default_value );
-	double (*config_get_float)	( char *sectionname, char *keyname, int skip, double default_value );
-	char *( *config_get_string)	( char *sectionname, char *keyname, int skip, char *default_value );
-	int (*config_has_section)	( char *sectionname );
-	int (*config_has_key)		( char *sectionname, char *keyname );
+	short (*config_get_bool)	(const char *sectionname, const char *keyname, int skip, short default_value);
+	long int (*config_get_int)	(const char *sectionname, const char *keyname, int skip, long int default_value);
+	double (*config_get_float)	(const char *sectionname, const char *keyname, int skip, double default_value);
+	const char *( *config_get_string)(const char *sectionname, const char *keyname, int skip, const char *default_value);
+	int (*config_has_section)	(const char *sectionname);
+	int (*config_has_key)		(const char *sectionname, const char *keyname);
 
 	/* Reporting function */
 	/* Easily usable by including drivers/report.h */
-	void (*report)			( const int level, const char *format, .../*args*/ );
+	void (*report)			(const int level, const char *format, .../*args*/ );
 
 	/* Display properties functions (for drivers that adapt to other loaded drivers) */
 	int (*request_display_width) ();

@@ -133,7 +133,7 @@ joy_init (Driver *drvthis)
 
 	for (i = 0; i < p->axes; i++) {
 		char mapkey[50];
-		char *mapval;
+		const char *mapval;
 
 		snprintf(mapkey, sizeof(mapkey), "Map_Axis%dneg", i+1);
 		mapval = drvthis->config_get_string(drvthis->name, mapkey, 0, NULL);
@@ -154,7 +154,7 @@ joy_init (Driver *drvthis)
 
 	for (i = 0; i < p->buttons; i++) {
 		char mapkey[50];
-		char *mapval;
+		const char *mapval;
 
 		snprintf(mapkey, sizeof(mapkey), "Map_Button%d", i+1);
 		mapval = drvthis->config_get_string(drvthis->name, mapkey, 0, NULL);

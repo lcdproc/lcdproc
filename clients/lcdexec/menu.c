@@ -21,7 +21,7 @@
 #include "menu.h"
 
 /* recursively read the menu hierarchy */
-MenuEntry *menu_read(MenuEntry *parent, char *name)
+MenuEntry *menu_read(MenuEntry *parent, const char *name)
 {
 	static int id = 0;
 
@@ -50,7 +50,7 @@ MenuEntry *menu_read(MenuEntry *parent, char *name)
 		
 		if (config_get_string(name, "Entry", 0, NULL) != NULL) {
 			MenuEntry **addr = &me->entries;
-			char *entryname;
+			const char *entryname;
 			int index = 0;
 			
 			// it is a sub-menu
