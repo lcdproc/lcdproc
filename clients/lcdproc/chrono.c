@@ -25,6 +25,7 @@
 # endif
 #endif
 
+#include "shared/configfile.h"
 #include "shared/sockets.h"
 
 #include "main.h"
@@ -33,60 +34,11 @@
 #include "chrono.h"
 
 
-static int TwentyFourHour = 1;
-
-// A couple of tables for later use...
-static char *days[] = {
-	"Sunday,   ",
-	"Monday,   ",
-	"Tuesday,  ",
-	"Wednesday,",
-	"Thursday, ",
-	"Friday,   ",
-	"Saturday, ",
-};
-static char *shortdays[] = {
-	"Sun",
-	"Mon",
-	"Tue",
-	"Wed",
-	"Thu",
-	"Fri",
-	"Sat",
-};
-
-static char *months[] = {
-	"  January",
-	" February",
-	"    March",
-	"    April",
-	"      May",
-	"     June",
-	"     July",
-	"   August",
-	"September",
-	"  October",
-	" November",
-	" December",
-};
-static char *shortmonths[] = {
-	"Jan",
-	"Feb",
-	"Mar",
-	"Apr",
-	"May",
-	"Jun",
-	"Jul",
-	"Aug",
-	"Sep",
-	"Oct",
-	"Nov",
-	"Dec",
-};
+static char *tickTime(char *time, int heartbeat);
 
 
 //////////////////////////////////////////////////////////////////////
-// Time Screen displays current time and date, uptime, OS ver...
+// TimeDate Screen displays current time and date, uptime, OS ver...
 //
 //+--------------------+	+--------------------+
 //|## Linux 2.6.11 ###@|	|### TIME: myhost ##@|
@@ -98,17 +50,23 @@ static char *shortmonths[] = {
 int
 time_screen (int rep, int display, int *flags_ptr)
 {
-	char now[20];
+	char now[40];
+	char today[40];
 	int xoffs;
 	int days, hour, min, sec;
 	static int heartbeat = 0;
-	static char colon[] = {':', ' '};
+	static const char *timeFormat = NULL;
+	static const char *dateFormat = NULL;
 	time_t thetime;
 	struct tm *rtime;
 	double uptime, idle;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
+
+		/* get config values */
+		timeFormat = config_get_string("TimeDate", "TimeFormat", 0, "%H:%M:%S");
+		dateFormat = config_get_string("TimeDate", "DateFormat", 0, "%b %d %Y");
 
 		sock_send_string(sock, "screen_add T\n");
 		sock_printf(sock, "screen_set T -name {Time Screen: %s}\n", get_hostname());
@@ -133,43 +91,35 @@ time_screen (int rep, int display, int *flags_ptr)
 	time(&thetime);
 	rtime = localtime(&thetime);
 
-	if (TwentyFourHour) {
-		sprintf(now, "%02d%c%02d%c%02d",
-			rtime->tm_hour, colon[heartbeat], rtime->tm_min, colon[heartbeat], rtime->tm_sec);
-	} else {
-		sprintf(now, "%02d%c%02d%c%02d%*s",
-			((rtime->tm_hour + 11) % 12) + 1, colon[heartbeat], rtime->tm_min, colon[heartbeat], rtime->tm_sec,
-			(lcd_wid > 20) ? 2 : 1, (rtime->tm_hour >= 12) ? "pm" : "am");
-	}
+	if (strftime(today, sizeof(today), dateFormat, rtime) == 0)
+		*today = '\0';
+	if (strftime(now, sizeof(now), timeFormat, rtime) == 0)
+		*now = '\0';
+	tickTime(now, heartbeat);
 
 	if (lcd_hgt >= 4) {
-		char *day = shortdays[rtime->tm_wday];
-		char *month = shortmonths[rtime->tm_mon];
-
 		machine_get_uptime(&uptime, &idle);
 
 		// display the uptime...
 		days = (int) uptime / 86400;
-		hour = ((int) uptime % 86400) / 60 / 60;
-		min = (((int) uptime % 86400) % 3600) / 60;
-		sec = ((int) uptime % 60);
+		hour = ((int) uptime % 86400) / 3600;
+		min  = ((int) uptime % 3600) / 60;
+		sec  = ((int) uptime % 60);
 
 		if (lcd_wid >= 20)
-			sprintf(tmp, "Up %3d day%s %02d%c%02d%c%02d",
-				days, ((days != 1) ? "s" : ""), hour, colon[heartbeat], min, colon[heartbeat], sec);
+			sprintf(tmp, "Up %3d day%s %02d:%02d:%02d",
+				days, ((days != 1) ? "s" : ""), hour, min, sec);
 		else
-			sprintf(tmp, "Up %dd %02d%c%02d%c%02d",
-				days, hour, colon[heartbeat], min, colon[heartbeat], sec);
+			sprintf(tmp, "Up %dd %02d:%02d:%02d", days, hour, min, sec);
+
 		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
 		if (display)
 			sock_printf(sock, "widget_set T one 1 2 {%s}\n", tmp);
 
 		// display the date
-		sprintf(tmp, "%s %s %d, %d",
-			day, month, rtime->tm_mday, rtime->tm_year + 1900);
-		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		xoffs = (lcd_wid > strlen(today)) ? ((lcd_wid - strlen(today)) / 2) + 1 : 1;
 		if (display)
-			sock_printf(sock, "widget_set T two %i 3 {%s}\n", xoffs, tmp);
+			sock_printf(sock, "widget_set T two %i 3 {%s}\n", xoffs, today);
 
 		// display the time & idle time...
 		sprintf(tmp, "%s %3i%% idle", now, (int) idle);
@@ -178,22 +128,17 @@ time_screen (int rep, int display, int *flags_ptr)
 			sock_printf(sock, "widget_set T three %i 4 {%s}\n", xoffs, tmp);
 	}
 	else {							// 2 line version of the screen
-		if (lcd_wid >= 20)				// 20+x columns
-			sprintf(tmp, "%02d.%02d.%04d %s",
-				rtime->tm_mday, rtime->tm_mon + 1, rtime->tm_year + 1900, now);
-		else						// <20 columns
-			sprintf(tmp, "%02d.%02d. %s",
-				rtime->tm_mday, rtime->tm_mon + 1, now);
-		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		xoffs = (lcd_wid > (strlen(today) + strlen(now) + 1))
+			? ((lcd_wid - ((strlen(today) + strlen(now) + 1))) / 2) + 1 : 1;
 		if (display)
-			sock_printf(sock, "widget_set T one %i 2 {%s}\n", xoffs, tmp);
+			sock_printf(sock, "widget_set T one %i 2 {%s %s}\n", xoffs, today, now);
 	}
 
 	return 0;
 }										  // End time_screen()
 
 //////////////////////////////////////////////////////////////////////
-// Old Clock Screen displays current time and date...
+// OldTime Screen displays current time and date...
 //
 //+--------------------+	+--------------------+
 //|## DATE & TIME ####@|	|### TIME: myhost ##@|
@@ -205,15 +150,21 @@ time_screen (int rep, int display, int *flags_ptr)
 int
 clock_screen (int rep, int display, int *flags_ptr)
 {
-	char now[20];
+	char now[40];
+	char today[40];
 	int xoffs;
 	static int heartbeat = 0;
-	static char colon[] = {':', ' '};
+	static const char *timeFormat = NULL;
+	static const char *dateFormat = NULL;
 	time_t thetime;
 	struct tm *rtime;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
+
+		/* get config values */
+		timeFormat = config_get_string("OldTime", "TimeFormat", 0, "%H:%M:%S");
+		dateFormat = config_get_string("OldTime", "DateFormat", 0, "%b %d %Y");
 
 		sock_send_string(sock, "screen_add O\n");
 		sock_printf(sock, "screen_set O -name {Old Clock Screen: %s}\n", get_hostname());
@@ -239,39 +190,27 @@ clock_screen (int rep, int display, int *flags_ptr)
 	time (&thetime);
 	rtime = localtime (&thetime);
 
-	if (TwentyFourHour) {
-		sprintf(now, "%02d%c%02d%c%02d",
-			rtime->tm_hour, colon[heartbeat], rtime->tm_min, colon[heartbeat], rtime->tm_sec);
-	} else {
-		sprintf(now, "%02d%c%02d%c%02d%*s",
-			((rtime->tm_hour + 11) % 12) + 1, colon[heartbeat], rtime->tm_min, colon[heartbeat], rtime->tm_sec,
-			(lcd_wid > 20) ? 2 : 1, (rtime->tm_hour >= 12) ? "pm" : "am");
-	}
+	if (strftime(today, sizeof(today), dateFormat, rtime) == 0)
+		*today = '\0';
+	if (strftime(now, sizeof(now), timeFormat, rtime) == 0)
+		*now = '\0';
+	tickTime(now, heartbeat);
+fprintf(stderr, "now: %s\ttoday: %s\n", now, today);
 
 	if (lcd_hgt >= 4) {				// 4-line version of the screen
-		char *day = days[rtime->tm_wday];
-		char *month = months[rtime->tm_mon];
-
-		sprintf(tmp, "%s %s", now, day);
-		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		xoffs = (lcd_wid > strlen(today)) ? ((lcd_wid - strlen(today)) / 2) + 1 : 1;
 		if (display)
-			sock_printf(sock, "widget_set O two %i 3 {%s}\n", xoffs, tmp);
+			sock_printf(sock, "widget_set O two %i 3 {%s}\n", xoffs, today);
 
-		sprintf(tmp, "%s %d, %d", month, rtime->tm_mday, rtime->tm_year + 1900);
-		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		xoffs = (lcd_wid > strlen(now)) ? ((lcd_wid - strlen(now)) / 2) + 1 : 1;
 		if (display)
-			sock_printf(sock, "widget_set O three %i 4 {%s}\n", xoffs, tmp);
+			sock_printf(sock, "widget_set O three %i 4 {%s}\n", xoffs, now);
 	}
 	else {						// 2-line version of the screen
-		if (lcd_wid >= 20)			// 20+x columns
-			sprintf(tmp, "%d-%02d-%02d %s",
-				rtime->tm_year + 1900, rtime->tm_mon + 1, rtime->tm_mday, now);
-		else					// <20 columns
-			sprintf(tmp, "%02d/%02d %s",
-				rtime->tm_mon + 1, rtime->tm_mday, now);
-		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
+		xoffs = (lcd_wid > (strlen(today) + strlen(now) + 1))
+			? ((lcd_wid - ((strlen(today) + strlen(now) + 1))) / 2) + 1 : 1;
 		if (display)
-			sock_printf(sock, "widget_set O one %i 2 {%s}\n", xoffs, tmp);
+			sock_printf(sock, "widget_set O one %i 2 {%s %s}\n", xoffs, today, now);
 	}
 
 	return 0;
@@ -294,7 +233,6 @@ uptime_screen (int rep, int display, int *flags_ptr)
 	int days, hour, min, sec;
 	double uptime, idle;
 	static int heartbeat = 0;
-	static char colon[] = {':', ' '};
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
@@ -329,15 +267,14 @@ uptime_screen (int rep, int display, int *flags_ptr)
 
 	machine_get_uptime(&uptime, &idle);
 	days = (int) uptime / 86400;
-	hour = ((int) uptime % 86400) / 60 / 60;
-	min = (((int) uptime % 86400) % 3600) / 60;
-	sec = ((int) uptime % 60);
+	hour = ((int) uptime % 86400) / 3600;
+	min =  ((int) uptime % 3600) / 60;
+	sec =  ((int) uptime % 60);
 	if (lcd_wid >= 20)
-		sprintf(tmp, "%d day%s %02d%c%02d%c%02d",
-			days, ((days != 1) ? "s" : ""), hour, colon[heartbeat], min, colon[heartbeat], sec);
+		sprintf(tmp, "%d day%s %02d:%02d:%02d",
+			days, ((days != 1) ? "s" : ""), hour, min, sec);
 	else
-		sprintf(tmp, "%dd %02d%c%02d%c%02d",
-			days, hour, colon[heartbeat], min, colon[heartbeat], sec);
+		sprintf(tmp, "%dd %02d:%02d:%02d", days, hour, min, sec);
 
 	if (display) {
 		xoffs = (lcd_wid > strlen(tmp)) ? (((lcd_wid - strlen(tmp)) / 2) + 1) : 1;
@@ -369,6 +306,7 @@ big_clock_screen (int rep, int display, int *flags_ptr)
 	char fulltxt[16];
 	static char old_fulltxt[16];
 	static int heartbeat = 0;
+	static int TwentyFourHour = 1;
 	int j = 0;
 	int digits = (lcd_wid >= 20) ? 6 : 4;
 	int xoffs = (lcd_wid + 1 - (pos[digits-1] + 2)) / 2;
@@ -425,8 +363,8 @@ big_clock_screen (int rep, int display, int *flags_ptr)
 }										  // End big_clock_screen()
 
 
-//////////////////////////////////////////////////////////////////////
-// Mini Clock Screen displays the current time with hours & minutes only
+/////////////////////////////////////////////////////////////////////
+// MiniClock Screen displays the current time with hours & minutes only
 //
 //+--------------------+	+--------------------+
 //|                    |	|       11:32        |
@@ -438,10 +376,12 @@ big_clock_screen (int rep, int display, int *flags_ptr)
 int
 mini_clock_screen (int rep, int display, int *flags_ptr)
 {
+	char now[40];
 	time_t thetime;
 	struct tm *rtime;
-	static char colon[] = {':', ' '};
+	static const char *timeFormat = NULL;
 	static int heartbeat = 0;
+	int xoffs;
 
 	// toggle colon display
 	heartbeat ^= 1;
@@ -449,18 +389,40 @@ mini_clock_screen (int rep, int display, int *flags_ptr)
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
 
+		/* get config values */
+		timeFormat = config_get_string("MiniClock", "TimeFormat", 0, "%H:%M");
+
 		sock_send_string(sock, "screen_add N\n");
-		sock_send_string(sock, "screen_set N -name {Essential Clock Screen} -heartbeat off\n");
+		sock_send_string(sock, "screen_set N -name {Mini Clock Screen} -heartbeat off\n");
 		sock_send_string(sock, "widget_add N one string\n");
 	}
 
 	time (&thetime);
 	rtime = localtime (&thetime);
 
-	sock_printf(sock, "widget_set N one %d %d {%02d%c%02d}\n",
-			((lcd_wid - 5) / 2) + 1, (lcd_hgt / 2),
-			((TwentyFourHour) ? rtime->tm_hour : (((rtime->tm_hour + 11) % 12) + 1)),
-			colon[heartbeat & 0x01], rtime->tm_min);
+	if (strftime(now, sizeof(now), timeFormat, rtime) == 0)
+		*now = '\0';
+	tickTime(now, heartbeat);
+
+	xoffs = (lcd_wid > strlen(now)) ? (((lcd_wid - strlen(now)) / 2) + 1) : 1;
+	sock_printf(sock, "widget_set N one %d %d {%s}\n", xoffs, (lcd_hgt / 2), now);
 
 	return 0;
 }										  // End mini_clock_screen()
+
+
+// helper function: toggle between ':' and ' ' in time strings
+static char *tickTime(char *time, int heartbeat)
+{
+	if (time != NULL) {
+		static char colon[] = {':', ' '};
+		char *ptr = time;
+
+		for (heartbeat %= 2; *ptr != '\0'; ptr++) {
+			if (*ptr == colon[0])
+				*ptr = colon[heartbeat];
+		}		
+	}
+	return(time);
+}
+

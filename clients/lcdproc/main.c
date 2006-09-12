@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <errno.h>
+#include <locale.h>
 #include <signal.h>
 #include <netdb.h>
 #include <ctype.h>
@@ -173,6 +174,9 @@ main(int argc, char **argv)
 {
 	int cfgresult;
 	int c;
+
+	/* set locale for cwdate & time formatting in chrono.c */
+	setlocale(LC_TIME, "" );
 
 	/* get uname information */
 	if (uname(&unamebuf) == -1) {
