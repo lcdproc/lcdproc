@@ -21,8 +21,6 @@ As well the driver API has slightly changed, which should not
 make older drivers incompatible, but might cause some trouble. As well the way
 <application>LCDd</application> reports messages (including error messages) has changed.
 </para>
-<note>
-</note>
 </listitem>
 </varlistentry>
 
