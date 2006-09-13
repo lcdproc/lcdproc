@@ -24,12 +24,6 @@ lcdproc=${bindir}/lcdproc
 
 test -x ${lcdproc} || exit 0
 
-if [ -f /etc/lcdproc.conf ]; then
-	. /etc/lcdproc.conf
-else
-	SCREENS="C X"
-fi
-
 
 case "$1" in
 start)

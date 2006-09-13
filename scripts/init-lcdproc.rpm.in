@@ -50,12 +50,6 @@ lcdproc=${bindir}/lcdproc
 
 [ -x ${lcdproc} ] || exit 0
 
-if [ -f /etc/lcdproc.conf ]; then
-	. /etc/lcdproc.conf
-else
-	SCREENS="C X"
-fi
-
 
 start() {
 	echo -n "Starting up lcdproc: "
