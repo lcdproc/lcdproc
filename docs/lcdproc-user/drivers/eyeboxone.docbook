@@ -5,7 +5,7 @@
       This section describes the Eyebox One.
     </para>
 
-<sect2>
+<sect2 id="eyeboxone-features">
         <title>Eyebox One LCD Module</title>
         <para>
           Eyebox One is a small rackmounted server marketed by Rightvision 
@@ -34,7 +34,7 @@
 	  more than meets LCDproc's needs.
         </para>
     </sect2>
-    <sect2>
+    <sect2 id="eyeboxone-special_features">
         <title>Eyebox One Driver and lcdproc client</title>
         <para>
 	You can use the two Eyebox One graphbars, one as a free CPU meter, and one as a free RAM meter
@@ -56,7 +56,7 @@ This section was originally part of the mtxorb.docbook file by Rene Wagner <emai
 </para>
 
 <para>
-This section has been modified by Cédric TESSIER (http://www.nezetic.info)
+This section has been modified by CÃ©dric TESSIER (http://www.nezetic.info)
 </para>
 </sect2>
 
@@ -64,7 +64,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
 <sect2 id="eyeboxone-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="eyeboxone-config-section">
 <title>[EyeboxOne]</title>
 
 <variablelist>

@@ -347,7 +347,7 @@ optional
 <title>Configuration in LCDd.conf</title>
 
 
-<sect3>
+<sect3 id="serialVFD-config-section">
 <title>[serialVFD]</title>
 
 <variablelist>

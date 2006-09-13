@@ -10,7 +10,7 @@ text chipset.
 <sect2 id="text-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="text-config-section">
 <title>[text]</title>
 
 <variablelist>

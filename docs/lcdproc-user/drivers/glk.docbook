@@ -10,7 +10,7 @@ Matrix Orbital GLK chipset.
 <sect2 id="glk-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="glk-config-section">
 <title>[glk]</title>
 
 <variablelist>

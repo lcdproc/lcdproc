@@ -61,7 +61,7 @@ lirc supports Irman as well.
 <sect2 id="IrMan-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="IrMan-config-section">
 <title>[IrMan]</title>
 
 <variablelist>

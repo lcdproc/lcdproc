@@ -10,7 +10,7 @@ xosd chipset.
 <sect2 id="xosd-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="xosd-config-section">
 <title>[xosd]</title>
 
 <variablelist>

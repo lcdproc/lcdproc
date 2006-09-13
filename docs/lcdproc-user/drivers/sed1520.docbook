@@ -10,7 +10,7 @@ sed1520 chipset.
 <sect2 id="sed1520-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="sed1520-config-section">
 <title>[sed1520]</title>
 
 <variablelist>

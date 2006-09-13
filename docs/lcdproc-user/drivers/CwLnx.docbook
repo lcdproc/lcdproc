@@ -10,7 +10,7 @@ CwLnx chipset.
 <sect2 id="CwLnx-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="CwLnx-config-section">
 <title>[CwLnx]</title>
 
 <variablelist>

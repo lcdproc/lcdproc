@@ -9,7 +9,7 @@ This section covers the joystick input driver for LCDd.
 <sect2 id="joy-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="joy-config-section">
 <title>[joy]</title>
 
 <variablelist>

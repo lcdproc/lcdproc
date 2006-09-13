@@ -10,7 +10,7 @@ ula200 chipset.
 <sect2 id="ula200-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="ula200-config-section">
 <title>[ula200]</title>
 
 <variablelist>

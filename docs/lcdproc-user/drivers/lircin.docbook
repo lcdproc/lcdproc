@@ -115,7 +115,7 @@ The prog=... line must be the same as in your <filename>~/.lircrc</filename>
 <sect2 id="lirc-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="lirc-config-section">
 <title>[lirc]</title>
 
 <variablelist>

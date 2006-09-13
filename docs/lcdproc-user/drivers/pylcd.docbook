@@ -116,7 +116,7 @@ Email: info@coresystems.de  · http://www.coresystems.de/
 <sect2 id="pyramid-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="pyramid-config-section">
 <title>[pyramid]</title>
 
 <variablelist>

@@ -10,7 +10,7 @@ lcdm001 chipset.
 <sect2 id="lcdm001-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="lcdm001-config-section">
 <title>[lcdm001]</title>
 
 <variablelist>

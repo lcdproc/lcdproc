@@ -10,7 +10,7 @@ svga chipset.
 <sect2 id="svga-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="svga-config-section">
 <title>[svga]</title>
 
 <variablelist>

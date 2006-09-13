@@ -1602,7 +1602,7 @@ can be done by specifying "--enable-drivers=all" or by
 <sect2 id="hd44780-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="hd44780-config-section">
 <title>[hd44780]</title>
 
 <variablelist>

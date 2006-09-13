@@ -10,7 +10,7 @@ mtc_s16209x chipset.
 <sect2 id="mtc_s16209x-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="mtc_s16209x-config-section">
 <title>[mtc_s16209x]</title>
 
 <variablelist>

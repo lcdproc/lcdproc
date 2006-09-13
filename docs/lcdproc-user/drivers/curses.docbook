@@ -10,7 +10,7 @@ curses chipset.
 <sect2 id="curses-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="curses-config-section">
 <title>[curses]</title>
 
 <variablelist>

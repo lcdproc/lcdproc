@@ -19,7 +19,7 @@ You may find more information about the LCD on Martin Moeller's homepage
 <sect2 id="MD8800-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="MD8800-config-section">
 <title>[MD8800]</title>
 
 <variablelist>

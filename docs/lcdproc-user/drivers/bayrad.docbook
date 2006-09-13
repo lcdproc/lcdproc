@@ -32,7 +32,7 @@ For more information see the
 <sect2 id="bayrad-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="bayrad-config-section">
 <title>[bayrad]</title>
 
 <variablelist>

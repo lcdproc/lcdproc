@@ -10,7 +10,7 @@ CFontzPacket chipset.
 <sect2 id="CFontzPacket-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="CFontzPacket-config-section">
 <title>[CFontzPacket]</title>
 
 <variablelist>

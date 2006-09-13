@@ -10,7 +10,7 @@ ms6931 chipset.
 <sect2 id="ms6931-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="ms6931-config-section">
 <title>[ms6931]</title>
 
 <variablelist>

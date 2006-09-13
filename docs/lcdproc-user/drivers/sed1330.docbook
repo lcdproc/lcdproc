@@ -10,7 +10,7 @@ sed1330 chipset.
 <sect2 id="sed1330-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="sed1330-config-section">
 <title>[sed1330]</title>
 
 <variablelist>

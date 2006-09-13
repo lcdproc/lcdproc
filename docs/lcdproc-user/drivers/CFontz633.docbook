@@ -10,7 +10,7 @@ CFontz633 chipset.
 <sect2 id="CFontz633-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="CFontz633-config-section">
 <title>[CFontz633]</title>
 
 <variablelist>

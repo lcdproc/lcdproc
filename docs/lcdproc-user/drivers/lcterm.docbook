@@ -10,7 +10,7 @@ lcterm chipset.
 <sect2 id="lcterm-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="lcterm-config-section">
 <title>[lcterm]</title>
 
 <variablelist>

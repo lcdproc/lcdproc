@@ -33,7 +33,7 @@ of the LCD display by its manufacturer.
 <sect2 id="tyan-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="tyan-config-section">
 <title>[tyan]</title>
 
 <variablelist>

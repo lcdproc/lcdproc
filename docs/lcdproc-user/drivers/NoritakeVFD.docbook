@@ -10,7 +10,7 @@ NoritakeVFD chipset.
 <sect2 id="NoritakeVFD-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="NoritakeVFD-config-section">
 <title>[NoritakeVFD]</title>
 
 <variablelist>

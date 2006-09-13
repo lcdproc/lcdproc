@@ -10,7 +10,7 @@ icp_a106 chipset.
 <sect2 id="icp_a106-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="icp_a106-config-section">
 <title>[icp_a106]</title>
 
 <variablelist>

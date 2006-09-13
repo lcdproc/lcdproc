@@ -69,7 +69,7 @@ can be done by specifying "--enable-drivers=all" or by
 <sect2 id="t6963-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="t6963-config-section">
 <title>[t6963]</title>
 
 <variablelist>

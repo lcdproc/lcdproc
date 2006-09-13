@@ -10,7 +10,7 @@ IOWarrior chipset.
 <sect2 id="IOWarrior-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="IOWarrior-config-section">
 <title>[IOWarrior]</title>
 
 <variablelist>

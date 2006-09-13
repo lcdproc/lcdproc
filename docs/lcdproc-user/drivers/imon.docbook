@@ -36,7 +36,7 @@ For further details, please consult the page and the forum at
 <sect2 id="imon-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="imon-config-section">
 <title>[imon]</title>
 
 <variablelist>

@@ -1,18 +1,18 @@
-<sect1 id="mtxorb">
+<sect1 id="MtxOrb">
 <title>The Matrix Orbital Driver (MtxOrb)</title>
 
 <para>
       This section covers the installation process for the Matrix Orbital LCD
       module intended for use with LCDproc.
-    </para>
-    <para>
+</para>
+<para>
       We will examine the installation process of the hardware in
       small steps, as it is vitally important to pay close attention to detail during
       hardware installation to avoid damaging equipment.
-    </para>
+</para>
 
-<sect2>
-        <title>Matrix Orbital LCD Modules</title>
+<sect2 id="MtxOrb-features">
+<title>Matrix Orbital LCD Modules</title>
         <para>
           LCDproc was born out of original tinkering by William Ferrell with
           one of these LCD modules. Their ease of installation and use (as well
@@ -53,9 +53,10 @@
           than the whole screen, the LCD can update faster than can be seen by
           the human eye. This, of course, more than meets LCDproc's needs.
         </para>
-      </sect2>
-  <sect2>
-    <title>Matrix Orbital Hardware Installation</title>
+</sect2>
+
+<sect2 id="MtxOrb-hardware">
+<title>Matrix Orbital Hardware Installation</title>
       <para>
         Regardless of what specific type of hardware you intend to use with LCDproc,
         installation is usually straightforward, and requires only a few steps. Regardless,
@@ -75,7 +76,8 @@
           power cables (as some LCD modules require).
         </para>
       </warning>
-      <sect3>
+
+      <sect3 id="MtxOrb-lcd_vfd-installation">
         <title>Matrix Orbital LCD/VFD Module Installation</title>
         <para>
           The LCD and VFD modules from Matrix Orbital are relatively straightforward
@@ -96,7 +98,7 @@
 	    or 12 volt unit. You should have this information available before proceeding.
 	  </para>
 	</tip>
-	<sect4>
+	<sect4 id="MtxOrb-powercable-modification">
 	  <title>Power Cable Modification</title>
 	  <para>
 	    The first step in installing the module is making the necessary modifications
@@ -188,7 +190,7 @@
 	    </para>
 	  </note>
         </sect4>
-	<sect4>
+	<sect4 id="MtxOrb-serial-connection">
 	  <title>Serial Connection</title>
 	  <para>
 	    The LCD module uses a standard DB9 serial connector. You can attach the module
@@ -200,13 +202,14 @@
 	    While connecting the serial cable to the module, be sure to configure the
 	    module's serial interface settings. Typically, setting the module to its fastest
 	    setting (19,200 baud, 8-N-1) is recommended. The speed settings can
-	    be configured from the config file <filename>/etc/LCDd.conf</filename>. If not specified in the config file,
+	    be configured from the config file <filename>/etc/LCDd.conf</filename>.
+	    If not specified in the config file,
 	    the Matrix Orbital module driver in LCDproc default to use these settings.
 	  </para>
 	</sect4>
       </sect3>
 </sect2>
-<sect2 id="mtxorb-copy">
+<sect2 id="MtxOrb-copy">
 <title>Copyright</title>
 
 <para>
@@ -222,7 +225,7 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
 <sect2 id="MtxOrb-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="MtxOrb-config-section">
 <title>[MtxOrb]</title>
 
 <variablelist>

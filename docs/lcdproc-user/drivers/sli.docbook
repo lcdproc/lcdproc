@@ -10,7 +10,7 @@ sli chipset.
 <sect2 id="Wirz-sli-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="Wirz-sli-config-section">
 <title>[sli]</title>
 
 <variablelist>

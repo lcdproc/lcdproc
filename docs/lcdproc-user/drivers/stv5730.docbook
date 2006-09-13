@@ -10,7 +10,7 @@ stv5730 chipset.
 <sect2 id="stv5730-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="stv5730-config-section">
 <title>[stv5730]</title>
 
 <variablelist>

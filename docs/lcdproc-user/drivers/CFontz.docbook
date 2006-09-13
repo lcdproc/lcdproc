@@ -10,7 +10,7 @@ CFontz chipset.
 <sect2 id="CFontz-config">
 <title>Configuration in LCDd.conf</title>
 
-<sect3>
+<sect3 id="CFontz-config-section">
 <title>[CFontz]</title>
 
 <variablelist>
