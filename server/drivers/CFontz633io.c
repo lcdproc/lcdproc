@@ -372,7 +372,7 @@ void SyncPeekPointer(ReceiveBuffer *rb)
 }
 
 
-/** accept ppeked data by syncing the read pointer to the peek pointer */
+/** accept peeked data by syncing the read pointer to the peek pointer */
 void AcceptPeekedData(ReceiveBuffer *rb)
 {
 	rb->tail = rb->peek;
