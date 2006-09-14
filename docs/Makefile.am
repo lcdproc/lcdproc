@@ -15,6 +15,17 @@ EXTRA_DIST = README.dg \
 	LCDd.8 \
 	$(doxygen_input)
 
+
+## convenience targets
+install-html-guides: install-html-developerguide install-html-userguide
+
+install-html-developerguide:
+	$(MAKE) -C lcdproc-dev $@
+
+install-html-userguide:
+	$(MAKE) -C lcdproc-user $@
+
+
 ######################################################################
 # DOXYGEN stuff
 # (stolen from cppunit project (http://cppunit.sourceforge.net/)

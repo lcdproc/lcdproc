@@ -10,6 +10,15 @@ sysconf_DATA = LCDd.conf
 EXTRA_DIST = $(sysconf_DATA) CREDITS README.IRman contrib
 
 
+## convenience targets
+install-html-guides: install-html-developerguide install-html-userguide
+
+install-html-developerguide:
+	$(MAKE) -C docs $@
+
+install-html-userguide:
+	$(MAKE) -C docs $@
+
 dox:
 	$(MAKE) -C docs $@
 

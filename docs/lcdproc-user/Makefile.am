@@ -14,4 +14,13 @@ EXTRA_DIST =	bookinfo.docbook \
 		running.docbook \
 		README.docbook
 
+
+## convenience targets
+xmlto = /usr/bin/xmlto
+userguidedir = $(DESTDIR)$(htmldir)/user-guide/
+
+install-html-userguide: $(xmlto) lcdproc-user.docbook
+	$(mkinstalldirs) $(userguidedir)
+	$(xmlto) html -o $(userguidedir) lcdproc-user.docbook
+
 ## EOF

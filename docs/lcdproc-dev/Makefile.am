@@ -11,4 +11,13 @@ EXTRA_DIST =	lcdproc-dev.docbook \
 		license.docbook \
 		README.docbook
 
+
+## convenience targets
+xmlto = /usr/bin/xmlto
+developerguidedir = $(DESTDIR)$(htmldir)/developer-guide/
+
+install-html-developerguide: $(xmlto) lcdproc-dev.docbook
+	$(mkinstalldirs) $(developerguidedir)
+	$(xmlto) html -o $(developerguidedir) lcdproc-dev.docbook
+
 ## EOF

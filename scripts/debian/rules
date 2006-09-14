@@ -75,6 +75,7 @@ install: build
 
 	# Add here commands to install the package into debian/lcdproc.
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/lcdproc
+	$(MAKE) install-html-userguide DESTDIR=$(CURDIR)/debian/lcdproc
 
 	# install config file (with some corrections
 	sed -e '/^DriverPath=/s,server/drivers,/usr/lib/lcdproc,' \
