@@ -632,7 +632,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 			switch (ch) {
 			  case '\0':
 			  case '\n':
-				report(RPT_WARNING, "Section name incorrectly closed on line %d of %s: %s", line_nr, source_descr, sectionname);
+				report(RPT_WARNING, "Section name incorrectly closed on line %d of %s: %s",
+						line_nr, source_descr, sectionname);
 				state = ST_INITIAL;
 				break;
 			  case '\r':
@@ -640,7 +641,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 			  case ' ':
 			  case '"':
 			  case '[':
-				report(RPT_WARNING, "Section name contains invalid chars on line %d of %s: %s", line_nr, source_descr, sectionname);
+				report(RPT_WARNING, "Invalid characters in section name on line %d of %s: %s",
+						line_nr, source_descr, sectionname);
 				state = ST_INVALID_SECTIONNAME;
 				break;
 			  case ']':
@@ -654,7 +656,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 					sectionname[sectionname_pos++] = ch;
 					sectionname[sectionname_pos] = '\0';
 				} else {
-					report(RPT_WARNING, "Section name too long on line %d of %s: %s", line_nr, source_descr, sectionname);
+					report(RPT_WARNING, "Section name too long on line %d of %s: %s",
+							line_nr, source_descr, sectionname);
 					state = ST_INVALID_SECTIONNAME;
 				}
 			}
@@ -674,13 +677,15 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 			  case '\r':
 			  case '\t':
 			  case ' ':
-				report(RPT_WARNING, "Loose word found on line %d of %s: %s", line_nr, source_descr, keyname);
+				report(RPT_WARNING, "Loose word found on line %d of %s: %s",
+						line_nr, source_descr, keyname);
 				state = ST_INITIAL;
 				break;
 			  case '"':
 			  case '[':
 			  case ']':
-				report(RPT_WARNING, "Key name contains invalid characters on line %d of %s: %s", line_nr, source_descr, keyname);
+				report(RPT_WARNING, "Invalid characters in key name on line %d of %s: %s",
+						line_nr, source_descr, keyname);
 				state = ST_INVALID_KEYNAME;
 				break;
 			  case '=':
@@ -690,7 +695,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 				break;
 			  default:
 				if (keyname_pos>=MAXKEYNAMELENGTH) {
-					report(RPT_WARNING, "Key name too long on line %d of %s: %s", line_nr, source_descr, keyname);
+					report(RPT_WARNING, "Key name too long on line %d of %s: %s",
+							line_nr, source_descr, keyname);
 					state = ST_INVALID_KEYNAME;
 				} else {
 					keyname[keyname_pos++] = ch;
@@ -712,7 +718,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 			  case '#':
 			  case ';':
 			  case '=':
-				report(RPT_WARNING, "Value contains invalid characters on line %d of %s, at key: %s", line_nr, source_descr, keyname);
+				report(RPT_WARNING, "Invalid characters in value on line %d of %s, at key: %s",
+						line_nr, source_descr, keyname);
 				state = ST_INVALID_VALUE;
 				break;
 			  case '"':
@@ -725,7 +732,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 			  case ' ':
 				/* Value complete !*/
 				if (! *current_section) {
-					report(RPT_WARNING, "Data before any section on line %d of %s with key: %s", line_nr, source_descr, keyname);
+					report(RPT_WARNING, "Data outside sections on line %d of %s with key: %s",
+							line_nr, source_descr, keyname);
 				}
 				else {
 					/* Store the value*/
@@ -739,7 +747,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 					value[value_pos++] = ch;
 					value[value_pos] = '\0';
 				} else {
-					report(RPT_WARNING, "Value key is too long on line %d of %s, at key: %s", line_nr, source_descr, keyname);
+					report(RPT_WARNING, "Value too long on line %d of %s, at key: %s",
+							line_nr, source_descr, keyname);
 					state = ST_INVALID_KEYNAME;
 				}
 			}
@@ -757,7 +766,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 			switch (ch) {
 			  case '\0':
 			  case '\n':
-				report(RPT_WARNING, "String is incorrectly terminated on line %d of %s: %s", line_nr, source_descr, keyname);
+				report(RPT_WARNING, "String is incorrectly terminated on line %d of %s: %s",
+						line_nr, source_descr, keyname);
 				state = ST_INITIAL;
 				break;
 			  case '\\':
