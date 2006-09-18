@@ -273,7 +273,7 @@ main(int argc, char **argv)
 			int found = set_mode(shortname, name, state);
 
 			if (!found) {
-				fprintf(stderr, "Invalid Mode: %s\n", name);
+				fprintf(stderr, "Invalid Screen: %s\n", name);
 				return(EXIT_FAILURE);
 			}
 		}	
@@ -401,7 +401,7 @@ void
 HelpScreen (int exit_state)
 {
 	fprintf(stderr,
-		"Usage: lcdproc [<options>] [<modes> ...]\n"
+		"Usage: lcdproc [<options>] [<screens> ...]\n"
 		"  where <options> are\n"
 		"    -s <host>               connect to LCDd daemon on <host>\n"
 		"    -p <port>               connect to LCDd daemon using <port>\n"
@@ -410,14 +410,14 @@ HelpScreen (int exit_state)
 		"    -c <config>             use a configuration file other than %s\n"
 		"    -h                      show this help screen\n"
 		"    -v                      display program version\n"
-		"  and <modes> are\n"
+		"  and <screens> are\n"
 		"    C CPU                   detailed CPU usage\n"
 		"    P SMP-CPU               CPU usage overview (one line per CPU)\n"
 		"    G CPUGraph              CPU usage histogram\n"
 		"    L Load                  load histogram\n"
 		"    M Memory                memory & swap usage\n"
 		"    S ProcSize              biggest processes size\n"
-		"    D Disk                  disk usage\n"
+		"    D Disk                  filling level of mounted file systems\n"
 		"    I Iface                 network interface usage\n"
 		"    B Battery               battery status\n"
 		"    T TimeDate              time & date information\n"
