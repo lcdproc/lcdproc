@@ -441,7 +441,7 @@ This can be achieved without changes to the config file by using the following c
 .RE
 
 .SH FILES
-\fB@SYSCONFDIR@/LCDd.conf\fR, LCDd default configuration file
+\fB@SYSCONFDIR@/LCDd.conf\fR, LCDd's default configuration file
 
 .SH SEE ALSO
 lcdproc-config(5),
