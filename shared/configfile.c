@@ -594,20 +594,22 @@ static char get_next_char_f(FILE *f)
 
 /* Parser states */
 #define ST_INITIAL		0
-#define ST_IGNORE		257
-#define ST_SECTIONNAME		258
+#define ST_COMMENT		257
+#define ST_SECTIONLABEL		258
 #define ST_KEYNAME		259
-#define ST_VALUE		260
-#define ST_QUOTEDVALUE		261
-#define ST_QUOTEDVALUE_ESCCHAR	262
-#define ST_INVALID_SECTIONNAME	263
-#define ST_INVALID_KEYNAME	264
-#define ST_INVALID_VALUE	265
-#define ST_INVALID_QUOTEDVALUE	266
+#define ST_ASSIGNMENT		260
+#define ST_VALUE		261
+#define ST_QUOTEDVALUE		262
+#define ST_SECTIONLABEL_DONE	263
+#define ST_VALUE_DONE		264
+#define ST_INVALID_SECTIONLABEL	265
+#define ST_INVALID_KEYNAME	266
+#define ST_INVALID_ASSIGNMENT	267
+#define ST_INVALID_VALUE	268
 #define ST_END			999
 
 /* Limits */
-#define MAXSECTIONNAMELENGTH	40
+#define MAXSECTIONLABELLENGTH	40
 #define MAXKEYNAMELENGTH	40
 #define MAXVALUELENGTH		200
 
@@ -616,7 +618,7 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 {
 	int state = ST_INITIAL;
 	char ch;
-	char sectionname[MAXSECTIONNAMELENGTH+1];
+	char sectionname[MAXSECTIONLABELLENGTH+1];
 	int sectionname_pos = 0;
 	char keyname[MAXKEYNAMELENGTH+1];
 	int keyname_pos = 0;
@@ -625,6 +627,7 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 	int escape = 0;
 	key *k;
 	int line_nr = 1;
+	int error = 0;
 
 	while (state != ST_END) {
 
@@ -639,180 +642,206 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 		switch (state) {
 		  case ST_INITIAL:
 			switch (ch) {
-			  case '\n':
-			  case '\r':
-			  case '\t':
-			  case ' ':
-				break;
 			  case '#':
 			  case ';':
-			  case '=':
-			  case ']':
-				/* It's a comment or an error */
-				state = ST_IGNORE;
-				break;
-			  case '[':
-				/* It's a section name */
-				state = ST_SECTIONNAME;
-				sectionname[0] = '\0';
-				sectionname_pos = 0;
-				break;
-			  case '\0':
-				break;
-			  default:
-				/* It's a keyname */
-				state = ST_KEYNAME;
-				keyname[0] = ch;
-				keyname[1] = '\0';
-				keyname_pos = 1;
-			}
-			break;
-		  case ST_IGNORE:
-			switch (ch) {
-			  case '\n':
-				state = ST_INITIAL;
-				break;
-			}
-			break;
-		  case ST_SECTIONNAME:
-			switch (ch) {
+				/* comment start */
+				state = ST_COMMENT;
+				/* fall through */
 			  case '\0':
 			  case '\n':
-				report(RPT_WARNING, "Section name incorrectly closed on line %d of %s: %s",
-						line_nr, source_descr, sectionname);
-				state = ST_INITIAL;
-				break;
 			  case '\r':
 			  case '\t':
 			  case ' ':
-			  case '"':
+				/* ignore spaces */
+			  	break;
 			  case '[':
-				report(RPT_WARNING, "Invalid characters in section name on line %d of %s: %s",
-						line_nr, source_descr, sectionname);
-				state = ST_INVALID_SECTIONNAME;
-				break;
-			  case ']':
-				if (!(*current_section=find_section(sectionname))) {
-               				*current_section=add_section(sectionname);
-				}
-				state = ST_INITIAL;
+				/* section name */
+				state = ST_SECTIONLABEL;
+				sectionname_pos = 0;
+				sectionname[sectionname_pos] = '\0';
 				break;
 			  default:
-				if (sectionname_pos < MAXSECTIONNAMELENGTH) {
-					sectionname[sectionname_pos++] = ch;
-					sectionname[sectionname_pos] = '\0';
-				} else {
-					report(RPT_WARNING, "Section name too long on line %d of %s: %s",
-							line_nr, source_descr, sectionname);
-					state = ST_INVALID_SECTIONNAME;
-				}
+			  	/* key word */
+				state = ST_KEYNAME;
+				keyname_pos = 0;
+				keyname[keyname_pos++] = ch;
+				keyname[keyname_pos] = '\0';
 			}
 			break;
-		  case ST_INVALID_SECTIONNAME:
+		  case ST_SECTIONLABEL:
+		  	/* section label: "["{non-space chars}+"]" */
 			switch (ch) {
+			  case '\0':
 			  case '\n':
-			  case ']':
-				state = ST_INITIAL;
+			  	/* premature end of label */
+				report(RPT_WARNING, "Unterminated section label on line %d of %s: %s",
+						line_nr, source_descr, sectionname);
+				error = 1;
+				state = ST_INITIAL;	/* alrady at the end, no resync required */	
 				break;
+			  case ']':
+			  	/* label terminated: find/create section */
+				if (!(*current_section = find_section(sectionname))) {
+               				*current_section = add_section(sectionname);
+				}
+				state = ST_SECTIONLABEL_DONE;
+				break;
+			//  case '\r':
+			//  case '\t':
+			//  case ' ':
+			//  	/* no spaces allowed in section labels WHY? */
+			//	report(RPT_WARNING, "Invalid character in section label on line %d of %s: %s",
+			//			line_nr, source_descr, sectionname);
+			//	error = 1;
+			//	state = ST_INVALID_SECTIONLABEL;	/* resync required */
+			//	break;
+			  default:
+			  	/* append char to section label */
+				if (sectionname_pos < MAXSECTIONLABELLENGTH) {
+					sectionname[sectionname_pos++] = ch;
+					sectionname[sectionname_pos] = '\0';
+					break;
+				}
+				report(RPT_WARNING, "Section name too long on line %d of %s: %s",
+						line_nr, source_descr, sectionname);
+				error = 1;
+				state = ST_INVALID_SECTIONLABEL;	/* resync required */
 			}
 			break;
 		  case ST_KEYNAME:
+		  	/* key name: {non-space chars}+ */
 			switch (ch) {
-			  case '\0':
-			  case '\n':
 			  case '\r':
 			  case '\t':
 			  case ' ':
+			  	/* ignore trailing spaces */
+			  	if (keyname_pos != 0)
+					state = ST_ASSIGNMENT;
+				break;
+			  case '\0':
+			  case '\n':
+				/* premature end of line */
 				report(RPT_WARNING, "Loose word found on line %d of %s: %s",
 						line_nr, source_descr, keyname);
-				state = ST_INITIAL;
-				break;
-			  case '"':
-			  case '[':
-			  case ']':
-				report(RPT_WARNING, "Invalid characters in key name on line %d of %s: %s",
-						line_nr, source_descr, keyname);
-				state = ST_INVALID_KEYNAME;
+				error = 1;
+				state = ST_INITIAL;	/* already at the end; no resync required */
 				break;
 			  case '=':
+			  	/* end of key reached, "=" found, now we need a value */
+				state = ST_VALUE;
+				value[0] = '\0';
+				value_pos = 0;
+				break;
+			//  case '"':
+			//  case '[':
+			//  case ']':
+			//  	/* character invalid in key names WHY ? */
+			//	report(RPT_WARNING, "Invalid character in key name on line %d of %s: %s",
+			//			line_nr, source_descr, keyname);
+			//	error = 1;
+			//	state = ST_INVALID_KEYNAME;	/* resync required */
+			//	break;
+			  default:
+			  	/* append char to key name */
+				if (keyname_pos < MAXKEYNAMELENGTH) {
+					keyname[keyname_pos++] = ch;
+					keyname[keyname_pos] = '\0';
+					break;
+				}	
+				report(RPT_WARNING, "Key name too long on line %d of %s: %s",
+						line_nr, source_descr, keyname);
+				error = 1;
+				state = ST_INVALID_KEYNAME;	/* resync required */
+			}
+			break;
+		  case ST_ASSIGNMENT:
+			/* assignement: "=" */
+			switch (ch) {
+			  case '\t':
+			  case ' ':
+				/* ignore leading spaces */
+			  	break;
+			  case '=':
+			  	/* "=" found, now we need a value */
 				state = ST_VALUE;
 				value[0] = '\0';
 				value_pos = 0;
 				break;
 			  default:
-				if (keyname_pos>=MAXKEYNAMELENGTH) {
-					report(RPT_WARNING, "Key name too long on line %d of %s: %s",
-							line_nr, source_descr, keyname);
-					state = ST_INVALID_KEYNAME;
-				} else {
-					keyname[keyname_pos++] = ch;
-					keyname[keyname_pos] = '\0';
-				}
-			}
-			break;
-		  case ST_INVALID_KEYNAME:
-			switch (ch) {
-			  case '\n':
-				state = ST_INITIAL;
+			  	report(RPT_WARNING, "Assigment expected on line %d of %s: %s",
+						line_nr, source_descr, keyname);
+				error = 1;
+				state = ST_INVALID_ASSIGNMENT;		
 			}
 			break;
 		  case ST_VALUE:
+		  	/* value: {non-space char}+ | "\""{any potentially-quoted char}+"\"" */
 			switch (ch) {
-			  case '[':
-			  case ']':
 			  case '#':
 			  case ';':
+			  	/* allow comment if we already had a value */
+				/* WHY ONLY THEN ? 'xx=' can be seen as equivalent to 'xx=""' */
+			  	if (value_pos > 0) {
+					state = ST_COMMENT;
+					break;
+				}
+				/* fall through */
+			  case '[':
+			  case ']':
 			  case '=':
-				report(RPT_WARNING, "Invalid characters in value on line %d of %s, at key: %s",
-						line_nr, source_descr, keyname);
+				/* illegal characters WHY? */
+				report(RPT_WARNING, "Invalid character '%c' in value on line %d of %s, at key: %s",
+						ch, line_nr, source_descr, keyname);
+				error = 1;
 				state = ST_INVALID_VALUE;
 				break;
-			  case '"':
-				state = ST_QUOTEDVALUE;
-				break;
+			  case '\t':
+			  case ' ':
+				/* ignore leading spaces */
+			  	if (value_pos == 0)
+					break;
+				/* fall through */	
 			  case '\0':
 			  case '\n':
 			  case '\r':
-			  case '\t':
-			  case ' ':
-				/* Value complete ! */
-				if (! *current_section) {
+				/* value complete */
+				if (!*current_section) {
 					report(RPT_WARNING, "Data outside sections on line %d of %s with key: %s",
 							line_nr, source_descr, keyname);
+					error = 1;
 				}
 				else {
-					/* Store the value */
+					/* Store the value*/
 					k = add_key(*current_section, keyname, value);
 				}
-				/* And be ready for next thing... */
-				state = ST_INITIAL;
-				break;
-			  default:
-				if (value_pos<MAXVALUELENGTH) {
-					value[value_pos++] = ch;
-					value[value_pos] = '\0';
-				} else {
-					report(RPT_WARNING, "Value too long on line %d of %s, at key: %s",
-							line_nr, source_descr, keyname);
-					state = ST_INVALID_KEYNAME;
-				}
-			}
-			break;
-		  case ST_INVALID_VALUE:
-			switch (ch) {
-			  case '\n':
-				state = ST_INITIAL;
+				/* And be ready for next thing...*/
+				state = ((ch == ' ') || (ch == '\t')) ? ST_VALUE_DONE : ST_INITIAL;
 				break;
 			  case '"':
-				state = ST_INVALID_QUOTEDVALUE;
+			  	/* quoted string */ 
+				state = ST_QUOTEDVALUE;
+				break;
+			  default:
+			  	/* append char to value */
+				if (value_pos < MAXVALUELENGTH) {
+					value[value_pos++] = ch;
+					value[value_pos] = '\0';
+					break;
+				}
+				report(RPT_WARNING, "Value too long on line %d of %s, at key: %s",
+						line_nr, source_descr, keyname);
+				error = 1;
+				state = ST_INVALID_VALUE;
 			}
 			break;
 		  case ST_QUOTEDVALUE:
+		  	/* a quoted part of a string */
 			switch (ch) {
 			  case '\0':
 			  case '\n':
-				report(RPT_WARNING, "String is incorrectly terminated on line %d of %s: %s",
+				report(RPT_WARNING, "Premature end of quoted string on line %d of %s: %s",
 						line_nr, source_descr, keyname);
+				error = 1;
 				state = ST_INITIAL;
 				break;
 			  case '\\':
@@ -830,9 +859,13 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 			  default:
 				if (escape) {
 					switch (ch) {
+					  case 'a': ch = '\a'; break;
+					  case 'b': ch = '\b'; break;
+					  case 'f': ch = '\f'; break;
 					  case 'n': ch = '\n'; break;
 					  case 'r': ch = '\r'; break;
 					  case 't': ch = '\t'; break;
+					  case 'v': ch = '\v'; break;
 					  /* default: literal char  (i.e. ignore '\') */
 					}
 					escape = 0;
@@ -840,22 +873,54 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 				value[value_pos++] = ch;
 				value[value_pos] = '\0';
 			}
-			break;
-		  case ST_INVALID_QUOTEDVALUE:
-			switch (ch) {
-			  case '\n':
-				state = ST_INITIAL;
+		  	break;
+		  case ST_SECTIONLABEL_DONE:
+		  case ST_VALUE_DONE:
+		  	switch (ch) {
+			  case ';':
+			  case '#':
+			  	state = ST_COMMENT;
 				break;
-			  case '"':
+			  case '\0':
+			  case '\n':
+			  	state = ST_INITIAL;
+				break;
+			  case '\t':
+			  case ' ':
+				break;
+			  default:
+				/* illegal characters */
+				report(RPT_WARNING, "Invalid character '%c' on line %d of %s",
+						ch, line_nr, source_descr);
+				error = 1;
 				state = ST_INVALID_VALUE;
-			}
-			break;
+			 } 	
+		  case ST_INVALID_SECTIONLABEL:
+			/* invalid section label: resync up to end of label/next line */
+			if (ch == ']')
+				state = ST_INITIAL;
+			/* fall through */
+		  case ST_INVALID_ASSIGNMENT:
+		  case ST_INVALID_KEYNAME:
+		  case ST_INVALID_VALUE:
+		  case ST_COMMENT:
+		  	/* comment or error: ignore anything up to the next line */
+			if (ch == '\n')
+				state = ST_INITIAL;
 		}
 		if (ch == '\0') {
+			if ((!error) && (state != ST_INITIAL) && (state != ST_COMMENT) &&
+			    (state != ST_SECTIONLABEL_DONE) && (state != ST_VALUE_DONE)) {
+				report(RPT_WARNING, "Premature end of configuration on line %d of %s: %d",
+						line_nr, source_descr, state);
+
+				error = 1;
+			}			
 			state = ST_END;
 		}
+
 	}
-	return 0;
+	return (error) ? -1 : 0;
 }
 
 
