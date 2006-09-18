@@ -48,7 +48,7 @@ continues with the next line.
 
 .SH EXAMPLE
 Here is fully working example of an LCDd.conf
-(formatted somehat strange to show the features):
+(formatted somewhat strange to show the features):
 .na
 .nf
 # the server section

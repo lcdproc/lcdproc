@@ -5,14 +5,17 @@ LCDd - LCDproc server daemon
 
 .SH SYNOPSIS
 .B LCDd
-[\fB\-hfis\fP] 
+[\fB\-h\fP] 
 [\fB\-c\fP \fIconfig\fP] 
 [\fB\-d\fP \fIdriver\fP] 
+[\fB\-f\fP \fIbool\fP] 
+[\fB\-i\fP \fIbool\fP] 
 [\fB\-a\fP \fIaddr\fP] 
 [\fB\-p\fP \fIport\fP] 
 [\fB\-u\fP \fIuser\fP] 
 [\fB\-w\fP \fItime\fP] 
 [\fB\-r\fP \fIlevel\fP] 
+[\fB\-s\fP \fIbool\fP] 
 
 .SH DESCRIPTION
 LCDd is the server part of LCDproc, a deamon which listens to a certain port (normally 13666)
@@ -25,7 +28,8 @@ Before running LCDd you should carefully
 read through that file and modify everything neccessary according to your needs.
 Otherwise you might encounter LCDd not running properly on your system.
 .PP
-To make full use of LCDd, a client such as lcdproc(1) is required.
+To make full use of LCDd, a client such as lcdproc(1), lcdexec(1), or lcdvd 
+is required.
 
 .SH OPTIONS
 Available LCDd options are:
@@ -40,13 +44,14 @@ Use a configuration file other than @SYSCONFDIR@/LCDd.conf
 Specify a driver to use (output only to first), overriding
 the \fBDriver\fP parameter in the config file's \fB[Server]\fP section.
 .TP
-.B \-f
-Run in the foreground, override the \fBForegound\fP parameter
-in the config file's \fB[Server]\fP section.
+.B \-f \fIbool\fp
+Tell whether to run in the foreground (\fI1\fP) or background (\fI0\fP),
+overriding the \fBForeground\fP parameter in the config file's \fB[Server]\fP section.
 .TP
-.B \-i
-Disable showing the main LCDproc server screen in rotation, overriding
-\fBServerScreen\fP in the config file's \fB[Server]\fP section.
+.B \-i \fIbool\fP
+Tell whether the to enable (\fI1\fP) or disable (\fI0\fP) showing the LCDproc
+server screen in n the screen rotation, overriding \fBServerScreen\fP
+in the config file's \fB[Server]\fP section.
 .TP
 .B \-w \fIwaittime\fP
 Time to pause at each screen (in seconds), overriding the
@@ -54,24 +59,23 @@ Time to pause at each screen (in seconds), overriding the
 .TP
 .B \-a \fIaddr\fP
 Bind to network address \fIaddr\fP, overriding the
-\fPBind\fP parameter in the config file's \fB[Server]\fP section.
+\fBBind\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-p \fIport\fP
 Listen on port \fIport\fP for incoming connections, overriding the
-\fPPort\fP parameter in the config file's \fB[Server]\fP section.
+\fBPort\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-u \fIuser\fP
 Run as user \fIuser\fP, overriding the
-\fPUser\fP parameter in the config file's \fB[Server]\fP section.
+\fBUser\fP parameter in the config file's \fB[Server]\fP section.
 .TP
-.B \-s
-Output messages to syslog instead of STDOUT, overriding the
-\fPReportToSyslog\fP parameter in the config file's \fB[Server]\fP section.
+.B \-s \fIbool\fP
+Output messages to syslog (\fI1\fP) or to stdout (\fI0\fP), overriding the
+\fBReportToSyslog\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-r \fIlevel\fP
 Set reporting level to \fIlevel\fP, overriding th
 \fBReportLevel\fP parameter in the config file's \fB[Server]\fP section.
-.PP
 
 .SS SUPPORTED DRIVERS
 Currently supported display drivers include:
@@ -227,8 +231,9 @@ Multiple drivers can be used simultaneously; thus, for example, a Matrix Orbital
 can be combined with an infrared driver (irmanin driver).
 
 .SH INVOCATION
-.RI "LCDd -d MtxOrb -d joy"
-.PP
+.RS
+.I LCDd -d MtxOrb -d joy
+.RE
 The invocation example above will start LCDd reading its configuration from the
 default configuration file @SYSCONFDIR@/LCDd.conf but overriding the drivers
 specified therein with the Matrix Orbital driver and the Joystick input driver.
@@ -237,7 +242,7 @@ specified therein with the Matrix Orbital driver and the Joystick input driver.
 There is a basic sequence:
 .TP
 1. Open a TCP connection to the LCDd server port (usually 13666).
-.TP 8
+.TP
 2. Say "hello"
 .TP
 3. The server will return some information on the type
@@ -247,7 +252,9 @@ of display available.
 .TP
 5. Close the socket when done displaying data.
 .PP
-There are many commands for the LCDd server:
+
+.SS CLIENT COMMANDS
+There are many commands for the client to send to the LCDd server:
 .TP
 .B hello
 This starts a client-server session with the LCDd server; the
@@ -276,7 +283,7 @@ Delete widget \fI#id\fR from screen \fI#screen\fR.
 Set the data used to define a particular widget \fI#id\fR on screen
 \fI#screen\fR.
 
-.SS Heartbeat Modes
+.SS HEARTBEAT MODES
 Valid heartbeat mode values (for the \fBscreen_set\fR command) are:
 .TP
 .B on
@@ -288,7 +295,7 @@ No heartbeat display.
 .B open
 Use client's heartbeat setting. This is the default.
 
-.SS Backlight Modes
+.SS BACKLIGHT MODES
 Valid heartbeat mode values (for the \fBscreen_set\fR command) are:
 .TP
 .B on
@@ -359,7 +366,7 @@ would be displayed immediately.  It wouldn't even wait for
 the previous screen to finish.  Also, the display would stay
 on screen most of the time until the user did something about it.
 
-.SS Widget Types
+.SS WIDGET TYPES
 Widgets can be any of the following:
 .TP
 .B string
@@ -387,39 +394,32 @@ parameter, where \fI#id\fR refers to the id of the frame.
 .PP
 Widgets are drawn on the screen in the order they are created.
 
-.SS Setting Widget Data
+.SS SETTING WIDGET DATA
 In the \fBwidget_set\fR command, the \fIdata\fR argument depends on which widget is being
 set.  Each widget takes a particular set of arguments which defines its form and behavior:
 .TP
 .B string \fIx y text\fP
-.sp
 Displays \fItext\fP at position (\fIx\fP,\fIy\fP).
 .TP
 .B title \fItext
-.sp
 Uses \fItext\fP as title to display.
 .TP
 .B hbar \fIx y length\fP
-.sp
 Displays a horizontal bar starting at position (\fIx\fP,\fIy\fP) that is \fIlength\fP pixels wide.
 .TP
 .B vbar \fIx y length\fP
-.sp
 Displays a vertical bar starting at position (\fIx\fP,\fIy\fP) that is \fIlength\fP pixels high.
 .TP
 .B icon \fIx y name\fP
-.sp
 Displays the icon \fIname\fP at position (\fIx\fP,\fIy\fP).
 .TP
 .B scroller \fIleft top right bottom direction speed text\fP
-.sp
 The \fItext\fR defined will scroll in the direction defined.  Valid directions
 are \fBh\fR (horizontal) and \fBv\fR (vertical).  The speed defines how many
 "movements" (or changes) will occur per frame.  A positive number indicates
 frames per movement; a negative number indicates movements per frame.
 .TP
 .B frame \fIleft top right bottom wid hgt dir speed\fP
-.sp
 Frames define a visible "box" on screen,
 from the (\fIleft\fR, \fItop\fR) corner to the
 (\fIright\fR, \fIbottom\fR) corner.  The actual data may be bigger,
@@ -428,17 +428,17 @@ bigger, then the frame will scroll in the direction (\fIdir\fR)
 and \fIspeed\fR defined.
 .TP
 .B num \fIx int\fP
-.sp
 Displays large decimal digit \fIint\fP at the horizontal position \fIx\fP,
 which is a normal character x coordinate on the display.
 The special value 10 for \fIint\fP displays a colon.
 
 .SH BUGS
-If LCDd seems to quietly disappear upon invocation or other similar problems,
-check the order of the options and the quoting involved.  Some combinations
-of options will be misread and thus fail.
-.PP
-Try using the -d option last.
+If LCDd seems not to work as expected try to run it with reporting level test to maximum,
+reporting to stderr and running it in the foreground.
+This can be achieved without changes to the config file by using the following command line:
+.RS
+.I LCDd -f 1 -r 5 -s 0
+.RE
 
 .SH FILES
 \fB@SYSCONFDIR@/LCDd.conf\fR, LCDd default configuration file
