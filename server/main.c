@@ -950,14 +950,18 @@ catch_reload_signal(int val)
 static int
 interpret_boolean_arg(char *s)
 {
-	if( strcmp( s, "on" ) == 0 || strcmp( s, "yes" ) == 0
-	|| strcmp( s, "true" ) == 0 || strcmp( s, "1" ) == 0 ) {
-		return 1;
-	}
-	if( strcmp( s, "off" ) == 0 || strcmp( s, "no" ) == 0
-	|| strcmp( s, "false" ) == 0 || strcmp( s, "0" ) == 0 ) {
+	/* keep these checks consistent with config_get_boolean() */
+	if (strcasecmp(s, "0") == 0 || strcasecmp(s, "false") == 0
+	|| strcasecmp(s, "n") == 0 || strcasecmp(s, "no") == 0 
+	|| strcasecmp(s, "off") == 0) {
 		return 0;
 	}
+	if (strcasecmp(s, "1") == 0 || strcasecmp(s, "true") == 0
+	|| strcasecmp(s, "y") == 0 || strcasecmp(s, "yes") == 0
+	|| strcasecmp(s, "on") == 0) {
+		return 1;
+	}
+	/* no legal boolean string given */
 	return -1;
 }
 
