@@ -428,7 +428,7 @@ HelpScreen (int exit_state)
 		"    A About                 credits page\n"
 		"\n"
 		"Example:\n"
-		"    lcdproc -s my.lcdproc.server.com -p 13666 C M X\n"
+		"    lcdproc -s my.lcdproc.server.com -p 13666 C M L\n"
 		, DEFAULT_CONFIGFILE);
 
 	exit(exit_state);

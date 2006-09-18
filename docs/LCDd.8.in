@@ -433,7 +433,7 @@ which is a normal character x coordinate on the display.
 The special value 10 for \fIint\fP displays a colon.
 
 .SH BUGS
-If LCDd seems not to work as expected try to run it with reporting level test to maximum,
+If LCDd seems not to work as expected, try to run it with reporting level set to maximum,
 reporting to stderr and running it in the foreground.
 This can be achieved without changes to the config file by using the following command line:
 .RS
