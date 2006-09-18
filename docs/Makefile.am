@@ -10,7 +10,7 @@ EXTRA_DIST = README.dg \
 	README.imon \
 	menustuff.txt \
 	netstuff.txt \
-	lcdproc.1 \
+	lcdproc.1.in \
 	lcdexec.1 \
 	LCDd.8.in \
 	lcdproc-config.5.in \
@@ -18,6 +18,9 @@ EXTRA_DIST = README.dg \
 
 ## generate man pages
 LCDd.8: LCDd.8.in
+	sed -e 's#@SYSCONFDIR@#@sysconfdir@#' $< > $@
+
+lcdproc.1: lcdproc.1.in
 	sed -e 's#@SYSCONFDIR@#@sysconfdir@#' $< > $@
 
 lcdproc-config.5: lcdproc-config.5.in

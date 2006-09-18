@@ -1,0 +1,171 @@
+.TH lcdproc 1 "18 September 2006" LCDproc "LCDproc suite"
+
+.SH NAME
+lcdproc - system status information client
+
+.SH SYNOPSIS
+.B lcdproc
+[\fB\-c\fP \fIconfig\fP]
+[\fB\-s\fP \fIhost\fP]
+[\fB\-p\fP \fIport\fP]
+[\fB\-e\fP \fIdelay\fP]
+[\fB\-f\fP]
+[\fB\-h\fP]
+[\fB\-v\fP]
+[\fIscreen\fP ...]
+
+.SH DESCRIPTION
+\fBlcdproc\fP is the client in the LCDproc suite that displays information about the local
+system's status on an LCD that is connected to an LCDd server daemon.
+.PP
+Due to the client-server architecture it does not matter whether the LCDd daemon runs
+on the local machine or on a remote system.
+.PP
+Most settings of \fBlcdproc\fP are configured through its configuration file
+\fI@SYSCONFDIR@/lcdproc.conf\fP, some of them can be overriden using command line options.
+.PP
+Before running \fBlcdproc\fP you should carefully read through that file and modify
+the settings therein according to your needs.
+.PP
+When compiled appropriately, some aspects of \fBlcdproc\fP can even configured
+at run time using a menu on the LCD.
+.PP
+Currently, only Linux, the BSD variants FreeBSD, NetBSD, OpenBSD and Darwin as well as Solaris
+are supported, but not all features may be available on all platforms.
+
+.SH OPTIONS
+.B lcdproc
+understands these command line options:
+.TP
+.B \-c \fIconfig\fP
+Use a configuration file other than @SYSCONFDIR@/LCDd.conf
+.TP
+.B \-s \fIhost\fP
+Connect to the LCDd server on \fIhost\fP, instead to the one listed
+in te \fBServer\fP parameter in the config file's \fB[lcdproc]\fP section.
+If not given here and not specified in the config file or if the default config file
+does not exist, it defaults to '\fIlocalhost\fP.
+.TP
+.B \-p \fIport\fP
+Use port \fIport\fP when connecting to the LCDd server on \fIhost\fP.
+This option overrides the \fBPort\fP parameter in the config file's \fB[lcdproc]\fP section.
+Without a default config file or when not set in the config file,
+it defaults to the LCDproc port \fI13666\fP.
+.TP
+.B \-f
+Run lcdproc in foreground, overriding the \fBForeground\fP parameter
+in the config file's \fB[lcdproc]\fP section.
+The default, if not in the config file or without a config file, is to
+daemonize \fBlcdproc\fP as it is intended to display the system information
+in the background.
+.TP
+.B \-e \fIdelay\fP
+Sleep \fIdelay\fP 100ths of seconds between updating screens in an update cycle.
+This option overrides the \fBDelay\fP parameter in the config file's \fB[lcdproc]\fP section.
+When not given and not in the config file, it defaults to 0.
+.TP
+.B \-h
+Show help screen.
+.TP 
+.B \-v
+Print the version of \fBlcdproc\fP and exit.
+.TP
+.B \fIscreen\fP
+can be one of the following:
+.RS
+.TP 16
+.B C CPU
+show detailed CPU usage
+.TP 16
+.B P SMP-CPU
+CPU usage overview: one line per CPU, especially useful on SMP systems.
+.TP 16
+.B G CPUGraph
+CPU histogram
+.TP 16
+.B L Load
+Load histogram
+.TP 16
+.B M Memory
+memory & swap usage
+.TP 16
+.B S ProcSize
+memory usage of 5 biggest processes
+.TP 16
+.B D Disk
+filling level of the mounted file systems
+.TP 16
+.B I Iface
+network interface usage
+.TP 16
+.B B Battery
+battery status
+.TP 16
+.B T TimeDate
+time & date information
+.TP 16
+.B O OldTime
+old time screen
+.TP 16
+.B U Uptime
+old uptime screen
+.TP 16
+.B K BigClock
+big clock
+.TP 16
+.B N MiniClock
+minimal clock
+.TP 16
+.B A About
+credits page
+.PP
+On the command line you may either use the short or the long \fImode\fP name.
+In the config file, the long names are used as section labels to configure the screens
+further.
+
+.SH EXAMPLES
+.RS
+.I lcdproc C M D L 
+.RE
+With the command line specified above, \fBlcdproc\fP loads the default configuration file,
+connects to the LCDd server specified therein and then displays the following screens
+on the LCD:
+.IP *
+detailed CPU Usage
+.IP *
+Memory & swap usage
+.IP *
+filling level of the mounted file systems
+.IP *
+Load histogram
+.PP
+
+.SH FILES
+\fB@SYSCONFDIR@/lcdproc.conf\fR, lcdproc's default configuration file
+
+.SH SEE ALSO
+LCDd(8),
+lcdproc-config(5)
+
+.SH AUTHOR
+LCDproc was originally written by William Ferrell (wwf@splatwerks.org) andr
+Scott Scriven (scriven@cs.colostate.edu).
+
+Since that time various people have contributed to LCDproc.
+
+The newest version of LCDproc should be available from here:
+
+		http://www.lcdproc.org/
+
+.SH LEGAL STUFF
+LCDproc is released as "WorksForMe-Ware".
+In other words, it is free, kinda neat, and we don't guarantee that it will do
+anything in particular on any machine except the ones it was developed on.
+.PP
+It is technically released under the GNU GPL license (you should have received the file,
+"COPYING", with LCDproc) (also, look on http://www.fsf.org/ for more information),
+so you can distribute and use it for free -- but you must make the source code freely
+available to anyone who wants it.
+.PP
+For any sort of real legal information, read the GNU GPL (GNU General Public License).
+It's worth reading.
