@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-man_MANS = lcdproc.1 lcdexec.1 LCDd.8
+man_MANS = lcdproc.1 lcdexec.1 LCDd.8 lcdproc-config.5
 SUBDIRS = lcdproc-user lcdproc-dev
 doxygen_input = header.html footer.html
 
@@ -13,8 +13,12 @@ EXTRA_DIST = README.dg \
 	lcdproc.1 \
 	lcdexec.1 \
 	LCDd.8 \
+	lcdproc-config.5.in \
 	$(doxygen_input)
 
+## generate man pages
+lcdproc-config.5: lcdproc-config.5.in
+	sed -e 's#@SYSCONFDIR@#@sysconfdir@#' $< > $@
 
 ## convenience targets
 install-html-guides: install-html-developerguide install-html-userguide

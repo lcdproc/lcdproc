@@ -1,0 +1,116 @@
+.TH lcdproc-config 5 "18 September 2006" LCDproc "LCDproc suite"
+
+.SH NAME
+lcdproc-config - format of LCDproc's configuration files
+
+.SH SYNTAX
+The syntax for LCDproc's configuration files is INI-file style.
+.PP
+They are 8-bit text files divided into sections, each containing zero or
+more key-value pairs.
+Sections are introduced by section labels which start with '\fB[\fP' and end with '\fB]\fP',
+and key-value pairs consist of a key name, a '\fB=\fP' sign and a value each.
+.PP
+Key names are sequences of non-space characters, not starting with '\fB[\fP'
+and not containing '\fB=\fP' or '\fB\\n\fP', while values are shell like strings.
+I.e. they are either simple sequences of non-space characters, or
+double quoted-strings with C-style syntax (except the missing support
+for '\\NNN' and '\\xNN' escape sequences) or or a mix of both
+of these forms.
+.PP
+Section labels and key names are case-insensitive and may occur more than once.
+Keys of duplicate sections will be merged into one section, while the
+values of duplicate keys in a section will be appended to form an array of
+values for this key.
+(In the program, all values of a key can be retrieved individually)
+.PP
+Spaces around section labels, keys, and values are ignored.
+Lines starting with '\fB;\fP' or '\fB#\fP' are considered comments and ignored too.
+.PP
+While all of the above is quite common to almost all INI-file implementations,
+there are a few special features that make LCDproc's config files special:
+.IP *
+Section labels may contain any character except '\fB]\fP', '\fB\\n\fP' or '\fB\\0\fP'.
+However, all characters are interpreted literally (i.e. neither quoting, nor escaping done).
+.IP *
+Key names may contain any non-space character except '\fB\\n\fP' or '\fB\\0\fP'.
+However, all characters are interpreted literally (i.e. neither quoting, nor escaping done).
+.IP *
+Comments are allowed after section labels and key value pairs
+.IP *
+Values may be a mix of quoted and unquoted strings similar as strings are interpreted
+in the shell.
+E.g. the value \fR'string" with "blanks"\\t!"'\fP will be parsed as \fR'string with blanks<TAB>!'\fP
+where <TAB> stands for the TAB character.
+.PP
+In case of a a parsing error the rest of the line is ignored and parsing
+continues with the next line.
+
+.SH EXAMPLE
+Here is fully working example of an LCDd.conf
+(formatted somehat strange to show the features):
+.na
+.nf
+# the server section
+[server]
+Bind=127.0.0.1
+Port=13666
+User="nobody"
+#Foreground=no
+#ReportLevel=3
+#ReportToSyslog=yes
+Driver="my Curses Driver"
+DriverPath=/usr/lib/lcdproc/
+WaitTime= "5"
+ServerScreen=no
+
+# assign keys to special functions #
+ToggleRotateKey = Enter
+PrevScreenKey = Left
+NextScreenKey = Right
+# ScrollUpKey = Up
+ #ScrollDownKey=Down
+
+#  menu section: define keys to use in the server menu #
+	 [menu]
+MenuKey = Escape	# ESC switches to server menu
+EnterKey =Enter
+UpKey= Up	
+DownKey="Down"
+ LeftKey= "Left"
+ RightKey = "Right"
+
+# configuration of the curses driver #
+[my curses Driver]	# yes I use the curse driver
+File= "curses.so"
+Size="20"x"4"		# LCD screen dimensions
+TopLeftX=7		# screen position: X coordinate
+TopLeftY=7		# screen position: Y coordinate
+Foreground=blue		# foreground color
+Background=cyan		# background color when backight is off
+Backlight=red		# background color when backight is on
+
+
+.SH FILES
+
+These are the default config files for the various parts of the LCDproc suite:
+.TP
+.B @SYSCONFDIR@/LCDd.conf
+configuration of the \fILCDd\fP server daemon
+.TP
+.B @SYSCONFDIR@/lcdproc.conf
+configuration of the \fIlcdproc\fP system monitoring client
+.TP
+.B @SYSCONFDIR@/lcdexec.conf
+configuration of the \fIlcdexec\fP the program starter client
+.TP
+.B @SYSCONFDIR@/lcdvc.conf
+configuration of the \fIlcdvc\fP virtual console client
+
+.SH SEE ALSO
+LCDd(8),
+lcdproc(1),
+lcdexec(1)
+
+.SH AUTHOR
+This manual page has been written by Peter Marschall <peter@adpm.de>
