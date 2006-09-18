@@ -44,12 +44,12 @@ static section *first_section = NULL;
 /* Yes there is a static. It's C after all :)*/
 
 
-section *find_section(const char *sectionname);
-section *add_section(const char *sectionname);
-key *find_key(section *s, const char *keyname, int skip);
-key *add_key(section *s, const char *keyname, const char *value);
-char get_next_char_f(FILE *f);
-int process_config(section **current_section, char(*get_next_char)(), char modify_section_allowed, const char *source_descr, FILE *f);
+static section *find_section(const char *sectionname);
+static section *add_section(const char *sectionname);
+static key *find_key(section *s, const char *keyname, int skip);
+static key *add_key(section *s, const char *keyname, const char *value);
+static char get_next_char_f(FILE *f);
+static int process_config(section **current_section, char(*get_next_char)(), const char *source_descr, FILE *f);
 
 
 #ifdef WITH_LDAP_SUPPORT
@@ -115,7 +115,7 @@ int config_read_file(const char *filename)
 		return -1;
 	}
 
-	process_config(&curr_section, get_next_char_f, 1, filename, f);
+	process_config(&curr_section, get_next_char_f, filename, f);
 
 	fclose(f);
 
@@ -320,7 +320,8 @@ connect_to_ldap(void)
 #define BUFSIZE 255
 #endif /* WITH_LDAP_SUPPORT */
 
-section *find_section(const char *sectionname)
+
+static section *find_section(const char *sectionname)
 {
 	section *s;
 
@@ -374,7 +375,8 @@ section *find_section(const char *sectionname)
 	return NULL; /* not found */
 }
 
-section *add_section(const char *sectionname)
+
+static section *add_section(const char *sectionname)
 {
 	section *s;
 	section **place = &first_section;
@@ -392,7 +394,8 @@ section *add_section(const char *sectionname)
 	return(*place);
 }
 
-key *find_key(section *s, const char *keyname, int skip)
+
+static key *find_key(section *s, const char *keyname, int skip)
 {
 	key *k;
 	int count = 0;
@@ -516,7 +519,8 @@ key *find_key(section *s, const char *keyname, int skip)
 	return NULL; /* not found*/
 }
 
-key *add_key(section *s, const char *keyname, const char *value)
+
+static key *add_key(section *s, const char *keyname, const char *value)
 {
 	if (s != NULL) {
 		key *k;
@@ -537,7 +541,8 @@ key *add_key(section *s, const char *keyname, const char *value)
 	return NULL;
 }
 
-char get_next_char_f(FILE *f)
+
+static char get_next_char_f(FILE *f)
 {
 	int c = fgetc(f);
 
@@ -546,27 +551,26 @@ char get_next_char_f(FILE *f)
 
 
 /* Parser states*/
-#define ST_INITIAL 0
-#define ST_IGNORE 1
-#define ST_SECTIONNAME 2
-#define ST_KEYNAME 3
-#define ST_VALUE 10
-#define ST_QUOTEDVALUE 11
-#define ST_QUOTEDVALUE_ESCCHAR 12
-#define ST_INVALID_SECTIONNAME 23
-#define ST_INVALID_KEYNAME 24
-#define ST_INVALID_VALUE 30
-#define ST_INVALID_QUOTEDVALUE 31
-#define ST_END 99
+#define ST_INITIAL		0
+#define ST_IGNORE		1
+#define ST_SECTIONNAME		2
+#define ST_KEYNAME		3
+#define ST_VALUE		10
+#define ST_QUOTEDVALUE		11
+#define ST_QUOTEDVALUE_ESCCHAR	12
+#define ST_INVALID_SECTIONNAME	23
+#define ST_INVALID_KEYNAME	24
+#define ST_INVALID_VALUE	30
+#define ST_INVALID_QUOTEDVALUE	31
+#define ST_END			99
 
 /* Limits*/
-#define MAXSECTIONNAMELENGTH 40
-#define MAXKEYNAMELENGTH 40
-#define MAXVALUELENGTH 200
+#define MAXSECTIONNAMELENGTH	40
+#define MAXKEYNAMELENGTH	40
+#define MAXVALUELENGTH		200
 
 
-
-int process_config(section **current_section, char(*get_next_char)(), char modify_section_allowed, const char *source_descr, FILE *f)
+static int process_config(section **current_section, char(*get_next_char)(), const char *source_descr, FILE *f)
 {
 	char state = ST_INITIAL;
 	char ch;
@@ -813,7 +817,8 @@ int process_config(section **current_section, char(*get_next_char)(), char modif
 	return 0;
 }
 
-#if 0
+
+#if CONFIGFILE_DEBUGTEST
 void config_dump(void)
 {
 section *s;
@@ -828,5 +833,12 @@ section *s;
 
 		fprintf(stderr, "\n");
 	}	
+}
+
+int main(int argc, char *argv[])
+{
+	if (argc > 0)
+		config_read_file(argv[1]);
+	config_dump();
 }
 #endif
