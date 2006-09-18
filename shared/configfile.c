@@ -53,7 +53,7 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 
 
 #ifdef WITH_LDAP_SUPPORT
-int connect_to_ldap(void);
+static int connect_to_ldap(void);
 
 static LDAP *ld = NULL;
 int use_ldap = 0;
@@ -68,12 +68,18 @@ int ldap_port;
 #endif /* WITH_LDAP_SUPPORT */
 
 
-/**** EXTERNAL FUNCTIONS ****/
+/**** PUBLIC FUNCTIONS ****/
 
+/** Parse configuration from INI-file style config file into memory.
+ * \param filename Name of the config file.
+ * \returns 0 : config successfully parsed
+ * \returns <0 : error occurred
+ */
 int config_read_file(const char *filename)
 {
 	FILE *f;
 	section *curr_section = NULL;
+	int result = 0;
 
 #ifdef WITH_LDAP_SUPPORT
 	LDAPURLDesc *url = NULL;
@@ -115,11 +121,11 @@ int config_read_file(const char *filename)
 		return -1;
 	}
 
-	process_config(&curr_section, get_next_char_f, filename, f);
+	result = process_config(&curr_section, get_next_char_f, filename, f);
 
 	fclose(f);
 
-	return 0;
+	return result;
 }
 
 
@@ -137,12 +143,17 @@ int config_read_string(const char *sectionname, const char *str)
 	if ((s = find_section(sectionname)) == NULL)
 		s = add_section(sectionname);
 
-	process_config(&s, get_next_char, 0, "command line", NULL);
-
-	return 0;
+	return process_config(&s, get_next_char, "command line", NULL);
 }
 
 
+/** Get string from configuration in memory.
+ * \param sectionname   Name of the section where the key is sought.
+ * \param keyname       Name of the key to look for.
+ * \param skip          Number of values to skip/ignore before returning the value.
+ * \param default_value Default value if section/key is not found.
+ * \return Value found / default value
+ */
 const char *config_get_string(const char *sectionname, const char *keyname,
 		int skip, const char *default_value)
 {
@@ -165,6 +176,13 @@ const char *config_get_string(const char *sectionname, const char *keyname,
 }
 
 
+/** Get boolean value from configuration in memory.
+ * \param sectionname   Name of the section where the key is sought.
+ * \param keyname       Name of the key to look for.
+ * \param skip          Number of values to skip/ignore before returning the value.
+ * \param default_value Default value if section/key is not found or value is no legal boolean.
+ * \return Value found / default value
+ */
 short config_get_bool(const char *sectionname, const char *keyname,
 		int skip, short default_value)
 {
@@ -187,6 +205,13 @@ short config_get_bool(const char *sectionname, const char *keyname,
 }
 
 
+/** Get integer from configuration in memory.
+ * \param sectionname   Name of the section where the key is sought.
+ * \param keyname       Name of the key to look for.
+ * \param skip          Number of values to skip/ignore before returning the value.
+ * \param default_value Default value if section/key is not found or value is no integer.
+ * \return Value found / default value
+ */
 long int config_get_int(const char *sectionname, const char *keyname,
 		int skip, long int default_value)
 {
@@ -204,6 +229,13 @@ long int config_get_int(const char *sectionname, const char *keyname,
 }
 
 
+/** Get floating point number from configuration in memory.
+ * \param sectionname   Name of the section where the key is sought.
+ * \param keyname       Name of the key to look for.
+ * \param skip          Number of values to skip/ignore before returning the value.
+ * \param default_value Default value if section/key is not found or value is no floating point number.
+ * \return Value found / default value
+ */
 double config_get_float(const char *sectionname, const char *keyname,
 		int skip, double default_value)
 {
@@ -221,12 +253,21 @@ double config_get_float(const char *sectionname, const char *keyname,
 }
 
 
+/** Test whether the configuration containis a specific section.
+ * \param sectionname Name of the section to look for.
+ * \return 0 = section not in config; 1 = section in config
+ */
 int config_has_section(const char *sectionname)
 {
 	return (find_section(sectionname) != NULL) ? 1 : 0;
 }
 
 
+/** Test whether the configuration contains a specific key in a specfic section.
+ * \param sectionname Name of the section where the key is sought.
+ * \param keyname     Name of the key to look for.
+ * \return 0 =  key or section not found; n = key found with n values
+ */
 int config_has_key(const char *sectionname, const char *keyname)
 {
 	section *s = find_section(sectionname);
@@ -245,6 +286,7 @@ int config_has_key(const char *sectionname, const char *keyname)
 }
 
 
+/** Clear configuration. */
 void config_clear()
 {
 	section *s;
@@ -277,7 +319,7 @@ void config_clear()
 /**** INTERNAL FUNCTIONS ****/
 
 #ifdef WITH_LDAP_SUPPORT
-int
+static int
 connect_to_ldap(void)
 {
 	int retval;
@@ -550,21 +592,21 @@ static char get_next_char_f(FILE *f)
 }
 
 
-/* Parser states*/
+/* Parser states */
 #define ST_INITIAL		0
-#define ST_IGNORE		1
-#define ST_SECTIONNAME		2
-#define ST_KEYNAME		3
-#define ST_VALUE		10
-#define ST_QUOTEDVALUE		11
-#define ST_QUOTEDVALUE_ESCCHAR	12
-#define ST_INVALID_SECTIONNAME	23
-#define ST_INVALID_KEYNAME	24
-#define ST_INVALID_VALUE	30
-#define ST_INVALID_QUOTEDVALUE	31
-#define ST_END			99
+#define ST_IGNORE		257
+#define ST_SECTIONNAME		258
+#define ST_KEYNAME		259
+#define ST_VALUE		260
+#define ST_QUOTEDVALUE		261
+#define ST_QUOTEDVALUE_ESCCHAR	262
+#define ST_INVALID_SECTIONNAME	263
+#define ST_INVALID_KEYNAME	264
+#define ST_INVALID_VALUE	265
+#define ST_INVALID_QUOTEDVALUE	266
+#define ST_END			999
 
-/* Limits*/
+/* Limits */
 #define MAXSECTIONNAMELENGTH	40
 #define MAXKEYNAMELENGTH	40
 #define MAXVALUELENGTH		200
@@ -572,7 +614,7 @@ static char get_next_char_f(FILE *f)
 
 static int process_config(section **current_section, char(*get_next_char)(), const char *source_descr, FILE *f)
 {
-	char state = ST_INITIAL;
+	int state = ST_INITIAL;
 	char ch;
 	char sectionname[MAXSECTIONNAMELENGTH+1];
 	int sectionname_pos = 0;
@@ -590,7 +632,7 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 			? get_next_char(f)
 			: get_next_char();
 
-		/* Secretly keep count of the line numbers*/
+		/* Secretly keep count of the line numbers */
 		if (ch == '\n')
 			line_nr++;
 
@@ -606,11 +648,11 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 			  case ';':
 			  case '=':
 			  case ']':
-				/* It's a comment or an error*/
+				/* It's a comment or an error */
 				state = ST_IGNORE;
 				break;
 			  case '[':
-				/* It's a section name*/
+				/* It's a section name */
 				state = ST_SECTIONNAME;
 				sectionname[0] = '\0';
 				sectionname_pos = 0;
@@ -618,7 +660,7 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 			  case '\0':
 				break;
 			  default:
-				/* It's a keyname*/
+				/* It's a keyname */
 				state = ST_KEYNAME;
 				keyname[0] = ch;
 				keyname[1] = '\0';
@@ -712,7 +754,6 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 			switch (ch) {
 			  case '\n':
 				state = ST_INITIAL;
-			  /*case ' ':*/
 			}
 			break;
 		  case ST_VALUE:
@@ -734,16 +775,16 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 			  case '\r':
 			  case '\t':
 			  case ' ':
-				/* Value complete !*/
+				/* Value complete ! */
 				if (! *current_section) {
 					report(RPT_WARNING, "Data outside sections on line %d of %s with key: %s",
 							line_nr, source_descr, keyname);
 				}
 				else {
-					/* Store the value*/
+					/* Store the value */
 					k = add_key(*current_section, keyname, value);
 				}
-				/* And be ready for next thing...*/
+				/* And be ready for next thing... */
 				state = ST_INITIAL;
 				break;
 			  default:
@@ -829,11 +870,12 @@ section *s;
 		fprintf(stderr, "[%s]\n", s->name);
 
 		for (k = s->first_key; k != NULL; k = k->next_key)
-			fprintf(stderr, "%s = '%s'\n", k->name, k->value);
+			fprintf(stderr, "%s = \"%s\"\n", k->name, k->value);
 
 		fprintf(stderr, "\n");
 	}	
 }
+
 
 int main(int argc, char *argv[])
 {
