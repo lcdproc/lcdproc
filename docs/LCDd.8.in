@@ -1,6 +1,8 @@
-.TH LCDd 8 "18 June 2006" LCDproc "LCDproc suite"
+.TH LCDd 8 "18 September 2006" LCDproc "LCDproc suite"
+
 .SH NAME
 LCDd - LCDproc server daemon
+
 .SH SYNOPSIS
 .B LCDd
 [\fB\-hfis\fP] 
@@ -17,8 +19,9 @@ LCDd is the server part of LCDproc, a deamon which listens to a certain port (no
 and displays information on an LCD display.  It works with several types
 and sizes of displays.
 .PP
-Most settings of LCDproc are configured through the LCDd configuration file,
-which is normally /etc/LCDd.conf. Before running LCDd you should carefully
+Most settings of LCDd are configured through its configuration file
+@SYSCONFDIR@/LCDd.conf, some of them can be overriden using command line options.
+Before running LCDd you should carefully
 read through that file and modify everything neccessary according to your needs.
 Otherwise you might encounter LCDd not running properly on your system.
 .PP
@@ -28,39 +31,49 @@ To make full use of LCDd, a client such as lcdproc(1) is required.
 Available LCDd options are:
 .TP
 .B \-h
-Display this help screen
+Display help screen
 .TP
 .B \-c \fIconfig\fP
-Use a configuration file other than /etc/LCDd.conf
+Use a configuration file other than @SYSCONFDIR@/LCDd.conf
 .TP
 .B \-d \fIdriver\fP
-Add a driver to use (output only to first)
+Specify a driver to use (output only to first), overriding
+the \fBDriver\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-f
-Run in the foreground
+Run in the foreground, override the \fBForegound\fP parameter
+in the config file's \fB[Server]\fP section.
 .TP
 .B \-i
-Disable showing the main LCDproc server screen in rotation
+Disable showing the main LCDproc server screen in rotation, overriding
+\fBServerScreen\fP in the config file's \fB[Server]\fP section.
 .TP
 .B \-w \fIwaittime\fP
-Time to pause at each screen (in seconds)
+Time to pause at each screen (in seconds), overriding the
+\fBWaitTime\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-a \fIaddr\fP
-Network IP address to bind to
+Bind to network address \fIaddr\fP, overriding the
+\fPBind\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-p \fIport\fP
-Network port to listen for connections on
+Listen on port \fIport\fP for incoming connections, overriding the
+\fPPort\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-u \fIuser\fP
-User to run as
+Run as user \fIuser\fP, overriding the
+\fPUser\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-s
-Output messages to syslog
+Output messages to syslog instead of STDOUT, overriding the
+\fPReportToSyslog\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-r \fIlevel\fP
-Report level (default=2)
+Set reporting level to \fIlevel\fP, overriding th
+\fBReportLevel\fP parameter in the config file's \fB[Server]\fP section.
+.PP
 
-.SS Supported Drivers
+.SS SUPPORTED DRIVERS
 Currently supported display drivers include:
 .TP
 .B bayrad
@@ -202,7 +215,7 @@ Toshiba T6963 based LCD displays
 Standard "hard-copy" text display
 .TP
 .B tyan
-LCDi module in Tyan Barebone GS series
+LCD module in Tyan Barebone GS series
 .TP
 .B ula200
 ULA-200 device from ELV (http://www.elv.de)
@@ -214,48 +227,45 @@ Multiple drivers can be used simultaneously; thus, for example, a Matrix Orbital
 can be combined with an infrared driver (irmanin driver).
 
 .SH INVOCATION
-.R LCDd -d MtxOrb -d joy
+.RI "LCDd -d MtxOrb -d joy"
 .PP
-As of version 0.4.3, driver parameters are read from a configuration file
-(default location /etc/LCDd.conf) rather than being passed on the command
-line as arguments.
-The invocation example above will start LCDd with the Matrix Orbital driver
-and the Joystick input driver,and attempt to load the driver parameters
-from the default configuration file.
+The invocation example above will start LCDd reading its configuration from the
+default configuration file @SYSCONFDIR@/LCDd.conf but overriding the drivers
+specified therein with the Matrix Orbital driver and the Joystick input driver.
 
 .SH LCDPROC CLIENT-SERVER PROTOCOL
 There is a basic sequence:
-.TP 8
+.TP
 1. Open a TCP connection to the LCDd server port (usually 13666).
 .TP 8
 2. Say "hello"
-.TP 8
+.TP
 3. The server will return some information on the type
 of display available.
-.TP 8
+.TP
 4. Define (and use) a new screen and its widgets.
-.TP 8
+.TP
 5. Close the socket when done displaying data.
 .PP
 There are many commands for the LCDd server:
-.TP 8
+.TP
 .B hello
 This starts a client-server session with the LCDd server; the
 server will return a data string detailing the type of display
 and its size.
-.TP 8
+.TP
 .B client_set -name \fIname\fP
 Set the client's name.
-.TP 8
+.TP
 .B screen_add \fI#id\fP
 Add a new screen to the display.
-.TP 8
+.TP
 .B screen_del \fI#id\fP
 Remove a screen from the display.
-.TP 8
+.TP
 .B screen_set \fI#id\fP [\fB-name\fI "name"\fP] [\fB-wid\fI width\fP] [\fB-hgt\fI height\fP] [\fB-priority\fI prio\fP] [\fB-duration\fI int\fP] [\fB-timeout\fI int\fP] [\fB-heartbeat\fI mode\fP] [\fB-backlight\fI mode\fP] [\fB-cursor\fI mode\fP] [\fB-cursor_x\fI xpos\fP] [\fB-cursor_y\fI ypos\fP]
 Initialize a screen, or reset its data.
-.TP 8
+.TP
 .B widget_add \fI#screen #id type\fR [\fB-in \fI#frame\fR]
 Add a widget of type \fItype\fPto screen \fI#screen\fR.
 .TP
@@ -269,13 +279,13 @@ Set the data used to define a particular widget \fI#id\fR on screen
 .SS Heartbeat Modes
 Valid heartbeat mode values (for the \fBscreen_set\fR command) are:
 .TP
-.BR on
+.B on
 Display pulsing heart symbol.
 .TP
-.BR off
+.B off
 No heartbeat display.
 .TP
-.BR open
+.B open
 Use client's heartbeat setting. This is the default.
 
 .SS Backlight Modes
@@ -376,6 +386,7 @@ as a single unit.  A widget is put inside a frame by using the -in \fI#id\fR
 parameter, where \fI#id\fR refers to the id of the frame.
 .PP
 Widgets are drawn on the screen in the order they are created.
+
 .SS Setting Widget Data
 In the \fBwidget_set\fR command, the \fIdata\fR argument depends on which widget is being
 set.  Each widget takes a particular set of arguments which defines its form and behavior:
@@ -430,16 +441,16 @@ of options will be misread and thus fail.
 Try using the -d option last.
 
 .SH FILES
-.na
-.nf
-\fB/etc/LCDd.conf\fR, LCDd default configuration file
+\fB@SYSCONFDIR@/LCDd.conf\fR, LCDd default configuration file
 
-.Sh SEE ALSO
-.Xr lcdproc 1
+.SH SEE ALSO
+lcdproc-config(5),
+lcdproc(1),
+lcdexec(1)
 
 .SH AUTHOR
-LCDd was originally written by William Ferrell (wwf@splatwerks.org) and Scott Scriv
-en (scriven@cs.colostate.edu).
+LCDd was originally written by William Ferrell (wwf@splatwerks.org) and
+Scott Scriven (scriven@cs.colostate.edu).
 
 Since that time various people have contributed to LCDproc.
 
