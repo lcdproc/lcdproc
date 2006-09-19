@@ -1003,7 +1003,7 @@ output_help_screen(void)
 	fprintf (stdout, "\t-h\t\tDisplay this help screen\n");
 	fprintf (stdout, "\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
 	fprintf (stdout, "\t-d <driver>\tAdd a driver to use (overrides drivers in config file) [%s]\n", DEFAULT_DRIVER);
-	fprintf (stdout, "\t-f <bool>\tWhether to run in the foreground\n");
+	fprintf (stdout, "\t-f\t\tRun in the foreground\n");
 	fprintf (stdout, "\t-a <addr>\tNetwork (IP) address to bind to [%s]\n", DEFAULT_BIND_ADDR);
 	fprintf (stdout, "\t-p <port>\tNetwork port to listen for connections on [%i]\n", DEFAULT_BIND_PORT);
 	fprintf (stdout, "\t-u <user>\tUser to run as [%s]\n", DEFAULT_USER);
