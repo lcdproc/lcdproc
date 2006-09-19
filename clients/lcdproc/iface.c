@@ -23,7 +23,6 @@
 */
 
 #include <stdio.h>
-#include <getopt.h>
 #include <signal.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -42,25 +41,10 @@
 #define UNSET_STR "\01"
 
 
-int iface_count = 0;  /* number of interfaces */
+static int iface_count = 0;  /* number of interfaces */
 
-char unit_label[10] = "B";  /* default unit label is Bytes */
-int transfer_screen = 0;  /* by default, transfer screen is not shown */
-
-/* command line parameters, used by getopt_long() */
-static struct option const long_options[] =
-{
-	{"interface", required_argument, 0, 'i'},
-	{"alias", required_argument, 0, 'a'},
-	{"server", required_argument, 0, 's'},
-	{"port", required_argument, 0, 'p'},
-	{"unit", required_argument, 0, 'u'},
-	{"transfer", no_argument, 0, 't'},
-	{"daemon", no_argument, 0, 'd'},
-	{"help", no_argument, 0, 'h'},
-	{"version", no_argument, 0, 'V'},
-	{NULL, 0, NULL, 0}
-};
+static char unit_label[10] = "B";  /* default unit label is Bytes */
+static int transfer_screen = 0;  /* by default, transfer screen is not shown */
 
 
 /* reads and parses configuration file */
