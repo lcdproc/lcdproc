@@ -16,6 +16,7 @@ EXTRA_DIST = README.dg \
 	lcdproc-config.5.in \
 	$(doxygen_input)
 
+
 ## generate man pages
 LCDd.8: LCDd.8.in
 	sed -e 's:@SYSCONFDIR@:@sysconfdir@:g' $? > $@
@@ -25,6 +26,10 @@ lcdproc.1: lcdproc.1.in
 
 lcdproc-config.5: lcdproc-config.5.in
 	sed -e 's:@SYSCONFDIR@:@sysconfdir@:g' $? > $@
+
+## clean generated makefiles
+CLEANFILES = LCDd.8 lcdproc.1 lcdproc-config.5
+
 
 ## convenience targets
 install-html-guides: install-html-developerguide install-html-userguide
