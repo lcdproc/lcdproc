@@ -301,7 +301,7 @@ process_command_line(int argc, char **argv)
 
 	/* Analyze options here.. (please try to keep list of options the
 	 * same everywhere) */
-	while ((c = getopt(argc, argv, "hc:d:f:a:p:u:w:s:r:i:" )) > 0) {
+	while ((c = getopt(argc, argv, "hc:d:fa:p:u:w:s:r:i:" )) > 0) {
 		switch(c) {
 			case 'h':
 				help = 1; /* Continue to process the other
@@ -328,13 +328,7 @@ process_command_line(int argc, char **argv)
 				}
 				break;
 			case 'f':
-				b = interpret_boolean_arg( optarg );
-				if( b == -1 ) {
-					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
-					e = -1;
-				} else {
-					foreground_mode = b;
-				}
+				foreground_mode = 1;
 				break;
 			case 'a':
 				strncpy(bind_addr, optarg, sizeof(bind_addr));

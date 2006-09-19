@@ -5,13 +5,11 @@ lcdproc - system status information client
 
 .SH SYNOPSIS
 .B lcdproc
+[\fB\-hfv\fP]
 [\fB\-c\fP \fIconfig\fP]
 [\fB\-s\fP \fIhost\fP]
 [\fB\-p\fP \fIport\fP]
 [\fB\-e\fP \fIdelay\fP]
-[\fB\-f\fP]
-[\fB\-h\fP]
-[\fB\-v\fP]
 [\fIscreen\fP ...]
 
 .SH DESCRIPTION

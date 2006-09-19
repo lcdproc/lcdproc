@@ -5,10 +5,9 @@ LCDd - LCDproc server daemon
 
 .SH SYNOPSIS
 .B LCDd
-[\fB\-h\fP] 
+[\fB\-hf\fP] 
 [\fB\-c\fP \fIconfig\fP] 
 [\fB\-d\fP \fIdriver\fP] 
-[\fB\-f\fP \fIbool\fP] 
 [\fB\-i\fP \fIbool\fP] 
 [\fB\-a\fP \fIaddr\fP] 
 [\fB\-p\fP \fIport\fP] 
@@ -44,9 +43,11 @@ Use a configuration file other than @SYSCONFDIR@/LCDd.conf
 Specify a driver to use (output only to first), overriding
 the \fBDriver\fP parameter in the config file's \fB[Server]\fP section.
 .TP
-.B \-f \fIbool\fp
-Tell whether to run in the foreground (\fI1\fP) or background (\fI0\fP),
-overriding the \fBForeground\fP parameter in the config file's \fB[Server]\fP section.
+.B \-f
+Run LCDd in foreground, overriding the \fBForeground\fP parameter
+in the config file's \fB[Server]\fP section.
+The default, if not in the config file or without a config file, is to
+daemonize \fBLCDd\fP as it is intended to operate in the background.
 .TP
 .B \-i \fIbool\fP
 Tell whether the to enable (\fI1\fP) or disable (\fI0\fP) showing the LCDproc
@@ -437,7 +438,7 @@ If LCDd seems not to work as expected, try to run it with reporting level set to
 reporting to stderr and running it in the foreground.
 This can be achieved without changes to the config file by using the following command line:
 .RS
-.I LCDd -f 1 -r 5 -s 0
+.I LCDd -f -r 5 -s 0
 .RE
 
 .SH FILES

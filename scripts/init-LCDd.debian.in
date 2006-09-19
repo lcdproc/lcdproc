@@ -28,7 +28,7 @@ test -x ${LCDd} || exit 0
 case "$1" in
 start)
         printf "Starting $DESC:"
-        start-stop-daemon --start --quiet --background --exec ${LCDd} -- -s -f -c ${configfile}
+        start-stop-daemon --start --quiet --background --exec ${LCDd} -- -c ${configfile}
         printf " LCDd"
         printf ".\n"
         ;;
