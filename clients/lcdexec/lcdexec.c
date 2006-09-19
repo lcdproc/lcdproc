@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 
 int process_command_line(int argc, char **argv)
 {
-	char c;
+	int c;
 	int error = 0;
 
 	/* No error output from getopt */
