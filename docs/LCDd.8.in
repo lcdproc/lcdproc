@@ -17,36 +17,36 @@ LCDd - LCDproc server daemon
 [\fB\-s\fP \fIbool\fP] 
 
 .SH DESCRIPTION
-LCDd is the server part of LCDproc, a deamon which listens to a certain port (normally 13666)
+\fBLCDd\fP is the server part of LCDproc, a deamon which listens to a certain port (normally 13666)
 and displays information on an LCD display.  It works with several types
 and sizes of displays.
 .PP
-Most settings of LCDd are configured through its configuration file
-@SYSCONFDIR@/LCDd.conf, some of them can be overriden using command line options.
-Before running LCDd you should carefully
+Most settings of \fBLCDd\fP are configured through its configuration file
+\fI@SYSCONFDIR@/LCDd.conf\fP, some of them can be overriden using command line options.
+Before running \fBLCDd\fP you should carefully
 read through that file and modify everything neccessary according to your needs.
-Otherwise you might encounter LCDd not running properly on your system.
+Otherwise you might encounter \fBLCDd\fP not running properly on your system.
 .PP
-To make full use of LCDd, a client such as lcdproc(1), lcdexec(1), or lcdvd 
+To make full use of \fBLCDd\fP, a client such as lcdproc(1), lcdexec(1), or lcdvd 
 is required.
 
 .SH OPTIONS
-Available LCDd options are:
+Available options are:
 .TP
 .B \-h
 Display help screen
 .TP
 .B \-c \fIconfig\fP
-Use a configuration file other than @SYSCONFDIR@/LCDd.conf
+Use a configuration file other than \fI@SYSCONFDIR@/LCDd.conf\fP
 .TP
 .B \-d \fIdriver\fP
 Specify a driver to use (output only to first), overriding
 the \fBDriver\fP parameter in the config file's \fB[Server]\fP section.
 .TP
 .B \-f
-Run LCDd in foreground, overriding the \fBForeground\fP parameter
+Run in the foreground, overriding the \fBForeground\fP parameter
 in the config file's \fB[Server]\fP section.
-The default, if not in the config file or without a config file, is to
+The default, if not specified in the config file, is to
 daemonize \fBLCDd\fP as it is intended to operate in the background.
 .TP
 .B \-i \fIbool\fP
@@ -235,8 +235,8 @@ can be combined with an infrared driver (irmanin driver).
 .RS
 .I LCDd -d MtxOrb -d joy
 .RE
-The invocation example above will start LCDd reading its configuration from the
-default configuration file @SYSCONFDIR@/LCDd.conf but overriding the drivers
+The invocation example above will start \fBLCDd\fP reading its configuration from the
+default configuration file \fI@SYSCONFDIR@/LCDd.conf\fP but overriding the drivers
 specified therein with the Matrix Orbital driver and the Joystick input driver.
 
 .SH LCDPROC CLIENT-SERVER PROTOCOL
@@ -434,9 +434,10 @@ which is a normal character x coordinate on the display.
 The special value 10 for \fIint\fP displays a colon.
 
 .SH BUGS
-If LCDd seems not to work as expected, try to run it with reporting level set to maximum,
-reporting to stderr and running it in the foreground.
-This can be achieved without changes to the config file by using the following command line:
+If \fBLCDd\fP seems not to work as expected, try to run it in the foreground
+with reporting level set to maximum and reporting to stderr.
+This can be achieved without changes to the config file by using the 
+command line:
 .RS
 .I LCDd -f -r 5 -s 0
 .RE

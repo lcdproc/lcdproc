@@ -51,14 +51,14 @@ Without a default config file or when not set in the config file,
 it defaults to the LCDproc port \fI13666\fP.
 .TP
 .B \-f
-Run lcdproc in foreground, overriding the \fBForeground\fP parameter
+Run in the foreground, overriding the \fBForeground\fP parameter
 in the config file's \fB[lcdproc]\fP section.
 The default, if not in the config file or without a config file, is to
 daemonize \fBlcdproc\fP as it is intended to display the system information
 in the background.
 .TP
 .B \-e \fIdelay\fP
-Sleep \fIdelay\fP 100ths of seconds between updating screens in an update cycle.
+Sleep \fIdelay\fP in 100ths of seconds between updating screens in an update cycle.
 This option overrides the \fBDelay\fP parameter in the config file's \fB[lcdproc]\fP section.
 When not given and not in the config file, it defaults to 0.
 .TP
