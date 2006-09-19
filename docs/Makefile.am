@@ -18,13 +18,13 @@ EXTRA_DIST = README.dg \
 
 ## generate man pages
 LCDd.8: LCDd.8.in
-	sed -e 's#@SYSCONFDIR@#@sysconfdir@#' $< > $@
+	sed -e 's:@SYSCONFDIR@:@sysconfdir@:g' LCDd.8.in > $@
 
 lcdproc.1: lcdproc.1.in
-	sed -e 's#@SYSCONFDIR@#@sysconfdir@#' $< > $@
+	sed -e 's:@SYSCONFDIR@:@sysconfdir@:g' lcdproc.1.in > $@
 
 lcdproc-config.5: lcdproc-config.5.in
-	sed -e 's#@SYSCONFDIR@#@sysconfdir@#' $< > $@
+	sed -e 's:@SYSCONFDIR@:@sysconfdir@:g' lcdproc-config.5.in > $@
 
 ## convenience targets
 install-html-guides: install-html-developerguide install-html-userguide
