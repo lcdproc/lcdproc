@@ -16,11 +16,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 */
 
-/*configfile support added by Rene Wagner (c) 2001*/
-/*backlight support modified by Rene Wagner (c) 2001*/
-/*block patch by Eddie Sheldrake (c) 2001 inserted by Rene Wagner*/
-/*big num patch by Luis Llorente (c) 2002*/
-/*adaptions to other CFontz* dirvers Peter Marschall (c) 2005*/
+/* configfile support added by Rene Wagner (c) 2001 */
+/* backlight support modified by Rene Wagner (c) 2001 */
+/* block patch by Eddie Sheldrake (c) 2001 inserted by Rene Wagner */
+/* big num patch by Luis Llorente (c) 2002 */
+/* adaptions to other CFontz* drivers Peter Marschall (c) 2005/6 */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -530,7 +530,7 @@ CFontz_reboot(Driver *drvthis)
 }
 
 /////////////////////////////////////////////////////////////////
-// Toggle the built-in automatic scrolling feature
+// Move the cursor to position (x,y) on the LCD
 //
 static void
 CFontz_cursor_goto(Driver *drvthis, int x, int y)
