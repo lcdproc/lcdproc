@@ -16,8 +16,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-extern char *optarg;
-extern int optind, optopt, opterr;
+
+#include "getopt.h"
 
 #include "shared/str.h"
 #include "shared/report.h"
@@ -27,7 +27,12 @@ extern int optind, optopt, opterr;
 #include "vc_link.h"
 #include "lcdvc.h"
 
+#if !defined(SYSCONFDIR)
+# define SYSCONFDIR	"/etc"
+#endif
+
 #define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdvc.conf"
+
 
 char * help_text =
 "lcdvc - LCDproc virtual console displayer.\n"
@@ -94,7 +99,7 @@ int main( int argc, char ** argv )
 
 int process_command_line( int argc, char ** argv )
 {
-	char c;
+	int c;
 	int error = 0;
 
 	/* No error output from getopt */
