@@ -1007,7 +1007,7 @@ output_help_screen(void)
 	fprintf (stdout, "\t-a <addr>\tNetwork (IP) address to bind to [%s]\n", DEFAULT_BIND_ADDR);
 	fprintf (stdout, "\t-p <port>\tNetwork port to listen for connections on [%i]\n", DEFAULT_BIND_PORT);
 	fprintf (stdout, "\t-u <user>\tUser to run as [%s]\n", DEFAULT_USER);
-	fprintf (stdout, "\t-w <waittime>\tTime to pause at each screen (in seconds) [%d]\n", DEFAULT_SCREEN_DURATION);
+	fprintf (stdout, "\t-w <waittime>\tTime to pause at each screen (in seconds) [%d]\n", DEFAULT_SCREEN_DURATION/RENDER_FREQ);
 	fprintf (stdout, "\t-s <bool>\tIf set, reporting will be done using syslog\n");
 	fprintf (stdout, "\t-r <level>\tReport level [%d]\n", DEFAULT_REPORTLEVEL);
 	fprintf (stdout, "\t-i <bool>\tWhether to rotate the server info screen\n");
