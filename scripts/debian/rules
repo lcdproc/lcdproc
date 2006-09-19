@@ -113,7 +113,7 @@ binary-arch: build install
 	dh_installinit --name=lcdvc
 #	dh_installcron
 #	dh_installinfo
-	dh_installman docs/LCDd.8 docs/lcdproc.1
+	dh_installman
 	dh_link
 	dh_strip
 	dh_compress
