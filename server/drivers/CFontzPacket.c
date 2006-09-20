@@ -569,7 +569,7 @@ CFontzPacket_flush (Driver *drvthis)
 /**
  * Get next key from the KeyRing.
  * \param drvthis  Pointer to driver structure.
- * \return  String represntation of the key.
+ * \return  String representation of the key.
  */
 MODULE_EXPORT const char *
 CFontzPacket_get_key (Driver *drvthis)
@@ -976,7 +976,7 @@ CFontzPacket_get_free_chars (Driver *drvthis)
 {
 //PrivateData *p = drvthis->private_data;
 
-  return NUM_CCs;
+	return NUM_CCs;
 }
 
 
