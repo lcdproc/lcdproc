@@ -1056,7 +1056,7 @@ IOWarrior_output(Driver *drvthis, int state)
   if (!p->output_mask)
      return;
 
-  p->output_state = on;
+  p->output_state = state;
 
   iowled_on_off(p->udh, p->productID, state & p->output_mask);
 }
