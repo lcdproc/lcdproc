@@ -134,8 +134,10 @@ static void CFontz633_no_live_report (Driver *drvthis);
 static void CFontz633_hardware_clear (Driver *drvthis);
 
 
-/*
- * Opens com port and sets baud correctly...
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Information of success (0) or failure (non-0).
  */
 MODULE_EXPORT int
 CFontz633_init (Driver *drvthis)
@@ -314,8 +316,9 @@ CFontz633_init (Driver *drvthis)
 }
 
 
-/*
- * Clean-up
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CFontz633_close (Driver *drvthis)
@@ -340,8 +343,10 @@ CFontz633_close (Driver *drvthis)
 }
 
 
-/*
- * Returns the display width in characters
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
  */
 MODULE_EXPORT int
 CFontz633_width (Driver *drvthis)
@@ -352,8 +357,10 @@ CFontz633_width (Driver *drvthis)
 }
 
 
-/*
- * Returns the display height in characters
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
  */
 MODULE_EXPORT int
 CFontz633_height (Driver *drvthis)
@@ -364,8 +371,10 @@ CFontz633_height (Driver *drvthis)
 }
 
 
-/*
- * Returns the width of a character in pixels
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
 CFontz633_cellwidth (Driver *drvthis)
@@ -376,8 +385,10 @@ CFontz633_cellwidth (Driver *drvthis)
 }
 
 
-/*
- * Returns the height of a character in pixels
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
 CFontz633_cellheight (Driver *drvthis)
@@ -388,8 +399,9 @@ CFontz633_cellheight (Driver *drvthis)
 }
 
 
-/*
- * Flushes all output to the lcd...
+/**
+ * Flush data on screen to the LCD.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CFontz633_flush (Driver *drvthis)
@@ -440,8 +452,10 @@ CFontz633_flush (Driver *drvthis)
 }
 
 
-/*
- * Return one char from the KeyRing
+/**
+ * Get next key from the KeyRing.
+ * \param drvthis  Pointer to driver structure.
+ * \return  String representation of the key.
  */
 MODULE_EXPORT const char *
 CFontz633_get_key (Driver *drvthis)
@@ -478,9 +492,13 @@ CFontz633_get_key (Driver *drvthis)
 }
 
 
-/*
- * Prints a character on the lcd display, at position (x,y).
- * The upper-left is (1,1), and the lower right should be (16,2).
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
  */
 MODULE_EXPORT void
 CFontz633_chr (Driver *drvthis, int x, int y, char c)
@@ -495,10 +513,12 @@ CFontz633_chr (Driver *drvthis, int x, int y, char c)
 }
 
 
-/*
- * Returns current contrast (in promille)
+/**
+ * Get current LCD contrast.
  * This is only the locally stored contrast, the contrast value
  * cannot be retrieved from the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Stored contrast in promille.
  */
 MODULE_EXPORT int
 CFontz633_get_contrast (Driver *drvthis)
@@ -509,8 +529,10 @@ CFontz633_get_contrast (Driver *drvthis)
 }
 
 
-/*
- *  Changes screen contrast (in promille)
+/**
+ * Change LCD contrast.
+ * \param drvthis  Pointer to driver structure.
+ * \param promille New contrast value in promille.
  */
 MODULE_EXPORT void
 CFontz633_set_contrast (Driver *drvthis, int promille)
@@ -531,8 +553,11 @@ CFontz633_set_contrast (Driver *drvthis, int promille)
 }
 
 
-/*
- * Retrieves brightness (in promille)
+/**
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return Stored brightness in promille.
  */
 MODULE_EXPORT int
 CFontz633_get_brightness(Driver *drvthis, int state)
@@ -543,8 +568,11 @@ CFontz633_get_brightness(Driver *drvthis, int state)
 }
 
 
-/*
- * Sets on/off brightness (in promille)
+/**
+ * Set on/off brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want to store the value.
+ * \param promille New brightness in promille.
  */
 MODULE_EXPORT void
 CFontz633_set_brightness(Driver *drvthis, int state, int promille)
@@ -567,9 +595,10 @@ CFontz633_set_brightness(Driver *drvthis, int state, int promille)
 }
 
 
-/*
- * Sets the backlight on or off.
- * The hardware support any value between 0 and 100.
+/**
+ * Turn the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
  */
 MODULE_EXPORT void
 CFontz633_backlight (Driver *drvthis, int on)
@@ -585,8 +614,9 @@ CFontz633_backlight (Driver *drvthis, int on)
 }
 
 
-/*
- * Get rid of the blinking cursor
+/**
+ * Get rid of the blinking cursor.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontz633_hidecursor (Driver *drvthis)
@@ -597,8 +627,9 @@ CFontz633_hidecursor (Driver *drvthis)
 }
 
 
-/*
+/**
  * Stop live reporting of temperature.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontz633_no_live_report (Driver *drvthis)
@@ -612,8 +643,9 @@ CFontz633_no_live_report (Driver *drvthis)
 }
 
 
-/*
+/**
  * Stop the reporting of any fan.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontz633_no_fan_report (Driver *drvthis)
@@ -624,8 +656,9 @@ CFontz633_no_fan_report (Driver *drvthis)
 }
 
 
-/*
+/**
  * Stop the reporting of any temperature.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontz633_no_temp_report (Driver *drvthis)
@@ -637,8 +670,9 @@ CFontz633_no_temp_report (Driver *drvthis)
 }
 
 
-/*
- * Reset the display bios
+/**
+ * Reset the LCD display.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontz633_reboot (Driver *drvthis)
@@ -651,18 +685,18 @@ CFontz633_reboot (Driver *drvthis)
 }
 
 
-/*
- * Draws a vertical bar...
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
 CFontz633_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-/* x and y are the start position of the bar.
- * The bar by default grows in the 'up' direction
- * (other direction not yet implemented).
- * len is the number of characters that the bar is long at 100%
- * promille is the number of promilles (0..1000) that the bar should be filled.
- */
 	PrivateData *p = drvthis->private_data;
 
 	if (p->ccmode != vbar) {
@@ -690,18 +724,18 @@ CFontz633_vbar (Driver *drvthis, int x, int y, int len, int promille, int option
 }
 
 
-/*
- * Draws a horizontal bar to the right.
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
 CFontz633_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-/* x and y are the start position of the bar.
- * The bar by default grows in the 'right' direction
- * (other direction not yet implemented).
- * len is the number of characters that the bar is long at 100%
- * promille is the number of promilles (0..1000) that the bar should be filled.
- */
 	PrivateData *p = drvthis->private_data;
 
 	if (p->ccmode != hbar) {
@@ -729,8 +763,11 @@ CFontz633_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 }
 
 
-/*
- * Writes a big number.
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
  */
 MODULE_EXPORT void
 CFontz633_num(Driver *drvthis, int x, int num)
@@ -759,24 +796,28 @@ int do_init = 0;
 }
 
 
-/*
- * Gets number of custom chars (always NUM_CCs)
+/**
+ * Get number of custom chars available.
+ * \param drvthis  Pointer to driver structure.
+ * \returns  Number of custom characters (always NUM_CCs).
  */
 MODULE_EXPORT int
 CFontz633_get_free_chars (Driver *drvthis)
 {
 //PrivateData *p = drvthis->private_data;
 
-  return NUM_CCs;
+	return NUM_CCs;
 }
 
 
-/*
- * Sets a custom character from 0 - (NUM_CCs-1)
- *
- * For input, values > 0 mean "on" and values <= 0 are "off".
- *
- * The input is just an array of characters...
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [0 - (NUM_CCs-1)].
+ * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ *                 starting from the top to bottom.
+ *                 The bits in each byte represent the pixels where the LSB
+ *                 (least significant bit) is the rightmost pixel in each pixel row.
  */
 MODULE_EXPORT void
 CFontz633_set_char (Driver *drvthis, int n, unsigned char *dat)
@@ -800,8 +841,13 @@ CFontz633_set_char (Driver *drvthis, int n, unsigned char *dat)
 }
 
 
-/*
- * Places an icon on screen
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
  */
 MODULE_EXPORT int
 CFontz633_icon (Driver *drvthis, int x, int y, int icon)
@@ -983,8 +1029,9 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 }
 
 
-/*
- * Clears the LCD screen
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CFontz633_clear (Driver *drvthis)
@@ -996,8 +1043,9 @@ CFontz633_clear (Driver *drvthis)
 }
 
 
-/*
- * Hardware clears the LCD screen
+/**
+ * Clear the LCD using hardware commands.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontz633_hardware_clear (Driver *drvthis)
@@ -1008,9 +1056,13 @@ CFontz633_hardware_clear (Driver *drvthis)
 }
 
 
-/*
- * Prints a string on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (16,2).
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
  */
 MODULE_EXPORT void
 CFontz633_string (Driver *drvthis, int x, int y, char string[])
