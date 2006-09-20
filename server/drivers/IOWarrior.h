@@ -135,7 +135,7 @@ MODULE_EXPORT void IOWarrior_num(Driver *drvthis, int x, int num);
 MODULE_EXPORT int  IOWarrior_get_free_chars(Driver *drvthis);
 MODULE_EXPORT void IOWarrior_set_char(Driver *drvthis, int n, unsigned char *dat);
 MODULE_EXPORT int  IOWarrior_icon(Driver *drvthis, int x, int y, int icon);
-MODULE_EXPORT void IOWarrior_output(Driver *drvthis, int on);
+MODULE_EXPORT void IOWarrior_output(Driver *drvthis, int state);
 MODULE_EXPORT const char *IOWarrior_get_info(Driver *drvthis);
 
 #endif	/* IOWARRIOR_H */

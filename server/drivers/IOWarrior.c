@@ -75,7 +75,7 @@ static int iow_led_wcmd(usb_dev_handle *udh,int len,unsigned char *data)
 /* ------------------- IOWarrior LCD routines ------------------------------ */
 
 /* start IOWarrior's LCD mode */
-int iowlcd_enable(usb_dev_handle *udh)
+static int iowlcd_enable(usb_dev_handle *udh)
 {
   unsigned char lcd_cmd[8] = { 0x04, 0x01, 0, 0, 0, 0, 0, 0 };
   int res = iow_lcd_wcmd(udh,lcd_cmd);
@@ -84,7 +84,7 @@ int iowlcd_enable(usb_dev_handle *udh)
 }
 
 /* leave IOWarrior's LCD mode */
-int iowlcd_disable(usb_dev_handle *udh)
+static int iowlcd_disable(usb_dev_handle *udh)
 {
   unsigned char lcd_cmd[8] = { 0x04, 0x00, 0, 0, 0, 0, 0, 0 };
   int res = iow_lcd_wcmd(udh,lcd_cmd);
@@ -93,7 +93,7 @@ int iowlcd_disable(usb_dev_handle *udh)
 }
 
 /* clear IOWarrior's display */
-int iowlcd_display_clear(usb_dev_handle *udh)
+static int iowlcd_display_clear(usb_dev_handle *udh)
 {
   unsigned char lcd_cmd[8] = { 0x05, 1, 0x01, 0, 0, 0, 0, 0 };
   int res = iow_lcd_wcmd(udh,lcd_cmd);
@@ -101,7 +101,7 @@ int iowlcd_display_clear(usb_dev_handle *udh)
   return res;
 }
 
-int iowlcd_display_on_off(usb_dev_handle *udh,int display,int cursor,int blink)
+static int iowlcd_display_on_off(usb_dev_handle *udh,int display,int cursor,int blink)
 {
   unsigned char lcd_cmd[8] = { 0x05, 1, 0x08, 0, 0, 0, 0, 0 };
   if (display) lcd_cmd[2] |= 0x04;
@@ -110,7 +110,7 @@ int iowlcd_display_on_off(usb_dev_handle *udh,int display,int cursor,int blink)
   return iow_lcd_wcmd(udh,lcd_cmd);
 }
 
-int iowlcd_set_function(usb_dev_handle *udh,int eight_bit,int two_line,int ten_dots)
+static int iowlcd_set_function(usb_dev_handle *udh,int eight_bit,int two_line,int ten_dots)
 {
   unsigned char lcd_cmd[8] = { 0x05, 1, 0x20, 0, 0, 0, 0, 0 };
   if (eight_bit) lcd_cmd[2] |= 0x10;
@@ -119,21 +119,21 @@ int iowlcd_set_function(usb_dev_handle *udh,int eight_bit,int two_line,int ten_d
   return iow_lcd_wcmd(udh,lcd_cmd);
 }
 
-int iowlcd_set_cgram_addr(usb_dev_handle *udh,int addr)
+static int iowlcd_set_cgram_addr(usb_dev_handle *udh,int addr)
 {
   unsigned char lcd_cmd[8] = { 0x05, 1, 0x40, 0, 0, 0, 0, 0 };
   lcd_cmd[2] |= (addr & 0x3f);
   return iow_lcd_wcmd(udh,lcd_cmd);
 }
 
-int iowlcd_set_ddram_addr(usb_dev_handle *udh,int addr)
+static int iowlcd_set_ddram_addr(usb_dev_handle *udh,int addr)
 {
   unsigned char lcd_cmd[8] = { 0x05, 1, 0x80, 0, 0, 0, 0, 0 };
   lcd_cmd[2] |= (addr & 0x7f);
   return iow_lcd_wcmd(udh,lcd_cmd);
 }
 
-int iowlcd_write_data(usb_dev_handle *udh,int len,unsigned char *data)
+static int iowlcd_write_data(usb_dev_handle *udh,int len,unsigned char *data)
 {
   unsigned char lcd_cmd[8] = { 0x05, 0x80, 0, 0, 0, 0, 0, 0 };
   unsigned char *ptr = data;
@@ -161,21 +161,21 @@ int iowlcd_write_data(usb_dev_handle *udh,int len,unsigned char *data)
   return len;
 }
 
-int iowlcd_set_pos(usb_dev_handle *udh,int x,int y)
+static int iowlcd_set_pos(usb_dev_handle *udh,int x,int y)
 {
   const unsigned char lineOff[4] = { 0x00, 0x40, 0x14, 0x54 };
   unsigned char addr = lineOff[y] + x;
   return iowlcd_set_ddram_addr(udh, addr);
 }
 
-int iowlcd_set_text(usb_dev_handle *udh,int x,int y,int len,unsigned char *data)
+static int iowlcd_set_text(usb_dev_handle *udh,int x,int y,int len,unsigned char *data)
 {
   if (iowlcd_set_pos(udh,x,y) == IOW_ERROR)
     return IOW_ERROR;
   return iowlcd_write_data(udh,len,data);
 }
 
-int iowlcd_load_chars(usb_dev_handle *udh,int offset,int num,unsigned char *bits)
+static int iowlcd_load_chars(usb_dev_handle *udh,int offset,int num,unsigned char *bits)
 {
   if (iowlcd_set_cgram_addr(udh, offset<<3) == IOW_ERROR)
     return IOW_ERROR;
@@ -185,7 +185,7 @@ int iowlcd_load_chars(usb_dev_handle *udh,int offset,int num,unsigned char *bits
 
 /* ------------------- IOWarrior LED routines ------------------------------ */
 
-int iowled_on_off(usb_dev_handle *udh,int type, unsigned int pattern)
+static int iowled_on_off(usb_dev_handle *udh,int type, unsigned int pattern)
 {
   unsigned char led_cmd[4] = { 0x00, 0x00, 0x00, 0x00 };
   int i;
@@ -206,8 +206,10 @@ int iowled_on_off(usb_dev_handle *udh,int type, unsigned int pattern)
  * Here start the API function
  */
 
-/*****************************************************
- * API: Open USB device and initialize it ...
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Information of success (0) or failure (non-0).
  */
 MODULE_EXPORT int
 IOWarrior_init(Driver *drvthis)
@@ -411,8 +413,9 @@ PrivateData *p;
 }
 
 
-/******************************************************
- * API: Clean-up
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 IOWarrior_close(Driver *drvthis)
@@ -448,8 +451,10 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/******************************************************
- * API: Returns the display's width
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
  */
 MODULE_EXPORT int 
 IOWarrior_width(Driver *drvthis)
@@ -462,8 +467,10 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/******************************************************
- * API: Returns the display's height
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
  */
 MODULE_EXPORT int 
 IOWarrior_height(Driver *drvthis)
@@ -476,8 +483,10 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/******************************************************
- * API: Returns the display's character cell width
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int 
 IOWarrior_cellwidth(Driver *drvthis)
@@ -490,8 +499,10 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/******************************************************
- * API: Returns the display's character cell height
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int 
 IOWarrior_cellheight(Driver *drvthis)
@@ -504,8 +515,9 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/******************************************************
- * API: Send what we have to the hardware
+/**
+ * Flush data on screen to the LCD.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 IOWarrior_flush(Driver *drvthis)
@@ -566,8 +578,9 @@ int count;
 }
 
 
-/*********************************************************
- * API: Clears the LCD screen
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 IOWarrior_clear(Driver *drvthis)
@@ -582,9 +595,13 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/*******************************************************************
- * API: Prints a character on the lcd display, at position (x,y).
- * The upper-left is (1,1), and the lower right is (p->width,p->height).
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
  */
 MODULE_EXPORT void
 IOWarrior_chr(Driver *drvthis, int x, int y, char c)
@@ -601,9 +618,14 @@ PrivateData *p = drvthis->private_data;
 		  drvthis->name, (unsigned) c, x, y);
 }
 
-/*****************************************************************
- * API: Prints a string on the lcd display, at position (x,y).
- * The upper-left is (1,1), and the lower right is (p->width,p->height).
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
  */
 MODULE_EXPORT void
 IOWarrior_string(Driver *drvthis, int x, int y, char *string)
@@ -635,9 +657,10 @@ int i;
  */
 
 
-/*********************************************************
- * API: Sets the backlight
- * the API only permit setting to off=0 and on<>0
+/**
+ * Turn the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
  */
 MODULE_EXPORT void
 IOWarrior_backlight(Driver *drvthis, int on)
@@ -648,20 +671,19 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/*************************************************************
- * API: Draws a vertical bar...
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
 IOWarrior_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 PrivateData *p = drvthis->private_data;
-
-  /* x and y are the start position of the bar.
-   * The bar by default grows in the 'up' direction
-   *(other direction not yet implemented).
-   * len is the number of characters that the bar is long at 100%
-   * promille is the number of promilles(0..1000) that the bar should be filled.
-   */
 
   if (p->ccmode != vbar) {
     unsigned char vBar[p->cellheight];
@@ -688,20 +710,19 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/*****************************************************************
- * API: Draws a horizontal bar to the right.
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
 IOWarrior_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 PrivateData *p = drvthis->private_data;
-
-  /* x and y are the start position of the bar.
-   * The bar by default grows in the 'cwrightup' direction
-   *(other direction not yet implemented).
-   * len is the number of characters that the bar is long at 100%
-   * promille is the number of promilles(0..1000) that the bar should be filled.
-   */
 
   if (p->ccmode != hbar) {
     unsigned char hBar[p->cellheight];
@@ -727,8 +748,11 @@ PrivateData *p = drvthis->private_data;
 }
 
 
-/*******************************************************************
- * API: Writes a big number.
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
  */
 MODULE_EXPORT void
 IOWarrior_num(Driver *drvthis, int x, int num)
@@ -757,8 +781,12 @@ int do_init = 0;
 }
 
 
-/*********************************************************************
- * API: set cursor position and state
+/**
+ * Set cursor position and state.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal cursor position (column).
+ * \param y        Vertical cursor position (row).
+ * \param state    New cursor state.
  */
 /* not yet tested (needs input)
  * maybe better: set only variables here and update when flushing
@@ -785,8 +813,11 @@ PrivateData *p = drvthis->private_data;
 }
 */
 
-/*********************************************************************
- * API: get number of custom chars (always NUM_CCs)
+
+/**
+ * Get number of custom chars available.
+ * \param drvthis  Pointer to driver structure.
+ * \returns  Number of custom characters (always NUM_CCs).
  */
 MODULE_EXPORT int
 IOWarrior_get_free_chars (Driver *drvthis)
@@ -797,13 +828,14 @@ IOWarrior_get_free_chars (Driver *drvthis)
 }
 
 
-/*********************************************************************
- * API: Sets a custom character from 0 - (NUM_CCs-1)
- *
- * The input is an array of bytes, each representing a pixel row
- * starting from the top to bottom.
- * The bits in each byte represent the pixels where the LSB
- * (least significant bit) is the rightmost pixel in each pixel row
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [0 - (NUM_CCs-1)].
+ * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ *                 starting from the top to bottom.
+ *                 The bits in each byte represent the pixels where the LSB
+ *                 (least significant bit) is the rightmost pixel in each pixel row.
  */
 MODULE_EXPORT void
 IOWarrior_set_char(Driver *drvthis, int n, unsigned char *dat)
@@ -830,8 +862,13 @@ int row;
 }
 
 
-/*********************************************************************
- * API: Places an icon on screen
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
  */
 MODULE_EXPORT int 
 IOWarrior_icon(Driver *drvthis, int x, int y, int icon)
@@ -1005,11 +1042,13 @@ static unsigned char block_filled[] =
 }
 
 
-/*********************************************************************
- * API: Places an icon on screen
+/**
+ * Set output port.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Integer with bits representingthe new states
  */
 MODULE_EXPORT void
-IOWarrior_output(Driver *drvthis, int on)
+IOWarrior_output(Driver *drvthis, int state)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -1019,12 +1058,14 @@ IOWarrior_output(Driver *drvthis, int on)
 
   p->output_state = on;
 
-  iowled_on_off(p->udh, p->productID, (on) ? p->output_mask : 0);
+  iowled_on_off(p->udh, p->productID, state & p->output_mask);
 }
 
 
-/*********************************************************************
- * API: provides some info about this driver
+/**
+ * Provide some information about this driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Constant string with information.
  */
 MODULE_EXPORT const char *
 IOWarrior_get_info (Driver *drvthis)
