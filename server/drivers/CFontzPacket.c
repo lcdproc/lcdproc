@@ -386,7 +386,7 @@ CFontzPacket_init (Driver *drvthis)
 
 
 /**
- * Close the driver (do necessary clean-up.
+ * Close the driver (do necessary clean-up).
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
@@ -984,8 +984,10 @@ CFontzPacket_get_free_chars (Driver *drvthis)
  * Define a custom character and write it to the LCD.
  * \param drvthis  Pointer to driver structure.
  * \param n        Custom character to define [0 - (NUM_CCs-1)].
- * \param dat      Array of 8-bytes, where each byte represents a row
- *                 and each bit represents a pixel in the character.
+ * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ *                 starting from the top to bottom.
+ *                 The bits in each byte represent the pixels where the LSB
+ *                 (least significant bit) is the rightmost pixel in each pixel row.
  */
 MODULE_EXPORT void
 CFontzPacket_set_char (Driver *drvthis, int n, unsigned char *dat)
