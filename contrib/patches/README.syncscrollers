@@ -1,0 +1,14 @@
+Multiple scrollers on the same screen are not synchronised with eachother 
+- some may be scrolling in the opposite direction to others.  I find 
+that this makes the display look messy and harder to read.
+
+The patch in syncscrollers.patch addresses this problem by ensuring the scrollers
+are all going in the same direction.  All scrollers on the screen now wait 
+once they reach the end of their travel until the longer scrollers catch 
+up.
+
+At the moment this has not been done as an autoconf option - I'm not sure 
+what the consensus is on whether this sort of thing should be optional or 
+not?
+
+Steve Hill <steve@nexusuk.org>
