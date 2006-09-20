@@ -29,6 +29,7 @@
 #include "screen.h"
 #include "screenlist.h"
 #include "widget.h"
+#include "main.h"
 #include "serverscreens.h"
 
 #define UNSET_INT -1
