@@ -170,8 +170,10 @@ static void CFontzPacket_no_live_report (Driver *drvthis);
 static void CFontzPacket_hardware_clear (Driver *drvthis);
 
 
-/*
- * Opens com port and sets baud correctly...
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Information of success (0) or failure (non-0).
  */
 MODULE_EXPORT int
 CFontzPacket_init (Driver *drvthis)
@@ -383,8 +385,9 @@ CFontzPacket_init (Driver *drvthis)
 }
 
 
-/*
- * Clean-up
+/**
+ * Close the driver (do necessary clean-up.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CFontzPacket_close (Driver *drvthis)
@@ -409,8 +412,10 @@ CFontzPacket_close (Driver *drvthis)
 }
 
 
-/*
- * Returns the display width in characters
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
  */
 MODULE_EXPORT int
 CFontzPacket_width (Driver *drvthis)
@@ -421,8 +426,10 @@ CFontzPacket_width (Driver *drvthis)
 }
 
 
-/*
- * Returns the display height in characters
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
  */
 MODULE_EXPORT int
 CFontzPacket_height (Driver *drvthis)
@@ -433,8 +440,10 @@ CFontzPacket_height (Driver *drvthis)
 }
 
 
-/*
- * Returns the width of a character in pixels
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
 CFontzPacket_cellwidth (Driver *drvthis)
@@ -445,8 +454,10 @@ CFontzPacket_cellwidth (Driver *drvthis)
 }
 
 
-/*
- * Returns the height of a character in pixels
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
 CFontzPacket_cellheight (Driver *drvthis)
@@ -457,19 +468,21 @@ CFontzPacket_cellheight (Driver *drvthis)
 }
 
 
-/*
- * Flushes all output to the lcd...
+/**
+ * Flush all output to the LCD.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CFontzPacket_flush (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
+  int modified = 0;
   int i,j;
 
   if (p->model == 633) {
   /*
    * For CF633 we don't use delta update yet.
-   * The protocol only permit update of full or partial line starting from pos 0.
+   * Older HW/FW types only support updates of full or partial line starting from pos 0.
    */
   unsigned char *xp = p->framebuf;
   unsigned char *xq = p->backingstore;
@@ -478,6 +491,7 @@ CFontzPacket_flush (Driver *drvthis)
       if (*xp++ != *xq++) {
 	send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_One, 16, p->framebuf);
         memcpy(p->backingstore, p->framebuf, p->width);
+        modified++;
         break;
       }
     }
@@ -489,6 +503,7 @@ CFontzPacket_flush (Driver *drvthis)
       if (*xp++ != *xq++) {
         send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_Two, 16, p->framebuf + p->width);
         memcpy(p->backingstore + p->width, p->framebuf + p->width, p->width);
+        modified++;
         break;
       }
     }
@@ -506,40 +521,6 @@ CFontzPacket_flush (Driver *drvthis)
       debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
       debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
 
-#if defined(CFONTZPACKET_OLD_OPTIMATION)       
-      /* Strategy:
-       * - one update command per chunk of modified data
-       */
-
-      for (j = 0; j < p->width; ) {
-	// skip over identical portions
-	for ( ; *sp == *sq && j < p->width; sp++, sq++, j++)
-	  ;
-
-	// deal with the differences
-	if (j < p->width) {
-          unsigned char out[23];
-          int diff_length;
-	  int first_diff = j;
-
-	  // get length of differing portions
-	  for ( ; *sp != *sq && j < p->width; sp++, sq++, j++)
-	    ;
-
-	  // send the difference to the screen
-	  diff_length = j - first_diff;
-	  out[0] = first_diff;	// column
-	  out[1] = i;		// line
-
-	  debug(RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
-	 	 __FUNCTION__, out[0], out[1], diff_length, diff_length,
-		 &p->framebuf[first_diff + (i * p->width)]);
-
-	  memcpy(&out[2], &p->framebuf[first_diff + (i * p->width)], diff_length);
-	  send_bytes_message(p->fd, CF633_Send_Data_to_LCD, diff_length + 2, out);
-	}
-      } // j < p->width
-#else
       /* Strategy:
        * - not more than one update command per line
        * - leave out leading and trailing parts that are identical
@@ -571,16 +552,24 @@ CFontzPacket_flush (Driver *drvthis)
 
 	memcpy(&out[2], sp, length);
 	send_bytes_message(p->fd, CF633_Send_Data_to_LCD, length + 2, out);
+     	modified++;
       }      
-#endif      
     }	// i < p->height
-    memcpy(p->backingstore, p->framebuf, p->width * p->height);
+
+    if (modified)
+      memcpy(p->backingstore, p->framebuf, p->width * p->height);
   }
+
+  /* send something to the LCD to allow keys to be received */
+  if (!modified)
+    send_bytes_message(p->fd,CF633_Ping_Command, 0, NULL);
 }
 
 
-/*
- * Return one char from the KeyRing
+/**
+ * Return next key from the KeyRing.
+ * \param drvthis  Pointer to driver structure.
+ * \return  String represntation of the key.
  */
 MODULE_EXPORT const char *
 CFontzPacket_get_key (Driver *drvthis)
@@ -642,9 +631,13 @@ CFontzPacket_get_key (Driver *drvthis)
 }
 
 
-/*
- * Prints a character on the lcd display, at position (x,y).
- * The upper-left is (1,1), and the lower right should be (16,2).
+/**
+ * Print a character on the LCD at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
  */
 MODULE_EXPORT void
 CFontzPacket_chr (Driver *drvthis, int x, int y, char c)
@@ -661,9 +654,13 @@ CFontzPacket_chr (Driver *drvthis, int x, int y, char c)
 }
 
 
-/*
- * Prints a character on the lcd display, at position (x,y).
- * The upper-left is (1,1), and the lower right should be (16,2).
+/**
+ * Print a raw character on the LCD at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
  */
 static void
 CFontzPacket_raw_chr (Driver *drvthis, int x, int y, unsigned char c)
@@ -678,10 +675,12 @@ CFontzPacket_raw_chr (Driver *drvthis, int x, int y, unsigned char c)
 }
 
 
-/*
- * Returns current contrast (in promille)
+/**
+ * Return current contrast.
  * This is only the locally stored contrast, the contrast value
  * cannot be retrieved from the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Stored contrast in promille.
  */
 MODULE_EXPORT int
 CFontzPacket_get_contrast (Driver *drvthis)
@@ -692,8 +691,10 @@ CFontzPacket_get_contrast (Driver *drvthis)
 }
 
 
-/*
- *  Changes screen contrast (in promille)
+/**
+ * Change screen contrast.
+ * \param drvthis  Pointer to driver structure.
+ * \param promille New contrast value in promille.
  */
 MODULE_EXPORT void
 CFontzPacket_set_contrast (Driver *drvthis, int promille)
@@ -718,8 +719,11 @@ CFontzPacket_set_contrast (Driver *drvthis, int promille)
 }
 
 
-/*
- * Retrieves brightness (in promille)
+/**
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return Stored brightness in promille.
  */
 MODULE_EXPORT int
 CFontzPacket_get_brightness(Driver *drvthis, int state)
@@ -730,8 +734,11 @@ CFontzPacket_get_brightness(Driver *drvthis, int state)
 }
 
 
-/*
- * Sets on/off brightness (in promille)
+/**
+ * Set on/off brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want to store the value.
+ * \param promille New brightness in promille.
  */
 MODULE_EXPORT void
 CFontzPacket_set_brightness(Driver *drvthis, int state, int promille)
@@ -754,9 +761,10 @@ CFontzPacket_set_brightness(Driver *drvthis, int state, int promille)
 }
 
 
-/*
- * Sets the backlight on or off.
- * The hardware support any value between 0 and 100.
+/**
+ * Set the backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
  */
 MODULE_EXPORT void
 CFontzPacket_backlight (Driver *drvthis, int on)
@@ -772,8 +780,9 @@ CFontzPacket_backlight (Driver *drvthis, int on)
 }
 
 
-/*
- * Get rid of the blinking cursor
+/**
+ * Get rid of the blinking cursor.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontzPacket_hidecursor (Driver *drvthis)
@@ -784,8 +793,9 @@ CFontzPacket_hidecursor (Driver *drvthis)
 }
 
 
-/*
+/**
  * Stop live reporting of temperature.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontzPacket_no_live_report (Driver *drvthis)
@@ -800,8 +810,9 @@ CFontzPacket_no_live_report (Driver *drvthis)
 }
 
 
-/*
+/**
  * Stop the reporting of any fan.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontzPacket_no_fan_report (Driver *drvthis)
@@ -813,8 +824,9 @@ CFontzPacket_no_fan_report (Driver *drvthis)
 }
 
 
-/*
+/**
  * Stop the reporting of any temperature.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontzPacket_no_temp_report (Driver *drvthis)
@@ -827,8 +839,9 @@ CFontzPacket_no_temp_report (Driver *drvthis)
 }
 
 
-/*
- * Reset the display bios
+/**
+ * Reset the LCD display.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontzPacket_reboot (Driver *drvthis)
@@ -841,18 +854,18 @@ CFontzPacket_reboot (Driver *drvthis)
 }
 
 
-/*
- * Draws a vertical bar...
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
 CFontzPacket_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-/* x and y are the start position of the bar.
- * The bar by default grows in the 'up' direction
- * (other direction not yet implemented).
- * len is the number of characters that the bar is long at 100%
- * promille is the number of promilles (0..1000) that the bar should be filled.
- */
 	PrivateData *p = drvthis->private_data;
 
 	if (p->ccmode != vbar) {
@@ -881,18 +894,18 @@ CFontzPacket_vbar (Driver *drvthis, int x, int y, int len, int promille, int opt
 }
 
 
-/*
- * Draws a horizontal bar to the right.
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
 CFontzPacket_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-/* x and y are the start position of the bar.
- * The bar by default grows in the 'right' direction
- * (other direction not yet implemented).
- * len is the number of characters that the bar is long at 100%
- * promille is the number of promilles (0..1000) that the bar should be filled.
- */
 	PrivateData *p = drvthis->private_data;
 
 	if (p->ccmode != hbar) {
@@ -920,8 +933,11 @@ CFontzPacket_hbar (Driver *drvthis, int x, int y, int len, int promille, int opt
 }
 
 
-/*
- * Writes a big number.
+/**
+ * Write a big number.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
  */
 MODULE_EXPORT void
 CFontzPacket_num(Driver *drvthis, int x, int num)
@@ -950,8 +966,10 @@ int do_init = 0;
 }
 
 
-/*
- * Gets number of custom chars (always NUM_CCs)
+/**
+ * Get number of custom chars available (always NUM_CCs).
+ * \param drvthis  Pointer to driver structure.
+ * \returns  Number of custom characters.
  */
 MODULE_EXPORT int
 CFontzPacket_get_free_chars (Driver *drvthis)
@@ -962,12 +980,12 @@ CFontzPacket_get_free_chars (Driver *drvthis)
 }
 
 
-/*
- * Sets a custom character from 0 - (NUM_CCs-1)
- *
- * For input, values > 0 mean "on" and values <= 0 are "off".
- *
- * The input is just an array of characters...
+/**
+ * Set a custom character from 0 - (NUM_CCs-1).
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define
+ * \param dat      Array of 8-bytes, where each byte represents a row
+ *                 and each bit represents a pixel in the character.
  */
 MODULE_EXPORT void
 CFontzPacket_set_char (Driver *drvthis, int n, unsigned char *dat)
@@ -991,8 +1009,13 @@ CFontzPacket_set_char (Driver *drvthis, int n, unsigned char *dat)
 }
 
 
-/*
- * Places an icon on screen
+/**
+ * Place an icon on the LCD screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
  */
 MODULE_EXPORT int
 CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
@@ -1194,8 +1217,12 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 }
 
 
-/*
- * * Sets cursor position and state
+/**
+ * Set cursor position and state.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal cursor position (column).
+ * \param y        Vertical cursor position (row).
+ * \param state    New cursor state.
  */
 MODULE_EXPORT void 
 CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
@@ -1232,8 +1259,9 @@ CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
 }
 
 
-/*
- * Clears the LCD screen
+/**
+ * Clear the LCD screen.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CFontzPacket_clear (Driver *drvthis)
@@ -1245,8 +1273,9 @@ CFontzPacket_clear (Driver *drvthis)
 }
 
 
-/*
- * Hardware clears the LCD screen
+/**
+ * Clear the LCD using hardware commands.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 CFontzPacket_hardware_clear (Driver *drvthis)
@@ -1257,9 +1286,13 @@ CFontzPacket_hardware_clear (Driver *drvthis)
 }
 
 
-/*
- * Prints a string on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right is (p->width, p->height).
+/**
+ * Print a string on the lcd display, at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
  */
 MODULE_EXPORT void
 CFontzPacket_string (Driver *drvthis, int x, int y, char string[])
@@ -1285,8 +1318,10 @@ CFontzPacket_string (Driver *drvthis, int x, int y, char string[])
 }
 
 
-/*
- * Output values using the LEDs of a CF635
+/**
+ * Output values using the LEDs of a CF635.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Integer with bits representing LED states. 
  */
 MODULE_EXPORT void
 CFontzPacket_output(Driver *drvthis, int state)
@@ -1316,8 +1351,10 @@ CFontzPacket_output(Driver *drvthis, int state)
 }
 
 
-/*
- * Provide some info about this driver
+/**
+ * Provide some information about this driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Constant string with information.
  */
 MODULE_EXPORT const char *
 CFontzPacket_get_info(Driver *drvthis)
