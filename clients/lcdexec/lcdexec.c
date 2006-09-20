@@ -46,9 +46,6 @@ char * help_text =
 
 char * progname = "lcdexec";
 
-extern char *optarg;
-extern int optind, optopt, opterr;
-
 /* Variables set by config */
 #define UNSET_INT -1
 #define UNSET_STR "\01"

@@ -51,10 +51,6 @@
 #endif
 /* TODO: fill in what to include otherwise */
 
-/* REVISIT: externs should be provided by a header */
-extern char *optarg;
-extern int optind, optopt, opterr;
-
 #include "shared/report.h"
 
 #include "drivers.h"
