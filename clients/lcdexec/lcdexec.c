@@ -327,7 +327,7 @@ int exec_command(MenuEntry *cmd)
 		switch (fork()) {
 		  case 0:
 			/* We're the child. Execute the command. */
-			execv(argv[0], argv);
+			execv(argv[0], (char **) argv);
 			exit(0);
 			break;
 		  case -1:
