@@ -2,9 +2,9 @@ AC_DEFUN([LCD_DRIVERS_SELECT], [
 AC_CHECKING(for which drivers to compile)
 
 AC_ARG_ENABLE(drivers,
-	[  --enable-drivers=<list> compile driver for LCDs in <list>.]
-	[                  drivers may be separated with commas.]
-	[                  Possible choices are:]
+	[  --enable-drivers=<list> compile drivers for LCDs in <list>,]
+	[                  which is a comma-separated list of drivers.]
+	[                  Possible drivers are:]
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,EyeboxOne,]
 	[                    g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,]
@@ -745,8 +745,8 @@ AC_DEFUN([BB_ENABLE_DOXYGEN],
 [
 AC_ARG_ENABLE(doxygen, [  --enable-doxygen        enable documentation generation with doxygen (auto)])
 AC_ARG_ENABLE(dot, [  --enable-dot            use 'dot' to generate graphs in doxygen (auto)])
-AC_ARG_ENABLE(html-dox, [  --enable-html-dox      enable HTML generation with doxygen (yes)], [], [ enable_html_dox=yes])
-AC_ARG_ENABLE(latex-dox, [  --enable-latex-dox     enable LaTeX documentation generation with doxygen (no)], [], [ enable_latex_dox=no])
+AC_ARG_ENABLE(html-dox, [  --enable-html-dox       enable HTML generation with doxygen (yes)], [], [ enable_html_dox=yes])
+AC_ARG_ENABLE(latex-dox, [  --enable-latex-dox      enable LaTeX documentation generation with doxygen (no)], [], [ enable_latex_dox=no])
 if test "x$enable_doxygen" = xno; then
         enable_dox=no
 else
