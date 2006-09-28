@@ -64,6 +64,12 @@
 #define GIVE_UP 2
 
 
+/* define CFONTZ633_WRITE_DELAY to use select when waiting for packet acknowledgement */
+#if !defined(CFONTZ633_WRITE_DELAY)
+# define CFONTZ633_WRITE_DELAY	250
+#endif
+
+
 /* static local functions */
 static void send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in);
 static int  get_crc(unsigned char *buf, int len, int seed);
