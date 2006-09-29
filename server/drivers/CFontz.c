@@ -56,11 +56,6 @@ typedef enum {
 } CGmode;
 
 
-typedef struct cgram_cache {
-	char cache[DEFAULT_CELL_HEIGHT];
-	int clean;
-} CGram;
-
 typedef struct driver_private_data {
 	char device[200];
 
@@ -78,7 +73,6 @@ typedef struct driver_private_data {
 	unsigned char *backingstore;
 
 	/* defineable characters */
-	CGram cc[NUM_CCs];
 	CGmode ccmode;
 
 	int contrast;
