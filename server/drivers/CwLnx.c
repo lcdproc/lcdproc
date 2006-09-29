@@ -78,6 +78,7 @@ get_info	.
 static char *defaultKeyMap[MaxKeyMap] = { "Up", "Down", "Left", "Right", "Enter", "Escape" };
 
 typedef enum {
+    standard = 0,
     hbar = 1,
     vbar = 2,
     bign = 4,
@@ -152,6 +153,7 @@ static void CwLnx_draw_frame(Driver *drvthis, char *dat);
 #define SETUP_DELAY		1	/* 2 sec */
 
 
+
 int Write_LCD(int fd, char *c, int size)
 {
     int rc;
@@ -173,8 +175,6 @@ int Write_LCD(int fd, char *c, int size)
 /*    usleep(DELAY); */
     return rc;
 }
-
-
 
 
 /*********************************************
@@ -426,6 +426,30 @@ void Set_19200(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
+/* Hardware function */
+void Set_Insert(int fd, int row, int col)
+{
+    char c;
+    int rc;
+
+    c = LCD_CMD;
+    rc = Write_LCD(fd, &c, 1);
+    if (row == 0 && col == 0) {
+    	c = LCD_INIT_INSERT;
+    	rc = Write_LCD(fd, &c, 1);
+    }
+    else {
+	c = LCD_SET_INSERT;
+	rc = Write_LCD(fd, &c, 1);
+	c = col;
+	rc = Write_LCD(fd, &c, 1);
+	c = row;
+	rc = Write_LCD(fd, &c, 1);
+    }
+    c = LCD_CMD_END;
+    rc = Write_LCD(fd, &c, 1);
+}
+
 
 /*****************************************************
  * Here start the API function
@@ -434,7 +458,8 @@ void Set_19200(int fd)
 /*****************************************************
  * API: Opens com port and sets baud correctly...
  */
-int CwLnx_init(Driver * drvthis)
+MODULE_EXPORT int
+CwLnx_init(Driver * drvthis)
 {
     struct termios portset_save;
 
@@ -462,6 +487,8 @@ int CwLnx_init(Driver * drvthis)
     p->backingstore = NULL;
     p->cellwidth = DEFAULT_CELLWIDTH;
     p->cellheight = DEFAULT_CELLHEIGHT;
+
+    p->custom = standard;
 
     p->saved_backlight = -1;
     p->backlight = DEFAULT_BACKLIGHT;
@@ -698,29 +725,6 @@ CwLnx_flush(Driver *drvthis)
 
     CwLnx_flushtime_heartbeat(drvthis);
 /*    CwLnx_flushtime_backlight(drvthis); */ 
-}
-
-void Set_Insert(int fd, int row, int col)
-{
-    char c;
-    int rc;
-
-    c = LCD_CMD;
-    rc = Write_LCD(fd, &c, 1);
-    if (row == 0 && col == 0) {
-    	c = LCD_INIT_INSERT;
-    	rc = Write_LCD(fd, &c, 1);
-    }
-    else {
-	c = LCD_SET_INSERT;
-	rc = Write_LCD(fd, &c, 1);
-	c = col;
-	rc = Write_LCD(fd, &c, 1);
-	c = row;
-	rc = Write_LCD(fd, &c, 1);
-    }
-    c = LCD_CMD_END;
-    rc = Write_LCD(fd, &c, 1);
 }
 
 
@@ -1273,7 +1277,7 @@ CwLnx_draw_frame(Driver *drvthis, char *dat)
 	    r++; 
 	}
     }
-    strncpy(p->backingstore, dat, p->width * p->height);
+    memcpy(p->backingstore, dat, p->width * p->height);
 }
 
 /*********************************************************
@@ -1284,11 +1288,8 @@ CwLnx_clear(Driver *drvthis)
 {
     PrivateData * p = drvthis->private_data;
 
-    /* WHY: are we the only function to check framebuf for null? */
-    if (p->framebuf != NULL)
-        memset(p->framebuf, ' ', p->width * p->height);
-
-    /* We could remember the custom char are not in use anymore. $$$ */
+    memset(p->framebuf, ' ', p->width * p->height);
+    p->custom = standard;
 
     debug(RPT_DEBUG, "CwLnx: cleared framebuffer");
 }
