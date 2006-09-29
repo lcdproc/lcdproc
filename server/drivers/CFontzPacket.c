@@ -99,9 +99,6 @@
 #define CFP_KEY_LL_RELEASE	19
 #define CFP_KEY_LR_RELEASE	20
 
-#define CELLWIDTH	DEFAULT_CELL_WIDTH
-#define CELLHEIGHT	DEFAULT_CELL_HEIGHT
-
 
 /* LEDs dispatch */
 #define CF635_NUM_LEDs	8
@@ -162,8 +159,6 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "CFontzPacket_";
 
 /* Internal functions */
-/* static void CFontzPacket_linewrap (int on); */
-/* static void CFontzPacket_autoscroll (int on);  */
 static void CFontzPacket_hidecursor (Driver *drvthis);
 static void CFontzPacket_reboot (Driver *drvthis);
 static void CFontzPacket_no_live_report (Driver *drvthis);
@@ -217,12 +212,7 @@ CFontzPacket_init (Driver *drvthis)
 	}
 	p->model = tmp;
 
-	/* Which device should be used */
-	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
-	p->device[sizeof(p->device)-1] = '\0';
-	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
-
-	/* Which size */
+	/* Determine size & speed depending on model */
 	if (p->model == 631) {
 		default_size = DEFAULT_SIZE_CF631;
 		default_speed = DEFAULT_SPEED_CF631;
@@ -233,6 +223,11 @@ CFontzPacket_init (Driver *drvthis)
 		default_size = DEFAULT_SIZE_CF635;
 		default_speed = DEFAULT_SPEED_CF635;
 	}	
+
+	/* Which device should be used */
+	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
+	p->device[sizeof(p->device)-1] = '\0';
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
 	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, default_size), sizeof(size));
 	size[sizeof(size)-1] = '\0';
