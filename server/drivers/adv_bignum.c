@@ -1,6 +1,7 @@
 /* 	This is the bignumber-library used by the serialVFD driver.
 
-	Copyright (C) 2006 Stefan Herdler
+	Copyright (C) 2006 Stefan Herdler,
+		      2006 Peter Marschall
 
 	Based on drivers.c and lcd-lib.c.
 	It may contain parts of other drivers of this package too.
@@ -24,8 +25,8 @@
 
 
 	Requirements to the calling driver / display:
-	cellwidth == 5
-	cellheight == 7 or 8 (tested only on 7)
+	cellwidth == 5 (also with 6, but with gaps)
+	cellheight == 7 or 8
 	needed functions:
 		drvthis->set_char (only if the display has customcharacters)
 		drvthis->chr
@@ -42,25 +43,18 @@
 	Example: Call of the lib_adv_bignum from a drivers_num function :
 
 	MODULE_EXPORT void
-	serialVFD_num( Driver * drvthis, int x, int num )
+	serialVFD_num(Driver *drvthis, int x, int num)
 	{
-		int do_init=0;
 		PrivateData *p = drvthis->private_data;
+		int do_init = 0;
 
-
-		if (p->ccmode != CCMODE_BIGNUM) // Are the customcharacters set up correctly? If not:
-		{
-			do_init=1;	// Lib_adv_bignum has to set the customcharacters.
+		if (p->ccmode != CCMODE_BIGNUM) { // Are the customcharacters set up correctly? If not:
+			do_init = 1;	// Lib_adv_bignum has to set the customcharacters.
 			p->ccmode = CCMODE_BIGNUM; // Switch customcharactermode to bignum.
 		}
 		// Lib_adv_bignum does everything needed to show the bignumbers.
 		lib_adv_bignum(drvthis, x, num, p->height, do_init, p->customchars);
 	}
-
-	To enable the bignumbers on 2-line displays you have to edit "/clients/lcdproc/chrono.c"
-	before compiling. In function "big_clock_screen" you have to replace the "4" by a "2" in
-	this line: "if (lcd_hgt < 4)".
-
 
 */
 
