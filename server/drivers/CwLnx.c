@@ -124,7 +124,6 @@ static void CwLnx_linewrap(int fd, int on);
 static void CwLnx_autoscroll(int fd, int on);
 static void CwLnx_hidecursor(int fd);
 
-static void CwLnx_draw_frame(Driver *drvthis, char *dat);
 
 #define LCD_CMD			254
 #define LCD_CMD_END		253
@@ -749,10 +748,33 @@ CwLnx_flush(Driver *drvthis)
 {
     PrivateData *p = drvthis->private_data;
 
-    CwLnx_draw_frame(drvthis, p->framebuf);
+    int i, j;
+    int mv = 1;
+    char *q = p->framebuf;
+    char *r = p->backingstore;
+
+    for (i = 0; i < p->height; i++) {
+	for (j = 0; j < p->width; j++) {
+	    if ((*q == *r) && !((0 < *q) && (*q < 16))) {
+		mv = 1;
+	    }
+	    else {
+		/* Draw characters that have changed, as well
+		 * as custom characters.  We know not if a custom
+		 * character has changed.  */ 
+		if (mv == 1) {
+		    Set_Insert(p->fd, i, j);
+		    mv = 0;
+		}
+		Write_LCD(p->fd, q, 1);
+	    }
+	    q++;
+	    r++; 
+	}
+    }
+    memcpy(p->backingstore, p->framebuf, p->width * p->height);
 
     CwLnx_flushtime_heartbeat(drvthis);
-/*    CwLnx_flushtime_backlight(drvthis); */ 
 }
 
 
@@ -1269,52 +1291,6 @@ CwLnx_icon(Driver *drvthis, int x, int y, int icon)
 	return 0;
 }
 
-/**********************************************************
- * ONLY CALLED FROM _flush ...
- *
- * Blasts a single frame onscreen, to the lcd...
- *
- * Input is a character array, sized p->wid*p->hgt
- */
-static void
-CwLnx_draw_frame(Driver *drvthis, char *dat)
-{
-    PrivateData *p = drvthis->private_data;
-
-    int i, j, mv, rc;
-    char *q, *r;
-/*  char c; */
-
-    if (!dat)
-	return;
-
-    mv = 1;
-    q = dat;
-    r = p->backingstore;
-
-/*    printf("\n_draw_frame: %d\n", count);   */
-
-    for (i = 0; i < p->height; i++) {
-	for (j = 0; j < p->width; j++) {
-	    if ((*q == *r) && !((0 < *q) && (*q < 16))) {
-		mv = 1;
-	    }
-	    else {
-		/* Draw characters that have changed, as well
-		 * as custom characters.  We know not if a custom
-		 * character has changed.  */ 
-		if (mv == 1) {
-		    Set_Insert(p->fd, i, j);
-		    mv = 0;
-		}
-		rc = Write_LCD(p->fd, q, 1);
-	    }
-	    q++;
-	    r++; 
-	}
-    }
-    memcpy(p->backingstore, dat, p->width * p->height);
-}
 
 /*********************************************************
  * API: Clears the LCD screen
