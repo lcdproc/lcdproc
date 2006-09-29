@@ -154,7 +154,7 @@ static void CwLnx_draw_frame(Driver *drvthis, char *dat);
 
 
 
-int Write_LCD(int fd, char *c, int size)
+static int Write_LCD(int fd, char *c, int size)
 {
     int rc;
 
@@ -184,7 +184,7 @@ int Write_LCD(int fd, char *c, int size)
 
 
 /* Hardware function */
-void Enable_Backlight(int fd)
+static void Enable_Backlight(int fd)
 {
     char c;
     int rc;
@@ -198,7 +198,7 @@ void Enable_Backlight(int fd)
 }
 
 /* Hardware function */
-void Disable_Backlight(int fd)
+static void Disable_Backlight(int fd)
 {
     char c;
     int rc;
@@ -212,7 +212,7 @@ void Disable_Backlight(int fd)
 }
 
 /* Hardware function */
-void Enable_Pixel(int fd, int x, int y)
+static void Enable_Pixel(int fd, int x, int y)
 {
     char c;
     int rc;
@@ -232,7 +232,7 @@ void Enable_Pixel(int fd, int x, int y)
 }
 
 /* Hardware function */
-void Disable_Pixel(int fd, int x, int y)
+static void Disable_Pixel(int fd, int x, int y)
 {
     char c;
     int rc;
@@ -253,7 +253,7 @@ void Disable_Pixel(int fd, int x, int y)
 
 
 /* Hardware function */
-void Backlight_Brightness(int fd, int brightness)
+static void Backlight_Brightness(int fd, int brightness)
 {
     char c;
     int rc;
@@ -275,7 +275,7 @@ void Backlight_Brightness(int fd, int brightness)
 }
 
 /* Hardware function */
-void Enable_Scroll(int fd)
+static void Enable_Scroll(int fd)
 {
     char c;
     int rc;
@@ -289,7 +289,7 @@ void Enable_Scroll(int fd)
 }
 
 /* Hardware function */
-void Disable_Scroll(int fd)
+static void Disable_Scroll(int fd)
 {
     char c;
     int rc;
@@ -304,7 +304,7 @@ void Disable_Scroll(int fd)
 
 
 /* Hardware function */
-void Clear_Screen(int fd)
+static void Clear_Screen(int fd)
 {
     char c;
     int rc;
@@ -319,7 +319,7 @@ void Clear_Screen(int fd)
 }
 
 /* Hardware function */
-void Enable_Wrap(int fd)
+static void Enable_Wrap(int fd)
 {
     char c;
     int rc;
@@ -333,7 +333,7 @@ void Enable_Wrap(int fd)
 }
 
 /* Hardware function */
-void Disable_Wrap(int fd)
+static void Disable_Wrap(int fd)
 {
     char c;
     int rc;
@@ -347,7 +347,7 @@ void Disable_Wrap(int fd)
 }
 
 /* Hardware function */
-void Disable_Cursor(int fd)
+static void Disable_Cursor(int fd)
 {
     char c;
     int rc;
@@ -362,7 +362,7 @@ void Disable_Cursor(int fd)
 
 
 /* Hardware function */
-void Init_Port(fd)
+static void Init_Port(fd)
 {
     /* Posix - set baudrate to 0 and back */
     struct termios tty, old;
@@ -377,7 +377,7 @@ void Init_Port(fd)
 }
 
 /* Hardware function */
-void Setup_Port(int fd, speed_t speed)
+static void Setup_Port(int fd, speed_t speed)
 {
     struct termios portset;
 
@@ -395,7 +395,7 @@ void Setup_Port(int fd, speed_t speed)
 }
 
 /* Hardware function */
-void Set_9600(int fd)
+static void Set_9600(int fd)
 {
     char c;
     int rc;
@@ -411,7 +411,7 @@ void Set_9600(int fd)
 }
 
 /* Hardware function */
-void Set_19200(int fd)
+static void Set_19200(int fd)
 {
     char c;
     int rc;
@@ -427,7 +427,7 @@ void Set_19200(int fd)
 }
 
 /* Hardware function */
-void Set_Insert(int fd, int row, int col)
+static void Set_Insert(int fd, int row, int col)
 {
     char c;
     int rc;
@@ -1363,10 +1363,6 @@ CwLnx_get_key(Driver * drvthis)
  * Maybe the display of text caracter hide the pixel.
  * It might be the flush just after the heartbeat call.
  */
-
-/*I*/ int saved_heartbeat;
-/*I*/ int heartbeat;
-/*I*/ int heartbeat_state;
 
 MODULE_EXPORT void
 CwLnx_heartbeat(Driver * drvthis, int type)
