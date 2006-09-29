@@ -147,38 +147,10 @@ static void CwLnx_draw_frame(Driver *drvthis, char *dat);
 #define LCD_PUT_PIXEL		112
 #define LCD_CLEAR_PIXEL		113
 
-#define LCD_LENGTH		20
-
 #define DELAY			20
 #define UPDATE_DELAY		0	/* 1 sec */
 #define SETUP_DELAY		1	/* 2 sec */
 
-/* Parse one key from the configfile */
-static char CwLnx_parse_keypad_setting(Driver *drvthis, char * keyname, char default_value)
-{
-    char return_val = 0;
-    const char *s;
-    char buf[255];
-
-    s = drvthis->config_get_string(drvthis->name, keyname, 0, NULL);
-    if (s != NULL) {
-	strncpy(buf, s, sizeof(buf));
-	buf[sizeof(buf)-1] = '\0';
-	return_val = buf[0];
-    } else {
-	return_val = default_value;
-    }
-    return return_val;
-}
-
-int Read_LCD(int fd, char *c, int size)
-{
-    int rc;
-
-    rc = read(fd, c, size);
-/*    usleep(DELAY); */
-    return rc;
-}
 
 int Write_LCD(int fd, char *c, int size)
 {
@@ -455,34 +427,6 @@ void Set_19200(int fd)
 }
 
 
-/*
- * ONLY USED BY flush_box
-int Write_Line_LCD(int fd, char *buf)
-{
-    int i;
-    char c;
-    int isEnd = 0;
-    int rc;
-
-    for (i = 0; i < LCD_LENGTH; i++) {
-	if (buf[i] == '\0') {
-	    isEnd = 1;
-	}
-	if (isEnd) {
-	    c = ' ';
-	} else {
-	    c = buf[i];
-	}
-	rc = Write_LCD(fd, &c, 1);
-    }
-*/
-/*    printf("%s\n", buf); */
-/*
-    return 0;
-}
-*/
-
-
 /*****************************************************
  * Here start the API function
  */
@@ -719,38 +663,6 @@ CwLnx_height(Driver *drvthis)
 }
 
 
-
-/******************************************************
- * API: Clean-up
- */
-/*
-MODULE_EXPORT void
-CwLnx_flushtime_backlight(Driver *drvthis)
-{
-    PrivateData * p = drvthis->private_data;
-
-    int bright;
-
-    if (((p->saved_backlight) && (!p->backlight))
-	|| ((p->backlight) && (!p->saved_backlight))) {
-	p->backlight = p->saved_backlight;
-	if (p->backlight) {
-	    Enable_Backlight(p->fd);
-	}
-	else {
-	    Disable_Backlight(p->fd);
-	}
-    }
-
-    if (p->brightness != p->saved_brightness) {
-	p->brightness = p->saved_brightness;
-	Backlight_Brightness(p->fd, p->brightness)
-    }
-
-    debug(RPT_DEBUG, "CwLnx: updating the backlight and brightness at flush time");
-}
-*/
-
 /*****************************************************
  * This is a test to see how a driver can overwrite build-in heartbeat.
  * It make a pixel blink at calling rate independently of flush call.
@@ -810,24 +722,6 @@ void Set_Insert(int fd, int row, int col)
     c = LCD_CMD_END;
     rc = Write_LCD(fd, &c, 1);
 }
-
-/***********************************************
- *
- * _flush_box is not an API entry anymore.
- * 
-static void
-CwLnx_flush_box(int lft, int top, int rgt, int bot)
-{
-    int y;
-
-    debug(RPT_DEBUG, "CwLnx: flush_box (%i,%i)-(%i,%i)", lft, top, rgt,
-	  bot);
-    for (y = top; y <= bot; y++) {
-	Set_Insert(fd, top, lft);
-	Write_Line_LCD(fd, CwLnx->framebuf + (y * p->width) + lft);
-    }
-}
-*/
 
 
 /*******************************************************************
@@ -1494,25 +1388,3 @@ CwLnx_heartbeat(Driver * drvthis, int type)
     }
 }
 
-/*
-MODULE_EXPORT void
-CwLnx_heartbeat(Driver * drvthis, int type)
-{
-    PrivateData * p = drvthis->private_data;
-
-    if (type) {
-        if (p->heartbeat_state) {
-            Enable_Pixel(p->fd, 121, 0);
-            p->heartbeat_state = 0;
-	} else {
-            Disable_Pixel(p->fd, 121, 0);
-            p->heartbeat_state = 1;
-	}
-    } else {
-        if (p->heartbeat_state) {
-            Disable_Pixel(p->fd, 121, 0);
-            p->heartbeat_state = 0;
-	}
-    }
-}
-*/
