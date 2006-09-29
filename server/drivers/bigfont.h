@@ -32,7 +32,7 @@ int normal[96][3*4] = {
     5,S,5,
     S,S,S,
     S,S,S,
-  }, // "          "
+  }, // "
   {
     4,S,4,
     F,5,F,
@@ -1179,5 +1179,74 @@ int normal[96][3*4] = {
 
  };
 
+/* Here start the 8 basic block used above and named 0-7 */
+/*	
+	static unsigned bigfont[8][8] = {
+		{ b_______,	// char a[]
+		  b_______,
+		  b_______,
+		  b__X____,
+		  b__XX___,
+		  b__XXX__,
+		  b__XXXX_,
+		  b__XXXXX },
+		{ b_______,	// char b[]
+		  b_______,
+		  b_______,
+		  b______X,
+		  b_____XX,
+		  b____XXX,
+		  b___XXXX,
+		  b__XXXXX },
+		{ b__XXXXX,	// char c[]
+		  b___XXXX,
+		  b____XXX,
+		  b_____XX,
+		  b______X,
+		  b_______,
+		  b_______,
+		  b_______ },
+		{ b__XXXXX,	// char d[]
+		  b__XXXX_,
+		  b__XXX__,
+		  b__XX___,
+		  b__X____,
+		  b_______,
+		  b_______,
+		  b_______ },
+		{ b_______,	// char e[]
+		  b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX },
+		{ b__XXXXX,	// char f[]
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b_______,
+		  b_______,
+		  b_______ },
+		{ b__X____,	// char g[]
+		  b__XX___,
+		  b__XXX__,
+		  b__XXXX_,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX },
+		{ b__XXXXX,	// char h[]
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXX_,
+		  b__XXX__,
+		  b__XX___,
+		  b__X____ }
+		};
+*/		
 #endif
 
