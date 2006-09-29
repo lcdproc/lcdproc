@@ -37,26 +37,29 @@
 #define DEFAULT_BRIGHTNESS 200
 
 
-MODULE_EXPORT int  CwLnx_init(Driver * drvthis);
-MODULE_EXPORT void CwLnx_close(Driver * drvthis);
-MODULE_EXPORT int  CwLnx_width(Driver * drvthis);
-MODULE_EXPORT int  CwLnx_height(Driver * drvthis);
-MODULE_EXPORT void CwLnx_clear(Driver * drvthis);
-MODULE_EXPORT void CwLnx_flush(Driver * drvthis);
-MODULE_EXPORT void CwLnx_string(Driver * drvthis, int x, int y, char string[]);
-MODULE_EXPORT void CwLnx_chr(Driver * drvthis, int x, int y, char c);
-MODULE_EXPORT const char *CwLnx_get_key(Driver * drvthis);
+MODULE_EXPORT int  CwLnx_init(Driver *drvthis);
+MODULE_EXPORT void CwLnx_close(Driver *drvthis);
+MODULE_EXPORT int  CwLnx_width(Driver *drvthis);
+MODULE_EXPORT int  CwLnx_height(Driver *drvthis);
+MODULE_EXPORT int  CwLnx_cellwidth(Driver *drvthis);
+MODULE_EXPORT int  CwLnx_cellheight(Driver *drvthis);
+MODULE_EXPORT void CwLnx_clear(Driver *drvthis);
+MODULE_EXPORT void CwLnx_flush(Driver *drvthis);
+MODULE_EXPORT void CwLnx_string(Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void CwLnx_chr(Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT const char *CwLnx_get_key(Driver *drvthis);
 
-MODULE_EXPORT void CwLnx_vbar(Driver * drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void CwLnx_hbar(Driver * drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void CwLnx_num(Driver * drvthis, int x, int num);
-MODULE_EXPORT int  CwLnx_icon(Driver * drvthis, int x, int y, int icon);
+MODULE_EXPORT void CwLnx_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void CwLnx_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void CwLnx_num(Driver *drvthis, int x, int num);
+MODULE_EXPORT int  CwLnx_icon(Driver *drvthis, int x, int y, int icon);
 
-MODULE_EXPORT void CwLnx_set_char(Driver * drvthis, int n, char *dat);
+MODULE_EXPORT int  CwLnx_get_free_chars(Driver *drvthis);
+MODULE_EXPORT void CwLnx_set_char(Driver *drvthis, int n, char *dat);
 
-MODULE_EXPORT int  CwLnx_get_contrast(Driver * drvthis);
-MODULE_EXPORT void CwLnx_set_contrast(Driver * drvthis, int contrast);
-MODULE_EXPORT void CwLnx_backlight(Driver * drvthis, int on);
+MODULE_EXPORT int  CwLnx_get_contrast(Driver *drvthis);
+MODULE_EXPORT void CwLnx_set_contrast(Driver *drvthis, int contrast);
+MODULE_EXPORT void CwLnx_backlight(Driver *drvthis, int on);
 
 #endif
 

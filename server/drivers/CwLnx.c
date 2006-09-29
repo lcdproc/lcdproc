@@ -1,5 +1,3 @@
-/* #define COUNT -1 */
-
 /*
 List of driver entry point:
 
@@ -113,6 +111,7 @@ typedef struct p {
 /*I*/ int heartbeat_state; /* toggle to remember when we turn on or off */
 
 } PrivateData;
+
 
 /* API: Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -459,7 +458,7 @@ static void Set_Insert(int fd, int row, int col)
  * API: Opens com port and sets baud correctly...
  */
 MODULE_EXPORT int
-CwLnx_init(Driver * drvthis)
+CwLnx_init(Driver *drvthis)
 {
     struct termios portset_save;
 
@@ -598,7 +597,7 @@ CwLnx_init(Driver * drvthis)
 
 
     /* Set up io port correctly, and open it... */
-    debug(RPT_DEBUG, "%s: Opening serial device: %s", drvthis->name, device);
+    debug(RPT_DEBUG, "%s: Opening device: %s", drvthis->name, device);
     p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (p->fd == -1) {
 	report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
@@ -644,7 +643,7 @@ CwLnx_init(Driver * drvthis)
 MODULE_EXPORT void
 CwLnx_close(Driver *drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     if (p != NULL) {
 	if (p->fd >= 0)
@@ -664,29 +663,58 @@ CwLnx_close(Driver *drvthis)
 }
 
 /******************************************************
- * API: Returns the displays width
+ * API: Returns the display's width
  */
 MODULE_EXPORT int 
 CwLnx_width(Driver *drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     debug(RPT_DEBUG, "CwLnx: returning width");
 
     return p->width;
 }
 
+
 /******************************************************
- * API: Returns the displays height
+ * API: Returns the display's height
  */
 MODULE_EXPORT int 
 CwLnx_height(Driver *drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     debug(RPT_DEBUG, "CwLnx: returning height");
 
     return p->height;
+}
+
+
+/******************************************************
+ * API: Returns the display's cell width
+ */
+MODULE_EXPORT int 
+CwLnx_cellwidth(Driver *drvthis)
+{
+    PrivateData *p = drvthis->private_data;
+
+    debug(RPT_DEBUG, "CwLnx: returning cellwidth");
+
+    return p->cellwidth;
+}
+
+
+/******************************************************
+ * API: Returns the display's cell height
+ */
+MODULE_EXPORT int 
+CwLnx_cellheight(Driver *drvthis)
+{
+    PrivateData *p = drvthis->private_data;
+
+    debug(RPT_DEBUG, "CwLnx: returning cellheight");
+
+    return p->cellheight;
 }
 
 
@@ -695,9 +723,9 @@ CwLnx_height(Driver *drvthis)
  * It make a pixel blink at calling rate independently of flush call.
  */
 MODULE_EXPORT void
-CwLnx_flushtime_heartbeat(Driver * drvthis)
+CwLnx_flushtime_heartbeat(Driver *drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     if (p->heartbeat != p->saved_heartbeat) {
         p->saved_heartbeat=p->heartbeat;
@@ -719,7 +747,7 @@ CwLnx_flushtime_heartbeat(Driver * drvthis)
 MODULE_EXPORT void
 CwLnx_flush(Driver *drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     CwLnx_draw_frame(drvthis, p->framebuf);
 
@@ -735,7 +763,7 @@ CwLnx_flush(Driver *drvthis)
 MODULE_EXPORT void
 CwLnx_chr(Driver *drvthis, int x, int y, char c)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     int offset;
 
@@ -780,9 +808,9 @@ CwLnx_chr(Driver *drvthis, int x, int y, char c)
  * the API only permit setting to off=0 and on<>0
  */
 MODULE_EXPORT void
-CwLnx_backlight(Driver * drvthis, int on)
+CwLnx_backlight(Driver *drvthis, int on)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     p->backlight = on;
 }
@@ -792,9 +820,9 @@ CwLnx_backlight(Driver * drvthis, int on)
  * API: Get the backlight brightness
  */
 MODULE_EXPORT int 
-CwLnx_get_brightness(Driver * drvthis, int state)
+CwLnx_get_brightness(Driver *drvthis, int state)
 {
-        PrivateData * p = drvthis->private_data;
+        PrivateData *p = drvthis->private_data;
 
         return p->saved_brightness;
 }
@@ -804,9 +832,9 @@ CwLnx_get_brightness(Driver * drvthis, int state)
  * API: Set the backlight brightness
  */
 MODULE_EXPORT void
-CwLnx_set_brightness(Driver * drvthis, int state, int promille)
+CwLnx_set_brightness(Driver *drvthis, int state, int promille)
 {
-        PrivateData * p = drvthis->private_data;
+        PrivateData *p = drvthis->private_data;
 
         p->brightness = promille;
 }
@@ -853,9 +881,9 @@ CwLnx_hidecursor(int fd)
  * This was part of API in 0.4 and removed in 0.5
  */
 static void
-CwLnx_init_vbar(Driver * drvthis)
+CwLnx_init_vbar(Driver *drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     char a[] = {
 	1, 0, 0, 0, 0, 0, 0, 0,
@@ -931,9 +959,9 @@ CwLnx_init_vbar(Driver * drvthis)
  * This was part of API in 0.4 and removed in 0.5
  */
 static void
-CwLnx_init_hbar(Driver * drvthis)
+CwLnx_init_hbar(Driver *drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     char a[] = {
 	1, 1, 1, 1, 1, 1, 1, 1,
@@ -1000,9 +1028,9 @@ CwLnx_init_hbar(Driver * drvthis)
  * API: Draws a vertical bar...
  */
 MODULE_EXPORT void
-CwLnx_vbar(Driver * drvthis, int x, int y, int len, int promille, int options)
+CwLnx_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     CwLnx_init_vbar(drvthis);
 
@@ -1013,9 +1041,9 @@ CwLnx_vbar(Driver * drvthis, int x, int y, int len, int promille, int options)
  * API: Draws a horizontal bar to the right.
  */
 MODULE_EXPORT void
-CwLnx_hbar(Driver * drvthis, int x, int y, int len, int promille, int options)
+CwLnx_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     CwLnx_init_hbar(drvthis);
 
@@ -1029,11 +1057,21 @@ CwLnx_hbar(Driver * drvthis, int x, int y, int len, int promille, int options)
 /* Currently using the server ascii default */
 /*
 MODULE_EXPORT void
-CwLnx_num(Driver * drvthis, int x, int num)
+CwLnx_num(Driver *drvthis, int x, int num)
 {
     return;
 }
 */
+
+
+MODULE_EXPORT int
+CwLnx_get_free_chars(Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return 16;
+}
+
 
 /*********************************************************************
  * API: Sets a custom character...
@@ -1045,9 +1083,9 @@ CwLnx_num(Driver * drvthis, int x, int num)
  * The input is just an array of characters...
  */
 MODULE_EXPORT void
-CwLnx_set_char(Driver * drvthis, int n, char *dat)
+CwLnx_set_char(Driver *drvthis, int n, char *dat)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     int row, col;
     int letter;
@@ -1080,7 +1118,7 @@ CwLnx_set_char(Driver * drvthis, int n, char *dat)
 }
 
 MODULE_EXPORT int 
-CwLnx_icon(Driver * drvthis, int x, int y, int icon)
+CwLnx_icon(Driver *drvthis, int x, int y, int icon)
 {
     char heart_open[] = 
 	{
@@ -1236,17 +1274,16 @@ CwLnx_icon(Driver * drvthis, int x, int y, int icon)
  *
  * Blasts a single frame onscreen, to the lcd...
  *
- * Input is a character array, sized CwLnx->wid*CwLnx->hgt
+ * Input is a character array, sized p->wid*p->hgt
  */
 static void
 CwLnx_draw_frame(Driver *drvthis, char *dat)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     int i, j, mv, rc;
     char *q, *r;
 /*  char c; */
-/*  static int count=0; */
 
     if (!dat)
 	return;
@@ -1261,7 +1298,6 @@ CwLnx_draw_frame(Driver *drvthis, char *dat)
 	for (j = 0; j < p->width; j++) {
 	    if ((*q == *r) && !((0 < *q) && (*q < 16))) {
 		mv = 1;
-/*         count++; if (count==COUNT) exit(0);       */
 	    }
 	    else {
 		/* Draw characters that have changed, as well
@@ -1286,7 +1322,7 @@ CwLnx_draw_frame(Driver *drvthis, char *dat)
 MODULE_EXPORT void
 CwLnx_clear(Driver *drvthis)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     memset(p->framebuf, ' ', p->width * p->height);
     p->custom = standard;
@@ -1299,9 +1335,9 @@ CwLnx_clear(Driver *drvthis)
  * The upper-left is (1,1), and the lower right should be (20,4).
  */
 MODULE_EXPORT void
-CwLnx_string(Driver * drvthis, int x, int y, char *string)
+CwLnx_string(Driver *drvthis, int x, int y, char *string)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     int offset, siz;
 
@@ -1335,9 +1371,9 @@ CwLnx_string(Driver * drvthis, int x, int y, char *string)
  * API: Get a key translated into a string.
  */
 MODULE_EXPORT const char *
-CwLnx_get_key(Driver * drvthis)
+CwLnx_get_key(Driver *drvthis)
 {
-	PrivateData * p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 	char key = '\0';
 
 	read(p->fd, &key, 1);
@@ -1365,9 +1401,9 @@ CwLnx_get_key(Driver * drvthis)
  */
 
 MODULE_EXPORT void
-CwLnx_heartbeat(Driver * drvthis, int type)
+CwLnx_heartbeat(Driver *drvthis, int type)
 {
-    PrivateData * p = drvthis->private_data;
+    PrivateData *p = drvthis->private_data;
 
     if (type) {
         if (p->heartbeat_state) {
