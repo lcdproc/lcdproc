@@ -1089,7 +1089,7 @@ CwLnx_num(Driver *drvthis, int x, int num)
 MODULE_EXPORT int
 CwLnx_get_free_chars(Driver *drvthis)
 {
-	PrivateData *p = drvthis->private_data;
+//	PrivateData *p = drvthis->private_data;
 
 	return 16;
 }
