@@ -207,7 +207,7 @@ main(int argc, char **argv)
 
 	/* Read config file
 	 * If config file was not given on command line use default */
-	if (strcmp(configfile, UNSET_STR)==0)
+	if (strcmp(configfile, UNSET_STR) == 0)
 		strncpy(configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
 	CHAIN( e, process_configfile(configfile) );
 
@@ -383,7 +383,7 @@ process_command_line(int argc, char **argv)
 		report( RPT_ERR, "Non-option arguments on the command line !");
 		e = -1;
 	}
-	if( help ) {
+	if (help) {
 		output_help_screen();
 		e = -1;
 	}
@@ -972,24 +972,24 @@ output_GPL_notice(void)
 	/* This will only be invoked when running in foreground
 	 * So, directly output to stderr
 	 */
-	fprintf (stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
-	fprintf (stderr, "Part of LCDproc\n");
-	fprintf (stderr, "Copyright (C) 1998-2006 William Ferrell, Scott Scriven\n");
-	fprintf (stderr, "                        and many other contributors\n\n");
-	fprintf (stderr, "This program is free software; you can redistribute it and/or\n");
-	fprintf (stderr, "modify it under the terms of the GNU General Public License\n");
-	fprintf (stderr, "as published by the Free Software Foundation; either version 2\n");
-	fprintf (stderr, "of the License, or (at your option) any later version.\n\n");
+	fprintf(stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
+	fprintf(stderr, "Part of the LCDproc suite\n");
+	fprintf(stderr, "Copyright (C) 1998-2006 William Ferrell, Scott Scriven\n"
+	                "                        and many other contributors\n\n");
 
-	fprintf (stderr, "This program is distributed in the hope that it will be useful,\n");
-	fprintf (stderr, "but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
-	fprintf (stderr, "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
-	fprintf (stderr, "GNU General Public License for more details.\n\n");
+	fprintf(stderr, "This program is free software; you can redistribute it and/or\n"
+	                "modify it under the terms of the GNU General Public License\n"
+	                "as published by the Free Software Foundation; either version 2\n"
+	                "of the License, or (at your option) any later version.\n\n");
 
-	fprintf (stderr, "The file COPYING contains the GNU General Public License.\n");
-	fprintf (stderr, "You should have received a copy of the GNU General Public License\n");
-	fprintf (stderr, "along with this program; if not, write to the Free Software\n");
-	fprintf (stderr, "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n\n");
+	fprintf(stderr, "This program is distributed in the hope that it will be useful,\n"
+	                "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+	                "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+	                "GNU General Public License for more details.\n\n");
+
+	fprintf(stderr, "You should have received a copy of the GNU General Public License\n"
+	                "along with this program; if not, write to the Free Software Foundation,\n"
+	                "Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n\n");
 }
 
 
@@ -1001,23 +1001,23 @@ output_help_screen(void)
 	 */
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
-	fprintf (stdout, "LCDd: LCDproc Server Daemon, %s\n", version);
-	fprintf (stdout, "Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc contributors\n");
-	fprintf (stdout, "This program is freely redistributable under the terms of the GNU Public License\n\n");
-	fprintf (stdout, "Usage: LCDd [<options>]\n");
-	fprintf (stdout, "  where <options> are:\n");
-	fprintf (stdout, "\t-h\t\tDisplay this help screen\n");
-	fprintf (stdout, "\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
-	fprintf (stdout, "\t-d <driver>\tAdd a driver to use (overrides drivers in config file) [%s]\n", DEFAULT_DRIVER);
-	fprintf (stdout, "\t-f\t\tRun in the foreground\n");
-	fprintf (stdout, "\t-a <addr>\tNetwork (IP) address to bind to [%s]\n", DEFAULT_BIND_ADDR);
-	fprintf (stdout, "\t-p <port>\tNetwork port to listen for connections on [%i]\n", DEFAULT_BIND_PORT);
-	fprintf (stdout, "\t-u <user>\tUser to run as [%s]\n", DEFAULT_USER);
-	fprintf (stdout, "\t-w <waittime>\tTime to pause at each screen (in seconds) [%d]\n", DEFAULT_SCREEN_DURATION/RENDER_FREQ);
-	fprintf (stdout, "\t-s <bool>\tIf set, reporting will be done using syslog\n");
-	fprintf (stdout, "\t-r <level>\tReport level [%d]\n", DEFAULT_REPORTLEVEL);
-	fprintf (stdout, "\t-i <bool>\tWhether to rotate the server info screen\n");
-	fprintf (stdout, "\n");
+	fprintf(stdout, "LCDd: LCDproc Server Daemon, %s\n", version);
+	fprintf(stdout, "Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc. contributors.\n");
+	fprintf(stdout, "This program is freely redistributable under the terms of the GNU Public License.\n\n");
+	fprintf(stdout, "Usage: LCDd [<options>]\n");
+	fprintf(stdout, "  where <options> are:\n");
+	fprintf(stdout, "\t-h\t\tDisplay this help screen\n");
+	fprintf(stdout, "\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
+	fprintf(stdout, "\t-d <driver>\tAdd a driver to use (overrides drivers in config file) [%s]\n", DEFAULT_DRIVER);
+	fprintf(stdout, "\t-f\t\tRun in the foreground\n");
+	fprintf(stdout, "\t-a <addr>\tNetwork (IP) address to bind to [%s]\n", DEFAULT_BIND_ADDR);
+	fprintf(stdout, "\t-p <port>\tNetwork port to listen for connections on [%i]\n", DEFAULT_BIND_PORT);
+	fprintf(stdout, "\t-u <user>\tUser to run as [%s]\n", DEFAULT_USER);
+	fprintf(stdout, "\t-w <waittime>\tTime to pause at each screen (in seconds) [%d]\n", DEFAULT_SCREEN_DURATION/RENDER_FREQ);
+	fprintf(stdout, "\t-s <bool>\tIf set, reporting will be done using syslog\n");
+	fprintf(stdout, "\t-r <level>\tReport level [%d]\n", DEFAULT_REPORTLEVEL);
+	fprintf(stdout, "\t-i <bool>\tWhether to rotate the server info screen\n");
+	fprintf(stdout, "\n");
 
 	/* Error messages will be flushed to the configured output after this
 	 * help message.
