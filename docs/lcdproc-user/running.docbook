@@ -64,15 +64,14 @@ Usage: LCDd [<options>]
     -h              Display this help screen
     -c <config>     Use a configuration file other than /etc/LCDd.conf
     -d <driver>     Add a driver to use (overrides drivers in config file) [curses]
-    -f <bool>       Whether to run in the foreground
+    -f              Run in the foreground
     -a <addr>       Network (IP) address to bind to [127.0.0.1]
     -p <port>       Network port to listen for connections on [13666]
     -u <user>       User to run as [nobody]
-    -w <waittime>   Time to pause at each screen (in seconds) [32]
+    -w <waittime>   Time to pause at each screen (in seconds) [4]
     -s <bool>       If set, reporting will be done using syslog
     -r <level>      Report level [2]
     -i <bool>       Whether to rotate the server info screen
-											  
 
 ]]>
 </screen>

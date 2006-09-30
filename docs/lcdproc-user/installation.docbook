@@ -30,8 +30,8 @@ If you have autoconf and friends, run:
 </screen>
 
 <para>
-This produces the configure script and supporting files. It has allready 
-been run if you using the tarball distribution.
+This produces the configure script and supporting files. It has already 
+been run if you are using the tarball distribution.
 </para>
 
 <para>
@@ -106,8 +106,8 @@ and install it according to the instructions that are included
 in its source distribution.
 </para>
 <para>
-Debian users (who do not want to download the official debs via apt-get)
-can of course use the debian package of epm:
+Debian users (who do not want to download the official lcdproc debs via apt-get)
+can of course use Debian's epm package:
 </para>
 
 <screen>
