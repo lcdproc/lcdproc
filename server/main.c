@@ -989,7 +989,7 @@ output_GPL_notice(void)
 	fprintf (stderr, "The file COPYING contains the GNU General Public License.\n");
 	fprintf (stderr, "You should have received a copy of the GNU General Public License\n");
 	fprintf (stderr, "along with this program; if not, write to the Free Software\n");
-	fprintf (stderr, "Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n\n");
+	fprintf (stderr, "Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n\n");
 }
 
 
