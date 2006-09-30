@@ -11,7 +11,7 @@
  *               2002, Mike Patnode
  *               2002, Guillaume Filion
  *               2003, Benjamin Tse (Win32 support)
- *               2005, Peter Marschall (cleanup)
+ *               2005-2006, Peter Marschall (cleanup)
  *
  * Contains main(), plus signal callback functions and a help screen.
  *
@@ -1001,23 +1001,29 @@ output_help_screen(void)
 	 */
 	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
 
-	fprintf(stdout, "LCDd: LCDproc Server Daemon, %s\n", version);
+	fprintf(stdout, "LCDd - LCDproc Server Daemon, %s\n\n", version);
 	fprintf(stdout, "Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc. contributors.\n");
-	fprintf(stdout, "This program is freely redistributable under the terms of the GNU Public License.\n\n");
+	fprintf(stdout, "This program is released under the terms of the GNU General Public License.\n\n");
 	fprintf(stdout, "Usage: LCDd [<options>]\n");
 	fprintf(stdout, "  where <options> are:\n");
-	fprintf(stdout, "\t-h\t\tDisplay this help screen\n");
-	fprintf(stdout, "\t-c <config>\tUse a configuration file other than %s\n", DEFAULT_CONFIGFILE);
-	fprintf(stdout, "\t-d <driver>\tAdd a driver to use (overrides drivers in config file) [%s]\n", DEFAULT_DRIVER);
-	fprintf(stdout, "\t-f\t\tRun in the foreground\n");
-	fprintf(stdout, "\t-a <addr>\tNetwork (IP) address to bind to [%s]\n", DEFAULT_BIND_ADDR);
-	fprintf(stdout, "\t-p <port>\tNetwork port to listen for connections on [%i]\n", DEFAULT_BIND_PORT);
-	fprintf(stdout, "\t-u <user>\tUser to run as [%s]\n", DEFAULT_USER);
-	fprintf(stdout, "\t-w <waittime>\tTime to pause at each screen (in seconds) [%d]\n", DEFAULT_SCREEN_DURATION/RENDER_FREQ);
-	fprintf(stdout, "\t-s <bool>\tIf set, reporting will be done using syslog\n");
-	fprintf(stdout, "\t-r <level>\tReport level [%d]\n", DEFAULT_REPORTLEVEL);
-	fprintf(stdout, "\t-i <bool>\tWhether to rotate the server info screen\n");
-	fprintf(stdout, "\n");
+	fprintf(stdout, "    -h                  Display this help screen\n");
+	fprintf(stdout, "    -c <config>         Use a configuration file other than %s\n",
+		DEFAULT_CONFIGFILE);
+	fprintf(stdout, "    -d <driver>         Add a driver to use (overrides drivers in config file) [%s]\n",
+		DEFAULT_DRIVER);
+	fprintf(stdout, "    -f                  Run in the foreground\n");
+	fprintf(stdout, "    -a <addr>           Network (IP) address to bind to [%s]\n",
+		DEFAULT_BIND_ADDR);
+	fprintf(stdout, "    -p <port>           Network port to listen for connections on [%i]\n",
+		DEFAULT_BIND_PORT);
+	fprintf(stdout, "    -u <user>           User to run as [%s]\n",
+		DEFAULT_USER);
+	fprintf(stdout, "    -w <waittime>       Time to pause at each screen (in seconds) [%d]\n",
+		DEFAULT_SCREEN_DURATION/RENDER_FREQ);
+	fprintf(stdout, "    -s <bool>           If set, reporting will be done using syslog\n");
+	fprintf(stdout, "    -r <level>          Report level [%d]\n",
+		DEFAULT_REPORTLEVEL);
+	fprintf(stdout, "    -i <bool>           Whether to rotate the server info screen\n");
 
 	/* Error messages will be flushed to the configured output after this
 	 * help message.
