@@ -48,30 +48,31 @@ running LCDd from the source directory, e.g. after building.
 
 <para>
 Running <command>LCDd -h</command> gives you an overview of the currently available
-command line options, including a list of the compiled in drivers.
+command line options.
 </para>
 
 <example>
 <title><command>LCDd -h</command></title>
 <screen> <![CDATA[
 
-LCDd: LCDproc Server Daemon, 0.5dev
-Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc contributors
-This program is freely redistributable under the terms of the GNU Public License
+LCDd - LCDproc Server Daemon, 0.5dev
+
+Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc. contributors.
+This program is released under the terms of the GNU General Public License.
 
 Usage: LCDd [<options>]
   where <options> are:
-    -h              Display this help screen
-    -c <config>     Use a configuration file other than /etc/LCDd.conf
-    -d <driver>     Add a driver to use (overrides drivers in config file) [curses]
-    -f              Run in the foreground
-    -a <addr>       Network (IP) address to bind to [127.0.0.1]
-    -p <port>       Network port to listen for connections on [13666]
-    -u <user>       User to run as [nobody]
-    -w <waittime>   Time to pause at each screen (in seconds) [4]
-    -s <bool>       If set, reporting will be done using syslog
-    -r <level>      Report level [2]
-    -i <bool>       Whether to rotate the server info screen
+    -h                  Display this help screen
+    -c <config>         Use a configuration file other than /etc/lcdproc/LCDd.conf
+    -d <driver>         Add a driver to use (overrides drivers in config file) [curses]
+    -f                  Run in the foreground
+    -a <addr>           Network (IP) address to bind to [127.0.0.1]
+    -p <port>           Network port to listen for connections on [13666]
+    -u <user>           User to run as [nobody]
+    -w <waittime>       Time to pause at each screen (in seconds) [4]
+    -s <bool>           If set, reporting will be done using syslog
+    -r <level>          Report level [2]
+    -i <bool>           Whether to rotate the server info screen    
 
 ]]>
 </screen>
@@ -101,31 +102,36 @@ command line options.
 <title><command>lcdproc -h</command></title>
 <screen> <![CDATA[
 
-Usage: lcdproc [<options>] [<modes> ...]
+lcdproc - LCDproc system status information viewer
+
+Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc. contributors.
+This program is released under the terms of the GNU General Public License.
+
+Usage: lcdproc [<options>] [<screens> ...]
   where <options> are
-    -s <host>               connect to LCDd daemon on <host>
-    -p <port>               connect to LCDd daemon using <port>
-    -f                      run in foreground
-    -e <delay>              slow down initial announcement of modes (in 1/100s)
-    -c <config>             use a configuration file other than /etc/lcdproc.conf
-    -h                      show this help screen
-    -v                      display program version
-  and <modes> are
-    C CPU                   detailed CPU usage
-    P SMP-CPU               CPU usage overview (one line per CPU)
-    G CPUGraph              CPU usage histogram
-    L Load                  load histogram
-    M Memory                memory & swap usage
-    S ProcSize              biggest processes size
-    D Disk                  disk usage
-    I Iface                 network interface usage
-    B Battery               battery status
-    T TimeDate              time & date information
-    O OldTime               old time screen
-    U Uptime                uptime screen
-    K BigClock              big clock
-    N MiniClock             minimal clock
-    A About                 credits page
+    -s <host>           connect to LCDd daemon on <host>
+    -p <port>           connect to LCDd daemon using <port>
+    -f                  run in foreground
+    -e <delay>          slow down initial announcement of screens (in 1/100s)
+    -c <config>         use a configuration file other than /etc/lcdproc/lcdproc.conf
+    -h                  show this help screen
+    -v                  display program version
+  and <screens> are
+    C CPU               detailed CPU usage
+    P SMP-CPU           CPU usage overview (one line per CPU)
+    G CPUGraph          CPU usage histogram
+    L Load              load histogram
+    M Memory            memory & swap usage
+    S ProcSize          biggest processes size
+    D Disk              filling level of mounted file systems
+    I Iface             network interface usage
+    B Battery           battery status
+    T TimeDate          time & date information
+    O OldTime           old time screen
+    U Uptime            uptime screen
+    K BigClock          big clock
+    N MiniClock         minimal clock
+    A About             credits page
       
 Example:
     lcdproc -s my.lcdproc.server.com -p 13666 C M X

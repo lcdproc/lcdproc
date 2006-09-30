@@ -89,121 +89,179 @@ settings for the LCDproc server <application>LCDd</application>.
 </para>
 
 <variablelist>
+
 <varlistentry>
-<term>Driver=</term>
-<listitem>
-<para>
-Tells the server which driver(s) to use. See
-<link linkend="which-driver">above</link> for details
-</para>
-<note>
-<para>
-The default setting is Driver=none which makes the server exit right
-after the start. This is neccessary to avoid trouble with package installations.
-</para>
-</note>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>Bind=</term>
-<listitem>
-<para>
-Tells the server to bind to the given interface. Default to Bind=127.0.0.1 which
-is actually the safest variant.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>Port=</term>
-<listitem>
-<para>
-Tells the server to listen to this specified port; defaults to 13666.
-</para>
-</listitem>
+  <term>Driver=</term>
+  <listitem>
+    <para>
+    Tells the server which driver(s) to use. See
+    <link linkend="which-driver">above</link> for details
+    </para>
+    <note>
+      <para>
+      The default setting is Driver=none which makes the server exit right
+      after the start. This is neccessary to avoid trouble with package installations.
+      </para>
+    </note>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
-<term>ReportLevel=</term>
-<listitem>
-<para>
-Sets the reporting level; defaults to 2 (warnings and errors only).
-</para>
-</listitem>
+  <term>Bind=</term>
+  <listitem>
+    <para>
+    Tells the server to bind to the given interface. Default to Bind=127.0.0.1 which
+    is actually the safest variant.
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
-<term>ReportToSyslog=</term>
-<listitem>
-<para>
-Should we report to syslog instead of stderr ? Defaults to no.
-</para>
-</listitem>
+  <term>Port=</term>
+  <listitem>
+    <para>
+    Tells the server to listen to this specified port; defaults to 13666.
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
-<term>WaitTime=
-</term>
-<listitem>
-<para>
-Sets the default time in seconds to display a screen.
-</para>
-</listitem>
+  <term>ReportLevel=</term>
+  <listitem>
+    <para>
+    Sets the reporting level; defaults to 2 (warnings and errors only).
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
-<term>User=
-</term>
-<listitem>
-<para>
-User to run as.  LCDd will drop its root privileges,
-if any, and run as this user instead. Defaults to User=nobody.
-</para>
-<note>
-<para>
-If you want to use the server menu, to shutdown or reboot your system,
- you will have to set this to root. Otherwise LCDd does not have the
- privileges to run commands like <command>init 6</command>.
-</para>
-</note>
-</listitem>
+  <term>ReportToSyslog=</term>
+  <listitem>
+    <para>
+    Should we report to syslog instead of stderr ? Defaults to no.
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
-<term>ServerScreen=
-</term>
-<listitem>
-<para>
-Enables the server screen even when other screens are active. Defaults to
-no.
-</para>
-</listitem>
+  <term>WaitTime=
+  </term>
+  <listitem>
+    <para>
+    Sets the default time in seconds to display a screen.
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
-<term>Foreground=</term>
-<listitem>
-<para>
-The server will stay in the foreground if set to true.
-Otherwise the server will fork to background and report
-to syslog. Defaults to yes.
-</para>
-</listitem>
+  <term>User=
+  </term>
+  <listitem>
+    <para>
+    User to run as.  LCDd will drop its root privileges,
+    if any, and run as this user instead. Defaults to User=nobody.
+    </para>
+    <note>
+      <para>
+      If you want to use the server menu, to shutdown or reboot your system,
+       you will have to set this to root. Otherwise LCDd does not have the
+       privileges to run commands like <command>init 6</command>.
+      </para>
+    </note>
+  </listitem>
 </varlistentry>
 
+<varlistentry>
+  <term>ServerScreen=
+  </term>
+  <listitem>
+    <para>
+    Enables the server screen even when other screens are active. Defaults to
+    no.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>Foreground=</term>
+  <listitem>
+    <para>
+    The server will stay in the foreground if set to true.
+    Otherwise the server will fork to background and report
+    to syslog. Defaults to yes.
+    </para>
+  </listitem>
+</varlistentry>
+
+</variablelist>
+
+
+<para>
+The "...Key=" lines define what the server does with keypresses that
+don't go to any client.
+</para>
+
+<variablelist>
+
+<varlistentry>
+  <term>ToggleRotateKey=</term>
+  <listitem>
+    <para>
+    Defaults to <literal>Enter</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>PrevScreenKey=</term>
+  <listitem>
+    <para>
+    Defaults to <literal>Left</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>NextScreenKey=</term>
+  <listitem>
+    <para>
+    Defaults to <literal>Right</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>ScrollUpKey=</term>
+  <listitem>
+    <para>
+    Defaults to <literal>Up</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>ScrollDownKey=</term>
+  <listitem>
+    <para>
+    Defaults to <literal>Down</literal>.
+    </para>
+  </listitem>
+</varlistentry>
 
 </variablelist>
 
 </sect2>
 
-<sect2 id="input-section">
-<title><filename>LCDd.conf</filename>: The [input] Section</title>
+<sect2 id="menu-section">
+<title><filename>LCDd.conf</filename>: The [menu] Section</title>
 
 <para>
-The [input] section enables you to set some general ("global")
+The [menu] section enables you to set some general ("global")
 options related to the way <application>LCDd</application> handles
 input "events".
 </para>
 
+<!--
 <table>
 <title>The Standard LCDd Input Keys</title>
 <tgroup cols="3">
@@ -220,98 +278,123 @@ input "events".
 </thead>
 <tbody>
 <row>
-<entry>PauseKey</entry>
-<entry>Pause/Continue</entry>
-<entry>Enter/select</entry>
+<entry>MenuKey</entry>
+<entry>Open main menu</entry>
+<entry>Exit/Cancel</entry>
 </row>
 <row>
-<entry>BackKey</entry>
+<entry>EnterKey</entry>
+<entry>Toggle Hold/Rotate screens</entry>
+<entry>Enter/Select</entry>
+</row>
+<row>
+<entry>UpKey</entry>
 <entry>Back (Go to previous screen)</entry>
 <entry>Up/Left</entry>
 </row>
 <row>
-<entry>ForwardKey</entry>
+<entry>DownKey</entry>
 <entry>Forward (Go to next screen)</entry>
 <entry>Down/Right</entry>
 </row>
 <row>
-<entry>MainMenuKey</entry>
+<entry>LeftKey</entry>
+<entry>Back (Go to previous screen)</entry>
+<entry>Left</entry>
+</row>
+<row>
+<entry>RightKey</entry>
+<entry>Forward (Go to next screen)</entry>
+<entry>Right</entry>
+</row>
+<row>
+<entry>MenuKey</entry>
 <entry>Open main menu</entry>
 <entry>Exit/Cancel</entry>
 </row>
 </tbody>
 </tgroup>
 </table>
-
-<note>
-<para>
-The way input keys are handled will change completely in LCDproc 0.5.
-</para>
-</note>
-
-
-<sect3 id="freekeyoptions">
-<title><filename>LCDd.conf</filename>: [input] Section: The Free*Key Options</title>
+-->
 
 <para>
-The Free*Key Options are interesting for those users whose keypad (or other input source)
-has got only four (or less) keys. In this case LCDd would normally use all those
-keys to enable you to control the server menu and the other server functions (like
-switching to the next screen). If these keys are used by a client to do anything
-but noticing that the user has e.g. entered the menu or switched to another screen,
-this will probably cause trouble, as one keypress has several effects at the same
-time.
-</para>
-<para>
-The Free*Key options enable you to influence this behaviour.
+The menu is an LCDproc client built into <application>rLCDd</application>.
+You can configure what keys the menu should use. Note that the MenuKey
+will be reserved exclusively, the others work in shared mode.
 </para>
 
 <variablelist>
-  <varlistentry>
-    <term>FreePauseKey=</term>
-    <listitem>
-    <para>
-    If set to yes, this prevents LCDd from handling the PauseKey itself.
-    Then a client can request the key 'A' and handle it.
-    </para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term>FreeBackKey=</term>
-    <listitem>
-    <para>
-    If set to yes, this prevents LCDd from handling the BackKey itself.
-    Then a client can request the key 'B' and handle it.
-    </para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term>FreeForwardKey=</term>
-    <listitem>
-    <para>
-    If set to yes, this prevents LCDd from handling the ForwardKey itself.
-    Then a client can request the key 'C' and handle it.
-    </para>
-    </listitem>
-  </varlistentry>
-  <varlistentry>
-    <term>FreeMainMenuKey=</term>
-    <listitem>
-    <para>
-    If set to yes, this prevents LCDd from handling the MainMenuKey itself.
-    Then a client can request the key 'D' and handle it.
-    </para>
-    <tip>
-    <para>
-    Even if you "free" the above keys, you can still use the menu
-    provided you set FreeMainMenuKey to no.
-    </para>
-    </tip>
-    </listitem>
-  </varlistentry>
-</variablelist>
 
-</sect3>
+  <varlistentry>
+    <term>MenuKey=</term>
+    <listitem>
+      <para>
+      The key that switches into menu mode (=opens the main menu).
+      In menu mode it cancels any operation. Cancelling the main menu
+      means returning to the regular display mode.
+      It defaults to <literal>Escape</literal>.
+    </para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term>EnterKey=</term>
+    <listitem>
+      <para>
+      The key to enter a sub menu and/or, to select an entry.
+      It defaults to <literal>Enter</literal>.
+      </para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term>UpKey=</term>
+    <listitem>
+      <para>
+      The key to move to the previous menu item.
+      If the <replaceable>LeftKey</replaceable> is not set,
+      it is also used to move left in input fields.
+      It default to <literal>Up</literal>.
+      </para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term>DownKey=</term>
+    <listitem>
+      <para>
+      The key to move to the next menu item.
+      If the <replaceable>RightKey</replaceable> is not set,
+      it is also used to move right in input fields.
+      It default to <literal>Down</literal>.
+      </para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term>LeftKey=</term>
+    <listitem>
+      <para>
+      If defined, this optional key is used to 
+      to move left in input fields and to select submenu entries.
+      It is not set by default, but if you have more than 4 keys,
+      a natural candidate is <literal>Left</literal>.
+      </para>
+    </listitem>
+  </varlistentry>
+
+  <varlistentry>
+    <term>RightKey=</term>
+    <listitem>
+      <para>
+      If defined, this optional key is used to to move right in input fields.
+      It is not set by default, but if you have more than 4 keys,
+      a natural candidate is <literal>Right</literal>.
+      </para>
+    </listitem>
+  </varlistentry>
+
+</variablelist>
 
 </sect2>
 
@@ -393,7 +476,7 @@ sources distribution).
 # Set SCREENS to the screens you want lcdproc to send to LCDd
 # lcdproc --help will give you a list of the screens available
 
-SCREENS="C X"
+SCREENS="C L"
 
 </programlisting>
 </example>

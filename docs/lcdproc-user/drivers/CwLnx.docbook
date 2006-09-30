@@ -2,9 +2,42 @@
 <title>The CwLnx Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-CwLnx chipset.
+This section talks about using LCDproc with the serial / USB LCDs CW12232
+by CwLinux.
 </para>
+
+<sect2 id="CwLnx-features">
+<title>Features</title>
+
+<para>
+The CwLinux CW12232 LCDs are graphical LCDs with 122 x 32 dots
+that also have a text mode with 20 x 4 characters.
+The modules can be ordered bare or as part of a kit mounted
+on brackets that fit in half-height 5.25" drive bays.
+The mounting brackets optionally feature a 6 button keypad that
+makes use of the keypad connector on the display modules.
+</para>
+
+<para>
+The kits allow to programmatically switch on/off their backlight.
+Newer revisions of the kits also have programmable brighness as well
+as 4 general purpose IO ports.
+</para>
+
+<para>
+The CW12232 come in 2 variants that differ how they communicate with the host:
+The serial modules are connected to the PC using a serial RS232 connection getting
+operating power using the standard floppy drive power connector,
+while the USB modules only require an USB connection.
+</para>
+
+<para>
+For more information see the 
+<ulink url="http://www.cwlinux.com">CwLinux web site</ulink>
+</para>
+
+</sect2>
+
 
 <!-- ## Cwlinux driver ## -->
 <sect2 id="CwLnx-config">
