@@ -63,6 +63,7 @@ endif
 ifneq "$(wildcard /usr/share/misc/config.guess)" ""
 	cp -f /usr/share/misc/config.guess config.guess
 endif
+	rm -f LCDd.conf.debian
 
 	dh_clean 
 
@@ -77,7 +78,7 @@ install: build
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/lcdproc
 	$(MAKE) install-html-userguide DESTDIR=$(CURDIR)/debian/lcdproc
 
-	# install config file (with some corrections
+	# install config file (with some adaptions)
 	sed -e '/^DriverPath=/s,server/drivers,/usr/lib/lcdproc,' \
 	    < $(CURDIR)/LCDd.conf > $(CURDIR)/LCDd.conf.debian
 	install -m644 $(CURDIR)/LCDd.conf.debian $(CURDIR)/debian/lcdproc/etc/lcdproc/LCDd.conf
