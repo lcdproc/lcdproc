@@ -154,7 +154,7 @@ LCD in 4-bit mode driven by PCF8574(A) / PCA9554(A), connected via I2C bus
 ICP A106 alarm/LCD board in 19" rack cases by ICP
 .TP
 .B imon
-iMON IR/VFDamodules in cases by Soundgraph/Ahanix/Silverstone/Uneed/Accent
+iMON IR/VFD modules in cases by Soundgraph/Ahanix/Silverstone/Uneed/Accent
 .TP
 .B IOWarrior
 Code Mercenaries IOWarrior
