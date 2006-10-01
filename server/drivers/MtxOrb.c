@@ -53,23 +53,26 @@
 #include "adv_bignum.h"
 
 #include "report.h"
-/* #include "shared/str.h"
-   #include "input.h"
-   Above 3 lines modified by Joris */
-#define INPUT_PAUSE_KEY         'A'
-#define INPUT_BACK_KEY          'B'
-#define INPUT_FORWARD_KEY       'C'
-#define INPUT_MAIN_MENU_KEY     'D'
-#define MTXORB_DEFAULT_Left     'A'
-#define MTXORB_DEFAULT_Right    'B'
-#define MTXORB_DEFAULT_Up       'C'
-#define MTXORB_DEFAULT_Down     'D'
-#define MTXORB_DEFAULT_Enter    'E'
-#define MTXORB_DEFAULT_Escape   'F'
 
-#define DEFAULT_SIZE "20x4"
-#define DEFAULT_BACKLIGHT 1
-#define DEFAULT_TYPE "lcd"
+// Uncomment to test new key mapping code
+//#define MTXORB_NEW_KEYMAP
+// Also don't forget to define key mappings in LCDd.conf: KeyMap_A=Enter, ...
+
+#ifdef MTXORB_NEW_KEYMAP 
+/* MO displays allow 25 keys that map by default to 'A' - 'Y' */
+# define MAX_KEY_MAP	25
+#else
+# define MTXORB_DEFAULT_Left     'A'
+# define MTXORB_DEFAULT_Right    'B'
+# define MTXORB_DEFAULT_Up       'C'
+# define MTXORB_DEFAULT_Down     'D'
+# define MTXORB_DEFAULT_Enter    'E'
+# define MTXORB_DEFAULT_Escape   'F'
+#endif
+
+#define DEFAULT_SIZE		"20x4"
+#define DEFAULT_BACKLIGHT	1
+#define DEFAULT_TYPE		"lcd"
 /* #define CONFIG_FILE Non config file code removed by David GLAUDE */
 /* Above 5 lines added by Joris :( */
 
@@ -145,13 +148,20 @@ typedef struct {
 
 	MtxOrb_type_type MtxOrb_type;
 
+#ifdef MTXORB_NEW_KEYMAP
+	/* the keymap */
+	char *keymap[MAX_KEY_MAP];
+	int keys;
+#else	
 	char left_key;
 	char right_key;
 	char up_key;
 	char down_key;
 	char enter_key;
 	char escape_key;
+#endif	
 	int keypad_test_mode;
+
 	char info[255];		/* static data from MtxOrb_get_info */
 } PrivateData;
 
@@ -230,12 +240,14 @@ MtxOrb_init (Driver *drvthis)
 	p->backlight_state = 1; /* static data from MtxOrb_backlight */
 	p->backlightenabled = DEFAULT_BACKLIGHT;
 
+#ifndef MTXORB_NEW_KEYMAP
 	p->left_key = MTXORB_DEFAULT_Left;
 	p->right_key = MTXORB_DEFAULT_Right;
 	p->up_key = MTXORB_DEFAULT_Up;
 	p->down_key = MTXORB_DEFAULT_Down;
 	p->enter_key = MTXORB_DEFAULT_Enter;
 	p->escape_key = MTXORB_DEFAULT_Escape;
+#endif	
 	p->keypad_test_mode = 0;
 
 	debug(RPT_INFO, "MtxOrb: init(%p)", drvthis);
@@ -325,6 +337,33 @@ MtxOrb_init (Driver *drvthis)
 		 * test mode.
 		 */
 
+#ifdef MTXORB_NEW_KEYMAP 
+		int i;
+
+		/* assume no mapped keys */
+		p->keys = 0;
+
+		/* read the keymap */
+		for (i = 0; i < MAX_KEY_MAP; i++) {
+			char buf[40];
+			const char *s;
+
+			/* First fill with NULL; */
+			p->keymap[i] = NULL;
+
+			/* Read config value */
+			sprintf(buf, "KeyMap_%c", i+'A');
+			s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
+
+			/* Was a key specified in the config file ? */
+			if (s != NULL) {
+				p->keys++;
+				p->keymap[i] = strdup(s);
+				report(RPT_INFO, "%s: Key '%c' mapped to \"%s\"",
+					drvthis->name, i+'A', s );
+			}
+		}
+#else	
 		/* left_key */
 		p->left_key = MtxOrb_parse_keypad_setting(drvthis, "LeftKey", MTXORB_DEFAULT_Left);
 		report(RPT_DEBUG, "%s: Using \"%c\" as Leftkey.", drvthis->name, p->left_key);
@@ -348,6 +387,7 @@ MtxOrb_init (Driver *drvthis)
 		/* escape_key */
 		p->escape_key = MtxOrb_parse_keypad_setting(drvthis, "EscapeKey", MTXORB_DEFAULT_Escape);
 		report(RPT_DEBUG, "%s: Using \"%c\" as EscapeKey.", drvthis->name, p->escape_key);
+#endif		
 
 	}
 	/* End of config file parsing */
@@ -1363,10 +1403,16 @@ MODULE_EXPORT const char *
 MtxOrb_get_key (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char in = 0;
+	char key = 0;
 	struct pollfd fds[1];
 
-	// POLL For data or return
+#ifdef MTXORB_NEW_KEYMAP
+	/* don't query the keyboard if there are no mapped keys; see \todo above */
+	if ((!p->keypad_test_mode) || (p->keys == 0))
+		return NULL;
+#endif		
+
+	/* poll for data or return */
 	fds[0].fd = p->fd;
 	fds[0].events = POLLIN;
 	fds[0].revents = 0;
@@ -1374,32 +1420,43 @@ MtxOrb_get_key (Driver *drvthis)
 	if (fds[0].revents == 0)
 		return NULL;
 
-	(void) read(p->fd, &in, 1);
-	report(RPT_DEBUG, "%s: get_key: key 0x%02X", drvthis->name, in);
+	(void) read(p->fd, &key, 1);
+	report(RPT_DEBUG, "%s: get_key: key 0x%02X", drvthis->name, key);
 
-	if (in == '\0')
+	if (key == '\0')
 		return NULL;
 
 	if (!p->keypad_test_mode) {
-	        if (in == p->left_key)
+#ifdef MTXORB_NEW_KEYMAP 
+		/* we assume standard key mapping here */
+		if ((key >= 'A') && (key <= 'A' + MAX_KEY_MAP)) {
+			return p->keymap[key-'A'];
+		}
+		else {
+			report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
+			return NULL;
+		}
+#else	
+	        if (key == p->left_key)
 			return "Left";
-		else if (in == p->right_key)
+		else if (key == p->right_key)
 			return "Right";
-		else if (in == p->up_key)
+		else if (key == p->up_key)
 			return "Up";
-		else if (in == p->down_key)
+		else if (key == p->down_key)
 			return "Down";
-		else if (in == p->enter_key)
+		else if (key == p->enter_key)
 			return "Enter"; 
-		else if (in == p->escape_key)
+		else if (key == p->escape_key)
 			return "Escape";
 		else {
-        		report(RPT_INFO, "%s: untreated key 0x%02X", drvthis->name, in);
+        		report(RPT_INFO, "%s: untreated key 0x%02X", drvthis->name, key);
 			return NULL;
 	        }
+#endif		
 	}
 	else {
-		fprintf(stdout, "MtxOrb: Received character %c\n", in);
+		fprintf(stdout, "MtxOrb: Received character %c\n", key);
 		fprintf(stdout, "MtxOrb: Press another key of your device.\n");
 	}
 	return NULL;
