@@ -70,12 +70,6 @@
 # define MTXORB_DEFAULT_Escape   'F'
 #endif
 
-#define DEFAULT_SIZE		"20x4"
-#define DEFAULT_BACKLIGHT	1
-#define DEFAULT_TYPE		"lcd"
-/* #define CONFIG_FILE Non config file code removed by David GLAUDE */
-/* Above 5 lines added by Joris :( */
-
 #define IS_LCD_DISPLAY	(p->MtxOrb_type == MTXORB_LCD)
 #define IS_LKD_DISPLAY	(p->MtxOrb_type == MTXORB_LKD)
 #define IS_VFD_DISPLAY	(p->MtxOrb_type == MTXORB_VFD)

@@ -9,6 +9,9 @@
 #define DEFAULT_LINEWRAP	1
 #define DEFAULT_AUTOSCROLL	1
 #define DEFAULT_CURSORBLINK	0
+#define DEFAULT_SIZE		"20x4"
+#define DEFAULT_BACKLIGHT	1
+#define DEFAULT_TYPE		"lcd"
 
 
 MODULE_EXPORT int  MtxOrb_init (Driver *drvthis);
