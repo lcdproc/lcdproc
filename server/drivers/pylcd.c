@@ -34,7 +34,7 @@
  *  2006-02-20 Stefan Reinauer <stepan@coresystems.de>
  *   - add support for onboard LEDs via "output" command
  *  2006-04-12 Stefan Reinauer <stepan@coresystems.de>
- *   - add support for user defined characters (set_char/get_free_chars)
+ *   - add support for user-defined characters (set_char/get_free_chars)
  *   - add support for vbars/hbars, get_info, reorganize pyramid_init()
  *   - fixed a timing bug and implemented escaping in (real_)send_tele()
  *  2006-04-18 Stefan Reinauer <stepan@coresystems.de>

@@ -409,7 +409,7 @@ lcterm_init_vbar (Driver *drvthis)
 
   if (p->ccmode != CCMODE_STANDARD) {
     /* Not supported (yet) */
-    report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user defined characters",
+    report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }
@@ -489,7 +489,7 @@ lcterm_init_hbar (Driver *drvthis)
 
   if (p->ccmode != CCMODE_STANDARD) {
     /* Not supported (yet) */
-    report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user defined characters",
+    report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }
@@ -616,7 +616,7 @@ lcterm_init_num (Driver *drvthis)
 
   if (p->ccmode != CCMODE_STANDARD) {
     /* Not supported (yet) */
-    report(RPT_WARNING, "%s: init_num: cannot combine two modes using user defined characters",
+    report(RPT_WARNING, "%s: init_num: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }

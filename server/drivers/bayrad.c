@@ -443,7 +443,7 @@ bayrad_init_vbar(Driver * drvthis)
 
   if (p->ccmode != CCMODE_STANDARD) {
     /* Not supported (yet) */
-    report(RPT_WARNING, "%s: cannot combine two modes using user defined characters",
+    report(RPT_WARNING, "%s: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }
@@ -523,7 +523,7 @@ bayrad_init_hbar(Driver * drvthis)
 
   if (p->ccmode != CCMODE_STANDARD) {
     /* Not supported (yet) */
-    report(RPT_WARNING, "%s: cannot combine two modes using user defined characters",
+    report(RPT_WARNING, "%s: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }

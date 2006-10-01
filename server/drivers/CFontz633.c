@@ -699,7 +699,7 @@ CFontz633_vbar (Driver *drvthis, int x, int y, int len, int promille, int option
 
 		if (p->ccmode != standard) {
 			/* Not supported(yet) */
-			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user defined characters",
+			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user-defined characters",
 					drvthis->name);
 			return;
 		}
@@ -738,7 +738,7 @@ CFontz633_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 
 		if (p->ccmode != standard) {
 			/* Not supported(yet) */
-			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user defined characters",
+			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
 					drvthis->name);
 			return;
 		}
@@ -775,7 +775,7 @@ int do_init = 0;
 	if (p->ccmode != bignum) {
 		if (p->ccmode != standard) {
 			/* Not supported (yet) */
-			report(RPT_WARNING, "%s: num: cannot combine two modes using user defined characters",
+			report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
 					drvthis->name);
 			return;
 		}

@@ -629,7 +629,7 @@ HD44780_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 
 		if (p->ccmode != standard) {
 			/* Not supported(yet) */
-			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user defined characters",
+			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user-defined characters",
 				drvthis->name);
 			return;
 		}
@@ -668,7 +668,7 @@ HD44780_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 
 		if (p->ccmode != standard) {
 			/* Not supported(yet) */
-			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user defined characters",
+			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
 			      drvthis->name);
 		return;
 		}
@@ -701,7 +701,7 @@ HD44780_num (Driver *drvthis, int x, int num)
 	if (p->ccmode != bignum) {
 		if (p->ccmode != standard) {
 			/* Not supported (yet) */
-			report(RPT_WARNING, "%s: num: cannot combine two modes using user defined characters",
+			report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
 					drvthis->name);
 			return;
 		}
