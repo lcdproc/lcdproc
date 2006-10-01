@@ -113,7 +113,7 @@ curses chipset.
     </arg>  
   </term>
   <listitem><para>
-  Tell whether to use ACS (alternative character set) symbols ifor icons and bars
+  Tell whether to use ACS (alternative character set) symbols for icons and bars
   instead of  simple ASCII characters.
   </para></listitem>
 </varlistentry>
