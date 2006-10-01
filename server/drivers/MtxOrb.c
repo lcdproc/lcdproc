@@ -3,6 +3,9 @@
 
     For the Matrix Orbital LCD* LKD* VFD* and VKD* displays
 
+    Applicable Data Sheets:
+    - http://www.matrixorbital.ca/manuals/
+
     NOTE: GLK displays have a different driver.
 
     Copyright (C) 1999, William Ferrell and Scott Scriven

@@ -3,10 +3,10 @@
  *  It support the CrystalFontz 633 USB/Serial, the 631 USB and the 635 USB
  *  (get yours from http://crystalfontz.com)
  *
- *  Applicable Data Sheets
- *  http://www.crystalfontz.com/products/631/CFA-631_v1.0.pdf
- *  http://www.crystalfontz.com/products/633/CFA_633_0_6.PDF
- *  http://www.crystalfontz.com/products/635/CFA_635_1_0.pdf
+ *  Applicable Data Sheets:
+ *  - http://www.crystalfontz.com/products/631/CFA-631_v1.0.pdf
+ *  - http://www.crystalfontz.com/products/633/CFA_633_0_6.PDF
+ *  - http://www.crystalfontz.com/products/635/CFA_635_1_0.pdf
  *
  *  Copyright (C) 2002 David GLAUDE
  *  Portions Copyright (C) 2005 Peter Marschall
@@ -38,7 +38,7 @@
  *
  * THINGS NOT DONE:
  * + No checking if right hardware is connected (firmware/hardware)
- * + No support for multiple instance (require private structure)
+ * + No support for multiple instance (private structure done)
  * + No cache of custom char usage (like in MtxOrb)
  *
  * THINGS DONE:
@@ -48,10 +48,10 @@
  * + Support for keypad (Using a KeyRing)
  * + BigNum (for CF635 only: it is a 4-line display)
  * + Output support (LED control on a CF635 only)
+ * + Create and use the library (for custom char handling)
  *
  * THINGS TO DO:
  * + Make the caching at least for heartbeat icon
- * + Create and use the library (for custom char handling)
  *
  */
 
