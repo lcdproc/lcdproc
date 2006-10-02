@@ -259,7 +259,7 @@ Then, you'll need some clients. LCDproc comes with a few, of which the
     clients/lcdproc/lcdproc -f  C M T L
 
 This will run the LCDproc client, with the [C]pu, [M]emory,
-[T]ime, and [L]oad screens.  The option "-f" causes it not to daemonizei,
+[T]ime, and [L]oad screens.  The option "-f" causes it not to daemonize,
 but run in the foreground.
 
 By default, the client tries to connect to a server located on localhost
