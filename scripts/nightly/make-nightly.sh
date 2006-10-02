@@ -7,7 +7,7 @@ PERL=/usr/bin/perl
 GUNZIP=/bin/gunzip
 BZIP2=/usr/bin/bzip2
 CVS2CL=/home/gfk/lcdproc/cvs2cl.pl
-SCP=/usr/bin/scp
+SSH=/usr/bin/ssh
 RSYNC=/usr/bin/rsync
 #####
 # Branch, can be stable-0-4-x, stable-0-5-x or current
@@ -81,12 +81,9 @@ mv lcdproc-*.tar.gz lcdproc-CVS-${BRANCH}.tar.gz
 # ${BZIP2} lcdproc-CVS-${BRANCH}.tar
 
 # Upload
-# scp -qB -i ${NIGHTLYDIR}/id_dsa lcdproc-CVS-${BRANCH}.tar.gz lcdproc-CVS-${BRANCH}.tar.bz2 gfk@lcdproc.sourceforge.net:www-lcdproc/nightly/
-#${SCP} -qB \
 ${RSYNC} -q \
 lcdproc-CVS-${BRANCH}.tar.gz gfk@lcdproc.sourceforge.net:www-lcdproc/nightly/
-${RSYNC} -q \
-lcdproc-CVS-${BRANCH}.tar.gz gfk@cf-shell.sourceforge.net:smoketest/
+${SSH} -q lcdproc.sourceforge.net "sh lcdproc-finish-nightly.sh ${BRANCH}"
 
 # Cleanup
 mv configure.in.temp configure.in
@@ -94,6 +91,5 @@ mv README.temp README
 mv ChangeLog.temp ChangeLog
 rm -f nightly-ChangeLog
 rm -f nightly-cvsChanges.txt
-#mv lcdproc-CVS-${BRANCH}.tar.bz2 ../
 mv lcdproc-CVS-${BRANCH}.tar.gz ../
 sh autogen.sh >/dev/null
