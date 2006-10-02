@@ -5,16 +5,32 @@ Feel free to help out with any of this stuff!  :)
 Please send a message to the mailing list if you have any question.
 
 Things for the short term:
-- The menu_goto command: A given menu should come up
-  (if the menu accepts that).
-- Rotation and priorities
-- Have server also use Left and Right key 
-- Entire server menu working properly
-- Fix rendering of subframes
-- Fix rendering anyway ;)
-- (?) Use centralized command message parsing engine (more secure)
+- Use centralized command message parsing engine (more secure)
+- allow bignum library to use user-defined characters different
+  from 0 - N but from M - (M+N)
+- more features for existing display drivers
+  (e.g. adapt them to bignum library)
 
 Things for the longer term:
+
+----------------------------------------
+lcdproc client
+--------------
+
+allow more than one instance of a screen with different configuration
+sections (implementation should be possible similar to the one with
+the drivers in LCDd where File=... points to the original driver file)
+
+more options in the config file (clocks with offsets from localtime, ...)
+
+more options changeable in the lcdproc client menu
+
+----------------------------------------
+lcdexec client
+--------------
+
+more flexbibility: do not just only execute commands, but 
+maybe also display their result in a screen, ...
 
 ----------------------------------------
 Client driver
@@ -34,69 +50,6 @@ command line.  Or,
 
 would have the same result as pressing a key on the keypad.
 
-STATUS: Loadable drivers are working in 0.5 but not loggin in remotely nor key
-----------------------------------------
-Port the lcdproc client screens to *BSD.
-
-Thomas Runge ported the 4.0-pre9 client to *BSD but we forgot to merge it
-in the CVS tree back them.
-The patch is available at: http://core.de/~coto/misc/lcdproc_bsd.diff.gz
-A backup copy is available at: http://lcdproc.sf.net/lcdproc_bsd.diff.gz
-
-The main problem in applying this patch is to make it work with
-autoconf/automake.
-
-I estimate the time to do this to between 1 and 4 hours per screen. The
-person applying to port should have access to at least one BSD account
-(sourceforge compile farm provide a BSD box, ask the mailing list if you
-don't know how to access it).
-
-The port should be tested on FreeBSD, OpenBSD and NetBSD before applying
-it to the CVS tree. Just ask the mailing list for testing.
-
-STATUS: chrono.c, cpu.c, disk.c have been ported.
-----------------------------------------
-Add LibGTop support to the lcdproc client
-
-LibGTop is a library that fetches information about the running system
-such as cpu, memory usage and active processes, and make it available to
-the requesting program.
-
-Adding LibGTop support to the lcdproc client would enable it to work on
-more platforms, including MacOS X.
-
-LibGTop is available at:
-http://ftp.gnome.org/pub/GNOME/stable/sources/libgtop/
-
-STATUS: No work done yet.
-----------------------------------------
-Menus / Client menus
-
-LCDproc will have a "menu" mode, where various options can be
-configured.  You can rearrange the screenlist, change the contrast,
-add/remove drivers, change screen priorities, kick off clients, etc...  
-
-You can also access client menus to configure options in each client.
-
-STATUS: This is currently being worked on. Client supplied menus work.
-Check 0.5 to see it.
-----------------------------------------
-Config Files...
-
-LCDproc will use a config file for its parameters, like other
-programs; instead of relying upon long command lines.  Keypresses,
-drivers, and other things will be configurable here.  Also, LCDproc
-will have the ability to load/modify/save config files via its menu
-interface, so you don't have to edit it by hand.
-
-Info about particular clients/screens will also be stored in the
-LCDproc config file, so you can (for example) save your preferences
-about screen priorities, etc...
-
-Code will be made generic, so that other programs can use it for their
-own config files.  Clients may want to use this..
-
-STATUS: We have a config file only for LCDd but we don't save config.
 ----------------------------------------
 Scheduling modes
 
@@ -109,25 +62,5 @@ low-priority screens, simply by showing up more often.
 
 STATUS: Currently high priority screens will only be shown _first_ after
 a resorting of the screenlist. The time that it's visible is unaltered.
-----------------------------------------
-Shell Commands
 
-The server will also be able to run arbitrary shell commands from the
-config file.  This will allow you to, for example, shut down the
-machine, get online, or other system tasks.
-
-STATUS: These commands can now be run by the lcdexec client.
-----------------------------------------
-Improved display driver API
-
-The desirable aspects of what a driver should do has changed somewhat
-since I first read the LCD manual.  The driver spec is based largely
-on the functions MtxOrb's LCDs provide easily, but it is not
-well-suited to other types of display.
-
-So, I'll be working on a new driver spec which is more flexible and
-more powerful.  In addition, I'm looking for ways to better handle
-multiple driver devices.
-
-STATUS: This is API and version 0.5
 ----------------------------------------
