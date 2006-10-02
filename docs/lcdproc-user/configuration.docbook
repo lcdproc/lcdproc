@@ -89,78 +89,94 @@ settings for the LCDproc server <application>LCDd</application>.
 </para>
 
 <variablelist>
-
 <varlistentry>
-  <term>Driver=</term>
-  <listitem>
-    <para>
+  <term>
+    <command>Driver=</command>
+    <arg choice="plain"><replaceable>DRIVERNAME</replaceable></arg>
+  </term>
+  <listitem><para>
     Tells the server which driver(s) to use. See
-    <link linkend="which-driver">above</link> for details
-    </para>
-    <note>
-      <para>
-      The default setting is Driver=none which makes the server exit right
-      after the start. This is neccessary to avoid trouble with package installations.
-      </para>
-    </note>
-  </listitem>
+    <link linkend="which-driver">above</link> for details.
+    If not specified <replaceable>DRIVERNAME</replaceable>
+    defaults to <literal>curses</literal>, a driver that is supposed
+    to work on any half-way decent UNIX console.
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>Bind=</term>
-  <listitem>
-    <para>
-    Tells the server to bind to the given interface. Default to Bind=127.0.0.1 which
+  <term>
+    <command>Bind=</command>
+    <arg choice="plain"><replaceable>ADDRESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Tells the server to bind to the given local IP address and listen for incoming client connections.
+    The default value for <replaceable>ADDRESS</replaceable> is <literal>127.0.0.1</literal>, which
     is actually the safest variant.
-    </para>
-  </listitem>
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>Port=</term>
-  <listitem>
-    <para>
-    Tells the server to listen to this specified port; defaults to 13666.
-    </para>
-  </listitem>
-</varlistentry>
-
-<varlistentry>
-  <term>ReportLevel=</term>
-  <listitem>
-    <para>
-    Sets the reporting level; defaults to 2 (warnings and errors only).
-    </para>
-  </listitem>
-</varlistentry>
-
-<varlistentry>
-  <term>ReportToSyslog=</term>
-  <listitem>
-    <para>
-    Should we report to syslog instead of stderr ? Defaults to no.
-    </para>
-  </listitem>
-</varlistentry>
-
-<varlistentry>
-  <term>WaitTime=
+  <term>
+    <command>Port=</command>
+    <arg choice="plain"><replaceable>PORTNUMBER</replaceable></arg>
   </term>
-  <listitem>
-    <para>
+  <listitem><para>
+    Tells the server to listen to this specified port.
+    If not specified <replaceable>PORTNUMBER</replaceable> defaults to <literal>13666</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ReportLevel=</command>
+    <arg choice="plain"><replaceable>LEVEL</replaceable></arg>
+  </term>
+  <listitem><para>
+    Sets the reporting level.
+    Legal values for <replaceable>LEVEL</replaceable> range from <literal>0</literal>
+    (only critical errors) to <literal>5</literal> (everything including debugging information).
+    If not specified it defaults to <literal>2</literal> (warnings and errors only).
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ReportToSyslog=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+      <arg choice="plain"><literal>yes</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Should we report to <filename>syslog</filename> instead of <filename>stderr</filename>?
+    Default value is <literal>no</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>WaitTime=</command>
+    <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
+  </term>
+  <listitem><para>
     Sets the default time in seconds to display a screen.
-    </para>
-  </listitem>
+    If not specified the default value for <replaceable>SECONDS</replaceable> is <literal>4</literal>.
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>User=
+  <term>
+    <command>User=</command>
+    <arg choice="plain"><replaceable>USER</replaceable></arg>
   </term>
   <listitem>
     <para>
-    User to run as.  LCDd will drop its root privileges,
-    if any, and run as this user instead. Defaults to User=nobody.
+    User to run as. When started as root LCDd will drop its privileges,
+    and run as this user instead. Defaults to <literal>nobody</literal>.
     </para>
+    <!--
     <note>
       <para>
       If you want to use the server menu, to shutdown or reboot your system,
@@ -168,31 +184,43 @@ settings for the LCDproc server <application>LCDd</application>.
        privileges to run commands like <command>init 6</command>.
       </para>
     </note>
+    -->
   </listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>ServerScreen=
+  <term>
+    <command>ServerScreen=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
   </term>
-  <listitem>
-    <para>
-    Enables the server screen even when other screens are active. Defaults to
-    no.
-    </para>
-  </listitem>
+  <listitem><para>
+    Include the server screen, that shows the number of active clients and screens,
+    into the screen rotation scheme when other screens exist.
+    Defaults to <literal>yes</literal>.
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>Foreground=</term>
-  <listitem>
-    <para>
+  <term>
+    <command>Foreground=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+      <arg choice="plain"><literal>yes</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
     The server will stay in the foreground if set to true.
     Otherwise the server will fork to background and report
-    to syslog. Defaults to yes.
-    </para>
-  </listitem>
+    to syslog. Defaults to <literal>no</literal>.
+  </para></listitem>
 </varlistentry>
-
 </variablelist>
 
 
@@ -202,50 +230,54 @@ don't go to any client.
 </para>
 
 <variablelist>
-
 <varlistentry>
-  <term>ToggleRotateKey=</term>
-  <listitem>
-    <para>
+  <term>
+    <command>ToggleRotateKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
     Defaults to <literal>Enter</literal>.
-    </para>
-  </listitem>
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>PrevScreenKey=</term>
-  <listitem>
-    <para>
+  <term>
+    <command>PrevScreenKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
     Defaults to <literal>Left</literal>.
-    </para>
-  </listitem>
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>NextScreenKey=</term>
-  <listitem>
-    <para>
+  <term>
+    <command>NextScreenKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
     Defaults to <literal>Right</literal>.
-    </para>
-  </listitem>
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>ScrollUpKey=</term>
-  <listitem>
-    <para>
+  <term>
+    <command>ScrollUpKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
     Defaults to <literal>Up</literal>.
-    </para>
-  </listitem>
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>ScrollDownKey=</term>
-  <listitem>
-    <para>
+  <term>
+    <command>ScrollDownKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
     Defaults to <literal>Down</literal>.
-    </para>
-  </listitem>
+  </para></listitem>
 </varlistentry>
 
 </variablelist>
@@ -307,96 +339,97 @@ input "events".
 <entry>Forward (Go to next screen)</entry>
 <entry>Right</entry>
 </row>
-<row>
-<entry>MenuKey</entry>
-<entry>Open main menu</entry>
-<entry>Exit/Cancel</entry>
-</row>
 </tbody>
 </tgroup>
 </table>
 -->
 
 <para>
-The menu is an LCDproc client built into <application>rLCDd</application>.
-You can configure what keys the menu should use. Note that the MenuKey
-will be reserved exclusively, the others work in shared mode.
+The menu is an LCDproc client built into <application>LCDd</application>.
+You can configure what keys the menu should use.
+Note that the <literal>MenuKey</literal> will be reserved exclusively,
+while the others work in shared mode.
 </para>
 
 <variablelist>
+<varlistentry>
+  <term>
+    <command>MenuKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    The key that switches into menu mode (=open the main menu).
+    In menu mode it cancels any operation. Cancelling the main menu
+    means returning to the regular display mode.
+    It defaults to <literal>Menu</literal>.
+  </para></listitem>
+</varlistentry>
 
-  <varlistentry>
-    <term>MenuKey=</term>
-    <listitem>
-      <para>
-      The key that switches into menu mode (=opens the main menu).
-      In menu mode it cancels any operation. Cancelling the main menu
-      means returning to the regular display mode.
-      It defaults to <literal>Escape</literal>.
-    </para>
-    </listitem>
-  </varlistentry>
+<varlistentry>
+  <term>
+    <command>EnterKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    The key to enter a sub menu and/or, to select an entry.
+    It defaults to <literal>Enter</literal>.
+  </para></listitem>
+</varlistentry>
 
-  <varlistentry>
-    <term>EnterKey=</term>
-    <listitem>
-      <para>
-      The key to enter a sub menu and/or, to select an entry.
-      It defaults to <literal>Enter</literal>.
-      </para>
-    </listitem>
-  </varlistentry>
+<varlistentry>
+  <term>
+    <command>UpKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    The key to move to the previous menu item.
+    If the <replaceable>LeftKey</replaceable> is not set,
+    it is also used to move left in input fields.
+    It default to <literal>Up</literal>.
+  </para></listitem>
+</varlistentry>
 
-  <varlistentry>
-    <term>UpKey=</term>
-    <listitem>
-      <para>
-      The key to move to the previous menu item.
-      If the <replaceable>LeftKey</replaceable> is not set,
-      it is also used to move left in input fields.
-      It default to <literal>Up</literal>.
-      </para>
-    </listitem>
-  </varlistentry>
+<varlistentry>
+  <term>
+    <command>DownKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    The key to move to the next menu item.
+    If the <replaceable>RightKey</replaceable> is not set,
+    it is also used to move right in input fields.
+    It default to <literal>Down</literal>.
+  </para></listitem>
+</varlistentry>
 
-  <varlistentry>
-    <term>DownKey=</term>
-    <listitem>
-      <para>
-      The key to move to the next menu item.
-      If the <replaceable>RightKey</replaceable> is not set,
-      it is also used to move right in input fields.
-      It default to <literal>Down</literal>.
-      </para>
-    </listitem>
-  </varlistentry>
+<varlistentry>
+  <term>
+    <command>LeftKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    If defined, this optional key is used to 
+    to move left in input fields and to select submenu entries.
+    It is not set by default, but if you have more than 4 keys,
+    a natural candidate is <literal>Left</literal>.
+  </para></listitem>
+</varlistentry>
 
-  <varlistentry>
-    <term>LeftKey=</term>
-    <listitem>
-      <para>
-      If defined, this optional key is used to 
-      to move left in input fields and to select submenu entries.
-      It is not set by default, but if you have more than 4 keys,
-      a natural candidate is <literal>Left</literal>.
-      </para>
-    </listitem>
-  </varlistentry>
-
-  <varlistentry>
-    <term>RightKey=</term>
-    <listitem>
-      <para>
-      If defined, this optional key is used to to move right in input fields.
-      It is not set by default, but if you have more than 4 keys,
-      a natural candidate is <literal>Right</literal>.
-      </para>
-    </listitem>
-  </varlistentry>
-
+<varlistentry>
+  <term>
+    <command>RightKey=</command>
+    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+  </term>
+  <listitem><para>
+    If defined, this optional key is used to to move right in input fields.
+    It is not set by default, but if you have more than 4 keys,
+    a natural candidate is <literal>Right</literal>.
+  </para></listitem>
+</varlistentry>
 </variablelist>
 
 </sect2>
+
 
 <sect2 id="driver-section">
 <title><filename>LCDd.conf</filename>: The Driver Section</title>
@@ -407,13 +440,16 @@ As mentioned earlier, each driver has its own section in the
 </para>
 
 <para>
-The settings are more or less self-explanatory. So, read through the
-section of your driver and change everything neccessary.
+Although the settings are more or less self-explanatory,
+they are explained in the next chapter in the section for each driver.
+So, read through the section of your driver and changei
+everything neccessary.
 </para>
 
 </sect2>
 
 </sect1>
+
 
 <sect1 id="init-scripts">
 <title>The LCDproc Init Scripts</title>

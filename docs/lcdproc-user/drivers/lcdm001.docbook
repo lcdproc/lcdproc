@@ -26,19 +26,19 @@ lcdm001 chipset.
 
 <varlistentry>
   <term>
-    <command>PauseKey=<replaceable>LeftKey</replaceable></command>
+    <command>PauseKey=</command>
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>BackKey=<replaceable>UpKey</replaceable></command>
+    <command>BackKey=</command>
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>ForwardKey=<replaceable>DownKey</replaceable></command>
+    <command>ForwardKey=</command>
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>MainMenuKey=<replaceable>RightKey</replaceable></command>
+    <command>MainMenuKey=</command>
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem>

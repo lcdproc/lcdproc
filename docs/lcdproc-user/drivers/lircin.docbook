@@ -69,47 +69,6 @@ Then you have to modify the [lirc] section of your
 <filename>LCDd.conf</filename>.
 </para>
 
-<sect3 id="lirc-section">
-<title><filename>LCDd.conf</filename>: The [lirc] Section</title>
-
-<para>
-The [lirc] section of the <filename>LCDd.conf</filename> contains the
-settings for the lirc LCDproc driver.
-</para>
-
-<variablelist>
-<varlistentry>
-<term>lircrc=</term>
-<listitem>
-<para>
-<anchor id="which-lircrc" />Normally all LIRC clients scan the file <filename>~/.lircrc</filename>.
-However, you might want to have a separate file to configure the
-LCDproc lirc driver only.
-</para>
-<para>
-This option enables you to specify the file you want the lirc
-driver to scan.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term>prog=</term>
-<listitem>
-<para>
-All LIRC keys are assigned to a program using the prog=... option
-in the <filename>~/.lircrc</filename> (or the file you have specified
-with lircrc=...).
-</para>
-<para>
-The prog=... line must be the same as in your <filename>~/.lircrc</filename>
-(or the file you have specified with lircrc=...).
-</para>
-</listitem>
-</varlistentry>
-
-</variablelist>
-
-</sect3>
 
 <!-- ## LIRC input driver ## -->
 <sect2 id="lirc-config">
@@ -143,8 +102,8 @@ The prog=... line must be the same as in your <filename>~/.lircrc</filename>
   </term>
   <listitem>
     <para>
-    All LIRC keys are assigned to a program using the prog=... option
-    in the lirc configuration file.
+    All LIRC keys are assigned to a program using the <literal>prog=...</literal>
+    directive in the lirc configuration file.
     </para>
     <para>
     <replaceable>PROGRAM</replaceable> must be the same as in iyour lirc
@@ -175,7 +134,7 @@ lines to the file:
 </para>
 
 <example>
-<title><filename>~/.lircrc</filename>: Specify the associations from buttons to keysi
+<title><filename>~/.lircrc</filename>: Specify the associations from buttons to keys
 for the lirc driver</title>
 <programlisting>
 
