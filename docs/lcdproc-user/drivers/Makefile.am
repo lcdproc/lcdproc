@@ -6,6 +6,8 @@ EXTRA_DIST =	bayrad.docbook \
 		CFontzPacket.docbook \
 		curses.docbook \
 		CwLnx.docbook \
+		eyeboxone.docbook \
+		g15.docbook \
 		glcdlib.docbook \
 		glk.docbook \
 		hd44780.docbook \
@@ -18,6 +20,7 @@ EXTRA_DIST =	bayrad.docbook \
 		lcdm001.docbook \
 		lcterm.docbook \
 		lircin.docbook \
+		MD8800.docbook \
 		ms6931.docbook \
 		mtc_s16209x.docbook \
 		mtxorb.docbook \
