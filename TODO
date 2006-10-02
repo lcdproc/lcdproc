@@ -30,7 +30,10 @@ lcdexec client
 --------------
 
 more flexbibility: do not just only execute commands, but 
-maybe also display their result in a screen, ...
+maybe also display their result in a screen, get a command's
+parameters interactively using the builtin input menus,
+confirmation of commands, jumping between commands depending
+on the output of a command (wizards), ...
 
 ----------------------------------------
 Client driver
