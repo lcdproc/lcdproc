@@ -39,6 +39,7 @@
 #define iowVendor		0x07c0   /* CodeMercs */
 #define iowProd40		0x1500   /* IOW40 */
 #define iowProd24		0x1501   /* IOW24 */
+#define iowProd56		0x1503   /* IOW56 */
 #define iowTimeout		1000
 
 #define USB_REQ_SET_REPORT	0x09

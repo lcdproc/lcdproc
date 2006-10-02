@@ -308,7 +308,8 @@ PrivateData *p;
       /* Check if this device is a Code Mercenaries IO-Warrior */
       if ((dev->descriptor.idVendor == iowVendor) &&
          ((dev->descriptor.idProduct == iowProd24) ||
-          (dev->descriptor.idProduct == iowProd40))) {
+          (dev->descriptor.idProduct == iowProd40) ||
+          (dev->descriptor.idProduct == iowProd56))) {
 
         /* IO-Warrior found; try to find it's description and serial number */
         p->udh = usb_open(dev);
