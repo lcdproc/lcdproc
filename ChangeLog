@@ -34,11 +34,14 @@ v.0.5dev (ongoing development)
  + g15 - driver for LCD in Logitech G15 gaming keyboards (Anthony J. Mirabella)
  + EyeboxOne - driver for the LCD display on the EyeboxOne (Cedric TESSIER)
  * more flexible parsing of config files: allow spaces around sections and keys
- * updated documentation
+ * updated & extended documentation
  * command line options more synchronizd between server and clients
- * various little fixes
  * CFontzPacket & CFontz633 support big & little endian systems
  * MtxOrb driver completely rewritten to support used-defined characters
+ * more options in lcdproc's config file lcdproc.conf:
+   + time and date formats can be changed using strftime formats
+   + Load screen's LowLoad & HighLoad thresholds
+ * various little fixes
 
 v0.5.0
 This version has split off from unstable-0.4.3. Includes major changes.
