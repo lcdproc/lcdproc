@@ -1,18 +1,32 @@
 README.docbook
+--------------
 
-You can generate the documentation of LCDproc using
-the Docbook utilities.
+The documentation for LCDproc is written in DocBook,
+to be exact: DocBook V4.x XML.
+
+You can generate the documentation of LCDproc using 'xmlto',
+which is a shell-script frontend to an XML toolchain.
+
+Get it from http://cyberelk.net/tim/xmlto/ or pre-packaged
+from your distribution.
+
+To convert the Admin Guide to a single XHTML document, simply do:
+
+$ xmlto xhtml-nochunks lcdproc-dev.docbook
+
+See xlmto's man page for further conversion targets.
+
+
+In earlier releases it was possible to convert the LCDproc documentation
+using the Docbook utilities, but unfortunately this is not possible any
+more.
 
 $ docbook2html lcdproc-dev.docbook
 
-should generate ist as HTML.
+should create HTML documents, but currently fails.
 
-On my box (Mdk 8.1) I have to run
+Unfortunately I am not expert enough in DocBook and SGML to find out why.
+If you find out the cause of this failure, please do not hesitate to post
+the fix tho the LCDproc mailing list.
 
-$ docbook2html -c /etc/sgml/catalog lcdproc-dev.docbook
-
-(-c defines the location of the SGML catalog)
-
-Another tool is 'xmlto', use it this way:
-
-$ xmlto html lcdproc-dev.docbook
+Peter Marschall

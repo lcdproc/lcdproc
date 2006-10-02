@@ -36,9 +36,9 @@ In order to compile LCDproc, you'll need the following programs:
 Depending on the ./configure options and your choice of drivers, you will
 need some additional programs or libraries installed:
 
-* DocBook if you want to create the documentation or Doxygen when used with
-  --enable-doxygen, also see
-  http://sources.redhat.com/docbook-tools/ and
+* DocBook XML converter "xmlto" if you want to create the documentation
+  or Doxygen when used with --enable-doxygen, also see
+  http://cyberelk.net/tim/xmlto/ and
   http://www.stack.nl/~dimitri/doxygen/
 
 * OpenLDAP if you --enable-ldap, see http://www.openldap.org/software/
