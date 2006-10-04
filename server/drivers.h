@@ -57,15 +57,6 @@ void
 drivers_chr( int x, int y, char c );
 
 void
-drivers_init_vbar();	/* TO BE REMOVED */
-
-void
-drivers_init_hbar();	/* TO BE REMOVED */
-
-void
-drivers_init_num();	/* TO BE REMOVED */
-
-void
 drivers_vbar( int x, int y, int len, int promille, int pattern );
 
 void
