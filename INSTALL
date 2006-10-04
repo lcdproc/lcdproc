@@ -46,8 +46,8 @@ need some additional programs or libraries installed:
 
 * libusb if you --enable-libusb, see http://libusb.sourceforge.net/
 
-* G15daemon, libg15 and libg15render for use with the 'g15' driver, see
-  http://g15daemon.sourceforge.net/ and http://g15tools.sourceforge.net/
+* G15daemon, libg15 and libg15render (>= 1.1.1) for use with the 'g15' driver,
+  see http://g15daemon.sourceforge.net/ and http://g15tools.sourceforge.net/
 
 * GraphLCD and GLCDprocDriver for use with the 'glcdlib' driver, see
   http://graphlcd.berlios.de/ and http://www.muresan.de/graphlcd/lcdproc/
