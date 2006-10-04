@@ -3,11 +3,11 @@ Section: utils
 Priority: extra
 Maintainer: Jonathan Oxer <jon@debian.org>
 Build-Depends: debhelper (>= 4.0.0), automake1.9, autoconf, xmlto, texinfo, libncurses5-dev, libusb-dev (>= 0.1.8), libsvga1-dev, libxosd-dev
-Standards-Version: 3.6.2
+Standards-Version: 3.7.2.0
 
 Package: lcdproc
 Architecture: any
-Depends: ${shlibs:Depends}, debconf (>= 0.5.0)
+Depends: ${shlibs:Depends}, debconf (>= 0.5.0) | | debconf-2.0
 Description: LCD display driver daemon and clients
  This is a client/server suite including drivers for all kinds of
  nifty LCD displays. The server supports several serial devices: Matrix
