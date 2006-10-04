@@ -181,12 +181,6 @@ debug_backlight (Driver *drvthis, int on)
 	report(RPT_INFO, "%s(%i)", __FUNCTION__, on);
 }
 
-static void
-debug_init_num (Driver *drvthis)
-{
-	report(RPT_INFO, "%s()", __FUNCTION__);
-}
-
 MODULE_EXPORT void
 debug_num (Driver *drvthis, int x, int num)
 {
@@ -197,12 +191,6 @@ MODULE_EXPORT void
 debug_set_char (Driver *drvthis, int n, char *dat)
 {
 	report(RPT_INFO, "%s(%i,data)", __FUNCTION__, n);
-}
-
-static void
-debug_init_vbar (Driver *drvthis)
-{
-	report(RPT_INFO, "%s()", __FUNCTION__);
 }
 
 /////////////////////////////////////////////////////////////////
@@ -222,12 +210,6 @@ debug_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 			; /* print nothing */
 		}
 	}
-}
-
-static void
-debug_init_hbar (Driver *drvthis)
-{
-	report(RPT_INFO, "%s()", __FUNCTION__);
 }
 
 /////////////////////////////////////////////////////////////////

@@ -122,8 +122,6 @@ MODULE_EXPORT char *symbol_prefix = "CFontz633_";
 /* static void CFontz633_autoscroll (int on);  */
 static void CFontz633_hidecursor (Driver *drvthis);
 static void CFontz633_reboot (Driver *drvthis);
-static void CFontz633_init_vbar (Driver *drvthis);
-static void CFontz633_init_hbar (Driver *drvthis);
 static void CFontz633_no_live_report (Driver *drvthis);
 static void CFontz633_hardware_clear (Driver *drvthis);
 
