@@ -715,8 +715,8 @@ case "$host" in
   hp*|HP*)
 	if test ! "$GCC" = "yes"; then
 		CCSHARED="+z";
+  		LDSHARED="-b"
 	fi
-  	LDSHARED="-b"
   	;;
   *cygwin*)
   	CCSHARED="-DUSE_DL_IMPORT"
