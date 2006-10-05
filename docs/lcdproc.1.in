@@ -117,26 +117,36 @@ minimal clock
 .B A About
 credits page
 .PP
-On the command line you may either use the short or the long \fImode\fP name.
+On the command line you may either use the short or the long \fIscreen\fP name.
 In the config file, the long names are used as section labels to configure the screens
 further.
+.PP
+You may also prefix the screen names with an exclamation mark '\fB!\fP' to disable
+a screen that was activated in the config file instead of activating a disabled one.
 
 .SH EXAMPLES
 .RS
-.I lcdproc C M D L 
+.I lcdproc C M D '!L' 
 .RE
+.PP
 With the command line specified above, \fBlcdproc\fP loads the default configuration file,
 connects to the LCDd server specified therein and then displays the following screens
-on the LCD:
+in addition to those activated in the configuration file on the LCD:
 .IP *
 detailed CPU Usage
 .IP *
 Memory & swap usage
 .IP *
 filling level of the mounted file systems
+.PP
+The
 .IP *
 Load histogram
 .PP
+screen is disabled and therefore not shown in the display.
+(The quotes are not part of lcdproc's command line syntax;
+they are required to disable special interpretation of the question mark by the shell).
+
 
 .SH FILES
 \fB@SYSCONFDIR@/lcdproc.conf\fR, lcdproc's default configuration file
