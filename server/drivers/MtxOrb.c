@@ -1405,7 +1405,7 @@ MtxOrb_get_key (Driver *drvthis)
 
 #ifdef MTXORB_NEW_KEYMAP
 	/* don't query the keyboard if there are no mapped keys; see \todo above */
-	if ((!p->keypad_test_mode) || (p->keys == 0))
+	if ((p->keys == 0) && (!p->keypad_test_mode))
 		return NULL;
 #endif		
 
