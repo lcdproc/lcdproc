@@ -2,6 +2,7 @@
 *
 *  cpu_smp.c - dipslay cpu info for multi-processor machines
 *  Copyright (C) 2000  J Robert Ray
+*  Copyright (C) 2006  Peter Marschall
 *
 *  Adapted from cpu.c.
 *
@@ -31,14 +32,8 @@
 *  GNU General Public License for more details.
 *
 *  You should have received a copy of the GNU General Public License
-*  along with this program; if not, write to the Free Software
-*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*
-*  ---
-*
-*  $Source$
-*  $Revision$ $Date$
-*  Checked in by: $Author$
+*  along with this program; if not, write to the Free Software Foundation,
+*  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 *
 *******************************************************************************/
 
@@ -57,9 +52,7 @@
 #include "machine.h"
 #include "cpu_smp.h"
 
-#define MAX_CPUS 8
-
-static char *numnames[MAX_CPUS] = { "one", "two", "three", "four", "five", "six", "seven", "eight" };
+#define MAX_CPUS 16
 
 //////////////////////////////////////////////////////////////////////////
 // CPU screen shows info about percentage of the CPU being used
@@ -69,102 +62,64 @@ cpu_smp_screen (int rep, int display, int *flags_ptr)
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 4
-	int i, j, n, z;
-	float value;
-	static float cpu[MAX_CPUS][CPU_BUF_SIZE + 1][5];	// last buffer is scratch
+	int z;
+	static float cpu[MAX_CPUS][CPU_BUF_SIZE + 1];	// last buffer is scratch
 	load_type load[MAX_CPUS];
-	int numprocs;
-	char buf[256];
-	char *graphsize;
+	int num_cpus;
+	int bar_size;
+
+	machine_get_smpload(load, &num_cpus);
+
+	bar_size = (num_cpus > lcd_hgt) ? (lcd_wid / 2 - 6) : (lcd_wid - 6);
+
+	// restrict num_cpus to max. twic display height
+	if (num_cpus > 2 * lcd_hgt)
+		num_cpus = 2 * lcd_hgt;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
 
-		machine_get_smpload (load, &numprocs);
+		sock_send_string(sock, "screen_add P\n");
+		sock_send_string(sock, "screen_set P -heartbeat off\n");
 
-		sock_send_string (sock, "screen_add P\n");
-		sock_send_string (sock, "screen_set P -heartbeat off\n");
+		sock_printf(sock, "screen_set P -name {CPU Use: %s}\n", get_hostname());
 
-		sprintf (buffer, "screen_set P -name {CPU Use: %s}\n", get_hostname());
-		sock_send_string (sock, buffer);
+		for (z = 0; z < num_cpus; z++) {
+			int x = (num_cpus > lcd_hgt) ? ((z % 2) * (lcd_wid/2) + 1) : 1;
+			int y = (num_cpus > lcd_hgt) ? (z/2 + 1) : (z+1);
 
-		graphsize = calloc (sizeof (char), lcd_wid);
-		if (numprocs > lcd_hgt) {
-			for (i = 0; i < lcd_wid / 2 - 6; i++) {
-				graphsize[i] = ' ';
-			}
-		} else {
-			for (i = 0; i < lcd_wid - 6; i++) {
-				graphsize[i] = ' ';
-			}
+			sock_printf(sock, "widget_add P cpu%d_title string\n", z);
+			sock_printf(sock, "widget_set P cpu%d_title %d %d \"CPU%d[%*s]\"\n",
+					z, x, y, z, bar_size, "");
+			sock_printf(sock, "widget_add P cpu%d_bar hbar\n", z);
 		}
-
-		for (i = 0; i < numprocs; i++) {
-			if (i + 1 > lcd_hgt * 2)
-				break;
-
-			sprintf (buf, "widget_add P %s_title string\n", numnames[i]);
-			sock_send_string (sock, buf);
-
-			if (numprocs > lcd_hgt) {
-				sprintf (buf, "widget_set P %s_title %d %d \"CPU%d[%s]\"\n", numnames[i], i % 2 * lcd_wid / 2 + 1, i / 2 + 1, i, graphsize);
-			} else {
-				sprintf (buf, "widget_set P %s_title 1 %d \"CPU%d[%s]\"\n", numnames[i], i + 1, i, graphsize);
-			}
-			sock_send_string (sock, buf);
-
-			sprintf (buf, "widget_add P %s_bar hbar\n", numnames[i]);
-			sock_send_string (sock, buf);
-		}
-
-		free (graphsize);
 
 		return 0;
 	}
 
-	machine_get_smpload(load, &numprocs);
-
-	for (z = 0; z < numprocs; z++) {
+	for (z = 0; z < num_cpus; z++) {
+		int x = (num_cpus > lcd_hgt) ? ((z % 2) * (lcd_wid/2) + 6) : 6;
+		int y = (num_cpus > lcd_hgt) ? (z/2 + 1) : (z+1);
+		float value = 0.0;
+		int i, n;
 
 		// Shift values over by one
 		for (i = 0; i < (CPU_BUF_SIZE - 1); i++)
-			for (j = 4; j < 5; j++)
-				cpu[z][i][j] = cpu[z][i + 1][j];
+			cpu[z][i] = cpu[z][i + 1];
 
 		// Read new data
-#if 0									  // we're only using 4 right now
-		cpu[z][CPU_BUF_SIZE-1][0] = ((float) load[z].user / (float) load[z].total) * 100.0;
-		cpu[z][CPU_BUF_SIZE-1][1] = ((float) load[z].system / (float) load[z].total) * 100.0;
-		cpu[z][CPU_BUF_SIZE-1][2] = ((float) load[z].nice / (float) load[z].total) * 100.0;
-		cpu[z][CPU_BUF_SIZE-1][3] = ((float) load[z].idle / (float) load[z].total) * 100.0;
-#endif
-		cpu[z][CPU_BUF_SIZE-1][4] = (load[z].total > 0L)
-					    ? (((float) load[z].user + (float) load[z].system + (float) load[z].nice) / (float) load[z].total) * 100.0
-					    : 0.0;
+		cpu[z][CPU_BUF_SIZE-1] = (load[z].total > 0L)
+				    ? (((float) load[z].user + (float) load[z].system + (float) load[z].nice) / (float) load[z].total) * 100.0
+				    : 0.0;
 
 		// Average values for final result
-		for (i = 4; i < 5; i++) {
-			value = 0.0;
-			for (j = 0; j < CPU_BUF_SIZE; j++) {
-				value += cpu[z][j][i];
-			}
-			value /= CPU_BUF_SIZE;
-			cpu[z][CPU_BUF_SIZE][i] = value;
+		for (i = 0; i < CPU_BUF_SIZE; i++) {
+			value += cpu[z][i];
 		}
+		value /= CPU_BUF_SIZE;
 
-		value = cpu[z][CPU_BUF_SIZE][4];
-
-		if (numprocs > lcd_hgt) {
-			n = (float) (value * lcd_cellwid * ((float) lcd_wid / 2.f - 6.f)) / 100.f + .5f;
-			sprintf (buf, "widget_set P %s_bar %d %d %d\n", numnames[z], z % 2 * lcd_wid / 2 + 6, z / 2 + 1, n);
-		} else {
-			n = (float) (value * lcd_cellwid * ((float) lcd_wid - 6.f)) / 100.f + .5f;
-			sprintf (buf, "widget_set P %s_bar 6 %d %d\n", numnames[z], z + 1, n);
-		}
-		sock_send_string (sock, buf);
-
-		if (z + 1 > lcd_hgt * 2)
-			break;
+		n = (int) ((value * lcd_cellwid * bar_size) / 100.0 + 0.5);
+		sock_printf(sock, "widget_set P cpu%d_bar %d %d %d\n", z, x, y, n);
 	}
 
 	return 0;
