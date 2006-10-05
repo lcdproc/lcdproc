@@ -14,6 +14,7 @@
 #               2002, Jonathan Oxer
 #               2002, Rene Wagner <reenoo@gmx.de>
 #               2006, Peter Marschall
+#               2006, Ethan Dicks
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,8 +36,6 @@
 #       or even look very nice.
 #
 #       However, it demonstrates one way to handle input from the server.
-#       (although it seems buggy..  oops!  :)
-
 
 use 5.005;
 use strict;
@@ -47,6 +46,13 @@ use Fcntl;
 ############################################################
 # Configurable part. Set it according your setup.
 ############################################################
+
+# Verbose
+# 0 : None (only fatal errors)
+# 1 : Warnings
+# 5 : Explain every step.
+my $default_verbosity = 0;
+my $verbose;
 
 # Host which runs lcdproc daemon (LCDd)
 my $SERVER = "localhost";
@@ -66,6 +72,11 @@ my $XMMS_PLAY_PAUSE = "$XMMS --play-pause";
 # End of user configurable parts
 ############################################################
 
+# catch SIGINT and SIGTERM to invoke our cleanup routine
+$SIG{INT} = \&grace;
+$SIG{TERM} = \&grace;
+
+
 my $progname = $0;
    $progname =~ s#.*/(.*?)$#$1#;
 
@@ -78,14 +89,14 @@ sub usage($);
 my %opt = ();
 
 # get options #
-if (getopts('s:p:hV', \%opt) == 0) {
+if (getopts('s:p:v:hV', \%opt) == 0) {
   usage(1);
 }
 
 # check options
 usage(0)  if ($opt{h});
 if ($opt{V}) {
-  print STDERR $progname ." version 1.1\n";
+  print STDERR $progname ." version 1.2\n";
   exit(0);
 }
 
@@ -94,8 +105,9 @@ usage(1)  if ($#ARGV >= 0);
 
 
 # set variables
-$SERVER = defined($opt{s}) ? $opt{s} : $SERVER;
-$PORT = defined($opt{p}) ? $opt{p} : $PORT;
+$SERVER  = defined($opt{s}) ? $opt{s} : $SERVER;
+$PORT    = defined($opt{p}) ? $opt{p} : $PORT;
+$verbose = defined($opt{v}) ? $opt{v} : $default_verbosity;
 
 # Connect to the server...
 my $remote = IO::Socket::INET->new(
@@ -115,7 +127,12 @@ print $remote "hello\n";
 # server even if there isn't meant to be one. If you don't, you may find
 # your program crashes after running for a while when the buffers fill up:
 my $lcdresponse = <$remote>;
-#print $lcdresponse;
+print $lcdresponse if ($verbose >= 5);
+
+# determine LCD size (not needed here, but useful for other clients)
+($lcdresponse =~ /lcd.+wid\s+(\d+)\s+hgt\s+(\d+)/);
+my $lcdwidth = $1; my $lcdheight= $2;
+print "Detected LCD size of $lcdwidth x $lcdheight\n" if ($verbose >= 5);
 
 # Turn off blocking mode...
 fcntl($remote, F_SETFL, O_NONBLOCK);
@@ -148,8 +165,11 @@ $lcdresponse = <$remote>;
 while(1) {
 	# Handle input...
 	while (defined(my $line = <$remote>)) {
+            chomp $line;
+	    print "Received '$line'\n" if ($verbose >= 5);
 	    my @items = split(/ /, $line);
 	    my $command = shift @items;
+
 
 	    # Use input to change songs...
 	    if ($command eq 'key') {
@@ -184,8 +204,22 @@ while(1) {
 	sleep 1;
 }
 
-close ($remote)  or  error(1, "close() error");
-exit;
+# To be called on exit and on SIGINT or SIGTERM.
+sub grace() {
+        print "Exiting...\n" if ($verbose >= 5);
+ 
+        # release keys
+	print $remote "client_del_key Left\n";
+	$lcdresponse = <$remote>;
+	print $remote "client_del_key Right\n";
+	$lcdresponse = <$remote>;
+	print $remote "client_del_key Enter\n";
+	$lcdresponse = <$remote>;
+ 
+        # close socket
+        close($remote);
+        exit;
+}
 
 
 ## print out error message and eventually exit ##
@@ -212,6 +246,7 @@ my $status = shift;
     print STDERR "  where <options> are\n" .
                  "    -s <server>                connect to <server> (default: $SERVER)\n" .
                  "    -p <port>                  connect to <port> on <server> (default: $PORT)\n" .
+                 "    -v <verbosity>             verbosity level (default: $default_verbosity, max verbosity: 5)\n" .
 		 "    -h                         show this help page\n" .
 		 "    -V                         display version number\n";
   }
@@ -237,6 +272,7 @@ x11amp.pl - LCDproc client controlling XMMS/X11AMP
 B<x11amp.pl>
 [B<-s> I<server>]
 [B<-p> I<port>]
+[B<-v> I<verbosity>]
 [B<-h>]
 [B<-V>]
 
@@ -244,9 +280,8 @@ B<x11amp.pl>
 =head1 DESCRIPTION
 
 B<x11amp.pl> is a simple client for LCDproc which controls an XMMS/X11AMP
-MP3 player from the keyboard controlled by LCDproc.
-It can only rewind to the previous song previous song, skip forward
-to the next song and switch between pause and play.
+MP3 player from the keypad controlled by LCDproc.
+It can only rewind to the previous song, skip forward to the next song, and switch between pause and play.
 
 =head1 OPTIONS
 
@@ -260,6 +295,10 @@ Connect to the LCDd daemon at host I<server> instead of the default C<localhost>
 
 Use port I<port> when connecting to the LCDd server instead of the default
 LCDd port C<13666>.
+
+=item B<-v> I<verbosity>
+
+Set message verbosity (0 is silent, 1 is warnings only, 5 describes events in detail).
 
 =item B<-h>
 
@@ -286,13 +325,13 @@ this manual page was written by Peter Marschall.
 
 =head1 BUGS
 
-Yes, there might be some. Please report any one you find to LCDproc's mailing list.
+Yes, there might be some.  Please report any you find to LCDproc's mailing list.
 See the website for more information.
 
 
 =head1 WEBSITE
 
-Visit B<http://www.lcdproc.org/> for more infos and the lastest version.
+Visit B<http://www.lcdproc.org/> for more info and the latest version.
 
 =cut
 
