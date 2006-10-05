@@ -1,5 +1,25 @@
 lcdproc for Debian
 ------------------
+
+New upstream version. All drivers enabled.
+
+CFontz633 and all other USB drivers are enabled in this release.
+Enabled support for libusb
+Doxygen-generated documentation included
+Moved to a more "standard" way of installing most files
+
+ -- Jose Luis Tallon <jltallon@adv-solutions.net>  Sun, 23 Jul 2006 20:23:48 +0200
+
+
+WARNING: CFontz633 USB driver removed
+
+Due to licencing issues this upstream release is missing the CFontz633
+USB driver. Upstream are hoping to add this back in once the licence
+is resolved.
+
+ -- Jonathan Oxer <jon@debian.org>, Thu,  1 Apr 2004 13:24:56 +1000
+
+
 WARNING: Location of example clients changed
 
 lcdproc originally installed a number of example clients in /usr/bin,
