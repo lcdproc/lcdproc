@@ -1,18 +1,15 @@
 #!/bin/sh -e
-#
-# lcdd          Startup script for lcdproc
-#
-#               Modified for autoconf
-#               by Rene Wagner <reenoo@gmx.de>
-#               Modified for lcd-server
-#               by Joris Robijn <joris@robijn.net>
-#               Written by Miquel van Smoorenburg <miquels@cistron.nl>.
-#               Modified for Debian GNU/Linux
-#               by Ian Murdock <imurdock@gnu.ai.mit.edu>.
-#
-# Version:      $Id$
 
-DESC="lcdproc @VERSION@"
+#### BEGIN INIT INFO
+# Provides:          lcdproc
+# Required-Start:    $syslog $local_fs $network $remote_fs
+# Required-Stop:     $syslog $local_fs $network $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: LCDproc system status information viewer
+# Description:       Debian init script for lcdproc, the system
+#                    status information viewer in the LCDproc suite
+### END INIT INFO
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -20,30 +17,32 @@ bindir=@bindir@
 sbindir=@sbindir@
 etc=@sysconfdir@
 
-lcdproc=${bindir}/lcdproc
+NAME=lcdproc
+DAEMON=${bindir}/${NAME}
+DESC="${NAME} @VERSION@"
 
-test -x ${lcdproc} || exit 0
+OPTIONS=""
 
+
+test -x ${DAEMON} || exit 0
 
 case "$1" in
-start)
-        printf "Starting $DESC:"
-        start-stop-daemon --start --quiet --background --exec ${lcdproc} -- $SCREENS
-        printf " lcdproc"
-        printf ".\n"
+    start)
+        printf "Starting ${DESC}: "
+        start-stop-daemon --start --quiet --exec ${DAEMON} -- ${OPTIONS}
+        printf "${NAME}."
         ;;
-stop)
-        printf "Stopping $DESC:"
-        start-stop-daemon --stop --oknodo --quiet --exec ${lcdproc}
-        printf " lcdproc"
-        printf ".\n"
+    stop)
+        printf "Stopping ${DESC}: "
+        start-stop-daemon --stop --oknodo --quiet --exec ${DAEMON}
+        printf "${NAME}."
         ;;
-restart | force-reload)
+    restart|force-reload)
         $0 stop
         sleep 1
         $0 start
         ;;
-*)
+    *)
         printf "Usage: $0 {start|stop|restart|force-reload}\n" >&2
         exit 1
         ;;
