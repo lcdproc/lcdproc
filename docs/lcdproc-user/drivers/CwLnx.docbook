@@ -3,7 +3,7 @@
 
 <para>
 This section talks about using LCDproc with the serial / USB LCDs CW12232
-by CwLinux.
+and CW1602 by CwLinux.
 </para>
 
 <sect2 id="CwLnx-features">
@@ -11,7 +11,12 @@ by CwLinux.
 
 <para>
 The CwLinux CW12232 LCDs are graphical LCDs with 122 x 32 dots
-that also have a text mode with 20 x 4 characters.
+that also have a text mode with 20 x 4 characters,
+the CW1602 LCDs are character LCDs that are 16 characters wide and
+2 lines high.
+</para>
+
+<para>
 The modules can be ordered bare or as part of a kit mounted
 on brackets that fit in half-height 5.25" drive bays.
 The mounting brackets optionally feature a 6 button keypad that
@@ -25,10 +30,10 @@ as 4 general purpose IO ports.
 </para>
 
 <para>
-The CW12232 come in 2 variants that differ how they communicate with the host:
-The serial modules are connected to the PC using a serial RS232 connection getting
-operating power using the standard floppy drive power connector,
-while the USB modules only require an USB connection.
+The CW12232 and CW1608 come in 2 variants that differ how they communicate
+with the host: The serial modules are connected to the PC using a serial
+RS232 connection getting operating power using the standard floppy drive
+power connector, while the USB modules only require an USB connection.
 </para>
 
 <para>
@@ -47,6 +52,21 @@ For more information see the
 <title>[CwLnx]</title>
 
 <variablelist>
+<varlistentry>
+  <term>
+    <command>Model=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>12232</emphasis></literal></arg>
+      <arg choice="plain"><literal>1602</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Select the LCD model [default: 12232; legal: 12232, 1602]
+  </para></listitem>
+</varlistentry>
+
 <varlistentry>
   <term>
     <command>Device=</command>
@@ -68,7 +88,8 @@ For more information see the
     </arg>
   </term>
   <listitem><para>
-    Select the LCD size [default: 20x4]
+    Select the LCD size [default: depending on model: 12232: <literal>20x4</literal>,
+                                                       1602: <literal>16x2</literal>]
   </para></listitem>
 </varlistentry>
 

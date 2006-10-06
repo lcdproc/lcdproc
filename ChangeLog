@@ -38,6 +38,8 @@ v.0.5dev (ongoing development)
  * command line options more synchronizd between server and clients
  * CFontzPacket & CFontz633 support big & little endian systems
  * MtxOrb driver completely rewritten to support used-defined characters
+ * CWLnx driver completely rewritten to support Cw1602 LCDs in addition
+   to the CW12232 LCDs
  * more options in lcdproc's config file lcdproc.conf:
    + time and date formats can be changed using strftime formats
    + Load screen's LowLoad & HighLoad thresholds

@@ -3,6 +3,7 @@
     Copyright (C) 2002, Andrew Ip
                   2002, David Glaude
                   2003, David Glaude
+                  2006, Peter Marschall
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,13 +29,25 @@
 // #define DEFAULT_OFFBRIGHTNESS 0
 // #define DEFAULT_EXITBRIGHTNESS 0
 
-#define DEFAULT_CELLWIDTH 6
-#define DEFAULT_CELLHEIGHT 8
-#define DEFAULT_DEVICE "/dev/lcd"
-#define DEFAULT_SPEED 19200
-#define DEFAULT_SIZE "20x4"
-#define DEFAULT_BACKLIGHT 1
-#define DEFAULT_BRIGHTNESS 200
+#define DEFAULT_DEVICE		"/dev/lcd"
+#define DEFAULT_BACKLIGHT	1
+#define DEFAULT_BRIGHTNESS	200
+
+#define DEFAULT_CELL_WIDTH_1602		5
+#define DEFAULT_CELL_WIDTH_12232	6
+#define DEFAULT_CELL_WIDTH		DEFAULT_CELL_WIDTH_12232
+
+#define DEFAULT_CELL_HEIGHT_1602	8
+#define DEFAULT_CELL_HEIGHT_12232	8
+#define DEFAULT_CELL_HEIGHT		DEFAULT_CELL_HEIGHT_12232
+
+#define DEFAULT_SPEED_1602	19200
+#define DEFAULT_SPEED_12232	19200
+#define DEFAULT_SPEED		DEFAULT_SPEED_12232
+
+#define	DEFAULT_SIZE_1602	"16x2"
+#define	DEFAULT_SIZE_12232	"20x4"
+#define DEFAULT_SIZE		DEFAULT_SIZE_12232
 
 
 MODULE_EXPORT int  CwLnx_init(Driver *drvthis);
@@ -55,7 +68,7 @@ MODULE_EXPORT void CwLnx_num(Driver *drvthis, int x, int num);
 MODULE_EXPORT int  CwLnx_icon(Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT int  CwLnx_get_free_chars(Driver *drvthis);
-MODULE_EXPORT void CwLnx_set_char(Driver *drvthis, int n, char *dat);
+MODULE_EXPORT void CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat);
 
 MODULE_EXPORT int  CwLnx_get_contrast(Driver *drvthis);
 MODULE_EXPORT void CwLnx_set_contrast(Driver *drvthis, int contrast);

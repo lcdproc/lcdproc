@@ -1,39 +1,12 @@
-/*
-List of driver entry point:
-
-init		Work in progress...
-close		Implemented.
-width		If this is a variable, then implemented.
-height		If this is a variable, then implemented.
-clear		Implemented by space filling no custom char info.
-flush		Calling draw_frame only.
-string		Implemented.
-chr		Implemented.
-vbar		.
-hbar		.
-num		.
-heartbeat	Implemented for testing only.
-icon		.
-cursor		NOT IMPLEMENTED: Is it really used?
-set_char	.
-get_free_chars	NOT IMPLEMENTED: Custom char should not be exported.
-cellwidth	If this is a variable, then implemented.
-cellheight	If this is a variable, then implemented.
-get_contrast	Not implemented, no software control.
-set_contrast	Not implemented, no software control.
-get_brightness	Implemented, still need flush code.
-set_brightness	Implemented, still need flush code.
-backlight	Implemented, still need flush code.
-output		.
-get_key		Implemented like in CF633, need cleaning in init.
-get_info	.
-
-*/
-
 /*  This is the LCDproc driver for Cwlinux devices (http://www.cwlinux.com)
+
+    Applicable Data Sheets:
+    - http://www.cwlinux.com/downloads/cw1602/cw1602-manual.pdf
+    - http://www.cwlinux.com/downloads/lcd/cw12232-manual.pdf
 
         Copyright (C) 2002, Andrew Ip
                       2003, David Glaude
+                      2006, Peter Marschall
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,8 +19,30 @@ get_info	.
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 */
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+*/
+   
+/*   
+    Feedback from Tomislav Secen, who tested it with a 1602:
+
+    Great, this is much better:
+    - icons are displayed nicely
+    - bars are OK (at least the few I've seen)
+    - heartbeat icon flashes nicely in the top right corner.
+
+    Only issue I encountered was (similar came up before) - when setting some menu 
+    options, or just entering a certain menu (like Options->CwLnx->OnBrightness, 
+    lcdvc client menu), the LCD becomes garbled  (i.e. displays two blinking hearts, 
+    boxes, '%' symbols), sometimes starts displaying just '%' symbols over the whole 
+    LCD while I'm pressing Left/Right keys (is this the screen-saver?), scrolling 
+    from right to left. Even the "Thank you for using ..." message is garbled (each 
+    time in a different way) if I kill the daemon after that. Pressing 'X' when the 
+    garbled characters occur exits the menu and the other (client) screens are 
+    displayed correctly after that. So only the menus are affected by this issue - 
+    it seems that this screen-saver mode kicks in in the wrong time, and tries to 
+    write to LCD faster than it can process chars/commands.
+*/
 
 
 #include <stdlib.h>
@@ -68,6 +63,9 @@ get_info	.
 #include "report.h"
 #include "lcd_lib.h"
 
+/* for the icon definitions */
+#include "adv_bignum.h"
+
 #define ValidX(x) if ((x) > p->width) { (x) = p->width; } else (x) = (x) < 1 ? 1 : (x);
 #define ValidY(y) if ((y) > p->height) { (y) = p->height; } else (y) = (y) < 1 ? 1 : (y);
 
@@ -75,41 +73,42 @@ get_info	.
 
 static char *defaultKeyMap[MaxKeyMap] = { "Up", "Down", "Left", "Right", "Enter", "Escape" };
 
-typedef enum {
-    standard = 0,
-    hbar = 1,
-    vbar = 2,
-    bign = 4,
-} custom_type;
 
-typedef struct p {
-	int custom;
+typedef enum {
+	standard,	/* only char 0 is used for heartbeat */
+	vbar,		/* vertical bars */
+	hbar,		/* horizontal bars */
+	custom,		/* custom settings */
+	bignum,		/* big numbers */
+	bigchar		/* big characters */
+} CGmode;
+
+
+typedef struct driver_private_data {
 	int fd;
 
 	int have_keypad;
 	int keypad_test_mode;
-        char *KeyMap[MaxKeyMap];
+	char *KeyMap[MaxKeyMap];
 
-/*I*/ int width;
-/*I*/ int height;
+	int model;
 
-/*I*/ int cellwidth;
-/*I*/ int cellheight;
+	/* dimensions */
+	int width, height;
+	int cellwidth, cellheight;
 
-/*I*/ char *backingstore;
-/*I*/ char *framebuf;					/* Frame buffer */
+	/* framebuffer and buffer for old LCD contents */
+	unsigned char *framebuf;
+	unsigned char *backingstore;
 
-/*I*/ char saved_backlight; /* current state of the backlight */
-/*I*/ char backlight; /* state of the backlight at next flush */
+	/* defineable characters */
+	CGmode ccmode;
 
-/*I*/ int saved_brightness; /* brightness as displayed on the LCD currently */
-/*I*/ int brightness; /* brightness as it will be displayed at next flush */
+	char saved_backlight;	/* current state of the backlight */
+	char backlight;		/* state of the backlight at next flush */
 
-/*I*/ int saved_heartbeat; /* heartbeat as displayed on the LCD currently */
-/*I*/ int heartbeat; /* heartbeat as it will be displayed at next flush */
-
-/*I*/ int heartbeat_state; /* toggle to remember when we turn on or off */
-
+	int saved_brightness;	/* brightness as displayed on the LCD currently */
+	int brightness;		/* brightness as it will be displayed at next flush */
 } PrivateData;
 
 
@@ -195,6 +194,7 @@ static void Enable_Backlight(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
+
 /* Hardware function */
 static void Disable_Backlight(int fd)
 {
@@ -208,6 +208,7 @@ static void Disable_Backlight(int fd)
     c = LCD_CMD_END;
     rc = Write_LCD(fd, &c, 1);
 }
+
 
 /* Hardware function */
 static void Enable_Pixel(int fd, int x, int y)
@@ -228,6 +229,7 @@ static void Enable_Pixel(int fd, int x, int y)
     c = LCD_CMD_END;
     rc = Write_LCD(fd, &c, 1);
 }
+
 
 /* Hardware function */
 static void Disable_Pixel(int fd, int x, int y)
@@ -272,6 +274,7 @@ static void Backlight_Brightness(int fd, int brightness)
     }
 }
 
+
 /* Hardware function */
 static void Enable_Scroll(int fd)
 {
@@ -285,6 +288,7 @@ static void Enable_Scroll(int fd)
     c = LCD_CMD_END;
     rc = Write_LCD(fd, &c, 1);
 }
+
 
 /* Hardware function */
 static void Disable_Scroll(int fd)
@@ -316,6 +320,7 @@ static void Clear_Screen(int fd)
     usleep(UPDATE_DELAY);
 }
 
+
 /* Hardware function */
 static void Enable_Wrap(int fd)
 {
@@ -330,6 +335,7 @@ static void Enable_Wrap(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
+
 /* Hardware function */
 static void Disable_Wrap(int fd)
 {
@@ -343,6 +349,7 @@ static void Disable_Wrap(int fd)
     c = LCD_CMD_END;
     rc = Write_LCD(fd, &c, 1);
 }
+
 
 /* Hardware function */
 static void Disable_Cursor(int fd)
@@ -374,6 +381,7 @@ static void Init_Port(fd)
     tcsetattr(fd, TCSANOW, &old);
 }
 
+
 /* Hardware function */
 static void Setup_Port(int fd, speed_t speed)
 {
@@ -392,6 +400,7 @@ static void Setup_Port(int fd, speed_t speed)
     tcsetattr(fd, TCSANOW, &portset);
 }
 
+
 /* Hardware function */
 static void Set_9600(int fd)
 {
@@ -408,6 +417,7 @@ static void Set_9600(int fd)
     rc = Write_LCD(fd, &c, 1);
 }
 
+
 /* Hardware function */
 static void Set_19200(int fd)
 {
@@ -423,6 +433,7 @@ static void Set_19200(int fd)
     c = LCD_CMD_END;
     rc = Write_LCD(fd, &c, 1);
 }
+
 
 /* Hardware function */
 static void Set_Insert(int fd, int row, int col)
@@ -449,12 +460,51 @@ static void Set_Insert(int fd, int row, int col)
 }
 
 
+/**
+ * Toggle the built-in linewrapping feature
+ */
+static void
+CwLnx_linewrap(int fd, int on)
+{
+    if (on)
+	    Enable_Wrap(fd);
+    else
+	    Disable_Wrap(fd);
+}
+
+
+/**
+ * Toggle the built-in automatic scrolling feature
+ */
+static void
+CwLnx_autoscroll(int fd, int on)
+{
+    if (on)
+	    Enable_Scroll(fd);
+    else
+	    Disable_Scroll(fd);
+}
+
+
+/**
+ * Get rid of the blinking curson
+ */
+static void
+CwLnx_hidecursor(int fd)
+{
+	Disable_Cursor(fd);
+}
+
+
 /*****************************************************
  * Here start the API function
  */
 
-/*****************************************************
- * API: Opens com port and sets baud correctly...
+
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Information of success (0) or failure (non-0).
  */
 MODULE_EXPORT int
 CwLnx_init(Driver *drvthis)
@@ -464,6 +514,8 @@ CwLnx_init(Driver *drvthis)
     char device[200] = DEFAULT_DEVICE;
     int speed = DEFAULT_SPEED;
     char size[200] = DEFAULT_SIZE;
+    int default_speed = DEFAULT_SPEED;
+    char *default_size = DEFAULT_SIZE;
 
     int tmp;
     int w;
@@ -481,12 +533,10 @@ CwLnx_init(Driver *drvthis)
 
     /* Initialise the PrivateData structure */
     p->fd = -1;
-    p->framebuf = NULL;
-    p->backingstore = NULL;
-    p->cellwidth = DEFAULT_CELLWIDTH;
-    p->cellheight = DEFAULT_CELLHEIGHT;
+    p->cellwidth = DEFAULT_CELL_WIDTH;
+    p->cellheight = DEFAULT_CELL_HEIGHT;
 
-    p->custom = standard;
+    p->ccmode = standard;
 
     p->saved_backlight = -1;
     p->backlight = DEFAULT_BACKLIGHT;
@@ -494,36 +544,55 @@ CwLnx_init(Driver *drvthis)
     p->saved_brightness = -1;
     p->brightness = DEFAULT_BRIGHTNESS;
 
-    p->heartbeat_state = 0;
-    p->saved_heartbeat = -1;
-    p->heartbeat = 0;
-
     debug(RPT_INFO, "%s: init(%p)", drvthis->name, drvthis);
 
     /* Read config file */
 
-    /* Which serial device should be used */
+    /* Which model is it (1602 or 12232)? */
+    tmp = drvthis->config_get_int(drvthis->name, "Model", 0, 12232);
+    debug(RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, tmp);
+    if ((tmp != 1602) && (tmp != 12232)) {
+	tmp = 12232;
+	report(RPT_WARNING, "%s: Model must be 12232 or 1602; using default %d",
+		drvthis->name, tmp);
+    }
+    p->model = tmp;
+
+    /* Which size & cell dimensions */
+    if (p->model == 1602) {
+	default_size = DEFAULT_SIZE_1602;
+	default_speed = DEFAULT_SPEED_1602;
+	p->cellwidth = DEFAULT_CELL_WIDTH_1602;
+	p->cellheight = DEFAULT_CELL_HEIGHT_1602;
+    } else if (p->model == 12232) {
+	default_size = DEFAULT_SIZE_12232;
+	default_speed = DEFAULT_SPEED_12232;
+	p->cellwidth = DEFAULT_CELL_WIDTH_12232;
+	p->cellheight = DEFAULT_CELL_HEIGHT_12232;
+    }
+
+    /* Which device should be used */
     strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
     device[sizeof(device) - 1] = '\0';
     report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
     /* Which size */
-    strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
+    strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, default_size), sizeof(size));
     size[sizeof(size) - 1] = '\0';
     if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 	report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-			drvthis->name, size, DEFAULT_SIZE);
-	sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
+			drvthis->name, size, default_size);
+	sscanf(default_size, "%dx%d", &w, &h);
     }
     p->width = w;
     p->height = h;
 
-    /* Contrast of the LCD can be change by adjusting the trimpot R7  */
+    /* Contrast of the LCD can be changed by adjusting the trimpot R7  */
 
     /* Which speed */
-    tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
+    tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, default_speed);
 
     switch (tmp) {
 	case 9600:
@@ -535,7 +604,7 @@ CwLnx_init(Driver *drvthis)
 	default:
 	    speed = B19200;
 	    report(RPT_WARNING, "%s: Speed must be 9600 or 19200. Using default %d",
-			    drvthis->name, DEFAULT_SPEED);
+			    drvthis->name, default_speed);
     }	    
 
     /* do we have a keypad? */
@@ -581,13 +650,15 @@ CwLnx_init(Driver *drvthis)
     /* End of config file parsing */
 
     /* Allocate framebuffer memory */
-    p->framebuf = malloc(p->width * p->height);
+    p->framebuf = (unsigned char *) malloc(p->width * p->height);
     if (p->framebuf == NULL) {
 	report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 	return -1;
     }
+    memset(p->framebuf, ' ', p->width * p->height);
 
-    p->backingstore = malloc(p->width * p->height);
+    /* make sure the framebuffer backing store is there... */
+    p->backingstore = (unsigned char *) malloc(p->width * p->height);
     if (p->backingstore == NULL) {
 	report(RPT_ERR, "%s: unable to create backingstore", drvthis->name);
 	return -1;
@@ -636,8 +707,10 @@ CwLnx_init(Driver *drvthis)
     return 1;
 }
 
-/******************************************************
- * API: Clean-up
+
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CwLnx_close(Driver *drvthis)
@@ -650,9 +723,11 @@ CwLnx_close(Driver *drvthis)
 
 	if (p->framebuf != NULL)
 	    free(p->framebuf);
+	p->framebuf = NULL;
 
 	if (p->backingstore != NULL)
 	    free(p->backingstore);
+	p->backingstore = NULL;
 
 	free(p);
     }
@@ -661,10 +736,13 @@ CwLnx_close(Driver *drvthis)
     debug(RPT_DEBUG, "CwLnx: closed");
 }
 
-/******************************************************
- * API: Returns the display's width
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 CwLnx_width(Driver *drvthis)
 {
     PrivateData *p = drvthis->private_data;
@@ -675,10 +753,12 @@ CwLnx_width(Driver *drvthis)
 }
 
 
-/******************************************************
- * API: Returns the display's height
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 CwLnx_height(Driver *drvthis)
 {
     PrivateData *p = drvthis->private_data;
@@ -689,10 +769,12 @@ CwLnx_height(Driver *drvthis)
 }
 
 
-/******************************************************
- * API: Returns the display's cell width
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel columns a character cell is wide.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 CwLnx_cellwidth(Driver *drvthis)
 {
     PrivateData *p = drvthis->private_data;
@@ -703,10 +785,12 @@ CwLnx_cellwidth(Driver *drvthis)
 }
 
 
-/******************************************************
- * API: Returns the display's cell height
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel lines a character cell is high.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 CwLnx_cellheight(Driver *drvthis)
 {
     PrivateData *p = drvthis->private_data;
@@ -717,31 +801,9 @@ CwLnx_cellheight(Driver *drvthis)
 }
 
 
-/*****************************************************
- * This is a test to see how a driver can overwrite build-in heartbeat.
- * It make a pixel blink at calling rate independently of flush call.
- */
-MODULE_EXPORT void
-CwLnx_flushtime_heartbeat(Driver *drvthis)
-{
-    PrivateData *p = drvthis->private_data;
-
-    if (p->heartbeat != p->saved_heartbeat) {
-        p->saved_heartbeat=p->heartbeat;
-        if (p->heartbeat) {
-            Enable_Pixel(p->fd, 121, 0);
-            Enable_Pixel(p->fd, 60, 0);
-            Enable_Pixel(p->fd, 121, 31);
-	} else {
-            Disable_Pixel(p->fd, 121, 0);
-            Disable_Pixel(p->fd, 60, 0);
-            Disable_Pixel(p->fd, 121, 31);
-	}
-    }
-}
-
-/******************************************************
- * API: Send what we have to the hardware
+/**
+ * Flush data on screen to the LCD.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CwLnx_flush(Driver *drvthis)
@@ -749,38 +811,41 @@ CwLnx_flush(Driver *drvthis)
     PrivateData *p = drvthis->private_data;
 
     int i, j;
-    int mv = 1;
-    char *q = p->framebuf;
-    char *r = p->backingstore;
+    int move = 1;
+
+    unsigned char *q = p->framebuf;
+    unsigned char *r = p->backingstore;
 
     for (i = 0; i < p->height; i++) {
 	for (j = 0; j < p->width; j++) {
 	    if ((*q == *r) && !((0 < *q) && (*q < 16))) {
-		mv = 1;
+		move = 1;
 	    }
 	    else {
 		/* Draw characters that have changed, as well
 		 * as custom characters.  We know not if a custom
 		 * character has changed.  */ 
-		if (mv == 1) {
+		if (move == 1) {
 		    Set_Insert(p->fd, i, j);
-		    mv = 0;
+		    move = 0;
 		}
-		Write_LCD(p->fd, q, 1);
+		Write_LCD(p->fd, (char *) q, 1);
 	    }
 	    q++;
 	    r++; 
 	}
     }
     memcpy(p->backingstore, p->framebuf, p->width * p->height);
-
-    CwLnx_flushtime_heartbeat(drvthis);
 }
 
 
-/*******************************************************************
- * API: Prints a character on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (20,4).
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
  */
 MODULE_EXPORT void
 CwLnx_chr(Driver *drvthis, int x, int y, char c)
@@ -800,6 +865,7 @@ CwLnx_chr(Driver *drvthis, int x, int y, char c)
 
     debug(RPT_DEBUG, "CwLnx: writing character %02X to position (%d,%d)", c, x, y);
 }
+
 
 /*
  * The CwLinux hardware does not support contrast setting by software,
@@ -825,9 +891,10 @@ CwLnx_chr(Driver *drvthis, int x, int y, char c)
  * and we update the LCD only at flush time.
  */
 
-/*********************************************************
- * API: Sets the backlight
- * the API only permit setting to off=0 and on<>0
+/**
+ * Turn the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
  */
 MODULE_EXPORT void
 CwLnx_backlight(Driver *drvthis, int on)
@@ -838,8 +905,11 @@ CwLnx_backlight(Driver *drvthis, int on)
 }
 
 
-/*********************************************************
- * API: Get the backlight brightness
+/**
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return Stored brightness in promille.
  */
 MODULE_EXPORT int 
 CwLnx_get_brightness(Driver *drvthis, int state)
@@ -850,8 +920,11 @@ CwLnx_get_brightness(Driver *drvthis, int state)
 }
 
 
-/*********************************************************
- * API: Set the backlight brightness
+/**
+ * Set on/off brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want to store the value.
+ * \param promille New brightness in promille.
  */
 MODULE_EXPORT void
 CwLnx_set_brightness(Driver *drvthis, int state, int promille)
@@ -862,259 +935,131 @@ CwLnx_set_brightness(Driver *drvthis, int state, int promille)
 }
 
 
-/*********************************************************
- * Toggle the built-in linewrapping feature
- */
-static void
-CwLnx_linewrap(int fd, int on)
-{
-    if (on)
-	    Enable_Wrap(fd);
-    else
-	    Disable_Wrap(fd);
-}
-
-
-/****************************************************************
- * Toggle the built-in automatic scrolling feature
- */
-static void
-CwLnx_autoscroll(int fd, int on)
-{
-    if (on)
-	    Enable_Scroll(fd);
-    else
-	    Disable_Scroll(fd);
-}
-
-
-/*******************************************************************
- * Get rid of the blinking curson
- */
-static void
-CwLnx_hidecursor(int fd)
-{
-	Disable_Cursor(fd);
-}
-
-
-/*********************************************************
- * NOTAPI: Inits vertical bars...
- * This was part of API in 0.4 and removed in 0.5
- */
-static void
-CwLnx_init_vbar(Driver *drvthis)
-{
-    PrivateData *p = drvthis->private_data;
-
-    char a[] = {
-	1, 0, 0, 0, 0, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 0, 0,
-    };
-    char b[] = {
-	1, 1, 0, 0, 0, 0, 0, 0,
-	1, 1, 0, 0, 0, 0, 0, 0,
-	1, 1, 0, 0, 0, 0, 0, 0,
-	1, 1, 0, 0, 0, 0, 0, 0,
-	1, 1, 0, 0, 0, 0, 0, 0,
-	1, 1, 0, 0, 0, 0, 0, 0,
-    };
-    char c[] = {
-	1, 1, 1, 0, 0, 0, 0, 0,
-	1, 1, 1, 0, 0, 0, 0, 0,
-	1, 1, 1, 0, 0, 0, 0, 0,
-	1, 1, 1, 0, 0, 0, 0, 0,
-	1, 1, 1, 0, 0, 0, 0, 0,
-	1, 1, 1, 0, 0, 0, 0, 0,
-    };
-    char d[] = {
-	1, 1, 1, 1, 0, 0, 0, 0,
-	1, 1, 1, 1, 0, 0, 0, 0,
-	1, 1, 1, 1, 0, 0, 0, 0,
-	1, 1, 1, 1, 0, 0, 0, 0,
-	1, 1, 1, 1, 0, 0, 0, 0,
-	1, 1, 1, 1, 0, 0, 0, 0,
-    };
-    char e[] = {
-	1, 1, 1, 1, 1, 0, 0, 0,
-	1, 1, 1, 1, 1, 0, 0, 0,
-	1, 1, 1, 1, 1, 0, 0, 0,
-	1, 1, 1, 1, 1, 0, 0, 0,
-	1, 1, 1, 1, 1, 0, 0, 0,
-	1, 1, 1, 1, 1, 0, 0, 0,
-    };
-    char f[] = {
-	1, 1, 1, 1, 1, 1, 0, 0,
-	1, 1, 1, 1, 1, 1, 0, 0,
-	1, 1, 1, 1, 1, 1, 0, 0,
-	1, 1, 1, 1, 1, 1, 0, 0,
-	1, 1, 1, 1, 1, 1, 0, 0,
-	1, 1, 1, 1, 1, 1, 0, 0,
-    };
-    char g[] = {
-	1, 1, 1, 1, 1, 1, 1, 0,
-	1, 1, 1, 1, 1, 1, 1, 0,
-	1, 1, 1, 1, 1, 1, 1, 0,
-	1, 1, 1, 1, 1, 1, 1, 0,
-	1, 1, 1, 1, 1, 1, 1, 0,
-	1, 1, 1, 1, 1, 1, 1, 0,
-    };
-
-    if (p->custom != vbar) {
-	CwLnx_set_char(drvthis, 1, a);
-	CwLnx_set_char(drvthis, 2, b);
-	CwLnx_set_char(drvthis, 3, c);
-	CwLnx_set_char(drvthis, 4, d);
-	CwLnx_set_char(drvthis, 5, e);
-	CwLnx_set_char(drvthis, 6, f);
-	CwLnx_set_char(drvthis, 7, g);
-	p->custom = vbar;
-    }
-}
-
-/*********************************************************
- * NOTAPI: Inits horizontal bars...
- * This was part of API in 0.4 and removed in 0.5
- */
-static void
-CwLnx_init_hbar(Driver *drvthis)
-{
-    PrivateData *p = drvthis->private_data;
-
-    char a[] = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-    };
-    char b[] = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-    };
-    char c[] = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-    };
-    char d[] = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0,
-    };
-    char e[] = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	0, 0, 0, 0, 0, 0, 0, 0,
-    };
-    char f[] = {
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1,
-    };
-
-    if (p->custom != hbar) {
-	CwLnx_set_char(drvthis, 1, a);
-	CwLnx_set_char(drvthis, 2, b);
-	CwLnx_set_char(drvthis, 3, c);
-	CwLnx_set_char(drvthis, 4, d);
-	CwLnx_set_char(drvthis, 5, e);
-	CwLnx_set_char(drvthis, 6, f);
-	p->custom = hbar;
-    }
-
-}
-
-/*************************************************************
- * API: Draws a vertical bar...
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
 CwLnx_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
     PrivateData *p = drvthis->private_data;
 
-    CwLnx_init_vbar(drvthis);
+    if (p->ccmode != vbar) {
+	unsigned char vBar[p->cellheight];
+	int i;
 
-    lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
+	if (p->ccmode != standard) {
+	    /* Not supported(yet) */
+	    report(RPT_WARNING, "%s: vbar: cannot combine two modes using user-defined characters",
+		      drvthis->name);
+	    return;
+	}
+	p->ccmode = vbar;
+
+	memset(vBar, 0x00, sizeof(vBar));
+
+	for (i = 1; i < p->cellheight; i++) {
+	    // add pixel line per pixel line ...
+	    vBar[p->cellheight - i] = 0xFF;
+	    CwLnx_set_char(drvthis, i+1, vBar);
+	}
+    }
+
+    lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 1);
 }
 
-/*****************************************************************
- * API: Draws a horizontal bar to the right.
+
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
 CwLnx_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
     PrivateData *p = drvthis->private_data;
 
-    CwLnx_init_hbar(drvthis);
+    if (p->ccmode != hbar) {
+	unsigned char hBar[p->cellheight];
+	int i;
 
-    lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
+	if (p->ccmode != standard) {
+	    /* Not supported(yet) */
+	    report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
+		      drvthis->name);
+	    return;
+	}
+	p->ccmode = hbar;
+
+	for (i = 1; i <= p->cellwidth; i++) {
+	    // fill pixel columns from left to right.
+	    memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
+	    CwLnx_set_char(drvthis, i+1, hBar);
+	}
+    }
+
+    lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 1);
 }
 
 
-/*******************************************************************
- * API: Writes a big number.
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
  */
-/* Currently using the server ascii default */
 /*
 MODULE_EXPORT void
 CwLnx_num(Driver *drvthis, int x, int num)
 {
+    // needs work in bignum library: accept offset for the custom characters
+    // similar to lib_{h,v}bar_static().
     return;
 }
 */
 
 
+/**
+ * Get number of custom chars available.
+ * \param drvthis  Pointer to driver structure.
+ * \returns  Number of custom characters (always NUM_CCs).
+ */
 MODULE_EXPORT int
 CwLnx_get_free_chars(Driver *drvthis)
 {
-//	PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-	return 16;
+	return (p->model == 1602) ? 8 : 16;
 }
 
 
-/*********************************************************************
- * API: Sets a custom character...
- * This should be removed from API since it is hardware dependent.
- *
- * The API only permit setting to off=0 and on<>0
- * For input, values > 0 mean "on" and values <= 0 are "off".
- *
- * The input is just an array of characters...
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [1 - free_chars].
+ * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ *                 starting from the top to bottom.
+ *                 The bits in each byte represent the pixels where the LSB
+ *                 (least significant bit) is the rightmost pixel in each pixel row.
  */
 MODULE_EXPORT void
-CwLnx_set_char(Driver *drvthis, int n, char *dat)
+CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
     PrivateData *p = drvthis->private_data;
 
-    int row, col;
-    int letter;
     char c;
     int rc;
 
-    if (n < 1 || n > 16)
+    if ((n <= 0) || (n > CwLnx_get_free_chars(drvthis)))
 	return;
     if (!dat)
 	return;
@@ -1126,164 +1071,217 @@ CwLnx_set_char(Driver *drvthis, int n, char *dat)
     c = (char) n;
     rc = Write_LCD(p->fd, &c, 1);
 
-    for (col = 0; col < p->cellwidth; col++) {
-	letter = 0;
+    if (p->model == 1602) {	// the character model
+	unsigned char mask = (1 << p->cellwidth) - 1;
+	int row;
+
 	for (row = 0; row < p->cellheight; row++) {
-	    letter <<= 1;
-	    letter |= (dat[(col * p->cellheight) + row] > 0);
+	    c = dat[row] & mask;
+	    Write_LCD(p->fd, &c, 1);
 	}
-	c = letter;
-	Write_LCD(p->fd, &c, 1);
     }
+    else {			// the graphical model
+	int col;
+
+	for (col = p->cellwidth - 1; col >= 0; col--) {
+	    int letter = 0;
+	    int row;
+
+	    for (row = p->cellheight - 1; row >= 0; row--) {
+		letter <<= 1;
+		letter |= ((dat[row] >> col) & 1);
+	    }
+
+	    c = letter;
+	    Write_LCD(p->fd, &c, 1);
+	}
+    }
+
     c = LCD_CMD_END;
     rc = Write_LCD(p->fd, &c, 1);
 }
 
+
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
+ */
 MODULE_EXPORT int 
 CwLnx_icon(Driver *drvthis, int x, int y, int icon)
 {
-    char heart_open[] = 
-	{
-	 1,1,1,0,0,0,1,1,
-	 1,1,0,0,0,0,0,1,
-	 1,0,0,0,0,0,1,1,
-	 1,1,0,0,0,0,0,1,
-	 1,1,1,0,0,0,1,1,
-	 1,1,1,1,1,1,1,1 
-	 };
+    PrivateData *p = drvthis->private_data;
 
-    char heart_filled[] = 
-	{
-	 1,1,1,0,0,0,1,1,
-	 1,1,0,1,1,1,0,1,
-	 1,0,1,1,1,0,1,1,
-	 1,1,0,1,1,1,0,1,
-	 1,1,1,0,0,0,1,1,
-	 1,1,1,1,1,1,1,1
-	 };
+	static unsigned char heart_open[] = 
+		{ b__XXXXX,
+		  b__X_X_X,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b__X___X,
+		  b__XX_XX,
+		  b__XXXXX };
+	static unsigned char heart_filled[] = 
+		{ b__XXXXX,
+		  b__X_X_X,
+		  b___X_X_,
+		  b___XXX_,
+		  b___XXX_,
+		  b__X_X_X,
+		  b__XX_XX,
+		  b__XXXXX };
+	static unsigned char arrow_up[] = 
+		{ b____X__,
+		  b___XXX_,
+		  b__X_X_X,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b_______ };
+	static unsigned char arrow_down[] = 
+		{ b____X__,
+		  b____X__,
+		  b____X__,
+		  b____X__,
+		  b__X_X_X,
+		  b___XXX_,
+		  b____X__,
+		  b_______ };
+/*
+	static unsigned char arrow_left[] = 
+		{ b_______,
+		  b____X__,
+		  b___X___,
+		  b__XXXXX,
+		  b___X___,
+		  b____X__,
+		  b_______,
+		  b_______ };
+	static unsigned char arrow_right[] = 
+		{ b_______,
+		  b____X__,
+		  b_____X_,
+		  b__XXXXX,
+		  b_____X_,
+		  b____X__,
+		  b_______,
+		  b_______ };
+*/
+	static unsigned char checkbox_off[] = 
+		{ b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__X___X,
+		  b__X___X,
+		  b__X___X,
+		  b__XXXXX,
+		  b_______ };
+	static unsigned char checkbox_on[] = 
+		{ b____X__,
+		  b____X__,
+		  b__XXX_X,
+		  b__X_XX_,
+		  b__X_X_X,
+		  b__X___X,
+		  b__XXXXX,
+		  b_______ };
+	static unsigned char checkbox_gray[] = 
+		{ b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__X_X_X,
+		  b__XX_XX,
+		  b__X_X_X,
+		  b__XXXXX,
+		  b_______ };
+/*
+	static unsigned char selector_left[] = 
+		{ b___X___,
+		  b___XX__,
+		  b___XXX_,
+		  b___XXXX,
+		  b___XXX_,
+		  b___XX__,
+		  b___X___,
+		  b_______ };
+	static unsigned char selector_right[] = 
+		{ b_____X_,
+		  b____XX_,
+		  b___XXX_,
+		  b__XXXX_,
+		  b___XXX_,
+		  b____XX_,
+		  b_____X_,
+		  b_______ };
+	static unsigned char ellipsis[] = 
+		{ b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b__X_X_X,
+		  b_______ };
+*/	  
+	static unsigned char block_filled[] = 
+		{ b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX };
 
-    char arrow_up[] = 
-	{
-	 0,0,0,0,1,1,0,0,
-	 0,0,0,0,0,1,1,0,
-	 1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,1,1,1,
-	 0,0,0,0,0,1,1,0,
-	 0,0,0,0,1,1,0,0
-	 };
-
-    char arrow_down[] = 
-	{
-	 0,0,1,1,0,0,0,0,
-	 0,1,1,0,0,0,0,0,
-	 1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,1,1,1,
-	 0,1,1,0,0,0,0,0,
-	 0,0,1,1,0,0,0,0
-	 };
-
-    char checkbox_off[] = 
-	{
-	 0,1,1,1,1,1,0,0,
-	 0,1,0,0,0,1,0,0,
-	 0,1,0,0,0,1,0,0,
-	 0,1,0,0,0,1,0,0,
-	 0,1,1,1,1,1,0,0,
-	 0,0,0,0,0,0,0,0
-	 };
-
-    char checkbox_on[] = 
-	{
-	 0,1,1,1,1,1,0,0,
-	 0,1,0,0,0,1,0,0,
-	 0,1,0,1,1,1,1,0,
-	 0,1,0,0,1,0,0,0,
-	 0,1,1,1,0,1,0,0,
-	 0,0,0,0,0,0,1,0
-	 };
-
-    char checkbox_gray[] = 
-	{
-	 0,1,1,1,1,1,0,0,
-	 0,1,0,1,0,1,0,0,
-	 0,1,1,0,1,1,0,0,
-	 0,1,0,1,0,1,0,0,
-	 0,1,1,1,1,1,0,0,
-	 0,0,0,0,0,0,0,0
-	 };
-
-    char block_filled[] = 
-	{
-	 1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,1,1,1,
-	 1,1,1,1,1,1,1,1
-	 };
-
-    char arrow_left[] = 
-	{
-	 0,0,0,1,1,0,0,0,
-	 0,0,1,1,1,1,0,0,
-	 0,1,1,1,1,1,1,0,
-	 1,1,0,1,1,0,1,1,
-	 0,0,0,1,1,0,0,0,
-	 0,0,0,1,1,0,0,0
-	 };
-
-    char arrow_right[] = 
-	{
-	 0,0,0,1,1,0,0,0,
-	 0,0,0,1,1,0,0,0,
-	 1,1,0,1,1,0,1,1,
-	 0,1,1,1,1,1,1,0,
-	 0,0,1,1,1,1,0,0,
-	 0,0,0,1,1,0,0,0
-	 };
-
-
-/* Yes we know, this is a VERY BAD implementation */
+	/* Yes we know, this is a VERY BAD implementation */
 	switch (icon) {
+		case ICON_BLOCK_FILLED:
+			CwLnx_set_char(drvthis, 7, block_filled);
+			CwLnx_chr(drvthis, x, y, 7);
+			break;
 		case ICON_HEART_FILLED:
-			CwLnx_set_char(drvthis, 8, heart_filled);
-			CwLnx_chr(drvthis, x, y, 8);
+			CwLnx_set_char(drvthis, 1, heart_filled);
+			CwLnx_chr(drvthis, x, y, 1);
 			break;
 		case ICON_HEART_OPEN:
-			CwLnx_set_char(drvthis, 8, heart_open);
-			CwLnx_chr(drvthis, x, y, 8);
-			break;
-		case ICON_CHECKBOX_GRAY:
-			CwLnx_set_char(drvthis, 9, checkbox_gray);
-			CwLnx_chr(drvthis, x, y, 9);
-			break;
-		case ICON_BLOCK_FILLED:
-			CwLnx_set_char(drvthis, 10, block_filled);
-			CwLnx_chr(drvthis, x, y, 10);
+			CwLnx_set_char(drvthis, 1, heart_open);
+			CwLnx_chr(drvthis, x, y, 1);
 			break;
 		case ICON_ARROW_UP:
-			CwLnx_set_char(drvthis, 11, arrow_up);
-			CwLnx_chr(drvthis, x, y, 11);
+			CwLnx_set_char(drvthis, 2, arrow_up);
+			CwLnx_chr(drvthis, x, y, 2);
 			break;
 		case ICON_ARROW_DOWN:
-			CwLnx_set_char(drvthis, 12, arrow_down);
-			CwLnx_chr(drvthis, x, y, 12);
+			CwLnx_set_char(drvthis, 3, arrow_down);
+			CwLnx_chr(drvthis, x, y, 3);
 			break;
 		case ICON_ARROW_LEFT:
-			CwLnx_set_char(drvthis, 13, arrow_left);
-			CwLnx_chr(drvthis, x, y, 13);
+			if (p->model == 1602)
+				CwLnx_chr(drvthis, x, y, 0x7F);
+			else
+				return -1;
 			break;
 		case ICON_ARROW_RIGHT:
-			CwLnx_set_char(drvthis, 14, arrow_right);
-			CwLnx_chr(drvthis, x, y, 14);
+			if (p->model == 1602)
+				CwLnx_chr(drvthis, x, y, 0x7E);
+			else
+				return -1;
 			break;
 		case ICON_CHECKBOX_OFF:
-			CwLnx_set_char(drvthis, 15, checkbox_off);
-			CwLnx_chr(drvthis, x, y, 15);
+			CwLnx_set_char(drvthis, 4, checkbox_off);
+			CwLnx_chr(drvthis, x, y, 4);
 			break;
 		case ICON_CHECKBOX_ON:
-			CwLnx_set_char(drvthis, 16, checkbox_on);
-			CwLnx_chr(drvthis, x, y, 16);
+			CwLnx_set_char(drvthis, 5, checkbox_on);
+			CwLnx_chr(drvthis, x, y, 5);
+			break;
+		case ICON_CHECKBOX_GRAY:
+			CwLnx_set_char(drvthis, 6, checkbox_gray);
+			CwLnx_chr(drvthis, x, y, 6);
 			break;
 		default:
 			return -1; /* Let the core do other icons */
@@ -1292,8 +1290,9 @@ CwLnx_icon(Driver *drvthis, int x, int y, int icon)
 }
 
 
-/*********************************************************
- * API: Clears the LCD screen
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 CwLnx_clear(Driver *drvthis)
@@ -1301,14 +1300,19 @@ CwLnx_clear(Driver *drvthis)
     PrivateData *p = drvthis->private_data;
 
     memset(p->framebuf, ' ', p->width * p->height);
-    p->custom = standard;
+    p->ccmode = standard;
 
     debug(RPT_DEBUG, "CwLnx: cleared framebuffer");
 }
 
-/*****************************************************************
- * API: Prints a string on the lcd display, at position (x,y).
- * The upper-left is (1,1), and the lower right should be (20,4).
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
  */
 MODULE_EXPORT void
 CwLnx_string(Driver *drvthis, int x, int y, char *string)
@@ -1343,8 +1347,11 @@ CwLnx_string(Driver *drvthis, int x, int y, char *string)
     debug(RPT_DEBUG, "CwLnx: printed string at (%d,%d)", x, y);
 }
 
-/*********************************************************
- * API: Get a key translated into a string.
+
+/**
+ * Get next key from the KeyRing.
+ * \param drvthis  Pointer to driver structure.
+ * \return  String representation of the key.
  */
 MODULE_EXPORT const char *
 CwLnx_get_key(Driver *drvthis)
@@ -1366,34 +1373,4 @@ CwLnx_get_key(Driver *drvthis)
 	return NULL;
 }
 
-/*****************************************************
- * API: This is a test to see how a driver can overwrite build-in heartbeat.
- * It make a pixel blink at calling rate independently of flush call.
- */
-/*
- * The Pixel is not very visible when located at (121,0).
- * Maybe the display of text caracter hide the pixel.
- * It might be the flush just after the heartbeat call.
- */
-
-MODULE_EXPORT void
-CwLnx_heartbeat(Driver *drvthis, int type)
-{
-    PrivateData *p = drvthis->private_data;
-
-    if (type) {
-        if (p->heartbeat_state) {
-	    p->heartbeat = 1;
-            p->heartbeat_state = 0;
-	} else {
-	    p->heartbeat = 0;
-            p->heartbeat_state = 1;
-	}
-    } else {
-        if (p->heartbeat_state) {
-	    p->heartbeat = 0;
-            p->heartbeat_state = 0;
-	}
-    }
-}
 
