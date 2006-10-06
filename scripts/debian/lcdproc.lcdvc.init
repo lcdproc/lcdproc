@@ -11,7 +11,6 @@
 #                    console client in the LCDproc suite
 ### END INIT INFO
 
-set -e
 
 # local variables
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
@@ -30,11 +29,12 @@ if [ "${START}" != "yes" ]; then
     exit 0
 fi
 
-# sanity check
-test -x $DAEMON || exit 0
+# installation check
+test -x $DAEMON || exit 5
 
 # load LSB 3.x init functions
 . /lib/lsb/init-functions
+
 
 case "$1" in
   start)
@@ -54,7 +54,7 @@ case "$1" in
 	;;
   *)
 	echo "Usage: /etc/init.d/$NAME {start|stop|restart|reload|force-reload}" >&2
-	exit 1
+	exit 2
 	;;
 esac
 
