@@ -53,7 +53,7 @@ lcdproc=${bindir}/lcdproc
 
 start() {
 	echo -n "Starting up lcdproc: "
-	daemon ${lcdproc} -d $SCREENS
+	daemon ${lcdproc} $SCREENS
 
 	RETVAL=$?
 	[ $RETVAL -eq 0 ] && touch /var/lock/subsys/lcdproc
