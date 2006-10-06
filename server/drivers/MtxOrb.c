@@ -57,9 +57,10 @@
 
 #include "report.h"
 
-// Uncomment to test new key mapping code
-//#define MTXORB_NEW_KEYMAP
-// Also don't forget to define key mappings in LCDd.conf: KeyMap_A=Enter, ...
+// Use the new key mapping code
+#define MTXORB_NEW_KEYMAP
+// Don't forget to define key mappings in LCDd.conf: KeyMap_A=Enter, ...
+// otherwise you will not get your keypad working.
 
 #ifdef MTXORB_NEW_KEYMAP 
 /* MO displays allow 25 keys that map by default to 'A' - 'Y' */
