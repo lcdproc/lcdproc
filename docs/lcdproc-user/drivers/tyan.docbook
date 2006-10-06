@@ -73,7 +73,7 @@ of the LCD display by its manufacturer.
     </arg>
   </term>
   <listitem><para>
-    set display size [default: 16x2]
+    set display size [default: <literal>16x2</literal>]
   </para></listitem>
 </varlistentry>
 </variablelist>

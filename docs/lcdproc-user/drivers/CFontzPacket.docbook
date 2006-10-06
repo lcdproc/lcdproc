@@ -26,7 +26,9 @@ CFontzPacket chipset.
     </arg>
   </term>
   <listitem><para>
-    Select the LCD model [default: 633; legal: 631, 633, 635]
+    Select the LCD model [default: <literal>633</literal>; legal: <literal>631</literal>,
+                                                                  <literal>633</literal>,
+								  <literal>635</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -75,7 +77,7 @@ CFontzPacket chipset.
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial brightness [default: 1000; legal: 0 - 1000]
+    Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -85,7 +87,7 @@ CFontzPacket chipset.
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial off-brightness [default: 0; legal: 0 - 1000]
+    Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
     This value is used when the display is normally
     switched off in case LCDd is inactive
   </para></listitem>
@@ -122,7 +124,7 @@ CFontzPacket chipset.
     </arg>
   </term>
   <listitem><para>
-    Set the firmware version (New means >= 2.0) [default: no; legal: yes, no]
+    Set the firmware version (<emphasis>New</emphasis> means >= 2.0) [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     Currently this flag is not in use, there is no such thing as NewFirmware. ;=)
   </para></listitem>
 </varlistentry>
@@ -138,7 +140,7 @@ CFontzPacket chipset.
     </arg>
   </term>
   <listitem><para>
-    Reinitialize the LCD's BIOS [default: no; legal: yes, no]
+    Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     I want to reboot the LCD to make sure we start from a known state
   </para></listitem>
 </varlistentry>

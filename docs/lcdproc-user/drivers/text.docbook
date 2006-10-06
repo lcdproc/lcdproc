@@ -24,7 +24,7 @@ text chipset.
     </arg>
   </term>
   <listitem><para>
-    Set the display size [default: 20x4]
+    Set the display size [default: <literal>20x4</literal>]
   </para></listitem>
 </varlistentry>
 </variablelist>

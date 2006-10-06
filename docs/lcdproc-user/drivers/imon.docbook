@@ -50,7 +50,7 @@ For further details, please consult the page and the forum at
     </arg>
   </term>
   <listitem><para>
-    set display size [default: 20x4]
+    set display size [default: <literal>20x4</literal>]
   </para></listitem>
 </varlistentry>
 

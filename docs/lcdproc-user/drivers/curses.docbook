@@ -83,7 +83,7 @@ curses chipset.
     </arg>
   </term>
   <listitem><para>
-    display size [default: 20x4]
+    display size [default: <literal>20x4</literal>]
   </para></listitem>
 </varlistentry>
 

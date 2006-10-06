@@ -24,7 +24,7 @@ ula200 chipset.
     </arg>
   </term>
   <listitem><para>
-    Select the LCD size [default: 20x4]
+    Select the LCD size [default: <literal>20x4</literal>]
   </para></listitem>
 </varlistentry>
 

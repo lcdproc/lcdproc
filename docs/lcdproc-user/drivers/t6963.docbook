@@ -83,7 +83,7 @@ can be done by specifying "--enable-drivers=all" or by
     </arg>
   </term>
   <listitem><para>
-    set display size [default: 20x6]
+    set display size [default: <literal>20x6</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -112,7 +112,7 @@ can be done by specifying "--enable-drivers=all" or by
     </arg>
   </term>
   <listitem><para>
-    Is ECP mode on? [default: yes; legal: yes, no]
+    Is ECP mode on? [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -127,7 +127,7 @@ can be done by specifying "--enable-drivers=all" or by
     </arg>
   </term>
   <listitem><para>
-    Use graphic? [default: no; legal: yes, no]
+    Use graphic? [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
   </para></listitem>
 </varlistentry>
 </variablelist>

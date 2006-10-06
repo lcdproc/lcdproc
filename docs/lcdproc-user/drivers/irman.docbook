@@ -72,7 +72,6 @@ lirc supports Irman as well.
   </term>
   <listitem><para>
     Select the input device to use, e.g. <filename>/dev/irman</filename>.
-    default: none
   </para></listitem>
 </varlistentry>
 

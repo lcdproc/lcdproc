@@ -43,7 +43,7 @@ You may find more information about the LCD on Martin Moeller's homepage
     </arg>
   </term>
   <listitem><para>
-    display size [default: 16x2]
+    display size [default: <literal>16x2</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -53,7 +53,7 @@ You may find more information about the LCD on Martin Moeller's homepage
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial brightness [default: 1000; legal: 0 - 1000]
+    Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -63,7 +63,7 @@ You may find more information about the LCD on Martin Moeller's homepage
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial off-brightness [default: 0; legal: 0 - 1000]
+    Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
     This value is used when the display is normally
     switched off in case LCDd is inactive
   </para></listitem>

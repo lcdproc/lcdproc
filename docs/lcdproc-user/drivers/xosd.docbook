@@ -24,7 +24,7 @@ xosd chipset.
     </arg>
   </term>
   <listitem><para>
-    set display size [default: 20x4]
+    set display size [default: <literal>20x4</literal>]
   </para></listitem>
 </varlistentry>
 

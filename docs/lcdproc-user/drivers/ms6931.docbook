@@ -34,7 +34,7 @@ ms6931 chipset.
     </arg>
   </term>
   <listitem><para>
-    display size [default: 16x2]
+    display size [default: <literal>16x2</literal>]
   </para></listitem>
 </varlistentry>
 </variablelist>

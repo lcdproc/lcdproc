@@ -111,7 +111,7 @@ CFontz chipset.
     </arg>
   </term>
   <listitem><para>
-    Set the firmware version (New means >= 2.0) [default: no; legal: yes, no]
+    Set the firmware version (<emphasis>New</emphasis> means >= 2.0) [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -126,7 +126,7 @@ CFontz chipset.
     </arg>
   </term>
   <listitem><para>
-    Reinitialize the LCD's BIOS [default: no; legal: yes, no]
+    Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     normally you shouldn't need this
   </para></listitem>
 </varlistentry>

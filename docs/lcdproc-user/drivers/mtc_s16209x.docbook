@@ -30,7 +30,7 @@ mtc_s16209x chipset.
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial brightness [default: 255; legal: 0 - 255]
+    Set the initial brightness [default: <literal>255</literal>; legal: <literal>0</literal> - <literal>255</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -45,7 +45,7 @@ mtc_s16209x chipset.
     </arg>
   </term>
   <listitem><para>
-    Reinitialize the LCD's BIOS [default: no; legal: yes, no]
+    Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
   </para></listitem>
 </varlistentry>
 </variablelist>

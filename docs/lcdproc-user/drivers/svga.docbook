@@ -20,7 +20,7 @@ svga chipset.
     <arg choice="plain"><replaceable>SCGALIB-MODE</replaceable></arg>
   </term>
   <listitem><para>
-    svgalib mode to use [default: G320x240x256]
+    svgalib mode to use [default: <literal>G320x240x256</literal>]
     <replaceable>SCGALIB-MODE</replaceable> can be any legal mode string for svgalib.
     See the <citerefentry><refentrytitle>cwsvgalib</refentrytitle>
     <manvolnum>7</manvolnum></citerefentry> manual page for legal mode strings.
@@ -37,7 +37,7 @@ svga chipset.
     </arg>
   </term>
   <listitem><para>
-    set display size [default: 20x4]
+    set display size [default: <literal>20x4</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -63,7 +63,7 @@ svga chipset.
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial brightness [default: 1000; legal: 1 - 1000]
+    Set the initial brightness [default: <literal>1000</literal>; legal: <literal>1</literal> - <literal>1000</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -73,7 +73,7 @@ svga chipset.
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial off-brightness [default: 500; legal: 1 - 1000]
+    Set the initial off-brightness [default: <literal>500</literal>; legal: <literal>1</literal> - <literal>1000</literal>]
     This value is used when the display is normally
     switched off in case LCDd is inactive
   </para></listitem>

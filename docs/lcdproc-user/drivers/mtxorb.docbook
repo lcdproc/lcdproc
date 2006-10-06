@@ -249,7 +249,7 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
     </arg>
   </term>
   <listitem><para>
-    Set the display size [default: 20x4]
+    Set the display size [default: <literal>20x4</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -264,7 +264,7 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
     </arg>
   </term>
   <listitem><para>
-    Switch on the backlight? [default: yes]
+    Switch on the backlight? [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     </para>
     <note><para>
       The driver will ignore this setting if the display
@@ -321,7 +321,10 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
     </arg>
   </term>
   <listitem><para>
-    Set the display type [default: lcd; legal: lcd, lkd, vfd, vkd]
+    Set the display type [default: <literal>lcd</literal>; legal: <literal>lcd</literal>,
+								  <literal>lkd</literal>,
+								  <literal>vfd</literal>,
+								  <literal>vkd</literal>]
   </para></listitem>
 </varlistentry>
 

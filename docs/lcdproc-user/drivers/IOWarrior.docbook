@@ -52,7 +52,7 @@ IOWarrior chipset.
   </term>
   <listitem><para>
     Specifies if the last line is pixel addressable or it controls an
-    underline effect. [default: yes (= pixel addressable); legal: yes, no]
+    underline effect. [default: <literal>yes</literal> (= pixel addressable); legal: <literal>yes</literal>, <literal>no</literal>]
   </para></listitem>
 </varlistentry>
 </variablelist>

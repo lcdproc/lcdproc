@@ -86,7 +86,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
     </arg>
   </term>
   <listitem><para>
-    Set the display size [default: 20x4]
+    Set the display size [default: <literal>20x4</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -101,7 +101,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
     </arg>
   </term>
   <listitem><para>
-    Switch on the backlight? [default: yes]
+    Switch on the backlight? [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     </para>
     <note><para>
       If you choose yes, you can switch on/off the backlight in real time 
@@ -121,7 +121,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
     </arg>
   </term>
   <listitem><para>
-     Switch on the cursor? [default: no]
+     Switch on the cursor? [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     </para>
   </listitem>
 </varlistentry>

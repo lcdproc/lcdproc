@@ -63,7 +63,7 @@ For more information see the
     </arg>
   </term>
   <listitem><para>
-    Select the LCD model [default: 12232; legal: 12232, 1602]
+    Select the LCD model [default: <literal>12232</literal>; legal: <literal>12232</literal>, <literal>1602</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -120,7 +120,7 @@ For more information see the
     </arg>
   </term>
   <listitem><para>
-    Reinitialize the LCD's BIOS [default: no; legal: yes, no]
+    Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     normally you shouldn't need this
   </para></listitem>
 </varlistentry>
