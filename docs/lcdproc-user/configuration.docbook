@@ -28,7 +28,7 @@ and are lines that start with '#' or ';'.
 </para>
 
 <para>
-The server has a 'central' section named [server]. Further each driver
+The server has a 'central' section named [Server]. Further each driver
 has a section which defines how the driver acts. Those sections start with
 [drivername].
 </para>
@@ -81,7 +81,7 @@ config file are ignored.
 </note>
 
 <sect2 id="server-section">
-<title><filename>LCDd.conf</filename>: The [server] Section</title>
+<title id="server-section.title"><filename>LCDd.conf</filename>: The [Server] Section</title>
 
 <para>
 The [server] section of the <filename>LCDd.conf</filename> contains the
@@ -285,10 +285,10 @@ don't go to any client.
 </sect2>
 
 <sect2 id="menu-section">
-<title><filename>LCDd.conf</filename>: The [menu] Section</title>
+<title id="menu-section.title"><filename>LCDd.conf</filename>: The [Menu] Section</title>
 
 <para>
-The [menu] section enables you to set some general ("global")
+The [Menu] section enables you to set some general ("global")
 options related to the way <application>LCDd</application> handles
 input "events".
 </para>
