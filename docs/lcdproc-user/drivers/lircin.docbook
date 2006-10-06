@@ -85,6 +85,7 @@ Then you have to modify the [lirc] section of your
   </term>
   <listitem>
     <para>
+    <anchor id="which-lircrc" />
     Normally all LIRC clients scan the file <filename>~/.lircrc</filename>.
     However, you might want to have a separate file to configure the LCDproc lirc driver only. 
     </para>

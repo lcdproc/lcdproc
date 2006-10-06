@@ -41,9 +41,7 @@
 	with lcdproc client (see eyebox.c in lcdproc client sources).
 	
 	In order to use it, you must execute ./configure with a special parameter:
-	<term>
 	  <command>CPPFLAGS=-DLCDPROC_EYEBOXONE ./configure --enable-drivers=EyeboxOne</command>
-	</term>
 	
 	This is only a BETA version modification, take it as a demo...
 	 </para>
