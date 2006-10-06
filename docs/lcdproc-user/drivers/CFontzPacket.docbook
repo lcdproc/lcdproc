@@ -51,7 +51,9 @@ CFontzPacket chipset.
     </arg>
   </term>
   <listitem><para>
-    Select the LCD size [default: depending on model: 635: 20x4, 631 &amp; 633: 16x2]
+    Select the LCD size [default: depending on model: 635: <literal>20x4</literal>,
+                                                      631: <literal>20x2</literal>,
+						      633: <literal>16x2</literal>]
   </para></listitem>
 </varlistentry>
 
