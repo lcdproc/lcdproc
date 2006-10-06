@@ -1,12 +1,23 @@
 #! /bin/sh
-#
-# /etc/init.d/lcdvc	lcdvc client starting and stopping
-#
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+#### BEGIN INIT INFO
+# Provides:          lcdvc
+# Required-Start:    $syslog $local_fs $network $remote_fs
+# Required-Stop:     $syslog $local_fs $network $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: LCDproc virtual console
+# Description:       Debian init script for lcdvc, the virtual
+#                    console client in the LCDproc suite
+### END INIT INFO
+
+set -e
+
+# local variables
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/bin/lcdvc
 NAME=lcdvc
-DESC="lcdvc virtual console daemon"
+DESC="LCDproc virtual console"
 DEFAULTS=/etc/default/$NAME
 
 # Source defaults file; edit that file to configure this script.
@@ -19,22 +30,22 @@ if [ "${START}" != "yes" ]; then
     exit 0
 fi
 
+# sanity check
 test -x $DAEMON || exit 0
 
-set -e
+# load LSB 3.x init functions
+. /lib/lsb/init-functions
 
 case "$1" in
   start)
-	echo -n "Starting $DESC: "
-	start-stop-daemon --start --quiet \
-		--exec $DAEMON -- $OPTIONS
-	echo "$NAME."
+	log_daemon_msg "Starting $DESC" "$NAME"
+	start_daemon $DAEMON $OPTIONS
+	log_end_msg $?
 	;;
   stop)
-	echo -n "Stopping $DESC: "
-	start-stop-daemon --stop --oknodo --quiet \
-		--exec $DAEMON
-	echo "$NAME."
+	log_daemon_msg "Stopping $DESC" "$NAME"
+	killproc $DAEMON
+	log_end_msg $?
 	;;
   restart|reload|force-reload)
 	$0 stop
@@ -42,9 +53,7 @@ case "$1" in
 	$0 start
 	;;
   *)
-	N=/etc/init.d/$NAME
-	# echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
-	echo "Usage: $N {start|stop|restart|force-reload}" >&2
+	echo "Usage: /etc/init.d/$NAME {start|stop|restart|reload|force-reload}" >&2
 	exit 1
 	;;
 esac
