@@ -484,9 +484,12 @@ LCDproc server LCDd. It does not require modification.
 <title>init-lcdproc</title>
 <para>
 The file <filename>scripts/init-lcdproc.*</filename> is the init script for the
-LCDproc "main" client lcdproc. As lcdproc itself does not (yet) have a configuration file
-you may want to modify the options the init script passes to lcdproc.
+LCDproc "main" client lcdproc.
 </para>
+<!--
+As lcdproc itself does not (yet) have a configuration file
+you may want to modify the options the init script passes to lcdproc.
+-->
 
 <note>
 <para>
@@ -494,6 +497,7 @@ You can retrieve a listing of all options of lcdproc running <command>lcdproc --
 </para>
 </note>
 
+<!--
 <para>
 The lcdproc init script retrieves the options it will pass to lcdproc from the file
 <filename>/etc/lcdproc.conf</filename> (<filename>scripts/lcdproc.conf</filename> in the
@@ -510,7 +514,7 @@ sources distribution).
 # NOTE: The configuration file of LCDd is /etc/LCDd.conf
 
 # Set SCREENS to the screens you want lcdproc to send to LCDd
-# lcdproc --help will give you a list of the screens available
+# lcdproc -h will give you a list of the screens available
 
 SCREENS="C L"
 
@@ -518,8 +522,10 @@ SCREENS="C L"
 </example>
 
 <para>
-In this example lcdproc will only send information on the CPU usage [C] and system load [X] to the server.
+In this example lcdproc will only send information on the CPU usage [C] and system load [L] to the server.
 </para>
+-->
+
 </sect2>
 
 </sect1>
