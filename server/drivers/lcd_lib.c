@@ -4,6 +4,10 @@
 
 #include "lcd.h"
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
 
 // ==================================================
 // LCD library of useful functions for drivers
