@@ -787,7 +787,7 @@
 	    <cmdsynopsis>
 	      <command>client_add_key</command>
 	      <group>
-	        <arg choice="plain">-excl</arg>
+	        <arg choice="plain">-exclusively</arg>
 		<arg choice="plain">-shared</arg>
 	      </group>
 	      <arg choice="plain" rep="repeat"><replaceable>key</replaceable></arg>
