@@ -31,7 +31,8 @@ These files are provided only for drivers, others are provided for all of LCDpro
 <para>The file port.h, located in the server/drivers/ directory provide Input/Output and port permissions for the PC compatible parallel port, also known as the LPT port.</para>
 
 <para>
-Of course, these functions will only work if the computer where LCDproc runs has parallel port! In these situations, the configure script will see this and disable drivers that need a parallel port.
+  Of course, these functions will only work if the computer where LCDproc runs has parallel port!r
+  In these situations, the configure script will see this and disable drivers that need a parallel port.
 </para>
 
 <para>port.h file defines 6 static inline functions for port I/O:</para>
@@ -40,37 +41,43 @@ Of course, these functions will only work if the computer where LCDproc runs has
 <title>Read a byte from port</title>
 
 <funcsynopsis>
-<funcprototype>
-  <funcdef>static inline int <function>port_in</function></funcdef>
-  <paramdef>unsigned short int <parameter>port</parameter></paramdef>
-</funcprototype>
+  <funcprototype>
+    <funcdef>static inline int <function>port_in</function></funcdef>
+    <paramdef>unsigned short int <parameter>port</parameter></paramdef>
+  </funcprototype>
 </funcsynopsis>
-<para>Returns the content of the byte.</para>
+<para>
+  Returns the content of the byte.
+</para>
 
 </sect3>
 <sect3 id="port-out">
 <title>Write a char(byte) 'val' to port</title>
 
 <funcsynopsis>
-<funcprototype>
-  <funcdef>static inline void <function>port_out</function></funcdef>
-  <paramdef>unsigned short int <parameter>port</parameter></paramdef>
-  <paramdef>unsigned char <parameter>val</parameter></paramdef>
-</funcprototype>
+  <funcprototype>
+    <funcdef>static inline void <function>port_out</function></funcdef>
+    <paramdef>unsigned short int <parameter>port</parameter></paramdef>
+    <paramdef>unsigned char <parameter>val</parameter></paramdef>
+  </funcprototype>
 </funcsynopsis>
-<para>Returns nothing (void).</para>
+<para>
+  Returns nothing (void).
+</para>
 
 </sect3>
 <sect3 id="port-access">
 <title>Get access to a specific port</title>
 
 <funcsynopsis>
-<funcprototype>
-  <funcdef>static inline int <function>port_access</function></funcdef>
-  <paramdef>unsigned short int <parameter>port</parameter></paramdef>
-</funcprototype>
+  <funcprototype>
+    <funcdef>static inline int <function>port_access</function></funcdef>
+    <paramdef>unsigned short int <parameter>port</parameter></paramdef>
+  </funcprototype>
 </funcsynopsis>
-<para>Returns 0 if successful, -1 if failed.</para>
+<para>
+  Returns <literal>0</literal> if successful, <literal>-1</literal> if failed.
+</para>
 
 
 </sect3>
@@ -78,12 +85,14 @@ Of course, these functions will only work if the computer where LCDproc runs has
 <title>Close access to a specific port</title>
 
 <funcsynopsis>
-<funcprototype>
-  <funcdef>static inline int <function>port_deny</function></funcdef>
-  <paramdef>unsigned short int <parameter>port</parameter></paramdef>
-</funcprototype>
+  <funcprototype>
+    <funcdef>static inline int <function>port_deny</function></funcdef>
+    <paramdef>unsigned short int <parameter>port</parameter></paramdef>
+  </funcprototype>
 </funcsynopsis>
-<para>Returns 0 if successful, -1 if failed.</para>
+<para>
+  Returns <literal>0</literal> if successful, <literal>-1</literal> if failed.
+</para>
 
 
 </sect3>
@@ -91,31 +100,36 @@ Of course, these functions will only work if the computer where LCDproc runs has
 <title>Get access to multiple sequential ports</title>
 
 <funcsynopsis>
-<funcprototype>
-  <funcdef>static inline int <function>port_access_full</function></funcdef>
-  <paramdef>unsigned short int <parameter>port</parameter></paramdef>
-  <paramdef>unsigned short int <parameter>count</parameter></paramdef>
-</funcprototype>
+  <funcprototype>
+    <funcdef>static inline int <function>port_access_full</function></funcdef>
+    <paramdef>unsigned short int <parameter>port</parameter></paramdef>
+    <paramdef>unsigned short int <parameter>count</parameter></paramdef>
+  </funcprototype>
 </funcsynopsis>
-<para>Returns 0 if successful, -1 if failed.</para>
+<para>
+  Returns <literal>0</literal> if successful, <literal>-1</literal> if failed.
+</para>
 
 </sect3>
 <sect3 id="port-deny-multiple">
 <title>Close access to multiple sequential ports</title>
 
 <funcsynopsis>
-<funcprototype>
-  <funcdef>static inline int <function>port_deny_full</function></funcdef>
-  <paramdef>unsigned short int <parameter>port</parameter></paramdef>
-  <paramdef>unsigned short int <parameter>count</parameter></paramdef>
-</funcprototype>
+  <funcprototype>
+    <funcdef>static inline int <function>port_deny_full</function></funcdef>
+    <paramdef>unsigned short int <parameter>port</parameter></paramdef>
+    <paramdef>unsigned short int <parameter>count</parameter></paramdef>
+  </funcprototype>
 </funcsynopsis>
-<para>Returns 0 if successful, -1 if failed.</para>
+<para>
+  Returns <literal>0</literal> if successful, <literal>-1</literal> if failed.
+</para>
 
 </sect3>
 
 <sect3 id="port.h-example">
 <title>Example use</title>
+
 <screen>
 #include "port.h"
 
@@ -146,15 +160,46 @@ port_deny_multiple(0x378,3);
 <sect2 id="adv_bignum.h">
 <title>adv_bignum.h : Write Big-Numbers</title>
 
-<para><filename>adv_bignum.h</filename> is the headerfile for <filename>lib_bignum.a</filename> (made from <filename>adv_bignum.c</filename>) which contains everything needed to show big-numbers, including the fonts for the different displays. (All files are located in the <filename>server/drivers/</filename> directory.) </para>
+<para>
+  <filename>adv_bignum.h</filename> is the headerfile for <filename>lib_bignum.a</filename>
+  (made from <filename>adv_bignum.c</filename>) which contains everything needed to show big-numbers,
+  including the fonts for the different displays.
+  (All files are located in the <filename>server/drivers/</filename> directory.) </para>
 <para/>
-<para>There are only a few requirements to the calling driver:</para>
-<listitem><para>The displays <replaceable>cellwidth</replaceable> has to be 5 and the <replaceable>cellheight</replaceable> 7 or 8.</para></listitem>
-<listitem><para>The following functions have to be implemented: <function> chr( )</function>;
- <function>   set_char( )</function>(only if the display has custom-characters)</para></listitem>
-<listitem><para>The custom-characters (if available) have to be at char 0, 1, 2, ..... ,n</para></listitem>
-<para/>
-<para>The lib determines the correct font, depending on the displaysize and the number of user-character, itself. So it is easy to integrate into the driver.</para>
+
+<para>
+  There are only a few requirements to the calling driver:
+</para>
+
+<itemizedlist>
+  <listitem><para>
+    The display's <replaceable>cellwidth</replaceable> has to be <literal>5</literal>
+    (<literal>6</literal> works also in some cases) and the <replaceable>cellheight</replaceable>
+    <literal>7</literal> or <literal>8</literal>.
+  </para></listitem>
+  <listitem>
+    <para>
+      The following functions have to be implemented by the driver:
+      <itemizedlist>
+        <listitem>
+          <function>chr()</function>
+        </listitem>	
+        <listitem>	
+          <function>set_char()</function> (only if the display has custom-characters)
+        </listitem>	
+      </itemizedlist>  
+    </para>
+  </listitem>
+  <listitem><para>
+    The custom-characters (if available) have to be at char 0, 1, 2, ..... ,n
+  </para></listitem>
+</itemizedlist>  
+
+<para>
+  The library determines the correct font, depending on the display size and the number
+  of user-defined characters itself.
+  So it is easy to integrate into the driver.
+</para>
 
 
 
@@ -162,68 +207,122 @@ port_deny_multiple(0x378,3);
 <title>External provided Functions</title>
 
 <funcsynopsis>
-<funcprototype>
-  <funcdef>void <function>lib_adv_bignum</function></funcdef>
-  <paramdef>Driver *<parameter>drvthis</parameter></paramdef>
-  <paramdef>int <parameter>x</parameter></paramdef>
-  <paramdef>int <parameter>num</parameter></paramdef>
-  <paramdef>int <parameter>height</parameter></paramdef>
-  <paramdef>int <parameter>do_init</parameter></paramdef>
-  <paramdef>int <parameter>customchars</parameter></paramdef>
-</funcprototype>
+  <funcprototype>
+    <funcdef>void <function>lib_adv_bignum</function></funcdef>
+    <paramdef>Driver *<parameter>drvthis</parameter></paramdef>
+    <paramdef>int <parameter>x</parameter></paramdef>
+    <paramdef>int <parameter>num</parameter></paramdef>
+    <paramdef>int <parameter>height</parameter></paramdef>
+    <paramdef>int <parameter>do_init</parameter></paramdef>
+    <paramdef>int <parameter>customchars</parameter></paramdef>
+  </funcprototype>
 </funcsynopsis>
 
-<para>The main thing the driver has to do is to call this function from its the <function>num( )</function> function.</para>
+<para>
+  The main thing the driver has to do is to call this function from its <function>num()</function>
+  function.
+</para>
 
-<para>Where <parameter>num</parameter> is the number (legal: 0,...9,:) to be written, <parameter>height</parameter> the displays hight in characters and <parameter>customchars</parameter> the number of available custom-characters.</para>
+<para>
+  Where <parameter>num</parameter> is the number (legal: <literal>0</literal> - <literal>9</literal>,
+  and <literal>:</literal>)
+  to be written, <parameter>height</parameter> the display's height in characters and
+  <parameter>customchars</parameter> the number of available custom characters.
+</para>
 
-<para><parameter>x</parameter> is the x position of the top-left corner of the big-number (the big-numbers don't have a y position). The placing of the characters is done by the client, so the driver only has to forward the position to the lib. The bignumlib has no influence on the placing of the characters.</para>
+<para>
+  <parameter>x</parameter> is the x position of the top-left corner of the big-number
+  (the big-numbers don't have a y position).
+  The placing of the characters is done by the client, so the driver only has to forward
+  the position to the lib. The bignumlib has no influence on the placing of the characters.
+</para>
 
-<para>If <parameter>do_init</parameter> is unequal 0 lib_bignum will set the custom-characters of the display for the big-numbers.</para>
-<para>The driver has to check if the custom-characters have to be set or if it is already done and tell it to the lib (using the <parameter>do_init</parameter> parameter).
-The common way is to use variable called <replaceable>p-&gt;ccmode</replaceable> or similar. In the different drivers there are some differences in the naming and handling of this variable. So the responsibility of checking and setting is left at the driver.</para>
+<para>
+  If <parameter>do_init</parameter> is not <literal>0</literal> lib_bignum will set the
+  custom characters of the display for the big-numbers.
+</para>
+
+<para>
+  The driver has to check if the custom-characters have to be set or if it is
+  already done and tell it to the lib (using the <parameter>do_init</parameter> parameter).
+  The common way is to use variable called <replaceable>p-&gt;ccmode</replaceable> or similar.
+  In the different drivers there are some differences in the naming and handling of this variable.
+  So the responsibility of checking and setting is left at the driver.
+</para>
 
 </sect3>
 
 <sect3 id="adv_bignum.h-intern">
 <title>Internal Structure and Functions</title>
 
-<para>The only function of <function>lib_adv_bignum( )</function> is to determine the best display-dependent big-number-function for the given display-parameters, and to call it.</para>
-<para/>
+<para>
+  The only function of <function>lib_adv_bignum()</function> is to determine the best
+  display-dependent big-number function for the given display parameters, and to call it.
+</para>
 
-<para>The display-dependent functions are named <function>adv_bignum_num_N_M( )</function>.
-Where <replaceable>N</replaceable> is the display-hight lines and  <replaceable>M</replaceable> the number of used user-characters.
-The bits of the user-characters are stored in <replaceable>static char bignum</replaceable> (take a look at the source and you will see what I mean). (On a display with a <replaceable>cellheight</replaceable> of 7 the lowest line stored is not shown.) While <replaceable>static char num_map</replaceable> defines the placing in the big number. (A big number is always 3 characters wide and 4 characters high. On a big number for 2 line displays the 2 lower lines are not in use.)</para>
-<para>If user-characters have to be set the drivers <function>set_char( )</function> function will be called once for every user-character.</para>
-<para>Now <function>adv_bignum_write_num( )</function> is called. This function places the 6 or 12 characters the big-number consists of in the framebuffer using the drivers <function>char( )</function> function.</para>
+<para>
+  The display-dependent functions are named <function>adv_bignum_num_N_M()</function>.
+  Where <replaceable>N</replaceable> is the display-height in lines and <replaceable>M</replaceable>
+  the number of used user-defineable characters.
+  The bits of the user-characters are stored in <replaceable>static char bignum</replaceable>
+  (take a look at the source and you will see what I mean). (On a display with a
+  <replaceable>cellheight</replaceable> of 7 the lowest line stored is not shown.)
+  While <replaceable>static char num_map</replaceable> defines the placing in the big number.
+  (A big number is always 3 characters wide and 4 characters high.
+  On a big number for 2 line displays the 2 lower lines are not in use.)
+</para>
+
+<para>
+  If user-characters have to be set the driver's <function>set_char()</function> function
+  will be called once for every user-character.
+</para>
+
+<para>
+  Now <function>adv_bignum_write_num()</function> is called.
+  This function places the 6 or 12 characters the big-number consists of in the framebuffer
+  using the drivers <function>chr()</function> function.
+</para>
 
 </sect3>
 
 <sect3 id="adv_bignum.h-example">
 <title>Example:</title>
-<para>Calling the <function>lib_adv_bignum( )</function> from a drivers_num function. (from <filename>serialVFD.c</filename>):</para>
+
+<para>
+  Calling the <function>lib_adv_bignum()</function> from a drivers_num function.
+  (from <filename>serialVFD.c</filename>):
+</para>
 <screen>
 
 MODULE_EXPORT void
-serialVFD_num( Driver * drvthis, int x, int num ){
-int do_init=0;
-PrivateData *p = drvthis-&gt;private_data;
+serialVFD_num( Driver * drvthis, int x, int num )
+{
+  PrivateData *p = drvthis-&gt;private_data;
+  int do_init = 0;
 
-
-if (p-&gt;ccmode != CCMODE_BIGNUM){ // Are the custom-characters set up correctly? If not:
-do_init=1;// Lib_adv_bignum has to set the custom-characters.
-p-&gt;ccmode = CCMODE_BIGNUM; // Switch custom-charactermode to bignum.
-}
-// Lib_adv_bignum does everything needed to show the big-numbers.
-lib_adv_bignum(drvthis, x, num, p-&gt;height, do_init, p-&gt;customchars);
+  if (p-&gt;ccmode != CCMODE_BIGNUM){  // Are the custom-characters set up correctly? If not:
+    do_init = 1;                       // Lib_adv_bignum has to set the custom-characters.
+    p-&gt;ccmode = CCMODE_BIGNUM;      // Switch custom-charactermode to bignum.
+  }
+  // Lib_adv_bignum does everything needed to show the big-numbers.
+  lib_adv_bignum(drvthis, x, num, p-&gt;height, do_init, p-&gt;customchars);
 }
 
 </screen>
 
-<para>All that's left to do is to include the header-file</para>
-<screen>#include "adv_bignum.h"</screen>
-<para>and to add <filename>libbignum.a</filename> to the libs and <filename>adv_bignum.h</filename> sources of your driver.</para>
+<para>
+  All that's left to do is to include the header-file
+</para>
 
+<screen>
+#include "adv_bignum.h"
+</screen>
+
+<para>
+  and to add <filename>libbignum.a</filename> to the libs and <filename>adv_bignum.h</filename>
+  sources of your driver in the <filename>Makefile</filename> (or the file that generates the
+  <filename>Makefile</filename>).
+</para>
 
 </sect3>
 
