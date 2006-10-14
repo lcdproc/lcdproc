@@ -6,6 +6,8 @@ Key:
      * Something changed / fixed
 
 v.0.5dev (ongoing development)
+
+v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
  * install server & client config files in $(sysconfdir)
  + new client lcdvc: virtual console on LCD

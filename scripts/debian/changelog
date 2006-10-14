@@ -1,8 +1,43 @@
-lcdproc (0.5.0+cvs20060412) unstable; urgency=low
+lcdproc (0.5.1+cvs20061014) UNRELEASED; urgency=low
 
   * New snapshot from upstream CVS
 
- -- Peter Marschall <peter@adpm.de>  Sat, 15 Apr 2006 15:00:00 +0200
+ -- Peter Marschall <peter@adpm.de>  Sat, 14 Oct 2006 17:00:01 +0200
+
+lcdproc (0.5.1) unstable; urgency=low
+
+  * New upstream release
+    - updated & extended documentation
+    - install server & client config files in $(sysconfdir)
+    - various fixes to the server core
+    - new drivers:
+      + MD8800 driver for LCDs in Medion MD8800 PCs
+      + g15 - driver for LCD in Logitech G15 gaming keyboards
+      + EyeboxOne - driver for the LCD display on the EyeboxOne
+      + new unified serial sub-driver for hd44780
+    - updated drivers:
+      + CFontz
+      + CFontz633
+      + CFontzPacket
+      + CwLnx - completely revamped
+      + hd44780
+      + IOWarrior
+      + joy
+      + MtxOrb - completely revamped
+      + serialVFD
+      + tyan
+    - new clients:
+      + lcdvc - virtual console on LCD
+    - updated clients:
+      + lcdproc
+        - config file support with lots of options
+        - iface screen - netwerk interface information
+        - bigclock screen flexibilized
+      + lcdexec
+        - revamped & documented menu configuration
+      +  sample Perl clients
+
+ -- Peter Marschall <peter@adpm.de>  Sat, 14 Oct 2006 17:00:00 +0200
 
 lcdproc (0.5.0-1) unstable; urgency=low
 
