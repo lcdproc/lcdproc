@@ -637,7 +637,7 @@ EyeboxOne_get_key (Driver *drvthis)
 		else if (in == p->escape_key)
 			return "Escape";
 		else {
-			report(RPT_INFO, "%s: untreated key 0x%02X", drvthis->name, in);
+			//report(RPT_INFO, "%s: untreated key 0x%02X", drvthis->name, in);
 			return NULL;
 		}
 	}
