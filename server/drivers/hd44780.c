@@ -715,6 +715,21 @@ HD44780_num (Driver *drvthis, int x, int num)
 	lib_adv_bignum(drvthis, x, num, do_init, NUM_CCs);
 }
 
+
+/**
+ * Get number of custom characters available.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of custom characters (always NUM_CCs).
+ */
+MODULE_EXPORT int
+HD44780_get_free_chars(Driver *drvthis)
+{
+//PrivateData *p = drvthis->private_data;
+
+  return NUM_CCs;
+}
+
+
 /////////////////////////////////////////////////////////////////
 // Sets a custom character from 0-7...
 //
