@@ -789,9 +789,9 @@ int do_init = 0;
 
 
 /**
- * Get number of custom chars available.
+ * Get number of custom characters available.
  * \param drvthis  Pointer to driver structure.
- * \returns  Number of custom characters (always NUM_CCs).
+ * \return  Number of custom characters (always NUM_CCs).
  */
 MODULE_EXPORT int
 CFontz633_get_free_chars (Driver *drvthis)
