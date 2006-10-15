@@ -25,22 +25,10 @@
 
 // TODO: Clean this up...  Support multiple display sizes..
 
-char *tmp    = NULL;
-char *buffer = NULL;
 
 int
 mode_init()
 {
-	if ((buffer = malloc(1024)) == NULL) {
-		perror("malloc buffer");
-		return(0);
-	}
-
-	if ((tmp = malloc(1024)) == NULL) {
-		perror("malloc tmp");
-		return(0);
-	}
-
 	machine_init();
 
 	return(0);
@@ -50,16 +38,6 @@ void
 mode_close()
 {
 	machine_close();
-
-	if (tmp != NULL) {
-		free(tmp);
-		tmp = NULL;
-	}
-
-	if (buffer != NULL) {
-		free(buffer);
-		buffer = NULL;
-	}
 }
 
 int
@@ -112,8 +90,7 @@ credit_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "screen_add A\n");
 		sock_send_string(sock, "screen_set A -name {Credits for LCDproc}\n");
 		sock_send_string(sock, "widget_add A title title\n");
-		sprintf(buffer, "widget_set A title {LCDPROC %s}\n", version);
-		sock_send_string(sock, buffer);
+		sock_printf(sock, "widget_set A title {LCDPROC %s}\n", version);
 		if (lcd_hgt >= 4)
 		{
 			sock_send_string(sock, "widget_add A one string\n");
@@ -126,8 +103,7 @@ credit_screen(int rep, int display, int *flags_ptr)
 		else
 		{
 			sock_send_string(sock, "widget_add A text scroller\n");
-			sprintf(buffer, "widget_set A text 1 2 %d 2 h 8 { for Linux & *BSD by William Ferrell, Scott Scriven}\n", lcd_wid);
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set A text 1 2 %d 2 h 8 { for Linux & *BSD by William Ferrell, Scott Scriven}\n", lcd_wid);
 		}
 	}
 

@@ -466,42 +466,41 @@ menus_init ()
 
 	for (k = 0; sequence[k].which ; k++) {
 		if (sequence[k].longname) {
-			sprintf (buffer, "menu_add_item {} %c checkbox {%s} -value %s\n",
+			sock_printf(sock, "menu_add_item {} %c checkbox {%s} -value %s\n",
 				 	 sequence[k].which, sequence[k].longname,
 					 (sequence[k].flags & ACTIVE) ? "on" : "off");
-			sock_send_string (sock, buffer);
 		}
 	}
 
 #ifdef LCDPROC_CLIENT_TESTMENUS
 //	  # to be entered on escape from test_menu (but overwritten
 //	  # for test_{checkbox,ring}
-	sock_send_string (sock,  "menu_add_item {} ask menu {Leave menus?} -is_hidden true\n");
-	sock_send_string (sock, "menu_add_item {ask} ask_yes action {Yes} -next _quit_\n");
-	sock_send_string (sock, "menu_add_item {ask} ask_no action {No} -next _close_\n");
-	sock_send_string (sock, "menu_add_item {} test menu {Test}\n");
-	sock_send_string (sock, "menu_add_item {test} test_action action {Action}\n");
-	sock_send_string (sock, "menu_add_item {test} test_checkbox checkbox {Checkbox}\n");
-	sock_send_string (sock, "menu_add_item {test} test_ring ring {Ring} -strings {one\ttwo\tthree}\n");
-	sock_send_string (sock, "menu_add_item {test} test_slider slider {Slider} -mintext < -maxtext > -value 50\n");
-	sock_send_string (sock, "menu_add_item {test} test_numeric numeric {Numeric} -value 42\n");
-	sock_send_string (sock, "menu_add_item {test} test_alpha alpha {Alpha} -value abc\n");
-	sock_send_string (sock, "menu_add_item {test} test_ip ip {IP} -v6 false -value 192.168.1.1\n");
-	sock_send_string (sock, "menu_add_item {test} test_menu menu {Menu}\n");
-	sock_send_string (sock, "menu_add_item {test_menu} test_menu_action action {Submenu's action}\n");
+	sock_send_string(sock, "menu_add_item {} ask menu {Leave menus?} -is_hidden true\n");
+	sock_send_string(sock, "menu_add_item {ask} ask_yes action {Yes} -next _quit_\n");
+	sock_send_string(sock, "menu_add_item {ask} ask_no action {No} -next _close_\n");
+	sock_send_string(sock, "menu_add_item {} test menu {Test}\n");
+	sock_send_string(sock, "menu_add_item {test} test_action action {Action}\n");
+	sock_send_string(sock, "menu_add_item {test} test_checkbox checkbox {Checkbox}\n");
+	sock_send_string(sock, "menu_add_item {test} test_ring ring {Ring} -strings {one\ttwo\tthree}\n");
+	sock_send_string(sock, "menu_add_item {test} test_slider slider {Slider} -mintext < -maxtext > -value 50\n");
+	sock_send_string(sock, "menu_add_item {test} test_numeric numeric {Numeric} -value 42\n");
+	sock_send_string(sock, "menu_add_item {test} test_alpha alpha {Alpha} -value abc\n");
+	sock_send_string(sock, "menu_add_item {test} test_ip ip {IP} -v6 false -value 192.168.1.1\n");
+	sock_send_string(sock, "menu_add_item {test} test_menu menu {Menu}\n");
+	sock_send_string(sock, "menu_add_item {test_menu} test_menu_action action {Submenu's action}\n");
 
 //	  # no successor for menus. Since test_checkbox and test_ring have their
 //	  # own predecessors defined the "ask" rule will not work for them
-	sock_send_string (sock, "menu_set_item {} test -prev {ask}\n");
+	sock_send_string(sock, "menu_set_item {} test -prev {ask}\n");
 
-	sock_send_string (sock, "menu_set_item {test} test_action -next {test_checkbox}\n");
-	sock_send_string (sock, "menu_set_item {test} test_checkbox -next {test_ring} -prev test_action\n");
-	sock_send_string (sock, "menu_set_item {test} test_ring -next {test_slider} -prev {test_checkbox}\n");
-	sock_send_string (sock, "menu_set_item {test} test_slider -next {test_numeric} -prev {test_ring}\n");
-	sock_send_string (sock, "menu_set_item {test} test_numeric -next {test_alpha} -prev {test_slider}\n");
-	sock_send_string (sock, "menu_set_item {test} test_alpha -next {test_ip} -prev {test_numeric}\n");
-	sock_send_string (sock, "menu_set_item {test} test_ip -next {test_menu} -prev {test_alpha}\n");
-	sock_send_string (sock, "menu_set_item {test} test_menu_action -next {_close_}\n");
+	sock_send_string(sock, "menu_set_item {test} test_action -next {test_checkbox}\n");
+	sock_send_string(sock, "menu_set_item {test} test_checkbox -next {test_ring} -prev test_action\n");
+	sock_send_string(sock, "menu_set_item {test} test_ring -next {test_slider} -prev {test_checkbox}\n");
+	sock_send_string(sock, "menu_set_item {test} test_slider -next {test_numeric} -prev {test_ring}\n");
+	sock_send_string(sock, "menu_set_item {test} test_numeric -next {test_alpha} -prev {test_slider}\n");
+	sock_send_string(sock, "menu_set_item {test} test_alpha -next {test_ip} -prev {test_numeric}\n");
+	sock_send_string(sock, "menu_set_item {test} test_ip -next {test_menu} -prev {test_alpha}\n");
+	sock_send_string(sock, "menu_set_item {test} test_menu_action -next {_close_}\n");
 #endif //LCDPROC_CLIENT_TESTMENUS
 
 	return 0;

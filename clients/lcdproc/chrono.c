@@ -48,7 +48,7 @@ static char *tickTime(char *time, int heartbeat);
 //+--------------------+
 //
 int
-time_screen (int rep, int display, int *flags_ptr)
+time_screen(int rep, int display, int *flags_ptr)
 {
 	char now[40];
 	char today[40];
@@ -99,6 +99,7 @@ time_screen (int rep, int display, int *flags_ptr)
 
 	if (lcd_hgt >= 4) {
 		machine_get_uptime(&uptime, &idle);
+		char tmp[40];	// should be large enough
 
 		// display the uptime...
 		days = (int) uptime / 86400;
@@ -148,7 +149,7 @@ time_screen (int rep, int display, int *flags_ptr)
 //+--------------------+
 //
 int
-clock_screen (int rep, int display, int *flags_ptr)
+clock_screen(int rep, int display, int *flags_ptr)
 {
 	char now[40];
 	char today[40];
@@ -160,6 +161,8 @@ clock_screen (int rep, int display, int *flags_ptr)
 	struct tm *rtime;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
+		char tmp[257];	// should be large enough for host name
+
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
@@ -176,7 +179,7 @@ clock_screen (int rep, int display, int *flags_ptr)
 
 			sock_printf(sock, "widget_set O title {DATE & TIME}\n");
 
-			sprintf (tmp, "%s", get_hostname());
+			sprintf(tmp, "%s", get_hostname());
 			xoffs = (lcd_wid > strlen(tmp)) ? (((lcd_wid - strlen(tmp)) / 2) + 1) : 1;
 			sock_printf(sock, "widget_set O one %i 2 {%s}\n", xoffs, tmp);
 		} else {
@@ -187,15 +190,14 @@ clock_screen (int rep, int display, int *flags_ptr)
 	// toggle colon display
 	heartbeat ^= 1;
 
-	time (&thetime);
-	rtime = localtime (&thetime);
+	time(&thetime);
+	rtime = localtime(&thetime);
 
 	if (strftime(today, sizeof(today), dateFormat, rtime) == 0)
 		*today = '\0';
 	if (strftime(now, sizeof(now), timeFormat, rtime) == 0)
 		*now = '\0';
 	tickTime(now, heartbeat);
-fprintf(stderr, "now: %s\ttoday: %s\n", now, today);
 
 	if (lcd_hgt >= 4) {				// 4-line version of the screen
 		xoffs = (lcd_wid > strlen(today)) ? ((lcd_wid - strlen(today)) / 2) + 1 : 1;
@@ -227,12 +229,13 @@ fprintf(stderr, "now: %s\ttoday: %s\n", now, today);
 //+--------------------+
 //
 int
-uptime_screen (int rep, int display, int *flags_ptr)
+uptime_screen(int rep, int display, int *flags_ptr)
 {
 	int xoffs;
 	int days, hour, min, sec;
 	double uptime, idle;
 	static int heartbeat = 0;
+	char tmp[257];	// should be large enough for host name
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
@@ -298,7 +301,7 @@ uptime_screen (int rep, int display, int *flags_ptr)
 // +--------------------+
 //
 int
-big_clock_screen (int rep, int display, int *flags_ptr)
+big_clock_screen(int rep, int display, int *flags_ptr)
 {
 	time_t thetime;
 	struct tm *rtime;
@@ -374,7 +377,7 @@ big_clock_screen (int rep, int display, int *flags_ptr)
 //+--------------------+
 //
 int
-mini_clock_screen (int rep, int display, int *flags_ptr)
+mini_clock_screen(int rep, int display, int *flags_ptr)
 {
 	char now[40];
 	time_t thetime;
@@ -397,8 +400,8 @@ mini_clock_screen (int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "widget_add N one string\n");
 	}
 
-	time (&thetime);
-	rtime = localtime (&thetime);
+	time(&thetime);
+	rtime = localtime(&thetime);
 
 	if (strftime(now, sizeof(now), timeFormat, rtime) == 0)
 		*now = '\0';

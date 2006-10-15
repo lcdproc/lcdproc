@@ -29,7 +29,7 @@
 // +--------------------+
 //
 int
-mem_screen (int rep, int display, int *flags_ptr)
+mem_screen(int rep, int display, int *flags_ptr)
 {
 	static int which_title = 0;
 	static int gauge_wid = 0;
@@ -40,8 +40,7 @@ mem_screen (int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		sock_send_string(sock, "screen_add M\n");
-		sprintf(buffer, "screen_set M -name {Memory & Swap: %s}\n", get_hostname());
-		sock_send_string(sock, buffer);
+		sock_printf(sock, "screen_set M -name {Memory & Swap: %s}\n", get_hostname());
 
 		if (lcd_hgt >= 4) {
 			gauge_wid = (lcd_wid >= 18)
@@ -52,17 +51,13 @@ mem_screen (int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_set M title { MEM -==- SWAP}\n");
 			sock_send_string(sock, "widget_add M totl string\n");
 			sock_send_string(sock, "widget_add M used string\n");
-			sprintf(buffer, "widget_set M totl %i 2 Totl\n", lcd_wid/2 - 1);
-			sock_send_string(sock, buffer);
-			sprintf(buffer, "widget_set M used %i 3 Free\n", lcd_wid/2 - 1);
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M totl %i 2 Totl\n", lcd_wid/2 - 1);
+			sock_printf(sock, "widget_set M used %i 3 Free\n", lcd_wid/2 - 1);
 			sock_send_string(sock, "widget_add M EFmem string\n");
-			sprintf(buffer, "widget_set M EFmem 1 4 {E%*sF}\n", gauge_wid, "");
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M EFmem 1 4 {E%*sF}\n", gauge_wid, "");
 			sock_send_string(sock, "widget_add M EFswap string\n");
-			sprintf(buffer, "widget_set M EFswap %i 4 {E%*sF}\n",
-				lcd_wid - gauge_wid - 1, gauge_wid, "");
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M EFswap %i 4 {E%*sF}\n",
+					lcd_wid - gauge_wid - 1, gauge_wid, "");
 			sock_send_string(sock, "widget_add M memused string\n");
 			sock_send_string(sock, "widget_add M swapused string\n");
 		} else {
@@ -72,12 +67,10 @@ mem_screen (int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_add M m string\n");
 			sock_send_string(sock, "widget_add M s string\n");
 			if (gauge_wid > 0) {
-				sprintf(buffer, "widget_set M m 1 1 {M%*s[%*s]}\n",
+				sock_printf(sock, "widget_set M m 1 1 {M%*s[%*s]}\n",
 					gauge_offs - 3, "", gauge_wid, "");
-				sock_send_string(sock, buffer);
-				sprintf(buffer, "widget_set M s 1 2 {S%*s[%*s]}\n",
+				sock_printf(sock, "widget_set M s 1 2 {S%*s[%*s]}\n",
 					gauge_offs - 3, "", gauge_wid, "");
-				sock_send_string(sock, buffer);
 			}
 			else {
 				sock_send_string(sock, "widget_set M m 1 1 {M   }\n");
@@ -97,37 +90,34 @@ mem_screen (int rep, int display, int *flags_ptr)
 	machine_get_meminfo(mem);
 
 	if (lcd_hgt >= 4) {
+		char tmp[12];	// should be sufficient
+
 		// flip the title back and forth... (every 4 updates)
 		if (which_title & 4) {
-			sprintf(buffer, "widget_set M title {%s}\n", get_hostname());
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M title {%s}\n", get_hostname());
 		} else
 			sock_send_string(sock, "widget_set M title { MEM -==- SWAP}\n");
 		which_title = (which_title + 1) & 7;
 
 		// Total memory
 		sprintf_memory(tmp, mem[0].total * 1024, 1);
-		sprintf(buffer, "widget_set M memtotl 1 2 {%7s}\n", tmp);
 		if (display)
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M memtotl 1 2 {%7s}\n", tmp);
 
 		// Free memory (plus buffers and cache)
 		sprintf_memory(tmp, (mem[0].free + mem[0].buffers + mem[0].cache) * 1024, 1);
-		sprintf(buffer, "widget_set M memused 1 3 {%7s}\n", tmp);
 		if (display)
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M memused 1 3 {%7s}\n", tmp);
 
 		// Total swap
 		sprintf_memory(tmp, mem[1].total * 1024, 1);
-		sprintf(buffer, "widget_set M swaptotl %i 2 {%7s}\n", lcd_wid - 7, tmp);
 		if (display)
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M swaptotl %i 2 {%7s}\n", lcd_wid - 7, tmp);
 
 		// Free swap
 		sprintf_memory(tmp, mem[1].free * 1024, 1);
-		sprintf(buffer, "widget_set M swapused %i 3 {%7s}\n", lcd_wid - 7, tmp);
 		if (display)
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M swapused %i 3 {%7s}\n", lcd_wid - 7, tmp);
 
 		if (gauge_wid > 0) {
 			// Free memory graph
@@ -136,10 +126,9 @@ mem_screen (int rep, int display, int *flags_ptr)
 	                	                         / (double) mem[0].total;
 
 				//printf(".0f", val) only prints the integer part
-				sprintf(buffer, "widget_set M memgauge 2 4 %.0f\n",
-						lcd_cellwid * gauge_wid * value);
 				if (display)
-					sock_send_string(sock, buffer);
+					sock_printf(sock, "widget_set M memgauge 2 4 %.0f\n",
+							lcd_cellwid * gauge_wid * value);
 			}	
 
 			// Free swap graph
@@ -147,25 +136,24 @@ mem_screen (int rep, int display, int *flags_ptr)
 				double value = 1.0 - ((double) mem[1].free / (double) mem[1].total);
 
 				//printf(".0f", val) only prints the integer part
-				sprintf(buffer, "widget_set M swapgauge %i 4 %.0f\n",
-					lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
 				if (display)
-					sock_send_string(sock, buffer);
+					sock_printf(sock, "widget_set M swapgauge %i 4 %.0f\n",
+						lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
 			}	
 		}
 	}
 	else {
+		char tmp[12];	// should be sufficient
+
 		// Total memory
 		sprintf_memory(tmp, mem[0].total * 1024, 1);
-		sprintf(buffer, "widget_set M memtotl 3 1 {%6s}\n", tmp);
 		if (display)
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M memtotl 3 1 {%6s}\n", tmp);
 
 		// Total swap
 		sprintf_memory(tmp, mem[1].total * 1024, 1);
-		sprintf(buffer, "widget_set M swaptotl 3 2 {%6s}\n", tmp);
 		if (display)
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M swaptotl 3 2 {%6s}\n", tmp);
 
 		// Free memory graph
 		strcpy(tmp, "N/A");
@@ -175,17 +163,15 @@ mem_screen (int rep, int display, int *flags_ptr)
 
 			if (gauge_wid > 0) {
 				//printf(".0f", val) only prints the integer part
-				sprintf(buffer, "widget_set M memgauge %i 1 %.0f\n",
-					gauge_offs, lcd_cellwid * gauge_wid * value);
 				if (display)
-					sock_send_string(sock, buffer);
+					sock_printf(sock, "widget_set M memgauge %i 1 %.0f\n",
+							gauge_offs, lcd_cellwid * gauge_wid * value);
 			}	
 
 			sprintf_percent(tmp, value * 100);
 		}
-		sprintf(buffer, "widget_set M mem%% %i 1 {%5s}\n", lcd_wid - 5, tmp);
 		if (display)
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M mem%% %i 1 {%5s}\n", lcd_wid - 5, tmp);
 
 		// Free swap graph
 		strcpy(tmp, "N/A");
@@ -194,17 +180,15 @@ mem_screen (int rep, int display, int *flags_ptr)
 
 			if (gauge_wid > 0) {
 				//printf(".0f", val) only prints the integer part
-				sprintf(buffer, "widget_set M swapgauge %i 2 %.0f\n",
-					gauge_offs, lcd_cellwid * gauge_wid * value);
 				if (display)
-					sock_send_string(sock, buffer);
+					sock_printf(sock, "widget_set M swapgauge %i 2 %.0f\n",
+						gauge_offs, lcd_cellwid * gauge_wid * value);
 			}
 
 			sprintf_percent(tmp, value * 100);
 		}
-		sprintf(buffer, "widget_set M swap%% %i 2 {%5s}\n", lcd_wid - 5, tmp);
 		if (display)
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_set M swap%% %i 2 {%5s}\n", lcd_wid - 5, tmp);
 	}
 
 	return 0;
@@ -212,7 +196,7 @@ mem_screen (int rep, int display, int *flags_ptr)
 
 
 static int
-sort_procs (void *a, void *b)
+sort_procs(void *a, void *b)
 {
 	procinfo_type *one, *two;
 
@@ -237,7 +221,7 @@ sort_procs (void *a, void *b)
 // +--------------------+
 //
 int
-mem_top_screen (int rep, int display, int *flags_ptr)
+mem_top_screen(int rep, int display, int *flags_ptr)
 {
 	LinkedList *procs;
 	int i;
@@ -246,31 +230,27 @@ mem_top_screen (int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		sock_send_string(sock, "screen_add S\n");
-		sprintf(buffer, "screen_set S -name {Top Memory Use: %s}\n", get_hostname());
-		sock_send_string(sock, buffer);
+		sock_printf(sock, "screen_set S -name {Top Memory Use: %s}\n", get_hostname());
 		sock_send_string(sock, "widget_add S title title\n");
-		sprintf(buffer, "widget_set S title {TOP MEM: %s}\n", get_hostname());
-		sock_send_string(sock, buffer);
+		sock_printf(sock, "widget_set S title {TOP MEM: %s}\n", get_hostname());
 
 		// frame from (2nd line, left) to (last line, right)
 		sock_send_string(sock, "widget_add S f frame\n");
-		sprintf(buffer, "widget_set S f 1 2 %i %i %i 5 v %i\n",
-			lcd_wid, lcd_hgt, lcd_wid,
-			// scroll rate: 1 line every X ticks (= 1/8 sec)
-			((lcd_hgt >= 4) ? 8 : 12));
-		sock_send_string(sock, buffer);
+		sock_printf(sock, "widget_set S f 1 2 %i %i %i 5 v %i\n",
+				lcd_wid, lcd_hgt, lcd_wid,
+				// scroll rate: 1 line every X ticks (= 1/8 sec)
+				((lcd_hgt >= 4) ? 8 : 12));
 
 		// frame contents
 		for (i = 1; i <= 5; i++) {
-			sprintf(buffer, "widget_add S %i string -in f\n", i);
-			sock_send_string(sock, buffer);
+			sock_printf(sock, "widget_add S %i string -in f\n", i);
 		}
 		sock_send_string(sock, "widget_set S 1 1 1 Checking...\n");
 	}
 
 	procs = LL_new();
 	if (procs == NULL) {
-		fprintf (stderr, "mem_top_screen: Error allocating list\n");
+		fprintf(stderr, "mem_top_screen: Error allocating list\n");
 		return -1;
 	}
 
@@ -289,22 +269,23 @@ mem_top_screen (int rep, int display, int *flags_ptr)
 			sprintf_memory(mem, (double) p->totl * 1024, 1);
 
 			//printf("Mem hog: %s: %s\n", p->name, mem);
-			if (p->number > 1)
-				sprintf(tmp, "%i %5s %s(%i)", i, mem, p->name, p->number);
-			else
-				sprintf(tmp, "%i %5s %s", i, mem, p->name);
-			sprintf(buffer, "widget_set S %i 1 %i {%s}\n", i, i, tmp);
-			if (display)
-				sock_send_string(sock, buffer);
-		} else {
+			if (display) {
+				if (p->number > 1)
+					sock_printf(sock, "widget_set S %i 1 %i {%i %5s %s(%i)}\n",
+							i, i, i, mem, p->name, p->number);
+				else
+					sock_printf(sock, "widget_set S %i 1 %i {%i %5s %s}\n",
+							i, i, i, mem, p->name);
+			}				
+		}
+		else {
 			//printf("Mem hog: none?\n");
 			//sprintf(buffer, "widget_set S %i 1 %i {}\n", i, i);
-			sprintf(buffer, "widget_set S %i 1 %i { }\n", i, i);
 			if (display)
-				sock_send_string(sock, buffer);
+				sock_printf(sock, "widget_set S %i 1 %i { }\n", i, i);
 		}
 
-		LL_Next (procs);
+		LL_Next(procs);
 	}
 
 	// Now clean it all up...

@@ -8,6 +8,6 @@
 #define LOAD_MIN 0.05
 #endif
 
-int xload_screen (int rep, int display, int *flags_ptr);
+int xload_screen(int rep, int display, int *flags_ptr);
 
 #endif

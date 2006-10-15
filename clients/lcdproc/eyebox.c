@@ -53,10 +53,8 @@ eyebox_screen(char display, int init)
 	load_type load;
 
 	if (init == 0) {
-		sprintf(buffer, "widget_add %c eyebo_cpu string\n", display);
-		sock_send_string(sock, buffer);
-		sprintf(buffer, "widget_add %c eyebo_mem string\n", display);
-		sock_send_string(sock, buffer);
+		sock_printf(sock, "widget_add %c eyebo_cpu string\n", display);
+		sock_printf(sock, "widget_add %c eyebo_mem string\n", display);
 
 		return(0);
 	}
@@ -100,8 +98,8 @@ eyebox_screen(char display, int init)
 	 * b = Level         
 	 */
 
-	sprintf(buffer, "widget_set %c eyebo_cpu 1 2 {/xB%d%d}\n", display, 2,(int)(cpu[CPU_BUF_SIZE][4]/10));
-	sock_send_string(sock, buffer);
+	sock_printf(sock, "widget_set %c eyebo_cpu 1 2 {/xB%d%d}\n",
+			display, 2,(int)(cpu[CPU_BUF_SIZE][4]/10));
 
 	/* 
 	 * /xBab = Use Bas         
@@ -111,8 +109,7 @@ eyebox_screen(char display, int init)
 
 	value = 1.0 - (double) (mem[0].free + mem[0].buffers + mem[0].cache)
 		/ (double) mem[0].total;
-	sprintf(buffer, "widget_set %c eyebo_mem 1 3 {/xB%d%d}\n", display, 1, (int) (value * 10)) ;
-	sock_send_string(sock, buffer);
+	sock_printf(sock, "widget_set %c eyebo_mem 1 3 {/xB%d%d}\n", display, 1, (int) (value * 10)) ;
 
 	return 0;
 }						 // End mem_screen()
@@ -132,9 +129,8 @@ void eyebox_clear(void){
 
 	sock_send_string(sock, "widget_set OFF text 1 2 {Reseting Leds...}\n");
 	sock_send_string(sock, "widget_set OFF about 5 4 {EyeBO by NeZetiC}\n");
-	sprintf(buffer, "widget_set OFF cpu 1 2 {/xB%d%d}\n", 2, 0);
-	sock_send_string(sock, buffer);
-	sprintf(buffer, "widget_set OFF mem 1 3 {/xB%d%d}\n", 1, 0);
-	sock_send_string(sock, buffer);
+	sock_printf(sock, "widget_set OFF cpu 1 2 {/xB%d%d}\n", 2, 0);
+	sock_printf(sock, "widget_set OFF mem 1 3 {/xB%d%d}\n", 1, 0);
 	usleep(2000000); /* Wait last order execution */
 }
+
