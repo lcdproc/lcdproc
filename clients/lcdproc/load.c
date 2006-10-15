@@ -47,30 +47,30 @@ xload_screen (int rep, int display, int *flags_ptr)
 		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 		memset (loads, '\0', sizeof (double) * LCD_MAX_WIDTH);
 
-		sock_send_string (sock, "screen_add X\n");
-		sprintf (buffer, "screen_set X -name {X-Load: %s}\n", get_hostname());
+		sock_send_string (sock, "screen_add L\n");
+		sprintf (buffer, "screen_set L -name {Load: %s}\n", get_hostname());
 		sock_send_string (sock, buffer);
 		// Add the vbars...
 		for (i = 1; i < lcd_wid; i++) {
-			sprintf (tmp, "widget_add X bar%i vbar\n", i);
+			sprintf (tmp, "widget_add L bar%i vbar\n", i);
 			sock_send_string (sock, tmp);
-			sprintf (tmp, "widget_set X bar%i %i %i 0\n", i, i, lcd_hgt);
+			sprintf (tmp, "widget_set L bar%i %i %i 0\n", i, i, lcd_hgt);
 			sock_send_string (sock, tmp);
 		}
 		// And add a title...
 		if (lcd_hgt > 2) {
-			sock_send_string (sock, "widget_add X title title\n");
-			sock_send_string (sock, "widget_set X title {LOAD        }\n");
+			sock_send_string (sock, "widget_add L title title\n");
+			sock_send_string (sock, "widget_set L title {LOAD        }\n");
 		} else {
-			sock_send_string (sock, "widget_add X title string\n");
-			sock_send_string (sock, "widget_set X title 1 1 {LOAD}\n");
-			sock_send_string (sock, "screen_set X -heartbeat off\n");
+			sock_send_string (sock, "widget_add L title string\n");
+			sock_send_string (sock, "widget_set L title 1 1 {LOAD}\n");
+			sock_send_string (sock, "screen_set L -heartbeat off\n");
 		}
-		sock_send_string (sock, "widget_add X zero string\n");
-		sock_send_string (sock, "widget_add X top string\n");
-		sprintf (tmp, "widget_set X zero %i %i 0\n", lcd_wid, lcd_hgt);
+		sock_send_string (sock, "widget_add L zero string\n");
+		sock_send_string (sock, "widget_add L top string\n");
+		sprintf (tmp, "widget_set L zero %i %i 0\n", lcd_wid, lcd_hgt);
 		sock_send_string (sock, tmp);
-		sprintf (tmp, "widget_set X top %i %i 1\n", lcd_wid, (lcd_hgt + 1 - gauge_hgt));
+		sprintf (tmp, "widget_set L top %i %i 1\n", lcd_wid, (lcd_hgt + 1 - gauge_hgt));
 		sock_send_string (sock, tmp);
 	}
 
@@ -94,21 +94,21 @@ xload_screen (int rep, int display, int *flags_ptr)
 	factor = (double) (lcd_cellhgt * gauge_hgt) / (double) loadtop;
 
 	// display load
-	sprintf (tmp, "widget_set X top %i %i %i\n", lcd_wid, (lcd_hgt + 1 - gauge_hgt), loadtop);
+	sprintf (tmp, "widget_set L top %i %i %i\n", lcd_wid, (lcd_hgt + 1 - gauge_hgt), loadtop);
 	sock_send_string (sock, tmp);
 
 	for (i = 0; i < lcd_wid - 1; i++) {
 		double x = loads[i] * factor;
 
-		sprintf (tmp, "widget_set X bar%i %i %i %i\n", i + 1, i + 1, lcd_hgt, (int) x);
+		sprintf (tmp, "widget_set L bar%i %i %i %i\n", i + 1, i + 1, lcd_hgt, (int) x);
 		sock_send_string (sock, tmp);
 	}
 
 	// And now the title...
 	if (lcd_hgt > 2)
-		sprintf (tmp, "widget_set X title {LOAD %2.2f: %s}\n", loads[lcd_wid - 2], get_hostname());
+		sprintf (tmp, "widget_set L title {LOAD %2.2f: %s}\n", loads[lcd_wid - 2], get_hostname());
 	else
-		sprintf (tmp, "widget_set X title 1 1 {%s %2.2f}\n", get_hostname(), loads[lcd_wid - 2]);
+		sprintf (tmp, "widget_set L title 1 1 {%s %2.2f}\n", get_hostname(), loads[lcd_wid - 2]);
 	sock_send_string (sock, tmp);
 
 	// set return status depending on max & current load
