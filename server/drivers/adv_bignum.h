@@ -63,7 +63,7 @@
 #define  b_XXXXXX	0x3F
 
 
-void lib_adv_bignum (Driver *drvthis, int x, int num, int do_init, int customchars);
+void lib_adv_bignum(Driver *drvthis, int x, int num, int offset, int do_init);
 
 
 

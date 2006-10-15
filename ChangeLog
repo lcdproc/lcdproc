@@ -7,6 +7,7 @@ Key:
 
 v.0.5dev (ongoing development)
  * fix switching on/off the Load screen in lcdproc client using the menu
+ * refactor adv_bignum: support height > 4, loadable chars with offset
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

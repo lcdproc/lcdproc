@@ -1129,7 +1129,7 @@ MtxOrb_num (Driver *drvthis, int x, int num)
 	}
 
 	// Lib_adv_bignum does everything needed to show the bignumbers.
-	lib_adv_bignum(drvthis, x, num, do_init, NUM_CCs);
+	lib_adv_bignum(drvthis, x, num, 0, do_init);
 }
 
 

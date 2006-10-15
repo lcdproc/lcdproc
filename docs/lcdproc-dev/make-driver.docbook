@@ -161,7 +161,7 @@ port_deny_multiple(0x378,3);
 <title>adv_bignum.h : Write Big-Numbers</title>
 
 <para>
-  <filename>adv_bignum.h</filename> is the headerfile for <filename>lib_bignum.a</filename>
+  <filename>adv_bignum.h</filename> is the headerfile for <filename>libbignum.a</filename>
   (made from <filename>adv_bignum.c</filename>) which contains everything needed to show big-numbers,
   including the fonts for the different displays.
   (All files are located in the <filename>server/drivers/</filename> directory.) </para>
@@ -172,27 +172,79 @@ port_deny_multiple(0x378,3);
 </para>
 
 <itemizedlist>
-  <listitem><para>
-    The display's <replaceable>cellwidth</replaceable> has to be <literal>5</literal>
-    (<literal>6</literal> works also in some cases) and the <replaceable>cellheight</replaceable>
-    <literal>7</literal> or <literal>8</literal>.
-  </para></listitem>
   <listitem>
     <para>
       The following functions have to be implemented by the driver:
-      <itemizedlist>
-        <listitem>
-          <function>chr()</function>
-        </listitem>	
-        <listitem>	
-          <function>set_char()</function> (only if the display has custom-characters)
-        </listitem>	
-      </itemizedlist>  
+      <variablelist>
+        <varlistentry>
+          <term><function>height()</function></term>
+          <listitem>
+            <para>
+              to determine the display's height and thus the maximal height of the
+              big numbers to be displayed.
+            </para>
+          </listitem>	
+        </varlistentry>
+
+        <varlistentry>
+          <term><function>get_free_chars()</function></term>
+          <listitem>
+            <para>
+              to determine the number of user-defineable characters that can be
+              used in the generation of big numbers.
+            </para>
+          </listitem>	
+        </varlistentry>
+
+        <varlistentry>
+          <term><function>set_char()</function></term>
+          <listitem>	
+            <para>
+              to define a character necessary to write a big number.
+              Of course this is only necessary if there really are user-definieable
+	      characters, i.e. only if <function>get_free_chars()</function> returns
+	      a value greater <literal>0</literal>.
+            </para>
+          </listitem>	
+        </varlistentry>
+
+        <varlistentry>
+          <term><function>chr()</function></term>
+          <listitem>
+            <para>
+              to actually write the characters the big numbers consist of.
+            </para>
+          </listitem>	
+        </varlistentry>
+      </variablelist>  
     </para>
   </listitem>
-  <listitem><para>
-    The custom-characters (if available) have to be at char 0, 1, 2, ..... ,n
-  </para></listitem>
+
+  <listitem>
+    <para>
+      The display's <replaceable>cellwidth</replaceable> has to be <literal>5</literal>
+      (<literal>6</literal> works also in some cases) and the <replaceable>cellheight</replaceable>
+      <literal>7</literal> or <literal>8</literal>.
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      The custom-characters (if any) have to be at character positions
+      <replaceable>offset</replaceable><literal>+0</literal>, 
+      <replaceable>offset</replaceable><literal>+1</literal>, 
+      <replaceable>offset</replaceable><literal>+2</literal>, ...
+      <replaceable>offset</replaceable><literal>+</literal>
+      <function>get_free_chars()</function><literal>-1</literal>, 
+    </para>
+  </listitem>
+
+  <listitem>
+    <para>
+      <replaceable>offset</replaceable><literal>+</literal>
+      <function>get_free_chars()</function><literal>-1</literal> must be less than <literal>32</literal>, 
+    </para>
+  </listitem>
 </itemizedlist>  
 
 <para>
@@ -204,7 +256,7 @@ port_deny_multiple(0x378,3);
 
 
 <sect3 id="adv_bignum.h-usage">
-<title>External provided Functions</title>
+<title>Provided Functions</title>
 
 <funcsynopsis>
   <funcprototype>
@@ -212,43 +264,127 @@ port_deny_multiple(0x378,3);
     <paramdef>Driver *<parameter>drvthis</parameter></paramdef>
     <paramdef>int <parameter>x</parameter></paramdef>
     <paramdef>int <parameter>num</parameter></paramdef>
-    <paramdef>int <parameter>height</parameter></paramdef>
+    <paramdef>int <parameter>offset</parameter></paramdef>
     <paramdef>int <parameter>do_init</parameter></paramdef>
-    <paramdef>int <parameter>customchars</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 
 <para>
   The main thing the driver has to do is to call this function from its <function>num()</function>
-  function.
+  function with the parameters described below.
 </para>
 
-<para>
-  Where <parameter>num</parameter> is the number (legal: <literal>0</literal> - <literal>9</literal>,
-  and <literal>:</literal>)
-  to be written, <parameter>height</parameter> the display's height in characters and
-  <parameter>customchars</parameter> the number of available custom characters.
-</para>
+<variablelist>
+  <varlistentry>
+    <term><parameter>drvthis</parameter></term>
+    <listitem>
+      <para>
+        the pointer pointing to the Driver structure passed to thea driver's
+        <function>num()</function> function.
+      </para>
+    </listitem>
+  </varlistentry>  
+
+  <varlistentry>
+    <term><parameter>x</parameter></term>
+    <listitem>
+      <para>
+        the horizontal position of the top-left corner of the big-number
+        (the big-numbers don't have a y position).
+        The placing of the characters is done by the client, so the driver only has to forward
+        the position to the lib. The bignumlib has no influence on the placing of the characters.
+      </para>
+    </listitem>
+  </varlistentry>  
+
+  <varlistentry>
+    <term><parameter>num</parameter></term>
+    <listitem>
+      <para>
+        the number (legal: <literal>0</literal> - <literal>9</literal>,
+        and <literal>:</literal>) to be written.
+      </para>
+    </listitem>
+  </varlistentry>  
+
+  <varlistentry>
+    <term><parameter>offset</parameter></term>
+    <listitem>
+      <para>  
+        the character position where the user-defineable characters start
+        (usually <literal>0</literal>).
+        The user-defineable characters (if any) are then expected to be at the character positions
+        <replaceable>offset</replaceable><literal>+0</literal>, 
+        <replaceable>offset</replaceable><literal>+1</literal>, 
+        <replaceable>offset</replaceable><literal>+2</literal>, ...
+        <replaceable>offset</replaceable><literal>+</literal>
+        <function>get_free_chars()</function><literal>-1</literal>
+	and <replaceable>offset</replaceable><literal>+</literal>
+       <function>get_free_chars()</function><literal>-1</literal> is required to be less than
+       <literal>32</literal>. 
+      </para>  
+    </listitem>
+  </varlistentry>  
+
+  <varlistentry>
+    <term><parameter>do_init</parameter></term>
+    <listitem>
+      <para>
+        if not <literal>0</literal>, lib_adv_bignum will set the
+        custom characters of the display for the big-numbers.
+      </para>
+      <para>
+        The driver has to check if the custom-characters have to be set or if it is
+        already done and tell it to the lib (using the <parameter>do_init</parameter> parameter).
+        The common way is to use variable called <replaceable>p-&gt;ccmode</replaceable> or similar.
+        In the different drivers there are some differences in the naming and handling of this variable.
+        So the responsibility of checking and setting is left to the driver.
+      </para>
+    </listitem>
+  </varlistentry>  
+</variablelist>
+
+<example id="lib_adv_bignum-example">
+<title>Calling <function>lib_adv_bignum()</function></title>
+
+<programlisting>
+<emphasis>#include "adv_bignum.h"</emphasis>
+
+MODULE_EXPORT void
+myDriver_num( Driver * drvthis, int x, int num )
+{
+  PrivateData *p = drvthis-&gt;private_data;
+  int do_init = 0;
+
+  if (p-&gt;ccmode != CCMODE_BIGNUM){     // Are the custom-characters set up correctly? If not:
+    do_init = 1;                       // Lib_adv_bignum has to set the custom-characters.
+    p-&gt;ccmode = CCMODE_BIGNUM;         // Switch custom-charactermode to bignum.
+  }
+
+  // Lib_adv_bignum does everything needed to show the big-numbers.
+  <emphasis>lib_adv_bignum(drvthis, x, num, 0, do_init);</emphasis>
+}
+</programlisting>
+
+</example>
 
 <para>
-  <parameter>x</parameter> is the x position of the top-left corner of the big-number
-  (the big-numbers don't have a y position).
-  The placing of the characters is done by the client, so the driver only has to forward
-  the position to the lib. The bignumlib has no influence on the placing of the characters.
+  All that's left to do is to add <filename>libbignum.a</filename> to the libs and
+  <filename>adv_bignum.h</filename> sources of your driver in the <filename>Makefile</filename>
+  (or the file that generates the
+  <filename>Makefile</filename>).
 </para>
 
-<para>
-  If <parameter>do_init</parameter> is not <literal>0</literal> lib_bignum will set the
-  custom characters of the display for the big-numbers.
-</para>
+<example id="adv_bignum.h-Makefile.am-example">
+<title>Enabling adv_bignum support in <filename>Makefile.am</filename></title>
 
-<para>
-  The driver has to check if the custom-characters have to be set or if it is
-  already done and tell it to the lib (using the <parameter>do_init</parameter> parameter).
-  The common way is to use variable called <replaceable>p-&gt;ccmode</replaceable> or similar.
-  In the different drivers there are some differences in the naming and handling of this variable.
-  So the responsibility of checking and setting is left at the driver.
-</para>
+<programlisting>
+myDriver_LDADD: libLCD.a <emphasis>libbignum.a</emphasis>
+
+myDriver_SOURCES: lcd.h lcd_lib.h myDriver.c myDriver.h report.h <emphasis>adv_bignum.h</emphasis>
+</programlisting>
+
+</example>
 
 </sect3>
 
@@ -256,13 +392,16 @@ port_deny_multiple(0x378,3);
 <title>Internal Structure and Functions</title>
 
 <para>
-  The only function of <function>lib_adv_bignum()</function> is to determine the best
-  display-dependent big-number function for the given display parameters, and to call it.
+  The only purpose of <function>lib_adv_bignum()</function> is to determine the best
+  display-dependent big-number function, based upon the values of the driver's
+  <function>height()</function> and <function>get_free_chars()</function> functions,
+  and call it.
 </para>
 
 <para>
-  The display-dependent functions are named <function>adv_bignum_num_N_M()</function>.
-  Where <replaceable>N</replaceable> is the display-height in lines and <replaceable>M</replaceable>
+  The display-dependent functions are named
+  <function>adv_bignum_num_<replaceable>N_M</replaceable>()</function>,
+  where <replaceable>N</replaceable> is the display's height in lines and <replaceable>M</replaceable>
   the number of used user-defineable characters.
   The bits of the user-characters are stored in <replaceable>static char bignum</replaceable>
   (take a look at the source and you will see what I mean). (On a display with a
@@ -273,55 +412,14 @@ port_deny_multiple(0x378,3);
 </para>
 
 <para>
-  If user-characters have to be set the driver's <function>set_char()</function> function
-  will be called once for every user-character.
+  If user-defineable characters have to be set, the driver's <function>set_char()</function> function
+  will be called once for every user-idefneable character.
 </para>
 
 <para>
   Now <function>adv_bignum_write_num()</function> is called.
   This function places the 6 or 12 characters the big-number consists of in the framebuffer
   using the drivers <function>chr()</function> function.
-</para>
-
-</sect3>
-
-<sect3 id="adv_bignum.h-example">
-<title>Example:</title>
-
-<para>
-  Calling the <function>lib_adv_bignum()</function> from a drivers_num function.
-  (from <filename>serialVFD.c</filename>):
-</para>
-<screen>
-
-MODULE_EXPORT void
-serialVFD_num( Driver * drvthis, int x, int num )
-{
-  PrivateData *p = drvthis-&gt;private_data;
-  int do_init = 0;
-
-  if (p-&gt;ccmode != CCMODE_BIGNUM){  // Are the custom-characters set up correctly? If not:
-    do_init = 1;                       // Lib_adv_bignum has to set the custom-characters.
-    p-&gt;ccmode = CCMODE_BIGNUM;      // Switch custom-charactermode to bignum.
-  }
-  // Lib_adv_bignum does everything needed to show the big-numbers.
-  lib_adv_bignum(drvthis, x, num, p-&gt;height, do_init, p-&gt;customchars);
-}
-
-</screen>
-
-<para>
-  All that's left to do is to include the header-file
-</para>
-
-<screen>
-#include "adv_bignum.h"
-</screen>
-
-<para>
-  and to add <filename>libbignum.a</filename> to the libs and <filename>adv_bignum.h</filename>
-  sources of your driver in the <filename>Makefile</filename> (or the file that generates the
-  <filename>Makefile</filename>).
 </para>
 
 </sect3>

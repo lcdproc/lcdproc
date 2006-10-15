@@ -28,19 +28,23 @@
 	cellwidth == 5 (also with 6, but with gaps)
 	cellheight == 7 or 8
 	needed functions:
-		drvthis->set_char (only if the display has customcharacters)
-		drvthis->chr
-	customcharacters (if available) at char 0, 1, 2, ..... ,n
+		drvthis->get_free_chars()
+		drvthis->set_char() [only if get_free_chars() returns a value > 0]
+		drvthis->chr()
+		drvthis->height()
+	customcharacters (if available) at char offset+0, offset+1, ..., offset+get_free_chars()-1
 
 	USAGE:
 
-	Just call lib_adv_bignum(drvthis, x, num, height, do_init, customchars)
-	from drvthis->num.
+	Just call lib_adv_bignum(drvthis, x, num, offset, do_init)
+	from drvthis->num().
 	The library does everything needed to show bignumbers EXCEPT checking or
 	setting the CCMODE variable. The driver has to do this (see serialVFD.c
 	for details).
 
-	Example: Call of the lib_adv_bignum from a drivers_num function :
+	Example: Call of the lib_adv_bignum from a driver's num function:
+
+	#include "adv_bignum.h"
 
 	MODULE_EXPORT void
 	serialVFD_num(Driver *drvthis, int x, int num)
@@ -53,7 +57,7 @@
 			p->ccmode = CCMODE_BIGNUM; // Switch customcharactermode to bignum.
 		}
 		// Lib_adv_bignum does everything needed to show the bignumbers.
-		lib_adv_bignum(drvthis, x, num, p->height, do_init, p->customchars);
+		lib_adv_bignum(drvthis, x, num, 0, do_init);
 	}
 
 */
@@ -78,17 +82,17 @@
 
 
 
-static void adv_bignum_num_2_0 (Driver *drvthis, int x, int num, int height, int do_init);
-static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int do_init);
-static void adv_bignum_num_2_2 (Driver *drvthis, int x, int num, int height, int do_init);
-static void adv_bignum_num_2_5 (Driver *drvthis, int x, int num, int height, int do_init);
-static void adv_bignum_num_2_28 (Driver *drvthis, int x, int num, int height, int do_init);
+static void adv_bignum_num_2_0(Driver *drvthis, int x, int num, int height, int offset, int do_init);
+static void adv_bignum_num_2_1(Driver *drvthis, int x, int num, int height, int offset, int do_init);
+static void adv_bignum_num_2_2(Driver *drvthis, int x, int num, int height, int offset, int do_init);
+static void adv_bignum_num_2_5(Driver *drvthis, int x, int num, int height, int offset, int do_init);
+static void adv_bignum_num_2_28(Driver *drvthis, int x, int num, int height, int offset, int do_init);
 
-static void adv_bignum_num_4_0 (Driver *drvthis, int x, int num, int height, int do_init);
-static void adv_bignum_num_4_3 (Driver *drvthis, int x, int num, int height, int do_init);
-static void adv_bignum_num_4_8 (Driver *drvthis, int x, int num, int height, int do_init);
+static void adv_bignum_num_4_0(Driver *drvthis, int x, int num, int height, int offset, int do_init);
+static void adv_bignum_num_4_3(Driver *drvthis, int x, int num, int height, int offset, int do_init);
+static void adv_bignum_num_4_8(Driver *drvthis, int x, int num, int height, int offset, int do_init);
 
-static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][3], int x, int num, int height);
+static void adv_bignum_write_num(Driver *drvthis, char num_map[][4][3], int x, int num, int height, int offset);
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -96,59 +100,78 @@ static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][3], i
 // The called bignumberfunction is depending on the display's height and the
 // number of customcharacters.
 void
-lib_adv_bignum(Driver *drvthis, int x, int num, int do_init, int customchars)
+lib_adv_bignum(Driver *drvthis, int x, int num, int offset, int do_init)
 {
 int height = drvthis->height(drvthis);
+int customchars = drvthis->get_free_chars(drvthis);
 
-	switch (height) { // Display heigth:
-		case 2: // 2 lines
-		case 3: // are 3 line displays really existing?
-			if (customchars == 0) {		// 2 lines and customchars = 0
-				adv_bignum_num_2_0 (drvthis, x, num, height, do_init);
-				}
-			else if (customchars == 1) {	// 2 lines and customchars = 1
-				adv_bignum_num_2_1 (drvthis, x, num, height, do_init);
-				}
-			else if (customchars < 5) {	// 2 lines and customchars = 2 ... 4
-				adv_bignum_num_2_2 (drvthis, x, num, height, do_init);
-				}
-			else if (customchars < 28) {	// 2 lines and customchars = 5 ... 27
-				adv_bignum_num_2_5 (drvthis, x, num, height, do_init);
-				}
-			else {				// 2 lines and customchars >= 28
-				adv_bignum_num_2_28 (drvthis, x, num, height, do_init);
-				}
-			break;
-		case 4: // 4 lines
-			if (customchars == 0) {		// 4 lines and customchars < 3
-				adv_bignum_num_4_0 (drvthis, x, num, height, do_init);
-				}
-			else if (customchars < 8) {	// 4 lines and customchars < 8
-				adv_bignum_num_4_3 (drvthis, x, num, height, do_init);
-				}
-			else {				// 4 lines and customchars >= 8
-				adv_bignum_num_4_8 (drvthis, x, num, height, do_init);
-				}
-			break;
-		default:
-			return;
+	if (height >= 4) {
+		height = 4;	// not ideal: we always start at the 1st line
 
+		if (customchars == 0) {		// 4 lines and customchars < 3
+			adv_bignum_num_4_0 (drvthis, x, num, height, offset, do_init);
+		}
+		else if (customchars < 8) {	// 4 lines and customchars < 8
+			adv_bignum_num_4_3 (drvthis, x, num, height, offset, do_init);
+		}
+		else {				// 4 lines and customchars >= 8
+			adv_bignum_num_4_8 (drvthis, x, num, height, offset, do_init);
+		}
 	}
+	else if (height >= 2) {
+		height = 2; 	// do 3 -line displays really exist?
+
+		if (customchars == 0) {		// 2 lines and customchars = 0
+			adv_bignum_num_2_0 (drvthis, x, num, height, offset, do_init);
+		}
+		else if (customchars == 1) {	// 2 lines and customchars = 1
+			adv_bignum_num_2_1 (drvthis, x, num, height, offset, do_init);
+		}
+		else if (customchars < 5) {	// 2 lines and customchars = 2 ... 4
+			adv_bignum_num_2_2 (drvthis, x, num, height, offset, do_init);
+		}
+		else if (customchars < 28) {	// 2 lines and customchars = 5 ... 27
+			adv_bignum_num_2_5 (drvthis, x, num, height, offset, do_init);
+		}
+		else {				// 2 lines and customchars >= 28
+			adv_bignum_num_2_28 (drvthis, x, num, height, offset, do_init);
+		}
+	}
+
+	return;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function writes the selected type of bignumber by calling the driver's chr function.
 // It is called by display-depending bignumber functions to write the numbers.
-static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][3], int x, int num, int height)
+static void adv_bignum_write_num(Driver *drvthis, char num_map[][4][3], int x, int num, int height, int offset)
 {
 	int y, dx;
 
 	for (y = 0; y < height; y++) {
-		if (num == 10)	// ":" is only 1 character wide.
-			drvthis->chr(drvthis, x, y+1, write_num_map[num][y][0]);
+		if (num == 10)	{	// ":" is only 1 character wide.
+			unsigned char c = num_map[num][y][0];
+
+			// increase c by offset if it is a user-defined character
+			// Note: this is a bit of a kludge,
+			//       we'd better check for c < offset+get_free_chars()
+			if (c < ' ')
+				c += offset;
+
+			drvthis->chr(drvthis, x, y+1, c);
+		}	
 		else {
-			for (dx = 0; dx < 3; dx++)
-				drvthis->chr(drvthis, x + dx, y+1, write_num_map[num][y][dx]);
+			for (dx = 0; dx < 3; dx++) {
+				unsigned char c = num_map[num][y][dx];
+
+				// increase c by offset if it is a user-defined character
+				// Note: this is a bit of a kludge,
+				//       we'd better check for c < offset+get_free_chars()
+				if (c < ' ')
+					c += offset;
+
+				drvthis->chr(drvthis, x + dx, y+1, c);
+			}	
 		}	
 	}
 
@@ -166,7 +189,7 @@ static void adv_bignum_write_num (Driver *drvthis, char write_num_map[][4][3], i
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function is called for a 2 line display without custom characters.
 // (pretty ugly looking)
-static void adv_bignum_num_2_0 (Driver *drvthis, int x, int num, int height, int do_init)
+static void adv_bignum_num_2_0(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
 	static char num_map[][4][3] = {
 		{ /* 0 */
@@ -226,7 +249,7 @@ static void adv_bignum_num_2_0 (Driver *drvthis, int x, int num, int height, int
 			" " }
 		}; // Defines the character placing inside the bignumber.
 
-		adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
+		adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
 
 }
 
@@ -234,7 +257,7 @@ static void adv_bignum_num_2_0 (Driver *drvthis, int x, int num, int height, int
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function is usable for a 2 line display with 1 or more custom characters.
 // (not a beauty, but useable)
-static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int do_init)
+static void adv_bignum_num_2_1(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
 	static char num_map[][4][3] = {
 		{ /* 0 */
@@ -306,10 +329,10 @@ static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int
 			b_______,
 			b_______, }
 		};
-		drvthis->set_char (drvthis, 0, bignum[0]); // put the customcharacter into the display
+		drvthis->set_char(drvthis, offset+0, bignum[0]); // put the customcharacter into the display
 	}
 
-	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
+	adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
 
 }
 
@@ -317,7 +340,7 @@ static void adv_bignum_num_2_1 (Driver *drvthis, int x, int num, int height, int
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function is usable for a 2 line display with 2 or more custom characters.
 // (o.k.)
-static void adv_bignum_num_2_2 (Driver *drvthis, int x, int num, int height, int do_init)
+static void adv_bignum_num_2_2(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
 	static char num_map[][4][3] ={
 		{ /* 0 */
@@ -400,18 +423,18 @@ static void adv_bignum_num_2_2 (Driver *drvthis, int x, int num, int height, int
 		};
 		int i;
 		for (i = 0; i < 2; i++) { // put the customcharacters into the display
-			drvthis->set_char (drvthis, i, bignum[i]);
+			drvthis->set_char(drvthis, offset+i, bignum[i]);
 		}
 	}
 
-	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
+	adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function is usable for a 2 line display with 5 or more custom characters.
 // (nice bignumbers)
-static void adv_bignum_num_2_5 (Driver *drvthis, int x, int num, int height, int do_init)
+static void adv_bignum_num_2_5(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
 	static char num_map[][4][3] =
 		{{{3	,0	,2}, /*0*/
@@ -510,18 +533,18 @@ static void adv_bignum_num_2_5 (Driver *drvthis, int x, int num, int height, int
 		int i;
 
 		for (i = 0; i < 5 ; i++) { // put the customcharacters into the display
-			drvthis->set_char (drvthis, i, bignum[i]);
+			drvthis->set_char(drvthis, offset+i, bignum[i]);
 		}
 	}
 
-	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
+	adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function is usable for a 2 line display with 28 or more custom characters.
 // (Wow, allmost graphical)
-static void adv_bignum_num_2_28 (Driver *drvthis, int x, int num, int height, int do_init)
+static void adv_bignum_num_2_28(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
 	static char num_map[][4][3] =
 		{{{15	,6	,2}, /*0*/
@@ -827,18 +850,18 @@ static void adv_bignum_num_2_28 (Driver *drvthis, int x, int num, int height, in
 		int i;
 
 		for (i = 0; i < 28 ; i++) { // put the customcharacters into the display
-			drvthis->set_char (drvthis, i, bignum[i]);
+			drvthis->set_char(drvthis, offset+i, bignum[i]);
 		}
 	}
 
-	adv_bignum_write_num (drvthis, num_map, x, num, height); // write the number
+	adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function is usable for a 4 line display without custom characters.
 // (o.k.)
-static void adv_bignum_num_4_0 (Driver *drvthis, int x, int num, int height, int do_init)
+static void adv_bignum_num_4_0(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
 	/* Ugly code extracted by David GLAUDE from lcdm001.c ;)*/
 	/* Moved to driver.c by Joris Robijn */
@@ -901,14 +924,14 @@ static char num_map[][4][3] = {
 		" " }
 	}; // Defines the character placing inside the bignumber.
 
-	adv_bignum_write_num(drvthis, num_map, x, num, height); // write the number
+	adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function is usable for a 4 line display with 3 or more custom characters.
 // (nice bignumbers)
-static void adv_bignum_num_4_3 (Driver *drvthis, int x, int num, int height, int do_init)
+static void adv_bignum_num_4_3(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
 static char num_map[][4][3] =
 	{{{3	,1	,3}, /*0*/
@@ -989,18 +1012,18 @@ static char num_map[][4][3] =
 		int i;
 
 		for (i = 0; i < 3; i++) { // put the customcharacters into the display
-			drvthis->set_char(drvthis, i+1, bignum[i]);
+			drvthis->set_char(drvthis, offset+i+1, bignum[i]);
 		}
 	}
 
-	adv_bignum_write_num(drvthis, num_map, x, num, height); // write the number
+	adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 // This function is usable for a 4 line display with 8 or more custom characters.
 // (nice bignumbers)
-static void adv_bignum_num_4_8 (Driver *drvthis, int x, int num, int height, int do_init)
+static void adv_bignum_num_4_8(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
 static char num_map[][4][3] = {
 	{ /* 0: */
@@ -1138,9 +1161,9 @@ static char num_map[][4][3] = {
 		int i;
 
 		for (i = 0; i < 8 ; i++) { // put the customcharacters into the display
-			drvthis->set_char(drvthis, i, bignum[i]);
+			drvthis->set_char(drvthis, offset+i, bignum[i]);
 		}
 	}
 
-	adv_bignum_write_num(drvthis, num_map, x, num, height); // write the number
+	adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
 }
