@@ -1,0 +1,28 @@
+This directory contains
+* init-script templates for various system types
+  (These templates are adapted to the confugration parameters
+  passed to configure at configure-run-time.)
+
+  - init-*.LSB.in	templates for systems conforming to LSB
+			(Linux Standard Base) 3.x.  Among others
+			the following distributions support LSB 3.x:
+			- SuSE Linux 10.x
+			- SuSE Linux Enterprise Server 10
+			- SuSE Linux Enterprise Server 9 SP3
+			- Ubuntu 6.06
+			- Debian Etch
+			- RedHat Enterprise Linux4 Update2
+
+  - init-*.debian.in	templates for older Debian systems (or modern Debian
+			systems without	the lsb-core package installed)
+
+  - init-*.rpm		init-scripts for RPM based distributions that are
+			not LSB 3.x conforming.
+			Please try the LSB scripts first.
+
+- a sub-directory debian/ that contains the infrastructure to create a
+  Debian package for lcdproc.
+  Simply copy the debian/ directory to the top-level source directory,
+  adapt the call in debian/rules to your wishes, call
+  	dpkg -rfakeoot -sd
+  and you're done.	

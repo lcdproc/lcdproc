@@ -1,14 +1,14 @@
 #!/bin/sh -e
 
 #### BEGIN INIT INFO
-# Provides:          LCDd
+# Provides:          lcdvc
 # Required-Start:    $syslog $local_fs $network $remote_fs
 # Required-Stop:     $syslog $local_fs $network $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
-# Short-Description: LCDproc Server Daemon
-# Description:       Debian init script for LCDd, the display
-#                    server daemon in the LCDproc suite
+# Short-Description: LCDproc virtual console
+# Description:       Debian init script for lcdvc, the virtual
+#                    console client in the LCDproc suite
 ### END INIT INFO
 
 # local variables
@@ -18,9 +18,9 @@ bindir=@bindir@
 sbindir=@sbindir@
 etc=@sysconfdir@
 
-NAME=LCDd
-DAEMON=${sbindir}/${NAME}
-DESC="LCDproc display server daemon"
+NAME=lcdvc
+DAEMON=${bindir}/${NAME}
+DESC="LCDproc virtual console"
 OPTIONS=""
 
 # installation check

@@ -7,22 +7,28 @@
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
 # Short-Description: LCDproc virtual console
-# Description:       Debian init script for lcdvc, the virtual
+# Description:       LSB init script for lcdvc, the virtual
 #                    console client in the LCDproc suite
 ### END INIT INFO
 
 
 # local variables
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+bindir=@bindir@
+sbindir=@sbindir@
+etc=@sysconfdir@
+
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 NAME=lcdvc
-DAEMON=/usr/bin/$NAME
+DAEMON=${bindir}/$NAME
 DESC="LCDproc virtual console"
 DEFAULTS=/etc/default/$NAME
 START=no
 
 # Source defaults file; edit that file to configure this script.
 if [ -e "${DEFAULTS}" ]; then
-    . "${DEFAULTS}"
+  . "${DEFAULTS}"
 fi
 
 # If we're not to start the daemon, simply exit
@@ -38,22 +44,22 @@ test -x $DAEMON || exit 5
 
 
 case "$1" in
-    start)
+  start)
 	log_daemon_msg "Starting $DESC" "$NAME"
 	start_daemon $DAEMON $OPTIONS
 	log_end_msg $?
 	;;
-    stop)
+  stop)
 	log_daemon_msg "Stopping $DESC" "$NAME"
 	killproc $DAEMON
 	log_end_msg $?
 	;;
-    restart|reload|force-reload)
+  restart|reload|force-reload)
 	$0 stop
 	sleep 1
 	$0 start
 	;;
-    *)
+  *)
 	echo "Usage: $0 {start|stop|restart|reload|force-reload}" >&2
 	exit 2
 	;;

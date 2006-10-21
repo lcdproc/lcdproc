@@ -580,8 +580,14 @@ AC_CONFIG_FILES([Makefile
 	docs/lcdproc-user/Makefile
 	docs/lcdproc-user/drivers/Makefile
 	scripts/Makefile
+	scripts/init-LCDd.LSB
+	scripts/init-lcdproc.LSB
+	scripts/init-lcdexec.LSB
+	scripts/init-lcdvc.LSB
 	scripts/init-LCDd.debian
-	scripts/init-LCDd.rpm
 	scripts/init-lcdproc.debian
+	scripts/init-lcdexec.debian
+	scripts/init-lcdvc.debian
+	scripts/init-LCDd.rpm
 	scripts/init-lcdproc.rpm])
 AC_OUTPUT

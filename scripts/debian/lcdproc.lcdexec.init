@@ -14,10 +14,11 @@
 
 # local variables
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
-DAEMON=/usr/bin/lcdexec
 NAME=lcdexec
+DAEMON=/usr/bin/$NAME
 DESC="LCDproc program starter"
 DEFAULTS=/etc/default/$NAME
+START=no
 
 # Source defaults file; edit that file to configure this script.
 if [ -e "${DEFAULTS}" ]; then
@@ -53,7 +54,7 @@ case "$1" in
 	$0 start
 	;;
     *)
-	echo "Usage: /etc/init.d/$NAME {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $0 {start|stop|restart|reload|force-reload}" >&2
 	exit 2
 	;;
 esac

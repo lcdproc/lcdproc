@@ -11,6 +11,7 @@
 #                    status information viewer in the LCDproc suite
 ### END INIT INFO
 
+# local variables
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 bindir=@bindir@
@@ -19,33 +20,32 @@ etc=@sysconfdir@
 
 NAME=lcdproc
 DAEMON=${bindir}/${NAME}
-DESC="${NAME} @VERSION@"
-
+DESC="LCDproc system status monitor"
 OPTIONS=""
 
-
+# installation check
 test -x ${DAEMON} || exit 0
 
 case "$1" in
     start)
-        printf "Starting ${DESC}: "
-        start-stop-daemon --start --quiet --exec ${DAEMON} -- ${OPTIONS}
-        printf "${NAME}."
-        ;;
+	printf "Starting ${DESC}: "
+	start-stop-daemon --start --quiet --exec ${DAEMON} -- ${OPTIONS}
+	printf "${NAME}."
+	;;
     stop)
-        printf "Stopping ${DESC}: "
-        start-stop-daemon --stop --oknodo --quiet --exec ${DAEMON}
-        printf "${NAME}."
-        ;;
+	printf "Stopping ${DESC}: "
+	start-stop-daemon --stop --oknodo --quiet --exec ${DAEMON}
+	printf "${NAME}."
+	;;
     restart|force-reload)
-        $0 stop
-        sleep 1
-        $0 start
-        ;;
+	$0 stop
+	sleep 1
+	$0 start
+	;;
     *)
-        printf "Usage: $0 {start|stop|restart|force-reload}\n" >&2
-        exit 1
-        ;;
+	printf "Usage: $0 {start|stop|restart|force-reload}\n" >&2
+	exit 1
+	;;
 esac
 
 exit 0
