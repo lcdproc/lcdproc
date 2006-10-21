@@ -9,6 +9,7 @@ v.0.5dev (ongoing development)
  * fix switching on/off the Load screen in lcdproc client using the menu
  * refactor adv_bignum: support height > 4, loadable chars with offset
  * ged rid of global variables buffer & tmp in lcdproc client
+ + add init-script templates for LSB 3.x conforming systems
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
