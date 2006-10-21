@@ -279,11 +279,9 @@ void (*chr)		(Driver *drvthis, int x, int y, char c);
 
 void (*vbar)		(Driver *drvthis, int x, int len);
 // Draws a vertical bar at horizontal position x and with length len.
-// init_vbar will be called once before this functions.
 
 void (*hbar)		(Driver *drvthis, int x, int y, int len);
 // Draws a horizontal bar at position x,y and with length len.
-// init_hbar will be called once before this functions.
 
 void (*num)		(Driver *drvthis, int x, int num);
 // Displays a big number at horizontal position x.
