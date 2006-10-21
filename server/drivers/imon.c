@@ -277,7 +277,7 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 			; // write nothing (not even a space) 
 		}
 
-		pixels -= p->cellwidth * pos;
+		pixels -= p->cellwidth;
 	}
 }
 
