@@ -21,17 +21,12 @@ DEFAULTS=/etc/default/$NAME
 
 # Source defaults file; edit that file to configure this script.
 if [ -e "${DEFAULTS}" ]; then
-  . "${DEFAULTS}"
+    . "${DEFAULTS}"
 fi
 
 # If we're not to start the daemon, simply exit
 if [ "${START}" != "yes" ]; then
     exit 0
-fi
-
-# if no OPTIONS are defined use default options
-if [ -z "${OPTIONS}" ]; then
-  OPTIONS="-c /etc/lcdproc/LCDd.conf"
 fi
 
 # installation check
@@ -42,22 +37,22 @@ test -x $DAEMON || exit 5
 
 
 case "$1" in
-  start)
+    start)
 	log_daemon_msg "Starting $DESC" "$NAME"
 	start_daemon $DAEMON $OPTIONS
 	log_end_msg $?
 	;;
-  stop)
+    stop)
 	log_daemon_msg "Stopping $DESC" "$NAME"
 	killproc $DAEMON
 	log_end_msg $?
 	;;
-  restart|reload|force-reload)
+    restart|reload|force-reload)
 	$0 stop
 	sleep 1
 	$0 start
 	;;
-  *)
+    *)
 	echo "Usage: /etc/init.d/$NAME {start|stop|restart|reload|force-reload}" >&2
 	exit 2
 	;;
