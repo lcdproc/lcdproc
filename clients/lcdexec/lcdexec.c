@@ -46,7 +46,7 @@ char * help_text =
 "    -s <0|1>            Report to syslog (1) or stderr (0, default)\n"
 "    -h                  Show this help\n";
 
-char * progname = "lcdexec";
+char *progname = "lcdexec";
 
 /* Variables set by config */
 #define UNSET_INT -1
@@ -58,6 +58,7 @@ int foreground_mode = UNSET_INT;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
 char *displayname = NULL;
+char *default_shell = NULL;
 
 MenuEntry *main_menu;
 
@@ -206,6 +207,21 @@ int process_configfile(char *configfile)
 	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
 		displayname = strdup(tmp);
 
+	/* try to find a shell that understands the -c COMMAND syntax */
+	if ((tmp = config_get_string(progname, "Shell", 0, NULL)) != NULL)
+		default_shell = strdup(tmp);
+	else {
+		/* 1st fallback: SHELL environment variable */
+		report(RPT_WARNING, "Shell not set in configuration, falling back to variable SHELL");
+		default_shell = getenv("SHELL");
+
+		/* 2nd fallback: /bin/sh */
+		if (default_shell == NULL) {
+			report(RPT_WARNING, "variable SHELL not set, falling back to /bin/sh");
+			default_shell = "/bin/sh";
+		}
+	}
+
 	main_menu = menu_read(NULL, "MainMenu");
 #if defined(DEBUG)
 	menu_dump(main_menu);
@@ -316,15 +332,10 @@ int exec_command(MenuEntry *cmd)
 
 		report(RPT_NOTICE, "Executing: %s", command);
 
-		argv[0] = getenv("SHELL");
+		argv[0] = default_shell;
 		argv[1] = "-c";
 		argv[2] = command;
 		argv[3] = NULL;
-
-		if (!argv[0]) {
-			report(RPT_ERR, "SHELL environment variable not set.");
-			return -1;
-		}
 
 		switch (fork()) {
 		  case 0:

@@ -11,6 +11,7 @@ v.0.5dev (ongoing development)
  * ged rid of global variables buffer & tmp in lcdproc client
  + add init-script templates for LSB 3.x conforming systems
  * fix cellwidth & hbar in iMon driver
+ * try harder to find a shell in lcdexec
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
