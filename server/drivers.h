@@ -31,12 +31,6 @@ extern DisplayProps * display_props;
 
 int
 drivers_load_driver( char * name );
-/* returns:
- * <0 error
- *  0 ok, driver is an input driver only
- *  1 ok, driver is an output driver
- *  2 ok, driver is an output driver that needs to run in the foreground
- */
 
 int
 drivers_unload_all();
@@ -92,8 +86,9 @@ drivers_output( int state );
 const char *
 drivers_get_key();
 
-extern LinkedList * loaded_drivers;
+
 /* Please don't read this list except using the following functions */
+extern LinkedList * loaded_drivers;
 
 static inline Driver * drivers_getfirst ()
 {

@@ -39,6 +39,15 @@ DisplayProps * display_props = NULL;
 #define ForAllDrivers(drv) for( drv = LL_GetFirst(loaded_drivers); drv; drv = LL_GetNext(loaded_drivers) )
 
 
+/**
+ * Load driver based on "DriverPath" config setting and section name or
+ * "File" configuration setting in the driver's section.
+ * \param   Driver section name.
+ * \return  <0: error;
+ *           0: ok, driver is an input driver only;
+ *           1: ok, driver is an output driver;
+ *           2: ok, driver is an output driver that needs to run in the foreground.
+ */
 int
 drivers_load_driver( char * name )
 {
@@ -60,11 +69,11 @@ drivers_load_driver( char * name )
 	}
 
 	/* Retrieve data from config file */
-	s = config_get_string( "server", "driverpath", 0, "" );
+	s = config_get_string( "server", "DriverPath", 0, "" );
 	driverpath = malloc( strlen(s) + 1 );
 	strcpy( driverpath, s );
 
-	s = config_get_string( name, "file", 0, NULL );
+	s = config_get_string( name, "File", 0, NULL );
 	if( s ) {
 		filename = malloc( strlen(driverpath) + strlen(s) + 1 );
 		strcpy( filename, driverpath );
@@ -126,6 +135,10 @@ drivers_load_driver( char * name )
 }
 
 
+/**
+ * Unload all loaded drivers.
+ * \return  0.
+ */
 int
 drivers_unload_all()
 {
@@ -141,6 +154,11 @@ drivers_unload_all()
 }
 
 
+/**
+ * Get information from loaded drivers.
+ * \return  Information string of 1st driver with get_info() function defined,
+ *          or "" (empty string) if no driver has a get_info() function.
+ */
 const char *
 drivers_get_info()
 {
@@ -157,6 +175,10 @@ drivers_get_info()
 }
 
 
+/**
+ * Clear screen on all loaded drivers.
+ * Call clear() function of all loaded drivers that have a clear() function defined.
+ */
 void
 drivers_clear()
 {
@@ -171,6 +193,10 @@ drivers_clear()
 }
 
 
+/**
+ * Flush data on all loaded drivers to LCDs
+ * Call flush() function of all loaded drivers that have a flush() function defined.
+ */
 void
 drivers_flush()
 {
