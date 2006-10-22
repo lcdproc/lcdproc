@@ -1020,6 +1020,7 @@ CwLnx_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT void
 CwLnx_num(Driver *drvthis, int x, int num)
 {
+    PrivateData *p = drvthis->private_data;
     int do_init = 0;
 
     if ((num < 0) || (num > 10))
