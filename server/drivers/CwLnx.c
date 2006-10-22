@@ -63,7 +63,7 @@
 #include "report.h"
 #include "lcd_lib.h"
 
-/* for the icon definitions */
+/* for the icon definitions & the big numbers */
 #include "adv_bignum.h"
 
 #define ValidX(x) if ((x) > p->width) { (x) = p->width; } else (x) = (x) < 1 ? 1 : (x);
@@ -1017,15 +1017,30 @@ CwLnx_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
  * \param x        Horizontal character position (column).
  * \param num      Character to write (0 - 10 with 10 representing ':')
  */
-/*
 MODULE_EXPORT void
 CwLnx_num(Driver *drvthis, int x, int num)
 {
-    // needs work in bignum library: accept offset for the custom characters
-    // similar to lib_{h,v}bar_static().
-    return;
+    int do_init = 0;
+
+    if ((num < 0) || (num > 10))
+	return;
+
+    if (p->ccmode != bignum) {
+	if (p->ccmode != standard) {
+	    /* Not supported (yet) */
+	    report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
+				drvthis->name);
+	    return;
+	}
+
+	p->ccmode = bignum;
+
+	do_init = 1;
+    }
+
+    // Lib_adv_bignum does everything needed to show the bignumbers.
+    lib_adv_bignum(drvthis, x, num, 1, do_init);
 }
-*/
 
 
 /**

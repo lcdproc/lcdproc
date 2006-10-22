@@ -13,6 +13,7 @@ v.0.5dev (ongoing development)
  * fix cellwidth in iMon driver
  + graphics character support in iMon driver (John Saunders)
  * try harder to find a shell in lcdexec
+ + big number support in CwLnx driver
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
