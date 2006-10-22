@@ -15,7 +15,8 @@
  *	Sasem driver	(Oliver Stabel)
  *
  * Copyright (c)  2005 Lucian Muresan <lucianm AT users.sourceforge.net>,
- * porting the LCDproc 0.4.5 code to LCDproc 0.5
+ *                     porting the LCDproc 0.4.5 code to LCDproc 0.5
+ * Copyright (c)  2006 John Saunders, use graphics characters
  *
  * This source code is being released under the GPL.
  * Please see the file COPYING in this package for details.
@@ -44,10 +45,44 @@
 
 #include "imon.h"
 
-#define PAD		'#'
+// iMon reserves the first 8 locations for the
+// special bargraph characters
+#define IMON_CHAR_1_BAR		0x00
+#define IMON_CHAR_2_BARS	0x01
+#define IMON_CHAR_3_BARS	0x02
+#define IMON_CHAR_4_BARS	0x03
+#define IMON_CHAR_5_BARS	0x04
+#define IMON_CHAR_6_BARS	0x05
+#define IMON_CHAR_7_BARS	0x06
+#define IMON_CHAR_8_BARS	0x07
+
+// Standard music control characters
+#define IMON_CHAR_PLAY		0x10	// >  Play
+#define IMON_CHAR_RPLAY		0x11	// <  Reverse Play
+#define IMON_CHAR_PAUSE		0xA0	// || Pause
+#define IMON_CHAR_RECORD	0x16	// O  Record
+
+#define IMON_CHAR_TRI_UP	0x1E	// ^
+#define IMON_CHAR_TRI_DOWN	0x1F	// V
+#define IMON_CHAR_DLB_TRI_UP	0x14
+#define IMON_CHAR_DBL_TRI_DOWN	0x15
+
+#define IMON_CHAR_ARROW_UP	0x18
+#define IMON_CHAR_ARROW_DOWN	0x19
+#define IMON_CHAR_ARROW_RIGHT	0x1A
+#define IMON_CHAR_ARROW_LEFT	0x1B
+#define IMON_CHAR_ENTER		0x17
+
+#define IMON_CHAR_HOUSE		0x7F
+
+#define IMON_CHAR_HEART		0x9D
+
+#define IMON_CHAR_BLOCK_FILLED	IMON_CHAR_8_BARS
+#define IMON_CHAR_BLOCK_EMPTY	' '
+
 #define DEFAULT_DEVICE	"/dev/usb/lcd"
 #define DEFAULT_SIZE	"16x2"
-/* The two value below are only used internally, we don't support custom char. */
+
 #define VFD_DEFAULT_CELL_WIDTH	5
 #define VFD_DEFAULT_CELL_HEIGHT	8
 
@@ -70,8 +105,13 @@ typedef struct {
 } PrivateData;
 
 
-/** 
+/**
  * driver initialization
+ */
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Information of success (1) or failure (< 0).
  */
 MODULE_EXPORT int imon_init (Driver *drvthis)
 {
@@ -118,7 +158,7 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 	if ((sscanf(buf , "%dx%d", &p->width, &p->height) != 2)
 	    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
 	    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
-		report(RPT_WARNING, "%s: cannot read Size: %s; using default %s", 
+		report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
 				drvthis->name, buf, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE , "%dx%d", &p->width, &p->height);
 	}
@@ -133,21 +173,13 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return 1;		 
+	return 1;
 }
 
-/** 
- * provides some info about this driver
- */
-MODULE_EXPORT const char * imon_get_info (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-	strcpy(p->info, "Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD driver");
-	return p->info;
-}
 
-/** 
- * closes driver
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void imon_close (Driver *drvthis)
 {
@@ -166,8 +198,24 @@ MODULE_EXPORT void imon_close (Driver *drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
-/** 
- * Clears the VFD screen 
+
+/**
+ * Provide some information about this driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Constant string with information.
+ */
+MODULE_EXPORT const char * imon_get_info (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	strcpy(p->info, "Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD driver");
+	return p->info;
+}
+
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void imon_clear (Driver *drvthis)
 {
@@ -176,8 +224,10 @@ MODULE_EXPORT void imon_clear (Driver *drvthis)
 	memset(p->framebuf, ' ', p->width * p->height);
 }
 
+
 /**
- * Flushes all output to the VFD...  
+ * Flush data on screen to the LCD.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void imon_flush (Driver *drvthis)
 {
@@ -186,9 +236,14 @@ MODULE_EXPORT void imon_flush (Driver *drvthis)
 	write(p->imon_fd, p->framebuf, p->width * p->height);
 }
 
+
 /**
- * Prints a string on the VFD display, at position (x,y).
- * The upper-left is (1,1) and the lower right is (16, 2).  
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
  */
 MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, char string[])
 {
@@ -198,63 +253,131 @@ MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, char string[])
 		imon_chr(drvthis, x+i, y, string[i]);
 }
 
+
 /**
- * Prints a character on the VFD display, at position (x,y).
- * The upper-left is (1,1) and the lower right is (16,2).
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
  */
 MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char ch)
 {
 	PrivateData *p = drvthis->private_data;
+
 	y--; x--;
 
 	if ((x < 0) || (y < 0) || (x >= p->width) || (y >= p->height))
 		return;
 
-	switch (ch) {
-		case '\0':
-		case -1:	/* ugly: this is 255 unsigned */
-			ch = PAD;
-			break;
-		default:
-			;
-	}
 	p->framebuf[(y * p->width) + x] = ch;
 }
 
+
 /**
- * Draws a vertical bar (adapted from the curses driver, because
- * this device does not support custom characters, as Venky
- * states in the original LCDproc-0.4.5 implementation)
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
+ */
+MODULE_EXPORT int imon_icon (Driver *drvthis, int x, int y, int icon)
+{
+	switch (icon) {
+		case ICON_BLOCK_FILLED:
+			imon_chr(drvthis, x, y, IMON_CHAR_BLOCK_FILLED);
+			break;
+		case ICON_HEART_OPEN:
+			imon_chr(drvthis, x, y, IMON_CHAR_BLOCK_EMPTY);
+			break;
+		case ICON_HEART_FILLED:
+			imon_chr(drvthis, x, y, IMON_CHAR_HEART);
+			break;
+		case ICON_ARROW_UP:
+			imon_chr(drvthis, x, y, IMON_CHAR_ARROW_UP);
+			break;
+		case ICON_ARROW_DOWN:
+			imon_chr(drvthis, x, y, IMON_CHAR_ARROW_DOWN);
+			break;
+		case ICON_ARROW_LEFT:
+			imon_chr(drvthis, x, y, IMON_CHAR_ARROW_LEFT);
+			break;
+		case ICON_ARROW_RIGHT:
+			imon_chr(drvthis, x, y, IMON_CHAR_ARROW_RIGHT);
+			break;
+		case ICON_STOP:
+			imon_chr(drvthis, x, y, IMON_CHAR_BLOCK_FILLED);
+			imon_chr(drvthis, x+1, y, ' ');
+			break;
+		case ICON_PAUSE:
+			imon_chr(drvthis, x, y, IMON_CHAR_PAUSE);
+			imon_chr(drvthis, x+1, y, ' ');
+			break;
+		case ICON_PLAY:
+			imon_chr(drvthis, x, y, IMON_CHAR_PLAY);
+			imon_chr(drvthis, x+1, y, ' ');
+			break;
+		case ICON_PLAYR:
+			imon_chr(drvthis, x, y, IMON_CHAR_RPLAY);
+			imon_chr(drvthis, x+1, y, ' ');
+			break;
+		case ICON_FF:
+			imon_chr(drvthis, x, y, IMON_CHAR_PLAY);
+			imon_chr(drvthis, x+1, y, IMON_CHAR_PLAY);
+			break;
+		case ICON_FR:
+			imon_chr(drvthis, x, y, IMON_CHAR_RPLAY);
+			imon_chr(drvthis, x+1, y, IMON_CHAR_RPLAY);
+			break;
+		case ICON_NEXT:
+			imon_chr(drvthis, x, y, IMON_CHAR_PLAY);
+			imon_chr(drvthis, x+1, y, '|');
+			break;
+		case ICON_PREV:
+			imon_chr(drvthis, x, y, '|');
+			imon_chr(drvthis, x+1, y, IMON_CHAR_RPLAY);
+			break;
+		case ICON_REC:
+			imon_chr(drvthis, x, y, IMON_CHAR_RECORD);
+			imon_chr(drvthis, x+1, y, ' ');
+			break;
+		default:
+		      /* let the server core do the rest */
+		      return -1;
+	}
+	return 0;
+}
+
+
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void imon_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
-	int pixels = ((long) 2 * len * p->cellheight) * promille / 2000;
-	int pos;
 
-	for (pos = 0; pos < len; pos++) {
-		if (pixels >= p->cellheight) {
-			/* write a "full" block to the screen... */
-			//drvthis->icon (drvthis, x, y-pos, ICON_BLOCK_FILLED);
-			imon_chr(drvthis, x, y-pos, '#');
-		}
-		else if (pixels > 0) {
-			/* write a "partial" block to the screen... */
-			imon_chr(drvthis, x, y-pos, '|');
-			break;
-		}
-		else {
-			; // write nothing (not even a space) 
-		}
-
-		pixels -= p->cellheight;
-	}
+	// Special characters start at 0 not 1, so pass -1 as first char.
+	// This can be safely done as heartbeat icon is not 0
+	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, -1);
 }
 
+
 /**
- * Draws a horizontal bar (adapted from the curses driver, because
- * this device does not support custom characters, as Venky
- * states in the original LCDproc-0.4.5 implementation)
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -262,27 +385,41 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 	int pixels = ((long) 2 * len * p->cellwidth) * promille / 2000;
 	int pos;
 
+	if ((x <= 0) || (y <= 0) || (y > p->height))
+		return;
+
 	for (pos = 0; pos < len; pos++) {
-		if (pixels >= p->cellwidth) {
+
+		if (x + pos > p->width)
+			return;
+
+		if (pixels >= p->cellwidth * 3/4) {
 			/* write a "full" block to the screen... */
-			//drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
-			imon_chr (drvthis, x+pos, y, '#');
+			imon_chr(drvthis, x+pos, y, IMON_CHAR_BLOCK_FILLED);
 		}
-		else if (pixels > 0) {
-			/* write a "partial" block to the screen... */
-			imon_chr (drvthis, x+pos, y, '-');
+		else if (pixels >= p->cellwidth * 2/4) {
+			/* write a partial block... */
+			imon_chr(drvthis, x+pos, y, IMON_CHAR_PLAY);
+			break;
+		}
+		else if (pixels >= p->cellwidth * 1/4) {
+			/* write a partial block... */
+			imon_chr(drvthis, x+pos, y, '>');
 			break;
 		}
 		else {
-			; // write nothing (not even a space) 
+			; // write nothing (not even a space)
 		}
 
 		pixels -= p->cellwidth;
 	}
 }
 
-/** 
- * returns the display's width
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
  */
 MODULE_EXPORT int imon_width (Driver *drvthis)
 {
@@ -291,8 +428,11 @@ MODULE_EXPORT int imon_width (Driver *drvthis)
 	return p->width;
 }
 
-/** 
- * returns the display's height
+
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
  */
 MODULE_EXPORT int  imon_height (Driver *drvthis)
 {
@@ -301,8 +441,11 @@ MODULE_EXPORT int  imon_height (Driver *drvthis)
 	return p->height;
 }
 
-/** 
- * returns the display's cell width
+
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int imon_cellwidth (Driver *drvthis)
 {
@@ -311,8 +454,11 @@ MODULE_EXPORT int imon_cellwidth (Driver *drvthis)
 	return p->cellwidth;
 }
 
-/** 
- * returns the display's cell height
+
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int  imon_cellheight (Driver *drvthis)
 {

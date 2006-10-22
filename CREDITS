@@ -73,6 +73,7 @@ Jason Dale Woodward:
 
 Ethan Dicks:
 	- PIC-an-LCD original driver (later merged into HD44780 driver)
+	- fixes & tests to the MtxOrb driver and some clients
 
 Michael Reinelt:
 	- SED1520 (copied work of him)
@@ -192,6 +193,9 @@ Bernd Walle:
 
 Andrew Foss:
 	- menu support for lcdproc client
+
+John Sanders:
+	- iMon driver graphics support
 
 
 Further developers in the sourceforge lcdproc team:

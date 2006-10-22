@@ -15,7 +15,8 @@
  *	Sasem driver	(Oliver Stabel)
  *
  * Copyright (c)  2005 Lucian Muresan <lucianm AT users.sourceforge.net>,
- * porting the LCDproc 0.4.5 code to LCDproc 0.5
+ *                     porting the LCDproc 0.4.5 code to LCDproc 0.5
+ * Copyright (c)  2006 John Saunders, use graphics characters
  *
  * This source code is being released under the GPL.
  * Please see the file COPYING in this package for details.
@@ -37,16 +38,14 @@ MODULE_EXPORT void imon_clear (Driver *drvthis);
 MODULE_EXPORT void imon_flush (Driver *drvthis);
 MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, char string[]);
 MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT int  imon_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT const char *imon_get_info (Driver *drvthis);
 MODULE_EXPORT void imon_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 
 /**
- * theese are not (yet?) supported by the iMON IR/VFD kernel module
+ * these are not (yet?) supported by the iMON IR/VFD kernel module
  */
-//MODULE_EXPORT int  imon_icon (Driver *drvthis, int x, int y, int icon);
-//MODULE_EXPORT int  imon_cellwidth (Driver *drvthis);
-//MODULE_EXPORT int  imon_cellheight (Driver *drvthis);
 //MODULE_EXPORT int  imon_get_free_chars (Driver *drvthis);
 //MODULE_EXPORT void imon_set_char (Driver *drvthis, int n, char *dat);
 //MODULE_EXPORT void imon_num (Driver *drvthis, int x, int num);
