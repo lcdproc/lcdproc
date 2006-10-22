@@ -12,25 +12,24 @@ Internet.
 <variablelist>
 
 <varlistentry>
-<term>LCDproc 0.4.3 to 0.4.5</term>
-<listitem>
-<para>
-LCDproc 0.4.5 was the last stable release of LCDproc. It no longer uses the old
-command line configuration, but introduces the configuration file <filename>/etc/LCDd.conf</filename>.
-As well the driver API has slightly changed, which should not
-make older drivers incompatible, but might cause some trouble. As well the way
-<application>LCDd</application> reports messages (including error messages) has changed.
-</para>
-</listitem>
+  <term>LCDproc 0.5.1</term>
+  <listitem>
+    <para>
+      LCDproc 0.5.1 is the current stable version of LCDproc.
+      This is the version recommended to use.
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
-<term>LCDproc 0.5.0</term>
-<listitem>
-<para>
-LCDproc 0.5.0 is the current stable version of LCDproc. It's recommended that you use this version.
-</para>
-</listitem>
+  <term>LCDproc 0.5.0</term>
+    <listitem>
+    <para>
+      LCDproc 0.5.0 is the old stable version of LCDproc.
+      It was the first stable version of LCDproc after the move to the 0.5 API.
+      It now has been superseeded with LCDproc 0.5.1.
+    </para>
+  </listitem>
 </varlistentry>
 
 </variablelist>
