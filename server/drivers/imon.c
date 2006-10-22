@@ -247,7 +247,7 @@ MODULE_EXPORT void imon_vbar (Driver *drvthis, int x, int y, int len, int promil
 			; // write nothing (not even a space) 
 		}
 
-		pixels -= p->cellheight * pos;
+		pixels -= p->cellheight;
 	}
 }
 
