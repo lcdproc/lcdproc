@@ -26,6 +26,10 @@ more options in the config file (clocks with offsets from localtime, ...)
 
 more options changeable in the lcdproc client menu
 
+rewrite machine_get_fs() in machine_Linux.c to use functions from mntent.h
+
+get rid of MTAB_FILE compile time definition (for Linux & SunOS)
+
 ----------------------------------------
 lcdexec client
 --------------
