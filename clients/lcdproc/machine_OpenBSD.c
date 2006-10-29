@@ -170,9 +170,9 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 #endif
 		)
 		{
-			snprintf(fs[statcnt].dev, 255, "%s", pp->f_mntfromname);
+			snprintf(fs[statcnt].dev,    255, "%s", pp->f_mntfromname);
 			snprintf(fs[statcnt].mpoint, 255, "%s", pp->f_mntonname);
-			snprintf(fs[statcnt].type, 255, "%s", pp->f_fstypename);
+			snprintf(fs[statcnt].type,    63, "%s", pp->f_fstypename);
 
 			fs[statcnt].blocks = pp->f_blocks;
 			if (fs[statcnt].blocks > 0)

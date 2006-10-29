@@ -4,21 +4,39 @@
 
 #include "shared/LL.h"
 
+
 typedef struct
 {
-	unsigned long total, user, system, nice, idle;
+	unsigned long total;
+	unsigned long user;
+	unsigned long system;
+	unsigned long nice;
+	unsigned long idle;
 } load_type;
 
-typedef struct
-{
-	char dev[256], type[64], mpoint[256];
-	long bsize, blocks, bfree, files, ffree;
-} mounts_type;
 
 typedef struct
 {
-	int total, cache, buffers, free, shared;
+	char dev[256];		/*< device */
+	char type[64];		/*< file system type (as string) */
+	char mpoint[256];	/*< mount point */
+	long bsize;		/*< transfer block size */
+	long blocks;		/*< total data blocks in file system */
+	long bfree;		/*< free blocks in fs */
+	long files;		/*< total file nodes in file system */
+	long ffree;		/*< free file nodes in fs */
+} mounts_type;
+
+
+typedef struct
+{
+	int total;
+	int cache;
+	int buffers;
+	int free,;
+	int shared;
 } meminfo_type;
+
 
 typedef struct
 {
@@ -26,6 +44,7 @@ typedef struct
 	int totl;
 	int number;
 } procinfo_type;
+
 
 /* status definitions for network interfaces */
 typedef enum {
@@ -60,6 +79,7 @@ typedef struct iface_info
 	double tr_pkt;
 	double tr_pkt_old;
 } IfaceInfo;
+
 
 int machine_init();
 int machine_close();
