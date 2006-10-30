@@ -2,8 +2,9 @@
 <title>The ula200 Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-ula200 chipset.
+  This section talks about using LCDproc with LCD displays that use the
+  ULA-200 USB adapter for HD44780 drivers that can be obtained at
+  <ulink url="http://www.elv.de">ELV</ref>.
 </para>
 
 <!-- ## ELV ULA200 driver ## -->
@@ -55,7 +56,7 @@ ula200 chipset.
   </term>
   <listitem><para>
     If you have a non standard keypad you can associate any keystrings to keys.
-    There are 6 input key in the CwLnx hardware that generate characters
+    There are 6 input keys in the ULA-200 hardware that generate characters
     from '<literal>A</literal>' to '<literal>F</literal>'.
     Legal values for <replaceable>KEY</replaceable> are <literal>Up</literal>,
     <literal>Down</literal>, <literal>Left</literal>, <literal>Right</literal>,

@@ -344,13 +344,13 @@ dnl			else
 			;;
 		ula200)
 			AC_CHECK_HEADERS([usb.h ftdi.h],[
-				AC_CHECK_LIB(ftdi, main,[
+				AC_CHECK_LIB(ftdi, ftdi_set_line_property,[
 					LIBFTDI="-lusb -lftdi"
 					DRIVERS="$DRIVERS ula200${SO}"
 					actdrivers=["$actdrivers ula200"]
 				],[
 dnl				else
-					AC_MSG_WARN([The ula200 driver needs the ftdi library])
+					AC_MSG_WARN([The ula200 driver needs the ftdi library in version 0.7])
 				])
 			],[
 dnl			else
