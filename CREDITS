@@ -187,12 +187,19 @@ Matthias Goebl <matthias.goebl@goebl.net>:
 
 Stefan Herdler:
 	- serialVFD driver
+	- bignum library
 
-Bernd Walle:
+Bernhard Walle:
 	- driver for the ULA-200 device from ELV (http://www.elv.de)
 
 Andrew Foss:
 	- menu support for lcdproc client
+
+Anthony J. Mirabella:
+	- Logitech g15 driver
+
+Cedric Tessier:
+	- EyeBoxOne driver
 
 John Sanders:
 	- iMon driver graphics support

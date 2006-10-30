@@ -17,14 +17,14 @@ typedef struct
 
 typedef struct
 {
-	char dev[256];		/*< device */
-	char type[64];		/*< file system type (as string) */
-	char mpoint[256];	/*< mount point */
-	long bsize;		/*< transfer block size */
-	long blocks;		/*< total data blocks in file system */
-	long bfree;		/*< free blocks in fs */
-	long files;		/*< total file nodes in file system */
-	long ffree;		/*< free file nodes in fs */
+	char dev[256];		/**< device */
+	char type[64];		/**< file system type (as string) */
+	char mpoint[256];	/**< mount point */
+	long bsize;		/**< transfer block size */
+	long blocks;		/**< total data blocks in file system */
+	long bfree;		/**< free blocks in fs */
+	long files;		/**< total file nodes in file system */
+	long ffree;		/**< free file nodes in fs */
 } mounts_type;
 
 

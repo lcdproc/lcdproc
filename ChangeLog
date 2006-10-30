@@ -14,6 +14,9 @@ v.0.5dev (ongoing development)
  + graphics character support in iMon driver (John Saunders)
  * try harder to find a shell in lcdexec
  + big number support in CwLnx driver via bignum library
+ * do not copy more bytes than reserved in get_fs() in lcdproc's machine_*.c
+ * update lcdproc's About screen with credits
+ * fixes to ula200 build environment and documentation (B. Walle)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
