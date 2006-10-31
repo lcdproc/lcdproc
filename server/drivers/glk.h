@@ -19,6 +19,7 @@ MODULE_EXPORT void glk_old_hbar(Driver *drvthis, int x, int y, int len);
 MODULE_EXPORT void glk_num(Driver *drvthis, int x, int num);
 MODULE_EXPORT void glk_old_icon(Driver *drvthis, int which, int dest);
 
+MODULE_EXPORT int  glk_get_free_chars(Driver *drvthis);
 MODULE_EXPORT void glk_set_char(Driver *drvthis, int n, char *dat);
 
 MODULE_EXPORT int glk_get_contrast(Driver *drvthis);

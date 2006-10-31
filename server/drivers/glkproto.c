@@ -55,6 +55,7 @@ GLKDisplay *glkopen(char *name, tcflag_t speed)
    /* Get current settings */
    if (tcgetattr(fd, &new) < 0) {
       int errsave = errno;
+
       close(fd);
       errno = errsave;
       return(NULL);
@@ -99,6 +100,7 @@ GLKDisplay *glkopen(char *name, tcflag_t speed)
    tcflush(fd, TCIOFLUSH);
    if (tcsetattr(fd, TCSANOW, &new) < 0) {
       int errsave = errno;
+
       glkclose(retval);
       errno = errsave;
       return(NULL);
@@ -438,19 +440,19 @@ glkputl(GLKDisplay *fd, ...)
       retval = glkput(fd, value);
       value = va_arg(ap, int);
    }
+   va_end(ap);
 
    return(retval);
 }
 
 /* glkputs
  *
- * Send a null terminated string of characters to the
- *    GLK.
+ * Send a null terminated string of characters to the GLK.
  */
 int
 glkputs(GLKDisplay *fd, char *str)
 {
-   register  char *p = str;
+   register char *p = str;
    int retval;
 
    retval = 0;  /* Success */
@@ -468,7 +470,7 @@ glkputs(GLKDisplay *fd, char *str)
 int
 glkputa(GLKDisplay *fd, int len, unsigned char *str)
 {
-   register  unsigned char *p = str;
+   register unsigned char *p = str;
    int i;
    int retval;
 
