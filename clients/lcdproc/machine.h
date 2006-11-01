@@ -33,7 +33,7 @@ typedef struct
 	int total;
 	int cache;
 	int buffers;
-	int free,;
+	int free;
 	int shared;
 } meminfo_type;
 
