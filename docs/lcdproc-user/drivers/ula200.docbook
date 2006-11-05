@@ -4,7 +4,7 @@
 <para>
   This section talks about using LCDproc with LCD displays that use the
   ULA-200 USB adapter for HD44780 drivers that can be obtained at
-  <ulink url="http://www.elv.de">ELV</ref>.
+  <ulink url="http://www.elv.de">ELV</ulink>.
 </para>
 
 <!-- ## ELV ULA200 driver ## -->
