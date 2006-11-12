@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <syslog.h>
 #include <sys/socket.h>
+#include <sys/types.h>
 #include <libg15.h>
 #include <g15daemon_client.h>
 #include <libg15render.h>
@@ -70,6 +71,7 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
    p->cellheight = G15_CELL_HEIGHT;
    p->backlight_state = BACKLIGHT_ON;
    p->g15screen_fd = 0;
+   p->g15d_ver = g15daemon_version();
 
    if((p->g15screen_fd = new_g15_screen(G15_G15RBUF)) < 0)
    {
@@ -372,14 +374,35 @@ MODULE_EXPORT void g15_vbar(Driver *drvthis, int x, int y, int len, int promille
 MODULE_EXPORT const char * g15_get_key (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+	int toread = 0;
 	unsigned int key_state = 0;
-	
-	if(send(p->g15screen_fd, "k", 1, MSG_OOB)<1) /* request key status */
-        report(RPT_INFO, "%s: Error in send to g15daemon", drvthis->name);    
 
-    	recv(p->g15screen_fd, &key_state , sizeof(key_state),0);
+	if ((strncmp("1.2", p->g15d_ver, 3)))
+	  {	/* other than g15daemon-1.2 (should be >=1.9) */
+		fd_set fds;
+		struct timeval tv;
+		memset (&tv, 0, sizeof(struct timeval));
+
+		FD_ZERO(&fds);
+		FD_SET(p->g15screen_fd, &fds);
 	
+		toread = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
+	  }
+	else
+	  {	/* g15daemon-1.2 */
+		if(send(p->g15screen_fd, "k", 1, MSG_OOB)<1) /* request key status */
+		  {
+	 	  	report(RPT_INFO, "%s: Error in send to g15daemon", drvthis->name);
+			return NULL;
+		  }
+		toread = 1;
+	  }
+	
+	if (toread >= 1)
+	  read(p->g15screen_fd, &key_state, sizeof(key_state));
+	else
+	  return NULL;
+
 	if (key_state & G15_KEY_G1)
 		return "Escape";
 	else if (key_state & G15_KEY_L1)

@@ -32,6 +32,8 @@ typedef struct driver_private_data {
 	int cellwidth, cellheight;
 	/* file descriptor for g15daemon socket */
 	int g15screen_fd;
+	/* g15daemon version for compatibility checks */
+	const char *g15d_ver;
 	/* canvas for LCD contents */
 	g15canvas *canvas;
 	g15canvas *backingstore;
