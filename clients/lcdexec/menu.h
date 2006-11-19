@@ -1,22 +1,24 @@
 /*
- * lcdexec.c
+ * lcdexec/menu.h
  * This file is part of lcdexec, an LCDproc client.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
  * Copyright (c) 2002, Joris Robijn
+ * Copyright (c) 2006, Peter Marschall
  *
  */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
+#ifndef LCDEXEC_MENU_H
+#define LCDEXEC_MENU_H
 
-#include "shared/str.h"
-#include "shared/report.h"
-#include "shared/configfile.h"
-#include "shared/sockets.h"
+#ifndef TRUE
+# define TRUE    1
+#endif
+#ifndef FALSE
+# define FALSE   0
+#endif
 
 
 typedef enum {
@@ -48,3 +50,4 @@ const char *menu_command(MenuEntry *me);
 void menu_free(MenuEntry *me);
 void menu_dump(MenuEntry *me);
 
+#endif

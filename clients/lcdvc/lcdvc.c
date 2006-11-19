@@ -54,7 +54,7 @@ char *progname = "lcdvc";
 char *configfile = UNSET_STR;
 
 /* Variables set by config */
-int foreground_mode = UNSET_INT;
+int foreground = FALSE;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
 char *vcsa_device = UNSET_STR;
@@ -88,7 +88,7 @@ int main( int argc, char ** argv )
 	CHAIN( e, connect_and_setup() );
 	CHAIN_END( e );
 
-	if (!foreground_mode) {
+	if (foreground != TRUE) {
 		if (daemon(1,1) != 0) {
 			report(RPT_ERR, "Error: daemonize failed");
 		}
@@ -132,7 +132,7 @@ int process_command_line( int argc, char ** argv )
 			}
 			break;
 		  case 'f':
-			foreground_mode = 1;
+			foreground = TRUE;
 			break;
 		  case 'r':
 			temp_int = strtol(optarg, &end, 0);
@@ -191,16 +191,16 @@ int process_configfile( char * configfile )
 			report_dest = RPT_DEST_STDERR;
 		}
 	}
-	if (foreground_mode == UNSET_INT) {
-		foreground_mode = config_get_bool(progname, "Foreground", 0, 0);
+	if (foreground != TRUE) {
+		foreground = config_get_bool(progname, "Foreground", 0, FALSE);
 	}
 	vcs_device = strdup(config_get_string(progname, "vcsDevice", 0, "/dev/vcs"));
 	vcsa_device = strdup(config_get_string(progname, "vcsaDevice", 0, "/dev/vcsa"));
 
-	keys[0] = strdup( config_get_string( progname, "UpKey", 0, "Up" ));
-	keys[1] = strdup( config_get_string( progname, "DownKey", 0, "Down" ));
-	keys[2] = strdup( config_get_string( progname, "LeftKey", 0, "Left" ));
-	keys[3] = strdup( config_get_string( progname, "RightKey", 0, "Right" ));
+	keys[0] = strdup(config_get_string( progname, "UpKey", 0, "Up"));
+	keys[1] = strdup(config_get_string( progname, "DownKey", 0, "Down"));
+	keys[2] = strdup(config_get_string( progname, "LeftKey", 0, "Left"));
+	keys[3] = strdup(config_get_string( progname, "RightKey", 0, "Right"));
 
 	return 0;
 }

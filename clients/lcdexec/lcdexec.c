@@ -54,7 +54,7 @@ char *progname = "lcdexec";
 char * configfile = NULL;
 char * address = NULL;
 int port = UNSET_INT;
-int foreground_mode = UNSET_INT;
+int foreground = FALSE;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
 char *displayname = NULL;
@@ -97,7 +97,7 @@ int main(int argc, char **argv)
 	CHAIN(error, connect_and_setup());
 	CHAIN_END(error);
 
-	if(!foreground_mode) {
+	if(foreground != TRUE) {
 		if (daemon(1,1) != 0) {
 			report(RPT_ERR, "Error: daemonize failed");
 		}
@@ -138,7 +138,7 @@ int process_command_line(int argc, char **argv)
 			}
 			break;
 		  case 'f':
-			foreground_mode = 1;
+			foreground = TRUE;
 			break;
 		  case 'r':
 			temp_int = strtol(optarg, &end, 0);
@@ -200,8 +200,8 @@ int process_configfile(char *configfile)
 				? RPT_DEST_SYSLOG
 				: RPT_DEST_STDERR;
 	}
-	if (foreground_mode == UNSET_INT) {
-		foreground_mode = config_get_bool(progname, "Foreground", 0, 0);
+	if (foreground != TRUE) {
+		foreground = config_get_bool(progname, "Foreground", 0, FALSE);
 	}
 
 	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)

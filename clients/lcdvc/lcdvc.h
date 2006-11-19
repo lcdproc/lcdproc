@@ -9,6 +9,13 @@
 #define UNSET_INT -1
 #define UNSET_STR "\01"
 
+#ifndef TRUE
+# define TRUE    1
+#endif
+#ifndef FALSE
+# define FALSE   0
+#endif
+
 extern char *vcs_device;
 extern char *vcsa_device;
 

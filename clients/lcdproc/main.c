@@ -108,7 +108,7 @@ static int islow = -1;
 char *progname = "lcdproc";
 char *server 	= NULL;
 int port	= LCDPORT;
-int foreground 	= UNSET_INT;
+int foreground 	= FALSE;
 static int report_level = UNSET_INT;
 static int report_dest 	= UNSET_INT;
 char *configfile = NULL;
@@ -301,7 +301,7 @@ main(int argc, char **argv)
 	lcd_cellwid = 5;
 	lcd_cellhgt = 8;
 
-	if (foreground == 0) {
+	if (foreground != TRUE) {
 		if (daemon(1,0) != 0) {
 			fprintf(stderr, "Error: daemonize failed");
 			return(EXIT_FAILURE);
@@ -359,18 +359,18 @@ process_configfile(char *configfile)
 		port = config_get_int(progname, "Port", 0, LCDPORT);
 	}
 
-	if(report_level == UNSET_INT) {
+	if (report_level == UNSET_INT) {
 		report_level = config_get_int(progname, "ReportLevel", 0, RPT_WARNING);
 	}
-	if(report_dest == UNSET_INT) {
+	if (report_dest == UNSET_INT) {
 		if (config_get_bool(progname, "ReportToSyslog", 0, 0)) {
 			report_dest = RPT_DEST_SYSLOG;
 		} else {
 			report_dest = RPT_DEST_STDERR;
 		}
 	}
-	if (foreground == UNSET_INT) {
-		foreground = config_get_bool(progname, "Foreground", 0, 0);
+	if (foreground != TRUE) {
+		foreground = config_get_bool(progname, "Foreground", 0, FALSE);
 	}
 	if (islow < 0) {
 		islow = config_get_int(progname, "Delay", 0, -1);
