@@ -6,7 +6,7 @@ bin_PROGRAMS = lcdexec
 
 lcdexec_SOURCES = lcdexec.c menu.c menu.h
 
-lcdexec_LDADD = @ldap_libs@ ../../shared/libLCDstuff.a
+lcdexec_LDADD = ../../shared/libLCDstuff.a @ldap_libs@  
 
 AM_CPPFLAGS = -I$(top_srcdir) -DSYSCONFDIR=\"$(sysconfdir)\"
 

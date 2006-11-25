@@ -6,7 +6,7 @@ bin_PROGRAMS = lcdvc
 
 lcdvc_SOURCES = lcdvc.c lcdvc.h lcd_link.c lcd_link.h vc_link.c vc_link.h 
 
-lcdvc_LDADD = @ldap_libs@ ../../shared/libLCDstuff.a
+lcdvc_LDADD = ../../shared/libLCDstuff.a @ldap_libs@  
 
 if DARWIN
 AM_LDFLAGS = -framework CoreFoundation -framework IOKit
