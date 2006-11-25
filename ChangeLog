@@ -18,6 +18,7 @@ v.0.5dev (ongoing development)
  * update lcdproc's About screen with credits
  * fixes to ula200 build environment and documentation (B. Walle)
  * update g15 driver to be compatible with g15daemon > 1.2 (Anthony J. Mirabella)
+ * allow compiling with LDFLAG "--as-needed" (Robert Buchholz)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
