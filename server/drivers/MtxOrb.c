@@ -744,15 +744,26 @@ MODULE_EXPORT void
 MtxOrb_backlight (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
-	unsigned char out[5] = { '\xFE', '\x99', 0 };
 	int promille = (on == BACKLIGHT_ON)
 			     ? p->brightness
 			     : p->offbrightness;
 
-	/* map range [0, 1000] -> [0, 255] that the hardware understands */
-	out[2] = (unsigned char) ((long) promille * 255 / 1000);
+	if (IS_VKD_DISPLAY) {
+		unsigned char out[5] = { '\xFE', '\x89', 0 };
 
-	write(p->fd, out, 3);
+		/* map range [0, 1000] -> [0, 3] that the hardware understands */
+		out[2] = (unsigned char) ((long) promille * 3 / 1000);
+
+		write(p->fd, out, 3);
+	}
+	else {
+		unsigned char out[5] = { '\xFE', '\x99', 0 };
+
+		/* map range [0, 1000] -> [0, 255] that the hardware understands */
+		out[2] = (unsigned char) ((long) promille * 255 / 1000);
+
+		write(p->fd, out, 3);
+	}
 
 	debug(RPT_DEBUG, "MtxOrb: changed brightness to %d", out[2]);
 }
