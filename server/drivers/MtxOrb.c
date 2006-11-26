@@ -149,9 +149,10 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1;
 MODULE_EXPORT char *symbol_prefix = "MtxOrb_";
 
-static void MtxOrb_linewrap (Driver *drvthis, int on);
-static void MtxOrb_autoscroll (Driver *drvthis, int on);
-static void MtxOrb_cursorblink (Driver *drvthis, int on);
+static void MtxOrb_hardware_clear(Driver *drvthis);
+static void MtxOrb_linewrap(Driver *drvthis, int on);
+static void MtxOrb_autoscroll(Driver *drvthis, int on);
+static void MtxOrb_cursorblink(Driver *drvthis, int on);
 static void MtxOrb_cursor_goto(Driver *drvthis, int x, int y);
 
 
@@ -387,10 +388,8 @@ MtxOrb_init (Driver *drvthis)
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
 
-	/*
-	 * Configure display
-	 */
-
+	/* set initial LCD configuration */
+	MtxOrb_hardware_clear(drvthis);
 	MtxOrb_linewrap(drvthis, DEFAULT_LINEWRAP);
 	MtxOrb_autoscroll(drvthis, DEFAULT_AUTOSCROLL);
 	MtxOrb_cursorblink(drvthis, DEFAULT_CURSORBLINK);
@@ -733,6 +732,21 @@ MtxOrb_output (Driver *drvthis, int state)
 			write(p->fd, out, 3);
 		}
 	}
+}
+
+
+/**
+ * Clear the LCD using ints hardware command
+ * \param drvthis  Pointer to driver structure.
+ */
+static void
+MtxOrb_hardware_clear (Driver *drvthis)
+{
+        PrivateData *p = drvthis->private_data;
+
+	write(p->fd, "\xFE" "X", 2);
+
+	debug(RPT_DEBUG, "MtxOrb: cleared LCD");
 }
 
 
