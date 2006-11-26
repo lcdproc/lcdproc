@@ -61,8 +61,8 @@ CFontz chipset.
   <listitem><para>
     Set the initial brightness.
     Legal values for <replaceable>BRIGHTNESS</replaceable> range from
-    <literal>0</literal> to <literal>255</literal>.
-    If not given, it defaults to <literal>255</literal>.
+    <literal>0</literal> to <literal>1000</literal>.
+    If not given, it defaults to <literal>1000</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -76,7 +76,7 @@ CFontz chipset.
     This value is used when the display is normally
     switched off in case LCDd is inactive.
     Legal values <replaceable>BRIGHTNESS</replaceable> are in the range
-    from <literal>0</literal> to <literal>255</literal>.
+    from <literal>0</literal> to <literal>1000</literal>.
     The default is <literal>0</literal>.
   </para></listitem>
 </varlistentry>

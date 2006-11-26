@@ -21,6 +21,7 @@ v.0.5dev (ongoing development)
  * allow compiling with LDFLAG "--as-needed" (Robert Buchholz)
  * optimize MtxOrb flush()
  * make MtxOrb use Brightness and OffBrightness like CFontzPacket
+ * make Brightness & OffBrightness run-time configurable in CFontz & MtxOrb
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

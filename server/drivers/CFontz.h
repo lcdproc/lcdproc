@@ -8,7 +8,7 @@
 #define DEFAULT_CONTRAST	560
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_SPEED		B9600
-#define DEFAULT_BRIGHTNESS	60
+#define DEFAULT_BRIGHTNESS	1000
 #define DEFAULT_OFFBRIGHTNESS	0
 #define DEFAULT_SIZE		"20x4"
 
@@ -65,6 +65,8 @@ MODULE_EXPORT void CFontz_set_char(Driver *drvthis, int n, unsigned char *dat);
 
 MODULE_EXPORT int  CFontz_get_contrast(Driver *drvthis);
 MODULE_EXPORT void CFontz_set_contrast(Driver *drvthis, int contrast);
+MODULE_EXPORT int  CFontz_get_brightness(Driver *drvthis, int state);
+MODULE_EXPORT void CFontz_set_brightness(Driver *drvthis, int state, int promille);
 MODULE_EXPORT void CFontz_backlight(Driver *drvthis, int on);
 
 #endif

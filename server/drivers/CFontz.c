@@ -161,8 +161,8 @@ CFontz_init(Driver *drvthis)
 
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	if ((tmp < 0) || (tmp > 255)) {
-		report(RPT_WARNING, "%s: Brightness must be between 0 and 255; using default %d",
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
 				drvthis->name, DEFAULT_BRIGHTNESS);
 		tmp = DEFAULT_BRIGHTNESS;
 	}
@@ -170,8 +170,8 @@ CFontz_init(Driver *drvthis)
 
 	/* Which backlight-off "brightness" */
 	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	if ((tmp < 0) || (tmp > 255)) {
-		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 255; using default %d",
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
 				drvthis->name, DEFAULT_OFFBRIGHTNESS);
 		tmp = DEFAULT_OFFBRIGHTNESS;
 	}
@@ -491,6 +491,48 @@ CFontz_set_contrast(Driver *drvthis, int promille)
 
 
 /**
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return Stored brightness in promille.
+ */
+MODULE_EXPORT int
+CFontz_get_brightness(Driver *drvthis, int state)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/**
+ * Set on/off brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want to store the value.
+ * \param promille New brightness in promille.
+ */
+MODULE_EXPORT void
+CFontz_set_brightness(Driver *drvthis, int state, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is not get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+		//CFontz_backlight(drvthis, BACKLIGHT_ON);
+	}
+	else {
+		p->offbrightness = promille;
+		//CFontz_backlight(drvthis, BACKLIGHT_OFF);
+	}
+}
+
+
+/**
  * Turn the LCD backlight on or off.
  * \param drvthis  Pointer to driver structure.
  * \param on       New backlight status.
@@ -499,9 +541,11 @@ MODULE_EXPORT void
 CFontz_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
-	char out[4] = { CFONTZ_Backlight_Control, 0 };
+	unsigned char out[4] = { CFONTZ_Backlight_Control, 0 };
+	int promille = (on == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 
-	out[1] = (on) ? p->brightness : p->offbrightness;
+	/* map range [0, 1000] -> [0, 255] that the hardware understands */
+	out[1] = (unsigned char) ((long) promille * 255 / 1000);
 	write(p->fd, out, 2);
 }
 
