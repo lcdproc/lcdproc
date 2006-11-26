@@ -4,6 +4,8 @@
 #include "lcd.h"
 
 #define DEFAULT_CONTRAST	480
+#define DEFAULT_BRIGHTNESS	1000
+#define DEFAULT_OFFBRIGHTNESS	0
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_SPEED		19200
 #define DEFAULT_LINEWRAP	1
@@ -37,6 +39,8 @@ MODULE_EXPORT void MtxOrb_set_char (Driver *drvthis, int n, unsigned char *dat);
 
 MODULE_EXPORT int  MtxOrb_get_contrast (Driver *drvthis);
 MODULE_EXPORT void MtxOrb_set_contrast (Driver *drvthis, int promille);
+MODULE_EXPORT int  MtxOrb_get_brightness(Driver *drvthis, int state);
+MODULE_EXPORT void MtxOrb_set_brightness(Driver *drvthis, int state, int promille);
 MODULE_EXPORT void MtxOrb_backlight (Driver *drvthis, int on);
 MODULE_EXPORT void MtxOrb_output (Driver *drvthis, int state);
 MODULE_EXPORT const char * MtxOrb_get_info (Driver *drvthis);

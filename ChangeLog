@@ -19,6 +19,8 @@ v.0.5dev (ongoing development)
  * fixes to ula200 build environment and documentation (B. Walle)
  * update g15 driver to be compatible with g15daemon > 1.2 (Anthony J. Mirabella)
  * allow compiling with LDFLAG "--as-needed" (Robert Buchholz)
+ * optimize MtxOrb flush()
+ * make MtxOrb use Brightness and OffBrightness like CFontzPacket
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

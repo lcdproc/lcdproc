@@ -258,22 +258,22 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
 
 <varlistentry>
   <term>
-    <command>Backlight=</command>
+    <command>Type=</command>
     <arg choice="plain">
     <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
+      <arg choice="plain"><literal><emphasis>lcd</emphasis></literal></arg>
+      <arg choice="plain"><literal>lkd</literal></arg>
+      <arg choice="plain"><literal>vfd</literal></arg>
+      <arg choice="plain"><literal>vkd</literal></arg>
     </group>
     </arg>
   </term>
   <listitem><para>
-    Switch on the backlight? [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
-    </para>
-    <note><para>
-      The driver will ignore this setting if the display
-      is a VFD or VKD as they crash if the backlight is turned off.
-    </para></note>
-  </listitem>
+    Set the display type [default: <literal>lcd</literal>; legal: <literal>lcd</literal>,
+								  <literal>lkd</literal>,
+								  <literal>vfd</literal>,
+								  <literal>vkd</literal>]
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -295,6 +295,28 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
 
 <varlistentry>
   <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>OffBrightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
+    This value is used when the display is normally
+    switched off in case LCDd is inactive
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>Speed=</command>
     <arg choice="plain">
     <group choice="req">
@@ -308,26 +330,6 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
   <listitem><para>
     Set the the baud rate to use when communicating with the LCD.
     If not specified, it defaults to <literal>19200</literal>.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term>
-    <command>Type=</command>
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>lcd</emphasis></literal></arg>
-      <arg choice="plain"><literal>lkd</literal></arg>
-      <arg choice="plain"><literal>vfd</literal></arg>
-      <arg choice="plain"><literal>vkd</literal></arg>
-    </group>
-    </arg>
-  </term>
-  <listitem><para>
-    Set the display type [default: <literal>lcd</literal>; legal: <literal>lcd</literal>,
-								  <literal>lkd</literal>,
-								  <literal>vfd</literal>,
-								  <literal>vkd</literal>]
   </para></listitem>
 </varlistentry>
 

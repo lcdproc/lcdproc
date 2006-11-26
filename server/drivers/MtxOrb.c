@@ -59,9 +59,9 @@
 
 
 /* MO displays allow 25 keys that map by default to 'A' - 'Y' */
+#define MAX_KEY_MAP	25
 // Don't forget to define key mappings in LCDd.conf: KeyMap_A=Enter, ...
 // otherwise you will not get your keypad working.
-# define MAX_KEY_MAP	25
 
 #define IS_LCD_DISPLAY	(p->MtxOrb_type == MTXORB_LCD)
 #define IS_LKD_DISPLAY	(p->MtxOrb_type == MTXORB_LKD)
@@ -130,8 +130,8 @@ typedef struct {
 
 	int output_state;	/* static data from MtxOrb_output */
 	int contrast;		/* static data from set/get_contrast */
-	int backlight_state;	/* static data from MtxOrb_backlight */
-	int backlightenabled;
+	int brightness;
+	int offbrightness;
 
 	MtxOrb_type_type MtxOrb_type;
 
@@ -142,6 +142,7 @@ typedef struct {
 
 	char info[255];		/* static data from MtxOrb_get_info */
 } PrivateData;
+
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -186,7 +187,6 @@ MtxOrb_init (Driver *drvthis)
 {
 	struct termios portset;
 
-	int contrast = DEFAULT_CONTRAST;
 	char device[256] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
 	char size[256] = DEFAULT_SIZE;
@@ -214,11 +214,7 @@ MtxOrb_init (Driver *drvthis)
 	p->framebuf = NULL;
 	p->backingstore = NULL;
 
-	p->contrast = DEFAULT_CONTRAST;
 	p->output_state = -1;	/* static data from MtxOrb_output */
-	p->backlight_state = 1; /* static data from MtxOrb_backlight */
-	p->backlightenabled = DEFAULT_BACKLIGHT;
-
 	p->keypad_test_mode = 0;
 
 	debug(RPT_INFO, "MtxOrb: init(%p)", drvthis);
@@ -250,7 +246,27 @@ MtxOrb_init (Driver *drvthis)
 				drvthis->name, DEFAULT_CONTRAST);
 		tmp = DEFAULT_CONTRAST;
 	}
-	contrast = tmp;
+	p->contrast = tmp;
+
+	/* Which backlight brightness */
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_BRIGHTNESS);
+		tmp = DEFAULT_BRIGHTNESS;
+	}
+	p->brightness = tmp;
+
+	/* Which backlight-off "brightness" */
+	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_OFFBRIGHTNESS);
+		tmp = DEFAULT_OFFBRIGHTNESS;
+	}
+	p->offbrightness = tmp;
 
 	/* Get speed */
 	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
@@ -272,9 +288,6 @@ MtxOrb_init (Driver *drvthis)
 			report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600 or 19200; using default %d",
 					drvthis->name, tmp);
 	}
-
-	/* Get backlight setting */
-	p->backlightenabled = drvthis->config_get_bool(drvthis->name, "Backlight", 0, DEFAULT_BACKLIGHT);
 
 	/* Get display type */
 	strncpy(buf, drvthis->config_get_string(drvthis->name, "Type", 0, DEFAULT_TYPE), sizeof(buf));
@@ -393,7 +406,8 @@ MtxOrb_init (Driver *drvthis)
 	MtxOrb_linewrap(drvthis, DEFAULT_LINEWRAP);
 	MtxOrb_autoscroll(drvthis, DEFAULT_AUTOSCROLL);
 	MtxOrb_cursorblink(drvthis, DEFAULT_CURSORBLINK);
-	MtxOrb_set_contrast(drvthis, contrast);
+	MtxOrb_set_contrast(drvthis, p->contrast);
+	MtxOrb_backlight(drvthis, DEFAULT_BACKLIGHT);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -597,7 +611,7 @@ MtxOrb_flush (Driver *drvthis)
 	if (modified)
 		memcpy(p->backingstore, p->framebuf, p->width * p->height);
 
-	debug(RPT_DEBUG, "MtxOrb: framebuffer flushed");
+	debug(RPT_DEBUG, "MtxOrb: frame buffer flushed");
 }
 
 
@@ -680,39 +694,67 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
 
 
 /**
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return Stored brightness in promille.
+ */
+MODULE_EXPORT int
+MtxOrb_get_brightness(Driver *drvthis, int state)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/**
+ * Set on/off brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want to store the value.
+ * \param promille New brightness in promille.
+ */
+MODULE_EXPORT void
+MtxOrb_set_brightness(Driver *drvthis, int state, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is no get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+		MtxOrb_backlight(drvthis, BACKLIGHT_ON);
+	}
+	else {
+		p->offbrightness = promille;
+		MtxOrb_backlight(drvthis, BACKLIGHT_OFF);
+	}
+}
+
+
+/**
  * Turn the LCD backlight on or off.
  * \param drvthis  Pointer to driver structure.
  * \param on       New backlight status.
- *
- * \warning on=0 switches vfd/vkd displays off entirely 
- *
- * \warning There seems to be a movement afoot to add more functions than just on/off to this..
  */
 MODULE_EXPORT void
 MtxOrb_backlight (Driver *drvthis, int on)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
+	unsigned char out[5] = { '\xFE', '\x99', 0 };
+	int promille = (on == BACKLIGHT_ON)
+			     ? p->brightness
+			     : p->offbrightness;
 
-	p->backlight_state = on;
+	/* map range [0, 1000] -> [0, 255] that the hardware understands */
+	out[2] = (unsigned char) ((long) promille * 255 / 1000);
 
-	switch (on) {
-		case BACKLIGHT_ON:
-			debug(RPT_DEBUG, "MtxOrb: display timer set to leave display on indefinitely");
-			write(p->fd, "\xFE" "B" "\0", 3);  /* 0 minutes == never turn display off */
-			break;
-		case BACKLIGHT_OFF:
-			if (IS_VKD_DISPLAY || IS_VFD_DISPLAY) {
-				debug(RPT_DEBUG, "MtxOrb: backlight off ignored - not LCD or LKD display");
-				; /* turns display off entirely (whoops!) */
-			} else {
-				debug(RPT_DEBUG, "MtxOrb: backlight turned off");
-				write(p->fd, "\xFE" "F", 2);
-			}
-			break;
-		default: /* ignored... */
-			debug(RPT_DEBUG, "MtxOrb: backlight - invalid setting");
-			break;
-		}
+	write(p->fd, out, 3);
+
+	debug(RPT_DEBUG, "MtxOrb: changed brightness to %d", out[2]);
 }
 
 
