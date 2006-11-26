@@ -402,28 +402,6 @@ MtxOrb_init (Driver *drvthis)
 
 
 /**
- * Clear the screen.
- * \param drvthis  Pointer to driver structure.
- */
-MODULE_EXPORT void
-MtxOrb_clear (Driver *drvthis)
-{
-        PrivateData *p = drvthis->private_data;
-
-	/* set hbar/vbar/bignum mode back to normal character display */
-	p->ccmode = standard;
-
-	/* replace all chars in framebuf with spaces */
-	memset(p->framebuf, ' ', (p->width * p->height));
-
-	/* make backing store differ from framebuf so it all gets cleared by MtxOrb_flush */
-	memset(p->backingstore, 0xFE, (p->width * p->height));
-
-	debug(RPT_DEBUG, "MtxOrb: cleared screen");
-}
-
-
-/**
  * Close the driver (do necessary clean-up).
  * \param drvthis  Pointer to driver structure.
  */
@@ -539,6 +517,28 @@ MtxOrb_string (Driver *drvthis, int x, int y, char string[])
 
 
 /**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
+MODULE_EXPORT void
+MtxOrb_clear (Driver *drvthis)
+{
+        PrivateData *p = drvthis->private_data;
+
+	/* set hbar/vbar/bignum mode back to normal character display */
+	p->ccmode = standard;
+
+	/* replace all chars in framebuf with spaces */
+	memset(p->framebuf, ' ', (p->width * p->height));
+
+	/* make backing store differ from framebuf so it all gets cleared by MtxOrb_flush */
+	//memset(p->backingstore, 0xFE, (p->width * p->height));
+
+	debug(RPT_DEBUG, "MtxOrb: cleared screen");
+}
+
+
+/**
  * Flush data on screen to the LCD.
  * \param drvthis  Pointer to driver structure.
  */
@@ -546,38 +546,58 @@ MODULE_EXPORT void
 MtxOrb_flush (Driver *drvthis)
 {
         PrivateData *p = drvthis->private_data;
-	unsigned char *xp = p->framebuf;
-	unsigned char *xq = p->backingstore;
-	int i;
+	int modified = 0;
+	int i, j;
 
-	/* Note: this implementation is not optimal as it does 1 write per char */
-	for (i = 1; i <= p->height; i++) {
-		int j;
-		int move = 1;	/* need to move to the 1st char of each line */
+	for (i = 0; i < p->height; i++) {
+		// set  pointers to start of the line in frame buffer & backing store
+		unsigned char *sp = p->framebuf + (i * p->width);
+		unsigned char *sq = p->backingstore + (i * p->width);
 
-		for (j = 1; j <= p->width; j++) {
+		debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
+		debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
 
-			if (*xp == *xq)
-				move++;		/* skip a char => need to move cursor */
-			else {
-				/* Draw characters that have changed */
+		/* Strategy:
+		 * - not more than one update command per line
+		 * - leave out leading and trailing parts that are identical
+		 */
 
-				/* don't send the command character to the display */
-				unsigned char c = (*xp == 0xFE) ?  ' ': *xp;
+		// set  pointers to end of the line in frame buffer & backing store
+		unsigned char *ep = sp + (p->width - 1);
+		unsigned char *eq = sq + (p->width - 1);
+		int length = 0;
 
-				if (move != 0) {
-					MtxOrb_cursor_goto(drvthis, j, i);
-					move = 0;
-				}
-				write(p->fd, &c, 1);
-			}
-			xp++;
-			xq++;
-		}
-	}
-	memcpy(p->backingstore, p->framebuf, p->width * p->height);
+		// skip over leading identical portions of the line
+		for (j = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, j++)
+			;
 
-	debug(RPT_DEBUG, "MtxOrb: frame buffer flushed");
+		// skip over trailing identical portions of the line
+		for (length = p->width - j; (length > 0) && (*ep == *eq); ep--, eq--, length--)
+			;
+
+		/* there are differences, ... */
+		if (length > 0) {
+			unsigned char out[length+2];
+			unsigned char *byte;
+
+			memcpy(out, sp, length);
+			// replace command character \xFE by space
+			while ((byte = memchr(out, '\xFE', length)) != NULL)
+				*byte = ' ';
+
+			debug(RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
+			      __FUNCTION__, i, j, length, length, sp);
+
+			MtxOrb_cursor_goto(drvthis, j+1, i+1);
+			write(p->fd, out, length);
+			modified++;
+		}      
+	}	// i < p->height
+
+	if (modified)
+		memcpy(p->backingstore, p->framebuf, p->width * p->height);
+
+	debug(RPT_DEBUG, "MtxOrb: framebuffer flushed");
 }
 
 
