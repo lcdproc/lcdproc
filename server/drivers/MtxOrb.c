@@ -57,22 +57,11 @@
 
 #include "report.h"
 
-// Use the new key mapping code
-#define MTXORB_NEW_KEYMAP
+
+/* MO displays allow 25 keys that map by default to 'A' - 'Y' */
 // Don't forget to define key mappings in LCDd.conf: KeyMap_A=Enter, ...
 // otherwise you will not get your keypad working.
-
-#ifdef MTXORB_NEW_KEYMAP 
-/* MO displays allow 25 keys that map by default to 'A' - 'Y' */
 # define MAX_KEY_MAP	25
-#else
-# define MTXORB_DEFAULT_Left     'A'
-# define MTXORB_DEFAULT_Right    'B'
-# define MTXORB_DEFAULT_Up       'C'
-# define MTXORB_DEFAULT_Down     'D'
-# define MTXORB_DEFAULT_Enter    'E'
-# define MTXORB_DEFAULT_Escape   'F'
-#endif
 
 #define IS_LCD_DISPLAY	(p->MtxOrb_type == MTXORB_LCD)
 #define IS_LKD_DISPLAY	(p->MtxOrb_type == MTXORB_LKD)
@@ -146,18 +135,9 @@ typedef struct {
 
 	MtxOrb_type_type MtxOrb_type;
 
-#ifdef MTXORB_NEW_KEYMAP
 	/* the keymap */
 	char *keymap[MAX_KEY_MAP];
 	int keys;
-#else	
-	char left_key;
-	char right_key;
-	char up_key;
-	char down_key;
-	char enter_key;
-	char escape_key;
-#endif	
 	int keypad_test_mode;
 
 	char info[255];		/* static data from MtxOrb_get_info */
@@ -238,14 +218,6 @@ MtxOrb_init (Driver *drvthis)
 	p->backlight_state = 1; /* static data from MtxOrb_backlight */
 	p->backlightenabled = DEFAULT_BACKLIGHT;
 
-#ifndef MTXORB_NEW_KEYMAP
-	p->left_key = MTXORB_DEFAULT_Left;
-	p->right_key = MTXORB_DEFAULT_Right;
-	p->up_key = MTXORB_DEFAULT_Up;
-	p->down_key = MTXORB_DEFAULT_Down;
-	p->enter_key = MTXORB_DEFAULT_Enter;
-	p->escape_key = MTXORB_DEFAULT_Escape;
-#endif	
 	p->keypad_test_mode = 0;
 
 	debug(RPT_INFO, "MtxOrb: init(%p)", drvthis);
@@ -335,7 +307,6 @@ MtxOrb_init (Driver *drvthis)
 		 * test mode.
 		 */
 
-#ifdef MTXORB_NEW_KEYMAP 
 		int i;
 
 		/* assume no mapped keys */
@@ -361,32 +332,6 @@ MtxOrb_init (Driver *drvthis)
 					drvthis->name, i+'A', s );
 			}
 		}
-#else	
-		/* left_key */
-		p->left_key = MtxOrb_parse_keypad_setting(drvthis, "LeftKey", MTXORB_DEFAULT_Left);
-		report(RPT_DEBUG, "%s: Using \"%c\" as Leftkey.", drvthis->name, p->left_key);
-
-		/* right_key */
-		p->right_key = MtxOrb_parse_keypad_setting(drvthis, "RightKey", MTXORB_DEFAULT_Right);
-		report(RPT_DEBUG, "%s: Using \"%c\" as RightKey.", drvthis->name, p->right_key);
-
-		/* up_key */
-		p->up_key = MtxOrb_parse_keypad_setting(drvthis, "UpKey", MTXORB_DEFAULT_Up);
-		report(RPT_DEBUG, "%s: Using \"%c\" as UpKey.", drvthis->name, p->up_key);
-
-		/* down_key */
-		p->down_key = MtxOrb_parse_keypad_setting(drvthis, "DownKey", MTXORB_DEFAULT_Down);
-		report(RPT_DEBUG, "%s: Using \"%c\" as DownKey.", drvthis->name, p->down_key);
-
-		/* right_key */
-		p->enter_key = MtxOrb_parse_keypad_setting(drvthis, "EnterKey", MTXORB_DEFAULT_Enter);
-		report(RPT_DEBUG, "%s: Using \"%c\" as EnterKey.", drvthis->name, p->enter_key);
-
-		/* escape_key */
-		p->escape_key = MtxOrb_parse_keypad_setting(drvthis, "EscapeKey", MTXORB_DEFAULT_Escape);
-		report(RPT_DEBUG, "%s: Using \"%c\" as EscapeKey.", drvthis->name, p->escape_key);
-#endif		
-
 	}
 	/* End of config file parsing */
 
@@ -1404,11 +1349,9 @@ MtxOrb_get_key (Driver *drvthis)
 	char key = 0;
 	struct pollfd fds[1];
 
-#ifdef MTXORB_NEW_KEYMAP
 	/* don't query the keyboard if there are no mapped keys; see \todo above */
 	if ((p->keys == 0) && (!p->keypad_test_mode))
 		return NULL;
-#endif		
 
 	/* poll for data or return */
 	fds[0].fd = p->fd;
@@ -1425,7 +1368,6 @@ MtxOrb_get_key (Driver *drvthis)
 		return NULL;
 
 	if (!p->keypad_test_mode) {
-#ifdef MTXORB_NEW_KEYMAP 
 		/* we assume standard key mapping here */
 		if ((key >= 'A') && (key <= 'A' + MAX_KEY_MAP)) {
 			return p->keymap[key-'A'];
@@ -1434,24 +1376,6 @@ MtxOrb_get_key (Driver *drvthis)
 			report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
 			return NULL;
 		}
-#else	
-	        if (key == p->left_key)
-			return "Left";
-		else if (key == p->right_key)
-			return "Right";
-		else if (key == p->up_key)
-			return "Up";
-		else if (key == p->down_key)
-			return "Down";
-		else if (key == p->enter_key)
-			return "Enter"; 
-		else if (key == p->escape_key)
-			return "Escape";
-		else {
-        		report(RPT_INFO, "%s: untreated key 0x%02X", drvthis->name, key);
-			return NULL;
-	        }
-#endif		
 	}
 	else {
 		fprintf(stdout, "MtxOrb: Received character %c\n", key);
