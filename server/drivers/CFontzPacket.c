@@ -530,7 +530,7 @@ CFontzPacket_flush (Driver *drvthis)
 
       /* there are differences, ... */
       if (length > 0) {
-        unsigned char out[23];
+        unsigned char out[length + 3];
 
 	/* ... send then to the LCD */
 	out[0] = j;	// column
