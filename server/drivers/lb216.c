@@ -26,12 +26,6 @@
 # include "config.h"
 #endif
 
-//#ifdef HAVE_NCURSES_H
-//# include <ncurses.h>
-//#else
-//# include <curses.h>
-//#endif
-
 #include "lcd.h"
 #include "lb216.h"
 #include "shared/str.h"
