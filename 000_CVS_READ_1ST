@@ -25,8 +25,8 @@ Once the above two commands have run, the rest is pretty standard:
 
 $ ./configure --help
 [read about the options, figure out what to use]
-$ ./configure --prefix=/usr/local --enable-drivers=ncurses,cfontz
-[replace ncurses,cfontz with comma-separated list of drivers you want]
+$ ./configure --prefix=/usr/local --enable-drivers=curses,CFontz
+[replace curses,CFontz with comma-separated list of drivers you want]
 $ make
 $ su
 $ make install

@@ -47,12 +47,12 @@ Read about the options, figure out what to use.
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>./configure --prefix=/usr/local --enable-drivers=ncurses,cfontz</userinput>
+<prompt>$</prompt> <userinput>./configure --prefix=/usr/local --enable-drivers=curses,CFontz</userinput>
 </screen>
 
 <para>
 Be sure to replace /usr/local with the prefixdir you want (e.g. /usr
-for RedHat) and ncurses,cfontz with comma-separated list
+for RedHat) and curses,CFontz with comma-separated list
 of drivers you want.
 </para>
 
