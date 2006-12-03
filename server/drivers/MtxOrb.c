@@ -765,7 +765,7 @@ MtxOrb_backlight (Driver *drvthis, int on)
 		write(p->fd, out, 3);
 	}
 
-	debug(RPT_DEBUG, "MtxOrb: changed brightness to %d", out[2]);
+	debug(RPT_DEBUG, "MtxOrb: changed brightness to %d", promille);
 }
 
 
