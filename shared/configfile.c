@@ -49,7 +49,11 @@ static section *add_section(const char *sectionname);
 static key *find_key(section *s, const char *keyname, int skip);
 static key *add_key(section *s, const char *keyname, const char *value);
 static char get_next_char_f(FILE *f);
+#if defined(LCDPROC_CONFIG_READ_STRING)
 static int process_config(section **current_section, char(*get_next_char)(), const char *source_descr, FILE *f);
+#else
+static int process_config(section **current_section, const char *source_descr, FILE *f);
+#endif
 
 
 #ifdef WITH_LDAP_SUPPORT
@@ -121,7 +125,11 @@ int config_read_file(const char *filename)
 		return -1;
 	}
 
+#if defined(LCDPROC_CONFIG_READ_STRING)
 	result = process_config(&curr_section, get_next_char_f, filename, f);
+#else
+	result = process_config(&curr_section, filename, f);
+#endif
 
 	fclose(f);
 
@@ -129,6 +137,7 @@ int config_read_file(const char *filename)
 }
 
 
+#if defined(LCDPROC_CONFIG_READ_STRING)
 int config_read_string(const char *sectionname, const char *str)
 /* All the config parameters are placed in the given section in memory.*/
 {
@@ -145,6 +154,7 @@ int config_read_string(const char *sectionname, const char *str)
 
 	return process_config(&s, get_next_char, "command line", NULL);
 }
+#endif
 
 
 /** Get string from configuration in memory.
@@ -584,12 +594,14 @@ static key *add_key(section *s, const char *keyname, const char *value)
 }
 
 
+#if defined(LCDPROC_CONFIG_READ_STRING)
 static char get_next_char_f(FILE *f)
 {
 	int c = fgetc(f);
 
 	return((c == EOF) ? '\0' : c);
 }
+#endif
 
 
 /* Parser states */
@@ -614,10 +626,14 @@ static char get_next_char_f(FILE *f)
 #define MAXVALUELENGTH		200
 
 
+#if defined(LCDPROC_CONFIG_READ_STRING)
 static int process_config(section **current_section, char(*get_next_char)(), const char *source_descr, FILE *f)
+#else
+static int process_config(section **current_section, const char *source_descr, FILE *f)
+#endif
 {
 	int state = ST_INITIAL;
-	char ch;
+	int ch;
 	char sectionname[MAXSECTIONLABELLENGTH+1];
 	int sectionname_pos = 0;
 	char keyname[MAXKEYNAMELENGTH+1];
@@ -629,11 +645,22 @@ static int process_config(section **current_section, char(*get_next_char)(), con
 	int line_nr = 1;
 	int error = 0;
 
+#if !defined(LCDPROC_CONFIG_READ_STRING)
+	if (f == NULL)
+		return(0);
+#endif
+
 	while (state != ST_END) {
 
+#if defined(LCDPROC_CONFIG_READ_STRING)
 		ch = (f != NULL)
 			? get_next_char(f)
 			: get_next_char();
+#else
+		ch = fgetc(f);
+		if (ch == EOF)
+			ch = '\0';
+#endif
 
 		/* Secretly keep count of the line numbers */
 		if (ch == '\n')
