@@ -47,7 +47,9 @@
 #include <sys/user.h>
 #include <kvm.h>
 #include <errno.h>
-
+#include <sys/socket.h>
+#include <net/if.h>
+#include <net/if_mib.h>
 #include <mach/mach.h>
 
 #include "main.h"
@@ -70,7 +72,7 @@ static mach_port_t lcdproc_port;
 int machine_init()
 {
 	/* get the page size with "getpagesize" and calculate pageshift from it */
-	int pagesize = 0;
+	unsigned int pagesize = 0;
 	pageshift = 0;
 
 	lcdproc_port = mach_host_self();
@@ -307,39 +309,82 @@ int machine_get_meminfo(meminfo_type *result)
 
 int machine_get_procs(LinkedList *procs)
 {
-	#warning machine_get_procs not implemented
-	return(FALSE);
-	/* FIX ME */
-	/* This needs to be finished. */
-	procinfo_type	*p;
+	struct kinfo_proc *kprocs;
+	
+	procinfo_type *p;
+	int nproc, i;
+	int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
 
-	processor_set_t *psets, pset;
-	task_t          *tasks;
-
-	unsigned int nproc, i;
-
-	if (host_processor_sets(lcdproc_port, &psets, &nproc))
+	size_t size = 0;
+	
+	/* Call sysctl with a NULL buffer. */ 
+	if ( sysctl(mib, 4, NULL, &size, NULL, 0 ) < 0)
 	{
-		perror("host_processor_sets");
-		return(FALSE);
+		perror("Failure calling sysctl");
+		return FALSE;
 	}
-
-	for (i = 0; i < nproc; i++)
+	/* Allocate a buffer based on previous results of sysctl. */ 
+	kprocs = (struct kinfo_proc *)malloc(size);
+	if (kprocs == NULL)
 	{
-		if (host_processor_set_priv(lcdproc_port, psets[i], &pset))
-		{
-			perror("host_processor_set_priv");
-			return(FALSE);
-		}
-
+		perror("mem_malloc");
+		return FALSE;
+	}
+	/* Call sysctl again with the new buffer. */
+	if ( sysctl(mib, 4, kprocs, &size, NULL, 0 ) < 0)
+	{
+		perror("Failure calling sysctl");
+		free(kprocs);
+		return FALSE;
+	}
+	
+	nproc = size / sizeof(struct kinfo_proc);		
+	
+	for (i = 0; i < nproc; i++, kprocs++)
+	{
+		mach_port_t task;
+		unsigned int status = kprocs->kp_proc.p_stat;
+		
+		if (status == SIDL ||status == SZOMB)
+			continue;
+		
 		p = malloc(sizeof(procinfo_type));
 		if (!p)
 		{
-			perror("mem_top_malloc");
-			return(FALSE);
+			perror("mem_malloc");
+			continue;
 		}
-
+		strncpy(p->name, kprocs->kp_proc.p_comm, 15);
+		p->name[15] = '\0';
+		
+		p->number = kprocs->kp_proc.p_pid;
+		
+		LL_Push(procs, (void *)p);
+		
+		/* Normal user can't get tasks for processes owned by root. */
+		if (kprocs->kp_eproc.e_pcred.p_ruid == 0)
+			continue;
+		
+		/* Get the memory data for each pid from Mach. */
+		if (task_for_pid(mach_task_self(), kprocs->kp_proc.p_pid, &task) == KERN_SUCCESS)
+		{
+			task_basic_info_data_t info;
+			mach_msg_type_number_t count = TASK_BASIC_INFO_COUNT;
+			
+			if (task_info(task, TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS) {
+				p->totl = (unsigned long)(/*info.virtual_size*/ info.resident_size / 1024);
+			}
+		} else {
+			/* This error pops up very often and doesn't seem to be a serious problem. 
+			perror("task_for_pid");
+			printf("process: %s, owner:%d\n", kprocs->kp_proc.p_comm, kprocs->kp_eproc.e_pcred.p_ruid); */
+			p->totl = 0;
+		}
 	}
+	
+	kprocs -= i;
+	free(kprocs);
+	
 	return(TRUE);
 }
 
@@ -431,8 +476,60 @@ static int swapmode(int *rettotal, int *retfree)
 /* Get network statistics */
 int machine_get_iface_stats (IfaceInfo *interface)
 {
-	/* Implementation missing */
-	return 0;
-}
+	static int      first_time = 1;	/* is it first time we call this function? */
+	int             rows;
+	int             name[6] = {CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_SYSTEM, IFMIB_IFCOUNT};
+	size_t          len;
+	struct ifmibdata ifmd; /* ifmibdata contains the network statistics */
+	
+	len = sizeof(rows);
+	/* get number of interfaces */
+	//if (sysctlbyname("net.link.generic.system.ifcount", &rows, &len, NULL, 0) == 0) {
+	if (sysctl(name, 5, &rows, &len, 0, 0) == 0) {
+		interface->status = down; /* set status down by default */
+		
+		name[3] = IFMIB_IFDATA;
+		name[4] = 0;
+		name[5] = IFDATA_GENERAL;
+		
+		len = sizeof(ifmd);
+		/* walk through all interfaces in the ifmib table from last to first */
+		for ( ; rows > 0; rows--) {
+			name[4] = rows; /* set the interface index */
+			/* retrive the ifmibdata for the current index */
+			if (sysctl(name, 6, &ifmd, &len, NULL, 0) == -1) {
+				perror("read sysctl");
+				break;
+			}
+			/* check if its interface name matches */
+			if (strcmp(ifmd.ifmd_name, interface->name) == 0) {
+				interface->last_online = time(NULL);	/* save actual time */
+				
+				if ((ifmd.ifmd_flags & IFF_UP) == IFF_UP)
+					interface->status = up;	/* is up */
+
+				interface->rc_byte = ifmd.ifmd_data.ifi_ibytes;
+				interface->tr_byte = ifmd.ifmd_data.ifi_obytes;
+				interface->rc_pkt = ifmd.ifmd_data.ifi_ipackets;
+				interface->tr_pkt = ifmd.ifmd_data.ifi_opackets;
+
+				if (first_time) {
+					interface->rc_byte_old = interface->rc_byte;
+					interface->tr_byte_old = interface->tr_byte;
+					interface->rc_pkt_old = interface->rc_pkt;
+					interface->tr_pkt_old = interface->tr_pkt;
+					first_time = 0;	/* now it isn't first time */
+				}
+				return 1;
+			}
+		}
+		/* if we are here there is no interface with the given name */
+		return 0;
+	} else {
+		perror("read sysctl IFMIB_IFCOUNT");
+		return 0;
+	}
+} /* get_iface_stats() */
+
 
 #endif /* __APPLE__ */
