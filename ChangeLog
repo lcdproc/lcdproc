@@ -23,6 +23,7 @@ v.0.5dev (ongoing development)
  * make MtxOrb use Brightness and OffBrightness like CFontzPacket
  * make Brightness & OffBrightness run-time configurable in CFontz & MtxOrb
  * add support for Iface and ProcSize screens for OS X / Darwin (Eric Pooch)
+ * update & fix serialVFD driver (Stefan Herdler)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

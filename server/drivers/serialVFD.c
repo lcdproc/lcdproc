@@ -126,7 +126,7 @@ serialVFD_init (Driver *drvthis)
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = CCMODE_STANDARD;
 	p->ISO_8859_1 = 1;
-	p->refresh_timer = 0;
+	p->refresh_timer = 480;
 	p->hw_brightness = 0;
 
 	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis );
@@ -134,14 +134,16 @@ serialVFD_init (Driver *drvthis)
 /* Read config file */
 
 	p->use_parallel	= drvthis->config_get_bool( drvthis->name, "use_parallel", 0, 0 );
-	if (p->use_parallel) {
-		p->port	= drvthis->config_get_int( drvthis->name, "port", 0, LPTPORT );
-	}
-	else {
+	
 		/* Which device should be used */
 		strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 		p->device[sizeof(p->device)-1] = '\0';
 		report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+
+	if (p->use_parallel) {
+		p->port	= drvthis->config_get_int( drvthis->name, "port", 0, LPTPORT );
+	}
+	else {
 
 		/* Which speed */
 		tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
@@ -236,7 +238,7 @@ serialVFD_init (Driver *drvthis)
 		report(RPT_ERR, "%s: unable to create framebuffer backing store.", drvthis->name);
 		return -1;
 	}
-	memset(p->backingstore, ' ', p->width * p->height);
+	memset(p->backingstore, 0, p->width * p->height);
 
 //setup displayspecific data
 	serialVFD_load_display_data(drvthis);
@@ -427,8 +429,7 @@ serialVFD_flush (Driver *drvthis)
 		Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[p->hw_brightness][1],\
 		p->hw_cmd[p->hw_brightness][0]); // restore brightness
 
-		for (i = 0; i < (p->height * p->width); i++)
-			p->backingstore[i]=0; // clear Backing-store
+		memset(p->backingstore, 0, p->width * p->height); // clear Backing-store
 
 		for(i=0;i<p->customchars;i++) // refresh all customcharacters
 			custom_char_changed[i]=1;
@@ -659,8 +660,7 @@ serialVFD_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	if (p != NULL) {
-		if (p->fd >= 0)
-			close(p->fd);
+		Port_Function[p->use_parallel].close_fkt (drvthis);
 		if (p->framebuf)
 			free(p->framebuf);
 		if (p->backingstore)

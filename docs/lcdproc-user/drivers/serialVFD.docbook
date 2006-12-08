@@ -394,7 +394,7 @@ optional
     <arg choice="plain"><replaceable>CUSTOM-CHARACTERS</replaceable></arg>
   </term>
   <listitem><para>
-    Number of Custom-Characters [default: Display-<command>Type</command> dependent].
+Number of Custom-Characters [default: Display-<command>Type</command> dependent].
   </para></listitem>
 </varlistentry>
 
@@ -420,7 +420,7 @@ optional
   </term>
   <listitem>
     <para>
-    Specifies the display type.[default: <literal>0</literal>]
+    Specifies the display type.[default: 0]
     The following type codes are available:
     </para>
     <informaltable>
@@ -463,7 +463,7 @@ optional
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
+Set the initial brightness [default: 1000; legal: 0 - 1000]
  (4 steps 0-250, 251-500, 501-750, 751-1000)
   </para></listitem>
 </varlistentry>
@@ -474,7 +474,7 @@ Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0<
     <arg choice="plain"><replaceable>OFFBRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
-Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>].
+Set the initial off-brightness [default: 0; legal: 0 - 1000].
  This value is used when the display is normally
  switched off in case LCDd is inactive.
  (4 steps 0-250, 251-500, 501-750, 751-1000)

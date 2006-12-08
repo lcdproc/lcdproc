@@ -44,12 +44,15 @@
 
 int serialVFD_init_serial (Driver *drvthis);
 int serialVFD_init_parallel (Driver *drvthis);
-void serialVFD_write_serial (Driver *drvthis, char *dat, size_t length);
-void serialVFD_write_parallel (Driver *drvthis, char *dat, size_t length);
+void serialVFD_write_serial (Driver *drvthis, unsigned char *dat, size_t length);
+void serialVFD_write_parallel (Driver *drvthis, unsigned char *dat, size_t length);
+void serialVFD_close_serial (Driver *drvthis);
+void serialVFD_close_parallel (Driver *drvthis);
 
 typedef struct Port_fkt {
-	void (*write_fkt) (Driver *drvthis, char *dat, size_t length);
+	void (*write_fkt) (Driver *drvthis, unsigned char *dat, size_t length);
 	int (*init_fkt) (Driver *drvthis);
+	void (*close_fkt) (Driver *drvthis);
 } Port_fkt;
 
 
@@ -57,8 +60,8 @@ static const Port_fkt Port_Function[] = {
 	// initialisation function
 	// write function
 
-	{serialVFD_write_serial, serialVFD_init_serial},
-	{serialVFD_write_parallel, serialVFD_init_parallel}
+	{serialVFD_write_serial, serialVFD_init_serial, serialVFD_close_serial},
+	{serialVFD_write_parallel, serialVFD_init_parallel, serialVFD_close_parallel}
 };
 
 
