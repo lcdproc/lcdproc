@@ -1929,11 +1929,7 @@ can be done by specifying "--enable-drivers=all" or by
 
 </sect2>
 
-<sect2 id="hd44780-configuration">
-<title>Configuration</title>
-
-</sect2>
-
+<!--
 <sect2 id="hd44780-running">
 <title>Running</title>
 
@@ -1960,6 +1956,7 @@ file anyway.
 </para>
 
 </sect2>
+-->
 
 <sect2 id="hd44780-miscellania">
 <title>Miscellania</title>
