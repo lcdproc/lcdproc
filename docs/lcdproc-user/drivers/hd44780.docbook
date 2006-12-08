@@ -1245,7 +1245,7 @@ help of the kernel modules ftdi_sio which map the USB port to a serial port (/de
 </sect3>
 
 <sect3 id="hd44780-los-panel">
-<title>LCD on Serial panel device "cwlos-panel"</title>
+<title>LCD on Serial panel device "los-panel"</title>
 
 <para>
 See <ulink url="http://www.xs4all.nl/~mlf/los/">http://www.xs4all.nl/~mlf/los/</ulink>
@@ -1255,10 +1255,10 @@ for information on this device.
 </sect3>
 
 <sect3 id="hd44780-vdr-lcd">
-<title>VDR LCD iserial device "vdr-lcd"</title>
+<title>VDR LCD serial device "vdr-lcd"</title>
 
 <para>
- ... to b documented ...
+ ... to be documented ...
 </para>
 
 <para>
@@ -1683,16 +1683,24 @@ can be done by specifying "--enable-drivers=all" or by
           <entry>PIC-an-LCD serial device "picanlcd"</entry>
         </row>
         <row>
-          <entry><literal>bwctusb</literal></entry>
-          <entry>BWCT USB device "bwctusb"</entry>
-        </row>
-        <row>
           <entry><literal>lcdserializer</literal></entry>
           <entry>LCD serializer "lcdserializer"</entry>
         </row>
         <row>
+          <entry><literal>los-panel</literal></entry>
+          <entry>LCD on Serial panel device "los-panel" (http://www.xs4all.nl/~mlf/los/)</entry>
+        </row>
+        <row>
+          <entry><literal>vdr-lcd</literal></entry>
+          <entry>VDR LCD serial device "vdr-lcd"</entry>
+        </row>
+        <row>
           <entry><literal>lis2</literal></entry>
           <entry>LIS2 from VLSystem (http://www.vlsys.co.kr)</entry>
+        </row>
+        <row>
+          <entry><literal>bwctusb</literal></entry>
+          <entry>BWCT USB device "bwctusb"</entry>
         </row>
         <row>
           <entry><literal>i2c</literal></entry>
