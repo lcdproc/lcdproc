@@ -62,18 +62,6 @@ static int parse_message (const char *str, Client *c)
 	int argpos = 0;
 	CommandFunc function = NULL;
 
-	void close_arg() {
-		if (argc >= MAX_ARGUMENTS-1) {
-			error = 1;
-		}
-		else {
-			argv[argc][argpos] = '\0';
-			argv[argc+1] = argv[argc] + argpos + 1;
-			argc++;
-			argpos = 0;
-		}
-	}
-
 	debug( RPT_DEBUG, "%s( str=\"%.120s\", client=[%d] )", __FUNCTION__, str, c->sock );
 
 	/* We will create a list of strings that is shorter or equally long as
@@ -105,7 +93,15 @@ static int parse_message (const char *str, Client *c)
 			if (is_final(ch)) {
 				if (quote)
 					error = 2;
-				close_arg();
+				if (argc >= MAX_ARGUMENTS-1) {
+					error = 1;
+				}
+				else {
+					argv[argc][argpos] = '\0';
+					argv[argc+1] = argv[argc] + argpos + 1;
+					argc++;
+					argpos = 0;
+				}
 				state = ST_FINAL;
 			}
 			else if (ch == '\\') {
@@ -131,7 +127,15 @@ static int parse_message (const char *str, Client *c)
 			 	else {
 			 		error = 2;
 					/* alternative: argv[argc][argpos++] = ch; */
-			 		close_arg();
+					if (argc >= MAX_ARGUMENTS-1) {
+						error = 1;
+					}
+					else {
+						argv[argc][argpos] = '\0';
+						argv[argc+1] = argv[argc] + argpos + 1;
+						argc++;
+						argpos = 0;
+					}
 			 		state = ST_FINAL;
 			 	}
 			}
@@ -140,11 +144,27 @@ static int parse_message (const char *str, Client *c)
 			}	
 			else if (is_closing_quote(ch, quote)) {
 				quote = '\0';
-				close_arg();
+				if (argc >= MAX_ARGUMENTS-1) {
+					error = 1;
+				}
+				else {
+					argv[argc][argpos] = '\0';
+					argv[argc+1] = argv[argc] + argpos + 1;
+					argc++;
+					argpos = 0;
+				}
 				state = ST_WHITESPACE;
 			}
 			else if (is_whitespace(ch) && (quote == '\0')) {
-				close_arg();
+				if (argc >= MAX_ARGUMENTS-1) {
+					error = 1;
+				}
+				else {
+					argv[argc][argpos] = '\0';
+					argv[argc+1] = argv[argc] + argpos + 1;
+					argc++;
+					argpos = 0;
+				}
 				state = ST_WHITESPACE;
 			}	
 			else {
