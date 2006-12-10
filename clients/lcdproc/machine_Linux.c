@@ -300,7 +300,7 @@ int machine_get_load(load_type *curr_load)
 	load_type load;
 
 	reread(load_fd, "get_load");
-	sscanf(procbuf, "%*s %lu %lu %lu %lu\n", &load.user, &load.nice, &load.system, &load.idle);
+	sscanf(procbuf, "cpu %lu %lu %lu %lu", &load.user, &load.nice, &load.system, &load.idle);
 	load.total = load.user + load.nice + load.system + load.idle;
 
 	curr_load->user   = load.user   - last_load.user;
@@ -460,7 +460,7 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	token = strtok(procbuf, "\n");
 	while (token != NULL) {
 		if ((strlen(token) > 3) && (!strncmp(token, "cpu", 3)) && isdigit(token[3])) {
-			sscanf(token, "%*s %lu %lu %lu %lu", &curr_load[*numcpus].user, &curr_load[*numcpus].nice, &curr_load[*numcpus].system, &curr_load[*numcpus].idle);
+			sscanf(token, "cpu%*d %lu %lu %lu %lu", &curr_load[*numcpus].user, &curr_load[*numcpus].nice, &curr_load[*numcpus].system, &curr_load[*numcpus].idle);
 
 			curr_load[*numcpus].total = curr_load[*numcpus].user + curr_load[*numcpus].nice + curr_load[*numcpus].system + curr_load[*numcpus].idle;
 			result[*numcpus].total	= curr_load[*numcpus].total - last_load[*numcpus].total;
