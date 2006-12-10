@@ -23,11 +23,11 @@
 
 typedef struct
 {
-	unsigned long total;	/**< total # of processes (since last call) */
-	unsigned long user;	/**< # of processes in user mode (since last call) */
-	unsigned long system;	/**< # of processes in kernel mode (since last call) */
-	unsigned long nice;	/**< # of 'niced' processes in user mode (since last call) */
-	unsigned long idle;	/**< # of processes idling (since last call) */
+	unsigned long total;	/**< total time (in USER_HZ; since last call) */
+	unsigned long user;	/**< time in user mode (in USER_HZ; since last call) */
+	unsigned long system;	/**< time in kernel mode (in USER_HZ; since last call) */
+	unsigned long nice;	/**< time in 'niced' user mode (in USER_HZ; since last call) */
+	unsigned long idle;	/**< time idling (in USER_HZ; since last call) */
 } load_type;
 
 
@@ -50,7 +50,7 @@ typedef struct
 	int cache;		/**< memory in page cache (in kB) */
 	int buffers;		/**< memory in buffer cache (in kB) */
 	int free;		/**< free memory (in kB) */
-	int shared;		/**< ??? (in KB) */
+	int shared;		/**< ??? (in kB) */
 } meminfo_type;
 
 
