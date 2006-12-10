@@ -74,6 +74,7 @@ xload_screen(int rep, int display, int *flags_ptr)
 		loads[i] = loads[i + 1];
 
 	// get new load value
+	// ignore failure: the shift above makes sure we still have the prev. value
 	machine_get_loadavg(&(loads[lcd_wid - 2]));
 
 	// determine max. load from history
