@@ -30,7 +30,12 @@
 #include "util.h"
 
 
-/** print a memory value with the correct unit to a given string */
+/** Print a memory value with the correct unit to a given string.
+ * \param *dst        String to print the value to.
+ * \param value       Value to print.
+ * \param roundlimit  Set < 1.0 if precision of original input value is not sufficient.
+ * \return  dst
+ */
 char *
 sprintf_memory(char *dst, double value, double roundlimit)
 {
@@ -50,7 +55,11 @@ sprintf_memory(char *dst, double value, double roundlimit)
 }
 
 
-/** print a percentage value to a given string */
+/** Print a percentage value to a given string.
+ * \param *dst     String to print the percentage value to.
+ * \param percent  Value to print.
+ * \return  dst
+ */
 char *
 sprintf_percent(char *dst, double percent)
 {
@@ -63,10 +72,13 @@ sprintf_percent(char *dst, double percent)
 	return dst;
 }
 
-/** converts a value with unit value
+
+/** Convert a value with unit value.
  * does not do formatting
- * base : should be 1000 for decimal and 1024 for binary units
- * roundlimit : set < 1.0 if precision of original input value is not sufficient
+ * \param *value       Pointer to the value to be scaled
+ * \param base         Base used for scaling (e.g. 1000 for decimal, 1024 for binary units)
+ * \param roundlimit   Set < 1.0 if precision of original input value is not sufficient
+ * \return       Unit string to be used when displaying value
  */
 char *
 convert_double(double *value, int base, double roundlimit)
