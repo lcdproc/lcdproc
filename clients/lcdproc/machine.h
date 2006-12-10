@@ -7,19 +7,19 @@
 
 typedef struct
 {
-	unsigned long total;
-	unsigned long user;
-	unsigned long system;
-	unsigned long nice;
-	unsigned long idle;
+	unsigned long total;	/**< total # of processes (since last call) */
+	unsigned long user;	/**< # of processes in user mode (since last call) */
+	unsigned long system;	/**< # of processes in kernel mode (since last call) */
+	unsigned long nice;	/**< # of 'niced' processes in user mode (since last call) */
+	unsigned long idle;	/**< # of processes idling (since last call) */
 } load_type;
 
 
 typedef struct
 {
-	char dev[256];		/**< device */
+	char dev[256];		/**< device name */
 	char type[64];		/**< file system type (as string) */
-	char mpoint[256];	/**< mount point */
+	char mpoint[256];	/**< mount point name */
 	long bsize;		/**< transfer block size */
 	long blocks;		/**< total data blocks in file system */
 	long bfree;		/**< free blocks in fs */
@@ -30,19 +30,19 @@ typedef struct
 
 typedef struct
 {
-	int total;
-	int cache;
-	int buffers;
-	int free;
-	int shared;
+	int total;		/**< total memory (in kB) */
+	int cache;		/**< memory in page cache (in kB) */
+	int buffers;		/**< memory in buffer cache (in kB) */
+	int free;		/**< free memory (in kB) */
+	int shared;		/**< ??? (in KB) */
 } meminfo_type;
 
 
 typedef struct
 {
-	char name[16];
-	int totl;
-	int number;
+	char name[16];		/**< process name */
+	int totl;		/**< process memory usage (in kB) */
+	int number;		/**< incstances of the process */
 } procinfo_type;
 
 
