@@ -100,22 +100,22 @@ mem_screen(int rep, int display, int *flags_ptr)
 		which_title = (which_title + 1) & 7;
 
 		// Total memory
-		sprintf_memory(tmp, mem[0].total * 1024, 1);
+		sprintf_memory(tmp, mem[0].total * 1024.0, 1);
 		if (display)
 			sock_printf(sock, "widget_set M memtotl 1 2 {%7s}\n", tmp);
 
 		// Free memory (plus buffers and cache)
-		sprintf_memory(tmp, (mem[0].free + mem[0].buffers + mem[0].cache) * 1024, 1);
+		sprintf_memory(tmp, (mem[0].free + mem[0].buffers + mem[0].cache) * 1024.0, 1);
 		if (display)
 			sock_printf(sock, "widget_set M memused 1 3 {%7s}\n", tmp);
 
 		// Total swap
-		sprintf_memory(tmp, mem[1].total * 1024, 1);
+		sprintf_memory(tmp, mem[1].total * 1024.0, 1);
 		if (display)
 			sock_printf(sock, "widget_set M swaptotl %i 2 {%7s}\n", lcd_wid - 7, tmp);
 
 		// Free swap
-		sprintf_memory(tmp, mem[1].free * 1024, 1);
+		sprintf_memory(tmp, mem[1].free * 1024.0, 1);
 		if (display)
 			sock_printf(sock, "widget_set M swapused %i 3 {%7s}\n", lcd_wid - 7, tmp);
 
@@ -146,12 +146,12 @@ mem_screen(int rep, int display, int *flags_ptr)
 		char tmp[12];	// should be sufficient
 
 		// Total memory
-		sprintf_memory(tmp, mem[0].total * 1024, 1);
+		sprintf_memory(tmp, mem[0].total * 1024.0, 1);
 		if (display)
 			sock_printf(sock, "widget_set M memtotl 3 1 {%6s}\n", tmp);
 
 		// Total swap
-		sprintf_memory(tmp, mem[1].total * 1024, 1);
+		sprintf_memory(tmp, mem[1].total * 1024.0, 1);
 		if (display)
 			sock_printf(sock, "widget_set M swaptotl 3 2 {%6s}\n", tmp);
 
@@ -266,7 +266,7 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 		if (p != NULL) {
 			char mem[10];
 
-			sprintf_memory(mem, (double) p->totl * 1024, 1);
+			sprintf_memory(mem, (double) p->totl * 1024.0, 1);
 
 			//printf("Mem hog: %s: %s\n", p->name, mem);
 			if (display) {
