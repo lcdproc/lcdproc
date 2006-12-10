@@ -4,6 +4,22 @@
 
 #include "shared/LL.h"
 
+#ifndef LOADAVG_NSTATS
+# define LOADAVG_NSTATS	3
+#endif
+
+#ifndef LOADAVG_1MIN
+# define LOADAVG_1MIN	0
+#endif
+
+#ifndef LOADAVG_5MIN
+# define LOADAVG_5MIN	1
+#endif
+
+#ifndef LOADAVG_15MIN
+# define LOADAVG_15MIN	2
+#endif
+
 
 typedef struct
 {

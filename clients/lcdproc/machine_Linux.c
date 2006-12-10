@@ -26,8 +26,14 @@
 # endif
 #endif
 
+#ifdef HAVE_GETLOADAVG
+# define USE_GETLOADAVG
+#endif
+
 #ifdef USE_GETLOADAVG
-# include <sys/loadavg.h>
+# ifdef HAVE_SYS_LOADAVG_H
+#  include <sys/loadavg.h>
+# endif
 #endif
 
 #ifdef HAVE_PROCFS_H
@@ -147,11 +153,12 @@ reread (int f, char *errmsg)
 	exit(1);
 }
 
-int
+long
 getentry (const char *tag, const char *bufptr)
 {
 	char *tail;
-	int retval, len = strlen (tag);
+	int len = strlen(tag);
+	long retval;
 
 	while (bufptr != NULL) {
 		if (*bufptr == '\n')
@@ -292,7 +299,7 @@ int machine_get_load(load_type *curr_load)
 	static load_type last_load = { 0, 0, 0, 0, 0 };
 	load_type load;
 
-	reread(load_fd, "get_load:");
+	reread(load_fd, "get_load");
 	sscanf(procbuf, "%*s %lu %lu %lu %lu\n", &load.user, &load.nice, &load.system, &load.idle);
 	load.total = load.user + load.nice + load.system + load.idle;
 
@@ -311,14 +318,13 @@ int machine_get_loadavg(double *load)
 #ifdef USE_GETLOADAVG
 	double loadavg[LOADAVG_NSTATS];
 
-	if (getloadavg(loadavg, LOADAVG_NSTATS) < 0) {
+	if (getloadavg(loadavg, LOADAVG_NSTATS) <= LOADAVG_1MIN) {
 		perror("getloadavg");	/* ToDo: correct error reporting */
-		*load = 1.;
 		return(FALSE);
 	}
 	*load = loadavg[LOADAVG_1MIN];
 #else
-	reread(loadavg_fd, "get_load:");
+	reread(loadavg_fd, "get_loadavg");
 	sscanf(procbuf, "%lf", load);
 #endif
 	return(TRUE);
@@ -326,7 +332,7 @@ int machine_get_loadavg(double *load)
 
 int machine_get_meminfo(meminfo_type *result)
 {
-	reread(meminfo_fd, "get_meminfo:");
+	reread(meminfo_fd, "get_meminfo");
 	result[0].total   = getentry("MemTotal:", procbuf);
 	result[0].free    = getentry("MemFree:", procbuf);
 	result[0].shared  = getentry("MemShared:", procbuf);
@@ -452,7 +458,7 @@ int machine_get_smpload(load_type *result, int *numcpus)
 
 	// Look for lines starting with "cpu0", "cpu1", etc.
 	token = strtok(procbuf, "\n");
-	while (token) {
+	while (token != NULL) {
 		if ((strlen(token) > 3) && (!strncmp(token, "cpu", 3)) && isdigit(token[3])) {
 			sscanf(token, "%*s %lu %lu %lu %lu", &curr_load[*numcpus].user, &curr_load[*numcpus].nice, &curr_load[*numcpus].system, &curr_load[*numcpus].idle);
 
@@ -479,7 +485,7 @@ int machine_get_uptime(double *up, double *idle)
 {
 	double local_up, local_idle;
 
-	reread(uptime_fd, "get_uptime:");
+	reread(uptime_fd, "get_uptime");
 	sscanf(procbuf, "%lf %lf", &local_up, &local_idle);
 	if (up != NULL)
 			*up = local_up;

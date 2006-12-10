@@ -193,12 +193,12 @@ int machine_get_load(load_type *curr_load)
 
 int machine_get_loadavg(double *load)
 {
-	double loadavg[1];
+	double loadavg[LOADAVG_NSTATS];
 
-	if (getloadavg(loadavg, 1) == -1)
+	if (getloadavg(loadavg, LOADAVG_NSTATS) <= LOADAVG_1MIN)
 		return(FALSE);
 
-	*load = loadavg[0];
+	*load = loadavg[LOADAVG_1MIN];
 
 	return(TRUE);
 }
