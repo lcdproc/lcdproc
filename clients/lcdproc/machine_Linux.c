@@ -153,26 +153,29 @@ reread (int f, char *errmsg)
 	exit(1);
 }
 
-long
-getentry (const char *tag, const char *bufptr)
+static int
+getentry (const char *tag, const char *bufptr, long *value)
 {
 	char *tail;
 	int len = strlen(tag);
-	long retval;
+	long val;
 
 	while (bufptr != NULL) {
 		if (*bufptr == '\n')
 			bufptr++;
 		if (!strncmp(tag, bufptr, len)) {
-			retval = strtol(bufptr + len, &tail, 10);
-			if (tail == bufptr + len)
-				return -1;
+			errno = 0;
+			val = strtol(bufptr + len, &tail, 10);
+			if ((errno == 0) && (tail != bufptr + len)) {
+				*value = val;
+				return TRUE;
+			}
 			else
-				return retval;
+				return FALSE;
 		}
 		bufptr = strchr(bufptr, '\n');
 	}
-	return -1;
+	return FALSE;
 }
 
 int machine_get_battstat(int *acstat, int *battflag, int *percent)
@@ -332,14 +335,16 @@ int machine_get_loadavg(double *load)
 
 int machine_get_meminfo(meminfo_type *result)
 {
+	long tmp;
+
 	reread(meminfo_fd, "get_meminfo");
-	result[0].total   = getentry("MemTotal:", procbuf);
-	result[0].free    = getentry("MemFree:", procbuf);
-	result[0].shared  = getentry("MemShared:", procbuf);
-	result[0].buffers = getentry("Buffers:", procbuf);
-	result[0].cache   = getentry("Cached:", procbuf);
-	result[1].total   = getentry("SwapTotal:", procbuf);
-	result[1].free    = getentry("SwapFree:", procbuf);
+	result[0].total   = (getentry("MemTotal:", procbuf, &tmp)  == TRUE) ? tmp : 0L;
+	result[0].free    = (getentry("MemFree:", procbuf, &tmp)   == TRUE) ? tmp : 0L;
+	result[0].shared  = (getentry("MemShared:", procbuf, &tmp) == TRUE) ? tmp : 0L;
+	result[0].buffers = (getentry("Buffers:", procbuf, &tmp)   == TRUE) ? tmp : 0L;
+	result[0].cache   = (getentry("Cached:", procbuf, &tmp)    == TRUE) ? tmp : 0L;
+	result[1].total   = (getentry("SwapTotal:", procbuf, &tmp) == TRUE) ? tmp : 0L;
+	result[1].free    = (getentry("SwapFree:", procbuf, &tmp)  == TRUE) ? tmp : 0L;
 
 	return(TRUE);
 }

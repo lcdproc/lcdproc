@@ -46,18 +46,18 @@ typedef struct
 
 typedef struct
 {
-	int total;		/**< total memory (in kB) */
-	int cache;		/**< memory in page cache (in kB) */
-	int buffers;		/**< memory in buffer cache (in kB) */
-	int free;		/**< free memory (in kB) */
-	int shared;		/**< ??? (in kB) */
+	long total;		/**< total memory (in kB) */
+	long cache;		/**< memory in page cache (in kB) */
+	long buffers;		/**< memory in buffer cache (in kB) */
+	long free;		/**< free memory (in kB) */
+	long shared;		/**< ??? (in kB) */
 } meminfo_type;
 
 
 typedef struct
 {
 	char name[16];		/**< process name */
-	int totl;		/**< process memory usage (in kB) */
+	long totl;		/**< process memory usage (in kB) */
 	int number;		/**< incstances of the process */
 } procinfo_type;
 
