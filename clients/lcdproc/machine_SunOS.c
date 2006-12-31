@@ -300,7 +300,7 @@ int machine_get_procs(LinkedList *procs)
 	{
 		psinfo_t psinfo;
 
-		if (!index("1234567890", procdir->d_name[0]))
+		if (!strchr("1234567890", procdir->d_name[0]))
 			continue;
 
 		sprintf(buf, "/proc/%s/psinfo", procdir->d_name);

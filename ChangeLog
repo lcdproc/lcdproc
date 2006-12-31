@@ -25,6 +25,7 @@ v.0.5dev (ongoing development)
  * add support for Iface and ProcSize screens for OS X / Darwin (Eric Pooch)
  * update & fix serialVFD driver (Stefan Herdler)
  + Hitachi SP14Q002 support & another connection type to sed1330 (Benjamin Wiedmann)
+ * replace obsolete index() by strchr() (Guillaume LECERF)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

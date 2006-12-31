@@ -383,7 +383,7 @@ int machine_get_procs(LinkedList *procs)
 		char buf[128];
 
 		/* ignore everything in proc except process ids */
-		if (!index("1234567890", procdir->d_name[0]))
+		if (!strchr("1234567890", procdir->d_name[0]))
 			continue;
 
 		sprintf(buf, "/proc/%s/status", procdir->d_name);
