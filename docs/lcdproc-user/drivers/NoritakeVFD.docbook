@@ -2,8 +2,8 @@
 <title>The NoritakeVFD Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-NoritakeVFD chipset.
+This section talks about using LCDproc with text mode VFD displays from
+<ulink url="http://www.noritake-itron.com/">Noritake Itron</ulink>.
 </para>
 
 <!-- ## Noritake VFD driver ## -->
