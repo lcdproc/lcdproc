@@ -24,6 +24,7 @@ v.0.5dev (ongoing development)
  * make Brightness & OffBrightness run-time configurable in CFontz & MtxOrb
  * add support for Iface and ProcSize screens for OS X / Darwin (Eric Pooch)
  * update & fix serialVFD driver (Stefan Herdler)
+ + Hitachi SP14Q002 support & another connection type to sed1330 (Benjamin Wiedmann)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

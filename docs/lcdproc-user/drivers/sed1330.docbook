@@ -2,9 +2,149 @@
 <title>The sed1330 Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-sed1330 chipset.
+This section talks about using LCDproc with graphical LCD displays driven by
+the EPSON/SMOS SED1330 or SED1335 LCD controllers, which may also be known by their
+new names: S1D13300 (= SED1330) and S1D13305 (SED1335).
+
+The displays are driven in text mode using their built-in character generator.
 </para>
+
+<sect2 id="sed1330-connections">
+<title>Connections</title>
+
+<para>
+Connections below are for the G242C, G121C and G321D displays.
+Always consult documentation about the specific display before asuming
+the connections given here are also correct for your display !
+</para> 
+
+
+   Ordered by LCD pins
+<screen>
+<![CDATA[
+	LCD		pin?	<--->	pin	LPT port
+	^RESET		1		1	^STROBE
+	^RD		2	+5V
+	^WR		3		16	^INIT
+	SEL1		4	GND
+	SEL2		5	GND
+	^CS		6	GND
+	A0		7		17	^SELECT_IN
+	D0		8		2	D0
+	D1		9		3	D1
+	D2		10		4	D2
+	D3		11		5	D3
+	D4		12		6	D4
+	D5		13		7	D5
+	D6		14		8	D6
+	D7		15		9	D7
+	Vdd		16	+5V
+	Vss		17	GND	18..25	GND
+	V0		18	potmeter
+	Vlc		19	-24V
+	Frame		20	GND
+					10	^ACK
+				GND	11	BUSY
+					12	PAPEREND
+					13	^SELECT
+					14	^LF
+					15	^ERROR
+]]>
+</screen>
+
+   Or ordered by the LPT port pins:
+<screen>
+<![CDATA[
+	LCD		pin?	<--->	pin	LPT port
+	^RESET		1		1	^STROBE
+	D0		8		2	D0
+	D1		9		3	D1
+	D2		10		4	D2
+	D3		11		5	D3
+	D4		12		6	D4
+	D5		13		7	D5
+	D6		14		8	D6
+	D7		15		9	D7
+					10	^ACK
+				GND	11	BUSY
+					12	PAPEREND
+					13	^SELECT
+					14	^LF
+					15	^ERROR
+	^WR		3		16	^INIT
+	A0		7		17	^SELECT_IN
+	Vss		17	GND	18..25	GND
+	^RD		2	+5V
+	SEL1		4	GND
+	SEL2		5	GND
+	^CS		6	GND
+	Vdd		16	+5V
+	V0		18	potmeter
+	Vlc		19	-24V (not required for G242C)
+	Frame		20	GND
+]]>
+</screen>
+ 
+The potmeter should be connected like this on these display modules:
+
+<screen>
+<![CDATA[
+	=== GND
+	 |
+	.-.
+	| |
+	| |5k
+	'-'
+	 |
+	 |
+	.-.10k potmeter
+	| |
+	| |<----------------o V0
+	| |
+	'-'
+	 |
+	 O Vlc (= -24V)
+]]>
+</screen>
+
+The G242C generates -24V internally. It is available on Vlc.
+
+To generate -24 from the +5V without an external power source, you can
+use the following circuit.
+
+<screen>
+<![CDATA[
+ 5V O------+----------+                                 pinout:
+           |          |                                  _____
+           |         --- 100uF                          |  _  |
+           |         --- 10V                            | (_) | <-3
+           |          |                                 |_____|
+           |          +--------+--------+--------+      | max |
+           |5         |        |        |        |      | 724 |
+       ---------     === GND   C        -        |      |_____|
+      |         |              C coil  | |       |       |||||
+      |         |              C 47uH  | |10k    |       |||||.
+      |         |4             |        -        |       | | |
+      | MAX724  |--------------+        |        |       12345
+      |   or    |              |        |        |
+      | MAX726  |1             |        |        |+
+      |         |-----------------------+       --- 47uF
+      |         |              |        |       --- 50V
+      |         |              |        |        |
+       ---------               |        -        |
+        |2    |3               |       | |       |
+        |     |              '---,     | |1k     |
+       ---    |        SB160  / \       -        |
+  100nF---    |               ^T^       |        |
+        |     |                |        |        |
+        +-----+----------------+--------+--------+----O -24V out
+]]>
+</screen>
+
+
+
+</sect2>
+
 
 <!-- ## Seiko Epson 1330 driver ## -->
 <sect2 id="sed1330-config">
@@ -14,6 +154,24 @@ sed1330 chipset.
 <title>[sed1330]</title>
 
 <variablelist>
+<varlistentry>
+  <term>
+    <command>CellSize=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Specify the size of a character in pixels.
+    <replaceable>WIDTH</replaceable> may vary between <literal>6</literal> and <literal>8</literal>;
+    legal values for <replaceable>HEIGHT</replaceable> range from <literal>7</literal> to
+    <literal>16</literal>.
+    If not given <command>CellSize</command> defaults to <literal>6x10</literal>.
+  </para></listitem>
+</varlistentry>
+
 <varlistentry>
   <term>
     <command>Port=</command>
@@ -37,6 +195,7 @@ sed1330 chipset.
       <arg choice="plain"><literal>G242C</literal></arg>
       <arg choice="plain"><literal>G191D</literal></arg>
       <arg choice="plain"><literal>G2446</literal></arg>
+      <arg choice="plain"><literal>SP14Q002</literal></arg>
     </group>
     </arg>
   </term>
@@ -45,11 +204,17 @@ sed1330 chipset.
     Type of LCD module.
     </para>
     <note><para>
-      The G321D is the only one that is tested currently.
+      The G321D and SP14Q002 are the only ones that this driver is tested with currently.
     </para></note>  
   </listitem>
 </varlistentry>
 </variablelist>
+
+<para>
+Contrary to other drivers the character size of an LCD is not given given directly.
+Instead it is determined by the pixel size of the display, which is derived from 
+the display type setting and the character cell size.
+</para>
 
 </sect3>
 

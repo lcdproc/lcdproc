@@ -11,6 +11,8 @@ Things for the short term:
 - more features for existing display drivers
   (e.g. adapt them to bignum library)
 - documentation (any help is appreciated)
+- ConnectionType configuration parameter for the sed1330 driver to
+  distinguish between the default and bitshaker (a.k.a. yasedw) wiring
 
 Things for the longer term:
 

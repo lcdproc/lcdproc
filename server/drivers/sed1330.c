@@ -15,6 +15,7 @@
  *
  * Copyright (c) 2001-2003, Joris Robijn <joris@robijn.net>
  * 		 2003, Michael Rohde <Micha.R@online.de>
+ * 		 2006, Benjamin Wiedmann <benjamin.wiedmann@gmx.net>
  *
  *
  * Changelog:
@@ -41,6 +42,13 @@
  * - added function sed1330_icon to get correct display of full blocks
  * May 2003, Joris Robijn
  * - Made bars have spaces between them (I hope people like this)
+ * December 2006, Benjamin Wiedmann
+ * - added support for Hitachi SP14Q002 gLCD (320x240) with ccfl inverter
+ * - built for parport version of this interface: Wallbraun Electronics lcdinterface
+ *   (specifications here: http://wallbraun-electronics.de/produkte/lcdinterface/index.html)
+ * - wiring scheme used: "bitshaker" (called "yasedw" in serdisplib)
+ *   --> default wiring: wr=16; a0=17; rd=01; cs=14
+ *   --> yasedw  wiring: wr=01; a0=14; rd=16; cs=17
  *
  *
  * IMPORTANT: MODULES OTHER THAN G321D
@@ -173,11 +181,12 @@
  *
  * With the display= option you should specify what display module you have.
  * Accepted values are:
- * display=G121C
- * display=G242C
- * display=G321D
- * display=G191D
- * display=G2446
+ * type=G121C
+ * type=G242C
+ * type=G321D
+ * type=G191D
+ * type=G2446
+ * type=SP14Q002
  * The port= value should be set to the LPT port address that the LCD is
  * connected to. Examples:
  * port=0x378
@@ -210,9 +219,33 @@
 #define KEYPAD_AUTOREPEAT_FREQ 15
 
 // LPT lines
+
+// should we use the bitshaker wiring?
+//#define WIRING_BITSHAKER
+
+#ifdef WIRING_BITSHAKER
+
+// use BITSHAKER / YASEDW wiring
+
+// pin 14 
+#define A0	nLF   
+// pin 16 
+#define nRESET	  INIT  
+// pin 1
+#define nWR	STRB
+
+#else
+
+// use default wiring
+
+// pin 17
 #define A0	SEL
-#define nRESET	STRB
-#define nWR	INIT
+// pin 1  
+#define nRESET	STRB 
+// pin 16
+#define nWR	INIT 
+
+#endif
 
 // Command definitions
 #define CMD_SYSTEM_SET	0x40
@@ -237,11 +270,12 @@
 #define KEYPAD_MAXX 5
 #define KEYPAD_MAXY 8
 
-#define TYPE_G321D 1
-#define TYPE_G121C 2
-#define TYPE_G242C 3
-#define TYPE_G191D 4
-#define TYPE_G2446 5
+#define TYPE_G321D    1
+#define TYPE_G121C    2
+#define TYPE_G242C    3
+#define TYPE_G191D    4
+#define TYPE_G2446    5
+#define TYPE_SP14Q002 6
 
 #define SCR1_L 0x00 // Memory locations
 #define SCR1_H 0x00
@@ -378,7 +412,10 @@ sed1330_init( Driver * drvthis )
 		p->type = TYPE_G2446;
 		p->graph_width = 240;
 		p->graph_height = 64;
-
+	} else if(strcmp(s, "SP14Q002") == 0) {
+		p->type = TYPE_SP14Q002;
+		p->graph_width = 320;
+		p->graph_height = 240;
 	} else {
 		report(RPT_ERR, "%s: Unknown display type %s", drvthis->name, s);
 		return -1;
@@ -496,6 +533,9 @@ sed1330_init( Driver * drvthis )
 
 	switch (p->type) {
 	  case TYPE_G321D:
+		data[4] = 0x38;
+		break;
+	  case TYPE_SP14Q002:
 		data[4] = 0x38;
 		break;
 	  case TYPE_G121C:
@@ -632,6 +672,38 @@ sed1330_height( Driver * drvthis )
 	debug(RPT_INFO, "%s()", __FUNCTION__);
 
 	return p->height;
+}
+
+
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel columns a character cell is wide.
+ */
+MODULE_EXPORT int 
+sed1330_cellwidth(Driver *drvthis)
+{
+PrivateData *p = drvthis->private_data;
+
+	debug(RPT_DEBUG, "%s: returning cellwidth", drvthis->name);
+
+	return p->cellwidth;
+}
+
+
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel lines a character cell is high.
+ */
+MODULE_EXPORT int 
+sed1330_cellheight(Driver *drvthis)
+{
+PrivateData *p = drvthis->private_data;
+
+	debug(RPT_DEBUG, "%s: returning cellheight", drvthis->name);
+
+	return p->cellheight;
 }
 
 
