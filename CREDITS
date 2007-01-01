@@ -207,6 +207,9 @@ John Sanders:
 Eric Pooch:
 	- Mac OS X / Darwin support
 
+Benjamin Wiedmann
+	- Added functionality for HITACHI SP14Q002 gLCD (320x240)
+	- Implemented dynamic wiring scheme selection for SED1330 driver ("ConnectionType")
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min
