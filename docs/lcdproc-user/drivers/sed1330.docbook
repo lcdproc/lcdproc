@@ -19,7 +19,7 @@ the connections given here are also correct for your display !
 </para> 
 
 
-   Ordered by LCD pins
+ConnectionType <literal>classic</literal> ordered by LCD pins
 <screen>
 <![CDATA[
 	LCD		pin?	<--->	pin	LPT port
@@ -52,7 +52,7 @@ the connections given here are also correct for your display !
 ]]>
 </screen>
 
-   Or ordered by the LPT port pins:
+ConnectionType <literal>classic</literal> ordered by LPT port pins
 <screen>
 <![CDATA[
 	LCD		pin?	<--->	pin	LPT port
@@ -174,6 +174,48 @@ use the following circuit.
 
 <varlistentry>
   <term>
+    <command>ConnectionType=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>classic</emphasis></literal></arg>
+      <arg choice="plain"><literal>bitshaker</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem>
+    <para>
+    Select the type of the wiring.
+    </para>
+
+    <informaltable>
+    <tgroup cols="2">
+      <thead>
+        <row>
+          <entry>ConnectionType</entry>
+          <entry>Wiring</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry><literal>classic</literal></entry>
+          <entry>^WR = LPT pin 16, A0 = LPT pin 17, ^RESET = LPT pin 1</entry>
+        </row>
+        <row>
+          <entry><literal>bitshaker</literal></entry>
+          <entry>^WR = LPT pin 1, A0 = LPT pin 14, ^RESET = LPT pin 16</entry>
+        </row>
+      </tbody>
+    </tgroup>
+    </informaltable>
+
+    <para>
+    If not given, it defaults to <literal>classic</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>Port=</command>
     <arg choice="plain"><replaceable>PORT</replaceable></arg>
   </term>
@@ -201,17 +243,57 @@ use the following circuit.
   </term>
   <listitem>
     <para>
-    Type of LCD module.
+    Type of LCD module. Besised other things (internal setup) this configuration setting
+    detrmines the size of the display in pixels.
     </para>
+
+    <informaltable>
+    <tgroup cols="2">
+      <thead>
+        <row>
+          <entry>Type</entry>
+          <entry>Size (in pixels)</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row>
+          <entry><literal>G321D</literal></entry>
+	  <entry>320 x 200</entry>
+        </row>
+        <row>
+          <entry><literal>G121C</literal></entry>
+	  <entry>128 x 128</entry>
+        </row>
+        <row>
+          <entry><literal>G242C</literal></entry>
+	  <entry>240 x 128</entry>
+        </row>
+        <row>
+          <entry><literal>G191D</literal></entry>
+	  <entry>192 x 192</entry>
+        </row>
+        <row>
+          <entry><literal>G2446</literal></entry>
+	  <entry>240 x 64</entry>
+        </row>
+        <row>
+          <entry><literal>SP14Q002</literal></entry>
+	  <entry>320 x 240</entry>
+        </row>
+      </tbody>
+    </tgroup>
+    </informaltable>
+
     <note><para>
-      The G321D and SP14Q002 are the only ones that this driver is tested with currently.
+      Currently the G321D and SP14Q002 are the only ones that this driver is tested with.
     </para></note>  
   </listitem>
 </varlistentry>
 </variablelist>
 
 <para>
-Contrary to other drivers the character size of an LCD is not given given directly.
+Contrary to other drivers the character size of an LCD using the sed1330i
+driver is not given directly.
 Instead it is determined by the pixel size of the display, which is derived from 
 the display type setting and the character cell size.
 </para>
