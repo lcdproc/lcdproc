@@ -14,9 +14,9 @@ Driver for Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD Module
 <para>
 In order to be able to use it, you have to get and install one of
 the following kernel modules:
- - standalone iMON VFD driver from http://venky.ws/projects/imon/
+ - standalone iMON VFD driver from <ulink url="http://venky.ws/projects/imon/"></ulink>
  - the iMON module included with LIRC ver. 0.7.1 or newer
-   from http://www.lirc.org/
+   from the <ulink url="http://www.lirc.org">LIRC project</ulink>/
 </para>
 
 <para>

@@ -1237,7 +1237,7 @@ that. The BL output below should be connected to the BL input in the
 <title>LIS2 USB device "lis2"</title>
 
 <para>
-LIS2 from VLSystem (http://www.vlsys.co.kr) is a full featured usb vfd module
+LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>) is a full featured usb vfd module
 with four channel fan controls. This device can be access as a serial device with
 help of the kernel modules ftdi_sio which map the USB port to a serial port (/dev/ttyUSBx).
 </para>
@@ -1688,7 +1688,7 @@ can be done by specifying "--enable-drivers=all" or by
         </row>
         <row>
           <entry><literal>los-panel</literal></entry>
-          <entry>LCD on Serial panel device "los-panel" (http://www.xs4all.nl/~mlf/los/)</entry>
+          <entry>LCD on Serial panel device "los-panel" (<ulink url="http://www.xs4all.nl/~mlf/los/"></ulink>)</entry>
         </row>
         <row>
           <entry><literal>vdr-lcd</literal></entry>
@@ -1696,11 +1696,11 @@ can be done by specifying "--enable-drivers=all" or by
         </row>
         <row>
           <entry><literal>lis2</literal></entry>
-          <entry>LIS2 from VLSystem (http://www.vlsys.co.kr)</entry>
+          <entry>LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
         </row>
         <row>
           <entry><literal>bwctusb</literal></entry>
-          <entry>BWCT USB device "bwctusb"</entry>
+          <entry>BWCT USB device "bwctusb" (<ulink url="http://www.bwct.de/lcd.html"></ulink>)</entry>
         </row>
         <row>
           <entry><literal>i2c</literal></entry>

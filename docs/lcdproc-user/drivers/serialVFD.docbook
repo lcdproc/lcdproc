@@ -71,7 +71,7 @@ The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
       <entry>Ok</entry>
       <entry>Yes</entry>
       <entry>(* perhaps no compatible baudrate, not tested)
- The display has no user-characters set  <command>Custom-Characters=0</command>
+ The display has no user-characters: set <command>Custom-Characters=0</command>
  in <filename>LCDd.conf.</filename></entry>
     </row>
     <row>
@@ -88,7 +88,7 @@ The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
       <entry>Ok</entry>
       <entry>Ok</entry>
       <entry>Yes</entry>
-      <entry>The display is FUTABA compatible (hard and software). Set <command>Custom-Characters=0</command>
+      <entry>The display is FUTABA compatible (hard- and software). Set <command>Custom-Characters=0</command>
  in <filename>LCDd.conf.</filename> </entry>
     </row>
 

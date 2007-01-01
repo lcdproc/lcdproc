@@ -8,8 +8,8 @@ that works with LIRC to control the LCDproc server
 and/or clients that can handle input.
 </para>
 <para>
-Of course you need a working LIRC setup. Refer to
-<ulink url="http://www.lirc.org">http://www.lirc.org</ulink> for more
+Of course you need a working LIRC setup. Refer to the
+<ulink url="http://www.lirc.org">LIRC project</ulink> for more
 information on LIRC itself.
 </para>
 
