@@ -6,7 +6,7 @@
 
         Copyright (C) 2002, Andrew Ip
                       2003, David Glaude
-                      2006, Peter Marschall
+                      2006,7 Peter Marschall
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -145,31 +145,25 @@ static void CwLnx_hidecursor(int fd);
 #define LCD_PUT_PIXEL		112
 #define LCD_CLEAR_PIXEL		113
 
-#define DELAY			20
-#define UPDATE_DELAY		0	/* 1 sec */
-#define SETUP_DELAY		1	/* 2 sec */
+#define DELAY			2000	/* 2 milli sec */
+#define UPDATE_DELAY		0	/* 1 imicro sec */
+#define SETUP_DELAY		1	/* 2 micro sec */
 
 
 
 static int Write_LCD(int fd, char *c, int size)
 {
     int rc;
+    int retries = 30;
 
-    rc = write(fd, c, size);
-/* Debuging code to be cleaned when very stable */
-/* 
-    if (size == 1) {
-	if (*c >= 0) 
-	    printf("%3d ", *c);
-	else {
-	    if (*c+256==254)
-		printf("\n%3d ", *c+256);
-	    else
-		printf("%3d ", *c+256);
-	}
-    }
-*/
-/*    usleep(DELAY); */
+    do {
+	rc = write(fd, c, size);
+        if (rc == size)
+	    break;
+	usleep(DELAY);
+        
+    } while (--retries > 0);
+
     return rc;
 }
 
@@ -1095,8 +1089,7 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
 	    c = dat[row] & mask;
 	    Write_LCD(p->fd, &c, 1);
 	}
-    }
-    else {			// the graphical model
+    } else if (p->model == 12232) {	// the graphical model
 	int col;
 
 	for (col = p->cellwidth - 1; col >= 0; col--) {
@@ -1108,7 +1101,9 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
 		letter |= ((dat[row] >> col) & 1);
 	    }
 
-	    c = letter;
+	    /* restrict width to 5 pixels */
+	    c = (col < p->cellwidth - 1) ? letter : '\0';
+
 	    Write_LCD(p->fd, &c, 1);
 	}
     }
