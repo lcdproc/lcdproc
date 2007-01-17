@@ -236,7 +236,7 @@ static void Backlight_Brightness(int fd, int brightness)
 /* Hardware function */
 static void Enable_Scroll(int fd)
 {
-    char cmd[] = { LCD_CMD, LCD_ENABLE_SCROLL, Write_LCD };
+    char cmd[] = { LCD_CMD, LCD_ENABLE_SCROLL, LCD_CMD_END };
 
     Write_LCD(fd, cmd, 3);
 }
