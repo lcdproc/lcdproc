@@ -74,7 +74,7 @@ Login to CVS:
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@cvs.lcdproc.sourceforge.net:/cvsroot/lcdproc login</userinput>
+<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc login</userinput>
 </screen>
 
 <para>
@@ -86,7 +86,7 @@ Get the files from CVS:
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@cvs.lcdproc.sourceforge.net:/cvsroot/lcdproc checkout -r stable-0-5-x lcdproc</userinput>
+<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc checkout -r stable-0-5-x lcdproc</userinput>
 </screen>
 
 <para>
