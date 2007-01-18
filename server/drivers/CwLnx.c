@@ -355,7 +355,7 @@ static void Set_Insert(int fd, int row, int col)
 	cmd[2] = (char) col;
 	cmd[3] = (char) row;
 
-	Write_LCD(fd, cmd, 4);
+	Write_LCD(fd, cmd, 5);
     }
 }
 
