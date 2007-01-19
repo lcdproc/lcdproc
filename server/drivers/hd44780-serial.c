@@ -136,18 +136,18 @@ hd_init_serial (Driver *drvthis)
 	char conf_serialif[SERIALIF_NAME_LENGTH];
 
 	strncpy(conf_serialif, drvthis->config_get_string(drvthis->name, "connectiontype", 0, ""), SERIALIF_NAME_LENGTH);
-	conf_serialif[SERIALIF_NAME_LENGTH-1]='\0';
-	p->serial_type=0;
-	for (counter=0; counter<(sizeof(serial_interfaces)/sizeof(SerialInterface)); counter++) {
+	conf_serialif[SERIALIF_NAME_LENGTH-1] = '\0';
+	p->serial_type = 0;
+	for (counter = 0; counter < (sizeof(serial_interfaces)/sizeof(SerialInterface)); counter++) {
 		if (strcasecmp(conf_serialif, serial_interfaces[counter].name) == 0) {
-			p->serial_type=counter;
+			p->serial_type = counter;
 			break;
 		}
 	}
 	if (p->serial_type != counter) {
 		report(RPT_ERR, "HD44780: serial: serial interface %s unknown", conf_serialif);
 		report(RPT_ERR, "HD44780: serial: available interfaces:");
-		for (counter=0; counter<(sizeof(serial_interfaces)/sizeof(SerialInterface)); counter++)
+		for (counter = 0; counter < (sizeof(serial_interfaces)/sizeof(SerialInterface)); counter++)
 			report(RPT_ERR, " %s", serial_interfaces[counter].name);
 		return -1;
 	}
@@ -170,9 +170,9 @@ hd_init_serial (Driver *drvthis)
 	unsigned int conf_bitrate;
 	size_t bitrate;
 
-	conf_bitrate=atoi( drvthis->config_get_string(drvthis->name, "Speed", 0, "0") );
-	if (conf_bitrate==0)
-		conf_bitrate=SERIAL_IF.default_bitrate;
+	conf_bitrate = atoi( drvthis->config_get_string(drvthis->name, "Speed", 0, "0") );
+	if (conf_bitrate == 0)
+		conf_bitrate = SERIAL_IF.default_bitrate;
 	if (convert_bitrate(conf_bitrate, &bitrate)) {
 		report(RPT_ERR, "HD44780: serial: invalid configured bitrate speed");
 		return -1;
@@ -181,7 +181,7 @@ hd_init_serial (Driver *drvthis)
 
 	/* Get serial device to use */
 	strncpy(device, drvthis->config_get_string(drvthis->name, "device", 0, DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device)-1]=0;
+	device[sizeof(device)-1] = '\0';
 	report (RPT_INFO,"HD44780: serial: using device: %s", device);
 
 	/* Set up io port correctly, and open it... */
@@ -197,7 +197,7 @@ hd_init_serial (Driver *drvthis)
 	/* We use RAW mode */
 #ifdef HAVE_CFMAKERAW
 	/* The easy way */
-	cfmakeraw( &portset );
+	cfmakeraw(&portset);
 	portset.c_cflag |= CLOCAL;
 #else
 	/* The hard way */
@@ -223,11 +223,11 @@ hd_init_serial (Driver *drvthis)
 
 	/* Do initialization */
 	if (SERIAL_IF.if_bits == 8) {
-		report (RPT_INFO,"HD44780: serial: initializing with 8 bits interface");
-		common_init (p, IF_8BIT);
+		report(RPT_INFO,"HD44780: serial: initializing with 8 bits interface");
+		common_init(p, IF_8BIT);
 	} else {
 		report (RPT_INFO,"HD44780: serial: initializing with 4 bits interface");
-		common_init (p, IF_4BIT);
+		common_init(p, IF_4BIT);
 	}
 
 	return 0;
@@ -238,19 +238,21 @@ void
 serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	/* Filter illegally sent escape characters (for interfaces without data escape) */
-	if (flags == RS_DATA && SERIAL_IF.data_escape==0 && ch==SERIAL_IF.instruction_escape)
+	if (flags == RS_DATA && SERIAL_IF.data_escape == 0 && ch == SERIAL_IF.instruction_escape)
 		ch='?';
 
 	if (flags == RS_DATA) {
 		/* Do we need a DATA indicator byte? */
-		if( SERIAL_IF.data_escape!=0 && ch<SERIAL_IF.data_escape_max ) {
-			write( p->fd, &SERIAL_IF.data_escape, 1 );
+		if ((SERIAL_IF.data_escape != '\0') &&
+		    (ch >= SERIAL_IF.data_escape_min) &&
+		    (ch < SERIAL_IF.data_escape_max)) {
+			write(p->fd, &SERIAL_IF.data_escape, 1);
 		}
-		write( p->fd, &ch, 1 );
+		write(p->fd, &ch, 1);
 	}
 	else {
-		write( p->fd, &SERIAL_IF.instruction_escape, 1 );
-		write( p->fd, &ch, 1 );
+		write(p->fd, &SERIAL_IF.instruction_escape, 1);
+		write(p->fd, &ch, 1);
 	}
 }
 
@@ -266,9 +268,10 @@ serial_HD44780_scankeypad (PrivateData *p)
 {
 	unsigned char buffer = 0;
 	char hangcheck = 100;
+
 	read(p->fd, &buffer, 1);
 	if (buffer == SERIAL_IF.keypad_escape) {
-		while(hangcheck>0) {
+		while (hangcheck > 0) {
 			/* Check if I can read another byte */
 			if (read(p->fd, &buffer, 1) == 1) {
 				return buffer;
