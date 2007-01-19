@@ -170,9 +170,7 @@ hd_init_serial (Driver *drvthis)
 	unsigned int conf_bitrate;
 	size_t bitrate;
 
-	conf_bitrate = atoi( drvthis->config_get_string(drvthis->name, "Speed", 0, "0") );
-	if (conf_bitrate == 0)
-		conf_bitrate = SERIAL_IF.default_bitrate;
+	conf_bitrate = drvthis->config_get_string(drvthis->name, "Speed", 0, SERIAL_IF.default_bitrate);
 	if (convert_bitrate(conf_bitrate, &bitrate)) {
 		report(RPT_ERR, "HD44780: serial: invalid configured bitrate speed");
 		return -1;
