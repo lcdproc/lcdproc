@@ -28,7 +28,7 @@ static const SerialInterface serial_interfaces[] = {
 	{ "picanlcd",      0x11, 0x12, 0x00, 0x20,   9600,   8, 0, 0x00, 0,   0 },
 	{ "lcdserializer", 0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 0,   0 },
 	{ "los-panel",     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 1,   0 },
-	{ "vdr-lcd",       0xFE,    0, 0x00, 0x00,   9600,   4, 0, 0x00, 0,   0 }
+	{ "vdr-lcd",       0xFE,    0, 0x00, 0x00,   9600,   4, 0, 0x00, 0,   0 },
 	{ "vdr-wakeup",    0xC0, 0xC4, 0xC0, 0xD0,   9600,   4, 0, 0x00, 0,   0 }
 };
 
