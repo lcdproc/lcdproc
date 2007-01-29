@@ -18,18 +18,20 @@ typedef struct SerialInterface {
 	char         keypad;
 	char         keypad_escape;
 	char         backlight;
-	char         backlight_escape;
+ 	char         backlight_off;
+ 	char         backlight_on;
+ 	char         multiple_displays;
 } SerialInterface;
 
 /* List of connectiontypes managed by this driver, if you change
    something here, remember also to change hd44780-drivers.h */
 static const SerialInterface serial_interfaces[] = {
-	/*    name         instr data     v     ^ bitrate bits  K   esc  B  esc */
-	{ "picanlcd",      0x11, 0x12, 0x00, 0x20,   9600,   8, 0, 0x00, 0,   0 },
-	{ "lcdserializer", 0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 0,   0 },
-	{ "los-panel",     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 1,   0 },
-	{ "vdr-lcd",       0xFE,    0, 0x00, 0x00,   9600,   4, 0, 0x00, 0,   0 },
-	{ "vdr-wakeup",    0xC0, 0xC4, 0xC0, 0xD0,   9600,   4, 0, 0x00, 0,   0 }
+ 	/*    name         instr data     v     ^ bitrate bits  K   esc  B  Boff   Bon Multi */
+	{ "picanlcd",      0x11, 0x12, 0x00, 0x20,   9600,   8, 0, 0x00, 0,    0,    0,   0 },
+ 	{ "lcdserializer", 0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 0,    0,    0,   0 },
+ 	{ "los-panel",     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 0,    0,    0,   0 },
+ 	{ "vdr-lcd",       0xFE,    0, 0x00, 0x00,   9600,   4, 0, 0x00, 0,    0,    0,   0 },
+ 	{ "vdr-wakeup",    0xC0, 0xC4, 0xC0, 0xD0,   9600,   4, 0, 0x00, 1, 0xC9, 0xC8,   1 }
 };
 
 /* initialize this particular driver */

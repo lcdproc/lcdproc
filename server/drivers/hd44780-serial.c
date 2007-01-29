@@ -116,6 +116,8 @@ int convert_bitrate(unsigned int conf_bitrate, size_t *bitrate) {
 	return 1;
 }
 
+static int lastdisplayID;
+
 void serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
 void serial_HD44780_backlight (PrivateData *p, unsigned char state);
 unsigned char serial_HD44780_scankeypad (PrivateData *p);
@@ -170,7 +172,9 @@ hd_init_serial (Driver *drvthis)
 	unsigned int conf_bitrate;
 	size_t bitrate;
 
-	conf_bitrate = drvthis->config_get_string(drvthis->name, "Speed", 0, SERIAL_IF.default_bitrate);
+	conf_bitrate = drvthis->config_get_int(drvthis->name, "Speed", 0, SERIAL_IF.default_bitrate);
+        if (conf_bitrate==0)
+                conf_bitrate = SERIAL_IF.default_bitrate;
 	if (convert_bitrate(conf_bitrate, &bitrate)) {
 		report(RPT_ERR, "HD44780: serial: invalid configured bitrate speed");
 		return -1;
@@ -213,6 +217,8 @@ hd_init_serial (Driver *drvthis)
 	/* Set TCSANOW mode of serial device */
 	tcsetattr(p->fd, TCSANOW, &portset);
 
+        lastdisplayID = -1;
+
 	/* Assign functions */
 	p->hd44780_functions->senddata = serial_HD44780_senddata;
 	p->hd44780_functions->backlight = serial_HD44780_backlight;
@@ -243,8 +249,9 @@ serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char 
 		/* Do we need a DATA indicator byte? */
 		if ((SERIAL_IF.data_escape != '\0') &&
 		    (ch >= SERIAL_IF.data_escape_min) &&
-		    (ch < SERIAL_IF.data_escape_max)) {
-			write(p->fd, &SERIAL_IF.data_escape, 1);
+		    (ch < SERIAL_IF.data_escape_max) ||
+                    (SERIAL_IF.multiple_displays && displayID != lastdisplayID)) {
+			write(p->fd, &SERIAL_IF.data_escape + displayID, 1);
 		}
 		write(p->fd, &ch, 1);
 	}
@@ -252,13 +259,17 @@ serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char 
 		write(p->fd, &SERIAL_IF.instruction_escape, 1);
 		write(p->fd, &ch, 1);
 	}
+        lastdisplayID = displayID;
 }
 
 void
 serial_HD44780_backlight (PrivateData *p, unsigned char state)
 {
-	/* TODO */
-	//if (p->have_backlight) ....
+	if (p->have_backlight) {
+                unsigned char send[1];
+                send[0] = state ? SERIAL_IF.backlight_on : SERIAL_IF.backlight_off;
+                write(p->fd, &send, 1);
+        }
 }
 
 unsigned char
