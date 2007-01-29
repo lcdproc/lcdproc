@@ -1258,11 +1258,26 @@ for information on this device.
 <title>VDR LCD serial device "vdr-lcd"</title>
 
 <para>
- ... to be documented ...
+... to be documented ...
 </para>
 
 <para>
 Please address Matteo Pillon for further information.
+</para>
+
+</sect3>
+
+<sect3 id="hd44780-vdr-wakeup">
+<title>VDR-Wakeup module "vdr-wakeup"</title>
+
+<para>
+The VDR-Wake module by Frank Jepsen is a serial IO extension module for the
+famous Linux-based VDR that allows to connect an LCD to it and supports LCDproc. 
+</para>
+
+<para>
+See <unlink url="http://www.jepsennet.de/vdr/">http://www.jepsennet.de/vdr/</ulink>
+(German) for more information on VDR-Wakeup.
 </para>
 
 </sect3>
@@ -1693,6 +1708,10 @@ can be done by specifying "--enable-drivers=all" or by
         <row>
           <entry><literal>vdr-lcd</literal></entry>
           <entry>VDR LCD serial device "vdr-lcd"</entry>
+        </row>
+        <row>
+          <entry><literal>vdr-wakeup</literal></entry>
+          <entry>VDR-Wakeup module "vdr-wakeup"</entry>
         </row>
         <row>
           <entry><literal>lis2</literal></entry>

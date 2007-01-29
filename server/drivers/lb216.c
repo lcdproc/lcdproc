@@ -1,6 +1,6 @@
 /*
  *
- * Chris Debenham - eSun Systems Engineer <chris.debenham@aus.sun.com>
+ * Chris Debenham - Sun Systems Engineer <chris.debenham@aus.sun.com>
  *
  * Heres a bit more info on the display.
  * It is the LB216 and is made by R.T.N. Australia

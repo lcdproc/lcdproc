@@ -27,6 +27,7 @@ v.0.5dev (ongoing development)
  + Hitachi SP14Q002 support & ConnectionType setting for sed1330 (Benjamin Wiedmann)
  * replace obsolete index() by strchr() (Guillaume LECERF)
  * fixes for CwLinux driver (Gideon Tsang)
+ + new ConnectionType vdr-wakeup in hd44780 driver
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
