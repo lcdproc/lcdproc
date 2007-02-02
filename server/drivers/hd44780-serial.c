@@ -1,6 +1,6 @@
 /*
  * Driver for serial connected hd44780 LCDs
- * Copyright (C) 2006  Matteo Pillon <matteo.pillon@gmail.com>
+ * Copyright (C) 2006-2007  Matteo Pillon <matteo.pillon@gmail.com>
  *
  * Some parts are based on the original pic-an-lcd driver code
  *  Copyright (C) 1997, Matthias Prinke <m.prinke@trashcan.mcnet.de>
@@ -121,6 +121,7 @@ static int lastdisplayID;
 void serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
 void serial_HD44780_backlight (PrivateData *p, unsigned char state);
 unsigned char serial_HD44780_scankeypad (PrivateData *p);
+void serial_HD44780_close (PrivateData *p);
 
 // initialize the driver
 int
@@ -224,6 +225,7 @@ hd_init_serial (Driver *drvthis)
 	p->hd44780_functions->backlight = serial_HD44780_backlight;
 	if (p->have_keypad)
 		p->hd44780_functions->scankeypad = serial_HD44780_scankeypad;
+        p->hd44780_functions->close = serial_HD44780_close;
 
 	/* Do initialization */
 	if (SERIAL_IF.if_bits == 8) {
@@ -297,4 +299,12 @@ serial_HD44780_scankeypad (PrivateData *p)
 		}
 	}
 	return 0;
+}
+
+void
+serial_HD44780_close (PrivateData *p)
+{
+        if (SERIAL_IF.end_code)
+                write(p->fd, &SERIAL_IF.end_code, 1);
+        close(p->fd);
 }

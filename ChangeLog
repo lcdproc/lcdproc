@@ -28,6 +28,7 @@ v.0.5dev (ongoing development)
  * replace obsolete index() by strchr() (Guillaume LECERF)
  * fixes for CwLinux driver (Gideon Tsang)
  + new ConnectionType vdr-wakeup in hd44780 driver
+ * fixes for the hd44780-serial drivers (Matteo Pillon)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

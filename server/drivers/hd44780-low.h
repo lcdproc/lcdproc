@@ -150,6 +150,9 @@ typedef struct hwDependentFns {
 	// Output "data" to output latch if there is one
 	void (*output) (PrivateData *p, int data);
 
+        // Close the interface on shutdown
+        void (*close) (PrivateData *p);
+
 } HD44780_functions;				  /* for want of a better name :-) */
 
 

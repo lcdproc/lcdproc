@@ -328,6 +328,7 @@ HD44780_init (Driver * drvthis)
 	p->hd44780_functions->uPause = uPause;
 	p->hd44780_functions->scankeypad = HD44780_scankeypad;
 	p->hd44780_functions->output = NULL;
+	p->hd44780_functions->close = NULL;
 
 	// Do connection type specific display init
 	if (connectionMapping[p->connectiontype_index].init_fn(drvthis) != 0)
@@ -408,6 +409,9 @@ MODULE_EXPORT void
 HD44780_close(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
+        if (p->hd44780_functions->close)
+                p->hd44780_functions->close(p);
 
 	if (p != NULL) {
 		if (p->framebuf)
