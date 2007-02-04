@@ -1,0 +1,182 @@
+<sect1 id="serialPOS-howto">
+<title>The serialPOS Driver</title>
+
+<para>
+This section talks about using LCDproc with a point of sale ("POS") character-display.
+</para>
+
+
+<para>
+The serialPOS-driver is currently working with the AEDEX emulation protocol, 
+but can be extended to work with various other protocols.
+</para>
+
+<para>
+The driver should operate most character POS displays with a serial (rs232) input. 
+Because these displays use a standardized protocol, if the protocol is
+supported by your display, it should work as expected.
+  Feedback is welcome.
+
+
+<table><title>serialPOS: Emulation Protocol Status</title>
+<tgroup cols="5">
+  <thead>
+    <row>
+      <entry>Protocol</entry>
+      <entry>Display tested</entry>
+      <entry>Currently Supported</entry>
+      <entry>Remark</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>AEDEX</entry>
+      <entry>Emax</entry>
+      <entry>Yes</entry>
+      <entry> </entry>
+    </row>
+    <row>
+      <entry>IEE</entry>
+      <entry> </entry>
+      <entry>No</entry>
+      <entry> </entry>
+    </row>
+    <row>
+      <entry>Epson</entry>
+      <entry> </entry>
+      <entry>No</entry>
+      <entry> </entry>
+    </row>
+    <row>
+      <entry>Emax</entry>
+      <entry> </entry>
+      <entry>No</entry>
+      <entry> </entry>
+    </row>
+    <row>
+      <entry>IBM</entry>
+      <entry> </entry>
+      <entry>No</entry>
+      <entry> </entry>
+    </row>
+    <row>
+      <entry>Logic Controls</entry>
+      <entry> </entry>
+      <entry>No</entry>
+      <entry> </entry>
+    </row>
+    <row>
+      <entry>Ultimate</entry>
+      <entry> </entry>
+      <entry>No</entry>
+      <entry> </entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+() feature not tested.
+</para>
+
+<sect2 id="serialPOS-connections">
+<title>Connecting The Display</title>
+
+<para>
+Connecting the display should consist of simply plugging it into your computer's
+rs232 port.  Because these displays typically support full rs232, no additional 
+wiring is needed. If you do not have this port (many newer computers do not), you 
+can use a USB to serial adapter with the appropriate driver.
+</para>
+<para>
+If your display supports a "pass-through" function, but you do not have
+another rs232 device connected to the pass-through port, you may experience hangs 
+if an improperly formatted command sneaks through.
+This is because the display is waiting for the pass-through 
+device to accept the data and a blocking state is created within the device.
+You can either connect another rs232 device, or rewire the display to send the pass-
+through commands back to your computer.
+</para>
+</sect2>
+
+<!-- ## Serial POS driver ## -->
+<sect2 id="serialPOS-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="serialPOS-config-section">
+<title>[serialPOS]</title>
+
+<variablelist>
+
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Device to use in serial mode. Usual values are <filename>/dev/ttyS0</filename> or <filename>/dev/cu.usbserial</filename>
+    [default: <filename>/dev/lcd</filename>].
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Specifies the size of the VFD in characters.
+    [default: <literal>16x2</literal>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Type=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>IEE</literal></arg>
+      <arg choice="plain"><literal><emphasis>AEDEX</emphasis></literal></arg>
+      <arg choice="plain"><literal>Epson</literal></arg>
+      <arg choice="plain"><literal>Emax</literal></arg>
+      <arg choice="plain"><literal>IBM</literal></arg>
+      <arg choice="plain"><literal>LogicControls</literal></arg>
+      <arg choice="plain"><literal>Ultimate</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the communication protocol to use with the POS display.
+    If not given [default <literal>AEDEX</literal>].
+    Currently, only AEDEX is supported.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Speed=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>1200</literal></arg>
+      <arg choice="plain"><literal>2400</literal></arg>
+      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
+      <arg choice="plain"><literal>19200</literal></arg>
+      <arg choice="plain"><literal>115200</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the the baud rate communication with the POS display.
+    If not given [default <literal>9600</literal>].
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>
+
