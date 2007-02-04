@@ -1237,9 +1237,10 @@ that. The BL output below should be connected to the BL input in the
 <title>LIS2 USB device "lis2"</title>
 
 <para>
-LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>) is a full featured usb vfd module
-with four channel fan controls. This device can be access as a serial device with
-help of the kernel modules ftdi_sio which map the USB port to a serial port (/dev/ttyUSBx).
+LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>) is a full featured USB VFD module
+with four channel fan controls. This device can be accessed as a serial device with the
+help of the kernel modules <filename>ftdi_sio</filename> that map the USB port to a serial port
+(<filename class="devicefile">/dev/ttyUSB<replaceable>x</replaceable></filename>).
 </para>
 
 </sect3>
@@ -1249,7 +1250,7 @@ help of the kernel modules ftdi_sio which map the USB port to a serial port (/de
 
 <para>
 See <ulink url="http://www.xs4all.nl/~mlf/los/">http://www.xs4all.nl/~mlf/los/</ulink>
-for information on this device.
+for more information on this device.
 </para>
 
 </sect3>
@@ -1258,7 +1259,7 @@ for information on this device.
 <title>VDR LCD serial device "vdr-lcd"</title>
 
 <para>
-... to be documented ...
+&hellip; to be documented &hellip;
 </para>
 
 <para>
