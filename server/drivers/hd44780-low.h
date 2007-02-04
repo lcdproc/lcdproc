@@ -117,6 +117,12 @@ typedef struct driver_private_data {
 
 	int backlight_bit;
 
+	// force full refresh of display
+	time_t nextrefresh;
+	int refreshdisplay;     // When >0 make a full display update every <refreshdisplay> seconds
+	time_t nextkeepalive;
+	int keepalivedisplay;   // When >0 refresh upper left char every <keepalivedisplay> seconds to keep display alive
+
 	int output_state;	// what was most recently output to the output port
 } PrivateData;
 

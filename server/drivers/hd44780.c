@@ -161,6 +161,11 @@ HD44780_init (Driver * drvthis)
 	p->delayBus 		= drvthis->config_get_bool( drvthis->name, "delaybus", 0, 1 );
 	p->lastline 		= drvthis->config_get_bool( drvthis->name, "lastline", 0, 1 );
 
+	p->nextrefresh		= 0;
+	p->refreshdisplay 	= drvthis->config_get_int( drvthis->name, "refreshdisplay", 0, 0 );
+	p->nextkeepalive	= 0;
+	p->keepalivedisplay	= drvthis->config_get_int( drvthis->name, "keepalivedisplay", 0, 0 );
+
 	// Get and search for the connection type
 	s = drvthis->config_get_string( drvthis->name, "ConnectionType", 0, "4bit" );
 	for (i = 0; connectionMapping[i].name != NULL && strcmp (s, connectionMapping[i].name) != 0; i++);
@@ -511,6 +516,22 @@ HD44780_flush (Driver *drvthis)
 	int row;
 	int i;
 	int count;
+	char refreshNow = 0;
+	char keepaliveNow = 0;
+
+	// force full refresh of display
+	if ((p->refreshdisplay > 0) && (time(NULL) > p->nextrefresh))
+	{
+		refreshNow = 1;
+		p->nextrefresh = time(NULL) + p->refreshdisplay;
+	}
+	// keepalive refresh of display
+	if ((p->keepalivedisplay > 0) && (time(NULL) > p->nextkeepalive))
+	{
+		keepaliveNow = 1;
+		p->nextkeepalive = time(NULL) + p->keepalivedisplay;
+	}
+
 
 	// Update LCD incrementally by comparing with last contents
 	count = 0;
@@ -518,7 +539,7 @@ HD44780_flush (Driver *drvthis)
 		drawing = 0;
 		for (x = 0 ; x < wid; x++) {
 			ch = p->framebuf[(y * wid) + x];
-			if ( ch != p->lcd_contents[(y*wid)+x] ) {
+			if ( refreshNow || (x + y == 0 && keepaliveNow) || ch != p->lcd_contents[(y*wid)+x] ) {
 				if ( !drawing || x % 8 == 0 ) { // x%8 is for 16x1 displays !
 					drawing = 1;
 					HD44780_position(drvthis,x,y);

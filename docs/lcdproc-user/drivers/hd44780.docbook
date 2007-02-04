@@ -1926,6 +1926,32 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
+    <command>KeepAliveDisplay=</command>
+    <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Some displays (e.g. <emphasis>vdr-wakeup</emphasis>) need a message from the driver to that it
+    is still alive. When set to a value bigger then <literal>0</literal> the character in the
+    upper left corner is updated every <replaceable>SECONDS</replaceable> seconds.
+    Default: <literal>0</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>RefreshDisplay=</command>
+    <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
+  </term>
+  <listitem><para>
+    If you experience occasional garbage on your display you can use this
+    option as workaround. If set to a value bigger than <literal>0</literal> it forces a
+    full screen refresh <replaceable>SECONDS</replaceable> seconds.
+    Default: <literal>0</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>KeyMatrix_4_1=</command>
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
