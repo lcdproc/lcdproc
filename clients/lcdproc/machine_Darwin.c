@@ -60,8 +60,6 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
-//AUTOFRAMEWORK(CoreFoundation)
-//AUTOFRAMEWORK(IOKit)
 
 static int pageshift;
 #define pagetok(size) ((size) << pageshift)
@@ -152,7 +150,8 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 				*percent = (int)((double)curCapacity/(double)maxCapacity * 100);
 
 				/*	There is a way to check this through the IOKit,
-					but I am not sure what gets for kIOPSLowWarnLevelKey and kIOPSDeadWarnLevelKey, and this is easier.
+					but I am not sure what gets returned for kIOPSLowWarnLevelKey and kIOPSDeadWarnLevelKey, 
+					and this is easier.
 				*/
 				if (*battflag == LCDP_BATT_UNKNOWN) {
 					if (*percent > 50)
@@ -316,38 +315,37 @@ int machine_get_procs(LinkedList *procs)
 	int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
 
 	size_t size = 0;
-	
-	/* Call sysctl with a NULL buffer. */ 
+
+	/* Call sysctl with a NULL buffer as a dry run. */ 
 	if ( sysctl(mib, 4, NULL, &size, NULL, 0 ) < 0)
 	{
 		perror("Failure calling sysctl");
 		return FALSE;
 	}
 	/* Allocate a buffer based on previous results of sysctl. */ 
-	kprocs = (struct kinfo_proc *)malloc(size);
+	kprocs = (struct kinfo_proc *)alloca(size);
 	if (kprocs == NULL)
 	{
-		perror("mem_malloc");
+		perror("mem_alloca");
 		return FALSE;
 	}
 	/* Call sysctl again with the new buffer. */
 	if ( sysctl(mib, 4, kprocs, &size, NULL, 0 ) < 0)
 	{
 		perror("Failure calling sysctl");
-		free(kprocs);
 		return FALSE;
 	}
-	
+
 	nproc = size / sizeof(struct kinfo_proc);		
-	
+
 	for (i = 0; i < nproc; i++, kprocs++)
 	{
 		mach_port_t task;
 		unsigned int status = kprocs->kp_proc.p_stat;
-		
+
 		if (status == SIDL ||status == SZOMB)
 			continue;
-		
+
 		p = malloc(sizeof(procinfo_type));
 		if (!p)
 		{
@@ -356,35 +354,36 @@ int machine_get_procs(LinkedList *procs)
 		}
 		strncpy(p->name, kprocs->kp_proc.p_comm, 15);
 		p->name[15] = '\0';
-		
+
 		p->number = kprocs->kp_proc.p_pid;
-		
+
 		LL_Push(procs, (void *)p);
-		
+
 		/* Normal user can't get tasks for processes owned by root. */
 		if (kprocs->kp_eproc.e_pcred.p_ruid == 0)
 			continue;
-		
+
 		/* Get the memory data for each pid from Mach. */
 		if (task_for_pid(mach_task_self(), kprocs->kp_proc.p_pid, &task) == KERN_SUCCESS)
 		{
 			task_basic_info_data_t info;
 			mach_msg_type_number_t count = TASK_BASIC_INFO_COUNT;
-			
+
 			if (task_info(task, TASK_BASIC_INFO, (task_info_t)&info, &count) == KERN_SUCCESS) {
 				p->totl = (unsigned long)(/*info.virtual_size*/ info.resident_size / 1024);
 			}
 		} else {
-			/* This error pops up very often and doesn't seem to be a serious problem. 
+			/*	This error pops up very often because of Mac OS X security fixes.
+				It might pop up all of the time on an intel Mac.
+				Basically, we cannot get many tasks unless we are root. 
 			perror("task_for_pid");
 			printf("process: %s, owner:%d\n", kprocs->kp_proc.p_comm, kprocs->kp_eproc.e_pcred.p_ruid); */
 			p->totl = 0;
 		}
 	}
-	
+
 	kprocs -= i;
-	free(kprocs);
-	
+
 	return(TRUE);
 }
 
