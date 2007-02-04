@@ -35,6 +35,7 @@ well as the configuration of LCDd.
 &pylcd;
 &sed1330;
 &sed1520;
+&serialPOS;
 &serialVFD;
 &sli;
 &stv5730;

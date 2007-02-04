@@ -207,6 +207,7 @@ John Sanders:
 
 Eric Pooch:
 	- Mac OS X / Darwin support
+	- serialPOS driver
 
 Benjamin Wiedmann
 	- Added functionality for HITACHI SP14Q002 gLCD (320x240)

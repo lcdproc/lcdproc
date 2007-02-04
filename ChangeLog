@@ -30,6 +30,7 @@ v.0.5dev (ongoing development)
  + new ConnectionType vdr-wakeup in hd44780 driver (originally Frank Jepsen)
  * fixes for the hd44780-serial drivers (Matteo Pillon)
  + new options for the hd44780 driver (Frank Jepsen)
+ + new driver for text based serial Point of Sale displays (Eric Pooch)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

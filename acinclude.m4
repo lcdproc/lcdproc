@@ -8,14 +8,14 @@ AC_ARG_ENABLE(drivers,
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,EyeboxOne,]
 	[                    g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,]
-	[                    MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,]
-	[                    sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+	[                    MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialPOS,]
+	[                    serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -292,6 +292,10 @@ dnl				else
 			else
 				AC_MSG_WARN([The sed1520 driver needs a parallel port.])
 			fi
+			;;
+		serialPOS)
+			DRIVERS="$DRIVERS serialPOS${SO}"
+			actdrivers=["$actdrivers serialPOS"]
 			;;
 		serialVFD)
 			DRIVERS="$DRIVERS serialVFD${SO}"

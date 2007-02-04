@@ -41,6 +41,7 @@
   <!ENTITY pylcd SYSTEM "drivers/pylcd.docbook">
   <!ENTITY sed1330 SYSTEM "drivers/sed1330.docbook">
   <!ENTITY sed1520 SYSTEM "drivers/sed1520.docbook">
+  <!ENTITY serialPOS SYSTEM "drivers/serialPOS.docbook">
   <!ENTITY serialVFD SYSTEM "drivers/serialVFD.docbook">
   <!ENTITY sli SYSTEM "drivers/sli.docbook">
   <!ENTITY stv5730 SYSTEM "drivers/stv5730.docbook">
