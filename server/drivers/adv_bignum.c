@@ -86,6 +86,7 @@ static void adv_bignum_num_2_0(Driver *drvthis, int x, int num, int height, int 
 static void adv_bignum_num_2_1(Driver *drvthis, int x, int num, int height, int offset, int do_init);
 static void adv_bignum_num_2_2(Driver *drvthis, int x, int num, int height, int offset, int do_init);
 static void adv_bignum_num_2_5(Driver *drvthis, int x, int num, int height, int offset, int do_init);
+static void adv_bignum_num_2_6(Driver *drvthis, int x, int num, int height, int offset, int do_init);
 static void adv_bignum_num_2_28(Driver *drvthis, int x, int num, int height, int offset, int do_init);
 
 static void adv_bignum_num_4_0(Driver *drvthis, int x, int num, int height, int offset, int do_init);
@@ -130,8 +131,11 @@ int customchars = drvthis->get_free_chars(drvthis);
 		else if (customchars < 5) {	// 2 lines and customchars = 2 ... 4
 			adv_bignum_num_2_2 (drvthis, x, num, height, offset, do_init);
 		}
-		else if (customchars < 28) {	// 2 lines and customchars = 5 ... 27
+		else if (customchars < 6) {	// 2 lines and customchars = 5
 			adv_bignum_num_2_5 (drvthis, x, num, height, offset, do_init);
+		}
+		else if (customchars < 28) {	// 2 lines and customchars = 6 ... 27
+			adv_bignum_num_2_6 (drvthis, x, num, height, offset, do_init);
 		}
 		else {				// 2 lines and customchars >= 28
 			adv_bignum_num_2_28 (drvthis, x, num, height, offset, do_init);
@@ -432,7 +436,7 @@ static void adv_bignum_num_2_2(Driver *drvthis, int x, int num, int height, int 
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-// This function is usable for a 2 line display with 5 or more custom characters.
+// This function is usable for a 2 line display with 5 characters.
 // (nice bignumbers)
 static void adv_bignum_num_2_5(Driver *drvthis, int x, int num, int height, int offset, int do_init)
 {
@@ -533,6 +537,125 @@ static void adv_bignum_num_2_5(Driver *drvthis, int x, int num, int height, int 
 		int i;
 
 		for (i = 0; i < 5 ; i++) { // put the customcharacters into the display
+			drvthis->set_char(drvthis, offset+i, bignum[i]);
+		}
+	}
+
+	adv_bignum_write_num(drvthis, num_map, x, num, height, offset); // write the number
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// This function is usable for a 2 line display with 6 or more custom characters.
+// (nice bignumbers)
+
+static void adv_bignum_num_2_6(Driver *drvthis, int x, int num, int height, int offset, int do_init)
+{
+	static char num_map[][4][3] =
+		{{{3	,0	,2}, /*0*/
+		{3	,1	,2},
+		{"   "},
+		{"   "}},
+		{{' '	,' ',    2},/*1*/
+		{' '	,' ',    2},
+		{"   "},
+		{"   "}},
+		{{' '	,5	,2},/*2*/
+		{3	,4	,' '},
+		{"   "},
+		{"   "}},
+		{{' '	,5	,2},/*3*/
+		{' '	,4	,2},
+		{"   "},
+		{"   "}},
+		{{3	,1	,2},/*4*/
+		{' '	,' '	,2},
+		{"   "},
+		{"   "}},
+		{{3	,5	,' '},/*5*/
+		{' '	,4	,2},
+		{"   "},
+		{"   "}},
+		{{3	,5	,7},/*6*/
+		{3	,4	,2},
+		{"   "},
+		{"   "}},
+		{{' '	,0	,2},/*7*/
+		{' '	,' '	,2},
+		{"   "},
+		{"   "}},
+		{{3	,5	,2},/*8*/
+		{3	,4	,2},
+		{"   "},
+		{"   "}},
+		{{3	,5	,2},/*9*/
+		{' '	,1	,2},
+		{"   "},
+		{"   "}},
+		{{'.'},/*:*/
+		{'.'},
+		{"   "},
+		{"   "}}}; // Defines the character placing inside the bignumber.
+
+	if (do_init) {	// Set customcharacters if needed.
+		static unsigned char bignum[6][8] = { // stored customcharacters
+		[0] {
+			b__XXXXX,
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______, },
+		[1] {
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b__XXXXX,
+			b__XXXXX,
+			b__XXXXX, },
+		[2] {
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__,
+			b__XXX__, },
+		[3] {
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX,
+			b____XXX, },
+		[4] {
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b__XXXXX,
+			b__XXXXX,
+			b__XXXXX, },
+		[5] {
+			b__XXXXX,
+			b__XXXXX,
+			b_______,
+			b_______,
+			b_______,
+			b_______,
+			b__XXXXX,
+			b__XXXXX, },
+		};
+		int i;
+
+		for (i = 0; i < 6 ; i++) { // put the customcharacters into the display
 			drvthis->set_char(drvthis, offset+i, bignum[i]);
 		}
 	}

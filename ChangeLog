@@ -31,6 +31,7 @@ v.0.5dev (ongoing development)
  * fixes for the hd44780-serial drivers (Matteo Pillon)
  + new options for the hd44780 driver (Frank Jepsen)
  + new driver for text based serial Point of Sale displays (Eric Pooch)
+ + new 2-line bignum mode using 6 user defined characters (Robin Gilks)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
