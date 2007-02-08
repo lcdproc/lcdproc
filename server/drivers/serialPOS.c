@@ -154,8 +154,8 @@ typedef struct {
 	CGmode ccmode;
 	
 	/* feature enable */
-	int *hardwrap;
-	int *hardscroll;
+	int hardwrap;
+	int hardscroll;
 
 	POS_EmulationType emulation_mode;	/* The emulation type  */
 	int output_state;	/* static data from serialPOS_output */
