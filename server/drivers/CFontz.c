@@ -373,10 +373,10 @@ CFontz_flush(Driver *drvthis)
 				unsigned char c = p->framebuf[(i * p->width) + j];
 
 				/* characters that need to be treated special */
-				if ((c < 0x20) || ((c >= 0xF0) && (c < 0xF8))) {
+				if ((c < 0x20) || ((c >= 0x80) && (c < 0x88))) {
 					if (c < 0x08) {
-						// custom chars are at position 0xF0 - 0xF7
-						c += 0xF0;
+						// custom chars are at position 0x80 - 0x87
+						c += 0x80;
 					}
 					else {
 						// send data directly to LCD
@@ -544,8 +544,8 @@ CFontz_backlight(Driver *drvthis, int on)
 	unsigned char out[4] = { CFONTZ_Backlight_Control, 0 };
 	int promille = (on == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 
-	/* map range [0, 1000] -> [0, 255] that the hardware understands */
-	out[1] = (unsigned char) ((long) promille * 255 / 1000);
+	/* map range [0, 1000] -> [0, 100] that the hardware understands */
+	out[1] = (unsigned char) (promille / 10);
 	write(p->fd, out, 2);
 }
 
