@@ -390,10 +390,10 @@ CFontz_flush(Driver *drvthis)
 		}
 	}
 	else {
-		// Custom characters start at 0xF0, not at 0.
+		// Custom characters start at 0x80, not at 0.
 		for (i = 0; i < p->width * p->height; i++) {
 			if (p->framebuf[i] < 32)
-				p->framebuf[i] += 128;
+				p->framebuf[i] += 0x80;
 		}
 
 		for (i = 0; i < p->height; i++) {
