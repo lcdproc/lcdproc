@@ -1,8 +1,8 @@
-diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/drivers/CFontz633.c server.OPT/drivers/CFontz633.c
---- server/drivers/CFontz633.c	2006-01-26 19:47:59.000000000 -0800
-+++ server.OPT/drivers/CFontz633.c	2006-02-21 19:35:27.000000000 -0800
-@@ -131,6 +131,9 @@ static void CFontz633_init_vbar (Driver 
- static void CFontz633_init_hbar (Driver *drvthis);
+diff -ruNp lcdproc-0.5.1-orig/server/drivers/CFontz633.c lcdproc-0.5.1-working/server/drivers/CFontz633.c
+--- lcdproc-0.5.1-orig/server/drivers/CFontz633.c	2006-10-06 03:02:47.000000000 -0400
++++ lcdproc-0.5.1-working/server/drivers/CFontz633.c	2007-02-23 11:55:05.000000000 -0500
+@@ -124,6 +124,9 @@ static void CFontz633_hidecursor (Driver
+ static void CFontz633_reboot (Driver *drvthis);
  static void CFontz633_no_live_report (Driver *drvthis);
  static void CFontz633_hardware_clear (Driver *drvthis);
 +#ifndef OPT //store boot screen
@@ -10,25 +10,28 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +#endif //OPT
  
  
- /*
-@@ -305,6 +308,16 @@ CFontz633_init (Driver *drvthis)
- 	CFontz633_no_live_report (drvthis);
- 	CFontz633_hardware_clear (drvthis);
+ /**
+@@ -302,6 +305,19 @@ CFontz633_init (Driver *drvthis)
+ 	CFontz633_no_live_report(drvthis);
+ 	CFontz633_hardware_clear(drvthis);
  
 +#ifndef OPT //store boot screen
 +	/* get and store the power on boot line, repurposing the "size" buffer */
 +	strncpy(size, drvthis->config_get_string (drvthis->name, "BootDisplay", 0, "" ), sizeof(size));
 +	if ( size[0] ) {
 +		CFontz633_string (drvthis, 1, 1, size);
++		if ( strlen(size) > p->width ) {
++			CFontz633_string (drvthis, 1, 2, size + p->width);
++		}
 +		CFontz633_flush (drvthis);
 +		CFontz633_store_boot_state (drvthis);
 +	}
 +#endif //OPT
 +
- 	report (RPT_DEBUG, "%s: done\n", __FUNCTION__);
+ 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
  
  	return 0;
-@@ -1118,3 +1131,15 @@ CFontz633_string (Driver *drvthis, int x
+@@ -1076,3 +1092,15 @@ CFontz633_string (Driver *drvthis, int x
  	}
  }
  
@@ -44,32 +47,48 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +	send_zerobyte_message(p->fd, CF633_Store_Current_State_As_Boot_State);
 +}
 +#endif //OPT
-diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/menuscreens.c server.OPT/menuscreens.c
---- server/menuscreens.c	2006-01-26 19:47:59.000000000 -0800
-+++ server.OPT/menuscreens.c	2006-02-21 19:31:00.000000000 -0800
-@@ -48,6 +48,9 @@ char * down_key;
+diff -ruNp lcdproc-0.5.1-orig/server/menuscreens.c lcdproc-0.5.1-working/server/menuscreens.c
+--- lcdproc-0.5.1-orig/server/menuscreens.c	2006-10-06 03:02:47.000000000 -0400
++++ lcdproc-0.5.1-working/server/menuscreens.c	2007-02-26 11:57:39.000000000 -0500
+@@ -48,6 +48,10 @@ char * down_key;
  char * left_key;
  char * right_key;
  
 +#ifndef OPT
 +char * menuname;		/* the name for the default menu */
++char * menuentryname;	/* the name for the default menu's entry */
 +#endif //OPT
  Screen * menuscreen = NULL;
  MenuItem * active_menuitem = NULL;
  /** the "real" main_menu */
-@@ -91,6 +94,11 @@ int menuscreens_init()
+@@ -91,6 +95,11 @@ int menuscreens_init()
  	if (tmp)
  		right_key = strdup(tmp);
-     
+ 
 +#ifndef OPT //get main menu name and hybrid keys from config file
 +	/* Get main menu name from config file */
 +	menuname = strdup (config_get_string ("menu", "menuname", 0, "LCDproc Menu"));
++	menuentryname = strdup (config_get_string ("menu", "menuentryname", 0, "Options"));
 +#endif //OPT
-+
-         
+ 
  	/* Now reserve keys */
  	input_reserve_key (menu_key, true, NULL);
-@@ -437,55 +445,62 @@ void menuscreen_create_menu ()
+@@ -387,7 +396,13 @@ void menuscreen_key_handler (const char 
+ 	/* Is the menu already active ? */
+ 	if (!active_menuitem) {
+ 		debug (RPT_DEBUG, "%s: Activating menu screen", __FUNCTION__);
+-		menuscreen_switch_item(menuscreen_get_main());
++		Menu *main = menuscreen_get_main();
++		/* Don't display an empty menu */
++		if (!main || !LL_Get(main->data.menu.contents)) {
++			debug (RPT_DEBUG, "%s: Ignoring empty menu", __FUNCTION__);
++			return;
++		}
++		menuscreen_switch_item(main);
+ 		return;
+ 	}
+ 
+@@ -437,55 +452,62 @@ void menuscreen_create_menu ()
  
  	debug (RPT_DEBUG, "%s()", __FUNCTION__);
  
@@ -94,9 +113,21 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 -	/* menu's client is NULL since we're in the server */
 -	checkbox = menuitem_create_checkbox ("backlight", backlight_handler, "Backlight", NULL, true, backlight);
 -	menu_add_item (options_menu, checkbox);
-+#ifndef OPT //Options menu display from config file
+-
+-	for (driver = drivers_getfirst(); driver; driver = drivers_getnext()) {
+-		int contrast_avail = (driver->get_contrast && driver->set_contrast) ? 1 : 0;
+-		int brightness_avail = (driver->get_brightness && driver->set_brightness) ? 1 : 0;
+-
+-		if (contrast_avail || brightness_avail) {
+-			/* menu's client is NULL since we're in the server */
+-			driver_menu = menu_create (driver->name, NULL, driver->name, NULL);
+-			menu_set_association(driver_menu, driver);
+-			menu_add_item (options_menu, driver_menu);
+-			if (contrast_avail) {
+-				int contrast = driver->get_contrast(driver);
++#ifndef OPT
 +	if ( config_get_bool ("server", "LCDOptionsMenu", 0, 0)) {
-+		options_menu = menu_create ("options", NULL, "Options", NULL);
++		options_menu = menu_create ("options", NULL, menuentryname, NULL);
 +		menu_add_item (main_menu, options_menu);
 +
 +		/* menu's client is NULL since we're in the server */
@@ -111,18 +142,6 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +			int contrast_avail = (driver->get_contrast && driver->set_contrast) ? 1 : 0;
 +			int brightness_avail = (driver->get_brightness && driver->set_brightness) ? 1 : 0;
  
--	for (driver = drivers_getfirst(); driver; driver = drivers_getnext()) {
--		int contrast_avail = (driver->get_contrast && driver->set_contrast) ? 1 : 0;
--		int brightness_avail = (driver->get_brightness && driver->set_brightness) ? 1 : 0;
--
--		if (contrast_avail || brightness_avail) {
--			/* menu's client is NULL since we're in the server */
--			driver_menu = menu_create (driver->name, NULL, driver->name, NULL);
--			menu_set_association(driver_menu, driver);
--			menu_add_item (options_menu, driver_menu);
--			if (contrast_avail) {
--				int contrast = driver->get_contrast(driver);
--				
 +			if (contrast_avail || brightness_avail) {
  				/* menu's client is NULL since we're in the server */
 -				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast",
@@ -132,7 +151,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 -			if (brightness_avail) {
 -				int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
 -				int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
--				
+-
 -				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness",
 -								 NULL, "min", "max", 0, 1000, 25, onbrightness);
 -				menu_add_item (driver_menu, slider);
@@ -148,7 +167,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +
 +					/* menu's client is NULL since we're in the server */
 +					slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast",
-+								 	NULL, "min", "max", 0, 1000, 25, contrast);
++									 NULL, "min", "max", 0, 1000, 25, contrast);
 +					menu_add_item (driver_menu, slider);
 +				}
 +				if (brightness_avail) {
@@ -156,11 +175,11 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +					int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
 +
 +					slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness",
-+								 	NULL, "min", "max", 0, 1000, 25, onbrightness);
++									 NULL, "min", "max", 0, 1000, 25, onbrightness);
 +					menu_add_item (driver_menu, slider);
 +
 +					slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness",
-+								 	NULL, "min", "max", 0, 1000, 25, offbrightness);
++									 NULL, "min", "max", 0, 1000, 25, offbrightness);
 +					menu_add_item (driver_menu, slider);
 +				}
  			}
@@ -174,11 +193,11 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
  
  #ifdef LCDPROC_TESTMENUS	
  	test_menu = menu_create ("test", NULL, "Test menu", NULL);
-diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/serverscreens.c server.OPT/serverscreens.c
---- server/serverscreens.c	2006-01-26 19:47:59.000000000 -0800
-+++ server.OPT/serverscreens.c	2006-02-21 19:27:40.000000000 -0800
-@@ -31,6 +31,12 @@
- #include "widget.h"
+diff -ruNp lcdproc-0.5.1-orig/server/serverscreens.c lcdproc-0.5.1-working/server/serverscreens.c
+--- lcdproc-0.5.1-orig/server/serverscreens.c	2006-10-06 03:02:47.000000000 -0400
++++ lcdproc-0.5.1-working/server/serverscreens.c	2007-02-23 11:48:56.000000000 -0500
+@@ -32,6 +32,12 @@
+ #include "main.h"
  #include "serverscreens.h"
  
 +#ifndef OPT //startup screen title from config
@@ -190,7 +209,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
  #define UNSET_INT -1
  
  Screen * server_screen;
-@@ -38,6 +44,7 @@ int rotate_server_screen = UNSET_INT;
+@@ -39,6 +45,7 @@ int rotate_server_screen = UNSET_INT;
  
  #define MAX_SERVERSCREEN_WIDTH 40
  
@@ -198,7 +217,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
  int
  server_screen_init ()
  {
-@@ -46,6 +53,11 @@ server_screen_init ()
+@@ -47,6 +54,11 @@ server_screen_init ()
  
  	debug (RPT_DEBUG, "server_screen_init");
  
@@ -210,7 +229,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
  	/* Create the screen */
  	server_screen = screen_create ("_server_screen", NULL);
  	if (!server_screen) {
-@@ -77,7 +89,11 @@ server_screen_init ()
+@@ -78,7 +90,11 @@ server_screen_init ()
  		w->text = malloc (MAX_SERVERSCREEN_WIDTH+1);
  		if (line == 1) {
  			w->type = WID_TITLE;
@@ -222,7 +241,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
  		} else {
  			w->text[0] = 0;
  		}
-@@ -156,6 +172,18 @@ goodbye_screen ()
+@@ -157,6 +173,18 @@ goodbye_screen ()
  	char *l16 = "    LCDproc!    ";
  #endif
  
