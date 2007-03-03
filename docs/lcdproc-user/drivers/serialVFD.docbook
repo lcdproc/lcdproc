@@ -326,7 +326,7 @@ Pin: 	Name:			Name:   Pin:
 		  |
 11	BUSY    --o-----------	BUSY	20
 
-			   o--  /SEL	23
+			   o--  /SEL	18
 			   |
 18 - 25	GND    ------------o--	GND	10,12,14
 			   |*
