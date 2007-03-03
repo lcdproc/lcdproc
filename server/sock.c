@@ -312,7 +312,7 @@ sock_poll_clients ()
                                                __FUNCTION__, sock_geterror());
 					return -1;
 				}
-				report (RPT_NOTICE, "Connect from host %s:%hd on socket %i",
+				report (RPT_NOTICE, "Connect from host %s:%hu on socket %i",
 					inet_ntoa (clientname.sin_addr), ntohs (clientname.sin_port), new_sock);
 				FD_SET (new_sock, &active_fd_set);
 
