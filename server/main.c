@@ -539,8 +539,14 @@ install_signal_handlers(int allow_reload)
 
 	debug( RPT_DEBUG, "%s( allow_reload=%d )", __FUNCTION__, allow_reload );
 
-	sa.sa_handler = exit_program;
 	sigemptyset ( &(sa.sa_mask) );
+
+	/* Clients can cause SIGPIPE if they quit unexpectedly, and the 
+	 * default action is to kill the server.  Just ignore it. */
+	sa.sa_handler = SIG_IGN;
+	sigaction (SIGPIPE, &sa, NULL);
+
+	sa.sa_handler = exit_program;
 	sa.sa_flags = SA_RESTART;
 
 	sigaction (SIGINT, &sa, NULL);		/* Ctrl-C will cause a clean exit...*/
@@ -559,6 +565,7 @@ install_signal_handlers(int allow_reload)
          * support ANSI signals in mingw. */
 	signal (SIGINT, exit_program);		/* Ctrl-C will cause a clean exit...*/
 	signal (SIGTERM, exit_program);		/* and "kill"...*/
+	signal (SIGPIPE, SIG_IGN);
 
         /* REVISIT: implement SIGHUP on windows */
 #endif
