@@ -11,14 +11,24 @@ currently has 3 levels, that might be able to be flattened, I've been
 pondering it and don't have a simple sol'n yet, but feel like there's 
 one there, so I'll keep thinking on it for now.
 
-2. OPT - adds options to the LCDd.conf for;
-storing the default display string on the CFontz633.c, we use this to 
-put up a "starting" message for reboot for example.
-setting the main menu name - which show's up on the LCD menu list, we 
-give it a more meaningful name like "admin" for the menus, instead of 
-"lcdproc"
-setting the goodbye msg - which we set to "shutting down", instead of 
-"Thanks for using lcdproc+linux"
+2. OPT - adds options to the LCDd.conf for
+* storing the default display string on the CFontz633.c, we use this to 
+  put up a "starting" message for reboot for example.
+  CFontz633 boot messages can use both lines of the display: if you
+  specify a message longer than 16 characters, the second line gets set
+  to characters 17+.
+* setting the main menu name - which show's up on the LCD menu list, we 
+  give it a more meaningful name like "admin" for the menus, instead of 
+  "lcdproc"
+  Now doesn't display empty menus - if you disabled the default LCDd
+  server menu (one of the features of the patch), you could still enter
+  the menus, but it would crash if you pressed the right arrow.  It also
+  looked pretty funny.  I figured the safest and easiest thing to do was
+  just to not display a useless menu.
+  Let the server menu name be configurable in the config file with the
+  [menu]menuentryname="Menu Name" option in LCDd.conf.
+* setting the goodbye msg - which we set to "shutting down", instead of 
+  "Thanks for using lcdproc+linux"
 
 3. SEG - adds the ability to get a stack trace for the LCDd daemon. I 
 didn't actually catch a useful trace w/ it, but might be a nice 
