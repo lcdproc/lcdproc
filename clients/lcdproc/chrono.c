@@ -115,7 +115,7 @@ time_screen(int rep, int display, int *flags_ptr)
 
 		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
 		if (display)
-			sock_printf(sock, "widget_set T one 1 2 {%s}\n", tmp);
+			sock_printf(sock, "widget_set T one %i 2 {%s}\n", xoffs, tmp);
 
 		// display the date
 		xoffs = (lcd_wid > strlen(today)) ? ((lcd_wid - strlen(today)) / 2) + 1 : 1;

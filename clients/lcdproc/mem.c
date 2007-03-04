@@ -22,7 +22,7 @@
 // Mem Screen displays info about memory and swap usage...
 //
 // +--------------------+	+--------------------+
-// |##  MEM -==- SWAP #@|	|M 758.3M [- ] 35.3%@|
+// |##  MEM #### SWAP #@|	|M 758.3M [- ] 35.3%@|
 // | 758.3M Totl 1.884G |	|S 1.884G [  ]  0.1% |
 // | 490.8M Free 1.882G |	+--------------------+
 // |E---    F  E       F|
@@ -48,7 +48,9 @@ mem_screen(int rep, int display, int *flags_ptr)
 				    : (lcd_wid - 4) / 2;	// leave room for the  E...F pairs
 
 			sock_send_string(sock, "widget_add M title title\n");
-			sock_send_string(sock, "widget_set M title { MEM -==- SWAP}\n");
+			sock_send_string(sock, "widget_set M title { MEM}\n");
+			sock_send_string(sock, "widget_add M subtitle string\n");
+			sock_printf(sock, "widget_set M subtitle %i 1 { SWAP }\n", lcd_wid - 6);
 			sock_send_string(sock, "widget_add M totl string\n");
 			sock_send_string(sock, "widget_add M used string\n");
 			sock_printf(sock, "widget_set M totl %i 2 Totl\n", lcd_wid/2 - 1);
@@ -94,9 +96,12 @@ mem_screen(int rep, int display, int *flags_ptr)
 
 		// flip the title back and forth... (every 4 updates)
 		if (which_title & 4) {
+			sock_printf(sock, "widget_set M subtitle %i 1 {}\n", lcd_wid - 7);
 			sock_printf(sock, "widget_set M title {%s}\n", get_hostname());
-		} else
-			sock_send_string(sock, "widget_set M title { MEM -==- SWAP}\n");
+		} else {
+			sock_send_string(sock, "widget_set M title { MEM}\n");
+			sock_printf(sock, "widget_set M subtitle %i 1 { SWAP }\n", lcd_wid - 7);
+		}
 		which_title = (which_title + 1) & 7;
 
 		// Total memory
