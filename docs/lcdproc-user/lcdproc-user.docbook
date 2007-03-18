@@ -19,6 +19,7 @@
   <!ENTITY CFontzPacket SYSTEM "drivers/CFontzPacket.docbook">
   <!ENTITY curses SYSTEM "drivers/curses.docbook">
   <!ENTITY CwLnx SYSTEM "drivers/CwLnx.docbook">
+  <!ENTITY ea65 SYSTEM "drivers/ea65.docbook">
   <!ENTITY EyeboxOne SYSTEM "drivers/eyeboxone.docbook">
   <!ENTITY g15 SYSTEM "drivers/g15.docbook">
   <!ENTITY glcdlib SYSTEM "drivers/glcdlib.docbook">

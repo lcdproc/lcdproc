@@ -99,6 +99,9 @@ Standard video display using the (n)curses library
 .B CwLnx
 serial/USB displays by Cwlinux (http://www.cwlinux.com)
 .TP
+.B ea65
+VFD front panel display on Aopen XC Cube EA65 media barebone
+.TP
 .B EyeboxOne
 LCD display on the EyeboxOne (http://www.rightvision.com)
 .TP

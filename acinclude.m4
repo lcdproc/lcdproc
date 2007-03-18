@@ -5,7 +5,7 @@ AC_ARG_ENABLE(drivers,
 	[  --enable-drivers=<list> compile drivers for LCDs in <list>,]
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
-	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,EyeboxOne,]
+	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,]
 	[                    g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,]
 	[                    MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialPOS,]
@@ -15,7 +15,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -123,6 +123,10 @@ dnl				else
 		CwLnx)
 			DRIVERS="$DRIVERS CwLnx${SO}"
 			actdrivers=["$actdrivers CwLnx"]
+			;;
+		ea65)
+			DRIVERS="$DRIVERS ea65${SO}"
+			actdrivers=["$actdrivers ea65"]
 			;;
 		EyeboxOne)
 			DRIVERS="$DRIVERS EyeboxOne${SO}"

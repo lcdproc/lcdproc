@@ -33,6 +33,7 @@ v.0.5dev (ongoing development)
  + new driver for text based serial Point of Sale displays (Eric Pooch)
  + new 2-line bignum mode using 6 user defined characters (Robin Gilks)
  * fix custom characters [with NewFirmware=yes] & backlight in CFontz
+ + ea65 - driver for VFD in AOpen XC Cube AV EA65 barebones (Karsten <kafe69@gmx.net>)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)
