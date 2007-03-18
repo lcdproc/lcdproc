@@ -143,6 +143,12 @@ LCD driven by an Atmel AVR based board, connected to a serial port
 .B vdr-lcd
 ???, connected to a serial port
 .TP
+.B vdr-wakeup
+VDR-Wake module by Frank Jepsen (http://www.jepsennet.de/vdr/)
+.TP
+.B pertelian
+Pertelian X2040 module (http://pertelian.com/)
+.TP
 .B lis2
 LIS2 from VLSystem (http://www.vlsys.co.kr), connected to USB
 .TP
