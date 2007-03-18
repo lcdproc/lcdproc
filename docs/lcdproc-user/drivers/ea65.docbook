@@ -1,0 +1,77 @@
+<sect1 id="ea65">
+<title>The ea65 driver</title>
+
+<para>
+      This section describes the ea65 driver which works with the front panel
+      VFD display on the AOpen XC Cube-AV EA65 media barebone.
+</para>
+
+<sect2 id="ea65-features">
+        <title>EA65 front panel VFD </title>
+        <para>
+          The AOpen XC Cube-AV is a barebone designed for using as a media center.
+          It comes with a front panel display which is capable of displaying one line 
+          of 9 characters. 
+        </para>
+        <para>
+          The display is internally connected to the serial port (/dev/ttyS1)
+          with a rate of 9600 baud
+        </para>
+        <para>
+          The display uses 13 segments per character. That's why the driver provides 
+          no custom characters like the ones for dot matrix displays do.
+        </para>
+        <para>
+          The front panel furthermore has 9 keys which are illuminated by blue LEDs. 
+          The LEDs can be controlled with the backlight functions. The keys are not 
+          supported by this driver. The red LED (RECORD) can be controlled with the 
+          output command of LCDd.
+        </para>
+</sect2>
+
+<sect2 id="ea65-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="ea65-config-section">
+<title>[ea65]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the brightness for the front LEDs if backlight is switched on.
+    Legal values for <replaceable>BRIGHTNESS</replaceable> are in the range
+    between <literal>0</literal> and <literal>1000</literal>.
+    Values under <literal>300</literal> set the LEDs off.
+    Values between <literal>300</literal> and <literal>700</literal> turn
+    on the LEDs with half brightness.
+    Values above <literal>700</literal> turn on the LEDs with full brightness.
+    If not given, it defaults to <literal>500</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>OffBrightness=</command>
+    <arg choice="plain"><replaceable>OFFBRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the brightness for the front LEDs if backlight is switched off.
+    Legal values for <replaceable>OFFBRIGHTNESS</replaceable> are in the range
+    between <literal>0</literal> and <literal>1000</literal>.
+    Values under <literal>300</literal> set the LEDs off.
+    Values between <literal>300</literal> and <literal>700</literal> turn
+    on the LEDs with half brightness.
+    Values above <literal>700</literal> turn on the LEDs with full brightness.
+    If not given, it defaults to <literal>0</literal>.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>
