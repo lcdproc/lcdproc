@@ -18,6 +18,12 @@ typedef struct SerialInterface {
 	char         keypad;
 	char         keypad_escape;
 	char         backlight;
+        /*
+          if both escape and on/off codes are set means that display
+          can't set brightness, but can only switch light on or off and
+          needs both escape and on/off bytes (see pertelian,
+          http://pertelian.com/index.php?option=com_content&task=view&id=27&Itemid=33)
+        */
 	char         backlight_escape; /* leave to 0 is the interface uses on/off codes   */
 	char         backlight_off;
 	char         backlight_on;     /* leave these two to 0 is backlight_escape is set */
@@ -33,7 +39,8 @@ static const SerialInterface serial_interfaces[] = {
 	{ "lcdserializer", 0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
 	{ "los-panel",     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 1, 0xFF,    0,    0,   0,    0 },
 	{ "vdr-lcd",       0xFE,    0, 0x00, 0x00,   9600,   4, 0, 0x00, 0,    0,    0,    0,   0,    0 },
-	{ "vdr-wakeup",    0xC0, 0xC4, 0xC0, 0xD0,   9600,   4, 0, 0x00, 1,    0, 0xC9, 0xC8,   1, 0xCF }
+	{ "vdr-wakeup",    0xC0, 0xC4, 0xC0, 0xD0,   9600,   4, 0, 0x00, 1,    0, 0xC9, 0xC8,   1, 0xCF },
+	{ "pertelian",     0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 1, 0xFE, 0x02, 0x03,   0,    0 }
 };
 
 /* initialize this particular driver */

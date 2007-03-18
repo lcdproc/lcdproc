@@ -35,6 +35,7 @@ v.0.5dev (ongoing development)
  * fix custom characters [with NewFirmware=yes] & backlight in CFontz
  + ea65 - driver for VFD in AOpen XC Cube AV EA65 barebones (Karsten Festag)
  + picolcd - driver for Mini-box.com USB LCD picoLCD (Gatewood Green)
+ + new ConnectionType pertelian in hd44780 driver (Matteo Pillon)
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

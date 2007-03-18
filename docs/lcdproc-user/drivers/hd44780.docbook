@@ -1283,6 +1283,24 @@ See <ulink url="http://www.jepsennet.de/vdr/">http://www.jepsennet.de/vdr/</ulin
 
 </sect3>
 
+<sect3 id="hd44780-pertelian">
+<title>Pertelian X2040 "pertelian"</title>
+
+<para>
+The Pertelian X2040 includes an hd44780 display with enclosure and usb
+connection. In order to work with lcdproc you need usbserial and
+ftdi_sio modules loaded. Display will be available on /dev/ttyUSB0.
+</para>
+
+<para>
+  See <ulink
+         url="http://pertelian.com/index.php?option=com_content&task=view&id=43&Itemid=48">product
+    page</ulink> for more information.
+</para>
+
+</sect3>
+
+
 <sect3 id="hd44780-picanlcd">
 <title>PIC-an-LCD serial device "picanlcd"</title>
 

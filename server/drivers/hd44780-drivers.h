@@ -44,6 +44,7 @@ static const ConnectionMapping connectionMapping[] = {
 	{"los-panel", hd_init_serial, "\tnone\n"},
 	{"vdr-lcd", hd_init_serial, "\tnone\n"},
 	{"vdr-wakeup", hd_init_serial, "\tnone\n"},
+	{"pertelian", hd_init_serial, "\tnone\n"},
 	/* End serial connectiontypes */
 	{"lis2", hd_init_lis2, "\tnone\n"},
 #ifdef HAVE_LIBUSB

@@ -267,18 +267,19 @@ serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char 
 void
 serial_HD44780_backlight (PrivateData *p, unsigned char state)
 {
+        unsigned char send[1];
 	if (p->have_backlight) {
 		if (SERIAL_IF.backlight_escape) {
-			unsigned char send[2];
 			send[0] = SERIAL_IF.backlight_escape;
-			send[1] = state ? 0 : 0xFF;
-			write(p->fd, &send, 2);
+			write(p->fd, &send, 1);
+                }
+                if (SERIAL_IF.backlight_on && SERIAL_IF.backlight_off) {
+			send[0] = state ? SERIAL_IF.backlight_on : SERIAL_IF.backlight_off;
 		}
 		else {
-			unsigned char send[1];
-			send[0] = state ? SERIAL_IF.backlight_on : SERIAL_IF.backlight_off;
-			write(p->fd, &send, 1);
+			send[0] = state ? 0 : 0xFF;
 		}
+                write(p->fd, &send, 1);
 	}
 }
 
