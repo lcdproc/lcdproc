@@ -39,6 +39,7 @@
   <!ENTITY mtc_s16209x SYSTEM "drivers/mtc_s16209x.docbook">
   <!ENTITY MtxOrb SYSTEM "drivers/mtxorb.docbook">
   <!ENTITY NoritakeVFD SYSTEM "drivers/NoritakeVFD.docbook">
+  <!ENTITY picolcd SYSTEM "drivers/picolcd.docbook">
   <!ENTITY pylcd SYSTEM "drivers/pylcd.docbook">
   <!ENTITY sed1330 SYSTEM "drivers/sed1330.docbook">
   <!ENTITY sed1520 SYSTEM "drivers/sed1520.docbook">

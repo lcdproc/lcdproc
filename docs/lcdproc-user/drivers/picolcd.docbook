@@ -1,139 +1,231 @@
 <sect1 id="picolcd">
-	<title>The Mini-Box USB LCD (picoLCD 20x2) Driver (picolcd)</title>
+<title>The Mini-Box USB LCD (picoLCD 20x2) Driver (picolcd)</title>
+
+<para>
+	This section covers the installation and use of the Mini-Box USB LCD (picoLCD 
+	20x2) display.
+</para>
+<para>
+	The picoLCD page indicates that the device can be connected via I2C or USART.  
+	This lcdproc driver, however, is limited to the USB connected model. 
+</para>
+
+<sect2 id="picolcd-setup">
+	<title>Setting up the picoLCD</title>
 
 	<para>
-		This section covers the installation and use of the Mini-Box USB LCD (picoLCD 
-		20x2) display.
+		The picoLCD device as used by this driver is USB connected and may be purchased 
+		with an internal USB header connector (5-pin to 5-pin) or an external cable 
+		(Type-A to 5-pin).  See: <ulink url="http://www.mini-box.com/picoLCD-20x2-OEM"/>.
+		It may also come pre-installed on systems like the Mini-Box M300: 
+		<ulink url="http://www.mini-box.com/Mini-Box-M300-LCD"/>.
 	</para>
 	<para>
-		The picoLCD page indicates that the device can be connected via I2C or USART.  
-		This lcdproc driver, however, is limited to the USB connected model. 
+		Using the USB LCD with this driver requires the usblcd library from Mini-box.com
+		(avaiable at <ulink url="http://www.mini-box.com/picoLCD-20x2-OEM"/>).i
+		The usblcd library 
+		requires libusb and libhcd.  Your distribution may or may not already provide 
+		these libraries.  The only kernel driver required is the USB host controller 
+		driver (uhci_hcd on the M300) required to fire up the usb bus to which the LCD is 
+		attached.
 	</para>
-	<sect2 id="picolcd-setup">
-		<title>Setting up the picoLCD</title>
+	<para>
+		Lastly, the usbfs file system must be mounted on <filename>/proc/bus/usb</filename>.
+		<code>mount -t usbfs usbfs /proc/bus/usb</code>
+	</para>
+	<para>
+		Once connected and with libusblcd, libusb and libhid installed, testing the USB LCD 
+		can be done with the <command>usblcd</command> program that comes with the usblcd
+		library.
+		You can also change the USB LCD's initial display (what it shows when you
+		initialize the device) by using the <command>usblcd</command> binary's
+		<command>splash</command> command.
+	</para>
+	<para>
+		To use the picolcd with lcdproc, add picolcd to the lcdproc configure drivers option 
+		(or use all) and then start LCDd with the "-d picolcd" option.  The driver has 
+		sane default options and the options that are user configurable are limited to mostly 
+		simple items, like contrast and which keys to lights up.
+	</para>
+</sect2>
 
-		<para>
-			The picoLCD device as used by this driver is USB connected and may be purchased 
-			with an internal USB header connector (5-pin to 5-pin) or an external cable 
-			(Type-A to 5-pin).  See: http://www.mini-box.com/picoLCD-20x2-OEM.  It may also
-			come pre-installed on systems like the Mini-Box M300: 
-			http://www.mini-box.com/Mini-Box-M300-LCD.
-		</para>
-		<para>
-			Using the USB LCD with this driver requires the usblcd library from Mini-box.com
-			(avaiable at http://www.mini-box.com/picoLCD-20x2-OEM).  The usblcd library 
-			requires libusb and libhcd.  Your distribution may or may not already provide 
-			these libraries.  The only kernel driver required is the USB host controller 
-			driver (uhci_hcd on the M300) required to fire up the usb bus to which the LCD is 
-			attached.
-		</para>
-		<para>
-			Lastly, the usbfs file system must be mounted on /proc/bus/usb.
-			<code>mount -t usbfs usbfs /proc/bus/usb</code>
-		</para>
-		<para>
-			Once connected and with libusblcd, libusb and libhid installed, testing the USB LCD 
-			can be done with the "usblcd" program that comes with the usblcd library.  You can 
-			also change the USB LCD's initial display (what it shows when you initialize the 
-			device) by using the usblcd binary's "splash" command.
-		</para>
-		<para>
-			To use the picolcd with lcdproc, add picolcd to the lcdproc configure drivers option 
-			(or use all) and then start LCDd with the "-d picolcd" option.  The driver has 
-			sane default options and the options that are user configurable are limited to mostly 
-			simple items, like contrast and which keys to lights up.
-		</para>
-	</sect2>
-	<sect2 id="picolcd-options">
-		<para>
-			Contrast: 0-1000.  0 is visible, and 1000 is not on my M300.  Default is 0.			
-		</para>
-		<para>
-			Keylights: 0/1.  0 turns off the key LEDs and 1 turns them on.  Default is 1.			
-		</para>
-	</sect2>
-	<sect2>
-		<para>
-			Key0Light: if Keylights is set to 1, you can disable the directional pad LED by 
-			setting this value to 0.  Default is 1.
-		</para>
-	</sect2>
-	<sect2>
-		<para>
-			Key1Light: if Keylights is set to 1, you can disable the F1 LED by setting this value 
-			to 0.  Default is 1.
-		</para>
-	</sect2>
-	<sect2>
-		<para>
-			Key2Light: if Keylights is set to 1, you can disable the F2 LED by setting this value 
-			to 0.  Default is 1.
-		</para>
-	</sect2>
-	<sect2>
-		<para>
-			Key3Light: if Keylights is set to 1, you can disable the F3 LED by setting this value 
-			to 0.  Default is 1.
-		</para>
-	</sect2>
-	<sect2>
-		<para>
-			Key4Light: if Keylights is set to 1, you can disable the F4 LED by setting this value 
-			to 0.  Default is 1.
-		</para>
-	</sect2>
-	<sect2>
-		<para>
-			Key5Light: if Keylights is set to 1, you can disable the F5 LED by setting this value 
-			to 0.  Default is 1.
-		</para>
-	</sect2>
-	<sect2>
-		<para>
-			KeyTimeout: (Advanced) This value controls how long LCDd waits for a key press when 
-			get_key is called.  The value represents microseconds and the default is 500 or .5 
-			seconds.  Lowering this value will make LCDd more responsive but also causes LCDd to use 
-			more CPU time and, as the timeout grows shorter, key presses become harder to detect.  
-			Larger values make key presses more reliable if somewhat slow to take effect.
-		</para>
-	</sect2>
-	<sect2 id="picolcd-status">
-		<title>picolcd driver status</title>
+<sect2 id="picolcd-config">
+<title>Configuration in LCDd.conf</title>
 
-		<para>
-			The lcdproc picolcd driver relies upon Mini-Box's usblcd library to setup the USB/HID 
-			interface.  Unfortunately the usblcd library is very thin and tends to put function 
-			results on stdout/stderr instead of in return values.  They (Mini-Box) really had 
-			scripting interfaces in mind.
-		</para>
-		<para>
-			The primary example of this is that I had to write a replacement (get_key_events) for 
-			usblcd's read_events so that I could get the key presses back to the calling function 
-			instead of on stdout.  usblcd also has a large number of function shells for which no 
-			code exists yet.  I am not an expert on HID and USB coding, but if and as time permits 
-			and hardware is available I will try and improve this drivers access to the hardware in 
-			order to get back data (get_contrast for example) and to potentially drive multiple 
-			pcioLCDs at once (or pick the one we want out of many).
-		</para>
-		<para>
-			To sum up, this driver right now stabs and hopes since response data is lacking.
-		</para>
-		<para>
-			The hardware also reports key-up events.  Normally this would be of no issue (they are 
-			usually a 0 or 'no key') except that when keys are used in combonation, the key-up 
-			event may actually come back as multiple events depending on how the user released the 
-			keys.  If the key-up event for a multiple key press comes back as two events, the first 
-			up event will actually look like a new key press.  The algorithm in get_key tries to 
-			deal with this in a sane way and toss out all key-up events for now.  The hardware is 
-			touchy and both combo key-down and key-up actions may be reported as mutiple events if 
-			the user is more than a tenth of a second (maybe less?) off in motions.
-		</para>
-	</sect2>
-	<sect2 id="picolcd-copy">
-		<title>Copyright</title>
-		<para>
-			The lcdproc picolcd driver was written by Gatewood Green (woody@nitrosecurity.com) 
-			or (woody@linif.org) and paid for by NitroSecurity, Inc (nitrosecurity.com).
-		</para>
-	</sect2>
+<sect3 id="picolcd-config-section">
+<title>[picolcd]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Contrast=</command>
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Contrast: 0-1000.  0 is visible, and 1000 is not on my M300.  Default is 0.			
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>KeyLights=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Allow key LEDs to be turned on or off. Default is <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>Key0Light=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    If Keylights is set, you can disable the directional pad LED by 
+    setting this value to <literal>no</literal>.  Default is <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>Key1Light=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    If Keylights is set, you can disable the F1 LED by setting this value 
+    to <literal>no</literal>.  Default is <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>Key2Light=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    If Keylights is set, you can disable the F2 LED by setting this value 
+    to <literal>no</literal>.  Default is <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>Key3Light=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    If Keylights is set, you can disable the F3 LED by setting this value 
+    to <literal>no</literal>.  Default is <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>Key4Light=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    If Keylights is set, you can disable the F4 LED by setting this value 
+    to <literal>no</literal>.  Default is <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>Key5Light=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    If Keylights is set, you can disable the F5 LED by setting this value 
+    to <literal>no</literal>.  Default is <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>KeyTimeout=</command>
+    <arg choice="plain"><replaceable>DURATION</replaceable></arg>
+  </term>
+  <listitem><para>
+    (Advanced) This value controls how long LCDd waits for a key press when 
+    get_key() is called.  The value represents microseconds and the default is <literal>500</literal>
+    or .5 seconds.  Lowering this value will make LCDd more responsive but also causes LCDd to use 
+    more CPU time and, as the timeout grows shorter, key presses become harder to detect.  
+    Larger values make key presses more reliable if somewhat slow to take effect.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+</sect2>
+
+<sect2 id="picolcd-status">
+	<title>picolcd driver status</title>
+
+	<para>
+		The lcdproc picolcd driver relies upon Mini-Box's usblcd library to setup the USB/HID 
+		interface.  Unfortunately the usblcd library is very thin and tends to put function 
+		results on stdout/stderr instead of in return values.  They (Mini-Box) really had 
+		scripting interfaces in mind.
+	</para>
+	<para>
+		The primary example of this is that I had to write a replacement (get_key_events) for 
+		usblcd's read_events so that I could get the key presses back to the calling function 
+		instead of on stdout.  usblcd also has a large number of function shells for which no 
+		code exists yet.  I am not an expert on HID and USB coding, but if and as time permits 
+		and hardware is available I will try and improve this drivers access to the hardware in 
+		order to get back data (get_contrast for example) and to potentially drive multiple 
+		pcioLCDs at once (or pick the one we want out of many).
+	</para>
+	<para>
+		To sum up, this driver right now stabs and hopes since response data is lacking.
+	</para>
+	<para>
+		The hardware also reports key-up events.  Normally this would be of no issue (they are 
+		usually a 0 or 'no key') except that when keys are used in combonation, the key-up 
+		event may actually come back as multiple events depending on how the user released the 
+		keys.  If the key-up event for a multiple key press comes back as two events, the first 
+		up event will actually look like a new key press.  The algorithm in get_key tries to 
+		deal with this in a sane way and toss out all key-up events for now.  The hardware is 
+		touchy and both combo key-down and key-up actions may be reported as mutiple events if 
+		the user is more than a tenth of a second (maybe less?) off in motions.
+	</para>
+</sect2>
+
+<sect2 id="picolcd-copy">
+	<title>Copyright</title>
+	<para>
+		The lcdproc picolcd driver was written by Gatewood Green (woody@nitrosecurity.com) 
+		or (woody@linif.org) and paid for by NitroSecurity, Inc (nitrosecurity.com).
+	</para>
+</sect2>
+
 </sect1>

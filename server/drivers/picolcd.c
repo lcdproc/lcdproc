@@ -3,6 +3,7 @@
  *
  * (c) 2007 NitroSecurity, Inc.
  * Written by Gatewood Green <woody@nitrosecurity.com> or <woody@linif.org>
+ * (c) 2007 Peter Marschall - adapted coding style and reporting to LCDproc
  *
  * License: GPL (same as usblcd and lcdPROC)
  *
@@ -45,7 +46,15 @@
 /* lcdPROC includes */
 #include "lcd.h"
 #include "picolcd.h"
+
+/* Debug mode: un-comment to turn on debugging messages in the server */
+/* #define DEBUG 1 */
+
 #include "report.h"
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 /* These three includes are the Mini-box.com libusblcd (usblcd) and company. */
 #include <usblcd.h>
@@ -59,9 +68,6 @@
 #include <unistd.h>
 #include <stdio.h>
 
-/* This is a hack */
-#define API_VERSION "0.5"
-
 /* 12 keys plus a 0 placeholder */
 #define KEYPAD_MAX 13
 #define KEYPAD_LIGHTS 6
@@ -71,8 +77,6 @@
 #define DEFAULT_KEYLIGHTS 1    /* On */
 #define DEFAULT_TIMEOUT   500  /* Half second */
 
-/* Set this to 1 and get lots of cruft on stderr when using "LCDd -f 1 -d picolcd" */
-#define DEBUG_PICO 0
 
 /* PrivateData struct */
 typedef struct pd {
@@ -107,8 +111,8 @@ static char * keymap[KEYPAD_MAX] = {
 };
 
 /* Private function definitions */
-void get_key_event  ( usblcd_operations *self, lcd_packet *packet, int timeout );
-void set_key_lights ( usblcd_operations *self, int keys[], int state );
+void get_key_event  (usblcd_operations *self, lcd_packet *packet, int timeout);
+void set_key_lights (usblcd_operations *self, int keys[], int state);
 
 /* lcd_logical_driver Variables */
 MODULE_EXPORT char *api_version       = API_VERSION;
@@ -117,193 +121,180 @@ MODULE_EXPORT int  supports_multiple  = 1;
 MODULE_EXPORT char *symbol_prefix     = "picoLCD_";
 
 /* lcd_logical_driver Manditory functions */
-MODULE_EXPORT int  picoLCD_init( Driver *drvthis ) {
+MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 	PrivateData *pd;
 	int x;
 
-	pd = ( PrivateData * ) malloc( sizeof( PrivateData ) );
+	pd = (PrivateData *) malloc(sizeof(PrivateData));
 
-	if ( ! pd )
+	if (! pd)
 		return -1;
 
-	if ( drvthis->store_private_ptr( drvthis, pd ) )
+	if (drvthis->store_private_ptr(drvthis, pd))
 		return -1;
 
 	pd->lcd = new_usblcd_operations();
-	pd->lcd->init( pd->lcd );
+	pd->lcd->init(pd->lcd);
 	pd->width  = 20; /* hard coded (mfg spec) */
 	pd->height = 2;  /* hard coded (mfg spec) */
 	pd->info = "picoLCD: Supports the LCD as installed on the M300 (http://www.mini-box.com/Mini-Box-M300-LCD) ";
 
-	for ( x = 0; x < KEYPAD_LIGHTS; x++ )
+	for (x = 0; x < KEYPAD_LIGHTS; x++)
 		pd->key_light[x] = 1; /* individual lights on */
 
-	pd->contrast     = drvthis->config_get_int(  drvthis->name, "Contrast",   0, DEFAULT_CONTRAST  );
-	pd->backlight    = drvthis->config_get_bool( drvthis->name, "BackLight",  0, DEFAULT_BACKLIGHT );
-	pd->keylights    = drvthis->config_get_bool( drvthis->name, "KeyLights",  0, DEFAULT_KEYLIGHTS ); /* key lights with LCD Backlight? */
-	pd->key_timeout  = drvthis->config_get_int(  drvthis->name, "KeyTimeout", 0, DEFAULT_TIMEOUT   );
+	pd->contrast     = drvthis->config_get_int( drvthis->name, "Contrast",   0, DEFAULT_CONTRAST );
+	pd->backlight    = drvthis->config_get_bool(drvthis->name, "BackLight",  0, DEFAULT_BACKLIGHT);
+	pd->keylights    = drvthis->config_get_bool(drvthis->name, "KeyLights",  0, DEFAULT_KEYLIGHTS); /* key lights with LCD Backlight? */
+	pd->key_timeout  = drvthis->config_get_int( drvthis->name, "KeyTimeout", 0, DEFAULT_TIMEOUT  );
 
 	/* These allow individual lights to be disabled */
-	pd->key_light[0] = drvthis->config_get_bool( drvthis->name, "Key0Light",  0, 1 ); /* Directional PAD */
-	pd->key_light[1] = drvthis->config_get_bool( drvthis->name, "Key1Light",  0, 1 ); /* F1 */
-	pd->key_light[2] = drvthis->config_get_bool( drvthis->name, "Key2Light",  0, 1 ); /* F2 */
-	pd->key_light[3] = drvthis->config_get_bool( drvthis->name, "Key3Light",  0, 1 ); /* F3 */
-	pd->key_light[4] = drvthis->config_get_bool( drvthis->name, "Key4Light",  0, 1 ); /* F4 */
-	pd->key_light[5] = drvthis->config_get_bool( drvthis->name, "Key5Light",  0, 1 ); /* F5 */
+	pd->key_light[0] = drvthis->config_get_bool(drvthis->name, "Key0Light",  0, 1); /* Directional PAD */
+	pd->key_light[1] = drvthis->config_get_bool(drvthis->name, "Key1Light",  0, 1); /* F1 */
+	pd->key_light[2] = drvthis->config_get_bool(drvthis->name, "Key2Light",  0, 1); /* F2 */
+	pd->key_light[3] = drvthis->config_get_bool(drvthis->name, "Key3Light",  0, 1); /* F3 */
+	pd->key_light[4] = drvthis->config_get_bool(drvthis->name, "Key4Light",  0, 1); /* F4 */
+	pd->key_light[5] = drvthis->config_get_bool(drvthis->name, "Key5Light",  0, 1); /* F5 */
 
-	for ( x = 0; x < KEYPAD_MAX; x++ )
+	for (x = 0; x < KEYPAD_MAX; x++)
 		pd->key_matrix[x] = keymap[x];
 
-	pd->framebuf = ( unsigned char * ) malloc( pd->width * pd->height + 1 );
-	if ( pd->framebuf == NULL ) {
-		report( RPT_ERR, "%s: unable to create framebuf.\n", __FUNCTION__ );
+	pd->framebuf = (unsigned char *) malloc(pd->width * pd->height + 1);
+	if (pd->framebuf == NULL) {
+		report(RPT_ERR, "%s: unable to create framebuf.\n", __FUNCTION__);
 		return -1;
 	}
-	memset( pd->framebuf, ' ', pd->width * pd->height );
+	memset(pd->framebuf, ' ', pd->width * pd->height);
 	pd->framebuf[pd->width * pd->height] = 0;
 
-	pd->lstframe = ( unsigned char * ) malloc( pd->width * pd->height + 1 );
-	if ( pd->lstframe == NULL ) {
-		report( RPT_ERR, "%s: unable to create lstframe.\n", __FUNCTION__ );
+	pd->lstframe = (unsigned char *) malloc(pd->width * pd->height + 1);
+	if (pd->lstframe == NULL) {
+		report(RPT_ERR, "%s: unable to create lstframe.\n", __FUNCTION__);
 		return -1;
 	}
-	memset( pd->lstframe, ' ', pd->width * pd->height );
+	memset(pd->lstframe, ' ', pd->width * pd->height);
 	pd->lstframe[pd->width * pd->height] = 0;
 
-	if ( pd->backlight )
-		picoLCD_backlight( drvthis, 1 );
-		if ( ! pd->keylights )
-			set_key_lights( pd->lcd, pd->key_light, 0 );
+	if (pd->backlight)
+		picoLCD_backlight(drvthis, 1);
+		if (! pd->keylights)
+			set_key_lights(pd->lcd, pd->key_light, 0);
 	else
-		picoLCD_backlight( drvthis, 0 );
+		picoLCD_backlight(drvthis, 0);
 
-	picoLCD_set_contrast( drvthis, pd->contrast );
+	picoLCD_set_contrast(drvthis, pd->contrast);
 
-	report( RPT_INFO, "picolcd: init complete\n", __FUNCTION__ );
-
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: init complete\n" );
+	report(RPT_INFO, "picolcd: init complete\n", __FUNCTION__);
 
 	return 0;
 }
 
-MODULE_EXPORT void picoLCD_close( Driver *drvthis ) {
+MODULE_EXPORT void picoLCD_close(Driver *drvthis) {
 	PrivateData *pd = drvthis->private_data;
 
-	pd->lcd->close( pd->lcd ); /* This actually does not do anything in usblcd (yet?) */
+	pd->lcd->close(pd->lcd); /* This actually does not do anything in usblcd (yet?) */
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: close complete\n" );
+	debug(RPT_DEBUG, "picolcd: close complete\n");
 }
 
 /* lcd_logical_driver Essential output functions */
-MODULE_EXPORT int  picoLCD_width( Driver *drvthis ) {
+MODULE_EXPORT int  picoLCD_width(Driver *drvthis) {
 	PrivateData *pd = drvthis->private_data;
 
 	return pd->width;
 }
 
-MODULE_EXPORT int  picoLCD_height( Driver *drvthis ) {
+MODULE_EXPORT int  picoLCD_height(Driver *drvthis) {
 	PrivateData *pd = drvthis->private_data;
 
 	return pd->height;
 }
 
-MODULE_EXPORT void picoLCD_clear( Driver *drvthis ) {
+MODULE_EXPORT void picoLCD_clear(Driver *drvthis) {
 	PrivateData *pd = drvthis->private_data;
 
-	memset( pd->framebuf, ' ', pd->width * pd->height );
+	memset(pd->framebuf, ' ', pd->width * pd->height);
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: clear complete\n" );
+	debug(RPT_DEBUG, "picolcd: clear complete\n");
 }
 
-MODULE_EXPORT void picoLCD_flush( Driver *drvthis ) {
+MODULE_EXPORT void picoLCD_flush(Driver *drvthis) {
 	PrivateData   *pd = drvthis->private_data;
 	unsigned char *fb = pd->framebuf;
 	unsigned char *lf = pd->lstframe;
 	static char   text[48];
 	int           i, line, offset;
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: flush started\n" );
+	debug(RPT_DEBUG, "picolcd: flush started\n");
 
-	for ( line = 0; line < pd->height; line++ ) { 
-		memset( text, 0, 48 ); 
+	for (line = 0; line < pd->height; line++) { 
+		memset(text, 0, 48); 
 		offset = line * pd->width;
 		fb     = pd->framebuf + offset;
 		lf     = pd->lstframe + offset;
 
-		for ( i = 0; i < pd->width; i++ ) {
-			if ( *fb++ != *lf++ ) {
-				strncpy( text, pd->framebuf + offset, pd->width );
-				pd->lcd->settext( pd->lcd, line, 0, text );
-				memcpy( pd->lstframe + offset, pd->framebuf + offset, pd->width );
+		for (i = 0; i < pd->width; i++) {
+			if (*fb++ != *lf++) {
+				strncpy(text, pd->framebuf + offset, pd->width);
+				pd->lcd->settext(pd->lcd, line, 0, text);
+				memcpy(pd->lstframe + offset, pd->framebuf + offset, pd->width);
 
-				if ( DEBUG_PICO )
-					fprintf( stderr, "picolcd: flush wrote line %d (%s)\n", line + 1, text );
+				debug(RPT_DEBUG, "picolcd: flush wrote line %d (%s)\n", line + 1, text);
 
 				break;
 			}
 		}
 	}
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: flush complete\n\t(%s)\n\t(%s)\n", pd->framebuf, pd->lstframe );
+	debug(RPT_DEBUG, "picolcd: flush complete\n\t(%s)\n\t(%s)\n", pd->framebuf, pd->lstframe);
 }
 
-MODULE_EXPORT void picoLCD_string( Driver *drvthis, int x, int y, char *str ) {
+MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, char *str) {
 	PrivateData *pd = drvthis->private_data;
 	char *dest;
 	int  len;
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: string start (%s)\n", str );
+	debug(RPT_DEBUG, "picolcd: string start (%s)\n", str);
 
-	if ( y < 1 || y > pd->height )
+	if (y < 1 || y > pd->height)
 		return;
-	if ( x < 1 || x > pd->width )
+	if (x < 1 || x > pd->width)
 		return;
 
-	len = strlen( str );
-	if ( len + x > pd->width ) {
-		if ( DEBUG_PICO )
-			fprintf( stderr, "picolcd: string overlength (>%d). Start: %d Length: %d (%s)\n", pd->width, x, len ,str );
+	len = strlen(str);
+	if (len + x > pd->width) {
+		debug(RPT_DEBUG, "picolcd: string overlength (>%d). Start: %d Length: %d (%s)\n", pd->width, x, len ,str);
 
 		len = pd->width - x; /* Copy what we can */
 	}
 
 	x--; y--; /* Convert 1-based to 0-based */
-	dest = pd->framebuf + ( y * pd->width + x );
-	memcpy( dest, str, len * sizeof(char) );
+	dest = pd->framebuf + (y * pd->width + x);
+	memcpy(dest, str, len * sizeof(char));
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: string complete (%s)\n", str );
+	debug(RPT_DEBUG, "picolcd: string complete (%s)\n", str);
 }
 
-MODULE_EXPORT void picoLCD_chr( Driver *drvthis, int x, int y, char chr ) {
+MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, char chr) {
 	PrivateData *pd = drvthis->private_data;
 	char *dest;
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: chr start (%c)\n", chr );
+	debug(RPT_DEBUG, "picolcd: chr start (%c)\n", chr);
 
-	if ( y < 1 || y > pd->height )
+	if (y < 1 || y > pd->height)
 		return;
-	if ( x < 1 || x > pd->width )
+	if (x < 1 || x > pd->width)
 		return;
 
 	x--; y--; /* Convert 1-based to 0-based */
-	dest = pd->framebuf + ( y * pd->width + x );
-	memcpy( dest, &chr, sizeof(char) );
+	dest = pd->framebuf + (y * pd->width + x);
+	memcpy(dest, &chr, sizeof(char));
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: chr complete (%c)\n", chr );
+	debug(RPT_DEBUG, "picolcd: chr complete (%c)\n", chr);
 }
 
 /* lcd_logical_driver Essential input functions */
 
-MODULE_EXPORT char *picoLCD_get_key( Driver *drvthis ) {
+MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 	PrivateData *pd = drvthis->private_data;
 	lcd_packet *keydata;
 	char *keystr;
@@ -311,51 +302,44 @@ MODULE_EXPORT char *picoLCD_get_key( Driver *drvthis ) {
 	int  key_pass  = 0;
 	int  two_keys  = 0;
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: get_key start (timeout %d)\n", pd->key_timeout );
+	debug(RPT_DEBUG, "picolcd: get_key start (timeout %d)\n", pd->key_timeout);
 
-	keydata = malloc( sizeof( lcd_packet ) );
+	keydata = malloc(sizeof(lcd_packet));
 
-	while ( ! keys_read ) {
-		get_key_event( pd->lcd, keydata, pd->key_timeout );
-		if ( DEBUG_PICO )
-			fprintf( stderr, "picolcd: get_key got an event\n" );
+	while (! keys_read) {
+		get_key_event(pd->lcd, keydata, pd->key_timeout);
+		debug(RPT_DEBUG, "picolcd: get_key got an event\n");
 
-		if ( keydata->type == IN_REPORT_KEY_STATE ) {
-			if ( ! keydata->data[1] && key_pass ) {
-				if ( DEBUG_PICO )
-					fprintf( stderr, "picolcd: get_key got all clear\n" );
+		if (keydata->type == IN_REPORT_KEY_STATE) {
+			if (! keydata->data[1] && key_pass) {
+				debug(RPT_DEBUG, "picolcd: get_key got all clear\n");
 				/* Got a <0, 0> key-up event after reading a valid key press event */
 				keys_read++; /* All clear */
-			} else if ( ! keydata->data[2] && ! two_keys ) {
-				if ( DEBUG_PICO )
-					fprintf( stderr, "picolcd: get_key got one key\n" );
+			} else if (! keydata->data[2] && ! two_keys) {
+				debug(RPT_DEBUG, "picolcd: get_key got one key\n");
 				/* We got one key (but not after a two key event and before and all clear) */
 				keystr = pd->key_matrix[keydata->data[1]];
 			} else {
 				/* We got two keys */
-				if ( DEBUG_PICO )
-					fprintf( stderr, "picolcd: get_key got two keys\n" );
+				debug(RPT_DEBUG, "picolcd: get_key got two keys\n");
 				two_keys++;
-				sprintf( keystr, "%s+%s", pd->key_matrix[keydata->data[1]], pd->key_matrix[keydata->data[2]] );
+				sprintf(keystr, "%s+%s", pd->key_matrix[keydata->data[1]], pd->key_matrix[keydata->data[2]]);
 			}
 
 			key_pass++; /* This hack allows us to deal with receiving left over <0,0> first */
 		} else {
-			if ( DEBUG_PICO )
-				fprintf( stderr, "picolcd: get_key got non-key data or timeout\n" );
+			debug(RPT_DEBUG, "picolcd: get_key got non-key data or timeout\n");
 			/* We got IR or otherwise bad data */
 			return NULL;
 		}
 
 	}
 
-   free( keydata );
+   free(keydata);
 
-	if ( DEBUG_PICO )
-		fprintf( stderr, "picolcd: get_key complete (%s)\n", keystr );
+	debug(RPT_DEBUG, "picolcd: get_key complete (%s)\n", keystr);
 
-	if ( ! strlen( keystr ) )
+	if (! strlen(keystr))
 		return NULL;
 
 	return keystr;
@@ -406,80 +390,80 @@ MODULE_EXPORT char *picoLCD_get_key( Driver *drvthis ) {
 /* lcd_logical_driver User-defined character functions */
 
 /* lcd_logical_driver Hardware functions */
-/*MODULE_EXPORT int picoLCD_get_contrast( Driver *drvthis ) {
+/*MODULE_EXPORT int picoLCD_get_contrast(Driver *drvthis) {
 	PrivateData *pd = drvthis->private_data;
 
 }*/
 
-MODULE_EXPORT int  picoLCD_set_contrast( Driver *drvthis, int promille ) {
+MODULE_EXPORT int  picoLCD_set_contrast(Driver *drvthis, int promille) {
 	PrivateData *pd = drvthis->private_data;
 	int inv; /* The hardware seems to go dark on higher values, so we turn it around */
 
-	if ( promille <= 1000 && promille > 0 ) {
+	if (promille <= 1000 && promille > 0) {
 		inv = 1000 - promille;
-		pd->lcd->contrast( pd->lcd, ( int ) ( inv / 1000 * 40 ) );
+		pd->lcd->contrast(pd->lcd, (int) (inv / 1000 * 40));
 		return 0;
-	} else if ( promille > 1000 ) {
-		pd->lcd->contrast( pd->lcd,  0 );
+	} else if (promille > 1000) {
+		pd->lcd->contrast(pd->lcd,  0);
 		return 0;
-	} else if ( promille <= 0 ) {
-		pd->lcd->contrast( pd->lcd,  40 );
+	} else if (promille <= 0) {
+		pd->lcd->contrast(pd->lcd,  40);
 		return 0;
 	} else {
 		return -1;
 	}
 }
 
-/*MODULE_EXPORT int picoLCD_get_brightness( Driver *drvthis, int state ) {
+/*MODULE_EXPORT int picoLCD_get_brightness(Driver *drvthis, int state) {
 	PrivateData *pd = drvthis->private_data;
 
 }*/
 
-/*MODULE_EXPORT int  picoLCD_set_brightness( Driver *drvthis, int state, int promille ) {
+/*MODULE_EXPORT int  picoLCD_set_brightness(Driver *drvthis, int state, int promille) {
 	PrivateData *pd = drvthis->private_data;
 
 }*/
 
-MODULE_EXPORT void picoLCD_backlight( Driver *drvthis, int state ) {
+MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state) {
 	PrivateData *pd = drvthis->private_data;
 
-	if ( state == 0 ) {
-		pd->lcd->backlight( pd->lcd, state );
-		set_key_lights( pd->lcd, pd->key_light, state );
+	if (state == 0) {
+		pd->lcd->backlight(pd->lcd, state);
+		set_key_lights(pd->lcd, pd->key_light, state);
 		return;
 	}
 
-	if ( state == 1 ) {
-		pd->lcd->backlight( pd->lcd, state );
-		if ( pd->keylights )
-			set_key_lights( pd->lcd, pd->key_light, state );
+	if (state == 1) {
+		pd->lcd->backlight(pd->lcd, state);
+		if (pd->keylights)
+			set_key_lights(pd->lcd, pd->key_light, state);
 		return;
 	}
 
 	return;
 }
 
-/*MODULE_EXPORT int  picoLCD_output( Driver *drvthis, int state ) {
+/*MODULE_EXPORT int  picoLCD_output(Driver *drvthis, int state) {
 	PrivateData *pd = drvthis->private_data;
 
 }*/
 
 /* lcd_logical_driver Informational functions */
-MODULE_EXPORT char *picoLCD_get_info( Driver *drvthis ) {
+MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis) {
 	PrivateData *pd = drvthis->private_data;
 
 	return pd->info;
 }
 
 /* Private functions */
-void get_key_event ( usblcd_operations *self, lcd_packet *packet, int timeout ) {
+void get_key_event (usblcd_operations *self, lcd_packet *packet, int timeout) {
 	int ret;
 
-	memset( packet->data, 0, 255 );
+	memset(packet->data, 0, 255);
 	packet->type = 0;
-	ret = usb_interrupt_read( self->hid->hiddev->handle, USB_ENDPOINT_IN + 1, packet->data, _USBLCD_MAX_DATA_LEN, timeout );
-	if ( ret > 0 ) {
-		switch ( packet->data[0] ) {
+	ret = usb_interrupt_read(self->hid->hiddev->handle, USB_ENDPOINT_IN + 1, packet->data, _USBLCD_MAX_DATA_LEN, timeout);
+	if (ret > 0) {
+		switch (packet->data[0]) {
 			case IN_REPORT_KEY_STATE: {
 				packet->type = IN_REPORT_KEY_STATE;
 			} break;
@@ -493,28 +477,28 @@ void get_key_event ( usblcd_operations *self, lcd_packet *packet, int timeout ) 
 	}
 }
 
-void set_key_lights ( usblcd_operations *self, int keys[], int state ) {
-	if ( state ) {
+void set_key_lights (usblcd_operations *self, int keys[], int state) {
+	if (state) {
 		/* Only LEDs we want on */
-		if ( keys[0] )
-			self->setled( self, 0, 1 );
-		if ( keys[1] )
-			self->setled( self, 1, 1 );
-		if ( keys[2] )
-			self->setled( self, 2, 1 );
-		if ( keys[3] )
-			self->setled( self, 3, 1 );
-		if ( keys[4] )
-			self->setled( self, 4, 1 );
-		if ( keys[5] )
-			self->setled( self, 5, 1 );
+		if (keys[0])
+			self->setled(self, 0, 1);
+		if (keys[1])
+			self->setled(self, 1, 1);
+		if (keys[2])
+			self->setled(self, 2, 1);
+		if (keys[3])
+			self->setled(self, 3, 1);
+		if (keys[4])
+			self->setled(self, 4, 1);
+		if (keys[5])
+			self->setled(self, 5, 1);
 	} else {
 		/* All LEDs off */
-		self->setled( self, 0, 0 );
-		self->setled( self, 1, 0 );
-		self->setled( self, 2, 0 );
-		self->setled( self, 3, 0 );
-		self->setled( self, 4, 0 );
-		self->setled( self, 5, 0 );
+		self->setled(self, 0, 0);
+		self->setled(self, 1, 0);
+		self->setled(self, 2, 0);
+		self->setled(self, 3, 0);
+		self->setled(self, 4, 0);
+		self->setled(self, 5, 0);
 	}
 }
