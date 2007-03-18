@@ -33,6 +33,7 @@ well as the configuration of LCDd.
 &mtc_s16209x;
 &MtxOrb;
 &NoritakeVFD;
+&picolcd;
 &pylcd;
 &sed1330;
 &sed1520;

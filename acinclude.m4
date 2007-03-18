@@ -5,17 +5,18 @@ AC_ARG_ENABLE(drivers,
 	[  --enable-drivers=<list> compile drivers for LCDs in <list>,]
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
-	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,]
-	[                    g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,]
-	[                    joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,]
-	[                    MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialPOS,]
-	[                    serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,]
+	[                    EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,]
+	[                    irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,]
+	[                    mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330]
+	[                    sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,]
+	[                    tyan,ula200,xosd]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,pyramid,sed1330,sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -275,6 +276,23 @@ dnl				else
 			DRIVERS="$DRIVERS NoritakeVFD${SO}"
 			actdrivers=["$actdrivers NoritakeVFD"]
 			;;
+		picolcd)
+			AC_CHECK_HEADERS([usblcd.h],[
+				AC_CHECK_LIB(usblcd, main,[
+					LIBUSBLCD="-lusblcd"
+					DRIVERS="$DRIVERS picolcd${SO}"
+					actdrivers=["$actdrivers picolcd"]
+				],[
+dnl				else
+					AC_MSG_WARN([The picolcd driver needs the usblcd library])
+				],
+				[-lusblcd]
+				)
+			],[
+dnl			else        
+				AC_MSG_WARN([The picolcd driver needs widgets.h, usblcd.h and usblcd_util.h from the usblcd package])
+			])       
+			;;       
 		pyramid)
 			DRIVERS="$DRIVERS pyramid${SO}"
 			actdrivers=["$actdrivers pyramid"]
@@ -399,6 +417,7 @@ AC_SUBST(LIBG15)
 AC_SUBST(LIBGLCD)
 AC_SUBST(LIBFTDI)
 AC_SUBST(LIBXOSD)
+AC_SUBST(LIBUSBLCD)
 ])
 
 
