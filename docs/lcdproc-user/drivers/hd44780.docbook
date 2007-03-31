@@ -799,9 +799,9 @@ such as portato. Further details can be obtained from:
 </para>
 
 <para>
-<ulink url="http://metalab.unc.edu/pub/linux/system/status/lcdtime-0.2.tar.gz">http://metalab.unc.edu/pub/linux/system/status/lcdtime-0.2.tar.gz</ulink>
-<ulink url="http://metalab.unc.edu/pub/linux/system/status/meter-0.2.tar.gz">http://metalab.unc.edu/pub/linux/system/status/meter-0.2.tar.gz</ulink>
-<ulink url="http://metalab.unc.edu/pub/linux/system/status/portato-1.2.tar.gz">http://metalab.unc.edu/pub/linux/system/status/portato-1.2.tar.gz</ulink>
+<ulink url="http://metalab.unc.edu/pub/linux/system/status/lcdtime-0.2.tar.gz"></ulink>
+<ulink url="http://metalab.unc.edu/pub/linux/system/status/meter-0.2.tar.gz"></ulink>
+<ulink url="http://metalab.unc.edu/pub/linux/system/status/portato-1.2.tar.gz"></ulink>
 </para>
 
 <note>
@@ -986,7 +986,7 @@ Andrew McMeikan <email>andrewm@engineer.com</email>. The original wiring and
 driver can be found at:
 </para>
 <para>
-<ulink url="http://members.xoom.com/andrewmuck">http://members.xoom.com/andrewmuck</ulink>
+<ulink url="http://members.xoom.com/andrewmuck"></ulink>
 </para>
 
 <para>
@@ -1249,7 +1249,7 @@ help of the kernel modules <filename>ftdi_sio</filename> that map the USB port t
 <title>LCD on Serial panel device "los-panel"</title>
 
 <para>
-See <ulink url="http://www.xs4all.nl/~mlf/los/">http://www.xs4all.nl/~mlf/los/</ulink>
+See <ulink url="http://www.xs4all.nl/~mlf/los/"></ulink>
 for more information on this device.
 </para>
 
@@ -1277,7 +1277,7 @@ famous Linux-based VDR that allows to connect an LCD to it and supports LCDproc.
 </para>
 
 <para>
-See <ulink url="http://www.jepsennet.de/vdr/">http://www.jepsennet.de/vdr/</ulink>
+See <ulink url="http://www.jepsennet.de/vdr/"></ulink>
 (German) for more information on VDR-Wakeup.
 </para>
 
@@ -1293,8 +1293,8 @@ ftdi_sio modules loaded. Display will be available on /dev/ttyUSB0.
 </para>
 
 <para>
-  See <ulink
-         url="http://pertelian.com/index.php?option=com_content&task=view&id=43&Itemid=48">product
+  See the
+  <ulink url="http://pertelian.com/joomla/index.php?option=com_content&amp;task=view&amp;id=43&amp;Itemid=48">product
     page</ulink> for more information.
 </para>
 
@@ -1513,13 +1513,38 @@ specifying which one (of multiple BWCT LCD devices) is wanted using the
 </sect3>
 
 
+<sect3 id="hd44780-lcd2usb">
+<title>Till Harbaum's "lcd2usb"</title>
+
+<para>
+<ulink url="http://www.harbaum.org/till/lcd2usb/">LCD2USB</ulink>
+is a cheap but powerful do-it-yourself interface to connect HD44780 based displays via USB,
+consisting of easily available parts only.
+The device supports software adjustable contrast and backlight as well as dual controller displays
+(required for 4*27 and 4*40).
+</para>
+
+<para>
+It is based upon Atmel AVR Mega8 CPU with a pure software implementation of the USB protocol
+for the Atmel AVR microcontroller series. 
+</para>
+
+<para>
+The whole interface incl. the hardware layout is under a GPL like license.
+This means that you can take these schematics and use it as a basis for your own interface
+e.g. for a graphic LCD
+</para>
+
+</sect3>
+
+
 <sect3 id="hd44780-i2c">
 <title>I<superscript>2</superscript>C with Port-Expander</title>
 
 <para>
 If you have an I<superscript>2</superscript>C port available that is supported by your kernel
-(through /dev/i2c*), you can add a I<superscript>2</superscript>C port expander there
-(PCF8574P in this example).
+(through <filename>/dev/i2c*</filename>), you can add a I<superscript>2</superscript>C
+port expander there (PCF8574P in this example).
 </para>
 
 <figure>
@@ -1676,8 +1701,13 @@ can be done by specifying "--enable-drivers=all" or by
       <arg choice="plain"><literal>serialLpt</literal></arg>
       <arg choice="plain"><literal>winamp</literal></arg>
       <arg choice="plain"><literal>picanlcd</literal></arg>
-      <arg choice="plain"><literal>bwctusb</literal></arg>
       <arg choice="plain"><literal>lcdserializer</literal></arg>
+      <arg choice="plain"><literal>los-panel</literal></arg>
+      <arg choice="plain"><literal>vdr-lcd</literal></arg>
+      <arg choice="plain"><literal>vdr-wakeup</literal></arg>
+      <arg choice="plain"><literal>pertelian</literal></arg>
+      <arg choice="plain"><literal>bwctusb</literal></arg>
+      <arg choice="plain"><literal>lcd2usb</literal></arg>
       <arg choice="plain"><literal>lis2</literal></arg>
       <arg choice="plain"><literal>i2c</literal></arg>
     </group>
@@ -1733,12 +1763,20 @@ can be done by specifying "--enable-drivers=all" or by
           <entry>VDR-Wakeup module "vdr-wakeup"</entry>
         </row>
         <row>
-          <entry><literal>lis2</literal></entry>
-          <entry>LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
+          <entry><literal>pertelian</literal></entry>
+          <entry>Pertelian X2040 LCD display (<ulink url="http://pertelian.com/joomla/index.php?option=com_content&amp;task=view&amp;id=43&amp;Itemid=48"></ulink>)</entry>
         </row>
         <row>
           <entry><literal>bwctusb</literal></entry>
           <entry>BWCT USB device "bwctusb" (<ulink url="http://www.bwct.de/lcd.html"></ulink>)</entry>
+        </row>
+        <row>
+          <entry><literal>lcd2usb</literal></entry>
+          <entry>Tim Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)</entry>
+        </row>
+        <row>
+          <entry><literal>lis2</literal></entry>
+          <entry>LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
         </row>
         <row>
           <entry><literal>i2c</literal></entry>

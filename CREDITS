@@ -163,6 +163,7 @@ Peter Marschall: (current maintainer)
 	- bwctusb connectiontype for the HD44780 driver
 	- extensions to CFontz* drivers: support CF631 & CF635
 	- various fixes in preparation of 0.5
+	- lcd2usb connectiontype for the HD44780 driver
 
 Markus Dolze:
 	- various fixes (especially for *BSD)

@@ -19,6 +19,7 @@
 #endif
 #ifdef HAVE_LIBUSB
 # include "hd44780-bwct-usb.h"
+# include "hd44780-lcd2usb.h"
 #endif
 #include "hd44780-serial.h"
 #include "hd44780-lis2.h"
@@ -49,6 +50,7 @@ static const ConnectionMapping connectionMapping[] = {
 	{"lis2", hd_init_lis2, "\tnone\n"},
 #ifdef HAVE_LIBUSB
 	{"bwctusb", hd_init_bwct_usb, "\tnone\n"},
+	{"lcd2usb", hd_init_lcd2usb, "\tnone\n"},
 #endif
 #ifdef HAVE_I2C
 	{"i2c", hd_init_i2c, "\tnone\n"},

@@ -190,7 +190,7 @@ dnl			else
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-4bit.o hd44780-hd44780-ext8bit.o hd44780-lcd_sem.o hd44780-hd44780-winamp.o hd44780-hd44780-serialLpt.o"
 			fi
 			if test "$enable_libusb" = yes ; then
-				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-bwct-usb.o"
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-bwct-usb.o hd44780-hd44780-lcd2usb.o"
 			fi
 			AC_CHECK_HEADER(linux/i2c-dev.h,
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-i2c.o"
