@@ -6,57 +6,60 @@
 
 <para>
 As mentioned in the <link linkend="introduction">introduction</link>
-LCDd, the LCDproc server, now (with version 0.4.3 of LCDproc) has its
-own configuration file, which is normally <filename>/etc/LCDd.conf</filename>.
+<application>LCDd</application>, the LCDproc server, has its own configuration file,
+which is usually <filename>/etc/LCDd.conf</filename>.
 </para>
 
 <note>
 <para>
-If you have not installed LCDproc from the sources the configuration
-file might have a different location. You should find it when making
-your system's package manager list all the files in the LCDproc package.
+If you have not installed <package>LCDproc</package> from the sources the configuration
+file might have a different location. You should be able to find it by making
+your system's package manager list all the files in the <package>LCDproc</package> package.
 </para>
 </note>
 
 <para>
 The format of the <filename>/etc/LCDd.conf</filename> is ini-file-like.
 </para>
+
 <para>
-It is divided into sections that start at
-markers that look like [section]. Comments are all line-based comments,
-and are lines that start with '#' or ';'.
+It is divided into sections that start at markers that look like
+<code>[<replaceable>section</replaceable>]</code>.
+Comments are all line-based comments,
+and are lines that start with '<literal>#</literal>' or '<literal>;</literal>'.
 </para>
 
 <para>
-The server has a 'central' section named [Server]. Further each driver
-has a section which defines how the driver acts. Those sections start with
-[drivername].
-</para>
-<para>
-<anchor id="which-driver" />The drivers are activated by specifiying them in a driver= line in the
-server section, like:
+The server has a 'central' section named <code>[Server]</code>.
+Further each driver has a section which defines how the driver acts.
+Those sections start with <code>[<replaceable>drivername</replaceable>]</code>.
 </para>
 
-<example>
+<para>
+<anchor id="which-driver" />The drivers are activated by specifiying them in a <code>Driver=</code>
+line in the server section, like:
+</para>
+
+<example id="configure-lcdd.example">
 <title><filename>LCDd.conf</filename>: Specify which driver to use</title>
 <programlisting>
-
+[Server]
 Driver=curses
-
 </programlisting>
 </example>
 
 <para>
-This tells LCDd to use the curses driver. The first driver specified here
-that is capable of output functionality will be used as 'the' output driver.
-All extra drivers can only serve as input.
-The default driver to use is curses.
+This tells <application>LCDd</application> to use the <literal>curses</literal> driver.
+The first driver specified here that is capable of output functionality
+will be used as <emphasis>the</emphasis> output driver.
+All other drivers can only serve as input drivers.
+The default driver to use is <literal>curses</literal>.
 </para>
 
 <warning>
 <para>
-If LCDd is started automatically by an init-script using the curses driver
-will lock <filename>/dev/tty1</filename>! So, be careful about what you are
+If LCDd is started automatically by an init-script using the curses driver,
+it will lock <filename>/dev/tty1</filename>! So, be careful about what you are
 doing here.
 </para>
 </warning>
@@ -72,23 +75,35 @@ For this purpose they use the config sections that are named like the driver.
 
 <note>
 <para>
-The -d option still works, but does not allow driverargs any more.
-</para>
-<para>
-If -d is specified on the command line, the Driver= options in the
-config file are ignored.
+If <option>-d</option> is specified on the command line, the
+<code>Driver=</code> options in the configuration file are ignored.
 </para>
 </note>
 
 <sect2 id="server-section">
-<title id="server-section.title"><filename>LCDd.conf</filename>: The [Server] Section</title>
+<title id="server-section.title"><filename>LCDd.conf</filename>: The <code>[Server]</code> Section</title>
 
 <para>
-The [server] section of the <filename>LCDd.conf</filename> contains the
+The <code>[Server]</code> section of the <filename>LCDd.conf</filename> contains the
 settings for the LCDproc server <application>LCDd</application>.
 </para>
 
 <variablelist>
+<varlistentry>
+  <term>
+    <command>DriverPath=</command>
+    <arg choice="plain"><replaceable>DRIVERPATH</replaceable></arg>
+  </term>
+  <listitem><para>
+    Tells the server where to look for the driver files.
+    See <link linkend="which-driver">above</link> for details.
+    If not specified <replaceable>DRIVERPATH</replaceable>
+    defaults to the empty string, resulting in drivers being
+    searched
+    in the directory LCDd is started in.
+  </para></listitem>
+</varlistentry>
+
 <varlistentry>
   <term>
     <command>Driver=</command>
@@ -254,11 +269,13 @@ settings for the LCDproc server <application>LCDd</application>.
     </para>
   </listitem>
 </varlistentry>
+
+
 </variablelist>
 
 
 <para>
-The "...Key=" lines define what the server does with keypresses that
+The <code>&hellip;Key=</code> lines define what the server does with keypresses that
 don't go to any client.
 </para>
 
@@ -318,10 +335,10 @@ don't go to any client.
 </sect2>
 
 <sect2 id="menu-section">
-<title id="menu-section.title"><filename>LCDd.conf</filename>: The [Menu] Section</title>
+<title id="menu-section.title"><filename>LCDd.conf</filename>: The <code>[Menu]</code> Section</title>
 
 <para>
-The [Menu] section enables you to set some general ("global")
+The <code>[Menu]</code> section enables you to set some general ("global")
 options related to the way <application>LCDd</application> handles
 input "events".
 </para>
@@ -488,8 +505,12 @@ everything neccessary.
 <title>The LCDproc Init Scripts</title>
 
 <para>
-The LCDproc distribution contains init scripts for RedHat- and Debian-based
-GNU/Linux distributions. You can find them in the <filename>scripts/</filename>
+The <package>LCDproc</package> distribution contains init scripts for
+<acronym>LSB</acronym> 3.1 (Linux Standard Base 3.1) conforming
+GNU/Linux distributions.
+In addition to those it contains init scripts for older RedHat- and Debian-based
+distributions that do not adhere to LSB 3.1. 
+You can find iall of them in the <filename>scripts/</filename>
 directory of the LCDproc sources.
 </para>
 
@@ -519,10 +540,6 @@ LCDproc server LCDd. It does not require modification.
 The file <filename>scripts/init-lcdproc.*</filename> is the init script for the
 LCDproc "main" client lcdproc.
 </para>
-<!--
-As lcdproc itself does not (yet) have a configuration file
-you may want to modify the options the init script passes to lcdproc.
--->
 
 <note>
 <para>
@@ -539,8 +556,8 @@ sources distribution).
 
 <example>
 <title><filename>lcdproc.conf</filename>: Modify the option passed to lcdproc</title>
-<programlisting>
 
+<programlisting>
 # /etc/lcdproc.conf
 #
 # Configuration file of the main LCDproc client "lcdproc"

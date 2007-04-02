@@ -5,20 +5,21 @@
 <title>Build LCDproc</title>
 
 <para>
-Now that you have downloaded the LCDproc distribution you can
+Now that you have downloaded the <package>LCDproc</package> distribution you can
 start building it.
 </para>
 
 <note>
 <para>
-If you have installed the debian package with apt-get (or another
-debian tool), you can skip this this chapter.
+If you have installed the Debian package with <application>apt-get</application>
+(or another Debian package management tool), you can skip this this chapter.
 </para>
 </note>
 
 <para>
 If you're building this version from CVS, you'll need 
-autoconf, automake, aclocal &amp; autoheader installed.
+<application>autoconf</application>, <application>automake</application>,
+<application>aclocal</application> and <application>autoheader</application> installed.
 </para>
 
 <para>
@@ -30,8 +31,8 @@ If you have autoconf and friends, run:
 </screen>
 
 <para>
-This produces the configure script and supporting files. It has already 
-been run if you are using the tarball distribution.
+This produces the configure script and supporting files.
+It has already been run if you are using the tarball distribution.
 </para>
 
 <para>
@@ -51,9 +52,9 @@ Read about the options, figure out what to use.
 </screen>
 
 <para>
-Be sure to replace /usr/local with the prefixdir you want (e.g. /usr
-for RedHat) and curses,CFontz with comma-separated list
-of drivers you want.
+Be sure to replace <filename>/usr/local</filename> with the prefixdir you want
+(e.g. <filename>/usr</filename> for RedHat) and <code>curses,CFontz</code> with
+the comma-separated list of drivers you want to have compiled.
 </para>
 
 <screen>
@@ -61,7 +62,7 @@ of drivers you want.
 </screen>
 
 <para>
-Congratulations: You have just compiled your version of LCDproc ;)
+Congratulations: You have just compiled your version of <package>LCDproc</package> ;)
 </para>
 
 </sect1>
@@ -82,7 +83,7 @@ can run:
 
 <note>
 <para>
-make install is absolutely OPTIONAL
+<command>make install</command> is absolutely OPTIONAL
 You can also run LCDproc directly from the source directory. See
 <link linkend="lcdd-commandline">below</link> for details.
 </para>

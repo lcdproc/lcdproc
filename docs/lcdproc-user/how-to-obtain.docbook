@@ -109,7 +109,8 @@ you should (you don't have to) copy them to another place on your machine:
 <title>apt-get</title>
 
 <para>
-Debian GNU/Linux users can get the debian package of LCDproc, which is in the unstable and testing distributions.
+Debian GNU/Linux users can get the Debian package of <package>LCDproc</package>,
+which is in the unstable and testing distributions.
 </para>
 
 <para>

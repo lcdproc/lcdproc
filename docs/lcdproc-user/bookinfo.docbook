@@ -31,8 +31,8 @@
 
 </authorgroup>
 
-<date>2006-10-06</date>
-<releaseinfo>0.0.3</releaseinfo>
+<date>2007-04-02</date>
+<releaseinfo>0.0.4</releaseinfo>
 
 <abstract>
 <para>
@@ -42,6 +42,7 @@ This document is a guide to LCDproc written for users. It covers LCDproc 0.5.x
 
 <copyright>
 <year>2006</year>
+<year>2007</year>
 <holder>Peter Marschall</holder>
 </copyright>
 <copyright>
