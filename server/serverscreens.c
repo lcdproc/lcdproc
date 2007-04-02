@@ -22,6 +22,7 @@
 #endif
 
 #include "shared/report.h"
+#include "shared/configfile.h"
 
 #include "drivers/lcd.h"
 #include "drivers.h"
@@ -139,53 +140,42 @@ update_server_screen ()
 }
 
 int
-goodbye_screen ()
+goodbye_screen()
 {
-	char *b20 = "                    ";
-	char *t20 = "  Thanks for using  ";
-#ifdef LINUX
-	char *l20 = " LCDproc and Linux! ";
-#else
-	char *l20 = "      LCDproc!      ";
-#endif
-
-	char *b16 = "                ";
-	char *t16 = "Thanks for using";
-#ifdef LINUX
-	char *l16 = " LCDproc+Linux! ";
-#else
-	char *l16 = "    LCDproc!    ";
-#endif
-
-	if( !display_props )
+	if(!display_props)
 		return 0;
 
-	drivers_clear ();
+	drivers_clear();
 
-	if (display_props->height >= 4) {
-		if (display_props->width >= 20) {
-			drivers_string (1, 1, b20);
-			drivers_string (1, 2, t20);
-			drivers_string (1, 3, l20);
-			drivers_string (1, 4, b20);
-		} else {
-			drivers_string (1, 1, b16);
-			drivers_string (1, 2, t16);
-			drivers_string (1, 3, l16);
-			drivers_string (1, 4, b16);
+	if (config_has_key("Server", "GoodBye")) {	/* custom GoodBye */
+		int i;
+	   
+		/* loop over all display lines to read config & display message */
+		for (i = 0; i < display_props->height; i++) {
+			const char *line = config_get_string("Server", "GoodBye", i, "");
+
+			drivers_string(1, 1+i, line);
 		}
-	} else {
-		if (display_props->width >= 20) {
-			drivers_string (1, 1, t20);
-			drivers_string (1, 2, l20);
-		} else {
-			drivers_string (1, 1, t16);
-			drivers_string (1, 2, l16);
+	}		
+	else {		/* default GoodBye */
+		if ((display_props->height >= 2) && (display_props->width >= 16)) {
+			int xoffs = (display_props->width - 16) / 2;
+			int yoffs = (display_props->height - 2) / 2;
+
+			char *top = "Thanks for using";
+#ifdef LINUX
+			char *low = "LCDproc & Linux!";
+#else
+			char *low = "    LCDproc!    ";
+#endif
+
+			drivers_string(1+xoffs, 1+yoffs, top);
+			drivers_string(1+xoffs, 2+yoffs, low);
 		}
 	}
 
-	drivers_cursor (1, 1, CURSOR_OFF);
-	drivers_flush ();
+	drivers_cursor(1, 1, CURSOR_OFF);
+	drivers_flush();
 
 	return 0;
 }

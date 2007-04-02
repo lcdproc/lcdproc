@@ -27,8 +27,6 @@ one there, so I'll keep thinking on it for now.
   just to not display a useless menu.
   Let the server menu name be configurable in the config file with the
   [menu]menuentryname="Menu Name" option in LCDd.conf.
-* setting the goodbye msg - which we set to "shutting down", instead of 
-  "Thanks for using lcdproc+linux"
 
 3. SEG - adds the ability to get a stack trace for the LCDd daemon. I 
 didn't actually catch a useful trace w/ it, but might be a nice 

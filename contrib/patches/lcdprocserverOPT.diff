@@ -241,22 +241,3 @@ diff -ruNp lcdproc-0.5.1-orig/server/serverscreens.c lcdproc-0.5.1-working/serve
  		} else {
  			w->text[0] = 0;
  		}
-@@ -157,6 +173,18 @@ goodbye_screen ()
- 	char *l16 = "    LCDproc!    ";
- #endif
- 
-+#ifndef OPT // disable config goobye
-+	char * goodbye_string;
-+
-+	if ( (goodbye_string = strdup(config_get_string("server", "goodbye", 0, "")))) {
-+		t20=t16=goodbye_string;
-+		if (strlen(goodbye_string) > 16 )
-+			l16 = goodbye_string + 16;
-+		if (strlen(goodbye_string) > 20 )
-+			l20 = goodbye_string + 20;
-+	}
-+#endif //OPT
-+
- 	if( !display_props )
- 		return 0;
- 
