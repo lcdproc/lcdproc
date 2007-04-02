@@ -162,8 +162,8 @@ static int interpret_boolean_arg(char *s);
 static void output_help_screen(void);
 static void output_GPL_notice(void);
 
-#define CHAIN(e,f) { if( e>=0 ) { e=(f); }}
-#define CHAIN_END(e,msg) { if( e<0 ) { report( RPT_CRIT,(msg)); exit(e); }}
+#define CHAIN(e,f) { if (e>=0) { e=(f); }}
+#define CHAIN_END(e,msg) { if (e<0) { report(RPT_CRIT,(msg)); exit(e); }}
 
 
 int
@@ -196,20 +196,20 @@ main(int argc, char **argv)
 	 */
 
 	/* Report that server is starting (report will be delayed) */
-	report(RPT_NOTICE, "LCDd version %s starting", version );
+	report(RPT_NOTICE, "LCDd version %s starting", version);
 	report(RPT_INFO, "Built on %s, protocol version %s, API version %s",
-		build_date, protocol_version, api_version );
+		build_date, protocol_version, api_version);
 
 	clear_settings();
 
 	/* Read command line*/
-	CHAIN( e, process_command_line(argc, argv) );
+	CHAIN(e, process_command_line(argc, argv));
 
 	/* Read config file
 	 * If config file was not given on command line use default */
 	if (strcmp(configfile, UNSET_STR) == 0)
 		strncpy(configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	CHAIN( e, process_configfile(configfile) );
+	CHAIN(e, process_configfile(configfile));
 
 	/* Set default values*/
 	set_default_settings();
@@ -218,7 +218,7 @@ main(int argc, char **argv)
 	set_reporting("LCDd", report_level, report_dest);
 	report(RPT_INFO, "Set report level to %d, output to %s", report_level,
 			((report_dest == RPT_DEST_SYSLOG) ? "syslog" : "stderr"));
-	CHAIN_END( e, "Critical error while processing settings, abort." );
+	CHAIN_END(e, "Critical error while processing settings, abort.");
 
 	/* Now, go into daemon mode (if we should)...
 	 * We wait for the child to report it is running OK. This mechanism
@@ -226,26 +226,26 @@ main(int argc, char **argv)
 	 * child to loose the (LPT) port access. */
 	if (!foreground_mode) {
 		report(RPT_INFO, "Server forking to background");
-		CHAIN( e, parent_pid = daemonize() );
+		CHAIN(e, parent_pid = daemonize());
 	} else {
 		output_GPL_notice();
 		report(RPT_INFO, "Server running in foreground");
 	}
-	install_signal_handlers (!foreground_mode);
+	install_signal_handlers(!foreground_mode);
 		/* Only catch SIGHUP if not in foreground mode */
 
 	/* Startup the subparts of the server */
-	CHAIN( e, sock_init(bind_addr, bind_port) );
-	CHAIN( e, screenlist_init() );
-	CHAIN( e, init_drivers() );
-	CHAIN( e, clients_init() );
-	CHAIN( e, input_init() );
-	CHAIN( e, menuscreens_init() );
-	CHAIN( e, server_screen_init() );
-	CHAIN_END( e, "Critical error while initializing, abort." );
+	CHAIN(e, sock_init(bind_addr, bind_port));
+	CHAIN(e, screenlist_init());
+	CHAIN(e, init_drivers());
+	CHAIN(e, clients_init());
+	CHAIN(e, input_init());
+	CHAIN(e, menuscreens_init());
+	CHAIN(e, server_screen_init());
+	CHAIN_END(e, "Critical error while initializing, abort.");
 	if (!foreground_mode) {
 		/* Tell to parent that startup went OK. */
-		wave_to_parent (parent_pid);
+		wave_to_parent(parent_pid);
 	}
 	drop_privs(user); /* This can't be done before, because sending a
 			signal to a process of a different user will fail */
@@ -262,12 +262,12 @@ clear_settings(void)
 {
 	int i;
 
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	bind_port = UNSET_INT;
-	strncpy( bind_addr, UNSET_STR, sizeof(bind_addr) );
-	strncpy( configfile, UNSET_STR, sizeof(configfile) );
-	strncpy( user, UNSET_STR, sizeof(user) );
+	strncpy(bind_addr, UNSET_STR, sizeof(bind_addr));
+	strncpy(configfile, UNSET_STR, sizeof(configfile));
+	strncpy(user, UNSET_STR, sizeof(user));
 	foreground_mode = UNSET_INT;
 	rotate_server_screen = UNSET_INT;
 	backlight = UNSET_INT;
@@ -276,8 +276,8 @@ clear_settings(void)
 	report_dest = UNSET_INT;
 	report_level = UNSET_INT;
 
-	for( i=0; i < num_drivers; i++ ) {
-		free( drivernames[i] );
+	for (i = 0; i < num_drivers; i++) {
+		free(drivernames[i]);
 		drivernames[i] = NULL;
 	}
 	num_drivers = 0;
@@ -291,14 +291,14 @@ process_command_line(int argc, char **argv)
 	int c, b;
 	int e = 0, help = 0;
 
-	debug( RPT_DEBUG, "%s( argc=%d, argv=...)", __FUNCTION__, argc );
+	debug(RPT_DEBUG, "%s(argc=%d, argv=...)", __FUNCTION__, argc);
 
 	/* Reset getopt */
 	opterr = 0; /* Prevent some messages to stderr */
 
 	/* Analyze options here.. (please try to keep list of options the
 	 * same everywhere) */
-	while ((c = getopt(argc, argv, "hc:d:fa:p:u:w:s:r:i:" )) > 0) {
+	while ((c = getopt(argc, argv, "hc:d:fa:p:u:w:s:r:i:")) > 0) {
 		switch(c) {
 			case 'h':
 				help = 1; /* Continue to process the other
@@ -320,7 +320,7 @@ process_command_line(int argc, char **argv)
 						e = -1;
 					}	
 				} else {
-					report( RPT_ERR, "Too many drivers!" );
+					report(RPT_ERR, "Too many drivers!");
 					e = -1;
 				}
 				break;
@@ -340,15 +340,15 @@ process_command_line(int argc, char **argv)
 				break;
 			case 'w':
 				default_duration = (int) (atof(optarg) * 1e6 / TIME_UNIT);
-				if ( default_duration * TIME_UNIT < 2e6 ) {
-					report( RPT_ERR, "Waittime should be at least 2 (seconds), not %.8s", optarg );
+				if (default_duration * TIME_UNIT < 2e6) {
+					report(RPT_ERR, "Waittime should be at least 2 (seconds), not %.8s", optarg);
 					e = -1;
 				}
 				break;
 			case 's':
-				b = interpret_boolean_arg( optarg );
-				if( b == -1 ) {
-					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
+				b = interpret_boolean_arg(optarg);
+				if (b == -1) {
+					report(RPT_ERR, "Not a boolean value: '%s'", optarg);
 					e = -1;
 				} else {
 					report_dest = (b) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
@@ -358,9 +358,9 @@ process_command_line(int argc, char **argv)
 				report_level = atoi(optarg);
 				break;
 			case 'i':
-				b = interpret_boolean_arg( optarg );
-				if( b == -1 ) {
-					report( RPT_ERR, "Not a boolean value: '%s'", optarg );
+				b = interpret_boolean_arg(optarg);
+				if (b == -1) {
+					report(RPT_ERR, "Not a boolean value: '%s'", optarg);
 					e = -1;
 				} else {
 					rotate_server_screen = b;
@@ -369,18 +369,18 @@ process_command_line(int argc, char **argv)
 			case '?':
 				/* For some reason getopt also returns an '?'
 				 * when an option argument is mission... */
-				report( RPT_ERR, "Unknown option: '%c'", optopt );
+				report(RPT_ERR, "Unknown option: '%c'", optopt);
 				e = -1;
 				break;
 			case ':':
-				report( RPT_ERR, "Missing option argument!" );
+				report(RPT_ERR, "Missing option argument!");
 				e = -1;
 				break;
 		}
 	}
 
 	if (optind < argc) {
-		report( RPT_ERR, "Non-option arguments on the command line !");
+		report(RPT_ERR, "Non-option arguments on the command line !");
 		e = -1;
 	}
 	if (help) {
@@ -398,58 +398,58 @@ process_configfile(char *configfile)
 	const char *s;
 	/*char buf[64];*/
 
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Read server settings*/
 
-	if( config_read_file( configfile ) != 0 ) {
-		report( RPT_CRIT, "Could not read config file: %s", configfile );
+	if (config_read_file(configfile) != 0) {
+		report(RPT_CRIT, "Could not read config file: %s", configfile);
 		return -1;
 	}
 
-	if( bind_port == UNSET_INT )
-		bind_port = config_get_int( "server", "port", 0, UNSET_INT );
+	if (bind_port == UNSET_INT)
+		bind_port = config_get_int("server", "port", 0, UNSET_INT);
 
-	if( strcmp( bind_addr, UNSET_STR ) == 0 )
-		strncpy( bind_addr, config_get_string( "server", "bind", 0, UNSET_STR ), sizeof(bind_addr));
+	if (strcmp(bind_addr, UNSET_STR) == 0)
+		strncpy(bind_addr, config_get_string("server", "bind", 0, UNSET_STR), sizeof(bind_addr));
 
-	if( strcmp( user, UNSET_STR ) == 0 )
-		strncpy( user, config_get_string( "server", "user", 0, UNSET_STR ), sizeof(user));
+	if (strcmp(user, UNSET_STR) == 0)
+		strncpy(user, config_get_string("server", "user", 0, UNSET_STR), sizeof(user));
 
-	if( default_duration == UNSET_INT ) {
-		default_duration = (config_get_float( "server", "waittime", 0, 0 ) * 1e6 / TIME_UNIT );
-		if( default_duration == 0 )
+	if (default_duration == UNSET_INT) {
+		default_duration = (config_get_float("server", "waittime", 0, 0) * 1e6 / TIME_UNIT);
+		if (default_duration == 0)
 			default_duration = UNSET_INT;
-		else if( default_duration * TIME_UNIT < 2e6 ) {
-			report( RPT_WARNING, "Waittime should be at least 2 (seconds). Set to 2 seconds." );
+		else if (default_duration * TIME_UNIT < 2e6) {
+			report(RPT_WARNING, "Waittime should be at least 2 (seconds). Set to 2 seconds.");
 			default_duration = 2e6 / TIME_UNIT;
 		}
 	}
 
-	if( foreground_mode == UNSET_INT ) {
-		int fg = config_get_bool( "server", "foreground", 0, UNSET_INT );
+	if (foreground_mode == UNSET_INT) {
+		int fg = config_get_bool("server", "foreground", 0, UNSET_INT);
 
-		if( fg != UNSET_INT )
+		if (fg != UNSET_INT)
 			foreground_mode = fg;
 	}
 
-	if( rotate_server_screen == UNSET_INT ) {
-		rotate_server_screen = config_get_bool( "server", "serverscreen", 0, UNSET_INT );
+	if (rotate_server_screen == UNSET_INT) {
+		rotate_server_screen = config_get_bool("server", "serverscreen", 0, UNSET_INT);
 	}
 
-	if( backlight == UNSET_INT ) {
-		s = config_get_string( "server", "backlight", 0, UNSET_STR );
-		if( strcmp( s, "on" ) == 0 ) {
+	if (backlight == UNSET_INT) {
+		s = config_get_string("server", "backlight", 0, UNSET_STR);
+		if (strcmp(s, "on") == 0) {
 			backlight = BACKLIGHT_ON;
 		}
-		else if( strcmp( s, "off" ) == 0 ) {
+		else if (strcmp(s, "off") == 0) {
 			backlight = BACKLIGHT_OFF;
 		}
-		else if( strcmp( s, "open" ) == 0 ) {
+		else if (strcmp(s, "open") == 0) {
 			backlight = BACKLIGHT_OPEN;
 		}
-		else if( strcmp( s, UNSET_STR ) != 0 ) {
-			report( RPT_WARNING, "Backlight state should be on, off or open" );
+		else if (strcmp(s, UNSET_STR) != 0) {
+			report(RPT_WARNING, "Backlight state should be on, off or open");
 		}
 	}
 
@@ -459,8 +459,8 @@ process_configfile(char *configfile)
 		if (rs != UNSET_INT)
 			report_dest = (rs) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
 	}
-	if( report_level == UNSET_INT ) {
-		report_level = config_get_int( "server", "reportLevel", 0, UNSET_INT );
+	if (report_level == UNSET_INT) {
+		report_level = config_get_int("server", "reportLevel", 0, UNSET_INT);
 	}
 
 
@@ -469,16 +469,16 @@ process_configfile(char *configfile)
 	 /* If drivers have been specified on the command line, then do not
 	 * use the driver list from the config file.
 	 */
-	if( num_drivers == 0 ) {
+	if (num_drivers == 0) {
 		/* read the drivernames*/
 
-		while( 1 ) {
-			s = config_get_string( "server", "driver", num_drivers, NULL );
-			if( !s )
+		while(1) {
+			s = config_get_string("server", "driver", num_drivers, NULL);
+			if (!s)
 				break;
-			if( s[0] != 0 ) {
+			if (s[0] != 0) {
 				drivernames[num_drivers] = malloc(strlen(s)+1);
-				strcpy( drivernames[num_drivers], s );
+				strcpy(drivernames[num_drivers], s);
 				num_drivers++;
 			}
 		}
@@ -491,15 +491,15 @@ process_configfile(char *configfile)
 static void
 set_default_settings(void)
 {
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Set defaults into unfilled variables....*/
 
 	if (bind_port == UNSET_INT)
 		bind_port = DEFAULT_BIND_PORT;
-	if (strcmp( bind_addr, UNSET_STR ) == 0)
-		strncpy (bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
-	if (strcmp( user, UNSET_STR ) == 0)
+	if (strcmp(bind_addr, UNSET_STR) == 0)
+		strncpy(bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
+	if (strcmp(user, UNSET_STR) == 0)
 		strncpy(user, DEFAULT_USER, sizeof(user));
 
 	if (foreground_mode == UNSET_INT)
@@ -512,14 +512,14 @@ set_default_settings(void)
 	if (backlight == UNSET_INT)
 		backlight = BACKLIGHT_OPEN;
 
-	if (report_dest == UNSET_INT )
+	if (report_dest == UNSET_INT)
 		report_dest = DEFAULT_REPORTDEST;
-	if( report_level == UNSET_INT )
+	if (report_level == UNSET_INT)
 		report_level = DEFAULT_REPORTLEVEL;
 
 
 	/* Use default driver*/
-	if( num_drivers == 0 ) {
+	if (num_drivers == 0) {
 		drivernames[0] = malloc(strlen(DEFAULT_DRIVER)+1);
 		strcpy(drivernames[0], DEFAULT_DRIVER);
 		num_drivers = 1;
@@ -537,20 +537,20 @@ install_signal_handlers(int allow_reload)
 
 	struct sigaction sa;
 
-	debug( RPT_DEBUG, "%s( allow_reload=%d )", __FUNCTION__, allow_reload );
+	debug(RPT_DEBUG, "%s(allow_reload=%d)", __FUNCTION__, allow_reload);
 
-	sigemptyset ( &(sa.sa_mask) );
+	sigemptyset(&(sa.sa_mask));
 
 	/* Clients can cause SIGPIPE if they quit unexpectedly, and the 
 	 * default action is to kill the server.  Just ignore it. */
 	sa.sa_handler = SIG_IGN;
-	sigaction (SIGPIPE, &sa, NULL);
+	sigaction(SIGPIPE, &sa, NULL);
 
 	sa.sa_handler = exit_program;
 	sa.sa_flags = SA_RESTART;
 
-	sigaction (SIGINT, &sa, NULL);		/* Ctrl-C will cause a clean exit...*/
-	sigaction (SIGTERM, &sa, NULL);		/* and "kill"...*/
+	sigaction(SIGINT, &sa, NULL);		/* Ctrl-C will cause a clean exit...*/
+	sigaction(SIGTERM, &sa, NULL);		/* and "kill"...*/
 
 	if (allow_reload) {
 		sa.sa_handler = catch_reload_signal;
@@ -559,13 +559,13 @@ install_signal_handlers(int allow_reload)
 	else {
 		/* Treat this signal just like INT and TERM */
 	}
-	sigaction (SIGHUP, &sa, NULL);
+	sigaction(SIGHUP, &sa, NULL);
 #else
         /* Win32 does not support POSIX signals i.e. sigaction(). However, it does 
          * support ANSI signals in mingw. */
-	signal (SIGINT, exit_program);		/* Ctrl-C will cause a clean exit...*/
-	signal (SIGTERM, exit_program);		/* and "kill"...*/
-	signal (SIGPIPE, SIG_IGN);
+	signal(SIGINT, exit_program);		/* Ctrl-C will cause a clean exit...*/
+	signal(SIGTERM, exit_program);		/* and "kill"...*/
+	signal(SIGPIPE, SIG_IGN);
 
         /* REVISIT: implement SIGHUP on windows */
 #endif
@@ -577,10 +577,10 @@ child_ok_func(int signal)
 {
 	/* We only catch this signal to be sure the child runs OK. */
 
-	debug( RPT_INFO, "%s( signal=%d )", __FUNCTION__, signal );
+	debug(RPT_INFO, "%s(signal=%d)", __FUNCTION__, signal);
 
 	/* Exit now !    because of bug? in wait() */
-	_exit( 0 ); /* Parent exits normally. */
+	_exit(0); /* Parent exits normally. */
 }
 
 
@@ -599,49 +599,49 @@ daemonize(void)
 	int child_status;
 	struct sigaction sa;
 
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	parent = getpid();
-	debug( RPT_INFO, "parent = %d", parent );
+	debug(RPT_INFO, "parent = %d", parent);
 
 	/* Install handler at parent for child's signal */
 	/* sigaction should be more portable than signal, but it does not
 	 * work for some reason. */
 	sa.sa_handler = child_ok_func;
-	sigemptyset ( &(sa.sa_mask) );
+	sigemptyset(&(sa.sa_mask));
 	sa.sa_flags = SA_RESTART;
-	sigaction (SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR1, &sa, NULL);
 
 	/* Do the fork */
-	switch ((child = fork ()) ) {
+	switch ((child = fork())) {
 	  case -1:
-		report( RPT_ERR, "Could not fork" );
+		report(RPT_ERR, "Could not fork");
 		return -1;
 	  case 0: /* We are the child */
 		break;
 	  default: /* We are the parent */
-		debug( RPT_INFO, "child = %d", child );
-		wait( &child_status );
+		debug(RPT_INFO, "child = %d", child);
+		wait(&child_status);
 		/* BUG? According to the man page wait() should also return
 		 * when a signal comes in that is caught. Instead it
 		 * continues to wait. */
 
-		if( WIFEXITED(child_status) ) {
+		if (WIFEXITED(child_status)) {
 			/* Child exited normally, probably because of some
 			 * error. */
-			debug( RPT_INFO, "Child has terminated!" );
-			exit( WEXITSTATUS(child_status) );
+			debug(RPT_INFO, "Child has terminated!");
+			exit(WEXITSTATUS(child_status));
 			/* Parent exits with same status as child did... */
 		}
 		/* Child is still running and has signalled it's OK.
 		 * This means the parent can now rest in peace. */
-		debug( RPT_INFO, "Got OK signal from child." );
-		exit( 0 ); /* Parent exits normally. */
+		debug(RPT_INFO, "Got OK signal from child.");
+		exit(0); /* Parent exits normally. */
 	}
 	/* At this point we are always the child. */
 	/* Reset signal handler */
 	sa.sa_handler = SIG_DFL;
-	sigaction (SIGUSR1, &sa, NULL);
+	sigaction(SIGUSR1, &sa, NULL);
 
 	setsid();	/* Create a new session because otherwise we'll
 			 * catch a SIGHUP when the shell is closed. */
@@ -655,9 +655,9 @@ static int
 wave_to_parent(pid_t parent_pid)
 {
 #ifndef WIN32
-	debug( RPT_DEBUG, "%s( parent_pid=%d )", __FUNCTION__, parent_pid );
+	debug(RPT_DEBUG, "%s(parent_pid=%d)", __FUNCTION__, parent_pid);
 
-	kill( parent_pid, SIGUSR1 );
+	kill(parent_pid, SIGUSR1);
 #endif
 
 	return 0;
@@ -671,15 +671,15 @@ init_drivers(void)
 
 	int output_loaded = 0;
 
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	for (i = 0; i < num_drivers; i++) {
 
-		res = drivers_load_driver (drivernames[i]);
+		res = drivers_load_driver(drivernames[i]);
 		if (res >= 0) {
 			/* Load went OK */
 
-			switch( res ) {
+			switch(res) {
 			  case 0: /* Driver does input only */
 			  	break;
 			  case 1: /* Driver does output */
@@ -691,15 +691,15 @@ init_drivers(void)
 			  	break;
 			}
 		} else {
-			report( RPT_ERR, "Could not load driver %.40s", drivernames[i] );
+			report(RPT_ERR, "Could not load driver %.40s", drivernames[i]);
 		}
 	}
 
 	/* Do we have a running output driver ?*/
-	if ( output_loaded ) {
+	if (output_loaded) {
 		return 0;
 	} else {
-		report( RPT_ERR, "There is no output driver" );
+		report(RPT_ERR, "There is no output driver");
 		return -1;
 	}
 }
@@ -711,15 +711,15 @@ drop_privs(char *user)
 #ifndef WIN32
 	struct passwd *pwent;
 
-	debug( RPT_DEBUG, "%s( user=\"%.40s\" )", __FUNCTION__, user );
+	debug(RPT_DEBUG, "%s(user=\"%.40s\")", __FUNCTION__, user);
 
 	if (getuid() == 0 || geteuid() == 0) {
 		if ((pwent = getpwnam(user)) == NULL) {
-			report( RPT_ERR, "User %.40s not a valid user!", user );
+			report(RPT_ERR, "User %.40s not a valid user!", user);
 			return -1;
 		} else {
 			if (setuid(pwent->pw_uid) < 0) {
-				report( RPT_ERR, "Unable to switch to user %.40s", user );
+				report(RPT_ERR, "Unable to switch to user %.40s", user);
 				return -1;
 			}
 		}
@@ -735,15 +735,15 @@ drop_privs(char *user)
 static int
 init_screens(void)
 {
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	if (screenlist_init () < 0) {
+	if (screenlist_init() < 0) {
 		report(RPT_ERR, "Error initializing screen list");
 		return -1;
 	}
 
 	/* Add the server screen */
-	if (server_screen_init () < 0) {
+	if (server_screen_init() < 0) {
 		report(RPT_ERR, "Error initializing server screens");
 		return -1;
 	}
@@ -761,37 +761,37 @@ do_reload(void)
 {
 	int e = 0;
 
-	drivers_unload_all ();		/* Close all drivers */
+	drivers_unload_all();		/* Close all drivers */
 
 	config_clear();
 	clear_settings();
 
 	/* Reread command line*/
-	CHAIN( e, process_command_line (stored_argc, stored_argv) );
+	CHAIN(e, process_command_line(stored_argc, stored_argv));
 
 	/* Reread config file */
 	if (strcmp(configfile, UNSET_STR)==0)
 		strncpy(configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	CHAIN( e, process_configfile (configfile) );
+	CHAIN(e, process_configfile(configfile));
 
 	/* Set default values */
-	CHAIN( e, ( set_default_settings(), 0 ));
+	CHAIN(e, (set_default_settings(), 0));
 
 	/* Set reporting values */
-	CHAIN( e, set_reporting("LCDd", report_level, report_dest) );
-	CHAIN( e, ( report(RPT_INFO, "Set report level to %d, output to %s", report_level,
-			((report_dest == RPT_DEST_SYSLOG) ? "syslog" : "stderr")), 0 ) );
+	CHAIN(e, set_reporting("LCDd", report_level, report_dest));
+	CHAIN(e, (report(RPT_INFO, "Set report level to %d, output to %s", report_level,
+			((report_dest == RPT_DEST_SYSLOG) ? "syslog" : "stderr")), 0));
 
 	/* And restart the drivers */
-	CHAIN( e, init_drivers() );
-	CHAIN_END( e, "Critical error while reloading, abort." );
+	CHAIN(e, init_drivers());
+	CHAIN_END(e, "Critical error while reloading, abort.");
 }
 
 
 static void
 do_mainloop(void)
 {
-	Screen * s;
+	Screen *s;
 #ifndef WIN32
 	struct timeval t;
 	struct timeval last_t;
@@ -805,10 +805,10 @@ do_mainloop(void)
 	long int render_lag = 0;
 	long int t_diff;
 
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 #ifndef WIN32
-	gettimeofday (&t, NULL); /* Get initial time */
+	gettimeofday(&t, NULL); /* Get initial time */
 #else
         QueryPerformanceFrequency(&perf_freq);
         /* scale perf_freq to number of cycles per micro-sec */
@@ -821,7 +821,7 @@ do_mainloop(void)
 		/* Get current time */
 		last_t = t;
 #ifndef WIN32
-		gettimeofday (&t, NULL);
+		gettimeofday(&t, NULL);
 		t_diff = t.tv_sec - last_t.tv_sec;
 		if ((t_diff + 1) > (LONG_MAX / 1e6)) {
 			/* We're going to overflow the calculation - probably been to sleep, fudge the values */
@@ -844,9 +844,9 @@ do_mainloop(void)
                 process_lag += t_diff;
 		if (process_lag > 0) {
 			/* Time for a processing stroke */
-			sock_poll_clients ();		/* poll clients for input*/
-			parse_all_client_messages ();	/* analyze input from network clients*/
-			handle_input ();		/* handle key input from devices*/
+			sock_poll_clients();		/* poll clients for input*/
+			parse_all_client_messages();	/* analyze input from network clients*/
+			handle_input();		/* handle key input from devices*/
 
 			/* We've done the job... */
 			process_lag = 0 - (1e6/PROCESS_FREQ);
@@ -857,19 +857,19 @@ do_mainloop(void)
 		if (render_lag > 0) {
 			/* Time for a rendering stroke */
 			timer ++;
-			screenlist_process ();
-			s = screenlist_current ();
+			screenlist_process();
+			s = screenlist_current();
 
 			/* TODO: Move this call to every client connection
 			 *       and every screen add...
 			 */
-			if( s == server_screen ) {
-				update_server_screen (timer);
+			if (s == server_screen) {
+				update_server_screen();
 			}
-			render_screen (s, timer);
+			render_screen(s, timer);
 
 			/* We've done the job... */
-			if( render_lag > (1e6/RENDER_FREQ) * MAX_RENDER_LAG_FRAMES ) {
+			if (render_lag > (1e6/RENDER_FREQ) * MAX_RENDER_LAG_FRAMES) {
 				/* Cause rendering slowdown because too much lag */
 				render_lag = (1e6/RENDER_FREQ) * MAX_RENDER_LAG_FRAMES;
 			}
@@ -878,10 +878,10 @@ do_mainloop(void)
 		}
 
 		/* Sleep just as long as needed */
-		sleeptime = min (0-process_lag, 0-render_lag);
-		if( sleeptime > 0 ) {
+		sleeptime = min(0-process_lag, 0-render_lag);
+		if (sleeptime > 0) {
 #ifndef WIN32
-			usleep (sleeptime);
+			usleep(sleeptime);
 #else
                         /* Sleep in Windows takes milliseconds argument */
                         Sleep(sleeptime / 1000);
@@ -889,14 +889,14 @@ do_mainloop(void)
 		}
 
 		/* Check if a SIGHUP has been caught */
-		if( got_reload_signal ) {
+		if (got_reload_signal) {
 			got_reload_signal = 0;
-			do_reload ();
+			do_reload();
 		}
 	}
 
 	/* Quit! */
-	exit_program (0);
+	exit_program(0);
 }
 
 
@@ -905,14 +905,14 @@ exit_program(int val)
 {
 	char buf[64];
 
-	debug( RPT_DEBUG, "%s( val=%d )", __FUNCTION__, val );
+	debug(RPT_DEBUG, "%s(val=%d)", __FUNCTION__, val);
 
 	/* TODO: These things shouldn't be so interdependent.  The order
 	 * things are shut down in shouldn't matter...
 	 */
 
-	if( val > 0 ) {
-		strncpy(buf, "Server shutting down on ", sizeof (buf) );
+	if (val > 0) {
+		strncpy(buf, "Server shutting down on ", sizeof(buf));
 		switch(val) {
 			case 1: strcat(buf, "SIGHUP"); break;
 			case 2: strcat(buf, "SIGINT"); break;
@@ -924,31 +924,31 @@ exit_program(int val)
 	}
 
 	/* Set emergency reporting and flush all messages if not done already. */
-	if (report_level == UNSET_INT )
+	if (report_level == UNSET_INT)
 		report_level = DEFAULT_REPORTLEVEL;
-	if (report_dest == UNSET_INT )
+	if (report_dest == UNSET_INT)
 		report_dest = DEFAULT_REPORTDEST;
 	set_reporting("LCDd", report_level, report_dest);
 
-	goodbye_screen ();		/* display goodbye screen on LCD display */
-	drivers_unload_all ();		/* release driver memory and file descriptors */
+	goodbye_screen();		/* display goodbye screen on LCD display */
+	drivers_unload_all();		/* release driver memory and file descriptors */
 
 	/* Shutdown things if server start was complete */
-	clients_shutdown ();		/* shutdown clients (must come first) */
-	menuscreens_shutdown ();
-	screenlist_shutdown ();		/* shutdown screens (must come after client_shutdown) */
-	input_shutdown ();		/* shutdown key input part */
+	clients_shutdown();		/* shutdown clients (must come first) */
+	menuscreens_shutdown();
+	screenlist_shutdown();		/* shutdown screens (must come after client_shutdown) */
+	input_shutdown();		/* shutdown key input part */
         sock_shutdown();                /* shutdown the sockets server */
 
-	report( RPT_INFO, "Exiting." );
-	_exit (0);
+	report(RPT_INFO, "Exiting.");
+	_exit(0);
 }
 
 
 static void
 catch_reload_signal(int val)
 {
-	debug( RPT_DEBUG, "%s( val=%d )", __FUNCTION__, val );
+	debug(RPT_DEBUG, "%s(val=%d)", __FUNCTION__, val);
 
 	got_reload_signal = 1;
 }
@@ -981,7 +981,7 @@ output_GPL_notice(void)
 	 */
 	fprintf(stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
 	fprintf(stderr, "Part of the LCDproc suite\n");
-	fprintf(stderr, "Copyright (C) 1998-2006 William Ferrell, Scott Scriven\n"
+	fprintf(stderr, "Copyright (C) 1998-2007 William Ferrell, Scott Scriven\n"
 	                "                        and many other contributors\n\n");
 
 	fprintf(stderr, "This program is free software; you can redistribute it and/or\n"
@@ -1006,7 +1006,7 @@ output_help_screen(void)
 	/* Help screen is printed to stdout on purpose. No reason to have
 	 * this in syslog...
 	 */
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	fprintf(stdout, "LCDd - LCDproc Server Daemon, %s\n\n", version);
 	fprintf(stdout, "Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc. contributors.\n");

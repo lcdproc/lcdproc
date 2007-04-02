@@ -34,7 +34,7 @@ MODULE_EXPORT int  svga_cellwidth (Driver *drvthis);
 MODULE_EXPORT int  svga_cellheight (Driver *drvthis);
 MODULE_EXPORT void svga_clear (Driver *drvthis);
 MODULE_EXPORT void svga_flush (Driver *drvthis);
-MODULE_EXPORT void svga_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void svga_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void svga_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void svga_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);

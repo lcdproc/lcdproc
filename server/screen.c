@@ -43,19 +43,19 @@ char *pri_names[] = {
 };
 
 Screen *
-screen_create (char * id, Client * client)
+screen_create(char *id, Client *client)
 {
 	Screen *s;
 
-	debug( RPT_DEBUG, "%s( id=\"%.40s\", client=[%d] )", __FUNCTION__, id, (client?client->sock:-1));
+	debug(RPT_DEBUG, "%s(id=\"%.40s\", client=[%d])", __FUNCTION__, id, (client?client->sock:-1));
 
-	s = malloc (sizeof (Screen));
+	s = malloc(sizeof(Screen));
 	if (!s) {
 		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 	if (!id) {
-		report (RPT_ERR, "%s: Need id string", __FUNCTION__);
+		report(RPT_ERR, "%s: Need id string", __FUNCTION__);
 		return NULL;
 	}
 	/* Client can be NULL for serverscreens and other client-less screens */
@@ -83,100 +83,100 @@ screen_create (char * id, Client * client)
 	s->cursor_x = 1;
 	s->cursor_y = 1;
 
-	s->widgetlist = LL_new ();
+	s->widgetlist = LL_new();
 	if (!s->widgetlist) {
 		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 
-	menuscreen_add_screen (s);
+	menuscreen_add_screen(s);
 
 	return s;
 }
 
 int
-screen_destroy (Screen * s)
+screen_destroy(Screen *s)
 {
 	Widget *w;
 
-	debug( RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id );
+	debug(RPT_DEBUG, "%s(s=[%.40s])", __FUNCTION__, s->id);
 
-	menuscreen_remove_screen (s);
+	menuscreen_remove_screen(s);
 
-	screenlist_remove (s);
+	screenlist_remove(s);
 
-	for (w=LL_GetFirst(s->widgetlist); w; w=LL_GetNext(s->widgetlist)) {
+	for (w = LL_GetFirst(s->widgetlist); w; w = LL_GetNext(s->widgetlist)) {
 		/* Free a widget...*/
-		widget_destroy (w);
+		widget_destroy(w);
 	}
-	LL_Destroy (s->widgetlist);
+	LL_Destroy(s->widgetlist);
 
 	if (s->id)
-		free (s->id);
+		free(s->id);
 	if (s->name)
-		free (s->name);
+		free(s->name);
 
-	free (s);
-
-	return 0;
-}
-
-int
-screen_add_widget (Screen * s, Widget * w)
-{
-	debug( RPT_DEBUG, "%s( s=[%.40s], widget=[%.40s] )", __FUNCTION__, s->id, w->id );
-
-	LL_Push (s->widgetlist, (void *) w);
+	free(s);
 
 	return 0;
 }
 
 int
-screen_remove_widget (Screen * s, Widget * w)
+screen_add_widget(Screen *s, Widget *w)
 {
-	debug( RPT_DEBUG, "%s( s=[%.40s], widget=[%.40s] )", __FUNCTION__, s->id, w->id );
+	debug(RPT_DEBUG, "%s(s=[%.40s], widget=[%.40s])", __FUNCTION__, s->id, w->id);
 
-	LL_Remove (s->widgetlist, (void *) w);
+	LL_Push(s->widgetlist, (void *) w);
+
+	return 0;
+}
+
+int
+screen_remove_widget(Screen *s, Widget *w)
+{
+	debug(RPT_DEBUG, "%s(s=[%.40s], widget=[%.40s])", __FUNCTION__, s->id, w->id);
+
+	LL_Remove(s->widgetlist, (void *) w);
 
 	return 0;
 }
 
 Widget *
-screen_find_widget (Screen * s, char *id)
+screen_find_widget(Screen *s, char *id)
 {
-	Widget * w;
+	Widget *w;
 
 	if (!s)
 		return NULL;
 	if (!id)
 		return NULL;
 
-	debug( RPT_DEBUG, "%s( s=[%.40s], id=\"%.40s\" )", __FUNCTION__, s->id, id );
+	debug(RPT_DEBUG, "%s(s=[%.40s], id=\"%.40s\")", __FUNCTION__, s->id, id);
 
-	for ( w=LL_GetFirst(s->widgetlist); w; w=LL_GetNext(s->widgetlist) ) {
-		if (0 == strcmp (w->id, id)) {
-			debug (RPT_DEBUG, "%s: Found %s", __FUNCTION__, id);
+	for (w = LL_GetFirst(s->widgetlist); w; w = LL_GetNext(s->widgetlist)) {
+		if (0 == strcmp(w->id, id)) {
+			debug(RPT_DEBUG, "%s: Found %s", __FUNCTION__, id);
 			return w;
 		}
 		/* Search subscreens recursively */
 		if (w->type == WID_FRAME) {
-			w = widget_search_subs (w, id);
+			w = widget_search_subs(w, id);
 			if (w)
 				return w;
 		}
 	}
-	debug (RPT_DEBUG, "%s: Not found", __FUNCTION__);
+	debug(RPT_DEBUG, "%s: Not found", __FUNCTION__);
 	return NULL;
 }
 
 Priority
-screen_pri_name_to_pri (char * priname)
+screen_pri_name_to_pri(char *priname)
 {
 	Priority pri = WID_NONE;
 	int i;
 
 	for (i = 0; pri_names[i]; i++) {
-		if (strcmp (pri_names[i], priname) == 0) {
+		if (strcmp(pri_names[i], priname) == 0) {
 			pri = i;
 			break; /* it's valid: skip out...*/
 		}
@@ -185,7 +185,7 @@ screen_pri_name_to_pri (char * priname)
 }
 
 char *
-screen_pri_to_pri_name (Priority pri)
+screen_pri_to_pri_name(Priority pri)
 {
 	return pri_names[pri];
 }

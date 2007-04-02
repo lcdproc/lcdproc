@@ -14,13 +14,13 @@
 
 #include "screen.h"
 
-extern Screen * server_screen;
+extern Screen *server_screen;
 
 extern int rotate_server_screen;
 
-int server_screen_init ();
-int server_screen_shutdown ();
-int update_server_screen ();
-int goodbye_screen ();
+int server_screen_init(void);
+int server_screen_shutdown(void);
+int update_server_screen(void);
+int goodbye_screen(void);
 
 #endif

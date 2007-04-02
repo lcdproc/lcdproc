@@ -441,7 +441,7 @@ svga_cellheight (Driver *drvthis)
  * Clear screen
  */
 MODULE_EXPORT void
-svga_clear (Driver * drvthis)
+svga_clear (Driver *drvthis)
 {
 	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
@@ -465,20 +465,21 @@ svga_flush (Driver *drvthis)
  * upper-left is (1,1), and the lower right should be (p->width,p->height).
  */
 MODULE_EXPORT void
-svga_string (Driver *drvthis, int x, int y, char string[])
+svga_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
-	int i;
+	char *buffer = strdup(string);
+	char *ptr;
 
 	debug(RPT_DEBUG, "%s(%p, %d, %d, \"%s\")", __FUNCTION__, drvthis, x, y, string);
 
-	for (i = 0; string[i] != '\0'; i++) {
-		char *c = &string[i];
+	for (ptr = buffer; *ptr != '\0'; ptr++) {
 
-		if ((unsigned char) *c == 255)	// TODO: Is this still necessary ?
-			*c = '#';
+		if ((unsigned char) *ptr == 255)	// TODO: Is this still necessary ?
+			*ptr = '#';
 	}
-	gl_writen(x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, i, string);
+	gl_writen(x * p->cellwidth + p->xoffs, y * p->cellheight + p->yoffs, (ptr - buffer), buffer);
+	free(buffer);
 }
 
 

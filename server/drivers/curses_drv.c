@@ -430,7 +430,7 @@ curses_backlight (Driver *drvthis, int on)
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-curses_string (Driver *drvthis, int x, int y, char *string)
+curses_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 

@@ -26,20 +26,20 @@
 #include "main.h" /* for timer */
 
 /* Local functions */
-int compare_priority (void *one, void *two);
+int compare_priority(void *one, void *two);
 
 bool autorotate = 1;			/* If on, INFO and FOREGROUND screens will rotate */
 LinkedList *screenlist = NULL;
-Screen * current_screen = NULL;
+Screen *current_screen = NULL;
 long int current_screen_start_time = 0;
 
 
 int
-screenlist_init ()
+screenlist_init(void)
 {
-	report (RPT_DEBUG, "%s()", __FUNCTION__);
+	report(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	screenlist = LL_new ();
+	screenlist = LL_new();
 	if (!screenlist) {
 		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
 		return -1;
@@ -49,71 +49,71 @@ screenlist_init ()
 
 
 int
-screenlist_shutdown ()
+screenlist_shutdown(void)
 {
-	report (RPT_DEBUG, "%s()", __FUNCTION__);
+	report(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	if( !screenlist ) {
+	if (!screenlist) {
 		/* Program shutdown before completed startup */
 		return -1;
 	}
-	LL_Destroy (screenlist);
+	LL_Destroy(screenlist);
 
 	return 0;
 }
 
 
 int
-screenlist_add (Screen * s)
+screenlist_add(Screen *s)
 {
 	if (!screenlist)
 		return -1;
-	return LL_Push (screenlist, s);
+	return LL_Push(screenlist, s);
 }
 
 
 int
-screenlist_remove (Screen * s)
+screenlist_remove(Screen *s)
 {
-	debug (RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id);
+	debug(RPT_DEBUG, "%s(s=[%.40s])", __FUNCTION__, s->id);
 
 	if (!screenlist)
 		return -1;
 
 	/* Are we trying to remove the current screen ? */
 	if (s == current_screen) {
-		screenlist_goto_next ();
+		screenlist_goto_next();
 		if (s == current_screen) {
 			/* Hmm, no other screen had same priority */
-			void * res = LL_Remove (screenlist, s);
+			void *res = LL_Remove(screenlist, s);
 			/* And now once more */
-			screenlist_goto_next ();
+			screenlist_goto_next();
 			return (res == NULL) ? -1 : 0;
 		}
 	}
-	return (LL_Remove (screenlist, s) == NULL) ? -1 : 0;
+	return (LL_Remove(screenlist, s) == NULL) ? -1 : 0;
 }
 
 
 void
-screenlist_process ()
+screenlist_process(void)
 {
-	Screen * s;
-	Screen * f;
+	Screen *s;
+	Screen *f;
 
-	report (RPT_DEBUG, "%s()", __FUNCTION__);
+	report(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	if (!screenlist)
 		return;
 
 	/* Sort the list acfording to priority class */
-	LL_Sort (screenlist, compare_priority);
+	LL_Sort(screenlist, compare_priority);
 	f = LL_GetFirst(screenlist);
 
 	/**** First we need to check out the current situation. ****/
 
 	/* Check whether there is an active screen */
-	s = screenlist_current ();
+	s = screenlist_current();
 	if (!s) {
 		/* We have no active screen yet.
 		 * Try to switch to the first screen in the list... */
@@ -123,7 +123,7 @@ screenlist_process ()
 			/* There was no screen in the list */
 			return;
 		}
-		screenlist_switch (s);
+		screenlist_switch(s);
 		return;
 	}
 	else {
@@ -137,8 +137,8 @@ screenlist_process ()
 			if (s->timeout <= 0) {
 				/* Expired, we can destroy it */
 				report(RPT_DEBUG, "Removing expired screen [%.40s]", s->id);
-				client_remove_screen (s->client, s);
-				screen_destroy (s);
+				client_remove_screen(s->client, s);
+				screen_destroy(s);
 			}
 		}
 	}
@@ -165,14 +165,14 @@ screenlist_process ()
 
 
 void
-screenlist_switch (Screen * s)
+screenlist_switch(Screen *s)
 {
-	Client * c;
+	Client *c;
 	char str[256];
 
 	if (!s) return;
 
-	report (RPT_DEBUG, "%s( s=[%.40s] )", __FUNCTION__, s->id );
+	report(RPT_DEBUG, "%s(s=[%.40s])", __FUNCTION__, s->id);
 
 	if (s == current_screen) {
 		/* Nothing to be done */
@@ -183,8 +183,8 @@ screenlist_switch (Screen * s)
 		c = current_screen->client;
 		if (c) {
 			/* Tell the client we're not listening any more...*/
-			snprintf (str, sizeof(str), "ignore %s\n", current_screen->id);
-			sock_send_string (c->sock, str);
+			snprintf(str, sizeof(str), "ignore %s\n", current_screen->id);
+			sock_send_string(c->sock, str);
 		} else {
 			/* It's a server screen, no need to inform it. */
 		}
@@ -192,82 +192,82 @@ screenlist_switch (Screen * s)
 	c = s->client;
 	if (c) {
 		/* Tell the client we're paying attention...*/
-		snprintf (str, sizeof(str), "listen %s\n", s->id);
-		sock_send_string (c->sock, str);
+		snprintf(str, sizeof(str), "listen %s\n", s->id);
+		sock_send_string(c->sock, str);
 	} else {
 		/* It's a server screen, no need to inform it. */
 	}
-	report (RPT_INFO, "%s: switched to screen [%.40s]", __FUNCTION__, s->id );
+	report(RPT_INFO, "%s: switched to screen [%.40s]", __FUNCTION__, s->id);
 	current_screen = s;
 	current_screen_start_time = timer;
 }
 
 
 Screen *
-screenlist_current ()
+screenlist_current(void)
 {
 	return current_screen;
 }
 
 
 int
-screenlist_goto_next ()
+screenlist_goto_next(void)
 {
 	Screen *s;
 
-	debug (RPT_DEBUG, "%s()", __FUNCTION__);
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	if (!current_screen)
 		return -1;
 
 	/* Find current screen in screenlist */
-	for( s = LL_GetFirst(screenlist); s && s != current_screen; s = LL_GetNext(screenlist) );
+	for (s = LL_GetFirst(screenlist); s && s != current_screen; s = LL_GetNext(screenlist));
 
 	/* One step forward */
 	s = LL_GetNext(screenlist);
-	if( !s || s->priority < current_screen->priority) {
+	if (!s || s->priority < current_screen->priority) {
 		/* To far, go back to start of screenlist */
 		s = LL_GetFirst(screenlist);
 	}
-	screenlist_switch (s);
+	screenlist_switch(s);
 	return 0;
 }
 
 
 int
-screenlist_goto_prev ()
+screenlist_goto_prev(void)
 {
 	Screen *s;
 
-	debug (RPT_DEBUG, "%s()", __FUNCTION__);
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	if (!current_screen)
 		return -1;
 
 	/* Find current screen in screenlist */
-	for( s = LL_GetFirst(screenlist); s && s != current_screen; s = LL_GetNext(screenlist) );
+	for (s = LL_GetFirst(screenlist); s && s != current_screen; s = LL_GetNext(screenlist));
 
 	/* One step back */
 	s = LL_GetPrev(screenlist);
-	if( !s ) {
+	if (!s) {
 		/* We're at the start of the screenlist. We should find the
 		 * last screen with the same priority as the first screen.
 		 */
-		Screen * f = LL_GetFirst(screenlist);
-		Screen * n;
+		Screen *f = LL_GetFirst(screenlist);
+		Screen *n;
 
 		s = f;
-		while( (n = LL_GetNext(screenlist)) && n->priority == f->priority ) {
+		while ((n = LL_GetNext(screenlist)) && n->priority == f->priority) {
 			s = n;
 		}
 	}
-	screenlist_switch (s);
+	screenlist_switch(s);
 	return 0;
 }
 
 /* Internal function for sorting. */
 int
-compare_priority (void *one, void *two)
+compare_priority(void *one, void *two)
 {
 	Screen *a, *b;
 

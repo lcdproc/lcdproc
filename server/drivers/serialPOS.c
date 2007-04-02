@@ -462,7 +462,7 @@ MtxcOrb_cellheight (Driver *drvthis)
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-serialPOS_string (Driver *drvthis, int x, int y, char string[])
+serialPOS_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -712,7 +712,7 @@ serialPOS_get_info (Driver *drvthis)
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-serialPOS_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+serialPOS_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
 	// map
@@ -765,7 +765,7 @@ serialPOS_vbar (Driver * drvthis, int x, int y, int len, int promille, int optio
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-serialPOS_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+serialPOS_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
 	int pixels = ((long) 2 * len * p->cellwidth) * promille / 2000;

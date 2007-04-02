@@ -312,7 +312,7 @@ t6963_flush (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (20,6).
 //
 MODULE_EXPORT void
-t6963_string (Driver *drvthis, int x, int y, char string[])
+t6963_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 

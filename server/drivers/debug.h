@@ -9,7 +9,7 @@ MODULE_EXPORT int  debug_width (Driver *drvthis);
 MODULE_EXPORT int  debug_height (Driver *drvthis);
 MODULE_EXPORT void debug_clear (Driver *drvthis);
 MODULE_EXPORT void debug_flush (Driver *drvthis);
-MODULE_EXPORT void debug_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void debug_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void debug_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void debug_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);

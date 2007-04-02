@@ -228,7 +228,7 @@ xosdlib_drv_height (Driver *drvthis)
  * Clear screen
  */
 MODULE_EXPORT void
-xosdlib_drv_clear (Driver * drvthis)
+xosdlib_drv_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -265,7 +265,7 @@ xosdlib_drv_flush (Driver *drvthis)
  * upper-left is (1,1), and the lower right should be (p->width,p->height).
  */
 MODULE_EXPORT void
-xosdlib_drv_string (Driver *drvthis, int x, int y, char string[])
+xosdlib_drv_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;

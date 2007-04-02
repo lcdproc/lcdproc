@@ -508,7 +508,7 @@ MtxcOrb_cellheight (Driver *drvthis)
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-MtxOrb_string (Driver *drvthis, int x, int y, char string[])
+MtxOrb_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -1064,7 +1064,7 @@ MtxOrb_get_info (Driver *drvthis)
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-MtxOrb_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+MtxOrb_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -1103,7 +1103,7 @@ MtxOrb_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-MtxOrb_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+MtxOrb_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
 

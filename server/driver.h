@@ -21,42 +21,42 @@
 #endif
 
 Driver *
-driver_load( char * name, char * filename );
+driver_load(const char *name, const char *filename);
 
 int
-driver_unload( Driver * driver );
+driver_unload(Driver *driver);
 
 int
-driver_bind_module( Driver * driver );
+driver_bind_module(Driver *driver);
 
 int
-driver_unbind_module( Driver * driver );
+driver_unbind_module(Driver *driver);
 
 bool
-driver_does_output( Driver * driver );
+driver_does_output(Driver *driver);
 
 bool
-driver_does_input( Driver * driver );
+driver_does_input(Driver *driver);
 
 bool
-driver_support_multiple( Driver * driver );
+driver_support_multiple(Driver *driver);
 
 bool
-driver_stay_in_foreground( Driver * driver );
+driver_stay_in_foreground(Driver *driver);
 
 
 /* Alternative functions for all extended functions */
 
-void driver_alt_vbar( Driver * drv, int x, int y, int len, int promille, int pattern );
+void driver_alt_vbar(Driver *drv, int x, int y, int len, int promille, int pattern);
 
-void driver_alt_hbar( Driver * drv, int x, int y, int len, int promille, int pattern );
+void driver_alt_hbar(Driver *drv, int x, int y, int len, int promille, int pattern);
 
-void driver_alt_num( Driver * drv, int x, int num );
+void driver_alt_num(Driver *drv, int x, int num);
 
-void driver_alt_heartbeat( Driver * drv, int state );
+void driver_alt_heartbeat(Driver *drv, int state);
 
-void driver_alt_icon( Driver * drv, int x, int y, int icon );
+void driver_alt_icon(Driver *drv, int x, int y, int icon);
 
-void driver_alt_cursor( Driver * drv, int x, int y, int state );
+void driver_alt_cursor(Driver *drv, int x, int y, int state);
 
 #endif

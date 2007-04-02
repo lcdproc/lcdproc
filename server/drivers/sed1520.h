@@ -11,7 +11,7 @@ MODULE_EXPORT int sed1520_cellwidth (Driver *drvthis);
 MODULE_EXPORT int sed1520_cellheight (Driver *drvthis);
 MODULE_EXPORT void sed1520_clear (Driver *drvthis);
 MODULE_EXPORT void sed1520_flush (Driver *drvthis);
-MODULE_EXPORT void sed1520_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void sed1520_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void sed1520_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void sed1520_old_vbar (Driver *drvthis, int x, int len);

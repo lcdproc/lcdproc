@@ -69,22 +69,22 @@ struct icontable {
 
 
 Widget *
-widget_create (char *id, WidgetType type, Screen * screen)
+widget_create(char *id, WidgetType type, Screen *screen)
 {
-	Widget * w;
+	Widget *w;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", type=%d, screen=[%s] )", __FUNCTION__, id, type, screen->id );
+	debug(RPT_DEBUG, "%s(id=\"%s\", type=%d, screen=[%s])", __FUNCTION__, id, type, screen->id);
 
 	/* Create it */
-	w = malloc (sizeof (Widget));
+	w = malloc(sizeof(Widget));
 	if (!w) {
-		report (RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
+		report(RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 
 	w->id = strdup(id);
 	if (!w->id) {
-		report (RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
+		report(RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
 		return NULL;
 	}
 
@@ -105,49 +105,49 @@ widget_create (char *id, WidgetType type, Screen * screen)
 
 	if (w->type == WID_FRAME) {
 		/* create a screen for the frame widget */
-		char * frame_name;
-		frame_name = malloc (strlen("frame_") + strlen(id) + 1);
-		strcpy (frame_name, "frame_");
-		strcat (frame_name, id);
+		char *frame_name;
+		frame_name = malloc(strlen("frame_") + strlen(id) + 1);
+		strcpy(frame_name, "frame_");
+		strcat(frame_name, id);
 
-		w->frame_screen = screen_create (frame_name, screen->client);
+		w->frame_screen = screen_create(frame_name, screen->client);
 
-		free (frame_name); /* not needed anymore */
+		free(frame_name); /* not needed anymore */
 	}
 	return w;
 }
 
 int
-widget_destroy (Widget * w)
+widget_destroy(Widget *w)
 {
-	debug (RPT_DEBUG, "%s( w=[%s] )", __FUNCTION__, w->id);
+	debug(RPT_DEBUG, "%s(w=[%s])", __FUNCTION__, w->id);
 
 	if (!w)
 		return -1;
 
 	if (w->id)
-		free (w->id);
+		free(w->id);
 	if (w->text)
-		free (w->text);
+		free(w->text);
 
 	/* Free subscreen of frame widget too */
 	if (w->type == WID_FRAME) {
-		screen_destroy (w->frame_screen);
+		screen_destroy(w->frame_screen);
 	}
 
-	free (w);
+	free(w);
 
 	return 0;
 }
 
 WidgetType
-widget_typename_to_type (char * typename)
+widget_typename_to_type(char *typename)
 {
 	WidgetType wid_type = WID_NONE;
 	int i;
 
 	for (i = 0; typenames[i]; i++) {
-		if (strcmp (typenames[i], typename) == 0) {
+		if (strcmp(typenames[i], typename) == 0) {
 			wid_type = i;
 			break; /* it's valid: skip out...*/
 		}
@@ -156,26 +156,26 @@ widget_typename_to_type (char * typename)
 }
 
 char *
-widget_type_to_typename (WidgetType t)
+widget_type_to_typename(WidgetType t)
 {
 	return typenames[t];
 }
 
 Widget *
-widget_search_subs (Widget * w, char * id)
+widget_search_subs(Widget *w, char *id)
 {
 	if (w->type == WID_FRAME) {
-		return screen_find_widget (w->frame_screen, id);
+		return screen_find_widget(w->frame_screen, id);
 	} else {
 		return NULL; /* no kids */
 	}
 }
 
-char *widget_icon_to_iconname (int icon)
+char *widget_icon_to_iconname(int icon)
 {
 	int i;
 
-	for (i=0; icontable[i].iconname; i++) {
+	for (i = 0; icontable[i].iconname; i++) {
 		if (icontable[i].icon == icon) {
 			return icontable[i].iconname;
 		}
@@ -184,12 +184,12 @@ char *widget_icon_to_iconname (int icon)
 	return NULL;
 }
 
-int widget_iconname_to_icon (char *iconname)
+int widget_iconname_to_icon(char *iconname)
 {
 	int i;
 
-	for (i=0; icontable[i].iconname; i++) {
-		if (strcasecmp( icontable[i].iconname, iconname) == 0) {
+	for (i = 0; icontable[i].iconname; i++) {
+		if (strcasecmp(icontable[i].iconname, iconname) == 0) {
 			return icontable[i].icon;
 		}
 	}

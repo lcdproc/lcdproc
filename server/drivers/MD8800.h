@@ -38,7 +38,7 @@ MODULE_EXPORT int  MD8800_cellwidth (Driver *drvthis);
 MODULE_EXPORT int  MD8800_cellheight (Driver *drvthis);
 MODULE_EXPORT void MD8800_clear (Driver *drvthis);
 MODULE_EXPORT void MD8800_flush (Driver *drvthis);
-MODULE_EXPORT void MD8800_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void MD8800_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void MD8800_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void MD8800_output (Driver *drvthis, int on);
 MODULE_EXPORT const char * MD8800_get_info(Driver *drvthis);

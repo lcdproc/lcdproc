@@ -200,7 +200,7 @@ MODULE_EXPORT void g15_chr (Driver *drvthis, int x, int y, char c)
 // Prints a string on the lcd display, at position (x,y).  The
 // upper-left is (1,1), and the lower right should be (20,5).
 //
-MODULE_EXPORT void g15_string (Driver *drvthis, int x, int y, char string[])
+MODULE_EXPORT void g15_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -452,7 +452,7 @@ MODULE_EXPORT void g15_backlight(Driver *drvthis, int on)
 		}
 }
 
-MODULE_EXPORT void g15_num(Driver * drvthis, int x, int num)
+MODULE_EXPORT void g15_num(Driver *drvthis, int x, int num)
 {
 	PrivateData *p = drvthis->private_data;
 	

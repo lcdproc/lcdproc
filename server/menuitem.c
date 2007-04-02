@@ -35,32 +35,32 @@ char *error_strs[] = {"", "Out of range", "Too long", "Too short", "Invalid Addr
 char *menuitemtypenames[] = {"menu", "action", "checkbox", "ring", "slider", "numeric", "alpha", "ip"};
 char *menueventtypenames[] = {"select", "update", "plus", "minus", "enter", "leave"};
 
-void menuitem_destroy_action (MenuItem *item);
-void menuitem_destroy_checkbox (MenuItem *item);
-void menuitem_destroy_ring (MenuItem *item);
-void menuitem_destroy_slider (MenuItem *item);
-void menuitem_destroy_numeric (MenuItem *item);
-void menuitem_destroy_alpha (MenuItem *item);
-void menuitem_destroy_ip (MenuItem *item);
+void menuitem_destroy_action(MenuItem *item);
+void menuitem_destroy_checkbox(MenuItem *item);
+void menuitem_destroy_ring(MenuItem *item);
+void menuitem_destroy_slider(MenuItem *item);
+void menuitem_destroy_numeric(MenuItem *item);
+void menuitem_destroy_alpha(MenuItem *item);
+void menuitem_destroy_ip(MenuItem *item);
 
-void menuitem_reset_numeric (MenuItem *item);
-void menuitem_reset_alpha (MenuItem *item);
-void menuitem_reset_ip (MenuItem *item);
+void menuitem_reset_numeric(MenuItem *item);
+void menuitem_reset_alpha(MenuItem *item);
+void menuitem_reset_ip(MenuItem *item);
 
-void menuitem_rebuild_screen_slider (MenuItem *item, Screen *s);
-void menuitem_rebuild_screen_numeric (MenuItem *item, Screen *s);
-void menuitem_rebuild_screen_alpha (MenuItem *item, Screen *s);
-void menuitem_rebuild_screen_ip (MenuItem *item, Screen *s);
+void menuitem_rebuild_screen_slider(MenuItem *item, Screen *s);
+void menuitem_rebuild_screen_numeric(MenuItem *item, Screen *s);
+void menuitem_rebuild_screen_alpha(MenuItem *item, Screen *s);
+void menuitem_rebuild_screen_ip(MenuItem *item, Screen *s);
 
-void menuitem_update_screen_slider (MenuItem *item, Screen *s);
-void menuitem_update_screen_numeric (MenuItem *item, Screen *s);
-void menuitem_update_screen_alpha (MenuItem *item, Screen *s);
-void menuitem_update_screen_ip (MenuItem *item, Screen *s);
+void menuitem_update_screen_slider(MenuItem *item, Screen *s);
+void menuitem_update_screen_numeric(MenuItem *item, Screen *s);
+void menuitem_update_screen_alpha(MenuItem *item, Screen *s);
+void menuitem_update_screen_ip(MenuItem *item, Screen *s);
 
-MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, const char * key, bool extended);
-MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, const char * key, bool extended);
-MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const char * key, bool extended);
-MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const char * key, bool extended);
+MenuResult menuitem_process_input_slider(MenuItem *item, MenuToken token, const char *key, bool extended);
+MenuResult menuitem_process_input_numeric(MenuItem *item, MenuToken token, const char *key, bool extended);
+MenuResult menuitem_process_input_alpha(MenuItem *item, MenuToken token, const char *key, bool extended);
+MenuResult menuitem_process_input_ip(MenuItem *item, MenuToken token, const char *key, bool extended);
 
 
 /* information about string representation of IP addresses */
@@ -130,13 +130,13 @@ MenuItem *menuitem_search(char *menu_id, Client *client)
 	MenuItem *top = client->menu;
 # endif /* LCDPROC_PERMISSIVE_MENU_GOTO */
 
-	return menu_find_item (top, menu_id, true);
+	return menu_find_item(top, menu_id, true);
 }
 
 /******** FUNCTION TABLES ********/
 /* Tables with functions to call for all different item types */
 
-void (*destructor_table[NUM_ITEMTYPES] ) (MenuItem *item) =
+void (*destructor_table[NUM_ITEMTYPES]) (MenuItem *item) =
 {
 	menu_destroy,
 	NULL,
@@ -147,7 +147,7 @@ void (*destructor_table[NUM_ITEMTYPES] ) (MenuItem *item) =
 	menuitem_destroy_alpha,
 	menuitem_destroy_ip
 };
-void (*reset_table[NUM_ITEMTYPES] ) (MenuItem *item) =
+void (*reset_table[NUM_ITEMTYPES]) (MenuItem *item) =
 {
 	menu_reset,
 	NULL,
@@ -158,7 +158,7 @@ void (*reset_table[NUM_ITEMTYPES] ) (MenuItem *item) =
 	menuitem_reset_alpha,
 	menuitem_reset_ip
 };
-void (*build_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
+void (*build_screen_table[NUM_ITEMTYPES]) (MenuItem *item, Screen *s) =
 {
 	menu_build_screen,
 	NULL,
@@ -169,7 +169,7 @@ void (*build_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
 	menuitem_rebuild_screen_alpha,
 	menuitem_rebuild_screen_ip
 };
-void (*update_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
+void (*update_screen_table[NUM_ITEMTYPES]) (MenuItem *item, Screen *s) =
 {
 	menu_update_screen,
 	NULL,
@@ -181,7 +181,7 @@ void (*update_screen_table[NUM_ITEMTYPES] ) (MenuItem *item, Screen *s) =
 	menuitem_update_screen_ip
 };
 
-MenuResult (*process_input_table[NUM_ITEMTYPES] ) (MenuItem *item, MenuToken token, const char *key, bool extended) =
+MenuResult (*process_input_table[NUM_ITEMTYPES]) (MenuItem *item, MenuToken token, const char *key, bool extended) =
 {
 	menu_process_input,
 	NULL,
@@ -195,62 +195,62 @@ MenuResult (*process_input_table[NUM_ITEMTYPES] ) (MenuItem *item, MenuToken tok
 
 /******** METHODS ********/
 
-MenuItem *menuitem_create (MenuItemType type, char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create(MenuItemType type, char *id, MenuEventFunc(*event_func),
 	char *text, Client *client)
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( type=%d, id=\"%s\", event_func=%p, text=\"%s\" )",
+	debug(RPT_DEBUG, "%s(type=%d, id=\"%s\", event_func=%p, text=\"%s\")",
 			__FUNCTION__, type, id, event_func, text);
 
 	if ((id == NULL) || (text == NULL)) {
-		// report (RPT_ERR, "%s: illegal id or text", __FUNCTION__);
+		// report(RPT_ERR, "%s: illegal id or text", __FUNCTION__);
 		return NULL;
 	}
 
 	/* Allocate space and fill struct */
-	new_item = malloc (sizeof(MenuItem));
+	new_item = malloc(sizeof(MenuItem));
 	if (!new_item) {
-		report (RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
+		report(RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
 		return NULL;
 	}
 	new_item->type = type;
-	new_item->id = strdup (id);
+	new_item->id = strdup(id);
 	if (!new_item->id) {
-		report (RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
-		free (new_item);
+		report(RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
+		free(new_item);
 		return NULL;
 	}
 	new_item->successor_id = NULL;
 	new_item->predecessor_id = NULL;
 	new_item->parent = NULL;
 	new_item->event_func = event_func;
-	new_item->text = strdup (text);
+	new_item->text = strdup(text);
 	if (!new_item->text) {
-		report (RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
-		free (new_item->id);
-		free (new_item);
+		report(RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
+		free(new_item->id);
+		free(new_item);
 		return NULL;
 	}
 	new_item->client = client;
 	new_item->is_hidden = false;
 
 	/* Clear the type specific data part */
-	memset ( &(new_item->data), '\0', sizeof(new_item->data));
+	memset(&(new_item->data), '\0', sizeof(new_item->data));
 
 	return new_item;
 }
 
 // fixme: the menu_result arg is obsoleted (use char* successor_id)
-MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_action(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, MenuResult menu_result)
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", close_menu=%d )",
+	debug(RPT_DEBUG, "%s(id=[%s], event_func=%p, text=\"%s\", close_menu=%d)",
 			__FUNCTION__, id, event_func, text, menu_result);
 
-	new_item = menuitem_create (MENUITEM_ACTION, id, event_func, text, client);
+	new_item = menuitem_create(MENUITEM_ACTION, id, event_func, text, client);
 	if (new_item != NULL)
 	{
 		switch (menu_result)
@@ -272,15 +272,15 @@ MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
 	return new_item;
 }
 
-MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_checkbox(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, bool allow_gray, bool value)
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", allow_gray=%d, value=%d )",
+	debug(RPT_DEBUG, "%s(id=[%s], event_func=%p, text=\"%s\", allow_gray=%d, value=%d)",
 			__FUNCTION__, id, event_func, text, allow_gray, value);
 
-	new_item = menuitem_create (MENUITEM_CHECKBOX, id, event_func, text, client);
+	new_item = menuitem_create(MENUITEM_CHECKBOX, id, event_func, text, client);
 	if (new_item != NULL) {
 		new_item->data.checkbox.allow_gray = allow_gray;
 		new_item->data.checkbox.value = value;
@@ -289,36 +289,36 @@ MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
 	return new_item;
 }
 
-MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_ring(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, char *strings, short value)
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", strings=\"%s\", value=%d )",
+	debug(RPT_DEBUG, "%s(id=[%s], event_func=%p, text=\"%s\", strings=\"%s\", value=%d)",
 			__FUNCTION__, id, event_func, text, strings, value);
 
-	new_item = menuitem_create (MENUITEM_RING, id, event_func, text, client);
+	new_item = menuitem_create(MENUITEM_RING, id, event_func, text, client);
 	if (new_item != NULL) {
-		new_item->data.ring.strings = tablist2linkedlist (strings);
+		new_item->data.ring.strings = tablist2linkedlist(strings);
 		new_item->data.ring.value = value;
 	}	
 
 	return new_item;
 }
 
-MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_slider(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, char *mintext, char *maxtext,
 	int minvalue, int maxvalue, int stepsize, int value)
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", mintext=\"%s\", maxtext=\"%s\", minvalue=%d, maxvalue=%d, stepsize=%d, value=%d )",
+	debug(RPT_DEBUG, "%s(id=[%s], event_func=%p, text=\"%s\", mintext=\"%s\", maxtext=\"%s\", minvalue=%d, maxvalue=%d, stepsize=%d, value=%d)",
 			__FUNCTION__, id, event_func, text, mintext, maxtext, minvalue, maxvalue, stepsize, value);
 
-	new_item = menuitem_create (MENUITEM_SLIDER, id, event_func, text, client);
+	new_item = menuitem_create(MENUITEM_SLIDER, id, event_func, text, client);
 	if (new_item != NULL) {
-		new_item->data.slider.mintext = strdup (mintext);
-		new_item->data.slider.maxtext = strdup (maxtext);
+		new_item->data.slider.mintext = strdup(mintext);
+		new_item->data.slider.maxtext = strdup(maxtext);
 		new_item->data.slider.minvalue = minvalue;
 		new_item->data.slider.maxvalue = maxvalue;
 		new_item->data.slider.stepsize = stepsize;
@@ -328,36 +328,36 @@ MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
 	return new_item;
 }
 
-MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_numeric(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, int minvalue, int maxvalue, int value)
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=[%s], event_func=%p, text=\"%s\", minvalue=%d, maxvalue=%d, value=%d )",
+	debug(RPT_DEBUG, "%s(id=[%s], event_func=%p, text=\"%s\", minvalue=%d, maxvalue=%d, value=%d)",
 			__FUNCTION__, id, event_func, text, minvalue, minvalue, value);
 
-	new_item = menuitem_create (MENUITEM_NUMERIC, id, event_func, text, client);
+	new_item = menuitem_create(MENUITEM_NUMERIC, id, event_func, text, client);
 	if (new_item != NULL) {
 		new_item->data.numeric.maxvalue = maxvalue;
 		new_item->data.numeric.minvalue = minvalue;
-		new_item->data.numeric.edit_str = malloc (MAX_NUMERIC_LEN);
+		new_item->data.numeric.edit_str = malloc(MAX_NUMERIC_LEN);
 		new_item->data.numeric.value = value;
 	}	
 
 	return new_item;
 }
 
-MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_alpha(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, char password_char, short minlength, short maxlength,
 	bool allow_caps, bool allow_noncaps, bool allow_numbers,
 	char *allowed_extra, char *value)
 {
 	MenuItem *new_item;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", password_char=%d, maxlength=%d, value=\"%s\" )",
+	debug(RPT_DEBUG, "%s(id=\"%s\", event_func=%p, text=\"%s\", password_char=%d, maxlength=%d, value=\"%s\")",
 			__FUNCTION__, id, event_func, text, password_char, maxlength, value);
 
-	new_item = menuitem_create (MENUITEM_ALPHA, id, event_func, text, client);
+	new_item = menuitem_create(MENUITEM_ALPHA, id, event_func, text, client);
 	if (new_item != NULL) {
 		new_item->data.alpha.password_char = password_char;
 		new_item->data.alpha.minlength = minlength;
@@ -366,35 +366,35 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
 		new_item->data.alpha.allow_caps = allow_caps;
 		new_item->data.alpha.allow_noncaps = allow_noncaps;
 		new_item->data.alpha.allow_numbers = allow_numbers;
-		new_item->data.alpha.allowed_extra = strdup (allowed_extra);
+		new_item->data.alpha.allowed_extra = strdup(allowed_extra);
 
-		new_item->data.alpha.value = malloc (maxlength + 1);
+		new_item->data.alpha.value = malloc(maxlength + 1);
 		if (new_item->data.alpha.value != NULL) {
-			strncpy (new_item->data.alpha.value, value, maxlength);
+			strncpy(new_item->data.alpha.value, value, maxlength);
 			new_item->data.alpha.value[maxlength] = 0;
 		}	
 
-		new_item->data.alpha.edit_str = malloc (maxlength + 1);
+		new_item->data.alpha.edit_str = malloc(maxlength + 1);
 	}	
 
 	return new_item;
 }
 
-MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_ip(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, bool v6, char *value)
 {
 	MenuItem *new_item;
 	const IpSstringProperties *ipinfo;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", v6=%d, value=\"%s\" )",
+	debug(RPT_DEBUG, "%s(id=\"%s\", event_func=%p, text=\"%s\", v6=%d, value=\"%s\")",
 			__FUNCTION__, id, event_func, text, v6, value);
 
-	new_item = menuitem_create (MENUITEM_IP, id, event_func, text, client);
+	new_item = menuitem_create(MENUITEM_IP, id, event_func, text, client);
 	new_item->data.ip.v6 = v6;
 	ipinfo = (v6) ? &IPinfo[1] : &IPinfo[0];
 
 	new_item->data.ip.maxlength = ipinfo->maxlen;;
-	new_item->data.ip.value = malloc (new_item->data.ip.maxlength + 1);
+	new_item->data.ip.value = malloc(new_item->data.ip.maxlength + 1);
 
 	strncpy(new_item->data.ip.value, value, new_item->data.ip.maxlength);
 	new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
@@ -420,14 +420,14 @@ MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
 		}	
 	}
 
-	new_item->data.ip.edit_str = malloc (new_item->data.ip.maxlength + 1);
+	new_item->data.ip.edit_str = malloc(new_item->data.ip.maxlength + 1);
 
 	return new_item;
 }
 
-void menuitem_destroy (MenuItem *item)
+void menuitem_destroy(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	if (item != NULL) {
@@ -436,88 +436,88 @@ void menuitem_destroy (MenuItem *item)
 		/* First destroy type specific data */
 		destructor = destructor_table[item->type];
 		if (destructor)
-			destructor (item);
+			destructor(item);
 
 		/* Following strings should always be allocated */
-		free (item->text);
-		free (item->id);
+		free(item->text);
+		free(item->id);
 
 		/* And finally...*/
-		free (item);
+		free(item);
 	}	
 }
 
-void menuitem_destroy_ring (MenuItem *item)
+void menuitem_destroy_ring(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	if (item != NULL) {
-	char * s;
+	char *s;
 
 		/* deallocate the strings */
 		for (s = LL_GetFirst(item->data.ring.strings);
 		     s != NULL;
 		     s = LL_GetNext(item->data.ring.strings)) {
-			free (s);
+			free(s);
 		}
 		/* and the list */
-		LL_Destroy (item->data.ring.strings);
+		LL_Destroy(item->data.ring.strings);
 	}	
 }
 
-void menuitem_destroy_slider (MenuItem *item)
+void menuitem_destroy_slider(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	if (item != NULL) {
 		/* These strings should always be allocated */
-		free (item->data.slider.mintext);
-		free (item->data.slider.maxtext);
+		free(item->data.slider.mintext);
+		free(item->data.slider.maxtext);
 	}	
 }
 
-void menuitem_destroy_numeric (MenuItem *item)
+void menuitem_destroy_numeric(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	if (item != NULL) {
 		/* This string should always be allocated */
-		free (item->data.numeric.edit_str);
+		free(item->data.numeric.edit_str);
 	}	
 }
 
-void menuitem_destroy_alpha (MenuItem *item)
+void menuitem_destroy_alpha(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	if (item != NULL) {
 		/* These strings should always be allocated */
-		free (item->data.alpha.allowed_extra);
-		free (item->data.alpha.value);
-		free (item->data.alpha.edit_str);
+		free(item->data.alpha.allowed_extra);
+		free(item->data.alpha.value);
+		free(item->data.alpha.edit_str);
 	}	
 }
 
-void menuitem_destroy_ip (MenuItem *item)
+void menuitem_destroy_ip(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	/* These strings should always be allocated */
-	free (item->data.ip.value);
-	free (item->data.ip.edit_str);
+	free(item->data.ip.value);
+	free(item->data.ip.edit_str);
 }
 
 
 /******** MENU ITEM RESET FUNCTIONS ********/
 
-void menuitem_reset (MenuItem *item)
+void menuitem_reset(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	if (item != NULL) {
@@ -526,53 +526,53 @@ void menuitem_reset (MenuItem *item)
 		/* First destroy type specific data */
 		func = reset_table[item->type];
 		if (func)
-			func (item);
+			func(item);
 	}	
 }
 
-void menuitem_reset_numeric (MenuItem *item)
+void menuitem_reset_numeric(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	if (item != NULL) {
 		item->data.numeric.edit_pos = 0;
 		item->data.numeric.edit_offs = 0;
-		memset (item->data.numeric.edit_str, '\0', MAX_NUMERIC_LEN);
+		memset(item->data.numeric.edit_str, '\0', MAX_NUMERIC_LEN);
 		if (item->data.numeric.minvalue < 0) {
-			snprintf (item->data.numeric.edit_str, MAX_NUMERIC_LEN,
+			snprintf(item->data.numeric.edit_str, MAX_NUMERIC_LEN,
 					"%+d", item->data.numeric.value);
 		} else {
-			snprintf (item->data.numeric.edit_str, MAX_NUMERIC_LEN,
+			snprintf(item->data.numeric.edit_str, MAX_NUMERIC_LEN,
 					"%d", item->data.numeric.value);
 		}	
 	}
 }
 
-void menuitem_reset_alpha (MenuItem *item)
+void menuitem_reset_alpha(MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	if (item != NULL) {
 		item->data.alpha.edit_pos = 0;
 		item->data.alpha.edit_offs = 0;
-		memset (item->data.alpha.edit_str, '\0', item->data.alpha.maxlength+1);
-		strcpy (item->data.alpha.edit_str, item->data.alpha.value);
+		memset(item->data.alpha.edit_str, '\0', item->data.alpha.maxlength+1);
+		strcpy(item->data.alpha.edit_str, item->data.alpha.value);
 	}	
 }
 
-void menuitem_reset_ip (MenuItem *item)
+void menuitem_reset_ip(MenuItem *item)
 {
 	char *start = item->data.ip.value;
 	const IpSstringProperties *ipinfo = (item->data.ip.v6) ? &IPinfo[1] : &IPinfo[0];
 
-	debug (RPT_DEBUG, "%s( item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"));
 
 	item->data.ip.edit_pos = 0;
 	item->data.ip.edit_offs = 0;
-	memset (item->data.ip.edit_str, '\0', item->data.ip.maxlength+1);
+	memset(item->data.ip.edit_str, '\0', item->data.ip.maxlength+1);
 
 	// normalize IP address string to e.g. 010.002.250.002 / 0001:0203:0405:0607:0809:0a0b:0c0d:0e0f
 	while (start != NULL) {
@@ -595,71 +595,71 @@ void menuitem_reset_ip (MenuItem *item)
 
 /******** MENU SCREEN BUILD FUNCTIONS ********/
 
-void menuitem_rebuild_screen (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 	void (*build_screen) (MenuItem *item, Screen *s);
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
 	if (!display_props) {
 		/* Nothing to build if no display size is known */
-		report (RPT_ERR, "%s: display size unknown", __FUNCTION__ );
+		report(RPT_ERR, "%s: display size unknown", __FUNCTION__);
 		return;
 	}
 
 	if (s != NULL) {
 		/* First remove all widgets from the screen */
-		while ( (w = screen_getfirst_widget(s)) != NULL) {
+		while ((w = screen_getfirst_widget(s)) != NULL) {
 			/* We know these widgets don't have subwidgets, so we can
 			 * easily remove them
 			 */
-			screen_remove_widget (s, w);
-			widget_destroy (w);
+			screen_remove_widget(s, w);
+			widget_destroy(w);
 		}
 
 		if (item != NULL) {
 			/* Call type specific screen building function */
 			build_screen = build_screen_table [item->type];
 			if (build_screen) {
-				build_screen (item, s);
+				build_screen(item, s);
 			} else {
-				report (RPT_ERR, "%s: given menuitem cannot be active", __FUNCTION__);
+				report(RPT_ERR, "%s: given menuitem cannot be active", __FUNCTION__);
 				return;
 			}
 
 			/* Also always call update_screen */
-			menuitem_update_screen (item, s);
+			menuitem_update_screen(item, s);
 		}	
 	}	
 }
 
-void menuitem_rebuild_screen_slider (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen_slider(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
 	if ((item == NULL) || (s == NULL))
 		return;
 
-	if (display_props->height >= 2 ) {
+	if (display_props->height >= 2) {
 		/* Only add a title if enough space... */
-		w = widget_create ("text", WID_STRING, s);
-		screen_add_widget (s, w);
+		w = widget_create("text", WID_STRING, s);
+		screen_add_widget(s, w);
 		w->text = strdup(item->text);
 		w->x = 1;
 		w->y = 1;
 	}
 
-	w = widget_create ("bar", WID_HBAR, s);
-	screen_add_widget (s, w);
+	w = widget_create("bar", WID_HBAR, s);
+	screen_add_widget(s, w);
 	w->width = display_props->width;
-	if (display_props->height > 2 ) {
+	if (display_props->height > 2) {
 		/* This is option 1: we have enought space, so the bar and
 		 * min/max texts can be on separate lines.
 		 */
@@ -668,129 +668,129 @@ void menuitem_rebuild_screen_slider (MenuItem *item, Screen *s)
 		w->width = display_props->width - 2;
 	}
 
-	w = widget_create ("min", WID_STRING, s);
-	screen_add_widget (s, w);
+	w = widget_create("min", WID_STRING, s);
+	screen_add_widget(s, w);
 	w->text = NULL;
 	w->x = 1;
-	if (display_props->height > 2 ) {
+	if (display_props->height > 2) {
 		w->y = display_props->height / 2 + 2;
 	} else {
 		w->y = display_props->height / 2 + 1;
 	}
 
-	w = widget_create ("max", WID_STRING, s);
-	screen_add_widget (s, w);
+	w = widget_create("max", WID_STRING, s);
+	screen_add_widget(s, w);
 	w->text = NULL;
 	w->x = 1;
-	if (display_props->height > 2 ) {
+	if (display_props->height > 2) {
 		w->y = display_props->height / 2 + 2;
 	} else {
 		w->y = display_props->height / 2 + 1;
 	}
 }
 
-void menuitem_rebuild_screen_numeric (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen_numeric(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
 	if ((item == NULL) || (s == NULL))
 		return;
 
-	if (display_props->height >= 2 ) {
+	if (display_props->height >= 2) {
 		/* Only add a title if enough space... */
-		w = widget_create ("text", WID_STRING, s);
-		screen_add_widget (s, w);
+		w = widget_create("text", WID_STRING, s);
+		screen_add_widget(s, w);
 		w->text = strdup(item->text);
 		w->x = 1;
 		w->y = 1;
 	}
 
-	w = widget_create ("value", WID_STRING, s);
-	screen_add_widget (s, w);
-	w->text = malloc (MAX_NUMERIC_LEN);
+	w = widget_create("value", WID_STRING, s);
+	screen_add_widget(s, w);
+	w->text = malloc(MAX_NUMERIC_LEN);
 	w->x = 2;
 	w->y = display_props->height / 2 + 1;
 
 	/* Only display error string if enough space... */
-	if (display_props->height > 2 ) {
-		w = widget_create ("error", WID_STRING, s);
-		screen_add_widget (s, w);
+	if (display_props->height > 2) {
+		w = widget_create("error", WID_STRING, s);
+		screen_add_widget(s, w);
 		w->text = strdup("");
 		w->x = 1;
 		w->y = display_props->height;
 	}
 }
 
-void menuitem_rebuild_screen_alpha (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen_alpha(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
 	if ((item == NULL) || (s == NULL))
 		return;
 
-	if (display_props->height >= 2 ) {
+	if (display_props->height >= 2) {
 		/* Only add a title if enough space... */
-		w = widget_create ("text", WID_STRING, s);
-		screen_add_widget (s, w);
+		w = widget_create("text", WID_STRING, s);
+		screen_add_widget(s, w);
 		w->text = strdup(item->text);
 		w->x = 1;
 		w->y = 1;
 	}
 
-	w = widget_create ("value", WID_STRING, s);
-	screen_add_widget (s, w);
-	w->text = malloc (item->data.alpha.maxlength+1);
+	w = widget_create("value", WID_STRING, s);
+	screen_add_widget(s, w);
+	w->text = malloc(item->data.alpha.maxlength+1);
 	w->x = 2;
 	w->y = display_props->height / 2 + 1;
 
 	/* Only display error string if enough space... */
-	if (display_props->height > 2 ) {
-		w = widget_create ("error", WID_STRING, s);
-		screen_add_widget (s, w);
+	if (display_props->height > 2) {
+		w = widget_create("error", WID_STRING, s);
+		screen_add_widget(s, w);
 		w->text = strdup("");
 		w->x = 1;
 		w->y = display_props->height;
 	}
 }
 
-void menuitem_rebuild_screen_ip (MenuItem *item, Screen *s)
+void menuitem_rebuild_screen_ip(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
 	if ((item == NULL) || (s == NULL))
 		return;
 
-	if (display_props->height >= 2 ) {
+	if (display_props->height >= 2) {
 		/* Only add a title if enough space... */
-		w = widget_create ("text", WID_STRING, s);
-		screen_add_widget (s, w);
+		w = widget_create("text", WID_STRING, s);
+		screen_add_widget(s, w);
 		w->text = strdup(item->text);
 		w->x = 1;
 		w->y = 1;
 	}
 
-	w = widget_create ("value", WID_STRING, s);
-	screen_add_widget (s, w);
-	w->text = malloc (item->data.ip.maxlength+1);
+	w = widget_create("value", WID_STRING, s);
+	screen_add_widget(s, w);
+	w->text = malloc(item->data.ip.maxlength+1);
 	w->x = 2;
 	w->y = display_props->height / 2 + 1;
 
 	/* Only display error string if enough space... */
-	if (display_props->height > 2 ) {
-		w = widget_create ("error", WID_STRING, s);
-		screen_add_widget (s, w);
+	if (display_props->height > 2) {
+		w = widget_create("error", WID_STRING, s);
+		screen_add_widget(s, w);
 		w->text = strdup("");
 		w->x = 1;
 		w->y = display_props->height;
@@ -799,11 +799,11 @@ void menuitem_rebuild_screen_ip (MenuItem *item, Screen *s)
 
 /******** MENU SCREEN UPDATE FUNCTIONS ********/
 
-void menuitem_update_screen (MenuItem *item, Screen *s)
+void menuitem_update_screen(MenuItem *item, Screen *s)
 {
 	void (*update_screen) (MenuItem *item, Screen *s);
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
@@ -816,19 +816,19 @@ void menuitem_update_screen (MenuItem *item, Screen *s)
 	/* Call type specific screen building function */
 	update_screen = update_screen_table [item->type];
 	if (update_screen) {
-		update_screen (item, s);
+		update_screen(item, s);
 	} else {
-		report (RPT_ERR, "%s: given menuitem cannot be active", __FUNCTION__);
+		report(RPT_ERR, "%s: given menuitem cannot be active", __FUNCTION__);
 		return;
 	}
 }
 
-void menuitem_update_screen_slider (MenuItem *item, Screen *s)
+void menuitem_update_screen_slider(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 	int min_len, max_len;
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
@@ -836,13 +836,13 @@ void menuitem_update_screen_slider (MenuItem *item, Screen *s)
 		return;
 
 	/* Calculate the bar position and length by filling buffers */
-	min_len = strlen (item->data.slider.mintext);
-	max_len = strlen (item->data.slider.maxtext);
+	min_len = strlen(item->data.slider.mintext);
+	max_len = strlen(item->data.slider.maxtext);
 
 	/* And adjust the data */
 
-	w = screen_find_widget (s, "bar");
-	if (display_props->height <= 2 ) {
+	w = screen_find_widget(s, "bar");
+	if (display_props->height <= 2) {
 		/* This is option 2: we're tight on lines, so we put the bar
 		 * and min/max texts on the same line.
 		 */
@@ -856,60 +856,60 @@ void menuitem_update_screen_slider (MenuItem *item, Screen *s)
 		* (item->data.slider.value - item->data.slider.minvalue)
 		/ (item->data.slider.maxvalue - item->data.slider.minvalue);
 
-	w = screen_find_widget (s, "min");
-	if (w->text) free (w->text);
+	w = screen_find_widget(s, "min");
+	if (w->text) free(w->text);
 	w->text = strdup(item->data.slider.mintext);
 
-	w = screen_find_widget (s, "max");
-	if (w->text) free (w->text);
+	w = screen_find_widget(s, "max");
+	if (w->text) free(w->text);
 	w->x = 1 + display_props->width - max_len;
 	w->text = strdup(item->data.slider.maxtext);
 }
 
-void menuitem_update_screen_numeric (MenuItem *item, Screen *s)
+void menuitem_update_screen_numeric(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
 	if ((item == NULL) || (s == NULL))
 		return;
 
-	w = screen_find_widget (s, "value");
-	strcpy (w->text, item->data.numeric.edit_str + item->data.numeric.edit_offs);
+	w = screen_find_widget(s, "value");
+	strcpy(w->text, item->data.numeric.edit_str + item->data.numeric.edit_offs);
 
 	s->cursor = CURSOR_DEFAULT_ON;
 	s->cursor_x = w->x + item->data.numeric.edit_pos - item->data.numeric.edit_offs;
 	s->cursor_y = w->y;
 
 	/* Only display error string if enough space... */
-	if (display_props->height > 2 ) {
-		w = screen_find_widget (s, "error");
-		free (w->text);
-		w->text = strdup (error_strs[item->data.numeric.error_code]);
+	if (display_props->height > 2) {
+		w = screen_find_widget(s, "error");
+		free(w->text);
+		w->text = strdup(error_strs[item->data.numeric.error_code]);
 	}
 }
 
-void menuitem_update_screen_alpha (MenuItem *item, Screen *s)
+void menuitem_update_screen_alpha(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
 	if ((item == NULL) || (s == NULL))
 		return;
 
-	w = screen_find_widget (s, "value");
+	w = screen_find_widget(s, "value");
 	if (item->data.alpha.password_char == '\0') {
-		strcpy (w->text, item->data.alpha.edit_str + item->data.alpha.edit_offs);
+		strcpy(w->text, item->data.alpha.edit_str + item->data.alpha.edit_offs);
 	} else {
 		int len = strlen(item->data.alpha.edit_str) - item->data.alpha.edit_offs;
 
-		memset (w->text, item->data.alpha.password_char, len);
+		memset(w->text, item->data.alpha.password_char, len);
 		w->text[len] = '\0';
 	}
 
@@ -918,47 +918,47 @@ void menuitem_update_screen_alpha (MenuItem *item, Screen *s)
 	s->cursor_y = w->y;
 
 	/* Only display error string if enough space... */
-	if (display_props->height > 2 ) {
-		w = screen_find_widget (s, "error");
-		free (w->text);
-		w->text = strdup (error_strs[item->data.alpha.error_code]);
+	if (display_props->height > 2) {
+		w = screen_find_widget(s, "error");
+		free(w->text);
+		w->text = strdup(error_strs[item->data.alpha.error_code]);
 	}
 }
 
-void menuitem_update_screen_ip (MenuItem *item, Screen *s)
+void menuitem_update_screen_ip(MenuItem *item, Screen *s)
 {
-	Widget * w;
+	Widget *w;
 
-	debug (RPT_DEBUG, "%s( item=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], screen=[%s])", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
 	if ((item == NULL) || (s == NULL))
 		return;
 
-	w = screen_find_widget (s, "value");
+	w = screen_find_widget(s, "value");
 	if (w != NULL)
-		strcpy (w->text, item->data.ip.edit_str + item->data.ip.edit_offs);
+		strcpy(w->text, item->data.ip.edit_str + item->data.ip.edit_offs);
 
 	s->cursor = CURSOR_DEFAULT_ON;
 	s->cursor_x = w->x + item->data.ip.edit_pos - item->data.ip.edit_offs;
 	s->cursor_y = w->y;
 
 	/* Only display error string if enough space... */
-	if (display_props->height > 2 ) {
-		w = screen_find_widget (s, "error");
-		free (w->text);
-		w->text = strdup (error_strs[item->data.ip.error_code]);
+	if (display_props->height > 2) {
+		w = screen_find_widget(s, "error");
+		free(w->text);
+		w->text = strdup(error_strs[item->data.ip.error_code]);
 	}
 }
 
 /******** MENU SCREEN INPUT HANDLING FUNCTIONS ********/
 
-MenuResult menuitem_process_input (MenuItem *item, MenuToken token, const char * key, bool extended)
+MenuResult menuitem_process_input(MenuItem *item, MenuToken token, const char *key, bool extended)
 {
-	MenuResult (*process_input) (MenuItem *item, MenuToken token, const char * key, bool extended);
+	MenuResult (*process_input) (MenuItem *item, MenuToken token, const char *key, bool extended);
 
-	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], token=%d, key=\"%s\")", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), token, key);
 
 	if (item == NULL)
@@ -966,17 +966,17 @@ MenuResult menuitem_process_input (MenuItem *item, MenuToken token, const char *
 
 	/* Call type specific screen building function */
 	process_input  = process_input_table [item->type];
-	if (process_input ) {
-		return process_input (item, token, key, extended);
+	if (process_input) {
+		return process_input(item, token, key, extended);
 	} else {
-		report (RPT_ERR, "%s: given menuitem cannot be active", __FUNCTION__);
+		report(RPT_ERR, "%s: given menuitem cannot be active", __FUNCTION__);
 		return MENURESULT_ERROR;
 	}
 }
 
-MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, const char * key, bool extended)
+MenuResult menuitem_process_input_slider(MenuItem *item, MenuToken token, const char *key, bool extended)
 {
-	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], token=%d, key=\"%s\")", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), token, key);
 
 	if (item == NULL)
@@ -991,17 +991,17 @@ MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, const
 			item->successor_id, MENURESULT_CLOSE);
 	  case MENUTOKEN_UP:
 	  case MENUTOKEN_RIGHT:
-	  	item->data.slider.value = min (item->data.slider.maxvalue,
+	  	item->data.slider.value = min(item->data.slider.maxvalue,
 	  			item->data.slider.value + item->data.slider.stepsize);
 		if (item->event_func)
-			item->event_func (item, MENUEVENT_PLUS);
+			item->event_func(item, MENUEVENT_PLUS);
 	  	return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 	  case MENUTOKEN_LEFT:
-	  	item->data.slider.value = max (item->data.slider.minvalue,
+	  	item->data.slider.value = max(item->data.slider.minvalue,
 	  			item->data.slider.value - item->data.slider.stepsize);
 		if (item->event_func)
-			item->event_func (item, MENUEVENT_MINUS);
+			item->event_func(item, MENUEVENT_MINUS);
 	  	return MENURESULT_NONE;
 	  case MENUTOKEN_OTHER:
           default:
@@ -1011,14 +1011,14 @@ MenuResult menuitem_process_input_slider (MenuItem *item, MenuToken token, const
 	return MENURESULT_ERROR;
 }
 
-MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, const char * key, bool extended)
+MenuResult menuitem_process_input_numeric(MenuItem *item, MenuToken token, const char *key, bool extended)
 {
 	char buf1[MAX_NUMERIC_LEN];
 	char buf2[MAX_NUMERIC_LEN];
 
 	int max_len;
 
-	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], token=%d, key=\"%s\")", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), token, key);
 
 	if (item != NULL) {
@@ -1028,10 +1028,10 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, cons
 		int allow_signed = (item->data.numeric.minvalue < 0);
 		char *format_str = (allow_signed) ? "%+d" : "%d";
 
-		snprintf (buf1, MAX_NUMERIC_LEN, format_str, item->data.numeric.minvalue);
-		snprintf (buf2, MAX_NUMERIC_LEN, format_str, item->data.numeric.maxvalue);
+		snprintf(buf1, MAX_NUMERIC_LEN, format_str, item->data.numeric.minvalue);
+		snprintf(buf2, MAX_NUMERIC_LEN, format_str, item->data.numeric.maxvalue);
 
-		max_len = max (strlen(buf1), strlen(buf2));
+		max_len = max(strlen(buf1), strlen(buf2));
 
 		/* Clear the error */
 		item->data.numeric.error_code = 0;
@@ -1053,7 +1053,7 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, cons
 				/* The user completed his input */
 
 				/* ...scan it */
-				if (sscanf (str, "%d", &value) != 1) {
+				if (sscanf(str, "%d", &value) != 1) {
 					return MENURESULT_ERROR;
 				}
 				/* Test the value */
@@ -1073,7 +1073,7 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, cons
 
 				/* Inform client */
 				if (item->event_func)
-					item->event_func (item, MENUEVENT_UPDATE);
+					item->event_func(item, MENUEVENT_UPDATE);
 
 				return menuitem_successor2menuresult(
 					item->successor_id, MENURESULT_CLOSE);
@@ -1168,12 +1168,12 @@ MenuResult menuitem_process_input_numeric (MenuItem *item, MenuToken token, cons
 	return MENURESULT_ERROR;
 }
 
-MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const char * key, bool extended)
+MenuResult menuitem_process_input_alpha(MenuItem *item, MenuToken token, const char *key, bool extended)
 {
-	char * p;
-	static char * chars = NULL;
+	char *p;
+	static char *chars = NULL;
 
-	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], token=%d, key=\"%s\")", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), token, key);
 
 	if (item != NULL) {
@@ -1182,15 +1182,15 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const 
 		int pos = item->data.alpha.edit_pos;
 
 		/* Create list of allowed chars */
-		chars = realloc (chars, 26 + 26 + 10 + strlen(item->data.alpha.allowed_extra) + 1);
+		chars = realloc(chars, 26 + 26 + 10 + strlen(item->data.alpha.allowed_extra) + 1);
 		chars[0] = '\0'; /* clear string */
 		if (item->data.alpha.allow_caps)
-			strcat (chars, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+			strcat(chars, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 		if (item->data.alpha.allow_noncaps)
-			strcat (chars, "abcdefghijklmnopqrstuvwxyz");
+			strcat(chars, "abcdefghijklmnopqrstuvwxyz");
 		if (item->data.alpha.allow_numbers)
-			strcat (chars, "0123456789");
-		strcat (chars, item->data.alpha.allowed_extra);
+			strcat(chars, "0123456789");
+		strcat(chars, item->data.alpha.allowed_extra);
 
 		/* Clear the error */
 		item->data.alpha.error_code = 0;
@@ -1211,17 +1211,17 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const 
 				/* The user completed his input */
 
 				/* It's not too short ? */
-				if (strlen (item->data.alpha.edit_str) < item->data.alpha.minlength) {
+				if (strlen(item->data.alpha.edit_str) < item->data.alpha.minlength) {
 					item->data.alpha.error_code = 3;
 					return MENURESULT_NONE;
 				}
 
 				/* Store value */
-				strcpy (item->data.alpha.value, item->data.alpha.edit_str);
+				strcpy(item->data.alpha.value, item->data.alpha.edit_str);
 
 				/* Inform client */
 				if (item->event_func)
-					item->event_func (item, MENUEVENT_UPDATE);
+					item->event_func(item, MENUEVENT_UPDATE);
 
 				return menuitem_successor2menuresult(
 					item->successor_id, MENURESULT_CLOSE);
@@ -1248,9 +1248,9 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const 
 				str[pos] = chars[0];
 			} else {
 				/* We should have a symbol from our list */
-				p = strchr (chars, str[pos]);
+				p = strchr(chars, str[pos]);
 				if (p != NULL) {
-					str[pos] = * (++p); /* next symbol on list */
+					str[pos] = *(++p); /* next symbol on list */
 					/* Might be '\0' now */
 				} else {
 					str[pos] = '\0';
@@ -1270,9 +1270,9 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const 
 				str[pos] = chars[strlen(chars)-1];
 			} else {
 				/* We should have a symbol from our list */
-				p = strchr (chars, str[pos]);
+				p = strchr(chars, str[pos]);
 				if ((p != NULL) && (p != chars)) {
-					str[pos] = * (--p); /* previous symbol on list */
+					str[pos] = *(--p); /* previous symbol on list */
 				} else {
 					str[pos] = '\0';
 				}
@@ -1317,7 +1317,7 @@ MenuResult menuitem_process_input_alpha (MenuItem *item, MenuToken token, const 
 }
 
 
-MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const char * key, bool extended)
+MenuResult menuitem_process_input_ip(MenuItem *item, MenuToken token, const char *key, bool extended)
 {
 	/* To make life easy... */
 	char *str = item->data.ip.edit_str;
@@ -1326,7 +1326,7 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const cha
 	int pos = item->data.ip.edit_pos;
 	const IpSstringProperties *ipinfo = (item->data.ip.v6) ? &IPinfo[1] : &IPinfo[0];
 
-	debug (RPT_DEBUG, "%s( item=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(item=[%s], token=%d, key=\"%s\")", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), token, key);
 
 	/* Clear the error */
@@ -1370,11 +1370,11 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const cha
 				}
 
 				// store value
-				strcpy (item->data.ip.value, tmp);
+				strcpy(item->data.ip.value, tmp);
 
 				// Inform client
 				if (item->event_func)
-					item->event_func (item, MENUEVENT_UPDATE);
+					item->event_func(item, MENUEVENT_UPDATE);
 
 				return menuitem_successor2menuresult(
 					item->successor_id, MENURESULT_CLOSE);
@@ -1449,14 +1449,14 @@ MenuResult menuitem_process_input_ip (MenuItem *item, MenuToken token, const cha
 /**
  * get the Client that owns item. extracted from menu_commands_handler().
  */
-Client * menuitem_get_client(MenuItem * item)
+Client *menuitem_get_client(MenuItem *item)
 {
         return item->client;
 }
 
-LinkedList * tablist2linkedlist (char *strings)
+LinkedList *tablist2linkedlist(char *strings)
 {
-	LinkedList * list;
+	LinkedList *list;
 
 	list = LL_new();
 
@@ -1469,30 +1469,30 @@ LinkedList * tablist2linkedlist (char *strings)
 			int len = (int)(tabptr - p);
 
 			/* Alloc and copy substring */
-			new_s = malloc (len + 1);
-			strncpy (new_s, p, len);
+			new_s = malloc(len + 1);
+			strncpy(new_s, p, len);
 			new_s[len] = 0;
 
-			LL_Push (list, new_s);
+			LL_Push(list, new_s);
 
 			/* Go to next string */
 			p = tabptr + 1;
 		}
 		/* Add last string */
-		new_s = strdup (p);
-		LL_Push (list, new_s);
+		new_s = strdup(p);
+		LL_Push(list, new_s);
 	}	
 
 	return list;
 }
 
-MenuItemType menuitem_typename_to_type (char *name)
+MenuItemType menuitem_typename_to_type(char *name)
 {
 	if (name != NULL) {
 		MenuItemType type;
 
 		for (type = 0; type < NUM_ITEMTYPES; type ++) {
-			if (strcmp (menuitemtypenames[type], name) == 0) {
+			if (strcmp(menuitemtypenames[type], name) == 0) {
 				return type;
 			}
 		}
@@ -1500,20 +1500,20 @@ MenuItemType menuitem_typename_to_type (char *name)
 	return -1;
 }
 
-char *menuitem_type_to_typename (MenuItemType type)
+char *menuitem_type_to_typename(MenuItemType type)
 {
 	return ((type >= 0 && type < NUM_ITEMTYPES)
 		? menuitemtypenames[type]
 		: NULL);
 }
 
-MenuEventType menuitem_eventtypename_to_eventtype (char *name)
+MenuEventType menuitem_eventtypename_to_eventtype(char *name)
 {
 	if (name != NULL) {
 		MenuEventType type;
 
 		for (type = 0; type < NUM_EVENTTYPES; type ++) {
-			if (strcmp (menueventtypenames[type], name) == 0) {
+			if (strcmp(menueventtypenames[type], name) == 0) {
 				return type;
 			}
 		}
@@ -1521,7 +1521,7 @@ MenuEventType menuitem_eventtypename_to_eventtype (char *name)
 	return -1;
 }
 
-char *menuitem_eventtype_to_eventtypename (MenuEventType type)
+char *menuitem_eventtype_to_eventtypename(MenuEventType type)
 {
 	return ((type >= 0 && type < NUM_EVENTTYPES)
 		? menueventtypenames[type]

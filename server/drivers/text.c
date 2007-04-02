@@ -185,7 +185,7 @@ text_flush (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-text_string (Driver *drvthis, int x, int y, char string[])
+text_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;

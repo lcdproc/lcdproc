@@ -58,7 +58,7 @@ MODULE_EXPORT int  CwLnx_cellwidth(Driver *drvthis);
 MODULE_EXPORT int  CwLnx_cellheight(Driver *drvthis);
 MODULE_EXPORT void CwLnx_clear(Driver *drvthis);
 MODULE_EXPORT void CwLnx_flush(Driver *drvthis);
-MODULE_EXPORT void CwLnx_string(Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void CwLnx_string(Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void CwLnx_chr(Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT const char *CwLnx_get_key(Driver *drvthis);
 

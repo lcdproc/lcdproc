@@ -51,26 +51,26 @@ extern int  default_priority ;
 #include "client.h"
 
 /* Creates a new screen */
-Screen * screen_create (char * id, Client * client);
+Screen *screen_create(char *id, Client *client);
 
 /* Destroys a screen */
-int screen_destroy (Screen * s);
+int screen_destroy(Screen *s);
 
 /* Add a widget to a screen */
-int screen_add_widget (Screen * s, Widget * w);
+int screen_add_widget(Screen *s, Widget *w);
 
 /* Remove a widget from a screen (does not destroy it) */
-int screen_remove_widget (Screen * s, Widget * w);
+int screen_remove_widget(Screen *s, Widget *w);
 
 /* List functions */
-static inline Widget * screen_getfirst_widget (Screen * s)
+static inline Widget *screen_getfirst_widget(Screen *s)
 {
 	return (Widget *) ((s != NULL)
 			   ? LL_GetFirst(s->widgetlist)
 			   : NULL);
 }
 
-static inline Widget * screen_getnext_widget (Screen * s)
+static inline Widget *screen_getnext_widget(Screen *s)
 {
 	return (Widget *) ((s != NULL)
 			   ? LL_GetNext(s->widgetlist)
@@ -79,10 +79,10 @@ static inline Widget * screen_getnext_widget (Screen * s)
 
 
 /* Find a widget in a screen */
-Widget *screen_find_widget (Screen * s, char *id);
+Widget *screen_find_widget(Screen *s, char *id);
 
 /* Convert priority names to priority and vv */
-Priority screen_pri_name_to_pri (char * pri_name);
-char * screen_pri_to_pri_name (Priority pri);
+Priority screen_pri_name_to_pri(char *pri_name);
+char *screen_pri_to_pri_name(Priority pri);
 
 #endif

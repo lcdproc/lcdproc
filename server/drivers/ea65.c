@@ -59,7 +59,7 @@ MODULE_EXPORT char *symbol_prefix = "EA65_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-EA65_init (Driver * drvthis)
+EA65_init (Driver *drvthis)
 {
         debug(RPT_INFO, "EA65: init(%p)", drvthis);
 
@@ -230,7 +230,7 @@ EA65_flush (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (9,1).
 //
 MODULE_EXPORT void
-EA65_chr (Driver * drvthis, int x, int y, char c)
+EA65_chr (Driver *drvthis, int x, int y, char c)
 {
         PrivateData *p = (PrivateData *) drvthis->private_data;
 
@@ -252,7 +252,7 @@ EA65_chr (Driver * drvthis, int x, int y, char c)
 // Sets the backlight on or off
 //
 MODULE_EXPORT void
-EA65_backlight (Driver * drvthis, int on)
+EA65_backlight (Driver *drvthis, int on)
 {
         PrivateData *p = (PrivateData *) drvthis->private_data;
 
@@ -269,7 +269,7 @@ EA65_backlight (Driver * drvthis, int on)
 // Clears the LCD screen
 //
 MODULE_EXPORT void
-EA65_clear (Driver * drvthis)
+EA65_clear (Driver *drvthis)
 {
         PrivateData *p = (PrivateData *) drvthis->private_data;
 
@@ -282,7 +282,7 @@ EA65_clear (Driver * drvthis)
 // upper-left is (1,1), and the lower right should be (9,1).
 //
 MODULE_EXPORT void
-EA65_string (Driver * drvthis, int x, int y, char string[])
+EA65_string (Driver *drvthis, int x, int y, const char string[])
 {
         PrivateData *p = (PrivateData *) drvthis->private_data;
 
@@ -304,7 +304,7 @@ EA65_string (Driver * drvthis, int x, int y, char string[])
 //// Turns the recording LED on or off as desired.
 ////
 MODULE_EXPORT void
-EA65_output (Driver * drvthis, int on)
+EA65_output (Driver *drvthis, int on)
 {
         PrivateData *p = (PrivateData *) drvthis->private_data;
 

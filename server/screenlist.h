@@ -25,33 +25,33 @@
 /*extern int screenlist_action;*/
 extern bool autorotate;
 
-int screenlist_init ();
+int screenlist_init(void);
 	/* Initializes the screenlist. */
 
-int screenlist_shutdown ();
+int screenlist_shutdown(void);
 	/* Shuts down the screenlist. */
 
-int screenlist_add (Screen * s);
+int screenlist_add(Screen *s);
 	/* Adds a screen to the screenlist. */
 
-int screenlist_remove (Screen * s);
+int screenlist_remove(Screen *s);
 	/* Removes a screen from the screenlist. */
 
-void screenlist_process ();
+void screenlist_process(void);
 	/* Processes the screenlist. Decides if we need to switch to an other
 	 * screen. */
 
-void screenlist_switch (Screen * s);
+void screenlist_switch(Screen *s);
 	/* Switches to an other screen in the proper way. Informs clients of
 	 * the switch. ALWAYS USE THIS FUNCTION TO SWITCH SCREENS. */
 
-Screen *screenlist_current ();
+Screen *screenlist_current(void);
 	/* Returns the currently active screen. */
 
-int screenlist_goto_next ();
+int screenlist_goto_next(void);
 	/* Moves on to the next screen. */
 
-int screenlist_goto_prev ();
+int screenlist_goto_prev(void);
 	/* Moves on to the previous screen. */
 
 #endif

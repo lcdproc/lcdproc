@@ -84,25 +84,25 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "tyan_lcdm_";
 
 /* API: functions for the server core */
-MODULE_EXPORT int  tyan_lcdm_init (Driver * drvthis, char *device);
-MODULE_EXPORT void tyan_lcdm_close (Driver * drvthis);
-MODULE_EXPORT int  tyan_lcdm_width (Driver * drvthis);
-MODULE_EXPORT int  tyan_lcdm_height (Driver * drvthis);
-MODULE_EXPORT int  tyan_lcdm_cellwidth (Driver * drvthis);
-MODULE_EXPORT int  tyan_lcdm_cellheight (Driver * drvthis);
-MODULE_EXPORT void tyan_lcdm_clear (Driver * drvthis);
-MODULE_EXPORT void tyan_lcdm_flush (Driver * drvthis);
-MODULE_EXPORT void tyan_lcdm_string (Driver * drvthis, int x, int y, char string[]);
-MODULE_EXPORT void tyan_lcdm_chr (Driver * drvthis, int x, int y, char c);
+MODULE_EXPORT int  tyan_lcdm_init (Driver *drvthis, char *device);
+MODULE_EXPORT void tyan_lcdm_close (Driver *drvthis);
+MODULE_EXPORT int  tyan_lcdm_width (Driver *drvthis);
+MODULE_EXPORT int  tyan_lcdm_height (Driver *drvthis);
+MODULE_EXPORT int  tyan_lcdm_cellwidth (Driver *drvthis);
+MODULE_EXPORT int  tyan_lcdm_cellheight (Driver *drvthis);
+MODULE_EXPORT void tyan_lcdm_clear (Driver *drvthis);
+MODULE_EXPORT void tyan_lcdm_flush (Driver *drvthis);
+MODULE_EXPORT void tyan_lcdm_string (Driver *drvthis, int x, int y, const char string[]);
+MODULE_EXPORT void tyan_lcdm_chr (Driver *drvthis, int x, int y, char c);
 
-MODULE_EXPORT void tyan_lcdm_vbar (Driver * drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void tyan_lcdm_hbar (Driver * drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void tyan_lcdm_num (Driver * drvthis, int x, int num);
-MODULE_EXPORT int  tyan_lcdm_icon(Driver * drvthis, int x, int y, int icon);
+MODULE_EXPORT void tyan_lcdm_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void tyan_lcdm_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void tyan_lcdm_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT int  tyan_lcdm_icon(Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT int  tyan_lcdm_get_free_chars (Driver *drvthis);
-MODULE_EXPORT void tyan_lcdm_set_char (Driver * drvthis, int n, unsigned char *dat);
+MODULE_EXPORT void tyan_lcdm_set_char (Driver *drvthis, int n, unsigned char *dat);
 
-MODULE_EXPORT void tyan_lcdm_backlight (Driver * drvthis, int on);
+MODULE_EXPORT void tyan_lcdm_backlight (Driver *drvthis, int on);
 
 #endif

@@ -80,13 +80,13 @@ MODULE_EXPORT int  g15_cellwidth (Driver *drvthis);
 MODULE_EXPORT int  g15_cellheight (Driver *drvthis);
 MODULE_EXPORT void g15_clear (Driver *drvthis);
 MODULE_EXPORT void g15_flush (Driver *drvthis);
-MODULE_EXPORT void g15_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void g15_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void g15_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT void g15_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void g15_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT const char * g15_get_key (Driver *drvthis);
 MODULE_EXPORT void g15_backlight(Driver *drvthis, int on);
-MODULE_EXPORT void g15_num(Driver * drvthis, int x, int num);
+MODULE_EXPORT void g15_num(Driver *drvthis, int x, int num);
 
 #endif /*G15_H_*/

@@ -58,8 +58,8 @@ typedef struct driver_private_data {
 } PrivateData;
 
 
-static void LB216_hidecursor(Driver * drvthis);
-static void LB216_reboot(Driver * drvthis);
+static void LB216_hidecursor(Driver *drvthis);
+static void LB216_reboot(Driver *drvthis);
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -74,7 +74,7 @@ MODULE_EXPORT char *symbol_prefix = "LB216_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-LB216_init(Driver * drvthis)
+LB216_init(Driver *drvthis)
 {
   PrivateData *p;
   struct termios portset;
@@ -190,7 +190,7 @@ LB216_init(Driver * drvthis)
 // Clean-up
 //
 MODULE_EXPORT void
-LB216_close(Driver * drvthis)
+LB216_close(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -256,7 +256,7 @@ LB216_cellheight (Driver *drvthis)
 // Clears the LCD screen
 //
 MODULE_EXPORT void
-LB216_clear (Driver * drvthis)
+LB216_clear (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -268,7 +268,7 @@ LB216_clear (Driver * drvthis)
 // Flushes the framebuffer to the LCD
 //
 MODULE_EXPORT void
-LB216_flush(Driver * drvthis)
+LB216_flush(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
@@ -295,7 +295,7 @@ LB216_flush(Driver * drvthis)
 // upper-left is (1,1), and the lower right should be (16,2).
 //
 MODULE_EXPORT void
-LB216_chr(Driver * drvthis, int x, int y, char c)
+LB216_chr(Driver *drvthis, int x, int y, char c)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -315,7 +315,7 @@ LB216_chr(Driver * drvthis, int x, int y, char c)
 // an intermediate brightness...
 //
 MODULE_EXPORT void
-LB216_backlight(Driver * drvthis, int on)
+LB216_backlight(Driver *drvthis, int on)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -329,7 +329,7 @@ LB216_backlight(Driver * drvthis, int on)
 /////////////////////////////////////////////////////////////////
 // Get rid of the blinking curson
 //
-static void LB216_hidecursor(Driver * drvthis)
+static void LB216_hidecursor(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   char out[4];
@@ -341,7 +341,7 @@ static void LB216_hidecursor(Driver * drvthis)
 /////////////////////////////////////////////////////////////////
 // Reset the display bios
 //
-static void LB216_reboot(Driver * drvthis)
+static void LB216_reboot(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   char out[4];
@@ -352,7 +352,7 @@ static void LB216_reboot(Driver * drvthis)
 
 
 MODULE_EXPORT void
-LB216_string (Driver * drvthis, int x, int y, char string[])
+LB216_string (Driver *drvthis, int x, int y, const char string[])
 {
   PrivateData *p = drvthis->private_data;
   int i;
@@ -378,7 +378,7 @@ LB216_string (Driver * drvthis, int x, int y, char string[])
 // Sets up for vertical bars.  Call before LB216->vbar()
 //
 static void
-LB216_init_vbar(Driver * drvthis)
+LB216_init_vbar(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   char a[] = {
@@ -468,7 +468,7 @@ LB216_init_vbar(Driver * drvthis)
 // Inits horizontal bars...
 //
 static void
-LB216_init_hbar(Driver * drvthis)
+LB216_init_hbar(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   char a[] = {
@@ -536,7 +536,7 @@ LB216_init_hbar(Driver * drvthis)
 // Draws a vertical bar...
 //
 MODULE_EXPORT void
-LB216_vbar(Driver * drvthis, int x, int len)
+LB216_vbar(Driver *drvthis, int x, int len)
 {
   PrivateData *p = drvthis->private_data;
   char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
@@ -556,7 +556,7 @@ LB216_vbar(Driver * drvthis, int x, int len)
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-LB216_hbar(Driver * drvthis, int x, int y, int len)
+LB216_hbar(Driver *drvthis, int x, int y, int len)
 {
   PrivateData *p = drvthis->private_data;
   char map[7] = { 32, 1, 2, 3, 4, 5 };
@@ -580,7 +580,7 @@ LB216_hbar(Driver * drvthis, int x, int y, int len)
 // The input is just an array of characters...
 //
 MODULE_EXPORT void
-LB216_set_char(Driver * drvthis, int n, char *dat)
+LB216_set_char(Driver *drvthis, int n, char *dat)
 {
   PrivateData *p = drvthis->private_data;
   char out[4];
@@ -608,7 +608,7 @@ LB216_set_char(Driver * drvthis, int n, char *dat)
 
 
 MODULE_EXPORT int
-LB216_icon(Driver * drvthis, int x, int y, int icon)
+LB216_icon(Driver *drvthis, int x, int y, int icon)
 {
   //PrivateData *p = drvthis->private_data;
   static char heart_open[] = {

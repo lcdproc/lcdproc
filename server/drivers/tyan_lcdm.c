@@ -67,7 +67,7 @@ static unsigned char tyan_lcdm_read_key(int fd);
  * Opens com port and sets baud correctly...
  */
 MODULE_EXPORT int
-tyan_lcdm_init (Driver * drvthis, char *args)
+tyan_lcdm_init (Driver *drvthis, char *args)
 {
 	PrivateData *p;
 	struct termios portset;
@@ -183,7 +183,7 @@ tyan_lcdm_init (Driver * drvthis, char *args)
  * Clean-up
  */
 MODULE_EXPORT void
-tyan_lcdm_close (Driver * drvthis)
+tyan_lcdm_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -255,7 +255,7 @@ PrivateData *p = drvthis->private_data;
  * Flushes all output to the lcd...
  */
 MODULE_EXPORT void
-tyan_lcdm_flush (Driver * drvthis)
+tyan_lcdm_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -333,7 +333,7 @@ tyan_lcdm_get_key (Driver *drvthis)
  * The upper-left is (1,1), and the lower right should be (16,2).
  */
 MODULE_EXPORT void
-tyan_lcdm_chr (Driver * drvthis, int x, int y, char c)
+tyan_lcdm_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -351,7 +351,7 @@ tyan_lcdm_chr (Driver * drvthis, int x, int y, char c)
  * Need to find out if we have support for intermediate value.
  */
 MODULE_EXPORT void
-tyan_lcdm_backlight (Driver * drvthis, int on)
+tyan_lcdm_backlight (Driver *drvthis, int on)
 {
 }
 
@@ -360,7 +360,7 @@ tyan_lcdm_backlight (Driver * drvthis, int on)
  * Draws a vertical bar...
  */
 MODULE_EXPORT void
-tyan_lcdm_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+tyan_lcdm_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 /* x and y are the start position of the bar.
  * The bar by default grows in the 'up' direction
@@ -399,7 +399,7 @@ tyan_lcdm_vbar (Driver * drvthis, int x, int y, int len, int promille, int optio
  * Draws a horizontal bar to the right.
  */
 MODULE_EXPORT void
-tyan_lcdm_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+tyan_lcdm_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 /* x and y are the start position of the bar.
  * The bar by default grows in the 'right' direction
@@ -436,7 +436,7 @@ tyan_lcdm_hbar (Driver * drvthis, int x, int y, int len, int promille, int optio
  * Writes a big number.
  */
 MODULE_EXPORT void
-tyan_lcdm_num (Driver * drvthis, int x, int num)
+tyan_lcdm_num (Driver *drvthis, int x, int num)
 {
 	PrivateData *p = drvthis->private_data;
 	int do_init = 0;
@@ -483,7 +483,7 @@ tyan_lcdm_get_free_chars(Driver *drvthis)
  * (least significant bit) is the rightmost pixel in each pixel row
  */
 MODULE_EXPORT void
-tyan_lcdm_set_char (Driver * drvthis, int n, unsigned char *dat)
+tyan_lcdm_set_char (Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char mask = (1 << p->cellwidth) - 1;
@@ -511,7 +511,7 @@ tyan_lcdm_set_char (Driver * drvthis, int n, unsigned char *dat)
  * Places an icon on screen
  */
 MODULE_EXPORT int
-tyan_lcdm_icon (Driver * drvthis, int x, int y, int icon)
+tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
 	static unsigned char heart_open[] = 
@@ -693,7 +693,7 @@ tyan_lcdm_icon (Driver * drvthis, int x, int y, int icon)
  * Clears the LCD screen
  */
 MODULE_EXPORT void
-tyan_lcdm_clear (Driver * drvthis)
+tyan_lcdm_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -706,7 +706,7 @@ tyan_lcdm_clear (Driver * drvthis)
  * upper-left is (1,1), and the lower right should be (16,2).
  */
 MODULE_EXPORT void
-tyan_lcdm_string (Driver * drvthis, int x, int y, char string[])
+tyan_lcdm_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;

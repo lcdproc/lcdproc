@@ -513,7 +513,7 @@ stv5730_flush (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (28,11).
 //
 MODULE_EXPORT void
-stv5730_string (Driver *drvthis, int x, int y, char string[])
+stv5730_string (Driver *drvthis, int x, int y, const char string[])
 {
     //PrivateData *p = drvthis->private_data;
     int i;

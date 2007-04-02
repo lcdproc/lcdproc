@@ -999,7 +999,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +			 *       and every screen add...
 +			 */
 +			if( s == server_screen ) {
-+				update_server_screen (timer);
++				update_server_screen();
 +			}
 +			render_screen (s, timer);
 +

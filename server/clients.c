@@ -29,13 +29,13 @@ LinkedList *clientlist = NULL;
 
 /* Initialize and kill client list...*/
 int
-clients_init ()
+clients_init(void)
 {
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	clientlist = LL_new ();
+	clientlist = LL_new();
 	if (!clientlist) {
-		report( RPT_ERR, "%s: Unable to create client list", __FUNCTION__);
+		report(RPT_ERR, "%s: Unable to create client list", __FUNCTION__);
 		return -1;
 	}
 
@@ -43,68 +43,68 @@ clients_init ()
 }
 
 int
-clients_shutdown ()
+clients_shutdown(void)
 {
 	Client *c;
 
-	debug (RPT_DEBUG, "%s()", __FUNCTION__);
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	if( !clientlist ) {
+	if (!clientlist) {
 		/* Program shutdown before completed startup */
 		return -1;
 	}
 
 	/* Free all client structures... */
-	for (c=LL_GetFirst (clientlist); c; c=LL_GetNext (clientlist) ) {
-		debug (RPT_DEBUG, "%s: ...", __FUNCTION__);
+	for (c = LL_GetFirst(clientlist); c; c = LL_GetNext(clientlist)) {
+		debug(RPT_DEBUG, "%s: ...", __FUNCTION__);
 		if (c) {
-			debug (RPT_DEBUG, "%s: ... %i ...", __FUNCTION__, c->sock);
-			if (client_destroy (c) != 0) {
-				report (RPT_ERR, "%s: Error freeing client", __FUNCTION__);
+			debug(RPT_DEBUG, "%s: ... %i ...", __FUNCTION__, c->sock);
+			if (client_destroy(c) != 0) {
+				report(RPT_ERR, "%s: Error freeing client", __FUNCTION__);
 			} else {
-				debug (RPT_DEBUG, "%s: Freed client...", __FUNCTION__);
+				debug(RPT_DEBUG, "%s: Freed client...", __FUNCTION__);
 			}
 		} else {
-			debug (RPT_DEBUG, "%s: No client!", __FUNCTION__);
+			debug(RPT_DEBUG, "%s: No client!", __FUNCTION__);
 		}
 	}
 
 	/* Then, free the list...*/
-	LL_Destroy (clientlist);
+	LL_Destroy(clientlist);
 
-	debug (RPT_DEBUG, "%s: done", __FUNCTION__);
+	debug(RPT_DEBUG, "%s: done", __FUNCTION__);
 
 	return 0;
 }
 
 int
-clients_add_client (Client *c)
+clients_add_client(Client *c)
 {
 	/* Add the client to the clients list... */
-	return LL_Push (clientlist, c);
+	return LL_Push(clientlist, c);
 }
 
 int
-clients_remove_client (Client *c)
+clients_remove_client(Client *c)
 {
 	/* Remove the client from the clients list... */
-	return (LL_Remove (clientlist, c) == NULL)?-1:0;
+	return(LL_Remove(clientlist, c) == NULL)?-1:0;
 }
 
 Client *
-clients_getfirst ()
+clients_getfirst(void)
 {
 	return (Client *) LL_GetFirst(clientlist);
 }
 
 Client *
-clients_getnext ()
+clients_getnext(void)
 {
 	return (Client *) LL_GetNext(clientlist);
 }
 
 int
-clients_client_count ()
+clients_client_count(void)
 {
 	return LL_Length(clientlist);
 }
@@ -115,19 +115,19 @@ clients_client_count ()
  */
 
 Client *
-clients_find_client_by_sock (int sock)
+clients_find_client_by_sock(int sock)
 {
 	Client *c;
 
-	debug(RPT_DEBUG, "%s( sock=%i )", __FUNCTION__, sock);
+	debug(RPT_DEBUG, "%s(sock=%i)", __FUNCTION__, sock);
 
-	for( c=LL_GetFirst(clientlist); c; c=LL_GetNext(clientlist) ) {
+	for (c = LL_GetFirst(clientlist); c; c = LL_GetNext(clientlist)) {
 		if (c->sock == sock) {
 			return c;
 		}
 	}
 
-	debug (RPT_ERR, "%s: failed", __FUNCTION__);
+	debug(RPT_ERR, "%s: failed", __FUNCTION__);
 
 	return NULL;
 }

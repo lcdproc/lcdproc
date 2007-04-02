@@ -1057,7 +1057,7 @@ CFontz633_hardware_clear (Driver *drvthis)
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-CFontz633_string (Driver *drvthis, int x, int y, char string[])
+CFontz633_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;

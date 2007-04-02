@@ -433,7 +433,7 @@ EyeboxOne_height (Driver *drvthis)
  * Display a string at x,y
  */
 	MODULE_EXPORT void
-EyeboxOne_string (Driver *drvthis, int x, int y, char *string)
+EyeboxOne_string (Driver *drvthis, int x, int y, const char string[])
 {
 	int offset, siz;
 	int bar,level;

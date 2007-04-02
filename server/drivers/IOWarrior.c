@@ -629,7 +629,7 @@ PrivateData *p = drvthis->private_data;
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-IOWarrior_string(Driver *drvthis, int x, int y, char *string)
+IOWarrior_string(Driver *drvthis, int x, int y, const char string[])
 {
 PrivateData *p = drvthis->private_data;
 int i;

@@ -33,38 +33,38 @@ typedef enum WidgetType {
 typedef struct Widget {
 	char *id;
 	WidgetType type;
-	Screen * screen;		/* What screen is this widget in ? */
+	Screen *screen;			/* What screen is this widget in ? */
 	int x, y;			/* Position */
 	int width, height;		/* Visible size */
 	int left, top, right, bottom;	/* bounding rectangle */
 	int length;			/* size or direction */
 	int speed;			/* For scroller... */
 	char *text;			/* text or binary data */
-	struct Screen * frame_screen;	/* frame widget get an associated screen */
+	struct Screen *frame_screen;	/* frame widget get an associated screen */
 	//LinkedList *kids;		/* Frames can contain more widgets...*/
 } Widget;
 
 #define WID_MAX_DIR 4
 
 /* Create new widget */
-Widget * widget_create (char *id, WidgetType type, Screen * screen);
+Widget *widget_create(char *id, WidgetType type, Screen *screen);
 
 /* Destroy a widget */
-int widget_destroy (Widget * w);
+int widget_destroy(Widget *w);
 
 /* Convert a widget typename to a widget type */
-WidgetType widget_typename_to_type (char * typename);
+WidgetType widget_typename_to_type(char *typename);
 
 /* Convert a widget typename to a widget type */
-char *widget_type_to_typename (WidgetType t);
+char *widget_type_to_typename(WidgetType t);
 
 /* Search subwidgets of a widget */
-Widget * widget_search_subs (Widget * w, char * id);
+Widget *widget_search_subs(Widget *w, char *id);
 
 /* Convert icon number to icon name */
-char *widget_icon_to_iconname (int icon);
+char *widget_icon_to_iconname(int icon);
 
 /* Convert iconname to icon number */
-int widget_iconname_to_icon (char *iconname);
+int widget_iconname_to_icon(char *iconname);
 
 #endif

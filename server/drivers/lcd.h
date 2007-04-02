@@ -127,44 +127,44 @@ typedef struct lcd_logical_driver {
 	/* The driver loader will look for symbols with these names ! */
 
 	/* mandatory functions (necessary for all drivers) */
-	int (*init)		(struct lcd_logical_driver* drvthis);
-	void (*close)		(struct lcd_logical_driver* drvthis);
+	int (*init)		(struct lcd_logical_driver *drvthis);
+	void (*close)		(struct lcd_logical_driver *drvthis);
 
 	/* essential output functions (necessary for output drivers) */
-	int (*width)		(struct lcd_logical_driver* drvthis);
-	int (*height)		(struct lcd_logical_driver* drvthis);
-	void (*clear)		(struct lcd_logical_driver* drvthis);
-	void (*flush)		(struct lcd_logical_driver* drvthis);
-	void (*string)		(struct lcd_logical_driver* drvthis, int x, int y, char *str);
-	void (*chr)		(struct lcd_logical_driver* drvthis, int x, int y, char c);
+	int (*width)		(struct lcd_logical_driver *drvthis);
+	int (*height)		(struct lcd_logical_driver *drvthis);
+	void (*clear)		(struct lcd_logical_driver *drvthis);
+	void (*flush)		(struct lcd_logical_driver *drvthis);
+	void (*string)		(struct lcd_logical_driver *drvthis, int x, int y, const char *str);
+	void (*chr)		(struct lcd_logical_driver *drvthis, int x, int y, char c);
 
 	/* essential input functions (necessary for all input drivers) */
-	const char *(*get_key)	(struct lcd_logical_driver* drvthis);
+	const char *(*get_key)	(struct lcd_logical_driver *drvthis);
 
 	/* extended output functions (optional; core provides alternatives) */
-	void (*vbar)		(struct lcd_logical_driver* drvthis, int x, int y, int len, int promille, int pattern);
-	void (*hbar)		(struct lcd_logical_driver* drvthis, int x, int y, int len, int promille, int pattern);
-	void (*num)		(struct lcd_logical_driver* drvthis, int x, int num);
-	void (*heartbeat)	(struct lcd_logical_driver* drvthis, int state);
-	int (*icon)		(struct lcd_logical_driver* drvthis, int x, int y, int icon);
-	void (*cursor)		(struct lcd_logical_driver* drvthis, int x, int y, int type);
+	void (*vbar)		(struct lcd_logical_driver *drvthis, int x, int y, int len, int promille, int pattern);
+	void (*hbar)		(struct lcd_logical_driver *drvthis, int x, int y, int len, int promille, int pattern);
+	void (*num)		(struct lcd_logical_driver *drvthis, int x, int num);
+	void (*heartbeat)	(struct lcd_logical_driver *drvthis, int state);
+	int (*icon)		(struct lcd_logical_driver *drvthis, int x, int y, int icon);
+	void (*cursor)		(struct lcd_logical_driver *drvthis, int x, int y, int type);
 
 	/* user-defined character functions, are those still supported ? */
-	void (*set_char)	(struct lcd_logical_driver* drvthis, int n, unsigned char *dat);
-	int (*get_free_chars)	(struct lcd_logical_driver* drvthis);
-	int (*cellwidth)	(struct lcd_logical_driver* drvthis);
-	int (*cellheight)	(struct lcd_logical_driver* drvthis);
+	void (*set_char)	(struct lcd_logical_driver *drvthis, int n, unsigned char *dat);
+	int (*get_free_chars)	(struct lcd_logical_driver *drvthis);
+	int (*cellwidth)	(struct lcd_logical_driver *drvthis);
+	int (*cellheight)	(struct lcd_logical_driver *drvthis);
 
 	/* Hardware functions */
-	int (*get_contrast)	(struct lcd_logical_driver* drvthis);
-	void (*set_contrast)	(struct lcd_logical_driver* drvthis, int promille);
-	int (*get_brightness)	(struct lcd_logical_driver* drvthis, int state);
-	void (*set_brightness)	(struct lcd_logical_driver* drvthis, int state, int promille);
-	void (*backlight)	(struct lcd_logical_driver* drvthis, int on);
-	void (*output)		(struct lcd_logical_driver* drvthis, int state);
+	int (*get_contrast)	(struct lcd_logical_driver *drvthis);
+	void (*set_contrast)	(struct lcd_logical_driver *drvthis, int promille);
+	int (*get_brightness)	(struct lcd_logical_driver *drvthis, int state);
+	void (*set_brightness)	(struct lcd_logical_driver *drvthis, int state, int promille);
+	void (*backlight)	(struct lcd_logical_driver *drvthis, int on);
+	void (*output)		(struct lcd_logical_driver *drvthis, int state);
 
 	/* informational functions */
-	const char * (*get_info) (struct lcd_logical_driver* drvthis);
+	const char * (*get_info) (struct lcd_logical_driver *drvthis);
 
 
 	/******** Variables in server core available for drivers ********/

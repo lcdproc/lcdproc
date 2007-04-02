@@ -35,79 +35,82 @@
 
 #define UNSET_INT -1
 
-Screen * server_screen;
-int rotate_server_screen = UNSET_INT;
-
 #define MAX_SERVERSCREEN_WIDTH 40
 
+
+Screen *server_screen;
+int rotate_server_screen = UNSET_INT;
+
+
 int
-server_screen_init ()
+server_screen_init(void)
 {
-	Widget * w;
+	Widget *w;
 	int line;
 
-	debug (RPT_DEBUG, "server_screen_init");
+	debug(RPT_DEBUG, "server_screen_init");
 
 	/* Create the screen */
-	server_screen = screen_create ("_server_screen", NULL);
+	server_screen = screen_create("_server_screen", NULL);
 	if (!server_screen) {
-		report (RPT_ERR, "server_screen_init: Error allocating screen");
+		report(RPT_ERR, "server_screen_init: Error allocating screen");
 		return -1;
 	}
 	server_screen->name = "Server screen";
 	server_screen->duration = RENDER_FREQ; /* 1 second, instead of 4...*/
 
-	if ((rotate_server_screen == UNSET_INT ) || (rotate_server_screen == 1)) {
+	if ((rotate_server_screen == UNSET_INT) || (rotate_server_screen == 1)) {
 		server_screen->priority = PRI_INFO;
 	} else {
 		server_screen->priority = PRI_BACKGROUND;
 	}
 
 	/* Create all the widgets...*/
-	for (line=1; line<=4; line++) {
+	for (line = 1; line <= 4; line++) {
 		char id[8];
-		sprintf (id, "line%d", line);
+		sprintf(id, "line%d", line);
 
-		w = widget_create (id, WID_STRING, server_screen);
+		w = widget_create(id, WID_STRING, server_screen);
 		if (!w) {
-			report (RPT_ERR, "server_screen_init: Can't create a widget");
+			report(RPT_ERR, "server_screen_init: Can't create a widget");
 			return -1;
 		}
-		screen_add_widget (server_screen, w);
+		screen_add_widget(server_screen, w);
 		w->x = 1;
 		w->y = line;
-		w->text = malloc (MAX_SERVERSCREEN_WIDTH+1);
+		w->text = malloc(MAX_SERVERSCREEN_WIDTH+1);
 		if (line == 1) {
 			w->type = WID_TITLE;
-			strncpy (w->text, "LCDproc Server", MAX_SERVERSCREEN_WIDTH);
+			strncpy(w->text, "LCDproc Server", MAX_SERVERSCREEN_WIDTH);
 		} else {
-			w->text[0] = 0;
+			w->text[0] = '\0';
 		}
 	}
 
 	/* And enqueue the screen*/
-	screenlist_add (server_screen);
+	screenlist_add(server_screen);
 
-	debug (RPT_DEBUG, "server_screen_init done");
+	debug(RPT_DEBUG, "server_screen_init done");
 
 	return 0;
 }
 
 int
-server_screen_shutdown ()
+server_screen_shutdown(void)
 {
-	if (!server_screen) return -1;
+	if (!server_screen)
+		return -1;
 
-	screenlist_remove (server_screen);
-	screen_destroy (server_screen);
+	screenlist_remove(server_screen);
+	screen_destroy(server_screen);
 	return 0;
 }
 
 int
-update_server_screen ()
+update_server_screen(void)
 {
-	Client * c;
-	Widget * w;
+	Client *c;
+	Widget *w;
 	int num_clients;
 	int num_screens;
 
@@ -116,33 +119,33 @@ update_server_screen ()
 
 	/* ... and screens */
 	num_screens = 0;
-	for (c = clients_getfirst (); c; c = clients_getnext () ) {
+	for (c = clients_getfirst(); c != NULL; c = clients_getnext()) {
 		num_screens += client_screen_count(c);
 	}
 
 	/* Format strings for the appropriate size display... */
 	if (display_props->height >= 3) {
-		w = screen_find_widget (server_screen, "line2");
-		snprintf (w->text, MAX_SERVERSCREEN_WIDTH,
+		w = screen_find_widget(server_screen, "line2");
+		snprintf(w->text, MAX_SERVERSCREEN_WIDTH,
 					"Clients: %i", num_clients);
-		w = screen_find_widget (server_screen, "line3");
-		snprintf (w->text, MAX_SERVERSCREEN_WIDTH,
+		w = screen_find_widget(server_screen, "line3");
+		snprintf(w->text, MAX_SERVERSCREEN_WIDTH,
 					"Screens: %i", num_screens);
 	} else {
-		w = screen_find_widget (server_screen, "line2");
-		/*if (display_props->width >= 20)*/
-		snprintf (w->text, MAX_SERVERSCREEN_WIDTH,
-				"Cli: %i  Scr: %i",
+		w = screen_find_widget(server_screen, "line2");
+		snprintf(w->text, MAX_SERVERSCREEN_WIDTH,
+				((display_props->width >= 16)
+				 ? "Cli: %i  Scr: %i"
+				 : "C: %i  S: %i"),
 				num_clients, num_screens);
-		/*else					* 16x2 size */
 	}
 	return 0;
 }
 
 int
-goodbye_screen()
+goodbye_screen(void)
 {
-	if(!display_props)
+	if (!display_props)
 		return 0;
 
 	drivers_clear();

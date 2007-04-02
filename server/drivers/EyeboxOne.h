@@ -9,7 +9,7 @@ MODULE_EXPORT int  EyeboxOne_width (Driver *drvthis);
 MODULE_EXPORT int  EyeboxOne_height (Driver *drvthis);
 MODULE_EXPORT void EyeboxOne_clear (Driver *drvthis);
 MODULE_EXPORT void EyeboxOne_flush (Driver *drvthis);
-MODULE_EXPORT void EyeboxOne_string (Driver *drvthis, int x, int y, char *string);
+MODULE_EXPORT void EyeboxOne_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void EyeboxOne_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void EyeboxOne_set_char (Driver *drvthis, int n, char *dat);

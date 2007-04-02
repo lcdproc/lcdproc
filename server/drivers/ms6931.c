@@ -384,7 +384,7 @@ ms6931_clear (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (16,2).
 //
 MODULE_EXPORT void
-ms6931_string (Driver *drvthis, int x, int y, char string[])
+ms6931_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;

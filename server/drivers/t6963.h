@@ -118,7 +118,7 @@ MODULE_EXPORT int  t6963_width (Driver *drvthis);
 MODULE_EXPORT int  t6963_height (Driver *drvthis);
 MODULE_EXPORT void t6963_clear (Driver *drvthis);
 MODULE_EXPORT void t6963_flush (Driver *drvthis);
-MODULE_EXPORT void t6963_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void t6963_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void t6963_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void t6963_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);

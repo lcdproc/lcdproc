@@ -11,7 +11,7 @@ MODULE_EXPORT int stv5730_cellwidth (Driver *drvthis);
 MODULE_EXPORT int stv5730_cellheight (Driver *drvthis);
 MODULE_EXPORT void stv5730_clear (Driver *drvthis);
 MODULE_EXPORT void stv5730_flush (Driver *drvthis);
-MODULE_EXPORT void stv5730_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void stv5730_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void stv5730_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void stv5730_old_vbar (Driver *drvthis, int x, int len);
 MODULE_EXPORT void stv5730_old_hbar (Driver *drvthis, int x, int y, int len);

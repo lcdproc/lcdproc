@@ -54,7 +54,7 @@ MODULE_EXPORT int  serialVFD_cellwidth (Driver *drvthis);
 MODULE_EXPORT int  serialVFD_cellheight (Driver *drvthis);
 MODULE_EXPORT void serialVFD_clear (Driver *drvthis);
 MODULE_EXPORT void serialVFD_flush (Driver *drvthis);
-MODULE_EXPORT void serialVFD_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void serialVFD_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void serialVFD_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void serialVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
@@ -67,7 +67,7 @@ MODULE_EXPORT int  serialVFD_get_brightness (Driver *drvthis, int state);
 MODULE_EXPORT void serialVFD_set_brightness (Driver *drvthis, int state, int promille);
 MODULE_EXPORT void serialVFD_backlight (Driver *drvthis, int on);
 MODULE_EXPORT void serialVFD_output (Driver *drvthis, int state);
-MODULE_EXPORT void serialVFD_num (Driver * drvthis, int x, int num);
+MODULE_EXPORT void serialVFD_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int serialVFD_get_free_chars (Driver *drvthis);
 MODULE_EXPORT const char * serialVFD_get_info( Driver *drvthis );
 

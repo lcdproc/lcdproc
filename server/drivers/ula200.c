@@ -456,7 +456,7 @@ ula200_ftdi_rawdata(Driver *drvthis, unsigned char flags, unsigned char ch)
 // Displays a string
 //
 static int
-ula200_ftdi_string(Driver *drvthis, unsigned char *string, int len)
+ula200_ftdi_string(Driver *drvthis, const unsigned char *string, int len)
 {
     //PrivateData *p = (PrivateData *) drvthis->private_data;
     unsigned char buffer[128];
@@ -626,7 +626,7 @@ ula200_init(Driver *drvthis)
 	EmptyKeyRing(&p->keyring);
 
 	// Get and parse size
-	s = drvthis->config_get_string( drvthis->name, "size", 0, "20x4");
+	s = drvthis->config_get_string(drvthis->name, "size", 0, "20x4");
 	if ((sscanf(s, "%dx%d", &(p->width), &(p->height)) != 2)
 	    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
 	    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
@@ -798,7 +798,7 @@ ula200_chr (Driver *drvthis, int x, int y, char ch)
 // Place a string in the framebuffer
 //
 MODULE_EXPORT void
-ula200_string (Driver *drvthis, int x, int y, char *s)
+ula200_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	int i;
@@ -806,11 +806,11 @@ ula200_string (Driver *drvthis, int x, int y, char *s)
 	x --;  // Convert 1-based coords to 0-based
 	y --;
 
-	for (i = 0; s[i]; i++) {
+	for (i = 0; string[i] != '\0'; i++) {
 		// Check for buffer overflows...
 		if ((y * p->width) + x + i > (p->width * p->height))
 			break;
-		p->framebuf[(y*p->width) + x + i] = s[i];
+		p->framebuf[(y*p->width) + x + i] = string[i];
 	}
 }
 

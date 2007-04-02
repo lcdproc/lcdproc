@@ -40,23 +40,23 @@
 #include "widget.h"
 
 
-extern Menu * custom_main_menu;
+extern Menu *custom_main_menu;
 
 /** Basicly a patched version of LL_GetByIndex() that ignores hidden
  * entries completely. (But it takes a menu as an argument.) */
 static void *
-menu_get_subitem(Menu * menu, int index)
+menu_get_subitem(Menu *menu, int index)
 {
-	MenuItem * item;
+	MenuItem *item;
 	int i = 0;
 
-	debug (RPT_DEBUG, "%s( menu=[%s], index=%d )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], index=%d)", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"), index);
 	for (item = LL_GetFirst(menu->data.menu.contents);
 	     item != NULL;
 	     item = LL_GetNext(menu->data.menu.contents))
 	{
-		if ( ! item->is_hidden)
+		if (! item->is_hidden)
 		{
 			if (i == index)
 				return item;
@@ -73,18 +73,18 @@ menu_get_subitem(Menu * menu, int index)
  *
  * @return index of subitem if found and -1 otherwise. */
 static int
-menu_get_index_of(Menu * menu, char * item_id)
+menu_get_index_of(Menu *menu, char *item_id)
 {
-	MenuItem * item;
+	MenuItem *item;
 	int i = 0;
 
-	debug (RPT_DEBUG, "%s( menu=[%s], item_id=%s )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], item_id=%s)", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"), item_id);
 	for (item = LL_GetFirst(menu->data.menu.contents);
 	     item != NULL;
 	     item = LL_GetNext(menu->data.menu.contents))
 	{
-		if ( ! item->is_hidden)
+		if (! item->is_hidden)
 		{
 			if (strcmp(item_id, item->id) == 0)
 				return i;
@@ -96,16 +96,16 @@ menu_get_index_of(Menu * menu, char * item_id)
 }
 
 static int
-menu_visible_item_count(Menu * menu)
+menu_visible_item_count(Menu *menu)
 {
-	MenuItem * item;
+	MenuItem *item;
 	int i = 0;
 
 	for (item = LL_GetFirst(menu->data.menu.contents);
 	     item != NULL;
 	     item = LL_GetNext(menu->data.menu.contents))
 	{
-		if ( ! item->is_hidden)
+		if (! item->is_hidden)
 			++i;
 	}
 	return i;
@@ -113,15 +113,15 @@ menu_visible_item_count(Menu * menu)
 
 
 Menu *
-menu_create (char *id, MenuEventFunc(*event_func),
+menu_create(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client)
 {
 	Menu *new_menu;
 
-	debug (RPT_DEBUG, "%s( id=\"%s\", event_func=%p, text=\"%s\", client=%p )",
+	debug(RPT_DEBUG, "%s(id=\"%s\", event_func=%p, text=\"%s\", client=%p)",
 	       __FUNCTION__, id, event_func, text, client);
 
-	new_menu = menuitem_create (MENUITEM_MENU, id, event_func, text, client);
+	new_menu = menuitem_create(MENUITEM_MENU, id, event_func, text, client);
 
 	if (new_menu != NULL) {
 		new_menu->data.menu.contents = LL_new();
@@ -132,9 +132,9 @@ menu_create (char *id, MenuEventFunc(*event_func),
 }
 
 void
-menu_destroy (Menu *menu)
+menu_destroy(Menu *menu)
 {
-	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s])", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"));
 
 	if (menu == NULL)
@@ -143,17 +143,17 @@ menu_destroy (Menu *menu)
 	if (custom_main_menu == menu)
 		custom_main_menu = NULL;
 
-	menu_destroy_all_items (menu);
-	LL_Destroy (menu->data.menu.contents);
+	menu_destroy_all_items(menu);
+	LL_Destroy(menu->data.menu.contents);
 	menu->data.menu.contents = NULL;
 
 	/* After this the general menuitem routine destroys the rest... */
 }
 
 void
-menu_add_item (Menu *menu, MenuItem *item)
+menu_add_item(Menu *menu, MenuItem *item)
 {
-	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], item=[%s])", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"),
 			((item != NULL) ? item->id : "(null)"));
 
@@ -161,17 +161,17 @@ menu_add_item (Menu *menu, MenuItem *item)
 		return;
 
 	/* Add the item to the menu */
-	LL_Push (menu->data.menu.contents, item);
+	LL_Push(menu->data.menu.contents, item);
 	item->parent = menu;
 }
 
 void
-menu_remove_item (Menu *menu, MenuItem *item)
+menu_remove_item(Menu *menu, MenuItem *item)
 {
 	int i;
-	MenuItem * item2;
+	MenuItem *item2;
 
-	debug (RPT_DEBUG, "%s( menu=[%s], item=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], item=[%s])", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"),
 			((item != NULL) ? item->id : "(null)"));
 
@@ -181,9 +181,9 @@ menu_remove_item (Menu *menu, MenuItem *item)
 	/* Find the item */
 	for (item2 = LL_GetFirst(menu->data.menu.contents), i = 0;
 	     item2 != NULL;
-	     item2 = LL_GetNext(menu->data.menu.contents), i++ ) {
+	     item2 = LL_GetNext(menu->data.menu.contents), i++) {
 		if (item == item2) {
-			LL_DeleteNode (menu->data.menu.contents);
+			LL_DeleteNode(menu->data.menu.contents);
 			if (menu->data.menu.selector_pos >= i) {
 				menu->data.menu.selector_pos--;
 				if (menu->data.menu.scroll > 0)
@@ -195,34 +195,34 @@ menu_remove_item (Menu *menu, MenuItem *item)
 }
 
 void
-menu_destroy_all_items (Menu *menu)
+menu_destroy_all_items(Menu *menu)
 {
-	MenuItem * item;
+	MenuItem *item;
 
-	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s])", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"));
 
 	if (menu == NULL)
 		return;
 
-	for( item = menu_getfirst_item(menu); item != NULL; item = menu_getfirst_item(menu) ) {
-		menuitem_destroy (item);
-		LL_Remove (menu->data.menu.contents, item);
+	for (item = menu_getfirst_item(menu); item != NULL; item = menu_getfirst_item(menu)) {
+		menuitem_destroy(item);
+		LL_Remove(menu->data.menu.contents, item);
 	}
 }
 
-MenuItem *menu_get_current_item (Menu *menu)
+MenuItem *menu_get_current_item(Menu *menu)
 {
 	return (MenuItem*) ((menu != NULL)
 			    ? menu_get_subitem(menu, menu->data.menu.selector_pos)
 			    : NULL);
 }
 
-MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
+MenuItem *menu_find_item(Menu *menu, char *id, bool recursive)
 {
-	MenuItem * item;
+	MenuItem *item;
 
-	debug (RPT_DEBUG, "%s( menu=[%s], id=\"%s\", recursive=%d )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], id=\"%s\", recursive=%d)", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"), id, recursive);
 
 	if ((menu == NULL) || (id == NULL))
@@ -230,13 +230,13 @@ MenuItem *menu_find_item (Menu *menu, char *id, bool recursive)
 	if (strcmp(menu->id, id) == 0)
 		return menu;
 
-	for( item = menu_getfirst_item(menu); item != NULL; item = menu_getnext_item(menu) ) {
-		if ( strcmp(item->id, id) == 0 ) {
+	for (item = menu_getfirst_item(menu); item != NULL; item = menu_getnext_item(menu)) {
+		if (strcmp(item->id, id) == 0) {
 			return item;
 		}
 		else if (recursive && item->type == MENUITEM_MENU) {
-			MenuItem * res;
-			res = menu_find_item (item, id, recursive);
+			MenuItem *res;
+			res = menu_find_item(item, id, recursive);
 			if (res) {
 				return res;
 			}
@@ -250,9 +250,9 @@ void menu_set_association(Menu *menu, void *assoc)
 	menu->data.menu.association = assoc;
 }
 
-void menu_reset (Menu *menu)
+void menu_reset(Menu *menu)
 {
-	debug (RPT_DEBUG, "%s( menu=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s])", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"));
 
 	if (menu == NULL)
@@ -262,13 +262,13 @@ void menu_reset (Menu *menu)
 	menu->data.menu.scroll = 0;
 }
 
-void menu_build_screen (MenuItem *menu, Screen *s)
+void menu_build_screen(MenuItem *menu, Screen *s)
 {
-	Widget * w;
-	MenuItem * subitem;
+	Widget *w;
+	MenuItem *subitem;
 	int itemnr;
 
-	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], screen=[%s])", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
@@ -279,57 +279,57 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 	/* Problem: frames are not handled correctly by renderer */
 
 	/* Create menu title widget */
-	w = widget_create ("title", WID_TITLE, s);
+	w = widget_create("title", WID_TITLE, s);
 	if (w != NULL) {
-		screen_add_widget (s, w);
+		screen_add_widget(s, w);
 		w->text = strdup(menu->text);
 		w->x = 1;
 	}	
 
 	/* Create widgets for each subitem in the menu */
-	for (subitem = LL_GetFirst (menu->data.menu.contents), itemnr = 0;
+	for (subitem = LL_GetFirst(menu->data.menu.contents), itemnr = 0;
 	     subitem != NULL;
-	     subitem = LL_GetNext (menu->data.menu.contents), itemnr ++ )
+	     subitem = LL_GetNext(menu->data.menu.contents), itemnr ++)
 	{
 		char buf[10];
 
 		if (subitem->is_hidden)
 			continue;
-		snprintf (buf, sizeof(buf)-1, "text%d", itemnr);
+		snprintf(buf, sizeof(buf)-1, "text%d", itemnr);
 		buf[sizeof(buf)-1] = 0;
-		w = widget_create (buf, WID_STRING, s);
+		w = widget_create(buf, WID_STRING, s);
 					/* (buf will be copied) */
 		if (w != NULL) {
-			screen_add_widget (s, w);
+			screen_add_widget(s, w);
 			w->x = 2;
 
 			switch (subitem->type) {
 			  case MENUITEM_CHECKBOX:
 
 				/* Limit string length */
-				w->text = strdup (subitem->text);
+				w->text = strdup(subitem->text);
 				if (strlen(subitem->text) >= display_props->width-2) {
 					(w->text)[display_props->width-2] = 0;
 				}
 
 				/* Add icon for checkbox */
-				snprintf (buf, sizeof(buf)-1, "icon%d", itemnr);
+				snprintf(buf, sizeof(buf)-1, "icon%d", itemnr);
 				buf[sizeof(buf)-1] = 0;
-				w = widget_create (buf, WID_ICON, s);
+				w = widget_create(buf, WID_ICON, s);
 						/* (buf will be copied) */
-				screen_add_widget (s, w);
+				screen_add_widget(s, w);
 				w->x = display_props->width - 1;
 				w->length = ICON_CHECKBOX_OFF;
 				break;
 			  case MENUITEM_RING:
 				/* Create string for text + ringtext */
-				w->text = malloc (display_props->width);
+				w->text = malloc(display_props->width);
 				break;
 			  case MENUITEM_MENU:
 				/* Limit string length */
-				w->text = malloc( strlen(subitem->text) + 4 );
-				strcpy( w->text, subitem->text );
-				strcat( w->text, " >" );
+				w->text = malloc(strlen(subitem->text) + 4);
+				strcpy(w->text, subitem->text);
+				strcat(w->text, " >");
 				if (strlen(subitem->text) >= display_props->width-1) {
 					(w->text)[display_props->width-1] = '\0';
 				}
@@ -340,7 +340,7 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 			  case MENUITEM_ALPHA:
 			  case MENUITEM_IP:
 				/* Limit string length */
-				w->text = strdup (subitem->text);
+				w->text = strdup(subitem->text);
 				if (strlen(subitem->text) >= display_props->width-1) {
 					(w->text)[display_props->width-1] = '\0';
 				}
@@ -352,26 +352,26 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 	}
 
 	/* Add arrow for selection on the left */
-	w = widget_create ("selector", WID_ICON, s);
+	w = widget_create("selector", WID_ICON, s);
 	if (w != NULL) {
-		screen_add_widget (s, w);
+		screen_add_widget(s, w);
 		w->length = ICON_SELECTOR_AT_LEFT;
 		w->x = 1;
 	}
 
 	/* Add scrollers on the right side on top and bottom */
 	/* TODO: when menu is in a frame, these can be removed */
-	w = widget_create ("upscroller", WID_ICON, s);
+	w = widget_create("upscroller", WID_ICON, s);
 	if (w != NULL) {
-		screen_add_widget (s, w);
+		screen_add_widget(s, w);
 		w->length = ICON_ARROW_UP;
 		w->x = display_props->width;
 		w->y = 1;
 	}
 
-	w = widget_create ("downscroller", WID_ICON, s);
+	w = widget_create("downscroller", WID_ICON, s);
 	if (w != NULL) {
-		screen_add_widget (s, w);
+		screen_add_widget(s, w);
 		w->length = ICON_ARROW_DOWN;
 		w->x = display_props->width;
 		w->y = display_props->height;
@@ -379,14 +379,14 @@ void menu_build_screen (MenuItem *menu, Screen *s)
 
 }
 
-void menu_update_screen (MenuItem *menu, Screen *s)
+void menu_update_screen(MenuItem *menu, Screen *s)
 {
-	Widget * w;
-	MenuItem * subitem;
+	Widget *w;
+	MenuItem *subitem;
 	int itemnr;
 	int hidden_count = 0;
 
-	debug (RPT_DEBUG, "%s( menu=[%s], screen=[%s] )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], screen=[%s])", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"),
 			((s != NULL) ? s->id : "(null)"));
 
@@ -394,8 +394,8 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 		return;
 
 	/* Update widgets for the title */
-	w = screen_find_widget (s, "title");
-	if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "title");
+	w = screen_find_widget(s, "title");
+	if (!w)	report(RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "title");
 	w->y = 1 - menu->data.menu.scroll;
 
 	/* TODO: remove next 5 limes when rendering is safe */
@@ -406,12 +406,12 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 	}
 
 	/* Update widgets for each subitem in the menu */
-	for (subitem = LL_GetFirst (menu->data.menu.contents), itemnr = 0;
+	for (subitem = LL_GetFirst(menu->data.menu.contents), itemnr = 0;
 	     subitem;
-	     subitem = LL_GetNext (menu->data.menu.contents), itemnr ++ )
+	     subitem = LL_GetNext(menu->data.menu.contents), itemnr ++)
 	{
 		char buf[10];
-		char * p;
+		char *p;
 
 		if (subitem->is_hidden)
 		{
@@ -420,10 +420,10 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 			++hidden_count;
 			continue;
 		}
-		snprintf (buf, sizeof(buf)-1, "text%d", itemnr);
+		snprintf(buf, sizeof(buf)-1, "text%d", itemnr);
 		buf[sizeof(buf)-1] = 0;
-		w = screen_find_widget (s, buf);
-		if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, buf);
+		w = screen_find_widget(s, buf);
+		if (!w)	report(RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, buf);
 		w->y = 2 + itemnr - hidden_count - menu->data.menu.scroll;
 
 		/* TODO: remove next 5 lines when rendering is safe */
@@ -437,10 +437,10 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 		  case MENUITEM_CHECKBOX:
 
 			/* Update icon value for checkbox */
-			snprintf (buf, sizeof(buf)-1, "icon%d", itemnr);
+			snprintf(buf, sizeof(buf)-1, "icon%d", itemnr);
 			buf[sizeof(buf)-1] = 0;
-			w = screen_find_widget (s, buf);
-			if (!w)	report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, buf);
+			w = screen_find_widget(s, buf);
+			if (!w)	report(RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, buf);
 			w->y = 2 + itemnr - menu->data.menu.scroll;
 			w->length = ((int[]){ICON_CHECKBOX_OFF,ICON_CHECKBOX_ON,ICON_CHECKBOX_GRAY})[subitem->data.checkbox.value];
 
@@ -454,28 +454,28 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 		  case MENUITEM_RING:
 			if (subitem->data.ring.value >= LL_Length(subitem->data.ring.strings)) {
 				/* No strings available */
-				memcpy (w->text, subitem->text, display_props->width - 2);
+				memcpy(w->text, subitem->text, display_props->width - 2);
 				w->text[ display_props->width - 2 ] = 0;
 			}
 			else {
 				/* Limit string length and add ringstring */
-				p = LL_GetByIndex (subitem->data.ring.strings, subitem->data.ring.value);
+				p = LL_GetByIndex(subitem->data.ring.strings, subitem->data.ring.value);
 				assert(p != NULL);
 				if (strlen(p) > display_props->width - 3) {
 					short a = display_props->width - 3;
 					/* We need to limit the ring string and DON'T
 					 * display the item text */
-					strcpy (w->text, " ");
-					memcpy (w->text + 1, p, a);
+					strcpy(w->text, " ");
+					memcpy(w->text + 1, p, a);
 					w->text[a + 1] = 0;
 				}
 				else {
-					short b = display_props->width - 2 - strlen (p);
-					short c = min (strlen (subitem->text), b - 1);
+					short b = display_props->width - 2 - strlen(p);
+					short c = min(strlen(subitem->text), b - 1);
 					/* We don't limit the ring string */
-					memset (w->text, ' ', b);
-					memcpy (w->text, subitem->text, c);
-					strcpy (w->text + b, p);
+					memset(w->text, ' ', b);
+					memcpy(w->text, subitem->text, c);
+					strcpy(w->text + b, p);
 				}
 			}
 			break;
@@ -485,32 +485,32 @@ void menu_update_screen (MenuItem *menu, Screen *s)
 	}
 
 	/* Update selector position */
-	w = screen_find_widget (s, "selector");
+	w = screen_find_widget(s, "selector");
 	if (w != NULL)
 		w->y = 2 + menu->data.menu.selector_pos - menu->data.menu.scroll;
 	else
-		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "selector");
+		report(RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "selector");
 
 	/* Enable upscroller (if necessary) */
-	w = screen_find_widget (s, "upscroller");
+	w = screen_find_widget(s, "upscroller");
 	if (w != NULL)
 		w->type = (menu->data.menu.scroll > 0) ? WID_ICON : WID_NONE;
 	else
-		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "upscroller");
+		report(RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "upscroller");
 
 	/* Enable downscroller (if necessary) */
-	w = screen_find_widget (s, "downscroller");
+	w = screen_find_widget(s, "downscroller");
 	if (w != NULL)
 		w->type = (menu_visible_item_count(menu) >= menu->data.menu.scroll + display_props->height)
 			? WID_ICON : WID_NONE;
 	else
-		report (RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "downscroller");
+		report(RPT_ERR, "%s: could not find widget: %s", __FUNCTION__, "downscroller");
 }
 
-MenuItem * menu_get_item_for_predecessor_check(Menu *menu)
+MenuItem *menu_get_item_for_predecessor_check(Menu *menu)
 {
 	MenuItem *subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
-	if ( ! subitem)
+	if (! subitem)
 		return NULL;
 	switch (subitem->type) {
 	case MENUITEM_ACTION:
@@ -534,10 +534,10 @@ MenuItem * menu_get_item_for_predecessor_check(Menu *menu)
 	}
 }
 
-MenuItem * menu_get_item_for_successor_check(Menu *menu)
+MenuItem *menu_get_item_for_successor_check(Menu *menu)
 {
 	MenuItem *subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
-	if ( ! subitem)
+	if (! subitem)
 		return NULL;
 	switch (subitem->type) {
 	case MENUITEM_ACTION:
@@ -555,10 +555,10 @@ MenuItem * menu_get_item_for_successor_check(Menu *menu)
 	}
 }
 
-MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, bool extended)
+MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, bool extended)
 {
 	MenuItem *subitem;
-	debug (RPT_DEBUG, "%s( menu=[%s], token=%d, key=\"%s\" )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], token=%d, key=\"%s\")", __FUNCTION__,
 			((menu != NULL) ? menu->id : "(null)"), token, key);
 
 	if (menu == NULL)
@@ -567,18 +567,18 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, boo
 	switch (token) {
 	  case MENUTOKEN_MENU:
 		subitem = menu_get_item_for_predecessor_check(menu);
-		if ( ! subitem)
+		if (! subitem)
 			return MENURESULT_ERROR;
 		return menuitem_predecessor2menuresult(
 			subitem->predecessor_id, MENURESULT_CLOSE);
 	  case MENUTOKEN_ENTER:
-		subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
+		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
 		if (!subitem)
 			break;
 		switch (subitem->type) {
 		  case MENUITEM_ACTION:
 			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_SELECT);
+				subitem->event_func(subitem, MENUEVENT_SELECT);
 			return menuitem_successor2menuresult(
 				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_CHECKBOX:
@@ -589,13 +589,13 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, boo
 				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
 			}
 			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return menuitem_successor2menuresult(
 				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_RING:
-			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
+			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length(subitem->data.ring.strings);
 			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return menuitem_successor2menuresult(
 				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_MENU:
@@ -636,7 +636,7 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, boo
 		if (!extended)
 			return MENURESULT_NONE;
 
-		subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
+		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
 		if (subitem == NULL)
 			break;
 		switch (subitem->type) {
@@ -650,15 +650,15 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, boo
 				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 2;
 			}
 			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  case MENUITEM_RING:
 			/* ring: jump to the end if beginning is reached */
 			subitem->data.ring.value = (subitem->data.ring.value < 1)
-				? LL_Length (subitem->data.ring.strings) - 1
-				: (subitem->data.ring.value - 1) % LL_Length (subitem->data.ring.strings);
+				? LL_Length(subitem->data.ring.strings) - 1
+				: (subitem->data.ring.value - 1) % LL_Length(subitem->data.ring.strings);
 			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  default:
 			break;
@@ -680,12 +680,12 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, boo
 				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
 			}
 			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  case MENUITEM_RING:
-			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
+			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length(subitem->data.ring.strings);
 			if (subitem->event_func)
-				subitem->event_func (subitem, MENUEVENT_UPDATE);
+				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  case MENUITEM_MENU:
 			return MENURESULT_ENTER;
@@ -702,10 +702,10 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char * key, boo
 
 /** positions current item pointer on subitem subitem_id. If subitem_id is
  * hidden or not valid subitem of menu this function does nothing. */
-void menu_select_subitem(Menu *menu, char * subitem_id)
+void menu_select_subitem(Menu *menu, char *subitem_id)
 {
 	assert(menu != NULL);
-	debug(RPT_DEBUG, "%s( menu=[%s], subitem_id=\"%s\" )", __FUNCTION__,
+	debug(RPT_DEBUG, "%s(menu=[%s], subitem_id=\"%s\")", __FUNCTION__,
 	       menu->id, subitem_id);
 	int position = menu_get_index_of(menu, subitem_id);
 	if (position < 0)

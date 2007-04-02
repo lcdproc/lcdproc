@@ -178,7 +178,7 @@ bayrad_init(Driver *drvthis)
 // your driver.
 
 MODULE_EXPORT void
-bayrad_close(Driver * drvthis)
+bayrad_close(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -202,7 +202,7 @@ bayrad_close(Driver * drvthis)
 // Returns the display width
 //
 MODULE_EXPORT int
-bayrad_width(Driver * drvthis)
+bayrad_width(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -214,7 +214,7 @@ bayrad_width(Driver * drvthis)
 // Returns the display height
 //
 MODULE_EXPORT int
-bayrad_height(Driver * drvthis)
+bayrad_height(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -226,7 +226,7 @@ bayrad_height(Driver * drvthis)
 // Returns the display's cell width
 //
 MODULE_EXPORT int
-bayrad_cellwidth(Driver * drvthis)
+bayrad_cellwidth(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -238,7 +238,7 @@ bayrad_cellwidth(Driver * drvthis)
 // Returns the display's cell height
 //
 MODULE_EXPORT int
-bayrad_cellheight(Driver * drvthis)
+bayrad_cellheight(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -250,7 +250,7 @@ bayrad_cellheight(Driver * drvthis)
 // Clears the LCD screen
 //
 MODULE_EXPORT void
-bayrad_clear(Driver * drvthis)
+bayrad_clear(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -263,7 +263,7 @@ bayrad_clear(Driver * drvthis)
 // Flushes all output to the lcd...
 //
 MODULE_EXPORT void
-bayrad_flush(Driver * drvthis)
+bayrad_flush(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -279,7 +279,7 @@ bayrad_flush(Driver * drvthis)
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-bayrad_string(Driver * drvthis, int x, int y, char string[])
+bayrad_string(Driver *drvthis, int x, int y, const char string[])
 {
   PrivateData *p = drvthis->private_data;
   int i;
@@ -315,7 +315,7 @@ bayrad_string(Driver * drvthis, int x, int y, char string[])
 // upper-left is (1,1), and the lower right should be (20,2).
 //
 MODULE_EXPORT void
-bayrad_chr(Driver * drvthis, int x, int y, char c)
+bayrad_chr(Driver *drvthis, int x, int y, char c)
 {
   PrivateData *p = drvthis->private_data;
   unsigned char ch = (unsigned char) c;
@@ -339,7 +339,7 @@ bayrad_chr(Driver * drvthis, int x, int y, char c)
 // Turns the lcd backlight on or off...
 //
 MODULE_EXPORT void
-bayrad_backlight(Driver * drvthis, int on)
+bayrad_backlight(Driver *drvthis, int on)
 {
   //PrivateData *p = drvthis->private_data;
 
@@ -364,7 +364,7 @@ bayrad_backlight(Driver * drvthis, int on)
 // Tells the driver to get ready for vertical bargraphs.
 //
 static void
-bayrad_init_vbar(Driver * drvthis)
+bayrad_init_vbar(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   static char bar_up[7][5*8] = {
@@ -462,7 +462,7 @@ bayrad_init_vbar(Driver * drvthis)
 // Tells the driver to get ready for horizontal bargraphs.
 //
 static void
-bayrad_init_hbar(Driver * drvthis)
+bayrad_init_hbar(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   static char bar_right[5][5*8] = {
@@ -540,7 +540,7 @@ bayrad_init_hbar(Driver * drvthis)
 // Tells the driver to get ready for big numbers, if possible.
 //
 static void
-bayrad_init_num(Driver * drvthis)
+bayrad_init_num(Driver *drvthis)
 {
   //PrivateData *p = drvthis->private_data;
 
@@ -551,7 +551,7 @@ bayrad_init_num(Driver * drvthis)
 // Draws a big (4-row) number.
 //
 MODULE_EXPORT void
-bayrad_num(Driver * drvthis, int x, int num)
+bayrad_num(Driver *drvthis, int x, int num)
 {
   //PrivateData *p = drvthis->private_data;
 
@@ -562,7 +562,7 @@ bayrad_num(Driver * drvthis, int x, int num)
 // Changes the font data of character n.
 //
 MODULE_EXPORT void
-bayrad_set_char(Driver * drvthis, int n, char *dat)
+bayrad_set_char(Driver *drvthis, int n, char *dat)
 {
   PrivateData *p = drvthis->private_data;
   char out[4];
@@ -598,7 +598,7 @@ bayrad_set_char(Driver * drvthis, int n, char *dat)
 // Draws a vertical bar, from the bottom of the screen up.
 //
 MODULE_EXPORT void
-bayrad_vbar(Driver * drvthis, int x, int y, int len, int promille, int options)
+bayrad_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -620,7 +620,7 @@ bayrad_vbar(Driver * drvthis, int x, int y, int len, int promille, int options)
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-bayrad_hbar(Driver * drvthis, int x, int y, int len, int promille, int options)
+bayrad_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -643,7 +643,7 @@ bayrad_hbar(Driver * drvthis, int x, int y, int len, int promille, int options)
 // Places an icon on screen
 //
 MODULE_EXPORT int
-bayrad_icon(Driver * drvthis, int x, int y, int icon)
+bayrad_icon(Driver *drvthis, int x, int y, int icon)
 {
   /*PrivateData *p = drvthis->private_data;
   static char icons[3][5*8] = {
@@ -694,7 +694,7 @@ bayrad_icon(Driver * drvthis, int x, int y, int icon)
 // Return 0 for "nothing available".
 //
 MODULE_EXPORT const char *
-bayrad_get_key(Driver * drvthis)
+bayrad_get_key(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   fd_set brfdset;

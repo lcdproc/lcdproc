@@ -127,7 +127,7 @@ MODULE_EXPORT char *symbol_prefix = "HD44780_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-HD44780_init (Driver * drvthis)
+HD44780_init (Driver *drvthis)
 {
 	// TODO: remove the two magic numbers below
 	// TODO: single point of return
@@ -606,7 +606,7 @@ HD44780_chr (Driver *drvthis, int x, int y, char ch)
 // Place a string in the framebuffer
 //
 MODULE_EXPORT void
-HD44780_string (Driver *drvthis, int x, int y, char *string)
+HD44780_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	int i;

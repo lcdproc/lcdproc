@@ -245,7 +245,7 @@ MODULE_EXPORT void imon_flush (Driver *drvthis)
  * \param y        Vertical character position (row).
  * \param string   String that gets written.
  */
-MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, char string[])
+MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, const char string[])
 {
 	int i;
 

@@ -1232,7 +1232,7 @@ CwLnx_clear(Driver *drvthis)
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-CwLnx_string(Driver *drvthis, int x, int y, char *string)
+CwLnx_string(Driver *drvthis, int x, int y, const char string[])
 {
     PrivateData *p = drvthis->private_data;
 

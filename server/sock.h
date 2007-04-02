@@ -19,9 +19,9 @@ typedef struct sockaddr_in sockaddr_in;
 
 /* Server functions...*/
 int sock_init(char* bind_addr, int bind_port);
-int sock_shutdown();
+int sock_shutdown(void);
 int sock_create_inet_socket(char* bind_addr, unsigned int port);
-int sock_poll_clients();
+int sock_poll_clients(void);
 int verify_ipv4(const char *addr);
 int verify_ipv6(const char *addr);
 

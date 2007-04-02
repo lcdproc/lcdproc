@@ -204,10 +204,10 @@ MenuResult menuitem_predecessor2menuresult(char *predecessor_id, MenuResult defa
 /** translates a successor_id into a MenuResult. */
 MenuResult menuitem_successor2menuresult(char *successor_id, MenuResult default_result);
 
-MenuItem * menuitem_search(char *menu_id, Client *client);
+MenuItem *menuitem_search(char *menu_id, Client *client);
 
 /** YOU SHOULD NOT CALL THIS FUNCTION BUT THE TYPE SPECIFIC ONE INSTEAD */
-MenuItem *menuitem_create (MenuItemType type, char *id,
+MenuItem *menuitem_create(MenuItemType type, char *id,
 		MenuEventFunc(*event_func), char *text, Client *client);
 
 /* For all constructor functions below the following:
@@ -229,13 +229,13 @@ MenuItem *menuitem_create (MenuItemType type, char *id,
 /** Creates a an action item (a string only).  Generated events:
  * MENUEVENT_SELECT when user selects the item.
  */
-MenuItem *menuitem_create_action (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_action(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, MenuResult menu_result);
 
 /** Creates a checkbox.
  * Generated events: MENUEVENT_UPDATE when user changes value (immediately).
  */
-MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_checkbox(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, bool allow_gray, bool value);
 
 /** Creates a ring with the given string, separated by tabs.
@@ -243,7 +243,7 @@ MenuItem *menuitem_create_checkbox (char *id, MenuEventFunc(*event_func),
  * eg: if strings="abc\\tdef" the value=1 means that "def" is selected.
  * Generated events: MENUEVENT_UPDATE when user changes value (immediately).
  */
-MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_ring(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, char *strings, short value);
 
 /** Creates a slider with the given min and max values.
@@ -253,7 +253,7 @@ MenuItem *menuitem_create_ring (char *id, MenuEventFunc(*event_func),
  * and update the value yourself.
  * MENUEVENT_PLUS, MENUEVENT_MINUS when slider is moved (immediately).
  */
-MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_slider(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, char *mintext, char *maxtext,
 	int minvalue, int maxvalue, int stepsize, int value);
 
@@ -261,7 +261,7 @@ MenuItem *menuitem_create_slider (char *id, MenuEventFunc(*event_func),
  * Value can range from minvalue to maxvalue.
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
-MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_numeric(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, int minvalue, int maxvalue, int value);
 
 /** Creates a string value box.
@@ -271,7 +271,7 @@ MenuItem *menuitem_create_numeric (char *id, MenuEventFunc(*event_func),
  * input.
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
-MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_alpha(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, char password_char, short minlength, short maxlength,
 	bool allow_caps, bool allow_noncaps, bool allow_numbers,
 	char *allowed_extra, char *value);
@@ -279,20 +279,20 @@ MenuItem *menuitem_create_alpha (char *id, MenuEventFunc(*event_func),
 /** Creates an ip value box.  can be either v4 or v6
  * MENUEVENT_UPDATE when user finishes the value (no immediate update).
  */
-MenuItem *menuitem_create_ip (char *id, MenuEventFunc(*event_func),
+MenuItem *menuitem_create_ip(char *id, MenuEventFunc(*event_func),
 	char *text, Client *client, bool v6, char *value);
 
 /** Deletes item from memory.
  * All allocated extra data (like strings) will be freed.
  */
-void menuitem_destroy (MenuItem *item);
+void menuitem_destroy(MenuItem *item);
 
 /** Resets the item to the initial state.
  * You should call menuitem_update after this to see the effects.
  * This call is useless on items that have immediate effect, like a slider.
  * Those items do not keep temporary data.
  */
-void menuitem_reset (MenuItem *item);
+void menuitem_reset(MenuItem *item);
 
 /** (Re)builds the selected menuitem on screen using widgets.
  * Should be re-called if menuitem data has been changed.
@@ -300,30 +300,30 @@ void menuitem_reset (MenuItem *item);
  * - the values
  * - the menu scroll and menu index
  */
-void menuitem_rebuild_screen (MenuItem *item, Screen *s);
+void menuitem_rebuild_screen(MenuItem *item, Screen *s);
 
 /** Updates the widgets of the selected menuitem
  * Fills all widget attributes with the corrrect values.
  */
-void menuitem_update_screen (MenuItem *item, Screen *s);
+void menuitem_update_screen(MenuItem *item, Screen *s);
 
 /** Does something with the given input.
  * key is only used if token is MENUTOKEN_OTHER.
  */
-MenuResult menuitem_process_input (MenuItem *item, MenuToken token, const char * key, bool extended);
+MenuResult menuitem_process_input(MenuItem *item, MenuToken token, const char *key, bool extended);
 
 /** returns the Client that owns the MenuItem. item must not be null */
-Client * menuitem_get_client(MenuItem * item);
+Client *menuitem_get_client(MenuItem *item);
 
 /** Converts a tab-separated list to a LinkedList. */
-LinkedList * tablist2linkedlist (char * strings);
+LinkedList *tablist2linkedlist(char *strings);
 
-MenuItemType menuitem_typename_to_type (char *name);
+MenuItemType menuitem_typename_to_type(char *name);
 
-char *menuitem_type_to_typename (MenuItemType type);
+char *menuitem_type_to_typename(MenuItemType type);
 
-MenuEventType menuitem_eventtypename_to_eventtype (char *name);
+MenuEventType menuitem_eventtypename_to_eventtype(char *name);
 
-char *menuitem_eventtype_to_eventtypename (MenuEventType type);
+char *menuitem_eventtype_to_eventtypename(MenuEventType type);
 
 #endif

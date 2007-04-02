@@ -36,7 +36,7 @@ MODULE_EXPORT int  imon_cellwidth (Driver *drvthis);
 MODULE_EXPORT int  imon_cellheight (Driver *drvthis);
 MODULE_EXPORT void imon_clear (Driver *drvthis);
 MODULE_EXPORT void imon_flush (Driver *drvthis);
-MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT int  imon_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT const char *imon_get_info (Driver *drvthis);

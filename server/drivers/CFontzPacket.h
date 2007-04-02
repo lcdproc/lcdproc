@@ -27,7 +27,7 @@ MODULE_EXPORT int  CFontzPacket_cellwidth (Driver *drvthis);
 MODULE_EXPORT int  CFontzPacket_cellheight (Driver *drvthis);
 MODULE_EXPORT void CFontzPacket_clear (Driver *drvthis);
 MODULE_EXPORT void CFontzPacket_flush (Driver *drvthis);
-MODULE_EXPORT void CFontzPacket_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void CFontzPacket_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void CFontzPacket_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT const char *CFontzPacket_get_key (Driver *drvthis);
 

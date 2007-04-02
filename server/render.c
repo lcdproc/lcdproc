@@ -44,22 +44,22 @@ static int heartbeat_fallback = HEARTBEAT_ON; /* If no heartbeat setting has bee
 int backlight = BACKLIGHT_OPEN;
 static int backlight_fallback = BACKLIGHT_ON; /* If no backlight setting has been set at all */
 int output_state = 0;
-char * server_msg_text;
+char *server_msg_text;
 int server_msg_expire = 0;
 
 static int reset;
 
 #define BUFSIZE 1024
 
-static int render_frame (LinkedList * list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, long int timer);
+static int render_frame(LinkedList *list, char fscroll, int left, int top, int right, int bottom, int fwid, int fhgt, int fspeed, long int timer);
 
 int
-render_screen (Screen * s, long int timer)
+render_screen(Screen *s, long int timer)
 {
-	static Screen * old_s = NULL;
+	static Screen *old_s = NULL;
 	int tmp_state = 0;
 
-	debug(RPT_DEBUG, "%s( screen=[%.40s], timer=%d )  ==== START RENDERING ====", __FUNCTION__, s->id, timer );
+	debug(RPT_DEBUG, "%s(screen=[%.40s], timer=%d)  ==== START RENDERING ====", __FUNCTION__, s->id, timer);
 
 	reset = 1;
 
@@ -71,7 +71,7 @@ render_screen (Screen * s, long int timer)
 	old_s = s;
 
 	/* Clear the LCD screen... */
-	drivers_clear ();
+	drivers_clear();
 
 	/* FIXME drivers_backlight --
 	 *
@@ -94,32 +94,32 @@ render_screen (Screen * s, long int timer)
 	/* NOTE: dirty stripping of other options... */
 	/* Backlight flash: check timer and flip backlight as appropriate */
 	if (tmp_state & BACKLIGHT_FLASH) {
-		drivers_backlight (
+		drivers_backlight(
 			(
 				(tmp_state & BACKLIGHT_ON)
 				^ ((timer & 7) == 7)
-			) ? BACKLIGHT_ON : BACKLIGHT_OFF );
+			) ? BACKLIGHT_ON : BACKLIGHT_OFF);
 	/* Backlight blink: check timer and flip backlight as appropriate */
 	}
 	else if (tmp_state & BACKLIGHT_BLINK) {
-		drivers_backlight (
+		drivers_backlight(
 			(
 				(tmp_state & BACKLIGHT_ON)
 				^ ((timer & 14) == 14)
-			) ? BACKLIGHT_ON : BACKLIGHT_OFF );
+			) ? BACKLIGHT_ON : BACKLIGHT_OFF);
 	} else {
 		/* Simple: Only send lowest bit then...*/
-		drivers_backlight (tmp_state & BACKLIGHT_ON);
+		drivers_backlight(tmp_state & BACKLIGHT_ON);
 	}
 
 	/* Output ports from LCD - outputs depend on the current screen */
-	drivers_output (output_state);
+	drivers_output(output_state);
 
 	/* Draw a frame... */
-	render_frame (s->widgetlist, 'v', 0, 0, display_props->width, display_props->height, s->width, s->height, (((s->duration / s->height) < 1) ? 1 : (s->duration / s->height)), timer);
+	render_frame(s->widgetlist, 'v', 0, 0, display_props->width, display_props->height, s->width, s->height, (((s->duration / s->height) < 1) ? 1 : (s->duration / s->height)), timer);
 
 	/* Set the cursor */
-	drivers_cursor (s->cursor_x, s->cursor_y, s->cursor);
+	drivers_cursor(s->cursor_x, s->cursor_y, s->cursor);
 
 	if (heartbeat != HEARTBEAT_OPEN) {
 		tmp_state = heartbeat;
@@ -133,19 +133,19 @@ render_screen (Screen * s, long int timer)
 	drivers_heartbeat(tmp_state);
 
 	/* If there is an server message that is not expired, display it */
-	if( server_msg_expire > 0 ) {
-		drivers_string( display_props->width - strlen(server_msg_text) + 1,
-				display_props->height, server_msg_text );
+	if (server_msg_expire > 0) {
+		drivers_string(display_props->width - strlen(server_msg_text) + 1,
+				display_props->height, server_msg_text);
 		server_msg_expire --;
-		if( server_msg_expire == 0 ) {
-			free( server_msg_text );
+		if (server_msg_expire == 0) {
+			free(server_msg_text);
 		}
 	}
 
 	/* flush display out, frame and all... */
-	drivers_flush ();
+	drivers_flush();
 
-	debug(RPT_DEBUG, "==== END RENDERING ====" );
+	debug(RPT_DEBUG, "==== END RENDERING ====");
 	return 0;
 
 }
@@ -154,7 +154,7 @@ render_screen (Screen * s, long int timer)
 /* Best thing to do is to remove support for frames... but anyway... */
 /* */
 static int
-render_frame (LinkedList * list,
+render_frame(LinkedList *list,
 		char fscroll,	/* direction of scrolling */
 		int left,	/* left edge of frame */
 		int top,	/* top edge of frame */
@@ -177,10 +177,10 @@ render_frame (LinkedList * list,
 	int str_length = BUFSIZE-1;
 	int reset = 1;
 
-	debug( RPT_DEBUG, "%s( list=%p, fscroll='%c', left=%d, top=%d, "
-			  "right=%d, bottom=%d, fwid=%d, fhgt=%d, fspeed=%d, timer=%d )",
+	debug(RPT_DEBUG, "%s(list=%p, fscroll='%c', left=%d, top=%d, "
+			  "right=%d, bottom=%d, fwid=%d, fhgt=%d, fspeed=%d, timer=%d)",
 			  __FUNCTION__, list, fscroll, left,top, right, bottom,
-			  fwid, fhgt, fspeed, timer );
+			  fwid, fhgt, fspeed, timer);
 
 	/* return on no data or illegal height */
 	if (!list || (fhgt <= 0))
@@ -203,12 +203,12 @@ render_frame (LinkedList * list,
 	}
 
 	/* reset widget list */
-	LL_Rewind (list);
+	LL_Rewind(list);
 
 	/* loop over all widgets */
 	do {
 		char str[BUFSIZE];			/* scratch buffer */
-		Widget *w = (Widget *) LL_Get (list);
+		Widget *w = (Widget *) LL_Get(list);
 
 		if (!w)
 			return -1;
@@ -220,9 +220,9 @@ render_frame (LinkedList * list,
 				    (w->y <= vis_height + fy) && (w->y > fy)) {
 					w->x = min(w->x, vis_width);
 					str_length = min(vis_width - w->x + 1, BUFSIZE - 1);
-					strncpy (str, w->text, str_length);
+					strncpy(str, w->text, str_length);
 					str[str_length] = 0;
-					drivers_string (w->x + left, w->y + top - fy, str);
+					drivers_string(w->x + left, w->y + top - fy, str);
 				}
 				break;
 			case WID_HBAR:
@@ -233,17 +233,17 @@ render_frame (LinkedList * list,
 				    (w->y <= vis_height + fy) && (w->y > fy)) {
 					if (w->length > 0) {
 						if ((w->length / display_props->cellwidth) < vis_width - w->x + 1) {
-							/*was: drivers_hbar (w->x + left, w->y + top - fy, w->length); */
+							/*was: drivers_hbar(w->x + left, w->y + top - fy, w->length); */
 							/* improvised len and promille */
 							int full_len = display_props->width - w->x - left + 1;
-							int promille = (long) 1000 * w->length / ( display_props->cellwidth * full_len );
-							drivers_hbar (w->x + left, w->y + top - fy, full_len, promille, BAR_PATTERN_FILLED);
+							int promille = (long) 1000 * w->length / (display_props->cellwidth * full_len);
+							drivers_hbar(w->x + left, w->y + top - fy, full_len, promille, BAR_PATTERN_FILLED);
 						}
 						else {
-							/*was: drivers_hbar (w->x + left, w->y + top - fy, wid * display_props->cellwidth); */
+							/*was: drivers_hbar(w->x + left, w->y + top - fy, wid * display_props->cellwidth); */
 							/* Improvised len and promille while we have the old widget language */
-							int full_len = ( display_props->width - w->x - left + 1 );
-							drivers_hbar (w->x + left, w->y + top - fy, full_len, 1000, BAR_PATTERN_FILLED);
+							int full_len = (display_props->width - w->x - left + 1);
+							drivers_hbar(w->x + left, w->y + top - fy, full_len, 1000, BAR_PATTERN_FILLED);
 						}
 					} else if (w->length < 0) {
 						/* TODO:  Rearrange stuff to get left-extending
@@ -263,7 +263,7 @@ render_frame (LinkedList * list,
 						/* Improvised len and promille while we have the old widget language */
 						int full_len = display_props->height;
 						int promille = (long) 1000 * w->length / display_props->cellheight / full_len;
-						drivers_vbar (w->x, display_props->height, full_len, promille, BAR_PATTERN_FILLED);
+						drivers_vbar(w->x, display_props->height, full_len, promille, BAR_PATTERN_FILLED);
 					} else if (w->length < 0) {
 						/* TODO:  Rearrange stuff to get down-extending
 						 * vbars to draw correctly...
@@ -274,7 +274,7 @@ render_frame (LinkedList * list,
 				}
 				break;
 			case WID_ICON:
-				drivers_icon (w->x, w->y, w->length);
+				drivers_icon(w->x, w->y, w->length);
 
 				break;
 			case WID_TITLE:			  /* FIXME:  Doesn't work quite right in frames...*/
@@ -283,13 +283,13 @@ render_frame (LinkedList * list,
 				if (vis_width < 8)
 					break;
 
-				drivers_icon (w->x + left, w->y + top, ICON_BLOCK_FILLED);
-				drivers_icon (w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
+				drivers_icon(w->x + left, w->y + top, ICON_BLOCK_FILLED);
+				drivers_icon(w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
 
-				length = strlen (w->text);
+				length = strlen(w->text);
 				length = min(length, BUFSIZE - 1);
 				if (length <= vis_width - 6) {
-					strncpy (str, w->text, length);
+					strncpy(str, w->text, length);
 					str[length] = 0;
 					x = length + 5;
 				} else					  /* Scroll the title, if it doesn't fit...*/
@@ -307,15 +307,15 @@ render_frame (LinkedList * list,
 						x = (length - (vis_width - 6)) - x;
 					str_length = abs(vis_width - 6);
 					str_length = min(str_length, BUFSIZE -1);
-					strncpy (str, w->text + x, str_length);
+					strncpy(str, w->text + x, str_length);
 					str[str_length] = 0;
 					x = vis_width - 1;
 				}
 
-				drivers_string (w->x + 3 + left, w->y + top, str);
+				drivers_string(w->x + 3 + left, w->y + top, str);
 
 				for (; x<=vis_width; x++) {
-					drivers_icon (w->x + x - 1 + left, w->y + top, ICON_BLOCK_FILLED);
+					drivers_icon(w->x + x - 1 + left, w->y + top, ICON_BLOCK_FILLED);
 				}
 
 				break;
@@ -336,10 +336,10 @@ render_frame (LinkedList * list,
 						 * last letter in the string...  (1-off error?)
 						 */
 					case 'm': // Marquee
-						length = strlen (w->text);
+						length = strlen(w->text);
 						if (length <= screen_width) {
 							/* it fits within the box, just render it */
-							drivers_string (w->left, w->top, w->text);
+							drivers_string(w->left, w->top, w->text);
 						} else {
 							int necessaryTimeUnits = 0;
 
@@ -355,11 +355,11 @@ render_frame (LinkedList * list,
 							if (offset <= length) {
 								int room = screen_width - (length - offset);
 
-								strncpy (str, &w->text[offset], screen_width);
+								strncpy(str, &w->text[offset], screen_width);
 
 								// if there's more room, restart at the beginning
 								if (room > 0) {
-									strncat (str, w->text, room);
+									strncat(str, w->text, room);
 								}
 
 								str[screen_width] = '\0';
@@ -368,14 +368,14 @@ render_frame (LinkedList * list,
 							} else {
 								str[0] = '\0';
 							}
-							drivers_string (w->left, w->top, str);
+							drivers_string(w->left, w->top, str);
 						}
 						break;
 					case 'h':
-						length = strlen (w->text) + 1;
+						length = strlen(w->text) + 1;
 						if (length <= screen_width) {
 							/* it fits within the box, just render it */
-							drivers_string (w->left, w->top, w->text);
+							drivers_string(w->left, w->top, w->text);
 						} else {
 							int effLength = length - screen_width;
 							int necessaryTimeUnits = 0;
@@ -405,13 +405,13 @@ render_frame (LinkedList * list,
 								offset = 0;
 							}
 							if (offset <= length) {
-								strncpy (str, &((w->text)[offset]), screen_width);
+								strncpy(str, &((w->text)[offset]), screen_width);
 								str[screen_width] = '\0';
 								/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset); */
 							} else {
 								str[0] = '\0';
 							}
-							drivers_string (w->left, w->top, str);
+							drivers_string(w->left, w->top, str);
 						}
 						break;
 						/* FIXME:  Vert scrollers don't always seem to scroll */
@@ -421,10 +421,10 @@ render_frame (LinkedList * list,
 						{
 							int i = 0;
 
-							length = strlen (w->text);
+							length = strlen(w->text);
 							if (length <= screen_width) {
 								/* no scrolling required... */
-								drivers_string (w->left, w->top, w->text);
+								drivers_string(w->left, w->top, w->text);
 							} else {
 								int lines_required = (length / screen_width)
 									 + (length % screen_width ? 1 : 0);
@@ -433,7 +433,7 @@ render_frame (LinkedList * list,
 								if (lines_required <= available_lines) {
 									/* easy...*/
 									for (i = 0; i < lines_required; i++) {
-										strncpy (str, &((w->text)[i * screen_width]), screen_width);
+										strncpy(str, &((w->text)[i * screen_width]), screen_width);
 										str[screen_width] = '\0';
 										drivers_string (w->left, w->top + i, str);
 									}
@@ -470,11 +470,11 @@ render_frame (LinkedList * list,
 									}
 									/*debug(RPT_DEBUG, "rendering begin: %d  timer: %d effLines: %d",begin,timer,effLines); */
 									for (i = begin; i < begin + available_lines; i++) {
-										strncpy (str, &((w->text)[i * (screen_width)]), screen_width);
+										strncpy(str, &((w->text)[i * (screen_width)]), screen_width);
 										str[screen_width] = '\0';
 										/*debug(RPT_DEBUG, "rendering: '%s' of %s", */
 										/*str,w->text); */
-										drivers_string (w->left, w->top + (i - begin), str);
+										drivers_string(w->left, w->top + (i - begin), str);
 									}
 								}
 							}
@@ -494,7 +494,7 @@ render_frame (LinkedList * list,
 					int new_bottom = min(top + w->bottom, bottom);
 
 					if ((new_left < right) && (new_top < bottom))	/* Render only if it's visible...*/
-						render_frame (w->frame_screen->widgetlist, w->length, new_left, new_top, new_right, new_bottom, w->width, w->height, w->speed, timer);
+						render_frame(w->frame_screen->widgetlist, w->length, new_left, new_top, new_right, new_bottom, w->width, w->height, w->speed, timer);
 				}
 				break;
 			case WID_NUM:				  /* FIXME: doesn't work in frames...*/
@@ -503,37 +503,37 @@ render_frame (LinkedList * list,
 					if (reset) {
 						reset = 0;
 					}
-					drivers_num (w->x + left, w->y);
+					drivers_num(w->x + left, w->y);
 				}
 				break;
 			case WID_NONE:
 			default:
 				break;
 		}
-	} while (LL_Next (list) == 0);
+	} while (LL_Next(list) == 0);
 
 	return 0;
 }
 
 int
-server_msg( const char * text, int expire )
+server_msg(const char *text, int expire)
 {
-	debug( RPT_DEBUG, "%s( text=\"%.40s\", expire=%d )", __FUNCTION__, text, expire );
+	debug(RPT_DEBUG, "%s(text=\"%.40s\", expire=%d)", __FUNCTION__, text, expire);
 
-	if( strlen(text) > 15 || expire <= 0 ) {
+	if (strlen(text) > 15 || expire <= 0) {
 		return -1;
 	}
 
 	/* Still a message active ? */
 
-	if( server_msg_expire > 0 ) {
-		free( server_msg_text );
+	if (server_msg_expire > 0) {
+		free(server_msg_text);
 	}
 
 	/* Store new message */
-	server_msg_text = malloc( strlen(text) + 3 );
-	strcpy( server_msg_text, "| " );
-	strcat( server_msg_text, text );
+	server_msg_text = malloc(strlen(text) + 3);
+	strcpy(server_msg_text, "| ");
+	strcat(server_msg_text, text);
 
 	server_msg_expire = expire;
 

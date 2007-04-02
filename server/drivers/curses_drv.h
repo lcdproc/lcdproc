@@ -3,13 +3,13 @@
 
 #include "lcd.h"
 
-MODULE_EXPORT int  curses_init (Driver * drvthis);
+MODULE_EXPORT int  curses_init (Driver *drvthis);
 MODULE_EXPORT void curses_close (Driver *drvthis);
 MODULE_EXPORT int  curses_width (Driver *drvthis);
 MODULE_EXPORT int  curses_height (Driver *drvthis);
 MODULE_EXPORT void curses_clear (Driver *drvthis);
 MODULE_EXPORT void curses_flush (Driver *drvthis);
-MODULE_EXPORT void curses_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void curses_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void curses_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void curses_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);

@@ -35,7 +35,7 @@ MODULE_EXPORT int  glcdlib_width (Driver *drvthis);
 MODULE_EXPORT int  glcdlib_height (Driver *drvthis);
 MODULE_EXPORT void glcdlib_clear (Driver *drvthis);
 MODULE_EXPORT void glcdlib_flush (Driver *drvthis);
-MODULE_EXPORT void glcdlib_string (Driver *drvthis, int x, int y, char string[]);
+MODULE_EXPORT void glcdlib_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void glcdlib_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT int  glcdlib_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT int  glcdlib_cellwidth (Driver *drvthis);

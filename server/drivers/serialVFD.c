@@ -129,11 +129,11 @@ serialVFD_init (Driver *drvthis)
 	p->refresh_timer = 480;
 	p->hw_brightness = 0;
 
-	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis );
+	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis);
 	
 /* Read config file */
 
-	p->use_parallel	= drvthis->config_get_bool( drvthis->name, "use_parallel", 0, 0 );
+	p->use_parallel	= drvthis->config_get_bool(drvthis->name, "use_parallel", 0, 0);
 	
 		/* Which device should be used */
 		strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
@@ -141,12 +141,12 @@ serialVFD_init (Driver *drvthis)
 		report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
 	if (p->use_parallel) {
-		p->port	= drvthis->config_get_int( drvthis->name, "port", 0, LPTPORT );
+		p->port	= drvthis->config_get_int(drvthis->name, "port", 0, LPTPORT);
 	}
 	else {
 
 		/* Which speed */
-		tmp = drvthis->config_get_int (drvthis->name, "Speed", 0, DEFAULT_SPEED);
+		tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
 		if ((tmp != 1200) && (tmp != 2400) && (tmp != 9600) && (tmp != 19200) && (tmp != 115200)) {
 			report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default %d.\n",
 				drvthis->name, DEFAULT_SPEED);
@@ -158,7 +158,7 @@ serialVFD_init (Driver *drvthis)
 		else if (tmp == 19200) p->speed = B19200;
 		else if (tmp == 115200) p->speed = B115200;
 	}
-//	report(RPT_ERR, "%s: Port: %X\n", __FUNCTION__, p->port, strerror (errno));
+//	report(RPT_ERR, "%s: Port: %X\n", __FUNCTION__, p->port, strerror(errno));
 
 	/* Which size */
 	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
@@ -206,7 +206,7 @@ serialVFD_init (Driver *drvthis)
 	p->display_type = tmp;
 
 	/* Number of custom characters */
-	tmp = drvthis->config_get_int (drvthis->name, "Custom-Characters", 0, -83);
+	tmp = drvthis->config_get_int(drvthis->name, "Custom-Characters", 0, -83);
 	if ((tmp < 0) || (tmp > 99)) {
 		report(RPT_WARNING, "%s: The number of Custom-Characters must be between 0 and 99. Using default.",
 			drvthis->name, 0);
@@ -215,10 +215,10 @@ serialVFD_init (Driver *drvthis)
 	p->customchars = tmp;
 
 
-//	report (RPT_ERR, "%s: Port: %X\n", __FUNCTION__, p->port, strerror (errno));
+//	report(RPT_ERR, "%s: Port: %X\n", __FUNCTION__, p->port, strerror(errno));
 
 // Do connection type specific io-port init
-	if (Port_Function[p->use_parallel].init_fkt (drvthis) == -1) {
+	if (Port_Function[p->use_parallel].init_fkt(drvthis) == -1) {
 		report(RPT_ERR, "%s: unable to initialize io-port.", drvthis->name);
 		return -1;
 	}
@@ -243,11 +243,11 @@ serialVFD_init (Driver *drvthis)
 //setup displayspecific data
 	serialVFD_load_display_data(drvthis);
 
-//	report (RPT_ERR, "%s: Port: %X\n", drvthis->name, p->port, strerror (errno));
+//	report(RPT_ERR, "%s: Port: %X\n", drvthis->name, p->port, strerror(errno));
 
 //initialise display
-	Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[reset][1],p->hw_cmd[reset][0]);
-	Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
+	Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[reset][1],p->hw_cmd[reset][0]);
+	Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
 	serialVFD_backlight(drvthis, 1);
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 	return 0;
@@ -304,9 +304,9 @@ serialVFD_backlight (Driver *drvthis, int on)
 	// map range [0, 1000] -> [0, 4] that the hardware understands
 	//(4 steps 0-250, 251-500, 501-750, 751-1000)
 	hardware_value /= 251;
-	if(hardware_value != p->hw_brightness){
-		p->hw_brightness=hardware_value;
-		Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[p->hw_brightness][1],\
+	if (hardware_value != p->hw_brightness) {
+		p->hw_brightness = hardware_value;
+		Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[p->hw_brightness][1],\
 		p->hw_cmd[p->hw_brightness][0]);
 		}
 
@@ -322,11 +322,11 @@ serialVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int option
 {
 	PrivateData *p = drvthis->private_data;
 
-	if (p->customchars >= p->cellheight || p->predefined_vbar == 1){
+	if (p->customchars >= p->cellheight || p->predefined_vbar == 1) {
 		serialVFD_init_vbar(drvthis);
 		lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, p->vbar_cc_offset);
 	}
-	else{
+	else {
 		lib_vbar_static(drvthis, x, y, len, promille, options, 2, 0x5E);
 	}
 }
@@ -340,11 +340,11 @@ serialVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 {
 	PrivateData *p = drvthis->private_data;
 
-	if (p->customchars >= p->cellwidth || p->predefined_hbar == 1){
+	if (p->customchars >= p->cellwidth || p->predefined_hbar == 1) {
 		serialVFD_init_hbar(drvthis);
 		lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, p->hbar_cc_offset);
 	}
-	else{
+	else {
 		lib_hbar_static(drvthis, x, y, len, promille, options, 2, 0x2C);
 	}
 }
@@ -391,10 +391,10 @@ serialVFD_put_char (Driver *drvthis, int n)
 {	// put char in display
 	PrivateData *p = drvthis->private_data;
 
-	Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[set_user_char][1],\
+	Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[set_user_char][1],\
 		p->hw_cmd[set_user_char][0]);// substitute and select Character to overwrite
-	Port_Function[p->use_parallel].write_fkt (drvthis, (char*)&p->usr_chr_mapping[n], 1);
-	Port_Function[p->use_parallel].write_fkt (drvthis, &p->custom_char[n][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
+	Port_Function[p->use_parallel].write_fkt(drvthis, (char*)&p->usr_chr_mapping[n], 1);
+	Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[n][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
 }
 
 
@@ -415,37 +415,37 @@ serialVFD_flush (Driver *drvthis)
 	for (i = 0; i < p->customchars; i++) {
 		for (j = 0; j < p->usr_chr_dot_assignment[0]; j++) {
 			if (p->custom_char[i][j] != p->custom_char_store[i][j]) {
-				custom_char_changed[i]=1;
-//				report (RPT_ERR, "%s: Char: %X   %i\n", __FUNCTION__, i, j, strerror (errno));
+				custom_char_changed[i] = 1;
+//				report(RPT_ERR, "%s: Char: %X   %i\n", __FUNCTION__, i, j, strerror(errno));
 				}
-			p->custom_char_store[i][j]=p->custom_char[i][j];
+			p->custom_char_store[i][j] = p->custom_char[i][j];
 		}
 	}
 
 	if (p->refresh_timer > 500) { // Do a full refresh every 500 refreshs.
 	// With this it is possible to switch display on and off while lcdproc is running
-		Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
+		Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
 
-		Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[p->hw_brightness][1],\
+		Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[p->hw_brightness][1],\
 		p->hw_cmd[p->hw_brightness][0]); // restore brightness
 
 		memset(p->backingstore, 0, p->width * p->height); // clear Backing-store
 
-		for(i=0;i<p->customchars;i++) // refresh all customcharacters
-			custom_char_changed[i]=1;
+		for (i = 0; i < p->customchars; i++) // refresh all customcharacters
+			custom_char_changed[i] = 1;
 		p->refresh_timer = 0;
 	}
 
 	p->refresh_timer++;
 
 	if (p->display_type != 1) { //not KD Rev 2.1
-		for(i=0;i<p->customchars;i++) // set customcharacters
-			if(custom_char_changed[i])
-				serialVFD_put_char (drvthis, i);
+		for (i = 0; i < p->customchars; i++) // set customcharacters
+			if (custom_char_changed[i])
+				serialVFD_put_char(drvthis, i);
 		}
 
-	if(custom_char_changed[p->last_custom])
-		p->last_custom=-10;
+	if (custom_char_changed[p->last_custom])
+		p->last_custom = -10;
 
 	for (i = 0; i < (p->height * p->width); i++) {
 
@@ -453,37 +453,38 @@ serialVFD_flush (Driver *drvthis)
 		 * on the screen, don't put it there again
 		 */
 
-		if(p->framebuf[i] != p->backingstore[i] || (p->framebuf[i] <=30 && custom_char_changed[(int)p->framebuf[i]])) {
-			if (last_chr < i-1){ // if not last char written cursor has to be moved.
-				if(last_chr < i-2-p->hw_cmd[mv_cursor][0]) {
-					Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[mv_cursor][1],\
+		if ((p->framebuf[i] != p->backingstore[i]) ||
+		    ((p->framebuf[i] <= 30) && (custom_char_changed[(int)p->framebuf[i]]))) {
+			if (last_chr < i-1) { // if not last char written cursor has to be moved.
+				if (last_chr < i-2-p->hw_cmd[mv_cursor][0]) {
+					Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[mv_cursor][1],\
 						p->hw_cmd[mv_cursor][0]);
-					Port_Function[p->use_parallel].write_fkt (drvthis, (char*)&i, 1);
+					Port_Function[p->use_parallel].write_fkt(drvthis, (char*)&i, 1);
 					}
 				else {
 					for (j = last_chr; j < (i-1); j++)
-						Port_Function[p->use_parallel].write_fkt (drvthis, &p->hw_cmd[hor_tab][1], p->hw_cmd[hor_tab][0]);
+						Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[hor_tab][1], p->hw_cmd[hor_tab][0]);
 				}
 			}
 
-			if(p->framebuf[i] <= 30) { // custom character
+			if (p->framebuf[i] <= 30) { // custom character
 				if (p->display_type == 1) { // KD Rev 2.1 only
-					if (p->last_custom != p->framebuf[i]){
-						Port_Function[p->use_parallel].write_fkt (drvthis, "\x1A\xDB", 2);		// substitute and select character to overwrite (237)
-						Port_Function[p->use_parallel].write_fkt (drvthis, &p->custom_char[(int)p->framebuf[i]][0], 7);// overwrite selected character
+					if (p->last_custom != p->framebuf[i]) {
+						Port_Function[p->use_parallel].write_fkt(drvthis, "\x1A\xDB", 2);		// substitute and select character to overwrite (237)
+						Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[(int)p->framebuf[i]][0], 7);// overwrite selected character
 						}
-					Port_Function[p->use_parallel].write_fkt (drvthis, "\xDB", 1);			// write character
+					Port_Function[p->use_parallel].write_fkt(drvthis, "\xDB", 1);			// write character
 					p->last_custom = p->framebuf[i];
 				}
 				else {	// all other displays
-					Port_Function[p->use_parallel].write_fkt (drvthis, (char*)&p->usr_chr_mapping[(int)p->framebuf[i]], 1);
+					Port_Function[p->use_parallel].write_fkt(drvthis, (char*)&p->usr_chr_mapping[(int)p->framebuf[i]], 1);
 				}
 			}
-			else if(p->framebuf[i] > 127 && (p->ISO_8859_1 != 0)) { // ISO_8859_1 translation for 129 ... 255
-				Port_Function[p->use_parallel].write_fkt (drvthis, &p->charmap[p->framebuf[i] - 128], 1);
+			else if (p->framebuf[i] > 127 && (p->ISO_8859_1 != 0)) { // ISO_8859_1 translation for 129 ... 255
+				Port_Function[p->use_parallel].write_fkt(drvthis, &p->charmap[p->framebuf[i] - 128], 1);
 			}
 			else {
-				Port_Function[p->use_parallel].write_fkt (drvthis, &p->framebuf[i], 1);
+				Port_Function[p->use_parallel].write_fkt(drvthis, &p->framebuf[i], 1);
 			}
 
 			last_chr = i;
@@ -496,7 +497,7 @@ serialVFD_flush (Driver *drvthis)
 
 
 MODULE_EXPORT void
-serialVFD_num( Driver * drvthis, int x, int num )
+serialVFD_num(Driver * drvthis, int x, int num)
 {
 	PrivateData *p = drvthis->private_data;
 	int do_init = 0;
@@ -544,7 +545,7 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 			serialVFD_chr(drvthis, x, y, 127);
 			break;
 		case ICON_HEART_FILLED:
-			if (p->customchars > 0){
+			if (p->customchars > 0) {
 		        	p->ccmode = CCMODE_STANDARD;
 				serialVFD_set_char(drvthis, 0, heart_filled);
 				serialVFD_chr(drvthis, x, y, 0);
@@ -553,7 +554,7 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 				serialVFD_icon(drvthis, x, y, ICON_BLOCK_FILLED);
 			break;
 		case ICON_HEART_OPEN:
-			if (p->customchars > 0){
+			if (p->customchars > 0) {
 				p->ccmode = CCMODE_STANDARD;
 				serialVFD_set_char(drvthis, 0, heart_open);
 				serialVFD_chr(drvthis, x, y, 0);
@@ -637,7 +638,7 @@ serialVFD_clear (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (20,4).
 //
 MODULE_EXPORT void
-serialVFD_string (Driver *drvthis, int x, int y, char string[])
+serialVFD_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -660,7 +661,7 @@ serialVFD_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	if (p != NULL) {
-		Port_Function[p->use_parallel].close_fkt (drvthis);
+		Port_Function[p->use_parallel].close_fkt(drvthis);
 		if (p->framebuf)
 			free(p->framebuf);
 		if (p->backingstore)

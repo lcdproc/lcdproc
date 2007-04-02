@@ -262,7 +262,7 @@ glcdlib_flush (Driver *drvthis)
 // upper-left is (1,1), and the lower right should be (20,6).
 //
 MODULE_EXPORT void
-glcdlib_string (Driver *drvthis, int x, int y, char string[])
+glcdlib_string (Driver *drvthis, int x, int y, const char string[])
 {
 	debug(RPT_DEBUG, "String out");
 	y--;

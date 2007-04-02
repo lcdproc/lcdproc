@@ -18,19 +18,19 @@
 /* extern LinkedList *clientlist;   Not needed outside ? */
 
 /* Initialize and kill client list...*/
-int clients_init ();
-int clients_shutdown ();
+int clients_init(void);
+int clients_shutdown(void);
 
 /* Add/remove clients (return -1 for error) */
-int clients_add_client (Client *c);
-int clients_remove_client (Client *c);
+int clients_add_client(Client *c);
+int clients_remove_client(Client *c);
 
 /* List functions */
-Client * clients_getfirst ();
-Client * clients_getnext ();
-int clients_client_count ();
+Client *clients_getfirst(void);
+Client *clients_getnext(void);
+int clients_client_count(void);
 
 /* Search for a client with a particular filedescriptor...*/
-Client * clients_find_client_by_sock (int sock);
+Client * clients_find_client_by_sock(int sock);
 
 #endif

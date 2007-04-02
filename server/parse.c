@@ -48,7 +48,7 @@ static inline int is_closing_quote(char x, char q) {
 }
 
 
-static int parse_message (const char *str, Client *c)
+static int parse_message(const char *str, Client *c)
 {
 	typedef enum { ST_INITIAL, ST_WHITESPACE, ST_ARGUMENT, ST_FINAL } State;
 	State state = ST_INITIAL;
@@ -62,14 +62,14 @@ static int parse_message (const char *str, Client *c)
 	int argpos = 0;
 	CommandFunc function = NULL;
 
-	debug( RPT_DEBUG, "%s( str=\"%.120s\", client=[%d] )", __FUNCTION__, str, c->sock );
+	debug(RPT_DEBUG, "%s(str=\"%.120s\", client=[%d])", __FUNCTION__, str, c->sock);
 
 	/* We will create a list of strings that is shorter or equally long as
 	 * the original string str.
 	 */
 	arg_space = malloc(strlen(str)+1);
 	if (arg_space == NULL) {
-		report (RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
+		report(RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
 		sock_send_error(c->sock, "error allocating memory!\n");
 	}
 
@@ -109,7 +109,7 @@ static int parse_message (const char *str, Client *c)
 			 		/* We solve quoted chars here right away */
 					const char escape_chars[] = "nrt";
 					const char escape_trans[] = "\n\r\t";
-			 		char *p = strchr( escape_chars, str[pos] );
+			 		char *p = strchr(escape_chars, str[pos]);
 
 					/* Is it wise to have the characters \n, \r & \t expanded ?
 					 * Can the displays deal with them ?
@@ -183,7 +183,7 @@ static int parse_message (const char *str, Client *c)
 
 	if (error) {
 		sock_send_error(c->sock, "Could not parse command\n");
-		free( arg_space  );
+		free(arg_space);
 		return 0;
 	}
 
@@ -198,37 +198,37 @@ static int parse_message (const char *str, Client *c)
 	function = get_command_function(argv[0]);
 
 	if (function != NULL) {
-		error = function (c, argc, argv);
+		error = function(c, argc, argv);
 		if (error) {
 			sock_printf_error(c->sock, "Function returned error \"%.40s\"\n", argv[0]);
-			report( RPT_WARNING, "Command function returned an error after command from client on socket %d: %.40s", c->sock, str );
+			report(RPT_WARNING, "Command function returned an error after command from client on socket %d: %.40s", c->sock, str);
 		}	
 	}
 	else {
 		sock_printf_error(c->sock, "Invalid command \"%.40s\"\n", argv[0]);
-		report( RPT_WARNING, "Invalid command from client on socket %d: %.40s", c->sock, str );
+		report(RPT_WARNING, "Invalid command from client on socket %d: %.40s", c->sock, str);
 	}
 
-	free( arg_space );
+	free(arg_space);
 	return 0;
 }
 
 
 int
-parse_all_client_messages ()
+parse_all_client_messages(void)
 {
-	Client * c;
+	Client *c;
 
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	for (c = clients_getfirst(); c != NULL; c = clients_getnext()) {
-		char * str;
+		char *str;
 
 		/* And parse all its messages...*/
 		/*debug(RPT_DEBUG, "parse: Getting messages...");*/
-		for (str = client_get_message (c); str != NULL; str = client_get_message (c)) {
-			parse_message (str, c);
-			free (str);
+		for (str = client_get_message(c); str != NULL; str = client_get_message(c)) {
+			parse_message(str, c);
+			free(str);
 		}
 	}
 	return 0;

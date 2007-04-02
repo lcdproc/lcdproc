@@ -34,10 +34,10 @@ extern int heartbeat;
 extern int backlight;
 extern int output_state;
 
-int render_screen (Screen * s, long int timer);
+int render_screen(Screen *s, long int timer);
 	/* Renders the given screen. */
 
-int server_msg( const char * text, int expire );
+int server_msg(const char *text, int expire);
 	/* Displays a short message in a corner. Message must be shorter
 	 * than 16 chars. */
 

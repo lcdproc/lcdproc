@@ -118,7 +118,7 @@ MODULE_EXPORT char *symbol_prefix = "MTC_S16209X_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-MTC_S16209X_init (Driver * drvthis)
+MTC_S16209X_init (Driver *drvthis)
 {
   PrivateData *p;
   struct termios portset;
@@ -228,7 +228,7 @@ MTC_S16209X_init (Driver * drvthis)
 // Clean-up
 //
 MODULE_EXPORT void
-MTC_S16209X_close (Driver * drvthis)
+MTC_S16209X_close (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -258,7 +258,7 @@ MTC_S16209X_close (Driver * drvthis)
 // Returns the display width
 //
 MODULE_EXPORT int
-MTC_S16209X_width (Driver * drvthis)
+MTC_S16209X_width (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -269,7 +269,7 @@ MTC_S16209X_width (Driver * drvthis)
 // Returns the display height
 //
 MODULE_EXPORT int
-MTC_S16209X_height (Driver * drvthis)
+MTC_S16209X_height (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -280,7 +280,7 @@ MTC_S16209X_height (Driver * drvthis)
 // Returns the display's cell width
 //
 MODULE_EXPORT int
-MTC_S16209X_cellwidth (Driver * drvthis)
+MTC_S16209X_cellwidth (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -291,7 +291,7 @@ MTC_S16209X_cellwidth (Driver * drvthis)
 // Returns the display's cell height
 //
 MODULE_EXPORT int
-MTC_S16209X_cellheight (Driver * drvthis)
+MTC_S16209X_cellheight (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -302,7 +302,7 @@ MTC_S16209X_cellheight (Driver * drvthis)
 // Clears the LCD screen
 //
 MODULE_EXPORT void
-MTC_S16209X_clear (Driver * drvthis)
+MTC_S16209X_clear (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -314,7 +314,7 @@ MTC_S16209X_clear (Driver * drvthis)
 // Flushes the framebuffer to the LCD
 //
 MODULE_EXPORT void
-MTC_S16209X_flush (Driver * drvthis)
+MTC_S16209X_flush (Driver *drvthis)
 {
 /* TODO: Do we really have a flush for this thing? Do we need to? How do we do it? */
 /* TODO Update: yes, we need to buffer and flush - else the LCD looks slow, and flicker a lot */
@@ -353,7 +353,7 @@ MTC_S16209X_flush (Driver * drvthis)
 // upper-left is (1,1), and the lower right should be (16,2).
 //
 MODULE_EXPORT void
-MTC_S16209X_chr (Driver * drvthis, int x, int y, char c)
+MTC_S16209X_chr (Driver *drvthis, int x, int y, char c)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -371,7 +371,7 @@ MTC_S16209X_chr (Driver * drvthis, int x, int y, char c)
 // an intermediate brightness...
 //
 MODULE_EXPORT void
-MTC_S16209X_backlight (Driver * drvthis, int on)
+MTC_S16209X_backlight (Driver *drvthis, int on)
 {
 /* TODO: Can the backlights be controlled? Can't find anything in the docs */
   //PrivateData *p = drvthis->private_data;
@@ -384,7 +384,7 @@ MTC_S16209X_backlight (Driver * drvthis, int on)
 // Get rid of the blinking cursor
 //
 static void
-MTC_S16209X_hidecursor (Driver * drvthis)
+MTC_S16209X_hidecursor (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   int result;
@@ -406,7 +406,7 @@ MTC_S16209X_hidecursor (Driver * drvthis)
 // Reset the display bios
 //
 static void
-MTC_S16209X_reboot (Driver * drvthis)
+MTC_S16209X_reboot (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   int result;
@@ -418,7 +418,7 @@ MTC_S16209X_reboot (Driver * drvthis)
 #endif // CAN_REBOOT_LCD
 
 MODULE_EXPORT void
-MTC_S16209X_string (Driver * drvthis, int x, int y, char string[])
+MTC_S16209X_string (Driver *drvthis, int x, int y, const char string[])
 {
   PrivateData *p = drvthis->private_data;
   int i;
@@ -439,7 +439,7 @@ MTC_S16209X_string (Driver * drvthis, int x, int y, char string[])
 // Sets up for vertical bars.  Call before MTC_S16209X->vbar()
 //
 static void
-MTC_S16209X_init_vbar (Driver * drvthis)
+MTC_S16209X_init_vbar (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   static char a[] = {
@@ -529,7 +529,7 @@ MTC_S16209X_init_vbar (Driver * drvthis)
 // Inits horizontal bars...
 //
 static void
-MTC_S16209X_init_hbar (Driver * drvthis)
+MTC_S16209X_init_hbar (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   static char a[] = {
@@ -597,7 +597,7 @@ MTC_S16209X_init_hbar (Driver * drvthis)
 // Draws a vertical bar...
 //
 MODULE_EXPORT void
-MTC_S16209X_vbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+MTC_S16209X_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -610,7 +610,7 @@ MTC_S16209X_vbar (Driver * drvthis, int x, int y, int len, int promille, int opt
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-MTC_S16209X_hbar (Driver * drvthis, int x, int y, int len, int promille, int options)
+MTC_S16209X_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
   PrivateData *p = drvthis->private_data;
 
@@ -628,7 +628,7 @@ MTC_S16209X_hbar (Driver * drvthis, int x, int y, int len, int promille, int opt
 // The input is just an array of characters...
 //
 MODULE_EXPORT void
-MTC_S16209X_set_char (Driver * drvthis, int n, char *dat)
+MTC_S16209X_set_char (Driver *drvthis, int n, char *dat)
 {
   PrivateData *p = drvthis->private_data;
   char out[4];
@@ -664,7 +664,7 @@ MTC_S16209X_set_char (Driver * drvthis, int n, char *dat)
 }
 
 MODULE_EXPORT int
-MTC_S16209X_icon (Driver * drvthis, int x, int y, int icon)
+MTC_S16209X_icon (Driver *drvthis, int x, int y, int icon)
 {
   //PrivateData *p = drvthis->private_data;
   static char heart_open[] = {
