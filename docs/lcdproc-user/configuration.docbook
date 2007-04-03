@@ -19,7 +19,7 @@ your system's package manager list all the files in the <package>LCDproc</packag
 </note>
 
 <para>
-The format of the <filename>/etc/LCDd.conf</filename> is ini-file-like.
+The format of the <filename>/etc/LCDd.conf</filename> is INI-file like.
 </para>
 
 <para>

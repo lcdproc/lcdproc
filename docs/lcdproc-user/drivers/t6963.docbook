@@ -10,7 +10,7 @@ displays that can often act as a screen.
 <sect2 id="t6963-connections">
 <title>Connections</title>
 
-<table>
+<table id="t6963-connections.mapping">
 <title>T6963 wiring schematic</title>
 <tgroup cols="2">
   <thead>

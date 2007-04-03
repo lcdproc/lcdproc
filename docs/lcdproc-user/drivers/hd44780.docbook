@@ -6,23 +6,28 @@ There are several ways of wiring up the HD44780 devices. Your choice
 will probably be governed largely by your ability to wire up each one
 and/or a desire to use the device with other programs.
 </para>
+
 <para>
 The LCDproc HD44780 driver supports the following connections on a
 parallel port:
 </para>
+
 <itemizedlist>
-<listitem><para>4-bit</para></listitem>
-<listitem><para>8-bit (winamp style)</para></listitem>
-<listitem><para>extended 8-bit (LCD + LED bargraph)</para></listitem>
-<listitem><para>serial LPT</para></listitem>
+ <listitem><para>4-bit</para></listitem>
+ <listitem><para>8-bit (winamp style)</para></listitem>
+ <listitem><para>extended 8-bit (LCD + LED bargraph)</para></listitem>
+ <listitem><para>serial LPT</para></listitem>
 </itemizedlist>
+
 <para>
 It also supports the following connections:
 </para>
+
 <itemizedlist>
-<listitem><para>A PIC-an-LCD or LCD serializer connected to a serial port</para></listitem>
-<listitem><para>A I<superscript>2</superscript>C port expander connected to an I<superscript>2</superscript>C port</para></listitem>
+ <listitem><para>A PIC-an-LCD or LCD serializer connected to a serial port</para></listitem>
+ <listitem><para>A I<superscript>2</superscript>C port expander connected to an I<superscript>2</superscript>C port</para></listitem>
 </itemizedlist>
+
 <para>
 The driver also lets you use multiple displays as a single virtual
 display.  For example, a 4, 2 and 1 line display can be used to form a
@@ -48,41 +53,41 @@ connections. They are explaned here.
 All variants use the same method of obtaining power. i.e., for each LCD:
 </para>
 
-<table>
+<table id="hd44780-connections-power.table">
 <title>HD44780: Power Connections</title>
 <tgroup cols="3">
-<thead>
-<row>
-<entry>LCD</entry>
-<entry>pin</entry>
-<entry>signal</entry>
-</row>
-</thead>
-<tbody>
-<row>
-<entry>1</entry>
-<entry>GND</entry>
-<entry>(connect to any of pins 18 - 25 of you parallel port)</entry>
-</row>
-<row>
-<entry>2</entry>
-<entry>+5V</entry>
-<entry></entry>
-</row>
-<row>
-<entry>3</entry>
-<entry>Vadj</entry>
-<entry>(contrast)</entry>
-</row>
-</tbody>
+ <thead>
+  <row>
+   <entry>LCD</entry>
+   <entry>pin</entry>
+   <entry>signal</entry>
+  </row>
+ </thead>
+ <tbody>
+  <row>
+   <entry>1</entry>
+   <entry>GND</entry>
+   <entry>(connect to any of pins 18 - 25 of you parallel port)</entry>
+  </row>
+  <row>
+   <entry>2</entry>
+   <entry>+5V</entry>
+   <entry></entry>
+  </row>
+  <row>
+   <entry>3</entry>
+   <entry>Vadj</entry>
+   <entry>(contrast)</entry>
+  </row>
+ </tbody>
 </tgroup>
 </table>
 
 <warning>
-<para>
-Always double check your power connection, your display will probably
-NOT survive a reversely connected supply !
-</para>
+ <para>
+ Always double check your power connection, your display will probably
+ <emphasis>not</emphasis> survive a reversely connected supply !
+ </para>
 </warning>
 
 <para>
@@ -90,28 +95,28 @@ There are several ways to get 5V:
 </para>
 
 <itemizedlist>
-<listitem><para>
-Connect to a 5V line intented for disk drives (the red wire is 5V,
-black is GND).
-</para></listitem>
-<listitem><para>
-Get it from a joystick port (pin 1 and 9 are 5V, 4, 5 and 12 are GND).
-It seems that some soundcards can use these lines for communication,
-so if you want to use this first check wether it really gives a 'clean' 5V.
-</para></listitem>
-<listitem><para>
-If you don't have a backlight, you can sometimes get the needed mA's
-from the LPT port itself. Connect a few diodes from the data pins to
-a capacitor and you have the 5V. If it's strong enough is another question...
-</para></listitem>
-<listitem><para>
-Get it from the keyboard connector. I do not recommend to use this with
-a backlight, as the keyboard connector is often protected with a fuse
-of 100mA or 200mA.
-</para></listitem>
+ <listitem><para>
+  Connect to a 5V line intented for disk drives (the red wire is 5V,
+  black is GND).
+ </para></listitem>
+ <listitem><para>
+  Get it from a joystick port (pin 1 and 9 are 5V, 4, 5 and 12 are GND).
+  It seems that some soundcards can use these lines for communication,
+  so if you want to use this first check wether it really gives a 'clean' 5V.
+ </para></listitem>
+ <listitem><para>
+  If you don't have a backlight, you can sometimes get the needed mA's
+  from the LPT port itself. Connect a few diodes from the data pins to
+  a capacitor and you have the 5V. If it's strong enough is another question...
+ </para></listitem>
+ <listitem><para>
+  Get it from the keyboard connector. I do not recommend to use this with
+  a backlight, as the keyboard connector is often protected with a fuse
+  of 100mA or 200mA.
+ </para></listitem>
 </itemizedlist>
 
-<figure>
+<figure id="hd44780-connections-power.contrast-circuit">
 <title>HD44780: Connecting the contrast adjusting pin (Vadj.)</title>
 <screen>
 <![CDATA[
@@ -134,7 +139,7 @@ of 100mA or 200mA.
 <title>Keypad</title>
 
 <para>
-You can connect a keypad with all connection types. The maximum supported
+You can connect a keypad with most connection types. The maximum supported
 number of keys differs per type. There are several ways to connect the keys
 to the input pins.
 </para>
@@ -147,7 +152,7 @@ If you connect a key like sketched below, then you can only connect one key
 per input pin. It is a simple solution if you need only few keys.
 </para>
 
-<figure>
+<figure id="hd44780-connections-keypad-direct.circuit">
 <title>HD44780: Direct Keys</title>
 <screen>
 <![CDATA[
@@ -178,28 +183,28 @@ per input pin. It is a simple solution if you need only few keys.
 By default, the following keystrokes are generated by the different keys:
 </para>
 
-<table>
-<title>HD44780: Default Keystrokes</title>
-<tgroup cols="2">
-<tbody>
-<row>
-<entry>X0</entry>
-<entry>A</entry>
-</row>
-<row>
-<entry>X1</entry>
-<entry>B</entry>
-</row>
-<row>
-<entry>X2</entry>
-<entry>C</entry>
-</row>
-<row>
-<entry>X3</entry>
-<entry>D</entry>
-</row>
-</tbody>
-</tgroup>
+<table id="hd44780-connections-keypad-direct.mapping">
+ <title>HD44780: Default Keystrokes</title>
+ <tgroup cols="2">
+  <tbody>
+   <row>
+    <entry>X0</entry>
+    <entry>A</entry>
+   </row>
+   <row>
+    <entry>X1</entry>
+    <entry>B</entry>
+   </row>
+   <row>
+    <entry>X2</entry>
+    <entry>C</entry>
+   </row>
+   <row>
+    <entry>X3</entry>
+    <entry>D</entry>
+   </row>
+  </tbody>
+ </tgroup>
 </table>
 
 </sect5>
@@ -212,7 +217,7 @@ Using a matrix, we can connect much more keys. To simplify the drawing here,
 we replace all switches with an @ symbol:
 </para>
 
-<figure>
+<figure id="hd44780-connections-keypad-matrix.single-circuit">
 <title>HD44780: Single Matrix Key</title>
 <screen>
 <![CDATA[
@@ -238,7 +243,7 @@ we replace all switches with an @ symbol:
 We connect the matrix of keys like this:
 </para>
 
-<figure>
+<figure id="hd44780-connections-keypad-matrix.complete-circuit">
 <title>HD44780: Complete Key Matrix</title>
 <screen>
 <![CDATA[
@@ -272,7 +277,7 @@ connected, with X and Y lines connected as show. To be more precise, it
 assumes this:
 </para>
 
-<table>
+<table id="hd44780-connections-keypad-matrix.mapping">
 <title>HD44780: Keypad Layout</title>
 <tgroup cols="5">
   <tbody>
@@ -332,7 +337,7 @@ If you want to use just one return line, for example with the serialLpt
 wiring, it looks (completely drawn) like this:
 </para>
 
-<figure>
+<figure id="hd44780-connections-keypad-matrix.1line-circuit">
 <title>HD44780: One Return Line</title>
 <screen>
 <![CDATA[
@@ -357,12 +362,12 @@ Y3 o---|<---o o---+----o return line
 </figure>
 
 <tip>
-<para>
-If the driver generates keypresses without that you actually press a key,
-it might be that the unconnected input lines are picking up
-electromagnetic waves from the air. In that case connect the unconnected
-input lines (pin 10, 11, 12, 13 and 15 of the LPT) to VCC = 5V.
-</para>
+ <para>
+ If the driver generates keypresses without that you actually press a key,
+ it might be that the unconnected input lines are picking up
+ electromagnetic waves from the air. In that case connect the unconnected
+ input lines (pin 10, 11, 12, 13 and 15 of the LPT) to VCC = 5V.
+ </para>
 </tip>
 
 </sect5>
@@ -379,7 +384,7 @@ this. The extension uses one output pin, you cannot use that pin for other
 functions anymore. The wiring looks like this:
 </para>
 
-<figure>
+<figure id="hd44780-connections-backlight.circuit">
 <title>HD44780: Backlight Wiring</title>
 <screen>
 <![CDATA[
@@ -401,7 +406,7 @@ LPT Sub-D connector              |   4k7     |
                                              |
                                             === GND
 
-Note: 4k7 means 4,7 kohm.
+Note: 4k7 means 4,7 kOhm.
 The BC327 transistor has the following connections:
 
      _____
@@ -418,21 +423,21 @@ The BC327 transistor has the following connections:
 </figure>
 
 <caution>
-<para>
-Sometimes the backlight connections are not on the 'main' connector, but on
-the side. If that is the case, there is usually NO RESISTOR present to limit
-the current through the LEDs. Therefor you should then add a resistor after
-the transistor of about 10 ohm (see display documentation).
-</para>
+ <para>
+ Sometimes the backlight connections are not on the 'main' connector, but on
+ the side. If that is the case, there is usually NO RESISTOR present to limit
+ the current through the LEDs. Therefor you should then add a resistor after
+ the transistor of about 10 ohm (see display documentation).
+ </para>
 </caution>
 
 <tip>
-<para>
-If you want the backlight to light a bit while it's switched 'off', you can
-add a resistor bypassing the transistor from e to c, with a value of, say
-47ohm or 22ohm. (My 4x20 has an internal resistor of 6ohm, so with 47 ohm
-extra it lights at only 1/9th. I like this. Joris.)
-</para>
+ <para>
+ If you want the backlight to light a bit while it's switched 'off', you can
+ add a resistor bypassing the transistor from e to c, with a value of, say
+ 47ohm or 22ohm. (My 4x20 has an internal resistor of 6ohm, so with 47 ohm
+ extra it lights at only 1/9th. I like this. Joris.)
+ </para>
 </tip>
 
 </sect4>
@@ -446,7 +451,7 @@ extra it lights at only 1/9th. I like this. Joris.)
 This is originally based on "lcdtext" (by Matthias Prinke).
 </para>
 
-<table>
+<table id="hd44780-4-bit.base-mapping">
 <title>HD44780: 4-bit Pinouts (1)</title>
 <tgroup cols="2">
   <thead>
@@ -505,7 +510,7 @@ wire D5 (pin 7) to the enable line (pin 6) of the third LCD. Then for
 displays four to seven use:
 </para>
 
-<table>
+<table id="hd44780-4-bit.multi-mapping">
 <title>HD44780: 4-bit Pinouts (2)</title>
 <tgroup cols="2">
   <thead>
@@ -539,7 +544,7 @@ displays four to seven use:
 The optional keypad can be connected as follows:
 </para>
 
-<table>
+<table id="hd44780-4-bit.keypad-mapping">
 <title>HD44780: 4-bit Keypad Pinouts</title>
 <tgroup cols="2">
   <thead>
@@ -626,7 +631,7 @@ The optional backlight wiring should be connected to D5, pin 7.
 This type of connection should work with winamp.
 </para>
 
-<table>
+<table id="hd44780-8-bit-winamp.base-mapping">
 <title>HD44780: "Winamp" wiring</title>
 <tgroup cols="2">
   <thead>
@@ -707,7 +712,7 @@ connected to this line.
 The optional keypad can be connected as follows:
 </para>
 
-<table>
+<table id="hd44780-8-bit-winamp.keypad-mapping">
 <title>HD44780: "Winamp" wiring - Keypad</title>
 <tgroup cols="2">
   <thead>
@@ -757,7 +762,6 @@ The optional keypad can be connected as follows:
       <entry>INIT (16)</entry>
       <entry>Y9</entry>
     </row>
-
     <row>
       <entry>nACK (10)</entry>
       <entry>X0</entry>
@@ -815,7 +819,7 @@ winamp or ext8bit wirings, because it only sends 4 bits at a time.
 The LCD connections are:
 </para>
 
-<table>
+<table id="hd44780-8-bit-lcdtime.base-mapping">
 <title>HD44780: "lcdtime" wiring</title>
 <tgroup cols="2">
   <thead>
@@ -893,7 +897,7 @@ connections.
 The optional keypad can be connected as follows:
 </para>
 
-<table>
+<table id="hd44780-8-bit-lcdtime.keypad-mapping">
 <title>HD44780: "lcdtime" wiring - keypad</title>
 <tgroup cols="2">
   <thead>
@@ -943,7 +947,6 @@ The optional keypad can be connected as follows:
       <entry>nSEL (17)</entry>
       <entry>Y9</entry>
     </row>
-
     <row>
       <entry>nACK (10)</entry>
       <entry>X0</entry>
@@ -1013,7 +1016,7 @@ the shift register, a 4094. Do not forget to connect the 5V to pin 16 and
 GND to pin 8 of the IC.
 </para>
 
-<figure>
+<figure id="hd44780-seriallpt.simple-circuit">
 <title>HD44780: Serial LPT wiring ('simple')</title>
 <screen>
 <![CDATA[
@@ -1073,7 +1076,7 @@ The second possible wiring is with 2 output lines. This one is a bit more
 complex. If you do not understand the schematic, do not build it.
 </para>
 
-<figure>
+<figure id="hd44780-seriallpt.complex-circuit">
 <title>HD44780: Serial LPT wiring ('complex')</title>
 <screen>
 <![CDATA[
@@ -1149,7 +1152,7 @@ serialLpt wiring supports a keypad. The 3 wires version supports
 7 x 5 = 35 keys.
 </para>
 
-<table>
+<table id="hd44780-seriallpt-keypad.mapping">
 <title>HD44780: Serial LPT - Keypad return lines</title>
 <tgroup cols="2">
   <tbody>
@@ -1183,7 +1186,7 @@ If you only have 1 return line, you can buffer it with two remaining
 buffers from the 74HCT14:
 </para>
 
-<figure>
+<figure id="hd44780-seriallpt-keypad.circuit">
 <title>HD44780: Serial LPT - Keypad return lines buffered</title>
 <screen>
 <![CDATA[
@@ -1211,7 +1214,7 @@ that. The BL output below should be connected to the BL input in the
 <link linkend="hd44780-connections-backlight">backlight section</link>
 </para>
 
-<figure>
+<figure id="hd44780-seriallpt-backlight.circuit">
 <title>HD44780: Serial LPT - Backlight extra circuit</title>
 <screen>
 <![CDATA[
@@ -1535,6 +1538,39 @@ This means that you can take these schematics and use it as a basis for your own
 e.g. for a graphic LCD
 </para>
 
+<sect4 id="hd44780-lcd2usb-config">
+<title>Special config options</title>
+
+<para>
+Besides the standard configuration options for <code>hd44780</code> displays, the
+<code>lcd2usb</code> connection type supports two additional options:
+<command>Contrast=</command> to set the display's contrast and 
+<command>Brightness=</command> to set the display's brightness.
+Both options expect a number in the range from <literal>0</literal> to <literal>1000</literal>.
+</para>
+</sect4>
+
+<sect4 id="hd44780-lcd2usb-status">
+<title>Status</title>
+
+<para>
+The <code>lcd2usb</code> connection type has been written to support displaysi
+with one and two HD44780 controllers.
+Owing to the lack of a 2-controller display, it has only been tested with a 
+1-controller display.
+If you happen to have a 2-controller display connected to LCD2USB,
+please report to the mailing list.
+<tip>
+ <para>
+  In order to make the <code>lcd2usb</code> connection type work with a 2-controller display
+  you may need to set the <command>vSpan=</command> config option accordingly.
+ </para>
+</tip> 
+Although the LCD2USB sports two keys, they are currently not supported by
+<package>LCDproc</package>. Patches to fix the situation are very welcome.
+</para>
+</sect4>
+
 </sect3>
 
 
@@ -1547,7 +1583,7 @@ If you have an I<superscript>2</superscript>C port available that is supported b
 port expander there (PCF8574P in this example).
 </para>
 
-<figure>
+<figure id="hd44780-i2c.circuit">
 <title>HD44780: PCF8574P port expander on I2C bus</title>
 <screen>
 <![CDATA[
@@ -1597,7 +1633,7 @@ port expander there (PCF8574P in this example).
 <sect4 id="hd44780-i2c-config">
 <title>Configuration</title> 
 
-<figure>
+<figure id="hd44780-i2c-config.example">
 <title>HD44780: Configuration for I<superscript>2</superscript>C with port expander</title>
 <screen>
 <![CDATA[
@@ -1629,7 +1665,7 @@ a device that needs a 2-byte command, and it will be stripped
 off the address.
 </para>
 
-<figure>
+<figure id="hd44780-i2c-config.portexpander-address">
 <title>HD44780: Examples of I<superscript>2</superscript>C port expander adresses</title>
 <screen>
 <![CDATA[
@@ -1650,9 +1686,10 @@ port=0xa0..0xa7   PCA9554A with A[012]=0..7
 <title>Compiling</title>
 
 <para>
-Make sure that the HD44780 files are built when you run configure. This
-can be done by specifying "--enable-drivers=all" or by
-"--enable-drivers=hd44780".
+Make sure that the HD44780 files are built when you run <command>./configure</command>.
+This can be done by specifying <option>--enable-drivers=all</option> or by including
+<code>hd44780</code> in the list of enabled drivers
+(e.g. <option>--enable-drivers=hd44780</option>).
 </para>
 
 </sect2>
@@ -1790,8 +1827,8 @@ can be done by specifying "--enable-drivers=all" or by
       <para>
       The above table might be outdated, when you read this.
       If you suspect the table above to be outdated, you might want to have a look at
-      <filename>server/drivers/hd44780-drivers.h</filename>
-      which contains the actual translation code.
+      <filename>server/drivers/hd44780-drivers.h</filename> in <package>LCDproc</package>'s
+      source directory which contains the actual translation code.
       </para>
     </tip>
 
@@ -1922,16 +1959,24 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <command>vspan=</command>
+    <command>vSpan=</command>
     <arg choice="plain">
       <replaceable>HEIGHT</replaceable>
       <literal>,</literal>&hellip;
     </arg>
   </term>
   <listitem><para>
-    For multiple combined displays: how many lines does each display have.
-    E.g. <literal>Vrspan=2,2</literal> means you have two displays and
+    The "vertical span" when using multiple displays or multi-controller displays.
+    It is a comma separated list of the heights of each display. In multi-controller
+    displays it lists the number of lines each controller is responsible for.
+    </para>
+    <para>
+    E.g. <code>VSpan=2,2</code> means you have two displays and
     each has two lines.
+    </para>
+    <para>
+    The sum of the <replaceable>HEIGHT</replaceable>s must match the total height
+    given in <code>Size=</code>.
   </para></listitem>
 </varlistentry>
 
@@ -1987,7 +2032,7 @@ can be done by specifying "--enable-drivers=all" or by
     <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
   </term>
   <listitem><para>
-    Some displays (e.g. <emphasis>vdr-wakeup</emphasis>) need a message from the driver to that it
+    Some displays (e.g. <code>vdr-wakeup</code>) need a message from the driver to that it
     is still alive. When set to a value bigger then <literal>0</literal> the character in the
     upper left corner is updated every <replaceable>SECONDS</replaceable> seconds.
     Default: <literal>0</literal>.
@@ -2009,29 +2054,26 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <command>KeyMatrix_4_1=</command>
+    <command>DirectKey_<replaceable>NUM</replaceable>=</command>
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMatrix_4_2=</command>
+    <command>KeyMatrix_<replaceable>X</replaceable>_<replaceable>Y</replaceable>=</command>
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
-  <term>
-    <command>KeyMatrix_4_3=</command>
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
-  </term>
-  <term>
-    <command>KeyMatrix_4_4=</command>
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
-  </term>
-  <listitem><para>
-    If you have a keypad you can assign keystrings to the keys.
-    See documentation for used terms and how to wire it.
-    For example to give directly connected key 4 the string "Enter", use:
-    KeyDirect_4=Enter
-    For matrix keys use the X and Y coordinates of the key:
-    KeyMatrix_1_3=Enter
-  </para></listitem>
+  <listitem>
+    <para>
+      If you have a keypad you can assign keystrings to the keys.
+      See documentation for used terms and how to wire it.
+    </para>
+    <para>
+      To map, for example, the directly connected key <literal>4</literal>
+      to the string <literal>Enter</literal>, use <code>KeyDirect_4=Enter</code>.
+      For matrix keys use the <replaceable>X</replaceable> and
+      <replaceable>Y</replaceable> coordinates of the key;
+      e.g. <code>KeyMatrix_1_3=Enter</code>.
+    </para>
+  </listitem>
 </varlistentry>
 </variablelist>
 

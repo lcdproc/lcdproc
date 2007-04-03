@@ -7,6 +7,7 @@ that works with LIRC to control the LCDproc server
 (<application>LCDd</application>)
 and/or clients that can handle input.
 </para>
+
 <para>
 Of course you need a working LIRC setup. Refer to the
 <ulink url="http://www.lirc.org">LIRC project</ulink> for more
@@ -21,6 +22,7 @@ Basically all you need is a running <application>lircd</application>.
 And of course you have to start <application>lircd</application>
 as root.
 </para>
+
 <para>
 Also, make sure that the permission of <filename>/dev/lircd</filename>
 are correct.
@@ -45,27 +47,26 @@ Then simply run make.
 <title>Configure LCDd to Use the lirc Driver</title>
 
 <para>
-First of all you need to activate the driver by adding a Driver=lirc line
+First of all you need to activate the driver by adding a <code>Driver=lirc</code> line
 to your <filename>LCDd.conf</filename>
 </para>
 
-<example>
+<example id="lirc-configuration.example">
 <title><filename>LCDd.conf</filename>: Activate the lirc driver</title>
+
 <programlisting>
-
-Driver=mtxorb
-Driver=lirc
-
+ Driver=mtxorb
+ Driver=lirc
 </programlisting>
 </example>
 
 <para>
-This activates the mtxorb driver as the output driver and the lirc driver
-as the input driver.
+This activates the <code>mtxorb</code> driver as the output driver
+and the <code>lirc</code> driver as the input driver.
 </para>
 
 <para>
-Then you have to modify the [lirc] section of your
+Then you have to modify the <code>[lirc]</code> section of your
 <filename>LCDd.conf</filename>.
 </para>
 
@@ -134,11 +135,11 @@ No matter which file you use, you have to add at least the following
 lines to the file:
 </para>
 
-<example>
+<example id="lircrc.example">
 <title><filename>~/.lircrc</filename>: Specify the associations from buttons to keys
 for the lirc driver</title>
-<programlisting>
 
+<programlisting>
 begin
         prog = lcdd
         button = 2
@@ -174,8 +175,6 @@ begin
         button = 0
         config = Enter
 end
-
-
 </programlisting>
 </example>
 
@@ -192,7 +191,7 @@ and <literal>Enter</literal> are necessary.
 </para>
 
 <para>
-<!-- TOTO: is this still true with 0.5 ? -->
+<!-- TODO: is this still true with 0.5 ? -->
 Of course you can define other keys. Those keys will not be handled by the
 server but sent to a client. Refer to the documentation of the client you want
 to use, to find out which keys are neccessary for that client.

@@ -11,21 +11,22 @@ After reading this document you will be able to set up your own LCDproc'ed syste
 </para>
 
 <note><para>
-Please note that this document is still "under construction". We hope to finish it
-until the final release of LCDproc, which will probably take place in May or June 2002.
+Please note that this document is still under construction". We hope to finish it
+until the final release of LCDproc &smile;.
 If you run into any trouble feel free to write to the LCDproc mailing list.
-See <ulink url="http://lcdproc.omnipotent.net/mail.php3">http://lcdproc.omnipotent.net/mail.php3</ulink>
+See <ulink url="http://lcdproc.omnipotent.net/mail.php3"></ulink>
 for details on how to subscribe to the list.
 </para>
 <para>
-Therefore you might want to have a look at <ulink url="http://lcdproc.sourceforge.net/docs/">http://lcdproc.sourceforge.net/docs/</ulink>,
-to get the latest version of this document (, unless you want to generate it yourself from the
+Therefore you might want to have a look at <ulink url="http://lcdproc.sourceforge.net/docs/"></ulink>,
+to get the latest version of this document (unless you want to generate it yourself from the
 docbook files in the CVS).
 </para></note>
 
 <para>
-This document was written for LCDproc 0.4.3. At the time of writing there had already
-been the "LCDproc User's Guide" written by William W. Ferrel in 1999. His version covered
+This document was originally written for LCDproc 0.4.3, but has been dramatically updated since.
+At the time of writing there had already been the "LCDproc User's Guide" written by
+William W. Ferrel in 1999. His version covered
 an early version of LCDproc and therefore concentrated on Matrix Orbital displays.
 </para>
 
@@ -45,12 +46,12 @@ document. The authors of those are listed below every such document.
 <title>What is LCDproc?</title>
 
 <para>
-LCDproc is a client/server suite including drivers for all kinds of
+<package>LCDproc</package> is a client/server suite including drivers for all kinds of
 nifty LCD displays.
 </para>
 <para>
-The server 'LCDd' makes it possible to display text and other data on
-an LCD display. As well LCDd can handle certain input devices.
+The server <application>LCDd</application> makes it possible to display text and
+other data on an LCD display. As well LCDd can handle certain input devices.
 </para>
 <para>
 Support for devices is added by drivers. We distinguish between output
@@ -66,10 +67,10 @@ HD44780, STV5730, T6963, SED1520 and SED1330.
 There are input (only) drivers for LIRC and joysticks.
 </para>
 <para>
-Clients can connect to LCDd through common sockets.
+Clients can connect to LCDd through common TCP sockets.
 </para>
 <para>
-Various clients are available. The "main" client
+Various clients are available. The <emphasis>main</emphasis> client
 <application>lcdproc</application>, which is shipped with the LCDproc
 distribution, can display things like CPU load, system load, memory
 usage, uptime, and a lot more.
@@ -134,10 +135,11 @@ As it is rather simple to write an LCDproc client, you can find various
 clients on the Internet.
 </para>
 <para>
-Unfortunately we cannot provide a list of LCDproc clients (yet). So, have
-fun searching <ulink url="http://www.google.com">google</ulink> or
-<ulink url="http://freshmeat.net">freshmeat</ulink>. Simply type 'lcdproc'
-for the keyword.
+Unfortunately we cannot provide a list of LCDproc clients here. So, take a look at the
+<ulink url="http://www.lcdproc.org/clients.php3">Clients page on LCDproc's web site</ulink>
+or have fun searching <ulink url="http://www.google.com">Google</ulink> or
+<ulink url="http://freshmeat.net">freshmeat</ulink>. Simply use <literal>lcdproc</literal>
+as the search pattern.
 </para>
 
 </sect1>

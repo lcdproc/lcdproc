@@ -78,7 +78,7 @@ There's no way of finding out whether 3 or 9 LEDs are available, so it
 is up to the software to do the right thing.
 </para>
 
-<example>
+<example id="pyramid-ledoutput.example">
 <title>How to use the LED output from the client</title>
 <programlisting>
 telnet localhost 13666

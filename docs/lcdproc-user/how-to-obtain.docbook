@@ -37,11 +37,11 @@ Internet.
 </sect1>
 
 <sect1 id="tar">
-<title>Download Last Day's CVS Version of LCDproc as a Tarball</title>
+<title>Download Yesterday's CVS Version of LCDproc as a Tarball</title>
 
 <para>
 There are nightly distributions of the CVS branches of LCDproc. You can download them from
-<ulink url="http://lcdproc.sourceforge.net/nightly/">http://lcdproc.sourceforge.net/nightly/</ulink>
+<ulink url="http://lcdproc.sourceforge.net/nightly/"></ulink>
 </para>
 
 <para>
@@ -114,7 +114,7 @@ which is in the unstable and testing distributions.
 </para>
 
 <para>
-Provided apt-get is configured properly. You should be able to install the package running:
+Provided apt-get is configured properly, you should be able to install the package running:
 </para>
 
 <screen>

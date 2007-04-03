@@ -11,7 +11,7 @@ and/or clients that can handle input.
 
 The keys are mapped according to the following table:
 
-<table>
+<table id="irman-howto.mapping">
 <title>Mapping between LCDproc keys and IrMan commands</title>
 <tgroup cols="2">
   <thead>

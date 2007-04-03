@@ -51,7 +51,7 @@ Running <command>LCDd -h</command> gives you an overview of the currently availa
 command line options.
 </para>
 
-<example>
+<example id="lcdd-commandline-options.example">
 <title><command>LCDd -h</command></title>
 <screen> <![CDATA[
 
@@ -98,7 +98,7 @@ Running <command>lcdproc -h</command> gives you an overview of the currently ava
 command line options.
 </para>
 
-<example>
+<example id="lcdproc-commandline-optionsi.example">
 <title><command>lcdproc -h</command></title>
 <screen> <![CDATA[
 

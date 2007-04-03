@@ -14,12 +14,13 @@ It is also known to work on FUTABA VFDs.
 
 <para>
 The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
- serial(rs232) and/or parallel interface. See the following table for testing-status.
-  Feedback is welcome.
+serial(RS-232) and/or parallel interface. See the following table for testing-status.
+Feedback is welcome.
 
 
-<table><title>serialVFD: Display Status</title>
-<tgroup cols="5">
+<table id="serialVFD-howto.status">
+<title>serialVFD: Display Status</title>
+<tgroup cols="6">
   <thead>
     <row>
       <entry>Display</entry>
@@ -112,19 +113,21 @@ The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
   </tbody>
 </tgroup>
 </table>
-() feature not tested.
+
+<literal>(</literal>&hellip;<literal>)</literal>: Feature not tested.
 </para>
 
 <para>
 If your display isn't working 100% satisfactorily you can add a new device with modified hardware
-commands to the driver if you want. To do that you have to add a new section to the display-
+commands to the driver if you want. To do that you have to add a new section to the display
 <command>Type=</command>-switch-case in <filename>./server/drivers/serialVFD-displays.c</filename>
-and to write a new "load"function with the correct commands for the display.(Try which display-<command>Type=</command>
-works best with your display, copy, rename and modify this function that is the easiest way I guess.)
+and to write a new "load" function with the correct commands for the display.
+(Try which display <command>Type=</command> works best with your display, 
+then copy, rename and modify this function to your needs - that is the easiest way I guess.)
 </para>
 
 <para>
-On this page you may find pictures and datasheets of the VFDs:
+On Malte Poeggel's page you may find pictures and datasheets of the VFDs:
 <ulink url="http://www.maltepoeggel.de/html/vfd/index.html"></ulink>
 </para>
 
@@ -143,7 +146,7 @@ the display show everything correctly.
 <warning>
 <para>
 Always cross-check with your datasheet, before connecting your display!
-Displays of same manufacturer may have different pin assignments!
+Different displays of even the same manufacturer may have different pin assignments!
 </para></warning>
 
 <para>
@@ -161,7 +164,7 @@ serialport. The signal has to be inverted. I use the following
 circuit to do that job.
 </para>
 
-<figure>
+<figure id="serialVFD-serial-connections.circuit">
 <title>serialVFD: Serial Inverter</title>
 <screen>
 <![CDATA[
@@ -232,7 +235,7 @@ The blue connector (6pin in a row) (the important one!):
 <tip>
   <para>
   Hold the display in that position where you can read
-  the "KD Rev 2.1" marking normally!
+  the <literal>KD Rev 2.1</literal> marking normally!
   </para>
 </tip>
 

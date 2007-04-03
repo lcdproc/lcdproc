@@ -5,21 +5,20 @@
 This section talks about using LCDproc with a point of sale ("POS") character-display.
 </para>
 
-
 <para>
-The serialPOS-driver is currently working with the AEDEX emulation protocol, 
+The <code>serialPOS</code> driver is currently working with the AEDEX emulation protocol, 
 but can be extended to work with various other protocols.
 </para>
 
 <para>
-The driver should operate most character POS displays with a serial (rs232) input. 
+The driver should operate most character POS displays with a serial (RS-232) input. 
 Because these displays use a standardized protocol, if the protocol is
 supported by your display, it should work as expected.
-  Feedback is welcome.
+Feedback is welcome.
 
-
-<table><title>serialPOS: Emulation Protocol Status</title>
-<tgroup cols="5">
+<table id="serialPOS-howto.status">
+<title>serialPOS: Emulation Protocol Status</title>
+<tgroup cols="4">
   <thead>
     <row>
       <entry>Protocol</entry>
@@ -74,7 +73,8 @@ supported by your display, it should work as expected.
   </tbody>
 </tgroup>
 </table>
-() feature not tested.
+
+<literal>(</literal>&hellip;<literal>)</literal>: Feature not tested.
 </para>
 
 <sect2 id="serialPOS-connections">
@@ -82,19 +82,23 @@ supported by your display, it should work as expected.
 
 <para>
 Connecting the display should consist of simply plugging it into your computer's
-rs232 port.  Because these displays typically support full rs232, no additional 
-wiring is needed. If you do not have this port (many newer computers do not), you 
-can use a USB to serial adapter with the appropriate driver.
+RS-232 port.  Because these displays typically support full RS-232, no additional 
+wiring is needed. If your computer does not have such a port (many newer computers don't),
+you can use a USB to serial adapter with the appropriate driver.
 </para>
-<para>
-If your display supports a "pass-through" function, but you do not have
-another rs232 device connected to the pass-through port, you may experience hangs 
-if an improperly formatted command sneaks through.
-This is because the display is waiting for the pass-through 
-device to accept the data and a blocking state is created within the device.
-You can either connect another rs232 device, or rewire the display to send the pass-
-through commands back to your computer.
-</para>
+
+<note>
+  <para>
+  If your display supports a <emphasis>pass-through</emphasis> function,
+  but you do not have another RS-232 device connected to the pass-through port,
+  you may experience hangs if an improperly formatted command sneaks through.
+  This is because the display is waiting for the pass-through device to accept
+  the data and a blocking state is created within the device.
+  You can either connect another RS-232 device, or rewire the display to send the
+  pass-through commands back to your computer.
+  </para>
+</note>
+
 </sect2>
 
 <!-- ## Serial POS driver ## -->
@@ -112,8 +116,8 @@ through commands back to your computer.
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
-    Device to use in serial mode. Usual values are <filename>/dev/ttyS0</filename> or <filename>/dev/cu.usbserial</filename>
-    [default: <filename>/dev/lcd</filename>].
+    Device to use in serial mode. Usual values are <filename>/dev/ttyS0</filename> or
+    <filename>/dev/cu.usbserial</filename>. Default is <filename>/dev/lcd</filename>.
   </para></listitem>
 </varlistentry>
 
@@ -128,7 +132,7 @@ through commands back to your computer.
   </term>
   <listitem><para>
     Specifies the size of the VFD in characters.
-    [default: <literal>16x2</literal>]
+    If not given, it defaults to <literal>16x2</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -149,7 +153,7 @@ through commands back to your computer.
   </term>
   <listitem><para>
     Set the communication protocol to use with the POS display.
-    If not given [default <literal>AEDEX</literal>].
+    If not specified it defaults to <literal>AEDEX</literal>.
     Currently, only AEDEX is supported.
   </para></listitem>
 </varlistentry>
@@ -169,7 +173,7 @@ through commands back to your computer.
   </term>
   <listitem><para>
     Set the the baud rate communication with the POS display.
-    If not given [default <literal>9600</literal>].
+    If not given the default of <literal>9600</literal> is used.
   </para></listitem>
 </varlistentry>
 </variablelist>
