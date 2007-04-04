@@ -71,8 +71,8 @@
 // HD44780_senddata
 // HD44780_readkeypad
 
-void i2c_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
-void i2c_HD44780_backlight (PrivateData *p, unsigned char state);
+void i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void i2c_HD44780_backlight(PrivateData *p, unsigned char state);
 
 #define RS	0x10
 #define RW	0x20
@@ -84,7 +84,7 @@ void i2c_HD44780_backlight (PrivateData *p, unsigned char state);
 #define I2C_PCAX_MASK 0x80
 
 static void
-i2c_out (PrivateData *p, unsigned char val)
+i2c_out(PrivateData *p, unsigned char val)
 {
 	__u8 data[2];
 	int datalen;
@@ -97,8 +97,8 @@ i2c_out (PrivateData *p, unsigned char val)
 		data[0]=val;
 		datalen=1;
 	}
-	if ( write(p->fd,data,datalen) != datalen ) {
-		report( no_more_errormsgs?RPT_DEBUG:RPT_ERR, "HD44780: I2C: i2c write data %u to address %u failed: %s",
+	if (write(p->fd,data,datalen) != datalen) {
+		report(no_more_errormsgs?RPT_DEBUG:RPT_ERR, "HD44780: I2C: i2c write data %u to address %u failed: %s",
 			val, p->port & I2C_ADDR_MASK, strerror(errno));
 		no_more_errormsgs=1;
 	}
@@ -108,7 +108,7 @@ i2c_out (PrivateData *p, unsigned char val)
 
 // initialisation function
 int
-hd_init_i2c (Driver *drvthis)
+hd_init_i2c(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
@@ -160,7 +160,7 @@ hd_init_i2c (Driver *drvthis)
 	// powerup the lcd now
 	/* We'll now send 0x03 a couple of times,
 	 * which is in fact (FUNCSET | IF_8BIT) >> 4 */
-	i2c_out (p, 0x03);
+	i2c_out(p, 0x03);
 	if (p->delayBus)
 		hd44780_functions->uPause(p, 1);
 
@@ -200,7 +200,7 @@ hd_init_i2c (Driver *drvthis)
 	hd44780_functions->uPause(p, 100);
 
 	// Set up two-line, small character (5x8) mode
-	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR );
+	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
 	hd44780_functions->uPause(p, 40);
 
 	common_init(p, IF_4BIT);
@@ -210,7 +210,7 @@ hd_init_i2c (Driver *drvthis)
 
 // i2c_HD44780_senddata
 void
-i2c_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
+i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	unsigned char enableLines = 0, portControl = 0;
 	unsigned char h = (ch >> 4) & 0x0f;     // high and low nibbles
@@ -242,7 +242,7 @@ i2c_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char fla
 	i2c_out(p, portControl | l);
 }
 
-void i2c_HD44780_backlight (PrivateData *p, unsigned char state)
+void i2c_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	p->backlight_bit = ((!p->have_backlight||state) ? 0 : BL);
 

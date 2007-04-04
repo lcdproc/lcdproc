@@ -45,7 +45,7 @@ typedef struct cgram_cache {
 
 typedef struct ConnectionMapping {
 	char *name;
-	int (*init_fn) (Driver *drvthis);
+	int (*init_fn)(Driver *drvthis);
 	const char *helpMsg;
 } ConnectionMapping;
 
@@ -129,40 +129,40 @@ typedef struct driver_private_data {
 // Structures holding pointers to HD44780 specific functions
 typedef struct hwDependentFns {
 	// microsec pauses
-	void (*uPause) (PrivateData *p, int usecs);
+	void (*uPause)(PrivateData *p, int usecs);
 
 	// Senddata to the LCD
 	// dispID     - display to send data to (0 = all displays)
 	// flags      - data or instruction command (RS_DATA | RS_INSTR)
 	// ch	      - character to display or instruction value
-	void (*senddata) (PrivateData *p, unsigned char dispID, unsigned char flags, unsigned char ch);
+	void (*senddata)(PrivateData *p, unsigned char dispID, unsigned char flags, unsigned char ch);
 
 	// Switch the backlight on or off
 	// state      - to be or not to be on
-	void (*backlight) (PrivateData *p, unsigned char state);
+	void (*backlight)(PrivateData *p, unsigned char state);
 
 	// Read the keypad
 	// Ydata      - the up to 11 bits that should be put on the Y side of the matrix
 	// return     - the up to 5 bits that are read out on the X side of the matrix
-	unsigned char (*readkeypad) (PrivateData *p, unsigned int Ydata);
+	unsigned char (*readkeypad)(PrivateData *p, unsigned int Ydata);
 
 	// Scan the keypad and return a scancode.
 	// The code is the Yvalue in the high nibble and the Xvalue in the low nibble.
 	// A subdriver should do only one of two things:
 	// - set readkeypad; or
 	// - override scankeypad.
-	unsigned char (*scankeypad) (PrivateData *p);
+	unsigned char (*scankeypad)(PrivateData *p);
 
 	// Output "data" to output latch if there is one
-	void (*output) (PrivateData *p, int data);
+	void (*output)(PrivateData *p, int data);
 
         // Close the interface on shutdown
-        void (*close) (PrivateData *p);
+        void (*close)(PrivateData *p);
 
 } HD44780_functions;				  /* for want of a better name :-) */
 
 
-void common_init (PrivateData *p, unsigned char if_bit);
+void common_init(PrivateData *p, unsigned char if_bit);
 
 
 // commands for senddata

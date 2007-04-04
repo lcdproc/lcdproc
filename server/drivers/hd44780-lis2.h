@@ -4,6 +4,6 @@
 #include "lcd.h"					  /* for Driver */
 
 // initialise this particular driver
-int hd_init_lis2 (Driver *drvthis);
+int hd_init_lis2(Driver *drvthis);
 
 #endif

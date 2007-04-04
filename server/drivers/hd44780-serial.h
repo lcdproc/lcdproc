@@ -44,6 +44,6 @@ static const SerialInterface serial_interfaces[] = {
 };
 
 /* initialize this particular driver */
-int hd_init_serial (Driver *drvthis);
+int hd_init_serial(Driver *drvthis);
 
 #endif

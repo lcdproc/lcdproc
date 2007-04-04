@@ -75,9 +75,9 @@
 // HD44780_senddata
 // HD44780_readkeypad
 
-void lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
-void lcdstat_HD44780_backlight (PrivateData *p, unsigned char state);
-unsigned char lcdstat_HD44780_readkeypad (PrivateData *p, unsigned int YData);
+void lcdstat_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void lcdstat_HD44780_backlight(PrivateData *p, unsigned char state);
+unsigned char lcdstat_HD44780_readkeypad(PrivateData *p, unsigned int YData);
 
 #define RS	0x10
 #define RW	0x20
@@ -94,7 +94,7 @@ static const unsigned char EnMask[] = { EN1, EN2, EN3, STRB, LF, INIT, SEL };
 
 // initialisation function
 int
-hd_init_4bit (Driver *drvthis)
+hd_init_4bit(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
@@ -109,60 +109,60 @@ hd_init_4bit (Driver *drvthis)
 	hd44780_functions->readkeypad = lcdstat_HD44780_readkeypad;
 
 	// powerup the lcd now
-	port_out (p->port + 2, 0 ^ OUTMASK);
-	port_out (p->port, 0x03);
-	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
+	port_out(p->port + 2, 0 ^ OUTMASK);
+	port_out(p->port, 0x03);
+	if (p->delayBus) hd44780_functions->uPause(p, 1);
 
 	/* We'll now send 0x03 a coulpe of times, 
 	 * which is in fact (FUNCSET | IF_8BIT) >> 4 */
-	port_out (p->port, enableLines | 0x03);
-	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
-	port_out (p->port, 0x03);
-	port_out (p->port + 2, 0 ^ OUTMASK);
-	hd44780_functions->uPause (p, 15000);
+	port_out(p->port, enableLines | 0x03);
+	port_out(p->port + 2, ALLEXT ^ OUTMASK);
+	if (p->delayBus) hd44780_functions->uPause(p, 1);
+	port_out(p->port, 0x03);
+	port_out(p->port + 2, 0 ^ OUTMASK);
+	hd44780_functions->uPause(p, 15000);
 
-	port_out (p->port, enableLines | 0x03);
-	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
-	port_out (p->port, 0x03);
-	port_out (p->port + 2, 0 ^ OUTMASK);
-	hd44780_functions->uPause (p, 5000);
+	port_out(p->port, enableLines | 0x03);
+	port_out(p->port + 2, ALLEXT ^ OUTMASK);
+	if (p->delayBus) hd44780_functions->uPause(p, 1);
+	port_out(p->port, 0x03);
+	port_out(p->port + 2, 0 ^ OUTMASK);
+	hd44780_functions->uPause(p, 5000);
 
-	port_out (p->port, enableLines | 0x03);
-	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
-	port_out (p->port, 0x03);
-	port_out (p->port + 2, 0 ^ OUTMASK);
-	hd44780_functions->uPause (p, 100);
+	port_out(p->port, enableLines | 0x03);
+	port_out(p->port + 2, ALLEXT ^ OUTMASK);
+	if (p->delayBus) hd44780_functions->uPause(p, 1);
+	port_out(p->port, 0x03);
+	port_out(p->port + 2, 0 ^ OUTMASK);
+	hd44780_functions->uPause(p, 100);
 
-	port_out (p->port, enableLines | 0x03);
-	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
-	port_out (p->port, 0x03);
-	port_out (p->port + 2, 0 ^ OUTMASK);
-	hd44780_functions->uPause (p, 100);
+	port_out(p->port, enableLines | 0x03);
+	port_out(p->port + 2, ALLEXT ^ OUTMASK);
+	if (p->delayBus) hd44780_functions->uPause(p, 1);
+	port_out(p->port, 0x03);
+	port_out(p->port + 2, 0 ^ OUTMASK);
+	hd44780_functions->uPause(p, 100);
 
 	// now in 8-bit mode...  set 4-bit mode
-	port_out (p->port, 0x02);
-	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
+	port_out(p->port, 0x02);
+	if (p->delayBus) hd44780_functions->uPause(p, 1);
 
-	port_out (p->port, enableLines | 0x02);
-	port_out (p->port + 2, ALLEXT ^ OUTMASK);
-	if ( p->delayBus ) hd44780_functions->uPause (p, 1);
-	port_out (p->port, 0x02);
-	port_out (p->port + 2, 0 ^ OUTMASK);
-	hd44780_functions->uPause (p, 100);
+	port_out(p->port, enableLines | 0x02);
+	port_out(p->port + 2, ALLEXT ^ OUTMASK);
+	if (p->delayBus) hd44780_functions->uPause(p, 1);
+	port_out(p->port, 0x02);
+	port_out(p->port + 2, 0 ^ OUTMASK);
+	hd44780_functions->uPause(p, 100);
 
 	// Set up two-line, small character (5x8) mode
-	hd44780_functions->senddata (p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR );
-	hd44780_functions->uPause (p, 40);
+	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	hd44780_functions->uPause(p, 40);
 
-	common_init (p, IF_4BIT);
+	common_init(p, IF_4BIT);
 
 	if (p->have_keypad) {
 		// Remember which input lines are stuck
-		p->stuckinputs = lcdstat_HD44780_readkeypad (p, 0);
+		p->stuckinputs = lcdstat_HD44780_readkeypad(p, 0);
 	}
 
 	return 0;
@@ -170,7 +170,7 @@ hd_init_4bit (Driver *drvthis)
 
 // lcdstat_HD44780_senddata
 void
-lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
+lcdstat_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	unsigned char enableLines = 0, portControl = 0;
 	unsigned char h = (ch >> 4) & 0x0f;     // high and low nibbles
@@ -190,17 +190,17 @@ lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 			enableLines = EnMask[displayID - 1];
 		}
 
-		port_out (p->port, portControl | h);
-		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-		port_out (p->port, enableLines | portControl | h);
-		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-		port_out (p->port, portControl | h);
+		port_out(p->port, portControl | h);
+		if (p->delayBus) p->hd44780_functions->uPause(p, 1);
+		port_out(p->port, enableLines | portControl | h);
+		if (p->delayBus) p->hd44780_functions->uPause(p, 1);
+		port_out(p->port, portControl | h);
 
-		port_out (p->port, portControl | l);
-		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-		port_out (p->port, enableLines | portControl | l);
-		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-		port_out (p->port, portControl | l);
+		port_out(p->port, portControl | l);
+		if (p->delayBus) p->hd44780_functions->uPause(p, 1);
+		port_out(p->port, enableLines | portControl | l);
+		if (p->delayBus) p->hd44780_functions->uPause(p, 1);
+		port_out(p->port, portControl | l);
 	}
 
 	if (p->numDisplays > 3) {
@@ -210,50 +210,50 @@ lcdstat_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char
 			enableLines = EnMask[(displayID - 1)];
 		}
 
-		port_out (p->port, portControl | h);
-		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-		port_out (p->port + 2, enableLines ^ OUTMASK);
-		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-		port_out (p->port + 2, 0 ^ OUTMASK);
+		port_out(p->port, portControl | h);
+		if (p->delayBus) p->hd44780_functions->uPause(p, 1);
+		port_out(p->port + 2, enableLines ^ OUTMASK);
+		if (p->delayBus) p->hd44780_functions->uPause(p, 1);
+		port_out(p->port + 2, 0 ^ OUTMASK);
 
-		port_out (p->port, portControl | l);
-		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-		port_out (p->port + 2, enableLines ^ OUTMASK);
-		if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
-		port_out (p->port + 2, 0 ^ OUTMASK);
+		port_out(p->port, portControl | l);
+		if (p->delayBus) p->hd44780_functions->uPause(p, 1);
+		port_out(p->port + 2, enableLines ^ OUTMASK);
+		if (p->delayBus) p->hd44780_functions->uPause(p, 1);
+		port_out(p->port + 2, 0 ^ OUTMASK);
 	}
 }
 
-void lcdstat_HD44780_backlight (PrivateData *p, unsigned char state)
+void lcdstat_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	p->backlight_bit = ((!p->have_backlight||state)?0:BL);
 
-	port_out (p->port, p->backlight_bit);
+	port_out(p->port, p->backlight_bit);
 }
 
-unsigned char lcdstat_HD44780_readkeypad (PrivateData *p, unsigned int YData)
+unsigned char lcdstat_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 {
 	unsigned char readval;
 
 	// 10 bits output or 6 bits if >=3 displays
 	// Convert the positive logic to the negative logic on the LPT port
-	port_out (p->port, ~YData & 0x003F );
+	port_out(p->port, ~YData & 0x003F);
 	if (p->numDisplays<=3) {
 		// Can't combine >3 displays with >6 keypad output lines
-		port_out (p->port + 2, ( ((~YData & 0x03C0) << 6 )) ^ OUTMASK);
+		port_out(p->port + 2, (((~YData & 0x03C0) << 6)) ^ OUTMASK);
 	}
-	if ( p->delayBus ) p->hd44780_functions->uPause (p, 1);
+	if (p->delayBus) p->hd44780_functions->uPause(p, 1);
 
 	// Read inputs
-	readval = ~ port_in (p->port + 1) ^ INMASK;
+	readval = ~ port_in(p->port + 1) ^ INMASK;
 
 	// Put port back into idle state for backlight
-	port_out (p->port, p->backlight_bit);
+	port_out(p->port, p->backlight_bit);
 
 	// And convert value back (MSB first).
 	return (((readval & FAULT) / FAULT <<4) |		/* pin 15 */
 		((readval & SELIN) / SELIN <<3) |		/* pin 13 */
 		((readval & PAPEREND) / PAPEREND <<2) |		/* pin 12 */
 		((readval & BUSY) / BUSY <<1) |			/* pin 11 */
-		((readval & ACK) / ACK )) & ~p->stuckinputs;	/* pin 10 */
+		((readval & ACK) / ACK)) & ~p->stuckinputs;	/* pin 10 */
 }

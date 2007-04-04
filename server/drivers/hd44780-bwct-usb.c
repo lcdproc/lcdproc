@@ -38,7 +38,7 @@ static int bwct_usb_i;
 
 // initialize the driver
 int
-hd_init_bwct_usb (Driver *drvthis)
+hd_init_bwct_usb(Driver *drvthis)
 {
   PrivateData *p = (PrivateData*) drvthis->private_data;
 

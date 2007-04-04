@@ -108,8 +108,8 @@ unsigned int bitrate_conversion[][2] = {
 
 int convert_bitrate(unsigned int conf_bitrate, size_t *bitrate) {
 	int counter;
-	for ( counter=0 ; counter<sizeof(bitrate_conversion)/(2*sizeof(unsigned int)) ; counter++ )
-		if (bitrate_conversion[counter][0]==conf_bitrate) {
+	for (counter = 0; counter < sizeof(bitrate_conversion)/(2*sizeof(unsigned int)); counter++)
+		if (bitrate_conversion[counter][0] == conf_bitrate) {
 			*bitrate = (size_t) bitrate_conversion[counter][1];
 			return 0;
 		}
@@ -118,14 +118,14 @@ int convert_bitrate(unsigned int conf_bitrate, size_t *bitrate) {
 
 static int lastdisplayID;
 
-void serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
-void serial_HD44780_backlight (PrivateData *p, unsigned char state);
-unsigned char serial_HD44780_scankeypad (PrivateData *p);
-void serial_HD44780_close (PrivateData *p);
+void serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void serial_HD44780_backlight(PrivateData *p, unsigned char state);
+unsigned char serial_HD44780_scankeypad(PrivateData *p);
+void serial_HD44780_close(PrivateData *p);
 
 // initialize the driver
 int
-hd_init_serial (Driver *drvthis)
+hd_init_serial(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 
@@ -155,17 +155,17 @@ hd_init_serial (Driver *drvthis)
 		return -1;
 	}
 
-	report (RPT_INFO,"HD44780: serial: device type: %s", SERIAL_IF.name);
+	report(RPT_INFO,"HD44780: serial: device type: %s", SERIAL_IF.name);
 
 	/* Check if user knows the capabilities of his hardware ;-) */
 	if (p->have_keypad && !(SERIAL_IF.keypad)) {
-		report (RPT_ERR, "HD44780: serial: keypad is not supported by %s", SERIAL_IF.name);
-		report (RPT_ERR, "HD44780: serial: check your configuration file and disable it");
+		report(RPT_ERR, "HD44780: serial: keypad is not supported by %s", SERIAL_IF.name);
+		report(RPT_ERR, "HD44780: serial: check your configuration file and disable it");
 		return -1;
 	}
 	if (p->have_backlight && !(SERIAL_IF.backlight)) {
-		report (RPT_ERR, "HD44780: serial: backlight control is not supported by %s", SERIAL_IF.name);
-		report (RPT_ERR, "HD44780: serial: check your configuration file and disable it");
+		report(RPT_ERR, "HD44780: serial: backlight control is not supported by %s", SERIAL_IF.name);
+		report(RPT_ERR, "HD44780: serial: check your configuration file and disable it");
 		return -1;
 	}
 
@@ -180,12 +180,12 @@ hd_init_serial (Driver *drvthis)
 		report(RPT_ERR, "HD44780: serial: invalid configured bitrate speed");
 		return -1;
 	}
-	report (RPT_INFO,"HD44780: serial: using speed: %d", conf_bitrate);
+	report(RPT_INFO,"HD44780: serial: using speed: %d", conf_bitrate);
 
 	/* Get serial device to use */
 	strncpy(device, drvthis->config_get_string(drvthis->name, "device", 0, DEFAULT_DEVICE), sizeof(device));
 	device[sizeof(device)-1] = '\0';
-	report (RPT_INFO,"HD44780: serial: using device: %s", device);
+	report(RPT_INFO,"HD44780: serial: using device: %s", device);
 
 	/* Set up io port correctly, and open it... */
 	p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
@@ -232,7 +232,7 @@ hd_init_serial (Driver *drvthis)
 		report(RPT_INFO,"HD44780: serial: initializing with 8 bits interface");
 		common_init(p, IF_8BIT);
 	} else {
-		report (RPT_INFO,"HD44780: serial: initializing with 4 bits interface");
+		report(RPT_INFO,"HD44780: serial: initializing with 4 bits interface");
 		common_init(p, IF_4BIT);
 	}
 
@@ -241,7 +241,7 @@ hd_init_serial (Driver *drvthis)
 
 // serial_HD44780_senddata
 void
-serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
+serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	/* Filter illegally sent escape characters (for interfaces without data escape) */
 	if (flags == RS_DATA && SERIAL_IF.data_escape == 0 && ch == SERIAL_IF.instruction_escape)
@@ -265,7 +265,7 @@ serial_HD44780_senddata (PrivateData *p, unsigned char displayID, unsigned char 
 }
 
 void
-serial_HD44780_backlight (PrivateData *p, unsigned char state)
+serial_HD44780_backlight(PrivateData *p, unsigned char state)
 {
         unsigned char send[1];
 	if (p->have_backlight) {
@@ -284,7 +284,7 @@ serial_HD44780_backlight (PrivateData *p, unsigned char state)
 }
 
 unsigned char
-serial_HD44780_scankeypad (PrivateData *p)
+serial_HD44780_scankeypad(PrivateData *p)
 {
 	unsigned char buffer = 0;
 	char hangcheck = 100;
@@ -303,7 +303,7 @@ serial_HD44780_scankeypad (PrivateData *p)
 }
 
 void
-serial_HD44780_close (PrivateData *p)
+serial_HD44780_close(PrivateData *p)
 {
         if (SERIAL_IF.end_code)
                 write(p->fd, &SERIAL_IF.end_code, 1);
