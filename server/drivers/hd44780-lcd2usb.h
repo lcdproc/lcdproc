@@ -11,7 +11,7 @@
 /* target is a bit map for CMD/DATA */
 #define LCD2USB_CTRL_0		(1<<3)
 #define LCD2USB_CTRL_1		(1<<4)
-#define LCD2USB_CTRL_BOTH	(LCD_CTRL_0 | LCD_CTRL_1)
+#define LCD2USB_CTRL_BOTH	(LCD2USB_CTRL_0 | LCD2USB_CTRL_1)
 
 #define LCD2USB_ECHO		(0<<5)
 #define LCD2USB_CMD		(1<<5)

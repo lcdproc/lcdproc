@@ -28,7 +28,7 @@ static usb_dev_handle *lcd2usb;
 
 // initialize the driver
 int
-hd_init_lcd2usb (Driver *drvthis)
+hd_init_lcd2usb(Driver *drvthis)
 {
   PrivateData *p = (PrivateData*) drvthis->private_data;
 
@@ -130,9 +130,11 @@ hd_init_lcd2usb (Driver *drvthis)
 void
 lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-int type = (flags == RS_DATA) ? (LCD2USB_DATA | LCD2USB_CTRL_0) : (LCD2USB_CMD | LCD2USB_CTRL_0);
+int type = (flags == RS_DATA) ? LCD2USB_DATA : LCD2USB_CMD;
+int id = (displayID == 0) ? LCD2USB_CTRL_BOTH
+                          : ((displayID == 1) ? LCD2USB_CTRL_0 : LCD2USB_CTRL_1);
 
-    usb_control_msg(lcd2usb, USB_TYPE_VENDOR, type, ch, 0, NULL, 0, 1000);
+    usb_control_msg(lcd2usb, USB_TYPE_VENDOR, (type | id), ch, 0, NULL, 0, 1000);
 }
 
 
