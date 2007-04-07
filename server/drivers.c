@@ -1,6 +1,8 @@
-/*
- * drivers.c
- * This file is part of LCDd, the lcdproc server.
+/** \file drivers.c
+ * This code manages the lists of loaded drivers and does actions on all drivers.
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -8,7 +10,6 @@
  * Copyright(c) 2001, Joris Robijn
  *
  *
- * This code manages the lists of loaded drivers and does actions on all drivers.
  *
  */
 
@@ -33,8 +34,8 @@
 /* lcd.h is used for the driver API definition */
 
 
-LinkedList *loaded_drivers = NULL;
-DisplayProps *display_props = NULL;
+LinkedList *loaded_drivers = NULL;		/**< list of loaded drivers */
+DisplayProps *display_props = NULL;		/**< properties of the display */
 
 #define ForAllDrivers(drv) for (drv = LL_GetFirst(loaded_drivers); drv; drv = LL_GetNext(loaded_drivers))
 
@@ -42,11 +43,11 @@ DisplayProps *display_props = NULL;
 /**
  * Load driver based on "DriverPath" config setting and section name or
  * "File" configuration setting in the driver's section.
- * \param   Driver section name.
- * \return  <0: error;
- *           0: ok, driver is an input driver only;
- *           1: ok, driver is an output driver;
- *           2: ok, driver is an output driver that needs to run in the foreground.
+ * \param name  Driver section name.
+ * \retval  <0  error.
+ * \retval   0  OK, driver is an input driver only.
+ * \retval   1  OK, driver is an output driver.
+ * \retval   2  OK, driver is an output driver that needs to run in the foreground.
  */
 int
 drivers_load_driver(const char *name)
@@ -137,7 +138,7 @@ drivers_load_driver(const char *name)
 
 /**
  * Unload all loaded drivers.
- * \return  0.
+ * \retval  0
  */
 int
 drivers_unload_all(void)
@@ -156,8 +157,8 @@ drivers_unload_all(void)
 
 /**
  * Get information from loaded drivers.
- * \return  Information string of 1st driver with get_info() function defined,
- *          or ""(empty string) if no driver has a get_info() function.
+ * \return  Pointer to information string of first driver with get_info() function defined,
+ *          or the empty string if no driver has a get_info() function.
  */
 const char *
 drivers_get_info(void)
@@ -194,7 +195,7 @@ drivers_clear(void)
 
 
 /**
- * Flush data on all loaded drivers to LCDs
+ * Flush data on all loaded drivers to LCDs.
  * Call flush() function of all loaded drivers that have a flush() function defined.
  */
 void
@@ -211,6 +212,13 @@ drivers_flush(void)
 }
 
 
+/**
+ * Write string to all loaded drivers.
+ * Call string() function of all loaded drivers that have a flush() function defined.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
 void
 drivers_string(int x, int y, const char *string)
 {
@@ -225,6 +233,13 @@ drivers_string(int x, int y, const char *string)
 }
 
 
+/**
+ * Write a character to all loaded drivers.
+ * Call chr() function of all loaded drivers that have a chr() function defined.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
 void
 drivers_chr(int x, int y, char c)
 {
@@ -239,12 +254,23 @@ drivers_chr(int x, int y, char c)
 }
 
 
+/**
+ * Draw a vertical bar to all drivers.
+ * For drivers that define a vbar() function, call it;
+ * otherwise call the general driver_alt_vbar() function from the server core.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param pattern  Options (currently unused).
+ */
 void
 drivers_vbar(int x, int y, int len, int promille, int pattern)
 {
 	Driver *drv;
 
-	debug(RPT_DEBUG, "%s(x=%d, y=%d, len=%d, promille=%d, pattern=%d)", __FUNCTION__, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(x=%d, y=%d, len=%d, promille=%d, pattern=%d)",
+	      __FUNCTION__, x, y, len, promille, pattern);
 
 	/* NEW FUNCTIONS
 	 *
@@ -261,12 +287,23 @@ drivers_vbar(int x, int y, int len, int promille, int pattern)
 }
 
 
+/**
+ * Draw a horizontal bar to all drivers.
+ * For drivers that define a hbar() function, call it;
+ * otherwise call the general driver_alt_hbar() function from the server core.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param pattern  Options (currently unused).
+ */
 void
 drivers_hbar(int x, int y, int len, int promille, int pattern)
 {
 	Driver *drv;
 
-	debug(RPT_DEBUG, "%s(x=%d, y=%d, len=%d, promille=%d, pattern=%d)", __FUNCTION__, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(x=%d, y=%d, len=%d, promille=%d, pattern=%d)",
+	      __FUNCTION__, x, y, len, promille, pattern);
 
 	ForAllDrivers(drv) {
 		if (drv->hbar)
@@ -277,6 +314,13 @@ drivers_hbar(int x, int y, int len, int promille, int pattern)
 }
 
 
+/**
+ * Write a big number to all output drivers.
+ * For drivers that define a num() function, call it;
+ * otherwise call the general driver_alt_num() function from the server core.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
+ */
 void
 drivers_num(int x, int num)
 {
@@ -293,6 +337,12 @@ drivers_num(int x, int num)
 }
 
 
+/**
+ * Perform heartbeat on all drivers.
+ * For drivers that define a heartbeat() function, call it;
+ * otherwise call the general driver_alt_heartbeat() function from the server core.
+ * \param state    Heartbeat state.
+ */
 void
 drivers_heartbeat(int state)
 {
@@ -309,6 +359,16 @@ drivers_heartbeat(int state)
 }
 
 
+/**
+ * Write icon to all drivers.
+ * For drivers that define a icon() function, call it;
+ * otherwise call the general driver_alt_icon() function from the server core.
+ * If the driver's locally defined icon() function returns -1, then also
+ * call the server core's driver_alt_icon().
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ */
 void
 drivers_icon(int x, int y, int icon)
 {
@@ -331,6 +391,15 @@ drivers_icon(int x, int y, int icon)
 	}
 }
 
+
+/**
+ * Set cursor on all loaded drivers.
+ * For drivers that define a cursor() function, call it;
+ * otherwise call the general driver_alt_cursor() function from the server core.
+ * \param x        Horizontal cursor position (column).
+ * \param y        Vertical cursor position (row).
+ * \param state    New cursor state.
+ */
 void
 drivers_cursor(int x, int y, int state)
 {
@@ -346,20 +415,31 @@ drivers_cursor(int x, int y, int state)
 	}
 }
 
+
+/**
+ * Set backlight on all drivers.
+ * Call backlight() function of all drivers that have a backlight() function defined.
+ * \param state    New backlight status.
+ */
 void
-drivers_backlight(int brightness)
+drivers_backlight(int state)
 {
 	Driver *drv;
 
-	debug(RPT_DEBUG, "%s(brightness=%d)", __FUNCTION__, brightness);
+	debug(RPT_DEBUG, "%s(state=%d)", __FUNCTION__, state);
 
 	ForAllDrivers(drv) {
 		if (drv->backlight)
-			drv->backlight(drv, brightness);
+			drv->backlight(drv, state);
 	}
 }
 
 
+/**
+ * Set output on all drivers.
+ * Call ouptput() function of all drivers that have an ouptput() function defined.
+ * \param state    New ouptut status.
+ */
 void
 drivers_output(int state)
 {
@@ -374,6 +454,11 @@ drivers_output(int state)
 }
 
 
+/**
+ * Get key presses from loaded drivers.
+ * \return  Pointer to key string for first driver ithat has a get_key() function defined
+ *          and for which the get_key() function returns a key; otherwise \c NULL.
+ */
 const char *
 drivers_get_key(void)
 {
