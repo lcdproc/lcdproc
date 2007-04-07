@@ -343,8 +343,7 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	load_type curr_load;
 
 	size = sizeof(int);
-	if (sysctlbyname("hw.ncpu", &num, &size, NULL, 0) < 0)
-	{
+	if (sysctlbyname("hw.ncpu", &num, &size, NULL, 0) < 0) {
 		perror("sysctl hw.ncpu");
 		return(FALSE);
 	}
@@ -352,11 +351,15 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	if (machine_get_load(&curr_load) == FALSE)
 		return(FALSE);
 
+	if (numcpus == NULL)
+		return(FALSE);
+
+	/* restrict #CPUs to max. *numcpus */
+	num = (*numcpus >= num) ? num : *numcpus;
 	*numcpus = num;
-	num = num > 8 ? 8 : num;
+
 	/* Don't know how to get per-cpu-load values */
-	for (i = 0; i < num; i++)
-	{
+	for (i = 0; i < num; i++) {
 		result[i] = curr_load;
 	}
 
