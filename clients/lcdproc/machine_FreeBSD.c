@@ -61,7 +61,8 @@ static int pageshift;
 #define pagetok(size) ((size) << pageshift)
 static int swapmode(int *retavail, int *retfree);
 
-int machine_init()
+
+int machine_init(void)
 {
 	/* get the page size with "getpagesize" and calculate pageshift from it */
 	int pagesize = getpagesize();
@@ -78,7 +79,7 @@ int machine_init()
 	return(TRUE);
 }
 
-int machine_close()
+int machine_close(void)
 {
 	return(TRUE);
 }

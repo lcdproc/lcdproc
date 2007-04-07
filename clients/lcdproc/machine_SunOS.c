@@ -31,7 +31,7 @@
 
 static kstat_ctl_t *kc;
 
-int machine_init()
+int machine_init(void)
 {
 	kc = NULL;
 
@@ -45,7 +45,7 @@ int machine_init()
 	return(TRUE);
 }
 
-int machine_close()
+int machine_close(void)
 {
 	if (kc != NULL)
 	{

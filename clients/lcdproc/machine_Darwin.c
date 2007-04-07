@@ -67,7 +67,8 @@ static int swapmode(int *rettotal, int *retfree);
 
 static mach_port_t lcdproc_port;
 
-int machine_init()
+
+int machine_init(void)
 {
 	/* get the page size with "getpagesize" and calculate pageshift from it */
 	unsigned int pagesize = 0;
@@ -88,7 +89,7 @@ int machine_init()
 	return(TRUE);
 }
 
-int machine_close()
+int machine_close(void)
 {
 	return(TRUE);
 }

@@ -61,7 +61,8 @@ static char procbuf[1024]; //TODO ugly hack!
 
 static FILE *mtab_fd;
 
-int machine_init()
+
+int machine_init(void)
 {
 	uptime_fd	= -1;
 	batt_fd		= -1;
@@ -115,7 +116,7 @@ int machine_init()
 	return(TRUE);
 }
 
-int machine_close()
+int machine_close(void)
 {
 	if (batt_fd >= 0)
 		close(batt_fd);
