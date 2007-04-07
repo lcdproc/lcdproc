@@ -39,20 +39,19 @@
 # include "config.h"
 #endif
 
+#define DEFAULT_DEVICE		"/dev/ttyUSB0"
+
 
 void lis2_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
 void lis2_HD44780_backlight(PrivateData *p, unsigned char state);
 unsigned char lis2_HD44780_scankeypad(PrivateData *p);
-void SetMatrice(PrivateData *p,int fd, int matriceNum, int ligne, int point);
-void SetFan(int fd, int fan1, int fan2, int fan3, int fan4);
-void gotoXY(int fd, int x, int y);
-void test(PrivateData *p, int a);
-void clear(int fd);
 
+static void SetMatrice(PrivateData *p,int fd, int matriceNum, int ligne, int point);
+static void SetFan(int fd, int fan1, int fan2, int fan3, int fan4);
+static void gotoXY(int fd, int x, int y);
 
-#define DEFAULT_DEVICE		"/dev/ttyUSB0"
+static void writeChar(int fd, int code);
 
-void writeChar(int fd, int code);
 
 // initialise the driver
 int hd_init_lis2(Driver *drvthis)
@@ -106,7 +105,7 @@ int hd_init_lis2(Driver *drvthis)
 }
 
 
-void SetMatrice(PrivateData *p, int fd, int matriceNum, int ligne, int point)
+static void SetMatrice(PrivateData *p, int fd, int matriceNum, int ligne, int point)
 {
 	// char from 0 to 7
 	// line from 0 to 7 from top to bottom
@@ -118,7 +117,7 @@ void SetMatrice(PrivateData *p, int fd, int matriceNum, int ligne, int point)
 	writeChar(fd, point);
 }
 
-void SetFan(int fd, int fan1, int fan2, int fan3, int fan4)
+static void SetFan(int fd, int fan1, int fan2, int fan3, int fan4)
 {
 	writeChar(fd, 0);
 	writeChar(fd, 174);
@@ -135,7 +134,7 @@ void SetFan(int fd, int fan1, int fan2, int fan3, int fan4)
 	writeChar(fd, 0);
 }
 
-void gotoXY(int fd, int x, int y)
+static void gotoXY(int fd, int x, int y)
 {
 	writeChar(fd, 0);
 	writeChar(fd, 160+y);
@@ -143,16 +142,17 @@ void gotoXY(int fd, int x, int y)
 	writeChar(fd, 167);
 }
 
-void writeChar(int fd, int code)
+static void writeChar(int fd, int code)
 {
 	char buf = code;
 
 	write(fd, &buf, 1);
 }
 
-int mode = 0;
-int charNum = 0;
-int rowNum = 0;
+
+static int mode = 0;
+static int charNum = 0;
+static int rowNum = 0;
 
 void lis2_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
