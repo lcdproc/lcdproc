@@ -262,7 +262,7 @@ MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, const char string
  * \param y        Vertical character position (row).
  * \param c        Character that gets written.
  */
-MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char ch)
+MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -271,7 +271,7 @@ MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char ch)
 	if ((x < 0) || (y < 0) || (x >= p->width) || (y >= p->height))
 		return;
 
-	p->framebuf[(y * p->width) + x] = ch;
+	p->framebuf[(y * p->width) + x] = c;
 }
 
 
