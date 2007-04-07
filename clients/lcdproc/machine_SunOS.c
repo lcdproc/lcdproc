@@ -28,7 +28,6 @@
 #include "config.h"
 #include "shared/LL.h"
 
-#define MAX_CPUS 8
 
 static kstat_ctl_t *kc;
 
@@ -138,7 +137,6 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 int machine_get_load(load_type *curr_load)
 {
 	static load_type last_load = { 0, 0, 0, 0, 0 };
-	static load_type last_ret_load;
 	load_type load;
 	kstat_t *k_space;
 	struct cpu_stat cinfo;
@@ -173,20 +171,14 @@ int machine_get_load(load_type *curr_load)
 	load.nice   = cinfo.cpu_sysinfo.cpu[CPU_WAIT];
 	load.total  = load.user + load.nice + load.system + load.idle;
 
-	if (load.total != last_load.total)
-	{
-		curr_load->user   = load.user   - last_load.user;
-		curr_load->nice   = load.nice   - last_load.nice;
-		curr_load->system = load.system - last_load.system;
-		curr_load->idle   = load.idle   - last_load.idle;
-		curr_load->total  = load.total  - last_load.total;
-		last_ret_load = *curr_load;
-		last_load = load;
-	}
-	else
-	{
-		*curr_load = last_ret_load;
-	}
+	curr_load->user   = load.user   - last_load.user;
+	curr_load->nice   = load.nice   - last_load.nice;
+	curr_load->system = load.system - last_load.system;
+	curr_load->idle   = load.idle   - last_load.idle;
+	curr_load->total  = load.total  - last_load.total;
+
+	// struct assingment is legal in C89
+	last_load = load;
 
 	return(TRUE);
 }
@@ -370,30 +362,31 @@ int machine_get_smpload(load_type *result, int *numcpus)
 {
 	static load_type last_load[MAX_CPUS];
 	load_type curr_load[MAX_CPUS];
+	int ncpu = 0;
+	int max_cpu, count;
 
-	kstat_t	*k_space;
-	int	ncpu = 0, count;
-	char buffer[16];
+	max_cpu = sysconf(_SC_NPROCESSORS_CONF);
+	for (count = 0; count < max_cpu; count++) {
+		kstat_t	*k_space;
+		char buffer[16];
 
-	*numcpus = sysconf(_SC_NPROCESSORS_CONF);
-	for (count = 0; count < MAX_CPUS; count++)
-	{
 		sprintf(buffer, "cpu_stat%d", count);
 
 		k_space = kstat_lookup(kc, "cpu_stat", count, buffer);
+
 		if ((k_space != NULL) && (kstat_read(kc, k_space, NULL) != -1))
 		{
 			struct cpu_stat cinfo;
 
 			k_space = kstat_lookup(kc, "cpu_stat", -1, buffer);
-			kstat_read(kc,k_space,&cinfo);
+			kstat_read(kc, k_space, &cinfo);
 
 			curr_load[ncpu].idle	= cinfo.cpu_sysinfo.cpu[CPU_IDLE];
 			curr_load[ncpu].user	= cinfo.cpu_sysinfo.cpu[CPU_USER];
 			curr_load[ncpu].system	= cinfo.cpu_sysinfo.cpu[CPU_KERNEL];
 			curr_load[ncpu].nice	= cinfo.cpu_sysinfo.cpu[CPU_WAIT];
-			//Hu? Why?  curr_load[ncpu].nice	= 0;
-			curr_load[ncpu].total	= curr_load[ncpu].user + curr_load[ncpu].nice + curr_load[ncpu].system + curr_load[ncpu].idle;
+			curr_load[ncpu].total	= curr_load[ncpu].user + curr_load[ncpu].nice +
+						  curr_load[ncpu].system + curr_load[ncpu].idle;
 
 			result[ncpu].total	= curr_load[ncpu].total  - last_load[ncpu].total;
 			result[ncpu].user	= curr_load[ncpu].user   - last_load[ncpu].user;
@@ -401,15 +394,16 @@ int machine_get_smpload(load_type *result, int *numcpus)
 			result[ncpu].system	= curr_load[ncpu].system - last_load[ncpu].system;
 			result[ncpu].idle	= curr_load[ncpu].idle   - last_load[ncpu].idle;
 
-			last_load[ncpu].total	= curr_load[ncpu].total;
-			last_load[ncpu].user	= curr_load[ncpu].user;
-			last_load[ncpu].nice	= curr_load[ncpu].nice;
-			last_load[ncpu].system	= curr_load[ncpu].system;
-			last_load[ncpu].idle	= curr_load[ncpu].idle;
+			// struct assignment is legal in C89
+			last_load[ncpu] = curr_load[ncpu];
 
+			// restrict # CPUs to min(*numcpus, MAX_CPUS)
 			ncpu++;
+			if ((ncpu >= *numcpus) || (ncpu >= MAX_CPUS))
+				break;
 		}
 	}
+	*numcpus = ncpu;
 
 	return(TRUE);
 }
