@@ -20,6 +20,9 @@
 # define LOADAVG_15MIN	2
 #endif
 
+#ifndef MAX_CPUS
+# define MAX_CPUS 16	/**< max. # of CPUs for which we store load history */
+#endif
 
 typedef struct
 {
@@ -83,7 +86,7 @@ typedef struct iface_info
 	double rc_byte;
 	double rc_byte_old;
 
-	/* transmited bytes */
+	/* transmitted bytes */
 	double tr_byte;
 	double tr_byte_old;
 
