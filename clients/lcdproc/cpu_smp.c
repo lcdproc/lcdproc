@@ -2,7 +2,7 @@
 *
 *  cpu_smp.c - dipslay cpu info for multi-processor machines
 *  Copyright (C) 2000  J Robert Ray
-*  Copyright (C) 2006  Peter Marschall
+*  Copyright (C) 2006,7  Peter Marschall
 *
 *  Adapted from cpu.c.
 *
@@ -13,11 +13,11 @@
 *  more CPUs than lines on the LCD, it puts 2 CPUs per line, splitting the line
 *  in half.  Otherwise, it uses one line per CPU.
 *
-*  If you have a four-line display and a dual-processor machine, two lines will
-*  go unused.  This would be a good spot for a histogram or other info.  Also,
-*  it could always display two CPUs per line to provide extra space for other
-*  info, when there otherwise wouldn't be extra space (e.g., on a two proc-
-*  machine, with a two-line LCD [this is my setup]).
+*  If the number of lines used to display the bar graphs for the CPUs is smaller
+*  than the LCD's height, a title line is introduced, so that the screen looks
+*  similar to other lcdproc screens.
+*  In all other cases (i.e. #CPUs == LCD height or #CPUs >= 2 * LCD height),
+*  the title is left out to display as many CPUs graphs as possible.
 *
 *  ---
 *
@@ -52,7 +52,6 @@
 #include "machine.h"
 #include "cpu_smp.h"
 
-#define MAX_CPUS 16
 
 //////////////////////////////////////////////////////////////////////////
 // CPU screen shows info about percentage of the CPU being used
@@ -65,28 +64,41 @@ cpu_smp_screen (int rep, int display, int *flags_ptr)
 	int z;
 	static float cpu[MAX_CPUS][CPU_BUF_SIZE + 1];	// last buffer is scratch
 	load_type load[MAX_CPUS];
-	int num_cpus;
+	int num_cpus = MAX_CPUS;
 	int bar_size;
+	int lines_used;
 
+	// get SMP load - inform about max #CPUs allowed
 	machine_get_smpload(load, &num_cpus);
 
-	bar_size = (num_cpus > lcd_hgt) ? (lcd_wid / 2 - 6) : (lcd_wid - 6);
-
-	// restrict num_cpus to max. twic display height
+	// restrict num_cpus to max. twice the display height
 	if (num_cpus > 2 * lcd_hgt)
 		num_cpus = 2 * lcd_hgt;
+
+	// 2 CPUs per line if more CPUs than lines
+	bar_size = (num_cpus > lcd_hgt) ? (lcd_wid / 2 - 6) : (lcd_wid - 6);
+	lines_used = (num_cpus > lcd_hgt) ? (num_cpus + 1) / 2 : num_cpus;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
 
 		sock_send_string(sock, "screen_add P\n");
-		sock_send_string(sock, "screen_set P -heartbeat off\n");
+		
+		// print title if he have room for it
+		if (lines_used < lcd_hgt) {
+			sock_send_string(sock, "widget_add P title title\n");
+			sock_printf(sock, "widget_set P title {SMP CPU %s}\n", get_hostname());
+		}
+		else {
+			sock_send_string(sock, "screen_set P -heartbeat off\n");
+		}	
 
 		sock_printf(sock, "screen_set P -name {CPU Use: %s}\n", get_hostname());
 
 		for (z = 0; z < num_cpus; z++) {
+			int y_offs = (lines_used < lcd_hgt) ? 2 : 1;
 			int x = (num_cpus > lcd_hgt) ? ((z % 2) * (lcd_wid/2) + 1) : 1;
-			int y = (num_cpus > lcd_hgt) ? (z/2 + 1) : (z+1);
+			int y = (num_cpus > lcd_hgt) ? (z/2 + y_offs) : (z + y_offs);
 
 			sock_printf(sock, "widget_add P cpu%d_title string\n", z);
 			sock_printf(sock, "widget_set P cpu%d_title %d %d \"CPU%d[%*s]\"\n",
@@ -98,8 +110,9 @@ cpu_smp_screen (int rep, int display, int *flags_ptr)
 	}
 
 	for (z = 0; z < num_cpus; z++) {
+		int y_offs = (lines_used < lcd_hgt) ? 2 : 1;
 		int x = (num_cpus > lcd_hgt) ? ((z % 2) * (lcd_wid/2) + 6) : 6;
-		int y = (num_cpus > lcd_hgt) ? (z/2 + 1) : (z+1);
+		int y = (num_cpus > lcd_hgt) ? (z/2 + y_offs) : (z + y_offs);
 		float value = 0.0;
 		int i, n;
 
