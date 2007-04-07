@@ -50,8 +50,6 @@
 #include "config.h"
 #include "shared/LL.h"
 
-#define MAX_CPUS 8
-
 
 static int batt_fd;
 static int load_fd;
@@ -303,6 +301,7 @@ int machine_get_load(load_type *curr_load)
 	load_type load;
 
 	reread(load_fd, "get_load");
+
 	sscanf(procbuf, "cpu %lu %lu %lu %lu", &load.user, &load.nice, &load.system, &load.idle);
 	load.total = load.user + load.nice + load.system + load.idle;
 
@@ -311,6 +310,8 @@ int machine_get_load(load_type *curr_load)
 	curr_load->system = load.system - last_load.system;
 	curr_load->idle   = load.idle   - last_load.idle;
 	curr_load->total  = load.total  - last_load.total;
+
+	// struct assignment is legal in C89
 	last_load = load;
 
 	return(TRUE);
@@ -456,8 +457,7 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	char *token;
 	static load_type last_load[MAX_CPUS];
 	load_type curr_load[MAX_CPUS];
-
-	*numcpus = 0;
+	int ncpu = 0;
 
 	reread(load_fd, "get_load");
 
@@ -465,24 +465,29 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	token = strtok(procbuf, "\n");
 	while (token != NULL) {
 		if ((strlen(token) > 3) && (!strncmp(token, "cpu", 3)) && isdigit(token[3])) {
-			sscanf(token, "cpu%*d %lu %lu %lu %lu", &curr_load[*numcpus].user, &curr_load[*numcpus].nice, &curr_load[*numcpus].system, &curr_load[*numcpus].idle);
+			sscanf(token, "cpu%*d %lu %lu %lu %lu", &curr_load[ncpu].user, &curr_load[ncpu].nice, &curr_load[ncpu].system, &curr_load[ncpu].idle);
 
-			curr_load[*numcpus].total = curr_load[*numcpus].user + curr_load[*numcpus].nice + curr_load[*numcpus].system + curr_load[*numcpus].idle;
-			result[*numcpus].total	= curr_load[*numcpus].total - last_load[*numcpus].total;
-			result[*numcpus].user	= curr_load[*numcpus].user - last_load[*numcpus].user;
-			result[*numcpus].nice	= curr_load[*numcpus].nice - last_load[*numcpus].nice;
-			result[*numcpus].system	= curr_load[*numcpus].system - last_load[*numcpus].system;
-			result[*numcpus].idle	= curr_load[*numcpus].idle - last_load[*numcpus].idle;
-			last_load[*numcpus].total	= curr_load[*numcpus].total;
-			last_load[*numcpus].user	= curr_load[*numcpus].user;
-			last_load[*numcpus].nice	= curr_load[*numcpus].nice;
-			last_load[*numcpus].system	= curr_load[*numcpus].system;
-			last_load[*numcpus].idle	= curr_load[*numcpus].idle;
+			curr_load[ncpu].total = curr_load[ncpu].user + curr_load[ncpu].nice +
+						curr_load[ncpu].system + curr_load[ncpu].idle;
 
-			(*numcpus)++;
+			result[ncpu].total	= curr_load[ncpu].total - last_load[ncpu].total;
+			result[ncpu].user	= curr_load[ncpu].user - last_load[ncpu].user;
+			result[ncpu].nice	= curr_load[ncpu].nice - last_load[ncpu].nice;
+			result[ncpu].system	= curr_load[ncpu].system - last_load[ncpu].system;
+			result[ncpu].idle	= curr_load[ncpu].idle - last_load[ncpu].idle;
+			
+			// struct assignment is legal in C89
+			last_load[ncpu] = curr_load[ncpu];
+
+			// restrict # CPUs to min(*numcpus, MAX_CPUS)
+			ncpu++;
+			if ((ncpu >= *numcpus) || (ncpu >= MAX_CPUS))
+				break;
 		}
 		token = strtok(NULL, "\n");
 	}
+	*numcpus = ncpu;
+
 	return(TRUE);
 }
 
