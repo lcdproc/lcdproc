@@ -71,7 +71,7 @@ int process_configfile(char * configfile);
 int connect_and_setup();
 int process_response(char * str);
 int exec_command(MenuEntry *cmd);
-int main_loop();
+int main_loop(void);
 
 
 #define CHAIN(e,f) { if (e>=0) { e=(f); }}
@@ -355,7 +355,7 @@ int exec_command(MenuEntry *cmd)
 	return -1;
 }
 
-int main_loop ()
+int main_loop(void)
 {
 	int num_bytes;
 	char buf[100];
@@ -376,7 +376,7 @@ int main_loop ()
 			}
 		}
 		else {
-			process_response (buf);
+			process_response(buf);
 		}
 	}
 
