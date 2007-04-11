@@ -66,12 +66,12 @@ MenuEntry *main_menu;
 int sock = -1;
 
 /* Function prototypes */
-int process_command_line(int argc, char **argv);
-int process_configfile(char * configfile);
-int connect_and_setup();
-int process_response(char * str);
-int exec_command(MenuEntry *cmd);
-int main_loop(void);
+static int process_command_line(int argc, char **argv);
+static int process_configfile(char * configfile);
+static int connect_and_setup(void);
+static int process_response(char *str);
+static int exec_command(MenuEntry *cmd);
+static int main_loop(void);
 
 
 #define CHAIN(e,f) { if (e>=0) { e=(f); }}
@@ -108,7 +108,8 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-int process_command_line(int argc, char **argv)
+
+static int process_command_line(int argc, char **argv)
 {
 	int c;
 	int error = 0;
@@ -175,7 +176,8 @@ int process_command_line(int argc, char **argv)
 	return error;
 }
 
-int process_configfile(char *configfile)
+
+static int process_configfile(char *configfile)
 {
 	const char *tmp;
 
@@ -236,7 +238,8 @@ int process_configfile(char *configfile)
 	return 0;
 }
 
-int connect_and_setup()
+
+static int connect_and_setup(void)
 {
 	report(RPT_INFO, "Connecting to %s:%d", address, port);
 
@@ -267,7 +270,8 @@ int connect_and_setup()
 	return 0;
 }
 
-int process_response(char *str)
+
+static int process_response(char *str)
 {
 	char *argv[15];
 	int argc;
@@ -324,7 +328,8 @@ int process_response(char *str)
 	return 0;
 }
 
-int exec_command(MenuEntry *cmd)
+
+static int exec_command(MenuEntry *cmd)
 {
 	if ((cmd != NULL)  && (menu_command(cmd) != NULL)) {
 		const char *command = menu_command(cmd);
@@ -355,7 +360,8 @@ int exec_command(MenuEntry *cmd)
 	return -1;
 }
 
-int main_loop(void)
+
+static int main_loop(void)
 {
 	int num_bytes;
 	char buf[100];
