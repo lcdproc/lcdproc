@@ -2,7 +2,7 @@
  * Common data types and function declarations
  * for OS specific sources in \c machine_{Darwin,Linux,SunOS,*BSD}.c.
  *
- * In order to port the lcdproc client to a new cwoperating system,
+ * In order to port the \e lcdproc client to a new operating system,
  * a new file \c machine_XXX.c (where \c XXX = OS name) needs to be
  * created, that provides functions to the function declarations below.
  * The aleady existing \c machine_*.c files can be used as examples.
@@ -196,7 +196,7 @@ int machine_get_uptime(double *up, double *idle);
 
 /**
  * Get network interface status.
- * \param  interface Ppointer where to store interface info.
+ * \param  interface Pointer where to store interface info.
  * \retval  FALSE  Error, do not trust the contents of the parameter pointers.
  * \retval  TRUE   OK, parameter pointers are filled with sensible data.
  */
