@@ -27,7 +27,7 @@
 
 
 int
-mode_init()
+mode_init(void)
 {
 	machine_init();
 
@@ -35,7 +35,7 @@ mode_init()
 }
 
 void
-mode_close()
+mode_close(void)
 {
 	machine_close();
 }

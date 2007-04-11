@@ -1,6 +1,12 @@
 /** \file machine.h
  * Common data types and function declarations
  * for OS specific sources in \c machine_{Darwin,Linux,SunOS,*BSD}.c.
+ *
+ * In order to port the lcdproc client to a new cwoperating system,
+ * a new file \c machine_XXX.c (where \c XXX = OS name) needs to be
+ * created, that provides functions to the function declarations below.
+ * The aleady existing \c machine_*.c files can be used as examples.
+ *
  */
 
 #ifndef _lcdproc_machine_h_

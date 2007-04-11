@@ -49,7 +49,7 @@ static int transfer_screen = 0;  /* by default, transfer screen is not shown */
 
 /* reads and parses configuration file */
 static int
-iface_process_configfile()
+iface_process_configfile(void)
 {
 	const char *unit;
 

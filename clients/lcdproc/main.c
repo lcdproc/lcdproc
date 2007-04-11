@@ -60,7 +60,7 @@ static struct utsname unamebuf;
 
 static void HelpScreen(int exit_state);
 static void exit_program(int val);
-static void main_loop();
+static void main_loop(void);
 static int process_configfile(char *cfgfile);
 
 
@@ -115,25 +115,25 @@ char *configfile = NULL;
 char *displayname = NULL;
 
 
-const char *get_hostname()
+const char *get_hostname(void)
 {
 	return(unamebuf.nodename);
 }
 
 
-const char *get_sysname()
+const char *get_sysname(void)
 {
 	return(unamebuf.sysname);
 }
 
 
-const char *get_sysrelease()
+const char *get_sysrelease(void)
 {
 	return(unamebuf.release);
 }
 
 
-int set_mode(int shortname, char *longname, int state)
+static int set_mode(int shortname, char *longname, int state)
 {
 	int k;
 
@@ -158,7 +158,7 @@ int set_mode(int shortname, char *longname, int state)
 }
 
 
-void clear_modes()
+static void clear_modes(void)
 {
 	int k;
 
@@ -512,7 +512,7 @@ menus_init ()
 // Main program loop...
 //
 void
-main_loop()
+main_loop(void)
 {
 	int i = 0, j;
 	int connected = 0;

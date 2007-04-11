@@ -57,9 +57,9 @@ typedef struct mode
 #define LCD_MAX_WIDTH	80
 #define LCD_MAX_HEIGHT	80
 
-const char *get_hostname();
-const char *get_sysname();
-const char *get_sysrelease();
+const char *get_hostname(void);
+const char *get_sysname(void);
+const char *get_sysrelease(void);
 
 #ifndef min
 # define min(a,b) (((a) < (b)) ? (a) : (b))
