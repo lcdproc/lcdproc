@@ -1,28 +1,42 @@
 <sect1 id="imon-howto">
 <title>The imon Driver</title>
 
-<para>
-This section talks about using LCDproc with LCD displays that use the
-imon chipset.
-</para>
-
 <sect2 id="imon-general">
 <title>General</title>
 
-Driver for Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD Module
-
 <para>
-In order to be able to use it, you have to get and install one of
-the following kernel modules:
- - standalone iMON VFD driver from <ulink url="http://venky.ws/projects/imon/"></ulink>
- - the iMON module included with LIRC ver. 0.7.1 or newer
-   from the <ulink url="http://www.lirc.org">LIRC project</ulink>/
+The <code>imon</code> driver controls
+<ulink url="http://www.soundgraph.com/Eng_/Products/imon25.aspx">Soundgraph iMON VFD</ulink>
+devices, that are either preinstalled or available as optional accessories
+for a variety of Home Theater PC (HTPC) cases from Ahanix, Silverstone, Cooler Master
+and others. They can also be bought separately and then fit into a 5,25" disk drive bay
+of any regular PC.
 </para>
 
 <para>
-Adjust the 'Device' key in the [imon] section of /etc/LCDd.conf as
-necessary, depending on what device is file created by the kernel module
-when loaded (this may depend on your system configuration).
+The iMON VFD sports a vacuum fluorescent display with 16x2 characters
+that connects to the computer using USB. Although the device is shipped
+with an IR remote control and some versions even have a volume knob,
+<package>LCDproc</package>'s driver currently only supports the display
+part of the device.
+</para>
+
+<para id="imon-kernelmodules">
+In order to be able to use it, you have to get and install one of
+the following Linux kernel modules:
+<itemizedlist>
+  <listitem>
+    <para>
+      standalone iMON VFD driver from <ulink url="http://venky.ws/projects/imon/"></ulink>
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+       the iMON module included with LIRC ver. 0.7.1 or newer
+       from the <ulink url="http://www.lirc.org">LIRC project</ulink>
+    </para>
+  </listitem>
+</itemizedlist>
 </para>
 
 <para>
@@ -50,7 +64,10 @@ For further details, please consult the page and the forum at
     </arg>
   </term>
   <listitem><para>
-    set display size [default: <literal>20x4</literal>]
+    Set the display size. The default <literal>16x2</literal> should be safe
+    for most iif not all users, since the device seeems to be made only with
+    this one size.
+    But who knowns &hellip;
   </para></listitem>
 </varlistentry>
 
@@ -60,7 +77,9 @@ For further details, please consult the page and the forum at
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
-    Select the output device to use [default: <filename>/dev/lcd</filename>]
+    Select the output device to use. Change this from the default
+    <filename>/dev/lcd</filename> to the device file that gets created
+    when the kernel module (<link linkend="imon-kernelmodules">see above</link>) is loaded.
   </para></listitem>
 </varlistentry>
 </variablelist>

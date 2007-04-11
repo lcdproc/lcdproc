@@ -18,7 +18,9 @@ enabling use of the L1-L5 and G1 keys.  The required libraries are
 available from the g15daemon and g15tools projects at sourceforge.net.
 </para>
 
-<sect3 id="G15-config">
+</sect2>
+
+<sect2 id="G15-config">
 <title>Configuration in LCDd.conf</title>
 
 <para>
@@ -28,7 +30,6 @@ In the future, now that libg15render has FreeType2 support, there may
 be options to adjust the font used and the display size.
 </para>
 
-</sect3>
 </sect2>
 </sect1>
 
