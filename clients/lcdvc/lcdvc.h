@@ -23,6 +23,4 @@ extern char *keys[4];
 
 extern char *progname;
 
-int split(char * str, char delim, char * parts[], int maxparts);
-
 #endif

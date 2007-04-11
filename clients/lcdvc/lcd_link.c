@@ -13,7 +13,7 @@
 #include "shared/str.h"
 #include "shared/sockets.h"
 
-char * address = UNSET_STR;
+char *address = UNSET_STR;
 int port = UNSET_INT;
 short autoscroll = 1;
 
@@ -22,16 +22,18 @@ short listening = 0;
 short scroll_x = 0, scroll_y = 0;
 short lcd_cursor_x, lcd_cursor_y;
 short lcd_width = 0, lcd_height = 0;
-char * lcd_buf = NULL;
+char *lcd_buf = NULL;
 
 short last_vc_cursor_y = 0;
 short last_vc_cursor_x = 0;
 short last_lcd_cursor_x = 0;
 short last_lcd_cursor_y = 0;
 
-int read_connect_string();
+static int read_connect_string(void);
+static int split(char *str, char delim, char *parts[], int maxparts);
 
-int connect_and_setup()
+
+int connect_and_setup(void)
 {
 	char buf[200];
 	int i;
@@ -80,12 +82,13 @@ int connect_and_setup()
 	return 0;
 }
 
-int read_connect_string()
+
+static int read_connect_string(void)
 {
 	char buf[8192];
 	int len = 0;
 	int a;
-	char * argv[20];
+	char *argv[20];
 	int argc;
 	short received = 0;
 	short timeout = 50; /* Give the server 5 secs to respond */
@@ -110,10 +113,10 @@ int read_connect_string()
 
 	argc = split(buf, ' ', argv, 20);
 	for (a = 1; a < argc; a++) {
-		if (0 == strcmp (argv[a], "wid"))
-			lcd_width = atoi (argv[++a]);
-		else if (0 == strcmp (argv[a], "hgt"))
-			lcd_height = atoi (argv[++a]);
+		if (0 == strcmp(argv[a], "wid"))
+			lcd_width = atoi(argv[++a]);
+		else if (0 == strcmp(argv[a], "hgt"))
+			lcd_height = atoi(argv[++a]);
 	}
 	if (argc <= 0 || strcmp(argv[0], "connect") != 0
 	|| lcd_width == 0 || lcd_width == 0) {
@@ -123,18 +126,51 @@ int read_connect_string()
 	return 0;
 }
 
-int read_response(char * buf, int maxsize)
+
+static int split(char *str, char delim, char *parts[], int maxparts)
+/* Splits a string into parts, to which pointers will be returned in &parts.
+ * The return value is the number of parts.
+ * maxparts is the maximum number of parts returned. If more parts exist
+ * they are (unsplit) in the last part.
+ * The parts are split at the character delim.
+ * No new space will be allocated, the string str will be mutated !
+ */
+{
+	char *p1 = str;
+	char *p2;
+	int part_nr = 0;
+
+	/* Find the delim char to end the current part */
+	while (part_nr < maxparts - 1 && (p2 = strchr(p1, delim))) {
+
+		/* subsequent parts... */
+		*p2 = 0;
+		parts[part_nr] = p1;
+
+		p1 = p2 + 1; /* Just after the delim char */
+		part_nr ++;
+	}
+	/* and the last part... */
+	parts[part_nr] = p1;
+	part_nr ++;
+
+	return part_nr;
+}
+
+
+int read_response(char *buf, int maxsize)
 {
 	return sock_recv_string(sock, buf, maxsize);
 }
 
-int process_response(char * str)
+
+int process_response(char *str)
 {
 	char *argv[10];
 	int argc;
 	//int i;
-	//char * p;
-	char * str2 = strdup(str); /* get_args modifies str2 */
+	//char *p;
+	char *str2 = strdup(str); /* get_args modifies str2 */
 
 	report(RPT_DEBUG, "Server said: \"%s\"", str);
 
@@ -205,13 +241,14 @@ int process_response(char * str)
 
 }
 
-int update_display()
+
+int update_display(void)
 {
 	//int bytes_read;
 	short line;
 	int e = 0;
 	char buf[80];
-	char * str_buf;
+	char *str_buf;
 	short num_lines;
 	num_lines = min(lcd_height, vc_height);
 
@@ -261,8 +298,8 @@ int update_display()
 	str_buf = malloc(80 + 2 * lcd_width);
 	for (line = 0; line < num_lines; line++) {
 
-		char * vc_p;
-		char * lcd_p;
+		char *vc_p;
+		char *lcd_p;
 		short line_width;
 
 		line_width = min(lcd_width, vc_width);
@@ -274,7 +311,7 @@ int update_display()
 		/* Has the line data changed ? */
 		if (memcmp(vc_p, lcd_p, line_width) != 0) {
 			/* Yes, so send it */
-			char * a;
+			char *a;
 			short pos;
 
 			/* Format/escape the data */
@@ -311,7 +348,8 @@ int update_display()
 	return 0;
 }
 
-int send_nop()
+
+int send_nop(void)
 {
 	return sock_send_string(sock, "\n");
 }

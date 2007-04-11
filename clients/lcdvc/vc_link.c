@@ -14,9 +14,10 @@
 int vcs0, vcsa;
 unsigned short vc_width = 0, vc_height = 0;
 unsigned short vc_cursor_x = 0, vc_cursor_y = 0;
-char * vc_buf = NULL;
+char *vc_buf = NULL;
 
-int open_vcs()
+
+int open_vcs(void)
 {
 	/* Open the /dev/vcsX and /dev/vcsaX devices */
 	vcs0 = open(vcs_device, O_RDONLY);
@@ -32,7 +33,8 @@ int open_vcs()
 	return 0;
 }
 
-int read_vcdata()
+
+int read_vcdata(void)
 {
 	unsigned short new_vc_height;
 	unsigned short new_vc_width;
@@ -53,13 +55,19 @@ int read_vcdata()
 	vc_cursor_y = buf[3];
 
 	/* Screen resize or initial buffer allocation ? */
-	if (new_vc_width != vc_width || new_vc_height != vc_height) {
+	if ((new_vc_width != vc_width) || (new_vc_height != vc_height)) {
 		vc_width = new_vc_width;
 		vc_height = new_vc_height;
-		if (vc_buf)
-			free(vc_buf);
-		vc_buf = malloc(vc_width * vc_height);
-		memset(vc_buf, ' ', vc_width * vc_height);
+
+		if (vc_width * vc_height > 0) {
+			vc_buf = realloc(vc_buf, vc_width * vc_height);
+
+			if (vc_buf == NULL) {
+				report(RPT_ERR, "malloc failure: %s", strerror(errno));
+				return -1;
+			}	
+			memset(vc_buf, ' ', vc_width * vc_height);
+		}
 	}
 
 	/* Read characters from /dev/cvs0 */

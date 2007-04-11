@@ -3,9 +3,9 @@
 
 extern unsigned short vc_width, vc_height;
 extern unsigned short vc_cursor_x, vc_cursor_y;
-extern char * vc_buf;
+extern char *vc_buf;
 
-int open_vcs();
-int read_vcdata();
+int open_vcs(void);
+int read_vcdata(void);
 
 #endif
