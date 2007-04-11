@@ -51,8 +51,8 @@ The keys are mapped according to the following table:
 
 <tip>
 <para>
-If you have trouble using the IrMan driver, you might try the lirc driver.
-lirc supports Irman as well.
+If you have trouble using the <code>irman</code> driver, you might try the <code>lirc</code> driver.
+lirc supports IrMan as well.
 </para>
 </tip>
 

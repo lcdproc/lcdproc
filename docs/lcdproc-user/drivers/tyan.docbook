@@ -12,7 +12,7 @@ barebones.
 <para>
 The LCD modules used on the front side of the Tyan GS10 and GS12 series
 barebones consist of an LCD display by Winstar Display Co. LTD
-that is 16 characters wide and 2 lines. high.
+that is 16 characters wide and 2 lines high.
 To the right of the display there is a 6 button keypad:
 4 array buttons and two buttons labeled <literal>C</literal> and <literal>S</literal>.
 </para>

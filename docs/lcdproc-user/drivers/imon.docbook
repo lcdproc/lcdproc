@@ -65,7 +65,7 @@ For further details, please consult the page and the forum at
   </term>
   <listitem><para>
     Set the display size. The default <literal>16x2</literal> should be safe
-    for most iif not all users, since the device seeems to be made only with
+    for most if not all users, since the device seeems to be made only with
     this one size.
     But who knowns &hellip;
   </para></listitem>

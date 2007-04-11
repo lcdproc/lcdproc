@@ -14,8 +14,8 @@
           of 9 characters. 
         </para>
         <para>
-          The display is internally connected to the serial port (/dev/ttyS1)
-          with a rate of 9600 baud
+          The display is internally connected to the serial port
+	  (<filename>/dev/ttyS1</filename>) with a fixed rate of 9600 baud.
         </para>
         <para>
           The display uses 13 segments per character. That's why the driver provides 
@@ -25,7 +25,7 @@
           The front panel furthermore has 9 keys which are illuminated by blue LEDs. 
           The LEDs can be controlled with the backlight functions. The keys are not 
           supported by this driver. The red LED (RECORD) can be controlled with the 
-          output command of LCDd.
+          <code>output</code> command of <application>LCDd</application>.
         </para>
 </sect2>
 

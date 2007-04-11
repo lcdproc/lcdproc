@@ -56,26 +56,63 @@ LEDs, similar to what the IOWarrior driver does.
 </para>
 
 <para>
-The Pyramid LC-Display exists in two different versions, with 3 and with
-9 LEDs. 2 of these LEDs can not be controlled by software but are
+The Pyramid LC displays come in two different versions, with 3 and with
+9 LEDs. Two of these LEDs can not be controlled by software but are
 usually hard wired to power and HDD. The other 1 or 7 LEDs can now be
-controlled by sending an "output" command to the server. The one
-argument to the output command is a bitmask that controls the LEDs.
+controlled by sending an <code>output</code> command to the server.
 </para>
 
-<screen>
-bit 0: LED3
-bit 1: LED4
-bit 2: LED5
-bit 3: LED6
-bit 4: LED7
-bit 5: LED8
-bit 6: LED9
-</screen>
+<para>
+The argument to the <code>output</code> command is a bitmask that controls the LEDs
+according to the table below:
+
+<table id="pyramid-ledoutput-mapping">
+<title>Mapping of <code>output</code> bits to LEDs</title>
+<tgroup cols="2" align="left">
+  <thead>
+    <row>
+      <entry>Bit</entry>
+      <entry>LED</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>0</entry>
+      <entry>3</entry>
+    </row>
+    <row>
+      <entry>1</entry>
+      <entry>4</entry>
+    </row>
+    <row>
+      <entry>2</entry>
+      <entry>5</entry>
+    </row>
+    <row>
+      <entry>3</entry>
+      <entry>6</entry>
+    </row>
+    <row>
+      <entry>4</entry>
+      <entry>7</entry>
+    </row>
+    <row>
+      <entry>5</entry>
+      <entry>8</entry>
+    </row>
+    <row>
+      <entry>6</entry>
+      <entry>9</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+</para>
 
 <para>
-There's no way of finding out whether 3 or 9 LEDs are available, so it
-is up to the software to do the right thing.
+For the <application>LCDd</application> server there is no way to find out
+whether 3 or 9 LEDs are available, so it is up to the client software
+to do the right thing.
 </para>
 
 <example id="pyramid-ledoutput.example">

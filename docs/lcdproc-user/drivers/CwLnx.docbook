@@ -226,7 +226,7 @@ For more information see the
     </arg>
   </term>
   <listitem><para>
-    keypad_test_mode permit to test keypad assignement
+    keypad_test_mode permit to test keypad assignment
     Default value is no
   </para></listitem>
 </varlistentry>

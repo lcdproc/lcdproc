@@ -9,17 +9,17 @@
         <title>Eyebox One LCD Module</title>
         <para>
           Eyebox One is a small rackmounted server marketed by Rightvision 
-	  (http://www.alcateleyebox.rightvision.com/).
+	  (<ulink url="http://www.alcateleyebox.rightvision.com/"></ulink>).
 	  This server has an LCD module, a keypad, two graphbars and some leds.
         </para>
         <para>
-          The LCD is a 20x4 alphanumeric modules connected via standard DB-9 cabling and
-          connectors.
+          The LCD is a 20x4 alphanumeric module connected via standard DB-9 cabling and
+          connector.
         </para>
         <para>
 	  I couldn't find any documentation about it. 
 	  All I know has been obtained with some reverse engineering.
-          It seems that it can run only at 19,200 baud.
+          It seems that it can run only at 19.200 baud.
           Sending ASCII to the module will make it simply display that text at 
 	  its current cursor position. 
 	  The module has a built-in BIOS that recognizes commands (sent by transmitting a
