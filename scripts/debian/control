@@ -23,5 +23,3 @@ Description: LCD display driver daemon and clients
  code.
  .
  http://lcdproc.omnipotent.net/  or http://www.lcdproc.org/
-Tag: use::monitoring, administration::monitoring, hardware::lcd, role::sw:utility,
- interface::commandline, interface::daemon, made-of::lang:c
