@@ -41,9 +41,6 @@ need some additional programs or libraries installed:
   http://cyberelk.net/tim/xmlto/ and
   http://www.stack.nl/~dimitri/doxygen/
 
-* OpenLDAP if you --enable-ldap, see http://www.openldap.org/software/
-  Please note that OpenlDAP support is currently very experimental.
-
 * libusb if you --enable-libusb, see http://libusb.sourceforge.net/
 
 * G15daemon, libg15 and libg15render (>= 1.1.1) for use with the 'g15' driver,

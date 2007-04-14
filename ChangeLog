@@ -38,6 +38,7 @@ v.0.5dev (ongoing development)
  + new ConnectionType pertelian in hd44780 driver (Matteo Pillon)
  + new ConnectionType lcd2usb in hd44780 driver
  + make LCDd's GoodBye message configurable
+ - remove compile-time option to read configuration from LDAP
 
 v.0.5.1
  + config file support in lcdproc client (Andrew Foss)

@@ -6,7 +6,7 @@ libLCDstuff_a_SOURCES = LL.c LL.h sockets.c sockets.h str.c str.h configfile.c c
 
 libLCDstuff_a_LIBADD = @LIBOBJS@
 
-AM_CPPFLAGS = @ldap_includes@ -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 
 EXTRA_DIST = Makefile.in
 
