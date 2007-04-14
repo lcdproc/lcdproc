@@ -1,8 +1,40 @@
-lcdproc (0.5.1+cvs20061014) UNRELEASED; urgency=low
+lcdproc (0.5.2~cvs20070414) UNRELEASED; urgency=low
 
   * New snapshot from upstream CVS
+    - updated & extended documentation
+    - various fixes to the server core 
+    - init-script templates for LSB 3.x conforming systems
+    - new drivers:
+      + serialPOS: for text based serial Point of Sale displays
+      + ea65: driver for VFD in AOpen XC Cube AV EA65 barebones
+      + picolcd: driver for Mini-box.com USB LCD picoLCD
+      + hd44780/pertelian: connection type for Pertelian X4020
+      + hd44780/lcd2usb: connection type for Till Harbaum's LCD2USB
+      + hd44780/vdr-wakeup: connection type for Frank Jepsen's vdr-wakeup
+      + sed1330/SP14Q002: connection type for Hitachi SP14Q002
+    - updated drivers:
+      + iMon: fix cellwidth, add graphics character support
+      + ula200: fix build environment and documentation
+      + g15: compatibility with g15daemon > 1.2
+      + MtxOrb: flush(), run-time configurable Brightness/OffBrightness 
+      + CFontz: run-time configurable Brightness/OffBrightness, custom chars 
+      + CwLnx: fixes, big number support
+      + serialVFD: fixes, updates
+      + hd44780: fixes for the serial connection types, new options
+    - updated clients:
+      + lcdproc:
+        - ged rid of more global variables
+        - fix Disk screen
+        - Credit contributors in About screen
+        - support Iface and ProcSize screens for OS X / Darwin
+        - allow switching on/off Load screen using menu
+      + lcdexec:
+        - try harder to find a shell
+    - updated build environment:
+      + allow compiling with LDFLAG "--as-needed"
+      + remove compile-time option to read configuration from LDAP
 
- -- Peter Marschall <peter@adpm.de>  Sat, 14 Oct 2006 17:00:01 +0200
+ -- Peter Marschall <peter@adpm.de>  Sat, 14 Apr 2007 17:30:01 +0200
 
 lcdproc (0.5.1) unstable; urgency=low
 
