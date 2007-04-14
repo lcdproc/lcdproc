@@ -159,8 +159,8 @@ the datasheet.
 <title>Serial Connections</title>
 
 <para>
-It is NOT possible to connect most of the displays directly to the
-serialport. The signal has to be inverted. I use the following
+It is <emphasis>not</emphasis> possible to connect most of the displays directly to the
+serial port. The signal has to be inverted. I use the following
 circuit to do that job.
 </para>
 
@@ -173,27 +173,26 @@ Computer                                          Display
 HDD Powerconnector
 color(Voltage)
 
-red(+5V)    --------------------------------o----- +5V
-					    |
-black(GND)  --------------------o           |
-				|           R
-				|           R 10k
-Serial(SUB-D 9Pin female)       V*          R
-pin(signal)                                 |
-					    |
-3(TxD)  --RRRR--o--o      o-----------------o----- RxD
-	  10k   |  |      |
-		|  |     C|
-		|  |   -----  BC547c (or similar NPN)
-		R  | B|  /  |
-	    10k R  o--|-|   |
-		R     |  \  |
-		|      --->-    A*
-		|         E|    |
-		|          |    |
-5(GND)  --------o----------o----o--------------o-- GND
-					       |*
-Shield  ---------------------------------------o
+red(+5V)    ----------------------------------o----- +5V
+                                              |
+black(GND)  ----------------------o          .-.
+                                  |          | | 10k
+Serial(SUB-D  9Pin female)        |          | |
+pin(signal)                       V*         '-'
+           ___                                |
+3(TxD)  --|___|--o---o      o-----------------o----- RxD
+           10k   |   |      |
+                 |   |     C|
+                .-.  |   -----  BC547c (or similar NPN)
+                | |  | B|  /  |
+            10k | |  o--|-|   |
+                '-'     |  \  |
+                 |       --->-    A*
+                 |          E|    |
+                 |           |    |
+5(GND)  ---------o-----------o----o--------------o-- GND
+                                                 |*
+Shield  -----------------------------------------o
 optional
 
 *connect near display
