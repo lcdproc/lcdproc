@@ -13,6 +13,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/utsname.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 #include "getopt.h"
 
@@ -73,6 +75,9 @@ static int process_response(char *str);
 static int exec_command(MenuEntry *cmd);
 static int main_loop(void);
 
+static pid_t last_child_pid = 0;
+static int last_child_status = 0;
+static void sigchld_handler(int);
 
 #define CHAIN(e,f) { if (e>=0) { e=(f); }}
 #define CHAIN_END(e) { if (e<0) { report(RPT_CRIT,"Critical error, abort"); exit(e); }}
@@ -81,6 +86,7 @@ static int main_loop(void);
 int main(int argc, char **argv)
 {
 	int error = 0;
+	struct sigaction sa;
 
 	CHAIN(error, process_command_line(argc, argv));
 	if (configfile == NULL)
@@ -103,9 +109,44 @@ int main(int argc, char **argv)
 		}
 	}
 
+	/* setup signal handler for children to avoid zombies */
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+	sa.sa_handler = sigchld_handler;
+	sigaction(SIGCHLD, &sa, NULL);
+
 	main_loop();
 
 	return 0;
+}
+
+
+/* the grim reaper ;-) */
+static void sigchld_handler(int signal)
+{
+  pid_t pid;
+  int status;
+
+  if ((pid = wait(&status)) != -1) {
+    last_child_pid = pid;
+    last_child_status = status;
+
+  // better:
+  // - build a queue with (pid,status) pairs (here)
+  // - show a screen for each pair (in the main_loop)
+  // - remove elements from the queue which are shown (dito)
+  // even better:
+  // - build a queue of (pid, name) on exec (in exec command)
+  // - display a screen about start (in main_loop)
+  // - add status to the appropriate queue element (here)
+  // - display screen about exit (in main_loop)
+  // - remove elements from the queue which are shown (dito)
+  // screens should be shown in main_loop to 
+  // - not show a startup screen when the command is already done
+  //   (note: danger for a race between sig_handler and main_loop,
+  //    in the 1st case above, since both work on the queue)
+  // - automatically time screens  
+  }  
 }
 
 
