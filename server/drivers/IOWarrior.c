@@ -209,7 +209,8 @@ static int iowled_on_off(usb_dev_handle *udh,int type, unsigned int pattern)
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \return  Information of success (0) or failure (non-0).
+ * \retval 0   Success.
+ * \retval <0  Error.
  */
 MODULE_EXPORT int
 IOWarrior_init(Driver *drvthis)
@@ -816,7 +817,7 @@ PrivateData *p = drvthis->private_data;
 
 
 /**
- * Get number of custom characters available.
+ * Get total number of custom characters available.
  * \param drvthis  Pointer to driver structure.
  * \return  Number of custom characters (always NUM_CCs).
  */

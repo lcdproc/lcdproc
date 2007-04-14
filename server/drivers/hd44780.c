@@ -746,7 +746,7 @@ HD44780_num(Driver *drvthis, int x, int num)
 
 
 /**
- * Get number of custom characters available.
+ * Get total number of custom characters available.
  * \param drvthis  Pointer to driver structure.
  * \return  Number of custom characters (always NUM_CCs).
  */

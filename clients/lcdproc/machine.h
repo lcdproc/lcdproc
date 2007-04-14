@@ -15,7 +15,7 @@
 #include "shared/LL.h"
 
 #ifndef LOADAVG_NSTATS
-# define LOADAVG_NSTATS	3	/** size of loadavg[] parameter to getloadavg() */
+# define LOADAVG_NSTATS	3	/**< size of loadavg[] parameter to getloadavg() */
 #endif
 
 #ifndef LOADAVG_1MIN

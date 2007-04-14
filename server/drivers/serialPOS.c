@@ -200,7 +200,8 @@ serialPOS_parse_keypad_setting (Driver *drvthis, char *keyname, char default_val
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \return  Information of success (0) or failure (non-0).
+ * \retval 0   Success.
+ * \retval <0  Error.
  */
 MODULE_EXPORT int
 serialPOS_init (Driver *drvthis)
@@ -838,7 +839,7 @@ serialPOS_num (Driver *drvthis, int x, int num)
 
 #ifdef NOTUSED
 /**
- * Get number of custom characters available.
+ * Get total number of custom characters available.
  * \param drvthis  Pointer to driver structure.
  * \return  Number of custom characters (always NUM_CCs).
  */

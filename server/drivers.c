@@ -1,5 +1,5 @@
 /** \file drivers.c
- * This code manages the lists of loaded drivers and does actions on all drivers.
+ * Manage the lists of loaded drivers and perform actions on all drivers.
  */
 
 /* This file is part of LCDd, the lcdproc server.

@@ -1,5 +1,5 @@
 /** \file configfile.h
- * Declares routines to read INI-file like files.
+ * Declare routines to read INI-file like files.
  */
 
 /* This file is part of LCDd, the lcdproc server.
