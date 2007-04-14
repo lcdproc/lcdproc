@@ -11,7 +11,7 @@ diff -ruNp lcdproc-0.5.1-orig/server/drivers/CFontz633.c lcdproc-0.5.1-working/s
  
  
  /**
-@@ -302,6 +305,19 @@ CFontz633_init (Driver *drvthis)
+@@ -303,6 +306,19 @@ CFontz633_init (Driver *drvthis)
  	CFontz633_no_live_report(drvthis);
  	CFontz633_hardware_clear(drvthis);
  
@@ -31,7 +31,7 @@ diff -ruNp lcdproc-0.5.1-orig/server/drivers/CFontz633.c lcdproc-0.5.1-working/s
  	report(RPT_DEBUG, "%s: init() done", drvthis->name);
  
  	return 0;
-@@ -1076,3 +1092,15 @@ CFontz633_string (Driver *drvthis, int x
+@@ -1077,3 +1093,15 @@ CFontz633_string (Driver *drvthis, int x
  	}
  }
  
@@ -51,15 +51,15 @@ diff -ruNp lcdproc-0.5.1-orig/server/menuscreens.c lcdproc-0.5.1-working/server/
 --- lcdproc-0.5.1-orig/server/menuscreens.c	2006-10-06 03:02:47.000000000 -0400
 +++ lcdproc-0.5.1-working/server/menuscreens.c	2007-02-26 11:57:39.000000000 -0500
 @@ -48,6 +48,10 @@ char * down_key;
- char * left_key;
- char * right_key;
+ char *left_key;
+ char *right_key;
  
 +#ifndef OPT
 +char * menuname;		/* the name for the default menu */
 +char * menuentryname;	/* the name for the default menu's entry */
 +#endif //OPT
- Screen * menuscreen = NULL;
- MenuItem * active_menuitem = NULL;
+ Screen *menuscreen = NULL;
+ MenuItem *active_menuitem = NULL;
  /** the "real" main_menu */
 @@ -91,6 +95,11 @@ int menuscreens_init()
  	if (tmp)
@@ -72,11 +72,11 @@ diff -ruNp lcdproc-0.5.1-orig/server/menuscreens.c lcdproc-0.5.1-working/server/
 +#endif //OPT
  
  	/* Now reserve keys */
- 	input_reserve_key (menu_key, true, NULL);
+ 	input_reserve_key(menu_key, true, NULL);
 @@ -387,7 +396,13 @@ void menuscreen_key_handler (const char 
  	/* Is the menu already active ? */
  	if (!active_menuitem) {
- 		debug (RPT_DEBUG, "%s: Activating menu screen", __FUNCTION__);
+ 		debug(RPT_DEBUG, "%s: Activating menu screen", __FUNCTION__);
 -		menuscreen_switch_item(menuscreen_get_main());
 +		Menu *main = menuscreen_get_main();
 +		/* Don't display an empty menu */
@@ -90,29 +90,29 @@ diff -ruNp lcdproc-0.5.1-orig/server/menuscreens.c lcdproc-0.5.1-working/server/
  
 @@ -437,55 +452,62 @@ void menuscreen_create_menu ()
  
- 	debug (RPT_DEBUG, "%s()", __FUNCTION__);
+ 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
  
 +#ifndef OPT //main menu name from config file
 +	main_menu = menu_create ("mainmenu", NULL, menuname, NULL);
 +#else //OPT
- 	main_menu = menu_create ("mainmenu", NULL, "LCDproc Menu", NULL);
+ 	main_menu = menu_create("mainmenu", NULL, "LCDproc Menu", NULL);
 +#endif //OPT
  
--	options_menu = menu_create ("options", NULL, "Options", NULL);
--	menu_add_item (main_menu, options_menu);
+-	options_menu = menu_create("options", NULL, "Options", NULL);
+-	menu_add_item(main_menu, options_menu);
 -
 -#ifdef LCDPROC_TESTMENUS
--	screens_menu = menu_create ("screens", NULL, "Screens", NULL);
--	menu_add_item (main_menu, screens_menu);
+-	screens_menu = menu_create("screens", NULL, "Screens", NULL);
+-	menu_add_item(main_menu, screens_menu);
 -#endif /*LCDPROC_TESTMENUS*/
 -
 -	/* menu's client is NULL since we're in the server */
--	checkbox = menuitem_create_checkbox ("heartbeat", heartbeat_handler, "Heartbeat", NULL, true, heartbeat);
--	menu_add_item (options_menu, checkbox);
+-	checkbox = menuitem_create_checkbox("heartbeat", heartbeat_handler, "Heartbeat", NULL, true, heartbeat);
+-	menu_add_item(options_menu, checkbox);
 -
 -	/* menu's client is NULL since we're in the server */
--	checkbox = menuitem_create_checkbox ("backlight", backlight_handler, "Backlight", NULL, true, backlight);
--	menu_add_item (options_menu, checkbox);
+-	checkbox = menuitem_create_checkbox("backlight", backlight_handler, "Backlight", NULL, true, backlight);
+-	menu_add_item(options_menu, checkbox);
 -
 -	for (driver = drivers_getfirst(); driver; driver = drivers_getnext()) {
 -		int contrast_avail = (driver->get_contrast && driver->set_contrast) ? 1 : 0;
@@ -120,23 +120,23 @@ diff -ruNp lcdproc-0.5.1-orig/server/menuscreens.c lcdproc-0.5.1-working/server/
 -
 -		if (contrast_avail || brightness_avail) {
 -			/* menu's client is NULL since we're in the server */
--			driver_menu = menu_create (driver->name, NULL, driver->name, NULL);
+-			driver_menu = menu_create(driver->name, NULL, driver->name, NULL);
 -			menu_set_association(driver_menu, driver);
--			menu_add_item (options_menu, driver_menu);
+-			menu_add_item(options_menu, driver_menu);
 -			if (contrast_avail) {
 -				int contrast = driver->get_contrast(driver);
 +#ifndef OPT
-+	if ( config_get_bool ("server", "LCDOptionsMenu", 0, 0)) {
-+		options_menu = menu_create ("options", NULL, menuentryname, NULL);
-+		menu_add_item (main_menu, options_menu);
++	if (config_get_bool("server", "LCDOptionsMenu", 0, 0)) {
++		options_menu = menu_create("options", NULL, menuentryname, NULL);
++		menu_add_item(main_menu, options_menu);
 +
 +		/* menu's client is NULL since we're in the server */
-+		checkbox = menuitem_create_checkbox ("heartbeat", heartbeat_handler, "Heartbeat", NULL, true, heartbeat);
-+		menu_add_item (options_menu, checkbox);
++		checkbox = menuitem_create_checkbox("heartbeat", heartbeat_handler, "Heartbeat", NULL, true, heartbeat);
++		menu_add_item(options_menu, checkbox);
 +
 +		/* menu's client is NULL since we're in the server */
-+		checkbox = menuitem_create_checkbox ("backlight", backlight_handler, "Backlight", NULL, true, backlight);
-+		menu_add_item (options_menu, checkbox);
++		checkbox = menuitem_create_checkbox("backlight", backlight_handler, "Backlight", NULL, true, backlight);
++		menu_add_item(options_menu, checkbox);
 +
 +		for (driver = drivers_getfirst(); driver; driver = drivers_getnext()) {
 +			int contrast_avail = (driver->get_contrast && driver->set_contrast) ? 1 : 0;
@@ -144,59 +144,59 @@ diff -ruNp lcdproc-0.5.1-orig/server/menuscreens.c lcdproc-0.5.1-working/server/
  
 +			if (contrast_avail || brightness_avail) {
  				/* menu's client is NULL since we're in the server */
--				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast",
+-				slider = menuitem_create_slider("contrast", contrast_handler, "Contrast",
 -								 NULL, "min", "max", 0, 1000, 25, contrast);
--				menu_add_item (driver_menu, slider);
+-				menu_add_item(driver_menu, slider);
 -			}
 -			if (brightness_avail) {
--				int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
--				int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
+-				int onbrightness = driver->get_brightness(driver, BACKLIGHT_ON);
+-				int offbrightness = driver->get_brightness(driver, BACKLIGHT_OFF);
 -
--				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness",
+-				slider = menuitem_create_slider("onbrightness", brightness_handler, "On Brightness",
 -								 NULL, "min", "max", 0, 1000, 25, onbrightness);
--				menu_add_item (driver_menu, slider);
+-				menu_add_item(driver_menu, slider);
 -
--				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness",
+-				slider = menuitem_create_slider("offbrightness", brightness_handler, "Off Brightness",
 -								 NULL, "min", "max", 0, 1000, 25, offbrightness);
--				menu_add_item (driver_menu, slider);
-+				driver_menu = menu_create (driver->name, NULL, driver->name, NULL);
+-				menu_add_item(driver_menu, slider);
++				driver_menu = menu_create(driver->name, NULL, driver->name, NULL);
 +				menu_set_association(driver_menu, driver);
-+				menu_add_item (options_menu, driver_menu);
++				menu_add_item(options_menu, driver_menu);
 +				if (contrast_avail) {
 +					int contrast = driver->get_contrast(driver);
 +
 +					/* menu's client is NULL since we're in the server */
-+					slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast",
++					slider = menuitem_create_slider("contrast", contrast_handler, "Contrast",
 +									 NULL, "min", "max", 0, 1000, 25, contrast);
-+					menu_add_item (driver_menu, slider);
++					menu_add_item(driver_menu, slider);
 +				}
 +				if (brightness_avail) {
-+					int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
-+					int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
++					int onbrightness = driver->get_brightness(driver, BACKLIGHT_ON);
++					int offbrightness = driver->get_brightness(driver, BACKLIGHT_OFF);
 +
-+					slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness",
++					slider = menuitem_create_slider("onbrightness", brightness_handler, "On Brightness",
 +									 NULL, "min", "max", 0, 1000, 25, onbrightness);
-+					menu_add_item (driver_menu, slider);
++					menu_add_item(driver_menu, slider);
 +
-+					slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness",
++					slider = menuitem_create_slider("offbrightness", brightness_handler, "Off Brightness",
 +									 NULL, "min", "max", 0, 1000, 25, offbrightness);
-+					menu_add_item (driver_menu, slider);
++					menu_add_item(driver_menu, slider);
 +				}
  			}
  		}
  	}
-+	if ( config_get_bool ("server", "LCDScreensMenu", 0, 0)) {
-+		screens_menu = menu_create ("screens", NULL, "Screens", NULL);
-+		menu_add_item (main_menu, screens_menu);
++	if (config_get_bool("server", "LCDScreensMenu", 0, 0)) {
++		screens_menu = menu_create("screens", NULL, "Screens", NULL);
++		menu_add_item(main_menu, screens_menu);
 +	}
 +#endif //OPT
  
  #ifdef LCDPROC_TESTMENUS	
- 	test_menu = menu_create ("test", NULL, "Test menu", NULL);
+ 	test_menu = menu_create("test", NULL, "Test menu", NULL);
 diff -ruNp lcdproc-0.5.1-orig/server/serverscreens.c lcdproc-0.5.1-working/server/serverscreens.c
 --- lcdproc-0.5.1-orig/server/serverscreens.c	2006-10-06 03:02:47.000000000 -0400
 +++ lcdproc-0.5.1-working/server/serverscreens.c	2007-02-23 11:48:56.000000000 -0500
-@@ -32,6 +32,12 @@
+@@ -33,6 +33,12 @@
  #include "main.h"
  #include "serverscreens.h"
  
@@ -208,36 +208,28 @@ diff -ruNp lcdproc-0.5.1-orig/server/serverscreens.c lcdproc-0.5.1-working/serve
 +
  #define UNSET_INT -1
  
- Screen * server_screen;
-@@ -39,6 +45,7 @@ int rotate_server_screen = UNSET_INT;
- 
  #define MAX_SERVERSCREEN_WIDTH 40
+@@ -50,6 +56,11 @@
  
-+
- int
- server_screen_init ()
- {
-@@ -47,6 +54,11 @@ server_screen_init ()
- 
- 	debug (RPT_DEBUG, "server_screen_init");
+ 	debug(RPT_DEBUG, "server_screen_init");
  
 +#ifndef OPT //startup screen title from config
 +	/* Get server title name from config file */
-+	title = strdup (config_get_string ("server", "title", 0, "LCDproc Server"));
++	title = strdup(config_get_string("server", "title", 0, "LCDproc Server"));
 +#endif //OPT
 +
  	/* Create the screen */
- 	server_screen = screen_create ("_server_screen", NULL);
+ 	server_screen = screen_create("_server_screen", NULL);
  	if (!server_screen) {
-@@ -78,7 +90,11 @@ server_screen_init ()
- 		w->text = malloc (MAX_SERVERSCREEN_WIDTH+1);
+@@ -81,7 +92,11 @@
+ 		w->text = malloc(MAX_SERVERSCREEN_WIDTH+1);
  		if (line == 1) {
  			w->type = WID_TITLE;
 +#ifndef OPT //startup screen titel from config
-+			strncpy (w->text, title, MAX_SERVERSCREEN_WIDTH);
++			strncpy(w->text, title, MAX_SERVERSCREEN_WIDTH);
 +#else //OPT
- 			strncpy (w->text, "LCDproc Server", MAX_SERVERSCREEN_WIDTH);
+ 			strncpy(w->text, "LCDproc Server", MAX_SERVERSCREEN_WIDTH);
 +#endif //OPT
  		} else {
- 			w->text[0] = 0;
+ 			w->text[0] = '\0';
  		}

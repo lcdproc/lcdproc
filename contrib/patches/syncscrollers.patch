@@ -1,21 +1,19 @@
-Index: server/render.c
-===================================================================
---- server/render.c	(revision 78)
-+++ server/render.c	(revision 79)
+--- server/render.c
++++ server/render.c
 @@ -176,6 +176,7 @@
  	int length, speed;
  	int str_length = BUFSIZE-1;
  	int reset = 1;
 +	int max_scroller_len = 0;
  
- 	debug( RPT_DEBUG, "%s( list=%p, fscroll='%c', left=%d, top=%d, "
- 			  "right=%d, bottom=%d, fwid=%d, fhgt=%d, fspeed=%d, timer=%d )",
+ 	debug(RPT_DEBUG, "%s(list=%p, fscroll='%c', left=%d, top=%d, "
+ 			  "right=%d, bottom=%d, fwid=%d, fhgt=%d, fspeed=%d, timer=%d)",
 @@ -202,6 +203,27 @@
  		/* TODO:  Frames don't scroll horizontally yet! */
  	}
  
 +	/* loop through the widgets before starting to render to pull out data we need before starting */
-+	LL_Rewind (list);
++	LL_Rewind(list);
 +	do {
 +		Widget *w = (Widget *) LL_Get(list);
 +		if (!w)
@@ -36,14 +34,14 @@ Index: server/render.c
 +	} while (LL_Next(list) == 0);
 +	
  	/* reset widget list */
- 	LL_Rewind (list);
+ 	LL_Rewind(list);
  
-@@ -343,13 +365,9 @@
+@@ -341,13 +363,9 @@
  							/* it fits within the box, just render it */
- 							drivers_string (w->left, w->top, w->text);
+ 							drivers_string(w->left, w->top, w->text);
  						} else {
 -							int necessaryTimeUnits = 0;
--							
+-
  							if (w->speed > 0) {
 -								necessaryTimeUnits = length * w->speed;
  								offset = (timer % (length * w->speed)) / w->speed;
@@ -52,8 +50,8 @@ Index: server/render.c
  								offset = (timer % (length / (w->speed * -1))) * w->speed * -1;
  							} else {
  								offset = 0;
-@@ -380,28 +398,39 @@
- 							drivers_string (w->left, w->top, w->text);
+@@ -378,28 +396,39 @@
+ 							drivers_string(w->left, w->top, w->text);
  						} else {
  							int effLength = length - screen_width;
 -							int necessaryTimeUnits = 0;
@@ -103,7 +101,7 @@ Index: server/render.c
  								}
  							} else {
  								offset = 0;
-@@ -440,13 +469,11 @@
+@@ -438,13 +467,11 @@
  										drivers_string (w->left, w->top + i, str);
  									}
  								} else {
@@ -117,7 +115,7 @@ Index: server/render.c
  										if (((timer / (effLines * w->speed)) % 2) == 0) {
  											/*debug(RPT_DEBUG, "up ");*/
  											begin = (timer % (effLines * w->speed))
-@@ -458,7 +485,6 @@
+@@ -456,7 +483,6 @@
  												 * -1;
  										}
  									} else if (w->speed < 0) {

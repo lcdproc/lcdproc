@@ -1,9 +1,9 @@
-diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/menu.c server.HKEY/menu.c
+diff -Nuarp server/menu.c server.HKEY/menu.c
 --- server/menu.c	2006-01-26 19:47:59.000000000 -0800
 +++ server.HKEY/menu.c	2006-02-21 09:21:25.000000000 -0800
-@@ -39,6 +39,13 @@
- #include "screen.h"
+@@ -40,6 +40,13 @@
  #include "widget.h"
+ 
  
 +#ifndef HKEY //hybrid keys
 +#include "shared/configfile.h"
@@ -12,10 +12,10 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +extern int hybrid_right_key;
 +#endif //HKEY
 +
+ extern Menu *custom_main_menu;
+ 
  /** Basicly a patched version of LL_GetByIndex() that ignores hidden
-  * entries completely. (But it takes a menu as an argument.) */
- static void *
-@@ -559,12 +566,86 @@ MenuResult menu_process_input(Menu *menu
+@@ -565,12 +572,86 @@
  		return MENURESULT_ERROR;
  
  	switch (token) {
@@ -27,7 +27,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +		 * hybrid left key just fall through to menu key
 +		 */
 +		if (!hybrid_left_key) {
-+			subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
++			subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
 +			if (subitem == NULL)
 +				break;
 +			switch (subitem->type) {
@@ -41,15 +41,15 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +					subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 2;
 +				}
 +				if (subitem->event_func)
-+					subitem->event_func (subitem, MENUEVENT_UPDATE);
++					subitem->event_func(subitem, MENUEVENT_UPDATE);
 +				return MENURESULT_NONE;
 +			  case MENUITEM_RING:
 +				/* ring: jump to the end if beginning is reached */
 +				subitem->data.ring.value = (subitem->data.ring.value < 1)
-+					? LL_Length (subitem->data.ring.strings) - 1
-+					: (subitem->data.ring.value - 1) % LL_Length (subitem->data.ring.strings);
++					? LL_Length(subitem->data.ring.strings) - 1
++					: (subitem->data.ring.value - 1) % LL_Length(subitem->data.ring.strings);
 +				if (subitem->event_func)
-+					subitem->event_func (subitem, MENUEVENT_UPDATE);
++					subitem->event_func(subitem, MENUEVENT_UPDATE);
 +				return MENURESULT_NONE;
 +			  default:
 +				break;
@@ -59,7 +59,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +#endif //HKEY
  	  case MENUTOKEN_MENU:
  		subitem = menu_get_item_for_predecessor_check(menu);
- 		if ( ! subitem)
+ 		if (! subitem)
  			return MENURESULT_ERROR;
  		return menuitem_predecessor2menuresult(
  			subitem->predecessor_id, MENURESULT_CLOSE);
@@ -84,12 +84,12 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +					subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
 +				}
 +				if (subitem->event_func)
-+					subitem->event_func (subitem, MENUEVENT_UPDATE);
++					subitem->event_func(subitem, MENUEVENT_UPDATE);
 +				return MENURESULT_NONE;
 +		  	case MENUITEM_RING:
 +				subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
 +				if (subitem->event_func)
-+					subitem->event_func (subitem, MENUEVENT_UPDATE);
++					subitem->event_func(subitem, MENUEVENT_UPDATE);
 +				return MENURESULT_NONE;
 +		  	case MENUITEM_MENU:
 +				return MENURESULT_ENTER;
@@ -100,20 +100,20 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +		}
 +#endif //HKEY
  	  case MENUTOKEN_ENTER:
- 		subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
+ 		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
  		if (!subitem)
-@@ -609,6 +690,18 @@ MenuResult menu_process_input(Menu *menu
+@@ -615,6 +696,18 @@
  				menu->data.menu.scroll --;
  		}
  		else if (menu->data.menu.selector_pos == 0) {
 +#ifndef HKEY //hybrid key left
-+			if ( hybrid_left_key ) {
++			if (hybrid_left_key) {
 +				/*
 +		 		* If this menu has only checkbox's and/or rings
 +		 		*  need a key to get back from this menu on a 4 key pad
 +		 		*/
 +				subitem = menu_get_item_for_predecessor_check(menu);
-+				if ( subitem && ((subitem->type == MENUITEM_CHECKBOX) || (subitem->type == MENUITEM_RING)))
++				if (subitem && ((subitem->type == MENUITEM_CHECKBOX) || (subitem->type == MENUITEM_RING)))
 +					return menuitem_predecessor2menuresult(
 +						subitem->predecessor_id, MENURESULT_CLOSE);
 +				}
@@ -121,15 +121,15 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
  			// wrap around to last menu entry
  			menu->data.menu.selector_pos = menu_visible_item_count(menu) - 1;
  			menu->data.menu.scroll = menu->data.menu.selector_pos + 2 - display_props->height;
-@@ -626,67 +719,6 @@ MenuResult menu_process_input(Menu *menu
+@@ -632,67 +725,6 @@
  			menu->data.menu.scroll = 0;
  		}	
  		return MENURESULT_NONE;
 -	  case MENUTOKEN_LEFT:
 -		if (!extended)
 -			return MENURESULT_NONE;
--		
--		subitem = menu_get_subitem (menu, menu->data.menu.selector_pos);
+-
+-		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
 -		if (subitem == NULL)
 -			break;
 -		switch (subitem->type) {
@@ -143,15 +143,15 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 -				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 2;
 -			}
 -			if (subitem->event_func)
--				subitem->event_func (subitem, MENUEVENT_UPDATE);
+-				subitem->event_func(subitem, MENUEVENT_UPDATE);
 -			return MENURESULT_NONE;
 -		  case MENUITEM_RING:
 -			/* ring: jump to the end if beginning is reached */
 -			subitem->data.ring.value = (subitem->data.ring.value < 1)
--				? LL_Length (subitem->data.ring.strings) - 1
--				: (subitem->data.ring.value - 1) % LL_Length (subitem->data.ring.strings);
+-				? LL_Length(subitem->data.ring.strings) - 1
+-				: (subitem->data.ring.value - 1) % LL_Length(subitem->data.ring.strings);
 -			if (subitem->event_func)
--				subitem->event_func (subitem, MENUEVENT_UPDATE);
+-				subitem->event_func(subitem, MENUEVENT_UPDATE);
 -			return MENURESULT_NONE;
 -		  default:
 -			break;
@@ -160,7 +160,7 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 -	  case MENUTOKEN_RIGHT:
 -		if (!extended)
 -			return MENURESULT_NONE;
--		
+-
 -		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
 -		if (subitem == NULL)
 -			break;
@@ -173,12 +173,12 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 -				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
 -			}
 -			if (subitem->event_func)
--				subitem->event_func (subitem, MENUEVENT_UPDATE);
+-				subitem->event_func(subitem, MENUEVENT_UPDATE);
 -			return MENURESULT_NONE;
 -		  case MENUITEM_RING:
--			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length (subitem->data.ring.strings);
+-			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length(subitem->data.ring.strings);
 -			if (subitem->event_func)
--				subitem->event_func (subitem, MENUEVENT_UPDATE);
+-				subitem->event_func(subitem, MENUEVENT_UPDATE);
 -			return MENURESULT_NONE;
 -		  case MENUITEM_MENU:
 -			return MENURESULT_ENTER;
@@ -189,13 +189,13 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
  	  case MENUTOKEN_OTHER:
  		/* TODO: move to the selected number and enter it */
  		return MENURESULT_NONE;
-diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/menuitem.c server.HKEY/menuitem.c
+diff -Nuarp server/menuitem.c server.HKEY/menuitem.c
 --- server/menuitem.c	2006-01-26 19:47:59.000000000 -0800
 +++ server.HKEY/menuitem.c	2006-02-21 09:22:53.000000000 -0800
 @@ -84,6 +84,10 @@ const IpSstringProperties IPinfo[] = {
  	{ 39, ':', 16, 4, 65535, { 4096, 256, 16, 1, 0 }, "%04x", verify_ipv6, "0:0:0:0:0:0:0:0" }
  };
- 	
+ 
 +#ifndef HKEY // hybrid keys
 +extern int hybrid_left_key;
 +extern int hybrid_right_key;
@@ -215,17 +215,17 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 -			item->successor_id, MENURESULT_CLOSE);
  	  case MENUTOKEN_UP:
  	  case MENUTOKEN_RIGHT:
--	  	item->data.slider.value = min (item->data.slider.maxvalue,
+-	  	item->data.slider.value = min(item->data.slider.maxvalue,
 +#ifndef HKEY //hybrid key right
-+		if ( !hybrid_right_key || token == MENUTOKEN_UP )  {
++		if (!hybrid_right_key || token == MENUTOKEN_UP)  {
 +#endif /*HKEY*/
-+	  		item->data.slider.value = min (item->data.slider.maxvalue,
++	  		item->data.slider.value = min(item->data.slider.maxvalue,
  	  			item->data.slider.value + item->data.slider.stepsize);
 -		if (item->event_func)
--			item->event_func (item, MENUEVENT_PLUS);
+-			item->event_func(item, MENUEVENT_PLUS);
 -	  	return MENURESULT_NONE;
 +			if (item->event_func)
-+				item->event_func (item, MENUEVENT_PLUS);
++				item->event_func(item, MENUEVENT_PLUS);
 +	  		return MENURESULT_NONE;
 +#ifndef HKEY //hybrid key right
 +		} /* hybrid right key fall through to enter */
@@ -235,17 +235,17 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +			item->successor_id, MENURESULT_CLOSE);
  	  case MENUTOKEN_DOWN:
  	  case MENUTOKEN_LEFT:
--	  	item->data.slider.value = max (item->data.slider.minvalue,
+-	  	item->data.slider.value = max(item->data.slider.minvalue,
 +#ifndef HKEY //hybrid key left
-+		if ( !hybrid_left_key || token == MENUTOKEN_DOWN )  {
++		if (!hybrid_left_key || token == MENUTOKEN_DOWN)  {
 +#endif /*HKEY*/
-+	  		item->data.slider.value = max (item->data.slider.minvalue,
++	  		item->data.slider.value = max(item->data.slider.minvalue,
  	  			item->data.slider.value - item->data.slider.stepsize);
 -		if (item->event_func)
--			item->event_func (item, MENUEVENT_MINUS);
+-			item->event_func(item, MENUEVENT_MINUS);
 -	  	return MENURESULT_NONE;
 +			if (item->event_func)
-+				item->event_func (item, MENUEVENT_MINUS);
++				item->event_func(item, MENUEVENT_MINUS);
 +	  		return MENURESULT_NONE;
 +#ifndef HKEY //hybrid key left
 +		} /* hybrid left key fall through to menu */
@@ -467,12 +467,12 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
  		case MENUTOKEN_OTHER:
  			/* process other keys */
    			if ((strlen(key) == 1) &&
-diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig' --exclude=Makefile --exclude='*.o' --exclude=Doxyfile --exclude='*.a' --exclude=config.log --exclude=config.status --exclude='init-*' -Nuarp server/menuscreens.c server.HKEY/menuscreens.c
+diff -Nuarp server/menuscreens.c server.HKEY/menuscreens.c
 --- server/menuscreens.c	2006-01-26 19:47:59.000000000 -0800
 +++ server.HKEY/menuscreens.c	2006-02-21 09:33:21.000000000 -0800
-@@ -48,6 +48,15 @@ char * down_key;
- char * left_key;
- char * right_key;
+@@ -48,6 +48,15 @@
+ char *left_key;
+ char *right_key;
  
 +#ifndef HKEY //hybrid keys
 +/*
@@ -483,65 +483,29 @@ diff --exclude='*.wanjet' --exclude='.??*' --exclude=config.h --exclude='*.orig'
 +int hybrid_right_key = 0;
 +#endif //HKEY
 +
- Screen * menuscreen = NULL;
- MenuItem * active_menuitem = NULL;
+ Screen *menuscreen = NULL;
+ MenuItem *active_menuitem = NULL;
  /** the "real" main_menu */
-@@ -91,6 +100,11 @@ int menuscreens_init()
+@@ -91,6 +100,10 @@
  	if (tmp)
  		right_key = strdup(tmp);
-     
-+#ifndef HKEY //get hybrid keys from config file
-+	hybrid_right_key = config_get_bool ("menu", "HybridRightKey", 0, 0);
-+	hybrid_left_key = config_get_bool ("menu", "HybridLeftKey", 0, 0);
-+#endif
-+
-         
- 	/* Now reserve keys */
- 	input_reserve_key (menu_key, true, NULL);
-@@ -186,6 +200,11 @@ void menuscreen_inform_item_modified (Me
  
- bool is_menu_key (char * key)
++#ifndef HKEY //get hybrid keys from config file
++ 	hybrid_right_key = config_get_bool("menu", "HybridRightKey", 0, 0);
++ 	hybrid_left_key = config_get_bool("menu", "HybridLeftKey", 0, 0);
++#endif
+ 
+ 	/* Now reserve keys */
+ 	input_reserve_key(menu_key, true, NULL);
+@@ -186,6 +199,11 @@
+ 
+ bool is_menu_key(const char *key)
  {
 +#ifndef HKEY //hybrid keys, any key wake-up menus
 +	/* any key wakes up menus */
-+	if (key && ( hybrid_left_key || hybrid_right_key ))
++	if (key && (hybrid_left_key || hybrid_right_key))
 +		return true;
 +#endif //HKEY
- 	if (menu_key && key && strcmp (key, menu_key) == 0)
+ 	if (menu_key && key && strcmp(key, menu_key) == 0)
  		return true;
  	else
-@@ -466,28 +485,28 @@ void menuscreen_create_menu ()
- 			menu_add_item (options_menu, driver_menu);
- 			if (contrast_avail) {
- 				int contrast = driver->get_contrast(driver);
--				
-+
- 				/* menu's client is NULL since we're in the server */
- 				slider = menuitem_create_slider ("contrast", contrast_handler, "Contrast",
--								 NULL, "min", "max", 0, 1000, 25, contrast);
-+							 	NULL, "min", "max", 0, 1000, 25, contrast);
- 				menu_add_item (driver_menu, slider);
- 			}
- 			if (brightness_avail) {
- 				int onbrightness = driver->get_brightness (driver, BACKLIGHT_ON);
- 				int offbrightness = driver->get_brightness (driver, BACKLIGHT_OFF);
--				
-+
- 				slider = menuitem_create_slider ("onbrightness", brightness_handler, "On Brightness",
--								 NULL, "min", "max", 0, 1000, 25, onbrightness);
-+							 	NULL, "min", "max", 0, 1000, 25, onbrightness);
- 				menu_add_item (driver_menu, slider);
- 
- 				slider = menuitem_create_slider ("offbrightness", brightness_handler, "Off Brightness",
--								 NULL, "min", "max", 0, 1000, 25, offbrightness);
-+							 	NULL, "min", "max", 0, 1000, 25, offbrightness);
- 				menu_add_item (driver_menu, slider);
- 			}
- 		}
- 	}
- 
--#ifdef LCDPROC_TESTMENUS	
-+#ifdef LCDPROC_TESTMENUS
- 	test_menu = menu_create ("test", NULL, "Test menu", NULL);
- 	menu_add_item (main_menu, test_menu);
- 
