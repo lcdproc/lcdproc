@@ -64,7 +64,7 @@ need some additional programs or libraries installed:
   http://www.intra2net.com/de/produkte/opensource/ftdi/ and
   http://libusb.sourceforge.net/
 
-* XOSD for use with the 'xosd' driver, see http://www.ignavus.net/software.html ,
+* XOSD for use with the 'xosd' driver, see http://sourceforge.net/projects/libxosd ,
   as well as an x11 implementation, more precisely libX11 and libXext.
 
 

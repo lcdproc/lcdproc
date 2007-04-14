@@ -1,9 +1,15 @@
 <sect1 id="xosd-howto">
 <title>The xosd Driver</title>
 
+
 <para>
-This section talks about using LCDproc with LCD displays that use the
-xosd chipset.
+This section talks about using LCDproc with libxosd.
+</para>
+
+<para>
+<ulink url="http://sourceforge.net/projects/libxosd">libxosd</ulink> is a system
+that displays text on top of your X-Windows screen, much like the
+on-screen display (OSD) used by most modern televisions and video-players.
 </para>
 
 <!-- ## OnScreen Display using libxosd ## -->
