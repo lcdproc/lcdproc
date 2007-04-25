@@ -39,9 +39,18 @@ on-screen display (OSD) used by most modern televisions and video-players.
     <command>Font=</command>
     <arg choice="plain"><replaceable>FONT</replaceable></arg>
   </term>
-  <listitem><para>
-    font to use, e.g. <literal>-*-terminus-*-r-*-*-*-320-*-*-*-*-*</literal>.
-  </para></listitem>
+  <listitem>
+    <para>
+      X font to use, in XLFD (X Logical Font Description) format,
+      as given by the <command>xfontsel</command> command.
+      E.g. <literal>-*-terminus-*-r-*-*-*-320-*-*-*-*-*</literal>.
+    </para>
+    <para>
+      For best results it is recommended to use a mono-spaced font
+      to mimic the aspect of a physical LCD display that most 
+      clients expect with regard to their screen layouts.
+    </para>
+  </listitem>
 </varlistentry>
 </variablelist>
 
