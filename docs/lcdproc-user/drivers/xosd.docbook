@@ -36,6 +36,24 @@ on-screen display (OSD) used by most modern televisions and video-players.
 
 <varlistentry>
   <term>
+    <command>Offset=</command>
+    <arg choice="plain">
+      <replaceable>X-OFFSET</replaceable>
+      <literal>x</literal>
+      <replaceable>Y-OFFSET</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Offset (in pixels) of the top-left corner of <package>LCDproc</package>'s
+    xosd window from the top-left corner of the monitor.
+    If not given, it defaults to <literal>0x0</literal>.
+  </para></listitem>
+</varlistentry>
+
+Offset=200x200
+
+<varlistentry>
+  <term>
     <command>Font=</command>
     <arg choice="plain"><replaceable>FONT</replaceable></arg>
   </term>
@@ -52,6 +70,46 @@ on-screen display (OSD) used by most modern televisions and video-players.
     </para>
   </listitem>
 </varlistentry>
+
+<!--
+<varlistentry>
+  <term>
+    <command>Contrast=</command>
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial contrast.
+    Legal values for <replaceable>CONTRAST</replaceable> are <literal>0</literal> - <literal>1000</literal>.
+    If not given, the default value is <literal>500</literal>.
+    </para>
+    <note><para>
+      This parameter can be set but it does not change anything in the driver.
+    </para></note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial brightness [default: <literal>1000</literal>; legal: <literal>1</literal> - <literal>1000</literal>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>OffBrightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial off-brightness [default: <literal>500</literal>; legal: <literal>1</literal> - <literal>1000</literal>]
+    This value is used when the display is normally
+    switched off in case LCDd is inactive
+  </para></listitem>
+</varlistentry>
+-->
 </variablelist>
 
 </sect3>

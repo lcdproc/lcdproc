@@ -57,7 +57,9 @@ MODULE_EXPORT char *symbol_prefix = "xosdlib_drv_";
 MODULE_EXPORT int
 xosdlib_drv_init (Driver *drvthis)
 {
-	char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
+	const char *size;
+	const char *offset;
+	int x, y;
 	int tmp;
 
 	PrivateData *p;
@@ -84,9 +86,7 @@ xosdlib_drv_init (Driver *drvthis)
 		int w;
 		int h;
 
-		strncpy(size, drvthis->config_get_string(drvthis->name, "Size",
-							 0, DEFAULT_SIZE), sizeof(size));
-		size[sizeof(size) - 1] = '\0';
+		size = drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE);
 		debug(RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
 		if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
 		    (w <= 0) || (w > LCD_MAX_WIDTH) ||
@@ -109,6 +109,20 @@ xosdlib_drv_init (Driver *drvthis)
 		}
 	}
 	report(RPT_INFO, "%s: using size %dx%d", drvthis->name, p->width, p->height);
+
+	/* Which x/y offsets */
+	offset = drvthis->config_get_string(drvthis->name, "Offset", 0, DEFAULT_OFFSET);
+	debug(RPT_INFO, "%s: Offset (in config) is '%s'", __FUNCTION__, offset);
+	if (sscanf(offset, "%dx%d", &x, &y) != 2) {
+		report(RPT_WARNING, "%s: cannot read Offset: %s. using default %s",
+				drvthis->name, offset, DEFAULT_OFFSET);
+		sscanf(DEFAULT_OFFSET, "%dx%d", &x, &y);		
+	}	
+	p->xoffs= x;
+	p->yoffs = y;
+
+	report(RPT_INFO, "%s: using offset %dx%d", drvthis->name, p->xoffs, p->yoffs);
+
 
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
@@ -144,10 +158,20 @@ xosdlib_drv_init (Driver *drvthis)
 	}	
 
 	/* set font */
-	if (xosd_set_font(p->osd, p->font) == -1) {
+	if (xosd_set_font(p->osd, p->font) != 0) {
 		report(RPT_ERR, "%s: xosd_set_font() failed", drvthis->name);
 		return -1;
-	}	
+	}
+
+	/* set x/y offsets */
+	if (xosd_set_horizontal_offset(p->osd, p->xoffs) != 0) {
+		report(RPT_ERR, "%s: xosd_set_horizontal_offset() failed", drvthis->name);
+		return -1;
+	}
+	if (xosd_set_vertical_offset(p->osd, p->yoffs) != 0) {
+		report(RPT_ERR, "%s: xosd_set_vertical_offset() failed", drvthis->name);
+		return -1;
+	}
 
         /* make sure the frame buffer is there... */
         p->framebuf = (unsigned char *) malloc(p->width * p->height);
