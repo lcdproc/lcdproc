@@ -6,9 +6,10 @@ Key:
      * Something changed / fixed
 
 v.0.5dev (ongoing development)
- * lcdexec: notification when called program finishes
- * xosd driver: offset from top-left corner
- 
+ + lcdexec: notification when called program finishes
+ + xosd driver: offset from top-left corner
+ + LCDd: Hello= config option for startup message
+
 v.0.5.2 (unreleased) 
  * fix switching on/off the Load screen in lcdproc client using the menu
  * refactor adv_bignum: support height > 4, loadable chars with offset

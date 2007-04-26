@@ -239,6 +239,38 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
+    <command>Hello=</command>
+    <arg choice="plain"><replaceable>HELLOMSG</replaceable></arg>
+  </term>
+  <listitem>
+    <para>
+      Define the startup message printed on the screen when LCDd starts.
+      This message will stay on the screen until a client connects.
+      If not given, it defaults to the builtin server screen that tells
+      how many clients are connected and how many screens these clients
+      are using in total.
+      If it is given, each <code>Hello=</code> directive represents
+      a line on the display.
+    </para>
+    <para>
+      The <replaceable>HELLOMSG</replaceable>s will be printed on
+      the display one after each other starting on the beginning of each line.
+      So, the definition of
+      <programlisting>
+        Hello="   Welcome to"
+	Hello="    LCDproc!"
+      </programlisting>
+      prints a nice 2-line welcome message to the display.
+    </para>
+    <para>
+      To simply disable the default builtin message, and leave the screen blank
+      a single <code>Hello=""</code> suffices.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>GoodBye=</command>
     <arg choice="plain"><replaceable>GOODBYEMSG</replaceable></arg>
   </term>
@@ -269,7 +301,6 @@ settings for the LCDproc server <application>LCDd</application>.
     </para>
   </listitem>
 </varlistentry>
-
 
 </variablelist>
 

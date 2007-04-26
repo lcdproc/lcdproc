@@ -7,6 +7,7 @@
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2002, Joris Robijn
+ *               2007, Peter Marschall
  *
  *
  * Implements the serverscreens
@@ -24,21 +25,17 @@
 #include "shared/report.h"
 #include "shared/configfile.h"
 
-#include "drivers/lcd.h"
 #include "drivers.h"
 #include "clients.h"
+#include "render.h"
 #include "screen.h"
 #include "screenlist.h"
 #include "widget.h"
 #include "main.h"
 #include "serverscreens.h"
 
-#define UNSET_INT -1
 
-#define MAX_SERVERSCREEN_WIDTH 40
-
-
-Screen *server_screen;
+Screen *server_screen = NULL;
 int rotate_server_screen = UNSET_INT;
 
 
@@ -46,7 +43,8 @@ int
 server_screen_init(void)
 {
 	Widget *w;
-	int line;
+	int i;
+	int has_hello_msg = config_has_key("Server", "Hello");
 
 	debug(RPT_DEBUG, "server_screen_init");
 
@@ -58,6 +56,7 @@ server_screen_init(void)
 	}
 	server_screen->name = "Server screen";
 	server_screen->duration = RENDER_FREQ; /* 1 second, instead of 4...*/
+	server_screen->heartbeat = (has_hello_msg) ? HEARTBEAT_OFF : HEARTBEAT_OPEN;
 
 	if ((rotate_server_screen == UNSET_INT) || (rotate_server_screen == 1)) {
 		server_screen->priority = PRI_INFO;
@@ -66,9 +65,9 @@ server_screen_init(void)
 	}
 
 	/* Create all the widgets...*/
-	for (line = 1; line <= 4; line++) {
+	for (i = 0; i < display_props->height; i++) {
 		char id[8];
-		sprintf(id, "line%d", line);
+		sprintf(id, "line%d", i+1);
 
 		w = widget_create(id, WID_STRING, server_screen);
 		if (!w) {
@@ -77,14 +76,24 @@ server_screen_init(void)
 		}
 		screen_add_widget(server_screen, w);
 		w->x = 1;
-		w->y = line;
-		w->text = malloc(MAX_SERVERSCREEN_WIDTH+1);
-		if (line == 1) {
-			w->type = WID_TITLE;
-			strncpy(w->text, "LCDproc Server", MAX_SERVERSCREEN_WIDTH);
-		} else {
-			w->text[0] = '\0';
+		w->y = i+1;
+		w->text = calloc(LCD_MAX_WIDTH+1, 1);
+
+		/* depending on Hello in LCDd.conf set the widgets */
+		if (has_hello_msg) {
+		 	const char *line = config_get_string("Server", "Hello", i, "");
+
+			strncpy(w->text, line, LCD_MAX_WIDTH);
+			w->text[LCD_MAX_WIDTH] = '\0';
 		}
+		else {
+			if (i == 0) {
+				w->type = WID_TITLE;
+				strncpy(w->text, "LCDproc Server", LCD_MAX_WIDTH);
+			} else {
+				w->text[0] = '\0';
+			}
+		}	
 	}
 
 	/* And enqueue the screen*/
@@ -113,9 +122,26 @@ update_server_screen(void)
 	Widget *w;
 	int num_clients;
 	int num_screens;
+	static int use_default = 0;
 
 	/* Now get info on the number of connected clients...*/
 	num_clients = clients_client_count();
+
+	/* turn off the Hello message after the first client onnected */
+	if (!use_default && config_has_key("Server", "Hello")) {
+		if (num_clients != 0) {
+			if (!use_default) {
+				server_screen->heartbeat = HEARTBEAT_OPEN;
+
+				w = screen_find_widget(server_screen, "line1");
+				w->type = WID_TITLE;
+				strncpy(w->text, "LCDproc Server", LCD_MAX_WIDTH);
+			}	
+			use_default = 1;
+		}
+		if (!use_default)
+			return 0;
+	}
 
 	/* ... and screens */
 	num_screens = 0;
@@ -126,18 +152,25 @@ update_server_screen(void)
 	/* Format strings for the appropriate size display... */
 	if (display_props->height >= 3) {
 		w = screen_find_widget(server_screen, "line2");
-		snprintf(w->text, MAX_SERVERSCREEN_WIDTH,
+		if (w != NULL) {
+			snprintf(w->text, LCD_MAX_WIDTH,
 					"Clients: %i", num_clients);
+		}			
+
 		w = screen_find_widget(server_screen, "line3");
-		snprintf(w->text, MAX_SERVERSCREEN_WIDTH,
+		if (w != NULL) {
+			snprintf(w->text, LCD_MAX_WIDTH,
 					"Screens: %i", num_screens);
+		}			
 	} else {
 		w = screen_find_widget(server_screen, "line2");
-		snprintf(w->text, MAX_SERVERSCREEN_WIDTH,
-				((display_props->width >= 16)
-				 ? "Cli: %i  Scr: %i"
-				 : "C: %i  S: %i"),
-				num_clients, num_screens);
+		if (w != NULL) {
+			snprintf(w->text, LCD_MAX_WIDTH,
+					((display_props->width >= 16)
+					 ? "Cli: %i  Scr: %i"
+					 : "C: %i  S: %i"),
+					num_clients, num_screens);
+		}		
 	}
 	return 0;
 }
