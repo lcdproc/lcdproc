@@ -263,8 +263,8 @@ settings for the LCDproc server <application>LCDd</application>.
       prints a nice 2-line welcome message to the display.
     </para>
     <para>
-      To simply disable the default builtin message, and leave the screen blank
-      a single <code>Hello=""</code> suffices.
+      To simply disable the default builtin server screen on startup,
+      and start with a blank screen a single <code>Hello=""</code> is sufficient.
     </para>
   </listitem>
 </varlistentry>
