@@ -153,7 +153,6 @@ static pid_t daemonize(void);
 static int wave_to_parent(pid_t parent_pid);
 static int init_drivers(void);
 static int drop_privs(char *user);
-static int init_screens(void);
 static void do_reload(void);
 static void do_mainloop(void);
 static void exit_program(int val);
@@ -728,30 +727,6 @@ drop_privs(char *user)
         /* Don't alter privileges in WIN32 */
 #endif
 
-	return 0;
-}
-
-
-static int
-init_screens(void)
-{
-	debug(RPT_DEBUG, "%s()", __FUNCTION__);
-
-	if (screenlist_init() < 0) {
-		report(RPT_ERR, "Error initializing screen list");
-		return -1;
-	}
-
-	/* Add the server screen */
-	if (server_screen_init() < 0) {
-		report(RPT_ERR, "Error initializing server screens");
-		return -1;
-	}
-	if (!rotate_server_screen) {
-		/* Display the server screen only when there are no other
-		 * screens */
-		/* server_screen->priority = PRI_BACKGROUND; */
-	}
 	return 0;
 }
 
