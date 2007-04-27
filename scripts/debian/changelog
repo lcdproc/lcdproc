@@ -1,6 +1,12 @@
-lcdproc (0.5.2~cvs20070414) UNRELEASED; urgency=low
+lcdproc (0.5.2+cvs20070427) UNRELEASED; urgency=low
 
   * New snapshot from upstream CVS
+
+ -- Peter Marschall <peter@adpm.de>  Sat, 27 Apr 2007 15:30:00 +0200
+
+lcdproc (0.5.2) unstable; urgency=low
+
+  * New upstream release
     - updated & extended documentation
     - various fixes to the server core 
     - init-script templates for LSB 3.x conforming systems
@@ -34,7 +40,7 @@ lcdproc (0.5.2~cvs20070414) UNRELEASED; urgency=low
       + allow compiling with LDFLAG "--as-needed"
       + remove compile-time option to read configuration from LDAP
 
- -- Peter Marschall <peter@adpm.de>  Sat, 14 Apr 2007 17:30:01 +0200
+ -- Peter Marschall <peter@adpm.de>  Sat, 27 Apr 2007 13:30:00 +0200
 
 lcdproc (0.5.1) unstable; urgency=low
 

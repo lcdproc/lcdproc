@@ -10,7 +10,7 @@ v.0.5dev (ongoing development)
  + xosd driver: offset from top-left corner
  + LCDd: Hello= config option for startup message
 
-v.0.5.2 (unreleased) 
+v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
  * refactor adv_bignum: support height > 4, loadable chars with offset
  * ged rid of global variables buffer & tmp in lcdproc client
