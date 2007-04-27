@@ -12,22 +12,22 @@ Internet.
 <variablelist>
 
 <varlistentry>
-  <term>LCDproc 0.5.1</term>
+  <term>LCDproc 0.5.2</term>
   <listitem>
     <para>
-      LCDproc 0.5.1 is the current stable version of LCDproc.
+      LCDproc 0.5.2 is the current stable version of LCDproc.
       This is the version recommended to use.
     </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>LCDproc 0.5.0</term>
+  <term>LCDproc 0.5.1</term>
     <listitem>
     <para>
-      LCDproc 0.5.0 is the old stable version of LCDproc.
-      It was the first stable version of LCDproc after the move to the 0.5 API.
-      It now has been superseeded with LCDproc 0.5.1.
+      LCDproc 0.5.1 is the old stable version of LCDproc.
+      It was the second stable version of LCDproc after the move to the 0.5 API.
+      It now has been superseeded with LCDproc 0.5.2.
     </para>
   </listitem>
 </varlistentry>
