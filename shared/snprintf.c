@@ -4,20 +4,22 @@
  * AUTHOR
  *   Mark Martinec <mark.martinec@ijs.si>, April 1999.
  *
- *   Copyright 1999, Mark Martinec. All rights reserved.
+ *   Copyright 1999-2002 Mark Martinec. All rights reserved.
  *
  * TERMS AND CONDITIONS
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the "Frontier Artistic License" which comes
- *   with this Kit.
+ *   This program is free software; it is dual licensed, the terms of the
+ *   "Frontier Artistic License" or the "GNU General Public License"
+ *   can be chosen at your discretion. The chosen license then applies
+ *   solely and in its entirety. Both licenses come with this Kit.
  *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty
  *   of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *   See the Frontier Artistic License for more details.
+ *   See the license for more details.
  *
- *   You should have received a copy of the Frontier Artistic License
- *   with this Kit in the file named LICENSE.txt .
+ *   You should have received a copy of the "Frontier Artistic License"
+ *   with this Kit in the file named LICENSE.txt, and the copy of
+ *   the "GNU General Public License" in the file named LICENSE-GPL.txt.
  *   If not, I'll be glad to provide one.
  *
  * FEATURES
@@ -28,14 +30,16 @@
  *   optimizations turned on, tell the compiler the code is strict ANSI
  *   if necessary to give it more freedom for optimizations);
  * - return value semantics per ISO/IEC 9899:1999 ("ISO C99");
- * - written in standard ISO/ANSI C - requires an ANSI C compiler.
+ * - written in standard ISO/ANSI C - requires an ANSI C compiler;
+ * - works also with non-ASCII 8-bit character sets (e.g. EBCDIC)
+ *   provided strings are '\0'-terminated.
  *
  * SUPPORTED CONVERSION SPECIFIERS AND DATA TYPES
  *
  * This snprintf only supports the following conversion specifiers:
  * s, c, d, u, o, x, X, p  (and synonyms: i, D, U, O - see below)
  * with flags: '-', '+', ' ', '0' and '#'.
- * An asterisk is supported for field width as well as precision.
+ * An asterisk is supported for field width and for the precision.
  *
  * Length modifiers 'h' (short int), 'l' (long int),
  * and 'll' (long long int) are supported.
@@ -182,6 +186,36 @@
  *		- several comments rephrased and new ones added;
  *		- make compiler not complain about 'credits' defined but
  *		  not used;
+ * 2001-08	V2.3  Mark Martinec <mark.martinec@ijs.si>
+ *  .. 2002-02	- writeback conversion specifier 'n' is now supported;
+ *		- bump the size of a temporary buffer for simple
+ *		  numeric->string conversion from 32 to 48 characters
+ *		  in anticipation of 128-bit machines;
+ *		- added #include <stddef.h> and <stdarg.h> to snprintf.h;
+ *		- fixed one assert in test.c
+ *		  (thanks to Tuomo A Turunen for reporting this problem);
+ *		- portability fix: use isdigit() provided with <ctype.h>
+ *		  and do not assume character set is ASCII - call strtoul()
+ *		  if needed to convert field width and precision;
+ *		- check for broken or non-ANSI native sprintf (e.g. SunOS)
+ *		  which does not return string lenth, and work around it;
+ *		- shouldn't happen, but just in case (applies to numeric
+ *		  conversions only): added assertion after a call to
+ *		  system's sprintf to make sure we detect a problem
+ *		  as it happens (or very shortly - but still - after a
+ *		  buffer overflow occured for some strange reason
+ *		  in system's sprintf);
+ *		- cleanup: avoid comparing signed and unsigned values
+ *		  (ANSI c++ complaint); added a couple of 'const' qualifiers;
+ *		- changed few comments, new references to some other
+ *		  implementations added to the README file;
+ *		- it appears the Artistic License and its variant the Frontier
+ *		  Artistic License are incompatible with GPL and precludes
+ *		  this work to be included with GPL-licensed work. This was
+ *		  not my intention. The fact that this package is dual licensed
+ *		  comes to the rescue. Changed the credits[] string, and
+ *		  TERMS AND CONDITIONS to explicitly say so, stressing
+ *		  the fact that this work is dual licensed.
  */
 
 #include "config.h"
@@ -194,7 +228,6 @@
  * (and portable_vsnprintf).
  */
 /* #define HAVE_SNPRINTF */
-/* defined from config.h */
 
 /* Define PREFER_PORTABLE_SNPRINTF if your system does have snprintf and
  * vsnprintf but you would prefer to use the portable routine(s) instead.
@@ -202,7 +235,7 @@
  * (and portable_vsnprintf) and a macro 'snprintf' (and 'vsnprintf')
  * is defined to expand to 'portable_v?snprintf' - see file snprintf.h .
  * Defining this macro is only useful if HAVE_SNPRINTF is also defined,
- * but does does no harm if defined nevertheless.
+ * but does no harm if defined nevertheless.
  */
 /* #define PREFER_PORTABLE_SNPRINTF */
 
@@ -240,13 +273,13 @@
  * I don't know of any other standard and portable way of achieving the same.
  * With some versions of gcc you may use __va_copy(). You might even get away
  * with "ap2 = ap", in this case you must not call va_end(ap2) !
- *   #define va_copy(ap2,ap) ap2 = ap
+ *   #define va_copy(ap2,ap) __va_copy((ap2),(ap))
+ *   #define va_copy(ap2,ap) (ap2) = (ap)
  */
 /* #define NEED_ASPRINTF   */
 /* #define NEED_ASNPRINTF  */
 /* #define NEED_VASPRINTF  */
 /* #define NEED_VASNPRINTF */
-
 
 /* Define the following macros if desired:
  *   SOLARIS_COMPATIBLE, SOLARIS_BUG_COMPATIBLE,
@@ -287,7 +320,7 @@
 /* ============================================= */
 
 #define PORTABLE_SNPRINTF_VERSION_MAJOR 2
-#define PORTABLE_SNPRINTF_VERSION_MINOR 2
+#define PORTABLE_SNPRINTF_VERSION_MINOR 3
 
 #if defined(NEED_ASPRINTF) || defined(NEED_ASNPRINTF) || defined(NEED_VASPRINTF) || defined(NEED_VASNPRINTF)
 # if defined(NEED_SNPRINTF_ONLY)
@@ -319,17 +352,13 @@
 #endif
 
 #include <sys/types.h>
+#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
 #include <errno.h>
-
-#ifdef isdigit
-#undef isdigit
-#endif
-#define isdigit(c) ((c) >= '0' && (c) <= '9')
 
 /* For copying strings longer or equal to 'breakeven_point'
  * it is more efficient to call memcpy() than to do it inline.
@@ -339,13 +368,14 @@
  * will be just fine if you don't care to squeeze every drop
  * of performance out of the code.
  *
- * Small values favor memcpy, large values favor inline code.
+ * Small values favour memcpy & memset (extra procedure call, less code),
+ * large values favour inline code (saves procedure call, more code).
  */
 #if defined(__alpha__) || defined(__alpha)
-#  define breakeven_point   2	/* AXP (DEC Alpha)     - gcc or cc or egcs */
+#  define breakeven_point   2	/* AXP (DEC Alpha)     - gcc or cc */
 #endif
 #if defined(__i386__)  || defined(__i386)
-#  define breakeven_point  12	/* Intel Pentium/Linux - gcc 2.96 */
+#  define breakeven_point  15	/* Intel Pentium/Linux - gcc 2.96 (12..30) */
 #endif
 #if defined(__hppa)
 #  define breakeven_point  10	/* HP-PA               - gcc */
@@ -355,8 +385,8 @@
 #endif
 
 /* some other values of possible interest: */
-/* #define breakeven_point  8 */  /* VAX 4000          - vaxc */
-/* #define breakeven_point 19 */  /* VAX 4000          - gcc 2.7.0 */
+/* #define breakeven_point  8 */  /* VAX 4000         - vaxc */
+/* #define breakeven_point 19 */  /* VAX 4000         - gcc 2.7.0 */
 
 #ifndef breakeven_point
 #  define breakeven_point   6	/* some reasonable one-size-fits-all value */
@@ -365,16 +395,57 @@
 #define fast_memcpy(d,s,n) \
   { register size_t nn = (size_t)(n); \
     if (nn >= breakeven_point) memcpy((d), (s), nn); \
-    else if (nn > 0) { /* proc call overhead is worth only for large strings*/\
+    else if (nn > 0) { /* call overhead is worth only for large strings*/ \
       register char *dd; register const char *ss; \
       for (ss=(s), dd=(d); nn>0; nn--) *dd++ = *ss++; } }
 
 #define fast_memset(d,c,n) \
   { register size_t nn = (size_t)(n); \
     if (nn >= breakeven_point) memset((d), (int)(c), nn); \
-    else if (nn > 0) { /* proc call overhead is worth only for large strings*/\
+    else if (nn > 0) { /* call overhead is worth only for large strings*/ \
       register char *dd; register const int cc=(int)(c); \
       for (dd=(d); nn>0; nn--) *dd++ = cc; } }
+
+/* The following isdigit() is not portable (e.g. may not work
+ * with non-ASCII character sets). Use the system-provided isdigit()
+ * if available, otherwise uncomment:
+ *   #define isdigit(c) ((c) >= '0' && (c) <= '9')
+ */
+
+/* atosizet converts a span of decimal digits to a number of type size_t.
+ * It is a macro, similar to:  (but not quite, p will be modified!)
+ *   void atosizet(const char *p, const char **endp, size_t *result);
+ * endp will point to just beyond the digits substring.
+ * This is _not_ a general-purpose macro:
+ *  - the first argument will be modified;
+ *  - the first character must already be checked to be a digit!
+ * NOTE: size_t could be wider than unsigned int;
+ *       but we treat numeric string like common implementations do!
+ * If character set is ASCII (checking with a quick and simple-minded test)
+ * we convert string to a number inline for speed, otherwise we call strtoul.
+ */
+#define atosizet(p, endp, result)					\
+  if ((int)'0' == 48) {  /* a compile-time constant expression, */	\
+                         /* hoping the code from one branch     */	\
+                         /* will be optimized away */			\
+    /* looks like ASCII character set, let's hope it really is */	\
+    register unsigned int uj = (unsigned int)(*(p)++ - '0');		\
+    while (isdigit((int)(*(p))))					\
+      uj = 10*uj + (unsigned int)(*(p)++ - '0');			\
+    if ((endp) != NULL) *(endp) = (p);					\
+    *(result) = (size_t) uj;						\
+  } else {								\
+    /* non-ASCII character set, play by the rules */			\
+    char *ep;  /* NOTE: no 'const' to make strtoul happy! */		\
+    /* NOTE: clip (unsigned long) to (unsigned int) as is common !!! */	\
+    const unsigned int uj = (unsigned int) strtoul((p), &ep, 10);	\
+    /* The following assignment is legal: the address of a non-const */	\
+    /* object can be assigned to a pointer to a const object, but    */	\
+    /* that pointer cannot be used to alter the value of the object. */	\
+    if ((endp) != NULL) *(endp) = ep;					\
+    /* if num too large the result will be ULONG_MAX and errno=ERANGE */ \
+    *(result) = (size_t) uj;						\
+  }									\
 
 /* prototypes */
 
@@ -411,12 +482,10 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap);
 
 /* declarations */
 
-static char credits[] = "\n\
-@(#)snprintf.c, v2.2: Mark Martinec, <mark.martinec@ijs.si>\n\
-@(#)snprintf.c, v2.2: Copyright 1999, Mark Martinec. Frontier Artistic License applies.\n\
-@(#)snprintf.c, v2.2: http://www.ijs.si/software/snprintf/\n";
-/* avoid not used warning */
-inline const char* get_credits_snprintf(const char* dummy) { return credits; }
+static const char credits[] = "\n\
+@(#)snprintf.c, v2.3: Mark Martinec, <mark.martinec@ijs.si>\n\
+@(#)snprintf.c, v2.3: Copyright 1999-2002 Mark Martinec. Dual licensed: Frontier Artistic License or GNU General Public License applies.\n\
+@(#)snprintf.c, v2.3: http://www.ijs.si/software/snprintf/\n";
 
 #if defined(NEED_ASPRINTF)
 int asprintf(char **ptr, const char *fmt, /*args*/ ...) {
@@ -457,7 +526,7 @@ int vasprintf(char **ptr, const char *fmt, va_list ap) {
   *ptr = (char *) malloc(str_m = (size_t)str_l + 1);
   if (*ptr == NULL) { errno = ENOMEM; str_l = -1; }
   else {
-    int str_l2 = portable_vsnprintf(*ptr, str_m, fmt, ap);
+    const int str_l2 = portable_vsnprintf(*ptr, str_m, fmt, ap);
     assert(str_l2 == str_l);
   }
   return str_l;
@@ -465,7 +534,7 @@ int vasprintf(char **ptr, const char *fmt, va_list ap) {
 #endif
 
 #if defined(NEED_ASNPRINTF)
-int asnprintf (char **ptr, size_t str_m, const char *fmt, /*args*/ ...) {
+int asnprintf(char **ptr, size_t str_m, const char *fmt, /*args*/ ...) {
   va_list ap;
   int str_l;
 
@@ -493,7 +562,7 @@ int asnprintf (char **ptr, size_t str_m, const char *fmt, /*args*/ ...) {
 #endif
 
 #if defined(NEED_VASNPRINTF)
-int vasnprintf (char **ptr, size_t str_m, const char *fmt, va_list ap) {
+int vasnprintf(char **ptr, size_t str_m, const char *fmt, va_list ap) {
   int str_l;
 
   *ptr = NULL;
@@ -510,7 +579,7 @@ int vasnprintf (char **ptr, size_t str_m, const char *fmt, va_list ap) {
     *ptr = (char *) malloc(str_m);
     if (*ptr == NULL) { errno = ENOMEM; str_l = -1; }
     else {
-      int str_l2 = portable_vsnprintf(*ptr, str_m, fmt, ap);
+      const int str_l2 = portable_vsnprintf(*ptr, str_m, fmt, ap);
       assert(str_l2 == str_l);
     }
   }
@@ -548,7 +617,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
   size_t str_l = 0;
   const char *p = fmt;
 
-/* In contrast with POSIX, the ISO C99 now says
+/* In contrast to POSIX, the ISO C99 now says
  * that str can be NULL and str_m can be 0.
  * This is more useful than the old:  if (str_m < 1) return -1; */
 
@@ -558,16 +627,21 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
   if (!p) p = "";
   while (*p) {
     if (*p != '%') {
-   /* if (str_l < str_m) str[str_l++] = *p++;    -- this would be sufficient */
-   /* but the following code achieves better performance for cases
-    * where format string is long and contains few conversions */
-      const char *q = strchr(p+1,'%');
-      size_t n = !q ? strlen(p) : (q-p);
-      if (str_l < str_m) {
-        size_t avail = str_m-str_l;
-        fast_memcpy(str+str_l, p, (n>avail?avail:n));
+      if (0) {  /* compile time decision between two equivalent alternatives */
+     /* this is simple but slow */
+        if (str_l < str_m) str[str_l] = *p;
+        p++; str_l++;
+      } else {
+     /* this usually achieves much better performance for cases
+      * where format string is long and contains few conversions */
+        const char *const q = strchr(p+1,'%');
+        const size_t n = !q ? strlen(p) : (q-p);
+        if (str_l < str_m) {
+          const size_t avail = str_m-str_l;
+          fast_memcpy(str+str_l, p, (n>avail?avail:n));
+        }
+        p += n; str_l += n;
       }
-      p += n; str_l += n;
     } else {
       const char *starting_p;
       size_t min_field_width = 0, precision = 0;
@@ -576,7 +650,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
       int space_for_positive = 1; /* If both the ' ' and '+' flags appear,
                                      the ' ' flag should be ignored. */
       char length_modifier = '\0';            /* allowed values: \0, h, l, L */
-      char tmp[32];/* temporary buffer for simple numeric->string conversion */
+      char tmp[48];/* temporary buffer for simple numeric->string conversion */
 
       const char *str_arg;      /* string address in case of string argument */
       size_t str_arg_l;         /* natural field width of arg without padding
@@ -618,26 +692,22 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
         }
         p++;
       }
-   /* If the '0' and '-' flags both appear, the '0' flag should be ignored. */
+   /* If flags '0' and '-' both appear, the '0' flag should be ignored. */
 
    /* parse field width */
       if (*p == '*') {
-        int j;
-        p++; j = va_arg(ap, int);
+        const int j = va_arg(ap, int);
+        p++;
         if (j >= 0) min_field_width = j;
         else { min_field_width = -j; justify_left = 1; }
       } else if (isdigit((int)(*p))) {
-        /* size_t could be wider than unsigned int;
-           make sure we treat argument like common implementations do */
-        unsigned int uj = *p++ - '0';
-        while (isdigit((int)(*p))) uj = 10*uj + (unsigned int)(*p++ - '0');
-        min_field_width = uj;
+        atosizet(p, &p, &min_field_width);
       }
    /* parse precision */
       if (*p == '.') {
         p++; precision_specified = 1;
         if (*p == '*') {
-          int j = va_arg(ap, int);
+          const int j = va_arg(ap, int);
           p++;
           if (j >= 0) precision = j;
           else {
@@ -650,21 +720,17 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
           */
           }
         } else if (isdigit((int)(*p))) {
-          /* size_t could be wider than unsigned int;
-             make sure we treat argument like common implementations do */
-          unsigned int uj = *p++ - '0';
-          while (isdigit((int)(*p))) uj = 10*uj + (unsigned int)(*p++ - '0');
-          precision = uj;
+          atosizet(p, &p, &precision);
         }
       }
    /* parse 'h', 'l' and 'll' length modifiers */
       if (*p == 'h' || *p == 'l') {
         length_modifier = *p; p++;
-        if (length_modifier == 'l' && *p == 'l') {   /* double l = long long */
+        if (length_modifier == 'l' && *p == 'l') {  /* double el = long long */
 #ifdef SNPRINTF_LONGLONG_SUPPORT
-          length_modifier = '2';                  /* double l encoded as '2' */
+          length_modifier = '2';          /* double letter el encoded as '2' */
 #else
-          length_modifier = 'l';                 /* treat it as a single 'l' */
+          length_modifier = 'l';     /* treat it as a single 'l' (letter el) */
 #endif
           p++;
         }
@@ -695,7 +761,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
         case '%':
           str_arg = p; break;
         case 'c': {
-          int j = va_arg(ap, int);
+          const int j = va_arg(ap, int);
           uchar_arg = (unsigned char) j;   /* standard demands unsigned char */
           str_arg = (const char *) &uchar_arg;
           break;
@@ -709,7 +775,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
           else if (precision == 0) str_arg_l = 0;
           else {
        /* memchr on HP does not like n > 2^31  !!! */
-            const char *q = memchr(str_arg, '\0',
+            const char *const q = (const char *) memchr(str_arg, '\0',
                              precision <= 0x7fffffff ? precision : 0x7fffffff);
             str_arg_l = !q ? precision : (q-str_arg);
           }
@@ -730,15 +796,15 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
           /* only defined for length modifier h, or for no length modifiers */
 
         long int long_arg = 0;  unsigned long int ulong_arg = 0;
-          /* only defined for length modifier l */
+          /* only defined for length modifier l (letter el) */
 
         void *ptr_arg = NULL;
-          /* pointer argument value -only defined for p conversion */
+          /* pointer argument value - only defined for p conversion */
 
 #ifdef SNPRINTF_LONGLONG_SUPPORT
         long long int long_long_arg = 0;
         unsigned long long int ulong_long_arg = 0;
-          /* only defined for length modifier ll */
+          /* only defined for length modifier ll (double letter el) */
 #endif
         if (fmt_spec == 'p') {
         /* HPUX 10: An l, h, ll or L before any other conversion character
@@ -766,7 +832,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
           switch (length_modifier) {
           case '\0':
           case 'h':
-         /* It is non-portable to specify a second argument of char or short
+         /* It is non-portable to specify char or short as the second argument
           * to va_arg, because arguments seen by the called function
           * are not char or short.  C converts char and short arguments
           * to int before passing them to a function.
@@ -775,7 +841,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
             if      (int_arg > 0) arg_sign =  1;
             else if (int_arg < 0) arg_sign = -1;
             break;
-          case 'l':
+          case 'l':  /* letter el */
             long_arg = va_arg(ap, long int);
             if      (long_arg > 0) arg_sign =  1;
             else if (long_arg < 0) arg_sign = -1;
@@ -795,7 +861,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
             uint_arg = va_arg(ap, unsigned int);
             if (uint_arg) arg_sign = 1;
             break;
-          case 'l':
+          case 'l':  /* letter el */
             ulong_arg = va_arg(ap, unsigned long int);
             if (ulong_arg) arg_sign = 1;
             break;
@@ -854,32 +920,46 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
          /* When zero value is formatted with an explicit precision 0,
             the resulting formatted string is empty (d, i, u, o, x, X, p).   */
         } else {
-          char f[5]; int f_l = 0;
+          static int sprintf_return_value_is_ansi_compliant = -1; /* unknown */
+          char f[5]; int f_l = 0, sprintf_l = 0;
           f[f_l++] = '%';    /* construct a simple format string for sprintf */
           if (!length_modifier) { }
           else if (length_modifier=='2') { f[f_l++] = 'l'; f[f_l++] = 'l'; }
           else f[f_l++] = length_modifier;
           f[f_l++] = fmt_spec; f[f_l++] = '\0';
-          if (fmt_spec == 'p') str_arg_l += sprintf(tmp+str_arg_l, f, ptr_arg);
+          if (sprintf_return_value_is_ansi_compliant < 0) { /* not yet known */
+         /* let's do a little run-time experiment (only once) to see if the
+          * native sprintf returns a string length as required by ANSI, or has
+          * some other ideas like the old SunOS which returns buffer address */
+            sprintf_return_value_is_ansi_compliant =
+              (sprintf(tmp+str_arg_l, "%d", 19) == 2);
+          }
+          if (fmt_spec == 'p') sprintf_l=sprintf(tmp+str_arg_l, f, ptr_arg);
           else if (fmt_spec == 'd') {  /* signed */
             switch (length_modifier) {
             case '\0':
-            case 'h': str_arg_l+=sprintf(tmp+str_arg_l, f, int_arg);  break;
-            case 'l': str_arg_l+=sprintf(tmp+str_arg_l, f, long_arg); break;
+            case 'h': sprintf_l=sprintf(tmp+str_arg_l, f, int_arg);  break;
+            case 'l': sprintf_l=sprintf(tmp+str_arg_l, f, long_arg); break;
 #ifdef SNPRINTF_LONGLONG_SUPPORT
-            case '2': str_arg_l+=sprintf(tmp+str_arg_l,f,long_long_arg); break;
+            case '2': sprintf_l=sprintf(tmp+str_arg_l,f,long_long_arg); break;
 #endif
             }
           } else {  /* unsigned */
             switch (length_modifier) {
             case '\0':
-            case 'h': str_arg_l+=sprintf(tmp+str_arg_l, f, uint_arg);  break;
-            case 'l': str_arg_l+=sprintf(tmp+str_arg_l, f, ulong_arg); break;
+            case 'h': sprintf_l=sprintf(tmp+str_arg_l, f, uint_arg);  break;
+            case 'l': sprintf_l=sprintf(tmp+str_arg_l, f, ulong_arg); break;
 #ifdef SNPRINTF_LONGLONG_SUPPORT
-            case '2': str_arg_l+=sprintf(tmp+str_arg_l,f,ulong_long_arg);break;
+            case '2': sprintf_l=sprintf(tmp+str_arg_l,f,ulong_long_arg);break;
 #endif
             }
           }
+          if (!sprintf_return_value_is_ansi_compliant) {  /* broken sprintf? */
+            tmp[sizeof(tmp)-1] = '\0'; sprintf_l = strlen(tmp+str_arg_l);
+          }
+          assert(sprintf_l >= 0);  /* should not happen; problem in sprintf? */
+          assert(sprintf_l+str_arg_l < sizeof(tmp)); /*better late then never*/
+          str_arg_l += sprintf_l;
          /* include the optional minus sign and possible "0x"
             in the region before the zero padding insertion point */
           if (zero_padding_insertion_ind < str_arg_l &&
@@ -893,7 +973,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
             zero_padding_insertion_ind += 2;
           }
         }
-        { size_t num_of_digits = str_arg_l - zero_padding_insertion_ind;
+        { const size_t num_of_digits = str_arg_l - zero_padding_insertion_ind;
           if (alternate_form && fmt_spec == 'o'
 #ifdef HPUX_COMPATIBLE                                  /* ("%#.o",0) -> ""  */
               && (str_arg_l > 0)
@@ -918,9 +998,27 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
         }
      /* zero padding to specified minimal field width? */
         if (!justify_left && zero_padding) {
-          int n = min_field_width - (str_arg_l+number_of_zeros_to_pad);
+          const int n = min_field_width - (str_arg_l+number_of_zeros_to_pad);
           if (n > 0) number_of_zeros_to_pad += n;
         }
+        break;
+      }
+      case 'n': {
+        void *const ptr = va_arg(ap, void *);
+        if (ptr != NULL) {
+       /* same problem of size_t -> int type conversion as with the
+        * snprintf return value - see comment at the end of this procedure */
+          switch (length_modifier) {
+          case '\0': *(      int *const)ptr = str_l; break;
+          case 'h':  *(short int *const)ptr = str_l; break;
+          case 'l':  *(long  int *const)ptr = str_l; break;
+#ifdef SNPRINTF_LONGLONG_SUPPORT
+          case '2':  *(long long int *const)ptr = str_l; break;
+#endif
+          }
+        }
+     /* no argument converted */
+        min_field_width = number_of_zeros_to_pad = str_arg_l = 0;
         break;
       }
       default: /* unrecognized conversion specifier, keep format string as-is*/
@@ -946,60 +1044,66 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
    /* insert padding to the left as requested by min_field_width;
       this does not include the zero padding in case of numerical conversions*/
       if (!justify_left) {                /* left padding with blank or zero */
-        int n = min_field_width - (str_arg_l+number_of_zeros_to_pad);
+        const int n = min_field_width - (str_arg_l+number_of_zeros_to_pad);
         if (n > 0) {
           if (str_l < str_m) {
-            size_t avail = str_m-str_l;
-            fast_memset(str+str_l, (zero_padding?'0':' '), (n>avail?avail:n));
+            const size_t avail = str_m-str_l;
+            fast_memset(str+str_l, (zero_padding?'0':' '),
+                        ((unsigned int)n > avail ? avail : (unsigned int)n));
           }
           str_l += n;
         }
       }
-   /* zero padding as requested by the precision or by the minimal field width
-    * for numeric conversions required? */
+   /* is zero padding as requested by the precision or by the
+    * minimal field width for numeric conversions required? */
       if (number_of_zeros_to_pad <= 0) {
-     /* will not copy first part of numeric right now, *
-      * force it to be copied later in its entirety    */
+     /* will not copy the first part of numeric right now, *
+      * force it to be copied later in its entirety        */
         zero_padding_insertion_ind = 0;
       } else {
      /* insert first part of numerics (sign or '0x') before zero padding */
-        int n = zero_padding_insertion_ind;
-        if (n > 0) {
-          if (str_l < str_m) {
-            size_t avail = str_m-str_l;
-            fast_memcpy(str+str_l, str_arg, (n>avail?avail:n));
+        { const int n = zero_padding_insertion_ind;
+          if (n > 0) {
+            if (str_l < str_m) {
+              const size_t avail = str_m-str_l;
+              fast_memcpy(str+str_l, str_arg,
+                          ((unsigned int)n > avail ? avail : (unsigned int)n));
+            }
+            str_l += n;
           }
-          str_l += n;
         }
      /* insert zero padding as requested by the precision or min field width */
-        n = number_of_zeros_to_pad;
-        if (n > 0) {
-          if (str_l < str_m) {
-            size_t avail = str_m-str_l;
-            fast_memset(str+str_l, '0', (n>avail?avail:n));
+        { const int n = number_of_zeros_to_pad;
+          if (n > 0) {
+            if (str_l < str_m) {
+              const size_t avail = str_m-str_l;
+              fast_memset(str+str_l, '0',
+                          ((unsigned int)n > avail ? avail : (unsigned int)n));
+            }
+            str_l += n;
           }
-          str_l += n;
         }
       }
    /* insert formatted string
     * (or as-is conversion specifier for unknown conversions) */
-      { int n = str_arg_l - zero_padding_insertion_ind;
+      { const int n = str_arg_l - zero_padding_insertion_ind;
         if (n > 0) {
           if (str_l < str_m) {
-            size_t avail = str_m-str_l;
+            const size_t avail = str_m-str_l;
             fast_memcpy(str+str_l, str_arg+zero_padding_insertion_ind,
-                        (n>avail?avail:n));
+                        ((unsigned int)n > avail ? avail : (unsigned int)n));
           }
           str_l += n;
         }
       }
    /* insert right padding */
       if (justify_left) {          /* right blank padding to the field width */
-        int n = min_field_width - (str_arg_l+number_of_zeros_to_pad);
+        const int n = min_field_width - (str_arg_l+number_of_zeros_to_pad);
         if (n > 0) {
           if (str_l < str_m) {
-            size_t avail = str_m-str_l;
-            fast_memset(str+str_l, ' ', (n>avail?avail:n));
+            const size_t avail = str_m-str_l;
+            fast_memset(str+str_l, ' ',
+                        ((unsigned int)n > avail ? avail : (unsigned int)n));
           }
           str_l += n;
         }
@@ -1009,9 +1113,8 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
 #if defined(NEED_SNPRINTF_ONLY)
   va_end(ap);
 #endif
-  if (str_m > 0) { /* make sure the string is null-terminated
-                      even at the expense of overwriting the last character
-                      (shouldn't happen, but just in case) */
+  if (str_m > 0) { /* make sure the string is null-terminated, possibly
+                      at the expense of overwriting the last character */
     str[str_l <= str_m-1 ? str_l : str_m-1] = '\0';
   }
   /* Return the number of characters formatted (excluding trailing null
@@ -1020,7 +1123,7 @@ int portable_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap) {
    *
    * The value of str_l should be returned, but str_l is of unsigned type
    * size_t, and snprintf is int, possibly leading to an undetected
-   * integer overflow, resulting in a negative return value, which is illegal.
+   * integer overflow, resulting in a negative return value, which is invalid.
    * Both XSH5 and ISO C99 (at least the draft) are silent on this issue.
    * Should errno be set to EOVERFLOW and EOF returned in this case???
    */
