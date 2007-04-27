@@ -1663,21 +1663,16 @@ Both options expect a number in the range from <literal>0</literal> to <literal>
 <title>Status</title>
 
 <para>
-The <code>lcd2usb</code> connection type has been written to support displays
-with one and two HD44780 controllers.
-Owing to the lack of a 2-controller display, it has only been tested with a 
-1-controller display.
-If you happen to have a 2-controller display connected to LCD2USB,
-please report to the mailing list.
+Although the LCD2USB sports two keys, they are currently not supported by
+<package>LCDproc</package>. Patches to fix the situation are very welcome.
+</para>
+
 <tip>
  <para>
   In order to make the <code>lcd2usb</code> connection type work with a 2-controller display
   you may need to set the <command>vSpan=</command> config option accordingly.
  </para>
 </tip> 
-Although the LCD2USB sports two keys, they are currently not supported by
-<package>LCDproc</package>. Patches to fix the situation are very welcome.
-</para>
 </sect4>
 
 </sect3>
