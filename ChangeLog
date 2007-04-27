@@ -9,6 +9,7 @@ v.0.5dev (ongoing development)
  + lcdexec: notification when called program finishes
  + xosd driver: offset from top-left corner
  + LCDd: Hello= config option for startup message
+ * glk driver: bignum support fixed
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

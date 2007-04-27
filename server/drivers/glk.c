@@ -533,7 +533,7 @@ glk_output(Driver *drvthis, int on)
  * \param num      Character to write (0 - 10 with 10 representing ':')
  */
 MODULE_EXPORT void
-IOWarrior_num(Driver *drvthis, int x, int num)
+glk_num(Driver *drvthis, int x, int num)
 {
 	//PrivateData *p = drvthis->private_data;
 	int do_init = 1;
