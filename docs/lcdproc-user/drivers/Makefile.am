@@ -6,6 +6,7 @@ EXTRA_DIST =	bayrad.docbook \
 		CFontzPacket.docbook \
 		curses.docbook \
 		CwLnx.docbook \
+		ea65.docbook \
 		eyeboxone.docbook \
 		g15.docbook \
 		glcdlib.docbook \
@@ -25,10 +26,12 @@ EXTRA_DIST =	bayrad.docbook \
 		mtc_s16209x.docbook \
 		mtxorb.docbook \
 		NoritakeVFD.docbook \
+		picolcd.docbook \
 		ppttrouble.docbook \
 		pylcd.docbook \
 		sed1330.docbook \
 		sed1520.docbook \
+		serialPOS.docbook \
 		serialVFD.docbook \
 		sli.docbook \
 		stv5730.docbook \
