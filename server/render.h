@@ -34,7 +34,7 @@ extern int heartbeat;
 extern int backlight;
 extern int output_state;
 
-int render_screen(Screen *s, long int timer);
+int render_screen(Screen *s, long timer);
 	/* Renders the given screen. */
 
 int server_msg(const char *text, int expire);

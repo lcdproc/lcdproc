@@ -140,7 +140,7 @@ static char **stored_argv;
 static volatile short got_reload_signal = 0;
 
 /* Local exported variables */
-long int timer = 0;
+long timer = 0;
 
 /**** Local functions ****/
 static void clear_settings(void);
