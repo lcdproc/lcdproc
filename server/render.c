@@ -435,7 +435,7 @@ render_frame(LinkedList *list,
 								for (i = 0; i < lines_required; i++) {
 									strncpy(str, &((w->text)[i * screen_width]), screen_width);
 									str[screen_width] = '\0';
-									drivers_string (w->left, w->top + i, str);
+									drivers_string(w->left, w->top + i, str);
 								}
 							}
 							else {
