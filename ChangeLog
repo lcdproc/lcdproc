@@ -11,6 +11,7 @@ v.0.5dev (ongoing development)
  + LCDd: Hello= config option for startup message
  * glk driver: bignum support fixed
  * update local snprintf to the last one, which is GPL
+ - server core: cleanup - remove unnecessary cruft
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
