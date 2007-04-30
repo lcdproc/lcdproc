@@ -224,6 +224,9 @@ Karsten Festag
 Gatewood Green
 	- picolcd driver
 
+Dave Pratt
+	- overhauled CwLnx driver
+
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min
