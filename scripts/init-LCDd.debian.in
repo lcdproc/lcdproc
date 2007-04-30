@@ -30,12 +30,12 @@ case "$1" in
     start)
 	printf "Starting ${DESC}: "
 	start-stop-daemon --start --quiet --exec ${DAEMON} -- ${OPTIONS}
-	printf "${NAME}."
+	printf "${NAME}.\n"
 	;;
     stop)
 	printf "Stopping ${DESC}: "
 	start-stop-daemon --stop --oknodo --quiet --exec ${DAEMON}
-	printf "${NAME}."
+	printf "${NAME}.\n"
 	;;
     restart|force-reload)
 	$0 stop

@@ -25,4 +25,4 @@ This directory contains
   Simply copy the debian/ directory to the top-level source directory,
   adapt the call in debian/rules to your wishes, call
   	dpkg -rfakeoot -sd
-  and you're done.	
+  and you're done.
