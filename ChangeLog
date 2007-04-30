@@ -14,7 +14,7 @@ v.0.5dev (ongoing development)
  - server core: cleanup - remove unnecessary cruft
  * server core: refactor renderin code
  + LCDd: config options TitleSpeed= and Heartbeat=
- * overhauled CwLnx driver (Dave Pratt)
+ * overhauled CwLnx driver (Dave Platt)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
