@@ -172,17 +172,6 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>WaitTime=</command>
-    <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
-  </term>
-  <listitem><para>
-    Sets the default time in seconds to display a screen.
-    If not specified the default value for <replaceable>SECONDS</replaceable> is <literal>4</literal>.
-  </para></listitem>
-</varlistentry>
-
-<varlistentry>
-  <term>
     <command>User=</command>
     <arg choice="plain"><replaceable>USER</replaceable></arg>
   </term>
@@ -201,23 +190,6 @@ settings for the LCDproc server <application>LCDd</application>.
     </note>
     -->
   </listitem>
-</varlistentry>
-
-<varlistentry>
-  <term>
-    <command>ServerScreen=</command>
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
-  </term>
-  <listitem><para>
-    Include the server screen, that shows the number of active clients and screens,
-    into the screen rotation scheme when other screens exist.
-    Defaults to <literal>yes</literal>.
-  </para></listitem>
 </varlistentry>
 
 <varlistentry>
@@ -302,11 +274,95 @@ settings for the LCDproc server <application>LCDd</application>.
   </listitem>
 </varlistentry>
 
+<varlistentry>
+  <term>
+    <command>WaitTime=</command>
+    <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Sets the default time in seconds to display a screen.
+    If not specified the default value for <replaceable>SECONDS</replaceable> is <literal>4</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ServerScreen=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Include the server screen, that shows the number of active clients and screens,
+    into the screen rotation scheme when other screens exist.
+    Defaults to <literal>yes</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Backlight=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>off</literal></arg>
+      <arg choice="plain"><literal><emphasis>open</emphasis></literal></arg>
+      <arg choice="plain"><literal>on</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the master backlight setting.
+    If set to the default value <literal>open</literal>, then the backlight setting
+    of the display can be influenced by the clients.
+    When set to <literal>off</literal> or <literal>on</literal>, the backlight
+    is set to the appropriate value without the clients being able to change
+    the value.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Heartbeat=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>off</literal></arg>
+      <arg choice="plain"><literal><emphasis>open</emphasis></literal></arg>
+      <arg choice="plain"><literal>on</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the master heartbeat, the oscillating icon in the top right corner
+    of the display, setting.
+    If set to the default value <literal>open</literal>, then the heartbeat setting
+    of the display can be influenced by the clients.
+    When set to <literal>off</literal> or <literal>on</literal>, the heartbeat
+    is turned on or off without the clients being able to change the value.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>TitleSpeed=</command>
+    <arg choice="plain"><replaceable>SPEED</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the speed how fast cwover-long title lines shall scroll.
+    Legal values are <literal>0</literal> to <literal>10</literal>,
+    where <literal>0</literal> means that no scrolling takes place
+    and <literal>10</literal> stands for fastest scrolling.
+    Default is <literal>10</literal>, where no artificial delay is inserted.
+  </para></listitem>
+</varlistentry>
+
 </variablelist>
 
 
 <para>
-The <code>&hellip;Key=</code> lines define what the server does with keypresses that
+The <command>&hellip;Key=</command> lines define what the server does with keypresses that
 don't go to any client.
 </para>
 

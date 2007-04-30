@@ -39,16 +39,20 @@
 #include "widget.h"
 #include "render.h"
 
+#define BUFSIZE 1024	/* larger than display width => large enough */
+
+
 int heartbeat = HEARTBEAT_OPEN;
 static int heartbeat_fallback = HEARTBEAT_ON; /* If no heartbeat setting has been set at all */
+
 int backlight = BACKLIGHT_OPEN;
 static int backlight_fallback = BACKLIGHT_ON; /* If no backlight setting has been set at all */
+
+int titlespeed = 1;
+
 int output_state = 0;
 char *server_msg_text;
 int server_msg_expire = 0;
-
-
-#define BUFSIZE 1024	/* larger than display width => large enough */
 
 
 static int render_frame(LinkedList *list, int left, int top, int right, int bottom, int fwid, int fhgt, char fscroll, int fspeed, long timer);
@@ -352,40 +356,67 @@ render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 	if ((w != NULL) && (w->text != NULL) && (vis_width >= 8)) {
 		char str[BUFSIZE];
 		int length = strlen(w->text);
+		int width = vis_width - 6;
 		int x;
+		/* calculate delay from titlespeed: <=0 -> 0, [1 - infty] -> [10 - 1] */
+		int delay = (titlespeed <= TITLESPEED_NO)
+			    ? TITLESPEED_NO
+			    : max(TITLESPEED_MIN, TITLESPEED_MAX - titlespeed);
 
+		/* display leading fillers */
 		drivers_icon(w->x + left, w->y + top, ICON_BLOCK_FILLED);
 		drivers_icon(w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
 
 		length = min(length, sizeof(str));
-		if (length <= vis_width - 6) {
+		if ((length <= width) || (delay == 0)) {
+
+			/* copy test starting from the beginning */
+			length = min(length, width);
 			strncpy(str, w->text, length);
 			str[length] = '\0';
 
+			/* set x value for trailing fillers */
 			x = length + 4;
 		}
 		else {			/* Scroll the title, if it doesn't fit... */
-			int speed = 1;
-			int offset = timer / speed;
-			int reverse = offset / length;
+			int offset = timer;
+			int reverse;
 
+			/* if the delay is "too large" increase cycle length */
+			if ((delay != 0) && (delay < length / (length - width)))
+				offset /= delay;
+
+			/* reverse direction every length ticks */
+			reverse = (offset / length) & 1;
+
+			/* restrict offset to cycle length */
 			offset %= length;
 			offset = max(offset, 0);
-			if (offset > length - (vis_width - 6))
-				offset = length - (vis_width - 6);
 
-			if (reverse & 1)	  /* Scrolling backwards... */
-				offset = (length - (vis_width - 6)) - offset;
-			length = abs(vis_width - 6);
-			length = min(length, sizeof(str));
+			/* if the delay is "low enough" slow down as requested */
+			if ((delay != 0) && (delay >= length / (length - width)))
+				offset /= delay;
+
+			/* restrict offset to the max. allowed offset: length - width */
+			offset = min(offset, length - width);
+
+			/* scroll backward by mirroring offset at max. offset */
+			if (reverse)
+				offset = (length - width) - offset;
+
+			/* copy test starting from offset */
+			length = min(width, sizeof(str));
 			strncpy(str, w->text + offset, length);
 			str[length] = '\0';
 
+			/* set x value for trailing fillers */
 			x = vis_width - 2;
 		}
 
+		/* display text */
 		drivers_string(w->x + 3 + left, w->y + top, str);
 
+		/* display trailing fillers */
 		for ( ; x < vis_width; x++) {
 			drivers_icon(w->x + x + left, w->y + top, ICON_BLOCK_FILLED);
 		}

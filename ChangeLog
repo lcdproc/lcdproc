@@ -12,6 +12,8 @@ v.0.5dev (ongoing development)
  * glk driver: bignum support fixed
  * update local snprintf to the last one, which is GPL
  - server core: cleanup - remove unnecessary cruft
+ * server core: refactor renderin code
+ + LCDd: config options TitleSpeed= and Heartbeat=
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

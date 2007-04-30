@@ -41,6 +41,7 @@
 /* Next include files are needed for settings that we can modify */
 #include "render.h"
 
+
 char *menu_key;
 char *enter_key;
 char *up_key;
@@ -67,6 +68,7 @@ void menuscreen_create_menu(void);
 Menu *menuscreen_get_main(void);
 MenuEventFunc(heartbeat_handler);
 MenuEventFunc(backlight_handler);
+MenuEventFunc(titlespeed_handler);
 MenuEventFunc(contrast_handler);
 MenuEventFunc(brightness_handler);
 
@@ -447,14 +449,20 @@ void menuscreen_create_menu(void)
 	menu_add_item(main_menu, screens_menu);
 #endif /*LCDPROC_TESTMENUS*/
 
-	/* menu's client is NULL since we're in the server */
+	/* add option menu contents:
+	 * menu's client is NULL since we're in the server */
 	checkbox = menuitem_create_checkbox("heartbeat", heartbeat_handler, "Heartbeat", NULL, true, heartbeat);
 	menu_add_item(options_menu, checkbox);
 
-	/* menu's client is NULL since we're in the server */
 	checkbox = menuitem_create_checkbox("backlight", backlight_handler, "Backlight", NULL, true, backlight);
 	menu_add_item(options_menu, checkbox);
 
+	slider = menuitem_create_slider("titlespeed", titlespeed_handler,
+					"TitleSpeed", NULL, "0", "10", TITLESPEED_NO, TITLESPEED_MAX, 1, titlespeed);
+	menu_add_item(options_menu, slider);
+
+	/* add driver specific option menus for each driver:
+	 * menu's client is NULL since we're in the server */
 	for (driver = drivers_getfirst(); driver; driver = drivers_getnext()) {
 		int contrast_avail = (driver->get_contrast && driver->set_contrast) ? 1 : 0;
 		int brightness_avail = (driver->get_brightness && driver->set_brightness) ? 1 : 0;
@@ -534,11 +542,10 @@ MenuEventFunc (heartbeat_handler)
 	debug(RPT_DEBUG, "%s(item=[%s], event=%d)", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), event);
 
-	if (event == MENUEVENT_UPDATE) {
+	if ((item != NULL) && (event == MENUEVENT_UPDATE)) {
 		/* Set heartbeat setting */
 		heartbeat = item->data.checkbox.value;
-		report(RPT_INFO, "Menu: set heartbeat to %d",
-				item->data.checkbox.value);
+		report(RPT_INFO, "Menu: set heartbeat to %d", heartbeat);
 	}
 	return 0;
 }
@@ -548,12 +555,23 @@ MenuEventFunc (backlight_handler)
 	debug(RPT_DEBUG, "%s(item=[%s], event=%d)", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), event);
 
-	if (event == MENUEVENT_UPDATE)
-	{
+	if ((item != NULL) && (event == MENUEVENT_UPDATE)) {
 		/* Set backlight setting */
 		backlight = item->data.checkbox.value;
-		report(RPT_INFO, "Menu: set backlight to %d",
-				item->data.checkbox.value);
+		report(RPT_INFO, "Menu: set backlight to %d", backlight);
+	}
+	return 0;
+}
+
+MenuEventFunc (titlespeed_handler)
+{
+	debug(RPT_DEBUG, "%s(item=[%s], event=%d)", __FUNCTION__,
+			((item != NULL) ? item->id : "(null)"), event);
+
+	if ((item != NULL) && ((event == MENUEVENT_MINUS) || (event == MENUEVENT_PLUS))) {
+		/* set titlespeed setting */
+		titlespeed = item->data.slider.value;
+		report(RPT_INFO, "Menu: set titlespeed to %d", titlespeed);
 	}
 	return 0;
 }
@@ -563,11 +581,9 @@ MenuEventFunc (contrast_handler)
 	debug(RPT_DEBUG, "%s(item=[%s], event=%d)", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), event);
 
-	/* This function can be called by one of several drivers that
-	 * support contrast !
-	 * We need to check the menu association to see which driver. */
-	if (event == MENUEVENT_MINUS || event == MENUEVENT_PLUS) {
-		/* Determine the driver */
+	/* This function can be called by one of several drivers that support contrast */
+	if ((item != NULL) && ((event == MENUEVENT_MINUS) || (event == MENUEVENT_PLUS))) {
+		/* Determine the driver by following the menu's association */
 		Driver *driver = item->parent->data.menu.association;
 
 		if (driver != NULL) {
@@ -584,11 +600,9 @@ MenuEventFunc (brightness_handler)
 	debug(RPT_DEBUG, "%s(item=[%s], event=%d)", __FUNCTION__,
 			((item != NULL) ? item->id : "(null)"), event);
 
-	/* This function can be called by one of several drivers that
-	 * support brightness !
-	 * We need to check the menu association to see which driver. */
-	if (event == MENUEVENT_MINUS || event == MENUEVENT_PLUS) {
-		/* Determine the driver */
+	/* This function can be called by one of several drivers that support brightness ! */
+	if ((item != NULL) && ((event == MENUEVENT_MINUS) || (event == MENUEVENT_PLUS))) {
+		/* Determine the driver by following the menu's association */
 		Driver *driver = item->parent->data.menu.association;
 
 		if (driver != NULL) {

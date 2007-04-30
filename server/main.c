@@ -270,6 +270,8 @@ clear_settings(void)
 	foreground_mode = UNSET_INT;
 	rotate_server_screen = UNSET_INT;
 	backlight = UNSET_INT;
+	heartbeat = UNSET_INT;
+	titlespeed = UNSET_INT;
 
 	default_duration = UNSET_INT;
 	report_dest = UNSET_INT;
@@ -394,9 +396,6 @@ process_command_line(int argc, char **argv)
 static int
 process_configfile(char *configfile)
 {
-	const char *s;
-	/*char buf[64];*/
-
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Read server settings*/
@@ -437,20 +436,51 @@ process_configfile(char *configfile)
 	}
 
 	if (backlight == UNSET_INT) {
-		s = config_get_string("server", "backlight", 0, UNSET_STR);
-		if (strcmp(s, "on") == 0) {
-			backlight = BACKLIGHT_ON;
-		}
-		else if (strcmp(s, "off") == 0) {
-			backlight = BACKLIGHT_OFF;
-		}
-		else if (strcmp(s, "open") == 0) {
-			backlight = BACKLIGHT_OPEN;
-		}
-		else if (strcmp(s, UNSET_STR) != 0) {
-			report(RPT_WARNING, "Backlight state should be on, off or open");
+		const char *s = config_get_string("server", "Backlight", 0, NULL);
+
+		if (s != NULL) {
+			if ((strcasecmp(s, "on") == 0) || (strcasecmp(s, "yes") == 0)) {
+				backlight = BACKLIGHT_ON;
+			}
+			else if (strcasecmp(s, "off") == 0) {
+				backlight = BACKLIGHT_OFF;
+			}
+			if ((strcasecmp(s, "off") == 0) || (strcasecmp(s, "no") == 0)) {
+				backlight = BACKLIGHT_OPEN;
+			}
+			else {
+				report(RPT_WARNING, "Backlight state should be on, off or open");
+			}
 		}
 	}
+
+	if (heartbeat == UNSET_INT) {
+		const char *s = config_get_string("server", "Heartbeat", 0, NULL);
+
+		if (s != NULL) {
+			if ((strcasecmp(s, "on") == 0) || (strcasecmp(s, "yes") == 0)) {
+				heartbeat = HEARTBEAT_ON;
+			}
+			else if (strcasecmp(s, "off") == 0) {
+				heartbeat = HEARTBEAT_OFF;
+			}
+			if ((strcasecmp(s, "off") == 0) || (strcasecmp(s, "no") == 0)) {
+				heartbeat = HEARTBEAT_OPEN;
+			}
+			else {
+				report(RPT_WARNING, "Heartbeat state should be on, off or open");
+			}
+		}
+	}
+
+	if (titlespeed == UNSET_INT) {
+		int speed = config_get_int("server", "TitleSpeed", 0, TITLESPEED_DEFAULT);
+
+		/* set titlespeed */
+		titlespeed = (speed <= TITLESPEED_NO)
+			     ? TITLESPEED_NO
+			     : min(speed, TITLESPEED_MAX);
+	}		     
 
 	if (report_dest == UNSET_INT) {
 		int rs = config_get_bool("server", "reportToSyslog", 0, UNSET_INT);
@@ -471,9 +501,9 @@ process_configfile(char *configfile)
 	if (num_drivers == 0) {
 		/* read the drivernames*/
 
-		while(1) {
-			s = config_get_string("server", "driver", num_drivers, NULL);
-			if (!s)
+		while (1) {
+			const char *s = config_get_string("server", "driver", num_drivers, NULL);
+			if (s == NULL)
 				break;
 			if (s[0] != 0) {
 				drivernames[num_drivers] = malloc(strlen(s)+1);
@@ -510,6 +540,10 @@ set_default_settings(void)
 		default_duration = DEFAULT_SCREEN_DURATION;
 	if (backlight == UNSET_INT)
 		backlight = BACKLIGHT_OPEN;
+	if (heartbeat == UNSET_INT)
+		heartbeat = HEARTBEAT_OPEN;
+	if (titlespeed == UNSET_INT)
+		titlespeed = TITLESPEED_DEFAULT;
 
 	if (report_dest == UNSET_INT)
 		report_dest = DEFAULT_REPORTDEST;
