@@ -454,7 +454,7 @@ settings for the LCDproc server <application>LCDd</application>.
     <arg choice="plain"><replaceable>SPEED</replaceable></arg>
   </term>
   <listitem><para>
-    Set the speed how fast cwover-long title lines shall scroll.
+    Set the speed how fast over-long title lines shall scroll.
     Legal values are <literal>0</literal> to <literal>10</literal>,
     where <literal>0</literal> means that no scrolling takes place
     and <literal>10</literal> stands for fastest scrolling.
