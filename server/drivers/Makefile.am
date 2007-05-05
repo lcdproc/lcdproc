@@ -25,6 +25,7 @@ noinst_LIBRARIES = libLCD.a libbignum.a
 IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
 hd44780_CFLAGS =     @libusb_cflags@ $(AM_CFLAGS)
 g15_CFLAGS =         @libusb_cflags@ $(AM_CFLAGS)
+picolcd_CFLAGS =     @libusb_cflags@ $(AM_CFLAGS)	
 
 CFontz_LDADD =       libLCD.a libbignum.a
 CFontz633_LDADD =    libLCD.a libbignum.a
@@ -45,7 +46,7 @@ MD8800_LDADD =       libLCD.a
 mtc_s16209x_LDADD =  libLCD.a
 MtxOrb_LDADD =       libLCD.a libbignum.a
 NoritakeVFD_LDADD =  libLCD.a
-picolcd_LDADD =      libLCD.a @LIBUSBLCD@
+picolcd_LDADD =      @libusb_libs@ libLCD.a libbignum.a
 pyramid_LDADD =      libLCD.a
 serialPOS_LDADD =    libLCD.a libbignum.a
 serialVFD_LDADD =    libLCD.a libbignum.a

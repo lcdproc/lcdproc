@@ -277,21 +277,12 @@ dnl				else
 			actdrivers=["$actdrivers NoritakeVFD"]
 			;;
 		picolcd)
-			AC_CHECK_HEADERS([usblcd.h],[
-				AC_CHECK_LIB(usblcd, main,[
-					LIBUSBLCD="-lusblcd"
-					DRIVERS="$DRIVERS picolcd${SO}"
-					actdrivers=["$actdrivers picolcd"]
-				],[
-dnl				else
-					AC_MSG_WARN([The picolcd driver needs the usblcd library])
-				],
-				[-lusblcd]
-				)
-			],[
-dnl			else        
-				AC_MSG_WARN([The picolcd driver needs widgets.h, usblcd.h and usblcd_util.h from the usblcd package])
-			])       
+			if test "$enable_libusb" = yes ; then
+				DRIVERS="$DRIVERS picolcd${SO}"
+				actdrivers=["$actdrivers picolcd"]
+			else
+				AC_MSG_WARN([The picolcd driver needs the libusb library.])
+			fi
 			;;       
 		pyramid)
 			DRIVERS="$DRIVERS pyramid${SO}"

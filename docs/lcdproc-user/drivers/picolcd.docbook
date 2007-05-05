@@ -11,42 +11,43 @@
 </para>
 
 <sect2 id="picolcd-setup">
-	<title>Setting up the picoLCD</title>
+<title>Setting up the picoLCD</title>
 
-	<para>
-		The picoLCD device as used by this driver is USB connected and may be purchased 
-		with an internal USB header connector (5-pin to 5-pin) or an external cable 
-		(Type-A to 5-pin).  See: <ulink url="http://www.mini-box.com/picoLCD-20x2-OEM"/>.
-		It may also come pre-installed on systems like the Mini-Box M300: 
-		<ulink url="http://www.mini-box.com/Mini-Box-M300-LCD"/>.
-	</para>
-	<para>
-		Using the USB LCD with this driver requires the usblcd library from Mini-box.com
-		(available at <ulink url="http://www.mini-box.com/picoLCD-20x2-OEM"/>).i
-		The usblcd library 
-		requires libusb and libhcd.  Your distribution may or may not already provide 
-		these libraries.  The only kernel driver required is the USB host controller 
-		driver (uhci_hcd on the M300) required to fire up the usb bus to which the LCD is 
-		attached.
-	</para>
-	<para>
-		Lastly, the usbfs file system must be mounted on <filename>/proc/bus/usb</filename>.
-		<code>mount -t usbfs usbfs /proc/bus/usb</code>
-	</para>
-	<para>
-		Once connected and with libusblcd, libusb and libhid installed, testing the USB LCD 
-		can be done with the <command>usblcd</command> program that comes with the usblcd
-		library.
-		You can also change the USB LCD's initial display (what it shows when you
-		initialize the device) by using the <command>usblcd</command> binary's
-		<command>splash</command> command.
-	</para>
-	<para>
-		To use the picolcd with LCDproc, add picolcd to the LCDproc configure drivers option 
-		(or use all) and then start LCDd with the "-d picolcd" option.  The driver has 
-		sane default options and the options that are user configurable are limited to mostly 
-		simple items, like contrast and which keys to lights up.
-	</para>
+<para>
+	The picoLCD device as used by this driver is USB connected and may be purchased 
+	with an internal USB header connector (5-pin to 5-pin) or an external cable 
+	(Type-A to 5-pin).  See: <ulink url="http://www.mini-box.com/picoLCD-20x2-OEM"/>.
+	It may also come pre-installed on systems like the Mini-Box M300: 
+	<ulink url="http://www.mini-box.com/Mini-Box-M300-LCD"/>.
+</para>
+<para>
+	Building and using the USB LCD with this driver requires the
+	<filename>libusb</filename> library.
+	Most distributions do provide this library.
+	The only kernel module required is the USB host controller driver 
+	(<filename>uhci_hcd</filename> on the M300) to fire up the USB bus
+	to which the LCD is attached.
+</para>
+<para>
+	Lastly, the <filename>usbfs</filename> file system must be mounted on
+	<filename>/proc/bus/usb</filename>, e.g. using the command
+	<code>mount -t usbfs usbfs /proc/bus/usb</code> or by your disptributions
+	default configuration.
+</para>
+<para>
+	You can also change the USB LCD's initial display (what it shows when you
+	initialize the device) by using the <command>usblcd</command> binary's
+	<command>splash</command> command.
+</para>
+<para>
+	To use the picoLCD with LCDproc, add <literal>picolcd</literal>
+	to the LCDproc <code>./configure</code> <code>--drivers</code> option 
+	(or use <literal>all</literal>), set the <code>Driver=</code> to
+	<literal>picolcd</literal> in the <filename>LCDd.conf</filename> config
+	file, and then start LCDd either directly or using startup scripts.
+	The driver has sane default options and the options that are user configurable
+	are limited to mostly simple items, like contrast and which keys to light up.
+</para>
 </sect2>
 
 <sect2 id="picolcd-config">
