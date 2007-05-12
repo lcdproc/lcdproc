@@ -45,6 +45,19 @@ int config_read_string(const char *sectionname, const char *str);
 short config_get_bool(const char *sectionname, const char *keyname,
 		int skip, short default_value);
 
+/* Tries to interpret a value in the config file as a boolean.
+ * 0, false, off, no, n = 0
+ * 1, true, on, yes, y = 1
+ * 2, or the given 3rd name = 2
+ * If the key is not found or cannot be interpreted, the given default value is
+ * returned.
+ * The skip value can be used to iterate over multiple values with the same
+ * key. Should be 0 to get the first one, 1 for the second etc. and -1 for the
+ * last.
+ */
+short config_get_tristate(const char *sectionname, const char *keyname,
+		int skip, const char *name3rd, short default_value);
+
 /* Tries to interpret a value in the config file as an integer.*/
 long int config_get_int(const char *sectionname, const char *keyname,
 		int skip, long int default_value);

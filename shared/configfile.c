@@ -185,15 +185,58 @@ short config_get_bool(const char *sectionname, const char *keyname,
 	if (k == NULL)
 		return default_value;
 
-	if (strcasecmp(k->value, "0") == 0 || strcasecmp(k->value, "false") == 0
-	|| strcasecmp(k->value, "n") == 0 || strcasecmp(k->value, "no") == 0 
-	|| strcasecmp(k->value, "off") == 0) {
+	if ((strcasecmp(k->value, "0") == 0) || (strcasecmp(k->value, "false") == 0) ||
+	    (strcasecmp(k->value, "n") == 0) || (strcasecmp(k->value, "no") == 0) ||
+	    (strcasecmp(k->value, "off") == 0)) {
 		return 0;
 	}
-	if (strcasecmp(k->value, "1") == 0 || strcasecmp(k->value, "true") == 0
-	|| strcasecmp(k->value, "y") == 0 || strcasecmp(k->value, "yes") == 0
-	|| strcasecmp(k->value, "on") == 0) {
+	if ((strcasecmp(k->value, "1") == 0) || (strcasecmp(k->value, "true") == 0) ||
+	    (strcasecmp(k->value, "y") == 0) || (strcasecmp(k->value, "yes") == 0) ||
+	    (strcasecmp(k->value, "on") == 0)) {
 		return 1;
+	}
+	return default_value;
+}
+
+
+/** Get tristate value from configuration in memory.
+ *
+ * Legal tristate values are:
+ * \li \c 0 , \c false , \c off , \c no or \c n for 0.
+ * \li \c 1 , \c true , \c on , \c yes or \c y for 1
+ * \li \c 2 or the given name of the third state for 2
+ * 
+ * \param sectionname   Name of the section where the key is sought.
+ * \param keyname       Name of the key to look for.
+ * \param skip          Number of values to skip/ignore before returning the value.
+ *                      This is used to iterate through the values of a multi-valued key:
+ *                      \c 0 for the first value, \c 1 for the 2nd, ... and \c -1 for the last.
+ * \param name3rd       Name of the 3rd state
+ * \param default_value Default value if section/key is not found, value is no legal boolean,
+ *                      or \c skip exceeds the number of values of the key.
+ * \return Value found / \c default_value
+ */
+short config_get_tristate(const char *sectionname, const char *keyname,
+		int skip, const char *name3rd, short default_value)
+{
+	key *k = find_key(find_section(sectionname), keyname, skip);
+
+	if (k == NULL)
+		return default_value;
+
+	if ((strcasecmp(k->value, "0") == 0) || (strcasecmp(k->value, "false") == 0) ||
+	    (strcasecmp(k->value, "n") == 0) || (strcasecmp(k->value, "no") == 0) ||
+	    (strcasecmp(k->value, "off") == 0)) {
+		return 0;
+	}
+	if ((strcasecmp(k->value, "1") == 0) || (strcasecmp(k->value, "true") == 0) ||
+	    (strcasecmp(k->value, "y") == 0) || (strcasecmp(k->value, "yes") == 0) ||
+	    (strcasecmp(k->value, "on") == 0)) {
+		return 1;
+	}
+	if ((strcasecmp(k->value, "2") == 0) ||
+	    (name3rd != NULL) && (strcasecmp(k->value, name3rd) == 0)) {
+		return 2;
 	}
 	return default_value;
 }
