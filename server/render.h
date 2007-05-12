@@ -33,7 +33,6 @@
 #define TITLESPEED_NO		0	/* needs to be (TITLESPEED_MIN - 1) */
 #define TITLESPEED_MIN		1	
 #define TITLESPEED_MAX		10
-#define TITLESPEED_DEFAULT	10	/* = no delay */
 
 extern int heartbeat;
 extern int backlight;
