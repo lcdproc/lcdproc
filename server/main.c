@@ -434,7 +434,7 @@ process_configfile(char *configfile)
 	}
 
 	if (rotate_server_screen == UNSET_INT) {
-		rotate_server_screen = config_get_tristate("Server", "ServerScreen", 0, "never", UNSET_INT);
+		rotate_server_screen = config_get_tristate("Server", "ServerScreen", 0, "blank", UNSET_INT);
 	}
 
 	if (backlight == UNSET_INT) {

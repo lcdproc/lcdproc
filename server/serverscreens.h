@@ -1,5 +1,8 @@
+/** \file serverscreens.h
+ * Interface for the serverscreen implementation
+ */
+
 /*
- * serverscreens.h
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -17,7 +20,7 @@
 /* server screen rotation states */
 #define SERVERSCREEN_OFF	0	/* show server screen in rotation */
 #define SERVERSCREEN_ON		1	/* show server sreen only when there is no other screen */
-#define SERVERSCREEN_NEVER	2	/* don't rotate, and only show a blank screen [not implemented] */
+#define SERVERSCREEN_BLANK	2	/* don't rotate, and only show a blank screen [not implemented] */
 
 extern Screen *server_screen;
 
