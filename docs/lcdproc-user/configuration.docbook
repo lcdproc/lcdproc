@@ -388,20 +388,33 @@ settings for the LCDproc server <application>LCDd</application>.
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
       <arg choice="plain"><literal>no</literal></arg>
+      <arg choice="plain"><literal>blank</literal></arg>
     </group>
     </arg>
   </term>
   <listitem>
     <para>
-      Include the server screen, that shows the number of active clients and screens,
-      into the screen rotation scheme when other screens exist.
-      Defaults to <literal>yes</literal>.
+      Control the bahaviour of the server screen, that usually shows the number
+      of active clients and screens.
+      When set to its default value <literal>yes</literal>, the server screen
+      is included into the screen rotation scheme when other screens exist.
+      Whet set to <literal>no</literal>, the server screen only shows up
+      when no other screen exists.
+      The special value <literal>blank</literal> is similar to <literal>no</literal>,
+      but instead of displaying the current number of clients and screens,
+      only a blank screen is displayed.
     </para>
     <para>
-      This setting can be overridden on <application>LCDd</application>'s
+      This setting can be partially overridden on <application>LCDd</application>'s
       command line using the <option>-i <replaceable>NUMBER</replaceable></option> option.
       Passing <option>-i 1</option> on the command line enables server screen rotation,
       while <option>-i 0</option> disables it.
+      <note>
+        <para>
+          Using the command line, it is not possible to set the server screen to 
+          <literal>blank</literal> mode.
+	</para>
+      </note>	
     </para>
   </listitem>
 </varlistentry>
