@@ -750,7 +750,7 @@ MtxOrb_backlight (Driver *drvthis, int on)
 			     : p->offbrightness;
 
 	if (IS_VKD_DISPLAY) {
-		unsigned char out[5] = { '\xFE', '\x89', 0 };
+		unsigned char out[5] = { '\xFE', 'Y', 0 };
 
 		/* map range [0, 1000] -> [0, 3] that the hardware understands */
 		out[2] = (unsigned char) ((long) promille * 3 / 1000);

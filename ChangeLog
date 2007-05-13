@@ -17,6 +17,7 @@ v.0.5dev (ongoing development)
  * overhauled CwLnx driver (Dave Platt)
  * overhauled picolcd driver (Nicu Pavel)
  + add ServerScreen=blank option value
+ * MtxOrb driver: fix VFD/VKD support (Ethan Dicks)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
