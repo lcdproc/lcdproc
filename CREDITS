@@ -230,6 +230,9 @@ Dave Platt
 Nicu Pavel
 	- overhauled picolcd driver
 
+Daryl Fonseca-Holt
+	- lis driver
+
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min

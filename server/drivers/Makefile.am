@@ -19,7 +19,7 @@ AM_LDFLAGS = @LDSHARED@
 #LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD stv5730 svga t6963 text tyan sli ula200 xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD stv5730 svga t6963 text tyan sli ula200 xosd
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
@@ -42,6 +42,7 @@ IOWarrior_LDADD =    @libusb_libs@ libLCD.a libbignum.a
 irman_LDADD =        @LIBIRMAN@
 lcterm_LDADD =       libLCD.a
 lirc_LDADD =         @LIBLIRC_CLIENT@
+lis_LDADD =          libLCD.a @LIBFTDI@
 MD8800_LDADD =       libLCD.a
 mtc_s16209x_LDADD =  libLCD.a
 MtxOrb_LDADD =       libLCD.a libbignum.a
@@ -83,6 +84,7 @@ lb216_SOURCES =      lcd.h lb216.c lb216.h report.h
 lcdm001_SOURCES =    lcd.h lcdm001.c lcdm001.h report.h
 lcterm_SOURCES =     lcd.h lcd_lib.h lcterm.c lcterm.h report.h
 lirc_SOURCES =       lcd.h lircin.c lircin.h report.h
+lis_SOURCES =        lcd.h lcd_lib.h lis.h lis.c report.h
 MD8800_SOURCES =     lcd.h lcd_lib.h MD8800.c MD8800.h report.h
 ms6931_SOURCES =     lcd.h lcd_lib.h ms6931.h ms6931.c report.h
 mtc_s16209x_SOURCES =  lcd.h lcd_lib.h mtc_s16209x.c mtc_s16209x.h report.h

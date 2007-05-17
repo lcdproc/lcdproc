@@ -1,0 +1,50 @@
+<sect1 id="lis-howto">
+<title>The lis Driver</title>
+
+<para>
+  This section talks about using LCDproc with the VLSystem L.I.S
+  MCE 2005 Vacuum Flourescent Display based on the FTDI USB-to-serial
+  converter, the Microchip PIC-16F716 microcontroller, and
+  the NEC UPD16314 display driver that can be obtained at
+  <ulink url="http://www.vlsys.co.kr">VLSys</ulink>.
+</para>
+
+<!-- ## VLSys lis driver ## -->
+<sect2 id="lis-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="lis-config-section">
+<title>[lis]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
+  </para></listitem>
+  </term>
+  <listitem><para>
+    Select the LCD size [default: <literal>20x4</literal>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Device=</command>
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    USB device to use. Usual values are <filename>/dev/ttyUSB0</filename>, <filename>/dev/ttyUSB1</filename>, etc.
+    [default: <filename>/dev/ttyUSB0</filename>].
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

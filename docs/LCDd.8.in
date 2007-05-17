@@ -189,6 +189,9 @@ serial LCD terminal from Helmut Neumark Elektronik (http://www.neumark.de)
 .B lirc
 Infrared (input)
 .TP
+.B lis
+L.I.S MCE 2005 20x2 VFD (http://vlsys.co.kr)
+.TP
 .B MD8800
 VFD displays in Medion MD8800 PCs
 .TP

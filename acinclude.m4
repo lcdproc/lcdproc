@@ -7,7 +7,7 @@ AC_ARG_ENABLE(drivers,
 	[                  Possible drivers are:]
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,]
 	[                    EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,]
-	[                    irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,]
+	[                    irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,]
 	[                    mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330]
 	[                    sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,]
 	[                    tyan,ula200,xosd]
@@ -16,7 +16,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -255,6 +255,30 @@ dnl				else
 dnl				else
 				AC_MSG_WARN([The lirc driver needs the lirc client library])
 			])
+			;;
+		lis)
+			AC_CHECK_HEADERS([usb.h ftdi.h],[
+				AC_CHECK_LIB(ftdi, main,[
+					LIBFTDI="-lusb -lftdi"
+					DRIVERS="$DRIVERS lis${SO}"
+					actdrivers=["$actdrivers lis"]
+				],[
+dnl				else
+					AC_MSG_WARN([The lis driver needs the ftdi library])
+				])
+			],[
+dnl			else
+				AC_MSG_WARN([The lis driver needs ftdi.h and usb.h])
+			])
+			AC_CACHE_CHECK([for ftdi_setdtr() in libftdi], ac_cv_ftdi_setdtr,
+			[oldlibs="$LIBS"
+			 LIBS="$LIBS $LIBFTDI"
+			 AC_TRY_LINK_FUNC(ftdi_setdtr, ac_cv_ftdi_setdtr=yes, ac_cv_ftdi_setdtr=no)
+			 LIBS="$oldlibs"
+			])
+			if test "$ac_cv_ftdi_setdtrt" = no; then
+				AC_MSG_WARN([Upgrade to libftdi >= version 0.8])
+			fi
 			;;
 		MD8800)
 			DRIVERS="$DRIVERS MD8800${SO}"
