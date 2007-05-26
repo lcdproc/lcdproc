@@ -7,8 +7,7 @@
  * This driver uses the libftdi library to interface to the FTDI chip. Make
  * sure kernel module ftdi_sio doesn't claim the device.
  *
- * Based on the ula200 driver Copyright (C) 2006, Bernhard Walle
- * and the CrystalFontz 633 driver Copyright (C) 2002 David GLAUDE
+ * Based on:   ula200 driver Copyright (C) 2006, Bernhard Walle
  *
  * Copyright (c)  2007, Daryl Fonseca-Holt <wyatt@prairieturtle.ca>
  *
@@ -33,6 +32,16 @@
  * was which line would be written at column 1.
  */
 
+/* CHANGES:
+ *
+ * 	2007/05/22	Removed useless Device= config option.
+ * 			Added VendorID= and ProductID= config
+ * 			option parsting. Moved constants to
+ * 			lis.h where they belong. Added 
+ * 			lis_cellheight() and lis_cellwidth().
+ * 			Completely commented out lis_test() to
+ * 			save memory.
+ */
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -57,7 +66,7 @@
 #include "lcd_lib.h"
 #include "timing.h"
 
-void lis_test(Driver *drvthis);
+// void lis_test(Driver *drvthis);
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -65,17 +74,6 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1;
 MODULE_EXPORT char *symbol_prefix = "lis_";
 
-
-///////////////////////////////////////////////////////////////////////////////
-// constants
-//
-#define DISPLAY_VENDOR_ID    0x0403
-#define DISPLAY_PRODUCT_ID   0x6001
-
-#define CELLWIDTH  5
-#define CELLHEIGHT 8
-
-#define DEFAULT_BRIGHTNESS 750
 
 /*
  * Charactar mapping for UPD16314 device by Daryl Fonseca-Holt
@@ -96,79 +94,47 @@ MODULE_EXPORT char *symbol_prefix = "lis_";
  */
 
 const unsigned char UPD16314_charmap[] = {
-  /* #0 */
-    0,   1,   2,   3,   4,   5,   6,   7,
-    8,   9,  10,  11,  12,  13,  14,  15,
-   16,  17,  18,  19,  20,  21,  22,  23,
-   24,  25,  26,  27,  28,  29,  30,  31,
-  /* #32 */
-   32,  33,  34,  35,  36,  37,  38,  39,
-   40,  41,  42,  43,  44,  45,  46,  47,
-   48,  49,  50,  51,  52,  53,  54,  55,
-   56,  57,  58,  59,  60,  61,  62,  63,
-  /* #64 */
-   64,  65,  66,  67,  68,  69,  70,  71,
-   72,  73,  74,  75,  76,  77,  78,  79,
-   80,  81,  82,  83,  84,  85,  86,  87,
-   88,  89,  90,  91,  47,  93,  94,  95,
-  /* #96 */
-   96,  97,  98,  99, 100, 101, 102, 103,
-  104, 105, 106, 107, 108, 109, 110, 111,
-  112, 113, 114, 115, 116, 117, 118, 119,
-  120, 121, 122, 123, 124, 125, 126, 127,
-  /* #128 */
-  128, 129, 130, 131, 132, 133, 134, 135,
-  136, 137, 138, 139, 140, 141, 142, 143,
-  144, 145, 146, 147, 148, 149, 150, 151,
-  152, 153, 154, 155, 156, 157, 158, 159,
-  /* #160 */
-  160,  33, 236, 237, 164,  92, 124, 167,
-  168, 169, 170, 171, 172, 173, 174, 175,
-  176, 177, 178, 179, 180, 181, 182, 183,
-  184, 185, 186, 187, 188, 189, 190, 191,
-  /* #192 */
-  192, 193, 194, 195, 196, 197, 198, 199,
-  200, 201, 202, 203, 204, 205, 206, 207,
-  208, 209, 210, 211, 212, 213, 214, 215,
-  216, 217, 218, 219, 220, 221, 223, 224,
-  /* #224 */
-  224, 225, 226, 227, 228, 229, 230, 231,
-  232, 233, 234, 235, 237, 237, 238, 239,
-  240, 241, 242, 243, 244, 245, 246, 247,
-  248, 249, 250, 251, 252, 253, 254, 3 
+	/* #0 */
+	 0,   1,   2,   3,   4,   5,   6,   7,
+	 8,   9,  10,  11,  12,  13,  14,  15,
+	 16,  17,  18,  19,  20,  21,  22,  23,
+	 24,  25,  26,  27,  28,  29,  30,  31,
+	/* #32 */
+	 32,  33,  34,  35,  36,  37,  38,  39,
+	 40,  41,  42,  43,  44,  45,  46,  47,
+	 48,  49,  50,  51,  52,  53,  54,  55,
+	 56,  57,  58,  59,  60,  61,  62,  63,
+	/* #64 */
+	 64,  65,  66,  67,  68,  69,  70,  71,
+	 72,  73,  74,  75,  76,  77,  78,  79,
+	 80,  81,  82,  83,  84,  85,  86,  87,
+	 88,  89,  90,  91,  47,  93,  94,  95,
+	/* #96 */
+	 96,  97,  98,  99, 100, 101, 102, 103,
+	104, 105, 106, 107, 108, 109, 110, 111,
+	112, 113, 114, 115, 116, 117, 118, 119,
+	120, 121, 122, 123, 124, 125, 126, 127,
+	/* #128 */
+	128, 129, 130, 131, 132, 133, 134, 135,
+	136, 137, 138, 139, 140, 141, 142, 143,
+	144, 145, 146, 147, 148, 149, 150, 151,
+	152, 153, 154, 155, 156, 157, 158, 159,
+	/* #160 */
+	160, 33,  236, 237, 164,  92, 124, 167,
+	168, 169, 170, 171, 172, 173, 174, 175,
+	176, 177, 178, 179, 180, 181, 182, 183,
+	184, 185, 186, 187, 188, 189, 190, 191,
+	/* #192 */
+	192, 193, 194, 195, 196, 197, 198, 199,
+	200, 201, 202, 203, 204, 205, 206, 207,
+	208, 209, 210, 211, 212, 213, 214, 215,
+	216, 217, 218, 219, 220, 221, 223, 224,
+	/* #224 */
+	224, 225, 226, 227, 228, 229, 230, 231,
+	232, 233, 234, 235, 237, 237, 238, 239,
+	240, 241, 242, 243, 244, 245, 246, 247,
+	248, 249, 250, 251, 252, 253, 254, 3 
 };
-
-
-///////////////////////////////////////////////////////////////////////////////
-// private data types
-//
-typedef struct {
-
-    // the handle for the USB FTDI library
-    struct ftdi_context ftdic;
-
-    // the width and the height (in number of characters) of the library
-	int width, height;
-
-	// The framebuffer and the framebuffer for the last contents (incr. update)
-	unsigned char *framebuf;
-
-    // dirty line flags
-	unsigned int *line_flags;
-
-	// child thread flag
-	int child_flag;
-
-	// parent thread flag
-	int parent_flag;
-
-	// display brightness 0-1000
-	int brightness;
-
-	// custom characters loaded
-	int	cc_flag;
-
-} PrivateData;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -182,18 +148,18 @@ typedef struct {
 static int
 lis_ftdi_write_command(Driver *drvthis, unsigned char *data, int length)
 {
-    PrivateData *p = (PrivateData *) drvthis->private_data;
-    int err;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	int err;
 
-    err = ftdi_write_data(&p->ftdic, data, length);
-    if (err < 0) {
-        report(RPT_WARNING, "%s: ftdi_write_data failed with %d", drvthis->name, err);
-        return -1;
-    }
+	err = ftdi_write_data(&p->ftdic, data, length);
+	if (err < 0) {
+		report(RPT_WARNING, "%s: ftdi_write_data failed with %d", drvthis->name, err);
+		return -1;
+	}
 
-    timing_uPause(16000);
+	timing_uPause(16000);
 
-    return 0;
+	return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -202,30 +168,30 @@ lis_ftdi_write_command(Driver *drvthis, unsigned char *data, int length)
 static int
 lis_ftdi_line_to_display(Driver *drvthis, int line, unsigned char *string, int len)
 {
-    PrivateData *p = (PrivateData *) drvthis->private_data;
-    unsigned char buffer[128];
-    int err;
-    int i;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	unsigned char buffer[128];
+	int err;
+	int i;
 
-    if (len > p->width || line < 1 || line > p->height) {
-        return -EINVAL;
-    }
-    buffer[0] = 0xA0 + line;
-    buffer[1] = 0;
-    buffer[2] = 0xA7;
+	if (len > p->width || line < 1 || line > p->height) {
+		return -EINVAL;
+	}
+	buffer[0] = 0xA0 + line;
+	buffer[1] = 0;
+	buffer[2] = 0xA7;
 
-    for (i=0; i < len; i++) {
-   	buffer[i+3] = UPD16314_charmap[(unsigned char)string[i]];
-    }
-    buffer[i+3] = 0x00;
+	for (i=0; i < len; i++) {
+		buffer[i+3] = UPD16314_charmap[(unsigned char)string[i]];
+	}
+	buffer[i+3] = 0x00;
 
-    err = lis_ftdi_write_command(drvthis, buffer, len+4);
-    if (err < 0) {
-        report(RPT_WARNING, "%s: lis_ftdi_string: "
-                            "lis_ftdi_write_command() failed", drvthis->name);
-    }
+	err = lis_ftdi_write_command(drvthis, buffer, len+4);
+	if (err < 0) {
+		report(RPT_WARNING, "%s: lis_ftdi_string: "
+			"lis_ftdi_write_command() failed", drvthis->name);
+	}
 
-    return err;
+	return err;
 }
 
 
@@ -256,103 +222,103 @@ static int
 lis_load_custom_chars(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
-    int i, col, row, err;
+	int i, col, row, err;
 	unsigned char buffer[65];
 	char custom_chars[8][CELLHEIGHT*CELLHEIGHT] = {
-       { 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0 },
-       { 1, 0, 0, 0, 0,			/* 1-5 characters used by hbar() */
-		 1, 0, 0, 0, 0,
-		 1, 0, 0, 0, 0,
-		 1, 0, 0, 0, 0,
-		 1, 0, 0, 0, 0,
-		 1, 0, 0, 0, 0,
-		 1, 0, 0, 0, 0,
-		 1, 0, 0, 0, 0 },
-       { 1, 1, 0, 0, 0,			
-		 1, 1, 0, 0, 0,
-		 1, 1, 0, 0, 0,
-		 1, 1, 0, 0, 0,
-		 1, 1, 0, 0, 0,
-		 1, 1, 0, 0, 0,
-		 1, 1, 0, 0, 0,
-		 1, 1, 0, 0, 0 },
-       { 1, 1, 1, 0, 0,			
-		 1, 1, 1, 0, 0,
-		 1, 1, 1, 0, 0,
-		 1, 1, 1, 0, 0,
-		 1, 1, 1, 0, 0,
-		 1, 1, 1, 0, 0,
-		 1, 1, 1, 0, 0,
-		 1, 1, 1, 0, 0 },
-       { 1, 1, 1, 1, 0,			
-		 1, 1, 1, 1, 0,
-		 1, 1, 1, 1, 0,
-		 1, 1, 1, 1, 0,
-		 1, 1, 1, 1, 0,
-		 1, 1, 1, 1, 0,
-		 1, 1, 1, 1, 0,
-		 1, 1, 1, 1, 0 },
-       { 1, 1, 1, 1, 1,			
-		 1, 1, 1, 1, 1,
-		 1, 1, 1, 1, 1,
-		 1, 1, 1, 1, 1,
-		 1, 1, 1, 1, 1,
-		 1, 1, 1, 1, 1,
-		 1, 1, 1, 1, 1,
-		 1, 1, 1, 1, 1 },
-       { 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 1, 1, 1, 1,
-		 1, 0, 0, 0, 1,
-		 1, 0, 0, 0, 1,
-		 1, 0, 0, 0, 1,
-		 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0 },
-       { 0, 0, 0, 0, 0,
-		 0, 0, 0, 0, 0,
-		 1, 1, 1, 1, 1,
-		 1, 0, 1, 0, 1,
-		 1, 1, 0, 1, 1,
-		 1, 0, 1, 0, 1,
-		 1, 1, 1, 1, 1,
-		 0, 0, 0, 0, 0 }};
+	{ 0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0 },
+	{ 1, 0, 0, 0, 0,			/* 1-5 characters used by hbar() */
+	  1, 0, 0, 0, 0,
+	  1, 0, 0, 0, 0,
+	  1, 0, 0, 0, 0,
+	  1, 0, 0, 0, 0,
+	  1, 0, 0, 0, 0,
+	  1, 0, 0, 0, 0,
+	  1, 0, 0, 0, 0 },
+	{ 1, 1, 0, 0, 0,			
+	  1, 1, 0, 0, 0,
+	  1, 1, 0, 0, 0,
+	  1, 1, 0, 0, 0,
+	  1, 1, 0, 0, 0,
+	  1, 1, 0, 0, 0,
+	  1, 1, 0, 0, 0,
+	  1, 1, 0, 0, 0 },
+	{ 1, 1, 1, 0, 0,			
+	  1, 1, 1, 0, 0,
+	  1, 1, 1, 0, 0,
+	  1, 1, 1, 0, 0,
+	  1, 1, 1, 0, 0,
+	  1, 1, 1, 0, 0,
+	  1, 1, 1, 0, 0,
+	  1, 1, 1, 0, 0 },
+	{ 1, 1, 1, 1, 0,			
+	  1, 1, 1, 1, 0,
+	  1, 1, 1, 1, 0,
+	  1, 1, 1, 1, 0,
+	  1, 1, 1, 1, 0,
+	  1, 1, 1, 1, 0,
+	  1, 1, 1, 1, 0,
+	  1, 1, 1, 1, 0 },
+	{ 1, 1, 1, 1, 1,			
+	  1, 1, 1, 1, 1,
+	  1, 1, 1, 1, 1,
+	  1, 1, 1, 1, 1,
+	  1, 1, 1, 1, 1,
+	  1, 1, 1, 1, 1,
+	  1, 1, 1, 1, 1,
+	  1, 1, 1, 1, 1 },
+	{ 0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0,
+	  1, 1, 1, 1, 1,
+	  1, 0, 0, 0, 1,
+	  1, 0, 0, 0, 1,
+	  1, 0, 0, 0, 1,
+	  1, 1, 1, 1, 1,
+	  0, 0, 0, 0, 0 },
+	{ 0, 0, 0, 0, 0,
+	  0, 0, 0, 0, 0,
+	  1, 1, 1, 1, 1,
+	  1, 0, 1, 0, 1,
+	  1, 1, 0, 1, 1,
+	  1, 0, 1, 0, 1,
+	  1, 1, 1, 1, 1,
+	  0, 0, 0, 0, 0 }};
 
 	buffer[0] = 0xAD;		// command to write CGRAM at 0
 
-    for (i = 0; i < 8; i++)
-    {
+	for (i = 0; i < 8; i++)
+	{
 
-        /* build the buffer */
-        for (row = 0; row < CELLHEIGHT; row++) {
-            unsigned char value = 0;
+		/* build the buffer */
+		for (row = 0; row < CELLHEIGHT; row++) {
+			unsigned char value = 0;
 
-            for (col = 0; col < CELLWIDTH; col++) {
+			for (col = 0; col < CELLWIDTH; col++) {
 				value <<= 1;
 				value |= (custom_chars[i][(row * CELLWIDTH) + col] > 0) ? 1 : 0;
-            }
+			}
 			buffer[(i*8)+row+1] = value;
-        }
-    }
-    err = lis_ftdi_write_command(drvthis, buffer, 65);
-    if (err < 0) {
-        report(RPT_WARNING, "%s: lis_load_custom_chars(): "
-                            "lis_ftdi_write_command() failed", drvthis->name);
-    }
+		}
+	}
+	err = lis_ftdi_write_command(drvthis, buffer, 65);
+	if (err < 0) {
+		report(RPT_WARNING, "%s: lis_load_custom_chars(): "
+			"lis_ftdi_write_command() failed", drvthis->name);
+	}
 	else
 		p->cc_flag = 1;
 
-    return err;
+	return err;
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// Seperate thread to keep a read up on the USB device at all times
+// Separate thread to keep a read up on the USB device at all times
 int
 lis_read_thread(void *arg)
 {
@@ -388,7 +354,7 @@ lis_set_brightness(Driver *drvthis, int state, int promille)
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	
 	if (promille < 0 || promille > 1000) 
-        return -EINVAL;
+		return -EINVAL;
 
 	buffer[0] = 0xA5;
 	if ( promille < 251 )
@@ -400,11 +366,11 @@ lis_set_brightness(Driver *drvthis, int state, int promille)
 	else
 		buffer[1] = 0x0;		// 100%
 
-    err = ftdi_write_data(&p->ftdic, buffer, 2);
-    if (err < 0) {
-        report(RPT_WARNING, "%s: lis_set_brightness(): ftdi_write_data failed with %d", drvthis->name, err);
-        return err;
-    }
+	err = ftdi_write_data(&p->ftdic, buffer, 2);
+	if (err < 0) {
+		report(RPT_WARNING, "%s: lis_set_brightness(): ftdi_write_data failed with %d", drvthis->name, err);
+		return err;
+	}
 	else
 		p->brightness = promille;
 	return 0;
@@ -448,8 +414,8 @@ lis_init(Driver *drvthis)
 	// Get and parse size
 	s = drvthis->config_get_string( drvthis->name, "size", 0, "20x2");
 	if ((sscanf(s, "%dx%d", &(p->width), &(p->height)) != 2)
-	    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
-	    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
+		|| (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
+		|| (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
 		report(RPT_ERR, "%s: cannot read Size %s", drvthis->name, s);
 		return -1;
 	}
@@ -470,6 +436,9 @@ lis_init(Driver *drvthis)
 		count = DEFAULT_BRIGHTNESS;
 	}
 	p->brightness = count;
+
+	p->VendorID = drvthis->config_get_int(drvthis->name, "VendorID", 0, DISPLAY_VENDOR_ID);
+	p->ProductID = drvthis->config_get_int(drvthis->name, "ProductID", 0, DISPLAY_PRODUCT_ID);
 
 	/* End of config file parsing */
 
@@ -492,9 +461,12 @@ lis_init(Driver *drvthis)
 //	(&p->ftdic)->usb_read_timeout = 20;
 
 	// open the device
-	err = ftdi_usb_open(&p->ftdic, DISPLAY_VENDOR_ID, DISPLAY_PRODUCT_ID);
+	err = ftdi_usb_open(&p->ftdic, p->VendorID, p->ProductID);
 	if (err < 0) {
-		report(RPT_ERR, "%s: cannot open USB device", drvthis->name);
+		report(RPT_ERR, "%s: cannot open USB device %x:%x", 
+			drvthis->name
+			p->VendorID,
+			p->ProductID);
 		goto err_framebuf;
 	}
 
@@ -1042,11 +1014,11 @@ lis_init(Driver *drvthis)
 	// don't know what this does exactly
 	buffer[0] = 0xA4;
 	buffer[1] = 0x7d;
-    err = ftdi_write_data(&p->ftdic, buffer, 2);
-    if (err < 0) {
-        report(RPT_WARNING, "%s: ftdi_write_data failed with %d", drvthis->name, err);
-        goto err_ftdi;
-    }
+	err = ftdi_write_data(&p->ftdic, buffer, 2);
+	if (err < 0) {
+		report(RPT_WARNING, "%s: ftdi_write_data failed with %d", drvthis->name, err);
+		goto err_ftdi;
+	}
 
 	timing_uPause(3*16000);
 
@@ -1054,7 +1026,7 @@ lis_init(Driver *drvthis)
 	buffer[1] = 0xAA;
 	for(count = 0; count < 10; count++) {
 		err = ftdi_write_data(&p->ftdic, buffer, 2);
-	    if (err < 0) {
+		if (err < 0) {
 			report(RPT_WARNING, "%s: ftdi_write_data failed with %d", drvthis->name, err);
 			goto err_ftdi;
 		}
@@ -1182,12 +1154,12 @@ lis_init(Driver *drvthis)
 //	timing_uPause(2*16000);
 
 	// not sure about this
-    buffer[0] = 0xA0;
-    err = lis_ftdi_write_command(drvthis, buffer, 1);
-    if (err < 0) {
-        report(RPT_WARNING, "%s: lis_ftdi_clear: "
-                            "lis_ftdi_write_command failed", drvthis->name);
-    }
+	buffer[0] = 0xA0;
+	err = lis_ftdi_write_command(drvthis, buffer, 1);
+	if (err < 0) {
+		report(RPT_WARNING, "%s: lis_ftdi_clear: "
+							"lis_ftdi_write_command failed", drvthis->name);
+	}
 
 	timing_uPause(10*16000);
 
@@ -1235,7 +1207,7 @@ lis_close(Driver *drvthis)
 		ftdi_deinit(&p->ftdic);
 
 		if (p->framebuf != NULL)
-        		free(p->framebuf);
+				free(p->framebuf);
 
 		free(p);
 	}
@@ -1277,6 +1249,7 @@ lis_clear (Driver *drvthis)
 		memset(p->framebuf + (line * p->width), ' ', p->width);
 		p->line_flags[line] = 1;
 	}
+	p->ccmode = standard;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1448,6 +1421,9 @@ lis_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 }
 
 
+
+
+#if 0
 void
 lis_test(Driver *drvthis)
 {
@@ -1463,3 +1439,4 @@ lis_test(Driver *drvthis)
 		lis_flush(drvthis);
 	}
 }
+#endif

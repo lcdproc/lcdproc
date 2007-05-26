@@ -3,13 +3,47 @@
 
 <para>
   This section talks about using LCDproc with the VLSystem L.I.S
-  MCE 2005 Vacuum Flourescent Display based on the FTDI USB-to-serial
+  MCE 2005 Vacuum Flourescent Display (VFD) based on the FTDI USB-to-serial
   converter, the Microchip PIC-16F716 microcontroller, and
-  the NEC UPD16314 display driver that can be obtained at
-  <ulink url="http://www.vlsys.co.kr">VLSys</ulink>.
+  the NEC UPD16314 display driver manufactured by
+  <ulink url="http://www.vlsys.co.kr">VLSystem</ulink>.
 </para>
 
 <!-- ## VLSys lis driver ## -->
+<sect2 id="lis-features">
+<title>Features</title>
+
+<para>
+This device uses a vacuum flourescent display of 20 characters by 2 lines. Each each
+character is 5 pixels wide by 8 pixels high. The device is connected by USB. The FTDI chip
+translates the USB protocol to serial expected by the VFD driver chip, an NEC UPD16314. A
+programmable interrupt controller (PIC), the PIC16F716 by Microchip, provides the glue
+between the FTDI and the NEC chips.
+</para>
+
+
+</sect2>
+
+<sect2 id="lis-requirements">
+<title>Requirements</title>
+
+<para>
+The driver depends on libftdi, version 0.8 or higher, from
+<ulink url="http://www.intra2net.com/opensource/ftdi/">
+http://www.intra2net.com/opensource/ftdi/</ulink>.
+</para>
+
+</sect2>
+<sect2 id="lis-compiling">
+<title>Compiling</title>
+
+<para>
+Make sure that the L.I.S files are built when you run configure. This
+can be done by specifying "--enable-drivers=all" or by
+"--enable-drivers=lis".
+</para>
+
+</sect2>
 <sect2 id="lis-config">
 <title>Configuration in LCDd.conf</title>
 
@@ -19,28 +53,60 @@
 <variablelist>
 <varlistentry>
   <term>
+    <command>Size=</command>
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the display size. The default <literal>20x2</literal> should be safe
+    for most if not all users, since the device seeems to be made only with
+    this one size.
+    But who knowns &hellip;
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>VendorID=</command>
+    <arg choice="plain">
+      <replaceable>VENDORID</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    USB Vendor ID
+    [default: <literal>0x0403</literal>].
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>ProductID=</command>
+    <arg choice="plain">
+      <replaceable>PRODUCTID</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    USB Product ID
+    [default: <literal>0x6001</literal>].
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
     <command>Brightness=</command>
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
-  <listitem><para>
-    Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
-  </para></listitem>
-  </term>
-  <listitem><para>
-    Select the LCD size [default: <literal>20x4</literal>]
-  </para></listitem>
+  <listitem>
+  <para>
+    Set the initial brightness [default: <literal>1000</literal>; 
+    legal: <literal>0</literal> - <literal>1000</literal>. Values
+    between 0 and 250 give 25% brightness, 251 to 500 give 50% brightness,
+    501 and 750, give 75% brightness, and values higher than 751 give 100%
+    brightness.
+  </para>
+  </listitem>
 </varlistentry>
 
-<varlistentry>
-  <term>
-    <command>Device=</command>
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
-  </term>
-  <listitem><para>
-    USB device to use. Usual values are <filename>/dev/ttyUSB0</filename>, <filename>/dev/ttyUSB1</filename>, etc.
-    [default: <filename>/dev/ttyUSB0</filename>].
-  </para></listitem>
-</varlistentry>
 </variablelist>
 
 </sect3>
