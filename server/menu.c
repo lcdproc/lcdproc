@@ -704,10 +704,11 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, bool
  * hidden or not valid subitem of menu this function does nothing. */
 void menu_select_subitem(Menu *menu, char *subitem_id)
 {
+	int position;
 	assert(menu != NULL);
+	position = menu_get_index_of(menu, subitem_id);
 	debug(RPT_DEBUG, "%s(menu=[%s], subitem_id=\"%s\")", __FUNCTION__,
 	       menu->id, subitem_id);
-	int position = menu_get_index_of(menu, subitem_id);
 	if (position < 0)
 	{
 		debug(RPT_DEBUG, "%s: subitem \"%s\" not found"

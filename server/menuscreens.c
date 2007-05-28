@@ -277,13 +277,14 @@ static void handle_enter(void)
 
 static void handle_predecessor(void)
 {
+	MenuItem* predecessor;
 	MenuItem* item = (active_menuitem->type == MENUITEM_MENU)
 		? menu_get_item_for_predecessor_check(active_menuitem)
 		: active_menuitem;
 	assert(item != NULL);
 	debug(RPT_DEBUG, "%s: Switching to registered predecessor '%s' of '%s'.",
 	       __FUNCTION__, item->predecessor_id, item->id);
-	MenuItem *predecessor = menuitem_search(
+	predecessor = menuitem_search(
 		item->predecessor_id, (Client*)active_menuitem->client);
 	if (predecessor == NULL)
 	{
@@ -318,13 +319,14 @@ static void handle_predecessor(void)
 
 static void handle_successor(void)
 {
+	MenuItem *successor;
 	MenuItem* item = (active_menuitem->type == MENUITEM_MENU)
 		? menu_get_item_for_successor_check(active_menuitem)
 		: active_menuitem;
 	assert(item != NULL);
 	debug(RPT_DEBUG, "%s: Switching to registered successor '%s' of '%s'.",
 	       __FUNCTION__, item->successor_id, item->id);
-	MenuItem *successor = menuitem_search(
+	successor = menuitem_search(
 		item->successor_id, (Client*)active_menuitem->client);
 	if (successor == NULL)
 	{

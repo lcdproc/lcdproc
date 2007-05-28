@@ -98,8 +98,9 @@ time_screen(int rep, int display, int *flags_ptr)
 	tickTime(now, heartbeat);
 
 	if (lcd_hgt >= 4) {
-		machine_get_uptime(&uptime, &idle);
 		char tmp[40];	// should be large enough
+
+		machine_get_uptime(&uptime, &idle);
 
 		// display the uptime...
 		days = (int) uptime / 86400;

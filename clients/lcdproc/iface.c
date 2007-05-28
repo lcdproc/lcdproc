@@ -239,12 +239,14 @@ initialize_speed_screen(void)
 void
 format_value (char *buff, double value, char *unit)
 {
+	char *mag;
+
 	/* Convert bytes to bits, if necessary */
 	if (strstr(unit, "b"))
 		value *= 8;
 
 	/* If units are bytes, then divide by 2^10, otherwise by 10^3 */
-	char *mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
+	mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
 
 	/* Formatting rules:
 	 * - if original value was < 1000, output decimal value only
@@ -266,10 +268,12 @@ format_value (char *buff, double value, char *unit)
 void
 format_value_multi_interface (char *buff, double value, char *unit)
 {
+	char *mag;
+
 	if (strstr(unit, "b"))
 		value *= 8;
 
-	char *mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
+	mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
 
 	/* Formatting rules:
 	 * - if original value was < 1000, output decimal value only
@@ -281,7 +285,7 @@ format_value_multi_interface (char *buff, double value, char *unit)
 	else if (value < 10)
 		sprintf(buff, "%3.1f%s", value, mag);
 	else
-		sprintf(buff, "%3.f%s", value, mag);
+		sprintf(buff, "%3.0f%s", value, mag);
 
 } /* format_value_multi_interface() */
 

@@ -569,6 +569,11 @@ MtxOrb_flush (Driver *drvthis)
 		unsigned char *sp = p->framebuf + (i * p->width);
 		unsigned char *sq = p->backingstore + (i * p->width);
 
+		// set  pointers to end of the line in frame buffer & backing store
+		unsigned char *ep = sp + (p->width - 1);
+		unsigned char *eq = sq + (p->width - 1);
+		int length = 0;
+
 		debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
 		debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
 
@@ -576,11 +581,6 @@ MtxOrb_flush (Driver *drvthis)
 		 * - not more than one update command per line
 		 * - leave out leading and trailing parts that are identical
 		 */
-
-		// set  pointers to end of the line in frame buffer & backing store
-		unsigned char *ep = sp + (p->width - 1);
-		unsigned char *eq = sq + (p->width - 1);
-		int length = 0;
 
 		// skip over leading identical portions of the line
 		for (j = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, j++)
@@ -1193,7 +1193,7 @@ MODULE_EXPORT void
 MtxOrb_set_char (Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
-	unsigned char out[12] = { '\xFE', 'N', 0, 0,0,0,0,0,0,0,0 };;
+	unsigned char out[12] = { '\xFE', 'N', 0, 0,0,0,0,0,0,0,0 };
 	unsigned char mask = (1 << p->cellwidth) - 1;
 	int row;
 

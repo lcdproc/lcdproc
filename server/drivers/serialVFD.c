@@ -378,7 +378,7 @@ serialVFD_set_char (Driver *drvthis, int n, unsigned char *dat)
 				int posbyte = (pos-1) / 5;
 				int posbit = 4 - ((pos-1) % 5);
 
-				letter |= ((dat[posbyte] >> posbit) & 1) << bit;;
+				letter |= ((dat[posbyte] >> posbit) & 1) << bit;
 			}
 		}
 		p->custom_char[n][byte] = letter;

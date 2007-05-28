@@ -433,8 +433,6 @@ menu_set_item_func (Client * c, int argc, char **argv)
 		{ -1,			NULL,		-1,		-1 }
 	};
 
-	debug (RPT_DEBUG, "%s( Client [%d]: %s)",
-	       __FUNCTION__, c->sock, argv2string(argc, argv));
 	bool bool_value = false;
 	CheckboxValue checkbox_value = CHECKBOX_OFF;
 	short short_value = 0;
@@ -448,6 +446,8 @@ menu_set_item_func (Client * c, int argc, char **argv)
 	char * item_id;
 	int argnr;
 
+	debug (RPT_DEBUG, "%s( Client [%d]: %s)",
+	       __FUNCTION__, c->sock, argv2string(argc, argv));
 	if (!c->ack)
 		return 1;
 
