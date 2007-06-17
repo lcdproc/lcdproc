@@ -156,7 +156,7 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 
 	pd->framebuf = (unsigned char *) malloc(pd->width * pd->height + 1);
 	if (pd->framebuf == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuf.\n", __FUNCTION__);
+		report(RPT_ERR, "%s: unable to create framebuf", __FUNCTION__);
 		return -1;
 	}
 	memset(pd->framebuf, ' ', pd->width * pd->height);
@@ -164,7 +164,7 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 
 	pd->lstframe = (unsigned char *) malloc(pd->width * pd->height + 1);
 	if (pd->lstframe == NULL) {
-		report(RPT_ERR, "%s: unable to create lstframe.\n", __FUNCTION__);
+		report(RPT_ERR, "%s: unable to create lstframe", __FUNCTION__);
 		return -1;
 	}
 	memset(pd->lstframe, ' ', pd->width * pd->height);
@@ -179,7 +179,7 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 
 	picoLCD_set_contrast(drvthis, pd->contrast);
 
-	report(RPT_INFO, "picolcd: init complete\n", __FUNCTION__);
+	report(RPT_INFO, "picolcd: init complete", __FUNCTION__);
 
 	return 0;
 }
@@ -190,7 +190,7 @@ MODULE_EXPORT void picoLCD_close(Driver *drvthis) {
 	usb_release_interface(pd->lcd, 0);
 	usb_close(pd->lcd);
 
-	debug(RPT_DEBUG, "picolcd: close complete\n");
+	debug(RPT_DEBUG, "picolcd: close complete");
 }
 
 /* lcd_logical_driver Essential output functions */
@@ -212,7 +212,7 @@ MODULE_EXPORT void picoLCD_clear(Driver *drvthis) {
 	memset(pd->framebuf, ' ', pd->width * pd->height);
 	pd->ccmode = standard;
 
-	debug(RPT_DEBUG, "picolcd: clear complete\n");
+	debug(RPT_DEBUG, "picolcd: clear complete");
 }
 
 MODULE_EXPORT void picoLCD_flush(Driver *drvthis) {
@@ -222,7 +222,7 @@ MODULE_EXPORT void picoLCD_flush(Driver *drvthis) {
 	static unsigned char   text[48];
 	int           i, line, offset;
 
-	debug(RPT_DEBUG, "picolcd: flush started\n");
+	debug(RPT_DEBUG, "picolcd: flush started");
 
 	for (line = 0; line < pd->height; line++) { 
 		memset(text, 0, 48); 
@@ -236,14 +236,14 @@ MODULE_EXPORT void picoLCD_flush(Driver *drvthis) {
 				picolcd_write(pd->lcd, line, 0, text);
 				memcpy(pd->lstframe + offset, pd->framebuf + offset, pd->width);
 
-				debug(RPT_DEBUG, "picolcd: flush wrote line %d (%s)\n", line + 1, text);
+				debug(RPT_DEBUG, "picolcd: flush wrote line %d (%s)", line + 1, text);
 
 				break;
 			}
 		}
 	}
 
-	debug(RPT_DEBUG, "picolcd: flush complete\n\t(%s)\n\t(%s)\n", pd->framebuf, pd->lstframe);
+	debug(RPT_DEBUG, "picolcd: flush complete\n\t(%s)\n\t(%s)", pd->framebuf, pd->lstframe);
 }
 
 MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char *str) {
@@ -251,7 +251,7 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char *
 	unsigned char *dest;
 	int  len;
 
-	debug(RPT_DEBUG, "picolcd: string start (%s)\n", str);
+	debug(RPT_DEBUG, "picolcd: string start (%s)", str);
 
 	if (y < 1 || y > pd->height)
 		return;
@@ -260,7 +260,7 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char *
 
 	len = strlen((char *)str);
 	if (len + x > pd->width) {
-		debug(RPT_DEBUG, "picolcd: string overlength (>%d). Start: %d Length: %d (%s)\n", pd->width, x, len ,str);
+		debug(RPT_DEBUG, "picolcd: string overlength (>%d). Start: %d Length: %d (%s)", pd->width, x, len ,str);
 
 		len = pd->width - x; /* Copy what we can */
 	}
@@ -269,13 +269,13 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char *
 	dest = pd->framebuf + (y * pd->width + x);
 	memcpy(dest, str, len * sizeof(char));
 
-	debug(RPT_DEBUG, "picolcd: string complete (%s)\n", str);
+	debug(RPT_DEBUG, "picolcd: string complete (%s)", str);
 }
 
 MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char chr) {
 	PrivateData *pd = drvthis->private_data;
 	unsigned char *dest;
-	debug(RPT_DEBUG, "picolcd: chr start (%c)\n", chr);
+	debug(RPT_DEBUG, "picolcd: chr start (%c)", chr);
 
 	if (y < 1 || y > pd->height)
 		return;
@@ -285,7 +285,7 @@ MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char chr)
 	x--; y--; /* Convert 1-based to 0-based */
 	dest = pd->framebuf + (y * pd->width + x);
 	memcpy(dest, &chr, sizeof(char));
-	debug(RPT_DEBUG, "picolcd: chr complete (%c)\n", chr);
+	debug(RPT_DEBUG, "picolcd: chr complete (%c)", chr);
 }
 
 
@@ -451,33 +451,33 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 	int  key_pass  = 0;
 	int  two_keys  = 0;
 
-	debug(RPT_DEBUG, "picolcd: get_key start (timeout %d)\n", pd->key_timeout);
+	debug(RPT_DEBUG, "picolcd: get_key start (timeout %d)", pd->key_timeout);
 
 	keydata = malloc(sizeof(lcd_packet));
 
 	while (! keys_read) {
 		get_key_event(pd->lcd, keydata, pd->key_timeout);
-		debug(RPT_DEBUG, "picolcd: get_key got an event\n");
+		debug(RPT_DEBUG, "picolcd: get_key got an event");
 
 		if (keydata->type == IN_REPORT_KEY_STATE) {
 			if (! keydata->data[1] && key_pass) {
-				debug(RPT_DEBUG, "picolcd: get_key got all clear\n");
+				debug(RPT_DEBUG, "picolcd: get_key got all clear");
 				/* Got a <0, 0> key-up event after reading a valid key press event */
 				keys_read++; /* All clear */
 			} else if (! keydata->data[2] && ! two_keys) {
-				debug(RPT_DEBUG, "picolcd: get_key got one key\n");
+				debug(RPT_DEBUG, "picolcd: get_key got one key");
 				/* We got one key (but not after a two key event and before and all clear) */
 				keystr = pd->key_matrix[keydata->data[1]];
 			} else {
 				/* We got two keys */
-				debug(RPT_DEBUG, "picolcd: get_key got two keys\n");
+				debug(RPT_DEBUG, "picolcd: get_key got two keys");
 				two_keys++;
 				sprintf(keystr, "%s+%s", pd->key_matrix[keydata->data[1]], pd->key_matrix[keydata->data[2]]);
 			}
 
 			key_pass++; /* This hack allows us to deal with receiving left over <0,0> first */
 		} else {
-			debug(RPT_DEBUG, "picolcd: get_key got non-key data or timeout\n");
+			debug(RPT_DEBUG, "picolcd: get_key got non-key data or timeout");
 			/* We got IR or otherwise bad data */
 			return NULL;
 		}
@@ -486,7 +486,7 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 
    free(keydata);
 
-	debug(RPT_DEBUG, "picolcd: get_key complete (%s)\n", keystr);
+	debug(RPT_DEBUG, "picolcd: get_key complete (%s)", keystr);
 
 	if (! strlen(keystr))
 		return NULL;
@@ -623,7 +623,7 @@ static usb_dev_handle *picolcd_open(void)
     
 	lcd = NULL;
 
-        debug(RPT_DEBUG, "picolcd: scanning for devices...\n");
+        debug(RPT_DEBUG, "picolcd: scanning for devices...");
 
 	usb_init();
 	usb_find_busses();
@@ -633,13 +633,13 @@ static usb_dev_handle *picolcd_open(void)
 	for (bus = busses; bus; bus = bus->next) {
 		for (dev = bus->devices; dev; dev = dev->next) {
 			if ((dev->descriptor.idVendor == picoLCD_VENDOR) && (dev->descriptor.idProduct == picoLCD_DEVICE)) {
-				debug(RPT_DEBUG, "Found picoLCD on bus %s device %s \n", bus->dirname, dev->filename);
+				debug(RPT_DEBUG, "Found picoLCD on bus %s device %s", bus->dirname, dev->filename);
 				lcd = usb_open(dev);
 				ret = usb_get_driver_np(lcd, 0, driver, sizeof(driver));
 				if (ret == 0) {
-					debug(RPT_DEBUG, "Interface 0 already claimed by '%s' attempting to detach driver...\n", driver);
+					debug(RPT_DEBUG, "Interface 0 already claimed by '%s' attempting to detach driver...", driver);
 					if (usb_detach_kernel_driver_np(lcd, 0) < 0) {
-						debug(RPT_DEBUG, "Failed to detach '%s' driver !\n", driver);
+						debug(RPT_DEBUG, "Failed to detach '%s' driver !", driver);
 						return NULL;
 					}
 				}
@@ -648,7 +648,7 @@ static usb_dev_handle *picolcd_open(void)
 				usleep(100);
 
 				if (usb_claim_interface(lcd, 0) < 0) {
-					debug(RPT_DEBUG, "Failed to claim interface !\n");
+					debug(RPT_DEBUG, "Failed to claim interface !");
 					return NULL;
 				}
 
@@ -658,7 +658,7 @@ static usb_dev_handle *picolcd_open(void)
 		}
 	}
 	
-	debug(RPT_DEBUG, "Could not find a picoLCD !\n");
+	debug(RPT_DEBUG, "Could not find a picoLCD !");
 	return NULL;
 }
 

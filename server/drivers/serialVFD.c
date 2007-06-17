@@ -148,7 +148,7 @@ serialVFD_init (Driver *drvthis)
 		/* Which speed */
 		tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
 		if ((tmp != 1200) && (tmp != 2400) && (tmp != 9600) && (tmp != 19200) && (tmp != 115200)) {
-			report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default %d.\n",
+			report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200. Using default %d",
 				drvthis->name, DEFAULT_SPEED);
 			tmp = DEFAULT_SPEED;
 		}
@@ -158,7 +158,7 @@ serialVFD_init (Driver *drvthis)
 		else if (tmp == 19200) p->speed = B19200;
 		else if (tmp == 115200) p->speed = B115200;
 	}
-//	report(RPT_ERR, "%s: Port: %X\n", __FUNCTION__, p->port, strerror(errno));
+//	report(RPT_ERR, "%s: Port: %X", __FUNCTION__, p->port, strerror(errno));
 
 	/* Which size */
 	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
@@ -166,7 +166,7 @@ serialVFD_init (Driver *drvthis)
 	if ((sscanf(size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-		report(RPT_WARNING, "%s: cannot parse size: %s; using default %s.",
+		report(RPT_WARNING, "%s: cannot parse size: %s; using default %s",
 			drvthis->name, size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
@@ -208,18 +208,18 @@ serialVFD_init (Driver *drvthis)
 	/* Number of custom characters */
 	tmp = drvthis->config_get_int(drvthis->name, "Custom-Characters", 0, -83);
 	if ((tmp < 0) || (tmp > 99)) {
-		report(RPT_WARNING, "%s: The number of Custom-Characters must be between 0 and 99. Using default.",
+		report(RPT_WARNING, "%s: The number of Custom-Characters must be between 0 and 99. Using default",
 			drvthis->name, 0);
 		tmp = -83;
 	}
 	p->customchars = tmp;
 
 
-//	report(RPT_ERR, "%s: Port: %X\n", __FUNCTION__, p->port, strerror(errno));
+//	report(RPT_ERR, "%s: Port: %X", __FUNCTION__, p->port, strerror(errno));
 
 // Do connection type specific io-port init
 	if (Port_Function[p->use_parallel].init_fkt(drvthis) == -1) {
-		report(RPT_ERR, "%s: unable to initialize io-port.", drvthis->name);
+		report(RPT_ERR, "%s: unable to initialize io-port", drvthis->name);
 		return -1;
 	}
 
@@ -227,7 +227,7 @@ serialVFD_init (Driver *drvthis)
 	/* make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer.", drvthis->name);
+		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
@@ -235,7 +235,7 @@ serialVFD_init (Driver *drvthis)
 	/* make sure the framebuffer backing store is there... */
 	p->backingstore = (unsigned char *) malloc(p->width * p->height);
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer backing store.", drvthis->name);
+		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
 		return -1;
 	}
 	memset(p->backingstore, 0, p->width * p->height);
@@ -243,7 +243,7 @@ serialVFD_init (Driver *drvthis)
 //setup displayspecific data
 	serialVFD_load_display_data(drvthis);
 
-//	report(RPT_ERR, "%s: Port: %X\n", drvthis->name, p->port, strerror(errno));
+//	report(RPT_ERR, "%s: Port: %X", drvthis->name, p->port, strerror(errno));
 
 //initialise display
 	Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[reset][1],p->hw_cmd[reset][0]);
@@ -416,7 +416,7 @@ serialVFD_flush (Driver *drvthis)
 		for (j = 0; j < p->usr_chr_dot_assignment[0]; j++) {
 			if (p->custom_char[i][j] != p->custom_char_store[i][j]) {
 				custom_char_changed[i] = 1;
-//				report(RPT_ERR, "%s: Char: %X   %i\n", __FUNCTION__, i, j, strerror(errno));
+//				report(RPT_ERR, "%s: Char: %X   %i", __FUNCTION__, i, j, strerror(errno));
 				}
 			p->custom_char_store[i][j] = p->custom_char[i][j];
 		}
@@ -754,6 +754,6 @@ MODULE_EXPORT const char *
 serialVFD_get_info (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	strcpy(p->info, "Driver for many serialVFDs from NEC(all FIPC based), Noritake, Futaba and the \"KD Rev2.1\"VFD.");
+	strcpy(p->info, "Driver for many serialVFDs from NEC(all FIPC based), Noritake, Futaba and the \"KD Rev2.1\"VFD");
 	return p->info;
 }

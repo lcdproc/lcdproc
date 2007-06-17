@@ -510,12 +510,12 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 
 
 	if (n<0 && n>15) {
-		debug(RPT_DEBUG, "only characters 0-15 can be changed.\n");
+		debug(RPT_DEBUG, "only characters 0-15 can be changed");
 		return;
 	}
 
 	if (!dat) {
-		debug(RPT_DEBUG, "no character data\n");
+		debug(RPT_DEBUG, "no character data");
 		return;
 	}
 

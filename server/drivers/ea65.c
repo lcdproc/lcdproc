@@ -96,7 +96,8 @@ EA65_init (Driver *drvthis)
                         p->brightness = 0x02;           // command char that turns button LEDs on half
                 }
         } else {
-                report (RPT_WARNING, "EA65_init: Brightness must be between 0 and 1000. Using default value.\n");
+                report (RPT_WARNING, "%s: Brightness must be between 0 and 1000. Using default %d",
+				drvthis->name, DEFAULT_BRIGHTNESS);
                 p->brightness = DEFAULT_BRIGHTNESS;
         }
 
@@ -111,7 +112,8 @@ EA65_init (Driver *drvthis)
                         p->offbrightness = 0x02;           // command char that turns button LEDs on half
                 }
         } else {
-                report (RPT_WARNING, "EA65_init: OffBrightness must be between 0 and 1000. Using default value.\n");
+                report (RPT_WARNING, "%s: OffBrightness must be between 0 and 1000. Using default %d",
+				drvthis->name, DEFAULT_OFFBRIGHTNESS);
                 p->offbrightness = DEFAULT_OFFBRIGHTNESS;
         }
 
@@ -120,7 +122,7 @@ EA65_init (Driver *drvthis)
         struct termios portset;
         p->fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
         if (p->fd == -1) {
-                report (RPT_ERR, "EA65_init: failed (%s)\n", strerror (errno));
+                report (RPT_ERR, "EA65_init: failed (%s)", strerror (errno));
                 return -1;
         }
         tcgetattr (p->fd, &portset);
@@ -145,7 +147,7 @@ EA65_init (Driver *drvthis)
         // Do it...
         tcsetattr (p->fd, TCSANOW, &portset);
 
-        report (RPT_DEBUG, "EA65_init: done\n");
+        report (RPT_DEBUG, "EA65_init: done");
 
         return 0;
 }

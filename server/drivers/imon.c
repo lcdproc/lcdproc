@@ -146,7 +146,7 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 
 	/* Open device for writing */
 	if ((p->imon_fd = open(buf, O_WRONLY)) < 0) {
-		report(RPT_ERR, "%s: ERROR opening %s (%s).", drvthis->name, buf, strerror(errno));
+		report(RPT_ERR, "%s: ERROR opening %s (%s)", drvthis->name, buf, strerror(errno));
 		report(RPT_ERR, "%s: Did you load the iMON VFD kernel module?", drvthis->name);
 		report(RPT_ERR, "%s: More info in lcdproc/docs/README.imon", drvthis->name);
 		return -1;

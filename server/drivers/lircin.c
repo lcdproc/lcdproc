@@ -72,11 +72,11 @@ lircin_init (Driver *drvthis)
 	/* Alocate and store private data */
         p = (PrivateData *) malloc(sizeof(PrivateData));
 	if (p == NULL) {
-		report(RPT_ERR, "%s: Could not allocate private data.", drvthis->name);
+		report(RPT_ERR, "%s: Could not allocate private data", drvthis->name);
 	        return -1;
 	}
 	if (drvthis->store_private_ptr(drvthis, p)) {
-		report(RPT_ERR, "%s: Could not store private data.", drvthis->name);
+		report(RPT_ERR, "%s: Could not store private data", drvthis->name);
 	        return -1;
 	}
 
@@ -97,7 +97,7 @@ lircin_init (Driver *drvthis)
 	if (*s != '\0') {
 		p->lircrc = malloc(strlen(s) + 1);
 		if (p->lircrc == NULL) {
-			report(RPT_ERR, "%s: Could not allocate new memory.", drvthis->name);
+			report(RPT_ERR, "%s: Could not allocate new memory", drvthis->name);
 			return -1;
 		}
 		strcpy(p->lircrc, s);
@@ -112,7 +112,7 @@ lircin_init (Driver *drvthis)
 
 	p->prog = malloc(strlen(s) + 1);
 	if (p->prog == NULL) {
-		report(RPT_ERR, "%s: Could not allocate new memory.", drvthis->name);
+		report(RPT_ERR, "%s: Could not allocate new memory", drvthis->name);
 		return -1;
 	}
 	strcpy(p->prog, s);
@@ -122,14 +122,14 @@ lircin_init (Driver *drvthis)
 
 	/* open socket to lirc */
 	if (-1 == (p->lircin_fd = lirc_init(p->prog, LIRCIN_VERBOSELY))) {
-		report(RPT_ERR, "%s: Could not connect to lircd.", drvthis->name);
+		report(RPT_ERR, "%s: Could not connect to lircd", drvthis->name);
 
 		lircin_close(drvthis);
 		return -1;
 	}
 
 	if (0 != lirc_readconfig(p->lircrc, &p->lircin_irconfig, NULL)) {
-		report(RPT_ERR, "%s: lirc_readconfig() failed.", drvthis->name);
+		report(RPT_ERR, "%s: lirc_readconfig() failed", drvthis->name);
 
 		lircin_close(drvthis);
 		return -1;

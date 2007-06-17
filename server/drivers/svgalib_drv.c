@@ -324,7 +324,7 @@ svga_init (Driver *drvthis)
 
 	/* switch to selected VGA mode if it is available */
 	if (!vga_hasmode (p->mode)) {
-		report(RPT_ERR, "%s: VGA mode %s not available.", drvthis->name, modestr);
+		report(RPT_ERR, "%s: VGA mode %s not available", drvthis->name, modestr);
 		return -1;
 	}
 

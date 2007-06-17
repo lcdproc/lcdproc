@@ -230,27 +230,27 @@ EyeboxOne_init (Driver *drvthis)
 
 		/* left_key */
 		p->left_key = EyeboxOne_parse_keypad_setting(drvthis, "LeftKey", EYEBOXONE_DEFAULT_Left);
-		report(RPT_DEBUG, "%s: Using \"%c\" as Leftkey.", drvthis->name, p->left_key);
+		report(RPT_DEBUG, "%s: Using \"%c\" as Leftkey", drvthis->name, p->left_key);
 
 		/* right_key */
 		p->right_key = EyeboxOne_parse_keypad_setting(drvthis, "RightKey", EYEBOXONE_DEFAULT_Right);
-		report(RPT_DEBUG, "%s: Using \"%c\" as RightKey.", drvthis->name, p->right_key);
+		report(RPT_DEBUG, "%s: Using \"%c\" as RightKey", drvthis->name, p->right_key);
 
 		/* up_key */
 		p->up_key = EyeboxOne_parse_keypad_setting(drvthis, "UpKey", EYEBOXONE_DEFAULT_Up);
-		report(RPT_DEBUG, "%s: Using \"%c\" as UpKey.", drvthis->name, p->up_key);
+		report(RPT_DEBUG, "%s: Using \"%c\" as UpKey", drvthis->name, p->up_key);
 
 		/* down_key */
 		p->down_key = EyeboxOne_parse_keypad_setting(drvthis, "DownKey", EYEBOXONE_DEFAULT_Down);
-		report(RPT_DEBUG, "%s: Using \"%c\" as DownKey.", drvthis->name, p->down_key);
+		report(RPT_DEBUG, "%s: Using \"%c\" as DownKey", drvthis->name, p->down_key);
 
 		/* right_key */
 		p->enter_key = EyeboxOne_parse_keypad_setting(drvthis, "EnterKey", EYEBOXONE_DEFAULT_Enter);
-		report(RPT_DEBUG, "%s: Using \"%c\" as EnterKey.", drvthis->name, p->enter_key);
+		report(RPT_DEBUG, "%s: Using \"%c\" as EnterKey", drvthis->name, p->enter_key);
 
 		/* escape_key */
 		p->escape_key = EyeboxOne_parse_keypad_setting(drvthis, "EscapeKey", EYEBOXONE_DEFAULT_Escape);
-		report(RPT_DEBUG, "%s: Using \"%c\" as EscapeKey.", drvthis->name, p->escape_key);
+		report(RPT_DEBUG, "%s: Using \"%c\" as EscapeKey", drvthis->name, p->escape_key);
 
 	}
 	/* End of config file parsing*/

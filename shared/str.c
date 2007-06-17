@@ -19,11 +19,11 @@ get_args (char **argv, char *str, int max_args)
 	if (max_args < 1)
 		return 0;
 
-	//debug("get_args(%i): string=%s\n", max_args, str);
+	//debug("get_args(%i): string=%s", max_args, str);
 
 	// Parse the command line...
 	for (item = strtok (str, delimiters); item; item = strtok (NULL, delimiters)) {
-		//debug("get_args: item=%s\n", item);
+		//debug("get_args: item=%s", item);
 		if (i < max_args) {
 			argv[i] = item;
 			i++;

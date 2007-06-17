@@ -81,7 +81,7 @@ serialVFD_init_serial (Driver *drvthis)
 	p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
 
 	if (p->fd == -1) {
-		report(RPT_ERR, "%s: open() of %s failed (%s)\n", __FUNCTION__, p->device, strerror(errno));
+		report(RPT_ERR, "%s: open() of %s failed (%s)", __FUNCTION__, p->device, strerror(errno));
 		return -1;
 	}
 
@@ -117,12 +117,12 @@ serialVFD_init_parallel (Driver *drvthis)
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
 	debug(RPT_DEBUG, "%s: Opening parallelport at: 0x%X", __FUNCTION__, p->port);
 	if (port_access_multiple(p->port,3)) {
-		report(RPT_ERR, "%s: port_access_multiple() of 0x%X failed (%s)\n", __FUNCTION__, p->port, strerror(errno));
+		report(RPT_ERR, "%s: port_access_multiple() of 0x%X failed (%s)", __FUNCTION__, p->port, strerror(errno));
 		return -1;
 	}
 	return 0;
 #else
-	report(RPT_ERR, "%s: LCDproc was compiled without PCstyle LPT support\n", __FUNCTION__);
+	report(RPT_ERR, "%s: LCDproc was compiled without PCstyle LPT support", __FUNCTION__);
 	return -1;
 #endif
 }
@@ -143,7 +143,7 @@ serialVFD_close_parallel (Driver *drvthis)
 
 	debug(RPT_DEBUG, "%s: Closing parallelport at: 0x%X", __FUNCTION__, p->port);
 	if (port_deny_multiple(p->port,3)) {
-		report(RPT_ERR, "%s: port_deny_multiple() of 0x%X failed (%s)\n", __FUNCTION__, p->port, strerror(errno));
+		report(RPT_ERR, "%s: port_deny_multiple() of 0x%X failed (%s)", __FUNCTION__, p->port, strerror(errno));
 	}
 #endif
 }

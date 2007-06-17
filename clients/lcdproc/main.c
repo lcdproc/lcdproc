@@ -269,7 +269,7 @@ main(int argc, char **argv)
 			int state = (*argv[i] == '!') ? 0 : 1;
 			char *name = (state) ? argv[i] : argv[i]+1;
 			int shortname = (strlen(name) == 1) ? name[0] : '\0';
-			// debug: fprintf(stderr, "%s%s\n", (state) ? "" : "!", name);
+			// debug: fprintf(stderr, "%s%s", (state) ? "" : "!", name);
 			int found = set_mode(shortname, name, state);
 
 			if (!found) {
@@ -554,7 +554,7 @@ main_loop(void)
 								for (j = 0; sequence[j].which; j++) {
 									if (sequence[j].which == argv[1][0]) {
 										sequence[j].flags |= VISIBLE;
-										//debug(RPT_DEBUG, "Listen %s\n", argv[1]);
+										//debug(RPT_DEBUG, "Listen %s", argv[1]);
 									}
 								}
 							}
@@ -562,12 +562,12 @@ main_loop(void)
 								for (j = 0; sequence[j].which; j++) {
 									if (sequence[j].which == argv[1][0]) {
 										sequence[j].flags &= ~VISIBLE;
-										//debug(RPT_DEBUG, "Ignore %s\n", argv[1]);
+										//debug(RPT_DEBUG, "Ignore %s", argv[1]);
 									}
 								}
 							}
 							else if (0 == strcmp(argv[0], "key")) {
-								debug(RPT_DEBUG, "Key %s\n", argv[1]);
+								debug(RPT_DEBUG, "Key %s", argv[1]);
 							}
 #ifdef LCDPROC_MENUS
 							else if (0 == strcmp(argv[0], "menuevent")) {

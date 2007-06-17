@@ -434,7 +434,7 @@ bayrad_init_vbar(Driver *drvthis)
       }
   };
 
-  //debug(RPT_DEBUG,"Init Vertical bars.");
+  //debug(RPT_DEBUG,"Init Vertical bars");
 
   if (p->ccmode == CCMODE_VBAR) {
     /* Work already done */
@@ -514,7 +514,7 @@ bayrad_init_hbar(Driver *drvthis)
       }
   };
 
-  //debug(RPT_DEBUG,"Init Horizontal bars.");
+  //debug(RPT_DEBUG,"Init Horizontal bars");
 
   if (p->ccmode == CCMODE_HBAR) {
     /* Work already done */
@@ -544,7 +544,7 @@ bayrad_init_num(Driver *drvthis)
 {
   //PrivateData *p = drvthis->private_data;
 
-//  debug(RPT_DEBUG,"Big Numbers.");
+//  debug(RPT_DEBUG,"Big Numbers");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -729,11 +729,11 @@ bayrad_get_key(Driver *drvthis)
     }  /* if read returned data */
     else {
       /* Read error */
-      report(RPT_ERR, "%s: Read error in BayRAD getchar.", drvthis->name);
+      report(RPT_ERR, "%s: Read error in BayRAD getchar", drvthis->name);
     }
   }  /* if select */
   else {
-      ;//debug(RPT_DEBUG, "No BayRAD data present.");
+      ;//debug(RPT_DEBUG, "No BayRAD data present");
   }
 
   ret_val[0] = readchar;

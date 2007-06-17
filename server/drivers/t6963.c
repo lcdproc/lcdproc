@@ -170,7 +170,7 @@ t6963_init (Driver *drvthis)
 		} while (i < 100 && (ecp_input & 0x03)!=0x03);
 		T6963_DATAOUT(p->port);
 		if (i >= 100) {
-			debug(RPT_WARNING, "T6963: ECP mode not working!\n -> is now disabled  (STA0: %i, STA1: %i\n", ecp_input & 1, ecp_input & 2);
+			debug(RPT_WARNING, "T6963: ECP mode not working!\n -> is now disabled  (STA0: %i, STA1: %i", ecp_input & 1, ecp_input & 2);
 			p->bidirectLPT = 0;
 		}
 		else
