@@ -74,10 +74,18 @@ can be done by specifying "--enable-drivers=all" or by
       <replaceable>VENDORID</replaceable>
     </arg>
   </term>
-  <listitem><para>
-    USB Vendor ID
-    [default: <literal>0x0403</literal>].
-  </para></listitem>
+  <listitem>
+    <para>
+      The USB Vendor ID of the device to use.
+      If not given, it defaults to <literal>0x0403</literal> for a VLSystems L.I.S. MCE 2005 VFD
+      based on a FT232BL USB-to-RS232 converter by FTDIi, which was produced
+      before March 2007.
+    </para>
+    <para>
+      It is usually not necessary to specify a <replaceable>VENDORID</replaceable>.
+      Please do so only if you want to test a compatible device.
+    </para>
+  </listitem>
 </varlistentry>
 <varlistentry>
   <term>
@@ -86,10 +94,18 @@ can be done by specifying "--enable-drivers=all" or by
       <replaceable>PRODUCTID</replaceable>
     </arg>
   </term>
-  <listitem><para>
-    USB Product ID
-    [default: <literal>0x6001</literal>].
-  </para></listitem>
+  <listitem>
+    <para>
+      The USB Product ID of the device to use.
+      If not given, it defaults to <literal>0x6001</literal> for a VLSystems L.I.S. MCE 2005 VFD
+      based on a FT232BL USB-to-RS232 converter by FTDIi, which was produced 
+      before March 2007.
+    </para>
+    <para>
+      It is usually not necessary to specify a <replaceable>PRODUCTID</replaceable>.
+      Please do so only if you want to test a compatible device.
+    </para>
+  </listitem>
 </varlistentry>
 <varlistentry>
   <term>

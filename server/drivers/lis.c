@@ -8,6 +8,7 @@
  * sure kernel module ftdi_sio doesn't claim the device.
  *
  * Based on:   ula200 driver Copyright (C) 2006, Bernhard Walle
+ *             IOWarrior driver Copyright(C) 2004-2006 Peter Marschall <peter@adpm.de>
  *
  * Copyright (c)  2007, Daryl Fonseca-Holt <wyatt@prairieturtle.ca>
  *
@@ -41,6 +42,9 @@
  * 			lis_cellheight() and lis_cellwidth().
  * 			Completely commented out lis_test() to
  * 			save memory.
+ * 	2007/05/30	Remove set_custom_chars(). Implement
+ * 			lis_set_chars(), lis_vbar(), lis_hbar()
+ * 			and lis_num() using helper functions.
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -64,9 +68,10 @@
 #include "lis.h"
 #include "report.h"
 #include "lcd_lib.h"
+#include "adv_bignum.h"
 #include "timing.h"
 
-// void lis_test(Driver *drvthis);
+//void lis_test(Driver *drvthis);
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -133,9 +138,42 @@ const unsigned char UPD16314_charmap[] = {
 	224, 225, 226, 227, 228, 229, 230, 231,
 	232, 233, 234, 235, 237, 237, 238, 239,
 	240, 241, 242, 243, 244, 245, 246, 247,
-	248, 249, 250, 251, 252, 253, 254, 3 
+	248, 249, 250, 251, 252, 253, 254, 1 
 };
 
+/////////////////////////////////////////
+// Cache standard custom chars
+void
+lis_standard_custom_chars (Driver *drvthis) {
+
+PrivateData *p = drvthis->private_data;
+
+	static unsigned char checkbox_gray[] = 
+		{ b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__X_X_X,
+		  b__XX_XX,
+		  b__X_X_X,
+		  b__XXXXX,
+		  b_______ };
+
+	static unsigned char block_filled[] = 
+		{ b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX };
+
+		  lis_set_char(drvthis, 1, block_filled);
+		  lis_set_char(drvthis, 2, checkbox_gray);
+		  
+		  p->ccmode = standard;
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Write a command to the display.
@@ -203,119 +241,42 @@ lis_flush(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	int line;
+	int line, err, i, count;
+	unsigned char buffer[65];
 
+	// see if any custom characters changed
+	for (i = 0, count = 0; i < NUM_CCs; i++) {
+		if ( ! p->cc[i].clean ) {
+			count++;
+			p->cc[i].clean++;   // mark clean
+		}
+	}
+	if (count) {
+		// flush custom characters to device
+		buffer[0] = 0xAD;		// command to write CGRAM at 0
+		for (i = 0; i < NUM_CCs; i++) {
+			memcpy(buffer + 1 + (i*CELLHEIGHT), p->cc[i].cache, CELLHEIGHT);
+		}
+		err = lis_ftdi_write_command(drvthis, buffer, sizeof(buffer));
+		if (err < 0) {
+			report(RPT_WARNING, "%s: lis_flush(): "
+				"lis_ftdi_write_command() failed", drvthis->name);
+		}
+		report(RPT_DEBUG, "Flushed %d custom chars that changed", count);
+		timing_uPause(16000);
+	}
 
+	// write any line that has a change in it
 	for (line = 0; line < p->height; line++) {
 		if (p->line_flags[line]) {
+			report(RPT_DEBUG, "Flushing line %d", line+1);
 			lis_ftdi_line_to_display(drvthis, line+1, p->framebuf + (line * p->width), p->width);
 			p->line_flags[line] = 0;	// clean
+			timing_uPause(16000);
 		}
 	}
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
-// Loads custom characters in the display
-//
-static int
-lis_load_custom_chars(Driver *drvthis)
-{
-	PrivateData *p = (PrivateData *) drvthis->private_data;
-	int i, col, row, err;
-	unsigned char buffer[65];
-	char custom_chars[8][CELLHEIGHT*CELLHEIGHT] = {
-	{ 0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0 },
-	{ 1, 0, 0, 0, 0,			/* 1-5 characters used by hbar() */
-	  1, 0, 0, 0, 0,
-	  1, 0, 0, 0, 0,
-	  1, 0, 0, 0, 0,
-	  1, 0, 0, 0, 0,
-	  1, 0, 0, 0, 0,
-	  1, 0, 0, 0, 0,
-	  1, 0, 0, 0, 0 },
-	{ 1, 1, 0, 0, 0,			
-	  1, 1, 0, 0, 0,
-	  1, 1, 0, 0, 0,
-	  1, 1, 0, 0, 0,
-	  1, 1, 0, 0, 0,
-	  1, 1, 0, 0, 0,
-	  1, 1, 0, 0, 0,
-	  1, 1, 0, 0, 0 },
-	{ 1, 1, 1, 0, 0,			
-	  1, 1, 1, 0, 0,
-	  1, 1, 1, 0, 0,
-	  1, 1, 1, 0, 0,
-	  1, 1, 1, 0, 0,
-	  1, 1, 1, 0, 0,
-	  1, 1, 1, 0, 0,
-	  1, 1, 1, 0, 0 },
-	{ 1, 1, 1, 1, 0,			
-	  1, 1, 1, 1, 0,
-	  1, 1, 1, 1, 0,
-	  1, 1, 1, 1, 0,
-	  1, 1, 1, 1, 0,
-	  1, 1, 1, 1, 0,
-	  1, 1, 1, 1, 0,
-	  1, 1, 1, 1, 0 },
-	{ 1, 1, 1, 1, 1,			
-	  1, 1, 1, 1, 1,
-	  1, 1, 1, 1, 1,
-	  1, 1, 1, 1, 1,
-	  1, 1, 1, 1, 1,
-	  1, 1, 1, 1, 1,
-	  1, 1, 1, 1, 1,
-	  1, 1, 1, 1, 1 },
-	{ 0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0,
-	  1, 1, 1, 1, 1,
-	  1, 0, 0, 0, 1,
-	  1, 0, 0, 0, 1,
-	  1, 0, 0, 0, 1,
-	  1, 1, 1, 1, 1,
-	  0, 0, 0, 0, 0 },
-	{ 0, 0, 0, 0, 0,
-	  0, 0, 0, 0, 0,
-	  1, 1, 1, 1, 1,
-	  1, 0, 1, 0, 1,
-	  1, 1, 0, 1, 1,
-	  1, 0, 1, 0, 1,
-	  1, 1, 1, 1, 1,
-	  0, 0, 0, 0, 0 }};
-
-	buffer[0] = 0xAD;		// command to write CGRAM at 0
-
-	for (i = 0; i < 8; i++)
-	{
-
-		/* build the buffer */
-		for (row = 0; row < CELLHEIGHT; row++) {
-			unsigned char value = 0;
-
-			for (col = 0; col < CELLWIDTH; col++) {
-				value <<= 1;
-				value |= (custom_chars[i][(row * CELLWIDTH) + col] > 0) ? 1 : 0;
-			}
-			buffer[(i*8)+row+1] = value;
-		}
-	}
-	err = lis_ftdi_write_command(drvthis, buffer, 65);
-	if (err < 0) {
-		report(RPT_WARNING, "%s: lis_load_custom_chars(): "
-			"lis_ftdi_write_command() failed", drvthis->name);
-	}
-	else
-		p->cc_flag = 1;
-
-	return err;
-}
 
 //////////////////////////////////////////////////////////////////////////////
 // Separate thread to keep a read up on the USB device at all times
@@ -353,8 +314,12 @@ lis_set_brightness(Driver *drvthis, int state, int promille)
 	int err;
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	
-	if (promille < 0 || promille > 1000) 
+	if (promille < 0 || promille > 1000) {
+		report(RPT_WARNING, "%s: invalid brightness %d less then 0 or greater than 1000",
+			drvthis->name, promille);
+
 		return -EINVAL;
+	}
 
 	buffer[0] = 0xA5;
 	if ( promille < 251 )
@@ -373,6 +338,10 @@ lis_set_brightness(Driver *drvthis, int state, int promille)
 	}
 	else
 		p->brightness = promille;
+
+	report(RPT_DEBUG, "%s: brightness set to %d",
+		drvthis->name, promille);
+
 	return 0;
 }
 
@@ -382,6 +351,9 @@ MODULE_EXPORT int
 lis_get_brightness(Driver *drvthis, int state)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
+	report(RPT_DEBUG, "%s: brightness query returns %d",
+		drvthis->name, p->brightness);
 
 	return p->brightness;
 }
@@ -398,6 +370,8 @@ lis_init(Driver *drvthis)
 	unsigned char buffer[64], *thread_stack;
 	int count;
 
+	report(RPT_DEBUG, "%s: Initializing driver",
+		drvthis->name);
 	// Alocate and store private data
 	p = (PrivateData *) malloc( sizeof( PrivateData) );
 	if (p == NULL) {
@@ -409,7 +383,8 @@ lis_init(Driver *drvthis)
 
 	p->child_flag = 0;
 	p->parent_flag = 0;
-	p->cc_flag = 0;
+	p->cellwidth = CELLWIDTH;
+	p->cellheight = CELLHEIGHT;
 
 	// Get and parse size
 	s = drvthis->config_get_string( drvthis->name, "size", 0, "20x2");
@@ -1158,12 +1133,10 @@ lis_init(Driver *drvthis)
 	err = lis_ftdi_write_command(drvthis, buffer, 1);
 	if (err < 0) {
 		report(RPT_WARNING, "%s: lis_ftdi_clear: "
-							"lis_ftdi_write_command failed", drvthis->name);
+			"lis_ftdi_write_command failed", drvthis->name);
 	}
 
 	timing_uPause(10*16000);
-
-	lis_load_custom_chars(drvthis);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -1196,6 +1169,8 @@ lis_close(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
+	report(RPT_DEBUG, "%s: closing driver",
+		drvthis->name);
 	if (p != NULL) {
 		if (p->parent_flag) {			// terminate the child
 			p->child_flag = 1;
@@ -1245,24 +1220,30 @@ lis_clear (Driver *drvthis)
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	int line;
 
+	report(RPT_DEBUG, "%s: Clearing display",
+		drvthis->name);
 	for (line = 0; line < p->height; line++) {
 		memset(p->framebuf + (line * p->width), ' ', p->width);
 		p->line_flags[line] = 1;
 	}
-	p->ccmode = standard;
+	lis_standard_custom_chars(drvthis);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Place a character in the framebuffer
 //
 MODULE_EXPORT void
-lis_chr (Driver *drvthis, int x, int y, char ch)
+lis_chr (Driver *drvthis, int x, int y, unsigned char ch)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	// ignore out-of-range
-	if (y > p->height || x > p->width)
+	if (y > p->height || x > p->width) {
+		report(RPT_WARNING, "%s: Writing char %x at %d,%d"
+			" ignored out of range %d,%d",
+		 	drvthis->name, ch, x, y, p->height, p->width);
 		return;
+	}
 
 	y--;
 	x--;
@@ -1271,6 +1252,8 @@ lis_chr (Driver *drvthis, int x, int y, char ch)
 		p->framebuf[ (y * p->width) + x] = ch;
 
 		p->line_flags[y] = 1;
+		report(RPT_DEBUG, "%s: Caching char %x at %d,%d",
+			drvthis->name, ch, x, y);
 	}
 }
 
@@ -1286,10 +1269,16 @@ lis_string (Driver *drvthis, int x, int y, char *s)
 	x --;  // Convert 1-based coords to 0-based
 	y --;
 
+	report(RPT_DEBUG, "%s: Write string to framebuffer  %d,%d \"%s\"",
+	 	drvthis->name, x, y, s);
+
 	for (i = 0; s[i]; i++) {
 		// Check for buffer overflows...
-		if ((y * p->width) + x + i > (p->width * p->height))
+		if ((y * p->width) + x + i > (p->width * p->height)) {
+			report(RPT_WARNING, "%s: Writing string ignored, out of range",
+			 	drvthis->name, x, y);
 			break;
+		}
 
 		if ( p->framebuf[(y*p->width) + x + i] != s[i] ) {
 			p->framebuf[(y*p->width) + x + i] = s[i];
@@ -1305,11 +1294,12 @@ lis_string (Driver *drvthis, int x, int y, char *s)
 MODULE_EXPORT int
 lis_icon (Driver *drvthis, int x, int y, int icon)
 {
-	char ch;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	unsigned char ch;
 
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
-			ch = 0xFF;
+			ch = 0xff;
 			break;
 		case ICON_HEART_FILLED:
 			ch = 0x9D;
@@ -1336,7 +1326,9 @@ lis_icon (Driver *drvthis, int x, int y, int icon)
 			ch = 0xC7;
 			break;
 		case ICON_CHECKBOX_GRAY:
-			ch = 7;
+			ch = 2;
+			if (p->ccmode != standard)
+				lis_standard_custom_chars(drvthis);
 			break;
 		case ICON_STOP:
 			ch = 0x16;
@@ -1368,59 +1360,13 @@ lis_icon (Driver *drvthis, int x, int y, int icon)
 		default:
 			return -1; /* Let the core do other icons */
 
-		lis_chr(drvthis, x, y, ch);
 	}
+	report(RPT_DEBUG, "%s: Writing icon #%d (%x) @ %d,%d",
+ 		drvthis->name, icon, ch, x, y);
+	lis_chr(drvthis, x, y, ch);
+
 	return 0;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// Draw a horizontal bar
-//
-// options ignored
-// truncates to fit display if needed
-MODULE_EXPORT void
-lis_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-	PrivateData *p = (PrivateData *) drvthis->private_data;
-	char	buf[p->width+1];
-	int		per_pel;
-	char	*bp;
-
-	if (! p->cc_flag)
-		lis_load_custom_chars(drvthis);
-
-	if (x + len > p->width)
-		len = p->width - x;
-
-	if (len < 1 || promille < 0 || promille > 1000 )
-		return;
-
-	// blank area for bar
-	memset(buf, ' ', len);
-
-	if( promille == 0)
-		return;
-
-	per_pel = 1000 / (len * CELLWIDTH);
-
-	bp = buf;
-
-	while(promille > per_pel) {
-		if( promille >= per_pel * CELLWIDTH) {
-			*bp = 0x05;		// full width
-			promille -= CELLWIDTH*per_pel;
-		} else {
-			*bp = (promille / per_pel);
-			promille = 0;
-		}
-		bp++;
-	}
-	*bp = 0x00;
-
-	lis_string(drvthis, x, y, buf);
-}
-
-
 
 
 #if 0
@@ -1435,8 +1381,179 @@ lis_test(Driver *drvthis)
 	lis_clear(drvthis);
 
 	for (i = 0; i < 1001; i++) {
-		lis_hbar(drvthis, 1, 1, 20, i, 0);
+		lis_vbar(drvthis, 1, 2, 2, i, 0);
 		lis_flush(drvthis);
 	}
 }
 #endif
+
+
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [0 - (NUM_CCs-1)].
+ * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ *                 starting from the top to bottom.
+ *                 The bits in each byte represent the pixels where the LSB
+ *                 (least significant bit) is the rightmost pixel in each pixel row.
+ */
+MODULE_EXPORT void
+lis_set_char(Driver *drvthis, int n, unsigned char *dat)
+{
+PrivateData *p = drvthis->private_data;
+unsigned char mask = (1 << p->cellwidth) - 1;
+int row;
+
+
+  if ((n < 0) || (n >= NUM_CCs))
+    return;
+  if (dat == NULL)
+    return;
+
+  for (row = 0; row < p->cellheight; row++) {
+    int letter = 0;
+
+    if (p->lastline || (row < p->cellheight - 1))
+      letter = dat[row] & mask;	
+
+    if (p->cc[n].cache[row] != letter) {
+      p->cc[n].clean = 0;	 /* only mark dirty if really different */
+    }
+    p->cc[n].cache[row] = letter;
+  }
+  report(RPT_DEBUG, "%s: cached custom character #%d",
+                     drvthis->name, n);
+}
+
+
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
+MODULE_EXPORT void
+lis_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
+{
+PrivateData *p = drvthis->private_data;
+
+  if (p->ccmode != vbar) {
+    unsigned char vBar[p->cellheight];
+    int i;
+
+    if (p->ccmode != standard) {
+      /* Not supported(yet) */
+      report(RPT_WARNING, "%s: vbar: cannot combine two modes using user-defined characters",
+		      drvthis->name);
+      return;
+    }
+    p->ccmode = vbar;
+
+    memset(vBar, 0x00, sizeof(vBar));
+
+    for (i = 2; i <= p->cellheight; i++) {
+      // add pixel line per pixel line ...
+      vBar[p->cellheight - i + 1] = 0x1F;
+      lis_set_char(drvthis, i, vBar);
+    }
+  }
+
+  report(RPT_DEBUG, "%s: vbar @ %d,%d len %d, %d/1000",
+ 	drvthis->name, x, y, len, promille);
+
+  lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 2);
+}
+
+
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
+MODULE_EXPORT void
+lis_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
+{
+PrivateData *p = drvthis->private_data;
+
+  if (p->ccmode != hbar) {
+    unsigned char hBar[p->cellheight];
+    int i;
+
+    if (p->ccmode != standard) {
+      /* Not supported(yet) */
+      report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
+		      drvthis->name);
+      return;
+    }
+
+    p->ccmode = hbar;
+
+    for (i = 1; i <= p->cellwidth; i++) {
+      // fill pixel columns from left to right.
+      memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
+      lis_set_char(drvthis, i + 2, hBar);
+    }
+  }
+  report(RPT_DEBUG, "%s: hbar @ %d,%d len %d, %d/1000",
+ 	drvthis->name, x, y, len, promille);
+
+  lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 2);
+}
+
+
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
+ */
+MODULE_EXPORT void
+lis_num(Driver *drvthis, int x, int num)
+{
+PrivateData *p = drvthis->private_data;
+int do_init = 0;
+
+	if ((num < 0) || (num > 10))
+		return;
+
+	if (p->ccmode != bignum) {
+		if (p->ccmode != standard) {
+			/* Not supported (yet) */
+			report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
+					drvthis->name);
+			return;
+		}
+
+		p->ccmode = bignum;
+
+		do_init = 1;
+	}
+  	report(RPT_DEBUG, "%s: big number %d @ %d",
+ 		drvthis->name, x, num);
+
+	// Lib_adv_bignum does everything needed to show the bignumbers.
+	// offset by 2 because driver uses first three custom characters
+	lib_adv_bignum(drvthis, x, num, 3, do_init);
+}
+
+
+/**
+ * Get total number of custom characters available.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of custom characters.
+ */
+MODULE_EXPORT int
+lis_get_free_chars (Driver *drvthis)
+{
+//PrivateData *p = drvthis->private_data;
+
+  return NUM_CCs - 3;		// first three are reserved
+}
+
