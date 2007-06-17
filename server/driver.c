@@ -17,15 +17,15 @@
 #include <unistd.h>
 #include <string.h>
 #ifndef WIN32
-#include <sys/errno.h>
-#include <dlfcn.h>
+# include <sys/errno.h>
+# include <dlfcn.h>
 #else
-#include <windows.h>
+# include <windows.h>
 #endif
 #include <string.h>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #include "main.h" /* for timer  */

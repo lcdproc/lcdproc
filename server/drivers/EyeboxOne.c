@@ -217,7 +217,7 @@ EyeboxOne_init (Driver *drvthis)
 
 	/* keypad test mode? */
 	if (drvthis->config_get_bool(drvthis->name, "keypad_test_mode", 0, 0)) {
-		fprintf( stdout, "EyeBO: Entering keypad test mode...\n");
+		fprintf(stdout, "EyeBO: Entering keypad test mode...\n");
 		p->keypad_test_mode = 1;
 		stay_in_foreground = 1;
 	}

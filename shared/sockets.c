@@ -1,4 +1,3 @@
-#include "config.h"
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -7,16 +6,20 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #ifndef WINSOCK2
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>
+# include <sys/socket.h>
+# include <sys/un.h>
+# include <netinet/in.h>
+# include <netdb.h>
+# include <arpa/inet.h>
 #else
-#include <winsock2.h>
+# include <winsock2.h>
 #endif
 #include <stdarg.h>
 #include <fcntl.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include "report.h"
 #include "sockets.h"

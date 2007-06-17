@@ -897,7 +897,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 	// 
 	// Leaving this in the code as notification for other similar cases
 	if (p->custom == bign) {
-		printf("Switching to beat\n");
+		debug(RPT_DEBUG, "%s: Switching to beat", __FUNCTION__);
 		p->custom = beat;
 	}
 #endif
@@ -958,7 +958,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 			break;
 
 		default:
-			printf("x=%d, y=%d, icon=%x\n", x,y,icon);
+			debug(RPT_INFO, "%s: x=%d, y=%d, icon=%x", __FUNCTION__, x, y, icon);
 			return -1;
 	}
 	return 0;

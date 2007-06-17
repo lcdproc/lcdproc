@@ -218,7 +218,9 @@
  *		  the fact that this work is dual licensed.
  */
 
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 /* Define HAVE_SNPRINTF if your system already has snprintf and vsnprintf.
  *

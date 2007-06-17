@@ -26,7 +26,7 @@
 #endif
 
 #ifdef HAVE_CONFIG_H
-# include <config.h>
+# include "config.h"
 #else
 # if !defined __STDC__ || !__STDC__
 /* This is a separate conditional since some stdc systems

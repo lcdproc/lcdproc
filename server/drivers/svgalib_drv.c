@@ -29,7 +29,9 @@
 #include <vga.h>
 #include <vgagl.h>
 
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include "lcd.h"
 #include "report.h"

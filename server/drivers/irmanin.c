@@ -2,7 +2,7 @@
 /* Copyright (C) 1999 David Glaude loosely based on workmanir.c */
 /* workmanir.c - test/demo of LIBIR's high level command functions */
 /* Copyright (C) 1998 Tom Wheeley, see file COPYING for details    */
-#include <config.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -21,6 +21,10 @@
 #include "shared/str.h"
 
 #define NAME_LENGTH 128
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include "lcd.h"
 #include "irmanin.h"

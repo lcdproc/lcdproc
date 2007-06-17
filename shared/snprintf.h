@@ -5,7 +5,7 @@
 #define PORTABLE_SNPRINTF_VERSION_MINOR 2
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+# include "config.h"
 #endif
 
 #ifdef HAVE_SNPRINTF

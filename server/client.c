@@ -14,7 +14,9 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include "client.h"
 #include "screenlist.h"

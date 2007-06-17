@@ -52,7 +52,7 @@ not be in this file but in lpt-port.h ...
 #define PORT_H
 
 #ifdef HAVE_CONFIG_H
-# include <config.h>
+# include "config.h"
 #endif
 
 #include <stdio.h>

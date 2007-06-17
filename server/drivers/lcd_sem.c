@@ -20,13 +20,16 @@
  * 
  */
 
-#include <config.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>			  /* for semaphore functions */
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #include <errno.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include "lcd_sem.h"
 

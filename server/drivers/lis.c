@@ -464,7 +464,7 @@ lis_init(Driver *drvthis)
 	err = ftdi_usb_open(&p->ftdic, p->VendorID, p->ProductID);
 	if (err < 0) {
 		report(RPT_ERR, "%s: cannot open USB device %x:%x", 
-			drvthis->name
+			drvthis->name,
 			p->VendorID,
 			p->ProductID);
 		goto err_framebuf;
