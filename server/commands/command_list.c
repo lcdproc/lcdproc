@@ -1,5 +1,8 @@
+/* \file command_list.c
+ * Defines the dispatcher for handlers dealing with the client commands.
+ */
+
 /*
- * commands/command_list.c
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -14,7 +17,6 @@
  *
  * The client's available function set is defined here, as is the syntax
  * for each command. <-- TODO !
- *
  */
 
 #include "command_list.h"

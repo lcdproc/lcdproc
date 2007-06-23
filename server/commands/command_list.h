@@ -1,5 +1,8 @@
+/* \file command_list.h
+ * Declares client command dispatcher function.
+ */
+
 /*
- * commands/command_list.h
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -19,7 +22,7 @@
   point to a function to call, defined below.
  */
 
-typedef int (*CommandFunc) (Client * c, int argc, char **argv);
+typedef int (*CommandFunc) (Client *c, int argc, char **argv);
 
 typedef struct client_function {
 	char *keyword;

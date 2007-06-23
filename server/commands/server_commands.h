@@ -1,5 +1,8 @@
+/* \file server_commands.h
+ * Declares handlers for client commands dealing with server properties.
+ */
+
 /*
- * server_commands.h
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -13,10 +16,10 @@
 #ifndef COMMANDS_SERVER_H
 #define COMMANDS_SERVER_H
 
-int output_func (Client * c, int argc, char **argv);
-int test_func_func (Client * c, int argc, char **argv);
-int noop_func (Client * c, int argc, char **argv);
-int info_func (Client * c, int argc, char **argv);
-int sleep_func (Client * c, int argc, char **argv);
+int output_func(Client *c, int argc, char **argv);
+int test_func_func(Client *c, int argc, char **argv);
+int noop_func(Client *c, int argc, char **argv);
+int info_func(Client *c, int argc, char **argv);
+int sleep_func(Client *c, int argc, char **argv);
 
 #endif

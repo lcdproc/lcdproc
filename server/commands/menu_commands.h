@@ -1,5 +1,8 @@
+/* \file menu_commands.h
+ * Declares handlers for client menu commands.
+ */
+
 /*
- * menu_commands.h
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -13,11 +16,11 @@
 #ifndef COMMANDS_MENU_H
 #define COMMANDS_MENU_H
 
-int menu_add_item_func (Client * c, int argc, char **argv);
-int menu_del_item_func (Client * c, int argc, char **argv);
-int menu_set_item_func (Client * c, int argc, char **argv);
-int menu_goto_func (Client * c, int argc, char **argv);
-int menu_set_main_func (Client * c, int argc, char **argv);
+int menu_add_item_func(Client *c, int argc, char **argv);
+int menu_del_item_func(Client *c, int argc, char **argv);
+int menu_set_item_func(Client *c, int argc, char **argv);
+int menu_goto_func(Client *c, int argc, char **argv);
+int menu_set_main_func(Client *c, int argc, char **argv);
 
 #endif
 

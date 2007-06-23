@@ -1,5 +1,8 @@
+/* \file server_commands.c
+ * Defines handlers for client commands concerning the server settings.
+ */
+
 /*
- * server_commands.c
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -14,9 +17,6 @@
  *
  * The client's available function set is defined here, as is the syntax
  * for each command.
- *
- * This particular file defines actions concerning the server settings.
- *
  */
 
 #include <unistd.h>
@@ -41,61 +41,42 @@
 #define ALL_OUTPUTS_OFF 0
 
 int
-output_func (Client * c, int argc, char **argv)
+output_func(Client *c, int argc, char **argv)
 {
-	/*int rc = 0;*/
-	char str[128];
+	if (!c->ack)
+		return 1;
 
 	if (argc != 2) {
 		sock_send_error(c->sock, "Usage: output {on|off|<num>}\n");
 		return 0;
 	}
 
-	if (0 == strcmp (argv[1], "on"))
+	if (0 == strcmp(argv[1], "on"))
 		output_state = ALL_OUTPUTS_ON;
-	else if (0 == strcmp (argv[1], "off"))
+	else if (0 == strcmp(argv[1], "off"))
 		output_state = ALL_OUTPUTS_OFF;
 	else {
 		long out;
-		char *endptr, *p;
+		char *endptr;
 
 		/* Note that there is no valid range set for
 		 * output_state; thus a value in the 12 digits
 		 * is not considered out of range.
 		 */
 
+		/* set errno to be able to detect errors in strtol() */
 		errno = 0;
 
-		/* errno is set here, because if strtol does not result in
-		 * ERANGE (out of range error) it will not set errno (!).
-		 * At least, this is the case with glibc 2.1.3 ...
-		 */
-
-		p = argv[1];
-		out = strtol(p, &endptr, 0);
-
-		/* From the man page for strtol(3)
-		 *
-		 * In particular, if *nptr is not `\0' but **endptr is
-		 * `\0' on return, the entire string is valid.
-		 *
-		 * In this case, argv[1] is *nptr, and &endptr is **endptr.
-		 */
+		out = strtol(argv[1], &endptr, 0);
 
 		if (errno) {
-			int space;
-
-			strcat(str, "number argument: ");
-			space = sizeof(str) - 3 - strlen(str);
-
-			strncat(str, strerror(errno), space);
-			strcat(str, "\n");
-
-			sock_send_error(c->sock, str);
+			sock_printf_error(c->sock, "number argument: %s\n", strerror(errno));
 			return 0;
-		} else if (*p != '\0' && *endptr == '\0') {
+		}
+		else if ((*argv[1] != '\0') && (*endptr == '\0')) {
 			output_state = out;
-		} else {
+		}
+		else {
 			sock_send_error(c->sock, "invalid parameter...\n");
 			return 0;
 		}
@@ -105,10 +86,10 @@ output_func (Client * c, int argc, char **argv)
 
 	/* Makes sense to me to set the output immediately;
 	 * however, the outputs are currently set in
-	 * draw_screen(screen * s, int timer)
+	 * draw_screen(screen *s, int timer)
 	 * Whatever for? */
 
-	/* drivers_output (output_state); */
+	/* drivers_output(output_state); */
 
 	report(RPT_NOTICE, "output states changed");
 	return 0;
@@ -120,30 +101,27 @@ output_func (Client * c, int argc, char **argv)
  * Usage: sleep <seconds>
  */
 int
-sleep_func (Client * c, int argc, char **argv)
+sleep_func(Client *c, int argc, char **argv)
 {
 	int secs;
 	long out;
-	char *endptr, *p;
-	char str[120];
+	char *endptr;
 
 #define MAX_SECS 60
 #define MIN_SECS 1
+
+	if (!c->ack)
+		return 1;
 
 	if (argc != 2) {
 		sock_send_error(c->sock, "Usage: sleep <secs>\n");
 		return 0;
 	}
 
+	/* set errno to be able to detect errors in strtol() */
 	errno = 0;
 
-	/* errno is set here, because if strtol does not result in
-	 * ERANGE (out of range error) it will not set errno (!).
-	 * At least, this is the case with glibc 2.1.3 ...
-	 */
-
-	p = argv[1];
-	out = strtol(p, &endptr, 0);
+	out = strtol(argv[1], &endptr, 0);
 
 	/* From the man page for strtol(3)
 	 *
@@ -154,29 +132,23 @@ sleep_func (Client * c, int argc, char **argv)
 	 */
 
 	if (errno) {
-		int space;
-
-		strcat(str, "number argument: ");
-		space = sizeof(str) - 3 - strlen(str);
-
-		strncat(str, strerror(errno), space);
-		strcat(str, "\n");
-
-		sock_send_error(c->sock, str);
+		sock_printf_error(c->sock, "number argument: %s\n", strerror(errno));
 		return 0;
-	} else if (*p != '\0' && *endptr == '\0') {
+	}
+	else if ((*argv[1] != '\0') && (*endptr == '\0')) {
+		/* limit seconds to range: MIN_SECS - MAX_SECS */
+		out = (out > MAX_SECS) ? MAX_SECS : out;
+		out = (out < MIN_SECS) ? MIN_SECS : out;
 		secs = out;
-		out = out > MAX_SECS ? MAX_SECS : out;
-		out = out < MIN_SECS ? MIN_SECS : out;
-	} else {
+	}
+	else {
 		sock_send_error(c->sock, "invalid parameter...\n");
 		return 0;
 	}
 
 	/* Repeat until no more remains - should normally be zero
 	 * on exit the first time...*/
-	snprintf(str, sizeof(str), "sleeping %d seconds\n", secs);
-	sock_send_string (c->sock, str);
+	sock_printf(c->sock, "sleeping %d seconds\n", secs);
 
 	/* whoops.... if this takes place as planned, ALL screens
 	 * will "freeze" for the alloted time...
@@ -196,9 +168,12 @@ sleep_func (Client * c, int argc, char **argv)
  *    command and look for the "noop complete" message.
  */
 int
-noop_func (Client * c, int argc, char **argv)
+noop_func(Client *c, int argc, char **argv)
 {
-	sock_send_string (c->sock, "noop complete\n");
+	if (!c->ack)
+		return 1;
+
+	sock_send_string(c->sock, "noop complete\n");
 	return 0;
 }
 

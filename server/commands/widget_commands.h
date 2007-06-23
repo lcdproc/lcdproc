@@ -1,5 +1,8 @@
+/* \file widget_commands.h
+ * Declares handlers for client widget commands.
+ */
+
 /*
- * widget_commands.h
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -13,8 +16,8 @@
 #ifndef COMMANDS_WIDGET_H
 #define COMMANDS_WIDGET_H
 
-int widget_add_func (Client * c, int argc, char **argv);
-int widget_del_func (Client * c, int argc, char **argv);
-int widget_set_func (Client * c, int argc, char **argv);
+int widget_add_func(Client *c, int argc, char **argv);
+int widget_del_func(Client *c, int argc, char **argv);
+int widget_set_func(Client *c, int argc, char **argv);
 
 #endif

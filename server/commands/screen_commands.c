@@ -1,5 +1,8 @@
+/* \file screens_commands.c
+ * Defines handlers for the client commands concerning screens.
+ */
+
 /*
- * screens_commands.c
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -14,9 +17,6 @@
  *
  * The client's available function set is defined here, as is the syntax
  * for each command.
- *
- * This particular file defines actions concerning screens.
- *
  */
 
 #include <unistd.h>
@@ -39,10 +39,10 @@
  * Usage: screen_add <id>
  */
 int
-screen_add_func (Client * c, int argc, char **argv)
+screen_add_func(Client *c, int argc, char **argv)
 {
 	int err = 0;
-	Screen * s;
+	Screen *s;
 
 	if (!c->ack)
 		return 1;
@@ -54,19 +54,19 @@ screen_add_func (Client * c, int argc, char **argv)
 
 	debug(RPT_DEBUG, "screen_add: Adding screen %s", argv[1]);
 
-	s = client_find_screen (c, argv[1]);
-	if (s) {
+	s = client_find_screen(c, argv[1]);
+	if (s != NULL) {
 		sock_send_error(c->sock, "Screen already exists\n");
 		return 0;
 	}
 
-	s = screen_create (argv[1], c);
-	if (!s) {
+	s = screen_create(argv[1], c);
+	if (s == NULL) {
 		sock_send_error(c->sock, "failed to create screen\n");
 		return 0;
 	}
 
-	err = client_add_screen (c, s);
+	err = client_add_screen(c, s);
 
 	if (err == 0) {
 		sock_send_string(c->sock, "success\n");
@@ -83,10 +83,10 @@ screen_add_func (Client * c, int argc, char **argv)
  * Usage: screen_del <screenid>
  */
 int
-screen_del_func (Client * c, int argc, char **argv)
+screen_del_func(Client *c, int argc, char **argv)
 {
 	int err = 0;
-	Screen * s;
+	Screen *s;
 
 	if (!c->ack)
 		return 1;
@@ -96,21 +96,24 @@ screen_del_func (Client * c, int argc, char **argv)
 		return 0;
 	}
 
-	debug (RPT_DEBUG, "screen_del: Deleting screen %s", argv[1]);
+	debug(RPT_DEBUG, "screen_del: Deleting screen %s", argv[1]);
 
-	s = client_find_screen (c, argv[1]);
-	if (!s) {
+	s = client_find_screen(c, argv[1]);
+	if (s == NULL) {
 		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 
-	err = client_remove_screen (c, s);
-	if ( err == 0 )
+	err = client_remove_screen(c, s);
+	if (err == 0) {
 		sock_send_string(c->sock, "success\n");
+	}
 	else if (err < 0) {
 		sock_send_error(c->sock, "failed to remove screen\n");
-	} else
+	}
+	else {
 		sock_send_error(c->sock, "Unknown screen id\n");
+	}
 
 	report(RPT_INFO, "Client on socket %d removed screen \"%s\"", c->sock, s->id);
 
@@ -128,7 +131,7 @@ screen_del_func (Client * c, int argc, char **argv)
  *     [-cursor <type>] [-cursor_x <xpos>] [-cursor_y <ypos>] 
  */
 int
-screen_set_func (Client * c, int argc, char **argv)
+screen_set_func(Client *c, int argc, char **argv)
 {
 	int i;
 
@@ -147,146 +150,149 @@ screen_set_func (Client * c, int argc, char **argv)
 				" [-cursor <type>]"
 				" [-cursor_x <xpos>] [-cursor_y <ypos>]\n");
 		return 0;
-	} else if (argc == 2) {
+	}
+	else if (argc == 2) {
 		sock_send_error(c->sock, "What do you want to set?\n");
 		return 0;
 	}
 
 	id = argv[1];
-	s = client_find_screen (c, id);
-	if (!s) {
+	s = client_find_screen(c, id);
+	if (s == NULL) {
 		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 	/* Handle the rest of the parameters*/
 	for (i = 2; i < argc; i++) {
-		char *p;
+		char *p = argv[i];
 
-		/* The following code allows us to use p for comparisions,
-		 * ignoring a (valid) single leading '-' - reduces string comparisons
-		 * by half.
-		 */
-
-		p = argv[i];
+		/* ignore leading '-' in options: we allow both forms */
 		if (*p == '-')
 			p++;
 
 		/* Handle the "name" parameter*/
-		if (strcmp (p, "name") == 0) {
+		if (strcmp(p, "name") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: name=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: name=\"%s\"", argv[i]);
 
 				/* set the name...*/
-				if (s->name)
-					free (s->name);
-				s->name = strdup (argv[i]);
+				if (s->name != NULL)
+					free(s->name);
+				s->name = strdup(argv[i]);
 				sock_send_string(c->sock, "success\n");
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-name requires a parameter\n");
 			}
 		}
 		/* Handle the "priority" parameter*/
-		else if (strcmp (p, "priority") == 0) {
+		else if (strcmp(p, "priority") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: priority=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: priority=\"%s\"", argv[i]);
 
 				/* first try to interpret it as a number */
-				number = atoi (argv[i]);
+				number = atoi(argv[i]);
 				if (number > 0) {
-					if (number <= 64) {
+					if (number <= 64)
 						s->priority = PRI_FOREGROUND;
-					} else if (number < 192) {
+					else if (number < 192)
 						s->priority = PRI_INFO;
-					} else {
+					else
 						s->priority = PRI_BACKGROUND;
-					}
-				} else {
+				}
+				else {
 					/* Try if it is a priority class */
-					number = screen_pri_name_to_pri (argv[i]);
+					number = screen_pri_name_to_pri(argv[i]);
 				}
 				if (number >= 0) {
 					s->priority = number;
 					sock_send_string(c->sock, "success\n");
-				} else {
+				}
+				else {
 					sock_send_error(c->sock, "invalid argument at -priority\n");
 				}
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-priority requires a parameter\n");
 			}
 		}
 		/* Handle the "duration" parameter*/
-		else if (strcmp (p, "duration") == 0) {
+		else if (strcmp(p, "duration") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: duration=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: duration=\"%s\"", argv[i]);
 
 				/* set the duration...*/
-				number = atoi (argv[i]);
+				number = atoi(argv[i]);
 				if (number > 0)
 					s->duration = number;
 				sock_send_string(c->sock, "success\n");
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-duration requires a parameter\n");
 			}
 		}
 		/* Handle the "heartbeat" parameter*/
-		else if (strcmp (p, "heartbeat") == 0) {
+		else if (strcmp(p, "heartbeat") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: heartbeat=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: heartbeat=\"%s\"", argv[i]);
 
 				/* set the heartbeat type...*/
-				if (0 == strcmp (argv[i], "on"))
+				if (0 == strcmp(argv[i], "on"))
 					s->heartbeat = HEARTBEAT_ON;
-				else if (0 == strcmp (argv[i], "off"))
+				else if (0 == strcmp(argv[i], "off"))
 					s->heartbeat = HEARTBEAT_OFF;
-				else if (0 == strcmp (argv[i], "open"))
+				else if (0 == strcmp(argv[i], "open"))
 					s->heartbeat = HEARTBEAT_OPEN;
 				sock_send_string(c->sock, "success\n");
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-heartbeat requires a parameter\n");
 			}
 		}
 		/* Handle the "wid" parameter*/
-		else if (strcmp (p, "wid") == 0) {
+		else if (strcmp(p, "wid") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: wid=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: wid=\"%s\"", argv[i]);
 
 				/* set the duration...*/
-				number = atoi (argv[i]);
+				number = atoi(argv[i]);
 				if (number > 0)
 					s->width = number;
 				sock_send_string(c->sock, "success\n");
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-wid requires a parameter\n");
 			}
 
 		}
 		/* Handle the "hgt" parameter*/
-		else if (strcmp (p, "hgt") == 0) {
+		else if (strcmp(p, "hgt") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: hgt=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: hgt=\"%s\"", argv[i]);
 
 				/* set the duration...*/
-				number = atoi (argv[i]);
+				number = atoi(argv[i]);
 				if (number > 0)
 					s->height = number;
 				sock_send_string(c->sock, "success\n");
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-hgt requires a parameter\n");
 			}
 		}
 		/* Handle the "timeout" parameter*/
-		else if (strcmp (p, "timeout") == 0) {
+		else if (strcmp(p, "timeout") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: timeout=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: timeout=\"%s\"", argv[i]);
 				/* set the duration...*/
-				number = atoi (argv[i]);
+				number = atoi(argv[i]);
 				/* Add the timeout value (count of TIME_UNITS)
 				 *  to struct,  TIME_UNIT is 1/8th of a second
 				 */
@@ -295,35 +301,36 @@ screen_set_func (Client * c, int argc, char **argv)
 					report(RPT_NOTICE, "Timeout set.");
 				}
 				sock_send_string(c->sock, "success\n");
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-timeout requires a parameter\n");
 			}
 		}
 		/* Handle the "backlight" parameter*/
-		else if (strcmp (p, "backlight") == 0) {
+		else if (strcmp(p, "backlight") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: backlight=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: backlight=\"%s\"", argv[i]);
 				/* set the backlight status based on what the client has set*/
 				switch(c->backlight) {
 					case BACKLIGHT_OPEN:
-						if (strcmp ("on", argv[i]) == 0)
+						if (strcmp("on", argv[i]) == 0)
 							s->backlight = BACKLIGHT_ON;
 
-						if (strcmp ("off", argv[i]) == 0)
+						if (strcmp("off", argv[i]) == 0)
 							s->backlight = BACKLIGHT_OFF;
 
-						if (strcmp ("toggle", argv[i]) == 0) {
+						if (strcmp("toggle", argv[i]) == 0) {
 							if (s->backlight == BACKLIGHT_ON)
 								s->backlight = BACKLIGHT_OFF;
 							else if (s-backlight == BACKLIGHT_OFF)
 								s->backlight = BACKLIGHT_ON;
 						}
 
-						if (strcmp ("blink", argv[i]) == 0)
+						if (strcmp("blink", argv[i]) == 0)
 							s->backlight  |= BACKLIGHT_BLINK;
 
-						if (strcmp ("flash", argv[i]) == 0)
+						if (strcmp("flash", argv[i]) == 0)
 							s->backlight |= BACKLIGHT_FLASH;
 					break;
 					default:
@@ -332,38 +339,40 @@ screen_set_func (Client * c, int argc, char **argv)
 					break;
 				}
 				sock_send_string(c->sock, "success\n");
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-backlight requires a parameter\n");
 			}
 		}
 		/* Handle the "cursor" parameter */
-		else if (strcmp (p, "cursor") == 0) {
+		else if (strcmp(p, "cursor") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: cursor=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: cursor=\"%s\"", argv[i]);
 
 				/* set the heartbeat type...*/
-				if (0 == strcmp (argv[i], "off"))
+				if (0 == strcmp(argv[i], "off"))
 					s->cursor = CURSOR_OFF;
-				if (0 == strcmp (argv[i], "on"))
+				if (0 == strcmp(argv[i], "on"))
 					s->cursor = CURSOR_DEFAULT_ON;
-				if (0 == strcmp (argv[i], "under"))
+				if (0 == strcmp(argv[i], "under"))
 					s->cursor = CURSOR_UNDER;
-				if (0 == strcmp (argv[i], "block"))
+				if (0 == strcmp(argv[i], "block"))
 					s->cursor = CURSOR_BLOCK;
 				sock_send_string(c->sock, "success\n");
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-cursor requires a parameter\n");
 			}
 		}
 		/* Handle the "cursor_x" parameter */
-		else if (strcmp (p, "cursor_x") == 0) {
+		else if (strcmp(p, "cursor_x") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: cursor_x=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: cursor_x=\"%s\"", argv[i]);
 
 				/* set the position...*/
-				number = atoi (argv[i]);
+				number = atoi(argv[i]);
 				if (number > 0 && number <= s->width) {
 					s->cursor_x = number;
 					sock_send_string(c->sock, "success\n");
@@ -371,18 +380,19 @@ screen_set_func (Client * c, int argc, char **argv)
 				else {
 					sock_send_error(c->sock, "Cursor position outside screen\n");
 				}
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-cursor_x requires a parameter\n");
 			}
 		}
 		/* Handle the "cursor_y" parameter */
-		else if (strcmp (p, "cursor_y") == 0) {
+		else if (strcmp(p, "cursor_y") == 0) {
 			if (argc > i + 1) {
 				i++;
-				debug (RPT_DEBUG, "screen_set: cursor_y=\"%s\"", argv[i]);
+				debug(RPT_DEBUG, "screen_set: cursor_y=\"%s\"", argv[i]);
 
 				/* set the position...*/
-				number = atoi (argv[i]);
+				number = atoi(argv[i]);
 				if (number > 0 && number <= s->height) {
 					s->cursor_y = number;
 					sock_send_string(c->sock, "success\n");
@@ -390,7 +400,8 @@ screen_set_func (Client * c, int argc, char **argv)
 				else {
 					sock_send_error(c->sock, "Cursor position outside screen\n");
 				}
-			} else {
+			}
+			else {
 				sock_send_error(c->sock, "-cursor_y requires a parameter\n");
 			}
 		}
@@ -407,12 +418,11 @@ screen_set_func (Client * c, int argc, char **argv)
  * Usage: screen_add_key <screenid> <keylist>
  */
 int
-screen_add_key_func (Client * c, int argc, char **argv)
+screen_add_key_func(Client *c, int argc, char **argv)
 {
-	/*widget *  w ;*/  /* Keys are stored on a WID_KEYS widget */
-	Screen *  s ;  /* Attached to a specific screen */
-	char *  id ;  /* Screen ID */
-	char *  keys ;  /* Keys wanted */
+	Screen *s;  /* Attached to a specific screen */
+	char *id;  /* Screen ID */
+	char *keys;  /* Keys wanted */
 
 	if (!c->ack)
 		return 1;
@@ -437,39 +447,41 @@ screen_add_key_func (Client * c, int argc, char **argv)
 	debug(RPT_DEBUG, "screen_add_key: Adding key(s) %s to screen %s", keys, id);
 
 	/* Find the screen*/
-	s = client_find_screen (c, id);
+	s = client_find_screen(c, id);
 	if (!s) {
 		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 
 	/* Save the keys*/
-	if (!s->keys) {
+	if (s->keys == NULL) {
 		/* Save supplied key list*/
-		s->keys = strdup( keys );
-	} else {
+		s->keys = strdup(keys);
+	}
+	else {
 		/* Add supplied keys to existing list
 		 * NOTE: There could be duplicates in the resulting list
 		 *    That's OK, it's the existence of the key in the list
 		 *    that's important.  We'll be more careful in the delete
 		 *    key function.
 		 */
-		char * new_keys ;
-		new_keys = realloc( s->keys, strlen(s->keys) + strlen(keys) +1 );
+		char *new_keys;
+		new_keys = realloc(s->keys, strlen(s->keys) + strlen(keys) +1);
 		if (new_keys) {
-			strcpy (new_keys, s->keys);
-			strcat (new_keys, keys );
-			free (s->keys);
+			strcpy(new_keys, s->keys);
+			strcat(new_keys, keys);
+			free(s->keys);
 			s->keys = new_keys;
-		} else {
+		}
+		else {
 			sock_send_error(c->sock, "Could not add new keys\n");
 			return 0;
 		}
 	}
 
-	if (!s->keys) {
+	if (s->keys == NULL)
 		sock_send_error(c->sock, "failed\n");
-	} else
+	else
 		sock_send_string(c->sock, "success\n");
 
 	return 0;
@@ -482,12 +494,11 @@ screen_add_key_func (Client * c, int argc, char **argv)
  * Usage: screen_del_key <screenid> <keylist>
  */
 int
-screen_del_key_func (Client * c, int argc, char **argv)
+screen_del_key_func(Client *c, int argc, char **argv)
 {
-	/*widget *  w ;*/  /* Keys are stored on a WID_KEYS widget */
-	Screen *  s ;  /* Attached to a specific screen */
-	char *  id ;  /* Screen ID */
-	char *  keys ;  /* Keys wanted */
+	Screen *s;  /* Attached to a specific screen */
+	char *id;  /* Screen ID */
+	char *keys;  /* Keys wanted */
 
 	if (!c->ack)
 		return 1;
@@ -507,38 +518,38 @@ screen_del_key_func (Client * c, int argc, char **argv)
 		return 0;
 	}
 
-	id = argv[1] ;
-	keys = argv[2] ;
+	id = argv[1];
+	keys = argv[2];
 	debug(RPT_DEBUG, "screen_del_key: Deleting key(s) %s from screen %s", keys, id);
 
 	/* Find the screen*/
-	s = client_find_screen (c, id);
-
-	if (!s) {
+	s = client_find_screen(c, id);
+	if (s == NULL) {
 		sock_send_error(c->sock, "Unknown screen id\n");
 		return 0;
 	}
 
 	/* Do we have keys?*/
-	if (s->keys) {
+	if (s->keys != NULL) {
 		/* Have keys, remove keys from the list
 		 * NOTE: We let malloc/realloc remember the length
 		 *    of the allocated storage.  If keys are later
 		 *    added, realloc (in add_key above) will make
 		 *    sure there is enough space at s->keys
 		 */
-		char *  from ;
-		char *  to ;
+		char *from;
+		char *to;
 
-		to = from = s->keys ;
-		while( *from ) {
-			/*  Is this key to be deleted from the list?*/
-			if( strchr( keys, *from ) ) {
-				/* Yes, skip it*/
-				++from ;
-			} else {
-				/* No, save it*/
-				*to++ = *from++ ;
+		to = from = s->keys;
+		while (*from != NULL) {
+			/* Is this key to be deleted from the list? */
+			if (strchr(keys, *from) == 0) {
+				/* Yes, skip it */
+				++from;
+			}
+			else {
+				/* No, save it */
+				*to++ = *from++;
 			}
 		}
 		to = '\0';	/* terminates the new keys string...*/
