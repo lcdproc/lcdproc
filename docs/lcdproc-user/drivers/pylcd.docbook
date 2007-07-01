@@ -26,17 +26,64 @@ buttons as well as 3 (or 9) LEDs which can also be software controlled.
 </sect2>
 
 
+<sect2 id="pyramid-connector">
+<title>Connector</title>
+
+<para>
+The display is connected to the host system using USB, with the 
+usual USB pinout as shown below.
+The +5V V<subscript>CC</subscript> pin is marked with red colour.
+</para>
+
+<table id="pyramid-usb-pinout">
+<title>USB Pinout</title>
+<tgroup cols="4">
+  <thead>
+    <row>
+      <entry>GND</entry>
+      <entry>D+</entry>
+      <entry>D-</entry>
+      <entry>V<subscript>CC</subscript></entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>GND</entry>
+      <entry>P<subscript>0</subscript>+</entry>
+      <entry>P<subscript>0</subscript>-</entry>
+      <entry>+5V</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+
+</sect2>
+
+
 <sect2 id="pyramid-requirements">
 <title>Requirements</title>
 
 <para>
 For Linux the driver depends on features of the <filename>ftdi_sio.ko</filename>
-that have only been added to quite recent version of the 2.6 kernel series.
-For older Linux kernels of the 2.6 series (or even the 2.4 series) that patch
-to <filename>ftdi_sio.c</filename> might help: 
-<ulink url="http://www.pyramid.de/d/downloads/patch-4-linux-2.6.13-14.txt">
-http://www.pyramid.de/d/downloads/patch-4-linux-2.6.13-14.txt</ulink>.
+that have only been added to version 2.6.15 version of the 2.6 kernel series.
+For older Linux kernels of the 2.6 series these patches to
+<filename>ftdi_sio.c</filename> may help: 
 </para>
+
+<itemizedlist>
+  <listitem><para>
+    <ulink url="http://www.pyramid.de/upload/files/divers/patch-4-ftdi-2.6.9.txt">
+    Linux 2.6.9-11</ulink>.
+  </para></listitem>
+  <listitem><para>
+    <ulink url="http://www.pyramid.de/upload/files/divers/patch-4-ftdi-2.6.12.6.txt">
+    Linux 2.6.12.x</ulink>.
+  </para></listitem>
+  <listitem><para>
+    <ulink url="http://www.pyramid.de/upload/files/divers/patch-4-linux-2.6.13-14.txt">
+    Linux 2.6.13-14</ulink>.
+  </para></listitem>
+</itemizedlist>
 
 </sect2>
 
@@ -134,7 +181,7 @@ will clear all LEDs.
 
 <para>
 More information on the Pyramid LC-Display can be found here:
-<ulink url="http://www.pyramid.de/e/produkte/server/pyramid-lcd.php"></ulink>
+<ulink url="http://www.pyramid.de/en/products/programmable_lcd.php"></ulink>
 </para>
 
 </sect2>

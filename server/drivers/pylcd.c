@@ -25,7 +25,7 @@
 /* 
  * This driver controls the programmable LC-Display from 
  * Pyramid Computer GmbH. For more information see
- * http://www.pyramid.de/e/produkte/server/pyramid-lcd.php
+ * http://www.pyramid.de/en/products/programmable_lcd.php
  * 
  * Contact Thomas Riewe <thomas.riewe@pyramid.de> for further
  * information on the LCD.

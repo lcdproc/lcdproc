@@ -37,7 +37,7 @@ output 0
 will clear all LEDs.
 
 More information on the Pyramid LC-Display can be found here:
-http://www.pyramid.de/e/produkte/server/pyramid-lcd.php
+http://www.pyramid.de/en/products/programmable_lcd.php
 
 Please apply attached patch to the lcdproc CVS. 
 
