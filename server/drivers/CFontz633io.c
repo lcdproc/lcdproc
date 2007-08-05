@@ -107,7 +107,7 @@ void EmptyKeyRing(KeyRing *kr)
 int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 {
 	if (((kr->head + 1) % KEYRINGSIZE) != (kr->tail % KEYRINGSIZE)) {
-		debug(RPT_DEBUG, "%s: add key: %d", __FUNCTION__, key);
+		//debug(RPT_DEBUG, "%s: add key: %d", __FUNCTION__, key);
 
 	        kr->contents[kr->head % KEYRINGSIZE] = key;
   		kr->head = (kr->head + 1) % KEYRINGSIZE;
@@ -132,7 +132,7 @@ unsigned char GetKeyFromKeyRing(KeyRing *kr)
 	}
 
 	if (retval)
-		debug(RPT_DEBUG, "%s: remove key: %d", __FUNCTION__, retval);
+		//debug(RPT_DEBUG, "%s: remove key: %d", __FUNCTION__, retval);
 	return retval;
 }
 
@@ -310,19 +310,19 @@ void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 
 	if (BytesRead == -1) {
 		/* this should not happen with the select() above */
-		debug(RPT_WARNING, "%s: ~~~Problem reading: %s", __FUNCTION__, strerror(errno));
+		//debug(RPT_WARNING, "%s: ~~~Problem reading: %s", __FUNCTION__, strerror(errno));
 	}
 	else {
 		int	i;
 
-		debug(RPT_DEBUG, "%s: read %d bytes:", __FUNCTION__, BytesRead);
+		//debug(RPT_DEBUG, "%s: read %d bytes:", __FUNCTION__, BytesRead);
 
 		/* wrap write pointer to the receive buffer */
 		rb->head %= RECEIVEBUFFERSIZE;
 
 		/* store the bytes read */
 		for (i = 0; i < BytesRead; i++) {
-			debug(RPT_DEBUG, "%s: reading byte %02x", __FUNCTION__, buffer[i]);
+			//debug(RPT_DEBUG, "%s: reading byte %02x", __FUNCTION__, buffer[i]);
 			rb->contents[rb->head] = buffer[i];
 
 			/* increment write pointer (wrap if needed) */
@@ -486,7 +486,7 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 	//First off, there must be at least 4 bytes available in the input stream
 	//for there to be a valid command in it (command, length, no data, CRC).
 	if (BytesAvail(&receivebuffer) < 4) {
-		debug(RPT_INFO, "%s: not enough bytes available for even the smallest message", __FUNCTION__);
+		//debug(RPT_INFO, "%s: not enough bytes available for even the smallest message", __FUNCTION__);
 		return(GIVE_UP); /* We don't need to retry before more byte are received */
 	}
 
@@ -500,7 +500,7 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 	if (MAX_COMMAND < (0x3F & in->command)) {
 		/* Throw out one byte of garbage. Next pass through should re-sync. */
 		GetByte(&receivebuffer);
-		debug(RPT_INFO, "%s: unknown command", __FUNCTION__);
+		//debug(RPT_INFO, "%s: unknown command", __FUNCTION__);
 		return(TRY_AGAIN);
 	}
 
@@ -511,7 +511,7 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
   	if (MAX_DATA_LENGTH < in->data_length) {
 		//Throw out one byte of garbage. Next pass through should re-sync.
 		GetByte(&receivebuffer);
-		debug(RPT_INFO, "%s: too long packet: %d", __FUNCTION__, in->data_length);
+		//debug(RPT_INFO, "%s: too long packet: %d", __FUNCTION__, in->data_length);
 		return(TRY_AGAIN);
 	}
 
@@ -520,7 +520,7 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 	if ((int) PeekBytesAvail(&receivebuffer) < (in->data_length + 2)) {
 		//It looked like a valid start of a packet, but it does not look
 		//like the complete packet has been received yet.
-		debug(RPT_INFO, "%s: not enough read to check the complete message", __FUNCTION__);
+		//debug(RPT_INFO, "%s: not enough read to check the complete message", __FUNCTION__);
 		return(GIVE_UP); /* Let's not return until more byte are available */
 	}
 
@@ -549,7 +549,7 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 	* Next pass through should re-sync.
 	*/
 	GetByte(&receivebuffer);
-	debug(RPT_INFO, "%s: wrong CheckSum: computed %04x / real %04x",
+	//debug(RPT_INFO, "%s: wrong CheckSum: computed %04x / real %04x",
   		__FUNCTION__, testcrc, in->crc);
 	return(TRY_AGAIN);
 }
