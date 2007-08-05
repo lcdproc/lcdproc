@@ -2,7 +2,7 @@
 	various protocols.  While it currently only supports AEDEX, 
 	it can be extended to provide support for many POS emulation types.
 
-	Copyright (C) 2006 Eric Pooch
+	Copyright (C) 2006, 2007 Eric Pooch
 
 	This driver is based on MtxOrb.c driver and is subject to its copyrights.
 	
@@ -35,10 +35,10 @@ vbar		Implemented.
 hbar		Implemented.
 num		Implemented.
 heartbeat	Implemented.
-icon		NOT IMPLEMENTED: not part of POS protocol
+icon		NOT IMPLEMENTED: not part of any POS protocol
 cursor		NOT IMPLEMENTED: not part of AEDEX protocol
 set_char	NOT IMPLEMENTED: not part of AEDEX protocol
-get_free_chars	Implemented.
+get_free_chars	NOT IMPLEMENTED: not part of AEDEX protocol
 cellwidth	Implemented.
 cellheight	Implemented.
 get_contrast	NOT IMPLEMENTED: not part of AEDEX protocol
@@ -46,8 +46,8 @@ set_contrast	NOT IMPLEMENTED: not part of AEDEX protocol
 get_brightness	NOT IMPLEMENTED: not part of AEDEX protocol
 set_brightness	NOT IMPLEMENTED: not part of AEDEX protocol
 backlight	NOT IMPLEMENTED: not part of AEDEX protocol
-output		Not implemented.
-get_key		Not implemented, no keys.
+output		NOT IMPLEMENTED: not part of any POS protocol
+get_key		Implemented for devices using a pass-through serial port connected to an RS232 terminal or keyboard.
 get_info	Implemented.
 */
 
@@ -839,67 +839,6 @@ serialPOS_num (Driver *drvthis, int x, int num)
 
 #ifdef NOTUSED
 /**
- * Get total number of custom characters available.
- * \param drvthis  Pointer to driver structure.
- * \return  Number of custom characters (always NUM_CCs).
- */
-MODULE_EXPORT int
-serialPOS_get_free_chars (Driver *drvthis)
-{
-	//PrivateData *p = drvthis->private_data;
-
-	return NUM_CCs;
-}
-
-
-/**
- * Define a custom character and write it to the LCD.
- * \param drvthis  Pointer to driver structure.
- * \param n	Custom character to define [0 - (NUM_CCs-1)].
- * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
- *		 starting from the top to bottom.
- *		 The bits in each byte represent the pixels where the LSB
- *		 (least significant bit) is the rightmost pixel in each pixel row.
- */
-MODULE_EXPORT void
-serialPOS_set_char (Driver *drvthis, int n, unsigned char *dat)
-{
-	PrivateData *p = drvthis->private_data;
-	unsigned char mask = (1 << p->cellwidth) - 1;
-	int row;
-
-	if ((n < 0) || (n >= NUM_CCs))
-		return;
-	if (!dat)
-		return;
-
-	out[2] = n;	/* Custom char to define. xxx */
-
-	for (row = 0; row < p->cellheight; row++) {
-		out[row+3] = dat[row] & mask;
-	}
-	write(p->fd, out, 11);
-}
-
-
-/**
- * Place an icon on the screen.
- * \param drvthis  Pointer to driver structure.
- * \param x	Horizontal character position (column).
- * \param y	Vertical character position (row).
- * \param icon     synbolic value representing the icon.
- * \return  Information whether the icon is handled here or needs to be handled by the server core.
- */
-MODULE_EXPORT int
-serialPOS_icon (Driver *drvthis, int x, int y, int icon)
-{
-	//PrivateData *p = drvthis->private_data;
-
-	return 0;
-}
-
-
-/**
  * Set cursor position and state.
  * \param drvthis  Pointer to driver structure.
  * \param x	Horizontal cursor position (column).
@@ -915,54 +854,79 @@ serialPOS_cursor (Driver *drvthis, int x, int y, int state)
 	 //serialPOS_cursor_goto(drvthis, x, y);
 }
 
+#endif
+
 /**
- * Get key from the LCD/VFD.
+ * Get key from a pass-through port of the POS display.
  * \param drvthis  Pointer to driver structure.
  * \return  String representation of the key.
- *
  */
+
 MODULE_EXPORT const char *
 serialPOS_get_key (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	char key = 0;
-	struct pollfd fds[1];
+	int ret;
+	char buf;
+	const char *key = NULL;
+	static struct timeval selectTimeout = { 0, 0 };
+	fd_set fdset;
 
-	/* don't query the keyboard if there are no mapped keys; see \todo above */
-	if ((p->keys == 0) && (!p->keypad_test_mode))
+	FD_ZERO(&fdset);
+	FD_SET(p->fd, &fdset);
+
+	if ((ret = select(FD_SETSIZE, &fdset, NULL, NULL, &selectTimeout)) < 0) {
+		report(RPT_DEBUG, "%s: get_key: select() failed (%s)",
+				drvthis->name, strerror(errno));
+		return NULL;
+	}
+	if (!ret) {
+		FD_SET(p->fd, &fdset);
+		return NULL;
+	}
+
+	if (!FD_ISSET(p->fd, &fdset))
 		return NULL;
 
-	/* poll for data or return */
-	fds[0].fd = p->fd;
-	fds[0].events = POLLIN;
-	fds[0].revents = 0;
-	poll(fds,1,0);
-	if (fds[0].revents == 0)
+	if ((ret = read(p->fd, &buf, 1)) < 0) {
+		report(RPT_DEBUG, "%s: get_key: read() failed (%s)",
+				drvthis->name, strerror(errno));
 		return NULL;
+	}
 
-	(void) read(p->fd, &key, 1);
-	report(RPT_DEBUG, "%s: get_key: key 0x%02X", drvthis->name, key);
+	if (ret == 1) {
 
-	if (key == '\0')
-		return NULL;
-
-	if (!p->keypad_test_mode) {
-		/* we assume standard key mapping here */
-		if ((key >= 'A') && (key <= 'A' + MAX_KEY_MAP)) {
-			return p->keymap[key-'A'];
-		}
-		else {
-			report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
+		switch (buf) {
+		case 13:
+			key = "Enter";
+			break;
+		case 65:
+			key = "Up";
+			break;
+		case 66:
+			key = "Down";
+			break;
+		case 67:
+			key = "Right";
+			break;
+		case 68:
+			key = "Left";
+			break;
+		case 8:
+			key = "Escape";
+			break;
+		default:
+			report(RPT_DEBUG, "%s get_key: illegal key 0x%02X", 
+					drvthis->name, buf);
 			return NULL;
 		}
+
+		report(RPT_DEBUG, "%s: get_key: returns %s", drvthis->name, key);
+		return key;
 	}
-	else {
-		fprintf(stdout, "serialPOS: Received character %c\n", key);
-		fprintf(stdout, "serialPOS: Press another key of your device.\n");
-	}
+
 	return NULL;
 }
 
-#endif
 
 /* EOF */

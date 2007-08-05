@@ -82,20 +82,25 @@ Feedback is welcome.
 
 <para>
 Connecting the display should consist of simply plugging it into your computer's
-RS-232 port.  Because these displays typically support full RS-232, no additional 
-wiring is needed. If your computer does not have such a port (many newer computers don't),
+RS-232 serial port.  Because these displays typically support full RS-232, no additional 
+wiring is needed.  If your computer does not have such a port (many newer computers don't),
 you can use a USB to serial adapter with the appropriate driver.
 </para>
-
+<para>
+If your display supports a <emphasis>pass-through</emphasis> function, you can connect
+an RS-232 keyboard or terminal to the pass-through port.  This will allow you to input
+keystrokes to LCDproc and control features and menus.  Use the pass-through keyboard's
+arrow, delete, and return keys by default.
+</para>
 <note>
   <para>
   If your display supports a <emphasis>pass-through</emphasis> function,
   but you do not have another RS-232 device connected to the pass-through port,
   you may experience hangs if an improperly formatted command sneaks through.
   This is because the display is waiting for the pass-through device to accept
-  the data and a blocking state is created within the device.
-  You can either connect another RS-232 device, or rewire the display to send the
-  pass-through commands back to your computer.
+  the data and a blocking state is created within the display.
+  You can either connect another RS-232 device or use a wire to jumper the CTS and RTS
+  pins together within the display.
   </para>
 </note>
 
