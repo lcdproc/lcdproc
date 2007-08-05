@@ -20,6 +20,7 @@ v.0.5dev (ongoing development)
  * MtxOrb driver: fix VFD/VKD support (Ethan Dicks)
  + new driver lis for VLSystem L.I.S VFD (Daryl Fonseca-Holt)
  * serialPOS driver: input support, cleanup (Eric Pooch)
+ * new driver shuttleVFD for USB-based Shuttle VFDs (Thien Vu)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

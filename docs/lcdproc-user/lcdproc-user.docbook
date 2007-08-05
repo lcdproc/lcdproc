@@ -46,6 +46,7 @@
   <!ENTITY sed1520 SYSTEM "drivers/sed1520.docbook">
   <!ENTITY serialPOS SYSTEM "drivers/serialPOS.docbook">
   <!ENTITY serialVFD SYSTEM "drivers/serialVFD.docbook">
+  <!ENTITY shuttleVFD SYSTEM "drivers/shuttleVFD.docbook">
   <!ENTITY sli SYSTEM "drivers/sli.docbook">
   <!ENTITY stv5730 SYSTEM "drivers/stv5730.docbook">
   <!ENTITY svga SYSTEM "drivers/svga.docbook">

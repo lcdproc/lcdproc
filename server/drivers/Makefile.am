@@ -19,13 +19,14 @@ AM_LDFLAGS = @LDSHARED@
 #LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD stv5730 svga t6963 text tyan sli ula200 xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 svga t6963 text tyan sli ula200 xosd
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @libusb_cflags@ $(AM_CFLAGS)
 hd44780_CFLAGS =     @libusb_cflags@ $(AM_CFLAGS)
 g15_CFLAGS =         @libusb_cflags@ $(AM_CFLAGS)
 picolcd_CFLAGS =     @libusb_cflags@ $(AM_CFLAGS)	
+shuttleVFD_CFLAGS =  @libusb_cflags@ $(AM_CFLAGS)
 
 CFontz_LDADD =       libLCD.a libbignum.a
 CFontz633_LDADD =    libLCD.a libbignum.a
@@ -51,6 +52,7 @@ picolcd_LDADD =      @libusb_libs@ libLCD.a libbignum.a
 pyramid_LDADD =      libLCD.a
 serialPOS_LDADD =    libLCD.a libbignum.a
 serialVFD_LDADD =    libLCD.a libbignum.a
+shuttleVFD_LDADD =   @libusb_libs@ libLCD.a libbignum.a
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 tyan_LDADD =         libLCD.a libbignum.a
@@ -96,6 +98,7 @@ sed1330_SOURCES =    lcd.h sed1330.h sed1330.c port.h lpt-port.h timing.h report
 sed1520_SOURCES =    lcd.h sed1520.c sed1520.h sed1520fm.c sed1520fm.h port.h report.h
 serialPOS_SOURCES =  lcd.h lcd_lib.h serialPOS.c serialPOS.h report.h adv_bignum.h
 serialVFD_SOURCES =  lcd.h lcd_lib.h serialVFD.c serialVFD.h report.h adv_bignum.h serialVFD_displays.c serialVFD_displays.h serialVFD_io.c serialVFD_io.h
+shuttleVFD_SOURCES = lcd.h shuttleVFD.c shuttleVFD.h report.h
 stv5730_SOURCES =    lcd.h stv5730.c stv5730.h report.h
 svga_SOURCES =       lcd.h svgalib_drv.c svgalib_drv.h report.h
 t6963_SOURCES =      lcd.h lcd_lib.h t6963.c t6963.h t6963_font.h report.h

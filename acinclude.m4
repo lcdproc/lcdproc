@@ -8,15 +8,15 @@ AC_ARG_ENABLE(drivers,
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,]
 	[                    EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,]
 	[                    irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,]
-	[                    mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330]
-	[                    sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,]
-	[                    tyan,ula200,xosd]
+	[                    mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,]
+	[                    sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,]
+	[                    t6963,text,tyan,ula200,xosd]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -337,6 +337,14 @@ dnl			else
 		serialVFD)
 			DRIVERS="$DRIVERS serialVFD${SO}"
 			actdrivers=["$actdrivers serialVFD"]
+			;;
+		shuttleVFD)
+			if test "$enable_libusb" = yes ; then
+				DRIVERS="$DRIVERS shuttleVFD${SO}"
+				actdrivers=["$actdrivers shuttleVFD"]
+			else
+				AC_MSG_WARN([The shuttleVFD driver needs the libusb library.])
+			fi
 			;;
 		sli)
 			DRIVERS="$DRIVERS sli${SO}"

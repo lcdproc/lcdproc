@@ -222,6 +222,9 @@ SED1330/SED1335 (aka S1D13300/S1D13305) based graphical displays
 .B serialVFD
 NEC (FIPC8367 based) and FUTABA VFDs
 .TP
+.B shuttleVFD
+Shuttle VFD (USB-based)
+.TP
 .B sli
 Wirz SLI driver (unknown)
 .TP
