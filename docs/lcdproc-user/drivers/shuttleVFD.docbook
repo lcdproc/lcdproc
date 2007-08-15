@@ -1,0 +1,48 @@
+<sect1 id="shuttleVFD-howto">
+<title>The shuttleVFD Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays that use the
+ShuttleVFD display.
+</para>
+
+<para>
+The shuttleVFD drivers works with Shuttle Computer Group VFDs. These VFDs are
+found on various Shuttle XPC models. A partial list include Shuttle M1000,
+Shuttle M2000, and Shuttle G5 3300m.
+</para>
+
+<para>
+The display itself is a 20x1 character display. Each character cell is 5x8
+pixels. It also has smaller row of specialized icons: clock, radio, music,
+CD/DVD, television, camera, rewind, record, play, pause, stop, fast-forward,
+reverse, repeat, mute, and a series of volume bars. Some or all of the icons
+can be displayed.
+</para>
+
+<para>
+The display is driven by Princeton Technologies PT6314 VFD Controller according
+to the sources cited in the driver source. The PT6314 is probably driven off
+the Serial Peripheral Interface of a Cypress CY7C63723C low-speed USB
+controller that is connected to the mainboard via USB. Data is written to the
+Cypress CY7C63723C in bytes. The specifications for both the PT6314 and
+CY7C63723C are available, but not used when writing this driver. It seems that
+much more advanced uses are available if the specifications were to be used,
+specifically pixel addressing.
+</para>
+
+<para>
+A current limitation of the driver is that it sleeps for some number of
+microseconds after writing to the display. If data is written to the display
+too quickly, it is simply discarded therefore the driver must sleep. The sleep
+time was experimentally found on a Shuttle M1000 machine and is hard-coded into
+the driver. This maybe different for other machines and configurations. This
+may occassionally cause the display to flicker or refresh unevenly across the
+display. It seems that the PT6314 can signal when it has read the data from the
+buffer, but this functionality is not used.
+</para>
+
+<para>
+There are no configuration options available for this display.
+</para>
+</sect1>
