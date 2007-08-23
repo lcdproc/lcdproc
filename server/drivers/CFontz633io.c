@@ -550,7 +550,7 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 	*/
 	GetByte(&receivebuffer);
 	//debug(RPT_INFO, "%s: wrong CheckSum: computed %04x / real %04x",
-  		__FUNCTION__, testcrc, in->crc);
+  	//	__FUNCTION__, testcrc, in->crc);
 	return(TRY_AGAIN);
 }
 
