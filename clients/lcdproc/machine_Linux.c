@@ -15,6 +15,10 @@
 #include <sys/statvfs.h>
 #include <errno.h>
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -47,7 +51,6 @@
 #include "main.h"
 #include "mode.h"
 #include "machine.h"
-#include "config.h"
 #include "shared/LL.h"
 
 
