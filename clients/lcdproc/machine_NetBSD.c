@@ -48,7 +48,7 @@
 #include <sys/ucred.h>
 #include <sys/mount.h>
 #include <sys/dkstat.h>
-#include <sys/sched.h>
+#include <sched.h>
 #include <uvm/uvm_extern.h>
 #include <machine/apmvar.h>
 #include <errno.h>

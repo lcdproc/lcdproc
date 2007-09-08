@@ -22,6 +22,7 @@ v.0.5dev (ongoing development)
  * serialPOS driver: input support, cleanup (Eric Pooch)
  + new driver shuttleVFD for USB-based Shuttle VFDs (Thien Vu)
  * enable building lcdproc client on FreeBSD AMD64 platform (M. Dolze)
+ * Autoconf fixes for Net/FreeBSD (M. Dolze)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

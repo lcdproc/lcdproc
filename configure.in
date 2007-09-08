@@ -107,9 +107,16 @@ AC_CHECK_LIB(kvm, kvm_open,[
 ])
 
 dnl NetBSD, OpenBSD and FreeBSD
-AC_CHECK_HEADERS(sched.h sys/sched.h machine/cpufunc.h sys/types.h machine/pio.h machine/sysarch.h sys/cpuvar.h machine/apm_bios.h)
+AC_CHECK_HEADERS(sched.h sys/types.h machine/pio.h machine/sysarch.h sys/cpuvar.h machine/apm_bios.h)
 ETR_SYSV_IPC
 ETR_UNION_SEMUN
+
+dnl machine/cpufunc.h needs additional header on FreeBSD
+AC_CHECK_HEADERS([machine/cpufunc.h], [], [],
+[[#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+]])
 
 dnl sched_setscheduler on OpenBSD
 AC_CHECK_FUNCS(sched_setscheduler)
