@@ -147,6 +147,18 @@ lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
 unsigned char
 lcd2usb_HD44780_scankeypad(PrivateData *p)
 {
+  unsigned char       buffer[2];
+  int                 nBytes;
+
+  /* send control request and accept return value */
+  nBytes = usb_control_msg(lcd2usb, 
+	   USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, 
+	   LCD2USB_GET_KEYS, 0, 0, (char *) buffer, sizeof(buffer), 1000);
+
+  if (nBytes != -1) {
+    return buffer[0];
+  }
+
   return 0;
 }
 
