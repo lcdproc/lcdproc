@@ -29,6 +29,7 @@
 #define DEFAULT_SPEED		9600
 #define DEFAULT_BRIGHTNESS	140
 #define DEFAULT_SIZE		"20x4"
+#define DEFAULT_PARITY		0
 
 MODULE_EXPORT int  NoritakeVFD_init (Driver *drvthis);
 MODULE_EXPORT void NoritakeVFD_close (Driver *drvthis);

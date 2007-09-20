@@ -24,7 +24,8 @@ v.0.5dev (ongoing development)
  * enable building lcdproc client on FreeBSD AMD64 platform (M. Dolze)
  * Autoconf fixes for Net/FreeBSD (M. Dolze)
  * fixes for the lcpdroc client iface screen on *BSD (M.Dolze)
- * key support for hd44780/lcd2usb (M. Dolze)
+ + key support for hd44780/lcd2usb (M. Dolze)
+ + option Priority for NoritakeVFD (idea: Richard Muratti)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

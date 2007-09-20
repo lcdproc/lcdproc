@@ -53,6 +53,7 @@ typedef struct driver_private_data {
 	char device[200];
 	int fd;
 	int speed;
+	int parity;
 	/* dimensions */
 	int width, height;
 	int cellwidth, cellheight;
@@ -150,12 +151,23 @@ NoritakeVFD_init (Driver *drvthis)
 	else if (tmp == 115200) p->speed = B115200;
 
 
+	/* Which parity */
+	tmp = drvthis->config_get_int(drvthis->name, "Parity", 0, DEFAULT_PARITY);
+	if ((tmp != 0) && (tmp != 1) && (tmp != 2) ) {
+		report(RPT_WARNING, "%s: Parity must be 0(=none), 1(=odd), 2(=even); using default %d",
+			drvthis->name, DEFAULT_PARITY);
+		tmp = DEFAULT_PARITY;
+	}
+	if (tmp != 0)
+	  p->parity = (tmp & 1) ? (PARENB | PARODD) : PARENB;
+
+
 	/* Reboot display? */
 	reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
 
 	/* Set up io port correctly, and open it...*/
 	debug(RPT_DEBUG, "%s: Opening device: %s", __FUNCTION__, p->device);
-	p->fd = open (p->device, O_RDWR | O_NOCTTY | O_NDELAY);
+	p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
 
 	if (p->fd == -1) {
 		report(RPT_ERR, "%s: open() of %s failed (%s)", drvthis->name, p->device, strerror(errno));
@@ -164,10 +176,13 @@ NoritakeVFD_init (Driver *drvthis)
 
 	tcgetattr(p->fd, &portset);
 
-	// We use RAW mode
+	// We use RAW mode (with varying parity)
 #ifdef HAVE_CFMAKERAW
 	// The easy way
 	cfmakeraw(&portset);
+	// set parity the way we want it
+	portset.c_cflag &= ~(PARENB | PARODD);
+	portset.c_cflag |= p->parity;
 #else
 	// The hard way
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
@@ -175,8 +190,8 @@ NoritakeVFD_init (Driver *drvthis)
 	portset.c_oflag &= ~OPOST;
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-	portset.c_cflag |= CS8 | CREAD | CLOCAL;
-#endif
+	portset.c_cflag |= CS8 | CREAD | CLOCAL | p->parity;
+#endif                                           
 
 	// Set port speed
 	cfsetospeed(&portset, p->speed);
@@ -356,7 +371,7 @@ NoritakeVFD_autoscroll (Driver *drvthis, int on)
 }
 
 /////////////////////////////////////////////////////////////////
-// Get rid of the blinking curson
+// Get rid of the blinking cursor
 //
 static void
 NoritakeVFD_hidecursor (Driver *drvthis)

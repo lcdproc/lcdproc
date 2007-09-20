@@ -70,6 +70,24 @@ This section talks about using LCDproc with text mode VFD displays from
 
 <varlistentry>
   <term>
+    <command>Parity=</command>
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>0</emphasis></literal></arg>
+      <arg choice="plain"><literal>1</literal></arg>
+      <arg choice="plain"><literal>2</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the parity for communication with the device to even parity (<literal>2</literal>),
+    odd parity (<literal>1</literal>) or no parity (<literal>0</literal>).
+    If not given, it defaults to <literal>0</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>Reboot=</command>
     <arg choice="plain">
     <group choice="req">
