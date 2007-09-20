@@ -1,10 +1,8 @@
 <sect1 id="shuttleVFD-howto">
 <title>The shuttleVFD Driver</title>
 
-<para>
-This section talks about using LCDproc with LCD displays that use the
-ShuttleVFD display.
-</para>
+<sect2 id="shuttleVFD-features">
+<title>Features</title>
 
 <para>
 The shuttleVFD drivers works with Shuttle Computer Group VFDs. These VFDs are
@@ -42,7 +40,20 @@ display. It seems that the PT6314 can signal when it has read the data from the
 buffer, but this functionality is not used.
 </para>
 
+</sect2>
+
+<sect2 id="shuttleVFD-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="shuttleVFD-config-section">
+<title>[shuttleVFD]</title>
+
 <para>
 There are no configuration options available for this display.
 </para>
+
+</sect3>
+
+</sect2>
+
 </sect1>
