@@ -380,7 +380,6 @@ int machine_get_uptime(double *up, double *idle)
 /* Get network statistics */
 int machine_get_iface_stats (IfaceInfo *interface)
 {
-	static int     first_time = 1;	/* is it first time we call this function? */
 	struct ifaddrs *ifa, *ifa_ptr;
 	struct if_data *ifd;
 
@@ -397,30 +396,31 @@ int machine_get_iface_stats (IfaceInfo *interface)
 			(ifa_ptr->ifa_addr->sa_family == AF_LINK)) {
 
 			ifd = (struct if_data *)ifa_ptr->ifa_data;
-			interface->last_online = time(NULL);	/* save actual time */
-
-			if ((ifa_ptr->ifa_flags & IFF_UP) == IFF_UP)
-				interface->status = up;	/* is up */
 
 			interface->rc_byte = ifd->ifi_ibytes;
 			interface->tr_byte = ifd->ifi_obytes;
 			interface->rc_pkt = ifd->ifi_ipackets;
 			interface->tr_pkt = ifd->ifi_opackets;
 
-			if (first_time) {
+			if (interface->last_online == 0) {
 				interface->rc_byte_old = interface->rc_byte;
 				interface->tr_byte_old = interface->tr_byte;
 				interface->rc_pkt_old = interface->rc_pkt;
 				interface->tr_pkt_old = interface->tr_pkt;
-				first_time = 0;	/* now it isn't first time */
 			}
-			return 1;
+
+			if ((ifa_ptr->ifa_flags & IFF_UP) == IFF_UP) {
+				interface->status = up;			/* is up */
+				interface->last_online = time(NULL);	/* save actual time */
+			}
+
+			return (TRUE);
 		}
 	}
 	freeifaddrs(ifa);
 
 	/* if we are here there is no interface with the given name */
-	return 0;
+	return (TRUE);
 }
 
 #endif /* __NetBSD__ */

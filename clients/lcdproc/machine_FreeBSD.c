@@ -439,7 +439,6 @@ static int swapmode(int *retavail, int *retfree)
  */
 int machine_get_iface_stats (IfaceInfo *interface)
 {
-	static int      first_time = 1;	/* is it first time we call this function? */
 	int             rows;
 	int             name[6] = {CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_IFDATA, 0, IFDATA_GENERAL};
 	size_t          len;
@@ -461,31 +460,32 @@ int machine_get_iface_stats (IfaceInfo *interface)
 			}
 			/* check if its interface name matches */
 			if (strcmp(ifmd.ifmd_name, interface->name) == 0) {
-				interface->last_online = time(NULL);	/* save actual time */
-
-				if ((ifmd.ifmd_flags & IFF_UP) == IFF_UP)
-					interface->status = up;	/* is up */
 
 				interface->rc_byte = ifmd.ifmd_data.ifi_ibytes;
 				interface->tr_byte = ifmd.ifmd_data.ifi_obytes;
 				interface->rc_pkt = ifmd.ifmd_data.ifi_ipackets;
 				interface->tr_pkt = ifmd.ifmd_data.ifi_opackets;
 
-				if (first_time) {
+				if (interface->last_online == 0) {
 					interface->rc_byte_old = interface->rc_byte;
 					interface->tr_byte_old = interface->tr_byte;
 					interface->rc_pkt_old = interface->rc_pkt;
 					interface->tr_pkt_old = interface->tr_pkt;
-					first_time = 0;	/* now it isn't first time */
 				}
-				return 1;
+
+				if ((ifmd.ifmd_flags & IFF_UP) == IFF_UP) {
+					interface->status = up;			/* is up */
+					interface->last_online = time(NULL);	/* save actual time */
+				}
+
+				return (TRUE);
 			}
 		}
 		/* if we are here there is no interface with the given name */
-		return 0;
+		return (TRUE);
 	} else {
 		perror("read sysctlbyname");
-		return 0;
+		return (FALSE);
 	}
 } /* get_iface_stats() */
 
