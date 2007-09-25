@@ -46,6 +46,19 @@ This section talks about using LCDproc with text mode VFD displays from
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
+    Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>OffBrightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
+    This value is used when the display is normally
+    switched off in case LCDd is inactive
   </para></listitem>
 </varlistentry>
 
@@ -97,6 +110,7 @@ This section talks about using LCDproc with text mode VFD displays from
     </arg>
   </term>
   <listitem><para>
+    Reinitialize the VFD [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
   </para></listitem>
 </varlistentry>
 </variablelist>

@@ -1,9 +1,33 @@
 /*  This is the LCDproc driver for Noritake VFD Device CU20045SCPB-T28A
 
     Copyright (C) 2005 Simon Funke
+    Copyright (C) 2007 Richard Muratti ricacho@gmail.com
+    Copyright (C) 2007 Peter Marschall
+
     This source Code is based on CFontz Driver of this package.
 
     2005-08-01 Version 0.1: mostly everything should work (vbar, hbar never tested)
+
+    2007-09-16 Version 0.2: 
+     - Fixed vbar & hbar - Allowed for displays with 2 custom characters
+     - Fixed cursor off  - 16H - Data sheet for CU20045SCPB has error -> Cursor Off 14,16,17H
+     - Tested with CU40026SCPB-T20A - 40x2 - Hardware Defaults to 19200 8E1
+     - Added new config parameter [Parity] to set serial data parity 0(none),1(odd),2(even)
+     - Added config parameter OffBrightness
+     - added support for big numbers
+       
+       CU40026SCPB-T20A  SOFTWARE COMMANDS
+       Back Space              08H     International Font              18H
+       Horizontal Tab          09H     Katakana Font                   19H
+       Line Feed               0AH     Escape                          1BH
+       Form Feed               0CH             Send User Font          +43H
+       Carriage Return         0DH             Position cursor         +48H
+       Clear Display           0EH             Software Reset          +49H
+       Increment Write Mode    11H             Luminance               +4CH
+       Vertical Scroll Mode    12H             Flickerless Write       +53H
+       Underline Cursor On     14H             Cursor Blink Speed      +54H
+       5x7 Block Cursor On     15H     Character Data                  20H+
+       Cursor Off              16H     User Character Data             00H+ 
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,18 +59,20 @@
 
 #include "lcd.h"
 #include "NoritakeVFD.h"
-
 #include "report.h"
 #include "lcd_lib.h"
+#include "adv_bignum.h"
+
 
 /* Constants for userdefchar_mode */
-#define NUM_CCs		8 /* max. number of custom characters */
+#define NUM_CCs		2 /* max. number of custom characters */
 
 typedef enum {
 	standard,	/* only char 0 is used for heartbeat */
 	vbar,		/* vertical bars */
 	hbar,		/* horizontal bars */
 	custom,		/* custom settings */
+	bignum,		/* big numbers */
 } CGmode;
 
 typedef struct driver_private_data {
@@ -63,6 +89,7 @@ typedef struct driver_private_data {
 	/* defineable characters */
 	CGmode ccmode;
 	int brightness;
+	int offbrightness;
 } PrivateData;
 
 /* Vars for the server core */
@@ -71,18 +98,20 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "NoritakeVFD_";
 
+
 /* Internal functions */
 static void NoritakeVFD_autoscroll (Driver *drvthis, int on);
 static void NoritakeVFD_hidecursor (Driver *drvthis);
 static void NoritakeVFD_reboot (Driver *drvthis);
-static void NoritakeVFD_init_vbar (Driver *drvthis);
-static void NoritakeVFD_init_hbar (Driver *drvthis);
-static void NoritakeVFD_draw_frame (Driver *drvthis, unsigned char *dat);
-//static void NoritakeVFD_heartbeat (Driver *drvthis, int type);
+static void NoritakeVFD_cursor_goto (Driver *drvthis, int x, int y);
 
 
-// Opens com port and sets baud correctly...
-//
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0   Success.
+ * \retval <0  Error.
+ */
 MODULE_EXPORT int
 NoritakeVFD_init (Driver *drvthis)
 {
@@ -136,6 +165,15 @@ NoritakeVFD_init (Driver *drvthis)
 	}
 	p->brightness = tmp;
 
+	/* Which backlight-off "brightness" */
+	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_OFFBRIGHTNESS);
+		tmp = DEFAULT_OFFBRIGHTNESS;
+	}
+	p->offbrightness = tmp;
 
 	/* Which speed */
 	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
@@ -150,7 +188,6 @@ NoritakeVFD_init (Driver *drvthis)
 	else if (tmp == 19200) p->speed = B19200;
 	else if (tmp == 115200) p->speed = B115200;
 
-
 	/* Which parity */
 	tmp = drvthis->config_get_int(drvthis->name, "Parity", 0, DEFAULT_PARITY);
 	if ((tmp != 0) && (tmp != 1) && (tmp != 2) ) {
@@ -159,7 +196,7 @@ NoritakeVFD_init (Driver *drvthis)
 		tmp = DEFAULT_PARITY;
 	}
 	if (tmp != 0)
-	  p->parity = (tmp & 1) ? (PARENB | PARODD) : PARENB;
+		p->parity = (tmp & 1) ? (PARENB | PARODD) : PARENB;
 
 
 	/* Reboot display? */
@@ -223,8 +260,8 @@ NoritakeVFD_init (Driver *drvthis)
 		sleep(4);
 	}
 	NoritakeVFD_hidecursor(drvthis);
-	NoritakeVFD_set_brightness(drvthis, 1, p->brightness);
 	NoritakeVFD_autoscroll(drvthis, 0);
+	NoritakeVFD_set_brightness(drvthis, 1, p->brightness);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -232,9 +269,11 @@ NoritakeVFD_init (Driver *drvthis)
 
 }
 
-/////////////////////////////////////////////////////////////////
-// Clean-up
-//
+
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 NoritakeVFD_close (Driver *drvthis)
 {
@@ -253,8 +292,11 @@ NoritakeVFD_close (Driver *drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
-/*
- * Returns the display width in characters
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
  */
 MODULE_EXPORT int
 NoritakeVFD_width (Driver *drvthis)
@@ -265,8 +307,10 @@ NoritakeVFD_width (Driver *drvthis)
 }
 
 
-/*
- * Returns the display height in characters
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
  */
 MODULE_EXPORT int
 NoritakeVFD_height (Driver *drvthis)
@@ -277,8 +321,10 @@ NoritakeVFD_height (Driver *drvthis)
 }
 
 
-/*
- * Returns the width of a character in pixels
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
 NoritakeVFD_cellwidth (Driver *drvthis)
@@ -289,8 +335,10 @@ NoritakeVFD_cellwidth (Driver *drvthis)
 }
 
 
-/*
- * Returns the height of a character in pixels
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
 NoritakeVFD_cellheight (Driver *drvthis)
@@ -301,394 +349,35 @@ NoritakeVFD_cellheight (Driver *drvthis)
 }
 
 
+/**
+ * Flush data on screen to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 NoritakeVFD_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	NoritakeVFD_draw_frame(drvthis, p->framebuf);
-}
-
-
-/////////////////////////////////////////////////////////////////
-// Prints a character on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
-MODULE_EXPORT void
-NoritakeVFD_chr (Driver *drvthis, int x, int y, char c)
-{
-	PrivateData *p = drvthis->private_data;
-
-	y--;
-	x--;
-	/*if (c < 32 && (int)c >= 0)
-		c += 128;*/
-	p->framebuf[(y * p->width) + x ] = c;
-	//NoritakeVFD->framebuf[ 19 ] = c;
-}
-
-/////////////////////////////////////////////////////////////////
-/*
- * Retrieves brightness
- */
-MODULE_EXPORT int
-NoritakeVFD_get_brightness(Driver *drvthis, int state)
-{
-	PrivateData *p = drvthis->private_data;
-
-	return p->brightness;
-}
-
-/////////////////////////////////////////////////////////////////
-// Changes screen brightness (0-255; 140 seems good)
-//
-MODULE_EXPORT void
-NoritakeVFD_set_brightness (Driver *drvthis, int state, int brightness)
-{
-	PrivateData *p = drvthis->private_data;
-	int realbrightness = -1;
-	char out[5];
-
-	if (brightness > 0) {
-		realbrightness = (int) (140 * 100 / 255);
-		snprintf(out, sizeof(out), "%c%c%c", 0x1B, 'L', brightness);
-		write(p->fd, out, 3);
-	}
-	p->brightness = brightness;
-}
-
-
-/////////////////////////////////////////////////////////////////
-// Toggle the built-in automatic scrolling feature
-//
-static void
-NoritakeVFD_autoscroll (Driver *drvthis, int on)
-{
-	PrivateData *p = drvthis->private_data;
-	char out[4];
-
-	snprintf(out, sizeof(out), "%c", (on) ? 0x12 : 0x11);
-	write(p->fd, out, 1);
-}
-
-/////////////////////////////////////////////////////////////////
-// Get rid of the blinking cursor
-//
-static void
-NoritakeVFD_hidecursor (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-	char out[4];
-
-	snprintf(out, sizeof(out), "%c", 0x14);
-	write(p->fd, out, 1);
-}
-
-/////////////////////////////////////////////////////////////////
-// Reset the display bios
-//
-static void
-NoritakeVFD_reboot (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-	char out[4];
-
-	snprintf(out, sizeof(out), "%c%c", 0x1B, 'I');
-	write(p->fd, out, 2);
-}
-
-/////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before NoritakeVFD->vbar()
-//
-static void
-NoritakeVFD_init_vbar (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-	};
-	char b[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char c[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char d[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char e[] = {
-		0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-	char f[] = {
-		0, 0, 0, 0, 0,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-		1, 1, 1, 1, 1,
-	};
-
-	if (p->ccmode != hbar) {
-		p->ccmode = hbar;
-		NoritakeVFD_set_char(drvthis, 2, a);
-		NoritakeVFD_set_char(drvthis, 3, b);
-		NoritakeVFD_set_char(drvthis, 4, c);
-		NoritakeVFD_set_char(drvthis, 5, d);
-		NoritakeVFD_set_char(drvthis, 6, e);
-		NoritakeVFD_set_char(drvthis, 7, f);
-	}
-}
-
-/////////////////////////////////////////////////////////////////
-// Inits horizontal bars...
-//
-static void
-NoritakeVFD_init_hbar (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
-	char a[] = {
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0,
-		1, 0, 0, 0, 0, 
-		1, 0, 0, 0, 0, 
-		1, 0, 0, 0, 0, 
-	};
-	char b[] = {
-		1, 1, 0, 0, 0, 
-		1, 1, 0, 0, 0, 
-		1, 1, 0, 0, 0, 
-		1, 1, 0, 0, 0, 
-		1, 1, 0, 0, 0, 
-		1, 1, 0, 0, 0, 
-		1, 1, 0, 0, 0, 
-	};
-	char c[] = {
-		1, 1, 1, 0, 0, 
-		1, 1, 1, 0, 0, 
-		1, 1, 1, 0, 0, 
-		1, 1, 1, 0, 0, 
-		1, 1, 1, 0, 0, 
-		1, 1, 1, 0, 0, 
-		1, 1, 1, 0, 0, 
-	};
-	char d[] = {
-		1, 1, 1, 1, 0, 
-		1, 1, 1, 1, 0, 
-		1, 1, 1, 1, 0, 
-		1, 1, 1, 1, 0, 
-		1, 1, 1, 1, 0, 
-		1, 1, 1, 1, 0, 
-		1, 1, 1, 1, 0, 
-	};
-
-	if (p->ccmode != hbar) {
-		p->ccmode = hbar;
-		NoritakeVFD_set_char(drvthis, 2, a);
-		NoritakeVFD_set_char(drvthis, 3, b);
-		NoritakeVFD_set_char(drvthis, 4, c);
-		NoritakeVFD_set_char(drvthis, 5, d);
-	}
-}
-
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar...
-//
-MODULE_EXPORT void
-NoritakeVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-/*	PrivateData *p = drvthis->private_data;
-	char map[8] = { 32, 1, 2, 3, 4, 5, 6, 255 };
-
-	int y;
-	for (y = p->height; y > 0 && len > 0; y--) {
-		if (len >= p->cellheight)
-			NoritakeVFD_chr (drvthis, x, y, 255);
-		else
-			NoritakeVFD_chr (drvthis, x, y, map[len]);
-
-		len -= p->cellheight;
-	}*/
-
-	NoritakeVFD_init_vbar(drvthis);
-	//lib_vbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
-}
-
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-//
-MODULE_EXPORT void
-NoritakeVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-/*	PrivateData *p = drvthis->private_data;
-	char map[5] = { 32, 1, 2, 3, 4 };
-
-	for (; x <= p->width && len > 0; x++) {
-		if (len >= p->cellwidth)
-			NoritakeVFD_chr (drvthis, x, y, map[4]);
-		else
-			NoritakeVFD_chr (drvthis, x, y, map[len]);
-
-		len -= p->cellwidth;
-
-	}*/
-
-	NoritakeVFD_init_hbar(drvthis);
-	//lib_hbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
-}
-
-
-/////////////////////////////////////////////////////////////////
-// Sets a custom character from 0-7...
-//
-// For input, value 1 mean "on" and 0 is "off".
-//
-// The input is just an array of characters...
-//
-MODULE_EXPORT void
-NoritakeVFD_set_char (Driver *drvthis, int n, char *dat)
-{
-	PrivateData *p = drvthis->private_data;
-	char out[4];
-	int byte, bit;
-	char letter;
-
-	if (n < 0 || n > 7)
-		return;
-	if (!dat)
-		return;
-
-	snprintf(out, sizeof(out), "%c%c%c", 0x1B, 'C', n);
-	write(p->fd, out, 3);
-
-	for (byte = 0; byte < 5; byte++) {
-		letter = dat[(byte+1) * 8 - 1];
-		for (bit = 7; bit > 0; bit--) {
-			letter <<= 1;
-			if ((byte * 8) + bit < 36)
-				letter |= dat[(byte * 8) - 1 + bit];
-		}
-		write(p->fd, &letter, 1);
-	}
-}
-
-/*
- * Places an icon on screen
- */
-MODULE_EXPORT int
-NoritakeVFD_icon (Driver *drvthis, int x, int y, int icon)
-{
-	PrivateData *p = drvthis->private_data;
-	char icons[2][5 * 7] = {
-		{
-		 0, 0, 0, 0, 0, 		  // Empty Heart
-		 0, 1, 0, 1, 0, 
-		 1, 1, 1, 1, 1, 
-		 1, 1, 1, 1, 1, 
-		 1, 1, 1, 1, 1, 
-		 0, 1, 1, 1, 0, 
-		 0, 0, 1, 0, 0, 
-		 },
-
-		{
-		 0, 0, 0, 0, 0, 		  // Filled Heart
-		 0, 1, 0, 1, 0, 
-		 1, 0, 1, 0, 1, 
-		 1, 0, 0, 0, 1, 
-		 1, 0, 0, 0, 1, 
-		 0, 1, 0, 1, 0, 
-		 0, 0, 1, 0, 0, 
-		},
-	};
-
-	/* Yes we know, this is a VERY BAD implementation :-) */
-	switch (icon) {
-		case ICON_HEART_FILLED:
-		        p->ccmode = custom;
-			NoritakeVFD_set_char(drvthis, 0, icons[1]);
-			NoritakeVFD_chr(drvthis, x, y, 0);
-			break;
-		case ICON_HEART_OPEN:
-		        p->ccmode = custom;
-			NoritakeVFD_set_char(drvthis, 0, icons[0]);
-			NoritakeVFD_chr(drvthis, x, y, 0);
-			break;
-		default:
-			return -1; /* Let the core do other icons */
-	}
-	return 0;
-}
-
-/////////////////////////////////////////////////////////////
-// Blasts a single frame onscreen, to the lcd...
-//
-// Input is a character array, sized NoritakeVFD->width*NoritakeVFD->height
-//
-static void
-NoritakeVFD_draw_frame (Driver *drvthis, unsigned char *dat)
-{
-	PrivateData *p = drvthis->private_data;
-	char out[p->width * p->height];
-	unsigned char *row, *b_row;
 	int i;
 
-	if (!dat)
-		return;
-
 	for (i = 0; i < p->height; i++) {
-		row = dat + (p->width * i);
-		b_row = p->backingstore + (p->width * i);
+		int offset = i * p->width;
 
-		/* Backing-store implementation.  If it's already
-		 * on the screen, don't put it there again
-		 */
-		if (memcmp(b_row, row, p->width) == 0)
-			continue;
+		/* Backing-store based implementation:
+		 * Only put it on the screen if it's not already there */
+		if (memcmp(p->backingstore+offset, p->framebuf+offset, p->width) != 0) {
+			memcpy(p->backingstore+offset, p->framebuf+offset, p->width);
 
-        	/* else, write out the entire row */
-		memcpy(b_row, row, p->width);
-		int pos = i * p->width;
-		snprintf(out, sizeof(out), "%c%c%c", 0x1B, 'H', pos);
-		write(p->fd, out, 3);
-		write(p->fd, row, p->width);
+			NoritakeVFD_cursor_goto(drvthis, 1, i+1);
+			write(p->fd, p->framebuf+offset, p->width);
+		}	
 	}
-
 }
 
-/////////////////////////////////////////////////////////////////
-// Clears the LCD screen
-//
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 NoritakeVFD_clear (Driver *drvthis)
 {
@@ -698,10 +387,35 @@ NoritakeVFD_clear (Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Prints a string on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
+MODULE_EXPORT void
+NoritakeVFD_chr (Driver *drvthis, int x, int y, char c)
+{
+	PrivateData *p = drvthis->private_data;
+
+	y--;
+	x--;
+
+	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+		p->framebuf[(y * p->width) + x] = c;
+}
+
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
 MODULE_EXPORT void
 NoritakeVFD_string (Driver *drvthis, int x, int y, const char string[])
 {
@@ -710,43 +424,426 @@ NoritakeVFD_string (Driver *drvthis, int x, int y, const char string[])
 
 	x--;
 	y--;
-	for (i = 0; string[i] != '\0'; i++) {
-		// Check for buffer overflows...
-		if ((y * p->width) + x + i > (p->width * p->height))
-			break;
-		p->framebuf[(y * p->width) + x + i] = string[i];
+
+	if ((y < 0) || (y >= p->height))
+		return;
+
+	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
+		if (x >= 0)     // no write left of left border
+			p->framebuf[(y * p->width) + x] = string[i];
 	}
 }
-/*
-/////////////////////////////////////////////////////////////
-// Does the heartbeat...
-//
-static void
-NoritakeVFD_heartbeat (Driver *drvthis, int type)
+
+
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
+MODULE_EXPORT void
+NoritakeVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
-	static int timer = 0;
-	int whichIcon;
-	static int saved_type = HEARTBEAT_ON;
+	int pixels = ((long) 2 * len * p->cellheight) * promille / 2000;
+        int pos;
+	static unsigned char half[] =
+		{ b_______,
+		  b_______,
+		  b_______,
+		  b_______,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX };
 
-	NoritakeVFD_icon(drvthis, 0, 0);
-	NoritakeVFD_icon(drvthis, 1, 1);
+	if (p->ccmode != vbar) {
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user-defined characters",
+				drvthis->name);
+			return;
+		}
 
-	if (type)
-		saved_type = type;
+		p->ccmode = vbar;
 
-	if (type == HEARTBEAT_ON) {
-		// Set this to pulsate like a real heart beat...
-		whichIcon = (! ((timer + 4) & 5));
+		/* define half full block at position 1 */
+		NoritakeVFD_set_char(drvthis, 1, half);
+	}	
 
-		// Put character on screen...
-		NoritakeVFD_chr(p->width, 1, whichIcon);
+	for (pos = 0; pos < len; pos++) {
+		/* if pixels > 2/3 cellheight [in integer arithmetics] ... */
+		if (3 * pixels >= p->cellheight * 2) {
+	       		/* ... write a full block to the screen */
+			NoritakeVFD_chr(drvthis, x+pos, y, 0xBE);
+		}
+		/* if pixels > 1/3 cellheight [in integer arithmetics] ... */
+		else if (3 * pixels > p->cellheight * 1) {
+			/* ... write a partial block */
+			NoritakeVFD_chr(drvthis, x+pos, y, 1);
+			break;
+		}
+		else {
+			; // write nothing (not even a space)
+		}
+		pixels -= p->cellheight;
+	}
+}
 
-		// change display...
-		NoritakeVFD_flush ();
+
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
+MODULE_EXPORT void
+NoritakeVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+{
+	PrivateData *p = drvthis->private_data;
+	int pixels = ((long) 2 * len * p->cellwidth) * promille / 2000;
+        int pos;
+	static unsigned char half[] =
+		{ b__XX___,
+		  b__XX___,
+		  b__XX___,
+		  b__XX___,
+		  b__XX___,
+		  b__XX___,
+		  b__XX___ };
+
+	if (p->ccmode != hbar) {
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
+				drvthis->name);
+			return;
+		}
+
+		p->ccmode = hbar;
+
+		/* define half full block at position 1 */
+		NoritakeVFD_set_char(drvthis, 1, half);
+	}	
+
+        for (pos = 0; pos < len; pos++) {
+		/* if pixels > 2/3 cellwidth [in integer arithmetics] ... */
+                if (3 * pixels >= p->cellwidth * 2) {
+                        /* ... write a full block to the screen */
+                        NoritakeVFD_chr(drvthis, x+pos, y, 0xBE);
+                }
+		/* if pixels > 1/3 cellwidth [in integer arithmetics] ... */
+                else if (3 * pixels > p->cellwidth * 1) {
+                        /* ... write a partial block */
+                        NoritakeVFD_chr(drvthis, x+pos, y, 1);
+                        break;
+                }
+		else {
+			; // write nothing (not even a space)
+		}
+		pixels -= p->cellwidth;
+	}
+}
+
+
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
+ */
+MODULE_EXPORT void
+NoritakeVFD_num(Driver *drvthis, int x, int num)
+{
+PrivateData *p = drvthis->private_data;
+int do_init = 0;
+
+	if ((num < 0) || (num > 10))
+		return;
+
+	if (p->ccmode != bignum) {
+		if (p->ccmode != standard) {
+			/* Not supported (yet) */
+			report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
+					drvthis->name);
+			return;
+		}
+
+		p->ccmode = bignum;
+
+		do_init = 1;
 	}
 
-	timer++;
-	timer &= 0x0f;
+	// Lib_adv_bignum does everything needed to show the bignumbers.
+	lib_adv_bignum(drvthis, x, num, 0, do_init);
+}
+
+
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
+ */
+MODULE_EXPORT int
+NoritakeVFD_icon (Driver *drvthis, int x, int y, int icon)
+{
+	//PrivateData *p = drvthis->private_data;
+	static unsigned char heart_open[] =
+		{ b_______,
+		  b___X_X_,
+		  b__X_X_X,
+		  b__X___X,
+		  b__X___X,
+		  b___X_X_,
+		  b____X__ };
+	static unsigned char heart_filled[] =
+		{ b_______,
+		  b___X_X_,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b__XXXXX,
+		  b___XXX_,
+		  b____X__ };
+
+	/* Yes we know, this is a VERY BAD implementation :-) */
+	switch (icon) {
+		case ICON_BLOCK_FILLED:
+			NoritakeVFD_chr(drvthis, x, y, 0xBE);
+				      break;
+		case ICON_HEART_FILLED:
+			NoritakeVFD_set_char(drvthis, 0, heart_filled);
+			NoritakeVFD_chr(drvthis, x, y, 0);
+			break;
+		case ICON_HEART_OPEN:
+			NoritakeVFD_set_char(drvthis, 0, heart_open);
+			NoritakeVFD_chr(drvthis, x, y, 0);
+			break;
+		default:
+			return -1; /* Let the core do other icons */
+	}
+	return 0;
+}
+
+
+/*
+ * Set cursor position and state.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal cursor position (column).
+ * \param y        Vertical cursor position (row).
+ * \param state    New cursor state.
+ */
+/*
+MODULE_EXPORT void 
+CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
+{
+	PrivateData *p = drvthis->private_data;
+	char out[2] = { 0x15 };
+
+	// set cursor state
+	switch (state) {
+		case CURSOR_OFF:	// no cursor
+			out[0] = 0x16;
+			break;
+		case CURSOR_UNDER:	// underline cursor
+			out[0] = 0x14;
+			break;
+		case CURSOR_BLOCK:	// inverting blinking block
+		case CURSOR_DEFAULT_ON:	// blinking block
+		default:
+			out[0] = 0x15;
+			break;
+	}
+	write(p->fd, out, 1);
+
+	NoritakeVFD_cursor_goto(x, y);
 }
 */
+
+
+/**
+ * Get total number of custom characters available.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of custom characters (always NUM_CCs).
+ */
+MODULE_EXPORT int
+NoritakeVFD_get_free_chars (Driver *drvthis)
+{
+	//PrivateData *p = drvthis->private_data;
+
+	return NUM_CCs;
+}
+
+
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [0 - (NUM_CCs-1)].
+ * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ *                 starting from the top to bottom.
+ *                 The bits in each byte represent the pixels where the LSB
+ *                 (least significant bit) is the rightmost pixel in each pixel row.
+ */
+MODULE_EXPORT void
+NoritakeVFD_set_char (Driver *drvthis, int n, unsigned char *dat)
+{
+	PrivateData *p = drvthis->private_data;
+	char out[9] = { 0x1B, 0x43, 0, 0, 0, 0, 0, 0, 0 };
+	int i;
+
+	if ((n < 0) || (n >= NUM_CCs))
+		return;
+	if (dat == NULL)
+		return;
+
+	out[2] = n;
+
+	/* mangle the character data bits so that the VFD can chew them ;-) */
+	for (i = 0; i < 35; i++) {
+		out[3 + i/8] |= ((dat[i/5] >> (4 - i%5)) & 1) << i%8;
+	}
+
+	write(p->fd, out, 8);
+}
+
+
+/**
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return Stored brightness in promille.
+ */
+MODULE_EXPORT int
+NoritakeVFD_get_brightness(Driver *drvthis, int state)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/**
+ * Set on/off brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want to store the value.
+ * \param promille New brightness in promille.
+ */
+MODULE_EXPORT void
+NoritakeVFD_set_brightness(Driver *drvthis, int state, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is not get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+		//Noritake_backlight(drvthis, BACKLIGHT_ON);
+	}
+	else {
+		p->offbrightness = promille;
+		//Noritake_backlight(drvthis, BACKLIGHT_OFF);
+	}
+}
+
+
+/**
+ * Turn the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
+ */
+MODULE_EXPORT void
+NoritakeVFD_backlight (Driver *drvthis, int on)
+{
+	PrivateData *p = drvthis->private_data;
+	char out[4] = { 0x1B, 0x4C, 0 };
+	int hardware_value = (on == BACKLIGHT_ON)
+			     ? p->brightness
+			     : p->offbrightness;
+
+	// Changes screen brightness (0-255; 140 seems good)
+	/* not sure if the formula is correct:
+	 * What is the allowed range for the brightness value ? */
+	out[2] = (int) (hardware_value * 255 / 1000);
+	write(p->fd, out, 3);
+}
+
+
+/**
+ * Toggle the built-in automatic scrolling feature.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New scrolling status.
+ */
+static void
+NoritakeVFD_autoscroll (Driver *drvthis, int on)
+{
+	PrivateData *p = drvthis->private_data;
+	char out[2];
+
+	out[0] = (on) ? 0x12 : 0x11;
+	write(p->fd, out, 1);
+}
+
+
+/**
+ * Get rid of the blinking cursor.
+ * \param drvthis  Pointer to driver structure.
+ */
+static void
+NoritakeVFD_hidecursor (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+	char out[2] = { 0x16 };
+
+	write(p->fd, out, 1);
+}
+
+
+/**
+ * Reset the display bios.
+ * \param drvthis  Pointer to driver structure.
+ */
+static void
+NoritakeVFD_reboot (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+	char reset_out[3] = { 0x1B, 0x49 };
+	char flickerless_out[3] = { 0x1B, 0x53 };
+
+	/* reset display */
+	write(p->fd, reset_out, 2);
+
+	/* switch on flickerless write */
+	write(p->fd, flickerless_out, 2);
+}
+
+
+/**
+ * Move cursor to position (x,y).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ */
+static void
+NoritakeVFD_cursor_goto(Driver *drvthis, int x, int y)
+{
+	PrivateData *p = drvthis->private_data;
+	unsigned char out[4] = { 0x1B, 0x48, 0 };
+
+	/* set cursor position */
+	if ((x > 0) && (x <= p->width) && (y > 0) && (y <= p->height))
+		out[2] = (x-1) * p->width + (y-1);
+	write(p->fd, out, 3);
+}
+
+
+/* EOF */

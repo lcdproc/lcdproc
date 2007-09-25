@@ -23,11 +23,12 @@
 #define NORITAKEVFD_H
 #include "lcd.h"
 
-#define DEFAULT_CELL_WIDTH	6
-#define DEFAULT_CELL_HEIGHT	8
+#define DEFAULT_CELL_WIDTH	5
+#define DEFAULT_CELL_HEIGHT	7
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_SPEED		9600
 #define DEFAULT_BRIGHTNESS	140
+#define DEFAULT_OFFBRIGHTNESS	100
 #define DEFAULT_SIZE		"20x4"
 #define DEFAULT_PARITY		0
 
@@ -44,12 +45,16 @@ MODULE_EXPORT void NoritakeVFD_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void NoritakeVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void NoritakeVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT int  NoritakeVFD_icon(Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT void NoritakeVFD_num(Driver *drvthis, int x, int num);
+MODULE_EXPORT int  NoritakeVFD_icon (Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT void NoritakeVFD_cursor (Driver *drvthis, int x, int y, int state);
 
-MODULE_EXPORT void NoritakeVFD_set_char (Driver *drvthis, int n, char *dat);
+MODULE_EXPORT int  NoritakeVFD_get_free_chars (Driver *drvthis);
+MODULE_EXPORT void NoritakeVFD_set_char (Driver *drvthis, int n, unsigned char *dat);
 
-MODULE_EXPORT int  NoritakeVFD_get_brightness (Driver *drvthis, int state);
-MODULE_EXPORT void NoritakeVFD_set_brightness (Driver *drvthis, int state, int promille);
-MODULE_EXPORT void NoritakeVFD_output (Driver *drvthis, int state);
+MODULE_EXPORT int  NoritakeVFD_get_brightness(Driver *drvthis, int state);
+MODULE_EXPORT void NoritakeVFD_set_brightness(Driver *drvthis, int state, int promille);
+MODULE_EXPORT void NoritakeVFD_backlight (Driver *drvthis, int on);
 
 #endif 
+

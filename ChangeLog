@@ -26,6 +26,7 @@ v.0.5dev (ongoing development)
  * fixes for the lcpdroc client iface screen on *BSD (M.Dolze)
  + key support for hd44780/lcd2usb (M. Dolze)
  + option Priority for NoritakeVFD (idea: Richard Muratti)
+ * overhauled NoritakeVFD driver (idea: Richard Muratti)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
