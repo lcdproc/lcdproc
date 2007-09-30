@@ -131,7 +131,7 @@ unsigned char GetKeyFromKeyRing(KeyRing *kr)
 	        kr->tail = (kr->tail + 1) % KEYRINGSIZE;
 	}
 
-	if (retval)
+	//if (retval)
 		//debug(RPT_DEBUG, "%s: remove key: %d", __FUNCTION__, retval);
 	return retval;
 }
