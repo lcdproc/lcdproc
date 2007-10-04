@@ -393,7 +393,7 @@ serialVFD_put_char (Driver *drvthis, int n)
 
 	Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[set_user_char][1],\
 		p->hw_cmd[set_user_char][0]);// substitute and select Character to overwrite
-	Port_Function[p->use_parallel].write_fkt(drvthis, (char*)&p->usr_chr_mapping[n], 1);
+	Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &p->usr_chr_mapping[n], 1);
 	Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[n][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
 }
 
@@ -457,10 +457,10 @@ serialVFD_flush (Driver *drvthis)
 		    ((p->framebuf[i] <= 30) && (custom_char_changed[(int)p->framebuf[i]]))) {
 			if (last_chr < i-1) { // if not last char written cursor has to be moved.
 				if (last_chr < i-2-p->hw_cmd[mv_cursor][0]) {
-					Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[mv_cursor][1],\
+					Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[mv_cursor][1],
 						p->hw_cmd[mv_cursor][0]);
-					Port_Function[p->use_parallel].write_fkt(drvthis, (char*)&i, 1);
-					}
+					Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &i, 1);
+				}
 				else {
 					for (j = last_chr; j < (i-1); j++)
 						Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[hor_tab][1], p->hw_cmd[hor_tab][0]);
@@ -470,17 +470,19 @@ serialVFD_flush (Driver *drvthis)
 			if (p->framebuf[i] <= 30) { // custom character
 				if (p->display_type == 1) { // KD Rev 2.1 only
 					if (p->last_custom != p->framebuf[i]) {
-						Port_Function[p->use_parallel].write_fkt(drvthis, "\x1A\xDB", 2);		// substitute and select character to overwrite (237)
-						Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[(int)p->framebuf[i]][0], 7);// overwrite selected character
-						}
+						// substitute and select character to overwrite (237)
+						Port_Function[p->use_parallel].write_fkt(drvthis, "\x1A\xDB", 2);
+						// overwrite selected character
+						Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[(int)p->framebuf[i]][0], 7);
+					}
 					Port_Function[p->use_parallel].write_fkt(drvthis, "\xDB", 1);			// write character
 					p->last_custom = p->framebuf[i];
 				}
 				else {	// all other displays
-					Port_Function[p->use_parallel].write_fkt(drvthis, (char*)&p->usr_chr_mapping[(int)p->framebuf[i]], 1);
+					Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &p->usr_chr_mapping[(int)p->framebuf[i]], 1);
 				}
 			}
-			else if (p->framebuf[i] > 127 && (p->ISO_8859_1 != 0)) { // ISO_8859_1 translation for 129 ... 255
+			else if ((p->framebuf[i] > 127) && (p->ISO_8859_1 != 0)) { // ISO_8859_1 translation for 129 ... 255
 				Port_Function[p->use_parallel].write_fkt(drvthis, &p->charmap[p->framebuf[i] - 128], 1);
 			}
 			else {
