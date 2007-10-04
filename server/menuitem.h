@@ -44,14 +44,14 @@
 
 /** These values are used in the function tables in menuitem.c ! */
 typedef enum MenuItemType {
-	MENUITEM_MENU = 0,
-	MENUITEM_ACTION = 1,
+	MENUITEM_MENU     = 0,
+	MENUITEM_ACTION   = 1,
 	MENUITEM_CHECKBOX = 2,
-	MENUITEM_RING = 3,
-	MENUITEM_SLIDER = 4,
-	MENUITEM_NUMERIC = 5,
-	MENUITEM_ALPHA = 6,
-	MENUITEM_IP = 7,
+	MENUITEM_RING     = 3,
+	MENUITEM_SLIDER   = 4,
+	MENUITEM_NUMERIC  = 5,
+	MENUITEM_ALPHA    = 6,
+	MENUITEM_IP       = 7,
         NUM_ITEMTYPES = 8
 } MenuItemType;
 
@@ -59,21 +59,22 @@ typedef enum CheckboxValue {
 	CHECKBOX_OFF = 0, CHECKBOX_ON, CHECKBOX_GRAY
 } CheckboxValue;
 
-/** Recognized input token codes */
+/** Recognized input token codes: they need to be bit values */
 typedef enum MenuToken {
-	MENUTOKEN_MENU,
-	MENUTOKEN_ENTER,
-	MENUTOKEN_UP,
-	MENUTOKEN_DOWN,
-	MENUTOKEN_LEFT,
-	MENUTOKEN_RIGHT,
-	MENUTOKEN_OTHER
+	MENUTOKEN_NONE  = 0x0000,	/**< no key */
+	MENUTOKEN_MENU  = 0x0001,	/**< MenuKey */
+	MENUTOKEN_ENTER = 0x0002,	/**< EnterKey */
+	MENUTOKEN_UP    = 0x0004,	/**< UpKey */
+	MENUTOKEN_DOWN  = 0x0008,	/**< DownKey */
+	MENUTOKEN_LEFT  = 0x0010,	/**< LeftKey */
+	MENUTOKEN_RIGHT = 0x0020,	/**< RightKey */
+	MENUTOKEN_OTHER = 0x1000	/**< any other key */
 } MenuToken;
 
 /** Return codes from an input handler */
 typedef enum MenuResult {
 	MENURESULT_ERROR = -1,	/**< Something has gone wrong */
-	MENURESULT_NONE = 0,	/**< Token handled OK, no extra action */
+	MENURESULT_NONE  = 0,	/**< Token handled OK, no extra action */
 	MENURESULT_ENTER,	/**< Token handled OK, enter the selected
 				 * menuitem now */
 	MENURESULT_CLOSE,	/**< Token handled OK, close the current
@@ -88,16 +89,16 @@ typedef enum MenuResult {
 /** Events caused by a menuitem */
 typedef enum MenuEventType {
 	MENUEVENT_SELECT = 0,	/**< Item has been selected
-				(action chosen) */
+				 * (action chosen) */
 	MENUEVENT_UPDATE = 1,	/**< Item has been modified
-				(checkbox, numeric, alphanumeric) */
-	MENUEVENT_PLUS = 2,	/**< Item has been modified in positive direction
-				 (slider moved) */
-	MENUEVENT_MINUS = 3,	/**< Item has been modified in negative direction
-				(slider moved) */
-	MENUEVENT_ENTER = 4,	/**< Menu has been entered */
-	MENUEVENT_LEAVE = 5,    /**< Menu has been left */
-        NUM_EVENTTYPES = 6
+				 * (checkbox, numeric, alphanumeric) */
+	MENUEVENT_PLUS   = 2,	/**< Item has been modified in positive direction
+				 * (slider moved) */
+	MENUEVENT_MINUS  = 3,	/**< Item has been modified in negative direction
+				 * (slider moved) */
+	MENUEVENT_ENTER  = 4,	/**< Menu has been entered */
+	MENUEVENT_LEAVE  = 5,	/**< Menu has been left */
+	NUM_EVENTTYPES   = 6
 } MenuEventType;
 
 #define MenuEventFunc(f) int (f) (struct MenuItem *item, MenuEventType event)

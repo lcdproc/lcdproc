@@ -1068,8 +1068,8 @@ MenuResult menuitem_process_input_numeric(MenuItem *item, MenuToken token, const
 					return MENURESULT_ERROR;
 				}
 				/* Test the value */
-				if (value < item->data.numeric.minvalue
-				|| value > item->data.numeric.maxvalue) {
+				if ((value < item->data.numeric.minvalue) ||
+				    (value > item->data.numeric.maxvalue)) {
 					/* Out of range !
 					 * We can't exit this screen now
 					 */
@@ -1355,7 +1355,7 @@ MenuResult menuitem_process_input_ip(MenuItem *item, MenuToken token, const char
 			}
 			return MENURESULT_NONE;
 		case MENUTOKEN_ENTER:
-			if (extended || (pos >= item->data.ip.maxlength - 1)) {
+			if ((extended) || (pos >= item->data.ip.maxlength - 1)) {
 				// remove the leading spaces/zeros in each octet-representing string
 				char tmp[40];	// 40 = max. length of IPv4 & IPv6 addresses incl. '\0'
 				char *start = tmp;

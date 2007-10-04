@@ -615,7 +615,7 @@ while the others work in shared mode.
     The key that switches into menu mode (=open the main menu).
     In menu mode it cancels any operation. Cancelling the main menu
     means returning to the regular display mode.
-    It defaults to <literal>Menu</literal>.
+    It has no default, but a natural candidate is <literal>Menu</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -626,7 +626,7 @@ while the others work in shared mode.
   </term>
   <listitem><para>
     The key to enter a sub menu and/or, to select an entry.
-    It defaults to <literal>Enter</literal>.
+    It is not set by default, but a natural candidate is <literal>Enter</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -639,7 +639,7 @@ while the others work in shared mode.
     The key to move to the previous menu item.
     If the <replaceable>LeftKey</replaceable> is not set,
     it is also used to move left in input fields.
-    It default to <literal>Up</literal>.
+    It is not set by default, but a natural candidate is <literal>Up</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -652,7 +652,7 @@ while the others work in shared mode.
     The key to move to the next menu item.
     If the <replaceable>RightKey</replaceable> is not set,
     it is also used to move right in input fields.
-    It default to <literal>Down</literal>.
+    It has no default, but a natural candidate is <literal>Down</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -681,6 +681,17 @@ while the others work in shared mode.
   </para></listitem>
 </varlistentry>
 </variablelist>
+
+<para>
+The keys required for the menu work correctly are the <command>MenuKey</command>, 
+the <command>EnterKey</command> and one of <command>UpKey</command> or
+<command>DownKey</command>.
+With these 3 keys the menus can be operated.
+Of course with only 3 keys the navigation gets a bit awkward.
+So if you have 4 or more keys, you better use them.
+Especially the <command>LeftKey</command> and <command>RightKey</command>
+make a big difference in user experience.
+</para>
 
 </sect2>
 
