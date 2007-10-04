@@ -1,6 +1,8 @@
-/*
- * lcdexec/menu.h
- * This file is part of lcdexec, an LCDproc client.
+/** \file clients/lcdexec/menu.h
+ * Declare constants, data types and functions for menu functions in clients/lcdexec/menu.c.
+ */
+
+/* This file is part of lcdexec, an LCDproc client.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -22,24 +24,24 @@
 
 
 typedef enum {
-	unknown = 0,
-	menu = 1,
-	exec = 2,
+	unknown = 0,		/**< unknown menu entry. */
+	menu = 1,		/**< menu entry representing a menu. */
+	exec = 2,		/**< menu entry repesenting a command. */
 } MenuType;	
 
 
 typedef struct menu_entry {
-	char *name;
-	char *displayname;
-	int id;
-	MenuType type;
+	char *name;		/**< Name of the menu entry. */
+	char *displayname;	/**< Display name of the enty. */
+	int id;			/**< Internal ID of the entry. */
+	MenuType type;		/**< Type of the entry. */
 
 	// variables necessary for type menu
-	struct menu_entry *entries;
-	struct menu_entry *next;
+	struct menu_entry *entries;	/**< Subordinate menu entries (for MenuType menu). */
+	struct menu_entry *next;	/**< Next sibling menu entry (for MenuType menu). */
 
 	// variables necessary for type exec
-	char *command;
+	char *command;			/**< Command to execute (for MenuType exec). */
 } MenuEntry;
 
 

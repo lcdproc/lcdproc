@@ -1,5 +1,5 @@
 /** \file serverscreens.h
- * Interface for the serverscreen implementation
+ * Interface for the serverscreen implementation.
  */
 
 /*
@@ -18,9 +18,9 @@
 #include "screen.h"
 
 /* server screen rotation states */
-#define SERVERSCREEN_OFF	0	/* show server screen in rotation */
-#define SERVERSCREEN_ON		1	/* show server sreen only when there is no other screen */
-#define SERVERSCREEN_BLANK	2	/* don't rotate, and only show a blank screen [not implemented] */
+#define SERVERSCREEN_OFF	0	/**< Show server screen in rotation. */
+#define SERVERSCREEN_ON		1	/**< Show server sreen only when there is no other screen. */
+#define SERVERSCREEN_BLANK	2	/**< Don't rotate, and only show a blank screen. */
 
 extern Screen *server_screen;
 
