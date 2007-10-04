@@ -1,5 +1,7 @@
-// This header contains low level code to export from hd44780.c to "lower" HW
-// implementation dependent files.
+/** \file hd44780-low.h
+ * Interface to low level code to export from hd44780.c to "lower" HW
+ * implementation dependent files.
+ */
 
 #ifndef HD_LOW_H
 #define HD_LOW_H

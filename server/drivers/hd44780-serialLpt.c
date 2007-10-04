@@ -1,9 +1,10 @@
-/*
- * Serial LPT driver module for Hitachi HD44780 based LCD displays by
- * Andrew McMeikan. The LCD is operated in it's 4 bit-mode through a
- * 4094 shift register and supports a keypad.
+/** \file hd44780-serialLPT.c
+ * \c serialLPT connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
- * Copyright (c)  1999 Andrew McMeikan <andrewm@engineer.com>
+ * The LCD is operated in it's 4 bit-mode through a 4094 shift register and supports a keypad.
+ */
+
+/* Copyright (c)  1999 Andrew McMeikan <andrewm@engineer.com>
  *		modular driver 1999 Benjamin Tse <blt@Comports.com>
  *
  *              2001 Joris Robijn <joris@robijn.net>

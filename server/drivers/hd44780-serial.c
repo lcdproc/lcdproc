@@ -1,6 +1,9 @@
-/*
- * Driver for serial connected hd44780 LCDs
- * Copyright (C) 2006-2007  Matteo Pillon <matteo.pillon@gmail.com>
+/** \file hd44780-serial.c
+ * Connection types \c picanlcd, \c lcdserializer, \c los-panel, \c vdr-lcd,
+ * \c vdr-wakeup, \c pertelian, ... of \c hd44780 driver for Hitachi HD44780 based LCD displays.
+ */
+
+/* Copyright (C) 2006-2007  Matteo Pillon <matteo.pillon@gmail.com>
  *
  * Some parts are based on the original pic-an-lcd driver code
  *  Copyright (C) 1997, Matthias Prinke <m.prinke@trashcan.mcnet.de>

@@ -1,8 +1,10 @@
-/* driver module for Hitachi HD44780 based LCD displays
- * connected to using the lcd2usb interface
- * (http://www.harbaum.org/till/lcd2usb)
+/** \file hd44780-lcd2usb.c
+ * \c lcd2usb connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
- * Copyright (C) 2007 Peter Marschall <peter@adpm.de>
+ * See http://www.harbaum.org/till/lcd2usb.
+ */
+
+/* Copyright (C) 2007 Peter Marschall <peter@adpm.de>
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.

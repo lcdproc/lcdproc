@@ -1,9 +1,10 @@
-/*
- * 8-bit driver module for Hitachi HD44780 based LCD displays.
- * The LCD is operated in it's 8 bit-mode to be connected to a single
- * PC parallel port.
+/** \file hd44780-ext8bit.c
+ * \c 8bit connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
- * Copyright (c)  1999, 1995 Benjamin Tse <blt@Comports.com>
+ * The LCD is operated in its 8 bit-mode to be connected to a single PC parallel port.
+ */
+
+/* Copyright (c)  1999, 1995 Benjamin Tse <blt@Comports.com>
  *                2001 Joris Robijn <joris@robijn.net>
  *
  * The connections are:

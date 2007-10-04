@@ -1,16 +1,17 @@
-/*
- * Base driver module for Hitachi HD44780 based LCD displays. This is
- * a modular driver that allows support for alternative HD44780
- * designs to be added in a flexible and maintainable manner.
+/** \file hd44780.h
+ * Interface to the base driver module for Hitachi HD44780 based LCD displays.
  *
- * This file is released under the GNU General Public License. Refer to the
+ * This is a modular driver that allows support for alternative HD44780
+ * designs to be added in a flexible and maintainable manner.
+ */
+
+/* This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
  * Copyright (c)  1999, 1995 Benjamin Tse <blt@Comports.com>
  *		  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  1998 Richard Rognlie <rrognlie@gamerz.net>
- *
- 1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
+ *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
  */
 
 #ifndef HD44780_H

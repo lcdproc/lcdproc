@@ -1,4 +1,4 @@
-/*
+/** \file hd44780.c
  * Base driver module for Hitachi HD44780 based LCD displays. This is
  * a modular driver that readily allows support for alternative HD44780
  * designs to be added in a flexible and maintainable manner.
@@ -8,12 +8,13 @@
  * to form a 16x8 display.
  *
  * To add support for additional HD44780 connections:
- *  1. Add a connection type and mapping to hd44780-drivers.h
- *  2. Call your initialisation roUine
- *  3. Create the low-level driver (use hd44780-ext8bit.c as a starting point)
- *  4. Modify the makefile
- *
- * Modular driver created and generic support for multiple displays added
+ * \li Add a connection type and mapping to hd44780-drivers.h
+ * \li Call your initialization routine
+ * \li Create the low-level driver (use hd44780-ext8bit.c as a starting point)
+ * \li Modify the makefile
+ */
+
+/* Modular driver created and generic support for multiple displays added
  * Dec 1999, Benjamin Tse <blt@Comports.com>
  *
  * Modified July 2000 by Charles Steinkuehler to use one of 3 methods for delay

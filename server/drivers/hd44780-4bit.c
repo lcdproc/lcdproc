@@ -1,9 +1,10 @@
-/*
- * 4-bit driver module for Hitachi HD44780 based LCD displays.
- * The LCD is operated in it's 4 bit-mode to be connected to a single
- * 8 bit-port.
+/** \file hd44780-4bit.c
+ * \c 4bit connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
- * Copyright (c)  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
+ * The LCD is operated in its 4 bit-mode to be connected to a single PC parallel port.
+ */
+
+/* Copyright (c)  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
  *		  2001 Joris Robijn <joris@robijn.net>
  *		  1999 Andrew McMeikan <andrewm@engineer.com>
  *		  1998 Richard Rognlie <rrognlie@gamerz.net>

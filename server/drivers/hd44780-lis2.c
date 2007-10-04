@@ -1,6 +1,8 @@
-/*
- * LIS2 Serializer driver
- * Modification of the code of the LCDSerializer driver
+/** \file hd44780-lis2.c
+ * \c lis2 connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
+ */
+
+/* Modification of the code of the LCDSerializer driver
  *
  * Copyright (c)  1997, Matthias Prinke <m.prinke@trashcan.mcnet.de>
  *		  1998, Richard Rognlie <rrognlie@gamerz.net>
@@ -13,10 +15,6 @@
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
- *
- * 
- * 
- *
  */
 
 #include "hd44780-lis2.h"

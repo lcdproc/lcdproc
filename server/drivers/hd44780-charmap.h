@@ -1,5 +1,8 @@
-/*
- * Character mapping for HD44780 devices by Mark Haemmerling <mail@markh.de>.
+/** \file hd44780-charmap.h
+ * Character mapping for HD44780 devices.
+ */
+
+/* Character mapping for HD44780 devices by Mark Haemmerling <mail@markh.de>.
  *
  * Translates ISO 8859-1 to any HD44780 charset.
  *

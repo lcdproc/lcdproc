@@ -1,10 +1,10 @@
-/*
- * Low-level driver types, headers and names.
+/** \file hd44780-drivers.h
+ * Interface to low-level driver types, headers and names.
  *
  * To add support for a new driver in this file:
- *  1. include your header file
- *  2. Add a new connectionType
- *  3. Add an entry in the connectionMapping structure
+ * \li 1. include your header file
+ * \li 2. Add a new connectionType
+ * \li 3. Add an entry in the \c ConnectionMapping structure
  */
 
 #ifndef HD44780_DRIVERS_H

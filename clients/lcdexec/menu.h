@@ -22,26 +22,26 @@
 # define FALSE   0
 #endif
 
-
+/**  Symbolic names for the types of a MenuEntry */
 typedef enum {
-	unknown = 0,		/**< unknown menu entry. */
-	menu = 1,		/**< menu entry representing a menu. */
-	exec = 2,		/**< menu entry repesenting a command. */
+	unknown = 0,		/**< Unknown MenuEntry type. */
+	menu = 1,		/**< MenuEntry representing a menu. */
+	exec = 2,		/**< MenuEntry representing an executable command. */
 } MenuType;	
 
 
 typedef struct menu_entry {
-	char *name;		/**< Name of the menu entry. */
-	char *displayname;	/**< Display name of the enty. */
+	char *name;		/**< Name of the menu entry (from section name). */
+	char *displayname;	/**< isible name of the entry. */
 	int id;			/**< Internal ID of the entry. */
 	MenuType type;		/**< Type of the entry. */
 
 	// variables necessary for type menu
-	struct menu_entry *entries;	/**< Subordinate menu entries (for MenuType menu). */
-	struct menu_entry *next;	/**< Next sibling menu entry (for MenuType menu). */
+	struct menu_entry *entries;	/**< Subordinate menu entries (for MenuType \c menu). */
+	struct menu_entry *next;	/**< Next sibling menu entry (for MenuType \c menu). */
 
 	// variables necessary for type exec
-	char *command;			/**< Command to execute (for MenuType exec). */
+	char *command;			/**< Command to execute (for MenuType \c exec). */
 } MenuEntry;
 
 

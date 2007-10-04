@@ -1,9 +1,11 @@
-/*
- * i2c driver module for Hitachi HD44780 based LCD displays.
- * The LCD is operated in it's 4 bit-mode to be connected to the 8 bit-port
- * of a single PCF8574(A) or PCA9554(A) that is accessed by the server via the i2c bus.
+/** \file hd44780-i2c.c
+ * \c i2c connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
- * Copyright (c) 2005 Matthias Goebl <matthias.goebl@goebl.net>
+ * The LCD is operated in its 4 bit-mode to be connected to the 8 bit-port
+ * of a single PCF8574(A) or PCA9554(A) that is accessed by the server via the i2c bus.
+ */
+
+/* Copyright (c) 2005 Matthias Goebl <matthias.goebl@goebl.net>
  *		  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
  *		  2001 Joris Robijn <joris@robijn.net>
  *		  1999 Andrew McMeikan <andrewm@engineer.com>

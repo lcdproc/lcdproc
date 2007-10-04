@@ -1,8 +1,10 @@
-/*
- * USB driver module for Hitachi HD44780 based LCD displays.
- * http://www.bwct.de/lcd.html
+/** \file hd44780-bwct-usb.c
+ * \c bwctusb connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
- * Copyright (c) 2004, Bernd Walter <bernd@bwct.de>
+ * See http://www.bwct.de/lcd.html
+ */
+
+/* Copyright (c) 2004, Bernd Walter <bernd@bwct.de>
  * Contributions:
  *   Copyright (c) 2004, Peter Marschall <peter@adpm.de>
  *
