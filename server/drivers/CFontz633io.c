@@ -96,14 +96,23 @@ ReceiveBuffer receivebuffer;
  * It is just a small fifo of unsigned char.
  */
 
-/** initialize/empty key ring by resetting its read & write pointers */
+/**
+ * Initialize/empty key ring by resetting its read & write pointers.
+ * \param kr  Pointer to KeyRing.
+ */
 void EmptyKeyRing(KeyRing *kr)
 {
 	kr->head = kr->tail = 0;
 }
 
 
-/** add byte to key ring; return success (byte added) / failure (key ring is full) */
+/**
+ * Add byte to key ring.
+ * \param kr   Pointer to KeyRing.
+ * \param key  Key byte to add.
+ * \retval 1  Success (byte added).
+ * \retval 0  Failure (key ring is full).
+ */
 int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 {
 	if (((kr->head + 1) % KEYRINGSIZE) != (kr->tail % KEYRINGSIZE)) {
@@ -119,7 +128,12 @@ int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 }
 
 
-/** get byte from key ring (or '\\0' if key ring is empty) */
+/**
+ * Get byte from key ring.
+ * \param kr  Pointer to KeyRing.
+ * \retval retval  Byte from KeyRing.
+ * \retval '\0'    Failure (key ring is empty).
+ */
 unsigned char GetKeyFromKeyRing(KeyRing *kr)
 {
 	unsigned char retval = '\0';
@@ -132,13 +146,20 @@ unsigned char GetKeyFromKeyRing(KeyRing *kr)
 	}
 
 	//if (retval)
-		//debug(RPT_DEBUG, "%s: remove key: %d", __FUNCTION__, retval);
+	//	debug(RPT_DEBUG, "%s: remove key: %d", __FUNCTION__, retval);
+
 	return retval;
 }
 
 
 
-/** send message with arguments to the given handle */
+/**
+ * Send message with arguments to the given handle.
+ * \param fd    File handle to write to.
+ * \param msg   Command byte to write.
+ * \param len   Length (in bytes) of data following.
+ * \param data  Pointer to command argument data.
+ */
 void send_bytes_message(int fd, unsigned char msg, int len, unsigned char *data)
 {
 	COMMAND_PACKET out;
@@ -153,7 +174,12 @@ void send_bytes_message(int fd, unsigned char msg, int len, unsigned char *data)
 }
 
 
-/** send message with one byte argument to the given handle */
+/**
+ * Send message with one byte argument to the given handle.
+ * \param fd     File handle to write to.
+ * \param msg    Command byte to write.
+ * \param value  Command argument.
+ */
 void send_onebyte_message(int fd, unsigned char msg, unsigned char value)
 {
 	COMMAND_PACKET out;
@@ -168,7 +194,11 @@ void send_onebyte_message(int fd, unsigned char msg, unsigned char value)
 }
 
 
-/** send message without data to the given handle */
+/**
+ * Send message without arguments to the given handle.
+ * \param fd    File handle to write to.
+ * \param msg   Command byte to write.
+ */
 void send_zerobyte_message(int fd, unsigned char msg)
 {
 	COMMAND_PACKET out;
@@ -182,7 +212,12 @@ void send_zerobyte_message(int fd, unsigned char msg)
 }
 
 
-/** send out to the given handle; calc & send CRC when doing so */
+/**
+ * Send out to the given handle; calc & send CRC when doing so.
+ * \param fd    File handle to write to.
+ * \param out   Pointer to COMMAND_PACKET structure to write.
+ * \param in    Pointer to COMMAND_PACKET structure to read after write.
+ */
 static void
 send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in)
 {
@@ -207,7 +242,13 @@ send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in)
 }
 
 
-/** calculate CRC over given buffer with given length */
+/**
+ * Calculate CRC over given buffer with given length.
+ * \param buf   Byte buffer.
+ * \param len   Length of byte buffer.
+ * \param seed  CRC seed value.
+ * \return  CRC calulated.
+ */
 /* According to the "Painless Guide to CRC error dectectin algorithmsi
  * (http://www.repairfaq.org/filipg/LINK/F_crc_v3.html) this is the table driven
  * implementation of a CRC with the following parameters:
@@ -276,14 +317,22 @@ get_crc(unsigned char *buf, int len, int seed)
 /*           ^ tail              ^ head               */
 
 
-/** initialize/empty receive buffer by resetting its pointers */
+/**
+ * Initialize/empty receive buffer by resetting its pointers.
+ * \param rb  Pointer to ReceiveBuffer structure.
+ */
 void EmptyReceiveBuffer(ReceiveBuffer *rb)
 {
 	rb->head = rb->tail = rb->peek = 0;
 }
 
 
-/** read given number of bytes from given file handle into receive buffer */
+/**
+ * Read given number of bytes from given file handle into receive buffer.
+ * \param rb      Pointer to ReceiveBuffer structure.
+ * \param fd      File handle to read from.
+ * \param number  Max. number of bytes to read from file handle.
+ */
 void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 {
 	unsigned char buffer[MAX_DATA_LENGTH];
@@ -332,7 +381,11 @@ void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 }
 
 
-/** return number of bytes available for reading in receive buffer */
+/**
+ * Get number of bytes available for reading in receive buffer.
+ * \param rb  Pointer to ReceiveBuffer structure.
+ * \return  Number of bytes available in receive buffer.
+ */
 int BytesAvail(ReceiveBuffer *rb)
 {
 	int avail_bytes = rb->head - rb->tail;
@@ -344,7 +397,12 @@ int BytesAvail(ReceiveBuffer *rb)
 }
 
 
-/** get next byte from receive buffer (return '\\0' if buffer is empty) */
+/**
+ * Get next byte from receive buffer.
+ * \param rb  Pointer to ReceiveBuffer structure.
+ * \retval return_byte  Next byte in receive buffer.
+ * \retval '\0'         Failure (receive buffer is empty).
+ */
 unsigned char GetByte(ReceiveBuffer *rb)
 {
 	unsigned char return_byte = '\0';
@@ -365,7 +423,11 @@ unsigned char GetByte(ReceiveBuffer *rb)
 }
 
 
-/** return number of bytes available for peeking in receive buffer */
+/**
+ * Return number of bytes available for peeking in receive buffer.
+ * \param rb  Pointer to ReceiveBuffer structure.
+ * \return  Number of bytes available for peeking in receive buffer.
+ */
 int PeekBytesAvail(ReceiveBuffer *rb)
 {
 	int avail_bytes = rb->head - rb->peek;
@@ -377,21 +439,32 @@ int PeekBytesAvail(ReceiveBuffer *rb)
 }
 
 
-/** sync peek pointer with read pointer */
+/**
+ * Sync peek pointer with read pointer.
+ * \param rb  Pointer to ReceiveBuffer structure.
+ */
 void SyncPeekPointer(ReceiveBuffer *rb)
 {
 	rb->peek = rb->tail;
 }
 
 
-/** accept peeked data by syncing the read pointer to the peek pointer */
+/**
+ * Accept peeked data by syncing the read pointer to the peek pointer.
+ * \param rb  Pointer to ReceiveBuffer structure.
+ */
 void AcceptPeekedData(ReceiveBuffer *rb)
 {
 	rb->tail = rb->peek;
 }
 
 
-/** peek next byte from receive buffer (return '\\0' if buffer is empty) */
+/**
+ * Peek next byte from receive buffer.
+ * \param rb  Pointer to ReceiveBuffer structure.
+ * \retval return_byte  Next byte in receive buffer.
+ * \retval '\0'         Failure (receive buffer is empty).
+ */
 unsigned char PeekByte(ReceiveBuffer *rb)
 {
 	unsigned char return_byte = '\0';
@@ -413,6 +486,14 @@ unsigned char PeekByte(ReceiveBuffer *rb)
 
 
 
+/**
+ * Check for a response packet and try to identify it.
+ * \param fd        File handle to read from.
+ * \param response  Expected response command.
+ * \param in        Pointer to COMMAND_PACKET structure to write the response to.
+ * \retval 1  Expected response received.
+ * \retval 0  Expected response not received.
+ */
 /* I should use the value GIVE_UP and not reenter if there is no extra
  * byte read from the serial port
  */ 
@@ -468,12 +549,14 @@ test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
  */
 
 
-/* Let's return
- * O if we have no message but we should try again immediatly
- * 1 if we have a message correctly identified
- * 2 if we have no message and we should not retry until new input
- * So a loop should run as long as we have no 0
- * If we have a 2 we should avoid comming back there.
+/**
+ * Check for a packet to read.
+ * \param fd        File handle to read from.
+ * \param in        Pointer to COMMAND_PACKET structure to write the response to.
+ * \param expected_length  Expected response length.
+ * \retval GIVE_UP    No message and we should not retry until new input.
+ * \retval TRY_AGAIN  No message but we should try again immediately.
+ * \retval GOOD_MSG   Message correctly identified.
  */
 static int
 check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
