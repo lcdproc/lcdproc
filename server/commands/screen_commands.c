@@ -541,7 +541,7 @@ screen_del_key_func(Client *c, int argc, char **argv)
 		char *to;
 
 		to = from = s->keys;
-		while (*from != NULL) {
+		while (*from != '\0') {
 			/* Is this key to be deleted from the list? */
 			if (strchr(keys, *from) == 0) {
 				/* Yes, skip it */
