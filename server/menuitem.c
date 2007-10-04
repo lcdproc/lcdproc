@@ -1006,7 +1006,7 @@ MenuResult menuitem_process_input_slider(MenuItem *item, MenuToken token, const 
 	  	return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 	  case MENUTOKEN_LEFT:
-	  	if ((!extended) && item->data.slider.value == item->data.slider.minvalue))
+	  	if ((!extended) && (item->data.slider.value == item->data.slider.minvalue))
 			item->data.slider.value = item->data.slider.maxvalue;
 		else
 	  		item->data.slider.value = max(item->data.slider.minvalue,
