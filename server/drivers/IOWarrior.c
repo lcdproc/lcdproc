@@ -783,7 +783,7 @@ int do_init = 0;
 }
 
 
-/**
+/* *
  * Set cursor position and state.
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal cursor position (column).
