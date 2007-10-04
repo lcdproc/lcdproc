@@ -198,7 +198,7 @@ bwct_usb_HD44780_backlight(PrivateData *p, unsigned char state)
 unsigned char
 bwct_usb_HD44780_scankeypad(PrivateData *p)
 {
-  return 0;
+  return '\0';
 }
 
 

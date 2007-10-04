@@ -159,7 +159,7 @@ lcd2usb_HD44780_scankeypad(PrivateData *p)
     return buffer[0];
   }
 
-  return 0;
+  return '\0';
 }
 
 void

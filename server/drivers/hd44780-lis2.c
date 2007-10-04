@@ -214,7 +214,7 @@ void lis2_HD44780_backlight(PrivateData *p, unsigned char state)
 
 unsigned char lis2_HD44780_scankeypad(PrivateData *p)
 {
-	return 0;
+	return '\0';
 }
 
 
