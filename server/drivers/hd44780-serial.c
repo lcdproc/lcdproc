@@ -252,9 +252,9 @@ serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 	if (flags == RS_DATA) {
 		/* Do we need a DATA indicator byte? */
 		if ((SERIAL_IF.data_escape != '\0') &&
-		    (ch >= SERIAL_IF.data_escape_min) &&
-		    (ch < SERIAL_IF.data_escape_max) ||
-                    (SERIAL_IF.multiple_displays && displayID != lastdisplayID)) {
+		    (((ch >= SERIAL_IF.data_escape_min) &&
+		    (ch < SERIAL_IF.data_escape_max)) ||
+                    (SERIAL_IF.multiple_displays && displayID != lastdisplayID))) {
 			write(p->fd, &SERIAL_IF.data_escape + displayID, 1);
 		}
 		write(p->fd, &ch, 1);
@@ -301,7 +301,7 @@ serial_HD44780_scankeypad(PrivateData *p)
 			hangcheck--;
 		}
 	}
-	return 0;
+	return '\0';
 }
 
 void
