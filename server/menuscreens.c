@@ -87,10 +87,10 @@ int menuscreens_init(void)
 	/* if the user has specified in the conf file a left and right key */
 	left_key = right_key = NULL;
 	tmp = config_get_string("menu", "LeftKey", 0, NULL);
-	if (tmp)
+	if (tmp != NULL)
 		left_key = strdup(tmp);
 	tmp = config_get_string("menu", "RightKey", 0, NULL);
-	if (tmp)
+	if (tmp != NULL)
 		right_key = strdup(tmp);
 
 
@@ -99,9 +99,9 @@ int menuscreens_init(void)
 	input_reserve_key(enter_key, false, NULL);
 	input_reserve_key(up_key, false, NULL);
 	input_reserve_key(down_key, false, NULL);
-	if (left_key)
+	if (left_key != NULL)
 		input_reserve_key(left_key, false, NULL);
-	if (right_key)
+	if (right_key != NULL)
 		input_reserve_key(right_key, false, NULL);
 
 	/* Create screen */
@@ -148,9 +148,9 @@ int menuscreens_shutdown(void)
 	free(enter_key);
 	free(up_key);
 	free(down_key);
-	if (left_key)
+	if (left_key != NULL)
         	free(left_key);
-	if (right_key)
+	if (right_key != NULL)
         	free(right_key);
 
 	return 0;
