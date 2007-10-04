@@ -237,7 +237,7 @@ short config_get_tristate(const char *sectionname, const char *keyname,
 		return 1;
 	}
 	if ((strcasecmp(k->value, "2") == 0) ||
-	    (name3rd != NULL) && (strcasecmp(k->value, name3rd) == 0)) {
+	    ((name3rd != NULL) && (strcasecmp(k->value, name3rd) == 0))) {
 		return 2;
 	}
 	return default_value;
