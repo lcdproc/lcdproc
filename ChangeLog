@@ -12,7 +12,7 @@ v.0.5dev (ongoing development)
  * glk driver: bignum support fixed
  * update local snprintf to the last one, which is GPL
  - server core: cleanup - remove unnecessary cruft
- * server core: refactor renderin code
+ * server core: refactor rendering code
  + LCDd: config options TitleSpeed= and Heartbeat=
  * overhauled CwLnx driver (Dave Platt)
  * overhauled picolcd driver (Nicu Pavel)
@@ -27,6 +27,8 @@ v.0.5dev (ongoing development)
  + key support for hd44780/lcd2usb (M. Dolze)
  + option Priority for NoritakeVFD (idea: Richard Muratti)
  * overhauled NoritakeVFD driver (idea: Richard Muratti)
+ * allow wrapping slider menu items with <= 4 keys (M. Dolze)
+ * a bit more Doxygen-ation
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

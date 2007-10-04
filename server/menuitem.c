@@ -991,14 +991,25 @@ MenuResult menuitem_process_input_slider(MenuItem *item, MenuToken token, const 
 			item->successor_id, MENURESULT_CLOSE);
 	  case MENUTOKEN_UP:
 	  case MENUTOKEN_RIGHT:
-	  	item->data.slider.value = min(item->data.slider.maxvalue,
+	  	/* Wrap slider around if max value is reached.
+		 * Note: The max value is actually reached,
+		 * because of min(maxvalue, value + stepsize) below.
+		 * Wrapping then happens on the next key press.
+		 */		
+	  	if ((!extended) && (item->data.slider.value == item->data.slider.maxvalue))
+			item->data.slider.value = item->data.slider.minvalue;
+		else
+		  	item->data.slider.value = min(item->data.slider.maxvalue,
 	  			item->data.slider.value + item->data.slider.stepsize);
 		if (item->event_func)
 			item->event_func(item, MENUEVENT_PLUS);
 	  	return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 	  case MENUTOKEN_LEFT:
-	  	item->data.slider.value = max(item->data.slider.minvalue,
+	  	if ((!extended) && item->data.slider.value == item->data.slider.minvalue))
+			item->data.slider.value = item->data.slider.maxvalue;
+		else
+	  		item->data.slider.value = max(item->data.slider.minvalue,
 	  			item->data.slider.value - item->data.slider.stepsize);
 		if (item->event_func)
 			item->event_func(item, MENUEVENT_MINUS);
