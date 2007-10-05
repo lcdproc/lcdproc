@@ -123,7 +123,7 @@ MenuItem *menu_get_item_for_successor_check(Menu *menu);
  * key is only used if token is MENUTOKEN_OTHER.
  * DO NOT CALL THIS FUNCTION, CALL menuitem_process_input INSTEAD !
  */
-MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, bool extended);
+MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsigned int keymask);
 
 /** positions current item pointer on subitem subitem_id. */
 void menu_select_subitem(Menu *menu, char *subitem_id);

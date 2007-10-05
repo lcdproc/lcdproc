@@ -557,7 +557,7 @@ MenuItem *menu_get_item_for_successor_check(Menu *menu)
 	}
 }
 
-MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, bool extended)
+MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsigned int keymask)
 {
 	MenuItem *subitem;
 	debug(RPT_DEBUG, "%s(menu=[%s], token=%d, key=\"%s\")", __FUNCTION__,
@@ -635,7 +635,7 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, bool
 		}	
 		return MENURESULT_NONE;
 	  case MENUTOKEN_LEFT:
-		if (!extended)
+		if (!(keymask & MENUTOKEN_LEFT))
 			return MENURESULT_NONE;
 
 		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
@@ -667,7 +667,7 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, bool
 		}
 		return MENURESULT_NONE;
 	  case MENUTOKEN_RIGHT:
-		if (!extended)
+		if (!(keymask & MENUTOKEN_RIGHT))
 			return MENURESULT_NONE;
 
 		subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
@@ -697,6 +697,7 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, bool
 		return MENURESULT_NONE;
 	  case MENUTOKEN_OTHER:
 		/* TODO: move to the selected number and enter it */
+	  default:	
 		return MENURESULT_NONE;
 	}
 	return MENURESULT_ERROR;

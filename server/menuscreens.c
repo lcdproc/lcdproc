@@ -48,7 +48,7 @@ char *up_key;
 char *down_key;
 char *left_key;
 char *right_key;
-static int keymask;	/* mask of defined menu keys */
+static unsigned int keymask;	/* mask of defined menu keys */
 
 Screen *menuscreen = NULL;
 MenuItem *active_menuitem = NULL;
@@ -425,9 +425,7 @@ void menuscreen_key_handler(const char *key)
 		return;
 	}
 
-	res = menuitem_process_input(active_menuitem, token, key,
-			(keymask & (MENUTOKEN_LEFT | MENUTOKEN_RIGHT)) ? 1 : 0);
-
+	res = menuitem_process_input(active_menuitem, token, key, keymask);
 	switch (res) {
 	  case MENURESULT_ERROR:
 		report(RPT_ERR, "%s: Error from menuitem_process_input", __FUNCTION__);
