@@ -56,30 +56,35 @@ All variants use the same method of obtaining power. i.e., for each LCD:
 <table id="hd44780-connections-power.table">
 <title>HD44780: Power Connections</title>
 <tgroup cols="3" align="left">
- <thead>
-  <row>
-   <entry>LCD</entry>
-   <entry>pin</entry>
-   <entry>signal</entry>
-  </row>
- </thead>
- <tbody>
-  <row>
-   <entry>1</entry>
-   <entry>GND</entry>
-   <entry>(connect to any of pins 18 - 25 of you parallel port)</entry>
-  </row>
-  <row>
-   <entry>2</entry>
-   <entry>+5V</entry>
-   <entry></entry>
-  </row>
-  <row>
-   <entry>3</entry>
-   <entry>Vadj</entry>
-   <entry>(contrast)</entry>
-  </row>
- </tbody>
+<colspec colname="lpt1"/>
+<colspec colname="lpt2" align="right"/>
+  <thead>
+    <row>
+      <entry namest="lpt1" nameend="lpt2" align="center">LCD</entry>
+      <entry morerows="1">Signal</entry>
+    </row>
+    <row>
+       <entry>name</entry>
+       <entry>pin</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>V<subscript>SS</subscript></entry>
+      <entry>1</entry>
+      <entry>GND (connect to any of pins 18 - 25 of you parallel port)</entry>
+    </row>
+    <row>
+      <entry>V<subscript>DD</subscript></entry>
+      <entry>2</entry>
+      <entry>+5V</entry>
+    </row>
+    <row>
+      <entry>V<subscript>LC</subscript></entry>
+      <entry>3</entry>
+      <entry>(contrast adjustment)</entry>
+    </row>
+  </tbody>
 </tgroup>
 </table>
 
@@ -117,7 +122,7 @@ There are several ways to get 5V:
 </itemizedlist>
 
 <figure id="hd44780-connections-power.contrast-circuit">
-<title>HD44780: Connecting the contrast adjusting pin (Vadj.)</title>
+<title>HD44780: Connecting the contrast adjusting pin (V<subscript>LC</subscript>)</title>
 <screen>
 <![CDATA[
 
@@ -127,7 +132,7 @@ There are several ways to get 5V:
         `---^--'
            /|\
             |
-          Vadj.
+           Vlc
 
 ]]>
 </screen>
@@ -463,14 +468,16 @@ This is originally based on "lcdtext" (by Matthias Prinke).
 
 <table id="hd44780-4bit.base-mapping">
 <title>HD44780: 4bit Pinouts (1)</title>
-<tgroup cols="4" align="left">
+<tgroup cols="5" align="left">
 <colspec colname="lpt1"/>
-<colspec colname="lpt2"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
 <colspec colname="lcd1"/>
 <colspec colname="lcd2"/>
   <thead>
     <row>
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
       <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
     </row>
     <row>
@@ -484,48 +491,56 @@ This is originally based on "lcdtext" (by Matthias Prinke).
     <row>
       <entry>D0</entry>
       <entry>2</entry>
+      <entry></entry>
       <entry>D4</entry>
       <entry>11</entry>
     </row>
     <row>
       <entry>D1</entry>
       <entry>3</entry>
+      <entry></entry>
       <entry>D5</entry>
       <entry>12</entry>
     </row>
     <row>
       <entry>D2</entry>
       <entry>4</entry>
+      <entry></entry>
       <entry>D6</entry>
       <entry>(13)</entry>
     </row>
     <row>
       <entry>D3</entry>
       <entry>5</entry>
+      <entry></entry>
       <entry>D7</entry>
       <entry>14</entry>
     </row>
     <row>
       <entry>D4</entry>
       <entry>6</entry>
+      <entry></entry>
       <entry>RS</entry>
       <entry>4</entry>
     </row>
     <row>
       <entry>D5</entry>
       <entry>7</entry>
+      <entry></entry>
       <entry>RW</entry>
       <entry>5 (LCD3 - 6) (optional - pull all LCD RW low (*) )</entry>
     </row>
     <row>
       <entry>D6</entry>
       <entry>8</entry>
+      <entry></entry>
       <entry>EN</entry>
       <entry>6</entry>
     </row>
     <row>
       <entry>D7</entry>
       <entry>9</entry>
+      <entry></entry>
       <entry>EN2</entry>
       <entry>(LCD2 - 6) (optional)</entry>
     </row>
@@ -548,14 +563,16 @@ displays four to seven use:
 
 <table id="hd44780-4bit.multi-mapping">
 <title>HD44780: 4bit Pinouts (2)</title>
-<tgroup cols="4" align="left">
+<tgroup cols="5" align="left">
 <colspec colname="lpt1"/>
-<colspec colname="lpt2"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
 <colspec colname="lcd1"/>
 <colspec colname="lcd2"/>
   <thead>
     <row>
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
       <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
     </row>
     <row>
@@ -569,24 +586,28 @@ displays four to seven use:
     <row>
       <entry>STR</entry>
       <entry>1</entry>
+      <entry></entry>
       <entry>EN4</entry>
       <entry>6</entry>
     </row>
     <row>
       <entry>LF</entry>
       <entry>14</entry>
+      <entry></entry>
       <entry>EN5</entry>
       <entry>6</entry>
     </row>
     <row>
       <entry>INIT</entry>
       <entry>16</entry>
+      <entry></entry>
       <entry>EN6</entry>
       <entry>6</entry>
     </row>
     <row>
       <entry>SEL</entry>
       <entry>17</entry>
+      <entry></entry>
       <entry>EN7</entry>
       <entry>6</entry>
     </row>
@@ -600,12 +621,14 @@ The optional keypad can be connected as follows:
 
 <table id="hd44780-4bit.keypad-mapping">
 <title>HD44780: 4bit Keypad Pinouts</title>
-<tgroup cols="3" align="left">
+<tgroup cols="4" align="left">
 <colspec colname="lpt1"/>
-<colspec colname="lpt2"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
   <thead>
     <row>
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
       <entry align="center">keypad</entry>
     </row>
     <row>
@@ -618,76 +641,91 @@ The optional keypad can be connected as follows:
     <row>
       <entry>D0</entry>
       <entry>2</entry>
+      <entry></entry>
       <entry>Y0</entry>
     </row>
     <row>
       <entry>D1</entry>
       <entry>3</entry>
+      <entry></entry>
       <entry>Y1</entry>
     </row>
     <row>
       <entry>D2</entry>
       <entry>4</entry>
+      <entry></entry>
       <entry>Y2</entry>
     </row>
     <row>
       <entry>D3</entry>
       <entry>5</entry>
+      <entry></entry>
       <entry>Y3</entry>
     </row>
     <row>
       <entry>D4</entry>
       <entry>6</entry>
+      <entry></entry>
       <entry>Y4</entry>
     </row>
     <row>
       <entry>D5</entry>
       <entry>7</entry>
+      <entry></entry>
       <entry>Y5</entry>
     </row>
     <row>
       <entry>nSTRB</entry>
       <entry>1</entry>
+      <entry></entry>
       <entry>Y6</entry>
     </row>
     <row>
       <entry>nLF</entry>
       <entry>14</entry>
+      <entry></entry>
       <entry>Y7</entry>
     </row>
     <row>
       <entry>INIT</entry>
       <entry>16</entry>
+      <entry></entry>
       <entry>Y8</entry>
     </row>
     <row>
       <entry>nSEL</entry>
       <entry>17</entry>
+      <entry></entry>
       <entry>Y9</entry>
     </row>
     <row>
       <entry>nACK</entry>
       <entry>10</entry>
+      <entry></entry>
       <entry>X0</entry>
     </row>
     <row>
       <entry>BUSY</entry>
       <entry>11</entry>
+      <entry></entry>
       <entry>X1</entry>
     </row>
     <row>
       <entry>PAPEREND</entry>
       <entry>12</entry>
+      <entry></entry>
       <entry>X2</entry>
     </row>
     <row>
       <entry>SELIN</entry>
       <entry>13</entry>
+      <entry></entry>
       <entry>X3</entry>
     </row>
     <row>
       <entry>nFAULT</entry>
       <entry>15</entry>
+      <entry></entry>
       <entry>X4</entry>
     </row>
   </tbody>
@@ -709,14 +747,16 @@ This type of connection should work with winamp.
 
 <table id="hd44780-8bit-winamp.base-mapping">
 <title>HD44780: "Winamp" wiring</title>
-<tgroup cols="4" align="left">
+<tgroup cols="5" align="left">
 <colspec colname="lpt1"/>
-<colspec colname="lpt2"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
 <colspec colname="lcd1"/>
 <colspec colname="lcd2"/>
   <thead>
     <row>
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
       <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
     </row>
     <row>
@@ -730,72 +770,84 @@ This type of connection should work with winamp.
     <row>
       <entry>D0</entry>
       <entry>2</entry>
+      <entry></entry>
       <entry>D0</entry>
       <entry>7</entry>
     </row>
     <row>
       <entry>D1</entry>
       <entry>3</entry>
+      <entry></entry>
       <entry>D1</entry>
       <entry>8</entry>
     </row>
     <row>
       <entry>D2</entry>
       <entry>4</entry>
+      <entry></entry>
       <entry>D2</entry>
       <entry>9</entry>
     </row>
     <row>
       <entry>D3</entry>
       <entry>5</entry>
+      <entry></entry>
       <entry>D3</entry>
       <entry>10</entry>
     </row>
     <row>
       <entry>D4</entry>
       <entry>6</entry>
+      <entry></entry>
       <entry>D4</entry>
       <entry>11</entry>
     </row>
     <row>
       <entry>D5</entry>
       <entry>7</entry>
+      <entry></entry>
       <entry>D5</entry>
       <entry>12</entry>
     </row>
     <row>
       <entry>D6</entry>
       <entry>8</entry>
+      <entry></entry>
       <entry>D6</entry>
       <entry>13</entry>
     </row>
     <row>
       <entry>D7</entry>
       <entry>9</entry>
+      <entry></entry>
       <entry>D7</entry>
       <entry>14</entry>
     </row>
     <row>
       <entry>nSTRB</entry>
       <entry>(1)</entry>
+      <entry></entry>
       <entry>EN</entry>
       <entry>6</entry>
     </row>
     <row>
       <entry>nLF</entry>
       <entry>14</entry>
+      <entry></entry>
       <entry>RW</entry>
       <entry>5 (EN3 6 - LCD 3) (optional (*) )</entry>
     </row>
     <row>
       <entry>INIT</entry>
       <entry>16</entry>
+      <entry></entry>
       <entry>RS</entry>
       <entry>4</entry>
     </row>
     <row>
       <entry>nSEL</entry>
       <entry>17</entry>
+      <entry></entry>
       <entry>EN2</entry>
       <entry>(6 - LCD 2) (optional)</entry>
     </row>
@@ -824,12 +876,14 @@ The optional keypad can be connected as follows:
 
 <table id="hd44780-8bit-winamp.keypad-mapping">
 <title>HD44780: "Winamp" wiring - Keypad</title>
-<tgroup cols="3" align="left">
+<tgroup cols="4" align="left">
 <colspec colname="lpt1"/>
-<colspec colname="lpt2"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
   <thead>
     <row>
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
       <entry align="center">keypad</entry>
     </row>
     <row>
@@ -842,76 +896,91 @@ The optional keypad can be connected as follows:
     <row>
       <entry>D0</entry>
       <entry>2</entry>
+      <entry></entry>
       <entry>Y0</entry>
     </row>
     <row>
       <entry>D1</entry>
       <entry>3</entry>
+      <entry></entry>
       <entry>Y1</entry>
     </row>
     <row>
       <entry>D2</entry>
       <entry>4</entry>
+      <entry></entry>
       <entry>Y2</entry>
     </row>
     <row>
       <entry>D3</entry>
       <entry>5</entry>
+      <entry></entry>
       <entry>Y3</entry>
     </row>
     <row>
       <entry>D4</entry>
       <entry>6</entry>
+      <entry></entry>
       <entry>Y4</entry>
     </row>
     <row>
       <entry>D5</entry>
       <entry>7</entry>
+      <entry></entry>
       <entry>Y5</entry>
     </row>
     <row>
       <entry>D6</entry>
       <entry>8</entry>
+      <entry></entry>
       <entry>Y6</entry>
     </row>
     <row>
       <entry>D7</entry>
       <entry>9</entry>
+      <entry></entry>
       <entry>Y7</entry>
     </row>
     <row>
       <entry>nLF</entry>
       <entry>14</entry>
+      <entry></entry>
       <entry>Y8</entry>
     </row>
     <row>
       <entry>INIT</entry>
       <entry>16</entry>
+      <entry></entry>
       <entry>Y9</entry>
     </row>
     <row>
       <entry>nACK</entry>
       <entry>10</entry>
+      <entry></entry>
       <entry>X0</entry>
     </row>
     <row>
       <entry>BUSY</entry>
       <entry>11</entry>
+      <entry></entry>
       <entry>X1</entry>
     </row>
     <row>
       <entry>PAPEREND</entry>
       <entry>12</entry>
+      <entry></entry>
       <entry>X2</entry>
     </row>
     <row>
       <entry>SELIN</entry>
       <entry>13</entry>
+      <entry></entry>
       <entry>X3</entry>
     </row>
     <row>
       <entry>nFAULT</entry>
       <entry>15</entry>
+      <entry></entry>
       <entry>X4</entry>
     </row>
   </tbody>
@@ -953,14 +1022,16 @@ The LCD connections are:
 
 <table id="hd44780-8bit-lcdtime.base-mapping">
 <title>HD44780: "lcdtime" wiring</title>
-<tgroup cols="4" align="left">
+<tgroup cols="5" align="left">
 <colspec colname="lpt1"/>
-<colspec colname="lpt2"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
 <colspec colname="lcd1"/>
 <colspec colname="lcd2"/>
   <thead>
     <row>
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
       <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
     </row>
     <row>
@@ -974,72 +1045,84 @@ The LCD connections are:
     <row>
       <entry>D0</entry>
       <entry>2</entry>
+      <entry></entry>
       <entry>D0</entry>
       <entry>7</entry>
     </row>
     <row>
       <entry>D1</entry>
       <entry>3</entry>
+      <entry></entry>
       <entry>D1</entry>
       <entry>8</entry>
     </row>
     <row>
       <entry>D2</entry>
       <entry>4</entry>
+      <entry></entry>
       <entry>D2</entry>
       <entry>9</entry>
     </row>
     <row>
       <entry>D3</entry>
       <entry>5</entry>
+      <entry></entry>
       <entry>D3</entry>
       <entry>10</entry>
     </row>
     <row>
       <entry>D4</entry>
       <entry>6</entry>
+      <entry></entry>
       <entry>D4</entry>
       <entry>11</entry>
     </row>
     <row>
       <entry>D5</entry>
       <entry>7</entry>
+      <entry></entry>
       <entry>D5</entry>
       <entry>12</entry>
     </row>
     <row>
       <entry>D6</entry>
       <entry>8</entry>
+      <entry></entry>
       <entry>D6</entry>
       <entry>13</entry>
     </row>
     <row>
       <entry>D7</entry>
       <entry>9</entry>
+      <entry></entry>
       <entry>D7</entry>
       <entry>14</entry>
     </row>
     <row>
       <entry>nSEL</entry>
       <entry>17</entry>
+      <entry></entry>
       <entry>-</entry>
       <entry></entry>
     </row>
     <row>
       <entry>nSTRB</entry>
       <entry>1</entry>
+      <entry></entry>
       <entry>RS</entry>
       <entry>4</entry>
     </row>
     <row>
       <entry>nLF</entry>
       <entry>14</entry>
+      <entry></entry>
       <entry>RW</entry>
       <entry>5 (LCD2 - 6) (optional - pull all LCD RW low (*)</entry>
     </row>
     <row>
       <entry>INIT</entry>
       <entry>16</entry>
+      <entry></entry>
       <entry>EN</entry>
       <entry>6</entry>
     </row>
@@ -1065,12 +1148,14 @@ The optional keypad can be connected as follows:
 
 <table id="hd44780-8bit-lcdtime.keypad-mapping">
 <title>HD44780: "lcdtime" wiring - keypad</title>
-<tgroup cols="3" align="left">
+<tgroup cols="4" align="left">
 <colspec colname="lpt1"/>
-<colspec colname="lpt2"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
   <thead>
     <row>
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
       <entry align="center">keypad</entry>
     </row>
     <row>
@@ -1083,76 +1168,91 @@ The optional keypad can be connected as follows:
     <row>
       <entry>D0</entry>
       <entry>2</entry>
+      <entry></entry>
       <entry>Y0</entry>
     </row>
     <row>
       <entry>D1</entry>
       <entry>3</entry>
+      <entry></entry>
       <entry>Y1</entry>
     </row>
     <row>
       <entry>D2</entry>
       <entry>4</entry>
+      <entry></entry>
       <entry>Y2</entry>
     </row>
     <row>
       <entry>D3</entry>
       <entry>5</entry>
+      <entry></entry>
       <entry>Y3</entry>
     </row>
     <row>
       <entry>D4</entry>
       <entry>6</entry>
+      <entry></entry>
       <entry>Y4</entry>
     </row>
     <row>
       <entry>D5</entry>
       <entry>7</entry>
+      <entry></entry>
       <entry>Y5</entry>
     </row>
     <row>
       <entry>D6</entry>
       <entry>8</entry>
+      <entry></entry>
       <entry>Y6</entry>
     </row>
     <row>
       <entry>D7</entry>
       <entry>9</entry>
+      <entry></entry>
       <entry>Y7</entry>
     </row>
     <row>
       <entry>nSTRB</entry>
       <entry>1</entry>
+      <entry></entry>
       <entry>Y8</entry>
     </row>
     <row>
       <entry>nSEL</entry>
       <entry>17</entry>
+      <entry></entry>
       <entry>Y9</entry>
     </row>
     <row>
       <entry>nACK</entry>
       <entry>10</entry>
+      <entry></entry>
       <entry>X0</entry>
     </row>
     <row>
       <entry>BUSY</entry>
       <entry>11</entry>
+      <entry></entry>
       <entry>X1</entry>
     </row>
     <row>
       <entry>PAPEREND</entry>
       <entry>12</entry>
+      <entry></entry>
       <entry>X2</entry>
     </row>
     <row>
       <entry>SELIN</entry>
       <entry>13</entry>
+      <entry></entry>
       <entry>X3</entry>
     </row>
     <row>
       <entry>nFAULT</entry>
       <entry>15</entry>
+      <entry></entry>
       <entry>X4</entry>
     </row>
   </tbody>
@@ -1342,12 +1442,14 @@ serialLpt wiring supports a keypad. The 3 wires version supports
 
 <table id="hd44780-seriallpt-keypad.mapping">
 <title>HD44780: Serial LPT - Keypad return lines</title>
-<tgroup cols="3" align="left">
+<tgroup cols="4" align="left">
 <colspec colname="lpt1"/>
-<colspec colname="lpt2"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
   <thead>
     <row>
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
       <entry align="center">keypad</entry>
     </row>
     <row>
@@ -1360,26 +1462,31 @@ serialLpt wiring supports a keypad. The 3 wires version supports
     <row>
       <entry>nACK</entry>
       <entry>10</entry>
+      <entry></entry>
       <entry>X0</entry>
     </row>
     <row>
       <entry>BUSY</entry>
       <entry>11</entry>
+      <entry></entry>
       <entry>X1</entry>
     </row>
     <row>
       <entry>PAPEREND</entry>
       <entry>12</entry>
+      <entry></entry>
       <entry>X2</entry>
     </row>
     <row>
       <entry>SELIN</entry>
       <entry>13</entry>
+      <entry></entry>
       <entry>X3</entry>
     </row>
     <row>
       <entry>nFAULT</entry>
       <entry>15</entry>
+      <entry></entry>
       <entry>X4</entry>
     </row>
   </tbody>

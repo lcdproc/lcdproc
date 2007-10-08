@@ -6,8 +6,9 @@
 	20x2) display.
 </para>
 <para>
-	The picoLCD page indicates that the device can be connected via I2C or USART.  
-	This lcdproc driver, however, is limited to the USB connected model. 
+	The picoLCD page indicates that the device can be connected via I<superscript>2</superscript>C 
+	or USART.  
+	This LCDproc driver, however, is limited to the USB connected model. 
 </para>
 
 <sect2 id="picolcd-setup">
