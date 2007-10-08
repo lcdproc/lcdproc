@@ -436,14 +436,14 @@ The BC327 transistor has the following connections:
  <para>
  Sometimes the backlight connections are not on the 'main' connector, but on
  the side. If that is the case, there is usually NO RESISTOR present to limit
- the current through the LEDs. Therefor you should then add a resistor after
+ the current through the LEDs. Therefore you should then add a resistor after
  the transistor of about 10 ohm (see display documentation).
  </para>
 </caution>
 
 <tip>
  <para>
- If you want the backlight to light a bit while it's switched 'off', you can
+ If you want the backlight to light a bit while it is "switched off", you can
  add a resistor bypassing the transistor from e to c, with a value of, say
  47ohm or 22ohm. (My 4x20 has an internal resistor of 6ohm, so with 47 ohm
  extra it lights at only 1/9th. I like this. Joris.)
@@ -535,8 +535,8 @@ This is originally based on "lcdtext" (by Matthias Prinke).
 
 <para>
 (*) on the RW line of the display: this line decides whether the display receives data from the 
-LPT port, or whether it sends data to the LPT port. If grounded, it receives. If High or connected 
-to nothing at all, it "sends" (i.e., will not work as intended). So, if you are not sure that 
+LPT port, or whether it sends data to the LPT port: if grounded it receives, if High or connected 
+to nothing at all it "sends" (i.e., will not work as intended). So, if you are not sure that 
 you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
 </para>
 
@@ -548,29 +548,47 @@ displays four to seven use:
 
 <table id="hd44780-4bit.multi-mapping">
 <title>HD44780: 4bit Pinouts (2)</title>
-<tgroup cols="2" align="left">
+<tgroup cols="4" align="left">
+<colspec colname="lpt1"/>
+<colspec colname="lpt2"/>
+<colspec colname="lcd1"/>
+<colspec colname="lcd2"/>
   <thead>
     <row>
-      <entry>printer port</entry>
-      <entry>LCD</entry>
+      <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>name</entry>
+      <entry>pin</entry>
     </row>
   </thead>
   <tbody>
     <row>
-      <entry>STR (1)</entry>
+      <entry>STR</entry>
+      <entry>1</entry>
       <entry>EN4</entry>
+      <entry>6</entry>
     </row>
     <row>
-      <entry>LF (14)</entry>
+      <entry>LF</entry>
+      <entry>14</entry>
       <entry>EN5</entry>
+      <entry>6</entry>
     </row>
     <row>
-      <entry>INIT (16)</entry>
+      <entry>INIT</entry>
+      <entry>16</entry>
       <entry>EN6</entry>
+      <entry>6</entry>
     </row>
     <row>
-      <entry>SEL (17)</entry>
+      <entry>SEL</entry>
+      <entry>17</entry>
       <entry>EN7</entry>
+      <entry>6</entry>
     </row>
   </tbody>
 </tgroup>
@@ -582,72 +600,94 @@ The optional keypad can be connected as follows:
 
 <table id="hd44780-4bit.keypad-mapping">
 <title>HD44780: 4bit Keypad Pinouts</title>
-<tgroup cols="2" align="left">
+<tgroup cols="3" align="left">
+<colspec colname="lpt1"/>
+<colspec colname="lpt2"/>
   <thead>
     <row>
-      <entry>printer port</entry>
-      <entry>LCD</entry>
-  </row>
+      <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry align="center">keypad</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>pin</entry>
+    </row>
   </thead>
   <tbody>
     <row>
-      <entry>D0 (2)</entry>
+      <entry>D0</entry>
+      <entry>2</entry>
       <entry>Y0</entry>
     </row>
     <row>
-      <entry>D1 (3)</entry>
+      <entry>D1</entry>
+      <entry>3</entry>
       <entry>Y1</entry>
     </row>
     <row>
-      <entry>D2 (4)</entry>
+      <entry>D2</entry>
+      <entry>4</entry>
       <entry>Y2</entry>
     </row>
     <row>
-      <entry>D3 (5)</entry>
+      <entry>D3</entry>
+      <entry>5</entry>
       <entry>Y3</entry>
     </row>
     <row>
-      <entry>D4 (6)</entry>
+      <entry>D4</entry>
+      <entry>6</entry>
       <entry>Y4</entry>
     </row>
     <row>
-      <entry>D5 (7)</entry>
+      <entry>D5</entry>
+      <entry>7</entry>
       <entry>Y5</entry>
     </row>
     <row>
-      <entry>nSTRB (1)</entry>
+      <entry>nSTRB</entry>
+      <entry>1</entry>
       <entry>Y6</entry>
     </row>
     <row>
-      <entry>nLF  (14)</entry>
+      <entry>nLF</entry>
+      <entry>14</entry>
       <entry>Y7</entry>
     </row>
     <row>
-      <entry>INIT (16)</entry>
+      <entry>INIT</entry>
+      <entry>16</entry>
       <entry>Y8</entry>
     </row>
     <row>
-      <entry>nSEL (17)</entry>
+      <entry>nSEL</entry>
+      <entry>17</entry>
       <entry>Y9</entry>
     </row>
     <row>
-      <entry>nACK (10)</entry>
+      <entry>nACK</entry>
+      <entry>10</entry>
       <entry>X0</entry>
     </row>
     <row>
-      <entry>BUSY (11)</entry>
+      <entry>BUSY</entry>
+      <entry>11</entry>
       <entry>X1</entry>
     </row>
     <row>
-      <entry>PAPEREND (12)</entry>
+      <entry>PAPEREND</entry>
+      <entry>12</entry>
       <entry>X2</entry>
     </row>
     <row>
-      <entry>SELIN (13)</entry>
+      <entry>SELIN</entry>
+      <entry>13</entry>
       <entry>X3</entry>
     </row>
     <row>
-      <entry>nFAULT (15)</entry>
+      <entry>nFAULT</entry>
+      <entry>15</entry>
       <entry>X4</entry>
     </row>
   </tbody>
@@ -744,7 +784,7 @@ This type of connection should work with winamp.
     <row>
       <entry>nLF</entry>
       <entry>14</entry>
-      <entry>nRW</entry>
+      <entry>RW</entry>
       <entry>5 (EN3 6 - LCD 3) (optional (*) )</entry>
     </row>
     <row>
@@ -757,7 +797,7 @@ This type of connection should work with winamp.
       <entry>nSEL</entry>
       <entry>17</entry>
       <entry>EN2</entry>
-      <entry>6 - LCD 2) (optional)</entry>
+      <entry>(6 - LCD 2) (optional)</entry>
     </row>
   </tbody>
 </tgroup>
@@ -765,14 +805,14 @@ This type of connection should work with winamp.
 
 <para>
 (*) on the RW line of the display: this line decides whether the display receives data from the 
-LPT port, or whether it sends data to the LPT port. If grounded, it receives. If High or connected 
-to nothing at all, it "sends" (i.e., will not work as intended). So, if you are not sure that 
+LPT port, or whether it sends data to the LPT port: if grounded it receives, if High or connected 
+to nothing at all it "sends" (i.e., will not work as intended). So, if you are not sure that 
 you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
 </para>
 
 <para>
 If you want the display to work with the Winamp plugin, wire nLF (pin 14)
-to nRW of your LCD. You can then use the plugin in bidirectional mode (wich
+to RW of your LCD. You can then use the plugin in bidirectional mode (wich
 is much faster). With 3 connected LCDs this is not possible.
 Note from Benjamin: I haven't tried using winamp while having the third LCD
 connected to this line.
@@ -784,72 +824,94 @@ The optional keypad can be connected as follows:
 
 <table id="hd44780-8bit-winamp.keypad-mapping">
 <title>HD44780: "Winamp" wiring - Keypad</title>
-<tgroup cols="2" align="left">
+<tgroup cols="3" align="left">
+<colspec colname="lpt1"/>
+<colspec colname="lpt2"/>
   <thead>
     <row>
-      <entry>printer port</entry>
-      <entry>keypad</entry>
+      <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry align="center">keypad</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>pin</entry>
     </row>
   </thead>
   <tbody>
     <row>
-      <entry>D0 (2)</entry>
+      <entry>D0</entry>
+      <entry>2</entry>
       <entry>Y0</entry>
     </row>
     <row>
-      <entry>D1 (3)</entry>
+      <entry>D1</entry>
+      <entry>3</entry>
       <entry>Y1</entry>
     </row>
     <row>
-      <entry>D2 (4)</entry>
+      <entry>D2</entry>
+      <entry>4</entry>
       <entry>Y2</entry>
     </row>
     <row>
-      <entry>D3 (5)</entry>
+      <entry>D3</entry>
+      <entry>5</entry>
       <entry>Y3</entry>
     </row>
     <row>
-      <entry>D4 (6)</entry>
+      <entry>D4</entry>
+      <entry>6</entry>
       <entry>Y4</entry>
     </row>
     <row>
-      <entry>D5 (7)</entry>
+      <entry>D5</entry>
+      <entry>7</entry>
       <entry>Y5</entry>
     </row>
     <row>
-      <entry>D6 (8)</entry>
+      <entry>D6</entry>
+      <entry>8</entry>
       <entry>Y6</entry>
     </row>
     <row>
-      <entry>D7 (9)</entry>
+      <entry>D7</entry>
+      <entry>9</entry>
       <entry>Y7</entry>
     </row>
     <row>
-      <entry>nLF (14)</entry>
+      <entry>nLF</entry>
+      <entry>14</entry>
       <entry>Y8</entry>
     </row>
     <row>
-      <entry>INIT (16)</entry>
+      <entry>INIT</entry>
+      <entry>16</entry>
       <entry>Y9</entry>
     </row>
     <row>
-      <entry>nACK (10)</entry>
+      <entry>nACK</entry>
+      <entry>10</entry>
       <entry>X0</entry>
     </row>
     <row>
-      <entry>BUSY (11)</entry>
+      <entry>BUSY</entry>
+      <entry>11</entry>
       <entry>X1</entry>
     </row>
     <row>
-      <entry>PAPEREND (12)</entry>
+      <entry>PAPEREND</entry>
+      <entry>12</entry>
       <entry>X2</entry>
     </row>
     <row>
-      <entry>SELIN (13)</entry>
+      <entry>SELIN</entry>
+      <entry>13</entry>
       <entry>X3</entry>
     </row>
     <row>
-      <entry>nFAULT (15)</entry>
+      <entry>nFAULT</entry>
+      <entry>15</entry>
       <entry>X4</entry>
     </row>
   </tbody>
@@ -987,8 +1049,8 @@ The LCD connections are:
 
 <para>
 (*) on the RW line of the display: this line decides whether the display receives data from the 
-LPT port, or whether it sends data to the LPT port. If grounded, it receives. If High or connected 
-to nothing at all, it "sends" (i.e., will not work as intended). So, if you are not sure that 
+LPT port, or whether it sends data to the LPT port: if grounded it receives, if High or connected 
+to nothing at all it "sends" (i.e., will not work as intended). So, if you are not sure that 
 you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
 </para>
 
@@ -1003,72 +1065,94 @@ The optional keypad can be connected as follows:
 
 <table id="hd44780-8bit-lcdtime.keypad-mapping">
 <title>HD44780: "lcdtime" wiring - keypad</title>
-<tgroup cols="2" align="left">
+<tgroup cols="3" align="left">
+<colspec colname="lpt1"/>
+<colspec colname="lpt2"/>
   <thead>
     <row>
-      <entry>printer port</entry>
-      <entry>keypad</entry>
+      <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry align="center">keypad</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>pin</entry>
     </row>
   </thead>
   <tbody>
     <row>
-      <entry>D0 (2)</entry>
+      <entry>D0</entry>
+      <entry>2</entry>
       <entry>Y0</entry>
     </row>
     <row>
-      <entry>D1 (3)</entry>
+      <entry>D1</entry>
+      <entry>3</entry>
       <entry>Y1</entry>
     </row>
     <row>
-      <entry>D2 (4)</entry>
+      <entry>D2</entry>
+      <entry>4</entry>
       <entry>Y2</entry>
     </row>
     <row>
-      <entry>D3 (5)</entry>
+      <entry>D3</entry>
+      <entry>5</entry>
       <entry>Y3</entry>
     </row>
     <row>
-      <entry>D4 (6)</entry>
+      <entry>D4</entry>
+      <entry>6</entry>
       <entry>Y4</entry>
     </row>
     <row>
-      <entry>D5 (7)</entry>
+      <entry>D5</entry>
+      <entry>7</entry>
       <entry>Y5</entry>
     </row>
     <row>
-      <entry>D6 (8)</entry>
+      <entry>D6</entry>
+      <entry>8</entry>
       <entry>Y6</entry>
     </row>
     <row>
-      <entry>D7 (9)</entry>
+      <entry>D7</entry>
+      <entry>9</entry>
       <entry>Y7</entry>
     </row>
     <row>
-      <entry>nSTRB (1)</entry>
+      <entry>nSTRB</entry>
+      <entry>1</entry>
       <entry>Y8</entry>
     </row>
     <row>
-      <entry>nSEL (17)</entry>
+      <entry>nSEL</entry>
+      <entry>17</entry>
       <entry>Y9</entry>
     </row>
     <row>
-      <entry>nACK (10)</entry>
+      <entry>nACK</entry>
+      <entry>10</entry>
       <entry>X0</entry>
     </row>
     <row>
-      <entry>BUSY (11)</entry>
+      <entry>BUSY</entry>
+      <entry>11</entry>
       <entry>X1</entry>
     </row>
     <row>
-      <entry>PAPEREND (12)</entry>
+      <entry>PAPEREND</entry>
+      <entry>12</entry>
       <entry>X2</entry>
     </row>
     <row>
-      <entry>SELIN (13)</entry>
+      <entry>SELIN</entry>
+      <entry>13</entry>
       <entry>X3</entry>
     </row>
     <row>
-      <entry>nFAULT (15)</entry>
+      <entry>nFAULT</entry>
+      <entry>15</entry>
       <entry>X4</entry>
     </row>
   </tbody>
