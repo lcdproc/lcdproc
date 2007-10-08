@@ -1853,15 +1853,17 @@ for the Atmel AVR microcontroller series.
 <para>
 The whole interface incl. the hardware layout is under a GPL like license.
 This means that you can take these schematics and use it as a basis for your own interface
-e.g. for a graphic LCD
-</para>
-
-<para>
-The LCD2USB interface supports up to two keys. They can be configured as direct keys 1 and 2.
+e.g. for a graphic LCD.
 </para>
 
 <sect4 id="hd44780-lcd2usb-config">
 <title>Special config options</title>
+
+<para>
+Two keys can be connected to the LCD2USB interface board. They can generate three key events:
+One for each key and one if the keys are pressed simultaneously. With this menus can be used
+(see example below).
+</para>
 
 <para>
 Besides the standard configuration options for <code>hd44780</code> displays, the
@@ -1870,6 +1872,29 @@ Besides the standard configuration options for <code>hd44780</code> displays, th
 <command>Brightness=</command> to set the display's brightness.
 Both options expect a number in the range from <literal>0</literal> to <literal>1000</literal>.
 </para>
+
+<example id="hd44780-lcd2usb-config.example">
+<title>HD44780: Configuration for LCD2USB</title>
+<screen>
+<![CDATA[
+[menu]
+MenuKey=Escape
+EnterKey=Enter
+DownKey=Down
+
+[hd44780]
+ConnectionType=lcd2usb
+Contrast=850
+Brightness=800
+Keypad=yes
+Size=20x2
+KeyDirect_1=Enter
+KeyDirect_2=Down
+KeyDirect_3=Escape
+]]>
+</screen>
+</example>
+
 
 <tip>
  <para>
