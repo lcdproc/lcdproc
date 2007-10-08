@@ -100,7 +100,7 @@ hd_init_4bit(Driver *drvthis)
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
 
-	int enableLines = EN1 | EN2 | EN3;
+	int enableLines = EN1 | EN2 | ((p->numDisplays == 3) ? EnMask[2] : 0);
 
 	// Reserve the port registers
 	port_access_multiple(p->port,3);
@@ -186,7 +186,8 @@ lcdstat_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 
 	if (displayID <= 3) {
 		if (displayID == 0) {
-			enableLines = EnMask[0] | EnMask[1] | EnMask[2];
+			enableLines = EnMask[0] | EnMask[1]
+			| ((p->numDisplays == 3) ? EnMask[2] : 0);
 		} else {
 			enableLines = EnMask[displayID - 1];
 		}

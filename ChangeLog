@@ -28,7 +28,8 @@ v.0.5dev (ongoing development)
  + option Priority for NoritakeVFD (idea: Richard Muratti)
  * overhauled NoritakeVFD driver (idea: Richard Muratti)
  * allow wrapping slider menu items with <= 4 keys (M. Dolze)
- * a bit more Doxygen-ation
+ * a bit more Doxygen-ation and documentation
+ * hd44780 driver: make ConnectionType 4bit more fool-proof (M. Dolze)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
