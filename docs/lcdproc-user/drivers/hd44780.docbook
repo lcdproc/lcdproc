@@ -1342,26 +1342,44 @@ serialLpt wiring supports a keypad. The 3 wires version supports
 
 <table id="hd44780-seriallpt-keypad.mapping">
 <title>HD44780: Serial LPT - Keypad return lines</title>
-<tgroup cols="2" align="left">
+<tgroup cols="3" align="left">
+<colspec colname="lpt1"/>
+<colspec colname="lpt2"/>
+  <thead>
+    <row>
+      <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
+      <entry align="center">keypad</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>pin</entry>
+    </row>
+  </thead>
   <tbody>
     <row>
-      <entry>nACK (10)</entry>
+      <entry>nACK</entry>
+      <entry>10</entry>
       <entry>X0</entry>
     </row>
     <row>
-      <entry>BUSY (11)</entry>
+      <entry>BUSY</entry>
+      <entry>11</entry>
       <entry>X1</entry>
     </row>
     <row>
-      <entry>PAPEREND (12)</entry>
+      <entry>PAPEREND</entry>
+      <entry>12</entry>
       <entry>X2</entry>
     </row>
     <row>
-      <entry>SELIN (13)</entry>
+      <entry>SELIN</entry>
+      <entry>13</entry>
       <entry>X3</entry>
     </row>
     <row>
-      <entry>nFAULT (15)</entry>
+      <entry>nFAULT</entry>
+      <entry>15</entry>
       <entry>X4</entry>
     </row>
   </tbody>
