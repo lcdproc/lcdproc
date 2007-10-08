@@ -102,7 +102,6 @@ static char * keymap[KEYPAD_MAX] = {
 };
 
 /* Private function definitions */
-static usb_dev_handle *picolcd_open(void);
 static void picolcd_send(usb_dev_handle *lcd, unsigned char *data, int size);
 static void picolcd_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data);
 static void get_key_event  (usb_dev_handle *lcd, lcd_packet *packet, int timeout);
@@ -118,6 +117,8 @@ MODULE_EXPORT char *symbol_prefix     = "picoLCD_";
 MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 	PrivateData *pd;
 	int x;
+	struct usb_bus *bus;
+	struct usb_device *dev;
 
 	pd = (PrivateData *) malloc(sizeof(PrivateData));
 
@@ -127,7 +128,62 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 	if (drvthis->store_private_ptr(drvthis, pd))
 		return -1;
 
-	pd->lcd = picolcd_open();
+	/* Try to find picolcd device */
+	usb_init();
+	usb_find_busses();
+	usb_find_devices();
+
+	pd->lcd = NULL;
+	for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
+		for (dev = bus->devices; dev != NULL; dev = dev->next) {
+			if ((dev->descriptor.idVendor == picoLCD_VENDOR) &&
+				(dev->descriptor.idProduct == picoLCD_DEVICE)) {
+				
+				report(RPT_INFO, "Found picoLCD on bus %s device %s", bus->dirname, dev->filename);
+				pd->lcd = usb_open(dev);
+				goto done;
+			}
+		}
+	}
+	done:
+
+	if (pd->lcd != NULL) {
+		debug(RPT_DEBUG, "%s: opening device succeeded", drvthis->name);
+
+		if (usb_set_configuration(pd->lcd, 0) < 0) {
+			usb_close(pd->lcd);
+			report(RPT_ERR, "%s: unable to set configuration", drvthis->name);
+			return -1;
+		}
+		usleep(100);
+
+		if (usb_claim_interface(pd->lcd, 0) < 0) {
+#ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
+			if ((usb_detach_kernel_driver_np(pd->lcd, 0) < 0) ||
+				(usb_claim_interface(pd->lcd, 0) < 0)) {
+#ifdef LIBUSB_HAS_GET_DRIVER_NP
+				char driver[1024];
+				if (usb_get_driver_np(pd->lcd, 0, driver, sizeof(driver)) == 0)
+					report(RPT_WARNING, "Interface 0 already claimed by '%s'", driver);
+#endif
+				usb_close(pd->lcd);
+				report(RPT_ERR, "%s: unable to re-claim interface", drvthis->name);
+			        return -1;
+			}
+#else
+			report(RPT_ERR, "%s: failed to claim interface", drvthis->name);
+			usb_close(pd->lcd);
+			return -1;
+#endif
+		}
+
+		if (usb_set_altinterface(pd->lcd, 0) < 0)
+			report(RPT_WARNING, "%s: unable to set alternate configuration", drvthis->name);
+	} else {
+		report(RPT_ERR, "%s: no device found", drvthis->name);
+		return -1;
+	}		
+	
 	pd->width  = 20; /* hard coded (mfg spec) */
 	pd->height = 2;  /* hard coded (mfg spec) */
 	pd->info = "picoLCD: Supports the LCD as installed on the M300 (http://www.mini-box.com/Mini-Box-M300-LCD) ";
@@ -611,56 +667,6 @@ MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis) {
 }
 
 /* Private functions */
-
-static usb_dev_handle *picolcd_open(void)
-{
-    
-	usb_dev_handle *lcd;
-        struct usb_bus *busses, *bus;
-	struct usb_device *dev;
-        char driver[1024];
-        int ret;
-    
-	lcd = NULL;
-
-        debug(RPT_DEBUG, "picolcd: scanning for devices...");
-
-	usb_init();
-	usb_find_busses();
-	usb_find_devices();
-	busses = usb_get_busses();
-
-	for (bus = busses; bus; bus = bus->next) {
-		for (dev = bus->devices; dev; dev = dev->next) {
-			if ((dev->descriptor.idVendor == picoLCD_VENDOR) && (dev->descriptor.idProduct == picoLCD_DEVICE)) {
-				debug(RPT_DEBUG, "Found picoLCD on bus %s device %s", bus->dirname, dev->filename);
-				lcd = usb_open(dev);
-				ret = usb_get_driver_np(lcd, 0, driver, sizeof(driver));
-				if (ret == 0) {
-					debug(RPT_DEBUG, "Interface 0 already claimed by '%s' attempting to detach driver...", driver);
-					if (usb_detach_kernel_driver_np(lcd, 0) < 0) {
-						debug(RPT_DEBUG, "Failed to detach '%s' driver !", driver);
-						return NULL;
-					}
-				}
-
-				usb_set_configuration(lcd, 1);
-				usleep(100);
-
-				if (usb_claim_interface(lcd, 0) < 0) {
-					debug(RPT_DEBUG, "Failed to claim interface !");
-					return NULL;
-				}
-
-				usb_set_altinterface(lcd, 0);
-				return lcd;
-			}
-		}
-	}
-	
-	debug(RPT_DEBUG, "Could not find a picoLCD !");
-	return NULL;
-}
 
 static void picolcd_send(usb_dev_handle *lcd, unsigned char *data, int size)
 {
