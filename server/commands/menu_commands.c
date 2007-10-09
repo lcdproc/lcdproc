@@ -94,7 +94,6 @@ menu_add_item_func(Client *c, int argc, char **argv)
 	Menu *menu = NULL;
 	MenuItem *item;
 	MenuItemType itemtype;
-	char **argv_set = NULL;
 
 	debug(RPT_DEBUG, "%s(Client [%d], %s, %s)",
 	       __FUNCTION__, c->sock, argv[1], argv[2]);
@@ -190,17 +189,17 @@ menu_add_item_func(Client *c, int argc, char **argv)
 	}
 	menu_add_item(menu, item);
 	menuscreen_inform_item_modified(menu);
-	sock_send_string(c->sock, "success\n");
 
 	/* are there any options (starting with '-')?
-	 * - create a temporary argv for menu_set_item() call */
+	 * call menu_set_item() with a temporarily allocated argv */
 	if ((argc > 5) || (argv[4][0] == '-')) {
 		// menu_add_item <menuid> <newitemid> <type> [<text>]
 		// menu_set_item <menuid> <itemid> {<option>}+
 		int i, j;
-		argv_set = malloc(argc * sizeof(char *));
-		assert(argv_set);
-		argv_set[0] = "menu_set_item";
+		char **tmp_argv = malloc(argc * sizeof(char *));
+
+		assert(tmp_argv);
+		tmp_argv[0] = "menu_set_item";
 		for (i = j = 1; i < argc; i++) {
 			/* skip "type" */
 			if (i == 3)
@@ -209,11 +208,15 @@ menu_add_item_func(Client *c, int argc, char **argv)
 			if ((i == 4) && (argv[4][0] != '-'))
 				continue;
 
-			argv_set[j++] = argv[i];
+			tmp_argv[j++] = argv[i];
 		}
-		menu_set_item_func(c, j, argv_set);
-		free(argv_set);
+		// call menu_set_item() and let it send result to client
+		menu_set_item_func(c, j, tmp_argv);
+		free(tmp_argv);
 	}
+	else	// make sure the client gets informed
+		sock_send_string(c->sock, "success\n");
+
 	return 0;
 }
 
