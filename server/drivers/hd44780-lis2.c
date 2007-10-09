@@ -64,12 +64,12 @@ int hd_init_lis2(Driver *drvthis)
 	/* Get serial device to use */
 	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
 	device[sizeof(device)-1] = '\0';
-	report(RPT_INFO, "HD44780: LCD Serializer: Using device: %s", device);
+	report(RPT_INFO, "HD44780: LIS2: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
 	p->fd = open(device, O_RDWR | O_NOCTTY);
 	if (p->fd == -1) {
-		report(RPT_ERR, "HD44780: LCD Serializer: could not open device %s (%s)",
+		report(RPT_ERR, "HD44780: LIS2: could not open device %s (%s)",
 				device, strerror(errno));
 		return -1;
 	}
@@ -86,7 +86,7 @@ int hd_init_lis2(Driver *drvthis)
 	portset.c_cc[VMIN] = 1;
 	portset.c_cc[VTIME] = 3;
 
-	/* Set port speed to 9600 baud */
+	/* Set port speed to 19200 baud */
 	cfsetospeed(&portset, B19200);
 	cfsetispeed(&portset, B0);
 
@@ -108,8 +108,8 @@ static void SetMatrice(PrivateData *p, int fd, int matriceNum, int ligne, int po
 	// char from 0 to 7
 	// line from 0 to 7 from top to bottom
 	// pixel 0/1 is 5 bit coding from 0 to 31 from right to left (16/8/4/2/1)
-	writeChar(p->fd,0);
-	writeChar(p->fd,171);
+	writeChar(p->fd, 0);
+	writeChar(p->fd, 171);
 	writeChar(p->fd, matriceNum);
 	writeChar(fd, ligne);
 	writeChar(fd, point);
@@ -135,7 +135,7 @@ static void SetFan(int fd, int fan1, int fan2, int fan3, int fan4)
 static void gotoXY(int fd, int x, int y)
 {
 	writeChar(fd, 0);
-	writeChar(fd, 160+y);
+	writeChar(fd, 161 + y);
 	writeChar(fd, x);
 	writeChar(fd, 167);
 }
@@ -168,7 +168,8 @@ void lis2_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned cha
 			}
 		}
 		else {
-			if (ch < 7) ch++;
+			if (ch < 7)
+				ch++;
 			write(p->fd, &ch, 1);
 		}
 	}
@@ -182,25 +183,23 @@ void lis2_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned cha
 
 			if (p->ext_mode) {				
 				y = pos / 0x20;
-				x = pos - (y * 0x20);
+				x = pos % 0x20;
 			}
 			else {
 				y = pos / 0x40;
-				x = pos - (y * 0x40);
+				x = pos % 0x40;
 			}
 
-			writeChar(p->fd, 0);
-			writeChar(p->fd, 161 + y);
-			writeChar(p->fd, x);
-			writeChar(p->fd, 167);
-
+			gotoXY(p->fd, x, y);
 		}
 		else if ((ch & SETCHAR) != 0) {
 			mode = SETCHAR;
 			charNum = ((ch & ~SETCHAR)/8) + 1;
-			if (charNum == 8) charNum = 7;
+			if (charNum == 8)
+				charNum = 7;
 		}
-	 	else write(p->fd, &ch, 1);
+	 	else
+			write(p->fd, &ch, 1);
 	}
 
 }
