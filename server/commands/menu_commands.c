@@ -190,8 +190,8 @@ menu_add_item_func(Client *c, int argc, char **argv)
 	menu_add_item(menu, item);
 	menuscreen_inform_item_modified(menu);
 
-	/* are there any options (starting with '-')?
-	 * call menu_set_item() with a temporarily allocated argv */
+	/* call menu_set_item() with a temporarily allocated argv
+	 * to process the remaining options */
 	if ((argc > 5) || (argv[4][0] == '-')) {
 		// menu_add_item <menuid> <newitemid> <type> [<text>]
 		// menu_set_item <menuid> <itemid> {<option>}+
