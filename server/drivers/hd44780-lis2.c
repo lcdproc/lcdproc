@@ -2,7 +2,9 @@
  * \c lis2 connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  */
 
-/* Modification of the code of the LCDSerializer driver
+/*
+ * VLSystems LIS2 driver
+ * Modification of the code of the LCDSerializer driver
  *
  * Copyright (c)  1997, Matthias Prinke <m.prinke@trashcan.mcnet.de>
  *		  1998, Richard Rognlie <rrognlie@gamerz.net>
@@ -64,12 +66,12 @@ int hd_init_lis2(Driver *drvthis)
 	/* Get serial device to use */
 	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
 	device[sizeof(device)-1] = '\0';
-	report(RPT_INFO, "HD44780: LIS2: Using device: %s", device);
+	report(RPT_INFO, "HD44780: lis2: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
 	p->fd = open(device, O_RDWR | O_NOCTTY);
 	if (p->fd == -1) {
-		report(RPT_ERR, "HD44780: LIS2: could not open device %s (%s)",
+		report(RPT_ERR, "HD44780: lis2: could not open device %s (%s)",
 				device, strerror(errno));
 		return -1;
 	}
