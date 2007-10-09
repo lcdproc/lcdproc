@@ -22,21 +22,21 @@
 
 /*
 Different implementations of (n)curses available on:
-OpenBSD:
+  - OpenBSD:
 	http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libcurses/
 	ncurses
-NetBSD:
+  - NetBSD:
 	http://cvsweb.netbsd.org/bsdweb.cgi/basesrc/lib/libcurses/
 	curses : does not define ACS_S3, ACS_S7, wcolor_set() or redrawwin().
 	it is possible to make a:
 		#define ACS_S3 (_acs_char['p'])
 		#define ACS_S7 (_acs_char['r'])
-FreeBSD:
+  - FreeBSD:
 	http://www.freebsd.org/cgi/cvsweb.cgi/src/
 	ncurses
-RedHat, Debian, (most distros) Linux:
+  - RedHat, Debian, (most distros) Linux:
 	ncurses
-SunOS (5.5.1):
+  - SunOS (5.5.1):
 	curses : does not define ACS_S3, ACS_S7 or wcolor_set().
 	it is possible to make a:
 		#define ACS_S3 (acs_map['p'])
@@ -97,17 +97,9 @@ SunOS (5.5.1):
 # endif
 #endif
 
-// Character used for title bars...
-#define PAD '#'
-// #define PAD ACS_BLOCK
-
 /* A few different nice pairs of colors to use... */
 #define DEFAULT_FOREGROUND_COLOR COLOR_CYAN
 #define DEFAULT_BACKGROUND_COLOR COLOR_BLUE
-
-/* What position (X,Y) to start the left top corner at... */
-#define TOP_LEFT_X 7
-#define TOP_LEFT_Y 7
 
 
 typedef struct driver_private_data {
@@ -126,6 +118,8 @@ typedef struct driver_private_data {
 	int yoffs;
 
 	int useACS;
+
+	int drawBorder;
 } PrivateData;
 
 
@@ -135,54 +129,37 @@ MODULE_EXPORT int stay_in_foreground = 1;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "curses_";
 
-
-void curses_restore_screen (Driver *drvthis);
+// local helper functions
+static chtype get_color_by_name (char *colorname, chtype default_color);
+static void curses_restore_screen (Driver *drvthis);
 
 //////////////////////////////////////////////////////////////////////////
 ////////////////////// For Curses Terminal Output ////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
 
-chtype get_color (char *colorstr) {
-	if (strcasecmp(colorstr, "red") == 0)
+static chtype
+get_color_by_name (char *colorname, chtype default_color) {
+	if (strcasecmp(colorname, "red") == 0)
 		return COLOR_RED;
-	else if (strcasecmp(colorstr, "black") == 0)
+	else if (strcasecmp(colorname, "black") == 0)
 		return COLOR_BLACK;
-	else if (strcasecmp(colorstr, "green") == 0)
+	else if (strcasecmp(colorname, "green") == 0)
 		return COLOR_GREEN;
-	else if (strcasecmp(colorstr, "yellow") == 0)
+	else if (strcasecmp(colorname, "yellow") == 0)
 		return COLOR_YELLOW;
-	else if (strcasecmp(colorstr, "blue") == 0)
+	else if (strcasecmp(colorname, "blue") == 0)
 		return COLOR_BLUE;
-	else if (strcasecmp(colorstr, "magenta") == 0)
+	else if (strcasecmp(colorname, "magenta") == 0)
 		return COLOR_MAGENTA;
-	else if (strcasecmp(colorstr, "cyan") == 0)
+	else if (strcasecmp(colorname, "cyan") == 0)
 		return COLOR_CYAN;
-	else if (strcasecmp(colorstr, "white") == 0)
+	else if (strcasecmp(colorname, "white") == 0)
 		return COLOR_WHITE;
-	else
-		return -1;
+
+	return default_color;
 }
 
-chtype
-set_foreground_color (char * buf) {
-	chtype color;
-
-	if ((color = get_color(buf)) < 0)
-		color = DEFAULT_FOREGROUND_COLOR;
-
-	return color;
-}
-
-chtype
-set_background_color (char * buf) {
-	chtype color;
-
-	if ((color = get_color(buf)) < 0)
-		color = DEFAULT_BACKGROUND_COLOR;
-
-	return color;
-}
 
 MODULE_EXPORT int
 curses_init (Driver *drvthis)
@@ -214,7 +191,7 @@ curses_init (Driver *drvthis)
 	p->yoffs = CONF_DEF_TOP_LEFT_Y;
 	p->cellwidth = LCD_DEFAULT_CELLWIDTH;
 	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
-
+	p->drawBorder = CONF_DEF_DRAWBORDER;
 
 	/* Get settings from config file */
 
@@ -223,24 +200,28 @@ curses_init (Driver *drvthis)
 	/* foreground color */
 	strncpy(buf, drvthis->config_get_string(drvthis->name, "Foreground", 0, CONF_DEF_FOREGR), sizeof(buf));
 	buf[sizeof(buf)-1] = '\0';
-	fore_color = set_foreground_color(buf);
+	fore_color = get_color_by_name(buf, DEFAULT_FOREGROUND_COLOR);
 	debug(RPT_DEBUG, "%s: using foreground color %s", drvthis->name, buf);
 
 	/* background color */
 	strncpy(buf, drvthis->config_get_string(drvthis->name, "Background", 0, CONF_DEF_BACKGR), sizeof(buf));
 	buf[sizeof(buf)-1] = '\0';
-	back_color = set_background_color(buf);
+	back_color = get_color_by_name(buf, DEFAULT_BACKGROUND_COLOR);
 	debug(RPT_DEBUG, "%s: using background color %s", drvthis->name, buf);
 
 	/* backlight color */
 	strncpy(buf, drvthis->config_get_string(drvthis->name, "Backlight", 0, CONF_DEF_BACKLIGHT), sizeof(buf));
 	buf[sizeof(buf)-1] = '\0';
-	backlight_color = set_background_color(buf);
+	backlight_color = get_color_by_name(buf, DEFAULT_BACKGROUND_COLOR);
 	debug(RPT_DEBUG, "%s: using backlight color %s", drvthis->name, buf);
 
 	/* use ACS characters? */
-	p->useACS = drvthis->config_get_bool(drvthis->name, "UseACS", 0, 0);
+	p->useACS = drvthis->config_get_bool(drvthis->name, "UseACS", 0, CONF_DEF_USEACS);
 	debug(RPT_DEBUG, "%s: using ACS %s", drvthis->name, (p->useACS) ? "ON" : "OFF");
+
+	/* draw border ? */
+	p->drawBorder = drvthis->config_get_bool(drvthis->name, "DrawBorder", 0, CONF_DEF_DRAWBORDER);
+	debug(RPT_DEBUG, "%s: drawing Border %s", drvthis->name, (p->drawBorder) ? "ON" : "OFF");
 
 	/* Get size settings */
 	if ((drvthis->request_display_width() > 0)
@@ -291,10 +272,18 @@ curses_init (Driver *drvthis)
 	intrflush(stdscr, FALSE);
 	keypad(stdscr, TRUE);
 
-	p->win = newwin(p->height + 2,	/* +2 for the border */
-			 p->width + 2,	/* +2 for the border */
-			 p->yoffs,
-			 p->xoffs);
+	if (p->drawBorder) {
+		p->win = newwin(p->height + 2,	/* +2 for the border */
+				p->width + 2,	/* +2 for the border */
+				p->yoffs,
+				p->xoffs);
+	}
+	else{
+		p->win = newwin(p->height,
+				p->width,
+				p->yoffs,
+				p->xoffs);
+	}
 
 	//nodelay(p->win, TRUE);
 	//intrflush(p->win, FALSE);
@@ -396,7 +385,10 @@ curses_clear (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	wbkgdset(p->win, COLOR_PAIR(p->current_color_pair) | ' ');
-	curses_wborder(drvthis);
+
+	if (p->drawBorder)
+		curses_wborder(drvthis);
+
 	werase(p->win);
 }
 
@@ -437,6 +429,11 @@ curses_string (Driver *drvthis, int x, int y, const char string[])
 	if ((x <= 0) || (y <= 0) || (x > p->width) || (y > p->height))
 		return;
 
+	if (!p->drawBorder) {
+		x--;
+		y--;
+	}
+
 	mvwaddstr(p->win, y, x, string);
 }
 
@@ -451,6 +448,11 @@ curses_chr (Driver *drvthis, int x, int y, char c)
 
 	if ((x <= 0) || (y <= 0) || (x > p->width) || (y > p->height))
 		return;
+
+	if (!p->drawBorder) {
+		x--;
+		y--;
+	}
 
 	mvwaddch(p->win, y, x, c);
 }
@@ -601,7 +603,9 @@ curses_flush (Driver *drvthis)
 			ungetch(c);
 		}
 
-	curses_wborder(drvthis);
+	if (p->drawBorder)
+		curses_wborder(drvthis);
+
 	wrefresh(p->win);
 }
 
@@ -642,7 +646,7 @@ curses_get_key (Driver *drvthis)
 	}
 }
 
-void
+static void
 curses_restore_screen (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -655,3 +659,4 @@ curses_restore_screen (Driver *drvthis)
 	wrefresh(p->win);
 }
 
+/* EOF */

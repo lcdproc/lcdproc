@@ -31,6 +31,7 @@ v.0.5dev (ongoing development)
  * a bit more Doxygen-ation and documentation
  * hd44780 driver: make ConnectionType 4bit more fool-proof (M. Dolze)
  * picolcd driver: overhaul USB init for more portability (M. Dolze)
+ + curses driver: new option DrawBorder (Bruno Schwander)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

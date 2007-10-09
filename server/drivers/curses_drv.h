@@ -22,12 +22,14 @@ MODULE_EXPORT void curses_backlight (Driver *drvthis, int on);
 
 MODULE_EXPORT const char *curses_get_key (Driver *drvthis);
 
-/*Default settings for config file parsing*/
-#define CONF_DEF_FOREGR "blue"
-#define CONF_DEF_BACKGR "cyan"
-#define CONF_DEF_BACKLIGHT "red"
-#define CONF_DEF_SIZE "20x4"
-#define CONF_DEF_TOP_LEFT_X 7
-#define CONF_DEF_TOP_LEFT_Y 7
+/* Default settings for config file parsing */
+#define CONF_DEF_FOREGR		"blue"
+#define CONF_DEF_BACKGR		"cyan"
+#define CONF_DEF_BACKLIGHT	"red"
+#define CONF_DEF_SIZE		"20x4"
+#define CONF_DEF_TOP_LEFT_X	7
+#define CONF_DEF_TOP_LEFT_Y	7
+#define CONF_DEF_USEACS		0
+#define CONF_DEF_DRAWBORDER	1
 
 #endif

@@ -117,6 +117,21 @@ curses chipset.
   instead of  simple ASCII characters.
   </para></listitem>
 </varlistentry>
+
+<varlistentry>
+  <term>
+    <command>DrawBorder=</command>
+    <arg choice ="plain">
+      <group choice="req">
+        <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+        <arg choice="plain"><literal>no</literal></arg>
+      </group>
+    </arg>  
+  </term>
+  <listitem><para>
+  Tell whether to draw a border around the screen.
+  </para></listitem>
+</varlistentry>
 </variablelist>
 
 </sect3>
