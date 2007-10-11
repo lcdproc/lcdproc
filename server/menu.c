@@ -515,9 +515,9 @@ MenuItem *menu_get_item_for_predecessor_check(Menu *menu)
 	if (! subitem)
 		return NULL;
 	switch (subitem->type) {
-	case MENUITEM_ACTION:
-	case MENUITEM_CHECKBOX:
-	case MENUITEM_RING:
+	  case MENUITEM_ACTION:
+	  case MENUITEM_CHECKBOX:
+	  case MENUITEM_RING:
 		// for types without own screen: look for menu's
 		// predecessor if its subitem doesn't have one. (Since
 		// menus can't have successors this problem arises
@@ -525,13 +525,13 @@ MenuItem *menu_get_item_for_predecessor_check(Menu *menu)
 		if (subitem->predecessor_id == NULL)
 			return menu;
 		return subitem;
-	case MENUITEM_MENU:
-	case MENUITEM_SLIDER:
-	case MENUITEM_NUMERIC:
-	case MENUITEM_ALPHA:
-	case MENUITEM_IP:
+	  case MENUITEM_MENU:
+	  case MENUITEM_SLIDER:
+	  case MENUITEM_NUMERIC:
+	  case MENUITEM_ALPHA:
+	  case MENUITEM_IP:
 		return menu;
-	default:
+	  default:
 		return NULL;
 	}
 }
@@ -542,17 +542,17 @@ MenuItem *menu_get_item_for_successor_check(Menu *menu)
 	if (! subitem)
 		return NULL;
 	switch (subitem->type) {
-	case MENUITEM_ACTION:
-	case MENUITEM_CHECKBOX:
-	case MENUITEM_RING:
+	  case MENUITEM_ACTION:
+	  case MENUITEM_CHECKBOX:
+	  case MENUITEM_RING:
 		return subitem;
-	case MENUITEM_MENU:
-	case MENUITEM_SLIDER:
-	case MENUITEM_NUMERIC:
-	case MENUITEM_ALPHA:
-	case MENUITEM_IP:
+	  case MENUITEM_MENU:
+	  case MENUITEM_SLIDER:
+	  case MENUITEM_NUMERIC:
+	  case MENUITEM_ALPHA:
+	  case MENUITEM_IP:
 		return menu;
-	default:
+	  default:
 		return NULL;
 	}
 }
@@ -708,12 +708,12 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 void menu_select_subitem(Menu *menu, char *subitem_id)
 {
 	int position;
+
 	assert(menu != NULL);
 	position = menu_get_index_of(menu, subitem_id);
 	debug(RPT_DEBUG, "%s(menu=[%s], subitem_id=\"%s\")", __FUNCTION__,
 	       menu->id, subitem_id);
-	if (position < 0)
-	{
+	if (position < 0) {
 		debug(RPT_DEBUG, "%s: subitem \"%s\" not found"
 		      " or hidden in \"%s\", ignored",
 		      __FUNCTION__, subitem_id, menu->id);
