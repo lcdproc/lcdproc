@@ -32,7 +32,7 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 {
 	static int id = 0;
 
-	if (config_has_section(name)) {
+	if ((name != NULL) && (config_has_section(name))) {
 		MenuEntry *me = calloc(1, sizeof(MenuEntry)); // auto-NULL elements
 
 		if (me == NULL)
@@ -108,6 +108,10 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 				*addr = entry;
 				addr = &entry->next;
 			}
+
+			// automagically add an "Apply ?" action
+			if ((me->numChildren > 0) && (addr != NULL))
+				*addr = menu_read(me, NULL);
 #endif
 		}
 #if defined(LCDEXEC_PARAMS)
@@ -194,6 +198,39 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 		}
 
 		return me;
+	}
+	else {
+		/* the magic stuff: if name is NULL and parent is an EXEC entry,
+		 * then generate an Action entry with the name "Apply" */
+		if ((name == NULL) && (parent != NULL) && (parent->type = MT_EXEC)) {
+			MenuEntry *me = calloc(1, sizeof(MenuEntry)); // auto-NULL elements
+
+			if (me == NULL)
+				return NULL;
+			// set common entries
+			me->id = id++;
+			me->name = malloc(strlen(parent->name) + 10);
+			if (me->name == NULL) {
+				//menu_free(me);
+				return NULL;
+			}
+			strcpy(me->name, "Apply_");
+			strcat(me->name, parent->name);
+
+			me->displayname = strdup("Apply!");
+			if (me->displayname == NULL) {
+				//menu_free(me);
+				return NULL;
+			}
+
+			me->parent = parent;
+			me->next = NULL;
+			me->children = NULL;
+			me->numChildren = 0;
+			me->type = MT_ARG_ACTION | MT_AUTOMATIC;
+
+			return me;
+		}
 	}
 
 	return NULL;
@@ -372,6 +409,15 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						return -1;
 				}		
 				break;
+			case MT_ARG_ACTION | MT_AUTOMATIC:
+				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" action \"%s\"\n",
+						parent_id, me->id, me->displayname) < 0)
+					return -1;
+
+				if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -menu_result quit\n",
+						parent_id, me->id) < 0)
+					return -1;
+				break;
 #endif
 			default:
 				return -1;
@@ -494,6 +540,10 @@ void menu_free(MenuEntry *me)
 void menu_dump(MenuEntry *me)
 {
 	if (me != NULL) {
+		/* the quick way out */
+		if (me->type & MT_AUTOMATIC)
+			return;
+
 		report(RPT_DEBUG, "# menu ID: %d", me->id);
 		report(RPT_DEBUG, "[%s]", me->name);
 		if (me->displayname != NULL)

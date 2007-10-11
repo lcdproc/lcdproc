@@ -366,10 +366,10 @@ static int process_response(char *str)
 			 * - command entry without args
 			 * - last arg of a command entry with args */
 			if (((entry->type == MT_EXEC) && (entry->children == NULL)) ||
-			    ((entry->type & MT_ARG_ANY) && (entry->next == NULL))) {
+			    ((entry->type & MT_ARGUMENT) && (entry->next == NULL))) {
 
 				// last arg => get parent entry
-				if ((entry->type & MT_ARG_ANY) && (entry->next == NULL))
+				if ((entry->type & MT_ARGUMENT) && (entry->next == NULL))
 					entry = entry->parent;
 
 				if (entry->type == MT_EXEC)

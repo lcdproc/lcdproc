@@ -24,18 +24,19 @@
 
 /**  Symbolic names for the types of a MenuEntry */
 typedef enum {
-	MT_UNKNOWN = 0x00,	/**< Unknown MenuEntry type. */
-	MT_MENU    = 0x01,	/**< MenuEntry representing a menu. */
-	MT_EXEC    = 0x02,	/**< MenuEntry representing an executable command. */
-
-	MT_ARG_ANY      = 0x10,	/**< Mask denoting a parameter of any type */
+	MT_UNKNOWN      = 0x00,	/**< Unknown MenuEntry type. */
+	MT_MENU         = 0x10,	/**< MenuEntry representing a menu. */
+	MT_EXEC         = 0x20,	/**< MenuEntry representing an executable command. */
+	MT_ARGUMENT     = 0x40,	/**< Mask denoting a parameter of any type */
+	MT_AUTOMATIC	= 0x80,	/**< BitFlag denoting automatically generated entries */
 #if defined(LCDEXEC_PARAMS)
-	MT_ARG_SLIDER   = 0x11,	/**< MenuEntry representing a slider parameter. */
-	MT_ARG_RING     = 0x12,	/**< MenuEntry representing a ring parameter. */
-	MT_ARG_NUMERIC  = 0x13,	/**< MenuEntry representing a numeric input parameter. */
-	MT_ARG_ALPHA    = 0x14,	/**< MenuEntry representing a alpha input parameter. */
-	MT_ARG_IP       = 0x15,	/**< MenuEntry representing a IP input parameter. */
-	MT_ARG_CHECKBOX = 0x16,	/**< MenuEntry representing a checkbox input parameter. */
+	MT_ARG_SLIDER   = 0x41,	/**< MenuEntry representing a slider parameter. */
+	MT_ARG_RING     = 0x42,	/**< MenuEntry representing a ring parameter. */
+	MT_ARG_NUMERIC  = 0x43,	/**< MenuEntry representing a numeric input parameter. */
+	MT_ARG_ALPHA    = 0x44,	/**< MenuEntry representing a alpha input parameter. */
+	MT_ARG_IP       = 0x45,	/**< MenuEntry representing a IP input parameter. */
+	MT_ARG_CHECKBOX = 0x46,	/**< MenuEntry representing a checkbox input parameter. */
+	MT_ARG_ACTION   = 0x47,	/**< MenuEntry representing a checkbox input parameter. */
 #endif
 } MenuType;	
 
