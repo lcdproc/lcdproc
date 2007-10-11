@@ -49,7 +49,7 @@ extern Menu *custom_main_menu;
  * Search a menu for an entry by index, ignoring hidden entries.
  * \param menu   Pointer to menu to search in.
  * \param index  Index to search for.
- * \return  Pointer to entry found, 0 otherwise.
+ * \return  Pointer to entry found, NULL otherwise.
  */
 static void *
 menu_get_subitem(Menu *menu, int index)
@@ -101,6 +101,11 @@ menu_get_index_of(Menu *menu, char *item_id)
 }
 
 
+/**
+ * Count entries in a menu, ignoring invisible ones.
+ * \param menu     Pointer to menu to search in.
+ * \return  Number of visible entries in the menu.
+ */
 static int
 menu_visible_item_count(Menu *menu)
 {
@@ -115,6 +120,79 @@ menu_visible_item_count(Menu *menu)
 			++i;
 	}
 	return i;
+}
+
+
+#define LV_LABEL_ONLY	1	/**< fill string with label only */
+#define LV_VALUE_ONLY	2	/**< fill string with value only */
+#define LV_LABEL_VALU	3	/**< fill string with label & beginning of value */
+#define LV_LABEL_ALUE	4	/**< fill string wit label & end of value */
+
+/**
+ * Fill string with left-aligned label and right-aligned value,
+ * with different modes on overflow.
+ * \param string  String to fill with label and value.
+ * \param len     Length of string (=no. of bytes).
+ * \param text    Label to use.
+ * \param value   Value to use.
+ * \param mode    Flag governing behaviour on overflow.
+ * \return Filled string, or \c NULL in case of problems.
+ */
+char *
+fill_labeled_value(char *string, int len, const char *text, const char *value, int mode)
+{
+	if ((string != NULL)  && (text != NULL) && (len > 0)) {
+		int textlen = strlen(text);
+
+		len--;	// make calculations nicer ;-)))
+
+		debug(RPT_DEBUG, "%s(string=[%p], len=%d, text=\"%s\", value=\"%s\", mode=%d)", __FUNCTION__,
+				string, len, text, ((value != NULL) ? value : "(null)"), mode);
+
+		if ((value != NULL) &&
+		    (textlen + strlen(value) < len - 1)) {
+			memset(string, ' ', len);
+			strncpy(string, text, textlen);
+			strcpy(string + len - strlen(value), value);
+		}
+		else {
+			// safeguard against missing value or too long labels
+			if ((value == NULL) || (textlen >= len-3))
+				mode = LV_LABEL_ONLY;
+
+			switch (mode) {
+			  case LV_LABEL_VALU:	// show fist chars in value
+				memset(string, ' ', len);
+			  	strncpy(string, text, textlen);
+				strncpy(string + textlen + 2, value, len - textlen - 2);
+				strcpy(string + len - 2, "..");
+				string[len] = '\0';
+				break;
+			  case LV_LABEL_ALUE:	// show last chars in value
+				memset(string, ' ', len);
+			  	strncpy(string, text, textlen);
+				strcpy(string + textlen + 2, "..");
+				strcpy(string + textlen + 4,
+				       value + strlen(value) - len + textlen + 4);
+				string[len] = '\0';
+				break;
+			  case LV_VALUE_ONLY:
+				/* indent by one to indicate it's a value */
+				strcpy(string, " ");
+				strncpy(string + 1, value, len-1);
+				string[len] = '\0';
+				break;
+			  case LV_LABEL_ONLY:
+			  default:
+				strncpy(string, text, len);
+				string[len] = '\0';
+				break;
+			}
+
+		}
+		return(string);
+	}
+	return NULL;
 }
 
 
@@ -421,8 +499,9 @@ void menu_update_screen(MenuItem *menu, Screen *s)
 	     subitem != NULL;
 	     subitem = LL_GetNext(menu->data.menu.contents), itemnr ++)
 	{
-		char buf[10];
+		char buf[LCD_MAX_WIDTH];	// long enough for "icon%d" and such
 		char *p;
+		int len = display_props->width - 1;
 
 		if (subitem->is_hidden) {
 			debug(RPT_DEBUG, "%s: menu %s has hidden menu: %s",
@@ -444,7 +523,6 @@ void menu_update_screen(MenuItem *menu, Screen *s)
 
 		switch (subitem->type) {
 		  case MENUITEM_CHECKBOX:
-
 			/* Update icon value for checkbox */
 			snprintf(buf, sizeof(buf)-1, "icon%d", itemnr);
 			buf[sizeof(buf)-1] = '\0';
@@ -460,33 +538,26 @@ void menu_update_screen(MenuItem *menu, Screen *s)
 				  : WID_NONE;	/* make invisible */
 			break;
 		  case MENUITEM_RING:
-			if (subitem->data.ring.value >= LL_Length(subitem->data.ring.strings)) {
-				/* No strings available */
-				memcpy(w->text, subitem->text, display_props->width - 2);
-				w->text[ display_props->width - 2] = '\0';
-			}
-			else {
-				/* Limit string length and add ringstring */
-				p = LL_GetByIndex(subitem->data.ring.strings, subitem->data.ring.value);
-				assert(p != NULL);
-				if (strlen(p) > display_props->width - 3) {
-					short a = display_props->width - 3;
-					/* We need to limit the ring string and DON'T
-					 * display the item text */
-					strcpy(w->text, " ");
-					memcpy(w->text + 1, p, a);
-					w->text[a + 1] = '\0';
-				}
-				else {
-					short b = display_props->width - 2 - strlen(p);
-					short c = min(strlen(subitem->text), b - 1);
-					/* We don't limit the ring string */
-					memset(w->text, ' ', b);
-					memcpy(w->text, subitem->text, c);
-					strcpy(w->text + b, p);
-				}
-			}
+			p = LL_GetByIndex(subitem->data.ring.strings, subitem->data.ring.value);
+			fill_labeled_value(w->text, len, subitem->text, p, LV_VALUE_ONLY);
+
 			break;
+		    case MENUITEM_SLIDER:
+			snprintf(buf, display_props->width, "%d", subitem->data.slider.value);
+			buf[display_props->width-1] = '\0';
+			fill_labeled_value(w->text, len, subitem->text, buf, LV_LABEL_VALU);
+		    	break;
+		    case MENUITEM_NUMERIC:
+			snprintf(buf, display_props->width, "%d", subitem->data.numeric.value);
+			buf[display_props->width-1] = '\0';
+			fill_labeled_value(w->text, len, subitem->text, buf, LV_LABEL_VALU);
+		    	break;
+		    case MENUITEM_ALPHA:
+			fill_labeled_value(w->text, len, subitem->text, subitem->data.alpha.value, LV_LABEL_VALU);
+		    	break;
+		    case MENUITEM_IP:
+			fill_labeled_value(w->text, len, subitem->text, subitem->data.ip.value, LV_LABEL_ALUE);
+		    	break;
 		  default:
                       break;
 		}
