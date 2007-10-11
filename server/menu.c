@@ -351,7 +351,7 @@ void menu_build_screen(MenuItem *menu, Screen *s)
 			  case MENUITEM_NUMERIC:
 			  case MENUITEM_ALPHA:
 			  case MENUITEM_IP:
-			  	/* Limit string length */
+				/* Limit string length */
 				w->text = malloc(display_props->width);
 				strncpy(w->text, subitem->text, display_props->width);
 				w->text[display_props->width-1] = '\0';
@@ -519,7 +519,8 @@ void menu_update_screen(MenuItem *menu, Screen *s)
 MenuItem *menu_get_item_for_predecessor_check(Menu *menu)
 {
 	MenuItem *subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
-	if (! subitem)
+
+	if (subitem == NULL)
 		return NULL;
 	switch (subitem->type) {
 	  case MENUITEM_ACTION:
@@ -547,7 +548,8 @@ MenuItem *menu_get_item_for_predecessor_check(Menu *menu)
 MenuItem *menu_get_item_for_successor_check(Menu *menu)
 {
 	MenuItem *subitem = menu_get_subitem(menu, menu->data.menu.selector_pos);
-	if (! subitem)
+
+	if (subitem == NULL)
 		return NULL;
 	switch (subitem->type) {
 	  case MENUITEM_ACTION:
@@ -578,7 +580,7 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 	switch (token) {
 	  case MENUTOKEN_MENU:
 		subitem = menu_get_item_for_predecessor_check(menu);
-		if (! subitem)
+		if (subitem == NULL)
 			return MENURESULT_ERROR;
 		return menuitem_predecessor2menuresult(
 			subitem->predecessor_id, MENURESULT_CLOSE);
@@ -593,18 +595,17 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 			return menuitem_successor2menuresult(
 				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_CHECKBOX:
-			if (subitem->data.checkbox.allow_gray) {
-				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
-			}
-			else {
-				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
-			}
+			subitem->data.checkbox.value++;
+			subitem->data.checkbox.value %= (subitem->data.checkbox.allow_gray) ? 3 : 2;
+
 			if (subitem->event_func)
 				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return menuitem_successor2menuresult(
 				subitem->successor_id, MENURESULT_NONE);
 		  case MENUITEM_RING:
-			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length(subitem->data.ring.strings);
+			subitem->data.ring.value++;
+			subitem->data.ring.value %= LL_Length(subitem->data.ring.strings);
+
 			if (subitem->event_func)
 				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return menuitem_successor2menuresult(
@@ -688,7 +689,7 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  case MENUITEM_RING:
-		  	subitem->data.ring.value++;
+			subitem->data.ring.value++;
 			subitem->data.ring.value %= LL_Length(subitem->data.ring.strings);
 
 			if (subitem->event_func)
