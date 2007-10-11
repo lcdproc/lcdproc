@@ -40,6 +40,7 @@ typedef struct ProcInfo {
 	time_t starttime;	/**< start time of the process */
 	time_t endtime;		/**< finishing time of the process */
 	int status;		/**< exit status of the process */
+	int feedback;		/**< what info to show to the user */
 	int shown;		/**< tell if the info has been shown to the user */
 } ProcInfo;
 
@@ -342,8 +343,9 @@ static int process_response(char *str)
 			free(str2);
 			return -1;
 		}
-		if (strcmp(argv[1], "select") == 0) {
-			MenuEntry *exec;
+		if ((strcmp(argv[1], "select") == 0) ||
+		    (strcmp(argv[1], "leave") == 0)) {
+			MenuEntry *entry;
 			
 			if (argc < 3) {
 				report(RPT_WARNING, "Server gave invalid response");
@@ -351,16 +353,85 @@ static int process_response(char *str)
 				return -1;
 			}
 
-			/* Find the id */
-			exec = menu_find_by_id(main_menu, atoi(argv[2]));
-			if (exec == NULL) {
+			/* Find the entry by id */
+			entry = menu_find_by_id(main_menu, atoi(argv[2]));
+			if (entry == NULL) {
 				report(RPT_WARNING, "Could not find the item id given by the server");
 				free(str2);
 				return -1;
 			}
-			/* The id has been found */
-			exec_command(exec);
+
+			/* The id has been found.
+			 * We trigger on the following conditions:
+			 * - command entry without args
+			 * - last arg of a command entry with args */
+			if (((entry->type == MT_EXEC) && (entry->children == NULL)) ||
+			    ((entry->type & MT_ARG_ANY) && (entry->next == NULL))) {
+
+				// last arg => get parent entry
+				if ((entry->type & MT_ARG_ANY) && (entry->next == NULL))
+					entry = entry->parent;
+
+				if (entry->type == MT_EXEC)
+					exec_command(entry);
+			}		
 		}
+#if defined(LCDEXEC_PARAMS)		
+		else if ((strcmp(argv[1], "plus") == 0) ||
+			 (strcmp(argv[1], "minus") == 0) ||
+			 (strcmp(argv[1], "update") == 0)) {
+			MenuEntry *entry;
+			
+			if (argc < 4) {
+				report(RPT_WARNING, "Server gave invalid response");
+				free(str2);
+				return -1;
+			}
+
+			/* Find the entry by id */
+			entry = menu_find_by_id(main_menu, atoi(argv[2]));
+			if (entry == NULL) {
+				report(RPT_WARNING, "Could not find the item id given by the server");
+				free(str2);
+				return -1;
+			}
+
+			switch (entry->type) {
+				case MT_ARG_SLIDER:
+					entry->data.slider.value = atoi(argv[3]);
+					break;
+				case MT_ARG_RING:
+					entry->data.ring.value = atoi(argv[3]);
+					break;
+				case MT_ARG_NUMERIC:
+					entry->data.numeric.value = atoi(argv[3]);
+					break;
+				case MT_ARG_ALPHA:
+					entry->data.alpha.value = realloc(entry->data.alpha.value,
+									  strlen(argv[3]));
+					strcpy(entry->data.alpha.value, argv[3]);
+					break;
+				case MT_ARG_IP:
+					entry->data.ip.value = realloc(entry->data.ip.value,
+									strlen(argv[3]));
+					strcpy(entry->data.ip.value, argv[3]);
+					break;
+				case MT_ARG_CHECKBOX:
+					if ((entry->data.checkbox.allow_gray) &&
+					    (strcasecmp(argv[3], "gray") == 0))
+						entry->data.checkbox.value = 2;
+					else if (strcasecmp(argv[3], "on") == 0)
+						entry->data.checkbox.value = 1;
+					else
+						entry->data.checkbox.value = 0;
+					break;
+				default:
+					report(RPT_WARNING, "Illegal menu entry type for event");
+					free(str2);
+					return -1;
+			}
+		}
+#endif			
 		else {
 			; /* Ignore other menuevents */
 		}
@@ -401,18 +472,64 @@ static int exec_command(MenuEntry *cmd)
 		const char *argv[4];
 		pid_t pid;
 		ProcInfo *p;
+#if defined(LCDEXEC_PARAMS)		
+		char *envp[cmd->numChildren+1];
+		MenuEntry *arg;
+		int i;
+#endif		
 
-		report(RPT_NOTICE, "Executing: %s", command);
-
+		/* set argument vector */
 		argv[0] = default_shell;
 		argv[1] = "-c";
 		argv[2] = command;
 		argv[3] = NULL;
 
+#if defined(LCDEXEC_PARAMS)
+		/* set environment vector: allocate & fill contents */
+		for (arg = cmd->children, i = 0; arg != NULL; arg = arg->next, i++) {
+			char buf[1025];
+
+			switch (arg->type) {
+				case MT_ARG_SLIDER:
+					snprintf(buf, 1024, "%s=%d", arg->name, arg->data.slider.value);
+					break;
+				case MT_ARG_RING:
+					snprintf(buf, 1024, "%s=%s", arg->name, arg->data.ring.strings[arg->data.ring.value]);
+					break;
+				case MT_ARG_NUMERIC:
+					snprintf(buf, 1024, "%s=%d", arg->name, arg->data.numeric.value);
+					break;
+				case MT_ARG_ALPHA:
+					snprintf(buf, 1024, "%s=%s", arg->name, arg->data.alpha.value);
+					break;
+				case MT_ARG_IP:
+					snprintf(buf, 1024, "%s=%s", arg->name, arg->data.ip.value);
+					break;
+				case MT_ARG_CHECKBOX:
+					snprintf(buf, 1024, "%s=%d", arg->name, arg->data.checkbox.value);
+					break;
+				default:
+					/* error ? */
+					break;
+			}		
+			buf[1024] ='\0';
+			envp[i] = strdup(buf);
+
+			debug(RPT_DEBUG, "Environment: %s", envp[i]);
+		}
+		envp[cmd->numChildren] = NULL;
+#endif		
+
+		debug(RPT_DEBUG, "Executing '%s' via Shell %s", command, default_shell);
+
 		switch (pid = fork()) {
 		  case 0:
 			/* We're the child: execute the command */
+#if defined(LCDEXEC_PARAMS)
+			execve(argv[0], (char **) argv, envp);
+#else
 			execv(argv[0], (char **) argv);
+#endif			
 			exit(0);
 			break;
 		  default:
@@ -422,15 +539,23 @@ static int exec_command(MenuEntry *cmd)
 				p->cmd = cmd;
 				p->pid = pid;
 				p->starttime = time(NULL);
+				p->feedback = cmd->data.exec.feedback;
 				/* prepend it to existing queue atomically */
 				p->next = proc_queue;
 				proc_queue = p;
 			}
-	        	break;
+        		break;
 		  case -1:
 			report(RPT_ERR, "Could not fork");
 			return -1;
 		}
+
+#if defined(LCDEXEC_PARAMS)			
+		/* free envp's contents */
+		for (i = 0; envp[i] != NULL; i++)
+			free(envp[i]);
+#endif
+
 		return 0;
 	}
 	return -1;
@@ -441,11 +566,15 @@ static int show_procinfo_msg(ProcInfo *p)
 {
 	if ((p != NULL) && (lcd_wid > 0) && (lcd_hgt > 0)) {
 		if (p->endtime > 0) {
+			/* nothing to do => the quick way out (successful) */
+			if ((p->shown) || (!p->feedback))
+				return 1;
+
 			sock_printf(sock, "screen_add [%u]\n", p->pid);
 			sock_printf(sock, "screen_set [%u] -name {lcdexec [%u]}"
 					  " -priority alert -timeout %d"
 					  " -heartbeat off\n",
-					p->pid, p->pid, 8*8);
+					p->pid, p->pid, 6*8);
 
 			if (lcd_hgt > 2) {
 				sock_printf(sock, "widget_add [%u] t title\n", p->pid);
@@ -472,8 +601,9 @@ static int show_procinfo_msg(ProcInfo *p)
 						p->pid, WTERMSIG(p->status));
 				}
 
-				sock_printf(sock, "widget_set [%u] s3 1 4 {Exec time: %lds}\n",
-						p->pid, p->endtime - p->starttime);
+				if (lcd_hgt > 3)
+					sock_printf(sock, "widget_set [%u] s3 1 4 {Exec time: %lds}\n",
+							p->pid, p->endtime - p->starttime);
 			}
 			else {
 				sock_printf(sock, "widget_add [%u] s1 string\n", p->pid);
@@ -496,9 +626,10 @@ static int show_procinfo_msg(ProcInfo *p)
 				
 				}
 			}
+			return 1;
 		}
 	}
-	return 1;
+	return 0;
 }
 
 
@@ -560,3 +691,4 @@ static int main_loop(void)
 	return 0;
 }
 
+/* EOF */

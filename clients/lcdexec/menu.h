@@ -24,9 +24,19 @@
 
 /**  Symbolic names for the types of a MenuEntry */
 typedef enum {
-	unknown = 0,		/**< Unknown MenuEntry type. */
-	menu = 1,		/**< MenuEntry representing a menu. */
-	exec = 2,		/**< MenuEntry representing an executable command. */
+	MT_UNKNOWN = 0x00,	/**< Unknown MenuEntry type. */
+	MT_MENU    = 0x01,	/**< MenuEntry representing a menu. */
+	MT_EXEC    = 0x02,	/**< MenuEntry representing an executable command. */
+
+	MT_ARG_ANY      = 0x10,	/**< Mask denoting a parameter of any type */
+#if defined(LCDEXEC_PARAMS)
+	MT_ARG_SLIDER   = 0x11,	/**< MenuEntry representing a slider parameter. */
+	MT_ARG_RING     = 0x12,	/**< MenuEntry representing a ring parameter. */
+	MT_ARG_NUMERIC  = 0x13,	/**< MenuEntry representing a numeric input parameter. */
+	MT_ARG_ALPHA    = 0x14,	/**< MenuEntry representing a alpha input parameter. */
+	MT_ARG_IP       = 0x15,	/**< MenuEntry representing a IP input parameter. */
+	MT_ARG_CHECKBOX = 0x16,	/**< MenuEntry representing a checkbox input parameter. */
+#endif
 } MenuType;	
 
 
@@ -35,13 +45,52 @@ typedef struct menu_entry {
 	char *displayname;	/**< isible name of the entry. */
 	int id;			/**< Internal ID of the entry. */
 	MenuType type;		/**< Type of the entry. */
+	struct menu_entry *parent;	/**< Parent menu entry */
+	int numChildren;		/**< # of child entries */
 
-	// variables necessary for type menu
-	struct menu_entry *entries;	/**< Subordinate menu entries (for MenuType \c menu). */
-	struct menu_entry *next;	/**< Next sibling menu entry (for MenuType \c menu). */
+	// variables necessary for multiple types
+	struct menu_entry *children;	/**< Subordinate menu entries (for MenuType \c MT_MENU & \c MT_EXEC). */
+	struct menu_entry *next;	/**< Next sibling menu entry (for MenuType \c MT_MENU). */
 
-	// variables necessary for type exec
-	char *command;			/**< Command to execute (for MenuType \c exec). */
+	union {
+		struct {	// elements necessary for type MT_EXEC
+			char *command;	/**< Command to execute (for MenuType \c exec). */
+			int feedback;	/**< Feedback option (for MenuType \c exec). */
+		} exec;
+#if defined(LCDEXEC_PARAMS)
+		struct {	// elements necessary for type MT_ARG_SLIDER
+			int value;
+			int minval;
+			int maxval;
+			int stepsize;
+			char *mintext;
+			char *maxtext;
+		} slider;
+		struct {	// elements necessary for type MT_ARG_RING
+			int value;
+			char **strings;
+		} ring;
+		struct {	// elements necessary for type MT_ARG_NUMERIC
+			int value;
+			int minval;
+			int maxval;
+		} numeric;
+		struct {	// elements necessary for type MT_ARG_ALPHA
+			char *value;
+			int minlen;
+			int maxlen;
+			char *allowed_chars;
+		} alpha;
+		struct {	// elements necessary for type MT_ARG_IP
+			char *value;
+			int v6;
+		} ip;
+		struct {	// elements necessary for type MT_ARG_CHECKBOX
+			int value;
+			int allow_gray;
+		} checkbox;
+#endif	
+	} data;
 } MenuEntry;
 
 

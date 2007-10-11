@@ -94,7 +94,7 @@ is the hostname of the system \fIlcdexec\fP is running on.
 Set the shell to use when executing programs.
 If not given, \fBlcdexec\fP tries to read the environment variable \fISHELL\fP.
 If that fails, it defaults to \fB/bin/sh\fP.
-Please note that the shell given here must understand the option \fB-c\fP 
+Please note that the shell given here must understand the option \fB\-c\fP 
 followed by the command line to execute.
 .PP
 
@@ -119,6 +119,11 @@ Sections containing an \fBExec=\fP option are command entries.
 .B DisplayName=\fIname\fP
 The name of the menu entry to be displayed on the LCD.
 If this option is not given, the the section header name is used (without the square brackets).
+.TP 8
+.B Feedback=\fIbool\fP
+In command entries, this option tells whether to inform the user of the completion of 
+commands using an alert screen on the display.
+If not given, it defaults to \fBno\fB.
 .PP
 
 .SH FILES
@@ -178,14 +183,17 @@ Entry=RebootNow
 [Shutdown5min]
 DisplayName="Shutdown in 5 minutes"
 Exec="shutdown -h +5"
+Feedback=yes
 
 [Reboot5min]
 DisplayName="Reboot in 5 minutes"
 Exec="shutdown -r +5"
+Feedback=yes
 
 [CanclShutdown]
 DisplayName="Cancel shutdown/reboot"
 Exec="shutdown -c"
+Feedback=yes
 
 [ShutdownNow]
 DisplayName="Shutdown now"
