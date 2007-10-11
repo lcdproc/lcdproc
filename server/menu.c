@@ -48,7 +48,7 @@ extern Menu *custom_main_menu;
 /**
  * Search a menu for an entry by index, ignoring hidden entries.
  * \param menu   Pointer to menu to search in.
- * \param index  ID to search for.
+ * \param index  Index to search for.
  * \return  Pointer to entry found, 0 otherwise.
  */
 static void *
@@ -621,9 +621,9 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 		return MENURESULT_ERROR;
 	  case MENUTOKEN_UP:
 		if (menu->data.menu.selector_pos > 0) {
-			menu->data.menu.selector_pos --;
-			if (menu->data.menu.selector_pos + 1 < menu->data.menu.scroll)
-				menu->data.menu.scroll --;
+			if (menu->data.menu.selector_pos < menu->data.menu.scroll)
+				menu->data.menu.scroll--;
+			menu->data.menu.selector_pos--;
 		}
 		else if (menu->data.menu.selector_pos == 0) {
 			// wrap around to last menu entry
@@ -633,9 +633,9 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 		return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 		if (menu->data.menu.selector_pos < menu_visible_item_count(menu) - 1) {
-			menu->data.menu.selector_pos ++;
+			menu->data.menu.selector_pos++;
 			if (menu->data.menu.selector_pos - menu->data.menu.scroll + 2 > display_props->height)
-				menu->data.menu.scroll ++;
+				menu->data.menu.scroll++;
 		}
 		else {
 			// wrap araound to 1st menu entry
@@ -652,22 +652,19 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 			break;
 		switch (subitem->type) {
 		  case MENUITEM_CHECKBOX:
-			/* note: this dangerous looking code works since
-			 * CheckboxValue is an enum >= 0. */
-			if (subitem->data.checkbox.allow_gray) {
-				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 3;
-			}
-			else {
-				subitem->data.checkbox.value = (subitem->data.checkbox.value - 1) % 2;
-			}
+			/* Note: this works as CheckboxValue is an enum >= 0. */
+			subitem->data.checkbox.value--;
+			subitem->data.checkbox.value %= (subitem->data.checkbox.allow_gray) ? 3 : 2;
+
 			if (subitem->event_func)
 				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  case MENUITEM_RING:
 			/* ring: jump to the end if beginning is reached */
-			subitem->data.ring.value = (subitem->data.ring.value < 1)
-				? LL_Length(subitem->data.ring.strings) - 1
-				: (subitem->data.ring.value - 1) % LL_Length(subitem->data.ring.strings);
+			/* Note: this works as data.ring.value is a short >= 0 */
+			subitem->data.ring.value--;
+			subitem->data.ring.value %= LL_Length(subitem->data.ring.strings);
+
 			if (subitem->event_func)
 				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
@@ -684,17 +681,16 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 			break;
 		switch (subitem->type) {
 		  case MENUITEM_CHECKBOX:
-			if (subitem->data.checkbox.allow_gray) {
-				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 3;
-			}
-			else {
-				subitem->data.checkbox.value = (subitem->data.checkbox.value + 1) % 2;
-			}
+			subitem->data.checkbox.value++;
+			subitem->data.checkbox.value %= (subitem->data.checkbox.allow_gray) ? 3 : 2;
+
 			if (subitem->event_func)
 				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  case MENUITEM_RING:
-			subitem->data.ring.value = (subitem->data.ring.value + 1) % LL_Length(subitem->data.ring.strings);
+		  	subitem->data.ring.value++;
+			subitem->data.ring.value %= LL_Length(subitem->data.ring.strings);
+
 			if (subitem->event_func)
 				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
@@ -713,8 +709,12 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 }
 
 
-/** positions current item pointer on subitem subitem_id. If subitem_id is
- * hidden or not valid subitem of menu this function does nothing. */
+/**
+ * Position current item pointer on entry subitem_id.
+ * If subitem_id is hidden or no valid subitem of menu do nothing.
+ * \param menu     Pointer to menu to search in.
+ * \param item_id  ID to search for.
+ */
 void menu_select_subitem(Menu *menu, char *subitem_id)
 {
 	int position;
@@ -723,6 +723,7 @@ void menu_select_subitem(Menu *menu, char *subitem_id)
 	position = menu_get_index_of(menu, subitem_id);
 	debug(RPT_DEBUG, "%s(menu=[%s], subitem_id=\"%s\")", __FUNCTION__,
 	       menu->id, subitem_id);
+
 	if (position < 0) {
 		debug(RPT_DEBUG, "%s: subitem \"%s\" not found"
 		      " or hidden in \"%s\", ignored",
