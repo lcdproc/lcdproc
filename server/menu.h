@@ -125,6 +125,6 @@ MenuItem *menu_get_item_for_successor_check(Menu *menu);
  */
 MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsigned int keymask);
 
-/** positions current item pointer on subitem subitem_id. */
-void menu_select_subitem(Menu *menu, char *subitem_id);
+/** positions current item pointer on subitem item_id. */
+void menu_select_subitem(Menu *menu, char *item_id);
 #endif

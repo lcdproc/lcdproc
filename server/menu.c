@@ -123,10 +123,10 @@ menu_visible_item_count(Menu *menu)
 }
 
 
-#define LV_LABEL_ONLY	1	/**< fill string with label only */
-#define LV_VALUE_ONLY	2	/**< fill string with value only */
-#define LV_LABEL_VALU	3	/**< fill string with label & beginning of value */
-#define LV_LABEL_ALUE	4	/**< fill string wit label & end of value */
+#define LV_LABEL_ONLY	1	/**< Fill string with label only */
+#define LV_VALUE_ONLY	2	/**< Fill string with value only */
+#define LV_LABEL_VALU	3	/**< Fill string with label & beginning of value */
+#define LV_LABEL_ALUE	4	/**< Fill string with label & end of value */
 
 /**
  * Fill string with left-aligned label and right-aligned value,
@@ -782,29 +782,29 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 
 
 /**
- * Position current item pointer on entry subitem_id.
- * If subitem_id is hidden or no valid subitem of menu do nothing.
- * \param menu     Pointer to menu to search in.
- * \param item_id  ID to search for.
+ * Position current item pointer on entry with given ID in given menu.
+ * If entry is hidden or no valid subitem of menu do nothing.
+ * \param menu     Pointer to menu to position pointer in.
+ * \param item_id  Sub-Menu ID to position menu pointer on.
  */
-void menu_select_subitem(Menu *menu, char *subitem_id)
+void menu_select_subitem(Menu *menu, char *item_id)
 {
 	int position;
 
 	assert(menu != NULL);
-	position = menu_get_index_of(menu, subitem_id);
-	debug(RPT_DEBUG, "%s(menu=[%s], subitem_id=\"%s\")", __FUNCTION__,
-	       menu->id, subitem_id);
+	position = menu_get_index_of(menu, item_id);
+	debug(RPT_DEBUG, "%s(menu=[%s], item_id=\"%s\")", __FUNCTION__,
+	       menu->id, item_id);
 
 	if (position < 0) {
-		debug(RPT_DEBUG, "%s: subitem \"%s\" not found"
+		debug(RPT_DEBUG, "%s: item \"%s\" not found"
 		      " or hidden in \"%s\", ignored",
-		      __FUNCTION__, subitem_id, menu->id);
+		      __FUNCTION__, item_id, menu->id);
 		return;
 	}
 	// debug(RPT_DEBUG, "%s: %s->%s is at position %d,"
 	//       " current item is at menu position: %d, scroll: %d",
-	//       __FUNCTION__, menu->id, subitem_id, position,
+	//       __FUNCTION__, menu->id, item_id, position,
 	//       menu->data.menu.selector_pos, menu->data.menu.scroll);
 	menu->data.menu.selector_pos = position;
 	menu->data.menu.scroll = position;
