@@ -1,12 +1,14 @@
-/*
- * menu.c
- * This file is part of lcdexec, an LCDproc client.
+/** \file clients/lcdexec/menu.c
+ * Menu parsing and building functions for the \c lcdexec client
+ */
+
+/* This file is part of lcdexec, an LCDproc client.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
  * Copyright (c) 2002, Joris Robijn
- * Copyright (c) 2006, Peter Marschall
+ * Copyright (c) 2006-7, Peter Marschall
  */
 
 #include <stdio.h>
@@ -20,11 +22,10 @@
 
 #include "menu.h"
 
+
 /* names for boolean and tristate values */
 static char *boolValueName[] = { "false", "true" };
-#if defined(LCDEXEC_PARAMS)
 static char *triGrayValueName[] = { "off", "on", "gray" };
-#endif
 
 
 /* recursively read the menu hierarchy */
@@ -79,10 +80,9 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 			}
 		}
 		else if (config_get_string(name, "Exec", 0, NULL) != NULL) {
-#if defined(LCDEXEC_PARAMS)
 			MenuEntry **addr = &me->children;
 			const char *entryname;
-#endif
+
 			// it's a command to execute
 			me->type = MT_EXEC;
 
@@ -93,7 +93,6 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 			}
 			me->data.exec.feedback = config_get_bool(name, "Feedback", 0, 0);
 
-#if defined(LCDEXEC_PARAMS)
 			// try to read parameters
 			while ((entryname = config_get_string(name, "Parameter", me->numChildren, NULL)) != NULL) {
 				MenuEntry *entry = menu_read(me, entryname);
@@ -112,9 +111,7 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 			// automagically add an "Apply ?" action
 			if ((me->numChildren > 0) && (addr != NULL))
 				*addr = menu_read(me, NULL);
-#endif
 		}
-#if defined(LCDEXEC_PARAMS)
 		else if (config_get_string(name, "Type", 0, NULL) != NULL) {
 			// it's a command parameter
 			const char *type;
@@ -168,7 +165,8 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 				me->data.alpha.value = strdup(config_get_string(name, "Value", 0, ""));
 				me->data.alpha.minlen = config_get_int(name, "MinLength", 0, 0);
 				me->data.alpha.maxlen = config_get_int(name, "MaxLength", 0, 100);
-				me->data.alpha.allowed_chars = strdup(config_get_string(name, "AllowedChars", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
+				me->data.alpha.allowed = strdup(config_get_string(name, "AllowedChars", 0,
+										  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
 			}
 			else if (strcasecmp(type, "ip") == 0) {
 				me->type = MT_ARG_IP;
@@ -177,12 +175,21 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 				me->data.ip.v6 = config_get_bool(name, "Value", 0, 0);
 			}
 			else if (strcasecmp(type, "checkbox") == 0) {
+				const char *tmp;
+
 				me->type = MT_ARG_CHECKBOX;
 
 				me->data.checkbox.allow_gray = config_get_bool(name, "AllowGray", 0, 0);
 				me->data.checkbox.value = (me->data.checkbox.allow_gray)
 				                          ? config_get_tristate(name, "Value", 0, "gray", 0)
 				                          : config_get_bool(name, "Value", 0, 0);
+				// get replacement strings for different values
+				tmp = config_get_string(name, "OffText", 0, NULL);
+				me->data.checkbox.map[0] = (tmp != NULL) ? strdup(tmp) : NULL;
+				tmp = config_get_string(name, "OnText", 0, NULL);
+				me->data.checkbox.map[1] = (tmp != NULL) ? strdup(tmp) : NULL;
+				tmp = config_get_string(name, "GrayText", 0, NULL);
+				me->data.checkbox.map[2] = (tmp != NULL) ? strdup(tmp) : NULL;
 			}
 			else {
 				report(RPT_DEBUG, "illegal parameter type");
@@ -190,7 +197,6 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 				return NULL;
 			}
 		}
-#endif
 		else {
 			report(RPT_DEBUG, "unknown menu entry type");
 			//menu_free(me);
@@ -267,7 +273,6 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 				}
 				break;
 			case MT_EXEC:
-#if defined(LCDEXEC_PARAMS)
 				if (me->children == NULL) {
 					if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" action \"%s\"\n",
 							parent_id, me->id, me->displayname) < 0)
@@ -290,17 +295,7 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 							return -1;
 					}		
 				}	
-#else
-				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" action \"%s\"\n",
-						parent_id, me->id, me->displayname) < 0)
-					return -1;
-
-				if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -menu_result quit\n",
-						parent_id, me->id) < 0)
-					return -1;
-#endif					
 				break;
-#if defined(LCDEXEC_PARAMS)
 			case MT_ARG_SLIDER:
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" slider -text \"%s\""
 						      " -value %d -minvalue %d -maxvalue %d"
@@ -372,7 +367,7 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						      me->data.alpha.value,
 						      me->data.alpha.minlen,
 						      me->data.alpha.maxlen,
-						      me->data.alpha.allowed_chars) <0)
+						      me->data.alpha.allowed) <0)
 					return -1;
 
 				if (me->next == NULL) {
@@ -418,7 +413,6 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						parent_id, me->id) < 0)
 					return -1;
 				break;
-#endif
 			default:
 				return -1;
 		}
@@ -464,9 +458,10 @@ const char *menu_command(MenuEntry *me)
 void menu_free(MenuEntry *me)
 {
 	if (me != NULL) {
-		switch (me->type) {
-			MenuEntry *entry;
+		MenuEntry *entry;
+		int i;
 
+		switch (me->type) {
 			case MT_EXEC:
 				if (me->data.exec.command != NULL)
 					free(me->data.exec.command);
@@ -482,7 +477,6 @@ void menu_free(MenuEntry *me)
 				}
 				me->children = NULL;
 				break;
-#if defined(LCDEXEC_PARAMS)
 			case MT_ARG_SLIDER:
 				if (me->data.slider.mintext != NULL)
 					free(me->data.slider.mintext);
@@ -506,16 +500,22 @@ void menu_free(MenuEntry *me)
 				if (me->data.alpha.value != NULL)
 					free(me->data.alpha.value);
 				me->data.alpha.value = NULL;
-				if (me->data.alpha.allowed_chars != NULL)
-					free(me->data.alpha.allowed_chars);
-				me->data.alpha.allowed_chars = NULL;
+				if (me->data.alpha.allowed != NULL)
+					free(me->data.alpha.allowed);
+				me->data.alpha.allowed = NULL;
 				break;
 			case MT_ARG_IP:
 				if (me->data.ip.value != NULL)
 					free(me->data.ip.value);
 				me->data.ip.value = NULL;
 				break;
-#endif
+			case MT_ARG_CHECKBOX:
+				for (i = 0; i < sizeof(me->data.checkbox.map)/sizeof(me->data.checkbox.map[0]); i++) {
+					if (me->data.checkbox.map[i] != NULL) {
+						free(me->data.checkbox.map[i]);
+						me->data.checkbox.map[i] = NULL;
+					}
+				}	
 			default:
 				break;
 		}
@@ -562,11 +562,10 @@ void menu_dump(MenuEntry *me)
 				for (entry = me->children; entry != NULL; entry = entry->next)
 					menu_dump(entry);
 				break;
-
 			case MT_EXEC:
 				report(RPT_DEBUG, "Exec=\"%s\"", me->data.exec.command);
 				report(RPT_DEBUG, "Feedback=%s", boolValueName[me->data.exec.feedback]);
-#if defined(LCDEXEC_PARAMS)
+
 				// dump entry's parameter referencess
 				for (entry = me->children; entry != NULL; entry = entry->next)
 					report(RPT_DEBUG, "Parameter=%s", entry->name);
@@ -575,11 +574,7 @@ void menu_dump(MenuEntry *me)
 				// dump entry's parameters
 				for (entry = me->children; entry != NULL; entry = entry->next)
 					menu_dump(entry);
-#else
-				report(RPT_DEBUG, "");
-#endif
 				break;
-#if defined(LCDEXEC_PARAMS)
 			case MT_ARG_SLIDER:
 				report(RPT_DEBUG, "Type=slider");
 				report(RPT_DEBUG, "Value=%d", me->data.slider.value);
@@ -611,7 +606,7 @@ void menu_dump(MenuEntry *me)
 			case MT_ARG_ALPHA:
 				report(RPT_DEBUG, "Type:=lpha");
 				report(RPT_DEBUG, "Value=\"%s\"", me->data.alpha.value);
-				report(RPT_DEBUG, "AllowedChars=\"%s\"", me->data.alpha.allowed_chars);
+				report(RPT_DEBUG, "AllowedChars=\"%s\"", me->data.alpha.allowed);
 				report(RPT_DEBUG, "");
 				break;
 			case MT_ARG_IP:
@@ -624,9 +619,14 @@ void menu_dump(MenuEntry *me)
 				report(RPT_DEBUG, "Type=ip");
 				report(RPT_DEBUG, "Value=%s", triGrayValueName[me->data.checkbox.value]);
 				report(RPT_DEBUG, "AllowGray=%s", boolValueName[me->data.checkbox.allow_gray]);
+				if (me->data.checkbox.map[0] != NULL)
+					report(RPT_DEBUG, "OffText=%s", me->data.checkbox.map[0]);
+				if (me->data.checkbox.map[1] != NULL)
+					report(RPT_DEBUG, "OnText=%s", me->data.checkbox.map[1]);
+				if (me->data.checkbox.map[2] != NULL)
+					report(RPT_DEBUG, "GrayText=%s", me->data.checkbox.map[2]);
 				report(RPT_DEBUG, "");
 				break;
-#endif
 			default:
 				report(RPT_DEBUG, "ERROR: unknown menu entry type");
 				break;

@@ -1,12 +1,14 @@
-/*
- * lcdexec.c
- * This file is part of lcdexec, an LCDproc client.
+/* \file clients/lcdexec/lcdexec.c
+ * Main file for \lcdexec, the program starter in the LCDproc suite.
+ */
+
+/* This file is part of lcdexec, an LCDproc client.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
  * Copyright (c) 2002, Joris Robijn
- * Copyright (c) 2006, Peter Marschall
+ * Copyright (c) 2006-7, Peter Marschall
  */
 
 #include <stdio.h>
@@ -26,11 +28,13 @@
 
 #include "menu.h"
 
+
 #if !defined(SYSCONFDIR)
 # define SYSCONFDIR	"/etc"
 #endif
 
 #define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdexec.conf"
+
 
 /** information about a process started by lcdexec */
 typedef struct ProcInfo {
@@ -94,6 +98,7 @@ static int process_response(char *str);
 static int exec_command(MenuEntry *cmd);
 static int show_procinfo_msg(ProcInfo *p);
 static int main_loop(void);
+
 
 #define CHAIN(e,f) { if (e>=0) { e=(f); }}
 #define CHAIN_END(e) { if (e<0) { report(RPT_CRIT,"Critical error, abort"); exit(e); }}
@@ -376,7 +381,6 @@ static int process_response(char *str)
 					exec_command(entry);
 			}		
 		}
-#if defined(LCDEXEC_PARAMS)		
 		else if ((strcmp(argv[1], "plus") == 0) ||
 			 (strcmp(argv[1], "minus") == 0) ||
 			 (strcmp(argv[1], "update") == 0)) {
@@ -431,7 +435,6 @@ static int process_response(char *str)
 					return -1;
 			}
 		}
-#endif			
 		else {
 			; /* Ignore other menuevents */
 		}
@@ -472,11 +475,9 @@ static int exec_command(MenuEntry *cmd)
 		const char *argv[4];
 		pid_t pid;
 		ProcInfo *p;
-#if defined(LCDEXEC_PARAMS)		
 		char *envp[cmd->numChildren+1];
 		MenuEntry *arg;
 		int i;
-#endif		
 
 		/* set argument vector */
 		argv[0] = default_shell;
@@ -484,52 +485,56 @@ static int exec_command(MenuEntry *cmd)
 		argv[2] = command;
 		argv[3] = NULL;
 
-#if defined(LCDEXEC_PARAMS)
 		/* set environment vector: allocate & fill contents */
 		for (arg = cmd->children, i = 0; arg != NULL; arg = arg->next, i++) {
 			char buf[1025];
 
 			switch (arg->type) {
 				case MT_ARG_SLIDER:
-					snprintf(buf, 1024, "%s=%d", arg->name, arg->data.slider.value);
+					snprintf(buf, sizeof(buf)-1, "%s=%d",
+						 arg->name, arg->data.slider.value);
 					break;
 				case MT_ARG_RING:
-					snprintf(buf, 1024, "%s=%s", arg->name, arg->data.ring.strings[arg->data.ring.value]);
+					snprintf(buf, sizeof(buf)-1, "%s=%s", arg->name,
+						 arg->data.ring.strings[arg->data.ring.value]);
 					break;
 				case MT_ARG_NUMERIC:
-					snprintf(buf, 1024, "%s=%d", arg->name, arg->data.numeric.value);
+					snprintf(buf, sizeof(buf)-1, "%s=%d",
+						 arg->name, arg->data.numeric.value);
 					break;
 				case MT_ARG_ALPHA:
-					snprintf(buf, 1024, "%s=%s", arg->name, arg->data.alpha.value);
+					snprintf(buf, sizeof(buf)-1, "%s=%s",
+						 arg->name, arg->data.alpha.value);
 					break;
 				case MT_ARG_IP:
-					snprintf(buf, 1024, "%s=%s", arg->name, arg->data.ip.value);
+					snprintf(buf, sizeof(buf)-1, "%s=%s",
+						 arg->name, arg->data.ip.value);
 					break;
 				case MT_ARG_CHECKBOX:
-					snprintf(buf, 1024, "%s=%d", arg->name, arg->data.checkbox.value);
+					if (arg->data.checkbox.map[arg->data.checkbox.value] != NULL)
+					    strncpy(buf, arg->data.checkbox.map[arg->data.checkbox.value],
+					    	    sizeof(buf)-1);
+					else
+						snprintf(buf, sizeof(buf)-1, "%s=%d",
+							 arg->name, arg->data.checkbox.value);
 					break;
 				default:
 					/* error ? */
 					break;
 			}		
-			buf[1024] ='\0';
+			buf[sizeof(buf)-1] ='\0';
 			envp[i] = strdup(buf);
 
 			debug(RPT_DEBUG, "Environment: %s", envp[i]);
 		}
 		envp[cmd->numChildren] = NULL;
-#endif		
 
 		debug(RPT_DEBUG, "Executing '%s' via Shell %s", command, default_shell);
 
 		switch (pid = fork()) {
 		  case 0:
 			/* We're the child: execute the command */
-#if defined(LCDEXEC_PARAMS)
 			execve(argv[0], (char **) argv, envp);
-#else
-			execv(argv[0], (char **) argv);
-#endif			
 			exit(0);
 			break;
 		  default:
@@ -550,11 +555,9 @@ static int exec_command(MenuEntry *cmd)
 			return -1;
 		}
 
-#if defined(LCDEXEC_PARAMS)			
 		/* free envp's contents */
 		for (i = 0; envp[i] != NULL; i++)
 			free(envp[i]);
-#endif
 
 		return 0;
 	}

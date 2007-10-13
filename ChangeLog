@@ -33,7 +33,7 @@ v.0.5dev (ongoing development)
  * picolcd driver: overhaul USB init for more portability (M. Dolze)
  + curses driver: new option DrawBorder (Bruno Schwander)
  * avoid sending duplicate "success" messages in response to menu_add_item
- + lcdexec: parameter support using widgets; hidden behind compile time option
+ + lcdexec: parameter support using widgets
  * server core: display values in menu for all input MenuEntry types
 
 v.0.5.2
