@@ -47,8 +47,9 @@ typedef struct cgram_cache {
 
 typedef struct ConnectionMapping {
 	char *name;
+	int connectiontype;
+	int if_type;
 	int (*init_fn)(Driver *drvthis);
-	const char *helpMsg;
 } ConnectionMapping;
 
 typedef struct driver_private_data {
@@ -75,7 +76,7 @@ typedef struct driver_private_data {
 	CGmode ccmode;
 
 	// Connection type data
-	int connectiontype_index;
+	int connectiontype;
 	struct hwDependentFns *hd44780_functions;
 
 	// spanList[line number] = display line number is in

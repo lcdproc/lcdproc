@@ -120,9 +120,6 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1; // yes, we have no global variables (except for constants)
 MODULE_EXPORT char *symbol_prefix = "HD44780_";
 
-#define IF_TYPE_PARPORT  0
-#define IF_TYPE_USB      1
-#define IF_TYPE_SERIAL   2
 
 /////////////////////////////////////////////////////////////////
 // Opens com port and sets baud correctly...
@@ -134,8 +131,9 @@ HD44780_init(Driver *drvthis)
 	// TODO: single point of return
 	char buf[40];
 	const char *s;
-	int i;
-	int if_type = IF_TYPE_PARPORT;
+	int i = 0;
+	int (*init_fn)(Driver *drvthis) = NULL;
+	int if_type = IF_TYPE_UNKNOWN;
 	PrivateData *p;
 
 	// Alocate and store private data
@@ -169,22 +167,17 @@ HD44780_init(Driver *drvthis)
 
 	// Get and search for the connection type
 	s = drvthis->config_get_string(drvthis->name, "ConnectionType", 0, "4bit");
-	for (i = 0; connectionMapping[i].name != NULL && strcmp(s, connectionMapping[i].name) != 0; i++);
-	if (connectionMapping[i].name == NULL) {
-		report(RPT_ERR, "%s: unknown ConnectionType: %s", drvthis->name, s);
-		return -1; // fatal error
+	for (i = 0; (connectionMapping[i].name != NULL) &&
+		    (strcmp(s, connectionMapping[i].name) != 0); i++);
+		if (connectionMapping[i].name == NULL) {
+			report(RPT_ERR, "%s: unknown ConnectionType: %s", drvthis->name, s);
+			return -1; // fatal error
 	} else {
-		p->connectiontype_index = i;
-		/* check if ConnectionType contains the string "usb" or "USB" */
-		if ((strstr(connectionMapping[p->connectiontype_index].name, "usb") != NULL) ||
-		    (strstr(connectionMapping[p->connectiontype_index].name, "USB") != NULL))
-			if_type = IF_TYPE_USB;
-		/* check if it is the serial driver */
-		for (i = 0; i < (sizeof(serial_interfaces)/sizeof(SerialInterface)); i++) {
-			if (strcasecmp(connectionMapping[p->connectiontype_index].name,
-				       serial_interfaces[i].name)==0)
-			    if_type = IF_TYPE_SERIAL;
-		}
+		/* set connection type */
+		p->connectiontype = connectionMapping[i].connectiontype;
+
+		if_type = connectionMapping[i].if_type;
+		init_fn = connectionMapping[i].init_fn;
 	}
 
 	// Get and parse vspan only when specified
@@ -341,7 +334,7 @@ HD44780_init(Driver *drvthis)
 	p->hd44780_functions->close = NULL;
 
 	// Do connection type specific display init
-	if (connectionMapping[p->connectiontype_index].init_fn(drvthis) != 0)
+	if (init_fn(drvthis) != 0)
 		return -1;
 
 	// Display startup parameters on the LCD
@@ -349,21 +342,29 @@ HD44780_init(Driver *drvthis)
 	sprintf(buf, "HD44780 %dx%d", p->width, p->height);
 	HD44780_string(drvthis, 1, 1, buf);
  	switch(if_type) {
- 	case IF_TYPE_USB:
+ 	  case IF_TYPE_USB:
   		sprintf(buf, "USB %s%s%s",
  			 (p->have_backlight?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
- 	case IF_TYPE_SERIAL:
+ 	  case IF_TYPE_SERIAL:
  		sprintf(buf, "SERIAL %s%s%s",
  			 (p->have_backlight?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
- 	default:
+ 	  case IF_TYPE_I2C:
+ 		sprintf(buf, "I2C %s%s%s",
+ 			 (p->have_backlight?" bl":""),
+ 			 (p->have_keypad?" key":""),
+ 			 (p->have_output?" out":"")
+ 			);
+ 		break;
+	  case IF_TYPE_PARPORT:
+ 	  default:
  		sprintf(buf, "LPT 0x%x%s%s%s", p->port,
  			 (p->have_backlight?" bl":""),
  			 (p->have_keypad?" key":""),

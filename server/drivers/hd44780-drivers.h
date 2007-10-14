@@ -29,36 +29,61 @@
 // add new connection type header files here
 
 
+// symbolic names for connection types
+#define HD44780_CT_UNKNOWN		0
+#define HD44780_CT_4BIT			1
+#define HD44780_CT_8BIT			2
+#define HD44780_CT_SERIALLPT		3
+#define HD44780_CT_WINAMP		4
+#define HD44780_CT_PICANLCD		5
+#define HD44780_CT_LCDSERIALIZER	6
+#define HD44780_CT_LOS_PANEL		7
+#define HD44780_CT_VDR_LCD		8
+#define HD44780_CT_VDR_WAKEUP		9
+#define HD44780_CT_PERTELIAN		10
+#define HD44780_CT_LIS2			11
+#define HD44780_CT_BWCTUSB		12
+#define HD44780_CT_LCDUSB		13
+#define HD44780_CT_I2C			14
+
+// symbolic names for interface types
+#define IF_TYPE_UNKNOWN		0
+#define IF_TYPE_PARPORT		1
+#define IF_TYPE_SERIAL		2
+#define IF_TYPE_USB		3
+#define IF_TYPE_I2C		4
+
+// connectionType enumerator:
+// - string to identify connection in config file
+// - connection type identifier
+// - interface type
+// - initialisation function
 static const ConnectionMapping connectionMapping[] = {
-	// connectionType enumerator
-	// string to identify connection on command line
-	// your initialisation function
-	// help string for your particular connection
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
-	{ "4bit",          hd_init_4bit,      "\tnone\n" },
-	{ "8bit",          hd_init_ext8bit,   "\tnone\n" },
-	{ "serialLpt",     hd_init_serialLpt, "\tnone\n" },
-	{ "winamp",        hd_init_winamp,    "\tnone\n" },
+	{ "4bit",          HD44780_CT_4BIT,          IF_TYPE_PARPORT, hd_init_4bit       },
+	{ "8bit",          HD44780_CT_8BIT,          IF_TYPE_PARPORT, hd_init_ext8bit    },
+	{ "serialLpt",     HD44780_CT_SERIALLPT,     IF_TYPE_PARPORT, hd_init_serialLpt  },
+	{ "winamp",        HD44780_CT_WINAMP,        IF_TYPE_PARPORT, hd_init_winamp     },
 #endif
 	/* Serial connectiontypes */
-	{ "picanlcd",      hd_init_serial,    "\tnone\n" },
-	{ "lcdserializer", hd_init_serial,    "\tnone\n" },
-	{ "los-panel",     hd_init_serial,    "\tnone\n" },
-	{ "vdr-lcd",       hd_init_serial,    "\tnone\n" },
-	{ "vdr-wakeup",    hd_init_serial,    "\tnone\n" },
-	{ "pertelian",     hd_init_serial,    "\tnone\n" },
+	{ "picanlcd",      HD44780_CT_PICANLCD,      IF_TYPE_SERIAL,  hd_init_serial     },
+	{ "lcdserializer", HD44780_CT_LCDSERIALIZER, IF_TYPE_SERIAL,  hd_init_serial     },
+	{ "los-panel",     HD44780_CT_LOS_PANEL,     IF_TYPE_SERIAL,  hd_init_serial     },
+	{ "vdr-lcd",       HD44780_CT_VDR_LCD,       IF_TYPE_SERIAL,  hd_init_serial     },
+	{ "vdr-wakeup",    HD44780_CT_VDR_WAKEUP,    IF_TYPE_SERIAL,  hd_init_serial     },
+	{ "pertelian",     HD44780_CT_PERTELIAN,     IF_TYPE_SERIAL,  hd_init_serial     },
 	/* End serial connectiontypes */
-	{ "lis2",          hd_init_lis2,      "\tnone\n" },
+	{ "lis2",          HD44780_CT_LIS2,          IF_TYPE_SERIAL,  hd_init_lis2       },
 #ifdef HAVE_LIBUSB
-	{ "bwctusb",       hd_init_bwct_usb,  "\tnone\n" },
-	{ "lcd2usb",       hd_init_lcd2usb,   "\tnone\n" },
+	{ "bwctusb",       HD44780_CT_BWCTUSB,       IF_TYPE_USB,     hd_init_bwct_usb   },
+	{ "lcd2usb",       HD44780_CT_I2C,           IF_TYPE_USB,     hd_init_lcd2usb    },
 #endif
 #ifdef HAVE_I2C
-	{ "i2c",           hd_init_i2c,       "\tnone\n" },
+	{ "i2c",           HD44780_CT_I2C,           IF_TYPE_I2C,     hd_init_i2c        },
 #endif
 		 // add new connection types and their string specifier here
 		 // default, end of structure element (do not delete)
-	{ NULL, NULL, NULL }
+	{ NULL, HD44780_CT_UNKNOWN, IF_TYPE_UNKNOWN, NULL }
 };
 
 #endif
