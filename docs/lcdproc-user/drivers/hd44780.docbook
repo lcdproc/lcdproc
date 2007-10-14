@@ -1553,10 +1553,25 @@ that. The BL output below should be connected to the BL input in the
 <title>LIS2 USB device "lis2"</title>
 
 <para>
-LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>) is a full featured USB VFD module
-with four channel fan controls. This device can be accessed as a serial device with the
-help of the kernel modules <filename>ftdi_sio.ko</filename> that map the USB port to a serial port
-(<filename class="devicefile">/dev/ttyUSB<replaceable>x</replaceable></filename>).
+LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)
+is a full featured USB VFD module with four channel fan controls.
+This device can be accessed as a serial device with the help of the kernel
+module <filename>ftdi_sio.ko</filename> that maps the USB port to a serial port
+(e.g. <filename class="devicefile">/dev/ttyUSB<replaceable>x</replaceable></filename>).
+</para>
+
+</sect3>
+
+<sect3 id="hd44780-mplay">
+<title>MPlay Blast USB device "mplay"</title>
+
+<para>
+MPlay Blast from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)
+is a full featured USB VFD module with two channel fan controls and
+two channel temperature sensors.
+This device can be accessed as a serial device with the help of the kernel
+module <filename>ftdi_sio.ko</filename> that maps the USB port to a serial port
+(e.g. <filename class="devicefile">/dev/ttyUSB<replaceable>x</replaceable></filename>).
 </para>
 
 </sect3>
@@ -2104,6 +2119,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <arg choice="plain"><literal>bwctusb</literal></arg>
       <arg choice="plain"><literal>lcd2usb</literal></arg>
       <arg choice="plain"><literal>lis2</literal></arg>
+      <arg choice="plain"><literal>mplay</literal></arg>
       <arg choice="plain"><literal>i2c</literal></arg>
     </group>
     </arg>
@@ -2172,6 +2188,10 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         <row>
           <entry><literal><link linkend="hd44780-lis2">lis2</link></literal></entry>
           <entry>LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
+        </row>
+        <row>
+          <entry><literal><link linkend="hd44780-mplay">mplay</link></literal></entry>
+          <entry>MPlay Blast from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
         </row>
         <row>
           <entry><literal><link linkend="hd44780-i2c">i2c</link></literal></entry>

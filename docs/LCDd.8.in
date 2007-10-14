@@ -152,6 +152,9 @@ Pertelian X2040 module (http://pertelian.com/)
 .B lis2
 LIS2 from VLSystem (http://www.vlsys.co.kr), connected to USB
 .TP
+.B mplay
+MPlay Blast from VLSystem (http://www.vlsys.co.kr), connected to USB
+.TP
 .B bwctusb
 USB-to-HD44780 converter by BWCT (http://www.bwct.de)
 .TP

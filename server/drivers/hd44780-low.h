@@ -35,9 +35,10 @@
 #define HD44780_CT_VDR_WAKEUP		9
 #define HD44780_CT_PERTELIAN		10
 #define HD44780_CT_LIS2			11
-#define HD44780_CT_BWCTUSB		12
-#define HD44780_CT_LCDUSB		13
-#define HD44780_CT_I2C			14
+#define HD44780_CT_MPLAY		12
+#define HD44780_CT_BWCTUSB		13
+#define HD44780_CT_LCDUSB		14
+#define HD44780_CT_I2C			15
 
 // symbolic names for interface types
 #define IF_TYPE_UNKNOWN		0
