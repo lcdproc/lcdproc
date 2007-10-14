@@ -29,30 +29,6 @@
 // add new connection type header files here
 
 
-// symbolic names for connection types
-#define HD44780_CT_UNKNOWN		0
-#define HD44780_CT_4BIT			1
-#define HD44780_CT_8BIT			2
-#define HD44780_CT_SERIALLPT		3
-#define HD44780_CT_WINAMP		4
-#define HD44780_CT_PICANLCD		5
-#define HD44780_CT_LCDSERIALIZER	6
-#define HD44780_CT_LOS_PANEL		7
-#define HD44780_CT_VDR_LCD		8
-#define HD44780_CT_VDR_WAKEUP		9
-#define HD44780_CT_PERTELIAN		10
-#define HD44780_CT_LIS2			11
-#define HD44780_CT_BWCTUSB		12
-#define HD44780_CT_LCDUSB		13
-#define HD44780_CT_I2C			14
-
-// symbolic names for interface types
-#define IF_TYPE_UNKNOWN		0
-#define IF_TYPE_PARPORT		1
-#define IF_TYPE_SERIAL		2
-#define IF_TYPE_USB		3
-#define IF_TYPE_I2C		4
-
 // connectionType enumerator:
 // - string to identify connection in config file
 // - connection type identifier
