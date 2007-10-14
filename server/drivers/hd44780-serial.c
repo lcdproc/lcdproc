@@ -140,36 +140,28 @@ hd_init_serial(Driver *drvthis)
 	/* READ CONFIG FILE */
 
 	/* Get interface type */
-	int counter;
-	char conf_serialif[SERIALIF_NAME_LENGTH];
+	int i;
 
-	strncpy(conf_serialif, drvthis->config_get_string(drvthis->name, "connectiontype", 0, ""), SERIALIF_NAME_LENGTH);
-	conf_serialif[SERIALIF_NAME_LENGTH-1] = '\0';
 	p->serial_type = 0;
-	for (counter = 0; counter < (sizeof(serial_interfaces)/sizeof(SerialInterface)); counter++) {
-		if (strcasecmp(conf_serialif, serial_interfaces[counter].name) == 0) {
-			p->serial_type = counter;
+	for (i = 0; serial_interfaces[i].connectiontype != HD44780_CT_UNKNOWN; i++) {
+		if (p->connectiontype == serial_interfaces[i].connectiontype) {
+			p->serial_type = i;
 			break;
 		}
 	}
-	if (p->serial_type != counter) {
-		report(RPT_ERR, "HD44780: serial: serial interface %s unknown", conf_serialif);
-		report(RPT_ERR, "HD44780: serial: available interfaces:");
-		for (counter = 0; counter < (sizeof(serial_interfaces)/sizeof(SerialInterface)); counter++)
-			report(RPT_ERR, " %s", serial_interfaces[counter].name);
+	if (p->serial_type != i) {
+		report(RPT_ERR, "HD44780: serial: unknown connection type");
 		return -1;
 	}
 
-	report(RPT_INFO,"HD44780: serial: device type: %s", SERIAL_IF.name);
-
 	/* Check if user knows the capabilities of his hardware ;-) */
 	if (p->have_keypad && !(SERIAL_IF.keypad)) {
-		report(RPT_ERR, "HD44780: serial: keypad is not supported by %s", SERIAL_IF.name);
+		report(RPT_ERR, "HD44780: serial: keypad is not supported by connection type");
 		report(RPT_ERR, "HD44780: serial: check your configuration file and disable it");
 		return -1;
 	}
 	if (p->have_backlight && !(SERIAL_IF.backlight)) {
-		report(RPT_ERR, "HD44780: serial: backlight control is not supported by %s", SERIAL_IF.name);
+		report(RPT_ERR, "HD44780: serial: backlight control is not supported by connection type");
 		report(RPT_ERR, "HD44780: serial: check your configuration file and disable it");
 		return -1;
 	}
@@ -179,7 +171,7 @@ hd_init_serial(Driver *drvthis)
 	size_t bitrate;
 
 	conf_bitrate = drvthis->config_get_int(drvthis->name, "Speed", 0, SERIAL_IF.default_bitrate);
-        if (conf_bitrate==0)
+        if (conf_bitrate == 0)
                 conf_bitrate = SERIAL_IF.default_bitrate;
 	if (convert_bitrate(conf_bitrate, &bitrate)) {
 		report(RPT_ERR, "HD44780: serial: invalid configured bitrate speed");
