@@ -47,6 +47,11 @@
 #define IF_TYPE_USB		3
 #define IF_TYPE_I2C		4
 
+// symbolic default values
+#define DEFAULT_CONTRAST	800
+#define DEFAULT_BRIGHTNESS	800
+#define DEFAULT_OFFBRIGHTNESS	300
+
 
 // Maximum sizes of the keypad
 // DO NOT CHANGE THESE 2 VALUES, unless you change the functions too
@@ -56,6 +61,7 @@
 /* Constants for userdefchar_mode */
 #define NUM_CCs 8 /* number of custom characters */
 
+
 typedef enum {
 	standard,	/* only char 0 is used for heartbeat */
 	vbar,		/* vertical bars */
@@ -64,10 +70,12 @@ typedef enum {
 	bigchar		/* big characters */
 } CGmode;
 
+
 typedef struct cgram_cache {
 	unsigned char cache[LCD_DEFAULT_CELLHEIGHT];
 	int clean;
 } CGram;
+
 
 typedef struct ConnectionMapping {
 	char *name;
@@ -76,8 +84,8 @@ typedef struct ConnectionMapping {
 	int (*init_fn)(Driver *drvthis);
 } ConnectionMapping;
 
-typedef struct driver_private_data {
 
+typedef struct driver_private_data {
 	unsigned int port;
 
 	/* for serial connection type */
@@ -151,7 +159,12 @@ typedef struct driver_private_data {
 	int keepalivedisplay;   // When >0 refresh upper left char every <keepalivedisplay> seconds to keep display alive
 
 	int output_state;	// what was most recently output to the output port
+	
+	int contrast;		// Contrast setting (range 0 - 1000)
+	int brightness;		// Brightness when backlight is "on" (range 0 - 1000)
+	int offbrightness;	// Brightness when backlight is "off" (range 0 - 1000)
 } PrivateData;
+
 
 // Structures holding pointers to HD44780 specific functions
 typedef struct hwDependentFns {
@@ -167,6 +180,15 @@ typedef struct hwDependentFns {
 	// Switch the backlight on or off
 	// state      - to be or not to be on
 	void (*backlight)(PrivateData *p, unsigned char state);
+
+	// Set the contrast
+	// value      - new value to be set
+	void (*set_contrast)(PrivateData *p, unsigned char value);
+
+	// Switch the backlight on or off
+	// state      - backlight state to set the new value for
+	// value      - new value to be set
+	void (*set_brightness)(PrivateData *p, int backlight, unsigned char value);
 
 	// Read the keypad
 	// Ydata      - the up to 11 bits that should be put on the Y side of the matrix
@@ -193,57 +215,57 @@ void common_init(PrivateData *p, unsigned char if_bit);
 
 
 // commands for senddata
-#define RS_DATA     0x00
-#define RS_INSTR    0x01
+#define RS_DATA		0x00
+#define RS_INSTR	0x01
 
-#define CLEAR       0x01
+#define CLEAR		0x01
 
-#define HOMECURSOR  0x02
+#define HOMECURSOR	0x02
 
-#define ENTRYMODE   0x04
-#define E_MOVERIGHT 0x02
-#define E_MOVELEFT  0x00
-#define EDGESCROLL  0x01
-#define NOSCROLL    0x00
+#define ENTRYMODE	0x04
+#define E_MOVERIGHT	0x02
+#define E_MOVELEFT	0x00
+#define EDGESCROLL	0x01
+#define NOSCROLL	0x00
 
-#define ONOFFCTRL   0x08	/* Only reachable with EXTREG clear */
-#define DISPON      0x04
-#define DISPOFF     0x00
-#define CURSORON    0x02
-#define CURSOROFF   0x00
-#define CURSORBLINK 0x01
-#define CURSORNOBLINK 0x00
+#define ONOFFCTRL	0x08	/* Only reachable with EXTREG clear */
+#define DISPON		0x04
+#define DISPOFF		0x00
+#define CURSORON	0x02
+#define CURSOROFF	0x00
+#define CURSORBLINK	0x01
+#define CURSORNOBLINK	0x00
 
-#define EXTMODESET  0x08	/* Only reachable with EXTREG set */
-#define FONT6WIDE   0x04
-#define INVCURSOR   0x02
-#define FOURLINE    0x01
+#define EXTMODESET	0x08	/* Only reachable with EXTREG set */
+#define FONT6WIDE	0x04
+#define INVCURSOR	0x02
+#define FOURLINE	0x01
 
-#define CURSORSHIFT 0x10	/* Only reachable with EXTREG clear */
-#define SCROLLDISP  0x08
-#define MOVECURSOR  0x00
-#define MOVERIGHT   0x04
-#define MOVELEFT    0x00
+#define CURSORSHIFT	0x10	/* Only reachable with EXTREG clear */
+#define SCROLLDISP	0x08
+#define MOVECURSOR	0x00
+#define MOVERIGHT	0x04
+#define MOVELEFT	0x00
 
-#define HSCROLLEN   0x10	/* Only reachable with EXTREG set */
+#define HSCROLLEN	0x10	/* Only reachable with EXTREG set */
 
-#define FUNCSET     0x20
-#define IF_8BIT     0x10
-#define IF_4BIT     0x00
-#define TWOLINE     0x08
-#define ONELINE     0x00
-#define LARGECHAR   0x04	/* 5x11 characters */
-#define SMALLCHAR   0x00	/* 5x8 characters */
-#define EXTREG      0x04	/* Select ext. registers (Yes, the same bits)*/
-#define SEGBLINK    0x02	/* Only reachable with EXTREG set */
-#define POWERDOWN   0x01	/* Only reachable with EXTREG set */
+#define FUNCSET		0x20
+#define IF_8BIT		0x10
+#define IF_4BIT		0x00
+#define TWOLINE		0x08
+#define ONELINE		0x00
+#define LARGECHAR	0x04	/* 5x11 characters */
+#define SMALLCHAR	0x00	/* 5x8 characters */
+#define EXTREG		0x04	/* Select ext. registers (Yes, the same bits)*/
+#define SEGBLINK	0x02	/* Only reachable with EXTREG set */
+#define POWERDOWN	0x01	/* Only reachable with EXTREG set */
 
-#define SETCHAR     0x40	/* Only reachable with EXTREG clear */
+#define SETCHAR		0x40	/* Only reachable with EXTREG clear */
 
-#define SETSEG      0x40	/* Only reachable with EXTREG set */
+#define SETSEG		0x40	/* Only reachable with EXTREG set */
 
-#define POSITION    0x80	/* Only reachable with EXTREG clear */
+#define POSITION	0x80	/* Only reachable with EXTREG clear */
 
-#define HSCROLLAMOUNT 0x80	/* Only reachable with EXTREG set */
+#define HSCROLLAMOUNT	0x80	/* Only reachable with EXTREG set */
 
 #endif

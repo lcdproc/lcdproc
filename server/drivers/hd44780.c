@@ -108,22 +108,29 @@ static char *defaultKeyMapMatrix[KEYPAD_MAXY][KEYPAD_MAXX] = {
 		{ NULL, NULL, NULL, NULL, NULL },
 		{ NULL, NULL, NULL, NULL, NULL }};
 
-// function declarations
-void HD44780_position(Driver *drvthis, int x, int y);
-static void uPause(PrivateData *p, int usecs);
-unsigned char HD44780_scankeypad(PrivateData *p);
-static int parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], const char *spanlist);
 
-// Vars for the server core
+/* Vars for the server core */
 MODULE_EXPORT char * api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1; // yes, we have no global variables (except for constants)
 MODULE_EXPORT char *symbol_prefix = "HD44780_";
 
 
-/////////////////////////////////////////////////////////////////
-// Opens com port and sets baud correctly...
-//
+/* Internal functions */
+void HD44780_position(Driver *drvthis, int x, int y);
+static void uPause(PrivateData *p, int usecs);
+unsigned char HD44780_scankeypad(PrivateData *p);
+static int parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], const char *spanlist);
+
+
+/**
+ * Initialize the driver.
+ * Initialize common part of drive & call sub-initialization
+ * routine depending on connection type.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0   Success.
+ * \retval <0  Error.
+ */
 MODULE_EXPORT int
 HD44780_init(Driver *drvthis)
 {
@@ -134,6 +141,7 @@ HD44780_init(Driver *drvthis)
 	int i = 0;
 	int (*init_fn)(Driver *drvthis) = NULL;
 	int if_type = IF_TYPE_UNKNOWN;
+	int tmp;
 	PrivateData *p;
 
 	// Alocate and store private data
@@ -199,6 +207,33 @@ HD44780_init(Driver *drvthis)
 		report(RPT_ERR, "%s: cannot read Size %s", drvthis->name, s);
 	}
 
+	/* set contrast */
+	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: Contrast must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_CONTRAST);
+		tmp = DEFAULT_CONTRAST;
+	}
+	p->contrast = tmp;
+
+	/* set brightness */
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_BRIGHTNESS);
+		tmp = DEFAULT_BRIGHTNESS;
+	}
+	p->brightness = tmp;
+
+	/* set backlight-off "brightness" */
+	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_OFFBRIGHTNESS);
+		tmp = DEFAULT_OFFBRIGHTNESS;
+	}
+	p->offbrightness = tmp;
+
 	// default case for when spans aren't indicated
 	if (p->numLines == 0) {
 		if ((p->spanList = (int *) calloc(sizeof(int), p->height)) != NULL) {
@@ -215,6 +250,7 @@ HD44780_init(Driver *drvthis)
 	  if (p->numLines != p->height)
 	    report(RPT_ERR, "%s: height in Size does not match vSpan", drvthis->name);
 	}
+
 	if (p->numDisplays == 0) {
 		if (((p->dispVOffset = (int *) calloc(1, sizeof(int))) != NULL) &&
 	            ((p->dispSizes = (int *) calloc(1, sizeof(int))) != NULL)) {
@@ -282,7 +318,7 @@ HD44780_init(Driver *drvthis)
 		}
 
 		for (x = 0; x < KEYPAD_MAXX; x++) {
-			for (y = 0; y<KEYPAD_MAXY; y++) {
+			for (y = 0; y < KEYPAD_MAXY; y++) {
 				char buf[40];
 
 				// First fill with default value
@@ -326,11 +362,18 @@ HD44780_init(Driver *drvthis)
 	// Output latch state - init to a non-valid value
 	p->output_state = 999999;
 
+	// allocate local function pointers
 	if ((p->hd44780_functions = (HD44780_functions *) calloc(1, sizeof(HD44780_functions))) == NULL) {
 		report(RPT_ERR, "%s: error mallocing", drvthis->name);
 		return -1;
 	}
+	// pre-set local function pointers (may be overridden by local init function)
 	p->hd44780_functions->uPause = uPause;
+	p->hd44780_functions->senddata = NULL;
+	p->hd44780_functions->backlight = NULL;
+	p->hd44780_functions->set_contrast = NULL;
+	p->hd44780_functions->set_brightness = NULL;
+	p->hd44780_functions->readkeypad = NULL;
 	p->hd44780_functions->scankeypad = HD44780_scankeypad;
 	p->hd44780_functions->output = NULL;
 	p->hd44780_functions->close = NULL;
@@ -338,6 +381,13 @@ HD44780_init(Driver *drvthis)
 	// Do connection type specific display init
 	if (init_fn(drvthis) != 0)
 		return -1;
+
+	// fail if local senddata function was not defined
+	if (p->hd44780_functions->senddata == NULL) {
+		report(RPT_ERR, "%s: incomplete functions for connection type");
+		return -1;
+	}	
+
 
 	// Display startup parameters on the LCD
 	HD44780_clear(drvthis);
@@ -380,12 +430,13 @@ HD44780_init(Driver *drvthis)
 	return 1;
 }
 
-/////////////////////////////////////////////////////////////////
-// Common initialisation sequence - sets cursor off and not blinking,
-// clear display and homecursor
-// Does not set twoline mode nor small characters (5x8). The init function of
-// the connectiontype should do this.
-//
+
+/**
+ * Common initialisation sequence - sets cursor off and not blinking,
+ * clear display and homecursor
+ * Does not set twoline mode nor small characters (5x8). The init function of
+ * the connectiontype should do this.
+ */
 void
 common_init(PrivateData *p, unsigned char if_bit)
 {
@@ -406,25 +457,28 @@ common_init(PrivateData *p, unsigned char if_bit)
 	p->hd44780_functions->uPause(p, 1600);
 }
 
-/////////////////////////////////////////////////////////////////
-// Delay a number of microseconds
-//
+
+/**
+ * Delay a number of microseconds
+ */
 void
 uPause(PrivateData *p, int usecs)
 {
 	timing_uPause(usecs * p->delayMult);
 }
 
-/////////////////////////////////////////////////////////////////
-// Clean-up
-//
+
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 HD44780_close(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	if (p != NULL) {
-        	if (p->hd44780_functions->close)
+        	if (p->hd44780_functions->close != NULL)
                 	p->hd44780_functions->close(p);
 
 		if (p->framebuf)
@@ -438,9 +492,12 @@ HD44780_close(Driver *drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
+ */
 MODULE_EXPORT int
 HD44780_width(Driver *drvthis)
 {
@@ -449,9 +506,12 @@ HD44780_width(Driver *drvthis)
 	return p->width;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
+ */
 MODULE_EXPORT int
 HD44780_height(Driver *drvthis)
 {
@@ -460,9 +520,12 @@ HD44780_height(Driver *drvthis)
 	return p->height;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display's character cell width
-//
+
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel columns a character cell is wide.
+ */
 MODULE_EXPORT int
 HD44780_cellwidth(Driver *drvthis)
 {
@@ -471,9 +534,12 @@ HD44780_cellwidth(Driver *drvthis)
 	return p->cellwidth;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display's character cell height
-//
+
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of pixel lines a character cell is high.
+ */
 MODULE_EXPORT int
 HD44780_cellheight(Driver *drvthis)
 {
@@ -482,10 +548,13 @@ HD44780_cellheight(Driver *drvthis)
 	return p->cellheight;
 }
 
-/////////////////////////////////////////////////////////////////
-// Set position (not part of API)
-//
-// x and y here are for the virtual p->height x p->width display
+
+/**
+ * Set position (not part of API).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        X-coordinate to go to.
+ * \param y        Y-coordinate to go to.
+ */
 void
 HD44780_position(Driver *drvthis, int x, int y)
 {
@@ -514,9 +583,11 @@ HD44780_position(Driver *drvthis, int x, int y)
 	p->hd44780_functions->uPause(p, 40);  // Minimum exec time for all commands
 }
 
-/////////////////////////////////////////////////////////////////
-// Flush the framebuffer to the display
-//
+
+/**
+ * Flush data on screen to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 HD44780_flush(Driver *drvthis)
 {
@@ -589,9 +660,11 @@ HD44780_flush(Driver *drvthis)
 	debug(RPT_DEBUG, "%s: flushed %d custom chars", drvthis->name, count);
 }
 
-/////////////////////////////////////////////////////////////////
-// Clear the framebuffer
-//
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 HD44780_clear(Driver *drvthis)
 {
@@ -601,9 +674,15 @@ HD44780_clear(Driver *drvthis)
 	p->ccmode = standard;
 }
 
-/////////////////////////////////////////////////////////////////
-// Place a character in the framebuffer
-//
+
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
 MODULE_EXPORT void
 HD44780_chr(Driver *drvthis, int x, int y, char ch)
 {
@@ -616,9 +695,15 @@ HD44780_chr(Driver *drvthis, int x, int y, char ch)
 		p->framebuf[(y * p->width) + x] = ch;
 }
 
-/////////////////////////////////////////////////////////////////
-// Place a string in the framebuffer
-//
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
 MODULE_EXPORT void
 HD44780_string(Driver *drvthis, int x, int y, const char string[])
 {
@@ -637,20 +722,62 @@ HD44780_string(Driver *drvthis, int x, int y, const char string[])
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets the backlight on or off
-//
+
+/**
+ * Get current LCD contrast.
+ * This is only the locally stored contrast, the contrast value
+ * cannot be retrieved from the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Stored contrast in promille.
+ */
+MODULE_EXPORT int
+HD44780_get_contrast(Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return p->contrast;
+}
+
+
+/**
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return Stored brightness in promille.
+ */
+MODULE_EXPORT int
+HD44780_get_brightness(Driver *drvthis, int state)
+{
+	PrivateData *p = drvthis->private_data;
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/**
+ * Turn the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
+ */
 MODULE_EXPORT void
 HD44780_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	p->hd44780_functions->backlight (p, on);
+	if (p->hd44780_functions->backlight != NULL)
+		p->hd44780_functions->backlight(p, on);
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar...
-//
+
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void
 HD44780_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -687,9 +814,16 @@ HD44780_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-//
+
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void
 HD44780_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -726,9 +860,12 @@ HD44780_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Writes a big number.
-//
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
+ */
 MODULE_EXPORT void
 HD44780_num(Driver *drvthis, int x, int num)
 {
@@ -770,13 +907,15 @@ HD44780_get_free_chars(Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Sets a custom character from 0-7...
-//
-// For input, values > 0 mean "on" and values <= 0 are "off".
-//
-// The input is just an array of characters...
-//
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [0 - (NUM_CCs-1)].
+ * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ *                 starting from the top to bottom.
+ *                 The bits in each byte represent the pixels where the LSB
+ *                 (least significant bit) is the rightmost pixel in each pixel row.
+ */
 MODULE_EXPORT void
 HD44780_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
@@ -801,9 +940,15 @@ HD44780_set_char(Driver *drvthis, int n, unsigned char *dat)
 	}
 }
 
-/////////////////////////////////////////////////////////////
-// Set default icon into a userdef char
-//
+
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
+ */
 MODULE_EXPORT int
 HD44780_icon(Driver *drvthis, int x, int y, int icon)
 {
@@ -975,9 +1120,12 @@ HD44780_icon(Driver *drvthis, int x, int y, int icon)
 	return 0;
 }
 
-/////////////////////////////////////////////////////////////
-// Get a key from the keypad (if there is one)
-//
+
+/**
+ * Get next key from the key panel connected to the display.
+ * \param drvthis  Pointer to driver structure.
+ * \return  String representation of the key.
+ */
 MODULE_EXPORT const char *
 HD44780_get_key(Driver *drvthis)
 {
@@ -1026,9 +1174,10 @@ HD44780_get_key(Driver *drvthis)
 	return keystr;
 }
 
-/////////////////////////////////////////////////////////////
-// Scan the keypad
-//
+
+/**
+ * Scan the keypad (not part of the API).
+ */
 unsigned char HD44780_scankeypad(PrivateData *p)
 {
 	unsigned int keybits;
@@ -1094,38 +1243,44 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 }
 
 
-/////////////////////////////////////////////////////////////
-// Output to the optional output latch(es)
-//
+/**
+ * Output to the optional output latch(es).
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Integer with bits representing LED states.
+ */
 MODULE_EXPORT void
 HD44780_output(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 
-	if (!p->have_output) return; /* output disabled */
-	if (!p->hd44780_functions->output) return; /* unsupported for selected connectiontype */
+	// return immediately if output is disabled
+	if (!p->have_output)
+		return;
 
 	// perhaps it is better just to do this every time in case of a glitch
 	// but leaving this in does make sure that any latch-enable line glitches
 	// are more easily seen
-	if (p->output_state == on) return;
+	if (p->output_state == on)
+		return;
 
 	p->output_state = on;
-	p->hd44780_functions->output(p, on);
+
+	// call output function only if it is defined for the commenction type	
+	if (p->hd44780_functions->output != NULL)
+		p->hd44780_functions->output(p, on);
 }
 
 
-/////////////////////////////////////////////////////////////
-// Parse the span list
-//      spanListArray   - array to store vertical spans
-//      spLsize	 - size of spanListArray
-//      dispOffsets     - array to store display offsets
-//      dOffsize	- size of dispOffsets
-//      dispSizeArray   - array of display vertical sizes (= spanlist)
-//      spanlist	- null terminated input span list in comma delimited
-//			format. All span elements [1-9] e.g. "1,4,2"
-//      returns number of span elements, -1 on parse error
-
+/**
+ * Parse a span list, a comma separated list of numbers (e.g. "1,4,2").
+ * \param spanListArray  Array to store vertical spans.
+ * \param spLsize	 Size of spanListArray.
+ * \param dispOffsets    Array to store display offsets.
+ * \param dOffsize	 Size of dispOffsets.
+ * \param dispSizeArray  Array of display vertical sizes (= spanlist).
+ * \param spanlist	 '\0'-terminated input span list in comma delimited format.
+ * \return  Number of span elements, -1 on parse error.
+ */
 int
 parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], const char *spanlist)
 {
@@ -1165,3 +1320,4 @@ parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOf
 	return retVal;
 }
 
+/* EOF */
