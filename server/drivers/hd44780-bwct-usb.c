@@ -38,7 +38,12 @@ static usb_dev_handle *bwct_usb;
 static int bwct_usb_i;
 
 
-// initialize the driver
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0   Success.
+ * \retval -1  Error.
+ */
 int
 hd_init_bwct_usb(Driver *drvthis)
 {
@@ -48,12 +53,12 @@ hd_init_bwct_usb(Driver *drvthis)
   //char device_manufacturer[LCD_MAX_WIDTH+1] = "";
   char device_serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
   char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
-  int contrast = -1;	/* illegal contrast value (to detect errors) */
 
   p->hd44780_functions->senddata = bwct_usb_HD44780_senddata;
   p->hd44780_functions->backlight = bwct_usb_HD44780_backlight;
   p->hd44780_functions->scankeypad = bwct_usb_HD44780_scankeypad;
   p->hd44780_functions->close = bwct_usb_HD44780_close;
+  drvthis->set_contrast = bwct_usb_set_contrast;
 
   /* Read config file's contents: serial number and contrast */
 
@@ -63,8 +68,6 @@ hd_init_bwct_usb(Driver *drvthis)
   if (*serial != '\0') {
     report(RPT_INFO, "hd_init_bwct_usb: Using serial number: %s", serial);
   }
-
-  contrast = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
 
   /* try to find USB device */
 #if 0
@@ -167,21 +170,20 @@ hd_init_bwct_usb(Driver *drvthis)
 
   common_init(p, IF_4BIT);
 
-  /* set contrast */
-  if ((0 <= contrast) && (contrast <= 1000)) {
-    int res = usb_control_msg(bwct_usb, USB_TYPE_VENDOR, BWCT_LCD_SET_CONTRAST,
-                              (contrast * 255) / 1000, bwct_usb_i, NULL, 0, 1000);
-    if (res < 0)
-      report(RPT_WARNING, "hd_init_bwct_usb: setting contrast failed");
-  } else {
-    report(RPT_INFO, "hd_init_bwct_usb: Using default contrast value");
-  }
+  /* set contrast: value comes from global init */
+  bwct_usb_set_contrast(drvthis, p->contrast);
 
   return 0;
 }
 
 
-// bwct_usb_HD44780_senddata
+/**
+ * Send data or commands to the display.
+ * \param p          Pointer to driver's data structure.
+ * \param displayID  ID of the display (or 0 for all) to send data to.
+ * \param flags      Defines whether to end a command or data.
+ * \param ch         The value to send.
+ */
 void
 bwct_usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
@@ -212,5 +214,30 @@ bwct_usb_HD44780_close(PrivateData *p)
     bwct_usb = NULL;
   }
 }
+
+
+/**
+ * Change LCD contrast.
+ * \param drvthis   Pointer to driver structure.
+ * \param promille  New contrast value in promille.
+ */
+void
+bwct_usb_set_contrast(Driver *drvthis, int promille)
+{
+  PrivateData *p = drvthis->private_data;
+
+  // Check if value within range
+  if ((promille < 0) || (promille > 1000))
+    return;
+
+  // And set it (converted from [0,1000] -> [0,255]).
+  // If successful, update the local value.
+  if (usb_control_msg(bwct_usb, USB_TYPE_VENDOR, BWCT_LCD_SET_CONTRAST,
+                      (promille * 255) / 1000, bwct_usb_i, NULL, 0, 1000) < 0)
+    report(RPT_WARNING, "hd_init_lcd2usb: setting contrast failed");
+  else
+    p->contrast = promille;
+}
+
 
 /* EOF */
