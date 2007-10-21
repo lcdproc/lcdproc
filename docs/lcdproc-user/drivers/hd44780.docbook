@@ -1882,9 +1882,10 @@ One for each key and one if the keys are pressed simultaneously. With this menus
 
 <para>
 Besides the standard configuration options for <code>hd44780</code> displays, the
-<code>lcd2usb</code> connection type supports two additional options:
-<command>Contrast=</command> to set the display's contrast and 
-<command>Brightness=</command> to set the display's brightness.
+<code>lcd2usb</code> connection type supports three additional options:
+<command>Contrast=</command> to set the display's contrast,
+<command>Brightness=</command> to set the display's brightness when is backlight is switched on and
+<command>OffBrightness=</command> to set the display's brightness when is backlight is switched off.
 Both options expect a number in the range from <literal>0</literal> to <literal>1000</literal>.
 </para>
 
@@ -1901,7 +1902,9 @@ DownKey=Down
 ConnectionType=lcd2usb
 Contrast=850
 Brightness=800
+OffBrightness=0
 Keypad=yes
+Backlight=yes
 Size=20x2
 KeyDirect_1=Enter
 KeyDirect_2=Down

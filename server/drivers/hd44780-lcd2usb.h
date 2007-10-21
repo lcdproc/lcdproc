@@ -31,10 +31,6 @@
 #define LCD2USB_GET_CTRL	(LCD2USB_GET | (2<<3))
 #define LCD2USB_GET_RESERVED1	(LCD2USB_GET | (3<<3))
 
-#define DEFAULT_CONTRAST	300
-#define DEFAULT_BRIGHTNESS	600
-#define DEFAULT_OFFBRIGHTNESS	300
-
 // initialise this particular driver
 int hd_init_lcd2usb(Driver *drvthis);
 
@@ -42,5 +38,8 @@ void lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned 
 void lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state);
 unsigned char lcd2usb_HD44780_scankeypad(PrivateData *p);
 void lcd2usb_HD44780_close(PrivateData *p);
+void lcd2usb_set_contrast(Driver *drvthis, int promille);
+void lcd2usb_set_brightness(Driver *drvthis, int state, int promille);
+
 
 #endif
