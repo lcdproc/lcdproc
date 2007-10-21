@@ -423,10 +423,10 @@ HD44780_close(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-        if (p->hd44780_functions->close)
-                p->hd44780_functions->close(p);
-
 	if (p != NULL) {
+        	if (p->hd44780_functions->close)
+                	p->hd44780_functions->close(p);
+
 		if (p->framebuf)
 			free(p->framebuf);
 
@@ -445,6 +445,7 @@ MODULE_EXPORT int
 HD44780_width(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
 	return p->width;
 }
 
@@ -455,6 +456,7 @@ MODULE_EXPORT int
 HD44780_height(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
 	return p->height;
 }
 
@@ -465,6 +467,7 @@ MODULE_EXPORT int
 HD44780_cellwidth(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
 	return p->cellwidth;
 }
 
@@ -475,6 +478,7 @@ MODULE_EXPORT int
 HD44780_cellheight(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
 	return p->cellheight;
 }
 
@@ -592,6 +596,7 @@ MODULE_EXPORT void
 HD44780_clear(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
 	memset(p->framebuf, ' ', p->width * p->height);
 	p->ccmode = standard;
 }
@@ -603,6 +608,7 @@ MODULE_EXPORT void
 HD44780_chr(Driver *drvthis, int x, int y, char ch)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
 	y--;
 	x--;
 
@@ -638,6 +644,7 @@ MODULE_EXPORT void
 HD44780_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
+
 	p->hd44780_functions->backlight (p, on);
 }
 
