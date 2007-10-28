@@ -42,7 +42,7 @@ thick enough (or not existent, see 1) the resistance of the
 wire may cause differing GND potentials in the circuit.
 This may lead to strange display behaviour. It may also be
 wise to solder a 100nF capacitor directly to the GND and
-V<subscript>DD</subscript> pins of the display.
+V<subscript>CC</subscript> pins of the display.
 </para>
 </sect2>
 <sect2 id="ppt-latchup">

@@ -140,7 +140,7 @@ can be done by specifying "--enable-drivers=all" or by
 <title>Running</title>
 
 <para>
-Modify the LCDd.conf file before you run LCDd. In this config file are
+Modify the <filename>LCDd.conf</filename> file before you run LCDd. In this config file are
 detailed instructions on how to configure the T6963 driver.
 </para>
 

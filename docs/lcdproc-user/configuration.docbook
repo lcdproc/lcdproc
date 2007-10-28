@@ -599,10 +599,13 @@ input "events".
 -->
 
 <para>
-The menu is an LCDproc client built into <application>LCDd</application>.
+The menu is a special LCDproc client built into <application>LCDd</application>
+that allows changing server and display settings as well as extending it
+with entries from client applications.
+</para>
+
+<para>
 You can configure what keys the menu should use.
-Note that the <literal>MenuKey</literal> will be reserved exclusively,
-while the others work in shared mode.
 </para>
 
 <variablelist>
@@ -611,12 +614,19 @@ while the others work in shared mode.
     <command>MenuKey=</command>
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
-  <listitem><para>
-    The key that switches into menu mode (=open the main menu).
-    In menu mode it cancels any operation. Cancelling the main menu
-    means returning to the regular display mode.
-    It has no default, but a natural candidate is <literal>Menu</literal>.
-  </para></listitem>
+  <listitem>
+    <para>
+      The key that switches into menu mode (=open the main menu).
+      In menu mode it cancels any operation. Cancelling the main menu
+      means returning to the regular display mode.
+      It has no default, but a natural candidate is <literal>Menu</literal>.
+    </para>
+    <note>
+      The <literal>MenuKey</literal> will be reserved exclusively,
+      while the others work in shared mode and can thus be used by a
+      client application when not in the menu.
+    </note>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
@@ -625,7 +635,13 @@ while the others work in shared mode.
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
-    The key to enter a sub menu and/or, to select an entry.
+    The key to enter a sub menu, to select an entry and/or
+    to confirm the value of an input field.
+    If the <replaceable>RightKey</replaceable> is not defined,
+    it is also used to move right in input fields.
+    In this case the value of the input field is not confirmed,
+    until the right end of the input has been reached.
+    
     It is not set by default, but a natural candidate is <literal>Enter</literal>.
   </para></listitem>
 </varlistentry>
@@ -636,9 +652,11 @@ while the others work in shared mode.
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
-    The key to move to the previous menu item.
-    If the <replaceable>LeftKey</replaceable> is not set,
-    it is also used to move left in input fields.
+    The key to move to the previous item in a menu and/or to select
+    the previous value in input fields (e.g. the previous character
+    available for the current position).
+    If the <replaceable>DownKey</replaceable> is not set, moving up
+    before the first entry automatically wraps around to the last entry.
     It is not set by default, but a natural candidate is <literal>Up</literal>.
   </para></listitem>
 </varlistentry>
@@ -649,9 +667,11 @@ while the others work in shared mode.
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
-    The key to move to the next menu item.
-    If the <replaceable>RightKey</replaceable> is not set,
-    it is also used to move right in input fields.
+    The key to move to the next item in a menu andi/or to select
+    the next value in input fields (e.g. the next character available
+    for the current position).
+    If the <replaceable>UpKey</replaceable> is not set, moving down
+    below the last entry automatically wraps around to the first entry.
     It has no default, but a natural candidate is <literal>Down</literal>.
   </para></listitem>
 </varlistentry>
@@ -683,7 +703,7 @@ while the others work in shared mode.
 </variablelist>
 
 <para>
-The keys required for the menu work correctly are the <command>MenuKey</command>, 
+The minimal keys required for the menu work correctly are the <command>MenuKey</command>, 
 the <command>EnterKey</command> and one of <command>UpKey</command> or
 <command>DownKey</command>.
 With these 3 keys the menus can be operated.
@@ -692,6 +712,7 @@ So if you have 4 or more keys, you better use them.
 Especially the <command>LeftKey</command> and <command>RightKey</command>
 make a big difference in user experience.
 </para>
+
 
 </sect2>
 

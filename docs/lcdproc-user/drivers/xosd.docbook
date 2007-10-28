@@ -106,7 +106,7 @@ Offset=200x200
   <listitem><para>
     Set the initial off-brightness [default: <literal>500</literal>; legal: <literal>1</literal> - <literal>1000</literal>]
     This value is used when the display is normally
-    switched off in case LCDd is inactive
+    switched off in case <application>LCDd</application> is inactive
   </para></listitem>
 </varlistentry>
 -->

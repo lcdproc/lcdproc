@@ -70,12 +70,12 @@ All variants use the same method of obtaining power. i.e., for each LCD:
   </thead>
   <tbody>
     <row>
-      <entry>V<subscript>SS</subscript></entry>
+      <entry>V<subscript>EE</subscript></entry>
       <entry>1</entry>
       <entry>GND (connect to any of pins 18 - 25 of you parallel port)</entry>
     </row>
     <row>
-      <entry>V<subscript>DD</subscript></entry>
+      <entry>V<subscript>CC</subscript></entry>
       <entry>2</entry>
       <entry>+5V</entry>
     </row>
@@ -100,25 +100,28 @@ There are several ways to get 5V:
 </para>
 
 <itemizedlist>
- <listitem><para>
-  Connect to a 5V line intented for disk drives (the red wire is 5V,
-  black is GND).
- </para></listitem>
- <listitem><para>
-  Get it from a joystick port (pin 1 and 9 are 5V, 4, 5 and 12 are GND).
-  It seems that some soundcards can use these lines for communication,
-  so if you want to use this first check wether it really gives a 'clean' 5V.
- </para></listitem>
- <listitem><para>
-  If you don't have a backlight, you can sometimes get the needed mA's
-  from the LPT port itself. Connect a few diodes from the data pins to
-  a capacitor and you have the 5V. If it's strong enough is another question...
- </para></listitem>
- <listitem><para>
-  Get it from the keyboard connector. I do not recommend to use this with
-  a backlight, as the keyboard connector is often protected with a fuse
-  of 100mA or 200mA.
- </para></listitem>
+  <listitem><para>
+    Connect to a 5V line intented for disk drives (the red wire is 5V,
+    black is GND).
+  </para></listitem>
+  <listitem><para>
+    Get it from the V<subscript>CC</subscript> pin of an USB connector.
+  </para></listitem>
+  <listitem><para>
+    Get it from a joystick port (pin 1 and 9 are 5V, 4, 5 and 12 are GND).
+    It seems that some soundcards can use these lines for communication,
+    so if you want to use this first check wether it really gives a 'clean' 5V.
+  </para></listitem>
+  <listitem><para>
+    If you don't have a backlight, you can sometimes get the needed mA's
+    from the LPT port itself. Connect a few diodes from the data pins to
+    a capacitor and you have the 5V. If it's strong enough is another question...
+  </para></listitem>
+  <listitem><para>
+    Get it from the keyboard connector. I do not recommend to use this with
+    a backlight, as the keyboard connector is often protected with a fuse
+    of 100mA or 200mA.
+  </para></listitem>
 </itemizedlist>
 
 <figure id="hd44780-connections-power.contrast-circuit">
@@ -380,7 +383,7 @@ Y3 o---|<---o o---+----o return line
  If the driver generates keypresses without that you actually press a key,
  it might be that the unconnected input lines are picking up
  electromagnetic waves from the air. In that case connect the unconnected
- input lines (pin 10, 11, 12, 13 and 15 of the LPT) to VCC = 5V.
+ input lines (pin 10, 11, 12, 13 and 15 of the LPT) to V<subscript>CC</subscript> = 5V.
  </para>
 </tip>
 
@@ -489,6 +492,48 @@ This is originally based on "lcdtext" (by Matthias Prinke).
   </thead>
   <tbody>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
+      <entry>V<subscript>EE</subscript></entry>
+      <entry>1</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>+5V</entry>
+      <entry>V<subscript>CC</subscript></entry>
+      <entry>2</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>(contrast adjustment)</entry>
+      <entry>V<subscript>LC</subscript></entry>
+      <entry>3</entry>
+    </row>
+    <row>
+      <entry>D4</entry>
+      <entry>6</entry>
+      <entry></entry>
+      <entry>RS</entry>
+      <entry>4</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
+      <entry>RW</entry>
+      <entry>5</entry>
+    </row>
+    <row>
+      <entry>D6</entry>
+      <entry>8</entry>
+      <entry></entry>
+      <entry>EN</entry>
+      <entry>6</entry>
+    </row>
+    <row>
       <entry>D0</entry>
       <entry>2</entry>
       <entry></entry>
@@ -507,7 +552,7 @@ This is originally based on "lcdtext" (by Matthias Prinke).
       <entry>4</entry>
       <entry></entry>
       <entry>D6</entry>
-      <entry>(13)</entry>
+      <entry>13</entry>
     </row>
     <row>
       <entry>D3</entry>
@@ -516,49 +561,28 @@ This is originally based on "lcdtext" (by Matthias Prinke).
       <entry>D7</entry>
       <entry>14</entry>
     </row>
-    <row>
-      <entry>D4</entry>
-      <entry>6</entry>
-      <entry></entry>
-      <entry>RS</entry>
-      <entry>4</entry>
-    </row>
-    <row>
-      <entry>D5</entry>
-      <entry>7</entry>
-      <entry></entry>
-      <entry>RW</entry>
-      <entry>5 (LCD3 - 6) (optional - pull all LCD RW low (*) )</entry>
-    </row>
-    <row>
-      <entry>D6</entry>
-      <entry>8</entry>
-      <entry></entry>
-      <entry>EN</entry>
-      <entry>6</entry>
-    </row>
-    <row>
-      <entry>D7</entry>
-      <entry>9</entry>
-      <entry></entry>
-      <entry>EN2</entry>
-      <entry>(LCD2 - 6) (optional)</entry>
-    </row>
   </tbody>
 </tgroup>
 </table>
 
-<para>
-(*) on the RW line of the display: this line decides whether the display receives data from the 
+<note>
+The <literal>RW</literal> (pin 5) line of the display decides whether the display receives data from the 
 LPT port, or whether it sends data to the LPT port: if grounded it receives, if High or connected 
 to nothing at all it "sends" (i.e., will not work as intended). So, if you are not sure that 
 you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
+</note>
+
+<para>
+The <literal>4bit</literal> connection type supports more than one display connected
+to the same parallel port.
+If you want to connect more than one display, then wire the all the displays to the
+parallel port according to the scheme above with the exception of the <literal>EN</literal>
+(pin 6) line of the LCDs.
 </para>
 
 <para>
-If you want to connect more than two displays to the parallel port then
-wire D5 (pin 7) to the enable line (pin 6) of the third LCD. Then for
-displays four to seven use:
+For the second and further displays, you can find the wiring for the <literal>EN</literal>
+(pin 6) line in the table below.
 </para>
 
 <table id="hd44780-4bit.multi-mapping">
@@ -584,32 +608,46 @@ displays four to seven use:
   </thead>
   <tbody>
     <row>
+      <entry>D7</entry>
+      <entry>9</entry>
+      <entry></entry>
+      <entry>EN<subscript>2</subscript></entry>
+      <entry>6 of 2<superscript>nd</superscript> display</entry>
+    </row>
+    <row>
+      <entry>D5</entry>
+      <entry>7</entry>
+      <entry></entry>
+      <entry>EN<subscript>3</subscript></entry>
+      <entry>6 of 3<superscript>rd</superscript> display</entry>
+    </row>
+    <row>
       <entry>STR</entry>
       <entry>1</entry>
       <entry></entry>
-      <entry>EN4</entry>
-      <entry>6</entry>
+      <entry>EN<subscript>4</subscript></entry>
+      <entry>6 of 4<superscript>th</superscript> display</entry>
     </row>
     <row>
       <entry>LF</entry>
       <entry>14</entry>
       <entry></entry>
-      <entry>EN5</entry>
-      <entry>6</entry>
+      <entry>EN<subscript>5</subscript></entry>
+      <entry>6 of 5<superscript>th</superscript> display</entry>
     </row>
     <row>
       <entry>INIT</entry>
       <entry>16</entry>
       <entry></entry>
-      <entry>EN6</entry>
-      <entry>6</entry>
+      <entry>EN<subscript>6</subscript></entry>
+      <entry>6 of 6<superscript>th</superscript> display</entry>
     </row>
     <row>
       <entry>SEL</entry>
       <entry>17</entry>
       <entry></entry>
-      <entry>EN7</entry>
-      <entry>6</entry>
+      <entry>EN<subscript>7</subscript></entry>
+      <entry>6 of 7<superscript>th</superscript> display</entry>
     </row>
   </tbody>
 </tgroup>
@@ -2469,7 +2507,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 <title>Running</title>
 
 <para>
-Modify the LCDd.conf file before you run LCDd. In this config file are
+Modify the <filename>LCDd.conf</filename> file before you run LCDd. In this config file are
 detailed instructions on how to configure the HD44780 driver.
 </para>
 
@@ -2480,7 +2518,7 @@ Then as usual, start LCDd with the correct config file:
 E.g. <command>LCDd -c ./LCDd.conf</command>
 </para>
 <para>
-If you want to override the driver selection in LCDd.conf then use:
+If you want to override the driver selection in <filename>LCDd.conf</filename> then use:
 </para>
 <para>
 <command>LCDd -c ./LCDd.conf -d HD44780</command>

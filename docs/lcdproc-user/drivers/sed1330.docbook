@@ -146,14 +146,14 @@ the connections given here are also correct for your display !
       <entry>D7</entry>
     </row>
     <row>
-      <entry>V<subscript>DD</subscript></entry>
+      <entry>V<subscript>CC</subscript></entry>
       <entry>16</entry>
       <entry>+5V</entry>
       <entry></entry>
       <entry></entry>
     </row>
     <row>
-      <entry>V<subscript>SS</subscript></entry>
+      <entry>V<subscript>EE</subscript></entry>
       <entry>17</entry>
       <entry>GND</entry>
       <entry>18..25</entry>
@@ -368,7 +368,7 @@ the connections given here are also correct for your display !
       <entry>^SELECT_IN</entry>
     </row>
     <row>
-      <entry>V<subscript>SS</subscript></entry>
+      <entry>V<subscript>EE</subscript></entry>
       <entry>17</entry>
       <entry>GND</entry>
       <entry>18..25</entry>
@@ -403,7 +403,7 @@ the connections given here are also correct for your display !
       <entry></entry>
     </row>
     <row>
-      <entry>V<subscript>DD</subscript></entry>
+      <entry>V<subscript>CC</subscript></entry>
       <entry>16</entry>
       <entry>+5V</entry>
       <entry></entry>

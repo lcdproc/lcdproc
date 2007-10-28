@@ -45,7 +45,7 @@
 	to the LCDproc <code>./configure</code> <code>--drivers</code> option 
 	(or use <literal>all</literal>), set the <code>Driver=</code> to
 	<literal>picolcd</literal> in the <filename>LCDd.conf</filename> config
-	file, and then start LCDd either directly or using startup scripts.
+	file, and then start <application>LCDd</application> either directly or using startup scripts.
 	The driver has sane default options and the options that are user configurable
 	are limited to mostly simple items, like contrast and which keys to light up.
 </para>
@@ -179,7 +179,7 @@
     <arg choice="plain"><replaceable>DURATION</replaceable></arg>
   </term>
   <listitem><para>
-    (Advanced) This value controls how long LCDd waits for a key press when 
+    (Advanced) This value controls how long <application>LCDd</application> waits for a key press when 
     get_key() is called.  The value represents microseconds and the default is <literal>500</literal>
     or .5 seconds.  Lowering this value will make LCDd more responsive but also causes LCDd to use 
     more CPU time and, as the timeout grows shorter, key presses become harder to detect.  
