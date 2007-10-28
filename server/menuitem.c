@@ -1007,7 +1007,7 @@ MenuResult menuitem_process_input_slider(MenuItem *item, MenuToken token, const 
 	  	return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
 	  case MENUTOKEN_LEFT:
-		if ((!(keymask & (MENUTOKEN_LEFT | MENUTOKEN_UP))) &&
+		if ((!(keymask & (MENUTOKEN_RIGHT | MENUTOKEN_UP))) &&
 		    (item->data.slider.value == item->data.slider.minvalue))
 			item->data.slider.value = item->data.slider.maxvalue;
 		else
@@ -1061,7 +1061,7 @@ MenuResult menuitem_process_input_numeric(MenuItem *item, MenuToken token, const
 			}
 			return MENURESULT_NONE;
 		  case MENUTOKEN_ENTER:
-			if ((keymask & MENUTOKEN_LEFT) || (str[pos] == '\0')) {
+			if ((keymask & MENUTOKEN_RIGHT) || (str[pos] == '\0')) {
 				int value;
 				/* The user completed his input */
 
@@ -1221,7 +1221,7 @@ MenuResult menuitem_process_input_alpha(MenuItem *item, MenuToken token, const c
 			}
 			return MENURESULT_NONE;
 		  case MENUTOKEN_ENTER:
-			if ((keymask & MENUTOKEN_LEFT) || (str[item->data.alpha.edit_pos] == '\0')) {
+			if ((keymask & MENUTOKEN_RIGHT) || (str[item->data.alpha.edit_pos] == '\0')) {
 				/* The user completed his input */
 
 				/* It's not too short ? */
@@ -1359,7 +1359,7 @@ MenuResult menuitem_process_input_ip(MenuItem *item, MenuToken token, const char
 			}
 			return MENURESULT_NONE;
 		case MENUTOKEN_ENTER:
-			if ((keymask & MENUTOKEN_LEFT) || (pos >= item->data.ip.maxlength - 1)) {
+			if ((keymask & MENUTOKEN_RIGHT) || (pos >= item->data.ip.maxlength - 1)) {
 				// remove the leading spaces/zeros in each octet-representing string
 				char tmp[40];	// 40 = max. length of IPv4 & IPv6 addresses incl. '\0'
 				char *start = tmp;
