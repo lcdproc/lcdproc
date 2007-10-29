@@ -618,6 +618,7 @@ static int render_num(Widget *w, int left, int top, int right, int bottom)
 	if ((w != NULL) && (w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
 		drivers_num(w->x + left, w->y);
 	}
+	return 0;
 }
 
 
