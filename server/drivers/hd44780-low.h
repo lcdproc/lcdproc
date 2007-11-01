@@ -170,6 +170,9 @@ typedef struct driver_private_data {
 typedef struct hwDependentFns {
 	// microsec pauses
 	void (*uPause)(PrivateData *p, int usecs);
+	// report and debug helper
+	void (*drv_report)(const int level, const char *format, .../*args*/);
+	void (*drv_debug)(const int level, const char *format, .../*args*/);
 
 	// Senddata to the LCD
 	// dispID     - display to send data to (0 = all displays)

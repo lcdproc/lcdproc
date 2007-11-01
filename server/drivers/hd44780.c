@@ -369,6 +369,8 @@ HD44780_init(Driver *drvthis)
 	}
 	// pre-set local function pointers (may be overridden by local init function)
 	p->hd44780_functions->uPause = uPause;
+	p->hd44780_functions->drv_report = report;
+	p->hd44780_functions->drv_debug = debug;
 	p->hd44780_functions->senddata = NULL;
 	p->hd44780_functions->backlight = NULL;
 	p->hd44780_functions->set_contrast = NULL;

@@ -236,6 +236,10 @@ Daryl Fonseca-Holt
 Thien Vu
 	- shuttleVFD driver
 
+Thomas Jarosch
+	- support reporting in hd44780's ConnectionType functions
+
+
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min
