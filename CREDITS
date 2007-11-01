@@ -238,6 +238,7 @@ Thien Vu
 
 Thomas Jarosch
 	- support reporting in hd44780's ConnectionType functions
+	- build-system clean up: use pkg-config for some libs
 
 
 

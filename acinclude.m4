@@ -1,5 +1,5 @@
 AC_DEFUN([LCD_DRIVERS_SELECT], [
-AC_CHECKING(for which drivers to compile)
+AC_CHECKING(which drivers to compile)
 
 AC_ARG_ENABLE(drivers,
 	[  --enable-drivers=<list> compile drivers for LCDs in <list>,]
@@ -257,27 +257,11 @@ dnl				else
 			])
 			;;
 		lis)
-			AC_CHECK_HEADERS([usb.h ftdi.h],[
-				AC_CHECK_LIB(ftdi, main,[
-					LIBFTDI="-lusb -lftdi"
-					DRIVERS="$DRIVERS lis${SO}"
-					actdrivers=["$actdrivers lis"]
-				],[
-dnl				else
-					AC_MSG_WARN([The lis driver needs the ftdi library])
-				])
-			],[
-dnl			else
-				AC_MSG_WARN([The lis driver needs ftdi.h and usb.h])
-			])
-			AC_CACHE_CHECK([for ftdi_setdtr() in libftdi], ac_cv_ftdi_setdtr,
-			[oldlibs="$LIBS"
-			 LIBS="$LIBS $LIBFTDI"
-			 AC_TRY_LINK_FUNC(ftdi_setdtr, ac_cv_ftdi_setdtr=yes, ac_cv_ftdi_setdtr=no)
-			 LIBS="$oldlibs"
-			])
-			if test "$ac_cv_ftdi_setdtrt" = no; then
-				AC_MSG_WARN([Upgrade to libftdi >= version 0.8])
+			if test "$enable_libftdi" = yes ; then
+				DRIVERS="$DRIVERS lis${SO}"
+				actdrivers=["$actdrivers lis"]
+			else
+				AC_MSG_WARN([The lis driver needs the ftdi library])
 			fi
 			;;
 		MD8800)
@@ -392,19 +376,12 @@ dnl			else
 			actdrivers=["$actdrivers tyan"]
 			;;
 		ula200)
-			AC_CHECK_HEADERS([usb.h ftdi.h],[
-				AC_CHECK_LIB(ftdi, ftdi_set_line_property,[
-					LIBFTDI="-lusb -lftdi"
-					DRIVERS="$DRIVERS ula200${SO}"
-					actdrivers=["$actdrivers ula200"]
-				],[
-dnl				else
-					AC_MSG_WARN([The ula200 driver needs the ftdi library in version 0.7])
-				])
-			],[
-dnl			else
-				AC_MSG_WARN([The ula200 driver needs ftdi.h and usb.h])
-			])
+			if test "$enable_libftdi" = yes ; then
+				DRIVERS="$DRIVERS ula200${SO}"
+				actdrivers=["$actdrivers ula200"]
+			else
+				AC_MSG_WARN([The ula200 driver needs the ftdi library])
+			fi
 			;;
 		xosd)
 			AC_CHECK_HEADERS([xosd.h],[
