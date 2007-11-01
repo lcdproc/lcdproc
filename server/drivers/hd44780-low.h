@@ -10,6 +10,10 @@
 # include "config.h"
 #endif
 
+#if defined(HAVE_LIBUSB)
+# include <usb.h>
+#endif
+
 # if TIME_WITH_SYS_TIME
 #  include <sys/time.h>
 #  include <time.h>
@@ -86,11 +90,18 @@ typedef struct ConnectionMapping {
 
 
 typedef struct driver_private_data {
-	unsigned int port;
+	// parallel connection typeS
+	unsigned int port;		/* parallel port */
 
-	/* for serial connection type */
-	int fd;
-	int serial_type;
+	// serial connection types
+	int fd;				/* file handle to serial device */
+	int serial_type;	
+
+#if defined(HAVE_LIBUSB)	
+	// USB connection types
+	usb_dev_handle *usbHandle;	/* USB device handle */
+	int usbIndex;			/* USB interface index */
+#endif
 
 	int charmap;
 
@@ -170,7 +181,7 @@ typedef struct driver_private_data {
 typedef struct hwDependentFns {
 	// microsec pauses
 	void (*uPause)(PrivateData *p, int usecs);
-	// report and debug helper
+	// report and debug helper: set by global hd44780 init
 	void (*drv_report)(const int level, const char *format, .../*args*/);
 	void (*drv_debug)(const int level, const char *format, .../*args*/);
 

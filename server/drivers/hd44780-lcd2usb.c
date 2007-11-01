@@ -25,10 +25,6 @@
 #endif
 
 
-/* USB device handle & interface index we write to */
-static usb_dev_handle *lcd2usb;
-
-
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
@@ -58,7 +54,7 @@ hd_init_lcd2usb(Driver *drvthis)
   usb_find_busses();
   usb_find_devices();
 
-  lcd2usb = NULL;
+  p->usbHandle = NULL;
   for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
     struct usb_device *dev;
 
@@ -69,23 +65,23 @@ hd_init_lcd2usb(Driver *drvthis)
 	  (dev->descriptor.idProduct == LCD2USB_PRODUCTID)) {
 
         /* LCD2USB device found; try to find its description */
-        lcd2usb = usb_open(dev);
-        if (lcd2usb == NULL) {
+        p->usbHandle = usb_open(dev);
+        if (p->usbHandle == NULL) {
           report(RPT_WARNING, "hd_init_lcd2usb: unable to open device");
         }
         else {
           /* read firmware version */
 	  unsigned char buffer[2];
 
-          if (usb_control_msg(lcd2usb, USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, 
-	    LCD2USB_GET_FWVER, 0, 0, (char *)buffer, sizeof(buffer), 1000) == 2)
+          if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, 
+	                      LCD2USB_GET_FWVER, 0, 0, (char *)buffer, sizeof(buffer), 1000) == 2)
 	      report(RPT_INFO, "hd_init_lcd2usb: device with firmware version %d.%02d found", buffer[0], buffer[1]);
         }
       }
     }
   }
 
-  if (lcd2usb != NULL) {
+  if (p->usbHandle != NULL) {
     debug(RPT_DEBUG, "hd_init_lcd2usb: opening device succeeded");
   }
   else {
@@ -116,7 +112,7 @@ lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
   int id = (displayID == 0) ? LCD2USB_CTRL_BOTH
                           : ((displayID == 1) ? LCD2USB_CTRL_0 : LCD2USB_CTRL_1);
 
-  usb_control_msg(lcd2usb, USB_TYPE_VENDOR, (type | id), ch, 0, NULL, 0, 1000);
+  usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, (type | id), ch, 0, NULL, 0, 1000);
 }
 
 
@@ -132,7 +128,7 @@ lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
   int promille = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 
   // And set it (converted from [0,1000] -> [0,255]).
-  usb_control_msg(lcd2usb, USB_TYPE_VENDOR, LCD2USB_SET_BRIGHTNESS,
+  usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_BRIGHTNESS,
                    (promille * 255) / 1000, 0, NULL, 0, 1000);
 }
 
@@ -153,7 +149,7 @@ lcd2usb_set_contrast(Driver *drvthis, int promille)
 
   // And set it (converted from [0,1000] -> [0,255]).
   // If successful, update the local value.
-  if (usb_control_msg(lcd2usb, USB_TYPE_VENDOR, LCD2USB_SET_CONTRAST,
+  if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_CONTRAST,
                               (promille * 255) / 1000, 0, NULL, 0, 1000) < 0)
     report(RPT_WARNING, "hd_init_lcd2usb: setting contrast failed");
   else
@@ -198,7 +194,7 @@ lcd2usb_HD44780_scankeypad(PrivateData *p)
   int                 nBytes;
 
   /* send control request and accept return value */
-  nBytes = usb_control_msg(lcd2usb, 
+  nBytes = usb_control_msg(p->usbHandle, 
 	   USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, 
 	   LCD2USB_GET_KEYS, 0, 0, (char *) buffer, sizeof(buffer), 1000);
 
@@ -217,9 +213,9 @@ lcd2usb_HD44780_scankeypad(PrivateData *p)
 void
 lcd2usb_HD44780_close(PrivateData *p)
 {
-  if (lcd2usb != NULL) {
-    usb_close(lcd2usb);
-    lcd2usb = NULL;
+  if (p->usbHandle != NULL) {
+    usb_close(p->usbHandle);
+    p->usbHandle = NULL;
   }
 }
 
