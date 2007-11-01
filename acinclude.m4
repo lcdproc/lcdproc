@@ -1,3 +1,6 @@
+dnl
+dnl Define function/macro for driver selection using the --enable-drivers=... option
+dnl
 AC_DEFUN([LCD_DRIVERS_SELECT], [
 AC_CHECKING(which drivers to compile)
 
@@ -443,10 +446,10 @@ AC_DEFUN([AC_CURSES_ACS_ARRAY], [
 	fi
 ])
 
+
 dnl
 dnl Find out where is the mounted filesystem table
 dnl
-
 AC_DEFUN([AC_FIND_MTAB_FILE], [
 	AC_CACHE_CHECK([for your mounted filesystem table], ac_cv_mtab_file, [
 		dnl Linux
@@ -469,6 +472,7 @@ AC_DEFUN([AC_FIND_MTAB_FILE], [
 	fi
 ])
 
+
 dnl
 dnl Filesystem information detection
 dnl
@@ -477,7 +481,6 @@ dnl
 dnl This code is stolen from mc-4.5.41, which in turn has stolen it
 dnl from GNU fileutils-3.12.
 dnl
-
 AC_DEFUN([AC_GET_FS_INFO], [
     AC_CHECK_HEADERS(fcntl.h sys/dustat.h sys/param.h sys/statfs.h sys/fstyp.h)
     AC_CHECK_HEADERS(mnttab.h mntent.h utime.h sys/statvfs.h sys/vfs.h)
@@ -645,6 +648,7 @@ AC_DEFUN([AC_GET_FS_INFO], [
     dnl fi
 ])
 
+
 dnl 1.1 (2001/07/26) -- Miscellaneous @ ac-archive-0.5.32
 dnl Warren Young <warren@etr-usa.com>
 dnl This macro checks for the SysV IPC header files. It only checks
@@ -669,6 +673,7 @@ AC_CACHE_CHECK([for System V IPC headers], ac_cv_sysv_ipc, [
                 AC_DEFINE(HAVE_SYSV_IPC, 1, [ Define if you have System V IPC ])
         fi
 ]) dnl ETR_SYSV_IPC
+
 
 dnl 1.1 (2001/07/26) -- Miscellaneous @ ac-archive-0.5.32
 dnl Warren Young <warren@etr-usa.com>
@@ -700,6 +705,7 @@ AC_CACHE_CHECK([for union semun], ac_cv_union_semun, [
                         [ Define if your system's sys/sem.h file defines union semun ])
         fi
 ]) dnl ETR_UNION_SEMUN
+
 
 dnl Loadable modules determination.
 dnl Joris Robijn, 2002
@@ -766,13 +772,22 @@ AC_SUBST(LDSHARED)
 dnl End of loadable modules determination
 ]) dnl AC_MODULES_INFO
 
+
 dnl stolen from cppunit project (http://cppunit.sourceforge.net/)
 AC_DEFUN([BB_ENABLE_DOXYGEN],
 [
-AC_ARG_ENABLE(doxygen, [  --enable-doxygen        enable documentation generation with doxygen (auto)])
-AC_ARG_ENABLE(dot, [  --enable-dot            use 'dot' to generate graphs in doxygen (auto)])
-AC_ARG_ENABLE(html-dox, [  --enable-html-dox       enable HTML generation with doxygen (yes)], [], [ enable_html_dox=yes])
-AC_ARG_ENABLE(latex-dox, [  --enable-latex-dox      enable LaTeX documentation generation with doxygen (no)], [], [ enable_latex_dox=no])
+AC_ARG_ENABLE(doxygen,
+	[AS_HELP_STRING([--enable-doxygen], [enable documentation generation with doxygen (auto)])])
+AC_ARG_ENABLE(dot,
+	[AS_HELP_STRING([--enable-dot], [use 'dot' to generate graphs in doxygen (auto)])])
+AC_ARG_ENABLE(html-dox,
+	[AS_HELP_STRING([--enable-html-dox], [enable HTML generation with doxygen (yes)])],
+	[],
+	[enable_html_dox=yes])
+AC_ARG_ENABLE(latex-dox,
+	[AS_HELP_STRING([--enable-latex-dox], [enable LaTeX documentation generation with doxygen (no)])],
+	[],
+	[enable_latex_dox=no])
 if test "x$enable_doxygen" = xno; then
         enable_dox=no
 else
@@ -801,6 +816,7 @@ AC_SUBST(enable_dot)
 AC_SUBST(enable_html_dox)
 AC_SUBST(enable_latex_dox)
 ])
+
 
 dnl From: http://autoconf-archive.cryp.to/ax_cflags_gcc_option.html
 dnl Author: Guido Draheim <guidod@gmx.de>
