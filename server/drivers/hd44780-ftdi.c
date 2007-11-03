@@ -48,7 +48,7 @@ hd_init_ftdi(Driver *drvthis)
 
     p->ftdi_line_RS = drvthis->config_get_int(drvthis->name, "ftdi_line_RS", 0, 0x01);
     p->ftdi_line_RW = drvthis->config_get_int(drvthis->name, "ftdi_line_RW", 0, 0x02);
-    p->ftdi_line_E = drvthis->config_get_int(drvthis->name, "ftdi_line_E", 0, 0x04);
+    p->ftdi_line_EN = drvthis->config_get_int(drvthis->name, "ftdi_line_EN", 0, 0x04);
     p->ftdi_line_backlight = drvthis->config_get_int(drvthis->name, "ftdi_line_backlight", 0, 0x08);
 
     // Init 1. channel: data
@@ -97,8 +97,8 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
         exit (-1);
     }
 
-    // Setup RS and R/W and E
-    ch = p->ftdi_line_E | p->backlight_bit;
+    // Setup RS and R/W and EN
+    ch = p->ftdi_line_EN | p->backlight_bit;
     if (flags == RS_DATA) {
         ch |= p->ftdi_line_RS;
     }

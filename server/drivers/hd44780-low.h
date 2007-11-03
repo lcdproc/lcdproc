@@ -113,7 +113,7 @@ typedef struct driver_private_data {
 
 	int ftdi_line_RS;
 	int ftdi_line_RW;
-	int ftdi_line_E;
+	int ftdi_line_EN;
 	int ftdi_line_backlight;
 #endif
 

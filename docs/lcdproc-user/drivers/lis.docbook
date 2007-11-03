@@ -16,8 +16,8 @@
 <para>
 This device uses a vacuum flourescent display of 20 characters by 2 lines. Each each
 character is 5 pixels wide by 8 pixels high. The device is connected by USB. The FTDI chip
-translates the USB protocol to serial expected by the VFD driver chip, an NEC UPD16314. A
-programmable interrupt controller (PIC), the PIC16F716 by Microchip, provides the glue
+translates the USB protocol to serial expected by the VFD driver chip, an NEC UPD16314.
+A programmable interrupt controller (PIC), the PIC16F716 by Microchip, provides the glue
 between the FTDI and the NEC chips.
 </para>
 
@@ -78,7 +78,7 @@ can be done by specifying "--enable-drivers=all" or by
     <para>
       The USB Vendor ID of the device to use.
       If not given, it defaults to <literal>0x0403</literal> for a VLSystems L.I.S. MCE 2005 VFD
-      based on a FT232BL USB-to-RS232 converter by FTDIi, which was produced
+      based on a FT232BL USB-to-RS232 converter by FTDI, which was produced
       before March 2007.
     </para>
     <para>
@@ -98,7 +98,7 @@ can be done by specifying "--enable-drivers=all" or by
     <para>
       The USB Product ID of the device to use.
       If not given, it defaults to <literal>0x6001</literal> for a VLSystems L.I.S. MCE 2005 VFD
-      based on a FT232BL USB-to-RS232 converter by FTDIi, which was produced 
+      based on a FT232BL USB-to-RS232 converter by FTDI, which was produced 
       before March 2007.
     </para>
     <para>

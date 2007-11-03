@@ -406,10 +406,10 @@ const unsigned char SED1278F_0B_charmap[] = {
         /* 255 ( 'ÿ' ) */  253
 };
 
-#define MAX_CHARMAP_NAME_LENGHT 16
+#define MAX_CHARMAP_NAME_LENGTH 16
 
 struct charmap {
-        char name[MAX_CHARMAP_NAME_LENGHT];
+        char name[MAX_CHARMAP_NAME_LENGTH];
         const unsigned char *charmap;
 };
 

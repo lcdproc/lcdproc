@@ -1693,7 +1693,7 @@ and drives both channels as outputs to control the display in 8bit mode.
       <entry>BDBUS2</entry>
       <entry>38</entry>
       <entry></entry>
-      <entry>E</entry>
+      <entry>EN</entry>
       <entry>6</entry>
     </row>
     <row>
@@ -2586,8 +2586,9 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
   </term>
   <listitem><para>
-    Some displays (e.g. <code>vdr-wakeup</code>) need a message from the driver to that it
-    is still alive. When set to a value bigger then <literal>0</literal> the character in the
+    Some displays (e.g. <code>vdr-wakeup</code>) need a message from the driver to
+    indicate that it is still alive.
+    When set to a value greater than <literal>0</literal> the character in the
     upper left corner is updated every <replaceable>SECONDS</replaceable> seconds.
     The default <literal>0</literal> does not cause any extra updates.
   </para></listitem>
@@ -2600,8 +2601,8 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   </term>
   <listitem><para>
     If you experience occasional garbage on your display you can use this
-    option as workaround. If set to a value bigger than <literal>0</literal> it forces a
-    full screen refresh <replaceable>SECONDS</replaceable> seconds.
+    option as workaround. If set to a value greater than <literal>0</literal> it forces a
+    full screen refresh every <replaceable>SECONDS</replaceable> seconds.
     Default: <literal>0</literal>.
   </para></listitem>
 </varlistentry>
@@ -2637,7 +2638,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>VENDORID</replaceable></arg>
   </term>
   <listitem><para>
-    USB vendor ID to look for a FTDI chip.
+    USB vendor ID to look for a FTDI chip with <command>ConnectionType=</command><literal>ftdi</literal>.
     Default: <literal>0x4003</literal>.
   </para></listitem>
 </varlistentry>
@@ -2648,7 +2649,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>PRODUCTID</replaceable></arg>
   </term>
   <listitem><para>
-    USB product ID to look for a FTDI chip.
+    USB product ID to look for a FTDI chip with <command>ConnectionType=</command><literal>ftdi</literal>.
     Default: <literal>0x6001</literal>.
   </para></listitem>
 </varlistentry>

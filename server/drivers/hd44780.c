@@ -338,12 +338,12 @@ HD44780_init(Driver *drvthis)
 	}
 
 	// Get configured charmap
-	char conf_charmap[MAX_CHARMAP_NAME_LENGHT];
+	char conf_charmap[MAX_CHARMAP_NAME_LENGTH];
 
-	strncpy(conf_charmap, drvthis->config_get_string(drvthis->name, "charmap", 0, "hd44780_default"), MAX_CHARMAP_NAME_LENGHT);
-	conf_charmap[MAX_CHARMAP_NAME_LENGHT-1]='\0';
-	p->charmap=0;
-	for (i=0; i<(sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
+	strncpy(conf_charmap, drvthis->config_get_string(drvthis->name, "charmap", 0, "hd44780_default"), MAX_CHARMAP_NAME_LENGTH);
+	conf_charmap[MAX_CHARMAP_NAME_LENGTH-1] = '\0';
+	p->charmap = 0;
+	for (i = 0; i < (sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
 		if (strcasecmp(conf_charmap, available_charmaps[i].name) == 0) {
 			p->charmap=i;
 			break;
@@ -383,6 +383,17 @@ HD44780_init(Driver *drvthis)
 	// Do connection type specific display init
 	if (init_fn(drvthis) != 0)
 		return -1;
+
+	// consistency check: local keypad functions missing => no keypad
+	if ((p->hd44780_functions->readkeypad == NULL) &&
+	    (p->hd44780_functions->scankeypad == HD44780_scankeypad)) {
+		p->hd44780_functions->scankeypad = NULL;
+		p->have_keypad = 0;
+	}
+
+	// consistency check: no local output function => no output
+	if (p->hd44780_functions->output == NULL)
+		p->have_output = 0;
 
 	// fail if local senddata function was not defined
 	if (p->hd44780_functions->senddata == NULL) {
@@ -596,34 +607,32 @@ HD44780_flush(Driver *drvthis)
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	int x, y;
 	int wid = p->width;
-	char ch;
-	char drawing;
-	int row;
 	int i;
 	int count;
 	char refreshNow = 0;
 	char keepaliveNow = 0;
+	time_t now = time(NULL);
 
 	// force full refresh of display
-	if ((p->refreshdisplay > 0) && (time(NULL) > p->nextrefresh))
-	{
+	if ((p->refreshdisplay > 0) && (now > p->nextrefresh)) {
 		refreshNow = 1;
-		p->nextrefresh = time(NULL) + p->refreshdisplay;
+		p->nextrefresh = now + p->refreshdisplay;
 	}
 	// keepalive refresh of display
-	if ((p->keepalivedisplay > 0) && (time(NULL) > p->nextkeepalive))
-	{
+	if ((p->keepalivedisplay > 0) && (now > p->nextkeepalive)) {
 		keepaliveNow = 1;
-		p->nextkeepalive = time(NULL) + p->keepalivedisplay;
+		p->nextkeepalive = now + p->keepalivedisplay;
 	}
 
 
 	// Update LCD incrementally by comparing with last contents
 	count = 0;
 	for (y = 0; y < p->height; y++) {
-		drawing = 0;
+		int drawing = 0;
+
 		for (x = 0 ; x < wid; x++) {
-			ch = p->framebuf[(y * wid) + x];
+			char ch = p->framebuf[(y * wid) + x];
+
 			if (refreshNow || (x + y == 0 && keepaliveNow) || ch != p->lcd_contents[(y*wid)+x]) {
 				if (!drawing || x % 8 == 0) { // x%8 is for 16x1 displays !
 					drawing = 1;
@@ -645,6 +654,7 @@ HD44780_flush(Driver *drvthis)
 	count = 0;
 	for (i = 0; i < NUM_CCs; i++) {
 		if (!p->cc[i].clean) {
+			int row;
 
 			/* Tell the HD44780 we will redefine char number i */
 			p->hd44780_functions->senddata(p, 0, RS_INSTR, SETCHAR | i * 8);
@@ -1133,21 +1143,21 @@ HD44780_get_key(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	unsigned char scancode;
-	char * keystr = NULL;
+	char *keystr = NULL;
 	struct timeval curr_time, time_diff;
 
-	if (!p->have_keypad) return NULL;
+	// return "no key pressed" if required functions mission or input disabled
+	if ((!p->have_keypad) || (p->hd44780_functions->scankeypad == NULL))
+		return NULL;
 
 	gettimeofday(&curr_time, NULL);
 
 	scancode = p->hd44780_functions->scankeypad(p);
-	if (scancode) {
-		if (scancode & 0xF0) {
-			keystr = p->keyMapMatrix[((scancode&0xF0)>>4)-1][(scancode&0x0F)-1];
-		}
-		else {
-			keystr = p->keyMapDirect[scancode - 1];
-		}
+	if (scancode != '\0') {
+		// TODO: check if arrays are large enough
+		keystr = (scancode & 0xF0)
+			 ? p->keyMapMatrix[((scancode&0xF0)>>4)-1][(scancode&0x0F)-1]
+			 : p->keyMapDirect[scancode - 1];
 	}
 
 	if (keystr != NULL) {
@@ -1190,6 +1200,10 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 	signed char exp;
 
 	unsigned char scancode = 0;
+
+	// return "no ke pressed if no keypad reading function defined
+	if (p->hd44780_functions->readkeypad == NULL)
+		return('\0');
 
 	// First check if a directly connected key is pressed
 	// Put all zeros on Y of keypad
