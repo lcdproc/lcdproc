@@ -26,6 +26,7 @@ It also supports the following connections:
 <itemizedlist>
  <listitem><para>A PIC-an-LCD or LCD serializer connected to a serial port</para></listitem>
  <listitem><para>A I<superscript>2</superscript>C port expander connected to an I<superscript>2</superscript>C port</para></listitem>
+ <listitem><para>USB connection via a FTDI FT2232D chip in bitbang mode</para></listitem>
 </itemizedlist>
 
 <para>
@@ -1587,6 +1588,133 @@ that. The BL output below should be connected to the BL input in the
 
 </sect3>
 
+<sect3 id="hd44780-ftdi">
+<title>FTDI FT2232D USB chip "ftdi"</title>
+
+<para>
+You can use a FTDI FT2232D dual channel USB &lt;-&gt; parallel FIFO chip
+to connect a display via the USB bus. The chip is switched to bitbang mode
+and drives both channels as outputs to control the display in 8bit mode.
+</para>
+
+<table id="hd44780-ftdi.base-mapping">
+<title>HD44780: 8bit FTDI</title>
+<tgroup cols="5" align="left">
+<colspec colname="ftdi1"/>
+<colspec colname="ftdi2" align="right"/>
+<colspec colname="base" align="center"/>
+<colspec colname="lcd1"/>
+<colspec colname="lcd2"/>
+  <thead>
+    <row>
+      <entry namest="ftdi1" nameend="ftdi2" align="center">FTDI chip</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
+      <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>name</entry>
+      <entry>pin</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>ADBUS0</entry>
+      <entry>24</entry>
+      <entry></entry>
+      <entry>D0</entry>
+      <entry>7</entry>
+    </row>
+    <row>
+      <entry>ADBUS1</entry>
+      <entry>23</entry>
+      <entry></entry>
+      <entry>D1</entry>
+      <entry>8</entry>
+    </row>
+    <row>
+      <entry>ADBUS2</entry>
+      <entry>22</entry>
+      <entry></entry>
+      <entry>D2</entry>
+      <entry>9</entry>
+    </row>
+    <row>
+      <entry>ADBUS3</entry>
+      <entry>21</entry>
+      <entry></entry>
+      <entry>D3</entry>
+      <entry>10</entry>
+    </row>
+    <row>
+      <entry>ADBUS4</entry>
+      <entry>20</entry>
+      <entry></entry>
+      <entry>D4</entry>
+      <entry>11</entry>
+    </row>
+    <row>
+      <entry>ADBUS5</entry>
+      <entry>19</entry>
+      <entry></entry>
+      <entry>D5</entry>
+      <entry>12</entry>
+    </row>
+    <row>
+      <entry>ADBUS6</entry>
+      <entry>18</entry>
+      <entry></entry>
+      <entry>D6</entry>
+      <entry>13</entry>
+    </row>
+    <row>
+      <entry>ADBUS7</entry>
+      <entry>17</entry>
+      <entry></entry>
+      <entry>D7</entry>
+      <entry>14</entry>
+    </row>
+    <row>
+      <entry>BDBUS0</entry>
+      <entry>40</entry>
+      <entry></entry>
+      <entry>RS</entry>
+      <entry>4</entry>
+    </row>
+    <row>
+      <entry>BDBUS1</entry>
+      <entry>39</entry>
+      <entry></entry>
+      <entry>RW</entry>
+      <entry>5</entry>
+    </row>
+    <row>
+      <entry>BDBUS2</entry>
+      <entry>38</entry>
+      <entry></entry>
+      <entry>E</entry>
+      <entry>6</entry>
+    </row>
+    <row>
+      <entry>BDBUS3</entry>
+      <entry>37</entry>
+      <entry></entry>
+      <entry>BL</entry>
+      <entry>Backlight (optional)</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+
+<para>
+You can configure the USB vendor/product ID in LCDd.conf.
+The wiring of the control lines can optionally be reconfigured,
+please look at the driver source if you really need that.
+</para>
+
+</sect3>
+
 <sect3 id="hd44780-lis2">
 <title>LIS2 USB device "lis2"</title>
 
@@ -2162,6 +2290,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <arg choice="plain"><literal>lis2</literal></arg>
       <arg choice="plain"><literal>mplay</literal></arg>
       <arg choice="plain"><literal>i2c</literal></arg>
+      <arg choice="plain"><literal>ftdi</literal></arg>
     </group>
     </arg>
   </term>
@@ -2237,6 +2366,10 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         <row>
           <entry><literal><link linkend="hd44780-i2c">i2c</link></literal></entry>
           <entry>LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C</entry>
+        </row>
+        <row>
+          <entry><literal><link linkend="hd44780-ftdi">ftdi</link></literal></entry>
+          <entry>Display connected to a dual channel FTDI 2232D USB chip</entry>
         </row>
       </tbody>
     </tgroup>
@@ -2497,6 +2630,28 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   </listitem>
 </varlistentry>
 </variablelist>
+
+<varlistentry>
+  <term>
+    <command>VendorID=</command>
+    <arg choice="plain"><replaceable>VENDORID</replaceable></arg>
+  </term>
+  <listitem><para>
+    USB vendor ID to look for a FTDI chip.
+    Default: <literal>0x4003</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>ProductID=</command>
+    <arg choice="plain"><replaceable>PRODUCTID</replaceable></arg>
+  </term>
+  <listitem><para>
+    USB product ID to look for a FTDI chip.
+    Default: <literal>0x6001</literal>.
+  </para></listitem>
+</varlistentry>
 
 </sect3>
 

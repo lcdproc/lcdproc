@@ -163,6 +163,9 @@ Till Harbaum's open source/open hardware LCD2USB (http://www.harbaum.org/till/lc
 .TP
 .B i2c
 LCD in 4-bit mode driven by PCF8574(A) / PCA9554(A), connected via I2C bus
+.TP
+.B ftdi
+USB connection via a FTDI FT2232D chip in bitbang mode
 .RE
 .TP
 .B icp_a106

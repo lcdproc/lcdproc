@@ -195,6 +195,9 @@ dnl			else
 			if test "$enable_libusb" = yes ; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-bwct-usb.o hd44780-hd44780-lcd2usb.o"
 			fi
+			if test "$enable_libftdi" = yes ; then
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-ftdi.o"
+			fi
 			AC_CHECK_HEADER(linux/i2c-dev.h,
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-i2c.o"
 				AC_DEFINE(HAVE_I2C,[1],[Define to 1 if you have the i2c headers])

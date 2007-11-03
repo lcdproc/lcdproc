@@ -25,6 +25,9 @@
 #  endif
 # endif
 
+#ifdef HAVE_LIBFTDI
+# include <ftdi.h>
+#endif
 
 // symbolic names for connection types
 #define HD44780_CT_UNKNOWN		0
@@ -42,7 +45,8 @@
 #define HD44780_CT_MPLAY		12
 #define HD44780_CT_BWCTUSB		13
 #define HD44780_CT_LCDUSB		14
-#define HD44780_CT_I2C			15
+#define HD44780_CT_FTDI		15
+#define HD44780_CT_I2C			16
 
 // symbolic names for interface types
 #define IF_TYPE_UNKNOWN		0
@@ -101,6 +105,16 @@ typedef struct driver_private_data {
 	// USB connection types
 	usb_dev_handle *usbHandle;	/* USB device handle */
 	int usbIndex;			/* USB interface index */
+#endif
+
+#ifdef HAVE_LIBFTDI
+	// FTDI connection type
+	struct ftdi_context ftdic, ftdic2;
+
+	int ftdi_line_RS;
+	int ftdi_line_RW;
+	int ftdi_line_E;
+	int ftdi_line_backlight;
 #endif
 
 	int charmap;

@@ -23,6 +23,9 @@
 # include "hd44780-bwct-usb.h"
 # include "hd44780-lcd2usb.h"
 #endif
+#ifdef HAVE_LIBFTDI
+# include "hd44780-ftdi.h"
+#endif
 #ifdef HAVE_I2C
 # include "hd44780-i2c.h"
 #endif
@@ -54,6 +57,9 @@ static const ConnectionMapping connectionMapping[] = {
 #ifdef HAVE_LIBUSB
 	{ "bwctusb",       HD44780_CT_BWCTUSB,       IF_TYPE_USB,     hd_init_bwct_usb  },
 	{ "lcd2usb",       HD44780_CT_I2C,           IF_TYPE_USB,     hd_init_lcd2usb   },
+#endif
+#ifdef HAVE_LIBFTDI
+	{ "ftdi",          HD44780_CT_FTDI,          IF_TYPE_USB,     hd_init_ftdi      },
 #endif
 #ifdef HAVE_I2C
 	{ "i2c",           HD44780_CT_I2C,           IF_TYPE_I2C,     hd_init_i2c       },
