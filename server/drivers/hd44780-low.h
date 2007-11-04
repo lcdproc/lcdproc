@@ -195,6 +195,7 @@ typedef struct driver_private_data {
 typedef struct hwDependentFns {
 	// microsec pauses
 	void (*uPause)(PrivateData *p, int usecs);
+
 	// report and debug helper: set by global hd44780 init
 	void (*drv_report)(const int level, const char *format, .../*args*/);
 	void (*drv_debug)(const int level, const char *format, .../*args*/);
@@ -212,11 +213,6 @@ typedef struct hwDependentFns {
 	// Set the contrast
 	// value      - new value to be set
 	void (*set_contrast)(PrivateData *p, unsigned char value);
-
-	// Switch the backlight on or off
-	// state      - backlight state to set the new value for
-	// value      - new value to be set
-	void (*set_brightness)(PrivateData *p, int backlight, unsigned char value);
 
 	// Read the keypad
 	// Ydata      - the up to 11 bits that should be put on the Y side of the matrix

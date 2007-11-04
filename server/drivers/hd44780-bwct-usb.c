@@ -6,7 +6,7 @@
 
 /* Copyright (c) 2004, Bernd Walter <bernd@bwct.de>
  * Contributions:
- *   Copyright (c) 2004, Peter Marschall <peter@adpm.de>
+ *   Copyright (c) 2004-7, Peter Marschall <peter@adpm.de>
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -33,6 +33,12 @@
 #endif
 
 
+// connection type specific functions to be exposed using pointers in init()
+void bwct_usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void bwct_usb_HD44780_set_contrast(PrivateData *p, unsigned char value);
+void bwct_usb_HD44780_close(PrivateData *p);
+
+
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
@@ -51,7 +57,7 @@ hd_init_bwct_usb(Driver *drvthis)
 
   p->hd44780_functions->senddata = bwct_usb_HD44780_senddata;
   p->hd44780_functions->close = bwct_usb_HD44780_close;
-  drvthis->set_contrast = bwct_usb_set_contrast;
+  p->hd44780_functions->set_contrast = bwct_usb_HD44780_set_contrast;
 
   /* Read config file's contents: serial number and contrast */
 
@@ -164,9 +170,6 @@ hd_init_bwct_usb(Driver *drvthis)
 
   common_init(p, IF_4BIT);
 
-  /* set contrast: value comes from global init */
-  bwct_usb_set_contrast(drvthis, p->contrast);
-
   return 0;
 }
 
@@ -200,24 +203,14 @@ bwct_usb_HD44780_close(PrivateData *p)
 /**
  * Change LCD contrast.
  * \param drvthis   Pointer to driver structure.
- * \param promille  New contrast value in promille.
+ * \param value     New contrast value (one byte).
  */
 void
-bwct_usb_set_contrast(Driver *drvthis, int promille)
+bwct_usb_HD44780_set_contrast(PrivateData *p, unsigned char value)
 {
-  PrivateData *p = drvthis->private_data;
-
-  // Check if value within range
-  if ((promille < 0) || (promille > 1000))
-    return;
-
-  // And set it (converted from [0,1000] -> [0,255]).
-  // If successful, update the local value.
   if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, BWCT_LCD_SET_CONTRAST,
-                      (promille * 255) / 1000, p->usbIndex, NULL, 0, 1000) < 0)
-    report(RPT_WARNING, "hd_init_lcd2usb: setting contrast failed");
-  else
-    p->contrast = promille;
+                      value, p->usbIndex, NULL, 0, 1000) < 0)
+    p->hd44780_functions->drv_report(RPT_WARNING, "bwct_usb_HD44780_set_contrast: setting contrast failed");
 }
 
 

@@ -34,12 +34,4 @@
 // initialise this particular driver
 int hd_init_lcd2usb(Driver *drvthis);
 
-void lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
-void lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state);
-unsigned char lcd2usb_HD44780_scankeypad(PrivateData *p);
-void lcd2usb_HD44780_close(PrivateData *p);
-void lcd2usb_set_contrast(Driver *drvthis, int promille);
-void lcd2usb_set_brightness(Driver *drvthis, int state, int promille);
-
-
 #endif

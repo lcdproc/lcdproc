@@ -37,13 +37,16 @@
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
- * Copyright (c)  2000, 1999, 1995 Benjamin Tse <blt@Comports.com>
- *		  2001 Joris Robijn <joris@robijn.net>
- *		  2001 Mark Haemmerling <mail@markh.de>
- *		  2000 Charles Steinkuehler <cstein@newtek.com>
- *		  1999 Andrew McMeikan <andrewm@engineer.com>
- *		  1998 Richard Rognlie <rrognlie@gamerz.net>
+ * Copyright (c)  1995,1999,2000 Benjamin Tse <blt@Comports.com>
  *		  1997 Matthias Prinke <m.prinke@trashcan.mcnet.de>
+ *		  1998 Richard Rognlie <rrognlie@gamerz.net>
+ *		  1999 Andrew McMeikan <andrewm@engineer.com>
+ *		  2000 Charles Steinkuehler <cstein@newtek.com>
+ *		  2001 Joris Robijn <joris@robijn.net>
+ *		  2001 Guillaume Filion <gfk@logidac.com>
+ *		  2001 Mark Haemmerling <mail@markh.de>
+ *		  2006 Matteo Pillon <matteo.pillon@email.it>
+ *		  2007 Peter Marschall <peter@adpm.de>
  */
 
 
@@ -374,7 +377,6 @@ HD44780_init(Driver *drvthis)
 	p->hd44780_functions->senddata = NULL;
 	p->hd44780_functions->backlight = NULL;
 	p->hd44780_functions->set_contrast = NULL;
-	p->hd44780_functions->set_brightness = NULL;
 	p->hd44780_functions->readkeypad = NULL;
 	p->hd44780_functions->scankeypad = NULL;
 	p->hd44780_functions->output = NULL;
@@ -408,6 +410,8 @@ HD44780_init(Driver *drvthis)
 	if (p->hd44780_functions->output == NULL)
 		p->have_output = 0;
 
+	// set contrast
+	HD44780_set_contrast(drvthis, p->contrast);
 
 	// Display startup parameters on the LCD
 	HD44780_clear(drvthis);
@@ -760,6 +764,33 @@ HD44780_get_contrast(Driver *drvthis)
 
 
 /**
+ * Change LCD contrast.
+ * \param drvthis  Pointer to driver structure.
+ * \param promille New contrast value in promille.
+ */
+MODULE_EXPORT void
+HD44780_set_contrast (Driver *drvthis, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+	unsigned char contrast_byte;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is not get */
+	p->contrast = promille;
+
+	/* map range [0, 1000] -> [0, 255] (for one byte)) */
+	contrast_byte = (255 * promille) / 1000;
+
+	/* call local function */
+	if (p->hd44780_functions->set_contrast != NULL)
+		p->hd44780_functions->set_contrast(p, contrast_byte);
+}
+
+
+/**
  * Retrieve brightness.
  * \param drvthis  Pointer to driver structure.
  * \param state    Brightness state (on/off) for which we want the value.
@@ -771,6 +802,32 @@ HD44780_get_brightness(Driver *drvthis, int state)
 	PrivateData *p = drvthis->private_data;
 
 	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/**
+ * Set on/off brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want to store the value.
+ * \param promille New brightness in promille.
+ */
+MODULE_EXPORT void
+HD44780_set_brightness(Driver *drvthis, int state, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is not get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+	}
+	else {
+		p->offbrightness = promille;
+	}
+	//HD44780_backlight(drvthis, state);
 }
 
 

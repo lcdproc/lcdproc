@@ -18,8 +18,4 @@
 // initialise this particular driver
 int hd_init_bwct_usb(Driver *drvthis);
 
-void bwct_usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
-void bwct_usb_set_contrast(Driver *drvthis, int promille);
-void bwct_usb_HD44780_close(PrivateData *p);
-
 #endif

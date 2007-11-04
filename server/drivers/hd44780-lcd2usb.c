@@ -25,6 +25,14 @@
 #endif
 
 
+// connection type specific functions to be exposed using pointers in init()
+void lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state);
+unsigned char lcd2usb_HD44780_scankeypad(PrivateData *p);
+void lcd2usb_HD44780_close(PrivateData *p);
+void lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value);
+
+
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
@@ -42,8 +50,7 @@ hd_init_lcd2usb(Driver *drvthis)
   p->hd44780_functions->backlight = lcd2usb_HD44780_backlight;
   p->hd44780_functions->scankeypad = lcd2usb_HD44780_scankeypad;
   p->hd44780_functions->close = lcd2usb_HD44780_close;
-  drvthis->set_contrast = lcd2usb_set_contrast;
-  drvthis->set_brightness = lcd2usb_set_brightness;
+  p->hd44780_functions->set_contrast = lcd2usb_HD44780_set_contrast;
 
   /* try to find USB device */
 #if 0
@@ -91,9 +98,6 @@ hd_init_lcd2usb(Driver *drvthis)
 
   common_init(p, IF_4BIT);
 
-  /* set contrast: value comes from global hd44780 init */
-  lcd2usb_set_contrast(drvthis, p->contrast);
-
   return 0;
 }
 
@@ -136,24 +140,14 @@ lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
 /**
  * Change LCD contrast.
  * \param drvthis   Pointer to driver structure.
- * \param promille  New contrast value in promille.
+ * \param value     New contrast value (one byte).
  */
 void
-lcd2usb_set_contrast(Driver *drvthis, int promille)
+lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value)
 {
-  PrivateData *p = drvthis->private_data;
-
-  // Check if value within range
-  if ((promille < 0) || (promille > 1000))
-    return;
-
-  // And set it (converted from [0,1000] -> [0,255]).
-  // If successful, update the local value.
   if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_CONTRAST,
-                              (promille * 255) / 1000, 0, NULL, 0, 1000) < 0)
-    report(RPT_WARNING, "hd_init_lcd2usb: setting contrast failed");
-  else
-    p->contrast = promille;
+                              value, 0, NULL, 0, 1000) < 0)
+    p->hd44780_functions->drv_report(RPT_WARNING, "lcd2usb_HD44780_set_contrast: setting contrast failed");
 }
 
 

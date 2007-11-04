@@ -32,7 +32,19 @@
 # include "config.h"
 #endif
 
-// initialize the driver
+
+// connection type specific functions to be exposed using pointers in init()
+void ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void ftdi_HD44780_backlight(PrivateData *p, unsigned char state);
+void ftdi_HD44780_close(PrivateData *p);
+
+
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0   Success.
+ * \retval -1  Error.
+ */
 int
 hd_init_ftdi(Driver *drvthis)
 {
@@ -49,6 +61,7 @@ hd_init_ftdi(Driver *drvthis)
     vendor_id = drvthis->config_get_int(drvthis->name, "VendorID", 0, 0x0403);
     product_id = drvthis->config_get_int(drvthis->name, "ProductID", 0, 0x6001);
 
+    // these config settings are not documented intentionally
     p->ftdi_line_RS = drvthis->config_get_int(drvthis->name, "ftdi_line_RS", 0, 0x01);
     p->ftdi_line_RW = drvthis->config_get_int(drvthis->name, "ftdi_line_RW", 0, 0x02);
     p->ftdi_line_EN = drvthis->config_get_int(drvthis->name, "ftdi_line_EN", 0, 0x04);
@@ -58,7 +71,7 @@ hd_init_ftdi(Driver *drvthis)
     ftdi_init(&p->ftdic);
     ftdi_set_interface(&p->ftdic, INTERFACE_A);
     f = ftdi_usb_open(&p->ftdic, vendor_id, product_id);
-    if(f < 0 && f != -5) {
+    if (f < 0 && f != -5) {
         report(RPT_ERR, "unable to open ftdi device: %d (%s)", f, ftdi_get_error_string(&p->ftdic));
         return -1;
     }
@@ -71,7 +84,7 @@ hd_init_ftdi(Driver *drvthis)
     ftdi_init(&p->ftdic2);
     ftdi_set_interface(&p->ftdic2, INTERFACE_B);
     f = ftdi_usb_open(&p->ftdic2, vendor_id, product_id);
-    if(f < 0 && f != -5) {
+    if (f < 0 && f != -5) {
         report(RPT_ERR, "unable to open second ftdi device: %d (%s)", f, ftdi_get_error_string(&p->ftdic2));
         return -2;
     }
@@ -88,6 +101,7 @@ hd_init_ftdi(Driver *drvthis)
 
     return 0;
 }
+
 
 // ftdi_HD44780_senddata
 void
