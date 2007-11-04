@@ -742,12 +742,11 @@ CFontzPacket_set_brightness(Driver *drvthis, int state, int promille)
 	/* store the software value since there is not get */
 	if (state == BACKLIGHT_ON) {
 		p->brightness = promille;
-		//CFontzPacket_backlight(drvthis, BACKLIGHT_ON);
 	}
 	else {
 		p->offbrightness = promille;
-		//CFontzPacket_backlight(drvthis, BACKLIGHT_OFF);
 	}
+	//CFontzPacket_backlight(drvthis, state);
 }
 
 

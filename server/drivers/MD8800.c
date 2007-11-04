@@ -470,7 +470,7 @@ MD8800_set_brightness(Driver *drvthis, int state, int promille)
 	else {
 		p->off_brightness = promille;
 	}
- //       MD8800_backlight(drvthis,state); //
+	 //MD8800_backlight(drvthis,state);
 }
 
 
@@ -488,12 +488,11 @@ MD8800_backlight (Driver *drvthis, int on)
 
 	/* map range [0, 1000] -> [0, 6] that the hardware understands */
 	hardware_value /= 167;
-	if(hardware_value != p->hw_brightness){
-		p->hw_brightness=hardware_value;
+	if (hardware_value != p->hw_brightness) {
+		p->hw_brightness = hardware_value;
 		write(p->fd, "\x1B\x40", 2);
 		write(p->fd, &p->hw_brightness, 1);
-		}
-
+	}
 }
 
 /////////////////////////////////////////////////////////////////
@@ -528,28 +527,24 @@ MODULE_EXPORT void
 MD8800_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-//	char out[2];
-
 
 	if (memcmp(p->backingstore, p->framebuf, p->width*p->height) == 0)
 		return;
 
+	/* Backing-store implementation.  If it's already
+	 * on the screen, don't put it there again
+	 */
 
-		/* Backing-store implementation.  If it's already
-		 * on the screen, don't put it there again
-		 */
+       	/* else, write out the entire row */
+	memcpy(p->backingstore, p->framebuf, p->width*p->height);
 
+	write(p->fd, "\x1B\x51", 2);// medion \33\121 oct
+//	usleep(300);
+//	write(p->fd, "\x51", 1);// medion \33\121 oct
+//	usleep(300);
 
-        	/* else, write out the entire row */
-		memcpy(p->backingstore, p->framebuf, p->width*p->height);
-
-		write(p->fd, "\x1B\x51", 2);// medion \33\121 oct
-//		usleep(300);
-//		write(p->fd, "\x51", 1);// medion \33\121 oct
-//		usleep(300);
-
-//		write(p->fd, "\x0D", 1); // nec
-		write(p->fd, p->framebuf, p->width*p->height);
+//	write(p->fd, "\x0D", 1); // nec
+	write(p->fd, p->framebuf, p->width*p->height);
 
 
 }
@@ -608,7 +603,7 @@ MD8800_output (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 
-	if(on == 144){
+	if (on == 144) {
 		switch (p->wifi_scan){
 			case 1:
 				write(p->fd, "\x1B\x30\x15\x01", 4);
@@ -630,14 +625,14 @@ MD8800_output (Driver *drvthis, int on)
 			break;
 			}
 		p->wifi_scan++;
-		}
+	}
 
-	if(on == p->last_command)
+	if (on == p->last_command)
 		return;
-	p->last_command=on;
+	p->last_command = on;
 
 	report(RPT_ERR, "commmand send is: %i", on);
-	switch ( on ) {
+	switch (on) {
 	// +0 -> off
 		case 1: // 'hdd'
 			write(p->fd, "\x1B\x30\x00\x00", 4);

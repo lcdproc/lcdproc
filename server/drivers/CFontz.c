@@ -524,12 +524,11 @@ CFontz_set_brightness(Driver *drvthis, int state, int promille)
 	/* store the software value since there is not get */
 	if (state == BACKLIGHT_ON) {
 		p->brightness = promille;
-		//CFontz_backlight(drvthis, BACKLIGHT_ON);
 	}
 	else {
 		p->offbrightness = promille;
-		//CFontz_backlight(drvthis, BACKLIGHT_OFF);
 	}
+	//CFontz_backlight(drvthis, state);
 }
 
 

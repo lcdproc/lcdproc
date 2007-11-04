@@ -727,12 +727,11 @@ MtxOrb_set_brightness(Driver *drvthis, int state, int promille)
 	/* store the software value since there is no get */
 	if (state == BACKLIGHT_ON) {
 		p->brightness = promille;
-		MtxOrb_backlight(drvthis, BACKLIGHT_ON);
 	}
 	else {
 		p->offbrightness = promille;
-		MtxOrb_backlight(drvthis, BACKLIGHT_OFF);
 	}
+	MtxOrb_backlight(drvthis, state);
 }
 
 
@@ -810,7 +809,7 @@ MtxOrb_output (Driver *drvthis, int state)
 
 
 /**
- * Clear the LCD using ints hardware command
+ * Clear the LCD using its hardware command
  * \param drvthis  Pointer to driver structure.
  */
 static void
