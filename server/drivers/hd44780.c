@@ -192,7 +192,7 @@ HD44780_init(Driver *drvthis)
 
 	// Get and parse vspan only when specified
 	s = drvthis->config_get_string(drvthis->name, "vspan", 0, "");
-	if (s[0] != 0) {
+	if (s[0] != '\0') {
 		if (parse_span_list(&(p->spanList), &(p->numLines), &(p->dispVOffset), &(p->numDisplays), &(p->dispSizes), s) == -1) {
 			report(RPT_ERR, "%s: invalid vspan value: %s", drvthis->name, s);
 			return -1;
@@ -246,9 +246,9 @@ HD44780_init(Driver *drvthis)
 			report(RPT_ERR, "%s: error allocing", drvthis->name);
 	}
 	else {
-	  // sanity check against p->height
-	  if (p->numLines != p->height)
-	    report(RPT_ERR, "%s: height in Size does not match vSpan", drvthis->name);
+		// sanity check against p->height
+		if (p->numLines != p->height)
+			report(RPT_ERR, "%s: height in Size does not match vSpan", drvthis->name);
 	}
 
 	if (p->numDisplays == 0) {
@@ -281,7 +281,7 @@ HD44780_init(Driver *drvthis)
 #endif
 
 	// Allocate framebuffer
-	p->framebuf = (char *) calloc(p->width * p->height, sizeof(char));
+	p->framebuf = (unsigned char *) calloc(p->width * p->height, sizeof(char));
 	if (p->framebuf == NULL) {
 		report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
 		//HD44780_close();
@@ -289,8 +289,8 @@ HD44780_init(Driver *drvthis)
 	}
 
 	// Allocate and clear the buffer for incremental updates
-	p->lcd_contents = (char *) calloc(p->width * p->height, sizeof(char));
-	if (p->lcd_contents == NULL) {
+	p->backingstore = (unsigned char *) calloc(p->width * p->height, sizeof(char));
+	if (p->backingstore == NULL) {
 		report(RPT_ERR, "%s: unable to allocate framebuffer backing store", drvthis->name);
 		return -1;
 	}
@@ -345,14 +345,14 @@ HD44780_init(Driver *drvthis)
 	p->charmap = 0;
 	for (i = 0; i < (sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
 		if (strcasecmp(conf_charmap, available_charmaps[i].name) == 0) {
-			p->charmap=i;
+			p->charmap = i;
 			break;
 		}
 	}
 	if (p->charmap != i) {
 		report(RPT_ERR, "%s: Charmap %s is unknown", drvthis->name, conf_charmap);
 		report(RPT_ERR, "%s: Available charmaps:", drvthis->name);
-		for (i=0; i<(sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
+		for (i = 0; i < (sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
 			report(RPT_ERR, " %s", available_charmaps[i].name);
 		}
 		return -1;
@@ -497,8 +497,8 @@ HD44780_close(Driver *drvthis)
 		if (p->framebuf)
 			free(p->framebuf);
 
-		if (p->lcd_contents)
-			free(p->lcd_contents);
+		if (p->backingstore)
+			free(p->backingstore);
 
 		free(p);
 	}	
@@ -631,16 +631,17 @@ HD44780_flush(Driver *drvthis)
 		int drawing = 0;
 
 		for (x = 0 ; x < wid; x++) {
-			char ch = p->framebuf[(y * wid) + x];
+			unsigned char ch = p->framebuf[(y * wid) + x];
 
-			if (refreshNow || (x + y == 0 && keepaliveNow) || ch != p->lcd_contents[(y*wid)+x]) {
+			if (refreshNow || (x + y == 0 && keepaliveNow) || ch != p->backingstore[(y*wid)+x]) {
 				if (!drawing || x % 8 == 0) { // x%8 is for 16x1 displays !
 					drawing = 1;
 					HD44780_position(drvthis,x,y);
 				}
-				p->hd44780_functions->senddata(p, p->spanList[y], RS_DATA, available_charmaps[p->charmap].charmap[(unsigned char)ch]);
+				p->hd44780_functions->senddata(p, p->spanList[y], RS_DATA,
+								available_charmaps[p->charmap].charmap[ch]);
 				p->hd44780_functions->uPause(p, 40);  // Minimum exec time for all commands
-				p->lcd_contents[(y*wid)+x] = ch;
+				p->backingstore[(y*wid)+x] = ch;
 				count++;
 			}
 			else {

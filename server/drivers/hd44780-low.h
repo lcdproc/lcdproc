@@ -123,10 +123,10 @@ typedef struct driver_private_data {
 	int cellwidth, cellheight;
 
 	// The framebuffer
-	char *framebuf;
+	unsigned char *framebuf;
 
 	// For incremental updates store last lcd contents
-	char *lcd_contents;
+	unsigned char *backingstore;
 
 	// The defineable characters
 	CGram cc[NUM_CCs];
