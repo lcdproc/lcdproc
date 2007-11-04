@@ -1,3 +1,7 @@
+/** \file hd44780-ftdi.c
+ * \c ftdi connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
+ */
+
 /*
  * FTDI/USB driver module for Hitachi HD44780 based LCD displays
  * connected to a FT2232C/D chip in 8 bit mode.
@@ -39,7 +43,6 @@ hd_init_ftdi(Driver *drvthis)
 
     p->hd44780_functions->senddata = ftdi_HD44780_senddata;
     p->hd44780_functions->backlight = ftdi_HD44780_backlight;
-    p->hd44780_functions->scankeypad = ftdi_HD44780_scankeypad;
     p->hd44780_functions->close = ftdi_HD44780_close;
 
     // Load config
@@ -93,7 +96,8 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
     // Output data on first channel
     int f = ftdi_write_data(&p->ftdic, &ch, 1);
     if (f < 0) {
-        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting", f, ftdi_get_error_string(&p->ftdic));
+        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
+					f, ftdi_get_error_string(&p->ftdic));
         exit (-1);
     }
 
@@ -104,7 +108,8 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
     }
     f = ftdi_write_data(&p->ftdic2, &ch, 1);
     if (f < 0) {
-        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting", f, ftdi_get_error_string(&p->ftdic2));
+        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
+					f, ftdi_get_error_string(&p->ftdic2));
         exit(-1);
     }
 
@@ -115,7 +120,8 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
     }
     f = ftdi_write_data(&p->ftdic2, &ch, 1);
     if (f < 0) {
-        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting", f, ftdi_get_error_string(&p->ftdic2));
+        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
+					f, ftdi_get_error_string(&p->ftdic2));
         exit(-1);
     }
 }
@@ -130,16 +136,10 @@ ftdi_HD44780_backlight(PrivateData *p, unsigned char state)
 
     f = ftdi_write_data(&p->ftdic2, &state, 1);
     if (f < 0) {
-        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting", f, ftdi_get_error_string(&p->ftdic2));
+        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
+					f, ftdi_get_error_string(&p->ftdic2));
         exit(-1);
     }
-}
-
-
-unsigned char
-ftdi_HD44780_scankeypad(PrivateData *p)
-{
-    return 0;
 }
 
 

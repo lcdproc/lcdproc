@@ -50,8 +50,6 @@ hd_init_bwct_usb(Driver *drvthis)
   char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
 
   p->hd44780_functions->senddata = bwct_usb_HD44780_senddata;
-  p->hd44780_functions->backlight = bwct_usb_HD44780_backlight;
-  p->hd44780_functions->scankeypad = bwct_usb_HD44780_scankeypad;
   p->hd44780_functions->close = bwct_usb_HD44780_close;
   drvthis->set_contrast = bwct_usb_set_contrast;
 
@@ -186,19 +184,6 @@ bwct_usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char
 int type = (flags == RS_DATA) ? BWCT_LCD_DATA : BWCT_LCD_CMD;
 
   usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, type, ch, p->usbIndex, NULL, 0, 1000);
-}
-
-
-void
-bwct_usb_HD44780_backlight(PrivateData *p, unsigned char state)
-{
-}
-
-
-unsigned char
-bwct_usb_HD44780_scankeypad(PrivateData *p)
-{
-  return '\0';
 }
 
 

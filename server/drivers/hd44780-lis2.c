@@ -48,8 +48,6 @@ extern unsigned int **bitrate_conversion;
 extern int convert_bitrate(unsigned int conf_bitrate, size_t *bitrate);
 
 void lis2_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
-void lis2_HD44780_backlight(PrivateData *p, unsigned char state);
-unsigned char lis2_HD44780_scankeypad(PrivateData *p);
 
 static void clearScreen(int fd);
 static void gotoXY(int fd, unsigned char x, unsigned char y);
@@ -122,8 +120,6 @@ int hd_init_lis2(Driver *drvthis)
 	tcsetattr(p->fd, TCSANOW, &portset);
 
 	p->hd44780_functions->senddata = lis2_HD44780_senddata;
-	p->hd44780_functions->backlight = lis2_HD44780_backlight;
-	p->hd44780_functions->scankeypad = lis2_HD44780_scankeypad;
 
 	common_init(p, IF_8BIT);
 
@@ -217,18 +213,6 @@ static unsigned char rowNum = 0;
 			// simply write instruction byte
 			write(p->fd, &ch, 1);
 	}
-}
-
-
-void lis2_HD44780_backlight(PrivateData *p, unsigned char state)
-{
-	/* No backlight control */
-}
-
-
-unsigned char lis2_HD44780_scankeypad(PrivateData *p)
-{
-	return '\0';
 }
 
 

@@ -19,9 +19,7 @@
 int hd_init_bwct_usb(Driver *drvthis);
 
 void bwct_usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
-void bwct_usb_HD44780_backlight(PrivateData *p, unsigned char state);
 void bwct_usb_set_contrast(Driver *drvthis, int promille);
-unsigned char bwct_usb_HD44780_scankeypad(PrivateData *p);
 void bwct_usb_HD44780_close(PrivateData *p);
 
 #endif

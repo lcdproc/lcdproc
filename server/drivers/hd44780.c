@@ -376,30 +376,37 @@ HD44780_init(Driver *drvthis)
 	p->hd44780_functions->set_contrast = NULL;
 	p->hd44780_functions->set_brightness = NULL;
 	p->hd44780_functions->readkeypad = NULL;
-	p->hd44780_functions->scankeypad = HD44780_scankeypad;
+	p->hd44780_functions->scankeypad = NULL;
 	p->hd44780_functions->output = NULL;
 	p->hd44780_functions->close = NULL;
 
-	// Do connection type specific display init
+	// Do local (=connection type specific) display init
 	if (init_fn(drvthis) != 0)
 		return -1;
 
-	// consistency check: local keypad functions missing => no keypad
-	if ((p->hd44780_functions->readkeypad == NULL) &&
-	    (p->hd44780_functions->scankeypad == HD44780_scankeypad)) {
-		p->hd44780_functions->scankeypad = NULL;
-		p->have_keypad = 0;
-	}
-
-	// consistency check: no local output function => no output
-	if (p->hd44780_functions->output == NULL)
-		p->have_output = 0;
-
-	// fail if local senddata function was not defined
+	// consistency check: fail if local senddata function was not defined
 	if (p->hd44780_functions->senddata == NULL) {
 		report(RPT_ERR, "%s: incomplete functions for connection type");
 		return -1;
 	}	
+
+	// set scankeypad function if local readkeypad function is defined
+	if ((p->hd44780_functions->readkeypad != NULL) &&
+	    (p->hd44780_functions->scankeypad == NULL)) {
+		p->hd44780_functions->scankeypad = HD44780_scankeypad;
+	}
+
+	// consistency check: no local keypad function => no keypad
+	if (p->hd44780_functions->scankeypad == NULL)
+		p->have_keypad = 0;
+
+	// consistency check: no local backlight function => no backlight
+	if (p->hd44780_functions->backlight == NULL)
+		p->have_backlight = 0;
+
+	// consistency check: no local output function => no output
+	if (p->hd44780_functions->output == NULL)
+		p->have_output = 0;
 
 
 	// Display startup parameters on the LCD

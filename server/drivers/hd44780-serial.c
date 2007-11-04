@@ -171,8 +171,8 @@ hd_init_serial(Driver *drvthis)
 	size_t bitrate;
 
 	conf_bitrate = drvthis->config_get_int(drvthis->name, "Speed", 0, SERIAL_IF.default_bitrate);
-        if (conf_bitrate == 0)
-                conf_bitrate = SERIAL_IF.default_bitrate;
+	if (conf_bitrate == 0)
+		conf_bitrate = SERIAL_IF.default_bitrate;
 	if (convert_bitrate(conf_bitrate, &bitrate)) {
 		report(RPT_ERR, "HD44780: serial: invalid configured bitrate speed");
 		return -1;
@@ -215,14 +215,13 @@ hd_init_serial(Driver *drvthis)
 	/* Set TCSANOW mode of serial device */
 	tcsetattr(p->fd, TCSANOW, &portset);
 
-        lastdisplayID = -1;
+	lastdisplayID = -1;
 
 	/* Assign functions */
 	p->hd44780_functions->senddata = serial_HD44780_senddata;
 	p->hd44780_functions->backlight = serial_HD44780_backlight;
-	if (p->have_keypad)
-		p->hd44780_functions->scankeypad = serial_HD44780_scankeypad;
-        p->hd44780_functions->close = serial_HD44780_close;
+	p->hd44780_functions->scankeypad = serial_HD44780_scankeypad;
+	p->hd44780_functions->close = serial_HD44780_close;
 
 	/* Do initialization */
 	if (SERIAL_IF.if_bits == 8) {
@@ -248,8 +247,8 @@ serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 		/* Do we need a DATA indicator byte? */
 		if ((SERIAL_IF.data_escape != '\0') &&
 		    (((ch >= SERIAL_IF.data_escape_min) &&
-		    (ch < SERIAL_IF.data_escape_max)) ||
-                    (SERIAL_IF.multiple_displays && displayID != lastdisplayID))) {
+		      (ch < SERIAL_IF.data_escape_max)) ||
+		     (SERIAL_IF.multiple_displays && displayID != lastdisplayID))) {
 			write(p->fd, &SERIAL_IF.data_escape + displayID, 1);
 		}
 		write(p->fd, &ch, 1);
@@ -258,25 +257,25 @@ serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 		write(p->fd, &SERIAL_IF.instruction_escape, 1);
 		write(p->fd, &ch, 1);
 	}
-        lastdisplayID = displayID;
+	lastdisplayID = displayID;
 }
 
 void
 serial_HD44780_backlight(PrivateData *p, unsigned char state)
 {
-        unsigned char send[1];
+	unsigned char send[1];
 	if (p->have_backlight) {
 		if (SERIAL_IF.backlight_escape) {
 			send[0] = SERIAL_IF.backlight_escape;
 			write(p->fd, &send, 1);
-                }
-                if (SERIAL_IF.backlight_on && SERIAL_IF.backlight_off) {
+		}
+		if (SERIAL_IF.backlight_on && SERIAL_IF.backlight_off) {
 			send[0] = state ? SERIAL_IF.backlight_on : SERIAL_IF.backlight_off;
 		}
 		else {
 			send[0] = state ? 0 : 0xFF;
 		}
-                write(p->fd, &send, 1);
+		write(p->fd, &send, 1);
 	}
 }
 
@@ -302,7 +301,7 @@ serial_HD44780_scankeypad(PrivateData *p)
 void
 serial_HD44780_close(PrivateData *p)
 {
-        if (SERIAL_IF.end_code)
-                write(p->fd, &SERIAL_IF.end_code, 1);
-        close(p->fd);
+	if (SERIAL_IF.end_code)
+		write(p->fd, &SERIAL_IF.end_code, 1);
+	close(p->fd);
 }

@@ -157,7 +157,6 @@ hd_init_i2c(Driver *drvthis)
 
 	hd44780_functions->senddata = i2c_HD44780_senddata;
 	hd44780_functions->backlight = i2c_HD44780_backlight;
-	hd44780_functions->scankeypad = NULL;
 
 	// powerup the lcd now
 	/* We'll now send 0x03 a couple of times,
