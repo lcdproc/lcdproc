@@ -263,9 +263,31 @@ dnl				else
 			])
 			;;
 		lis)
+			AC_CHECK_HEADERS([pthread.h],[
+				AC_CHECK_LIB(pthread, pthread_create,[
+					LIBPTHREAD_LIBS="-lpthread"
+					ac_cv_lis_pthread=yes
+				],[
+dnl				else
+					ac_cv_lis_pthread=no
+					AC_MSG_WARN([The lis driver needs the pthread library and pthread_create() from it])
+				])
+			],[
+dnl			else
+				ac_cv_lis_pthread=no
+				AC_MSG_WARN([The lis driver needs pthread.h])
+			])
 			if test "$enable_libftdi" = yes ; then
-				DRIVERS="$DRIVERS lis${SO}"
-				actdrivers=["$actdrivers lis"]
+				if test "$enable_libusb" = yes; then
+					if test "$ac_cv_lis_pthread" = yes; then
+						DRIVERS="$DRIVERS lis${SO}"
+						actdrivers=["$actdrivers lis"]
+					else
+						AC_MSG_WARN([The lis driver needs the pthread library])
+					fi
+				else
+					AC_MSG_WARN([The lis driver needs the usb library])
+				fi
 			else
 				AC_MSG_WARN([The lis driver needs the ftdi library])
 			fi
@@ -423,6 +445,7 @@ AC_SUBST(LIBG15)
 AC_SUBST(LIBGLCD)
 AC_SUBST(LIBFTDI)
 AC_SUBST(LIBXOSD)
+AC_SUBST(LIBPTHREAD_LIBS)
 ])
 
 

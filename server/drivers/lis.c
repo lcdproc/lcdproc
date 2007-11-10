@@ -45,6 +45,8 @@
  * 	2007/05/30	Remove set_custom_chars(). Implement
  * 			lis_set_chars(), lis_vbar(), lis_hbar()
  * 			and lis_num() using helper functions.
+ * 	2007/11/01	Change Linux-centric clone() to POSIX
+ * 			threads for portability.
  */
 #include <stdlib.h>
 #include <stdio.h>
@@ -54,6 +56,7 @@
 #include <string.h>
 #include <errno.h>
 #include <syslog.h>
+#include <pthread.h>
 
 #include <usb.h>
 #include <ftdi.h>
@@ -367,8 +370,9 @@ lis_init(Driver *drvthis)
 	PrivateData *p;
 	int err;
 	const char *s;
-	unsigned char buffer[64], *thread_stack;
+	unsigned char buffer[64];
 	int count;
+	pthread_t read_thread;
 
 	report(RPT_DEBUG, "%s: Initializing driver",
 		drvthis->name);
@@ -502,16 +506,14 @@ lis_init(Driver *drvthis)
 		goto err_ftdi;
 	}
 
-	// clone a thread to keep a read up on the device
-	thread_stack = calloc(4096, 1);
-	if(! thread_stack) {
-		report(RPT_ERR, "%s: cannot create thread stack", drvthis->name);
-		goto err_framebuf;
-	}
-
-	err = clone(lis_read_thread, thread_stack+4092, CLONE_VM | CLONE_THREAD| CLONE_SIGHAND, drvthis);
-	if (err == -1) {
-		report(RPT_ERR, "%s: clone() - %s", drvthis->name, strerror(errno));
+	// create a thread to keep a read up on the device
+	err = pthread_create(	&read_thread,
+				NULL,
+				(void *) lis_read_thread,
+				drvthis
+				);
+	if (err) {
+		report(RPT_ERR, "%s: pthread_create() - %s", drvthis->name, err);
 		goto err_framebuf;
 	}
 	p->parent_flag = 1;		// show we're now a happy parent, birth successful.
