@@ -129,7 +129,7 @@ MODULE_EXPORT int shuttleVFD_init(Driver *drvthis) {
     struct usb_device *dev;
     for (dev = bus->devices; dev != NULL; dev = dev->next) {
       if (dev->descriptor.idVendor == SHUTTLE_VFD_VENDOR_ID &&
-          dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID) {
+          (dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID1 || dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID2)) {
         p->dev = usb_open(dev);
       }
     }

@@ -41,6 +41,7 @@ v.0.5dev (ongoing development)
  + hd44780 driver: reporting in ConnectionType functions (Thomas Jarosch)
  * clean up build system (T. Jarosch, with tests/fixes by M. Dolze)
  + hd44780 driver: new ConnectionType ftdi (Thomas Jarosch)
+ * shuttleVFD driver: fix VendorID, support newer models (Miska Sulander)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
