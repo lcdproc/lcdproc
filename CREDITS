@@ -240,6 +240,7 @@ Thomas Jarosch
 	- support reporting in hd44780's ConnectionType functions
 	- build-system clean up: use pkg-config for some libs
 	- HD44780 connection type for a USB connection via a FTDI FT2232D chip
+	- i2500vfd driver
 
 
 

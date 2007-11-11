@@ -13,13 +13,13 @@ AC_ARG_ENABLE(drivers,
 	[                    irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,]
 	[                    mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,]
 	[                    sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,]
-	[                    t6963,text,tyan,ula200,xosd]
+	[                    t6963,text,tyan,ula200,xosd,i2500vfd]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd,i2500vfd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -425,6 +425,14 @@ dnl				else
 dnl			else
 				AC_MSG_WARN([The xosd driver needs xosd.h])
 			])
+			;;
+		i2500vfd)
+			if test "$enable_libftdi" = yes ; then
+				DRIVERS="$DRIVERS i2500vfd${SO}"
+				actdrivers=["$actdrivers i2500vfd"]
+			else
+				AC_MSG_WARN([The i2500vfd driver needs the ftdi library])
+			fi
 			;;
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])

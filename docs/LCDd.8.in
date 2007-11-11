@@ -254,6 +254,9 @@ ULA-200 device from ELV (http://www.elv.de)
 .TP
 .B xosd
 On Screen Display on X11
+.TP
+.B i2500vfd
+140x32 pixel VFD Display of the Intra2net Intranator 2500 appliance
 .PP
 Multiple drivers can be used simultaneously; thus, for example, a Matrix Orbital display (MtxOrb driver)
 can be combined with an infrared driver (irmanin driver).

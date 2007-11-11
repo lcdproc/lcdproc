@@ -19,7 +19,7 @@ AM_LDFLAGS = @LDSHARED@
 #LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 svga t6963 text tyan sli ula200 xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 svga t6963 text tyan sli ula200 xosd i2500vfd
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -29,6 +29,7 @@ lis_CFLAGS =         @LIBUSB_CFLAGS@ @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 picolcd_CFLAGS =     @LIBUSB_CFLAGS@ $(AM_CFLAGS)	
 shuttleVFD_CFLAGS =  @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 ula200_CFLAGS =      @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
+i2500vfd_CFLAGS =    @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 
 CFontz_LDADD =       libLCD.a libbignum.a
 CFontz633_LDADD =    libLCD.a libbignum.a
@@ -61,6 +62,7 @@ tyan_LDADD =         libLCD.a libbignum.a
 ula200_LDADD =       libLCD.a @LIBFTDI_LIBS@
 sli_LDADD =          libLCD.a
 xosd_LDADD =         @LIBXOSD@
+i2500vfd_LDADD =     libLCD.a @LIBFTDI_LIBS@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
 libbignum_a_SOURCES = adv_bignum.h  adv_bignum.c 
@@ -109,6 +111,7 @@ tyan_SOURCES =       lcd.h lcd_lib.h tyan_lcdm.h tyan_lcdm.c report.h adv_bignum
 ula200_SOURCES =     lcd.h lcd_lib.h ula200.h ula200.c report.h
 sli_SOURCES =        lcd.h lcd_lib.h wirz-sli.h wirz-sli.c report.h
 xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h
+i2500vfd_SOURCES =   lcd.h i2500vfd.c i2500vfd.h i2500vfdfm.c i2500vfdfm.h report.h
 
 AM_CPPFLAGS = -I$(top_srcdir)
 
