@@ -2,32 +2,134 @@
 <title>The HD44780 Driver</title>
 
 <para>
-There are several ways of wiring up the HD44780 devices. Your choice
-will probably be governed largely by your ability to wire up each one
-and/or a desire to use the device with other programs.
+The HD44780 has become the de-facto standard of alphanumeric character displays.
+Although the original Hitachi HD44780 is long out of production, its command
+set has survived in a variety of (fully or nearly) compatible LCD, VFD and
+even OLED displays sold by a broad range of manufacturers all over the world.
+To name ony a few: KS0066, KS0070, KS0076, LC7985, NT3881, SED1278, ST7066 ...
 </para>
 
 <para>
-The LCDproc HD44780 driver supports the following connections on a
-parallel port:
+The command set of these displays, which sometimes are advertised as being
+"industry standards compatible", is thus the workhorse of controllers for
+displays ranging from 8x1 to 20x4 or 40x2 characters.
+There are even displays with larger dimensions sporting two controllers,
+one for each half of the display.
+</para>
+
+<para>
+The HD44780 driver supports  various ways of connecting HD44780 devices
+to your system.
+Each of these different ways is called a connection type of the driver.
+</para>
+
+<para>
+On a parallel port, probably the first interface type HD44780 devices were
+historically connected to, the driver supports the connection types:
 </para>
 
 <itemizedlist>
- <listitem><para>4bit</para></listitem>
- <listitem><para>8bit (winamp style)</para></listitem>
- <listitem><para>extended 8bit (LCD + LED bargraph)</para></listitem>
- <listitem><para>serial LPT</para></listitem>
+  <listitem>
+    <link linkend="hd44780-4bit">4bit</link>:
+    4bit Wiring
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-8bit-lcdtime">8bit</link>:
+    8bit Wiring ("lcdtime")
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-8bit-winamp">winamp</link>:
+    8bit Wiring "winamp" Style
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-seriallpt">serialLpt</link>:
+    Serial LPT Wiring
+  </listitem>
 </itemizedlist>
 
 <para>
-It also supports the following connections:
+For serial RS-232 ports you can choose among these connection types:
 </para>
 
 <itemizedlist>
- <listitem><para>A PIC-an-LCD or LCD serializer connected to a serial port</para></listitem>
- <listitem><para>A I<superscript>2</superscript>C port expander connected to an I<superscript>2</superscript>C port</para></listitem>
- <listitem><para>USB connection via a FTDI FT2232D chip in bitbang mode</para></listitem>
+  <listitem>
+    <link linkend="hd44780-picanlcd">picanlcd</link>:
+    PIC-an-LCD serial device
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-lcdserializer">lcdserializer</link>:
+   LCD serializer
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-los-panel">los-panel</link>:
+    LCD on Serial panel device (<ulink url="http://www.xs4all.nl/~mlf/los/"></ulink>)
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-vdr-lcd">vdr-lcd</link>:
+    VDR LCD serial device
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-vdr-wakeup">vdr-wakeup</link>:
+    VDR-Wakeup module
+  </listitem>
 </itemizedlist>
+
+<para>
+In recent years, with with parallel ports and serial ports being declared legacy
+and on the demise on modern computers, the USB connection types get
+more important. Here are the USB connection types the HD44780 driver supports:
+</para>
+
+<itemizedlist>
+  <listitem>
+    <link linkend="hd44780-pertelian">pertelian</link>:
+    Pertelian X2040 LCD display (<ulink url="http://pertelian.com/joomla/index.php?option=com_content&amp;task=view&amp;id=43&amp;Itemid=48"></ulink>)
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-bwctusb">bwctusb</link>:
+    BWCT USB LCD module (<ulink url="http://www.bwct.de/lcd.html"></ulink>)
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-lcd2usb">lcd2usb</link>:
+    Tim Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-lis2">lis2</link>:
+    LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-mplay">mplay</link>:
+    MPlay Blast from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-ftdi">ftdi</link>:
+    Display connected to a dual channel FTDI 2232D USB chip
+  </listitem>
+</itemizedlist>
+
+<para>
+Last but not least, for special purposes, there are even more connection types:
+</para>
+
+<itemizedlist>
+  <listitem>
+    <link linkend="hd44780-i2c">i2c</link>:
+    LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C
+  </listitem>
+</itemizedlist>
+
 
 <para>
 The driver also lets you use multiple displays as a single virtual
@@ -106,7 +208,7 @@ There are several ways to get 5V:
     black is GND).
   </para></listitem>
   <listitem><para>
-    Get it from the V<subscript>CC</subscript> pin of an USB connector.
+    Get it from the V<subscript>CC</subscript> and GND pins of an USB connector.
   </para></listitem>
   <listitem><para>
     Get it from a joystick port (pin 1 and 9 are 5V, 4, 5 and 12 are GND).
@@ -467,7 +569,7 @@ The BC327 transistor has the following connections:
 <title>4bit</title>
 
 <para>
-This is originally based on "lcdtext" (by Matthias Prinke).
+This wiring is originally based on "lcdtext" (by Matthias Prinke).
 </para>
 
 <table id="hd44780-4bit.base-mapping">
@@ -1999,7 +2101,7 @@ Refer to <link linkend="hd44780-lcdserializer-burning">burning section</link> in
 
 
 <sect3 id="hd44780-bwctusb">
-<title>BWCT USB device "bwctusb"</title>
+<title>BWCT USB LCD module "bwctusb"</title>
 
 <para>
 The BWCT USB LCD module is also supported. It is not connected to an LPT port
@@ -2307,22 +2409,24 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         </row>
       </thead>
       <tbody>
+        <!-- parallel -->  
         <row>
           <entry><literal><link linkend="hd44780-4bit">4bit</link></literal></entry>
-          <entry>HD44780 4bit Wiring (default)</entry>
+          <entry>4bit Wiring to parallel port(default)</entry>
         </row>
         <row>
           <entry><literal><link linkend="hd44780-8bit-lcdtime">8bit</link></literal></entry>
-          <entry>HD44780 8bit Wiring ("lcdtime")</entry>
+          <entry>8bit Wiring to parallel port ("lcdtime")</entry>
         </row>
         <row>
           <entry><literal><link linkend="hd44780-8bit-winamp">winamp</link></literal></entry>
-          <entry>HD44780 8bit Wiring "winamp" Style</entry>
+          <entry>8bit Wiring "winamp" Style to parallel port</entry>
         </row>
         <row>
           <entry><literal><link linkend="hd44780-seriallpt">serialLpt</link></literal></entry>
-          <entry>HD44780 Serial LPT Wiring</entry>
+          <entry>Serial LPT Wiring</entry>
         </row>
+        <!-- serial -->  
         <row>
           <entry><literal><link linkend="hd44780-picanlcd">picanlcd</link></literal></entry>
           <entry>PIC-an-LCD serial device "picanlcd"</entry>
@@ -2343,6 +2447,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
           <entry><literal><link linkend="hd44780-vdr-wakeup">vdr-wakeup</link></literal></entry>
           <entry>VDR-Wakeup module "vdr-wakeup"</entry>
         </row>
+        <!-- USB -->  
         <row>
           <entry><literal><link linkend="hd44780-pertelian">pertelian</link></literal></entry>
           <entry>Pertelian X2040 LCD display (<ulink url="http://pertelian.com/joomla/index.php?option=com_content&amp;task=view&amp;id=43&amp;Itemid=48"></ulink>)</entry>
@@ -2364,12 +2469,13 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
           <entry>MPlay Blast from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
         </row>
         <row>
-          <entry><literal><link linkend="hd44780-i2c">i2c</link></literal></entry>
-          <entry>LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C</entry>
-        </row>
-        <row>
           <entry><literal><link linkend="hd44780-ftdi">ftdi</link></literal></entry>
           <entry>Display connected to a dual channel FTDI 2232D USB chip</entry>
+        </row>
+        <!-- I2C -->  
+        <row>
+          <entry><literal><link linkend="hd44780-i2c">i2c</link></literal></entry>
+          <entry>LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C</entry>
         </row>
       </tbody>
     </tgroup>
