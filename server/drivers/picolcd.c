@@ -535,12 +535,13 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 		} else {
 			debug(RPT_DEBUG, "picolcd: get_key got non-key data or timeout");
 			/* We got IR or otherwise bad data */
+			free(keydata);
 			return NULL;
 		}
 
 	}
 
-   free(keydata);
+	free(keydata);
 
 	debug(RPT_DEBUG, "picolcd: get_key complete (%s)", keystr);
 
