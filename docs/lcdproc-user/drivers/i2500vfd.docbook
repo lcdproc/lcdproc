@@ -1,0 +1,38 @@
+<sect1 id="i2500vfd-howto">
+<title>The i2500vfd Driver</title>
+
+<para>
+This section talks about using LCDproc with an Intra2net Intranator 2500 VFD display.
+The displays are part of a custom high grade steel chassis and not sold separately.
+More information can be found here: <ulink url="http://www.intra2net.com/">Intra2net AG</ulink>
+</para>
+
+<para>
+It connects to USB using a FTDI FT245BM chip and therefore needs libftdi as requirement.
+libftdi can be found here: <ulink url="http://www.intra2net.com/de/produkte/opensource/ftdi/">libftdi</ulink>
+</para>
+
+<sect2 id="i2500vfd-features">
+<title>Features</title>
+
+<para>
+The display features a 140x32 pixel Noritake VFD tube which gets driven
+by an Atmel ATmega128 processor and used as a 23x4 character display with a
+6x8 pixel font.
+It features B/W colors and two additional adjustable grayscale colors.
+It does hardware double buffering with up to 27 FPS and shows an animated boot logo
+until data is received from USB.
+</para>
+
+</sect2>
+
+<sect2 id="i2500vfd-options">
+<title>Options</title>
+
+<para>
+There are currently no options for this driver.
+</para>
+
+</sect2>
+
+</sect1>

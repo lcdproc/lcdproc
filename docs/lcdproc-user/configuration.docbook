@@ -746,7 +746,7 @@ The <package>LCDproc</package> distribution contains init scripts for
 GNU/Linux distributions.
 In addition to those it contains init scripts for older RedHat- and Debian-based
 distributions that do not adhere to LSB 3.1. 
-You can find iall of them in the <filename>scripts/</filename>
+You can find all of them in the <filename>scripts/</filename>
 directory of the LCDproc sources.
 </para>
 

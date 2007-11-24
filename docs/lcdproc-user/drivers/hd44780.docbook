@@ -6,7 +6,7 @@ The HD44780 has become the de-facto standard of alphanumeric character displays.
 Although the original Hitachi HD44780 is long out of production, its command
 set has survived in a variety of (fully or nearly) compatible LCD, VFD and
 even OLED displays sold by a broad range of manufacturers all over the world.
-To name ony a few: KS0066, KS0070, KS0076, LC7985, NT3881, SED1278, ST7066 ...
+To name only a few: KS0066, KS0070, KS0076, LC7985, NT3881, SED1278, ST7066 ...
 </para>
 
 <para>
@@ -132,11 +132,24 @@ Last but not least, for special purposes, there are even more connection types:
 
 
 <para>
+Depending on the connection type and the display connected, the driver supports
+various special features.
+<itemizedlist>
+  <listitem>Input keys</listitem>
+  <listitem>software controllable brightness / backlight</listitem>
+  <listitem>software controllable contrast</listitem>
+  <listitem>multiple displays / multi-controller displays</listitem>
+</itemizedlist>
+</para>
+
+<!--
+<para>
 The driver also lets you use multiple displays as a single virtual
 display.  For example, a 4, 2 and 1 line display can be used to form a
 7 line display. The number of displays is limited by the individual
 HD44780 driver.
 </para>
+-->
 
 <sect2 id="hd44780-connections">
 <title>Connections</title>
@@ -145,7 +158,7 @@ HD44780 driver.
 <title>Common connections for all connectiontypes</title>
 
 <para>
-No matter what connectiontype you choose, you will always need some
+No matter what connection type you choose, you will always need some
 connections. They are explaned here.
 </para>
 
@@ -441,8 +454,8 @@ assumes this:
 </table>
 
 <para>
-If you only need 10 keys, leave the rest away. However, the lcdproc menu is
-controlled by the keystrokes A to D. You should modify and recompile the
+If you only need 10 keys, leave the rest away.
+You should modify and recompile the
 driver to get an other keypad layout.
 </para>
 
@@ -1810,7 +1823,7 @@ and drives both channels as outputs to control the display in 8bit mode.
 </table>
 
 <para>
-You can configure the USB vendor/product ID in LCDd.conf.
+You can configure the USB vendor/product ID in <filename>LCDd.conf</filename>.
 The wiring of the control lines can optionally be reconfigured,
 please look at the driver source if you really need that.
 </para>
@@ -2104,14 +2117,23 @@ Refer to <link linkend="hd44780-lcdserializer-burning">burning section</link> in
 <title>BWCT USB LCD module "bwctusb"</title>
 
 <para>
-The BWCT USB LCD module is also supported. It is not connected to an LPT port
-but to an USB port, which saves you from a lot of potential problems.
-To use it, set the connection type in the config file with the ConnectionType=
-setting to "bwctusb" (without the quotes).
-It does neither support a keypad nor backlight switching but it supports setting
-the display's contrast using the "Contrast" configuration parameter as well as
-specifying which one (of multiple BWCT LCD devices) is wanted using the
-"SerialNumber" configuration parameter.
+The BWCT USB LCD module, sold by Bernd Walter Computing Technology 
+(<ulink url="http://www.bwct.de/lcd.html"></ulink>) is a little board
+that can be piggy-packed to a HD44780 display and connects that to USB.
+</para>
+
+<para>
+The board, driven by the <literal>bwctusb</literal> connection type,
+does neither support a keypad for input, nor more than one single-controller
+display, nor does it allow setting the backlight or brightness.
+But it you can the display's contrast using software
+(see the <command>Constrast=</command> configuration parameter). 
+</para>
+
+<para>
+If there is more than one BWCT USB modules connected to the system,
+the <command>SerialNumber=</command> configuration parameters allows
+selecting which display is used in LCDd.
 </para>
 
 </sect3>
@@ -2143,9 +2165,11 @@ e.g. for a graphic LCD.
 <title>Special config options</title>
 
 <para>
-Two keys can be connected to the LCD2USB interface board. They can generate three key events:
-One for each key and one if the keys are pressed simultaneously. With this menus can be used
-(see example below).
+Two keys can be connected to the LCD2USB interface board. They can generate three key events
+that can be mapped to key names using the <command>DirectKey_1</command> to
+<command>DirectKey_3=</command> commands:
+one for each key and one if the keys are pressed simultaneously.
+With this 3-key setup, menus can be used (see example below).
 </para>
 
 <para>
@@ -2542,13 +2566,44 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 
 <varlistentry>
   <term>
+    <command>Brightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial brightness when the backlight is on
+    for the <literal>lcd2usb</literal> connection type.
+    Legal values are <literal>0</literal> - <literal>1000</literal>,
+    with <literal>800</literal> being the default.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>OffBrightness=</command>
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the initial off-brightness, i.e. the brightness when the backlight is off,
+    for the <literal>lcd2usb</literal> connection type.
+    The ilegal range is <literal>0</literal> - <literal>1000</literal>.
+    If not given, it defaults to <literal>300</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>Contrast=</command>
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial contrast for the <literal>bwctusb</literal> connection type.
-    Legal values for <replaceable>CONTRAST</replaceable> are <literal>0</literal> - <literal>1000</literal>.
-    If not given, it defaults to <literal>300</literal>.
+    Set the initial contrast for the <literal>bwctusb</literal> and
+    <literal>lcd2usb</literal> connection types.
+    Legal values for <replaceable>CONTRAST</replaceable> are
+    <literal>0</literal> - <literal>1000</literal>.
+    If not given, it defaults to <literal>500</literal> which may
+    be too low or too high for the selected connection type.
+    So, if the screen is blank or dark, please try playing with
+    the contrast a bit.
   </para></listitem>
 </varlistentry>
 
@@ -2625,13 +2680,16 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     </arg>
   </term>
   <listitem><para>
-    The "vertical span" when using multiple displays or multi-controller displays.
-    It is a comma separated list of the heights of each display. In multi-controller
-    displays it lists the number of lines each controller is responsible for.
+    The "vertical span" when using the driver with multi-controller displays
+    or with multiple displays that are treated as a single virtual display.
+    It is a comma separated list of the heights of each display.
+    In multi-controller displays it lists the number of lines each controller
+    is responsible for.
     </para>
     <para>
-    E.g. <code>VSpan=2,2</code> means you have two displays and
-    each has two lines.
+    E.g. <code>vSpan=2,2,1</code> means you have three physical displays, the first
+    two having two lines each, and the third having one line, that together form
+    a virtual display that is 5 lines high.
     </para>
     <para>
     The sum of the <replaceable>HEIGHT</replaceable>s must match the total height
@@ -2736,7 +2794,6 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     </para>
   </listitem>
 </varlistentry>
-</variablelist>
 
 <varlistentry>
   <term>
@@ -2759,6 +2816,18 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     Default: <literal>0x6001</literal>.
   </para></listitem>
 </varlistentry>
+
+<varlistentry>
+  <term>
+    <command>SerialNumber=</command>
+    <arg choice="plain"><replaceable>VENDORID</replaceable></arg>
+  </term>
+  <listitem><para>
+    Serial no. of the USB device to look for with <command>ConnectionType=</command><literal>bwctusb</literal>.
+    If not given, the first BWCT USB module found will be used.
+  </para></listitem>
+</varlistentry>
+</variablelist>
 
 </sect3>
 
@@ -2818,7 +2887,7 @@ Updated April 2002, Rene Wagner <email>reenoo@gmx.de</email>
 </para>
 
 <para>
-Updated and extended April 2006, Peter Marschall <email>peter@adpm.de</email>
+Updated and extended April 2006 to November 2007, Peter Marschall <email>peter@adpm.de</email>
 </para>
 
 </sect2>
