@@ -2126,12 +2126,12 @@ that can be piggy-packed to a HD44780 display and connects that to USB.
 The board, driven by the <literal>bwctusb</literal> connection type,
 does neither support a keypad for input, nor more than one single-controller
 display, nor does it allow setting the backlight or brightness.
-But it you can the display's contrast using software
+But you can set the display's contrast using software
 (see the <command>Constrast=</command> configuration parameter). 
 </para>
 
 <para>
-If there is more than one BWCT USB modules connected to the system,
+If there is more than one BWCT USB module connected to the system,
 the <command>SerialNumber=</command> configuration parameters allows
 selecting which display is used in LCDd.
 </para>
@@ -2166,7 +2166,7 @@ e.g. for a graphic LCD.
 
 <para>
 Two keys can be connected to the LCD2USB interface board. They can generate three key events
-that can be mapped to key names using the <command>DirectKey_1</command> to
+that can be mapped to key names using the <command>DirectKey_1=</command> to
 <command>DirectKey_3=</command> commands:
 one for each key and one if the keys are pressed simultaneously.
 With this 3-key setup, menus can be used (see example below).
