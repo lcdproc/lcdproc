@@ -20,7 +20,8 @@ one for each half of the display.
 <para>
 The HD44780 driver supports  various ways of connecting HD44780 devices
 to your system.
-Each of these different ways is called a connection type of the driver.
+Each of these different ways is called a <emphasis>connection type</emphasis>
+of the driver.
 </para>
 
 <para>
@@ -2130,11 +2131,16 @@ But you can set the display's contrast using software
 (see the <command>Constrast=</command> configuration parameter). 
 </para>
 
+<sect4 id="hd44780-bwctusb-config">
+<title>Special configuration options</title>
+
 <para>
 If there is more than one BWCT USB module connected to the system,
 the <command>SerialNumber=</command> configuration parameters allows
 selecting which display is used in LCDd.
 </para>
+
+</sect4>
 
 </sect3>
 
@@ -2144,39 +2150,39 @@ selecting which display is used in LCDd.
 
 <para>
 <ulink url="http://www.harbaum.org/till/lcd2usb/">LCD2USB</ulink>
-is a cheap but powerful do-it-yourself interface to connect HD44780 based displays via USB,
-consisting of easily available parts only.
-The device supports software adjustable contrast and backlight as well as dual controller displays
-(required for 4*27 and 4*40).
+is a cheap but powerful do-it-yourself interface to connect HD44780
+based displays via USB, consisting of easily available parts only.
+The device supports software adjustable contrast and backlight
+as well as dual controller displays (required for 4*27 and 4*40).
 </para>
 
 <para>
-It is based upon Atmel AVR Mega8 CPU with a pure software implementation of the USB protocol
-for the Atmel AVR microcontroller series. 
+It is based upon an Atmel AVR Mega8 CPU with a pure software implementation
+of the USB protocol for the Atmel AVR microcontroller series. 
 </para>
 
 <para>
 The whole interface incl. the hardware layout is under a GPL like license.
-This means that you can take these schematics and use it as a basis for your own interface
-e.g. for a graphic LCD.
+This means that you can take these schematics and use it as a basis
+for your own interface e.g. for a graphic LCD.
+</para>
+
+<para>
+Two keys can be connected to the LCD2USB interface board.
+They can generate three key events that can be mapped to key names using
+the <command>DirectKey_1=</command> to <command>DirectKey_3=</command> commands:
+one for each key and the third if the keys are pressed simultaneously.
+With this 3-key setup, menus can be used (see example below).
 </para>
 
 <sect4 id="hd44780-lcd2usb-config">
-<title>Special config options</title>
-
-<para>
-Two keys can be connected to the LCD2USB interface board. They can generate three key events
-that can be mapped to key names using the <command>DirectKey_1=</command> to
-<command>DirectKey_3=</command> commands:
-one for each key and one if the keys are pressed simultaneously.
-With this 3-key setup, menus can be used (see example below).
-</para>
+<title>Special configuration options</title>
 
 <para>
 Besides the standard configuration options for <code>hd44780</code> displays, the
 <code>lcd2usb</code> connection type supports three additional options:
 <command>Contrast=</command> to set the display's contrast,
-<command>Brightness=</command> to set the display's brightness when is backlight is switched on and
+<command>Brightness=</command> to set the display's brightness when the backlight is switched on and
 <command>OffBrightness=</command> to set the display's brightness when is backlight is switched off.
 Both options expect a number in the range from <literal>0</literal> to <literal>1000</literal>.
 </para>
@@ -2204,7 +2210,6 @@ KeyDirect_3=Escape
 ]]>
 </screen>
 </example>
-
 
 <tip>
  <para>
@@ -2375,7 +2380,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>PORT</replaceable></arg>
   </term>
   <listitem><para>
-    Specify the address of the parallel port the LCD is connected to.
+    For parallel connections, specify the address of the parallel port the LCD is connected to.
     Common values for <replaceable>PORT</replaceable> are <literal>0x278</literal>,
     <literal>0x378</literal> and <literal>0x3BC</literal>.
     If not given, the default is <literal>0x378</literal>.
@@ -2388,9 +2393,9 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
-    If you are using a serial connection, you must
-    set this parameter to the device your LCD is connected to. For
-    example, if the display is connected to the first serial port,
+    If you are using a serial or I<superscript>2</superscript>C connection,
+    you need to set this parameter to the device your LCD is connected to.
+    For example, if the display is connected to the first serial port,
     you have to set it to <filename>/dev/ttyS0</filename>.
     The default value is <filename>/dev/lcd</filename>.
   </para></listitem>
