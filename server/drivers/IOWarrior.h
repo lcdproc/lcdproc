@@ -53,6 +53,9 @@
 #define IOWLCD_BUSY		0x80
 #define IOWLCD_ADDR_MASK	0x7F
 
+/* IOW56 uses a different USB request size */
+#define IOWLCD_SIZE		((p->productID == 0x1503) ? 64 : 8)
+
 /* IOWarriors drive HD44780 cmpatible displays that have these cells: */
 #define CELLWIDTH	LCD_DEFAULT_CELLWIDTH
 #define CELLHEIGHT	LCD_DEFAULT_CELLHEIGHT

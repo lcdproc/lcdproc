@@ -53,17 +53,17 @@
 /* ------------------- IOWarrior LCD routines ------------------------------ */
 
 /* write a set report to interface 1 of warrior */
-static int iow_lcd_wcmd(usb_dev_handle *udh, unsigned char data[8])
+static int iow_lcd_wcmd(usb_dev_handle *udh, int size, unsigned char *data)
 {
   return(usb_control_msg(udh, USB_DT_HID, USB_REQ_SET_REPORT, 0, 1,
-                         (char *) data, 8, iowTimeout) == 8) ? IOW_OK : IOW_ERROR;
+                         (char *) data, size, iowTimeout) == size) ? IOW_OK : IOW_ERROR;
 }
 
 
 /* ------------------- IOWarrior LED routines ------------------------------ */
 
 /* write a set report to interface 0 of warrior */
-static int iow_led_wcmd(usb_dev_handle *udh,int len,unsigned char *data)
+static int iow_led_wcmd(usb_dev_handle *udh, int len, unsigned char *data)
 {
   return (usb_control_msg(udh, USB_DT_HID, USB_REQ_SET_REPORT, 2, 0,
                           (char *) data, len, iowTimeout) == len) ? IOW_OK : IOW_ERROR;
@@ -75,111 +75,111 @@ static int iow_led_wcmd(usb_dev_handle *udh,int len,unsigned char *data)
 /* ------------------- IOWarrior LCD routines ------------------------------ */
 
 /* start IOWarrior's LCD mode */
-static int iowlcd_enable(usb_dev_handle *udh)
+static int iowlcd_enable(usb_dev_handle *udh, int size)
 {
-  unsigned char lcd_cmd[8] = { 0x04, 0x01, 0, 0, 0, 0, 0, 0 };
-  int res = iow_lcd_wcmd(udh,lcd_cmd);
+  unsigned char lcd_cmd[64] = { 0x04, 0x01, 0, 0, 0, 0, 0, 0 };
+  int res = iow_lcd_wcmd(udh, size, lcd_cmd);
   usleep(30000); /* wait for 30ms */
   return res;
 }
 
 /* leave IOWarrior's LCD mode */
-static int iowlcd_disable(usb_dev_handle *udh)
+static int iowlcd_disable(usb_dev_handle *udh, int size)
 {
-  unsigned char lcd_cmd[8] = { 0x04, 0x00, 0, 0, 0, 0, 0, 0 };
-  int res = iow_lcd_wcmd(udh,lcd_cmd);
+  unsigned char lcd_cmd[64] = { 0x04, 0x00, 0, 0, 0, 0, 0, 0 };
+  int res = iow_lcd_wcmd(udh, size, lcd_cmd);
   usleep(30000);
   return res;
 }
 
 /* clear IOWarrior's display */
-static int iowlcd_display_clear(usb_dev_handle *udh)
+static int iowlcd_display_clear(usb_dev_handle *udh, int size)
 {
-  unsigned char lcd_cmd[8] = { 0x05, 1, 0x01, 0, 0, 0, 0, 0 };
-  int res = iow_lcd_wcmd(udh,lcd_cmd);
+  unsigned char lcd_cmd[64] = { 0x05, 1, 0x01, 0, 0, 0, 0, 0 };
+  int res = iow_lcd_wcmd(udh, size, lcd_cmd);
   usleep(3000); /* 3ms */
   return res;
 }
 
-static int iowlcd_display_on_off(usb_dev_handle *udh,int display,int cursor,int blink)
+static int iowlcd_display_on_off(usb_dev_handle *udh, int size, int display, int cursor, int blink)
 {
-  unsigned char lcd_cmd[8] = { 0x05, 1, 0x08, 0, 0, 0, 0, 0 };
+  unsigned char lcd_cmd[64] = { 0x05, 1, 0x08, 0, 0, 0, 0, 0 };
   if (display) lcd_cmd[2] |= 0x04;
   if (cursor)  lcd_cmd[2] |= 0x02;
   if (blink)   lcd_cmd[2] |= 0x01;
-  return iow_lcd_wcmd(udh,lcd_cmd);
+  return iow_lcd_wcmd(udh, size, lcd_cmd);
 }
 
-static int iowlcd_set_function(usb_dev_handle *udh,int eight_bit,int two_line,int ten_dots)
+static int iowlcd_set_function(usb_dev_handle *udh, int size, int eight_bit, int two_line, int ten_dots)
 {
-  unsigned char lcd_cmd[8] = { 0x05, 1, 0x20, 0, 0, 0, 0, 0 };
+  unsigned char lcd_cmd[64] = { 0x05, 1, 0x20, 0, 0, 0, 0, 0 };
   if (eight_bit) lcd_cmd[2] |= 0x10;
   if (two_line)  lcd_cmd[2] |= 0x08;
   if (ten_dots)  lcd_cmd[2] |= 0x04;
-  return iow_lcd_wcmd(udh,lcd_cmd);
+  return iow_lcd_wcmd(udh, size, lcd_cmd);
 }
 
-static int iowlcd_set_cgram_addr(usb_dev_handle *udh,int addr)
+static int iowlcd_set_cgram_addr(usb_dev_handle *udh, int size, int addr)
 {
-  unsigned char lcd_cmd[8] = { 0x05, 1, 0x40, 0, 0, 0, 0, 0 };
+  unsigned char lcd_cmd[64] = { 0x05, 1, 0x40, 0, 0, 0, 0, 0 };
   lcd_cmd[2] |= (addr & 0x3f);
-  return iow_lcd_wcmd(udh,lcd_cmd);
+  return iow_lcd_wcmd(udh, size, lcd_cmd);
 }
 
-static int iowlcd_set_ddram_addr(usb_dev_handle *udh,int addr)
+static int iowlcd_set_ddram_addr(usb_dev_handle *udh, int size, int addr)
 {
-  unsigned char lcd_cmd[8] = { 0x05, 1, 0x80, 0, 0, 0, 0, 0 };
+  unsigned char lcd_cmd[64] = { 0x05, 1, 0x80, 0, 0, 0, 0, 0 };
   lcd_cmd[2] |= (addr & 0x7f);
-  return iow_lcd_wcmd(udh,lcd_cmd);
+  return iow_lcd_wcmd(udh, size, lcd_cmd);
 }
 
-static int iowlcd_write_data(usb_dev_handle *udh,int len,unsigned char *data)
+static int iowlcd_write_data(usb_dev_handle *udh, int size, int len, unsigned char *data)
 {
-  unsigned char lcd_cmd[8] = { 0x05, 0x80, 0, 0, 0, 0, 0, 0 };
+  unsigned char lcd_cmd[64] = { 0x05, 0x80, 0, 0, 0, 0, 0, 0 };
   unsigned char *ptr = data;
   int num_blk, last_blk, i;
-  num_blk  = len / 6;
-  last_blk = len % 6;
+  num_blk  = len / (size - 2);
+  last_blk = len % (size - 2);
 
-  /* write 6 data byte reports */
+  /* write data in (size-2)-sized chunks */
   for (i = 0; i < num_blk; i++) {
-    lcd_cmd[1] = 0x80 | 6;
-    memcpy(&lcd_cmd[2], ptr, 6);
-    if (iow_lcd_wcmd(udh, lcd_cmd) == IOW_ERROR)
+    lcd_cmd[1] = 0x80 | (size-2);
+    memcpy(&lcd_cmd[2], ptr, size-2);
+    if (iow_lcd_wcmd(udh, size, lcd_cmd) == IOW_ERROR)
       return ptr - data;
-    ptr += 6;
+    ptr += (size-2);
   }
 
   /* last block */
   if (last_blk > 0) {
     lcd_cmd[1] = 0x80 | last_blk;
     memcpy(&lcd_cmd[2], ptr, last_blk);
-    if (iow_lcd_wcmd(udh, lcd_cmd) == IOW_ERROR)
+    if (iow_lcd_wcmd(udh, size, lcd_cmd) == IOW_ERROR)
       return ptr - data;
   }
 
   return len;
 }
 
-static int iowlcd_set_pos(usb_dev_handle *udh,int x,int y)
+static int iowlcd_set_pos(usb_dev_handle *udh, int size, int x, int y)
 {
   const unsigned char lineOff[4] = { 0x00, 0x40, 0x14, 0x54 };
   unsigned char addr = lineOff[y] + x;
-  return iowlcd_set_ddram_addr(udh, addr);
+  return iowlcd_set_ddram_addr(udh, size, addr);
 }
 
-static int iowlcd_set_text(usb_dev_handle *udh,int x,int y,int len,unsigned char *data)
+static int iowlcd_set_text(usb_dev_handle *udh, int size, int x, int y, int len, unsigned char *data)
 {
-  if (iowlcd_set_pos(udh,x,y) == IOW_ERROR)
+  if (iowlcd_set_pos(udh, size, x, y) == IOW_ERROR)
     return IOW_ERROR;
-  return iowlcd_write_data(udh,len,data);
+  return iowlcd_write_data(udh, size, len, data);
 }
 
-static int iowlcd_load_chars(usb_dev_handle *udh,int offset,int num,unsigned char *bits)
+static int iowlcd_load_chars(usb_dev_handle *udh, int size, int offset, int num, unsigned char *bits)
 {
-  if (iowlcd_set_cgram_addr(udh, offset<<3) == IOW_ERROR)
+  if (iowlcd_set_cgram_addr(udh, size, offset << 3) == IOW_ERROR)
     return IOW_ERROR;
-  return iowlcd_write_data(udh, num*CELLHEIGHT, bits);
+  return iowlcd_write_data(udh, size, num * CELLHEIGHT, bits);
 }
 
 
@@ -383,13 +383,13 @@ PrivateData *p;
   }
 
   /* enable LCD in IOW */
-  if (iowlcd_enable(p->udh) == IOW_ERROR)
+  if (iowlcd_enable(p->udh, IOWLCD_SIZE) == IOW_ERROR)
     return -1;
   /* enable 8bit transfer mode */
-  if (iowlcd_set_function(p->udh, 1, 1, 0) == IOW_ERROR)
+  if (iowlcd_set_function(p->udh, IOWLCD_SIZE, 1, 1, 0) == IOW_ERROR)
     return -1;
   /* enable display, disable cursor+blinking */
-  if (iowlcd_display_on_off(p->udh, 1, 0, 0) == IOW_ERROR)
+  if (iowlcd_display_on_off(p->udh, IOWLCD_SIZE, 1, 0, 0) == IOW_ERROR)
     return -1;
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
@@ -428,10 +428,10 @@ PrivateData *p = drvthis->private_data;
 
   if (p != NULL) {
     /* don't turn display off: keep the logoff message */
-    // iowlcd_display_on_off(p->udh,0,0,0);
+    // iowlcd_display_on_off(p->udh, IOWLCD_SIZE,0,0,0);
 
     /* IOW leave LCD mode */
-    iowlcd_disable(p->udh);
+    iowlcd_disable(p->udh, IOWLCD_SIZE);
 
     /* release interface 1 */
     usb_release_interface(p->udh, 1);
@@ -545,7 +545,7 @@ int count;
           buffer[count] = HD44780_charmap[(unsigned char) p->framebuf[offset+count]];
           p->backingstore[offset+count] = p->framebuf[offset+count];
         }
-        iowlcd_set_text(p->udh, 0, y, count, buffer);
+        iowlcd_set_text(p->udh, IOWLCD_SIZE, 0, y, count, buffer);
         debug(RPT_DEBUG, "%s: flushed %d chars at (%d,%d)",
 			drvthis->name, count, 0, y);
 
@@ -560,7 +560,7 @@ int count;
 //		    buffer[i] = HD44780_charmap[(unsigned char) p->framebuf[offset+x+i]];
 //		    p->backingstore[offset+x+i] = p->framebuf[offset+x+i];
 //		}
-//		iowlcd_set_text(p->udh, x, y, count, buffer);
+//		iowlcd_set_text(p->udh, IOWLCD_SIZE, x, y, count, buffer);
 //		debug(RPT_DEBUG, "%s: flushed %d chars at (%d,%d)",
 //			drvthis->name, count, x, y);
 
@@ -573,7 +573,7 @@ int count;
   count = 0;
   for (i = 0; i < NUM_CCs; i++) {
     if (!p->cc[i].clean) {
-      iowlcd_load_chars(p->udh, i, 1, p->cc[i].cache);
+      iowlcd_load_chars(p->udh, IOWLCD_SIZE, i, 1, p->cc[i].cache);
       p->cc[i].clean = 1;	/* mark as clean */
       count++;
     }
@@ -799,19 +799,19 @@ IOWarrior_cursor (Driver *drvthis, int x, int y, int state)
 {
 PrivateData *p = drvthis->private_data;
 
-  iowlcd_set_pos(p->udh, x, y);
+  iowlcd_set_pos(p->udh, IOWLCD_SIZE, x, y);
 
   switch (state) {
     case CURSOR_OFF:
-      iowlcd_display_on_off(p->udh, 1, 0, 0);
+      iowlcd_display_on_off(p->udh, IOWLCD_SIZE, 1, 0, 0);
       break;
     case CURSOR_UNDER:
-      iowlcd_display_on_off(p->udh, 1, 1, 0);
+      iowlcd_display_on_off(p->udh, IOWLCD_SIZE, 1, 1, 0);
       break;
     case CURSOR_BLOCK:
     case CURSOR_DEFAULT_ON:
     default:
-      iowlcd_display_on_off(p->udh, 1, 1, 1);
+      iowlcd_display_on_off(p->udh, IOWLCD_SIZE, 1, 1, 1);
       break;
   }    
 }
@@ -836,7 +836,7 @@ IOWarrior_get_free_chars (Driver *drvthis)
  * Define a custom character and write it to the LCD.
  * \param drvthis  Pointer to driver structure.
  * \param n        Custom character to define [0 - (NUM_CCs-1)].
- * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ * \param dat      Array of 8 (=cellheight) bytes, each representing a pixel row
  *                 starting from the top to bottom.
  *                 The bits in each byte represent the pixels where the LSB
  *                 (least significant bit) is the rightmost pixel in each pixel row.
