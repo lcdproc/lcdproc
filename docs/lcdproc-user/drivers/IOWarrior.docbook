@@ -62,9 +62,9 @@ The <literal>IOWarrior</literal> driver currently only supports writing
 to a single-controller HD44780-type display.
 LED output using the <command>output()</command> function is also implemented,
 although not tested very well.
-The hardware's support for input using keys or IR and multi-controller displays
+The hardware's support for input using keys or IR and dual-controller displays
 is not implemented yet.
-The latter requres extra circuitry for IOWarrior24 and IOWarrior40.
+Please note that the latter requires extra circuitry with IOWarrior24 and IOWarrior40.
 </para>
 
 <para>
