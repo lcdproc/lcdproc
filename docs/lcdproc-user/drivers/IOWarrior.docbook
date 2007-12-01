@@ -69,7 +69,7 @@ Please note that the latter requires extra circuitry with IOWarrior24 and IOWarr
 
 <para>
 The driver was developed and tested with IOWarrior24 and the IOWarrior40.
-Although there are good chances for it to work with an IOWarrior50,
+Although there are good chances for it to work with an IOWarrior56,
 the current state regarding support of this chip is unknown due to the
 lack of the required hardware.
 </para>
