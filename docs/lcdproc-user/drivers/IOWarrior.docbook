@@ -69,9 +69,33 @@ Please note that the latter requires extra circuitry with IOWarrior24 and IOWarr
 
 <para>
 The driver was developed and tested with IOWarrior24 and the IOWarrior40.
-Although there are chances for it to work with an IOWarrior50,
+Although there are good chances for it to work with an IOWarrior50,
 the current state regarding support of this chip is unknown due to the
 lack of the required hardware.
+</para>
+
+<para>
+The driver is based on the <ulink url="http://libusb.sourceforge.net/"><filename>libusb</filename></ulink>
+USB library, which should make it work with Linux, the different BSB variants
+as well as Darwin/MacOS X.
+
+<note>
+  <para>
+    When using a <filename>libusb</filename> based driver like <literal>IOWarrior</literal>,
+    <application>LCDd</application> needs to be started as root.
+  </para>
+</note>
+
+<note>
+  <para>
+    Newer Linux kernels (2.6.20 and higher) provide a kernel module
+    <filename>iowarrior.ko</filename> that allows controlling IOWarrior
+    chips using device files.
+    Having this module loaded may hinder <application>LCDd</application>
+    from starting using the <literal>IOWarrior</literal> driver.
+    In this case, simply unload the kernel module.
+  </para>
+</note>
 </para>
 
 </sect2>
