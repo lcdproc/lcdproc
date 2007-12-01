@@ -2825,10 +2825,11 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 <varlistentry>
   <term>
     <command>SerialNumber=</command>
-    <arg choice="plain"><replaceable>VENDORID</replaceable></arg>
+    <arg choice="plain"><replaceable>SERIALNO</replaceable></arg>
   </term>
   <listitem><para>
-    Serial no. of the USB device to look for with <command>ConnectionType=</command><literal>bwctusb</literal>.
+    Serial number of the USB device to look for with
+    <command>ConnectionType=</command><literal>bwctusb</literal>.
     If not given, the first BWCT USB module found will be used.
   </para></listitem>
 </varlistentry>
