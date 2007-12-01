@@ -58,7 +58,7 @@ support controlling LCD displays:
 </para>
 
 <para>
-The <literal>IOWarrior</literal> driver currently only supports writing
+The <code>IOWarrior</code> driver currently only supports writing
 to a single-controller HD44780-type display.
 LED output using the <command>output()</command> function is also implemented,
 although not tested very well.
@@ -74,6 +74,12 @@ the current state regarding support of this chip is unknown due to the
 lack of the required hardware.
 </para>
 
+</sect2>
+
+
+<sect2 id="IOWarrior-requirements">
+<title>Requirements</title>
+
 <para>
 The driver is based on the <ulink url="http://libusb.sourceforge.net/"><filename>libusb</filename></ulink>
 USB library, which should make it work with Linux, the different BSB variants
@@ -81,7 +87,7 @@ as well as Darwin/MacOS X.
 
 <note>
   <para>
-    When using a <filename>libusb</filename> based driver like <literal>IOWarrior</literal>,
+    When using a <filename>libusb</filename> based driver like <code>IOWarrior</code>,
     <application>LCDd</application> needs to be started as root.
   </para>
 </note>
@@ -92,7 +98,7 @@ as well as Darwin/MacOS X.
     <filename>iowarrior.ko</filename> that allows controlling IOWarrior
     chips using device files.
     Having this module loaded may hinder <application>LCDd</application>
-    from starting using the <literal>IOWarrior</literal> driver.
+    from starting using the <code>IOWarrior</code> driver.
     In this case, simply unload the kernel module.
   </para>
 </note>

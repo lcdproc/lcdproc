@@ -2,10 +2,9 @@
 <title>The lirc Driver</title>
 
 <para>
-The lirc driver enables you to use any IR remote control
-that works with LIRC to control the LCDproc server
-(<application>LCDd</application>)
-and/or clients that can handle input.
+The <code>lirc</code> driver enables you to use any IR remote control
+that works with <package>LIRC</package> to control the LCDproc server
+<application>LCDd</application> and/or clients that can handle input.
 </para>
 
 <para>
@@ -179,7 +178,7 @@ end
 </example>
 
 <para>
-Which buttons you specify here depends on your RC and your LIRC configuration.
+Which buttons you specify here depends on your remote control and your LIRC configuration.
 </para>
 
 <para>

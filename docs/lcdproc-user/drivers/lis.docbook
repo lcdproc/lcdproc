@@ -28,22 +28,38 @@ between the FTDI and the NEC chips.
 <title>Requirements</title>
 
 <para>
-The driver depends on libftdi, version 0.8 or higher, from
+The driver depends on <filename>libftd</filename>, version 0.8 or higher, from
 <ulink url="http://www.intra2net.com/opensource/ftdi/">
 http://www.intra2net.com/opensource/ftdi/</ulink>.
 </para>
 
-</sect2>
-<sect2 id="lis-compiling">
-<title>Compiling</title>
-
 <para>
-Make sure that the L.I.S files are built when you run configure. This
-can be done by specifying "--enable-drivers=all" or by
-"--enable-drivers=lis".
+<filename>libftd</filename> itself depends on the
+<ulink url="http://libusb.sourceforge.net/"><filename>libusb</filename></ulink>
+USB library.
+
+<note>
+  <para>
+    When using a <filename>libusb</filename> based driver like <code>lis</code>,
+    <application>LCDd</application> needs to be started as root.
+  </para>
+</note>
+
+<note>
+  <para>
+    Newer Linux kernels (2.6.20 and higher) provide a kernel module
+    <filename>iowarrior.ko</filename> that allows controlling IOWarrior
+    chips using device files.
+    Having this module loaded may hinder <application>LCDd</application>
+    from starting using the <code>lis</code> driver.
+    In this case, simply unload the kernel module.
+  </para>
+</note>
 </para>
 
 </sect2>
+
+
 <sect2 id="lis-config">
 <title>Configuration in LCDd.conf</title>
 

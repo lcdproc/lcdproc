@@ -690,7 +690,7 @@ you need it otherwise, then connect it to GND. This certainly applies if you hav
 </note>
 
 <para>
-The <literal>4bit</literal> connection type supports more than one display connected
+The <code>4bit</code> connection type supports more than one display connected
 to the same parallel port.
 If you want to connect more than one display, then wire the all the displays to the
 parallel port according to the scheme above with the exception of the <literal>EN</literal>
@@ -2124,7 +2124,7 @@ that can be piggy-packed to a HD44780 display and connects that to USB.
 </para>
 
 <para>
-The board, driven by the <literal>bwctusb</literal> connection type,
+The board, driven by the <code>bwctusb</code> connection type,
 does neither support a keypad for input, nor more than one single-controller
 display, nor does it allow setting the backlight or brightness.
 But you can set the display's contrast using software
@@ -2184,7 +2184,7 @@ Besides the standard configuration options for <code>hd44780</code> displays, th
 <command>Contrast=</command> to set the display's contrast,
 <command>Brightness=</command> to set the display's brightness when the backlight is switched on and
 <command>OffBrightness=</command> to set the display's brightness when is backlight is switched off.
-Both options expect a number in the range from <literal>0</literal> to <literal>1000</literal>.
+All three options expect a number in the range from <literal>0</literal> to <literal>1000</literal>.
 </para>
 
 <example id="hd44780-lcd2usb-config.example">
@@ -2589,7 +2589,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   </term>
   <listitem><para>
     Set the initial off-brightness, i.e. the brightness when the backlight is off,
-    for the <literal>lcd2usb</literal> connection type.
+    for the <code>lcd2usb</code> connection type.
     The ilegal range is <literal>0</literal> - <literal>1000</literal>.
     If not given, it defaults to <literal>300</literal>.
   </para></listitem>
@@ -2601,8 +2601,8 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
-    Set the initial contrast for the <literal>bwctusb</literal> and
-    <literal>lcd2usb</literal> connection types.
+    Set the initial contrast for the <code>bwctusb</code> and
+    <code>lcd2usb</code> connection types.
     Legal values for <replaceable>CONTRAST</replaceable> are
     <literal>0</literal> - <literal>1000</literal>.
     If not given, it defaults to <literal>500</literal> which may
@@ -2806,7 +2806,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>VENDORID</replaceable></arg>
   </term>
   <listitem><para>
-    USB vendor ID to look for a FTDI chip with <command>ConnectionType=</command><literal>ftdi</literal>.
+    USB vendor ID to look for a FTDI chip with connection type <code>ftdi</code>.
     Default: <literal>0x4003</literal>.
   </para></listitem>
 </varlistentry>
@@ -2817,7 +2817,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>PRODUCTID</replaceable></arg>
   </term>
   <listitem><para>
-    USB product ID to look for a FTDI chip with <command>ConnectionType=</command><literal>ftdi</literal>.
+    USB product ID to look for a FTDI chip with connection type <code>ftdi</code>.
     Default: <literal>0x6001</literal>.
   </para></listitem>
 </varlistentry>
@@ -2829,7 +2829,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   </term>
   <listitem><para>
     Serial number of the USB device to look for with
-    <command>ConnectionType=</command><literal>bwctusb</literal>.
+    connection type <code>bwctusb</code>.
     If not given, the first BWCT USB module found will be used.
   </para></listitem>
 </varlistentry>

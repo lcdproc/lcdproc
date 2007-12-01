@@ -2,9 +2,8 @@
 <title>The irman Driver</title>
 
 <para>
-The irman driver allows you to use the IrMan IR remote control
-to control the LCDproc server
-(<application>LCDd</application>)
+The <code>irman</code> driver allows you to use the IrMan IR remote control
+to control the LCDproc server <application>LCDd</application>
 and/or clients that can handle input.
 </para>
 
@@ -50,10 +49,11 @@ The keys are mapped according to the following table:
 </table>
 
 <tip>
-<para>
-If you have trouble using the <code>irman</code> driver, you might try the <code>lirc</code> driver.
-lirc supports IrMan as well.
-</para>
+  <para>
+    If you have trouble using the <code>irman</code> driver,
+    you might try the <code>lirc</code> driver.
+    <package>lirc</package> supports IrMan as well.
+  </para>
 </tip>
 
 
