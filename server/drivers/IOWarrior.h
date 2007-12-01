@@ -40,6 +40,8 @@
 #define iowProd40		0x1500   /* IOW40 */
 #define iowProd24		0x1501   /* IOW24 */
 #define iowProd56		0x1503   /* IOW56 */
+#define iowProd24PVa		0x1511   /* IOW24 PowerVampire */
+#define iowProd24PVb		0x1512   /* IOW24 PowerVampire */
 #define iowTimeout		1000
 
 #define USB_REQ_SET_REPORT	0x09

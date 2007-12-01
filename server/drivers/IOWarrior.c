@@ -143,7 +143,7 @@ static int iowlcd_write_data(usb_dev_handle *udh,int len,unsigned char *data)
 
   /* write 6 data byte reports */
   for (i = 0; i < num_blk; i++) {
-    lcd_cmd[1] = 0x86;
+    lcd_cmd[1] = 0x80 | 6;
     memcpy(&lcd_cmd[2], ptr, 6);
     if (iow_lcd_wcmd(udh, lcd_cmd) == IOW_ERROR)
       return ptr - data;
@@ -255,7 +255,7 @@ PrivateData *p;
   /* Which size */
   strncpy(size, drvthis->config_get_string(drvthis->name, "Size",
                                            0, DEFAULT_SIZE), sizeof(size));
-  size[sizeof(size) - 1] = 0;
+  size[sizeof(size) - 1] = '\0';
   if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
       (w <= 0) || (w > LCD_MAX_WIDTH) ||
       (h <= 0) || (h > LCD_MAX_HEIGHT)) {
@@ -310,6 +310,8 @@ PrivateData *p;
       if ((dev->descriptor.idVendor == iowVendor) &&
          ((dev->descriptor.idProduct == iowProd24) ||
           (dev->descriptor.idProduct == iowProd40) ||
+          (dev->descriptor.idProduct == iowProd24PVa) ||
+          (dev->descriptor.idProduct == iowProd24PVb) ||
           (dev->descriptor.idProduct == iowProd56))) {
 
         /* IO-Warrior found; try to find it's description and serial number */
