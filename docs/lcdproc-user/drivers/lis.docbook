@@ -44,17 +44,6 @@ USB library.
     <application>LCDd</application> needs to be started as root.
   </para>
 </note>
-
-<note>
-  <para>
-    Newer Linux kernels (2.6.20 and higher) provide a kernel module
-    <filename>iowarrior.ko</filename> that allows controlling IOWarrior
-    chips using device files.
-    Having this module loaded may hinder <application>LCDd</application>
-    from starting using the <code>lis</code> driver.
-    In this case, simply unload the kernel module.
-  </para>
-</note>
 </para>
 
 </sect2>
