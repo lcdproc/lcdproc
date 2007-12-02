@@ -11,14 +11,14 @@ in our efforts.
 </para>
 
 <para>
-The main reason for that is the fact that we do NOT have all
-the hardware people have writte. drivers for. Unfortunately
-some developers have kind of vanished and don't react to mails
+The main reason for that is the fact that we do <emphasis>not</emphasis>
+have all the hardware people have written drivers for.
+Unfortunately some developers have kind of vanished and don't react to mails
 from the mailing list any more.
 </para>
 
 <para>
-So, as far as drivers are concerned we rely on YOU as testers.
+So, as far as drivers are concerned we rely on <emphasis>you</emphasis> as testers.
 We have developed elaborate "coding in the dark" skills over the
 time. E.g. the CFontz driver has been updated and ported to 0.4.3
 without the developers having the hardware.
@@ -30,9 +30,8 @@ without the developers having the hardware.
 <title>The LCDproc Mailing List</title>
 
 <para>
-We are a bit lazy about the bug-tracking and whatever stuff
-on SourceForge. So, please contact us directly through the mailing
-list.
+We are a bit lazy about the bug-tracking and whatever stuff on SourceForge.
+So, please contact us directly through the mailing list.
 </para>
 
 <para>
@@ -58,28 +57,33 @@ Before reporting this to the mailing list, please respect the following:
 </para>
 
 <itemizedlist>
-<listitem><para>Your system should be more or less up to date. This does not mean
-that you have to update from GNU/Linux kernel 2.0.x to 2.2.x or from 2.2.x to
-2.4.x. But we would like to make sure that your problem is not related to a
-known bug in the kernel or maybe your compiler.
-</para></listitem>
-<listitem><para>Especially LCDd might need certain privileges to execute
-a command. Make sure LCDd HAS the rights to do so.</para></listitem>
-<listitem>
-<para>
-When experiencing problems with LCDd, make sure that your hardware is OK.
-E.g. you should make sure that the wireing for your (in this case most
-likely parallel) device is correct.
-</para>
-</listitem>
-<listitem><para>Make sure that you use the correct speed settings for your device.
-Incorrect speed settings (baud rate) are most likely to produce garbage
-scrolling on your display.
-Refer to the specifications of your device. If your device needs a speed
-setting that is not supported by LCDd send us a mail.</para></listitem>
-<listitem><para>Make sure that you have modified the configuration file according
-to your needs and that LCDd actually uses the configuration file. I.e. you might
-have to run LCDd with the -c <link linkend="lcdd-commandline-options">option</link>
+  <listitem><para>
+    Your system should be more or less up to date. This does not mean
+    that you have to update from GNU/Linux kernel 2.2.x to 2.4.x or from 2.4.x to
+    2.6.x. But we would like to make sure that your problem is not related to a
+    known bug in the kernel or maybe your compiler.
+  </para></listitem>
+  <listitem><para>
+    Especially LCDd might need certain privileges to access a device.
+    Make sure LCDd <emphasis>has</emphasis> the required rights to do so.
+  </para></listitem>
+  <listitem><para>
+    When experiencing problems with LCDd, make sure that your hardware is OK.
+    E.g. you should make sure that the wiring for your (in this case most
+    likely parallel) device is correct.
+  </para></listitem>
+  <listitem><para>
+    Make sure that you use the correct speed settings for your device.
+    Incorrect speed settings (baud rate) are most likely to produce garbage
+    scrolling on your display.
+    Refer to the specifications of your device. If your device needs a speed
+    setting that is not supported by LCDd send us a mail.
+  </para></listitem>
+  <listitem><para>
+    Make sure that you have modified the configuration file according
+    to your needs and that LCDd actually uses the configuration file.
+    I.e. you might have to run LCDd with the <code>-c</code>
+    <link linkend="lcdd-commandline-options">option</link>
 </para></listitem>
 </itemizedlist>
 

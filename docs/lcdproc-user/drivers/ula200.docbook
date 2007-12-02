@@ -1,11 +1,115 @@
 <sect1 id="ula200-howto">
 <title>The ula200 Driver</title>
 
+<sect2 id="ula200-general">
+<title>General</title>
+
 <para>
-  This section talks about using LCDproc with LCD displays that use the
-  ULA-200 USB adapter for HD44780 drivers that can be obtained at
-  <ulink url="http://www.elv.de">ELV</ulink>.
+The ULA-200 (short for German <emphasis>USB-LCD-Ansteuerung</emphasis>),
+manufactured and sold by <ulink url="http://www.elv.de">ELV</ulink>,
+is a small board that connects a HD44780-compatible display to the computer
+using the USB interface.
+Additionally it provides 6 digital inputs that can be used for keys.
 </para>
+
+<para>
+The <code>ula200</code> driver controls this board supporting the features:
+
+<itemizedlist>
+  <listitem>display on a single-controller HD44780 display</listitem>
+  <listitem>standard icons (heart, checkbox)</listitem>
+  <listitem>backlight control</listitem>
+  <listitem>input buttons</listitem>
+  <listitem><emphasis>no</emphasis> horizontal or vertical bars</listitem>
+</itemizedlist>
+</para>
+
+</sect2>
+
+
+<sect2 id="ula200-requirements">
+<title>Requirements</title>
+
+<para>
+The driver uses <filename>libftdi</filename>, which again uses <filename>libusb</filename>
+for communication with the device, so no kernel driver is needed on Linux, and the
+driver can be used on other operating systems as well.
+
+<note>
+  <para>
+    When using a <filename>libusb</filename> based driver like <code>IOWarrior</code>,
+    <application>LCDd</application> needs to be started as root.
+  </para>
+</note>
+
+<note>
+  <para>
+    On Linux, you have to take care that the <filename>ftdi_sio.ko</filename>r
+    kernel module doesn't claim the ELV device.
+    If you didn't change the IDs in the kernel driver (<filename>ftdi_sio.c</filename>),
+    this should not matter.
+  </para>
+</note>
+</para>
+
+</sect2>
+
+
+<sect2 id="ula200-problems">
+<title>Known problems</title>
+
+<para>
+Sometimes the display hangs (the ACK response is not received) on shutdown.
+Reconnect the display in that case.
+Please do the same if it hangs while starting up.
+The latter only happens if it was not the first time <application>LCDd</application>
+talked to the display.
+</para>
+
+</sect2>
+
+
+<sect2 id="ula200-implementation-note">
+<title>Implementation note</title>
+<subtitle>(by the driver's author Bernhard Walle)</subtitle>
+
+<para>
+The ULA-200 talks a text protocol which allows to display text using a
+high-level language, i.e.
+<code>STX</code> <literal>s</literal> <replaceable>len</replaceable>
+<replaceable>char0</replaceable> <replaceable>char1</replaceable> ... <code>ETX</code>.
+It also allows low-level register access to the HD44780.
+So in theory, it would be possible to write a connection type for the
+<code>hd44780</code> driver and let the <code>hd44780</code> core do the rest.
+I tried this. It was slow and didn't work with user-specific characters
+(the hd44780 frequently changes this characters which seems to confuse the
+microcontroller, at least I cannot explain why it didn't work, there was
+garbare).
+</para>
+
+<para>
+So I wrote a separate driver, the <code>ula200</code>, which uses
+the high-level language and should work for displays with all sizes.
+I only tested 20x4, so maybe for other sizes the positioning code may be adapted.
+</para>
+
+<para>
+As I mentioned, there were problems with frequently changing the
+user-definable characters.
+I also tried to implement bar code in the <code>ula200</code> driver
+with similar effects.
+I gave it up because I don't need it personally and it can be done later.
+However, standard icons are implemented.
+The user-definable characters are set in startup and are not changed.
+This works like a charm.
+It is not possible to use character 0 with the high-level language
+(or at least it isn't documented how to escape it).
+It could be done with hd44780 code, but I replaced the character with
+a standard character which looks good.
+</para>
+
+</sect2>
+
 
 <!-- ## ELV ULA200 driver ## -->
 <sect2 id="ula200-config">
@@ -63,7 +167,7 @@
     <literal>Enter</literal> and <literal>Escape</literal>.
     </para>
     <para>
-    The following it the built-in default mapping hardcoded in the driver.
+    The following table lists the built-in default mapping hardcoded in the driver.
     </para>
     <informaltable>
     <tgroup cols="2">
@@ -97,8 +201,7 @@
     </informaltable>
     <para>
     You may leave it unchanged if you have a standard keypad.
-    You can change it if you want to report other keystrings or have a non
-    standard keypad.
+    You can change it if you want to report other keystrings or have a non-standard keypad.
     </para>
   </listitem>
 </varlistentry>
