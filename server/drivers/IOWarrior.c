@@ -310,8 +310,6 @@ PrivateData *p;
       if ((dev->descriptor.idVendor == iowVendor) &&
          ((dev->descriptor.idProduct == iowProd24) ||
           (dev->descriptor.idProduct == iowProd40) ||
-          (dev->descriptor.idProduct == iowProd24PVa) ||
-          (dev->descriptor.idProduct == iowProd24PVb) ||
           (dev->descriptor.idProduct == iowProd56))) {
 
         /* IO-Warrior found; try to find it's description and serial number */
