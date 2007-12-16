@@ -2136,7 +2136,7 @@ But you can set the display's contrast using software
 
 <para>
 If there is more than one BWCT USB module connected to the system,
-the <command>SerialNumber=</command> configuration parameters allows
+the <command>SerialNumber=</command> configuration parameter allows
 selecting which display is used in LCDd.
 </para>
 
