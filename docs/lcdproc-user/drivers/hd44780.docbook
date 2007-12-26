@@ -980,7 +980,7 @@ This type of connection should work with winamp.
     </row>
     <row>
       <entry>nSTRB</entry>
-      <entry>(1)</entry>
+      <entry>1</entry>
       <entry></entry>
       <entry>EN</entry>
       <entry>6</entry>
@@ -2128,7 +2128,7 @@ The board, driven by the <code>bwctusb</code> connection type,
 does neither support a keypad for input, nor more than one single-controller
 display, nor does it allow setting the backlight or brightness.
 But you can set the display's contrast using software
-(see the <command>Constrast=</command> configuration parameter). 
+(see the <command>Contrast=</command> configuration parameter). 
 </para>
 
 <sect4 id="hd44780-bwctusb-config">

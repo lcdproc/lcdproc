@@ -2,9 +2,9 @@
  * Interface to low-level driver types, headers and names.
  *
  * To add support for a new driver in this file:
- * \li 1. include your header file
- * \li 2. Add a new connectionType
- * \li 3. Add an entry in the \c ConnectionMapping structure
+ * -# include your header file
+ * -# Add a new connectionType
+ * -# Add an entry in the \c ConnectionMapping structure
  */
 
 #ifndef HD44780_DRIVERS_H
@@ -32,26 +32,28 @@
 // add new connection type header files here
 
 
-// connectionType enumerator:
-// - string to identify connection in config file
-// - connection type identifier
-// - interface type
-// - initialisation function
+/** connectionType mapping table:
+ * - string to identify connection in config file
+ * - connection type identifier
+ * - interface type
+ * - initialisation function
+ */
 static const ConnectionMapping connectionMapping[] = {
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
+	/* parallel connection types */
 	{ "4bit",          HD44780_CT_4BIT,          IF_TYPE_PARPORT, hd_init_4bit      },
 	{ "8bit",          HD44780_CT_8BIT,          IF_TYPE_PARPORT, hd_init_ext8bit   },
 	{ "serialLpt",     HD44780_CT_SERIALLPT,     IF_TYPE_PARPORT, hd_init_serialLpt },
 	{ "winamp",        HD44780_CT_WINAMP,        IF_TYPE_PARPORT, hd_init_winamp    },
 #endif
-	/* Serial connectiontypes */
+	/* serial connection types */
 	{ "picanlcd",      HD44780_CT_PICANLCD,      IF_TYPE_SERIAL,  hd_init_serial    },
 	{ "lcdserializer", HD44780_CT_LCDSERIALIZER, IF_TYPE_SERIAL,  hd_init_serial    },
 	{ "los-panel",     HD44780_CT_LOS_PANEL,     IF_TYPE_SERIAL,  hd_init_serial    },
 	{ "vdr-lcd",       HD44780_CT_VDR_LCD,       IF_TYPE_SERIAL,  hd_init_serial    },
 	{ "vdr-wakeup",    HD44780_CT_VDR_WAKEUP,    IF_TYPE_SERIAL,  hd_init_serial    },
 	{ "pertelian",     HD44780_CT_PERTELIAN,     IF_TYPE_SERIAL,  hd_init_serial    },
-	/* End serial connectiontypes */
+	/* USB connection types */
 	{ "lis2",          HD44780_CT_LIS2,          IF_TYPE_USB,     hd_init_lis2      },
 	{ "mplay",         HD44780_CT_MPLAY,         IF_TYPE_USB,     hd_init_lis2      },
 #ifdef HAVE_LIBUSB
@@ -61,11 +63,13 @@ static const ConnectionMapping connectionMapping[] = {
 #ifdef HAVE_LIBFTDI
 	{ "ftdi",          HD44780_CT_FTDI,          IF_TYPE_USB,     hd_init_ftdi      },
 #endif
+	/* I2C connection types */
 #ifdef HAVE_I2C
 	{ "i2c",           HD44780_CT_I2C,           IF_TYPE_I2C,     hd_init_i2c       },
 #endif
-		 // add new connection types and their string specifier here
-		 // default, end of structure element (do not delete)
+	// add new connection types here
+	// ....
+	// default, end of structure element (do not delete)
 	{ NULL, HD44780_CT_UNKNOWN, IF_TYPE_UNKNOWN, NULL }
 };
 

@@ -456,16 +456,20 @@ HD44780_init(Driver *drvthis)
 
 
 /**
- * Common initialisation sequence - sets cursor off and not blinking,
- * clear display and homecursor
- * Does not set twoline mode nor small characters (5x8). The init function of
- * the connectiontype should do this.
+ * Common initialisation sequence:
+ * - set twoline mode, small (5x8) charactersi & 4- or 8-bit mode
+ * - set display on & cursor off, not blinking,
+ * - set output mode to lefto-to-right & turn off display scolling
+ * - clear display & move cursor home
+ * .
+ * \param p       Pointer to PrivateData structure.
+ * \param if_bit  Command bits for 4- resp. 8-bit mode
  */
 void
 common_init(PrivateData *p, unsigned char if_bit)
 {
 	if (p->ext_mode) {
-		// Set up extended mode */
+		// Set up extended mode
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | EXTREG);
 		p->hd44780_functions->uPause(p, 40);
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
@@ -475,6 +479,8 @@ common_init(PrivateData *p, unsigned char if_bit)
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause(p, 40);
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | NOSCROLL);
+	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, CLEAR);
 	p->hd44780_functions->uPause(p, 1600);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, HOMECURSOR);
@@ -483,7 +489,9 @@ common_init(PrivateData *p, unsigned char if_bit)
 
 
 /**
- * Delay a number of microseconds
+ * Delay a number of microseconds.
+ * \param p  Pointer to PrivateData structure.
+ * \param usecs  Number of micro-seconds to sleep.
  */
 void
 uPause(PrivateData *p, int usecs)
