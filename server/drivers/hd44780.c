@@ -479,10 +479,10 @@ common_init(PrivateData *p, unsigned char if_bit)
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause(p, 40);
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | NOSCROLL);
-	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, CLEAR);
 	p->hd44780_functions->uPause(p, 1600);
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | NOSCROLL);
+	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, HOMECURSOR);
 	p->hd44780_functions->uPause(p, 1600);
 }
