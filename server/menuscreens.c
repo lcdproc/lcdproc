@@ -465,6 +465,25 @@ void menuscreen_create_menu(void)
 #ifdef LCDPROC_TESTMENUS
 	MenuItem *test_item;
 	Menu *test_menu;
+
+	char testiso[] = {
+		'D', 'e', 'm', 'o', '\t',
+		/* #160 */
+		160, 161, 162, 163, 164, 165, 166, 167, '\t',
+		168, 169, 170, 171, 172, 173, 174, 175, '\t',
+		176, 177, 178, 179, 180, 181, 182, 183, '\t',
+		184, 185, 186, 187, 188, 189, 190, 191, '\t',
+		/* #192 */
+		192, 193, 194, 195, 196, 197, 198, 199, '\t',
+		200, 201, 202, 203, 204, 205, 206, 207, '\t',
+		208, 209, 210, 211, 212, 213, 214, 215, '\t',
+		216, 217, 218, 219, 220, 221, 222, 223, '\t',
+		/* #224 */
+		224, 225, 226, 227, 228, 229, 230, 231, '\t',
+		232, 233, 234, 245, 236, 237, 238, 239, '\t',
+		240, 241, 242, 243, 244, 245, 246, 247, '\t',
+		248, 249, 250, 251, 252, 253, 254, 255, '\0'
+	};	
 #endif /*LCDPROC_TESTMENUS*/
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
@@ -563,6 +582,9 @@ void menuscreen_create_menu(void)
 	test_item = menuitem_create_ip("", NULL, "IPv4", NULL, 0, "192.168.1.245");
 	menu_add_item(test_menu, test_item);
 	test_item = menuitem_create_ip("", NULL, "IPv6", NULL, 1, "1080:0:0:0:8:800:200C:417A");
+	menu_add_item(test_menu, test_item);
+	
+	test_item = menuitem_create_ring("", NULL, "Charset", NULL, testiso, 0);
 	menu_add_item(test_menu, test_item);
 #endif /*LCDPROC_TESTMENUS*/
 }
