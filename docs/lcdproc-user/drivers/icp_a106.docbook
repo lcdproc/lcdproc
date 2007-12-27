@@ -16,7 +16,7 @@ icp_a106 chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>

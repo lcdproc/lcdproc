@@ -16,7 +16,7 @@ text chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>

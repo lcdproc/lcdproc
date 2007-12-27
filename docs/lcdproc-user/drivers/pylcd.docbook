@@ -206,7 +206,7 @@ Email: info@coresystems.de  · http://www.coresystems.de/
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>

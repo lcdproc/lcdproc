@@ -16,7 +16,7 @@ Matrix Orbital GLK chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -26,7 +26,7 @@ Matrix Orbital GLK chipset.
 
 <varlistentry>
   <term>
-    <command>Contrast=</command>
+    <command>Contrast</command> =
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
@@ -38,7 +38,7 @@ Matrix Orbital GLK chipset.
 
 <varlistentry>
   <term>
-    <command>Speed=</command>
+    <command>Speed</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>9600</literal></arg>

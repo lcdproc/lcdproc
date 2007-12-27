@@ -25,7 +25,7 @@ You may find more information about the LCD on
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -35,7 +35,7 @@ You may find more information about the LCD on
 
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -49,7 +49,7 @@ You may find more information about the LCD on
 
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -59,7 +59,7 @@ You may find more information about the LCD on
 
 <varlistentry>
   <term>
-    <command>OffBrightness=</command>
+    <command>OffBrightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>

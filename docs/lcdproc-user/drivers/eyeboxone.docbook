@@ -68,7 +68,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -78,7 +78,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
 
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -92,7 +92,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
 
 <varlistentry>
   <term>
-    <command>Backlight=</command>
+    <command>Backlight</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -112,7 +112,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
 
 <varlistentry>
   <term>
-    <command>Cursor=</command>
+    <command>Cursor</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -128,7 +128,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
 
 <varlistentry>
   <term>
-    <command>Speed=</command>
+    <command>Speed</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>1200</literal></arg>
@@ -149,27 +149,27 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
 
 <varlistentry>
   <term>
-    <command>LeftKey=</command>
+    <command>LeftKey</command> =
     <arg choice="plain"><replaceable>D</replaceable></arg>
   </term>
   <term>
-    <command>RightKey=</command>
+    <command>RightKey</command> =
     <arg choice="plain"><replaceable>C</replaceable></arg>
   </term>
   <term>
-    <command>UpKey=</command>
+    <command>UpKey</command> =
     <arg choice="plain"><replaceable>A</replaceable></arg>
   </term>
   <term>
-    <command>DownKey=</command>
+    <command>DownKey</command> =
     <arg choice="plain"><replaceable>B</replaceable></arg>
   </term>
   <term>
-    <command>EscapeKey=</command>
+    <command>EscapeKey</command> =
     <arg choice="plain"><replaceable>P</replaceable></arg>
   </term>
   <term>
-    <command>EnterKey=</command>
+    <command>EnterKey</command> =
     <arg choice="plain"><replaceable></replaceable></arg>
   </term>
   <listitem><para>
@@ -180,7 +180,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
 
 <varlistentry>
   <term>
-    <command>keypad_test_mode=</command>
+    <command>keypad_test_mode</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>

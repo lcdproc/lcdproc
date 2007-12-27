@@ -38,7 +38,7 @@ For more information see the
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -49,7 +49,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Speed=</command>
+    <command>Speed</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>1200</literal></arg>

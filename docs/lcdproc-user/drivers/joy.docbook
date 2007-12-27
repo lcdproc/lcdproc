@@ -15,7 +15,7 @@ This section covers the joystick input driver for LCDd.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -25,11 +25,11 @@ This section covers the joystick input driver for LCDd.
 
 <varlistentry>
   <term>
-    <command>Map_Axis<replaceable>NUM</replaceable>neg=</command>
+    <command>Map_Axis<replaceable>NUM</replaceable>neg</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>Map_Axis<replaceable>NUM</replaceable>pos=</command>
+    <command>Map_Axis<replaceable>NUM</replaceable>pos</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem>
@@ -55,7 +55,7 @@ This section covers the joystick input driver for LCDd.
 
 <varlistentry>
   <term>
-    <command>Map_Button<replaceable>NUM</replaceable>=</command>
+    <command>Map_Button<replaceable>NUM</replaceable></command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem>

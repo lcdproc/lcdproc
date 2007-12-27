@@ -121,7 +121,7 @@ a standard character which looks good.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -135,27 +135,27 @@ a standard character which looks good.
 
 <varlistentry>
   <term>
-    <command>KeyMap_A=</command>
+    <command>KeyMap_A</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_B=</command>
+    <command>KeyMap_B</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_C=</command>
+    <command>KeyMap_C</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_D=</command>
+    <command>KeyMap_D</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_E=</command>
+    <command>KeyMap_E</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_F=</command>
+    <command>KeyMap_F</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>

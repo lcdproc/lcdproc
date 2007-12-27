@@ -16,7 +16,7 @@ svga chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Mode=</command>
+    <command>Mode</command> =
     <arg choice="plain"><replaceable>SCGALIB-MODE</replaceable></arg>
   </term>
   <listitem><para>
@@ -29,7 +29,7 @@ svga chipset.
 
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -43,7 +43,7 @@ svga chipset.
 
 <varlistentry>
   <term>
-    <command>Contrast=</command>
+    <command>Contrast</command> =
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
@@ -59,7 +59,7 @@ svga chipset.
 
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -69,7 +69,7 @@ svga chipset.
 
 <varlistentry>
   <term>
-    <command>OffBrightness=</command>
+    <command>OffBrightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>

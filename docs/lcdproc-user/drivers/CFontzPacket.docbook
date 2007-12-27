@@ -16,7 +16,7 @@ CFontzPacket chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Model=</command>
+    <command>Model</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>631</literal></arg>
@@ -34,7 +34,7 @@ CFontzPacket chipset.
 
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -45,7 +45,7 @@ CFontzPacket chipset.
 
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -61,7 +61,7 @@ CFontzPacket chipset.
 
 <varlistentry>
   <term>
-    <command>Contrast=</command>
+    <command>Contrast</command> =
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
@@ -73,7 +73,7 @@ CFontzPacket chipset.
 
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -83,7 +83,7 @@ CFontzPacket chipset.
 
 <varlistentry>
   <term>
-    <command>OffBrightness=</command>
+    <command>OffBrightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -95,7 +95,7 @@ CFontzPacket chipset.
 
 <varlistentry>
   <term>
-    <command>Speed=</command>
+    <command>Speed</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>1200</literal></arg>
@@ -115,7 +115,7 @@ CFontzPacket chipset.
 
 <varlistentry>
   <term>
-    <command>NewFirmware=</command>
+    <command>NewFirmware</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -131,7 +131,7 @@ CFontzPacket chipset.
 
 <varlistentry>
   <term>
-    <command>Reboot=</command>
+    <command>Reboot</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>

@@ -505,7 +505,7 @@ use the following circuit.
 <variablelist>
 <varlistentry>
   <term>
-    <command>CellSize=</command>
+    <command>CellSize</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -523,7 +523,7 @@ use the following circuit.
 
 <varlistentry>
   <term>
-    <command>ConnectionType=</command>
+    <command>ConnectionType</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>classic</emphasis></literal></arg>
@@ -565,7 +565,7 @@ use the following circuit.
 
 <varlistentry>
   <term>
-    <command>Port=</command>
+    <command>Port</command> =
     <arg choice="plain"><replaceable>PORT</replaceable></arg>
   </term>
   <listitem><para>
@@ -578,7 +578,7 @@ use the following circuit.
 
 <varlistentry>
   <term>
-    <command>Type=</command>
+    <command>Type</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>G321D</literal></arg>

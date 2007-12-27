@@ -39,8 +39,8 @@ Author
 
 <variablelist>
 <varlistentry>
-  <term>
-    <command>Driver=</command>
+<term>
+<command>Driver</command> =
     <arg choice="plain"><replaceable>GRAPHLCD-DRIVER</replaceable></arg>
   </term>
   <listitem><para>
@@ -58,7 +58,7 @@ Author
 
 <varlistentry>
   <term>
-    <command>UseFT2=</command>
+    <command>UseFT2</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -79,7 +79,7 @@ Author
 
 <varlistentry>
   <term>
-    <command>TextResolution=</command>
+    <command>TextResolution</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -96,7 +96,7 @@ Author
 
 <varlistentry>
   <term>
-    <command>FontFile=</command>
+    <command>FontFile</command> =
     <arg choice="plain"><replaceable>FILENAME</replaceable></arg>
   </term>
   <listitem><para>
@@ -106,12 +106,12 @@ Author
 </variablelist>
 
 
-The following parameters only apply if <command>UseFT2=</command><literal>yes</literal>:
+The following parameters only apply if <command>UseFT2</command> = <literal>yes</literal>:
 
 <variablelist>
 <varlistentry>
   <term>
-    <command>CharEncoding=</command>
+    <command>CharEncoding</command> =
     <arg choice="plain"><replaceable>CHARSET</replaceable></arg>
   </term>
   <listitem><para>
@@ -122,7 +122,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 
 <varlistentry>
   <term>
-    <command>MinFontFaceSize=</command>
+    <command>MinFontFaceSize</command> =
     <arg choice="plain">
       <replaceable>COLUMNS</replaceable>
       <literal>x</literal>
@@ -138,7 +138,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 ## optional:
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -150,7 +150,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 
 <varlistentry>
   <term>
-    <command>Contrast=</command>
+    <command>Contrast</command> =
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
@@ -162,7 +162,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 
 <varlistentry>
   <term>
-    <command>Backlight=</command>
+    <command>Backlight</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -177,7 +177,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 
 <varlistentry>
   <term>
-    <command>UpsideDown=</command>
+    <command>UpsideDown</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -192,7 +192,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 
 <varlistentry>
   <term>
-    <command>Invert=</command>
+    <command>Invert</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -207,7 +207,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 
 <varlistentry>
   <term>
-    <command>ShowDebugFrame=</command>
+    <command>ShowDebugFrame</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -225,7 +225,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 
 <varlistentry>
   <term>
-    <command>ShowBigBorder=</command>
+    <command>ShowBigBorder</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -240,7 +240,7 @@ The following parameters only apply if <command>UseFT2=</command><literal>yes</l
 
 <varlistentry>
   <term>
-    <command>ShowThinBorder=</command>
+    <command>ShowThinBorder</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>

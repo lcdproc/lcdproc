@@ -60,7 +60,7 @@
 <variablelist>
 <varlistentry>
   <term>
-    <command>Contrast=</command>
+    <command>Contrast</command> =
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
@@ -71,7 +71,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>KeyLights=</command>
+    <command>KeyLights</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -85,7 +85,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>Key0Light=</command>
+    <command>Key0Light</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -100,7 +100,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>Key1Light=</command>
+    <command>Key1Light</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -115,7 +115,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>Key2Light=</command>
+    <command>Key2Light</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -130,7 +130,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>Key3Light=</command>
+    <command>Key3Light</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -145,7 +145,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>Key4Light=</command>
+    <command>Key4Light</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -160,7 +160,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>Key5Light=</command>
+    <command>Key5Light</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -175,7 +175,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>KeyTimeout=</command>
+    <command>KeyTimeout</command> =
     <arg choice="plain"><replaceable>DURATION</replaceable></arg>
   </term>
   <listitem><para>

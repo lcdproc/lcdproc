@@ -16,7 +16,7 @@ CFontz633 chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -28,7 +28,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -42,7 +42,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Contrast=</command>
+    <command>Contrast</command> =
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
@@ -54,7 +54,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -64,7 +64,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>OffBrightness=</command>
+    <command>OffBrightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -76,7 +76,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Speed=</command>
+    <command>Speed</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>1200</literal></arg>
@@ -95,7 +95,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>NewFirmware=</command>
+    <command>NewFirmware</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -111,7 +111,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Reboot=</command>
+    <command>Reboot</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>

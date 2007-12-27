@@ -117,7 +117,7 @@ as well as Darwin/MacOS X.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -131,7 +131,7 @@ as well as Darwin/MacOS X.
 
 <varlistentry>
   <term>
-    <command>SerialNumber=</command>
+    <command>SerialNumber</command> =
     <arg choice="plain"><replaceable>SERIALNO</replaceable></arg>
   </term>
   <listitem><para>
@@ -142,7 +142,7 @@ as well as Darwin/MacOS X.
 
 <varlistentry>
   <term>
-    <command>Lastline=</command>
+    <command>Lastline</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>

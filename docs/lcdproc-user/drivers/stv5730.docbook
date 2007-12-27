@@ -16,7 +16,7 @@ stv5730 chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Port=</command>
+    <command>Port</command> =
     <arg choice="plain"><replaceable>PORT</replaceable></arg>
   </term>
   <listitem><para>

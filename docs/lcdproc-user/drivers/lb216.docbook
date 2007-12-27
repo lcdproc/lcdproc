@@ -38,7 +38,7 @@ made in australia :-)
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -48,7 +48,7 @@ made in australia :-)
 
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -58,7 +58,7 @@ made in australia :-)
 
 <varlistentry>
   <term>
-    <command>Speed=</command>
+    <command>Speed</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>2400</literal></arg>
@@ -74,7 +74,7 @@ made in australia :-)
 
 <varlistentry>
   <term>
-    <command>Reboot=</command>
+    <command>Reboot</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>

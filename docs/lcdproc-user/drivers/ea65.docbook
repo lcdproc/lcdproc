@@ -38,7 +38,7 @@
 <variablelist>
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -54,7 +54,7 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>OffBrightness=</command>
+    <command>OffBrightness</command> =
     <arg choice="plain"><replaceable>OFFBRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>

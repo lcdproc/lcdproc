@@ -54,7 +54,7 @@ For more information see the
 <variablelist>
 <varlistentry>
   <term>
-    <command>Model=</command>
+    <command>Model</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>12232</emphasis></literal></arg>
@@ -69,7 +69,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -80,7 +80,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -95,7 +95,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Speed=</command>
+    <command>Speed</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>9600</literal></arg>
@@ -111,7 +111,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Reboot=</command>
+    <command>Reboot</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -127,7 +127,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Keypad=</command>
+    <command>Keypad</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>
@@ -143,27 +143,27 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>KeyMap_A=</command>
+    <command>KeyMap_A</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_B=</command>
+    <command>KeyMap_B</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_C=</command>
+    <command>KeyMap_C</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_D=</command>
+    <command>KeyMap_D</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_E=</command>
+    <command>KeyMap_E</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>KeyMap_F=</command>
+    <command>KeyMap_F</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -217,7 +217,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>keypad_test_mode=</command>
+    <command>keypad_test_mode</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>

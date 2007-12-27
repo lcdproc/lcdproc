@@ -75,7 +75,7 @@ can be done by specifying "--enable-drivers=all" or by
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -89,7 +89,7 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <command>Port=</command>
+    <command>Port</command> =
     <arg choice="plain"><replaceable>PORT</replaceable></arg>
   </term>
   <listitem><para>
@@ -103,7 +103,7 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <command>ECPlpt=</command>
+    <command>ECPlpt</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -118,7 +118,7 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <command>graphic=</command>
+    <command>graphic</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>

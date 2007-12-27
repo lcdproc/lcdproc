@@ -80,7 +80,7 @@ Then you have to modify the <code>[lirc]</code> section of your
 <variablelist>
 <varlistentry>
   <term>
-    <command>lircrc=</command>
+    <command>lircrc</command> =
     <arg choice="plain"><replaceable>FILENAME</replaceable></arg>
   </term>
   <listitem>
@@ -98,7 +98,7 @@ Then you have to modify the <code>[lirc]</code> section of your
 
 <varlistentry>
   <term>
-    <command>Prog=</command>
+    <command>Prog</command> =
     <arg choice="plain"><replaceable>PROGRAM</replaceable></arg>
   </term>
   <listitem>

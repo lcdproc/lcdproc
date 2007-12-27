@@ -22,7 +22,7 @@ on-screen display (OSD) used by most modern televisions and video-players.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -36,7 +36,7 @@ on-screen display (OSD) used by most modern televisions and video-players.
 
 <varlistentry>
   <term>
-    <command>Offset=</command>
+    <command>Offset</command> =
     <arg choice="plain">
       <replaceable>X-OFFSET</replaceable>
       <literal>x</literal>
@@ -54,7 +54,7 @@ Offset=200x200
 
 <varlistentry>
   <term>
-    <command>Font=</command>
+    <command>Font</command> =
     <arg choice="plain"><replaceable>FONT</replaceable></arg>
   </term>
   <listitem>
@@ -74,7 +74,7 @@ Offset=200x200
 <!--
 <varlistentry>
   <term>
-    <command>Contrast=</command>
+    <command>Contrast</command> =
     <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
   </term>
   <listitem><para>
@@ -90,7 +90,7 @@ Offset=200x200
 
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -100,7 +100,7 @@ Offset=200x200
 
 <varlistentry>
   <term>
-    <command>OffBrightness=</command>
+    <command>OffBrightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>

@@ -16,7 +16,7 @@ mtc_s16209x chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -26,7 +26,7 @@ mtc_s16209x chipset.
 
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -36,7 +36,7 @@ mtc_s16209x chipset.
 
 <varlistentry>
   <term>
-    <command>Reboot=</command>
+    <command>Reboot</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>yes</literal></arg>

@@ -58,7 +58,7 @@ USB library.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -74,7 +74,7 @@ USB library.
 </varlistentry>
 <varlistentry>
   <term>
-    <command>VendorID=</command>
+    <command>VendorID</command> =
     <arg choice="plain">
       <replaceable>VENDORID</replaceable>
     </arg>
@@ -94,7 +94,7 @@ USB library.
 </varlistentry>
 <varlistentry>
   <term>
-    <command>ProductID=</command>
+    <command>ProductID</command> =
     <arg choice="plain">
       <replaceable>PRODUCTID</replaceable>
     </arg>
@@ -114,7 +114,7 @@ USB library.
 </varlistentry>
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem>

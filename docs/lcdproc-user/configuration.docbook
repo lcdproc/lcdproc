@@ -132,7 +132,7 @@ settings for the LCDproc server <application>LCDd</application>.
 <variablelist>
 <varlistentry>
   <term>
-    <command>DriverPath=</command>
+    <command>DriverPath</command> =
     <arg choice="plain"><replaceable>DRIVERPATH</replaceable></arg>
   </term>
   <listitem><para>
@@ -147,7 +147,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Driver=</command>
+    <command>Driver</command> =
     <arg choice="plain"><replaceable>DRIVERNAME</replaceable></arg>
   </term>
   <listitem>
@@ -173,7 +173,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Bind=</command>
+    <command>Bind</command> =
     <arg choice="plain"><replaceable>ADDRESS</replaceable></arg>
   </term>
   <listitem>
@@ -192,7 +192,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Port=</command>
+    <command>Port</command> =
     <arg choice="plain"><replaceable>PORTNUMBER</replaceable></arg>
   </term>
   <listitem>
@@ -209,7 +209,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>ReportLevel=</command>
+    <command>ReportLevel</command> =
     <arg choice="plain"><replaceable>LEVEL</replaceable></arg>
   </term>
   <listitem>
@@ -228,7 +228,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>ReportToSyslog=</command>
+    <command>ReportToSyslog</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
@@ -261,7 +261,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>User=</command>
+    <command>User</command> =
     <arg choice="plain"><replaceable>USER</replaceable></arg>
   </term>
   <listitem>
@@ -278,7 +278,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Foreground=</command>
+    <command>Foreground</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
@@ -301,7 +301,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Hello=</command>
+    <command>Hello</command> =
     <arg choice="plain"><replaceable>HELLOMSG</replaceable></arg>
   </term>
   <listitem>
@@ -333,7 +333,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>GoodBye=</command>
+    <command>GoodBye</command> =
     <arg choice="plain"><replaceable>GOODBYEMSG</replaceable></arg>
   </term>
   <listitem>
@@ -366,7 +366,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>WaitTime=</command>
+    <command>WaitTime</command> =
     <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
   </term>
   <listitem>
@@ -383,7 +383,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>ServerScreen=</command>
+    <command>ServerScreen</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -421,7 +421,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Backlight=</command>
+    <command>Backlight</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>off</literal></arg>
@@ -442,7 +442,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Heartbeat=</command>
+    <command>Heartbeat</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>off</literal></arg>
@@ -463,7 +463,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>TitleSpeed=</command>
+    <command>TitleSpeed</command> =
     <arg choice="plain"><replaceable>SPEED</replaceable></arg>
   </term>
   <listitem><para>
@@ -479,14 +479,14 @@ settings for the LCDproc server <application>LCDd</application>.
 
 
 <para>
-The <command>&hellip;Key=</command> lines define what the server does with keypresses that
+The <command>&hellip;Key</command> lines define what the server does with keypresses that
 don't go to any client.
 </para>
 
 <variablelist>
 <varlistentry>
   <term>
-    <command>ToggleRotateKey=</command>
+    <command>ToggleRotateKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -496,7 +496,7 @@ don't go to any client.
 
 <varlistentry>
   <term>
-    <command>PrevScreenKey=</command>
+    <command>PrevScreenKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -506,7 +506,7 @@ don't go to any client.
 
 <varlistentry>
   <term>
-    <command>NextScreenKey=</command>
+    <command>NextScreenKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -516,7 +516,7 @@ don't go to any client.
 
 <varlistentry>
   <term>
-    <command>ScrollUpKey=</command>
+    <command>ScrollUpKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -526,7 +526,7 @@ don't go to any client.
 
 <varlistentry>
   <term>
-    <command>ScrollDownKey=</command>
+    <command>ScrollDownKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -611,7 +611,7 @@ You can configure what keys the menu should use.
 <variablelist>
 <varlistentry>
   <term>
-    <command>MenuKey=</command>
+    <command>MenuKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem>
@@ -631,7 +631,7 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>EnterKey=</command>
+    <command>EnterKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -648,7 +648,7 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>UpKey=</command>
+    <command>UpKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -663,7 +663,7 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>DownKey=</command>
+    <command>DownKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -678,7 +678,7 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>LeftKey=</command>
+    <command>LeftKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>
@@ -691,7 +691,7 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>RightKey=</command>
+    <command>RightKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem><para>

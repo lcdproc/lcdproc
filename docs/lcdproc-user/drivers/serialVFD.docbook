@@ -120,9 +120,9 @@ Feedback is welcome.
 <para>
 If your display isn't working 100% satisfactorily you can add a new device with modified hardware
 commands to the driver if you want. To do that you have to add a new section to the display
-<command>Type=</command>-switch-case in <filename>./server/drivers/serialVFD-displays.c</filename>
+<command>Type</command>-switch-case in <filename>./server/drivers/serialVFD-displays.c</filename>
 and to write a new "load" function with the correct commands for the display.
-(Try which display <command>Type=</command> works best with your display, 
+(Try which display <command>Type</command> works best with your display, 
 then copy, rename and modify this function to your needs - that is the easiest way I guess.)
 </para>
 
@@ -356,7 +356,7 @@ optional
 
 <varlistentry>
   <term>
-    <command>use_parallel=</command>
+    <command>use_parallel</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
@@ -371,7 +371,7 @@ optional
 
 <varlistentry>
   <term>
-    <command>Port=</command>
+    <command>Port</command> =
     <arg choice="plain"><replaceable>PORT</replaceable></arg>
   </term>
   <listitem><para>
@@ -381,7 +381,7 @@ optional
 
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -392,7 +392,7 @@ optional
 
 <varlistentry>
   <term>
-    <command>Custom-Characters=</command>
+    <command>Custom-Characters</command> =
     <arg choice="plain"><replaceable>CUSTOM-CHARACTERS</replaceable></arg>
   </term>
   <listitem><para>
@@ -402,7 +402,7 @@ Number of Custom-Characters [default: Display-<command>Type</command> dependent]
 
 <varlistentry>
   <term>
-    <command>Size=</command>
+    <command>Size</command> =
     <arg choice="plain">
       <replaceable>WIDTH</replaceable>
       <literal>x</literal>
@@ -417,7 +417,7 @@ Number of Custom-Characters [default: Display-<command>Type</command> dependent]
 
 <varlistentry>
   <term>
-    <command>Type=</command>
+    <command>Type</command> =
     <arg choice="plain"><replaceable>CODE</replaceable></arg>
   </term>
   <listitem>
@@ -461,7 +461,7 @@ Number of Custom-Characters [default: Display-<command>Type</command> dependent]
 
 <varlistentry>
   <term>
-    <command>Brightness=</command>
+    <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -472,7 +472,7 @@ Set the initial brightness [default: 1000; legal: 0 - 1000]
 
 <varlistentry>
   <term>
-    <command>OffBrightness=</command>
+    <command>OffBrightness</command> =
     <arg choice="plain"><replaceable>OFFBRIGHTNESS</replaceable></arg>
   </term>
   <listitem><para>
@@ -485,7 +485,7 @@ Set the initial off-brightness [default: 0; legal: 0 - 1000].
 
 <varlistentry>
   <term>
-    <command>Speed=</command>
+    <command>Speed</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal>1200</literal></arg>
@@ -504,7 +504,7 @@ Set the initial off-brightness [default: 0; legal: 0 - 1000].
 
 <varlistentry>
   <term>
-    <command>ISO_8859_1=</command>
+    <command>ISO_8859_1</command> =
     <arg choice="plain">
     <group choice="req">
       <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>

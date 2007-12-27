@@ -16,7 +16,7 @@ lcdm001 chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -26,19 +26,19 @@ lcdm001 chipset.
 
 <varlistentry>
   <term>
-    <command>PauseKey=</command>
+    <command>PauseKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>BackKey=</command>
+    <command>BackKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>ForwardKey=</command>
+    <command>ForwardKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <term>
-    <command>MainMenuKey=</command>
+    <command>MainMenuKey</command> =
     <arg choice="plain"><replaceable>KEY</replaceable></arg>
   </term>
   <listitem>

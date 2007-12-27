@@ -67,7 +67,7 @@ The keys are mapped according to the following table:
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device=</command>
+    <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
   <listitem><para>
@@ -77,7 +77,7 @@ The keys are mapped according to the following table:
 
 <varlistentry>
   <term>
-    <command>Config=</command>
+    <command>Config</command> =
     <arg choice="plain"><replaceable>FILENAME</replaceable></arg>
   </term>
   <listitem><para>
