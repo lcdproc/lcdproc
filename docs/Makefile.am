@@ -7,7 +7,6 @@ doxygen_input = header.html footer.html
 EXTRA_DIST = README.dg \
 	README.dg2 \
 	README.glcdlib \
-	README.imon \
 	menustuff.txt \
 	netstuff.txt \
 	lcdproc.1.in \
