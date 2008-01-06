@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/utsname.h>
 #include <signal.h>
 #include <time.h>
@@ -32,8 +33,12 @@
 #if !defined(SYSCONFDIR)
 # define SYSCONFDIR	"/etc"
 #endif
+#if !defined(PIDFILEDIR)
+# define PIDFILEDIR	"/var/run"
+#endif
 
 #define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdexec.conf"
+#define DEFAULT_PIDFILE		PIDFILEDIR "/lcdexec.pid"
 
 
 /** information about a process started by lcdexec */
@@ -52,7 +57,7 @@ typedef struct ProcInfo {
 char * help_text =
 "lcdexec - LCDproc client to execute commands from the LCDd menu\n"
 "\n"
-"Copyright (c) 2002, Joris Robijn, 2006 Peter Marschall.\n"
+"Copyright (c) 2002, Joris Robijn, 2006,7 Peter Marschall.\n"
 "This program is released under the terms of the GNU General Public License.\n"
 "\n"
 "Usage: lcdexec [<options>]\n"
@@ -76,10 +81,11 @@ int port = UNSET_INT;
 int foreground = FALSE;
 static int report_level = UNSET_INT;
 static int report_dest = UNSET_INT;
+char *pidfile = NULL;
 char *displayname = NULL;
 char *default_shell = NULL;
 
-/* Other variables */
+/* Other global variables */
 MenuEntry *main_menu = NULL;	/**< pointer to the main menu */
 ProcInfo *proc_queue = NULL;	/**< pointer to the list of executed processes */
 
@@ -88,9 +94,12 @@ int lcd_hgt = 0;		/**< LCD display height reported by the server */
 
 int sock = -1;			/**< socket to connect to server */
 
+int Quit = 0;			/**< indicate end of main loop */
+
 
 /* Function prototypes */
-static void sigchld_handler(int);
+static void exit_program(int val);
+static void sigchld_handler(int signal);
 static int process_command_line(int argc, char **argv);
 static int process_configfile(char * configfile);
 static int connect_and_setup(void);
@@ -128,7 +137,29 @@ int main(int argc, char **argv)
 		if (daemon(1,1) != 0) {
 			report(RPT_ERR, "Error: daemonize failed");
 		}
+
+		if (pidfile != NULL) {
+			FILE *pidf = fopen(pidfile, "w");
+
+			if (pidf) {
+				fprintf(pidf, "%d\n", (int) getpid());
+				fclose(pidf);
+			} else {
+				fprintf(stderr, "Error creating pidfile %s: %s\n",
+					pidfile, strerror(errno));
+				return(EXIT_FAILURE);
+			}
+		}
 	}
+
+	/* setup signal handlers for common signals */
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sa.sa_handler = exit_program;
+	sigaction(SIGINT, &sa, NULL);	// Ctrl-C
+	sigaction(SIGTERM, &sa, NULL);	// "regular" kill
+	sigaction(SIGHUP, &sa, NULL);	// kill -HUP
+	sigaction(SIGKILL, &sa, NULL);	// kill -9 [cannot be trapped; but ...]
 
 	/* setup signal handler for children to avoid zombies */
 	sigemptyset(&sa.sa_mask);
@@ -138,7 +169,18 @@ int main(int argc, char **argv)
 
 	main_loop();
 
-	return 0;
+	exit_program(EXIT_SUCCESS);
+}
+
+
+static void exit_program(int val)
+{
+	//printf("exit program\n");
+	Quit = 1;
+	sock_close(sock);
+	if ((foreground != TRUE) && (pidfile != NULL))
+		unlink(pidfile);
+	exit(val);
 }
 
 
@@ -215,7 +257,7 @@ static int process_command_line(int argc, char **argv)
 			break;
 		  case 'h':
 			fprintf(stderr, "%s", help_text);
-			exit(0);
+			exit(EXIT_SUCCESS);
 		  case ':':
 			report(RPT_ERR, "Missing option argument for %c", optopt);
 			error = -1;
@@ -258,6 +300,9 @@ static int process_configfile(char *configfile)
 	}
 	if (foreground != TRUE) {
 		foreground = config_get_bool(progname, "Foreground", 0, FALSE);
+	}
+	if (pidfile == NULL) {
+		pidfile = strdup(config_get_string(progname, "PidFile", 0, DEFAULT_PIDFILE));
 	}
 
 	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
@@ -453,8 +498,7 @@ static int process_response(char *str)
 	else if (strcmp(argv[0], "bye") == 0) {
 		// TODO: make it better
 		report(RPT_INFO, "Server said: \"%s\"", str);
-		sock_close(sock);
-		exit(EXIT_SUCCESS);
+		exit_program(EXIT_SUCCESS);
 	}	
 	else if (strcmp(argv[0], "huh?") == 0) {
 		/* Report errors */
@@ -535,7 +579,7 @@ static int exec_command(MenuEntry *cmd)
 		  case 0:
 			/* We're the child: execute the command */
 			execve(argv[0], (char **) argv, envp);
-			exit(0);
+			exit(EXIT_SUCCESS);
 			break;
 		  default:
 			/* We're the parent: setup the ProcInfo structure */
@@ -644,7 +688,7 @@ static int main_loop(void)
 	int status_delay = 0;
 
 	/* Continuously check if we get a menu event... */
-	while ((num_bytes = sock_recv_string(sock, buf, sizeof(buf)-1)) >= 0) {
+	while (!Quit && ((num_bytes = sock_recv_string(sock, buf, sizeof(buf)-1)) >= 0)) {
 		if (num_bytes == 0) {
 			ProcInfo *p;
 
@@ -690,7 +734,8 @@ static int main_loop(void)
 		}
 	}
 
-	report(RPT_ERR, "Server disconnected (or connection error)");
+	if (!Quit)
+		report(RPT_ERR, "Server disconnected (or connection error)");
 	return 0;
 }
 

@@ -12,7 +12,7 @@ if DARWIN
 AM_LDFLAGS = -framework CoreFoundation -framework IOKit
 endif
 
-AM_CPPFLAGS = -I$(top_srcdir) -DSYSCONFDIR=\"$(sysconfdir)\"
+AM_CPPFLAGS = -I$(top_srcdir) -DSYSCONFDIR=\"$(sysconfdir)\" -DPIDFILEDIR=\"$(pidfiledir)\"
 
 
 EXTRA_DIST = $(sysconf_DATA)

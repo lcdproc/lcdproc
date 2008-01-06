@@ -33,7 +33,7 @@ static int read_connect_string(void);
 static int split(char *str, char delim, char *parts[], int maxparts);
 
 
-int connect_and_setup(void)
+int setup_connection(void)
 {
 	char buf[200];
 	int i;
@@ -78,6 +78,14 @@ int connect_and_setup(void)
 		report(RPT_ERR, "Could not send to to LCDd");
 		return -1;
 	}
+
+	return 0;
+}
+
+
+int teardown_connection(void)
+{
+	sock_close(sock);
 
 	return 0;
 }

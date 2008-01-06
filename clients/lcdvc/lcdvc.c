@@ -14,6 +14,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <signal.h>
 #include <fcntl.h>
 #include <errno.h>
 
@@ -30,8 +31,12 @@
 #if !defined(SYSCONFDIR)
 # define SYSCONFDIR	"/etc"
 #endif
+#if !defined(PIDFILEDIR)
+# define PIDFILEDIR	"/var/run"
+#endif
 
 #define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdvc.conf"
+#define DEFAULT_PIDFILE		PIDFILEDIR "/lcdvc.pid"
 
 
 char *help_text =
@@ -50,9 +55,6 @@ char *help_text =
 "    -s <0|1>            Report to syslog (1) or stderr (0, default)\n"
 "    -h                  Show this help\n";
 
-char *progname = "lcdvc";
-char *configfile = UNSET_STR;
-
 /* Variables set by config */
 int foreground = FALSE;
 static int report_level = UNSET_INT;
@@ -61,7 +63,15 @@ char *vcsa_device = UNSET_STR;
 char *vcs_device = UNSET_STR;
 char *keys[4];
 
+/* Other global variables */
+char *progname = "lcdvc";
+char *pidfile = NULL;
+char *configfile = UNSET_STR;
+
+int Quit = 0;			/**< indicate end of main loop */
+
 /* Function prototypes */
+static void exit_program(int val);
 static int process_command_line(int argc, char **argv);
 static int process_configfile(char *configfile);
 static int main_loop(void);
@@ -70,6 +80,7 @@ static int main_loop(void);
 int main(int argc, char **argv)
 {
 	int e = 0;
+	struct sigaction sa;
 
 	CHAIN( e, process_command_line( argc, argv ));
 	if (strcmp( configfile, UNSET_STR ) == 0) {
@@ -83,18 +94,51 @@ int main(int argc, char **argv)
 	set_reporting( progname, report_level, report_dest );
 
 	CHAIN( e, open_vcs() );
-	CHAIN( e, connect_and_setup() );
+	CHAIN( e, setup_connection() );
 	CHAIN_END( e );
 
 	if (foreground != TRUE) {
 		if (daemon(1,1) != 0) {
 			report(RPT_ERR, "Error: daemonize failed");
 		}
+
+		if (pidfile != NULL) {
+			FILE *pidf = fopen(pidfile, "w");
+
+			if (pidf) {
+				fprintf(pidf, "%d\n", (int) getpid());
+				fclose(pidf);
+			} else {
+				fprintf(stderr, "Error creating pidfile %s: %s\n",
+					pidfile, strerror(errno));
+				return(EXIT_FAILURE);
+			}
+		}
 	}
+
+	/* setup signal handlers for common signals */
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_RESTART;
+	sa.sa_handler = exit_program;
+	sigaction(SIGINT, &sa, NULL);	// Ctrl-C
+	sigaction(SIGTERM, &sa, NULL);	// "regular" kill
+	sigaction(SIGHUP, &sa, NULL);	// kill -HUP
+	sigaction(SIGKILL, &sa, NULL);	// kill -9 [cannot be trapped; but ...]
 
 	main_loop();
 
-	return 0;
+	exit_program(EXIT_SUCCESS);
+}
+
+
+static void exit_program(int val)
+{
+	//printf("exit program\n");
+	Quit = 1;
+	teardown_connection();
+	if ((foreground != TRUE) && (pidfile != NULL))
+		unlink(pidfile);
+	exit(val);
 }
 
 
@@ -113,7 +157,7 @@ static int process_command_line(int argc, char **argv)
 		switch (c) {
 		  case 'h':
 			fprintf(stderr, "%s", help_text);
-			exit( 0 );
+			exit(EXIT_SUCCESS);
 		  case 'c':
 			configfile = strdup(optarg);
 			break;
@@ -194,6 +238,10 @@ static int process_configfile(char *configfile)
 	if (foreground != TRUE) {
 		foreground = config_get_bool(progname, "Foreground", 0, FALSE);
 	}
+	if (pidfile == NULL) {
+		pidfile = strdup(config_get_string(progname, "PidFile", 0, DEFAULT_PIDFILE));
+	}
+
 	vcs_device = strdup(config_get_string(progname, "vcsDevice", 0, "/dev/vcs"));
 	vcsa_device = strdup(config_get_string(progname, "vcsaDevice", 0, "/dev/vcsa"));
 
@@ -214,7 +262,7 @@ static int main_loop(void)
 
 	/* Continuously check if we get a menu event... */
 
-	while ((num_bytes = read_response(buf, sizeof(buf)-1)) >= 0) {
+	while (!Quit && ((num_bytes = read_response(buf, sizeof(buf)-1)) >= 0)) {
 		if (num_bytes != 0) {
 			process_response(buf);
 		}
@@ -233,7 +281,8 @@ static int main_loop(void)
 		}
 	}
 
-	report(RPT_WARNING, "Server disconnected %d", num_bytes);
+	if (!Quit)
+		report(RPT_WARNING, "Server disconnected %d", num_bytes);
 	return 0;
 }
 

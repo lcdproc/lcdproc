@@ -70,11 +70,15 @@ static int process_configfile(char *cfgfile);
 #if !defined(SYSCONFDIR)
 # define SYSCONFDIR	"/etc"
 #endif
+#if !defined(PIDFILEDIR)
+# define PIDFILEDIR	"/var/run"
+#endif
 
 #define UNSET_INT		-1
 #define UNSET_STR		"\01"
 #define DEFAULT_SERVER		"127.0.0.1"
 #define DEFAULT_CONFIGFILE	SYSCONFDIR "/lcdproc.conf"
+#define DEFAULT_PIDFILE		PIDFILEDIR "/lcdproc.pid"
 #define DEFAULT_REPORTDEST	RPT_DEST_STDERR
 #define DEFAULT_REPORTLEVEL	RPT_WARNING
 
@@ -111,6 +115,7 @@ int port	= LCDPORT;
 int foreground 	= FALSE;
 static int report_level = UNSET_INT;
 static int report_dest 	= UNSET_INT;
+char *pidfile = NULL;
 char *configfile = NULL;
 char *displayname = NULL;
 
@@ -243,7 +248,7 @@ main(int argc, char **argv)
 	/* Read config file*/
 	cfgresult = process_configfile(configfile);
 	if (cfgresult < 0) {
-		fprintf(stderr, "Error reading config file");
+		fprintf(stderr, "Error reading config file\n");
 		exit(EXIT_FAILURE);
 	}	
 
@@ -303,8 +308,21 @@ main(int argc, char **argv)
 
 	if (foreground != TRUE) {
 		if (daemon(1,0) != 0) {
-			fprintf(stderr, "Error: daemonize failed");
+			fprintf(stderr, "Error: daemonize failed\n");
 			return(EXIT_FAILURE);
+		}
+
+		if (pidfile != NULL) {
+			FILE *pidf = fopen(pidfile, "w");
+
+			if (pidf) {
+				fprintf(pidf, "%d\n", (int) getpid());
+				fclose(pidf);
+			} else {
+				fprintf(stderr, "Error creating pidfile %s: %s\n",
+					pidfile, strerror(errno));
+				return(EXIT_FAILURE);
+			}
 		}
 	}	
 
@@ -314,10 +332,8 @@ main(int argc, char **argv)
 	// And spew stuff!
 	main_loop();
 
-	// Clean up
+	// Clean up & exit
 	exit_program(EXIT_SUCCESS);
-
-	return(0);
 }
 
 
@@ -371,6 +387,9 @@ process_configfile(char *configfile)
 	}
 	if (foreground != TRUE) {
 		foreground = config_get_bool(progname, "Foreground", 0, FALSE);
+	}
+	if (pidfile == NULL) {
+		pidfile = strdup(config_get_string(progname, "PidFile", 0, DEFAULT_PIDFILE));
 	}
 	if (islow < 0) {
 		islow = config_get_int(progname, "Delay", 0, -1);
@@ -455,6 +474,8 @@ exit_program(int val)
 	Quit = 1;
 	sock_close(sock);
 	mode_close();
+	if ((foreground != TRUE) && (pidfile != NULL))
+		unlink(pidfile);
 	exit(val);
 }
 
