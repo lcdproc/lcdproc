@@ -14,8 +14,9 @@
 
 # local variables
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
-NAME=lcdvc
-DAEMON=/usr/bin/$NAME
+NAME=$(basename $0 | sed -e 's/^[SK][0-9][0-9]//')
+NAME=${NAME:-lcdvc}
+DAEMON=/usr/bin/lcdvc
 DESC="LCDproc virtual console"
 DEFAULTS=/etc/default/$NAME
 START=no
