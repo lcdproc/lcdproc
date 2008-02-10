@@ -329,9 +329,9 @@ render_vbar(Widget *w, int left, int top, int right, int bottom)
 	if ((w != NULL) && (w->x > 0) && (w->y > 0)) {
 		if (w->length > 0) {
 			int full_len = display_props->height;
-			int promille = (long) 1000 * w->length / display_props->cellheight / full_len;
+			int promille = (long) 1000 * w->length / (display_props->cellheight * full_len);
 
-			drivers_vbar(w->x, display_props->height, full_len, promille, BAR_PATTERN_FILLED);
+			drivers_vbar(w->x + left, w->y + top, full_len, promille, BAR_PATTERN_FILLED);
 		}
 		else if (w->length < 0) {
 			/* TODO:  Rearrange stuff to get down-extending
