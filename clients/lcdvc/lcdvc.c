@@ -65,8 +65,9 @@ char *keys[4];
 
 /* Other global variables */
 char *progname = "lcdvc";
-char *pidfile = NULL;
 char *configfile = UNSET_STR;
+char *pidfile = NULL;
+int pidfile_written = FALSE;
 
 int Quit = 0;			/**< indicate end of main loop */
 
@@ -108,6 +109,7 @@ int main(int argc, char **argv)
 			if (pidf) {
 				fprintf(pidf, "%d\n", (int) getpid());
 				fclose(pidf);
+				pidfile_written = TRUE;
 			} else {
 				fprintf(stderr, "Error creating pidfile %s: %s\n",
 					pidfile, strerror(errno));
@@ -136,7 +138,7 @@ static void exit_program(int val)
 	//printf("exit program\n");
 	Quit = 1;
 	teardown_connection();
-	if ((foreground != TRUE) && (pidfile != NULL))
+	if ((foreground != TRUE) && (pidfile != NULL) && (pidfile_written == TRUE))
 		unlink(pidfile);
 	exit(val);
 }

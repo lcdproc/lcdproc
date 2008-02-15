@@ -115,8 +115,9 @@ int port	= LCDPORT;
 int foreground 	= FALSE;
 static int report_level = UNSET_INT;
 static int report_dest 	= UNSET_INT;
-char *pidfile = NULL;
 char *configfile = NULL;
+char *pidfile = NULL;
+int pidfile_written = FALSE;
 char *displayname = NULL;
 
 
@@ -318,6 +319,7 @@ main(int argc, char **argv)
 			if (pidf) {
 				fprintf(pidf, "%d\n", (int) getpid());
 				fclose(pidf);
+				pidfile_written = TRUE;
 			} else {
 				fprintf(stderr, "Error creating pidfile %s: %s\n",
 					pidfile, strerror(errno));
@@ -474,7 +476,7 @@ exit_program(int val)
 	Quit = 1;
 	sock_close(sock);
 	mode_close();
-	if ((foreground != TRUE) && (pidfile != NULL))
+	if ((foreground != TRUE) && (pidfile != NULL) && (pidfile_written == TRUE))
 		unlink(pidfile);
 	exit(val);
 }
