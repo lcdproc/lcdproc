@@ -133,8 +133,8 @@ static void CwLnx_set_char_unrestricted(Driver *drvthis, int n, unsigned char *d
 #define LCD_LIGHT_OFF		70
 #define LCD_LIGHT_BRIGHTNESS	65
 #define LCD_CLEAR		88
-#define LCD_SET_INSERT		71
-#define LCD_INIT_INSERT		72
+#define LCD_SET_INSERT		71	/* go to X,Y */
+#define LCD_INIT_INSERT		72	/* go to home */
 #define LCD_SET_BAUD		57
 #define LCD_ENABLE_WRAP		67
 #define LCD_DISABLE_WRAP	68
@@ -142,7 +142,13 @@ static void CwLnx_set_char_unrestricted(Driver *drvthis, int n, unsigned char *d
 #define LCD_ENABLE_SCROLL	81
 #define LCD_DISABLE_SCROLL	82
 #define LCD_SOFT_RESET		86
-#define LCD_OFF_CURSOR		72
+#define LCD_OFF_CURSOR		72	/* is this correct? */
+#define LCD_UNDERLINE_CURSOR_ON	74	/* set cursor on at X,Y */
+#define	LCD_UNDERLINE_CURSOR_OFF	75
+#define LCD_MOVE_CURSOR_LEFT	76
+#define LCD_MOVE_CURSOR_RIGHT	77
+#define LCD_INVERSE_TEXT_ON	102
+#define LCD_INVERSE_TEXT_OFF	103
 
 #define LCD_PUT_PIXEL		112
 #define LCD_CLEAR_PIXEL		113
@@ -467,12 +473,12 @@ CwLnx_init(Driver *drvthis)
 
     /* Read config file */
 
-    /* Which model is it (1602 or 12232)? */
+    /* Which model is it (1602, 12232 or 12832)? */
     tmp = drvthis->config_get_int(drvthis->name, "Model", 0, 12232);
     debug(RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, tmp);
-    if ((tmp != 1602) && (tmp != 12232)) {
+    if ((tmp != 1602) && (tmp != 12232) && (tmp != 12832)) {
 	tmp = 12232;
-	report(RPT_WARNING, "%s: Model must be 12232 or 1602; using default %d",
+	report(RPT_WARNING, "%s: Model must be 12232, 12832 or 1602; using default %d",
 		drvthis->name, tmp);
     }
     p->model = tmp;
@@ -488,6 +494,11 @@ CwLnx_init(Driver *drvthis)
 	default_speed = DEFAULT_SPEED_12232;
 	p->cellwidth = DEFAULT_CELL_WIDTH_12232;
 	p->cellheight = DEFAULT_CELL_HEIGHT_12232;
+    } else if (p->model == 12832) {
+	default_size = DEFAULT_SIZE_12832;
+	default_speed = DEFAULT_SPEED_12832;
+	p->cellwidth = DEFAULT_CELL_WIDTH_12832;
+	p->cellheight = DEFAULT_CELL_HEIGHT_12832;
     }
 
     /* Which device should be used */

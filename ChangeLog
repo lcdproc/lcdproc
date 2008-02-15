@@ -45,6 +45,7 @@ v.0.5dev (ongoing development)
  + i2500vfd driver for a graphocal Noritake VFD (Thomas Jarosch)
  * hd44780 driver: more complete initialization (idea by Pierre Ossman)
  * hd44780 driver: "euro" character mapping table (Markus Dolze)
+ * CwLnx driver: support for CW12832
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
