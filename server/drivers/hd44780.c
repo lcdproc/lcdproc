@@ -849,6 +849,11 @@ HD44780_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
+	// not sure if this is the correct solution.
+	// alternative: return immediately	
+	if (!p->have_backlight)
+		on = 0;
+
 	if (p->hd44780_functions->backlight != NULL)
 		p->hd44780_functions->backlight(p, on);
 }
