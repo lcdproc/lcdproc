@@ -2,8 +2,54 @@
 <title>The CFontzPacket Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-CFontzPacket chipset.
+<ulink url="http://www.cwcrystalfontz.com/">CrystalFontz</ulink> offers a wide
+range of character and graphical LCD modules.
+The <code>CFontzPacket</code> driver supports the modules that communicate
+with the host computer using a packet-based communications protocol
+with 16-bit CRC (hence the driver name).
+</para>
+
+<para>
+Currently this line of modules comprises the models:
+
+<variablelist>
+<varlistentry>
+  <term>CFA-631</term>
+  <listitem>
+    <itemizedlist>
+      <listitem>20x2 character LCD with backlight</listitem>
+      <listitem>keypad with 4 keys: Up, Down, enter &amp; Escape</listitem>
+      <listitem>USB connection for data and power</listitem>
+      <listitem>mounting bracket to fit into 3,5" drive bays</listitem>
+    </itemizedlist>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>CFA-633</term>
+  <listitem>
+    <itemizedlist>
+      <listitem>16x2 character LCDi with backlight</listitem>
+      <listitem>keypad with 6 keys: 4 directions, Enter &amp; Escape</listitem>
+      <listitem>serial or USB connection</listitem>
+      <listitem>mounting bracket to fit into 5,25" drive bays</listitem>
+    </itemizedlist>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>CFA-635</term>
+  <listitem>
+    <itemizedlist>
+      <listitem>20x4 characters LCDi with backlight</listitem>
+      <listitem>keypad with 6 keys: 4 directions, Enter &amp; Escape</listitem>
+      <listitem>USB connection for data and power</listitem>
+      <listitem>four bi-color LEDs to show status information</listitem>
+      <listitem>optional mounting bracket to fit into 5,25" drive bays</listitem>
+    </itemizedlist>
+  </listitem>
+</varlistentry>
+</variablelist>
 </para>
 
 <!-- ## CrystalFontz packet driver (for CF631, CF633 &amp; CF635) ## -->
@@ -26,9 +72,10 @@ CFontzPacket chipset.
     </arg>
   </term>
   <listitem><para>
-    Select the LCD model [default: <literal>633</literal>; legal: <literal>631</literal>,
-                                                                  <literal>633</literal>,
-								  <literal>635</literal>]
+    Select the LCD model that is connected.
+    Legal values for this option are <literal>631</literal>,
+    <literal>633</literal>, or <literal>635</literal>,
+    with the default being <literal>633</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -37,10 +84,19 @@ CFontzPacket chipset.
     <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
-  <listitem><para>
-    Select the output device to use [default: <filename>/dev/lcd</filename>]
-    May be a serial device or a USB device in serial emulation mode.
-  </para></listitem>
+  <listitem>
+    <para>
+      Select the output device to use.
+      It may be a serial device or a USB device in serial emulation mode.
+      If not given, it defaults to <filename>/dev/lcd</filename>.
+    </para>
+    <note>
+      <para>
+        Mac OS X users may need to use one of the <filename>/dev/cu</filename>
+        devices instead of the <filename>/dev/tty</filename> ones.
+      </para>
+    </note>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
