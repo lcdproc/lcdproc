@@ -1,0 +1,52 @@
+<sect1 id="mx5000-howto">
+<title>The MX5000 Driver</title>
+
+<para>
+This section talks about using LCDproc with LCD displays on Logitech MX5000 
+keyboards.
+</para>
+
+<sect2 id="mx5000-features">
+<title>Features</title>
+
+<para>
+This drivers uses the library from mx5000tools.
+</para>
+
+</sect2>
+
+<sect2 id="mx5000-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="mx5000-config-section">
+<title>[mx5000]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Device</command> =
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the output device to use [default: <filename>/dev/hiddev0</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>WaitAfterRefresh</command> =
+    <arg choice="plain"><replaceable>MS</replaceable></arg>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the time (in ms) to wait after each screen sent to the keyboard.
+    Default is 1000ms.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+</sect1>
+

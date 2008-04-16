@@ -242,6 +242,9 @@ Thomas Jarosch
 	- HD44780 connection type for a USB connection via a FTDI FT2232D chip
 	- i2500vfd driver
 
+Christian Jodar
+	- mx5000 driver
+
 
 
 Further developers in the sourceforge lcdproc team:

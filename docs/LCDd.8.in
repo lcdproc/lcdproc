@@ -210,6 +210,9 @@ MTC_S16209x LCD displays by Microtips Technology Inc
 .B MtxOrb
 Matrix Orbital displays (except Matrix Orbital GLK displays)
 .TP
+.B mx5000
+LCD display on the Logitech MX5000 keyboard
+.TP
 .B NoritakeVFD
 Noritake VFD Device CU20045SCPB-T28A
 .TP

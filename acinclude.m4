@@ -11,7 +11,7 @@ AC_ARG_ENABLE(drivers,
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,]
 	[                    EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,]
 	[                    irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,]
-	[                    mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,]
+	[                    mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,]
 	[                    sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,]
 	[                    t6963,text,tyan,ula200,xosd,i2500vfd]
 	[                  'all' compiles all drivers;]
@@ -19,7 +19,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd,i2500vfd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd,i2500vfd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -308,6 +308,21 @@ dnl			else
 			DRIVERS="$DRIVERS MtxOrb${SO}"
 			actdrivers=["$actdrivers MtxOrb"]
 			;;
+		mx5000)
+			AC_CHECK_HEADERS([libmx5000/mx5000.h],[
+				AC_CHECK_LIB(mx5000, mx5000_sc_new_static,[
+					LIBMX5000="-lmx5000"
+					DRIVERS="$DRIVERS mx5000${SO}"
+					actdrivers=["$actdrivers mx5000"]
+				],[
+dnl				else
+					AC_MSG_WARN([The mx5000 driver needs the mx5000tools library])
+				])
+			],[
+dnl			else
+				AC_MSG_WARN([The mx5000 driver needs libmx5000/mx5000.h])
+			])
+			;;
 		NoritakeVFD)
 			DRIVERS="$DRIVERS NoritakeVFD${SO}"
 			actdrivers=["$actdrivers NoritakeVFD"]
@@ -454,6 +469,7 @@ AC_SUBST(LIBGLCD)
 AC_SUBST(LIBFTDI)
 AC_SUBST(LIBXOSD)
 AC_SUBST(LIBPTHREAD_LIBS)
+AC_SUBST(LIBMX5000)
 ])
 
 
