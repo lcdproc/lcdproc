@@ -111,6 +111,7 @@ typedef struct driver_private_data {
 	// FTDI connection type
 	struct ftdi_context ftdic, ftdic2;
 
+	int ftdi_mode;
 	int ftdi_line_RS;
 	int ftdi_line_RW;
 	int ftdi_line_EN;
