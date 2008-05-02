@@ -194,6 +194,7 @@ main(int argc, char **argv)
 	signal(SIGINT, exit_program);	// Ctrl-C
 	signal(SIGTERM, exit_program);	// "regular" kill
 	signal(SIGHUP, exit_program);	// kill -HUP
+	signal(SIGPIPE, exit_program);	// write to closed socket
 	signal(SIGKILL, exit_program);	// kill -9 [cannot be trapped; but ...]
 
 	/* No error output from getopt */
@@ -472,7 +473,6 @@ exit_program(int val)
 	 */
 	eyebox_clear();
 #endif
-	//printf("exit program\n");
 	Quit = 1;
 	sock_close(sock);
 	mode_close();

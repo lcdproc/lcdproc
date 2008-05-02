@@ -161,6 +161,7 @@ int main(int argc, char **argv)
 	sigaction(SIGINT, &sa, NULL);	// Ctrl-C
 	sigaction(SIGTERM, &sa, NULL);	// "regular" kill
 	sigaction(SIGHUP, &sa, NULL);	// kill -HUP
+	sigaction(SIGPIPE, &sa, NULL);	// write to closed socket
 	sigaction(SIGKILL, &sa, NULL);	// kill -9 [cannot be trapped; but ...]
 
 	/* setup signal handler for children to avoid zombies */
