@@ -1,11 +1,12 @@
 #! /bin/sh
 
-#### BEGIN INIT INFO
+### BEGIN INIT INFO
 # Provides:          lcdvc
 # Required-Start:    $syslog $local_fs $network $remote_fs
 # Required-Stop:     $syslog $local_fs $network $remote_fs
+# Should-Start:      LCDd
 # Default-Start:     2 3 4 5
-# Default-Stop:      S 0 1 6
+# Default-Stop:      0 1 6
 # Short-Description: LCDproc virtual console
 # Description:       Debian init script for lcdvc, the virtual
 #                    console client in the LCDproc suite
@@ -19,12 +20,27 @@ NAME=${NAME:-lcdvc}
 DAEMON=/usr/bin/lcdvc
 DESC="LCDproc virtual console"
 DEFAULTS=/etc/default/$NAME
+CONFIGFILE=/etc/lcdproc/$NAME.conf
+PIDFILE=/var/run/$NAME.pid
+OPTIONS=""
 START=no
 
 # Source defaults file; edit that file to configure this script.
 if [ -e "${DEFAULTS}" ]; then
     . "${DEFAULTS}"
 fi
+
+# try to get PID file name from config file
+if [ -f "${CONFIGFILE:=/etc/lcdproc/$NAME.conf}" ]; then
+  PIDFILE=`grep -i '^[:space:]*PidFile[:space:]*=' ${CONFIGFILE} \
+           | head -n1 \
+	   | cut -d= -f2- \
+	   | sed -e 's,^[:space:]*\(.*\)[:space:]*$,\1,'`
+  OPTIONS="${OPTIONS} -c ${CONFIGFILE}"
+fi
+
+# if necessary set default PID file name
+PIDFILE=${PIDFILE:-/var/run/$NAME.pid}
 
 # If we're not to start the daemon, simply exit
 if [ "${START}" != "yes" ]; then
@@ -41,12 +57,12 @@ test -x $DAEMON || exit 5
 case "$1" in
     start)
 	log_daemon_msg "Starting $DESC" "$NAME"
-	start_daemon $DAEMON $OPTIONS
+	start_daemon -p $PIDFILE $DAEMON $OPTIONS
 	log_end_msg $?
 	;;
     stop)
 	log_daemon_msg "Stopping $DESC" "$NAME"
-	killproc $DAEMON
+	killproc -p $PIDFILE $DAEMON
 	log_end_msg $?
 	;;
     restart|reload|force-reload)

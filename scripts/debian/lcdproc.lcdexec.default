@@ -3,6 +3,9 @@
 # shall lcdexec be started (yes/no)
 START=no
 
+# config file
+#CONFIGFILE=/etc/lcdproc/lcdexec.conf
+
 # options for lcdexec startup
 #OPTIONS=""
 

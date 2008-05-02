@@ -108,10 +108,10 @@ binary-arch: build install
 #	dh_installemacsen
 #	dh_installpam
 #	dh_installmime
-	dh_installinit	# for the lcdproc client
+	dh_installinit --update-rcd-params="defaults 21 79"	# for the lcdproc client
 	dh_installinit --name=LCDd
-	dh_installinit --name=lcdexec
-	dh_installinit --name=lcdvc
+	dh_installinit --name=lcdexec --update-rcd-params="defaults 21 79"
+	dh_installinit --name=lcdvc --update-rcd-params="defaults 21 79"
 #	dh_installcron
 #	dh_installinfo
 	dh_installman

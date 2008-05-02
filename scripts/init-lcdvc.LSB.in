@@ -1,9 +1,10 @@
 #! /bin/sh
 
-#### BEGIN INIT INFO
+### BEGIN INIT INFO
 # Provides:          lcdvc
 # Required-Start:    $syslog $local_fs $network $remote_fs
 # Required-Stop:     $syslog $local_fs $network $remote_fs
+# Should-Start:      LCDd
 # Default-Start:     2 3 4 5
 # Default-Stop:      S 0 1 6
 # Short-Description: LCDproc virtual console

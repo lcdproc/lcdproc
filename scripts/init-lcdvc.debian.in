@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-#### BEGIN INIT INFO
+### BEGIN INIT INFO
 # Provides:          lcdvc
 # Required-Start:    $syslog $local_fs $network $remote_fs
 # Required-Stop:     $syslog $local_fs $network $remote_fs

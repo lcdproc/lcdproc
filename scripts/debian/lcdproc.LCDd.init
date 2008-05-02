@@ -1,11 +1,12 @@
 #! /bin/sh
 
-#### BEGIN INIT INFO
+### BEGIN INIT INFO
 # Provides:          LCDd
 # Required-Start:    $syslog $local_fs $network $remote_fs
 # Required-Stop:     $syslog $local_fs $network $remote_fs
+# Should-Start:      udev
 # Default-Start:     2 3 4 5
-# Default-Stop:      S 0 1 6
+# Default-Stop:      0 1 6
 # Short-Description: LCDproc Server Daemon
 # Description:       Debian init script for LCDd, the display
 #                    server daemon in the LCDproc suite
@@ -19,12 +20,27 @@ NAME=${NAME:-LCDd}
 DAEMON=/usr/sbin/LCDd
 DESC="LCDproc display server daemon"
 DEFAULTS=/etc/default/$NAME
+CONFIGFILE=/etc/lcdproc/$NAME.conf
+PIDFILE=/var/run/$NAME.pid
+OPTIONS=""
 START=yes
 
 # Source defaults file; edit that file to configure this script.
 if [ -e "${DEFAULTS}" ]; then
     . "${DEFAULTS}"
 fi
+
+# try to get PID file name from config file (not used yet)
+if [ -f "${CONFIGFILE:=/etc/lcdproc/$NAME.conf}" ]; then
+  PIDFILE=`grep -i '^[:space:]*PidFile[:space:]*=' ${CONFIGFILE} \
+           | head -n1 \
+           | cut -d= -f2- \
+           | sed -e 's,^[:space:]*\(.*\)[:space:]*$,\1,'`
+  OPTIONS="${OPTIONS} -c ${CONFIGFILE}"
+fi
+
+# if necessary set default PID file name (not used yet)
+PIDFILE=${PIDFILE:-/var/run/$NAME.pid}
 
 # If we're not to start the daemon, simply exit
 if [ "${START}" != "yes" ]; then

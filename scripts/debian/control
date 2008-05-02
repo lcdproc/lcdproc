@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Jose Luis Tallon <jltallon@adv-solutions.net>
 Build-Depends: debhelper (>= 5.0.0), pkg-config, xmlto, libncurses5-dev, libusb-dev (>= 0.1.8), libsvga1-dev, libxosd-dev
 Uploaders: Jonathan Oxer <jon@debian.org>
-Standards-Version: 3.7.2.0
+Standards-Version: 3.7.3
 
 Package: lcdproc
 Architecture: any
