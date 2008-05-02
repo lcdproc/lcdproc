@@ -44,6 +44,7 @@
 #define DEFAULT_BRIGHTNESS	140
 #define DEFAULT_SIZE		"20x2"
 #define DEFAULT_DISPLAYTYPE 	0
+#define DEFAULT_PARA_WAIT	2
 
 
 MODULE_EXPORT int  serialVFD_init (Driver *drvthis);
@@ -93,7 +94,8 @@ typedef struct driver_private_data {
 	int predefined_vbar;
 	int ISO_8859_1;
 	unsigned int refresh_timer;
-	unsigned char charmap[128];
+	unsigned int para_wait;
+	unsigned char charmap[129];
 	int display_type;		// display type
 	int last_custom;		// last custom character written
 	unsigned char custom_char[31][7]; 	// stored custom characters
@@ -101,6 +103,7 @@ typedef struct driver_private_data {
 	unsigned char hw_cmd[10][4]; 		// hardwarespecific commands
 	int usr_chr_dot_assignment[57];	// how to setup usercharacters
 	unsigned int usr_chr_mapping[31];// where to place the usercharacters (0..30) in the asciicode
+	unsigned int usr_chr_load_mapping[31];// needed for displays with different read and write mapping 
 	int hbar_cc_offset;		// character offset of the bars
 	int vbar_cc_offset;		// character offset of the bars
 	char info[255];

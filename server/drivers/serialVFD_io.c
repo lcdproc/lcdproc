@@ -57,15 +57,28 @@ serialVFD_write_parallel (Driver *drvthis, unsigned char *dat, size_t length)
 
 	for (i_para = 0; i_para < length; i_para++) {
 		port_out(p->port, dat[i_para]);
-//		port_in(p->port+1);
+
+		if (p->para_wait > 2)	// some displays need a little time to rest
+			port_in(p->port+1);
+
 		port_out(p->port+2, WR_on);
-		port_in(p->port+1);
+
+		if (p->para_wait > 1)	// some displays need a little time to rest
+			port_in(p->port+1);
+
 		port_out(p->port+2, WR_off);
-		port_in(p->port+1);
+
+		if (p->para_wait > 0)	// some displays need a little time to rest
+			port_in(p->port+1);
+
 		for (j_para = 0; j_para < MAXBUSY; j_para++) {
 			if ((port_in(p->port+1)) & Busy)
 				break;
 		}
+
+		for (j_para = 3; j_para < p->para_wait; j_para++) // some displays need a little longer time to rest
+			port_in(p->port+1);
+
 	}
 #endif
 }

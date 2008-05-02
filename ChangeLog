@@ -48,6 +48,7 @@ v.0.5dev (ongoing development)
  * CwLnx driver: support for CW12832
  + new driver mx5000 for Logitech MX5000 keyboards (Christian Jodar)
  * update debian inits scripts to allow multiple instances of clients
+ + serialVFD driver: support for 4 more display types (Stefan Herdler)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

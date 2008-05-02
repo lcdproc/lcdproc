@@ -24,5 +24,5 @@
 #include "lcd.h"
 #include "serialVFD.h"
 
-void serialVFD_load_display_data(Driver *drvthis);
+int serialVFD_load_display_data(Driver *drvthis);
 #endif

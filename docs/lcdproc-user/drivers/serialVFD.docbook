@@ -28,6 +28,7 @@ Feedback is welcome.
       <entry>Serial</entry>
       <entry>Parallel</entry>
       <entry>Display tested</entry>
+      <entry><command>Type</command></entry>
       <entry>Remark</entry>
     </row>
   </thead>
@@ -38,22 +39,25 @@ Feedback is welcome.
       <entry>Ok</entry>
       <entry>Ok</entry>
       <entry>Yes</entry>
+      <entry>0</entry>
       <entry> </entry>
     </row>
     <row>
       <entry>NEC FC20X2JA</entry>
       <entry>NEC FIPC8367</entry>
-      <entry>(Ok)</entry>
-      <entry>(Ok)</entry>
+      <entry>(Ok)<footnote id="not_tested" label="1" > <para>Should work, but feature not tested yet.</para> </footnote> </entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
       <entry>No</entry>
+      <entry>0</entry>
       <entry>Same Controller as on FM20X2KB-AB</entry>
     </row>
     <row>
       <entry>NEC FC20X1SA-AB/AA</entry>
       <entry>NEC FIPC8367</entry>
-      <entry>(Ok)</entry>
-      <entry>(Ok)</entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
       <entry>No</entry>
+      <entry>0</entry>
       <entry>Same Controller as on FM20X2KB-AB</entry>
     </row>
     <row>
@@ -62,59 +66,109 @@ Feedback is welcome.
       <entry>Ok</entry>
       <entry>Ok</entry>
       <entry>Yes</entry>
+      <entry>1, 0<footnote id="no_char" label="2" >
+               <para>
+    Custom-Characters are not supported with this <command>Type</command>, set <command>Custom-Characters=0</command>
+ in <filename>LCDd.conf</filename>.
+               </para>
+               </footnote></entry>
       <entry> </entry>
     </row>
 
     <row>
       <entry>FUTABA M402SD06GJ</entry>
       <entry>?</entry>
-      <entry>(?)*</entry>
+      <entry>(?)<footnoteref linkend="not_tested" /></entry>
       <entry>Ok</entry>
       <entry>Yes</entry>
-      <entry>(* perhaps no compatible baudrate, not tested)
- The display has no user-characters: set <command>Custom-Characters=0</command>
- in <filename>LCDd.conf.</filename></entry>
+      <entry>3</entry>
+      <entry>The display has no user-characters.
+ Serial interface with PC compatible baudrate is optional only, feature not tested.</entry>
     </row>
     <row>
       <entry>FUTABA M204SD01AA</entry>
       <entry>FUTABA 5P00A016</entry>
-      <entry>(Ok)</entry>
-      <entry>(Ok)</entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
       <entry>No</entry>
+      <entry>3</entry>
       <entry> </entry>
     </row>
-  <row>
-      <entry>Samsung 20S204DA2</entry>
+    <row>
+      <entry>Futaba NA202SD08FA</entry>
       <entry>?</entry>
       <entry>Ok</entry>
       <entry>Ok</entry>
       <entry>Yes</entry>
-      <entry>The display is FUTABA compatible (hard- and software). Set <command>Custom-Characters=0</command>
- in <filename>LCDd.conf.</filename> </entry>
+      <entry>6</entry>
+      <entry>allmost IEE compatible, no Custom-Characters</entry>
     </row>
-
+    <row>
+      <entry>Samsung 20S204DA2 and 20S207DA1</entry>
+      <entry>?</entry>
+      <entry>Ok</entry>
+      <entry>Ok</entry>
+      <entry>Yes</entry>
+      <entry>3<footnoteref linkend="no_char" />, 7<footnoteref linkend="no_char" /><footnoteref linkend="not_tested" /> </entry>
+      <entry>The display is FUTABA compatible (hard- and software). Custom-Characters not supported(?). </entry>
+    </row>
+    <row>
+      <entry>Samsung 20S207DA4 and 20S207DA6</entry>
+      <entry>?</entry>
+      <entry>Ok</entry>
+      <entry>Ok</entry>
+      <entry>Yes</entry>
+      <entry>7, 3<footnoteref linkend="no_char" /></entry>
+      <entry>allmost Futaba compatible</entry>
+    </row>
     <row>
       <entry>Noritake CU20026SCPB-T</entry>
       <entry>microcontroller</entry>
-      <entry>(Ok)</entry>
-      <entry>(Ok)</entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
       <entry>No</entry>
+      <entry>2</entry>
       <entry> </entry>
-
     </row>
     <row>
       <entry>Noritake CU20045SCPB-T28A</entry>
       <entry>?</entry>
-      <entry>(Ok)</entry>
-      <entry>(Ok)</entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
       <entry>No</entry>
+      <entry>2</entry>
+      <entry> </entry>
+    </row>IEE 36657
+    <row>
+      <entry>IEE 36657-01 (= 02S-93290-VFD 36657-01)</entry>
+      <entry>?</entry>
+      <entry>Ok</entry>
+      <entry>Ok</entry>
+      <entry>Yes</entry>
+      <entry>4</entry>
+      <entry> </entry>
+    </row>
+    <row>
+      <entry>IEE S03601-95B</entry>
+      <entry>?</entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
+      <entry>No</entry>
+      <entry>4</entry>
+      <entry> </entry>
+    </row>
+    <row>
+      <entry>IEE S03601-96-080</entry>
+      <entry>?</entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
+      <entry>(Ok)<footnoteref linkend="not_tested" /></entry>
+      <entry>No</entry>
+      <entry>5</entry>
       <entry> </entry>
     </row>
   </tbody>
 </tgroup>
 </table>
-
-<literal>(</literal>&hellip;<literal>)</literal>: Feature not tested.
 </para>
 
 <para>
@@ -381,6 +435,16 @@ optional
 
 <varlistentry>
   <term>
+    <command>PortWait</command> =
+    <arg choice="plain"><replaceable>DELAY</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set parallel port timingdelay (us). Used in parallelmode only. [default: <literal>2</literal>; legal: 0 - 255].
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>Device</command> =
     <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
   </term>
@@ -449,6 +513,22 @@ Number of Custom-Characters [default: Display-<command>Type</command> dependent]
         <row>
 	  <entry><literal>3</literal></entry>
 	  <entry>Futaba VFDs</entry>
+	</row>
+	<row>
+	  <entry><literal>4</literal></entry>
+	  <entry>IEE S03601-95B</entry>
+	</row>
+	<row>
+	  <entry><literal>5</literal></entry>
+	  <entry>IEE S03601-96-080</entry>
+	</row>
+	<row>
+	  <entry><literal>6</literal></entry>
+	  <entry>Futaba NA202SD08FA (allmost IEE compatible)</entry>
+	</row>
+	<row>
+	  <entry><literal>7</literal></entry>
+	  <entry>Samsung 20S207DA?</entry>
 	</row>
       </tbody>
     </tgroup>

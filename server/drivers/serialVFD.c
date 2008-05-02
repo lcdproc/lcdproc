@@ -128,6 +128,8 @@ serialVFD_init (Driver *drvthis)
 	p->ISO_8859_1 = 1;
 	p->refresh_timer = 480;
 	p->hw_brightness = 0;
+	p->para_wait = DEFAULT_PARA_WAIT;
+
 
 	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis);
 	
@@ -197,14 +199,8 @@ serialVFD_init (Driver *drvthis)
 	p->ISO_8859_1 = drvthis->config_get_bool(drvthis->name, "ISO_8859_1", 0, 1);
 
 	/* Which displaytype */
-	tmp = drvthis->config_get_int(drvthis->name, "Type", 0, DEFAULT_DISPLAYTYPE);
-	if ((tmp < 0) || (tmp > 3)) {
-		report(RPT_WARNING, "%s: Type must be between 0 and 3; using default %d",
-			drvthis->name, DEFAULT_DISPLAYTYPE);
-		tmp = DEFAULT_DISPLAYTYPE;
-	}
-	p->display_type = tmp;
-
+	p->display_type = drvthis->config_get_int(drvthis->name, "Type", 0, DEFAULT_DISPLAYTYPE);
+	
 	/* Number of custom characters */
 	tmp = drvthis->config_get_int(drvthis->name, "Custom-Characters", 0, -83);
 	if ((tmp < 0) || (tmp > 99)) {
@@ -241,7 +237,26 @@ serialVFD_init (Driver *drvthis)
 	memset(p->backingstore, 0, p->width * p->height);
 
 //setup displayspecific data
-	serialVFD_load_display_data(drvthis);
+	memset(p->usr_chr_mapping, 0, 31);
+	memset(p->usr_chr_load_mapping, 0, 31);
+	if (serialVFD_load_display_data(drvthis) != 0) {
+		report(RPT_WARNING, "%s: Type %d not defined; using default %d",
+			drvthis->name, p->display_type, DEFAULT_DISPLAYTYPE);
+		p->display_type = DEFAULT_DISPLAYTYPE;
+		if (serialVFD_load_display_data(drvthis) != 0) {
+			report(RPT_ERR, "%s: unable to load display_data", drvthis->name);
+			return -1;
+		}
+	}
+
+	/* parallel port wait */
+	tmp = p->para_wait;
+	p->para_wait = drvthis->config_get_int(drvthis->name, "PortWait", 0, p->para_wait);
+
+	if ((p->usr_chr_load_mapping[0] == 0) && (p->usr_chr_load_mapping[1] == 0)){ //this should not happen if usr_chr_load_mapping had been set
+		memcpy(p->usr_chr_load_mapping, p->usr_chr_mapping, 31);
+	}
+
 
 //	report(RPT_ERR, "%s: Port: %X", drvthis->name, p->port, strerror(errno));
 
@@ -393,7 +408,7 @@ serialVFD_put_char (Driver *drvthis, int n)
 
 	Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[set_user_char][1],\
 		p->hw_cmd[set_user_char][0]);// substitute and select Character to overwrite
-	Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &p->usr_chr_mapping[n], 1);
+	Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &p->usr_chr_load_mapping[n], 1);
 	Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[n][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
 }
 
@@ -447,6 +462,11 @@ serialVFD_flush (Driver *drvthis)
 	if (custom_char_changed[p->last_custom])
 		p->last_custom = -10;
 
+	if (p->hw_cmd[mv_cursor][0] == 0) { // Workaround for Displays that doesn't support mv_cursor command
+		Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[pos1_cursor][1], p->hw_cmd[pos1_cursor][0]);
+		last_chr = -1;
+	}
+
 	for (i = 0; i < (p->height * p->width); i++) {
 
 		/* Backing-store implementation.  If it's already
@@ -454,16 +474,18 @@ serialVFD_flush (Driver *drvthis)
 		 */
 
 		if ((p->framebuf[i] != p->backingstore[i]) ||
-		    ((p->framebuf[i] <= 30) && (custom_char_changed[(int)p->framebuf[i]]))) {
+		    ((p->framebuf[i] <= 30) && (custom_char_changed[(int)p->framebuf[i]] != 0))) {
 			if (last_chr < i-1) { // if not last char written cursor has to be moved.
-				if (last_chr < i-2-p->hw_cmd[mv_cursor][0]) {
+				if (((p->hw_cmd[hor_tab][0] * (i-1-last_chr)) > (p->hw_cmd[mv_cursor][0]+1)) && (p->hw_cmd[mv_cursor][0] != 0)) {
 					Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[mv_cursor][1],
 						p->hw_cmd[mv_cursor][0]);
 					Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &i, 1);
+//report(RPT_WARNING, "%s: move  %d", drvthis->name, i);
 				}
 				else {
 					for (j = last_chr; j < (i-1); j++)
 						Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[hor_tab][1], p->hw_cmd[hor_tab][0]);
+//report(RPT_WARNING, "%s: TAB  %d", drvthis->name, j-last_chr);
 				}
 			}
 
@@ -482,8 +504,8 @@ serialVFD_flush (Driver *drvthis)
 					Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &p->usr_chr_mapping[(int)p->framebuf[i]], 1);
 				}
 			}
-			else if ((p->framebuf[i] > 127) && (p->ISO_8859_1 != 0)) { // ISO_8859_1 translation for 129 ... 255
-				Port_Function[p->use_parallel].write_fkt(drvthis, &p->charmap[p->framebuf[i] - 128], 1);
+			else if ((p->framebuf[i] == 127) || ((p->framebuf[i] > 127) && (p->ISO_8859_1 != 0))) { // ISO_8859_1 translation for 129 ... 255
+				Port_Function[p->use_parallel].write_fkt(drvthis, &p->charmap[p->framebuf[i] - 127], 1);
 			}
 			else {
 				Port_Function[p->use_parallel].write_fkt(drvthis, &p->framebuf[i], 1);
@@ -493,8 +515,11 @@ serialVFD_flush (Driver *drvthis)
 		}
 	}
 
-	if (last_chr != -10) // update backingstore if something changed
+	if (last_chr >= 0) { // update backingstore if something changed
 		memcpy(p->backingstore, p->framebuf, p->height * p->width);
+//report(RPT_WARNING, "%s: memcpy", drvthis->name);
+	}
+
 }
 
 
