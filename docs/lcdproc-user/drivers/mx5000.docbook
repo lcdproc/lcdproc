@@ -36,7 +36,6 @@ This drivers uses the library from mx5000tools.
   <term>
     <command>WaitAfterRefresh</command> =
     <arg choice="plain"><replaceable>MS</replaceable></arg>
-    </arg>
   </term>
   <listitem><para>
     Set the time (in ms) to wait after each screen sent to the keyboard.
