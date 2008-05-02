@@ -26,6 +26,7 @@ EXTRA_DIST =	bayrad.docbook \
 		ms6931.docbook \
 		mtc_s16209x.docbook \
 		mtxorb.docbook \
+		mx5000.docbook \
 		NoritakeVFD.docbook \
 		picolcd.docbook \
 		ppttrouble.docbook \
