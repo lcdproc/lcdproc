@@ -457,9 +457,9 @@ HD44780_init(Driver *drvthis)
 
 /**
  * Common initialisation sequence:
- * - set twoline mode, small (5x8) charactersi & 4- or 8-bit mode
+ * - set twoline mode, small (5x8) characters & 4- or 8-bit mode
  * - set display on & cursor off, not blinking,
- * - set output mode to lefto-to-right & turn off display scolling
+ * - set output mode to left-to-right & turn off display scolling
  * - clear display & move cursor home
  * .
  * \param p       Pointer to PrivateData structure.
