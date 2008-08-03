@@ -110,6 +110,9 @@ typedef struct driver_private_data {
   /* line is always zeroed for whatever redefined character */
   char lastline; 
 
+  /* extended mode for some half-compatible modules */
+  int ext_mode;
+
   int brightness;
   int backlight;
 

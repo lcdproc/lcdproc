@@ -2758,8 +2758,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   </term>
   <listitem><para>
     If you have a KS0073 or an other 'almost HD44780-compatible', set this
-    flag to get into extended mode (4-line linear).
-    This flag is NOT the old obsolete Extended option.
+    flag to get into extended,4-line linear addressing mode.
   </para></listitem>
 </varlistentry>
 

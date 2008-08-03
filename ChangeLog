@@ -50,6 +50,7 @@ v.0.5dev (ongoing development)
  * update debian init scripts to allow multiple instances of clients
  + serialVFD driver: support for 4 more display types (Stefan Herdler)
  * IOWarrior driver: fixed 4-line display use
+ + IOWarrior driver: add ExtendedMode option
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

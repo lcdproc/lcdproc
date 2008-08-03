@@ -142,6 +142,23 @@ as well as Darwin/MacOS X.
 
 <varlistentry>
   <term>
+    <command>ExtendedMode</command> =
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal>yes</literal></arg>
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    If you have a KS0073 or an other 'almost HD44780-compatible' display
+    connected to the IOWarrior, set this flag to get into extended,
+    4-line linear addressing mode
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>Lastline</command> =
     <arg choice="plain">
     <group choice="req">
