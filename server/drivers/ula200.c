@@ -503,7 +503,7 @@ ula200_ftdi_enable_raw_mode(Driver *drvthis)
 // Loads custom characters in the display
 //
 static int
-ula200_load_curstom_chars(Driver *drvthis)
+ula200_load_custom_chars(Driver *drvthis)
 {
     int i, col, row;
     int err = 0;
@@ -705,7 +705,7 @@ ula200_init(Driver *drvthis)
 	}
 
 	// load the chars
-	err = ula200_load_curstom_chars(drvthis);
+	err = ula200_load_custom_chars(drvthis);
 	if (err < 0) {
 		report(RPT_ERR, "%s: unable to write the custom characters", drvthis->name);
 		goto err_ftdi;
