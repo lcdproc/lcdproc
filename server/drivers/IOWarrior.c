@@ -1,6 +1,6 @@
 /*  This is the LCDproc driver for IO-Warrior devices (http://www.codemercs.de)
 
-      Copyright(C) 2004-2006 Peter Marschall <peter@adpm.de>
+      Copyright(C) 2004-2008 Peter Marschall <peter@adpm.de>
 
    based on GPL'ed code:
 
@@ -161,16 +161,22 @@ static int iowlcd_write_data(usb_dev_handle *udh, int size, int len, unsigned ch
   return len;
 }
 
-static int iowlcd_set_pos(usb_dev_handle *udh, int size, int x, int y)
+static int iowlcd_set_pos(usb_dev_handle *udh, int size, int width, int x, int y)
 {
-  const unsigned char lineOff[4] = { 0x00, 0x40, 0x14, 0x54 };
-  unsigned char addr = lineOff[y] + x;
+  /* HD44780 character offset layout:
+   * - 1st line starts at 0x0
+   * - (2n)th line starts at 0x40 behind (2n-1)th line
+   * - 3rd line starts at an offset equal to the display's width
+   */
+  unsigned char addr = ((y % 2) * 0x40)
+                       + ((y >= 2) * width)
+                       + x;
   return iowlcd_set_ddram_addr(udh, size, addr);
 }
 
-static int iowlcd_set_text(usb_dev_handle *udh, int size, int x, int y, int len, unsigned char *data)
+static int iowlcd_set_text(usb_dev_handle *udh, int size, int width, int x, int y, int len, unsigned char *data)
 {
-  if (iowlcd_set_pos(udh, size, x, y) == IOW_ERROR)
+  if (iowlcd_set_pos(udh, size, width, x, y) == IOW_ERROR)
     return IOW_ERROR;
   return iowlcd_write_data(udh, size, len, data);
 }
@@ -543,24 +549,9 @@ int count;
           buffer[count] = HD44780_charmap[(unsigned char) p->framebuf[offset+count]];
           p->backingstore[offset+count] = p->framebuf[offset+count];
         }
-        iowlcd_set_text(p->udh, IOWLCD_SIZE, 0, y, count, buffer);
+        iowlcd_set_text(p->udh, IOWLCD_SIZE, p->width, 0, y, count, buffer);
         debug(RPT_DEBUG, "%s: flushed %d chars at (%d,%d)",
 			drvthis->name, count, 0, y);
-
-//		/* Alternative: update the LCD in chunks of max 6 bytes
-//		 * since IOWarrior needs only one command for it
-//		 */
-//		char buffer[7];
-//
-//		count = (y+1) * p->width - offset - x;
-//		count = (count > 6) ? 6 : count;
-//		for (i = 0; i < count; i++) {
-//		    buffer[i] = HD44780_charmap[(unsigned char) p->framebuf[offset+x+i]];
-//		    p->backingstore[offset+x+i] = p->framebuf[offset+x+i];
-//		}
-//		iowlcd_set_text(p->udh, IOWLCD_SIZE, x, y, count, buffer);
-//		debug(RPT_DEBUG, "%s: flushed %d chars at (%d,%d)",
-//			drvthis->name, count, x, y);
 
         x += count-1;
       }
@@ -797,7 +788,7 @@ IOWarrior_cursor (Driver *drvthis, int x, int y, int state)
 {
 PrivateData *p = drvthis->private_data;
 
-  iowlcd_set_pos(p->udh, IOWLCD_SIZE, x, y);
+  iowlcd_set_pos(p->udh, IOWLCD_SIZE, p->width, x, y);
 
   switch (state) {
     case CURSOR_OFF:
