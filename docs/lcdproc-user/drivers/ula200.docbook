@@ -44,7 +44,7 @@ driver can be used on other operating systems as well.
 
 <note>
   <para>
-    On Linux, you have to take care that the <filename>ftdi_sio.ko</filename>r
+    On Linux, you have to take care that the <filename>ftdi_sio.ko</filename>
     kernel module doesn't claim the ELV device.
     If you didn't change the IDs in the kernel driver (<filename>ftdi_sio.c</filename>),
     this should not matter.

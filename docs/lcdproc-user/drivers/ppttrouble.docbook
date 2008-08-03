@@ -120,7 +120,7 @@ or a schmitt-trigger.
 
 <note>
 <para>
-The rise time of a digital output can (usually) not be altered by Software.
+The rise time of a digital output can (usually) not be altered by software.
 </para>
 </note>
 </sect2>
