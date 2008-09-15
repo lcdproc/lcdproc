@@ -45,7 +45,11 @@
 #include <sys/mount.h>
 #include <sys/time.h>
 #include <sys/user.h>
+
+#ifndef DEPRECATED_IN_MAC_OS_X_VERSION_10_5_AND_LATER
 #include <kvm.h>
+#endif
+
 #include <errno.h>
 #include <sys/socket.h>
 #include <net/if.h>
