@@ -575,7 +575,7 @@ static void adv_bignum_num_2_6(Driver *drvthis, int x, int num, int height, int 
 		{' '	,4	,2},
 		{"   "},
 		{"   "}},
-		{{3	,5	,7},/*6*/
+		{{3	,5	,' '},/*6*/
 		{3	,4	,2},
 		{"   "},
 		{"   "}},
