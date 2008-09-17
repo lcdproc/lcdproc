@@ -166,6 +166,9 @@ LCD in 4-bit mode driven by PCF8574(A) / PCA9554(A), connected via I2C bus
 .TP
 .B ftdi
 USB connection via a FTDI FT2232D chip in bitbang mode
+.TP
+.B ethlcd
+TCP connection using open source/open hardware ethlcd (http://manio.skyboo.net/ethlcd/)
 .RE
 .TP
 .B icp_a106

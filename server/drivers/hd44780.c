@@ -439,6 +439,13 @@ HD44780_init(Driver *drvthis)
  			 (p->have_output?" out":"")
  			);
  		break;
+ 	  case IF_TYPE_TCP:
+ 		sprintf(buf, "TCP %s%s%s",
+ 			 (p->have_backlight?" bl":""),
+ 			 (p->have_keypad?" key":""),
+ 			 (p->have_output?" out":"")
+ 			);
+ 		break;
 	  case IF_TYPE_PARPORT:
  	  default:
  		sprintf(buf, "LPT 0x%x%s%s%s", p->port,

@@ -29,6 +29,7 @@
 #ifdef HAVE_I2C
 # include "hd44780-i2c.h"
 #endif
+# include "hd44780-ethlcd.h"
 // add new connection type header files here
 
 
@@ -67,6 +68,8 @@ static const ConnectionMapping connectionMapping[] = {
 #ifdef HAVE_I2C
 	{ "i2c",           HD44780_CT_I2C,           IF_TYPE_I2C,     hd_init_i2c       },
 #endif
+	/* TCP socket connection types */
+	{ "ethlcd",        HD44780_CT_ETHLCD,        IF_TYPE_TCP,     hd_init_ethlcd    },
 	// add new connection types here
 	// ....
 	// default, end of structure element (do not delete)

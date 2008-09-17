@@ -47,6 +47,7 @@
 #define HD44780_CT_LCDUSB		14
 #define HD44780_CT_FTDI		15
 #define HD44780_CT_I2C			16
+#define HD44780_CT_ETHLCD		17
 
 // symbolic names for interface types
 #define IF_TYPE_UNKNOWN		0
@@ -54,6 +55,7 @@
 #define IF_TYPE_SERIAL		2
 #define IF_TYPE_USB		3
 #define IF_TYPE_I2C		4
+#define IF_TYPE_TCP		5
 
 // symbolic default values
 #define DEFAULT_CONTRAST	800
@@ -117,6 +119,8 @@ typedef struct driver_private_data {
 	int ftdi_line_EN;
 	int ftdi_line_backlight;
 #endif
+
+	int sock;			/* socket for TCP devices */
 
 	int charmap;
 

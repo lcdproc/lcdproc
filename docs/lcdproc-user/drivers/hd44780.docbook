@@ -118,6 +118,11 @@ more important. Here are the USB connection types the HD44780 driver supports:
     <link linkend="hd44780-ftdi">ftdi</link>:
     Display connected to a dual channel FTDI 2232D USB chip
   </listitem>
+
+  <listitem>
+    <link linkend="hd44780-ethlcd">ethlcd</link>:
+    Display connected via TCP to PoE powered ethlcd device (<ulink url="http://manio.skyboo.net/ethlcd/"></ulink>)
+  </listitem>
 </itemizedlist>
 
 <para>
@@ -1845,6 +1850,20 @@ and drives both channels as outputs to control the display in 8bit mode.
 You can configure the USB vendor/product ID in <filename>LCDd.conf</filename>.
 The wiring of the control lines can optionally be reconfigured,
 please look at the driver source if you really need that.
+</para>
+
+</sect3>
+
+<sect3 id="hd44780-ethlcd">
+<title>ethlcd device</title>
+
+<para>
+ethlcd (<ulink url="http://manio.skyboo.net/ethlcd"></ulink>)
+is a PoE powered device controlled via TCP. It has a 3-state (ON, HALF, OFF) backlight
+control, 6 buttons and a beeper. The hardware and software are open source.
+To use it, specify the device IP address or hostname, on which the ethlcd device is
+accessible by setting in config file the <command>Device</command> value.
+The default is <filename>ethlcd</filename>.
 </para>
 
 </sect3>

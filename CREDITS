@@ -245,6 +245,9 @@ Thomas Jarosch
 Christian Jodar
 	- mx5000 driver
 
+Mariusz Bialonczyk
+	- ethlcd connection type for HD44780
+
 
 
 Further developers in the sourceforge lcdproc team:
