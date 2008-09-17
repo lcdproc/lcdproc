@@ -545,10 +545,10 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 
 	debug(RPT_DEBUG, "picolcd: get_key complete (%s)", keystr);
 
-	if (! strlen(keystr))
-		return NULL;
+	if ((keystr != NULL) && (strlen(keystr) > 0))
+		return keystr;
 
-	return keystr;
+	return NULL;
 
 /* 
  * Due to how key events are reported, we need to keep reading key presses 
