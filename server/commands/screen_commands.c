@@ -144,7 +144,7 @@ screen_set_func(Client *c, int argc, char **argv)
 
 	if (argc == 1) {
 		sock_send_error(c->sock, "Usage: screen_set <id> [-name <name>]"
-				" [-wid <width>] [-hgt <height>] [-priority <int>]"
+				" [-wid <width>] [-hgt <height>] [-priority <prio>]"
 				" [-duration <int>] [-timeout <int>]"
 				" [-heartbeat <type>] [-backlight <type>]"
 				" [-cursor <type>]"
@@ -196,11 +196,11 @@ screen_set_func(Client *c, int argc, char **argv)
 				number = atoi(argv[i]);
 				if (number > 0) {
 					if (number <= 64)
-						s->priority = PRI_FOREGROUND;
+						number = PRI_FOREGROUND;
 					else if (number < 192)
-						s->priority = PRI_INFO;
+						number = PRI_INFO;
 					else
-						s->priority = PRI_BACKGROUND;
+						number = PRI_BACKGROUND;
 				}
 				else {
 					/* Try if it is a priority class */
