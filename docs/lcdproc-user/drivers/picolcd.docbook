@@ -186,6 +186,66 @@
     Larger values make key presses more reliable if somewhat slow to take effect.
   </para></listitem>
 </varlistentry>
+<varlistentry>
+  <term>
+    <command>LircHost=</command>
+    <arg choice="plain"><replaceable>HOSTNAME_OR_IP-ADDRESS</replaceable></arg>
+  </term>
+  <listitem>
+  <para>
+    Set the hostname or IP address to which the driver will send IR data from the sensor.
+    If not set or set to an empty value, IR support for LIRC will be disabled.
+  </para>
+  <para>
+    LIRC should be configured to use the driver "udp", which will cause it to listen on some 
+    UDP port for packets containing a series of integers, representing pulse and mark 
+    intervals from the sensor. It doesn't matter whether LCDd or LIRC is started first; if LIRC 
+    isn't listening, the packets from LCDd will be discarded. When LIRC comes back, it will 
+    start picking up the packets. Similarly, LCDd can be stopped and restarted without affecting 
+    anything, because UDP is a connectionless protocol. 
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>LircPort=</command>
+    <arg choice="plain"><replaceable>PORTNUM</replaceable></arg>
+  </term>
+  <listitem>
+  <para>
+    This value determines the UDP port to which the driver will send IR data from the sensor. It
+    defaults to <literal>8765</literal>, which is also the default port on which LIRC will listen.  
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>LircSync=</command>
+    <arg choice="plain"><replaceable>DURATION</replaceable></arg>
+  </term>
+  <listitem>
+  <para>
+    This value determines the length in jiffies (1/16384 seconds) of the synthesized sync pulse added 
+    to the beginning of the UDP packet sent to LIRC. Values up to 255 are permitted. Setting a length 
+    of zero will suppress the synthesized pulse (I can't make it work without it, though). The default is 
+    <literal>64</literal> jiffies (3.9ms).  
+  </para>
+  </listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <command>LircLength=</command>
+    <arg choice="plain"><replaceable>DURATION</replaceable></arg>
+  </term>
+  <listitem>
+  <para>
+    This value determines the length in jiffies (1/16384 seconds) of the entire LIRC code for a single remote 
+    command. It depends on the notion that all commands are of the same duration, and are padded with a trailing 
+    gap (space) to make up the time. No such gap is emitted by the picolcd hardware. Values up to MAXINT are permitted.
+    Setting a length of zero will suppress the synthesized gap. The default is 2048 jiffies (125ms).
+  </para>
+  </listitem>
+</varlistentry>
 </variablelist>
 
 </sect3>
@@ -222,13 +282,31 @@
 		touchy and both combo key-down and key-up actions may be reported as mutiple events if 
 		the user is more than a tenth of a second (maybe less?) off in motions.
 	</para>
+	<sect3 id="picolcd-ir-status">
+	<title>Infrared sensor status</title>
+	<para>
+	    LIRC expects sensor data that starts with a longish 'sync' space, denoting the start of 
+	    a command; followed by the code data, a sequence of mark/space pairs; sometimes followed by 
+	    a 'gap', which should be a space long enough to make the entire command up to a preset 
+	    duration in milliseconds. The 'sync' and the 'gap' are absent from the data 
+	    emitted by the picolcd hardware. I found that LIRC configuration files for remotes similar to the 
+	    ones I tested all used such a fixed-duration encoding, and as that was the only way I could get it 
+	    working, this driver by default adds the gap as well as the sync. However I have 
+	    <emphasis>still</emphasis> had trouble getting <code>irrecord</code> to work; you need at least 
+	    to feed it a template configuration containing sync and gap data.  
+	</para>
+	<para>
+	    This code could therefore use more testing, more research, and more work.
+	</para>  
+	</sect3>
 </sect2>
 
 <sect2 id="picolcd-copy">
 	<title>Copyright</title>
 	<para>
-		The lcdproc picolcd driver was written by Gatewood Green (woody@nitrosecurity.com) 
-		or (woody@linif.org) and paid for by NitroSecurity, Inc (nitrosecurity.com).
+		The lcdproc picolcd driver originally was written by Gatewood Green (woody@nitrosecurity.com) 
+		or (woody@linif.org) and paid for by NitroSecurity, Inc (nitrosecurity.com),
+		but has been extended with code from various contributors since then.
 	</para>
 </sect2>
 

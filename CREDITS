@@ -248,6 +248,8 @@ Christian Jodar
 Mariusz Bialonczyk
 	- ethlcd connection type for HD44780
 
+Jack Cleaver
+	- LIRC support in picolcd
 
 
 Further developers in the sourceforge lcdproc team:

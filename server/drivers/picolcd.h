@@ -34,12 +34,18 @@
 
 #define PICOLCD_MAX_DATA_LEN	24
 
+#define DEFAULT_LIRCPORT	8765
+#define DEFAULT_SYNC_JIFFY	64
+#define DEFAULT_LENGTH_JIFFY	2048 
+
 
 typedef struct _lcd_packet lcd_packet;
+
 struct _lcd_packet {
 	unsigned char data[255];
 	unsigned int type;
 };
+
 
 MODULE_EXPORT int  picoLCD_init(Driver *drvthis);
 MODULE_EXPORT void picoLCD_close(Driver *drvthis);

@@ -54,6 +54,7 @@ v.0.5dev (ongoing development)
  * lcdproc: unbreak compilation on OS X 1.5 and higher (Topher Fangio)
  * server: fix interpretation of numeric priorities (Andrew M. Bishop)
  + hd44780 driver: new ConnectionType ethlcd (Mariusz Bialonczyk)
+ + picolcd driver: support to send IR commands to LIRC (Jack Cleaver)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
