@@ -118,11 +118,6 @@ more important. Here are the USB connection types the HD44780 driver supports:
     <link linkend="hd44780-ftdi">ftdi</link>:
     Display connected to a dual channel FTDI 2232D USB chip
   </listitem>
-
-  <listitem>
-    <link linkend="hd44780-ethlcd">ethlcd</link>:
-    Display connected via TCP to PoE powered ethlcd device (<ulink url="http://manio.skyboo.net/ethlcd/"></ulink>)
-  </listitem>
 </itemizedlist>
 
 <para>
@@ -133,6 +128,11 @@ Last but not least, for special purposes, there are even more connection types:
   <listitem>
     <link linkend="hd44780-i2c">i2c</link>:
     LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-ethlcd">ethlcd</link>:
+    Display connected via TCP to PoE powered ethlcd device (<ulink url="http://manio.skyboo.net/ethlcd/"></ulink>)
   </listitem>
 </itemizedlist>
 

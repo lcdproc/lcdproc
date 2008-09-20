@@ -23,7 +23,7 @@
  
 #include <stdio.h>
 #include <string.h>
-#include <bits/local_lim.h>
+#include <limits.h>
 #include <fcntl.h>
 
 
@@ -38,7 +38,7 @@ void ethlcd_HD44780_uPause(PrivateData *p, int usecs) {}
 // initialisation function
 int hd_init_ethlcd(Driver *drvthis)
 {
-	char hostname[HOST_NAME_MAX];
+	char hostname[_POSIX_HOST_NAME_MAX];
 	long flags;
 
 	PrivateData *p = (PrivateData*) drvthis->private_data;
