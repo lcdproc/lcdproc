@@ -67,11 +67,12 @@ dnl (the spaces before $CFLAGS and -O are significant)
 	fi
 fi
 
-dnl Checks for programs.
+dnl Checks for programs used in building
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+AM_PROG_CC_C_O
 
 dnl Avoid unused static function warnings
 CFLAGS="-Wall $CFLAGS"
