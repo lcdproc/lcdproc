@@ -1,21 +1,23 @@
 #!/bin/sh
 
-DIR=/home/gfk/lcdproc/nightly
+SF_ACCOUNT=${SF_ACCOUNT:-$USER}
+LCDPROC_DIR=${LCDPROC_DIR:-$HOME/lcdproc}
+NIGHTLY_DIR=${NIGHTLY_DIR:-$LCDPROC_DIR/nightly}
 
-# stable-0-5-x or current
-BRANCH=$1
+# stable-0-5-x or current (default)
+BRANCH=${1:-current}
 
-# dev or user
-DOCS=$2
+# dev or user (default)
+DOCS=${2:-user}
 
 XMLTO=/usr/bin/xmlto
-SSH=/usr/bin/ssh
 RSYNC=/usr/bin/rsync
 
-#############################
-cd ${DIR}
-DOCSPATH=${DIR}/${BRANCH}/docs/lcdproc-${DOCS}
+DOCSPATH=${NIGHTLY_DIR}/${BRANCH}/docs/lcdproc-${DOCS}
 DOCSFILE=${DOCSPATH}/lcdproc-${DOCS}.docbook
+
+#############################
+test -d ${NIGHTLY_DIR} && cd ${NIGHTLY_DIR}
 
 # Generate HTML
 ${XMLTO}  xhtml-nochunks ${DOCSFILE} >/dev/null  2>&1
@@ -29,11 +31,9 @@ mv lcdproc-${DOCS}.html ${BRANCH}-${DOCS}.html
 ${XMLTO} txt ${DOCSFILE} >/dev/null  2>&1
 mv lcdproc-${DOCS}.txt ${BRANCH}-${DOCS}.txt
 
-# Upload the thing
-#${SCP} -r -qB \
+# Upload to sf.net
 ${RSYNC} -qr \
-${BRANCH}-${DOCS}.html ${BRANCH}-${DOCS}.txt \
-gfk,lcdproc@web.sourceforge.net:htdocs/docs/
+	${BRANCH}-${DOCS}.html ${BRANCH}-${DOCS}.txt \
+	${SF_ACCOUNT},lcdproc@web.sourceforge.net:htdocs/docs/
 
-# Finish the process on the server
-#${SSH} -q -l gfk shell.sourceforge.net "sh lcdproc-compress-html-docs.sh ${BRANCH}-${DOCS}-html"
+# EOF

@@ -1,7 +1,10 @@
 #!/bin/sh
-NIGHTLYDIR=/home/gfk/lcdproc/nightly
-MAKENIGHTLY=${NIGHTLYDIR}/make-nightly.sh
-MAKEDOCS=${NIGHTLYDIR}/make-docs.sh
+
+LCDPROC_DIR=${LCDPROC_DIR:-$HOME/lcdproc}
+NIGHTLY_DIR=${NIGHTLY_DIR:-$LCDPROC_DIR/nightly}
+
+MAKENIGHTLY=${NIGHTLY_DIR}/make-nightly.sh
+MAKEDOCS=${NIGHTLY_DIR}/make-docs.sh
 #####
 
 for branch in current stable-0-5-x; do
@@ -13,3 +16,5 @@ for branch in current stable-0-5-x; do
 	        ${MAKEDOCS} $branch $doc
 	done
 done
+
+# EOF
