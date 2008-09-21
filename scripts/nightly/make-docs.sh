@@ -33,7 +33,7 @@ mv lcdproc-${DOCS}.txt ${BRANCH}-${DOCS}.txt
 #${SCP} -r -qB \
 ${RSYNC} -qr \
 ${BRANCH}-${DOCS}.html ${BRANCH}-${DOCS}.txt \
-gfk@lcdproc.sourceforge.net:www-lcdproc/docs/
+gfk,lcdproc@web.sourceforge.net:htdocs/docs/
 
 # Finish the process on the server
-#${SSH} -q -l gfk lcdproc.sourceforge.net "sh lcdproc-compress-html-docs.sh ${BRANCH}-${DOCS}-html"
+#${SSH} -q -l gfk shell.sourceforge.net "sh lcdproc-compress-html-docs.sh ${BRANCH}-${DOCS}-html"
