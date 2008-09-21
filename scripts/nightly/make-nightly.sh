@@ -80,10 +80,12 @@ mv lcdproc-*.tar.gz lcdproc-CVS-${BRANCH}.tar.gz
 # ${GUNZIP} --stdout lcdproc-CVS-${BRANCH}.tar.gz > lcdproc-CVS-${BRANCH}.tar
 # ${BZIP2} lcdproc-CVS-${BRANCH}.tar
 
+# Date of the last nightly
+date > last-nightly.txt
+
 # Upload
-${RSYNC} -q \
-lcdproc-CVS-${BRANCH}.tar.gz gfk@lcdproc.sourceforge.net:www-lcdproc/nightly/
-${SSH} -q lcdproc.sourceforge.net "sh lcdproc-finish-nightly.sh ${BRANCH}"
+${RSYNC} -q lcdproc-CVS-${BRANCH}.tar.gz last-nightly.txt \
+gfk,lcdproc@web.sourceforge.net:htdocs/nightly/
 
 # Cleanup
 mv configure.in.temp configure.in
