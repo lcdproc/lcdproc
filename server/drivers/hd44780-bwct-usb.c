@@ -148,17 +148,30 @@ hd_init_bwct_usb(Driver *drvthis)
   if (p->usbHandle != NULL) {
     debug(RPT_DEBUG, "hd_init_bwct_usb: opening device succeeded");
 
+    errno = 0;
+    if (usb_set_configuration(p->usbHandle, p->usbIndex) < 0) {
+      report(RPT_WARNING, "hd_init_bwct_usb: unable to set configuration: %s",
+             strerror(errno));
+    }
+
+    errno = 0;
     if (usb_claim_interface(p->usbHandle, p->usbIndex) < 0) {
 #if defined(LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP)
+      report(RPT_WARNING, "hd_init_bwct_usb: interface may be claimed by "
+                          "kernel driver, attempting to detach it");
+      
+      errno = 0;
       if ((usb_detach_kernel_driver_np(p->usbHandle, p->usbIndex) < 0) ||
           (usb_claim_interface(p->usbHandle, p->usbIndex) < 0)) {
+        report(RPT_ERR, "hd_init_bwct_usb: unable to re-claim interface: %s",
+	       strerror(errno));
         usb_close(p->usbHandle);
-        report(RPT_ERR, "hd_init_bwct_usb: unable to re-claim interface");
         return -1;
       }
 #else
+      report(RPT_ERR, "hd_init_bwct_usb: unable to claim interface: %s",
+             strerror(errno));
       usb_close(p->usbHandle);
-      report(RPT_ERR, "hd_init_bwct_usb: unable to claim interface");
       return -1;
 #endif
     }

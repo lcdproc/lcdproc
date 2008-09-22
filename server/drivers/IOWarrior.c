@@ -376,23 +376,30 @@ PrivateData *p;
   if (p->udh != NULL) {
     debug(RPT_DEBUG, "%s: opening device succeeded", drvthis->name);
 
+    errno = 0;
     if (usb_set_configuration(p->udh, 1) < 0) {
-      usb_close(p->udh);
-      report(RPT_ERR, "%s: unable to set configuration", drvthis->name);
-      return -1;
+      report(RPT_WARNING, "%s: unable to set configuration: %s",
+             drvthis->name, strerror(errno));
     }
 
+    errno = 0;
     if (usb_claim_interface(p->udh, 1) < 0) {
 #if defined(LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP)
+      report(RPT_WARNING, "%s: interface may be claimed by kernel driver, attempting to detach it",
+             drvthis->name);
+      
+      errno = 0;
       if ((usb_detach_kernel_driver_np(p->udh, 1) < 0) ||
           (usb_claim_interface(p->udh, 1) < 0)) {
+        report(RPT_ERR, "%s: unable to re-claim interface: %s",
+	       drvthis->name, strerror(errno));
         usb_close(p->udh);
-        report(RPT_ERR, "%s: unable to re-claim interface", drvthis->name);
         return -1;
       }
 #else
+      report(RPT_ERR, "%s: unable to claim interface: %s",
+             drvthis->name, strerror(errno));
       usb_close(p->udh);
-      report(RPT_ERR, "%s: unable to claim interface", drvthis->name);
       return -1;
 #endif
     }
