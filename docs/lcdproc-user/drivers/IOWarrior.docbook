@@ -97,9 +97,11 @@ as well as Darwin/MacOS X.
     Newer Linux kernels (2.6.20 and higher) provide a kernel module
     <filename>iowarrior.ko</filename> that allows controlling IOWarrior
     chips using device files.
-    Having this module loaded may hinder <application>LCDd</application>
+    <application>LCDd</application> tries to unload this kernel module
+    for <filename>libusb</filename> to be able to control IOWarrior devices.
+    If this fails, this may hinder <application>LCDd</application>
     from starting using the <code>IOWarrior</code> driver.
-    In this case, simply unload the kernel module.
+    In this case, simply unload the kernel module by hand.
   </para>
 </note>
 </para>

@@ -72,6 +72,7 @@ USB library.
     But who knowns &hellip;
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>VendorID</command> =
@@ -92,6 +93,7 @@ USB library.
     </para>
   </listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>ProductID</command> =
@@ -112,6 +114,7 @@ USB library.
     </para>
   </listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>Brightness</command> =
@@ -127,7 +130,6 @@ USB library.
   </para>
   </listitem>
 </varlistentry>
-
 </variablelist>
 
 </sect3>
