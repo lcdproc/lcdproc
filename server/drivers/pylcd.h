@@ -84,7 +84,7 @@ typedef struct
     int C_state;
 
     /* led handling */
-    char led[7];
+    char led[8];
 
 } PrivateData;
 

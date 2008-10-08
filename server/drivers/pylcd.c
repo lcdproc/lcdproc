@@ -281,9 +281,9 @@ set_leds(PrivateData *p)
     int i;
     char tele[3]="L00";
 
-    for (i=0; i<7; i++) {
-      tele[1]=i+'1';
-      tele[2]=p->led[i]?'1':'0';
+    for (i = 0; i < 7; i++) {
+      tele[1] = i + '1';
+      tele[2] = p->led[i] ? '1' : '0';
       send_tele(p, tele);
     }
 
