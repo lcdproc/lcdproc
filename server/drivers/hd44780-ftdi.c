@@ -190,11 +190,11 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
 	    portControl = p->ftdi_line_RS;
 	}
 
-	buf[0] = (ch>>4) & 0x0F | portControl | p->ftdi_line_EN;
-	buf[1] = (ch>>4) & 0x0F | portControl;
+	buf[0] = ((ch>>4) & 0x0F) | portControl | p->ftdi_line_EN;
+	buf[1] = ((ch>>4) & 0x0F) | portControl;
 	buf[2] = (ch & 0x0F) | portControl | p->ftdi_line_EN;
 	buf[3] = (ch & 0x0F) | portControl;
-	int f = ftdi_write_data(&p->ftdic, &buf, 4);
+	int f = ftdi_write_data(&p->ftdic, buf, 4);
 
 	if (f < 0) {
 	     p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
