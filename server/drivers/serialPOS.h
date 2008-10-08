@@ -26,11 +26,10 @@ MODULE_EXPORT const char * serialPOS_get_key (Driver *drvthis);
 
 MODULE_EXPORT void serialPOS_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void serialPOS_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT int  serialPOS_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT void serialPOS_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT void serialPOS_cursor (Driver *drvthis, int x, int y, int state);
 
-//MODULE_EXPORT int  serialPOS_get_free_chars (Driver *drvthis);
+MODULE_EXPORT int  serialPOS_get_free_chars (Driver *drvthis);
 //MODULE_EXPORT void serialPOS_set_char (Driver *drvthis, int n, unsigned char *dat);
 
 MODULE_EXPORT void serialPOS_output (Driver *drvthis, int state);

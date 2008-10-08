@@ -7,7 +7,8 @@ This section talks about using LCDproc with a point of sale ("POS") character-di
 
 <para>
 The <code>serialPOS</code> driver is currently working with the AEDEX emulation protocol, 
-but can be extended to work with various other protocols.
+and may support Epson ESC/POS and Logic Controls. It can be extended to work with various 
+other protocol displays.
 </para>
 
 <para>
@@ -42,8 +43,8 @@ Feedback is welcome.
     </row>
     <row>
       <entry>Epson</entry>
-      <entry> </entry>
       <entry>No</entry>
+      <entry>Yes</entry>
       <entry> </entry>
     </row>
     <row>
@@ -60,8 +61,8 @@ Feedback is welcome.
     </row>
     <row>
       <entry>Logic Controls</entry>
-      <entry> </entry>
       <entry>No</entry>
+      <entry>Yes</entry>
       <entry> </entry>
     </row>
     <row>
@@ -84,7 +85,7 @@ Feedback is welcome.
 Connecting the display should consist of simply plugging it into your computer's
 RS-232 serial port.  Because these displays typically support full RS-232, no additional 
 wiring is needed.  If your computer does not have such a port (many newer computers don't),
-you can use a USB to serial adapter with the appropriate driver.
+you can use a USB to serial adapter with a driver provided by the adapter manufacturer.
 </para>
 <para>
 If your display supports a <emphasis>pass-through</emphasis> function, you can connect
