@@ -18,7 +18,7 @@
 #define LCDP_AC_OFF		0x00
 #define LCDP_AC_ON		0x01
 #define LCDP_AC_BACKUP		0x02
-#define LCDP_AC_UNKNOWN		0xFF
+#define LCDP_AC_UNKNOWN		0x03
 
 extern int Quit;
 extern int sock;
