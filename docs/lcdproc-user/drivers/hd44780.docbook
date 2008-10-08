@@ -18,7 +18,7 @@ one for each half of the display.
 </para>
 
 <para>
-The HD44780 driver supports  various ways of connecting HD44780 devices
+The HD44780 driver supports various ways of connecting HD44780 devices
 to your system.
 Each of these different ways is called a <emphasis>connection type</emphasis>
 of the driver.
@@ -102,6 +102,11 @@ more important. Here are the USB connection types the HD44780 driver supports:
   <listitem>
     <link linkend="hd44780-lcd2usb">lcd2usb</link>:
     Tim Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)
+  </listitem>
+
+  <listitem>
+    <link linkend="hd44780-uss720">uss720</link>:
+    Display connected to USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002)
   </listitem>
 
   <listitem>
@@ -2259,6 +2264,46 @@ KeyDirect_3=Escape
 </sect3>
 
 
+
+<sect3 id="hd44780-uss720">
+<title>USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002) "uss720"</title>
+
+<para>
+The USS-720 USB-to-IEEE 1284 Bridge is a fully featured USB to parallel chip that is used 
+in most (but not all) Belkin F5U002 USB Parallel Printer Adapters.  Because these adapters are 
+inexpensive and readily available on the second-hand market, they provide an excellent solution 
+for users who want to experiment with a parallel port but only have USB ports on their computers.  
+</para>
+
+<para>
+Because the chip acts as a parallel port, the driver maintains the same features and wiring as 
+the 8-bit "winamp" driver. However, because most USB Parallel Printer Adapters use a centronics 
+printer connector, be sure to convert the pin numbering of the parallel port pins in the "winamp" 
+wiring to the pin numbering of the centronics port.  Many tables are available on the internet 
+that illustrate how the pin numbering differs between the two.
+</para>
+
+<sect4 id="hd44780-uss720-config">
+<title>Special configuration options</title>
+
+<para>
+Because several manufacturers used the USS720 chip in their USB Parallel Printer Adapters, the 
+<command>VendorID</command> and <command>ProductID</command> options are configurable in the 
+<filename>LCDd.conf</filename> file.
+</para>
+
+<note>
+<para>
+Not all Belkin F5U002 USB Parallel Printer Adapters used the USS720 chip.  Look for the dark grey 
+adapters with the removable USB cable for best results. 
+</para>
+</note>
+
+</sect4>
+
+</sect3>
+
+
 <sect3 id="hd44780-i2c">
 <title>I<superscript>2</superscript>C with Port-Expander</title>
 
@@ -2870,8 +2915,11 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>VENDORID</replaceable></arg>
   </term>
   <listitem><para>
-    USB vendor ID to look for a FTDI chip with connection type <code>ftdi</code>.
-    Default: <literal>0x4003</literal>.
+    USB vendor ID to look for in certain USB connection types.  
+    When using an FTDI chip with connection type <code>ftdi</code>, the default value is 
+    <literal>0x4003</literal>. 
+    When using a USS720 chip with connection type <code>uss720</code>, the default value is 
+    <literal>0x1293</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -2881,8 +2929,11 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <arg choice="plain"><replaceable>PRODUCTID</replaceable></arg>
   </term>
   <listitem><para>
-    USB product ID to look for a FTDI chip with connection type <code>ftdi</code>.
-    Default: <literal>0x6001</literal>.
+    USB product ID to look for in certain USB connection types.  
+    When using an FTDI chip with connection type <code>ftdi</code>, the default value is 
+    <literal>0x6001</literal>.
+    When using a USS720 chip with connection type <code>uss720</code>, the default value is 
+    <literal>0x0002</literal>.
   </para></listitem>
 </varlistentry>
 

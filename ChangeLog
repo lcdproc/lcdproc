@@ -56,6 +56,7 @@ v.0.5dev (ongoing development)
  + hd44780 driver: new ConnectionType ethlcd (Mariusz Bialonczyk)
  + picolcd driver: support to send IR commands to LIRC (Jack Cleaver)
  + picolcd driver: support for 20x4 picoLCDs (Nicu Pavel)
+ + hd44780 driver: new ConnectionType uss720 (Eric Pooch)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

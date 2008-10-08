@@ -209,6 +209,7 @@ John Sanders:
 Eric Pooch:
 	- Mac OS X / Darwin support
 	- serialPOS driver
+	- uss720 connection type for hd44780 driver
 
 Benjamin Wiedmann
 	- Added functionality for HITACHI SP14Q002 gLCD (320x240)

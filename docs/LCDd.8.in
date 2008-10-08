@@ -161,6 +161,9 @@ USB-to-HD44780 converter by BWCT (http://www.bwct.de)
 .B lcd2usb
 Till Harbaum's open source/open hardware LCD2USB (http://www.harbaum.org/till/lcd2usb/)
 .TP
+.B uss720
+USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002 USB Parallel Printer Adapters)
+.TP
 .B i2c
 LCD in 4-bit mode driven by PCF8574(A) / PCA9554(A), connected via I2C bus
 .TP
