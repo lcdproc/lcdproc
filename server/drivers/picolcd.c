@@ -48,11 +48,11 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define DEFAULT_CONTRAST   1000 /* Full */
-#define DEFAULT_BRIGHTNESS 255  /* Full */
-#define DEFAULT_BACKLIGHT  1    /* On */
-#define DEFAULT_KEYLIGHTS  1    /* On */
-#define DEFAULT_TIMEOUT    500  /* Half second */
+#define DEFAULT_CONTRAST	1000 /* Full */
+#define DEFAULT_BRIGHTNESS	1000 /* Full */
+#define DEFAULT_BACKLIGHT	1    /* On */
+#define DEFAULT_KEYLIGHTS	1    /* On */
+#define DEFAULT_TIMEOUT		500  /* Half second */
 
 #define NUM_CCs         8 /* max. number of custom characters */ 
 
@@ -83,8 +83,8 @@ typedef struct pd {
 	char *info;
 	unsigned char *framebuf;
 	unsigned char *lstframe;
-        /* device info struct */
-        picolcd_device *device;
+	/* device info struct */
+	picolcd_device *device;
 	int IRenabled;
 	//For communicating with LIRC
 	int lircsock;
@@ -98,57 +98,55 @@ typedef struct pd {
 
 /* Private function definitions */
 static void picolcd_send(usb_dev_handle *lcd, unsigned char *data, int size);
-/* Write function for 20x2 OEM displays */
 static void picolcd_20x2_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data);
-/* Write function for 20x4 desktop displays */
 static void picolcd_20x4_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data);
-/* Custom character define function for 20x2 OEM displays */
 static void picolcd_20x2_set_char (Driver *drvthis, int n, unsigned char *dat);
-/* Custom character define function for 20x4 desktop displays */
 static void picolcd_20x4_set_char (Driver *drvthis, int n, unsigned char *dat);
 static void get_key_event  (usb_dev_handle *lcd, lcd_packet *packet, int timeout);
 static void set_key_lights (usb_dev_handle *lcd, int keys[], int state);
 static int ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdata, 
-                 				unsigned char *result, int cbresult);
+			unsigned char *result, int cbresult);
 
 picolcd_device picolcd_device_ids[] = {
-        {
-                .device_name  = "picoLCD20x2",
-                .description  = "Driver for picoLCD 20x2 OEM and picoLCD found on M200/M300 cases",
-                .vendor_id    = 0x04d8,
-                .device_id    = 0x0002,
-                .bklight_max  = 1,
+	{
+		.device_name  = "picoLCD20x2",
+		.description  = "Driver for picoLCD 20x2 OEM and picoLCD found on M200/M300 cases",
+		.vendor_id    = 0x04d8,
+		.device_id    = 0x0002,
+		.bklight_max  = 1,
 		.bklight_min  = 0,
-                .contrast_max = 40,
+		.contrast_max = 40,
 		.contrast_min = 0,
-                .width        = 20,
-                .height       = 2,
-                .write        = picolcd_20x2_write,
+		.width        = 20,
+		.height       = 2,
+		.write        = picolcd_20x2_write,
 		.cchar        = picolcd_20x2_set_char,
-                .keymap       = { NULL,  "Plus", "Minus", "F1", "F2", "F3", "F4", "F5",
-			          "Left","Right", "Up", "Down", "Enter" },
-                .initseq      = {},
-        },
-        {
-                .device_name  = "picoLCD20x4",
-                .description  = "Driver for picoLCD 20x4 desktop LCD",
-                .vendor_id    = 0x04d8,
-                .device_id    = 0xc001,
-                .bklight_max  = 100,
+		/* all keymap labels must be shorter than KEYPAD_LABEL_MAX */
+		.keymap       = { NULL,  "Plus", "Minus", "F1", "F2", "F3", "F4", "F5",
+				  "Left", "Right", "Up", "Down", "Enter" },
+		.initseq      = {},
+	},
+	{
+		.device_name  = "picoLCD20x4",
+		.description  = "Driver for picoLCD 20x4 desktop LCD",
+		.vendor_id    = 0x04d8,
+		.device_id    = 0xc001,
+		.bklight_max  = 100,
 		.bklight_min  = 0,
-                .contrast_max = 1,
+		.contrast_max = 1,
 		.contrast_min = 0,
-                .width        = 20,
-                .height       = 4,
-                .write        = picolcd_20x4_write,
+		.width        = 20,
+		.height       = 4,
+		.write        = picolcd_20x4_write,
 		.cchar        = picolcd_20x4_set_char,
-                .keymap       = { NULL, "Back", "F1", "F2", "F3", "Home", "Down", 
-			          "Enter", "Up", "", "", "", ""},
-                .initseq      = { 0x94, 0x00, 0x07, 0x00, 0x32, 0x30, 0x00,0x32, 0x30, 0x00, 0x32,
-                                  0x30, 0x00, 0x32, 0x38, 0x00, 0x32, 0x06, 0x00, 0x32, 0x0C, 0x07, 
-                                  0xD0, 0x01},
-        },
-        {}, /* End list */
+		/* all keymap labels must be shorter than KEYPAD_LABEL_MAX */
+		.keymap       = { NULL, "Escape", "F1", "F2", "F3", "Home", "Down", 
+				  "Enter", "Up", "", "", "", ""},
+		.initseq      = { 0x94, 0x00, 0x07, 0x00, 0x32, 0x30, 0x00, 0x32,
+				  0x30, 0x00, 0x32, 0x30, 0x00, 0x32, 0x38, 0x00,
+				  0x32, 0x06, 0x00, 0x32, 0x0C, 0x07, 0xD0, 0x01},
+	},
+	{}, /* End list */
 };
 
 /* lcd_logical_driver Variables */
@@ -165,7 +163,7 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 	struct usb_device *dev;
 	const char *lirchost;
 	int lircport;
-        int id;
+	int id;
 
 	p = (PrivateData *) malloc(sizeof(PrivateData));
 	if (p == NULL)
@@ -180,54 +178,59 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 	usb_find_devices();
 
 	p->lcd = NULL;
-        p->device = NULL;
-        
-        for (id = 0; picolcd_device_ids[id].device_name; ++id) {
-                report(RPT_INFO, "Looking for device %s ", picolcd_device_ids[id].device_name);
-	        for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
-		      for (dev = bus->devices; dev != NULL; dev = dev->next) {
-		              if ((dev->descriptor.idVendor == picolcd_device_ids[id].vendor_id) &&
-                                  (dev->descriptor.idProduct == picolcd_device_ids[id].device_id)) {
-				
-		                      report(RPT_INFO, "Found %s on bus %s device %s", picolcd_device_ids[id].device_name,
-                                                bus->dirname, dev->filename);
-				      
-				      p->lcd = usb_open(dev);
-                                      p->device = &picolcd_device_ids[id];
-				      goto done;
-			     }
-		      }
-	       }
-        }
+	p->device = NULL;
+
+	for (id = 0; picolcd_device_ids[id].device_name != NULL; ++id) {
+		report(RPT_INFO, "%s: looking for device %s ",
+			drvthis->name, picolcd_device_ids[id].device_name);
+		for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
+			for (dev = bus->devices; dev != NULL; dev = dev->next) {
+				if ((dev->descriptor.idVendor == picolcd_device_ids[id].vendor_id) &&
+				     (dev->descriptor.idProduct == picolcd_device_ids[id].device_id)) {
+					report(RPT_INFO, "%s: found %s on bus %s device %s",
+						drvthis->name, picolcd_device_ids[id].device_name,
+						bus->dirname, dev->filename);
+
+					p->lcd = usb_open(dev);
+					p->device = &picolcd_device_ids[id];
+					goto done;
+				}
+			}
+		}
+	}
 	done:
 
 	if (p->lcd != NULL) {
 		debug(RPT_DEBUG, "%s: opening device succeeded", drvthis->name);
+
 #ifdef LIBUSB_HAS_GET_DRIVER_NP
-                char driver[1024];
-                if (usb_get_driver_np(p->lcd, 0, driver, sizeof(driver)) == 0) {
-                        report(RPT_WARNING, "Interface 0 already claimed by '%s' detaching.", driver);
+		char driver[1024];
+
+		if (usb_get_driver_np(p->lcd, 0, driver, sizeof(driver)) == 0) {
+			report(RPT_WARNING, "%s: interface 0 already claimed by '%s' - detaching",
+				drvthis->name, driver);
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
-                        if ((usb_detach_kernel_driver_np(p->lcd, 0) < 0))
-                                report(RPT_ERR, "%s: unable to detach %s driver", driver);
+			if ((usb_detach_kernel_driver_np(p->lcd, 0) < 0))
+				report(RPT_ERR, "%s: unable to detach %s driver", drvthis->name, driver);
 #endif
-                }
+		}
 #endif
 		if (usb_claim_interface(p->lcd, 0) < 0) {
-			report(RPT_ERR, "Cannot claim interface !", driver);
+			report(RPT_ERR, "%s: cannot claim interface!", drvthis->name);
 			usb_close(p->lcd);
 			return -1;
 		}
 		usleep(100);
 		if (usb_set_altinterface(p->lcd, 0) < 0)
 			report(RPT_WARNING, "%s: unable to set alternate configuration", drvthis->name);
-        } else {
-                report(RPT_ERR, "%s: no device found", drvthis->name);
-                return -1;
-        }		
+	}
+	else {
+		report(RPT_ERR, "%s: no device found", drvthis->name);
+		return -1;
+	}		
 	
-        /* if the device has a init sequence sent it to device */
-        picolcd_send(p->lcd, p->device->initseq, PICOLCD_MAX_DATA_LEN);
+	/* if the device has a init sequence sent it to device */
+	picolcd_send(p->lcd, p->device->initseq, PICOLCD_MAX_DATA_LEN);
 
 	p->width  = p->device->width; 
 	p->height = p->device->height;
@@ -236,24 +239,19 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
 	p->ccmode = standard;
 
-	for (x = 0; x < KEYPAD_LIGHTS; x++)
-		p->key_light[x] = 1; /* individual lights on */
-
-	p->contrast     = drvthis->config_get_int( drvthis->name, "Contrast",   0, DEFAULT_CONTRAST );
-	p->brightness     = drvthis->config_get_int( drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS );
+	p->contrast     = drvthis->config_get_int(drvthis->name, "Contrast",   0, DEFAULT_CONTRAST);
+	p->brightness   = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	p->backlight    = drvthis->config_get_bool(drvthis->name, "BackLight",  0, DEFAULT_BACKLIGHT);
 	p->keylights    = drvthis->config_get_bool(drvthis->name, "KeyLights",  0, DEFAULT_KEYLIGHTS); /* key lights with LCD Backlight? */
-	p->key_timeout  = drvthis->config_get_int( drvthis->name, "KeyTimeout", 0, DEFAULT_TIMEOUT  );
+	p->key_timeout  = drvthis->config_get_int(drvthis->name, "KeyTimeout", 0, DEFAULT_TIMEOUT);
 
-	/* These allow individual lights to be disabled */
-	p->key_light[0] = drvthis->config_get_bool(drvthis->name, "Key0Light",  0, 1); 
-	p->key_light[1] = drvthis->config_get_bool(drvthis->name, "Key1Light",  0, 1); 
-	p->key_light[2] = drvthis->config_get_bool(drvthis->name, "Key2Light",  0, 1); 
-	p->key_light[3] = drvthis->config_get_bool(drvthis->name, "Key3Light",  0, 1); 
-	p->key_light[4] = drvthis->config_get_bool(drvthis->name, "Key4Light",  0, 1); 
-	p->key_light[5] = drvthis->config_get_bool(drvthis->name, "Key5Light",  0, 1); 
-	p->key_light[6] = drvthis->config_get_bool(drvthis->name, "Key6Light",  0, 1); 
-	p->key_light[7] = drvthis->config_get_bool(drvthis->name, "Key7Light",  0, 1); 
+	/* allow individual lights to be set */
+	for (x = 0; x < KEYPAD_LIGHTS; x++) {
+		char configkey[32];
+
+		sprintf(configkey, "Key%dLight", x);
+		p->key_light[x] = drvthis->config_get_bool(drvthis->name, configkey, 0, 1);
+	}	
 
 	p->framebuf = (unsigned char *) malloc(p->width * p->height + 1);
 	if (p->framebuf == NULL) {
@@ -296,10 +294,10 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 	                return -1;
 	        }
 		if ((p->lircsock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-  			report(RPT_ERR, "%s: failed to create socket to send data to LIRC", drvthis->name);
+			report(RPT_ERR, "%s: failed to create socket to send data to LIRC", drvthis->name);
 			return -1;
 		}
-    
+
 		/* Construct the server sockaddr_in structure */
 		memset(&p->lircserver, 0, sizeof(p->lircserver));		/* Clear struct */
 		p->lircserver.sin_family = AF_INET;				/* Internet/IP */
@@ -396,7 +394,7 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char *
 	unsigned char *dest;
 	int  len;
 
-		debug(RPT_DEBUG, "%s: string start (%s)", drvthis->name, str);
+	debug(RPT_DEBUG, "%s: string start (%s)", drvthis->name, str);
 
 	if (y < 1 || y > p->height)
 		return;
@@ -413,7 +411,7 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char *
 
 	x--; y--; /* Convert 1-based to 0-based */
 	dest = p->framebuf + (y * p->width + x);
-	memcpy(dest, str, len * sizeof(char));
+	memcpy(dest, str, len * sizeof(unsigned char));
 
 	debug(RPT_DEBUG, "%s: string complete (%s)", drvthis->name, str);
 }
@@ -423,6 +421,7 @@ MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char chr)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char *dest;
+
 	debug(RPT_DEBUG, "%s: chr start (%c)", drvthis->name, chr);
 
 	if (y < 1 || y > p->height)
@@ -432,7 +431,8 @@ MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char chr)
 
 	x--; y--; /* Convert 1-based to 0-based */
 	dest = p->framebuf + (y * p->width + x);
-	memcpy(dest, &chr, sizeof(char));
+	memcpy(dest, &chr, sizeof(unsigned char));
+
 	debug(RPT_DEBUG, "%s: chr complete (%c)", drvthis->name, chr);
 }
 
@@ -602,19 +602,26 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 				debug(RPT_DEBUG, "%s: get_key got all clear", drvthis->name);
 				/* Got a <0, 0> key-up event after reading a valid key press event */
 				keys_read++; /* All clear */
-			} else if (! keydata->data[2] && ! two_keys) {
+			}
+			else if (! keydata->data[2] && ! two_keys) {
 				debug(RPT_DEBUG, "%s: get_key got one key", drvthis->name);
 				/* We got one key (but not after a two key event and before and all clear) */
 				keystr = p->device->keymap[keydata->data[1]];
-			} else {
+			}
+			else {
 				/* We got two keys */
+				static char keybuf[2 * KEYPAD_LABEL_MAX + 1];
+
 				debug(RPT_DEBUG, "%s: get_key got two keys", drvthis->name);
 				two_keys++;
-				sprintf(keystr, "%s+%s", p->device->keymap[keydata->data[1]], p->device->keymap[keydata->data[2]]);
+				sprintf(keybuf, "%s+%s", p->device->keymap[keydata->data[1]],
+							 p->device->keymap[keydata->data[2]]);
+				keystr = keybuf;
 			}
 
 			key_pass++; /* This hack allows us to deal with receiving left over <0,0> first */
-		} else if (p->IRenabled && keydata->type == IN_REPORT_IR_DATA) {
+		}
+		else if (p->IRenabled && keydata->type == IN_REPORT_IR_DATA) {
 			int cbres;
 
 			debug(RPT_NOTICE, "%s: get_key irdata, length=%d bytes",
@@ -627,7 +634,8 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 			if (cbres < 0) {
 				report(RPT_ERR, "%s: could not transcode buffer, length=%d",
 					drvthis->name, keydata->data[1]);
-			} else {
+			}
+			else {
 				debug(RPT_NOTICE, "%s: sending packet to lirc, length=%d",
 					drvthis->name, cbres);
 			    int ret = sendto(p->lircsock, p->result, cbres, 0, 
@@ -635,14 +643,17 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 			    if (ret == -1) {
 			    	report(RPT_ERR, "%s: error sending UDP packet, errno=%d",
 					drvthis->name, errno);
-			    } else if (ret != cbres) {
+			    }
+			    else if (ret != cbres) {
 			    	report(RPT_ERR, "%s: mismatch in number of bytes sent (%d!=%d)",
 					drvthis->name, cbres, ret);
-			    } else {
+			    }
+			    else {
 			    	debug(RPT_NOTICE, "%s: packet sent to lirc.", drvthis->name);
 	   	        }
 	   	    }
-		} else {
+		}
+		else {
 			debug(RPT_DEBUG, "%s: get_key got non-key data or timeout", drvthis->name);
 			/* We got IR or otherwise bad data */
 			free(keydata);
@@ -694,40 +705,42 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 /* lcd_logical_driver User-defined character functions */
 
 /* lcd_logical_driver Hardware functions */
-/*MODULE_EXPORT int picoLCD_get_contrast(Driver *drvthis)
+MODULE_EXPORT int picoLCD_get_contrast(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-}*/
+	return p->contrast;
+}
 
 
-MODULE_EXPORT int  picoLCD_set_contrast(Driver *drvthis, int promille)
+MODULE_EXPORT void picoLCD_set_contrast(Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
 	int inv; /* The hardware seems to go dark on higher values, so we turn it around */
 	unsigned char packet[2] = { 0x92 }; /* set contrast id */
 	
-	
-	
 	if (promille <= 1000 && promille > 0) {
+		p->contrast = promille;
+
 		if (p->device->contrast_max == 1) 
 			packet[1] = 0x00; /* picoLCD20x4 permits contrast as 0/1 value */
 		else {
 			inv = 1000 - promille;
 			packet[1] =  inv / 1000 * p->device->contrast_max;
 		}
-	} else if (promille > 1000) {
+	}
+	else if (promille > 1000) {
+		p->contrast = 1000;
 		packet[1] = p->device->contrast_min;
-	} else if (promille <= 0) {
+	}
+	else if (promille <= 0) {
+		p->contrast = 0;
 		packet[1] = p->device->contrast_max;
-	} else {
-		return -1;
 	}
 	
 	picolcd_send(p->lcd, packet, 2);
-	
-	return 0;
 }
+
 
 /*MODULE_EXPORT int picoLCD_get_brightness(Driver *drvthis, int state)
 {
@@ -760,23 +773,18 @@ MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state)
 	if (s > p->device->bklight_max)
 		s = p->device->bklight_max;
 	
-	if (state == 0) {
+	if (state == BACKLIGHT_OFF) {
 		//packet[1] = (unsigned char) p->device->bklight_min; 
 		packet[1] = 0xff;
 		picolcd_send(p->lcd, packet, 2);
 		set_key_lights(p->lcd, p->key_light, state);
-		return;
 	} 
-
-	if (state == 1) {
+	else if (state == BACKLIGHT_ON) {
 		packet[1] = (unsigned char) s;
 		picolcd_send(p->lcd, packet, 2);
 		if (p->keylights)
 			set_key_lights(p->lcd, p->key_light, state);
-		return;
 	}
-
-	return;
 }
 
 /*MODULE_EXPORT int  picoLCD_output(Driver *drvthis, int state) {
@@ -812,7 +820,7 @@ MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis) {
  * @return: 		number of bytes placed in result buffer.
  */
 static int ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdata, 
-                 				unsigned char *result, int cbresult)
+			unsigned char *result, int cbresult)
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -860,7 +868,8 @@ static int ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdat
 			//scale: orig is usec, new is jiffy. E.g. 9055usec = 148 jiffy.
 			w = (w * 16384 /1000000) & 0xFFFF;
 			p->gap -= w;
-		} else {
+		}
+		else {
 			//Scale.
 			w = w * 16384 / 1000000;
 			//Set the space bit.
@@ -870,7 +879,8 @@ static int ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdat
 		if (resptr + 2 < cbresult) {
 			result[resptr++] = w & 0xFF;
 			result[resptr++] = (w >> 8) & 0xFF;
-		} else {
+		}
+		else {
 			resptr = -1;
 			break;
 		}
@@ -893,17 +903,21 @@ static int ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdat
 					p->gap |= 0x8000;
 					result[resptr++] = p->gap & 0xFF;
 					result[resptr++] = (p->gap >>8) & 0xFF;
-				} else {
+				}
+				else {
 					debug(RPT_DEBUG, "%s: terminal space=[%04x]; not appending gap (length=%d jiffies)", (unsigned int)(w & 0xffff), drvthis->name, p->gap);
 				}
-			} else {
+			}
+			else {
 				debug(RPT_DEBUG, "%s: not appending gap because it would be negative (length=%d jiffies)", drvthis->name, p->gap);
 			}
-		} else {
+		}
+		else {
 			//Result buffer would overflow
 			resptr = -1;
 		}
-	} else {
+	}
+	else {
 		debug(RPT_DEBUG, "%s: cIntervals=%d; not appending gap (length=%d jiffies)",
 			drvthis->name, cIntervals, p->gap);
 	}
@@ -913,73 +927,65 @@ static int ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdat
 
 static void picolcd_send(usb_dev_handle *lcd, unsigned char *data, int size)
 {
-        if ((lcd == NULL) && (data == NULL))
-             return;
-        
-        usb_interrupt_write(lcd, USB_ENDPOINT_OUT + 1, (char *) data, size, 1000);
+	if ((lcd == NULL) && (data == NULL))
+		return;
+
+	usb_interrupt_write(lcd, USB_ENDPOINT_OUT + 1, (char *) data, size, 1000);
 }
 
+
+/* Write function for 20x4 desktop displays */
 static void picolcd_20x4_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data)
 {
-        unsigned char packet[64];
-        
-        unsigned char lineset[4][6] = {
-                { 0x94, 0x00, 0x01, 0x00, 0x64, 0x80 },
-                { 0x94, 0x00, 0x01, 0x00, 0x64, 0xC0 },
-                { 0x94, 0x00, 0x01, 0x00, 0x64, 0x94 },
-                { 0x94, 0x00, 0x01, 0x00, 0x64, 0xD4 }
-        };
-        
-        int len, i;
-    	
-        switch(row) {
-                case 0: picolcd_send(lcd, lineset[0], 6);  break;
-                case 1: picolcd_send(lcd, lineset[1], 6);  break;
-                case 2: picolcd_send(lcd, lineset[2], 6);  break;
-                case 3: picolcd_send(lcd, lineset[3], 6);  break;
-                default: picolcd_send(lcd, lineset[0], 6);  break;
-        }
-    
-        len = strlen((char *)data);
-        if (len > 20) len = 20;
+	unsigned char packet[64] = { 0x95, 0x01, 0x00, 0x01 };
+	unsigned char lineset[4][6] = {
+		{ 0x94, 0x00, 0x01, 0x00, 0x64, 0x80 },
+		{ 0x94, 0x00, 0x01, 0x00, 0x64, 0xC0 },
+		{ 0x94, 0x00, 0x01, 0x00, 0x64, 0x94 },
+		{ 0x94, 0x00, 0x01, 0x00, 0x64, 0xD4 }
+	};
+	int len = strlen((char *) data);
 
-        packet[0] = 0x95;
-        packet[1] = 0x01;
-        packet[2] = 0x00;
-        packet[3] = 0x01;
-        packet[4] = len;
+	if (len > 20)
+		len = 20;
 
-        i = 5;
-        while (len--) {
-                packet[i++] = *data++;
-        }
+	switch (row) {
+		case 0:  picolcd_send(lcd, lineset[0], 6);  break;
+		case 1:  picolcd_send(lcd, lineset[1], 6);  break;
+		case 2:  picolcd_send(lcd, lineset[2], 6);  break;
+		case 3:  picolcd_send(lcd, lineset[3], 6);  break;
+		default: picolcd_send(lcd, lineset[0], 6);  break;
+	}
 
-        picolcd_send(lcd, packet, i);
+	packet[4] = len;
+
+	memcpy(packet + 5, data, len);
+
+	picolcd_send(lcd, packet, 5 + len);
 }
 
 
+/* Write function for 20x2 OEM displays */
 static void picolcd_20x2_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data)
 {
-	unsigned char packet[64];
-        int len, i;
-    
-        len = strlen((char *)data);
-        if (len > 20) len = 20;
+	unsigned char packet[64] = { 0x98 };
+	int len = strlen((char *) data);
 
-	packet[0] = 0x98;
-        packet[1] = row;
-        packet[2] = col;
-        packet[3] = len;
+	if (len > 20)
+		len = 20;
 
-	i = 4;
-	while (len--) {
-		packet[i++] = *data++;
-        }
+	packet[1] = row;
+	packet[2] = col;
+	packet[3] = len;
 
-	picolcd_send(lcd, packet, i);
+	memcpy(packet + 4, data, len);
+
+	picolcd_send(lcd, packet, 4 + len);
 }
 
-static void picolcd_20x2_set_char (Driver *drvthis, int n, unsigned char *dat)
+
+/* Custom character define function for 20x2 OEM displays */
+static void picolcd_20x2_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char packet[10] = { 0x9c };   /* define character */ 
@@ -998,29 +1004,26 @@ static void picolcd_20x2_set_char (Driver *drvthis, int n, unsigned char *dat)
 	}
 	
 	picolcd_send(p->lcd, packet, 10);
-	
-	return;
 }
 
 
-static void picolcd_20x4_set_char (Driver *drvthis, int n, unsigned char *dat)
+/* Custom character define function for 20x4 desktop displays */
+static void picolcd_20x4_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
+	PrivateData *p = drvthis->private_data;
 	
 	if ((n < 0) || (n >= NUM_CCs))
 		return;
 	if (!dat)
 		return;
 	
-	PrivateData *p = drvthis->private_data;
 	unsigned char command[6] = { OUT_REPORT_CMD, 0x00, 0x01, 0x00, 0x64, 0x40+8*n }; /* 0x94 */
 	unsigned char data[13] = { OUT_REPORT_DATA, 0x01, 0x00, 0x01, 0x08,
 					dat[0], dat[1], dat[2], dat[3], 
-  					dat[4], dat[5], dat[6], dat[7]};                 /* 0x95 */
+					dat[4], dat[5], dat[6], dat[7]};                 /* 0x95 */
 	
 	picolcd_send(p->lcd, command, 6);
 	picolcd_send(p->lcd, data, 13);
-	
-	return;
 }
 
 
@@ -1030,7 +1033,7 @@ static void get_key_event(usb_dev_handle *lcd, lcd_packet *packet, int timeout)
 
 	memset(packet->data, 0, 255);
 	packet->type = 0;
-        
+
 	ret = usb_interrupt_read(lcd, USB_ENDPOINT_IN + 1, (char *)packet->data, PICOLCD_MAX_DATA_LEN, timeout);
 	if (ret > 0) {
 		switch (packet->data[0]) {
@@ -1039,13 +1042,13 @@ static void get_key_event(usb_dev_handle *lcd, lcd_packet *packet, int timeout)
 			} break;
 			case IN_REPORT_IR_DATA: {
 				packet->type = IN_REPORT_IR_DATA;
-                               /* 
-                                * clears the halt status on the usb endpoint 
-                                * picoLCD 20x4 keeps last ir state without clearing the
-                                * status on endpoint, meaning that we will get same IR data 
-                                * over and over till we clear the status manually.
-                                */
-                                usb_clear_halt(lcd, USB_ENDPOINT_IN + 1);
+				/* 
+				 * clears the halt status on the usb endpoint 
+				 * picoLCD 20x4 keeps last ir state without clearing the
+				 * status on endpoint, meaning that we will get same IR data 
+				 * over and over till we clear the status manually.
+				 */
+				usb_clear_halt(lcd, USB_ENDPOINT_IN + 1);
 			} break;
 			default: {
 				packet->type = 0;
@@ -1057,23 +1060,24 @@ static void get_key_event(usb_dev_handle *lcd, lcd_packet *packet, int timeout)
 
 static void set_key_lights(usb_dev_handle *lcd, int keys[], int state)
 {
-        unsigned char packet[2] = { 0x81 }; /* set led */
+	unsigned char packet[2] = { 0x81 }; /* set led */
 	unsigned int leds = 0; 
-        int i;
-    
+	int i;
+
 	if (state) {
 		/* Only LEDs we want on */
 		for (i = 0; i < KEYPAD_LIGHTS; i++) 
 			if(keys[i]) 
-				leds |= 1 << i;
+				leds |= (1 << i);
 			else 
 				leds &= ~ (1 << i);
-	} else {
+	}
+	else {
 		/* All LEDs off */
 		leds = 0;
 	}
 	
 	packet[1] = leds;
-        picolcd_send(lcd, packet, 2);
+	picolcd_send(lcd, packet, 2);
 }
 

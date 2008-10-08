@@ -1,55 +1,107 @@
 <sect1 id="picolcd">
-<title>The Mini-Box USB LCD (picoLCD 20x2) Driver (picolcd)</title>
+<title>The Mini-Box.com USB LCD picoLCD Driver</title>
 
 <para>
-	This section covers the installation and use of the Mini-Box USB LCD (picoLCD 
-	20x2) display.
-</para>
-<para>
-	The picoLCD page indicates that the device can be connected via I<superscript>2</superscript>C 
-	or USART.  
-	This LCDproc driver, however, is limited to the USB connected model. 
+	This section covers the installation and use of the Mini-Box USB LCD displays.
 </para>
 
-<sect2 id="picolcd-setup">
-<title>Setting up the picoLCD</title>
+<sect2 id="picolcd-displays">
+<title>Displays</title>
+<para>
+	<ulink url="http://www.mini-box.com/">Mini-Box.com</ulink> offers two types of
+	USB LCD displays:
+</para>
+
+<variablelist>
+<varlistentry>
+<term>PicoLCD 4x20-Sideshow</term>
+<listitem>
+<para>
+	<ulink url="http://www.mini-box.com/PicoLCD-4X20-Sideshow">PicoLCD 4x20-Sideshow</ulink>
+	is the desktop variant targeted at end users.
+	It an external USB 2.0 full speed device that comes in a stylish casing and
+	sports a 4 line by 20 character display with white letters
+	on a blue background, a built-in InfraRed receiver as well as an
+	keypad with 8 keys labeled <literal>Escape</literal>, <literal>F1</literal>,
+	<literal>F2</literal>, <literal>F3</literal>, <literal>Home</literal>,
+	<literal>Up</literal>, <literal>Down</literal> and <literal>Enter</literal>.
+</para>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>picoLCD 20x2 (OEM)</term>
+<listitem>
+<para>
+	<ulink url="http://www.mini-box.com/picoLCD-20x2">picoLCD-20x2-OEM</ulink> is
+	the OEM version.
+	It is a 2 line by 20 character display with black letters on a
+	yellow-green background, that can be connected to the system via
+	USB, I<superscript>2</superscript>C or USART (the latter two are
+	not supported by this driver).
+	It  has connectors for an InfraRed receiver, keypad and LEDs.
+</para>
 
 <para>
-	The picoLCD device as used by this driver is USB connected and may be purchased 
-	with an internal USB header connector (5-pin to 5-pin) or an external cable 
-	(Type-A to 5-pin).  See: <ulink url="http://www.mini-box.com/picoLCD-20x2-OEM"/>.
-	It may also come pre-installed on systems like the Mini-Box M300: 
-	<ulink url="http://www.mini-box.com/Mini-Box-M300-LCD"/>.
+ 	When pre-installed in enclosures like the
+	<ulink url="http://www.mini-box.com/Mini-Box-M300-LCD">Mini-Box M300 LCD</ulink>
+	it comes equipped with an InfraRed receiver as well as key pad with 
+	12 keys labeled <literal>Plus</literal>, <literal>Minus</literal>,
+	<literal>F1</literal>, <literal>F2</literal>, <literal>F3</literal>,
+	<literal>F4</literal>, <literal>F5</literal>, <literal>Up</literal>,
+	<literal>Down</literal>, <literal>Left</literal>, <literal>Right</literal>,
+	and <literal>Enter</literal>.
 </para>
+
 <para>
-	Building and using the USB LCD with this driver requires the
-	<filename>libusb</filename> library.
-	Most distributions do provide this library.
-	The only kernel module required is the USB host controller driver 
-	(<filename>uhci_hcd</filename> on the M300) to fire up the USB bus
+	Finally, the picoLCD 20x2 (OEM) supports 8 general purpose outputs
+	and 10 custom splash screens.
+	Although these features are not supported by this driver, the
+	splash screens can be changed using the <command>usblcd</command> 
+	tool, that can be built from the Linux SDK available on the picoLCD web page.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+</sect2>
+
+
+<sect2 id="picolcd-requirements">
+<title>Requirements</title>
+
+<para>
+	The driver is based on the
+	<ulink url="http://libusb.sourceforge.net/"><filename>libusb</filename></ulink>
+	USB library, which should make it work with Linux, the different BSB variants
+	as well as Darwin/MacOS X.
+
+<note>
+	<para>
+		When using a <filename>libusb</filename> based driver like
+		<code>picolcd</code>, <application>LCDd</application>
+		needs to be started as root.
+	</para>
+</note>
+</para>
+
+<para>
+	On Linux, the only kernel module required is the USB host controller
+	driver 	(<filename>uhci_hcd</filename> on the M300) to fire up the USB bus
 	to which the LCD is attached.
+	For other operating systems, analogous requirements apply.
 </para>
+
 <para>
-	Lastly, the <filename>usbfs</filename> file system must be mounted on
+	Lastly, for <filename>libusb</filename> to work correctly,
+	the <filename>usbfs</filename> file system must be mounted on
 	<filename>/proc/bus/usb</filename>, e.g. using the command
-	<code>mount -t usbfs usbfs /proc/bus/usb</code> or by your disptributions
+	<code>mount -t usbfs usbfs /proc/bus/usb</code> or by your system's
 	default configuration.
 </para>
-<para>
-	You can also change the USB LCD's initial display (what it shows when you
-	initialize the device) by using the <command>usblcd</command> binary's
-	<command>splash</command> command.
-</para>
-<para>
-	To use the picoLCD with LCDproc, add <literal>picolcd</literal>
-	to the LCDproc <code>./configure</code> <code>--drivers</code> option 
-	(or use <literal>all</literal>), set the <code>Driver=</code> to
-	<literal>picolcd</literal> in the <filename>LCDd.conf</filename> config
-	file, and then start <application>LCDd</application> either directly or using startup scripts.
-	The driver has sane default options and the options that are user configurable
-	are limited to mostly simple items, like contrast and which keys to light up.
-</para>
 </sect2>
+
+
 
 <sect2 id="picolcd-config">
 <title>Configuration in LCDd.conf</title>
@@ -58,6 +110,37 @@
 <title>[picolcd]</title>
 
 <variablelist>
+<!--
+<varlistentry>
+  <term>
+    <command>Backlight</command> =
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Turn on backlight.
+  </para></listitem>
+</varlistentry>
+-->
+
+<varlistentry>
+  <term>
+    <command>Brightness</command> =
+    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+  </term>
+  <listitem>
+  <para>
+    Set the initial brightness.
+    Legal values are: <literal>0</literal> - <literal>1000</literal>.
+    If not given, it defaults to <literal><emphasis>1000</emphasis></literal>.
+  </para>
+  </listitem>
+</varlistentry>
+
 <varlistentry>
   <term>
     <command>Contrast</command> =
@@ -66,9 +149,10 @@
   <listitem><para>
     Contrast: <literal>0</literal>-<literal>1000</literal>.
     <literal>0</literal> is visible, and <literal>1000</literal> is not on my M300.
-    Default is <literal>0</literal>.			
+    Default is <literal><emphasis>1000</emphasis></literal>.			
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>KeyLights</command> =
@@ -83,6 +167,7 @@
     Allow key LEDs to be turned on or off. Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>Key0Light</command> =
@@ -98,6 +183,7 @@
     setting this value to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>Key1Light</command> =
@@ -113,6 +199,7 @@
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>Key2Light</command> =
@@ -128,6 +215,7 @@
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>Key3Light</command> =
@@ -143,6 +231,7 @@
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>Key4Light</command> =
@@ -158,6 +247,7 @@
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>Key5Light</command> =
@@ -173,6 +263,7 @@
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
     <command>KeyTimeout</command> =
@@ -186,9 +277,10 @@
     Larger values make key presses more reliable if somewhat slow to take effect.
   </para></listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
-    <command>LircHost=</command>
+    <command>LircHost</command> =
     <arg choice="plain"><replaceable>HOSTNAME_OR_IP-ADDRESS</replaceable></arg>
   </term>
   <listitem>
@@ -206,9 +298,10 @@
   </para>
   </listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
-    <command>LircPort=</command>
+    <command>LircPort</command> =
     <arg choice="plain"><replaceable>PORTNUM</replaceable></arg>
   </term>
   <listitem>
@@ -218,9 +311,10 @@
   </para>
   </listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
-    <command>LircSync=</command>
+    <command>LircSync</command> =
     <arg choice="plain"><replaceable>DURATION</replaceable></arg>
   </term>
   <listitem>
@@ -232,9 +326,10 @@
   </para>
   </listitem>
 </varlistentry>
+
 <varlistentry>
   <term>
-    <command>LircLength=</command>
+    <command>LircLength</command> =
     <arg choice="plain"><replaceable>DURATION</replaceable></arg>
   </term>
   <listitem>
@@ -251,63 +346,53 @@
 </sect3>
 </sect2>
 
-<sect2 id="picolcd-status">
-	<title>picolcd driver status</title>
 
-	<para>
-		The lcdproc picolcd driver relies upon Mini-Box's usblcd library to setup the USB/HID 
-		interface.  Unfortunately the usblcd library is very thin and tends to put function 
-		results on stdout/stderr instead of in return values.  They (Mini-Box) really had 
-		scripting interfaces in mind.
-	</para>
-	<para>
-		The primary example of this is that I had to write a replacement (get_key_events) for 
-		usblcd's read_events so that I could get the key presses back to the calling function 
-		instead of on stdout.  usblcd also has a large number of function shells for which no 
-		code exists yet.  I am not an expert on HID and USB coding, but if and as time permits 
-		and hardware is available I will try and improve this drivers access to the hardware in 
-		order to get back data (get_contrast for example) and to potentially drive multiple 
-		pcioLCDs at once (or pick the one we want out of many).
-	</para>
-	<para>
-		To sum up, this driver right now stabs and hopes since response data is lacking.
-	</para>
-	<para>
-		The hardware also reports key-up events.  Normally this would be of no issue (they are 
-		usually a 0 or 'no key') except that when keys are used in combonation, the key-up 
-		event may actually come back as multiple events depending on how the user released the 
-		keys.  If the key-up event for a multiple key press comes back as two events, the first 
-		up event will actually look like a new key press.  The algorithm in get_key tries to 
-		deal with this in a sane way and toss out all key-up events for now.  The hardware is 
-		touchy and both combo key-down and key-up actions may be reported as mutiple events if 
-		the user is more than a tenth of a second (maybe less?) off in motions.
-	</para>
-	<sect3 id="picolcd-ir-status">
-	<title>Infrared sensor status</title>
-	<para>
-	    LIRC expects sensor data that starts with a longish 'sync' space, denoting the start of 
-	    a command; followed by the code data, a sequence of mark/space pairs; sometimes followed by 
-	    a 'gap', which should be a space long enough to make the entire command up to a preset 
-	    duration in milliseconds. The 'sync' and the 'gap' are absent from the data 
-	    emitted by the picolcd hardware. I found that LIRC configuration files for remotes similar to the 
-	    ones I tested all used such a fixed-duration encoding, and as that was the only way I could get it 
-	    working, this driver by default adds the gap as well as the sync. However I have 
-	    <emphasis>still</emphasis> had trouble getting <code>irrecord</code> to work; you need at least 
-	    to feed it a template configuration containing sync and gap data.  
-	</para>
-	<para>
-	    This code could therefore use more testing, more research, and more work.
-	</para>  
-	</sect3>
+<sect2 id="picolcd-status">
+<title>picolcd driver status</title>
+
+<para>
+	The hardware also reports key-up events.  Normally this would be of no issue (they are 
+	usually a 0 or 'no key') except that when keys are used in combonation, the key-up 
+	event may actually come back as multiple events depending on how the user released the 
+	keys.  If the key-up event for a multiple key press comes back as two events, the first 
+	up event will actually look like a new key press.  The algorithm in get_key tries to 
+	deal with this in a sane way and toss out all key-up events for now.  The hardware is 
+	touchy and both combo key-down and key-up actions may be reported as mutiple events if 
+	the user is more than a tenth of a second (maybe less?) off in motions.
+</para>
+
+<sect3 id="picolcd-ir-status">
+<title>Infrared sensor status</title>
+
+<para>
+	LIRC expects sensor data that starts with a longish 'sync' space, denoting the start of 
+	a command; followed by the code data, a sequence of mark/space pairs; sometimes followed by 
+	a 'gap', which should be a space long enough to make the entire command up to a preset 
+	duration in milliseconds. The 'sync' and the 'gap' are absent from the data 
+	emitted by the picolcd hardware. I found that LIRC configuration files for remotes similar to the 
+	ones I tested all used such a fixed-duration encoding, and as that was the only way I could get it 
+	working, this driver by default adds the gap as well as the sync. However I have 
+	<emphasis>still</emphasis> had trouble getting <code>irrecord</code> to work; you need at least 
+	to feed it a template configuration containing sync and gap data.  
+</para>
+
+<para>
+	This code could therefore use more testing, more research, and more work.
+</para>  
+
+</sect3>
 </sect2>
 
+
 <sect2 id="picolcd-copy">
-	<title>Copyright</title>
-	<para>
-		The lcdproc picolcd driver originally was written by Gatewood Green (woody@nitrosecurity.com) 
-		or (woody@linif.org) and paid for by NitroSecurity, Inc (nitrosecurity.com),
-		but has been extended with code from various contributors since then.
-	</para>
+<title>Copyright</title>
+
+<para>
+	The lcdproc picolcd driver originally was written by Gatewood Green (woody@nitrosecurity.com) 
+	or (woody@linif.org) and paid for by NitroSecurity, Inc (nitrosecurity.com),
+	but has been extended with code from various contributors since then.
+</para>
+
 </sect2>
 
 </sect1>

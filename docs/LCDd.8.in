@@ -220,7 +220,7 @@ LCD display on the Logitech MX5000 keyboard
 Noritake VFD Device CU20045SCPB-T28A
 .TP
 .B picolcd
-Mini-box.com USB LCD (picoLCD 20x2)
+Mini-box.com USB LCD (PicoLCD 20x4 & picoLCD 20x2)
 .TP
 .B pyramid
 LCD displays from Pyramid (http://www.pyramid.de) 
