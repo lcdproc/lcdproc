@@ -17,7 +17,6 @@
  *
  * Applicable Data Sheets:
  * - http://digilander.libero.it/demarchidaniele/qcamvc/uss-720.pdf
- * - http://www.beyondlogic.org/parlcd/parlcd.htm
  * 
  * Wiring is same as winamp connection.
  * Uncomment //#define USS720_MAC_USB_LCD_KIT_WIRING 1 below to use a 
@@ -330,7 +329,6 @@ uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode)
 	int res = 0;
 
 	res = uss720_get_1284_register(usbHandle, 3, &regByte);
-	if (res) return res;
 
 	regByte &= ~0x01;
 	
@@ -338,10 +336,9 @@ uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode)
 	if (res) return res;
 	
 	res = uss720_get_1284_register(usbHandle, 2, &regByte);
-	if (res) return res;
 	
-	regByte &= ~(mode<<5);	// Mask off the mode bits 7-5. 
-	regByte |= (mode<<5);	// Set the mode bits 7-5.
+	regByte &= ~(mode<<5);	/* Mask off the mode bits 7-5. */ 
+	regByte |= (mode<<5);	/* Set the mode bits 7-5. */
 		
 	return uss720_set_1284_register(usbHandle, 6, regByte);
 }
