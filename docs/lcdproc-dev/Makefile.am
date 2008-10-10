@@ -16,6 +16,8 @@ EXTRA_DIST =	lcdproc-dev.docbook \
 xmlto = /usr/bin/xmlto
 developerguidedir = $(DESTDIR)$(htmldir)/developer-guide/
 
+.PHONY: install-html-developerguide
+
 install-html-developerguide: $(xmlto) lcdproc-dev.docbook
 	$(mkinstalldirs) $(developerguidedir)
 	$(xmlto) html -o $(developerguidedir) lcdproc-dev.docbook

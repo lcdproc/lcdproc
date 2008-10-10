@@ -19,6 +19,8 @@ EXTRA_DIST =	bookinfo.docbook \
 xmlto = /usr/bin/xmlto
 userguidedir = $(DESTDIR)$(htmldir)/user-guide/
 
+.PHONY: install-html-userguide
+
 install-html-userguide: $(xmlto) lcdproc-user.docbook
 	$(mkinstalldirs) $(userguidedir)
 	$(xmlto) html -o $(userguidedir) lcdproc-user.docbook
