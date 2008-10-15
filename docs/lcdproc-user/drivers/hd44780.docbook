@@ -162,6 +162,7 @@ HD44780 driver.
 </para>
 -->
 
+
 <sect2 id="hd44780-connections">
 <title>Connections</title>
 
@@ -1859,20 +1860,6 @@ please look at the driver source if you really need that.
 
 </sect3>
 
-<sect3 id="hd44780-ethlcd">
-<title>ethlcd device</title>
-
-<para>
-ethlcd (<ulink url="http://manio.skyboo.net/ethlcd"></ulink>)
-is a PoE powered device controlled via TCP. It has a 3-state (ON, HALF, OFF) backlight
-control, 6 buttons and a beeper. The hardware and software are open source.
-To use it, specify the device IP address or hostname, on which the ethlcd device is
-accessible by setting in config file the <command>Device</command> value.
-The default is <filename>ethlcd</filename>.
-</para>
-
-</sect3>
-
 <sect3 id="hd44780-lis2">
 <title>LIS2 USB device "lis2"</title>
 
@@ -2434,7 +2421,68 @@ off the address.
 
 </sect3>
 
+<sect3 id="hd44780-ethlcd">
+<title>ethlcd device</title>
+
+<para>
+ethlcd (<ulink url="http://manio.skyboo.net/ethlcd"></ulink>) device is simply
+an LCD display driven by an ATmega microcontroller, controlled and powered by
+"home-made" Power over Ethernet. The hardware and software are open source.
+
+<title>Features</title>
+<itemizedlist>
+<listitem><para>ethernet connection using ENC28J60 ethernet controller</para></listitem>
+<listitem><para>Power over Ethernet (data and power using single UTP cable)</para></listitem>
+<listitem><para>Atmel's ATmega168 microcontroller</para></listitem>
+<listitem><para>6 buttons (MENU, UP, DOWN, LEFT, RIGHT, ENTER)</para></listitem>
+<listitem><para>backlight control in three states: ON, Night-Mode (partialy ON) and OFF</para></listitem>
+<listitem><para>beeper</para></listitem>
+<listitem><para>device act as a TCP server - LCDproc driver is connecting to device just by creating
+a TCP socket - no need to PC-side additional hardware besides NIC</para></listitem>
+</itemizedlist>
+</para>
+
+<figure id="hd44780-connections-ethlcd.block-diagram">
+<title>HD44780: ethlcd - block diagram</title>
+<screen>
+<![CDATA[
+
+   _____________________________________________________
+  |                    buttons                          |
+  |                       ^                             |
+  |                       |                             |
+  |  _________       ___________         ____________   |
+  | |         |     |           |       |            |  |
+  | |         |     |           |       |            |  |
+  | |   LCD   |     |           |  SPI  |  ENC28J60  |  |  UTP cable
+  | | HD44780 |<--- | ATmega168 | <---> |  ethernet  |<========+------> PC running
+  | |         |     |           |       | controller |  |      |         LCDproc
+  | |         |     |           |       |            |  |      |
+  | |_________|     |___________|       |____________|  |      |
+  |                       |                             |      |
+  |                       |                             |      |
+  |                     beeper                          |      |
+  |_____________________________________________________|      |
+   ethlcd                                                  AC Adapter
+
+]]>
+</screen>
+</figure>
+
+<para>
+The device is "visible" to LCDproc just like any other HD44780 device. The difference
+is the wiring - instead of connecting the display directly to PC (via serial/parallel/usb port),
+it is connected via ethernet and the communication is done over TCP connection.
+The main feature is - that to power and control the LCD is needed single UTP cable.
+To use the driver, specify the device IP address or hostname, on which the ethlcd device
+is accessible by setting in config file the <command>Device</command> value.
+The default is <filename>ethlcd</filename>.
+</para>
+
+</sect3>
+
 </sect2>
+
 
 <sect2 id="hd44780-compiling">
 <title>Compiling</title>
@@ -2447,6 +2495,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 </para>
 
 </sect2>
+
 
 <!-- ## Hitachi HD44780 driver ## -->
 <sect2 id="hd44780-config">
@@ -2954,6 +3003,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 
 </sect2>
 
+
 <!--
 <sect2 id="hd44780-running">
 <title>Running</title>
@@ -2982,6 +3032,7 @@ file anyway.
 
 </sect2>
 -->
+
 
 <sect2 id="hd44780-miscellania">
 <title>Miscellania</title>
