@@ -7,7 +7,7 @@ Uploaders: Jonathan Oxer <jon@debian.org>
 Standards-Version: 3.7.3
 
 Package: lcdproc
-Architecture: any
+Architecture: alpha amd64 arm armel hppa hurd-i386 i386 ia64 kfreebsd-amd64 kfreebsd-i386 m68k mips mipsel powerpc sparc
 Depends: ${shlibs:Depends}, debconf | debconf-2.0, lsb-base (>= 3.0.10)
 Description: LCD display driver daemon and clients
  This is a client/server suite including drivers for all kinds of
