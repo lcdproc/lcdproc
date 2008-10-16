@@ -242,9 +242,11 @@ AC_ARG_ENABLE(libusb,
 AC_MSG_RESULT($enable_libusb) 
 
 if test "$enable_libusb" = "yes"; then
-	PKG_CHECK_MODULES(LIBUSB, libusb,
-		[AC_DEFINE(HAVE_LIBUSB, [1], [Define to 1 if you have libusb])],
-		[ enable_libusb=no ])
+	ifdef([PKG_CHECK_MODULES],
+		[PKG_CHECK_MODULES(LIBUSB, libusb,
+			[AC_DEFINE(HAVE_LIBUSB, [1], [Define to 1 if you have libusb])],
+			[ enable_libusb=no ])],
+		[AC_MSG_WARN([pkg-config not (fully) installed; drivers requiring libusb may not be built])])	
 fi
 AC_SUBST(LIBUSB_LIBS)
 AC_SUBST(LIBUSB_CFLAGS)
@@ -263,9 +265,11 @@ AC_ARG_ENABLE(libftdi,
 AC_MSG_RESULT($enable_libftdi) 
 
 if test "$enable_libftdi" = "yes"; then
- 	PKG_CHECK_MODULES(LIBFTDI, libftdi >= 0.8,
-		[AC_DEFINE(HAVE_LIBFTDI, [1], [Define to 1 if you have libftdi])],
-		[ enable_libftdi=no ])
+	ifdef([PKG_CHECK_MODULES],
+	 	[PKG_CHECK_MODULES(LIBFTDI, libftdi >= 0.8,
+			[AC_DEFINE(HAVE_LIBFTDI, [1], [Define to 1 if you have libftdi])],
+			[ enable_libftdi=no ])],
+		[AC_MSG_WARN([pkg-config not (fully) installed; drivers requiring libftdi may not be built])])	
 fi
 AC_SUBST(LIBFTDI_LIBS)
 AC_SUBST(LIBFTDI_CFLAGS)
@@ -284,8 +288,11 @@ AC_ARG_ENABLE(ethlcd,
 AC_MSG_RESULT($enable_ethlcd) 
 
 
+# check for doxygen
+BB_ENABLE_DOXYGEN
 
-dnl Select drivers to build
+
+# Select drivers to build
 LCD_DRIVERS_SELECT
 
 
@@ -363,9 +370,6 @@ AC_ARG_ENABLE(stat-smbfs,
 	fi ]
 )
 
-
-# check for doxygen
-BB_ENABLE_DOXYGEN
 
 AC_CONFIG_FILES([Makefile
 	shared/Makefile

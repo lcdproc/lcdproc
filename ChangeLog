@@ -58,6 +58,7 @@ v.0.5dev (ongoing development)
  + picolcd driver: support for 20x4 picoLCDs (Nicu Pavel)
  + hd44780 driver: new ConnectionType uss720 (Eric Pooch)
  * new make targets to compile & install server & clients separately
+ * autoconf fixes: check for pkg-config macros
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

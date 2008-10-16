@@ -2,7 +2,7 @@ dnl
 dnl Define function/macro for driver selection using the --enable-drivers=... option
 dnl
 AC_DEFUN([LCD_DRIVERS_SELECT], [
-AC_CHECKING(which drivers to compile)
+AC_MSG_NOTICE([checking which drivers to compile...])
 
 AC_ARG_ENABLE(drivers,
 	[  --enable-drivers=<list> compile drivers for LCDs in <list>,]
@@ -458,8 +458,12 @@ dnl			else
 	esac
 done
 
-actdrivers=`echo $actdrivers | sed -e 's/ /,/g'`
-AC_MSG_RESULT([Will compile drivers: $actdrivers])
+AC_MSG_RESULT([---------------------------------------])
+AC_MSG_RESULT([LCDd will be compiled with the drivers:])
+for driver in $actdrivers; do
+	AC_MSG_RESULT([    -  $driver])
+done	
+AC_MSG_RESULT([---------------------------------------])
 
 AC_SUBST(LIBCURSES)
 AC_SUBST(LIBIRMAN)
@@ -545,7 +549,7 @@ AC_DEFUN([AC_GET_FS_INFO], [
         ])
     AC_CHECK_FUNCS(getmntinfo)
 
-    AC_CHECKING(how to get filesystem space usage)
+    AC_MSG_NOTICE([checking how to get filesystem space usage...])
     space=no
 
     # Here we'll compromise a little (and perform only the link test)
