@@ -593,6 +593,12 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 
 	keydata = malloc(sizeof(lcd_packet));
 
+	if (keydata == NULL) {
+		report(RPT_ERR, "%s: get_key keydata malloc(%d) failed",
+			drvthis->name, sizeof(lcd_packet));
+		return NULL;
+	}
+
 	while (! keys_read) {
 		get_key_event(p->lcd, keydata, p->key_timeout);
 		debug(RPT_DEBUG, "%s: get_key got an event", drvthis->name);
