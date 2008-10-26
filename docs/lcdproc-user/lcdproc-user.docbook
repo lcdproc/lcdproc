@@ -30,6 +30,7 @@
   <!ENTITY imon SYSTEM "drivers/imon.docbook">
   <!ENTITY IOWarrior SYSTEM "drivers/IOWarrior.docbook">
   <!ENTITY irman SYSTEM "drivers/irman.docbook">
+  <!ENTITY irtrans SYSTEM "drivers/irtrans.docbook">
   <!ENTITY joy SYSTEM "drivers/joy.docbook">
   <!ENTITY lb216 SYSTEM "drivers/lb216.docbook">
   <!ENTITY lcdm001 SYSTEM "drivers/lcdm001.docbook">

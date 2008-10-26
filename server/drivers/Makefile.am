@@ -19,7 +19,7 @@ AM_LDFLAGS = @LDSHARED@
 #LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 svga t6963 text tyan sli ula200 xosd i2500vfd
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -114,6 +114,7 @@ ula200_SOURCES =     lcd.h lcd_lib.h ula200.h ula200.c report.h
 sli_SOURCES =        lcd.h lcd_lib.h wirz-sli.h wirz-sli.c report.h
 xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h
 i2500vfd_SOURCES =   lcd.h i2500vfd.c i2500vfd.h i2500vfdfm.c i2500vfdfm.h report.h
+irtrans_SOURCES =    lcd.h irtrans.c irtrans.h irtrans_network.h irtrans_remote.h irtrans_errcode.h report.h
 
 AM_CPPFLAGS = -I$(top_srcdir)
 

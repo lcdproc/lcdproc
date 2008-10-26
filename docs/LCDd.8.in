@@ -180,6 +180,10 @@ ICP A106 alarm/LCD board in 19" rack cases by ICP
 .B imon
 iMON IR/VFD modules in cases by Soundgraph/Ahanix/Silverstone/Uneed/Accent
 .TP
+.B irtrans
+IRTrans IR/VFD modules in cases by Ahanix (e.g. MCE303) and possibly others
+May require irserver (http://www.irtrans.de/en/download/linux.php) to be running for connectivity.
+.TP
 .B IOWarrior
 Code Mercenaries IOWarrior
 .TP

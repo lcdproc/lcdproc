@@ -9,17 +9,17 @@ AC_ARG_ENABLE(drivers,
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,]
-	[                    EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,]
-	[                    irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,]
-	[                    mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,]
-	[                    sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,]
-	[                    t6963,text,tyan,ula200,xosd,i2500vfd]
+	[                    EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,]
+	[                    IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,]
+	[                    MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,]
+	[                    pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,]
+	[                    stv5730,svga,t6963,text,tyan,ula200,xosd]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,icp_a106,imon,IOWarrior,irman,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd,i2500vfd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -208,6 +208,14 @@ dnl			else
 			DRIVERS="$DRIVERS hd44780${SO}"
 			actdrivers=["$actdrivers hd44780"]
 			;;
+		i2500vfd)
+			if test "$enable_libftdi" = yes ; then
+				DRIVERS="$DRIVERS i2500vfd${SO}"
+				actdrivers=["$actdrivers i2500vfd"]
+			else
+				AC_MSG_WARN([The i2500vfd driver needs the ftdi library])
+			fi
+			;;
 		icp_a106)
 			DRIVERS="$DRIVERS icp_a106${SO}"
 			actdrivers=["$actdrivers icp_a106"]
@@ -234,6 +242,10 @@ dnl				else
 				AC_MSG_WARN([The irman driver needs the irman library.])
 			])
 			;;
+		irtrans)
+			DRIVERS="$DRIVERS irtrans${SO}"
+			actdrivers=["$actdrivers irtrans"]
+			;;	
 		joy)
 			AC_CHECK_HEADER(linux/joystick.h, [
 				DRIVERS="$DRIVERS joy${SO}"
@@ -443,14 +455,6 @@ dnl				else
 dnl			else
 				AC_MSG_WARN([The xosd driver needs xosd.h])
 			])
-			;;
-		i2500vfd)
-			if test "$enable_libftdi" = yes ; then
-				DRIVERS="$DRIVERS i2500vfd${SO}"
-				actdrivers=["$actdrivers i2500vfd"]
-			else
-				AC_MSG_WARN([The i2500vfd driver needs the ftdi library])
-			fi
 			;;
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])
