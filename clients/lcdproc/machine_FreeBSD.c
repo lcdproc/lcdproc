@@ -169,6 +169,7 @@ int machine_get_fs(mounts_type fs[], int *cnt)
 	for (statcnt = 0, pp = mntbuf, i = 0; i < fscnt; pp++, i++)
 	{
 		if (    strcmp(pp->f_fstypename, "procfs")
+			&& strcmp(pp->f_fstypename, "devfs")
 			&& strcmp(pp->f_fstypename, "kernfs")
 			&& strcmp(pp->f_fstypename, "linprocfs")
 #ifndef STAT_NFS
