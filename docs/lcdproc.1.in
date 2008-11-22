@@ -106,7 +106,7 @@ time & date information
 old time screen
 .TP 16
 .B U Uptime
-old uptime screen
+uptime screen
 .TP 16
 .B K BigClock
 big clock
@@ -145,7 +145,7 @@ Load histogram
 .PP
 screen is disabled and therefore not shown in the display.
 (The quotes are not part of lcdproc's command line syntax;
-they are required to disable special interpretation of the question mark by the shell).
+they are required to disable special interpretation of the exclamation mark by the shell).
 
 
 .SH FILES
