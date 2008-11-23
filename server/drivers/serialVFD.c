@@ -91,6 +91,7 @@ get_info	Implemented.
 #define init_cmds	7 //commands needed to initialize the display.
 #define set_user_char	8 //set user character.
 #define hor_tab		9 //moves cursor 1 chr right
+#define next_line	10 //moves cursor to the first character of the next line (= LF + CR)
 #define LPTPORT 0x378
 
 /* Vars for the server core */
@@ -103,6 +104,7 @@ MODULE_EXPORT char *symbol_prefix = "serialVFD_";
 static void serialVFD_init_vbar (Driver *drvthis);
 static void serialVFD_init_hbar (Driver *drvthis);
 static void serialVFD_put_char (Driver *drvthis, int n);
+static void serialVFD_hw_write (Driver *drvthis, int i);
 
 // Opens com port and sets baud correctly...
 //
@@ -129,6 +131,7 @@ serialVFD_init (Driver *drvthis)
 	p->refresh_timer = 480;
 	p->hw_brightness = 0;
 	p->para_wait = DEFAULT_PARA_WAIT;
+	p->hw_cmd[next_line][0] = 0;
 
 
 	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis);
@@ -403,7 +406,7 @@ serialVFD_set_char (Driver *drvthis, int n, unsigned char *dat)
 
 static void
 serialVFD_put_char (Driver *drvthis, int n)
-{	// put char in display
+{	// put userchar in display
 	PrivateData *p = drvthis->private_data;
 
 	Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[set_user_char][1],\
@@ -411,7 +414,6 @@ serialVFD_put_char (Driver *drvthis, int n)
 	Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &p->usr_chr_load_mapping[n], 1);
 	Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[n][0], p->usr_chr_dot_assignment[0]);// overwrite selected Character
 }
-
 
 
 /////////////////////////////////////////////////////////////
@@ -438,7 +440,7 @@ serialVFD_flush (Driver *drvthis)
 	}
 
 	if (p->refresh_timer > 500) { // Do a full refresh every 500 refreshs.
-	// With this it is possible to switch display on and off while lcdproc is running
+	// With this it is possible to switch the display on and off while LCDd is running
 		Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[init_cmds][1],p->hw_cmd[init_cmds][0]);
 
 		Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[p->hw_brightness][1],\
@@ -453,73 +455,107 @@ serialVFD_flush (Driver *drvthis)
 
 	p->refresh_timer++;
 
-	if (p->display_type != 1) { //not KD Rev 2.1
+	if (p->display_type == 1) { // KD Rev 2.1 only
+		if (custom_char_changed[p->last_custom])
+			p->last_custom = -10;
+	}
+	else { // other Displays
 		for (i = 0; i < p->customchars; i++) // set customcharacters
 			if (custom_char_changed[i])
 				serialVFD_put_char(drvthis, i);
-		}
-
-	if (custom_char_changed[p->last_custom])
-		p->last_custom = -10;
-
-	if (p->hw_cmd[mv_cursor][0] == 0) { // Workaround for Displays that doesn't support mv_cursor command
-		Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[pos1_cursor][1], p->hw_cmd[pos1_cursor][0]);
-		last_chr = -1;
 	}
 
-	for (i = 0; i < (p->height * p->width); i++) {
 
-		/* Backing-store implementation.  If it's already
-		 * on the screen, don't put it there again
-		 */
-
-		if ((p->framebuf[i] != p->backingstore[i]) ||
-		    ((p->framebuf[i] <= 30) && (custom_char_changed[(int)p->framebuf[i]] != 0))) {
-			if (last_chr < i-1) { // if not last char written cursor has to be moved.
-				if (((p->hw_cmd[hor_tab][0] * (i-1-last_chr)) > (p->hw_cmd[mv_cursor][0]+1)) && (p->hw_cmd[mv_cursor][0] != 0)) {
-					Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[mv_cursor][1],
-						p->hw_cmd[mv_cursor][0]);
-					Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &i, 1);
-//report(RPT_WARNING, "%s: move  %d", drvthis->name, i);
-				}
-				else {
-					for (j = last_chr; j < (i-1); j++)
-						Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[hor_tab][1], p->hw_cmd[hor_tab][0]);
-//report(RPT_WARNING, "%s: TAB  %d", drvthis->name, j-last_chr);
-				}
-			}
-
-			if (p->framebuf[i] <= 30) { // custom character
-				if (p->display_type == 1) { // KD Rev 2.1 only
-					if (p->last_custom != p->framebuf[i]) {
-						// substitute and select character to overwrite (237)
-						Port_Function[p->use_parallel].write_fkt(drvthis, "\x1A\xDB", 2);
-						// overwrite selected character
-						Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[(int)p->framebuf[i]][0], 7);
+	if (p->hw_cmd[next_line][0] == 0) { // normal mode Display
+		if (p->hw_cmd[mv_cursor][0] == 0) { // Workaround for Displays that doesn't support mv_cursor command
+			Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[pos1_cursor][1], p->hw_cmd[pos1_cursor][0]);
+			last_chr = -1;
+		}
+	
+		for (i = 0; i < (p->height * p->width); i++) {
+	
+			/* Backing-store implementation.  If it's already
+			* on the screen, don't put it there again
+			*/
+	
+			if ((p->framebuf[i] != p->backingstore[i]) || (p->hw_cmd[hor_tab][0] == 0) ||
+			((p->framebuf[i] <= 30) && (custom_char_changed[(int)p->framebuf[i]] != 0))) {
+				if (last_chr < i-1) { // if not last char written cursor has to be moved.
+					if (((p->hw_cmd[hor_tab][0] * (i-1-last_chr)) > (p->hw_cmd[mv_cursor][0]+1)) && (p->hw_cmd[mv_cursor][0] != 0)) {
+						Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[mv_cursor][1],
+							p->hw_cmd[mv_cursor][0]);
+						Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &i, 1);
+	//report(RPT_WARNING, "%s: move  %d", drvthis->name, i);
 					}
-					Port_Function[p->use_parallel].write_fkt(drvthis, "\xDB", 1);			// write character
-					p->last_custom = p->framebuf[i];
+					else {
+						for (j = last_chr; j < (i-1); j++)
+							Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[hor_tab][1], p->hw_cmd[hor_tab][0]);
+	//report(RPT_WARNING, "%s: TAB  %d", drvthis->name, j-last_chr);
+					}
 				}
-				else {	// all other displays
-					Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &p->usr_chr_mapping[(int)p->framebuf[i]], 1);
-				}
+				serialVFD_hw_write(drvthis, i);
+				last_chr = i;
 			}
-			else if ((p->framebuf[i] == 127) || ((p->framebuf[i] > 127) && (p->ISO_8859_1 != 0))) { // ISO_8859_1 translation for 129 ... 255
-				Port_Function[p->use_parallel].write_fkt(drvthis, &p->charmap[p->framebuf[i] - 127], 1);
+		}
+	}
+
+	else { // line mode Display (partitially borrowed from serialPOS.c)
+		for (j = 0; j < p->height; j++) {
+			// set  pointers to start of the line in frame buffer & backing store
+			unsigned char *sp = p->framebuf + (j * p->width);
+			unsigned char *sq = p->backingstore + (j * p->width);
+			if (j == 0) {
+				Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[pos1_cursor][1], p->hw_cmd[pos1_cursor][0]);
 			}
 			else {
-				Port_Function[p->use_parallel].write_fkt(drvthis, &p->framebuf[i], 1);
+				Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[next_line][1], p->hw_cmd[next_line][0]);
 			}
-
-			last_chr = i;
+			// skip over identical lines
+			if ( memcmp(sp, sq, p->width) == 0) {
+				/* The lines are the same. */
+				continue;
+			}
+			for (i = 0; i < p->width; i++) {
+				serialVFD_hw_write(drvthis, (i + (j * p->width)));
+			}
+			last_chr = 10;
 		}
 	}
 
 	if (last_chr >= 0) { // update backingstore if something changed
 		memcpy(p->backingstore, p->framebuf, p->height * p->width);
-//report(RPT_WARNING, "%s: memcpy", drvthis->name);
+	//report(RPT_WARNING, "%s: memcpy", drvthis->name);
 	}
 
+
+}
+
+static void
+serialVFD_hw_write (Driver *drvthis, int i)
+{	// finally write character/usercharacter on the display
+	PrivateData *p = drvthis->private_data;
+
+	if (p->framebuf[i] <= 30) { // custom character
+		if (p->display_type == 1) { // KD Rev 2.1 only
+			if (p->last_custom != p->framebuf[i]) {
+				// substitute and select character to overwrite (237)
+				Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *)"\x1A\xDB", 2);
+				// overwrite selected character
+				Port_Function[p->use_parallel].write_fkt(drvthis, &p->custom_char[(int)p->framebuf[i]][0], 7);
+			}
+			Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *)"\xDB", 1);			// write character
+			p->last_custom = p->framebuf[i];
+		}
+		else {	// all other displays
+			Port_Function[p->use_parallel].write_fkt(drvthis, (unsigned char *) &p->usr_chr_mapping[(int)p->framebuf[i]], 1);
+		}
+	}
+	else if ((p->framebuf[i] == 127) || ((p->framebuf[i] > 127) && (p->ISO_8859_1 != 0))) { // ISO_8859_1 translation for 129 ... 255
+		Port_Function[p->use_parallel].write_fkt(drvthis, &p->charmap[p->framebuf[i] - 127], 1);
+	}
+	else {
+		Port_Function[p->use_parallel].write_fkt(drvthis, &p->framebuf[i], 1);
+	}
 }
 
 

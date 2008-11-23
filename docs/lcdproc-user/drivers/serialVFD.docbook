@@ -64,7 +64,7 @@ Feedback is welcome.
       <entry>KD Rev 2.1</entry>
       <entry>AT90S.... microcontroller</entry>
       <entry>Ok</entry>
-      <entry>Ok</entry>
+      <entry>-</entry>
       <entry>Yes</entry>
       <entry>1, 0<footnote id="no_char" label="2" >
                <para>
@@ -165,6 +165,16 @@ Feedback is welcome.
       <entry>No</entry>
       <entry>5</entry>
       <entry> </entry>
+    </row>
+    <row>
+      <entry>Siemens/Wincor Nixdorf BA63/66</entry>
+      <entry>?</entry>
+      <entry>Ok</entry>
+      <entry>-</entry>
+      <entry>Yes</entry>
+      <entry>8</entry>
+      <entry>Display needs different connection, see below!
+      no Custom-Characters, no brightness-control</entry>
     </row>
   </tbody>
 </tgroup>
@@ -319,6 +329,19 @@ Pin 19  ------ RxD
 ]]></screen>
 </sect4>
 
+<sect4 id="serialVFD-serial-connections-BA63/66">
+<title>Siemens/Wincor Nixdorf BA63/66:</title>
+<para>This display doesn't need the inverter!
+It must be connected directly with the serial port.</para>
+
+<para>Check the serial port setup of the display, it has to be "9600 8N1". In most cases JP3 needs to be modified (closed) by the user!</para>
+
+<screen><![CDATA[Suggested Jumper Setting:
+JP1 open, JP2 open, JP3 closed, JP4 open, JP5 open]]></screen>
+
+<para>More detailed information can be found in the users manual of 
+the display.</para>
+</sect4>
 
 </sect3>
 
@@ -529,6 +552,10 @@ Number of Custom-Characters [default: Display-<command>Type</command> dependent]
 	<row>
 	  <entry><literal>7</literal></entry>
 	  <entry>Samsung 20S207DA?</entry>
+	</row>
+	<row>
+	  <entry><literal>8</literal></entry>
+	  <entry>Siemens/Wincor Nixdorf BA63/66</entry>
 	</row>
       </tbody>
     </tgroup>

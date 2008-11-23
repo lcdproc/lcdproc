@@ -40,7 +40,7 @@ void serialVFD_load_IEE_95B (Driver *drvthis);
 void serialVFD_load_IEE_96 (Driver *drvthis);
 void serialVFD_load_Futaba_NA202SD08FA(Driver *drvthis);
 void serialVFD_load_Samsung (Driver *drvthis);
-
+void serialVFD_load_Nixdorf_BA6x (Driver *drvthis);
 
 int serialVFD_load_display_data(Driver *drvthis)
 {
@@ -70,6 +70,9 @@ int serialVFD_load_display_data(Driver *drvthis)
 		case 7:
 			serialVFD_load_Samsung(drvthis);
 			break;
+		case 8:
+			serialVFD_load_Nixdorf_BA6x(drvthis);
+			break;
 		default:
 			return -1;
 			break;
@@ -95,17 +98,22 @@ serialVFD_load_NEC_FIPC (Driver *drvthis)
 	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
 	//					.....
 	//				 {commandlength , command N}}
-	const char hw_cmd[10][4] = {{1	,0x04},  	// dark
+	const char hw_cmd[11][4] = {{1	,0x04},  	// dark
 				{1      ,0x03},
 				{1	,0x02},
 				{1	,0x01},  	// bright
-				{1	,0x0D},  	// pos1
+				{1	,0x0D},  	// pos1	
+			// pos1 command is only used (and needed), when mv_cursor command is not supported
 				{1	,0x1B},  	// move cursor (set to 0 if not supported)
 				{1	,0x0C},  	// reset
 				{2	,0x14, 0x11},  	// init
 				{1	,0x1A}, 	// set user char
-				{1	,0x09}}; 	// tab
-	for (tmp = 0; tmp < 10; tmp++)
+				{1	,0x09}, 	// tab 
+				{0	}};	// next_line (only used in line mode)
+			// Line mode will be used if Next_line command is set!!! 
+			// Do not set if the display supports normal mode (most displays should do this).
+
+	for (tmp = 0; tmp < 11; tmp++)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
@@ -154,6 +162,15 @@ serialVFD_load_NEC_FIPC (Driver *drvthis)
 	{0xAF,0,0,0,0,0, 0x5F, 0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0, 0x5F, 0xE1, 0xE3, 0xE4};
 	for (tmp = 0; tmp < 31; tmp++)
 		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
+
+	// The following is only needet to set if the display needs a different setting
+	// for loading the usercharacters.
+	// Example: The character loaded to 0x00 will be shown at 0xFD.
+	// usr_chr_load_mapping[0] or usr_chr_load_mapping[1] has to be != 0
+	//const unsigned int usr_chr_load_mapping[31]=
+	//{ 0x02, 0x01, 0x00};
+	//for (tmp = 0; tmp < 31; tmp++)
+	//	p->usr_chr_load_mapping[tmp] = usr_chr_load_mapping[tmp];
 }
 
 
@@ -694,6 +711,79 @@ serialVFD_load_Samsung (Driver *drvthis)
 						   0xFF, 0x05, 0x06, 0x07,
 						   0x0B, 0x0C, 0x0E, 0x0F,
 						   0x17, 0x1A, 0x1C, 0x1D };
+	for (tmp = 0; tmp < 31; tmp++)
+		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
+}
+
+void
+serialVFD_load_Nixdorf_BA6x (Driver *drvthis)
+{ 		// Nixdorf BA63 & BA66
+	PrivateData *p = (PrivateData*) drvthis->private_data;
+	int tmp, w;
+
+	//if (p->customchars == -83) // display doesn't support custom characters
+		p->customchars = 0;	// number of custom characters the display provides
+	p->vbar_cc_offset = 5;	// character offset of the bars
+	p->hbar_cc_offset = 12;	// character offset of the bars
+	p->predefined_hbar = 1;   // the display has predefined hbar-characters
+	p->predefined_vbar = 1;   // the display has predefined vbar-characters
+
+	// hardwarespecific commands:
+	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
+	//					.....
+	//				 {commandlength , command N}}
+	const char hw_cmd[11][10] = {{0    },	// dark
+				{0      },
+				{0	},
+				{0	},	// bright
+				{6 ,0x1B, 0x5B, '1', 0x3B, '1', 0x48},	// pos1
+		// pos1 command is only used (and needed), when mv_cursor command is not supported
+				{0	},	// move cursor
+				{4 ,0x1B, 0x5B, 0x32, 0x4A},	// reset
+				{3 ,0x1B, 0x52, 0x00},  		// init
+				{0	}, 	// set user char
+				{0	}, 	// tab 
+				{2 ,0x0D, 0x0A}	// next_line
+		// Next_line command is only used in line mode. 
+		// Line mode will be used if Next_line command is set!!! 
+		// Set to "0" if display supports normal_mode!
+				};
+	for (tmp = 0; tmp < 11; tmp++)
+		for (w = 0; w < 10; w++)
+			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
+
+	// Translates ISO 8859-1 to display charset.
+	const unsigned char charmap[] = {
+		0xDB, // the "filled-block"-character usually 127
+		/* #128  = 0x80 */
+		128, 129, 130, 131, 132, 133, 134, 135,
+		136, 137, 138, 139, 140, 141, 142, 143,
+		144, 145, 146, 147, 148, 149, 150, 151,
+		152, 153, 154, 155, 156, 157, 158, 159,
+		/* #160 = 0xA0 */
+		160,  0xAD, 0x9B, 0x9C, 0xC8, 0x9D, 0x7C, 0xC0,
+		'"',   '?', 0xA6, 0xAE, 0xAA,  '-',  '?',  '?',
+		0xEF, 0xCA, 0xC6, 0xC7, 0x27, 0xB8,  '?',  '.',
+		',',   '?', 0xA7, 0xAF, 0xAC, 0xAB,  '?', 0xA8,
+		/* #192 = 0xC0 */
+		0xD0,  'A', 0xD5,  'A', 0x8E, 0x8F, 0x92, 0x80,
+		0xD1, 0x90, 0xD6, 0xD3, 'I',   'I', 0xD7, 0xD4,
+		'D',  0xA5,  'O',  'O', 0xD8,  'O', 0x99,  'x',
+		'0',  0xD2,  'U', 0xD9, 0x9A,  'Y',  'p', 0xB1,
+		/* #224 = 0xE0 */
+		0x85, 0xA0, 0x83,  'a', 0x84, 0x86, 0x91, 0x87,
+		0x8A, 0x82, 0x88, 0x89, 0x8D, 0xA1, 0x8C, 0x8B,
+		'o',  0xA4, 0x95, 0xA9, 0x93,  'o', 0x94,  '/',
+		'0',  0x97, 0xA3, 0x96, 0x81,  'y',  'p', 0x89 };
+	for (tmp = 0; tmp < 129; tmp++)
+		p->charmap[tmp] = charmap[tmp];
+
+
+	// Where to place the usercharacters (0..30) in the asciicode.
+	// Also used to map standardcharacters in the usercharacterspace(0..30)
+	// (useful for displays with less then 30 usercharacters and predefined bars)
+	const unsigned int usr_chr_mapping[31]=
+	{0,0,0,0,0,0, ' ', ' ', 0xDC, 0xDC, 0xDC, 0xDB, 0, ' ', 0xDD, 0xDD, 0xDB};
 	for (tmp = 0; tmp < 31; tmp++)
 		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
 }

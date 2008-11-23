@@ -100,7 +100,7 @@ typedef struct driver_private_data {
 	int last_custom;		// last custom character written
 	unsigned char custom_char[31][7]; 	// stored custom characters
 	unsigned char custom_char_store[31][7]; 	// custom characters backingstore
-	unsigned char hw_cmd[10][4]; 		// hardwarespecific commands
+	unsigned char hw_cmd[11][10]; 		// hardwarespecific commands
 	int usr_chr_dot_assignment[57];	// how to setup usercharacters
 	unsigned int usr_chr_mapping[31];// where to place the usercharacters (0..30) in the asciicode
 	unsigned int usr_chr_load_mapping[31];// needed for displays with different read and write mapping 
