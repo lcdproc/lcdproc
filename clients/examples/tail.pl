@@ -13,6 +13,7 @@
 #               2001, Jarda Benkovsky
 #               2002, Jonathan Oxer
 #               2002, Rene Wagner <reenoo@gmx.de>
+#               2008, Peter Marschall
 #
 # This file is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,7 +40,7 @@ use Fcntl;
 # Configurable part. Set it according your setup.
 ############################################################
 
-# Host which runs lcdproc daemon (LCDd)
+# Host which runs LCDproc daemon (LCDd)
 my $SERVER = "localhost";
 
 # Port on which LCDd listens to requests
@@ -50,8 +51,8 @@ my $PORT = "13666";
 ############################################################
 
 # These define the visible part of the file...
-my $top = 3;    # How far from the end of the file should we start?
-my $lines = 3;  # How many lines to display?
+my $top = 3;    # How far from the end of the file should we start by default?
+my $lines = 3;  # How many lines to display by default ?
 my $left = 1;   # Left/right scrolling position,
 my $width = 20; # and number of characters per line to show
 
@@ -133,12 +134,11 @@ print $remote "widget_add tail title title\n";
 $lcdresponse = <$remote>;
 print $remote "widget_set tail title {Tail: $filename}\n";
 $lcdresponse = <$remote>;
-print $remote "widget_add tail 1 string\n";
-$lcdresponse = <$remote>;
-print $remote "widget_add tail 2 string\n";
-$lcdresponse = <$remote>;
-print $remote "widget_add tail 3 string\n";
-$lcdresponse = <$remote>;
+# create one widget called lineX (x in {1,2,...}) per line
+for (my $i = 1; $i <= $lines; $i++) {
+	print $remote "widget_add tail line$i string\n";
+	$lcdresponse = <$remote>;
+}
 
 # NOTE: You have to ask LCDd to send you keys you want to handle
 print $remote "client_add_key Left\n";
@@ -168,10 +168,10 @@ while (1) {
 		    my $key = $1;
 
 		    if ($key eq 'Down') {
-		    	$top++;
+			$top--  if ($top > $lines);
 		    }
 		    elsif ($key eq 'Up') { 
-			$top--  if ($top > $lines);
+		    	$top++;
 		    }
 		    elsif ($key eq 'Right') {
 		    	$left++;
@@ -187,6 +187,7 @@ while (1) {
 	if ( -f $filename ) {
 	    # Grab some text.
 	    my $right = $left + $width - 1;
+	    # get the data by calling external programs tail, head & cut
 	    my $text = `tail -$top $filename | head -$lines | cut -c$left-$right`;
 	    my @lines = split(/\n/, $text);
 
@@ -199,16 +200,26 @@ while (1) {
 		my $line = ($#lines < $i) ? " " : $lines[$i];
 		$line = " "  if ($line =~ /^\s*$/o);
 
-		print $remote "widget_set tail $j 1 $k {$line}\n";
+		# expand tabs to spaces
+		while ((my $idx = index($line, "\t")) >= 0) {
+		    use integer;	# calculate integers like in C
+		    my $w = 8 + 8 * ($idx / 8) - $idx;
+		    my $subst = " " x $w;
+			
+		    $line =~ s/\t/" " x $w/e;
+		}
+
+		# write to the display
+		print $remote "widget_set tail line$j 1 $k {$line}\n";
 		my $lcdresponse = <$remote>;
 	    }
 	}
 	else { # If the file is unreadable, show an error
-	    print $remote "widget_set tail 1 1 2 {$filename}\n";
+	    print $remote "widget_set tail line1 1 2 {$filename}\n";
 		$lcdresponse = <$remote>;
-	    print $remote "widget_set tail 2 1 3 {doesn't exist.}\n";
+	    print $remote "widget_set tail line2 1 3 {doesn't exist.}\n";
 		$lcdresponse = <$remote>;
-	    print $remote "widget_set tail 3 1 4 { }\n";
+	    print $remote "widget_set tail line3 1 4 { }\n";
 		$lcdresponse = <$remote>;
 	}
 
@@ -277,11 +288,12 @@ B<tail.pl>
 [B<-p> I<port>]
 [B<-h>]
 [B<-V>]
+I<file>
 
 
 =head1 DESCRIPTION
 
-B<tail.pl> is a small example client for LCDd, the lcdproc server.
+B<tail.pl> is a small example client for LCDd, the LCDproc server.
 
 It shows the tail of th file given as parameter on the LCD.
 
