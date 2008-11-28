@@ -22,20 +22,19 @@
 #undef DEBUG
 #endif
 
-//TODO: Comment everything
 //TODO: Test everything?
 
 
 /** Create new linked list.
- * \return Pointer to freshly created list object; \c NULL on error.
+ * \return  Pointer to freshly created list object; \c NULL on error.
  */
 LinkedList *
-LL_new()
+LL_new(void)
 {
 	LinkedList *list;
 
 	list = malloc(sizeof(LinkedList));
-	if (!list)
+	if (list == NULL)
 		return NULL;
 
 	list->head.data = NULL;
@@ -165,11 +164,6 @@ LL_Rewind(LinkedList *list)
 {
 	if (!list)
 		return -1;
-/*
-  printf("LL_Rewind:  list=%8x\n", list);
-  printf("LL_Rewind:  list.head=%8x\n", &list->head);
-  printf("LL_Rewind:  list.tail=%8x\n", &list->tail);
-*/
 
 	if (list->head.next != &list->tail)
 		list->current = list->head.next;
@@ -410,46 +404,25 @@ LL_AddNode(LinkedList *list, void *add)
 	if (!list->current)
 		return -1;
 
-	//LL_dprint(list);
-
 	node = malloc(sizeof(LL_node));
-	if (!node)
+	if (node == NULL)
 		return -1;
-	//printf("Allocated node\n");
 
-/*   printf("Current: prev: %8x\tnode: %8x\tnext: %8x\n", */
-/*   	 (int)list->current->prev, */
-/*   	 (int)list->current, */
-/*   	 (int)list->current->next); */
 	if (list->current == &list->tail) {
 		list->current = list->current->prev;
-/*      printf("Was at end of list...\n"); */
-/*      printf("Current: prev: %8x\tnode: %8x\tnext: %8x\n", */
-/* 	    (int)list->current->prev, */
-/* 	    (int)list->current, */
-/* 	    (int)list->current->next); */
 	}
-//  printf("Setting node data\n");
+	// Set node data
 	node->next = list->current->next;
 	node->prev = list->current;
 	node->data = add;
-//  printf("...done\n");
-/*      printf("NewNode: prev: %8x\tnode: %8x\tnext: %8x\n", */
-/* 	    (int)node->prev, */
-/* 	    (int)node, */
-/* 	    (int)node->next); */
 
-//  printf("Relinking...\n");
+	// Re-link
 	if (node->next)
 		node->next->prev = node;
-//  printf("...\n");
+
 	list->current->next = node;
-//  printf("...done\n");
 
 	list->current = node;
-
-//  printf("Added node\n");
-//  LL_dprint(list);
 
 	return 0;
 }
@@ -474,7 +447,7 @@ LL_InsertNode(LinkedList *list, void *add)
 		return -1;
 
 	node = malloc(sizeof(LL_node));
-	if (!node)
+	if (node == NULL)
 		return -1;
 
 	if (list->current == &list->head)
@@ -494,9 +467,12 @@ LL_InsertNode(LinkedList *list, void *add)
 	return 0;
 }
 
-////////////////////////////////////////////////////////////////////////
-// Removes a node from the link
-// ... and advances one node forward
+
+/** Remove current node from the list.
+ * Set the current pointer to the node after the deleted one.
+ * \param list   List object.
+ * \return       Pointer to data of deleted node; \c NULL on error.
+ */ 
 void *
 LL_DeleteNode(LinkedList *list)
 {
@@ -511,11 +487,6 @@ LL_DeleteNode(LinkedList *list)
 		return NULL;
 	if (list->current == &list->tail)
 		return NULL;
-
-/*
-	printf("LL_DeleteNode: Before...\n");
-	LL_dprint(list);
-*/
 
 	next = list->current->next;
 	prev = list->current->prev;
@@ -537,32 +508,27 @@ LL_DeleteNode(LinkedList *list)
 
 	list->current = next;
 
-/*
-	printf("LL_DeleteNode: After...\n");
-	LL_dprint(list);
-*/
-
 	return data;
 }
 
 
 /** Remove a specific node from the list.
- * find a node by a pointer to it's data and remove it.
+ * Find a node by a pointer to its data and remove it.
+ * After te deletion the "current" pointer is on the node after the deleted one.
  * \param list   List object.
- * \param data   Pointer to data of not to delete.
+ * \param data   Pointer to data of node to delete.
  * \return       Pointer to data of deleted node; \c NULL on error.
  */ 
 void *
 LL_Remove(LinkedList *list, void *data)
 {
-	void *find;
-
 	if (!list)
 		return NULL;
 
 	LL_Rewind(list);
 	do {
-		find = LL_Get(list);
+		void * find = LL_Get(list);
+
 		if (find == data)
 			return LL_DeleteNode(list);
 	} while (LL_Next(list) == 0);
@@ -586,10 +552,8 @@ LL_Push(LinkedList *list, void *add)  // Add node to end of list
 	if (!add)
 		return -1;
 
-//  printf("Going to end of list...\n");
 	LL_End(list);
 
-//  printf("Adding node...\n");
 	return LL_AddNode(list, add);
 }
 
@@ -857,7 +821,7 @@ LL_nSwapNodes(int one, int two)	// Switch two nodes positions...
  * \return       Number of nodes in the list; \c -1 on error.
  */
 int
-LL_Length(LinkedList *list)			  // Returns # of nodes in entire list
+LL_Length(LinkedList *list)
 {
 	LL_node *node;
 	int num = 0;
@@ -874,15 +838,20 @@ LL_Length(LinkedList *list)			  // Returns # of nodes in entire list
 }
 
 
-//////////////////////////////////////////////////////////////////////
-// Searching...
-// Goes to the list item which matches "value", and returns the
-// data found there.
-//
-// The "compare" function should return 0 for a "match"
-//
-// Note that this does *not* rewind the list first!  You should do
-// it yourself if you want to start from the beginning!
+/** Find a node by giving a comparison function and a value.
+ * Go to to the list node whose data matches the given value
+ * and return the data.
+ *
+ * Note that this does *not* rewind the list first!
+ * Do it yourself if you want to start from the beginning!
+ *
+ * \param list     List object.
+ * \param compare  Pointer to a comparison function, that takes to void pointers
+ *                 is arguments and returns an int. If must return 0 exactly when
+ *                 the node's data matches \c value.
+ * \param value    Pointer to the value used for matching.
+ * \return         The found node's data pointer; \c NULL otherwise
+ */
 void *
 LL_Find(LinkedList *list, int compare(void *, void *), void *value)
 {
@@ -936,16 +905,16 @@ LL_GetByIndex(LinkedList *list, int index)
  * After the sorting, the list's current pointer is set to the first node.
  * \param list     List object.
  * \param compare  Pointer to a comparison function, that takes to void pointers
-                   is arguments and returns an int > 0 when the first argument
-                   is considered greater then the second.
+ *                 is arguments and returns an int > 0 when the first argument
+ *                 is considered greater then the second.
  * \retval <0      error
  * \retval  0      success.
  */
 int
 LL_Sort(LinkedList *list, int compare(void *, void *))
 {
-	int i, j;						  // Junk / loop variables
-	int numnodes;					  // number of nodes in list
+	int i, j;			  // Junk / loop variables
+	int numnodes;			  // number of nodes in list
 	LL_node *best, *last;		  // best match and last node in the list
 	LL_node *current;
 
@@ -956,7 +925,7 @@ LL_Sort(LinkedList *list, int compare(void *, void *))
 
 	numnodes = LL_Length(list); // get the number of nodes...
 	if (0 > LL_End(list))
-		return -1;					  // Find the last node.
+		return -1;				  // Find the last node.
 	last = LL_GetNode(list);
 
 	if (numnodes < 2)
