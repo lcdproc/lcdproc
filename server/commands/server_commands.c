@@ -43,7 +43,7 @@
 int
 output_func(Client *c, int argc, char **argv)
 {
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 2) {
@@ -110,7 +110,7 @@ sleep_func(Client *c, int argc, char **argv)
 #define MAX_SECS 60
 #define MIN_SECS 1
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 2) {
@@ -170,7 +170,7 @@ sleep_func(Client *c, int argc, char **argv)
 int
 noop_func(Client *c, int argc, char **argv)
 {
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	sock_send_string(c->sock, "noop complete\n");

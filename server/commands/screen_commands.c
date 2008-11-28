@@ -44,7 +44,7 @@ screen_add_func(Client *c, int argc, char **argv)
 	int err = 0;
 	Screen *s;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 2) {
@@ -88,7 +88,7 @@ screen_del_func(Client *c, int argc, char **argv)
 	int err = 0;
 	Screen *s;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 2) {
@@ -139,7 +139,7 @@ screen_set_func(Client *c, int argc, char **argv)
 	char *id;
 	Screen * s;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc == 1) {
@@ -424,7 +424,7 @@ screen_add_key_func(Client *c, int argc, char **argv)
 	char *id;  /* Screen ID */
 	char *keys;  /* Keys wanted */
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 3) {
@@ -500,7 +500,7 @@ screen_del_key_func(Client *c, int argc, char **argv)
 	char *id;  /* Screen ID */
 	char *keys;  /* Keys wanted */
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 3) {

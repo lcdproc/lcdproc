@@ -51,7 +51,7 @@ widget_add_func(Client *c, int argc, char **argv)
 	Screen * s;
 	Widget * w;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if ((argc < 4) || (argc > 6)) {
@@ -137,7 +137,7 @@ widget_del_func(Client *c, int argc, char **argv)
 	Screen *s;
 	Widget *w;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 3) {
@@ -194,7 +194,7 @@ widget_set_func(Client *c, int argc, char **argv)
 	Screen *s;
 	Widget *w;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	/* If there weren't enough parameters...

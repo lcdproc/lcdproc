@@ -23,9 +23,15 @@
 
 #define CLIENT_NAME_SIZE 256
 
+typedef enum _clientstate {
+	NEW,
+	ACTIVE,
+	GONE
+} ClientState;
+
 typedef struct Client {
 	char *name;
-	int ack;
+	ClientState state;
 	int sock;
 	int backlight;
 	int heartbeat;

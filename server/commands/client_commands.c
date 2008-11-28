@@ -34,6 +34,7 @@
 #include "client.h"
 #include "input.h"
 
+
 /***************************************************************
  * Debugging only..  prints out a list of arguments it receives
  */
@@ -73,7 +74,7 @@ hello_func(Client *c, int argc, char **argv)
 		display_props->cellwidth, display_props->cellheight);
 
 	/* make note that client has sent hello */
-	c->ack = 1;
+	c->state = ACTIVE;
 
 	return 0;
 }
@@ -91,6 +92,7 @@ bye_func(Client *c, int argc, char **argv)
 	if (c != NULL) {
 		debug(RPT_INFO, "Bye, %s!", (c->name != NULL) ? c->name : "unknown client");
 
+		c->state = GONE;
 		sock_send_error(c->sock, "\"bye\" is currently ignored\n");
 	}	
 	return 0;
@@ -106,7 +108,7 @@ client_set_func(Client *c, int argc, char **argv)
 {
 	int i;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 3) {
@@ -164,7 +166,7 @@ client_add_key_func(Client *c, int argc, char **argv)
 	int exclusively = 0;
 	int argnr;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc < 2) {
@@ -206,7 +208,7 @@ client_del_key_func(Client *c, int argc, char **argv)
 {
 	int argnr;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc < 2) {
@@ -230,7 +232,7 @@ client_del_key_func(Client *c, int argc, char **argv)
 int
 backlight_func(Client *c, int argc, char **argv)
 {
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 2) {
@@ -276,7 +278,7 @@ backlight_func(Client *c, int argc, char **argv)
 int
 info_func(Client *c, int argc, char **argv)
 {
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc > 1) {

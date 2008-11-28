@@ -53,7 +53,7 @@ Client *client_create(int sock)
 		return NULL;
 	}
 
-	c->ack = 0;
+	c->state = NEW;
 	c->name = NULL;
 	c->menu = NULL;
 
@@ -110,7 +110,7 @@ client_destroy(Client *c)
 	input_release_client_keys(c);
 
 	/* Free client's other data */
-	c->ack = 0;
+	c->state = GONE;
 
 	/* Clean up the name...*/
 	if (c->name)

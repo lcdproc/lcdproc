@@ -97,7 +97,7 @@ menu_add_item_func(Client *c, int argc, char **argv)
 
 	debug(RPT_DEBUG, "%s(Client [%d], %s, %s)",
 	       __FUNCTION__, c->sock, argv[1], argv[2]);
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (c->name == NULL) {
@@ -237,7 +237,7 @@ menu_del_item_func(Client *c, int argc, char **argv)
 	char *menu_id;
 	char *item_id;
 
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 3) {
@@ -443,7 +443,7 @@ menu_set_item_func(Client *c, int argc, char **argv)
 
 	debug(RPT_DEBUG, "%s(Client [%d]: %s)",
 	       __FUNCTION__, c->sock, argv2string(argc, argv));
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc < 4) {
@@ -726,7 +726,7 @@ menu_goto_func(Client * c, int argc, char **argv)
 	debug(RPT_DEBUG, "%s(Client [%d], %s, %s)",
 	       __FUNCTION__, c->sock, ((argc > 1) ? argv[1] : "<null>"),
 	       ((argc > 2) ? argv[2] : "<null>"));
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if ((argc < 2) || (argc > 3)) {
@@ -845,7 +845,7 @@ menu_set_main_func(Client *c, int argc, char **argv)
 	debug(RPT_DEBUG, "%s(Client [%d], %s, %s)",
 	       __FUNCTION__, c->sock, ((argc > 1) ? argv[1] : "<null>"),
 	       ((argc > 2) ? argv[2] : "<null>"));
-	if (!c->ack)
+	if (c->state != ACTIVE)
 		return 1;
 
 	if (argc != 2) {
