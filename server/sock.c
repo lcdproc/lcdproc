@@ -1,6 +1,8 @@
-/*
- * sock.c
- * This file is part of LCDd, the lcdproc server.
+/** \file  sock.c
+ * LCDproc sockets code.
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -9,8 +11,6 @@
  *               2003, Benjamin Tse (blt@ieee.org) - Winsock port
  *               2004, F5 Networks, Inc. - IP-address input
  *               2005, Peter Marschall - error checks, ...
- *
- * LCDproc sockets code...
  *
  */
 
@@ -71,10 +71,16 @@ struct ClientSocketMap* freeClientSocketPool;
 #define MAXMSG 8192
 
 /**** Internal function declarations ****************************************/
-int sock_read_from_client(struct ClientSocketMap* clientSocketMap);
+static int sock_read_from_client(struct ClientSocketMap* clientSocketMap);
 
 
-/****************************************************************************/
+/** Initialize sockets.
+ * Prepare server socket, and initialize socket management structures.
+ * \param bind_addr       Hostname / IP address to bind to.
+ * \param bind_port       Port to bind to.
+ * \retval  <0            error
+ * \retval   0            success
+ */
 int
 sock_init(char* bind_addr, int bind_port)
 {
@@ -128,9 +134,8 @@ sock_init(char* bind_addr, int bind_port)
                    "list.", __FUNCTION__);
             return -1;
         } else {
-            struct ClientSocketMap* entry;
+            struct ClientSocketMap *entry;
 
-            /* LL_DeleteNode removes an entry from the list and returns it */
             entry = (struct ClientSocketMap*) LL_Pop(freeClientSocketList);
             entry->socket = listening_fd;
             entry->client = NULL;
@@ -157,6 +162,10 @@ This code gets the send and receive buffer sizes.
 */
 
 
+/** Cleanup socket management structures.
+ * \retval  <0    error
+ * \retval   0    success
+ */
 int
 sock_shutdown(void)
 {
@@ -200,8 +209,12 @@ sock_shutdown(void)
 }
 
 
-/****************************************************************************/
-/* Creates a socket in internet space */
+/** Create an INET socket, bind to it and listen on it.
+ * \param addr       Hostname / IP address to bind to.
+ * \param port       Port to bind to.
+ * \retval  <0       error
+ * \retval   0       success
+ */
 int
 sock_create_inet_socket(char *addr, unsigned int port)
 {
@@ -240,12 +253,12 @@ sock_create_inet_socket(char *addr, unsigned int port)
         name.sin_addr.S_un.S_addr = inet_addr(addr);
 #endif
 
-	if (bind(sock, (struct sockaddr *) &name, sizeof(name)) < 0) 
-        {
+	if (bind(sock, (struct sockaddr *) &name, sizeof(name)) < 0) {
 		report(RPT_ERR, "%s: Could not bind to port %d at address %s - %s", 
                        __FUNCTION__, port, addr, sock_geterror());
 		return -1;
-	} else {
+	}
+	else {
 		report(RPT_NOTICE, "Listening for queries on %s:%d", addr, port);
 	}
 
@@ -264,12 +277,13 @@ sock_create_inet_socket(char *addr, unsigned int port)
 }
 
 
-/* Service all clients with input pending...*/
+/** Service all clients with pending input.
+ * \retval  <0       error
+ * \retval   0       success
+ */
 int
 sock_poll_clients(void)
 {
-	int err;
-	struct sockaddr_in clientname;
 	struct timeval t;
         struct ClientSocketMap* clientSocket;
 
@@ -289,18 +303,18 @@ sock_poll_clients(void)
 
 	/* Service all the sockets with input pending. */
         LL_Rewind(openSocketList);
-        for (clientSocket = (struct ClientSocketMap*) LL_Get(openSocketList); 
-             clientSocket; 
-             clientSocket = LL_GetNext(openSocketList))
-        {
-		if (FD_ISSET(clientSocket->socket, &read_fd_set)) 
-                {
-			if (clientSocket->socket == listening_fd) 
-                        {
+        for (clientSocket = (struct ClientSocketMap *) LL_Get(openSocketList); 
+             clientSocket != NULL; 
+             clientSocket = LL_GetNext(openSocketList)) {
+
+		if (FD_ISSET(clientSocket->socket, &read_fd_set)) {
+			if (clientSocket->socket == listening_fd) {
 				/* Connection request on original socket. */
-                                Client* c;
+                                Client *c;
 				int new_sock;
+				struct sockaddr_in clientname;
 				socklen_t size = sizeof(clientname);
+
 				new_sock = accept(listening_fd, (struct sockaddr *) &clientname, &size);
 #ifdef WINSOCK2
                                 if (new_sock == INVALID_SOCKET)
@@ -330,18 +344,19 @@ sock_poll_clients(void)
 					report(RPT_ERR, "%s: Error creating client on socket %i - %s",
                                                 __FUNCTION__, clientSocket->socket, sock_geterror());
 					return -1;
-				} else {
+				}
+				else {
                                         /* add new_sock */
-                                        struct ClientSocketMap* newClientSocket;
-                                        newClientSocket = (struct ClientSocketMap*) LL_Pop(freeClientSocketList);
-                                        if (newClientSocket)
-                                        {
+                                        struct ClientSocketMap *newClientSocket;
+                                        newClientSocket = (struct ClientSocketMap *) LL_Pop(freeClientSocketList);
+                                        if (newClientSocket != NULL) {
                                             newClientSocket->socket = new_sock;
                                             newClientSocket->client = c;
                                             LL_InsertNode(openSocketList, (void*) newClientSocket);
                                             /* advance past the new node - check it on the next pass */
                                             LL_Next(openSocketList);
-                                        } else {
+                                        }
+					else {
                                             report(RPT_ERR, "%s: Error - free client socket list exhausted - %d clients.", 
                                                    __FUNCTION__, FD_SETSIZE);
                                             return -1;
@@ -351,20 +366,18 @@ sock_poll_clients(void)
 					report(RPT_ERR, "%s: Could not add client on socket %i", __FUNCTION__, clientSocket->socket);
 					return -1;
 				}
-			} else {
-				/* Data arriving on an already-connected socket. */
-				err = 0;
+			}
+			else {	/* Data arriving on an already-connected socket. */
+				int err = 0;
+
 				do {
 					debug(RPT_DEBUG, "%s: reading...", __FUNCTION__);
 					err = sock_read_from_client(clientSocket);
 					debug(RPT_DEBUG, "%s: ...done", __FUNCTION__);
-					if (err < 0) 
-                                        {
+					if (err < 0) {
                                             /* Client disconnected, destroy client data */
-                                            /* c = clients_find_client_by_sock(); - Deprecated by clientsocketmap*/
-                                            if (clientSocket->client) 
-                                            {
-                                                struct ClientSocketMap* entry;
+                                            if (clientSocket->client) {
+                                                struct ClientSocketMap *entry;
 
                                                 /*sock_send_string(i, "bye\n");*/
                                                 report(RPT_NOTICE, "Client on socket %i disconnected",
@@ -374,9 +387,10 @@ sock_poll_clients(void)
                                                 FD_CLR(clientSocket->socket, &active_fd_set);
                                                 close(clientSocket->socket);
 
-                                                entry = (struct ClientSocketMap*) LL_DeleteNode(openSocketList);
+                                                entry = (struct ClientSocketMap *) LL_DeleteNode(openSocketList);
                                                 LL_Push(freeClientSocketList, (void*) entry);
-                                            } else {
+                                            }
+					    else {
                                                 report(RPT_ERR, "%s: Can't find client of socket %i",
                                                         __FUNCTION__, clientSocket->socket);
                                             }
@@ -388,8 +402,13 @@ sock_poll_clients(void)
 	return 0;
 }
 
-int
-sock_read_from_client(struct ClientSocketMap* clientSocketMap)
+
+/** Read from a client's socket and store the messages in the client for further parsing.
+ * \retval  <0       error
+ * \retval   0       success
+ */
+static int
+sock_read_from_client(struct ClientSocketMap *clientSocketMap)
 {
 	char buffer[MAXMSG];
 	int nbytes, i;
@@ -398,28 +417,26 @@ sock_read_from_client(struct ClientSocketMap* clientSocketMap)
 
 	errno = 0;
         nbytes = sock_recv(clientSocketMap->socket, buffer, MAXMSG);
-	if (nbytes < 0) 
-        {
+	if (nbytes < 0) {
 		if (errno != EAGAIN)
 			report(RPT_DEBUG, "%s: Error on socket %d - %s", 
                                __FUNCTION__, clientSocketMap->socket, sock_geterror());
 		return 0;
-	} else if (nbytes == 0)		  /* EOF*/
-        {
+	}
+	else if (nbytes == 0) {		  /* EOF*/
 		return -1;
-	} else if (nbytes > (MAXMSG - (MAXMSG / 8)))	/* Very noisy client...*/
-	{
+	}
+	else if (nbytes > (MAXMSG - (MAXMSG / 8))) {	/* Very noisy client...*/
 		sock_send_error(clientSocketMap->socket, "Too much data received... quiet down!\n");
 		return -1;
-	} else							  /* Data Read*/
-	{
-		buffer[nbytes] = 0;
+	}
+	else {				  /* Data Read */
+		buffer[nbytes] = '\0';
 		/* Now, replace zeros with linefeeds...*/
 		for (i = 0; i < nbytes; i++)
 			if (buffer[i] == 0)
 				buffer[i] = '\n';
 		/* Enqueue a "client message" here...*/
-		/* c = clients_find_client_by_sock(filedes);  - Deprecated by clientsocketmap*/
 		if (clientSocketMap->client) {
 			client_add_message(clientSocketMap->client, buffer);
 		} else {
