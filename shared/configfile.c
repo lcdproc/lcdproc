@@ -298,7 +298,7 @@ double config_get_float(const char *sectionname, const char *keyname,
 }
 
 
-/** Test whether the configuration containis a specific section.
+/** Test whether the configuration contains a specific section.
  * \param sectionname Name of the section to look for.
  * \retval 0  section not in config
  * \retval 1  section in config
