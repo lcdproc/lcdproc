@@ -212,7 +212,7 @@ hd_init_uss720(Driver *drvthis)
 
 /**
  * Send data or commands to the display.
- * \param p          Pointer to driver's data structure.
+ * \param p          Pointer to driver's private data structure.
  * \param displayID  ID of the display (or 0 for all) to send data to.
  * \param flags      Defines whether to end a command or data.
  * \param ch         The value to send.

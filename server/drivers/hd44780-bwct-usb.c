@@ -189,7 +189,7 @@ hd_init_bwct_usb(Driver *drvthis)
 
 /**
  * Send data or commands to the display.
- * \param p          Pointer to driver's data structure.
+ * \param p          Pointer to driver's private data structure.
  * \param displayID  ID of the display (or 0 for all) to send data to.
  * \param flags      Defines whether to end a command or data.
  * \param ch         The value to send.
@@ -215,7 +215,7 @@ bwct_usb_HD44780_close(PrivateData *p)
 
 /**
  * Change LCD contrast.
- * \param drvthis   Pointer to driver structure.
+ * \param p          Pointer to driver's private data structure.
  * \param value     New contrast value (one byte).
  */
 void

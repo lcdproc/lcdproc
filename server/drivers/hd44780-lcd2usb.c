@@ -104,7 +104,7 @@ hd_init_lcd2usb(Driver *drvthis)
 
 /**
  * Send data or commands to the display.
- * \param p          Pointer to driver's data structure.
+ * \param p          Pointer to driver's private data structure.
  * \param displayID  ID of the display (or 0 for all) to send data to.
  * \param flags      Defines whether to end a command or data.
  * \param ch         The value to send.
@@ -122,7 +122,7 @@ lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 
 /**
  * Turn the LCD backlight on or off.
- * \param p      Pointer to driver's data structure.
+ * \param p      Pointer to driver's private data structure.
  * \param state  New backlight status.
  */
 void
@@ -139,8 +139,8 @@ lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
 
 /**
  * Change LCD contrast.
- * \param drvthis   Pointer to driver structure.
- * \param value     New contrast value (one byte).
+ * \param p      Pointer to driver's private data structure.
+ * \param value  New contrast value (one byte).
  */
 void
 lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value)
@@ -178,7 +178,7 @@ lcd2usb_set_brightness(Driver *drvthis, int state, int promille)
 
 /**
  * Read keypress.
- * \param p  Pointer to driver's data structure.
+ * \param p  Pointer to driver's private data structure.
  * \return  Bitmap of the pressed keys.
  */
 unsigned char
@@ -202,7 +202,7 @@ lcd2usb_HD44780_scankeypad(PrivateData *p)
 
 /**
  * Close the driver (do necessary clean-up).
- * \param p  Pointer to driver's data structure.
+ * \param p  Pointer to driver's private data structure.
  */
 void
 lcd2usb_HD44780_close(PrivateData *p)

@@ -720,7 +720,7 @@ HD44780_clear(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
- * \param c        Character that gets written.
+ * \param ch       Character that gets written.
  */
 MODULE_EXPORT void
 HD44780_chr(Driver *drvthis, int x, int y, char ch)
@@ -1347,7 +1347,7 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 /**
  * Output to the optional output latch(es).
  * \param drvthis  Pointer to driver structure.
- * \param state    Integer with bits representing LED states.
+ * \param on       Integer with bits representing LED states.
  */
 MODULE_EXPORT void
 HD44780_output(Driver *drvthis, int on)
