@@ -51,7 +51,8 @@ LL_new(void)
 
 /** Destroy the entire list.
  *
- * Note: this does not free the data, only the list itself
+ * \note
+ * This does not free the data, only the list itself.
  *
  * \param list   List object to be destroyed.
  * \retval <0    error
@@ -60,7 +61,8 @@ LL_new(void)
 int
 LL_Destroy(LinkedList *list)
 {
-	LL_node *node, *next;
+	LL_node *next, *prev;
+	LL_node *node;
 
 	if (!list)
 		return -1;
@@ -70,86 +72,21 @@ LL_Destroy(LinkedList *list)
 	for (node = node->next; node && node->next; node = next) {
 		// Avoid accessing "node" after it's freed..  :)
 		next = node->next;
-		if (LL_node_Destroy(node) < 0)
-			return -1;
+		prev = node->prev;
+
+		if (next != NULL)
+			next->prev = prev;
+		if (prev != NULL)
+			prev->next = next;
+
+		node->next = NULL;
+		node->prev = NULL;
+
+		free(node);
 	}
 
 	free(list);
 
-	return 0;
-}
-
-
-/** Destroy a node.
- *
- * \warning
- * This does not assert that the node data is free!
- *
- * \param node   Node to be destroyed.
- * \retval <0    error
- * \retval  0	 success
- */
-int
-LL_node_Destroy(LL_node *node)
-{
-	if (!node)
-		return -1;
-
-	if (LL_node_Unlink(node) < 0)
-		return -1;
-
-	free(node);
-
-	return 0;
-}
-
-
-/** Unlink a node from the list.
- * \param node   Node to be unlinked.
- * \retval <0    error
- * \retval  0	 success
- */
-int
-LL_node_Unlink(LL_node *node)
-{
-	LL_node *next, *prev;
-
-	if (!node)
-		return -1;
-
-	next = node->next;
-	prev = node->prev;
-
-	if (next)
-		next->prev = prev;
-	if (prev)
-		prev->next = next;
-
-	node->next = NULL;
-	node->prev = NULL;
-
-	return 0;
-}
-
-
-/** Free the data in a list node.
- * \param node   Node, whose data is to be destroyed.
- * \retval <0    error: illegal node, or no node data to destroy.
- * \retval  0	 success
- */
-int
-LL_node_DestroyData(LL_node *node)
-{
-	if (!node)
-		return -1;
-
-	if (node->data) {
-		free(node->data);
-		// prevent accidential double free()
-		node->data = NULL;
-	}
-	else
-		return -1;
 	return 0;
 }
 
@@ -653,92 +590,6 @@ LL_Unshift(LinkedList *list, void *add)	// Add node to beginning of list
 
 
 //////////////////////////////////////////////////////////////////////
-int
-LL_Roll(LinkedList *list)				  // Make last node first
-{
-	LL_node *node, *next;
-
-	if (!list)
-		return -1;
-	//if(!list->current) return -1;
-
-	if (0 > LL_End(list))
-		return -1;
-
-	// Avoid rolling an empty list, or unlinking the head/tail...
-	if (list->current == &list->head)
-		list->current = list->current->next;
-	if (list->current == &list->tail)
-		list->current = list->current->prev;
-	// List is empty
-	if (list->current == &list->head)
-		return 0;
-	// List has one item
-	if (list->current->prev == &list->head)
-		return 0;
-
-	node = list->current;
-
-	LL_node_Unlink(node);
-
-	if (0 > LL_Rewind(list))
-		return -1;
-
-	next = list->head.next;
-
-	list->head.next = node;
-	next->prev = node;
-	node->prev = &list->head;
-	node->next = next;
-
-	return 0;
-}
-
-
-//////////////////////////////////////////////////////////////////////
-int
-LL_UnRoll(LinkedList *list)			  // Roll the other way...
-{
-	LL_node *node, *prev;
-
-	if (!list)
-		return -1;
-	//if(!list->current) return -1;
-
-	if (0 > LL_Rewind(list))
-		return -1;
-
-	// Avoid rolling an empty list, or unlinking the head/tail...
-	if (list->current == &list->tail)
-		list->current = list->current->prev;
-	if (list->current == &list->head)
-		list->current = list->current->next;
-	// List is empty
-	if (list->current == &list->tail)
-		return 0;
-	// List has one item
-	if (list->current->next == &list->tail)
-		return 0;
-
-	node = list->current;
-
-	LL_node_Unlink(node);
-
-	if (0 > LL_End(list))
-		return -1;
-
-	prev = list->tail.prev;
-
-	list->tail.prev = node;
-	prev->next = node;
-	node->next = &list->tail;
-	node->prev = prev;
-
-	return 0;
-}
-
-
-//////////////////////////////////////////////////////////////////////
 // Add an item to the end of its "priority group"
 // The list is assumed to be sorted already...
 int
@@ -818,14 +669,6 @@ LL_SwapNodes(LL_node *one, LL_node *two)	// Switch two nodes positions...
 }
 
 
-//////////////////////////////////////////////////////////////////////
-int
-LL_nSwapNodes(int one, int two)	// Switch two nodes positions...
-{
-	return -1;
-}
-
-
 /** Calculate the length of a list.
  * \param list   List object.
  * \return       Number of nodes in the list; \c -1 on error.
@@ -884,11 +727,13 @@ LL_Find(LinkedList *list, int (*compare)(void *, void *), void *value)
 }
 
 
-//////////////////////////////////////////////////////////////////////
-// Array like...
-// Goes to the nth list item, and returns the
-// data found there.
-//
+/** Go to the n-th node in the list and return its data.
+ * Go to to the list node with the given \c index
+ * and return the data.
+ * \param list     List object.
+ * \param index    Index of the node whose data we want.
+ * \return         The found node's data pointer; \c NULL otherwise
+ */
 void *
 LL_GetByIndex(LinkedList *list, int index)
 {
@@ -903,8 +748,9 @@ LL_GetByIndex(LinkedList *list, int index)
 	for (node = list->head.next; node != &list->tail; node = node->next) {
 		if (num == index)
 			return node->data;
-		num ++;
+		num++;
 	}
+
 	return NULL; // got past the end
 }
 
@@ -958,15 +804,11 @@ LL_Sort(LinkedList *list, int (*compare)(void *, void *))
 			last = best->prev;
 		else
 			return -1;
-
-		//last = LL_FindPrev(best);         // And go backwards by one node.
 	}
 
-	//return LLFindFirst(current);        // return pointer to the first node.
 	LL_Rewind(list);
 
 	return 0;
-
 }
 
 void

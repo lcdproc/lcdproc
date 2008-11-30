@@ -82,32 +82,15 @@
     LL_Push()      // Regular stack stuff: add, remove, peek, rotate
     LL_Pop()
     LL_Top()
-    LL_Roll()
 
     LL_Shift()     // Other end of the stack (like in perl)
     LL_Unshift()
     LL_Look()
-    LL_UnRoll()
 
     LL_Enqueue()   // Standard queue operations
     LL_Dequeue()
 
   There are also other goodies, like sorting and searching.
-
-  *******************************************************************
-
-  Array-like operations will come later, to allow numerical indexing:
-
-    LL_nGet(list, 3);
-    LL_nSwap(list, 6, 13);
-    LL_nPut(list, -4, data);   // Puts item at 4th place from the end..
-
-  More ideas for later:
-
-    LL_MoveNode(list, amount);  // Slides a node to another spot in the list
-    -- LL_MoveNode(list, -1); // moves a node back one toward the head
-
-    ... um, more?
 
   *******************************************************************
   That's about it, for now...  Be sure to free the list when you're done!
@@ -146,9 +129,6 @@ typedef struct LinkedList {
 LinkedList *LL_new(void);
 // Destroying lists...
 int LL_Destroy(LinkedList *list);
-int LL_node_Destroy(LL_node *node);
-int LL_node_Unlink(LL_node *node);
-int LL_node_DestroyData(LL_node *node);
 
 // Returns to the beginning of the list...
 int LL_Rewind(LinkedList *list);
@@ -186,21 +166,13 @@ void *LL_Shift(LinkedList *list);	  // Remove node from start of list
 void *LL_Look(LinkedList *list);		  // Peek at first node
 int LL_Unshift(LinkedList *list, void *add);	// Add node to beginning of list
 
-int LL_Roll(LinkedList *list);		  // Make first node last
-int LL_UnRoll(LinkedList *list);		  // Roll the other way...
-
-// Queue operations...
-//int LL_Enqueue(LinkedList *list, void *add);
-//void * LL_Dequeue(LinkedList *list);
-//////////////////////////////////////////////////////////////////////
 // Queue operations...
 #define LL_Enqueue(list,add)	LL_Push(list,add)
 #define LL_Dequeue(list)	LL_Shift(list)
 
-int LL_PriorityEnqueue (LinkedList * list, void *add, int (*compare)(void *, void *));
+int LL_PriorityEnqueue(LinkedList * list, void *add, int (*compare)(void *, void *));
 
 int LL_SwapNodes(LL_node *one, LL_node *two);	// Switch two nodes positions...
-int LL_nSwapNodes(int one, int two);	// Switch two nodes positions...
 
 int LL_Length(LinkedList *list);		  // Returns # of nodes in entire list
 
