@@ -1,18 +1,4 @@
-/*
- * main.c
- * This file is part of LCDd, the lcdproc server.
- *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
- *
- * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
- *               2001, Rene Wagner
- *               2002, Mike Patnode
- *               2002, Guillaume Filion
- *               2003, Benjamin Tse (Win32 support)
- *               2005-2006, Peter Marschall (cleanup)
- *
+/** \file server/main.c
  * Contains main(), plus signal callback functions and a help screen.
  *
  * Program init, command-line handling, and the main loop are
@@ -22,7 +8,20 @@
  * Some of this stuff should probably be move elsewhere eventually,
  * such as command-line handling and the main loop.  main() is supposed
  * to be "dumb".
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2001, Joris Robijn
+ *               2001, Rene Wagner
+ *               2002, Mike Patnode
+ *               2002, Guillaume Filion
+ *               2003, Benjamin Tse (Win32 support)
+ *               2005-2006, Peter Marschall (cleanup)
  */
 
 #ifdef HAVE_CONFIG_H

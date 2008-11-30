@@ -1,14 +1,13 @@
-/** \file clients.h
+/** \file server/clients.h
  * Manage the list of clients that are connected.
  */
 
 /* This file is part of LCDd, the lcdproc server.
  *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *
  */
 
 #ifndef CLIENTS_H

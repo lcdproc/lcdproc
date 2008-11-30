@@ -1,4 +1,4 @@
-/** \file parse.c
+/** \file server/parse.c
  * Handles input commands from clients, by splitting strings into tokens
  * and passing arguments to the appropriate handler.
  *
@@ -8,12 +8,11 @@
  
 /* This file is part of LCDd, the lcdproc server.
  *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2008, Peter Marschall
- *
  */
 
 #include <stdlib.h>

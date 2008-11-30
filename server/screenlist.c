@@ -1,17 +1,15 @@
-/*
- * screenlist.c
- * This file is part of LCDd, the lcdproc server.
+/** \file server/screenlist.c
+ * All actions that can be performed on the list of screens.
+ * This file also manages the rotation of screens.
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *		 2003, Joris Robijn
- *
- *
- * All actions that can be performed on the list of screens.
- * This file also manages the rotation of screens.
- *
  */
 
 #include <stdlib.h>

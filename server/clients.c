@@ -1,18 +1,15 @@
-/*
- * clients.c
- * This file is part of LCDd, the lcdproc server.
+/** \file server/clients.c
+ * Manage the list of clients that are connected.
+ * Init/shut down client system, and search for clients in the list.
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
+ * This file is released under the GNU General Public License.
+ *  Refer to the COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2002, Joris Robijn
- *
- *
- * Inits/shuts down client system,
- * and searches for clients in the list.
- * On short: manages the list of clients that are connected.
- *
  */
 
 #include <stdio.h>

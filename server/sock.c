@@ -1,17 +1,16 @@
-/** \file  sock.c
+/** \file server/sock.c
  * LCDproc sockets code.
  */
 
 /* This file is part of LCDd, the lcdproc server.
  *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2003, Benjamin Tse (blt@ieee.org) - Winsock port
  *               2004, F5 Networks, Inc. - IP-address input
  *               2005, Peter Marschall - error checks, ...
- *
  */
 
 #ifdef HAVE_CONFIG_H

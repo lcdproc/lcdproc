@@ -1,24 +1,23 @@
-/*
- * menuscreens.c
- * This file is part of LCDd, the lcdproc server.
- *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
- *
- * Copyright (c) 1999, William Ferrell, Scott Scriven
- *               2002, Joris Robijn
- *               2004, F5 Networks, Inc. - IP-address input
- *               2005, Peter Marschall - error checks, ...
- *
- *
+/** \file server/menuscreens.c
  * Creates the server menu screen(s) and creates the menus that should be
  * displayed on this screen.
  * It also handles its keypresses and converts them to menu tokens for
  * easier processing.
  *
- * NOTE: menuscreens.c does not know whether a menuitem is displayed INSIDE
+ * \note
+ * menuscreens.c does not know whether a menuitem is displayed INSIDE
  * a menu or on a separate SCREEN, for flexibility.
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2002, Joris Robijn
+ *               2004, F5 Networks, Inc. - IP-address input
+ *               2005, Peter Marschall - error checks, ...
  */
 
 #include <string.h>

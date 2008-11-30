@@ -1,14 +1,4 @@
-/*
- * render.c
- * This file is part of LCDd, the lcdproc server.
- *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
- *
- * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2001, Joris Robijn
- *		 2007, Peter Marschall
- *
+/** \file server/render.c
  * Draws screens on the LCD.
  *
  * This needs to be greatly expanded and redone for greater flexibility.
@@ -22,7 +12,16 @@
  * NOTE: (from David Douthitt) Multiple screen sizes?  Multiple simultaneous
  * screens?  Horrors of horrors... next thing you know it'll be making coffee...
  * Better believe it'll take a while to do...
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2001, Joris Robijn
+ *		 2007, Peter Marschall
  */
 
 #include <string.h>
