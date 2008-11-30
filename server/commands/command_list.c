@@ -1,22 +1,20 @@
-/* \file command_list.c
+/* \file server/commands/command_list.c
  * Defines the dispatcher for handlers dealing with the client commands.
- */
-
-/*
- * This file is part of LCDd, the lcdproc server.
- *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
- *
- * Copyright (c) 1999, William Ferrell, Scott Scriven
- *		 2003, Joris Robijn
- *
  *
  * This contains definitions for all the functions which clients can run.
  * The functions here are to be called only from parse.c's interpreter.
  *
  * The client's available function set is defined here, as is the syntax
  * for each command. <-- TODO !
+ */
+
+/* This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *		 2003, Joris Robijn
  */
 
 #include "command_list.h"

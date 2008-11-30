@@ -1,24 +1,22 @@
-/* \file menu_commands.c
+/* \file server/commands/menu_commands.c
  * Defines handlers for client commands concerning menus.
- */
-
-/*
- * This file is part of LCDd, the lcdproc server.
- *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
- *
- * Copyright (c) 1999, William Ferrell, Scott Scriven
- *               2002, Joris Robijn
- *               2004, F5 Networks, Inc. - IP-address input
- *               2005, Peter Marschall - error checks, ...
- *
  *
  * This contains definitions for all the functions which clients can run.
  * The functions here are to be called only from parse.c's interpreter.
  *
  * The client's available function set is defined here, as is the syntax
  * for each command.
+ */
+
+/* This file is part of LCDd, the lcdproc server.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ *
+ * Copyright (c) 1999, William Ferrell, Scott Scriven
+ *               2002, Joris Robijn
+ *               2004, F5 Networks, Inc. - IP-address input
+ *               2005, Peter Marschall - error checks, ...
  */
 
 #include <stdlib.h>
