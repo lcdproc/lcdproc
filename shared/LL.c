@@ -4,8 +4,8 @@
 
 /* This file is part of LCDproc.
  *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
  *
  * Copyright(c) 1999, William Ferrell
  *          (c) 2000, Guillaume Filion
@@ -82,7 +82,8 @@ LL_Destroy(LinkedList *list)
 
 /** Destroy a node.
  *
- * Warning!  This does not assert that the node data is free!
+ * \warning
+ * This does not assert that the node data is free!
  *
  * \param node   Node to be destroyed.
  * \retval <0    error
@@ -154,7 +155,7 @@ LL_node_DestroyData(LL_node *node)
 
 
 /* Return to the beginning of the list.
- * Set list's "current" pointer to the first node in the list.
+ * Set list's \c current pointer to the first node in the list.
  * \param list   List object.
  * \retval <0    error: no list given
  * \retval  0	 success
@@ -165,17 +166,16 @@ LL_Rewind(LinkedList *list)
 	if (!list)
 		return -1;
 
-	if (list->head.next != &list->tail)
-		list->current = list->head.next;
-	else
-		list->current = &list->head;
+	list->current = (list->head.next != &list->tail)
+			? list->head.next
+			: &list->head;
 
 	return 0;
 }
 
 
 /** Jump to the end of the list.
- * Set list's "current" pointer to the last node in the list.
+ * Set list's \c current pointer to the last node in the list.
  * \param list   List object.
  * \retval <0    error: no list given
  * \retval  0	 success
@@ -186,17 +186,16 @@ LL_End(LinkedList *list)
 	if (!list)
 		return -1;
 
-	if (list->tail.prev != &list->head)
-		list->current = list->tail.prev;
-	else
-		list->current = &list->tail;
+	list->current = (list->tail.prev != &list->head)
+			? list->tail.prev
+			: &list->tail;
 
 	return 0;
 }
 
 
 /** Go to the next node of the list.
- * Advance list's "current" pointer to the next node in the list.
+ * Advance list's \c current pointer to the next node in the list.
  * \param list   List object.
  * \retval <0    error: no list given or no next node
  * \retval  0	 success
@@ -209,17 +208,16 @@ LL_Next(LinkedList *list)
 	if (!list->current)
 		return -1;
 
-	if (list->current->next != &list->tail) {
-		list->current = list->current->next;
-		return 0;
-	} else {
+	if (list->current->next == &list->tail)
 		return -1;
-	}
+
+	list->current = list->current->next;
+	return 0;
 }
 
 
 /** Go to the previous node of the list.
- * Set list's "current" pointer to the previous node in the list.
+ * Set list's \c current pointer to the previous node in the list.
  * \param list   List object.
  * \retval <0    error: no list given or no previous node
  * \retval  0	 success
@@ -232,19 +230,19 @@ LL_Prev(LinkedList *list)
 	if (!list->current)
 		return -1;
 
-	if (list->current->prev != &list->head) {
-		list->current = list->current->prev;
-		return 0;
-	} else {
+	if (list->current->prev == &list->head)
 		return -1;
-	}
+
+	list->current = list->current->prev;
+	return 0;
 }
 
 
 /** Access current node's data.
+ * Return pointer to list's \c current node's data.
  * \param list   List object.
- * \retval <0    error: no list given, or no data in current node
- * \retval  0	 success
+ * \return       Pointer to \c current node's payload data;
+ *               \c NULL may be empty payload or an error.
  */
 void *
 LL_Get(LinkedList *list)
@@ -292,12 +290,13 @@ LL_GetNode(LinkedList *list)
 }
 
 
-/** Set list's current pointr to a specific node.
+/** Set list's \c current pointer to a specific node.
  *
- * Warning: Don't use this unless you know what you're doing.
+ * \warning
+ * Don't use this unless you know what you're doing.
  *
  * \param list   List object.
- * \param list   List object.
+ * \param node   Node to become new \c current.
  * \retval <0    error
  * \retval  0    success
  */
@@ -316,7 +315,7 @@ LL_PutNode(LinkedList *list, LL_node *node)
 
 
 /** Access list's first node's data.
- * Set list's "current" pointer to the first node and return its data.
+ * Set list's \c current pointer to the first node and return its data.
  * \param list   List object.
  * \return       Pointer to first node's data; \c NULL on error.
  */
@@ -334,7 +333,7 @@ LL_GetFirst(LinkedList *list)
 
 
 /** Access next node's data.
- * Advance list's "current" pointer to the next node and return its data.
+ * Advance list's \c current pointer to the next node and return its data.
  * \param list   List object.
  * \return       Pointer to next node's data; \c NULL on error.
  */
@@ -352,7 +351,7 @@ LL_GetNext(LinkedList *list)
 
 
 /** Access previous node's data.
- * Set list's "current" pointer to the previous node, and return its data.
+ * Set list's \c current pointer to the previous node, and return its data.
  * \param list   List object.
  * \return       Pointer to previous node's data; \c NULL on error.
  */
@@ -370,7 +369,7 @@ LL_GetPrev(LinkedList *list)
 
 
 /** Access list's last node's data.
- * Set list's "current" pointer to the last node and return its data.
+ * Set list's \c current pointer to the last node and return its data.
  * \param list   List object.
  * \return       Pointer to last node's data; \c NULL on error.
  */
@@ -388,6 +387,7 @@ LL_GetLast(LinkedList *list)
 
 
 /** Add/append a new node after current one in the list.
+ * Update the list's \c current pointer to point to the freshly created node.
  * \param list   List object.
  * \param add    Pointer to new node's data.
  * \retval <0    error
@@ -400,7 +400,6 @@ LL_AddNode(LinkedList *list, void *add)
 
 	if (!list)
 		return -1;
-	//if(!add) return -1;  // Nevermind..  NULL entries can be good...
 	if (!list->current)
 		return -1;
 
@@ -408,9 +407,10 @@ LL_AddNode(LinkedList *list, void *add)
 	if (node == NULL)
 		return -1;
 
-	if (list->current == &list->tail) {
+	// we're behind the list's end, go to previous node
+	if (list->current == &list->tail)
 		list->current = list->current->prev;
-	}
+
 	// Set node data
 	node->next = list->current->next;
 	node->prev = list->current;
@@ -419,7 +419,6 @@ LL_AddNode(LinkedList *list, void *add)
 	// Re-link
 	if (node->next)
 		node->next->prev = node;
-
 	list->current->next = node;
 
 	list->current = node;
@@ -429,6 +428,7 @@ LL_AddNode(LinkedList *list, void *add)
 
 
 /** Add/insert a new node before current one in the list.
+ * Update the list's \c current pointer to point to the freshly created node.
  * \param list   List object.
  * \param add    Pointer to new node's data.
  * \retval <0    error
@@ -450,6 +450,7 @@ LL_InsertNode(LinkedList *list, void *add)
 	if (node == NULL)
 		return -1;
 
+	// we're before the list's start, go to next node
 	if (list->current == &list->head)
 		list->current = list->current->next;
 
@@ -459,7 +460,6 @@ LL_InsertNode(LinkedList *list, void *add)
 
 	if (list->current->prev)
 		list->current->prev->next = node;
-
 	list->current->prev = node;
 
 	list->current = node;
@@ -469,7 +469,7 @@ LL_InsertNode(LinkedList *list, void *add)
 
 
 /** Remove current node from the list.
- * Set the current pointer to the node after the deleted one.
+ * Set the list's \c current pointer to the node after the deleted one.
  * \param list   List object.
  * \return       Pointer to data of deleted node; \c NULL on error.
  */ 
@@ -514,7 +514,7 @@ LL_DeleteNode(LinkedList *list)
 
 /** Remove a specific node from the list.
  * Find a node by a pointer to its data and remove it.
- * After te deletion the "current" pointer is on the node after the deleted one.
+ * After the deletion the \c current pointer is on the node after the deleted one.
  * \param list   List object.
  * \param data   Pointer to data of node to delete.
  * \return       Pointer to data of deleted node; \c NULL on error.
@@ -527,7 +527,7 @@ LL_Remove(LinkedList *list, void *data)
 
 	LL_Rewind(list);
 	do {
-		void * find = LL_Get(list);
+		void *find = LL_Get(list);
 
 		if (find == data)
 			return LL_DeleteNode(list);
@@ -538,7 +538,8 @@ LL_Remove(LinkedList *list, void *data)
 
 
 /** Add/append a new node after the last one in the list.
- * Jump to the last node in the list and append a new node.
+ * Jump to the last node in the list, append a new node
+ * and make this new one the list's \c current one.
  * \param list   List object.
  * \param add    Pointer to new node's data.
  * \retval <0    error
@@ -559,7 +560,8 @@ LL_Push(LinkedList *list, void *add)  // Add node to end of list
 
 
 /** Remove the last node from the list, and return its data.
- * Jump to the last node in the list, remove it from the list and return its data.
+ * Jump to the last node in the list, remove it from the list
+ * and return its data.
  * \param list   List object.
  * \return       Pointer to data of deleted node; \c NULL on error.
  */
@@ -577,7 +579,7 @@ LL_Pop(LinkedList *list)				  // Remove node from end of list
 
 
 /** Access list's last node's data.
- * Set list's "current" pointer to the last node and return its data.
+ * Set list's \c current pointer to the last node and return its data.
  * \param list   List object.
  * \return       Pointer to last node's data; \c NULL on error.
  */
@@ -607,7 +609,7 @@ LL_Shift(LinkedList *list)				  // Remove node from start of list
 
 
 /** Access list's first node's data.
- * Set list's "current" pointer to the first node and return its data.
+ * Set list's \c current pointer to the first node and return its data.
  * \param list   List object.
  * \return       Pointer to first node's data; \c NULL on error.
  */
@@ -729,11 +731,8 @@ LL_UnRoll(LinkedList *list)			  // Roll the other way...
 // Add an item to the end of its "priority group"
 // The list is assumed to be sorted already...
 int
-LL_PriorityEnqueue(LinkedList *list, void *add, int compare(void *, void *))
+LL_PriorityEnqueue(LinkedList *list, void *add, int (*compare)(void *, void *))
 {
-	void *data;
-	int i;
-
 	if (!list)
 		return -1;
 	if (!add)
@@ -745,11 +744,12 @@ LL_PriorityEnqueue(LinkedList *list, void *add, int compare(void *, void *))
 	// the given nodes...
 	LL_End(list);
 	do {
-		data = LL_Get(list);
+		void *data = LL_Get(list);
+
 		if (data) {
-			i = compare(add, data);
-			if (i >= 0)				  // If we're in the right place, add it and exit
-			{
+			int i = compare(add, data);
+
+			if (i >= 0) {	// If we're in the right place, add it and exit
 				LL_AddNode(list, add);
 				return 0;
 			}
@@ -804,7 +804,6 @@ LL_SwapNodes(LL_node *one, LL_node *two)	// Switch two nodes positions...
 		two->prev = one;
 
 	return 0;
-
 }
 
 
@@ -842,21 +841,20 @@ LL_Length(LinkedList *list)
  * Go to to the list node whose data matches the given value
  * and return the data.
  *
- * Note that this does *not* rewind the list first!
+ * \note
+ * This does \em not rewind the list first!
  * Do it yourself if you want to start from the beginning!
  *
  * \param list     List object.
  * \param compare  Pointer to a comparison function, that takes to void pointers
- *                 is arguments and returns an int. If must return 0 exactly when
- *                 the node's data matches \c value.
+ *                 as arguments and returns an int. If must return \c 0 exactly
+ *                 when the node's data matches \c value.
  * \param value    Pointer to the value used for matching.
  * \return         The found node's data pointer; \c NULL otherwise
  */
 void *
-LL_Find(LinkedList *list, int compare(void *, void *), void *value)
+LL_Find(LinkedList *list, int (*compare)(void *, void *), void *value)
 {
-	void *data;
-
 	if (!list)
 		return NULL;
 	if (!compare)
@@ -865,10 +863,10 @@ LL_Find(LinkedList *list, int compare(void *, void *), void *value)
 		return NULL;
 
 	do {
-		data = LL_Get(list);
+		void *data = LL_Get(list);
+
 		if (0 == compare(data, value))
 			return data;
-
 	} while (LL_Next(list) == 0);
 
 	return NULL;
@@ -888,7 +886,7 @@ LL_GetByIndex(LinkedList *list, int index)
 
 	if (!list)
 		return NULL;
-	if (index<0)
+	if (index < 0)
 		return NULL;
 
 	for (node = list->head.next; node != &list->tail; node = node->next) {
@@ -905,13 +903,13 @@ LL_GetByIndex(LinkedList *list, int index)
  * After the sorting, the list's current pointer is set to the first node.
  * \param list     List object.
  * \param compare  Pointer to a comparison function, that takes to void pointers
- *                 is arguments and returns an int > 0 when the first argument
- *                 is considered greater then the second.
+ *                 as arguments and returns an int > \c 0 when the first argument
+ *                 is considered greater than the second.
  * \retval <0      error
  * \retval  0      success.
  */
 int
-LL_Sort(LinkedList *list, int compare(void *, void *))
+LL_Sort(LinkedList *list, int (*compare)(void *, void *))
 {
 	int i, j;			  // Junk / loop variables
 	int numnodes;			  // number of nodes in list
