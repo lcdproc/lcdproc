@@ -1,4 +1,4 @@
-/** \file hd44780.h
+/** \file server/drivers/hd44780.h
  * Interface to the base driver module for Hitachi HD44780 based LCD displays.
  *
  * This is a modular driver that allows support for alternative HD44780

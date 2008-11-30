@@ -1,4 +1,4 @@
-/** \file hd44780-ethlcd.c
+/** \file server/drivers/hd44780-ethlcd.c
  * \c ethlcd connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  */
 

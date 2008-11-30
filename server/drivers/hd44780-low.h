@@ -1,4 +1,4 @@
-/** \file hd44780-low.h
+/** \file server/drivers/hd44780-low.h
  * Interface to low level code to export from hd44780.c to "lower" HW
  * implementation dependent files.
  */

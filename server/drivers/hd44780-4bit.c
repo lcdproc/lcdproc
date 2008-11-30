@@ -1,4 +1,4 @@
-/** \file hd44780-4bit.c
+/** \file server/drivers/hd44780-4bit.c
  * \c 4bit connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
  * The LCD is operated in its 4 bit-mode to be connected to a single PC parallel port.

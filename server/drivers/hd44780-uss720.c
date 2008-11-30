@@ -1,4 +1,4 @@
-/** \file hd44780-uss720.c
+/** \file server/drivers/hd44780-uss720.c
  * \c uss720 connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
  * The LCD is operated in its 8 bit-mode to be connected to a uss720 based Belkin F5U002.

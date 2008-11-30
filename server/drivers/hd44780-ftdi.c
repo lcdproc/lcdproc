@@ -1,4 +1,4 @@
-/** \file hd44780-ftdi.c
+/** \file server/drivers/hd44780-ftdi.c
  * \c ftdi connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  */
 

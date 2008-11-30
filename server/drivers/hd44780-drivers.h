@@ -1,4 +1,4 @@
-/** \file hd44780-drivers.h
+/** \file server/drivers/hd44780-drivers.h
  * Interface to low-level driver types, headers and names.
  *
  * To add support for a new driver in this file:

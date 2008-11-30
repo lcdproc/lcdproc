@@ -1,4 +1,4 @@
-/** \file hd44780-i2c.c
+/** \file server/drivers/hd44780-i2c.c
  * \c i2c connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
  * The LCD is operated in its 4 bit-mode to be connected to the 8 bit-port

@@ -1,4 +1,4 @@
-/** \file hd44780-lis2.c
+/** \file server/drivers/hd44780-lis2.c
  * \c lis2 and \c mplay connection types of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  */
 

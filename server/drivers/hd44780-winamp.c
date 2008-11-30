@@ -1,4 +1,4 @@
-/** \file hd44780-winamp.c
+/** \file server/drivers/hd44780-winamp.c
  * \c winamp connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
  * The LCD is operated in it's 8 bit-mode to be connected to a single PC parallel port.

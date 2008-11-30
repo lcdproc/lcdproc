@@ -1,4 +1,4 @@
-/** \file hd44780-lcd2usb.c
+/** \file server/drivers/hd44780-lcd2usb.c
  * \c lcd2usb connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
  * See http://www.harbaum.org/till/lcd2usb.

@@ -1,4 +1,4 @@
-/** \file hd44780-charmap.h
+/** \file server/drivers/hd44780-charmap.h
  * Character mapping for HD44780 devices.
  */
 

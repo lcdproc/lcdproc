@@ -1,4 +1,4 @@
-/** \file hd44780-serial.c
+/** \file server/drivers/hd44780-serial.c
  * Connection types \c picanlcd, \c lcdserializer, \c los-panel, \c vdr-lcd,
  * \c vdr-wakeup, \c pertelian, ... of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  */

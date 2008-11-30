@@ -1,4 +1,4 @@
-/** \file hd44780-bwct-usb.c
+/** \file server/drivers/hd44780-bwct-usb.c
  * \c bwctusb connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
  * See http://www.bwct.de/lcd.html
