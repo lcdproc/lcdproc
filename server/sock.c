@@ -10,7 +10,7 @@
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2003, Benjamin Tse (blt@ieee.org) - Winsock port
  *               2004, F5 Networks, Inc. - IP-address input
- *               2005-2008, Peter Marschall - error checks, ...
+ *               2005, Peter Marschall - error checks, ...
  *
  */
 
@@ -478,7 +478,7 @@ sock_destroy_socket(void)
 			report(RPT_NOTICE, "Client on socket %i disconnected",
 				entry->socket);
 			client_destroy(entry->client);
-			clients_remove_client(entry->client);
+			clients_remove_client(entry->client, PREV);
 			entry->client = NULL;
 		}
 		else {
@@ -490,7 +490,7 @@ sock_destroy_socket(void)
 		close(entry->socket);
 
 		/* re-add socket to the free socket pool */
-		entry = (ClientSocketMap *) LL_DeleteNode(openSocketList);
+		entry = (ClientSocketMap *) LL_DeleteNode(openSocketList, PREV);
 		LL_Push(freeClientSocketList, (void*) entry);
 	}
 }

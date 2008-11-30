@@ -188,7 +188,7 @@ LL_Put(list, (void *)new_thingie);
 <screen>
 my_data * thingie;
 
-thingie = (my_data *)LL_DeleteNode(list);
+thingie = (my_data *)LL_DeleteNode(list, NEXT);
 free(thingie);
 
 thingie->number = 666;

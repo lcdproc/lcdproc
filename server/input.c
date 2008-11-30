@@ -185,7 +185,7 @@ int input_reserve_key(const char *key, bool exclusive, Client *client)
 	/* Find out if this key is already reserved in a way that interferes
 	 * with the new reservation.
 	 */
-	for (kr = LL_GetFirst(keylist); kr; kr = LL_GetNext(keylist)) {
+	for (kr = LL_GetFirst(keylist); kr != NULL; kr = LL_GetNext(keylist)) {
 		if (strcmp(kr->key, key) == 0) {
 			if (kr->exclusive || exclusive) {
 				/* Sorry ! */
@@ -214,13 +214,12 @@ void input_release_key(const char *key, Client *client)
 	debug(RPT_DEBUG, "%s(key=\"%.40s\", client=[%d])", __FUNCTION__, key, (client ? client->sock : -1));
 
 	for (kr = LL_GetFirst(keylist); kr != NULL; kr = LL_GetNext(keylist)) {
-		if (kr->client == client
-		&& strcmp(kr->key, key) == 0) {
-			free(kr->key);
-			free(kr);
-			LL_DeleteNode(keylist);
+		if ((kr->client == client) && (strcmp(kr->key, key) == 0)) {
 			report(RPT_INFO, "Key \"%.40s\" reserved %s by client [%d] and is now released",
 				key, (kr->exclusive ? "exclusively" : "shared"), (client ? client->sock : -1));
+			free(kr->key);
+			free(kr);
+			LL_DeleteNode(keylist, NEXT);
 			return;
 		}
 	}
@@ -232,17 +231,14 @@ void input_release_client_keys(Client *client)
 
 	debug(RPT_DEBUG, "%s(client=[%d])", __FUNCTION__, (client ? client->sock : -1));
 
-	kr = LL_GetFirst(keylist);
-	while (kr != NULL) {
+	for (kr = LL_GetFirst(keylist); kr != NULL; kr = LL_GetNext(keylist)) {
 		if (kr->client == client) {
 			report(RPT_INFO, "Key \"%.40s\" reserved %s by client [%d] and is now released",
-				kr->key, (kr->exclusive ? "exclusive" : "shared"), (client ? client->sock : -1));
+				kr->key, (kr->exclusive ? "exclusively" : "shared"), (client ? client->sock : -1));
 			free(kr->key);
 			free(kr);
-			LL_DeleteNode(keylist);
-			kr = LL_Get(keylist);
-		} else {
-			kr = LL_GetNext(keylist);
+			// jump to node before deleted one to not miss any
+			LL_DeleteNode(keylist, PREV);
 		}
 	}
 }

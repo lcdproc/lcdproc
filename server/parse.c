@@ -229,6 +229,11 @@ parse_all_client_messages(void)
 		for (str = client_get_message(c); str != NULL; str = client_get_message(c)) {
 			parse_message(str, c);
 			free(str);
+
+			if (c->state == GONE) {
+				sock_destroy_client_socket(c);
+				break;
+			}
 		}
 	}
 	return 0;

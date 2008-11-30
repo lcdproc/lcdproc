@@ -57,7 +57,7 @@
 
     my_data * thingie;
 
-    thingie = (my_data *)LL_DeleteNode(list);
+    thingie = (my_data *)LL_DeleteNode(list, NEXT);
     free(thingie);
 
     thingie->number = 666;
@@ -116,6 +116,16 @@
 // See LL.c for more detailed descriptions of these functions.
 
 
+/** Symbolic values for directions */
+typedef enum _direction {
+	FIRST    = -2,
+	PREV     = -1,
+	CURRENT	 = 0,
+	NEXT     = +1,
+	LAST     = +2
+} Direction;
+
+
 /** Structure for a node in a linked list */
 typedef struct LL_node {
 	struct LL_node *prev;	/**< Pointer to previous node */
@@ -164,9 +174,9 @@ void *LL_GetLast(LinkedList *list);	  //            ... last node
 int LL_AddNode(LinkedList *list, void *add);	// Adds node AFTER current one
 int LL_InsertNode(LinkedList *list, void *add);	// Adds node BEFORE current one
 // Removes a node from the link; returns the data from the node
-void *LL_DeleteNode(LinkedList *list);
+void *LL_DeleteNode(LinkedList *list, Direction whereto);
 // Removes a specific node...
-void *LL_Remove(LinkedList *list, void *data);
+void *LL_Remove(LinkedList *list, void *data, Direction whereto);
 
 // Stack operations
 int LL_Push(LinkedList *list, void *add);	// Add node to end of list

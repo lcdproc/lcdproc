@@ -85,13 +85,13 @@ screenlist_remove(Screen *s)
 		screenlist_goto_next();
 		if (s == current_screen) {
 			/* Hmm, no other screen had same priority */
-			void *res = LL_Remove(screenlist, s);
+			void *res = LL_Remove(screenlist, s, NEXT);
 			/* And now once more */
 			screenlist_goto_next();
 			return (res == NULL) ? -1 : 0;
 		}
 	}
-	return (LL_Remove(screenlist, s) == NULL) ? -1 : 0;
+	return (LL_Remove(screenlist, s, NEXT) == NULL) ? -1 : 0;
 }
 
 
@@ -221,7 +221,8 @@ screenlist_goto_next(void)
 		return -1;
 
 	/* Find current screen in screenlist */
-	for (s = LL_GetFirst(screenlist); s && s != current_screen; s = LL_GetNext(screenlist));
+	for (s = LL_GetFirst(screenlist); s && s != current_screen; s = LL_GetNext(screenlist))
+		;
 
 	/* One step forward */
 	s = LL_GetNext(screenlist);

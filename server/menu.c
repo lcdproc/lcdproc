@@ -270,7 +270,7 @@ menu_remove_item(Menu *menu, MenuItem *item)
 	     item2 != NULL;
 	     item2 = LL_GetNext(menu->data.menu.contents), i++) {
 		if (item == item2) {
-			LL_DeleteNode(menu->data.menu.contents);
+			LL_DeleteNode(menu->data.menu.contents, NEXT);
 			if (menu->data.menu.selector_pos >= i) {
 				menu->data.menu.selector_pos--;
 				if (menu->data.menu.scroll > 0)
@@ -295,7 +295,7 @@ menu_destroy_all_items(Menu *menu)
 
 	for (item = menu_getfirst_item(menu); item != NULL; item = menu_getfirst_item(menu)) {
 		menuitem_destroy(item);
-		LL_Remove(menu->data.menu.contents, item);
+		LL_Remove(menu->data.menu.contents, item, NEXT);
 	}
 }
 

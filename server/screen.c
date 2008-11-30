@@ -136,7 +136,7 @@ screen_remove_widget(Screen *s, Widget *w)
 {
 	debug(RPT_DEBUG, "%s(s=[%.40s], widget=[%.40s])", __FUNCTION__, s->id, w->id);
 
-	LL_Remove(s->widgetlist, (void *) w);
+	LL_Remove(s->widgetlist, (void *) w, NEXT);
 
 	return 0;
 }

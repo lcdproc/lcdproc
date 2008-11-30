@@ -25,7 +25,7 @@ int clients_shutdown(void);
 
 /* Add/remove clients (return NULL for error) */
 Client *clients_add_client(Client *c);
-Client *clients_remove_client(Client *c);
+Client *clients_remove_client(Client *c, Direction whereto);
 
 /* List functions */
 Client *clients_getfirst(void);

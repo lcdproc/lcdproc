@@ -1,6 +1,8 @@
-/*
- * client.c
- * This file is part of LCDd, the lcdproc server.
+/** \file client.c
+ * Define all the client data and actions.
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -228,7 +230,7 @@ client_remove_screen(Client *c, Screen *s)
 	debug(RPT_DEBUG, "%s(c=[%d], s=[%s])", __FUNCTION__, c->sock, s->id);
 
 	/* TODO:  Check for errors here?*/
-	LL_Remove(c->screenlist, (void *) s);
+	LL_Remove(c->screenlist, (void *) s, NEXT);
 
 	/* Now, remove it from the screenlist...*/
 	screenlist_remove(s);

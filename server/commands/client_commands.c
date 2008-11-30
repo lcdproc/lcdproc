@@ -93,7 +93,7 @@ bye_func(Client *c, int argc, char **argv)
 		debug(RPT_INFO, "Bye, %s!", (c->name != NULL) ? c->name : "unknown client");
 
 		c->state = GONE;
-		sock_send_error(c->sock, "\"bye\" is currently ignored\n");
+		//sock_send_error(c->sock, "\"bye\" is currently ignored\n");
 	}	
 	return 0;
 }

@@ -242,7 +242,7 @@ LL_Prev(LinkedList *list)
  * Return pointer to list's \c current node's data.
  * \param list   List object.
  * \return       Pointer to \c current node's payload data;
- *               \c NULL may be empty payload or an error.
+ *               \c NULL may be empty payload or an error.  
  */
 void *
 LL_Get(LinkedList *list)
@@ -469,12 +469,13 @@ LL_InsertNode(LinkedList *list, void *add)
 
 
 /** Remove current node from the list.
- * Set the list's \c current pointer to the node after the deleted one.
- * \param list   List object.
- * \return       Pointer to data of deleted node; \c NULL on error.
+ * Set the list's \c current pointer to the one denoted by \c whereto.
+ * \param list     List object.
+ * \param whereto  Direction where to set the list's \c current pointer
+ * \return         Pointer to data of deleted node; \c NULL on error.
  */ 
 void *
-LL_DeleteNode(LinkedList *list)
+LL_DeleteNode(LinkedList *list, Direction whereto)
 {
 	LL_node *next, *prev;
 	void *data;
@@ -506,7 +507,16 @@ LL_DeleteNode(LinkedList *list)
 
 	free(list->current);
 
-	list->current = next;
+	switch (whereto) {
+		case FIRST:	list->current = list->head.next;
+				break;
+		case LAST:	list->current = list->tail.prev;
+				break;
+		case PREV:	list->current = prev;
+				break;
+		default:
+		case NEXT:	list->current = next;
+	}
 
 	return data;
 }
@@ -514,13 +524,14 @@ LL_DeleteNode(LinkedList *list)
 
 /** Remove a specific node from the list.
  * Find a node by a pointer to its data and remove it.
- * After the deletion the \c current pointer is on the node after the deleted one.
+ * Set the list's \c current pointer to the one denoted by \c whereto.
  * \param list   List object.
  * \param data   Pointer to data of node to delete.
+ * \param whereto  Direction where to set the list's \c current pointer
  * \return       Pointer to data of deleted node; \c NULL on error.
  */ 
 void *
-LL_Remove(LinkedList *list, void *data)
+LL_Remove(LinkedList *list, void *data, Direction whereto)
 {
 	if (!list)
 		return NULL;
@@ -530,7 +541,7 @@ LL_Remove(LinkedList *list, void *data)
 		void *find = LL_Get(list);
 
 		if (find == data)
-			return LL_DeleteNode(list);
+			return LL_DeleteNode(list, whereto);
 	} while (LL_Next(list) == 0);
 
 	return NULL;
@@ -574,7 +585,7 @@ LL_Pop(LinkedList *list)				  // Remove node from end of list
 	if (0 > LL_End(list))
 		return NULL;
 
-	return LL_DeleteNode(list);
+	return LL_DeleteNode(list, PREV);
 }
 
 
@@ -604,7 +615,7 @@ LL_Shift(LinkedList *list)				  // Remove node from start of list
 	if (0 > LL_Rewind(list))
 		return NULL;
 
-	return LL_DeleteNode(list);
+	return LL_DeleteNode(list, NEXT);
 }
 
 
