@@ -1,17 +1,15 @@
-/*
- * clients.c
- * This file is part of LCDd, the lcdproc server.
+/** \file clients.c
+ * Manage the list of clients that are connected.
+ * Init/shut down client system, and search for clients in the list.
+ */
+
+/* This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *               2002, Joris Robijn
- *
- *
- * Inits/shuts down client system,
- * and searches for clients in the list.
- * On short: manages the list of clients that are connected.
  *
  */
 
@@ -77,18 +75,23 @@ clients_shutdown(void)
 	return 0;
 }
 
-int
+/* Add the client to the clients list... */
+Client *
 clients_add_client(Client *c)
 {
-	/* Add the client to the clients list... */
-	return LL_Push(clientlist, c);
+	if (LL_Push(clientlist, c) == 0)
+		return c;
+
+	return NULL;
 }
 
-int
+/* Remove the client from the clients list... */
+Client *
 clients_remove_client(Client *c)
 {
-	/* Remove the client from the clients list... */
-	return(LL_Remove(clientlist, c) == NULL)?-1:0;
+	Client *client = LL_Remove(clientlist, c);
+	
+	return client;
 }
 
 Client *
@@ -113,7 +116,6 @@ clients_client_count(void)
 /* A client is identified by the file descriptor
  * associated with it. Find one.
  */
-
 Client *
 clients_find_client_by_sock(int sock)
 {
