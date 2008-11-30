@@ -61,7 +61,7 @@ LL_new(void)
 int
 LL_Destroy(LinkedList *list)
 {
-	LL_node *next, *prev;
+	LL_node *prev, *next;
 	LL_node *node;
 
 	if (!list)
@@ -88,6 +88,42 @@ LL_Destroy(LinkedList *list)
 	free(list);
 
 	return 0;
+}
+
+
+/* Move to another entry in the list.
+ * Set list's \c current pointer to the node denoted to by \c whereto.
+ * \param list     List object.
+ * \param whereto  Direction where to set the list's \c current pointer
+ * \return         New value of list's \c current pointer;
+ *                 \c NULL on error or when moving beyond ends.
+ */
+LL_node *
+LL_GoTo(LinkedList *list, Direction whereto)
+{
+	if (!list)
+		return NULL;
+	
+	switch (whereto) {
+		case HEAD:	list->current = (list->head.next != &list->tail)
+						? list->head.next
+						: NULL;
+				break;
+		case PREV:	if (list->current->prev == &list->head)
+					return NULL;
+				list->current = list->current->prev;
+		case CURRENT:	break;
+		case NEXT:	if (list->current->next == &list->tail)
+					return NULL;
+				list->current = list->current->next;
+				break;
+		case TAIL:	list->current = (list->tail.prev != &list->head)
+						? list->tail.prev
+						: NULL;
+				break;
+	}
+	
+	return list->current;
 }
 
 
@@ -445,9 +481,9 @@ LL_DeleteNode(LinkedList *list, Direction whereto)
 	free(list->current);
 
 	switch (whereto) {
-		case FIRST:	list->current = list->head.next;
+		case HEAD:	list->current = list->head.next;
 				break;
-		case LAST:	list->current = list->tail.prev;
+		case TAIL:	list->current = list->tail.prev;
 				break;
 		case PREV:	list->current = prev;
 				break;
@@ -727,6 +763,57 @@ LL_Find(LinkedList *list, int (*compare)(void *, void *), void *value)
 }
 
 
+/** Perform an action for the all list elements.
+ * Execute a function on the data of each node in the list.
+ * Depending on the result of the function, new nodes may get added,
+ * nodes may get deleted or simply changed by the function itself.
+ *
+ * The \c action() function is in turn called with each node's data
+ * pointer as the first argument and \c value as its second argument.
+ * If it returns \c NULL, the node will be deleted from the list,
+ * otherwise, if the pointer returned from the function differs from
+ * data, a new node gets added after the current node.
+ * If the result equals the payload data, no addition or deletio happens.
+ *
+ * \note
+ * Removing the client payload in case of deletion, or creation of
+ * the payload for the new node in case of addition is up to the
+ * \c action() function.
+ *
+ * \note
+ * \c value can be used to report errors, pass additional information, ...
+ * 
+ * \param list     List object.
+ * \param action   Pointer to the action function that takes two void pointers
+ *                 as arguments and returns a void pointer.
+ * \param value    Pointer to data that is used as second argument to
+ *                 \c action().
+ */
+void
+LL_ForAll(LinkedList *list, void *(*action)(void *, void *), void *value)
+{
+	if (!list)
+		return;
+	if (!action)
+		return;
+
+	LL_Rewind(list);
+	if (list->current != NULL) {
+		do {
+			void *data = LL_Get(list);
+			void *result = action(data, value);
+
+			if (result != data) {
+				if (result != NULL)
+					LL_AddNode(list, result);
+				else
+					LL_DeleteNode(list, PREV);
+			}
+		} while (LL_Next(list) == 0);
+	}
+}
+
+
 /** Go to the n-th node in the list and return its data.
  * Go to to the list node with the given \c index
  * and return the data.
@@ -810,6 +897,7 @@ LL_Sort(LinkedList *list, int (*compare)(void *, void *))
 
 	return 0;
 }
+
 
 void
 LL_dprint(LinkedList *list)

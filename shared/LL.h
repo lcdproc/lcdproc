@@ -101,11 +101,11 @@
 
 /** Symbolic values for directions */
 typedef enum _direction {
-	FIRST    = -2,
+	HEAD     = -2,
 	PREV     = -1,
 	CURRENT	 = 0,
 	NEXT     = +1,
-	LAST     = +2
+	TAIL     = +2
 } Direction;
 
 
@@ -129,6 +129,9 @@ typedef struct LinkedList {
 LinkedList *LL_new(void);
 // Destroying lists...
 int LL_Destroy(LinkedList *list);
+
+// move "current" node
+LL_node *LL_GoTo(LinkedList *list, Direction whereto);
 
 // Returns to the beginning of the list...
 int LL_Rewind(LinkedList *list);
@@ -178,6 +181,8 @@ int LL_Length(LinkedList *list);		  // Returns # of nodes in entire list
 
 // Searching...
 void *LL_Find(LinkedList *list, int (*compare)(void *, void *), void *value);
+
+void LL_ForAll(LinkedList *list, void *(*action)(void *, void *), void *value);
 
 // Array operation...
 void *LL_GetByIndex(LinkedList *list, int index);  // gets the nth node, 0 being the first
