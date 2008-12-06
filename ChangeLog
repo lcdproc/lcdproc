@@ -61,6 +61,7 @@ v.0.5dev (ongoing development)
  * autoconf fixes: check for pkg-config macros
  + new driver irtrans (Phant0m / Aron Parsons)
  + serialVFD driver: support Siemens/Wincor Nixdorf BA63/66 (Stefan Herdler)
+ + new client lcdident.pl (Ethan Dicks)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

@@ -74,6 +74,7 @@ Jason Dale Woodward:
 Ethan Dicks:
 	- PIC-an-LCD original driver (later merged into HD44780 driver)
 	- fixes & tests to the MtxOrb driver and some clients
+	- lcdident.pl client
 
 Michael Reinelt:
 	- SED1520 (copied work of him)
