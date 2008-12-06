@@ -1,12 +1,14 @@
-/*  This is the LCDproc driver for Cwlinux devices (http://www.cwlinux.com)
+/** \file server/drivers/CwLnx.c
+ *  This is the LCDproc driver for Cwlinux devices (http://www.cwlinux.com)
+ */
 
-    Applicable Data Sheets:
+/* Applicable Data Sheets:
     - http://www.cwlinux.com/downloads/cw1602/cw1602-manual.pdf
     - http://www.cwlinux.com/downloads/lcd/cw12232-manual.pdf
 
         Copyright (C) 2002, Andrew Ip
                       2003, David Glaude
-                      2006,7 Peter Marschall
+                      2006,7,8 Peter Marschall
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -1051,7 +1053,7 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
 	    c = dat[row] & mask;
 	    Write_LCD(p->fd, &c, 1);
 	}
-    } else if (p->model == 12232) {	// the graphical model
+    } else if ((p->model == 12232) || (p->model == 12832)) {	// graphical models
 	int col;
 
 	for (col = p->cellwidth - 1; col >= 0; col--) {
@@ -1110,7 +1112,7 @@ CwLnx_set_char_unrestricted(Driver *drvthis, int n, unsigned char *dat)
 	    c = dat[row] & mask;
 	    Write_LCD(p->fd, &c, 1);
 	}
-    } else if (p->model == 12232) {	// the graphical model
+    } else if ((p->model == 12232) || (p->model == 12832)) {	// graphical models
 	int col;
 
 	for (col = p->cellwidth - 1; col >= 0; col--) {
