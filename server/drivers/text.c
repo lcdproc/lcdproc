@@ -1,10 +1,10 @@
-/*
- * TextMode driver
- *
+/** \file server/drivers/text.c
+ * LCDd text mode driver.
  * Displays LCD screens, one after another; suitable for hard-copy
  * terminals.
- *
- * Copyright (C) 1998-2004 The LCDproc Team
+ */
+
+/* Copyright (C) 1998-2004 The LCDproc Team
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,24 +37,26 @@
 //#include "drv_base.h"
 
 
-// Variables
+/* private data structure */
 typedef struct driver_private_data {
 	int width;
 	int height;
 	char *framebuf;
 } PrivateData;
 
-// Vars for the server core
+/* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "text_";
 
-//////////////////////////////////////////////////////////////////////////
-////////////////////// For Text-Mode Output //////////////////////////////
-//////////////////////////////////////////////////////////////////////////
 
-
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0   Success.
+ * \retval <0  Error.
+ */
 MODULE_EXPORT int
 text_init (Driver *drvthis)
 {
@@ -103,9 +105,11 @@ text_init (Driver *drvthis)
 	return 1;
 }
 
-/////////////////////////////////////////////////////////////////
-// Closes the device
-//
+
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 text_close (Driver *drvthis)
 {
@@ -120,9 +124,12 @@ text_close (Driver *drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
+ */
 MODULE_EXPORT int
 text_width (Driver *drvthis)
 {
@@ -131,9 +138,11 @@ text_width (Driver *drvthis)
 	return p->width;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT int
 text_height (Driver *drvthis)
 {
@@ -142,9 +151,11 @@ text_height (Driver *drvthis)
 	return p->height;
 }
 
-/////////////////////////////////////////////////////////////////
-// Clears the LCD screen
-//
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 text_clear (Driver *drvthis)
 {
@@ -153,9 +164,11 @@ text_clear (Driver *drvthis)
 	memset(p->framebuf, ' ', p->width * p->height);
 }
 
-//////////////////////////////////////////////////////////////////
-// Flushes all output to the lcd...
-//
+
+/**
+ * Flush data on screen to the display.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 text_flush (Driver *drvthis)
 {
@@ -180,10 +193,15 @@ text_flush (Driver *drvthis)
         fflush(stdin);
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a string on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
 MODULE_EXPORT void
 text_string (Driver *drvthis, int x, int y, const char string[])
 {
@@ -201,10 +219,15 @@ text_string (Driver *drvthis, int x, int y, const char string[])
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a character on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
 MODULE_EXPORT void
 text_chr (Driver *drvthis, int x, int y, char c)
 {
@@ -216,9 +239,12 @@ text_chr (Driver *drvthis, int x, int y, char c)
 		p->framebuf[(y * p->width) + x] = c;
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets the contrast
-//
+
+/**
+ * Simulate changing the LCD contrast.
+ * \param drvthis  Pointer to driver structure.
+ * \param promille New contrast value in promille.
+ */
 MODULE_EXPORT void
 text_set_contrast (Driver *drvthis, int promille)
 {
@@ -227,9 +253,12 @@ text_set_contrast (Driver *drvthis, int promille)
 	debug(RPT_DEBUG, "Contrast: %d", promille);
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets the backlight brightness
-//
+
+/**
+ * Simulate turning the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
+ */
 MODULE_EXPORT void
 text_backlight (Driver *drvthis, int on)
 {
@@ -238,3 +267,17 @@ text_backlight (Driver *drvthis, int on)
 	debug(RPT_DEBUG, "Backlight %s", (on) ? "ON" : "OFF");
 }
 
+
+/**
+ * Provide some information about this driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Constant string with information.
+ */
+MODULE_EXPORT const char *
+text_get_info (Driver *drvthis)
+{
+	//PrivateData *p = drvthis->private_data;
+        static char *test_info_string = "Text mode driver";
+
+	return test_info_string;
+}
