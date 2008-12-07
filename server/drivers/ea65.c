@@ -38,7 +38,9 @@
 #include "report.h"
 #include "lcd_lib.h"
 
-typedef struct driver_private_data {
+
+/** private data for the \c ea65 driver */
+typedef struct EA65_private_data {
         int fd;
         int brightness;
         int offbrightness;

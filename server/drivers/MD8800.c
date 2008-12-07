@@ -192,7 +192,8 @@
 #define DEFAULT_OFF_BRIGHTNESS	300
 #define DEFAULT_ON_BRIGHTNESS	1000
 
-typedef struct driver_private_data {
+/** private data for the \c MD8800 driver */
+typedef struct MD8800_private_data {
 	char device[200];
 	int fd;
 	int speed;

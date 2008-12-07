@@ -50,7 +50,8 @@
 #include "server/configfile.h"
 */
 
-typedef struct driver_private_data {
+/** private data for the \c ms6931 driver */
+typedef struct ms6931_private_data {
 	char device[200];
 	int fd;
 	unsigned char *framebuf;

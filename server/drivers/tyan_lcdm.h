@@ -58,7 +58,8 @@ typedef struct cgram_cache {
 } CGram;
 
 
-typedef struct driver_private_data {
+/** private data for the \c tyan driver */
+typedef struct tyan_lcdm_private_data {
 	char device[200];
 	int speed;
 	int fd;

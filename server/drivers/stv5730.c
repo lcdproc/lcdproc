@@ -80,7 +80,8 @@
 #define STV5730_COL_SBACK	2
 
 
-typedef struct driver_private_data {
+/** private data for the \c stv5730 driver */
+typedef struct stv5730_private_data {
     unsigned int port;
     unsigned int charattrib;
     unsigned int flags;

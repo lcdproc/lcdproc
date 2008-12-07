@@ -105,7 +105,7 @@ Different implementations of (n)curses available on:
 
 
 /** private data structure for the \c curses driver */
-typedef struct driver_private_data {
+typedef struct curses_private_data {
 	WINDOW *win;
 
 	int current_color_pair;

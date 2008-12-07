@@ -64,7 +64,8 @@
 #include "report.h"
 
 
-typedef struct driver_private_data {
+/** private data for the \c sed1520 driver */
+typedef struct sed1520_private_data {
     unsigned int port;
 
     unsigned char *framebuf;

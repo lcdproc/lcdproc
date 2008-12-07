@@ -44,7 +44,8 @@ typedef enum {
         beat = 8
 } custom_type;
 
-typedef struct driver_private_data {
+/** private data for the \c lb216 driver */
+typedef struct LB216_private_data {
 	char device[256];
 	int speed;
 	int fd;

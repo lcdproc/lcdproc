@@ -47,7 +47,8 @@
 //////////////////// Matrix Orbital Graphical Driver /////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-typedef struct driver_private_data {
+/** private data for the \c glk driver */
+typedef struct glk_private_data {
   char device[256];
   GLKDisplay *fd;
   speed_t speed;

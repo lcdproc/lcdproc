@@ -96,7 +96,8 @@ typedef struct ConnectionMapping {
 } ConnectionMapping;
 
 
-typedef struct driver_private_data {
+/** private data for the \c hd44780 driver */
+typedef struct hd44780_private_data {
 	// parallel connection typeS
 	unsigned int port;		/* parallel port */
 

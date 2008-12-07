@@ -84,7 +84,8 @@ typedef enum {
 } CGmode;
 
 
-typedef struct driver_private_data {
+/** private data for the \c CFonts633 driver */
+typedef struct CFontz633_private_data {
 	char device[200];
 
 	int fd;

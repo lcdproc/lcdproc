@@ -45,8 +45,8 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "shuttleVFD_";
 
 
-// Private data
-typedef struct driver_private_data {
+/** private data for the \c shuttleVFD driver */
+typedef struct shuttleVFD_private_data {
   usb_dev_handle *dev;
   int width;
   int height;

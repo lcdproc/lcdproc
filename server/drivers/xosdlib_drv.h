@@ -14,12 +14,11 @@
 #define CELLWIDTH	6
 #define CELLHEIGHT	8
 
-typedef struct driver_private_data {
-	/* xosd handle */
-	xosd *osd;
+/** private data for the \c xosd driver */
+typedef struct xosd_private_data {
+	xosd *osd;		/**< xosd handle */
 
-	/* xosd properties */
-	char font[256];
+	char font[256];		/**< xosd font properties */
 
 	/* dimensions */
 	int width, height;

@@ -80,7 +80,8 @@ typedef struct cgram_cache {
 } CGram;
 
 
-typedef struct driver_private_data {
+/** private data for the \c IOWarrior driver */
+typedef struct IOWarrior_private_data {
   char manufacturer[LCD_MAX_WIDTH+1];
   char product[LCD_MAX_WIDTH+1];
   char serial[LCD_MAX_WIDTH+1];

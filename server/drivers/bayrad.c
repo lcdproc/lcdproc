@@ -48,7 +48,8 @@
 ////////////////////// Base "class" to derive from ///////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-typedef struct driver_private_data {
+/** private data for the \c bayrad driver */
+typedef struct bayrad_private_data {
   char device[256];
   int speed;
   int fd;

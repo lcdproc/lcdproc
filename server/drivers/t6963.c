@@ -36,7 +36,8 @@
 
 //extern int debug_level;
 
-typedef struct driver_private_data {
+/** private data for the \c t6963 driver */
+typedef struct t6963_private_data {
 	u16 port;
 	u16 display_mode;
 	u8  *display_buffer1;

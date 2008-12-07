@@ -45,6 +45,8 @@
 
 #include "report.h"
 
+
+/** private data for the \c lirc driver */
 typedef struct lircin_private_data {
 	char *lircrc;
 	char *prog;

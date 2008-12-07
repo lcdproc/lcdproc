@@ -35,7 +35,8 @@ typedef enum {
 	beat = 8
 } custom_type;
 
-typedef struct driver_private_data {
+/** private data for the \c sli driver */
+typedef struct sli_private_data {
 	char device[256];
 	int speed;
 	int fd;

@@ -6,7 +6,8 @@ typedef struct _codemap {
 	const char *lcdproc;
 } CodeMap;
 
-typedef struct driver_private_data {
+/** private data for the \c irman driver */
+typedef struct irmanin_private_data {
 	char device[256];
 	char config[256];
 	char *portname;

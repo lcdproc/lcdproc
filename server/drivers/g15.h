@@ -26,7 +26,8 @@
 #include <libg15render.h>
 #include "lcd.h"
 
-typedef struct driver_private_data {
+/** private data for the \c g15 driver */
+typedef struct g15_private_data {
 	/* dimensions */
 	int width, height;
 	int cellwidth, cellheight;

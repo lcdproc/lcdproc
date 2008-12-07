@@ -55,7 +55,9 @@
 
 // Variables
 // TODO init
-typedef struct driver_private_data {
+
+/** private data for the \c irtrans driver */
+typedef struct irtrans_private_data {
     int width;
     int height;
     int socket;

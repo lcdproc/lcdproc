@@ -75,7 +75,8 @@ typedef enum {
 	bignum,		/* big numbers */
 } CGmode;
 
-typedef struct driver_private_data {
+/** private data for the \c NoritakeVFD driver */
+typedef struct NoritakeVFD_private_data {
 	char device[200];
 	int fd;
 	int speed;

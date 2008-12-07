@@ -30,7 +30,8 @@
 #define DEFAULT_DEVICE      "/dev/hiddev0"
 #define DEFAULT_WAIT        1000
 
-typedef struct driver_private_data {
+/** private data for the \c mx5000 driver */
+typedef struct mx5000_private_data {
     char device[200];
     int wait;
     int fd;	

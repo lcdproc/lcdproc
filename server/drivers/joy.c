@@ -44,8 +44,8 @@
 #define JOY_DEFAULT_BUTTONMAP	"BDACEFGHIJKLMNOP"
 
 
-
-typedef struct driver_private_data {
+/** private data for the \c joy driver */
+typedef struct joy_private_data {
 	char device[256];
 	int fd;
 

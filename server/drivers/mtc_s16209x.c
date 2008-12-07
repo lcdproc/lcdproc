@@ -91,7 +91,8 @@ typedef enum {
 } custom_type;
 
 
-typedef struct driver_private_data {
+/** private data for the \c mtc_s16209x driver */
+typedef struct MTC_S16209X_private_data {
   char device[256];
   int fd;
   char framebuf[2][16];

@@ -55,8 +55,8 @@ typedef enum {
 	bigchar		/* big characters */
 } CGmode;
 
-
-typedef struct driver_private_data {
+/** private data for the \c CFontz driver */
+typedef struct CFontz_private_data {
 	char device[200];
 
 	int fd;

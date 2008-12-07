@@ -86,7 +86,8 @@ typedef enum {
 } CGmode;
 
 
-typedef struct driver_private_data {
+/** private data for the \c CwLnx driver */
+typedef struct CwLnx_private_data {
 	int fd;
 
 	int have_keypad;

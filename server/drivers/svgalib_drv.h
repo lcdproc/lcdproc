@@ -11,7 +11,8 @@
 #define CELLWIDTH	6
 #define CELLHEIGHT	8
 
-typedef struct driver_private_data {
+/** private data for the \c svga driver */
+typedef struct svga_private_data {
 	int mode;
 
 	int width, height;

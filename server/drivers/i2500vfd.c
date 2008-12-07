@@ -58,7 +58,8 @@
 #define CELLWIDTH	6
 #define CELLHEIGHT	8
 
-typedef struct driver_private_data {
+/** private data for the \c i2500vfd driver */
+typedef struct i2500vfd_private_data {
     struct ftdi_context ftdi;
     unsigned char *framebuf;
     int changed;

@@ -37,12 +37,13 @@
 //#include "drv_base.h"
 
 
-/* private data structure */
-typedef struct driver_private_data {
+/* private data structure for the \c text driver */
+typedef struct text_private_data {
 	int width;
 	int height;
 	char *framebuf;
 } PrivateData;
+
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;

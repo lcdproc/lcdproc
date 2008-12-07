@@ -64,7 +64,8 @@
 //#include "configfile.h"
 
 
-typedef struct driver_private_data {
+/** private data for the \c lcdm001 driver */
+typedef struct lcdm001_private_data {
 	char device[200];
 	int fd;
 	int speed;

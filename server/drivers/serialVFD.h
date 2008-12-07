@@ -72,7 +72,8 @@ MODULE_EXPORT void serialVFD_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int serialVFD_get_free_chars (Driver *drvthis);
 MODULE_EXPORT const char * serialVFD_get_info( Driver *drvthis );
 
-typedef struct driver_private_data {
+/** private data for the \c serialVFD driver */
+typedef struct serialVFD_private_data {
 	int use_parallel;		// use parallel?
 	unsigned short port;		// Port in parallel mode
 	char device[200];		// Device in serial mode
