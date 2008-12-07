@@ -1,7 +1,7 @@
 /** \file server/drivers/text.c
- * LCDd text mode driver.
- * Displays LCD screens, one after another; suitable for hard-copy
- * terminals.
+ * LCDd \c text driver for dump text mode terminals.
+ * It displays the LCD screens, one below the other on the terminal,
+ * and is this suitable for dump hard-copy terminals.
  */
 
 /* Copyright (C) 1998-2004 The LCDproc Team
@@ -241,7 +241,8 @@ text_chr (Driver *drvthis, int x, int y, char c)
 
 
 /**
- * Simulate changing the LCD contrast.
+ * Change the display contrast.
+ * Dumb text terminals do not support this, so we ignore it.
  * \param drvthis  Pointer to driver structure.
  * \param promille New contrast value in promille.
  */
@@ -255,7 +256,8 @@ text_set_contrast (Driver *drvthis, int promille)
 
 
 /**
- * Simulate turning the LCD backlight on or off.
+ * Turn the display backlight on or off.
+ * Dumb text terminals do not support this, so we ignore it.
  * \param drvthis  Pointer to driver structure.
  * \param on       New backlight status.
  */

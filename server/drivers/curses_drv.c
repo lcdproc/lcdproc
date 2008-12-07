@@ -1,8 +1,10 @@
-/*  This is the LCDproc driver for ncurses.
-    It displays an emulated LCD display at top left of terminal screen
-    using ncurses.
+/** \file server/drivers/curses_drv.c
+ * LCDproc \c curses driver for text-mode terminals using curses.
+ * It displays an emulated LCD display of configurable size at
+ * a configurable position of the terminal screen using (n)curses.
+ */
 
-    Copyright (C) ?????? ?????????
+/*  Copyright (C) ?????? ?????????
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -102,6 +104,7 @@ Different implementations of (n)curses available on:
 #define DEFAULT_BACKGROUND_COLOR COLOR_BLUE
 
 
+/** private data structure for the \c curses driver */
 typedef struct driver_private_data {
 	WINDOW *win;
 
@@ -123,44 +126,24 @@ typedef struct driver_private_data {
 } PrivateData;
 
 
-// Vars for the server core
+/* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 1;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "curses_";
 
-// local helper functions
+/* local helper functions */
+static void curses_wborder (Driver *drvthis);
 static chtype get_color_by_name (char *colorname, chtype default_color);
 static void curses_restore_screen (Driver *drvthis);
 
-//////////////////////////////////////////////////////////////////////////
-////////////////////// For Curses Terminal Output ////////////////////////
-//////////////////////////////////////////////////////////////////////////
 
-
-static chtype
-get_color_by_name (char *colorname, chtype default_color) {
-	if (strcasecmp(colorname, "red") == 0)
-		return COLOR_RED;
-	else if (strcasecmp(colorname, "black") == 0)
-		return COLOR_BLACK;
-	else if (strcasecmp(colorname, "green") == 0)
-		return COLOR_GREEN;
-	else if (strcasecmp(colorname, "yellow") == 0)
-		return COLOR_YELLOW;
-	else if (strcasecmp(colorname, "blue") == 0)
-		return COLOR_BLUE;
-	else if (strcasecmp(colorname, "magenta") == 0)
-		return COLOR_MAGENTA;
-	else if (strcasecmp(colorname, "cyan") == 0)
-		return COLOR_CYAN;
-	else if (strcasecmp(colorname, "white") == 0)
-		return COLOR_WHITE;
-
-	return default_color;
-}
-
-
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0   Success.
+ * \retval <0  Error.
+ */
 MODULE_EXPORT int
 curses_init (Driver *drvthis)
 {
@@ -307,30 +290,11 @@ curses_init (Driver *drvthis)
 	return 0;
 }
 
-static void
-curses_wborder (Driver *drvthis)
-{
-	PrivateData *p = drvthis->private_data;
 
-#ifdef CURSES_HAS_WCOLOR_SET
-	if (has_colors()) {
-		//wattron(p->win, COLOR_PAIR(p->current_border_pair) | A_BOLD);
-		wcolor_set(p->win, p->current_border_pair, NULL);
-		wattron(p->win, A_BOLD);
-	}
-#endif
-
-	box(p->win, 0, 0);
-
-#ifdef CURSES_HAS_WCOLOR_SET
-	if (has_colors()) {
-		//wattron(p->win, COLOR_PAIR(p->current_color_pair));
-		wcolor_set(p->win, p->current_color_pair, NULL);
-		wattroff(p->win, A_BOLD);
-	}
-#endif
-}
-
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 curses_close (Driver *drvthis)
 {
@@ -354,9 +318,12 @@ curses_close (Driver *drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
+ */
 MODULE_EXPORT int
 curses_width (Driver *drvthis)
 {
@@ -365,9 +332,11 @@ curses_width (Driver *drvthis)
 	return p->width;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
+ */
 MODULE_EXPORT int
 curses_height (Driver *drvthis)
 {
@@ -376,9 +345,11 @@ curses_height (Driver *drvthis)
 	return p->height;
 }
 
-/////////////////////////////////////////////////////////////////
-// Clears the LCD screen
-//
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 curses_clear (Driver *drvthis)
 {
@@ -392,6 +363,14 @@ curses_clear (Driver *drvthis)
 	werase(p->win);
 }
 
+
+/**
+ * Turn the LCD backlight on or off.
+ * This is simulated by changing the background 
+ * colour of the characters displayed.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
+ */
 MODULE_EXPORT void
 curses_backlight (Driver *drvthis, int on)
 {
@@ -417,10 +396,15 @@ curses_backlight (Driver *drvthis, int on)
 	curses_clear(drvthis);
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a string on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
 MODULE_EXPORT void
 curses_string (Driver *drvthis, int x, int y, const char string[])
 {
@@ -437,10 +421,15 @@ curses_string (Driver *drvthis, int x, int y, const char string[])
 	mvwaddstr(p->win, y, x, string);
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a character on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
 MODULE_EXPORT void
 curses_chr (Driver *drvthis, int x, int y, char c)
 {
@@ -457,9 +446,16 @@ curses_chr (Driver *drvthis, int x, int y, char c)
 	mvwaddch(p->win, y, x, c);
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar; erases entire column onscreen.
-//
+
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void
 curses_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -504,9 +500,16 @@ curses_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-//
+
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void
 curses_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -546,9 +549,15 @@ curses_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 	}
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets character 0 to an icon...
-//
+
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
+ */
 MODULE_EXPORT int
 curses_icon (Driver *drvthis, int x, int y, int icon)
 {
@@ -588,9 +597,11 @@ curses_icon (Driver *drvthis, int x, int y, int icon)
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////
-// Flushes all output to the lcd...
-//
+
+/**
+ * Flush data on screen to the display.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 curses_flush (Driver *drvthis)
 {
@@ -610,6 +621,11 @@ curses_flush (Driver *drvthis)
 }
 
 
+/**
+ * Handle input from keyboard.
+ * \param drvthis  Pointer to driver structure.
+ * \return  String representation of the key.
+ */
 MODULE_EXPORT const char *
 curses_get_key (Driver *drvthis)
 {
@@ -645,6 +661,72 @@ curses_get_key (Driver *drvthis)
 			break;
 	}
 }
+
+
+/**
+ * Provide some information about this driver.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Constant string with information.
+ */
+MODULE_EXPORT const char *
+text_get_info (Driver *drvthis)
+{
+        //PrivateData *p = drvthis->private_data;
+        static char *test_info_string = "curses driver";
+
+        return test_info_string;
+}
+
+
+/* local helper function */
+
+static void
+curses_wborder (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+#ifdef CURSES_HAS_WCOLOR_SET
+	if (has_colors()) {
+		//wattron(p->win, COLOR_PAIR(p->current_border_pair) | A_BOLD);
+		wcolor_set(p->win, p->current_border_pair, NULL);
+		wattron(p->win, A_BOLD);
+	}
+#endif
+
+	box(p->win, 0, 0);
+
+#ifdef CURSES_HAS_WCOLOR_SET
+	if (has_colors()) {
+		//wattron(p->win, COLOR_PAIR(p->current_color_pair));
+		wcolor_set(p->win, p->current_color_pair, NULL);
+		wattroff(p->win, A_BOLD);
+	}
+#endif
+}
+
+
+static chtype
+get_color_by_name (char *colorname, chtype default_color) {
+	if (strcasecmp(colorname, "red") == 0)
+		return COLOR_RED;
+	else if (strcasecmp(colorname, "black") == 0)
+		return COLOR_BLACK;
+	else if (strcasecmp(colorname, "green") == 0)
+		return COLOR_GREEN;
+	else if (strcasecmp(colorname, "yellow") == 0)
+		return COLOR_YELLOW;
+	else if (strcasecmp(colorname, "blue") == 0)
+		return COLOR_BLUE;
+	else if (strcasecmp(colorname, "magenta") == 0)
+		return COLOR_MAGENTA;
+	else if (strcasecmp(colorname, "cyan") == 0)
+		return COLOR_CYAN;
+	else if (strcasecmp(colorname, "white") == 0)
+		return COLOR_WHITE;
+
+	return default_color;
+}
+
 
 static void
 curses_restore_screen (Driver *drvthis)
