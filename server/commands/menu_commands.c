@@ -47,15 +47,17 @@ int set_successor(MenuItem *item, char *itemid, Client *client);
 static char *argv2string(int argc, char **argv)
 {
 	char *rtn = NULL;
-	int len;
-	int i;
+	unsigned int len;
+	unsigned int i;
 	for (i = len = 0; i < argc; i++)
 		len += strlen(argv[i]) + 1;
 	rtn = malloc(len + 1);
-	rtn[0] = '\0';
-	for (i = len = 0; i < argc; i++) {
-		strcat(rtn, argv[i]);
-		strcat(rtn, " ");
+	if (rtn != NULL) {
+		rtn[0] = '\0';
+		for (i = 0; i < argc; i++) {
+			strcat(rtn, argv[i]);
+			strcat(rtn, " ");
+		}
 	}
 	return rtn;
 }
@@ -437,10 +439,15 @@ menu_set_item_func(Client *c, int argc, char **argv)
 	MenuItem *item;
 	char *menu_id;
 	char *item_id;
+	char *tmp_argv;
 	int argnr;
 
-	debug(RPT_DEBUG, "%s(Client [%d]: %s)",
-	       __FUNCTION__, c->sock, argv2string(argc, argv));
+	tmp_argv = argv2string(argc, argv);
+	if (tmp_argv != NULL) {
+		debug(RPT_DEBUG, "%s(Client [%d]: %s)",
+		       __FUNCTION__, c->sock, tmp_argv);
+		free(tmp_argv);
+	}
 	if (c->state != ACTIVE)
 		return 1;
 
