@@ -1,4 +1,5 @@
 /** \file server/screen.h
+ * Public interface to the screen management methods.
  */
 
 /* This file is part of LCDd, the lcdproc server.
