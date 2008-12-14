@@ -1,4 +1,5 @@
 /** \file server/widget.h
+ * Public interface to the widget methods.
  */
 
 /* This file is part of LCDd, the lcdproc server.
@@ -30,17 +31,19 @@ typedef enum WidgetType {
 	WID_NUM
 } WidgetType;
 
+
+/** Widget structure */
 typedef struct Widget {
-	char *id;
-	WidgetType type;
-	Screen *screen;			/* What screen is this widget in ? */
-	int x, y;			/* Position */
-	int width, height;		/* Visible size */
-	int left, top, right, bottom;	/* bounding rectangle */
-	int length;			/* size or direction */
-	int speed;			/* For scroller... */
-	char *text;			/* text or binary data */
-	struct Screen *frame_screen;	/* frame widget get an associated screen */
+	char *id;			/**< the widget's name */
+	WidgetType type;		/**< the widget's type */
+	Screen *screen;			/**< What screen is this widget in ? */
+	int x, y;			/**< Position */
+	int width, height;		/**< Visible size */
+	int left, top, right, bottom;	/**< bounding rectangle */
+	int length;			/**< size or direction */
+	int speed;			/**< For scroller... */
+	char *text;			/**< text or binary data */
+	struct Screen *frame_screen;	/**< frame widget get an associated screen */
 	//LinkedList *kids;		/* Frames can contain more widgets...*/
 } Widget;
 
