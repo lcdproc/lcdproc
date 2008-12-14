@@ -433,8 +433,8 @@ driver_alt_vbar(Driver *drv, int x, int y, int len, int promille, int options)
 {
 	int pos;
 
-	debug(RPT_DEBUG, "%s(drv=[%.40s], x=%d, y=%d, len=%d, promille=%d, pattern=%d)",
-		__FUNCTION__, drv->name, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(drv=[%.40s], x=%d, y=%d, len=%d, promille=%d, options=%d)",
+		__FUNCTION__, drv->name, x, y, len, promille, options);
 
 	/* if the driver does not support output, do nothing */
 	if (drv->chr == NULL)
@@ -464,8 +464,8 @@ driver_alt_hbar(Driver *drv, int x, int y, int len, int promille, int options)
 {
 	int pos;
 
-	debug(RPT_DEBUG, "%s(drv=[%.40s], x=%d, y=%d, len=%d, promille=%d, pattern=%d)",
-		__FUNCTION__, drv->name, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(drv=[%.40s], x=%d, y=%d, len=%d, promille=%d, options=%d)",
+		__FUNCTION__, drv->name, x, y, len, promille, options);
 
 	/* if the driver does not support output, do nothing */
 	if (drv->chr == NULL)
