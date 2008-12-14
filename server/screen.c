@@ -94,8 +94,8 @@ screen_create(char *id, Client *client)
 	s->widgetlist = LL_new();
 	if (s->widgetlist == NULL) {
 		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
-		free(s);
 		free(s->id);
+		free(s);
 		return NULL;
 	}
 
