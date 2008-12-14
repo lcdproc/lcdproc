@@ -123,6 +123,13 @@ widget_create(char *id, WidgetType type, Screen *screen)
 		strcat(frame_name, id);
 
 		w->frame_screen = screen_create(frame_name, screen->client);
+		if (w->frame_screen == NULL) {
+			report(RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
+			free(w->id);
+			free(w);
+			/* return NULL after cleaning up */
+			w = NULL;
+		}
 
 		free(frame_name); /* not needed anymore */
 	}
