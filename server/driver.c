@@ -429,7 +429,7 @@ request_display_height(void)
  * \param options  Options (currently unused).
  */
 void
-driver_alt_vbar(Driver *drv, int x, int y, int len, int promille, int pattern)
+driver_alt_vbar(Driver *drv, int x, int y, int len, int promille, int options)
 {
 	int pos;
 
@@ -460,7 +460,7 @@ driver_alt_vbar(Driver *drv, int x, int y, int len, int promille, int pattern)
  * \param options  Options (currently unused).
  */
 void
-driver_alt_hbar(Driver *drv, int x, int y, int len, int promille, int pattern)
+driver_alt_hbar(Driver *drv, int x, int y, int len, int promille, int options)
 {
 	int pos;
 
@@ -606,10 +606,10 @@ driver_alt_heartbeat(Driver *drv, int state)
  * Fallback for the driver's \c icon method, in case either the driver does not
  * provide one or the driver's method indicates the icon needs to be handled
  * by the server core.
- * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal character position (column).
- * \param y        Vertical character position (row).
- * \param icon     synbolic value representing the icon.
+ * \param drv   Pointer to driver structure.
+ * \param x     Horizontal character position (column).
+ * \param y     Vertical character position (row).
+ * \param icon  synbolic value representing the icon.
  */
 void
 driver_alt_icon(Driver *drv, int x, int y, int icon)
@@ -657,10 +657,10 @@ driver_alt_icon(Driver *drv, int x, int y, int icon)
 
 /** Set cursor position and state.
  * Fallback for the driver's \c cursor method if the driver does not provide one.
- * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal cursor position (column).
- * \param y        Vertical cursor position (row).
- * \param state    New cursor state.
+ * \param drv    Pointer to driver structure.
+ * \param x      Horizontal cursor position (column).
+ * \param y      Vertical cursor position (row).
+ * \param state  New cursor state.
  */
 void driver_alt_cursor(Driver *drv, int x, int y, int state)
 {
