@@ -1,5 +1,5 @@
 /** \file server/drivers/curses_drv.c
- * LCDproc \c curses driver for text-mode terminals using curses.
+ * LCDd \c curses driver for text-mode terminals using curses.
  * It displays an emulated LCD display of configurable size at
  * a configurable position of the terminal screen using (n)curses.
  */
@@ -672,9 +672,9 @@ MODULE_EXPORT const char *
 text_get_info (Driver *drvthis)
 {
         //PrivateData *p = drvthis->private_data;
-        static char *test_info_string = "curses driver";
+        static char *info_string = "curses driver";
 
-        return test_info_string;
+        return info_string;
 }
 
 

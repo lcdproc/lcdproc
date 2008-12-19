@@ -280,7 +280,7 @@ MODULE_EXPORT const char *
 text_get_info (Driver *drvthis)
 {
 	//PrivateData *p = drvthis->private_data;
-        static char *test_info_string = "Text mode driver";
+        static char *info_string = "Text mode driver";
 
-	return test_info_string;
+	return info_string;
 }
