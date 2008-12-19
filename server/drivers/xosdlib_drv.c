@@ -1,3 +1,7 @@
+/** \file server/dribers/xosdlib_drv.c
+ * LCDd \c xosd driver for on screen display on X windows.
+ */
+
 /*  This is the LCDproc driver for xosdlib
 
       Copyright(C) 2005 Peter Marschall <peter@adpm.de>

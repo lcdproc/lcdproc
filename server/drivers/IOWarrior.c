@@ -1,5 +1,8 @@
-/*  This is the LCDproc driver for IO-Warrior devices (http://www.codemercs.de)
+/** \file server/drivers/IOWarrior.c
+ * LCDd \c IOWarrior driver for CodeMercenaries' IO-Warrior devices (http://www.codemercs.de).
+ */
 
+/*
       Copyright(C) 2004-2008 Peter Marschall <peter@adpm.de>
 
    based on GPL'ed code:

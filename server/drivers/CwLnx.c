@@ -1,5 +1,5 @@
 /** \file server/drivers/CwLnx.c
- *  This is the LCDproc driver for Cwlinux devices (http://www.cwlinux.com)
+ *  LCDd \c CwLnx driver for CwLinux devices (http://www.cwlinux.com).
  */
 
 /* Applicable Data Sheets:
