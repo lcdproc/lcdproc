@@ -1,4 +1,4 @@
-/** \file server/dribers/xosdlib_drv.c
+/** \file server/drivers/xosdlib_drv.c
  * LCDd \c xosd driver for on screen display on X windows.
  */
 
