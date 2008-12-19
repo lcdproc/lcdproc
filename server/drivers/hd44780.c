@@ -1,7 +1,7 @@
 /** \file server/drivers/hd44780.c
- * Base driver module for Hitachi HD44780 based LCD displays. This is
- * a modular driver that readily allows support for alternative HD44780
- * designs to be added in a flexible and maintainable manner.
+ * LCDd \c hd44780 base driver module for Hitachi HD44780 based LCD displays.
+ * This is a modular driver that readily allows support for multiple HD44780
+ * connection types to be added in a flexible and maintainable manner.
  *
  * This driver also supports the aggregation of multiple displays to form
  * a single virtual display. e.g., Four 16x2 displays can be combined
