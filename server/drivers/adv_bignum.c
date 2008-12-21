@@ -1,6 +1,6 @@
 /** \file server/drivers/adv_bignum.c
  * Library to generate big numbers on displays with different numbers
- * custom characters.
+ * of custom characters.
  */
 
 /* 	This is the bignumber-library used by the serialVFD iand other drivers.
