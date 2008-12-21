@@ -1,4 +1,4 @@
-/** \file server/drivers/hd44780-serialLPT.c
+/** \file server/drivers/hd44780-serialLpt.c
  * \c serialLPT connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
  * The LCD is operated in it's 4 bit-mode through a 4094 shift register and supports a keypad.
