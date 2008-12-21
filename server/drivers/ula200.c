@@ -155,7 +155,7 @@ static char *default_key_map[MAX_KEY_MAP] = { "Up", "Down", "Left", "Right", "En
 /* KeyRing management */
 #define KEYRINGSIZE	16
 
-typedef struct {
+typedef struct ula200_keyring {
 	unsigned char contents[KEYRINGSIZE];
 	int head;
 	int tail;
@@ -219,32 +219,23 @@ unsigned char GetKeyFromKeyRing(KeyRing *kr)
 #define SETCHAR     0x40	/* Only reachable with EXTREG clear */
 
 
-///////////////////////////////////////////////////////////////////////////////
-// private data types
-//
-typedef struct {
-
-    // the handle for the USB FTDI library
-    struct ftdi_context ftdic;
+/** private data for the \c ula200 driver */
+typedef struct ula200_private_data {
+    struct ftdi_context ftdic;	/**< handle for the USB FTDI library */
 
     // the width and the height (in number of characters) of the library
-	int width, height;
+    int width, height;
 
-	// The framebuffer and the framebuffer for the last contents (incr. update)
-	unsigned char *framebuf, *lcd_contents;
+    // The framebuffer and the framebuffer for the last contents (incr. update)
+    unsigned char *framebuf, *lcd_contents;
 
-    // first time => all is dirty
-    unsigned char all_dirty;
+    unsigned char all_dirty;	/**< first time => all is dirty */
 
-    // backlight (-1 = unset, 0 = off, 1 = on)
-    int backlight;
+    int backlight;		/**< backlight: -1=unset, 0=off, 1=on */
 
-    // the keyring
-    KeyRing keyring;
+    KeyRing keyring;		/**< input key ring */
 
-	// the keymap
-	char *key_map[MAX_KEY_MAP];
-
+    char *key_map[MAX_KEY_MAP];	/**< mapping of input keys */
 } PrivateData;
 
 
@@ -609,8 +600,8 @@ ula200_load_custom_chars(Driver *drvthis)
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 ula200_init(Driver *drvthis)
@@ -764,7 +755,7 @@ ula200_close(Driver *drvthis)
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is wide.
+ * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
 ula200_width (Driver *drvthis)
@@ -777,7 +768,7 @@ ula200_width (Driver *drvthis)
 /**
  * Return the display height in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is high.
+ * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
 ula200_height (Driver *drvthis)

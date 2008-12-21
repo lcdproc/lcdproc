@@ -97,15 +97,16 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "imon_";
 
-// our private data
-typedef struct {
-	char info[255];
-	int imon_fd;
-	unsigned char *framebuf;
-	int height;
-	int width;
-	int cellwidth;
-	int cellheight;
+
+/** private data for the \c imon driver */
+typedef struct imon_private_data {
+	char info[255];			/**< info string contents */
+	int imon_fd;			/**< file descriptor to the display */
+	unsigned char *framebuf;	/**< fram buffer */
+	int height;			/**< display height in characters */
+	int width;			/**< display width in characters */
+	int cellwidth;			/**< character cell width */
+	int cellheight;			/**< character cell height */
 } PrivateData;
 
 

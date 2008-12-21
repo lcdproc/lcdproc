@@ -53,8 +53,9 @@ typedef enum {
     custom1 = 16
 } custom_type;
 
-typedef struct
-{
+
+/** private data for the \c pyramid driver */
+typedef struct pyramid_private_data {
     /* device io */
     int FD;
     char device[255];

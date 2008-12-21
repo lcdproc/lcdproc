@@ -52,15 +52,16 @@ typedef enum
   CCMODE_BIGNUM
 } CCMode;
 
-typedef struct
-{
-  CCMode ccmode;      /* custom character mode for current display */
-  CCMode last_ccmode; /* custom character set that is loaded in the display */
-  unsigned char *framebuf;
-  unsigned char *last_framebuf;
-  int width;
-  int height;
-  int fd;
+
+/** private data for the \c lcterm driver */
+typedef struct lcterm_private_data {
+  CCMode ccmode;	/**< custom character mode for current display */
+  CCMode last_ccmode;	/**< custom character set that is loaded in the display */
+  unsigned char *framebuf;	/**< frame buffer */
+  unsigned char *last_framebuf;	/**< old frame buffer contents */
+  int width;		/**< display width in characters */
+  int height;		/**< display height in characters */
+  int fd;		/**< handle to the device */	
 } PrivateData;
 
 

@@ -51,8 +51,9 @@
 #include "icp_a106.h"
 #include "report.h"
 
-typedef struct
-{
+
+/** private data for the \c icp_a106 driver */
+typedef struct icp_a106_private_data {
   unsigned char *framebuf;
   unsigned char *last_framebuf;
   int width;

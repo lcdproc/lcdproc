@@ -41,10 +41,10 @@
 #include "glcdlib.h"
 
 
-// our private data
-typedef struct {
-	GlcdDriver * glcdDriver;
-	char info[255];
+/** private data for the \c glcdlib driver */
+typedef struct glcdlib_private_data {
+	GlcdDriver *glcdDriver;		/**< GlcdDriver handle */
+	char info[255];			/**< info string contents */
 } glcdlibPD;
 
 

@@ -58,8 +58,9 @@ typedef struct cgram_cache {
   int clean;
 } CGram;
 
-typedef struct {
 
+/** private data for the \c lis driver */
+typedef struct lis_private_data {
 	// the handle for the USB FTDI library
 	struct ftdi_context ftdic;
 
@@ -98,8 +99,8 @@ typedef struct {
 	/* underline effect (false). To avoid the underline effect in the latter case, the last */
 	/* line is always zeroed for whatever redefined character */
 	char lastline; 
-
 } PrivateData;
+
 
 MODULE_EXPORT int  lis_init(Driver *drvthis);
 MODULE_EXPORT void lis_close (Driver *drvthis);

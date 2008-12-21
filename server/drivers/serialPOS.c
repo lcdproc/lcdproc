@@ -143,9 +143,9 @@ typedef enum {
 
 
 
-
-typedef struct {
-	int fd;			/* The LCD file descriptor */
+/** private data for the \c serialPOS driver */
+typedef struct serialPOS_private_data {
+	int fd;			/**< LCD file descriptor */
 	
 	/* dimensions */
 	int width, height;
@@ -162,9 +162,9 @@ typedef struct {
 	int hardwrap;
 	int hardscroll;
 
-	POS_EmulationType emulation_mode;	/* The emulation type  */
+	POS_EmulationType emulation_mode;	/**< emulation type */
 
-	char info[255];		/* static data from serialPOS_get_info */
+	char info[255];		/**< static data from serialPOS_get_info */
 } PrivateData;
 
 
@@ -180,6 +180,7 @@ static void serialPOS_linewrap(Driver *drvthis, int on);
 static void serialPOS_autoscroll(Driver *drvthis, int on);
 static void serialPOS_cursorblink(Driver *drvthis, int on);
 static void serialPOS_cursor_goto(Driver *drvthis, int x, int y);
+
 
 /* Parse one key from the configfile */
 static char
@@ -204,8 +205,8 @@ serialPOS_parse_keypad_setting (Driver *drvthis, char *keyname, char default_val
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 serialPOS_init (Driver *drvthis)
@@ -403,7 +404,7 @@ serialPOS_close (Driver *drvthis)
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is wide.
+ * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
 serialPOS_width (Driver *drvthis)
@@ -417,7 +418,7 @@ serialPOS_width (Driver *drvthis)
 /**
  * Return the display height in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is high.
+ * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
 serialPOS_height (Driver *drvthis)
@@ -428,20 +429,22 @@ serialPOS_height (Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Returns the maximum number of custom char slots (not how many
-// are free at a moment), needed for bignum.
-//
+/**
+ * Get total number of custom characters available.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of custom characters (always \c 0 ).
+ */
 MODULE_EXPORT int
 serialPOS_get_free_chars (Driver *drvthis)
 {
 	return 0;
 }
 
+
 /**
  * Return the width of a character in pixels.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel columns a character cell is wide.
+ * \return         Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
 serialPOS_cellwidth (Driver *drvthis)
@@ -455,7 +458,7 @@ serialPOS_cellwidth (Driver *drvthis)
 /**
  * Return the height of a character in pixels.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel lines a character cell is high.
+ * \return         Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
 serialPOS_cellheight (Driver *drvthis)
@@ -763,7 +766,7 @@ serialPOS_cursor_goto(Driver *drvthis, int x, int y)
 /**
  * Provide general information about the POS display.
  * \param drvthis  Pointer to driver structure.
- * \return  Constant string with information.
+ * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
 serialPOS_get_info (Driver *drvthis)
