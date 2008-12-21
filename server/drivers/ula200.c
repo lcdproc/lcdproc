@@ -606,9 +606,12 @@ ula200_load_custom_chars(Driver *drvthis)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Init the driver and display
-//
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0   Success.
+ * \retval <0  Error.
+ */
 MODULE_EXPORT int
 ula200_init(Driver *drvthis)
 {
@@ -731,9 +734,11 @@ err_begin:
 	return -1;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Clean-up
-//
+
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 ula200_close(Driver *drvthis)
 {
@@ -755,9 +760,12 @@ ula200_close(Driver *drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
+ */
 MODULE_EXPORT int
 ula200_width (Driver *drvthis)
 {
@@ -765,9 +773,12 @@ ula200_width (Driver *drvthis)
 	return p->width;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
+ */
 MODULE_EXPORT int
 ula200_height (Driver *drvthis)
 {
@@ -775,9 +786,11 @@ ula200_height (Driver *drvthis)
 	return p->height;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Clear the framebuffer
-//
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 ula200_clear (Driver *drvthis)
 {
@@ -785,22 +798,35 @@ ula200_clear (Driver *drvthis)
 	memset(p->framebuf, ' ', p->width * p->height);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Place a character in the framebuffer
-//
+
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
 MODULE_EXPORT void
-ula200_chr (Driver *drvthis, int x, int y, char ch)
+ula200_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	y--;
 	x--;
 
-	p->framebuf[ (y * p->width) + x] = ch;
+	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+		p->framebuf[ (y * p->width) + x] = c;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Place a string in the framebuffer
-//
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
 MODULE_EXPORT void
 ula200_string (Driver *drvthis, int x, int y, const char string[])
 {
@@ -814,13 +840,16 @@ ula200_string (Driver *drvthis, int x, int y, const char string[])
 		// Check for buffer overflows...
 		if ((y * p->width) + x + i > (p->width * p->height))
 			break;
-		p->framebuf[(y*p->width) + x + i] = string[i];
+		p->framebuf[(y * p->width) + x + i] = string[i];
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Sets the backlight on or off
-//
+
+/**
+ * Turn the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
+ */
 MODULE_EXPORT void
 ula200_backlight (Driver *drvthis, int on)
 {
@@ -843,9 +872,11 @@ ula200_backlight (Driver *drvthis, int on)
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Flush the framebuffer to the display
-//
+
+/**
+ * Flush data on screen to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 ula200_flush(Driver *drvthis)
 {
@@ -889,9 +920,14 @@ ula200_flush(Driver *drvthis)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Set default icon into a userdef char
-//
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \return  Information whether the icon is handled here or needs to be handled by the server core.
+ */
 MODULE_EXPORT int
 ula200_icon (Driver *drvthis, int x, int y, int icon)
 {
@@ -934,9 +970,11 @@ ula200_icon (Driver *drvthis, int x, int y, int icon)
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Set default icon into a userdef char
-//
+/**
+ * Get next key from the KeyRing.
+ * \param drvthis  Pointer to driver structure.
+ * \return  String representation of the key.
+ */
 MODULE_EXPORT const char *
 ula200_get_key (Driver *drvthis)
 {
@@ -964,5 +1002,4 @@ ula200_get_key (Driver *drvthis)
 	}
 	return NULL;
 }
-
 
