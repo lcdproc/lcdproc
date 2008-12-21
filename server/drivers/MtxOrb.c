@@ -1,17 +1,16 @@
 /** \file server/drivers/MtxOrb.c
  * LCDd \c MtxOrb driver for Matrix Orbital character mode displays.
+ *
+ * This driver supports the LCD*, LKD*, VFD*, and VKD* series of
+ * character mode displays by Matrix Orbital (http://www.matrixorbital.com).
+ * 
+ * Data sheets for the displays this driver supports can be found at
+ * http://www.matrixorbital.ca/manuals/
+ *
+ * \note The GLK series of graphical displays is supported by the \c glk driver.
  */
 
-/*  This is the LCDproc driver for Matrix Orbital devices
-    (http://www.matrixorbital.com)
-
-    For the Matrix Orbital LCD* LKD* VFD* and VKD* displays
-
-    Applicable Data Sheets:
-    - http://www.matrixorbital.ca/manuals/
-
-    NOTE: GLK displays have a different driver.
-
+/*
     Copyright (C) 1999, William Ferrell and Scott Scriven
 		  2001, Andre Breiler
 		  2001, Philip Pokorny
@@ -118,8 +117,9 @@ typedef enum {
 } CGmode;
 
 
-typedef struct {
-	int fd;			/* The LCD file descriptor */
+/** private data for the \c MtxOrb driver */
+typedef struct MtxOrb_private_data {
+	int fd;			/**< LCD file descriptor */
 	
 	/* dimensions */
 	int width, height;
@@ -132,8 +132,8 @@ typedef struct {
 	/* defineable characters */
 	CGmode ccmode;
 
-	int output_state;	/* static data from MtxOrb_output */
-	int contrast;		/* static data from set/get_contrast */
+	int output_state;	/**< current output state */
+	int contrast;		/**< current contrast */
 	int brightness;
 	int offbrightness;
 
@@ -144,7 +144,7 @@ typedef struct {
 	int keys;
 	int keypad_test_mode;
 
-	char info[255];		/* static data from MtxOrb_get_info */
+	char info[255];		/**< info string contents */
 } PrivateData;
 
 
@@ -184,8 +184,8 @@ MtxOrb_parse_keypad_setting (Driver *drvthis, char *keyname, char default_value)
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 MtxOrb_init (Driver *drvthis)
@@ -200,7 +200,7 @@ MtxOrb_init (Driver *drvthis)
 
         PrivateData *p;
 
-	/* Alocate and store private data */
+	/* Allocate and store private data */
         p = (PrivateData *) malloc(sizeof(PrivateData));
 	if (p == NULL)
 	        return -1;
@@ -451,7 +451,7 @@ MtxOrb_close (Driver *drvthis)
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is wide.
+ * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
 MtxOrb_width (Driver *drvthis)
@@ -465,7 +465,7 @@ MtxOrb_width (Driver *drvthis)
 /**
  * Return the display height in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is high.
+ * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
 MtxOrb_height (Driver *drvthis)
@@ -479,7 +479,7 @@ MtxOrb_height (Driver *drvthis)
 /**
  * Return the width of a character in pixels.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel columns a character cell is wide.
+ * \return         Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
 MtxcOrb_cellwidth (Driver *drvthis)
@@ -493,7 +493,7 @@ MtxcOrb_cellwidth (Driver *drvthis)
 /**
  * Return the height of a character in pixels.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel lines a character cell is high.
+ * \return         Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
 MtxcOrb_cellheight (Driver *drvthis)
@@ -649,7 +649,7 @@ MtxOrb_chr (Driver *drvthis, int x, int y, char c)
  * This is only the locally stored contrast, the contrast value
  * cannot be retrieved from the LCD.
  * \param drvthis  Pointer to driver structure.
- * \return  Stored contrast in promille.
+ * \return         Stored contrast in promille.
  */
 
 MODULE_EXPORT int
@@ -666,8 +666,8 @@ MtxOrb_get_contrast (Driver *drvthis)
  * Whis only works on LCD displays where the
  * HW supports values from 0 to 255 with 140 looking OK.
  * Is it better to use the brightness for VFD/VKD displays ?
- * \param drvthis  Pointer to driver structure.
- * \param promille New contrast value in promille.
+ * \param drvthis   Pointer to driver structure.
+ * \param promille  New contrast value in promille.
  */
 MODULE_EXPORT void
 MtxOrb_set_contrast (Driver *drvthis, int promille)
@@ -702,7 +702,7 @@ MtxOrb_set_contrast (Driver *drvthis, int promille)
  * Retrieve brightness.
  * \param drvthis  Pointer to driver structure.
  * \param state    Brightness state (on/off) for which we want the value.
- * \return Stored brightness in promille.
+ * \return         Stored brightness in promille.
  */
 MODULE_EXPORT int
 MtxOrb_get_brightness(Driver *drvthis, int state)
@@ -907,7 +907,7 @@ MtxOrb_cursor_goto(Driver *drvthis, int x, int y)
 /**
  * Provide general information about the LCD/VFD display.
  * \param drvthis  Pointer to driver structure.
- * \return  Constant string with information.
+ * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
 MtxOrb_get_info (Driver *drvthis)
@@ -1172,7 +1172,7 @@ MtxOrb_num (Driver *drvthis, int x, int num)
 /**
  * Get total number of custom characters available.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of custom characters (always NUM_CCs).
+ * \return         Number of custom characters (always NUM_CCs).
  */
 MODULE_EXPORT int
 MtxOrb_get_free_chars (Driver *drvthis)
