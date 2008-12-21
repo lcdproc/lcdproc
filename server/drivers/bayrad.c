@@ -48,10 +48,6 @@
 #define BAYRAD_DEFAULT_DEVICE	"/dev/lcd"
 
 
-//////////////////////////////////////////////////////////////////////////
-////////////////////// Base "class" to derive from ///////////////////////
-//////////////////////////////////////////////////////////////////////////
-
 /** private data for the \c bayrad driver */
 typedef struct bayrad_private_data {
   char device[256];
@@ -73,9 +69,12 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "bayrad_";
 
 
-////////////////////////////////////////////////////////////
-// init() should set up any device-specific stuff, and
-// point all the function pointers.
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval <0      Error.
+ */
 MODULE_EXPORT int
 bayrad_init(Driver *drvthis)
 {
@@ -128,7 +127,7 @@ bayrad_init(Driver *drvthis)
     return -1;
   }
 
-  //else debug(RPT_DEBUG, "bayrad_init: opened device %s", device);
+  //debug(RPT_DEBUG, "bayrad_init: opened device %s", device);
 
   tcflush(p->fd, TCIOFLUSH);
 
@@ -178,10 +177,10 @@ bayrad_init(Driver *drvthis)
 }
 
 
-// Below here, you may use either lcd.framebuf or drvthis->framebuf..
-// lcd.framebuf will be set to the appropriate buffer before calling
-// your driver.
-
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 bayrad_close(Driver *drvthis)
 {
@@ -203,9 +202,11 @@ bayrad_close(Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is wide.
+ */
 MODULE_EXPORT int
 bayrad_width(Driver *drvthis)
 {
@@ -215,9 +216,11 @@ bayrad_width(Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is high.
+ */
 MODULE_EXPORT int
 bayrad_height(Driver *drvthis)
 {
@@ -227,9 +230,11 @@ bayrad_height(Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Returns the display's cell width
-//
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of pixel columns a character cell is wide.
+ */
 MODULE_EXPORT int
 bayrad_cellwidth(Driver *drvthis)
 {
@@ -239,9 +244,11 @@ bayrad_cellwidth(Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Returns the display's cell height
-//
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of pixel lines a character cell is high.
+ */
 MODULE_EXPORT int
 bayrad_cellheight(Driver *drvthis)
 {
@@ -251,9 +258,10 @@ bayrad_cellheight(Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Clears the LCD screen
-//
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 bayrad_clear(Driver *drvthis)
 {
@@ -264,9 +272,10 @@ bayrad_clear(Driver *drvthis)
 }
 
 
-//////////////////////////////////////////////////////////////////
-// Flushes all output to the lcd...
-//
+/**
+ * Flush data on screen to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 bayrad_flush(Driver *drvthis)
 {
@@ -279,10 +288,15 @@ bayrad_flush(Driver *drvthis)
   write(p->fd, p->framebuf+20, 20);
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a string on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
 MODULE_EXPORT void
 bayrad_string(Driver *drvthis, int x, int y, const char string[])
 {
@@ -315,10 +329,15 @@ bayrad_string(Driver *drvthis, int x, int y, const char string[])
   }
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a character on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,2).
-//
+
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
 MODULE_EXPORT void
 bayrad_chr(Driver *drvthis, int x, int y, char c)
 {
@@ -340,30 +359,27 @@ bayrad_chr(Driver *drvthis, int x, int y, char c)
   p->framebuf[(y * p->width) + x] = ch;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Turns the lcd backlight on or off...
-//
+
+/**
+ * Turn the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
+ */
 MODULE_EXPORT void
 bayrad_backlight(Driver *drvthis, int on)
 {
-  //PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
-  /* This violates the LCDd driver model, but it does leave the
-   * backlight control entirely in the hands of the user via
-   * BayRAd buttons, which is nice, since the backlights have
-   * a finite lifespan... */
+  debug(RPT_DEBUG, "Backlight %s", (on) ? "ON" : "OFF");
 
   if (on) {
-    ;
-    //write(p->fd, "\x8e\x0f", 2);
-    //debug(RPT_DEBUG, "Backlight ON");
+    write(p->fd, "\x8e\x0f", 2);
   }
   else {
-    ;
-    //write(p->fd, "\x8e\x00", 2);
-    //debug(RPT_DEBUG, "Backlight OFF");
+    write(p->fd, "\x8e\x00", 2);
   }
 }
+
 
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for vertical bargraphs.
@@ -541,6 +557,7 @@ bayrad_init_hbar(Driver *drvthis)
   bayrad_set_char(drvthis, 5, bar_right[4]);
 }
 
+
 //////////////////////////////////////////////////////////////////////
 // Tells the driver to get ready for big numbers, if possible.
 //
@@ -551,6 +568,7 @@ bayrad_init_num(Driver *drvthis)
 
 //  debug(RPT_DEBUG,"Big Numbers");
 }
+
 
 //////////////////////////////////////////////////////////////////////
 // Draws a big (4-row) number.
@@ -563,14 +581,21 @@ bayrad_num(Driver *drvthis, int x, int num)
 //  debug(RPT_DEBUG,"BigNum(%i, %i)", x, num);
 }
 
-//////////////////////////////////////////////////////////////////////
-// Changes the font data of character n.
-//
+
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [0 - (NUM_CCs-1)].
+ * \param dat      Array of 40(=8*5=cellheight*cellwidth) bytes, each representing a pixel
+ *                 starting from the top left to the bottom right.
+ * \todo
+ * Convert \c dat to use one byte per pixel row as e.g. in the \c CFontzPackage driver.
+ */
 MODULE_EXPORT void
 bayrad_set_char(Driver *drvthis, int n, char *dat)
 {
   PrivateData *p = drvthis->private_data;
-  char out[4];
+  char out[4] = { 0x88, 0x0, 0x0, 0x0 };
   int row, col;
 
   //debug(RPT_DEBUG, "Set char %i", n);
@@ -599,9 +624,16 @@ bayrad_set_char(Driver *drvthis, int n, char *dat)
   write(p->fd, "\x80", 1);
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar, from the bottom of the screen up.
-//
+
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void
 bayrad_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -609,21 +641,21 @@ bayrad_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 
   //debug(RPT_DEBUG, "Vbar at %i, length %i", x, len);
 
-  /* x and y are the start position of the bar.
-   * The bar by default grows in the 'up' direction
-   * (other direction not yet implemented).
-   * len is the number of characters that the bar is long at 100%
-   * promille is the number of promilles (0..1000) that the bar should be filled.
-   */
-
   bayrad_init_vbar(drvthis);
 
   lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0x98);
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-//
+
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void
 bayrad_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -631,22 +663,21 @@ bayrad_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 
   //debug(RPT_DEBUG, "Hbar at %i,%i; length %i", x, y, len);
 
-  /* x and y are the start position of the bar.
-   * The bar by default grows in the 'right' direction
-   * (other direction not yet implemented).
-   * len is the number of characters that the bar is long at 100%
-   * promille is the number of promilles (0..1000) that the bar should be filled.
-   */
-
   bayrad_init_hbar(drvthis);
 
   lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0x98);
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Places an icon on screen
-//
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \retval 0       Icon has been successfully defined/written.
+ * \retval <0      Server core shall define/write the icon.
+ */
 MODULE_EXPORT int
 bayrad_icon(Driver *drvthis, int x, int y, int icon)
 {
@@ -693,26 +724,23 @@ bayrad_icon(Driver *drvthis, int x, int y, int icon)
 }
 
 
-//////////////////////////////////////////////////////////////////////
-// Tries to read a character from an input device...
-//
-// Return 0 for "nothing available".
-//
+/**
+ * Get key from the device.
+ * \param drvthis  Pointer to driver structure.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key.
+ */
 MODULE_EXPORT const char *
 bayrad_get_key(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
   fd_set brfdset;
   struct timeval twait;
-  char readchar;
-  int retval;
-  static char ret_val[2] = { 0, 0 };
+  char *key = NULL;
 
   //debug(RPT_DEBUG, "BayRAD get_key...");
 
   /* Check for incoming data.  Turn backlight ON/OFF as needed */
-
-  /* TODO: NEEDS TO BE ADAPTED TO RETURN REAL KEY DESCRIPTION STRINGS ! */
 
   FD_ZERO(&brfdset);
   FD_SET(p->fd, &brfdset);
@@ -721,19 +749,25 @@ bayrad_get_key(Driver *drvthis)
   twait.tv_usec = 0;
 
   if (select(p->fd + 1, &brfdset, NULL, NULL, &twait)) {
-    retval = read(p->fd, &readchar, 1);
-    if (retval > 0) {
-      debug(RPT_INFO, "bayrad_get_key: Got key: %c", readchar);
+    char ch;
+    int retval = read(p->fd, &ch, 1);
 
-      if (readchar == 'Y') {
-        write(p->fd, "\x8e\x0f", 2);
+    if (retval > 0) {	/* read() succeeded and returned data */
+      debug(RPT_INFO, "bayrad_get_key: Got key: %c", ch);
+
+      switch (ch) {
+	case 'Y': key = "Up";		/* YES/+ key pressed */
+		  break;
+	case 'N': key = "Down";		/* NO/- key pressed */
+		  break;
+	case 'M': key = "Escape";	/* MENU key pressed */
+		  break;
+	case 'S': key = "Enter";	/* SELECT key pressed */
+		  break;
+	default:  break;
       }
-      else if (readchar == 'N') {
-        write(p->fd, "\x8e\x00", 2);
-      }
-    }  /* if read returned data */
-    else {
-      /* Read error */
+    }
+    else {	/* read() error */
       report(RPT_ERR, "%s: Read error in BayRAD getchar", drvthis->name);
     }
   }  /* if select */
@@ -741,7 +775,6 @@ bayrad_get_key(Driver *drvthis)
       ;//debug(RPT_DEBUG, "No BayRAD data present");
   }
 
-  ret_val[0] = readchar;
-  return ret_val;
+  return key;
 }
 
