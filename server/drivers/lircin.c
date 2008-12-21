@@ -51,21 +51,25 @@
 
 /** private data for the \c lirc driver */
 typedef struct lircin_private_data {
-	char *lircrc;
-	char *prog;
-	int lircin_fd;
-	struct lirc_config *lircin_irconfig;
+	char *lircrc;			/**< path/name of the LIRC config file */
+	char *prog;			/**< program identifier in LIRC config file */
+	int lircin_fd;			/**< LIRC socket file handle */
+	struct lirc_config *lircin_irconfig;	/**< LIRC config */
 } PrivateData;
 
 
+/* vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "lircin_";
 
-/***********************************************************
- * init() should set up any device-specific stuff, and
- * point all the function pointers.
+
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 lircin_init (Driver *drvthis)
@@ -155,8 +159,10 @@ lircin_init (Driver *drvthis)
 	return 0;
 }
 
-/*********************************************************************
- * Closes the device
+
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 lircin_close (Driver *drvthis)
@@ -187,10 +193,12 @@ lircin_close (Driver *drvthis)
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
-/*********************************************************************
- * Tries to read a character from an input device...
- *
- * Return NULL for "nothing available".
+
+/**
+ * Get key from the device.
+ * \param drvthis  Pointer to driver structure.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key.
  */
 MODULE_EXPORT const char *
 lircin_get_key (Driver *drvthis)
