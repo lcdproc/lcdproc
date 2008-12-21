@@ -158,7 +158,15 @@ MODULE_EXPORT int  supports_multiple  = 1;
 MODULE_EXPORT char *symbol_prefix     = "picoLCD_";
 
 /* lcd_logical_driver mandatory functions */
-MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
+
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval <0      Error.
+ */
+MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
+ {
 	PrivateData *p;
 	int x;
 	struct usb_bus *bus;
@@ -316,6 +324,10 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis) {
 }
 
 
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void picoLCD_close(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -328,6 +340,12 @@ MODULE_EXPORT void picoLCD_close(Driver *drvthis)
 
 
 /* lcd_logical_driver Essential output functions */
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is wide.
+ */
 MODULE_EXPORT int  picoLCD_width(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -336,6 +354,11 @@ MODULE_EXPORT int  picoLCD_width(Driver *drvthis)
 }
 
 
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is high.
+ */
 MODULE_EXPORT int  picoLCD_height(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -344,6 +367,10 @@ MODULE_EXPORT int  picoLCD_height(Driver *drvthis)
 }
 
 
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void picoLCD_clear(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -355,6 +382,9 @@ MODULE_EXPORT void picoLCD_clear(Driver *drvthis)
 }
 
 
+/* Flush data on screen to the display.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void picoLCD_flush(Driver *drvthis)
 {
 	PrivateData   *p = drvthis->private_data;
@@ -390,41 +420,57 @@ MODULE_EXPORT void picoLCD_flush(Driver *drvthis)
 }
 
 
-MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char *str)
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
+MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char *dest;
 	int  len;
 
-	debug(RPT_DEBUG, "%s: string start (%s)", drvthis->name, str);
+	debug(RPT_DEBUG, "%s: string start (%s)", drvthis->name, string);
 
 	if (y < 1 || y > p->height)
 		return;
 	if (x < 1 || x > p->width)
 		return;
 
-	len = strlen((char *)str);
+	len = strlen((char *)string);
 	if (len + x > p->width) {
 		debug(RPT_DEBUG, "%s: string overlength (>%d). Start: %d Length: %d (%s)",
-			drvthis->name, p->width, x, len ,str);
+			drvthis->name, p->width, x, len, string);
 
 		len = p->width - x; /* Copy what we can */
 	}
 
 	x--; y--; /* Convert 1-based to 0-based */
 	dest = p->framebuf + (y * p->width + x);
-	memcpy(dest, str, len * sizeof(unsigned char));
+	memcpy(dest, string, len * sizeof(unsigned char));
 
-	debug(RPT_DEBUG, "%s: string complete (%s)", drvthis->name, str);
+	debug(RPT_DEBUG, "%s: string complete (%s)", drvthis->name, string);
 }
 
 
-MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char chr)
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
+MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char *dest;
 
-	debug(RPT_DEBUG, "%s: chr start (%c)", drvthis->name, chr);
+	debug(RPT_DEBUG, "%s: chr start (%c)", drvthis->name, c);
 
 	if (y < 1 || y > p->height)
 		return;
@@ -433,13 +479,21 @@ MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char chr)
 
 	x--; y--; /* Convert 1-based to 0-based */
 	dest = p->framebuf + (y * p->width + x);
-	memcpy(dest, &chr, sizeof(unsigned char));
+	memcpy(dest, &c, sizeof(unsigned char));
 
-	debug(RPT_DEBUG, "%s: chr complete (%c)", drvthis->name, chr);
+	debug(RPT_DEBUG, "%s: chr complete (%c)", drvthis->name, c);
 }
 
 
-
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [0 - (NUM_CCs-1)].
+ * \param dat      Array of 8 (=cellheight) bytes, each representing a pixel row
+ *                 starting from the top to bottom.
+ *                 The bits in each byte represent the pixels where the LSB
+ *                 (least significant bit) is the rightmost pixel in each pixel row.
+ */
 MODULE_EXPORT void picoLCD_set_char (Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
@@ -448,13 +502,26 @@ MODULE_EXPORT void picoLCD_set_char (Driver *drvthis, int n, unsigned char *dat)
 }
 
 
-
+/**
+ * Get total number of custom characters available.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of custom characters (always NUM_CCs).
+ */
 MODULE_EXPORT int picoLCD_get_free_chars (Driver *drvthis)
 {
 	return NUM_CCs;
 }
 
 
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void picoLCD_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
@@ -484,6 +551,15 @@ MODULE_EXPORT void picoLCD_vbar (Driver *drvthis, int x, int y, int len, int pro
 }
 
 
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void picoLCD_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
@@ -514,6 +590,12 @@ MODULE_EXPORT void picoLCD_hbar (Driver *drvthis, int x, int y, int len, int pro
 }
 
 
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
+ */
 MODULE_EXPORT void picoLCD_num (Driver *drvthis, int x, int num)
 {
 	PrivateData *p = drvthis->private_data;
@@ -540,6 +622,15 @@ MODULE_EXPORT void picoLCD_num (Driver *drvthis, int x, int num)
 }
 
 
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \retval 0       Icon has been successfully defined/written.
+ * \retval <0      Server core shall define/write the icon.
+ */
 MODULE_EXPORT int picoLCD_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
@@ -582,7 +673,15 @@ MODULE_EXPORT int picoLCD_icon (Driver *drvthis, int x, int y, int icon)
 
 
 /* lcd_logical_driver Essential input functions */
-MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
+
+/**
+ * Handle input from keyboard.
+ * \param drvthis  Pointer to driver structure.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key
+ */
+MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis)
+{
 	PrivateData *p = drvthis->private_data;
 	lcd_packet *keydata;
 	char *keystr = NULL;
@@ -713,6 +812,14 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis) {
 /* lcd_logical_driver User-defined character functions */
 
 /* lcd_logical_driver Hardware functions */
+
+/**
+ * Get current display contrast.
+ * This is only the locally stored contrast, the contrast value
+ * cannot be retrieved from the device.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Stored contrast in promille.
+ */
 MODULE_EXPORT int picoLCD_get_contrast(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -721,6 +828,11 @@ MODULE_EXPORT int picoLCD_get_contrast(Driver *drvthis)
 }
 
 
+/**
+ * Change display contrast.
+ * \param drvthis   Pointer to driver structure.
+ * \param promille  New contrast value in promille.
+ */
 MODULE_EXPORT void picoLCD_set_contrast(Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
@@ -750,12 +862,25 @@ MODULE_EXPORT void picoLCD_set_contrast(Driver *drvthis, int promille)
 }
 
 
+/* *
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return         Stored brightness in promille.
+ */
 /*MODULE_EXPORT int picoLCD_get_brightness(Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
 
 }*/
 
+
+/**
+ * Set on/off brightness.
+ * \param drvthis   Pointer to driver structure.
+ * \param state     Brightness state (on/off) for which we want to store the value.
+ * \param promille  New brightness in promille.
+ */
 MODULE_EXPORT void picoLCD_set_brightness(Driver *drvthis, int state, int promille)
 {
 	PrivateData *p = drvthis->private_data;
@@ -770,6 +895,11 @@ MODULE_EXPORT void picoLCD_set_brightness(Driver *drvthis, int state, int promil
 }
 
 
+/**
+ * Turn the backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    New backlight status.
+ */
 MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
@@ -795,14 +925,28 @@ MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state)
 	}
 }
 
-/*MODULE_EXPORT int  picoLCD_output(Driver *drvthis, int state) {
+
+/* *
+ * Set output port(s).
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Integer with bits representing port states.
+ */
+/*MODULE_EXPORT int  picoLCD_output(Driver *drvthis, int state)
+{
 	PrivateData *p = drvthis->private_data;
 
 }*/
 
 
 /* lcd_logical_driver Informational functions */
-MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis) {
+
+/**
+ * Provide general information about the LCD/VFD display.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Constant string with information.
+ */
+MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis)
+{
 	PrivateData *p = drvthis->private_data;
 
 	return p->info;
@@ -811,7 +955,7 @@ MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis) {
 
 /* Private functions */
 
-/*
+/**
  * Transcode from picoLCD USB format to LIRC UDP format.
  * LIRC UDP packets expect 16-bit intervals, with MSB set for space.
  * Intervals are measured in jiffies (1/16384 s).
@@ -821,11 +965,12 @@ MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis) {
  * in that order for transmission via UDP.
  * One jiffy == 61 us. 537 us == 9j. 
  * 
- * drvthis: 		driver data (used for debug() and report()).
- * data, cbdata: 	buffer of integers to be transcoded.
- * result, 
- * 	cbresult:		buffer to receive the transcoded values.  	
- * @return: 		number of bytes placed in result buffer.
+ * \param drvthis   Pointer to driver structure [used for debug() and report()].
+ * \param data      Buffer of integers to be transcoded.
+ * \param cbdata    Buffer of integers to be transcoded.
+ * \param result    Buffer to receive the transcoded values.
+ * \param cbresult  Buffer to receive the transcoded values.  	
+ * \return          Number of bytes placed in result buffer.
  */
 static int ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdata, 
 			unsigned char *result, int cbresult)

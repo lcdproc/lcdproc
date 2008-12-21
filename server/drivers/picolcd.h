@@ -82,7 +82,7 @@ MODULE_EXPORT int  picoLCD_width(Driver *drvthis);
 MODULE_EXPORT int  picoLCD_height(Driver *drvthis);
 MODULE_EXPORT void picoLCD_clear(Driver *drvthis);
 MODULE_EXPORT void picoLCD_flush(Driver *drvthis);
-MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char *str);
+MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char string[]);
 MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char c);
 MODULE_EXPORT void picoLCD_set_char (Driver *drvthis, int n, unsigned char *dat);
 MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis);
@@ -97,7 +97,7 @@ MODULE_EXPORT int  picoLCD_get_contrast(Driver *drvthis);
 MODULE_EXPORT void picoLCD_set_contrast(Driver *drvthis, int promille);
 //MODULE_EXPORT int  picoLCD_get_brightness(Driver *drvthis, int state);
 MODULE_EXPORT void picoLCD_set_brightness(Driver *drvthis, int state, int promille);
-MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int promille);
+MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state);
 //MODULE_EXPORT void picoLCD_output(Driver *drvthis, int state);
 
 MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis);
