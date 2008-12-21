@@ -113,8 +113,8 @@ static void NoritakeVFD_cursor_goto (Driver *drvthis, int x, int y);
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 NoritakeVFD_init (Driver *drvthis)
@@ -300,7 +300,7 @@ NoritakeVFD_close (Driver *drvthis)
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is wide.
+ * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
 NoritakeVFD_width (Driver *drvthis)
@@ -314,7 +314,7 @@ NoritakeVFD_width (Driver *drvthis)
 /**
  * Return the display height in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is high.
+ * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
 NoritakeVFD_height (Driver *drvthis)
@@ -328,7 +328,7 @@ NoritakeVFD_height (Driver *drvthis)
 /**
  * Return the width of a character in pixels.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel columns a character cell is wide.
+ * \return         Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
 NoritakeVFD_cellwidth (Driver *drvthis)
@@ -342,7 +342,7 @@ NoritakeVFD_cellwidth (Driver *drvthis)
 /**
  * Return the height of a character in pixels.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel lines a character cell is high.
+ * \return         Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
 NoritakeVFD_cellheight (Driver *drvthis)
@@ -676,7 +676,7 @@ CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
 /**
  * Get total number of custom characters available.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of custom characters (always NUM_CCs).
+ * \return         Number of custom characters (always \c NUM_CCs).
  */
 MODULE_EXPORT int
 NoritakeVFD_get_free_chars (Driver *drvthis)
@@ -723,7 +723,7 @@ NoritakeVFD_set_char (Driver *drvthis, int n, unsigned char *dat)
  * Retrieve brightness.
  * \param drvthis  Pointer to driver structure.
  * \param state    Brightness state (on/off) for which we want the value.
- * \return Stored brightness in promille.
+ * \return         Stored brightness in promille.
  */
 MODULE_EXPORT int
 NoritakeVFD_get_brightness(Driver *drvthis, int state)
