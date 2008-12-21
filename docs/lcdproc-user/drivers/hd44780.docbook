@@ -2422,15 +2422,15 @@ off the address.
 </sect3>
 
 <sect3 id="hd44780-ethlcd">
-<title>ethlcd device</title>
+<title>ethlcd Device</title>
 
 <para>
-ethlcd (<ulink url="http://manio.skyboo.net/ethlcd"></ulink>) device is simply
+The ethlcd (<ulink url="http://manio.skyboo.net/ethlcd"></ulink>) device is simply
 an LCD display driven by an ATmega microcontroller, controlled and powered by
 "home-made" Power over Ethernet. The hardware and software are open source.
 
-<title>Features</title>
 <itemizedlist>
+<title>Features</title>
 <listitem><para>ethernet connection using ENC28J60 ethernet controller</para></listitem>
 <listitem><para>Power over Ethernet (data and power using single UTP cable)</para></listitem>
 <listitem><para>Atmel's ATmega168 microcontroller</para></listitem>
