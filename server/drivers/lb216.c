@@ -1,5 +1,8 @@
+/** \file server/drivers/lb216.c
+ * LCDd \c lb216 driver for the LB216 by R.T.N. Australia.
+ */
+
 /*
- *
  * Chris Debenham - Sun Systems Engineer <chris.debenham@aus.sun.com>
  *
  * Heres a bit more info on the display.

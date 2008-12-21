@@ -1,3 +1,8 @@
+/** \file server/drivers/EyeboxOne.c
+ * LCDd \c EyeboxOne driver for the display used in the Eyebox ONE server
+ * by Rightvision.
+ */
+
 /*  This is the LCDproc driver for EyeboxOne devices
 
     This code is based on MtxOrb driver (William Ferrell and Scott Scriven) 

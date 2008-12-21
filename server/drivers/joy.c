@@ -1,3 +1,7 @@
+/** \file server/drivers/joy.c
+ * LCDd \c joy input driver for inputting data using joysticks.
+ */
+
 /*
  * Joystick input driver for LCDd
  *

@@ -1,3 +1,7 @@
+/** \file server/drivers/mtc_s16209x.c
+ * LCDd \c mtc_s16209x driver for the MTC_S16209x LCD display by Microtips Technology Inc.
+ */
+
 /*
  * LCD Driver for MTC_S16209x LCD display, used with lcdproc (lcdproc.org)
  * Copyright (C) 2002 SecureCiRT, A SBU of Z-Vance Pte Ltd (Singapore)

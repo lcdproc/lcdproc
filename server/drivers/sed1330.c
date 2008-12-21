@@ -1,3 +1,7 @@
+/** \file server/drivers/sed1330.c
+ * LCDd \c sed1330 driver for SED1330/1335 graphical displays.
+ */
+
 /*
  * Driver for SED1330/1335 graphical displays
  *

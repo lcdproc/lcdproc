@@ -1,3 +1,7 @@
+/** \file server/drivers/ms6931.c
+ * LCDd \c ms6931 driver for MSI-6931 displays in 1U rack servers by MSI.
+ */
+
 /*  This is the LCDproc driver for MSI-6931 displays
 	as found in the following 1U rack servers by MSI:
 		MS-9202

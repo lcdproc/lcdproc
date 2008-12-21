@@ -1,3 +1,7 @@
+/** \file server/drivers/lis.c
+ * LCDd \c lis driver for the L.I.S MCE VFD by vlsys.co.kr.
+ */
+
 /*
  * LIS driver for lcdproc
  * For the L.I.S MCE vacuum fluorescent display from vlsys.co.kr

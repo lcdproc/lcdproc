@@ -1,3 +1,7 @@
+/** \file server/drivers/svgalib_drv.c
+ * LCDd \c svga driver for displaying on SVGA screens.
+ */
+
 /*
    This is a hack of the curses driver.  It's my first attempt at SVGALIB
    programming so please send comments to <smh@remove_this@dr.com>.

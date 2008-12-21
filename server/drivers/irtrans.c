@@ -1,8 +1,9 @@
+/** \file server/drivers/irtrans.c
+ * LCDd \c irtrans driver for IRTrans VFD displays.
+ */
+
 /*
  * irtrans driver
- *
- * Displays LCD screens, one after another; suitable for hard-copy
- * terminals.
  *
  * Copyright (C) 1998-2007 <info@irtrans.de>
  *

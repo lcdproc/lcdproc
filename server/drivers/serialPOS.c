@@ -1,3 +1,8 @@
+/** \file server/drivers/serialPOS.c
+ * LCDd \c serialPOS driver for Point Of Sale ("POS") devices using
+ * various protocols.
+ */
+
 /* 	This is the LCDproc driver for Point Of Sale ("POS") devices using 
 	various protocols.  While it currently only supports AEDEX, 
 	it can be extended to provide support for many POS emulation types.

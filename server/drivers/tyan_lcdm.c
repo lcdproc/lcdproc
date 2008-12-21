@@ -1,5 +1,8 @@
-/*  This is the LCDproc driver for tyan lcd module (tyan Barebone GS series)
+/** \file server/drivers/tyan_lcdm.c
+ * LCDd \c tyan driver for the CLD module found in Tyan GS series barebones.
+ */
 
+/* 
     Author: yhlu@tyan.com
 
     Copyright (C) 2004 Tyan Corp

@@ -1,3 +1,7 @@
+/** \file server/drivers/t6963.c
+ * LCDd \c t6963 driver for Toshiba T6963 based LCD displays.
+ */
+
 /*
  * Base driver module for Toshiba T6963 based LCD displays. ver 2.2
  *

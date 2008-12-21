@@ -1,4 +1,8 @@
-/**
+/** \file server/drivers/imon.c
+ * LCDd \c imon driver for the Soundgraph iMON IR/VFD module.
+ */
+
+/*
  * Driver for Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD Module
  *
  * In order to be able to use it, you have to get and install one of

@@ -1,3 +1,8 @@
+/** \file server/drivers/CFontzPacket.c
+ * LCDd \c CFontzPacket driver for the CFA631, CFA633 & CFA635 display series
+ * by CrystalFontz, Inc.
+ */
+
 /*
  *  This is the LCDproc driver for CrystalFontz LCD using Packet protocol.
  *  It support the CrystalFontz 633 USB/Serial, the 631 USB and the 635 USB

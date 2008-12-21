@@ -1,5 +1,8 @@
-/*  This is the LCDproc driver for the LCD on the Logitech G15 keyboard
+/** \file server/drivers/g15.c
+ * LCDd \c g15 driver for the LCD on the Logitech G15 keyboard.
+ */
 
+/* 
     Copyright (C) 2006 Anthony J. Mirabella.
 
     2006-07-23 Version 1.0: Most functions should be implemented and working

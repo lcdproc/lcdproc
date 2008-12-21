@@ -1,3 +1,7 @@
+/** \file server/drivers/ula200.c
+ * LCDd \c ula200 driver for the ULA-200 from ELV (http://www.elv.de).
+ */
+
 // Description:
 //
 // This is a driver for the ULA-200 from ELV (http://www.elv.de).  It's a small

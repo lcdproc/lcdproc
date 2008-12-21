@@ -1,3 +1,7 @@
+/** \file server/drivers/MtxOrb.c
+ * LCDd \c MtxOrb driver for Matrix Orbital character mode displays.
+ */
+
 /*  This is the LCDproc driver for Matrix Orbital devices
     (http://www.matrixorbital.com)
 

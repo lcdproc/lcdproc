@@ -1,5 +1,8 @@
-/*  This is the LCDproc driver header for the Logitech MX5000 keyboard
+/** \file server/drivers/mx5000.c
+ * LCDd \c mx5000 driver for the Logitech MX5000 keyboard.
+ */
 
+/* 
     Author: Christian Jodar (tian@gcstar.org)
 
     Copyright (C) 2008 Christian Jodar

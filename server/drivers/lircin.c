@@ -1,5 +1,8 @@
-/*  This is the LCDproc driver for LIRC infrared devices (http://www.lirc.org)
+/** \file server/drivers/lircin.c
+ * LCDd \c lirc input driver for LIRC infrared devices (http://www.lirc.org),
+ */
 
+/*
     Copyright (C) 2000, Harald Klein
                   2002, Rene Wagner
     [Merged some stuff from a different lircin driver, so:]

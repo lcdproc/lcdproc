@@ -1,5 +1,5 @@
 /** \file server/drivers/hd44780.c
- * LCDd \c hd44780 base driver module for Hitachi HD44780 based LCD displays.
+ * LCDd \c hd44780 "meta-driver" for Hitachi HD44780 based LCD displays.
  * This is a modular driver that readily allows support for multiple HD44780
  * connection types to be added in a flexible and maintainable manner.
  *

@@ -1,5 +1,8 @@
-/* 	This is the LCDproc driver for various serial VFD Devices
+/** \file server/drivers/serialVFD.c
+ * LCDd \c serialVFD driver for various serial VFD dvices.
+ */
 
+/*
 	Copyright (C) 2006 Stefan Herdler
 
 	This driver is based on wirz-sli.c, hd44780.c, drv_base.c and NoritakeVFD

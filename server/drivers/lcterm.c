@@ -1,8 +1,9 @@
-/*lcterm.c*/
-/*
-  This is the LCDproc driver for the "LCTerm" serial LCD terminal
-  from Helmut Neumark Elektronik, www.neumark.de
+/** \file server/drivers/lcterm.c
+ * LCDd \c lcterm driver for the LCTerm serial LCD terminal from Helmut Neumark Elektronik,
+ * www.neumark.de.
+ */
 
+/*
   Copyright (C) 2002  Michael Schwingen <michael@schwingen.org>
 
   This program is free software; you can redistribute it and/or modify

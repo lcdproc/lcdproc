@@ -1,3 +1,7 @@
+/** \file server/drivers/i2500vfd.c
+ * LCDd \c i2500vfd driver for Intra2net's Intranator 2500 VFD displays.
+ */
+
 //////////////////////////////////////////////////////////////////////////
 // This is a driver for the Intra2net Intranator 2500 VFD display       //
 //                                                                      //

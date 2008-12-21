@@ -1,6 +1,8 @@
+/** \file server/drivers/picolcd.c
+ * LCDd \c picolcd driver for the ini-Box.com USB LCD picoLCD displays.
+ */
+
 /*
- * picoLCD driver for lcdPROC
- *
  * (c) 2007 NitroSecurity, Inc.
  * Written by Gatewood Green <woody@nitrosecurity.com> or <woody@linif.org>
  * (c) 2007-2008 Peter Marschall - adapted coding style and reporting to LCDproc

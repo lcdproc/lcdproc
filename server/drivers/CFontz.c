@@ -1,3 +1,7 @@
+/** \file server/drivers/CFontz.c
+ * LCDd \c CFontz driver for the CFA632 & CFA634 displays by CrystalFontz, Inc.
+ */
+
 /*  This is the LCDproc driver for CrystalFontz devices (http://crystalfontz.com)
 
     Copyright (C) 2001 ????

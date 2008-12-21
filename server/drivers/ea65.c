@@ -1,3 +1,7 @@
+/** \file server/drivers/ea65.c
+ * LCDd \c ea65 driver for the VFD used in the Aopen XC Cube-AV EA65 media barebone.
+ */
+
 /*  This is the LCDproc driver for the vfd on the Aopen EA65, based on
     the Crystal Fontz driver.
 

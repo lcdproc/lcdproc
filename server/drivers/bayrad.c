@@ -1,3 +1,7 @@
+/** \file server/drivers/bayrad.c
+ * LCDd \c bayrad driver for BayRAD LCD modules by EMAC, Inc.
+ */
+
 /* Code file for BayRAD driver
  * for LCDproc LCD software
  * by Nathan Yawn, yawn@emacinc.com

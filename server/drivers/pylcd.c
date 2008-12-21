@@ -1,7 +1,8 @@
-/* pylcd.c */
+/** \file server/drivers/pylcd.c
+ * LCDd \c pyramid driver for the programmable LC displays from Pyramid.
+ */
 
 /*
- This is the LCDproc driver for the "pyramid" LCD device from Pyramid.
 
  Copyright (C) 2005 Silvan Marco Fin <silvan@kernelconcepts.de>
  Copyright (C) 2006 coresystems GmbH <info@coresystems.de>

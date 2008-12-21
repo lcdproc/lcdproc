@@ -1,3 +1,7 @@
+/** \file server/drivers/glcdlib.c
+ * LCDd \c glcdlib "meta-driver" for all displays supported by graphlcd-base.
+ */
+
 /*
  * This so-called "meta-driver" extends LCDproc's supported drivers by
  * all the drivers supported by graphlcd-base, which you can get from

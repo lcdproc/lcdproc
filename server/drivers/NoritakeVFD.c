@@ -1,5 +1,8 @@
-/*  This is the LCDproc driver for Noritake VFD Device CU20045SCPB-T28A
+/** \file server/drivers/NoritakeVFD.c
+ * LCDd \c NoritakeVFD driver for the Noritake VFD Device CU20045SCPB-T28A.
+ */
 
+/* 
     Copyright (C) 2005 Simon Funke
     Copyright (C) 2007 Richard Muratti ricacho@gmail.com
     Copyright (C) 2007 Peter Marschall

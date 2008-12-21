@@ -1,6 +1,8 @@
+/** \file server/drivers/shuttleVFD.c
+ * LCDd \c shuttleVFD driver for VFD displays found in various Shuttle XPC models.
+ */
+
 /*
- * ShuttleVFD driver
- *
  * Copyright (C) 2007 Thien Vu
  * 
  * This program is free software; you can redistribute it and/or modify

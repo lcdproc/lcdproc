@@ -1,3 +1,8 @@
+/** \file server/drivers/stv5730.c
+ * LCDd \c stv5730 driver for the STV5730A on-screen display chip
+ * connected to a parallel port.
+ */
+
 //////////////////////////////////////////////////////////////////////////
 // This is a driver for the STV5730A on-screen display chip in con-     //
 // junction with a parallel port interface. Check                       //

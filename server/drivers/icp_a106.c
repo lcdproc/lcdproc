@@ -1,4 +1,7 @@
-/*icp_a106.c*/
+/** \file server/drivers/icp_a106.c
+ * LCDd \c icp_a106 for the ICP A106 alarm/LCD board used in 19" rack cases by ICP.
+ */
+
 /*
   This is the LCDproc driver for the ICP A106 alarm/LCD board,
   used in 19" rack cases by ICP

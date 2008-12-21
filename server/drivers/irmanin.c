@@ -1,3 +1,7 @@
+/** \file server/drivers/irmanin.c
+ * LCDd \c irman input driver fora the IrMan IR remote control.
+ */
+
 /* irmanin.c - test/demo of LIBIR's to interface with lcdproc (LCDd) */
 /* Copyright (C) 1999 David Glaude loosely based on workmanir.c */
 /* workmanir.c - test/demo of LIBIR's high level command functions */

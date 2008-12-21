@@ -1,3 +1,7 @@
+/** \file server/drivers/glk.c
+ * LCDd \c glk driver for graphical displays by MatroxOrbital.
+ */
+
 /*
  * MatrixOrbital GLK Graphic Display Driver
  *
