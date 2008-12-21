@@ -82,8 +82,8 @@ static int process_configfile(char *cfgfile);
 #define DEFAULT_REPORTDEST	RPT_DEST_STDERR
 #define DEFAULT_REPORTLEVEL	RPT_WARNING
 
-/* list of modes to run */
-mode sequence[] =
+/* list of screen modes to run */
+ScreenMode sequence[] =
 {
 	// flags default ACTIVE will run by default
 	// longname    which on  off inv  timer   flags

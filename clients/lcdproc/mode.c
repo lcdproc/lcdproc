@@ -41,7 +41,7 @@ mode_close(void)
 }
 
 int
-update_screen(mode *m, int display)
+update_screen(ScreenMode *m, int display)
 {
 	static int status = -1;
 	int old_status = status;
