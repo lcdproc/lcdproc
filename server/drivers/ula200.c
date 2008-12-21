@@ -926,7 +926,8 @@ ula200_flush(Driver *drvthis)
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
  * \param icon     synbolic value representing the icon.
- * \return  Information whether the icon is handled here or needs to be handled by the server core.
+ * \retval 0       Icon has been successfully defined/written.
+ * \retval <0      Server core shall define/write the icon.
  */
 MODULE_EXPORT int
 ula200_icon (Driver *drvthis, int x, int y, int icon)
