@@ -2,8 +2,8 @@
 <title>The glcdlib Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-glcdlib chipset.
+This section talks about using LCDproc with LCD displays supported by
+graphlcd-base.
 </para>
 
 <sect2 id="glcdlib-connections">

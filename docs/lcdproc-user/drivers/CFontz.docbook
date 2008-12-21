@@ -2,11 +2,10 @@
 <title>The CFontz Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-CFontz chipset.
+This section talks about using LCDproc with the serial LCD displays of the
+CFA632 and CFA634 series by CrystalFontz, Inc.
 </para>
 
-<!-- ## CrystalFontz driver (for CF632 &amp; CF634) ## -->
 <sect2 id="CFontz-config">
 <title>Configuration in LCDd.conf</title>
 

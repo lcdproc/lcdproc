@@ -1,0 +1,81 @@
+<sect1 id="irtrans-howto">
+<title>The irtrans Driver</title>
+
+<sect2 id="itrans-general">
+<title>General</title>
+
+<para>
+The <code>irtrans</code> driver controls
+<ulink url="http://www.irtrans.de/en/main.php">IRTrans VFD</ulink>
+devices, that are preinstalled in cases such as the Ahanix MCE303.
+</para>
+
+<para>
+The IRTrans VFD sports a vacuum fluorescent display with 16x2 characters
+that connects to the computer using USB. Although the device is shipped
+with an IR remote control, <package>LCDproc</package>'s driver currently only supports 
+the display part of the device.
+</para>
+
+<para id="irtrans-irserver">
+In order to be able to use it, you have to get and install the IRTrans irserver package
+from <ulink url="http://www.irtrans.de/en/download/linux.php"></ulink>.
+</para>
+
+</sect2>
+
+<!-- ## IRTrans driver ## -->
+<sect2 id="irtrans-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="irtrans-config-section">
+<title>[irtrans]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Backlight</command> =
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
+      <arg choice="plain"><literal>yes</literal></arg>
+    </group>
+    </arg>
+  </term>
+  <listitem><para>
+    Tell whether te device has a backlight, or whether the backlight shall be used.
+    If not goven, it defaults to <literal><emphasis>no</emphasis></literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Hostname</command> =
+    <arg choice="plain"><replaceable>HOSTNAME_OR_IP-ADDRESS</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the hostname or IP address of the IRTrans device to connect to.
+    If not set or set, the default is <code>localhost</code>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size</command> =
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Select the display size [default: <literal>16x2</literal>]
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

@@ -2,8 +2,17 @@
 <title>The icp_a106 Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-icp_a106 chipset.
+This section talks about using LCDproc with the ICP A106 alarm/LCD board,
+used in 19" rack cases by ICP.
+</para>
+
+<!-- 20x2 characters, serial connection -->
+
+<para>
+Both LCD and alarm functions are accessed via one serial port, using
+separate commands. Unfortunately, the device runs at slow 1200bps and the
+LCD does not allow user-defined characters, so the bargraphs do not look
+very nice.
 </para>
 
 <!-- ## ICP A106 driver ## -->

@@ -22,7 +22,7 @@ svga chipset.
   <listitem><para>
     svgalib mode to use [default: <literal>G320x240x256</literal>]
     <replaceable>SCGALIB-MODE</replaceable> can be any legal mode string for svgalib.
-    See the <citerefentry><refentrytitle>cwsvgalib</refentrytitle>
+    See the <citerefentry><refentrytitle>svgalib</refentrytitle>
     <manvolnum>7</manvolnum></citerefentry> manual page for legal mode strings.
   </para></listitem>
 </varlistentry>
