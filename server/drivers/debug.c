@@ -47,15 +47,16 @@
 #define DEFAULT_OFFBRIGHTNESS	250
 
 
+/** private data for the \c debug driver */
 typedef struct debug_private_data {
-	char *framebuf;
-	int width;
-	int height;
-	int cellwidth;
-	int cellheight;
-	int contrast;
-	int brightness;
-	int offbrightness;
+	char *framebuf;		/**< frame buffer */
+	int width;		/**< display width in characters */
+	int height;		/**< display height in characters */
+	int cellwidth;		/**< character cell width */
+	int cellheight;		/**< character cell height */
+	int contrast;		/**< current contrast */
+	int brightness;		/**< current brightness (for backlight on) */
+	int offbrightness;	/**< current brightness (for backlight off) */
 } PrivateData;
 
 
@@ -70,8 +71,8 @@ MODULE_EXPORT char *symbol_prefix = "debug_";
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 debug_init (Driver *drvthis)
@@ -132,7 +133,7 @@ debug_close (Driver *drvthis)
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is wide.
+ * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
 debug_width (Driver *drvthis)
@@ -148,7 +149,7 @@ debug_width (Driver *drvthis)
 /**
  * Return the display height in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is high.
+ * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
 debug_height (Driver *drvthis)
@@ -164,7 +165,7 @@ debug_height (Driver *drvthis)
 /**
  * Return the width of a character in pixels.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel columns a character cell is wide.
+ * \return         Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
 debug_cellwidth (Driver *drvthis)
@@ -178,7 +179,7 @@ debug_cellwidth (Driver *drvthis)
 /**
  * Return the height of a character in pixels.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of pixel lines a character cell is high.
+ * \return         Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
 debug_cellheight (Driver *drvthis)
@@ -400,7 +401,7 @@ debug_set_char (Driver *drvthis, int n, char *dat)
  * This is only the locally stored contrast, the contrast value
  * cannot be retrieved from the LCD.
  * \param drvthis  Pointer to driver structure.
- * \return  Stored contrast in promille.
+ * \return         Stored contrast in promille.
  */
 MODULE_EXPORT int
 debug_get_contrast (Driver *drvthis)
@@ -433,7 +434,7 @@ debug_set_contrast (Driver *drvthis, int promille)
  * Retrieve brightness.
  * \param drvthis  Pointer to driver structure.
  * \param state    Brightness state (on/off) for which we want the value.
- * \return Stored brightness in promille.
+ * \return         Stored brightness in promille.
  */
 MODULE_EXPORT int
 debug_get_brightness(Driver *drvthis, int state)
@@ -446,9 +447,9 @@ debug_get_brightness(Driver *drvthis, int state)
 
 /**
  * Set on/off brightness.
- * \param drvthis  Pointer to driver structure.
- * \param state    Brightness state (on/off) for which we want to store the value.
- * \param promille New brightness in promille.
+ * \param drvthis   Pointer to driver structure.
+ * \param state     Brightness state (on/off) for which we want to store the value.
+ * \param promille  New brightness in promille.
  */
 MODULE_EXPORT void
 debug_set_brightness(Driver *drvthis, int state, int promille)
@@ -485,7 +486,8 @@ debug_backlight (Driver *drvthis, int on)
 /**
  * Handle input from keyboard.
  * \param drvthis  Pointer to driver structure.
- * \return  String representation of the key.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key
  */
 MODULE_EXPORT const char *
 debug_get_key (Driver *drvthis)
@@ -500,7 +502,7 @@ debug_get_key (Driver *drvthis)
 /**
  * Provide some information about this driver.
  * \param drvthis  Pointer to driver structure.
- * \return  Constant string with information.
+ * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
 debug_get_info(Driver *drvthis)

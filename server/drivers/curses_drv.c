@@ -104,7 +104,7 @@ Different implementations of (n)curses available on:
 #define DEFAULT_BACKGROUND_COLOR COLOR_BLUE
 
 
-/** private data structure for the \c curses driver */
+/** private data for the \c curses driver */
 typedef struct curses_private_data {
 	WINDOW *win;
 
@@ -141,8 +141,8 @@ static void curses_restore_screen (Driver *drvthis);
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 curses_init (Driver *drvthis)
@@ -322,7 +322,7 @@ curses_close (Driver *drvthis)
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is wide.
+ * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
 curses_width (Driver *drvthis)
@@ -335,7 +335,7 @@ curses_width (Driver *drvthis)
 /**
  * Return the display height in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is high.
+ * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
 curses_height (Driver *drvthis)
@@ -625,7 +625,8 @@ curses_flush (Driver *drvthis)
 /**
  * Handle input from keyboard.
  * \param drvthis  Pointer to driver structure.
- * \return  String representation of the key.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key.
  */
 MODULE_EXPORT const char *
 curses_get_key (Driver *drvthis)
@@ -667,7 +668,7 @@ curses_get_key (Driver *drvthis)
 /**
  * Provide some information about this driver.
  * \param drvthis  Pointer to driver structure.
- * \return  Constant string with information.
+ * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
 text_get_info (Driver *drvthis)

@@ -37,11 +37,11 @@
 //#include "drv_base.h"
 
 
-/* private data structure for the \c text driver */
+/** private data for the \c text driver */
 typedef struct text_private_data {
-	int width;
-	int height;
-	char *framebuf;
+	int width;		/**< display width in characters */
+	int height;		/**< display height in characters */
+	char *framebuf;		/**< fram buffer */
 } PrivateData;
 
 
@@ -55,8 +55,8 @@ MODULE_EXPORT char *symbol_prefix = "text_";
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 text_init (Driver *drvthis)
@@ -129,7 +129,7 @@ text_close (Driver *drvthis)
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
- * \return  Number of characters the display is wide.
+ * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
 text_width (Driver *drvthis)
@@ -141,8 +141,9 @@ text_width (Driver *drvthis)
 
 
 /**
- * Clear the screen.
+ * Return the display height in characters.
  * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
 text_height (Driver *drvthis)
@@ -274,7 +275,7 @@ text_backlight (Driver *drvthis, int on)
 /**
  * Provide some information about this driver.
  * \param drvthis  Pointer to driver structure.
- * \return  Constant string with information.
+ * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
 text_get_info (Driver *drvthis)
