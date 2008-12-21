@@ -62,7 +62,7 @@ t6963_LDADD =        libLCD.a
 tyan_LDADD =         libLCD.a libbignum.a
 ula200_LDADD =       libLCD.a @LIBFTDI_LIBS@
 sli_LDADD =          libLCD.a
-xosd_LDADD =         @LIBXOSD@
+xosd_LDADD =         @LIBXOSD@ libbignum.a
 i2500vfd_LDADD =     libLCD.a @LIBFTDI_LIBS@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
@@ -112,7 +112,7 @@ text_SOURCES =       lcd.h text.h text.c report.h
 tyan_SOURCES =       lcd.h lcd_lib.h tyan_lcdm.h tyan_lcdm.c report.h adv_bignum.h
 ula200_SOURCES =     lcd.h lcd_lib.h ula200.h ula200.c report.h
 sli_SOURCES =        lcd.h lcd_lib.h wirz-sli.h wirz-sli.c report.h
-xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h
+xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h adv_bignum.h
 i2500vfd_SOURCES =   lcd.h i2500vfd.c i2500vfd.h i2500vfdfm.c i2500vfdfm.h report.h
 irtrans_SOURCES =    lcd.h irtrans.c irtrans.h irtrans_network.h irtrans_remote.h irtrans_errcode.h report.h
 

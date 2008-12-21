@@ -43,6 +43,7 @@
 #include "lcd.h"
 #include "report.h"
 #include "xosdlib_drv.h"
+#include "adv_bignum.h"
 
 
 static char icon_char = '@';
@@ -55,7 +56,10 @@ MODULE_EXPORT char *symbol_prefix = "xosdlib_drv_";
 
 
 /**
- * Init driver
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0   Success.
+ * \retval <0  Error.
  */
 MODULE_EXPORT int
 xosdlib_drv_init (Driver *drvthis)
@@ -199,7 +203,8 @@ xosdlib_drv_init (Driver *drvthis)
 
 
 /**
- * Close down driver
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 xosdlib_drv_close (Driver *drvthis)
@@ -228,7 +233,9 @@ xosdlib_drv_close (Driver *drvthis)
 
 
 /**
- * Return width
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is wide.
  */
 MODULE_EXPORT int
 xosdlib_drv_width (Driver *drvthis)
@@ -240,7 +247,9 @@ xosdlib_drv_width (Driver *drvthis)
 
 
 /**
- * Return height
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of characters the display is high.
  */
 MODULE_EXPORT int
 xosdlib_drv_height (Driver *drvthis)
@@ -252,7 +261,8 @@ xosdlib_drv_height (Driver *drvthis)
 
 
 /**
- * Clear screen
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 xosdlib_drv_clear (Driver *drvthis)
@@ -266,7 +276,8 @@ xosdlib_drv_clear (Driver *drvthis)
 
 
 /**
- * Flush framebuffer to screen
+ * Flush data on screen to the display.
+ * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
 xosdlib_drv_flush (Driver *drvthis)
@@ -288,8 +299,12 @@ xosdlib_drv_flush (Driver *drvthis)
 
 
 /**
- * Prints a string on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (p->width,p->height).
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
  */
 MODULE_EXPORT void
 xosdlib_drv_string (Driver *drvthis, int x, int y, const char string[])
@@ -313,8 +328,12 @@ xosdlib_drv_string (Driver *drvthis, int x, int y, const char string[])
 
 
 /**
- * Prints a character on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (p->width,p->height).
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
  */
 MODULE_EXPORT void
 xosdlib_drv_chr (Driver *drvthis, int x, int y, char c)
@@ -339,36 +358,54 @@ xosdlib_drv_chr (Driver *drvthis, int x, int y, char c)
 
 
 /**
- * Writes a big number, but not.  A bit like the curses driver.
+ * Get total number of custom characters available.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of custom characters (always NUM_CCs).
  */
-MODULE_EXPORT void
-xosdlib_drv_old_num (Driver *drvthis, int x, int num)
+MODULE_EXPORT int
+xosdlib_drv_get_free_chars (Driver *drvthis)
 {
-	int y, dx;
-	char c;
+	//PrivateData *p = drvthis->private_data;
 
-	debug(RPT_DEBUG, "%s(%p, %d, %d)", __FUNCTION__, drvthis, x, num);
-
-	if ((num < 0) || (num > 10))
-		return;
-
-	c = (num >= 10) ? ':' : ('0' + num);
-
-	for (y = 1; y < 5; y++)
-		for (dx = 0; dx < 3; dx++)
-			xosdlib_drv_chr(drvthis, x + dx, y, c);
+	  return 0;
 }
 
 
 /**
- * Draws a vertical bar; erases entire column onscreen.
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
  */
 MODULE_EXPORT void
-xosdlib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
+xosdlib_drv_num(Driver *drvthis, int x, int num)
+{
+	//PrivateData *p = drvthis->private_data;
+	int do_init = 1;
+
+        if ((num < 0) || (num > 10))
+                return;
+
+        // Lib_adv_bignum does everything needed to show the bignumbers.
+        lib_adv_bignum(drvthis, x, num, 0, do_init);
+}
+
+
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
+MODULE_EXPORT void
+xosdlib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	int pos;
 
-	debug(RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, options);
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
@@ -381,14 +418,20 @@ xosdlib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 
 
 /**
- * Draws a horizontal bar to the right.
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-xosdlib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern)
+xosdlib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	int pos;
 
-	debug(RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, pattern);
+	debug(RPT_DEBUG, "%s(%p, %d, %d, %d, %d, %02x)", __FUNCTION__, drvthis, x, y, len, promille, options);
 
 	for (pos = 0; pos < len; pos++) {
 		if (2 * pos < ((long) promille * len / 500 + 1)) {
@@ -401,8 +444,11 @@ xosdlib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int patt
 
 
 /**
- * Returns current contrast (in promille)
- * This is only the locally stored contrast.
+ * Get current display contrast.
+ * This is only the locally stored contrast, the contrast value
+ * cannot be retrieved from the display.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Stored contrast in promille.
  */
 MODULE_EXPORT int
 xosdlib_drv_get_contrast (Driver *drvthis)
@@ -414,7 +460,12 @@ xosdlib_drv_get_contrast (Driver *drvthis)
 
 
 /**
- *  Changes screen contrast (in promille)
+ * Change display contrast.
+ * \note 
+ * This is currently not implemented.
+ *
+ * \param drvthis  Pointer to driver structure.
+ * \param promille New contrast value in promille.
  */
 MODULE_EXPORT void
 xosdlib_drv_set_contrast (Driver *drvthis, int promille)
@@ -426,7 +477,7 @@ xosdlib_drv_set_contrast (Driver *drvthis, int promille)
 	if (promille < 0 || promille > 1000)
 		return;
 
-	/* store the software value since there is not get */
+	/* store the software value since there is no way to get it from the display */
 	p->contrast = promille;
 
 	/* map range [0, 1000] to [0, 255] */
@@ -437,7 +488,10 @@ xosdlib_drv_set_contrast (Driver *drvthis, int promille)
 
 
 /**
- * Retrieves brightness (in promille)
+ * Retrieve brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return Stored brightness in promille.
  */
 MODULE_EXPORT int
 xosdlib_drv_get_brightness(Driver *drvthis, int state)
@@ -449,7 +503,10 @@ xosdlib_drv_get_brightness(Driver *drvthis, int state)
 
 
 /**
- * Sets on/off brightness (in promille)
+ * Set on/off brightness.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want to store the value.
+ * \param promille New brightness in promille.
  */
 MODULE_EXPORT void
 xosdlib_drv_set_brightness(Driver *drvthis, int state, int promille)
@@ -471,8 +528,12 @@ xosdlib_drv_set_brightness(Driver *drvthis, int state, int promille)
 
 
 /**
- * Sets the backlight on or off.
- * The hardware support any value between 0 and 100.
+ * Turn the display backlight on or off.
+ * \note
+ * This is currently not implemented.
+ *
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
  */
 MODULE_EXPORT void
 xosdlib_drv_backlight (Driver *drvthis, int on)
