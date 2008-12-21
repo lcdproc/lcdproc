@@ -636,7 +636,7 @@ MODULE_EXPORT int  pyramid_cellheight (Driver *drvthis)
 /**
  * Set up vertical bars.
  * \todo
- * Get rid of it bay using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ * Get rid of it by using pixel-row based logic as e.g. in the \c CFontzPackage driver.
  */
 static void
 pyramid_init_vbar (Driver *drvthis)
@@ -729,7 +729,7 @@ pyramid_init_vbar (Driver *drvthis)
 /**
  * Set up horizontal bars.
  * \todo
- * Get rid of it bay using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ * Get rid of it by using pixel-row based logic as e.g. in the \c CFontzPackage driver.
  */
 static void
 pyramid_init_hbar (Driver *drvthis)
