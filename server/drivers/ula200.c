@@ -971,9 +971,10 @@ ula200_icon (Driver *drvthis, int x, int y, int icon)
 
 
 /**
- * Get next key from the KeyRing.
+ * Get key from the device.
  * \param drvthis  Pointer to driver structure.
- * \return  String representation of the key.
+ * \return         String representation of the key;
+ *                 \c NULL for nothing available / unmapped key.
  */
 MODULE_EXPORT const char *
 ula200_get_key (Driver *drvthis)

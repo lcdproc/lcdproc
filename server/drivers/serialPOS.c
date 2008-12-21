@@ -928,9 +928,9 @@ serialPOS_cursor (Driver *drvthis, int x, int y, int state)
 /**
  * Get key from a pass-through port of the POS display.
  * \param drvthis  Pointer to driver structure.
- * \return  String representation of the key.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key.
  */
-
 MODULE_EXPORT const char *
 serialPOS_get_key (Driver *drvthis)
 {

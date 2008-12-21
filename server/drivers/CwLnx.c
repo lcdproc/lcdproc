@@ -1384,9 +1384,10 @@ CwLnx_string(Driver *drvthis, int x, int y, const char string[])
 
 
 /**
- * Get next key from the KeyRing.
+ * Get key from the device.
  * \param drvthis  Pointer to driver structure.
- * \return  String representation of the key.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key.
  */
 MODULE_EXPORT const char *
 CwLnx_get_key(Driver *drvthis)

@@ -1219,9 +1219,10 @@ HD44780_icon(Driver *drvthis, int x, int y, int icon)
 
 
 /**
- * Get next key from the key panel connected to the display.
+ * Get key from the key panel connected to the display.
  * \param drvthis  Pointer to driver structure.
- * \return  String representation of the key.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key.
  */
 MODULE_EXPORT const char *
 HD44780_get_key(Driver *drvthis)

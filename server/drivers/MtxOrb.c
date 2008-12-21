@@ -1427,7 +1427,8 @@ MtxOrb_cursor (Driver *drvthis, int x, int y, int state)
 /**
  * Get key from the LCD/VFD.
  * \param drvthis  Pointer to driver structure.
- * \return  String representation of the key.
+ * \return         String representation of the key.
+ *                 \c NULL if nothing available / unmapped key.
  *
  * \todo Recover the code for I2C connectivity to MtxOrb
  * and don't query the LCD if it does not support keypad.
