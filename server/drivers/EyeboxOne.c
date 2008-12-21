@@ -1,6 +1,6 @@
 /** \file server/drivers/EyeboxOne.c
  * LCDd \c EyeboxOne driver for the display used in the Eyebox ONE server
- * by Rightvision.
+ * by RightVision.
  */
 
 /*  This is the LCDproc driver for EyeboxOne devices
@@ -66,17 +66,18 @@
 #define LED_ORANGE 2
 #define LED_GREEN 3
 
-typedef struct p {
+/** private data for the \c EyeBoxOne driver */
+typedef struct EyeboxOne_private_data {
 	int def[9];
 	int use[9];
-	int backlight_state;	/* static data from EyeboxOne_backlight */
-	int width;
-	int height;
-	char *framebuf;		/* Frame buffer */
-	char *old;		/* Current on screen frame buffer */
-	int widthBYheight;	/* Avoid computing width * height frequently */
-	int clear;		/* Control when the LCD is cleared */
-	int fd;			/* The LCD file descriptor */
+	int backlight_state;	/**< static data from EyeboxOne_backlight */
+	int width;		/**< display width in characters */
+	int height;		/**< display height in characters */
+	char *framebuf;		/**< frame buffer */
+	char *old;		/**< current on screen frame buffer */
+	int widthBYheight;	/**< avoid computing width * height frequently */
+	int clear;		/**< control when the LCD is cleared */
+	int fd;			/**< display file descriptor */
 	int backlightenabled;
 	int cursorenabled;
 	char left_key;
@@ -86,9 +87,9 @@ typedef struct p {
 	char enter_key;
 	char escape_key;
 	int keypad_test_mode;
-	int cellwidth;
-	int cellheight;
-	char info[255]; 
+	int cellwidth;		/**< character cell width */
+	int cellheight;		/**< character cell height */
+	char info[255]; 	/**< info string contents */
 	/*	LibData *libdata;		*/
 	/* Private Data of the new library: Work in progress */
 } PrivateData;
