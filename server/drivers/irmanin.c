@@ -36,6 +36,20 @@
 #include "irman.h"
 
 
+/** mapping between IrMan code names and LCDd key names */
+typedef struct _codemap {
+	const char *irman;	/**< IrMan code name */
+	const char *lcdproc;	/**< LCDproc key name */
+} CodeMap;
+
+/** private data for the \c irman driver */
+typedef struct irmanin_private_data {
+	char device[256];	/**< IrMan device name */
+	char config[256];	/**< IrMan config file */
+	char *portname;		/**< IrMan port name */
+} PrivateData;
+
+
 CodeMap codemap[] = {
 	{ "",  "" },	/* dummy: ir_register_command() needs offset > 0 */
 	{ "lcdproc-Up",     "Up"     },
