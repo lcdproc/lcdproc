@@ -36,8 +36,8 @@ void lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value);
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval -1  Error.
+ * \retval 0       Success.
+ * \retval -1      Error.
  */
 int
 hd_init_lcd2usb(Driver *drvthis)
@@ -121,7 +121,7 @@ lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 
 
 /**
- * Turn the LCD backlight on or off.
+ * Turn display backlight on or off.
  * \param p      Pointer to driver's private data structure.
  * \param state  New backlight status.
  */
@@ -138,7 +138,7 @@ lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
 
 
 /**
- * Change LCD contrast.
+ * Change display contrast.
  * \param p      Pointer to driver's private data structure.
  * \param value  New contrast value (one byte).
  */
@@ -179,7 +179,7 @@ lcd2usb_set_brightness(Driver *drvthis, int state, int promille)
 /**
  * Read keypress.
  * \param p  Pointer to driver's private data structure.
- * \return  Bitmap of the pressed keys.
+ * \return   Bitmap of the pressed keys.
  */
 unsigned char
 lcd2usb_HD44780_scankeypad(PrivateData *p)

@@ -92,7 +92,13 @@ void lcdwinamp_HD44780_output(PrivateData *p, int data);
 
 static const unsigned char EnMask[] = { EN1, EN2, EN3 };
 
-// initialise the driver
+
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval -1      Error.
+ */
 int
 hd_init_winamp(Driver *drvthis)
 {
@@ -125,7 +131,14 @@ hd_init_winamp(Driver *drvthis)
 	return 0;
 }
 
-// lcdwinamp_HD44780_senddata
+
+/**
+ * Send data or commands to the display.
+ * \param p          Pointer to driver's private data structure.
+ * \param displayID  ID of the display (or 0 for all) to send data to.
+ * \param flags      Defines whether to end a command or data.
+ * \param ch         The value to send.
+ */
 void
 lcdwinamp_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
@@ -170,6 +183,12 @@ lcdwinamp_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned cha
 	// 10 nS data hold time provided by the length of ISA write for EN
 }
 
+
+/**
+ * Turn display backlight on or off.
+ * \param p      Pointer to driver's private data structure.
+ * \param state  New backlight status.
+ */
 void lcdwinamp_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	p->backlight_bit = (state?0:nSEL);
@@ -177,6 +196,13 @@ void lcdwinamp_HD44780_backlight(PrivateData *p, unsigned char state)
 	port_out(p->port + 2, p->backlight_bit ^ OUTMASK);
 }
 
+
+/**
+ * Read keypress.
+ * \param p      Pointer to driver's private data structure.
+ * \param YData  ???
+ * \return       Bitmap of the pressed keys.
+ */
 unsigned char lcdwinamp_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 {
 	unsigned char readval;
@@ -198,6 +224,12 @@ unsigned char lcdwinamp_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 		((readval & ACK) / ACK )) & ~p->stuckinputs;	/* pin 10 */
 }
 
+
+/**
+ * Set output port.
+ * \param p      Pointer to driver's private data structure.
+ * \param data   Value the output port shall be set to.
+ */
 void lcdwinamp_HD44780_output(PrivateData *p, int data)
 {
 	// Setup data bus

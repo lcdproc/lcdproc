@@ -64,8 +64,9 @@ void lcdserLpt_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigne
 void lcdserLpt_HD44780_backlight(PrivateData *p, unsigned char state);
 
 unsigned char lcdserLpt_HD44780_scankeypad(PrivateData *p);
-void rawshift(PrivateData *p, unsigned char r);
-void shiftreg(PrivateData *p, unsigned char displayID, unsigned char r);
+
+static void rawshift(PrivateData *p, unsigned char r);
+static void shiftreg(PrivateData *p, unsigned char displayID, unsigned char r);
 
 #define RS       32
 #define LCDDATA   8
@@ -73,7 +74,13 @@ void shiftreg(PrivateData *p, unsigned char displayID, unsigned char r);
 #define EN1       4
 #define EN2      32
 
-// Initialisation
+
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval -1      Error.
+ */
 int
 hd_init_serialLpt(Driver *drvthis)
 {
@@ -112,6 +119,14 @@ hd_init_serialLpt(Driver *drvthis)
 	return 0;
 }
 
+
+/**
+ * Send data or commands to the display.
+ * \param p          Pointer to driver's private data structure.
+ * \param displayID  ID of the display (or 0 for all) to send data to.
+ * \param flags      Defines whether to end a command or data.
+ * \param ch         The value to send.
+ */
 void
 lcdserLpt_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
@@ -138,6 +153,12 @@ lcdserLpt_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned cha
 	port_out(p->port, p->backlight_bit);
 }
 
+
+/**
+ * Turn display backlight on or off.
+ * \param p      Pointer to driver's private data structure.
+ * \param state  New backlight status.
+ */
 void
 lcdserLpt_HD44780_backlight(PrivateData *p, unsigned char state)
 {
@@ -148,6 +169,12 @@ lcdserLpt_HD44780_backlight(PrivateData *p, unsigned char state)
 	port_out(p->port, p->backlight_bit);
 }
 
+
+/**
+ * Read keypress.
+ * \param p  Pointer to driver's private data structure.
+ * \return   Bitmap of the pressed keys.
+ */
 unsigned char lcdserLpt_HD44780_scankeypad(PrivateData *p)
 {
 	// Unfortunately just bit shifting does not work with the 2-wire version...
@@ -258,7 +285,7 @@ unsigned char lcdserLpt_HD44780_scankeypad(PrivateData *p)
 }
 
 /* this function sends r out onto the shift register */
-void
+static void
 rawshift(PrivateData *p, unsigned char r)
 {
 	int i;
@@ -270,7 +297,7 @@ rawshift(PrivateData *p, unsigned char r)
 }
 
 // enableLines = value on parallel port to toggle the correct display
-void
+static void
 shiftreg(PrivateData *p, unsigned char enableLines, unsigned char r)
 {
 	rawshift(p, r | 0x80);			// highest bit always set to 1 for Clear for 2-wire version

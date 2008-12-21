@@ -114,10 +114,9 @@ int uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode);
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval -1  Error.
+ * \retval 0       Success.
+ * \retval -1      Error.
  */
-
 int
 hd_init_uss720(Driver *drvthis)
 {
@@ -248,6 +247,12 @@ uss720_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 	uss720_set_1284_register(p->usbHandle, ControlRegAdr, portControl ^ OUTMASK);
 }
 
+
+/**
+ * Turn display backlight on or off.
+ * \param p      Pointer to driver's private data structure.
+ * \param state  New backlight status.
+ */
 void
 uss720_HD44780_backlight(PrivateData *p, unsigned char state)
 {
@@ -255,6 +260,10 @@ uss720_HD44780_backlight(PrivateData *p, unsigned char state)
 }
 
 
+/**
+ * Close the driver (do necessary clean-up).
+ * \param p  Pointer to driver's private data structure.
+ */
 void
 uss720_HD44780_close(PrivateData *p)
 {
@@ -267,8 +276,8 @@ uss720_HD44780_close(PrivateData *p)
 
 /**
  * Pause as needed (= a long time).
- * \param drvthis   Pointer to driver structure.
- * \param value     pause duration value (integer).
+ * \param p      Pointer to driver's private data structure.
+ * \param usecs  Pause duration.
  */
 static void
 uss720_HD44780_uPause(PrivateData *p, int usecs)
@@ -289,11 +298,11 @@ uss720_get_1284_register(usb_dev_handle *usbHandle, unsigned int regIndex, unsig
 	res = usb_control_msg(usbHandle,
 		/* bmRequestType */ 0xc0,/*USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,*/
 		/* bRequest      */ 3,
-        /* wValue        */ (unsigned int)regIndex<<8,
-        /* wIndex        */ 0,
-        /* Data          */ (char *)regData,
-        /* wLength       */ 7,
-                            10000 );
+	        /* wValue        */ (unsigned int)regIndex<<8,
+        	/* wIndex        */ 0,
+	        /* Data          */ (char *)regData,
+        	/* wLength       */ 7,
+                	            10000 );
 	
 	if (res) {
 		
@@ -311,11 +320,11 @@ uss720_set_1284_register(usb_dev_handle *usbHandle, unsigned int regAddress, uns
 	return usb_control_msg(usbHandle,
 		/* bmRequestType */ 0x40,/*USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,*/
 		/* bRequest      */ 4,
-        /* wValue        */ ((unsigned int)regAddress<<8 | (unsigned int) value),
-        /* wIndex        */ 0,
-        /* Data          */ NULL,
-        /* wLength       */ 0,
-                            10000 );
+	        /* wValue        */ ((unsigned int)regAddress<<8 | (unsigned int) value),
+        	/* wIndex        */ 0,
+	        /* Data          */ NULL,
+        	/* wLength       */ 0,
+                	            10000 );
 }
 
 

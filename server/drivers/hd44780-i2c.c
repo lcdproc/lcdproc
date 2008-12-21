@@ -108,7 +108,13 @@ i2c_out(PrivateData *p, unsigned char val)
 
 #define DEFAULT_DEVICE		"/dev/i2c-0"
 
-// initialisation function
+
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval -1      Error.
+ */
 int
 hd_init_i2c(Driver *drvthis)
 {
@@ -209,7 +215,14 @@ hd_init_i2c(Driver *drvthis)
 	return 0;
 }
 
-// i2c_HD44780_senddata
+
+/**
+ * Send data or commands to the display.
+ * \param p          Pointer to driver's private data structure.
+ * \param displayID  ID of the display (or 0 for all) to send data to.
+ * \param flags      Defines whether to end a command or data.
+ * \param ch         The value to send.
+ */
 void
 i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
@@ -243,6 +256,12 @@ i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flag
 	i2c_out(p, portControl | l);
 }
 
+
+/**
+ * Turn display backlight on or off.
+ * \param p      Pointer to driver's private data structure.
+ * \param state  New backlight status.
+ */
 void i2c_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	p->backlight_bit = ((!p->have_backlight||state) ? 0 : BL);

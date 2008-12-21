@@ -60,7 +60,12 @@ static void setLIS2Fans(int fd, int fan1, int fan2, int fan3, int fan4);
 static void writeChar(int fd, unsigned char code);
 
 
-// initialise the driver
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval -1      Error.
+ */
 int hd_init_lis2(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
@@ -127,6 +132,13 @@ int hd_init_lis2(Driver *drvthis)
 }
 
 
+/**
+ * Send data or commands to the display.
+ * \param p          Pointer to driver's private data structure.
+ * \param displayID  ID of the display (or 0 for all) to send data to.
+ * \param flags      Defines whether to end a command or data.
+ * \param ch         The value to send.
+ */
 void lis2_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 static int mode = 0;
@@ -288,8 +300,8 @@ static void setLIS2CustomCharRow(int fd, unsigned char custom, unsigned char row
  * \param fd     File handle to read from.
  * \param temps  Pointer to pre-allocated array to store the temperatures.
  * \param num    Length of temperature array.
- * \retval 0  Error.
- * \retval 1  Temperatures read successfully.
+ * \retval 0     Error.
+ * \retval 1     Temperatures read successfully.
  */
 static char readMPlayTemps(int fd, int *temps, int num)
 {

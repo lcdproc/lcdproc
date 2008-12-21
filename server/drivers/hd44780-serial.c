@@ -128,7 +128,13 @@ void serial_HD44780_backlight(PrivateData *p, unsigned char state);
 unsigned char serial_HD44780_scankeypad(PrivateData *p);
 void serial_HD44780_close(PrivateData *p);
 
-// initialize the driver
+
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval -1      Error.
+ */
 int
 hd_init_serial(Driver *drvthis)
 {
@@ -235,7 +241,14 @@ hd_init_serial(Driver *drvthis)
 	return 0;
 }
 
-// serial_HD44780_senddata
+
+/**
+ * Send data or commands to the display.
+ * \param p          Pointer to driver's private data structure.
+ * \param displayID  ID of the display (or 0 for all) to send data to.
+ * \param flags      Defines whether to end a command or data.
+ * \param ch         The value to send.
+ */
 void
 serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
@@ -260,6 +273,12 @@ serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 	lastdisplayID = displayID;
 }
 
+
+/**
+ * Turn display backlight on or off.
+ * \param p      Pointer to driver's private data structure.
+ * \param state  New backlight status.
+ */
 void
 serial_HD44780_backlight(PrivateData *p, unsigned char state)
 {
@@ -279,6 +298,12 @@ serial_HD44780_backlight(PrivateData *p, unsigned char state)
 	}
 }
 
+
+/**
+ * Read keypress.
+ * \param p  Pointer to driver's private data structure.
+ * \return   Bitmap of the pressed keys.
+ */
 unsigned char
 serial_HD44780_scankeypad(PrivateData *p)
 {
@@ -298,6 +323,11 @@ serial_HD44780_scankeypad(PrivateData *p)
 	return '\0';
 }
 
+
+/**
+ * Close the driver (do necessary clean-up).
+ * \param p  Pointer to driver's private data structure.
+ */
 void
 serial_HD44780_close(PrivateData *p)
 {

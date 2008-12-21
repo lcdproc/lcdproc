@@ -42,8 +42,8 @@ void bwct_usb_HD44780_close(PrivateData *p);
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval -1  Error.
+ * \retval 0       Success.
+ * \retval -1      Error.
  */
 int
 hd_init_bwct_usb(Driver *drvthis)

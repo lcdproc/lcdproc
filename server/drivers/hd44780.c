@@ -131,8 +131,8 @@ static int parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[
  * Initialize common part of drive & call sub-initialization
  * routine depending on connection type.
  * \param drvthis  Pointer to driver structure.
- * \retval 0   Success.
- * \retval <0  Error.
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int
 HD44780_init(Driver *drvthis)

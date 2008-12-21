@@ -35,7 +35,12 @@ void ethlcd_HD44780_close(PrivateData *p);
 void ethlcd_HD44780_uPause(PrivateData *p, int usecs) {}
 
 
-// initialisation function
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval -1      Error.
+ */
 int hd_init_ethlcd(Driver *drvthis)
 {
 	char hostname[_POSIX_HOST_NAME_MAX];
@@ -82,7 +87,13 @@ int hd_init_ethlcd(Driver *drvthis)
 }
 
 
-// ethlcd_HD44780_senddata
+/**
+ * Send data or commands to the display.
+ * \param p          Pointer to driver's private data structure.
+ * \param displayID  ID of the display (or 0 for all) to send data to.
+ * \param flags      Defines whether to end a command or data.
+ * \param ch         The value to send.
+ */
 void ethlcd_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
 	static char buff[2];
@@ -98,6 +109,11 @@ void ethlcd_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned c
 }
 
 
+/**
+ * Read keypress.
+ * \param p  Pointer to driver's private data structure.
+ * \return   Bitmap of the pressed keys.
+ */
 unsigned char ethlcd_HD44780_scankeypad(PrivateData *p)
 {
 	unsigned char readval;
@@ -127,6 +143,11 @@ unsigned char ethlcd_HD44780_scankeypad(PrivateData *p)
 }
 
 
+/**
+ * Turn the LCD backlight on or off.
+ * \param p      Pointer to driver's private data structure.
+ * \param state  New backlight status.
+ */
 void ethlcd_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	static char buff[2];
@@ -148,6 +169,10 @@ void ethlcd_HD44780_backlight(PrivateData *p, unsigned char state)
 }
 
 
+/**
+ * Close the driver (do necessary clean-up).
+ * \param p  Pointer to driver's private data structure.
+ */
 void ethlcd_HD44780_close(PrivateData *p)
 {
 	sock_close(p->sock);
