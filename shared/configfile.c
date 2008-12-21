@@ -25,46 +25,48 @@
 #include "shared/report.h"
 
 
-typedef struct key {
-	char *name;
-	char *value;
-	struct key *next_key;
-} key;
+/** configuration key */
+typedef struct _config_key {
+	char *name;			/**< name of the config key */
+	char *value;			/**< value of the config key */
+	struct _config_key *next_key;	/**< pointer to next config key */
+} ConfigKey;
 
-typedef struct section {
-	char *name;
-	key *first_key;
-	struct section *next_section;
-} section;
+/** configuration section */
+typedef struct _config_section {
+	char *name;			/**< name of the config section */
+	ConfigKey *first_key;		/**< config keys in the config section */
+	struct _config_section *next_section;	/**< pointer to next config section */
+} ConfigSection;
 
 
-static section *first_section = NULL;
+static ConfigSection *first_section = NULL;
 /* Yes there is a static. It's C after all :)*/
 
 
-static section *find_section(const char *sectionname);
-static section *add_section(const char *sectionname);
-static key *find_key(section *s, const char *keyname, int skip);
-static key *add_key(section *s, const char *keyname, const char *value);
+static ConfigSection *find_section(const char *sectionname);
+static ConfigSection *add_section(const char *sectionname);
+static ConfigKey *find_key(ConfigSection *s, const char *keyname, int skip);
+static ConfigKey *add_key(ConfigSection *s, const char *keyname, const char *value);
 static char get_next_char_f(FILE *f);
 #if defined(LCDPROC_CONFIG_READ_STRING)
-static int process_config(section **current_section, char(*get_next_char)(), const char *source_descr, FILE *f);
+static int process_config(ConfigSection **current_section, char(*get_next_char)(), const char *source_descr, FILE *f);
 #else
-static int process_config(section **current_section, const char *source_descr, FILE *f);
+static int process_config(ConfigSection **current_section, const char *source_descr, FILE *f);
 #endif
 
 
 /**** PUBLIC FUNCTIONS ****/
 
 /** Parse configuration from INI-file style config file into memory.
- * \param filename Name of the config file.
- * \retval 0   config successfully parsed
- * \retval <0  error occurred
+ * \param filename  Name of the config file.
+ * \retval 0        config successfully parsed
+ * \retval <0       error occurred
  */
 int config_read_file(const char *filename)
 {
 	FILE *f;
-	section *curr_section = NULL;
+	ConfigSection *curr_section = NULL;
 	int result = 0;
 
 	report(RPT_NOTICE, "Using Configuration File: %s", filename);
@@ -91,7 +93,7 @@ int config_read_string(const char *sectionname, const char *str)
 /* All the config parameters are placed in the given section in memory.*/
 {
 	int pos = 0;
-	section *s;
+	ConfigSection *s;
 
 	/* We use a nested fuction to transfer the characters from buffer to parser*/
 	char get_next_char() {
@@ -140,12 +142,12 @@ int config_read_string(const char *sectionname, const char *str)
  *                      \c 0 for the first value, \c 1 for the 2nd, ... and \c -1 for the last.
  * \param default_value Default value if section/key is not found
  *                      or \c skip exceeds the number of values of the key.
- * \return Value found / \c default_value
+ * \return              Value found / \c default_value
  */
 const char *config_get_string(const char *sectionname, const char *keyname,
 		int skip, const char *default_value)
 {
-	key *k = find_key(find_section(sectionname), keyname, skip);
+	ConfigKey *k = find_key(find_section(sectionname), keyname, skip);
 
 	if (k == NULL)
 		return default_value;
@@ -177,12 +179,12 @@ const char *config_get_string(const char *sectionname, const char *keyname,
  *                      \c 0 for the first value, \c 1 for the 2nd, ... and \c -1 for the last.
  * \param default_value Default value if section/key is not found, value is no legal boolean,
  *                      or \c skip exceeds the number of values of the key.
- * \return Value found / \c default_value
+ * \return              Value found / \c default_value
  */
 short config_get_bool(const char *sectionname, const char *keyname,
 		int skip, short default_value)
 {
-	key *k = find_key(find_section(sectionname), keyname, skip);
+	ConfigKey *k = find_key(find_section(sectionname), keyname, skip);
 
 	if (k == NULL)
 		return default_value;
@@ -216,12 +218,12 @@ short config_get_bool(const char *sectionname, const char *keyname,
  * \param name3rd       Name of the 3rd state
  * \param default_value Default value if section/key is not found, value is no legal boolean,
  *                      or \c skip exceeds the number of values of the key.
- * \return Value found / \c default_value
+ * \return              Value found / \c default_value
  */
 short config_get_tristate(const char *sectionname, const char *keyname,
 		int skip, const char *name3rd, short default_value)
 {
-	key *k = find_key(find_section(sectionname), keyname, skip);
+	ConfigKey *k = find_key(find_section(sectionname), keyname, skip);
 
 	if (k == NULL)
 		return default_value;
@@ -252,12 +254,12 @@ short config_get_tristate(const char *sectionname, const char *keyname,
  *                      \c 0 for the first value, \c 1 for the 2nd, ... and \c -1 for the last.
  * \param default_value Default value if section/key is not found, value is no integer,
  *                      or \c skip exceeds the number of values of the key.
- * \return Value found / \c default_value
+ * \return              Value found / \c default_value
  */
 long int config_get_int(const char *sectionname, const char *keyname,
 		int skip, long int default_value)
 {
-	key *k = find_key(find_section(sectionname), keyname, skip);
+	ConfigKey *k = find_key(find_section(sectionname), keyname, skip);
 
 	if (k != NULL) {
 		char *end;
@@ -279,12 +281,12 @@ long int config_get_int(const char *sectionname, const char *keyname,
  *                      \c 0 for the first value, \c 1 for the 2nd, ... and \c -1 for the last.
  * \param default_value Default value if section/key is not found, value is no floating point number
  *                      or \c skip exceeds the number of values of the key.
- * \return Value found / \c default_value
+ * \return              Value found / \c default_value
  */
 double config_get_float(const char *sectionname, const char *keyname,
 		int skip, double default_value)
 {
-	key *k = find_key(find_section(sectionname), keyname, skip);
+	ConfigKey *k = find_key(find_section(sectionname), keyname, skip);
 
 	if (k != NULL) {
 		char *end;
@@ -299,9 +301,9 @@ double config_get_float(const char *sectionname, const char *keyname,
 
 
 /** Test whether the configuration contains a specific section.
- * \param sectionname Name of the section to look for.
- * \retval 0  section not in config
- * \retval 1  section in config
+ * \param sectionname  Name of the section to look for.
+ * \retval 0           section not in config
+ * \retval 1           section in config
  */
 int config_has_section(const char *sectionname)
 {
@@ -310,18 +312,18 @@ int config_has_section(const char *sectionname)
 
 
 /** Test whether the configuration contains a specific key in a specfic section.
- * \param sectionname Name of the section where the key is sought.
- * \param keyname     Name of the key to look for.
- * \retval 0  key or section not found
- * \retval n  key found with \c n values (\c n > 0)
+ * \param sectionname  Name of the section where the key is sought.
+ * \param keyname      Name of the key to look for.
+ * \retval 0           key or section not found
+ * \retval n           key found with \c n values (\c n > 0)
  */
 int config_has_key(const char *sectionname, const char *keyname)
 {
-	section *s = find_section(sectionname);
+	ConfigSection *s = find_section(sectionname);
 	int count = 0;
 
 	if (s != NULL) {
-		key *k;
+		ConfigKey *k;
 
 		for (k = s->first_key; k != NULL; k = k->next_key) {
 			/* Did we find the right key ?*/
@@ -336,12 +338,12 @@ int config_has_key(const char *sectionname, const char *keyname)
 /** Clear configuration. */
 void config_clear(void)
 {
-	section *s;
-	section *next_s;
+	ConfigSection *s;
+	ConfigSection *next_s;
 
 	for (s = first_section; s != NULL; s = next_s) {
-		key *k;
-		key *next_k;
+		ConfigKey *k;
+		ConfigKey *next_k;
 
 		for (k = s->first_key; k != NULL; k = next_k) {
 			/* Advance before we destroy the current key */
@@ -365,9 +367,9 @@ void config_clear(void)
 
 /**** INTERNAL FUNCTIONS ****/
 
-static section *find_section(const char *sectionname)
+static ConfigSection *find_section(const char *sectionname)
 {
-	section *s;
+	ConfigSection *s;
 
 	for (s = first_section; s != NULL; s = s->next_section) {
 		if (strcasecmp(s->name, sectionname) == 0) {
@@ -378,15 +380,15 @@ static section *find_section(const char *sectionname)
 }
 
 
-static section *add_section(const char *sectionname)
+static ConfigSection *add_section(const char *sectionname)
 {
-	section *s;
-	section **place = &first_section;
+	ConfigSection *s;
+	ConfigSection **place = &first_section;
 
 	for (s = first_section; s != NULL; s = s->next_section)
 		place = &(s->next_section);
 
-	*place = (section*) malloc(sizeof(section));
+	*place = (ConfigSection *) malloc(sizeof(ConfigSection));
 	if (*place != NULL) {
 		(*place)->name = strdup(sectionname);
 		(*place)->first_key = NULL;
@@ -397,11 +399,11 @@ static section *add_section(const char *sectionname)
 }
 
 
-static key *find_key(section *s, const char *keyname, int skip)
+static ConfigKey *find_key(ConfigSection *s, const char *keyname, int skip)
 {
-	key *k;
+	ConfigKey *k;
 	int count = 0;
-	key *last_key = NULL;
+	ConfigKey *last_key = NULL;
 
 	/* Check for NULL section*/
 	if (s == NULL)
@@ -425,16 +427,16 @@ static key *find_key(section *s, const char *keyname, int skip)
 }
 
 
-static key *add_key(section *s, const char *keyname, const char *value)
+static ConfigKey *add_key(ConfigSection *s, const char *keyname, const char *value)
 {
 	if (s != NULL) {
-		key *k;
-		key **place = &(s->first_key);
+		ConfigKey *k;
+		ConfigKey **place = &(s->first_key);
 
 		for (k = s->first_key; k != NULL; k = k->next_key)
 			place = &(k->next_key);
 
-		*place = (key *) malloc(sizeof(key));
+		*place = (ConfigKey *) malloc(sizeof(ConfigKey));
 		if (*place != NULL) {
 			(*place)->name = strdup(keyname);
 			(*place)->value = strdup(value);
@@ -480,9 +482,9 @@ static char get_next_char_f(FILE *f)
 
 
 #if defined(LCDPROC_CONFIG_READ_STRING)
-static int process_config(section **current_section, char(*get_next_char)(), const char *source_descr, FILE *f)
+static int process_config(ConfigSection **current_section, char(*get_next_char)(), const char *source_descr, FILE *f)
 #else
-static int process_config(section **current_section, const char *source_descr, FILE *f)
+static int process_config(ConfigSection **current_section, const char *source_descr, FILE *f)
 #endif
 {
 	int state = ST_INITIAL;
@@ -494,7 +496,7 @@ static int process_config(section **current_section, const char *source_descr, F
 	char value[MAXVALUELENGTH+1];
 	int value_pos = 0;
 	int escape = 0;
-	key *k;
+	ConfigKey *k;
 	int line_nr = 1;
 	int error = 0;
 
@@ -807,10 +809,10 @@ static int process_config(section **current_section, const char *source_descr, F
 #if CONFIGFILE_DEBUGTEST
 void config_dump(void)
 {
-section *s;
+ConfigSection *s;
 
 	for (s = first_section; s != NULL; s = s->next_section) {
-		key *k;
+		ConfigKey *k;
 
 		fprintf(stderr, "[%s]\n", s->name);
 
