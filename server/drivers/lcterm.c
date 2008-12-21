@@ -72,9 +72,13 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "lcterm_";
 
 
-/////////////////////////////////////////////////////////////////
-// Opens com port and sets baud correctly...
-//
+/**
+ * Initialize the driver.
+ * Open com port and set baud correctly...
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval <0      Error.
+ */
 MODULE_EXPORT int
 lcterm_init (Driver *drvthis)
 {
@@ -169,9 +173,11 @@ lcterm_init (Driver *drvthis)
   return 1;
 }
 
-/////////////////////////////////////////////////////////////////
-// Clean-up
-//
+
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 lcterm_close (Driver *drvthis)
 {
@@ -195,9 +201,12 @@ lcterm_close (Driver *drvthis)
   report(RPT_INFO, "%s: closed", drvthis->name);
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is wide.
+ */
 MODULE_EXPORT int
 lcterm_width (Driver *drvthis)
 {
@@ -206,9 +215,12 @@ lcterm_width (Driver *drvthis)
   return p->width;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is high.
+ */
 MODULE_EXPORT int
 lcterm_height (Driver *drvthis)
 {
@@ -217,9 +229,11 @@ lcterm_height (Driver *drvthis)
   return p->height;
 }
 
-/////////////////////////////////////////////////////////////////
-// Clears the LCD screen
-//
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 lcterm_clear (Driver *drvthis)
 {
@@ -229,9 +243,11 @@ lcterm_clear (Driver *drvthis)
   p->ccmode = CCMODE_STANDARD;
 }
 
-//////////////////////////////////////////////////////////////////
-// Flushes all output to the lcd...
-//
+
+/**
+ * Flush data on screen to the display.
+ * \param drvthis  Pointer to driver structure.
+ */
 MODULE_EXPORT void
 lcterm_flush (Driver *drvthis)
 {
@@ -264,44 +280,56 @@ lcterm_flush (Driver *drvthis)
   memcpy(p->last_framebuf, p->framebuf, p->width * p->height);
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a character on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (16,2).
-//
+
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
 MODULE_EXPORT void
-lcterm_chr (Driver *drvthis, int x, int y, char ch)
+lcterm_chr (Driver *drvthis, int x, int y, char c)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
   y--;
   x--;
-  //debug(RPT_DEBUG, "lcterm_chr: x=%d, y=%d, chr=%x", x,y,ch);
+  //debug(RPT_DEBUG, "lcterm_chr: x=%d, y=%d, c=%x", x,y,c);
   if ((x >= 0) && (x < p->width) && (y >= 0) && (y < p->height))
-    p->framebuf[y * p->width + x] = ch;
+    p->framebuf[y * p->width + x] = c;
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a string on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (16,2).
-//
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
 MODULE_EXPORT void
-lcterm_string (Driver *drvthis, int x, int y, char *s)
+lcterm_string (Driver *drvthis, int x, int y, const char string[])
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
   x --;  // Convert 1-based coords to 0-based
   y --;
 
-  for ( ; (*s != '\0') && (x < p->width); x++)
-    p->framebuf[y * p->width + x] = *s++;
+  for ( ; (*string != '\0') && (x < p->width); x++)
+    p->framebuf[y * p->width + x] = *string++;
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Sets a custom character from 0-7...
-//
-// For input, values > 0 mean "on" and values <= 0 are "off".
-//
-// The input is just an array of characters...
-//
+/**
+ * Define a custom character and write it to the LCD.
+ * \param drvthis  Pointer to driver structure.
+ * \param n        Custom character to define [0 - (NUM_CCs-1)].
+ * \param dat      Array of 40(=8*5=cellheight*cellwidth) bytes, each representing a pixel
+ *                 starting from the top left to the bottom right.
+ * \todo
+ * Convert \c dat to use one byte per pixel-row as e.g. in the \c CFontzPackage driver.
+ */
 MODULE_EXPORT void
 lcterm_set_char (Driver *drvthis, int n, char *dat)
 {
@@ -327,9 +355,12 @@ lcterm_set_char (Driver *drvthis, int n, char *dat)
   write(p->fd, buf, 11);
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before lcterm->vbar()
-//
+
+/**
+ * Set up vertical bars.
+ * \todo
+ * Get rid of it by using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ */
 static void
 lcterm_init_vbar (Driver *drvthis)
 {
@@ -427,9 +458,12 @@ lcterm_init_vbar (Driver *drvthis)
   lcterm_set_char(drvthis, 7, vbar_7);
 }
 
-/////////////////////////////////////////////////////////////////
-// Inits horizontal bars...
-//
+
+/**
+ * Set up horizontal bars.
+ * \todo
+ * Get rid of it by using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ */
 static void
 lcterm_init_hbar (Driver *drvthis)
 {
@@ -506,9 +540,15 @@ lcterm_init_hbar (Driver *drvthis)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar, from the bottom of the screen up.
-//
+/**
+ * Draw a vertical bar bottom-up.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is high at 100%
+ * \param promille Current height level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void
 lcterm_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -517,9 +557,15 @@ lcterm_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-//
+/**
+ * Draw a horizontal bar to the right.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column) of the starting point.
+ * \param y        Vertical character position (row) of the starting point.
+ * \param len      Number of characters that the bar is long at 100%
+ * \param promille Current length level of the bar in promille.
+ * \param options  Options (currently unused).
+ */
 MODULE_EXPORT void
 lcterm_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
@@ -629,9 +675,16 @@ lcterm_init_num (Driver *drvthis)
     lcterm_set_char(drvthis, i, bignum_ccs[i]);
 }
 
-/////////////////////////////////////////////////////////////////
-// Writes a big number.
-//
+
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
+ *
+ * \todo
+ * Convert to pixel-row based logic to be able to use the adv_bignum library.
+ */
 MODULE_EXPORT void
 lcterm_num (Driver *drvthis, int x, int num)
 {
@@ -728,9 +781,18 @@ lcterm_num (Driver *drvthis, int x, int num)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Sets character 0 to an icon...
-//
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \retval 0       Icon has been successfully defined/written.
+ * \retval <0      Server core shall define/write the icon.
+ *
+ * \todo
+ * Convert to using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ */
 MODULE_EXPORT int
 lcterm_icon (Driver *drvthis, int x, int y, int icon)
 {
