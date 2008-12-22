@@ -40,7 +40,7 @@
 #include "report.h"
 
 
-// Variables in the driver module
+// Variables for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
@@ -49,13 +49,13 @@ MODULE_EXPORT char *symbol_prefix = "shuttleVFD_";
 
 /** private data for the \c shuttleVFD driver */
 typedef struct shuttleVFD_private_data {
-  usb_dev_handle *dev;
-  int width;
-  int height;
-  int cellwidth;
-  int cellheight;
-  char *framebuf;
-  char *last_framebuf;
+  usb_dev_handle *dev;		/**< device handle */
+  int width;			/**< display width in characters */
+  int height;			/**< display height in characters */
+  int cellwidth;		/**< character cell width */
+  int cellheight;		/**< character cell hight */
+  char *framebuf;		/**< frame buffer */
+  char *last_framebuf;		/**< old contents of frame buffer */
   unsigned long icons;
   unsigned long last_icons;
 } PrivateData;
@@ -65,10 +65,11 @@ typedef struct shuttleVFD_private_data {
 //////////////////// For ShuttleVFD Output ///////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 
-void send_packet(Driver *drvthis, char* packet) {
+static void send_packet(Driver *drvthis, char* packet)
+{
   PrivateData *p = drvthis->private_data;
-
   int i;
+
   for (i = 0; i < SHUTTLE_VFD_WRITE_ATTEMPTS; ++i) {
     if (usb_control_msg(p->dev,
                         0x21,
@@ -87,7 +88,14 @@ void send_packet(Driver *drvthis, char* packet) {
 }
 
 
-MODULE_EXPORT int shuttleVFD_init(Driver *drvthis) {
+/**
+ * Initialize the driver.
+ * \param drvthis  Pointer to driver structure.
+ * \retval 0       Success.
+ * \retval <0      Error.
+ */
+MODULE_EXPORT int shuttleVFD_init(Driver *drvthis)
+{
   PrivateData *p;
 
   // allocate and store private data
@@ -131,7 +139,8 @@ MODULE_EXPORT int shuttleVFD_init(Driver *drvthis) {
     struct usb_device *dev;
     for (dev = bus->devices; dev != NULL; dev = dev->next) {
       if (dev->descriptor.idVendor == SHUTTLE_VFD_VENDOR_ID &&
-          (dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID1 || dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID2)) {
+          (dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID1 ||
+           dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID2)) {
         p->dev = usb_open(dev);
       }
     }
@@ -153,8 +162,14 @@ MODULE_EXPORT int shuttleVFD_init(Driver *drvthis) {
 }
 
 
-MODULE_EXPORT void shuttleVFD_close(Driver *drvthis) {
+/**
+ * Close the driver (do necessary clean-up).
+ * \param drvthis  Pointer to driver structure.
+ */
+MODULE_EXPORT void shuttleVFD_close(Driver *drvthis)
+{
   PrivateData *p = drvthis->private_data;
+
   if (p != NULL) {
     if (p->dev != NULL) {
       if (usb_release_interface(p->dev, SHUTTLE_VFD_INTERFACE_NUM) < 0) {
@@ -177,52 +192,103 @@ MODULE_EXPORT void shuttleVFD_close(Driver *drvthis) {
 }
 
 
-MODULE_EXPORT int shuttleVFD_width(Driver *drvthis) {
+/**
+ * Return the display width in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is wide.
+ */
+MODULE_EXPORT int shuttleVFD_width(Driver *drvthis)
+{
   PrivateData *p = drvthis->private_data;
+
   return p->width;
 }
 
 
-MODULE_EXPORT int shuttleVFD_height(Driver *drvthis) {
+/**
+ * Return the display height in characters.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of characters the display is high.
+ */
+MODULE_EXPORT int shuttleVFD_height(Driver *drvthis)
+{
   PrivateData *p = drvthis->private_data;
+
   return p->height;
 }
 
 
-MODULE_EXPORT void shuttleVFD_clear(Driver *drvthis) {
+/**
+ * Return the width of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of pixel columns a character cell is wide.
+ */
+MODULE_EXPORT int shuttleVFD_cellwidth(Driver *drvthis)
+{
   PrivateData *p = drvthis->private_data;
+
+  return p->cellwidth;
+}
+
+
+/**
+ * Return the height of a character in pixels.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Number of pixel lines a character cell is high.
+ */
+MODULE_EXPORT int shuttleVFD_cellheight(Driver *drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+
+  return p->cellheight;
+}
+
+
+/**
+ * Clear the screen.
+ * \param drvthis  Pointer to driver structure.
+ */
+MODULE_EXPORT void shuttleVFD_clear(Driver *drvthis)
+{
+  PrivateData *p = drvthis->private_data;
+
   memset(p->framebuf, ' ', p->width * p->height);
   p->icons = 0;
 }
 
 
-MODULE_EXPORT void shuttleVFD_flush(Driver *drvthis) {
+/**
+ * Flush data on screen to the VFD.
+ * \param drvthis  Pointer to driver structure.
+ */
+MODULE_EXPORT void shuttleVFD_flush(Driver *drvthis)
+{
   PrivateData *p = drvthis->private_data;
   char packet[SHUTTLE_VFD_PACKET_SIZE];
 
   // set text
   if (strncmp(p->last_framebuf, p->framebuf, p->width * p->height) != 0) {
     // move cursor to front
-    memset(packet, 0, SHUTTLE_VFD_PACKET_SIZE);
-    packet[0] = (1 << 4) + 1;
-    packet[1] = 2;
+    memset(packet, '\0', SHUTTLE_VFD_PACKET_SIZE);
+    packet[0] = 0x11;
+    packet[1] = 0x02;
     send_packet(drvthis, packet);
   
     // write framebuf[0-6]
-    memset(packet, 0, SHUTTLE_VFD_PACKET_SIZE);
-    packet[0] = (9 << 4) + 7;
+    memset(packet, '\0', SHUTTLE_VFD_PACKET_SIZE);
+    packet[0] = 0x97;
     strncpy(&packet[1], &p->framebuf[0], 7);
     send_packet(drvthis, packet);
   
     // write framebuf[7-13]
-    memset(packet, 0, SHUTTLE_VFD_PACKET_SIZE);
-    packet[0] = (9 << 4) + 7;
+    memset(packet, '\0', SHUTTLE_VFD_PACKET_SIZE);
+    packet[0] = 0x97;
     strncpy(&packet[1], &p->framebuf[7], 7);
     send_packet(drvthis, packet);
   
     // write framebuf[14-20]
-    memset(packet, 0, SHUTTLE_VFD_PACKET_SIZE);
-    packet[0] = (9 << 4) + 6;
+    memset(packet, '\0', SHUTTLE_VFD_PACKET_SIZE);
+    packet[0] = 0x96;
     strncpy(&packet[1], &p->framebuf[14], 6);
     send_packet(drvthis, packet);
 
@@ -232,7 +298,7 @@ MODULE_EXPORT void shuttleVFD_flush(Driver *drvthis) {
   // set icons
   if (p->last_icons != p->icons) {
     memset(packet, 0, SHUTTLE_VFD_PACKET_SIZE);
-    packet[0] = (7 << 4) + 4;
+    packet[0] = 0x74;
     packet[1] = (p->icons >> 15) & 0x1f;
     packet[2] = (p->icons >> 10) & 0x1f;
     packet[3] = (p->icons >> 5) & 0x1f;
@@ -243,15 +309,24 @@ MODULE_EXPORT void shuttleVFD_flush(Driver *drvthis) {
   }
 }
 
-MODULE_EXPORT void shuttleVFD_string(
-    Driver *drvthis, int x, int y, const char string[]) {
+
+/**
+ * Print a string on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param string   String that gets written.
+ */
+MODULE_EXPORT void shuttleVFD_string(Driver *drvthis, int x, int y, const char string[])
+{
   PrivateData *p = drvthis->private_data;
+  int i;
 
   --x; --y;
   if (y < 0 || y >= p->height)
     return;
 
-  int i;
   for (i = 0; (string[i] != '\0') && (x < p->width); ++i, ++x) {
     if (x >= 0) {    // no write left of left border
       p->framebuf[(y * p->width) + x] = string[i];
@@ -260,7 +335,16 @@ MODULE_EXPORT void shuttleVFD_string(
 }
 
 
-MODULE_EXPORT void shuttleVFD_chr(Driver *drvthis, int x, int y, char c) {
+/**
+ * Print a character on the screen at position (x,y).
+ * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param c        Character that gets written.
+ */
+MODULE_EXPORT void shuttleVFD_chr(Driver *drvthis, int x, int y, char c)
+{
   PrivateData *p = drvthis->private_data;
 
   --x; --y;
@@ -270,7 +354,24 @@ MODULE_EXPORT void shuttleVFD_chr(Driver *drvthis, int x, int y, char c) {
 }
 
 
-MODULE_EXPORT int shuttleVFD_icon(Driver *drvthis, int x, int y, int icon) {
+/**
+ * Place an icon on the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param y        Vertical character position (row).
+ * \param icon     synbolic value representing the icon.
+ * \retval 0       Icon has been successfully defined/written.
+ * \retval <0      Server core shall define/write the icon.
+ *
+ * \note
+ * For some icons, the special, pre-defined icon symbols on
+ * Shuttle VFDs are used. This is not the intended use of icons.
+ *
+ * \todo
+ * Use output() method for these special "out-of-band" symbols.
+ */
+MODULE_EXPORT int shuttleVFD_icon(Driver *drvthis, int x, int y, int icon)
+{
   PrivateData *p = drvthis->private_data;
 
   switch (icon) {
@@ -298,16 +399,4 @@ MODULE_EXPORT int shuttleVFD_icon(Driver *drvthis, int x, int y, int icon) {
     default:
       return -1;
   }
-}
-
-
-MODULE_EXPORT int shuttleVFD_cellwidth(Driver *drvthis) {
-  PrivateData *p = drvthis->private_data;
-  return p->cellwidth;
-}
-
-
-MODULE_EXPORT int shuttleVFD_cellheight(Driver *drvthis) {
-  PrivateData *p = drvthis->private_data;
-  return p->cellheight;
 }

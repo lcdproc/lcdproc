@@ -60,16 +60,16 @@ MODULE_EXPORT void serialVFD_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void serialVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void serialVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void serialVFD_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  serialVFD_icon(Driver *drvthis, int x, int y, int icon);
 
 MODULE_EXPORT void serialVFD_set_char (Driver *drvthis, int n, unsigned char *dat);
+MODULE_EXPORT int serialVFD_get_free_chars (Driver *drvthis);
 
 MODULE_EXPORT int  serialVFD_get_brightness (Driver *drvthis, int state);
 MODULE_EXPORT void serialVFD_set_brightness (Driver *drvthis, int state, int promille);
 MODULE_EXPORT void serialVFD_backlight (Driver *drvthis, int on);
-MODULE_EXPORT void serialVFD_output (Driver *drvthis, int state);
-MODULE_EXPORT void serialVFD_num (Driver *drvthis, int x, int num);
-MODULE_EXPORT int serialVFD_get_free_chars (Driver *drvthis);
+
 MODULE_EXPORT const char * serialVFD_get_info( Driver *drvthis );
 
 /** private data for the \c serialVFD driver */
