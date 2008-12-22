@@ -1,5 +1,5 @@
 /** \file server/drivers/serialVFD.c
- * LCDd \c serialVFD driver for various serial VFD dvices.
+ * LCDd \c serialVFD driver for various serial (& parallel) VFD devices.
  */
 
 /*
@@ -26,11 +26,9 @@
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 
 
-
 	The driver should operate most of NEC, Futaba and Noritake 7x5 dot VFDs with
 	serial(rs232) and/or parallel interface. See /docs/lcdproc-user/serialvfd-howto.html
 	for further information
-
 
 List of driver entry point:
 

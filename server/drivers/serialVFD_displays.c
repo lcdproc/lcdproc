@@ -1,3 +1,9 @@
+/** \file server/drivers/serialVFD_displays.c
+ * Setup routines for the inidividual displays supported by the \c serialVFD driver.
+ * Here are the routines that set up the data as well as function pointers
+ * for the individual displays supported by the \c serialVFD driver.
+ */
+
 /* 	This file is part the LCDproc driver for various serial VFD Devices.
 
 	It contains the hardwaredependent commands ach characterset.

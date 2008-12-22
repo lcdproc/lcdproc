@@ -1,3 +1,9 @@
+/** \file server/drivers/serialVFD_io.c
+ * Hardware dependent routines for the \c serialVFD driver.
+ * Here are the routines for initializing, writing to, and closing the
+ * serial resp. parallel port for the \c serialVFD driver.
+ */
+
 /* 	This file is part the LCDproc driver for various serial VFD Devices.
 
 	It contains the hardwaredependent commands ach characterset.
