@@ -1,3 +1,7 @@
+/** \file server/drivers/CFontz633io.c
+ * IO routines for the drivers \c CFontzPacket and \c CFontz633.
+ */
+
 /* interfacing routines for the CrystalFontz CFA-631, CFA-633 and CFA-635 LCDs
 
   ===========================================================================
