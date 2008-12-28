@@ -101,7 +101,7 @@ more important. Here are the USB connection types the HD44780 driver supports:
 
   <listitem>
     <link linkend="hd44780-lcd2usb">lcd2usb</link>:
-    Tim Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)
+    Till Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)
   </listitem>
 
   <listitem>
@@ -712,10 +712,16 @@ This wiring is originally based on "lcdtext" (by Matthias Prinke).
 </table>
 
 <note>
+<para>
 The <literal>RW</literal> (pin 5) line of the display decides whether the display receives data from the 
 LPT port, or whether it sends data to the LPT port: if grounded it receives, if High or connected 
 to nothing at all it "sends" (i.e., will not work as intended). So, if you are not sure that 
 you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
+</para>
+<para>
+Theoretically this wiring sends the data over twice as slow as the
+winamp or ext8bit wirings, because it only sends 4 bits at a time.
+</para>
 </note>
 
 <para>
@@ -1192,13 +1198,6 @@ such as portato. Further details can be obtained from:
 <ulink url="http://metalab.unc.edu/pub/linux/system/status/meter-0.2.tar.gz"></ulink>
 <ulink url="http://metalab.unc.edu/pub/linux/system/status/portato-1.2.tar.gz"></ulink>
 </para>
-
-<note>
-<para>
-Theoretically this wiring sends the data over twice as slow as the
-winamp or ext8bit wirings, because it only sends 4 bits at a time.
-</para>
-</note>
 
 <para>
 The LCD connections are:
@@ -2618,7 +2617,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         </row>
         <row>
           <entry><literal><link linkend="hd44780-lcd2usb">lcd2usb</link></literal></entry>
-          <entry>Tim Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)</entry>
+          <entry>Till Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)</entry>
         </row>
         <row>
           <entry><literal><link linkend="hd44780-lis2">lis2</link></literal></entry>
