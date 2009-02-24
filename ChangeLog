@@ -63,6 +63,7 @@ v.0.5dev (ongoing development)
  + serialVFD driver: support Siemens/Wincor Nixdorf BA63/66 (Stefan Herdler)
  + new client lcdident.pl (Ethan Dicks)
  * server: prevent stalling if time goes backwards (M. Vallevand)
+ * hd44780 driver: update the backlight setting only on change
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

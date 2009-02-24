@@ -195,6 +195,7 @@ typedef struct hd44780_private_data {
 	int contrast;		// Contrast setting (range 0 - 1000)
 	int brightness;		// Brightness when backlight is "on" (range 0 - 1000)
 	int offbrightness;	// Brightness when backlight is "off" (range 0 - 1000)
+	int backlightstate;	// Saves the last backlight state
 } PrivateData;
 
 

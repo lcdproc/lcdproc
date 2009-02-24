@@ -158,6 +158,7 @@ HD44780_init(Driver *drvthis)
 	p->cellheight = 8; /* Do not change this !!! This is a controller property, not a display property !!! */
 	p->cellwidth = 5;
 	p->ccmode = standard;
+	p->backlightstate = -1;	// Init to invalid value
 
 
 	//// READ THE CONFIG FILE
@@ -842,7 +843,9 @@ HD44780_set_brightness(Driver *drvthis, int state, int promille)
 	else {
 		p->offbrightness = promille;
 	}
-	//HD44780_backlight(drvthis, state);
+
+	// Make last backlight state invalid to force update on next rendering
+	p->backlightstate = -1;
 }
 
 
@@ -856,13 +859,14 @@ HD44780_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	// not sure if this is the correct solution.
-	// alternative: return immediately	
-	if (!p->have_backlight)
-		on = 0;
+	// Immediately return if no backlight is available or no change is necessary
+	if (!p->have_backlight || p->backlightstate == on)
+		return;
 
 	if (p->hd44780_functions->backlight != NULL)
 		p->hd44780_functions->backlight(p, on);
+		
+	p->backlightstate = on;
 }
 
 
