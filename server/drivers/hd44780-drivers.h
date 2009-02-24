@@ -60,7 +60,7 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "mplay",         HD44780_CT_MPLAY,         IF_TYPE_USB,     hd_init_lis2      },
 #ifdef HAVE_LIBUSB
 	{ "bwctusb",       HD44780_CT_BWCTUSB,       IF_TYPE_USB,     hd_init_bwct_usb  },
-	{ "lcd2usb",       HD44780_CT_I2C,           IF_TYPE_USB,     hd_init_lcd2usb   },
+	{ "lcd2usb",       HD44780_CT_LCD2USB,       IF_TYPE_USB,     hd_init_lcd2usb   },
 	{ "uss720",        HD44780_CT_USS720,        IF_TYPE_USB,     hd_init_uss720    },
 #endif
 #ifdef HAVE_LIBFTDI
