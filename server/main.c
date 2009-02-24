@@ -810,7 +810,7 @@ do_mainloop(void)
 #ifndef WIN32
 		gettimeofday(&t, NULL);
 		t_diff = t.tv_sec - last_t.tv_sec;
-		if ((t_diff + 1) > (LONG_MAX / 1e6)) {
+		if ( ((t_diff + 1) > (LONG_MAX / 1e6)) || (t_diff < 0) ) {
 			/* We're going to overflow the calculation - probably been to sleep, fudge the values */
 			t_diff = 0;
 			process_lag = 1;
