@@ -31,6 +31,8 @@ void lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state);
 unsigned char lcd2usb_HD44780_scankeypad(PrivateData *p);
 void lcd2usb_HD44780_close(PrivateData *p);
 void lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value);
+// Pseudo uPause function. A lcd2usb device takes care of timing itself.
+void lcd2usb_HD44780_uPause(PrivateData *p, int usecs) {}
 
 
 /**
@@ -98,6 +100,8 @@ hd_init_lcd2usb(Driver *drvthis)
 
   common_init(p, IF_4BIT);
 
+  // Replace uPause with empty one after initialization
+  p->hd44780_functions->uPause = lcd2usb_HD44780_uPause;
   return 0;
 }
 
@@ -130,10 +134,13 @@ lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
 {
   // Get backlight brightness.
   int promille = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+  
+  p->hd44780_functions->drv_report(RPT_INFO, "lcd2usb_HD44780_backlight: Setting backlight to %d", promille);
 
   // And set it (converted from [0,1000] -> [0,255]).
-  usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_BRIGHTNESS,
-                   (promille * 255) / 1000, 0, NULL, 0, 1000);
+  if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_BRIGHTNESS,
+                   (promille * 255) / 1000, 0, NULL, 0, 1000) < 0)
+    p->hd44780_functions->drv_report(RPT_WARNING, "lcd2usb_HD44780_backlight: setting backlight failed");
 }
 
 
