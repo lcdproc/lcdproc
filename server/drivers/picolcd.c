@@ -441,6 +441,8 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char s
 	if (x < 1 || x > p->width)
 		return;
 
+	x--; y--; /* Convert 1-based to 0-based */
+
 	len = strlen((char *)string);
 	if (len + x > p->width) {
 		debug(RPT_DEBUG, "%s: string overlength (>%d). Start: %d Length: %d (%s)",
@@ -449,7 +451,6 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char s
 		len = p->width - x; /* Copy what we can */
 	}
 
-	x--; y--; /* Convert 1-based to 0-based */
 	dest = p->framebuf + (y * p->width + x);
 	memcpy(dest, string, len * sizeof(unsigned char));
 
