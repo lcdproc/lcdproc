@@ -1127,7 +1127,7 @@ MtxOrb_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 
 		for (i = 1; i <= p->cellwidth; i++) {
 			// fill pixel columns from left to right.
-			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar)-1);
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
 			MtxOrb_set_char(drvthis, i, hBar);
 		}
 	}
