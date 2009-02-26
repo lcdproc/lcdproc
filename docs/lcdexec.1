@@ -1,4 +1,4 @@
-.TH lcdexec 1 "18 June 2006" LCDproc "LCDproc suite"
+.TH lcdexec 1 "26 February 2009" LCDproc "LCDproc suite"
 .SH NAME
 lcdexec - LCDproc client to execute commands from the LCDd menu
 .SH SYNOPSIS
@@ -18,7 +18,7 @@ You can access the menu by pressing the menu key configured for LCDd.
 .SH OPTIONS
 .I lcdexec
 understands the following command line options., that override the
-icorresponding options given in the configuration file:
+corresponding options given in the configuration file:
 .TP 8
 .B \-c \fIfilename\fP
 Set the name of the config file to read, /etc/lcdexec.conf by default
@@ -48,9 +48,9 @@ a configuration file.
 This file is expected to have a "INI-file" like format with sections introduced by
 section headers in square brackets and options lines consisting of key=value pairs.
 .PP
-Section and option names may contain only characters from the range [a-za-Z0-9_]i,
+Section and option names may contain only characters from the range [a-zA-Z0-9_],
 while value strings may contain any printable character.
-Value strings with characters outside the range [a-za-Z0-9_] must be quoted with double quotes.
+Value strings with characters outside the range [a-zA-Z0-9_] must be quoted with double quotes.
 To get a double quote or backslashes in the string, they must be escaped by preceding it by a backslash.
 .PP
 
@@ -82,7 +82,7 @@ Default is 2 (errors and warnings only)
 Tell whether to report to syslog (TRUE) or to stderr (FALSE).
 .TP 8
 .B Foreground=\fIbool\fP
-Tell whether to run in fore foreground (TRUE) or in background (FALSE).
+Tell whether to run in foreground (TRUE) or in background (FALSE).
 If not given, the default is FALSE for daemon mode.
 .TP 8
 .B DisplayName=\fIDisplay\fP
@@ -214,13 +214,13 @@ lcdexec -c /usr/local/etc/lcdexec.conf
 This will allow you to eject the CD-ROM by opening the LCDd menu, selecting "lcdexec"
 and selecting "Eject CD-ROM".
 Further it allows you to do various shutdowns, among others the "Shutdown in 5 minutes"
-by opening the LCDd menu, selecting "lcdexec", selecting "Shutdown menu "
+by opening the LCDd menu, selecting "lcdexec", selecting "Shutdown menu"
 and selecting "Shutdown in 5 minutes".
 
 .Sh SEE ALSO
 .Xr LCDd 8
 .SH AUTHOR
-lcdexec is wriitten by Joris Robijn and Peter Marschall. It is part of the LCDproc suite.
+lcdexec is written by Joris Robijn and Peter Marschall. It is part of the LCDproc suite.
 
 The newest version of LCDproc should be available from here:
 

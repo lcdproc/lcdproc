@@ -1,4 +1,4 @@
-.TH LCDd 8 "18 September 2006" LCDproc "LCDproc suite"
+.TH LCDd 8 "26 February 2009" LCDproc "LCDproc suite"
 
 .SH NAME
 LCDd - LCDproc server daemon
@@ -27,7 +27,7 @@ Before running \fBLCDd\fP you should carefully
 read through that file and modify everything neccessary according to your needs.
 Otherwise you might encounter \fBLCDd\fP not running properly on your system.
 .PP
-To make full use of \fBLCDd\fP, a client such as lcdproc(1), lcdexec(1), or lcdvd 
+To make full use of \fBLCDd\fP, a client such as lcdproc(1), lcdexec(1), or lcdvc 
 is required.
 
 .SH OPTIONS
@@ -174,6 +174,9 @@ USB connection via a FTDI FT2232D chip in bitbang mode
 TCP connection using open source/open hardware ethlcd (http://manio.skyboo.net/ethlcd/)
 .RE
 .TP
+.B i2500vfd
+140x32 pixel VFD Display of the Intra2net Intranator 2500 appliance
+.TP
 .B icp_a106
 ICP A106 alarm/LCD board in 19" rack cases by ICP
 .TP
@@ -238,6 +241,9 @@ SED1330/SED1335 (aka S1D13300/S1D13305) based graphical displays
 .B sed1520
 122x32 pixel graphic displays based on SED1520 controllers
 .TP
+.B serialPOS
+Driver for Point Of Sale ("POS") devices using various protocols (currently AEDEX only)
+.TP
 .B serialVFD
 Text VFDs of various manufacturers, see LCDproc user-documentation for further details.
 .TP
@@ -267,9 +273,6 @@ ULA-200 device from ELV (http://www.elv.de)
 .TP
 .B xosd
 On Screen Display on X11
-.TP
-.B i2500vfd
-140x32 pixel VFD Display of the Intra2net Intranator 2500 appliance
 .PP
 Multiple drivers can be used simultaneously; thus, for example, a Matrix Orbital display (MtxOrb driver)
 can be combined with an infrared driver (irmanin driver).
@@ -318,7 +321,7 @@ Remove a screen from the display.
 Initialize a screen, or reset its data.
 .TP
 .B widget_add \fI#screen #id type\fR [\fB-in \fI#frame\fR]
-Add a widget of type \fItype\fPto screen \fI#screen\fR.
+Add a widget of type \fItype\fP to screen \fI#screen\fR.
 .TP
 .B widget_del \fI#screen #id\fR
 Delete widget \fI#id\fR from screen \fI#screen\fR.
@@ -399,8 +402,8 @@ Imagine you're making an mp3 player for lcdproc.  When the
 song changes, it's nice to display the new name immediately.
 So, you could set your screen's priority to \fBforeground\fP, wait for
 the server to display (or ignore) your screen, then set the
-screen back to i\fBnormal\fP.  This would cause the mp3 screen to
-show up as soon as the one onscreen was finished, then
+screen back to \fBnormal\fP.  This would cause the mp3 screen to
+show up as soon as the one on screen was finished, then
 return to normal priority afterward.
 .PP
 Or, let's say your client monitors the health of hospital
@@ -435,6 +438,9 @@ A scrolling text display, scrolling either horizontally or vertically.
 A \fIcontainer\fR to contain other widgets, permitting them to be refered to
 as a single unit.  A widget is put inside a frame by using the -in \fI#id\fR
 parameter, where \fI#id\fR refers to the id of the frame.
+.TP
+.B num
+Displays a large decimal digit
 .PP
 Widgets are drawn on the screen in the order they are created.
 
