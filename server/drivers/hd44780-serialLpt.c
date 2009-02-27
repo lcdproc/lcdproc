@@ -114,7 +114,7 @@ hd_init_serialLpt(Driver *drvthis)
 	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
 	hd44780_functions->uPause(p, 40);
 
-	common_init(p, IF_8BIT);
+	common_init(p, IF_4BIT);
 
 	return 0;
 }
