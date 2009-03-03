@@ -148,7 +148,7 @@ lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
   /* get backlight brightness */
   int promille = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
   
-  p->hd44780_functions->drv_report(RPT_INFO, "lcd2usb_HD44780_backlight: Setting backlight to %d", promille);
+  p->hd44780_functions->drv_debug(RPT_DEBUG, "lcd2usb_HD44780_backlight: Setting backlight to %d", promille);
 
   /* and set it (converted from [0,1000] -> [0,255]) */
   if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_BRIGHTNESS,

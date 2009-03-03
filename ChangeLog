@@ -42,7 +42,7 @@ v.0.5dev (ongoing development)
  * clean up build system (T. Jarosch, with tests/fixes by M. Dolze)
  + hd44780 driver: new ConnectionType ftdi (Thomas Jarosch)
  * shuttleVFD driver: fix VendorID, support newer models (Miska Sulander)
- + i2500vfd driver for a graphocal Noritake VFD (Thomas Jarosch)
+ + i2500vfd driver for a graphical Noritake VFD (Thomas Jarosch)
  * hd44780 driver: more complete initialization (idea by Pierre Ossman)
  * hd44780 driver: "euro" character mapping table (Markus Dolze)
  * CwLnx driver: support for CW12832
@@ -64,6 +64,7 @@ v.0.5dev (ongoing development)
  + new client lcdident.pl (Ethan Dicks)
  * server: prevent stalling if time goes backwards (M. Vallevand)
  * hd44780 driver: update the backlight setting only on change
+ + hd44780 driver: add lineaddress option to support ST7036 (Malte Poeggel)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

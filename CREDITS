@@ -256,6 +256,9 @@ Jack Cleaver
 Phant0m / Aron Parsons
 	-IRtrans driver
 
+Malte Poeggel
+	- support for ST7036 controller in hd44780
+
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min

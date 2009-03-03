@@ -161,6 +161,7 @@ typedef struct hd44780_private_data {
 	char have_backlight;	// off by default
 	char have_output;	// have extra output port (off by default)
 	char ext_mode;		// use of extended mode required for some weird controllers
+	int line_address; 	// address of the next line in ext_mode (linear addressing)
 	int delayMult;	 // Delay multiplier for slow displays
 	char delayBus;	 // Delay if the computer can send data too fast over
 				 // its bus to LPT port

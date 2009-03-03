@@ -2203,6 +2203,12 @@ one for each key and the third if the keys are pressed simultaneously.
 With this 3-key setup, menus can be used (see example below).
 </para>
 
+<para>
+This driver supports the original LCD2USB interface board as described above
+as well as compatible devices like those sold by <ulink url="http://www.lcdmodkit.com/">Lcdmod Kit</ulink>
+or those developed by <ulink url="http://www.maltepoeggel.de/index.php?site=sp-lcd&lang=en">Malte Pöggel</ulink>.
+</para>
+
 <sect4 id="hd44780-lcd2usb-config">
 <title>Special configuration options</title>
 
@@ -2871,6 +2877,17 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   <listitem><para>
     If you have a KS0073 or an other 'almost HD44780-compatible', set this
     flag to get into extended,4-line linear addressing mode.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>LineAddress</command> =
+    <arg choice="plain"><replaceable>ADDR</replaceable></arg>
+  </term>
+  <listitem><para>
+    If the next line of your display doesn't start <literal>0x20</literal> higher in
+    DDRAM you can override the default value of the ExtendedMode with this parameter.
   </para></listitem>
 </varlistentry>
 

@@ -60,6 +60,9 @@
 // Default parallel port address
 #define LPTPORT	 0x378
 
+// Default Lineaddress in ext_mode
+#define LADDR 0x20
+
 // Autorepeat values
 #define KEYPAD_AUTOREPEAT_DELAY 500
 #define KEYPAD_AUTOREPEAT_FREQ 15
@@ -165,6 +168,7 @@ HD44780_init(Driver *drvthis)
 
 	p->port			= drvthis->config_get_int(drvthis->name, "port", 0, LPTPORT);
 	p->ext_mode		= drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
+	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
 	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
 	p->have_backlight	= drvthis->config_get_bool(drvthis->name, "backlight", 0, 0);
 	p->have_output		= drvthis->config_get_bool(drvthis->name, "outputport", 0, 0);
@@ -605,7 +609,7 @@ HD44780_position(Driver *drvthis, int x, int y)
 
 	if (p->ext_mode) {
 		// Linear addressing, each line starts 0x20 higher.
-		DDaddr = x + relY * 0x20;
+		DDaddr = x + relY * p->line_address;
 	} else {
 		// 16x1 is a special case
 		if (p->dispSizes[dispID - 1] == 1 && p->width == 16) {
