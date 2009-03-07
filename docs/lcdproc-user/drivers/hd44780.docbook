@@ -2206,7 +2206,7 @@ With this 3-key setup, menus can be used (see example below).
 <para>
 This driver supports the original LCD2USB interface board as described above
 as well as compatible devices like those sold by <ulink url="http://www.lcdmodkit.com/">Lcdmod Kit</ulink>
-or those developed by <ulink url="http://www.maltepoeggel.de/index.php?site=sp-lcd&lang=en">Malte Pöggel</ulink>.
+or those developed by <ulink url="http://www.maltepoeggel.de/index.php?site=sp-lcd&amp;lang=en">Malte Pöggel</ulink>.
 </para>
 
 <sect4 id="hd44780-lcd2usb-config">
