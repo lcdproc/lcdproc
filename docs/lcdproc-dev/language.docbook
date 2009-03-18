@@ -528,7 +528,8 @@
 		    <literal>icon</literal>
 		  </term>
 		  <listitem><para>
-		      A predefined or client-defined icon.
+		      A predefined icon. For a list of valid names consult
+		      <filename>server/widget.c.</filename>
 		    </para></listitem>
 		</varlistentry>
 		<varlistentry>
