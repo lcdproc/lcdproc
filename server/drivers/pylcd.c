@@ -1263,11 +1263,11 @@ pyramid_get_key (Driver *drvthis)
  * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
-pylcd_get_info (Driver *drvthis)
+pyramid_get_info (Driver *drvthis)
 {
-    static char *pylcd_info_string="Pyramid LCD driver";
+    static char *pyramid_info_string="Pyramid LCD driver";
 
-    return pylcd_info_string;
+    return pyramid_info_string;
 };
 
 
