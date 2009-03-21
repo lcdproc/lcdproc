@@ -482,7 +482,7 @@ MtxOrb_height (Driver *drvthis)
  * \return         Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
-MtxcOrb_cellwidth (Driver *drvthis)
+MtxOrb_cellwidth (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -496,7 +496,7 @@ MtxcOrb_cellwidth (Driver *drvthis)
  * \return         Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
-MtxcOrb_cellheight (Driver *drvthis)
+MtxOrb_cellheight (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
