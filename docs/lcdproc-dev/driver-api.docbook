@@ -45,7 +45,7 @@ typedef struct lcd_logical_driver {
 	char *api_version;
 
 	// Does this driver require to be in foreground ?
-	int *stay_in_foreground;// Does this driver require to be in foreground ?
+	int *stay_in_foreground;
 
 	/ Does this driver support multiple instances ?
 	int *supports_multiple;
@@ -57,7 +57,7 @@ typedef struct lcd_logical_driver {
 The programmer should define the following symbols:
 char * api_version = API_VERSION;	// &lt;-- this symbol is defined by make
 int stay_in_foreground = 0;		// This driver does not need to be in foreground
-int supports_multiple = 0;		// This driver does not c$support multiple instances
+int supports_multiple = 0;		// This driver does not support multiple instances
 char *symbol_prefix = "MyDriver_";	// Driver functions start with MyDriver_
 And fill these values with the correct values. Upon loading the driver module,
 the server will locate these symbols and store pointers to them in the
@@ -95,7 +95,7 @@ API_VERSION in the code.
 	void (*flush)		(Driver *drvthis);
 
 	// write string s at position (x,y)
-	void (*string)		(Driver *drvthis, int x, int y, char *str);
+	void (*string)		(Driver *drvthis, int x, int y, const char *str);
 
 	// write char c at position (x,y)
 	void (*chr)		(Driver *drvthis, int x, int y, char c);
@@ -120,7 +120,7 @@ API_VERSION in the code.
 	void (*heartbeat)	(Driver *drvthis, int state);
 
 	// draw named icon at position (x,y)
-	void (*icon)		(Driver *drvthis, int x, int y, int icon);
+	int (*icon)		(Driver *drvthis, int x, int y, int icon);
 
 	// set cursor type and move it to position (x,y)
 	void (*cursor)		(Driver *drvthis, int x, int y, int type);
@@ -132,7 +132,7 @@ API_VERSION in the code.
 	// - It is currently unclear how this system should work exactly
 	// - The set_char function expects a simple block of data with 1 byte for each pixel-line.
 	//   (So that is 8 bytes for a 5x8 char)
-	void (*set_char)	(Driver *drvthis, char ch, unsigned char *dat);
+	void (*set_char)	(Driver *drvthis, int n, unsigned char *dat);
 	int (*get_free_chars)	(Driver *drvthis);
 
 	// get width / height of a character cell (in pixels)
@@ -146,11 +146,11 @@ API_VERSION in the code.
 
 	// get / set the display's contrast
 	int (*get_contrast)	(Driver *drvthis);
-	int (*set_contrast)	(Driver *drvthis, int promille);
+	void (*set_contrast)	(Driver *drvthis, int promille);
 
 	// get / set brightness for given backlight state
 	int (*get_brightness)	(Driver *drvthis, int state);
-	int (*set_brightness)	(Driver *drvthis, int state, int promille);
+	void (*set_brightness)	(Driver *drvthis, int state, int promille);
 
 	// set backlight state
 	void (*backlight)	(Driver *drvthis, int state);
@@ -186,22 +186,22 @@ API_VERSION in the code.
 	// Config file functions, cwprovided by the server
 	// - see configfile.h on how to use these functions
 	// - as sectionname, always use the driver name: drvthis->name
-	char (*config_get_bool)	(char * sectionname, char * keyname,
-				int skip, char default_value);
-	int (*config_get_int)	(char * sectionname, char * keyname,
-				int skip, int default_value);
+	short (*config_get_bool) (char * sectionname, char * keyname,
+				int skip, short default_value);
+	long int (*config_get_int) (char * sectionname, char * keyname,
+				int skip, long int default_value);
 	double (*config_get_float) (char * sectionname, char * keyname,
 				int skip, double default_value);
-	char *(*config_get_string) (char * sectionname, char * keyname,
-				int skip, char * default_value);
+	const char *(*config_get_string) (char * sectionname, char * keyname,
+				int skip, const char * default_value);
 				// Returns a string in server memory space.
 				// Copy this string.
-	int config_has_section	(char *sectionname);
-	int config_has_key	(char *sectionname, char *keyname);
+	int config_has_section	(const char *sectionname);
+	int config_has_key	(const char *sectionname, const char *keyname);
 
 	// error reporting function
 	// - see drivers/report.h for details
-	void (*report)			( const int level, const char *format, .../*args*/ );
+	void (*report)		( const int level, const char *format, .../*args*/ );
 
 	// Display properties functions (for drivers that adapt to other loaded drivers)
 	// - the return the size of another already loaded driver
@@ -230,7 +230,7 @@ API_VERSION in the code.
 </para>
 
 <screen>
-typedef struct my_driver_private {
+typedef struct MyDriver_private_data {
 	int fd;				// file descriptor for the LCD device
         int width, height;		// dimension of the LCD (in characters, 1-based
         int cellwidth, cellheight;	// Size of each LCD cell, in pixels
@@ -291,6 +291,7 @@ typedef struct my_driver_private {
   The init() function.
   It starts up the LCD, initializes all variables, allocates private data space
   and stores the pointer by calling store_private_ptr();
+  Returns &lt;0 on error.
 </para>
 
 <funcsynopsis>
@@ -352,7 +353,7 @@ typedef struct my_driver_private {
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
 	<paramdef>int <parameter>x</parameter></paramdef>
 	<paramdef>int <parameter>y</parameter></paramdef>
-	<paramdef>char *<parameter>str</parameter></paramdef>
+	<paramdef>const char *<parameter>str</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 <para>
@@ -435,14 +436,14 @@ typedef struct my_driver_private {
   </funcprototype>
 </funcsynopsis>
 <para>
-  Sets the heartbeat to the indicated state: 0=off 1=graph1 2=graph2
-  HEARTBEAT_ON to say that we want to display/refresh the heartbeat.
-  The driver choose how to do it. See MtxOrb.c
+  Sets the heartbeat to the indicated state: 0=off, 1=on.
+  Use HEARTBEAT_ON to say that we want to display/refresh the heartbeat.
+  The driver choose how to do it.
 </para>
 
 <funcsynopsis>
   <funcprototype>
-	<funcdef>void <function>(*icon)</function></funcdef>
+	<funcdef>int <function>(*icon)</function></funcdef>
 	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
 	<paramdef>int <parameter>x</parameter></paramdef>
 	<paramdef>int <parameter>y</parameter></paramdef>
@@ -452,6 +453,8 @@ typedef struct my_driver_private {
 <para>
   Draw named icon <replaceable>icon</replaceable> at position
   (<replaceable>x</replaceable>,<replaceable>y</replaceable>).
+  If the driver returns -1 the server core will draw an appropriate replacement
+  character.
 </para>
 
 <funcsynopsis>
@@ -477,8 +480,8 @@ typedef struct my_driver_private {
   </funcprototype>
 </funcsynopsis>
 <para>
-The set_char function expects a simple block of data with 1 byte for each pixel-line.
-(So that is 8 bytes for a 5x8 char)
+  The set_char function expects a simple block of data with 1 byte for each pixel-line.
+  (So that is 8 bytes for a 5x8 char)
 </para>
 
 <funcsynopsis>
@@ -488,6 +491,7 @@ The set_char function expects a simple block of data with 1 byte for each pixel-
   </funcprototype>
 </funcsynopsis>
 <para>
+  Get total number of custom characters available.
 </para>
 
 <funcsynopsis>
@@ -547,7 +551,7 @@ The set_char function expects a simple block of data with 1 byte for each pixel-
 </funcsynopsis>
 <para>
   Get the brightness value from the driver for the given backlight state.
-  The parameter <parameter>state</parameter> determnies which one
+  The parameter <parameter>state</parameter> determines which one
   is returned.
   The return value is an integer in the range from 0 to 1000.
   Many displays do not support getting or setting brightness using software.
@@ -620,11 +624,11 @@ The set_char function expects a simple block of data with 1 byte for each pixel-
 
 <funcsynopsis>
   <funcprototype>
-	<funcdef>char <function>(*config_get_bool)</function></funcdef>
+	<funcdef>short <function>(*config_get_bool)</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
 	<paramdef>char *<parameter>keyname</parameter></paramdef>
 	<paramdef>int <parameter>skip</parameter></paramdef>
-	<paramdef>char <parameter>default_value</parameter></paramdef>
+	<paramdef>short <parameter>default_value</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 <para>
@@ -637,11 +641,11 @@ The set_char function expects a simple block of data with 1 byte for each pixel-
 
 <funcsynopsis>
   <funcprototype>
-	<funcdef>int <function>(*config_get_int)</function></funcdef>
+	<funcdef>long int <function>(*config_get_int)</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
 	<paramdef>char *<parameter>keyname</parameter></paramdef>
 	<paramdef>int <parameter>skip</parameter></paramdef>
-	<paramdef>int <parameter>default_value</parameter></paramdef>
+	<paramdef>long int <parameter>default_value</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 <para>
@@ -663,11 +667,11 @@ The set_char function expects a simple block of data with 1 byte for each pixel-
 
 <funcsynopsis>
   <funcprototype>
-	<funcdef>char *<function>(*config_get_string)</function></funcdef>
+	<funcdef>const char *<function>(*config_get_string)</function></funcdef>
 	<paramdef>char *<parameter>sectionname</parameter></paramdef>
 	<paramdef>char *<parameter>keyname</parameter></paramdef>
 	<paramdef>int <parameter>skip</parameter></paramdef>
-	<paramdef>char *<parameter>default</parameter></paramdef>
+	<paramdef>const char *<parameter>default</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 <para>
@@ -683,7 +687,7 @@ The set_char function expects a simple block of data with 1 byte for each pixel-
 <funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>config_has_section</function></funcdef>
-	<paramdef>char *<parameter>sectionname</parameter></paramdef>
+	<paramdef>const char *<parameter>sectionname</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 <para>
@@ -694,8 +698,8 @@ The set_char function expects a simple block of data with 1 byte for each pixel-
 <funcsynopsis>
   <funcprototype>
 	<funcdef>int <function>config_has_key</function></funcdef>
-	<paramdef>char *<parameter>sectionname</parameter></paramdef>
-	<paramdef>char *<parameter>keyname</parameter></paramdef>
+	<paramdef>const char *<parameter>sectionname</parameter></paramdef>
+	<paramdef>const char *<parameter>keyname</parameter></paramdef>
   </funcprototype>
 </funcsynopsis>
 <para>
@@ -706,6 +710,8 @@ The set_char function expects a simple block of data with 1 byte for each pixel-
 
 <screen>
 First version, Joris Robijn, 20011016
+Corrected and expanded, Peter Marschall 20060411
+Sync'd with lcd.h, Markus Dolze, 20090322
 </screen>
 
 </sect1>

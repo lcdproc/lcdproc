@@ -30,7 +30,7 @@ typedef struct lcd_logical_driver {
 	char *api_version;
 
 	// Does this driver require to be in foreground ?
-	int *stay_in_foreground;// Does this driver require to be in foreground ?
+	int *stay_in_foreground;
 
 	/ Does this driver support multiple instances ?
 	int *supports_multiple;
@@ -40,9 +40,9 @@ typedef struct lcd_logical_driver {
 
 /*
 The programmer should define the following symbols:
-char * api_version = API_VERSION;  // <-- this symbol is defined by make
-int stay_in_foreground = 0;	// This driver does not need to be in foreground
-int supports_multiple = 0;	// This driver does not c$support multiple instances
+char * api_version = API_VERSION;	// <-- this symbol is defined by make
+int stay_in_foreground = 0;		// This driver does not need to be in foreground
+int supports_multiple = 0;		// This driver does not support multiple instances
 char *symbol_prefix = "MyDriver_";	// Driver functions start with MyDriver_
 And fill these values with the correct values. Upon loading the driver module,
 the server will locate these symbols and store pointers to them in the
@@ -69,7 +69,7 @@ API_VERSION in the code.
 
 	//// Essential output functions (necessary for output drivers)
 
-	// get display width & height (in characters)
+	// get display width / height (in characters; 1-based)
 	int (*width)		(Driver *drvthis);
 	int (*height)		(Driver *drvthis);
 
@@ -80,7 +80,7 @@ API_VERSION in the code.
 	void (*flush)		(Driver *drvthis);
 
 	// write string s at position (x,y)
-	void (*string)		(Driver *drvthis, int x, int y, char *str);
+	void (*string)		(Driver *drvthis, int x, int y, const char *str);
 
 	// write char c at position (x,y)
 	void (*chr)		(Driver *drvthis, int x, int y, char c);
@@ -105,7 +105,7 @@ API_VERSION in the code.
 	void (*heartbeat)	(Driver *drvthis, int state);
 
 	// draw named icon at position (x,y)
-	void (*icon)		(Driver *drvthis, int x, int y, int icon);
+	int (*icon)		(Driver *drvthis, int x, int y, int icon);
 
 	// set cursor type and move it to position (x,y)
 	void (*cursor)		(Driver *drvthis, int x, int y, int type);
@@ -117,10 +117,10 @@ API_VERSION in the code.
 	// - It is currently unclear how this system should work exactly
 	// - The set_char function expects a simple block of data with 1 byte for each pixel-line.
 	//   (So that is 8 bytes for a 5x8 char)
-	void (*set_char)	(Driver *drvthis, char ch, unsigned char *dat);
+	void (*set_char)	(Driver *drvthis, int n, unsigned char *dat);
 	int (*get_free_chars)	(Driver *drvthis);
 
-	// get width & height of a character cell (in pixels)
+	// get width / height of a character cell (in pixels)
 	// - necessary to provide info about cell size to clients
 	// - if not defined, the core will provide alternatives returning default values
 	int (*cellwidth)	(Driver *drvthis);
@@ -129,13 +129,13 @@ API_VERSION in the code.
 
 	//// Hardware functions
 
-	// get & set ithe display's contrast
+	// get / set the display's contrast
 	int (*get_contrast)	(Driver *drvthis);
-	int (*set_contrast)	(Driver *drvthis, int promille);
+	void (*set_contrast)	(Driver *drvthis, int promille);
 
-	// get & set brightness for given backlight state
+	// get / set brightness for given backlight state
 	int (*get_brightness)	(Driver *drvthis, int state);
-	int (*set_brightness)	(Driver *drvthis, int state, int promille);
+	void (*set_brightness)	(Driver *drvthis, int state, int promille);
 
 	// set backlight state
 	void (*backlight)	(Driver *drvthis, int state);
@@ -171,22 +171,22 @@ API_VERSION in the code.
 	// Config file functions, cwprovided by the server
 	// - see configfile.h on how to use these functions
 	// - as sectionname, always use the driver name: drvthis->name
-	char (*config_get_bool)	(char * sectionname, char * keyname,
-				int skip, char default_value);
-	int (*config_get_int)	(char * sectionname, char * keyname,
-				int skip, int default_value);
+	short (*config_get_bool) (char * sectionname, char * keyname,
+				int skip, short default_value);
+	long int (*config_get_int) (char * sectionname, char * keyname,
+				int skip, long int default_value);
 	double (*config_get_float) (char * sectionname, char * keyname,
 				int skip, double default_value);
-	char *(*config_get_string) (char * sectionname, char * keyname,
-				int skip, char * default_value);
+	const char *(*config_get_string) (char * sectionname, char * keyname,
+				int skip, const char * default_value);
 				// Returns a string in server memory space.
 				// Copy this string.
-	int config_has_section	(char *sectionname);
-	int config_has_key	(char *sectionname, char *keyname);
+	int config_has_section	(const char *sectionname);
+	int config_has_key	(const char *sectionname, const char *keyname);
 
 	// error reporting function
 	// - see drivers/report.h for details
-	void (*report)			( const int level, const char *format, .../*args*/ );
+	void (*report)		( const int level, const char *format, .../*args*/ );
 
 	// Display properties functions (for drivers that adapt to other loaded drivers)
 	// - the return the size of another already loaded driver
@@ -207,7 +207,7 @@ daemons on one machine. They will then use the same variables !
 
 In the driver's private structure will probably at least be something like:
 
-typedef struct my_driver_private {
+typedef struct MyDriver_private_data {
 	int fd;				// file descriptor for the LCD device
 	int width, height;		// dimension of the LCD (in characters, 1-based
 	int cellwidth, cellheight;	// Size of each LCD cell, in pixels
@@ -251,16 +251,19 @@ int (*init)		(Driver *drvthis, char *args);
 // The init function
 // Starts up the LCD, initializes all vars. Allocates private data space
 // and stores the pointer by calling store_private_ptr();
+// Returns <0 on error.
 
 void (*close)		(Driver *drvthis);
 // Shuts down the connection with the LCD.
 // Called just before unloading the driver.
 
 int (*width)		(Driver *drvthis);
-// Get the screen width.
+// Get the screen width in characters.
+// The result is 1-based.
 
 int (*height)		(Driver *drvthis);
-// Get the screen height.
+// Get the screen height in character lines.
+// The result is 1-based.
 
 void (*clear)		(Driver *drvthis);
 // Clears the framebuffer
@@ -268,7 +271,7 @@ void (*clear)		(Driver *drvthis);
 void (*flush)		(Driver *drvthis);
 // Flushes the framebuffer to the LCD.
 
-void (*string)		(Driver *drvthis, int x, int y, char *str);
+void (*string)		(Driver *drvthis, int x, int y, const char *str);
 // Places a string in the framebuffer
 // All coordinates are 1-based, (1,1) is top left.
 // Driver should check for overflows
@@ -277,56 +280,79 @@ void (*chr)		(Driver *drvthis, int x, int y, char c);
 // Places a char in the framebuffer
 // Driver should check for overflows
 
-void (*vbar)		(Driver *drvthis, int x, int len);
-// Draws a vertical bar at horizontal position x and with length len.
+void (*vbar)		(Driver *drvthis, int x, int y, int len, int promille, int options);
+// Draw a vertical bar at position (x,y) that has maximal length len,
+// where a fraction of (promille / 1000) is filled.
 
-void (*hbar)		(Driver *drvthis, int x, int y, int len);
-// Draws a horizontal bar at position x,y and with length len.
+void (*hbar)		(Driver *drvthis, int x, int y, int len, int promille, int options);
+// Draw a horizontal bar at position (x,y) that has maximal length len,
+// where a fraction of (promille / 1000) is filled.
 
 void (*num)		(Driver *drvthis, int x, int num);
 // Displays a big number at horizontal position x.
 
-void (*heartbeat)	(Driver *drvthis, int type);
-// Sets the heartbeat to the indicated type: 0=off 1=graph1 2=graph2
-//HEARTBEAT_ON to say that we want to display/refresh the heartbeat.
-//The driver choose how to do it. See MtxOrb.c"
+void (*heartbeat)	(Driver *drvthis, int state);
+// Sets the heartbeat to the indicated state: 0=off, 1=on
+// Use HEARTBEAT_ON to say that we want to display/refresh the heartbeat.
+// The driver choose how to do it.
 
-void (*icon)		(Driver *drvthis, int x, int y, int icon);
+int (*icon)		(Driver *drvthis, int x, int y, int icon);
 // draw named icon at position (x,y)
+// If the driver returns -1 the server core will draw
+// an appropriate replacement character.
 
 void (*cursor)		(Driver *drvthis, int x, int y, int type);
 // set cursor type and move it to position (x,y)
 
-int (*get_contrast)		(Driver *drvthis);
+void (*set_char)	(Driver *drvthis, int n, unsigned char *dat);
+// The set_char function expects a simple block of data with 1 byte for each pixel-line.
+// (So that is 8 bytes for a 5x8 char)
+
+int (*get_free_chars)	(Driver *drvthis);
+// Get total number of custom characters available.
+
+int (*cellwidth)	(Driver *drvthis);
+// Return the width of a character cell in pixels.
+// The result is 1-based.
+
+int (*cellheight)	(Driver *drvthis);
+// Return the height of a character cell in pixels.
+// The result is 1-based.
+
+int (*get_contrast)	(Driver *drvthis);
 // Gets the contrast from the driver.
-// the value returned is in the ramnge 0 - 1000
+// The return value is an integer in the range from 0 to 1000.
 // Many displays do not support software setting of contrast.
 
-void (*set_contrast)		(Driver *drvthis, int contrast);
-// Sets the contrast to the given value. Values should be 0 to 1000.
+void (*set_contrast)	(Driver *drvthis, int contrast);
+// Sets the contrast to the given value, which is an integer in the range
+// from 0 to 1000. It is up to the driver to map the logical interval [0, 1000]
+// into the interval that the hardware supports.
 // Many displays do not support software setting of contrast.
 
-int (*get_brightness)		(Driver *drvthis, int state);
+int (*get_brightness)	(Driver *drvthis, int state);
 // Get the brightness for the given backlight state.
-// Returned values are in the range from 0 - 1000.
+// The return value is an integer in the range from 0 to 1000.
 // Many displays do not support software setting of contrast.
 
-void (*set_brightness)		(Driver *drvthis, int state, int int brightness);
-// Sets the contrast to the given value. Values should be 0 to 1000.
-// Many displays do not support software setting of contrast.
-// Use -1 to get the current value returned.
+void (*set_brightness)	(Driver *drvthis, int state, int int brightness);
+// Set the brightness for the given backlight state to the value given.
+// Value must be an integer in the range from 0 to 1000.
+// It is up to the driver to map the logical interval [0, 1000] into the
+// interval that the hardware supports.
+// Many displays do not support software setting of brightness.
 
 void (*backlight)	(Driver *drvthis, int state);
-// Sets the backlight to brightness 'on'.
+// Sets the backlight to the given brightness state.
 // Often hardware can only support on and off, in that case any value
-// of on>0 will switch the backlight on.
+// of state > 0 will switch the backlight on.
 
 void (*output)		(Driver *drvthis, int state);
 // Sets the output value. Some displays/wirings have a general purpose
 // output, which can be controlled by calling this function. See the
 // 'output' command in the 'widget language'.
 
-const char *(*get_key) (Driver *drvthis);
+const char *(*get_key)	(Driver *drvthis);
 // Checks if a key has been pressed on the device.
 // Returns NULL for "no key pressed", or a string describing the pressd key.
 // These characters should match the keypad-layout.
@@ -335,24 +361,24 @@ const char *(*get_info) (Driver *drvthis);
 // Returns a string describing the driver and its features.
 
 
-char (*config_get_bool)	(char * sectionname, char * keyname,
-			int skip, char default_value);
+short (*config_get_bool) (char * sectionname, char * keyname,
+			int skip, short default_value);
 // Call to server. Retrieve a bool from the config file.
 // Sectionname should be the name of the driver (as in the struct).
 // If the key cannot be found, the default value will be returned.
 // skip should be 0 usually, but if you want to retrieve multiple
 // identical keys, then increase skip to get every next value.
 
-int (*config_get_int)	(char * sectionname, char * keyname,
-			int skip, int default_value);
+long int (*config_get_int) (char * sectionname, char * keyname,
+			int skip, long int default_value);
 // Call to server. Retrieve an integer from the config file.
 
 double (*config_get_float) (char * sectionname, char * keyname,
 			int skip, double default_value);
 // Call to server. Retrieve a float from the config file.
 
-char *(*config_get_string) (char * sectionname, char * keyname,
-			int skip, char * default);
+const char *(*config_get_string) (char * sectionname, char * keyname,
+			int skip, const char * default);
 // Call to server. Retrieve a string from the config file.
 // Fill result with a pointer to some available space. You can fill it
 // with a default value. If the key is found, it will be overwritten
@@ -361,15 +387,15 @@ char *(*config_get_string) (char * sectionname, char * keyname,
 // It is in the address space of the server, and will be freed at the
 // next call.
 
-int config_has_section	(char *sectionname);
+int config_has_section	(const char *sectionname);
 // Returns wether a section exists. Does not need to be called prior
 // to a call to a config_get_* function.
 
-int config_has_key	(char *sectionname, char *keyname);
+int config_has_key	(const char *sectionname, const char *keyname);
 // Returns the number of times a key exists. Does not need to be called
 // prior to a call to a config_get_* function.
 
 
 First version, Joris Robijn, 20011016
 Corrected and expanded, Peter Marschall 20060411
-
+Sync'd with lcd.h, Markus Dolze, 20090322
