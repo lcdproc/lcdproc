@@ -1,5 +1,5 @@
-/* \file server/commands/menu_commands.c
- * Defines handlers for client commands concerning menus.
+/** \file server/commands/menu_commands.c
+ * Implements handlers for client commands concerning menus.
  *
  * This contains definitions for all the functions which clients can run.
  * The functions here are to be called only from parse.c's interpreter.
@@ -63,14 +63,14 @@ static char *argv2string(int argc, char **argv)
 }
 
 
-/*************************************************************************
- * menu_add_item_func
+/**
+ * Adds an item to a menu.
  *
- * Adds an item to a menu
- *
- * Usage: menu_add_item <menuid> <newitemid> <type> [<text>]
+ * Usage: menu_add_item \<menuid\> \<newitemid\> \<type\> [\<text\>]
+ * 
  * You should use "" as id for the client's main menu. This menu will be
  * created automatically when you add an item to it the first time.
+ * 
  * You (currently?) cannot create a menu in the main level yourself.
  * The names you use for items should be unique for your client.
  * The text is the visible text for the item.
@@ -220,12 +220,11 @@ menu_add_item_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/*************************************************************************
- * menu_del_item_func
- *
+/**
  * Deletes an item from a menu
  *
- * Usage: menu_del_item <menuid> <itemid>
+ * Usage: menu_del_item \<menuid\> \<itemid\>
+ * 
  * The given item in the given menu will be deleted. If you have deleted all
  * the items from your client menu, that menu will automatically be removed.
  */
@@ -285,89 +284,89 @@ menu_del_item_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/**************************************************************************
- * menu_set_item_func
- * Sets the info about a menu item
+/**
+ * Sets the info about a menu item.
  *
  * For example, text displayed, value, etc...
  *
- * Usage: menu_set_item <menuid> <itemid> {<option>}+
+ * Usage: menu_set_item \<menuid\> \<itemid\> {\<option\>}+
+ * 
  * The following parameters can be set per item:
  * (you should include the - in the option)
  *
  * For all types:
- * -text "text"			("")
+ * \li -text "text"		("")
  *	Sets the visible text.
- * -is_hidden false|true	(false)
+ * \li -is_hidden false|true	(false)
  *	If the item currently should not appear in a menu.
- * -prev id			()
+ * \li -prev id			()
  *	Sets the predecessor of this item (what happens after "Escape")
  *
  * For all except menus:
- * -next id			()
+ * \li -next id			()
  *	Sets the successor of this item (what happens after "Enter")
  *
  * action:
- * -menu_result none|close|quit	(none)
+ * \li -menu_result none|close|quit	(none)
  *	Sets what to do with the menu when this action is selected:
  *	- none: the menu stays as it is.
  *	- close: the menu closes and returns to a higher level.
  *	- quit: quits the menu completely so you can foreground your app.
  *
  * checkbox:
- * -value off|on|gray		(off)
+ * \li -value off|on|gray	(off)
  *	Sets its current value.
- * -allow_gray false|true	(false)
+ * \li -allow_gray false|true	(false)
  *	Sets if a grayed checkbox is allowed.
  *
  * ring:
- * -value <int>			(0)
+ * \li -value \<int\>		(0)
  *	Sets the index in the stringlist that is currently selected.
- * -strings <string>		(empty)
+ * \li -strings \<string\>	(empty)
  *	The subsequent strings that can be selected. They should be
  *	tab-separated in ONE string.
  *
  * slider:
- * -value <int>			(0)
+ * \li -value \<int\>		(0)
  *	Sets its current value.
- * -mintext <string>		("")
- * -maxtex <string>		("")
+ * \li -mintext \<string\>	("")
+ * \li -maxtex \<string\>	("")
  *	Text at the minimal and maximal side. On small displays these might
  *	not be displayed.
- * -minvalue <int>		(0)
- * -maxvalue <int>		(100)
+ * \li -minvalue \<int\>	(0)
+ * \li -maxvalue \<int\>	(100)
  *	The minimum and maximum value of the slider.
- * -stepsize <int>		(1)
+ * \li -stepsize \<int\>	(1)
  *	The stepsize of the slider. If you use 0, you can control it yourself
  *	completely.
  *
  * numeric:
- * -value <int>			(0)
+ * \li -value \<int\>		(0)
  *	Sets its current value.
- * -minvalue <int>		(0)
- * -maxvalue <int>		(100)
+ * \li -minvalue \<int\>	(0)
+ * \li -maxvalue \<int\>	(100)
  *	The minimum and maximum value that are allowed. If you make one of
  *	them negative, the user will be able to enter negative numbers too.
  * Maybe floats will work too in the future.
  *
  * alpha:
- * -value <string>
+ * \li -value \<string\>
  *	Sets its current value.	("")
- * -password_char <char>	(none)
- * -minlength <int>		(0)
- * -maxlength <int>		(10)
+ * \li -password_char \<char\>	(none)
+ * \li -minlength \<int\>	(0)
+ * \li -maxlength \<int\>	(10)
  *	Set the minimum and maximum allowed length.
- * -allow_caps false|true	(true)
- * -allow_noncaps false|true	(false)
- * -allow_numbers false|true	(true)
+ * \li -allow_caps false|true	(true)
+ * \li -allow_noncaps false|true	(false)
+ * \li -allow_numbers false|true	(true)
  *	Allows these groups of characters.
- * -allowed_extra <string>	("")
+ * \li -allowed_extra \<string\>	("")
  *	The chars in this string are also allowed.
  *
  * ip:
- * -value <string>
+ * \li -value \<string\>
  *	Sets its current value.	("")
- * -v6 false|true
+ * \li -v6 false|true
  *
  * Hmm, this is getting very big. We might need a some real parser after all.
  */
@@ -714,13 +713,15 @@ menu_set_item_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/***************************************************************
- * Requests the menu system to display the given menu screen.  Depending on
+/**
+ * Requests the menu system to display the given menu screen.
+ *
+ * Depending on
  * the setting of the LCDPROC_PERMISSIVE_MENU_GOTO it is impossible
  * to go to a menu of another client (or the server menus). Same
  * restriction applies to the optional predecessor_id
  *
- * Usage: menu_goto <id> [<predecessor_id>]
+ * Usage: menu_goto \<id\> [\<predecessor_id\>]
  */
 int
 menu_goto_func(Client * c, int argc, char **argv)
@@ -759,10 +760,10 @@ menu_goto_func(Client * c, int argc, char **argv)
 	return 0;
 }
 
-/** Sets the predecessor of a Menuitem item to itemid (for wizzards)
- * i.e. the menuitem to go to after hitting "Enter" on item.
+/** Sets the predecessor of a Menuitem item to itemid (for wizzards).
+ * For example the menuitem to go to after hitting "Enter" on item.
  *
- * @return 0 on success and -1 otherwise
+ * \return 0 on success and -1 otherwise
  */
 int set_predecessor(MenuItem *item, char *itemid, Client *c)
 {
@@ -793,13 +794,13 @@ int set_predecessor(MenuItem *item, char *itemid, Client *c)
 	return 0;
 }
 
-/** Sets the successor of a Menuitem item to itemid (for wizzards) i.e. the
+/** Sets the successor of a Menuitem item to itemid (for wizzards). For example the
  * menuitem to go to after hitting "Enter" on item. Checks that a matching
  * menu item can be found. Checks if item is not a menu. (If you would
  * redefine the meaning of "Enter" for a menu it would not be useful
  * anymore.)
  *
- * @return 0 on success and -1 otherwise
+ * \return 0 on success and -1 otherwise
  */
 int set_successor(MenuItem *item, char *itemid, Client *c)
 {
@@ -836,10 +837,10 @@ int set_successor(MenuItem *item, char *itemid, Client *c)
 	return 0;
 }
 
-/***************************************************************
+/**
  * Requests the menu system to set the entry point into the menu system. 
  *
- * Usage: menu_set_main <id>
+ * Usage: menu_set_main \<id\>
  */
 int
 menu_set_main_func(Client *c, int argc, char **argv)
@@ -882,7 +883,7 @@ menu_set_main_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/***************************************************************
+/**
  * This function catches the event for the menus that have been
  * created on behalf of the clients. It informs the client with
  * an event message.

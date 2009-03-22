@@ -1,6 +1,4 @@
-/* \file server/commands/widget_commands.h
- * Declares handlers for client widget commands.
- */
+/** \file server/commands/widget_commands.h */
 
 /* This file is part of LCDd, the lcdproc server.
  *

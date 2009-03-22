@@ -1,4 +1,4 @@
-/* \file server/commands/command_list.h
+/** \file server/commands/command_list.h
  * Declares client command dispatcher function.
  */
 
@@ -15,16 +15,16 @@
 
 #include "../client.h"
 
-/*
-  The function list for clients is stored in a table, and the items each
-  point to a function to call, defined below.
+/**
+ * The function list for clients is stored in a table, and the items each
+ * point to a function to call, defined below.
  */
-
 typedef int (*CommandFunc) (Client *c, int argc, char **argv);
 
+/** Defines an entry in the command table */
 typedef struct client_function {
-	char *keyword;
-	CommandFunc function;
+	char *keyword;		/**< Command string in the protocol */
+	CommandFunc function;	/**< Pointer to the associated function */
 } client_function;
 
 

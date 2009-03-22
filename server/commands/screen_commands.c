@@ -1,5 +1,5 @@
-/* \file server/commands/screens_commands.c
- * Defines handlers for the client commands concerning screens.
+/** \file server/commands/screen_commands.c
+ * Implements handlers for the client commands concerning screens.
  *
  * This contains definitions for all the functions which clients can run.
  * The functions here are to be called only from parse.c's interpreter.
@@ -31,10 +31,10 @@
 #include "screen.h"
 #include "render.h"
 
-/***************************************************************
+/**
  * Tells the server the client has another screen to offer
  *
- * Usage: screen_add <id>
+ * Usage: screen_add \<id\>
  */
 int
 screen_add_func(Client *c, int argc, char **argv)
@@ -75,10 +75,10 @@ screen_add_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/****************************************************************
- * Client requests that the server forget about a screen
+/**
+ * The client requests that the server forget about a screen
  *
- * Usage: screen_del <screenid>
+ * Usage: screen_del \<screenid\>
  */
 int
 screen_del_func(Client *c, int argc, char **argv)
@@ -119,14 +119,14 @@ screen_del_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/***************************************************************
+/**
  * Configures info about a particular screen, such as its
  *  name, priority, or duration
  *
- * Usage: screen_set <id> [-name <name>] [-wid <width>] [-hgt <height>]
- *     [-priority <prio>] [-duration <int>] [-timeout <int>] 
- *     [-heartbeat <type>] [-backlight <type>]
- *     [-cursor <type>] [-cursor_x <xpos>] [-cursor_y <ypos>] 
+ * Usage: screen_set \<id\> [-name \<name\>] [-wid \<width\>] [-hgt \<height\>]
+ *     [-priority \<prio\>] [-duration \<int\>] [-timeout \<int\>] 
+ *     [-heartbeat \<type\>] [-backlight \<type\>]
+ *     [-cursor \<type\>] [-cursor_x \<xpos\>] [-cursor_y \<ypos\>] 
  */
 int
 screen_set_func(Client *c, int argc, char **argv)
@@ -409,11 +409,11 @@ screen_set_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/**********************************************************************
+/**
  * Tells the server the client would like to accept keypresses
  * of a particular type when the given screen is active on the display
  *
- * Usage: screen_add_key <screenid> <keylist>
+ * Usage: screen_add_key \<screenid\> \<keylist\>
  */
 int
 screen_add_key_func(Client *c, int argc, char **argv)
@@ -485,11 +485,11 @@ screen_add_key_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/*************************************************************************
+/**
  * Tells the server the client would NOT like to accept keypresses
  * of a particular type when the given screen is active on the display
  *
- * Usage: screen_del_key <screenid> <keylist>
+ * Usage: screen_del_key \<screenid\> \<keylist\>
  */
 int
 screen_del_key_func(Client *c, int argc, char **argv)

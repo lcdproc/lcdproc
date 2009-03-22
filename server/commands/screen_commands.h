@@ -1,6 +1,4 @@
-/* \file server/commands/screen_commands.h
- * Declares handlers for client screen commands.
- */
+/** \file server/commands/screen_commands.h */
 
 /* This file is part of LCDd, the lcdproc server.
  *

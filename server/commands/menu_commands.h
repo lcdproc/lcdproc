@@ -1,6 +1,4 @@
-/* \file server/commands/menu_commands.h
- * Declares handlers for client menu commands.
- */
+/** \file server/commands/menu_commands.h */
 
 /* This file is part of LCDd, the lcdproc server.
  *

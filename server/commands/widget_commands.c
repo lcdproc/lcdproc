@@ -1,5 +1,5 @@
-/* \file server/commands/widget_commands.c
- * Defines handlers for client commands concerning widgets.
+/** \file server/commands/widget_commands.c
+ * Implements handlers for client commands concerning widgets.
  *
  * This contains definitions for all the functions which clients can run.
  * The functions here are to be called only from parse.c's interpreter.
@@ -34,10 +34,10 @@
 #include "drivers.h"
 
 
-/*************************************************************************
+/**
  * Adds a widget to a screen, but doesn't give it a value
  *
- * Usage: widget_add <screenid> <widgetid> <widgettype> [-in <id>]
+ * Usage: widget_add \<screenid\> \<widgetid\> \<widgettype\> [-in \<id\>]
  */
 int
 widget_add_func(Client *c, int argc, char **argv)
@@ -120,10 +120,10 @@ widget_add_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/*******************************************************************
+/**
  * Removes a widget from a screen, and forgets about it
  *
- * Usage: widget_del <screenid> <widgetid>
+ * Usage: widget_del \<screenid\> \<widgetid\>
  */
 int
 widget_del_func(Client *c, int argc, char **argv)
@@ -169,13 +169,11 @@ widget_del_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/********************************************************************
+/**
  * Configures information about a widget, such as its size, shape,
- *  contents, position, speed, etc...
+ * contents, position, speed, etc.
  *
- * Ack!  This is long!
- *
- * widget_set <screenid> <widgetid> <widget-SPECIFIC-data>
+ * widget_set \<screenid\> \<widgetid\> \<widget-SPECIFIC-data\>
  */
 int
 widget_set_func(Client *c, int argc, char **argv)

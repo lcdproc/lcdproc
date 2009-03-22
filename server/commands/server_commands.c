@@ -1,5 +1,5 @@
-/* \file server/commands/server_commands.c
- * Defines handlers for client commands concerning the server settings.
+/** \file server/commands/server_commands.c
+ * Implements handlers for client commands concerning the server settings.
  *
  * This contains definitions for all the functions which clients can run.
  * The functions here are to be called only from parse.c's interpreter.
@@ -30,14 +30,14 @@
 #include "client.h"
 #include "render.h"
 
-/****************************************************************************
- * Sets the state of the output port (such as on MtxOrb LCDs)
- *
- * Usage: output <on|off|int>
- */
 #define ALL_OUTPUTS_ON -1
 #define ALL_OUTPUTS_OFF 0
 
+/**
+ * Sets the state of the output port (such as on MtxOrb LCDs)
+ *
+ * Usage: output \<on|off|int\>
+ */
 int
 output_func(Client *c, int argc, char **argv)
 {
@@ -93,10 +93,12 @@ output_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/*******************************************************************************
- * sleep_func
+/**
+ * The sleep_func was intended to make the server sleep for some seconds.
+ * This function is currently ignored as making the server sleep actually
+ * stalls it and disrupts other clients.
  *
- * Usage: sleep <seconds>
+ * Usage: sleep \<seconds\>
  */
 int
 sleep_func(Client *c, int argc, char **argv)
@@ -158,8 +160,8 @@ sleep_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/*****************************************************************************
- * Does nothing, returns "noop complete" message
+/**
+ * Does nothing, returns "noop complete" message.
  *
  * This is useful for shell scripts or programs that want to talk
  *    with LCDproc and not get deadlocked.  Send a noop after each
@@ -174,4 +176,3 @@ noop_func(Client *c, int argc, char **argv)
 	sock_send_string(c->sock, "noop complete\n");
 	return 0;
 }
-

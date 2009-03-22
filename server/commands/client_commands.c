@@ -1,5 +1,5 @@
-/* \file server/commands/client_commands.c
- * Defines handlers for general client commands.
+/** \file server/commands/client_commands.c
+ * Implements handlers for general client commands.
  *
  * This contains definitions for all the functions which clients can run.
  * The functions here are to be called only from parse.c's interpreter.
@@ -33,7 +33,7 @@
 #include "input.h"
 
 
-/***************************************************************
+/**
  * Debugging only..  prints out a list of arguments it receives
  */
 int
@@ -48,18 +48,18 @@ test_func_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/***************************************************************
+/**
  * The client must say "hello" before doing anything else.
  *
- * It returns a string of info about the server to the client
+ * It sends back a string of info about the server to the client.
  *
  * Usage: hello
+ *
+ * \todo  Give \em real info about the server/lcd
  */
 int
 hello_func(Client *c, int argc, char **argv)
 {
-	/* TODO:  Give *real* info about the server/lcd...*/
-
 	if (argc > 1) {
 		sock_send_error(c->sock, "extra parameters ignored\n");
 	}
@@ -77,10 +77,10 @@ hello_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/*****************************************************************************
+/**
  * The client should say "bye" before disconnecting
  *
- * The function does not respond to the client: it simply cuts connection
+ * The function does not respond to the client: it simply cuts connection.
  *
  * Usage: bye
  */
@@ -96,10 +96,10 @@ bye_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/***************************************************
- * sets info about the client, such as its name
+/**
+ * Sets info about the client, such as its name
  *
- * Usage: client_set -name <id>
+ * Usage: client_set -name \<id\>
  */
 int
 client_set_func(Client *c, int argc, char **argv)
@@ -152,11 +152,11 @@ client_set_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/******************************************************************
+/**
  * Tells the server the client would like to accept keypresses
  * of a particular type
  *
- * Usage: client_add_key [-exclusively|-shared] {<key>}+
+ * Usage: client_add_key [-exclusively|-shared] {\<key\>}+
  */
 int
 client_add_key_func(Client *c, int argc, char **argv)
@@ -195,11 +195,11 @@ client_add_key_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/*********************************************************************
+/**
  * Tells the server the client would NOT like to accept keypresses
  * of a particular type
  *
- * Usage: client_del_key {<key>}+
+ * Usage: client_del_key {\<key\>}+
  */
 int
 client_del_key_func(Client *c, int argc, char **argv)
@@ -222,7 +222,7 @@ client_del_key_func(Client *c, int argc, char **argv)
 	return 0;
 }
 
-/***************************************************************************
+/**
  * Toggles the backlight, if enabled.
  *
  * Usage: backlight {on|off|toggle|blink|flash}
@@ -268,8 +268,8 @@ backlight_func(Client *c, int argc, char **argv)
 
 }
 
-/****************************************************************************
- * info_func
+/**
+ * Sends back information about the loaded drivers.
  *
  * Usage: info
  */

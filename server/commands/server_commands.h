@@ -1,6 +1,4 @@
-/* \file server/commands/server_commands.h
- * Declares handlers for client commands dealing with server properties.
- */
+/** \file server/commands/server_commands.h */
 
 /* This file is part of LCDd, the lcdproc server.
  *
