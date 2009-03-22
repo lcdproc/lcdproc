@@ -66,6 +66,7 @@ v.0.5dev (ongoing development)
  * hd44780 driver: update the backlight setting only on change
  + hd44780 driver: add lineaddress option to support ST7036 (Malte Poeggel)
  + lcdproc: Retrieve per CPU usage statistics on FreeBSD (M. Dolze)
+ * Change drivers to start in background by default: bayrad, CFontz, ea65, glk
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

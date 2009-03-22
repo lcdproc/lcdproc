@@ -87,7 +87,7 @@ typedef struct CFontz_private_data {
 
 // Vars for the server core
 MODULE_EXPORT char *api_version = API_VERSION;
-MODULE_EXPORT int stay_in_foreground = 1;
+MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "CFontz_";
 
@@ -271,7 +271,7 @@ CFontz_init(Driver *drvthis)
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return 1;
+	return 0;
 }
 
 
