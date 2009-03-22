@@ -6,9 +6,14 @@ Please send a message to the mailing list if you have any question.
 
 Things for the short term:
 - Use centralized command message parsing engine (more secure)
-- more features for existing display drivers
-  (e.g. adapt them to bignum library)
+- more features for existing display drivers (e.g. adapt them to bignum library)
 - documentation (any help is appreciated)
+- lcd_lib: Make use of the options parameter to specify SEAMLESS_HBARS, the
+  height of hbars, etc.
+- lcterm: Support keyboard input
+- MtxOrb: Recover the code for I2C connectivity to MtxOrb
+- shuttleVFD: Use output() method for these special "out-of-band" symbols.
+
 
 Things for the longer term:
 

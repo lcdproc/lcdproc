@@ -7,6 +7,9 @@
  *
  * Contact Thomas Riewe <thomas.riewe@pyramid.de> for further
  * information on the LCD.
+ *
+ * \todo Convert to use pixel-row based logic for custom characters, icons,
+ *       bar graphs etc.
  */
 
 /*
@@ -557,8 +560,6 @@ pyramid_chr (Driver *drvthis, int x, int y, char c)
  * \param n        Custom character to define [0 - (NUM_CCs-1)].
  * \param dat      Array of 40(=8*5=cellheight*cellwidth) bytes, each representing a pixel
  *                 starting from the top left to the bottom right.
- * \todo
- * Convert \c dat to use one byte per pixel-row as e.g. in the \c CFontzPackage driver.
  */
 MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 {
@@ -635,8 +636,7 @@ MODULE_EXPORT int  pyramid_cellheight (Driver *drvthis)
 
 /**
  * Set up vertical bars.
- * \todo
- * Get rid of it by using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 pyramid_init_vbar (Driver *drvthis)
@@ -728,8 +728,7 @@ pyramid_init_vbar (Driver *drvthis)
 
 /**
  * Set up horizontal bars.
- * \todo
- * Get rid of it by using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 pyramid_init_hbar (Driver *drvthis)
@@ -796,6 +795,11 @@ pyramid_init_hbar (Driver *drvthis)
 	}
 }
 
+/**
+ * Defines some custom characters.
+ * These characters are enabled if the value 0x100 is sent to the \c output command.
+ * \param drvthis  Pointer to driver structure.
+ */
 static void
 pyramid_init_custom1 (Driver *drvthis)
 {

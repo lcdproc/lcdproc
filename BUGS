@@ -1,21 +1,22 @@
 Known Bugs:
 --------------
 
-V0.4.3:
+V0.5dev:
+  - A client gets disconnected if it sends a many commands quickly. This can
+    happen during initial screen setup or if vBars are used on large (40x4)
+    displays.
+  - If vBars are used together with ICON_BLOCK_FILLED on the same screen and
+    that icon is implemented as a custom char, it sometimes is replaced with
+    a non full block from the vBar.
+
+
+Bugs in previous versions (not checked if the still exist):
+-----------------------------------------------------------
+    
    - A client may cause the connection to LCDd to break or even crash
      LCDd by not reading the replies from LCDd
-	 See one of the example clients (clients/examples) for details.
+         See one of the example clients (clients/examples) for details.
    - MtxOrb driver
        - "lcdproc K" does not display properly in between digit.
-
-V0.4-pre1:
    - The server tends to crash if the joystick driver is the last one loaded.
      Specifically, if the "E" key is pressed...
-   - The lcdproc client doesn't have a disk screen.
-   - Menus are not implemented.
-   - Scrollers are not implemented.
-   - Dynamic driver adding/removing is not implemented.
-   - LCDproc needs more documentation!
-
-But, it's pretty stable considering I rewrote 400k of source since the
-last release...

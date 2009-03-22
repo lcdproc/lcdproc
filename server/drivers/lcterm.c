@@ -1,6 +1,10 @@
 /** \file server/drivers/lcterm.c
  * LCDd \c lcterm driver for the LCTerm serial LCD terminal from Helmut Neumark Elektronik,
  * www.neumark.de.
+ *
+ * \todo Support keyboard input
+ * \todo Convert to use pixel-row based logic for custom characters, icons,
+ *       bar graphs etc.
  */
 
 /*
@@ -23,8 +27,6 @@
   This driver is mostly based on the HD44780 and the LCDM001 driver.
   (Hopefully I have NOT forgotten any file I have stolen code from.
   If so send me an e-mail or add your copyright here!)
-
-  TODO: support keyboard input
 */
 
 #include <stdlib.h>
@@ -170,7 +172,7 @@ lcterm_init (Driver *drvthis)
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-  return 1;
+  return 0;
 }
 
 
@@ -327,8 +329,6 @@ lcterm_string (Driver *drvthis, int x, int y, const char string[])
  * \param n        Custom character to define [0 - (NUM_CCs-1)].
  * \param dat      Array of 40(=8*5=cellheight*cellwidth) bytes, each representing a pixel
  *                 starting from the top left to the bottom right.
- * \todo
- * Convert \c dat to use one byte per pixel-row as e.g. in the \c CFontzPackage driver.
  */
 MODULE_EXPORT void
 lcterm_set_char (Driver *drvthis, int n, char *dat)
@@ -358,8 +358,7 @@ lcterm_set_char (Driver *drvthis, int n, char *dat)
 
 /**
  * Set up vertical bars.
- * \todo
- * Get rid of it by using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 lcterm_init_vbar (Driver *drvthis)
@@ -461,8 +460,7 @@ lcterm_init_vbar (Driver *drvthis)
 
 /**
  * Set up horizontal bars.
- * \todo
- * Get rid of it by using pixel-row based logic as e.g. in the \c CFontzPackage driver.
+ * \param drvthis  Pointer to driver structure.
  */
 static void
 lcterm_init_hbar (Driver *drvthis)
@@ -574,9 +572,10 @@ lcterm_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 }
 
 
-/////////////////////////////////////////////////////////////////
-// Sets up for big numbers.
-//
+/**
+ * Sets up for big numbers.
+ * \param drvthis  Pointer to driver structure.
+ */
 static void
 lcterm_init_num (Driver *drvthis)
 {
@@ -681,9 +680,6 @@ lcterm_init_num (Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
  * \param num      Character to write (0 - 10 with 10 representing ':')
- *
- * \todo
- * Convert to pixel-row based logic to be able to use the adv_bignum library.
  */
 MODULE_EXPORT void
 lcterm_num (Driver *drvthis, int x, int num)
@@ -789,9 +785,6 @@ lcterm_num (Driver *drvthis, int x, int num)
  * \param icon     synbolic value representing the icon.
  * \retval 0       Icon has been successfully defined/written.
  * \retval <0      Server core shall define/write the icon.
- *
- * \todo
- * Convert to using pixel-row based logic as e.g. in the \c CFontzPackage driver.
  */
 MODULE_EXPORT int
 lcterm_icon (Driver *drvthis, int x, int y, int icon)
