@@ -108,7 +108,7 @@ AC_CHECK_LIB(kvm, kvm_open,[
 ])
 
 dnl NetBSD, OpenBSD and FreeBSD
-AC_CHECK_HEADERS(sched.h sys/types.h machine/pio.h machine/sysarch.h sys/cpuvar.h machine/apm_bios.h)
+AC_CHECK_HEADERS(sched.h sys/types.h machine/pio.h machine/sysarch.h sys/cpuvar.h machine/apm_bios.h sys/pcpu.h)
 ETR_SYSV_IPC
 ETR_UNION_SEMUN
 

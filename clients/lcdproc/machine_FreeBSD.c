@@ -59,11 +59,16 @@
 # include <machine/apm_bios.h>
 #endif
 
+#ifdef HAVE_SYS_PCPU_H
+# include <sys/pcpu.h>
+#endif
+
 #include "main.h"
 #include "machine.h"
 #include "shared/LL.h"
 
 static int pageshift;
+static kvm_t *kvmd;
 #define pagetok(size) ((size) << pageshift)
 static int swapmode(int *retavail, int *retfree);
 
@@ -82,11 +87,19 @@ int machine_init(void)
 	/* we only need the amount of log(2)1024 for our conversion */
 	pageshift -= 10;
 
+	/* open kernel virtual memory */
+	if ((kvmd = kvm_open(NULL, NULL, NULL, O_RDONLY, "kvm_open")) == NULL)
+	{
+		perror("kvm_open");
+		return(FALSE);
+	}
+
 	return(TRUE);
 }
 
 int machine_close(void)
 {
+	kvm_close(kvmd);
 	return(TRUE);
 }
 
@@ -298,13 +311,6 @@ int machine_get_procs(LinkedList *procs)
 	struct kinfo_proc *kprocs;
 	int nproc, i;
 	procinfo_type *p;
-	kvm_t *kvmd;
-
-	if ((kvmd = kvm_open(NULL, NULL, NULL, O_RDONLY, "kvm_open")) == NULL)
-	{
-		perror("kvm_open");
-		return(FALSE);
-	}
 
 	kprocs = kvm_getprocs(kvmd, KERN_PROC_ALL, 0, &nproc);
 	if (kprocs == NULL)
@@ -341,8 +347,6 @@ int machine_get_procs(LinkedList *procs)
 		kprocs++;
 	}
 
-	kvm_close(kvmd);
-
 	return(TRUE);
 }
 
@@ -350,7 +354,14 @@ int machine_get_smpload(load_type *result, int *numcpus)
 {
 	int i, num;
 	size_t size;
-	load_type curr_load;
+	load_type load;
+#ifdef HAVE_SYS_PCPU_H
+	static load_type last_load[MAX_CPUS];
+	struct pcpu *pcpudata;
+#endif
+
+	if (numcpus == NULL)
+		return(FALSE);
 
 	size = sizeof(int);
 	if (sysctlbyname("hw.ncpu", &num, &size, NULL, 0) < 0) {
@@ -358,19 +369,49 @@ int machine_get_smpload(load_type *result, int *numcpus)
 		return(FALSE);
 	}
 
-	if (machine_get_load(&curr_load) == FALSE)
-		return(FALSE);
-
-	if (numcpus == NULL)
-		return(FALSE);
-
 	/* restrict #CPUs to max. *numcpus */
 	num = (*numcpus >= num) ? num : *numcpus;
 	*numcpus = num;
 
-	/* Don't know how to get per-cpu-load values */
+#ifndef HAVE_SYS_PCPU_H
+	if (machine_get_load(&load) == FALSE)
+		return(FALSE);
+#endif
+
 	for (i = 0; i < num; i++) {
-		result[i] = curr_load;
+#ifdef HAVE_SYS_PCPU_H
+		pcpudata = kvm_getpcpu(kvmd, i);
+
+		if (pcpudata == NULL || pcpudata == -1)
+			return(FALSE);
+		
+		/* extract the data for single CPU */
+		load.user   = (unsigned long) (pcpudata->pc_cp_time[CP_USER]);
+		load.nice   = (unsigned long) (pcpudata->pc_cp_time[CP_NICE]);
+		load.system = (unsigned long) (pcpudata->pc_cp_time[CP_SYS] +
+						pcpudata->pc_cp_time[CP_INTR]);
+		load.idle   = (unsigned long) (pcpudata->pc_cp_time[CP_IDLE]);
+		load.total  = load.user + load.nice + load.system + load.idle;
+
+		/* store difference in result */
+		result[i].user   = load.user   - last_load[i].user;
+		result[i].nice   = load.nice   - last_load[i].nice;
+		result[i].system = load.system - last_load[i].system;
+		result[i].idle   = load.idle   - last_load[i].idle;
+		result[i].total  = load.total  - last_load[i].total;
+
+		/* store current value for next round */
+		last_load[i].user   = load.user;
+		last_load[i].nice   = load.nice;
+		last_load[i].system = load.system;
+		last_load[i].idle   = load.idle;
+		last_load[i].total  = load.total;
+
+		/* free pcpu buffer */
+		free(pcpudata);
+#else
+		result[i] = load;
+#endif
 	}
 
 	return(TRUE);

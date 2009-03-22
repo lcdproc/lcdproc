@@ -65,6 +65,7 @@ v.0.5dev (ongoing development)
  * server: prevent stalling if time goes backwards (M. Vallevand)
  * hd44780 driver: update the backlight setting only on change
  + hd44780 driver: add lineaddress option to support ST7036 (Malte Poeggel)
+ + lcdproc: Retrieve per CPU usage statistics on FreeBSD (M. Dolze)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
