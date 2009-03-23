@@ -4,12 +4,7 @@ man_MANS = lcdproc.1 lcdexec.1 LCDd.8 lcdproc-config.5
 SUBDIRS = lcdproc-user lcdproc-dev
 doxygen_input = header.html footer.html
 
-EXTRA_DIST = README.dg \
-	README.dg2 \
-	README.glcdlib \
-	menustuff.txt \
-	netstuff.txt \
-	lcdproc.1.in \
+EXTRA_DIST = lcdproc.1.in \
 	lcdexec.1 \
 	LCDd.8.in \
 	lcdproc-config.5.in \
