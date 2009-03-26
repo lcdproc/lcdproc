@@ -395,7 +395,7 @@ sock_poll_clients(void)
 static int
 sock_read_from_client(ClientSocketMap *clientSocketMap)
 {
-	char buffer[MAXMSG];
+	char buffer[MAXMSG + 1];
 	int nbytes, i;
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
