@@ -393,7 +393,8 @@ HD44780_init(Driver *drvthis)
 
 	// consistency check: fail if local senddata function was not defined
 	if (p->hd44780_functions->senddata == NULL) {
-		report(RPT_ERR, "%s: incomplete functions for connection type");
+		report(RPT_ERR, "%s: incomplete functions for connection type",
+				drvthis->name);
 		return -1;
 	}	
 
