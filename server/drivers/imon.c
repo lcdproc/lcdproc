@@ -399,6 +399,16 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 		if (x + pos > p->width)
 			return;
 
+#ifndef IMON_HBARS_OLD
+		if (pixels >= p->cellwidth ) {
+			/* write a "full" block to the screen... */
+			imon_chr(drvthis, x+pos, y, IMON_CHAR_BLOCK_FILLED);
+		}
+		else if (pixels >= 1) {
+			/* write a partial block, albeit vertically... */
+			imon_chr(drvthis, x+pos, y, pixels * p->cellheight / p->cellwidth);
+		}			
+#else
 		if (pixels >= p->cellwidth * 3/4) {
 			/* write a "full" block to the screen... */
 			imon_chr(drvthis, x+pos, y, IMON_CHAR_BLOCK_FILLED);
@@ -413,6 +423,7 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 			imon_chr(drvthis, x+pos, y, '>');
 			break;
 		}
+#endif
 		else {
 			; // write nothing (not even a space)
 		}
