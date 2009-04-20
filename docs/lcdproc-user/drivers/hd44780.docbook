@@ -1132,18 +1132,6 @@ The optional keypad can be connected as follows:
       <entry>Y<subscript>8</subscript></entry>
     </row>
     <row>
-      <entry>nLF</entry>
-      <entry>14</entry>
-      <entry></entry>
-      <entry>Y<subscript>9</subscript></entry>
-    </row>
-    <row>
-      <entry>INIT</entry>
-      <entry>16</entry>
-      <entry></entry>
-      <entry>Y<subscript>10</subscript></entry>
-    </row>
-    <row>
       <entry>nACK</entry>
       <entry>10</entry>
       <entry></entry>
@@ -1193,11 +1181,17 @@ bargraph. The LCD is driven by LCDproc and the LEDs by another program
 such as portato. Further details can be obtained from:
 </para>
 
-<para>
-<ulink url="http://metalab.unc.edu/pub/linux/system/status/lcdtime-0.2.tar.gz"></ulink>
-<ulink url="http://metalab.unc.edu/pub/linux/system/status/meter-0.2.tar.gz"></ulink>
-<ulink url="http://metalab.unc.edu/pub/linux/system/status/portato-1.2.tar.gz"></ulink>
-</para>
+<simplelist type="vert" columns="1">
+  <member>
+    <ulink url="http://www.ibiblio.org/pub/linux/system/status/lcdtime-0.2.tar.gz"></ulink>
+  </member>
+  <member>
+    <ulink url="http://www.ibiblio.org/pub/linux/system/status/meter-0.2.tar.gz"></ulink>
+  </member>
+  <member>
+    <ulink url="http://www.ibiblio.org/pub/linux/system/status/portato-1.2.tar.gz"></ulink>
+  </member>
+</simplelist>
 
 <para>
 The LCD connections are:
@@ -1300,7 +1294,7 @@ The LCD connections are:
       <entry>14</entry>
       <entry></entry>
       <entry>RW</entry>
-      <entry>5 (LCD2 - 6) (optional - pull all LCD RW low (*)</entry>
+      <entry>5 (optional - pull LCD RW low (*)</entry>
     </row>
     <row>
       <entry>INIT</entry>
@@ -1317,7 +1311,7 @@ The LCD connections are:
 (*) on the RW line of the display: this line decides whether the display receives data from the 
 LPT port, or whether it sends data to the LPT port: if grounded it receives, if High or connected 
 to nothing at all it "sends" (i.e., will not work as intended). So, if you are not sure that 
-you need it otherwise, then connect it to GND. This certainly applies if you have only one display.
+you need it otherwise, then connect it to GND.
 </para>
 
 <para>
