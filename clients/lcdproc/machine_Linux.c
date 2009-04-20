@@ -303,10 +303,22 @@ int machine_get_load(load_type *curr_load)
 {
 	static load_type last_load = { 0, 0, 0, 0, 0 };
 	load_type load;
+	int ret;
+	unsigned long load_iowait, load_irq, load_softirq;
 
 	reread(load_fd, "get_load");
 
-	sscanf(procbuf, "cpu %lu %lu %lu %lu", &load.user, &load.nice, &load.system, &load.idle);
+	ret = sscanf(procbuf, "cpu %lu %lu %lu %lu %lu %lu %lu",
+	             &load.user, &load.nice, &load.system, &load.idle,
+	             &load_iowait, &load_irq, &load_softirq);
+
+	if (ret >= 5)
+		load.idle += load_iowait;
+	if (ret >= 6)
+		load.system += load_irq;
+	if (ret >= 7)
+		load.system += load_softirq;
+
 	load.total = load.user + load.nice + load.system + load.idle;
 
 	curr_load->user   = load.user   - last_load.user;
@@ -462,6 +474,8 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	static load_type last_load[MAX_CPUS];
 	load_type curr_load[MAX_CPUS];
 	int ncpu = 0;
+	int ret;
+	unsigned long load_iowait, load_irq, load_softirq;
 
 	reread(load_fd, "get_load");
 
@@ -469,7 +483,16 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	token = strtok(procbuf, "\n");
 	while (token != NULL) {
 		if ((strlen(token) > 3) && (!strncmp(token, "cpu", 3)) && isdigit(token[3])) {
-			sscanf(token, "cpu%*d %lu %lu %lu %lu", &curr_load[ncpu].user, &curr_load[ncpu].nice, &curr_load[ncpu].system, &curr_load[ncpu].idle);
+			ret = sscanf(token, "cpu%*d %lu %lu %lu %lu %lu %lu %lu",
+			             &curr_load[ncpu].user, &curr_load[ncpu].nice, &curr_load[ncpu].system,
+			             &curr_load[ncpu].idle, &load_iowait, &load_irq, &load_softirq);
+
+			if (ret >= 5)
+				curr_load[ncpu].idle += load_iowait;
+			if (ret >= 6)
+				curr_load[ncpu].system += load_irq;
+			if (ret >= 7)
+				curr_load[ncpu].system += load_softirq;
 
 			curr_load[ncpu].total = curr_load[ncpu].user + curr_load[ncpu].nice +
 						curr_load[ncpu].system + curr_load[ncpu].idle;
