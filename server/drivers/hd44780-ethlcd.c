@@ -18,7 +18,7 @@
 
 #include "hd44780-ethlcd.h"
 #include "hd44780-low.h"
-#include "../../shared/sockets.h"
+#include "shared/sockets.h"
 #include "report.h"
  
 #include <stdio.h>
@@ -43,7 +43,7 @@ void ethlcd_HD44780_uPause(PrivateData *p, int usecs) {}
  */
 int hd_init_ethlcd(Driver *drvthis)
 {
-	char hostname[_POSIX_HOST_NAME_MAX];
+	char hostname[256];
 	long flags;
 
 	PrivateData *p = (PrivateData*) drvthis->private_data;
@@ -57,6 +57,7 @@ int hd_init_ethlcd(Driver *drvthis)
 
 	//reading configuration file
 	strncpy(hostname, drvthis->config_get_string(drvthis->name, "Device", 0, "ethlcd"), sizeof(hostname));
+	hostname[sizeof(hostname) - 1] = '\0';
 
 	p->sock = sock_connect(hostname, DEFAULT_ETHLCD_PORT);
 	if (p->sock < 0) {
