@@ -1,4 +1,4 @@
-/* $id$
+/* 
  * Low level I/O functions taken from led-stat.txt
  * Jan 22 95 copyright damianf@wpi.edu
  *

@@ -1,31 +1,24 @@
-/******************************************************************************
-*
-*  util.c - utility functions to print some numerical values in a nice fashion
-*  Copyright (C) 2005  Peter Marschall
-*
-*  ---
-*
-*  This program is free software; you can redistribute it and/or
-*  modify it under the terms of the GNU General Public License
-*  as published by the Free Software Foundation; either version 2
-*  of the License, or (at your option) any later version.
-*
-*  This program is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with this program; if not, write to the Free Software
-*  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*
-*  ---
-*
-*  $Source$
-*  $Revision$
-*  Checked in by: $Author$
-*
-*******************************************************************************/
+/** \file clients/lcdproc/util.c
+ * Utility functions to print some numerical values in a nice fashion
+ */
+
+/*
+ *  Copyright (C) 2005  Peter Marschall
+ *
+ *  This program is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation; either version 2
+ *  of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301.
+ */
 
 #include "util.h"
 
@@ -50,8 +43,8 @@ sprintf_memory(char *dst, double value, double roundlimit)
 			format = "%.3f%s";
 
 		sprintf(dst, format, value, unit);
-	}	
-	return dst;	
+	}
+	return dst;
 }
 
 
@@ -68,7 +61,7 @@ sprintf_percent(char *dst, double percent)
 			strcpy(dst, "100%");
 		else
 			sprintf(dst, "%.1f%%", (percent >= 0) ? percent : 0);
-	}	
+	}
 	return dst;
 }
 
@@ -99,7 +92,7 @@ convert_double(double *value, int base, double roundlimit)
 		off++;
 		*value /= base;
 	}
-	return units[off];	
+	return units[off];
 }
 
 /* EOF */
