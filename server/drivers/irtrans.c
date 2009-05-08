@@ -51,11 +51,13 @@
 #include "irtrans_network.h"
 #include "irtrans_errcode.h"
 #include "report.h"
-//#include "drv_base.h"
-
 
 // Variables
-// TODO init
+
+/* This is necessary for Solaris <= Solaris 9 */
+#ifndef INADDR_NONE
+#define INADDR_NONE ((unsigned long) -1)
+#endif
 
 /** private data for the \c irtrans driver */
 typedef struct irtrans_private_data {
