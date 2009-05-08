@@ -1,12 +1,13 @@
 /** \file server/drivers/hd44780-winamp.c
  * \c winamp connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
- * The LCD is operated in it's 8 bit-mode to be connected to a single PC parallel port.
+ * The LCD is operated in its 8 bit-mode to be connected to a single PC parallel port.
  */
 
 /*
  * Copyright (c)  1999 Andrew McMeikan <andrewm@engineer.com>
- *		  modular driver 1999-2000 Benjamin Tse <blt@Comports.com>
+ *		  1999-2000 Benjamin Tse <blt@Comports.com>
+ *                  - modular driver
  *
  *		  Modified July 2000 by Charles Steinkuehler for enhanced
  *		  performance and reduced CPU usage
@@ -15,6 +16,9 @@
  *
  *                2001 Joris Robijn <joris@robijn.net>
  *                  - Keypad support
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
  *
  * The connections are:
  * printer port   LCD
@@ -55,18 +59,14 @@
  * PAPEREND (12)  X2
  * SELIN  (13)    X3
  * nFAULT (15)    X4
- *
- * Created modular driver Dec 1999, Benjamin Tse <blt@Comports.com>
- *
- * This file is released under the GNU General Public License. Refer to the
- * COPYING file distributed with this package.
  */
 
 #include "hd44780-winamp.h"
 #include "hd44780-low.h"
 #include "lpt-port.h"
-
 #include "port.h"
+#include "report.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -82,6 +82,8 @@ void lcdwinamp_HD44780_backlight(PrivateData *p, unsigned char state);
 unsigned char lcdwinamp_HD44780_readkeypad(PrivateData *p, unsigned int YData);
 void lcdwinamp_HD44780_output(PrivateData *p, int data);
 
+// Compile time mapping of control lines
+// For expert users only!
 #define EN1	STRB
 #define EN2	SEL
 #define EN3	LF
@@ -104,6 +106,23 @@ hd_init_winamp(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
+
+	// Safety check against common configuration errors
+	if (p->numDisplays == 2) {
+		if (p->have_backlight && (EnMask[1] == BL)) {
+			report(RPT_ERR, "hd_init_winamp: backlight must be on different pin than 2nd controller");
+			report(RPT_ERR, "hd_init_winamp: please change connection mapping in hd44780-winamp.c");
+			return -1;
+		}
+		if (p->have_backlight && p->have_output) {
+			report(RPT_ERR, "hd_init_winamp: backlight and output not possible with 2 controllers");
+			return -1;
+		}
+	}
+	else if (p->numDisplays == 3 && (p->have_backlight || p->have_output)) {
+		report(RPT_ERR, "hd_init_winamp: backlight or output not possible with 3 controllers");
+		return -1;
+	}
 
 	// Reserve the port registers
 	port_access_multiple(p->port,3);
@@ -152,8 +171,8 @@ lcdwinamp_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned cha
 	portControl |= p->backlight_bit;
 
 	if (displayID == 0)
-		enableLines = EnMask[0] 
-		| ((p->have_backlight) ? 0 : EnMask[1])
+		enableLines = EnMask[0]
+		| ((p->numDisplays >= 2) ? EnMask[1] : 0)
 		| ((p->numDisplays == 3) ? EnMask[2] : 0);
 	else
 		enableLines = EnMask[displayID - 1];
@@ -191,7 +210,7 @@ lcdwinamp_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned cha
  */
 void lcdwinamp_HD44780_backlight(PrivateData *p, unsigned char state)
 {
-	p->backlight_bit = (state?0:nSEL);
+	p->backlight_bit = (state ? 0 : BL);
 
 	port_out(p->port + 2, p->backlight_bit ^ OUTMASK);
 }
@@ -200,7 +219,7 @@ void lcdwinamp_HD44780_backlight(PrivateData *p, unsigned char state)
 /**
  * Read keypress.
  * \param p      Pointer to driver's private data structure.
- * \param YData  ???
+ * \param YData  Bitmap of rows / lines to enable.
  * \return       Bitmap of the pressed keys.
  */
 unsigned char lcdwinamp_HD44780_readkeypad(PrivateData *p, unsigned int YData)
@@ -234,7 +253,7 @@ void lcdwinamp_HD44780_output(PrivateData *p, int data)
 {
 	// Setup data bus
 	port_out(p->port, data);
-	// Strobe the latch (374 latches on rising edge, 3/574 on trailing.  No matter)
+	// Strobe the latch (374 latches on rising edge, 373 on trailing. No matter)
 	port_out(p->port + 2, (LE | p->backlight_bit) ^ OUTMASK);
         if (p->delayBus) p->hd44780_functions->uPause(p, 1);
 	port_out(p->port + 2, (p->backlight_bit) ^ OUTMASK);
