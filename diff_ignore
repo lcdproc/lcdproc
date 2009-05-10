@@ -21,6 +21,9 @@ aclocal.m4
 cat-id-tbl.c
 charset.alias
 LCDd
+lcdproc
+lcdexec
+lcdvc
 config.cache
 config.guess
 config.h
@@ -38,6 +41,17 @@ ref-add.sed
 ref-del.sed
 stamp-cat-id
 stamp-h
+stamp-h1
 stamp-h.in
 tags
 undep.sh
+compile
+depcomp
+autom4te.cache
+Doxyfile
+init-*.LSB
+init-*.debian
+init-*.rpm
+lcdproc-config.5
+LCDd.8
+lcdproc.1
