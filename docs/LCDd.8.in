@@ -172,6 +172,9 @@ USB connection via a FTDI FT2232D chip in bitbang mode
 .TP
 .B ethlcd
 TCP connection using open source/open hardware ethlcd (http://manio.skyboo.net/ethlcd/)
+.TP
+.B usblcd
+LCD device from Adams IT Services (http://www.usblcd.de/)
 .RE
 .TP
 .B i2500vfd

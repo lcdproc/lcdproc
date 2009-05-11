@@ -31,6 +31,7 @@
 # include "hd44780-i2c.h"
 #endif
 # include "hd44780-ethlcd.h"
+# include "hd44780-usblcd.h"
 // add new connection type header files here
 
 
@@ -72,6 +73,7 @@ static const ConnectionMapping connectionMapping[] = {
 #endif
 	/* TCP socket connection types */
 	{ "ethlcd",        HD44780_CT_ETHLCD,        IF_TYPE_TCP,     hd_init_ethlcd    },
+	{ "usblcd",        HD44780_CT_USBLCD,        IF_TYPE_USB,     hd_init_usblcd    },
 	// add new connection types here
 	// ....
 	// default, end of structure element (do not delete)

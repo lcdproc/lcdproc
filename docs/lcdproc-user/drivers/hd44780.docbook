@@ -123,6 +123,11 @@ more important. Here are the USB connection types the HD44780 driver supports:
     <link linkend="hd44780-ftdi">ftdi</link>:
     Display connected to a dual channel FTDI 2232D USB chip
   </listitem>
+
+  <listitem>
+    <link linkend="hd44780-usblcd">usblcd</link>:
+    USBLCD from Adams IT Services (<ulink url="http://www.usblcd.de/"></ulink>)
+  </listitem>
 </itemizedlist>
 
 <para>
@@ -2480,6 +2485,32 @@ The default is <filename>ethlcd</filename>.
 
 </sect3>
 
+<sect3 id="hd44780-usblcd">
+<title>USBLCD adapter</title>
+
+<para>
+The USBLCD adapter from Adams IT Services (<ulink url="http://www.usblcd.de/"></ulink>)
+is a small interface board which allows you to connect an alphanumerical display
+module based on the HD44780 or compatible controller to the USB. The display
+will be powered by the USB. It features a switchable backlight (on or off) and
+can be used with 16x2, 16x4 or 20x4 displays.
+</para>
+
+<para>
+The <code>usblcd</code> connection type communicates with a kernel
+driver by using a device file <filename class="devicefile">/dev/usb/lcd<replaceable>x</replaceable></filename>.
+The kernel driver providing this device currently only exists for Linux kernels
+newer than 2.4.20-pre7.
+</para>
+
+<note>
+<para>
+As of 2007 these device are not sold anymore. This driver has been ported from
+lcdproc 0.4.5 to support existing users.
+</para>
+</note>
+</sect3>
+
 </sect2>
 
 
@@ -2552,6 +2583,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <arg choice="plain"><literal>mplay</literal></arg>
       <arg choice="plain"><literal>i2c</literal></arg>
       <arg choice="plain"><literal>ftdi</literal></arg>
+      <arg choice="plain"><literal>usblcd</literal></arg>
     </group>
     </arg>
   </term>
@@ -2630,6 +2662,10 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         <row>
           <entry><literal><link linkend="hd44780-ftdi">ftdi</link></literal></entry>
           <entry>Display connected to a dual channel FTDI 2232D USB chip</entry>
+        </row>
+        <row>
+          <entry><literal><link linkend="hd44780-usblcd">usblcd</link></literal></entry>
+          <entry>USBLCD adapter from Adams IT Services (<ulink url="http://www.usblcd.de/"></ulink>)</entry>
         </row>
         <!-- I2C -->  
         <row>

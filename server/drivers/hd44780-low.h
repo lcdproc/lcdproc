@@ -49,6 +49,7 @@
 #define HD44780_CT_I2C			16
 #define HD44780_CT_ETHLCD		17
 #define HD44780_CT_USS720		18
+#define HD44780_CT_USBLCD		19
 
 // symbolic names for interface types
 #define IF_TYPE_UNKNOWN		0
