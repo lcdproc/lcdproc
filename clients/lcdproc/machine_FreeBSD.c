@@ -382,7 +382,7 @@ int machine_get_smpload(load_type *result, int *numcpus)
 #ifdef HAVE_SYS_PCPU_H
 		pcpudata = kvm_getpcpu(kvmd, i);
 
-		if (pcpudata == NULL || pcpudata == -1)
+		if (pcpudata == NULL || pcpudata == (void *) -1)
 			return(FALSE);
 		
 		/* extract the data for single CPU */
