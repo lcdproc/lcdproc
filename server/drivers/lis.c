@@ -1406,29 +1406,29 @@ lis_test(Driver *drvthis)
 MODULE_EXPORT void
 lis_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
-PrivateData *p = drvthis->private_data;
-unsigned char mask = (1 << p->cellwidth) - 1;
-int row;
+	PrivateData *p = drvthis->private_data;
+	unsigned char mask = (1 << p->cellwidth) - 1;
+	int row;
 
 
-  if ((n < 0) || (n >= NUM_CCs))
-    return;
-  if (dat == NULL)
-    return;
+	if ((n < 0) || (n >= NUM_CCs))
+	    	return;
+	if (dat == NULL)
+	    	return;
 
-  for (row = 0; row < p->cellheight; row++) {
-    int letter = 0;
+	for (row = 0; row < p->cellheight; row++) {
+		int letter = 0;
 
-    if (p->lastline || (row < p->cellheight - 1))
-      letter = dat[row] & mask;	
+		if (p->lastline || (row < p->cellheight - 1))
+			letter = dat[row] & mask;	
 
-    if (p->cc[n].cache[row] != letter) {
-      p->cc[n].clean = 0;	 /* only mark dirty if really different */
-    }
-    p->cc[n].cache[row] = letter;
-  }
-  report(RPT_DEBUG, "%s: cached custom character #%d",
-                     drvthis->name, n);
+		if (p->cc[n].cache[row] != letter) {
+	      		p->cc[n].clean = 0;	 /* only mark dirty if really different */
+	    	}
+		p->cc[n].cache[row] = letter;
+	}
+	report(RPT_DEBUG, "%s: cached custom character #%d",
+		drvthis->name, n);
 }
 
 
@@ -1444,33 +1444,33 @@ int row;
 MODULE_EXPORT void
 lis_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-  if (p->ccmode != vbar) {
-    unsigned char vBar[p->cellheight];
-    int i;
+	if (p->ccmode != vbar) {
+		unsigned char vBar[p->cellheight];
+		int i;
 
-    if (p->ccmode != standard) {
-      /* Not supported(yet) */
-      report(RPT_WARNING, "%s: vbar: cannot combine two modes using user-defined characters",
-		      drvthis->name);
-      return;
-    }
-    p->ccmode = vbar;
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: vbar: cannot combine two modes using user-defined characters",
+				drvthis->name);
+			return;
+		}
+		p->ccmode = vbar;
 
-    memset(vBar, 0x00, sizeof(vBar));
+		memset(vBar, 0x00, sizeof(vBar));
 
-    for (i = 2; i <= p->cellheight; i++) {
-      // add pixel line per pixel line ...
-      vBar[p->cellheight - i + 1] = 0x1F;
-      lis_set_char(drvthis, i, vBar);
-    }
-  }
+		for (i = 2; i <= p->cellheight; i++) {
+			// add pixel line per pixel line ...
+			vBar[p->cellheight - i + 1] = 0x1F;
+			lis_set_char(drvthis, i, vBar);
+		}
+	}
 
-  report(RPT_DEBUG, "%s: vbar @ %d,%d len %d, %d/1000",
- 	drvthis->name, x, y, len, promille);
+	report(RPT_DEBUG, "%s: vbar @ %d,%d len %d, %d/1000",
+		drvthis->name, x, y, len, promille);
 
-  lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 2);
+	lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 2);
 }
 
 
@@ -1486,31 +1486,31 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 lis_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-  if (p->ccmode != hbar) {
-    unsigned char hBar[p->cellheight];
-    int i;
+	if (p->ccmode != hbar) {
+		unsigned char hBar[p->cellheight];
+		int i;
 
-    if (p->ccmode != standard) {
-      /* Not supported(yet) */
-      report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
-		      drvthis->name);
-      return;
-    }
+		if (p->ccmode != standard) {
+			/* Not supported(yet) */
+			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
+				drvthis->name);
+			return;
+		}
 
-    p->ccmode = hbar;
+		p->ccmode = hbar;
 
-    for (i = 1; i <= p->cellwidth; i++) {
-      // fill pixel columns from left to right.
-      memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
-      lis_set_char(drvthis, i + 2, hBar);
-    }
-  }
-  report(RPT_DEBUG, "%s: hbar @ %d,%d len %d, %d/1000",
- 	drvthis->name, x, y, len, promille);
+		for (i = 1; i <= p->cellwidth; i++) {
+			// fill pixel columns from left to right.
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
+			lis_set_char(drvthis, i + 2, hBar);
+		}
+	}
+	report(RPT_DEBUG, "%s: hbar @ %d,%d len %d, %d/1000",
+		drvthis->name, x, y, len, promille);
 
-  lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 2);
+	lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 2);
 }
 
 
@@ -1523,8 +1523,8 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 lis_num(Driver *drvthis, int x, int num)
 {
-PrivateData *p = drvthis->private_data;
-int do_init = 0;
+	PrivateData *p = drvthis->private_data;
+	int do_init = 0;
 
 	if ((num < 0) || (num > 10))
 		return;
@@ -1558,8 +1558,8 @@ int do_init = 0;
 MODULE_EXPORT int
 lis_get_free_chars (Driver *drvthis)
 {
-//PrivateData *p = drvthis->private_data;
+	//PrivateData *p = drvthis->private_data;
 
-  return NUM_CCs - 3;		// first three are reserved
+	return NUM_CCs - 3;		// first three are reserved
 }
 

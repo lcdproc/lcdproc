@@ -105,7 +105,8 @@ static void EyeboxOne_use_bar(int fd, int bar, int level);
 static void EyeboxOne_use_led(int fd, int led, int color);
 
 /* Parse one key from the configfile */
-static char EyeboxOne_parse_keypad_setting (Driver *drvthis, char * keyname, char default_value)
+static char
+EyeboxOne_parse_keypad_setting (Driver *drvthis, char * keyname, char default_value)
 {
 	char return_val = 0;
 	const char *s;
@@ -126,7 +127,7 @@ static char EyeboxOne_parse_keypad_setting (Driver *drvthis, char * keyname, cha
  *
  * Called to initialize driver settings
  */
-	MODULE_EXPORT int
+MODULE_EXPORT int
 EyeboxOne_init (Driver *drvthis)
 {
 	struct termios portset;
@@ -307,7 +308,7 @@ EyeboxOne_init (Driver *drvthis)
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return 1;
+	return 0;
 }
 
 #define ValidX(x) if ((x) > p->width) { (x) = p->width; } else (x) = (x) < 1 ? 1 : (x);
@@ -317,7 +318,9 @@ EyeboxOne_init (Driver *drvthis)
 /********************
  * Use bars
  */
-static void EyeboxOne_use_bar(int fd, int bar, int level){
+static void
+EyeboxOne_use_bar(int fd, int bar, int level)
+{
 	char buffer[16];
 
 	if(bar > 2 || bar < 1)
@@ -334,7 +337,9 @@ static void EyeboxOne_use_bar(int fd, int bar, int level){
 /********************
  * Use leds
  */
-static void EyeboxOne_use_led(int fd, int led, int color){
+static void
+EyeboxOne_use_led(int fd, int led, int color)
+{
 	char buffer[16];
 	int a,b;
 
@@ -371,7 +376,7 @@ static void EyeboxOne_use_led(int fd, int led, int color){
 /******************************
  * Clear the screen (the frame buffer)
  */
-	MODULE_EXPORT void
+MODULE_EXPORT void
 EyeboxOne_clear (Driver *drvthis)
 {
 	PrivateData * p = drvthis->private_data;
@@ -386,7 +391,7 @@ EyeboxOne_clear (Driver *drvthis)
 /******************************
  * Clean-up
  */
-	MODULE_EXPORT void
+MODULE_EXPORT void
 EyeboxOne_close (Driver *drvthis)
 {
 	PrivateData * p = drvthis->private_data;
@@ -416,7 +421,7 @@ EyeboxOne_close (Driver *drvthis)
 /******************************
  * Returns the display width
  */
-	MODULE_EXPORT int
+MODULE_EXPORT int
 EyeboxOne_width (Driver *drvthis)
 {
 	PrivateData * p = drvthis->private_data;
@@ -427,7 +432,7 @@ EyeboxOne_width (Driver *drvthis)
 /******************************
  * Returns the display height
  */
-	MODULE_EXPORT int
+MODULE_EXPORT int
 EyeboxOne_height (Driver *drvthis)
 {
 	PrivateData * p = drvthis->private_data;
@@ -438,7 +443,7 @@ EyeboxOne_height (Driver *drvthis)
 /******************************
  * Display a string at x,y
  */
-	MODULE_EXPORT void
+MODULE_EXPORT void
 EyeboxOne_string (Driver *drvthis, int x, int y, const char string[])
 {
 	int offset, siz;
@@ -477,7 +482,7 @@ EyeboxOne_string (Driver *drvthis, int x, int y, const char string[])
 /******************************
  * Send what we have to the hardware
  */
-	MODULE_EXPORT void
+MODULE_EXPORT void
 EyeboxOne_flush (Driver *drvthis)
 {
 	char out[12];
@@ -526,7 +531,7 @@ EyeboxOne_flush (Driver *drvthis)
  * Prints a character on the lcd display, at position (x,y).
  * The upper-left is (1,1), and the lower right should be (20,4).
  */
-	MODULE_EXPORT void
+MODULE_EXPORT void
 EyeboxOne_chr (Driver *drvthis, int x, int y, char c)
 {
 	int offset;
@@ -546,11 +551,7 @@ EyeboxOne_chr (Driver *drvthis, int x, int y, char c)
 /******************************
  * Sets the backlight on or off 
  */
-
-#define BACKLIGHT_OFF 0
-#define BACKLIGHT_ON 1
-
-	MODULE_EXPORT void
+MODULE_EXPORT void
 EyeboxOne_backlight (Driver *drvthis, int on)
 {
 	PrivateData * p = drvthis->private_data;
@@ -587,7 +588,7 @@ EyeboxOne_backlight (Driver *drvthis, int on)
 /********************** 
  * Toggle cursor on/off
  */
-	static void
+static void
 EyeboxOne_showcursor (Driver *drvthis, int on)
 {
 	PrivateData * p = drvthis->private_data;
@@ -605,7 +606,7 @@ EyeboxOne_showcursor (Driver *drvthis, int on)
  * returns a string for the function characters from the keypad...
  * (A-Z) on success, 0 on failure...
  */
-	MODULE_EXPORT const char *
+MODULE_EXPORT const char *
 EyeboxOne_get_key (Driver *drvthis)
 {
 	PrivateData * p = drvthis->private_data;
@@ -658,7 +659,7 @@ EyeboxOne_get_key (Driver *drvthis)
  * Returns string with general information about the display
  * I think lcd is able to tell us more, but I can't find how...
  */
-	MODULE_EXPORT const char *
+MODULE_EXPORT const char *
 EyeboxOne_get_info (Driver *drvthis)
 {
 	PrivateData * p = drvthis->private_data;

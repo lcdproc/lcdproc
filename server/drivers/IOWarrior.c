@@ -239,16 +239,16 @@ static int iowled_on_off(PrivateData *p, unsigned int pattern)
 MODULE_EXPORT int
 IOWarrior_init(Driver *drvthis)
 {
-char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
-char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
+  char serial[LCD_MAX_WIDTH+1] = DEFAULT_SERIALNO;
+  char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;
 
-struct usb_bus *busses;
-struct usb_bus *bus;
+  struct usb_bus *busses;
+  struct usb_bus *bus;
 
-int w;
-int h;
+  int w;
+  int h;
 
-PrivateData *p;
+  PrivateData *p;
 
   /* Allocate and store private data */
   p = (PrivateData *) calloc(1, sizeof(PrivateData));
@@ -461,7 +461,7 @@ PrivateData *p;
 MODULE_EXPORT void
 IOWarrior_close(Driver *drvthis)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   if (p != NULL) {
     /* don't turn display off: keep the logoff message */
@@ -500,7 +500,7 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT int 
 IOWarrior_width(Driver *drvthis)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   debug(RPT_DEBUG, "%s: returning width", drvthis->name);
 
@@ -516,7 +516,7 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT int 
 IOWarrior_height(Driver *drvthis)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   debug(RPT_DEBUG, "%s: returning height", drvthis->name);
 
@@ -532,7 +532,7 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT int 
 IOWarrior_cellwidth(Driver *drvthis)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   debug(RPT_DEBUG, "%s: returning cellwidth", drvthis->name);
 
@@ -548,7 +548,7 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT int 
 IOWarrior_cellheight(Driver *drvthis)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   debug(RPT_DEBUG, "%s: returning cellheight", drvthis->name);
 
@@ -563,11 +563,11 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 IOWarrior_flush(Driver *drvthis)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
-int x, y;
-int i;
-int count;
+  int x, y;
+  int i;
+  int count;
 
   /* Update LCD incrementally by comparing with last contents */
   for (y = 0; y < p->height; y++) {
@@ -611,7 +611,7 @@ int count;
 MODULE_EXPORT void
 IOWarrior_clear(Driver *drvthis)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   memset(p->framebuf, ' ', p->width * p->height);
 
@@ -632,7 +632,7 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 IOWarrior_chr(Driver *drvthis, int x, int y, char c)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   y--;
   x--;
@@ -656,8 +656,8 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 IOWarrior_string(Driver *drvthis, int x, int y, const char string[])
 {
-PrivateData *p = drvthis->private_data;
-int i;
+  PrivateData *p = drvthis->private_data;
+  int i;
 
   x--;
   y--;
@@ -691,7 +691,7 @@ int i;
 MODULE_EXPORT void
 IOWarrior_backlight(Driver *drvthis, int on)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   p->backlight = on;
 }
@@ -709,7 +709,7 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 IOWarrior_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   if (p->ccmode != vbar) {
     unsigned char vBar[p->cellheight];
@@ -748,7 +748,7 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 IOWarrior_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-PrivateData *p = drvthis->private_data;
+  PrivateData *p = drvthis->private_data;
 
   if (p->ccmode != hbar) {
     unsigned char hBar[p->cellheight];
@@ -783,8 +783,8 @@ PrivateData *p = drvthis->private_data;
 MODULE_EXPORT void
 IOWarrior_num(Driver *drvthis, int x, int num)
 {
-PrivateData *p = drvthis->private_data;
-int do_init = 0;
+  PrivateData *p = drvthis->private_data;
+  int do_init = 0;
 
 	if ((num < 0) || (num > 10))
 		return;
@@ -866,9 +866,9 @@ IOWarrior_get_free_chars (Driver *drvthis)
 MODULE_EXPORT void
 IOWarrior_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
-PrivateData *p = drvthis->private_data;
-unsigned char mask = (1 << p->cellwidth) - 1;
-int row;
+  PrivateData *p = drvthis->private_data;
+  unsigned char mask = (1 << p->cellwidth) - 1;
+  int row;
 
   if ((n < 0) || (n >= NUM_CCs))
     return;
