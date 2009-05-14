@@ -84,6 +84,10 @@ update_screen(ScreenMode *m, int display)
 int
 credit_screen(int rep, int display, int *flags_ptr)
 {
+	/*
+	 * List of persons who contributed to LCDproc.
+	 * Keep in sync with CREDITS file (ordered by appearance)
+	 */
 	const char *contributors[] = {
 		"William Ferrell",
 		"Scott Scriven",
@@ -131,6 +135,21 @@ credit_screen(int rep, int display, int *flags_ptr)
 		"Anthony J. Mirabella",
 		"Cedric Tessier",
 		"John Sanders",
+		"Eric Pooch",
+		"Benjamin Wiedmann",
+		"Frank Jepsen",
+		"Karsten Festag",
+		"Gatewood Green",
+		"Dave Platt",
+		"Nicu Pavel",
+		"Daryl Fonseca-Holt",
+		"Thien Vu",
+		"Thomas Jarosch",
+		"Christian Jodar",
+		"Mariusz Bialonczyk",
+		"Jack Cleaver",
+		"Aron Parsons",
+		"Malte Poeggel",
 		NULL
 	};
 	int contr_num = 0;
