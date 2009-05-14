@@ -214,12 +214,13 @@ screen_find_widget(Screen *s, char *id)
 
 /** Convert a priority name to the priority id.
  * \param priname  Name of the screen priority.
- * \return         Priority id associatited with \c priname.
+ * \return  Priority id associated with \c priname, -1 if no matching priority
+ *          id could be found.
  */
 Priority
 screen_pri_name_to_pri(char *priname)
 {
-	Priority pri = WID_NONE;
+	Priority pri = -1;
 	int i;
 
 	for (i = 0; pri_names[i]; i++) {
