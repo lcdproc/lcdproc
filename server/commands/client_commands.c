@@ -53,7 +53,9 @@ test_func_func(Client *c, int argc, char **argv)
  *
  * It sends back a string of info about the server to the client.
  *
+ *\verbatim
  * Usage: hello
+ *\endverbatim
  *
  * \todo  Give \em real info about the server/lcd
  */
@@ -82,7 +84,9 @@ hello_func(Client *c, int argc, char **argv)
  *
  * The function does not respond to the client: it simply cuts connection.
  *
+ *\verbatim
  * Usage: bye
+ *\endverbatim
  */
 int
 bye_func(Client *c, int argc, char **argv)
@@ -99,7 +103,9 @@ bye_func(Client *c, int argc, char **argv)
 /**
  * Sets info about the client, such as its name
  *
- * Usage: client_set -name \<id\>
+ *\verbatim
+ * Usage: client_set -name <id>
+ *\endverbatim
  */
 int
 client_set_func(Client *c, int argc, char **argv)
@@ -156,7 +162,9 @@ client_set_func(Client *c, int argc, char **argv)
  * Tells the server the client would like to accept keypresses
  * of a particular type
  *
- * Usage: client_add_key [-exclusively|-shared] {\<key\>}+
+ *\verbatim
+ * Usage: client_add_key [-exclusively|-shared] {<key>}+
+ *\endverbatim
  */
 int
 client_add_key_func(Client *c, int argc, char **argv)
@@ -199,7 +207,9 @@ client_add_key_func(Client *c, int argc, char **argv)
  * Tells the server the client would NOT like to accept keypresses
  * of a particular type
  *
- * Usage: client_del_key {\<key\>}+
+ *\verbatim
+ * Usage: client_del_key {<key>}+
+ *\endverbatim
  */
 int
 client_del_key_func(Client *c, int argc, char **argv)
@@ -225,7 +235,9 @@ client_del_key_func(Client *c, int argc, char **argv)
 /**
  * Toggles the backlight, if enabled.
  *
+ *\verbatim
  * Usage: backlight {on|off|toggle|blink|flash}
+ *\endverbatim
  */
 int
 backlight_func(Client *c, int argc, char **argv)
@@ -271,7 +283,9 @@ backlight_func(Client *c, int argc, char **argv)
 /**
  * Sends back information about the loaded drivers.
  *
+ *\verbatim
  * Usage: info
+ *\endverbatim
  */
 int
 info_func(Client *c, int argc, char **argv)

@@ -34,7 +34,9 @@
 /**
  * Tells the server the client has another screen to offer
  *
- * Usage: screen_add \<id\>
+ *\verbatim
+ * Usage: screen_add <id>
+ *\endverbatim
  */
 int
 screen_add_func(Client *c, int argc, char **argv)
@@ -78,7 +80,9 @@ screen_add_func(Client *c, int argc, char **argv)
 /**
  * The client requests that the server forget about a screen
  *
- * Usage: screen_del \<screenid\>
+ *\verbatim
+ * Usage: screen_del <screenid>
+ *\endverbatim
  */
 int
 screen_del_func(Client *c, int argc, char **argv)
@@ -123,10 +127,12 @@ screen_del_func(Client *c, int argc, char **argv)
  * Configures info about a particular screen, such as its
  *  name, priority, or duration
  *
- * Usage: screen_set \<id\> [-name \<name\>] [-wid \<width\>] [-hgt \<height\>]
- *     [-priority \<prio\>] [-duration \<int\>] [-timeout \<int\>] 
- *     [-heartbeat \<type\>] [-backlight \<type\>]
- *     [-cursor \<type\>] [-cursor_x \<xpos\>] [-cursor_y \<ypos\>] 
+ *\verbatim
+ * Usage: screen_set <id> [-name <name>] [-wid <width>] [-hgt <height>]
+ *     [-priority <prio>] [-duration <int>] [-timeout <int>] 
+ *     [-heartbeat <type>] [-backlight <type>]
+ *     [-cursor <type>] [-cursor_x <xpos>] [-cursor_y <ypos>]
+ *\endverbatim
  */
 int
 screen_set_func(Client *c, int argc, char **argv)
@@ -413,7 +419,9 @@ screen_set_func(Client *c, int argc, char **argv)
  * Tells the server the client would like to accept keypresses
  * of a particular type when the given screen is active on the display
  *
- * Usage: screen_add_key \<screenid\> \<keylist\>
+ *\verbatim
+ * Usage: screen_add_key <screenid> <keylist>
+ *\endverbatim
  */
 int
 screen_add_key_func(Client *c, int argc, char **argv)
@@ -489,7 +497,9 @@ screen_add_key_func(Client *c, int argc, char **argv)
  * Tells the server the client would NOT like to accept keypresses
  * of a particular type when the given screen is active on the display
  *
- * Usage: screen_del_key \<screenid\> \<keylist\>
+ *\verbatim
+ * Usage: screen_del_key <screenid> <keylist>
+ *\endverbatim
  */
 int
 screen_del_key_func(Client *c, int argc, char **argv)

@@ -66,7 +66,9 @@ static char *argv2string(int argc, char **argv)
 /**
  * Adds an item to a menu.
  *
- * Usage: menu_add_item \<menuid\> \<newitemid\> \<type\> [\<text\>]
+ *\verbatim
+ * Usage: menu_add_item <menuid> <newitemid> <type> [<text>]
+ *\endverbatim
  * 
  * You should use "" as id for the client's main menu. This menu will be
  * created automatically when you add an item to it the first time.
@@ -223,7 +225,9 @@ menu_add_item_func(Client *c, int argc, char **argv)
 /**
  * Deletes an item from a menu
  *
- * Usage: menu_del_item \<menuid\> \<itemid\>
+ *\verbatim
+ * Usage: menu_del_item <menuid> <itemid>
+ *\endverbatim
  * 
  * The given item in the given menu will be deleted. If you have deleted all
  * the items from your client menu, that menu will automatically be removed.
@@ -289,84 +293,86 @@ menu_del_item_func(Client *c, int argc, char **argv)
  *
  * For example, text displayed, value, etc...
  *
- * Usage: menu_set_item \<menuid\> \<itemid\> {\<option\>}+
+ *\verbatim
+ * Usage: menu_set_item <menuid> <itemid> {<option>}+
  * 
  * The following parameters can be set per item:
  * (you should include the - in the option)
  *
  * For all types:
- * \li -text "text"		("")
+ * -text "text"			("")
  *	Sets the visible text.
- * \li -is_hidden false|true	(false)
+ * -is_hidden false|true	(false)
  *	If the item currently should not appear in a menu.
- * \li -prev id			()
+ * -prev id			()
  *	Sets the predecessor of this item (what happens after "Escape")
  *
  * For all except menus:
- * \li -next id			()
+ * -next id			()
  *	Sets the successor of this item (what happens after "Enter")
  *
  * action:
- * \li -menu_result none|close|quit	(none)
+ * -menu_result none|close|quit	(none)
  *	Sets what to do with the menu when this action is selected:
  *	- none: the menu stays as it is.
  *	- close: the menu closes and returns to a higher level.
  *	- quit: quits the menu completely so you can foreground your app.
  *
  * checkbox:
- * \li -value off|on|gray	(off)
+ * -value off|on|gray		(off)
  *	Sets its current value.
- * \li -allow_gray false|true	(false)
+ * -allow_gray false|true	(false)
  *	Sets if a grayed checkbox is allowed.
  *
  * ring:
- * \li -value \<int\>		(0)
+ * -value <int>			(0)
  *	Sets the index in the stringlist that is currently selected.
- * \li -strings \<string\>	(empty)
+ * -strings <string>		(empty)
  *	The subsequent strings that can be selected. They should be
  *	tab-separated in ONE string.
  *
  * slider:
- * \li -value \<int\>		(0)
+ * -value <int>			(0)
  *	Sets its current value.
- * \li -mintext \<string\>	("")
- * \li -maxtex \<string\>	("")
+ * -mintext <string>		("")
+ * -maxtex <string>		("")
  *	Text at the minimal and maximal side. On small displays these might
  *	not be displayed.
- * \li -minvalue \<int\>	(0)
- * \li -maxvalue \<int\>	(100)
+ * -minvalue <int>		(0)
+ * -maxvalue <int>		(100)
  *	The minimum and maximum value of the slider.
- * \li -stepsize \<int\>	(1)
+ * -stepsize <int>		(1)
  *	The stepsize of the slider. If you use 0, you can control it yourself
  *	completely.
  *
  * numeric:
- * \li -value \<int\>		(0)
+ * -value <int>			(0)
  *	Sets its current value.
- * \li -minvalue \<int\>	(0)
- * \li -maxvalue \<int\>	(100)
+ * -minvalue <int>		(0)
+ * -maxvalue <int>		(100)
  *	The minimum and maximum value that are allowed. If you make one of
  *	them negative, the user will be able to enter negative numbers too.
  * Maybe floats will work too in the future.
  *
  * alpha:
- * \li -value \<string\>
+ * -value <string>
  *	Sets its current value.	("")
- * \li -password_char \<char\>	(none)
- * \li -minlength \<int\>	(0)
- * \li -maxlength \<int\>	(10)
+ * -password_char <char>	(none)
+ * -minlength <int>		(0)
+ * -maxlength <int>		(10)
  *	Set the minimum and maximum allowed length.
- * \li -allow_caps false|true	(true)
- * \li -allow_noncaps false|true	(false)
- * \li -allow_numbers false|true	(true)
+ * -allow_caps false|true	(true)
+ * -allow_noncaps false|true	(false)
+ * -allow_numbers false|true	(true)
  *	Allows these groups of characters.
- * \li -allowed_extra \<string\>	("")
+ * -allowed_extra <string>	("")
  *	The chars in this string are also allowed.
  *
  * ip:
- * \li -value \<string\>
+ * -value <string>
  *	Sets its current value.	("")
- * \li -v6 false|true
+ * -v6 false|true
+ *\endverbatim
  *
  * Hmm, this is getting very big. We might need a some real parser after all.
  */
@@ -721,7 +727,9 @@ menu_set_item_func(Client *c, int argc, char **argv)
  * to go to a menu of another client (or the server menus). Same
  * restriction applies to the optional predecessor_id
  *
- * Usage: menu_goto \<id\> [\<predecessor_id\>]
+ *\verbatim
+ * Usage: menu_goto <id> [<predecessor_id>]
+ *\endverbatim
  */
 int
 menu_goto_func(Client * c, int argc, char **argv)
@@ -840,7 +848,9 @@ int set_successor(MenuItem *item, char *itemid, Client *c)
 /**
  * Requests the menu system to set the entry point into the menu system. 
  *
- * Usage: menu_set_main \<id\>
+ *\verbatim
+ * Usage: menu_set_main <id>
+ *\endverbatim
  */
 int
 menu_set_main_func(Client *c, int argc, char **argv)

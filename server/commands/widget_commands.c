@@ -37,7 +37,9 @@
 /**
  * Adds a widget to a screen, but doesn't give it a value
  *
- * Usage: widget_add \<screenid\> \<widgetid\> \<widgettype\> [-in \<id\>]
+ *\verbatim
+ * Usage: widget_add <screenid> <widgetid> <widgettype> [-in <id>]
+ *\endverbatim
  */
 int
 widget_add_func(Client *c, int argc, char **argv)
@@ -123,7 +125,9 @@ widget_add_func(Client *c, int argc, char **argv)
 /**
  * Removes a widget from a screen, and forgets about it
  *
- * Usage: widget_del \<screenid\> \<widgetid\>
+ *\verbatim
+ * Usage: widget_del <screenid> <widgetid>
+ *\endverbatim
  */
 int
 widget_del_func(Client *c, int argc, char **argv)
@@ -173,7 +177,9 @@ widget_del_func(Client *c, int argc, char **argv)
  * Configures information about a widget, such as its size, shape,
  * contents, position, speed, etc.
  *
- * widget_set \<screenid\> \<widgetid\> \<widget-SPECIFIC-data\>
+ *\verbatim
+ * widget_set <screenid> <widgetid> <widget-SPECIFIC-data>
+ *\endverbatim
  */
 int
 widget_set_func(Client *c, int argc, char **argv)

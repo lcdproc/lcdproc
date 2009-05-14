@@ -36,7 +36,9 @@
 /**
  * Sets the state of the output port (such as on MtxOrb LCDs)
  *
- * Usage: output \<on|off|int\>
+ *\verbatim
+ * Usage: output <on|off|int>
+ *\endverbatim
  */
 int
 output_func(Client *c, int argc, char **argv)
@@ -98,7 +100,9 @@ output_func(Client *c, int argc, char **argv)
  * This function is currently ignored as making the server sleep actually
  * stalls it and disrupts other clients.
  *
- * Usage: sleep \<seconds\>
+ *\verbatim
+ * Usage: sleep <seconds>
+ *\endverbatim
  */
 int
 sleep_func(Client *c, int argc, char **argv)
