@@ -97,6 +97,8 @@ static void send_packet(Driver *drvthis, char* packet)
 MODULE_EXPORT int shuttleVFD_init(Driver *drvthis)
 {
   PrivateData *p;
+  struct usb_bus *bus;
+  int claim_rc;
 
   // allocate and store private data
   p = (PrivateData *)calloc(1, sizeof(PrivateData));
@@ -134,7 +136,6 @@ MODULE_EXPORT int shuttleVFD_init(Driver *drvthis)
   usb_init();
   usb_find_busses();
   usb_find_devices();
-  struct usb_bus *bus;
   for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
     struct usb_device *dev;
     for (dev = bus->devices; dev != NULL; dev = dev->next) {
@@ -149,7 +150,7 @@ MODULE_EXPORT int shuttleVFD_init(Driver *drvthis)
     report(RPT_ERR, "%s: unable to find Shuttle VFD", drvthis->name);
     return -1;
   }
-  int claim_rc = usb_claim_interface(p->dev, SHUTTLE_VFD_INTERFACE_NUM);
+  claim_rc = usb_claim_interface(p->dev, SHUTTLE_VFD_INTERFACE_NUM);
   if (claim_rc < 0) {
     report(RPT_ERR,
            "%s: unable to claim interface: %s",

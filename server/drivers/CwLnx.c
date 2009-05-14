@@ -305,7 +305,7 @@ static void Disable_Cursor(int fd)
 
 
 /* Hardware function */
-static void Init_Port(fd)
+static void Init_Port(int fd)
 {
     /* Posix - set baudrate to 0 and back */
     struct termios tty, old;

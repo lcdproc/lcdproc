@@ -68,7 +68,7 @@ typedef enum {
 } CGmode;
 
 /* PrivateData struct */
-typedef struct pd {
+typedef struct picolcd_private_data {
 	usb_dev_handle *lcd;
 	int  width;
 	int  height;
@@ -499,7 +499,7 @@ MODULE_EXPORT void picoLCD_set_char (Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
 	
-	return (p->device->cchar(drvthis, n, dat));
+	p->device->cchar(drvthis, n, dat);
 }
 
 
@@ -689,6 +689,7 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis)
 	int  keys_read = 0;
 	int  key_pass  = 0;
 	int  two_keys  = 0;
+	int  ret;
 
 	debug(RPT_DEBUG, "%s: get_key start (timeout %d)",
 		drvthis->name, p->key_timeout);
@@ -746,7 +747,7 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis)
 			else {
 				debug(RPT_NOTICE, "%s: sending packet to lirc, length=%d",
 					drvthis->name, cbres);
-			    int ret = sendto(p->lircsock, p->result, cbres, 0, 
+			    ret = sendto(p->lircsock, p->result, cbres, 0, 
 			    		(struct sockaddr *) &(p->lircserver),  sizeof(p->lircserver));
 			    if (ret == -1) {
 			    	report(RPT_ERR, "%s: error sending UDP packet, errno=%d",

@@ -1455,9 +1455,11 @@ MenuResult menuitem_process_input_ip(MenuItem *item, MenuToken token, const char
 						item->data.ip.edit_offs++;
 				}
 			}
+			/* FALLTHROUGH */
 		default:	
 			return MENURESULT_NONE;
 	}
+	/* NOTREACHED */
 	return MENURESULT_ERROR;
 }
 

@@ -71,8 +71,7 @@ MODULE_EXPORT char *symbol_prefix = "EA65_";
 MODULE_EXPORT int
 EA65_init (Driver *drvthis)
 {
-        debug(RPT_INFO, "EA65: init(%p)", drvthis);
-
+        struct termios portset;
         /* device is fixed */
         char device[] = "/dev/ttyS1";
         /*speed is fixed at 9600*/
@@ -80,6 +79,9 @@ EA65_init (Driver *drvthis)
 
         /* Allocate and store private data */
         PrivateData *p;
+
+        debug(RPT_INFO, "EA65: init(%p)", drvthis);
+        
         p = (PrivateData *) malloc(sizeof(PrivateData));
         if (p == NULL)
                 return -1;
@@ -129,7 +131,6 @@ EA65_init (Driver *drvthis)
 
         // Set up io port correctly, and open it...
         debug( RPT_DEBUG, "EA65: Opening serial device: %s", device);
-        struct termios portset;
         p->fd = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
         if (p->fd == -1) {
                 report (RPT_ERR, "EA65_init: failed (%s)", strerror (errno));

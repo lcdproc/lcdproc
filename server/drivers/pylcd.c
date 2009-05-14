@@ -404,7 +404,7 @@ pyramid_init (Driver *drvthis)
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
     return 0;
-};
+}
 
 
 /**
@@ -417,7 +417,7 @@ pyramid_close (Driver *drvthis)
     PrivateData *p = (PrivateData *) drvthis->private_data;
 
     close(p->FD);
-};
+}
 
 
 /**
@@ -431,7 +431,7 @@ pyramid_width (Driver *drvthis)
     PrivateData *p = (PrivateData *) drvthis->private_data;
 
     return p->width;
-};
+}
 
 
 /**
@@ -445,7 +445,7 @@ pyramid_height (Driver *drvthis)
     PrivateData *p = (PrivateData *) drvthis->private_data;
 
     return p->height;
-};
+}
 
 
 /**
@@ -459,7 +459,7 @@ pyramid_clear (Driver *drvthis)
 
     p->FB_modified=1;
     strcpy(p->framebuffer, "D                                ");
-};
+}
 
 
 /**
@@ -529,7 +529,7 @@ pyramid_string (Driver *drvthis, int x, int y, const char string[])
     offset = (x)+p->width*(y-1);
     len = min(strlen(string), p->width*p->height-offset+1);
     memcpy(&p->framebuffer[offset], string, len);
-};
+}
 
 
 /**
@@ -549,7 +549,7 @@ pyramid_chr (Driver *drvthis, int x, int y, char c)
     x = min(p->width, x);
     y = min(p->height, y);
     p->framebuffer[x+p->width*(y-1)]=c;
-};
+}
 
 
 /* User defined characters */
@@ -594,7 +594,7 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 		tele[row+2]=pixels;
 	}
         real_send_tele(p, tele, 10);
-};
+}
 
 
 /**
@@ -606,7 +606,7 @@ MODULE_EXPORT int  pyramid_get_free_chars (Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	return (p->customchars);
-};
+}
 
 
 /**
@@ -618,7 +618,7 @@ MODULE_EXPORT int  pyramid_cellwidth (Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	return (p->cellwidth);
-};
+}
 
 
 /**
@@ -630,7 +630,7 @@ MODULE_EXPORT int  pyramid_cellheight (Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	return (p->cellheight);
-};
+}
 
 
 
@@ -1112,7 +1112,7 @@ pyramid_cursor (Driver *drvthis, int x, int y, int state)
 	break;
     }
     p->C_state = state;
-};
+}
 
 
 /* Hardware functions */
@@ -1153,7 +1153,7 @@ pyramid_output (Driver *drvthis, int state)
     if(state & (1 << 8)) {
 	    pyramid_init_custom1(drvthis);
     }
-};
+}
 
 
 /* Key functions */
@@ -1258,7 +1258,7 @@ pyramid_get_key (Driver *drvthis)
 #endif
 
     return NULL; // Ignore combined key events
-};
+}
 
 
 /**
@@ -1272,6 +1272,6 @@ pyramid_get_info (Driver *drvthis)
     static char *pyramid_info_string="Pyramid LCD driver";
 
     return pyramid_info_string;
-};
+}
 
 

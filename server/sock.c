@@ -433,7 +433,6 @@ sock_read_from_client(ClientSocketMap *clientSocketMap)
 			__FUNCTION__, clientSocketMap->socket, buffer);
 		return nbytes;
 	}
-	return nbytes;
 }
 
 
