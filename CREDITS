@@ -211,6 +211,7 @@ Eric Pooch:
 	- Mac OS X / Darwin support
 	- serialPOS driver
 	- uss720 connection type for hd44780 driver
+	- driver for SoundGraph iMON OEM LCD Modules
 
 Benjamin Wiedmann
 	- Added functionality for HITACHI SP14Q002 gLCD (320x240)
@@ -258,6 +259,11 @@ Phant0m / Aron Parsons
 
 Malte Poeggel
 	- support for ST7036 controller in hd44780
+
+Dean Harding,
+Christian Leuschen,
+Jonathan Kyler:
+	- driver for SoundGraph iMON OEM LCD Modules
 
 
 Further developers in the sourceforge lcdproc team:

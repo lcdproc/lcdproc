@@ -150,6 +150,9 @@ credit_screen(int rep, int display, int *flags_ptr)
 		"Jack Cleaver",
 		"Aron Parsons",
 		"Malte Poeggel",
+		"Dean Harding",
+		"Christian Leuschen",
+		"Jonathan Kyler",
 		NULL
 	};
 	int contr_num = 0;

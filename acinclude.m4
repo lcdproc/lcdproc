@@ -9,7 +9,7 @@ AC_ARG_ENABLE(drivers,
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,]
-	[                    EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,]
+	[                    EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,]
 	[                    IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,]
 	[                    MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,]
 	[                    pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,]
@@ -19,7 +19,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -223,6 +223,10 @@ dnl			else
 		imon)
 			DRIVERS="$DRIVERS imon${SO}"
 			actdrivers=["$actdrivers imon"]
+			;;
+		imonlcd)
+			DRIVERS="$DRIVERS imonlcd${SO}"
+			actdrivers=["$actdrivers imonlcd"]
 			;;
 		IOWarrior)
 			if test "$enable_libusb" = yes ; then

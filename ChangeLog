@@ -69,7 +69,8 @@ v.0.5dev (ongoing development)
  * Change drivers to start in background by default: bayrad, CFontz, ea65, glk
  * imon driver: Change hbars to make last char in-/decrease vertically
  + hd44780 driver: port usblcd connection type from 0.4.5 to 0.5 (M. Dolze)
- * server: Fix interpretation of named screen priorities 
+ * server: Fix interpretation of named screen priorities
+ + new driver imonlcd for SoundGraph iMON LCD (Dean Harding, Jonathan Kyler)
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu

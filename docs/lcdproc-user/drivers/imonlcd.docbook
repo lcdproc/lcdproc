@@ -1,0 +1,134 @@
+<sect1 id="imonlcd-howto">
+<title>The imonlcd Driver</title>
+
+<sect2 id="imonlcd-general">
+<title>General</title>
+
+<para>
+This section talks about using LCDproc with LCD devices manufactured by SoundGraph.
+For example, <ulink url="http://www.soundgraph.com/Eng_/Products/oem3.aspx">the iMON OEM LCD</ulink>.
+</para>
+
+<para>
+This driver currently supports versions 15c2:ffdc and 15c2:0038 of the device.
+(You can find the version of your lcd via the lsusb command).
+</para>
+
+<para>
+In many systems, the LCD backlight will remain on after the system is shutdown.
+This behavior remains a mystery - somehow the lcd recieves a reset command (or
+similar) AFTER LCDd is stopped.
+</para>
+
+<para id="imonlcd-kernelmodules">
+This driver requires the iMON module included with LIRC v0.8.4a or newer,
+available from the <ulink url="http://www.lirc.org">LIRC project</ulink>.
+The 15c2:0038 device may require LIRC v0.8.5 or newer.
+</para>
+
+</sect2>
+
+
+<sect2 id="imonlcd-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="imonlcd-config-section">
+<title>[imonlcd]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <command>Protocol</command> = 
+    <arg choice="plain">
+      <replaceable>PROTOCOL</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Specify which version of iMON LCD is installed.
+    The default, <literal>0</literal> specifies the :ffdc device.
+    <literal>1</literal> should be used for the :0038 device.
+  </para></listitem>
+</varlistentry>  
+  
+<varlistentry>
+  <term>
+    <command>OnExit</command> =
+    <arg choice="plain"><replaceable>ONEXIT</replaceable></arg>
+  </term>
+  <listitem><para>
+    Specify the exit behavior.
+    The default is <literal>1</literal>, which turns on the big ugly clock upon
+    shutdown. <literal>0</literal> leaves the shutdown message on the screen.
+    <literal>2</literal> turns the LCD off.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Device</command> =
+    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the output device to use. Change this from the default
+    <filename>/dev/lcd0</filename> to the device file that gets created
+    when the kernel module (<link linkend="imonlcd-kernelmodules">see above</link>)
+    is loaded.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Contrast</command> =
+    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+  </term>
+  <listitem><para>
+    Select the display's contrast <literal>200</literal> is the default.
+    Permissible values are in the range of <literal>0</literal>-<literal>1000</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Size</command> =
+    <arg choice="plain">
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </arg>
+  </term>
+  <listitem><para>
+    Set the display size in pixels. The default <literal>96x16</literal> should
+    be safe for most if not all users, since the device seeems to be made only
+    with this one size.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>Backlight</command> =
+    <arg choice="plain"><replaceable>BACKLIGHT</replaceable></arg>
+  </term>
+  <listitem><para>
+    Set the backlight state. The default is <literal>1</literal>, which turns
+    the backlight on. <literal>0</literal> turns the backlight off.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <command>DiscMode</command> =
+    <arg choice="plain"><replaceable>DISCMODE</replaceable></arg>
+  </term>
+  <listitem><para>
+    Sets the disc mode. The default is <literal>0</literal> which spins the
+    "slim" disc. <literal>1</literal> spins their complement.
+  </para></listitem>
+</varlistentry>
+
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

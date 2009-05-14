@@ -21,6 +21,7 @@ well as the configuration of LCDd.
 &hd44780;
 &icp_a106;
 &imon;
+&imonlcd;
 &IOWarrior;
 &irman;
 &irtrans;

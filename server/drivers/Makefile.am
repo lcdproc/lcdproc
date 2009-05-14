@@ -19,7 +19,7 @@ AM_LDFLAGS = @LDSHARED@
 #LIBS =
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 IOWarrior_CFLAGS =   @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -42,6 +42,7 @@ hd44780_LDADD =      libLCD.a @HD44780_DRIVERS@ @LIBUSB_LIBS@ @LIBFTDI_LIBS@ lib
 hd44780_DEPENDENCIES = @HD44780_DRIVERS@
 icp_a106_LDADD =     libLCD.a
 imon_LDADD =         libLCD.a
+imonlcd_LDADD =      libLCD.a
 IOWarrior_LDADD =    @LIBUSB_LIBS@ libLCD.a libbignum.a
 irman_LDADD =        @LIBIRMAN@
 lcterm_LDADD =       libLCD.a
@@ -84,6 +85,7 @@ EXTRA_hd44780_SOURCES = hd44780-4bit.c hd44780-4bit.h hd44780-ext8bit.c hd44780-
 
 icp_a106_SOURCES =   lcd.h lcd_lib.h icp_a106.c icp_a106.h report.h
 imon_SOURCES =       lcd.h lcd_lib.h imon.h imon.c report.h
+imonlcd_SOURCES =    lcd.h lcd_lib.h imonlcd.h imonlcd_font.h imonlcd.c report.h
 IOWarrior_SOURCES =  lcd.h lcd_lib.h hd44780-charmap.h IOWarrior.c IOWarrior.h report.h adv_bignum.h
 irman_SOURCES =      lcd.h irmanin.c irmanin.h report.h
 joy_SOURCES =        lcd.h joy.c joy.h port.h report.h
