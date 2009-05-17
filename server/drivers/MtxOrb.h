@@ -4,6 +4,7 @@
 #include "lcd.h"
 
 #define DEFAULT_CONTRAST	480
+#define DEFAULT_ADJ_BACKLIGHT	1
 #define DEFAULT_BRIGHTNESS	1000
 #define DEFAULT_OFFBRIGHTNESS	0
 #define DEFAULT_DEVICE		"/dev/lcd"
@@ -15,6 +16,11 @@
 #define DEFAULT_BACKLIGHT	1
 #define DEFAULT_TYPE		"lcd"
 
+typedef struct MtxOrbModule {
+	int model;
+	char *name;
+	int flags;
+} MtxOrbModuleEntry;
 
 MODULE_EXPORT int  MtxOrb_init (Driver *drvthis);
 MODULE_EXPORT void MtxOrb_close (Driver *drvthis);

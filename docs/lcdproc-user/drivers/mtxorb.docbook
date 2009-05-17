@@ -294,6 +294,25 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
 
 <varlistentry>
   <term>
+    <command>hasAdjustableBacklight</command> =
+    <arg choice="plain">
+    <group choice="req">
+      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
+      <arg choice="plain"><literal>no</literal></arg>
+    </group>
+    </arg>    
+  </term>
+  <listitem><para>
+    Some old firmware versions of Matrix Orbital modules do not support an
+    adjustable backlight but only can switch the backlight on/off. If you own
+    such a module and experience randomly appearing block characters and
+    backlight cannot be switched on or off, use this to <literal>no</literal>
+    [default: <literal>yes</literal>].
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <command>Brightness</command> =
     <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
   </term>

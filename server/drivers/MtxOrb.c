@@ -136,6 +136,7 @@ typedef struct MtxOrb_private_data {
 	int contrast;		/**< current contrast */
 	int brightness;
 	int offbrightness;
+	int adjustable_backlight;
 
 	MtxOrb_type_type MtxOrb_type;
 
@@ -146,6 +147,62 @@ typedef struct MtxOrb_private_data {
 
 	char info[255];		/**< info string contents */
 } PrivateData;
+
+/** List of known Matrix Orbital modules */
+static const MtxOrbModuleEntry modulelist[] = {
+	/* model, name, flags */
+	{ 0x01, "LCD0821", 0 },
+	{ 0x03, "LCD2021", 0 },
+	{ 0x04, "LCD1641", 0 },
+	{ 0x05, "LCD2041", 0 },	/* VK202-25 ? */
+	{ 0x06, "LCD4021", 0 },
+	{ 0x07, "LCD4041", 0 },
+	{ 0x08, "LK202-25", 0 },
+	{ 0x09, "LK204-25", 0 },
+	{ 0x0A, "LK404-55", 0 },
+	{ 0x0B, "VFD2021", 0 },
+	{ 0x0C, "VFD2041", 0 },
+	{ 0x0D, "VFD4021", 0 },
+	{ 0x0E, "VK202-25", 0 },
+	{ 0x0F, "VK204-25", 0 },
+	{ 0x10, "GLC12232", 0 },
+	{ 0x11, "GLC12864", 0 },
+	{ 0x12, "GLC128128", 0 },	/* ??? */
+	{ 0x13, "GLC24064", 0 },
+	{ 0x14, "GLK12864-25", 0 },	/* ??? */
+	{ 0x15, "GLK24064-25", 0 },
+	{ 0x21, "GLK128128-25", 0 },	/* ??? */
+	{ 0x22, "GLK12232-25-WBL", 0 },
+	{ 0x24, "GLK12232-25-SM", 0 },
+	{ 0x31, "LK404-AT", 0 },
+	{ 0x32, "VFD1621", 0 },	/* MOS-AV-162A ? */
+	{ 0x33, "LK402-12", 0 },
+	{ 0x34, "LK162-12", 0 },
+	{ 0x35, "LK204-25PC", 0 },
+	{ 0x36, "LK202-24-USB", 0 },
+	{ 0x37, "VK202-24-USB", 0 },
+	{ 0x38, "LK204-24-USB", 0 },
+	{ 0x39, "VK204-24-USB", 0 },
+	{ 0x3A, "PK162-12", 0 },
+	{ 0x3B, "VK162-12", 0 },
+	{ 0x3C, "MOS-AP-162A", 0 },
+	{ 0x3D, "PK202-25", 0 },
+	{ 0x3E, "MOS-AL-162A", 0 },
+	{ 0x40, "MOS-AV-202A", 0 },
+	{ 0x41, "MOS-AP-202A", 0 },
+	{ 0x42, "PK202-24-USB", 0 },
+	{ 0x43, "MOS-AL-082", 0 },
+	{ 0x44, "MOS-AL-204", 0 },
+	{ 0x45, "MOS-AV-204", 0 },
+	{ 0x46, "MOS-AL-402", 0 },
+	{ 0x47, "MOS-AV-402", 0 },
+	{ 0x48, "LK082-12", 0 },
+	{ 0x49, "VK402-12", 0 },
+	{ 0x4A, "VK404-55", 0 },
+	{ 0x4B, "LK402-25", 0 },
+	{ 0x4C, "VK402-25", 0 },
+	{ 0x00, NULL, 0 },
+};
 
 
 /* Vars for the server core */
@@ -159,26 +216,6 @@ static void MtxOrb_linewrap(Driver *drvthis, int on);
 static void MtxOrb_autoscroll(Driver *drvthis, int on);
 static void MtxOrb_cursorblink(Driver *drvthis, int on);
 static void MtxOrb_cursor_goto(Driver *drvthis, int x, int y);
-
-
-/* Parse one key from the configfile */
-static char
-MtxOrb_parse_keypad_setting (Driver *drvthis, char *keyname, char default_value)
-{
-	char return_val = 0;
-	const char *s;
-	char buf[255];
-
-	s = drvthis->config_get_string(drvthis->name, keyname, 0, NULL);
-	if (s != NULL) {
-		strncpy(buf, s, sizeof(buf));
-		buf[sizeof(buf)-1] = '\0';
-		return_val = buf[0];
-	} else {
-		return_val = default_value;
-	}
-	return return_val;
-}
 
 
 /**
@@ -253,6 +290,11 @@ MtxOrb_init (Driver *drvthis)
 	}
 	p->contrast = tmp;
 
+	/* Does it have an adjustable backlight */
+	tmp = drvthis->config_get_bool(drvthis->name, "hasAdjustableBacklight", 0, DEFAULT_ADJ_BACKLIGHT);
+	debug(RPT_INFO, "%s: hasAdjustableBacklight is '%d'", __FUNCTION__, tmp);
+	p->adjustable_backlight = tmp;
+	
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
@@ -413,6 +455,8 @@ MtxOrb_init (Driver *drvthis)
 	MtxOrb_cursorblink(drvthis, DEFAULT_CURSORBLINK);
 	MtxOrb_set_contrast(drvthis, p->contrast);
 	MtxOrb_backlight(drvthis, DEFAULT_BACKLIGHT);
+	MtxOrb_get_info(drvthis);
+	report(RPT_INFO, "Display detected: %s", p->info);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -748,28 +792,42 @@ MODULE_EXPORT void
 MtxOrb_backlight (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
-	int promille = (on == BACKLIGHT_ON)
-			     ? p->brightness
-			     : p->offbrightness;
 
-	if (IS_VKD_DISPLAY) {
-		unsigned char out[5] = { '\xFE', 'Y', 0 };
+	if (p->adjustable_backlight) {
+	
+		int promille = (on == BACKLIGHT_ON)
+				     ? p->brightness
+				     : p->offbrightness;
 
-		/* map range [0, 1000] -> [0, 3] that the hardware understands */
-		out[2] = (unsigned char) ((long) promille * 3 / 1000);
+		if (IS_VKD_DISPLAY) {
+			unsigned char out[5] = { '\xFE', 'Y', 0 };
 
-		write(p->fd, out, 3);
+			/* map range [0, 1000] -> [0, 3] that the hardware understands */
+			out[2] = (unsigned char) ((long) promille * 3 / 1000);
+
+			write(p->fd, out, 3);
+		}
+		else {
+			unsigned char out[5] = { '\xFE', '\x99', 0 };
+
+			/* map range [0, 1000] -> [0, 255] that the hardware understands */
+			out[2] = (unsigned char) ((long) promille * 255 / 1000);
+
+			write(p->fd, out, 3);
+		}
+
+		debug(RPT_DEBUG, "MtxOrb: changed brightness to %d", promille);
 	}
 	else {
-		unsigned char out[5] = { '\xFE', '\x99', 0 };
-
-		/* map range [0, 1000] -> [0, 255] that the hardware understands */
-		out[2] = (unsigned char) ((long) promille * 255 / 1000);
-
-		write(p->fd, out, 3);
+		if (on == BACKLIGHT_ON) {
+			unsigned char out[4] = { '\xFE', 'B', '\0', 0};
+			write(p->fd, out, 3);
+		}
+		else {
+			unsigned char out[4] = { '\xFE', 'F', 0};
+			write(p->fd, out, 2);
+		}
 	}
-
-	debug(RPT_DEBUG, "MtxOrb: changed brightness to %d", promille);
 }
 
 
@@ -912,9 +970,9 @@ MtxOrb_cursor_goto(Driver *drvthis, int x, int y)
 MODULE_EXPORT const char *
 MtxOrb_get_info (Driver *drvthis)
 {
-	char in = 0;
-	char tmp[255], buf[64];
-	/* int i = 0; */
+	char tmp[10], buf[255];
+	int model = 0;
+	int i;
         PrivateData *p = drvthis->private_data;
 
 	fd_set rfds;
@@ -925,115 +983,56 @@ MtxOrb_get_info (Driver *drvthis)
 	debug(RPT_DEBUG, "MtxOrb: get_info");
 
 	memset(p->info, '\0', sizeof(p->info));
-	strcpy(p->info, "Matrix Orbital Driver ");
-
-	/*
-	 * Read type of display
-	 */
-
-	write(p->fd, "\x0FE" "7", 2);
+	strcat(p->info, "Matrix Orbital, ");
 
 	/* Watch fd to see when it has input. */
 	FD_ZERO(&rfds);
 	FD_SET(p->fd, &rfds);
 
+	/*
+	 * Read type of display
+	 * In query for its type, the display return a single byte value.
+	 */
+	memset(tmp, '\0', sizeof(tmp));
+	write(p->fd, "\x0FE" "7", 2);
+
 	/* Wait the specified amount of time. */
 	tv.tv_sec = 0;		/* seconds */
 	tv.tv_usec = 500;	/* microseconds */
 
-/*	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); */
-	retval = select(p->fd+1, &rfds, NULL, NULL, NULL);
+	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); 
 
 	if (retval) {
-		if (read (p->fd, &in, 1) < 0) {
-			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
-		} else {
-			switch (in) {
-				case '\x01': strcat(p->info, "LCD0821 "); break;
-				case '\x03': strcat(p->info, "LCD2021 "); break;
-				case '\x04': strcat(p->info, "LCD1641 "); break;
-				case '\x05': strcat(p->info, "LCD2041 "); break;	/* VK202-25 ? */
-				case '\x06': strcat(p->info, "LCD4021 "); break;
-				case '\x07': strcat(p->info, "LCD4041 "); break;
-				case '\x08': strcat(p->info, "LK202-25 "); break;
-				case '\x09': strcat(p->info, "LK204-25 "); break;
-				case '\x0A': strcat(p->info, "LK404-55 "); break;
-				case '\x0B': strcat(p->info, "VFD2021 "); break;
-				case '\x0C': strcat(p->info, "VFD2041 "); break;
-				case '\x0D': strcat(p->info, "VFD4021 "); break;
-				case '\x0E': strcat(p->info, "VK202-25 "); break;
-				case '\x0F': strcat(p->info, "VK204-25 "); break;
-				case '\x10': strcat(p->info, "GLC12232 "); break;
-				case '\x11': strcat(p->info, "GLC12864 "); break;
-				case '\x12': strcat(p->info, "GLC128128 "); break;	/* ??? */
-				case '\x13': strcat(p->info, "GLC24064 "); break;
-				case '\x14': strcat(p->info, "GLK12864-25 "); break;	/* ??? */
-				case '\x15': strcat(p->info, "GLK24064-25 "); break;
-				case '\x21': strcat(p->info, "GLK128128-25 "); break;	/* ??? */
-				case '\x22': strcat(p->info, "GLK12232-25-WBL "); break;
-				case '\x24': strcat(p->info, "GLK12232-25-SM "); break;
-				case '\x31': strcat(p->info, "LK404-AT "); break;
-				case '\x32': strcat(p->info, "VFD1621 "); break;	/* MOS-AV-162A ? */
-				case '\x33': strcat(p->info, "LK402-12 "); break;
-				case '\x34': strcat(p->info, "LK162-12 "); break;
-				case '\x35': strcat(p->info, "LK204-25PC "); break;
-				case '\x36': strcat(p->info, "LK202-24-USB "); break;
-				case '\x37': strcat(p->info, "VK202-24-USB "); break;
-				case '\x38': strcat(p->info, "LK204-24-USB "); break;
-				case '\x39': strcat(p->info, "VK204-24-USB "); break;
-				case '\x3A': strcat(p->info, "PK162-12 "); break;
-				case '\x3B': strcat(p->info, "VK162-12 "); break;
-				case '\x3C': strcat(p->info, "MOS-AP-162A "); break;
-				case '\x3D': strcat(p->info, "PK202-25 "); break;
-				case '\x3E': strcat(p->info, "MOS-AL-162A "); break;
-				case '\x40': strcat(p->info, "MOS-AV-202A "); break;
-				case '\x41': strcat(p->info, "MOS-AP-202A "); break;
-				case '\x42': strcat(p->info, "PK202-24-USB "); break;
-				case '\x43': strcat(p->info, "MOS-AL-082 "); break;
-				case '\x44': strcat(p->info, "MOS-AL-204 "); break;
-				case '\x45': strcat(p->info, "MOS-AV-204 "); break;
-				case '\x46': strcat(p->info, "MOS-AL-402 "); break;
-				case '\x47': strcat(p->info, "MOS-AV-402 "); break;
-				case '\x48': strcat(p->info, "LK082-12 "); break;
-				case '\x49': strcat(p->info, "VK402-12 "); break;
-				case '\x4A': strcat(p->info, "VK404-55 "); break;
-				case '\x4B': strcat(p->info, "LK402-25 "); break;
-				case '\x4C': strcat(p->info, "VK402-25 "); break;
-				default: /*snprintf(tmp, sizeof(tmp), "Unknown (%X) ", in); strcat(info, tmp); */
-					     break;
+		if (read(p->fd, &tmp, 1) < 0)
+			report(RPT_WARNING, "%s: unable to read data", drvthis->name);
+		else {
+			for (i = 0; modulelist[i].model != 0; i++) {
+				if (modulelist[i].model == tmp[0]) {
+					snprintf(buf, sizeof(buf), "Model: %s, ", modulelist[i].name);
+					strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
+					model = (int) tmp[0];
+					break;
+				}
 			}
 		}
-	} else
-		syslog(LOG_WARNING, "MatrixOrbital driver: unable to read device type");
+	}
+	else
+		report(RPT_WARNING, "%s: unable to read device type", drvthis->name);
 
-	/*
-	 * Read serial number of display
-	 */
-
-	memset(tmp, '\0', sizeof(tmp));
-	write(p->fd, "\x0FE" "5", 2);
-
-	/* Wait the specified amount of time. */
-	tv.tv_sec = 0;		/* seconds */
-	tv.tv_usec = 500;	/* microseconds */
-
-/*	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); */
-	retval = select(p->fd+1, &rfds, NULL, NULL, NULL);
-
-	if (retval) {
-		if (read(p->fd, &tmp, 2) < 0) {
-			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
-		} else {
-			snprintf(buf, sizeof(buf), "Serial No: %ld ", (long int) tmp);
-			strcat(p->info, buf);
-		}
-	} else
-		syslog(LOG_WARNING, "MatrixOrbital driver: unable to read device serial number");
+	if (model == 0) {
+		snprintf(buf, sizeof(buf), "Unknown model (0x%02x), ", (int) tmp[0]);
+		strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
+	}
 
 	/*
 	 * Read firmware revision number
+	 * TODO: check the format of a real display, because mine does not
+	 * return anything.
+	 * It is assumed that the display returns a two byte value giving
+	 * the major/minor version number.
+	 * NOTE: This is just a guess as the manual doesn't describe
+	 * the returned format.
 	 */
-
 	memset(tmp, '\0', sizeof(tmp));
 	write(p->fd, "\x0FE" "6", 2);
 
@@ -1041,19 +1040,46 @@ MtxOrb_get_info (Driver *drvthis)
 	tv.tv_sec = 0;		/* seconds */
 	tv.tv_usec = 500;	/* microseconds */
 
-/*	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); */
-	retval = select(p->fd+1, &rfds, NULL, NULL, NULL);
+	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); 
 
 	if (retval) {
-		if (read(p->fd, &tmp, 2) < 0) {
-			syslog(LOG_WARNING, "MatrixOrbital driver: unable to read data");
-		} else {
-			snprintf(buf, sizeof(buf), "Firmware Rev. %ld ", (long int) tmp);
-			strcat(p->info, buf);
-		}
-	} else
-		syslog(LOG_WARNING, "MatrixOrbital driver: unable to read device firmware revision");
+		if (read(p->fd, &tmp, 2) < 0)
+			report(RPT_WARNING, "%s: unable to read data", drvthis->name);
+		
+	}
+	else
+		report(RPT_WARNING, "%s: unable to read device firmware revision", drvthis->name);
 
+	snprintf(buf, sizeof(buf), "Firmware Rev.: 0x%02x 0x%02x, ", tmp[0], tmp[1]);
+	strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
+
+	/*
+	 * Read serial number of display
+	 * It is assumed that the display returns a two byte value giving
+	 * the serial number.
+	 * NOTE: This is just a guess as the manual doesn't describe
+	 * the returned format, but for setting the serial number two bytes
+	 * have to be supplied, so it is likely the display will return those.
+	 */
+	memset(tmp, '\0', sizeof(tmp));
+	write(p->fd, "\x0FE" "5", 2);
+
+	/* Wait the specified amount of time. */
+	tv.tv_sec = 0;		/* seconds */
+	tv.tv_usec = 500;	/* microseconds */
+
+	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); 
+
+	if (retval) {
+		if (read(p->fd, &tmp, 2) < 0)
+			report(RPT_WARNING, "%s: unable to read data", drvthis->name);
+	}
+	else
+		report(RPT_WARNING, "%s: unable to read device serial number", drvthis->name);
+
+	snprintf(buf, sizeof(buf), "Serial No: 0x%02x 0x%02x", tmp[0], tmp[1]);
+	strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
+		
 	return p->info;
 }
 

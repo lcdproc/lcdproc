@@ -71,6 +71,7 @@ v.0.5dev (ongoing development)
  + hd44780 driver: port usblcd connection type from 0.4.5 to 0.5 (M. Dolze)
  * server: Fix interpretation of named screen priorities
  + new driver imonlcd for SoundGraph iMON LCD (Dean Harding, Jonathan Kyler)
+ * MtxOrb driver: Fix backlight for old firmware
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
