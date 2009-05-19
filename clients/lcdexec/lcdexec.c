@@ -8,7 +8,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 2002, Joris Robijn
- * Copyright (c) 2006-7, Peter Marschall
+ *               2006-2008, Peter Marschall
  */
 
 #include <stdio.h>
@@ -57,7 +57,7 @@ typedef struct ProcInfo {
 char * help_text =
 "lcdexec - LCDproc client to execute commands from the LCDd menu\n"
 "\n"
-"Copyright (c) 2002, Joris Robijn, 2006,7 Peter Marschall.\n"
+"Copyright (c) 2002, Joris Robijn, 2006-2008 Peter Marschall.\n"
 "This program is released under the terms of the GNU General Public License.\n"
 "\n"
 "Usage: lcdexec [<options>]\n"

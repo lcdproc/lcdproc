@@ -425,7 +425,7 @@ HelpScreen (int exit_state)
 	fprintf(stderr,
 		"lcdproc - LCDproc system status information viewer\n"
 		"\n"
-		"Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc. contributors.\n"
+		"Copyright (c) 1999-2009 Scott Scriven, William Ferrell, and misc. contributors.\n"
 		"This program is released under the terms of the GNU General Public License.\n"
 		"\n"
 		"Usage: lcdproc [<options>] [<screens> ...]\n"

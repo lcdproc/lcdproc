@@ -6,7 +6,7 @@
  * COPYING file distributed with this package.
  *
  * Copyright (c) 2002, Joris Robijn
- * Copyright (c) 2006, Peter Marschall
+ *               2006-2008, Peter Marschall
  */
 
 #include <stdio.h>
@@ -42,7 +42,7 @@
 char *help_text =
 "lcdvc - LCDproc virtual console\n"
 "\n"
-"Copyright (c) 2002, Joris Robijn, 2006 Peter Marschall.\n"
+"Copyright (c) 2002, Joris Robijn, 2006-2008 Peter Marschall.\n"
 "This program is released under the terms of the GNU General Public License.\n"
 "\n"
 "Usage: lcdvc [<options>]\n"
