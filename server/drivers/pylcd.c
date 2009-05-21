@@ -122,7 +122,7 @@ read_tele(PrivateData *p, char *buffer)
 
     if (zeichen!=0x02)
     {
-        memset(buffer, MAXCOUNT, 0);
+        memset(buffer, 0, MAXCOUNT);
         return False;
     }
 
@@ -150,7 +150,7 @@ read_tele(PrivateData *p, char *buffer)
     }
     else
     {
-        memset(buffer, MAXCOUNT, 0);
+        memset(buffer, 0, MAXCOUNT);
         return False;
     }
 }
