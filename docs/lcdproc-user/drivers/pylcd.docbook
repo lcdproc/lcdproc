@@ -163,7 +163,7 @@ to do the right thing.
 </para>
 
 <example id="pyramid-ledoutput.example">
-<title>How to use the LED output from the client</title>
+<title>Pyramid: How to use the LED output from the client</title>
 <programlisting>
 telnet localhost 13666
 hello

@@ -375,6 +375,7 @@ Slightly modified in order to include it in this document March 2002, Rene Wagne
     as if it had no keys attached.
     </para>
     <example id="MtxOrb-config-keymap-example">
+      <title>Matrix Orbital: keymap config</title>
       <programlisting>
       KeyMap_A=Left
       KeyMap_B=Right
