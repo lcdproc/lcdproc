@@ -394,6 +394,11 @@ MenuItem *menuitem_create_ip(char *id, MenuEventFunc(*event_func),
 
 	new_item->data.ip.maxlength = ipinfo->maxlen;;
 	new_item->data.ip.value = malloc(new_item->data.ip.maxlength + 1);
+	if (new_item->data.ip.value == NULL)
+	{
+		menuitem_destroy(new_item);
+		return NULL;
+	}
 
 	strncpy(new_item->data.ip.value, value, new_item->data.ip.maxlength);
 	new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
