@@ -64,6 +64,7 @@ get_info	Implemented.
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
 #include <syslog.h>
 #include <ctype.h>

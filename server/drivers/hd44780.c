@@ -67,12 +67,13 @@
 #define KEYPAD_AUTOREPEAT_DELAY 500
 #define KEYPAD_AUTOREPEAT_FREQ 15
 
-
+	
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
 
 #ifdef HAVE_CONFIG_H

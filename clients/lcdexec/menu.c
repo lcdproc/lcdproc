@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+#include <strings.h>
 
 #include "shared/str.h"
 #include "shared/report.h"

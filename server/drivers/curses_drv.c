@@ -55,6 +55,7 @@ Different implementations of (n)curses available on:
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/errno.h>
 #include <ctype.h>
 #ifdef HAVE_NCURSES_H
