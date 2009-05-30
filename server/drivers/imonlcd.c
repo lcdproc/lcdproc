@@ -31,6 +31,10 @@
  * COPYING file distributed with this package.
  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -39,12 +43,10 @@
 #include <string.h>
 #include <errno.h>
 #include <time.h>
-#include <stdint.h>
-#include <math.h>
-
-#ifdef HAVE_CONFIG_H
-# include "config.h"
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
 #endif
+#include <math.h>
 
 #include "lcd.h"
 #include "lcd_lib.h"

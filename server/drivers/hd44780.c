@@ -150,6 +150,7 @@ HD44780_init(Driver *drvthis)
 	int if_type = IF_TYPE_UNKNOWN;
 	int tmp;
 	PrivateData *p;
+	char conf_charmap[MAX_CHARMAP_NAME_LENGTH];
 
 	// Alocate and store private data
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
@@ -347,8 +348,6 @@ HD44780_init(Driver *drvthis)
 	}
 
 	// Get configured charmap
-	char conf_charmap[MAX_CHARMAP_NAME_LENGTH];
-
 	strncpy(conf_charmap, drvthis->config_get_string(drvthis->name, "charmap", 0, "hd44780_default"), MAX_CHARMAP_NAME_LENGTH);
 	conf_charmap[MAX_CHARMAP_NAME_LENGTH-1] = '\0';
 	p->charmap = 0;

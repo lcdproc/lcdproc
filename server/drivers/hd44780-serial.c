@@ -67,9 +67,13 @@ unsigned int bitrate_conversion[][2] = {
 	{ 4800, B4800 },
 	{ 9600, B9600 },
 	{ 19200, B19200 },
-	{ 38400, B38400 },
-	{ 57600, B57600 },
-	{ 115200, B115200 }
+	{ 38400, B38400 }
+#if defined(B57600)
+	, { 57600, B57600 }
+#endif
+#if defined(B115200)
+	, { 115200, B115200 }
+#endif
 #if defined(B230400)
 	, { 230400, B230400 }
 #endif	
@@ -142,6 +146,8 @@ hd_init_serial(Driver *drvthis)
 
 	struct termios portset;
 	char device[256] = DEFAULT_DEVICE;
+	unsigned int conf_bitrate;
+	size_t bitrate;
 
 	/* READ CONFIG FILE */
 
@@ -173,9 +179,6 @@ hd_init_serial(Driver *drvthis)
 	}
 
 	/* Get bitrate */
-	unsigned int conf_bitrate;
-	size_t bitrate;
-
 	conf_bitrate = drvthis->config_get_int(drvthis->name, "Speed", 0, SERIAL_IF.default_bitrate);
 	if (conf_bitrate == 0)
 		conf_bitrate = SERIAL_IF.default_bitrate;

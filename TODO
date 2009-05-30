@@ -14,6 +14,7 @@ Things for the short term:
 - MtxOrb: Recover the code for I2C connectivity to MtxOrb
 - shuttleVFD: Use output() method for these special "out-of-band" symbols.
 - glk: port icon, vBar and hBar to 0.5 API.
+- Use non-standard serial baud rates (57600 and higher) only optional.
 
 
 Things for the longer term:
