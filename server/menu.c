@@ -336,6 +336,18 @@ MenuItem *menu_find_item(Menu *menu, char *id, bool recursive)
 
 void menu_set_association(Menu *menu, void *assoc)
 {
+	/*
+	 * assoc can currently be either a Screen or Driver, but there's
+	 * no way to tell, so just display (data) if it's not NULL
+	 */
+	debug(RPT_DEBUG, "%s(menu=[%s], assoc=[%s])", __FUNCTION__,
+			((menu != NULL) ? menu->id : "(null)"),
+			((assoc != NULL) ? "(data)" : "(null)"));
+
+	/* note that assoc is allowed to be NULL */
+	if (menu == NULL)
+		return;
+
 	menu->data.menu.association = assoc;
 }
 

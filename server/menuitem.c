@@ -318,6 +318,11 @@ MenuItem *menuitem_create_slider(char *id, MenuEventFunc(*event_func),
 	if (new_item != NULL) {
 		new_item->data.slider.mintext = strdup(mintext);
 		new_item->data.slider.maxtext = strdup(maxtext);
+		if (new_item->data.slider.mintext == NULL ||
+		    new_item->data.slider.maxtext == NULL) {
+			menuitem_destroy(new_item);
+			return NULL;
+		}
 		new_item->data.slider.minvalue = minvalue;
 		new_item->data.slider.maxvalue = maxvalue;
 		new_item->data.slider.stepsize = stepsize;
@@ -339,8 +344,12 @@ MenuItem *menuitem_create_numeric(char *id, MenuEventFunc(*event_func),
 	if (new_item != NULL) {
 		new_item->data.numeric.maxvalue = maxvalue;
 		new_item->data.numeric.minvalue = minvalue;
-		new_item->data.numeric.edit_str = malloc(MAX_NUMERIC_LEN);
 		new_item->data.numeric.value = value;
+		new_item->data.numeric.edit_str = malloc(MAX_NUMERIC_LEN);
+		if (new_item->data.numeric.edit_str == NULL) {
+			menuitem_destroy(new_item);
+			return NULL;
+		}
 	}	
 
 	return new_item;
@@ -366,15 +375,26 @@ MenuItem *menuitem_create_alpha(char *id, MenuEventFunc(*event_func),
 		new_item->data.alpha.allow_noncaps = allow_noncaps;
 		new_item->data.alpha.allow_numbers = allow_numbers;
 		new_item->data.alpha.allowed_extra = strdup(allowed_extra);
+		if (new_item->data.alpha.allowed_extra == NULL) {
+			menuitem_destroy(new_item);
+			return NULL;
+		}
 
 		new_item->data.alpha.value = malloc(maxlength + 1);
-		if (new_item->data.alpha.value != NULL) {
-			strncpy(new_item->data.alpha.value, value, maxlength);
-			new_item->data.alpha.value[maxlength] = 0;
-		}	
+		if (new_item->data.alpha.value == NULL) {
+			menuitem_destroy(new_item);
+			return NULL;
+		}
+
+		strncpy(new_item->data.alpha.value, value, maxlength);
+		new_item->data.alpha.value[maxlength] = 0;
 
 		new_item->data.alpha.edit_str = malloc(maxlength + 1);
-	}	
+		if (new_item->data.alpha.edit_str == NULL) {
+			menuitem_destroy(new_item);
+			return NULL;
+		}
+	}
 
 	return new_item;
 }
@@ -389,6 +409,9 @@ MenuItem *menuitem_create_ip(char *id, MenuEventFunc(*event_func),
 			__FUNCTION__, id, event_func, text, v6, value);
 
 	new_item = menuitem_create(MENUITEM_IP, id, event_func, text, client);
+	if (new_item == NULL)
+		return NULL;
+
 	new_item->data.ip.v6 = v6;
 	ipinfo = (v6) ? &IPinfo[1] : &IPinfo[0];
 
@@ -425,6 +448,10 @@ MenuItem *menuitem_create_ip(char *id, MenuEventFunc(*event_func),
 	}
 
 	new_item->data.ip.edit_str = malloc(new_item->data.ip.maxlength + 1);
+	if (new_item->data.ip.edit_str == NULL) {
+		menuitem_destroy(new_item);
+		return NULL;
+	}
 
 	return new_item;
 }
@@ -1492,18 +1519,21 @@ LinkedList *tablist2linkedlist(char *strings)
 
 			/* Alloc and copy substring */
 			new_s = malloc(len + 1);
-			strncpy(new_s, p, len);
-			new_s[len] = 0;
+			if (new_s != NULL) {
+				strncpy(new_s, p, len);
+				new_s[len] = 0;
 
-			LL_Push(list, new_s);
+				LL_Push(list, new_s);
+			}
 
 			/* Go to next string */
 			p = tabptr + 1;
 		}
 		/* Add last string */
 		new_s = strdup(p);
-		LL_Push(list, new_s);
-	}	
+		if (new_s != NULL)
+			LL_Push(list, new_s);
+	}
 
 	return list;
 }

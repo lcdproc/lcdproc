@@ -65,6 +65,9 @@ static void handle_enter(void);
 static void handle_successor(void);
 void menuscreen_switch_item(MenuItem *new_menuitem);
 void menuscreen_create_menu(void);
+#ifdef LCDPROC_TESTMENUS
+void menuscreen_create_testmenu(void);
+#endif
 Menu *menuscreen_get_main(void);
 MenuEventFunc(heartbeat_handler);
 MenuEventFunc(backlight_handler);
@@ -461,41 +464,36 @@ void menuscreen_create_menu(void)
 	MenuItem *slider;
 	Driver *driver;
 
-#ifdef LCDPROC_TESTMENUS
-	MenuItem *test_item;
-	Menu *test_menu;
-
-	char testiso[] = {
-		'D', 'e', 'm', 'o', '\t',
-		/* #160 */
-		160, 161, 162, 163, 164, 165, 166, 167, '\t',
-		168, 169, 170, 171, 172, 173, 174, 175, '\t',
-		176, 177, 178, 179, 180, 181, 182, 183, '\t',
-		184, 185, 186, 187, 188, 189, 190, 191, '\t',
-		/* #192 */
-		192, 193, 194, 195, 196, 197, 198, 199, '\t',
-		200, 201, 202, 203, 204, 205, 206, 207, '\t',
-		208, 209, 210, 211, 212, 213, 214, 215, '\t',
-		216, 217, 218, 219, 220, 221, 222, 223, '\t',
-		/* #224 */
-		224, 225, 226, 227, 228, 229, 230, 231, '\t',
-		232, 233, 234, 245, 236, 237, 238, 239, '\t',
-		240, 241, 242, 243, 244, 245, 246, 247, '\t',
-		248, 249, 250, 251, 252, 253, 254, 255, '\0'
-	};	
-#endif /*LCDPROC_TESTMENUS*/
-
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	main_menu = menu_create("mainmenu", NULL, "LCDproc Menu", NULL);
+	if (main_menu == NULL) {
+		report(RPT_ERR, "%s: Cannot create main menu", __FUNCTION__);
+		return;
+	}
 
 	options_menu = menu_create("options", NULL, "Options", NULL);
+	if (options_menu == NULL) {
+		report(RPT_ERR, "%s: Cannot create options menu", __FUNCTION__);
+		return;
+	}
 	menu_add_item(main_menu, options_menu);
 
 #ifdef LCDPROC_TESTMENUS
+	/* TODO:
+	 * Menu items in the screens menu currently have no functions assigned.
+	 * Thefore only enable the menu for testing. If functions are available,
+	 * this code should be outside the #ifdef.
+	 */
 	screens_menu = menu_create("screens", NULL, "Screens", NULL);
+	if (screens_menu == NULL) {
+		report(RPT_ERR, "%s: Cannot create screens menu", __FUNCTION__);
+		return;
+	}
 	menu_add_item(main_menu, screens_menu);
-#endif /*LCDPROC_TESTMENUS*/
+
+	menuscreen_create_testmenu();
+#endif
 
 	/* add option menu contents:
 	 * menu's client is NULL since we're in the server */
@@ -518,6 +516,11 @@ void menuscreen_create_menu(void)
 		if (contrast_avail || brightness_avail) {
 			/* menu's client is NULL since we're in the server */
 			driver_menu = menu_create(driver->name, NULL, driver->name, NULL);
+			if (driver_menu == NULL) {
+				report(RPT_ERR, "%s: Cannot create menu for driver %s",
+				    __FUNCTION__, driver->name);
+				continue;
+			}
 			menu_set_association(driver_menu, driver);
 			menu_add_item(options_menu, driver_menu);
 			if (contrast_avail) {
@@ -542,9 +545,37 @@ void menuscreen_create_menu(void)
 			}
 		}
 	}
+}
 
-#ifdef LCDPROC_TESTMENUS	
+#ifdef LCDPROC_TESTMENUS
+void menuscreen_create_testmenu(void) {
+	MenuItem *test_item;
+	Menu *test_menu;
+
+	char testiso[] = {
+		'D', 'e', 'm', 'o', '\t',
+		/* #160 */
+		160, 161, 162, 163, 164, 165, 166, 167, '\t',
+		168, 169, 170, 171, 172, 173, 174, 175, '\t',
+		176, 177, 178, 179, 180, 181, 182, 183, '\t',
+		184, 185, 186, 187, 188, 189, 190, 191, '\t',
+		/* #192 */
+		192, 193, 194, 195, 196, 197, 198, 199, '\t',
+		200, 201, 202, 203, 204, 205, 206, 207, '\t',
+		208, 209, 210, 211, 212, 213, 214, 215, '\t',
+		216, 217, 218, 219, 220, 221, 222, 223, '\t',
+		/* #224 */
+		224, 225, 226, 227, 228, 229, 230, 231, '\t',
+		232, 233, 234, 245, 236, 237, 238, 239, '\t',
+		240, 241, 242, 243, 244, 245, 246, 247, '\t',
+		248, 249, 250, 251, 252, 253, 254, 255, '\0'
+	};
+
 	test_menu = menu_create("test", NULL, "Test menu", NULL);
+	if (test_menu == NULL) {
+		report(RPT_ERR, "%s: Cannot create test menu", __FUNCTION__);
+		return;
+	}
 	menu_add_item(main_menu, test_menu);
 
 	/* menu's client is NULL since we're in the server */
@@ -585,8 +616,8 @@ void menuscreen_create_menu(void)
 	
 	test_item = menuitem_create_ring("", NULL, "Charset", NULL, testiso, 0);
 	menu_add_item(test_menu, test_item);
-#endif /*LCDPROC_TESTMENUS*/
 }
+#endif /*LCDPROC_TESTMENUS*/
 
 MenuEventFunc (heartbeat_handler)
 {
@@ -683,6 +714,10 @@ menuscreen_add_screen(Screen *s)
 
 	/* Create a menu entry for the screen */
 	m = menu_create(s->id, NULL, ((s->name != NULL) ? s->name : s->id), s->client);
+	if (m == NULL) {
+		report(RPT_ERR, "%s: Cannot create menu", __FUNCTION__);
+		return;
+	}
 	menu_set_association(m, s);
 	menu_add_item(screens_menu, m);
 
