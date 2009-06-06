@@ -14,8 +14,10 @@ EXTRA_DIST =	bayrad.docbook \
 		hd44780.docbook \
 		icp_a106.docbook \
 		imon.docbook \
+		imonlcd.docbook \
 		IOWarrior.docbook \
 		irman.docbook \
+		irtrans.docbook \
 		joy.docbook \
 		lb216.docbook \
 		lcdm001.docbook \
