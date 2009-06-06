@@ -8,7 +8,7 @@ lcdexec_SOURCES = lcdexec.c menu.c menu.h
 
 lcdexec_LDADD = ../../shared/libLCDstuff.a
 
-AM_CPPFLAGS = -I$(top_srcdir) -DSYSCONFDIR=\"$(sysconfdir)\" -DPIDFILEDIR=\"$(pidfiledir)\"
+AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir)\" -DPIDFILEDIR=\"$(pidfiledir)\"
 
 
 EXTRA_DIST = $(sysconf_DATA)

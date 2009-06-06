@@ -190,7 +190,7 @@ AC_CHECK_FUNCS(select socket strdup strerror strtol uname cfmakeraw snprintf)
 
 dnl Many people on non-GNU/Linux systems don't have getopt
 AC_CONFIG_LIBOBJ_DIR(shared)
-AC_CHECK_FUNC(getopt_long,
+AC_CHECK_FUNC(getopt,
   [
     AC_ARG_WITH(included-getopt,
       [AS_HELP_STRING([--with-included-getopt], [Use the included getopt rather than glibc's])],
