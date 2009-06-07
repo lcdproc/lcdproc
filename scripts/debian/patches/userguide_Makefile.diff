@@ -1,0 +1,23 @@
+diff -ur lcdproc-0.5dev.orig/docs/lcdproc-user/Makefile.am lcdproc-0.5dev/docs/lcdproc-user/Makefile.am
+--- lcdproc-0.5dev.orig/docs/lcdproc-user/Makefile.am	2008-10-10 12:08:10.000000000 +0200
++++ lcdproc-0.5dev/docs/lcdproc-user/Makefile.am	2009-06-07 15:27:45.000000000 +0200
+@@ -23,6 +23,6 @@
+ 
+ install-html-userguide: $(xmlto) lcdproc-user.docbook
+ 	$(mkinstalldirs) $(userguidedir)
+-	$(xmlto) html -o $(userguidedir) lcdproc-user.docbook
++	$(xmlto) html -o $(userguidedir) --skip-validation lcdproc-user.docbook
+ 
+ ## EOF
+diff -ur lcdproc-0.5dev.orig/docs/lcdproc-user/Makefile.in lcdproc-0.5dev/docs/lcdproc-user/Makefile.in
+--- lcdproc-0.5dev.orig/docs/lcdproc-user/Makefile.in	2009-06-07 15:14:20.000000000 +0200
++++ lcdproc-0.5dev/docs/lcdproc-user/Makefile.in	2009-06-07 15:29:21.000000000 +0200
+@@ -491,7 +491,7 @@
+ 
+ install-html-userguide: $(xmlto) lcdproc-user.docbook
+ 	$(mkinstalldirs) $(userguidedir)
+-	$(xmlto) html -o $(userguidedir) lcdproc-user.docbook
++	$(xmlto) html -o $(userguidedir) --skip-validation lcdproc-user.docbook
+ # Tell versions [3.59,3.63) of GNU make to not export all variables.
+ # Otherwise a system limit (for SysV at least) may be exceeded.
+ .NOEXPORT:

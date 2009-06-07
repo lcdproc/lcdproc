@@ -1,3 +1,9 @@
+lcdproc (0.5.2+cvs20090607) UNRELEASED; urgency=low
+
+  * New snapshot from upstream CVS
+
+ -- Markus Dolze <bsdfan@nurfuerspam.de>  Sun, 07 Jun 2009 11:34:46 +0200
+
 lcdproc (0.5.2+cvs20070501) UNRELEASED; urgency=low
 
   * New snapshot from upstream CVS

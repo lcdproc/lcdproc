@@ -27,6 +27,12 @@ endif
 config.status: configure
 	dh_testdir
 	# Add here commands to configure the package.
+ifneq "$(wildcard /usr/share/misc/config.sub)" ""
+	cp -f /usr/share/misc/config.sub config.sub
+endif
+ifneq "$(wildcard /usr/share/misc/config.guess)" ""
+	cp -f /usr/share/misc/config.guess config.guess
+endif
 	CFLAGS="$(CFLAGS)" ./configure \
 	       --host=$(DEB_HOST_GNU_TYPE) \
 	       --build=$(DEB_BUILD_GNU_TYPE) \
@@ -56,17 +62,10 @@ clean:
 	rm -f build-stamp 
 
 	# Add here commands to clean up after the build process.
-	-$(MAKE) distclean
-ifneq "$(wildcard /usr/share/misc/config.sub)" ""
-	cp -f /usr/share/misc/config.sub config.sub
-endif
-ifneq "$(wildcard /usr/share/misc/config.guess)" ""
-	cp -f /usr/share/misc/config.guess config.guess
-endif
+	[ ! -f Makefile ] || $(MAKE) distclean
 	rm -f LCDd.conf.debian
 
 	dh_clean 
-
 
 install: build
 	dh_testdir
@@ -85,7 +84,7 @@ install: build
 
 	# trick: move samples into the correct directory
 	# this saves us from patching Makefile.in files
-	for i in fortune.pl iosock.pl lcdmetar.pl tail.pl x11amp.pl ; do \
+	for i in fortune.pl iosock.pl lcdident.pl lcdmetar.pl tail.pl x11amp.pl ; do \
 	  mv $(CURDIR)/debian/lcdproc/usr/bin/$$i $(CURDIR)/debian/lcdproc/usr/share/doc/lcdproc/examples; \
 	done
 
@@ -108,6 +107,7 @@ binary-arch: build install
 #	dh_installemacsen
 #	dh_installpam
 #	dh_installmime
+#	dh_python
 	dh_installinit --update-rcd-params="defaults 21 79"	# for the lcdproc client
 	dh_installinit --name=LCDd
 	dh_installinit --name=lcdexec --update-rcd-params="defaults 21 79"
@@ -120,7 +120,6 @@ binary-arch: build install
 	dh_compress
 	dh_fixperms
 #	dh_perl
-#	dh_python
 #	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps

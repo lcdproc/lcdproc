@@ -2,9 +2,10 @@ Source: lcdproc
 Section: utils
 Priority: extra
 Maintainer: Jose Luis Tallon <jltallon@adv-solutions.net>
-Build-Depends: debhelper (>= 5.0.0), pkg-config, xmlto, libncurses5-dev, libusb-dev (>= 0.1.8), libsvga1-dev, libxosd-dev
+Build-Depends: debhelper (>= 5.0.0), pkg-config, xmlto, libncurses5-dev, libusb-dev (>= 0.1.8)
 Uploaders: Jonathan Oxer <jon@debian.org>
-Standards-Version: 3.7.3
+Homepage: http://www.lcdproc.org/
+Standards-Version: 3.8.0
 
 Package: lcdproc
 Architecture: alpha amd64 arm armel hppa hurd-i386 i386 ia64 kfreebsd-amd64 kfreebsd-i386 m68k mips mipsel powerpc sparc
@@ -21,5 +22,3 @@ Description: LCD display driver daemon and clients
  load, memory usage, uptime, and a lot more. Custom clients can be
  written using the simple client-server protocol and provided example
  code.
- .
- http://lcdproc.omnipotent.net/  or http://www.lcdproc.org/
