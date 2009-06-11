@@ -138,7 +138,7 @@ Feedback is welcome.
       <entry>No</entry>
       <entry>2</entry>
       <entry> </entry>
-    </row>IEE 36657
+    </row>
     <row>
       <entry>IEE 36657-01 (= 02S-93290-VFD 36657-01)</entry>
       <entry>?</entry>
@@ -329,7 +329,7 @@ Pin 19  ------ RxD
 ]]></screen>
 </sect4>
 
-<sect4 id="serialVFD-serial-connections-BA63/66">
+<sect4 id="serialVFD-serial-connections-BA63_66">
 <title>Siemens/Wincor Nixdorf BA63/66:</title>
 <para>This display doesn't need the inverter!
 It must be connected directly with the serial port.</para>

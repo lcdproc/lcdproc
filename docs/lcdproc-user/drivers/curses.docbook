@@ -14,8 +14,6 @@ curses chipset.
 <title>[curses]</title>
 
 <variablelist>
-    color settings
-
 <varlistentry>
   <term>
     <command>Foreground</command> =

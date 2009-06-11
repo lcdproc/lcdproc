@@ -85,7 +85,7 @@ lcdm001 chipset.
 </varlistentry>
 </variablelist>
 
-    If your device is broken, have a look at server/drivers/lcdm001.h
+<para>If your device is broken, have a look at server/drivers/lcdm001.h</para>
 
 </sect3>
 

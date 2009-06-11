@@ -30,25 +30,25 @@ historically connected to, the driver supports the connection types:
 </para>
 
 <itemizedlist>
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-4bit">4bit</link>:
     4bit Wiring
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-8bit-lcdtime">8bit</link>:
     8bit Wiring ("lcdtime")
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-8bit-winamp">winamp</link>:
     8bit Wiring "winamp" Style
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-seriallpt">serialLpt</link>:
     Serial LPT Wiring
-  </listitem>
+  </para></listitem>
 </itemizedlist>
 
 <para>
@@ -56,30 +56,30 @@ For serial RS-232 ports you can choose among these connection types:
 </para>
 
 <itemizedlist>
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-picanlcd">picanlcd</link>:
     PIC-an-LCD serial device
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-lcdserializer">lcdserializer</link>:
    LCD serializer
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-los-panel">los-panel</link>:
     LCD on Serial panel device (<ulink url="http://www.xs4all.nl/~mlf/los/"></ulink>)
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-vdr-lcd">vdr-lcd</link>:
     VDR LCD serial device
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-vdr-wakeup">vdr-wakeup</link>:
     VDR-Wakeup module
-  </listitem>
+  </para></listitem>
 </itemizedlist>
 
 <para>
@@ -89,45 +89,45 @@ more important. Here are the USB connection types the HD44780 driver supports:
 </para>
 
 <itemizedlist>
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-pertelian">pertelian</link>:
     Pertelian X2040 LCD display (<ulink url="http://pertelian.com/joomla/index.php?option=com_content&amp;task=view&amp;id=43&amp;Itemid=48"></ulink>)
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-bwctusb">bwctusb</link>:
     BWCT USB LCD module (<ulink url="http://www.bwct.de/lcd.html"></ulink>)
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-lcd2usb">lcd2usb</link>:
     Till Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-uss720">uss720</link>:
     Display connected to USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002)
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-lis2">lis2</link>:
     LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-mplay">mplay</link>:
     MPlay Blast from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-ftdi">ftdi</link>:
     Display connected to a dual channel FTDI 2232D USB chip
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-usblcd">usblcd</link>:
     USBLCD from Adams IT Services (<ulink url="http://www.usblcd.de/"></ulink>)
-  </listitem>
+  </para></listitem>
 </itemizedlist>
 
 <para>
@@ -135,15 +135,15 @@ Last but not least, for special purposes, there are even more connection types:
 </para>
 
 <itemizedlist>
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-i2c">i2c</link>:
     LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C
-  </listitem>
+  </para></listitem>
 
-  <listitem>
+  <listitem><para>
     <link linkend="hd44780-ethlcd">ethlcd</link>:
     Display connected via TCP to PoE powered ethlcd device (<ulink url="http://manio.skyboo.net/ethlcd/"></ulink>)
-  </listitem>
+  </para></listitem>
 </itemizedlist>
 
 
@@ -151,10 +151,10 @@ Last but not least, for special purposes, there are even more connection types:
 Depending on the connection type and the display connected, the driver supports
 various special features.
 <itemizedlist>
-  <listitem>Input keys</listitem>
-  <listitem>software controllable brightness / backlight</listitem>
-  <listitem>software controllable contrast</listitem>
-  <listitem>multiple displays / multi-controller displays</listitem>
+  <listitem><para>Input keys</para></listitem>
+  <listitem><para>software controllable brightness / backlight</para></listitem>
+  <listitem><para>software controllable contrast</para></listitem>
+  <listitem><para>multiple displays / multi-controller displays</para></listitem>
 </itemizedlist>
 </para>
 
@@ -483,10 +483,12 @@ To be more precise, it assumes this mapping:
 </tgroup>
 </table>
 
+<para>
 This mapping can be changed using the
 <command>KeyMatrix_<replaceable>X</replaceable>_<replaceable>Y</replaceable></command>
 configuration option, where <replaceable>X</replaceable> and
 <replaceable>Y</replaceable> are the subscripts to the respective axes above.
+</para>
 
 <para>
 If you only need e.g. 10 keys, leave the rest away.

@@ -16,11 +16,11 @@ Additionally it provides 6 digital inputs that can be used for keys.
 The <code>ula200</code> driver controls this board supporting the features:
 
 <itemizedlist>
-  <listitem>display on a single-controller HD44780 display</listitem>
-  <listitem>standard icons (heart, checkbox)</listitem>
-  <listitem>backlight control</listitem>
-  <listitem>input buttons</listitem>
-  <listitem><emphasis>no</emphasis> horizontal or vertical bars</listitem>
+  <listitem><para>display on a single-controller HD44780 display</para></listitem>
+  <listitem><para>standard icons (heart, checkbox)</para></listitem>
+  <listitem><para>backlight control</para></listitem>
+  <listitem><para>input buttons</para></listitem>
+  <listitem><para><emphasis>no</emphasis> horizontal or vertical bars</para></listitem>
 </itemizedlist>
 </para>
 

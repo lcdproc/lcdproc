@@ -44,11 +44,11 @@ When quoted, the following character sequences are evaluated as in literal C str
 <informaltable>
 <tgroup cols="2">
   <thead>
-  </thead>
     <row>
       <entry>escape sequence</entry>
       <entry>character</entry>
     </row>
+  </thead>
   <tbody>
     <row>
       <entry><literal>\a</literal></entry>
@@ -132,8 +132,8 @@ settings for the LCDproc server <application>LCDd</application>.
 <variablelist>
 <varlistentry>
   <term>
-    <command>DriverPath</command> =
-    <arg choice="plain"><replaceable>DRIVERPATH</replaceable></arg>
+    <property>DriverPath</property> =
+    <parameter><replaceable>DRIVERPATH</replaceable></parameter>
   </term>
   <listitem><para>
     Tells the server where to look for the driver files.
@@ -147,8 +147,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Driver</command> =
-    <arg choice="plain"><replaceable>DRIVERNAME</replaceable></arg>
+    <property>Driver</property> =
+    <parameter><replaceable>DRIVERNAME</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -173,8 +173,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Bind</command> =
-    <arg choice="plain"><replaceable>ADDRESS</replaceable></arg>
+    <property>Bind</property> =
+    <parameter><replaceable>ADDRESS</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -192,8 +192,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Port</command> =
-    <arg choice="plain"><replaceable>PORTNUMBER</replaceable></arg>
+    <property>Port</property> =
+    <parameter><replaceable>PORTNUMBER</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -209,8 +209,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>ReportLevel</command> =
-    <arg choice="plain"><replaceable>LEVEL</replaceable></arg>
+    <property>ReportLevel</property> =
+    <parameter><replaceable>LEVEL</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -228,13 +228,11 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>ReportToSyslog</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-      <arg choice="plain"><literal>yes</literal></arg>
-    </group>
-    </arg>
+    <property>ReportToSyslog</property> =
+    {
+      <emphasis><parameter><literal>no</literal></parameter></emphasis> |
+      <parameter><literal>yes</literal></parameter>
+    }
   </term>
   <listitem>
     <para>
@@ -261,8 +259,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>User</command> =
-    <arg choice="plain"><replaceable>USER</replaceable></arg>
+    <property>User</property> =
+    <parameter><replaceable>USER</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -278,13 +276,11 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Foreground</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-      <arg choice="plain"><literal>yes</literal></arg>
-    </group>
-    </arg>
+    <property>Foreground</property> =
+    {
+      <emphasis><parameter><literal>no</literal></parameter></emphasis> |
+      <parameter><literal>yes</literal></parameter>
+    }
   </term>
   <listitem>
     <para>
@@ -301,8 +297,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Hello</command> =
-    <arg choice="plain"><replaceable>HELLOMSG</replaceable></arg>
+    <property>Hello</property> =
+    <parameter><replaceable>HELLOMSG</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -333,8 +329,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>GoodBye</command> =
-    <arg choice="plain"><replaceable>GOODBYEMSG</replaceable></arg>
+    <property>GoodBye</property> =
+    <parameter><replaceable>GOODBYEMSG</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -366,8 +362,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>WaitTime</command> =
-    <arg choice="plain"><replaceable>SECONDS</replaceable></arg>
+    <property>WaitTime</property> =
+    <parameter><replaceable>SECONDS</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -383,14 +379,12 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>ServerScreen</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-      <arg choice="plain"><literal>blank</literal></arg>
-    </group>
-    </arg>
+    <property>ServerScreen</property> =
+    {
+      <emphasis><parameter><literal>yes</literal></parameter></emphasis> |
+      <parameter><literal>no</literal></parameter> |
+      <parameter><literal>blank</literal></parameter>
+    }
   </term>
   <listitem>
     <para>
@@ -421,14 +415,12 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Backlight</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>off</literal></arg>
-      <arg choice="plain"><literal><emphasis>open</emphasis></literal></arg>
-      <arg choice="plain"><literal>on</literal></arg>
-    </group>
-    </arg>
+    <property>Backlight</property> =
+    {
+      <parameter><literal>off</literal></parameter> |
+      <emphasis><parameter><literal>open</literal></parameter></emphasis> |
+      <parameter><literal>on</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the master backlight setting.
@@ -442,14 +434,12 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>Heartbeat</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>off</literal></arg>
-      <arg choice="plain"><literal><emphasis>open</emphasis></literal></arg>
-      <arg choice="plain"><literal>on</literal></arg>
-    </group>
-    </arg>
+    <property>Heartbeat</property> =
+    {
+      <parameter><literal>off</literal></parameter> |
+      <emphasis><parameter><literal>open</literal></parameter></emphasis> |
+      <parameter><literal>on</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the master heartbeat, the oscillating icon in the top right corner
@@ -463,8 +453,8 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <command>TitleSpeed</command> =
-    <arg choice="plain"><replaceable>SPEED</replaceable></arg>
+    <property>TitleSpeed</property> =
+    <parameter><replaceable>SPEED</replaceable></parameter>
   </term>
   <listitem><para>
     Set the speed how fast over-long title lines shall scroll.
@@ -486,8 +476,8 @@ don't go to any client.
 <variablelist>
 <varlistentry>
   <term>
-    <command>ToggleRotateKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>ToggleRotateKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     Defaults to <literal>Enter</literal>.
@@ -496,8 +486,8 @@ don't go to any client.
 
 <varlistentry>
   <term>
-    <command>PrevScreenKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>PrevScreenKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     Defaults to <literal>Left</literal>.
@@ -506,8 +496,8 @@ don't go to any client.
 
 <varlistentry>
   <term>
-    <command>NextScreenKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>NextScreenKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     Defaults to <literal>Right</literal>.
@@ -516,8 +506,8 @@ don't go to any client.
 
 <varlistentry>
   <term>
-    <command>ScrollUpKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>ScrollUpKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     Defaults to <literal>Up</literal>.
@@ -526,8 +516,8 @@ don't go to any client.
 
 <varlistentry>
   <term>
-    <command>ScrollDownKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>ScrollDownKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     Defaults to <literal>Down</literal>.
@@ -547,57 +537,6 @@ options related to the way <application>LCDd</application> handles
 input "events".
 </para>
 
-<!--
-<table>
-<title>The Standard LCDd Input Keys</title>
-<tgroup cols="3">
-<thead>
-<row>
-<entry>Keyname</entry>
-<entry>Function</entry>
-</row>
-<row>
-<entry></entry>
-<entry>Normal context</entry>
-<entry>Menu context</entry>
-</row>
-</thead>
-<tbody>
-<row>
-<entry>MenuKey</entry>
-<entry>Open main menu</entry>
-<entry>Exit/Cancel</entry>
-</row>
-<row>
-<entry>EnterKey</entry>
-<entry>Toggle Hold/Rotate screens</entry>
-<entry>Enter/Select</entry>
-</row>
-<row>
-<entry>UpKey</entry>
-<entry>Back (Go to previous screen)</entry>
-<entry>Up/Left</entry>
-</row>
-<row>
-<entry>DownKey</entry>
-<entry>Forward (Go to next screen)</entry>
-<entry>Down/Right</entry>
-</row>
-<row>
-<entry>LeftKey</entry>
-<entry>Back (Go to previous screen)</entry>
-<entry>Left</entry>
-</row>
-<row>
-<entry>RightKey</entry>
-<entry>Forward (Go to next screen)</entry>
-<entry>Right</entry>
-</row>
-</tbody>
-</tgroup>
-</table>
--->
-
 <para>
 The menu is a special LCDproc client built into <application>LCDd</application>
 that allows changing server and display settings as well as extending it
@@ -611,8 +550,8 @@ You can configure what keys the menu should use.
 <variablelist>
 <varlistentry>
   <term>
-    <command>MenuKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>MenuKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -621,18 +560,18 @@ You can configure what keys the menu should use.
       means returning to the regular display mode.
       It has no default, but a natural candidate is <literal>Menu</literal>.
     </para>
-    <note>
+    <note><para>
       The <literal>MenuKey</literal> will be reserved exclusively,
       while the others work in shared mode and can thus be used by a
       client application when not in the menu.
-    </note>
+    </para></note>
   </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>EnterKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>EnterKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     The key to enter a sub menu, to select an entry and/or
@@ -648,8 +587,8 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>UpKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>UpKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     The key to move to the previous item in a menu and/or to select
@@ -663,8 +602,8 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>DownKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>DownKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     The key to move to the next item in a menu andi/or to select
@@ -678,8 +617,8 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>LeftKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>LeftKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     If defined, this optional key is used to 
@@ -691,8 +630,8 @@ You can configure what keys the menu should use.
 
 <varlistentry>
   <term>
-    <command>RightKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>RightKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     If defined, this optional key is used to to move right in input fields.
@@ -766,7 +705,7 @@ Refer to your system's manual on how to install the scripts.
 <title>init-LCDd</title>
 <para>
 The file <filename>scripts/init-LCDd.*</filename> is the init script for the
-LCDproc server LCDd. It does not require modification.
+LCDproc server <application>LCDd</application>. It does not require modification.
 </para>
 </sect2>
 
@@ -774,7 +713,7 @@ LCDproc server LCDd. It does not require modification.
 <title>init-lcdproc</title>
 <para>
 The file <filename>scripts/init-lcdproc.*</filename> is the init script for the
-LCDproc "main" client lcdproc.
+LCDproc "main" client <application>lcdproc</application>.
 </para>
 
 <note>
@@ -783,35 +722,23 @@ You can retrieve a listing of all options of lcdproc running <command>lcdproc --
 </para>
 </note>
 
-<!--
+</sect2>
+
+<sect2 id="init-lcdexec">
+<title>init-lcdexec</title>
 <para>
-The lcdproc init script retrieves the options it will pass to lcdproc from the file
-<filename>/etc/lcdproc.conf</filename> (<filename>scripts/lcdproc.conf</filename> in the
-sources distribution).
+The file <filename>scripts/init-lcdexec.*</filename> is the init script for the
+LCDproc <application>lcdexec</application> client, which can execute predefined
+commands via the menu feature.
 </para>
+</sect2>
 
-<example>
-<title><filename>lcdproc.conf</filename>: Modify the option passed to lcdproc</title>
-
-<programlisting>
-# /etc/lcdproc.conf
-#
-# Configuration file of the main LCDproc client "lcdproc"
-# NOTE: The configuration file of LCDd is /etc/LCDd.conf
-
-# Set SCREENS to the screens you want lcdproc to send to LCDd
-# lcdproc -h will give you a list of the screens available
-
-SCREENS="C L"
-
-</programlisting>
-</example>
-
+<sect2 id="init-lcdvc">
+<title>init-lcdvc</title>
 <para>
-In this example lcdproc will only send information on the CPU usage [C] and system load [L] to the server.
+The file <filename>scripts/init-lcdvc.*</filename> is the init script for the
+LCDproc <application>lcdvc</application> client, a simple terminal.
 </para>
--->
-
 </sect2>
 
 </sect1>

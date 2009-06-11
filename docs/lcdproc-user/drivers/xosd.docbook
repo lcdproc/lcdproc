@@ -50,8 +50,6 @@ on-screen display (OSD) used by most modern televisions and video-players.
   </para></listitem>
 </varlistentry>
 
-Offset=200x200
-
 <varlistentry>
   <term>
     <command>Font</command> =
@@ -71,7 +69,6 @@ Offset=200x200
   </listitem>
 </varlistentry>
 
-<!--
 <varlistentry>
   <term>
     <command>Contrast</command> =
@@ -109,7 +106,6 @@ Offset=200x200
     switched off in case <application>LCDd</application> is inactive
   </para></listitem>
 </varlistentry>
--->
 </variablelist>
 
 </sect3>

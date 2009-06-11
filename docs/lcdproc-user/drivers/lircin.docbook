@@ -69,6 +69,7 @@ Then you have to modify the <code>[lirc]</code> section of your
 <filename>LCDd.conf</filename>.
 </para>
 
+</sect2>
 
 <!-- ## LIRC input driver ## -->
 <sect2 id="lirc-config">
@@ -115,8 +116,6 @@ Then you have to modify the <code>[lirc]</code> section of your
 </variablelist>
 
 </sect3>
-
-</sect2>
 
 </sect2>
 

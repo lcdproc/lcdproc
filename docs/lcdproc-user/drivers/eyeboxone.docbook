@@ -141,10 +141,11 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
   <listitem><para>
     Set the the baud rate to use when communicating with the LCD.
     If not specified, it defaults to <literal>19200</literal>.
-  </para></listitem>
-      <note><para>
+    </para>
+    <note><para>
       As I said, I think only <literal>19200</literal> is a good choice.
     </para></note>
+  </listitem>
 </varlistentry>
 
 <varlistentry>

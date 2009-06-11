@@ -1,4 +1,10 @@
 <sect1 id="glcdlib-howto">
+<sect1info>
+  <author>
+    <firstname>Lucian</firstname>
+    <surname>Muresan</surname>
+  </author>
+</sect1info>
 <title>The glcdlib Driver</title>
 
 <para>
@@ -20,12 +26,6 @@ from <ulink url="http://www.muresan.de/graphlcd/lcdproc"></ulink>
 before configuring the LCDproc build process --enable-drivers=glcdlib.
 </para>
 
-Author
-<author>
-<firstname>Lucian</firstname>
-<surname>Muresan</surname>
-</author>
-
 </sect2>
 
 <!-- ## glcdlib meta driver for graphical LCDs ## -->
@@ -35,7 +35,7 @@ Author
 <sect3 id="glcdlib-config-section">
 <title>[glcdlib]</title>
 
-## mandatory:
+<para>Mandatory settings:</para>
 
 <variablelist>
 <varlistentry>
@@ -105,8 +105,9 @@ Author
 </varlistentry>
 </variablelist>
 
-
+<para>
 The following parameters only apply if <command>UseFT2</command> = <literal>yes</literal>:
+</para>
 
 <variablelist>
 <varlistentry>
@@ -130,12 +131,15 @@ The following parameters only apply if <command>UseFT2</command> = <literal>yes<
     </arg>
   </term>
   <listitem><para>
-    minumum size in pixels in which fonts should be rendered
+    minimum size in pixels in which fonts should be rendered
   </para></listitem>
 </varlistentry>
+</variablelist>
 
+<para>Optional settings:</para>
 
-## optional:
+<variablelist>
+<title>Optional settings</title>
 <varlistentry>
   <term>
     <command>Brightness</command> =

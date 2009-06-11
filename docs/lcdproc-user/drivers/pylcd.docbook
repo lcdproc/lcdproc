@@ -1,4 +1,15 @@
 <sect1 id="pyramid-howto">
+<sect1info>
+  <author>
+    <firstname>Stefan</firstname>
+    <surname>Reinauer</surname>
+  </author>
+</sect1info>
+<!-- Only as a comment, as inline presentation is awful in Docbook 4.5
+coresystems GmbH · Brahmsstr. 16 · D-79104 Freiburg i. Br.
+Tel.: +49 761 7668825 · Fax: +49 761 7664613
+Email: info@coresystems.de  · http://www.coresystems.de/
+-->
 <title>The pyramid Driver</title>
 
 <para>
@@ -14,6 +25,7 @@ The LCD module, accessible via USB, can be integrated by Pyramid's BTO server
 and appliance manufacturing division at the customer's request or it can be
 made available separately for self-integration, e.g. as a 5.25" module. 
 </para>
+
 
 <sect2 id="pyramid-features">
 <title>Features</title>
@@ -170,13 +182,13 @@ hello
 output 67
 </programlisting>
 
-will light up LEDs 3, 4 and 9.
+<para>will light up LEDs 3, 4 and 9.</para>
 
 <programlisting>
 output 0
 </programlisting>
 
-will clear all LEDs.
+<para>will clear all LEDs.</para>
 </example>
 
 <para>
@@ -185,16 +197,6 @@ More information on the Pyramid LC-Display can be found here:
 </para>
 
 </sect2>
-
-Author
-<author>
-  <firstname>Stefan</firstname>
-  <surname>Reinauer</surname>
-</author>
-
-coresystems GmbH · Brahmsstr. 16 · D-79104 Freiburg i. Br.
-Tel.: +49 761 7668825 · Fax: +49 761 7664613
-Email: info@coresystems.de  · http://www.coresystems.de/
 
 <!-- ## Pyramid LCD driver ## -->
 <sect2 id="pyramid-config">

@@ -17,10 +17,10 @@ Currently this line of modules comprises the models:
   <term>CFA-631</term>
   <listitem>
     <itemizedlist>
-      <listitem>20x2 character LCD with backlight</listitem>
-      <listitem>keypad with 4 keys: Up, Down, enter &amp; Escape</listitem>
-      <listitem>USB connection for data and power</listitem>
-      <listitem>mounting bracket to fit into 3,5" drive bays</listitem>
+      <listitem><para>20x2 character LCD with backlight</para></listitem>
+      <listitem><para>keypad with 4 keys: Up, Down, enter &amp; Escape</para></listitem>
+      <listitem><para>USB connection for data and power</para></listitem>
+      <listitem><para>mounting bracket to fit into 3,5" drive bays</para></listitem>
     </itemizedlist>
   </listitem>
 </varlistentry>
@@ -29,10 +29,10 @@ Currently this line of modules comprises the models:
   <term>CFA-633</term>
   <listitem>
     <itemizedlist>
-      <listitem>16x2 character LCDi with backlight</listitem>
-      <listitem>keypad with 6 keys: 4 directions, Enter &amp; Escape</listitem>
-      <listitem>serial or USB connection</listitem>
-      <listitem>mounting bracket to fit into 5,25" drive bays</listitem>
+      <listitem><para>16x2 character LCDi with backlight</para></listitem>
+      <listitem><para>keypad with 6 keys: 4 directions, Enter &amp; Escape</para></listitem>
+      <listitem><para>serial or USB connection</para></listitem>
+      <listitem><para>mounting bracket to fit into 5,25" drive bays</para></listitem>
     </itemizedlist>
   </listitem>
 </varlistentry>
@@ -41,11 +41,11 @@ Currently this line of modules comprises the models:
   <term>CFA-635</term>
   <listitem>
     <itemizedlist>
-      <listitem>20x4 characters LCDi with backlight</listitem>
-      <listitem>keypad with 6 keys: 4 directions, Enter &amp; Escape</listitem>
-      <listitem>USB connection for data and power</listitem>
-      <listitem>four bi-color LEDs to show status information</listitem>
-      <listitem>optional mounting bracket to fit into 5,25" drive bays</listitem>
+      <listitem><para>20x4 characters LCDi with backlight</para></listitem>
+      <listitem><para>keypad with 6 keys: 4 directions, Enter &amp; Escape</para></listitem>
+      <listitem><para>USB connection for data and power</para></listitem>
+      <listitem><para>four bi-color LEDs to show status information</para></listitem>
+      <listitem><para>optional mounting bracket to fit into 5,25" drive bays</para></listitem>
     </itemizedlist>
   </listitem>
 </varlistentry>

@@ -5,7 +5,9 @@
 This section talks about using LCDproc with graphical LCD displays driven by
 the EPSON/SMOS SED1330 or SED1335 LCD controllers, which may also be known by their
 new names: S1D13300 (= SED1330) and S1D13305 (= SED1335).
+</para>
 
+<para>
 The displays are driven in text mode using their built-in character generator.
 </para>
 
@@ -434,7 +436,9 @@ the connections given here are also correct for your display !
 </tgroup>
 </table>
 
+<para>
 The potentiometer should be connected like this on these display modules:
+</para>
 
 <screen>
 <![CDATA[
@@ -456,10 +460,14 @@ The potentiometer should be connected like this on these display modules:
 ]]>
 </screen>
 
+<para>
 The G242C generates -24V internally. It is available on Vlc.
+</para>
 
+<para>
 To generate -24 from the +5V without an external power source, you can
 use the following circuit.
+</para>
 
 <screen>
 <![CDATA[

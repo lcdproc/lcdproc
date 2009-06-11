@@ -15,13 +15,13 @@ support controlling LCD displays:
   <term>IOWarrior24</term>
   <listitem>
     <itemizedlist>
-      <listitem>USB 1.1 Low Speed</listitem>
-      <listitem>16 generic I/O Pins, typ. 125Hz read rate</listitem>
-      <listitem>I<superscript>2</superscript>C master function, 100kHz, throughput typ. 750 bytes/sec</listitem>
-      <listitem>SPI master interface, up to 2MHz, throughput typ. 750 bytes/sec</listitem>
-      <listitem>control an HD44780 compatible LCD</listitem>
-      <listitem>drive a matrix of up to 8x32 LEDs</listitem>
-      <listitem>decode RC5 compatible infrared remote controls</listitem>
+      <listitem><para>USB 1.1 Low Speed</para></listitem>
+      <listitem><para>16 generic I/O Pins, typ. 125Hz read rate</para></listitem>
+      <listitem><para>I<superscript>2</superscript>C master function, 100kHz, throughput typ. 750 bytes/sec</para></listitem>
+      <listitem><para>SPI master interface, up to 2MHz, throughput typ. 750 bytes/sec</para></listitem>
+      <listitem><para>control an HD44780 compatible LCD</para></listitem>
+      <listitem><para>drive a matrix of up to 8x32 LEDs</para></listitem>
+      <listitem><para>decode RC5 compatible infrared remote controls</para></listitem>
     </itemizedlist>
   </listitem>
 </varlistentry>
@@ -30,12 +30,12 @@ support controlling LCD displays:
   <term>IOWarrior40</term>
   <listitem>
     <itemizedlist>
-      <listitem>USB 1.1 Low Speed</listitem>
-      <listitem>32 generic I/O Pins, typ. 125Hz read rate</listitem>
-      <listitem>I<superscript>2</superscript>C master function, 100kHz, throughput typ. 750 bytes/sec</listitem>
-      <listitem>control an HD44780 compatible LCD</listitem>
-      <listitem>drive a matrix of up to 8x32 LEDs</listitem>
-      <listitem>drive a 8x8 switch or button matrix</listitem>
+      <listitem><para>USB 1.1 Low Speed</para></listitem>
+      <listitem><para>32 generic I/O Pins, typ. 125Hz read rate</para></listitem>
+      <listitem><para>I<superscript>2</superscript>C master function, 100kHz, throughput typ. 750 bytes/sec</para></listitem>
+      <listitem><para>control an HD44780 compatible LCD</para></listitem>
+      <listitem><para>drive a matrix of up to 8x32 LEDs</para></listitem>
+      <listitem><para>drive a 8x8 switch or button matrix</para></listitem>
     </itemizedlist>
   </listitem>
 </varlistentry>
@@ -44,13 +44,13 @@ support controlling LCD displays:
   <term>IOWarrior56</term>
   <listitem>
     <itemizedlist>
-      <listitem>USB 1.1 Full Speed</listitem>
-      <listitem>50 generic I/O Pins, typ. 1000Hz read rate</listitem>
-      <listitem>I<superscript>2</superscript>C master function, 50, 100, or 400kHz</listitem>
-      <listitem>SPI master interface, up to 12MHz, throughput up to 62Kbytes/sec</listitem>
-      <listitem>control various display modules, including most graphic modules</listitem>
-      <listitem>drive a matrix of up to 8x64 LEDs</listitem>
-      <listitem>drive a 8x8 switch or button matrix</listitem>
+      <listitem><para>USB 1.1 Full Speed</para></listitem>
+      <listitem><para>50 generic I/O Pins, typ. 1000Hz read rate</para></listitem>
+      <listitem><para>I<superscript>2</superscript>C master function, 50, 100, or 400kHz</para></listitem>
+      <listitem><para>SPI master interface, up to 12MHz, throughput up to 62Kbytes/sec</para></listitem>
+      <listitem><para>control various display modules, including most graphic modules</para></listitem>
+      <listitem><para>drive a matrix of up to 8x64 LEDs</para></listitem>
+      <listitem><para>drive a 8x8 switch or button matrix</para></listitem>
     </itemizedlist>
   </listitem>
 </varlistentry>

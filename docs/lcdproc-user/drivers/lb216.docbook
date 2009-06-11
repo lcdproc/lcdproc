@@ -1,20 +1,17 @@
 <sect1 id="lb216-howto">
+<sect1info>
+  <author>
+    <firstname>Chris</firstname>
+    <surname>Debenham</surname>
+    <email>chris.debenham@aus.sun.com</email>
+  </author>
+</sect1info>
 <title>The lb216 Driver</title>
 
 <para>
 This section talks about using LCDproc with LCD displays that use the
 lb216 chipset.
 </para>
-
-<sect2 id="lb216-connections">
-<title>Connections</title>
-
-</sect2>
-
-<firstname>Chris</firstname>
-<surname>Debenham</surname>
-Sun Systems Engineer
-<email>chris.debenham@aus.sun.com</email>
 
 <screen>
 Heres a bit more info on the display.

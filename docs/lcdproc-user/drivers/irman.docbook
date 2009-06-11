@@ -7,8 +7,9 @@ to control the LCDproc server <application>LCDd</application>
 and/or clients that can handle input.
 </para>
 
-
+<para>
 The keys are mapped according to the following table:
+</para>
 
 <table id="irman-howto.mapping">
 <title>Mapping between LCDproc keys and IrMan commands</title>
