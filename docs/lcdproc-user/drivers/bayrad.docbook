@@ -38,8 +38,8 @@ For more information see the
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the serial output device to use.
@@ -49,15 +49,13 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>1200</literal></arg>
-      <arg choice="plain"><literal>2400</literal></arg>
-      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
-      <arg choice="plain"><literal>19200</literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
+      <parameter><literal>19200</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the the baud rate to use when communicating with the LCD.

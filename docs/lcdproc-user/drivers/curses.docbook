@@ -16,8 +16,8 @@ curses chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Foreground</command> =
-    <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
+    <property>Foreground</property> =
+    <parameter><replaceable>COLOUR</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -26,7 +26,7 @@ curses chipset.
     </para>
 
     <para>
-    Legal values for <replaceable>COLOUR</replaceable> are 
+    Legal values for <replaceable>COLOUR</replaceable> are
     <literal>red</literal>, <literal>black</literal>,
     <literal>green</literal>, <literal>yellow</literal>,
     <literal>blue</literal>, <literal>magenta</literal>,
@@ -37,8 +37,8 @@ curses chipset.
 
 <varlistentry>
   <term>
-    <command>Background</command> =
-    <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
+    <property>Background</property> =
+    <parameter><replaceable>COLOUR</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -47,16 +47,16 @@ curses chipset.
     </para>
 
     <para>
-    The legal values for <replaceable>COLOUR</replaceable> are 
-    the same as for the <command>Foreground</command> setting.
+    The legal values for <replaceable>COLOUR</replaceable> are
+    the same as for the <property>Foreground</property> setting.
     </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Backlight</command> =
-    <arg choice="plain"><replaceable>COLOUR</replaceable></arg>
+    <property>Backlight</property> =
+    <parameter><replaceable>COLOUR</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -65,20 +65,15 @@ curses chipset.
     </para>
 
     <para>
-    The legal values for <replaceable>COLOUR</replaceable> are 
-    the same as for the <command>Foreground</command> setting.
+    The legal values for <replaceable>COLOUR</replaceable> are
+    the same as for the <property>Foreground</property> setting.
     </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     display size [default: <literal>20x4</literal>]
@@ -87,12 +82,12 @@ curses chipset.
 
 <varlistentry>
   <term>
-    <command>TopLeftx</command> =
-    <arg choice="plain"><replaceable>X-OFFSET</replaceable></arg>
+    <property>TopLeftx</property> =
+    <parameter><replaceable>X-OFFSET</replaceable></parameter>
   </term>
   <term>
-    <command>TopLefty</command> =
-    <arg choice="plain"><replaceable>Y-OFFSET</replaceable></arg>
+    <property>TopLefty</property> =
+    <parameter><replaceable>Y-OFFSET</replaceable></parameter>
   </term>
   <listitem><para>
     What position (X,Y) to start the left top corner at.
@@ -102,29 +97,17 @@ curses chipset.
 
 <varlistentry>
   <term>
-    <command>UseACS</command> =
-    <arg choice ="plain">
-      <group choice="req">
-        <arg choice="plain"><literal>yes</literal></arg>
-        <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-      </group>
-    </arg>  
+    <property>UseACS</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
   Tell whether to use ACS (alternative character set) symbols for icons and bars
-  instead of  simple ASCII characters.
+  instead of simple ASCII characters.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>DrawBorder</command> =
-    <arg choice ="plain">
-      <group choice="req">
-        <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-        <arg choice="plain"><literal>no</literal></arg>
-      </group>
-    </arg>  
+    <property>DrawBorder</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
   Tell whether to draw a border around the screen.

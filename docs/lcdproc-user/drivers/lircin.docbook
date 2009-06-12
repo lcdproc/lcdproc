@@ -81,14 +81,14 @@ Then you have to modify the <code>[lirc]</code> section of your
 <variablelist>
 <varlistentry>
   <term>
-    <command>lircrc</command> =
-    <arg choice="plain"><replaceable>FILENAME</replaceable></arg>
+    <property>lircrc</property> =
+    <parameter><replaceable>FILENAME</replaceable></parameter>
   </term>
   <listitem>
     <para>
     <anchor id="which-lircrc" />
     Normally all LIRC clients scan the file <filename>~/.lircrc</filename>.
-    However, you might want to have a separate file to configure the LCDproc lirc driver only. 
+    However, you might want to have a separate file to configure the LCDproc lirc driver only.
     </para>
     <para>
     This option enables you to specify the file you want the lirc driver to scan.
@@ -99,8 +99,8 @@ Then you have to modify the <code>[lirc]</code> section of your
 
 <varlistentry>
   <term>
-    <command>Prog</command> =
-    <arg choice="plain"><replaceable>PROGRAM</replaceable></arg>
+    <property>Prog</property> =
+    <parameter><replaceable>PROGRAM</replaceable></parameter>
   </term>
   <listitem>
     <para>

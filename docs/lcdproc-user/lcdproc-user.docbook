@@ -1,6 +1,7 @@
 <?xml version='1.0'?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
                       "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+  <!ENTITY % parameters SYSTEM "parameters.ent">
   <!ENTITY bookinfo SYSTEM "bookinfo.docbook">
   <!ENTITY introduction SYSTEM "introduction.docbook">
   <!ENTITY how-to-obtain SYSTEM "how-to-obtain.docbook">
@@ -59,10 +60,11 @@
   <!ENTITY tyan SYSTEM "drivers/tyan.docbook">
   <!ENTITY ula200 SYSTEM "drivers/ula200.docbook">
   <!ENTITY xosd SYSTEM "drivers/xosd.docbook">
+
+  %parameters;
 ]>
 
 <book id="lcdproc-user" lang="en">
-
 &bookinfo;
 
 &introduction;

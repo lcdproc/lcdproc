@@ -24,8 +24,8 @@ This drivers uses the library from mx5000tools.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the output device to use [default: <filename>/dev/hiddev0</filename>]
@@ -34,8 +34,8 @@ This drivers uses the library from mx5000tools.
 
 <varlistentry>
   <term>
-    <command>WaitAfterRefresh</command> =
-    <arg choice="plain"><replaceable>MS</replaceable></arg>
+    <property>WaitAfterRefresh</property> =
+    <parameter><replaceable>MS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the time (in ms) to wait after each screen sent to the keyboard.

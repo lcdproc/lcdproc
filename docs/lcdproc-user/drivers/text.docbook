@@ -16,12 +16,7 @@ text chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Set the display size [default: <literal>20x4</literal>]

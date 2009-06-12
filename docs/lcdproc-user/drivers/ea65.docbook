@@ -2,31 +2,33 @@
 <title>The ea65 driver</title>
 
 <para>
-      This section describes the ea65 driver which works with the front panel
-      VFD display on the AOpen XC Cube-AV EA65 media barebone.
+This section describes the ea65 driver which works with the front panel
+VFD display on the AOpen XC Cube-AV EA65 media barebone.
 </para>
 
 <sect2 id="ea65-features">
-        <title>EA65 front panel VFD </title>
-        <para>
-          The AOpen XC Cube-AV is a barebone designed for using as a media center.
-          It comes with a front panel display which is capable of displaying one line 
-          of 9 characters. 
-        </para>
-        <para>
-          The display is internally connected to the serial port
-	  (<filename>/dev/ttyS1</filename>) with a fixed rate of 9600 baud.
-        </para>
-        <para>
-          The display uses 13 segments per character. That's why the driver provides 
-          no custom characters like the ones for dot matrix displays do.
-        </para>
-        <para>
-          The front panel furthermore has 9 keys which are illuminated by blue LEDs. 
-          The LEDs can be controlled with the backlight functions. The keys are not 
-          supported by this driver. The red LED (RECORD) can be controlled with the 
-          <code>output</code> command of <application>LCDd</application>.
-        </para>
+<title>EA65 front panel VFD </title>
+
+<para>
+  The AOpen XC Cube-AV is a barebone designed for using as a media center.
+  It comes with a front panel display which is capable of displaying one line 
+  of 9 characters. 
+</para>
+<para>
+  The display is internally connected to the serial port
+  (<filename>/dev/ttyS1</filename>) with a fixed rate of 9600 baud.
+</para>
+<para>
+  The display uses 13 segments per character. That's why the driver provides 
+  no custom characters like the ones for dot matrix displays do.
+</para>
+<para>
+  The front panel furthermore has 9 keys which are illuminated by blue LEDs. 
+  The LEDs can be controlled with the backlight functions. The keys are not 
+  supported by this driver. The red LED (RECORD) can be controlled with the 
+  <code>output</code> command of <application>LCDd</application>.
+</para>
+
 </sect2>
 
 <sect2 id="ea65-config">
@@ -38,8 +40,8 @@
 <variablelist>
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the brightness for the front LEDs if backlight is switched on.
@@ -54,8 +56,8 @@
 </varlistentry>
 <varlistentry>
   <term>
-    <command>OffBrightness</command> =
-    <arg choice="plain"><replaceable>OFFBRIGHTNESS</replaceable></arg>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>OFFBRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the brightness for the front LEDs if backlight is switched off.

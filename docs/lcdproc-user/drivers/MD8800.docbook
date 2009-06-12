@@ -25,8 +25,8 @@ You may find more information about the LCD on
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     device to use [default: <filename>/dev/ttyS1</filename>]
@@ -35,12 +35,7 @@ You may find more information about the LCD on
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     display size [default: <literal>16x2</literal>]
@@ -49,8 +44,8 @@ You may find more information about the LCD on
 
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
@@ -59,8 +54,8 @@ You may find more information about the LCD on
 
 <varlistentry>
   <term>
-    <command>OffBrightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>]

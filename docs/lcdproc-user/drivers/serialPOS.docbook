@@ -6,13 +6,13 @@ This section talks about using LCDproc with a point of sale ("POS") character-di
 </para>
 
 <para>
-The <code>serialPOS</code> driver is currently working with the AEDEX emulation protocol, 
-and may support Epson ESC/POS and Logic Controls. It can be extended to work with various 
+The <code>serialPOS</code> driver is currently working with the AEDEX emulation protocol,
+and may support Epson ESC/POS and Logic Controls. It can be extended to work with various
 other protocol displays.
 </para>
 
 <para>
-The driver should operate most character POS displays with a serial (RS-232) input. 
+The driver should operate most character POS displays with a serial (RS-232) input.
 Because these displays use a standardized protocol, if the protocol is
 supported by your display, it should work as expected.
 Feedback is welcome.
@@ -83,7 +83,7 @@ Feedback is welcome.
 
 <para>
 Connecting the display should consist of simply plugging it into your computer's
-RS-232 serial port.  Because these displays typically support full RS-232, no additional 
+RS-232 serial port.  Because these displays typically support full RS-232, no additional
 wiring is needed.  If your computer does not have such a port (many newer computers don't),
 you can use a USB to serial adapter with a driver provided by the adapter manufacturer.
 </para>
@@ -118,8 +118,8 @@ arrow, delete, and return keys by default.
 
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Device to use in serial mode. Usual values are <filename>/dev/ttyS0</filename> or
@@ -129,12 +129,7 @@ arrow, delete, and return keys by default.
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Specifies the size of the VFD in characters.
@@ -144,18 +139,16 @@ arrow, delete, and return keys by default.
 
 <varlistentry>
   <term>
-    <command>Type</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>IEE</literal></arg>
-      <arg choice="plain"><literal><emphasis>AEDEX</emphasis></literal></arg>
-      <arg choice="plain"><literal>Epson</literal></arg>
-      <arg choice="plain"><literal>Emax</literal></arg>
-      <arg choice="plain"><literal>IBM</literal></arg>
-      <arg choice="plain"><literal>LogicControls</literal></arg>
-      <arg choice="plain"><literal>Ultimate</literal></arg>
-    </group>
-    </arg>
+    <property>Type</property> =
+    {
+      <parameter><literal>IEE</literal></parameter> |
+      <emphasis><parameter><literal>AEDEX</literal></parameter></emphasis> |
+      <parameter><literal>Epson</literal></parameter> |
+      <parameter><literal>Emax</literal></parameter> |
+      <parameter><literal>IBM</literal></parameter> |
+      <parameter><literal>LogicControls</literal></parameter> |
+      <parameter><literal>Ultimate</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the communication protocol to use with the POS display.
@@ -166,16 +159,14 @@ arrow, delete, and return keys by default.
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>1200</literal></arg>
-      <arg choice="plain"><literal>2400</literal></arg>
-      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
-      <arg choice="plain"><literal>19200</literal></arg>
-      <arg choice="plain"><literal>115200</literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
+      <parameter><literal>19200</literal></parameter> |
+      <parameter><literal>115200</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the the baud rate communication with the POS display.

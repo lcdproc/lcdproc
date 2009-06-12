@@ -16,8 +16,8 @@ lcterm chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
   Default: <filename>/dev/lcd</filename>
@@ -26,15 +26,10 @@ lcterm chipset.
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
-  16x2
+  Default: <literal>16x2</literal>.
   </para></listitem>
 </varlistentry>
 </variablelist>

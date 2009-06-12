@@ -16,8 +16,8 @@ CFontz633 chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the output device to use [default: <filename>/dev/lcd</filename>]
@@ -28,12 +28,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Select the LCD type (size) [default: <literal>16x2</literal>]
@@ -42,8 +37,8 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Contrast</command> =
-    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial contrast.
@@ -54,8 +49,8 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
@@ -64,8 +59,8 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>OffBrightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
@@ -76,16 +71,14 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>1200</literal></arg>
-      <arg choice="plain"><literal>2400</literal></arg>
-      <arg choice="plain"><literal>9600</literal></arg>
-      <arg choice="plain"><literal><emphasis>19200</emphasis></literal></arg>
-      <arg choice="plain"><literal>115200</literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <parameter><literal>9600</literal></parameter> |
+      <emphasis><parameter><literal>19200</literal></parameter></emphasis> |
+      <parameter><literal>115200</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the the baud rate for communication with the LCD.
@@ -95,13 +88,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>NewFirmware</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>NewFirmware</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Set the firmware version (<emphasis>New</emphasis> means >= 2.0) [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
@@ -111,13 +98,7 @@ CFontz633 chipset.
 
 <varlistentry>
   <term>
-    <command>Reboot</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>Reboot</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]

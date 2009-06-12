@@ -68,8 +68,8 @@ The keys are mapped according to the following table:
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the input device to use, e.g. <filename>/dev/irman</filename>.
@@ -78,8 +78,8 @@ The keys are mapped according to the following table:
 
 <varlistentry>
   <term>
-    <command>Config</command> =
-    <arg choice="plain"><replaceable>FILENAME</replaceable></arg>
+    <property>Config</property> =
+    <parameter><replaceable>FILENAME</replaceable></parameter>
   </term>
   <listitem><para>
     Select the IrMan configuration file to use, e.g. <filename>/etc/irman.cfg</filename>.

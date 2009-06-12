@@ -15,8 +15,8 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the serial output device to use.
@@ -26,12 +26,7 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Set the LCD's dimensions in terms of characters per line and lines.
@@ -41,8 +36,8 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
 
 <varlistentry>
   <term>
-    <command>Contrast</command> =
-    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial contrast.
@@ -54,8 +49,8 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
 
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial brightness.
@@ -67,8 +62,8 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
 
 <varlistentry>
   <term>
-    <command>OffBrightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial off-brightness.
@@ -82,16 +77,14 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>1200</literal></arg>
-      <arg choice="plain"><literal>2400</literal></arg>
-      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
-      <arg choice="plain"><literal>19200</literal></arg>
-      <arg choice="plain"><literal>115200</literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
+      <parameter><literal>19200</literal></parameter> |
+      <parameter><literal>115200</literal></parameter> |
+    }
   </term>
   <listitem><para>
     Set the the baud rate to use when communicating with the LCD.
@@ -101,13 +94,7 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
 
 <varlistentry>
   <term>
-    <command>NewFirmware</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>NewFirmware</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Set the firmware version (<emphasis>New</emphasis> means >= 2.0) [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
@@ -116,13 +103,7 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
 
 <varlistentry>
   <term>
-    <command>Reboot</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>Reboot</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]

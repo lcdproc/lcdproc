@@ -2,8 +2,8 @@
 <title>The Toshiba T6963 Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the 
-T6963 chipset from Toshiba. Usually, this chipset is used on big character LCD 
+This section talks about using LCDproc with LCD displays that use the
+T6963 chipset from Toshiba. Usually, this chipset is used on big character LCD
 displays that can often act as a screen.
 </para>
 
@@ -75,12 +75,7 @@ can be done by specifying "--enable-drivers=all" or by
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     set display size [default: <literal>20x6</literal>]
@@ -89,8 +84,8 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <command>Port</command> =
-    <arg choice="plain"><replaceable>PORT</replaceable></arg>
+    <property>Port</property> =
+    <parameter><replaceable>PORT</replaceable></parameter>
   </term>
   <listitem><para>
     Specify the address of the parallel port the LCD is connected to.
@@ -103,13 +98,7 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <command>ECPlpt</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>ECPlpt</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
     Is ECP mode on? [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
@@ -118,13 +107,7 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <command>graphic</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>graphic</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Use graphic? [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]

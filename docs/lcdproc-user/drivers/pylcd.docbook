@@ -23,7 +23,7 @@ to show system data, and to allow the user to change important parameters or
 shut down the appliance in a controlled manner.
 The LCD module, accessible via USB, can be integrated by Pyramid's BTO server
 and appliance manufacturing division at the customer's request or it can be
-made available separately for self-integration, e.g. as a 5.25" module. 
+made available separately for self-integration, e.g. as a 5.25" module.
 </para>
 
 
@@ -42,7 +42,7 @@ buttons as well as 3 (or 9) LEDs which can also be software controlled.
 <title>Connector</title>
 
 <para>
-The display is connected to the host system using USB, with the 
+The display is connected to the host system using USB, with the
 usual USB pinout as shown below.
 The +5V V<subscript>CC</subscript> pin is marked with red colour.
 </para>
@@ -79,7 +79,7 @@ The +5V V<subscript>CC</subscript> pin is marked with red colour.
 For Linux the driver depends on features of the <filename>ftdi_sio.ko</filename>
 that have only been added to version 2.6.15 version of the 2.6 kernel series.
 For older Linux kernels of the 2.6 series these patches to
-<filename>ftdi_sio.c</filename> may help: 
+<filename>ftdi_sio.c</filename> may help:
 </para>
 
 <itemizedlist>
@@ -105,7 +105,7 @@ For older Linux kernels of the 2.6 series these patches to
 
 <para>
 I've added support for the LEDs on the Pyramid LC-Display to the
-"pyramid" driver of lcdproc. 
+"pyramid" driver of lcdproc.
 </para>
 
 <para>
@@ -208,8 +208,8 @@ More information on the Pyramid LC-Display can be found here:
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
   Device to connect to. Default: <filename>/dev/lcd</filename>

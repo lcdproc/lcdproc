@@ -16,8 +16,8 @@ stv5730 chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Port</command> =
-    <arg choice="plain"><replaceable>PORT</replaceable></arg>
+    <property>Port</property> =
+    <parameter><replaceable>PORT</replaceable></parameter>
   </term>
   <listitem><para>
     Specify the address of the parallel port the LCD is connected to.

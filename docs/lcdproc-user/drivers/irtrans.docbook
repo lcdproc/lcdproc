@@ -13,7 +13,7 @@ devices, that are preinstalled in cases such as the Ahanix MCE303.
 <para>
 The IRTrans VFD sports a vacuum fluorescent display with 16x2 characters
 that connects to the computer using USB. Although the device is shipped
-with an IR remote control, <package>LCDproc</package>'s driver currently only supports 
+with an IR remote control, <package>LCDproc</package>'s driver currently only supports
 the display part of the device.
 </para>
 
@@ -34,24 +34,18 @@ from <ulink url="http://www.irtrans.de/en/download/linux.php"></ulink>.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Backlight</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-      <arg choice="plain"><literal>yes</literal></arg>
-    </group>
-    </arg>
+    <property>Backlight</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Tell whether te device has a backlight, or whether the backlight shall be used.
-    If not goven, it defaults to <literal><emphasis>no</emphasis></literal>.
+    If not goven, it defaults to <literal>no</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Hostname</command> =
-    <arg choice="plain"><replaceable>HOSTNAME_OR_IP-ADDRESS</replaceable></arg>
+    <property>Hostname</property> =
+    <parameter><replaceable>HOSTNAME_OR_IP-ADDRESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the hostname or IP address of the IRTrans device to connect to.
@@ -61,12 +55,7 @@ from <ulink url="http://www.irtrans.de/en/download/linux.php"></ulink>.
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Select the display size [default: <literal>16x2</literal>]

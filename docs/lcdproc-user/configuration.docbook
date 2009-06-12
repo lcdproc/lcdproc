@@ -228,11 +228,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <property>ReportToSyslog</property> =
-    {
-      <emphasis><parameter><literal>no</literal></parameter></emphasis> |
-      <parameter><literal>yes</literal></parameter>
-    }
+    <property>ReportToSyslog</property> = &parameters.yesnodef;
   </term>
   <listitem>
     <para>
@@ -276,11 +272,7 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
-    <property>Foreground</property> =
-    {
-      <emphasis><parameter><literal>no</literal></parameter></emphasis> |
-      <parameter><literal>yes</literal></parameter>
-    }
+    <property>Foreground</property> = &parameters.yesnodef;
   </term>
   <listitem>
     <para>

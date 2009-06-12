@@ -22,12 +22,7 @@ on-screen display (OSD) used by most modern televisions and video-players.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     set display size [default: <literal>20x4</literal>]
@@ -36,12 +31,12 @@ on-screen display (OSD) used by most modern televisions and video-players.
 
 <varlistentry>
   <term>
-    <command>Offset</command> =
-    <arg choice="plain">
+    <property>Offset</property> =
+    <parameter>
       <replaceable>X-OFFSET</replaceable>
       <literal>x</literal>
       <replaceable>Y-OFFSET</replaceable>
-    </arg>
+    </parameter>
   </term>
   <listitem><para>
     Offset (in pixels) of the top-left corner of <package>LCDproc</package>'s
@@ -52,18 +47,18 @@ on-screen display (OSD) used by most modern televisions and video-players.
 
 <varlistentry>
   <term>
-    <command>Font</command> =
-    <arg choice="plain"><replaceable>FONT</replaceable></arg>
+    <property>Font</property> =
+    <parameter><replaceable>FONT</replaceable></parameter>
   </term>
   <listitem>
     <para>
       X font to use, in XLFD (X Logical Font Description) format,
-      as given by the <command>xfontsel</command> command.
+      as given by the <property>xfontsel</property> property.
       E.g. <literal>-*-terminus-*-r-*-*-*-320-*-*-*-*-*</literal>.
     </para>
     <para>
       For best results it is recommended to use a mono-spaced font
-      to mimic the aspect of a physical LCD display that most 
+      to mimic the aspect of a physical LCD display that most
       clients expect with regard to their screen layouts.
     </para>
   </listitem>
@@ -71,8 +66,8 @@ on-screen display (OSD) used by most modern televisions and video-players.
 
 <varlistentry>
   <term>
-    <command>Contrast</command> =
-    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial contrast.
@@ -87,8 +82,8 @@ on-screen display (OSD) used by most modern televisions and video-players.
 
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial brightness [default: <literal>1000</literal>; legal: <literal>1</literal> - <literal>1000</literal>]
@@ -97,8 +92,8 @@ on-screen display (OSD) used by most modern televisions and video-players.
 
 <varlistentry>
   <term>
-    <command>OffBrightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial off-brightness [default: <literal>500</literal>; legal: <literal>1</literal> - <literal>1000</literal>]

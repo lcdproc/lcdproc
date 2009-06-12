@@ -186,7 +186,7 @@ If your display isn't working 100% satisfactorily you can add a new device with 
 commands to the driver if you want. To do that you have to add a new section to the display
 <command>Type</command>-switch-case in <filename>./server/drivers/serialVFD-displays.c</filename>
 and to write a new "load" function with the correct commands for the display.
-(Try which display <command>Type</command> works best with your display, 
+(Try which display <command>Type</command> works best with your display,
 then copy, rename and modify this function to your needs - that is the easiest way I guess.)
 </para>
 
@@ -339,7 +339,7 @@ It must be connected directly with the serial port.</para>
 <screen><![CDATA[Suggested Jumper Setting:
 JP1 open, JP2 open, JP3 closed, JP4 open, JP5 open]]></screen>
 
-<para>More detailed information can be found in the users manual of 
+<para>More detailed information can be found in the users manual of
 the display.</para>
 </sect4>
 
@@ -433,13 +433,7 @@ optional
 
 <varlistentry>
   <term>
-    <command>use_parallel</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>use_parallel</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
     "<literal>no</literal>" if display connected serial, "<literal>yes</literal>" if connected parallel [default: <literal>no</literal>(serial)].
@@ -448,8 +442,8 @@ optional
 
 <varlistentry>
   <term>
-    <command>Port</command> =
-    <arg choice="plain"><replaceable>PORT</replaceable></arg>
+    <property>Port</property> =
+    <parameter><replaceable>PORT</replaceable></parameter>
   </term>
   <listitem><para>
     Portaddress where the LPT is. Used in parallelmode only. Usual values are 0x278, 0x378 and 0x3BC [default: <literal>0x278</literal>].
@@ -458,18 +452,18 @@ optional
 
 <varlistentry>
   <term>
-    <command>PortWait</command> =
-    <arg choice="plain"><replaceable>DELAY</replaceable></arg>
+    <property>PortWait</property> =
+    <parameter><replaceable>DELAY</replaceable></parameter>
   </term>
   <listitem><para>
-    Set parallel port timingdelay (us). Used in parallelmode only. [default: <literal>2</literal>; legal: 0 - 255].
+    Set parallel port timingdelay (us). Used in parallel mode only. [default: <literal>2</literal>; legal: 0 - 255].
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Device to use in serial mode. Usual values are <filename>/dev/ttyS0</filename> and <filename>/dev/ttyS1</filename>
@@ -479,22 +473,17 @@ optional
 
 <varlistentry>
   <term>
-    <command>Custom-Characters</command> =
-    <arg choice="plain"><replaceable>CUSTOM-CHARACTERS</replaceable></arg>
+    <property>Custom-Characters</property> =
+    <parameter><replaceable>CUSTOM-CHARACTERS</replaceable></parameter>
   </term>
   <listitem><para>
-Number of Custom-Characters [default: Display-<command>Type</command> dependent].
+Number of Custom-Characters [default: Display-<property>Type</property> dependent].
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Specifies the size of the VFD.
@@ -504,8 +493,8 @@ Number of Custom-Characters [default: Display-<command>Type</command> dependent]
 
 <varlistentry>
   <term>
-    <command>Type</command> =
-    <arg choice="plain"><replaceable>CODE</replaceable></arg>
+    <property>Type</property> =
+    <parameter><replaceable>CODE</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -522,7 +511,7 @@ Number of Custom-Characters [default: Display-<command>Type</command> dependent]
       </thead>
       <tbody>
         <row>
-	  <entry><literal><emphasis>0</emphasis></literal></entry>
+	  <entry><emphasis><literal>0</literal></emphasis></entry>
 	  <entry>NEC (FIPC8367 based) VFDs</entry>
 	</row>
         <row>
@@ -568,8 +557,8 @@ Number of Custom-Characters [default: Display-<command>Type</command> dependent]
 
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
 Set the initial brightness [default: 1000; legal: 0 - 1000]
@@ -579,8 +568,8 @@ Set the initial brightness [default: 1000; legal: 0 - 1000]
 
 <varlistentry>
   <term>
-    <command>OffBrightness</command> =
-    <arg choice="plain"><replaceable>OFFBRIGHTNESS</replaceable></arg>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>OFFBRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
 Set the initial off-brightness [default: 0; legal: 0 - 1000].
@@ -592,16 +581,14 @@ Set the initial off-brightness [default: 0; legal: 0 - 1000].
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>1200</literal></arg>
-      <arg choice="plain"><literal>2400</literal></arg>
-      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
-      <arg choice="plain"><literal>19200</literal></arg>
-      <arg choice="plain"><literal>115200</literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
+      <parameter><literal>19200</literal></parameter> |
+      <parameter><literal>115200</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the the baud rate communication with the VFD.
@@ -611,13 +598,7 @@ Set the initial off-brightness [default: 0; legal: 0 - 1000].
 
 <varlistentry>
   <term>
-    <command>ISO_8859_1</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>ISO_8859_1</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
     Enable ISO-8859-1 compatibility [default is <literal>yes</literal>].

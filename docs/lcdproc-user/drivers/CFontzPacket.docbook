@@ -62,14 +62,12 @@ Currently this line of modules comprises the models:
 <variablelist>
 <varlistentry>
   <term>
-    <command>Model</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>631</literal></arg>
-      <arg choice="plain"><literal><emphasis>633</emphasis></literal></arg>
-      <arg choice="plain"><literal>635</literal></arg>
-    </group>
-    </arg>
+    <property>Model</property> =
+    {
+      <parameter><literal>631</literal></parameter> |
+      <emphasis><parameter><literal>633</literal></parameter></emphasis> |
+      <parameter><literal>635</literal></parameter>
+    }
   </term>
   <listitem><para>
     Select the LCD model that is connected.
@@ -81,8 +79,8 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -101,12 +99,7 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Select the LCD size [default: depending on model: 635: <literal>20x4</literal>,
@@ -117,8 +110,8 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
-    <command>Contrast</command> =
-    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial contrast.
@@ -129,8 +122,8 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
@@ -139,8 +132,8 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
-    <command>OffBrightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
@@ -151,16 +144,14 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>1200</literal></arg>
-      <arg choice="plain"><literal>2400</literal></arg>
-      <arg choice="plain"><literal>9600</literal></arg>
-      <arg choice="plain"><literal>19200</literal></arg>
-      <arg choice="plain"><literal>115200</literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <parameter><literal>9600</literal></parameter> |
+      <parameter><literal>19200</literal></parameter> |
+      <parameter><literal>115200</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the the baud rate for communication with the LCD.
@@ -171,13 +162,7 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
-    <command>NewFirmware</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>NewFirmware</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Set the firmware version (<emphasis>New</emphasis> means >= 2.0) [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
@@ -187,13 +172,7 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
-    <command>Reboot</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>Reboot</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]

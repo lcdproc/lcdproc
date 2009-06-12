@@ -13,7 +13,7 @@ and CW1602 by CwLinux.
 The CwLinux CW12232 LCDs are graphical LCDs with 122 x 32 dots
 that also have a text mode with 20 x 4 characters,
 the CW12832 are graphical displays with 128 x 32 dots and a
-21 x 4 character text mode, 
+21 x 4 character text mode,
 the CW1602 LCDs are character LCDs that are 16 characters wide and
 2 lines high.
 </para>
@@ -40,7 +40,7 @@ power connector, while the USB modules only require an USB connection.
 </para>
 
 <para>
-For more information see the 
+For more information see the
 <ulink url="http://www.cwlinux.com">CwLinux web site</ulink>
 </para>
 
@@ -57,14 +57,12 @@ For more information see the
 <variablelist>
 <varlistentry>
   <term>
-    <command>Model</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>12232</emphasis></literal></arg>
-      <arg choice="plain"><literal>12832</literal></arg>
-      <arg choice="plain"><literal>1602</literal></arg>
-    </group>
-    </arg>
+    <property>Model</property> =
+    {
+      <emphasis><parameter><literal>12232</literal></parameter></emphasis> |
+      <parameter><literal>12832</literal></parameter> |
+      <parameter><literal>1602</literal></parameter>
+    }
   </term>
   <listitem><para>
     Select the LCD model [default: <literal>12232</literal>;
@@ -74,8 +72,8 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the output device to use [default: <filename>/dev/lcd</filename>]
@@ -85,12 +83,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Select the LCD size [default: depending on model: 12232: <literal>20x4</literal>,
@@ -101,13 +94,11 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>9600</literal></arg>
-      <arg choice="plain"><literal><emphasis>19200</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>9600</literal></parameter> |
+      <emphasis><parameter><literal>19200</literal></parameter></emphasis>
+    }
   </term>
   <listitem><para>
     Set the the baud rate for communication with the LCD.
@@ -117,13 +108,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Reboot</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>Reboot</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
@@ -133,13 +118,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>Keypad</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>Keypad</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Tells if you have a keypad connected. Keypad layout is currently not
@@ -149,28 +128,28 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>KeyMap_A</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_A</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_B</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_B</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_C</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_C</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_D</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_D</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_E</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_E</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_F</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_F</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     If you have a non standard keypad you can associate any keystrings to keys.
@@ -223,13 +202,7 @@ For more information see the
 
 <varlistentry>
   <term>
-    <command>keypad_test_mode</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>keypad_test_mode</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     keypad_test_mode permit to test keypad assignment

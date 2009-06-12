@@ -121,12 +121,7 @@ a standard character which looks good.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Select the LCD size [default: <literal>20x4</literal>]
@@ -135,28 +130,28 @@ a standard character which looks good.
 
 <varlistentry>
   <term>
-    <command>KeyMap_A</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_A</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_B</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_B</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_C</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_C</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_D</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_D</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_E</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_E</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>KeyMap_F</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>KeyMap_F</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
     If you have a non standard keypad you can associate any keystrings to keys.

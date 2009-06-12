@@ -16,8 +16,8 @@ lcdm001 chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
   Default: <filename>/dev/lcd</filename>
@@ -26,20 +26,20 @@ lcdm001 chipset.
 
 <varlistentry>
   <term>
-    <command>PauseKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>PauseKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>BackKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>BackKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>ForwardKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>ForwardKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>MainMenuKey</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>MainMenuKey</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -75,7 +75,7 @@ lcdm001 chipset.
           <entry>Open main menu</entry>
           <entry>Exit/Cancel</entry>
         </row>
-     </tbody> 
+     </tbody>
     </tgroup>
     </informaltable>
     <para>

@@ -1,0 +1,21 @@
+<!-- Entity for a yes/no parameters with yes as default value -->
+<!ENTITY parameters.yesdefno "
+    {
+      <emphasis><parameter><literal>yes</literal></parameter></emphasis> |
+      <parameter><literal>no</literal></parameter>
+    }" >
+
+<!-- Entity for a yes/no parameters with no as default value -->
+<!ENTITY parameters.yesnodef "
+    {
+      <parameter><literal>yes</literal></parameter> |
+      <emphasis><parameter><literal>no</literal></parameter></emphasis>
+    }" >
+
+<!-- Entity for a typical size parameter -->
+<!ENTITY parameters.size "
+    <parameter>
+      <replaceable>WIDTH</replaceable>
+      <literal>x</literal>
+      <replaceable>HEIGHT</replaceable>
+    </parameter>" >

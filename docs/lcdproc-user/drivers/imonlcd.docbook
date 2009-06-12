@@ -38,22 +38,20 @@ The 15c2:0038 device may require LIRC v0.8.5 or newer.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Protocol</command> = 
-    <arg choice="plain">
-      <replaceable>PROTOCOL</replaceable>
-    </arg>
+    <property>Protocol</property> =
+    <parameter><replaceable>PROTOCOL</replaceable></parameter>
   </term>
   <listitem><para>
     Specify which version of iMON LCD is installed.
     The default, <literal>0</literal> specifies the :ffdc device.
     <literal>1</literal> should be used for the :0038 device.
   </para></listitem>
-</varlistentry>  
-  
+</varlistentry>
+
 <varlistentry>
   <term>
-    <command>OnExit</command> =
-    <arg choice="plain"><replaceable>ONEXIT</replaceable></arg>
+    <property>OnExit</property> =
+    <parameter><replaceable>ONEXIT</replaceable></parameter>
   </term>
   <listitem><para>
     Specify the exit behavior.
@@ -65,8 +63,8 @@ The 15c2:0038 device may require LIRC v0.8.5 or newer.
 
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the output device to use. Change this from the default
@@ -78,8 +76,8 @@ The 15c2:0038 device may require LIRC v0.8.5 or newer.
 
 <varlistentry>
   <term>
-    <command>Contrast</command> =
-    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
   </term>
   <listitem><para>
     Select the display's contrast <literal>200</literal> is the default.
@@ -89,12 +87,7 @@ The 15c2:0038 device may require LIRC v0.8.5 or newer.
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Set the display size in pixels. The default <literal>96x16</literal> should
@@ -105,8 +98,8 @@ The 15c2:0038 device may require LIRC v0.8.5 or newer.
 
 <varlistentry>
   <term>
-    <command>Backlight</command> =
-    <arg choice="plain"><replaceable>BACKLIGHT</replaceable></arg>
+    <property>Backlight</property> =
+    <parameter><replaceable>BACKLIGHT</replaceable></parameter>
   </term>
   <listitem><para>
     Set the backlight state. The default is <literal>1</literal>, which turns
@@ -116,8 +109,8 @@ The 15c2:0038 device may require LIRC v0.8.5 or newer.
 
 <varlistentry>
   <term>
-    <command>DiscMode</command> =
-    <arg choice="plain"><replaceable>DISCMODE</replaceable></arg>
+    <property>DiscMode</property> =
+    <parameter><replaceable>DISCMODE</replaceable></parameter>
   </term>
   <listitem><para>
     Sets the disc mode. The default is <literal>0</literal> which spins the

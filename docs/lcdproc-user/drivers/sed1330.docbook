@@ -513,31 +513,24 @@ use the following circuit.
 <variablelist>
 <varlistentry>
   <term>
-    <command>CellSize</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>CellSize</property> = &parameters.size;
   </term>
   <listitem><para>
     Specify the size of a character in pixels.
     <replaceable>WIDTH</replaceable> may vary between <literal>6</literal> and <literal>8</literal>;
     legal values for <replaceable>HEIGHT</replaceable> range from <literal>7</literal> to
     <literal>16</literal>.
-    If not given <command>CellSize</command> defaults to <literal>6x10</literal>.
+    If not given <property>CellSize</property> defaults to <literal>6x10</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>ConnectionType</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>classic</emphasis></literal></arg>
-      <arg choice="plain"><literal>bitshaker</literal></arg>
-    </group>
-    </arg>
+    <property>ConnectionType</property> =
+    {
+      <emphasis><parameter><literal>classic</literal></parameter></emphasis> |
+      <parameter><literal>bitshaker</literal></parameter>
+    }
   </term>
   <listitem>
     <para>
@@ -573,8 +566,8 @@ use the following circuit.
 
 <varlistentry>
   <term>
-    <command>Port</command> =
-    <arg choice="plain"><replaceable>PORT</replaceable></arg>
+    <property>Port</property> =
+    <parameter><replaceable>PORT</replaceable></parameter>
   </term>
   <listitem><para>
     Specify the address of the parallel port the LCD is connected to.
@@ -586,17 +579,15 @@ use the following circuit.
 
 <varlistentry>
   <term>
-    <command>Type</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>G321D</literal></arg>
-      <arg choice="plain"><literal>G121C</literal></arg>
-      <arg choice="plain"><literal>G242C</literal></arg>
-      <arg choice="plain"><literal>G191D</literal></arg>
-      <arg choice="plain"><literal>G2446</literal></arg>
-      <arg choice="plain"><literal>SP14Q002</literal></arg>
-    </group>
-    </arg>
+    <property>Type</property> =
+    {
+      <parameter><literal>G321D</literal></parameter> |
+      <parameter><literal>G121C</literal></parameter> |
+      <parameter><literal>G242C</literal></parameter> |
+      <parameter><literal>G191D</literal></parameter> |
+      <parameter><literal>G2446</literal></parameter> |
+      <parameter><literal>SP14Q002</literal></parameter>
+    }
   </term>
   <listitem>
     <para>

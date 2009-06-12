@@ -16,8 +16,8 @@ Matrix Orbital GLK chipset.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     select the serial device to use [default: <filename>/dev/lcd</filename>]
@@ -26,8 +26,8 @@ Matrix Orbital GLK chipset.
 
 <varlistentry>
   <term>
-    <command>Contrast</command> =
-    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial contrast.
@@ -38,14 +38,12 @@ Matrix Orbital GLK chipset.
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>9600</literal></arg>
-      <arg choice="plain"><literal><emphasis>19200</emphasis></literal></arg>
-      <arg choice="plain"><literal>38400</literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>9600</literal></parameter> |
+      <emphasis><parameter><literal>19200</literal></parameter></emphasis> |
+      <parameter><literal>38400</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the the baud rate for communication with the LCD.

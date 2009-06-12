@@ -45,7 +45,7 @@
 <para>
  	When pre-installed in enclosures like the
 	<ulink url="http://www.mini-box.com/Mini-Box-M300-LCD">Mini-Box M300 LCD</ulink>
-	it comes equipped with an InfraRed receiver as well as key pad with 
+	it comes equipped with an InfraRed receiver as well as key pad with
 	12 keys labeled <literal>Plus</literal>, <literal>Minus</literal>,
 	<literal>F1</literal>, <literal>F2</literal>, <literal>F3</literal>,
 	<literal>F4</literal>, <literal>F5</literal>, <literal>Up</literal>,
@@ -57,7 +57,7 @@
 	Finally, the picoLCD 20x2 (OEM) supports 8 general purpose outputs
 	and 10 custom splash screens.
 	Although these features are not supported by this driver, the
-	splash screens can be changed using the <command>usblcd</command> 
+	splash screens can be changed using the <command>usblcd</command>
 	tool, that can be built from the Linux SDK available on the picoLCD web page.
 </para>
 </listitem>
@@ -110,58 +110,44 @@
 <title>[picolcd]</title>
 
 <variablelist>
-<!--
 <varlistentry>
   <term>
-    <command>Backlight</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>Backlight</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    Turn on backlight.
+    Turns the backlight on or off, default <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
--->
 
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem>
   <para>
     Set the initial brightness.
     Legal values are: <literal>0</literal> - <literal>1000</literal>.
-    If not given, it defaults to <literal><emphasis>1000</emphasis></literal>.
+    If not given, it defaults to <literal>1000</literal>.
   </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Contrast</command> =
-    <arg choice="plain"><replaceable>CONTRAST</replaceable></arg>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
   </term>
   <listitem><para>
     Contrast: <literal>0</literal>-<literal>1000</literal>.
     <literal>0</literal> is visible, and <literal>1000</literal> is not on my M300.
-    Default is <literal><emphasis>1000</emphasis></literal>.			
+    Default is <literal>1000</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>KeyLights</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>KeyLights</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
     Allow key LEDs to be turned on or off. Default is <literal>yes</literal>.
@@ -170,118 +156,82 @@
 
 <varlistentry>
   <term>
-    <command>Key0Light</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>Key0Light</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    If <command>Keylights</command> is set, you can disable the directional pad LED by 
+    If <property>Keylights</property> is set, you can disable the directional pad LED by
     setting this value to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Key1Light</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>Key1Light</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    If <command>Keylights</command> is set, you can disable the F1 LED by setting this value 
+    If <property>Keylights</property> is set, you can disable the F1 LED by setting this value
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Key2Light</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>Key2Light</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    If <command>Keylights</command> is set, you can disable the F2 LED by setting this value 
+    If <property>Keylights</property> is set, you can disable the F2 LED by setting this value
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Key3Light</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>Key3Light</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    If <command>Keylights</command> is set, you can disable the F3 LED by setting this value 
+    If <property>Keylights</property> is set, you can disable the F3 LED by setting this value
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Key4Light</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>Key4Light</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    If <command>Keylights</command> is set, you can disable the F4 LED by setting this value 
+    If <property>Keylights</property> is set, you can disable the F4 LED by setting this value
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>Key5Light</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>Key5Light</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    If <command>Keylights</command> is set, you can disable the F5 LED by setting this value 
+    If <property>Keylights</property> is set, you can disable the F5 LED by setting this value
     to <literal>no</literal>.  Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>KeyTimeout</command> =
-    <arg choice="plain"><replaceable>DURATION</replaceable></arg>
+    <property>KeyTimeout</property> =
+    <parameter><replaceable>DURATION</replaceable></parameter>
   </term>
   <listitem><para>
-    (Advanced) This value controls how long <application>LCDd</application> waits for a key press when 
+    (Advanced) This value controls how long <application>LCDd</application> waits for a key press when
     get_key() is called.  The value represents microseconds and the default is <literal>500</literal>
-    or .5 seconds.  Lowering this value will make LCDd more responsive but also causes LCDd to use 
-    more CPU time and, as the timeout grows shorter, key presses become harder to detect.  
-    Larger values make key presses more reliable if somewhat slow to take effect.
+    or .5 seconds.  Lowering this value will make LCDd more responsive but also causes LCDd to use
+    more CPU time and, as the timeout grows shorter, key presses become harder to detect.
+    Lparameterer values make key presses more reliable if somewhat slow to take effect.
   </para></listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>LircHost</command> =
-    <arg choice="plain"><replaceable>HOSTNAME_OR_IP-ADDRESS</replaceable></arg>
+    <property>LircHost</property> =
+    <parameter><replaceable>HOSTNAME_OR_IP-ADDRESS</replaceable></parameter>
   </term>
   <listitem>
   <para>
@@ -289,53 +239,53 @@
     If not set or set to an empty value, IR support for LIRC will be disabled.
   </para>
   <para>
-    LIRC should be configured to use the driver "udp", which will cause it to listen on some 
-    UDP port for packets containing a series of integers, representing pulse and mark 
-    intervals from the sensor. It doesn't matter whether LCDd or LIRC is started first; if LIRC 
-    isn't listening, the packets from LCDd will be discarded. When LIRC comes back, it will 
-    start picking up the packets. Similarly, LCDd can be stopped and restarted without affecting 
-    anything, because UDP is a connectionless protocol. 
+    LIRC should be configured to use the driver "udp", which will cause it to listen on some
+    UDP port for packets containing a series of integers, representing pulse and mark
+    intervals from the sensor. It doesn't matter whether LCDd or LIRC is started first; if LIRC
+    isn't listening, the packets from LCDd will be discarded. When LIRC comes back, it will
+    start picking up the packets. Similarly, LCDd can be stopped and restarted without affecting
+    anything, because UDP is a connectionless protocol.
   </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>LircPort</command> =
-    <arg choice="plain"><replaceable>PORTNUM</replaceable></arg>
+    <property>LircPort</property> =
+    <parameter><replaceable>PORTNUM</replaceable></parameter>
   </term>
   <listitem>
   <para>
     This value determines the UDP port to which the driver will send IR data from the sensor. It
-    defaults to <literal>8765</literal>, which is also the default port on which LIRC will listen.  
+    defaults to <literal>8765</literal>, which is also the default port on which LIRC will listen.
   </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>LircSync</command> =
-    <arg choice="plain"><replaceable>DURATION</replaceable></arg>
+    <property>LircSync</property> =
+    <parameter><replaceable>DURATION</replaceable></parameter>
   </term>
   <listitem>
   <para>
-    This value determines the length in jiffies (1/16384 seconds) of the synthesized sync pulse added 
-    to the beginning of the UDP packet sent to LIRC. Values up to 255 are permitted. Setting a length 
-    of zero will suppress the synthesized pulse (I can't make it work without it, though). The default is 
-    <literal>64</literal> jiffies (3.9ms).  
+    This value determines the length in jiffies (1/16384 seconds) of the synthesized sync pulse added
+    to the beginning of the UDP packet sent to LIRC. Values up to 255 are permitted. Setting a length
+    of zero will suppress the synthesized pulse (I can't make it work without it, though). The default is
+    <literal>64</literal> jiffies (3.9ms).
   </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <command>LircLength</command> =
-    <arg choice="plain"><replaceable>DURATION</replaceable></arg>
+    <property>LircLength</property> =
+    <parameter><replaceable>DURATION</replaceable></parameter>
   </term>
   <listitem>
   <para>
-    This value determines the length in jiffies (1/16384 seconds) of the entire LIRC code for a single remote 
-    command. It depends on the notion that all commands are of the same duration, and are padded with a trailing 
+    This value determines the length in jiffies (1/16384 seconds) of the entire LIRC code for a single remote
+    property. It depends on the notion that all propertys are of the same duration, and are padded with a trailing
     gap (space) to make up the time. No such gap is emitted by the picolcd hardware. Values up to MAXINT are permitted.
     Setting a length of zero will suppress the synthesized gap. The default is 2048 jiffies (125ms).
   </para>
@@ -351,13 +301,13 @@
 <title>picolcd driver status</title>
 
 <para>
-	The hardware also reports key-up events.  Normally this would be of no issue (they are 
-	usually a 0 or 'no key') except that when keys are used in combonation, the key-up 
-	event may actually come back as multiple events depending on how the user released the 
-	keys.  If the key-up event for a multiple key press comes back as two events, the first 
-	up event will actually look like a new key press.  The algorithm in get_key tries to 
-	deal with this in a sane way and toss out all key-up events for now.  The hardware is 
-	touchy and both combo key-down and key-up actions may be reported as mutiple events if 
+	The hardware also reports key-up events.  Normally this would be of no issue (they are
+	usually a 0 or 'no key') except that when keys are used in combonation, the key-up
+	event may actually come back as multiple events depending on how the user released the
+	keys.  If the key-up event for a multiple key press comes back as two events, the first
+	up event will actually look like a new key press.  The algorithm in get_key tries to
+	deal with this in a sane way and toss out all key-up events for now.  The hardware is
+	touchy and both combo key-down and key-up actions may be reported as mutiple events if
 	the user is more than a tenth of a second (maybe less?) off in motions.
 </para>
 
@@ -365,20 +315,20 @@
 <title>Infrared sensor status</title>
 
 <para>
-	LIRC expects sensor data that starts with a longish 'sync' space, denoting the start of 
-	a command; followed by the code data, a sequence of mark/space pairs; sometimes followed by 
-	a 'gap', which should be a space long enough to make the entire command up to a preset 
-	duration in milliseconds. The 'sync' and the 'gap' are absent from the data 
-	emitted by the picolcd hardware. I found that LIRC configuration files for remotes similar to the 
-	ones I tested all used such a fixed-duration encoding, and as that was the only way I could get it 
-	working, this driver by default adds the gap as well as the sync. However I have 
-	<emphasis>still</emphasis> had trouble getting <code>irrecord</code> to work; you need at least 
-	to feed it a template configuration containing sync and gap data.  
+	LIRC expects sensor data that starts with a longish 'sync' space, denoting the start of
+	a command; followed by the code data, a sequence of mark/space pairs; sometimes followed by
+	a 'gap', which should be a space long enough to make the entire command up to a preset
+	duration in milliseconds. The 'sync' and the 'gap' are absent from the data
+	emitted by the picolcd hardware. I found that LIRC configuration files for remotes similar to the
+	ones I tested all used such a fixed-duration encoding, and as that was the only way I could get it
+	working, this driver by default adds the gap as well as the sync. However I have
+	<emphasis>still</emphasis> had trouble getting <code>irrecord</code> to work; you need at least
+	to feed it a template configuration containing sync and gap data.
 </para>
 
 <para>
 	This code could therefore use more testing, more research, and more work.
-</para>  
+</para>
 
 </sect3>
 </sect2>
@@ -388,7 +338,7 @@
 <title>Copyright</title>
 
 <para>
-	The lcdproc picolcd driver originally was written by Gatewood Green (woody@nitrosecurity.com) 
+	The lcdproc picolcd driver originally was written by Gatewood Green (woody@nitrosecurity.com)
 	or (woody@linif.org) and paid for by NitroSecurity, Inc (nitrosecurity.com),
 	but has been extended with code from various contributors since then.
 </para>

@@ -18,7 +18,7 @@ To the right of the display there is a 6 button keypad:
 </para>
 
 <para>
-For more information see the 
+For more information see the
 <ulink url="ftp://ftp.tyan.com/barebone_support/GS10-GS12%20LCD-Pack.zip">LCD pack</ulink>
 from the Tyan support page.
 Besides a useless old version of LCDproc it contains some
@@ -39,8 +39,8 @@ of the LCD display by its manufacturer.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the output device to use [default: <filename>/dev/lcd</filename>]
@@ -49,13 +49,11 @@ of the LCD display by its manufacturer.
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>4800</literal></arg>
-      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>4800</literal></parameter> |
+      <emphasis><parameter><literal>9600</literal></parameter></emphasis>
+    }
   </term>
   <listitem><para>
     Set the the baud rate communication with the LCD.
@@ -65,12 +63,7 @@ of the LCD display by its manufacturer.
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     set display size [default: <literal>16x2</literal>]

@@ -15,8 +15,8 @@ This section covers the joystick input driver for LCDd.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Select the input device to use [default: <filename>/dev/js0</filename>]
@@ -25,12 +25,12 @@ This section covers the joystick input driver for LCDd.
 
 <varlistentry>
   <term>
-    <command>Map_Axis<replaceable>NUM</replaceable>neg</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>Map_Axis<replaceable>NUM</replaceable>neg</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <term>
-    <command>Map_Axis<replaceable>NUM</replaceable>pos</command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>Map_Axis<replaceable>NUM</replaceable>pos</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -46,7 +46,7 @@ This section covers the joystick input driver for LCDd.
 
     <para>
     <replaceable>KEY</replaceable> can be one of the keys that LCDd recognizes
-    (<literal>Left</literal>, <literal>Right</literal>, <literal>Up</literal>, 
+    (<literal>Left</literal>, <literal>Right</literal>, <literal>Up</literal>,
     <literal>Down</literal>, <literal>Enter</literal> or <literal>Escape</literal>)
     or any other string that a client can parse.
     </para>
@@ -55,8 +55,8 @@ This section covers the joystick input driver for LCDd.
 
 <varlistentry>
   <term>
-    <command>Map_Button<replaceable>NUM</replaceable></command> =
-    <arg choice="plain"><replaceable>KEY</replaceable></arg>
+    <property>Map_Button<replaceable>NUM</replaceable></property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem>
     <para>
@@ -71,7 +71,7 @@ This section covers the joystick input driver for LCDd.
 
     <para>
     <replaceable>KEY</replaceable> can be one of the keys that LCDd recognizes
-    (<literal>Left</literal>, <literal>Right</literal>, <literal>Up</literal>, 
+    (<literal>Left</literal>, <literal>Right</literal>, <literal>Up</literal>,
     <literal>Down</literal>, <literal>Enter</literal> or <literal>Escape</literal>)
     or any other string that a client can parse.
     </para>

@@ -16,8 +16,8 @@ This section talks about using LCDproc with text mode VFD displays from
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
     Port where the VFD is. Usual values are <filename>/dev/ttyS0</filename> and <filename>/dev/ttyS1</filename>
@@ -27,12 +27,7 @@ This section talks about using LCDproc with text mode VFD displays from
 
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Specifies the size of the LCD.
@@ -42,8 +37,8 @@ This section talks about using LCDproc with text mode VFD displays from
 
 <varlistentry>
   <term>
-    <command>Brightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial brightness [default: <literal>1000</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
@@ -52,8 +47,8 @@ This section talks about using LCDproc with text mode VFD displays from
 
 <varlistentry>
   <term>
-    <command>OffBrightness</command> =
-    <arg choice="plain"><replaceable>BRIGHTNESS</replaceable></arg>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
   </term>
   <listitem><para>
     Set the initial off-brightness [default: <literal>0</literal>; legal: <literal>0</literal> - <literal>1000</literal>]
@@ -64,16 +59,14 @@ This section talks about using LCDproc with text mode VFD displays from
 
 <varlistentry>
   <term>
-    <command>Speed</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>1200</literal></arg>
-      <arg choice="plain"><literal>2400</literal></arg>
-      <arg choice="plain"><literal><emphasis>9600</emphasis></literal></arg>
-      <arg choice="plain"><literal>19200</literal></arg>
-      <arg choice="plain"><literal>115200</literal></arg>
-    </group>
-    </arg>
+    <property>Speed</property> =
+    {
+      <parameter><literal>1200</literal></parameter> |
+      <parameter><literal>2400</literal></parameter> |
+      <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
+      <parameter><literal>19200</literal></parameter> |
+      <parameter><literal>115200</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the the baud rate to use when communicating with the VFD.
@@ -83,14 +76,12 @@ This section talks about using LCDproc with text mode VFD displays from
 
 <varlistentry>
   <term>
-    <command>Parity</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>0</emphasis></literal></arg>
-      <arg choice="plain"><literal>1</literal></arg>
-      <arg choice="plain"><literal>2</literal></arg>
-    </group>
-    </arg>
+    <property>Parity</property> =
+    {
+      <emphasis><parameter><literal>0</literal></parameter></emphasis> |
+      <parameter><literal>1</literal></parameter> |
+      <parameter><literal>2</literal></parameter>
+    }
   </term>
   <listitem><para>
     Set the parity for communication with the device to even parity (<literal>2</literal>),
@@ -101,13 +92,7 @@ This section talks about using LCDproc with text mode VFD displays from
 
 <varlistentry>
   <term>
-    <command>Reboot</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>Reboot</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     Reinitialize the VFD [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]

@@ -25,10 +25,11 @@ very nice.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Device</command> =
-    <arg choice="plain"><replaceable>DEVICE</replaceable></arg>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
+    Sets the device to use. Defaults to <filename>/dev/lcd</filename>.
   </para></listitem>
 </varlistentry>
 </variablelist>

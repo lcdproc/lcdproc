@@ -119,12 +119,7 @@ as well as Darwin/MacOS X.
 <variablelist>
 <varlistentry>
   <term>
-    <command>Size</command> =
-    <arg choice="plain">
-      <replaceable>WIDTH</replaceable>
-      <literal>x</literal>
-      <replaceable>HEIGHT</replaceable>
-    </arg>
+    <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
     Set the display dimensions. If not given, it defaults to <literal>20x4</literal>.
@@ -133,8 +128,8 @@ as well as Darwin/MacOS X.
 
 <varlistentry>
   <term>
-    <command>SerialNumber</command> =
-    <arg choice="plain"><replaceable>SERIALNO</replaceable></arg>
+    <property>SerialNumber</property> =
+    <parameter><replaceable>SERIALNO</replaceable></parameter>
   </term>
   <listitem><para>
     Use the IOWarrior module with the serial number <replaceable>SERIALNO</replaceable>.
@@ -144,13 +139,7 @@ as well as Darwin/MacOS X.
 
 <varlistentry>
   <term>
-    <command>ExtendedMode</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal>yes</literal></arg>
-      <arg choice="plain"><literal><emphasis>no</emphasis></literal></arg>
-    </group>
-    </arg>
+    <property>ExtendedMode</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
     If you have a KS0073 or an other 'almost HD44780-compatible' display
@@ -161,13 +150,7 @@ as well as Darwin/MacOS X.
 
 <varlistentry>
   <term>
-    <command>Lastline</command> =
-    <arg choice="plain">
-    <group choice="req">
-      <arg choice="plain"><literal><emphasis>yes</emphasis></literal></arg>
-      <arg choice="plain"><literal>no</literal></arg>
-    </group>
-    </arg>
+    <property>Lastline</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
     Specifies if the last line is pixel addressable or it controls an

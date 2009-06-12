@@ -11,6 +11,7 @@ EXTRA_DIST =	bookinfo.docbook \
 		introduction.docbook \
 		lcdproc-user.docbook \
 		license.docbook \
+		parameters.ent \
 		running.docbook \
 		README.docbook
 
