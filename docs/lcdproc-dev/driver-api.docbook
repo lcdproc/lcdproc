@@ -170,7 +170,7 @@ API_VERSION in the code.
 	// name of the driver instance (name of the config file section)
 	// - do not change from the driver; consider it read-only
 	// - to be used to access the driver's own section in the config file
-	char * name;	
+	char * name;
 
 	// pointer to the driver instance's private data
 	// - filled by the server by calling store_private_ptr()
@@ -378,7 +378,7 @@ typedef struct MyDriver_private_data {
   Place a single character <replaceable>c</replaceable> into position
   (<replaceable>x</replaceable>,<replaceable>y</replaceable>) in the framebuffer.
   The driver should check for overflows, i.e. that the positional parameters
-  are within the screen's boundaries and ignore the request if 
+  are within the screen's boundaries and ignore the request if
   the character is out of bounds.
 </para>
 

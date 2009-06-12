@@ -258,7 +258,7 @@ SED1330/SED1335 (aka S1D13300/S1D13305) based graphical displays
 <title>Step 1</title>
 
 <para>
-Please add a file <filename><emphasis>myDriver</emphasis>.docbook</filename>,
+Please add a file <filename>myDriver.docbook</filename>,
 that describes the configuration of your driver and the hard/software needed,
 to the directory <filename>docs/lcdproc-user/drivers/</filename>.
 </para>

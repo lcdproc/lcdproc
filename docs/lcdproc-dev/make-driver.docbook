@@ -5,11 +5,14 @@
 <title>Introduction</title>
 
 <para>
-LCDproc is meant to be modular, it is relatively easy to add new input and output drivers to LCDproc. Actually, there are a few things that you can do to make your life easier, they are listed here.
+LCDproc is meant to be modular, it is relatively easy to add new input and
+output drivers to LCDproc. Actually, there are a few things that you can do
+to make your life easier, they are listed here.
 </para>
 
 <para>
-This chapter will explain you the major steps and few gotchas of adding your own driver to LCDproc. Enjoy!
+This chapter will explain you the major steps and few gotchas of adding your
+own driver to LCDproc. Enjoy!
 </para>
 
 </sect1>
@@ -18,21 +21,34 @@ This chapter will explain you the major steps and few gotchas of adding your own
 <title>Shared files specific for drivers</title>
 
 <para>
-Driving an LCD display is not easy; you need to address ports, to send bytes in a certain order, to respect timing, and unfortunaly no two operating system let you do this in the same way. But don't dispair! There's hope! Someone in a galaxy far far away, has allready done the dirty job for you! This dirty job has been put in shared files. These shared files are full cross platform and are automagically configured by the configure script. You only need to include them and use their functions to benefit from them.
+Driving an LCD display is not easy; you need to address ports, to send bytes
+in a certain order, to respect timing, and unfortunaly no two operating system
+let you do this in the same way. But don't dispair! There's hope! Someone in
+a galaxy far far away, has allready done the dirty job for you! This dirty job
+has been put in shared files. These shared files are full cross platform and
+are automagically configured by the configure script. You only need to include
+them and use their functions to benefit from them.
 </para>
 
 <para>
-These files are provided only for drivers, others are provided for all of LCDproc. These files are located in the shared directory, they have a dedicated chapter in this book.
+These files are provided only for drivers, others are provided for all of
+LCDproc. These files are located in the shared directory, they have a
+dedicated chapter in this book.
 </para>
 
 <sect2 id="port.h">
 <title>port.h : Parallel port I/O</title>
 
-<para>The file port.h, located in the server/drivers/ directory provide Input/Output and port permissions for the PC compatible parallel port, also known as the LPT port.</para>
+<para>
+The file port.h, located in the server/drivers/ directory provide Input/Output
+and port permissions for the PC compatible parallel port, also known as the
+LPT port.
+</para>
 
 <para>
-  Of course, these functions will only work if the computer where LCDproc runs has parallel port!r
-  In these situations, the configure script will see this and disable drivers that need a parallel port.
+Of course, these functions will only work if the computer where LCDproc runs
+has parallel port! In these situations, the configure script will see this and
+disable drivers that need a parallel port.
 </para>
 
 <para>port.h file defines 6 static inline functions for port I/O:</para>
@@ -133,10 +149,10 @@ These files are provided only for drivers, others are provided for all of LCDpro
 <screen>
 #include "port.h"
 
-/* Get access to these 3 ports: 
-    0x378 (CONTROL), 
-    0x379 (STATUS) and 
-    0x37A (DATA) 
+/* Get access to these 3 ports:
+    0x378 (CONTROL),
+    0x379 (STATUS) and
+    0x37A (DATA)
 */
 if ( -1 == port_access_multiple(0x378,3) ) {
 	/* Access denied, do something */
@@ -183,7 +199,7 @@ port_deny_multiple(0x378,3);
               to determine the display's height and thus the maximal height of the
               big numbers to be displayed.
             </para>
-          </listitem>	
+          </listitem>
         </varlistentry>
 
         <varlistentry>
@@ -193,19 +209,19 @@ port_deny_multiple(0x378,3);
               to determine the number of user-defineable characters that can be
               used in the generation of big numbers.
             </para>
-          </listitem>	
+          </listitem>
         </varlistentry>
 
         <varlistentry>
           <term><function>set_char()</function></term>
-          <listitem>	
+          <listitem>
             <para>
               to define a character necessary to write a big number.
               Of course this is only necessary if there really are user-definieable
 	      characters, i.e. only if <function>get_free_chars()</function> returns
 	      a value greater <literal>0</literal>.
             </para>
-          </listitem>	
+          </listitem>
         </varlistentry>
 
         <varlistentry>
@@ -214,9 +230,9 @@ port_deny_multiple(0x378,3);
             <para>
               to actually write the characters the big numbers consist of.
             </para>
-          </listitem>	
+          </listitem>
         </varlistentry>
-      </variablelist>  
+      </variablelist>
     </para>
   </listitem>
 
@@ -231,21 +247,21 @@ port_deny_multiple(0x378,3);
   <listitem>
     <para>
       The custom-characters (if any) have to be at character positions
-      <replaceable>offset</replaceable><literal>+0</literal>, 
-      <replaceable>offset</replaceable><literal>+1</literal>, 
+      <replaceable>offset</replaceable><literal>+0</literal>,
+      <replaceable>offset</replaceable><literal>+1</literal>,
       <replaceable>offset</replaceable><literal>+2</literal>, ...
       <replaceable>offset</replaceable><literal>+</literal>
-      <function>get_free_chars()</function><literal>-1</literal>, 
+      <function>get_free_chars()</function><literal>-1</literal>,
     </para>
   </listitem>
 
   <listitem>
     <para>
       <replaceable>offset</replaceable><literal>+</literal>
-      <function>get_free_chars()</function><literal>-1</literal> must be less than <literal>32</literal>, 
+      <function>get_free_chars()</function><literal>-1</literal> must be less than <literal>32</literal>,
     </para>
   </listitem>
-</itemizedlist>  
+</itemizedlist>
 
 <para>
   The library determines the correct font, depending on the display size and the number
@@ -283,7 +299,7 @@ port_deny_multiple(0x378,3);
         <function>num()</function> function.
       </para>
     </listitem>
-  </varlistentry>  
+  </varlistentry>
 
   <varlistentry>
     <term><parameter>x</parameter></term>
@@ -295,7 +311,7 @@ port_deny_multiple(0x378,3);
         the position to the lib. The bignumlib has no influence on the placing of the characters.
       </para>
     </listitem>
-  </varlistentry>  
+  </varlistentry>
 
   <varlistentry>
     <term><parameter>num</parameter></term>
@@ -305,26 +321,26 @@ port_deny_multiple(0x378,3);
         and <literal>:</literal>) to be written.
       </para>
     </listitem>
-  </varlistentry>  
+  </varlistentry>
 
   <varlistentry>
     <term><parameter>offset</parameter></term>
     <listitem>
-      <para>  
+      <para>
         the character position where the user-defineable characters start
         (usually <literal>0</literal>).
         The user-defineable characters (if any) are then expected to be at the character positions
-        <replaceable>offset</replaceable><literal>+0</literal>, 
-        <replaceable>offset</replaceable><literal>+1</literal>, 
+        <replaceable>offset</replaceable><literal>+0</literal>,
+        <replaceable>offset</replaceable><literal>+1</literal>,
         <replaceable>offset</replaceable><literal>+2</literal>, ...
         <replaceable>offset</replaceable><literal>+</literal>
         <function>get_free_chars()</function><literal>-1</literal>
 	and <replaceable>offset</replaceable><literal>+</literal>
        <function>get_free_chars()</function><literal>-1</literal> is required to be less than
-       <literal>32</literal>. 
-      </para>  
+       <literal>32</literal>.
+      </para>
     </listitem>
-  </varlistentry>  
+  </varlistentry>
 
   <varlistentry>
     <term><parameter>do_init</parameter></term>
@@ -341,7 +357,7 @@ port_deny_multiple(0x378,3);
         So the responsibility of checking and setting is left to the driver.
       </para>
     </listitem>
-  </varlistentry>  
+  </varlistentry>
 </variablelist>
 
 <example id="lib_adv_bignum-example">

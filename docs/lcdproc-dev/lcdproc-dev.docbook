@@ -8,7 +8,7 @@
   <!ENTITY driver-api SYSTEM "driver-api.docbook">
   <!ENTITY make-driver SYSTEM "make-driver.docbook">
   <!ENTITY add-your-driver SYSTEM "add-your-driver.docbook">
-  <!ENTITY license SYSTEM "license.docbook">  
+  <!ENTITY license SYSTEM "license.docbook">
 ]>
 
 <book id="lcdproc-dev" lang="en">

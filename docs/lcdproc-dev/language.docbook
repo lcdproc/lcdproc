@@ -89,7 +89,7 @@
 	      <variablelist><!--<title>hello response parameters</title>-->
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">LCDproc <replaceable>version</replaceable></arg>
+		    <synopsis>LCDproc <replaceable>version</replaceable></synopsis>
 		  </term>
 		  <listitem><para>
 		      Indicates the version number of LCDd.
@@ -97,7 +97,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">protocol <replaceable>version</replaceable></arg>
+		    <synopsis>protocol <replaceable>version</replaceable></synopsis>
 		  </term>
 		  <listitem><para>
 		      Indicates the widget language version number. This number is
@@ -107,7 +107,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">wid <replaceable>int</replaceable></arg>
+		    <synopsis>wid <replaceable>int</replaceable></synopsis>
 		  </term>
 		  <listitem><para>
 		      Tells the client the width of the attached display device in characters.
@@ -115,7 +115,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">hgt <replaceable>int</replaceable></arg>
+		    <synopsis>hgt <replaceable>int</replaceable></synopsis>
 		  </term>
 		  <listitem><para>
 		      Tells the client the height of the attached display device in characters.
@@ -123,7 +123,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">cellwid <replaceable>int</replaceable></arg>
+		    <synopsis>cellwid <replaceable>int</replaceable></synopsis>
 		  </term>
 		  <listitem><para>
 		      How many pixels is a character wide (space between character
@@ -132,7 +132,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">cellhgt <replaceable>int</replaceable></arg>
+		    <synopsis>cellhgt <replaceable>int</replaceable></synopsis>
 		  </term>
 		  <listitem><para>
 		      How many pixels is a character high (space between character
@@ -141,7 +141,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">lcd</arg>
+		    <synopsis>lcd</synopsis>
 		  </term>
 		  <listitem><para>
 		      This word is NOT followed by a value !
@@ -158,10 +158,10 @@
 	    <cmdsynopsis>
 	      <command>client_set</command>
 	      <arg choice="plain">-name <replaceable>name</replaceable></arg>
-<!-- not implemented on the server side	      
+<!-- not implemented on the server side
 	      <arg rep="repeat" choice="plain"><replaceable>options</replaceable></arg>
--->	      
-	    </cmdsynopsis>  
+-->
+	    </cmdsynopsis>
 	  </term>
 	  <listitem>
 	    <para>
@@ -216,7 +216,7 @@
 		    </para></listitem>
 		</varlistentry>
 	      </variablelist>
--->		
+-->
 	    </para>
 	  </listitem>
 	</varlistentry>
@@ -273,7 +273,7 @@
 	      <variablelist><!--<title>screen_set attributes</title>-->
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-name <replaceable>name</replaceable></arg>
+		    <option>-name <replaceable>name</replaceable></option>
 		  </term>
 		  <listitem><para>
 		      Sets the screen's name as visible to a user.
@@ -281,10 +281,8 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-wid <replaceable>int</replaceable></arg>
-		  </term>
-		  <term>
-		    <arg choice="plain">-hgt <replaceable>int</replaceable></arg>
+		    <option>-wid <replaceable>int</replaceable></option>
+		    <option>-hgt <replaceable>int</replaceable></option>
 		  </term>
 		  <listitem><para>
 		      Sets the size of the screen in characters. If unset, the full display size is assumed.
@@ -292,7 +290,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-priority <replaceable>pri_class</replaceable></arg>
+		    <option>-priority <replaceable>pri_class</replaceable></option>
 		  </term>
 		  <listitem><para>
 		      Sets the screen's priority.
@@ -357,7 +355,7 @@
 				  <entry>info</entry>
 			        </row>
 			        <row>
-				  <entry>193 - &#8734;</entry>
+				  <entry>193 - &#x221E;</entry>
 				  <entry>background</entry>
 			        </row>
 			      </tbody>
@@ -378,13 +376,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-heartbeat
-		      <group choice="req">
-		        <arg choice="plain">on</arg>
-		        <arg choice="plain">off</arg>
-		        <arg choice="plain">open</arg>
-		      </group>
-		    </arg>
+		    <option>-heartbeat { on | off | open }</option>
 		  </term>
 		  <listitem><para>
 		      Changes the heartbeat setting for this screen.
@@ -394,16 +386,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-backlight
-		      <group choice="req">
-		        <arg choice="plain">on</arg>
-			<arg choice="plain">off</arg>
-			<arg choice="plain">toggle</arg>
-			<arg choice="plain">open</arg>
-			<arg choice="plain">blink</arg>
-			<arg choice="plain">flash</arg>
-		      </group>
-		    </arg>
+		    <option>-backlight { on | off | toggle | open | blink | flash }</option>
 		  </term>
 		  <listitem><para>
 		      Changes the screen's backlight setting.
@@ -415,7 +398,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-duration <replaceable>value</replaceable></arg>
+		    <option>-duration <replaceable>value</replaceable></option>
 		  </term>
 		  <listitem><para>
 		      A screen will be visible for this amount of time every rotation.
@@ -424,7 +407,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-timeout <replaceable>value</replaceable></arg>
+		    <option>-timeout <replaceable>value</replaceable></option>
 		  </term>
 		  <listitem><para>
 		      After the screen has been visible for a total of this amount of time,
@@ -434,14 +417,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-cursor
-		      <group choice="req">
-		        <arg choice="plain">on</arg>
-			<arg choice="plain">off</arg>
-			<arg choice="plain">under</arg>
-			<arg choice="plain">block</arg>
-		      </group>
-		    </arg>
+		    <option>-cursor { on | off | under | block}</option>
 		  </term>
 		  <listitem><para>
 		      Determines the visibility of a cursor.
@@ -454,18 +430,16 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <arg choice="plain">-cursor_x <replaceable>int</replaceable></arg>
-		  </term>
-		  <term>
-		    <arg choice="plain">-cursor_y <replaceable>int</replaceable></arg>
+		    <option>-cursor_x <replaceable>int</replaceable></option>
+		    <option>-cursor_y <replaceable>int</replaceable></option>
 		  </term>
 		  <listitem><para>
 		      Set the cursor's x and y coordinates respectively.
 		      If not given, the cursor will be set to
-		      the leftmost (<option>-cursor_x</option>) resp. 
+		      the leftmost (<option>-cursor_x</option>) resp.
 		      topmost (<option>-cursor_y</option>) position.
 		      Coordinates are always 1-based.
-		      So the default top-left corner is denoted by (1,1). 
+		      So the default top-left corner is denoted by (1,1).
 		    </para></listitem>
 		</varlistentry>
 	      </variablelist>
@@ -537,7 +511,7 @@
 		    <literal>scroller</literal>
 		  </term>
 		  <listitem><para>
-		      A variation of the string type that scrolls the text 
+		      A variation of the string type that scrolls the text
 		      horizontally or vertically.
 		    </para></listitem>
 		</varlistentry>
@@ -652,7 +626,7 @@
 		      <arg choice="plain"><replaceable>iconname</replaceable></arg>
 		    </cmdsynopsis>
 		    <para>
-		      Displays the icon <replaceable>iconname</replaceable> at 
+		      Displays the icon <replaceable>iconname</replaceable> at
 		      position (<replaceable>x</replaceable>,<replaceable>y</replaceable>).
 		    </para></listitem>
 		</varlistentry>
@@ -696,7 +670,7 @@
 		      <arg choice="plain"><replaceable>speed</replaceable></arg>
 		    </cmdsynopsis>
 		    <para>
-		      Sets up a frame spanning from 
+		      Sets up a frame spanning from
 		      (<replaceable>left</replaceable>,<replaceable>top</replaceable>)
 		      to (<replaceable>right</replaceable>,<replaceable>bottom</replaceable>)
 		      that is <replaceable>width</replaceable> columns wide and
@@ -802,7 +776,7 @@
 	      in exclusive mode no other client can reserve them again.
 	      Key(s) reserved in shared mode will only be returned when a screen
 	      of the current client is active. These keys can be used for
-	      interaction with a visible screen (default). 
+	      interaction with a visible screen (default).
 	      Key(s) reserved in exclusive mode will be returned regardless of
 	      which screen is active. They can be used to trigger a special
 	      feature or to make a screen come to foreground.
@@ -853,7 +827,7 @@
 		  <replaceable>menu_ids</replaceable> are <emphasis>unique</emphasis>
 		  (at least within a clients menu hierarchy).
 		</para>
-	      </note>	
+	      </note>
 	      <variablelist><title>menu item types</title>
 		<varlistentry>
 		  <term>
@@ -982,7 +956,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-text <replaceable>string</replaceable></arg>
+			    <option>-text <replaceable>string</replaceable></option>
 			  </term>
 			  <listitem><para>
 			      The visible text of the item.
@@ -990,13 +964,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-is_hidden
-			      <group choice="req">
-			        <arg choice="plain">false</arg>
-				<arg choice="plain">true</arg>
-			      </group>
-			    </arg>
-			    (false)
+			    <option>-is_hidden { true | false}</option> (false)
 			  </term>
 			  <listitem><para>
 			      If the item currently should not appear in a menu.
@@ -1004,7 +972,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-next <replaceable>successor_id</replaceable></arg>
+			    <option>-next <replaceable>successor_id</replaceable></option>
 			  </term>
 			  <listitem>
 			    <para>
@@ -1050,7 +1018,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-prev <replaceable>predecessor_id</replaceable></arg>
+			    <option>-prev <replaceable>predecessor_id</replaceable></option>
 			  </term>
 			  <listitem>
 			    <para>
@@ -1090,14 +1058,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-menu_result
-			      <group choice="req">
-			        <arg choice="plain">none</arg>
-				<arg choice="plain">close</arg>
-				<arg choice="plain">quit</arg>
-		 	      </group>
-			    </arg>  
-		 	    (none)
+			    <option>-menu_result { none | close | quit}</option> (none)
 			  </term>
 			  <listitem><para>
 			      Sets what to do with the menu when this action is selected:
@@ -1117,13 +1078,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-value
-			      <group choice="req">
-			        <arg choice="plain">off</arg>
-			        <arg choice="plain">on</arg>
-			        <arg choice="plain">gray</arg>
-			      </group>
-			    </arg>
+			    <option>-value { off | on | gray }</option>
 			  </term>
 			  <listitem><para>
 			      Set the value of the item.
@@ -1131,13 +1086,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-allow_gray
-			      <group choice="req">
-			        <arg choice="plain">false</arg>
-			        <arg choice="plain">true</arg>
-			      </group>
-			    </arg>
-			    (false)
+			    <option>-allow_gray { false | true}</option> (false)
 			  </term>
 			  <listitem><para>
 			      Sets if a grayed checkbox is allowed.
@@ -1154,7 +1103,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-value <replaceable>int</replaceable></arg> (0)
+			    <option>-value <replaceable>int</replaceable></option> (0)
 			  </term>
 			  <listitem><para>
 			      Sets the index in the stringlist that is currently selected.
@@ -1162,7 +1111,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-strings <replaceable>string</replaceable></arg> (empty)
+			    <option>-strings <replaceable>string</replaceable></option> (empty)
 			  </term>
 			  <listitem><para>
 			      This single string should contain the strings that can be selected. They should be tab-separated (\t).
@@ -1179,7 +1128,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-value <replaceable>int</replaceable></arg> (0)
+			    <option>-value <replaceable>int</replaceable></option> (0)
 			  </term>
 			  <listitem><para>
 			      Sets its current value.
@@ -1187,10 +1136,10 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-mintext <replaceable>string</replaceable></arg> ("")
+			    <option>-mintext <replaceable>string</replaceable></option> ("")
 			  </term>
 			  <term>
-			    <arg choice="plain">-maxtext <replaceable>string</replaceable></arg> ("")
+			    <option>-maxtext <replaceable>string</replaceable></option> ("")
 			  </term>
 			  <listitem><para>
 			      The texts at the left and right side of the slider.
@@ -1198,10 +1147,10 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-minvalue <replaceable>int</replaceable></arg> (0)
+			    <option>-minvalue <replaceable>int</replaceable></option> (0)
 			  </term>
 			  <term>
-			    <arg choice="plain">-maxvalue <replaceable>int</replaceable></arg> (100)
+			    <option>-maxvalue <replaceable>int</replaceable></option> (100)
 			  </term>
 			  <listitem><para>
 			      The minimum and maximum values of the slider.
@@ -1209,7 +1158,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-stepsize <replaceable>int</replaceable></arg> (1)
+			    <option>-stepsize <replaceable>int</replaceable></option> (1)
 			  </term>
 			  <listitem><para>
 			      The stepsize of the slider. If you use 0, you can control the movement completely from your client.
@@ -1226,7 +1175,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-value <replaceable>int</replaceable></arg> (0)
+			    <option>-value <replaceable>int</replaceable></option> (0)
 			  </term>
 			  <listitem><para>
 			      Sets its current value.
@@ -1234,10 +1183,10 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-minvalue <replaceable>int</replaceable></arg> (0)
+			    <option>-minvalue <replaceable>int</replaceable></option> (0)
 			  </term>
 			  <term>
-			    <arg choice="plain">-maxvalue <replaceable>int</replaceable></arg> (100)
+			    <option>-maxvalue <replaceable>int</replaceable></option> (100)
 			  </term>
 			  <listitem><para>
 			      The minimum and maximum values that are allowed. If one
@@ -1259,7 +1208,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-value <replaceable>string</replaceable></arg> ("")
+			    <option>-value <replaceable>string</replaceable></option> ("")
 			  </term>
 			  <listitem><para>
 			      Sets its current value.
@@ -1267,7 +1216,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-password_char <replaceable>string</replaceable></arg> ("")
+			    <option>-password_char <replaceable>string</replaceable></option> ("")
 			  </term>
 			  <listitem><para>
 			      If used, instead of the typed characters, this
@@ -1276,10 +1225,10 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-minlength <replaceable>int</replaceable></arg> (0)
+			    <option>-minlength <replaceable>int</replaceable></option> (0)
 			  </term>
 			  <term>
-			    <arg choice="plain">-maxlength <replaceable>int</replaceable></arg> (10)
+			    <option>-maxlength <replaceable>int</replaceable></option> (10)
 			  </term>
 			  <listitem><para>
 			      Sets the minimum and maximum allowed lengths.
@@ -1287,31 +1236,13 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-allow_caps
-			      <group choice="req">
-			        <arg choice="plain">false</arg>
-			        <arg choice="plain">true</arg>
-			      </group>
-			    </arg>
-			    (true)
+			    <option>-allow_caps { false | true }</option> (true)
 			  </term>
 			  <term>
-			    <arg choice="plain">-allow_noncaps
-			      <group choice="req">
-			        <arg choice="plain">false</arg>
-			        <arg choice="plain">true</arg>
-			      </group>
-			    </arg>
-			    (false)
+			    <option>-allow_noncaps { false | true }</option> (false)
 			  </term>
 			  <term>
-			    <arg choice="plain">-allow_numbers
-			      <group choice="req">
-			        <arg choice="plain">false</arg>
-			        <arg choice="plain">true</arg>
-			      </group>
-			    </arg>
-			    (false)
+			    <option>-allow_numbers { false | true }</option> (false)
 			  </term>
 			  <listitem><para>
 			      (Dis)allow these groups of characters.
@@ -1319,7 +1250,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-allowed_extra <replaceable>string</replaceable></arg> ("")
+			    <option>-allowed_extra <replaceable>string</replaceable></option> ("")
 			  </term>
 			  <listitem><para>
 			      The chars in this string are also allowed.
@@ -1336,7 +1267,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-value <replaceable>string</replaceable></arg> ("192.168.1.245")
+			    <option>-value <replaceable>string</replaceable></option> ("192.168.1.245")
 			  </term>
 			  <listitem><para>
 			      Set the value of the item,
@@ -1346,13 +1277,7 @@
 			</varlistentry>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-v6
-			      <group choice="req">
-			        <arg choice="plain">false</arg>
-			        <arg choice="plain">true</arg>
-			      </group>
-			    </arg>
-			    (false)
+			    <option>-v6 { false | true }</option> (false)
 			  </term>
 			  <listitem><para>
 			      Changes IP version from default v4.
@@ -1372,7 +1297,7 @@
 		      <variablelist>
 			<varlistentry>
 			  <term>
-			    <arg choice="plain">-parent <replaceable>parentid</replaceable></arg>
+			    <option>-parent <replaceable>parentid</replaceable></option>
 			  </term>
 			  <listitem><para> (Re)sets the parent of this
 			      menu. Parentid has to be of type menu. This
@@ -1589,7 +1514,7 @@
 	    </para>
 	  </listitem>
 	</varlistentry>
--->	
+-->
       </variablelist>
     </sect2>
   </sect1>
