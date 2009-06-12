@@ -74,6 +74,8 @@ v.0.5dev (ongoing development)
  * MtxOrb driver: Fix backlight for old firmware
  * Add checks for null pointer / failed malloc to menu code
  * lcdproc, lcdexec, lcdvc clients: Use our included getopt.h
+ * documentation: Fix XML errors in user and developer guide
+ + documentation: Add man page for lcdvc
 
 v.0.5.2
  * fix switching on/off the Load screen in lcdproc client using the menu
