@@ -1,11 +1,12 @@
 ## Process this file with automake to produce Makefile.in
 
-man_MANS = lcdproc.1 lcdexec.1 LCDd.8 lcdproc-config.5
+man_MANS = lcdproc.1 lcdexec.1 lcdvc.1 LCDd.8 lcdproc-config.5
 SUBDIRS = lcdproc-user lcdproc-dev
 doxygen_input = header.html footer.html
 
 EXTRA_DIST = lcdproc.1.in \
 	lcdexec.1 \
+	lcdvc.1.in \
 	LCDd.8.in \
 	lcdproc-config.5.in \
 	$(doxygen_input)
@@ -18,11 +19,14 @@ LCDd.8: LCDd.8.in
 lcdproc.1: lcdproc.1.in
 	sed -e 's:@SYSCONFDIR@:@sysconfdir@:g' $? > $@
 
+lcdvc.1: lcdvc.1.in
+	sed -e 's:@SYSCONFDIR@:@sysconfdir@:g' $? > $@
+
 lcdproc-config.5: lcdproc-config.5.in
 	sed -e 's:@SYSCONFDIR@:@sysconfdir@:g' $? > $@
 
 ## clean generated makefiles
-CLEANFILES = LCDd.8 lcdproc.1 lcdproc-config.5
+CLEANFILES = LCDd.8 lcdproc.1 lcdvc.1 lcdproc-config.5
 
 
 ## convenience targets
