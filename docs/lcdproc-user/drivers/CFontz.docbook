@@ -83,7 +83,7 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
       <parameter><literal>2400</literal></parameter> |
       <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
       <parameter><literal>19200</literal></parameter> |
-      <parameter><literal>115200</literal></parameter> |
+      <parameter><literal>115200</literal></parameter>
     }
   </term>
   <listitem><para>

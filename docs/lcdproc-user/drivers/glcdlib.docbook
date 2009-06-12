@@ -35,9 +35,8 @@ before configuring the LCDproc build process --enable-drivers=glcdlib.
 <sect3 id="glcdlib-config-section">
 <title>[glcdlib]</title>
 
-<para>Mandatory settings:</para>
-
 <variablelist>
+<title>Mandatory settings</title>
 <varlistentry>
   <term>
     <property>Driver</property> =
@@ -94,11 +93,8 @@ before configuring the LCDproc build process --enable-drivers=glcdlib.
 </varlistentry>
 </variablelist>
 
-<para>
-The following parameters only apply if <property>UseFT2</property> = <literal>yes</literal>:
-</para>
-
 <variablelist>
+<title>Availalble parameters if <property>UseFT2</property> = <literal>yes</literal></title>
 <varlistentry>
   <term>
     <property>CharEncoding</property> =
@@ -124,8 +120,6 @@ The following parameters only apply if <property>UseFT2</property> = <literal>ye
   </para></listitem>
 </varlistentry>
 </variablelist>
-
-<para>Optional settings:</para>
 
 <variablelist>
 <title>Optional settings</title>

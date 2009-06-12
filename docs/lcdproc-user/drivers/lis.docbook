@@ -28,13 +28,13 @@ between the FTDI and the NEC chips.
 <title>Requirements</title>
 
 <para>
-The driver depends on <filename>libftd</filename>, version 0.8 or higher, from
+The driver depends on <filename>libftdi</filename>, version 0.8 or higher, from
 <ulink url="http://www.intra2net.com/opensource/ftdi/">
 http://www.intra2net.com/opensource/ftdi/</ulink>.
 </para>
 
 <para>
-<filename>libftd</filename> itself depends on the
+<filename>libftdi</filename> itself depends on the
 <ulink url="http://libusb.sourceforge.net/"><filename>libusb</filename></ulink>
 USB library.
 
