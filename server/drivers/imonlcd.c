@@ -1241,14 +1241,6 @@ imonlcd_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 
-	/*
-	 * TODO: For some reason, lcdproc keeps calling this and flipping the
-	 * 'on' so you end up flashing the backlight for no particular reason
-	 * (and on my Antec, turning the backlight off, turns the whole thing
-	 * off, so it's really bad...)
-	 */
-	return;
-
 	/* To prevent superfluous (and erroneous) communication */
 	if (p->backlightOn == on)
 		return;
