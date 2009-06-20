@@ -93,7 +93,10 @@ compiled without debugging. This way memory and CPU cycles are saved.</para>
   <paramdef>int <parameter>new_dest</parameter></paramdef>
 </funcprototype>
 </funcsynopsis>
-<para>Returns the content of the byte.</para>
+<para>
+  Returns <returnvalue>-1</returnvalue> on error or <returnvalue>0</returnvalue>
+  on success.
+</para>
 
 </sect2>
 

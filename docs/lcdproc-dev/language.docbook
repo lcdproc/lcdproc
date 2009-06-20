@@ -1,3 +1,9 @@
+<!--
+  Note: While Docbook allows to use block formatted elements like <cmdsynopsis>
+  within a term definition, HTML only allows inline formatted elements.
+  Therefore <command> and <option> elements are used. Maybe <refentry> should
+  be used, but I currently dislike having a separate page for each command. 
+-->
 <chapter id="language">
   <title>The LCDproc client language</title>
 
@@ -71,25 +77,26 @@
       <variablelist>
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>hello</command>
-	    </cmdsynopsis>
+	    <command>hello</command>
 	  </term>
 	  <listitem>
 	    <para>
 	      Opens the session with the LCDd server program. This command is
-	      required before other commands can be issued. The response will be
-	      a string in the format:
-	      <cmdsynopsis>
-	        <command>connect</command>
-		<arg rep="repeat" choice="plain"><replaceable>parameter</replaceable></arg>
-	      </cmdsynopsis>
+	      required before other commands can be issued.
+	    </para>
+	    <para>
+	      The response will be a string in the format:
+	    </para>
+	    <para>
+	      <computeroutput>connect <replaceable>parameter</replaceable>...</computeroutput>
+	    </para>
+	    <para>
 	      The client should read all parameters it needs and store their values.
 	      The following parameters are in use:
 	      <variablelist><!--<title>hello response parameters</title>-->
 		<varlistentry>
 		  <term>
-		    <synopsis>LCDproc <replaceable>version</replaceable></synopsis>
+		    <computeroutput>LCDproc <replaceable>version</replaceable></computeroutput>
 		  </term>
 		  <listitem><para>
 		      Indicates the version number of LCDd.
@@ -97,7 +104,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <synopsis>protocol <replaceable>version</replaceable></synopsis>
+		    <computeroutput>protocol <replaceable>version</replaceable></computeroutput>
 		  </term>
 		  <listitem><para>
 		      Indicates the widget language version number. This number is
@@ -107,7 +114,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <synopsis>wid <replaceable>int</replaceable></synopsis>
+		    <computeroutput>wid <replaceable>int</replaceable></computeroutput>
 		  </term>
 		  <listitem><para>
 		      Tells the client the width of the attached display device in characters.
@@ -115,7 +122,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <synopsis>hgt <replaceable>int</replaceable></synopsis>
+		    <computeroutput>hgt <replaceable>int</replaceable></computeroutput>
 		  </term>
 		  <listitem><para>
 		      Tells the client the height of the attached display device in characters.
@@ -123,7 +130,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <synopsis>cellwid <replaceable>int</replaceable></synopsis>
+		    <computeroutput>cellwid <replaceable>int</replaceable></computeroutput>
 		  </term>
 		  <listitem><para>
 		      How many pixels is a character wide (space between character
@@ -132,7 +139,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <synopsis>cellhgt <replaceable>int</replaceable></synopsis>
+		    <computeroutput>cellhgt <replaceable>int</replaceable></computeroutput>
 		  </term>
 		  <listitem><para>
 		      How many pixels is a character high (space between character
@@ -141,7 +148,7 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
-		    <synopsis>lcd</synopsis>
+		    <computeroutput>lcd</computeroutput>
 		  </term>
 		  <listitem><para>
 		      This word is NOT followed by a value !
@@ -155,13 +162,7 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>client_set</command>
-	      <arg choice="plain">-name <replaceable>name</replaceable></arg>
-<!-- not implemented on the server side
-	      <arg rep="repeat" choice="plain"><replaceable>options</replaceable></arg>
--->
-	    </cmdsynopsis>
+	    <command>client_set <option>-name <replaceable>name</replaceable></option></command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -171,52 +172,6 @@
 	    </para>
 	    <para>
 	      <replaceable>name</replaceable> is the client's name as visible to a user.
-<!-- not implemented on the server side
-            </para>
-	      The following <replaceable>options</replaceable> are accepted:
-	      <variablelist><title>client_set options</title>
-		<varlistentry>
-		  <term>
-		    <arg choice="plain">-heartbeat
-		      <group choice="req">
-		        <arg choice="plain">on</arg>
-			<arg choice="plain">off</arg>
-			<arg choice="plain">open</arg>
-		      </group>
-		    </arg>
-		  </term>
-		  <listitem><para>
-		      Sets the client's heartbeat setting.
-		      This setting overrides the screen's setting,
-		      so you can enable the heartbeat for all your screens at once.
-		      If <literal>open</literal>, which is the default,
-		      the screen's setting will be used.
-		    </para></listitem>
-		</varlistentry>
-		<varlistentry>
-		  <term>
-		    <arg choice="plain">-backlight
-		      <group choice="req">
-		        <arg choice="plain">on</arg>
-			<arg choice="plain">off</arg>
-			<arg choice="plain">toggle</arg>
-			<arg choice="plain">open</arg>
-			<arg choice="plain">blink</arg>
-			<arg choice="plain">flash</arg>
-		      </group>
-		    </arg>
-		  </term>
-		  <listitem><para>
-		      Sets the client's backlight setting.
-		      This setting overrides the screen's setting,
-		      so you can enable the backlight for all your screens at once.
-		      If <literal>open</literal>, which is the default,
-		      the screen's setting will be used.
-		      See <command>screen_set</command> for details on the backlight modes.
-		    </para></listitem>
-		</varlistentry>
-	      </variablelist>
--->
 	    </para>
 	  </listitem>
 	</varlistentry>
@@ -229,10 +184,7 @@
       <variablelist>
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>screen_add</command>
-	      <arg choice="plain"><replaceable>new_screen_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>screen_add <option><replaceable>new_screen_id</replaceable></option></command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -245,10 +197,7 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>screen_del</command>
-	      <arg choice="plain"><replaceable>screen_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>screen_del <option><replaceable>screen_id</replaceable></option></command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -260,11 +209,10 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>screen_set</command>
-	      <arg choice="plain"><replaceable>screen_id</replaceable></arg>
-	      <arg choice="plain" rep="repeat"><replaceable>attributes</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>screen_set
+	      <option><replaceable>screen_id</replaceable></option>
+	      <option><replaceable>attributes</replaceable>...</option>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -449,13 +397,12 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>widget_add</command>
-	      <arg choice="plain"><replaceable>screen_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>new_widget_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>widgettype</replaceable></arg>
-	      <arg>-in <replaceable>frame_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>widget_add
+	      <option><replaceable>screen_id</replaceable></option>
+	      <option><replaceable>new_widget_id</replaceable></option>
+	      <option><replaceable>widgettype</replaceable></option>
+	      <optional><option>-in <replaceable>frame_id</replaceable></option></optional>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -541,11 +488,10 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>widget_del</command>
-	      <arg choice="plain"><replaceable>screen_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>widget_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>widget_del
+	      <option><replaceable>screen_id</replaceable></option>
+	      <option><replaceable>widget_id</replaceable></option>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -556,12 +502,11 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>widget_set</command>
-	      <arg choice="plain"><replaceable>screen_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>widget_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>widgettype_specific_parameters</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>widget_set
+	      <option><replaceable>screen_id</replaceable></option>
+	      <option><replaceable>widget_id</replaceable></option>
+	      <option><replaceable>widgettype_specific_parameters</replaceable></option>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -759,14 +704,12 @@
       <variablelist>
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>client_add_key</command>
-	      <group>
-	        <arg choice="plain">-exclusively</arg>
-		<arg choice="plain">-shared</arg>
-	      </group>
-	      <arg choice="plain" rep="repeat"><replaceable>key</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>client_add_key
+	      <optional>
+	        <option>-exclusively</option> | <option>-shared</option>
+	      </optional>
+	      <option><replaceable>key</replaceable></option>...
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -788,10 +731,9 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>client_del_key</command>
-	      <arg choice="plain" rep="repeat"><replaceable>key</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>client_del_key
+	      <option><replaceable>key</replaceable>...</option>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -802,13 +744,12 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>menu_add_item</command>
-	      <arg choice="plain"><replaceable>menu_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>new_item_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>type</replaceable></arg>
-	      <arg><replaceable>options</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>menu_add_item
+	      <option><replaceable>menu_id</replaceable></option>
+	      <option><replaceable>new_item_id</replaceable></option>
+	      <option><replaceable>type</replaceable></option>
+	      <optional><option><replaceable>options</replaceable></option></optional>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -921,11 +862,10 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>menu_del_item</command>
-	      <arg choice="plain"><replaceable>menu_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>item_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>menu_del_item
+	      <option><replaceable>menu_id</replaceable></option>
+	      <option><replaceable>item_id</replaceable></option>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -938,12 +878,11 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>menu_set_item</command>
-	      <arg choice="plain"><replaceable>menu_id</replaceable></arg>
-	      <arg choice="plain"><replaceable>item_id</replaceable></arg>
-	      <arg choice="plain" rep="repeat"><replaceable>item_specific_options</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>menu_set_item
+	      <option><replaceable>menu_id</replaceable></option>
+	      <option><replaceable>item_id</replaceable></option>
+	      <option><replaceable>item_specific_options</replaceable></option>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -1318,11 +1257,10 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>menu_goto</command>
-	      <arg choice="plain"><replaceable>menu_id</replaceable></arg>
-	      <arg><replaceable>parent_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>menu_goto
+	      <option><replaceable>menu_id</replaceable></option>
+	      <optional><option><replaceable>parent_id</replaceable></option></optional>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -1358,10 +1296,9 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>menu_set_main</command>
-	      <arg choice="plain"><replaceable>menu_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>menu_set_main
+	      <option><replaceable>menu_id</replaceable></option>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -1410,16 +1347,13 @@
       <variablelist>
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>backlight</command>
-	      <group choice="req">
-		<arg choice="plain">on</arg>
-		<arg choice="plain">off</arg>
-		<arg choice="plain">toggle</arg>
-		<arg choice="plain">blink</arg>
-		<arg choice="plain">flash</arg>
-	      </group>
-	    </cmdsynopsis>
+	    <command>backlight {
+	      <option>on</option> |
+	      <option>off</option> |
+	      <option>toggle</option> |
+	      <option>blink</option> |
+	      <option>flash</option> }
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -1430,14 +1364,11 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>output</command>
-	      <group choice="req">
-	        <arg choice="plain">on</arg>
-		<arg choice="plain">off</arg>
-		<arg choice="plain"><replaceable>int</replaceable></arg>
-	      </group>
-	    </cmdsynopsis>
+	    <command>output {
+	      <option>on</option> |
+	      <option>off</option> |
+	      <option><replaceable>int</replaceable></option> }
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -1452,9 +1383,7 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>info</command>
-	    </cmdsynopsis>
+	    <command>info</command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -1465,9 +1394,7 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>noop</command>
-	    </cmdsynopsis>
+	    <command>noop</command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -1480,10 +1407,9 @@
 
 	<varlistentry>
 	  <term>
-	    <cmdsynopsis>
-	      <command>sleep</command>
-	      <arg choice="plain"><replaceable>int</replaceable></arg>
-	    </cmdsynopsis>
+	    <command>sleep
+	      <option><replaceable>int</replaceable></option>
+	    </command>
 	  </term>
 	  <listitem>
 	    <para>
@@ -1500,21 +1426,6 @@
 	    </para>
 	  </listitem>
 	</varlistentry>
-
-<!-- not yet implemented but might be useful
-	<varlistentry>
-	  <term>
-	    <cmdsynopsis>
-	      <command>quit</command>
-	    </cmdsynopsis>
-	  </term>
-	  <listitem>
-	    <para>
-	      Terminates connection to the server.
-	    </para>
-	  </listitem>
-	</varlistentry>
--->
       </variablelist>
     </sect2>
   </sect1>
@@ -1533,9 +1444,7 @@
       <variablelist>
         <varlistentry>
           <term>
-	    <cmdsynopsis>
-	      <command>success</command>
-	    </cmdsynopsis>
+	    <computeroutput>success</computeroutput>
 	  </term>
           <listitem><para>
             This is the reponse to a command in case everything went ok.
@@ -1543,10 +1452,7 @@
 	</varlistentry>
         <varlistentry>
           <term>
-	    <cmdsynopsis>
-	      <command>huh?</command>
-	      <arg choice="plain"><replaceable>error_description</replaceable></arg>
-	    </cmdsynopsis>
+	    <computeroutput>huh? <errortext>error_description</errortext></computeroutput>
 	  </term>
           <listitem><para>
             This is the response to a command in case something has gone wrong.
@@ -1559,16 +1465,10 @@
 	</varlistentry>
         <varlistentry>
           <term>
-	    <cmdsynopsis>
-	      <command>listen</command>
-	      <arg choice="plain"><replaceable>screen_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <computeroutput>listen <replaceable>screen_id</replaceable></computeroutput>
 	  </term>
           <term>
-	    <cmdsynopsis>
-	      <command>ignore</command>
-	      <arg choice="plain"><replaceable>screen_id</replaceable></arg>
-	    </cmdsynopsis>
+	    <computeroutput>ignore <replaceable>screen_id</replaceable></computeroutput>
 	  </term>
           <listitem><para>
             The screen with the <replaceable>screen_id</replaceable> given is now
@@ -1578,10 +1478,7 @@
 	</varlistentry>
         <varlistentry>
           <term>
-	    <cmdsynopsis>
-	      <command>key</command>
-	      <arg choice="plain"><replaceable>key</replaceable></arg>
-	    </cmdsynopsis>
+	    <computeroutput>key <replaceable>key</replaceable></computeroutput>
 	  </term>
           <listitem><para>
             This message will be sent if there was a keypress that should be
@@ -1590,12 +1487,11 @@
 	</varlistentry>
         <varlistentry>
           <term>
-	    <cmdsynopsis>
-	      <command>menuevent</command>
-	      <arg choice="plain"><replaceable>event_type</replaceable></arg>
-	      <arg choice="plain"><replaceable>id</replaceable></arg>
-	      <arg><replaceable>value</replaceable></arg>
-	    </cmdsynopsis>
+	    <computeroutput>menuevent
+	      <replaceable>event_type</replaceable>
+	      <replaceable>id</replaceable>
+	      <optional><replaceable>value</replaceable></optional>
+	    </computeroutput>
 	  </term>
           <listitem><para>
 	    The user did something with a client supplied menu. The type of
