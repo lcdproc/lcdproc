@@ -6,6 +6,8 @@ Key:
      * Something changed / fixed
 
 v.0.5dev (ongoing development)
+
+v0.5.3
  + lcdexec: notification when called program finishes
  + xosd driver: offset from top-left corner
  + LCDd: Hello= config option for startup message

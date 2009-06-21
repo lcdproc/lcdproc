@@ -1,4 +1,4 @@
-.TH LCDd 8 "26 February 2009" LCDproc "LCDproc suite"
+.TH LCDd 8 "14 May 2009" LCDproc "LCDproc suite"
 
 .SH NAME
 LCDd - LCDproc server daemon
