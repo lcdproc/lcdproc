@@ -178,7 +178,7 @@ tyan_lcdm_init (Driver *drvthis, char *args)
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return 1;
+	return 0;
 }
 
 

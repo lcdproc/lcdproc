@@ -111,12 +111,10 @@ typedef struct imon_private_data {
 
 
 /**
- * driver initialization
- */
-/**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
- * \return  Information of success (1) or failure (< 0).
+ * \retval 0       Success.
+ * \retval <0      Error.
  */
 MODULE_EXPORT int imon_init (Driver *drvthis)
 {
@@ -178,7 +176,7 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return 1;
+	return 0;
 }
 
 

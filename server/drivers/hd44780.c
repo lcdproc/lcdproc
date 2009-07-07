@@ -464,7 +464,7 @@ HD44780_init(Driver *drvthis)
 	HD44780_flush(drvthis);
 	sleep(2);
 
-	return 1;
+	return 0;
 }
 
 

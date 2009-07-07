@@ -233,7 +233,7 @@ lcdm001_init (Driver *drvthis)
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return 1;
+	return 0;
 }
 
 /* Below here, you may use either lcd.framebuf or driver->framebuf..

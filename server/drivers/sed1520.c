@@ -207,7 +207,7 @@ sed1520_init (Driver *drvthis)
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-    return 1;
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////

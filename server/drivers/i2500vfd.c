@@ -170,7 +170,7 @@ i2500vfd_init (Driver *drvthis)
     ftdi_write_data (&p->ftdi, &c, 1);
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
-    return 1;
+    return 0;
 }
 
 /////////////////////////////////////////////////////////////////

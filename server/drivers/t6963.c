@@ -210,7 +210,7 @@ t6963_init (Driver *drvthis)
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return 1;						  // return success
+	return 0;  // return success
 }
 
 // Below here, you may use either lcd.framebuf or driver->framebuf..

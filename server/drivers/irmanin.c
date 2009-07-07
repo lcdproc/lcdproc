@@ -146,7 +146,7 @@ irmanin_init (Driver *drvthis)
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
-	return 1;						  // return success
+	return 0;  // return success
 }
 
 
