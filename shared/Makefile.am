@@ -8,6 +8,6 @@ libLCDstuff_a_LIBADD = @LIBOBJS@
 
 AM_CPPFLAGS = -I$(top_srcdir)
 
-EXTRA_DIST = Makefile.in
+EXTRA_DIST = getopt.c getopt1.c getopt.h
 
 ## EOF
