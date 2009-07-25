@@ -18,6 +18,8 @@ AM_LDFLAGS = @LDSHARED@
 ## Forget the libs that the server core requires
 #LIBS =
 
+## Keep the lists sorted!
+
 pkglib_PROGRAMS = @DRIVERS@
 EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
@@ -31,16 +33,17 @@ shuttleVFD_CFLAGS =  @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 ula200_CFLAGS =      @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 i2500vfd_CFLAGS =    @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 
+bayrad_LDADD =       libLCD.a
 CFontz_LDADD =       libLCD.a libbignum.a
 CFontz633_LDADD =    libLCD.a libbignum.a
 CFontzPacket_LDADD = libLCD.a libbignum.a
 curses_LDADD =       @LIBCURSES@
 CwLnx_LDADD =        libLCD.a libbignum.a
-g15_LDADD =          libLCD.a @LIBG15@
-glcdlib_LDADD =      libLCD.a @LIBGLCD@
+g15_LDADD =          @LIBG15@
+glcdlib_LDADD =      @LIBGLCD@
+glk_LDADD =          libbignum.a
 hd44780_LDADD =      libLCD.a @HD44780_DRIVERS@ @LIBUSB_LIBS@ @LIBFTDI_LIBS@ libbignum.a
 hd44780_DEPENDENCIES = @HD44780_DRIVERS@
-icp_a106_LDADD =     libLCD.a
 imon_LDADD =         libLCD.a
 imonlcd_LDADD =      libLCD.a
 IOWarrior_LDADD =    @LIBUSB_LIBS@ libLCD.a libbignum.a
@@ -48,23 +51,22 @@ irman_LDADD =        @LIBIRMAN@
 lcterm_LDADD =       libLCD.a
 lirc_LDADD =         @LIBLIRC_CLIENT@
 lis_LDADD =          libLCD.a @LIBFTDI_LIBS@ @LIBUSB_LIBS@ @LIBPTHREAD_LIBS@ libbignum.a
-MD8800_LDADD =       libLCD.a
 mtc_s16209x_LDADD =  libLCD.a
 MtxOrb_LDADD =       libLCD.a libbignum.a
-mx5000_LDADD =       libLCD.a @LIBMX5000@
-NoritakeVFD_LDADD =  libLCD.a libbignum.a
+mx5000_LDADD =       @LIBMX5000@
+NoritakeVFD_LDADD =  libbignum.a
 picolcd_LDADD =      @LIBUSB_LIBS@ libLCD.a libbignum.a
 pyramid_LDADD =      libLCD.a
-serialPOS_LDADD =    libLCD.a libbignum.a
+serialPOS_LDADD =    libbignum.a
 serialVFD_LDADD =    libLCD.a libbignum.a
-shuttleVFD_LDADD =   @LIBUSB_LIBS@ libLCD.a libbignum.a
+shuttleVFD_LDADD =   @LIBUSB_LIBS@
 svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 tyan_LDADD =         libLCD.a libbignum.a
-ula200_LDADD =       libLCD.a @LIBFTDI_LIBS@
+ula200_LDADD =       @LIBFTDI_LIBS@
 sli_LDADD =          libLCD.a
 xosd_LDADD =         @LIBXOSD@ libbignum.a
-i2500vfd_LDADD =     libLCD.a @LIBFTDI_LIBS@
+i2500vfd_LDADD =     @LIBFTDI_LIBS@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
 libbignum_a_SOURCES = adv_bignum.h  adv_bignum.c 

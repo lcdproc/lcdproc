@@ -113,7 +113,6 @@
 #include "lcd.h"
 #include "ula200.h"
 #include "report.h"
-#include "lcd_lib.h"
 #include "timing.h"
 
 

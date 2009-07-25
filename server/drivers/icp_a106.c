@@ -47,7 +47,6 @@
 #endif
 
 #include "lcd.h"
-#include "lcd_lib.h"
 #include "icp_a106.h"
 #include "report.h"
 

@@ -46,7 +46,6 @@
 #include "lcd.h"
 #include "mx5000.h"
 #include "report.h"
-#include "lcd_lib.h"
 
 
 /* Internal functions */

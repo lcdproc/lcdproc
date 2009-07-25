@@ -63,7 +63,6 @@
 #include "lcd.h"
 #include "NoritakeVFD.h"
 #include "report.h"
-#include "lcd_lib.h"
 #include "adv_bignum.h"
 
 

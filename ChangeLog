@@ -6,6 +6,7 @@ Key:
      * Something changed / fixed
 
 v.0.5dev (ongoing development)
+ * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)
 
 v0.5.3
  + lcdexec: notification when called program finishes

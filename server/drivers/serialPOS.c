@@ -75,7 +75,6 @@ get_info	Implemented.
 #endif
 
 #include "lcd.h"
-#include "lcd_lib.h"
 #include "serialPOS.h"
 #include "adv_bignum.h"
 

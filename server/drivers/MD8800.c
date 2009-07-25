@@ -188,7 +188,6 @@
 #include "MD8800.h"
 
 #include "report.h"
-#include "lcd_lib.h"
 
 /* Constants for userdefchar_mode */
 #define NUM_CCs		0 /* max. number of custom characters */
