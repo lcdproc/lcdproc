@@ -64,8 +64,9 @@
 #include "hd44780-4bit.h"
 #include "hd44780-low.h"
 #include "lpt-port.h"
-
 #include "port.h"
+#include "report.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -109,7 +110,11 @@ hd_init_4bit(Driver *drvthis)
 	int enableLines = EN1 | EN2 | ((p->numDisplays == 3) ? EnMask[2] : 0);
 
 	// Reserve the port registers
-	port_access_multiple(p->port,3);
+	if (port_access_multiple(p->port,3)) {
+		report(RPT_ERR, "%s: cannot get IO-permission for 0x%03X: %s",
+				drvthis->name, p->port, strerror(errno));
+		return -1;
+	}
 
 	hd44780_functions->senddata = lcdstat_HD44780_senddata;
 	hd44780_functions->backlight = lcdstat_HD44780_backlight;

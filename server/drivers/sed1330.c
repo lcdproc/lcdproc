@@ -531,9 +531,11 @@ sed1330_init( Driver * drvthis )
 
 	// Arrange for access to port
 	debug(RPT_DEBUG, "%s: getting port access", __FUNCTION__);
-	port_access(p->port);
-	port_access(p->port+1);
-	port_access(p->port+2);
+	if (port_access_multiple(p->port,3)) {
+		report(RPT_ERR, "%s: cannot get IO-permission for 0x%03X: %s",
+				drvthis->name, p->port, strerror(errno));
+		return -1;
+	}
 
 	if (timing_init() == -1) {
 		report(RPT_ERR, "%s: timing_init() failed (%s)",

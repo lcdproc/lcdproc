@@ -119,13 +119,13 @@ t6963_init (Driver *drvthis)
 	/* -- Get permission to parallel port --------------------------------------------*/
 	debug(RPT_DEBUG, "T6963: Getting permission to parallel port %d...", p->port);
 
-        if (port_access_multiple(p->port, 3)) {   //ioperm(p->port, 3, 1)) {
+        if (port_access_multiple(p->port, 3)) {
 		report(RPT_ERR, "%s: no permission to port 0x%03X: (%s)",
 				drvthis->name, p->port, strerror(errno));
                	return -1;
         }
 
-        if (port_access(0x80)) {	//ioperm(0x80, 1, 1)) {
+        if (port_access(0x80)) {
 	       report(RPT_ERR, "%s: no permission to port 0x80: (%s)",
 			       drvthis->name, strerror(errno));
                 return -1;

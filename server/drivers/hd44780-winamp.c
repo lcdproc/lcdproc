@@ -125,7 +125,11 @@ hd_init_winamp(Driver *drvthis)
 	}
 
 	// Reserve the port registers
-	port_access_multiple(p->port,3);
+	if (port_access_multiple(p->port,3)) {
+		report(RPT_ERR, "%s: cannot get IO-permission for 0x%03X: %s",
+				drvthis->name, p->port, strerror(errno));
+		return -1;
+	}
 
 	hd44780_functions->senddata = lcdwinamp_HD44780_senddata;
 	hd44780_functions->backlight = lcdwinamp_HD44780_backlight;

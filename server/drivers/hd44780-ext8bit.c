@@ -55,9 +55,10 @@
 #include "hd44780-ext8bit.h"
 #include "hd44780-low.h"
 #include "lpt-port.h"
-
 #include "port.h"
 #include "lcd_sem.h"
+#include "report.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -97,7 +98,11 @@ hd_init_ext8bit(Driver *drvthis)
 	semid = sem_get();
 
 	// Reserve the port registers
-	port_access_multiple(p->port,3);
+	if (port_access_multiple(p->port,3)) {
+		report(RPT_ERR, "%s: cannot get IO-permission for 0x%03X: %s",
+				drvthis->name, p->port, strerror(errno));
+		return -1;
+	}
 
 	hd44780_functions->senddata = lcdtime_HD44780_senddata;
 	hd44780_functions->backlight = lcdtime_HD44780_backlight;

@@ -53,8 +53,9 @@
 #include "hd44780-serialLpt.h"
 #include "hd44780-low.h"
 #include "lpt-port.h"
-
 #include "port.h"
+#include "report.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -89,7 +90,11 @@ hd_init_serialLpt(Driver *drvthis)
 	unsigned char enableLines = EN1 | EN2;
 
 	// Reserve the port registers
-	port_access_multiple(p->port,3);
+	if (port_access_multiple(p->port,3)) {
+		report(RPT_ERR, "%s: cannot get IO-permission for 0x%03X: %s",
+				drvthis->name, p->port, strerror(errno));
+		return -1;
+	}
 
 	hd44780_functions->senddata = lcdserLpt_HD44780_senddata;
 	hd44780_functions->backlight = lcdserLpt_HD44780_backlight;
