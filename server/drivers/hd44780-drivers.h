@@ -30,7 +30,9 @@
 #ifdef HAVE_I2C
 # include "hd44780-i2c.h"
 #endif
+#ifdef WITH_ETHLCD
 # include "hd44780-ethlcd.h"
+#endif
 # include "hd44780-usblcd.h"
 // add new connection type header files here
 
@@ -59,6 +61,7 @@ static const ConnectionMapping connectionMapping[] = {
 	/* USB connection types */
 	{ "lis2",          HD44780_CT_LIS2,          IF_TYPE_USB,     hd_init_lis2      },
 	{ "mplay",         HD44780_CT_MPLAY,         IF_TYPE_USB,     hd_init_lis2      },
+	{ "usblcd",        HD44780_CT_USBLCD,        IF_TYPE_USB,     hd_init_usblcd    },
 #ifdef HAVE_LIBUSB
 	{ "bwctusb",       HD44780_CT_BWCTUSB,       IF_TYPE_USB,     hd_init_bwct_usb  },
 	{ "lcd2usb",       HD44780_CT_LCD2USB,       IF_TYPE_USB,     hd_init_lcd2usb   },
@@ -72,8 +75,9 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "i2c",           HD44780_CT_I2C,           IF_TYPE_I2C,     hd_init_i2c       },
 #endif
 	/* TCP socket connection types */
+#ifdef WITH_ETHLCD
 	{ "ethlcd",        HD44780_CT_ETHLCD,        IF_TYPE_TCP,     hd_init_ethlcd    },
-	{ "usblcd",        HD44780_CT_USBLCD,        IF_TYPE_USB,     hd_init_usblcd    },
+#endif
 	// add new connection types here
 	// ....
 	// default, end of structure element (do not delete)
