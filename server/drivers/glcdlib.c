@@ -33,8 +33,6 @@
 #endif
 
 #include "lcd.h"
-#include "shared/debug.h"
-//#define DEBUG
 #include "report.h"
 
 #include "glcdlib.h"

@@ -21,8 +21,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-//#include <asm/io.h>
-//#include <sys/perm.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -32,13 +30,10 @@
 #include "t6963.h"
 #include "t6963_font.h"
 
-#include "shared/debug.h"
 #include "report.h"
 #include "lcd_lib.h"
 #include "port.h"
 
-
-//extern int debug_level;
 
 /** private data for the \c t6963 driver */
 typedef struct t6963_private_data {

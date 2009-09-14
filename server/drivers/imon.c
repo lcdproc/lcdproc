@@ -42,8 +42,6 @@
 
 #include "lcd.h"
 #include "lcd_lib.h"
-#include "shared/debug.h"
-//#define DEBUG
 #include "report.h"
 
 
@@ -123,12 +121,12 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 	// Alocate, initialize and store private p
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL) {
-		debug(RPT_ERR, "%s: failed to allocate private data", drvthis->name);
+		report(RPT_ERR, "%s: failed to allocate private data", drvthis->name);
 		return -1;
 	}
 
 	if (drvthis->store_private_ptr(drvthis, p)) {
-		debug(RPT_ERR, "%s: failed to store private data pointer", drvthis->name);
+		report(RPT_ERR, "%s: failed to store private data pointer", drvthis->name);
 		return -1;
 	}
 

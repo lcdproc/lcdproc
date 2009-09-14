@@ -19,7 +19,7 @@
  */
 
 #include "hd44780-usblcd.h"
-#include "shared/report.h"
+#include "report.h"
 
 #include <stdlib.h>
 #include <stdio.h>

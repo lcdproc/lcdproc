@@ -7,6 +7,7 @@ Key:
 
 v.0.5dev (ongoing development)
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)
+ * Modify all drivers to use server/drivers/report.h instead of shared/report.h
 
 v0.5.3
  + lcdexec: notification when called program finishes

@@ -21,15 +21,13 @@
 #define __u32 unsigned int
 #define __u8 unsigned char
 
-#include "shared/debug.h"
-#include "shared/str.h"
-
 #define NAME_LENGTH 128
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+#include "shared/str.h"
 #include "lcd.h"
 #include "irmanin.h"
 #include "report.h"

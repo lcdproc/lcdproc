@@ -54,7 +54,7 @@
 #include "hd44780-low.h"
 
 #include "shared/str.h"
-#include "shared/report.h"
+#include "report.h"
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

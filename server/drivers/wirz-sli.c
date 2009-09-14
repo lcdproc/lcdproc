@@ -22,11 +22,9 @@
 
 #include "lcd.h"
 #include "wirz-sli.h"
-//#include "drv_base.h"
 #include "report.h"
 #include "lcd_lib.h"
 
-//#include "shared/debug.h"
 #include "shared/str.h"
 
 #define SLI_DEFAULT_DEVICE	"/dev/lcd"
