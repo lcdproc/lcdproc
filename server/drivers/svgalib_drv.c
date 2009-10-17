@@ -29,7 +29,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <vga.h>
 #include <vgagl.h>
 

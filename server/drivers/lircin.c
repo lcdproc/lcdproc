@@ -30,7 +30,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <errno.h>

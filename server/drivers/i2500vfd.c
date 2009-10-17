@@ -30,7 +30,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <time.h>
 
 #include "i2500vfdfm.h"

@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <string.h>
 #ifndef WIN32
-# include <sys/errno.h>
+# include <errno.h>
 # include <dlfcn.h>
 #else
 # include <windows.h>

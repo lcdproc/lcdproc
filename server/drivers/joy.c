@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
 

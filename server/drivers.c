@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/errno.h>
+#include <errno.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
