@@ -120,7 +120,9 @@ int main(int argc, char **argv)
 
 	/* setup signal handlers for common signals */
 	sigemptyset(&sa.sa_mask);
+#ifdef HAVE_SA_RESTART
 	sa.sa_flags = SA_RESTART;
+#endif
 	sa.sa_handler = exit_program;
 	sigaction(SIGINT, &sa, NULL);	// Ctrl-C
 	sigaction(SIGTERM, &sa, NULL);	// "regular" kill

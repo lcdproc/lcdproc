@@ -884,6 +884,7 @@ AC_SUBST(enable_latex_dox)
 ])
 
 
+dnl Check if a given flag is understood and add it to CFLAGS.
 dnl From: http://autoconf-archive.cryp.to/ax_cflags_gcc_option.html
 dnl Author: Guido Draheim <guidod@gmx.de>
 dnl Last Modified: 2003-11-04
@@ -1029,3 +1030,17 @@ AC_DEFUN([AX_CFLAGS_GCC_OPTION],[ifelse(m4_bregexp([$2],[-]),-1,
 AC_DEFUN([AX_CXXFLAGS_GCC_OPTION],[ifelse(m4_bregexp([$2],[-]),-1,
 [AX_CXXFLAGS_GCC_OPTION_NEW($@)],[AX_CXXFLAGS_GCC_OPTION_OLD($@)])])
 
+dnl
+dnl Check if system has SA_RESTART defined. Copied from GNU's make configure.
+dnl
+AC_DEFUN([LCD_SA_RESTART], [
+AC_CACHE_CHECK([for SA_RESTART], lcd_cv_sa_restart, [
+  AC_TRY_COMPILE([#include <signal.h>],
+      [return SA_RESTART;],
+      lcd_cv_sa_restart=yes,
+      lcd_cv_sa_restart=no)])
+if test "$lcd_cv_sa_restart" != no; then
+  AC_DEFINE([HAVE_SA_RESTART], [1],
+     [Define to 1 if <signal.h> defines the SA_RESTART constant.])
+fi
+])

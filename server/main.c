@@ -559,7 +559,9 @@ install_signal_handlers(int allow_reload)
 	sigaction(SIGPIPE, &sa, NULL);
 
 	sa.sa_handler = exit_program;
+#ifdef HAVE_SA_RESTART
 	sa.sa_flags = SA_RESTART;
+#endif
 
 	sigaction(SIGINT, &sa, NULL);		/* Ctrl-C will cause a clean exit...*/
 	sigaction(SIGTERM, &sa, NULL);		/* and "kill"...*/
