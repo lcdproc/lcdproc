@@ -264,30 +264,16 @@
 
 <varlistentry>
   <term>
-    <property>LircSync</property> =
+    <property>LircFlushThreshold</property> =
     <parameter><replaceable>DURATION</replaceable></parameter>
   </term>
   <listitem>
   <para>
-    This value determines the length in jiffies (1/16384 seconds) of the synthesized sync pulse added
-    to the beginning of the UDP packet sent to LIRC. Values up to 255 are permitted. Setting a length
-    of zero will suppress the synthesized pulse (I can't make it work without it, though). The default is
-    <literal>64</literal> jiffies (3.9ms).
-  </para>
-  </listitem>
-</varlistentry>
-
-<varlistentry>
-  <term>
-    <property>LircLength</property> =
-    <parameter><replaceable>DURATION</replaceable></parameter>
-  </term>
-  <listitem>
-  <para>
-    This value determines the length in jiffies (1/16384 seconds) of the entire LIRC code for a single remote
-    property. It depends on the notion that all propertys are of the same duration, and are padded with a trailing
-    gap (space) to make up the time. No such gap is emitted by the picolcd hardware. Values up to MAXINT are permitted.
-    Setting a length of zero will suppress the synthesized gap. The default is 2048 jiffies (125ms).
+    This value is the length in jiffies (1/16384 seconds) of the synthesized sync space that will
+    trigger sending the queued IR data to LIRC. Values up to 32767 (2s) are permitted, values lower
+    than 16 will suppress the flushing IR data during processing. The default is
+    <literal>100</literal> jiffies (6.1ms). It's should only be needed to change this value when
+    when lircd.conf has a gap &lt; 6100 or the samples &gt; 6300.
   </para>
   </listitem>
 </varlistentry>

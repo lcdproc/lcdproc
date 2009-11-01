@@ -47,8 +47,7 @@
 #define PICOLCD_MAX_DATA_LEN	24
 
 #define DEFAULT_LIRCPORT	8765
-#define DEFAULT_SYNC_JIFFY	64
-#define DEFAULT_LENGTH_JIFFY	2048 
+#define DEFAULT_FLUSH_THRESHOLD_JIFFY 100 /* 6.1 millisec */
 
 
 typedef struct _lcd_packet {
