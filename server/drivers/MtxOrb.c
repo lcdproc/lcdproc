@@ -376,7 +376,6 @@ MtxOrb_init (Driver *drvthis)
 
 		/* read the keymap */
 		for (i = 0; i < MAX_KEY_MAP; i++) {
-			char buf[40];
 			const char *s;
 
 			/* First fill with NULL; */
@@ -1393,6 +1392,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		case ICON_ARROW_UP:
 			MtxOrb_set_char(drvthis, 1, arrow_up);
 			MtxOrb_chr(drvthis, x, y, 1);
+			break;
 		case ICON_ARROW_DOWN:
 			MtxOrb_set_char(drvthis, 2, arrow_down);
 			MtxOrb_chr(drvthis, x, y, 2);
@@ -1503,36 +1503,5 @@ MtxOrb_get_key (Driver *drvthis)
 	}
 	return NULL;
 }
-
-
-/*	
-	static unsigned char play[] =
-		{ b___X___,
-     		  b___XX__,
-     		  b___XXX_,
-     		  b___XXXX,
-     		  b___XXX_,
-     		  b___XX__,
-     		  b___X___,
-     		  b_______ };
-	static unsigned char fforward[] =
-		{ b_______,
-     		  b__X_X__,
-     		  b__XX_X_,
-     		  b__XXX_X,
-     		  b__XX_X_,
-     		  b__X_X__,
-     		  b_______,
-     		  b_______ };
-	static unsigned char frewind[] =
-     		{ b_______,
-     		  b____X_X,
-     		  b___X_XX,
-     		  b__X_XXX,
-     		  b___X_XX,
-     		  b____X_X,
-     		  b_______,
-     		  b_______ };
-*/		  
 
 /* EOF */
