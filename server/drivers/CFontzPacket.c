@@ -176,7 +176,7 @@ CFontzPacket_init (Driver *drvthis)
 {
 	struct termios portset;
 	int tmp, w, h;
-	int reboot = 0;
+	int cf_reboot = 0;
 	char size[200] = DEFAULT_SIZE;
 	int default_speed = DEFAULT_SPEED;
 	char *default_size = DEFAULT_SIZE;
@@ -292,7 +292,7 @@ CFontzPacket_init (Driver *drvthis)
 	p->newfirmware = drvthis->config_get_bool(drvthis->name, "NewFirmware", 0, 0);
 
 	/* Reboot display? */
-	reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
+	cf_reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
 
 	/* Am I USB or not? */
 	p->usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
@@ -359,10 +359,10 @@ CFontzPacket_init (Driver *drvthis)
 	memset(p->backingstore, ' ', p->width * p->height);
 
 	/* Set display-specific stuff.. */
-	if (reboot) {
+	if (cf_reboot) {
 		report(RPT_INFO, "%s: rebooting LCD...", drvthis->name);
 		CFontzPacket_reboot(drvthis);
-		reboot = 0;
+		cf_reboot = 0;
 		debug(RPT_DEBUG, "%s: reboot done", __FUNCTION__);
 	}
 
@@ -510,22 +510,22 @@ CFontzPacket_flush (Driver *drvthis)
    */
 
     for (i = 0; i < p->height; i++) {
-      // set  pointers to start of the line in frame buffer & backing store
-      unsigned char *sp = p->framebuf + (i * p->width);
-      unsigned char *sq = p->backingstore + (i * p->width);
-
-      debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
-      debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
-
       /* Strategy:
        * - not more than one update command per line
        * - leave out leading and trailing parts that are identical
        */
 
+      // set  pointers to start of the line in frame buffer & backing store
+      unsigned char *sp = p->framebuf + (i * p->width);
+      unsigned char *sq = p->backingstore + (i * p->width);
+
       // set  pointers to end of the line in frame buffer & backing store
       unsigned char *ep = sp + (p->width - 1);
       unsigned char *eq = sq + (p->width - 1);
       int length = 0;
+
+      debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
+      debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
 
       // skip over leading identical portions of the line
       for (j = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, j++)
@@ -624,6 +624,7 @@ CFontzPacket_get_key (Driver *drvthis)
 			return NULL;
 			break;
 	}
+	/* NOTREACHED */
 	return NULL;
 }
 
