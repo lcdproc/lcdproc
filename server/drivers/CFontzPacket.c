@@ -223,7 +223,7 @@ CFontzPacket_init (Driver *drvthis)
 	} else if (p->model == 635) {
 		default_size = DEFAULT_SIZE_CF635;
 		default_speed = DEFAULT_SPEED_CF635;
-	}	
+	}
 
 	/* Which device should be used */
 	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
@@ -471,94 +471,98 @@ CFontzPacket_cellheight (Driver *drvthis)
 MODULE_EXPORT void
 CFontzPacket_flush (Driver *drvthis)
 {
-  PrivateData *p = drvthis->private_data;
-  int modified = 0;
-  int i,j;
+	PrivateData *p = drvthis->private_data;
+	int modified = 0;
+	int i, j;
 
-  if (p->model == 633) {
-  /*
-   * For CF633 we don't use delta update yet.
-   * Older HW/FW types only support updates of full or partial line starting from pos 0.
-   */
-  unsigned char *xp = p->framebuf;
-  unsigned char *xq = p->backingstore;
+	if (p->model == 633) {
+		/*
+		 * For CF633 we don't use delta update yet. Older HW/FW types
+		 * only support updates of full or partial line starting from
+		 * pos 0.
+		 */
+		unsigned char *xp = p->framebuf;
+		unsigned char *xq = p->backingstore;
 
-    for (i = 0; i < p->width; i++) {
-      if (*xp++ != *xq++) {
-	send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_One, 16, p->framebuf);
-        memcpy(p->backingstore, p->framebuf, p->width);
-        modified++;
-        break;
-      }
-    }
+		for (i = 0; i < p->width; i++) {
+			if (*xp++ != *xq++) {
+				send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_One, 16, p->framebuf);
+				memcpy(p->backingstore, p->framebuf, p->width);
+				modified++;
+				break;
+			}
+		}
 
-    xp = p->framebuf + p->width;
-    xq = p->backingstore + p->width;
+		xp = p->framebuf + p->width;
+		xq = p->backingstore + p->width;
 
-    for (i = 0; i < p->width; i++) {
-      if (*xp++ != *xq++) {
-        send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_Two, 16, p->framebuf + p->width);
-        memcpy(p->backingstore + p->width, p->framebuf + p->width, p->width);
-        modified++;
-        break;
-      }
-    }
-  }
-  else { /* (p->model != 633) */
-  /*
-   * CF631 / CF635 protocol is more flexible and we can do real delta update.
-   */
+		for (i = 0; i < p->width; i++) {
+			if (*xp++ != *xq++) {
+				send_bytes_message(p->fd, CF633_Set_LCD_Contents_Line_Two, 16, p->framebuf + p->width);
+				memcpy(p->backingstore + p->width, p->framebuf + p->width, p->width);
+				modified++;
+				break;
+			}
+		}
+	}
+	else {
+		/*
+		 * CF631 / CF635 protocol is more flexible and we can do real
+		 * delta update.
+		 */
 
-    for (i = 0; i < p->height; i++) {
-      /* Strategy:
-       * - not more than one update command per line
-       * - leave out leading and trailing parts that are identical
-       */
+		for (i = 0; i < p->height; i++) {
+			/*-
+			 * Strategy:
+			 * - not more than one update command per line
+			 * - leave out leading and trailing parts that
+			 *   are identical
+			 */
 
-      // set  pointers to start of the line in frame buffer & backing store
-      unsigned char *sp = p->framebuf + (i * p->width);
-      unsigned char *sq = p->backingstore + (i * p->width);
+			/* set pointers to start of the line in frame buffer & backing store */
+			unsigned char *sp = p->framebuf + (i * p->width);
+			unsigned char *sq = p->backingstore + (i * p->width);
 
-      // set  pointers to end of the line in frame buffer & backing store
-      unsigned char *ep = sp + (p->width - 1);
-      unsigned char *eq = sq + (p->width - 1);
-      int length = 0;
+			/* set pointers to end of the line in frame buffer & backing store */
+			unsigned char *ep = sp + (p->width - 1);
+			unsigned char *eq = sq + (p->width - 1);
+			int length = 0;
 
-      debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
-      debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
+			debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
+			debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
 
-      // skip over leading identical portions of the line
-      for (j = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, j++)
-	;
+			/* skip over leading identical portions of the line */
+			for (j = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, j++)
+			  ;
 
-      // skip over trailing identical portions of the line
-      for (length = p->width - j; (length > 0) && (*ep == *eq); ep--, eq--, length--)
-	;
+			/* skip over trailing identical portions of the line */
+			for (length = p->width - j; (length > 0) && (*ep == *eq); ep--, eq--, length--)
+			  ;
 
-      /* there are differences, ... */
-      if (length > 0) {
-        unsigned char out[length + 3];
+			/* there are differences, ... */
+			if (length > 0) {
+				unsigned char out[length + 3];
 
-	/* ... send then to the LCD */
-	out[0] = j;	// column
-	out[1] = i;	// line
+				/* ... send then to the LCD */
+				out[0] = j;	/* column */
+				out[1] = i;	/* line */
 
-	debug(RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
-	       __FUNCTION__, out[0], out[1], length, length, sp);
+				debug(RPT_DEBUG, "%s: l=%d c=%d count=%d string='%.*s'",
+				      __FUNCTION__, out[0], out[1], length, length, sp);
 
-	memcpy(&out[2], sp, length);
-	send_bytes_message(p->fd, CF633_Send_Data_to_LCD, length + 2, out);
-     	modified++;
-      }      
-    }	// i < p->height
+				memcpy(&out[2], sp, length);
+				send_bytes_message(p->fd, CF633_Send_Data_to_LCD, length + 2, out);
+				modified++;
+			}
+		}		/* i < p->height */
 
-    if (modified)
-      memcpy(p->backingstore, p->framebuf, p->width * p->height);
-  }
+		if (modified)
+			memcpy(p->backingstore, p->framebuf, p->width * p->height);
+	}
 
-  /* send something to the LCD to allow keys to be received */
-  if (!modified)
-    send_bytes_message(p->fd,CF633_Ping_Command, 0, NULL);
+	/* send something to the LCD to allow keys to be received */
+	if (!modified)
+		send_bytes_message(p->fd, CF633_Ping_Command, 0, NULL);
 }
 
 
@@ -1022,7 +1026,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
 
-	static unsigned char heart_open[] = 
+	static unsigned char heart_open[] =
 		{ b__XXXXX,
 		  b__X_X_X,
 		  b_______,
@@ -1031,7 +1035,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XX_XX,
 		  b__XXXXX };
-	static unsigned char heart_filled[] = 
+	static unsigned char heart_filled[] =
 		{ b__XXXXX,
 		  b__X_X_X,
 		  b___X_X_,
@@ -1040,7 +1044,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X_X_X,
 		  b__XX_XX,
 		  b__XXXXX };
-	static unsigned char arrow_up[] = 
+	static unsigned char arrow_up[] =
 		{ b____X__,
 		  b___XXX_,
 		  b__X_X_X,
@@ -1049,7 +1053,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b____X__,
 		  b_______ };
-	static unsigned char arrow_down[] = 
+	static unsigned char arrow_down[] =
 		{ b____X__,
 		  b____X__,
 		  b____X__,
@@ -1059,7 +1063,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b_______ };
 	/*
-	static unsigned char arrow_left[] = 
+	static unsigned char arrow_left[] =
 		{ b_______,
 		  b____X__,
 		  b___X___,
@@ -1068,7 +1072,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b_______,
 		  b_______ };
-	static unsigned char arrow_right[] = 
+	static unsigned char arrow_right[] =
 		{ b_______,
 		  b____X__,
 		  b_____X_,
@@ -1078,7 +1082,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b_______ };
 	*/
-	static unsigned char checkbox_off[] = 
+	static unsigned char checkbox_off[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -1087,7 +1091,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char checkbox_on[] = 
+	static unsigned char checkbox_on[] =
 		{ b____X__,
 		  b____X__,
 		  b__XXX_X,
@@ -1096,7 +1100,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char checkbox_gray[] = 
+	static unsigned char checkbox_gray[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -1106,7 +1110,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b__XXXXX,
 		  b_______ };
 	/*
-	static unsigned char selector_left[] = 
+	static unsigned char selector_left[] =
 		{ b___X___,
 		  b___XX__,
 		  b___XXX_,
@@ -1115,7 +1119,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b___XX__,
 		  b___X___,
 		  b_______ };
-	static unsigned char selector_right[] = 
+	static unsigned char selector_right[] =
 		{ b_____X_,
 		  b____XX_,
 		  b___XXX_,
@@ -1124,7 +1128,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b____XX_,
 		  b_____X_,
 		  b_______ };
-	static unsigned char ellipsis[] = 
+	static unsigned char ellipsis[] =
 		{ b_______,
 		  b_______,
 		  b_______,
@@ -1133,7 +1137,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b__X_X_X,
 		  b_______ };
-	static unsigned char block_filled[] = 
+	static unsigned char block_filled[] =
 		{ b__XXXXX,
 		  b__XXXXX,
 		  b__XXXXX,
@@ -1224,7 +1228,7 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
  * \param y        Vertical cursor position (row).
  * \param state    New cursor state.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -1321,7 +1325,7 @@ CFontzPacket_string (Driver *drvthis, int x, int y, const char string[])
 /**
  * Set output port: output values using the LEDs of a CF635.
  * \param drvthis  Pointer to driver structure.
- * \param state    Integer with bits representing LED states. 
+ * \param state    Integer with bits representing LED states.
  */
 MODULE_EXPORT void
 CFontzPacket_output(Driver *drvthis, int state)
