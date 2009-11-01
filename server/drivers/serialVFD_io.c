@@ -50,22 +50,23 @@
 void
 serialVFD_write_serial (Driver *drvthis, unsigned char *dat, size_t length)
 {
+	PrivateData *p = drvthis->private_data;
+
 	if (length <= 0)
 		return;
 
-	PrivateData *p = drvthis->private_data;
 	write(p->fd,dat,length);
 }
 
 void
 serialVFD_write_parallel (Driver *drvthis, unsigned char *dat, size_t length)
 {
-	if (length <= 0)
-		return;
-
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
 	PrivateData *p = drvthis->private_data;
 	int i_para, j_para;
+
+	if (length <= 0)
+		return;
 
 	for (i_para = 0; i_para < length; i_para++) {
 		port_out(p->port, dat[i_para]);

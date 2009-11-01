@@ -131,6 +131,9 @@ int main(int argc, char **argv)
 	main_loop();
 
 	exit_program(EXIT_SUCCESS);
+
+	/* NOTREACHED */
+	return EXIT_SUCCESS;
 }
 
 
@@ -161,6 +164,7 @@ static int process_command_line(int argc, char **argv)
 		  case 'h':
 			fprintf(stderr, "%s", help_text);
 			exit(EXIT_SUCCESS);
+			/* NOTREACHED */
 		  case 'c':
 			configfile = strdup(optarg);
 			break;

@@ -347,10 +347,10 @@ render_vbar(Widget *w, int left, int top, int right, int bottom)
 static int
 render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 {
+	int vis_width = right - left;
+
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d, timer=%ld)",
 			  __FUNCTION__, w, left, top, right, bottom, timer);
-
-	int vis_width = right - left;
 
 	if ((w != NULL) && (w->text != NULL) && (vis_width >= 8)) {
 		char str[BUFSIZE];

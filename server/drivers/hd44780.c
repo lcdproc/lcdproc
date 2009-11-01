@@ -506,7 +506,7 @@ common_init(PrivateData *p, unsigned char if_bit)
  * \param p  Pointer to PrivateData structure.
  * \param usecs  Number of micro-seconds to sleep.
  */
-void
+static void
 uPause(PrivateData *p, int usecs)
 {
 	timing_uPause(usecs * p->delayMult);
@@ -1393,7 +1393,7 @@ HD44780_output(Driver *drvthis, int on)
  * \param spanlist	 '\0'-terminated input span list in comma delimited format.
  * \return  Number of span elements, -1 on parse error.
  */
-int
+static int
 parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], const char *spanlist)
 {
 	int j = 0, retVal = 0;

@@ -117,6 +117,7 @@ typedef struct imon_private_data {
 MODULE_EXPORT int imon_init (Driver *drvthis)
 {
 	PrivateData *p = NULL;
+	char buf[256];
 
 	// Alocate, initialize and store private p
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
@@ -130,7 +131,6 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 		return -1;
 	}
 
-	char buf[256];
 	p->imon_fd = -1;
 	p->width = 0;
 	p->height = 0;

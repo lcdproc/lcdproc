@@ -35,7 +35,7 @@ for driver in $drivers ; do
 	case $driver in
 		!*)
 			driver=`echo "$driver" | sed -e 's/^.//'`
-			selectdrivers=[`echo " $selectdrivers " | sed -r -e "s/ $driver / /g"`]
+			selectdrivers=[`echo " $selectdrivers " | sed -e "s/ $driver / /g"`]
 			;;
 		*)
 			selectdrivers=["$selectdrivers $driver "]

@@ -337,6 +337,9 @@ main(int argc, char **argv)
 
 	// Clean up & exit
 	exit_program(EXIT_SUCCESS);
+
+	/* NOTREACHED */
+	return EXIT_SUCCESS;
 }
 
 

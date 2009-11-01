@@ -10,6 +10,7 @@ v.0.5dev (ongoing development)
  * Modify all drivers to use server/drivers/report.h instead of shared/report.h
  * Make all drivers using parallel port fail if they cannot get IO permission
  * Include <errno.h> instead of <sys/errno.h> everywhere (found by S. Klauer)
+ * configure: Fix de-selecting of drivers
 
 v0.5.3
  + lcdexec: notification when called program finishes
