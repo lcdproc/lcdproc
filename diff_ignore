@@ -55,3 +55,4 @@ init-*.rpm
 lcdproc-config.5
 LCDd.8
 lcdproc.1
+lcdvc.1
