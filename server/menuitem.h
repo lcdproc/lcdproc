@@ -35,9 +35,6 @@
 # define false 0
 #endif
 
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-
 /*********************************************************************
  * Data definitions of the menustuff
  */

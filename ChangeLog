@@ -13,6 +13,7 @@ v.0.5dev (ongoing development)
  * configure: Fix de-selecting of drivers
  * Build system: Add a check testing if SA_RESTART flag is available.
  * picolcd driver: Fix RC-5 for picoLCD 20x2 (A. van Schie)
+ * Introduce shared/defines.h to collect commonly used macros
 
 v0.5.3
  + lcdexec: notification when called program finishes

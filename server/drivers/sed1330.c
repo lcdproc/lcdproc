@@ -225,9 +225,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#define min(a,b) (((a) < (b)) ? (a) : (b))
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-
 // Autorepeat values
 #define KEYPAD_AUTOREPEAT_DELAY 500
 #define KEYPAD_AUTOREPEAT_FREQ 15

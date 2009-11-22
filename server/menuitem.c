@@ -19,6 +19,7 @@
 #include <assert.h>
 
 #include "shared/report.h"
+#include "shared/defines.h"
 
 #include "menuitem.h"
 #include "menuscreens.h"

@@ -1,10 +1,10 @@
 #ifndef LCDVC_H
 #define LCDVC_H
 
+#include "shared/defines.h"
+
 #define CHAIN(e,f) { if( e>=0 ) { e=(f); }}
 #define CHAIN_END(e) { if( e<0 ) { report( RPT_CRIT,"Critical error, abort"); exit(e); }}
-
-#define min(a,b) ((a)<(b))?(a):(b)
 
 #define UNSET_INT -1
 #define UNSET_STR "\01"

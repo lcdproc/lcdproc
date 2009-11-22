@@ -1,6 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
+#include "shared/defines.h"
+
 #ifndef TRUE
 # define TRUE    1
 #endif
@@ -60,13 +62,5 @@ typedef struct _screen_mode
 const char *get_hostname(void);
 const char *get_sysname(void);
 const char *get_sysrelease(void);
-
-#ifndef min
-# define min(a,b) (((a) < (b)) ? (a) : (b))
-#endif
-
-#ifndef max
-# define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
 
 #endif

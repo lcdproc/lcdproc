@@ -30,6 +30,7 @@
 
 #include "shared/report.h"
 #include "shared/LL.h"
+#include "shared/defines.h"
 
 #include "drivers.h"
 
@@ -39,7 +40,6 @@
 #include "render.h"
 
 #define BUFSIZE 1024	/* larger than display width => large enough */
-
 
 int heartbeat = HEARTBEAT_OPEN;
 static int heartbeat_fallback = HEARTBEAT_ON; /* If no heartbeat setting has been set at all */

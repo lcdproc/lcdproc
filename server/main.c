@@ -55,6 +55,7 @@
 /* TODO: fill in what to include otherwise */
 
 #include "shared/report.h"
+#include "shared/defines.h"
 
 #include "drivers.h"
 #include "sock.h"
@@ -69,7 +70,6 @@
 #include "shared/configfile.h"
 #include "drivers.h"
 #include "main.h"
-
 
 #if !defined(SYSCONFDIR)
 # define SYSCONFDIR "/etc"

@@ -60,17 +60,17 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
-#include "lcd.h"
-#include "pylcd.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
+#include "shared/defines.h"
+#include "lcd.h"
+#include "pylcd.h"
 #include "lcd_lib.h"
 #include "report.h"
 
-#define min(a, b) ((a)<(b) ? (a) : (b))
 #define True 1
 #define False 0
 
