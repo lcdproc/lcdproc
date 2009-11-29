@@ -262,6 +262,9 @@ Wirz SLI driver (unknown)
 .B stv5730
 STV5730A on-screen display chip
 .TP
+.B SureElec
+LCD devices from SURE electronics  (http://www.sureelectronics.net)
+.TP
 .B svga
 VGA monitors using svgalib 
 .TP

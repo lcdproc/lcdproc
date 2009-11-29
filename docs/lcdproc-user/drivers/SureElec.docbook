@@ -1,0 +1,94 @@
+<sect1 id="SureElec">
+<title>The SureElec Driver</title>
+
+<para>
+  Driver for the LCD modules (actually the controller board) available from
+  the 'SURE electronics' shop (<ulink url="http://www.sureelectronics.net/"></ulink>).
+</para>
+<para>
+  These devices are PIC based controlled, using a serial communication
+  protocol with the host. The actual connection to host is done through
+  USB through a serial-to-USB converter (CP2102 USB to UART Bridge)
+  integrated on the board.
+</para> 
+
+<sect2 id="SureElec-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="SureElec-config-section">
+<title>[SureElec]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Port</property> =
+    <parameter><replaceable>PORT</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Port the device is connected to. By default first USB serial port
+    <literal>/dev/ttyUSB0</literal> is used.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Edition</property> =
+    <parameter><replaceable>EDITION</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Edition level of the device (can be 1, 2 or 3). The default is <literal>2</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Size</property> = &parameters.size;
+  </term>
+  <listitem><para>
+    Set the display size in characters. This is required for edition 1 devices.
+    For edition 2 &amp; 3 devices this value, if defined, overrides the size
+    read directly from the device.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Select the display's contrast, <literal>480</literal> is the default.
+    Permissible values are in the range of <literal>0</literal>-<literal>1000</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Select the display's brightness, <literal>480</literal> is the default.
+    Permissible values are in the range of <literal>0</literal>-<literal>1000</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>OFFBRIGHTNESS</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Select the display's when the display is normally switched off in case LCDd
+    is inactive, <literal>100</literal> is the default.
+    Permissible values are in the range of <literal>0</literal>-<literal>1000</literal>.
+  </para></listitem>
+</varlistentry>
+
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

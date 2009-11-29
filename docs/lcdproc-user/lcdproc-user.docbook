@@ -54,6 +54,7 @@
   <!ENTITY shuttleVFD SYSTEM "drivers/shuttleVFD.docbook">
   <!ENTITY sli SYSTEM "drivers/sli.docbook">
   <!ENTITY stv5730 SYSTEM "drivers/stv5730.docbook">
+  <!ENTITY SureElec SYSTEM "drivers/SureElec.docbook">
   <!ENTITY svga SYSTEM "drivers/svga.docbook">
   <!ENTITY t6963 SYSTEM "drivers/t6963.docbook">
   <!ENTITY text SYSTEM "drivers/text.docbook">

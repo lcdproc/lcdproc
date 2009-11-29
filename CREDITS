@@ -265,6 +265,9 @@ Christian Leuschen,
 Jonathan Kyler:
 	- driver for SoundGraph iMON OEM LCD Modules
 
+Laurent Latil
+	- SureElec driver for devices made by SURE Electronics
+
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min

@@ -46,6 +46,7 @@ well as the configuration of LCDd.
 &shuttleVFD;
 &sli;
 &stv5730;
+&SureElec;
 &svga;
 &t6963;
 &text;

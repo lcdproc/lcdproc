@@ -40,6 +40,7 @@ EXTRA_DIST =	bayrad.docbook \
 		shuttleVFD.docbook \
 		sli.docbook \
 		stv5730.docbook \
+		SureElec.docbook \
 		svga.docbook \
 		t6963.docbook \
 		text.docbook \
