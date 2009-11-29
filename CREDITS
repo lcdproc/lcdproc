@@ -159,7 +159,7 @@ Mike Patnode:
 	- Crystal Fontz
 	- Various 0.4.3 changes
 
-Peter Marschall: (current maintainer)
+Peter Marschall:
 	- new drivers: IOWarrior, xosdlib
 	- bwctusb connectiontype for the HD44780 driver
 	- extensions to CFontz* drivers: support CF631 & CF635
