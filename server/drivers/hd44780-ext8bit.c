@@ -18,7 +18,7 @@
  * D6 (8)	  D6 (13)
  * D7 (9)	  D7 (14)
  * nSTRB (1)      RS (4)
- * nLF   (14)     RW (5) (LCD2 - 6) (optional - pull all LCD RW low)
+ * nLF   (14)     RW (5) (optional - pull all LCD RW low)
  * INIT  (16)     EN (6)
  *
  * Backlight
@@ -145,7 +145,7 @@ lcdtime_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 
 	if (flags == RS_INSTR)
 		portControl = 0;
-	else //if (iflags == RS_DATA)
+	else // RS_DATA
 		portControl = RS;
 
 	portControl |= p->backlight_bit;
@@ -168,10 +168,10 @@ lcdtime_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
  */
 void lcdtime_HD44780_backlight(PrivateData *p, unsigned char state)
 {
-	p->backlight_bit = (state?0:SEL);
+	p->backlight_bit = (state?0:BL);
 
 	// Semaphores not needed because backlight will not go together with
-	// the bacrgraph anyway...
+	// the bargraph anyway...
 	port_out(p->port + 2, p->backlight_bit ^ OUTMASK);
 }
 
