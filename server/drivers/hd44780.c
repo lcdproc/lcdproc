@@ -1285,6 +1285,21 @@ HD44780_get_key(Driver *drvthis)
 
 /**
  * Scan the keypad (not part of the API).
+ *
+ * This function uses the readkeypad function of the connection type (if
+ * available) to read a key from the keypad. It calls readkeypad with a bit
+ * mask of keypad rows to enable and reads the bitmap of keys pressed on these
+ * rows.
+ *
+ * The returned scancode consists of 4 bits for the row and 4 bits for the
+ * column of the keypad. This allows for a 16x16 matrix keypad in theory, but
+ * on a parallel port we are limited to a 11x5 matrix (8 data + 3 control pins
+ * - excluding one for EN1, 5 status pins).
+ *
+ * Note that a connection type may support even less rows/columns!
+ * 
+ * \param p  Pointer to PrivateData structure.
+ * \return   Scancode of the key.
  */
 unsigned char HD44780_scankeypad(PrivateData *p)
 {
@@ -1297,11 +1312,11 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 
 	unsigned char scancode = 0;
 
-	// return "no ke pressed if no keypad reading function defined
+	// return 'no key pressed' if no keypad reading function defined
 	if (p->hd44780_functions->readkeypad == NULL)
 		return('\0');
 
-	// First check if a directly connected key is pressed
+	// Step 1: Check if a directly connected key is pressed
 	// Put all zeros on Y of keypad
 	keybits = p->hd44780_functions->readkeypad(p, 0);
 
@@ -1311,7 +1326,7 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 		shiftingbit = 1;
 		for (shiftcount = 0; shiftcount < KEYPAD_MAXX && !scancode; shiftcount++) {
 			if (keybits & shiftingbit) {
-				// Found !   Return from function.
+				// Found !
 				scancode = shiftcount+1;
 			}
 			shiftingbit <<= 1;
@@ -1319,28 +1334,37 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 	}
 	else {
 		// Now check the matrix
-		// First check with all 1's
+		// Step 2: Check with all 1's to see if a key is pressed at all
 		Ypattern = (1 << KEYPAD_MAXY) - 1;
 		if (p->hd44780_functions->readkeypad(p, Ypattern)) {
 			// Yes, a key on the matrix is pressed
 
-			// OK, now we know a key is pressed.
-			// Determine which one it is
-
-			// First determine the row
+			// Step 3: Determine the row
 			// Do a 'binary search' to minimize I/O
+			// Requires 4 I/O reads
 			Ypattern = 0;
 			Yval = 0;
 			for (exp=3; exp>=0; exp--) {
 				Ypattern = ((1 << (1 << exp)) - 1) << Yval;
+				/*
+				 * The above line generates the line mask for
+				 * the binary search. Example if a key is
+				 * pressed on row 3:
+				 * exp  bitmap
+				 *   3  00000000 11111111
+				 *   2  00000000 00001111
+				 *   1  00000000 00000011
+				 *   0  00000000 00000100
+				 */
 				keybits = p->hd44780_functions->readkeypad(p, Ypattern);
 				if (!keybits) {
 					Yval += (1 << exp);
 				}
 			}
 
-			// Which key is pressed in that row ?
+			// Step 4: Final read
 			keybits = p->hd44780_functions->readkeypad(p, 1<<Yval);
+			// Step 5: Which key is pressed in that row ?
 			shiftingbit = 1;
 			for (shiftcount = 0; shiftcount < KEYPAD_MAXX && !scancode; shiftcount++) {
 				if (keybits & shiftingbit) {
