@@ -261,7 +261,7 @@ void lcdstat_HD44780_backlight(PrivateData *p, unsigned char state)
 /**
  * Read keypress.
  * \param p      Pointer to driver's private data structure.
- * \param YData  ???
+ * \param YData  Bitmap of rows / lines to enable.
  * \return       Bitmap of the pressed keys.
  */
 unsigned char lcdstat_HD44780_readkeypad(PrivateData *p, unsigned int YData)
@@ -273,7 +273,7 @@ unsigned char lcdstat_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 	port_out(p->port, ~YData & 0x003F);
 	if (p->numDisplays<=3) {
 		// Can't combine >3 displays with >6 keypad output lines
-		port_out(p->port + 2, (((~YData & 0x03C0) << 6)) ^ OUTMASK);
+		port_out(p->port + 2, (((~YData & 0x03C0) >> 6)) ^ OUTMASK);
 	}
 	if (p->delayBus) p->hd44780_functions->uPause(p, 1);
 

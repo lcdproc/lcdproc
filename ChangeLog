@@ -15,6 +15,7 @@ v.0.5dev (ongoing development)
  * picolcd driver: Fix RC-5 for picoLCD 20x2 (A. van Schie)
  * Introduce shared/defines.h to collect commonly used macros
  + new driver: SureElec for devices made by SURE Electronics (Laurent Latil)
+ * hd44780-4bit: Fix bug not checking for keypad rows 7-10 correctly
 
 v0.5.3
  + lcdexec: notification when called program finishes
