@@ -21,11 +21,11 @@
 <variablelist>
 <varlistentry>
   <term>
-    <property>Port</property> =
-    <parameter><replaceable>PORT</replaceable></parameter>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
-    Port the device is connected to. By default first USB serial port
+    Name of the device the display appears as. By default first USB serial device
     <literal>/dev/ttyUSB0</literal> is used.
   </para></listitem>
 </varlistentry>
