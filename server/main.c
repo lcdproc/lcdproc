@@ -971,7 +971,7 @@ output_GPL_notice(void)
 	 */
 	fprintf(stderr, "LCDd %s, LCDproc Protocol %s\n", VERSION, PROTOCOL_VERSION);
 	fprintf(stderr, "Part of the LCDproc suite\n");
-	fprintf(stderr, "Copyright (C) 1998-2009 William Ferrell, Scott Scriven\n"
+	fprintf(stderr, "Copyright (C) 1998-2010 William Ferrell, Scott Scriven\n"
 	                "                        and many other contributors\n\n");
 
 	fprintf(stderr, "This program is free software; you can redistribute it and/or\n"
@@ -999,7 +999,7 @@ output_help_screen(void)
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	fprintf(stdout, "LCDd - LCDproc Server Daemon, %s\n\n", version);
-	fprintf(stdout, "Copyright (c) 1998-2009 Scott Scriven, William Ferrell, and misc. contributors.\n");
+	fprintf(stdout, "Copyright (c) 1998-2010 Scott Scriven, William Ferrell, and misc. contributors.\n");
 	fprintf(stdout, "This program is released under the terms of the GNU General Public License.\n\n");
 	fprintf(stdout, "Usage: LCDd [<options>]\n");
 	fprintf(stdout, "  where <options> are:\n");
