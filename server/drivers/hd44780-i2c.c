@@ -100,7 +100,7 @@ i2c_out(PrivateData *p, unsigned char val)
 		datalen=1;
 	}
 	if (write(p->fd,data,datalen) != datalen) {
-		report(no_more_errormsgs?RPT_DEBUG:RPT_ERR, "HD44780: I2C: i2c write data %u to address %u failed: %s",
+		p->hd44780_functions->drv_report(no_more_errormsgs?RPT_DEBUG:RPT_ERR, "HD44780: I2C: i2c write data %u to address %u failed: %s",
 			val, p->port & I2C_ADDR_MASK, strerror(errno));
 		no_more_errormsgs=1;
 	}
@@ -131,7 +131,7 @@ hd_init_i2c(Driver *drvthis)
 	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
 	device[sizeof(device)-1] = '\0';
 	report(RPT_INFO,"HD44780: I2C: Using device '%s' and address %u for a %s",
-			device, (p->port & I2C_ADDR_MASK) ? "PCA9554(A)" : "PCF8574(A)");
+		device, p->port & I2C_ADDR_MASK, (p->port & I2C_PCAX_MASK) ? "PCA9554(A)" : "PCF8574(A)");
 
 	// Open the I2C device
 	p->fd = open(device, O_RDWR);
