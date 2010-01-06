@@ -17,6 +17,7 @@ v.0.5dev (ongoing development)
  + new driver: SureElec for devices made by SURE Electronics (Laurent Latil)
  * hd44780-4bit: Fix bug not checking for keypad rows 7-10 correctly
  * Modify serial drivers to use cfmakeraw
+ + hd44780: Add a 'none' charmap which does not replace any character
 
 v0.5.3
  + lcdexec: notification when called program finishes
