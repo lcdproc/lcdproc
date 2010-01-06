@@ -91,12 +91,18 @@ int hd_init_lis2(Driver *drvthis)
 	/* Get serial device parameters */
 	tcgetattr(p->fd, &portset);
 
+#ifdef HAVE_CFMAKERAW
+	/* The easy way */
+	cfmakeraw(&portset);
+#else
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
 	                      | INLCR | IGNCR | ICRNL | IXON );
 	portset.c_oflag &= ~OPOST;
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
 	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
+#endif
+	/* Set timeouts */
 	portset.c_cc[VMIN] = 1;
 	portset.c_cc[VTIME] = 3;
 

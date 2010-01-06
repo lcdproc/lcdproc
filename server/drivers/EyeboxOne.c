@@ -274,9 +274,8 @@ EyeboxOne_init (Driver *drvthis)
 
 	tcgetattr(p->fd, &portset);
 
-	// THIS ALL COMMENTED OUT BECAUSE WE NEED TO SET TIMEOUTS
 	/* We use RAW mode */
-#ifdef HAVE_CFMAKERAW_NOT
+#ifdef HAVE_CFMAKERAW
 	/* The easy way */
 	cfmakeraw(&portset);
 #else
@@ -287,9 +286,10 @@ EyeboxOne_init (Driver *drvthis)
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
 	portset.c_cflag |= CS8 | CREAD | CLOCAL;
+#endif
+	/* Set timeouts */
 	portset.c_cc[VMIN] = 1;
 	portset.c_cc[VTIME] = 3;
-#endif
 
 	/* Set port speed */
 	cfsetospeed(&portset, speed);

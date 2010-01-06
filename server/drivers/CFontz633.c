@@ -247,29 +247,21 @@ CFontz633_init (Driver *drvthis)
 	tcgetattr(p->fd, &portset);
 
 	/* We use RAW mode */
+#ifdef HAVE_CFMAKERAW
+	/* The easy way */
+	cfmakeraw(&portset);
+#else
+	/* The hard way */
+	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+				| INLCR | IGNCR | ICRNL | IXON );
+	portset.c_oflag &= ~OPOST;
+	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+	portset.c_cflag |= CS8 | CREAD | CLOCAL;
+#endif
 	if (p->usb) {
-		// The USB way
-		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-					| INLCR | IGNCR | ICRNL | IXON );
-		portset.c_oflag &= ~OPOST;
-		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-		portset.c_cflag |= CS8 | CREAD | CLOCAL;
 		portset.c_cc[VMIN] = 0;
 		portset.c_cc[VTIME] = 0;
-	} else {
-#ifdef HAVE_CFMAKERAW
-		/* The easy way */
-		cfmakeraw(&portset);
-#else
-		/* The hard way */
-		portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-					| INLCR | IGNCR | ICRNL | IXON );
-		portset.c_oflag &= ~OPOST;
-		portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-		portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
-		portset.c_cflag |= CS8 | CREAD | CLOCAL;
-#endif
 	}
 
 	/* Set port speed */

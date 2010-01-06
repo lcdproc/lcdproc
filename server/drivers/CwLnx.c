@@ -326,15 +326,28 @@ static void Setup_Port(int fd, speed_t speed)
     struct termios portset;
 
     tcgetattr(fd, &portset);
-    cfsetospeed(&portset, speed);
-    cfsetispeed(&portset, speed);
-    portset.c_iflag = IGNBRK;
-    portset.c_lflag = 0;
-    portset.c_oflag = 0;
-    portset.c_cflag |= CLOCAL | CREAD;
-    portset.c_cflag &= ~CRTSCTS;
+
+    /* We use RAW mode */
+#ifdef HAVE_CFMAKERAW
+    /* The easy way */
+    cfmakeraw(&portset);
+#else
+    /* The hard way */
+    portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+                          | INLCR | IGNCR | ICRNL | IXON );
+    portset.c_oflag &= ~OPOST;
+    portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+    portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+    portset.c_cflag |= CS8 | CREAD | CLOCAL;
+#endif
+    /* Set timeouts */
     portset.c_cc[VMIN] = 1;
     portset.c_cc[VTIME] = 5;
+
+    /* Set speed */
+    cfsetospeed(&portset, speed);
+    cfsetispeed(&portset, speed);
+
     tcsetattr(fd, TCSANOW, &portset);
 }
 
