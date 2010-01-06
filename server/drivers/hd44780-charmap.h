@@ -71,10 +71,7 @@ const unsigned char none_charmap[] = {
  * - map umlaut accent characters to the corresponding umlaut characters
  * - map other accent characters to the characters without accents
  * - map beta (=sharp s), micro and Yen
- *
- * Alternative mappings:
- * - #112 ("p") -> #240 (large "p"),  orig. mapped -> #112
- * - #113 ("q") -> #241 (large "q"),  orig. mapped -> #113
+ * - map 'n/N with tilde' to 'n with bar above'
  *
  * HD44780 misses backslash
  *
@@ -113,12 +110,12 @@ const unsigned char HD44780_charmap[] = {
         /* #192 */
          65,  65,  65,  65, 225,  65,  65,  67,
          69,  69,  69,  69,  73,  73,  73,  73,
-         68,  78,  79,  79,  79,  79, 239, 120,
+         68, 238,  79,  79,  79,  79, 239, 120,
          48,  85,  85,  85, 245,  89, 240, 226,
         /* #224 */
          97,  97,  97,  97, 225,  97,  97,  99,
         101, 101, 101, 101, 105, 105, 105, 105,
-        111, 110, 111, 111, 111, 111, 239, 253,
+        111, 238, 111, 111, 111, 111, 239, 253,
          48, 117, 117, 117, 245, 121, 240, 255
 };
 
