@@ -334,7 +334,9 @@ serial_HD44780_scankeypad(PrivateData *p)
 void
 serial_HD44780_close(PrivateData *p)
 {
-	if (SERIAL_IF.end_code)
-		write(p->fd, &SERIAL_IF.end_code, 1);
-	close(p->fd);
+	if (p->fd >= 0) {
+		if (SERIAL_IF.end_code)
+			write(p->fd, &SERIAL_IF.end_code, 1);
+		close(p->fd);
+	}
 }

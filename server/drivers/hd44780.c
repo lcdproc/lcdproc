@@ -164,6 +164,7 @@ HD44780_init(Driver *drvthis)
 	p->cellwidth = 5;
 	p->ccmode = standard;
 	p->backlightstate = -1;	// Init to invalid value
+	p->fd = -1;
 
 
 	//// READ THE CONFIG FILE
@@ -1250,7 +1251,13 @@ HD44780_get_key(Driver *drvthis)
 
 	scancode = p->hd44780_functions->scankeypad(p);
 	if (scancode != '\0') {
-		// TODO: check if arrays are large enough
+		// Check if arrays are large enough
+		if ((scancode&0x0F) > KEYPAD_MAXX || ((scancode&0xF0)>>4) > KEYPAD_MAXY) {
+			report(RPT_WARNING, "HD44780_get_key: Scancode out of range: %d",
+				scancode);
+			return NULL;
+		}
+
 		keystr = (scancode & 0xF0)
 			 ? p->keyMapMatrix[((scancode&0xF0)>>4)-1][(scancode&0x0F)-1]
 			 : p->keyMapDirect[scancode - 1];

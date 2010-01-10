@@ -75,6 +75,7 @@
 
 void i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
 void i2c_HD44780_backlight(PrivateData *p, unsigned char state);
+void i2c_HD44780_close(PrivateData *p);
 
 #define RS	0x10
 #define RW	0x20
@@ -163,6 +164,7 @@ hd_init_i2c(Driver *drvthis)
 
 	hd44780_functions->senddata = i2c_HD44780_senddata;
 	hd44780_functions->backlight = i2c_HD44780_backlight;
+	hd44780_functions->close = i2c_HD44780_close;
 
 	// powerup the lcd now
 	/* We'll now send 0x03 a couple of times,
@@ -213,6 +215,18 @@ hd_init_i2c(Driver *drvthis)
 	common_init(p, IF_4BIT);
 
 	return 0;
+}
+
+
+/**
+ * Close the device.
+ * \param p          Pointer to driver's private data structure.
+ */
+void
+i2c_HD44780_close(PrivateData *p) {
+	if (p->fd >= 0) {
+		close(p->fd);
+	}
 }
 
 

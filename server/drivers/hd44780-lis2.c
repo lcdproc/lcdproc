@@ -48,6 +48,7 @@ extern unsigned int **bitrate_conversion;
 extern int convert_bitrate(unsigned int conf_bitrate, size_t *bitrate);
 
 void lis2_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
+void lis2_HD44780_close(PrivateData *p);
 
 static void clearScreen(int fd);
 static void gotoXY(int fd, unsigned char x, unsigned char y);
@@ -131,10 +132,23 @@ int hd_init_lis2(Driver *drvthis)
 	tcsetattr(p->fd, TCSANOW, &portset);
 
 	p->hd44780_functions->senddata = lis2_HD44780_senddata;
+	p->hd44780_functions->close = lis2_HD44780_close;
 
 	common_init(p, IF_8BIT);
 
 	return 0;
+}
+
+
+/**
+ * Close the device.
+ * \param p          Pointer to driver's private data structure.
+ */
+void
+lis2_HD44780_close(PrivateData *p) {
+	if (p->fd >= 0) {
+		close(p->fd);
+	}
 }
 
 

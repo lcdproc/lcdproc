@@ -168,7 +168,8 @@ usblcd_HD44780_backlight(PrivateData *p, unsigned char state)
 void
 usblcd_HD44780_close(PrivateData *p)
 {
-	close(p->fd);
+	if (p->fd >= 0)
+		close(p->fd);
 }
 
 /* EOF */
