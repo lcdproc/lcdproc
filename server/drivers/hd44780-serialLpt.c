@@ -31,19 +31,19 @@
  * Keypad connection (optional):
  * This is connected on the 4094 parallel to the LCD.
  * Some diodes and resistors are needed, see further documentation.
- * Q1 (4)	  Y0
- * Q2 (5)	  Y1
- * Q3 (6)	  Y2
- * Q4 (7)	  Y3
- * Q5 (14)	  Y4
- * Q6 (13)	  Y5
- * Q7 (12)	  Y6
+ * Q1 (4)	  Y1
+ * Q2 (5)	  Y2
+ * Q3 (6)	  Y3
+ * Q4 (7)	  Y4
+ * Q5 (14)	  Y5
+ * Q6 (13)	  Y6
+ * Q7 (12)	  Y7
  * The 'output' of the keys should be connected to the following LPT pins:
- * nACK   (10)    X0
- * BUSY   (11)    X1
- * PAPEREND (12)  X2
- * SELIN  (13)    X3
- * nFAULT (15)    X4
+ * nACK   (10)    X1
+ * BUSY   (11)    X2
+ * PAPEREND (12)  X3
+ * SELIN  (13)    X4
+ * nFAULT (15)    X5
  * If you want to use as few LPT lines as possible, only use X0.
  *
  * This file is released under the GNU General Public License. Refer to the

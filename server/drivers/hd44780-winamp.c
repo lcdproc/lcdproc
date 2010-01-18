@@ -46,19 +46,19 @@
  * Keypad connection (optional):
  * Some diodes and resistors are needed, see further documentation.
  * printer port   keypad
- * D0 (2)	  Y0
- * D1 (3)	  Y1
- * D2 (4)	  Y2
- * D3 (5)	  Y3
- * D4 (6)	  Y4
- * D5 (7)	  Y5
- * D6 (8)	  Y6
- * D7 (9)	  Y7
- * nACK   (10)    X0
- * BUSY   (11)    X1
- * PAPEREND (12)  X2
- * SELIN  (13)    X3
- * nFAULT (15)    X4
+ * D0 (2)	  Y1
+ * D1 (3)	  Y2
+ * D2 (4)	  Y3
+ * D3 (5)	  Y4
+ * D4 (6)	  Y5
+ * D5 (7)	  Y6
+ * D6 (8)	  Y7
+ * D7 (9)	  Y8
+ * nACK   (10)    X1
+ * BUSY   (11)    X2
+ * PAPEREND (12)  X3
+ * SELIN  (13)    X4
+ * nFAULT (15)    X5
  */
 
 #include "hd44780-winamp.h"

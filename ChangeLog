@@ -19,6 +19,7 @@ v.0.5dev (ongoing development)
  * Modify serial drivers to use cfmakeraw
  + hd44780: Add a 'none' charmap which does not replace any character
  * hd44780: Change mapping for spanish 'n with tilde' characters
+ * hd44780: Exclude pin for switchable backlight from keypad scanning
 
 v0.5.3
  + lcdexec: notification when called program finishes

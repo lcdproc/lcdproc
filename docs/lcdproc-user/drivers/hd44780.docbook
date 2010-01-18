@@ -827,6 +827,7 @@ The optional keypad can be connected as follows:
       <entry namest="lpt1" nameend="lpt2" align="center">printer port</entry>
       <entry morerows="1">&lt;-&gt;</entry>
       <entry align="center">keypad</entry>
+      <entry morerows="1">remarks</entry>
     </row>
     <row>
       <entry>name</entry>
@@ -840,42 +841,49 @@ The optional keypad can be connected as follows:
       <entry>2</entry>
       <entry></entry>
       <entry>Y<subscript>1</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>D1</entry>
       <entry>3</entry>
       <entry></entry>
       <entry>Y<subscript>2</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>D2</entry>
       <entry>4</entry>
       <entry></entry>
       <entry>Y<subscript>3</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>D3</entry>
       <entry>5</entry>
       <entry></entry>
       <entry>Y<subscript>4</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>D4</entry>
       <entry>6</entry>
       <entry></entry>
       <entry>Y<subscript>5</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>D5</entry>
       <entry>7</entry>
       <entry></entry>
       <entry>Y<subscript>6</subscript></entry>
+      <entry>Only if not used for backlight or 3<superscript>rd</superscript> controller.</entry>
     </row>
     <row>
       <entry>nSTRB</entry>
       <entry>1</entry>
       <entry></entry>
       <entry>Y<subscript>7</subscript></entry>
+      <entry morerows="3">Only if not used for additional controllers.</entry>
     </row>
     <row>
       <entry>nLF</entry>
@@ -900,30 +908,35 @@ The optional keypad can be connected as follows:
       <entry>10</entry>
       <entry></entry>
       <entry>X<subscript>1</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>BUSY</entry>
       <entry>11</entry>
       <entry></entry>
       <entry>X<subscript>2</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>PAPEREND</entry>
       <entry>12</entry>
       <entry></entry>
       <entry>X<subscript>3</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>SELIN</entry>
       <entry>13</entry>
       <entry></entry>
       <entry>X<subscript>4</subscript></entry>
+      <entry></entry>
     </row>
     <row>
       <entry>nFAULT</entry>
       <entry>15</entry>
       <entry></entry>
       <entry>X<subscript>5</subscript></entry>
+      <entry></entry>
     </row>
   </tbody>
 </tgroup>
@@ -1407,7 +1420,7 @@ The optional keypad can be connected as follows:
       <entry>nSEL</entry>
       <entry>17</entry>
       <entry></entry>
-      <entry>Y<subscript>10</subscript></entry>
+      <entry>Y<subscript>10</subscript> (only if not used for backlight)</entry>
     </row>
     <row>
       <entry>nACK</entry>
@@ -1857,6 +1870,106 @@ You can configure the USB vendor/product ID in <filename>LCDd.conf</filename>.
 The wiring of the control lines can optionally be reconfigured,
 please look at the driver source if you really need that.
 </para>
+
+<para>
+Alternatively you can use a single channel FTDI FT245BM USB &lt;-&gt; parallel
+FIFO chip and use the display in its 4 bit mode.
+</para>
+
+<table id="hd44780-ftdi.4bit-mapping">
+<title>HD44780: 4bit FTDI</title>
+<tgroup cols="5" align="left">
+<colspec colname="ftdi1"/>
+<colspec colname="ftdi2" align="right"/>
+<colspec colname="base" align="center"/>
+<colspec colname="lcd1"/>
+<colspec colname="lcd2"/>
+  <thead>
+    <row>
+      <entry namest="ftdi1" nameend="ftdi2" align="center">FTDI chip</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
+      <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>name</entry>
+      <entry>pin</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0</entry>
+      <entry>25</entry>
+      <entry></entry>
+      <entry>D4</entry>
+      <entry>11</entry>
+    </row>
+    <row>
+      <entry>D1</entry>
+      <entry>24</entry>
+      <entry></entry>
+      <entry>D5</entry>
+      <entry>12</entry>
+    </row>
+    <row>
+      <entry>D2</entry>
+      <entry>23</entry>
+      <entry></entry>
+      <entry>D6</entry>
+      <entry>13</entry>
+    </row>
+    <row>
+      <entry>D3</entry>
+      <entry>22</entry>
+      <entry></entry>
+      <entry>D7</entry>
+      <entry>14</entry>
+    </row>
+    <row>
+      <entry>D4</entry>
+      <entry>21</entry>
+      <entry></entry>
+      <entry>EN</entry>
+      <entry>6</entry>
+    </row>
+    <row>
+      <entry>D5</entry>
+      <entry>20</entry>
+      <entry></entry>
+      <entry>RS</entry>
+      <entry>4</entry>
+    </row>
+    <row>
+      <entry>D6</entry>
+      <entry>19</entry>
+      <entry></entry>
+      <entry>RW</entry>
+      <entry>5</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+
+<para>
+The following special configuration settings are required to use a single
+channel FTDI FIFO chip:
+</para>
+
+<example id="hd44780-ftdi-4bit-config.example">
+<title>HD44780: Configuration for FTDI 4bit</title>
+<screen>
+<![CDATA[
+[hd44780]
+ConnectionType=ftdi
+ftdi_mode=4
+ftdi_line_RS=0x40
+ftdi_line_RW=0x20
+ftdi_line_EN=0x10
+]]>
+</screen>
+</example>
+
 
 </sect3>
 
@@ -2706,7 +2819,8 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <emphasis><parameter><literal>hd44780_default</literal></parameter></emphasis> |
       <parameter><literal>hd44780_euro</literal></parameter> |
       <parameter><literal>ea_ks0073</literal></parameter> |
-      <parameter><literal>sed12780f_0b</literal></parameter>
+      <parameter><literal>sed12780f_0b</literal></parameter> |
+      <parameter><literal>none</literal></parameter>
     }
   </term>
   <listitem><para>
@@ -2728,6 +2842,12 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         </para></listitem>
         <listitem><para>
           <literal>sed12780f_0b</literal> is for some SED 1278 displays.
+        </para></listitem>
+        <listitem><para>
+          The <literal>none</literal> charmap does not translate any characters.
+          It displays the characters the display controllers actually has
+          stored in its CGROM for that position instead. This setting is
+          intended for debugging purpose.
         </para></listitem>
       </itemizedlist>
       You only need to set this parameter if you have a non-standard

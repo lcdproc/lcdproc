@@ -34,19 +34,29 @@
  * Keypad connection (optional):
  * Some diodes and resistors are needed, see further documentation.
  * printer port   keypad
- * D0 (2)	  Y0
- * D1 (3)	  Y1
- * D2 (4)	  Y2
- * D3 (5)	  Y3
- * D4 (6)	  Y4
- * D5 (7)	  Y5
+ * D0 (2)	  Y1
+ * D1 (3)	  Y2
+ * D2 (4)	  Y3
+ * D3 (5)	  Y4
+ * D4 (6)	  Y5
+ *
+ * With a backlight or three displays, 4 additional rows are possible:
  * nSTRB (1)      Y6
  * nLF  (14)      Y7
  * INIT (16)      Y8
  * nSEL (17)      Y9
+ *
+ * With only two controllers and no backlight, 5 additional rows are possible:
+ * D5 (7)	  Y6
+ * nSTRB (1)      Y7
+ * nLF  (14)      Y8
+ * INIT (16)      Y9
+ * nSEL (17)      Y10
+ *
+ * Colums return lines are the same for all configurations:
  * nACK (10)      X0
  * BUSY (11)      X1
- * PAPEREND (12   X2
+ * PAPEREND (12)  X2
  * SELIN (13)     X3
  * nFAULT (15)    X4
  *
@@ -125,7 +135,7 @@ hd_init_4bit(Driver *drvthis)
 	port_out(p->port, 0x03);
 	if (p->delayBus) hd44780_functions->uPause(p, 1);
 
-	/* We'll now send 0x03 a coulpe of times, 
+	/* We'll now send 0x03 a coulpe of times,
 	 * which is in fact (FUNCSET | IF_8BIT) >> 4 */
 	port_out(p->port, enableLines | 0x03);
 	port_out(p->port + 2, ALLEXT ^ OUTMASK);
@@ -268,22 +278,35 @@ unsigned char lcdstat_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 {
 	unsigned char readval;
 
-	// 10 bits output or 6 bits if >=3 displays
-	// Convert the positive logic to the negative logic on the LPT port
-	port_out(p->port, ~YData & 0x003F);
-	if (p->numDisplays<=3) {
-		// Can't combine >3 displays with >6 keypad output lines
+	/* If at most two controllers and NO backlight, 10 bits may be used */
+	if ((p->numDisplays <= 2) && (!p->have_backlight)) {
+		port_out(p->port, ~YData & 0x003F);
 		port_out(p->port + 2, (((~YData & 0x03C0) >> 6)) ^ OUTMASK);
+	}
+	else {
+		/*
+		 * Else ignore D5, because it may be either backlight or EN3.
+		 * Note: If three displays are used, have_backlight must be
+		 * set to 'no' in the config.
+		 */
+		port_out(p->port, (~YData & 0x001F) | p->backlight_bit);
+		/*
+		 * With at most three controllers or backlight 9 bits may be
+		 * used.
+		 */
+		if (p->numDisplays<=3) {
+			port_out(p->port + 2, (((~YData & 0x01E0) >> 5)) ^ OUTMASK);
+		}
 	}
 	if (p->delayBus) p->hd44780_functions->uPause(p, 1);
 
-	// Read inputs
+	/* Read inputs */
 	readval = ~ port_in(p->port + 1) ^ INMASK;
 
-	// Put port back into idle state for backlight
+	/* Put port back into idle state for backlight */
 	port_out(p->port, p->backlight_bit);
 
-	// And convert value back (MSB first).
+	/* And convert value back (MSB first) */
 	return (((readval & FAULT) / FAULT <<4) |		/* pin 15 */
 		((readval & SELIN) / SELIN <<3) |		/* pin 13 */
 		((readval & PAPEREND) / PAPEREND <<2) |		/* pin 12 */

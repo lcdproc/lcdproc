@@ -27,21 +27,21 @@
  * Keypad connection (optional):
  * Some diodes and resistors are needed, see further documentation.
  * printer port   keypad
- * D0 (2)	  Y0
- * D1 (3)	  Y1
- * D2 (4)	  Y2
- * D3 (5)	  Y3
- * D4 (6)	  Y4
- * D5 (7)	  Y5
- * D6 (8)	  Y6
- * D7 (9)	  Y7
- * nSTRB  (1)     Y8
- * nSEL   (17)    Y9
- * nACK   (10)    X0
- * BUSY   (11)    X1
- * PAPEREND (12)  X2
- * SELIN  (13)    X3
- * nFAULT (15)    X4
+ * D0 (2)	  Y1
+ * D1 (3)	  Y2
+ * D2 (4)	  Y3
+ * D3 (5)	  Y4
+ * D4 (6)	  Y5
+ * D5 (7)	  Y6
+ * D6 (8)	  Y7
+ * D7 (9)	  Y8
+ * nSTRB  (1)     Y9
+ * nSEL   (17)    Y10 (optional, only if no backlight is used)
+ * nACK   (10)    X1
+ * BUSY   (11)    X2
+ * PAPEREND (12)  X3
+ * SELIN  (13)    X4
+ * nFAULT (15)    X5
  *
  * Created modular driver Dec 1999, Benjamin Tse <blt@Comports.com>
  *
@@ -179,7 +179,7 @@ void lcdtime_HD44780_backlight(PrivateData *p, unsigned char state)
 /**
  * Read keypress.
  * \param p      Pointer to driver's private data structure.
- * \param YData  ???
+ * \param YData  Bitmap of rows / lines to enable.
  * \return       Bitmap of the pressed keys.
  */
 unsigned char lcdtime_HD44780_readkeypad(PrivateData *p, unsigned int YData)
@@ -188,19 +188,19 @@ unsigned char lcdtime_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 
 	sem_wait(semid);
 
-	// 10 bits output or 8 bits if >=2 displays
 	// Convert the positive logic to the negative logic on the LPT port
 	port_out(p->port, ~YData & 0x00FF);
-	if (p->numDisplays<=2) {
-		// Can't combine >3 displays with >8 keypad output lines
+	// 9 bits output if backlight is used, 10 bits otherwise
+	if (p->have_backlight)
+		port_out(p->port + 2, (((~YData & 0x0100) >> 8) | p->backlight_bit) ^ OUTMASK);
+	else
 		port_out(p->port + 2, (((~YData & 0x0100) >> 8) | ((~YData & 0x0200) >> 6)) ^ OUTMASK);
-	}
 	if (p->delayBus) p->hd44780_functions->uPause(p, 1);
 
 	// Read inputs
 	readval = ~ port_in(p->port + 1) ^ INMASK;
 
-	// Put port back into idle state for backlight
+	// Put port back into idle state
 	port_out(p->port, p->backlight_bit ^ OUTMASK);
 	sem_signal(semid);
 
