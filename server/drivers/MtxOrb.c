@@ -3,14 +3,14 @@
  *
  * This driver supports the LCD*, LKD*, VFD*, and VKD* series of
  * character mode displays by Matrix Orbital (http://www.matrixorbital.com).
- * 
+ *
  * Data sheets for the displays this driver supports can be found at
  * http://www.matrixorbital.ca/manuals/
  *
  * \note The GLK series of graphical displays is supported by the \c glk driver.
  */
 
-/*
+/*-
     Copyright (C) 1999, William Ferrell and Scott Scriven
 		  2001, Andre Breiler
 		  2001, Philip Pokorny
@@ -64,8 +64,10 @@
 
 /* MO displays allow 25 keys that map by default to 'A' - 'Y' */
 #define MAX_KEY_MAP	25
-// Don't forget to define key mappings in LCDd.conf: KeyMap_A=Enter, ...
-// otherwise you will not get your keypad working.
+/*
+ * Don't forget to define key mappings in LCDd.conf: KeyMap_A=Enter, ...
+ * otherwise you will not get your keypad working.
+ */
 
 #define IS_LCD_DISPLAY	(p->MtxOrb_type == MTXORB_LCD)
 #define IS_LKD_DISPLAY	(p->MtxOrb_type == MTXORB_LKD)
@@ -86,14 +88,7 @@
  * sent to the display across the serial link.
  *
  * In order to display graphic widgets, we define and use our own
- * custom characters.  To avoid multiple definitions of the same
- * custom characters, we use a caching mechanism that remembers
- * what is currently defined.  In order to avoid always redefining
- * the same custom character at the beginning of the table, we
- * rotate the beginning of the table.  This is supposed to reduce
- * the number of character redefinitions and make the caching more
- * effective.  The overall goal is to reduce the number of
- * characters sent to the display.
+ * custom characters.
  */
 
 
@@ -121,7 +116,7 @@ typedef enum {
 /** private data for the \c MtxOrb driver */
 typedef struct MtxOrb_private_data {
 	int fd;			/**< LCD file descriptor */
-	
+
 	/* dimensions */
 	int width, height;
 	int cellwidth, cellheight;
@@ -236,14 +231,14 @@ MtxOrb_init (Driver *drvthis)
 	char buf[256] = "";
 	int tmp, w, h;
 
-        PrivateData *p;
+	PrivateData *p;
 
 	/* Allocate and store private data */
-        p = (PrivateData *) malloc(sizeof(PrivateData));
+	p = (PrivateData *) malloc(sizeof(PrivateData));
 	if (p == NULL)
-	        return -1;
+		return -1;
 	if (drvthis->store_private_ptr(drvthis, p))
-	        return -1;
+		return -1;
 
 	/* Initialise the PrivateData structure */
 	p->fd = -1;
@@ -295,7 +290,7 @@ MtxOrb_init (Driver *drvthis)
 	tmp = drvthis->config_get_bool(drvthis->name, "hasAdjustableBacklight", 0, DEFAULT_ADJ_BACKLIGHT);
 	debug(RPT_INFO, "%s: hasAdjustableBacklight is '%d'", __FUNCTION__, tmp);
 	p->adjustable_backlight = tmp;
-	
+
 	/* Which backlight brightness */
 	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
 	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
@@ -415,7 +410,7 @@ MtxOrb_init (Driver *drvthis)
 #else
 	/* The hard way */
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-	                      | INLCR | IGNCR | ICRNL | IXON );
+			      | INLCR | IGNCR | ICRNL | IXON );
 	portset.c_oflag &= ~OPOST;
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
@@ -434,7 +429,7 @@ MtxOrb_init (Driver *drvthis)
 		report(RPT_ERR, "%s: failed to configure port (%s)", drvthis->name, strerror(errno));
 		return -1;
 	}
- 
+
 
 	/* Make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) calloc(p->width * p->height, 1);
@@ -475,7 +470,7 @@ MtxOrb_init (Driver *drvthis)
 MODULE_EXPORT void
 MtxOrb_close (Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
 	if (p != NULL) {
 		if (p->fd >= 0)
@@ -489,8 +484,8 @@ MtxOrb_close (Driver *drvthis)
 			free(p->backingstore);
 		p->backingstore = NULL;
 
-        	free(p);
-	}	
+		free(p);
+	}
 	drvthis->store_private_ptr(drvthis, NULL);
 	debug(RPT_DEBUG, "MtxOrb: closed");
 }
@@ -504,9 +499,9 @@ MtxOrb_close (Driver *drvthis)
 MODULE_EXPORT int
 MtxOrb_width (Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-        return p->width;
+	return p->width;
 }
 
 
@@ -518,7 +513,7 @@ MtxOrb_width (Driver *drvthis)
 MODULE_EXPORT int
 MtxOrb_height (Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
 	return p->height;
 }
@@ -590,16 +585,13 @@ MtxOrb_string (Driver *drvthis, int x, int y, const char string[])
 MODULE_EXPORT void
 MtxOrb_clear (Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
 	/* set hbar/vbar/bignum mode back to normal character display */
 	p->ccmode = standard;
 
 	/* replace all chars in framebuf with spaces */
 	memset(p->framebuf, ' ', (p->width * p->height));
-
-	/* make backing store differ from framebuf so it all gets cleared by MtxOrb_flush */
-	//memset(p->backingstore, 0xFE, (p->width * p->height));
 
 	debug(RPT_DEBUG, "MtxOrb: cleared screen");
 }
@@ -612,16 +604,16 @@ MtxOrb_clear (Driver *drvthis)
 MODULE_EXPORT void
 MtxOrb_flush (Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 	int modified = 0;
 	int i, j;
 
 	for (i = 0; i < p->height; i++) {
-		// set  pointers to start of the line in frame buffer & backing store
+		/* set pointers to start of the line in frame buffer & backing store */
 		unsigned char *sp = p->framebuf + (i * p->width);
 		unsigned char *sq = p->backingstore + (i * p->width);
 
-		// set  pointers to end of the line in frame buffer & backing store
+		/* set pointers to end of the line in frame buffer & backing store */
 		unsigned char *ep = sp + (p->width - 1);
 		unsigned char *eq = sq + (p->width - 1);
 		int length = 0;
@@ -634,11 +626,11 @@ MtxOrb_flush (Driver *drvthis)
 		 * - leave out leading and trailing parts that are identical
 		 */
 
-		// skip over leading identical portions of the line
+		/* skip over leading identical portions of the line */
 		for (j = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, j++)
 			;
 
-		// skip over trailing identical portions of the line
+		/* skip over trailing identical portions of the line */
 		for (length = p->width - j; (length > 0) && (*ep == *eq); ep--, eq--, length--)
 			;
 
@@ -648,7 +640,7 @@ MtxOrb_flush (Driver *drvthis)
 			unsigned char *byte;
 
 			memcpy(out, sp, length);
-			// replace command character \xFE by space
+			/* replace command character \xFE by space */
 			while ((byte = memchr(out, '\xFE', length)) != NULL)
 				*byte = ' ';
 
@@ -658,8 +650,8 @@ MtxOrb_flush (Driver *drvthis)
 			MtxOrb_cursor_goto(drvthis, j+1, i+1);
 			write(p->fd, out, length);
 			modified++;
-		}      
-	}	// i < p->height
+		}
+	}
 
 	if (modified)
 		memcpy(p->backingstore, p->framebuf, p->width * p->height);
@@ -679,14 +671,14 @@ MtxOrb_flush (Driver *drvthis)
 MODULE_EXPORT void
 MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
 	/* Convert 1-based coords to 0-based... */
 	x--;
 	y--;
 
 	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
-	                p->framebuf[(y * p->width) + x] = c;
+			p->framebuf[(y * p->width) + x] = c;
 
 	debug(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x, y);
 }
@@ -703,7 +695,7 @@ MtxOrb_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT int
 MtxOrb_get_contrast (Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
 	return p->contrast;
 }
@@ -720,7 +712,7 @@ MtxOrb_get_contrast (Driver *drvthis)
 MODULE_EXPORT void
 MtxOrb_set_contrast (Driver *drvthis, int promille)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 	int real_contrast = (int) ((long) promille * 255 / 1000);
 
 	/* Check it */
@@ -798,7 +790,7 @@ MtxOrb_backlight (Driver *drvthis, int on)
 	PrivateData *p = drvthis->private_data;
 
 	if (p->adjustable_backlight) {
-	
+
 		int promille = (on == BACKLIGHT_ON)
 				     ? p->brightness
 				     : p->offbrightness;
@@ -844,7 +836,7 @@ MtxOrb_backlight (Driver *drvthis, int on)
 MODULE_EXPORT void
 MtxOrb_output (Driver *drvthis, int state)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 	unsigned char out[5] = { '\xFE', 0, 0 };
 
 	state &= 0x3F;	/* strip to six bits */
@@ -881,7 +873,7 @@ MtxOrb_output (Driver *drvthis, int state)
 static void
 MtxOrb_hardware_clear (Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
 	write(p->fd, "\xFE" "X", 2);
 
@@ -897,7 +889,7 @@ MtxOrb_hardware_clear (Driver *drvthis)
 static void
 MtxOrb_linewrap (Driver *drvthis, int on)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 	unsigned char out[3] = { '\xFE', 0 };
 
 	out[1] = (on) ? 'C' : 'D';
@@ -915,7 +907,7 @@ MtxOrb_linewrap (Driver *drvthis, int on)
 static void
 MtxOrb_autoscroll (Driver *drvthis, int on)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 	unsigned char out[3] = { '\xFE', 0 };
 
 	out[1] = (on) ? 'Q' : 'R';
@@ -935,7 +927,7 @@ MtxOrb_autoscroll (Driver *drvthis, int on)
 static void
 MtxOrb_cursorblink (Driver *drvthis, int on)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 	unsigned char out[3] = { '\xFE', 0 };
 
 	out[1] = (on) ? 'S' : 'T';
@@ -977,7 +969,7 @@ MtxOrb_get_info (Driver *drvthis)
 	char tmp[10], buf[255];
 	int model = 0;
 	int i;
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
 	fd_set rfds;
 
@@ -1004,7 +996,7 @@ MtxOrb_get_info (Driver *drvthis)
 	tv.tv_sec = 0;		/* seconds */
 	tv.tv_usec = 500;	/* microseconds */
 
-	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); 
+	retval = select(p->fd+1, &rfds, NULL, NULL, &tv);
 
 	if (retval) {
 		if (read(p->fd, &tmp, 1) < 0)
@@ -1044,12 +1036,12 @@ MtxOrb_get_info (Driver *drvthis)
 	tv.tv_sec = 0;		/* seconds */
 	tv.tv_usec = 500;	/* microseconds */
 
-	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); 
+	retval = select(p->fd+1, &rfds, NULL, NULL, &tv);
 
 	if (retval) {
 		if (read(p->fd, &tmp, 2) < 0)
 			report(RPT_WARNING, "%s: unable to read data", drvthis->name);
-		
+
 	}
 	else
 		report(RPT_WARNING, "%s: unable to read device firmware revision", drvthis->name);
@@ -1072,7 +1064,7 @@ MtxOrb_get_info (Driver *drvthis)
 	tv.tv_sec = 0;		/* seconds */
 	tv.tv_usec = 500;	/* microseconds */
 
-	retval = select(p->fd+1, &rfds, NULL, NULL, &tv); 
+	retval = select(p->fd+1, &rfds, NULL, NULL, &tv);
 
 	if (retval) {
 		if (read(p->fd, &tmp, 2) < 0)
@@ -1083,7 +1075,7 @@ MtxOrb_get_info (Driver *drvthis)
 
 	snprintf(buf, sizeof(buf), "Serial No: 0x%02x 0x%02x", tmp[0], tmp[1]);
 	strncat(p->info, buf, sizeof(p->info) - strlen(p->info) - 1);
-		
+
 	return p->info;
 }
 
@@ -1117,7 +1109,7 @@ MtxOrb_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 		memset(vBar, 0x00, sizeof(vBar));
 
 		for (i = 1; i < p->cellheight; i++) {
-			// add pixel line per pixel line ...
+			/* add pixel line per pixel line ... */
 			vBar[p->cellheight - i] = 0xFF;
 			MtxOrb_set_char(drvthis, i, vBar);
 		}
@@ -1156,7 +1148,7 @@ MtxOrb_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 		memset(hBar, 0x00, sizeof(hBar));
 
 		for (i = 1; i <= p->cellwidth; i++) {
-			// fill pixel columns from left to right.
+			/* fill pixel columns from left to right. */
 			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
 			MtxOrb_set_char(drvthis, i, hBar);
 		}
@@ -1194,7 +1186,7 @@ MtxOrb_num (Driver *drvthis, int x, int num)
 		do_init = 1;
 	}
 
-	// Lib_adv_bignum does everything needed to show the bignumbers.
+	/* Lib_adv_bignum does everything needed to show the bignumbers. */
 	lib_adv_bignum(drvthis, x, num, 0, do_init);
 }
 
@@ -1207,9 +1199,7 @@ MtxOrb_num (Driver *drvthis, int x, int num)
 MODULE_EXPORT int
 MtxOrb_get_free_chars (Driver *drvthis)
 {
-//PrivateData *p = drvthis->private_data;
-
-  return NUM_CCs;
+	return NUM_CCs;
 }
 
 
@@ -1256,9 +1246,7 @@ MtxOrb_set_char (Driver *drvthis, int n, unsigned char *dat)
 MODULE_EXPORT int
 MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 {
-//	PrivateData *p = drvthis->private_data;
-
-	static unsigned char heart_open[] = 
+	static unsigned char heart_open[] =
 		{ b__XXXXX,
 		  b__X_X_X,
 		  b_______,
@@ -1267,7 +1255,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XX_XX,
 		  b__XXXXX };
-	static unsigned char heart_filled[] = 
+	static unsigned char heart_filled[] =
 		{ b__XXXXX,
 		  b__X_X_X,
 		  b___X_X_,
@@ -1276,7 +1264,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X_X_X,
 		  b__XX_XX,
 		  b__XXXXX };
-	static unsigned char arrow_up[] = 
+	static unsigned char arrow_up[] =
 		{ b____X__,
 		  b___XXX_,
 		  b__X_X_X,
@@ -1285,7 +1273,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b____X__,
 		  b_______ };
-	static unsigned char arrow_down[] = 
+	static unsigned char arrow_down[] =
 		{ b____X__,
 		  b____X__,
 		  b____X__,
@@ -1295,7 +1283,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b_______ };
 	/*
-	static unsigned char arrow_left[] = 
+	static unsigned char arrow_left[] =
 		{ b_______,
 		  b____X__,
 		  b___X___,
@@ -1304,7 +1292,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b_______,
 		  b_______ };
-	static unsigned char arrow_right[] = 
+	static unsigned char arrow_right[] =
 		{ b_______,
 		  b____X__,
 		  b_____X_,
@@ -1314,7 +1302,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b_______ };
 	*/
-	static unsigned char checkbox_off[] = 
+	static unsigned char checkbox_off[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -1323,7 +1311,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char checkbox_on[] = 
+	static unsigned char checkbox_on[] =
 		{ b____X__,
 		  b____X__,
 		  b__XXX_X,
@@ -1332,7 +1320,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char checkbox_gray[] = 
+	static unsigned char checkbox_gray[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -1342,7 +1330,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b__XXXXX,
 		  b_______ };
 	/*
-	static unsigned char selector_left[] = 
+	static unsigned char selector_left[] =
 		{ b___X___,
 		  b___XX__,
 		  b___XXX_,
@@ -1351,7 +1339,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b___XX__,
 		  b___X___,
 		  b_______ };
-	static unsigned char selector_right[] = 
+	static unsigned char selector_right[] =
 		{ b_____X_,
 		  b____XX_,
 		  b___XXX_,
@@ -1360,7 +1348,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b____XX_,
 		  b_____X_,
 		  b_______ };
-	static unsigned char ellipsis[] = 
+	static unsigned char ellipsis[] =
 		{ b_______,
 		  b_______,
 		  b_______,
@@ -1369,7 +1357,7 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b__X_X_X,
 		  b_______ };
-	static unsigned char block_filled[] = 
+	static unsigned char block_filled[] =
 		{ b__XXXXX,
 		  b__XXXXX,
 		  b__XXXXX,
@@ -1433,19 +1421,19 @@ MtxOrb_icon (Driver *drvthis, int x, int y, int icon)
  * \param y        Vertical cursor position (row).
  * \param state    New cursor state.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 MtxOrb_cursor (Driver *drvthis, int x, int y, int state)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	/* set cursor state */
 	switch (state) {
-		case CURSOR_OFF:	// no cursor
+		case CURSOR_OFF:	/* no cursor */
 			write(p->fd, "\xFE" "K", 2);
 			break;
-		case CURSOR_UNDER:	// underline cursor
-		case CURSOR_BLOCK:	// inverting blinking block
-		case CURSOR_DEFAULT_ON:	// blinking block
+		case CURSOR_UNDER:	/* underline cursor */
+		case CURSOR_BLOCK:	/* inverting blinking block */
+		case CURSOR_DEFAULT_ON:	/* blinking block */
 		default:
 			write(p->fd, "\xFE" "J", 2);
 			break;
@@ -1461,10 +1449,6 @@ MtxOrb_cursor (Driver *drvthis, int x, int y, int state)
  * \param drvthis  Pointer to driver structure.
  * \return         String representation of the key.
  *                 \c NULL if nothing available / unmapped key.
- *
- * \todo Recover the code for I2C connectivity to MtxOrb
- * and don't query the LCD if it does not support keypad.
- * Otherwise crash of the LCD and/or I2C bus.
  */
 MODULE_EXPORT const char *
 MtxOrb_get_key (Driver *drvthis)
@@ -1473,7 +1457,7 @@ MtxOrb_get_key (Driver *drvthis)
 	char key = 0;
 	struct pollfd fds[1];
 
-	/* don't query the keyboard if there are no mapped keys; see \todo above */
+	/* don't query the keyboard if there are no mapped keys */
 	if ((p->keys == 0) && (!p->keypad_test_mode))
 		return NULL;
 
