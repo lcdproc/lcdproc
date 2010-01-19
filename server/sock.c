@@ -11,6 +11,7 @@
  *               2003, Benjamin Tse (blt@ieee.org) - Winsock port
  *               2004, F5 Networks, Inc. - IP-address input
  *               2005, Peter Marschall - error checks, ...
+ *               2009, Markus Dolze - input ring buffer
  */
 
 #ifdef HAVE_CONFIG_H
@@ -43,6 +44,8 @@
 #include "screen.h"
 #include "shared/report.h"
 #include "screenlist.h"
+#include "shared/sring.h"
+#include "shared/defines.h"
 
 
 /****************************************************************************/
@@ -55,6 +58,9 @@ static int listening_fd;
  * as sockets can be arbitrary values instead of low value integers. */
 static LinkedList* openSocketList = NULL;
 static LinkedList* freeClientSocketList = NULL;
+
+/* ring buffer for incoming messages */
+static sring_buffer *messageRing;
 
 /** Mapping between socket and associated client */
 typedef struct _ClientSocketMap
@@ -147,24 +153,14 @@ sock_init(char* bind_addr, int bind_port)
 		LL_AddNode(openSocketList, (void*) entry);
 	}
 
+	if ((messageRing = sring_create(MAXMSG)) == NULL) {
+		report(RPT_ERR, "%s: error allocating receive buffer.",
+			 __FUNCTION__);
+		return -1;
+	}
+
 	return 0;
 }
-
-/*
-This code gets the send and receive buffer sizes.
-  {
-     int val, len, sock;
-     sock = new;
-
-     len = sizeof(int);
-     getsockopt(sock, SOL_SOCKET, SO_SNDBUF, &val, &len);
-     debug(RPT_DEBUG, "SEND buffer: %i bytes", val);
-
-     len = sizeof(int);
-     getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &val, &len);
-     debug(RPT_DEBUG, "RECV buffer: %i bytes", val);
-  }
-*/
 
 
 /** Cleanup socket management structures.
@@ -200,6 +196,7 @@ sock_shutdown(void)
 	close(listening_fd);
 	LL_Destroy(freeClientSocketList);
 	free(freeClientSocketPool);
+	sring_destroy(messageRing);
 
 #ifdef WINSOCK2
 	if (WSACleanup() != 0) {
@@ -373,14 +370,11 @@ sock_poll_clients(void)
 			}
 			else {	/* Data arriving on an already-connected socket. */
 				int err = 0;
-
-				do {
-					debug(RPT_DEBUG, "%s: reading...", __FUNCTION__);
-					err = sock_read_from_client(clientSocket);
-					debug(RPT_DEBUG, "%s: ...done", __FUNCTION__);
-					if (err < 0)
-						sock_destroy_socket();
-				} while (err > 0);
+				debug(RPT_DEBUG, "%s: reading...", __FUNCTION__);
+				err = sock_read_from_client(clientSocket);
+				debug(RPT_DEBUG, "%s: ...done", __FUNCTION__);
+				if (err < 0)
+					sock_destroy_socket();
 			}
 		}
 	}
@@ -395,44 +389,52 @@ sock_poll_clients(void)
 static int
 sock_read_from_client(ClientSocketMap *clientSocketMap)
 {
-	char buffer[MAXMSG + 1];
-	int nbytes, i;
+	char buffer[MAXMSG];
+	int nbytes;
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	errno = 0;
-        nbytes = sock_recv(clientSocketMap->socket, buffer, MAXMSG);
-	if (nbytes < 0) {
-		if (errno != EAGAIN)
-			report(RPT_DEBUG, "%s: Error on socket %d - %s", 
-				__FUNCTION__, clientSocketMap->socket, sock_geterror());
-		return 0;
-	}
-	else if (nbytes == 0) {		/* EOF*/
-		return -1;
-	}
-	else if (nbytes > (MAXMSG - (MAXMSG / 8))) {	/* Very noisy client...*/
-		sock_send_error(clientSocketMap->socket, "Too much data received... quiet down!\n");
-		return -1;
-	}
-	else {				/* Data Read */
-		buffer[nbytes] = '\0';
-		/* Now, replace zeros with linefeeds...*/
-		for (i = 0; i < nbytes; i++)
-			if (buffer[i] == 0)
-				buffer[i] = '\n';
-		/* Enqueue a "client message" here...*/
-		if (clientSocketMap->client) {
-			client_add_message(clientSocketMap->client, buffer);
-		} else {
-			report(RPT_DEBUG, "%s:  Can't find client %d", 
-				__FUNCTION__, clientSocketMap->socket);
-		}
+	nbytes = sock_recv(clientSocketMap->socket, buffer, MAXMSG);
 
-		report(RPT_DEBUG, "%s: got message from client %d: \"%s\"", 
-			__FUNCTION__, clientSocketMap->socket, buffer);
-		return nbytes;
+	while (nbytes > 0) {		/* Data available */
+		int fr;
+		char *str;
+
+		debug(RPT_DEBUG, "%s: received %4d bytes", __FUNCTION__, nbytes);
+
+		/* Append to ring buffer */
+		sring_write(messageRing, buffer, nbytes);
+
+		/* Process all available message in ring buffer */
+		do {
+			str = sring_read_string(messageRing);
+			if (clientSocketMap->client) {
+				client_add_message(clientSocketMap->client, str);
+			} else {
+				report(RPT_DEBUG, "%s: Can't find client %d", 
+					__FUNCTION__, clientSocketMap->socket);
+			}
+		} while (str != NULL);
+
+		/* Read again, but only as much as space is left */
+		fr = sring_getMaxWrite(messageRing);
+		if (fr == 0)
+			report(RPT_WARNING, "%s: Message buffer full", __FUNCTION__);
+
+		nbytes = sock_recv(clientSocketMap->socket, buffer, min(MAXMSG, fr));
 	}
+
+	if (sring_getMaxRead(messageRing) > 0) {
+		report(RPT_WARNING, "%s: left over bytes in message buffer",
+			__FUNCTION__);
+		sring_clear(messageRing);
+	}
+
+	if (nbytes < 0 && errno == EAGAIN)
+		return 0;		/* No data is not an error */
+
+	return -1;			/* EOF */
 }
 
 
@@ -521,5 +523,3 @@ int verify_ipv6(const char *addr)
 	}
 	return (result > 0) ? 1 : 0;
 } 
-
-

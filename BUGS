@@ -2,9 +2,6 @@ Known Bugs:
 --------------
 
 V0.5dev:
-  - A client gets disconnected if it sends a many commands quickly. This can
-    happen during initial screen setup or if vBars are used on large (40x4)
-    displays.
   - If vBars are used together with ICON_BLOCK_FILLED on the same screen and
     that icon is implemented as a custom char, it sometimes is replaced with
     a non full block from the vBar.

@@ -129,33 +129,18 @@ int
 client_add_message(Client *c, char *message)
 {
 	int err = 0;
-	char *dup;
-	char *str, *cp;
-	char delimiters[] = "\n\r\0";
-
-	debug(RPT_DEBUG, "%s(c=[%d], message=\"%s\")", __FUNCTION__, c->sock, message);
 
 	if (!c)
 		return -1;
 	if (!message)
 		return -1;
 
-	/* Copy the string to avoid overwriting the original...*/
-	dup = strdup(message);
-	if (!dup) {
-		report(RPT_ERR, "%s: Error allocating", __FUNCTION__);
-		return -1;
-	}
-	/* Now split the string into lines and enqueue each one...*/
-	for (str = strtok(dup, delimiters); str; str = strtok(NULL, delimiters)) {
-		cp = strdup(str);
-		debug(RPT_DEBUG, "%s: Queued message: \"%s\"", __FUNCTION__, cp);
-		err += LL_Enqueue(c->messages, (void *) cp);
+	if (strlen(message) > 0) {
+		debug(RPT_DEBUG, "%s(c=[%d], message=\"%s\")", __FUNCTION__,
+			c->sock, message);
+		err = LL_Enqueue(c->messages, (void *) message);
 	}
 
-	free(dup);
-
-	/* Err is the number of errors encountered...*/
 	return err;
 }
 
