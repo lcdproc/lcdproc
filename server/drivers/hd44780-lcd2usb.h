@@ -8,6 +8,9 @@
 #define LCD2USB_VENDORID	0x0403
 #define LCD2USB_PRODUCTID	0xc630
 
+/* current protocol supports up to 4 bytes */
+#define LCD2USB_MAX_CMD		4
+
 /* target is a bit map for CMD/DATA */
 #define LCD2USB_CTRL_0		(1<<3)
 #define LCD2USB_CTRL_1		(1<<4)

@@ -387,6 +387,7 @@ HD44780_init(Driver *drvthis)
 	p->hd44780_functions->scankeypad = NULL;
 	p->hd44780_functions->output = NULL;
 	p->hd44780_functions->close = NULL;
+	p->hd44780_functions->flush = NULL;
 
 	// Do local (=connection type specific) display init
 	if (init_fn(drvthis) != 0)
@@ -499,6 +500,8 @@ common_init(PrivateData *p, unsigned char if_bit)
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, HOMECURSOR);
 	p->hd44780_functions->uPause(p, 1600);
+	if (p->hd44780_functions->flush != NULL)
+		p->hd44780_functions->flush(p);
 }
 
 
@@ -627,6 +630,8 @@ HD44780_position(Driver *drvthis, int x, int y)
 	}
 	p->hd44780_functions->senddata(p, dispID, RS_INSTR, POSITION | DDaddr);
 	p->hd44780_functions->uPause(p, 40);  // Minimum exec time for all commands
+	if (p->hd44780_functions->flush != NULL)
+		p->hd44780_functions->flush(p);
 }
 
 
@@ -703,6 +708,8 @@ HD44780_flush(Driver *drvthis)
 			count++;
 		}
 	}
+	if (p->hd44780_functions->flush != NULL)
+		p->hd44780_functions->flush(p);	
 	debug(RPT_DEBUG, "%s: flushed %d custom chars", drvthis->name, count);
 }
 

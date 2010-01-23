@@ -216,6 +216,10 @@ typedef struct hwDependentFns {
 	// ch	      - character to display or instruction value
 	void (*senddata)(PrivateData *p, unsigned char dispID, unsigned char flags, unsigned char ch);
 
+	// Flush data to the display. To be used by subdrivers that
+	// queue from senddata internally.
+	void (*flush)(PrivateData *p);
+
 	// Switch the backlight on or off
 	// state      - to be or not to be on
 	void (*backlight)(PrivateData *p, unsigned char state);
@@ -241,6 +245,7 @@ typedef struct hwDependentFns {
 
         // Close the interface on shutdown
         void (*close)(PrivateData *p);
+
 
 } HD44780_functions;				  /* for want of a better name :-) */
 

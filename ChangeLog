@@ -21,6 +21,7 @@ v.0.5dev (ongoing development)
  * hd44780: Change mapping for spanish 'n with tilde' characters
  * hd44780: Exclude pin for switchable backlight from keypad scanning
  * server core: New network input buffering
+ * hd44780: Extended subdriver API and performance improvement for lcd2usb
 
 v0.5.3
  + lcdexec: notification when called program finishes

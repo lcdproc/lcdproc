@@ -31,6 +31,12 @@ void lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state);
 unsigned char lcd2usb_HD44780_scankeypad(PrivateData *p);
 void lcd2usb_HD44780_close(PrivateData *p);
 void lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value);
+void lcd2usb_HD44780_flush(PrivateData *p);
+
+/* small data buffer */
+unsigned char buffer[LCD2USB_MAX_CMD];
+int buffer_current_type_id = -1;
+int buffer_current_use = 0;
 
 
 /**
@@ -63,6 +69,7 @@ hd_init_lcd2usb(Driver *drvthis)
   p->hd44780_functions->scankeypad = lcd2usb_HD44780_scankeypad;
   p->hd44780_functions->close = lcd2usb_HD44780_close;
   p->hd44780_functions->set_contrast = lcd2usb_HD44780_set_contrast;
+  p->hd44780_functions->flush = lcd2usb_HD44780_flush;
 
   /* try to find USB device */
 #if 0
@@ -116,9 +123,9 @@ hd_init_lcd2usb(Driver *drvthis)
   return 0;
 }
 
-
 /**
- * Send data or commands to the display.
+ * Send data or command to the display. The data/command is internally
+ * queued.
  * \param p          Pointer to driver's private data structure.
  * \param displayID  ID of the display (or 0 for all) to send data to.
  * \param flags      Defines whether to end a command or data.
@@ -131,9 +138,41 @@ lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
   int id = (displayID == 0) ? LCD2USB_CTRL_BOTH
                           : ((displayID == 1) ? LCD2USB_CTRL_0 : LCD2USB_CTRL_1);
 
-  usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, (type | id), ch, 0, NULL, 0, 1000);
+  /* flush current buffer if target or command type are different */
+  if ((buffer_current_type_id >= 0) && (buffer_current_type_id != (type | id)))
+    lcd2usb_HD44780_flush(p);
+
+  /* add new item to buffer */
+  buffer_current_type_id = (type | id);
+  buffer[buffer_current_use++] = ch;
+
+  /* flush buffer if it's full */
+  if (buffer_current_use == LCD2USB_MAX_CMD)
+    lcd2usb_HD44780_flush(p);
 }
 
+/**
+ * Actually send data or command to the display.
+ * \param p  Pointer to driver's private data structure.
+ */
+void
+lcd2usb_HD44780_flush(PrivateData *p)
+{
+  /* only if some data available */
+  if (buffer_current_use == 0)
+    return;
+
+  /* construct and send message */
+  usb_control_msg(p->usbHandle, USB_TYPE_VENDOR,
+                  buffer_current_type_id | (buffer_current_use - 1),
+                  buffer[0] | (buffer[1] << 8),
+                  buffer[2] | (buffer[3] << 8),
+                  NULL, 0, 1000);
+
+  /* buffer is now free again. Not necessary to clear what's in it. */
+  buffer_current_type_id = -1;
+  buffer_current_use = 0;
+}
 
 /**
  * Turn display backlight on or off.
@@ -168,31 +207,6 @@ lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value)
   if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_CONTRAST,
                               value, 0, NULL, 0, 1000) < 0)
     p->hd44780_functions->drv_report(RPT_WARNING, "lcd2usb_HD44780_set_contrast: setting contrast failed");
-}
-
-
-/**
- * Set on/off brightness.
- * The value is not actually transmitted to the display. lcd2usb_hd44780_backlight
- * has to be called to do this.
- * \param drvthis   Pointer to driver structure.
- * \param state     Brightness state (on/off) for which we want to store the value.
- * \param promille  New brightness in promille.
- */
-void
-lcd2usb_set_brightness(Driver *drvthis, int state, int promille)
-{
-  PrivateData *p = drvthis->private_data;
-
-  /* check if value within range */
-  if (promille < 0 || promille > 1000)
-    return;
-
-  /* store the software value */
-  if (state == BACKLIGHT_ON)
-    p->brightness = promille;
-  else
-    p->offbrightness = promille;
 }
 
 
