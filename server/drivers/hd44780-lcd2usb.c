@@ -4,9 +4,10 @@
  * See http://www.harbaum.org/till/lcd2usb.
  */
 
-/* Copyright (C) 2007 Peter Marschall <peter@adpm.de>
- *               2007 Markus Dolze 
- *
+/*-
+ * Copyright (C) 2007 Peter Marschall <peter@adpm.de>
+ * 		 2007,2009 Markus Dolze
+ * 
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  */
@@ -60,67 +61,70 @@ lcd2usb_HD44780_uPause(PrivateData *p, int usecs)
 int
 hd_init_lcd2usb(Driver *drvthis)
 {
-  PrivateData *p = (PrivateData*) drvthis->private_data;
+	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-  struct usb_bus *bus;
+	struct usb_bus *bus;
 
-  p->hd44780_functions->senddata = lcd2usb_HD44780_senddata;
-  p->hd44780_functions->backlight = lcd2usb_HD44780_backlight;
-  p->hd44780_functions->scankeypad = lcd2usb_HD44780_scankeypad;
-  p->hd44780_functions->close = lcd2usb_HD44780_close;
-  p->hd44780_functions->set_contrast = lcd2usb_HD44780_set_contrast;
-  p->hd44780_functions->flush = lcd2usb_HD44780_flush;
+	p->hd44780_functions->senddata = lcd2usb_HD44780_senddata;
+	p->hd44780_functions->backlight = lcd2usb_HD44780_backlight;
+	p->hd44780_functions->scankeypad = lcd2usb_HD44780_scankeypad;
+	p->hd44780_functions->close = lcd2usb_HD44780_close;
+	p->hd44780_functions->set_contrast = lcd2usb_HD44780_set_contrast;
+	p->hd44780_functions->flush = lcd2usb_HD44780_flush;
 
-  /* try to find USB device */
+	/* try to find USB device */
 #if 0
-  usb_debug = 2;
+	usb_debug = 2;
 #endif
 
-  usb_init();
-  usb_find_busses();
-  usb_find_devices();
+	usb_init();
+	usb_find_busses();
+	usb_find_devices();
 
-  p->usbHandle = NULL;
-  for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
-    struct usb_device *dev;
+	p->usbHandle = NULL;
+	for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
+		struct usb_device *dev;
 
-    for (dev = bus->devices; dev != NULL; dev = dev->next) {
+		for (dev = bus->devices; dev != NULL; dev = dev->next) {
 
-      /* Check if this device is a LCD2USB device */
-      if ((dev->descriptor.idVendor == LCD2USB_VENDORID) &&
-	  (dev->descriptor.idProduct == LCD2USB_PRODUCTID)) {
+			/* Check if this device is a LCD2USB device */
+			if ((dev->descriptor.idVendor == LCD2USB_VENDORID) &&
+			 (dev->descriptor.idProduct == LCD2USB_PRODUCTID)) {
 
-        /* LCD2USB device found; try to find its description */
-        p->usbHandle = usb_open(dev);
-        if (p->usbHandle == NULL) {
-          report(RPT_WARNING, "hd_init_lcd2usb: unable to open device");
-        }
-        else {
-          /* read firmware version */
-	  unsigned char buffer[2];
+				/* 
+				 * LCD2USB device found; try to find its
+				 * description
+				 */
+				p->usbHandle = usb_open(dev);
+				if (p->usbHandle == NULL) {
+					report(RPT_WARNING, "hd_init_lcd2usb: unable to open device");
+				}
+				else {
+					/* read firmware version */
+					unsigned char buffer[2];
 
-          if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, 
-	                      LCD2USB_GET_FWVER, 0, 0, (char *)buffer, sizeof(buffer), 1000) == 2)
-	      report(RPT_INFO, "hd_init_lcd2usb: device with firmware version %d.%02d found", buffer[0], buffer[1]);
-        }
-      }
-    }
-  }
+					if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN,
+							    LCD2USB_GET_FWVER, 0, 0, (char *)buffer, sizeof(buffer), 1000) == 2)
+						report(RPT_INFO, "hd_init_lcd2usb: device with firmware version %d.%02d found", buffer[0], buffer[1]);
+				}
+			}
+		}
+	}
 
-  if (p->usbHandle != NULL) {
-    debug(RPT_DEBUG, "hd_init_lcd2usb: opening device succeeded");
-  }
-  else {
-    report(RPT_ERR, "hd_init_lcd2usb: no (matching) LCD2USB device found");
-    return -1;
-  }
+	if (p->usbHandle != NULL) {
+		debug(RPT_DEBUG, "hd_init_lcd2usb: opening device succeeded");
+	}
+	else {
+		report(RPT_ERR, "hd_init_lcd2usb: no (matching) LCD2USB device found");
+		return -1;
+	}
 
-  common_init(p, IF_4BIT);
+	common_init(p, IF_4BIT);
 
-  /* replace uPause with empty one after initialization */
-  p->hd44780_functions->uPause = lcd2usb_HD44780_uPause;
+	/* replace uPause with empty one after initialization */
+	p->hd44780_functions->uPause = lcd2usb_HD44780_uPause;
 
-  return 0;
+	return 0;
 }
 
 /**
@@ -134,21 +138,21 @@ hd_init_lcd2usb(Driver *drvthis)
 void
 lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-  int type = (flags == RS_DATA) ? LCD2USB_DATA : LCD2USB_CMD;
-  int id = (displayID == 0) ? LCD2USB_CTRL_BOTH
-                          : ((displayID == 1) ? LCD2USB_CTRL_0 : LCD2USB_CTRL_1);
+	int type = (flags == RS_DATA) ? LCD2USB_DATA : LCD2USB_CMD;
+	int id = (displayID == 0) ? LCD2USB_CTRL_BOTH
+	: ((displayID == 1) ? LCD2USB_CTRL_0 : LCD2USB_CTRL_1);
 
-  /* flush current buffer if target or command type are different */
-  if ((buffer_current_type_id >= 0) && (buffer_current_type_id != (type | id)))
-    lcd2usb_HD44780_flush(p);
+	/* flush current buffer if target or command type are different */
+	if ((buffer_current_type_id >= 0) && (buffer_current_type_id != (type | id)))
+		lcd2usb_HD44780_flush(p);
 
-  /* add new item to buffer */
-  buffer_current_type_id = (type | id);
-  buffer[buffer_current_use++] = ch;
+	/* add new item to buffer */
+	buffer_current_type_id = (type | id);
+	buffer[buffer_current_use++] = ch;
 
-  /* flush buffer if it's full */
-  if (buffer_current_use == LCD2USB_MAX_CMD)
-    lcd2usb_HD44780_flush(p);
+	/* flush buffer if it's full */
+	if (buffer_current_use == LCD2USB_MAX_CMD)
+		lcd2usb_HD44780_flush(p);
 }
 
 /**
@@ -158,20 +162,20 @@ lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 void
 lcd2usb_HD44780_flush(PrivateData *p)
 {
-  /* only if some data available */
-  if (buffer_current_use == 0)
-    return;
+	/* only if some data available */
+	if (buffer_current_use == 0)
+		return;
 
-  /* construct and send message */
-  usb_control_msg(p->usbHandle, USB_TYPE_VENDOR,
-                  buffer_current_type_id | (buffer_current_use - 1),
-                  buffer[0] | (buffer[1] << 8),
-                  buffer[2] | (buffer[3] << 8),
-                  NULL, 0, 1000);
+	/* construct and send message */
+	usb_control_msg(p->usbHandle, USB_TYPE_VENDOR,
+			buffer_current_type_id | (buffer_current_use - 1),
+			buffer[0] | (buffer[1] << 8),
+			buffer[2] | (buffer[3] << 8),
+			NULL, 0, 1000);
 
-  /* buffer is now free again. Not necessary to clear what's in it. */
-  buffer_current_type_id = -1;
-  buffer_current_use = 0;
+	/* buffer is now free again. Not necessary to clear what's in it. */
+	buffer_current_type_id = -1;
+	buffer_current_use = 0;
 }
 
 /**
@@ -184,15 +188,15 @@ lcd2usb_HD44780_flush(PrivateData *p)
 void
 lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
 {
-  /* get backlight brightness */
-  int promille = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
-  
-  p->hd44780_functions->drv_debug(RPT_DEBUG, "lcd2usb_HD44780_backlight: Setting backlight to %d", promille);
+	/* get backlight brightness */
+	int promille = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 
-  /* and set it (converted from [0,1000] -> [0,255]) */
-  if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_BRIGHTNESS,
-                   (promille * 255) / 1000, 0, NULL, 0, 1000) < 0)
-    p->hd44780_functions->drv_report(RPT_WARNING, "lcd2usb_HD44780_backlight: setting backlight failed");
+	p->hd44780_functions->drv_debug(RPT_DEBUG, "lcd2usb_HD44780_backlight: Setting backlight to %d", promille);
+
+	/* and set it (converted from [0,1000] -> [0,255]) */
+	if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_BRIGHTNESS,
+			    (promille * 255) / 1000, 0, NULL, 0, 1000) < 0)
+		p->hd44780_functions->drv_report(RPT_WARNING, "lcd2usb_HD44780_backlight: setting backlight failed");
 }
 
 
@@ -204,9 +208,9 @@ lcd2usb_HD44780_backlight(PrivateData *p, unsigned char state)
 void
 lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value)
 {
-  if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_CONTRAST,
-                              value, 0, NULL, 0, 1000) < 0)
-    p->hd44780_functions->drv_report(RPT_WARNING, "lcd2usb_HD44780_set_contrast: setting contrast failed");
+	if (usb_control_msg(p->usbHandle, USB_TYPE_VENDOR, LCD2USB_SET_CONTRAST,
+			    value, 0, NULL, 0, 1000) < 0)
+		p->hd44780_functions->drv_report(RPT_WARNING, "lcd2usb_HD44780_set_contrast: setting contrast failed");
 }
 
 
@@ -218,19 +222,19 @@ lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value)
 unsigned char
 lcd2usb_HD44780_scankeypad(PrivateData *p)
 {
-  unsigned char       buffer[2];
-  int                 nBytes;
+	unsigned char buffer[2];
+	int nBytes;
 
-  /* send control request and accept return value */
-  nBytes = usb_control_msg(p->usbHandle, 
-	   USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN, 
-	   LCD2USB_GET_KEYS, 0, 0, (char *) buffer, sizeof(buffer), 1000);
+	/* send control request and accept return value */
+	nBytes = usb_control_msg(p->usbHandle,
+		       USB_TYPE_VENDOR | USB_RECIP_DEVICE | USB_ENDPOINT_IN,
+	      LCD2USB_GET_KEYS, 0, 0, (char *) buffer, sizeof(buffer), 1000);
 
-  if (nBytes != -1) {
-    return buffer[0];
-  }
+	if (nBytes != -1) {
+		return buffer[0];
+	}
 
-  return '\0';
+	return '\0';
 }
 
 
@@ -241,10 +245,10 @@ lcd2usb_HD44780_scankeypad(PrivateData *p)
 void
 lcd2usb_HD44780_close(PrivateData *p)
 {
-  if (p->usbHandle != NULL) {
-    usb_close(p->usbHandle);
-    p->usbHandle = NULL;
-  }
+	if (p->usbHandle != NULL) {
+		usb_close(p->usbHandle);
+		p->usbHandle = NULL;
+	}
 }
 
 /* EOF */
