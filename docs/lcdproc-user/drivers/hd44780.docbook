@@ -2820,6 +2820,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>hd44780_euro</literal></parameter> |
       <parameter><literal>ea_ks0073</literal></parameter> |
       <parameter><literal>sed12780f_0b</literal></parameter> |
+      <parameter><literal>hd44780_koi8_r</literal></parameter> |
       <parameter><literal>none</literal></parameter>
     }
   </term>
@@ -2844,6 +2845,11 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
           <literal>sed12780f_0b</literal> is for some SED 1278 displays.
         </para></listitem>
         <listitem><para>
+          <literal>hd44780_koi8_r</literal> maps input from a client in
+          Russian KOI8-R to displays with a ROM mask supporting the european
+          charset (ROM code A02).
+        </para></listitem>
+        <listitem><para>
           The <literal>none</literal> charmap does not translate any characters.
           It displays the characters the display controllers actually has
           stored in its CGROM for that position instead. This setting is
@@ -2851,7 +2857,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         </para></listitem>
       </itemizedlist>
       You only need to set this parameter if you have a non-standard
-      HD44780 display.
+      HD44780 display or charmap.
 
       <tip>
         <para>

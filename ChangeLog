@@ -22,6 +22,7 @@ v.0.5dev (ongoing development)
  * hd44780: Exclude pin for switchable backlight from keypad scanning
  * server core: New network input buffering
  * hd44780: Extended subdriver API and performance improvement for lcd2usb
+ * hd44780: Add KOI8-R character mapping (Yura Scheglyuk)
 
 v0.5.3
  + lcdexec: notification when called program finishes
