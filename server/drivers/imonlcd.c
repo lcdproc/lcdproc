@@ -649,11 +649,11 @@ imonlcd_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 	PrivateData *p = drvthis->private_data;
 
 	/*
-	 * use the imonlcd_font full vbar characters and let lcd_lib do the
+	 * use the imonlcd_font narrow vbar characters and let lcd_lib do the
 	 * rest
 	 */
 	lib_vbar_static(drvthis, x, y, len, promille, options,
-			p->cellheight, IMONLCD_FONT_START_VBAR_FULL - 1);
+			p->cellheight, IMONLCD_FONT_START_VBAR_NARROW-1);
 }
 
 
@@ -1034,7 +1034,7 @@ imonlcd_output(Driver *drvthis, int state)
 	if (((state & IMON_OUTPUT_BMICONS_MASK) != 0)) {
 		switch (((state & IMON_OUTPUT_BMICONS_MASK) >> 16)) {
 		case 1:
-			icon |= IMON_ICON_MPG;
+			icon |= IMON_ICON_MPG2;
 			break;
 		case 2:
 			icon |= IMON_ICON_AC3;
