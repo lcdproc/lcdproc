@@ -22,8 +22,7 @@ typedef struct SerialInterface {
         /*
           if both escape and on/off codes are set means that display
           can't set brightness, but can only switch light on or off and
-          needs both escape and on/off bytes (see pertelian,
-          http://pertelian.com/index.php?option=com_content&task=view&id=27&Itemid=33)
+          needs both escape and on/off bytes (see pertelian)
         */
 	char         backlight_escape; /* leave to 0 is the interface uses on/off codes   */
 	char         backlight_off;

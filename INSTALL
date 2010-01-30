@@ -44,7 +44,7 @@ need some additional programs or libraries installed:
 * libusb if you --enable-libusb, see http://libusb.sourceforge.net/
 
 * G15daemon, libg15 and libg15render (>= 1.1.1) for use with the 'g15' driver,
-  see http://g15daemon.sourceforge.net/ and http://g15tools.sourceforge.net/
+  see http://www.g15tools.com/
 
 * GraphLCD and GLCDprocDriver for use with the 'glcdlib' driver, see
   http://graphlcd.berlios.de/ and http://www.muresan.de/graphlcd/lcdproc/
@@ -60,11 +60,11 @@ need some additional programs or libraries installed:
 
 * svgalib for use with the 'svga' driver, see http://www.svgalib.org/
 
-* libftdi and libusb for use with the 'ula200' driver, see
-  http://www.intra2net.com/de/produkte/opensource/ftdi/ and
+* libftdi and libusb for use with the 'ula200', 'lis', and 'i2500vfd' driver,
+  see http://www.intra2net.com/en/developer/libftdi/ and
   http://libusb.sourceforge.net/
 
-* XOSD for use with the 'xosd' driver, see http://sourceforge.net/projects/libxosd ,
+* XOSD for use with the 'xosd' driver, see http://sourceforge.net/projects/libxosd/ ,
   as well as an x11 implementation, more precisely libX11 and libXext.
 
 

@@ -2,7 +2,7 @@
 <title>The CFontzPacket Driver</title>
 
 <para>
-<ulink url="http://www.cwcrystalfontz.com/">CrystalFontz</ulink> offers a wide
+<ulink url="http://www.crystalfontz.com/">CrystalFontz</ulink> offers a wide
 range of character and graphical LCD modules.
 The <code>CFontzPacket</code> driver supports the modules that communicate
 with the host computer using a packet-based communications protocol

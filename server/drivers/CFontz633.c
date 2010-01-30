@@ -3,7 +3,7 @@
  */
 
 /*  This is the LCDproc driver for CrystalFontz 633 devices
-    (get yours from http://crystalfontz.com)
+    (get yours from http://www.crystalfontz.com/)
 
     Copyright (C) 2002 David GLAUDE
 

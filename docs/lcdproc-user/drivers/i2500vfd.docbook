@@ -9,7 +9,7 @@ More information can be found here: <ulink url="http://www.intra2net.com/">Intra
 
 <para>
 It connects to USB using a FTDI FT245BM chip and therefore needs libftdi as requirement.
-libftdi can be found here: <ulink url="http://www.intra2net.com/de/produkte/opensource/ftdi/">libftdi</ulink>
+libftdi can be found here: <ulink url="http://www.intra2net.com/en/developer/libftdi/">libftdi</ulink>
 </para>
 
 <sect2 id="i2500vfd-features">

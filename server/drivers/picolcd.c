@@ -26,7 +26,7 @@
  * The picoLCD is usb connected and is driven (currently) via userspace 
  * using libusb library.
  *
- *   libusb: http://libusb.sf.net
+ *   libusb: http://www.libusb.org/
  * 
  */
 

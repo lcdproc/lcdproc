@@ -29,8 +29,8 @@ between the FTDI and the NEC chips.
 
 <para>
 The driver depends on <filename>libftdi</filename>, version 0.8 or higher, from
-<ulink url="http://www.intra2net.com/opensource/ftdi/">
-http://www.intra2net.com/opensource/ftdi/</ulink>.
+<ulink url="http://www.intra2net.com/en/developer/libftdi/">
+http://www.intra2net.com/en/developer/libftdi/</ulink>.
 </para>
 
 <para>

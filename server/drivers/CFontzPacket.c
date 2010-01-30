@@ -6,7 +6,7 @@
 /*
  *  This is the LCDproc driver for CrystalFontz LCD using Packet protocol.
  *  It support the CrystalFontz 633 USB/Serial, the 631 USB and the 635 USB
- *  (get yours from http://crystalfontz.com)
+ *  (get yours from http://www.crystalfontz.com)
  *
  *  Applicable Data Sheets:
  *  - http://www.crystalfontz.com/products/631/CFA-631_v1.0.pdf

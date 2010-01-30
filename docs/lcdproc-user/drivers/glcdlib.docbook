@@ -22,7 +22,7 @@ all the drivers supported by graphlcd-base, which you can get from
 </para>
 <para>
 In order to be able to use it, you have to get and install the glcdprocdriver
-from <ulink url="http://www.muresan.de/graphlcd/lcdproc"></ulink>
+from <ulink url="http://www.muresan.de/graphlcd/lcdproc/"></ulink>
 before configuring the LCDproc build process --enable-drivers=glcdlib.
 </para>
 

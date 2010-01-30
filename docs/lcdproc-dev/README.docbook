@@ -7,7 +7,7 @@ to be exact: DocBook V4.x XML.
 You can generate the documentation of LCDproc using 'xmlto',
 which is a shell-script frontend to an XML toolchain.
 
-Get it from http://cyberelk.net/tim/xmlto/ or pre-packaged
+Get it from http://cyberelk.net/tim/software/xmlto/ or pre-packaged
 from your distribution.
 
 To convert the Admin Guide to a single XHTML document, simply do:

@@ -28,7 +28,7 @@ Different implementations of (n)curses available on:
 	http://www.openbsd.org/cgi-bin/cvsweb/src/lib/libcurses/
 	ncurses
   - NetBSD:
-	http://cvsweb.netbsd.org/bsdweb.cgi/basesrc/lib/libcurses/
+	http://cvsweb.netbsd.org/bsdweb.cgi/src/lib/libcurses/
 	curses : does not define ACS_S3, ACS_S7, wcolor_set() or redrawwin().
 	it is possible to make a:
 		#define ACS_S3 (_acs_char['p'])

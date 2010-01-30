@@ -103,7 +103,7 @@ serial/USB displays by Cwlinux (http://www.cwlinux.com)
 VFD front panel display on Aopen XC Cube EA65 media barebone
 .TP
 .B EyeboxOne
-LCD display on the EyeboxOne (http://www.rightvision.com)
+LCD display on the EyeboxOne
 .TP
 .B g15
 LCD display on the Logitech G15 keyboard

@@ -11,8 +11,6 @@
  *                - Keypad support
  *                - Changed for 2 line wire control
  *
- * Full connection details at http://members.xoom.com/andrewmuck/LCD.htm
- *
  * printer port   4094/LCD
  * D2 (4)	  EN  (6 - LCD)
  * D3 (5)	  D   (2 - 4094)

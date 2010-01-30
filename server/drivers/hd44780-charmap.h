@@ -65,8 +65,6 @@ const unsigned char none_charmap[] = {
  * Initial table taken from lcd.o Linux kernel driver by
  * Nils Faerber <nilsf@users.sourceforge.net>. Thanks!
  *
- * HD44780 charset reference: http://markh.de/hd44780-charset.png
- *
  * The following translations are being performed:
  * - map umlaut accent characters to the corresponding umlaut characters
  * - map other accent characters to the characters without accents

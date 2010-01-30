@@ -3,13 +3,10 @@
  * from Pyramid Computer GmbH.
  *
  * For more information see
- * http://www.pyramid.de/en/products/programmable_lcd.php
+ * https://www.pyramid.de/de/hardware/spezialkomponenten.php
  *
  * Contact Thomas Riewe <thomas.riewe@pyramid.de> for further
  * information on the LCD.
- *
- * \todo Convert to use pixel-row based logic for custom characters, icons,
- *       bar graphs etc.
  */
 
 /*

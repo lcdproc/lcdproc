@@ -7,7 +7,7 @@
  * all the drivers supported by graphlcd-base, which you can get from
  * http://graphlcd.berlios.de.
  * In order to be able to use it, you have to get and install the glcdprocdriver
- * from http://www.muresan.de/graphlcd/lcdproc.
+ * from http://www.muresan.de/graphlcd/lcdproc/.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
