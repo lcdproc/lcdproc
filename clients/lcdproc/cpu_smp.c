@@ -1,8 +1,5 @@
-/******************************************************************************
-*
-*  cpu_smp.c - dipslay cpu info for multi-processor machines
-*  Copyright (C) 2000  J Robert Ray
-*  Copyright (C) 2006,7  Peter Marschall
+/** \file clients/lcdproc/cpu_smp.c
+*  Display cpu info for multi-processor machines.
 *
 *  Adapted from cpu.c.
 *
@@ -16,10 +13,13 @@
 *  If the number of lines used to display the bar graphs for the CPUs is smaller
 *  than the LCD's height, a title line is introduced, so that the screen looks
 *  similar to other lcdproc screens.
-*  In all other cases (i.e. #CPUs == LCD height or #CPUs >= 2 * LCD height),
+*  In all other cases (i.e. \#CPUs == LCD height or \#CPUs >= 2 * LCD height),
 *  the title is left out to display as many CPUs graphs as possible.
-*
-*  ---
+*/
+
+/*-
+*  Copyright (C) 2000  J Robert Ray
+*  Copyright (C) 2006,7  Peter Marschall
 *
 *  This program is free software; you can redistribute it and/or
 *  modify it under the terms of the GNU General Public License
@@ -34,8 +34,7 @@
 *  You should have received a copy of the GNU General Public License
 *  along with this program; if not, write to the Free Software Foundation,
 *  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*
-*******************************************************************************/
+*/
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -45,7 +44,6 @@
 #include <ctype.h>
 
 #include "shared/sockets.h"
-#include "shared/debug.h"
 
 #include "main.h"
 #include "mode.h"
@@ -53,9 +51,14 @@
 #include "cpu_smp.h"
 
 
-//////////////////////////////////////////////////////////////////////////
-// CPU screen shows info about percentage of the CPU being used
-//
+/**
+ * CPU screen shows info about percentage of the CPU being used
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 cpu_smp_screen (int rep, int display, int *flags_ptr)
 {
@@ -83,7 +86,7 @@ cpu_smp_screen (int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		sock_send_string(sock, "screen_add P\n");
-		
+
 		// print title if he have room for it
 		if (lines_used < lcd_hgt) {
 			sock_send_string(sock, "widget_add P title title\n");
@@ -91,7 +94,7 @@ cpu_smp_screen (int rep, int display, int *flags_ptr)
 		}
 		else {
 			sock_send_string(sock, "screen_set P -heartbeat off\n");
-		}	
+		}
 
 		sock_printf(sock, "screen_set P -name {CPU Use: %s}\n", get_hostname());
 
@@ -136,4 +139,4 @@ cpu_smp_screen (int rep, int display, int *flags_ptr)
 	}
 
 	return 0;
-}										  // End cpu_screen()
+}	// End cpu_screen()

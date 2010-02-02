@@ -1,6 +1,8 @@
-/*
-   netlcdclient - Client for LCDproc which shows networks statistics
+/** \file clients/lcdproc/iface.c
+ * Shows networks statistics. Imported from netlcdclient.
+ */
 
+/*-
    Copyright (C) 2002 Luis Llorente Campo <luisllorente@luisllorente.com>
    Multiinterface Extension by Stephan Skrodzki <skrodzki@stevekist.de>
    Adaptions to lcdproc by Andrew Foss with fixes by M. Dolze
@@ -19,7 +21,6 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-
 */
 
 #include <stdio.h>
@@ -31,10 +32,10 @@
 #include <time.h>
 
 #include "shared/sockets.h"
-#include "shared/debug.h"
 #include "shared/report.h"
 #include "shared/configfile.h"
 #include "main.h"
+#include "machine.h"
 #include "util.h"
 #include "iface.h"
 
@@ -43,12 +44,13 @@
 
 
 static int iface_count = 0;  /* number of interfaces */
-
 static char unit_label[10] = "B";  /* default unit label is Bytes */
 static int transfer_screen = 0;  /* by default, transfer screen is not shown */
 
 
-/* reads and parses configuration file */
+/** Reads and parses configuration file.
+ * \return  0 on success, -1 on error
+ */
 static int
 iface_process_configfile(void)
 {
@@ -60,14 +62,14 @@ iface_process_configfile(void)
 
 	for (iface_count = 0; iface_count < MAX_INTERFACES; iface_count++) {
 		char iface_label[12];
-		
+
 		sprintf(iface_label, "Interface%i", iface_count);
 		debug(RPT_DEBUG, "Label %s count %i", iface_label, iface_count);
 		iface[iface_count].name = strdup(config_get_string("Iface", iface_label, 0, ""));
 		if (iface[iface_count].name == NULL) {
 			report(RPT_CRIT, "malloc failure");
 			return -1;
-		}	
+		}
 		if (*iface[iface_count].name == '\0')
 			break;
 		sprintf(iface_label, "Alias%i", iface_count);
@@ -78,7 +80,7 @@ iface_process_configfile(void)
 		debug(RPT_DEBUG, "Interface %i: %s alias %s",
 			iface_count, iface[iface_count].name, iface[iface_count].alias);
 	}
-	
+
 	unit = config_get_string("Iface", "Unit", 0, "byte");
 	if ((strcasecmp(unit, "byte") == 0) ||
 	    (strcasecmp(unit, "bytes") == 0))
@@ -92,7 +94,7 @@ iface_process_configfile(void)
 	else {
 		report(RPT_ERR, "illegal Unit value: %s", unit);
 		return -1;
-	}	
+	}
 	unit_label[sizeof(unit_label)-1] = '\0';
 
 	transfer_screen = config_get_bool("Iface", "Transfer", 0, 0);
@@ -101,29 +103,39 @@ iface_process_configfile(void)
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-// IFace screen shows info about percentage of the Network interface usage/throughput
-//
-// +--------------------+	+--------------------+
-// |## Net Load: LAN ##@|	|### Net Load ######@|
-// |UL:       123.456 Kb|	|LAN: U: 34kb D: 56Mb|
-// |DL:       654.321 Kb|	+--------------------+
-// |Total:    777.777 Kb|
-// +--------------------+
-//
+/**
+ * IFace screen shows info about percentage of the Network interface usage /
+ * throughput.
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## Net Load: LAN ##@|	|### Net Load ######@|
+ * |UL:       123.456 Kb|	|LAN: U: 34kb D: 56Mb|
+ * |DL:       654.321 Kb|	+--------------------+
+ * |Total:    777.777 Kb|
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 iface_screen(int rep, int display, int *flags_ptr)
 {
-	//ALF TODO need to make this actual time since last run
+	/* ALF TODO need to make this actual time since last run */
 	unsigned int interval = difftime(time(NULL), iface[0].last_online);  /* interval since last update */
 	int iface_nmbr;
-	
+
 	if (!interval)
 		return 0; /* need at least 1 second, no divide by 0 */
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
-		
+
 		/* get configuration options */
 		iface_process_configfile();
 
@@ -148,11 +160,11 @@ iface_screen(int rep, int display, int *flags_ptr)
 		/*read iface_parameter stats */
 		if (!machine_get_iface_stats(&iface[iface_nmbr])) {
 			/* there was an error, so we exit the loop */
-	    		break;
-	    	}
+			break;
+		}
 
 		/* actualize speed values in display */
-	    	actualize_speed_screen(&iface[iface_nmbr], interval, iface_nmbr);
+		actualize_speed_screen(&iface[iface_nmbr], interval, iface_nmbr);
 
 		/* if needed, actualize transfer values in display */
 		if (transfer_screen)
@@ -166,13 +178,12 @@ iface_screen(int rep, int display, int *flags_ptr)
 	}
 
 	return 0;
-}	  // End iface_screen()
+} /* End iface_screen() */
 
 
 
-/*************************************************************************
- * Send commands to server to add speed screen with all required widgets
- *************************************************************************
+/**
+ * Send commands to server to add speed screen with all required widgets.
  */
 void
 initialize_speed_screen(void)
@@ -213,7 +224,7 @@ initialize_speed_screen(void)
 				sock_printf(sock, "widget_set I title {Net Load (packets)}\n");
 			}
 		}
-		
+
 		sock_send_string (sock, "widget_add I f frame\n");
 
 		// frame from (2, left) to (width, height) that is iface_count lines high
@@ -231,11 +242,15 @@ initialize_speed_screen(void)
 
 } /* initialize_speed_screen() */
 
-/*************************************************************************
+/**
  * Format the value (in bytes) passed as parameter according to its scale,
  * adding the proper suffix. Store the formatted value string in the
  * variable 'buff' passed as pointer.
- *************************************************************************
+ * \param buff   Pointer to target buffer
+ * \param value  Number of bytes
+ * \param unit   String describing the unit. If this contains 'b', \c value is
+ *               converted to bits. If this contains 'B', value is converted
+ *               to binary multiples (1024 bytes = 1 KiB).
  */
 void
 format_value (char *buff, double value, char *unit)
@@ -260,11 +275,15 @@ format_value (char *buff, double value, char *unit)
 
 } /* format_value() */
 
-/*************************************************************************
+/**
  * Format the value (in bytes) passed as parameter according to its scale,
  * adding the proper suffix. Store the formatted value string in the
- * variable 'buff' passed as pointer. Version for multi-interfaces mode
- *************************************************************************
+ * variable 'buff' passed as pointer. Version for multi-interfaces mode.
+ * \param buff   Pointer to target buffer
+ * \param value  Number of bytes
+ * \param unit   String describing the unit. If this contains 'b', \c value is
+ *               converted to bits. If this contains 'B', value is converted
+ *               to binary multiples (1024 bytes = 1 KiB).
  */
 void
 format_value_multi_interface (char *buff, double value, char *unit)
@@ -290,9 +309,10 @@ format_value_multi_interface (char *buff, double value, char *unit)
 
 } /* format_value_multi_interface() */
 
-/*************************************************************************
- * Format the time in ASCII, depending on the elapsed time
- *************************************************************************
+/**
+ * Format the time in ASCII, depending on the elapsed time.
+ * \param buff         Pointer to buffer for storing result
+ * \param last_online  Time value
  */
 void
 get_time_string (char *buff, time_t last_online)
@@ -307,7 +327,7 @@ get_time_string (char *buff, time_t last_online)
 		sprintf(buff, "never");
 		return;
 	}
-	
+
 	/* Transform Unix time format to UTC time format */
 	strcpy(timebuff, ctime(&last_online));
 
@@ -323,11 +343,13 @@ get_time_string (char *buff, time_t last_online)
 	}
 } /* get_time_string() */
 
-/*************************************************************************
+/**
  * Actualize values in display, calculating speeds in the defined interval
  * of time and sending proper commands to server. If measure unit is
- * 'pkt', we don't format this speed. Is always XXXX pkt/s
- *************************************************************************
+ * 'pkt', we don't format this speed. Is always XXXX pkt/s.
+ * \param iface     Pointer to interface data
+ * \param interval  Time of last update
+ * \param index     Interface index
  */
 void
 actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
@@ -336,7 +358,7 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 	double rc_speed;
 	double tr_speed;
 
-	if ((iface_count == 1) && ( lcd_hgt >= 4)) { /* single interface mode */	
+	if ((iface_count == 1) && ( lcd_hgt >= 4)) { /* single interface mode */
 		if (iface->status == up) {
 			/* Calculate Download speed */
 			if (strstr(unit_label, "pkt")) { /* don't format this value */
@@ -407,14 +429,13 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 	}
 } /* actualize_speed_screen() */
 
-/*************************************************************************
- * Send commands to server to add transfer screen with all required widgets
- *************************************************************************
+/**
+ * Send commands to server to add transfer screen with all required widgets.
  */
 void
 initialize_transfer_screen(void)
 {
-	int iface_nmbr;  /* interface number */	
+	int iface_nmbr;  /* interface number */
 
 	/* Add screen */
 	sock_send_string(sock, "screen_add NT\n");
@@ -456,10 +477,11 @@ initialize_transfer_screen(void)
 	}
 } /* initialize_transfer_screen() */
 
-/*************************************************************************
+/**
  * Actualize values in display, formatting transfer measures and sending
- * proper commands to server. Traffic is shown in "bytes" unit
- *************************************************************************
+ * proper commands to server. Traffic is shown in "bytes" unit.
+ * \param iface  Pointer to interface data
+ * \param index  Interface index
  */
 void
 actualize_transfer_screen(IfaceInfo *iface, int index)

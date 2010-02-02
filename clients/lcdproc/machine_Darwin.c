@@ -1,3 +1,7 @@
+/** \file clients/lcdproc/machine_Darwin.c
+ * Collects system information on MacOS / Darwin.
+ */
+
 /* Copyright (c) 2003 Thomas Runge (coto@core.de)
  * Mach and Darwin specific code is Copyright (c) 2006 Eric Pooch (epooch@tenon.com)
  *

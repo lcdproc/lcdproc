@@ -1428,7 +1428,7 @@ HD44780_output(Driver *drvthis, int on)
  * \param dispOffsets    Array to store display offsets.
  * \param dOffsize	 Size of dispOffsets.
  * \param dispSizeArray  Array of display vertical sizes (= spanlist).
- * \param spanlist	 '\0'-terminated input span list in comma delimited format.
+ * \param spanlist	 '\\0'-terminated input span list in comma delimited format.
  * \return  Number of span elements, -1 on parse error.
  */
 static int

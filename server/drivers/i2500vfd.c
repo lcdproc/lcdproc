@@ -39,7 +39,6 @@
 # include "config.h"
 #endif
 
-#include "shared/str.h"
 #include "lcd.h"
 #include "i2500vfd.h"
 #include "report.h"

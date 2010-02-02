@@ -27,7 +27,6 @@
 #include "config.h"
 #endif
 
-#include "shared/str.h"
 #include "lcd.h"
 #include "irmanin.h"
 #include "report.h"

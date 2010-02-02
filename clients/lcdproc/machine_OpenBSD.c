@@ -1,3 +1,6 @@
+/** \file clients/lcdproc/machine_OpenBSD.c
+ * Collects system information on OpenBSD.
+ */
 
 /* Copyright (c) 2003 Thomas Runge (coto@core.de)
  *

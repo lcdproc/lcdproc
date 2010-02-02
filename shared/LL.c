@@ -1,4 +1,4 @@
-/** \file LL.c
+/** \file shared/LL.c
  * Define routines to deal with doubly linked lists
  */
 
@@ -91,7 +91,7 @@ LL_Destroy(LinkedList *list)
 }
 
 
-/* Move to another entry in the list.
+/** Move to another entry in the list.
  * Set list's \c current pointer to the node denoted to by \c whereto.
  * \param list     List object.
  * \param whereto  Direction where to set the list's \c current pointer
@@ -127,7 +127,7 @@ LL_GoTo(LinkedList *list, Direction whereto)
 }
 
 
-/* Return to the beginning of the list.
+/** Return to the beginning of the list.
  * Set list's \c current pointer to the first node in the list.
  * \param list   List object.
  * \retval <0    error: no list given
@@ -530,7 +530,7 @@ LL_Remove(LinkedList *list, void *data, Direction whereto)
  * \retval  0	 success
  */
 int
-LL_Push(LinkedList *list, void *add)  // Add node to end of list
+LL_Push(LinkedList *list, void *add)
 {
 	if (!list)
 		return -1;
@@ -550,7 +550,7 @@ LL_Push(LinkedList *list, void *add)  // Add node to end of list
  * \return       Pointer to data of deleted node; \c NULL on error.
  */
 void *
-LL_Pop(LinkedList *list)				  // Remove node from end of list
+LL_Pop(LinkedList *list)
 {
 	if (!list)
 		return NULL;
@@ -568,7 +568,7 @@ LL_Pop(LinkedList *list)				  // Remove node from end of list
  * \return       Pointer to last node's data; \c NULL on error.
  */
 void *
-LL_Top(LinkedList *list)				  // Peek at end node
+LL_Top(LinkedList *list)
 {
 	return LL_GetLast(list);
 }
@@ -580,7 +580,7 @@ LL_Top(LinkedList *list)				  // Peek at end node
  * \return       Pointer to data of deleted node; \c NULL on error.
  */
 void *
-LL_Shift(LinkedList *list)				  // Remove node from start of list
+LL_Shift(LinkedList *list)
 {
 	if (!list)
 		return NULL;
@@ -598,7 +598,7 @@ LL_Shift(LinkedList *list)				  // Remove node from start of list
  * \return       Pointer to first node's data; \c NULL on error.
  */
 void *
-LL_Look(LinkedList *list)				  // Peek at first node
+LL_Look(LinkedList *list)
 {
 	return LL_GetFirst(list);
 }
@@ -612,7 +612,7 @@ LL_Look(LinkedList *list)				  // Peek at first node
  * \retval  0	 success
  */
 int
-LL_Unshift(LinkedList *list, void *add)	// Add node to beginning of list
+LL_Unshift(LinkedList *list, void *add)
 {
 	if (!list)
 		return -1;
@@ -625,9 +625,14 @@ LL_Unshift(LinkedList *list, void *add)	// Add node to beginning of list
 }
 
 
-//////////////////////////////////////////////////////////////////////
-// Add an item to the end of its "priority group"
-// The list is assumed to be sorted already...
+/** Add an item to the end of its "priority group"
+ * The list is assumed to be sorted already.
+ * \param list     List object.
+ * \param add      Pointer to new node's data.
+ * \param compare  Pointer to a comparison function.
+ * \retval <0      error
+ * \retval  0      success
+ */
 int
 LL_PriorityEnqueue(LinkedList *list, void *add, int (*compare)(void *, void *))
 {
@@ -661,9 +666,13 @@ LL_PriorityEnqueue(LinkedList *list, void *add, int (*compare)(void *, void *))
 }
 
 
-//////////////////////////////////////////////////////////////////////
+/** Switch two nodes positions.
+ * \param one   First list object.
+ * \param two   Second list object.
+ * \return      -1 on error, 0 on success
+ */
 int
-LL_SwapNodes(LL_node *one, LL_node *two)	// Switch two nodes positions...
+LL_SwapNodes(LL_node *one, LL_node *two)
 {
 	LL_node *firstprev, *firstnext;
 	LL_node *secondprev, *secondnext;

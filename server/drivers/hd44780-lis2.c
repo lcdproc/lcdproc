@@ -401,8 +401,8 @@ static void setLIS2Fans(int fd, int fan1, int fan2, int fan3, int fan4)
 
 /**
  * Write a character.
- * \param fd  File handle to write to.
- * \param ch  Character to write.
+ * \param fd    File handle to write to.
+ * \param code  Character to write.
  */
 static void writeChar(int fd, unsigned char code)
 {

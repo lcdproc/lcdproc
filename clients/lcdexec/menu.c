@@ -16,7 +16,6 @@
 #include <string.h>
 #include <strings.h>
 
-#include "shared/str.h"
 #include "shared/report.h"
 #include "shared/configfile.h"
 #include "shared/sockets.h"

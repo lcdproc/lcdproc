@@ -25,8 +25,6 @@
 #include "report.h"
 #include "lcd_lib.h"
 
-#include "shared/str.h"
-
 #define SLI_DEFAULT_DEVICE	"/dev/lcd"
 
 typedef enum {

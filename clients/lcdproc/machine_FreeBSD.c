@@ -1,3 +1,6 @@
+/** \file clients/lcdproc/machine_FreeBSD.c
+ * Collects system information on FreeBSD.
+ */
 
 /* Copyright (c) 2003 Thomas Runge (coto@core.de)
  *

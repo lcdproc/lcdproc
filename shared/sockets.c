@@ -1,3 +1,13 @@
+/** \file shared/sockets.c
+ * Socket functions available to server and clients.
+ */
+
+/*-
+ * This file is part of LCDproc.
+ *
+ * Feel free to use this in your own clients... :)
+ */
+
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -24,17 +34,18 @@
 #include "report.h"
 #include "sockets.h"
 
-/**************************************************
-  LCDproc client sockets code...
-
-  Feel free to use this in your own clients... :)
-**************************************************/
-
 // Length of longest transmission allowed at once...
 #define MAXMSG 8192
 
 typedef struct sockaddr_in sockaddr_in;
 
+/**
+ * Tries to resolve a resolve a hostname.
+ * \param name      Pointer to resolves IP-address
+ * \param hostname  Hostname or IP-address (as string)
+ * \param port      Port number
+ * \return  0 on success, -1 on error.
+ */
 static int
 sock_init_sockaddr (sockaddr_in *name, const char *hostname, unsigned short int port)
 {
@@ -51,10 +62,14 @@ sock_init_sockaddr (sockaddr_in *name, const char *hostname, unsigned short int 
 	name->sin_addr = *(struct in_addr *) hostinfo->h_addr;
 
 	return 0;
-
 }
 
- // Client functions...
+/**
+ * Connect to server.
+ * \param host  Hostname or IP-address
+ * \param port  Port number
+ * \return  socket file descriptor on success, -1 on error
+ */
 int
 sock_connect (char *host, unsigned short int port)
 {
@@ -102,6 +117,11 @@ sock_connect (char *host, unsigned short int port)
 	return sock;
 }
 
+/**
+ * Disconnect from server.
+ * \param fd  Socket file descriptor
+ * \return  0 on success, -1 on error.
+ */
 int
 sock_close (int fd)
 {
@@ -115,7 +135,13 @@ sock_close (int fd)
 }
 
 
-/**  send printf-like formatted output */
+/**
+ * Send printf-like formatted output.
+ * \param fd      Socket file descriptor
+ * \param format  Format string
+ * \param ...     Arguments to the format string
+ * \return  Number of bytes sent.
+ */
 int
 sock_printf(int fd, const char *format, .../*args*/ )
 {
@@ -137,14 +163,26 @@ sock_printf(int fd, const char *format, .../*args*/ )
 	return sock_send_string(fd, buf);
 }
 
-// Send/receive lines of text
+/**
+ * Send lines of text.
+ * \param fd      Socket file descriptor
+ * \param string  Pointer to the string to send.
+ * \return  Number of bytes sent.
+ */
 int
 sock_send_string (int fd, char *string)
 {
 	return sock_send(fd, string, strlen(string));
 }
 
-// Recv gives only one line per call...
+/**
+ * Receive a line of text.
+ * Recv gives only one line per call...
+ * \param fd      Socket file descriptor
+ * \param dest    Pointer to buffer to store the received data
+ * \param maxlen  Number of bytes to read at most (size of buffer)
+ * \return  Number of bytes received.
+ */
 int
 sock_recv_string (int fd, char *dest, size_t maxlen)
 {
@@ -198,7 +236,13 @@ sock_recv_string (int fd, char *dest, size_t maxlen)
 	return recvBytes;
 }
 
-// Send/receive raw data
+/**
+ * Send raw data.
+ * \param fd    Socket file descriptor
+ * \param src   Buffer holding the data to send
+ * \param size  Number of bytes to send at most
+ * \return  Number of bytes sent.
+ */
 int
 sock_send (int fd, void *src, size_t size)
 {
@@ -235,6 +279,13 @@ sock_send (int fd, void *src, size_t size)
 	return offset;
 }
 
+/**
+ * Receive raw data.
+ * \param fd      Socket file descriptor
+ * \param dest    Pointer to buffer to store the received data
+ * \param maxlen  Number of bytes to read at most (size of buffer)
+ * \return  Number of bytes received.
+ */
 int
 sock_recv (int fd, void *dest, size_t maxlen)
 {
@@ -262,6 +313,10 @@ sock_recv (int fd, void *dest, size_t maxlen)
 
 /*****************************************************************************/
 
+/**
+ * Return the error message for the last error occured.
+ * \return  Error message string
+ */
 char*
 sock_geterror(void)
 {
@@ -295,21 +350,22 @@ sock_geterror(void)
 #endif
 }
 
-/** prints error to logfile and sends it to the client.
- * @param fd socket
- * @param message the message to send (without the "huh? ") */
+/**
+ * Send an already formatted error message to the client.
+ * \param fd  socket
+ * \param message  the message to send (without the "huh? ") */
 int sock_send_error(int fd, char* message)
 {
 	// simple: performance penalty isn't worth more work...
 	return sock_printf_error(fd, message);
 }
 
-/** prints printf-like formatted output to logfile and sends it to the
- * client.
- * @note don't add a the "huh? " to the message. This is done by this
+/**
+ * Print printf-like formatted output to logfile and sends it to the client.
+ * \note don't add a the "huh? " to the message. This is done by this
  *   method
- * @param fd socket
- * @param format a printf format */
+ * \param fd socket
+ * \param format a printf format */
 int
 sock_printf_error(int fd, const char *format, .../*args*/ )
 {

@@ -45,7 +45,6 @@
 #include <arpa/inet.h>
 
 #include "lcd.h"
-#include "shared/str.h"
 #include "irtrans.h"
 #include "irtrans_remote.h"
 #include "irtrans_network.h"

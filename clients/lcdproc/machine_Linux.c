@@ -1,3 +1,13 @@
+/** \file clients/lcdproc/machine_Linux.c
+ * Collects system information on Linux.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
 
 #ifdef linux
 

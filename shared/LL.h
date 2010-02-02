@@ -1,3 +1,7 @@
+/** \file shared/LL.h
+ * Define routines to deal with doubly linked lists
+ */
+
 #ifndef LL_H
 #define LL_H
 

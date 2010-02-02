@@ -1,3 +1,7 @@
+/** \file shared/str.h
+ * Commmand / argument parsing functions (for use in clients).
+ */
+
 #ifndef STR_H
 #define STR_H
 

@@ -1,3 +1,14 @@
+/** \file clients/lcdproc/main.h
+ * Contains mode related defines and structures.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
 #ifndef MAIN_H
 #define MAIN_H
 
@@ -32,22 +43,23 @@ extern int lcd_hgt;
 extern int lcd_cellwid;
 extern int lcd_cellhgt;
 
+/** Screen data structure */
 typedef struct _screen_mode
 {
-	char *longname;		// Which screen is it?
-	char which;		// Which screen is it?
-	int on_time;		// How often to update while visible?
-	int off_time;		// How often to get stats while not visible?
-	int show_invisible;	// Send stats while not visible?
-	int timer;		// Time since last update
-	int flags;		// bit 1 visible, bit 2 selected for display, bit 3 first
-	int (*func)(int,int,int *);	// function pointer
+	char *longname;		/**< Which screen is it (long name)? */
+	char which;		/**< Which screen is it (short name)? */
+	int on_time;		/**< How often to update while visible? */
+	int off_time;		/**< How often to get stats while not visible? */
+	int show_invisible;	/**< Send stats while not visible? */
+	int timer;		/**< Time since last update */
+	int flags;		/**< See mode flags defines */
+	int (*func)(int,int,int *);	/**< Pointer to init / update function */
 } ScreenMode;
 
-//mode flags
-#define VISIBLE 	0x00000001	//currently visible
-#define ACTIVE 		0x00000002	//selected for display
-#define INITIALIZED	0x00000004	//replaces the first variable to indicate whether the update screens are initialized
+/* mode flags */
+#define VISIBLE 	0x00000001	/**< currently visible */
+#define ACTIVE 		0x00000002	/**< selected for display */
+#define INITIALIZED	0x00000004	/**< screen had already been initialized */
 
 #define BLINK_ON	0x10
 #define BLINK_OFF	0x11

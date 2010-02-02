@@ -39,7 +39,6 @@
 #include "lcd.h"
 #include "joy.h"
 #include "report.h"
-#include "shared/str.h"
 
 #define JOY_NAMELENGTH		128
 #define JOY_DEFAULT_DEVICE	"/dev/js0"

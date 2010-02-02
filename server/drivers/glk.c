@@ -35,7 +35,6 @@
 
 #define DEBUG 1
 #include "lcd.h"
-#include "shared/str.h"
 #include "glk.h"
 #include "glkproto.h"
 #include "report.h"

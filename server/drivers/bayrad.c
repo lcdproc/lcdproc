@@ -34,8 +34,6 @@
 #endif
 #include "lcd.h"
 #include "bayrad.h"
-//#include "drv_base.h"
-#include "shared/str.h"
 #include "report.h"
 #include "lcd_lib.h"
 

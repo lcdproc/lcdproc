@@ -1,3 +1,14 @@
+/** \file clients/lcdproc/cpu.c
+ * Implements the 'CPU' and 'CPUGraph' screens.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
 #include <sys/types.h>
 #include <sys/param.h>
 #include <stdlib.h>
@@ -9,7 +20,6 @@
 #include <errno.h>
 
 #include "shared/sockets.h"
-#include "shared/debug.h"
 
 #include "main.h"
 #include "mode.h"
@@ -18,16 +28,25 @@
 #include "util.h"
 
 
-//////////////////////////////////////////////////////////////////////////
-// CPU screen shows info about percentage of the CPU being used
-//
-// +--------------------+	+--------------------+
-// |## CPU 51.9%: myh #@|	|CPU [----    ]48.1%@|
-// |Usr 46.0% Nice  0.0%|	|U--  S-   N    I--- |
-// |Sys  5.9% Idle 48.1%|	+--------------------+
-// |0%--------      100%|
-// +--------------------+
-//
+/**
+ * CPU screen shows info about percentage of the CPU being used
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## CPU 51.9%: myh #@|	|CPU [----    ]48.1%@|
+ * |Usr 46.0% Nice  0.0%|	|U--  S-   N    I--- |
+ * |Sys  5.9% Idle 48.1%|	+--------------------+
+ * |0%--------      100%|
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 cpu_screen(int rep, int display, int *flags_ptr)
 {
@@ -110,7 +129,7 @@ cpu_screen(int rep, int display, int *flags_ptr)
 	  cpu[CPU_BUF_SIZE - 1][2] = 0.0;
 	  cpu[CPU_BUF_SIZE - 1][3] = 0.0;
 	  cpu[CPU_BUF_SIZE - 1][4] = 0.0;
-	}	
+	}
 
 	/*
 	// Only clear on first display...
@@ -178,16 +197,25 @@ cpu_screen(int rep, int display, int *flags_ptr)
 
 
 
-//////////////////////////////////////////////////////////////////////////
-// Cpu Graph Screen shows a quick-moving histogram of CPU use.
-//
-// +--------------------+	+--------------------+
-// |## CPU: myhost ####@|	|CPU: myhos||       @|
-// |             ||     |	|         ||||       |
-// |            |||     |	+--------------------+
-// |            ||||    |
-// +--------------------+
-//
+/**
+ * Cpu Graph Screen shows a quick-moving histogram of CPU use.
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## CPU: myhost ####@|	|CPU: myhos||       @|
+ * |             ||     |	|         ||||       |
+ * |            |||     |	+--------------------+
+ * |            ||||    |
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 cpu_graph_screen(int rep, int display, int *flags_ptr)
 {
@@ -208,7 +236,7 @@ cpu_graph_screen(int rep, int display, int *flags_ptr)
 
 		sock_send_string(sock, "screen_add G\n");
 		sock_printf(sock, "screen_set G -name {CPU Graph: %s}\n", get_hostname());
-		
+
 		if (lcd_hgt >= 4) {
 			sock_send_string(sock, "widget_add G title title\n");
 			sock_printf(sock, "widget_set G title {CPU: %s}\n", get_hostname());

@@ -10,18 +10,27 @@ Here we provide functions that should be used by all parts of the program.
 
 </sect1>
 
-<sect1 id="debug.h">
+<sect1 id="report.h">
 <title>report.h : Debugging and reporting</title>
 
 <para>To enable the debug() function on all of the software, just type:
-./configure --enable-debug and recompile with 'make'.</para>
+<screen>./configure --enable-debug and recompile with 'make'.</screen></para>
 
-<para>To enable the debug() function only in specific files:
-1) Configure without enabling debug (that is without --enable-debug)
-2) Edit the source file that you want to debug and put the following
-   line at the top, before the #include "report.h" line:
-   #define DEBUG
-3) Then recompile with 'make'
+<procedure><title>Enabling the debug() function only in specific files:</title>
+<step>
+  <para>Configure without enabling debug (that is without --enable-debug).</para>
+</step>
+<step>
+  <para>Edit the source file that you want to debug and put the following line
+  at the top, before the #include "report.h" line: <code>#define DEBUG</code>.
+  </para>
+</step>
+<step>
+  <para>Then recompile with 'make'.</para>
+</step>
+</procedure>
+
+<para>
 This way, the global DEBUG macro is off but is locally enabled in
 certains parts of the software.</para>
 

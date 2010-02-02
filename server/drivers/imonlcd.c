@@ -1018,7 +1018,7 @@ imonlcd_output(Driver *drvthis, int state)
 			icon |= IMON_ICON_OGG;
 			break;
 		case 3:
-			icon |= IMON_ICON_WMA;
+			icon |= IMON_ICON_WMA2;
 			break;
 		case 4:
 			icon |= IMON_ICON_WAV;

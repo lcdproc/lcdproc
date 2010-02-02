@@ -50,7 +50,6 @@
 #include "report.h"
 #include "lcd_lib.h"
 /*
-#include "shared/str.h"
 #include "server/configfile.h"
 */
 

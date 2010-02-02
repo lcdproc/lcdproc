@@ -1,3 +1,6 @@
+/** \file clients/lcdproc/machine_NetBSD.c
+ * Collects system information on NetBSD.
+ */
 
 /* Copyright (c) 2003 Thomas Runge (coto@core.de)
  *

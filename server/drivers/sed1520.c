@@ -62,7 +62,6 @@
 #define WR 0x01
 #define IODELAY 500
 
-#include "shared/str.h"
 #include "lcd.h"
 #include "sed1520.h"
 #include "report.h"

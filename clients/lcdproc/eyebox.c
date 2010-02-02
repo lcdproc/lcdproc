@@ -1,10 +1,13 @@
-/*  This is the LCDproc client module for EyeboxOne devices
-    
+/** \file clients/lcdproc/eyebox.c
+    This is the LCDproc client module for EyeboxOne devices
+
     This allows to use leds, one as a free CPU meter, and one
     as a free RAM meter.
 
     All this is in BETA version, take it as a demo...
+*/
 
+/*-
     Copyright (C) 2006 Cedric TESSIER (aka NeZetiC) http://www.nezetic.info
 
     This program is free software; you can redistribute it and/or modify
@@ -33,7 +36,6 @@
 #include <errno.h>
 
 #include "shared/sockets.h"
-#include "shared/debug.h"
 
 #include "main.h"
 #include "mode.h"
@@ -41,7 +43,7 @@
 #include "eyebox.h"
 #include "util.h"
 
-	int 
+int
 eyebox_screen(char display, int init)
 {
 #undef CPU_BUF_SIZE
@@ -81,7 +83,7 @@ eyebox_screen(char display, int init)
 		cpu[CPU_BUF_SIZE - 1][2] = 0.0;
 		cpu[CPU_BUF_SIZE - 1][3] = 0.0;
 		cpu[CPU_BUF_SIZE - 1][4] = 0.0;
-	}	
+	}
 
 	// Average values for final result
 	for (i = 0; i < 5; i++) {
@@ -92,19 +94,19 @@ eyebox_screen(char display, int init)
 		cpu[CPU_BUF_SIZE][i] = value;
 	}
 
-	/* 
-	 * /xBab = Use Bar         
-	 * a = Bar ID         
-	 * b = Level         
+	/*
+	 * /xBab = Use Bar
+	 * a = Bar ID
+	 * b = Level
 	 */
 
 	sock_printf(sock, "widget_set %c eyebo_cpu 1 2 {/xB%d%d}\n",
 			display, 2,(int)(cpu[CPU_BUF_SIZE][4]/10));
 
-	/* 
-	 * /xBab = Use Bas         
-	 * a = Bar ID         
-	 * b = Level         
+	/*
+	 * /xBab = Use Bas
+	 * a = Bar ID
+	 * b = Level
 	 */
 
 	value = 1.0 - (double) (mem[0].free + mem[0].buffers + mem[0].cache)
@@ -114,7 +116,9 @@ eyebox_screen(char display, int init)
 	return 0;
 }						 // End mem_screen()
 
-void eyebox_clear(void){
+void
+eyebox_clear(void)
+{
 	/*
 	 * Clear LEDs before exit
 	 */

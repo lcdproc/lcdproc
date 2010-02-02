@@ -1,3 +1,14 @@
+/** \file clients/lcdproc/load.c
+ * Implements the 'Load' screen.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,16 +27,25 @@
 #include "load.h"
 
 
-///////////////////////////////////////////////////////////////////////////
-// Shows a display very similar to "xload"'s histogram.
-//
-// +--------------------+	+--------------------+
-// |## LOAD 0.44: myh #@|	|myhost 0.24        1|
-// |                   1|	|        |||||||||||0|
-// |            ||||||  |	+--------------------+
-// |    ||||  |||||||| 0|
-// +--------------------+
-//
+/**
+ * Shows a display very similar to "xload"'s histogram.
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## LOAD 0.44: myh #@|	|myhost 0.24        1|
+ * |                   1|	|        |||||||||||0|
+ * |            ||||||  |	+--------------------+
+ * |    ||||  |||||||| 0|
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  The backlight state
+ */
 int
 xload_screen(int rep, int display, int *flags_ptr)
 {
@@ -109,7 +129,7 @@ xload_screen(int rep, int display, int *flags_ptr)
 		status = (loadmax > lowLoad) ? BACKLIGHT_ON : BACKLIGHT_OFF;
 		if (loads[lcd_wid - 2] > highLoad)
 			status = BLINK_ON;
-	}		
+	}
 
 	return status;
-}										  // End xload_screen()
+}	// End xload_screen()

@@ -1,6 +1,10 @@
-/*
+/** \file shared/report.c
+ * Contains reporting functions.
+ */
+
+/*-
  * report.c
- * This file is part of LCDd, the lcdproc server.
+ * This file is part of LCDproc.
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -8,14 +12,9 @@
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *		 2001, Joris Robijn
  *		 2005, Peter Marschall
- *
- * Contains reporting functions
- *
  */
 
 #include <stdlib.h>
-#include "report.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,6 +23,8 @@
 #else
 # include <windows.h>
 #endif
+
+#include "report.h"
 
 static int report_level = RPT_INFO;
 static int report_dest = RPT_DEST_STORE;

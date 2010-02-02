@@ -1,3 +1,14 @@
+/** \file clients/lcdproc/mem.c
+ * Implements the 'Memory' and 'ProcSize' screens.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,16 +29,25 @@
 #include "util.h"
 
 
-/////////////////////////////////////////////////////////////////////////
-// Mem Screen displays info about memory and swap usage...
-//
-// +--------------------+	+--------------------+
-// |##  MEM #### SWAP #@|	|M 758.3M [- ] 35.3%@|
-// | 758.3M Totl 1.884G |	|S 1.884G [  ]  0.1% |
-// | 490.8M Free 1.882G |	+--------------------+
-// |E---    F  E       F|
-// +--------------------+
-//
+/**
+ * Mem Screen displays info about memory and swap usage...
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |##  MEM #### SWAP #@|	|M 758.3M [- ] 35.3%@|
+ * | 758.3M Totl 1.884G |	|S 1.884G [  ]  0.1% |
+ * | 490.8M Free 1.882G |	+--------------------+
+ * |E---    F  E       F|
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 mem_screen(int rep, int display, int *flags_ptr)
 {
@@ -134,7 +154,7 @@ mem_screen(int rep, int display, int *flags_ptr)
 				if (display)
 					sock_printf(sock, "widget_set M memgauge 2 4 %.0f\n",
 							lcd_cellwid * gauge_wid * value);
-			}	
+			}
 
 			// Free swap graph
 			if (mem[1].total > 0) {
@@ -144,7 +164,7 @@ mem_screen(int rep, int display, int *flags_ptr)
 				if (display)
 					sock_printf(sock, "widget_set M swapgauge %i 4 %.0f\n",
 						lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
-			}	
+			}
 		}
 	}
 	else {
@@ -171,7 +191,7 @@ mem_screen(int rep, int display, int *flags_ptr)
 				if (display)
 					sock_printf(sock, "widget_set M memgauge %i 1 %.0f\n",
 							gauge_offs, lcd_cellwid * gauge_wid * value);
-			}	
+			}
 
 			sprintf_percent(tmp, value * 100);
 		}
@@ -200,6 +220,10 @@ mem_screen(int rep, int display, int *flags_ptr)
 }						 // End mem_screen()
 
 
+/**
+ * Compares memory usage two procinfo structures and returns 1 (true) if the
+ * second one's is larger than the first one's, 0 (false) otherwise.
+ */
 static int
 sort_procs(void *a, void *b)
 {
@@ -215,16 +239,25 @@ sort_procs(void *a, void *b)
 }
 
 
-/////////////////////////////////////////////////////////////////////////
-// Mem Top Screen displays info about top 5 memory hogs...
-//
-// +--------------------+	+--------------------+
-// |## TOP MEM: myhos #@|	|## TOP MEM: myhos #@|
-// |1 110.4M mysqld     |	|1 110.4M mysqld     |
-// |2 35.38M konqueror(2|	+--------------------+
-// |3 29.21M XFree86    |
-// +--------------------+
-//
+/**
+ * Mem Top Screen displays info about top 5 memory hogs...
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## TOP MEM: myhos #@|	|## TOP MEM: myhos #@|
+ * |1 110.4M mysqld     |	|1 110.4M mysqld     |
+ * |2 35.38M konqueror(2|	+--------------------+
+ * |3 29.21M XFree86    |
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 mem_top_screen(int rep, int display, int *flags_ptr)
 {
@@ -281,7 +314,7 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 				else
 					sock_printf(sock, "widget_set S %i 1 %i {%i %5s %s}\n",
 							i, i, i, mem, p->name);
-			}				
+			}
 		}
 		else {
 			//printf("Mem hog: none?\n");

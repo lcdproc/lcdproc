@@ -1,4 +1,8 @@
-/*
+/** \file shared/report.h
+ * Contains reporting functions.
+ */
+
+/*-
  * report.h
  * This file is part of LCDd, the lcdproc server.
  *
@@ -13,7 +17,8 @@
 #ifndef REPORT_H
 #define REPORT_H
 
-/* DEBUGGING / REPORTING
+/** DEBUGGING / REPORTING
+ *\verbatim
  *
  * To enable the debug() function on all of the software, just type:
  * ./configure --enable-debug
@@ -53,6 +58,7 @@
  * function.
  * The code that this function generates will not be in the executable when
  * compiled without debugging. This way memory and CPU cycles are saved.
+ *\endverbatim
  */
 
 #ifdef HAVE_CONFIG_H

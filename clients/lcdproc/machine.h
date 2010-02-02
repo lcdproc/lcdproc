@@ -1,4 +1,4 @@
-/** \file machine.h
+/** \file clients/lcdproc/machine.h
  * Common data types and function declarations
  * for OS specific sources in \c machine_{Darwin,Linux,SunOS,*BSD}.c.
  *

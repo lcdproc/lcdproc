@@ -1,3 +1,15 @@
+/** \file clients/lcdproc/chrono.c
+ * Implements the 'OldTime', 'TimeDate', 'Uptime', 'MiniClock', and 'BigClock'
+ * screens.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
 #include <sys/types.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -37,16 +49,25 @@
 static char *tickTime(char *time, int heartbeat);
 
 
-//////////////////////////////////////////////////////////////////////
-// TimeDate Screen displays current time and date, uptime, OS ver...
-//
-//+--------------------+	+--------------------+
-//|## Linux 2.6.11 ###@|	|### TIME: myhost ##@|
-//|Up xxx days hh:mm:ss|	|17.05.2005 11:32:57a|
-//|  Wed May 17, 1998  |	+--------------------+
-//|11:32:57a  100% idle|
-//+--------------------+
-//
+/**
+ * TimeDate Screen displays current time and date, uptime, OS ver...
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## Linux 2.6.11 ###@|	|### TIME: myhost ##@|
+ * |Up xxx days hh:mm:ss|	|17.05.2005 11:32:57a|
+ * |  Wed May 17, 1998  |	+--------------------+
+ * |11:32:57a  100% idle|
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 time_screen(int rep, int display, int *flags_ptr)
 {
@@ -137,18 +158,28 @@ time_screen(int rep, int display, int *flags_ptr)
 	}
 
 	return 0;
-}										  // End time_screen()
+}					// End time_screen()
 
-//////////////////////////////////////////////////////////////////////
-// OldTime Screen displays current time and date...
-//
-//+--------------------+	+--------------------+
-//|## DATE & TIME ####@|	|### TIME: myhost ##@|
-//|       myhost       |	|2005-05-17 11:32:57a|
-//|11:32:75a Wednesday,|	+--------------------+
-//|       May 17, 2005 |
-//+--------------------+
-//
+
+/**
+ * OldTime Screen displays current time and date...
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## DATE & TIME ####@|	|### TIME: myhost ##@|
+ * |       myhost       |	|2005-05-17 11:32:57a|
+ * |11:32:75a Wednesday,|	+--------------------+
+ * |       May 17, 2005 |
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 clock_screen(int rep, int display, int *flags_ptr)
 {
@@ -217,18 +248,28 @@ clock_screen(int rep, int display, int *flags_ptr)
 	}
 
 	return 0;
-}										  // End clock_screen()
+}					// End clock_screen()
 
-////////////////////////////////////////////////////////////////////
-// Uptime Screen shows info about system uptime and OS version
-//
-//+--------------------+	+--------------------+
-//|## SYSTEM UPTIME ##@|	|# Linux 2.6.11: my#@|
-//|       myhost       |	| xxx days hh:mm:ss  |
-//| xxx days hh:mm:ss  |	+--------------------+
-//|   Linux 2.6.11     |
-//+--------------------+
-//
+
+/**
+ * Uptime Screen shows info about system uptime and OS version
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## SYSTEM UPTIME ##@|	|# Linux 2.6.11: my#@|
+ * |       myhost       |	| xxx days hh:mm:ss  |
+ * | xxx days hh:mm:ss  |	+--------------------+
+ * |   Linux 2.6.11     |
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 uptime_screen(int rep, int display, int *flags_ptr)
 {
@@ -286,21 +327,31 @@ uptime_screen(int rep, int display, int *flags_ptr)
 			sock_printf(sock, "widget_set U two %d 3 {%s}\n", xoffs, tmp);
 		else
 			sock_printf(sock, "widget_set U one %d 2 {%s}\n", xoffs, tmp);
-	}	
+	}
 
 	return 0;
-}										  // End uptime_screen()
+}					// End uptime_screen()
 
-//////////////////////////////////////////////////////////////////////
-// Big Clock Screen displays current time...
-//
-// +--------------------+
-// |    _   _      _  _ |
-// |  ||_ . _||_|. _|  ||
-// |  ||_|. _|  |.|_   ||
-// |                    |
-// +--------------------+
-//
+
+/**
+ * Big Clock Screen displays current time...
+ *
+ *\verbatim
+ *
+ * +--------------------+
+ * |    _   _      _  _ |
+ * |  ||_ . _||_|. _|  ||
+ * |  ||_|. _|  |.|_   ||
+ * |                    |
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 big_clock_screen(int rep, int display, int *flags_ptr)
 {
@@ -314,7 +365,7 @@ big_clock_screen(int rep, int display, int *flags_ptr)
 	int j = 0;
 	int digits = (lcd_wid >= 20) ? 6 : 4;
 	int xoffs = (lcd_wid + 1 - (pos[digits-1] + 2)) / 2;
-	
+
 	// toggle colon display
 	heartbeat ^= 1;
 
@@ -361,22 +412,31 @@ big_clock_screen(int rep, int display, int *flags_ptr)
 		sock_printf(sock, "widget_set K c0 %d 11\n", xoffs + 7);
 		if (digits > 4)
 			sock_printf(sock, "widget_set K c1 %d 11\n", xoffs + 14);
-	}	
+	}
 
 	return 0;
-}										  // End big_clock_screen()
+}					// End big_clock_screen()
 
 
-/////////////////////////////////////////////////////////////////////
-// MiniClock Screen displays the current time with hours & minutes only
-//
-//+--------------------+	+--------------------+
-//|                    |	|       11:32        |
-//|       11:32        |	|                    |
-//|                    |	+--------------------+
-//|                    |
-//+--------------------+
-//
+/**
+ * MiniClock Screen displays the current time with hours & minutes only
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |                    |	|       11:32        |
+ * |       11:32        |	|                    |
+ * |                    |	+--------------------+
+ * |                    |
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 mini_clock_screen(int rep, int display, int *flags_ptr)
 {
@@ -412,11 +472,17 @@ mini_clock_screen(int rep, int display, int *flags_ptr)
 	sock_printf(sock, "widget_set N one %d %d {%s}\n", xoffs, (lcd_hgt / 2), now);
 
 	return 0;
-}										  // End mini_clock_screen()
+}					// End mini_clock_screen()
 
 
-// helper function: toggle between ':' and ' ' in time strings
-static char *tickTime(char *time, int heartbeat)
+/** Helper function: toggle between ':' and ' ' in time strings.
+ * \note The time string passed is modified directly!
+ * \param time       String containing a formatted time value.
+ * \param heartbeat  Even numbers to display ':', odd to display ' '.
+ * \return  Pointer to the modfied time string.
+ */
+static char *
+tickTime(char *time, int heartbeat)
 {
 	if (time != NULL) {
 		static char colon[] = {':', ' '};
@@ -425,7 +491,7 @@ static char *tickTime(char *time, int heartbeat)
 		for (heartbeat %= 2; *ptr != '\0'; ptr++) {
 			if (*ptr == colon[0])
 				*ptr = colon[heartbeat];
-		}		
+		}
 	}
 	return(time);
 }

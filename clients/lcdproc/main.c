@@ -1,3 +1,17 @@
+/** \file clients/lcdproc/main.c
+ * Contains main(), plus signal callback functions and a help screen.
+ *
+ * Program init, command-line handling, and the main loop are
+ * implemented here.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -21,11 +35,11 @@
 #include "main.h"
 #include "mode.h"
 #include "shared/sockets.h"
-#include "shared/debug.h"
 #include "shared/report.h"
 #include "shared/configfile.h"
-#include "getopt.h"
+#include "getopt.h"		/* This is our local getopt.h! */
 
+/* Import screens */
 #include "batt.h"
 #include "chrono.h"
 #include "cpu.h"
@@ -39,8 +53,7 @@
 # include "eyebox.h"
 #endif
 
-// TODO: Commenting...  Everything!
-
+/* The following 8 variables are defined 'external' in main.h! */
 int Quit = 0;
 int sock = -1;
 
@@ -51,21 +64,17 @@ int lcd_wid = 0;
 int lcd_hgt = 0;
 int lcd_cellwid = 0;
 int lcd_cellhgt = 0;
+
 static struct utsname unamebuf;
 
-/*
-  Mode List:
-    See below...  (default_sequence[])
-*/
-
+/* local prototypes */
 static void HelpScreen(int exit_state);
 static void exit_program(int val);
 static void main_loop(void);
 static int process_configfile(char *cfgfile);
 
 
-// 1/8th second is a single time unit...
-#define TIME_UNIT	125000
+#define TIME_UNIT	125000	/**< 1/8th second is a single time unit. */
 
 #if !defined(SYSCONFDIR)
 # define SYSCONFDIR	"/etc"
@@ -82,11 +91,11 @@ static int process_configfile(char *cfgfile);
 #define DEFAULT_REPORTDEST	RPT_DEST_STDERR
 #define DEFAULT_REPORTLEVEL	RPT_WARNING
 
-/* list of screen modes to run */
+/** list of screen modes to run */
 ScreenMode sequence[] =
 {
-	// flags default ACTIVE will run by default
-	// longname    which on  off inv  timer   flags
+	/* flags default ACTIVE will run by default */
+	/* longname    which on  off inv  timer   flags */
 	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen        },	// [C]PU
 	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen      }, 	// [I]face
 	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen        },	// [M]emory
@@ -106,69 +115,77 @@ ScreenMode sequence[] =
 };
 
 
-
-/* All variables are set to 'unset' values*/
-static int islow = -1;
+/* All variables are set to 'unset' values */
+static int islow = -1;		/**< pause after mode update (in 1/100s) */
 char *progname = "lcdproc";
-char *server 	= NULL;
-int port	= LCDPORT;
-int foreground 	= FALSE;
+char *server = NULL;
+int port = LCDPORT;
+int foreground = FALSE;
 static int report_level = UNSET_INT;
-static int report_dest 	= UNSET_INT;
+static int report_dest = UNSET_INT;
 char *configfile = NULL;
 char *pidfile = NULL;
 int pidfile_written = FALSE;
-char *displayname = NULL;
+char *displayname = NULL;	/**< display name for the main menu */
 
-
-const char *get_hostname(void)
+/** Returns the network name of this machine */
+const char *
+get_hostname(void)
 {
-	return(unamebuf.nodename);
+	return (unamebuf.nodename);
+}
+
+/** Returns the name of the client's OS */
+const char *
+get_sysname(void)
+{
+	return (unamebuf.sysname);
+}
+
+/** Returns the release version of the client's OS */
+const char *
+get_sysrelease(void)
+{
+	return (unamebuf.release);
 }
 
 
-const char *get_sysname(void)
-{
-	return(unamebuf.sysname);
-}
-
-
-const char *get_sysrelease(void)
-{
-	return(unamebuf.release);
-}
-
-
-static int set_mode(int shortname, char *longname, int state)
+/** Enables or disables (and deletes) a screen */
+static int
+set_mode(int shortname, char *longname, int state)
 {
 	int k;
 
-	/* ignore already selected modes */
 	for (k = 0; sequence[k].which != 0; k++) {
 		if (((sequence[k].longname != NULL) &&
 		     (0 == strcasecmp(longname, sequence[k].longname))) ||
 		    (toupper(shortname) == sequence[k].which)) {
 			if (!state) {
-				/* clean both the active and initialized bits since we delete the screen */
+				/*
+				 * clean both the active and initialized bits
+				 * since we delete the screen
+				 */
 				sequence[k].flags &= (~ACTIVE & ~INITIALIZED);
 				/* delete the screen if we are connected */
 				if (sock >= 0) {
 					sock_printf(sock, "screen_del %c\n", sequence[k].which);
-				}	
-			} else
+				}
+			}
+			else
 				sequence[k].flags |= ACTIVE;
-			return 1; //found
+			return 1;	/* found */
 		}
 	}
-	return 0; //not found
+	return 0;		/* not found */
 }
 
 
-static void clear_modes(void)
+/** Sets all screens inactive */
+static void
+clear_modes(void)
 {
 	int k;
 
-	/* ignore already selected modes */
 	for (k = 0; sequence[k].which != 0; k++) {
 		sequence[k].flags &= (~ACTIVE);
 	}
@@ -182,38 +199,38 @@ main(int argc, char **argv)
 	int c;
 
 	/* set locale for cwdate & time formatting in chrono.c */
-	setlocale(LC_TIME, "" );
+	setlocale(LC_TIME, "");
 
 	/* get uname information */
 	if (uname(&unamebuf) == -1) {
 		perror("uname");
-		return(EXIT_FAILURE);
+		return (EXIT_FAILURE);
 	}
 
 	/* setup error handlers */
-	signal(SIGINT, exit_program);	// Ctrl-C
-	signal(SIGTERM, exit_program);	// "regular" kill
-	signal(SIGHUP, exit_program);	// kill -HUP
-	signal(SIGPIPE, exit_program);	// write to closed socket
-	signal(SIGKILL, exit_program);	// kill -9 [cannot be trapped; but ...]
+	signal(SIGINT, exit_program);	/* Ctrl-C */
+	signal(SIGTERM, exit_program);	/* "regular" kill */
+	signal(SIGHUP, exit_program);	/* kill -HUP */
+	signal(SIGPIPE, exit_program);	/* write to closed socket */
+	signal(SIGKILL, exit_program);	/* kill -9 [cannot be trapped; but ...] */
 
 	/* No error output from getopt */
 	opterr = 0;
 
 	/* get options from command line */
-	while ((c = getopt( argc, argv, "s:p:e:c:fhv")) > 0) {
+	while ((c = getopt(argc, argv, "s:p:e:c:fhv")) > 0) {
 		char *end;
 
 		switch (c) {
-			// c is for config file
+			/* c is for config file */
 			case 'c':
 				configfile = optarg;
 				break;
-			// s is for server
+			/* s is for server */
 			case 's':
 				server = optarg;
 				break;
-			// p is for port
+			/* p is for port */
 			case 'p':
 				port = strtol(optarg, &end, 0);
 				if ((*optarg == '\0') || (*end != '\0') ||
@@ -239,25 +256,26 @@ main(int argc, char **argv)
 				fprintf(stderr, "LCDproc %s\n", version);
 				exit(EXIT_SUCCESS);
 				break;
-			// otherwise...  Get help!
-			case '?':	// unknown option or missing argument	
+			/* otherwise...  Get help! */
+			case '?':	/* unknown option or missing argument */
+				/* FALLTHROUGH */
 			default:
 				HelpScreen(EXIT_FAILURE);
 				break;
 		}
-	}	
+	}
 
-	/* Read config file*/
+	/* Read config file */
 	cfgresult = process_configfile(configfile);
 	if (cfgresult < 0) {
 		fprintf(stderr, "Error reading config file\n");
 		exit(EXIT_FAILURE);
-	}	
+	}
 
 	/* Set default reporting options */
 	if (report_dest == UNSET_INT)
 		report_dest = DEFAULT_REPORTDEST;
-	if( report_level == UNSET_INT)
+	if (report_level == UNSET_INT)
 		report_level = DEFAULT_REPORTLEVEL;
 
 	/* Set reporting settings */
@@ -267,75 +285,75 @@ main(int argc, char **argv)
 	if (argc > max(optind, 1)) {
 		int i;
 
-		// if no config file was read, ignore hard coded default modes
+		/*
+		 * if no config file was read, ignore hard coded default
+		 * modes
+		 */
 		if (cfgresult == 0)
 			clear_modes();
 
-		// turn additional options on or off (using ! as prefix)
+		/* turn additional options on or off (using ! as prefix) */
 		for (i = max(optind, 1); i < argc; i++) {
 			int state = (*argv[i] == '!') ? 0 : 1;
-			char *name = (state) ? argv[i] : argv[i]+1;
+			char *name = (state) ? argv[i] : argv[i] + 1;
 			int shortname = (strlen(name) == 1) ? name[0] : '\0';
-			// debug: fprintf(stderr, "%s%s", (state) ? "" : "!", name);
 			int found = set_mode(shortname, name, state);
 
 			if (!found) {
 				fprintf(stderr, "Invalid Screen: %s\n", name);
-				return(EXIT_FAILURE);
+				return (EXIT_FAILURE);
 			}
-		}	
+		}
 	}
 
 	if (server == NULL)
 		server = DEFAULT_SERVER;
 
-	// Connect to the server...
-	usleep(500000);		// wait for the server to start up
+	/* Connect to the server... */
 	sock = sock_connect(server, port);
 	if (sock < 0) {
 		fprintf(stderr, "Error connecting to LCD server %s on port %d.\n"
-		                "Check to see that the server is running and operating normally.\n",
-				server, port);
-		return(EXIT_FAILURE);
+			"Check to see that the server is running and operating normally.\n",
+			server, port);
+		return (EXIT_FAILURE);
 	}
 
 	sock_send_string(sock, "hello\n");
-	usleep(500000);			// wait for the server to say hi.
+	usleep(500000);		/* wait for the server to say hi. */
 
-	// We grab the real values below, from the "connect" line.
+	/* We grab the real values below, from the "connect" line. */
 	lcd_wid = 20;
 	lcd_hgt = 4;
 	lcd_cellwid = 5;
 	lcd_cellhgt = 8;
 
 	if (foreground != TRUE) {
-		if (daemon(1,0) != 0) {
+		if (daemon(1, 0) != 0) {
 			fprintf(stderr, "Error: daemonize failed\n");
-			return(EXIT_FAILURE);
+			return (EXIT_FAILURE);
 		}
 
 		if (pidfile != NULL) {
 			FILE *pidf = fopen(pidfile, "w");
 
 			if (pidf) {
-				fprintf(pidf, "%d\n", (int) getpid());
+				fprintf(pidf, "%d\n", (int)getpid());
 				fclose(pidf);
 				pidfile_written = TRUE;
-			} else {
+			}
+			else {
 				fprintf(stderr, "Error creating pidfile %s: %s\n",
 					pidfile, strerror(errno));
-				return(EXIT_FAILURE);
+				return (EXIT_FAILURE);
 			}
 		}
-	}	
+	}
 
-	// Init the status gatherers...
+	/* Init the status gatherers... */
 	mode_init();
 
-	// And spew stuff!
+	/* And spew stuff! */
 	main_loop();
-
-	// Clean up & exit
 	exit_program(EXIT_SUCCESS);
 
 	/* NOTREACHED */
@@ -343,10 +361,12 @@ main(int argc, char **argv)
 }
 
 
-/* reads and parses configuration filei
- * returns:  1 if configfile was read,
- *           0 if default configfile doesn't exist
- *          <0 on error
+/**
+ * Reads and parses configuration file.
+ * \param configfile  The configfile to read or NULL for the default config.
+ * \retval 1 if configfile was read,
+ * \retval 0 if default configfile doesn't exist
+ * \retval <0 on error
  */
 static int
 process_configfile(char *configfile)
@@ -356,22 +376,24 @@ process_configfile(char *configfile)
 
 	debug(RPT_DEBUG, "%s(%s)", __FUNCTION__, (configfile) ? configfile : "<null>");
 
-	/* Read config settings*/
+	/* Read config settings */
 
 	if (configfile == NULL) {
 		struct stat statbuf;
 
-		// if default config file does not exist, do not consider this an error
+		/*
+		 * if default config file does not exist, do not consider
+		 * this an error and continue
+		 */
 		if ((lstat(DEFAULT_CONFIGFILE, &statbuf) == -1) && (errno = ENOENT))
 			return 0;
 
 		configfile = DEFAULT_CONFIGFILE;
 	}
-		
+
 	if (config_read_file(configfile) != 0) {
 		report(RPT_CRIT, "Could not read config file: %s", configfile);
 		return -1;
-		//report(RPT_WARNING, "Could not read config file: %s", configfile);
 	}
 
 	if (server == NULL) {
@@ -387,7 +409,8 @@ process_configfile(char *configfile)
 	if (report_dest == UNSET_INT) {
 		if (config_get_bool(progname, "ReportToSyslog", 0, 0)) {
 			report_dest = RPT_DEST_SYSLOG;
-		} else {
+		}
+		else {
 			report_dest = RPT_DEST_STDERR;
 		}
 	}
@@ -405,14 +428,15 @@ process_configfile(char *configfile)
 		displayname = strdup(tmp);
 
 	/*
-	 * check for config file variables to override all the sequence defaults
+	 * check for config file variables to override all the sequence
+	 * defaults
 	 */
-	for (k = 0; sequence[k].which  != 0; k++) {
+	for (k = 0; sequence[k].which != 0; k++) {
 		if (sequence[k].longname != NULL) {
 			sequence[k].on_time = config_get_int(sequence[k].longname, "OnTime", 0, sequence[k].on_time);
 			sequence[k].off_time = config_get_int(sequence[k].longname, "OffTime", 0, sequence[k].off_time);
 			sequence[k].show_invisible = config_get_bool(sequence[k].longname, "ShowInvisible", 0, sequence[k].show_invisible);
-			if (config_get_bool( sequence[k].longname, "Active", 0, sequence[k].flags & ACTIVE))
+			if (config_get_bool(sequence[k].longname, "Active", 0, sequence[k].flags & ACTIVE))
 				sequence[k].flags |= ACTIVE;
 			else
 				sequence[k].flags &= (~ACTIVE);
@@ -422,8 +446,9 @@ process_configfile(char *configfile)
 	return 1;
 }
 
+/** Print help screen and exit */
 void
-HelpScreen (int exit_state)
+HelpScreen(int exit_state)
 {
 	fprintf(stderr,
 		"lcdproc - LCDproc system status information viewer\n"
@@ -464,9 +489,8 @@ HelpScreen (int exit_state)
 	exit(exit_state);
 }
 
-///////////////////////////////////////////////////////////////////
-// Called upon TERM and INTR signals...
-//
+
+/** Called upon TERM and INTR signals. Also removes the pid-file. */
 void
 exit_program(int val)
 {
@@ -486,21 +510,23 @@ exit_program(int val)
 
 #ifdef LCDPROC_MENUS
 int
-menus_init ()
+menus_init()
 {
-	int k;	
+	int k;
 
-	for (k = 0; sequence[k].which ; k++) {
+	for (k = 0; sequence[k].which; k++) {
 		if (sequence[k].longname) {
 			sock_printf(sock, "menu_add_item {} %c checkbox {%s} -value %s\n",
-				 	 sequence[k].which, sequence[k].longname,
-					 (sequence[k].flags & ACTIVE) ? "on" : "off");
+				    sequence[k].which, sequence[k].longname,
+			       (sequence[k].flags & ACTIVE) ? "on" : "off");
 		}
 	}
 
 #ifdef LCDPROC_CLIENT_TESTMENUS
-//	  # to be entered on escape from test_menu (but overwritten
-//	  # for test_{checkbox,ring}
+	/*
+	 * to be entered on escape from test_menu (but overwritten for
+	 * test_{checkbox,ring}
+	 */
 	sock_send_string(sock, "menu_add_item {} ask menu {Leave menus?} -is_hidden true\n");
 	sock_send_string(sock, "menu_add_item {ask} ask_yes action {Yes} -next _quit_\n");
 	sock_send_string(sock, "menu_add_item {ask} ask_no action {No} -next _close_\n");
@@ -514,9 +540,11 @@ menus_init ()
 	sock_send_string(sock, "menu_add_item {test} test_ip ip {IP} -v6 false -value 192.168.1.1\n");
 	sock_send_string(sock, "menu_add_item {test} test_menu menu {Menu}\n");
 	sock_send_string(sock, "menu_add_item {test_menu} test_menu_action action {Submenu's action}\n");
-
-//	  # no successor for menus. Since test_checkbox and test_ring have their
-//	  # own predecessors defined the "ask" rule will not work for them
+	/*
+	 * no successor for menus. Since test_checkbox and test_ring have
+	 * their own predecessors defined the "ask" rule will not work for
+	 * them.
+	 */
 	sock_send_string(sock, "menu_set_item {} test -prev {ask}\n");
 
 	sock_send_string(sock, "menu_set_item {test} test_action -next {test_checkbox}\n");
@@ -527,16 +555,14 @@ menus_init ()
 	sock_send_string(sock, "menu_set_item {test} test_alpha -next {test_ip} -prev {test_numeric}\n");
 	sock_send_string(sock, "menu_set_item {test} test_ip -next {test_menu} -prev {test_alpha}\n");
 	sock_send_string(sock, "menu_set_item {test} test_menu_action -next {_close_}\n");
-#endif //LCDPROC_CLIENT_TESTMENUS
+#endif				/* LCDPROC_CLIENT_TESTMENUS */
 
 	return 0;
 }
-#endif //LCDPROC_MENUS
+#endif				/* LCDPROC_MENUS */
 
 
-///////////////////////////////////////////////////////////////////
-// Main program loop...
-//
+/** Main program loop... */
 void
 main_loop(void)
 {
@@ -547,16 +573,13 @@ main_loop(void)
 	int argc, newtoken;
 	int len;
 
-	// Main loop
-	// Run whatever screen we want, then wait.  Woo-hoo!
 	while (!Quit) {
-		// Check for server input...
+		/* Check for server input... */
 		len = sock_recv(sock, buf, 8000);
 
-		// Handle server input...
+		/* Handle server input... */
 		while (len > 0) {
-			// Now split the string into tokens...
-			//for (i=0; i<argc; i++) argv[i]=NULL; // Get rid of old tokens
+			/* Now split the string into tokens... */
 			argc = 0;
 			newtoken = 1;
 
@@ -565,22 +588,22 @@ main_loop(void)
 					case ' ':
 						newtoken = 1;
 						buf[i] = 0;
-					break;
-					default:	// regular chars, keep tokenizing
+						break;
+					default:	/* regular chars, keep
+							 * tokenizing */
 						if (newtoken)
 							argv[argc++] = buf + i;
 						newtoken = 0;
-					break;
+						break;
 					case '\0':
 					case '\n':
 						buf[i] = 0;
 						if (argc > 0) {
-							//printf("%s %s\n", argv[0], argv[1]);
 							if (0 == strcmp(argv[0], "listen")) {
 								for (j = 0; sequence[j].which; j++) {
 									if (sequence[j].which == argv[1][0]) {
 										sequence[j].flags |= VISIBLE;
-										//debug(RPT_DEBUG, "Listen %s", argv[1]);
+										debug(RPT_DEBUG, "Listen %s", argv[1]);
 									}
 								}
 							}
@@ -588,7 +611,7 @@ main_loop(void)
 								for (j = 0; sequence[j].which; j++) {
 									if (sequence[j].which == argv[1][0]) {
 										sequence[j].flags &= ~VISIBLE;
-										//debug(RPT_DEBUG, "Ignore %s", argv[1]);
+										debug(RPT_DEBUG, "Ignore %s", argv[1]);
 									}
 								}
 							}
@@ -598,7 +621,7 @@ main_loop(void)
 #ifdef LCDPROC_MENUS
 							else if (0 == strcmp(argv[0], "menuevent")) {
 								if (argc == 4 && (0 == strcmp(argv[1], "update"))) {
-									set_mode(argv[2][0],"", strcmp(argv[3],"off"));
+									set_mode(argv[2][0], "", strcmp(argv[3], "off"));
 								}
 							}
 #else
@@ -627,32 +650,31 @@ main_loop(void)
 #endif
 							}
 							else if (0 == strcmp(argv[0], "bye")) {
-								//printf("Exiting LCDproc\n");
 								exit_program(EXIT_SUCCESS);
 							}
 							else if (0 == strcmp(argv[0], "success")) {
 							}
 							else {
-								//int j;
-								//for (j = 0; j < argc; j++)
-								//	printf("%s ", argv[j]);
-								//printf("\n");
+								/*
+								int j;
+								for (j = 0; j < argc; j++)
+									printf("%s ", argv[j]);
+								printf("\n");
+								*/
 							}
 						}
 
-						// Restart tokenizing
+						/* Restart tokenizing */
 						argc = 0;
 						newtoken = 1;
-					break;
-				} // switch( buf[i] )
+						break;
+				}	/* switch( buf[i] ) */
 			}
 
 			len = sock_recv(sock, buf, 8000);
-			//debug("\n");
 		}
 
-		// Gather stats...
-		// Update screens...
+		/* Gather stats and update screens */
 		if (connected) {
 			for (i = 0; sequence[i].which > 0; i++) {
 				sequence[i].timer++;
@@ -663,14 +685,14 @@ main_loop(void)
 				if (sequence[i].flags & VISIBLE) {
 					if (sequence[i].timer >= sequence[i].on_time) {
 						sequence[i].timer = 0;
-						// Now, update the screen...
+						/* Now, update the screen... */
 						update_screen(&sequence[i], 1);
 					}
 				}
 				else {
 					if (sequence[i].timer >= sequence[i].off_time) {
 						sequence[i].timer = 0;
-						// Now, update the screen...
+						/* Now, update the screen... */
 						update_screen(&sequence[i], sequence[i].show_invisible);
 					}
 				}
@@ -679,8 +701,9 @@ main_loop(void)
 			}
 		}
 
-		// Now sleep...
+		/* Now sleep... */
 		usleep(TIME_UNIT);
 	}
 }
 
+/* EOF */

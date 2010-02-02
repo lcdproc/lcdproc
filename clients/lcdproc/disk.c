@@ -1,3 +1,14 @@
+/** \file clients/lcdproc/disk.c
+ * Implements the 'Disk' screen.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
 #include <sys/types.h>
 #include <sys/param.h>
 #include <stdlib.h>
@@ -19,18 +30,26 @@
 #include "util.h"
 
 
-///////////////////////////////////////////////////////////////////////////
-// Gives disk stats.
-//
-// Stays onscreen until it is done; rolls over all mounted file systems
-// +--------------------+	+--------------------+
-// |## DISKS: myhost ##@|	|## DISKS: myhost ##@|
-// |/       18.3G E--  F|	|-local  18.3G E--- F|
-// |-local  18.3G E--- F|	+--------------------+
-// |/boot  949.6M E-   F|
-// +--------------------+
-//
-// TODO: Disk screen!  Requires virtual pages in the server, though...
+/**
+ * Gives disk stats.
+ * Stays onscreen until it is done; rolls over all mounted file systems
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## DISKS: myhost ##@|	|## DISKS: myhost ##@|
+ * |/       18.3G E--  F|	|-local  18.3G E--- F|
+ * |-local  18.3G E--- F|	+--------------------+
+ * |/boot  949.6M E-   F|
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 disk_screen(int rep, int display, int *flags_ptr)
 {

@@ -38,7 +38,6 @@
 # include "config.h"
 #endif
 
-#include "shared/str.h"
 #include "lcd.h"
 #include "stv5730.h"
 #include "report.h"

@@ -1,3 +1,14 @@
+/** \file clients/lcdproc/batt.c
+ * Implements the 'battery' screen showing the APM battery status.
+ */
+
+/*-
+ * This file is part of lcdproc, the lcdproc client.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,13 +23,18 @@
 #include "batt.h"
 #include "machine.h"
 
-
+/** Map status code > status text */
 typedef struct {
 	int status;
 	const char *name;
-} NameTable;	
+} NameTable;
 
-
+/**
+ * Converts a numeric AC power status into a status text.
+ *
+ * \param status  Numeric status as returned by machine_get_battstat
+ * \return  Name of the status
+ */
 static const char *
 ac_status(int status)
 {
@@ -36,8 +52,14 @@ ac_status(int status)
 			return ac_table[i].name;
 
 	return ac_table[LCDP_AC_UNKNOWN].name;
-}	
+}
 
+/**
+ * Converts a numeric battery status into a status text.
+ *
+ * \param status  Numeric status as returned by machine_get_battstat
+ * \return  Name of the status
+ */
 static const char *
 battery_status(int status)
 {
@@ -59,17 +81,25 @@ battery_status(int status)
 	return batt_table[LCDP_AC_UNKNOWN].name;
 }
 
-
-////////////////////////////////////////////////////////////////////////
-// Battery Screen shows apm battery status...
-//
-// +--------------------+	+--------------------+
-// |## AC: 100%: myho #@|	|## AC: 100%: myho #@|
-// |AC: On              |	|AC, Batt: Absent    |
-// |Batt: Absent        |	+--------------------+
-// |E------------------F|
-// +--------------------+
-//
+/**
+ * Battery Screen shows apm battery status...
+ *
+ *\verbatim
+ *
+ * +--------------------+	+--------------------+
+ * |## AC: 100%: myho #@|	|## AC: 100%: myho #@|
+ * |AC: On              |	|AC, Batt: Absent    |
+ * |Batt: Absent        |	+--------------------+
+ * |E------------------F|
+ * +--------------------+
+ *
+ *\endverbatim
+ *
+ * \param rep        Time since last screen update
+ * \param display    1 if screen is visible or data should be updated
+ * \param flags_ptr  Mode flags
+ * \return  Always 0
+ */
 int
 battery_screen(int rep, int display, int *flags_ptr)
 {
@@ -95,8 +125,6 @@ battery_screen(int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_set B gauge 2 4 0\n");
 		}
 	}
-	// Only run once every 16 frames...
-	//if (rep & 0x0F) return 0;
 
 	machine_get_battstat(&acstat, &battstat, &percent);
 
@@ -117,7 +145,7 @@ battery_screen(int rep, int display, int *flags_ptr)
 			if (percent > 0)
 				sock_printf(sock, "widget_set B gauge 2 4 %d\n",
 						(percent * gauge_wid * lcd_cellwid) / 100);
-		}	
+		}
 		else {				  // two-line version of the screen
 			sock_printf(sock, "widget_set B one 1 2 {%sBatt: %s}\n",
 					(acstat == LCDP_AC_ON) ? "AC, " : "",
