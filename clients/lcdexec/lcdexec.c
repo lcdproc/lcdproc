@@ -1,5 +1,5 @@
-/* \file clients/lcdexec/lcdexec.c
- * Main file for \lcdexec, the program starter in the LCDproc suite.
+/** \file clients/lcdexec/lcdexec.c
+ * Main file for \c lcdexec, the program starter in the LCDproc suite.
  */
 
 /* This file is part of lcdexec, an LCDproc client.

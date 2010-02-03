@@ -1,3 +1,17 @@
+/** \file clients/lcdvc/vc_link.c
+ * Functions to handle a virtual console.
+ */
+
+/*-
+ * This file is part of lcdvc, an LCDproc client.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 2002, Joris Robijn
+ *               2006-2008, Peter Marschall
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>

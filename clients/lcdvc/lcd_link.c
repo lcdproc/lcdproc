@@ -1,3 +1,17 @@
+/** \file clients/lcdvc/lcd_link.c
+ * Functions to build and update the display and to handle server input.
+ */
+
+/*-
+ * This file is part of lcdvc, an LCDproc client.
+ *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
+ *
+ * Copyright (c) 2002, Joris Robijn
+ *               2006-2008, Peter Marschall
+ */
+
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -135,14 +149,15 @@ static int read_connect_string(void)
 }
 
 
-static int split(char *str, char delim, char *parts[], int maxparts)
-/* Splits a string into parts, to which pointers will be returned in &parts.
+/**
+ * Splits a string into parts, to which pointers will be returned in &parts.
  * The return value is the number of parts.
  * maxparts is the maximum number of parts returned. If more parts exist
  * they are (unsplit) in the last part.
  * The parts are split at the character delim.
  * No new space will be allocated, the string str will be mutated !
  */
+static int split(char *str, char delim, char *parts[], int maxparts)
 {
 	char *p1 = str;
 	char *p2;

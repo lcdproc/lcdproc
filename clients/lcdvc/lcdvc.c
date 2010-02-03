@@ -1,5 +1,8 @@
-/*
- * lcdvc.c
+/** \file clients/lcdvc/lcdvc.c
+ * Main file for \c lcdvc, the LCDproc virtual console.
+ */
+
+/*-
  * This file is part of lcdvc, an LCDproc client.
  *
  * This file is released under the GNU General Public License. Refer to the

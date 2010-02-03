@@ -28,7 +28,7 @@ static char *boolValueName[] = { "false", "true" };
 static char *triGrayValueName[] = { "off", "on", "gray" };
 
 
-/* recursively read the menu hierarchy */
+/** recursively read the menu hierarchy */
 MenuEntry *menu_read(MenuEntry *parent, const char *name)
 {
 	static int id = 0;
@@ -243,7 +243,7 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 }
 
 
-/* create LCDproc commands for the menu entry hierarchy and send it to the server */
+/** create LCDproc commands for the menu entry hierarchy and send it to the server */
 int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 {
 	if ((me != NULL) && (sock > 0)) {
@@ -422,7 +422,7 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 }
 
 
-/* find menu entry by its id */
+/** find menu entry by its id */
 MenuEntry *menu_find_by_id(MenuEntry *me, int id)
 {
 	if (me != NULL) {
@@ -444,7 +444,7 @@ MenuEntry *menu_find_by_id(MenuEntry *me, int id)
 }
 
 
-/* return command of a menu entry */
+/** return command of a menu entry */
 const char *menu_command(MenuEntry *me)
 {
 	if ((me != NULL) && (me->type == MT_EXEC))
@@ -454,7 +454,7 @@ const char *menu_command(MenuEntry *me)
 }
 
 
-/* free menu entry hierarchy */
+/** free menu entry hierarchy */
 void menu_free(MenuEntry *me)
 {
 	if (me != NULL) {
@@ -536,7 +536,7 @@ void menu_free(MenuEntry *me)
 
 
 #if defined(DEBUG)
-/* dump menu entry hierarchy to screen */
+/** dump menu entry hierarchy to screen */
 void menu_dump(MenuEntry *me)
 {
 	if (me != NULL) {
