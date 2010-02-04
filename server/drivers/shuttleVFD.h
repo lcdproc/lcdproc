@@ -56,7 +56,8 @@ MODULE_EXPORT int shuttleVFD_cellheight(Driver *drvthis);
 #define SHUTTLE_VFD_CELLHEIGHT    8
 
 // VFD USB properties
-#define SHUTTLE_VFD_VENDOR_ID       0x051c
+#define SHUTTLE_VFD_VENDOR_ID1      0x1308
+#define SHUTTLE_VFD_VENDOR_ID2      0x051c
 #define SHUTTLE_VFD_PRODUCT_ID1     0x0003
 // IR-receiver included in this model
 #define SHUTTLE_VFD_PRODUCT_ID2     0x0005

@@ -4,17 +4,17 @@
 
 /*
  * Copyright (C) 2007 Thien Vu
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
@@ -139,7 +139,8 @@ MODULE_EXPORT int shuttleVFD_init(Driver *drvthis)
   for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
     struct usb_device *dev;
     for (dev = bus->devices; dev != NULL; dev = dev->next) {
-      if (dev->descriptor.idVendor == SHUTTLE_VFD_VENDOR_ID &&
+      if ((dev->descriptor.idVendor == SHUTTLE_VFD_VENDOR_ID1 ||
+           dev->descriptor.idVendor == SHUTTLE_VFD_VENDOR_ID2) &&
           (dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID1 ||
            dev->descriptor.idProduct == SHUTTLE_VFD_PRODUCT_ID2)) {
         p->dev = usb_open(dev);
@@ -154,7 +155,7 @@ MODULE_EXPORT int shuttleVFD_init(Driver *drvthis)
   if (claim_rc < 0) {
     report(RPT_ERR,
            "%s: unable to claim interface: %s",
-	   drvthis->name, strerror(claim_rc));
+           drvthis->name, strerror(claim_rc));
     return -1;
   }
 
@@ -274,19 +275,19 @@ MODULE_EXPORT void shuttleVFD_flush(Driver *drvthis)
     packet[0] = 0x11;
     packet[1] = 0x02;
     send_packet(drvthis, packet);
-  
+
     // write framebuf[0-6]
     memset(packet, '\0', SHUTTLE_VFD_PACKET_SIZE);
     packet[0] = 0x97;
     strncpy(&packet[1], &p->framebuf[0], 7);
     send_packet(drvthis, packet);
-  
+
     // write framebuf[7-13]
     memset(packet, '\0', SHUTTLE_VFD_PACKET_SIZE);
     packet[0] = 0x97;
     strncpy(&packet[1], &p->framebuf[7], 7);
     send_packet(drvthis, packet);
-  
+
     // write framebuf[14-20]
     memset(packet, '\0', SHUTTLE_VFD_PACKET_SIZE);
     packet[0] = 0x96;
