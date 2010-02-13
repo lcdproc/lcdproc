@@ -19,6 +19,8 @@
  *
  */
 
+#include "hd44780-charmap.h"
+
 const unsigned char CFontz_charmap[] = {	// mapped chars: ? means ToDo
 /* #0 */
     0,   1,   2,   3,   4,   5,   6,   7,

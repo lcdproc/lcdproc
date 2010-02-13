@@ -147,6 +147,9 @@ CFontz633_init (Driver *drvthis)
 
 	PrivateData *p;
 
+	report(RPT_WARNING, "Driver %s is deprecated! Use CFontzPacket instead",
+		drvthis->name);
+
 	/* Allocate and store private data */
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL)

@@ -24,6 +24,8 @@ v.0.5dev (ongoing development)
  * hd44780: Extended subdriver API and performance improvement for lcd2usb
  * hd44780: Add KOI8-R character mapping (Yura Scheglyuk)
  * shuttleVFD: Add support for devices with USB VID 0x1308 again
+ * CFontzPacket: Add CFA-533. Use HD44780 character mapping for CFA533/633.
+ * CFontz633: Deprecate this driver. Use CFontzPacket with Model=633 instead!
 
 v0.5.3
  + lcdexec: notification when called program finishes

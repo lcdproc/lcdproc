@@ -36,7 +36,7 @@ MODULE_EXPORT void CFontz633_hbar (Driver *drvthis, int x, int y, int len, int p
 MODULE_EXPORT void CFontz633_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  CFontz633_icon(Driver *drvthis, int x, int y, int icon);
 
-MODULE_EXPORT int  CFontz633_iget_free_chars (Driver *drvthis);
+MODULE_EXPORT int  CFontz633_get_free_chars (Driver *drvthis);
 MODULE_EXPORT void CFontz633_set_char (Driver *drvthis, int n, unsigned char *dat);
 
 MODULE_EXPORT int  CFontz633_get_contrast (Driver *drvthis);

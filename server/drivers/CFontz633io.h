@@ -18,7 +18,7 @@
 #define CF633_Set_LCD_Contents_Line_One				7
 #define CF633_Set_LCD_Contents_Line_Two				8
 #define CF633_Set_LCD_Special_Character_Data			9
-#define CF633_Read_Height_Bytes_of_LCD_Memory			10
+#define CF633_Read_Eight_Bytes_of_LCD_Memory			10
 #define CF633_Set_LCD_Cursor_Position				11
 #define CF633_Set_LCD_Cursor_Style				12
 #define CF633_Set_LCD_Contrast					13

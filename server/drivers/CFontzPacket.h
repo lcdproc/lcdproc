@@ -8,16 +8,22 @@
 #define DEFAULT_CONTRAST	560
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_SPEED		19200
-#define DEFAULT_SPEED_CF631	115200
-#define DEFAULT_SPEED_CF633	19200
-#define DEFAULT_SPEED_CF635	115200
 #define DEFAULT_BRIGHTNESS	1000
 #define DEFAULT_OFFBRIGHTNESS	0
 #define DEFAULT_SIZE		"16x2"
-#define	DEFAULT_SIZE_CF631	"20x2"
-#define	DEFAULT_SIZE_CF633	"16x2"
-#define	DEFAULT_SIZE_CF635	"20x4"
 
+#define CFA_HAS_FAN		0x0001
+#define CFA_HAS_TEMP		0x0002
+#define CFA_HAS_4_TEMP_SLOTS	0x0004
+#define CFA_HAS_KS0073		0x0008
+
+typedef struct CFA_Model {
+	int model;
+	char *size;
+	int speed;
+	const unsigned char *charmap;
+	int flags;
+} CFA_Model;
 
 MODULE_EXPORT int  CFontzPacket_init (Driver *drvthis);
 MODULE_EXPORT void CFontzPacket_close (Driver *drvthis);

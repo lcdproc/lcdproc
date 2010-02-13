@@ -1,5 +1,22 @@
-/*
- * lcd.h
+/** \file server/drivers/lcd.h
+ * This file defines the LCDd-driver API
+ *
+ * It is written to facilitate loadable driver modules.
+ * There should be no further interaction between driver and server core
+ * other that via this API.
+ *
+ * Driver writer notes
+ * ~~~~~~~~~~~~~~~~~~~
+ * See documentation in the docs/lcdproc-dev/ directory.
+ *
+ * DO NOT MIX DRIVER ALLOCATED AND CORE ALLOCATED MEMORY.
+ * With this I mean that the server core should NEVER WRITE in memory
+ * allocated by the driver, and vice versa. Also the driver resp. core
+ * should free or realloc the memory that it has allocated. You can always
+ * simply copy a string if its data space is not 'yours'.
+ */
+
+/*-
  * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License. Refer to the
@@ -7,22 +24,6 @@
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
  *		 2001, Joris Robijn
- *
- *
- * This file defines the LCDd-driver API
- * It is written to facilitate loadable driver modules.
- * There should be no further interaction between driver and server core
- * other that via this API.
- *
- * Driver writer notes
- * ~~~~~~~~~~~~~~~~~~~
- * See documentation in the docs/lcdproc-devel directory.
- *
- * DO NOT MIX DRIVER ALLOCATED AND CORE ALLOCATED MEMORY.
- * With this I mean that the server core should NEVER WRITE in memory
- * allocated by the driver, and vice versa. Also the driver resp. core
- * should free or realloc the memory that it has allocated. You can always
- * simply copy a string if its data space is not 'yours'.
  */
 
 #ifndef LCD_H

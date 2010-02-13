@@ -518,8 +518,8 @@ test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 				if (in->command == 0x80)
 					AddKeyToKeyRing(&keyring, in->data[0]);
 				else if (in->command == response)
-        	                        response_received = 1;
-			}	
+					response_received = 1;
+			}
 
 			is_msg = check_for_packet(fd, in, MAX_DATA_LENGTH);
 		}
