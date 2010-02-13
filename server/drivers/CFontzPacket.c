@@ -280,7 +280,7 @@ CFontzPacket_init (Driver *drvthis)
 	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, p->model_desc->speed);
 	debug(RPT_INFO, "%s: Speed (in config) is '%d'", __FUNCTION__, tmp);
 	if ((tmp != 19200) && (tmp != 115200)) {
-		report(RPT_WARNING, "%s: Speed must be 19200 or 11500; using default %d",
+		report(RPT_WARNING, "%s: Speed must be 19200 or 115200; using default %d",
 			drvthis->name, p->model_desc->speed);
 		tmp = p->model_desc->speed;
 	}

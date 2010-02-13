@@ -21,6 +21,8 @@ Currently this line of modules comprises the models:
       <listitem><para>keypad with 4 keys: Up, Down, enter &amp; Escape</para></listitem>
       <listitem><para>USB connection for data and power</para></listitem>
       <listitem><para>mounting bracket to fit into 3,5" drive bays</para></listitem>
+      <listitem><para>Optional (via add-on board) temperature sensor, fan and
+      ATX power control connectors (all unsupported by LCDproc)</para></listitem>
     </itemizedlist>
   </listitem>
 </varlistentry>
@@ -29,10 +31,25 @@ Currently this line of modules comprises the models:
   <term>CFA-633</term>
   <listitem>
     <itemizedlist>
-      <listitem><para>16x2 character LCDi with backlight</para></listitem>
+      <listitem><para>16x2 character LCD with backlight</para></listitem>
       <listitem><para>keypad with 6 keys: 4 directions, Enter &amp; Escape</para></listitem>
       <listitem><para>serial or USB connection</para></listitem>
       <listitem><para>mounting bracket to fit into 5,25" drive bays</para></listitem>
+      <listitem><para>Temperature sensor and fan control connectors (both
+      unsupported by LCDproc)</para></listitem>
+    </itemizedlist>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>CFA-533</term>
+  <listitem>
+    <itemizedlist>
+      <listitem>
+        <para>This is the same as CFA-633 except it misses the fan control
+        capabilities. The temperature monitoring is not supported in LCDproc
+        though.</para>
+      </listitem>
     </itemizedlist>
   </listitem>
 </varlistentry>
@@ -41,7 +58,7 @@ Currently this line of modules comprises the models:
   <term>CFA-635</term>
   <listitem>
     <itemizedlist>
-      <listitem><para>20x4 characters LCDi with backlight</para></listitem>
+      <listitem><para>20x4 characters LCD with backlight</para></listitem>
       <listitem><para>keypad with 6 keys: 4 directions, Enter &amp; Escape</para></listitem>
       <listitem><para>USB connection for data and power</para></listitem>
       <listitem><para>four bi-color LEDs to show status information</para></listitem>
@@ -52,7 +69,7 @@ Currently this line of modules comprises the models:
 </variablelist>
 </para>
 
-<!-- ## CrystalFontz packet driver (for CF631, CF633 &amp; CF635) ## -->
+<!-- ## CrystalFontz packet driver ## -->
 <sect2 id="CFontzPacket-config">
 <title>Configuration in LCDd.conf</title>
 
@@ -64,6 +81,7 @@ Currently this line of modules comprises the models:
   <term>
     <property>Model</property> =
     {
+      <parameter><literal>533</literal></parameter> |
       <parameter><literal>631</literal></parameter> |
       <emphasis><parameter><literal>633</literal></parameter></emphasis> |
       <parameter><literal>635</literal></parameter>
@@ -72,6 +90,7 @@ Currently this line of modules comprises the models:
   <listitem><para>
     Select the LCD model that is connected.
     Legal values for this option are <literal>631</literal>,
+    <literal>533</literal>,
     <literal>633</literal>, or <literal>635</literal>,
     with the default being <literal>633</literal>.
   </para></listitem>
@@ -99,13 +118,25 @@ Currently this line of modules comprises the models:
 
 <varlistentry>
   <term>
+    <property>USB</property> = &parameters.yesnodef;
+  </term>
+  <listitem><para>
+    Enable this flag if the device is connected to an USB port. For serial ports
+    leave it disabled. [default: <literal>no</literal>; legal: <literal>yes</literal>,
+    <literal>no</literal>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
-    Select the LCD size [default: depending on model: 635: <literal>20x4</literal>,
-                                                      631: <literal>20x2</literal>,
-						      633: <literal>16x2</literal>]
-  </para></listitem>
+    Select the LCD size. This overrides the size the driver uses for the
+    selected model (631: <literal>20x2</literal>, 533/633: <literal>16x2</literal>,
+    635: <literal>20x4</literal>).</para>
+    <note><para>You should usually not need to set this value!</para></note>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
@@ -146,27 +177,30 @@ Currently this line of modules comprises the models:
   <term>
     <property>Speed</property> =
     {
-      <parameter><literal>1200</literal></parameter> |
-      <parameter><literal>2400</literal></parameter> |
-      <parameter><literal>9600</literal></parameter> |
       <parameter><literal>19200</literal></parameter> |
       <parameter><literal>115200</literal></parameter>
     }
   </term>
-  <listitem><para>
-    Set the the baud rate for communication with the LCD.
-    If not specified, the default depends on the model: it is <literal>9600</literal>
-    for the CFA633 and <literal>115200</literal> for the CFA631 and CFA635.
-  </para></listitem>
+  <listitem>
+    <para>
+    Override the default baud rate the driver uses for communication with the
+    selected LCD model. Allowed values are <literal>19200</literal> (default for
+    CFA-533 and CFA-633) and <literal>115200</literal> (default for the CFA631
+    and CFA635).
+    </para>
+    <note><para>You should usually not need to set this value!</para></note>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <property>NewFirmware</property> = &parameters.yesnodef;
+    <property>OldFirmware</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
-    Set the firmware version (<emphasis>New</emphasis> means >= 2.0) [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
-    Currently this flag is not in use, there is no such thing as NewFirmware. ;=)
+    Very old 633 firmware versions do not support partial screen updates using
+    'Send Data to LCD' command (31). For those devices it may be necessary to
+    enable this flag. [default: <literal>no</literal>; legal: <literal>yes</literal>,
+    <literal>no</literal>]
   </para></listitem>
 </varlistentry>
 
@@ -175,8 +209,8 @@ Currently this line of modules comprises the models:
     <property>Reboot</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
-    Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
-    I want to reboot the LCD to make sure we start from a known state
+    Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal:
+    <literal>yes</literal>, <literal>no</literal>].
   </para></listitem>
 </varlistentry>
 </variablelist>

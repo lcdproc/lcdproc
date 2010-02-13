@@ -6,6 +6,14 @@ This section talks about using LCDproc with LCD displays that use the
 CFontz633 chipset.
 </para>
 
+<warning>
+  <para>
+    This driver is deprecated. Please use the <code>CFontzPacket</code> driver
+    with <literal>Model=633</literal> instead. This driver will be removed in
+    a future version.
+  </para>
+</warning>
+
 <!-- ## CrystalFontz633 driver (for CF633 only) ## -->
 <sect2 id="CFontz633-config">
 <title>Configuration in LCDd.conf</title>
@@ -22,7 +30,6 @@ CFontz633 chipset.
   <listitem><para>
     Select the output device to use [default: <filename>/dev/lcd</filename>]
     may be serial device or USB device in serial emulation mode.
-
   </para></listitem>
 </varlistentry>
 
