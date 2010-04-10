@@ -15,15 +15,11 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#ifndef WINSOCK2
-# include <sys/socket.h>
-# include <sys/un.h>
-# include <netinet/in.h>
-# include <netdb.h>
-# include <arpa/inet.h>
-#else
-# include <winsock2.h>
-#endif
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #include <stdarg.h>
 #include <fcntl.h>
 
@@ -79,11 +75,7 @@ sock_connect (char *host, unsigned short int port)
 
 	report (RPT_DEBUG, "sock_connect: Creating socket");
 	sock = socket (PF_INET, SOCK_STREAM, 0);
-#ifdef WINSOCK2        
-        if (sock == INVALID_SOCKET) {
-#else
 	if (sock < 0) {
-#endif
 		report (RPT_ERR, "sock_connect: Error creating socket");
 		return sock;
 	}
@@ -93,26 +85,13 @@ sock_connect (char *host, unsigned short int port)
 		return -1;
 
 	err = connect (sock, (struct sockaddr *) &servername, sizeof (servername));
-#ifdef WINSOCK2        
-	if (err == INVALID_SOCKET) {
-#else
 	if (err < 0) {
-#endif
 		report (RPT_ERR, "sock_connect: connect failed");
 		shutdown (sock, SHUT_RDWR);
 		return -1;
 	}
 
-#ifndef WINSOCK2        
 	fcntl (sock, F_SETFL, O_NONBLOCK);
-#else
-        {
-                unsigned long tmp = 1;
-
-                if (ioctlsocket(sock, FIONBIO, &tmp) == SOCKET_ERROR)
-                        report(RPT_ERR, "sock_connect: Error setting socket to non-blocking");
-        }
-#endif
 
 	return sock;
 }
@@ -195,11 +174,7 @@ sock_recv_string (int fd, char *dest, size_t maxlen)
 		return 0;
 
 	while (1) {
-#ifndef WINSOCK2
 		int err = read (fd, ptr, 1);
-#else
-                int err = recv(fd, ptr, 1, 0);
-#endif
 		if (err == -1) {
 			if (errno == EAGAIN) {
 				if (recvBytes) {
@@ -254,11 +229,7 @@ sock_send (int fd, void *src, size_t size)
 	while (offset != size) {
 		// write isn't guaranteed to send the entire string at once,
 		// so we have to sent it in a loop like this
-#ifndef WINSOCK2
                 int sent = write (fd, ((char *) src) + offset, size - offset);
-#else
-                int sent = send(fd, ((char *) src) + offset, size - offset, 0);
-#endif
 		if (sent == -1) {
 			if (errno != EAGAIN) {
 				report (RPT_ERR, "sock_send: socket write error");
@@ -296,11 +267,7 @@ sock_recv (int fd, void *dest, size_t maxlen)
 	if (maxlen <= 0)
 		return 0;
 
-#ifndef WINSOCK2
 	err = read (fd, dest, maxlen);
-#else
-        err = recv(fd, dest, maxlen, 0);
-#endif
 	if (err < 0) {
 		//report (RPT_DEBUG,"sock_recv: socket read error");
 		//shutdown(fd, SHUT_RDWR);
@@ -320,34 +287,7 @@ sock_recv (int fd, void *dest, size_t maxlen)
 char*
 sock_geterror(void)
 {
-#ifndef WINSOCK2
     return strerror(errno);
-#else
-    static char retString[256];
-    long err;
-    char* tmp;
-
-    err = WSAGetLastError();
-
-    sprintf(retString, "Error code %ld: ", err);
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-                  FORMAT_MESSAGE_FROM_SYSTEM | 
-                  FORMAT_MESSAGE_IGNORE_INSERTS,
-                  NULL,
-                  err,
-                  0, /* Default language */
-                  (LPTSTR) &tmp,
-                  0,
-                  NULL);
-
-    /* append the message text after the error code and ensure a terminating
-       character ends the string */
-    strncpy(retString + strlen(retString), tmp, 
-            sizeof(retString) - strlen(retString) - 1);
-    retString[sizeof(retString) - 1] = '\0';
-
-    return retString;
-#endif
 }
 
 /**

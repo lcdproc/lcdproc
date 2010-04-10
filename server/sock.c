@@ -8,7 +8,6 @@
  * Refer to the COPYING file distributed with this package.
  *
  * Copyright (c) 1999, William Ferrell, Scott Scriven
- *               2003, Benjamin Tse (blt@ieee.org) - Winsock port
  *               2004, F5 Networks, Inc. - IP-address input
  *               2005, Peter Marschall - error checks, ...
  *               2009, Markus Dolze - input ring buffer
@@ -24,15 +23,11 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-#ifdef WINSOCK2
-#include <winsock2.h>
-#else
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#endif /* WINSOCK */
 #include <sys/time.h>
 #include <sys/types.h>
 #include <fcntl.h>
@@ -94,17 +89,6 @@ int
 sock_init(char* bind_addr, int bind_port)
 {
 	int i;
-
-#ifdef WINSOCK2
-	/* Initialize the Winsock dll */
-	WSADATA wsaData;
-	int startup = WSAStartup(MAKEWORD(2, 2), &wsaData);
-	if (startup != 0) {
-		report(RPT_ERR, "%s: Could not start Winsock library - %s", 
-			__FUNCTION__, sock_geterror());
-	}
-	/* REVISIT: call WSACleanup(); */
-#endif
 
 	debug(RPT_DEBUG, "%s(bind_addr=\"%s\", port=%d)", __FUNCTION__, bind_addr, bind_port);
 
@@ -198,14 +182,6 @@ sock_shutdown(void)
 	free(freeClientSocketPool);
 	sring_destroy(messageRing);
 
-#ifdef WINSOCK2
-	if (WSACleanup() != 0) {
-		report(RPT_ERR, "%s: Error closing Winsock library - %s",
-			__FUNCTION__, sock_geterror());
-		retVal = -1;
-	}
-#endif
-
 	return retVal;
 }
 
@@ -227,11 +203,7 @@ sock_create_inet_socket(char *addr, unsigned int port)
 
 	/* Create the socket. */
 	sock = socket(PF_INET, SOCK_STREAM, 0);
-#ifdef WINSOCK2
-	if (sock == INVALID_SOCKET)
-#else
 	if (sock < 0)
-#endif
 	{
 		report(RPT_ERR, "%s: cannot create socket - %s", 
 			__FUNCTION__, sock_geterror());
@@ -248,12 +220,7 @@ sock_create_inet_socket(char *addr, unsigned int port)
 	memset(&name, 0, sizeof(name));
 	name.sin_family = AF_INET;
 	name.sin_port = htons(port);
-#ifndef WINSOCK2
-	/* REVISIT: can probably use the same code as under winsock */
 	inet_aton(addr, &name.sin_addr);
-#else
-	name.sin_addr.S_un.S_addr = inet_addr(addr);
-#endif
 
 	if (bind(sock, (struct sockaddr *) &name, sizeof(name)) < 0) {
 		report(RPT_ERR, "%s: cannot bind to port %d at address %s - %s", 
@@ -317,11 +284,7 @@ sock_poll_clients(void)
 				socklen_t size = sizeof(clientname);
 
 				new_sock = accept(listening_fd, (struct sockaddr *) &clientname, &size);
-#ifdef WINSOCK2
-				if (new_sock == INVALID_SOCKET) {
-#else
 				if (new_sock < 0) {
-#endif
 					report(RPT_ERR, "%s: Accept error - %s", 
 						__FUNCTION__, sock_geterror());
 					return -1;
@@ -330,14 +293,7 @@ sock_poll_clients(void)
 					inet_ntoa(clientname.sin_addr), ntohs(clientname.sin_port), new_sock);
 				FD_SET(new_sock, &active_fd_set);
 
-#ifdef WINSOCK2        
-				{
-					unsigned long tmp;
-					ioctlsocket(new_sock, FIONBIO, &tmp);
-				}
-#else
 				fcntl(new_sock, F_SETFL, O_NONBLOCK);
-#endif
 
 				/* Create new client */
 				if ((c = client_create(new_sock)) == NULL) {

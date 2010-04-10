@@ -44,7 +44,7 @@
 #define COMMAND_LRNLONG		12
 #define COMMAND_LRNRAWRPT	13
 #define COMMAND_RELOAD		14
-#define COMMAND_LCD			15
+#define COMMAND_LCD		15
 #define COMMAND_LEARNSTAT	16
 #define COMMAND_TEMP		17
 #define COMMAND_GETREMOTES	18
@@ -306,18 +306,9 @@ typedef struct {
 }
 NETWORKCLIENT;
 
-#define TCP_PORT		21000
-#define LIRC_PORT		8765
-#define UDP_PORT		6510
-#define WEB_PORT		80
+#define TCP_PORT	21000
+#define LIRC_PORT	8765
+#define UDP_PORT	6510
+#define WEB_PORT	80
 #define ALTERNATE_WEB	8080
-
-#ifdef WIN32
-#define CLIENT_COUNT	MAXIMUM_WAIT_OBJECTS - 3
-#endif                          /* 
- */
-
-#ifdef LINUX
 #define CLIENT_COUNT	64
-#endif                          /* 
- */
