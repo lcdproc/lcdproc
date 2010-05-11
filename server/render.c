@@ -228,7 +228,7 @@ render_frame(LinkedList *list,
 			case WID_VBAR:			  /* FIXME:  Vbars don't work in frames! */
 				render_vbar(w, left, top, right, bottom);
 				break;
-			case WID_ICON:
+			case WID_ICON:			  /* FIXME:  Vbars don't work in frames! */
 				drivers_icon(w->x, w->y, w->length);
 				break;
 			case WID_TITLE:			  /* FIXME:  Doesn't work quite right in frames... */
@@ -260,6 +260,7 @@ render_frame(LinkedList *list,
 				}
 				break;
 			case WID_NONE:
+				/* FALLTHROUGH */
 			default:
 				break;
 		}

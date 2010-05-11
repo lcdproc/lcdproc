@@ -271,7 +271,7 @@ widget_set_func(Client *c, int argc, char **argv)
 				length = atoi(argv[i + 2]);
 				w->x = x;
 				w->y = y;
-				w->length = length;
+				w->length = length;	/* This is the length in pixels */ 
 			}
 			debug(RPT_DEBUG, "Widget %s set to %i", wid, w->length);
 			sock_send_string(c->sock, "success\n");
