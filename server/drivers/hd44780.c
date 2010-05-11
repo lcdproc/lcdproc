@@ -187,10 +187,11 @@ HD44780_init(Driver *drvthis)
 	// Get and search for the connection type
 	s = drvthis->config_get_string(drvthis->name, "ConnectionType", 0, "4bit");
 	for (i = 0; (connectionMapping[i].name != NULL) &&
-		    (strcasecmp(s, connectionMapping[i].name) != 0); i++);
-		if (connectionMapping[i].name == NULL) {
-			report(RPT_ERR, "%s: unknown ConnectionType: %s", drvthis->name, s);
-			return -1; // fatal error
+		    (strcasecmp(s, connectionMapping[i].name) != 0); i++)
+		;
+	if (connectionMapping[i].name == NULL) {
+		report(RPT_ERR, "%s: unknown ConnectionType: %s", drvthis->name, s);
+		return -1; // fatal error
 	} else {
 		/* set connection type */
 		p->connectiontype = connectionMapping[i].connectiontype;
