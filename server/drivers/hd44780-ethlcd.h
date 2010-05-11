@@ -6,6 +6,7 @@
 // initialise this particular driver
 int hd_init_ethlcd(Driver *drvthis);
 
+#define ETHLCD_DRV_NAME "ethlcd"
 #define DEFAULT_ETHLCD_PORT 2425
 
 // ethlcd protocol constants:

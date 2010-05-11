@@ -25,6 +25,7 @@
 #include <string.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <errno.h>
 
 
 void ethlcd_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
@@ -44,7 +45,7 @@ void ethlcd_HD44780_uPause(PrivateData *p, int usecs) {}
 int hd_init_ethlcd(Driver *drvthis)
 {
 	char hostname[256];
-	long flags;
+	unsigned long flags = 0;
 
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
@@ -61,18 +62,25 @@ int hd_init_ethlcd(Driver *drvthis)
 
 	p->sock = sock_connect(hostname, DEFAULT_ETHLCD_PORT);
 	if (p->sock < 0) {
-		report(RPT_ERR, "Connecting to %s:%d failed", hostname, DEFAULT_ETHLCD_PORT);
+		report(RPT_ERR, "%s[%s]: Connecting to %s:%d failed",
+			drvthis->name, ETHLCD_DRV_NAME, hostname, DEFAULT_ETHLCD_PORT);
 		return -1;
 	}
 
 	//we need to have a blocking read back again:
 	if (fcntl(p->sock, F_GETFL, &flags) < 0)
 	{
-		report(RPT_ERR, "Cannot set the socket to blocking mode");
+		report(RPT_ERR, "%s[%s]: Cannot obtain current flags: %s",
+			drvthis->name, ETHLCD_DRV_NAME, strerror(errno));
 		return -1;
 	}
 	flags &= ~O_NONBLOCK;
-	fcntl(p->sock, F_SETFL, flags);
+	if (fcntl(p->sock, F_SETFL, flags) < 0)
+	{
+		report(RPT_ERR, "%s[%s]: Unable to change socket to O_NONBLOCK: %s",
+			drvthis->name, ETHLCD_DRV_NAME, strerror(errno));
+		return -1;
+	}
 
 	// Set up two-line, small character (5x8) mode
 	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
