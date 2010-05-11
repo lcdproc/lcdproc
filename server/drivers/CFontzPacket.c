@@ -151,12 +151,12 @@ typedef struct CFontzPacket_private_data {
 
 
 static CFA_Model CFA_ModelList[] = {
-	{533, "16x2", 19200 , HD44780_charmap, CFA_HAS_TEMP | CFA_HAS_4_TEMP_SLOTS},
-	{631, "20x2", 115200, CFontz_charmap , CFA_HAS_FAN | CFA_HAS_TEMP |
+	{533, "16x2", 5, 19200 , HD44780_charmap, CFA_HAS_TEMP | CFA_HAS_4_TEMP_SLOTS},
+	{631, "20x2", 6, 115200, CFontz_charmap , CFA_HAS_FAN | CFA_HAS_TEMP |
 						CFA_HAS_KS0073 | CFA_HAS_4_TEMP_SLOTS},
-	{633, "16x2", 19200 , HD44780_charmap, CFA_HAS_FAN | CFA_HAS_TEMP},
-	{635, "20x4", 115200, CFontz_charmap , CFA_HAS_KS0073},
-	{0, NULL, 0, NULL, 0}
+	{633, "16x2", 5, 19200 , HD44780_charmap, CFA_HAS_FAN | CFA_HAS_TEMP},
+	{635, "20x4", 6, 115200, CFontz_charmap , CFA_HAS_KS0073},
+	{0, NULL, 0, 0, NULL, 0}
 };
 
 /* Vars for the server core */
@@ -197,7 +197,6 @@ CFontzPacket_init (Driver *drvthis)
 
 	/* Initialize the PrivateData structure */
 	p->fd = -1;
-	p->cellwidth = DEFAULT_CELL_WIDTH;
 	p->cellheight = DEFAULT_CELL_HEIGHT;
 	p->ccmode = standard;
 	p->LEDstate = 0xFFFF;
@@ -243,6 +242,8 @@ CFontzPacket_init (Driver *drvthis)
 	}
 	p->width = w;
 	p->height = h;
+	p->cellwidth = p->model_desc->cell_width;
+
 
 	debug(RPT_INFO, "%s: Size used: %dx%d", __FUNCTION__, p->width, p->height);
 
@@ -634,6 +635,8 @@ CFontzPacket_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
+	debug(RPT_INFO, "%s: x=%d, y=%d, ch=0x%02X", __FUNCTION__, x, y, c);
+
 	y--;
 	x--;
 
@@ -654,6 +657,8 @@ static void
 CFontzPacket_raw_chr (Driver *drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
+
+	debug(RPT_INFO, "%s: x=%d, y=%d, ch=0x%02X", __FUNCTION__, x, y, c);
 
 	y--;
 	x--;
@@ -918,7 +923,7 @@ CFontzPacket_hbar (Driver *drvthis, int x, int y, int len, int promille, int opt
 
 		for (i = 1; i <= p->cellwidth; i++) {
 			/* fill pixel columns from left to right. */
-			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar)-1);
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
 			CFontzPacket_set_char(drvthis, i, hBar);
 		}
 	}
@@ -994,7 +999,14 @@ CFontzPacket_set_char (Driver *drvthis, int n, unsigned char *dat)
 	if (!dat)
 		return;
 
-	out[0] = n;	/* Custom char to define. xxx */
+	out[0] = n;	/* Custom char to define. */
+
+	/*
+	 * Models with a KS0073 (631, 635) have a seamless display. Clear the
+	 * last line on those to avoid the custom characters banging together
+	 * with other characters. This actually makes vBars not seamless. This
+	 * is supposed to be a feature, not a bug.
+	 */
 	if (p->model_desc->flags & CFA_HAS_KS0073)
 		dat[p->cellheight-1] = 0;
 
@@ -1018,6 +1030,8 @@ MODULE_EXPORT int
 CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
+
+	debug(RPT_INFO, "%s: x=%d, y=%d, icon=0x%02X", __FUNCTION__, x, y, icon);
 
 	static unsigned char heart_open[] =
 		{ b__XXXXX,
@@ -1130,7 +1144,6 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b__X_X_X,
 		  b_______ };
-	*/
 	static unsigned char block_filled[] =
 		{ b__XXXXX,
 		  b__XXXXX,
@@ -1140,13 +1153,13 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b__XXXXX,
 		  b__XXXXX,
 		  b__XXXXX };
+	*/
 
 	/* Yes we know, this is a VERY BAD implementation :-) */
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
 			if (p->model_desc->flags & CFA_HAS_KS0073) {
-				CFontzPacket_set_char(drvthis, 7, block_filled);
-				CFontzPacket_chr(drvthis, x, y, 7);
+				CFontzPacket_raw_chr(drvthis, x, y, 31);
 			}
 			else
 				CFontzPacket_raw_chr(drvthis, x, y, 255);

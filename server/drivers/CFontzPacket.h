@@ -3,7 +3,6 @@
 
 #include "lcd.h"
 
-#define DEFAULT_CELL_WIDTH	6
 #define DEFAULT_CELL_HEIGHT	8
 #define DEFAULT_CONTRAST	560
 #define DEFAULT_DEVICE		"/dev/lcd"
@@ -20,6 +19,7 @@
 typedef struct CFA_Model {
 	int model;
 	char *size;
+	int cell_width;
 	int speed;
 	const unsigned char *charmap;
 	int flags;
