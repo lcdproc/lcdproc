@@ -108,7 +108,7 @@ AC_CHECK_LIB(kvm, kvm_open,[
 ])
 
 dnl NetBSD, OpenBSD and FreeBSD
-AC_CHECK_HEADERS(sched.h sys/types.h machine/pio.h machine/sysarch.h sys/cpuvar.h machine/apm_bios.h sys/pcpu.h)
+AC_CHECK_HEADERS(sched.h sys/types.h machine/pio.h machine/sysarch.h sys/cpuvar.h machine/apm_bios.h)
 ETR_SYSV_IPC
 ETR_UNION_SEMUN
 
@@ -178,6 +178,17 @@ AC_CHECK_HEADERS([sys/sysctl.h], [], [],
 # include <sys/param.h>
 #endif
 ]])
+
+dnl On FreeBSD >= 8 checking sys/pcpu.h fails without sys/param.h and kvm.h
+AC_CHECK_HEADERS([sys/pcpu.h], [], [],
+[[#if HAVE_SYS_PARAM_H
+# include <sys/param.h>
+#endif
+#if HAVE_KVM_H
+# include <kvm.h>
+#endif
+]])
+
 
 dnl Check for particular preprocessor macros
 LCD_SA_RESTART
