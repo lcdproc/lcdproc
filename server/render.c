@@ -282,7 +282,7 @@ render_string(Widget *w, int left, int top, int right, int bottom, int fy)
 		char str[BUFSIZE];
 
 		w->x = min(w->x, right - left);
-		length = min(right - left - w->x + 1, sizeof(str));
+		length = min(right - left - w->x + 1, sizeof(str)-1);
 		strncpy(str, w->text, length);
 		str[length] = '\0';
 		drivers_string(w->x + left, w->y + top, str);
@@ -367,7 +367,7 @@ render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 		drivers_icon(w->x + left, w->y + top, ICON_BLOCK_FILLED);
 		drivers_icon(w->x + left + 1, w->y + top, ICON_BLOCK_FILLED);
 
-		length = min(length, sizeof(str));
+		length = min(length, sizeof(str)-1);
 		if ((length <= width) || (delay == 0)) {
 
 			/* copy test starting from the beginning */
@@ -405,7 +405,7 @@ render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 				offset = (length - width) - offset;
 
 			/* copy test starting from offset */
-			length = min(width, sizeof(str));
+			length = min(width, sizeof(str)-1);
 			strncpy(str, w->text + offset, length);
 			str[length] = '\0';
 
@@ -439,7 +439,7 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 
 		/*debug(RPT_DEBUG, "%s: %s %d",__FUNCTION__,w->text,timer);*/
 		screen_width = abs(w->right - w->left + 1);
-		screen_width = min(screen_width, sizeof(str));
+		screen_width = min(screen_width, sizeof(str)-1);
 
 		switch (w->length) {	/* actually, direction... */
 			case 'm': // Marquee

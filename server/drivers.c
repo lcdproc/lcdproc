@@ -111,7 +111,7 @@ drivers_load_driver(const char *name)
 		display_props->width      = driver->width(driver);
 		display_props->height     = driver->height(driver);
 
-		if (driver->cellwidth != NULL && display_props->cellwidth > 0)
+		if (driver->cellwidth != NULL && driver->cellwidth(driver) > 0)
 			display_props->cellwidth  = driver->cellwidth(driver);
 		else
 			display_props->cellwidth  = LCD_DEFAULT_CELLWIDTH;
