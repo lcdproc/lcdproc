@@ -2,7 +2,7 @@
 lcdproc-finish-nightly.sh sits on the sourceforge server located at lcdproc.sf.net
 
 The other scripts (generate-nightlies.sh, make-nightly.sh & make-docs.sh) sit on a
-local server and are run every night. 
+local server and are run every night.
 generate-nightlies.sh calls make-nightly.sh for each CVS branch,
 and make-docs for each CVS branch for each documentation (user guide, admin guide).
 

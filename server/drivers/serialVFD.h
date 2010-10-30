@@ -104,7 +104,7 @@ typedef struct serialVFD_private_data {
 	unsigned char hw_cmd[11][10]; 		// hardwarespecific commands
 	int usr_chr_dot_assignment[57];	// how to setup usercharacters
 	unsigned int usr_chr_mapping[31];// where to place the usercharacters (0..30) in the asciicode
-	unsigned int usr_chr_load_mapping[31];// needed for displays with different read and write mapping 
+	unsigned int usr_chr_load_mapping[31];// needed for displays with different read and write mapping
 	int hbar_cc_offset;		// character offset of the bars
 	int vbar_cc_offset;		// character offset of the bars
 	char info[255];

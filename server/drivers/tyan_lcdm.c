@@ -2,7 +2,7 @@
  * LCDd \c tyan driver for the CLD module found in Tyan GS series barebones.
  */
 
-/* 
+/*
     Author: yhlu@tyan.com
 
     Copyright (C) 2004 Tyan Corp
@@ -60,7 +60,7 @@ static void tyan_lcdm_hardware_clear(int fd);
 
 static void tyan_lcdm_set_rampos(int fd, unsigned char pos);
 static void tyan_lcdm_write_str(int fd, unsigned char *str, unsigned char start_addr, int length);
-#if 0   	 
+#if 0
 static void tyan_lcdm_set_cursor(int fd, unsigned char start_addr, int pos);
 #endif
 static unsigned char tyan_lcdm_read_key(int fd);
@@ -119,7 +119,7 @@ tyan_lcdm_init (Driver *drvthis, char *args)
 	if (tmp == 4800) p->speed = B4800;
 	else if (tmp == 9600) p->speed = B9600;
 	else {
-		report(RPT_WARNING, "%s: Speed must be 4800 or 9600; using default %d", 
+		report(RPT_WARNING, "%s: Speed must be 4800 or 9600; using default %d",
 			drvthis->name, DEFAULT_SPEED);
 		p->speed = 9600;
 	}
@@ -233,7 +233,7 @@ tyan_lcdm_height (Driver *drvthis)
 /*
  * Returns the display's character cell width
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 tyan_lcmd_cellwidth(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
@@ -245,7 +245,7 @@ PrivateData *p = drvthis->private_data;
 /*
  * Returns the display's character cell height
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 tyan_lcmd_cellheight(Driver *drvthis)
 {
 PrivateData *p = drvthis->private_data;
@@ -318,7 +318,7 @@ tyan_lcdm_get_key (Driver *drvthis)
 			return "Right";
 			break;
 		case TYAN_LCDM_KEY_ENTER:
-			return "Enter"; 
+			return "Enter";
 			break;
 		case TYAN_LCDM_KEY_ESCAPE:
 			return "Escape";
@@ -517,7 +517,7 @@ MODULE_EXPORT int
 tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
-	static unsigned char heart_open[] = 
+	static unsigned char heart_open[] =
 		{ b__XXXXX,
 		  b__X_X_X,
 		  b_______,
@@ -526,7 +526,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XX_XX,
 		  b__XXXXX };
-	static unsigned char heart_filled[] = 
+	static unsigned char heart_filled[] =
 		{ b__XXXXX,
 		  b__X_X_X,
 		  b___X_X_,
@@ -535,7 +535,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X_X_X,
 		  b__XX_XX,
 		  b__XXXXX };
-	static unsigned char arrow_up[] = 
+	static unsigned char arrow_up[] =
 		{ b____X__,
 		  b___XXX_,
 		  b__X_X_X,
@@ -544,7 +544,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b____X__,
 		  b_______ };
-	static unsigned char arrow_down[] = 
+	static unsigned char arrow_down[] =
 		{ b____X__,
 		  b____X__,
 		  b____X__,
@@ -554,7 +554,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b_______ };
 	/*
-	static unsigned char arrow_left[] = 
+	static unsigned char arrow_left[] =
 		{ b_______,
 		  b____X__,
 		  b___X___,
@@ -563,7 +563,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b_______,
 		  b_______ };
-	static unsigned char arrow_right[] = 
+	static unsigned char arrow_right[] =
 		{ b_______,
 		  b____X__,
 		  b_____X_,
@@ -573,7 +573,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b_______ };
 	*/
-	static unsigned char checkbox_off[] = 
+	static unsigned char checkbox_off[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -582,7 +582,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char checkbox_on[] = 
+	static unsigned char checkbox_on[] =
 		{ b____X__,
 		  b____X__,
 		  b__XXX_X,
@@ -591,7 +591,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char checkbox_gray[] = 
+	static unsigned char checkbox_gray[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -601,7 +601,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b__XXXXX,
 		  b_______ };
 	/*
-	static unsigned char selector_left[] = 
+	static unsigned char selector_left[] =
 		{ b___X___,
 		  b___XX__,
 		  b___XXX_,
@@ -610,7 +610,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b___XX__,
 		  b___X___,
 		  b_______ };
-	static unsigned char selector_right[] = 
+	static unsigned char selector_right[] =
 		{ b_____X_,
 		  b____XX_,
 		  b___XXX_,
@@ -619,7 +619,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b____XX_,
 		  b_____X_,
 		  b_______ };
-	static unsigned char ellipsis[] = 
+	static unsigned char ellipsis[] =
 		{ b_______,
 		  b_______,
 		  b_______,
@@ -628,7 +628,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b__X_X_X,
 		  b_______ };
-	static unsigned char block_filled[] = 
+	static unsigned char block_filled[] =
 		{ b__XXXXX,
 		  b__XXXXX,
 		  b__XXXXX,
@@ -637,7 +637,7 @@ tyan_lcdm_icon (Driver *drvthis, int x, int y, int icon)
 		  b__XXXXX,
 		  b__XXXXX,
 		  b__XXXXX };
-	*/	  
+	*/
 
 	/* Yes we know, this is a VERY BAD implementation :-) */
 	switch (icon) {
@@ -761,7 +761,7 @@ tyan_lcdm_hardware_clear(int fd)
 }
 
 
-static 
+static
 void tyan_lcdm_set_rampos(int fd, unsigned char pos)
 {
 	char cmd_str[5] = { TYAN_LCDM_CMD_BEGIN, 0x70, 0x00, 0x00, TYAN_LCDM_CMD_END };
@@ -771,10 +771,10 @@ void tyan_lcdm_set_rampos(int fd, unsigned char pos)
 }
 
 
-static 
+static
 void tyan_lcdm_write_str(int fd, unsigned char *str,unsigned char start_addr, int length)
 {
-//CGRAM 0x40, 0x48,....	
+//CGRAM 0x40, 0x48,....
 //if Line 1: start_addr = 0x80
 //if Line 2: start_addr = 0xc0
 // 1<= length <=16
@@ -788,28 +788,28 @@ void tyan_lcdm_write_str(int fd, unsigned char *str,unsigned char start_addr, in
 	cmd_str[19] = TYAN_LCDM_CMD_END;
 	memcpy(cmd_str+3, str, (length < 16) ? length : 16);
         write(fd, cmd_str, 20);
-}      
+}
 
 
-#if 0   	 
-static 
+#if 0
+static
 void tyan_lcdm_set_cursor(int fd, unsigned char start_addr, int pos)
 {
-	char cmd_str[5] = { TYAN_LCDM_CMD_BEGIN, 0x70, 0x00, 0x0e, TYAN_LCDM_CMD_END };	
+	char cmd_str[5] = { TYAN_LCDM_CMD_BEGIN, 0x70, 0x00, 0x0e, TYAN_LCDM_CMD_END };
 
-	tyan_lcdm_set_rampos(pos+start_addr); 
-	write(fd,cmd_str,5);       
-}	     
+	tyan_lcdm_set_rampos(pos+start_addr);
+	write(fd,cmd_str,5);
+}
 #endif
 
 
 /* Note: this implementation works although it differs from the documentation
  * available at ftp://ftp.tyan.com/barebone_support/GS10-GS12%20LCD-Pack.zip
  * (i.e. with respect to this the docs are wrong) */
-static 
+static
 unsigned char tyan_lcdm_read_key(int fd)
 {
-	int count = 0;	
+	int count = 0;
 	char key_str[4];
 
 	memset(key_str, '\0', 4);

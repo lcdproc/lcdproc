@@ -543,7 +543,7 @@ driver_alt_num(Driver *drv, int x, int num)
  * Fallback for the driver's \c heartbeat method if the driver does not provide one.
  * \param drv    Pointer to driver structure.
  * \param state  Current heartbeat state.
- */ 
+ */
 void
 driver_alt_heartbeat(Driver *drv, int state)
 {

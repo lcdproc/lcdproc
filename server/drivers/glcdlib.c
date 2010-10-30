@@ -104,7 +104,7 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 	    || (nCfgTextRows <= 0) || (nCfgTextRows > LCD_MAX_HEIGHT))
 	{
 		report(RPT_WARNING,
-			"%s: cannot read or invalid TextResolution: %s; using default %s", 
+			"%s: cannot read or invalid TextResolution: %s; using default %s",
 			drvthis->name, strTextRes, strTextResDefault);
 		sscanf(strTextResDefault, "%dx%d", &nCfgTextWidth, &nCfgTextRows);
 	}
@@ -144,7 +144,7 @@ MODULE_EXPORT int glcdlib_init (Driver *drvthis)
 			"%s: cannot read or invalid MinFontFaceSize: %s; using default %s",
 			drvthis->name, strMinFontFaceSize, strMinFaceSizeDef);
 		sscanf(strMinFaceSizeDef, "%dx%d", &nCfgMinFontFaceWidth, &nCfgMinFontFaceHeight);
-	}		
+	}
 
 	// show debugging frame?
 	bool bShowDbgFrame = drvthis->config_get_bool(drvthis->name, "ShowDebugFrame", 0, true);
@@ -212,7 +212,7 @@ glcdlib_close (Driver *drvthis)
 		pPD->glcdDriver = NULL;
 
 		free(pPD);
-	}	
+	}
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 

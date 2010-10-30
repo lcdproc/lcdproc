@@ -13,7 +13,7 @@ COMPILEREPORT=../st-compile-report/${PLATFORM}:${BRANCH}:
 GMAKEPATH=`which gmake`
 MAKEPATH=`which make`
 
-if test ${GMAKEPATH} && test -f ${GMAKEPATH}; then 
+if test ${GMAKEPATH} && test -f ${GMAKEPATH}; then
         MAKE=${GMAKEPATH}
 else
         if test ${MAKEPATH} && test -f ${MAKEPATH}; then

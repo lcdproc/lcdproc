@@ -64,7 +64,7 @@ When not given and not in the config file, it defaults to 0.
 .TP
 .B \-h
 Show help screen.
-.TP 
+.TP
 .B \-v
 Print the version of \fBlcdproc\fP and exit.
 .TP
@@ -126,7 +126,7 @@ a screen that was activated in the config file instead of activating a disabled 
 
 .SH EXAMPLES
 .RS
-.I lcdproc C M D '!L' 
+.I lcdproc C M D '!L'
 .RE
 .PP
 With the command line specified above, \fBlcdproc\fP loads the default configuration file,

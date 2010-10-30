@@ -9,7 +9,7 @@ This section describes the Eyebox One.
 <title>Eyebox One LCD Module</title>
 
 <para>
-  Eyebox One is a small rackmounted server marketed by Rightvision 
+  Eyebox One is a small rackmounted server marketed by Rightvision
   (<ulink url="http://www.alcateleyebox.rightvision.com/"></ulink>).
   This server has an LCD module, a keypad, two graphbars and some leds.
 </para>
@@ -18,20 +18,20 @@ This section describes the Eyebox One.
   connector.
 </para>
 <para>
-  I couldn't find any documentation about it. 
+  I couldn't find any documentation about it.
   All I know has been obtained with some reverse engineering.
   It seems that it can run only at 19.200 baud.
-  Sending ASCII to the module will make it simply display that text at 
-  its current cursor position. 
+  Sending ASCII to the module will make it simply display that text at
+  its current cursor position.
   The module has a built-in BIOS that recognizes commands (sent by transmitting a
   single-byte "marker" signifying that a command is on the way, followed by
   the single-byte command character itself along with any parameters, if needed)
-  allowing the programmer to clear the screen, position the cursor anywhere, 
+  allowing the programmer to clear the screen, position the cursor anywhere,
   hide/show the cursor, on/off the backlight, and so on.
 </para>
 <para>
-  This module is fast. If updating less than the whole screen, the LCD can 
-  update faster than can be seen by the human eye. This, of course, 
+  This module is fast. If updating less than the whole screen, the LCD can
+  update faster than can be seen by the human eye. This, of course,
   more than meets LCDproc's needs.
 </para>
 
@@ -102,7 +102,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
     Switch on the backlight? [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     </para>
     <note><para>
-      If you choose yes, you can switch on/off the backlight in real time 
+      If you choose yes, you can switch on/off the backlight in real time
       using the LCDproc server menu with the keypad.
     </para></note>
   </listitem>

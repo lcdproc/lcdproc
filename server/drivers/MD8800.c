@@ -2,7 +2,7 @@
  * LCDd \c MD8800 driver for the CFD used in Medion MD8800 PCs.
  */
 
-/* 
+/*
     Copyright (C) 2006 Stefan Herdler in collaboration with Martin Møller.
 
     This source Code is based on the NoritakeVFD, the serialVFD and the
@@ -42,9 +42,9 @@
     \33\5 - Show clock
 
     \33\40 - 2-line mode, clearing at end of last line.
-    \33\41 - Only write to line1, no clearing, 
+    \33\41 - Only write to line1, no clearing,
              automatic scroll to the left when display is full.
-    \33\42 - Only write to line2, no clearing, 
+    \33\42 - Only write to line2, no clearing,
              automatic scroll to the left when display is full.
 
       (d is in the range 0-4. Anything above 4 is full brightness, b = 0/1):
@@ -248,7 +248,7 @@ MD8800_init (Driver *drvthis)
 	p->hw_brightness = 6;
 
 	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis);
-	
+
 	/* Read config file */
 	/* Which device should be used */
 	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
@@ -313,7 +313,7 @@ MD8800_init (Driver *drvthis)
 		report(RPT_ERR, "%s: open() of %s failed (%s)", drvthis->name, p->device, strerror(errno));
 		return -1;
 	}
-	
+
 	tcgetattr(p->fd, &portset);
 
 	// We use RAW mode
@@ -336,7 +336,7 @@ MD8800_init (Driver *drvthis)
 
 	// Do it...
 	tcsetattr(p->fd, TCSANOW, &portset);
-	
+
 	/* make sure the frame buffer is there... */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {

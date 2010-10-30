@@ -214,7 +214,7 @@ MTC_S16209X_init (Driver *drvthis)
   if (reboot) {
     report(RPT_INFO, "%s: rebooting LCD...", drvthis->name);
     MTC_S16209X_reboot();
-  }  
+  }
 #endif // CAN_REBOOT_LCD
 
   result = write(p->fd, lcd_clearscreen, sizeof(lcd_clearscreen));	// Clear the LCD, unbuffered

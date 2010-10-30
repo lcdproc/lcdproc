@@ -120,7 +120,7 @@ const unsigned char HD44780_charmap[] = {
 /*
  * Table for HD44780 controller with ROM mask supporting
  * the european charset (ROM code A02).
- * 
+ *
  * Replacements:
  * 160 => 32, 168 => 34, 180 => 39, 184 => 44
  */
@@ -165,7 +165,7 @@ const unsigned char HD44780_euro_charmap[] = {
         232, 233, 234, 235, 236, 237, 238, 239,
         240, 241, 242, 243, 244, 245, 246, 247,
         248, 249, 250, 251, 252, 253, 254, 255
-}; 
+};
 
 
 /*
@@ -283,7 +283,7 @@ const unsigned char SED1278F_0B_charmap[] = {
 /*
  * Table for HD44780 controller with ROM mask supporting
  * the european charset (ROM code A02).
- * 
+ *
  * Russian KOI8-R codepage as input, comments in KOI8-R.
  */
 const unsigned char HD44780_KOI8R_charmap[] = {

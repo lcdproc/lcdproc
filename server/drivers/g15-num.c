@@ -1,11 +1,11 @@
 #define G15_BIGNUM_LEN			1032
 
-/* 
- * This data should really be inverted so that 1=black 
+/*
+ * This data should really be inverted so that 1=black
  * but, for now, make sure to set canvas->mode_reverse
  * before drawing one of these overlays.
  */
- 
+
 short g15_bignum_data[11][G15_BIGNUM_LEN] = {
 	{ /* 0 */
 	1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,

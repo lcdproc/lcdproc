@@ -73,7 +73,7 @@ if ($opt{V}) {
   exit(0);
 }
 
-# check number of arguments 
+# check number of arguments
 usage(1)  if ($#ARGV >= 0);
 
 
@@ -197,7 +197,7 @@ my $status = shift;
   }
   else {
     print STDERR "For help, type: $progname -h\n";
-  }  
+  }
 
   exit($status);
 }

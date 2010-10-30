@@ -2,7 +2,7 @@
  * LCDd \c mx5000 driver for the Logitech MX5000 keyboard.
  */
 
-/* 
+/*
     Author: Christian Jodar (tian@gcstar.org)
 
     Copyright (C) 2008 Christian Jodar
@@ -150,7 +150,7 @@ mx5000_height (Driver *drvthis)
 /*
  * Returns the display's character cell width
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 mx5000_cellwidth(Driver *drvthis)
 {
     return CELL_WIDTH;
@@ -160,7 +160,7 @@ mx5000_cellwidth(Driver *drvthis)
 /*
  * Returns the display's character cell height
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 mx5000_cellheight(Driver *drvthis)
 {
     return CELL_HEIGHT;
@@ -179,7 +179,7 @@ mx5000_flush (Driver *drvthis)
       We could only update the needed part. But it would be hard to really
       figure out what has been changed
     */
-    
+
     if (p->changed)
     {
         mx5000_sc_send(p->sc, p->fd);
@@ -200,15 +200,15 @@ mx5000_chr (Driver *drvthis, int x, int y, char c)
     char str[2];
     // The position should be given in pixels
     int px, py;
-    
+
     if ((x <= 0) || (y <= 0) || (x > SCREEN_WIDTH) || (y > SCREEN_HEIGHT))
     {
         return;
     }
-    
+
     px = (x - 1) * CELL_WIDTH;
     py = y * CELL_HEIGHT;
-    
+
     str[0] = c;
     str[1] = 0;
     mx5000_sc_add_text(p->sc, str, -1, STATIC, py, px);
@@ -226,7 +226,7 @@ mx5000_string (Driver *drvthis, int x, int y, const char string[])
     int actual_len;
     // The position should be given in pixels
     int px, py;
-    
+
     if ((x <= 0) || (y <= 0) || (x > SCREEN_WIDTH) || (y > SCREEN_HEIGHT))
     {
         return;
@@ -238,7 +238,7 @@ mx5000_string (Driver *drvthis, int x, int y, const char string[])
     {
         actual_len = SCREEN_WIDTH - x + 1;
     }
-    
+
     px = (x - 1) * CELL_WIDTH;
     py = y * CELL_HEIGHT;
 
@@ -274,8 +274,8 @@ mx5000_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
     //printf("Bar : %d, %d, %d, %d, %d\n", x, y, len, promille, options);
     px = (x - 1) * CELL_WIDTH;
     py = y * CELL_HEIGHT;
-    
-    mx5000_sc_add_progress_bar(p->sc, 
+
+    mx5000_sc_add_progress_bar(p->sc,
 			       promille * len / 1000,
 			       len,
 			       STATIC,
@@ -292,7 +292,7 @@ mx5000_num (Driver *drvthis, int x, int num)
     char text[10];
     px = (x - 1) * CELL_WIDTH;
     py = 33;
-    
+
     if (num < 10)
     {
         sprintf(text, "%d", num);
@@ -352,7 +352,7 @@ mx5000_icon(Driver *drvthis, int x, int y, int icon)
     }
     else
     {
-      
+
         return -1; /* Let the core do other icons */
     }
 }

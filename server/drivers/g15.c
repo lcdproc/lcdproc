@@ -2,7 +2,7 @@
  * LCDd \c g15 driver for the LCD on the Logitech G15 keyboard.
  */
 
-/* 
+/*
     Copyright (C) 2006 Anthony J. Mirabella.
 
     2006-07-23 Version 1.0: Most functions should be implemented and working
@@ -80,28 +80,28 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
         report(RPT_ERR, "%s: Sorry, cant connect to the G15daemon", drvthis->name);
         return -1;
    }
-   
+
 	/* make sure the canvas is there... */
 	p->canvas = (g15canvas *) malloc(sizeof(g15canvas));
 	if (p->canvas == NULL) {
 		report(RPT_ERR, "%s: unable to create canvas", drvthis->name);
 		return -1;
 	}
-	
+
 	/* make sure the backingstore is there... */
 	p->backingstore = (g15canvas *) malloc(sizeof(g15canvas));
 	if (p->backingstore == NULL) {
 		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
 		return -1;
 	}
-	
+
 	g15r_initCanvas(p->canvas);
 	g15r_initCanvas(p->backingstore);
 	p->canvas->buffer[0] = G15_LCD_WRITE_CMD;
 	p->backingstore->buffer[0] = G15_LCD_WRITE_CMD;
-	
+
 //	ret = setLCDBrightness(G15_BRIGHTNESS_BRIGHT);
-	   
+
    return 0;
 }
 
@@ -110,13 +110,13 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 MODULE_EXPORT void g15_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	g15_close_screen(p->g15screen_fd);
-	
+
 	if (p != NULL) {
 		if (p->canvas)
 			free(p->canvas);
-		
+
 		if (p->backingstore)
 			free(p->backingstore);
 
@@ -190,12 +190,12 @@ MODULE_EXPORT void g15_flush (Driver *drvthis)
 MODULE_EXPORT void g15_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	y--;
 	x--;
 	if ((x > p->width) || (y > p->height))
 		return;
-		
+
 	g15r_renderCharacterLarge(p->canvas, x, y, c, 0, 0);
 }
 
@@ -222,10 +222,10 @@ MODULE_EXPORT void g15_string (Driver *drvthis, int x, int y, const char string[
 MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	x--;
 	y--;
-	
+
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
 			{
@@ -331,25 +331,25 @@ MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon)
 		default:
 			return -1; /* Let the core do other icons */
 	}
-	
+
 	return 0;
 }
 
 // Draws a horizontal bar growing to the right
-// 
+//
 MODULE_EXPORT void g15_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	x--;
 	y--;
-	
+
 	int total_pixels = ((long) 2 * len * p->cellwidth + 1) * promille / 2000;
 	int px1 = x * p->cellwidth;
 	int py1 = y * p->cellheight;
 	int px2 = px1 + total_pixels;
 	int py2 = py1 + (p->cellheight - 2);
-	
+
 	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 }
 
@@ -358,17 +358,17 @@ MODULE_EXPORT void g15_hbar(Driver *drvthis, int x, int y, int len, int promille
 MODULE_EXPORT void g15_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	x--;
-	
+
 	int total_pixels = ((long) 2 * len * p->cellwidth + 1) * promille / 2000;
 	int px1 = x * p->cellwidth;
 	int py1 = y * p->cellheight - total_pixels;
 	int px2 = px1 + (p->cellwidth - 2);
 	int py2 = py1 + total_pixels;
-	
+
 	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
-	
+
 }
 
 //  Return one char from the Keyboard
@@ -387,7 +387,7 @@ MODULE_EXPORT const char * g15_get_key (Driver *drvthis)
 
 		FD_ZERO(&fds);
 		FD_SET(p->g15screen_fd, &fds);
-	
+
 		toread = select(FD_SETSIZE, &fds, NULL, NULL, &tv);
 	  }
 	else
@@ -399,7 +399,7 @@ MODULE_EXPORT const char * g15_get_key (Driver *drvthis)
 		  }
 		toread = 1;
 	  }
-	
+
 	if (toread >= 1)
 	  read(p->g15screen_fd, &key_state, sizeof(key_state));
 	else
@@ -426,14 +426,14 @@ MODULE_EXPORT const char * g15_get_key (Driver *drvthis)
 MODULE_EXPORT void g15_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	if (p->backlight_state == on)
 		return;
 
 	p->backlight_state = on;
 
 	char msgbuf[256];
-	
+
 	switch (on) {
 		case BACKLIGHT_ON:
 			{
@@ -447,7 +447,7 @@ MODULE_EXPORT void g15_backlight(Driver *drvthis, int on)
 			send(p->g15screen_fd,msgbuf,1,MSG_OOB);
 			break;
 			}
-		default: 
+		default:
 			{
 			break;
 			}
@@ -457,23 +457,23 @@ MODULE_EXPORT void g15_backlight(Driver *drvthis, int on)
 MODULE_EXPORT void g15_num(Driver *drvthis, int x, int num)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	x--;
 	int ox = x * p->cellwidth;
-	
+
 	if ((num < 0) || (num > 10))
 		return;
-		
+
 	int width = 0;
 	int height = 43;
-	
+
 	if ((num >= 0) && (num <=9))
 		width = 24;
 	else
 		width = 9;
-	
+
 	int i=0;
-   
+
    	for (i=0;i<(width*height);++i)
    	{
       	int color = (g15_bignum_data[num][i] ? G15_COLOR_WHITE : G15_COLOR_BLACK);

@@ -129,7 +129,7 @@ screen_del_func(Client *c, int argc, char **argv)
  *
  *\verbatim
  * Usage: screen_set <id> [-name <name>] [-wid <width>] [-hgt <height>]
- *     [-priority <prio>] [-duration <int>] [-timeout <int>] 
+ *     [-priority <prio>] [-duration <int>] [-timeout <int>]
  *     [-heartbeat <type>] [-backlight <type>]
  *     [-cursor <type>] [-cursor_x <xpos>] [-cursor_y <ypos>]
  *\endverbatim

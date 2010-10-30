@@ -106,7 +106,7 @@ typedef struct imonlcd_private_data {
 	int backlightOn;	/* stores the backlight state */
 
 	/*
-	 * 0 = two disc-segments spinning as default, 1 = their complement 
+	 * 0 = two disc-segments spinning as default, 1 = their complement
 	 * spinning
 	 */
 	int discMode;
@@ -266,7 +266,7 @@ static void send_packet(PrivateData *p);
  * \retval 0	   Success.
  * \retval <0	  Error.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 imonlcd_init(Driver *drvthis)
 {
 	PrivateData *p = NULL;
@@ -433,7 +433,7 @@ imonlcd_init(Driver *drvthis)
  * Send the "initialize" commands to the screen.
  * \param drvthis  Pointer to driver structure.
  */
-static void 
+static void
 imonlcd_display_init(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -458,7 +458,7 @@ imonlcd_display_init(Driver *drvthis)
  * Close the driver (do necessary clean-up).
  * \param drvthis  Pointer to driver structure.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_close(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -539,7 +539,7 @@ imonlcd_get_info(Driver *drvthis)
  * Clear the screen.
  * \param drvthis  Pointer to driver structure.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_clear(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -552,7 +552,7 @@ imonlcd_clear(Driver *drvthis)
  * Flush data on screen to the LCD.
  * \param drvthis  Pointer to driver structure.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_flush(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -592,7 +592,7 @@ imonlcd_flush(Driver *drvthis)
  * \param y        Vertical character position (row).
  * \param string   String that gets written.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_string(Driver *drvthis, int x, int y, const char string[])
 {
 	int i;
@@ -610,7 +610,7 @@ imonlcd_string(Driver *drvthis, int x, int y, const char string[])
  * \param y        Vertical character position (row).
  * \param ch       Character that gets written.  (ISO 8859-1 + special characters)
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_chr(Driver *drvthis, int x, int y, char ch)
 {
 	PrivateData *p = drvthis->private_data;
@@ -643,7 +643,7 @@ imonlcd_chr(Driver *drvthis, int x, int y, char ch)
  * \param promille Current height level of the bar in promille.
  * \param options  Options (currently unused).
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
@@ -666,7 +666,7 @@ imonlcd_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
  * \param promille Current length level of the bar in promille (i.e. from 0 to 1000).
  * \param options  Options (currently unused).
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
@@ -709,7 +709,7 @@ imonlcd_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
  * \retval 0   Icon has been successfully defined/written.
  * \retval <0  Server core shall define/write the icon.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 imonlcd_icon(Driver *drvthis, int x, int y, int icon)
 {
 	char ch1 = '?';
@@ -797,7 +797,7 @@ imonlcd_icon(Driver *drvthis, int x, int y, int icon)
  * \param x        The x-coordinate to display the character at.
  * \param num      The number to display ("10" is the colon).
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_num(Driver *drvthis, int x, int num)
 {
 	PrivateData *p = drvthis->private_data;
@@ -850,7 +850,7 @@ imonlcd_num(Driver *drvthis, int x, int num)
  *               0 <= length <= 32, bars extend from left to right.
  *               length > 32, bars extend from right to left, length is counted
  *               from 32 up (i.e. 35 means a length of 3).
- *                       
+ *
  *     Remember: There are two kinds of calls!
  *               With bit 28 set to 1: Set all bars (leaving the symbols as is),
  *               with bit 28 set to 0: Set the symbols (leaving the bars as is).
@@ -863,7 +863,7 @@ imonlcd_num(Driver *drvthis, int x, int num)
  * \param drvthis  Pointer to driver structure.
  * \param state    This symbols or bars to display.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_output(Driver *drvthis, int state)
 {
 
@@ -1096,7 +1096,7 @@ imonlcd_output(Driver *drvthis, int state)
  * \param drvthis  Pointer to driver structure.
  * \return  Number of characters the display is wide.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 imonlcd_width(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1110,7 +1110,7 @@ imonlcd_width(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return  Number of characters the display is high.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 imonlcd_height(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1124,7 +1124,7 @@ imonlcd_height(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return  Number of pixel columns a character cell is wide.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 imonlcd_cellwidth(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1138,7 +1138,7 @@ imonlcd_cellwidth(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return  Number of pixel lines a character cell is high.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 imonlcd_cellheight(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1157,7 +1157,7 @@ imonlcd_cellheight(Driver *drvthis)
  *               the device. The kernel module doesn't actually do validation.
  * \param p      The private data containing the file descriptor to write to.
  */
-static void 
+static void
 send_command_data(uint64_t value, PrivateData *p)
 {
 	int i;
@@ -1175,7 +1175,7 @@ send_command_data(uint64_t value, PrivateData *p)
  *
  * \param p The private data structure containing a tx_buf with the data to send.
  */
-static void 
+static void
 send_packet(PrivateData *p)
 {
 	int err;
@@ -1195,7 +1195,7 @@ send_packet(PrivateData *p)
  * \return 0 on failure, >0 on success.
  */
 MODULE_EXPORT
-void 
+void
 imonlcd_set_contrast(Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1222,7 +1222,7 @@ imonlcd_set_contrast(Driver *drvthis, int promille)
  * \return The current contrast in promille (0 = lowest contrast;
  *         1000 = highest contrast).
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 imonlcd_get_contrast(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1235,7 +1235,7 @@ imonlcd_get_contrast(Driver *drvthis)
  * \param drvthis Pointer to driver structure.
  * \param on The backlight state boolean-like: 0 = off; >0 = on.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 imonlcd_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1262,7 +1262,7 @@ imonlcd_backlight(Driver *drvthis, int on)
  * \param y     vertical position
  * \param p     pointer to the PrivateData structure
  */
-static void 
+static void
 draw_bigchar(imon_bigfont *font, int ch, int x, int y, PrivateData *p)
 {
 	imon_bigfont *defn = font;
@@ -1305,7 +1305,7 @@ draw_bigchar(imon_bigfont *font, int ch, int x, int y, PrivateData *p)
  * \param botProgress  Length of the bottom progress bar (-32 to 32)
  * \param p The private data structure containing the file descriptor to write to.
  */
-static void 
+static void
 setLineLength(int topLine, int botLine, int topProgress, int botProgress, PrivateData *p)
 {
 	setBuiltinProgressBars(lengthToPixels(topLine),
@@ -1328,7 +1328,7 @@ setLineLength(int topLine, int botLine, int topProgress, int botProgress, Privat
  * \param botProgress  Pitmap of the bottom progress bar
  * \param p The private data structure containing the file descriptor to write to.
  */
-static void 
+static void
 setBuiltinProgressBars(int topLine, int botLine,
 		       int topProgress, int botProgress, PrivateData *p)
 {
@@ -1359,7 +1359,7 @@ setBuiltinProgressBars(int topLine, int botLine,
  * \param length The length of the bar.
  * \return The pixmap that represents the given length.
  */
-static int 
+static int
 lengthToPixels(int length)
 {
 	int pixLen[] =

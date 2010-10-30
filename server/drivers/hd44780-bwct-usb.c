@@ -159,7 +159,7 @@ hd_init_bwct_usb(Driver *drvthis)
 #if defined(LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP)
       report(RPT_WARNING, "hd_init_bwct_usb: interface may be claimed by "
                           "kernel driver, attempting to detach it");
-      
+
       errno = 0;
       if ((usb_detach_kernel_driver_np(p->usbHandle, p->usbIndex) < 0) ||
           (usb_claim_interface(p->usbHandle, p->usbIndex) < 0)) {

@@ -2,10 +2,10 @@
 .\" Refer to the COPYING file distributed with this package.
 .TH "lcdvc" "1" "12 June 2009" "LCDproc" "LCDproc suite"
 .SH "NAME"
-.LP 
+.LP
 lcdvc \- LCDproc virtual console
 .SH "SYNOPSIS"
-.LP 
+.LP
 lcdvc
 [\fB\-fh\fR]
 [\fB\-a\fR \fIaddr\fR]
@@ -14,58 +14,58 @@ lcdvc
 [\fB\-r\fR \fIlevel\fR]
 [\fB\-s\fR \fIbool\fR]
 .SH "DESCRIPTION"
-.LP 
+.LP
 This program shows content from a system console on a LCD controlled by
 \fBLCDd\fR. As the console is usually larger than a LCD, the area shown on
 the LCD screen can be scrolled using keys attached to the display.
-.LP 
+.LP
 Additionally it features an autoscroll feature, which is on by default and can
 only be disabled by using \fBlcdvc\fR's menu.
-.LP 
+.LP
 By default it uses \fI/dev/vcs\fR and \fI/dev/vcsa\fR devices as the
 console to show. Other console devices can be set in the configuration file
 \fI@SYSCONFDIR@/lcdvc.conf\fR. The keys used for scrolling can be set in the config
 file as well.
 .SH "OPTIONS"
-.LP 
+.LP
 The following options can be set in the configuration file
 \fI@SYSCONFDIR@/lcdvc.conf\fR as well, but those given on the command line take
 precedence:
-.TP 
+.TP
 \fB\-a\fR \fIaddr\fR
 DNS name or IP address of the LCDd server (default localhost).
-.TP 
+.TP
 \fB\-c\fR \fIfile\fR
 Specify configuration file.
-.TP 
+.TP
 \fB\-f\fR
 Run in foreground.
-.TP 
+.TP
 \fB\-h\fR
 Output help and exit.
-.TP 
+.TP
 \fB\-p\fR \fIport\fR
 Port of the LCDd server (default 13666).
-.TP 
+.TP
 \fB\-r\fR \fIlevel\fR
 Set reporting level (0\-5, default: 2)
-.TP 
+.TP
 \fB\-s\fR \fIbool\fR
 Report to syslog (1) or stderr (0, default).
 .SH "FILES"
-.LP 
+.LP
 \fI@SYSCONFDIR@/lcdvc.conf\fP
-.br 
-\fI/dev/vcs\fP 
-.br 
+.br
+\fI/dev/vcs\fP
+.br
 \fI/dev/vcsa\fP
 .SH "AUTHORS"
-.LP 
+.LP
 \fBlcdvc\fR was originally written by Joris Robijn, modified by Peter Marschall.
-.LP 
+.LP
 This man page was written by Markus Dolze.
 .SH "SEE ALSO"
-.LP 
+.LP
 LCDd(8) vcs(4)
 .SH "LICENSE"
 \fBlcdvc\fR is released under the GNU General Public License, version 2.

@@ -18,7 +18,7 @@ The displays are driven in text mode using their built-in character generator.
 Connections below are for the G242C, G121C and G321D displays.
 Always consult documentation about the specific display before asuming
 the connections given here are also correct for your display !
-</para> 
+</para>
 
 <table id="sed1330-connections.classic-by-lcd">
 <title>ConnectionType <literal>classic</literal> ordered by LCD pins</title>
@@ -634,7 +634,7 @@ use the following circuit.
 
     <note><para>
       Currently the G321D and SP14Q002 are the only ones that this driver is tested with.
-    </para></note>  
+    </para></note>
   </listitem>
 </varlistentry>
 </variablelist>
@@ -642,7 +642,7 @@ use the following circuit.
 <para>
 Contrary to other drivers the character size of an LCD using the sed1330
 driver is not given directly.
-Instead it is determined by the pixel size of the display, which is derived from 
+Instead it is determined by the pixel size of the display, which is derived from
 the display type setting and the character cell size.
 </para>
 

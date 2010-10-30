@@ -2,7 +2,7 @@ This document describes the driver API of v0.4 of LCDproc.
 
 The API consists of several functions to tell the driver that
 certains actions should be performed, and some data. I consider
-the data part of the API, because this data is transfered 
+the data part of the API, because this data is transfered
 between core and driver.
 
 OVERVIEW OF OPERATION
@@ -58,7 +58,7 @@ The various parts are meant for the following:
 
 1. Several variables
 These vars are meant to tell the server how many characters wide and high the
-LCD is, and what size the definable characters are. 
+LCD is, and what size the definable characters are.
 
 2. Framebuf
 The framebuffer can be written to by server and client in the 0.4 version.

@@ -108,15 +108,15 @@ serialVFD_load_NEC_FIPC (Driver *drvthis)
 				{1      ,0x03},
 				{1	,0x02},
 				{1	,0x01},  	// bright
-				{1	,0x0D},  	// pos1	
+				{1	,0x0D},  	// pos1
 			// pos1 command is only used (and needed), when mv_cursor command is not supported
 				{1	,0x1B},  	// move cursor (set to 0 if not supported)
 				{1	,0x0C},  	// reset
 				{2	,0x14, 0x11},  	// init
 				{1	,0x1A}, 	// set user char
-				{1	,0x09}, 	// tab 
+				{1	,0x09}, 	// tab
 				{0	}};	// next_line (only used in line mode)
-			// Line mode will be used if Next_line command is set!!! 
+			// Line mode will be used if Next_line command is set!!!
 			// Do not set if the display supports normal mode (most displays should do this).
 
 	for (tmp = 0; tmp < 11; tmp++)
@@ -467,7 +467,7 @@ serialVFD_load_IEE_95B (Driver *drvthis)
 	{0xFF, 0xFE, 0xFD, 0xFC, 0xFB, 0xFA, 0xF9, 0xF8, 0xF7, 0xF6};
 	for (tmp = 0; tmp < 31; tmp++)
 		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
-	
+
 	// The following is only needet to set if the display needs a different setting
 	// for loading the usercharacters.
 	// Example: The character loaded to 0x00 will be shown at 0xFD.
@@ -556,7 +556,7 @@ serialVFD_load_IEE_96 (Driver *drvthis)
 	{0xFF, 0xFE, 0xFD};
 	for (tmp = 0; tmp < 31; tmp++)
 		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
-	
+
 	// The following is only needet to set if the display needs a different setting
 	// for loading the usercharacters.
 	// Example: The character loaded to 0x00 will be shown at 0xFD.
@@ -589,7 +589,7 @@ serialVFD_load_Futaba_NA202SD08FA (Driver *drvthis)
 	const char hw_cmd[10][4] ={{2    ,0x04, 0x20},	// dark
 				{2      ,0x04, 0x40},
 				{2	,0x04, 0x60},
-				{2	,0x04, 0xFF},	// bright 
+				{2	,0x04, 0xFF},	// bright
 				{1	,0x16},	// pos1
 				{1	,0x1B},	// move cursor (set to 0 if not supported)
 				{1	,0x15},	// reset
@@ -639,7 +639,7 @@ serialVFD_load_Futaba_NA202SD08FA (Driver *drvthis)
 	{0,0,0,0,0,0, 0xF4, 0xF4, 0xF5, 0xF6, 0xF6, 0xF7, 0, 0xF0, 0xF1, 0xF2, 0xF3};
 	for (tmp = 0; tmp < 31; tmp++)
 		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
-	
+
 
 }
 
@@ -748,10 +748,10 @@ serialVFD_load_Nixdorf_BA6x (Driver *drvthis)
 				{4 ,0x1B, 0x5B, 0x32, 0x4A},	// reset
 				{3 ,0x1B, 0x52, 0x00},  		// init
 				{0	}, 	// set user char
-				{0	}, 	// tab 
+				{0	}, 	// tab
 				{2 ,0x0D, 0x0A}	// next_line
-		// Next_line command is only used in line mode. 
-		// Line mode will be used if Next_line command is set!!! 
+		// Next_line command is only used in line mode.
+		// Line mode will be used if Next_line command is set!!!
 		// Set to "0" if display supports normal_mode!
 				};
 	for (tmp = 0; tmp < 11; tmp++)

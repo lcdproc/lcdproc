@@ -223,7 +223,7 @@ widget_search_subs(Widget *w, char *id)
 /** Find a widget icon by type.
  * \param icon    Icon type.
  * \return        Pointer to constant string containing the icon name.
- */ 
+ */
 char *widget_icon_to_iconname(int icon)
 {
 	int i;

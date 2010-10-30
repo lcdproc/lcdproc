@@ -103,7 +103,7 @@ LL_GoTo(LinkedList *list, Direction whereto)
 {
 	if (!list)
 		return NULL;
-	
+
 	switch (whereto) {
 		case HEAD:	list->current = (list->head.next != &list->tail)
 						? list->head.next
@@ -122,7 +122,7 @@ LL_GoTo(LinkedList *list, Direction whereto)
 						: NULL;
 				break;
 	}
-	
+
 	return list->current;
 }
 
@@ -215,7 +215,7 @@ LL_Prev(LinkedList *list)
  * Return pointer to list's \c current node's data.
  * \param list   List object.
  * \return       Pointer to \c current node's payload data;
- *               \c NULL may be empty payload or an error.  
+ *               \c NULL may be empty payload or an error.
  */
 void *
 LL_Get(LinkedList *list)
@@ -446,7 +446,7 @@ LL_InsertNode(LinkedList *list, void *add)
  * \param list     List object.
  * \param whereto  Direction where to set the list's \c current pointer
  * \return         Pointer to data of deleted node; \c NULL on error.
- */ 
+ */
 void *
 LL_DeleteNode(LinkedList *list, Direction whereto)
 {
@@ -502,7 +502,7 @@ LL_DeleteNode(LinkedList *list, Direction whereto)
  * \param data   Pointer to data of node to delete.
  * \param whereto  Direction where to set the list's \c current pointer
  * \return       Pointer to data of deleted node; \c NULL on error.
- */ 
+ */
 void *
 LL_Remove(LinkedList *list, void *data, Direction whereto)
 {
@@ -791,7 +791,7 @@ LL_Find(LinkedList *list, int (*compare)(void *, void *), void *value)
  *
  * \note
  * \c value can be used to report errors, pass additional information, ...
- * 
+ *
  * \param list     List object.
  * \param action   Pointer to the action function that takes two void pointers
  *                 as arguments and returns a void pointer.

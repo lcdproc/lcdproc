@@ -4,7 +4,7 @@ sysconf_DATA = lcdvc.conf
 
 bin_PROGRAMS = lcdvc
 
-lcdvc_SOURCES = lcdvc.c lcdvc.h lcd_link.c lcd_link.h vc_link.c vc_link.h 
+lcdvc_SOURCES = lcdvc.c lcdvc.h lcd_link.c lcd_link.h vc_link.c vc_link.h
 
 lcdvc_LDADD = ../../shared/libLCDstuff.a
 

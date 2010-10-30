@@ -100,7 +100,7 @@ if ($opt{V}) {
   exit(0);
 }
 
-# check number of arguments 
+# check number of arguments
 usage(1)  if ($#ARGV >= 0);
 
 
@@ -207,7 +207,7 @@ while(1) {
 # To be called on exit and on SIGINT or SIGTERM.
 sub grace() {
         print "Exiting...\n" if ($verbose >= 5);
- 
+
         # release keys
 	print $remote "client_del_key Left\n";
 	$lcdresponse = <$remote>;
@@ -215,7 +215,7 @@ sub grace() {
 	$lcdresponse = <$remote>;
 	print $remote "client_del_key Enter\n";
 	$lcdresponse = <$remote>;
- 
+
         # close socket
         close($remote);
         exit;
@@ -252,7 +252,7 @@ my $status = shift;
   }
   else {
     print STDERR "For help, type: $progname -h\n";
-  }  
+  }
 
   exit($status);
 }

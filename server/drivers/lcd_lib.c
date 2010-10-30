@@ -22,7 +22,7 @@
  * This function places a hbar using the v0.5 API format and the given cellwidth.
  * It assumes that custom chars have been statically defined, so that number
  * 1 has 1 pixel, number 2 has 2 etc.
- * 
+ *
  * LCDs that have the custom chars at other char numbers than 0 should put the
  * first custom char number in cc_offset.
  */
@@ -38,7 +38,7 @@ lib_hbar_static (Driver *drvthis, int x, int y, int len, int promille, int optio
 
 		if ( pixels >= cellwidth ) {
 			/* write a "full" block to the screen... */
-#if defined(SEAMLESS_HBARS)			
+#if defined(SEAMLESS_HBARS)
 			drvthis->chr (drvthis, x+pos, y, cellwidth + cc_offset);
 #else
 			drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
@@ -59,7 +59,7 @@ lib_hbar_static (Driver *drvthis, int x, int y, int len, int promille, int optio
  * This function places a vbar using the v0.5 API format and the given cellwidth.
  * It assumes that custom chars have been statically defined, so that number
  * 1 has 1 pixel, number 2 has 2 etc., just like in good old times.
- * 
+ *
  * LCDs that have the custom chars at other char numbers than 0 should put the
  * first custom char number in cc_offset.
  */

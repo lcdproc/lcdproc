@@ -29,7 +29,7 @@ and displays them via LCDproc (http://lcdproc.omnipotent.net/)
 
 =item B<METAR-Code>
 
-The METAR code related of the city you want weather observations. 
+The METAR code related of the city you want weather observations.
 
 For fun, here are some example METAR codes:
  LA     : KLAX
@@ -50,18 +50,18 @@ http://www.nws.noaa.gov/oso/oso1/oso12/metar.htm
 
 =item Cannot connect to LCDproc port
 
-By default, lcdMetar tries to connect to localhost port 13666. If you get this 
+By default, lcdMetar tries to connect to localhost port 13666. If you get this
 error, that means that this is not possible to connect to this port. You can change
 the port lcdMetar connects to by modifying the script's variables $host and $port.
 
 =item METAR is too short! Something went wrong.
 
-The METAR data we received is not what we expected, check out NOOA's web site 
+The METAR data we received is not what we expected, check out NOOA's web site
 (http://weather.noaa.gov/) to see if something has changed.
 
 =item Can't connect to METAR source
 
-lcdMetar tried to fetch weather observations from NOAA's web site and failed. It 
+lcdMetar tried to fetch weather observations from NOAA's web site and failed. It
 will retry in 15 minutes.
 
 =back
@@ -74,22 +74,22 @@ These are all available on CPAN: http://www.cpan.org/
 
 =head1 DISCLAMER
 
-Data distribution via the Internet is not considered an operational 
-delivery mechanism by the NWS due to our inability to insure access 
-to this service, therefore, the information available here shall not 
+Data distribution via the Internet is not considered an operational
+delivery mechanism by the NWS due to our inability to insure access
+to this service, therefore, the information available here shall not
 be used for flight planning or other operational purposes.
 
-This program is free software; you can redistribute it and/or modify 
-it under the terms of the GNU General Public License version 2 as 
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along 
-with this program; if not, write to the Free Software Foundation, Inc., 
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 =head1 BUGS
@@ -249,7 +249,7 @@ while (1) {
 	print "Sleeping for 15 minutes.\n" if ($verbose >= 5);
 	sleep 900;
 }
-# Should never go there since above is an infinite loop, 
+# Should never go there since above is an infinite loop,
 # send a SIGINT or SIGTERM to exit nicely.
 
 # To be called on exit and on SIGINT or SIGTERM.

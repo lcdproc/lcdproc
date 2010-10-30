@@ -5,7 +5,7 @@
 
 /*  This is the LCDproc driver for EyeboxOne devices
 
-    This code is based on MtxOrb driver (William Ferrell and Scott Scriven) 
+    This code is based on MtxOrb driver (William Ferrell and Scott Scriven)
 
     Copyright (C) 2006 Cedric TESSIER (aka NeZetiC) http://www.nezetic.info
 
@@ -413,7 +413,7 @@ EyeboxOne_close (Driver *drvthis)
 		p->framebuf = NULL;
 
 		free(p);
-	}	
+	}
 	drvthis->store_private_ptr(drvthis, NULL);
 	debug(RPT_DEBUG, "EyeBO: closed");
 }
@@ -450,15 +450,15 @@ EyeboxOne_string (Driver *drvthis, int x, int y, const char string[])
 	int bar,level;
 
 	PrivateData * p = drvthis->private_data;
-	/* 
-	 * /xBab = Use Bar         
-	 * a = Bar ID         
-	 * b = Level         
+	/*
+	 * /xBab = Use Bar
+	 * a = Bar ID
+	 * b = Level
 	 */
 	if(strncmp(string,"/xB",3) == 0){
-		bar = (int) (string[3] - 48);	
+		bar = (int) (string[3] - 48);
 		level = (int) (string[4] - 48);
-		if(level == 1) 
+		if(level == 1)
 			if(strlen(string) > 5)
 				if(((int) (string[5] - 48)) == 0)
 					level = 10;
@@ -470,7 +470,7 @@ EyeboxOne_string (Driver *drvthis, int x, int y, const char string[])
 	ValidX(x);
 	ValidY(y);
 
-	x--; y--; 
+	x--; y--;
 	offset = (y * p->width) + x;
 	siz = (p->widthBYheight) - offset;
 	siz = (siz > strlen(string)) ? strlen(string) : siz;
@@ -541,7 +541,7 @@ EyeboxOne_chr (Driver *drvthis, int x, int y, char c)
 	ValidX(x);
 	ValidY(y);
 
-	y--; x--; 
+	y--; x--;
 	offset = (y * p->width) + x;
 	p->framebuf[offset] = c;
 
@@ -549,7 +549,7 @@ EyeboxOne_chr (Driver *drvthis, int x, int y, char c)
 }
 
 /******************************
- * Sets the backlight on or off 
+ * Sets the backlight on or off
  */
 MODULE_EXPORT void
 EyeboxOne_backlight (Driver *drvthis, int on)
@@ -585,7 +585,7 @@ EyeboxOne_backlight (Driver *drvthis, int on)
 	}
 }
 
-/********************** 
+/**********************
  * Toggle cursor on/off
  */
 static void
@@ -624,10 +624,10 @@ EyeboxOne_get_key (Driver *drvthis)
 
 	(void) read(p->fd, &in, 1);
 	report(RPT_DEBUG, "%s: get_key: key 0x%02X", drvthis->name, in);
-	/* There is a lot of undesirable chars which appear 
+	/* There is a lot of undesirable chars which appear
 	 * when a key is pressed
 	 * */
-	if (in == '\0' || (int) in == 19 || (int) in == 91 || (int) in == 79 || (int) in == 27) 
+	if (in == '\0' || (int) in == 19 || (int) in == 91 || (int) in == 79 || (int) in == 27)
 		return NULL;
 
 	if (!p->keypad_test_mode) {
@@ -640,7 +640,7 @@ EyeboxOne_get_key (Driver *drvthis)
 		else if (in == p->down_key)
 			return "Down";
 		else if (in == p->enter_key)
-			return "Enter"; 
+			return "Enter";
 		else if (in == p->escape_key)
 			return "Escape";
 		else {

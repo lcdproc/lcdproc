@@ -69,10 +69,10 @@ static char *argv2string(int argc, char **argv)
  *\verbatim
  * Usage: menu_add_item <menuid> <newitemid> <type> [<text>]
  *\endverbatim
- * 
+ *
  * You should use "" as id for the client's main menu. This menu will be
  * created automatically when you add an item to it the first time.
- * 
+ *
  * You (currently?) cannot create a menu in the main level yourself.
  * The names you use for items should be unique for your client.
  * The text is the visible text for the item.
@@ -232,7 +232,7 @@ menu_add_item_func(Client *c, int argc, char **argv)
  *\verbatim
  * Usage: menu_del_item <menuid> <itemid>
  *\endverbatim
- * 
+ *
  * The given item in the given menu will be deleted. If you have deleted all
  * the items from your client menu, that menu will automatically be removed.
  */
@@ -299,7 +299,7 @@ menu_del_item_func(Client *c, int argc, char **argv)
  *
  *\verbatim
  * Usage: menu_set_item <menuid> <itemid> {<option>}+
- * 
+ *
  * The following parameters can be set per item:
  * (you should include the - in the option)
  *
@@ -850,7 +850,7 @@ int set_successor(MenuItem *item, char *itemid, Client *c)
 }
 
 /**
- * Requests the menu system to set the entry point into the menu system. 
+ * Requests the menu system to set the entry point into the menu system.
  *
  *\verbatim
  * Usage: menu_set_main <id>

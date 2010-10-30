@@ -95,7 +95,7 @@ sock_init(char* bind_addr, int bind_port)
 	/* Create the socket and set it up to accept connections. */
 	listening_fd = sock_create_inet_socket(bind_addr, bind_port);
 	if (listening_fd < 0) {
-		report(RPT_ERR, "%s: error creating socket - %s", 
+		report(RPT_ERR, "%s: error creating socket - %s",
 			__FUNCTION__, sock_geterror());
 		return -1;
 	}
@@ -103,7 +103,7 @@ sock_init(char* bind_addr, int bind_port)
 	/* Create the socket -> Client mapping pool */
 	/* How large can FD_SETSIZE be? Even if it is ~2000 this only uses a
 	   few kilobytes of memory. Let's trade size for speed! */
-	freeClientSocketPool = (ClientSocketMap *) 
+	freeClientSocketPool = (ClientSocketMap *)
 				calloc(FD_SETSIZE, sizeof(ClientSocketMap));
 	if (freeClientSocketPool == NULL) {
 		report(RPT_ERR, "%s: Error allocating client sockets.",
@@ -205,13 +205,13 @@ sock_create_inet_socket(char *addr, unsigned int port)
 	sock = socket(PF_INET, SOCK_STREAM, 0);
 	if (sock < 0)
 	{
-		report(RPT_ERR, "%s: cannot create socket - %s", 
+		report(RPT_ERR, "%s: cannot create socket - %s",
 			__FUNCTION__, sock_geterror());
 		return -1;
 	}
 	/* Set the socket so we can re-use it*/
 	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *) &sockopt, sizeof(sockopt)) < 0) {
-		report(RPT_ERR, "%s: error setting socket option SO_REUSEADDR - %s", 
+		report(RPT_ERR, "%s: error setting socket option SO_REUSEADDR - %s",
 			__FUNCTION__, sock_geterror());
 		return -1;
 	}
@@ -223,14 +223,14 @@ sock_create_inet_socket(char *addr, unsigned int port)
 	inet_aton(addr, &name.sin_addr);
 
 	if (bind(sock, (struct sockaddr *) &name, sizeof(name)) < 0) {
-		report(RPT_ERR, "%s: cannot bind to port %d at address %s - %s", 
+		report(RPT_ERR, "%s: cannot bind to port %d at address %s - %s",
                        __FUNCTION__, port, addr, sock_geterror());
 		return -1;
 	}
 
 	if (listen(sock, 1) < 0) {
 		report(RPT_ERR, "%s: error in attempting to listen to port "
-			"%d at %s - %s", 
+			"%d at %s - %s",
 			__FUNCTION__, port, addr, sock_geterror());
 		return -1;
 	}
@@ -264,15 +264,15 @@ sock_poll_clients(void)
 	read_fd_set = active_fd_set;
 
 	if (select(FD_SETSIZE, &read_fd_set, NULL, NULL, &t) < 0) {
-		report(RPT_ERR, "%s: Select error - %s", 
+		report(RPT_ERR, "%s: Select error - %s",
 			__FUNCTION__, sock_geterror());
 		return -1;
 	}
 
 	/* Service all the sockets with input pending. */
 	LL_Rewind(openSocketList);
-	for (clientSocket = (ClientSocketMap *) LL_Get(openSocketList); 
-	     clientSocket != NULL; 
+	for (clientSocket = (ClientSocketMap *) LL_Get(openSocketList);
+	     clientSocket != NULL;
 	     clientSocket = LL_GetNext(openSocketList)) {
 
 		if (FD_ISSET(clientSocket->socket, &read_fd_set)) {
@@ -285,7 +285,7 @@ sock_poll_clients(void)
 
 				new_sock = accept(listening_fd, (struct sockaddr *) &clientname, &size);
 				if (new_sock < 0) {
-					report(RPT_ERR, "%s: Accept error - %s", 
+					report(RPT_ERR, "%s: Accept error - %s",
 						__FUNCTION__, sock_geterror());
 					return -1;
 				}
@@ -313,7 +313,7 @@ sock_poll_clients(void)
 						LL_Next(openSocketList);
 					}
 					else {
-						report(RPT_ERR, "%s: Error - free client socket list exhausted - %d clients.", 
+						report(RPT_ERR, "%s: Error - free client socket list exhausted - %d clients.",
 							__FUNCTION__, FD_SETSIZE);
 						return -1;
 					}
@@ -368,7 +368,7 @@ sock_read_from_client(ClientSocketMap *clientSocketMap)
 			if (clientSocketMap->client) {
 				client_add_message(clientSocketMap->client, str);
 			} else {
-				report(RPT_DEBUG, "%s: Can't find client %d", 
+				report(RPT_DEBUG, "%s: Can't find client %d",
 					__FUNCTION__, clientSocketMap->socket);
 			}
 		} while (str != NULL);
@@ -453,7 +453,7 @@ sock_destroy_socket(void)
 
 
 /* return 1 if addr is valid IPv4 */
-int verify_ipv4(const char *addr) 
+int verify_ipv4(const char *addr)
 {
 	int result = -1;
 
@@ -467,7 +467,7 @@ int verify_ipv4(const char *addr)
 }
 
 /* return 1 if addr is valid IPv6 */
-int verify_ipv6(const char *addr) 
+int verify_ipv6(const char *addr)
 {
 	int result = 0;
 
@@ -478,4 +478,4 @@ int verify_ipv6(const char *addr)
 		result = inet_pton(AF_INET6, addr, &a);
 	}
 	return (result > 0) ? 1 : 0;
-} 
+}

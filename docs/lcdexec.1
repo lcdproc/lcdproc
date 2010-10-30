@@ -3,12 +3,12 @@
 lcdexec - LCDproc client to execute commands from the LCDd menu
 .SH SYNOPSIS
 .B lcdexec
-[\fB\-hf\fP] 
-[\fB\-c\fP \fIconfig\fP] 
-[\fB\-a\fP \fIaddr\fP] 
-[\fB\-p\fP \fIport\fP] 
-[\fB\-r\fP \fIlevel\fP] 
-[\fB\-s\fP \fIbool\fP] 
+[\fB\-hf\fP]
+[\fB\-c\fP \fIconfig\fP]
+[\fB\-a\fP \fIaddr\fP]
+[\fB\-p\fP \fIport\fP]
+[\fB\-r\fP \fIlevel\fP]
+[\fB\-s\fP \fIbool\fP]
 
 .SH DESCRIPTION
 lcdexec connects to LCDd (the LCDproc server) and adds a submenu to the LCDd main menu
@@ -42,7 +42,7 @@ Report to syslog (1) or to stdout (0, default)
 .PP
 
 .SH USAGE
-In addition to the command line options listed above lcdexec also takes options from 
+In addition to the command line options listed above lcdexec also takes options from
 a configuration file.
 .PP
 This file is expected to have a "INI-file" like format with sections introduced by
@@ -94,7 +94,7 @@ is the hostname of the system \fIlcdexec\fP is running on.
 Set the shell to use when executing programs.
 If not given, \fBlcdexec\fP tries to read the environment variable \fISHELL\fP.
 If that fails, it defaults to \fB/bin/sh\fP.
-Please note that the shell given here must understand the option \fB\-c\fP 
+Please note that the shell given here must understand the option \fB\-c\fP
 followed by the command line to execute.
 .PP
 
@@ -121,7 +121,7 @@ The name of the menu entry to be displayed on the LCD.
 If this option is not given, the the section header name is used (without the square brackets).
 .TP 8
 .B Feedback=\fIbool\fP
-In command entries, this option tells whether to inform the user of the completion of 
+In command entries, this option tells whether to inform the user of the completion of
 commands using an alert screen on the display.
 If not given, it defaults to \fBno\fB.
 .PP

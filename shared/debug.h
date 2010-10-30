@@ -20,7 +20,7 @@ To enable the debug() function only in specific files:
 #include "shared/debug.h"
 #undef DEBUG
 Then recompile with 'make'
-This way, the global DEBUG macro is off but is locally enabled in 
+This way, the global DEBUG macro is off but is locally enabled in
 certains parts of the software.
 */
 

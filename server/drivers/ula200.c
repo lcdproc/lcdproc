@@ -43,7 +43,7 @@
 // display).
 //
 // I tried several hours to fix this, I simply find the reason for this problem.
-// 
+//
 //
 // Implementation note:
 //
@@ -239,7 +239,7 @@ typedef struct ula200_private_data {
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Reads a USB characters 
+// Reads a USB characters
 static inline int
 ula200_ftdi_usb_read(PrivateData *p)
 {
@@ -262,7 +262,7 @@ ula200_ftdi_usb_read(PrivateData *p)
 //
 // @return true if ACK was responded, false if NACk was responded
 //
-static bool 
+static bool
 ula200_ftdi_read_response(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -318,7 +318,7 @@ ula200_ftdi_read_response(Driver *drvthis)
 // @param p the private data
 // @param data the data bytes
 // @param length the number of bytes in @p data which are valid
-// @param escape if the data should be escaped (see the User's Guide of the 
+// @param escape if the data should be escaped (see the User's Guide of the
 //        ULA-200)
 // @return 0 on success, negative value on error
 //
@@ -480,7 +480,7 @@ ula200_ftdi_string(Driver *drvthis, const unsigned char *string, int len)
 ///////////////////////////////////////////////////////////////////////////////
 // Enables the raw register access mode.
 //
-static int 
+static int
 ula200_ftdi_enable_raw_mode(Driver *drvthis)
 {
     unsigned char command[3];
@@ -635,14 +635,14 @@ ula200_init(Driver *drvthis)
 	for (i = 0; i < MAX_KEY_MAP; i++) {
 		char buf[40];
 
-		// First fill with default value 
+		// First fill with default value
 		p->key_map[i] = default_key_map[i];
 
-		// Read config value 
+		// Read config value
 		sprintf(buf, "KeyMap_%c", i+'A');
 		s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
 
-		// Was a key specified in the config file ? 
+		// Was a key specified in the config file ?
 		if (s != NULL) {
 			p->key_map[i] = strdup(s);
 			report(RPT_INFO, "%s: Key '%c' mapped to \"%s\"",
@@ -903,7 +903,7 @@ ula200_flush(Driver *drvthis)
 
 		if (firstdiff >= 0) {
 			ula200_ftdi_position(drvthis, firstdiff, y);
-			ula200_ftdi_string(drvthis, p->framebuf + (y*wid) + firstdiff, 
+			ula200_ftdi_string(drvthis, p->framebuf + (y*wid) + firstdiff,
                                lastdiff - firstdiff + 1);
 		}
 	}

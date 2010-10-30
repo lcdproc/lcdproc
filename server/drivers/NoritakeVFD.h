@@ -56,5 +56,5 @@ MODULE_EXPORT int  NoritakeVFD_get_brightness(Driver *drvthis, int state);
 MODULE_EXPORT void NoritakeVFD_set_brightness(Driver *drvthis, int state, int promille);
 MODULE_EXPORT void NoritakeVFD_backlight (Driver *drvthis, int on);
 
-#endif 
+#endif
 

@@ -155,7 +155,7 @@ int machine_get_battstat(int *acstat, int *battflag, int *percent)
 				*percent = (int)((double)curCapacity/(double)maxCapacity * 100);
 
 				/*	There is a way to check this through the IOKit,
-					but I am not sure what gets returned for kIOPSLowWarnLevelKey and kIOPSDeadWarnLevelKey, 
+					but I am not sure what gets returned for kIOPSLowWarnLevelKey and kIOPSDeadWarnLevelKey,
 					and this is easier.
 				*/
 				if (*battflag == LCDP_BATT_UNKNOWN) {
@@ -314,20 +314,20 @@ int machine_get_meminfo(meminfo_type *result)
 int machine_get_procs(LinkedList *procs)
 {
 	struct kinfo_proc *kprocs;
-	
+
 	procinfo_type *p;
 	int nproc, i;
 	int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
 
 	size_t size = 0;
 
-	/* Call sysctl with a NULL buffer as a dry run. */ 
+	/* Call sysctl with a NULL buffer as a dry run. */
 	if ( sysctl(mib, 4, NULL, &size, NULL, 0 ) < 0)
 	{
 		perror("Failure calling sysctl");
 		return FALSE;
 	}
-	/* Allocate a buffer based on previous results of sysctl. */ 
+	/* Allocate a buffer based on previous results of sysctl. */
 	kprocs = (struct kinfo_proc *)alloca(size);
 	if (kprocs == NULL)
 	{
@@ -341,7 +341,7 @@ int machine_get_procs(LinkedList *procs)
 		return FALSE;
 	}
 
-	nproc = size / sizeof(struct kinfo_proc);		
+	nproc = size / sizeof(struct kinfo_proc);
 
 	for (i = 0; i < nproc; i++, kprocs++)
 	{
@@ -380,7 +380,7 @@ int machine_get_procs(LinkedList *procs)
 		} else {
 			/*	This error pops up very often because of Mac OS X security fixes.
 				It might pop up all of the time on an intel Mac.
-				Basically, we cannot get many tasks unless we are root. 
+				Basically, we cannot get many tasks unless we are root.
 			perror("task_for_pid");
 			printf("process: %s, owner:%d\n", kprocs->kp_proc.p_comm, kprocs->kp_eproc.e_pcred.p_ruid); */
 			p->totl = 0;
@@ -420,7 +420,7 @@ int machine_get_smpload(load_type *result, int *numcpus)
 	}
 
 	return(TRUE);
-}	
+}
 
 int machine_get_uptime(double *up, double *idle)
 {
@@ -449,7 +449,7 @@ int machine_get_uptime(double *up, double *idle)
 }
 
 static int swapmode(int *rettotal, int *retfree)
-{	
+{
 	#ifdef VM_SWAPUSAGE
 	size_t size;
 	struct xsw_usage xsu;
@@ -471,7 +471,7 @@ static int swapmode(int *rettotal, int *retfree)
 	*rettotal = (xsu.xsu_total/1024);
 	*retfree  = ((xsu.xsu_total-xsu.xsu_used)/1024);
 
-	return(TRUE);	
+	return(TRUE);
 	#endif
 
 	*rettotal = 0;
@@ -487,16 +487,16 @@ int machine_get_iface_stats (IfaceInfo *interface)
 	int             name[6] = {CTL_NET, PF_LINK, NETLINK_GENERIC, IFMIB_SYSTEM, IFMIB_IFCOUNT};
 	size_t          len;
 	struct ifmibdata ifmd; /* ifmibdata contains the network statistics */
-	
+
 	len = sizeof(rows);
 	/* get number of interfaces */
 	if (sysctl(name, 5, &rows, &len, 0, 0) == 0) {
 		interface->status = down; /* set status down by default */
-		
+
 		name[3] = IFMIB_IFDATA;
 		name[4] = 0;
 		name[5] = IFDATA_GENERAL;
-		
+
 		len = sizeof(ifmd);
 		/* walk through all interfaces in the ifmib table from last to first */
 		for ( ; rows > 0; rows--) {

@@ -2,7 +2,7 @@
 <title>The G15 Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays on Logitech G15 
+This section talks about using LCDproc with LCD displays on Logitech G15
 gaming keyboards.
 </para>
 
@@ -10,10 +10,10 @@ gaming keyboards.
 <title>Features</title>
 
 <para>
-This driver uses g15daemon's virtual screen capabilities to enable 
+This driver uses g15daemon's virtual screen capabilities to enable
 multiple LCDd instances to display on the LCD of the Logitech G15
 gaming keyboard.  Text and other rendering services are provided by
-libg15render from the g15tools project.  Input is provided by g15daemon, 
+libg15render from the g15tools project.  Input is provided by g15daemon,
 enabling use of the L1-L5 and G1 keys.  The required libraries are
 available from the g15daemon and g15tools projects at sourceforge.net.
 </para>

@@ -5,9 +5,9 @@
 /*
  * lcd_sem.c  -- semaphore code written for lcdtime and meter to mediate
  * access to the parallel port.
- * 
+ *
  * Written by Benjamin Tse (blt@mundil.cs.mu.edu.au); August,October 1995
- * 
+ *
  * Functions in this file:
  *   getkey      returns the key for the semaphore
  *   sem_get     create the semaphore (and initialise) if one doesn't exist
@@ -15,13 +15,13 @@
  *   sem_wait    wait on the semaphore
  *   sem_signal  signal on the semaphore
  *   sem_remove  remove the semaphore
- * 
+ *
  * Legal stuff: At no stage was this program written, assembled or compiled on
  * any computer at the University of Melbourne, Australia. This program is
  * Copyright (C) 1995 Benjamin Tse (blt@mundil.cs.mu.oz.au) and covered by
  * GNU's GPL. In particular, this program is free software and comes WITHOUT
  * ANY WARRANTY.
- * 
+ *
  */
 
 #include <stdio.h>
@@ -75,7 +75,7 @@ getkey(register char *p)
 
 /**
  * Get semaphore.
- * If the semaphore does not exist, create it and initialise it to 1, 
+ * If the semaphore does not exist, create it and initialise it to 1,
  * otherwise simply return the semaphore ID.
  * \return     Semaphore ID on success; terminate program with code \c 1 on error.
  */

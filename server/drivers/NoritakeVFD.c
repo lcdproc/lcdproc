@@ -2,7 +2,7 @@
  * LCDd \c NoritakeVFD driver for the Noritake VFD Device CU20045SCPB-T28A.
  */
 
-/* 
+/*
     Copyright (C) 2005 Simon Funke
     Copyright (C) 2007 Richard Muratti ricacho@gmail.com
     Copyright (C) 2007 Peter Marschall
@@ -11,14 +11,14 @@
 
     2005-08-01 Version 0.1: mostly everything should work (vbar, hbar never tested)
 
-    2007-09-16 Version 0.2: 
+    2007-09-16 Version 0.2:
      - Fixed vbar & hbar - Allowed for displays with 2 custom characters
      - Fixed cursor off  - 16H - Data sheet for CU20045SCPB has error -> Cursor Off 14,16,17H
      - Tested with CU40026SCPB-T20A - 40x2 - Hardware Defaults to 19200 8E1
      - Added new config parameter [Parity] to set serial data parity 0(none),1(odd),2(even)
      - Added config parameter OffBrightness
      - added support for big numbers
-       
+
        CU40026SCPB-T20A  SOFTWARE COMMANDS
        Back Space              08H     International Font              18H
        Horizontal Tab          09H     Katakana Font                   19H
@@ -30,7 +30,7 @@
        Vertical Scroll Mode    12H             Flickerless Write       +53H
        Underline Cursor On     14H             Cursor Blink Speed      +54H
        5x7 Block Cursor On     15H     Character Data                  20H+
-       Cursor Off              16H     User Character Data             00H+ 
+       Cursor Off              16H     User Character Data             00H+
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -231,7 +231,7 @@ NoritakeVFD_init (Driver *drvthis)
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
 	portset.c_cflag |= CS8 | CREAD | CLOCAL | p->parity;
-#endif                                           
+#endif
 
 	// Set port speed
 	cfsetospeed(&portset, p->speed);
@@ -372,7 +372,7 @@ NoritakeVFD_flush (Driver *drvthis)
 
 			NoritakeVFD_cursor_goto(drvthis, 1, i+1);
 			write(p->fd, p->framebuf+offset, p->width);
-		}	
+		}
 	}
 }
 
@@ -474,7 +474,7 @@ NoritakeVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int opti
 
 		/* define half full block at position 1 */
 		NoritakeVFD_set_char(drvthis, 1, half);
-	}	
+	}
 
 	for (pos = 0; pos < len; pos++) {
 		/* if pixels > 2/3 cellheight [in integer arithmetics] ... */
@@ -532,7 +532,7 @@ NoritakeVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int opti
 
 		/* define half full block at position 1 */
 		NoritakeVFD_set_char(drvthis, 1, half);
-	}	
+	}
 
         for (pos = 0; pos < len; pos++) {
 		/* if pixels > 2/3 cellwidth [in integer arithmetics] ... */
@@ -645,7 +645,7 @@ NoritakeVFD_icon (Driver *drvthis, int x, int y, int icon)
  * \param state    New cursor state.
  */
 /*
-MODULE_EXPORT void 
+MODULE_EXPORT void
 CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
 {
 	PrivateData *p = drvthis->private_data;

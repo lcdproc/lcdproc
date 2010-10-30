@@ -81,7 +81,7 @@ EA65_init (Driver *drvthis)
         PrivateData *p;
 
         debug(RPT_INFO, "EA65: init(%p)", drvthis);
-        
+
         p = (PrivateData *) malloc(sizeof(PrivateData));
         if (p == NULL)
                 return -1;

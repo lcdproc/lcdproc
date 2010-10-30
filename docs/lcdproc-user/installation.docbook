@@ -17,7 +17,7 @@ If you have installed the Debian package with <application>apt-get</application>
 </note>
 
 <para>
-If you're building this version from CVS, you'll need 
+If you're building this version from CVS, you'll need
 <application>autoconf</application>, <application>automake</application>,
 <application>aclocal</application> and <application>autoheader</application> installed.
 </para>

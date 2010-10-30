@@ -9,7 +9,7 @@
  *
  * Copyright(c) 2001, Joris Robijn
  *          (c) 2003, Rene Wagner
- *          (c) 2006,2007 Peter Marschall 
+ *          (c) 2006,2007 Peter Marschall
  *
  */
 
@@ -172,7 +172,7 @@ const char *config_get_string(const char *sectionname, const char *keyname,
  * Legal boolean values are:
  * \li \c 0 , \c false , \c off , \c no or \c n for FALSE.
  * \li \c 1 , \c true , \c on , \c yes or \c y for TRUE
- * 
+ *
  * \param sectionname   Name of the section where the key is sought.
  * \param keyname       Name of the key to look for.
  * \param skip          Number of values to skip/ignore before returning the value.
@@ -210,7 +210,7 @@ short config_get_bool(const char *sectionname, const char *keyname,
  * \li \c 0 , \c false , \c off , \c no or \c n for 0.
  * \li \c 1 , \c true , \c on , \c yes or \c y for 1
  * \li \c 2 or the given name of the third state for 2
- * 
+ *
  * \param sectionname   Name of the section where the key is sought.
  * \param keyname       Name of the key to look for.
  * \param skip          Number of values to skip/ignore before returning the value.
@@ -330,7 +330,7 @@ int config_has_key(const char *sectionname, const char *keyname)
 			/* Did we find the right key ?*/
 			if (strcasecmp(k->name, keyname) == 0)
 				count++;
-		}	
+		}
 	}
 	return count;
 }
@@ -394,7 +394,7 @@ static ConfigSection *add_section(const char *sectionname)
 		(*place)->name = strdup(sectionname);
 		(*place)->first_key = NULL;
 		(*place)->next_section = NULL;
-	}	
+	}
 
 	return(*place);
 }
@@ -560,7 +560,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				report(RPT_WARNING, "Unterminated section label on line %d of %s: %s",
 						line_nr, source_descr, sectionname);
 				error = 1;
-				state = ST_INITIAL;	/* alrady at the end, no resync required */	
+				state = ST_INITIAL;	/* alrady at the end, no resync required */
 				break;
 			  case ']':
 			  	/* label terminated: find/create section */
@@ -630,7 +630,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 					keyname[keyname_pos++] = ch;
 					keyname[keyname_pos] = '\0';
 					break;
-				}	
+				}
 				report(RPT_WARNING, "Key name too long on line %d of %s: %s",
 						line_nr, source_descr, keyname);
 				error = 1;
@@ -654,7 +654,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 			  	report(RPT_WARNING, "Assigment expected on line %d of %s: %s",
 						line_nr, source_descr, keyname);
 				error = 1;
-				state = ST_INVALID_ASSIGNMENT;		
+				state = ST_INVALID_ASSIGNMENT;
 			}
 			break;
 		  case ST_VALUE:
@@ -683,7 +683,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				/* ignore leading spaces */
 			  	if (value_pos == 0)
 					break;
-				/* fall through */	
+				/* fall through */
 			  case '\0':
 			  case '\n':
 			  case '\r':
@@ -701,7 +701,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				state = ((ch == ' ') || (ch == '\t')) ? ST_VALUE_DONE : ST_INITIAL;
 				break;
 			  case '"':
-			  	/* quoted string */ 
+			  	/* quoted string */
 				state = ST_QUOTEDVALUE;
 				break;
 			  default:
@@ -777,7 +777,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 						ch, line_nr, source_descr);
 				error = 1;
 				state = ST_INVALID_VALUE;
-			 } 	
+			 }
 		  case ST_INVALID_SECTIONLABEL:
 			/* invalid section label: resync up to end of label/next line */
 			if (ch == ']')
@@ -798,7 +798,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 						line_nr, source_descr, state);
 
 				error = 1;
-			}			
+			}
 			state = ST_END;
 		}
 
@@ -821,7 +821,7 @@ ConfigSection *s;
 			fprintf(stderr, "%s = \"%s\"\n", k->name, k->value);
 
 		fprintf(stderr, "\n");
-	}	
+	}
 }
 
 

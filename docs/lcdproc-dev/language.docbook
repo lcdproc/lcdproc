@@ -2,7 +2,7 @@
   Note: While Docbook allows to use block formatted elements like <cmdsynopsis>
   within a term definition, HTML only allows inline formatted elements.
   Therefore <command> and <option> elements are used. Maybe <refentry> should
-  be used, but I currently dislike having a separate page for each command. 
+  be used, but I currently dislike having a separate page for each command.
 -->
 <chapter id="language">
   <title>The LCDproc client language</title>

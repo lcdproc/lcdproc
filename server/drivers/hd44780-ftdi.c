@@ -7,7 +7,7 @@
  * connected to a FT2232C/D chip in 8 bit mode.
  *
  * Copyright (c) 2007, Intra2net AG <opensource@intra2net.com>
- * 
+ *
  * Modified February 2008 by Ismail Ibrahim <whirleyes@gmail.com> to
  * add support for single channel FTDI chip with 4 bit wiring mode.
  *

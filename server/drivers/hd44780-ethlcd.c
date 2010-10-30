@@ -20,7 +20,7 @@
 #include "hd44780-low.h"
 #include "shared/sockets.h"
 #include "report.h"
- 
+
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>

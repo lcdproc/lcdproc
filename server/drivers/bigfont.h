@@ -3,10 +3,10 @@
 
 /****************************************************************
  *  Character elements
- * 
+ *
  *  0 = ··  1 = ··  2 = ·X  3 = X·   S = ··
  *      X·      ·X      ··      ··       ··
- * 
+ *
  *  4 = ··  5 = XX  6 = X·  7 = XX   F = XX
  *      XX      ··      XX      X·       XX
  */
@@ -671,7 +671,7 @@ int normal[96][3*4] = {
      4,F,4,
      S,7,S,
      S,S,S,
-   }, //  
+   }, //
    {
      S,S,S,
      S,S,S,
@@ -1180,7 +1180,7 @@ int normal[96][3*4] = {
  };
 
 /* Here start the 8 basic block used above and named 0-7 */
-/*	
+/*
 	static unsigned bigfont[8][8] = {
 		{ b_______,	// char a[]
 		  b_______,
@@ -1247,6 +1247,6 @@ int normal[96][3*4] = {
 		  b__XX___,
 		  b__X____ }
 		};
-*/		
+*/
 #endif
 

@@ -66,7 +66,7 @@ typedef struct lis_private_data {
 
 	// the width and the height (in number of characters) of the display
 	int width, height;
-	
+
 	// pixel width and height of each character
 	int cellwidth, cellheight;
 
@@ -98,7 +98,7 @@ typedef struct lis_private_data {
 	/* lastline controls the use of the last line, if pixel addressable (true, default) or */
 	/* underline effect (false). To avoid the underline effect in the latter case, the last */
 	/* line is always zeroed for whatever redefined character */
-	char lastline; 
+	char lastline;
 } PrivateData;
 
 

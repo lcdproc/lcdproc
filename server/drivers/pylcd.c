@@ -30,7 +30,7 @@
 
  */
 
-/* 
+/*
  * Changes:
  *  2006-02-20 Stefan Reinauer <stepan@coresystems.de>
  *   - add support for onboard LEDs via "output" command
@@ -163,13 +163,13 @@ read_ACK(PrivateData *p)
     return (retval && buffer[0]=='Q');
 }
 
-/* Send the input as telegramm. 
- * 
+/* Send the input as telegramm.
+ *
  * The telegram buffer just contains the raw telegram data
  *  - It shall not contain <STX> and <ETX> marks
  *  - It may contain bytes below 0x20, they are automatically escaped by
  *    real_sent_tele
- *    
+ *
  * NOTE: This function does not wait for any ACKs.
  */
 int
@@ -179,7 +179,7 @@ real_send_tele(PrivateData *p, char *buffer, int len)
     int i, j;
     char buffer2[255];
 
-    i=0; j=0; 
+    i=0; j=0;
     buffer2[j++]=2; // emit <STX>
 
     /* copy the whole telegram package and escape
@@ -195,7 +195,7 @@ real_send_tele(PrivateData *p, char *buffer, int len)
             buffer2[j++]=buffer[i++];
         }
     }
-    buffer2[j++]=3; // emit <ETX> 
+    buffer2[j++]=3; // emit <ETX>
     len=j;	    // new package length
 
     /* calculate <BCC> over all bytes */
@@ -301,7 +301,7 @@ set_leds(PrivateData *p)
  * \retval 0       Success.
  * \retval <0      Error.
  */
-MODULE_EXPORT int  
+MODULE_EXPORT int
 pyramid_init (Driver *drvthis)
 {
     char buffer[6]="";
@@ -335,7 +335,7 @@ pyramid_init (Driver *drvthis)
     strcpy(p->framebuffer, "D                                ");
     p->FB_modified = 1;
 
-    /* read config file, fill configuration 
+    /* read config file, fill configuration
      * dependent elements of private data
      */
 
@@ -408,7 +408,7 @@ pyramid_init (Driver *drvthis)
  * Close the driver (do necessary clean-up).
  * \param drvthis  Pointer to driver structure.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_close (Driver *drvthis)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -422,7 +422,7 @@ pyramid_close (Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return         Number of characters the display is wide.
  */
-MODULE_EXPORT int  
+MODULE_EXPORT int
 pyramid_width (Driver *drvthis)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -436,7 +436,7 @@ pyramid_width (Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return         Number of characters the display is high.
  */
-MODULE_EXPORT int  
+MODULE_EXPORT int
 pyramid_height (Driver *drvthis)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -449,7 +449,7 @@ pyramid_height (Driver *drvthis)
  * Clear the screen.
  * \param drvthis  Pointer to driver structure.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_clear (Driver *drvthis)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -465,7 +465,7 @@ pyramid_clear (Driver *drvthis)
  * that means, nothing has to be done
  * \param drvthis  Pointer to driver structure.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_flush (Driver *drvthis)
 {
     static char mesg[33];
@@ -513,7 +513,7 @@ pyramid_flush (Driver *drvthis)
  * \param y        Vertical character position (row).
  * \param string   String that gets written.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_string (Driver *drvthis, int x, int y, const char string[])
 {
     int offset;
@@ -537,7 +537,7 @@ pyramid_string (Driver *drvthis, int x, int y, const char string[])
  * \param y        Vertical character position (row).
  * \param c        Character that gets written.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_chr (Driver *drvthis, int x, int y, char c)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -580,7 +580,7 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 	tele[1]=n+0x40;
 
 	for (row = 0; row < p->cellheight; row++) {
-		pixels=0; 
+		pixels=0;
 		for (column = 0; column < p->cellwidth; column++) {
 			pixels <<= 1;
 			pixels |= (dat[(row * p->cellwidth) + column] != 0);
@@ -931,7 +931,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		 },
 
 		{
-                 0, 0, 1, 0, 0, 		  // Arrow up 
+                 0, 0, 1, 0, 0, 		  // Arrow up
                  0, 1, 1, 1, 0,
                  1, 0, 1, 0, 1,
                  0, 0, 1, 0, 0,
@@ -953,7 +953,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
                  },
 
                 {
-                 0, 0, 0, 0, 0,			  // Checkbox off 
+                 0, 0, 0, 0, 0,			  // Checkbox off
                  0, 0, 0, 0, 0,
                  1, 1, 1, 1, 1,
                  1, 0, 0, 0, 1,
@@ -975,7 +975,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
                  },
 
                 {
-                 0, 0, 0, 0, 0,			  // Checkbox gray 
+                 0, 0, 0, 0, 0,			  // Checkbox gray
                  0, 0, 0, 0, 0,
                  1, 1, 1, 1, 1,
                  1, 0, 1, 0, 1,
@@ -1002,7 +1002,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 
 	// notify the others that we messed up their character set.
 	// Unused for heartbeats as we should always leave that icon alone.
-	// 
+	//
 	// Leaving this in the code as notification for other similar cases
 	if (p->custom == bign) {
 		debug(RPT_DEBUG, "%s: Switching to beat", __FUNCTION__);
@@ -1074,9 +1074,9 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 
 
 /*
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_num (Driver *drvthis, int x, int num){};
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_heartbeat (Driver *drvthis, int state){};
 */
 
@@ -1087,7 +1087,7 @@ pyramid_heartbeat (Driver *drvthis, int state){};
  * \param y        Vertical cursor position (row).
  * \param state    New cursor state.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_cursor (Driver *drvthis, int x, int y, int state)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -1116,15 +1116,15 @@ pyramid_cursor (Driver *drvthis, int x, int y, int state)
 
 #if 0
 // all of these are not supported by the display (data sheet)
-MODULE_EXPORT int  
+MODULE_EXPORT int
 pyramid_get_contrast (Driver *drvthis){return 0;};
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_set_contrast (Driver *drvthis, int promille){};
-MODULE_EXPORT int  
+MODULE_EXPORT int
 pyramid_get_brightness (Driver *drvthis, int state){return 0;};
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_set_brightness (Driver *drvthis, int state, int promille){};
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_backlight (Driver *drvthis, int on)
 #endif
 
@@ -1136,13 +1136,13 @@ pyramid_backlight (Driver *drvthis, int on)
  * \param drvthis  Pointer to driver structure.
  * \param state    Integer with bits representing port states.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 pyramid_output (Driver *drvthis, int state)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
     int i;
 
-    for (i = 0; i < 7; i++) 
+    for (i = 0; i < 7; i++)
         p->led[i] = state & (1 << i);
 
     set_leds(p);
@@ -1172,7 +1172,7 @@ pyramid_get_key (Driver *drvthis)
     PrivateData *p = (PrivateData *) drvthis->private_data;
 
     /* Now we read everything from the display,
-     * and as long as we got ACKs, we ignore them. 
+     * and as long as we got ACKs, we ignore them.
      * (eat up all pending ACKs)
      */
 

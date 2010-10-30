@@ -80,7 +80,7 @@ if ($opt{V}) {
   exit(0);
 }
 
-# check number of arguments 
+# check number of arguments
 usage(1)  if ($#ARGV != 0);
 
 
@@ -114,11 +114,11 @@ my $lcdresponse = <$remote>;
 # get width & height from server's greet message
 if ($lcdresponse =~ /\bwid\s+(\d+)\b/) {
 	$width = 0 + $1;
-}	
+}
 if ($lcdresponse =~ /\bhgt\s+(\d+)\b/) {
 	$lines = (0 + $1) - 1;
 	$top = $lines;
-}	
+}
 
 # Turn off blocking mode...
 fcntl($remote, F_SETFL, O_NONBLOCK);
@@ -170,13 +170,13 @@ while (1) {
 		    if ($key eq 'Down') {
 			$top--  if ($top > $lines);
 		    }
-		    elsif ($key eq 'Up') { 
+		    elsif ($key eq 'Up') {
 		    	$top++;
 		    }
 		    elsif ($key eq 'Right') {
 		    	$left++;
 		    }
-		    elsif ($key eq 'Left') { 
+		    elsif ($key eq 'Left') {
 			$left--  if ($left > 1);
 		    }
 		}
@@ -205,7 +205,7 @@ while (1) {
 		    use integer;	# calculate integers like in C
 		    my $w = 8 + 8 * ($idx / 8) - $idx;
 		    my $subst = " " x $w;
-			
+
 		    $line =~ s/\t/" " x $w/e;
 		}
 
@@ -266,7 +266,7 @@ my $status = shift;
   }
   else {
     print STDERR "For help, type: $progname -h\n";
-  }  
+  }
 
   exit($status);
 }

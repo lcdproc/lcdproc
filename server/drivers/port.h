@@ -1,4 +1,4 @@
-/* 
+/*
  * Low level I/O functions taken from led-stat.txt
  * Jan 22 95 copyright damianf@wpi.edu
  *
@@ -63,7 +63,7 @@ not be in this file but in lpt-port.h ...
 #if defined HAVE_IOPERM
 
 /* Glibc2 and Glibc1 */
-# ifdef HAVE_SYS_IO_H 
+# ifdef HAVE_SYS_IO_H
 #  include <sys/io.h>
 # endif
 

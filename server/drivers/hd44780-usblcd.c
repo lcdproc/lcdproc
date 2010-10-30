@@ -8,10 +8,10 @@
 
 /*
  * Copyright (C)  2002 Adams IT Services <info@usblcd.de>
- * 
+ *
  * This driver is based on pic-an-lcd driver. See file hd44780-serial.c for
  * additional Copyrights.
- * 
+ *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *

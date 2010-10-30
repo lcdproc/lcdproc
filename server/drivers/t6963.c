@@ -13,7 +13,7 @@
  *
  * Copyright (c)  2001 Manuel Stahl <mythos@xmythos.de>
  *
- * 
+ *
  */
 
 #include <stdlib.h>
@@ -487,7 +487,7 @@ t6963_low_dsp_ready (Driver *drvthis)
 		t6963_low_set_control(drvthis, 1, 0, 1, 0);
 		t6963_low_set_control(drvthis, 1, 1, 1, 1);
 		port_out(0x80, 0x00);  // wait 1ms
-    } 
+    }
     T6963_DATAOUT(p->port);
 }
 

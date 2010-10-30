@@ -68,7 +68,7 @@ double config_get_float(const char *sectionname, const char *keyname,
 
 /* Returns a pointer to the string associated with the specified key.
  * The strings returned are always NUL-terminated.
- * The string should never be modified, and used only short-term. 
+ * The string should never be modified, and used only short-term.
  * In successive calls this function can * re-use the data space !
  *
  * You can do some things with the returned string:

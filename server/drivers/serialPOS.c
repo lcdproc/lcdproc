@@ -3,14 +3,14 @@
  * various protocols.
  */
 
-/* 	This is the LCDproc driver for Point Of Sale ("POS") devices using 
-	various protocols.  While it currently only supports AEDEX, 
+/* 	This is the LCDproc driver for Point Of Sale ("POS") devices using
+	various protocols.  While it currently only supports AEDEX,
 	it can be extended to provide support for many POS emulation types.
 
 	Copyright (C) 2006, 2007 Eric Pooch
 
 	This driver is based on MtxOrb.c driver and is subject to its copyrights.
-	
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation; either version 2 of the License, or
@@ -107,7 +107,7 @@ get_info	Implemented.
 
 
 typedef enum {
-	POS_IEE = 0,		
+	POS_IEE = 0,
 	POS_AEDEX,				/* http://www.posguys.com/download/CD5220_Manual.pdf */
 	POS_Epson,				/* http://www.barcode-manufacturer.com/pdf/vfd_manual.pdf */
 	POS_Emax,
@@ -146,7 +146,7 @@ typedef enum {
 /** private data for the \c serialPOS driver */
 typedef struct serialPOS_private_data {
 	int fd;			/**< LCD file descriptor */
-	
+
 	/* dimensions */
 	int width, height;
 	int cellwidth, cellheight;
@@ -157,7 +157,7 @@ typedef struct serialPOS_private_data {
 
 	/* defineable characters */
 	CGmode ccmode;
-	
+
 	/* feature enable */
 	int hardwrap;
 	int hardscroll;
@@ -243,7 +243,7 @@ serialPOS_init (Driver *drvthis)
 	p->hardscroll = 0;
 
 	p->emulation_mode = POS_AEDEX;
-	
+
 	debug(RPT_INFO, "serialPOS: init(%p)", drvthis);
 
 	/* READ CONFIG FILE */
@@ -395,7 +395,7 @@ serialPOS_close (Driver *drvthis)
 		p->backingstore = NULL;
 
 		free(p);
-	}	
+	}
 	drvthis->store_private_ptr(drvthis, NULL);
 	debug(RPT_DEBUG, "serialPOS: closed");
 }
@@ -552,19 +552,19 @@ serialPOS_flush (Driver *drvthis)
 
 		/* there are differences, ... */
 		report(RPT_DEBUG, "%s: l=%d string='%.*s'", __FUNCTION__, i, p->width, sp);
-	
+
 		switch ((int)p->emulation_mode) {
 			case POS_AEDEX:	{
-			
+
 				int command = i+1;
 				if ( i == 0 && p->hardscroll == 1 )
 					command = AEDEXContinuousScroll;
-				
+
 				snprintf(out, length, "%s%d%.*s%c", AEDEXPrefix, command, p->width, sp, 13);
 				debug(RPT_DEBUG, "%s%d%.*s%c", AEDEXPrefix, command, p->width, sp, 13);
 				break;
 			}
-			
+
 			default:
 				/* Send to correct line, then write the data */
 				serialPOS_cursor_goto(drvthis, 1, i+1);
@@ -618,10 +618,10 @@ serialPOS_hardware_init(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-			
+
 	switch ((int)p->emulation_mode) {
 		case POS_AEDEX:	{
-			/* The # character might interfere with the AEDEX command set, 
+			/* The # character might interfere with the AEDEX command set,
 			   so change the AEDEX attention code.
 			*/
 			unsigned int length = 8;
@@ -635,11 +635,11 @@ serialPOS_hardware_init(Driver *drvthis)
 		case POS_Epson:
 			write(p->fd, "\x1B\x40", 2);
 			break;
-			
+
 		case POS_LogicControls:
 			write(p->fd, "\x11", 1);
 			break;
-			
+
 		default:
 			return;
 	}
@@ -655,29 +655,29 @@ serialPOS_hardware_clear (Driver *drvthis)
 {
 	/* Do a hardware clear, if possible. */
 	PrivateData *p = drvthis->private_data;
-	
+
 	switch ((int)p->emulation_mode) {
 		case POS_AEDEX: {
 			unsigned int length = 7;
 			char out[length];
-			
+
 			snprintf(out, length, "%s%c %d", AEDEXPrefix, AEDEXAllLineDisplay, 13);
 			write(p->fd, out, length);
 			break;
 		}
-		
+
 		case POS_Epson:
 			write(p->fd, "\x0C", 1);
 			break;
-			
+
 		case POS_LogicControls:
 			write(p->fd, "\x1F", 1);
 			break;
-		
+
 		default:
 			return;
 	}
-	
+
 	debug(RPT_DEBUG, "serialPOS: cleared LCD");
 }
 
@@ -691,7 +691,7 @@ static void
 serialPOS_linewrap (Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	p->hardwrap = on;
 
 	debug(RPT_DEBUG, "serialPOS: linewrap turned %s", (on) ? "on" : "off");
@@ -741,24 +741,24 @@ serialPOS_cursor_goto(Driver *drvthis, int x, int y)
 	PrivateData *p = drvthis->private_data;
 	unsigned int length = 8;
 	char out[length];
-	
+
 	switch ((int)p->emulation_mode) {
-		case POS_Epson:	
+		case POS_Epson:
 			length = 7;
-			
+
 			snprintf(out, length, "%c%c%02d%02d", 0x1F, 0x24, x, y);
 			break;
-			
+
 		case POS_LogicControls:
 			length = 4;
-			
+
 			snprintf(out, length, "%c%02d", 0x10, (x-1+((y-1)*(p->width))));
 			break;
-		
+
 		default:
 			return;
 	}
-	
+
 	write(p->fd, out, length);
 }
 
@@ -899,11 +899,11 @@ serialPOS_num(Driver * drvthis, int x, int num)
  * \param y	Vertical cursor position (row).
  * \param state    New cursor state.
  */
-MODULE_EXPORT void 
+MODULE_EXPORT void
 serialPOS_cursor (Driver *drvthis, int x, int y, int state)
 {
 	PrivateData *p = drvthis->private_data;
-	
+
 	switch ((int)p->emulation_mode) {
 		case POS_LogicControls:
 			switch (state) {
@@ -917,7 +917,7 @@ serialPOS_cursor (Driver *drvthis, int x, int y, int state)
 					break;
 			}
 			break;
-		
+
 		default:
 			/* set cursor state not supported */
 			break;
@@ -988,7 +988,7 @@ serialPOS_get_key (Driver *drvthis)
 			key = "Escape";
 			break;
 		default:
-			report(RPT_DEBUG, "%s get_key: illegal key 0x%02X", 
+			report(RPT_DEBUG, "%s get_key: illegal key 0x%02X",
 					drvthis->name, buf);
 			return NULL;
 		}

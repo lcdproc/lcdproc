@@ -28,7 +28,7 @@
  * Configuration:
  * device=/dev/i2c-0   # the device file of the i2c bus
  * port=0x20   # the i2c address of the i2c port expander
- * 
+ *
  *  Attention: Bit 8 of the address given in port is special:
  *  It tells the driver to treat the device as PCA9554 or similar,
  *  a device that needs a 2-byte command, and it will be stripped

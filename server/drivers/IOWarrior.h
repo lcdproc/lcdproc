@@ -109,7 +109,7 @@ typedef struct IOWarrior_private_data {
   /* lastline controls the use of the last line, if pixel addressable (true, default) or */
   /* underline effect (false). To avoid the underline effect in the latter case, the last */
   /* line is always zeroed for whatever redefined character */
-  char lastline; 
+  char lastline;
 
   /* extended mode for some half-compatible modules */
   int ext_mode;

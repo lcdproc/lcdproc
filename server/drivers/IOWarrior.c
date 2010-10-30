@@ -7,7 +7,7 @@
 
    based on GPL'ed code:
 
-   * IOWarrior LCD routines 
+   * IOWarrior LCD routines
        Copyright (c) 2004  Christian Vogelgsang <chris@lallafa.de>
 
    * misc. files from LCDproc source tree
@@ -82,7 +82,7 @@ static int iowlcd_enable(PrivateData *p)
 {
   unsigned char lcd_cmd[64] = { 0x04, 0x01, 0, 0, 0, 0, 0, 0 };
   int res = iow_lcd_wcmd(p->udh, IOWLCD_SIZE, lcd_cmd);
-  
+
   usleep(30000); /* wait for 30ms */
   return res;
 }
@@ -92,7 +92,7 @@ static int iowlcd_disable(PrivateData *p)
 {
   unsigned char lcd_cmd[64] = { 0x04, 0x00, 0, 0, 0, 0, 0, 0 };
   int res = iow_lcd_wcmd(p->udh, IOWLCD_SIZE, lcd_cmd);
-  
+
   usleep(30000);
   return res;
 }
@@ -102,7 +102,7 @@ static int iowlcd_display_clear(PrivateData *p)
 {
   unsigned char lcd_cmd[64] = { 0x05, 1, 0x01, 0, 0, 0, 0, 0 };
   int res = iow_lcd_wcmd(p->udh, IOWLCD_SIZE, lcd_cmd);
-  
+
   usleep(3000); /* 3ms */
   return res;
 }
@@ -110,7 +110,7 @@ static int iowlcd_display_clear(PrivateData *p)
 static int iowlcd_display_on_off(PrivateData *p, int display, int cursor, int blink)
 {
   unsigned char lcd_cmd[64] = { 0x05, 1, 0x08, 0, 0, 0, 0, 0 };
-  
+
   if (display) lcd_cmd[2] |= 0x04;
   if (cursor)  lcd_cmd[2] |= 0x02;
   if (blink)   lcd_cmd[2] |= 0x01;
@@ -120,7 +120,7 @@ static int iowlcd_display_on_off(PrivateData *p, int display, int cursor, int bl
 static int iowlcd_set_function(PrivateData *p, int eight_bit, int two_line, int ten_dots)
 {
   unsigned char lcd_cmd[64] = { 0x05, 1, 0x20, 0, 0, 0, 0, 0 };
-  
+
   if (eight_bit) lcd_cmd[2] |= 0x10;
   if (two_line)  lcd_cmd[2] |= 0x08;
   if (ten_dots)  lcd_cmd[2] |= 0x04;
@@ -130,7 +130,7 @@ static int iowlcd_set_function(PrivateData *p, int eight_bit, int two_line, int 
 static int iowlcd_set_cgram_addr(PrivateData *p, int addr)
 {
   unsigned char lcd_cmd[64] = { 0x05, 1, 0x40, 0, 0, 0, 0, 0 };
-  
+
   lcd_cmd[2] |= (addr & 0x3f);
   return iow_lcd_wcmd(p->udh, IOWLCD_SIZE, lcd_cmd);
 }
@@ -219,7 +219,7 @@ static int iowled_on_off(PrivateData *p, unsigned int pattern)
   for (i = 0; i < (p->productID == iowProd40) ? 4 : 2; i++) {
     led_cmd[i] = (unsigned char) (0xFF & pattern);
     pattern >>= 8;
-  }  
+  }
 
   return iow_led_wcmd(p->udh, (p->productID == iowProd40) ? 4 : 2, led_cmd);
 }
@@ -390,7 +390,7 @@ IOWarrior_init(Driver *drvthis)
 #if defined(LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP)
       report(RPT_WARNING, "%s: interface may be claimed by kernel driver, attempting to detach it",
              drvthis->name);
-      
+
       errno = 0;
       if ((usb_detach_kernel_driver_np(p->udh, 1) < 0) ||
           (usb_claim_interface(p->udh, 1) < 0)) {
@@ -485,7 +485,7 @@ IOWarrior_close(Driver *drvthis)
     p->backingstore = NULL;
 
     free(p);
-  }  
+  }
   drvthis->store_private_ptr(drvthis, NULL);
 
   debug(RPT_DEBUG, "%s: closed", drvthis->name);
@@ -497,7 +497,7 @@ IOWarrior_close(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return  Number of characters the display is wide.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 IOWarrior_width(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
@@ -513,7 +513,7 @@ IOWarrior_width(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return  Number of characters the display is high.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 IOWarrior_height(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
@@ -529,7 +529,7 @@ IOWarrior_height(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return  Number of pixel columns a character cell is wide.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 IOWarrior_cellwidth(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
@@ -545,7 +545,7 @@ IOWarrior_cellwidth(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return  Number of pixel lines a character cell is high.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 IOWarrior_cellheight(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
@@ -835,7 +835,7 @@ PrivateData *p = drvthis->private_data;
     default:
       iowlcd_display_on_off(p, 1, 1, 1);
       break;
-  }    
+  }
 }
 */
 
@@ -879,7 +879,7 @@ IOWarrior_set_char(Driver *drvthis, int n, unsigned char *dat)
     int letter = 0;
 
     if (p->lastline || (row < p->cellheight - 1))
-      letter = dat[row] & mask;	
+      letter = dat[row] & mask;
 
     if (p->cc[n].cache[row] != letter)
       p->cc[n].clean = 0;	 /* only mark dirty if really different */
@@ -897,10 +897,10 @@ IOWarrior_set_char(Driver *drvthis, int n, unsigned char *dat)
  * \retval 0       Icon has been successfully defined/written.
  * \retval <0      Server core shall define/write the icon.
  */
-MODULE_EXPORT int 
+MODULE_EXPORT int
 IOWarrior_icon(Driver *drvthis, int x, int y, int icon)
 {
-static unsigned char heart_open[] = 
+static unsigned char heart_open[] =
 	{ b__XXXXX,
 	  b__X_X_X,
 	  b_______,
@@ -909,7 +909,7 @@ static unsigned char heart_open[] =
 	  b__X___X,
 	  b__XX_XX,
 	  b__XXXXX };
-static unsigned char heart_filled[] = 
+static unsigned char heart_filled[] =
 	{ b__XXXXX,
 	  b__X_X_X,
 	  b___X_X_,
@@ -918,7 +918,7 @@ static unsigned char heart_filled[] =
 	  b__X_X_X,
 	  b__XX_XX,
 	  b__XXXXX };
-static unsigned char arrow_up[] = 
+static unsigned char arrow_up[] =
 	{ b____X__,
 	  b___XXX_,
 	  b__X_X_X,
@@ -927,7 +927,7 @@ static unsigned char arrow_up[] =
 	  b____X__,
 	  b____X__,
 	  b_______ };
-static unsigned char arrow_down[] = 
+static unsigned char arrow_down[] =
 	{ b____X__,
 	  b____X__,
 	  b____X__,
@@ -937,7 +937,7 @@ static unsigned char arrow_down[] =
 	  b____X__,
 	  b_______ };
 /*
-static unsigned char arrow_left[] = 
+static unsigned char arrow_left[] =
 	{ b_______,
 	  b____X__,
 	  b___X___,
@@ -946,7 +946,7 @@ static unsigned char arrow_left[] =
 	  b____X__,
 	  b_______,
 	  b_______ };
-static unsigned char arrow_right[] = 
+static unsigned char arrow_right[] =
 	{ b_______,
 	  b____X__,
 	  b_____X_,
@@ -956,7 +956,7 @@ static unsigned char arrow_right[] =
 	  b_______,
 	  b_______ };
 */
-static unsigned char checkbox_off[] = 
+static unsigned char checkbox_off[] =
 	{ b_______,
 	  b_______,
 	  b__XXXXX,
@@ -965,7 +965,7 @@ static unsigned char checkbox_off[] =
 	  b__X___X,
 	  b__XXXXX,
 	  b_______ };
-static unsigned char checkbox_on[] = 
+static unsigned char checkbox_on[] =
 	{ b____X__,
 	  b____X__,
 	  b__XXX_X,
@@ -974,7 +974,7 @@ static unsigned char checkbox_on[] =
 	  b__X___X,
 	  b__XXXXX,
 	  b_______ };
-static unsigned char checkbox_gray[] = 
+static unsigned char checkbox_gray[] =
 	{ b_______,
 	  b_______,
 	  b__XXXXX,
@@ -984,7 +984,7 @@ static unsigned char checkbox_gray[] =
 	  b__XXXXX,
 	  b_______ };
 /*
-static unsigned char selector_left[] = 
+static unsigned char selector_left[] =
 	{ b___X___,
 	  b___XX__,
 	  b___XXX_,
@@ -993,7 +993,7 @@ static unsigned char selector_left[] =
 	  b___XX__,
 	  b___X___,
 	  b_______ };
-static unsigned char selector_right[] = 
+static unsigned char selector_right[] =
 	{ b_____X_,
 	  b____XX_,
 	  b___XXX_,
@@ -1002,7 +1002,7 @@ static unsigned char selector_right[] =
 	  b____XX_,
 	  b_____X_,
 	  b_______ };
-static unsigned char ellipsis[] = 
+static unsigned char ellipsis[] =
 	{ b_______,
 	  b_______,
 	  b_______,
@@ -1011,8 +1011,8 @@ static unsigned char ellipsis[] =
 	  b_______,
 	  b__X_X_X,
 	  b_______ };
-*/	  
-static unsigned char block_filled[] = 
+*/
+static unsigned char block_filled[] =
 	{ b__XXXXX,
 	  b__XXXXX,
 	  b__XXXXX,

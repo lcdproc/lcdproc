@@ -2,7 +2,7 @@
  * LCDd \c xosd driver for on screen display on X windows.
  */
 
-/* 
+/*
       Copyright(C) 2005 Peter Marschall <peter@adpm.de>
 
    based on GPL'ed code:
@@ -123,8 +123,8 @@ xosdlib_drv_init (Driver *drvthis)
 	if (sscanf(offset, "%dx%d", &x, &y) != 2) {
 		report(RPT_WARNING, "%s: cannot read Offset: %s. using default %s",
 				drvthis->name, offset, DEFAULT_OFFSET);
-		sscanf(DEFAULT_OFFSET, "%dx%d", &x, &y);		
-	}	
+		sscanf(DEFAULT_OFFSET, "%dx%d", &x, &y);
+	}
 	p->xoffs= x;
 	p->yoffs = y;
 
@@ -162,7 +162,7 @@ xosdlib_drv_init (Driver *drvthis)
 	if (p->osd == NULL) {
 		report(RPT_ERR, "%s: xosd_create() failed", drvthis->name);
 		return -1;
-	}	
+	}
 
 	/* set font */
 	if (xosd_set_font(p->osd, p->font) != 0) {
@@ -227,7 +227,7 @@ xosdlib_drv_close (Driver *drvthis)
 		p->backingstore = NULL;
 
 		free(p);
-	}	
+	}
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
@@ -294,7 +294,7 @@ xosdlib_drv_flush (Driver *drvthis)
 
 		debug(RPT_DEBUG, "xosd: flushed string \"%s\" at (%d,%d)", buffer, 0, i);
 		xosd_display(p->osd, i, XOSD_string, buffer);
-	}	
+	}
 }
 
 
@@ -323,7 +323,7 @@ xosdlib_drv_string (Driver *drvthis, int x, int y, const char string[])
 		if (c == 255)
 			c = '#';
 		p->framebuf[(y * p->width) + x++] = c;
-	}	
+	}
 }
 
 
@@ -461,7 +461,7 @@ xosdlib_drv_get_contrast (Driver *drvthis)
 
 /**
  * Change display contrast.
- * \note 
+ * \note
  * This is currently not implemented.
  *
  * \param drvthis  Pointer to driver structure.

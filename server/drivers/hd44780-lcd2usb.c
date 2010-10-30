@@ -7,7 +7,7 @@
 /*-
  * Copyright (C) 2007 Peter Marschall <peter@adpm.de>
  * 		 2007,2009 Markus Dolze
- * 
+ *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  */
@@ -91,7 +91,7 @@ hd_init_lcd2usb(Driver *drvthis)
 			if ((dev->descriptor.idVendor == LCD2USB_VENDORID) &&
 			 (dev->descriptor.idProduct == LCD2USB_PRODUCTID)) {
 
-				/* 
+				/*
 				 * LCD2USB device found; try to find its
 				 * description
 				 */

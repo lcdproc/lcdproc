@@ -1,7 +1,7 @@
 // -*- coding:iso-8859-15 -*-
 /** \file server/drivers/imonlcd_font.h
  * This is a definition of a font for use with the iMON LCD.
- * 
+ *
  * The iMON LCD doesn't have a "text mode" - everthing is pixel-based.
  * So we need to define our own font, basically.
  */

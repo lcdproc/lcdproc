@@ -49,7 +49,7 @@ MODULE_EXPORT int  imonlcd_cellheight (Driver *drvthis);
 
 /* Hardware functions */
 MODULE_EXPORT int  imonlcd_get_contrast (Driver *drvthis);
-MODULE_EXPORT void imonlcd_set_contrast (Driver *drvthis, int promille); 
+MODULE_EXPORT void imonlcd_set_contrast (Driver *drvthis, int promille);
 /* MODULE_EXPORT int  imonlcd_get_brightness (Driver *drvthis, int state); NOT IMPLEMENTED */
 /* MODULE_EXPORT void imonlcd_set_brightness (Driver *drvthis, int state, int promille); NOT IMPLEMENTED */
 MODULE_EXPORT void imonlcd_backlight(Driver *drvthis, int on);

@@ -90,7 +90,7 @@
 #define DEFAULT_TITLESPEED		TITLESPEED_MAX
 
 /* All variables are set to 'unset' values*/
-#define UNSET_INT -1	 
+#define UNSET_INT -1
 #define UNSET_STR "\01"
 
 /* Socket to bind to...
@@ -316,11 +316,11 @@ process_command_line(int argc, char **argv)
 					drivernames[num_drivers] = strdup(optarg);
 					if (drivernames[num_drivers] != NULL) {
 						num_drivers++;
-					}	
+					}
 					else {
 						report(RPT_ERR, "alloc error storing driver name: %s", optarg);
 						e = -1;
-					}	
+					}
 				} else {
 					report(RPT_ERR, "Too many drivers!");
 					e = -1;
@@ -451,7 +451,7 @@ process_configfile(char *configfile)
 		titlespeed = (speed <= TITLESPEED_NO)
 			     ? TITLESPEED_NO
 			     : min(speed, TITLESPEED_MAX);
-	}		     
+	}
 
 	if (report_dest == UNSET_INT) {
 		int rs = config_get_bool("Server", "ReportToSyslog", 0, UNSET_INT);
@@ -480,7 +480,7 @@ process_configfile(char *configfile)
 				if (drivernames[num_drivers] == NULL) {
 					report(RPT_ERR, "alloc error storing driver name: %s", s);
 					exit(EXIT_FAILURE);
-				}	
+				}
 				num_drivers++;
 			}
 		}
@@ -530,7 +530,7 @@ set_default_settings(void)
 		if (drivernames[0] == NULL) {
 			report(RPT_ERR, "alloc error storing driver name: %s", DEFAULT_DRIVER);
 			exit(EXIT_FAILURE);
-		}	
+		}
 		num_drivers = 1;
 	}
 }
@@ -549,7 +549,7 @@ install_signal_handlers(int allow_reload)
 
 	sigemptyset(&(sa.sa_mask));
 
-	/* Clients can cause SIGPIPE if they quit unexpectedly, and the 
+	/* Clients can cause SIGPIPE if they quit unexpectedly, and the
 	 * default action is to kill the server.  Just ignore it. */
 	sa.sa_handler = SIG_IGN;
 	sigaction(SIGPIPE, &sa, NULL);
@@ -893,7 +893,7 @@ interpret_boolean_arg(char *s)
 {
 	/* keep these checks consistent with config_get_boolean() */
 	if (strcasecmp(s, "0") == 0 || strcasecmp(s, "false") == 0
-	|| strcasecmp(s, "n") == 0 || strcasecmp(s, "no") == 0 
+	|| strcasecmp(s, "n") == 0 || strcasecmp(s, "no") == 0
 	|| strcasecmp(s, "off") == 0) {
 		return 0;
 	}

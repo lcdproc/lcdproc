@@ -8,9 +8,9 @@
   633 Test code for linux.
   Copyright 2002, David GLAUDE
   Partial copyright
-  2001 Crystalfontz America, Inc. 
+  2001 Crystalfontz America, Inc.
   brent@crystalfontz.com
-  Written by Brent A. Crosby 
+  Written by Brent A. Crosby
   www.crystalfontz.com
   ===========================================================================
 
@@ -242,7 +242,7 @@ send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in)
 	// print_packet(out);
 
 	/* Every time we send a message, we also check for an incoming one. */
-	test_packet(fd, 0x40 | out->command, in); 
+	test_packet(fd, 0x40 | out->command, in);
 }
 
 
@@ -259,10 +259,10 @@ send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in)
  * - WIDTH:  16		(16 bit CRC)
  * - POLY:   0x1021	(generating polynomial)
  * - INIT:   0xFFFF	(seed value for the register when starting the algorithm)
- * - REFIN:  TRUE	(reflect [i.e. bit-swap] each input byte before being processed) 
+ * - REFIN:  TRUE	(reflect [i.e. bit-swap] each input byte before being processed)
  * - REFOUT: TRUE	(reflect [i.e. bit-swap] the result before the XOROUT phase)
  * - XOROUT: 0xFFFF	(value to xor the result before returning it as crc)
- */ 
+ */
 static int
 get_crc(unsigned char *buf, int len, int seed)
 {
@@ -355,7 +355,7 @@ void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 
 	if (!retval)
 		return;
-#endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */	
+#endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */
 
 	if (number > MAX_DATA_LENGTH)
 		number = MAX_DATA_LENGTH;
@@ -500,7 +500,7 @@ unsigned char PeekByte(ReceiveBuffer *rb)
  */
 /* I should use the value GIVE_UP and not reenter if there is no extra
  * byte read from the serial port
- */ 
+ */
 static int
 test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 {
@@ -651,7 +651,7 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 static void
 print_packet(COMMAND_PACKET *packet)
 {
-	int i, cmd, top, len; 
+	int i, cmd, top, len;
 
 	top = (0xC0 & (packet->command)) >> 6;
 	cmd = (0x3F & (packet->command));

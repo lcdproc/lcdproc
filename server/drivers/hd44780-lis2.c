@@ -226,7 +226,7 @@ static unsigned char rowNum = 0;
 				// extract character to set from given info
 				charNum = (ch & ~SETCHAR) / 8;
 
-				// offset it by one to avoid collisions with command prefix 
+				// offset it by one to avoid collisions with command prefix
 				// TODO: check if this is correct
 				charNum++;
 
@@ -234,7 +234,7 @@ static unsigned char rowNum = 0;
 				// TODO: check if this is correct
 				if (charNum == 8)
 					charNum = 7;
-			}		
+			}
 			// MPlay devices don't need the char num;
 			// they always set all custom characters
 
@@ -280,7 +280,7 @@ static void gotoXY(int fd, unsigned char x, unsigned char y)
 /**
  * Set a custom character, valid on MPlay devices only.
  * \param fd     File handle to write to.
- * \param chars  Pixel definition of all custom chars. 
+ * \param chars  Pixel definition of all custom chars.
  */
 static void setMPlayCustomChars(int fd, CGram *chars)
 {

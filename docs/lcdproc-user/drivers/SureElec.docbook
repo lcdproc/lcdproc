@@ -10,7 +10,7 @@
   protocol with the host. The actual connection to host is done through
   USB through a serial-to-USB converter (CP2102 USB to UART Bridge)
   integrated on the board.
-</para> 
+</para>
 
 <sect2 id="SureElec-config">
 <title>Configuration in LCDd.conf</title>

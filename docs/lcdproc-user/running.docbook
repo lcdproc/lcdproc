@@ -72,7 +72,7 @@ Usage: LCDd [<options>]
     -w <waittime>       Time to pause at each screen (in seconds) [4]
     -s <bool>           If set, reporting will be done using syslog
     -r <level>          Report level [2]
-    -i <bool>           Whether to rotate the server info screen    
+    -i <bool>           Whether to rotate the server info screen
 
 ]]>
 </screen>
@@ -132,7 +132,7 @@ Usage: lcdproc [<options>] [<screens> ...]
     K BigClock          big clock
     N MiniClock         minimal clock
     A About             credits page
-      
+
 Example:
     lcdproc -s my.lcdproc.server.com -p 13666 C M X
 

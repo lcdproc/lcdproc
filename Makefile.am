@@ -16,12 +16,12 @@ dist-hook:
 
 ## convenience targets
 
-.PHONY: $(SUBDIRS) install-server install-clients 
-	            
+.PHONY: $(SUBDIRS) install-server install-clients
+
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-clients server: shared	
+clients server: shared
 
 install-server: server
 	$(MAKE) -C server install
@@ -52,4 +52,4 @@ topleveltags:
 	$(CTAGS) --format=1 -f - --languages=C --c-kinds=f --recurse=yes  server shared clients \
 	| perl -p -e 's/^([^\t]+)\t[^\t]+\/([^\t\/]+)\t(.*)$/$1\t$2\t$3/' > tags
 
-## EOF	
+## EOF

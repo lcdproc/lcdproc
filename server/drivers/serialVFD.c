@@ -142,11 +142,11 @@ serialVFD_init (Driver *drvthis)
 
 
 	debug(RPT_INFO, "%s(%p)", __FUNCTION__, drvthis);
-	
+
 /* Read config file */
 
 	p->use_parallel	= drvthis->config_get_bool(drvthis->name, "use_parallel", 0, 0);
-	
+
 		/* Which device should be used */
 		strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
 		p->device[sizeof(p->device)-1] = '\0';
@@ -210,7 +210,7 @@ serialVFD_init (Driver *drvthis)
 
 	/* Which displaytype */
 	p->display_type = drvthis->config_get_int(drvthis->name, "Type", 0, DEFAULT_DISPLAYTYPE);
-	
+
 	/* Number of custom characters */
 	tmp = drvthis->config_get_int(drvthis->name, "Custom-Characters", 0, -83);
 	if ((tmp < 0) || (tmp > 99)) {
@@ -425,13 +425,13 @@ serialVFD_flush (Driver *drvthis)
 			Port_Function[p->use_parallel].write_fkt(drvthis, &p->hw_cmd[pos1_cursor][1], p->hw_cmd[pos1_cursor][0]);
 			last_chr = -1;
 		}
-	
+
 		for (i = 0; i < (p->height * p->width); i++) {
-	
+
 			/* Backing-store implementation.  If it's already
 			* on the screen, don't put it there again
 			*/
-	
+
 			if ((p->framebuf[i] != p->backingstore[i]) || (p->hw_cmd[hor_tab][0] == 0) ||
 			((p->framebuf[i] <= 30) && (custom_char_changed[(int)p->framebuf[i]] != 0))) {
 				if (last_chr < i-1) { // if not last char written cursor has to be moved.

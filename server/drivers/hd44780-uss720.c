@@ -12,15 +12,15 @@
  *
  * This is a uss720 driver module for Hitachi HD44780 based LCD displays
  * connected to a uss720 USB-to-IEEE 1284 Bridge chip in 8 bit mode.
- * The uss720 chip is found in many (but not all) 
+ * The uss720 chip is found in many (but not all)
  * Belkin F5U002 USB->parallel printer adapters.
  *
  * Applicable Data Sheets:
  * - http://digilander.libero.it/demarchidaniele/qcamvc/uss-720.pdf
- * 
+ *
  * Wiring is same as winamp connection.
- * Uncomment //#define USS720_MAC_USB_LCD_KIT_WIRING 1 below to use a 
- * Mac USB LCD Kit instead. 
+ * Uncomment //#define USS720_MAC_USB_LCD_KIT_WIRING 1 below to use a
+ * Mac USB LCD Kit instead.
  *
  */
 
@@ -133,41 +133,41 @@ hd_init_uss720(Driver *drvthis)
     /* load config */
     vendor_id = drvthis->config_get_int(drvthis->name, "VendorID", 0, 0x1293);
     product_id = drvthis->config_get_int(drvthis->name, "ProductID", 0, 0x0002);
-	
+
 	/* Hardware Init */
-	
+
 	/* try to find USB device */
 	usb_init();
 	usb_find_busses();
 	usb_find_devices();
-	
+
 	p->usbHandle = NULL;
 	p->usbIndex = 0;
 	for (bus = usb_get_busses(); bus != NULL; bus = bus->next) {
 		struct usb_device *dev;
-		
+
 		for (dev = bus->devices; dev != NULL; dev = dev->next) {
-			
+
 			/* Check if this device is a uss720 device */
 			if (dev->descriptor.idVendor != vendor_id || dev->descriptor.idProduct != product_id) {
 				continue;
 			}
-			
+
 			/* uss720 device found; try to open it */
 			p->usbHandle = usb_open(dev);
 			if (p->usbHandle == NULL) {
 				report(RPT_WARNING, "hd_init_uss720: unable to open device");
 				continue;
 			}
-			
+
 			debug(RPT_DEBUG, "hd_init_uss720: opening device succeeded");
-			
+
 			errno = 0;
 			if (usb_claim_interface(p->usbHandle, p->usbIndex) < 0) {
 #if defined(LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP)
 				report(RPT_WARNING, "hd_init_uss720: interface may be claimed by "
 					   "kernel driver, attempting to detach it");
-				
+
 				errno = 0;
 				if ((usb_detach_kernel_driver_np(p->usbHandle, p->usbIndex) < 0) ||
 					(usb_claim_interface(p->usbHandle, p->usbIndex) < 0)) {
@@ -184,7 +184,7 @@ hd_init_uss720(Driver *drvthis)
 #endif
 			}
 			/* Use the alternate, vendor-specific, interface so we have access to the registers */
-			
+
 			errno = usb_set_altinterface(p->usbHandle, 2);
 			if (errno) {
 				report(RPT_WARNING, "hd_init_uss720: unable to set alt interface: %s", strerror(errno));
@@ -200,7 +200,7 @@ hd_init_uss720(Driver *drvthis)
 
 			/* init the HD44780 LCD */
 			common_init(p, IF_8BIT);
-			
+
 			return 0;
 		}
 	}
@@ -225,17 +225,17 @@ uss720_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 		portControl = RS;	/* enable RS for data */
 	else
 		portControl = 0;	/* disable RS for instruction */
-	
+
 	portControl |= VCC;		/* keep the power on */
 	portControl |= p->backlight_bit;
 
 	if (displayID == 0)
-		enableLines = EnMask[0] 
+		enableLines = EnMask[0]
 		| ((p->have_backlight) ? 0 : EnMask[1])
 		| ((p->numDisplays == 3) ? EnMask[2] : 0);
 	else
 		enableLines = EnMask[displayID - 1];
-		
+
 	uss720_set_1284_register(p->usbHandle, ControlRegAdr, portControl ^ OUTMASK);
 
 	uss720_set_1284_register(p->usbHandle, DataRegAdr, ch);
@@ -243,7 +243,7 @@ uss720_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 
 	uss720_set_1284_register(p->usbHandle, ControlRegAdr, (portControl | enableLines ) ^ OUTMASK);
 	p->hd44780_functions->uPause(p, 1);
-	
+
 	uss720_set_1284_register(p->usbHandle, ControlRegAdr, portControl ^ OUTMASK);
 }
 
@@ -303,13 +303,13 @@ uss720_get_1284_register(usb_dev_handle *usbHandle, unsigned int regIndex, unsig
 	        /* Data          */ (char *)regData,
         	/* wLength       */ 7,
                 	            10000 );
-	
+
 	if (res) {
-		
+
 	} else if (value && (regIndex < 8)) {
 		*value = regData[(int)regIndex];
 	}
-		
+
 	return res;
 }
 
@@ -332,7 +332,7 @@ uss720_set_1284_register(usb_dev_handle *usbHandle, unsigned int regAddress, uns
 #pragma mark -Extended Methods
 
 int
-uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode) 
+uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode)
 {
 	unsigned char regByte = 0x00;
 	int res = 0;
@@ -340,15 +340,15 @@ uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode)
 	res = uss720_get_1284_register(usbHandle, 3, &regByte);
 
 	regByte &= ~0x01;
-	
+
 	res = uss720_set_1284_register(usbHandle, 7, regByte);
 	if (res) return res;
-	
+
 	res = uss720_get_1284_register(usbHandle, 2, &regByte);
-	
-	regByte &= ~(mode<<5);	/* Mask off the mode bits 7-5. */ 
+
+	regByte &= ~(mode<<5);	/* Mask off the mode bits 7-5. */
 	regByte |= (mode<<5);	/* Set the mode bits 7-5. */
-		
+
 	return uss720_set_1284_register(usbHandle, 6, regByte);
 }
 

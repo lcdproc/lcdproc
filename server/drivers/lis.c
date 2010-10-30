@@ -19,8 +19,8 @@
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
- * 
- * 
+ *
+ *
  *
  */
 
@@ -42,7 +42,7 @@
  * 	2007/05/22	Removed useless Device= config option.
  * 			Added VendorID= and ProductID= config
  * 			option parsting. Moved constants to
- * 			lis.h where they belong. Added 
+ * 			lis.h where they belong. Added
  * 			lis_cellheight() and lis_cellwidth().
  * 			Completely commented out lis_test() to
  * 			save memory.
@@ -145,7 +145,7 @@ const unsigned char UPD16314_charmap[] = {
 	224, 225, 226, 227, 228, 229, 230, 231,
 	232, 233, 234, 235, 237, 237, 238, 239,
 	240, 241, 242, 243, 244, 245, 246, 247,
-	248, 249, 250, 251, 252, 253, 254, 1 
+	248, 249, 250, 251, 252, 253, 254, 1
 };
 
 /////////////////////////////////////////
@@ -155,7 +155,7 @@ lis_standard_custom_chars (Driver *drvthis) {
 
 PrivateData *p = drvthis->private_data;
 
-	static unsigned char checkbox_gray[] = 
+	static unsigned char checkbox_gray[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -165,7 +165,7 @@ PrivateData *p = drvthis->private_data;
 		  b__XXXXX,
 		  b_______ };
 
-	static unsigned char block_filled[] = 
+	static unsigned char block_filled[] =
 		{ b__XXXXX,
 		  b__XXXXX,
 		  b__XXXXX,
@@ -177,7 +177,7 @@ PrivateData *p = drvthis->private_data;
 
 		  lis_set_char(drvthis, 1, block_filled);
 		  lis_set_char(drvthis, 2, checkbox_gray);
-		  
+
 		  p->ccmode = standard;
 
 }
@@ -320,7 +320,7 @@ lis_set_brightness(Driver *drvthis, int state, int promille)
 	unsigned char buffer[2];
 	int err;
 	PrivateData *p = (PrivateData *) drvthis->private_data;
-	
+
 	if (promille < 0 || promille > 1000) {
 		report(RPT_WARNING, "%s: invalid brightness %d less then 0 or greater than 1000",
 			drvthis->name, promille);
@@ -446,7 +446,7 @@ lis_init(Driver *drvthis)
 	// open the device
 	err = ftdi_usb_open(&p->ftdic, p->VendorID, p->ProductID);
 	if (err < 0) {
-		report(RPT_ERR, "%s: cannot open USB device %x:%x", 
+		report(RPT_ERR, "%s: cannot open USB device %x:%x",
 			drvthis->name,
 			p->VendorID,
 			p->ProductID);
@@ -1022,7 +1022,7 @@ lis_init(Driver *drvthis)
 //	}
 //
 //	timing_uPause(16000);
-	
+
 	// set DTR high
 	err = ftdi_setdtr(&p->ftdic, SIO_SET_DTR_HIGH);
 	if (err < 0) {
@@ -1420,7 +1420,7 @@ lis_set_char(Driver *drvthis, int n, unsigned char *dat)
 		int letter = 0;
 
 		if (p->lastline || (row < p->cellheight - 1))
-			letter = dat[row] & mask;	
+			letter = dat[row] & mask;
 
 		if (p->cc[n].cache[row] != letter) {
 	      		p->cc[n].clean = 0;	 /* only mark dirty if really different */

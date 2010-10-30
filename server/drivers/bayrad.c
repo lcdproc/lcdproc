@@ -57,7 +57,7 @@ typedef struct bayrad_private_data {
   int cellheight;
   char *framebuf;
   char ccmode;
-} PrivateData;	
+} PrivateData;
 
 
 // Vars for the server core
@@ -189,7 +189,7 @@ bayrad_close(Driver *drvthis)
     if (p->fd >= 0) {
       write(p->fd, "\x8e\x00", 2);  // Backlight OFF
       close(p->fd);
-    }  
+    }
 
     if (p->framebuf != NULL)
       free(p->framebuf);

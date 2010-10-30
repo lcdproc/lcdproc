@@ -332,7 +332,7 @@ int machine_get_procs(LinkedList *procs)
 			kvm_close(kvmd);
 			return(FALSE);
 		}
-#if (__FreeBSD_version > 500000)		
+#if (__FreeBSD_version > 500000)
 		strncpy(p->name, kprocs->ki_comm, 15);
 #else
 		strncpy(p->name, kprocs->kp_proc.p_comm, 15);
@@ -341,10 +341,10 @@ int machine_get_procs(LinkedList *procs)
 #if (__FreeBSD_version > 500000)
 		p->totl = kprocs->ki_size / 1024;
 		p->number = kprocs->ki_pid;
-#else		
+#else
 		p->totl = kprocs->kp_eproc.e_vm.vm_map.size / 1024;
 		p->number = kprocs->kp_proc.p_pid;
-#endif		
+#endif
 		LL_Push(procs, (void *)p);
 
 		kprocs++;
@@ -387,7 +387,7 @@ int machine_get_smpload(load_type *result, int *numcpus)
 
 		if (pcpudata == NULL || pcpudata == (void *) -1)
 			return(FALSE);
-		
+
 		/* extract the data for single CPU */
 		load.user   = (unsigned long) (pcpudata->pc_cp_time[CP_USER]);
 		load.nice   = (unsigned long) (pcpudata->pc_cp_time[CP_NICE]);
@@ -477,10 +477,10 @@ static int swapmode(int *retavail, int *retfree)
 }
 
 /*************************************************************************
- * Read interface statistics from system and  store in the struct 
- * passed as a pointer. If there are no errors, it returns 1. If errors, 
+ * Read interface statistics from system and  store in the struct
+ * passed as a pointer. If there are no errors, it returns 1. If errors,
  * returns 0.
- ************************************************************************* 
+ *************************************************************************
  */
 int machine_get_iface_stats (IfaceInfo *interface)
 {

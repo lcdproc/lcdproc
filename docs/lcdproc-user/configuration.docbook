@@ -282,7 +282,7 @@ settings for the LCDproc server <application>LCDd</application>.
     </para>
     <para>
       This setting can be overridden on <application>LCDd</application>'s
-      command line with the <option>-f</option> option that forces foreground mode. 
+      command line with the <option>-f</option> option that forces foreground mode.
     </para>
   </listitem>
 </varlistentry>
@@ -397,10 +397,10 @@ settings for the LCDproc server <application>LCDd</application>.
       while <option>-i 0</option> disables it.
       <note>
         <para>
-          Using the command line, it is not possible to set the server screen to 
+          Using the command line, it is not possible to set the server screen to
           <literal>blank</literal> mode.
 	</para>
-      </note>	
+      </note>
     </para>
   </listitem>
 </varlistentry>
@@ -572,7 +572,7 @@ You can configure what keys the menu should use.
     it is also used to move right in input fields.
     In this case the value of the input field is not confirmed,
     until the right end of the input has been reached.
-    
+
     It is not set by default, but a natural candidate is <literal>Enter</literal>.
   </para></listitem>
 </varlistentry>
@@ -613,7 +613,7 @@ You can configure what keys the menu should use.
     <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
-    If defined, this optional key is used to 
+    If defined, this optional key is used to
     to move left in input fields and to select submenu entries.
     It is not set by default, but if you have more than 4 keys,
     a natural candidate is <literal>Left</literal>.
@@ -634,7 +634,7 @@ You can configure what keys the menu should use.
 </variablelist>
 
 <para>
-The minimal keys required for the menu work correctly are the <command>MenuKey</command>, 
+The minimal keys required for the menu work correctly are the <command>MenuKey</command>,
 the <command>EnterKey</command> and one of <command>UpKey</command> or
 <command>DownKey</command>.
 With these 3 keys the menus can be operated.
@@ -676,7 +676,7 @@ The <package>LCDproc</package> distribution contains init scripts for
 <acronym>LSB</acronym> 3.1 (Linux Standard Base 3.1) conforming
 GNU/Linux distributions.
 In addition to those it contains init scripts for older RedHat- and Debian-based
-distributions that do not adhere to LSB 3.1. 
+distributions that do not adhere to LSB 3.1.
 You can find all of them in the <filename>scripts/</filename>
 directory of the LCDproc sources.
 </para>

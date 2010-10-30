@@ -266,11 +266,11 @@ glk_close(Driver *drvthis)
 
 		if (p->framebuf != NULL)
 			free(p->framebuf);
-		p->framebuf = NULL;  
+		p->framebuf = NULL;
 
 		if (p->backingstore != NULL)
 			free(p->backingstore);
-		p->backingstore = NULL;  
+		p->backingstore = NULL;
 
 		free(p);
 	}
@@ -613,7 +613,7 @@ glk_num(Driver *drvthis, int x, int num)
 
 	if ((x > 0) && (x <= p->width))
 		p->framebuf[x-1] = (num >= 10) ? ':' : (num + '0');
-	*/	
+	*/
 }
 
 

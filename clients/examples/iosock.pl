@@ -50,9 +50,9 @@ my $PORT = "13666";
 my $PING = "ping";
 
 # list of hosts to be ping'ed
-my @MACHINES = ("lcdproc.omnipotent.net", 
+my @MACHINES = ("lcdproc.omnipotent.net",
 	     "www.linux.org",
-	     "www.daemonnews.org", 
+	     "www.daemonnews.org",
 	     "127.0.0.1",
 	     "seurat",
 	     "rodin",
@@ -86,7 +86,7 @@ if ($opt{V}) {
   exit(0);
 }
 
-# check number of arguments 
+# check number of arguments
 #usage(1)  if ($#ARGV >= 0);
 
 # set variables
@@ -152,7 +152,7 @@ while (1) {
 		`$PING -c 1 $machine`;
 		$pingstatus{$machine} = ($?) ? 0 : 1;
 	}
-	
+
 	# count reachablei (up) machines
 	@list = grep { $pingstatus{$_} == 1 } @MACHINES;
 	print $remote "widget_set pings one 1 2 {Machines Up: ",scalar(@list),"}\n";
@@ -201,7 +201,7 @@ my $status = shift;
   }
   else {
     print STDERR "For help, type: $progname -h\n";
-  }  
+  }
 
   exit($status);
 }
@@ -232,7 +232,7 @@ B<iosock.pl>
 B<iosock.pl> is a small example client for LCDd, the lcdproc server.
 
 It tries to ping the servers given as parameters and displays on the LCD
-whether they are reachable or not.  
+whether they are reachable or not.
 If no hosts are given as parameters a built-in list of default machines will be checked.
 
 =head1 OPTIONS

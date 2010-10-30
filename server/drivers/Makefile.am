@@ -28,7 +28,7 @@ IOWarrior_CFLAGS =   @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 hd44780_CFLAGS =     @LIBUSB_CFLAGS@ @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 lis_CFLAGS =         @LIBUSB_CFLAGS@ @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
-picolcd_CFLAGS =     @LIBUSB_CFLAGS@ $(AM_CFLAGS)	
+picolcd_CFLAGS =     @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 shuttleVFD_CFLAGS =  @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 ula200_CFLAGS =      @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 i2500vfd_CFLAGS =    @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
@@ -70,7 +70,7 @@ xosd_LDADD =         @LIBXOSD@ libbignum.a
 i2500vfd_LDADD =     @LIBFTDI_LIBS@
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
-libbignum_a_SOURCES = adv_bignum.h  adv_bignum.c 
+libbignum_a_SOURCES = adv_bignum.h  adv_bignum.c
 
 bayrad_SOURCES =     lcd.h lcd_lib.h bayrad.h bayrad.c report.h
 CFontz_SOURCES =     lcd.h lcd_lib.h CFontz.c CFontz.h CFontz-charmap.h report.h adv_bignum.h

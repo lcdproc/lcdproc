@@ -1,5 +1,5 @@
 This is the CREDITS file that should list all people that are or have
-been involved in LCDproc. 
+been involved in LCDproc.
 
 Please help us keeping this file up to date. Developers, please insert
 your name and a short description of your activities. Other people
@@ -16,7 +16,7 @@ William Ferrell (Choadstre) <willfe@yahoo.com>:
 	  for V0.4, continued maintenance
 It's Choadstre's fault that LCDproc exists. He wanted his computer to have
 a heartbeat, like some HP workstations do. So he found a nice LCD, wrote
-some amazingly spiffy software for it, and life was good. 
+some amazingly spiffy software for it, and life was good.
 
 Scott Scriven (ToyKeeper) <http://toykeeper.net/>:
 	- wrote V0.3 and most of V0.4, and helped procrastinate the rest
@@ -40,7 +40,7 @@ Benjamin Tse <blt@Comports.com>, Matthias Prinke <m.prinke@trashcan.mcnet.de>:
 	- HD44780 driver and predecessors
 
 Richard Rognlie <rrognlie@gamerz.net>:
-	- Work on HD44780 driver 
+	- Work on HD44780 driver
 	- GIF driver (lost code)
 
 Tom Wheeley:
@@ -134,7 +134,7 @@ Joris Robijn:
 	- SED1330 driver
 
 Guillaume Filion:
-	- Portability bug fixes on the curses, HD44780, SED1520 and 
+	- Portability bug fixes on the curses, HD44780, SED1520 and
 	  STV5730 drivers.
 	- Partially implemented Thomas Runge's BSD port of lcdproc.
 	- Ported the parallel functions in port.h to BSD.

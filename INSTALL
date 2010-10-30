@@ -12,7 +12,7 @@ rest of the file. 8)
 
 First read the README if you haven't already.
 
-Please take a few minutes to read the user guide located at 
+Please take a few minutes to read the user guide located at
 http://lcdproc.sourceforge.net/docs/
 
 For the details on supported platforms, see the PLATFORM SPECIFIC section
@@ -20,7 +20,7 @@ of this file.
 
 In order to compile LCDproc, you'll need the following programs:
 
-* An ANSI C compiler, we recommend GCC. Most Linux or BSD systems come 
+* An ANSI C compiler, we recommend GCC. Most Linux or BSD systems come
   with GCC.
 
 * GNU Make. It is available for all major distributions. If you want to
@@ -120,29 +120,29 @@ And read the available options, especially --enable-drivers
 Run make to build the server and all clients
     make
 
-If you only want to compile the clients, you can omit to compile the 
+If you only want to compile the clients, you can omit to compile the
 server:
     cd shared
     make
     cd ../clients
     make
 
-Similarly, if you only want to compile the server, you can omit to 
+Similarly, if you only want to compile the server, you can omit to
 compile the clients:
     cd shared
     make
     cd ../server
     make
 
-Depending on your system, LCDproc will build in a few seconds to a 
-few minutes. It's not very big. 
+Depending on your system, LCDproc will build in a few seconds to a
+few minutes. It's not very big.
 
 If you want to, you can install it (if you're root) by typing:
     make install
 
 This will install the binaries and the man pages in the directory you
 specified in configure.
-You may have to copy the configuration file (LCDd.conf) to /etc   
+You may have to copy the configuration file (LCDd.conf) to /etc
 (or /usr/local/etc) manually.
 
 
@@ -198,21 +198,21 @@ Nothing special to say, everything should go well.
 
 You may not be able to compile all drivers on something else than i386
 if your linux installation does not have ioperm, inb and outb commands.
-./configure should leave all drivers that need those functions out   
+./configure should leave all drivers that need those functions out
 (drivers for parallel port displays), so that LCDd should compile anyway.
 
 --- NetBSD ---
-You need to use GNU Make instead of NetBSD's make. 
+You need to use GNU Make instead of NetBSD's make.
 Remember to type gmake instead of make to compile LCDproc.
 The server will probably only compile on NetBSD/i386.
 
 If you try to run LCDd and you get this error:
 Bus error (core dumped)
-It is likely that you did not have the right permission to access the ports. 
+It is likely that you did not have the right permission to access the ports.
 Try starting the program as root.
 
 --- OpenBSD ---
-You need to use GNU Make instead of OpenBSD's make. 
+You need to use GNU Make instead of OpenBSD's make.
 Remember to type gmake instead of make to compile LCDproc.
 The server will probably only compile on OpenBSD/i386.
 
@@ -246,7 +246,7 @@ Note that you cannot use more than one display driver at the same time.
 
 For security reasons, LCDd by default only accepts connections from
 localhost (127.0.0.1), it will not accept connections from other computers on
-your network / the Internet. You can change this behaviour in the 
+your network / the Internet. You can change this behaviour in the
 configuration file.
 
 --- Starting the client(s) ---
@@ -295,7 +295,7 @@ Debian: (the hard way)
 
 Debian: (the easy way)
       - Install the previously created .deb package (as root)
-	  dpkg -i lcdproc_VERSION-RELEASE_ARCH.deb        
+	  dpkg -i lcdproc_VERSION-RELEASE_ARCH.deb
 
 Redhat / Mandrake:
       - Copy the scripts:

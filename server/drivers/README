@@ -1,6 +1,6 @@
 UNDERSTANDING LCDPROC DRIVERS
 
-LCDproc drivers are compiled as modules that will be loaded by the 
+LCDproc drivers are compiled as modules that will be loaded by the
 LCDd daemon's core on request.
 
 To understand how to write a driver see docs/API-0.5.txt or the

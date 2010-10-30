@@ -40,7 +40,7 @@ for driver in $drivers ; do
 		*)
 			selectdrivers=["$selectdrivers $driver "]
 			;;
-	esac		
+	esac
 done
 
 dnl check for wanted drivers and their dependencies
@@ -249,7 +249,7 @@ dnl				else
 		irtrans)
 			DRIVERS="$DRIVERS irtrans${SO}"
 			actdrivers=["$actdrivers irtrans"]
-			;;	
+			;;
 		joy)
 			AC_CHECK_HEADER(linux/joystick.h, [
 				DRIVERS="$DRIVERS joy${SO}"
@@ -353,7 +353,7 @@ dnl			else
 			else
 				AC_MSG_WARN([The picolcd driver needs the libusb library.])
 			fi
-			;;       
+			;;
 		pyramid)
 			DRIVERS="$DRIVERS pyramid${SO}"
 			actdrivers=["$actdrivers pyramid"]
@@ -474,7 +474,7 @@ AC_MSG_RESULT([---------------------------------------])
 AC_MSG_RESULT([LCDd will be compiled with the drivers:])
 for driver in $actdrivers; do
 	AC_MSG_RESULT([    -  $driver])
-done	
+done
 AC_MSG_RESULT([---------------------------------------])
 
 AC_SUBST(LIBCURSES)
@@ -554,7 +554,7 @@ AC_DEFUN([AC_GET_FS_INFO], [
     AC_CHECK_HEADERS(fcntl.h sys/dustat.h sys/param.h sys/statfs.h sys/fstyp.h)
     AC_CHECK_HEADERS(mnttab.h mntent.h utime.h sys/statvfs.h sys/vfs.h)
     AC_CHECK_HEADERS(sys/filsys.h sys/fs_types.h)
-    AC_CHECK_HEADERS(sys/mount.h, [], [], 
+    AC_CHECK_HEADERS(sys/mount.h, [], [],
         [#if HAVE_SYS_PARAM_H
          #include <sys/param.h>
         #endif

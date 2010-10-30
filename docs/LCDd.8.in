@@ -5,16 +5,16 @@ LCDd - LCDproc server daemon
 
 .SH SYNOPSIS
 .B LCDd
-[\fB\-hf\fP] 
-[\fB\-c\fP \fIconfig\fP] 
-[\fB\-d\fP \fIdriver\fP] 
-[\fB\-i\fP \fIbool\fP] 
-[\fB\-a\fP \fIaddr\fP] 
-[\fB\-p\fP \fIport\fP] 
-[\fB\-u\fP \fIuser\fP] 
-[\fB\-w\fP \fItime\fP] 
-[\fB\-r\fP \fIlevel\fP] 
-[\fB\-s\fP \fIbool\fP] 
+[\fB\-hf\fP]
+[\fB\-c\fP \fIconfig\fP]
+[\fB\-d\fP \fIdriver\fP]
+[\fB\-i\fP \fIbool\fP]
+[\fB\-a\fP \fIaddr\fP]
+[\fB\-p\fP \fIport\fP]
+[\fB\-u\fP \fIuser\fP]
+[\fB\-w\fP \fItime\fP]
+[\fB\-r\fP \fIlevel\fP]
+[\fB\-s\fP \fIbool\fP]
 
 .SH DESCRIPTION
 \fBLCDd\fP is the server part of LCDproc, a deamon which listens to a certain port (normally 13666)
@@ -27,7 +27,7 @@ Before running \fBLCDd\fP you should carefully
 read through that file and modify everything neccessary according to your needs.
 Otherwise you might encounter \fBLCDd\fP not running properly on your system.
 .PP
-To make full use of \fBLCDd\fP, a client such as lcdproc(1), lcdexec(1), or lcdvc 
+To make full use of \fBLCDd\fP, a client such as lcdproc(1), lcdexec(1), or lcdvc
 is required.
 
 .SH OPTIONS
@@ -239,7 +239,7 @@ Noritake VFD Device CU20045SCPB-T28A
 Mini-box.com USB LCD (PicoLCD 20x4 & picoLCD 20x2)
 .TP
 .B pyramid
-LCD displays from Pyramid (http://www.pyramid.de) 
+LCD displays from Pyramid (http://www.pyramid.de)
 .TP
 .B sed1330
 SED1330/SED1335 (aka S1D13300/S1D13305) based graphical displays
@@ -266,7 +266,7 @@ STV5730A on-screen display chip
 LCD devices from SURE electronics  (http://www.sureelectronics.net)
 .TP
 .B svga
-VGA monitors using svgalib 
+VGA monitors using svgalib
 .TP
 .B t6963
 Toshiba T6963 based LCD displays
@@ -494,7 +494,7 @@ The special value 10 for \fIint\fP displays a colon.
 .SH BUGS
 If \fBLCDd\fP seems not to work as expected, try to run it in the foreground
 with reporting level set to maximum and reporting to stderr.
-This can be achieved without changes to the config file by using the 
+This can be achieved without changes to the config file by using the
 command line:
 .RS
 .I LCDd -f -r 5 -s 0

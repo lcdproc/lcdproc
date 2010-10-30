@@ -60,7 +60,7 @@ more-than-2-line (typically 4-line) displays.
 	how long to keep this client running (default is 5 seconds).
 
  -v <verbosity>
-        set logging verbosity level to <verbosity>. 
+        set logging verbosity level to <verbosity>.
 
  -V
         display the present version number of lcdident.
@@ -91,17 +91,17 @@ Perl 5.004;
 
 =head1 DISCLAMER
 
-This program is free software; you can redistribute it and/or modify 
-it under the terms of the GNU General Public License version 2 as 
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License version 2 as
 published by the Free Software Foundation.
 
 This program is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
-or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 for more details.
 
-You should have received a copy of the GNU General Public License along 
-with this program; if not, write to the Free Software Foundation, Inc., 
+You should have received a copy of the GNU General Public License along
+with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
 
 =head1 SEE ALSO
@@ -262,7 +262,7 @@ while(defined(my $input = <$remote>)) { }
 
 # all done
 grace();
-    
+
 # send a SIGINT or SIGTERM to exit nicely.
 
 # To be called on exit and on SIGINT or SIGTERM.
@@ -283,7 +283,7 @@ my $status = shift;
     print STDERR "  where <options> are\n" .
                  "    -s <server>                connect to <server> (default: $server)\n" .
                  "    -p <port>                  connect to <port> on <server> (default: $port)\n" .
-                 "    -t <seconds>               how long to hold the client screen up (default: $waittime seconds).\n" . 
+                 "    -t <seconds>               how long to hold the client screen up (default: $waittime seconds).\n" .
                  "    -v <verbosity>             verbosity level (default: $verbose, max verbosity: 5)\n" .
                  "    -h                         show this help page\n" .
                  "    -V                         display version number\n";

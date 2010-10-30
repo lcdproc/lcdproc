@@ -225,7 +225,7 @@ ms6931_init (Driver *drvthis)
 
 	tcsetattr(p->fd, TCSANOW, &portset);
 
-	// set display to comunications mode 
+	// set display to comunications mode
 	ms6931_write(p->fd, "~\040", 2);
 	sleep(1);
 
@@ -255,7 +255,7 @@ ms6931_close (Driver *drvthis)
 			ms6931_clear(drvthis);
 			ms6931_flush(drvthis);
 			ms6931_backlight (drvthis, BACKLIGHT_OFF);
-		}	
+		}
 
 		if (p->fd >= 0)
 			close(p->fd);
@@ -508,7 +508,7 @@ ms6931_get_key (Driver *drvthis)
 			key = "Down";
 			break;
 		default:
-			report(RPT_DEBUG, "%s get_key: illegal key 0x%02X", 
+			report(RPT_DEBUG, "%s get_key: illegal key 0x%02X",
 					drvthis->name, buf);
 			return NULL;
 		}

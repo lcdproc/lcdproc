@@ -94,8 +94,8 @@ server_screen_init(void)
 			if ((w != NULL) && (w->text != NULL)) {
 				strncpy(w->text, line, LCD_MAX_WIDTH);
 				w->text[LCD_MAX_WIDTH] = '\0';
-			}	
-		}	
+			}
+		}
 	}
 
 	/* And enqueue the screen */
@@ -162,13 +162,13 @@ update_server_screen(void)
 			if ((w != NULL) && (w->text != NULL)) {
 				snprintf(w->text, LCD_MAX_WIDTH,
 						"Clients: %i", num_clients);
-			}			
+			}
 
 			w = screen_find_widget(server_screen, "line3");
 			if ((w != NULL) && (w->text != NULL)) {
 				snprintf(w->text, LCD_MAX_WIDTH,
 						"Screens: %i", num_screens);
-			}			
+			}
 		} else {				/* 2-line display */
 			w = screen_find_widget(server_screen, "line2");
 			if ((w != NULL) && (w->text != NULL)) {
@@ -177,7 +177,7 @@ update_server_screen(void)
 						 ? "Cli: %i  Scr: %i"
 						 : "C: %i  S: %i"),
 						num_clients, num_screens);
-			}		
+			}
 		}
 	}
 	return 0;
@@ -194,14 +194,14 @@ goodbye_screen(void)
 
 	if (config_has_key("Server", "GoodBye")) {	/* custom GoodBye */
 		int i;
-	   
+
 		/* loop over all display lines to read config & display message */
 		for (i = 0; i < display_props->height; i++) {
 			const char *line = config_get_string("Server", "GoodBye", i, "");
 
 			drivers_string(1, 1+i, line);
 		}
-	}		
+	}
 	else {		/* default GoodBye */
 		if ((display_props->height >= 2) && (display_props->width >= 16)) {
 			int xoffs = (display_props->width - 16) / 2;
@@ -257,10 +257,10 @@ reset_server_screen(int rotate, int heartbeat, int title)
 				if ((i == 0) && (title) && (rotate != SERVERSCREEN_BLANK)) {
 					strncpy(w->text, "LCDproc Server", LCD_MAX_WIDTH);
 					w->text[LCD_MAX_WIDTH] = '\0';
-				}	
-			}	
-		}	
-	}		
+				}
+			}
+		}
+	}
 	return 0;
 }
 

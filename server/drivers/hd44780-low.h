@@ -104,9 +104,9 @@ typedef struct hd44780_private_data {
 
 	// serial connection types
 	int fd;				/* file handle to serial device */
-	int serial_type;	
+	int serial_type;
 
-#if defined(HAVE_LIBUSB)	
+#if defined(HAVE_LIBUSB)
 	// USB connection types
 	usb_dev_handle *usbHandle;	/* USB device handle */
 	int usbIndex;			/* USB interface index */
@@ -168,7 +168,7 @@ typedef struct hd44780_private_data {
 				 // its bus to LPT port
         char lastline;   // lastline controls the use of the last line, if pixel addressable (true, default) or
                          // underline effect (false). To avoid the underline effect, last line is always zeroed
-                         // for whatever redefined character 
+                         // for whatever redefined character
 
 	// keyMapDirect contains an array of the ascii-codes that should be generated
 	// when a directly connected key is pressed (not in matrix).
@@ -193,7 +193,7 @@ typedef struct hd44780_private_data {
 	int keepalivedisplay;   // When >0 refresh upper left char every <keepalivedisplay> seconds to keep display alive
 
 	int output_state;	// what was most recently output to the output port
-	
+
 	int contrast;		// Contrast setting (range 0 - 1000)
 	int brightness;		// Brightness when backlight is "on" (range 0 - 1000)
 	int offbrightness;	// Brightness when backlight is "off" (range 0 - 1000)

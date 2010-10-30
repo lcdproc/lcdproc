@@ -167,7 +167,7 @@ icp_a106_close (Driver *drvthis)
       close(p->fd);
     }
     free(p);
-  }	    
+  }
   drvthis->store_private_ptr(drvthis, NULL);
 
   report(RPT_INFO, "%s: closed", drvthis->name);

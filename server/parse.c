@@ -5,7 +5,7 @@
  * It works much like a command line.  Only the first token is used to
  * determine what function to call.
  */
- 
+
 /* This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License.
@@ -85,7 +85,7 @@ static int parse_message(const char *str, Client *c)
 			if (is_final(ch)) {
 				state = ST_FINAL;
 				break;
-			}	  
+			}
 			/* otherwise fall through */
 			state = ST_ARGUMENT;
 		  case ST_ARGUMENT:
@@ -140,7 +140,7 @@ static int parse_message(const char *str, Client *c)
 			}
 			else if (is_opening_quote(ch, quote)) {
 				quote = ch;
-			}	
+			}
 			else if (is_closing_quote(ch, quote)) {
 				quote = '\0';
 				if (argc >= MAX_ARGUMENTS-1) {
@@ -165,10 +165,10 @@ static int parse_message(const char *str, Client *c)
 					argpos = 0;
 				}
 				state = ST_WHITESPACE;
-			}	
+			}
 			else {
 				argv[argc][argpos++] = ch;
-			}	
+			}
 			break;
 		  case ST_FINAL:
 		  	/* This will never be reached */
@@ -190,7 +190,7 @@ static int parse_message(const char *str, Client *c)
 	int i;
 	for (i = 0; i < argc; i++) {
 		printf("%s%c", argv[i], (i == argc-1) ? '\n' : ' ');
-	}	
+	}
 #endif
 
 	/* Now find and call the appropriate function...*/
@@ -201,7 +201,7 @@ static int parse_message(const char *str, Client *c)
 		if (error) {
 			sock_printf_error(c->sock, "Function returned error \"%.40s\"\n", argv[0]);
 			report(RPT_WARNING, "Command function returned an error after command from client on socket %d: %.40s", c->sock, str);
-		}	
+		}
 	}
 	else {
 		sock_printf_error(c->sock, "Invalid command \"%.40s\"\n", argv[0]);

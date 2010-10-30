@@ -848,7 +848,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
 
-	static unsigned char heart_open[] = 
+	static unsigned char heart_open[] =
 		{ b__XXXXX,
 		  b__X_X_X,
 		  b_______,
@@ -857,7 +857,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XX_XX,
 		  b__XXXXX };
-	static unsigned char heart_filled[] = 
+	static unsigned char heart_filled[] =
 		{ b__XXXXX,
 		  b__X_X_X,
 		  b___X_X_,
@@ -866,7 +866,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X_X_X,
 		  b__XX_XX,
 		  b__XXXXX };
-	static unsigned char arrow_up[] = 
+	static unsigned char arrow_up[] =
 		{ b____X__,
 		  b___XXX_,
 		  b__X_X_X,
@@ -875,7 +875,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b____X__,
 		  b_______ };
-	static unsigned char arrow_down[] = 
+	static unsigned char arrow_down[] =
 		{ b____X__,
 		  b____X__,
 		  b____X__,
@@ -885,7 +885,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b_______ };
 	/*
-	static unsigned char arrow_left[] = 
+	static unsigned char arrow_left[] =
 		{ b_______,
 		  b____X__,
 		  b___X___,
@@ -894,7 +894,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b____X__,
 		  b_______,
 		  b_______ };
-	static unsigned char arrow_right[] = 
+	static unsigned char arrow_right[] =
 		{ b_______,
 		  b____X__,
 		  b_____X_,
@@ -904,7 +904,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b_______ };
 	*/
-	static unsigned char checkbox_off[] = 
+	static unsigned char checkbox_off[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -913,7 +913,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char checkbox_on[] = 
+	static unsigned char checkbox_on[] =
 		{ b____X__,
 		  b____X__,
 		  b__XXX_X,
@@ -922,7 +922,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b__X___X,
 		  b__XXXXX,
 		  b_______ };
-	static unsigned char checkbox_gray[] = 
+	static unsigned char checkbox_gray[] =
 		{ b_______,
 		  b_______,
 		  b__XXXXX,
@@ -932,7 +932,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b__XXXXX,
 		  b_______ };
 	/*
-	static unsigned char selector_left[] = 
+	static unsigned char selector_left[] =
 		{ b___X___,
 		  b___XX__,
 		  b___XXX_,
@@ -941,7 +941,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b___XX__,
 		  b___X___,
 		  b_______ };
-	static unsigned char selector_right[] = 
+	static unsigned char selector_right[] =
 		{ b_____X_,
 		  b____XX_,
 		  b___XXX_,
@@ -950,7 +950,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b____XX_,
 		  b_____X_,
 		  b_______ };
-	static unsigned char ellipsis[] = 
+	static unsigned char ellipsis[] =
 		{ b_______,
 		  b_______,
 		  b_______,
@@ -959,7 +959,7 @@ CFontz633_icon (Driver *drvthis, int x, int y, int icon)
 		  b_______,
 		  b__X_X_X,
 		  b_______ };
-	static unsigned char block_filled[] = 
+	static unsigned char block_filled[] =
 		{ b__XXXXX,
 		  b__XXXXX,
 		  b__XXXXX,
