@@ -3,18 +3,35 @@
 
 <para>
   This chapter describes the driver API of v0.5 of LCDproc.
-  At time of this writing, this version is not released and some things might
-  be changed.
-</para>
-
-<para>
-  The API consists of several functions to tell the driver that
-  certains actions should be performed, some data, and several functions
-  to retrieve configuration data from the server.
 </para>
 
 <sect1 id="api-overview">
-  <title>OVERVIEW OF OPERATION</title>
+  <title>Overview of Operation</title>
+
+<para>
+  The API defines functions which drivers may implement to provide certain
+  services. If a driver implements a function, the function will be detected by
+  the server. For some optional functions the server core provides default
+  implementations.
+</para>
+
+<para>
+  The API consists of functions to:
+</para>
+<itemizedlist>
+  <listitem>
+    <para>print data to the display,</para>
+  </listitem>
+  <listitem>
+    <para>set display properties (backlight, brightness, contrast, extra LEDs),</para>
+  </listitem>
+  <listitem>
+    <para>read input from an input device (may be the display), and</para>
+  </listitem>
+  <listitem>
+    <para>inform the server of the driver/display capabilities.</para>
+  </listitem>
+</itemizedlist>
 
 <para>
   The API is best descibed by starting with the struct lcd_logical_driver
@@ -22,16 +39,8 @@
 </para>
 
 <para>
-  The use of the API has changed from v0.4 to v0.5. The default functions that
-  the server put in the pointers in v0.4 do no longer exist. Instead empty
-  functions are the default. If a driver implements a function, the function
-  will be detected by the server. The driver should at least implement all
-  basic functions like driver_chr and driver_str itself, and should also have
-  defined a number of other symbols for the server.
-</para>
-
-<para>
-  I will walk through the driver struct here.
+  Below is a commented version of lcd_logical_driver. Each function is
+  described more detailed in <xref linkend="function-details"/>.
 </para>
 
 <screen>
@@ -52,24 +61,6 @@ typedef struct lcd_logical_driver {
 
 	// What should alternatively be prepended to the function names ?
 	char **symbol_prefix;
-
-/*
-The programmer should define the following symbols:
-char * api_version = API_VERSION;	// &lt;-- this symbol is defined by make
-int stay_in_foreground = 0;		// This driver does not need to be in foreground
-int supports_multiple = 0;		// This driver does not support multiple instances
-char *symbol_prefix = "MyDriver_";	// Driver functions start with MyDriver_
-And fill these values with the correct values. Upon loading the driver module,
-the server will locate these symbols and store pointers to them in the
-driver struct.
-
-Because the drivers are loadable, some kind of version checking should be
-done. Therefor the server expects the correct version number to be found in
-the api_version symbol (a string). For the v0.5 version this should be "0.5".
-If the version is incompatible, the driver will not be loaded. The current
-API version can always be determined by inserting the compiler define
-API_VERSION in the code.
-*/
 
 	//////// Functions to be provided by the driver module
 
@@ -215,7 +206,7 @@ API_VERSION in the code.
 </sect1>
 
 <sect1 id="private-data">
-  <title>PRIVATE DATA</title>
+  <title>Private Data</title>
 
 <para>
   With the introduction of loadable modules it is necesary to stop using global
@@ -279,7 +270,7 @@ typedef struct MyDriver_private_data {
 </sect1>
 
 <sect1 id="function-details">
-  <title>FUNCTIONS IN DETAIL</title>
+  <title>Functions in Detail</title>
 
 <funcsynopsis>
   <funcprototype>
@@ -706,7 +697,6 @@ typedef struct MyDriver_private_data {
   Returns the number of times a key exists. Does not need to be called
   prior to a call to a config_get_* function.
 </para>
-
 
 <screen>
 First version, Joris Robijn, 20011016

@@ -16,8 +16,8 @@
 &bookinfo;
 
 &introduction;
-&shared-files;
 &language;
+&shared-files;
 &driver-api;
 &add-your-driver;
 &make-driver;
