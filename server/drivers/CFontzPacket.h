@@ -6,23 +6,22 @@
 #define DEFAULT_CELL_HEIGHT	8
 #define DEFAULT_CONTRAST	560
 #define DEFAULT_DEVICE		"/dev/lcd"
-#define DEFAULT_SPEED		19200
 #define DEFAULT_BRIGHTNESS	1000
 #define DEFAULT_OFFBRIGHTNESS	0
-#define DEFAULT_SIZE		"16x2"
 
 #define CFA_HAS_FAN		0x0001
 #define CFA_HAS_TEMP		0x0002
 #define CFA_HAS_4_TEMP_SLOTS	0x0004
 #define CFA_HAS_KS0073		0x0008
 
+/** Structure describing features of a known display model */
 typedef struct CFA_Model {
-	int model;
-	char *size;
-	int cell_width;
-	int speed;
-	const unsigned char *charmap;
-	int flags;
+	int model;		/**< Model number */
+	char *size;		/**< Display size, format like '16x2' */
+	int cell_width;		/**< Width of a character cell in pixel */
+	int speed;		/**< Default speed of serial interface */
+	const unsigned char *charmap;	/**< Default HD44780 charmap used by display */
+	int flags;		/**< Bitmap of display features, see CFA_HAS_* above */
 } CFA_Model;
 
 MODULE_EXPORT int  CFontzPacket_init (Driver *drvthis);

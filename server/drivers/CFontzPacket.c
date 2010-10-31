@@ -1,17 +1,18 @@
 /** \file server/drivers/CFontzPacket.c
- * LCDd \c CFontzPacket driver for the CFA631, CFA633 & CFA635 display series
- * by CrystalFontz, Inc.
+ * LCDd \c CFontzPacket driver for the CFA533, CFA631, CFA633 & CFA635 display
+ * series by CrystalFontz, Inc.
  */
 
 /*
  *  This is the LCDproc driver for CrystalFontz LCD using Packet protocol.
- *  It support the CrystalFontz 633 USB/Serial, the 631 USB and the 635 USB
+ *  It support the CrystalFontz 533/633 USB/Serial, the 631 USB and the 635 USB
  *  (get yours from http://www.crystalfontz.com)
  *
  *  Applicable Data Sheets:
- *  - http://www.crystalfontz.com/products/631/CFA-631_v1.0.pdf
- *  - http://www.crystalfontz.com/products/633/CFA_633_0_6.PDF
- *  - http://www.crystalfontz.com/products/635/CFA_635_1_0.pdf
+ *  - http://www.crystalfontz.com/products/533/data_sheet/data_sheet.html
+ *  - http://www.crystalfontz.com/products/631/data_sheet/data_sheet.html
+ *  - http://www.crystalfontz.com/products/633/data_sheet/data_sheet.html
+ *  - http://www.crystalfontz.com/products/635/data_sheet/data_sheet.html
  *
  *  Copyright (C) 2002 David GLAUDE
  *  Portions Copyright (C) 2005 Peter Marschall
@@ -33,7 +34,7 @@
  */
 
 /*
- * Driver status
+ * Driver history
  * 04/04/2002: Working driver
  * 05/06/2002: Reading of return value
  * 02/09/2002: KeyPad handling and return string
@@ -41,15 +42,6 @@
  * 27/01/2003: Adapted for CFontz 631
  * 16/05/2005: Adapted for CFontz 635
  * 24/01/2010: Add CFontz 533, add model description
- *
- * THINGS DONE:
- * + Stopping the live reporting (of temperature)
- * + Stopping the reporting of temp and fan (is it necessary after reboot)
- * + Use of library for hbar and vbar (good but library could be better)
- * + Support for keypad (Using a KeyRing)
- * + BigNum (for CF635 only: it is a 4-line display)
- * + Output support (LED control on a CF635 only)
- * + Create and use the library (for custom char handling)
  *
  * THINGS TO DO:
  * + Make the caching at least for heartbeat icon
@@ -149,7 +141,7 @@ typedef struct CFontzPacket_private_data {
 	char info[255];
 } PrivateData;
 
-
+/** List of known models and their default settings and features */
 static CFA_Model CFA_ModelList[] = {
 	{533, "16x2", 5, 19200 , HD44780_charmap, CFA_HAS_TEMP | CFA_HAS_4_TEMP_SLOTS},
 	{631, "20x2", 6, 115200, CFontz_charmap , CFA_HAS_FAN | CFA_HAS_TEMP |
@@ -168,9 +160,11 @@ MODULE_EXPORT char *symbol_prefix = "CFontzPacket_";
 /* Internal functions */
 static void CFontzPacket_hidecursor (Driver *drvthis);
 static void CFontzPacket_reboot (Driver *drvthis);
+static void CFontzPacket_no_fan_report (Driver *drvthis);
 static void CFontzPacket_no_live_report (Driver *drvthis);
+static void CFontzPacket_no_temp_report (Driver *drvthis);
 static void CFontzPacket_hardware_clear (Driver *drvthis);
-
+static void CFontzPacket_raw_chr (Driver *drvthis, int x, int y, unsigned char c);
 
 /**
  * Initialize the driver.
@@ -184,7 +178,7 @@ CFontzPacket_init (Driver *drvthis)
 	struct termios portset;
 	int tmp, w, h, i;
 	int cf_reboot = 0;
-	char size[200] = DEFAULT_SIZE;
+	char size[200] = "";
 
 	PrivateData *p;
 
@@ -242,10 +236,10 @@ CFontzPacket_init (Driver *drvthis)
 	}
 	p->width = w;
 	p->height = h;
-	p->cellwidth = p->model_desc->cell_width;
-
-
 	debug(RPT_INFO, "%s: Size used: %dx%d", __FUNCTION__, p->width, p->height);
+
+	/* Cellwidth cannot be set by user */
+	p->cellwidth = p->model_desc->cell_width;
 
 	/* Which contrast */
 	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
@@ -358,7 +352,6 @@ CFontzPacket_init (Driver *drvthis)
 	}
 
 	CFontzPacket_hidecursor(drvthis);
-
 	CFontzPacket_set_contrast(drvthis, p->contrast);
 	CFontzPacket_no_live_report(drvthis);
 	CFontzPacket_hardware_clear(drvthis);
@@ -786,7 +779,7 @@ CFontzPacket_hidecursor (Driver *drvthis)
 
 
 /**
- * Stop live reporting of temperature.
+ * Stop live reporting of temperature and fan RPM.
  * \param drvthis  Pointer to driver structure.
  */
 static void
@@ -1155,7 +1148,6 @@ CFontzPacket_icon (Driver *drvthis, int x, int y, int icon)
 		  b__XXXXX };
 	*/
 
-	/* Yes we know, this is a VERY BAD implementation :-) */
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
 			if (p->model_desc->flags & CFA_HAS_KS0073) {
