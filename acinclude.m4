@@ -14,7 +14,7 @@ AC_ARG_ENABLE(drivers,
 	[                    joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,]
 	[                    mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,]
 	[                    pyramid,sed1330,sed1520,serialPOS,serialVFD,]
-	[                    shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,
+	[                    shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,]
 	[                    tyan,ula200,xosd]
 	[                    ]
 	[                  'all' compiles all drivers;]
