@@ -8,12 +8,15 @@ AC_ARG_ENABLE(drivers,
 	[  --enable-drivers=<list> compile drivers for LCDs in <list>,]
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
-	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,]
-	[                    EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,]
-	[                    IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,]
-	[                    MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,]
-	[                    pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,]
-	[                    stv5730,SureElec,svga,t6963,text,tyan,ula200,xosd]
+	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,]
+	[                    ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,]
+	[                    icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,]
+	[                    joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,]
+	[                    mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,]
+	[                    pyramid,sed1330,sed1520,serialPOS,serialVFD,]
+	[                    shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,
+	[                    tyan,ula200,xosd]
+	[                    ]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",

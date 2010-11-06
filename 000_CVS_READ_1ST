@@ -9,19 +9,15 @@ COMPILE! YOU'VE BEEN WARNED!
 ***************************************************************
 
 With that out of the way, welcome to the bleeding edge of LCDproc.
-To build and run this version, you'll need autoconf 2.50 or higher
+To build and run this version, you'll need autoconf 2.59 or higher
 and friends installed.
 
 Run:
 
 $ sh ./autogen.sh
 
-This produces the configure script and supporting files, and also
-runs configure with defaults. You want to run configure again with
-your own options, trust me :) I suspect the default drivers it sets
-aren't going to match your setup.
-
-Once the above two commands have run, the rest is pretty standard:
+This produces the configure script and supporting files. Once the above
+command has run, the rest is pretty standard:
 
 $ ./configure --help
 [read about the options, figure out what to use]
