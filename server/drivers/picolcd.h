@@ -10,6 +10,8 @@
  * (c) 2008 Jack Cleaver - add LIRC connection
  * (c) 2008 Mini-Box.com Nicu Pavel <npavel@mini-box.com>
  *      - Added support for 4x20 picoLCD
+ * (c) 2010 Martin Jones <martin.t.jones@virgin.net>
+ *      - Use module output function to control key LEDs.
  * License: GPL (same as usblcd and lcdPROC)
  *
  * picoLCD: http://www.mini-box.com/picoLCD-20x2-OEM
@@ -97,7 +99,7 @@ MODULE_EXPORT void picoLCD_set_contrast(Driver *drvthis, int promille);
 //MODULE_EXPORT int  picoLCD_get_brightness(Driver *drvthis, int state);
 MODULE_EXPORT void picoLCD_set_brightness(Driver *drvthis, int state, int promille);
 MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state);
-//MODULE_EXPORT void picoLCD_output(Driver *drvthis, int state);
+MODULE_EXPORT void picoLCD_output(Driver *drvthis, int state);
 
 MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis);
 

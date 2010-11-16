@@ -1,5 +1,5 @@
 /** \file server/drivers/picolcd.c
- * LCDd \c picolcd driver for the ini-Box.com USB LCD picoLCD displays.
+ * LCDd \c picolcd driver for the Mini-Box.com USB LCD picoLCD displays.
  */
 
 /*
@@ -16,6 +16,8 @@
  *      - Changed to dynamic IR sync(space) injection, by timing time between end and start pulse.
  *      - Queueing IR data to prevent timeouts by LIRC (sending by timeout)
  *      - Removed usb_clear_halt, because it breaks picoLCD 20x2 (1.57) communication
+ * (c) 2010 Martin Jones <martin.t.jones@virgin.net>
+ *      - Use module output function to control key LEDs.
  * License: GPL (same as usblcd and lcdPROC)
  *
  * picoLCD: http://www.mini-box.com/picoLCD-20x2-OEM
@@ -30,7 +32,7 @@
  *
  */
 
-/* lcdPROC includes */
+/* LCDproc includes */
 #include "lcd.h"
 #include "picolcd.h"
 #include <usb.h>
@@ -93,7 +95,7 @@ typedef struct picolcd_private_data {
 	/* device info struct */
 	picolcd_device *device;
 	int IRenabled;
-	//For communicating with LIRC
+	/* For communicating with LIRC */
 	int lircsock;
 	struct sockaddr_in lircserver;
 	/* IR transcode results */
@@ -257,8 +259,8 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
 
 	p->contrast     = drvthis->config_get_int(drvthis->name, "Contrast",   0, DEFAULT_CONTRAST);
 	p->brightness   = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	p->backlight    = drvthis->config_get_bool(drvthis->name, "BackLight",  0, DEFAULT_BACKLIGHT);
-	p->keylights    = drvthis->config_get_bool(drvthis->name, "KeyLights",  0, DEFAULT_KEYLIGHTS); /* key lights with LCD Backlight? */
+	p->backlight    = drvthis->config_get_bool(drvthis->name, "Backlight",  0, DEFAULT_BACKLIGHT);
+	p->keylights    = drvthis->config_get_bool(drvthis->name, "KeyLights",  0, DEFAULT_KEYLIGHTS);
 	p->key_timeout  = drvthis->config_get_int(drvthis->name, "KeyTimeout", 0, DEFAULT_TIMEOUT);
 
 	/* allow individual lights to be set */
@@ -287,10 +289,13 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
 
 	if (p->backlight)
 		picoLCD_backlight(drvthis, 1);
-		if (! p->keylights)
-			set_key_lights(p->lcd, p->key_light, 0);
 	else
 		picoLCD_backlight(drvthis, 0);
+
+	if (p->keylights)
+		set_key_lights(p->lcd, p->key_light, 1);
+	else
+		set_key_lights(p->lcd, p->key_light, 0);
 
 	picoLCD_set_contrast(drvthis, p->contrast);
 
@@ -397,7 +402,8 @@ MODULE_EXPORT void picoLCD_clear(Driver *drvthis)
 }
 
 
-/* Flush data on screen to the display.
+/**
+ *  Flush data on screen to the display.
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void picoLCD_flush(Driver *drvthis)
@@ -500,6 +506,7 @@ MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char c)
 	debug(RPT_DEBUG, "%s: chr complete (%c)", drvthis->name, c);
 }
 
+/* lcd_logical_driver User-defined character functions */
 
 /**
  * Define a custom character and write it to the LCD.
@@ -528,6 +535,7 @@ MODULE_EXPORT int picoLCD_get_free_chars (Driver *drvthis)
 	return NUM_CCs;
 }
 
+/* lcd_logical_driver Extended output functions */
 
 /**
  * Draw a vertical bar bottom-up.
@@ -596,7 +604,7 @@ MODULE_EXPORT void picoLCD_hbar (Driver *drvthis, int x, int y, int len, int pro
 		memset(hBar, 0x00, sizeof(hBar));
 
 		for (i = 1; i <= p->cellwidth; i++) {
-			// fill pixel columns from left to right.
+			/* fill pixel columns from left to right. */
 			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar)-1);
 			picoLCD_set_char(drvthis, i, hBar);
 		}
@@ -633,7 +641,7 @@ MODULE_EXPORT void picoLCD_num (Driver *drvthis, int x, int num)
 		do_init = 1;
 	}
 
-	// Lib_adv_bignum does everything needed to show the bignumbers.
+	/* Lib_adv_bignum does everything needed to show the big numbers. */
 	lib_adv_bignum(drvthis, x, num, 0, do_init);
 }
 
@@ -643,7 +651,7 @@ MODULE_EXPORT void picoLCD_num (Driver *drvthis, int x, int num)
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
- * \param icon     synbolic value representing the icon.
+ * \param icon     symbolic value representing the icon.
  * \retval 0       Icon has been successfully defined/written.
  * \retval <0      Server core shall define/write the icon.
  */
@@ -747,7 +755,7 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis)
 			debug(RPT_DEBUG, "%s: get_key got non-key/ir data or timeout", drvthis->name);
 			if (p->result < p->resptr) {
 				debug(RPT_INFO, "picolcd: timeout %d send lirc data now", p->key_timeout);
-				/* Send data maybe is enhough for LIRC */
+				/* Send data maybe is enough for LIRC */
 				picolcd_lircsend(drvthis);
 			}
 			/* We got IR or otherwise bad data */
@@ -765,7 +773,7 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis)
 
 /*
  * Due to how key events are reported, we need to keep reading key presses
- *	until we get the all clear (all keys up) event.
+ * until we get the all clear (all keys up) event.
  *
  * Key events come back in such a way to report up to two simultanious keys
  * pressed.  The highest numbered key always comes back as the first key and
@@ -790,11 +798,6 @@ MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis)
  */
 
 }
-
-
-/* lcd_logical_driver Extended output functions */
-
-/* lcd_logical_driver User-defined character functions */
 
 /* lcd_logical_driver Hardware functions */
 
@@ -897,6 +900,7 @@ MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state)
 		s = p->device->bklight_max;
 
 	if (state == BACKLIGHT_OFF) {
+		/* FIXME: Is 0x00 or 0xFF correct to turn backlight off? */
 		//packet[1] = (unsigned char) p->device->bklight_min;
 		packet[1] = 0xff;
 		picolcd_send(p->lcd, packet, 2);
@@ -911,16 +915,22 @@ MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state)
 }
 
 
-/* *
- * Set output port(s).
+/**
+ * Set output port(s). If the keypad is connected this controls the key lights.
  * \param drvthis  Pointer to driver structure.
  * \param state    Integer with bits representing port states.
  */
-/*MODULE_EXPORT int  picoLCD_output(Driver *drvthis, int state)
+MODULE_EXPORT void  picoLCD_output(Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
+	int x;
+	int m;
 
-}*/
+	for (x = 0, m = 1; x < KEYPAD_LIGHTS; x++, m <<= 1) {
+		p->key_light[x] = state & m;
+	}
+	set_key_lights(p->lcd, p->key_light, 1);
+}
 
 
 /* lcd_logical_driver Informational functions */
@@ -955,17 +965,17 @@ MODULE_EXPORT char *picoLCD_get_info(Driver *drvthis)
  * \param cbdata    Buffer of integers to be transcoded.
  *
  * \note The picoLCD introduces two issues:
- * 1. Every read contains a maximum of 10 samples (20 bytes),
+ * \note 1. Every read contains a maximum of 10 samples (20 bytes),
  *    sending the converted samples direct to LIRC will lead to timeouts,
  *    in LIRC while we are still waiting for the rest of the samples.
  *    To fix this I queue the samples and send it when a sync is detected or by a timeout.
- * 2. The sync (long space) are not send by the picoLCD.
+ * \note 2. The sync (long space) are not send by the picoLCD.
  *    To fix this we look for a pulse at the end of the last message and a pulse at the
  *    begin new message, we then flush the queue and start with a (sync) space, with
  *    the duration of the time between the last and current message.
  *
  * \note To make LIRC happy I send the queued samples with the sync space a the begin,
- * and not at the end (the next 'calcutated' sync is put at the begin of the next message),
+ * and not at the end (the next 'calculated' sync is put at the begin of the next message),
  * this is because LIRC requires a space at the begin but will solves the missing space
  * with a timeout at the end.
  */
@@ -1014,7 +1024,7 @@ static void ir_transcode(Driver *drvthis, unsigned char* data, unsigned int cbda
 		*p->resptr++ = (unsigned char)(gap & 0xff);
 		*p->resptr++ = (unsigned char)((gap >> 8) & 0xff);
 	}
-	/* Check if there is enhough space left in buffer to store all new samples */
+	/* Check if there is enough space left in buffer to store all new samples */
 	else if (cbdata >= (&p->result[sizeof(p->result)] - p->resptr)) {
 		/* This should never happen but just to be sure. */
 		debug(RPT_INFO, "picolcd: buffer almost full send lirc data now");
@@ -1025,19 +1035,19 @@ static void ir_transcode(Driver *drvthis, unsigned char* data, unsigned int cbda
 		w |= *data++ << 8;
 
 		if (w & 0x8000) {
-			//IF w is negative THEN negate. E.g. 0xDCA1 (-9055) -> 9055.
+			/* IF w is negative THEN negate. E.g. 0xDCA1 (-9055) -> 9055. */
 			w = 0x10000 - w;
-			//scale: orig is usec, new is jiffy. E.g. 9055usec = 148 jiffy.
+			/* scale: orig is usec, new is jiffy. E.g. 9055usec = 148 jiffy. */
 			w = (w * 16384/ 1000000) & 0xFFFF;
 		}
 		else {
-			//Scale.
+			/* Scale */
 			w = w * 16384 / 1000000;
 			if (w >= p->flush_threshold) {
 				report(RPT_INFO, "picolcd: detected sync space sending lirc data now");
 				picolcd_lircsend(drvthis);
 			}
-			//Set the space bit.
+			/* Set the space bit */
 			w |= 0x8000;
 		}
 		*p->resptr++ = (unsigned char)(w & 0xff);
@@ -1090,6 +1100,12 @@ static void picolcd_lircsend(Driver *drvthis)
 }
 
 
+/**
+ * Send raw data to the display using low level usb_interrupt_write.
+ * \param lcd   pointer to device handle
+ * \param data  pointer to data packet to send
+ * \param size  number of bytes to send
+ */
 static void picolcd_send(usb_dev_handle *lcd, unsigned char *data, int size)
 {
 	if ((lcd == NULL) && (data == NULL))
@@ -1099,7 +1115,13 @@ static void picolcd_send(usb_dev_handle *lcd, unsigned char *data, int size)
 }
 
 
-/* Write function for 20x4 desktop displays */
+/**
+ * Write function for 20x4 desktop displays
+ * \param lcd   pointer to device handle
+ * \param row   Row to place the string at
+ * \param col   ignored
+ * \param data  pointer to NUL terminated string
+ */
 static void picolcd_20x4_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data)
 {
 	unsigned char packet[64] = { 0x95, 0x01, 0x00, 0x01 };
@@ -1111,9 +1133,11 @@ static void picolcd_20x4_write(usb_dev_handle *lcd, const int row, const int col
 	};
 	int len = strlen((char *) data);
 
+	/* Cut off at display width */
 	if (len > 20)
 		len = 20;
 
+	/* Send command to select row */
 	switch (row) {
 		case 0:  picolcd_send(lcd, lineset[0], 6);  break;
 		case 1:  picolcd_send(lcd, lineset[1], 6);  break;
@@ -1122,23 +1146,33 @@ static void picolcd_20x4_write(usb_dev_handle *lcd, const int row, const int col
 		default: picolcd_send(lcd, lineset[0], 6);  break;
 	}
 
+	/* Fill in an send packet */
 	packet[4] = len;
-
 	memcpy(packet + 5, data, len);
-
 	picolcd_send(lcd, packet, 5 + len);
 }
 
 
-/* Write function for 20x2 OEM displays */
+/**
+ * Write function for 20x2 OEM displays
+ * \param lcd   pointer to device handle
+ * \param row   Row to place the string at
+ * \param col   ignored
+ * \param data  pointer to NUL terminated string
+ */
 static void picolcd_20x2_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data)
 {
 	unsigned char packet[64] = { 0x98 };
 	int len = strlen((char *) data);
 
+	/*
+	 * FIXME: Is it possible that data is written beyond the end of
+	 * the selected row? Shouldn't cut off happen at (20 - col)?
+	 */
 	if (len > 20)
 		len = 20;
 
+	/* prepare and send packet */
 	packet[1] = row;
 	packet[2] = col;
 	packet[3] = len;
@@ -1149,7 +1183,12 @@ static void picolcd_20x2_write(usb_dev_handle *lcd, const int row, const int col
 }
 
 
-/* Custom character define function for 20x2 OEM displays */
+/**
+ * Custom character define function for 20x2 OEM displays
+ * \param drvthis  Pointer to driver structure
+ * \param n        Index of custom character to update
+ * \param dat      Pointer to array of pixel data
+ */
 static void picolcd_20x2_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1172,7 +1211,12 @@ static void picolcd_20x2_set_char(Driver *drvthis, int n, unsigned char *dat)
 }
 
 
-/* Custom character define function for 20x4 desktop displays */
+/**
+ * Custom character define function for 20x4 desktop displays
+ * \param drvthis  Pointer to driver structure
+ * \param n        Index of custom character to update
+ * \param dat      Pointer to array of pixel data
+ */
 static void picolcd_20x4_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
 	PrivateData *p = drvthis->private_data;
@@ -1192,6 +1236,13 @@ static void picolcd_20x4_set_char(Driver *drvthis, int n, unsigned char *dat)
 }
 
 
+/**
+ * Read a key or IR event from the display into one packet.
+ * \param lcd      pointer to device handle
+ * \param packet   Pointer to packet structure which is filled with data
+ *                 read from the display
+ * \param timeout  Read timeout in ms
+ */
 static void get_key_event(usb_dev_handle *lcd, lcd_packet *packet, int timeout)
 {
 	int ret;
@@ -1201,6 +1252,7 @@ static void get_key_event(usb_dev_handle *lcd, lcd_packet *packet, int timeout)
 
 	ret = usb_interrupt_read(lcd, USB_ENDPOINT_IN + 1, (char *)packet->data, PICOLCD_MAX_DATA_LEN, timeout);
 	if (ret > 0) {
+		/* Set packet type */
 		switch (packet->data[0]) {
 			case IN_REPORT_KEY_STATE: {
 				packet->type = IN_REPORT_KEY_STATE;
@@ -1216,6 +1268,13 @@ static void get_key_event(usb_dev_handle *lcd, lcd_packet *packet, int timeout)
 }
 
 
+/**
+ * Set lights for individual keys
+ * \param lcd    pointer to device handle
+ * \param keys   array indicating which key number to turn on
+ * \param state  0 to turn all LEDs off, 1 to turn them on according to
+ *               values set in 'keys' array
+ */
 static void set_key_lights(usb_dev_handle *lcd, int keys[], int state)
 {
 	unsigned char packet[2] = { 0x81 }; /* set led */
@@ -1225,7 +1284,7 @@ static void set_key_lights(usb_dev_handle *lcd, int keys[], int state)
 	if (state) {
 		/* Only LEDs we want on */
 		for (i = 0; i < KEYPAD_LIGHTS; i++)
-			if(keys[i])
+			if (keys[i])
 				leds |= (1 << i);
 			else
 				leds &= ~ (1 << i);
@@ -1239,3 +1298,4 @@ static void set_key_lights(usb_dev_handle *lcd, int keys[], int state)
 	picolcd_send(lcd, packet, 2);
 }
 
+/* EOF */

@@ -28,6 +28,7 @@ v.0.5dev (ongoing development)
  * CFontzPacket: Report cell size correctly, use block character for icon.
  * CFontz633: Deprecate this driver. Use CFontzPacket with Model=633 instead!
  - Remove native win32 support.
+ * picolcd: Use module output function to control key LEDs (Martin Jones)
 
 v0.5.3
  + lcdexec: notification when called program finishes
