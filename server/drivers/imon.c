@@ -1,15 +1,15 @@
 /** \file server/drivers/imon.c
  * LCDd \c imon driver for the Soundgraph iMON IR/VFD module.
- */
-
-/*
- * Driver for Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD Module
  *
  * In order to be able to use it, you have to get and install one of
  * the following kernel modules:
  *  - standalone iMON VFD driver from http://venky.ws/projects/imon/
  *  - the iMON module included with LIRC ver. 0.7.1 or newer
  *    from http://www.lirc.org/
+ */
+
+/*
+ * Driver for Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD Module
  *
  * Copyright (c) 2004, Venky Raju <dev@venky.ws>, original author of
  * the LCDproc 0.4.5 iMON driver, the standalone and the LIRC kernel
