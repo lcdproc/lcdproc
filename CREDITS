@@ -30,7 +30,7 @@ Gareth Watts (Xeno42):
 Matrix Orbital Corporation <http://www.matrixorbital.com/>:
 	- Free displays for us developers, and lots of help early on
 
-Crystal Fontz <http://www.crystalfontz.com/>:
+Crystalfontz America, Inc. <http://www.crystalfontz.com/>:
 	- Sends us testing LCDs to get LCDproc going on all their models
 
 Lorand Bruhacs <bruhacs@ip23.net>:
@@ -110,7 +110,7 @@ David Douthitt:
 Eddie Sheldrake:
 	- Crystal Fontz driver
 
-Rene Wagner <reenoo@gmx.de>:
+Rene Wagner:
 	- LCDM001 driver
 	- ASCII emulation of BigNum
 	- CFontz v2.0 patches merging,
@@ -166,8 +166,10 @@ Peter Marschall:
 	- various fixes in preparation of 0.5
 	- lcd2usb connectiontype for the HD44780 driver
 
-Markus Dolze:
+Markus Dolze (current maintainer):
 	- various fixes (especially for *BSD)
+	- merged and extended network interface statistics to lcdproc client
+	- new LCDd network input buffering
 
 Volker Boerchers:
 	- fixes and extensions to the menu system
@@ -281,4 +283,3 @@ Ken Robertson		seadawg
 Simon Harrison		smh
 Stephen Paul		tegetana
 Luis Llorente		luisllo
-
