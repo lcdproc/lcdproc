@@ -1,5 +1,9 @@
 /** \file server/sock.c
- * LCDproc sockets code.
+ * This file contains all the sockets code used by the server. This contains
+ * the code called upon by main() to initialize the listening socket, as well
+ * as code to deal with sending messages to clients, maintaining connections,
+ * accepting new connections, closing dead connections (or connections
+ * associated with dying/exiting clients), etc.
  */
 
 /* This file is part of LCDd, the lcdproc server.

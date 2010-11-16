@@ -1,5 +1,12 @@
 /** \file server/serverscreens.c
- * Implement the serverscreens.
+ * This file contains code to allow the server to generate its own screens.
+ * Currently, the startup, goodbye and server status screen are provided. The
+ * server status screen shows total number of connected clients, and the
+ * combined total of screens they provide.
+ *
+ * It is interesting to note that the server creates a special screen
+ * definition for its screens, but uses the same widget set made available
+ * to clients.
  */
 
 /* This file is part of LCDd, the lcdproc server.

@@ -1,6 +1,8 @@
 /** \file server/clients.c
- * Manage the list of clients that are connected.
- * Init/shut down client system, and search for clients in the list.
+ * This file contains code allowing LCDd to handle client connections and
+ * data structures. It contains functions to initialize the internal list
+ * of clients, terminate client connections, add new clients to the list,
+ * and locating a client's socket.
  */
 
 /* This file is part of LCDd, the lcdproc server.

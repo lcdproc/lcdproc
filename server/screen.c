@@ -1,5 +1,7 @@
 /** \file server/screen.c
- * Does screen management.
+ * This file stores all the screen definition-handling code. Functions here
+ * provide means to create new screens and destroy existing ones. Screens are
+ * identified by client and by the client's own identifiers for screens.
  */
 
 /* This file is part of LCDd, the lcdproc server.

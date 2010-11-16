@@ -1,5 +1,8 @@
 /** \file server/render.c
- * Draws screens on the LCD.
+ * This file contains code that actually generates the full screen data to
+ * send to the LCD. render_screen() takes a screen definition and calls
+ * render_frame() which in turn builds the screen according to the definition.
+ * It may recursively call itself (for nested frames).
  *
  * This needs to be greatly expanded and redone for greater flexibility.
  * For example, it should support multiple screen sizes, more flexible
