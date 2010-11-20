@@ -54,19 +54,11 @@ There are nightly distributions of the CVS branches of LCDproc. You can download
 </para>
 
 <para>
-To extract the files run either
+To extract the files run
 </para>
 
 <screen>
 <prompt>$</prompt> <userinput>tar xvfz lcdproc-CVS-*.tar.gz</userinput>
-</screen>
-
-<para>
-or
-</para>
-
-<screen>
-<prompt>$</prompt> <userinput>bunzip2 -c lcdproc-CVS-*.tar.bz2 | tar xv</userinput>
 </screen>
 
 </sect1>
@@ -108,8 +100,9 @@ you can use the "update" command of CVS (Make sure to be in the lcdproc director
 </screen>
 
 <para>
-Now that you have downloaded the files you can prepare them for compiling, but first
-you should (you don't have to) copy them to another place on your machine:
+Now that once you have downloaded the files you can prepare them for
+compiling, but first you should (you don't have to) copy them to another
+place on your machine.
 </para>
 
 </sect1>
