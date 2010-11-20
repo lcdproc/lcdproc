@@ -6,20 +6,23 @@
 <authorgroup>
 
 <author>
+<firstname>Markus</firstname>
+<surname>Dolze</surname>
+</author>
+
+<author>
 <firstname>Peter</firstname>
 <surname>Marschall</surname>
-<affiliation><address><email>peter@adpm.de</email></address></affiliation>
 </author>
 
 <author>
 <firstname>Guillaume</firstname>
 <surname>Filion</surname>
-<affiliation><address><email>gfk@logidac.com</email></address></affiliation>
 </author>
 
 </authorgroup>
 
-<date>2009-05-21</date>
+<date>2010-11-20</date>
 <releaseinfo>0.0.3</releaseinfo>
 
 <abstract>
@@ -29,6 +32,10 @@ It covers LCDproc 0.5.x. Users should read the user guide.
 </para>
 </abstract>
 
+<copyright>
+<year>2010</year>
+<holder>Markus Dolze</holder>
+</copyright>
 <copyright>
 <year>2006</year>
 <holder>Peter Marschall</holder>

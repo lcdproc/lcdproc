@@ -1,0 +1,436 @@
+<chapter id="programming">
+<title>Programming for LCDproc</title>
+
+<sect1 id="getting-source">
+<title>Get the source</title>
+
+<para>If you want to start programming for LCDproc you will need the have
+the most current source code available. You can get it several ways:</para>
+
+<orderedlist>
+  <listitem>
+    <para>Download yesterday's CVS version of as a tarball (prefered).</para>
+  </listitem>
+  <listitem>
+    <para>Download the latest version from CVS.</para>
+  </listitem>
+  <listitem>
+    <para>Download the last stable release from Sourceforge. (This is not
+    recommended as stable release may be months behind the current version.)
+    </para>
+  </listitem>
+</orderedlist>
+
+<sect2 id="downloadtar">
+<title>Download Yesterday's CVS Version of LCDproc as a Tarball</title>
+
+<para>
+There are nightly distributions of the CVS branches of LCDproc. You can
+download them from <ulink url="http://lcdproc.sourceforge.net/nightly/"></ulink>.
+For development we recommended to use the 'current' branch.
+</para>
+
+<para>
+To extract the files run
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>tar xvfz lcdproc-CVS-current.tar.gz</userinput>
+</screen>
+
+</sect2>
+
+<sect2 id="downloadcvs">
+<title>Download The Latest Version of LCDproc from CVS</title>
+
+<para>
+Of course you can download the latest stuff from CVS via anonymous login.
+For more information on how to use CVS see
+<ulink url="http://sourceforge.net/scm/?type=cvs&amp;group_id=119">About CVS</ulink>
+on Sourceforge.
+</para>
+
+<para>
+Login to CVS:
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc login</userinput>
+</screen>
+
+<para>
+(Hit enter when prompted for a password.)
+</para>
+
+<para>
+Get the files from CVS:
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc checkout -P lcdproc</userinput>
+</screen>
+
+<para>
+Once you've done that and want to update the downloaded files to the latest stuff
+you can use the "update" command of CVS (make sure to be in the lcdproc directory!):
+</para>
+
+<screen>
+<prompt>$</prompt> <userinput>cvs update -d</userinput>
+</screen>
+
+<para>
+Now that once you have downloaded the files you can prepare them for
+compiling, but first you should (you don't have to) copy them to another
+place on your machine.
+</para>
+
+</sect2>
+
+</sect1>
+
+
+
+<sect1 id="code-style">
+<title>Code style guideline</title>
+
+<para>
+LCDproc has been developed by many contributors over many years. You may find
+different programming styles (naming, indention, etc) in the source code.
+</para>
+<para>
+When modifying an existing file, please take a careful look at its style and
+program continueing that style instead of mixing it up with another one even
+if it does not comply with the guidelines written below.
+</para>
+<para>
+For newly added files the following guideline describes how source code
+should look like.
+</para>
+<note>
+  <para>
+  All new submitted files will be passed through BSD <command>indent</command>
+  to enforce the style described below.
+  </para>
+</note>
+
+<sect2>
+<title>File format and indention</title>
+<itemizedlist mark="opencircle">
+  <listitem>
+    <para>
+    <emphasis>Language: </emphasis>The programming language used for LCDd
+    (server core), drivers and the lcdproc client is <literal>C</literal>.
+    No other programming lanuage will be accepted.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    <emphasis>File encoding: </emphasis>Files shall either encoded as UTF-8 or
+    ISO-8859-1 and line endings shall be Unix type.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    <emphasis>Line length: </emphasis>Lines of source code should be wrapped
+    at column 80.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    <emphasis>Indention: </emphasis>Tab indention shall be used (with tab
+    width set to 8 characters). Only exception are switch labels which are
+    indented a half tab (4 characters).
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    <emphasis>License: </emphasis>LCDproc is released under GNU General Public
+    License version 2 (GPL v2) and every file shall have a standard copyright
+    notice.
+    </para>
+  </listitem>
+</itemizedlist>
+</sect2>
+
+<sect2>
+<title>Naming conventions</title>
+<itemizedlist mark="opencircle">
+  <listitem>
+    <para>
+    <emphasis>Function names:</emphasis>
+    Function names shall be lowercase. We do not use CamelCase. Multiple words
+    are separated by underscore.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    <emphasis>Variable names:</emphasis>
+    We do not use Hungarian Notation. CamelCase may be used,
+    but names shall beginn with a lowercase letter.
+    </para>
+  </listitem>
+    <listitem>
+    <para>
+    <emphasis>Constants:</emphasis>
+    Constants shall be written in uppercase using underscore to
+    separate multiple words.
+    </para>
+  </listitem>
+</itemizedlist>
+<example>
+  <title>Names of constants, variables and functions</title>
+  <screen>
+/* Constants */
+#define KEYPAD_AUTOREPEAT_DELAY 500
+#define KEYPAD_AUTOREPEAT_FREQ 15
+
+/* Variable names */
+MODULE_EXPORT char * api_version = API_VERSION;
+MODULE_EXPORT int stay_in_foreground = 0;
+MODULE_EXPORT int supports_multiple = 1;
+
+/* Function names */
+void HD44780_position(Driver *drvthis, int x, int y);
+static void uPause(PrivateData *p, int usecs);
+unsigned char HD44780_scankeypad(PrivateData *p);
+  </screen>
+</example>
+</sect2>
+
+<sect2>
+<title>Comments</title>
+<itemizedlist mark="opencircle">
+  <listitem>
+    <para>
+    All code comments shall be <literal>C</literal>-style comments (/* */).
+    Comments spanning multiple lines shall have a star at the beginning of
+    each line.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    <literal>C++</literal>-style comments (//) may be used to comment out
+    single lines of code to disable these lines. Larger blocks of code which
+    shall be disabled should be wrapped within <literal>C</literal>-style
+    comments or using pre-processor directives (#if ... #endif).
+    </para>
+    <para>
+    <literal>C++</literal>-style comments shall not be used in general.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    We use Doxygen to document our source code. Functions shall be documented
+    using Doxygen-style comments (/** *).
+    See <ulink url="http://www.stack.nl/~dimitri/doxygen/manual.html">Doxygen Manual</ulink>
+    for more information and how to use it.
+    </para>
+  </listitem>
+  <listitem>
+    <para>
+    If you carefully formatted a comment, you may use the special comment
+    /*- */ (comment start is <quote>star minus</quote>) to prevent automatic
+    reformatting. This usually applies to the standard copyright notice.
+    </para>
+    <example>
+      <title>Standard copyright notice</title>
+      <screen>
+/*-
+ * Copyright (C) 2010 Your Name &lt;your_email_address&gt;
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
+      </screen>
+    </example>
+  </listitem>
+</itemizedlist>
+</sect2>
+
+<sect2>
+<title>Statement style</title>
+<itemizedlist mark="opencircle">
+  <listitem>
+    <para><emphasis>Function declarations:</emphasis></para>
+    <para>
+    Function declarations have their declaration and
+    opening brace split accross two lines.
+    </para>
+    <para>
+    Function names start in column one. The return type is placed on the
+    previous line.
+    </para>
+    <para>
+    There is no space between the function name and '('.
+    </para>
+    <example>
+      <title>A function declaration</title>
+      <screen>
+/**
+ * This is a Doxygen function description.
+ *
+ * \param y     The number of years
+ * \param str   Pointer to a string containing X
+ * \return      0 on success; -1 on error
+ */
+int
+this_is_a_function(int y, char *str)
+{
+	code
+}
+      </screen>
+    </example>
+
+  </listitem>
+    <listitem>
+    <para><emphasis>Operators:</emphasis></para>
+    <para>
+    There shall be a space characters before/after an operator or assignment,
+    except for increment (<quote>++</quote>) or decrement (<quote>--</quote>)
+    operators.
+    </para>
+    <example>
+      <title>Space around operators</title>
+      <screen>
+if (p->dispSizes[dispID - 1] == 1 &amp;&amp; p->width == 16) {
+	if (x >= 8) {
+		x -= 8;
+		relY = 1;
+	}
+}
+
+x--;			/* Convert 1-based coords to 0-based */
+y--;
+      </screen>
+    </example>
+  </listitem>
+
+  <listitem>
+    <para><emphasis>Function calls:</emphasis></para>
+    <para>
+    There shall be no space between the function call and the opening '(' of
+    the parameter list. Within the parameter list a space shall be after each
+    parameter.
+    </para>
+    <example>
+      <title>Function call</title>
+      <screen>
+lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
+      </screen>
+    </example>
+  </listitem>
+
+  <listitem>
+    <para><emphasis>Compound statements:</emphasis></para>
+    <para>
+    Opening braces occur on the same line as the
+    statement.
+    </para>
+    <para>
+    Else statements: Else statements are placed on a line of their own, even
+    is there is a previous closing brace.
+    </para>
+    <para>
+    Opening and closing braces may be ommited on single line compound
+    statements. However, if one part of an if-else-statement requires braces
+    the other part shall have braces as well.
+    </para>
+    <example>
+      <title>If-else with braces</title>
+      <screen>
+if (...) {
+	code
+}
+else {
+	code
+}
+      </screen>
+    </example>
+    <example>
+      <title>If-else with single statements</title>
+      <screen>
+if (...)
+	print();
+else
+	err = 1;
+      </screen>
+    </example>
+    <example>
+      <title>Other compound statements</title>
+      <screen>
+while (...) {
+	code
+}
+
+for (a = 0; a &lt; max; a++) {
+	code
+}
+
+/* case labels are indented one half tab stop (4 spaces) */
+switch (icon) {
+    case ICON_BLOCK_FILLED:
+	HD44780_set_char(drvthis, 6, block_filled);
+	break;
+    case ICON_HEART_FILLED:
+	HD44780_set_char(drvthis, 0, heart_filled);
+	break;
+    case ICON_HEART_OPEN:
+	HD44780_set_char(drvthis, 0, heart_open);
+	break;
+    default:
+	return -1;      /* Let the core do other icons */
+}
+      </screen>
+    </example>
+  </listitem>
+</itemizedlist>
+</sect2>
+
+
+</sect1>
+
+
+
+<sect1 id="submitting-code">
+<title>Submitting code</title>
+
+<para>When you have finished modifying the code you may decide to submit it to
+the LCDproc project. You usually do this by submitting a patch for review to the
+mailing list.</para>
+
+<para>To create a patch you need the unmodified files and the files containing
+your modificatiosn. Usually you do this by storing an unmodified copy of the
+sources in one directory and another copy with your modifications in another
+one. You then run <command>diff</command> like this:</para>
+
+<para><command>diff</command><option>-urN</option>
+<option>-X <replaceable>unmodified-dir</replaceable>/diff_ignore</option>
+<option><replaceable>unmodified-dir</replaceable></option>
+<option><replaceable>your-source-dir</replaceable></option>
+&gt; <replaceable>mymodifications.patch</replaceable></para>
+
+<important>
+<para>Please use unified diff format (<option>-u</option> option) only!</para>
+<para>When running <command>diff</command> using <option>-X diff_ignore</option>
+is strongly recommended. The file <filename>diff_ignore</filename> contains an
+exclusion list which makes <command>cvs</command> ignore all generated files
+(Makefiles, log files, object files, etc.)</para>
+</important>
+
+<para>If you have modified files in a source tree you checked out from CVS
+you can also run <command>cvs diff</command> from the working directory:</para>
+
+<para><command>cvs diff</command><option>-u</option>
+&gt; <replaceable>mymodifications.patch</replaceable></para>
+
+<note>
+<para>Some versions of <command>cvs diff</command> will not handle new files
+because these are unkown to the repository. There are ways to make cvs believe
+the files existed previously (fake add) but this is not recommended. You will
+need to submit new files 'as-is' in this case.</para>
+</note>
+
+</sect1>
+
+</chapter>

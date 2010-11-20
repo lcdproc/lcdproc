@@ -1,22 +1,3 @@
-<chapter id="make-driver">
-<title>Making a LCDproc driver</title>
-
-<sect1 id="make-driver-intro">
-<title>Introduction</title>
-
-<para>
-LCDproc is meant to be modular, it is relatively easy to add new input and
-output drivers to LCDproc. Actually, there are a few things that you can do
-to make your life easier, they are listed here.
-</para>
-
-<para>
-This chapter will explain you the major steps and few gotchas of adding your
-own driver to LCDproc. Enjoy!
-</para>
-
-</sect1>
-
 <sect1 id="driver-shared-files">
 <title>Shared files specific for drivers</title>
 
@@ -443,5 +424,3 @@ myDriver_SOURCES: lcd.h lcd_lib.h myDriver.c myDriver.h report.h <emphasis>adv_b
 </sect2>
 
 </sect1>
-
-</chapter>
