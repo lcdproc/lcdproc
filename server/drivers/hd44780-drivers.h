@@ -22,6 +22,7 @@
 #ifdef HAVE_LIBUSB
 # include "hd44780-bwct-usb.h"
 # include "hd44780-lcd2usb.h"
+# include "hd44780-usbtiny.h"
 # include "hd44780-uss720.h"
 #endif
 #ifdef HAVE_LIBFTDI
@@ -65,6 +66,7 @@ static const ConnectionMapping connectionMapping[] = {
 #ifdef HAVE_LIBUSB
 	{ "bwctusb",       HD44780_CT_BWCTUSB,       IF_TYPE_USB,     hd_init_bwct_usb  },
 	{ "lcd2usb",       HD44780_CT_LCD2USB,       IF_TYPE_USB,     hd_init_lcd2usb   },
+	{ "usbtiny",       HD44780_CT_USBTINY,       IF_TYPE_USB,     hd_init_usbtiny   },
 	{ "uss720",        HD44780_CT_USS720,        IF_TYPE_USB,     hd_init_uss720    },
 #endif
 #ifdef HAVE_LIBFTDI

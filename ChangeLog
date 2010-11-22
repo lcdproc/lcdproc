@@ -29,6 +29,7 @@ v.0.5dev (ongoing development)
  * CFontz633: Deprecate this driver. Use CFontzPacket with Model=633 instead!
  - Remove native win32 support.
  * picolcd: Use module output function to control key LEDs (Martin Jones)
+ + hd44780: Added 'usbtiny' connection type (Siarhei Herasimchuk)
 
 v0.5.3
  + lcdexec: notification when called program finishes

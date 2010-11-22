@@ -105,6 +105,11 @@ more important. Here are the USB connection types the HD44780 driver supports:
   </para></listitem>
 
   <listitem><para>
+    <link linkend="hd44780-usbtiny">usbtiny</link>:
+    Dick Streefland's USBtiny (<ulink url="http://www.xs4all.nl/~dicks/avr/usbtiny/"></ulink>)
+  </para></listitem>
+
+  <listitem><para>
     <link linkend="hd44780-uss720">uss720</link>:
     Display connected to USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002)
   </para></listitem>
@@ -2365,6 +2370,33 @@ KeyDirect_3=Escape
 
 </sect3>
 
+<sect3 id="hd44780-usbtiny">
+<title>Dick Streefland's "USBtiny"</title>
+
+<para>
+<quote><ulink url="http://www.xs4all.nl/~dicks/avr/usbtiny/">USBtiny</ulink>
+is a software implementation of the USB low-speed protocol for
+the Atmel ATtiny microcontrollers.</quote> It is also the name of a 'reference
+circuit' using the ATtiny2313.
+</para>
+
+<para>
+The reference circuit features an IR receiver for remote controls and a LCD.
+Due to hardware limitations of the ATtiny2313 the LCD does not have switchable
+backlight, adjustable contrast, any keys, nor does it support displays with
+more than one controller. If you want these features and do not require the
+IR receiver we recommend to take a look at the <link linkend="hd44780-lcd2usb">LCD2USB</link>
+device.
+</para>
+
+<note>
+  <para>
+  LCDproc does not make use of the IR receiver. 3rd party software is required
+  to make it do anything, e.g. <ulink url="http://www.lirc.org/">LIRC</ulink>.
+  </para>
+</note>
+
+</sect3>
 
 
 <sect3 id="hd44780-uss720">
@@ -2759,6 +2791,10 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         <row>
           <entry><literal><link linkend="hd44780-lcd2usb">lcd2usb</link></literal></entry>
           <entry>Till Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)</entry>
+        </row>
+        <row>
+          <entry><literal><link linkend="hd44780-usbtiny">usbtiny</link></literal></entry>
+          <entry> Dick Streefland's USBtiny (<ulink url="http://www.xs4all.nl/~dicks/avr/usbtiny/"></ulink>)</entry>
         </row>
         <row>
           <entry><literal><link linkend="hd44780-lis2">lis2</link></literal></entry>
