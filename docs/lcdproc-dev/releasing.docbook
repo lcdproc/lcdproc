@@ -89,9 +89,22 @@ release.
   <substeps>
   <step>
     <para>
+    Tag the stable tree to indicate the file revision where the branch was
+    made. This eases later diffs againt that point.
+    </para>
+    <para>
+    Run: <userinput>cvs tag LCDPROC_0_5_<replaceable>A</replaceable>_BP</userinput>
+    (where <replaceable>A</replaceable> is the version number of the next
+    release and <quote>_BP</quote> means <quote>branch point</quote>).
+    </para>
+    <note>
+      <para>Tag names are all uppercase with underscores to separate elements!</para>
+    </note>
+  </step>
+  <step>
+    <para>
     Create a release branch in CVS. Run:
-    <userinput>cvs tag -b lcdproc-0-5-<replaceable>A</replaceable></userinput> where
-    <replaceable>A</replaceable> is the version number of the next release.
+    <userinput>cvs tag -b lcdproc-0-5-<replaceable>A</replaceable></userinput>
     </para>
     <note>
       <para>Release branch names are all lowercase with hypens to separate
@@ -121,10 +134,6 @@ release.
   Set a CVS tag for the release. Run: <userinput>cvs tag LCDPROC_0_5_<replaceable>A</replaceable>_RELEASE</userinput>
   where <replaceable>A</replaceable> is the version number of the next release.
   </para>
-  <note>
-    <para>Release tag names are all uppercase with underscores to separate
-    elements!</para>
-  </note>
 </step>
 
 <step>

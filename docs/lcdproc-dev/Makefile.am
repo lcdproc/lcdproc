@@ -10,6 +10,7 @@ EXTRA_DIST =	add-your-driver.docbook \
 		make-driver.docbook \
 		programming.docbook \
 		README.docbook \
+		releasing.docbook \
 		shared-files.docbook
 
 
