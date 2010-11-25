@@ -9,7 +9,7 @@
  * integrated on the board.
  */
 
-/*
+/*-
  * Copyright (C) 2009, Laurent Latil
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -893,7 +893,7 @@ open_port(Driver * drvthis, const char *device)
 	int i;
 
 
-	fd = open(device, O_RDWR | O_NOCTTY);
+	fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd == -1) {
 		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
 		if (errno == EACCES) {
