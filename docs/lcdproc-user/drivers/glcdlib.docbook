@@ -51,7 +51,7 @@ before configuring the LCDproc build process --enable-drivers=glcdlib.
     <literal>hd61830</literal>, <literal>image</literal>, <literal>ks0108</literal>,
     <literal>noritake800</literal>, <literal>sed1330</literal>, <literal>sed1520</literal>,
     <literal>serdisp</literal>, <literal>simlcd</literal>, and <literal>t6963c</literal>.
-    If not specified it defaluts to <literal>image</literal>.
+    If not specified it defaults to <literal>image</literal>.
   </para></listitem>
 </varlistentry>
 

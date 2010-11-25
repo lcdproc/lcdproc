@@ -1,3 +1,6 @@
+<!-- NOTE: This file provides several entities which ease the description
+of LCDd.conf settings. Include them as the description of a LCDd.conf term. -->
+
 <!-- Entity for a yes/no parameters with yes as default value -->
 <!ENTITY parameters.yesdefno "
     {

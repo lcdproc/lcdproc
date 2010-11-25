@@ -1,6 +1,7 @@
 #*#
 *.a
 *.bak
+*.BAK
 *.gmo
 *.o
 *.so

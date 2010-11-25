@@ -62,6 +62,8 @@
   <!ENTITY ula200 SYSTEM "drivers/ula200.docbook">
   <!ENTITY xosd SYSTEM "drivers/xosd.docbook">
 
+  <!-- Note: The parameters include file provides commonly used entities for
+  config file descriptions. DO NOT DELETE! -->
   %parameters;
 ]>
 

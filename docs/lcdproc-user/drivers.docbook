@@ -19,6 +19,7 @@ well as the configuration of LCDd.
 &glcdlib;
 &glk;
 &hd44780;
+&i2500vfd;
 &icp_a106;
 &imon;
 &imonlcd;
@@ -53,7 +54,6 @@ well as the configuration of LCDd.
 &tyan;
 &ula200;
 &xosd;
-&i2500vfd;
 
 &ppttrouble;
 
