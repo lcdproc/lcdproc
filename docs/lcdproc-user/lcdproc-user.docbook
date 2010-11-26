@@ -40,6 +40,7 @@
   <!ENTITY lirc SYSTEM "drivers/lircin.docbook">
   <!ENTITY lis SYSTEM "drivers/lis.docbook">
   <!ENTITY MD8800 SYSTEM "drivers/MD8800.docbook">
+  <!ENTITY mdm166a SYSTEM "drivers/mdm166a.docbook">
   <!ENTITY ms6931 SYSTEM "drivers/ms6931.docbook">
   <!ENTITY mtc_s16209x SYSTEM "drivers/mtc_s16209x.docbook">
   <!ENTITY MtxOrb SYSTEM "drivers/mtxorb.docbook">

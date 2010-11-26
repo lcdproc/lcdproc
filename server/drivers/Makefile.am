@@ -21,7 +21,7 @@ AM_LDFLAGS = @LDSHARED@
 ## Keep the lists sorted!
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -29,6 +29,7 @@ hd44780_CFLAGS =     @LIBUSB_CFLAGS@ @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 i2500vfd_CFLAGS =    @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
 IOWarrior_CFLAGS =   @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 lis_CFLAGS =         @LIBUSB_CFLAGS@ @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
+mdm166a_CFLAGS =     @LIBHID_CFLAGS@ $(AM_CFLAGS)
 picolcd_CFLAGS =     @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 shuttleVFD_CFLAGS =  @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 ula200_CFLAGS =      @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
@@ -52,6 +53,7 @@ irman_LDADD =        @LIBIRMAN@
 lcterm_LDADD =       libLCD.a
 lirc_LDADD =         @LIBLIRC_CLIENT@
 lis_LDADD =          libLCD.a @LIBFTDI_LIBS@ @LIBUSB_LIBS@ @LIBPTHREAD_LIBS@ libbignum.a
+mdm166a_LDADD =      @LIBHID_LIBS@ libLCD.a
 mtc_s16209x_LDADD =  libLCD.a
 MtxOrb_LDADD =       libLCD.a libbignum.a
 mx5000_LDADD =       @LIBMX5000@
@@ -99,6 +101,7 @@ lcterm_SOURCES =     lcd.h lcd_lib.h lcterm.c lcterm.h report.h
 lirc_SOURCES =       lcd.h lircin.c lircin.h report.h
 lis_SOURCES =        lcd.h lcd_lib.h lis.h lis.c report.h
 MD8800_SOURCES =     lcd.h lcd_lib.h MD8800.c MD8800.h report.h
+mdm166a_SOURCES =    lcd.h mdm166a.c mdm166a.h i2500vfdfm.c i2500vfdfm.h report.h
 ms6931_SOURCES =     lcd.h lcd_lib.h ms6931.h ms6931.c report.h
 mtc_s16209x_SOURCES =  lcd.h lcd_lib.h mtc_s16209x.c mtc_s16209x.h report.h
 MtxOrb_SOURCES =     lcd.h lcd_lib.h MtxOrb.c MtxOrb.h report.h adv_bignum.h

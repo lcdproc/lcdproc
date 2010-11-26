@@ -1,0 +1,197 @@
+<sect1 id="mdm166a-howto">
+<sect1info>
+  <author>
+    <firstname>Markus</firstname><surname>Dolze</surname>
+  </author>
+</sect1info>
+<title>The mdm166a driver</title>
+
+<para>This section talks about using <application>LCDproc</application> with
+the Futaba / Targa USB Graphic Vacuum Fluorescent Display (MDM166A; USB
+VID=0x19c2, PID=0x6a11).</para>
+
+<para>The MDM166A is a graphical VFD with a 96x16 pixel dot matrix area which
+is used for 16x2 characters with a 6x8 pixel font. It features several icons,
+volume level and WLAN strength indicator which are all software controllable
+using the <function>output</function> function.</para>
+
+<para>The mdm166a driver builts on top of <literal>libhid</literal> which in
+turn uses <literal>libusb</literal>.</para>
+
+<para>The driver was developed by Christoph Rasim
+(<ulink url="http://www.rasim.net/" />) without any available documentation
+from the vendor, but with a good protocol description from Thomas Koos
+(<ulink url="http://www.muetze1.de" />) created by reverse engineering the
+protocol.</para>
+
+
+<sect2 id="mdm166a-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="mdm166a-config-section">
+<title>[mdm166a]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Clock</property> =
+    <parameter><replaceable>TYPE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Show self-running clock after LCDd shutdown. Possible values for
+    <replaceable>TYPE</replaceable> are <literal>no</literal>,
+    <literal>small</literal> and <literal>big</literal>. If not given no clock
+    is shown.
+  </para></listitem>
+</varlistentry>  
+
+<varlistentry>
+  <term>
+    <property>Dimming</property> = &parameters.yesnodef;
+  </term>
+  <listitem><para>
+    Dimm display, no dimming gives full brightness.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>OffDimming</property> = &parameters.yesnodef;
+  </term>
+  <listitem><para>
+    Dimm display in case LCDd is inactive.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+
+<sect2 id="mdm166a-icons">
+<title>Using the icons</title>
+
+<para>The icons, the volume bar and the WLAN indicator supported by the VFD
+can be controlled by use of the <function>output</function> function.</para>
+
+<para>The <parameter class="function">on</parameter> parameter is used as a
+bitmask to control which elements to display. Setting an icon bit to
+<literal>1</literal> enables the icon, setting the bit to <literal>0</literal>
+disables an icon. Volume and WLAN strength indicator accept an numeric value
+in the given bit mask.</para>
+
+<table id="mdm166a-icons-bitmask">
+  <title>mdm166a_output bitmask</title>
+  <tgroup cols="2">
+  <thead>
+    <row>
+      <entry>bit(s)</entry>
+      <entry>Icon</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>0</entry>
+      <entry>Play</entry>
+    </row>
+    <row>
+      <entry>1</entry>
+      <entry>Pause</entry>
+    </row>
+    <row>
+      <entry>2</entry>
+      <entry>Record</entry>
+    </row>
+    <row>
+      <entry>3</entry>
+      <entry>Message</entry>
+    </row>
+    <row>
+      <entry>4</entry>
+      <entry>Mail (at-symbol)</entry>
+    </row>
+    <row>
+      <entry>5</entry>
+      <entry>Mute</entry>
+    </row>
+    <row>
+      <entry>6</entry>
+      <entry>WLAN tower</entry>
+    </row>
+    <row>
+      <entry>7</entry>
+      <entry>Volume (the word)</entry>
+    </row>
+    <row>
+      <entry>8&hellip;12</entry>
+      <entry>Volume (decimal 0&hellip;28)</entry>
+    </row>
+    <row>
+      <entry>13&hellip;14</entry>
+      <entry>WLAN strength (0&hellip;3)</entry>
+    </row>
+  </tbody>
+  </tgroup>
+</table>
+
+</sect2>
+
+
+<sect2 id="mdm166a-device-config">
+<title>Special device hints</title>
+
+<para>This display may appear as a <acronym>HID</acronym> device in your
+system which may prevent <literal>libhid</literal> from being able to open
+the USB device. In this case you have to create some OS-specific
+configuration to prevent the <acronym>HID</acronym> driver to take control
+of this display.</para>
+
+<sect3 id="mdm166a-device-config-freebsd">
+<title>Configuring FreeBSD 7.x to exclude this device from uhid</title>
+
+<para>To make the uhid driver ignore this device you have to apply the
+following patch to your kernel source and recompile and install your kernel:
+</para>
+
+<programlisting>
+<![CDATA[
+--- sys/dev/usb/usbdevs.orig    2010-11-24 02:06:30.000000000 +0100
++++ sys/dev/usb/usbdevs 2010-11-24 07:36:38.000000000 +0100
+@@ -623,6 +623,7 @@
+ vendor AMIT            0x18c5  AMIT
+ vendor QCOM            0x18e8  Qcom
+ vendor LINKSYS3                0x1915  Linksys
++vendor TARGA           0x19c2  Targa Corporation
+ vendor QUALCOMMINC     0x19d2  Qualcomm, Incorporated
+ vendor STELERA         0x1a8d  Stelera Wireless
+ vendor DRESDENELEKTRONIK 0x1cf1 dresden elektronik
+@@ -2343,6 +2344,9 @@
+ /* System TALKS, Inc. */
+ product SYSTEMTALKS SGCX2UL    0x1920  SGC-X2UL
+ 
++/* Targa Corporation */
++product TARGA VFD              0x6a11  Targa USB Graphic VFD
++
+ /* Tapwave products */
+ product TAPWAVE ZODIAC         0x0100  Zodiac
+ 
+--- sys/dev/usb/usb_quirks.c.orig       2010-11-24 02:07:03.000000000 +0100
++++ sys/dev/usb/usb_quirks.c    2010-11-24 02:16:30.000000000 +0100
+@@ -112,6 +112,8 @@
+        ANY, { UQ_HID_IGNORE }},
+  { USB_VENDOR_APPLE, USB_PRODUCT_APPLE_IPHONE_3G,
+        ANY, { UQ_HID_IGNORE }},
++ { USB_VENDOR_TARGA, USB_PRODUCT_TARGA_VFD,
++       ANY, { UQ_HID_IGNORE }},
+ 
+  /* Devices which should be ignored by both ukbd and uhid */
+  { USB_VENDOR_CYPRESS, USB_PRODUCT_CYPRESS_WISPY1A,
+]]>
+</programlisting>
+
+</sect3>
+
+</sect2>
+
+</sect1>

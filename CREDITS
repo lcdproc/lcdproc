@@ -270,6 +270,9 @@ Jonathan Kyler:
 Laurent Latil
 	- SureElec driver for devices made by SURE Electronics
 
+Christoph Rasim
+	- MDM166A driver for Futaba/Targa USB VFD
+
 
 Further developers in the sourceforge lcdproc team:
 Mindaugas Idzelis       aim4min

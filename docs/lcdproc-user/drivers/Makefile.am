@@ -25,6 +25,7 @@ EXTRA_DIST =	bayrad.docbook \
 		lircin.docbook \
 		lis.docbook \
 		MD8800.docbook \
+		mdm166a.docbook \
 		ms6931.docbook \
 		mtc_s16209x.docbook \
 		mtxorb.docbook \

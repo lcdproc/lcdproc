@@ -11,18 +11,18 @@ AC_ARG_ENABLE(drivers,
 	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,]
 	[                    ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,]
 	[                    icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,]
-	[                    joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,]
-	[                    mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,]
-	[                    pyramid,sed1330,sed1520,serialPOS,serialVFD,]
-	[                    shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,]
-	[                    tyan,ula200,xosd]
+	[                    joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,]
+	[                    ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,]
+	[                    picolcd,pyramid,sed1330,sed1520,serialPOS,]
+	[                    serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,]
+	[                    t6963,text,tyan,ula200,xosd]
 	[                    ]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,xosd]
 
 drivers=`echo $drivers | sed -e 's/,/ /g'`
 
@@ -317,6 +317,14 @@ dnl			else
 		MD8800)
 			DRIVERS="$DRIVERS MD8800${SO}"
 			actdrivers=["$actdrivers MD8800"]
+			;;
+		mdm166a)
+			if test "$enable_libhid" = yes ; then
+				DRIVERS="$DRIVERS mdm166a${SO}"
+				actdrivers=["$actdrivers mdm166a"]
+			else
+				AC_MSG_WARN([The mdm166a driver needs the hid library])
+			fi
 			;;
 		ms6931)
 			DRIVERS="$DRIVERS ms6931${SO}"

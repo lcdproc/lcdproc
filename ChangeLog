@@ -31,6 +31,7 @@ v.0.5dev (ongoing development)
  * picolcd: Use module output function to control key LEDs (Martin Jones)
  + hd44780: Added 'usbtiny' connection type (Siarhei Herasimchuk)
  * SureElec: Fix stall on startup
+ + new driver: MDM166A for Futaba/Targa USB VFD (Christoph Rasim)
 
 v0.5.3
  + lcdexec: notification when called program finishes

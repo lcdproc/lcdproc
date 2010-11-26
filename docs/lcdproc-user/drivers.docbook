@@ -33,6 +33,7 @@ well as the configuration of LCDd.
 &lirc;
 &lis;
 &MD8800;
+&mdm166a;
 &ms6931;
 &mtc_s16209x;
 &MtxOrb;
