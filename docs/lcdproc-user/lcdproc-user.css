@@ -1,0 +1,18 @@
+pre.screen {
+  background-color: #FFFF99 ;
+  border: 1px solid #006600 ;
+}
+
+div.note, div.tip, div.warning {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding: 5px;
+}
+
+div.note, div.tip {
+  border-left: solid palegreen 20px;
+}
+
+div.warning {
+  border-left: solid red 20px;
+}
