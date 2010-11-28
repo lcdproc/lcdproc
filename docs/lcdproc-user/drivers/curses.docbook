@@ -1,10 +1,9 @@
 <sect1 id="curses-howto">
 <title>The curses Driver</title>
 
-<para>
-This section talks about using LCDproc with LCD displays that use the
-curses chipset.
-</para>
+<para>This section talks about using LCDproc with the (n)curses library.
+This diver displays an emulated LCD display of configurable size at a
+configurable position of the terminal screen using (n)curses.</para>
 
 <!-- ## Curses driver ## -->
 <sect2 id="curses-config">

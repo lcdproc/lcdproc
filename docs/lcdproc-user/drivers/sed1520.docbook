@@ -6,6 +6,11 @@ This section talks about using LCDproc with LCD displays that use the
 sed1520 chipset.
 </para>
 
+<para>Currently the driver supports 122x32 pixel graphic displays based on
+the SED1520 Controller connected to the parallel port.</para>
+
+<!-- Insert schematic here -->
+
 <!-- ## Seiko Epson 1520 driver ## -->
 <sect2 id="sed1520-config">
 <title>Configuration in LCDd.conf</title>

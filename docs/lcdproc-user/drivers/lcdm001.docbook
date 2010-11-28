@@ -2,8 +2,8 @@
 <title>The lcdm001 Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-lcdm001 chipset.
+This section talks about using LCDproc with serial LCD displays from
+<ulink url="http://www.kernelconcepts.de/">kernel concepts</ulink>.
 </para>
 
 <!-- ## LCDM001 driver ## -->

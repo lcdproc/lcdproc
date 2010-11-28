@@ -2,9 +2,17 @@
 <title>The sli Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-sli chipset.
+This section talks about using LCDproc with Serial LCD Interface (SLI-OEM)
+boards from Wirz Electronics.
 </para>
+
+<note>
+  <para>This driver is intended for use with the original SLI-OEM boards from
+  Wirz Electronics. As of 2010 <ulink url="http://www.parallax.com/">Parallax, Inc.</ulink>
+  sells serial displays designed by Element Products (formerly Wirz
+  Electronics). Due to the lack of documentation it is unclear if these
+  devices do work with this driver.</para>
+</note>
 
 <!-- ## Wirz SLI LCD driver ## -->
 <sect2 id="Wirz-sli-config">

@@ -3,8 +3,52 @@
 
 <para>
 This section talks about using LCDproc with LCD displays that use the
-Matrix Orbital GLK chipset.
+Matrix Orbital GLK and GLC chipset.
 </para>
+
+<sect2 id="glk-devices">
+<title>Supported devices</title>
+
+<para>Currently the drivers supports the following devices:</para>
+
+<itemizedlist>
+  <!-- Devices using GLC chipset -->
+  <listitem>
+    <para>GLC12232 (20x4)</para>
+  </listitem>
+  <listitem>
+    <para>GLC12864 (20x8)</para>
+  </listitem>
+  <listitem>
+    <para>GLC128128 (20x16)</para>
+  </listitem>
+  <listitem>
+    <para>GLC24064 (40x8)</para>
+  </listitem>
+  <!-- Devices using GLK chipset -->
+  <listitem>
+    <para>GLK12232-25 (20x4)</para>
+  </listitem>
+  <listitem>
+    <para>GLK12232-25-SM (20x4)</para>
+  </listitem>
+  <listitem>
+    <para>GLK12864-25 (20x8)</para>
+  </listitem>
+  <listitem>
+    <para>GLK128128-25 (20x16)</para>
+  </listitem>
+  <listitem>
+    <para>GLK24064-25 (40x8)</para>
+  </listitem>
+</itemizedlist>
+
+<note>
+  <para>Modules not in the list above are not recognized and the driver will
+  not load if it encounteres an unrecognized display.</para>
+</note>
+
+</sect2>
 
 <!-- ## Matrix Orbital GLK driver ## -->
 <sect2 id="glk-config">

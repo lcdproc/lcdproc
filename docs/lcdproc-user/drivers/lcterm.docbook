@@ -2,8 +2,8 @@
 <title>The lcterm Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-lcterm chipset.
+This section talks about using LCDproc with serial LCD displays from
+<ulink url="http://www.neumark.de/">Helmut Neumark Elektronik</ulink>.
 </para>
 
 <!-- ## HNE LCTerm driver ## -->
