@@ -1,42 +1,99 @@
 /** \file server/drivers/serialVFD_displays.c
  * Setup routines for the inidividual displays supported by the \c serialVFD driver.
+ * 
  * Here are the routines that set up the data as well as function pointers
  * for the individual displays supported by the \c serialVFD driver.
+ *
+ * If you want to add a new device to the driver add a new section
+ * to the displaytype-switch-case in the init-function, add a new load_...
+ * function below and fill it with the corrrect commands for the display.
+ * (Try wich displaytype works best with your display, copy and modify
+ * it's section that is the easiest way I guess.) 
+ *
+ * For each display the following setting have to be set in
+ * serialVFD_private_data:
+ * 
+ * \li customchars       Number of possible custom characters
+ * \li predefined_hbar   The display has predefined hbar-characters
+ * \li hbar_cc_offset    Offset of the predefined hbar-characters
+ * \li predefined_vbar   The display has predefined vbar-characters
+ * \li vbar_cc_offset    Offset of the predefined vbar-characters
+ * \li hw_cmd            Table with hardware commands (see below)
+ * \li charmap           Table mapping characters 127...255 to other chars
+ * \li usr_chr_dot_assignment  Mapping of icon bits (see below)
+ * \li usr_chr_mapping   Map indicating which chars may be overwritten in RAM
+ * \li usr_chr_load_mapping  Location byte (see below)
+ *
+ * \b hw_cmd:
+ * The hw_cmd is a two-dimensional array used as a table to store hardware-
+ * dependant command. 10 commands are supported. For each command a byte
+ * array is set with the 1st byte defining the command length (which may be
+ * zero) and up to 9 bytes of command. The following commands exist:
+ * 
+ * \li Set brightness level 0
+ * \li Set brightness level 1
+ * \li Set brightness level 2
+ * \li Set brightness level 3
+ * \li Move cursor to Pos1
+ * \li Move cursor to position X
+ * \li Reset
+ * \li Initialize
+ * \li Set user character
+ * \li Horizontal tab
+ * \li Move cursor to next line
+ *
+ *\verbatim
+ * hw_cmd[Command][data] = {{commandlength , command 1},
+ *                          .....
+ *                          {commandlength , command N}}
+ *\endverbatim
+ *
+ * \b usr_chr_dot_assignment:
+ * usr_chr_dot_assignment is an array specifying how our 5x7 matrix of custom
+ * character bits are mapped into user defined characters (UDC). The very
+ * first byte of usr_chr_dot_assignment gives the number of bytes this VFD
+ * uses for one UDC. The remaining numbers give which byte/bit if a UDC hold
+ * which bit of the 5x7 matrix.
+ *
+ * Note: LSB of an icon line is the leftmost entry in the array!
+ *
+ * \b usr_chr_load_mapping:
+ * Usually any character may be overwritten in RAM. Some VFD however use
+ * an index number for user defined characters. The usr_chr_load_mapping
+ * array specifies which byte of usr_chr_mapping is assigned which index.
+ *
+ * For displays not using index numbers usr_chr_load_mapping is a copy of
+ * usr_chr_mapping.
  */
 
-/* 	This file is part the LCDproc driver for various serial VFD Devices.
+/*-
+ * Copyright (C) 2006 Stefan Herdler
+ *
+ * This driver is based on wirz-sli.c, hd44780.c, drv_base.c and NoritakeVFD
+ * driver. It may contain parts of other drivers of this package too.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+ */
 
-	It contains the hardwaredependent commands ach characterset.
+/*
+ * 2006-05-16 Version 0.3: everything should work (not all hardware tested!)
+ */
 
-	If you want to add a new device to the driver add a new section
-	to the displaytype-switch-case in the init-function, add a new load_...
-	function below and fill it with the corrrect commands for the display.
-	(Try wich displaytype works best with your display, copy and modify
-	it's section that is the easiest way I guess.)
-
-	Copyright (C) 2006 Stefan Herdler
-
-	2006-05-16 Version 0.3: everything should work (not all hardware tested!)
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
-
-*/
-
+#include "lcd.h"
 #include "serialVFD_displays.h"
 #include "serialVFD.h"
-#include "lcd.h"
 
 void serialVFD_load_NEC_FIPC (Driver *drvthis);
 void serialVFD_load_KD (Driver *drvthis);
@@ -48,6 +105,11 @@ void serialVFD_load_Futaba_NA202SD08FA(Driver *drvthis);
 void serialVFD_load_Samsung (Driver *drvthis);
 void serialVFD_load_Nixdorf_BA6x (Driver *drvthis);
 
+/**
+ * Load display specific settings.
+ * \param  drvthis  Pointer to driver
+ * \return  0 on success; -1 if unknown display type selected in config
+ */
 int serialVFD_load_display_data(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
@@ -86,24 +148,26 @@ int serialVFD_load_display_data(Driver *drvthis)
 	return 0;
 }
 
-
+/* Init data for NEC FIPS based VFD */
 void
 serialVFD_load_NEC_FIPC (Driver *drvthis)
-{		//nec_fipc
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	if (p->customchars == -83)
-		p->customchars = 1;	// number of custom characters the display provides
-	p->vbar_cc_offset = 5;	// character offset of the bars
-	p->hbar_cc_offset = 12;	// character offset of the bars
-	p->predefined_hbar = 1;   // the display has predefined hbar-characters
-	p->predefined_vbar = 1;   // the display has predefined vbar-characters
+	if (p->customchars == CC_UNSET)
+		p->customchars = 1;
+	p->vbar_cc_offset = 5;
+	p->hbar_cc_offset = 12;
+	p->predefined_hbar = 1;
+	p->predefined_vbar = 1;
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[11][4] = {{1	,0x04},  	// dark
 				{1      ,0x03},
 				{1	,0x02},
@@ -123,9 +187,9 @@ serialVFD_load_NEC_FIPC (Driver *drvthis)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
-	// Translates ISO 8859-1 to display charset.
+	/* Translates ISO 8859-1 to display charset. */
 	const unsigned char charmap[] = {
-		127, // the "filled-block"-character usually 127
+		127,		/* the "filled-block"-character usually 127 */
 		/* #128  = 0x80 */
 		128, 129, 130, 131, 132, 133, 134, 135,
 		136, 137, 138, 139, 140, 141, 142, 143,
@@ -180,23 +244,26 @@ serialVFD_load_NEC_FIPC (Driver *drvthis)
 }
 
 
+/* Init data for KD Rev2.1 */
 void
 serialVFD_load_KD (Driver *drvthis)
-{ 		//KD Rev2.1
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	if (p->customchars == -83)
-		p->customchars = 31;	// number of custom characters the display provides
-	p->vbar_cc_offset = 0;	// character offset of the bars
-	p->hbar_cc_offset = 0;	// character offset of the bars
-	p->predefined_hbar = 0;   // the display has predefined hbar-characters
-	p->predefined_vbar = 0;   // the display has predefined vbar-characters
+	if (p->customchars == CC_UNSET)
+		p->customchars = 31;
+	p->vbar_cc_offset = 0;
+	p->hbar_cc_offset = 0;
+	p->predefined_hbar = 0;
+	p->predefined_vbar = 0;
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[10][4] = {{1	,0x04},  	// dark
 				{1      ,0x03},
 				{1	,0x02},
@@ -211,8 +278,9 @@ serialVFD_load_KD (Driver *drvthis)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
+	/* Translates ISO 8859-1 to display charset. */
 	const unsigned char charmap[] = {
-		127, // the "filled-block"-character usually 127
+		127,		/* the "filled-block"-character usually 127 */
 		/* #128  = 0x80 */
 		128, 129, 130, 131, 132, 133, 134, 135,
 		136, 137, 138, 139, 140, 141, 142, 143,
@@ -257,24 +325,26 @@ serialVFD_load_KD (Driver *drvthis)
 		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
 }
 
-
+/* Init data for Noritake VFD */
 void
 serialVFD_load_Noritake (Driver *drvthis)
-{ 		//Noritake
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	if (p->customchars == -83)
-		p->customchars = 16;	// number of custom characters the display provides
-	p->vbar_cc_offset = 0;	// character offset of the bars
-	p->hbar_cc_offset = 0;	// character offset of the bars
-	p->predefined_hbar = 0;   // the display has predefined hbar-characters
-	p->predefined_vbar = 0;   // the display has predefined vbar-characters
+	if (p->customchars == CC_UNSET)
+		p->customchars = 16;
+	p->vbar_cc_offset = 0;
+	p->hbar_cc_offset = 0;
+	p->predefined_hbar = 0;
+	p->predefined_vbar = 0;
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[10][4] = {{3	,0x1B, 0x4C, 0x00},  // dark
 				{3      ,0x1B, 0x4C, 0x50},
 				{3	,0x1B, 0x4C, 0x90},
@@ -289,7 +359,7 @@ serialVFD_load_Noritake (Driver *drvthis)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
-	// no charmap needed
+	/* no charmap needed */
 	for (tmp = 0; tmp < 129; tmp++)
 		p->charmap[tmp] = tmp+127;
 
@@ -314,23 +384,26 @@ serialVFD_load_Noritake (Driver *drvthis)
 }
 
 
+/* Init data for Futaba VFD */
 void
 serialVFD_load_Futaba (Driver *drvthis)
-{ 		//Futaba
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	if (p->customchars == -83)
-		p->customchars = 3;	// number of custom characters the display provides
-	p->vbar_cc_offset = 0;	// character offset of the bars
-	p->hbar_cc_offset = 0;	// character offset of the bars
-	p->predefined_hbar = 0;   // the display has predefined hbar-characters
-	p->predefined_vbar = 0;   // the display has predefined vbar-characters
+	if (p->customchars == CC_UNSET)
+		p->customchars = 3;
+	p->vbar_cc_offset = 0;
+	p->hbar_cc_offset = 0;
+	p->predefined_hbar = 0;
+	p->predefined_vbar = 0;
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[10][4] = {{2    ,0x04, 0x20},	// dark
 				{2      ,0x04, 0x40},
 				{2	,0x04, 0x60},
@@ -345,9 +418,9 @@ serialVFD_load_Futaba (Driver *drvthis)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
-	// Translates ISO 8859-1 to display charset.
+	/* Translates ISO 8859-1 to display charset. */
 	const unsigned char charmap[] = {
-		127, // the "filled-block"-character usually 127
+		127,		/* the "filled-block"-character usually 127 */
 		/* #128  = 0x80 */
 		128, 129, 130, 131, 132, 133, 134, 135,
 		136, 137, 138, 139, 140, 141, 142, 143,
@@ -390,24 +463,27 @@ serialVFD_load_Futaba (Driver *drvthis)
 }
 
 
+/* Init data for IEE_03601-95B_2x40_VFD */
 void
 serialVFD_load_IEE_95B (Driver *drvthis)
-{ 		//IEE_03601-95B_2x40_VFD
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	if (p->customchars == -83)
-		p->customchars = 10;	// number of custom characters the display provides
-	p->vbar_cc_offset = 0;	// character offset of the bars
-	p->hbar_cc_offset = 0;	// character offset of the bars
-	p->predefined_hbar = 0;   // the display has predefined hbar-characters
-	p->predefined_vbar = 0;   // the display has predefined vbar-characters
+	if (p->customchars == CC_UNSET)
+		p->customchars = 10;
+	p->vbar_cc_offset = 0;
+	p->hbar_cc_offset = 0;
+	p->predefined_hbar = 0;
+	p->predefined_vbar = 0;
 	p->para_wait = 60;	// the display needs more delay in the parallelport mode
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[10][4] = {{1	,0x1C},  // dark
 				{1      ,0x1D},
 				{1	,0x1E},
@@ -422,9 +498,9 @@ serialVFD_load_IEE_95B (Driver *drvthis)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
-
+	/* Translates ISO 8859-1 to display charset. */
 	const unsigned char charmap[] = {
-		0xEF, // the "filled-block"-character usually 127
+		0xEF,		/* the "filled-block"-character usually 127 */
 		/* #128  = 0x80 */
 		0x7F, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF,
 		0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7,
@@ -479,24 +555,28 @@ serialVFD_load_IEE_95B (Driver *drvthis)
 
 }
 
+
+/* Init data for IEE_03601-96_2x40_VFD */
 void
 serialVFD_load_IEE_96 (Driver *drvthis)
-{ 		//IEE_03601-96_2x40_VFD
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	if (p->customchars == -83)
-		p->customchars = 3;	// number of custom characters the display provides
-	p->vbar_cc_offset = 0;	// character offset of the bars
-	p->hbar_cc_offset = 0;	// character offset of the bars
-	p->predefined_hbar = 0;   // the display has predefined hbar-characters
-	p->predefined_vbar = 0;   // the display has predefined vbar-characters
+	if (p->customchars == CC_UNSET)
+		p->customchars = 3;
+	p->vbar_cc_offset = 0;
+	p->hbar_cc_offset = 0;
+	p->predefined_hbar = 0;
+	p->predefined_vbar = 0;
 	p->para_wait = 60;	// the display needs more delay in the parallelport mode
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[10][4] = {{1	,0x1C},  // dark
 				{1      ,0x1D},
 				{1	,0x1E},
@@ -511,9 +591,9 @@ serialVFD_load_IEE_96 (Driver *drvthis)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
-
+	/* Translates ISO 8859-1 to display charset. */
 	const unsigned char charmap[] = {
-		0xEF, // the "filled-block"-character usually 127
+		0xEF,		/* the "filled-block"-character usually 127 */
 		/* #128  = 0x80 */
 		0x7F, 0xD9, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF,
 		0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7,
@@ -565,27 +645,29 @@ serialVFD_load_IEE_96 (Driver *drvthis)
 	{ 0x02, 0x01, 0x00};
 	for (tmp = 0; tmp < 31; tmp++)
 		p->usr_chr_load_mapping[tmp] = usr_chr_load_mapping[tmp];
-
 }
 
+
+/* Init data for Futaba NA202SD08FA */
 void
 serialVFD_load_Futaba_NA202SD08FA (Driver *drvthis)
-{ 		//IEE_03601-96_2x40_VFD
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	//if (p->customchars == -83) // display doesn't support custom characters
-		p->customchars = 0;	// number of custom characters the display provides
-	p->vbar_cc_offset = 5;	// character offset of the bars
-	p->hbar_cc_offset = 12;	// character offset of the bars
-	p->predefined_hbar = 1;   // the display has predefined hbar-characters
-	p->predefined_vbar = 1;   // the display has predefined vbar-characters
+	p->customchars = 0;	/* display doesn't support custom characters */
+	p->vbar_cc_offset = 5;
+	p->hbar_cc_offset = 12;
+	p->predefined_hbar = 1;
+	p->predefined_vbar = 1;
 	p->para_wait = 25;	// the display needs more delay in the parallelport mode
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[10][4] ={{2    ,0x04, 0x20},	// dark
 				{2      ,0x04, 0x40},
 				{2	,0x04, 0x60},
@@ -600,9 +682,9 @@ serialVFD_load_Futaba_NA202SD08FA (Driver *drvthis)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
-
+	/* Translates ISO 8859-1 to display charset. */
 	const unsigned char charmap[] = {
-		127, // the "filled-block"-character usually 127
+		127,		/* the "filled-block"-character usually 127 */
 		/* #128  = 0x80 */
 		128, 129, 130, 131, 132, 133, 134, 135,
 		136, 137, 138, 139, 140, 141, 142, 143,
@@ -628,7 +710,7 @@ serialVFD_load_Futaba_NA202SD08FA (Driver *drvthis)
 
 
 	// {bytes to send, icon bit mapped to bit 0, icon bit mapped to bit 1, ...}
-	const int usr_chr_dot_assignment[57] = { 0, 0 }; 				// no usercharacters
+	const int usr_chr_dot_assignment[57] = { 0, 0 }; 	// no usercharacters
 	for (tmp = 0; tmp < 57; tmp++)
 		p->usr_chr_dot_assignment[tmp] = usr_chr_dot_assignment[tmp];
 
@@ -639,27 +721,29 @@ serialVFD_load_Futaba_NA202SD08FA (Driver *drvthis)
 	{0,0,0,0,0,0, 0xF4, 0xF4, 0xF5, 0xF6, 0xF6, 0xF7, 0, 0xF0, 0xF1, 0xF2, 0xF3};
 	for (tmp = 0; tmp < 31; tmp++)
 		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
-
-
 }
 
+
+/* Init data for Samsung 20S207DA4 & 20S207DA6 */
 void
 serialVFD_load_Samsung (Driver *drvthis)
-{ 		//Samsung 20S207DA4 & 20S207DA6
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	if (p->customchars == -83)
-		p->customchars = 16;	// number of custom characters the display provides
-	p->vbar_cc_offset = 0;	// character offset of the bars
-	p->hbar_cc_offset = 0;	// character offset of the bars
-	p->predefined_hbar = 0;   // the display has predefined hbar-characters
-	p->predefined_vbar = 0;   // the display has predefined vbar-characters
+	if (p->customchars == CC_UNSET)
+		p->customchars = 16;
+	p->vbar_cc_offset = 0;
+	p->hbar_cc_offset = 0;
+	p->predefined_hbar = 0;
+	p->predefined_vbar = 0;
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[10][4] = {{2    ,0x04, 0x20},	// dark
 				{2      ,0x04, 0x40},
 				{2	,0x04, 0x60},
@@ -674,9 +758,9 @@ serialVFD_load_Samsung (Driver *drvthis)
 		for (w = 0; w < 4; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
-	// Translates ISO 8859-1 to display charset.
+	/* Translates ISO 8859-1 to display charset. */
 	const unsigned char charmap[] = {
-		127, // the "filled-block"-character usually 127
+		127,		/* the "filled-block"-character usually 127 */
 		/* #128  = 0x80 */
 		128, 129, 130, 131, 132, 133, 134, 135,
 		136, 137, 138, 139, 140, 141, 142, 143,
@@ -721,23 +805,26 @@ serialVFD_load_Samsung (Driver *drvthis)
 		p->usr_chr_mapping[tmp] = usr_chr_mapping[tmp];
 }
 
+
+/* Init data for Nixdorf BA63 & BA66 */
 void
 serialVFD_load_Nixdorf_BA6x (Driver *drvthis)
-{ 		// Nixdorf BA63 & BA66
+{
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	int tmp, w;
 
-	//if (p->customchars == -83) // display doesn't support custom characters
-		p->customchars = 0;	// number of custom characters the display provides
-	p->vbar_cc_offset = 5;	// character offset of the bars
-	p->hbar_cc_offset = 12;	// character offset of the bars
-	p->predefined_hbar = 1;   // the display has predefined hbar-characters
-	p->predefined_vbar = 1;   // the display has predefined vbar-characters
+	p->customchars = 0;	/* display doesn't support custom characters */
+	p->vbar_cc_offset = 5;
+	p->hbar_cc_offset = 12;
+	p->predefined_hbar = 1;
+	p->predefined_vbar = 1;
 
-	// hardwarespecific commands:
-	//  hw_cmd[Command][data]  = 	{{commandlength , command 1},
-	//					.....
-	//				 {commandlength , command N}}
+	/*-
+	 * hardwarespecific commands:
+	 *   hw_cmd[Command][data] =	{{commandlength , command 1},
+	 *				.....
+	 *				 {commandlength , command N}};
+	 */
 	const char hw_cmd[11][10] = {{0    },	// dark
 				{0      },
 				{0	},
@@ -758,9 +845,9 @@ serialVFD_load_Nixdorf_BA6x (Driver *drvthis)
 		for (w = 0; w < 10; w++)
 			p->hw_cmd[tmp][w] = hw_cmd[tmp][w];
 
-	// Translates ISO 8859-1 to display charset.
+	/* Translates ISO 8859-1 to display charset. */
 	const unsigned char charmap[] = {
-		0xDB, // the "filled-block"-character usually 127
+		0xDB,		/* the "filled-block"-character usually 127 */
 		/* #128  = 0x80 */
 		128, 129, 130, 131, 132, 133, 134, 135,
 		136, 137, 138, 139, 140, 141, 142, 143,

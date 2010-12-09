@@ -4,49 +4,65 @@
  * serial resp. parallel port for the \c serialVFD driver.
  */
 
-/* 	This file is part the LCDproc driver for various serial VFD Devices.
+/*-
+ * Copyright (C) 2006 Stefan Herdler
+ *
+ * This driver is based on wirz-sli.c, hd44780.c, drv_base.c and NoritakeVFD
+ * driver. It may contain parts of other drivers of this package too.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+ */
 
-	It contains the hardwaredependent commands ach characterset.
+/*
+ * 2006-05-16 Version 0.3: everything should work (not all hardware tested!)
+ */
 
-	If you want to add a new device to the driver add a new section
-	to the displaytype-switch-case in the init-function, add a new load_...
-	function below and fill it with the corrrect commands for the display.
-	(Try wich displaytype works best with your display, copy and modify
-	it's section that is the easiest way I guess.)
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
-	Copyright (C) 2006 Stefan Herdler
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <termios.h>
+#include <fcntl.h>
+#include <string.h>
+#include <errno.h>
 
-	2006-05-15 Version 0.3: everything should work (not all hardware tested!)
-
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	any later version.
-
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-
-	You should have received a copy of the GNU General Public License
-	along with this program; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
-
-*/
-
-
+#include "lcd.h"
+#include "report.h"
+#include "lpt-port.h"
 #include "port.h"
 #include "serialVFD_io.h"
 #include "serialVFD.h"
-#include "lcd.h"
 
-#define WR_on  0x10
-#define WR_off 0x11
-#define Busy   0x80
-#define LPTPORT 0x378
+/*
+ * XXX: ENIRQ used to be set, although no IRQ handler is defined. As the
+ * schematic in the user guide shows BUSY connected to ACK, leave it as is.
+ */
+#define WR_on  ((ENIRQ | STRB) ^ OUTMASK)	/* STRB (1) is active low */
+#define WR_off (ENIRQ ^ OUTMASK)
 
 #define MAXBUSY 300
 
+/**
+ * Write bytes to the serial port.
+ * \param drvthis  Pointer to driver
+ * \param dat      Pointer to array storing the data
+ * \param length   Number of bytes to write
+ */
 void
 serialVFD_write_serial (Driver *drvthis, unsigned char *dat, size_t length)
 {
@@ -58,6 +74,21 @@ serialVFD_write_serial (Driver *drvthis, unsigned char *dat, size_t length)
 	write(p->fd,dat,length);
 }
 
+/**
+ * Write bytes to the parallel port.
+ *
+ * Timing can be modified by inserting additional delays according to the
+ * \c PortWait setting in \c LCDd.conf: \n
+ * Portwait = 0; no delays, only BUSY bit checked\n
+ * Portwait = 1; additional WR off to check BUSY delay\n
+ * Portwait = 2; as 1 + additional WR pulse width\n
+ * Portwait = 3; as 2 + additional WR setup delay\n
+ * Portwait >= 4; as 3 + additional wait delay to next command
+ * 
+ * \param drvthis  Pointer to driver
+ * \param dat      Pointer to array storing the data
+ * \param length   Number of bytes to write
+ */
 void
 serialVFD_write_parallel (Driver *drvthis, unsigned char *dat, size_t length)
 {
@@ -71,31 +102,45 @@ serialVFD_write_parallel (Driver *drvthis, unsigned char *dat, size_t length)
 	for (i_para = 0; i_para < length; i_para++) {
 		port_out(p->port, dat[i_para]);
 
-		if (p->para_wait > 2)	// some displays need a little time to rest
+		/* data to WR enable delay */
+		if (p->para_wait > 2)
 			port_in(p->port+1);
 
 		port_out(p->port+2, WR_on);
 
-		if (p->para_wait > 1)	// some displays need a little time to rest
+		/* additional WR pulse width */
+		if (p->para_wait > 1)
 			port_in(p->port+1);
 
 		port_out(p->port+2, WR_off);
 
-		if (p->para_wait > 0)	// some displays need a little time to rest
+		/* additional BUSY delay time */
+		if (p->para_wait > 0)
 			port_in(p->port+1);
 
+		/*
+		 * Check MAXBUSY times if the BUSY bit is set. Note: BUSY bit
+		 * on parallel port is hardware inverted, but VFD is ready
+		 * if its BUSY bit is cleared (thus high on PC).
+		 */
 		for (j_para = 0; j_para < MAXBUSY; j_para++) {
-			if ((port_in(p->port+1)) & Busy)
+			if ((port_in(p->port+1)) & BUSY)
 				break;
 		}
 
-		for (j_para = 3; j_para < p->para_wait; j_para++) // some displays need a little longer time to rest
+		/* wait time of next WR */
+		for (j_para = 3; j_para < p->para_wait; j_para++)
 			port_in(p->port+1);
 
 	}
 #endif
 }
 
+/**
+ * Open a serial port according to the settings in \c serialVFD_private_data.
+ * \param  drvthis  Pointer to driver
+ * \return -1 on error, 0 on success
+ */
 int
 serialVFD_init_serial (Driver *drvthis)
 {
@@ -113,12 +158,12 @@ serialVFD_init_serial (Driver *drvthis)
 
 	tcgetattr(p->fd, &portset);
 
-	// We use RAW mode
+	/* We use RAW mode */
 #ifdef HAVE_CFMAKERAW
-	// The easy way
+	/* The easy way */
 	cfmakeraw( &portset );
 #else
-	// The hard way
+	/* The hard way */
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
    	                   | INLCR | IGNCR | ICRNL | IXON );
 	portset.c_oflag &= ~OPOST;
@@ -127,15 +172,20 @@ serialVFD_init_serial (Driver *drvthis)
 	portset.c_cflag |= CS8 | CREAD | CLOCAL ;
 #endif
 
-	// Set port speed
+	/* Set port speed */
 	cfsetospeed(&portset, p->speed);
 	cfsetispeed(&portset, B0);
 
-	// Do it...
+	/* Do it... */
 	tcsetattr(p->fd, TCSANOW, &portset);
 	return 0;
 }
 
+/**
+ * Open a parallel port according to the settings in \c serialVFD_private_data.
+ * \param  drvthis  Pointer to driver
+ * \return -1 on error, 0 on success
+ */
 int
 serialVFD_init_parallel (Driver *drvthis)
 {
@@ -153,6 +203,10 @@ serialVFD_init_parallel (Driver *drvthis)
 #endif
 }
 
+/**
+ * Close serial port.
+ * \param  drvthis  Pointer to driver
+ */
 void
 serialVFD_close_serial (Driver *drvthis)
 {
@@ -161,6 +215,10 @@ serialVFD_close_serial (Driver *drvthis)
 		close(p->fd);
 }
 
+/**
+ * Close parallel port.
+ * \param  drvthis  Pointer to driver
+ */
 void
 serialVFD_close_parallel (Driver *drvthis)
 {
