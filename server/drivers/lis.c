@@ -517,9 +517,10 @@ lis_init(Driver *drvthis)
 				drvthis
 				);
 	if (err) {
-		report(RPT_ERR, "%s: pthread_create() - %s", drvthis->name, err);
+		report(RPT_ERR, "%s: pthread_create() - %s", drvthis->name, strerror(err));
 		goto err_framebuf;
 	}
+	report(RPT_INFO, "%s: read thread created");
 	p->parent_flag = 1;		// show we're now a happy parent, birth successful.
 
 	// set communication parameters
