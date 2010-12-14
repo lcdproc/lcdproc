@@ -302,8 +302,8 @@ lis_read_thread(void *arg)
 		for (size = ftdi_read_data(&p->ftdic, buffer, 64); size > 0; size = ftdi_read_data(&p->ftdic, buffer, 64))
 			;
 		if (size < 0) {
-			return size;
 			p->parent_flag = 0;
+			return size;
 		}
 	}
 	p->parent_flag = 0;
