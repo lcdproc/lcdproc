@@ -98,6 +98,19 @@ typedef struct ConnectionMapping {
 } ConnectionMapping;
 
 
+/**
+ * Transmit buffer. This structure provides a generic transmit buffer for
+ * collecting command or data bytes before sending them to the display. The
+ * connection driver is responsible for allocating memory and resetting
+ * \c use_count. \c type may also be driver dependent.
+ */
+typedef struct tx_buffer_t {
+	unsigned char *buffer;		/**< Pointer to buffer */
+	int type;			/**< data or command */
+	int use_count;			/**< currently used byte */
+} tx_buffer;
+
+
 /** private data for the \c hd44780 driver */
 typedef struct hd44780_private_data {
 	// parallel connection typeS
@@ -199,6 +212,8 @@ typedef struct hd44780_private_data {
 	int brightness;		// Brightness when backlight is "on" (range 0 - 1000)
 	int offbrightness;	// Brightness when backlight is "off" (range 0 - 1000)
 	int backlightstate;	// Saves the last backlight state
+
+	tx_buffer tx_buf;	// Output buffer
 } PrivateData;
 
 

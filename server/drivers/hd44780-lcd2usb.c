@@ -6,24 +6,23 @@
 
 /*-
  * Copyright (C) 2007 Peter Marschall <peter@adpm.de>
- * 		 2007,2009 Markus Dolze
+ * 		 2007-2010 Markus Dolze
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  */
 
-#include "hd44780-lcd2usb.h"
-
-#include "report.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <usb.h>
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include "hd44780-lcd2usb.h"
+#include "report.h"
 
 
 /* connection type specific functions to be exposed using pointers in init() */
@@ -33,11 +32,6 @@ unsigned char lcd2usb_HD44780_scankeypad(PrivateData *p);
 void lcd2usb_HD44780_close(PrivateData *p);
 void lcd2usb_HD44780_set_contrast(PrivateData *p, unsigned char value);
 void lcd2usb_HD44780_flush(PrivateData *p);
-
-/* small data buffer */
-unsigned char buffer[LCD2USB_MAX_CMD];
-int buffer_current_type_id = -1;
-int buffer_current_use = 0;
 
 
 /**
@@ -119,6 +113,15 @@ hd_init_lcd2usb(Driver *drvthis)
 		return -1;
 	}
 
+	/* allocate and initialize send buffer */
+	if ((p->tx_buf.buffer = malloc(LCD2USB_MAX_CMD)) == NULL) {
+		report(RPT_ERR, "hd_init_lcd2usb: could not allocate send buffer");
+		lcd2usb_HD44780_close(p);
+		return -1;
+	}
+	p->tx_buf.type = -1;
+	p->tx_buf.use_count = 0;
+
 	common_init(p, IF_4BIT);
 
 	/* replace uPause with empty one after initialization */
@@ -143,15 +146,15 @@ lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 	: ((displayID == 1) ? LCD2USB_CTRL_0 : LCD2USB_CTRL_1);
 
 	/* flush current buffer if target or command type are different */
-	if ((buffer_current_type_id >= 0) && (buffer_current_type_id != (type | id)))
+	if ((p->tx_buf.type >= 0) && (p->tx_buf.type != (type | id)))
 		lcd2usb_HD44780_flush(p);
 
 	/* add new item to buffer */
-	buffer_current_type_id = (type | id);
-	buffer[buffer_current_use++] = ch;
+	p->tx_buf.type = (type | id);
+	p->tx_buf.buffer[p->tx_buf.use_count++] = ch;
 
 	/* flush buffer if it's full */
-	if (buffer_current_use == LCD2USB_MAX_CMD)
+	if (p->tx_buf.use_count == LCD2USB_MAX_CMD)
 		lcd2usb_HD44780_flush(p);
 }
 
@@ -163,19 +166,19 @@ void
 lcd2usb_HD44780_flush(PrivateData *p)
 {
 	/* only if some data available */
-	if (buffer_current_use == 0)
+	if (p->tx_buf.use_count == 0)
 		return;
 
 	/* construct and send message */
 	usb_control_msg(p->usbHandle, USB_TYPE_VENDOR,
-			buffer_current_type_id | (buffer_current_use - 1),
-			buffer[0] | (buffer[1] << 8),
-			buffer[2] | (buffer[3] << 8),
+			p->tx_buf.type | (p->tx_buf.use_count - 1),
+			p->tx_buf.buffer[0] | (p->tx_buf.buffer[1] << 8),
+			p->tx_buf.buffer[2] | (p->tx_buf.buffer[3] << 8),
 			NULL, 0, 1000);
 
 	/* buffer is now free again. Not necessary to clear what's in it. */
-	buffer_current_type_id = -1;
-	buffer_current_use = 0;
+	p->tx_buf.type = -1;
+	p->tx_buf.use_count = 0;
 }
 
 /**
@@ -248,6 +251,10 @@ lcd2usb_HD44780_close(PrivateData *p)
 	if (p->usbHandle != NULL) {
 		usb_close(p->usbHandle);
 		p->usbHandle = NULL;
+	}
+	if (p->tx_buf.buffer != NULL) {
+		free(p->tx_buf.buffer);
+		p->tx_buf.buffer = NULL;
 	}
 }
 
