@@ -4,34 +4,30 @@
  * any one of the driver's functions is called.
  */
 
-/*  Copyright (C) ?????? ?????????
-                  2008, Peter Marschall
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 */
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
+/*-
+ * Copyright (C) 2008, Peter Marschall
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#include <stdlib.h>
+#include <string.h>
 
 #include "lcd.h"
 #include "debug.h"
@@ -60,12 +56,11 @@ typedef struct debug_private_data {
 } PrivateData;
 
 
-// Vars for the server core
+/* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 1;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "debug_";
-
 
 
 /**
@@ -75,13 +70,13 @@ MODULE_EXPORT char *symbol_prefix = "debug_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-debug_init (Driver *drvthis)
+debug_init(Driver *drvthis)
 {
 	PrivateData *p;
 
 	report(RPT_INFO, "%s()", __FUNCTION__);
 
-        /* Allocate and store private data */
+	/* Allocate and store private data */
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL)
 		return -1;
@@ -100,7 +95,7 @@ debug_init (Driver *drvthis)
 	if (p->framebuf == NULL) {
 		report(RPT_INFO, "%s: unable to allocate framebuffer", drvthis->name);
 		return -1;
-	}	
+	}
 
 	debug_clear(drvthis);
 
@@ -113,7 +108,7 @@ debug_init (Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
-debug_close (Driver *drvthis)
+debug_close(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -136,7 +131,7 @@ debug_close (Driver *drvthis)
  * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
-debug_width (Driver *drvthis)
+debug_width(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -152,7 +147,7 @@ debug_width (Driver *drvthis)
  * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
-debug_height (Driver *drvthis)
+debug_height(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -168,11 +163,11 @@ debug_height (Driver *drvthis)
  * \return         Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
-debug_cellwidth (Driver *drvthis)
+debug_cellwidth(Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-        return p->cellwidth;
+	return p->cellwidth;
 }
 
 
@@ -182,11 +177,11 @@ debug_cellwidth (Driver *drvthis)
  * \return         Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
-debug_cellheight (Driver *drvthis)
+debug_cellheight(Driver *drvthis)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-        return p->cellheight;
+	return p->cellheight;
 }
 
 
@@ -195,13 +190,13 @@ debug_cellheight (Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
-debug_clear (Driver *drvthis)
+debug_clear(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
 	report(RPT_INFO, "%s()", __FUNCTION__);
 
-	memset (p->framebuf, ' ', p->width * p->height);
+	memset(p->framebuf, ' ', p->width * p->height);
 
 }
 
@@ -211,7 +206,7 @@ debug_clear (Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
-debug_flush (Driver *drvthis)
+debug_flush(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	int i, j;
@@ -251,20 +246,21 @@ debug_flush (Driver *drvthis)
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-debug_string (Driver *drvthis, int x, int y, const char string[])
+debug_string(Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
 
 	report(RPT_INFO, "%s(%i,%i,%.40s)", __FUNCTION__, x, y, string);
 
-	y --; x --;  // Convert 1-based coords to 0-based...
+	y--;			/* Convert 1-based coords to 0-based... */
+	x--;
 
 	if ((y < 0) || (y >= p->height))
 		return;
 
 	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
-		if (x >= 0)	// no write left of left border
+		if (x >= 0)	/* no write left of left border */
 			p->framebuf[(y * p->width) + x] = string[i];
 	}
 }
@@ -279,13 +275,14 @@ debug_string (Driver *drvthis, int x, int y, const char string[])
  * \param c        Character that gets written.
  */
 MODULE_EXPORT void
-debug_chr (Driver *drvthis, int x, int y, char c)
+debug_chr(Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
 	report(RPT_DEBUG, "%s(%i,%i,%c)", __FUNCTION__, x, y, c);
 
-	x--; y--;
+	x--;
+	y--;
 
 	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
 		p->framebuf[(y * p->width) + x] = c;
@@ -302,7 +299,7 @@ debug_chr (Driver *drvthis, int x, int y, char c)
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-debug_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+debug_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	//PrivateData *p = drvthis->private_data;
 	int pos;
@@ -310,10 +307,11 @@ debug_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 	report(RPT_INFO, "%s(%i,%i,%i,%i,%i)", __FUNCTION__, x, y, len, promille, options);
 
 	for (pos = 0; pos < len; pos++) {
-		if (2 * pos < ((long) promille * len / 500 + 1)) {
-			debug_chr(drvthis, x, y-pos, '|');
-		} else {
-			; /* print nothing */
+		if (2 * pos < ((long)promille * len / 500 + 1)) {
+			debug_chr(drvthis, x, y - pos, '|');
+		}
+		else {
+			;	/* print nothing */
 		}
 	}
 }
@@ -329,7 +327,7 @@ debug_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-debug_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+debug_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	//PrivateData *p = drvthis->private_data;
 	int pos;
@@ -337,10 +335,11 @@ debug_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 	report(RPT_INFO, "%s(%i,%i,%i,%i,%i)", __FUNCTION__, x, y, len, promille, options);
 
 	for (pos = 0; pos < len; pos++) {
-		if (2 * pos < ((long) promille * len / 500 + 1)) {
-			debug_chr (drvthis, x+pos, y, '-');
-		} else {
-			; /* print nothing */
+		if (2 * pos < ((long)promille * len / 500 + 1)) {
+			debug_chr(drvthis, x + pos, y, '-');
+		}
+		else {
+			;	/* print nothing */
 		}
 	}
 }
@@ -353,7 +352,7 @@ debug_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
  * \param num      Character to write (0 - 10 with 10 representing ':')
  */
 MODULE_EXPORT void
-debug_num (Driver *drvthis, int x, int num)
+debug_num(Driver *drvthis, int x, int num)
 {
 	//PrivateData *p = drvthis->private_data;
 	report(RPT_INFO, "%s(%i,%i)", __FUNCTION__, x, num);
@@ -370,12 +369,12 @@ debug_num (Driver *drvthis, int x, int num)
  * \retval <0      Server core shall define/write the icon.
  */
 MODULE_EXPORT int
-debug_icon (Driver *drvthis, int x, int y, int icon)
+debug_icon(Driver *drvthis, int x, int y, int icon)
 {
 	//PrivateData *p = drvthis->private_data;
 	report(RPT_INFO, "%s(%i,%i,%i)", __FUNCTION__, x, y, icon);
 
-	return -1;	/* let the core do all the icon stuff */
+	return -1;		/* let the core do all the icon stuff */
 }
 
 
@@ -389,7 +388,7 @@ debug_icon (Driver *drvthis, int x, int y, int icon)
  *                 (least significant bit) is the rightmost pixel in each pixel row.
  */
 MODULE_EXPORT void
-debug_set_char (Driver *drvthis, int n, char *dat)
+debug_set_char(Driver *drvthis, int n, char *dat)
 {
 	//PrivateData *p = drvthis->private_data;
 	report(RPT_INFO, "%s(%i,data)", __FUNCTION__, n);
@@ -404,7 +403,7 @@ debug_set_char (Driver *drvthis, int n, char *dat)
  * \return         Stored contrast in promille.
  */
 MODULE_EXPORT int
-debug_get_contrast (Driver *drvthis)
+debug_get_contrast(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -420,7 +419,7 @@ debug_get_contrast (Driver *drvthis)
  * \param promille New contrast value in promille.
  */
 MODULE_EXPORT void
-debug_set_contrast (Driver *drvthis, int promille)
+debug_set_contrast(Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -439,9 +438,11 @@ debug_set_contrast (Driver *drvthis, int promille)
 MODULE_EXPORT int
 debug_get_brightness(Driver *drvthis, int state)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-        return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+	report(RPT_INFO, "%s(%i)", __FUNCTION__, state);
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 }
 
 
@@ -454,20 +455,22 @@ debug_get_brightness(Driver *drvthis, int state)
 MODULE_EXPORT void
 debug_set_brightness(Driver *drvthis, int state, int promille)
 {
-        PrivateData *p = drvthis->private_data;
+	PrivateData *p = drvthis->private_data;
 
-        /* Check it */
-        if (promille < 0 || promille > 1000)
-                return;
+	report(RPT_INFO, "%s(%i,%i)", __FUNCTION__, state, promille);
 
-        /* store the software value since there is not get */
-        if (state == BACKLIGHT_ON) {
-                p->brightness = promille;
-        }
-        else {
-                p->offbrightness = promille;
-        }
-        debug_backlight(drvthis, state);
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is not get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+	}
+	else {
+		p->offbrightness = promille;
+	}
+	debug_backlight(drvthis, state);
 }
 
 /**
@@ -476,7 +479,7 @@ debug_set_brightness(Driver *drvthis, int state, int promille)
  * \param on       New backlight status.
  */
 MODULE_EXPORT void
-debug_backlight (Driver *drvthis, int on)
+debug_backlight(Driver *drvthis, int on)
 {
 	//PrivateData *p = drvthis->private_data;
 	report(RPT_INFO, "%s(%i)", __FUNCTION__, on);
@@ -490,7 +493,7 @@ debug_backlight (Driver *drvthis, int on)
  *                 \c NULL if nothing available / unmapped key
  */
 MODULE_EXPORT const char *
-debug_get_key (Driver *drvthis)
+debug_get_key(Driver *drvthis)
 {
 	//PrivateData *p = drvthis->private_data;
 	report(RPT_INFO, "%s()", __FUNCTION__);
@@ -512,6 +515,5 @@ debug_get_info(Driver *drvthis)
 
 	report(RPT_INFO, "%s()", __FUNCTION__);
 
-        return info_string;
+	return info_string;
 }
-

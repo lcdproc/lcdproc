@@ -21,7 +21,7 @@ AM_LDFLAGS = @LDSHARED@
 ## Keep the lists sorted!
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
+EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -80,6 +80,7 @@ CFontz633_SOURCES =  lcd.h lcd_lib.h CFontz633.c CFontz633.h CFontz-charmap.h CF
 CFontzPacket_SOURCES = lcd.h lcd_lib.h CFontzPacket.c CFontzPacket.h CFontz-charmap.h CFontz633io.c CFontz633io.h report.h adv_bignum.h
 curses_SOURCES =     lcd.h curses_drv.h curses_drv.c report.h
 CwLnx_SOURCES =      lcd.h lcd_lib.h CwLnx.c CwLnx.h report.h
+debug_SOURCES =      lcd.h report.h debug.c debug.h
 ea65_SOURCES =       lcd.h ea65.h ea65.c report.h
 EyeboxOne_SOURCES =  lcd.h lcd_lib.h EyeboxOne.c EyeboxOne.h report.h
 g15_SOURCES =        lcd.h lcd_lib.h g15.h g15-num.c g15.c report.h
