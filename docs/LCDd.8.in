@@ -175,6 +175,9 @@ TCP connection using open source/open hardware ethlcd (http://manio.skyboo.net/e
 .TP
 .B usblcd
 LCD device from Adams IT Services (http://www.usblcd.de/)
+.TP
+.B usbtiny
+Devices based on Dick Streefland's USBtiny firmware
 .RE
 .TP
 .B i2500vfd
@@ -219,6 +222,9 @@ L.I.S MCE 2005 20x2 VFD (http://vlsys.co.kr)
 .TP
 .B MD8800
 VFD displays in Medion MD8800 PCs
+.TP
+.B mdm166a
+Futuba MDM166A displays
 .TP
 .B ms6931
 MSI-6931 displays in 1U rack servers by MSI
