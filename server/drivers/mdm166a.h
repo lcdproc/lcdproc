@@ -1,8 +1,6 @@
 #ifndef MDM166A_H
 #define MDM166A_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int mdm166a_init (Driver *drvthis);
 MODULE_EXPORT void mdm166a_close (Driver *drvthis);
 MODULE_EXPORT int mdm166a_width (Driver *drvthis);

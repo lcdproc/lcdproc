@@ -221,7 +221,7 @@ mdm166a_init(Driver *drvthis)
 	/* Clear internal screen */
 	mdm166a_clear(drvthis);
 
-	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+	report(RPT_INFO, "%s: init() done", drvthis->name);
 	return 0;
 
 	/* Central error exit point */
@@ -375,13 +375,21 @@ mdm166a_flush(Driver *drvthis)
 	if (!p->changed)
 		return;
 
+	/* First clear the packed framebuffer area */
 	memset(p->framebuf + packed_begin, 0, MDM166A_PACKEDSIZE);
 
-	/* Convert framebuffer */
+	/*
+	 * Convert framebuffer by packing pixel values from each column into
+	 * 2 adjacent bytes (= 16 bit) of the packed part of the framebuffer.
+	 */
+	/* FIXME: Using the same memory area for framebuffer and packed
+	 * framebuffer is hard to read. Better if two memory areas would be
+	 * used.
+	 */
 	for (xpos = 0; xpos < MDM166A_XSIZE; xpos++)
 		for (ypos = 0; ypos < MDM166A_YSIZE; ypos++)
 			if (p->framebuf[ypos * MDM166A_XSIZE + xpos])
-				p->framebuf[packed_begin + 2 * xpos + (ypos / 8)] |= (1 << (7 - (ypos % 8)));
+				p->framebuf[packed_begin + (2 * xpos) + (ypos / 8)] |= (1 << (7 - (ypos % 8)));
 
 	/* Write data to display */
 	/* Set position (0,0) */
@@ -398,6 +406,7 @@ mdm166a_flush(Driver *drvthis)
 	Cmd[3] = 48;
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 24; j++) {
+			/* Copy two bytes in each step (= 48 bytes) */
 			Cmd[4 + 2 * j] = p->framebuf[packed_begin + i * 48 + 2 * j];
 			Cmd[5 + 2 * j] = p->framebuf[packed_begin + i * 48 + 2 * j + 1];
 		}
@@ -542,10 +551,14 @@ mdm166a_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 		return;
 	}
 
-	offset = 2 + x * CELLWIDTH + y * MDM166A_XSIZE * CELLHEIGHT;
+	/*
+	 * Calculate starting point in framebuffer. Leave the leftmost column
+	 * empty (+1). Shorten the length by 1 then.
+	 */
+	offset = x * CELLWIDTH + y * MDM166A_XSIZE * CELLHEIGHT + 1;
 
 	/* calculate length of bar */
-	pixels = len * CELLWIDTH * promille / 1000;
+	pixels = len * CELLWIDTH * promille / 1000 - 1;
 
 	for (i = 0; i < CELLHEIGHT - 1; i++) {
 		for (j = 0; j < pixels; j++) {
