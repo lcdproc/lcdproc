@@ -14,11 +14,13 @@ The displays are driven in text mode using their built-in character generator.
 <sect2 id="sed1330-connections">
 <title>Connections</title>
 
+<warning>
 <para>
 Connections below are for the G242C, G121C and G321D displays.
 Always consult documentation about the specific display before asuming
 the connections given here are also correct for your display !
 </para>
+</warning>
 
 <table id="sed1330-connections.classic-by-lcd">
 <title>ConnectionType <literal>classic</literal> ordered by LCD pins</title>
@@ -586,7 +588,8 @@ use the following circuit.
       <parameter><literal>G242C</literal></parameter> |
       <parameter><literal>G191D</literal></parameter> |
       <parameter><literal>G2446</literal></parameter> |
-      <parameter><literal>SP14Q002</literal></parameter>
+      <parameter><literal>SP14Q002</literal></parameter> |
+      <parameter><literal>HG25504</literal></parameter>
     }
   </term>
   <listitem>
@@ -626,6 +629,10 @@ use the following circuit.
         </row>
         <row>
           <entry><literal>SP14Q002</literal></entry>
+	  <entry>320 x 240</entry>
+        </row>
+        <row>
+          <entry><literal>HG25504</literal></entry>
 	  <entry>320 x 240</entry>
         </row>
       </tbody>

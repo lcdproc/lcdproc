@@ -154,6 +154,30 @@
  *
  * The G242C generates -24V internally. It is available on Vlc.
  *
+ * Connections below are for the HG25504 displays.
+ * Always consult documentation about the specific display before asuming
+ * the connections given here are also correct for your display !
+ *
+ *   Ordered by LCD pins
+ *	LCD		pin?	<--->	pin	LPT port
+ *	Frame		1	GND
+ *	Vss		2	GND	18..25	GND
+ *	Vdd		3	+5V
+ *	Vo		3	potmeter
+ *	^RESET		5		1	^STROBE
+ *	^RD		6	+5V
+ *	^WR		7		16	^INIT
+ *	^CS		8	GND
+ *	A0		9		17	^SELECT_IN
+ *	D0		10		2	D0
+ *	D1		11		3	D1
+ *	D2		12		4	D2
+ *	D3		13		5	D3
+ *	D4		14		6	D4
+ *	D5		15		7	D5
+ *	D6		16		8	D6
+ *	D7		17		9	D7
+ *
  * To generate -24 from the +5V without an external power source, you can
  * use the following circuit.
  *
@@ -258,6 +282,7 @@
 #define TYPE_G191D    4
 #define TYPE_G2446    5
 #define TYPE_SP14Q002 6
+#define TYPE_HG25504  7
 
 #define SCR1_L 0x00 // Memory locations
 #define SCR1_H 0x00
@@ -407,6 +432,10 @@ sed1330_init( Driver * drvthis )
 		p->type = TYPE_SP14Q002;
 		p->graph_width = 320;
 		p->graph_height = 240;
+	} else if(strcmp(s, "HG25504") == 0) {
+		p->type = TYPE_HG25504;
+		p->graph_width = 256;
+		p->graph_height = 128;
 	} else {
 		report(RPT_ERR, "%s: Unknown display type %s", drvthis->name, s);
 		return -1;
@@ -569,6 +598,9 @@ sed1330_init( Driver * drvthis )
 		break;
 	  case TYPE_G191D:
 		data[4] = 0x5c; // ?
+		break;
+	  case TYPE_HG25504:
+		data[4] = 0x7F; // Confirmed
 		break;
 	  default:
 		return -1;
