@@ -1,8 +1,12 @@
-/*
+/** \file server/drivers/t6963_font.h
+ * Font definition for use the t6963 driver.
+ */
+
+/*-
  * Base driver module for Toshiba T6963 based LCD displays. ver 2.0
  *
- * Parts of this file are based on the kernel driver by Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
- *
+ * Parts of this file are based on the kernel driver by
+ * Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -12,7 +16,16 @@
 
 #define FONTDATAMAX 12288
 
-
+/**
+ * Definition of a 6x8 font recreating the characters from CP437 with the
+ * following exceptions at position:
+ * \li 4 contains the open heart icon
+ * \li 212-219 are vor vBars (bottom to top)
+ * \li 220-224 are for hBars (growing right)
+ * \li 247-251 are for hBars (growing left)
+ * \li 228,246,252 contain small german umlaute (upper case are missing)
+ * \li 243,244 contain ??
+ */
 unsigned char fontdata_6x8[FONTDATAMAX] = {
 /* num: 0 */
 0,0,0,0,0,0,
@@ -59,14 +72,6 @@ unsigned char fontdata_6x8[FONTDATAMAX] = {
 0,0,0,1,0,0,
 0,0,0,0,0,0,
 0,0,0,0,0,0,
-/*0,0,0,0,0,0,
-0,0,1,0,1,0,
-0,1,0,1,0,1,
-0,1,0,0,0,1,
-0,1,0,0,0,1,
-0,0,1,0,1,0,
-0,0,0,1,0,0,
-0,0,0,0,0,0,*/
 /* num: 5 */
 0,0,0,1,0,0,
 0,0,1,1,1,0,
