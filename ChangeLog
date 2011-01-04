@@ -35,6 +35,7 @@ v0.5.4
  + hd44780: Added 'usbtiny' connection type (Siarhei Herasimchuk)
  * SureElec: Fix stall on startup
  + new driver: MDM166A for Futaba/Targa USB VFD (Christoph Rasim)
+ * picolcd: Fix backlight and contrast handling (M. T. Jones)
 
 v0.5.3
  + lcdexec: notification when called program finishes

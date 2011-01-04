@@ -834,7 +834,7 @@ MODULE_EXPORT void picoLCD_set_contrast(Driver *drvthis, int promille)
 			packet[1] = 0x00; /* picoLCD20x4 permits contrast as 0/1 value */
 		else {
 			inv = 1000 - promille;
-			packet[1] =  inv / 1000 * p->device->contrast_max;
+			packet[1] =  inv * p->device->contrast_max / 1000;
 		}
 	}
 	else if (promille > 1000) {
@@ -900,9 +900,7 @@ MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state)
 		s = p->device->bklight_max;
 
 	if (state == BACKLIGHT_OFF) {
-		/* FIXME: Is 0x00 or 0xFF correct to turn backlight off? */
-		//packet[1] = (unsigned char) p->device->bklight_min;
-		packet[1] = 0xff;
+		packet[1] = (unsigned char) p->device->bklight_min;
 		picolcd_send(p->lcd, packet, 2);
 		set_key_lights(p->lcd, p->key_light, state);
 	}
