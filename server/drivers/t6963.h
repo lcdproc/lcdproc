@@ -29,7 +29,7 @@
  * FIXME: Those addresses are fine for 64 KB RAM. If the display has less,
  * these values need to be adjusted by the user. It should do no harm setting
  * these for 8 KB RAM.
- * /
+ */
 #define TEXT_BASE	0x0000
 #define ATTRIB_BASE	0x7000
 #define CHARGEN_BASE	0xF000
