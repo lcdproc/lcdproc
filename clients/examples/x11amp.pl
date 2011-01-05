@@ -8,7 +8,7 @@
 # previous song and skip forward to previous one.
 #
 #
-# Copyright (c) 1999, William Ferrell, Scott Scriven
+# Copyright (c) 1999, William Ferrell, Selene Scriven
 #               2001, David Glaude
 #               2001, Jarda Benkovsky
 #               2002, Jonathan Oxer

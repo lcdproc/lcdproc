@@ -5,7 +5,7 @@
 # This is just a small example of a client for LCDd the
 # LCDproc server
 #
-# Copyright (c) 1999, William Ferrell, Scott Scriven
+# Copyright (c) 1999, William Ferrell, Selene Scriven
 #               2001, David Glaude
 #               2002, Jonathan Oxer
 #               2002, Rene Wagner <reenoo@gmx.de>

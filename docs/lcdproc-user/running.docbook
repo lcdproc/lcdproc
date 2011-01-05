@@ -57,7 +57,7 @@ command line options.
 
 LCDd - LCDproc Server Daemon, 0.5dev
 
-Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc. contributors.
+Copyright (c) 1999-2006 Selene Scriven, William Ferrell, and misc. contributors.
 This program is released under the terms of the GNU General Public License.
 
 Usage: LCDd [<options>]
@@ -104,7 +104,7 @@ command line options.
 
 lcdproc - LCDproc system status information viewer
 
-Copyright (c) 1999-2006 Scott Scriven, William Ferrell, and misc. contributors.
+Copyright (c) 1999-2006 Selene Scriven, William Ferrell, and misc. contributors.
 This program is released under the terms of the GNU General Public License.
 
 Usage: lcdproc [<options>] [<screens> ...]

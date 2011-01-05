@@ -11,7 +11,7 @@
  */
 
 /*-
-    Copyright (C) 1999, William Ferrell and Scott Scriven
+    Copyright (C) 1999, William Ferrell and Selene Scriven
 		  2001, Andre Breiler
 		  2001, Philip Pokorny
 		  2001, David Douthitt

@@ -5,7 +5,7 @@
 
 /*  This is the LCDproc driver for EyeboxOne devices
 
-    This code is based on MtxOrb driver (William Ferrell and Scott Scriven)
+    This code is based on MtxOrb driver (William Ferrell and Selene Scriven)
 
     Copyright (C) 2006 Cedric TESSIER (aka NeZetiC) http://www.nezetic.info
 

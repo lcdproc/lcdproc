@@ -14,7 +14,7 @@
  * This file is released under the GNU General Public License.
  * Refer to the COPYING file distributed with this package.
  *
- * Copyright (c) 1999, William Ferrell, Scott Scriven
+ * Copyright (c) 1999, William Ferrell, Selene Scriven
  *               2002, Joris Robijn
  *               2004, F5 Networks, Inc. - IP-address input
  *               2005, Peter Marschall - error checks, ...

@@ -24,7 +24,7 @@ you can ask the mailing list. For how to get on the mailing list, see
 the main web site.
 
 LCDproc was originally written by William W. Ferrell <wwf@splatwerks.org>
-and Scott Scriven <scriven@cs.colostate.edu>.
+and Selene Scriven <lcdproc@toykeeper.net>.
 
 -- INSTALLATION --------------------------------------------------------------
 
@@ -60,7 +60,7 @@ CREDITS file. Thanks all !
 -- LEGAL STUFF ---------------------------------------------------------------
 
 LCDproc is Copyright (C) 1998-2006
-	William Ferrell, Scott Scriven and many other contributors.
+	William Ferrell, Selene Scriven and many other contributors.
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

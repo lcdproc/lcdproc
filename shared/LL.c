@@ -7,7 +7,8 @@
  * This file is released under the GNU General Public License.
  * Refer to the COPYING file distributed with this package.
  *
- * Copyright(c) 1999, William Ferrell
+ * Copyright(c) 1994, Selene Scriven
+ *          (c) 1999, William Ferrell
  *          (c) 2000, Guillaume Filion
  *          (c) 2001, Joris Robijn
  *          (c) 2008, Peter Marschall

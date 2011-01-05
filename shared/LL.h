@@ -2,6 +2,16 @@
  * Define routines to deal with doubly linked lists
  */
 
+/* This file is part of LCDproc.
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ *
+ * Copyright(c) 1994, Selene Scriven
+ *          (c) 1999, William Ferrell
+ *
+ */
+
 #ifndef LL_H
 #define LL_H
 

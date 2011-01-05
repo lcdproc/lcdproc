@@ -157,7 +157,7 @@ lcdproc-config(5)
 
 .SH AUTHOR
 LCDproc was originally written by William Ferrell (wwf@splatwerks.org) andr
-Scott Scriven (scriven@cs.colostate.edu).
+Selene Scriven (lcdproc@toykeeper.net).
 
 Since that time various people have contributed to LCDproc.
 

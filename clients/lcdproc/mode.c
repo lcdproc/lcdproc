@@ -111,7 +111,7 @@ credit_screen(int rep, int display, int *flags_ptr)
 	 */
 	const char *contributors[] = {
 		"William Ferrell",
-		"Scott Scriven",
+		"Selene Scriven",
 		"Gareth Watts",
 		"Lorand Bruhacs",
 		"Benjamin Tse",
