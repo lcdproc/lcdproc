@@ -466,18 +466,12 @@ dnl			else
 			fi
 			;;
 		xosd)
-			AC_CHECK_HEADERS([xosd.h],[
-				AC_CHECK_LIB(xosd, main,[
-					LIBXOSD=`xosd-config --libs`
-					DRIVERS="$DRIVERS xosd${SO}"
-					actdrivers=["$actdrivers xosd"]
-				],[
-dnl				else
-					AC_MSG_WARN([The xosd driver needs the xosd library])
-				])
+			AM_PATH_LIBXOSD([
+				DRIVERS="$DRIVERS xosd${SO}"
+				actdrivers=["$actdrivers xosd"]
 			],[
 dnl			else
-				AC_MSG_WARN([The xosd driver needs xosd.h])
+				AC_MSG_WARN([The xosd driver needs the xosd library])
 			])
 			;;
 		*)

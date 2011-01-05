@@ -33,6 +33,7 @@ mdm166a_CFLAGS =     @LIBHID_CFLAGS@ $(AM_CFLAGS)
 picolcd_CFLAGS =     @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 shuttleVFD_CFLAGS =  @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 ula200_CFLAGS =      @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
+xosd_CFLAGS =        @LIBXOSD_CFLAGS@ $(AM_CFLAGS)
 
 bayrad_LDADD =       libLCD.a
 CFontz_LDADD =       libLCD.a libbignum.a
@@ -69,7 +70,7 @@ svga_LDADD =         @LIBSVGA@
 t6963_LDADD =        libLCD.a
 tyan_LDADD =         libLCD.a libbignum.a
 ula200_LDADD =       @LIBFTDI_LIBS@
-xosd_LDADD =         @LIBXOSD@ libbignum.a
+xosd_LDADD =         @LIBXOSD_LIBS@ libbignum.a
 
 libLCD_a_SOURCES =   lcd_lib.h lcd_lib.c
 libbignum_a_SOURCES = adv_bignum.h  adv_bignum.c
