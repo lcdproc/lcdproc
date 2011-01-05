@@ -387,6 +387,7 @@ NoritakeVFD_clear (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	memset(p->framebuf, ' ', p->width * p->height);
+	p->ccmode = standard;
 }
 
 

@@ -307,26 +307,30 @@ tyan_lcdm_get_key (Driver *drvthis)
 	switch (key) {
 		case TYAN_LCDM_KEY_LEFT:
 			return "Left";
-			break;
+			/* NOTREACHED */
 		case TYAN_LCDM_KEY_UP:
 			return "Up";
-			break;
+			/* NOTREACHED */
 		case TYAN_LCDM_KEY_DOWN:
 			return "Down";
-			break;
+			/* NOTREACHED */
 		case TYAN_LCDM_KEY_RIGHT:
 			return "Right";
-			break;
+			/* NOTREACHED */
 		case TYAN_LCDM_KEY_ENTER:
 			return "Enter";
-			break;
+			/* NOTREACHED */
 		case TYAN_LCDM_KEY_ESCAPE:
 			return "Escape";
-			break;
+			/* NOTREACHED */
+		case 0xF4:
+			report(RPT_WARNING, "%s: Error while reading key", drvthis->name);
+			return NULL;
+			/* NOTREACHED */
 		default:
 			report(RPT_INFO, "%s: Untreated key 0x%02X", drvthis->name, key);
 			return NULL;
-			break;
+			/* NOTREACHED */
 	}
 }
 
@@ -701,6 +705,7 @@ tyan_lcdm_clear (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	memset(p->framebuf, ' ', p->width * p->height);
+	p->ccmode = standard;
 }
 
 
