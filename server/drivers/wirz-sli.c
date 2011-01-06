@@ -1,5 +1,7 @@
 /** \file server/drivers/wirz-sli.c
  * LCDd \c sli driver for the SLI devices by Wirz, http://www.wirz.com/.
+ *
+ * \todo Convert to new style hbar and vbar!
  */
 
 /*	wirz-sli.c -- Source file for LCDproc Wirz SLI driver
@@ -27,14 +29,6 @@
 
 #define SLI_DEFAULT_DEVICE	"/dev/lcd"
 
-typedef enum {
-	normal = 0,
-	hbar = 1,
-	vbar = 2,
-	bign = 4,
-	beat = 8
-} custom_type;
-
 /** private data for the \c sli driver */
 typedef struct sli_private_data {
 	char device[256];
@@ -45,7 +39,7 @@ typedef struct sli_private_data {
 	int height;
 	int cellwidth;
 	int cellheight;
-	int custom;
+	CGmode custom;
 } PrivateData;
 
 
@@ -74,7 +68,7 @@ sli_init (Driver *drvthis)
 		return -1;
 
 	/* initialize private data */
-	p->custom = normal;
+	p->custom = standard;
 	p->fd = -1;
 	p->framebuf = NULL;
 	p->width = 16;
@@ -540,7 +534,6 @@ sli_set_char (Driver *drvthis, int n, char *dat)
 MODULE_EXPORT int
 sli_icon (Driver *drvthis, int x, int y, int icon)
 {
-	PrivateData *p = drvthis->private_data;
 	static char icons[3][5 * 8] = {
 		{
 		 1, 1, 1, 1, 1,			  // Empty Heart
@@ -577,8 +570,6 @@ sli_icon (Driver *drvthis, int x, int y, int icon)
 
 	};
 
-	if (p->custom == bign)
-		p->custom = beat;
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
 			sli_chr(drvthis, x, y, 255);

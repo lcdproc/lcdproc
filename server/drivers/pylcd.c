@@ -323,7 +323,7 @@ pyramid_init (Driver *drvthis)
     p->customchars=CUSTOMCHARS;
     p->cellwidth=CELLWIDTH;
     p->cellheight=CELLHEIGHT;
-    p->custom = normal;
+    p->custom = standard;
 
     strcpy(p->last_key_pressed, NOKEY);
     p->last_key_time = timestamp(p);
@@ -845,12 +845,12 @@ pyramid_init_custom1 (Driver *drvthis)
 		0, 0, 0, 0, 0,
 	};
 
-	if (p->custom != custom1) {
+	if (p->custom != custom) {
 		pyramid_set_char (drvthis, 1, a);
 		pyramid_set_char (drvthis, 2, b);
 		pyramid_set_char (drvthis, 3, c);
 		pyramid_set_char (drvthis, 4, d);
-		p->custom = custom1;
+		p->custom = custom;
 	}
 }
 
@@ -997,19 +997,6 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		 },
 	};
 
-	PrivateData *p = (PrivateData *) drvthis->private_data;
-#if 0
-
-	// notify the others that we messed up their character set.
-	// Unused for heartbeats as we should always leave that icon alone.
-	//
-	// Leaving this in the code as notification for other similar cases
-	if (p->custom == bign) {
-		debug(RPT_DEBUG, "%s: Switching to beat", __FUNCTION__);
-		p->custom = beat;
-	}
-#endif
-
 	switch( icon ) {
 		case ICON_BLOCK_FILLED:
 			pyramid_chr( drvthis, x, y, 255 );
@@ -1028,13 +1015,11 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 		case ICON_ARROW_UP:
 			pyramid_set_char( drvthis, 2, icons[2] );
 			pyramid_chr( drvthis, x, y, 2 );
-			p->custom = icon;
 			break;
 
 		case ICON_ARROW_DOWN:
 			pyramid_set_char( drvthis, 3, icons[3] );
 			pyramid_chr( drvthis, x, y, 3 );
-			p->custom = icon;
 			break;
 
 		case ICON_ARROW_LEFT:
@@ -1045,6 +1030,7 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 			pyramid_chr( drvthis, x, y, '\176' );
 			break;
 
+		/* FIXME: Does setting CC to position 10-13 really work? */
 		case ICON_CHECKBOX_ON:
 			pyramid_set_char( drvthis, 10, icons[4] );
 			pyramid_chr( drvthis, x, y, 10 );

@@ -9,6 +9,7 @@ v.0.5dev (ongoing development)
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)
  * Build system: Fix xosd detection
  * Reset ccmode on screen clear for NoritakeVFD, tyan driver
+ * All drivers: Refactor CGmode enum into lcd.h
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)

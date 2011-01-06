@@ -73,15 +73,6 @@ typedef enum {
 	SURE_ELEC_EDITION3 = 3,
 }    SureElec_edition;
 
-typedef enum {
-	standard,		/* only char 0 is used for heartbeat */
-	vbar,			/* vertical bars */
-	hbar,			/* horizontal bars */
-	custom,			/* custom settings */
-	bignum,			/* big numbers */
-	bigchar			/* big characters */
-}    CGmode;
-
 /** private data for the \c SureElec driver */
 typedef struct SureElec_private_data {
 	int fd;			/* Serial port file descriptor */

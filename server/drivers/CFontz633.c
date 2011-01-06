@@ -78,16 +78,6 @@
 /* Constants for userdefchar_mode */
 #define NUM_CCs		8 /* max. number of custom characters */
 
-typedef enum {
-	standard,	/* only char 0 is used for heartbeat */
-	vbar,		/* vertical bars */
-	hbar,		/* horizontal bars */
-	custom,		/* custom settings */
-	bignum,		/* big numbers */
-	bigchar		/* big characters */
-} CGmode;
-
-
 /** private data for the \c CFonts633 driver */
 typedef struct CFontz633_private_data {
 	char device[200];

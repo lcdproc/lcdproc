@@ -1,5 +1,7 @@
 /** \file server/drivers/mtc_s16209x.c
  * LCDd \c mtc_s16209x driver for the MTC_S16209x LCD display by Microtips Technology Inc.
+ *
+ * \todo Convert to new style hbar and vbar!
  */
 
 /*
@@ -86,15 +88,6 @@ char lcd_showunderline[] = "\xFE\x0E";	// From Show_UnderLine()
 char lcd_hideunderline[] = "\xFE\x0B";	// From Hide_UnderLine()
 
 
-typedef enum {
-  normal = 1,
-  hbar = 1,
-  vbar = 2,
-  bign = 4,
-  beat = 8
-} custom_type;
-
-
 /** private data for the \c mtc_s16209x driver */
 typedef struct MTC_S16209X_private_data {
   char device[256];
@@ -104,7 +97,7 @@ typedef struct MTC_S16209X_private_data {
   int height;
   int cellwidth;
   int cellheight;
-  custom_type custom;
+  CGmode custom;
 } PrivateData;
 
 
@@ -151,7 +144,7 @@ MTC_S16209X_init (Driver *drvthis)
   p->height = 2;		//was: LCD_DEFAULT_HEIGHT; (is now hardcoded)
   p->cellwidth = LCD_DEFAULT_CELLWIDTH;
   p->cellheight = LCD_DEFAULT_CELLHEIGHT;
-  p->custom = normal;
+  p->custom = standard;
 
   /* Read config file */
 

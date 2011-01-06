@@ -69,14 +69,6 @@
 /* Constants for userdefchar_mode */
 #define NUM_CCs		2 /* max. number of custom characters */
 
-typedef enum {
-	standard,	/* only char 0 is used for heartbeat */
-	vbar,		/* vertical bars */
-	hbar,		/* horizontal bars */
-	custom,		/* custom settings */
-	bignum,		/* big numbers */
-} CGmode;
-
 /** private data for the \c NoritakeVFD driver */
 typedef struct NoritakeVFD_private_data {
 	char device[200];

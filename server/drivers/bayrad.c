@@ -38,10 +38,6 @@
 #include "lcd_lib.h"
 
 #define NUM_CCs 8 /* number of characters */
-#define CCMODE_STANDARD 0 /* only char 0 is used for heartbeat */
-#define CCMODE_VBAR 1
-#define CCMODE_HBAR 2
-#define CCMODE_BIGNUM 3
 
 #define BAYRAD_DEFAULT_DEVICE	"/dev/lcd"
 
@@ -56,7 +52,7 @@ typedef struct bayrad_private_data {
   int cellwidth;
   int cellheight;
   char *framebuf;
-  char ccmode;
+  CGmode ccmode;
 } PrivateData;
 
 
@@ -94,7 +90,7 @@ bayrad_init(Driver *drvthis)
   p->cellwidth = 5;
   p->cellheight = 8;
   p->framebuf = NULL;
-  p->ccmode = CCMODE_STANDARD;
+  p->ccmode = standard;
 
 
   /* Read config file */
@@ -266,7 +262,7 @@ bayrad_clear(Driver *drvthis)
   PrivateData *p = drvthis->private_data;
 
   memset(p->framebuf, ' ', p->width * p->height);
-  p->ccmode = CCMODE_STANDARD;
+  p->ccmode = standard;
 }
 
 
@@ -455,18 +451,18 @@ bayrad_init_vbar(Driver *drvthis)
 
   //debug(RPT_DEBUG,"Init Vertical bars");
 
-  if (p->ccmode == CCMODE_VBAR) {
+  if (p->ccmode == vbar) {
     /* Work already done */
     return;
   }
 
-  if (p->ccmode != CCMODE_STANDARD) {
+  if (p->ccmode != standard) {
     /* Not supported (yet) */
     report(RPT_WARNING, "%s: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }
-  p->ccmode = CCMODE_VBAR;
+  p->ccmode = vbar;
 
   bayrad_set_char(drvthis, 1, bar_up[0]);
   bayrad_set_char(drvthis, 2, bar_up[1]);
@@ -535,18 +531,18 @@ bayrad_init_hbar(Driver *drvthis)
 
   //debug(RPT_DEBUG,"Init Horizontal bars");
 
-  if (p->ccmode == CCMODE_HBAR) {
+  if (p->ccmode == hbar) {
     /* Work already done */
     return;
   }
 
-  if (p->ccmode != CCMODE_STANDARD) {
+  if (p->ccmode != standard) {
     /* Not supported (yet) */
     report(RPT_WARNING, "%s: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }
-  p->ccmode = CCMODE_HBAR;
+  p->ccmode = hbar;
 
   bayrad_set_char(drvthis, 1, bar_right[0]);
   bayrad_set_char(drvthis, 2, bar_right[1]);

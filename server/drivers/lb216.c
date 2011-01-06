@@ -1,5 +1,7 @@
 /** \file server/drivers/lb216.c
  * LCDd \c lb216 driver for the LB216 by R.T.N. Australia.
+ * 
+ * \todo Convert to new style hbar and vbar!
  */
 
 /*
@@ -37,14 +39,6 @@
 #define LB216_DEFAULT_SPEED		9600
 #define LB216_DEFAULT_BRIGHTNESS	255
 
-typedef enum {
-	normal = 0,
-	hbar = 1,
-	vbar = 2,
-	bign = 4,
-        beat = 8
-} custom_type;
-
 /** private data for the \c lb216 driver */
 typedef struct LB216_private_data {
 	char device[256];
@@ -56,7 +50,7 @@ typedef struct LB216_private_data {
 	int cellwidth;
 	int cellheight;
    	int backlight_brightness;
-	custom_type custom;
+	CGmode custom;
 } PrivateData;
 
 
@@ -97,7 +91,7 @@ LB216_init(Driver *drvthis)
   p->height = LCD_DEFAULT_HEIGHT;
   p->cellwidth = LCD_DEFAULT_CELLWIDTH;
   p->cellheight = LCD_DEFAULT_CELLHEIGHT;
-  p->custom = normal;
+  p->custom = standard;
 
   /* Read config file */
 
@@ -544,6 +538,8 @@ LB216_vbar(Driver *drvthis, int x, int len)
   char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
   int y;
 
+  LB216_init_vbar(drvthis);
+
   for (y = p->height; (y > 0) && (len > 0); y--) {
     if (len >= p->cellheight)
       LB216_chr(drvthis, x, y, map[8]);
@@ -562,6 +558,8 @@ LB216_hbar(Driver *drvthis, int x, int y, int len)
 {
   PrivateData *p = drvthis->private_data;
   char map[7] = { 32, 1, 2, 3, 4, 5 };
+
+  LB216_init_hbar(drvthis);
 
   for ( ; (x <= p->width) && (len > 0); x++) {
     if (len >= p->cellwidth)

@@ -65,15 +65,6 @@
 
 #define NUM_CCs         8 /* max. number of custom characters */
 
-typedef enum {
-	standard,	/* only char 0 is used for heartbeat */
-	vbar,		/* vertical bars */
-	hbar,		/* horizontal bars */
-	custom,		/* custom settings */
-	bignum,		/* big numbers */
-	bigchar		/* big characters */
-} CGmode;
-
 /* PrivateData struct */
 typedef struct picolcd_private_data {
 	usb_dev_handle *lcd;

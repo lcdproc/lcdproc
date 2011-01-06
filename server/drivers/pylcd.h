@@ -44,16 +44,6 @@
 #define CELLWIDTH   5
 
 
-typedef enum {
-    normal = 0,
-    hbar = 1,
-    vbar = 2,
-    beat = 4,
-    icon = 8,
-    custom1 = 16
-} custom_type;
-
-
 /** private data for the \c pyramid driver */
 typedef struct pyramid_private_data {
     /* device io */
@@ -72,7 +62,7 @@ typedef struct pyramid_private_data {
     /* output handling */
     char framebuffer[WIDTH*HEIGHT+2];
     int FB_modified;
-    custom_type custom;
+    CGmode custom;
 
     /* button handling */
     char last_key_pressed[6];

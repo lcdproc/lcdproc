@@ -26,14 +26,6 @@
 #ifndef SERIALVFD_H
 #define SERIALVFD_H
 
-#define CCMODE_STANDARD 0	/* only char 0 is used for heartbeat */
-#define CCMODE_VBAR 1
-#define CCMODE_HBAR 2
-#define CCMODE_BIGNUM 3
-#define CCMODE_BIGCHAR 4
-#define CCMODE_CUSTOM 5
-
-
 #define DEFAULT_CELL_WIDTH	5
 #define DEFAULT_CELL_HEIGHT	7
 #define DEFAULT_DEVICE		"/dev/lcd"
@@ -85,7 +77,7 @@ typedef struct serialVFD_private_data {
 	/* framebuffer and buffer for old LCD contents */
 	unsigned char *framebuf;
 	unsigned char *backingstore;
-	int ccmode;
+	CGmode ccmode;
 	int on_brightness;
 	int off_brightness;
 	int hw_brightness;

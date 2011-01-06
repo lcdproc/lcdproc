@@ -75,15 +75,6 @@
 #define NUM_CCs 8 /* number of custom characters */
 
 
-typedef enum {
-	standard,	/* only char 0 is used for heartbeat */
-	vbar,		/* vertical bars */
-	hbar,		/* horizontal bars */
-	bignum,		/* big numbers */
-	bigchar		/* big characters */
-} CGmode;
-
-
 typedef struct cgram_cache {
 	unsigned char cache[LCD_DEFAULT_CELLHEIGHT];
 	int clean;

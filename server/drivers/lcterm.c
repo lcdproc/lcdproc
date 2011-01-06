@@ -46,19 +46,11 @@
 #include "lcterm.h"
 #include "report.h"
 
-typedef enum
-{
-  CCMODE_STANDARD,    /* only char 0 is used for heartbeat */
-  CCMODE_VBAR,
-  CCMODE_HBAR,
-  CCMODE_BIGNUM
-} CCMode;
-
 
 /** private data for the \c lcterm driver */
 typedef struct lcterm_private_data {
-  CCMode ccmode;	/**< custom character mode for current display */
-  CCMode last_ccmode;	/**< custom character set that is loaded in the display */
+  CGmode ccmode;	/**< custom character mode for current display */
+  CGmode last_ccmode;	/**< custom character set that is loaded in the display */
   unsigned char *framebuf;	/**< frame buffer */
   unsigned char *last_framebuf;	/**< old frame buffer contents */
   int width;		/**< display width in characters */
@@ -100,7 +92,7 @@ lcterm_init (Driver *drvthis)
 
   // initialize private data
   p->fd = -1;
-  p->ccmode = p->last_ccmode = CCMODE_STANDARD;
+  p->ccmode = p->last_ccmode = standard;
 
   // READ CONFIG FILE:
   // which serial device should be used
@@ -242,7 +234,7 @@ lcterm_clear (Driver *drvthis)
   PrivateData *p = (PrivateData *) drvthis->private_data;
 
   memset(p->framebuf, ' ', p->width * p->height);
-  p->ccmode = CCMODE_STANDARD;
+  p->ccmode = standard;
 }
 
 
@@ -436,17 +428,17 @@ lcterm_init_vbar (Driver *drvthis)
     1, 1, 1, 1, 1,
   };
 
-  if (p->last_ccmode == CCMODE_VBAR)    /* Work already done */
+  if (p->last_ccmode == vbar)    /* Work already done */
     return;
 
-  if (p->ccmode != CCMODE_STANDARD) {
+  if (p->ccmode != standard) {
     /* Not supported (yet) */
     report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }
 
-  p->ccmode = p->last_ccmode = CCMODE_VBAR;
+  p->ccmode = p->last_ccmode = vbar;
 
   lcterm_set_char(drvthis, 1, vbar_1);
   lcterm_set_char(drvthis, 2, vbar_2);
@@ -518,17 +510,17 @@ lcterm_init_hbar (Driver *drvthis)
     1, 1, 1, 1, 1,
   };
 
-  if (p->last_ccmode == CCMODE_HBAR) /* Work already done */
+  if (p->last_ccmode == hbar) /* Work already done */
     return;
 
-  if (p->ccmode != CCMODE_STANDARD) {
+  if (p->ccmode != standard) {
     /* Not supported (yet) */
     report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }
 
-  p->ccmode = p->last_ccmode = CCMODE_HBAR;
+  p->ccmode = p->last_ccmode = hbar;
 
   lcterm_set_char(drvthis, 1, hbar_1);
   lcterm_set_char(drvthis, 2, hbar_2);
@@ -656,19 +648,19 @@ lcterm_init_num (Driver *drvthis)
     0, 0, 0, 0, 0
   }};
 
-  if (p->last_ccmode == CCMODE_BIGNUM) {
+  if (p->last_ccmode == bignum) {
     /* Work already done */
     return;
   }
 
-  if (p->ccmode != CCMODE_STANDARD) {
+  if (p->ccmode != standard) {
     /* Not supported (yet) */
     report(RPT_WARNING, "%s: init_num: cannot combine two modes using user-defined characters",
 		    drvthis->name);
     return;
   }
 
-  p->ccmode = p->last_ccmode = CCMODE_BIGNUM;
+  p->ccmode = p->last_ccmode = bignum;
 
   for (i = 0; i < 8; i++)
     lcterm_set_char(drvthis, i, bignum_ccs[i]);

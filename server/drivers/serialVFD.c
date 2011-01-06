@@ -110,7 +110,7 @@ serialVFD_init (Driver *drvthis)
 	/* Initialize the PrivateData structure */
 	p->cellwidth = DEFAULT_CELL_WIDTH;
 	p->cellheight = DEFAULT_CELL_HEIGHT;
-	p->ccmode = CCMODE_STANDARD;
+	p->ccmode = standard;
 	p->ISO_8859_1 = 1;
 	p->refresh_timer = 480;
 	p->hw_brightness = 0;
@@ -562,11 +562,11 @@ serialVFD_num(Driver * drvthis, int x, int num)
 	PrivateData *p = drvthis->private_data;
 	int do_init = 0;
 
-	if (p->ccmode != CCMODE_BIGNUM) {
+	if (p->ccmode != bignum) {
 		/* If custom characters are not yet set up Lib_adv_bignum has
 		 * to do it. */
 		do_init = 1;
-		p->ccmode = CCMODE_BIGNUM;
+		p->ccmode = bignum;
 	}
 	lib_adv_bignum(drvthis, x, num, 0, do_init);
 }
@@ -610,7 +610,7 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 			break;
 		case ICON_HEART_FILLED:
 			if (p->customchars > 0) {
-		        	p->ccmode = CCMODE_STANDARD;
+		        	p->ccmode = standard;
 				serialVFD_set_char(drvthis, 0, heart_filled);
 				serialVFD_chr(drvthis, x, y, 0);
 			}
@@ -619,7 +619,7 @@ serialVFD_icon (Driver *drvthis, int x, int y, int icon)
 			break;
 		case ICON_HEART_OPEN:
 			if (p->customchars > 0) {
-				p->ccmode = CCMODE_STANDARD;
+				p->ccmode = standard;
 				serialVFD_set_char(drvthis, 0, heart_open);
 				serialVFD_chr(drvthis, x, y, 0);
 			}
@@ -778,7 +778,7 @@ serialVFD_get_info (Driver *drvthis)
  * Set up vertical bars.
  * \param drvthis  Pointer to driver structure.
  *
- * \note
+ * \todo
  * Called only by vbar(). Can possibly be included there.
  * This should also make CCMODE independent of the implementation of the bars.
  */
@@ -787,11 +787,11 @@ serialVFD_init_vbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	if (p->ccmode != CCMODE_VBAR) {
+	if (p->ccmode != vbar) {
 		unsigned char vBar[p->cellheight];
 		int i;
 
-		p->ccmode = CCMODE_VBAR;
+		p->ccmode = vbar;
 
 		memset(vBar, 0x00, sizeof(vBar));
 
@@ -808,7 +808,7 @@ serialVFD_init_vbar (Driver *drvthis)
  * Set up horizontal bars.
  * \param drvthis  Pointer to driver structure.
  *
- * \note
+ * \todo
  * Called only by hbar(). Can possibly be included there.
  * This should also make CCMODE independent of the implementation of the bars.
  */
@@ -817,11 +817,11 @@ serialVFD_init_hbar (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	if (p->ccmode != CCMODE_HBAR) {
+	if (p->ccmode != hbar) {
 		unsigned char hBar[p->cellheight];
 		int i;
 
-		p->ccmode = CCMODE_HBAR;
+		p->ccmode = hbar;
 
 		for (i = 1; i < p->cellwidth; i++) {
 			/* fill pixel columns from left to right. */
