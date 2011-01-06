@@ -661,7 +661,6 @@ HD44780_flush(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	int x, y;
-	int wid = p->width;
 	int i;
 	int count;
 	char refreshNow = 0;
@@ -679,28 +678,51 @@ HD44780_flush(Driver *drvthis)
 		p->nextkeepalive = now + p->keepalivedisplay;
 	}
 
-
-	/* Update LCD incrementally by comparing with last contents */
+	/*
+	 * LCD update algorithm: For each line skip over leading and trailing
+	 * identical portions of the line. Then send everything in between.
+	 * This will also update unchanged parts in the middle but is still
+	 * faster than the old algorithm, especially with devices using the
+	 * transmit buffer.
+	 */
 	count = 0;
 	for (y = 0; y < p->height; y++) {
-		int drawing = 0;
+		int drawing;
+		int dispID = p->spanList[y];
 
-		for (x = 0 ; x < wid; x++) {
-			unsigned char ch = p->framebuf[(y * wid) + x];
+		/* set pointers to start of the line */
+		unsigned char *sp = p->framebuf + (y * p->width);
+		unsigned char *sq = p->backingstore + (y * p->width);
 
-			if (refreshNow || (x + y == 0 && keepaliveNow) || ch != p->backingstore[(y*wid)+x]) {
-				if (!drawing || x % 8 == 0) { /* x%8 is for 16x1 displays ! */
+		/* set pointers to end of the line */
+		unsigned char *ep = sp + (p->width - 1);
+		unsigned char *eq = sq + (p->width - 1);
+
+		/* On forced refresh update everything */
+		if (refreshNow || keepaliveNow) {
+			x = 0;
+		}
+		else {
+			/* find begin and end of differences */
+			for (x = 0; (sp <= ep) && (*sp == *sq); sp++, sq++, x++)
+			  ;
+			for (; (ep >= sp) && (*ep == *eq); ep--, eq--)
+			  ;
+		}
+
+		/* there are differences, ... */
+		if (sp <= ep) {
+			for (drawing = 0; sp <= ep; x++, sp++, sq++) {
+				 /* x%8 is for 16x1 displays only ! */
+				if (!drawing || (p->dispSizes[dispID-1] == 1 && p->width == 16 && (x % 8 == 0))) {
 					drawing = 1;
 					HD44780_position(drvthis,x,y);
 				}
-				p->hd44780_functions->senddata(p, p->spanList[y], RS_DATA,
-								available_charmaps[p->charmap].charmap[ch]);
+				p->hd44780_functions->senddata(p, dispID, RS_DATA,
+							       available_charmaps[p->charmap].charmap[*sp]);
 				p->hd44780_functions->uPause(p, 40);  /* Minimum exec time for all commands */
-				p->backingstore[(y*wid)+x] = ch;
+				*sq = *sp;	/* Update backing store */
 				count++;
-			} 
-			else {
-				drawing = 0;
 			}
 		}
 	}
