@@ -47,6 +47,7 @@ Tom Wheeley:
 	- IRMan input driver
 
 Bjoern Andersson:
+	- Autoconf/automake build system
 	- Curses driver
 
 Andrew McMeikan <andrewm@engineer.com>:
@@ -63,10 +64,6 @@ David Glaude:
 
 Todd Porter:
 	- Windows 95/98 and NT version
-
-Bjoern Andersson:
-	- Autoconf/automake build system
-	- Curses driver
 
 Jason Dale Woodward:
 	- widget scrolling
@@ -275,14 +272,7 @@ Christoph Rasim
 
 
 Further developers in the sourceforge lcdproc team:
-Mindaugas Idzelis       aim4min
-Andre Burton            andreb
 Colin Munro             colinmunro
 Shane Spencer           hardwire
-J Robert Ray            jrray
-Matthew Dainty          mattd
 Jim McCracken           merlin_jim
-Ken Robertson		seadawg
-Simon Harrison		smh
-Stephen Paul		tegetana
 Luis Llorente		luisllo
