@@ -156,14 +156,14 @@ LCDd(8),
 lcdproc-config(5)
 
 .SH AUTHOR
-LCDproc was originally written by William Ferrell (wwf@splatwerks.org) andr
-Selene Scriven (lcdproc@toykeeper.net).
-
-Since that time various people have contributed to LCDproc.
-
-The newest version of LCDproc should be available from here:
-
+Many people have contributed to LCDproc.  See the \fICREDITS\fP file for
+more details.
+.PP
+All questions should be sent to the lcdproc mailing list.  The mailing list,
+and the newest version of LCDproc, should be available from here:
+.PP
 		http://www.lcdproc.org/
+
 
 .SH LEGAL STUFF
 LCDproc is released as "WorksForMe-Ware".
