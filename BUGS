@@ -7,11 +7,13 @@ V0.5dev:
     a non full block from the vBar.
   - On Solaris the mtc_s16209x driver fails to compile. Configure LCDproc to
     exclude this driver.
+  - On FreeBSD drivers using the pthread library are known not to work.
+    Currently affected are the lis and xosd driver.
 
 
 Bugs in previous versions (not checked if the still exist):
 -----------------------------------------------------------
-    
+
    - A client may cause the connection to LCDd to break or even crash
      LCDd by not reading the replies from LCDd
          See one of the example clients (clients/examples) for details.

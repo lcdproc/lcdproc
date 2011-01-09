@@ -164,6 +164,7 @@ static inline void timing_uPause (int usecs) {
 	}
 #else // using I/O timing
       // Assuming every port I/O takes 1us
+      // FIXME: Does this work at all? Where does 'port' come from?
 	for (int i=0; i < usecs; ++i)
 		port_in(port);
 #endif
