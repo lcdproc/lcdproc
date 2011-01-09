@@ -40,6 +40,7 @@ v0.5.4
  * SureElec: Fix stall on startup
  + new driver: MDM166A for Futaba/Targa USB VFD (Christoph Rasim)
  * picolcd: Fix backlight and contrast handling (M. T. Jones)
+ * picolcd: Fix heartbeat icon messing up with vbar
 
 v0.5.3
  + lcdexec: notification when called program finishes

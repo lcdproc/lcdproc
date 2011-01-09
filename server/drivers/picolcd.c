@@ -648,30 +648,49 @@ MODULE_EXPORT void picoLCD_num (Driver *drvthis, int x, int num)
  */
 MODULE_EXPORT int picoLCD_icon (Driver *drvthis, int x, int y, int icon)
 {
-	PrivateData *p = drvthis->private_data;
-
-	/* 8x5 icons each number represents one row in binary */
-
 	static unsigned char heart_open[] =
-	    { 0x0, 0xa, 0x15, 0x11, 0x1b, 0xa, 0x4, 0x0 };
-
+	{
+		b_______,
+		b___X_X_,
+		b__X_X_X,
+		b__X___X,
+		b__XX_XX,
+		b___X_X_,
+		b____X__,
+		b_______
+	};
 
 	static unsigned char heart_filled[] =
-	    { 0x0, 0xa, 0x1f, 0x1f, 0x1f, 0xe, 0x4, 0x0 };
+	{
+		b_______,
+		b___X_X_,
+		b__XXXXX,
+		b__XXXXX,
+		b__XXXXX,
+		b___XXX_,
+		b____X__,
+		b_______
+	};
 
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
 			picoLCD_chr(drvthis, x, y, 255);
 			break;
 		case ICON_HEART_FILLED:
-			p->ccmode = custom;
-			picoLCD_set_char(drvthis, 7, heart_filled);
-			picoLCD_chr(drvthis, x, y, 7);
+			/*
+			 * Set heartbeat icons in custom character 0
+			 * but address character 8. The 'HD44780' can
+			 * address CC by char 0-7 and 8-15. As CC 0
+			 * cannot be used due to the string handling
+			 * in flush use CC 8 here.
+			 */
+			picoLCD_set_char(drvthis, 0, heart_filled);
+			picoLCD_chr(drvthis, x, y, 8);
 			break;
 		case ICON_HEART_OPEN:
-			p->ccmode = custom;
-			picoLCD_set_char(drvthis, 7, heart_open);
-			picoLCD_chr(drvthis, x, y, 7);
+			/* Same procedure as above */
+			picoLCD_set_char(drvthis, 0, heart_open);
+			picoLCD_chr(drvthis, x, y, 8);
 			break;
 		case ICON_ARROW_LEFT:
 			picoLCD_chr(drvthis, x, y, 127);
@@ -679,7 +698,6 @@ MODULE_EXPORT int picoLCD_icon (Driver *drvthis, int x, int y, int icon)
 		case ICON_ARROW_RIGHT:
 			picoLCD_chr(drvthis, x, y, 126);
 			break;
-
 		default:
 			return -1; /* Let the core do other icons */
 	}
