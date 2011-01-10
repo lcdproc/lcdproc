@@ -64,7 +64,7 @@ MODULE_EXPORT char *symbol_prefix = "debug_";
 
 
 /**
- * Initialize the driver.
+ * Initialize the driver. (Required)
  * \param drvthis  Pointer to driver structure.
  * \retval 0       Success.
  * \retval <0      Error.
@@ -104,7 +104,7 @@ debug_init(Driver *drvthis)
 
 
 /**
- * Close the driver (do necessary clean-up).
+ * Close the driver (do necessary clean-up). (Required)
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
@@ -126,7 +126,7 @@ debug_close(Driver *drvthis)
 
 
 /**
- * Return the display width in characters.
+ * Return the display width in characters. (Required for output)
  * \param drvthis  Pointer to driver structure.
  * \return         Number of characters the display is wide.
  */
@@ -142,7 +142,7 @@ debug_width(Driver *drvthis)
 
 
 /**
- * Return the display height in characters.
+ * Return the display height in characters. (Required for output)
  * \param drvthis  Pointer to driver structure.
  * \return         Number of characters the display is high.
  */
@@ -158,7 +158,7 @@ debug_height(Driver *drvthis)
 
 
 /**
- * Return the width of a character in pixels.
+ * Return the width of a character in pixels. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \return         Number of pixel columns a character cell is wide.
  */
@@ -167,12 +167,14 @@ debug_cellwidth(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
+	report(RPT_INFO, "%s()", __FUNCTION__);
+
 	return p->cellwidth;
 }
 
 
 /**
- * Return the height of a character in pixels.
+ * Return the height of a character in pixels. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \return         Number of pixel lines a character cell is high.
  */
@@ -181,12 +183,14 @@ debug_cellheight(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
+	report(RPT_INFO, "%s()", __FUNCTION__);
+
 	return p->cellheight;
 }
 
 
 /**
- * Clear the screen.
+ * Clear the screen. (Required for output)
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
@@ -202,7 +206,7 @@ debug_clear(Driver *drvthis)
 
 
 /**
- * Flush data on screen to the display.
+ * Flush data on screen to the display. (Required for output)
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
@@ -214,12 +218,14 @@ debug_flush(Driver *drvthis)
 
 	report(RPT_INFO, "%s()", __FUNCTION__);
 
+	/* Heading line */
 	for (i = 0; i < p->width; i++) {
 		out[i] = '-';
 	}
 	out[p->width] = 0;
 	//report(RPT_DEBUG, "+%s+", out);
 
+	/* Output each framebuffer line */
 	for (i = 0; i < p->height; i++) {
 		for (j = 0; j < p->width; j++) {
 			out[j] = p->framebuf[j + (i * p->width)];
@@ -229,6 +235,7 @@ debug_flush(Driver *drvthis)
 
 	}
 
+	/* Trailing line */
 	for (i = 0; i < p->width; i++) {
 		out[i] = '-';
 	}
@@ -238,7 +245,7 @@ debug_flush(Driver *drvthis)
 
 
 /**
- * Print a string on the screen at position (x,y).
+ * Print a string on the screen at position (x,y). (Required for output)
  * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
@@ -267,7 +274,7 @@ debug_string(Driver *drvthis, int x, int y, const char string[])
 
 
 /**
- * Print a character on the screen at position (x,y).
+ * Print a character on the screen at position (x,y). (Required for output)
  * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
@@ -290,7 +297,7 @@ debug_chr(Driver *drvthis, int x, int y, char c)
 
 
 /**
- * Draw a vertical bar bottom-up.
+ * Draw a vertical bar bottom-up. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column) of the starting point.
  * \param y        Vertical character position (row) of the starting point.
@@ -318,7 +325,7 @@ debug_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 
 
 /**
- * Draw a horizontal bar to the right.
+ * Draw a horizontal bar to the right. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column) of the starting point.
  * \param y        Vertical character position (row) of the starting point.
@@ -346,7 +353,7 @@ debug_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 
 
 /**
- * Write a big number to the screen.
+ * Write a big number to the screen. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
  * \param num      Character to write (0 - 10 with 10 representing ':')
@@ -360,7 +367,7 @@ debug_num(Driver *drvthis, int x, int num)
 
 
 /**
- * Place an icon on the screen.
+ * Place an icon on the screen. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
@@ -379,7 +386,21 @@ debug_icon(Driver *drvthis, int x, int y, int icon)
 
 
 /**
- * Define a custom character and write it to the LCD.
+ * Set cursor position and state. (Optional)
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal cursor position (column).
+ * \param y        Vertical cursor position (row).
+ * \param type     Appearance of the cursor
+ */
+MODULE_EXPORT void
+debug_cursor(Driver *drvthis, int x, int y, int type)
+{
+	report(RPT_INFO, "%s (%i,%i,%i)", __FUNCTION__, x, y, type);
+}
+
+
+/**
+ * Define a custom character and write it to the LCD. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \param n        Custom character to define [0 - (NUM_CCs-1)].
  * \param dat      Array of 8 (=cellheight) bytes, each representing a pixel row
@@ -396,7 +417,21 @@ debug_set_char(Driver *drvthis, int n, char *dat)
 
 
 /**
- * Get current LCD contrast.
+ * Get total number of custom characters available. (Optional)
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of custom characters.
+ */
+MODULE_EXPORT int
+debug_get_free_chars(Driver *drvthis)
+{
+	report(RPT_INFO, "%s()", __FUNCTION__);
+
+	return 0;
+}
+
+
+/**
+ * Get current LCD contrast. (Optional)
  * This is only the locally stored contrast, the contrast value
  * cannot be retrieved from the LCD.
  * \param drvthis  Pointer to driver structure.
@@ -414,7 +449,7 @@ debug_get_contrast(Driver *drvthis)
 
 
 /**
- * Change LCD contrast.
+ * Change LCD contrast. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \param promille New contrast value in promille.
  */
@@ -430,7 +465,7 @@ debug_set_contrast(Driver *drvthis, int promille)
 
 
 /**
- * Retrieve brightness.
+ * Retrieve brightness. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \param state    Brightness state (on/off) for which we want the value.
  * \return         Stored brightness in promille.
@@ -447,7 +482,7 @@ debug_get_brightness(Driver *drvthis, int state)
 
 
 /**
- * Set on/off brightness.
+ * Set on/off brightness. (Optional)
  * \param drvthis   Pointer to driver structure.
  * \param state     Brightness state (on/off) for which we want to store the value.
  * \param promille  New brightness in promille.
@@ -474,7 +509,7 @@ debug_set_brightness(Driver *drvthis, int state, int promille)
 }
 
 /**
- * Turn the backlight on or off.
+ * Turn the backlight on or off. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \param on       New backlight status.
  */
@@ -487,7 +522,20 @@ debug_backlight(Driver *drvthis, int on)
 
 
 /**
- * Handle input from keyboard.
+ * Send out-of-band data to the device. (Optional)
+ * \param drvthis  Pointer to driver structure.
+ * \param value    Integer. Meaning is specific to the device
+ */
+MODULE_EXPORT void
+debug_output(Driver *drvthis, int value)
+{
+	//PrivateData *p = drvthis->private_data;
+	report(RPT_INFO, "%s(%i)", __FUNCTION__, value);
+}
+
+
+/**
+ * Handle input from keyboard. (Required for input drivers)
  * \param drvthis  Pointer to driver structure.
  * \return         String representation of the key;
  *                 \c NULL if nothing available / unmapped key
@@ -503,7 +551,7 @@ debug_get_key(Driver *drvthis)
 
 
 /**
- * Provide some information about this driver.
+ * Provide some information about this driver. (Optional)
  * \param drvthis  Pointer to driver structure.
  * \return         Constant string with information.
  */
