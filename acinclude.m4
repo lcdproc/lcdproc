@@ -466,13 +466,17 @@ dnl			else
 			fi
 			;;
 		xosd)
-			AM_PATH_LIBXOSD([
+			AC_PATH_PROG([LIBXOSD_CONFIG], [xosd-config], [no])
+			if test "$LIBXOSD_CONFIG" = "no"; then
+				AC_MSG_WARN([The xosd driver needs the xosd library])
+			else
+				LIBXOSD_CFLAGS=`$LIBXOSD_CONFIG --cflags`
+				LIBXOSD_LIBS=`$LIBXOSD_CONFIG --libs`
+				AC_SUBST(LIBXOSD_CFLAGS)
+				AC_SUBST(LIBXOSD_LIBS)
 				DRIVERS="$DRIVERS xosd${SO}"
 				actdrivers=["$actdrivers xosd"]
-			],[
-dnl			else
-				AC_MSG_WARN([The xosd driver needs the xosd library])
-			])
+			fi
 			;;
 		*)
 			AC_MSG_ERROR([Unknown driver $driver])
