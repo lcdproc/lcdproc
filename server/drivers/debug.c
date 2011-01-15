@@ -6,6 +6,7 @@
 
 /*-
  * Copyright (C) 2008, Peter Marschall
+ * 		 2010, Markus Dolze
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -206,8 +207,21 @@ debug_clear(Driver *drvthis)
 
 
 /**
- * Flush data on screen to the display. (Required for output)
+ * Flush data on screen to the display. (Optional)
  * \param drvthis  Pointer to driver structure.
+ *
+ * \note Character 0x00 may be a valid character in the frame buffer! Avoid
+ * using string handling functions here (strcpy and friends).
+ *
+ * \note \n Note to driver developers: Drivers may write to the screen directly
+ * with chr() and string() functions. However, it makes sound to have these
+ * functions write to an internal frame buffer first and update the screen on
+ * call to flush(), maybe with some partial/incremental update algorithm.
+ * Some drivers have a second buffer to hold the actual screen content to be
+ * able to compare it with the current frame buffer (double buffering). The
+ * debug driver provides a simple single frame buffer implementation.
+ *
+ * DO NOT COPY THESE NOTES!
  */
 MODULE_EXPORT void
 debug_flush(Driver *drvthis)
@@ -251,6 +265,8 @@ debug_flush(Driver *drvthis)
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
  * \param string   String that gets written.
+ *
+ * \see debug_flush
  */
 MODULE_EXPORT void
 debug_string(Driver *drvthis, int x, int y, const char string[])
@@ -280,6 +296,12 @@ debug_string(Driver *drvthis, int x, int y, const char string[])
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
  * \param c        Character that gets written.
+ *
+ * \note Keep in mind that character 0x00 may be a valid character on your
+ * display and it is used by the bignum library. Avoid using string handling
+ * functions here!
+ *
+ * \see debug_flush
  */
 MODULE_EXPORT void
 debug_chr(Driver *drvthis, int x, int y, char c)
