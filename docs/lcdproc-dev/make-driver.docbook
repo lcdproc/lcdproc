@@ -21,9 +21,9 @@ dedicated chapter in this book.
 <title>port.h : Parallel port I/O</title>
 
 <para>
-The file port.h, located in the server/drivers/ directory provide Input/Output
-and port permissions for the PC compatible parallel port, also known as the
-LPT port.
+The file <filename>port.h</filename>, located in the <filename>server/drivers/</filename>
+directory provide Input/Output and port permissions for the PC compatible
+parallel port, also known as the LPT port.
 </para>
 
 <para>
@@ -32,7 +32,15 @@ has parallel port! In these situations, the configure script will see this and
 disable drivers that need a parallel port.
 </para>
 
-<para>port.h file defines 6 static inline functions for port I/O:</para>
+<para>
+The functions in <filename>port.h</filename> are defined and as 'static inline'.
+Therefore each driver including this header file gets its own copy of the
+functions and they are inlined into the driver's code.  As a result calls to
+port_in() and port_out() are directly translated to inb() or outb() or
+assembly code by the compiler. There is less to no overhead in using them.
+</para>
+
+<para><filename>port.h</filename> file defines 6 static inline functions for port I/O:</para>
 
 <sect3 id="port-in">
 <title>Read a byte from port</title>
@@ -130,23 +138,24 @@ disable drivers that need a parallel port.
 <screen>
 #include "port.h"
 
-/* Get access to these 3 ports:
-    0x378 (CONTROL),
-    0x379 (STATUS) and
-    0x37A (DATA)
-*/
-if ( -1 == port_access_multiple(0x378,3) ) {
+/*
+ * Get access to these 3 ports:
+ *  0x378 (CONTROL),
+ *  0x379 (STATUS) and
+ *  0x37A (DATA)
+ */
+if (port_access_multiple(0x378, 3) == -1) {
 	/* Access denied, do something */
 }
 
 /* Write a 'A' to the control port */
-ort_out(0x378, 'A');
+port_out(0x378, 'A');
 
 /* Read from the status port */
 char status = port_in(0x379);
 
 /* Close the 3 ports */
-port_deny_multiple(0x378,3);
+port_deny_multiple(0x378, 3);
 </screen>
 
 </sect3>

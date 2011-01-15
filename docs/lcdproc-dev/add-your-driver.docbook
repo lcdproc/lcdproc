@@ -19,6 +19,11 @@ Be sure to read <xref linkend="programming"/> and <xref linkend="driver-api"/>
 as well.
 </para>
 
+<para>
+As a starting point you may take a look at the debug driver. It is available
+as <filename>server/drivers/debug.c</filename>.
+</para>
+
 </sect1>
 
 
@@ -32,7 +37,7 @@ driver to be included in LCDproc's code some conditions have to be met:</para>
 <orderedlist>
 <listitem>
   <para>The hardware (display or enclosing product) is publicly sold
-  <emphasis>OR</emphasis> the schematics and firmware (if required) are publicy
+  <emphasis>OR</emphasis> the schematics and firmware (if required) are publicly
   available.
     <footnote><para>Therefore I will not commit drivers for displays ripped out
     from an old telephone for your private hardware project and are not
@@ -47,27 +52,27 @@ driver to be included in LCDproc's code some conditions have to be met:</para>
   <para>The submitter is or is acting on behalf of the original driver
   developer.
     <footnote><para>I will not submit drivers found somewhere on the internet and
-    submitted without the original developer's acknowledgement.</para></footnote>
+    submitted without the original developer's written acknowledgement.</para></footnote>
   </para>
 </listitem>
 <listitem>
-  <para>The driver describtion contains a valid email address for contacting
+  <para>The driver description contains a valid email address for contacting
   the submitter or developer.</para>
 </listitem>
 <listitem>
   <para>The code is commented <emphasis>AND</emphasis> includes appropriate
-  Doxygen comments, especially for private / non-API functions.</para>
+  Doxygen comments, especially for internal / non-API functions.</para>
 </listitem>
 <listitem>
   <para>End user documentation (updates to man pages <emphasis>AND</emphasis>
-  user-guide in docbook) is available.</para>
+  User's Guide in docbook format) is available.</para>
 </listitem>
 <listitem>
   <para>Driver options are described in the end user documentation
   <emphasis>AND</emphasis> <filename>LCDd.conf</filename>.</para>
 </listitem>
 <listitem>
-  <para>The driver adhere the style guide as described in <xref linkend="code-style"/>.</para>
+  <para>The driver adheres to the style guide as described in <xref linkend="code-style"/>.</para>
 </listitem>
 </orderedlist>
 
@@ -270,6 +275,34 @@ If you had an error, just send us an email describing it to the mailing list and
 Please do not forget to also add the required documentation,
 so that your driver can be used from others as well.
 </para>
+
+<sect2 id="documentation-source">
+<title>Within the source code</title>
+
+<para>
+We use Doxygen to document functions and data types. The doxygen documentation
+can be created anytime by changing to the <filename>docs/</filename> directory
+and running <command>doxygen</command>.
+</para>
+<para>
+When documenting your driver's API functions you may use a short hand version
+and add 'API:' to the beginning of your comment and leave out the parameter
+and return value description (as we know what the API is doing). If you use
+some clever algorithm inside a function please add a few words about it.
+</para>
+<note>
+<para>
+Always document functions internal to the driver! We do know what the API
+does (or is expected to do) but we don't know about what your driver does
+internally.
+</para>
+<para>
+Read <xref linkend="code-style-comments"/> on how for format comments.
+</para>
+</note>
+
+</sect2>
+
 
 <sect2 id="documentation-LCDd.conf">
 <title>The configuration file, LCDd.conf</title>

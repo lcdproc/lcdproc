@@ -114,7 +114,7 @@ should look like.
   </para>
 </note>
 
-<sect2>
+<sect2 id="code-style-indention">
 <title>File format and indention</title>
 <itemizedlist mark="opencircle">
   <listitem>
@@ -140,7 +140,7 @@ should look like.
     <para>
     <emphasis>Indention: </emphasis>Tab indention shall be used (with tab
     width set to 8 characters). Only exception are switch labels which are
-    indented a half tab (4 characters).
+    indented a half tab (4 spaces).
     </para>
   </listitem>
   <listitem>
@@ -153,14 +153,15 @@ should look like.
 </itemizedlist>
 </sect2>
 
-<sect2>
+<sect2 id="code-style-naming">
 <title>Naming conventions</title>
 <itemizedlist mark="opencircle">
   <listitem>
     <para>
     <emphasis>Function names:</emphasis>
-    Function names shall be lowercase. We do not use CamelCase. Multiple words
-    are separated by underscore.
+    Function names shall be lowercase. We do not use CamelCase (some
+    historical exceptions may exist). Multiple words are separated by
+    underscore.
     </para>
   </listitem>
   <listitem>
@@ -198,7 +199,7 @@ unsigned char HD44780_scankeypad(PrivateData *p);
 </example>
 </sect2>
 
-<sect2>
+<sect2 id="code-style-comments">
 <title>Comments</title>
 <itemizedlist mark="opencircle">
   <listitem>
@@ -248,7 +249,7 @@ unsigned char HD44780_scankeypad(PrivateData *p);
 </itemizedlist>
 </sect2>
 
-<sect2>
+<sect2 id="code-style-statements">
 <title>Statement style</title>
 <itemizedlist mark="opencircle">
   <listitem>
@@ -309,7 +310,7 @@ y--;
   <listitem>
     <para><emphasis>Function calls:</emphasis></para>
     <para>
-    There shall be no space between the function call and the opening '(' of
+    There shall be no space between the function call and the opening brace '(' of
     the parameter list. Within the parameter list a space shall be after each
     parameter.
     </para>
