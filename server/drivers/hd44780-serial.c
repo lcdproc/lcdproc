@@ -1,9 +1,17 @@
 /** \file server/drivers/hd44780-serial.c
- * Connection types \c picanlcd, \c lcdserializer, \c los-panel, \c vdr-lcd,
- * \c vdr-wakeup, \c pertelian, ... of \c hd44780 driver for Hitachi HD44780 based LCD displays.
+ * Connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays
+ * connected to a serial port.
+ *
+ * This driver supports text displays that understand the HD44780 command set
+ * and are connected to a serial port using some microcontroller. It supports
+ * protocols using escape sequences to trigger commands, backlight or keys.
+ *
+ * Currently supported are: \c picanlcd, \c lcdserializer, \c los-panel,
+ * \c vdr-lcd, \c vdr-wakeup, and \c pertelian.
  */
 
-/* Copyright (C) 2006-2007  Matteo Pillon <matteo.pillon@gmail.com>
+/*-
+ * Copyright (C) 2006-2007  Matteo Pillon <matteo.pillon@gmail.com>
  *
  * Some parts are based on the original pic-an-lcd driver code
  *  Copyright (C) 1997, Matthias Prinke <m.prinke@trashcan.mcnet.de>
@@ -29,29 +37,26 @@
  *
  */
 
-#include "hd44780-serial.h"
-#include "hd44780-low.h"
-
-#include "report.h"
-
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <fcntl.h>
-#include <termios.h>
-
-#include <errno.h>
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <errno.h>
+
+#include "hd44780-serial.h"
+#include "report.h"
+
+/** Shortcut to select an entry from serial_interfaces table */
 #define SERIAL_IF serial_interfaces[p->serial_type]
 
-/* bitrate conversion */
+/** bitrate conversion table */
 unsigned int bitrate_conversion[][2] = {
 	{ 50, B50 },
 	{ 75, B75 },
@@ -115,6 +120,16 @@ unsigned int bitrate_conversion[][2] = {
 #endif
 };
 
+
+/**
+ * Look up a given bitrate in the bitrate_conversion table and fill bitrate
+ * from the correct speed_t macro.
+ * \param conf_bitrate  Bitrate (int) as read from config.
+ * \param bitrate       Pointer to bitrate (speed_t) in which the speed is
+ *                      stored (if found in the conversion table).
+ * \return  0 if the bitrate was found in the conversion table; 1 to indicate
+ *          the configured bitrate is not in the table and therefore invalid.
+ */
 int convert_bitrate(unsigned int conf_bitrate, size_t *bitrate) {
 	int counter;
 	for (counter = 0; counter < sizeof(bitrate_conversion)/(2*sizeof(unsigned int)); counter++)
@@ -124,8 +139,6 @@ int convert_bitrate(unsigned int conf_bitrate, size_t *bitrate) {
 		}
 	return 1;
 }
-
-static int lastdisplayID;
 
 void serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
 void serial_HD44780_backlight(PrivateData *p, unsigned char state);
@@ -142,18 +155,17 @@ void serial_HD44780_close(PrivateData *p);
 int
 hd_init_serial(Driver *drvthis)
 {
-	PrivateData *p = (PrivateData*) drvthis->private_data;
-
 	struct termios portset;
 	char device[256] = DEFAULT_DEVICE;
 	unsigned int conf_bitrate;
 	size_t bitrate;
+	int i;
+
+	PrivateData *p = (PrivateData*) drvthis->private_data;
 
 	/* READ CONFIG FILE */
 
 	/* Get interface type */
-	int i;
-
 	p->serial_type = 0;
 	for (i = 0; serial_interfaces[i].connectiontype != HD44780_CT_UNKNOWN; i++) {
 		if (p->connectiontype == serial_interfaces[i].connectiontype) {
@@ -224,8 +236,6 @@ hd_init_serial(Driver *drvthis)
 	/* Set TCSANOW mode of serial device */
 	tcsetattr(p->fd, TCSANOW, &portset);
 
-	lastdisplayID = -1;
-
 	/* Assign functions */
 	p->hd44780_functions->senddata = serial_HD44780_senddata;
 	p->hd44780_functions->backlight = serial_HD44780_backlight;
@@ -246,7 +256,10 @@ hd_init_serial(Driver *drvthis)
 
 
 /**
- * Send data or commands to the display.
+ * Send data or commands to the display. Commands are prefixed with the
+ * instruction escape character. If a data byte is within a configured range
+ * it is prefixed with a data escape character if one is configured.
+ *
  * \param p          Pointer to driver's private data structure.
  * \param displayID  ID of the display (or 0 for all) to send data to.
  * \param flags      Defines whether to end a command or data.
@@ -255,6 +268,8 @@ hd_init_serial(Driver *drvthis)
 void
 serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
+	static int lastdisplayID = -1;	/* save displayID across calls */
+
 	/* Filter illegally sent escape characters (for interfaces without data escape) */
 	if (flags == RS_DATA && SERIAL_IF.data_escape == 0 && ch == SERIAL_IF.instruction_escape)
 		ch='?';

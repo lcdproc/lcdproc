@@ -10,7 +10,7 @@
 #ifndef HD44780_DRIVERS_H
 #define HD44780_DRIVERS_H
 
-// hd44780 specific header files
+/* hd44780 specific header files */
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
 # include "hd44780-4bit.h"
 # include "hd44780-ext8bit.h"
@@ -35,7 +35,7 @@
 # include "hd44780-ethlcd.h"
 #endif
 # include "hd44780-usblcd.h"
-// add new connection type header files here
+/* add new connection type header files to the correct section above or here */
 
 
 /** connectionType mapping table:
@@ -80,9 +80,9 @@ static const ConnectionMapping connectionMapping[] = {
 #ifdef WITH_ETHLCD
 	{ "ethlcd",        HD44780_CT_ETHLCD,        IF_TYPE_TCP,     hd_init_ethlcd    },
 #endif
-	// add new connection types here
-	// ....
-	// default, end of structure element (do not delete)
+	/* add new connection types in the correct section above or here */
+
+	/* default, end of structure element (do not delete) */
 	{ NULL, HD44780_CT_UNKNOWN, IF_TYPE_UNKNOWN, NULL }
 };
 

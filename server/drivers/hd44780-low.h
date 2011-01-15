@@ -109,7 +109,7 @@ typedef struct hd44780_private_data {
 
 	// serial connection types
 	int fd;				/* file handle to serial device */
-	int serial_type;
+	int serial_type;		/* type of device for hd44780-serial */
 
 #if defined(HAVE_LIBUSB)
 	// USB connection types

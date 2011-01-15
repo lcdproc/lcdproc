@@ -1,40 +1,50 @@
+/** \file server/drivers/hd44780-serial.h
+ * Contains configuration data for serial attached HD44780 displays supported
+ * by the \c hd44780 driver.
+ */
+
 #ifndef HD44780_SERIAL_H
 #define HD44780_SERIAL_H
 
-#include "lcd.h"					  /* for Driver */
+#include "lcd.h"
 #include "hd44780-low.h"
 
 #define SERIALIF_NAME_LENGTH 20
-
 #define DEFAULT_DEVICE       "/dev/lcd"
 
-typedef struct SerialInterface {
-	int          connectiontype;
+/** Declares one configuration enty in the serial_interfaces table */
+struct hd44780_SerialInterface {
+	int          connectiontype;	/**< Connection type from hd44780 config */
+	/** Command escape character. This is always sent, even if 0x00 */
 	char         instruction_escape;
+	/** Data escape character. Only sent if not NUL data is within range
+	 * configure by data_escape_min and data_escape_max. */
 	char         data_escape;
-	char         data_escape_min; /* escaped data lower limit */
-	char         data_escape_max; /* escaped data upper limit */
-	unsigned int default_bitrate;
-	char         if_bits;
-	char         keypad;
-	char         keypad_escape;
-	char         backlight;
-        /*
-          if both escape and on/off codes are set means that display
-          can't set brightness, but can only switch light on or off and
-          needs both escape and on/off bytes (see pertelian)
-        */
-	char         backlight_escape; /* leave to 0 is the interface uses on/off codes   */
+	char         data_escape_min;	/**< Escaped data lower limit (inclusive) */
+	char         data_escape_max;	/**< Escaped data upper limit (exclusive) */
+	unsigned int default_bitrate;	/**< Bitrate device is set to by default */
+	char         if_bits;		/**< Initialize to 8 or 4 bit interface */
+	char         keypad;		/**< Flag: keypad available */
+	char         keypad_escape;	/**< Keys must escaped with this character */
+	char         backlight;		/**< Flag: backlight available */
+	/** Escape character to send to indicate a backlight state change */
+	char         backlight_escape;
+	/** Character to send to set display off. If not configured 0xFF is sent */
 	char         backlight_off;
-	char         backlight_on;     /* leave these two to 0 is backlight_escape is set */
+	/** Character to send to set display on. If not configured 0x00 is sent */
+	char         backlight_on;
+	/** Flag: Device has multiple controllers. If enabled, the displayID
+	 * is added to data escape */
 	char         multiple_displays;
-	char         end_code;         /* code to send on shutdown */
-} SerialInterface;
+	char         end_code;         /**< Code to send on shutdown */
+};
 
-/* List of connectiontypes managed by this driver, if you change
-   something here, remember also to change hd44780-drivers.h */
-static const SerialInterface serial_interfaces[] = {
-	/*    type         instr data     v     ^ bitrate bits  K   esc  B  Besc  Boff   Bon Multi  End */
+/**
+ * List of connectiontypes managed by this driver. If you change something
+ * here, remember also to change hd44780-drivers.h as well.
+ */
+static const struct hd44780_SerialInterface serial_interfaces[] = {
+	/*    type                  instr data     v     ^ bitrate bits  K   esc  B  Besc  Boff   Bon Multi  End */
 	{ HD44780_CT_PICANLCD,      0x11, 0x12, 0x00, 0x20,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
 	{ HD44780_CT_LCDSERIALIZER, 0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
 	{ HD44780_CT_LOS_PANEL,     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 1, 0xFF,    0,    0,   0,    0 },
