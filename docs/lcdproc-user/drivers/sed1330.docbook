@@ -8,7 +8,8 @@ new names: S1D13300 (= SED1330) and S1D13305 (= SED1335).
 </para>
 
 <para>
-The displays are driven in text mode using their built-in character generator.
+The displays are driven in text mode using their built-in character generator
+and the graphic mode for bars and the heartbeat icon (a bouncing ball).
 </para>
 
 <sect2 id="sed1330-connections">
@@ -16,423 +17,246 @@ The displays are driven in text mode using their built-in character generator.
 
 <warning>
 <para>
-Connections below are for the G242C, G121C and G321D displays.
-Always consult documentation about the specific display before asuming
-the connections given here are also correct for your display !
+Displays using SED1330/1335 chipset come in a variety of pin-outs and power
+configurations. They usually require negative voltage for contrast and some
+displays have a negative voltage generator onboard.
+</para>
+<para>
+Connections below are for the G242C, G121C and G321D displays. Always consult
+documentation about the specific display before asuming the connections given
+here are also correct for your display!
 </para>
 </warning>
 
-<table id="sed1330-connections.classic-by-lcd">
-<title>ConnectionType <literal>classic</literal> ordered by LCD pins</title>
+<table id="sed1330-connections.classic-by-lpt">
+<title>ConnectionType <literal>classic</literal> ordered by LPT port pins</title>
 <tgroup cols="5" align="left">
-<colspec colname="lcd1"/>
-<colspec colname="lcd2" align="right"/>
+<colspec colname="lpt1"/>
+<colspec colname="lpt2" align="right"/>
 <colspec colname="base" align="center"/>
-<colspec colname="lpt1" align="right"/>
-<colspec colname="lpt2"/>
+<colspec colname="lcd1"/>
+<colspec colname="lcd2"/>
   <thead>
     <row>
-      <entry namest="lcd1" nameend="lcd2" align="center" rowsep="0">LCD</entry>
-      <entry morerows="1">&lt;-&gt;</entry>
       <entry namest="lpt1" nameend="lpt2" align="center" rowsep="0">LPT port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
+      <entry namest="lcd1" nameend="lcd2" align="center" rowsep="0">LCD</entry>
     </row>
     <row>
-      <entry>name</entry>
-      <entry>pin</entry>
       <entry>pin</entry>
       <entry>name</entry>
+      <entry>name</entry>
+      <entry>pin</entry>
     </row>
   </thead>
   <tbody>
     <row>
-      <entry>^RESET</entry>
-      <entry>1</entry>
-      <entry></entry>
       <entry>1</entry>
       <entry>^STROBE</entry>
+      <entry></entry>
+      <entry>^RESET</entry>
+      <entry>1</entry>
     </row>
     <row>
-      <entry>^RD</entry>
-      <entry>2</entry>
-      <entry>+5V</entry>
+      <entry>2-9</entry>
+      <entry>D0-D7</entry>
       <entry></entry>
-      <entry></entry>
+      <entry>D0-D7</entry>
+      <entry>8-15</entry>
     </row>
     <row>
-      <entry>^WR</entry>
-      <entry>3</entry>
-      <entry></entry>
       <entry>16</entry>
       <entry>^INIT</entry>
+      <entry></entry>
+      <entry>^WR</entry>
+      <entry>3</entry>
     </row>
     <row>
-      <entry>SEL1</entry>
-      <entry>4</entry>
-      <entry>GND</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>SEL2</entry>
-      <entry>5</entry>
-      <entry>GND</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>^CS</entry>
-      <entry>6</entry>
-      <entry>GND</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry>A0</entry>
-      <entry>7</entry>
-      <entry></entry>
       <entry>17</entry>
       <entry>^SELECT_IN</entry>
-    </row>
-    <row>
-      <entry>D0</entry>
-      <entry>8</entry>
       <entry></entry>
-      <entry>2</entry>
-      <entry>D0</entry>
-    </row>
-    <row>
-      <entry>D1</entry>
-      <entry>9</entry>
-      <entry></entry>
-      <entry>3</entry>
-      <entry>D1</entry>
-    </row>
-    <row>
-      <entry>D2	</entry>
-      <entry>10</entry>
-      <entry></entry>
-      <entry>4</entry>
-      <entry>D2</entry>
-    </row>
-    <row>
-      <entry>D3</entry>
-      <entry>11</entry>
-      <entry></entry>
-      <entry>5</entry>
-      <entry>D3</entry>
-    </row>
-    <row>
-      <entry>D4</entry>
-      <entry>12</entry>
-      <entry></entry>
-      <entry>6</entry>
-      <entry>D4</entry>
-    </row>
-    <row>
-      <entry>D5</entry>
-      <entry>13</entry>
-      <entry></entry>
+      <entry>A0</entry>
       <entry>7</entry>
-      <entry>D5</entry>
     </row>
     <row>
-      <entry>D6</entry>
-      <entry>14</entry>
-      <entry></entry>
-      <entry>8</entry>
-      <entry>D6</entry>
-    </row>
-    <row>
-      <entry>D7</entry>
-      <entry>15</entry>
-      <entry></entry>
-      <entry>9</entry>
-      <entry>D7</entry>
-    </row>
-    <row>
-      <entry>V<subscript>CC</subscript></entry>
-      <entry>16</entry>
-      <entry>+5V</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
+      <entry>18-25</entry>
+      <entry>GND</entry>
+      <entry>GND</entry>
       <entry>V<subscript>EE</subscript></entry>
       <entry>17</entry>
-      <entry>GND</entry>
-      <entry>18..25</entry>
-      <entry>GND</entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>+5V</entry>
+      <entry>^RD</entry>
+      <entry>2</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
+      <entry>SEL1</entry>
+      <entry>4</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
+      <entry>SEL2</entry>
+      <entry>5</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
+      <entry>^CS</entry>
+      <entry>6</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>+5V</entry>
+      <entry>V<subscript>CC</subscript></entry>
+      <entry>16</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>potentiometer</entry>
       <entry>V0</entry>
       <entry>18</entry>
-      <entry>potentiometer</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>-24V (not required for G242C)</entry>
       <entry>V<subscript>LC</subscript></entry>
       <entry>19</entry>
-      <entry>-24V (not required for G242C)</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>Frame</entry>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
+      <entry>F<subscript>GND</subscript></entry>
       <entry>20</entry>
-      <entry>GND</entry>
-      <entry></entry>
-      <entry></entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>10</entry>
-      <entry>^ACK</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry>GND</entry>
-      <entry>11</entry>
-      <entry>BUSY</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>12</entry>
-      <entry>PAPEREND</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>13</entry>
-      <entry>^SELECT</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>14</entry>
-      <entry>^LF</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>15</entry>
-      <entry>^ERROR</entry>
     </row>
   </tbody>
 </tgroup>
 </table>
 
-<table id="sed1330-connections.classic-by-lpt">
-<title>ConnectionType <literal>classic</literal> ordered by LPT port pins</title>
+<table id="sed1330-connections.bitshaker-by-lpt">
+<title>ConnectionType <literal>bitshaker</literal> ordered by LPT port pins</title>
 <tgroup cols="5" align="left">
-<colspec colname="lcd1"/>
-<colspec colname="lcd2" align="right"/>
+<colspec colname="lpt1"/>
+<colspec colname="lpt2" align="right"/>
 <colspec colname="base" align="center"/>
-<colspec colname="lpt1" align="right"/>
-<colspec colname="lpt2"/>
+<colspec colname="lcd1"/>
+<colspec colname="lcd2"/>
   <thead>
     <row>
-      <entry namest="lcd1" nameend="lcd2" align="center" rowsep="0">LCD</entry>
-      <entry morerows="1">&lt;-&gt;</entry>
       <entry namest="lpt1" nameend="lpt2" align="center" rowsep="0">LPT port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
+      <entry namest="lcd1" nameend="lcd2" align="center" rowsep="0">LCD</entry>
     </row>
     <row>
-      <entry>name</entry>
-      <entry>pin</entry>
       <entry>pin</entry>
       <entry>name</entry>
+      <entry>name</entry>
+      <entry>pin</entry>
     </row>
   </thead>
   <tbody>
     <row>
-      <entry>^RESET</entry>
-      <entry>1</entry>
-      <entry></entry>
       <entry>1</entry>
       <entry>^STROBE</entry>
-    </row>
-    <row>
-      <entry>D0</entry>
-      <entry>8</entry>
       <entry></entry>
-      <entry>2</entry>
-      <entry>D0</entry>
-    </row>
-    <row>
-      <entry>D1</entry>
-      <entry>9</entry>
-      <entry></entry>
-      <entry>3</entry>
-      <entry>D1</entry>
-    </row>
-    <row>
-      <entry>D2	</entry>
-      <entry>10</entry>
-      <entry></entry>
-      <entry>4</entry>
-      <entry>D2</entry>
-    </row>
-    <row>
-      <entry>D3</entry>
-      <entry>11</entry>
-      <entry></entry>
-      <entry>5</entry>
-      <entry>D3</entry>
-    </row>
-    <row>
-      <entry>D4</entry>
-      <entry>12</entry>
-      <entry></entry>
-      <entry>6</entry>
-      <entry>D4</entry>
-    </row>
-    <row>
-      <entry>D5</entry>
-      <entry>13</entry>
-      <entry></entry>
-      <entry>7</entry>
-      <entry>D5</entry>
-    </row>
-    <row>
-      <entry>D6</entry>
-      <entry>14</entry>
-      <entry></entry>
-      <entry>8</entry>
-      <entry>D6</entry>
-    </row>
-    <row>
-      <entry>D7</entry>
-      <entry>15</entry>
-      <entry></entry>
-      <entry>9</entry>
-      <entry>D7</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>10</entry>
-      <entry>^ACK</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry>GND</entry>
-      <entry>11</entry>
-      <entry>BUSY</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>12</entry>
-      <entry>PAPEREND</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>13</entry>
-      <entry>^SELECT</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>14</entry>
-      <entry>^LF</entry>
-    </row>
-    <row>
-      <entry></entry>
-      <entry></entry>
-      <entry></entry>
-      <entry>15</entry>
-      <entry>^ERROR</entry>
-    </row>
-    <row>
       <entry>^WR</entry>
       <entry>3</entry>
-      <entry></entry>
-      <entry>16</entry>
-      <entry>^INIT</entry>
     </row>
     <row>
+      <entry>2-9</entry>
+      <entry>D0-D7</entry>
+      <entry></entry>
+      <entry>D0-D7</entry>
+      <entry>8-15</entry>
+    </row>
+    <row>
+      <entry>14</entry>
+      <entry>^LF</entry>
+      <entry></entry>
       <entry>A0</entry>
       <entry>7</entry>
-      <entry></entry>
-      <entry>17</entry>
-      <entry>^SELECT_IN</entry>
     </row>
     <row>
+      <entry>16</entry>
+      <entry>^INIT</entry>
+      <entry></entry>
+      <entry>^RESET</entry>
+      <entry>1</entry>
+    </row>
+    <row>
+      <entry>18-25</entry>
+      <entry>GND</entry>
+      <entry>GND</entry>
       <entry>V<subscript>EE</subscript></entry>
       <entry>17</entry>
-      <entry>GND</entry>
-      <entry>18..25</entry>
-      <entry>GND</entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>+5V</entry>
       <entry>^RD</entry>
       <entry>2</entry>
-      <entry>+5V</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
       <entry>SEL1</entry>
       <entry>4</entry>
-      <entry>GND</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
       <entry>SEL2</entry>
       <entry>5</entry>
-      <entry>GND</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
       <entry>^CS</entry>
       <entry>6</entry>
-      <entry>GND</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>+5V</entry>
       <entry>V<subscript>CC</subscript></entry>
       <entry>16</entry>
-      <entry>+5V</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>potentiometer</entry>
       <entry>V0</entry>
       <entry>18</entry>
-      <entry>potentiometer</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>-24V (not required for G242C)</entry>
       <entry>V<subscript>LC</subscript></entry>
       <entry>19</entry>
-      <entry>-24V (not required for G242C)</entry>
-      <entry></entry>
-      <entry></entry>
     </row>
     <row>
-      <entry>Frame</entry>
-      <entry>20</entry>
+      <entry></entry>
+      <entry></entry>
       <entry>GND</entry>
-      <entry></entry>
-      <entry></entry>
+      <entry>F<subscript>GND</subscript></entry>
+      <entry>20</entry>
     </row>
   </tbody>
 </tgroup>
@@ -504,6 +328,14 @@ use the following circuit.
 
 </sect2>
 
+<sect2 id="sed1330-keypad">
+<title>Keypad</title>
+
+<para>The sed1330 driver supports the same direct keys and matrix keypad
+connections as the hd44780 driver. See <xref linkend="hd44780-connections-keypad"/>.
+</para>
+
+</sect2>
 
 <!-- ## Seiko Epson 1330 driver ## -->
 <sect2 id="sed1330-config">
@@ -523,6 +355,12 @@ use the following circuit.
     legal values for <replaceable>HEIGHT</replaceable> range from <literal>7</literal> to
     <literal>16</literal>.
     If not given <property>CellSize</property> defaults to <literal>6x10</literal>.
+  </para>
+  <para>
+    Contrary to other drivers the character size of an LCD using the sed1330
+    driver is not given directly. Instead it is determined by the pixel size
+    of the display, which is derived from the display type setting and the
+    character cell size specified with this setting.
   </para></listitem>
 </varlistentry>
 
@@ -536,30 +374,8 @@ use the following circuit.
   </term>
   <listitem>
     <para>
-    Select the type of the wiring.
+    Select the type of the wiring, see <xref linkend="sed1330-connections"/>.
     </para>
-
-    <informaltable>
-    <tgroup cols="2">
-      <thead>
-        <row>
-          <entry>ConnectionType</entry>
-          <entry>Wiring</entry>
-        </row>
-      </thead>
-      <tbody>
-        <row>
-          <entry><literal>classic</literal></entry>
-          <entry>^WR = LPT pin 16, A0 = LPT pin 17, ^RESET = LPT pin 1</entry>
-        </row>
-        <row>
-          <entry><literal>bitshaker</literal></entry>
-          <entry>^WR = LPT pin 1, A0 = LPT pin 14, ^RESET = LPT pin 16</entry>
-        </row>
-      </tbody>
-    </tgroup>
-    </informaltable>
-
     <para>
     If not given, it defaults to <literal>classic</literal>.
     </para>
@@ -645,13 +461,6 @@ use the following circuit.
   </listitem>
 </varlistentry>
 </variablelist>
-
-<para>
-Contrary to other drivers the character size of an LCD using the sed1330
-driver is not given directly.
-Instead it is determined by the pixel size of the display, which is derived from
-the display type setting and the character cell size.
-</para>
 
 </sect3>
 

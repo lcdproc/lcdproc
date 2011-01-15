@@ -19,7 +19,7 @@ EXTRA_DIST =	bookinfo.docbook \
 
 ## convenience targets
 xmlto ?= /usr/bin/xmlto
-userguidedir = $(DESTDIR)$(htmldir)/user-guide/
+userguidedir ?= $(DESTDIR)$(htmldir)/user-guide/
 
 .PHONY: install-html-userguide
 
