@@ -122,7 +122,7 @@ For more information see the
   </term>
   <listitem><para>
     Tells if you have a keypad connected. Keypad layout is currently not
-    configureable from the config file.
+    configurable from the config file.
   </para></listitem>
 </varlistentry>
 

@@ -180,7 +180,7 @@ before configuring the LCDproc build process --enable-drivers=glcdlib.
   </term>
   <listitem><para>
     turns on/off 1 pixel thick debugging
-    border whithin the usable text area,
+    border within the usable text area,
     for setting up TextResolution and
     MinFontFaceSize (if using FT2);
   </para></listitem>

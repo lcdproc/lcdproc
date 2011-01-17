@@ -177,11 +177,11 @@ HD44780 driver.
 <title>Connections</title>
 
 <sect3 id="hd44780-connections-common">
-<title>Common connections for all connectiontypes</title>
+<title>Common connections for all connection types</title>
 
 <para>
 No matter what connection type you choose, you will always need some
-connections. They are explaned here.
+connections. They are explained here.
 </para>
 
 <sect4 id="hd44780-connections-power">
@@ -239,7 +239,7 @@ There are several ways to get 5V:
 
 <itemizedlist>
   <listitem><para>
-    Connect to a 5V line intented for disk drives (the red wire is 5V,
+    Connect to a 5V line intended for disk drives (the red wire is 5V,
     black is GND).
   </para></listitem>
   <listitem><para>
@@ -250,7 +250,7 @@ There are several ways to get 5V:
   <listitem><para>
     Get it from a joystick port (pin 1 and 9 are 5V, 4, 5 and 12 are GND).
     It seems that some soundcards can use these lines for communication,
-    so if you want to use this first check wether it really gives a 'clean' 5V.
+    so if you want to use this first check whether it really gives a 'clean' 5V.
   </para></listitem>
   <listitem><para>
     If you don't have a backlight, you can sometimes get the needed mA's
@@ -435,7 +435,7 @@ Y4 o---|<---@--@--@            O 5V
 
 <para>
 As you can see, you need 1 resistor per X line, and 1 diode per Y line.
-By default, Lcdproc will presume that you have a keypad with a layout
+By default, lcdproc will presume that you have a keypad with a layout
 like a telephone connected, with X and Y lines connected as show.
 To be more precise, it assumes this mapping:
 </para>
@@ -1079,7 +1079,7 @@ you need it otherwise, then connect it to GND. This certainly applies if you hav
 
 <para>
 If you want the display to work with the Winamp plugin, wire nLF (pin 14)
-to RW of your LCD. You can then use the plugin in bidirectional mode (wich
+to RW of your LCD. You can then use the plugin in bidirectional mode (which
 is much faster). With 3 connected LCDs this is not possible.
 Note from Benjamin: I haven't tried using winamp while having the third LCD
 connected to this line.
@@ -1720,7 +1720,7 @@ buffers from the 74HCT14:
 <title>Serial LPT Backlight</title>
 
 <para>
-Also a backlight is suported. You will also need a port from the 74HCT14 for
+Also a backlight is supported. You will also need a port from the 74HCT14 for
 that. The BL output below should be connected to the BL input in the
 <link linkend="hd44780-connections-backlight">backlight section</link>
 </para>
@@ -2959,7 +2959,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     <property>Backlight</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
-    Specifiy if you have a switchable backlight.
+    Specify if you have a switchable backlight.
   </para></listitem>
 </varlistentry>
 
@@ -3166,7 +3166,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 
 
 <sect2 id="hd44780-miscellania">
-<title>Miscellania</title>
+<title>Miscellanea</title>
 
 <para>
 This text has originally been taken from a message by Bill Farrow
@@ -3182,7 +3182,7 @@ Updated October 2001, Joris Robijn <email>joris@robijn.net</email>
 </para>
 
 <para>
-Converted to docbook March 2002, Rene Wagner <email>reenoo@gmx.de</email>
+Converted to Docbook March 2002, Rene Wagner <email>reenoo@gmx.de</email>
 </para>
 
 <para>

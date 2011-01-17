@@ -18,7 +18,7 @@ The following hints might be helpful:
 
 <para>
 Wiring errors can easily be made.
-If you are unexperienced with the soldering iron better have someone solder
+If you are inexperienced with the soldering iron better have someone solder
 it for you.
 Display modules are sensitive to electrostatic discharges, so touch an
 earthed surface (computer case, water pipes...) before you handle these.
@@ -91,8 +91,8 @@ a logic H as the older parallel ports did, because the operating voltage of
 computers is lower than 5V these days.
 I have measured voltages between 2.5V and 4V for logic H, which is barely
 within specification of the HD44780.
-If you account RCL of your cable, this may not be enough and can cause
-unreliable operation.
+If you account R<subscript>CL</subscript> of your cable, this may not be
+enough and can cause unreliable operation.
 </para>
 </sect2>
 
@@ -190,13 +190,13 @@ To name a few: KS0066, KS0070, KS0076, LC7985, NT3881, SED1278, ST7066 ...
 </sect2>
 
 <sect2 id="ppt-misc">
-<title>Miscellania</title>
+<title>Miscellanea</title>
 <para>
 This text has originally been taken from a <ulink url="http://lists.omnipotent.net/pipermail/lcdproc/2002-May/005832.html">message</ulink> by
 Robin Adams <email>robin@adams-online.de</email>
 </para>
 <para>
-Converted to docbook and slightly modified May 2002, Rene Wagner <email>reenoo@gmx.de</email>
+Converted to Docbook and slightly modified May 2002, Rene Wagner <email>reenoo@gmx.de</email>
 </para>
 </sect2>
 

@@ -3,7 +3,7 @@
 
 <para>
 This section talks about using LCDproc with LCD displays that use the
-svga chipset.
+svga library.
 </para>
 
 <!-- ## SVGAlib driver ## -->

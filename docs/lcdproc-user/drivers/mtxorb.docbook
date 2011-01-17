@@ -209,20 +209,6 @@
       </sect3>
 </sect2>
 
-<!-- This is already covered in bookinfo.docbook
-<sect2 id="MtxOrb-copy">
-<title>Copyright</title>
-
-<para>
-This section was originally part of the lcdproc.sgml file by William W. Ferrell <email>wwf@splatwerks.org</email>
-</para>
-
-<para>
-Slightly modified in order to include it in this document March 2002, Rene Wagner <email>reenoo@gmx.de</email>
-</para>
-</sect2>
--->
-
 <!-- ## Matrix Orbital driver ## -->
 <sect2 id="MtxOrb-config">
 <title>Configuration in LCDd.conf</title>

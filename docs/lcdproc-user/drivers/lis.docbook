@@ -3,7 +3,7 @@
 
 <para>
   This section talks about using LCDproc with the VLSystem L.I.S
-  MCE 2005 Vacuum Flourescent Display (VFD) based on the FTDI USB-to-serial
+  MCE 2005 Vacuum Fluorescent Display (VFD) based on the FTDI USB-to-serial
   converter, the Microchip PIC-16F716 microcontroller, and
   the NEC UPD16314 display driver manufactured by
   <ulink url="http://www.vlsys.co.kr">VLSystem</ulink>.
@@ -14,7 +14,7 @@
 <title>Features</title>
 
 <para>
-This device uses a vacuum flourescent display of 20 characters by 2 lines. Each each
+This device uses a vacuum fluorescent display of 20 characters by 2 lines. Each each
 character is 5 pixels wide by 8 pixels high. The device is connected by USB. The FTDI chip
 translates the USB protocol to serial expected by the VFD driver chip, an NEC UPD16314.
 A programmable interrupt controller (PIC), the PIC16F716 by Microchip, provides the glue
@@ -62,9 +62,9 @@ USB library.
   </term>
   <listitem><para>
     Set the display size. The default <literal>20x2</literal> should be safe
-    for most if not all users, since the device seeems to be made only with
+    for most if not all users, since the device seems to be made only with
     this one size.
-    But who knowns &hellip;
+    But who knows &hellip;
   </para></listitem>
 </varlistentry>
 

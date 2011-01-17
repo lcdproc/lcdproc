@@ -90,7 +90,7 @@ release.
   <step>
     <para>
     Tag the stable tree to indicate the file revision where the branch was
-    made. This eases later diffs againt that point.
+    made. This eases later diffs against that point.
     </para>
     <para>
     Run: <userinput>cvs tag LCDPROC_0_5_<replaceable>A</replaceable>_BP</userinput>
@@ -107,14 +107,14 @@ release.
     <userinput>cvs tag -b lcdproc-0-5-<replaceable>A</replaceable></userinput>
     </para>
     <note>
-      <para>Release branch names are all lowercase with hypens to separate
+      <para>Release branch names are all lowercase with hyphens to separate
       elements!</para>
     </note>
   </step>
   <step>
     <para>
     Now you have created a branch from which the new release will done. Before
-    continuing either checkout this new branch to a new workding directory
+    continuing either checkout this new branch to a new working directory
     or update the current one by running:
     <userinput>cvs update -r lcdproc-0-5-<replaceable>A</replaceable></userinput>
     </para>
@@ -267,7 +267,7 @@ Here is how to create these documentation packages.
 </procedure>
 
 <para>
-The online documenation consists of the user and developer guide, each
+The online documentation consists of the user and developer guide, each
 converted to a single file for viewing online.
 </para>
 

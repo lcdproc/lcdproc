@@ -2,8 +2,8 @@
 <title>The text Driver</title>
 
 <para>
-This section talks about using LCDproc with LCD displays that use the
-text chipset.
+The text driver simply outputs the content of the internal framebuffer to
+the current console using printf().
 </para>
 
 <!-- ## Text driver ## -->

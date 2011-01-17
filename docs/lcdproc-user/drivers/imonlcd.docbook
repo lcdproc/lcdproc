@@ -11,12 +11,12 @@ For example, <ulink url="http://www.soundgraph.com/oem-lcd-feature-en/">the iMON
 
 <para>
 This driver currently supports versions 15c2:ffdc and 15c2:0038 of the device.
-(You can find the version of your lcd via the lsusb command).
+(You can find the version of your LCD via the lsusb command).
 </para>
 
 <para>
 In many systems, the LCD backlight will remain on after the system is shutdown.
-This behavior remains a mystery - somehow the lcd recieves a reset command (or
+This behavior remains a mystery - somehow the LCD receives a reset command (or
 similar) AFTER LCDd is stopped.
 </para>
 

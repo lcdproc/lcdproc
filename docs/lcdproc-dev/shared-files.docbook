@@ -32,7 +32,7 @@ Here we provide functions that should be used by all parts of the program.
 
 <para>
 This way, the global DEBUG macro is off but is locally enabled in
-certains parts of the software.</para>
+certain parts of the software.</para>
 
 <para>The reporting levels have the following meaning.</para>
 

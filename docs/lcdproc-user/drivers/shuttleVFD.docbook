@@ -35,7 +35,7 @@ microseconds after writing to the display. If data is written to the display
 too quickly, it is simply discarded therefore the driver must sleep. The sleep
 time was experimentally found on a Shuttle M1000 machine and is hard-coded into
 the driver. This maybe different for other machines and configurations. This
-may occassionally cause the display to flicker or refresh unevenly across the
+may occasionally cause the display to flicker or refresh unevenly across the
 display. It seems that the PT6314 can signal when it has read the data from the
 buffer, but this functionality is not used.
 </para>

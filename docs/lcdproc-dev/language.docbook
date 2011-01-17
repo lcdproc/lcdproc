@@ -12,7 +12,7 @@
 
     <para>
       The LCDproc clients, for example lcdproc, connect over the network to
-      LCDd. In their communication they use a protocol, often refered to as
+      LCDd. In their communication they use a protocol, often referred to as
       the "widget language". In this chapter the widget language will be
       discussed.
     </para>
@@ -218,7 +218,7 @@
 	    <para>
 	      Sets attributes for the given screen. The following attributes
 	      exist:
-	      <variablelist><!--<title>screen_set attributes</title>-->
+	      <variablelist>
 		<varlistentry>
 		  <term>
 		    <option>-name <replaceable>name</replaceable></option>
@@ -338,7 +338,7 @@
 		  </term>
 		  <listitem><para>
 		      Changes the screen's backlight setting.
-		      If iset to the default value <literal>open</literal>,
+		      If set to the default value <literal>open</literal>,
 		      the state will be determined by the client's setting.
 		      <literal>blink</literal> is a moderately striking backlight variation,
 		      <literal>flash</literal> is <emphasis>very</emphasis> strinking.
@@ -512,7 +512,7 @@
 	    <para>
 	      Sets parameters for a widget. Because not all widgets are created equal,
 	      the various widget types require different parameters.
-	      <variablelist><!--<title>widget_set required parameters per widget type</title>-->
+	      <variablelist>
 		<varlistentry>
 		  <term>
 		    <literal>string</literal>
@@ -838,8 +838,8 @@
 		    <literal>ip</literal>
 		  </term>
 		  <listitem><para>
-		      Allows the user to input an ip number (v4 or
-		      v6). When selected, a screen comes up that shows an ip
+		      Allows the user to input an IP number (v4 or
+		      v6). When selected, a screen comes up that shows an IP
 		      number that can be edited - digit by digit - via
 		      left/right (switch digit) and up/down keys
 		      (increase/decrease).
@@ -1447,7 +1447,7 @@
 	    <computeroutput>success</computeroutput>
 	  </term>
           <listitem><para>
-            This is the reponse to a command in case everything went ok.
+            This is the response to a command in case everything went OK.
 	  </para></listitem>
 	</varlistentry>
         <varlistentry>
@@ -1544,7 +1544,7 @@
 		  <literal>leave</literal>
 		</term>
                 <listitem><para>
-                  This item has been left, so it is currenly not the (main)
+                  This item has been left, so it is currently not the (main)
 		  active item anymore.
 	        </para></listitem>
               </varlistentry>

@@ -37,8 +37,8 @@ from <ulink url="http://www.irtrans.de/en/download/linux.php"></ulink>.
     <property>Backlight</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
-    Tell whether te device has a backlight, or whether the backlight shall be used.
-    If not goven, it defaults to <literal>no</literal>.
+    Tell whether the device has a backlight, or whether the backlight shall be used.
+    If not given, it defaults to <literal>no</literal>.
   </para></listitem>
 </varlistentry>
 

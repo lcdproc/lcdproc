@@ -34,7 +34,7 @@
 </itemizedlist>
 
 <para>
-  The API is best descibed by starting with the struct lcd_logical_driver
+  The API is best described by starting with the struct lcd_logical_driver
   which is defined in server/drivers/lcd.h.
 </para>
 
@@ -209,9 +209,9 @@ typedef struct lcd_logical_driver {
   <title>Private Data</title>
 
 <para>
-  With the introduction of loadable modules it is necesary to stop using global
+  With the introduction of loadable modules it is necessary to stop using global
   variables to store a driver's data in. Instead, you should store it in a
-  structure, that you allocate abd store on driver's init. If you don't use
+  structure, that you allocate and store on driver's init. If you don't use
   this system, but use globals, you get queer results if you run two LCDd
   daemons on one machine. They will then use the same variables !
 </para>
@@ -599,7 +599,7 @@ typedef struct MyDriver_private_data {
 </funcsynopsis>
 <para>
   Checks if a key has been pressed on the device.
-  Returns NULL for "no key pressed", or a string describing the pressd key.
+  Returns NULL for "no key pressed", or a string describing the pressed key.
   These characters should match the keypad-layout.
 </para>
 
@@ -682,7 +682,7 @@ typedef struct MyDriver_private_data {
   </funcprototype>
 </funcsynopsis>
 <para>
-  Returns wether a section exists. Does not need to be called prior
+  Returns whether a section exists. Does not need to be called prior
   to a call to a config_get_* function.
 </para>
 

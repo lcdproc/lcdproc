@@ -99,7 +99,7 @@ This section has been modified by Cédric TESSIER (http://www.nezetic.info)
     <property>Backlight</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    Switch on the backlight? [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
+    Switch on the backlight [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
     </para>
     <note><para>
       If you choose yes, you can switch on/off the backlight in real time

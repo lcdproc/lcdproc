@@ -9,7 +9,7 @@ the most current source code available. You can get it several ways:</para>
 
 <orderedlist>
   <listitem>
-    <para>Download yesterday's CVS version of as a tarball (prefered).</para>
+    <para>Download yesterday's CVS version of as a tarball (preferred).</para>
   </listitem>
   <listitem>
     <para>Download the latest version from CVS.</para>
@@ -100,7 +100,7 @@ different programming styles (naming, indention, etc) in the source code.
 </para>
 <para>
 When modifying an existing file, please take a careful look at its style and
-program continueing that style instead of mixing it up with another one even
+program continuing that style instead of mixing it up with another one even
 if it does not comply with the guidelines written below.
 </para>
 <para>
@@ -121,7 +121,7 @@ should look like.
     <para>
     <emphasis>Language: </emphasis>The programming language used for LCDd
     (server core), drivers and the lcdproc client is <literal>C</literal>.
-    No other programming lanuage will be accepted.
+    No other programming language will be accepted.
     </para>
   </listitem>
   <listitem>
@@ -168,7 +168,7 @@ should look like.
     <para>
     <emphasis>Variable names:</emphasis>
     We do not use Hungarian Notation. CamelCase may be used,
-    but names shall beginn with a lowercase letter.
+    but names shall begin with a lowercase letter.
     </para>
   </listitem>
     <listitem>
@@ -256,7 +256,7 @@ unsigned char HD44780_scankeypad(PrivateData *p);
     <para><emphasis>Function declarations:</emphasis></para>
     <para>
     Function declarations have their declaration and
-    opening brace split accross two lines.
+    opening brace split across two lines.
     </para>
     <para>
     Function names start in column one. The return type is placed on the
@@ -333,7 +333,7 @@ lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
     is there is a previous closing brace.
     </para>
     <para>
-    Opening and closing braces may be ommited on single line compound
+    Opening and closing braces may be omitted on single line compound
     statements. However, if one part of an if-else-statement requires braces
     the other part shall have braces as well.
     </para>
@@ -401,7 +401,7 @@ the LCDproc project. You usually do this by submitting a patch for review to the
 mailing list.</para>
 
 <para>To create a patch you need the unmodified files and the files containing
-your modificatiosn. Usually you do this by storing an unmodified copy of the
+your modifications. Usually you do this by storing an unmodified copy of the
 sources in one directory and another copy with your modifications in another
 one. You then run <command>diff</command> like this:</para>
 
@@ -427,7 +427,7 @@ you can also run <command>cvs diff</command> from the working directory:</para>
 
 <note>
 <para>Some versions of <command>cvs diff</command> will not handle new files
-because these are unkown to the repository. There are ways to make cvs believe
+because these are unknown to the repository. There are ways to make cvs believe
 the files existed previously (fake add) but this is not recommended. You will
 need to submit new files 'as-is' in this case.</para>
 </note>

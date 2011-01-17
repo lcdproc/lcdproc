@@ -3,11 +3,11 @@
 
 <para>
 Driving an LCD display is not easy; you need to address ports, to send bytes
-in a certain order, to respect timing, and unfortunaly no two operating system
-let you do this in the same way. But don't dispair! There's hope! Someone in
-a galaxy far far away, has allready done the dirty job for you! This dirty job
+in a certain order, to respect timing, and unfortunately no two operating system
+let you do this in the same way. But don't despair! There's hope! Someone in
+a galaxy far far away, has Already done the dirty job for you! This dirty job
 has been put in shared files. These shared files are full cross platform and
-are automagically configured by the configure script. You only need to include
+are auto-magically configured by the configure script. You only need to include
 them and use their functions to benefit from them.
 </para>
 
@@ -196,7 +196,7 @@ port_deny_multiple(0x378, 3);
           <term><function>get_free_chars()</function></term>
           <listitem>
             <para>
-              to determine the number of user-defineable characters that can be
+              to determine the number of user-definable characters that can be
               used in the generation of big numbers.
             </para>
           </listitem>
@@ -207,7 +207,7 @@ port_deny_multiple(0x378, 3);
           <listitem>
             <para>
               to define a character necessary to write a big number.
-              Of course this is only necessary if there really are user-definieable
+              Of course this is only necessary if there really are user-definable
 	      characters, i.e. only if <function>get_free_chars()</function> returns
 	      a value greater <literal>0</literal>.
             </para>
@@ -285,7 +285,7 @@ port_deny_multiple(0x378, 3);
     <term><parameter>drvthis</parameter></term>
     <listitem>
       <para>
-        the pointer pointing to the Driver structure passed to thea driver's
+        the pointer pointing to the Driver structure passed to the driver's
         <function>num()</function> function.
       </para>
     </listitem>
@@ -317,9 +317,9 @@ port_deny_multiple(0x378, 3);
     <term><parameter>offset</parameter></term>
     <listitem>
       <para>
-        the character position where the user-defineable characters start
+        the character position where the user-definable characters start
         (usually <literal>0</literal>).
-        The user-defineable characters (if any) are then expected to be at the character positions
+        The user-definable characters (if any) are then expected to be at the character positions
         <replaceable>offset</replaceable><literal>+0</literal>,
         <replaceable>offset</replaceable><literal>+1</literal>,
         <replaceable>offset</replaceable><literal>+2</literal>, ...
@@ -408,7 +408,7 @@ myDriver_SOURCES: lcd.h lcd_lib.h myDriver.c myDriver.h report.h <emphasis>adv_b
   The display-dependent functions are named
   <function>adv_bignum_num_<replaceable>N_M</replaceable>()</function>,
   where <replaceable>N</replaceable> is the display's height in lines and <replaceable>M</replaceable>
-  the number of used user-defineable characters.
+  the number of used user-definable characters.
   The bits of the user-characters are stored in <replaceable>static char bignum</replaceable>
   (take a look at the source and you will see what I mean). (On a display with a
   <replaceable>cellheight</replaceable> of 7 the lowest line stored is not shown.)
@@ -418,8 +418,8 @@ myDriver_SOURCES: lcd.h lcd_lib.h myDriver.c myDriver.h report.h <emphasis>adv_b
 </para>
 
 <para>
-  If user-defineable characters have to be set, the driver's <function>set_char()</function> function
-  will be called once for every user-idefneable character.
+  If user-definable characters have to be set, the driver's <function>set_char()</function> function
+  will be called once for every user-definable character.
 </para>
 
 <para>

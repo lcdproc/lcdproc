@@ -108,7 +108,7 @@ Then you have to modify the <code>[lirc]</code> section of your
     directive in the lirc configuration file.
     </para>
     <para>
-    <replaceable>PROGRAM</replaceable> must be the same as in iyour lirc
+    <replaceable>PROGRAM</replaceable> must be the same as in your lirc
     configuration file.
     </para>
   </listitem>
@@ -192,7 +192,7 @@ and <literal>Enter</literal> are necessary.
 <!-- TODO: is this still true with 0.5 ? -->
 Of course you can define other keys. Those keys will not be handled by the
 server but sent to a client. Refer to the documentation of the client you want
-to use, to find out which keys are neccessary for that client.
+to use, to find out which keys are necessary for that client.
 </para>
 
 </sect2>

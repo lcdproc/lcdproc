@@ -101,7 +101,7 @@ Feedback is welcome.
       <entry>Ok</entry>
       <entry>Yes</entry>
       <entry>6</entry>
-      <entry>allmost IEE compatible, no Custom-Characters</entry>
+      <entry>almost IEE compatible, no Custom-Characters</entry>
     </row>
     <row>
       <entry>Samsung 20S204DA2 and 20S207DA1</entry>
@@ -119,7 +119,7 @@ Feedback is welcome.
       <entry>Ok</entry>
       <entry>Yes</entry>
       <entry>7, 3<footnoteref linkend="no_char" /></entry>
-      <entry>allmost Futaba compatible</entry>
+      <entry>almost Futaba compatible</entry>
     </row>
     <row>
       <entry>Noritake CU20026SCPB-T</entry>
@@ -446,7 +446,7 @@ optional
     <parameter><replaceable>PORT</replaceable></parameter>
   </term>
   <listitem><para>
-    Portaddress where the LPT is. Used in parallelmode only. Usual values are 0x278, 0x378 and 0x3BC [default: <literal>0x278</literal>].
+    Portaddress where the LPT is. Used in parallel mode only. Usual values are 0x278, 0x378 and 0x3BC [default: <literal>0x278</literal>].
   </para></listitem>
 </varlistentry>
 
@@ -456,7 +456,7 @@ optional
     <parameter><replaceable>DELAY</replaceable></parameter>
   </term>
   <listitem><para>
-    Set parallel port timingdelay (us). Used in parallel mode only. [default: <literal>2</literal>; legal: 0 - 255].
+    Set parallel port timing delay (us). Used in parallel mode only. [default: <literal>2</literal>; legal: 0 - 255].
   </para></listitem>
 </varlistentry>
 

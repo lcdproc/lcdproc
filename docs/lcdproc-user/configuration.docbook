@@ -85,7 +85,7 @@ When quoted, the following character sequences are evaluated as in literal C str
   </tbody>
 </tgroup>
 </informaltable>
-All other occurences of <literal>\</literal> within quoted values will be ignored.
+All other occurrences of <literal>\</literal> within quoted values will be ignored.
 </para>
 
 <para>
@@ -101,7 +101,7 @@ Those sections start with <code>[<replaceable>drivername</replaceable>]</code>.
 </para>
 
 <para>
-<anchor id="which-driver" />The drivers are activated by specifiying them in a <code>Driver=</code>
+<anchor id="which-driver" />The drivers are activated by specifying them in a <code>Driver=</code>
 line in the server section, like:
 </para>
 
@@ -296,7 +296,7 @@ settings for the LCDproc server <application>LCDd</application>.
     <para>
       Define the startup message printed on the screen when LCDd starts.
       This message will stay on the screen until the first client connects.
-      If not given, it defaults to the builtin server screen that tells
+      If not given, it defaults to the built-in server screen that tells
       how many clients are connected and how many screens these clients
       are using in total.
       If it is given, each <code>Hello=</code> directive represents
@@ -313,7 +313,7 @@ settings for the LCDproc server <application>LCDd</application>.
       prints a nice 2-line welcome message to the display.
     </para>
     <para>
-      To simply disable the default builtin server screen on startup,
+      To simply disable the default built-in server screen on startup,
       and start with a blank screen a single <code>Hello=""</code> is sufficient.
     </para>
   </listitem>
@@ -327,7 +327,7 @@ settings for the LCDproc server <application>LCDd</application>.
   <listitem>
     <para>
       Define the message left on the screen when LCDd exits.
-      If not given, it defaults to the builtin
+      If not given, it defaults to the built-in
       <literal>Thanks for using LCDproc!</literal>.
       If it is given, each <code>GoodBye=</code> directive represents
       a line on the display.
@@ -346,7 +346,7 @@ settings for the LCDproc server <application>LCDd</application>.
       to show the full last line).
     </para>
     <para>
-      To simply disable the default builtin message, and leave the screen blank
+      To simply disable the default built-in message, and leave the screen blank
       a single <code>GoodBye=""</code> suffices.
     </para>
   </listitem>
@@ -380,7 +380,7 @@ settings for the LCDproc server <application>LCDd</application>.
   </term>
   <listitem>
     <para>
-      Control the bahaviour of the server screen, that usually shows the number
+      Control the behaviour of the server screen, that usually shows the number
       of active clients and screens.
       When set to its default value <literal>yes</literal>, the server screen
       is included into the screen rotation scheme when other screens exist.
@@ -598,7 +598,7 @@ You can configure what keys the menu should use.
     <parameter><replaceable>KEY</replaceable></parameter>
   </term>
   <listitem><para>
-    The key to move to the next item in a menu andi/or to select
+    The key to move to the next item in a menu and/or to select
     the next value in input fields (e.g. the next character available
     for the current position).
     If the <replaceable>UpKey</replaceable> is not set, moving down
@@ -660,7 +660,7 @@ As mentioned earlier, each driver has its own section in the
 Although the settings are more or less self-explanatory,
 they are explained in the next chapter in the section for each driver.
 So, read through the section of your driver and change
-everything neccessary.
+everything necessary.
 </para>
 
 </sect2>

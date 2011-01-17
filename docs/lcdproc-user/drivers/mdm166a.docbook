@@ -15,7 +15,7 @@ is used for 16x2 characters with a 6x8 pixel font. It features several icons,
 volume level and WLAN strength indicator which are all software controllable
 using the <function>output</function> function.</para>
 
-<para>The mdm166a driver builts on top of <literal>libhid</literal> which in
+<para>The mdm166a driver builds on top of <literal>libhid</literal> which in
 turn uses <literal>libusb</literal>.</para>
 
 <para>The driver was developed by Christoph Rasim
@@ -43,14 +43,14 @@ protocol.</para>
     <literal>small</literal> and <literal>big</literal>. If not given no clock
     is shown.
   </para></listitem>
-</varlistentry>  
+</varlistentry>
 
 <varlistentry>
   <term>
     <property>Dimming</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
-    Dimm display, no dimming gives full brightness.
+    Dim display, no dimming gives full brightness.
   </para></listitem>
 </varlistentry>
 
@@ -59,7 +59,7 @@ protocol.</para>
     <property>OffDimming</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
-    Dimm display in case LCDd is inactive.
+    Dim display in case LCDd is inactive.
   </para></listitem>
 </varlistentry>
 </variablelist>
@@ -169,13 +169,13 @@ following patch to your kernel source and recompile and install your kernel:
 @@ -2343,6 +2344,9 @@
  /* System TALKS, Inc. */
  product SYSTEMTALKS SGCX2UL    0x1920  SGC-X2UL
- 
+
 +/* Targa Corporation */
 +product TARGA VFD              0x6a11  Targa USB Graphic VFD
 +
  /* Tapwave products */
  product TAPWAVE ZODIAC         0x0100  Zodiac
- 
+
 --- sys/dev/usb/usb_quirks.c.orig       2010-11-24 02:07:03.000000000 +0100
 +++ sys/dev/usb/usb_quirks.c    2010-11-24 02:16:30.000000000 +0100
 @@ -112,6 +112,8 @@
@@ -184,7 +184,7 @@ following patch to your kernel source and recompile and install your kernel:
         ANY, { UQ_HID_IGNORE }},
 + { USB_VENDOR_TARGA, USB_PRODUCT_TARGA_VFD,
 +       ANY, { UQ_HID_IGNORE }},
- 
+
   /* Devices which should be ignored by both ukbd and uhid */
   { USB_VENDOR_CYPRESS, USB_PRODUCT_CYPRESS_WISPY1A,
 ]]>

@@ -65,7 +65,7 @@ driver to be included in LCDproc's code some conditions have to be met:</para>
 </listitem>
 <listitem>
   <para>End user documentation (updates to man pages <emphasis>AND</emphasis>
-  User's Guide in docbook format) is available.</para>
+  User's Guide in Docbook format) is available.</para>
 </listitem>
 <listitem>
   <para>Driver options are described in the end user documentation
@@ -90,7 +90,7 @@ automake. This allows LCDproc to be ported to several platforms with much
 less effort. It can be quite daunting to understand how autoconf &amp;
 automake interact with each others and with your code, but don't be
 discouraged. We have taken great care in making this as simple as possible
-for programers to add their own driver to LCDproc. Hopefully, you'll only
+for programmers to add their own driver to LCDproc. Hopefully, you'll only
 have to modify two files, one for autoconf and one for automake.
 </para>
 
@@ -191,7 +191,7 @@ mailing list and we'll make it for you.
 <sect2 id="automake">
 <title>Automake and its friend, Makefile.am</title>
 
-<para>Allready half of the job is done! Not to bad, wasn't it? The rest
+<para>Already half of the job is done! Not to bad, wasn't it? The rest
 should be just as easy. In this section, you'll be adding your driver to the
 file server/drivers/Makefile.am. As you can guess, it's the Makefile for the
 drivers. This can be done in three (or two) simple steps.</para>
@@ -219,7 +219,7 @@ EXTRA_PROGRAMS = bayrad CFontz ...(big list)... ula200 xosd <emphasis>myDriver</
 <para>This second step is only needed if your driver needs a particular
 library. If it doesn't, you can skip to step 3.</para>
 
-<para>You basically need to put you driver name followed by _LDADD and egal
+<para>You basically need to put you driver name followed by _LDADD and equal
 this to the name of the library that you need. Usually, these library are
 substituted by a autoconf variable, if you're not comfortable with this, you
 send an email to the mailing list and we'll set this up for you.</para>
@@ -237,7 +237,7 @@ myDriver_LDADD = @SOMESTRANGELIB@
 <para>
 Last but not least, you need to specify which source files should be
 associated with your driver. You put your driver name followed by
-<literal>_SOURCES</literal> and egal this to a space separated list
+<literal>_SOURCES</literal> and equal this to a space separated list
 of the source and header files. See below for an example.</para>
 
 <screen>
@@ -385,7 +385,7 @@ to the directory <filename>docs/lcdproc-user/drivers/</filename>.
 <title>Step 2</title>
 
 <para>
-Define a Docbook entity for your driverfile in <filename>lcdproc-user.docbook</filename>.
+Define a Docbook entity for your driver file in <filename>lcdproc-user.docbook</filename>.
 </para>
 
 <screen>
