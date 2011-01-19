@@ -371,6 +371,29 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
+    <property>AutoRotate</property> = &parameters.yesdefno;
+  </term>
+  <listitem>
+    <para>
+      If set to <literal>no</literal>, LCDd will start with screen rotation disabled.
+      This has the same effect as if the ToggleRotateKey had been pressed.
+      Rotation will start if the ToggleRotateKey is pressed.
+    </para>
+    <note>
+      <para>
+        This setting does not turn off priority sorting of screens. Therefore
+        the client or LCDd may still show a different screen if it assigns it
+        a higher priority than any other screen. Due to the way priority
+        sorting works the screen shown when the first client connects may not
+        be that clients first screen. If the client sets up more than two
+        screens it will be the next to last one (this is not considered a bug).
+      </para>
+    </note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <property>ServerScreen</property> =
     {
       <emphasis><parameter><literal>yes</literal></parameter></emphasis> |

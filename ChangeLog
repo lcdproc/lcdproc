@@ -11,6 +11,7 @@ v.0.5dev (ongoing development)
  * Reset ccmode on screen clear for NoritakeVFD, tyan driver
  * All drivers: Refactor CGmode enum into lcd.h
  * hd44780: New (possible faster) screen update algorithm
+ + Add an option to start LCDd with screen rotation disabled (M. Zanetti)
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)
@@ -187,7 +188,7 @@ v.0.5.1
  * more options in lcdproc's config file lcdproc.conf:
    + time and date formats can be changed using strftime formats
    + Load screen's LowLoad & HighLoad thresholds
- * revamped lcdexec's menu configuration   
+ * revamped lcdexec's menu configuration
  * various little fixes
 
 v0.5.0

@@ -88,10 +88,7 @@
 #define DEFAULT_BACKLIGHT		BACKLIGHT_OPEN
 #define DEFAULT_HEARTBEAT		HEARTBEAT_OPEN
 #define DEFAULT_TITLESPEED		TITLESPEED_MAX
-
-/* All variables are set to 'unset' values*/
-#define UNSET_INT -1
-#define UNSET_STR "\01"
+#define DEFAULT_AUTOROTATE		AUTOROTATE_ON
 
 /* Socket to bind to...
 
@@ -442,6 +439,10 @@ process_configfile(char *configfile)
 
 	if (heartbeat == UNSET_INT) {
 		heartbeat = config_get_tristate("Server", "Heartbeat", 0, "open", UNSET_INT);
+	}
+
+	if (autorotate == UNSET_INT) {
+		autorotate = config_get_bool("Server", "AutoRotate", 0, DEFAULT_AUTOROTATE);
 	}
 
 	if (titlespeed == UNSET_INT) {
