@@ -53,8 +53,10 @@
 
 /*
  * Uncomment one of the lines below to select your desired delay generation
- * mechanism. If both defines are commented, the original I/O read timing
- * loop is used. Using DELAY_NANOSLEEP  seems to provide the best performance.
+ * mechanism. Using DELAY_NANOSLEEP  seems to provide the best performance.
+ *
+ * Setting this here, overrides the set or selected algorithm in timing.h.
+ * FIXME: Is this on purpose?
  */
 //#define DELAY_GETTIMEOFDAY
 #define DELAY_NANOSLEEP
@@ -62,9 +64,6 @@
 
 /* Default parallel port address */
 #define LPTPORT	 0x378
-
-/* Default Lineaddress in ext_mode */
-#define LADDR 0x20
 
 /* Autorepeat values */
 #define KEYPAD_AUTOREPEAT_DELAY 500

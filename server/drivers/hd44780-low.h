@@ -314,4 +314,6 @@ void common_init(PrivateData *p, unsigned char if_bit);
 
 #define HSCROLLAMOUNT	0x80	/* Only reachable with EXTREG set */
 
+#define LADDR		0x20	/* Default Lineaddress in ext_mode */
+
 #endif
