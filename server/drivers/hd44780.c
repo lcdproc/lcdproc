@@ -94,15 +94,6 @@
 #include "hd44780-drivers.h"
 #include "hd44780-charmap.h"
 
-/* Only one alternate delay method at a time, please ;-) */
-#if defined DELAY_GETTIMEOFDAY
-# undef DELAY_NANOSLEEP
-#elif defined DELAY_NANOSLEEP
-# include <sched.h>
-# include <time.h>
-#endif
-
-
 static char *defaultKeyMapDirect[KEYPAD_MAXX] = { "A", "B", "C", "D", "E" };
 
 static char *defaultKeyMapMatrix[KEYPAD_MAXY][KEYPAD_MAXX] = {
@@ -279,24 +270,11 @@ HD44780_init(Driver *drvthis)
 			report(RPT_ERR, "%s: error mallocing", drvthis->name);
 	}
 
+	/* Set up timing */
 	if (timing_init() == -1) {
 		report(RPT_ERR, "%s: timing_init() failed (%s)", drvthis->name, strerror(errno));
 		return -1;
 	}
-
-#if defined DELAY_NANOSLEEP
-	/* Change to Round-Robin scheduling for nanosleep */
-	{
-		/* Set priority to 1 */
-		struct sched_param param;
-		param.sched_priority = 1;
-		if ((sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-			report(RPT_ERR, "%s: sched_setscheduler() failed (%s)",
-					drvthis->name, strerror(errno));
-			return -1;
-		}
-	}
-#endif
 
 	/* Allocate framebuffer */
 	p->framebuf = (unsigned char *) calloc(p->width * p->height, sizeof(char));
@@ -627,7 +605,7 @@ HD44780_position(Driver *drvthis, int x, int y)
 		DDaddr = x + relY * p->line_address;
 	} else {
 		/*
-		 * 16x1 is a special case: char 0 starts at 0x00, but char 8 
+		 * 16x1 is a special case: char 0 starts at 0x00, but char 8
 		 * starts at 0x40.
 		 */
 		if (p->dispSizes[dispID - 1] == 1 && p->width == 16) {
@@ -1401,7 +1379,7 @@ unsigned char HD44780_scankeypad(PrivateData *p)
 		if (p->hd44780_functions->readkeypad(p, Ypattern)) {
 			/*
 			 * Yes, a key on the matrix is pressed
-			 * 
+			 *
 			 * Step 3: Determine the row
 			 * Do a 'binary search' to minimize I/O
 			 * Requires 4 I/O reads

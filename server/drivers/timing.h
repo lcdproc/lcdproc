@@ -1,4 +1,4 @@
-/*
+/** \file server/drivers/timing.h
  * Utility header file for timing functions
  *
  * Made by Guillaume Filion, moved from the HD44780 driver.
@@ -7,7 +7,9 @@
  * Modified July 2000 by Charles Steinkuehler to use one of 3 methods for delay
  * timing.  I/O reads, gettimeofday, and nanosleep.  Of the three, nanosleep
  * seems to work best, so that's what is set by default.
- *
+ */
+
+/*-
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
@@ -19,12 +21,14 @@
 #ifndef _TIMING_H
 #define _TIMING_H
 
-// Uncomment one of the lines below this paragraph to select your desired
-// delay generation mechanism.
-// Mechanism DELAY_NANOSLEEP seems to provide the best performance.
-// Mechanism DELAY_IOCALLS can be quite inaccurate.
-// Mechanism DELAY_AUTOSELECT lets the system determine a mechanism, and is
-// the default.
+/*
+ * Uncomment one of the lines below this paragraph to select your desired
+ * delay generation mechanism.
+ * Mechanism DELAY_NANOSLEEP seems to provide the best performance.
+ * Mechanism DELAY_IOCALLS can be quite inaccurate.
+ * Mechanism DELAY_AUTOSELECT lets the system determine a mechanism, and is
+ * the default.
+ */
 
 #define DELAY_AUTOSELECT
 //#define DELAY_GETTIMEOFDAY
@@ -40,7 +44,7 @@
 # include "config.h"
 #endif
 
-// Autoselect...  Does this always work well ?
+/* Autoselect...  Does this always work well ? */
 #ifdef DELAY_AUTOSELECT
 # if defined HAVE_SCHED_H && defined HAVE_SCHED_SETSCHEDULER
 #  define DELAY_NANOSLEEP
@@ -49,7 +53,7 @@
 # endif
 #endif
 
-// Include the correct time.h stuff (regardless of selected mechanism)
+/* Include the correct time.h stuff (regardless of selected mechanism) */
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
@@ -61,8 +65,7 @@
 # endif
 #endif
 
-// Only one alternate delay method at a time, please ;-)
-// And include extra header files here...
+/* Only one alternate delay method at a time, please ;-) */
 #if defined DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
 # undef DELAY_IOCALLS
@@ -70,14 +73,19 @@
 # undef DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
 # include "port.h"
-#else // assume DELAY_NANOSLEEP
+#else /* assume DELAY_NANOSLEEP */
 # undef DELAY_GETTIMEOFDAY
 # undef DELAY_IOCALLS
 # include <sched.h>
 #endif
 
-/* Convenience macros for operations on timevals.
-   NOTE: `timercmp' does not work for >= or <=.  */
+/*
+ * Convenience macros for operations on timevals. These are usually defined
+ * in sys/time.h. If your system does not have them, the defines from below
+ * are used.
+ *
+ * NOTE: `timercmp' does not work for >= or <=.
+ */
 #ifndef timerisset
 # define timerisset(tvp)        ((tvp)->tv_sec || (tvp)->tv_usec)
 #endif
@@ -114,36 +122,48 @@
   } while (0)
 #endif
 
-/////////////////////////////////////////////////////////////////
-// Initialisation
-//
-static inline int timing_init() {
+
+/**
+ * Do necessary initialization for the selected waiting method.
+ * \return  0 if successful, -1 on error.
+ */
+static inline int
+timing_init()
+{
 #if defined DELAY_NANOSLEEP
-	// Change to Round-Robin scheduling for nanosleep
+	/* Change to Round-Robin scheduling for nanosleep */
 	{
-		// Set priority to 1
+		/* Set priority to 1 */
 		struct sched_param param;
 		param.sched_priority=1;
 		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
 			return -1;
 		}
 	}
+#elif defined DELAY_IOCALLS
+	if (port_access(0x3BD) == -1) {
+		return -1;
+	}
 #endif
 	return 0;
 }
 
-/////////////////////////////////////////////////////////////////
-// IO delay to avoid a task switch
-//
-static inline void timing_uPause (int usecs) {
 
+/**
+ * Delay operation for some time using either gettimeofday (more or less an
+ * active waiting loop), nanosleep, or an I/O call.
+ * \param usecs  Microsecond to pause
+ */
+static inline void
+timing_uPause(int usecs)
+{
 #if defined DELAY_GETTIMEOFDAY
 	struct timeval current_time,delay_time,wait_time;
 
-	// Get current time first thing
+	/* Get current time first thing */
 	gettimeofday(&current_time,NULL);
 
-	// Calculate when delay is over
+	/* Calculate when delay is over */
 	delay_time.tv_sec  = 0;
 	delay_time.tv_usec = usecs;
 	timeradd(&current_time,&delay_time,&wait_time);
@@ -162,13 +182,12 @@ static inline void timing_uPause (int usecs) {
 		delay_time.tv_sec  = remaining.tv_sec;
 		delay_time.tv_nsec = remaining.tv_nsec;
 	}
-#else // using I/O timing
-      // Assuming every port I/O takes 1us
-      // FIXME: Does this work at all? Where does 'port' come from?
-	for (int i=0; i < usecs; ++i)
-		port_in(port);
+#else	/* using I/O timing */
+	int i;
+	for (i = 0; i < usecs; ++i)
+		port_in(0x3BD);	/* Assuming every port I/O takes 1us */
 #endif
 }
 
 
-#endif // _TIMING_H
+#endif /* _TIMING_H */
