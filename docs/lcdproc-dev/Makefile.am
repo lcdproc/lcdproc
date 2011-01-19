@@ -16,15 +16,26 @@ EXTRA_DIST =	add-your-driver.docbook \
 
 
 ## convenience targets
-xmlto ?= /usr/bin/xmlto
 developerguidedir ?= $(DESTDIR)$(htmldir)/developer-guide/
+docreleasedir = lcdproc-$(PACKAGE_VERSION)-dev-html
 
-.PHONY: install-html-developerguide
+.PHONY: install-html-developerguide doc-release doc-online
 
-install-html-developerguide: $(xmlto) lcdproc-dev.docbook lcdproc-dev.css
+install-html-developerguide: lcdproc-dev.docbook lcdproc-dev.css
 	$(mkinstalldirs) $(developerguidedir)
-	$(xmlto) html -o $(developerguidedir) \
+	$(XMLTO) html -o $(developerguidedir) \
 	  --stringparam html.stylesheet=lcdproc-dev.css lcdproc-dev.docbook
 	cp lcdproc-dev.css $(developerguidedir)
+
+doc-release: lcdproc-dev.docbook lcdproc-dev.css
+	$(XMLTO) html -o $(docreleasedir) \
+	--stringparam html.stylesheet=lcdproc-dev.css lcdproc-dev.docbook
+	cp lcdproc-dev.css $(docreleasedir)
+	$(AMTAR) -czf $(docreleasedir).tar.gz $(docreleasedir)
+
+doc-online: lcdproc-dev.docbook
+	$(XMLTO) html-nochunks \
+	  --stringparam html.stylesheet=lcdproc-dev.css lcdproc-dev.docbook && \
+	mv lcdproc-dev.html current-dev.html
 
 ## EOF

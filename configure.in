@@ -73,6 +73,7 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 AM_PROG_CC_C_O
+AC_PATH_PROG([XMLTO], [xmlto], [no])
 
 dnl Avoid unused static function warnings
 CFLAGS="-Wall $CFLAGS"
@@ -303,7 +304,7 @@ AC_ARG_ENABLE(libhid,
 	fi ],
 	[ enable_libhid=yes ]
 )
-AC_MSG_RESULT($enable_libhid) 
+AC_MSG_RESULT($enable_libhid)
 
 if test "$enable_libhid" = "yes"; then
 	ifdef([PKG_CHECK_MODULES],
