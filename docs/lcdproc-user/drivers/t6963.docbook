@@ -3,18 +3,19 @@
 
 <para>
 This section talks about using LCDproc with LCD displays that use the
-T6963 chipset from Toshiba. Usually, this chipset is used on big character LCD
+T6963 chipset from Toshiba. Usually, this chipset is used on big graphical LCD
 displays that can often act as a screen.
 </para>
 
 <para>
 The driver uses the text mode of the chipset with a custom font loaded which
-resembles the characters from Code Page 437.
+resembles the characters from Code Page 437. If your display has a 'Font Select'
+pin it must be wired to use the 6x8 font.
 </para>
 
 <para>
 Only displays in 'Single Scan' configurations are supported. Displays configured
-as 'Dual Scan' are currently not supported. Those use onboard memory differently.
+as 'Dual Scan' are currently not supported. Those use on-board memory differently.
 Check the datasheet of your display!
 </para>
 
@@ -25,7 +26,7 @@ Check the datasheet of your display!
   <para>
   Displays using T6963 chipset come in a variety of pin-outs and power configurations.
   They usually require negative voltage for contrast and some displays have
-  a negative voltage generator onboard. Therefore the wiring table below does
+  a negative voltage generator on-board. Therefore the wiring table below does
   only list signal names, not LCD pins. Be sure to get the correct datasheet
   for your display and identify the pins to use!
   </para>
@@ -92,6 +93,13 @@ Check the datasheet of your display!
       <entry>/RD</entry>
       <entry>*</entry>
     </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>VDD</entry>
+      <entry>FS</entry>
+      <entry>*</entry>
+    </row>
   </tbody>
 </tgroup>
 </table>
@@ -122,7 +130,11 @@ can be done by specifying "--enable-drivers=all" or by
     <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
-    set display size [default: <literal>20x6</literal>]
+    Set display size in characters [default: <literal>20x6</literal>]. Do set
+    it as close as possible to the pixel size of the display (based on a
+    <literal>6x8</literal> font). Otherwise characters will repeat on the
+    right of a line. Example: <literal>21x8</literal> on a <literal>128x64</literal>
+    display.
   </para></listitem>
 </varlistentry>
 
@@ -142,31 +154,47 @@ can be done by specifying "--enable-drivers=all" or by
 
 <varlistentry>
   <term>
-    <property>ECPlpt</property> = &parameters.yesdefno;
+    <property>bidirectional</property> = &parameters.yesdefno;
   </term>
   <listitem>
   <para>
-    Is ECP mode on? [default: <literal>yes</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
+    Use LPT port in bi-directional mode. [default: <literal>yes</literal>;
+    legal: <literal>yes</literal>, <literal>no</literal>]
   </para>
   <para>
-    Despite its name, this driver does not use ECP mode of parallel port. This
-    option turns bi-directional mode of the port on or off. Leave this on
-    unless you experience problems.
+    Most LPT ports can be used in bi-directional mode. It is required for
+    proper timing of the display. Leave this on unless you experience problems.
   </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
   <term>
-    <property>graphic</property> = &parameters.yesnodef;
+    <property>ClearGraphic</property> = &parameters.yesnodef;
   </term>
   <listitem>
   <para>
-    Use graphic? [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
+     Clear graphic memory on start-up [default: <literal>no</literal>;
+     legal: <literal>yes</literal>, <literal>no</literal>]. The T6963 has a
+     graphic and a text area which can be combined using several modes. This
+     driver uses default OR-mode. Usually the graphic area is empty after
+     power-on but if you see random garbage overlaying the text this option
+     may be enabled.
   </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>delayBus</property> = &parameters.yesnodef;
+  </term>
+  <listitem>
   <para>
-    Enables / disables drawing of the content of the graphic RAM. This is
-    currently a no-op as the driver does not make use of the graphic RAM.
+     Use additional delay in read / write operations. [default: <literal>no</literal>;
+     legal: <literal>yes</literal>, <literal>no</literal>]. The display can
+     execute operations very fast. As the driver implements busy checking no
+     additional delays are required. But if you experience problems you may
+     try to slow down communication by enabling this setting.
   </para>
   </listitem>
 </varlistentry>

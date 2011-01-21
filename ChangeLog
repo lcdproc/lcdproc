@@ -12,6 +12,7 @@ v.0.5dev (ongoing development)
  * All drivers: Refactor CGmode enum into lcd.h
  * hd44780: New (possible faster) screen update algorithm
  + Add an option to start LCDd with screen rotation disabled (M. Zanetti)
+ * Rewrite of the t6963 driver fixing several problems (see commit note).
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)

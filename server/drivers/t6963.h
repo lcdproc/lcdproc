@@ -1,14 +1,14 @@
 /*-
- * Base driver module for Toshiba T6963 based LCD displays ver 2.2
- *    ( ver 2.* is not at all compatible to 1.* versions!)
+ * Base driver module for Toshiba T6963 based LCD displays.
  *
  * Parts of this file are based on the kernel driver by
  * Alexander Frink <Alexander.Frink@Uni-Mainz.DE>
  *
+ * Copyright (c) 2001 Manuel Stahl <mythos@xmythos.de>
+ *               2011 Markus Dolze
+ *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
- *
- * Copyright (c)  2001 Manuel Stahl <mythos@xmythos.de>
  */
 
 #ifndef T6963_H
@@ -19,20 +19,13 @@
 #define DEFAULT_SIZE "20x6"
 #define DEFAULT_PORT 0x378
 
-/** Configure LPT port for bidirectional input */
-#define T6963_DATAIN(p)  port_out(T6963_CONTROL_PORT(p), port_in(T6963_CONTROL_PORT(p)) | 0x20)
-/** Configure LPT port for bidirectional output */
-#define T6963_DATAOUT(p) port_out(T6963_CONTROL_PORT(p), port_in(T6963_CONTROL_PORT(p)) & 0xdf)
+#define T6963_MAX_WIDTH  40	/* These value are for 240x128 */
+#define T6963_MAX_HEIGHT 16
 
-/* RAM layout base addresses (for 64 KB RAM) */
-/*
- * FIXME: Those addresses are fine for 64 KB RAM. If the display has less,
- * these values need to be adjusted by the user. It should do no harm setting
- * these for 8 KB RAM.
- */
-#define TEXT_BASE	0x0000
-#define ATTRIB_BASE	0x7000
-#define CHARGEN_BASE	0xF000
+/* RAM layout base addresses (for 8 KB RAM) */
+#define TEXT_BASE	0x0000	/* 1K, fine for 40x16 */
+#define GRAPHIC_BASE	0x0400	/* 5K, fine for 240x128 */
+#define CHARGEN_BASE	0x1800	/* 2K, required for 256 CC */
 
 /* 'Registers setting' commands */
 #define SET_CURSOR_POINTER	0x21
@@ -75,19 +68,21 @@
 /* 'Data auto read/write' commands */
 #define AUTO_WRITE	0xb0
 #define AUTO_READ	0xb1
-#define AUTO_RESET	0xb
+#define AUTO_RESET	0xb2
 
+/* 'Status read' anwer codes */
+#define STA0		0x01
+#define STA1		0x02
+#define STA3		0x08
 
 /* Macros to make port usage more readable */
 #define T6963_DATA_PORT(p) (p)
 #define T6963_STATUS_PORT(p) ((p)+1)
 #define T6963_CONTROL_PORT(p) ((p)+2)
 
-
 /* Data types */
 typedef unsigned short u16;
 typedef unsigned char u8;
-
 
 /* API functions */
 MODULE_EXPORT int  t6963_init (Driver *drvthis);
@@ -104,24 +99,15 @@ MODULE_EXPORT void t6963_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  t6963_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
 
-
 /* Internal functions */
-void t6963_graphic_clear (Driver *drvthis, int x1, int y1, int x2, int y2);
-void t6963_set_nchar (Driver *drvthis, int n, unsigned char *dat, int num);
-
-void t6963_low_set_control(Driver *drvthis, char wr, char ce, char cd, char rd);
-void t6963_low_dsp_ready(Driver *drvthis);
-
-void t6963_low_data(Driver *drvthis, u8 byte);
-void t6963_low_command (Driver *drvthis, u8 byte);
-
-void t6963_low_command_byte(Driver *drvthis, u8 cmd, u8 byte);
-void t6963_low_command_2_bytes(Driver *drvthis, u8 cmd, u8 byte1, u8 byte2);
-void t6963_low_command_word(Driver *drvthis, u8 cmd, u16 word);
-
-void t6963_low_enable_mode (Driver *drvthis, u8 mode);
-void t6963_low_disable_mode (Driver *drvthis, u8 mode);
-
-void t6963_swap_buffers(Driver *drvthis);
+static void t6963_graphic_clear(Driver *drvthis);
+static void t6963_set_nchar(Driver *drvthis, int n, unsigned char *dat, int num);
+static inline int t6963_low_dsp_ready(Driver *drvthis, u8 sta);
+static void t6963_low_data(Driver *drvthis, u8 byte);
+static void t6963_low_auto_write(Driver *drvthis, u8 byte);
+static void t6963_low_command(Driver *drvthis, u8 byte);
+static void t6963_low_command_byte(Driver *drvthis, u8 cmd, u8 byte);
+static void t6963_low_command_word(Driver *drvthis, u8 cmd, u16 word);
+static inline void t6963_low_send(Driver * drvthis, u8 type, u8 byte);
 
 #endif
