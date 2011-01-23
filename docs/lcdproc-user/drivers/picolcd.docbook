@@ -2,7 +2,7 @@
 <title>The Mini-Box.com USB LCD picoLCD Driver</title>
 
 <para>
-	This section covers the installation and use of the Mini-Box USB LCD displays.
+	This section covers the use of the Mini-Box USB LCD displays.
 </para>
 
 <sect2 id="picolcd-displays">
@@ -19,10 +19,10 @@
 <para>
 	<ulink url="http://www.mini-box.com/PicoLCD-4X20-Sideshow">PicoLCD 4x20-Sideshow</ulink>
 	is the desktop variant targeted at end users.
-	It an external USB 2.0 full speed device that comes in a stylish casing and
+	It is an external USB 2.0 full speed device that comes in a stylish case and
 	sports a 4 line by 20 character display with white letters
-	on a blue background, a built-in InfraRed receiver as well as an
-	keypad with 8 keys labeled <literal>Escape</literal>, <literal>F1</literal>,
+	on a blue background, a built-in InfraRed receiver as well as a
+	keypad with 8 keys labelled <literal>Escape</literal>, <literal>F1</literal>,
 	<literal>F2</literal>, <literal>F3</literal>, <literal>Home</literal>,
 	<literal>Up</literal>, <literal>Down</literal> and <literal>Enter</literal>.
 </para>
@@ -110,12 +110,21 @@
 <title>[picolcd]</title>
 
 <variablelist>
+
+<note>
+  <para>
+    The Brightness and OffBrightness settings only have an effect on the 20x4
+    device. With the 20x2 device the backlight can only be set on (any value
+    greater than <literal>1000</literal>) or off (<literal>0</literal>).
+  </para>
+</note>
+
 <varlistentry>
   <term>
     <property>Backlight</property> = &parameters.yesdefno;
   </term>
   <listitem><para>
-    Turns the backlight on or off, default <literal>yes</literal>.
+    Turns the backlight on or off on start-up, default <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -126,9 +135,23 @@
   </term>
   <listitem>
   <para>
-    Set the initial brightness.
-    Legal values are: <literal>0</literal> - <literal>1000</literal>.
-    If not given, it defaults to <literal>1000</literal>.
+    Set the initial brightness if the backlight is on. Legal values are:
+    <literal>0</literal> - <literal>1000</literal>. If not given, it defaults
+    to <literal>1000</literal>.
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>OFFBRIGHTNESS</replaceable></parameter>
+  </term>
+  <listitem>
+  <para>
+    Set the initial value for the backlight if it is off. Legal values are:
+    <literal>0</literal> - <literal>1000</literal>. If not given, it defaults
+    to <literal>0</literal>.
   </para>
   </listitem>
 </varlistentry>
@@ -139,9 +162,8 @@
     <parameter><replaceable>CONTRAST</replaceable></parameter>
   </term>
   <listitem><para>
-    Contrast: <literal>0</literal>-<literal>1000</literal>.
-    <literal>0</literal> is visible, and <literal>1000</literal> is not on my M300.
-    Default is <literal>1000</literal>.
+    Contrast: <literal>0</literal>-<literal>1000</literal>, default to
+    <literal>1000</literal> (full contrast).
   </para></listitem>
 </varlistentry>
 
@@ -151,6 +173,8 @@
   </term>
   <listitem><para>
     Allow key LEDs to be turned on or off. Default is <literal>yes</literal>.
+    This setting affects all keys. If set to <literal>on</literal> each key
+    can be disabled independently by setting <literal>KeyXLight</literal> below.
   </para></listitem>
 </varlistentry>
 
@@ -220,11 +244,12 @@
     <parameter><replaceable>DURATION</replaceable></parameter>
   </term>
   <listitem><para>
-    (Advanced) This value controls how long <application>LCDd</application> waits for a key press when
-    get_key() is called.  The value represents microseconds and the default is <literal>500</literal>
+    This value controls how long <application>LCDd</application> waits for a key press when
+    get_key() is called.  The value represents milliseconds and the default is <literal>500</literal>
     or .5 seconds.  Lowering this value will make LCDd more responsive but also causes LCDd to use
     more CPU time and, as the timeout grows shorter, key presses become harder to detect.
-    Lparameterer values make key presses more reliable if somewhat slow to take effect.
+    Large values make key presses more reliable but may slow down LCDd. Values
+    in the range <literal>0</literal>-<literal>1000</literal> (1s) are allowed.
   </para></listitem>
 </varlistentry>
 
@@ -272,7 +297,7 @@
     This value is the length in jiffies (1/16384 seconds) of the synthesized sync space that will
     trigger sending the queued IR data to LIRC. Values up to 32767 (2s) are permitted, values lower
     than 16 will suppress the flushing IR data during processing. The default is
-    <literal>100</literal> jiffies (6.1ms). It's should only be needed to change this value when
+    <literal>100</literal> jiffies (6.1ms). It's should only be needed to change this value
     when lircd.conf has a gap &lt; 6100 or the samples &gt; 6300.
   </para>
   </listitem>
@@ -288,12 +313,12 @@
 
 <para>
 	The hardware also reports key-up events.  Normally this would be of no issue (they are
-	usually a 0 or 'no key') except that when keys are used in combonation, the key-up
+	usually a 0 or 'no key') except that when keys are used in combination, the key-up
 	event may actually come back as multiple events depending on how the user released the
 	keys.  If the key-up event for a multiple key press comes back as two events, the first
 	up event will actually look like a new key press.  The algorithm in get_key tries to
 	deal with this in a sane way and toss out all key-up events for now.  The hardware is
-	touchy and both combo key-down and key-up actions may be reported as mutiple events if
+	touchy and both combo key-down and key-up actions may be reported as multiple events if
 	the user is more than a tenth of a second (maybe less?) off in motions.
 </para>
 
@@ -310,10 +335,6 @@
 	working, this driver by default adds the gap as well as the sync. However I have
 	<emphasis>still</emphasis> had trouble getting <code>irrecord</code> to work; you need at least
 	to feed it a template configuration containing sync and gap data.
-</para>
-
-<para>
-	This code could therefore use more testing, more research, and more work.
 </para>
 
 </sect3>
