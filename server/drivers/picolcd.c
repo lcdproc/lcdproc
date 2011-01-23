@@ -1,45 +1,59 @@
 /** \file server/drivers/picolcd.c
  * LCDd \c picolcd driver for the Mini-Box.com USB LCD picoLCD displays.
+ *
+ * Currently the following devices are supported:
+ * \li picoLCD 20x2 (OEM), stand-alone version http://www.mini-box.com/picoLCD-20x2-OEM
+ *     or pre-installed as in http://www.mini-box.com/Mini-Box-M300-LCD.
+ * \li picoLCD-4x20-sideshow, http://www.mini-box.com/picoLCD-4x20-sideshow.
+ *
+ * The picoLCD is USB connected and is driven via userspace using libusb
+ * library (http://www.libusb.org/).
  */
 
-/*
- * (c) 2007 NitroSecurity, Inc.
- * Written by Gatewood Green <woody@nitrosecurity.com> or <woody@linif.org>
- * (c) 2007-2008 Peter Marschall - adapted coding style and reporting to LCDproc
- * (c) 2007 Mini-Box.com, Nicu Pavel <npavel@ituner.com>
- *     - removed libusblcd and hid dependency
- *     - added vbar, hbar, custom char, bignum support
- * (c) 2008 Jack Cleaver - add LIRC connection
- * (c) 2008 Mini-Box.com Nicu Pavel <npavel@mini-box.com>
- *      - Added support for 4x20 picoLCD
- * (c) 2009 Andries van Schie - Bugfix RC-5 for picoLCD 20x2
- *      - Changed to dynamic IR sync(space) injection, by timing time between end and start pulse.
- *      - Queueing IR data to prevent timeouts by LIRC (sending by timeout)
- *      - Removed usb_clear_halt, because it breaks picoLCD 20x2 (1.57) communication
- * (c) 2010 Martin Jones <martin.t.jones@virgin.net>
- *      - Use module output function to control key LEDs.
- * License: GPL (same as usblcd and lcdPROC)
+/*-
+ * Copyright (c) 2007 NitroSecurity, Inc.
+ * 		 2007-2008 Peter Marschall
+ * 		 2007-2008 Mini-Box.com, Nicu Pavel <npavel@ituner.com>
+ * 		 2008 Jack Cleaver
+ * 		 2009 Andries van Schie
+ * 		 2010 Martin Jones <martin.t.jones@virgin.net>
  *
- * picoLCD: http://www.mini-box.com/picoLCD-20x2-OEM
- * Can be purchased separately or preinstalled in units such as the
- * M300 http://www.mini-box.com/Mini-Box-M300-LCD
- * picoLCD 4x20: http://www.mini-box.com/PicoLCD-4X20-Sideshow
- *
- * The picoLCD is usb connected and is driven (currently) via userspace
- * using libusb library.
- *
- *   libusb: http://www.libusb.org/
- *
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
  */
 
-/* LCDproc includes */
-#include "lcd.h"
-#include "picolcd.h"
-#include <usb.h>
-/* Debug mode: un-comment to turn on debugging messages in the server */
-/* #define DEBUG 1 */
-
-#include "report.h"
+/*-
+ * Driver history:
+ *
+ * 2007 NitroSecurity, Inc.
+ *  - First version written by Gatewood Green <woody@nitrosecurity.com>
+ * 2007-2008 Peter Marschall
+ *  - adapted coding style and reporting to LCDproc
+ * 2007 Mini-Box.com, Nicu Pavel <npavel@ituner.com>
+ *  - removed libusblcd and hid dependency
+ *  - added vbar, hbar, custom char, bignum support
+ * 2008 Jack Cleaver
+ *  - add LIRC connection
+ * 2008 Mini-Box.com Nicu Pavel <npavel@mini-box.com>
+ *  - Added support for 4x20 picoLCD
+ * 2009 Andries van Schie
+ *  - Bugfix RC-5 for picoLCD 20x2
+ *  - Changed to dynamic IR sync(space) injection, by timing time between end
+ *    and start pulse.
+ *  - Queueing IR data to prevent timeouts by LIRC (sending by timeout)
+ *  - Removed usb_clear_halt, because it breaks picoLCD 20x2 (1.57) communication
+ * 2010 Martin Jones <martin.t.jones@virgin.net>
+ *  - Use module output function to control key LEDs.
+ * 2011 Markus Dolze
+ *  - Clean-up includes and move all defaults to header file.
+ *  - Fix heartbeat and bignum by mapping character 0 to 8.
+ *  - Fix backlight and contrast handling (by M. T. Jones).
+ *  - Add more icons (by M. T. Jones).
+ *  - Add OffBrightness for 20x4 (idea by S. Crane), IMPORTANT: The meaning
+ *    of 'bklight_min' changed.  It now is the maximum value allowed if
+ *    brightness is set off.
+ *  - Add range checking for config settings.
+ */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -56,12 +70,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <usb.h>
 
-#define DEFAULT_CONTRAST	1000 /* Full */
-#define DEFAULT_BRIGHTNESS	1000 /* Full */
-#define DEFAULT_BACKLIGHT	1    /* On */
-#define DEFAULT_KEYLIGHTS	1    /* On */
-#define DEFAULT_TIMEOUT		500  /* Half second */
+/* LCDproc includes */
+#include "lcd.h"
+#include "lcd_lib.h"
+#include "adv_bignum.h"
+#include "report.h"
+#include "picolcd.h"
 
 #define NUM_CCs         8 /* max. number of custom characters */
 
@@ -76,17 +92,17 @@ typedef struct picolcd_private_data {
 	int  contrast;
 	int  backlight;
 	int  brightness;
+	int  offbrightness;
 	int  keylights;
 	int  key_light[KEYPAD_LIGHTS];
-	/* defineable characters */
 	CGmode ccmode;
 	char *info;
 	unsigned char *framebuf;
 	unsigned char *lstframe;
 	/* device info struct */
 	picolcd_device *device;
-	int IRenabled;
 	/* For communicating with LIRC */
+	int IRenabled;
 	int lircsock;
 	struct sockaddr_in lircserver;
 	/* IR transcode results */
@@ -101,13 +117,17 @@ typedef struct picolcd_private_data {
 static void picolcd_send(usb_dev_handle *lcd, unsigned char *data, int size);
 static void picolcd_20x2_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data);
 static void picolcd_20x4_write(usb_dev_handle *lcd, const int row, const int col, const unsigned char *data);
-static void picolcd_20x2_set_char (Driver *drvthis, int n, unsigned char *dat);
-static void picolcd_20x4_set_char (Driver *drvthis, int n, unsigned char *dat);
-static void get_key_event  (usb_dev_handle *lcd, lcd_packet *packet, int timeout);
-static void set_key_lights (usb_dev_handle *lcd, int keys[], int state);
+static void picolcd_20x2_set_char(Driver *drvthis, int n, unsigned char *dat);
+static void picolcd_20x4_set_char(Driver *drvthis, int n, unsigned char *dat);
+static void get_key_event(usb_dev_handle *lcd, lcd_packet *packet, int timeout);
+static void set_key_lights(usb_dev_handle *lcd, int keys[], int state);
 static void picolcd_lircsend(Driver *drvthis);
 static void ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdata);
 
+/**
+ * Table describing various features of known picoLCD devices and pointers
+ * to low-level functions.
+ */
 picolcd_device picolcd_device_ids[] = {
 	{
 		.device_name  = "picoLCD20x2",
@@ -133,7 +153,7 @@ picolcd_device picolcd_device_ids[] = {
 		.vendor_id    = 0x04d8,
 		.device_id    = 0xc001,
 		.bklight_max  = 100,
-		.bklight_min  = 0,
+		.bklight_min  = 100,
 		.contrast_max = 1,
 		.contrast_min = 0,
 		.width        = 20,
@@ -164,8 +184,8 @@ MODULE_EXPORT char *symbol_prefix     = "picoLCD_";
  * \retval 0       Success.
  * \retval <0      Error.
  */
-MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
- {
+MODULE_EXPORT int picoLCD_init(Driver *drvthis)
+{
 	PrivateData *p;
 	int x;
 	struct usb_bus *bus;
@@ -173,6 +193,7 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
 	const char *lirchost;
 	int lircport;
 	int id;
+	int tmp;
 
 	p = (PrivateData *) malloc(sizeof(PrivateData));
 	if (p == NULL)
@@ -248,11 +269,36 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
 	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
 	p->ccmode = standard;
 
-	p->contrast     = drvthis->config_get_int(drvthis->name, "Contrast",   0, DEFAULT_CONTRAST);
-	p->brightness   = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	p->backlight    = drvthis->config_get_bool(drvthis->name, "Backlight",  0, DEFAULT_BACKLIGHT);
-	p->keylights    = drvthis->config_get_bool(drvthis->name, "KeyLights",  0, DEFAULT_KEYLIGHTS);
-	p->key_timeout  = drvthis->config_get_int(drvthis->name, "KeyTimeout", 0, DEFAULT_TIMEOUT);
+	/* set contrast */
+	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: Contrast must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_CONTRAST);
+		tmp = DEFAULT_CONTRAST;
+	}
+	p->contrast = tmp;
+
+	/* set brightness */
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_BRIGHTNESS);
+		tmp = DEFAULT_BRIGHTNESS;
+	}
+	p->brightness = tmp;
+
+	/* set brightness while display is off */
+	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_OFFBRIGHTNESS);
+		tmp = DEFAULT_OFFBRIGHTNESS;
+	}
+	p->offbrightness = tmp;
+
+	/* Backlight and key lights enable/disable */
+	p->backlight = drvthis->config_get_bool(drvthis->name, "Backlight", 0, DEFAULT_BACKLIGHT);
+	p->keylights = drvthis->config_get_bool(drvthis->name, "KeyLights", 0, DEFAULT_KEYLIGHTS);
 
 	/* allow individual lights to be set */
 	for (x = 0; x < KEYPAD_LIGHTS; x++) {
@@ -262,6 +308,16 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
 		p->key_light[x] = drvthis->config_get_bool(drvthis->name, configkey, 0, 1);
 	}
 
+	/* Get Timeout for USB read of key presses */
+	tmp = drvthis->config_get_int(drvthis->name, "KeyTimeout", 0, DEFAULT_TIMEOUT);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: KeyTimeout must be between 0 and 1000; using default %d",
+			drvthis->name, DEFAULT_TIMEOUT);
+		tmp = DEFAULT_TIMEOUT;
+	}
+	p->key_timeout = tmp;
+
+	/* Allocate and clear frame buffers */
 	p->framebuf = (unsigned char *) malloc(p->width * p->height + 1);
 	if (p->framebuf == NULL) {
 		report(RPT_ERR, "%s: unable to create framebuf", drvthis->name);
@@ -278,6 +334,7 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
 	memset(p->lstframe, ' ', p->width * p->height);
 	p->lstframe[p->width * p->height] = '\0';
 
+	/* Apply config settings to the display */
 	if (p->backlight)
 		picoLCD_backlight(drvthis, 1);
 	else
@@ -290,14 +347,23 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
 
 	picoLCD_set_contrast(drvthis, p->contrast);
 
-	lirchost      = drvthis->config_get_string(drvthis->name, "LircHost", 0, NULL);
-	lircport      = drvthis->config_get_int(drvthis->name, "LircPort", 0, DEFAULT_LIRCPORT);
-	p->flush_threshold = drvthis->config_get_int(drvthis->name, "LircFlushThreshold", 0,
-		DEFAULT_FLUSH_THRESHOLD_JIFFY);
-	if (p->flush_threshold < 16) /* Prevent small 'foolish' values these will disable the check also! */
-		p->flush_threshold = 0x8000; /* Disabled, send check will always fail! */
-
+	/* setup LIRC */
+	lirchost = drvthis->config_get_string(drvthis->name, "LircHost", 0, NULL);
+	lircport = drvthis->config_get_int(drvthis->name, "LircPort", 0, DEFAULT_LIRCPORT);
+	/* LIRC is only enabled if a hostname is set */
 	p->IRenabled = (lirchost != NULL && *lirchost != '\0') ? 1 : 0;
+
+	tmp = drvthis->config_get_int(drvthis->name, "LircFlushThreshold", 0, DEFAULT_FLUSH_THRESHOLD_JIFFY);
+	/* Prevent small 'foolish' values these will disable the check also! */
+	if (p->flush_threshold < 16) {
+		report(RPT_WARNING, "%s: flush threshold to small - disabled");
+		tmp = 0x8000; /* Disabled, send check will always fail! */
+	}
+	else if (p->flush_threshold > 0x7FFF) {
+		report(RPT_WARNING, "%s: flush threshold to large, using default");
+		tmp = DEFAULT_FLUSH_THRESHOLD_JIFFY;
+	}
+	p->flush_threshold = tmp;
 
 	/* Simulate that the last value send was a PULSE,
 	 * so we start with sending a SPACE to make LIRC happy
@@ -317,6 +383,12 @@ MODULE_EXPORT int  picoLCD_init(Driver *drvthis)
 		if ((p->lircsock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
 			report(RPT_ERR, "%s: failed to create socket to send data to LIRC", drvthis->name);
 			return -1;
+		}
+
+		/* Restrict LircPort to usable values */
+		if ((lircport < 1) || (lircport > 0xFFFF)) {
+			report(RPT_WARNING, "%s: invalid LircPort, using default");
+			lircport = DEFAULT_LIRCPORT;
 		}
 
 		/* Construct the server sockaddr_in structure */
@@ -448,9 +520,7 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char s
 
 	debug(RPT_DEBUG, "%s: string start (%s)", drvthis->name, string);
 
-	if (y < 1 || y > p->height)
-		return;
-	if (x < 1 || x > p->width)
+	if ((y < 1) || (y > p->height) || (x < 1) || (x > p->width))
 		return;
 
 	x--; y--; /* Convert 1-based to 0-based */
@@ -481,18 +551,24 @@ MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char s
 MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char c)
 {
 	PrivateData *p = drvthis->private_data;
-	unsigned char *dest;
 
 	debug(RPT_DEBUG, "%s: chr start (%c)", drvthis->name, c);
 
-	if (y < 1 || y > p->height)
-		return;
-	if (x < 1 || x > p->width)
+	if ((y < 1) || (y > p->height) || (x < 1) || (x > p->width))
 		return;
 
 	x--; y--; /* Convert 1-based to 0-based */
-	dest = p->framebuf + (y * p->width + x);
-	memcpy(dest, &c, sizeof(unsigned char));
+
+	/*
+	 * Map NUL to character 8 to avoid problems with string handling
+	 * functions used elsewhere. The custom characters stored in pos. 0-7
+	 * are repeated in pos. 8-15 (this is a feature of the controller
+	 * used).
+	 */
+	if (c == 0)
+		c = 8;
+
+	p->framebuf[y * p->width + x] = c;
 
 	debug(RPT_DEBUG, "%s: chr complete (%c)", drvthis->name, c);
 }
@@ -596,7 +672,7 @@ MODULE_EXPORT void picoLCD_hbar (Driver *drvthis, int x, int y, int len, int pro
 
 		for (i = 1; i <= p->cellwidth; i++) {
 			/* fill pixel columns from left to right. */
-			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar)-1);
+			memset(hBar, 0xFF & ~((1 << (p->cellwidth - i)) - 1), sizeof(hBar));
 			picoLCD_set_char(drvthis, i, hBar);
 		}
 	}
@@ -672,31 +748,71 @@ MODULE_EXPORT int picoLCD_icon (Driver *drvthis, int x, int y, int icon)
 		b_______
 	};
 
+	static unsigned char checkbox_gray[] =
+	{
+		b__X_X_X,
+		b_______,
+		b__X___X,
+		b____X__,
+		b__X___X,
+		b_______,
+		b__X_X_X,
+		b_______
+	};
+
+	static unsigned char checkbox_off[] =
+	{
+		b__XXXXX,
+		b__X___X,
+		b__X___X,
+		b__X___X,
+		b__X___X,
+		b__X___X,
+		b__XXXXX,
+		b_______
+	};
+
+	static unsigned char checkbox_on[] =
+	{
+		b__XXXXX,
+		b__X___X,
+		b__XX_XX,
+		b__X_X_X,
+		b__XX_XX,
+		b__X___X,
+		b__XXXXX,
+		b_______
+	};
+
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
 			picoLCD_chr(drvthis, x, y, 255);
 			break;
 		case ICON_HEART_FILLED:
-			/*
-			 * Set heartbeat icons in custom character 0
-			 * but address character 8. The 'HD44780' can
-			 * address CC by char 0-7 and 8-15. As CC 0
-			 * cannot be used due to the string handling
-			 * in flush use CC 8 here.
-			 */
 			picoLCD_set_char(drvthis, 0, heart_filled);
-			picoLCD_chr(drvthis, x, y, 8);
+			picoLCD_chr(drvthis, x, y, 0);
 			break;
 		case ICON_HEART_OPEN:
-			/* Same procedure as above */
 			picoLCD_set_char(drvthis, 0, heart_open);
-			picoLCD_chr(drvthis, x, y, 8);
+			picoLCD_chr(drvthis, x, y, 0);
 			break;
 		case ICON_ARROW_LEFT:
 			picoLCD_chr(drvthis, x, y, 127);
 			break;
 		case ICON_ARROW_RIGHT:
 			picoLCD_chr(drvthis, x, y, 126);
+			break;
+		case ICON_CHECKBOX_GRAY:
+			picoLCD_set_char(drvthis, 5, checkbox_gray);
+			picoLCD_chr(drvthis, x, y, 5);
+			break;
+		case ICON_CHECKBOX_ON:
+			picoLCD_set_char(drvthis, 6, checkbox_on);
+			picoLCD_chr(drvthis, x, y, 6);
+			break;
+		case ICON_CHECKBOX_OFF:
+			picoLCD_set_char(drvthis, 7, checkbox_off);
+			picoLCD_chr(drvthis, x, y, 7);
 			break;
 		default:
 			return -1; /* Let the core do other icons */
@@ -833,20 +949,23 @@ MODULE_EXPORT int picoLCD_get_contrast(Driver *drvthis)
 MODULE_EXPORT void picoLCD_set_contrast(Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
-	int inv; /* The hardware seems to go dark on higher values, so we turn it around */
 	unsigned char packet[2] = { 0x92 }; /* set contrast id */
 
-	if (promille <= 1000 && promille > 0) {
+	/*
+	 * Higher values for promille will result in less contrast. So reverse
+	 * the meaning of promille.
+	 */
+	if (promille > 0 && promille <= 1000) {
 		p->contrast = promille;
 
 		if (p->device->contrast_max == 1)
 			packet[1] = 0x00; /* picoLCD20x4 permits contrast as 0/1 value */
 		else {
-			inv = 1000 - promille;
+			int inv = 1000 - promille;
 			packet[1] =  inv * p->device->contrast_max / 1000;
 		}
 	}
-	else if (promille > 1000) {
+	else if (promille > 1000) {	/* Should not really happen */
 		p->contrast = 1000;
 		packet[1] = p->device->contrast_min;
 	}
@@ -859,17 +978,18 @@ MODULE_EXPORT void picoLCD_set_contrast(Driver *drvthis, int promille)
 }
 
 
-/* *
+/**
  * Retrieve brightness.
  * \param drvthis  Pointer to driver structure.
  * \param state    Brightness state (on/off) for which we want the value.
  * \return         Stored brightness in promille.
  */
-/*MODULE_EXPORT int picoLCD_get_brightness(Driver *drvthis, int state)
+MODULE_EXPORT int picoLCD_get_brightness(Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
 
-}*/
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
 
 
 /**
@@ -885,10 +1005,10 @@ MODULE_EXPORT void picoLCD_set_brightness(Driver *drvthis, int state, int promil
 	if (promille < 0 || promille > 1000)
 		return;
 
-	if (state)
+	if (state == BACKLIGHT_ON)
 		p->brightness = promille;
-
-	return;
+	else
+		p->offbrightness = promille;
 }
 
 
@@ -901,23 +1021,26 @@ MODULE_EXPORT void picoLCD_backlight(Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char packet[2] = { 0x91 }; /* set backlight id */
+	int s;
 
-	int s = p->brightness / 10; /* scale in 0-100 range for picoLCDs */
-
-	/* picoLCD 20x2 doesn't have brightness levels */
-	if (s > p->device->bklight_max)
-		s = p->device->bklight_max;
-
-	if (state == BACKLIGHT_OFF) {
-		packet[1] = (unsigned char) p->device->bklight_min;
-		picolcd_send(p->lcd, packet, 2);
-		set_key_lights(p->lcd, p->key_light, state);
-	}
-	else if (state == BACKLIGHT_ON) {
+	if (state == BACKLIGHT_ON) {
+		s = p->brightness / 10;
+		if (s > p->device->bklight_max)
+			s = p->device->bklight_max;
 		packet[1] = (unsigned char) s;
 		picolcd_send(p->lcd, packet, 2);
+		/* Only enable key lights if enabled by user */
 		if (p->keylights)
 			set_key_lights(p->lcd, p->key_light, state);
+	}
+	else if (state == BACKLIGHT_OFF) {
+		s = p->offbrightness / 10;
+		if (s > p->device->bklight_min)
+			s = p->device->bklight_min;
+		packet[1] = (unsigned char) s;
+		picolcd_send(p->lcd, packet, 2);
+		/* Always turn ley lights off */
+		set_key_lights(p->lcd, p->key_light, state);
 	}
 }
 
