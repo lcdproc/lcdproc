@@ -15,6 +15,8 @@
  * NOTE: (from David Douthitt) Multiple screen sizes?  Multiple simultaneous
  * screens?  Horrors of horrors... next thing you know it'll be making coffee...
  * Better believe it'll take a while to do...
+ *
+ * \todo Review render_string for correctness.
  */
 
 /* This file is part of LCDd, the lcdproc server.
@@ -308,6 +310,12 @@ render_string(Widget *w, int left, int top, int right, int bottom, int fy)
 		int length;
 		char str[BUFSIZE];
 
+		/*
+		 * FIXME: Could be a bug here? w->x is recalculated (On first
+		 * call only? Is it preserved between calls?) and first
+		 * character of w->text shows up on the rightmost column for
+		 * strings totally off-screen. Is this on purpose? (M. Dolze)
+		 */
 		w->x = min(w->x, right - left);
 		length = min(right - left - w->x + 1, sizeof(str)-1);
 		strncpy(str, w->text, length);
