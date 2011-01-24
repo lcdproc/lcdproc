@@ -94,8 +94,8 @@ disk_screen(int rep, int display, int *flags_ptr)
 
 	// Fill the display structure...
 	if (count) {
-		sock_send_string(sock, "widget_set D err1 30 5 .\n");
-		sock_send_string(sock, "widget_set D err2 30 5 .\n");
+		sock_send_string(sock, "widget_set D err1 0 0 .\n");
+		sock_send_string(sock, "widget_set D err2 0 0 .\n");
 		for (i = 0; i < count; i++) {
 			if (strlen(mnt[i].mpoint) > dev_wid)
 				sprintf(table[i].dev, "-%s", (mnt[i].mpoint) + (strlen(mnt[i].mpoint) - (dev_wid - 1)));
