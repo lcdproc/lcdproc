@@ -324,25 +324,34 @@ t6963_flush(Driver * drvthis)
 
 /**
  * API: Prints a string on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (20,6).
+ * upper-left is (1,1), and the lower right should be (width,height).
  */
 MODULE_EXPORT void
 t6963_string(Driver * drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
+	int len;
 
 	debug(RPT_DEBUG, "String out");
+
+	/* Don't accept start coordinates outside the screen at all */
+	if ((y < 1) || (y > p->height) || (x < 1) || (x > p->width))
+		return;
 
 	x--;			/* Convert 1-based coords to 0-based */
 	y--;
 
-	if ((y * p->width + x + strlen(string)) <= (p->width * p->height))
-		memcpy(&p->display_buffer1[y * p->width + x], string, strlen(string));
+	/* Restrict string length to screen width */
+	len = strlen(string);
+	if (x + len > p->width)
+		len = p->width - x;
+
+	memcpy(&p->display_buffer1[y * p->width + x], string, len);
 }
 
 /**
  * API: Prints a character on the lcd display, at position (x,y).  The
- * upper-left is (1,1), and the lower right should be (20,6).
+ * upper-left is (1,1), and the lower right should be (width,height).
  */
 MODULE_EXPORT void
 t6963_chr(Driver * drvthis, int x, int y, char c)
@@ -351,10 +360,14 @@ t6963_chr(Driver * drvthis, int x, int y, char c)
 
 	debug(RPT_DEBUG, "Char out");
 
+	/* Only copy if within screen bounds */
+	if ((y < 1) || (y > p->height) || (x < 1) || (x > p->width))
+		return;
+
 	y--;
 	x--;
-	if ((y * p->width) + x <= (p->width * p->height))
-		p->display_buffer1[(y * p->width) + x] = c;
+
+	p->display_buffer1[(y * p->width) + x] = c;
 }
 
 /**
