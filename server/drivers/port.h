@@ -145,7 +145,7 @@ static inline int port_deny (unsigned short port) {
 }
 
 /*  Get access to multiple ports at once */
-static inline int port_access_multiple (unsigned short port, int count) {
+static inline int port_access_multiple (unsigned short port, unsigned short count) {
 	if (port+count-1 <= 0x3FF) {
 		return ioperm(port, count, 255);
 	}
@@ -161,7 +161,7 @@ static inline int port_access_multiple (unsigned short port, int count) {
 }
 
 /*  Close access to multiple ports at once */
-static inline int port_deny_multiple (unsigned short port, int count) {
+static inline int port_deny_multiple (unsigned short port, unsigned short count) {
 	if (port+count-1 <= 0x3FF) {
 		return ioperm(port, count, 0);
 	}
