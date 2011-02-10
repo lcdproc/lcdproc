@@ -580,6 +580,9 @@ driver_alt_heartbeat(Driver *drv, int state)
  * \param x     Horizontal character position (column).
  * \param y     Vertical character position (row).
  * \param icon  synbolic value representing the icon.
+ *
+ * \note Icons used for 'play control' actually are composed of two
+ *       characters. Drivers must check for bounds on calls to chr()!
  */
 void
 driver_alt_icon(Driver *drv, int x, int y, int icon)
