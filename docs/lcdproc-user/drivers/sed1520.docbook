@@ -3,13 +3,228 @@
 
 <para>
 This section talks about using LCDproc with LCD displays that use the
-sed1520 chipset.
+SED1520 chipset.
 </para>
 
 <para>Currently the driver supports 122x32 pixel graphic displays based on
-the SED1520 Controller connected to the parallel port.</para>
+the SED1520 controller connected to the parallel port.</para>
 
+<note>
+<para>Those SED1520 displays are the most troublesome I have ever used. You
+should probably avoid using them and get a 20x4 text display instead.</para>
+</note>
+
+<sect2 id="sed1520-connections">
+<title>Connections</title>
 <!-- Insert schematic here -->
+
+<warning>
+<para>Displays using SED1520 come in a wide variety of configurations. It is
+possible to cause harm to your display (e.g. connecting negative voltage
+incorrectly. Be sure to check your datasheet! Do not try to use a display
+without having a datasheet to check against!</para>
+<para>Here here some of the options I encountered:</para>
+<itemizedlist>
+  <listitem><para>Negative voltage: The chip requires negative voltage for
+  driving the display. Some display modules have a negative voltage converter
+  on-board. On those that don't you have to supply about -7 V (will not
+  show how to do this).</para></listitem>
+  <listitem><para>Reset circuit: Some display modules have an R/C-combination
+  on-board selecting an MCU interface if the pin is not connected.</para></listitem>
+  <listitem><para>Frequency generator: The SED1520 is manufactured in several
+  versions. Some contain an on-chip frequency generator, others require an external
+  clock of 2 kHz (won't show this here). Note that display modules with an
+  on-chip generator do not have a /CS (chip select) line.</para></listitem>
+  <listitem><para>Incorrect datasheets: I have seen display datasheets
+  incorrectly naming pins, missing some of the commands, missing pages from the
+  chip description and other odds. Be warned!</para></listitem>
+  <listitem><para>No pin numbers are given in the tables below. You have to
+  figure out those yourself from the datasheet for your display!</para></listitem>
+</itemizedlist>
+</warning>
+
+<para>That said here some wirings:</para>
+
+<sect3 id="sed1520-80">
+<title>80-style connection style</title>
+
+<para>This mode of operation is selected if the RESET line is wired to ground.
+The wiring used by this driver in 80-style mode requires the use of an external
+74HC04 inverter and assumes you have /CS1 and /CS2 lines available (thus you
+must have an external clock generator) and toggles the /RW line. This is the
+original wiring by Robin Adams.</para>
+
+<table id="sed1520-connections-80-mapping">
+<title>SED1520 80-style wiring schematic</title>
+<tgroup cols="5" align="left">
+<colspec colname="lpt1"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
+<colspec colname="lcd1"/>
+<colspec colname="lcd2"/>
+  <thead>
+    <row>
+      <entry namest="lpt1" nameend="lpt2" align="center">Parallel port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
+      <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>name</entry>
+      <entry>pin</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0-D7</entry>
+      <entry>2-9</entry>
+      <entry></entry>
+      <entry>DB0-DB7</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry>nSTRB</entry>
+      <entry>1</entry>
+      <entry></entry>
+      <entry>/WR</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry>nLF</entry>
+      <entry>14</entry>
+      <entry></entry>
+      <entry>/CS1</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry>INIT</entry>
+      <entry>16</entry>
+      <entry></entry>
+      <entry>/CS2</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry>nSEL</entry>
+      <entry>17</entry>
+      <entry></entry>
+      <entry>A0</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>VDD</entry>
+      <entry>/RD</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>GND</entry>
+      <entry>RESET/IF</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>2 kHz clock</entry>
+      <entry>CL</entry>
+      <entry>*</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+</sect3>
+
+<sect3 id="sed1520-68">
+<title>68-style connection style</title>
+
+<para>This mode of operation is selected if the RESET line is wired to VDD.
+For this wiring the display is required to have an on-board frequency generator
+(something you really want to have) and the display module has an E1 and E2
+line. Writing is controlled by toggling the E1 and E2 line while /RW is low.
+</para>
+
+<table id="sed1520-connections-68-mapping">
+<title>SED1520 68-style wiring schematic</title>
+<tgroup cols="5" align="left">
+<colspec colname="lpt1"/>
+<colspec colname="lpt2" align="right"/>
+<colspec colname="base" align="center"/>
+<colspec colname="lcd1"/>
+<colspec colname="lcd2"/>
+  <thead>
+    <row>
+      <entry namest="lpt1" nameend="lpt2" align="center">Parallel port</entry>
+      <entry morerows="1">&lt;-&gt;</entry>
+      <entry namest="lcd1" nameend="lcd2" align="center">LCD</entry>
+    </row>
+    <row>
+      <entry>name</entry>
+      <entry>pin</entry>
+      <entry>name</entry>
+      <entry>pin</entry>
+    </row>
+  </thead>
+  <tbody>
+    <row>
+      <entry>D0-D7</entry>
+      <entry>2-9</entry>
+      <entry></entry>
+      <entry>DB0-DB7</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry>nSTRB</entry>
+      <entry>1</entry>
+      <entry></entry>
+      <entry>R/-W</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry>nLF</entry>
+      <entry>14</entry>
+      <entry></entry>
+      <entry>E1</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry>INIT</entry>
+      <entry>16</entry>
+      <entry></entry>
+      <entry>E2</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry>nSEL</entry>
+      <entry>17</entry>
+      <entry></entry>
+      <entry>A0</entry>
+      <entry>*</entry>
+    </row>
+    <row>
+      <entry></entry>
+      <entry></entry>
+      <entry>VDD</entry>
+      <entry>RESET/IF</entry>
+      <entry>*</entry>
+    </row>
+  </tbody>
+</tgroup>
+</table>
+
+<note>
+<para>This is the only wiring I was able to test. My display (Crystalfontz
+CFAG12232J-TFH-TA) has E1 and E2 lines. Trying to use it with 80-style wiring
+was not successful. I suspect that (as the E# line is used as /RD line in
+80-style mode) the wiring resulted in reading from one chip while writing to
+the other at the same time and the data bus got fuzzed.</para>
+</note>
+
+</sect3>
+
+</sect2>
 
 <!-- ## Seiko Epson 1520 driver ## -->
 <sect2 id="sed1520-config">
@@ -29,6 +244,36 @@ the SED1520 Controller connected to the parallel port.</para>
     Common values for <replaceable>PORT</replaceable> are <literal>0x278</literal>,
     <literal>0x378</literal> and <literal>0x3BC</literal>.
     The default value is <literal>0x378</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>InterfaceType</property> =
+    <parameter><replaceable>INTERFACE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    The SED1520 chip can be driven with one of two interface types selected by
+    the level of the RESET line: 68-style MCU interface (high level) or
+    80-style MCU interface (low level).
+  </para><para>
+    Use value <literal>68</literal> if your display is connected 68-style
+    style. In this mode the E1 and E2 lines are cycled to write the data. If
+    you use <literal>80</literal> (the default), 80-style style is selected
+    and the /WR line is cycled and /CS1 and /CS2 lines are required.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>DelayMult</property> =
+    <parameter><replaceable>DELAY</replaceable></parameter>
+  </term>
+  <listitem><para>
+    This value adds an additional delay to each write, in microseconds. For
+    the 80-style connection type actual two delays are added each. The
+    default value of <literal>1</literal> already slows down communication a
+    lot, larger value should likely be avoided.
   </para></listitem>
 </varlistentry>
 </variablelist>

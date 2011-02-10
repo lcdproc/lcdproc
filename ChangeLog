@@ -19,6 +19,7 @@ v.0.5dev (ongoing development)
  * All drivers: sync functions with prototypes
  * Port remaining drivers to 0.5 API (glk, lcdm001, stv5730)
  * Pyramid: Only send LED state changes, doxygen-ize
+ * sed1520: Make it work with 68-family style interface, convert to 0.5 API
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)

@@ -2,19 +2,14 @@
  * LCDd \c sed1520 driver for graphic displays based on the SED1520.
  *
  * This is a driver for 122x32 pixel graphic displays based on the SED1520
- * controller connected to the parallel port. Check http://www.usblcd.de/lcdproc/
- * for where to buy and how to build the hardware. This Controller has no
+ * controller connected to the parallel port. This Controller has no
  * built in character generator. Therefore all fonts and pixels are generated
  * by this driver.
- *
- * \todo Convert to 0.5 style hbar / vbar API.
  */
 
 /*-
- * (C) 2001 Robin Adams ( robin@adams-online.de )
- *
- * The HD44780 font in sed1520fm.c was shamelessly stolen from
- * Michael Reinelt / lcd4linux and is (C) 2000 by him.
+ * Copyright (C) 2001 Robin Adams <robin@adams-online.de>
+ *		 2011 Markus Dolze <bsdfan@nurfuerspam.de>
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -22,8 +17,14 @@
 
 /*-
  * Driver history:
- * Moved the delay timing code by Charles Steinkuehler to timing.h.
- * Guillaume Filion <gfk@logidac.com>, December 2001
+ * 2001, Guillaume Filion <gfk@logidac.com>:
+ *  - Moved the delay timing code by Charles Steinkuehler to timing.h.
+ * 2011, Markus Dolze:
+ *  - Add 68-familiy style interface support and make it configurable
+ *  - Make delay configurable
+ *  - Correct swapped display halves
+ *  - Resurrect vBar / hBar functions
+ *  - Fix icon definitions and modify set_char for common data format
  */
 
 #ifdef HAVE_CONFIG_H
@@ -45,9 +46,9 @@
 #include "port.h"
 #include "timing.h"
 #include "sed1520fm.h"
+#include "lpt-port.h"
 
 #define uPause timing_uPause
-#define IODELAY 500
 
 #ifndef DEFAULT_PORT
 # define DEFAULT_PORT	0x378
@@ -62,14 +63,16 @@
 #define WIDTH		((int) (PIXELWIDTH / CELLWIDTH))	/* 20 */
 #define HEIGHT		((int) (PIXELHEIGHT / CELLHEIGHT))	/*  4 */
 
-#define A0	0x08		/* nSEL */
-#define CS2	0x04		/* INIT */
-#define CS1	0x02		/* nLF */
-#define WR	0x01		/* nSTRB */
+#define A0	nSEL		/* pin 17 */
+#define CS1	nLF		/* pin 14 */
+#define CS2	INIT		/* pin 16 */
+#define WR	nSTRB		/* pin 1 */
 
 /** private data for the \c sed1520 driver */
 typedef struct sed1520_private_data {
-    unsigned int port;
+    unsigned short port;
+    int interface;
+    int delayMult;
 
     unsigned char *framebuf;
 } PrivateData;
@@ -83,70 +86,105 @@ MODULE_EXPORT char *symbol_prefix = "sed1520_";
 
 /**
  * Writes command value to one or both sed1520 selected by chip.
- * \param port   Output port base address
+ * \param p      Pointer to private data structure
  * \param value  Command byte to write
  * \param chip   Bitmap of controllers to send value to
+ *
+ * \note It is a little code duplication having writecommand and writedata
+ *       both, but I leave it that way.
  */
 void
-writecommand(unsigned int port, int value, int chip)
+writecommand(PrivateData *p, int value, int chip)
 {
-    port_out(port, value);
-    /*
-     * lower WR, rise A0 and CS1 and/or CS2. Take bit inversion of parallel
-     * port into account.
-     */
-    port_out(port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
-    /* rise WR */
-    port_out(port + 2, CS1 - (chip & CS1) + (chip & CS2));
-    uPause(IODELAY);
-    /* lower WR again */
-    port_out(port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
-    uPause(IODELAY);
+    if (p->interface == 68) {
+	port_out(p->port + 2, 0 ^ OUTMASK);
+	port_out(p->port, value);
+	/* cycle E */
+	port_out(p->port + 2, ((chip & CS1) + (chip & CS2)) ^ OUTMASK);
+	if (p->delayMult) uPause(p->delayMult);
+	port_out(p->port + 2, 0 ^ OUTMASK);
+    }
+    else {
+	port_out(p->port, value);
+	/*
+	* lower WR, rise A0 and CS1 and/or CS2. Take bit inversion of parallel
+	* port into account. External inverter required!
+	*/
+	port_out(p->port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
+	/* rise WR */
+	port_out(p->port + 2, CS1 - (chip & CS1) + (chip & CS2));
+	if (p->delayMult) uPause(p->delayMult);
+	/* lower WR again */
+	port_out(p->port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
+	if (p->delayMult) uPause(p->delayMult);
+    }
 }
 
 /**
  * Writes data value to one or both sed 1520 selected by chip.
- * \param port   Output port base address
+ * \param p      Pointer to private data structure
  * \param value  Data byte to write
  * \param chip   Bitmap of controllers to send value to
  */
 void
-writedata(unsigned int port, int value, int chip)
+writedata(PrivateData *p, int value, int chip)
 {
-    port_out(port, value);
-    /*
-     * lower WR and A0, rise CS1 and/or CS2. Take bit inversion of parallel
-     * port into account.
-     */
-    port_out(port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
-    port_out(port + 2, A0 + CS1 - (chip & CS1) + (chip & CS2));
-    uPause(IODELAY);
-    port_out(port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
-    uPause(IODELAY);
+    if (p->interface == 68) {
+	port_out(p->port + 2, (A0) ^ OUTMASK);
+	port_out(p->port, value);
+	/* cycle E */
+	port_out(p->port + 2, (A0 + (chip & CS1) + (chip & CS2)) ^ OUTMASK);
+	if (p->delayMult) uPause(p->delayMult);
+	port_out(p->port + 2, (A0) ^ OUTMASK);
+    }
+    else {
+	port_out(p->port, value);
+	/* lower WR and A0, rise CS1 and/or CS2. See also writecommand. */
+	port_out(p->port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
+	port_out(p->port + 2, A0 + CS1 - (chip & CS1) + (chip & CS2));
+	if (p->delayMult) uPause(p->delayMult);
+	port_out(p->port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
+	if (p->delayMult) uPause(p->delayMult);
+    }
 }
 
 /**
  * Selects a page (=row) on both sed1520s.
- * \param port  Output port base address
+ * \param p     Pointer to private data structure
  * \param page  Page (=row) number (0-3)
  */
 void
-selectpage(unsigned int port, int page)
+selectpage(PrivateData *p, int page)
 {
-    writecommand(port, 0xB8 + (page & 0x03), CS1 + CS2);
+    writecommand(p, PAGE_ADR + (page & 0x03), CS1 + CS2);
 }
 
 /**
- * Selects a column on the sed1520s specified by chip.
- * \param port    Output port base address
- * \param column  Select column (segment) in controller (0-79)
+ * Selects a column on the sed1520 specified by chip.
+ * \param p       Pointer to private data structure
+ * \param column  Select column (segment) in controller (0-60)
  * \param chip    Bitmap of controllers to send value to
  */
 void
-selectcolumn(unsigned int port, int column, int chip)
+selectcolumn(PrivateData *p, int column, int chip)
 {
-    writecommand(port, (column & 0x7F), chip);
+    writecommand(p, COLUMN_ADR + (column & 0x7F), chip);
 }
+
+/*-
+ * Display memory layout information:
+ *
+ * The SED1520 does not use a linear display data memory but a paged memory
+ * with four pages (0-3) corresponding to rows 0-7, 8-15, 16-23, and 24-31.
+ * Within each page, one bytes represents 8 pixels of one column (from 0-60)
+ * with bit 0 (LSB) being the top and bit 7 (MSB) the bottom pixel within
+ * that page.
+ *
+ * To write data to display memory one selects the page and column and then
+ * writes bytes of pixel data to the display. The column counter is increased
+ * by each write so the display fills from left ro right (the SED1520 can
+ * also be configured to write from right to left).
+ */
 
 /**
  * Draws character z from fontmap to the framebuffer at position x,y.
@@ -202,6 +240,13 @@ sed1520_init(Driver * drvthis)
 	report(RPT_ERR, "%s: timing_init() failed (%s)", drvthis->name, strerror(errno));
 	return -1;
     }
+    p->delayMult = drvthis->config_get_int(drvthis->name, "delaymult", 0, 1);
+    if (p->delayMult < 0 || p->delayMult > 1000) {
+	report(RPT_WARNING, "%s: DelayMult value invalid, using default (1)", drvthis->name);
+	p->delayMult = 1;
+    }
+    if (p->delayMult == 0)
+	report(RPT_INFO, "%s: Delay is disabled", drvthis->name);
 
     /* Allocate our framebuffer */
     p->framebuf = (unsigned char *) calloc(PIXELWIDTH * HEIGHT, sizeof(unsigned char));
@@ -214,18 +259,23 @@ sed1520_init(Driver * drvthis)
     memset(p->framebuf, '\0', PIXELWIDTH * HEIGHT);
 
     /* Open port */
-    if (port_access(p->port) || port_access(p->port + 2)) {
+    if (port_access_multiple(p->port, 3)) {
 	report(RPT_ERR, "%s: unable to access port 0x%03X", drvthis->name, p->port);
 	return -1;
     }
 
+    /* Get interface style (68-family or 80-family) */
+    p->interface = drvthis->config_get_int(drvthis->name, "InterfaceType", 0, 80);
+    if (p->interface != 68 && p->interface != 80) {
+	report(RPT_WARNING, "%s: Invalid interface configured, using type 80", drvthis->name);
+	p->interface = 80;
+    }
+
     /* Initialize display */
-    port_out(p->port, 0);
-    port_out(p->port + 2, WR + CS2);
-    writecommand(p->port, 0xE2, CS1 + CS2);	/* software reset */
-    writecommand(p->port, 0xAF, CS1 + CS2);	/* display on */
-    writecommand(p->port, 0xC0, CS1 + CS2);	/* display start address */
-    selectpage(p->port, 3);
+    writecommand(p, SOFT_RESET, CS1 + CS2);
+    writecommand(p, DISP_ON, CS1 + CS2);
+    writecommand(p, DISP_START_LINE, CS1 + CS2);
+    selectpage(p, 3);
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
     return 0;
@@ -306,18 +356,18 @@ sed1520_flush(Driver * drvthis)
     int i, j;
 
     for (i = 0; i < HEIGHT; i++) {
-	/* select line */
-	selectpage(p->port, i);
+	/* select line/page */
+	selectpage(p, i);
 
 	/* update left half of display */
-	selectcolumn(p->port, 0, CS2);
+	selectcolumn(p, 0, CS1);
 	for (j = 0; j < PIXELWIDTH / 2; j++)
-	    writedata(p->port, p->framebuf[j + (i * PIXELWIDTH)], CS2);
+	    writedata(p, p->framebuf[j + (i * PIXELWIDTH)], CS1);
 
 	/* update right half of display */
-	selectcolumn(p->port, 0, CS1);
+	selectcolumn(p, 0, CS2);
 	for (j = PIXELWIDTH / 2; j < PIXELWIDTH; j++)
-	    writedata(p->port, p->framebuf[j + (i * PIXELWIDTH)], CS1);
+	    writedata(p, p->framebuf[j + (i * PIXELWIDTH)], CS2);
     }
 }
 
@@ -406,7 +456,7 @@ sed1520_num(Driver * drvthis, int x, int num)
 
 /**
  * API: Changes the font of character n to a pattern given by *dat.
- * HD44780 Controllers only posses 8 programmable chars. But we store the
+ * HD44780 controllers only posses 8 programmable chars. But we store the
  * fontmap completely in RAM, so every character can be altered.
  *
  * Important: Characters have to be redrawn by drawchar2fb() to show their
@@ -416,76 +466,80 @@ sed1520_num(Driver * drvthis, int x, int num)
 MODULE_EXPORT void
 sed1520_set_char(Driver * drvthis, int n, char *dat)
 {
-    int row, col;
+    int row;
+    unsigned char mask = (1 << CELLWIDTH) - 1;
 
     if (n < 0 || n > 255)
 	return;
     if (!dat)
 	return;
 
-    for (row = 0; row < CELLHEIGHT; row++) {
-	int i = 0;
-
-	for (col = 0; col < CELLWIDTH; col++)
-	    i = (i << 1) | (dat[(row * CELLWIDTH) + col] > 0);
-
-	fontmap[n][row] = i;
-    }
+    for (row = 0; row < CELLHEIGHT; row++)
+	fontmap[n][row] = dat[row] & mask;
 }
 
-
-/*
- * Draws a vertical from the bottom up to the last 3 rows of the framebuffer
- * at 1-based position x. len is given in pixels.
+/**
+ * API: Draws a vertical from the bottom up at 1-based position x.
  */
 MODULE_EXPORT void
-sed1520_old_vbar(Driver * drvthis, int x, int len)
+sed1520_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
     PrivateData *p = drvthis->private_data;
     int i, j, k;
+    int pixels;
 
     x--;
+
+    if (x < 0 || y < 1 || x >= WIDTH || y > HEIGHT || len > HEIGHT)
+	return;
+
+    pixels = len * CELLHEIGHT * promille / 1000;
 
     for (j = 0; j < 3; j++) {
 	k = 0;
 	/* Set height of block. Bottom is leftmost bit */
 	for (i = 0; i < CELLHEIGHT; i++) {
-	    if (len > i)
+	    if (pixels > i)
 		k |= (1 << (CELLHEIGHT - 1 - i));
 	}
 
 	/* Draw directly into framebuffer starting from bottom */
 	p->framebuf[((3 - j) * PIXELWIDTH) + (x * CELLWIDTH) + 0] = 0;
-	p->framebuf[((3 - j) * PIXELWIDTH) + (x * CELLWIDTH) + 1] = 0;
+	p->framebuf[((3 - j) * PIXELWIDTH) + (x * CELLWIDTH) + 1] = k;
 	p->framebuf[((3 - j) * PIXELWIDTH) + (x * CELLWIDTH) + 2] = k;
 	p->framebuf[((3 - j) * PIXELWIDTH) + (x * CELLWIDTH) + 3] = k;
 	p->framebuf[((3 - j) * PIXELWIDTH) + (x * CELLWIDTH) + 4] = k;
 	p->framebuf[((3 - j) * PIXELWIDTH) + (x * CELLWIDTH) + 5] = 0;
 
-	len -= CELLHEIGHT;
+	pixels -= CELLHEIGHT;
     }
 }
 
-
-/*
- * Draws a horizontal bar from left to right at 1-based position x,y into the
- * framebuffer. len is given in pixels.
+/**
+ * API: Draws a horizontal bar from left to right at 1-based position x,y into
+ * the framebuffer.
  */
 MODULE_EXPORT void
-sed1520_old_hbar(Driver * drvthis, int x, int y, int len)
+sed1520_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
     PrivateData *p = drvthis->private_data;
     int i;
+    int pixels;
 
     x--;
     y--;
 
-    if ((y < 0) || (y >= HEIGHT) || (x < 0) || (len < 0) || ((x + (len / CELLWIDTH)) >= WIDTH))
+    if ((y < 0) || (y >= HEIGHT) || (x < 0) || (len < 0) || (x + len > WIDTH))
 	return;
 
-    /* Draw directly into framebuffer. Use 4 dots in the middle (0x3C). */
-    for (i = 0; i < len; i++)
-	p->framebuf[(y * PIXELWIDTH) + (x * CELLWIDTH) + i] = 0x3C;
+    pixels = len * CELLWIDTH * promille / 1000;
+
+    /*
+     * Draw directly into framebuffer. Drawing is easy, as one byte is one
+     * column in a page. Use 5 dots in the middle (0x3E).
+     */
+    for (i = 0; i < pixels; i++)
+	p->framebuf[(y * PIXELWIDTH) + (x * CELLWIDTH) + i] = 0x3E;
 }
 
 /**
@@ -496,26 +550,26 @@ sed1520_icon(Driver * drvthis, int x, int y, int icon)
 {
     static char heart_open[] =
     {
-	1, 1, 1, 1, 1,
-	1, 0, 1, 0, 1,
-	0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0,
-	1, 0, 0, 0, 1,
-	1, 1, 0, 1, 1,
-	1, 1, 1, 1, 1
+	b_OOOOO,
+	b_O_O_O,
+	b______,
+	b______,
+	b______,
+	b_O___O,
+	b_OO_OO,
+	b_OOOOO
     };
 
     static char heart_filled[] =
     {
-	1, 1, 1, 1, 1,
-	1, 0, 1, 0, 1,
-	0, 1, 0, 1, 0,
-	0, 1, 1, 1, 0,
-	0, 1, 1, 1, 0,
-	1, 0, 1, 0, 1,
-	1, 1, 0, 1, 1,
-	1, 1, 1, 1, 1
+	b_OOOOO,
+	b_O_O_O,
+	b__O_O_,
+	b__OOO_,
+	b__OOO_,
+	b_O_O_O,
+	b_OO_OO,
+	b_OOOOO
     };
 
     switch (icon) {

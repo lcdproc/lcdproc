@@ -3,6 +3,20 @@
 
 #include "lcd.h"
 
+/* Commands for SED1520 */
+#define DISP_OFF	0xAE
+#define DISP_ON		0xAF
+#define DISP_START_LINE	0xC0
+#define PAGE_ADR	0xB8
+#define COLUMN_ADR	0x00
+#define ADC_NORM	0xA0	/* left-to-right */
+#define ADC_INV		0xA1	/* right-to-left */
+#define STATIC_DR_OFF	0xA4	/* normal operation */
+#define STATIC_DR_ON	0xA5	/* power safe */
+#define DUTY_1_16	0xA8
+#define DUTY_1_32	0xA9
+#define SOFT_RESET	0xE2
+
 MODULE_EXPORT int sed1520_init (Driver *drvthis);
 MODULE_EXPORT void sed1520_close (Driver *drvthis);
 MODULE_EXPORT int sed1520_width (Driver *drvthis);
