@@ -32,12 +32,10 @@
 # include "config.h"
 #endif
 
-#define MAXCOUNT 10
+#define MAXCOUNT 10 /* Including terminating NUL */
 #define WIDTH 16
 #define HEIGHT 2
 
-//Pyramid DS says 16, HD44780U DS says 8
-//#define CUSTOMCHARS 16
 #define CUSTOMCHARS 8
 
 #define CELLHEIGHT  8
@@ -78,6 +76,26 @@ typedef struct pyramid_private_data {
     char led[8];
 
 } PrivateData;
+
+MODULE_EXPORT int  pyramid_init (Driver *drvthis);
+MODULE_EXPORT void pyramid_close (Driver *drvthis);
+MODULE_EXPORT int  pyramid_width (Driver *drvthis);
+MODULE_EXPORT int  pyramid_height (Driver *drvthis);
+MODULE_EXPORT int  pyramid_cellwidth (Driver *drvthis);
+MODULE_EXPORT int  pyramid_cellheight (Driver *drvthis);
+MODULE_EXPORT void pyramid_clear (Driver *drvthis);
+MODULE_EXPORT void pyramid_flush (Driver *drvthis);
+MODULE_EXPORT void pyramid_string (Driver *drvthis, int x, int y, const char string[]);
+MODULE_EXPORT void pyramid_chr (Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT void pyramid_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void pyramid_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT int  pyramid_icon (Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT void pyramid_cursor (Driver *drvthis, int x, int y, int state);
+MODULE_EXPORT int  pyramid_get_free_chars (Driver *drvthis);
+MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat);
+MODULE_EXPORT void pyramid_output (Driver *drvthis, int state);
+MODULE_EXPORT const char * pyramid_get_key (Driver *drvthis);
+MODULE_EXPORT const char * pyramid_get_info (Driver *drvthis);
 
 #endif
 

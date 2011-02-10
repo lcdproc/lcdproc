@@ -18,6 +18,7 @@ v.0.5dev (ongoing development)
  * lcdproc: Make the iface screen more readable on 2x16 displays
  * All drivers: sync functions with prototypes
  * Port remaining drivers to 0.5 API (glk, lcdm001, stv5730)
+ * Pyramid: Only send LED state changes, doxygen-ize
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)

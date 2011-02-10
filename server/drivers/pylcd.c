@@ -49,6 +49,9 @@
  *   - correct escaping for characters 128-255 (also fixes the 'ß' issue)
  *   - correct icons (custom chars 8-15 cannot be set, checkboxes were wrong)
  *   - Add a delay after set_char. This seems to fix occasional hangs
+ *   - Cache status of LEDs and only send on update, reduces communication
+ *   - Add prototypes for all and Doxygen comments to internal functions
+ *   - remove unused read_ACK()
  */
 
 #include <sys/types.h>
@@ -90,14 +93,21 @@ MODULE_EXPORT char *symbol_prefix = "pyramid_";
 
 /* Prototypes: */
 
-int send_ACK(PrivateData *);
+static int data_ready(PrivateData *p);
+static int read_tele(PrivateData *p, char *buffer);
+static int real_send_tele(PrivateData *p, char *buffer, int len);
+static int send_tele(PrivateData *p, char *buffer);
+static int send_ACK(PrivateData *p);
+static unsigned long long timestamp(PrivateData *p);
+static int initTTY(Driver *drvthis, int FD);
 
 /* local functions for pylcd.c */
 
-/* Performs an select on the device used. Returns if no data is available at the
- moment. Used to keep reading-operations from blocking the driver.
+/**
+ * Performs an select on the device used. Returns if no data is available at
+ * the moment. Used to keep reading-operations from blocking the driver.
  */
-int
+static int
 data_ready(PrivateData *p)
 {
     FD_ZERO(&p->rdfs);
@@ -105,12 +115,17 @@ data_ready(PrivateData *p)
     return select(p->FD+1, &p->rdfs, NULL, NULL, &p->timeout)>0;
 }
 
-/* Reads one telegramm, stores the telegramm without ETX/STX in buffer
- returns True on successful detection of a telegram, False if nothing was read
- or the telegramm didn't match its CC or if MAXCOUNT was exeeded without
- reading a complete telegramm.
+
+/**
+ * Reads one telegramm, stores the telegramm without ETX/STX in buffer.
+ * \param p       Pointer to driver's private data
+ * \param buffer  Pointer to memory to store the telegram in. Must be at least
+ *                MAXOUNT size!
+ * \return  True (1) on successful detection of a telegram, False (0) if
+ *          nothing was read or the telegramm didn't match its CC or if
+ *          MAXCOUNT was exeeded without reading a complete telegramm.
  */
-int
+static int
 read_tele(PrivateData *p, char *buffer)
 {
     char zeichen=0;
@@ -166,27 +181,21 @@ read_tele(PrivateData *p, char *buffer)
     }
 }
 
-/* Wrapper for reading an acknowledge telegramm.
- */
-int
-read_ACK(PrivateData *p)
-{
-    char buffer[MAXCOUNT];
-    int retval=read_tele(p, buffer);
-
-    return (retval && buffer[0]=='Q');
-}
-
-/* Send the input as telegramm.
+/**
+ * Send the input as telegramm.
  *
- * The telegram buffer just contains the raw telegram data
- *  - It shall not contain <STX> and <ETX> marks
- *  - It may contain bytes below 0x20, they are automatically escaped by
- *    real_sent_tele
+ * The telegram buffer just contains the raw telegram data:
+ *  - It shall not contain STX and ETX marks.
+ *  - It may contain bytes below 0x20, they are automatically escaped.
  *
- * NOTE: This function does not wait for any ACKs.
+ * \param p       Pointer to driver's private data
+ * \param buffer  Buffer containing the data to send
+ * \param len     Number of bytes to send from buffer
+ * \return  Always 0
+ *
+ * \note This function does not wait for any ACKs.
  */
-int
+static int
 real_send_tele(PrivateData *p, char *buffer, int len)
 {
     char cc=0x00;
@@ -194,11 +203,11 @@ real_send_tele(PrivateData *p, char *buffer, int len)
     char buffer2[255];
 
     i=0; j=0;
-    buffer2[j++]=2; // emit <STX>
+    buffer2[j++]=2;		/* emit <STX> */
 
-    /* copy the whole telegram package and escape
-     * characters below 0x20.
-     * ie. 0x8 --> <ESC> 0x28
+    /*
+     * copy the whole telegram package and escape characters below 0x20.
+     * ie. 0x8 --> <ESC> 0x28.
      */
 
     while (len-- && j < 253) {
@@ -209,8 +218,8 @@ real_send_tele(PrivateData *p, char *buffer, int len)
             buffer2[j++]=buffer[i++];
         }
     }
-    buffer2[j++]=3; // emit <ETX>
-    len=j;	    // new package length
+    buffer2[j++]=3;		/* emit <ETX> */
+    len=j;			/* new package length */
 
     /* calculate <BCC> over all bytes */
     for (i=0; i<len; i++)
@@ -226,30 +235,32 @@ real_send_tele(PrivateData *p, char *buffer, int len)
     return 0;
 }
 
-/* If we know what our telegrams look like, we may use
- * send_tele instead of real_send_tele.
- * NOTE: This only works when there are no NULL bytes
- * in the telegram
+/**
+ * Send the string given in buffer. The string must be NUL-terminated.
+ *
+ * \param p       Pointer to driver's private data
+ * \param buffer  Pointer to the string to send
+ * \return  Always 0
  */
-
-int
+static int
 send_tele(PrivateData *p, char *buffer)
 {
     return real_send_tele(p, buffer, strlen(buffer));
 }
 
-/* Wrapper for sending ACKs via real_send_tele
+/**
+ * Sends an acknowledge to the display.
  */
-int
+static int
 send_ACK(PrivateData *p)
 {
     return send_tele(p, "Q");
 }
 
-/*
+/**
  * Returns the current time in microseconds since the Epoch.
  */
-unsigned long long
+static unsigned long long
 timestamp(PrivateData *p)
 {
     struct timeval tv;
@@ -259,9 +270,13 @@ timestamp(PrivateData *p)
 }
 
 
-/* Sets the serial device, used for communication with the LCD, into raw mode
+/**
+ * Sets the serial device, used for communication with the LCD, into raw mode.
+ * \param drvthis  Pointer to driver
+ * \param FD       File descriptor of serial device to configure.
+ * \return  -1 on error, 0 otherwise
  */
-int
+static int
 initTTY(Driver *drvthis, int FD)
 {
     struct termios tty_mode;
@@ -288,22 +303,6 @@ initTTY(Driver *drvthis, int FD)
     return 0;
 }
 
-/* This function sets all LEDs according to the private data structure */
-
-int
-set_leds(PrivateData *p)
-{
-    int i;
-    char tele[]="L00";
-
-    for (i = 0; i < 7; i++) {
-      tele[1] = i + '1';
-      tele[2] = p->led[i] ? '1' : '0';
-      send_tele(p, tele);
-    }
-
-    return 0;
-}
 
 /* Driver functions according to current API-Version */
 
@@ -394,23 +393,20 @@ pyramid_init (Driver *drvthis)
     send_tele(p, "C0101");
     send_tele(p, "M3");
 
+    /* invalidate LED status to make output(0) work */
+    for (i = 0; i < 7; i++)
+	p->led[i] = -1;
     /* hardware selftest + clear all LEDs */
+    pyramid_output(drvthis, 0);		/* needed, otherwise L11 won't work */
     for (i = 0; i < 7; i++) {
-    	p->led[i?i-1:0] = 0;
-	p->led[i] = 1;
-    	set_leds(p);
+	pyramid_output(drvthis, 1 << i);
 	usleep(10000);
     }
     for (i = 6; i >= 0; i--) {
-    	p->led[i+1] = 0;
-	p->led[i] = 1;
-    	set_leds(p);
+	pyramid_output(drvthis, 1 << i);
 	usleep(10000);
     }
-    for (i = 0; i < 7; i++) {
-    	p->led[i] = 0;
-    }
-    set_leds(p);
+    pyramid_output(drvthis, 0);
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -496,22 +492,24 @@ pyramid_flush (Driver *drvthis)
     {
 	memcpy(mesg, p->framebuffer, 33);
 
-	// we got the japanese HD44780U, so convert the german umlauts and
-	// other stuff
+	/*
+	 * we got the japanese HD44780U, so convert the german umlauts and
+	 * other stuff, assuming input is iso_8859-1.
+	 */
 	for (i=1; i<33; i++) {
 		switch ((unsigned char)mesg[i]) {
-		// assume input is iso_8859-1
-		case 0xe4: mesg[i]=0xe1; break; // ä
-		case 0xf6: mesg[i]=0xef; break; // ö
-		case 0xfc: mesg[i]=0xf5; break; // ü
-		case 0xdf: mesg[i]=0xe2; break; // ß
-		case 0xb7: mesg[i]=0xa5; break; // ·
-		case 0xb0: mesg[i]=0xdf; break; // °
+		case 0xe4: mesg[i]=0xe1; break;	/* ä */
+		case 0xf6: mesg[i]=0xef; break;	/* ö */
+		case 0xfc: mesg[i]=0xf5; break;	/* ü */
+		case 0xdf: mesg[i]=0xe2; break;	/* ß */
+		case 0xb7: mesg[i]=0xa5; break;	/* · */
+		case 0xb0: mesg[i]=0xdf; break;	/* ° */
 		}
 	}
 
+	/* We do not wait for the ACK here, these are read by get_key() */
         send_tele(p, "C0101");
-        real_send_tele(p, mesg, 33); /* We do not wait for the ACK here*/
+        real_send_tele(p, mesg, 33);
         p->FB_modified=False;
         p->last_buf_time=current_time;
 
@@ -594,7 +592,7 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 		return;
 	}
 
-	// which character?
+	/* which character? */
 	tele[1]=n+0x40;
 
 	for (row = 0; row < p->cellheight; row++) {
@@ -603,9 +601,8 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 			pixels <<= 1;
 			pixels |= (dat[(row * p->cellwidth) + column] != 0);
 		}
-		pixels |= 0x40; // pixel information is transferred with
-				// an offset of 40h
-
+		/* pixel information is transferred with an offset of 40h */
+		pixels |= 0x40;
 		tele[row+2]=pixels;
 	}
         real_send_tele(p, tele, 10);
@@ -1077,11 +1074,9 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 }
 
 
-/*
+/* TODO: Implement this after converting to 8 byte CC.
 MODULE_EXPORT void
 pyramid_num (Driver *drvthis, int x, int num){};
-MODULE_EXPORT void
-pyramid_heartbeat (Driver *drvthis, int state){};
 */
 
 /**
@@ -1118,21 +1113,6 @@ pyramid_cursor (Driver *drvthis, int x, int y, int state)
 
 /* Hardware functions */
 
-#if 0
-// all of these are not supported by the display (data sheet)
-MODULE_EXPORT int
-pyramid_get_contrast (Driver *drvthis){return 0;};
-MODULE_EXPORT void
-pyramid_set_contrast (Driver *drvthis, int promille){};
-MODULE_EXPORT int
-pyramid_get_brightness (Driver *drvthis, int state){return 0;};
-MODULE_EXPORT void
-pyramid_set_brightness (Driver *drvthis, int state, int promille){};
-MODULE_EXPORT void
-pyramid_backlight (Driver *drvthis, int on)
-#endif
-
-
 /**
  * Set output port.
  * Setting an output port bit lights the associated LED;
@@ -1145,11 +1125,16 @@ pyramid_output (Driver *drvthis, int state)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
     int i;
+    char tele[]= {"L00"};
 
-    for (i = 0; i < 7; i++)
-        p->led[i] = state & (1 << i);
-
-    set_leds(p);
+    for (i = 0; i < 7; i++) {
+	if (p->led[i] != (state & (1 << i))) {
+	    p->led[i] = state & (1 << i);
+	    tele[1] = i + '1';
+	    tele[2] = p->led[i] ? '1' : '0';
+	    send_tele(p, tele);
+	}
+    }
 
     if(state & (1 << 8)) {
 	    pyramid_init_custom1(drvthis);
@@ -1259,7 +1244,7 @@ pyramid_get_key (Driver *drvthis)
         return "Escape+Enter";
 #endif
 
-    return NULL; // Ignore combined key events
+    return NULL;		/* Ignore combined key events */
 }
 
 
