@@ -2,39 +2,33 @@
  * LCDd \c lcdm001 driver for the LCDM001 device from kernelconcepts.de.
  */
 
+/*-
+ *  This driver is mostly based on the MtxOrb driver. See the file MtxOrb.c
+ *  for copyright details. The function calls needed for reporting and getting
+ *  settings from the configfile have been written taking the calls in
+ *  sed1330.c.
+ *
+ *  Copyright (C) 2001  Rene Wagner <reenoo@gmx.de>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+ */
+
 /*
-    Copyright (C) 2001  Rene Wagner <reenoo@gmx.de>
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 */
-
-/* This driver is mostly based on the MtxOrb driver.
-   See the file MtxOrb.c for copyright details */
-/* The heartbeat workaround has been taken from the curses driver
-   See the file curses_drv.c for copyright details */
-/* The function calls needed for reporting and getting settings from the
-   configfile have been written taking the calls in
-   sed1330.c ((C) by Joris Robijn) as examples*/
-/* (Hopefully I have NOT forgotten any file I have stolen code from.
-   If so send me an e-mail or add your copyright here!) */
-
-/* LCDM001 does NOT support custom chars
-   Most of the displaying problems have been fixed
-   using ASCII workarounds*/
-
-/* You can modify the characters that are displayed instead of
-   the normal icons for the heartbeat in lcdm001.h*/
+ * LCDM001 does NOT support custom chars. You can modify the characters that
+ * are displayed instead of the normal icons for the heartbeat in lcdm001.h.
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -49,21 +43,9 @@
 # include "config.h"
 #endif
 
-# if TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
-# else
-#  if HAVE_SYS_TIME_H
-#   include <sys/time.h>
-#  else
-#   include <time.h>
-#  endif
-# endif
-
 #include "lcd.h"
 #include "lcdm001.h"
 #include "report.h"
-//#include "configfile.h"
 
 
 /** private data for the \c lcdm001 driver */
@@ -72,8 +54,6 @@ typedef struct lcdm001_private_data {
 	int fd;
 	int speed;
 
-	char icon_char;
-
 	char pause_key;
 	char back_key;
 	char forward_key;
@@ -81,23 +61,32 @@ typedef struct lcdm001_private_data {
 
 	char *framebuf;
 
-	int width;
-	int height;
-} PrivateData;	
+	int width, height;
+	int cellwidth, cellheight;
+} PrivateData;
 
 
-// Vars for the server core
+/* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "lcdm001_";
 
+/* Local function prototypes */
 static void lcdm001_cursorblink(Driver *drvthis, int on);
 static char lcdm001_parse_keypad_setting(Driver *drvthis, char * keyname, char * default_value);
 
 
-// Parse one key from the configfile
-static char lcdm001_parse_keypad_setting(Driver *drvthis, char * keyname, char * default_value)
+/**
+ * Parse one key from the configfile.
+ * \param drvthis        Pointer to driver
+ * \param keyname        Name of the key in config file
+ * \param default_value  Default key value to assign if keyname does not exist.
+ * \return  The key character that will be assigned if the key on the device is
+ *          pressed.
+ */
+static char
+lcdm001_parse_keypad_setting(Driver *drvthis, char * keyname, char * default_value)
 {
 	char return_val = 0;
 
@@ -125,7 +114,11 @@ static char lcdm001_parse_keypad_setting(Driver *drvthis, char * keyname, char *
 	return return_val;
 }
 
-/* Set cursorblink on/off */
+/**
+ * Turn cursor blinking on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       Integer: 0 to turn off blinking, 1 to turn on blinking.
+ */
 static void
 lcdm001_cursorblink(Driver *drvthis, int on)
 {
@@ -141,11 +134,8 @@ lcdm001_cursorblink(Driver *drvthis, int on)
 }
 
 
-/* TODO: Get lcd.framebuf to properly work as whatever driver is running...*/
-
-/*********************************************************************
- * init() should set up any device-specific stuff, and
- * point all the function pointers.
+/**
+ * API: Set up any device-specific stuff.
  */
 MODULE_EXPORT int
 lcdm001_init (Driver *drvthis)
@@ -162,7 +152,6 @@ lcdm001_init (Driver *drvthis)
 
 	/* initialize private data */
 	p->speed = B38400;
-	p->icon_char = '@';
 	p->pause_key = DOWN_KEY;
 	p->back_key = LEFT_KEY;
 	p->forward_key = RIGHT_KEY;
@@ -170,6 +159,8 @@ lcdm001_init (Driver *drvthis)
 	p->framebuf = NULL;
 	p->width = LCD_DEFAULT_WIDTH;
 	p->height = LCD_DEFAULT_HEIGHT;
+	p->cellwidth = LCD_DEFAULT_CELLWIDTH;
+	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
 
 	debug(RPT_INFO, "LCDM001: init(%p)", drvthis);
 
@@ -180,20 +171,20 @@ lcdm001_init (Driver *drvthis)
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
 
-	// READ CONFIG FILE:
+	/* READ CONFIG FILE: */
 
-	// which serial device should be used
+	/* which serial device should be used */
 	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(p->device));
 	p->device[sizeof(p->device)-1] = '\0';
 	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 
-	// keypad settings
+	/* keypad settings */
 	p->pause_key =      lcdm001_parse_keypad_setting(drvthis, "PauseKey", "DownKey");
 	p->back_key =       lcdm001_parse_keypad_setting(drvthis, "BackKey", "LeftKey");
 	p->forward_key =    lcdm001_parse_keypad_setting(drvthis, "ForwardKey", "RightKey");
 	p->main_menu_key =  lcdm001_parse_keypad_setting(drvthis, "MainMenuKey", "UpKey");
 
-	// Set up io port correctly, and open it...
+	/* Set up io port correctly, and open it... */
 	debug(RPT_DEBUG, "%s: opening serial device: %s", __FUNCTION__, p->device);
 	p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (p->fd == -1) {
@@ -224,23 +215,22 @@ lcdm001_init (Driver *drvthis)
 	tcsetattr(p->fd, TCSANOW, &portset);
 	tcflush(p->fd, TCIOFLUSH);
 
-	// Reset and clear the LCDM001
+	/* Reset and clear the LCDM001 */
 	write(p->fd, "~C", 2);
-	//Set cursorblink default
+	/* Set cursorblink default */
 	lcdm001_cursorblink(drvthis, DEFAULT_CURSORBLINK);
-	// Turn all LEDs off
+	/* Turn all LEDs off */
 	lcdm001_output(drvthis, 0);
 
-	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+	report(RPT_INFO, "%s: init() done", drvthis->name);
 
 	return 0;
 }
 
-/* Below here, you may use either lcd.framebuf or driver->framebuf..
- * lcd.framebuf will be set to the appropriate buffer before calling
- * your driver.
- */
 
+/**
+ * API: Cleanup all data structures and close device.
+ */
 MODULE_EXPORT void
 lcdm001_close (Driver *drvthis)
 {
@@ -252,10 +242,10 @@ lcdm001_close (Driver *drvthis)
 		p->framebuf = NULL;
 
 		if (p->fd >= 0) {
-			//switch off all LEDs
+			/* switch off all LEDs */
 			lcdm001_output(drvthis, 0);
 			close(p->fd);
-		}	
+		}
 		p->fd = -1;
 
 		free(p);
@@ -265,9 +255,9 @@ lcdm001_close (Driver *drvthis)
         report(RPT_INFO, "%s: closed", drvthis->name);
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+/**
+ * API: Returns the display width
+ */
 MODULE_EXPORT int
 lcdm001_width (Driver *drvthis)
 {
@@ -276,9 +266,9 @@ lcdm001_width (Driver *drvthis)
 	return p->width;
 }
 
-/////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+/**
+ * API: Returns the display height
+ */
 MODULE_EXPORT int
 lcdm001_height (Driver *drvthis)
 {
@@ -287,49 +277,44 @@ lcdm001_height (Driver *drvthis)
 	return p->height;
 }
 
-/////////////////////////////////////////////////////////////////
-// Clears the LCD screen
-//
+/**
+ * API: Clears the internal frame buffer. Does not clear display screen
+ * immediately as it only makes the display flicker.
+ */
 MODULE_EXPORT void
 lcdm001_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
 	memset(p->framebuf, ' ', p->width * p->height);
-	/* instant clear is NOT neccessary, it only makes the display flicker */
-	//write(fd, "~C", 2);
 
 	debug(RPT_DEBUG, "LCDM001: cleared screen");
 }
 
-//////////////////////////////////////////////////////////////////
-// Flushes all output to the lcd...
-//
+/**
+ * API: Flushes all output to the lcd...
+ */
 MODULE_EXPORT void
 lcdm001_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-        //TODO: Check whether this is still correct
-
+	/* TODO: Check whether this is still correct */
 	write(p->fd, p->framebuf, p->width * p->height);
 
-        debug(RPT_DEBUG, "LCDM001: frame buffer flushed");
+	debug(RPT_DEBUG, "LCDM001: frame buffer flushed");
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a character on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+/**
+ * API: Prints a character on the lcd display, at position (x,y).  The
+ * upper-left is (1,1), and the lower right should be (20,4).
+ */
 MODULE_EXPORT void
 lcdm001_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
-        if (c == '\0')
-                c = p->icon_char;   //heartbeat workaround
-
-	y--; x--; // translate to 0-coords
+	y--; x--;		/* translate to 0-coords */
 
 	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
 		p->framebuf[(y * p->width) + x] = c;
@@ -337,31 +322,36 @@ lcdm001_chr (Driver *drvthis, int x, int y, char c)
 	debug(RPT_DEBUG, "LCDM001: writing character %02X to position (%d,%d)", c, x, y);
 }
 
-/////////////////////////////////////////////////////////////////
-// Prints a string on the lcd display, at position (x,y).  The
-// upper-left is (1,1), and the lower right should be (20,4).
-//
+/**
+ * API: Prints a string on the lcd display, at position (x,y).  The
+ * upper-left is (1,1), and the lower right should be (20,4).
+ */
 MODULE_EXPORT void
 lcdm001_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
 
-	x--; y--; // Convert 1-based coords to 0-based...
+	x--; y--;		/* Convert 1-based coords to 0-based... */
 
 	if ((y < 0) || (y >= p->height))
 		return;
 
 	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
-		if (x >= 0)     // no write left of left border
+		if (x >= 0)	/* no write left of left border */
 			p->framebuf[(y * p->width) + x] = string[i];
 	}
 
 	debug(RPT_DEBUG, "LCDM001: printed string at (%d,%d)", x, y);
 }
 
-/////////////////////////////////////////////////////////////////
-// Controls LEDs
+/**
+ * API: Controls LEDs.
+ * \param drvthis  Pointer to driver
+ * \param state    LED state
+ *
+ * \todo Document LED state.
+ */
 MODULE_EXPORT void
 lcdm001_output (Driver *drvthis, int state)
 {
@@ -376,91 +366,79 @@ lcdm001_output (Driver *drvthis, int state)
         debug(RPT_DEBUG, "LCDM001: current LED state %d", state);
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a vertical bar, from the bottom of the screen up.
-//
+/**
+ * API: Draws a vertical bar, from the bottom of the screen up.
+ */
 MODULE_EXPORT void
-lcdm001_old_vbar(Driver *drvthis, int x, int len)
+lcdm001_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
-	int y = p->height;
+	int pixels = ((long) 2 * len * p->cellheight) * promille / 2000;
 
-	debug(RPT_DEBUG , "LCDM001: vertical bar at %d set to %d", x, len);
+	if ((x <= 0) || (x > p->width) || (y <= 0) || (y > p->height))
+		return;
 
-	while (len >= LCD_DEFAULT_CELLHEIGHT) {
+	debug(RPT_DEBUG , "LCDM001: vertical bar at %d set to %d", x, pixels);
+
+	while (y > 0 && pixels >= p->cellheight) {
 		lcdm001_chr(drvthis, x, y, 0xFF);
-		len -= LCD_DEFAULT_CELLHEIGHT;
+		pixels -= p->cellheight;
 		y--;
 	}
-
-	if (!len)
-		return;
-
-	//TODO: Distinguish between len>=4 and len<4
 }
 
-/////////////////////////////////////////////////////////////////
-// Draws a horizontal bar to the right.
-//
+/**
+ * API: Draws a horizontal bar to the right.
+ */
 MODULE_EXPORT void
-lcdm001_old_hbar(Driver *drvthis, int x, int y, int len)
+lcdm001_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
+	int pixels = ((long) 2 * len * p->cellwidth) * promille / 2000;
 
-	if ((y <= 0) || (y > p->height))
+	if ((x <= 0) || (y <= 0) || (y > p->height))
 		return;
 
-	debug(RPT_DEBUG, "LCDM001: horizontal bar at %d set to %d", x, len);
+	debug(RPT_DEBUG, "LCDM001: horizontal bar at %d set to %d", x, pixels);
 
-	//TODO: Improve this function
-
-	while ((x <= p->width) && (len > 0)) {
-		if (len < LCD_DEFAULT_CELLWIDTH) {
-			//lcdm001_chr(x, y, 0x98 + len);
-			break;
-		}
-
+	while (x <= p->width && pixels >= p->cellwidth) {
 		lcdm001_chr(drvthis, x, y, 0xFF);
-		len -= LCD_DEFAULT_CELLWIDTH;
+		pixels -= p->cellwidth;
 		x++;
 	}
 
 	return;
 }
 
-/////////////////////////////////////////////////////////////////
-// Sets character 0 to an icon...
-//
-MODULE_EXPORT void
-lcdm001_old_icon (Driver *drvthis, int which, char dest)
+/**
+ * API: Place an icon on the screen. As this driver does not support custom
+ * characters only generic icons from core are supported. The heartbeat
+ * icons however are replaced with some different characters.
+ */
+MODULE_EXPORT int
+lcdm001_icon (Driver *drvthis, int x, int y, int icon)
 {
-	PrivateData *p = drvthis->private_data;
+	switch (icon) {
+	    case ICON_HEART_OPEN:
+		lcdm001_chr(drvthis, x, y, LCDM001_OPEN_HEART);
+		break;
+	    case ICON_HEART_FILLED:
+		lcdm001_chr(drvthis, x, y, LCDM001_FILLED_HEART);
+		break;
+	    default:
+		return -1;	/* Let the core do the other */
+	}
 
-/*Heartbeat workaround:
-   As custom chars are not supported OPEN_HEART
-   and FILLED_HEART are displayed instead.
-   Change them in lcdm001.h*/
-
-	if (dest == 0)
-		switch (which) {
-			case 0:
-				p->icon_char = OPEN_HEART;
-				break;
-			case 1:
-				p->icon_char = FILLED_HEART;
-				break;
-			default:
-				p->icon_char = PAD;
-				break;
-		}
+	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////
-// Tries to read a character from an input device...
-//
-// Return NULL for "nothing available".
-//
 
+/**
+ * API: Tries to read a character from an input device...
+ *
+ * \return  NULL for "nothing available" or one of the fixed strings "Enter",
+ *          "Left", "Right", or "Escape".
+ */
 MODULE_EXPORT const char *
 lcdm001_get_key (Driver *drvthis)
 {

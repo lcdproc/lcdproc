@@ -1,14 +1,17 @@
 /** \file server/drivers/glk.c
- * LCDd \c glk driver for graphical displays by MatroxOrbital.
- *
- * \todo  Adapt hBar, vBar, and icon to 0.5 API.
+ * LCDd \c glk driver for graphical displays by MatrixOrbital (GLK series).
  */
 
 /*
  * MatrixOrbital GLK Graphic Display Driver
  *
  * http://www.matrixorbital.com
+ */
+
+/*-
+ * Copyright ???
  *
+ * License ???
  */
 
 #include <stdlib.h>
@@ -33,12 +36,10 @@
 # endif
 #endif
 
-#define DEBUG 1
 #include "lcd.h"
 #include "glk.h"
 #include "glkproto.h"
 #include "report.h"
-
 #include "adv_bignum.h"
 
 #define GLK_DEFAULT_DEVICE	"/dev/lcd"
@@ -47,10 +48,6 @@
 #define GLK_DEFAULT_CELLWIDTH	6
 #define GLK_DEFAULT_CELLHEIGHT	8
 
-
-//////////////////////////////////////////////////////////////////////////
-//////////////////// Matrix Orbital Graphical Driver /////////////////////
-//////////////////////////////////////////////////////////////////////////
 
 /** private data for the \c glk driver */
 typedef struct glk_private_data {
@@ -79,7 +76,7 @@ typedef struct glk_private_data {
 } PrivateData;
 
 
-// Vars for the server core
+/* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
@@ -110,7 +107,7 @@ glk_init(Driver *drvthis)
   p->fd = NULL;
   p->speed = GLK_DEFAULT_SPEED;
   p->backingstore = NULL;
-  p->fontselected = -1;		// No font selected
+  p->fontselected = -1;		/* No font selected */
   p->gpo_count = 0;
   p->framebuf = NULL;
   p->cellwidth = GLK_DEFAULT_CELLWIDTH;
@@ -131,7 +128,7 @@ glk_init(Driver *drvthis)
 
   if (p->speed == 9600)       p->speed = B9600;
   else if (p->speed == 19200) p->speed = B19200;
-  // not in the specs:
+  /* not in the specs: */
   //else if (p->speed == 38400) p->speed = B38400;
   else if (p->speed == 57600) p->speed = B57600;
   else if (p->speed == 115200) p->speed = B115200;
@@ -158,7 +155,7 @@ glk_init(Driver *drvthis)
     return -1;
   }
 
-  // Query the module for a device type
+  /* Query the module for a device type */
   glkputl(p->fd, GLKCommand, 0x37, EOF);
   i = glkget(p->fd);
   if (i < 0) {
@@ -227,22 +224,21 @@ glk_init(Driver *drvthis)
 
   memset(p->framebuf, ' ', p->width * p->height);
 
-//  glk_clear();
   glkputl(p->fd, GLKCommand, 0x58, EOF);
 
-
-  // Enable flow control
+  /* Enable flow control */
   glkflow(p->fd, 40, 2);
 
-  // Set read character timeout to 0
+  /* Set read character timeout to 0 */
   glktimeout(p->fd, 0);
 
-  // Enable auto-transmit of up/down key events
-  // This allows us to generate REPEAT keys distinct from
-  //   normal keys using timeouts.  (see glk_get_key)
+  /*
+   * Enable auto-transmit of up/down key events. This allows us to generate
+   * REPEAT keys distinct from normal keys using timeouts. (see glk_get_key)
+   */
   glkputl(p->fd, GLKCommand, 0x7e, 1, GLKCommand, 0x41, EOF);
 
-  // Set p->contrast
+  /* Set p->contrast */
   glk_set_contrast(drvthis, p->contrast);
 
   report(RPT_DEBUG, "%s: init() done", drvthis->name);
@@ -360,7 +356,7 @@ glk_clear(Driver *drvthis)
 
 	memset(p->framebuf, ' ', p->width * p->height);
 
-	// do a hardware clear very CLEARCOUNT invocation
+	/* do a hardware clear very CLEARCOUNT invocation */
 	if (--p->clearcount < 0)
 		glk_clear_forced(drvthis);
 }
@@ -375,7 +371,6 @@ glk_flush(Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
 
-//   puts("glk_flush()");
   unsigned char *pf = p->framebuf;
   unsigned char *qf = p->backingstore;
   int x, y;
@@ -450,7 +445,7 @@ glk_chr(Driver *drvthis, int x, int y, char c)
 	PrivateData *p = drvthis->private_data;
 	int  myc = (unsigned char) c;
 
-	x--;  // Convert 1-based coords to 0-based...
+	x--;			/* Convert 1-based coords to 0-based... */
 	y--;
 
 	if (p->fontselected != 1) {
@@ -507,14 +502,12 @@ glk_set_contrast(Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
 
-	// Check it
 	if ((promille < 0) || (promille > 1000))
 		return;
 
-	// Store it
 	p->contrast = promille;
 
-	// Do it: map logical [0, 1000] -> physical [0, 255] for the hardware
+	/* Do it: map logical [0, 1000] -> physical [0, 255] for the hardware */
 	debug(RPT_DEBUG, "Contrast: %d", p->contrast);
 	glkputl(p->fd, GLKCommand, 0x50, (int) ((long) promille * 255 / 1000), EOF);
 }
@@ -573,7 +566,6 @@ glk_output(Driver *drvthis, int on)
 MODULE_EXPORT void
 glk_num(Driver *drvthis, int x, int num)
 {
-	//PrivateData *p = drvthis->private_data;
 	int do_init = 1;
 
 	debug(RPT_DEBUG, "glk_num(%d, %d)", x, num);
@@ -581,52 +573,20 @@ glk_num(Driver *drvthis, int x, int num)
 	if ((num < 0) || (num > 10))
 		return;
 
-	/* no need to check for alternative ccmodes: we have no custom characters
-	if (p->ccmode != bignum) {
-		if (p->ccmode != standard) {
-			// Not supported (yet)
-			report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
-					drvthis->name);
-			return;
-		}
-
-		p->ccmode = bignum;
-
-		do_init = 1;
-	}
-	*/
-
-	// Lib_adv_bignum does everything needed to show the bignumbers.
+	/* Lib_adv_bignum does everything needed to show the bignumbers. */
 	lib_adv_bignum(drvthis, x, num, 0, do_init);
-
-	/* previous implementation using alternative font:
-	if (p->fontselected != 3) {
-		debug(RPT_DEBUG, "Switching to font 3");
-		// Select Big Numbers font
-		glkputl(p->fd, GLKCommand, 0x31, 3, EOF);
-		p->fontselected = 3;
-		// Set font metrics
-		glkputl(p->fd, GLKCommand, 0x32, 1, 0, 1, 1, 32, EOF);
-		// Clear the screen
-		glk_clear_forced(drvthis);
-	}
-
-	if ((x > 0) && (x <= p->width))
-		p->framebuf[x-1] = (num >= 10) ? ':' : (num + '0');
-	*/
 }
 
 
 /**
- * Get total number of custom characters available.
+ * Get total number of custom characters available. This is required in order
+ * to be able to use bignum library.
  * \param drvthis  Pointer to driver structure.
  * \return  Number of custom characters (always 0).
  */
 MODULE_EXPORT int
 glk_get_free_chars(Driver *drvthis)
 {
-	//PrivateData *p = drvthis->private_data;
-
 	debug(RPT_DEBUG, "glk_get_free_chars()");
 
 	return 0;
@@ -640,35 +600,32 @@ glk_get_free_chars(Driver *drvthis)
 MODULE_EXPORT void
 glk_set_char(Driver *drvthis, int n, char *dat)
 {
-	//PrivateData *p = drvthis->private_data;
-
 	debug(RPT_DEBUG, "glk_set_char(%d)", n);
 }
 
 
 /**
- * Draws a vertical bar, from the bottom of the screen up.
- * This function still uses 0.4 API.
+ * Draws a vertical bar, from line y the screen up.
  */
 MODULE_EXPORT void
-glk_old_vbar(Driver *drvthis, int x, int len)
+glk_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
-	int y = p->height;
+	int pixels = ((long) 2 * len * p->cellheight) * promille / 2000;
 
-	debug(RPT_DEBUG, "glk_old_vbar(%d, %d)", x, len);
+	debug(RPT_DEBUG, "glk_old_vbar(%d, %d)", x, pixels);
 
-	while (len > p->cellheight) {
+	while (pixels > p->cellheight) {
 		glk_chr(drvthis, x, y, 255);
 		--y;
-		len -= p->cellheight;
+		pixels -= p->cellheight;
 	}
 
 	if (y >= 0) {
 		int lastc;
 
-		switch (len) {
-			case 0 :  return; break;  /* Don't output a char */
+		switch (pixels) {
+			case 0 :  return;	/* Don't output a char */
 			case 1 :  lastc = 138; break;  /* One bar */
 			case 2 :  lastc = 139; break;
 			case 3 :  lastc = 140; break;
@@ -684,25 +641,25 @@ glk_old_vbar(Driver *drvthis, int x, int len)
 
 /**
  * Draws a horizontal bar to the right.
- * This function still uses 0.4 API.
  */
 MODULE_EXPORT void
-glk_old_hbar(Driver *drvthis, int x, int y, int len)
+glk_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
+	int pixels = ((long) 2 * len * p->cellwidth) * promille / 2000;
 
-	debug(RPT_DEBUG, "glk_old_hbar(%d, %d, %d)", x, y, len);
+	debug(RPT_DEBUG, "glk_old_hbar(%d, %d, %d)", x, y, pixels);
 
-	while (len > p->cellwidth) {
+	while (pixels > p->cellwidth) {
 		glk_chr(drvthis, x, y, 255);
 		++x;
-		len -= p->cellwidth;
+		pixels -= p->cellwidth;
 	}
 
 	if (x <= p->width) {
 		int lastc;
 
-		switch (len) {
+		switch (pixels) {
 			case 0 :  lastc = ' '; break;
 			case 1 :  lastc = 134; break;  /* One bar */
 			case 2 :  lastc = 135; break;
@@ -716,47 +673,31 @@ glk_old_hbar(Driver *drvthis, int x, int y, int len)
 
 
 /**
- * Sets character 0 to an icon.
- * This function still uses 0.4 API.
+ * API: Draw an icon character on the screen.
  */
-MODULE_EXPORT void
-glk_old_icon(Driver *drvthis, int which, int dest)
+MODULE_EXPORT int
+glk_icon (Driver *drvthis, int x, int y, int icon)
 {
-  PrivateData *p = drvthis->private_data;
-  unsigned char old, new;
-  unsigned char *pf = p->framebuf;
-  unsigned char *qf = p->backingstore;
-  int count;
+    debug(RPT_DEBUG, "%s: x=%d, y=%d, icon=%x", __FUNCTION__, x, y, icon);
 
-  debug(RPT_DEBUG, "glk_old_icon(%i, %i)", which, dest);
-
-  if ((dest < 0) || (dest > 7)) {
-    /* Illegal custom character */
-    return;
-  }
-
-  /* which == 0  => empty heart   => 131
-   * which == 1  => filled heart  => 132
-   * which == 2  => ellipsis      => 128
-   */
-  switch (which) {
-    case 0:  new = 131; break;
-    case 1:  new = 132; break;
-    case 2:  new = 128; break;
-    default:  return;  /* ERROR */
-  }
-
-  old = p->CGRAM[(int) dest];
-  p->CGRAM[(int) dest] = new;
-
-  /* Replace all old icons with new icon in new frame */
-  for (count = p->width * p->height; count > 0; count--) {
-    if (*qf == old) {
-      debug(RPT_DEBUG, "icon %d to %d at %d", old, new, qf - p->backingstore);
-      *pf = new;
+    switch (icon) {
+      case ICON_BLOCK_FILLED:
+	glk_chr(drvthis, x, y, 255);
+	break;
+      case ICON_HEART_FILLED:
+	glk_chr(drvthis, x, y, 132);
+	break;
+      case ICON_HEART_OPEN:
+	glk_chr(drvthis, x, y, 131);
+	break;
+      case ICON_ELLIPSIS:
+	glk_chr(drvthis, x, y, 128);
+	break;
+      default:
+	return -1;		/* Let the core do the others */
     }
-    ++qf; ++pf;
-  }
+
+    return 0;
 }
 
 
@@ -828,7 +769,7 @@ glk_get_key(Driver *drvthis)
 	       break;
     default :  break;
 
-    // What to do with repeated keys? We currently ignore them.
+    /* What to do with repeated keys? We currently ignore them. */
     //case 'v' : c = 'N'; break;
     //case 'p' : c = 'O'; break;
     //case 'q' : c = 'P'; break;
