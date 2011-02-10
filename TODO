@@ -1,7 +1,14 @@
+NOTE: Use of this TODO list is obsolete! A list of things to be done is
+automatically created by Doxygen. You may create the Doxygen documentation
+yourself by running the doxygen command from the docs/ directory.
+
+Ideas for new features can be entered at the IdeaTorrent:
+http://sourceforge.net/apps/ideatorrent/lcdproc/
+
+----------------------------------------
+
 Stuff planned for future releases...  (in no particular order)
-
 Feel free to help out with any of this stuff!  :)
-
 Please send a message to the mailing list if you have any question.
 
 Things for the short term:
@@ -12,15 +19,12 @@ Things for the short term:
 - lcterm: Support keyboard input
 - MtxOrb: Recover the code for I2C connectivity to MtxOrb
 - shuttleVFD: Use output() method for these special "out-of-band" symbols.
-- glk: port icon, vBar and hBar to 0.5 API.
 - Use non-standard serial baud rates (57600 and higher) only optional.
 
 
 Things for the longer term:
-
 ----------------------------------------
 lcdproc client
---------------
 
 allow more than one instance of a screen with different configuration
 sections (implementation should be possible similar to the one with
@@ -36,9 +40,8 @@ get rid of MTAB_FILE compile time definition (for Linux & SunOS)
 
 ----------------------------------------
 lcdexec client
---------------
 
-more flexbibility: do not just only execute commands, but 
+more flexbibility: do not just only execute commands, but
 maybe also display their result in a screen, get a command's
 parameters interactively using the builtin input menus,
 confirmation of commands, jumping between commands depending
@@ -56,23 +59,10 @@ restart LCDproc...
 
 Another bonus is that LCDproc will come with a client which can, for
 example, start up a "client" driver to send "keypresses" from the
-command line.  Or, 
+command line.  Or,
 
 	lcdtool -key A
 
 would have the same result as pressing a key on the keypad.
-
-----------------------------------------
-Scheduling modes
-
-Instead of the simplistic "round robin" circular screen-scheduling in
-the current release, later versions will offer several different
-algorithms for screen-ordering.
-
-One example: High-priority screens will be shown more often than
-low-priority screens, simply by showing up more often.
-
-STATUS: Currently high priority screens will only be shown _first_ after
-a resorting of the screenlist. The time that it's visible is unaltered.
 
 ----------------------------------------
