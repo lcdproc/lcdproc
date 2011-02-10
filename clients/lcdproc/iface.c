@@ -418,8 +418,12 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 			}
 			format_value_multi_interface(speed, rc_speed, unit_label);
 			format_value_multi_interface(speed1, tr_speed, unit_label);
-			sock_printf(sock, "widget_set I i%1d 1 %1d {%5.5s U:%.4s D:%.4s}\n",
-					index, index+1, iface->alias, speed1, speed);
+			if (lcd_wid > 16)
+				sock_printf(sock, "widget_set I i%1d 1 %1d {%5.5s U:%.4s D:%.4s}\n",
+					    index, index+1, iface->alias, speed1, speed);
+			else
+				sock_printf(sock, "widget_set I i%1d 1 %1d {%4.4s ^%.4s v%.4s}\n",
+					    index, index+1, iface->alias, speed1, speed);
 		}
 		else { /* Interface is down */
 			get_time_string(speed, iface->last_online);
@@ -515,8 +519,12 @@ actualize_transfer_screen(IfaceInfo *iface, int index)
 		if (iface->status == up) {
 			format_value_multi_interface(transfer, iface->rc_byte, "B");
 			format_value_multi_interface(transfer1, iface->tr_byte, "B");
-			sock_printf(sock, "widget_set NT i%1d 1 %1d {%5.5s U:%.4s D:%.4s}\n",
-					index, index+1, iface->alias, transfer1, transfer);
+			if (lcd_wid > 16)
+				sock_printf(sock, "widget_set NT i%1d 1 %1d {%5.5s U:%.4s D:%.4s}\n",
+					    index, index+1, iface->alias, transfer1, transfer);
+			else
+				sock_printf(sock, "widget_set NT i%1d 1 %1d {%4.4s ^%.4s v%.4s}\n",
+					    index, index+1, iface->alias, transfer1, transfer);
 		}
 		else { /* Interface is down */
 			get_time_string(transfer, iface->last_online);

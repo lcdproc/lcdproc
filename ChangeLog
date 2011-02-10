@@ -15,6 +15,7 @@ v.0.5dev (ongoing development)
  * Rewrite of the t6963 driver fixing several problems (see commit note).
  * picolcd: Add OffBrightness (S. Crane), more icons and fix bignum
  * lcdproc: Fix a single dot appearing on line 5 of the D screen
+ * lcdproc: Make the iface screen more readable on 2x16 displays
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)
