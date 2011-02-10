@@ -335,14 +335,8 @@ HD44780_init(Driver *drvthis)
 	/* Get configured charmap */
 	strncpy(conf_charmap, drvthis->config_get_string(drvthis->name, "charmap", 0, "hd44780_default"), MAX_CHARMAP_NAME_LENGTH);
 	conf_charmap[MAX_CHARMAP_NAME_LENGTH-1] = '\0';
-	p->charmap = 0;
-	for (i = 0; i < (sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
-		if (strcasecmp(conf_charmap, available_charmaps[i].name) == 0) {
-			p->charmap = i;
-			break;
-		}
-	}
-	if (p->charmap != i) {
+	p->charmap = charmap_get_index(conf_charmap);
+	if (p->charmap == -1) {
 		report(RPT_ERR, "%s: Charmap %s is unknown", drvthis->name, conf_charmap);
 		report(RPT_ERR, "%s: Available charmaps:", drvthis->name);
 		for (i = 0; i < (sizeof(available_charmaps)/sizeof(struct charmap)); i++) {

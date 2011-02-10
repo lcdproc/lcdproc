@@ -1,12 +1,13 @@
 /** \file server/drivers/hd44780-charmap.h
- * Character mapping for HD44780 devices.
+ * Character mapping for HD44780 devices. Translates ISO 8859-1 to known
+ * HD44780 (and compatible) ROM character sets.
  */
 
-/* Character mapping for HD44780 devices by Mark Haemmerling <mail@markh.de>.
- *
- * Translates ISO 8859-1 to any HD44780 charset.
- *
- * Charmap selector (C) 2006 Pillon Matteo <matteo.pillon@email.it>
+/*-
+ * Copyright (C) 2001 Mark Haemmerling <mail@markh.de>
+ *               2006 Pillon Matteo <matteo.pillon@email.it>
+ *               2007 Frank Jepsen <vdr_at_jepsennet.de>
+ *               2009-2011 Markus Dolze <bsdfan@nurfuerspam.de>
  *
  * This file is released under the GNU General Public License.
  * Refer to the COPYING file distributed with this package.
@@ -235,7 +236,6 @@ const unsigned char EA_KS0073_charmap[] = {
 
 /*
  * Character mapping by Frank Jepsen <vdr_at_jepsennet.de>.
- *
  */
 const unsigned char SED1278F_0B_charmap[] = {
         /* #0 */
@@ -329,18 +329,102 @@ const unsigned char HD44780_KOI8R_charmap[] = {
          98, 142, 131, 139, 143, 140, 138, 141        /* Ь Ы З Ш Э Щ Ч Ъ */
 };
 
+/*
+ * Mapping table for NEC µ PD16314 controller. This is a VFD controller
+ * that understands the same command set as HD44780 driver and comes with (at
+ * least) one of two character sets in ROM:
+ *
+ * - ROM code 001 is the same charset as hd44780_euro.
+ * - ROM code 002 is the same charset as hd44780_default (with some additional
+ *   characters in the otherwise unused areas.
+ *
+ * The table below is for ROM code 002 and identical to hd44780_default but
+ * takes advantage of some additional international characters.
+ */
+const unsigned char uPD16314_charmap[] = {
+        /* 00h - 1Fh : Control characters */
+          0,   1,   2,   3,   4,   5,   6,   7,
+          8,   9,  10,  11,  12,  13,  14,  15,
+         16,  17,  18,  19,  20,  21,  22,  23,
+         24,  25,  26,  27,  28,  29,  30,  31,
+        /* 20h - 3Fh : Numbers and punctuation */
+         32,  33,  34,  35,  36,  37,  38,  39,
+         40,  41,  42,  43,  44,  45,  46,  47,
+         48,  49,  50,  51,  52,  53,  54,  55,
+         56,  57,  58,  59,  60,  61,  62,  63,
+        /* 40h - 7Fh : Upper and lower-case letters */
+         64,  65,  66,  67,  68,  69,  70,  71,
+         72,  73,  74,  75,  76,  77,  78,  79,
+         80,  81,  82,  83,  84,  85,  86,  87,
+         88,  89,  90,  91, 140,  93,  94,  95,
+         96,  97,  98,  99, 100, 101, 102, 103,
+        104, 105, 106, 107, 108, 109, 110, 111,
+        112, 113, 114, 115, 116, 117, 118, 119,
+        120, 121, 122, 123, 124, 125, 142, 127,
+        /* 80h - 9Fh : Control characters */
+        128, 129, 130, 131, 132, 133, 134, 135,
+        136, 137, 138, 139, 140, 141, 142, 143,
+        144, 145, 146, 147, 148, 149, 150, 151,
+        152, 153, 154, 155, 156, 157, 158, 159,
+        /* A0h - BFh : Special characters */
+         32,  33, 236, 146, 164,  92, 152, 143,
+         34, 169, 170, 171, 172, 173, 174, 175,
+        223, 177, 178, 179,  39, 228, 247, 165,
+         44, 185, 186, 187, 188, 189, 190,  63,
+        /* C0h - FFh : International characters */
+        129, 129,  65,  65, 128, 130, 144, 153,
+         69,  69,  69,  69,  73,  73,  73,  73,
+         68, 238,  79,  79,  79,  79, 134, 120,
+        136,  85,  85,  85, 138,  89, 240, 226,
+         97, 131,  97,  97, 225, 132, 145, 153,
+        101, 101, 101, 101, 105, 105, 105, 105,
+        111, 238, 111, 111, 111, 111, 135, 253,
+        137, 117, 117, 117, 139, 121, 240, 255
+};
+
 #define MAX_CHARMAP_NAME_LENGTH 16
 
 struct charmap {
-        char name[MAX_CHARMAP_NAME_LENGTH];
-        const unsigned char *charmap;
+	char name[MAX_CHARMAP_NAME_LENGTH];	/**< Name of the mapping table */
+	const unsigned char *charmap;		/**< Pointer to mapping table */
 };
 
+/** List of available character mappings. This list is sorted by relevance! */
 const struct charmap available_charmaps[] = {
-	{ "none",            none_charmap         },
 	{ "hd44780_default", HD44780_charmap      },
 	{ "hd44780_euro",    HD44780_euro_charmap },
 	{ "hd44780_koi8_r",  HD44780_KOI8R_charmap},
 	{ "ea_ks0073",       EA_KS0073_charmap    },
-	{ "sed1278f_0b",     SED1278F_0B_charmap  }
+	{ "sed1278f_0b",     SED1278F_0B_charmap  },
+	{ "upd16314",        uPD16314_charmap     },
+	{ "none",            none_charmap         }
 };
+
+/**
+ * Gets the index of the requested charmap entry in the list of available
+ * charmaps.
+ * \param req_charmap  String containing the name of the requested charmap
+ * \return  Index of charmap in available_charmaps array or -1 of not found.
+ *
+ * \note  As long as available_charmaps[] is still small a simple search is
+ *        fine. Should the list become larger (>10 entries) a better search
+ *        algorithm (e.g. binary search) should be used.
+ */
+static int
+charmap_get_index(const char * req_charmap)
+{
+	int i;
+
+	if (req_charmap == NULL)
+		return -1;
+
+	for (i = 0; i < (sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
+		if (strcasecmp(req_charmap, available_charmaps[i].name) == 0) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+/* EOF */

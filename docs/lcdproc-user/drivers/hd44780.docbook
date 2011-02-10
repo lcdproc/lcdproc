@@ -2853,6 +2853,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>ea_ks0073</literal></parameter> |
       <parameter><literal>sed12780f_0b</literal></parameter> |
       <parameter><literal>hd44780_koi8_r</literal></parameter> |
+      <parameter><literal>upd16314</literal></parameter> |
       <parameter><literal>none</literal></parameter>
     }
   </term>
@@ -2880,6 +2881,12 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
           <literal>hd44780_koi8_r</literal> maps input from a client in
           Russian KOI8-R to displays with a ROM mask supporting the european
           charset (ROM code A02).
+        </para></listitem>
+        <listitem><para>
+          <literal>upd16314</literal> is for displays with a Nec uPD16314
+          vacuum fluorescent display (VFD) controller with ROM code 002
+          character set. If your display has ROM code 001 character set you
+          may use the <literal>hd44780_euro</literal> charmap instead.
         </para></listitem>
         <listitem><para>
           The <literal>none</literal> charmap does not translate any characters.

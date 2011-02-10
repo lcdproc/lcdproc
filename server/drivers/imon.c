@@ -8,7 +8,7 @@
  *    from http://www.lirc.org/
  */
 
-/*
+/*-
  * Driver for Soundgraph/Ahanix/Silverstone/Uneed/Accent iMON IR/VFD Module
  *
  * Copyright (c) 2004, Venky Raju <dev@venky.ws>, original author of
@@ -43,9 +43,8 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "report.h"
-
-
 #include "imon.h"
+#include "hd44780-charmap.h"
 
 // iMon reserves the first 8 locations for the
 // special bargraph characters
@@ -105,8 +104,19 @@ typedef struct imon_private_data {
 	int width;			/**< display width in characters */
 	int cellwidth;			/**< character cell width */
 	int cellheight;			/**< character cell height */
+	const unsigned char *charmap;	/**< character mapping table */
 } PrivateData;
 
+/**
+ * NULL-terminated list of charmaps that can be used by this driver. This
+ * list is sorted by relevance. Most likely used entries first. */
+static char * imon_charmaps[] = {
+	"none",
+	"hd44780_euro",
+	"hd44780_koi8_r",
+	"upd16314",
+	NULL
+};
 
 /**
  * Initialize the driver.
@@ -118,8 +128,9 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 {
 	PrivateData *p = NULL;
 	char buf[256];
+	int i;
 
-	// Alocate, initialize and store private p
+	/* Allocate, initialize and store private p */
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL) {
 		report(RPT_ERR, "%s: failed to allocate private data", drvthis->name);
@@ -149,7 +160,6 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 	if ((p->imon_fd = open(buf, O_WRONLY)) < 0) {
 		report(RPT_ERR, "%s: ERROR opening %s (%s)", drvthis->name, buf, strerror(errno));
 		report(RPT_ERR, "%s: Did you load the iMON VFD kernel module?", drvthis->name);
-		report(RPT_ERR, "%s: More info in lcdproc/docs/README.imon", drvthis->name);
 		return -1;
 	}
 
@@ -171,6 +181,25 @@ MODULE_EXPORT int imon_init (Driver *drvthis)
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
+
+	/* Load character mapping table */
+	p->charmap = NULL;
+	strncpy(buf, drvthis->config_get_string(drvthis->name, "Charmap", 0, "none"), sizeof(buf));
+	buf[sizeof(buf)-1] = '\0';
+	for (i = 0; imon_charmaps[i] != NULL; i++) {
+		if (strcasecmp(imon_charmaps[i], buf) == 0) {
+			int idx = charmap_get_index(buf);
+			if (idx != -1) {
+				p->charmap = available_charmaps[idx].charmap;
+				report(RPT_INFO, "%s: using %s charmap",
+				       drvthis->name, available_charmaps[idx].name);
+			}
+		}
+	}
+	if (p->charmap == NULL) {
+		report(RPT_ERR, "%s: unable to load charmap: %s", drvthis->name, buf);
+		return -1;
+	}
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -272,7 +301,7 @@ MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char c)
 	if ((x < 0) || (y < 0) || (x >= p->width) || (y >= p->height))
 		return;
 
-	p->framebuf[(y * p->width) + x] = c;
+	p->framebuf[(y * p->width) + x] = p->charmap[(unsigned char) c];
 }
 
 
@@ -403,7 +432,7 @@ MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promil
 		else if (pixels >= 1) {
 			/* write a partial block, albeit vertically... */
 			imon_chr(drvthis, x+pos, y, pixels * p->cellheight / p->cellwidth);
-		}			
+		}
 #else
 		if (pixels >= p->cellwidth * 3/4) {
 			/* write a "full" block to the screen... */
