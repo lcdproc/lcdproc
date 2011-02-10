@@ -787,7 +787,7 @@ inline void
 sed1330_set_pixel(PrivateData * p, int x, int y, int value)
 {
 	unsigned int bytepos;
-	char bitmask;
+	unsigned char bitmask;
 
 	bytepos = y * p->bytesperline + x / p->cellwidth;
 	bitmask = 0x80 >> (x % p->cellwidth);
