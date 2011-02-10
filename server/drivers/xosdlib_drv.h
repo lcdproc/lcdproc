@@ -45,8 +45,8 @@ MODULE_EXPORT void xosdlib_drv_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void xosdlib_drv_vbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
 MODULE_EXPORT void xosdlib_drv_hbar (Driver *drvthis, int x, int y, int len, int promille, int pattern);
-MODULE_EXPORT void xosdlib_drv_old_num (Driver *drvthis, int x, int num);
-
+MODULE_EXPORT void xosdlib_drv_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT int  xosdlib_drv_get_free_chars (Driver *drvthis);
 MODULE_EXPORT int  xosdlib_drv_get_contrast (Driver *drvthis);
 MODULE_EXPORT void xosdlib_drv_set_contrast (Driver *drvthis, int promille);
 MODULE_EXPORT int  xosdlib_drv_get_brightness(Driver *drvthis, int state);

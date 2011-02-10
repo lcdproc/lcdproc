@@ -70,8 +70,10 @@ MODULE_EXPORT void picoLCD_clear(Driver *drvthis);
 MODULE_EXPORT void picoLCD_flush(Driver *drvthis);
 MODULE_EXPORT void picoLCD_string(Driver *drvthis, int x, int y, unsigned char string[]);
 MODULE_EXPORT void picoLCD_chr(Driver *drvthis, int x, int y, unsigned char c);
-MODULE_EXPORT void picoLCD_set_char (Driver *drvthis, int n, unsigned char *dat);
 MODULE_EXPORT char *picoLCD_get_key(Driver *drvthis);
+
+MODULE_EXPORT int picoLCD_get_free_chars (Driver *drvthis);
+MODULE_EXPORT void picoLCD_set_char (Driver *drvthis, int n, unsigned char *dat);
 
 MODULE_EXPORT void picoLCD_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void picoLCD_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);

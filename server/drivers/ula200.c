@@ -432,7 +432,7 @@ ula200_ftdi_rawdata(Driver *drvthis, unsigned char flags, unsigned char ch)
 {
     //PrivateData *p = (PrivateData *) drvthis->private_data;
     unsigned char command[3];
-    unsigned int err;
+    int err;
 
     command[0] = 'R';
     command[1] = flags == (RS_DATA) ? '2' : '0';

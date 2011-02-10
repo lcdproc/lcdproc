@@ -35,12 +35,11 @@ MODULE_EXPORT int  ula200_height (Driver *drvthis);
 MODULE_EXPORT void ula200_clear (Driver *drvthis);
 MODULE_EXPORT void ula200_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void ula200_chr (Driver *drvthis, int x, int y, char c);
-MODULE_EXPORT void ula200_set_char (Driver *drvthis, int n, char *dat);
 MODULE_EXPORT void ula200_backlight (Driver *drvthis, int on);
 MODULE_EXPORT void ula200_flush (Driver *drvthis);
 MODULE_EXPORT void ula200_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void ula200_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void ula200_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  ula200_icon(Driver *drvthis, int x, int y, int icon);
-
+MODULE_EXPORT const char * ula200_get_key (Driver *drvthis);
 #endif /* ULA200_H */
