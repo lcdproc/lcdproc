@@ -123,16 +123,11 @@ typedef struct imonlcd_private_data {
 	uint64_t command_display_on;
 	uint64_t command_clear_alarm;
 
-	/*
-	 * record the last "state" of the CD icon so that we can "animate"
-	 * it.
-	 */
+	/* last "state" of the CD icon so that we can animate it */
 	int last_cd_state;
-	time_t last_cd_state_change;
 
-	/* remind the last state for setting the icons */
-	uint64_t last_icon_state;
-	int lastPrivateIconState;
+	/* save the last output state so we don't needlessly reset the icons */
+	int last_output_state;
 } PrivateData;
 
 /*
@@ -296,8 +291,7 @@ imonlcd_init(Driver *drvthis)
 	p->cellheight = LCD_DEFAULT_CELL_HEIGHT; /* height of a character, in pixels */
 
 	p->last_cd_state = 0;
-	p->last_icon_state = 0x0;	/* no icons turned on at startup */
-	p->lastPrivateIconState = 0x0;	/* no icons turned on at startup */
+	p->last_output_state = 0x0;	/* no icons turned on at startup */
 	p->discMode = 0;
 
 	/* Get settings from config file */
@@ -870,10 +864,14 @@ imonlcd_output(Driver *drvthis, int state)
 	PrivateData *p = drvthis->private_data;
 	uint64_t icon = 0x0;
 
+	if (state == p->last_output_state)
+		return;
+
+	p->last_output_state = state;
+
 	if (state == -1) {	/* the value for "on" in the lcdproc-protocol */
 		icon = (uint64_t) IMON_ICON_ALL;
 		send_command_data(COMMANDS_SET_ICONS | icon, p);
-		p->lastPrivateIconState = state;
 		setLineLength(32, 32, 32, 32, p);
 
 		return;
@@ -881,7 +879,6 @@ imonlcd_output(Driver *drvthis, int state)
 					 * lcdproc-protocol */
 		icon = (uint64_t) 0x0;;
 		send_command_data(COMMANDS_SET_ICONS | icon, p);
-		p->lastPrivateIconState = state;
 		setLineLength(0, 0, 0, 0, p);
 		return;
 	}
@@ -899,50 +896,35 @@ imonlcd_output(Driver *drvthis, int state)
 		topLine = topLine > 32 ? -(topLine - 32) : topLine;
 
 		setLineLength(topLine, botLine, topProgress, botProgress, p);
-
-		/* continue and set all other icons as before */
-		state = p->lastPrivateIconState;
+		return;
 	}
 	/* bit 0 : disc icon (0=off, 1='spin') */
-	if ((state & IMON_OUTPUT_CD_MASK) != 0) {
-		switch (p->last_cd_state) {
-		case 0:
-			p->last_cd_state = 1;
-			if (p->discMode == 1)
-				/* all on except top & bottom */
-				icon |= ((uint64_t) (255 - 128 - 8) << 40);
-			else
-				/* top & bottom on */
-				icon |= ((uint64_t) (128 | 8) << 40);
-			break;
-		case 1:
-			p->last_cd_state = 2;
-			if (p->discMode == 1)
-				/* all on except top-right & bottom-left */
-				icon |= ((uint64_t) (255 - 16 - 1) << 40);
-			else
-				/* top-right & bottom-left on */
-				icon |= ((uint64_t) (1 | 16) << 40);
-			break;
-		case 2:
-			p->last_cd_state = 3;
-			if (p->discMode == 1)
-				/* all on except right & left */
-				icon |= ((uint64_t) (255 - 32 - 2) << 40);
-			else
-				/* right & left on */
-				icon |= ((uint64_t) (32 | 2) << 40);
-			break;
-		default:
+	if (state & IMON_OUTPUT_CD_MASK) {
+		/* Each icon bit represents a section of the cd,
+		 * starting at the top as msb, and going counter-clockwise.
+		 * Start with the top-right & bottom-left on.
+		 */
+		unsigned char tmp_cd_bitmap = (0x01 | (0x01 << 4));
+
+		if (p->last_cd_state >= 3 )
 			p->last_cd_state = 0;
-			if (p->discMode == 1)
-				/* all on except top-left & bottom-right */
-				icon |= ((uint64_t) (255 - 64 - 4) << 40);
-			else
-				/* top-left & bottom-right on */
-				icon |= ((uint64_t) (4 | 64) << 40);
-			break;
-		}
+		else
+			p->last_cd_state++;
+
+		/* Shift the bits to the left, and the cd moves clock-wise. */
+		tmp_cd_bitmap <<= p->last_cd_state;
+
+		if (p->discMode == 1)
+			tmp_cd_bitmap = ~tmp_cd_bitmap;
+
+		icon |= ((uint64_t)tmp_cd_bitmap) << 40;
+
+		/* Change the cached output state so that we will continue to
+		 * update / spin the cd. The set value makes a missed refresh
+		 * or clear very unusual.  The server core makes sure we get
+		 * the correct value next time around.
+		 */
+		p->last_output_state = (~IMON_OUTPUT_PBARS_MASK & ~IMON_OUTPUT_CD_MASK);
 	}
 	/*
 	 * bit 1,2,3 : top row (0=none, 1=music, 2=movie, 3=photo, 4=CD/DVD,
@@ -976,17 +958,14 @@ imonlcd_output(Driver *drvthis, int state)
 		}
 	}
 	/* bit 4,5 : 'speaker' icons (0=off, 1=L+R, 2=5.1ch, 3=7.1ch) */
-	if (((state & IMON_OUTPUT_SPEAKER_MASK) != 0)) {
+	if (state & IMON_OUTPUT_SPEAKER_MASK) {
 		switch (((state & IMON_OUTPUT_SPEAKER_MASK) >> 4)) {
-		case 1:
-			icon |= IMON_SPKR_FL | IMON_SPKR_FR;
-			break;
-		case 2:
-			icon |= IMON_SPKR_FL | IMON_SPKR_FC | IMON_SPKR_FR | IMON_SPKR_RL | IMON_SPKR_RR;
-			break;
 		case 3:
-			icon |= IMON_SPKR_FL | IMON_SPKR_FC | IMON_SPKR_FR | IMON_SPKR_RL | IMON_SPKR_RR | IMON_SPKR_SL | IMON_SPKR_SR;
-			break;
+			icon |= (IMON_SPKR_SL | IMON_SPKR_SR);
+		case 2:
+			icon |= (IMON_SPKR_FC | IMON_SPKR_RL | IMON_SPKR_RR);
+		case 1:
+			icon |= (IMON_SPKR_FL | IMON_SPKR_FR);
 		default:
 			break;
 		}
@@ -1086,9 +1065,7 @@ imonlcd_output(Driver *drvthis, int state)
 	/* bit 29 : 'disc-in' */
 	icon = ((state & IMON_OUTPUT_DISK_IN_MASK) != 0) ? (icon | IMON_ICON_DISK_IN) : (icon & ~IMON_ICON_DISK_IN);
 
-	p->last_icon_state = (uint64_t) icon;
-	p->lastPrivateIconState = state;
-	send_command_data(COMMANDS_SET_ICONS | p->last_icon_state, p);
+	send_command_data(COMMANDS_SET_ICONS | icon, p);
 }
 
 /**

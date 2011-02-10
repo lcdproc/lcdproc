@@ -45,6 +45,8 @@ v0.5.4
  + new driver: MDM166A for Futaba/Targa USB VFD (Christoph Rasim)
  * picolcd: Fix backlight and contrast handling (M. T. Jones)
  * picolcd: Fix heartbeat icon messing up with vbar
+ * imonlcd: Fix possible lockup in output (icons) function (E. Pooch)
+ * pyramid: Fix buffer overflow in set_leds, incorrect escaping, and icons
 
 v0.5.3
  + lcdexec: notification when called program finishes

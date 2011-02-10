@@ -43,6 +43,12 @@
  *   - add more custom characters
  *   - fix german umlauts
  *   - fix cursor handling
+ *  2011-01-29 Markus Dolze <bsdfan@nurfuerspam.de>
+ *   - fix string overflow in set_leds
+ *   - fix several possible buffer overflows
+ *   - correct escaping for characters 128-255 (also fixes the 'ß' issue)
+ *   - correct icons (custom chars 8-15 cannot be set, checkboxes were wrong)
+ *   - Add a delay after set_char. This seems to fix occasional hangs
  */
 
 #include <sys/types.h>
@@ -72,7 +78,7 @@
 #define False 0
 
 
-#define MICROTIMEOUT 50000
+#define MICROTIMEOUT 50000	/* Timeout for select() */
 #define NOKEY "00000"
 
 
@@ -111,38 +117,46 @@ read_tele(PrivateData *p, char *buffer)
     int len=0;
     char cc=0x00;
 
+    /* Try to find STX within first 10 chars */
     while (data_ready(p)
            && (read(p->FD, &zeichen, 1)>0)
            && (zeichen!=0x02)
            && (len<MAXCOUNT))
         len++;
 
+    /* If no STX available, set buffer all zero and return */
     if (zeichen!=0x02)
     {
         memset(buffer, 0, MAXCOUNT);
         return False;
     }
 
+    /* Now start reading until ETX */
     cc ^= zeichen;
     len=0;
 
     while (data_ready(p)
            && (read(p->FD, &zeichen, 1)>0)
-           && (len<MAXCOUNT+1))
+           && (len<MAXCOUNT))
     {
         buffer[len]=zeichen;
         cc ^= zeichen;
-        if (zeichen==0x03) break;
+        if (zeichen==0x03) break;	/* break before len++! */
         len++;
     }
 
+    /*
+     * Read the next character. If the previous character was ETX and the
+     * read charcters is a valid checksum, replace the ETX with NUL and
+     * return the resulting string. Otherwise clear buffer (throw away all
+     * read data) and return.
+     */
     if (data_ready(p)
         && (read(p->FD, &zeichen, 1)>0)
         && (buffer[len]==0x03)
         && (zeichen==cc))
     {
         buffer[len]=0x00;
-	/*debug(RPT_DEBUG, "%s: read %s", __FUNCTION__, buffer)*/;
         return True;
     }
     else
@@ -157,7 +171,7 @@ read_tele(PrivateData *p, char *buffer)
 int
 read_ACK(PrivateData *p)
 {
-    char buffer[6];
+    char buffer[MAXCOUNT];
     int retval=read_tele(p, buffer);
 
     return (retval && buffer[0]=='Q');
@@ -187,8 +201,8 @@ real_send_tele(PrivateData *p, char *buffer, int len)
      * ie. 0x8 --> <ESC> 0x28
      */
 
-    while (len--) {
-        if (buffer[i]<0x20) {
+    while (len-- && j < 253) {
+        if (buffer[i]>=0x00 && buffer[i]<0x20) {
             buffer2[j++]=0x1b;
             buffer2[j++]=buffer[i++]+0x20;
         } else {
@@ -205,12 +219,9 @@ real_send_tele(PrivateData *p, char *buffer, int len)
     buffer2[len++]=cc;
 
     write(p->FD, buffer2, len);
-    /* tcflush (p->FD, TCIFLUSH); */
 
     /* Take a little nap. This works as a pacemaker */
     usleep(50);
-
-    /*debug(RPT_DEBUG, "%s: sent %s", __FUNCTION__, buffer);*/
 
     return 0;
 }
@@ -235,6 +246,9 @@ send_ACK(PrivateData *p)
     return send_tele(p, "Q");
 }
 
+/*
+ * Returns the current time in microseconds since the Epoch.
+ */
 unsigned long long
 timestamp(PrivateData *p)
 {
@@ -280,7 +294,7 @@ int
 set_leds(PrivateData *p)
 {
     int i;
-    char tele[3]="L00";
+    char tele[]="L00";
 
     for (i = 0; i < 7; i++) {
       tele[1] = i + '1';
@@ -304,7 +318,7 @@ set_leds(PrivateData *p)
 MODULE_EXPORT int
 pyramid_init (Driver *drvthis)
 {
-    char buffer[6]="";
+    char buffer[MAXCOUNT];
     int i;
     PrivateData *p;
 
@@ -413,7 +427,11 @@ pyramid_close (Driver *drvthis)
 {
     PrivateData *p = (PrivateData *) drvthis->private_data;
 
-    close(p->FD);
+    if (p->FD) {
+	tcflush(p->FD, TCIFLUSH);
+	close(p->FD);
+    }
+
 }
 
 
@@ -473,6 +491,7 @@ pyramid_flush (Driver *drvthis)
     unsigned long long current_time=timestamp(p);
     int i;
 
+    /* Updates only once every 40 ms */
     if ((p->FB_modified==True) && (current_time>(p->last_buf_time+40000)))
     {
 	memcpy(mesg, p->framebuffer, 33);
@@ -485,9 +504,7 @@ pyramid_flush (Driver *drvthis)
 		case 0xe4: mesg[i]=0xe1; break; // ä
 		case 0xf6: mesg[i]=0xef; break; // ö
 		case 0xfc: mesg[i]=0xf5; break; // ü
-		// This makes the display show nothing
-		// though it is correct according the HD44780U DS
-		//case 0xdf: mesg[i]=0xe2; break; // ß
+		case 0xdf: mesg[i]=0xe2; break; // ß
 		case 0xb7: mesg[i]=0xa5; break; // ·
 		case 0xb0: mesg[i]=0xdf; break; // °
 		}
@@ -497,6 +514,8 @@ pyramid_flush (Driver *drvthis)
         real_send_tele(p, mesg, 33); /* We do not wait for the ACK here*/
         p->FB_modified=False;
         p->last_buf_time=current_time;
+
+	/* Set cursor */
         sprintf(mesg, "C%02d%02d", p->C_x, p->C_y);
         real_send_tele(p, mesg,5);
         sprintf(mesg, "M%d", p->C_state);
@@ -565,14 +584,13 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-
-	if (n<0 && n>15) {
-		debug(RPT_DEBUG, "only characters 0-15 can be changed");
+	if (n<0 && n>7) {
+		debug(RPT_WARNING, "only characters 0-7 can be changed");
 		return;
 	}
 
 	if (!dat) {
-		debug(RPT_DEBUG, "no character data");
+		debug(RPT_WARNING, "no character data");
 		return;
 	}
 
@@ -591,6 +609,7 @@ MODULE_EXPORT void pyramid_set_char (Driver *drvthis, int n, char *dat)
 		tele[row+2]=pixels;
 	}
         real_send_tele(p, tele, 10);
+	usleep(50);		/* extra delay required for processing this */
 }
 
 
@@ -1030,29 +1049,28 @@ pyramid_icon (Driver *drvthis, int x, int y, int icon)
 			pyramid_chr( drvthis, x, y, '\176' );
 			break;
 
-		/* FIXME: Does setting CC to position 10-13 really work? */
-		case ICON_CHECKBOX_ON:
-			pyramid_set_char( drvthis, 10, icons[4] );
-			pyramid_chr( drvthis, x, y, 10 );
+		case ICON_CHECKBOX_OFF:
+			pyramid_set_char( drvthis, 4, icons[4] );
+			pyramid_chr( drvthis, x, y, 4 );
 			break;
 
-		case ICON_CHECKBOX_OFF:
-			pyramid_set_char( drvthis, 11, icons[5] );
-			pyramid_chr( drvthis, x, y, 11 );
+		case ICON_CHECKBOX_ON:
+			pyramid_set_char( drvthis, 5, icons[5] );
+			pyramid_chr( drvthis, x, y, 5 );
 			break;
 
 		case ICON_CHECKBOX_GRAY:
-			pyramid_set_char( drvthis, 12, icons[6] );
-			pyramid_chr( drvthis, x, y, 12 );
+			pyramid_set_char( drvthis, 6, icons[6] );
+			pyramid_chr( drvthis, x, y, 6 );
 			break;
 
 		case ICON_ELLIPSIS:
-			pyramid_set_char( drvthis, 13, icons[7] );
-			pyramid_chr( drvthis, x, y, 13 );
+			pyramid_set_char( drvthis, 7, icons[7] );
+			pyramid_chr( drvthis, x, y, 7 );
 			break;
 
 		default:
-			debug(RPT_INFO, "%s: x=%d, y=%d, icon=%x", __FUNCTION__, x, y, icon);
+			debug(RPT_DEBUG, "%s: x=%d, y=%d, icon=%x", __FUNCTION__, x, y, icon);
 			return -1;
 	}
 	return 0;
@@ -1136,6 +1154,7 @@ pyramid_output (Driver *drvthis, int state)
     if(state & (1 << 8)) {
 	    pyramid_init_custom1(drvthis);
     }
+
 }
 
 
@@ -1152,7 +1171,7 @@ pyramid_get_key (Driver *drvthis)
 {
     /* supports only one key at a time */
 
-    static char buffer[MAXCOUNT];
+    static char buffer[MAXCOUNT];	/* has to be static to be visible outside this function */
     unsigned long long current_time;
     int retval;
     PrivateData *p = (PrivateData *) drvthis->private_data;
@@ -1195,7 +1214,7 @@ pyramid_get_key (Driver *drvthis)
         return NULL;
 
     current_time = timestamp(p);
-    if (current_time > p->last_key_time + 500000) /* (buffer[0]=='K' ? 500000 : 250000)) */
+    if (current_time > p->last_key_time + 500000)	/* New keys only every 0.5 seconds */
         p->last_key_time = current_time;
     else
         return NULL;
