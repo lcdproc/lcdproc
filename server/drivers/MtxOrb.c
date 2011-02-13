@@ -8,6 +8,8 @@
  * http://www.matrixorbital.ca/manuals/
  *
  * \note The GLK series of graphical displays is supported by the \c glk driver.
+ *
+ * \todo Recover the code for I2C connectivity to MtxOrb.
  */
 
 /*-

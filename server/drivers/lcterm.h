@@ -26,7 +26,6 @@
 #ifndef LCTERM_H
 #define LCTERM_H
 
-#include "lcd.h"
 MODULE_EXPORT int  lcterm_init (Driver *drvthis);
 MODULE_EXPORT void lcterm_close (Driver *drvthis);
 MODULE_EXPORT int  lcterm_width (Driver *drvthis);
@@ -40,9 +39,11 @@ MODULE_EXPORT void lcterm_vbar (Driver *drvthis, int x, int y, int len, int prom
 MODULE_EXPORT void lcterm_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void lcterm_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  lcterm_icon (Driver *drvthis, int x, int y, int icon);
-MODULE_EXPORT void lcterm_set_char (Driver *drvthis, int n, char *dat);
+MODULE_EXPORT void lcterm_set_char (Driver *drvthis, int n, unsigned char *dat);
+MODULE_EXPORT int  lcterm_get_free_chars(Driver *drvthis);
 
 #define DEFAULT_DEVICE "/dev/lcd"
+#define NUM_CCs 8
 
 #endif
 

@@ -1,7 +1,5 @@
 /** \file server/drivers/lb216.c
  * LCDd \c lb216 driver for the LB216 by R.T.N. Australia.
- * 
- * \todo Convert to new style hbar and vbar!
  */
 
 /*
@@ -33,6 +31,7 @@
 
 #include "lcd.h"
 #include "lb216.h"
+#include "lcd_lib.h"
 #include "report.h"
 
 #define LB216_DEFAULT_DEVICE		"/dev/lcd"
@@ -371,204 +370,56 @@ LB216_string (Driver *drvthis, int x, int y, const char string[])
 }
 
 /////////////////////////////////////////////////////////////////
-// Sets up for vertical bars.  Call before LB216->vbar()
-//
-static void
-LB216_init_vbar(Driver *drvthis)
-{
-  PrivateData *p = drvthis->private_data;
-  char a[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-  };
-  char b[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char c[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char d[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char e[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char f[] = {
-    0,0,0,0,0,
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-  char g[] = {
-    0,0,0,0,0,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-
-  if (p->custom != vbar) {
-    LB216_set_char(drvthis, 1, a);
-    LB216_set_char(drvthis, 2, b);
-    LB216_set_char(drvthis, 3, c);
-    LB216_set_char(drvthis, 4, d);
-    LB216_set_char(drvthis, 5, e);
-    LB216_set_char(drvthis, 6, f);
-    LB216_set_char(drvthis, 7, g);
-    p->custom = vbar;
-  }
-}
-
-/////////////////////////////////////////////////////////////////
-// Inits horizontal bars...
-//
-static void
-LB216_init_hbar(Driver *drvthis)
-{
-  PrivateData *p = drvthis->private_data;
-  char a[] = {
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-    1,0,0,0,0,
-  };
-  char b[] = {
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-    1,1,0,0,0,
-  };
-  char c[] = {
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-    1,1,1,0,0,
-  };
-  char d[] = {
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-    1,1,1,1,0,
-  };
-  char e[] = {
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-    1,1,1,1,1,
-  };
-
-  if (p->custom != hbar) {
-    LB216_set_char(drvthis, 1, a);
-    LB216_set_char(drvthis, 2, b);
-    LB216_set_char(drvthis, 3, c);
-    LB216_set_char(drvthis, 4, d);
-    LB216_set_char(drvthis, 5, e);
-    p->custom = hbar;
-  }
-}
-
-/////////////////////////////////////////////////////////////////
 // Draws a vertical bar...
 //
 MODULE_EXPORT void
-LB216_vbar(Driver *drvthis, int x, int len)
+LB216_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
   PrivateData *p = drvthis->private_data;
-  char map[9] = { 32, 1, 2, 3, 4, 5, 6, 7, 255 };
-  int y;
+  static unsigned char vbar_char[7][8] = {
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F}
+  };
 
-  LB216_init_vbar(drvthis);
+  if (p->custom != vbar) {
+    int i;
 
-  for (y = p->height; (y > 0) && (len > 0); y--) {
-    if (len >= p->cellheight)
-      LB216_chr(drvthis, x, y, map[8]);
-    else
-      LB216_chr(drvthis, x, y, map[len]);
-
-    len -= p->cellheight;
+    for (i = 0; i < 7; i++)
+      LB216_set_char(drvthis, i + 1, vbar_char[i]);
+    p->custom = vbar;
   }
+
+  lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0);
 }
 
 /////////////////////////////////////////////////////////////////
 // Draws a horizontal bar to the right.
 //
 MODULE_EXPORT void
-LB216_hbar(Driver *drvthis, int x, int y, int len)
+LB216_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
   PrivateData *p = drvthis->private_data;
-  char map[7] = { 32, 1, 2, 3, 4, 5 };
+  static unsigned char hbar_char[5][8] = {
+    {0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10},
+    {0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18},
+    {0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C},
+    {0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E},
+    {0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F}
+  };
 
-  LB216_init_hbar(drvthis);
+  if (p->custom != hbar) {
+    int i;
 
-  for ( ; (x <= p->width) && (len > 0); x++) {
-    if (len >= p->cellwidth)
-      LB216_chr(drvthis, x, y, map[5]);
-    else
-      LB216_chr(drvthis, x, y, map[len]);
-
-    len -= p->cellwidth;
+    for (i = 0; i < 5; i++)
+        LB216_set_char(drvthis, i + 1, hbar_char[i]);
+    p->custom = hbar;
   }
+  lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0);
 }
 
 
@@ -580,27 +431,25 @@ LB216_hbar(Driver *drvthis, int x, int y, int len)
 // The input is just an array of characters...
 //
 MODULE_EXPORT void
-LB216_set_char(Driver *drvthis, int n, char *dat)
+LB216_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
   PrivateData *p = drvthis->private_data;
   char out[4];
-  int row, col;
+  int row;
+  unsigned char mask = (1 << p->cellwidth) - 1;
 
-  if ((n < 0) || (n > 7))
-    return;
-  if (!dat)
+  if ((n < 0) || (n > 7) || (!dat))
     return;
 
   snprintf(out, sizeof(out), "%c%c", 254, 64 + (8 * n));
   write(p->fd, out, 2);
 
   for (row = 0; row < p->cellheight; row++) {
-    int letter = 1;
+    int letter = dat[row] & mask;
 
-    for (col = 0; col < p->cellwidth; col++) {
-      letter <<= 1;
-      letter |= (dat[(row * p->cellwidth) + col] > 0);
-    }
+    /* For some reason the previous implementation had the 6th bit set. */
+    letter |= 0x20;
+
     snprintf(out, sizeof(out), "%c", letter);
     write(p->fd, out, 1);
   }
@@ -610,26 +459,12 @@ LB216_set_char(Driver *drvthis, int n, char *dat)
 MODULE_EXPORT int
 LB216_icon(Driver *drvthis, int x, int y, int icon)
 {
-  //PrivateData *p = drvthis->private_data;
-  static char heart_open[] = {
-    1, 1, 1, 1, 1,
-    1, 0, 1, 0, 1,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 0, 0, 0, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 1, 1, 1 };
+  static unsigned char heart_open[] =
+    {0x1F, 0x15, 0x00, 0x00, 0x00, 0x11, 0x1B, 0x1F};
 
-  static char heart_filled[] = {
-    1, 1, 1, 1, 1,
-    1, 0, 1, 0, 1,
-    0, 1, 0, 1, 0,
-    0, 1, 1, 1, 0,
-    0, 1, 1, 1, 0,
-    1, 0, 1, 0, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 1, 1, 1 };
+  static unsigned char heart_filled[] =
+    {0x1F, 0x15, 0x0A, 0x0E, 0x0E, 0x15, 0x1B, 0x1F};
+
 
   switch (icon) {
     case ICON_BLOCK_FILLED:

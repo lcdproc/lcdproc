@@ -310,7 +310,6 @@ bayrad_string(Driver *drvthis, int x, int y, const char string[])
       break;
 
     if ((c > 0x7F) && (c < 0x98)) {
-      //c &= 0x7F;
       report(RPT_WARNING, "%s: illegal char 0x%02X requested in bayrad_string()",
 			 drvthis->name, c);
       c = ' ';
@@ -375,222 +374,20 @@ bayrad_backlight(Driver *drvthis, int on)
 }
 
 
-//////////////////////////////////////////////////////////////////////
-// Tells the driver to get ready for vertical bargraphs.
-//
-static void
-bayrad_init_vbar(Driver *drvthis)
-{
-  PrivateData *p = drvthis->private_data;
-  static char bar_up[7][5*8] = {
-      {
-	 0,0,0,0,0, //  char u1[] =
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 1,1,1,1,1,
-      }, {
-	 0,0,0,0,0, //  char u2[] =
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-      },{
-	 0,0,0,0,0, //  char u3[] =
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-      },{
-	 0,0,0,0,0, //  char u4[] =
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-      },{
-	 0,0,0,0,0, //  char u5[] =
-	 0,0,0,0,0,
-	 0,0,0,0,0,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-      },{
-	 0,0,0,0,0, //  char u6[] =
-	 0,0,0,0,0,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-      },{
-	 0,0,0,0,0, //  char u7[] =
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-      }
-  };
-
-  //debug(RPT_DEBUG,"Init Vertical bars");
-
-  if (p->ccmode == vbar) {
-    /* Work already done */
-    return;
-  }
-
-  if (p->ccmode != standard) {
-    /* Not supported (yet) */
-    report(RPT_WARNING, "%s: cannot combine two modes using user-defined characters",
-		    drvthis->name);
-    return;
-  }
-  p->ccmode = vbar;
-
-  bayrad_set_char(drvthis, 1, bar_up[0]);
-  bayrad_set_char(drvthis, 2, bar_up[1]);
-  bayrad_set_char(drvthis, 3, bar_up[2]);
-  bayrad_set_char(drvthis, 4, bar_up[3]);
-  bayrad_set_char(drvthis, 5, bar_up[4]);
-  bayrad_set_char(drvthis, 6, bar_up[5]);
-  bayrad_set_char(drvthis, 7, bar_up[6]);
-}
-
-//////////////////////////////////////////////////////////////////////
-// Tells the driver to get ready for horizontal bargraphs.
-//
-static void
-bayrad_init_hbar(Driver *drvthis)
-{
-  PrivateData *p = drvthis->private_data;
-  static char bar_right[5][5*8] = {
-      {
-	 1,0,0,0,0, //  char r1[] =
-	 1,0,0,0,0,
-	 1,0,0,0,0,
-	 1,0,0,0,0,
-	 1,0,0,0,0,
-	 1,0,0,0,0,
-	 1,0,0,0,0,
-	 1,0,0,0,0,
-      },{
-	 1,1,0,0,0, //  char r2[] =
-	 1,1,0,0,0,
-	 1,1,0,0,0,
-	 1,1,0,0,0,
-	 1,1,0,0,0,
-	 1,1,0,0,0,
-	 1,1,0,0,0,
-	 1,1,0,0,0,
-      },{
-	 1,1,1,0,0, //  char r3[] =
-	 1,1,1,0,0,
-	 1,1,1,0,0,
-	 1,1,1,0,0,
-	 1,1,1,0,0,
-	 1,1,1,0,0,
-	 1,1,1,0,0,
-	 1,1,1,0,0,
-      },{
-	 1,1,1,1,0, //  char r4[] =
-	 1,1,1,1,0,
-	 1,1,1,1,0,
-	 1,1,1,1,0,
-	 1,1,1,1,0,
-	 1,1,1,1,0,
-	 1,1,1,1,0,
-	 1,1,1,1,0,
-      },{
-	 1,1,1,1,1, //  char r5[] =
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-	 1,1,1,1,1,
-      }
-  };
-
-  //debug(RPT_DEBUG,"Init Horizontal bars");
-
-  if (p->ccmode == hbar) {
-    /* Work already done */
-    return;
-  }
-
-  if (p->ccmode != standard) {
-    /* Not supported (yet) */
-    report(RPT_WARNING, "%s: cannot combine two modes using user-defined characters",
-		    drvthis->name);
-    return;
-  }
-  p->ccmode = hbar;
-
-  bayrad_set_char(drvthis, 1, bar_right[0]);
-  bayrad_set_char(drvthis, 2, bar_right[1]);
-  bayrad_set_char(drvthis, 3, bar_right[2]);
-  bayrad_set_char(drvthis, 4, bar_right[3]);
-  bayrad_set_char(drvthis, 5, bar_right[4]);
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// Tells the driver to get ready for big numbers, if possible.
-//
-static void
-bayrad_init_num(Driver *drvthis)
-{
-  //PrivateData *p = drvthis->private_data;
-
-//  debug(RPT_DEBUG,"Big Numbers");
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// Draws a big (4-row) number.
-//
-MODULE_EXPORT void
-bayrad_num(Driver *drvthis, int x, int num)
-{
-  //PrivateData *p = drvthis->private_data;
-
-//  debug(RPT_DEBUG,"BigNum(%i, %i)", x, num);
-}
-
-
 /**
  * Define a custom character and write it to the LCD.
  * \param drvthis  Pointer to driver structure.
  * \param n        Custom character to define [0 - (NUM_CCs-1)].
- * \param dat      Array of 40(=8*5=cellheight*cellwidth) bytes, each representing a pixel
- *                 starting from the top left to the bottom right.
- * \todo
- * Convert \c dat to use one byte per pixel row as e.g. in the \c CFontzPackage driver.
+ * \param dat      Array of 8 (= cellheight) bytes, each representing a row in
+ *                 CGRAM starting from the top.
  */
 MODULE_EXPORT void
-bayrad_set_char(Driver *drvthis, int n, char *dat)
+bayrad_set_char(Driver *drvthis, int n, unsigned char *dat)
 {
   PrivateData *p = drvthis->private_data;
   char out[4] = { 0x88, 0x0, 0x0, 0x0 };
-  int row, col;
+  int row;
+  unsigned char mask = (1 << p->cellwidth) - 1;
 
   //debug(RPT_DEBUG, "Set char %i", n);
 
@@ -605,12 +402,7 @@ bayrad_set_char(Driver *drvthis, int n, char *dat)
   write(p->fd, out, 2);
 
   for (row = 0; row < p->cellheight; row++) {
-    char letter = 0;
-
-    for (col = 0; col < p->cellwidth; col++) {
-      letter <<= 1;
-      letter |= (dat[(row * p->cellwidth) + col] > 0);
-    }
+    char letter = dat[row] & mask;
     write(p->fd, &letter, 1);
   }
 
@@ -632,10 +424,32 @@ MODULE_EXPORT void
 bayrad_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
   PrivateData *p = drvthis->private_data;
+  static unsigned char bar_up[7][8] = {
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+  };
 
   //debug(RPT_DEBUG, "Vbar at %i, length %i", x, len);
 
-  bayrad_init_vbar(drvthis);
+  if (p->ccmode != vbar) {
+    int i;
+
+    if (p->ccmode != standard) {
+      /* Not supported (yet) */
+      report(RPT_WARNING, "%s: cannot combine two modes using user-defined characters",
+		      drvthis->name);
+      return;
+    }
+    p->ccmode = vbar;
+
+    for (i = 0; i < 7; i++)
+      bayrad_set_char(drvthis, i + 1, bar_up[i]);
+  }
 
   lib_vbar_static(drvthis, x, y, len, promille, options, p->cellheight, 0x98);
 }
@@ -654,10 +468,28 @@ MODULE_EXPORT void
 bayrad_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
   PrivateData *p = drvthis->private_data;
+  static unsigned char bar_right[4][8] = {
+    {0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10},
+    {0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18},
+    {0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C},
+    {0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E},
+  };
 
   //debug(RPT_DEBUG, "Hbar at %i,%i; length %i", x, y, len);
 
-  bayrad_init_hbar(drvthis);
+  if (p->ccmode != hbar) {
+    int i;
+
+    if (p->ccmode != standard) {
+      report(RPT_WARNING, "%s: cannot combine two modes using user-defined characters",
+	     drvthis->name);
+      return;
+    }
+    p->ccmode = hbar;
+
+    for (i = 0; i < 4; i++)
+      bayrad_set_char(drvthis, i + 1, bar_right[i]);
+  }
 
   lib_hbar_static(drvthis, x, y, len, promille, options, p->cellwidth, 0x98);
 }
@@ -675,38 +507,6 @@ bayrad_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT int
 bayrad_icon(Driver *drvthis, int x, int y, int icon)
 {
-  /*PrivateData *p = drvthis->private_data;
-  static char icons[3][5*8] = {
-   {
-     1,1,1,1,1,  // Empty Heart
-     1,0,1,0,1,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     1,0,0,0,1,
-     1,1,0,1,1,
-     1,1,1,1,1,
-   },{
-     1,1,1,1,1,  // Filled Heart
-     1,0,1,0,1,
-     0,1,0,1,0,
-     0,1,1,1,0,
-     0,1,1,1,0,
-     1,0,1,0,1,
-     1,1,0,1,1,
-     1,1,1,1,1,
-   },{
-     0,0,0,0,0,  // Ellipsis
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     0,0,0,0,0,
-     1,0,1,0,1,
-   }
-  };*/
-
   switch (icon) {
     case ICON_BLOCK_FILLED:
       bayrad_chr( drvthis, x, y, 0xFF );
@@ -764,11 +564,10 @@ bayrad_get_key(Driver *drvthis)
     else {	/* read() error */
       report(RPT_ERR, "%s: Read error in BayRAD getchar", drvthis->name);
     }
-  }  /* if select */
+  }
   else {
       ;//debug(RPT_DEBUG, "No BayRAD data present");
   }
 
   return key;
 }
-

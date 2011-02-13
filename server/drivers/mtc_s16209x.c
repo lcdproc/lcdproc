@@ -1,7 +1,5 @@
 /** \file server/drivers/mtc_s16209x.c
  * LCDd \c mtc_s16209x driver for the MTC_S16209x LCD display by Microtips Technology Inc.
- *
- * \todo Convert to new style hbar and vbar!
  */
 
 /*
@@ -440,85 +438,21 @@ static void
 MTC_S16209X_init_vbar (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
-  static char a[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-  };
-  static char b[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char c[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char d[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char e[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char f[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char g[] = {
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
+  static unsigned char vbar_char[7][8] = {
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F}
   };
 
   if (p->custom != vbar) {
-    MTC_S16209X_set_char(drvthis, 1, a);
-    MTC_S16209X_set_char(drvthis, 2, b);
-    MTC_S16209X_set_char(drvthis, 3, c);
-    MTC_S16209X_set_char(drvthis, 4, d);
-    MTC_S16209X_set_char(drvthis, 5, e);
-    MTC_S16209X_set_char(drvthis, 6, f);
-    MTC_S16209X_set_char(drvthis, 7, g);
+    int i;
+
+    for (i = 0; i < 7; i++)
+      MTC_S16209X_set_char(drvthis, i + 1, vbar_char[i]);
     p->custom = vbar;
   }
 }
@@ -530,63 +464,17 @@ static void
 MTC_S16209X_init_hbar (Driver *drvthis)
 {
   PrivateData *p = drvthis->private_data;
-  static char a[] = {
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-  };
-  static char b[] = {
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-  };
-  static char c[] = {
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-  };
-  static char d[] = {
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-  };
-  static char e[] = {
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
+  static unsigned char hbar_char[5][8] = {
+    {0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10},
+    {0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18},
+    {0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C},
+    {0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E}
   };
 
   if (p->custom != hbar) {
-    MTC_S16209X_set_char(drvthis, 1, a);
-    MTC_S16209X_set_char(drvthis, 2, b);
-    MTC_S16209X_set_char(drvthis, 3, c);
-    MTC_S16209X_set_char(drvthis, 4, d);
-    MTC_S16209X_set_char(drvthis, 5, e);
+    int i;
+    for (i = 0; i < 4; i++)
+      MTC_S16209X_set_char(drvthis, i + 1, hbar_char[i]);
     p->custom = hbar;
   }
 }
@@ -626,18 +514,15 @@ MTC_S16209X_hbar (Driver *drvthis, int x, int y, int len, int promille, int opti
 // The input is just an array of characters...
 //
 MODULE_EXPORT void
-MTC_S16209X_set_char (Driver *drvthis, int n, char *dat)
+MTC_S16209X_set_char (Driver *drvthis, int n, unsigned char *dat)
 {
   PrivateData *p = drvthis->private_data;
   char out[4];
-  int row, col;
+  int row;
   int letter;
+  unsigned char mask = (1 << p->cellwidth) - 1;
 
-  //return (0);
-
-  if ((n < 0) || (n > 7))
-    return;
-  if (!dat)
+  if ((n < 0) || (n > 7) || (!dat))
     return;
 
   snprintf(out, sizeof(out), "%c%c", 0xFE, 64 + (8 * n));
@@ -646,12 +531,13 @@ MTC_S16209X_set_char (Driver *drvthis, int n, char *dat)
   flock(p->fd, LOCK_UN);
 
   for (row = 0; row < p->cellheight; row++) {
-    letter = 1;
+    letter = dat[row] & mask;
 
-    for (col = 0; col < p->cellwidth; col++) {
-      letter <<= 1;
-      letter |= (dat[(row * p->cellwidth) + col] > 0);
-    }
+    /*
+     * For some reason the previous implementation had the 6th bit set. As
+     * I have no idea what this was supposed to be good for set it, too.
+     */
+    letter |= 0x20;
 
     snprintf(out, sizeof (out), "%c", letter);
 
@@ -664,27 +550,11 @@ MTC_S16209X_set_char (Driver *drvthis, int n, char *dat)
 MODULE_EXPORT int
 MTC_S16209X_icon (Driver *drvthis, int x, int y, int icon)
 {
-  //PrivateData *p = drvthis->private_data;
-  static char heart_open[] = {
-    1, 1, 1, 1, 1,
-    1, 0, 1, 0, 1,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 0, 0, 0, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 1, 1, 1
-  };
-  static char heart_filled[] = {
-    1, 1, 1, 1, 1,
-    1, 0, 1, 0, 1,
-    0, 1, 0, 1, 0,
-    0, 1, 1, 1, 0,
-    0, 1, 1, 1, 0,
-    1, 0, 1, 0, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 1, 1, 1
-  };
+  static unsigned char heart_open[] =
+    {0x1F, 0x15, 0x00, 0x00, 0x00, 0x11, 0x1B, 0x1F};
+
+  static unsigned char heart_filled[] =
+    {0x1F, 0x15, 0x0A, 0x0E, 0x0E, 0x15, 0x1B, 0x1F};
 
   switch (icon) {
     case ICON_BLOCK_FILLED:
@@ -703,4 +573,3 @@ MTC_S16209X_icon (Driver *drvthis, int x, int y, int icon)
   }
   return 0;
 }
-

@@ -5,41 +5,34 @@ yourself by running the doxygen command from the docs/ directory.
 Ideas for new features can be entered at the IdeaTorrent:
 http://sourceforge.net/apps/ideatorrent/lcdproc/
 
-----------------------------------------
+------------------------------------------------------------------------------
 
 Stuff planned for future releases...  (in no particular order)
 Feel free to help out with any of this stuff!  :)
 Please send a message to the mailing list if you have any question.
 
-Things for the short term:
-- Use centralized command message parsing engine (more secure)
-- more features for existing display drivers (e.g. adapt them to bignum library)
-- lcd_lib: Make use of the options parameter to specify SEAMLESS_HBARS, the
-  height of hbars, etc.
-- lcterm: Support keyboard input
-- MtxOrb: Recover the code for I2C connectivity to MtxOrb
-- shuttleVFD: Use output() method for these special "out-of-band" symbols.
+Things for the short term
+=========================
 - Use non-standard serial baud rates (57600 and higher) only optional.
 
 
-Things for the longer term:
-----------------------------------------
+Things for the longer term
+==========================
+
 lcdproc client
+--------------
 
-allow more than one instance of a screen with different configuration
-sections (implementation should be possible similar to the one with
-the drivers in LCDd where File=... points to the original driver file)
+- allow more than one instance of a screen with different configuration
+  sections (implementation should be possible similar to the one with
+  the drivers in LCDd where File=... points to the original driver file)
+- more options in the config file (clocks with offsets from localtime, ...)
+- more options changeable in the lcdproc client menu
+- rewrite machine_get_fs() in machine_Linux.c to use functions from mntent.h
+- get rid of MTAB_FILE compile time definition (for Linux & SunOS)
 
-more options in the config file (clocks with offsets from localtime, ...)
 
-more options changeable in the lcdproc client menu
-
-rewrite machine_get_fs() in machine_Linux.c to use functions from mntent.h
-
-get rid of MTAB_FILE compile time definition (for Linux & SunOS)
-
-----------------------------------------
 lcdexec client
+--------------
 
 more flexbibility: do not just only execute commands, but
 maybe also display their result in a screen, get a command's
@@ -47,8 +40,9 @@ parameters interactively using the builtin input menus,
 confirmation of commands, jumping between commands depending
 on the output of a command (wizards), ...
 
-----------------------------------------
+
 Client driver
+-------------
 
 An LCDproc client can connect, request the "client" driver, then get
 all screen information sent to it!  This allows things such as logging
@@ -64,5 +58,3 @@ command line.  Or,
 	lcdtool -key A
 
 would have the same result as pressing a key on the keypad.
-
-----------------------------------------

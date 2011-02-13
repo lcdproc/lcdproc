@@ -3,8 +3,6 @@
  * www.neumark.de.
  *
  * \todo Support keyboard input
- * \todo Convert to use pixel-row based logic for custom characters, icons,
- *       bar graphs etc.
  */
 
 /*
@@ -45,6 +43,7 @@
 #include "lcd_lib.h"
 #include "lcterm.h"
 #include "report.h"
+#include "adv_bignum.h"
 
 
 /** private data for the \c lcterm driver */
@@ -55,7 +54,7 @@ typedef struct lcterm_private_data {
   unsigned char *last_framebuf;	/**< old frame buffer contents */
   int width;		/**< display width in characters */
   int height;		/**< display height in characters */
-  int fd;		/**< handle to the device */	
+  int fd;		/**< handle to the device */
 } PrivateData;
 
 
@@ -316,31 +315,39 @@ lcterm_string (Driver *drvthis, int x, int y, const char string[])
 
 
 /**
+ * Get total number of custom characters available.
+ * \param drvthis  Pointer to driver structure.
+ * \return  Number of custom characters (always NUM_CCs).
+ */
+MODULE_EXPORT int
+lcterm_get_free_chars(Driver *drvthis)
+{
+	return NUM_CCs;
+}
+
+/**
  * Define a custom character and write it to the LCD.
  * \param drvthis  Pointer to driver structure.
  * \param n        Custom character to define [0 - (NUM_CCs-1)].
- * \param dat      Array of 40(=8*5=cellheight*cellwidth) bytes, each representing a pixel
- *                 starting from the top left to the bottom right.
+ * \param dat      Array of 8 (= cellheight) bytes, each representing a row in
+ *                 CGRAM starting from the top.
  */
 MODULE_EXPORT void
-lcterm_set_char (Driver *drvthis, int n, char *dat)
+lcterm_set_char (Driver *drvthis, int n, unsigned char *dat)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-  int row, col;
+  int row;
   int data;
   unsigned char buf[11];
+  unsigned char mask = (1 << LCD_DEFAULT_CELLWIDTH) - 1;
 
   if ((n < 0) || (n > 7) || (!dat))
     return;
 
   buf[0] = 0x1F;
   buf[1] = 8 * n;   // CG RAM address */
-  for (row = 0; row < 8; row++) {
-    data = 0;
-    for (col = 0; col < 5; col++) {
-      data <<= 1;
-      data |= (*dat++ != 0);
-    }
+  for (row = 0; row < LCD_DEFAULT_CELLHEIGHT; row++) {
+    data = dat[row] & mask;
     buf[2+row] = data | 0x80;
   }
   buf[10] = 0x1E; // Cursor Home - exit CG-RAM mode
@@ -356,77 +363,17 @@ static void
 lcterm_init_vbar (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-
-  static char vbar_1[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
+  static unsigned char vbar_char[8][8] = {
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x00, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F},
+    {0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F}
   };
-  static char vbar_2[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char vbar_3[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char vbar_4[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char vbar_5[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char vbar_6[] = {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
-  static char vbar_7[] = {
-    0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-  };
+  int i;
 
   if (p->last_ccmode == vbar)    /* Work already done */
     return;
@@ -434,19 +381,14 @@ lcterm_init_vbar (Driver *drvthis)
   if (p->ccmode != standard) {
     /* Not supported (yet) */
     report(RPT_WARNING, "%s: init_vbar: cannot combine two modes using user-defined characters",
-		    drvthis->name);
+	   drvthis->name);
     return;
   }
 
   p->ccmode = p->last_ccmode = vbar;
 
-  lcterm_set_char(drvthis, 1, vbar_1);
-  lcterm_set_char(drvthis, 2, vbar_2);
-  lcterm_set_char(drvthis, 3, vbar_3);
-  lcterm_set_char(drvthis, 4, vbar_4);
-  lcterm_set_char(drvthis, 5, vbar_5);
-  lcterm_set_char(drvthis, 6, vbar_6);
-  lcterm_set_char(drvthis, 7, vbar_7);
+  for (i = 0; i < 8; i++)
+    lcterm_set_char(drvthis, i + 1, vbar_char[i]);
 }
 
 
@@ -458,56 +400,13 @@ static void
 lcterm_init_hbar (Driver *drvthis)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-
-  static char hbar_1[] = {
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-    1, 0, 0, 0, 0,
-  };
-  static char hbar_2[] = {
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-  };
-  static char hbar_3[] = {
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-    1, 1, 1, 0, 0,
-  };
-  static char hbar_4[] = {
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-    1, 1, 1, 1, 0,
-  };
-  static char hbar_5[] = {
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
-    1, 1, 1, 1, 1,
+  int i;
+  static unsigned char hbar_char[5][8] = {
+    {0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10},
+    {0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18, 0x18},
+    {0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C, 0x1C},
+    {0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E},
+    {0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F, 0x1F}
   };
 
   if (p->last_ccmode == hbar) /* Work already done */
@@ -516,17 +415,14 @@ lcterm_init_hbar (Driver *drvthis)
   if (p->ccmode != standard) {
     /* Not supported (yet) */
     report(RPT_WARNING, "%s: init_hbar: cannot combine two modes using user-defined characters",
-		    drvthis->name);
+           drvthis->name);
     return;
   }
 
   p->ccmode = p->last_ccmode = hbar;
 
-  lcterm_set_char(drvthis, 1, hbar_1);
-  lcterm_set_char(drvthis, 2, hbar_2);
-  lcterm_set_char(drvthis, 3, hbar_3);
-  lcterm_set_char(drvthis, 4, hbar_4);
-  lcterm_set_char(drvthis, 5, hbar_5);
+  for (i = 0; i < 5; i++)
+    lcterm_set_char(drvthis, i + 1, hbar_char[i]);
 }
 
 
@@ -565,109 +461,6 @@ lcterm_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 
 
 /**
- * Sets up for big numbers.
- * \param drvthis  Pointer to driver structure.
- */
-static void
-lcterm_init_num (Driver *drvthis)
-{
-  PrivateData *p = (PrivateData *) drvthis->private_data;
-  int i;
-
-  static char bignum_ccs[8][5*8] = {{
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0
-  }, {
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0
-  }, {
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0
-  }, {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0
-  }, {
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 0, 0
-  }, {
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 0, 1, 1,
-    0, 0, 0, 0, 0
-  }, {
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    1, 1, 0, 0, 0,
-    0, 0, 0, 0, 0
-  }, {
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 1, 1,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0
-  }};
-
-  if (p->last_ccmode == bignum) {
-    /* Work already done */
-    return;
-  }
-
-  if (p->ccmode != standard) {
-    /* Not supported (yet) */
-    report(RPT_WARNING, "%s: init_num: cannot combine two modes using user-defined characters",
-		    drvthis->name);
-    return;
-  }
-
-  p->ccmode = p->last_ccmode = bignum;
-
-  for (i = 0; i < 8; i++)
-    lcterm_set_char(drvthis, i, bignum_ccs[i]);
-}
-
-
-/**
  * Write a big number to the screen.
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
@@ -677,95 +470,28 @@ MODULE_EXPORT void
 lcterm_num (Driver *drvthis, int x, int num)
 {
   PrivateData *p = (PrivateData *) drvthis->private_data;
-
-  static char bignum_map[11][4][3] = {
-    { /* 0: */
-      {1,2,3},
-      {6,32,6},
-      {6,32,6},
-      {7,2,32}
-    },
-    { /* 1: */
-      {7,6,32},
-      {32,6,32},
-      {32,6,32},
-      {7,2,32},
-    },
-    { /* 2: */
-      {1,2,3},
-      {32,5,0},
-      {1,32,32},
-      {2,2,0},
-    },
-    { /* 3: */
-      {1,2,3},
-      {32,5,0},
-      {3,32,6},
-      {7,2,32}
-    },
-    { /* 4: */
-      {32,3,6},
-      {1,32,6},
-      {2,2,6},
-      {32,32,0}
-    },
-    { /* 5: */
-      {1,2,0},
-      {2,2,3},
-      {3,32,6},
-      {7,2,32}
-    },
-    { /* 6: */
-      {1,2,32},
-      {6,5,32},
-      {6,32,6},
-      {7,2,32}
-    },
-    { /* 7: */
-      {2,2,6},
-      {32,1,32},
-      {32,6,32},
-      {32,0,32}
-    },
-    { /* 8: */
-      {1,2,3},
-      {4,5,0},
-      {6,32,6},
-      {7,2,32}
-    },
-    { /* 9: */
-      {1,2,3},
-      {4,3,6},
-      {32,1,32},
-      {7,32,32}
-    },
-    { /* colon: */
-      {32},
-      {7},
-      {7},
-      {32}
-    }};
+  int do_init = 0;
 
   if ((num < 0) || (num > 10))
     return;
 
-  if (p->height >= 4) {
-    int y = (p->height - 2) / 2;
-    int x2, y2;
+  if (p->height >= 4) {		/* Use standard bignum library */
+    if (p->last_ccmode != bignum) {
+      if (p->ccmode != standard) {
+	report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
+	       drvthis->name);
+	return;
+      }
 
-    lcterm_init_num(drvthis);
-
-    for (x2 = 0; x2 <= 2; x2++) {
-      for (y2 = 0; y2 <= 3; y2++) {
-	lcterm_chr(drvthis, x+x2, y+y2, bignum_map[num][y2][x2]);
-      }	
-      if (num == 10)
-	x2 = 2; /* =break, for colon only */
+      p->ccmode = p->last_ccmode = bignum;
+      do_init = 1;
     }
+
+    lib_adv_bignum(drvthis, x, num, 0, do_init);
   }
-  else
-    lcterm_chr(drvthis, x, 1 + (p->height - 1) / 2,
-	       (num == 10) ? ':' : (num + '0'));
+  else {			/* Roll our own 'mini big numbers' */
+    lcterm_chr(drvthis, x, 1 + (p->height - 1) / 2, (num == 10) ? ':' : (num + '0'));
+  }
 }
 
 
@@ -781,25 +507,27 @@ lcterm_num (Driver *drvthis, int x, int num)
 MODULE_EXPORT int
 lcterm_icon (Driver *drvthis, int x, int y, int icon)
 {
-  static char heart_open[] = {
-    1, 1, 1, 1, 1,
-    1, 0, 1, 0, 1,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0,
-    1, 0, 0, 0, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 1, 1, 1 };
+  static unsigned char heart_open[] = {
+    b__XXXXX,
+    b__X_X_X,
+    b_______,
+    b_______,
+    b_______,
+    b__X___X,
+    b__XX_XX,
+    b__XXXXX
+  };
 
-  static char heart_filled[] = {
-    1, 1, 1, 1, 1,
-    1, 0, 1, 0, 1,
-    0, 1, 0, 1, 0,
-    0, 1, 1, 1, 0,
-    0, 1, 1, 1, 0,
-    1, 0, 1, 0, 1,
-    1, 1, 0, 1, 1,
-    1, 1, 1, 1, 1 };
+  static unsigned char heart_filled[] = {
+    b__XXXXX,
+    b__X_X_X,
+    b___X_X_,
+    b___XXX_,
+    b___XXX_,
+    b__X_X_X,
+    b__XX_XX,
+    b__XXXXX
+  };
 
   switch (icon)
   {
@@ -819,4 +547,3 @@ lcterm_icon (Driver *drvthis, int x, int y, int icon)
   }
   return 0;
 }
-
