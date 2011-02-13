@@ -21,6 +21,7 @@ v.0.5dev (ongoing development)
  * Pyramid: Only send LED state changes, doxygen-ize
  * sed1520: Make it work with 68-family style interface, convert to 0.5 API
  * hd44780/imon: Add charmap for NEC uPD16314 and make it configurable
+ * Pyramid: Convert set_char to 8 byte bitmap, add support for bignum
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)
