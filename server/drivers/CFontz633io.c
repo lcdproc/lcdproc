@@ -1,9 +1,9 @@
 /** \file server/drivers/CFontz633io.c
- * IO routines for the drivers \c CFontzPacket and \c CFontz633.
+ * I/O routines for the \c CFontzPacket driver. Currently the CFA-631,
+ * CFA-533, CFA-633 and CFA-635 LCDs use this type of protocol.
  */
 
-/* interfacing routines for the CrystalFontz CFA-631, CFA-633 and CFA-635 LCDs
-
+/*-
   ===========================================================================
   633 Test code for linux.
   Copyright 2002, David GLAUDE
@@ -47,34 +47,31 @@
 
  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>	/* only required for debugging */
 
 #if defined(HAVE_SYS_SELECT_H)
 # include <sys/select.h>
 #else
 # include <sys/time.h>
 # include <sys/types.h>
-#endif /* defined(HAVE_SYS_SELECT_H) */
-
-#ifdef HAVE_CONFIG_H
-# include "config.h"
 #endif
 
 #include "CFontz633io.h"
-#include "report.h"
 
-
+/* Return values for the check_for_packet() */
 #define TRY_AGAIN 0
 #define GOOD_MSG 1
 #define GIVE_UP 2
 
-
 /* define CFONTZ633_WRITE_DELAY to use select when waiting for packet acknowledgement */
 #if !defined(CFONTZ633_WRITE_DELAY)
-# define CFONTZ633_WRITE_DELAY	250
+# define CFONTZ633_WRITE_DELAY 250
 #endif
 
 
@@ -88,17 +85,16 @@ static void print_packet(COMMAND_PACKET *packet);
 #endif
 
 
-/* global variables */
-KeyRing keyring;
-ReceiveBuffer receivebuffer;
-
-
-
-/*
+/** \addtogroup CFA_KeyRing
+ *
  * KeyRing handling functions.
  * This separates the producer from the consumer.
  * It is just a small fifo of unsigned char.
+ * @{
  */
+
+/* Global variable */
+KeyRing keyring;
 
 /**
  * Initialize/empty key ring by resetting its read & write pointers.
@@ -120,10 +116,8 @@ void EmptyKeyRing(KeyRing *kr)
 int AddKeyToKeyRing(KeyRing *kr, unsigned char key)
 {
 	if (((kr->head + 1) % KEYRINGSIZE) != (kr->tail % KEYRINGSIZE)) {
-		//debug(RPT_DEBUG, "%s: add key: %d", __FUNCTION__, key);
-
-	        kr->contents[kr->head % KEYRINGSIZE] = key;
-  		kr->head = (kr->head + 1) % KEYRINGSIZE;
+		kr->contents[kr->head % KEYRINGSIZE] = key;
+		kr->head = (kr->head + 1) % KEYRINGSIZE;
 		return 1;
 	}
 
@@ -149,11 +143,9 @@ unsigned char GetKeyFromKeyRing(KeyRing *kr)
 	        kr->tail = (kr->tail + 1) % KEYRINGSIZE;
 	}
 
-	//if (retval)
-	//	debug(RPT_DEBUG, "%s: remove key: %d", __FUNCTION__, retval);
-
 	return retval;
 }
+/** @} */
 
 
 
@@ -239,7 +231,7 @@ send_packet(int fd, COMMAND_PACKET *out, COMMAND_PACKET *in)
 	write(fd, CRC, 2);
 
 	/**** TEST STUFF ****/
-	// print_packet(out);
+	//print_packet(out);
 
 	/* Every time we send a message, we also check for an incoming one. */
 	test_packet(fd, 0x40 | out->command, in);
@@ -315,11 +307,22 @@ get_crc(unsigned char *buf, int len, int seed)
 }
 
 
-/* circular buffer: */
-/*                  v peek                            */
-/* -------------------------------------------------- */
-/*           ^ tail              ^ head               */
+/** \addtogroup CFA_ReceiveBuffer
+ *
+ * ReceiveBuffer handling functions.
+ * The receive buffer is a circular buffer of bytes with the possibility to
+ * 'peek' into received bytes.
+ *
+ *\verbatim
+ * |                 v peek                           |
+ * |--------------------------------------------------|
+ * |          ^ tail              ^ head              |
+ *\endverbatim
+ * @{
+ */
 
+/* Global variable */
+ReceiveBuffer receivebuffer;
 
 /**
  * Initialize/empty receive buffer by resetting its pointers.
@@ -355,30 +358,22 @@ void SyncReceiveBuffer(ReceiveBuffer *rb, int fd, unsigned int number)
 
 	if (!retval)
 		return;
-#endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */
+#endif
 
 	if (number > MAX_DATA_LENGTH)
 		number = MAX_DATA_LENGTH;
+
 	BytesRead = read(fd, buffer, number);
 
-	if (BytesRead == -1) {
-		/* this should not happen with the select() above */
-		//debug(RPT_WARNING, "%s: ~~~Problem reading: %s", __FUNCTION__, strerror(errno));
-	}
-	else {
-		int	i;
-
-		//debug(RPT_DEBUG, "%s: read %d bytes:", __FUNCTION__, BytesRead);
+	if (BytesRead > 0) {
+		int i;
 
 		/* wrap write pointer to the receive buffer */
 		rb->head %= RECEIVEBUFFERSIZE;
 
-		/* store the bytes read */
+		/* store the bytes read wrapping at the buffer end */
 		for (i = 0; i < BytesRead; i++) {
-			//debug(RPT_DEBUG, "%s: reading byte %02x", __FUNCTION__, buffer[i]);
 			rb->contents[rb->head] = buffer[i];
-
-			/* increment write pointer (wrap if needed) */
 			rb->head = (rb->head + 1) % RECEIVEBUFFERSIZE;
 		}
 	}
@@ -487,7 +482,7 @@ unsigned char PeekByte(ReceiveBuffer *rb)
 
 	return(return_byte);
 }
-
+/** @} */
 
 
 /**
@@ -497,9 +492,10 @@ unsigned char PeekByte(ReceiveBuffer *rb)
  * \param in        Pointer to COMMAND_PACKET structure to write the response to.
  * \retval 1  Expected response received.
  * \retval 0  Expected response not received.
- */
-/* I should use the value GIVE_UP and not reenter if there is no extra
- * byte read from the serial port
+ *
+ * \todo check_for_packet is always called with MAX_DATA_LENGTH. This doesn't
+ *       do any harm, but passing that parameter is useless then. Additionally
+ *       one complete packet is MAX_DATA_LENGTH + 4 (command, length, CRC).
  */
 static int
 test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
@@ -537,27 +533,19 @@ test_packet(int fd, unsigned char response, COMMAND_PACKET *in)
 	}
 
 	return 1;
-#endif /* defined(HAVE_SELECT) && defined(CFONTZ633_WRITE_DELAY) && (CFONTZ633_WRITE_DELAY > 0) */
+#endif
 }
 
 
-
-/*============================================================================
- *                              check_for_packet()
- *
- * check_for_packet() will see if there is a valid packet in the input buffer.
- * If there is, it will copy it into incoming_command and return 1. If there
- * is not it will return 0. incoming_packet may get partially filled with
- * garbage if there is not a valid packet available.
- *----------------------------------------------------------------------------
- */
-
-
 /**
- * Check for a packet to read.
+ * Check for a packet to read. If there is a valid packet in the input buffer
+ * it will copy it into \c in and return GOOD_MSG. If there is no enough data
+ * available for a valid packet it returns GIVE_UP.
+ *
  * \param fd        File handle to read from.
  * \param in        Pointer to COMMAND_PACKET structure to write the response to.
  * \param expected_length  Expected response length.
+ *
  * \retval GIVE_UP    No message and we should not retry until new input.
  * \retval TRY_AGAIN  No message but we should try again immediately.
  * \retval GOOD_MSG   Message correctly identified.
@@ -570,83 +558,78 @@ check_for_packet(int fd, COMMAND_PACKET *in, unsigned char expected_length)
 
 	SyncReceiveBuffer(&receivebuffer, fd, expected_length);
 
-	//First off, there must be at least 4 bytes available in the input stream
-	//for there to be a valid command in it (command, length, no data, CRC).
+	/*
+	 * There must be at least 4 bytes available in the input stream for
+	 * there to be a valid command in it (command, length, no data, CRC).
+	 */
 	if (BytesAvail(&receivebuffer) < 4) {
-		//debug(RPT_INFO, "%s: not enough bytes available for even the smallest message", __FUNCTION__);
-		return(GIVE_UP); /* We don't need to retry before more byte are received */
+		return(GIVE_UP);
 	}
 
 	/* Look into the buffer without removing the data. */
 	SyncPeekPointer(&receivebuffer);
 
-	/* look at potential command byte */
+	/*
+	 * Look at potential command byte. If it is not a valid command
+	 * discard it and try again.
+	 */
 	in->command = PeekByte(&receivebuffer);
-
-	/* Only commands 0 through MAX_COMMAND are valid */
-	if (MAX_COMMAND < (0x3F & in->command)) {
-		/* Throw out one byte of garbage. Next pass through should re-sync. */
+	if ((in->command & 0x3F) > MAX_COMMAND) {
 		GetByte(&receivebuffer);
-		//debug(RPT_INFO, "%s: unknown command", __FUNCTION__);
 		return(TRY_AGAIN);
 	}
 
-  	/* There is a valid command byte. Get the data_length. */
+	/*
+	 * Get the data_length and check it is within valid range. If not
+	 * discard it and try again.
+	 */
 	in->data_length = PeekByte(&receivebuffer);
-
-  	/* The data length must be within reason. */
-  	if (MAX_DATA_LENGTH < in->data_length) {
-		//Throw out one byte of garbage. Next pass through should re-sync.
+	if (in->data_length > MAX_DATA_LENGTH) {
 		GetByte(&receivebuffer);
-		//debug(RPT_INFO, "%s: too long packet: %d", __FUNCTION__, in->data_length);
 		return(TRY_AGAIN);
 	}
 
-	// Now there must be at least in->data_length + sizeof(CRC) bytes
-	// still available for us to continue.
+	/*
+	 * Now there must be at least in->data_length + sizeof(CRC) bytes
+	 * still available for us to continue. If not give up and try again
+	 * if more bytes are available.
+	 */
 	if ((int) PeekBytesAvail(&receivebuffer) < (in->data_length + 2)) {
-		//It looked like a valid start of a packet, but it does not look
-		//like the complete packet has been received yet.
-		//debug(RPT_INFO, "%s: not enough read to check the complete message", __FUNCTION__);
-		return(GIVE_UP); /* Let's not return until more byte are available */
+		return(GIVE_UP);
 	}
 
 	/* There is enough data to make a packet. Transfer over the data. */
 	for (i = 0; i < in->data_length; i++)
 		in->data[i] = PeekByte(&receivebuffer);
 
-	//Now move over the CRC: convert CRC bytes to CRC manually to avoid endianness issues
+	/* Convert CRC bytes to CRC manually to avoid endianess issues */
 	in->crc = PeekByte(&receivebuffer);
 	in->crc |= PeekByte(&receivebuffer) << 8;
 
-	//Compute the expected CheckSum
+	/* Compute the expected checksum and compare it to the received one. */
 	testcrc = get_crc((unsigned char *) in, in->data_length+2, 0xFFFF);
-
-	//Now check the CRC.
 	if (in->crc == testcrc) {
-		//This is a good packet. Remove the packet from the serial buffer.
+		/* This is a good packet. Remove it from the serial buffer. */
 		AcceptPeekedData(&receivebuffer);
-		//Let our caller know that incoming_command has good stuff in it.
-		/* print_packet(in); */
+
+		/**** TEST STUFF ****/
+		//print_packet(in);
 
 		return(GOOD_MSG);
 	}
 
-	/* The CRC did not match. Toss out one byte of garbage.
-	* Next pass through should re-sync.
-	*/
+	/*
+	 * The CRC did not match. Toss out one byte of garbage.  Next pass
+	 * through should re-sync.
+	 */
 	GetByte(&receivebuffer);
-	//debug(RPT_INFO, "%s: wrong CheckSum: computed %04x / real %04x",
-  	//	__FUNCTION__, testcrc, in->crc);
 	return(TRY_AGAIN);
 }
 
 
 #ifdef DEBUG
 /*
- * This is a debugging function.
- * It should be removed or compiled in conditionally.
- * Currently it is still using printf for debugging.
+ * This prints a hex dump of a packet to stderr.
  */
 static void
 print_packet(COMMAND_PACKET *packet)
@@ -658,11 +641,8 @@ print_packet(COMMAND_PACKET *packet)
 	len = packet->data_length;
 
 	fprintf(stderr, "Message (%d,%d) %d [", top, cmd, len);
-
-	//There is enough data to make a packet. Transfer over the data.
 	for (i = 0; i < packet->data_length; i++)
 		fprintf(stderr, " %02x", packet->data[i]);
-
 	fprintf(stderr, " ] %02x %02x .\n", packet->crc & 0xFF, (packet->crc >> 8) & 0xFF);
 }
-#endif /* DEBUG */
+#endif

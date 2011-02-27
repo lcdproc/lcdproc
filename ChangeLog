@@ -23,6 +23,7 @@ v.0.5dev (ongoing development)
  * hd44780/imon: Add charmap for NEC uPD16314 and make it configurable
  * Pyramid: Convert set_char to 8 byte bitmap, add support for bignum
  * Convert set_char of drivers bayrad, lb216, lcterm, mtc_s16209x, wirz-sli
+ * CFontzPacket: Fix not using select() even if its available
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)
