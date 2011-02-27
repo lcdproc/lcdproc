@@ -335,7 +335,8 @@ i2500vfd_chr (Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 i2500vfd_set_char (Driver *drvthis, int n, char *dat)
 {
-    int row, col;
+    int row;
+    unsigned char mask = (1 << CELLWIDTH) - 1;
 
     if (n < 0 || n > 255)
         return;
@@ -343,12 +344,7 @@ i2500vfd_set_char (Driver *drvthis, int n, char *dat)
         return;
 
     for (row = 0; row < CELLHEIGHT; row++) {
-        int i = 0;
-
-        for (col = 0; col < CELLWIDTH; col++)
-            i = (i << 1) | (dat[(row * CELLWIDTH) + col] > 0);
-
-        i2500vfd_fontmap[n][row] = i;
+        i2500vfd_fontmap[n][row] = dat[row] & mask;
     }
 }
 
@@ -427,37 +423,15 @@ i2500vfd_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 MODULE_EXPORT int
 i2500vfd_icon (Driver *drvthis, int x, int y, int icon)
 {
-    static char heart_open[] = {
-        1, 1, 1, 1, 1,
-        1, 0, 1, 0, 1,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0,
-        1, 0, 0, 0, 1,
-        1, 1, 0, 1, 1,
-        1, 1, 1, 1, 1 };
-
-    static char heart_filled[] = {
-        1, 1, 1, 1, 1,
-        1, 0, 1, 0, 1,
-        0, 1, 0, 1, 0,
-        0, 1, 1, 1, 0,
-        0, 1, 1, 1, 0,
-        1, 0, 1, 0, 1,
-        1, 1, 0, 1, 1,
-        1, 1, 1, 1, 1 };
-
     switch (icon) {
         case ICON_BLOCK_FILLED:
             i2500vfd_chr(drvthis, x, y, 255);
             break;
         case ICON_HEART_FILLED:
-            i2500vfd_set_char(drvthis, 0, heart_filled);
-            i2500vfd_chr(drvthis, x, y, 0);
+            i2500vfd_chr(drvthis, x, y, 3);
             break;
         case ICON_HEART_OPEN:
-            i2500vfd_set_char(drvthis, 0, heart_open);
-            i2500vfd_chr(drvthis, x, y, 0);
+            i2500vfd_chr(drvthis, x, y, 4);
             break;
         default:
             return -1;

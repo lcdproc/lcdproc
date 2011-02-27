@@ -47,6 +47,22 @@
 #define bOOOOOO 0x3f
 
 unsigned char i2500vfd_fontmap[256][8] = {
+    [0x03] {b_OOOOO,
+	    b_O_O_O,
+	    b__O_O_,
+	    b__OOO_,
+	    b__OOO_,
+	    b_O_O_O,
+	    b_OO_OO,
+	    b_OOOOO},
+    [0x04] {b_OOOOO,
+	    b_O_O_O,
+	    b______,
+	    b______,
+	    b______,
+	    b_O___O,
+	    b_OO_OO,
+	    b_OOOOO},
     [0x20] {b______,
 	    b______,
 	    b______,

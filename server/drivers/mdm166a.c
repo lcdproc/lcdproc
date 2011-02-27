@@ -88,7 +88,7 @@ MODULE_EXPORT char *symbol_prefix = "mdm166a_";
  * \param x  int_value
  * \return   BCD_value
  */
-inline byte 
+inline byte
 toBCD(int x)
 {
 	return (byte) (((x) / 10 * 16) + ((x) % 10));
@@ -99,7 +99,7 @@ toBCD(int x)
  * x,y. These are zero-based textmode positions.
  * The Fontmap is stored in rows while the framebuffer is stored
  * in columns, so we need a little conversion.
- * 
+ *
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
@@ -253,7 +253,7 @@ mdm166a_close(Driver *drvthis)
 			 * on errors during init. p->hid may not be NULL even
 			 * if the device could not be open!
 			 */
-			
+
 			/* Set clock */
 			if (p->showClock > 0) {
 				tt = time(NULL);
@@ -466,7 +466,8 @@ mdm166a_chr(Driver *drvthis, int x, int y, char c)
 MODULE_EXPORT void
 mdm166a_set_char(Driver *drvthis, int n, char *dat)
 {
-	int row, col;
+	int row;
+	unsigned char mask = (1 << CELLWIDTH) - 1;
 
 	if (n < 0 || n > 255)
 		return;
@@ -474,12 +475,7 @@ mdm166a_set_char(Driver *drvthis, int n, char *dat)
 		return;
 
 	for (row = 0; row < CELLHEIGHT; row++) {
-		int i = 0;
-
-		for (col = 0; col < CELLWIDTH; col++)
-			i = (i << 1) | (dat[(row * CELLWIDTH) + col] > 0);
-
-		i2500vfd_fontmap[n][row] = i;
+		i2500vfd_fontmap[n][row] = dat[row] & mask;
 	}
 }
 
@@ -584,37 +580,15 @@ mdm166a_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 MODULE_EXPORT int
 mdm166a_icon(Driver *drvthis, int x, int y, int icon)
 {
-	static char heart_open[] = {
-		0, 1, 1, 1, 1, 1,
-		0, 1, 0, 1, 0, 1,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0,
-		0, 1, 0, 0, 0, 1,
-		0, 1, 1, 0, 1, 1,
-		0, 1, 1, 1, 1, 1};
-
-	static char heart_filled[] = {
-		0, 1, 1, 1, 1, 1,
-		0, 1, 0, 1, 0, 1,
-		0, 0, 1, 0, 1, 0,
-		0, 0, 1, 1, 1, 0,
-		0, 0, 1, 1, 1, 0,
-		0, 1, 0, 1, 0, 1,
-		0, 1, 1, 0, 1, 1,
-		0, 1, 1, 1, 1, 1};
-
 	switch (icon) {
 	    case ICON_BLOCK_FILLED:
 		mdm166a_chr(drvthis, x, y, 255);
 		break;
 	    case ICON_HEART_FILLED:
-		mdm166a_set_char(drvthis, 0, heart_filled);
-		mdm166a_chr(drvthis, x, y, 0);
+		mdm166a_chr(drvthis, x, y, 3);
 		break;
 	    case ICON_HEART_OPEN:
-		mdm166a_set_char(drvthis, 0, heart_open);
-		mdm166a_chr(drvthis, x, y, 0);
+		mdm166a_chr(drvthis, x, y, 4);
 		break;
 	    default:
 		return -1;
@@ -669,7 +643,7 @@ mdm166a_backlight(Driver *drvthis, int on)
  * 8..12  Volume level bar (decimal 0..28)
  * 13..14 WLAN strength (decimal 0..3)
  * \endverbatim
- * 
+ *
  * \param drvthis  Pointer to driver structure.
  * \param on       Integer with bits representing LED states.
  */
