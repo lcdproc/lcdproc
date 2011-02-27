@@ -1,6 +1,13 @@
 /** \file server/drivers/CFontz633io.c
  * I/O routines for the \c CFontzPacket driver. Currently the CFA-631,
  * CFA-533, CFA-633 and CFA-635 LCDs use this type of protocol.
+ *
+ * \todo  As no reporting using report.h is possible here (does not has access
+ *        to drvthis) make the send_#_message functions return some error code
+ *        if send failed (or an error response is received).
+ * \todo  Make the content of a response packet available to the driver.
+ * \note  Modifying send_#_functions makes sound only if the CFontz633 driver
+ *        has been removed.
  */
 
 /*-
