@@ -84,7 +84,7 @@ So in theory, it would be possible to write a connection type for the
 I tried this. It was slow and didn't work with user-specific characters
 (the hd44780 frequently changes this characters which seems to confuse the
 microcontroller, at least I cannot explain why it didn't work, there was
-garbare).
+garbage).
 </para>
 
 <para>

@@ -124,7 +124,7 @@ svga_SOURCES =       lcd.h svgalib_drv.c svgalib_drv.h report.h
 t6963_SOURCES =      lcd.h lcd_lib.h t6963.c t6963.h t6963_font.h report.h
 text_SOURCES =       lcd.h text.h text.c report.h
 tyan_SOURCES =       lcd.h lcd_lib.h tyan_lcdm.h tyan_lcdm.c report.h adv_bignum.h
-ula200_SOURCES =     lcd.h lcd_lib.h ula200.h ula200.c report.h
+ula200_SOURCES =     lcd.h adv_bignum.h ula200.h ula200.c report.h
 xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h adv_bignum.h
 
 AM_CPPFLAGS = -I$(top_srcdir)
