@@ -31,6 +31,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -40,10 +44,6 @@
 #include <errno.h>
 #include <syslog.h>
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #include "lcd.h"
 #include "CFontzPacket.h"
 #include "CFontz633io.h"
@@ -51,29 +51,6 @@
 #include "lcd_lib.h"
 #include "CFontz-charmap.h"
 #include "adv_bignum.h"
-
-
-#define CFP_KEY_UP		1
-#define CFP_KEY_DOWN		2
-#define CFP_KEY_LEFT		3
-#define CFP_KEY_RIGHT		4
-#define CFP_KEY_ENTER		5
-#define CFP_KEY_ESCAPE		6
-#define CFP_KEY_UP_RELEASE	7
-#define CFP_KEY_DOWN_RELEASE	8
-#define CFP_KEY_LEFT_RELEASE	9
-#define CFP_KEY_RIGHT_RELEASE	10
-#define CFP_KEY_ENTER_RELEASE	11
-#define CFP_KEY_ESCAPE_RELEASE	12
-#define CFP_KEY_UL_PRESS	13
-#define CFP_KEY_UR_PRESS	14
-#define CFP_KEY_LL_PRESS	15
-#define CFP_KEY_LR_PRESS 	16
-#define CFP_KEY_UL_RELEASE	17
-#define CFP_KEY_UR_RELEASE	18
-#define CFP_KEY_LL_RELEASE	19
-#define CFP_KEY_LR_RELEASE	20
-
 
 /* LEDs dispatch */
 #define CF635_NUM_LEDs	8
@@ -534,34 +511,26 @@ CFontzPacket_get_key (Driver *drvthis)
 	unsigned char key = GetKeyFromKeyRing(&keyring);
 
 	switch (key) {
-		case CFP_KEY_LEFT:
-			return "Left";
-			break;
+		case CFP_KEY_UL_PRESS:
 		case CFP_KEY_UP:
 			return "Up";
 			break;
+		case CFP_KEY_LL_PRESS:
 		case CFP_KEY_DOWN:
 			return "Down";
+			break;
+		case CFP_KEY_LEFT:
+			return "Left";
 			break;
 		case CFP_KEY_RIGHT:
 			return "Right";
 			break;
+		case CFP_KEY_UR_PRESS:
 		case CFP_KEY_ENTER:
 			return "Enter";
 			break;
-		case CFP_KEY_ESCAPE:
-			return "Escape";
-			break;
-		case CFP_KEY_UL_PRESS:
-			return "Up";
-			break;
-		case CFP_KEY_UR_PRESS:
-			return "Enter";
-			break;
-		case CFP_KEY_LL_PRESS:
-			return "Down";
-			break;
 		case CFP_KEY_LR_PRESS:
+		case CFP_KEY_ESCAPE:
 			return "Escape";
 			break;
 		case CFP_KEY_UP_RELEASE:

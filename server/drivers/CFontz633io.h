@@ -45,19 +45,28 @@
 #define CF633_Set_GPIO_Pin					34
 #define CF633_Read_GPIO_Pin					35
 
-/* Those are all the possible keys we know off */
-#define KEY_UP_PRESS		1
-#define KEY_DOWN_PRESS		2
-#define KEY_LEFT_PRESS		3
-#define KEY_RIGHT_PRESS		4
-#define KEY_ENTER_PRESS		5
-#define KEY_EXIT_PRESS		6
-#define KEY_UP_RELEASE		7
-#define KEY_DOWN_RELEASE	8
-#define KEY_LEFT_RELEASE	9
-#define KEY_RIGHT_RELEASE	10
-#define KEY_ENTER_RELEASE	11
-#define KEY_EXIT_RELEASE	12
+/* Key events for 533, 633 and 635 */
+#define CFP_KEY_UP		1
+#define CFP_KEY_DOWN		2
+#define CFP_KEY_LEFT		3
+#define CFP_KEY_RIGHT		4
+#define CFP_KEY_ENTER		5
+#define CFP_KEY_ESCAPE		6
+#define CFP_KEY_UP_RELEASE	7
+#define CFP_KEY_DOWN_RELEASE	8
+#define CFP_KEY_LEFT_RELEASE	9
+#define CFP_KEY_RIGHT_RELEASE	10
+#define CFP_KEY_ENTER_RELEASE	11
+#define CFP_KEY_ESCAPE_RELEASE	12
+/* Key events for 631 */
+#define CFP_KEY_UL_PRESS	13
+#define CFP_KEY_UR_PRESS	14
+#define CFP_KEY_LL_PRESS	15
+#define CFP_KEY_LR_PRESS 	16
+#define CFP_KEY_UL_RELEASE	17
+#define CFP_KEY_UR_RELEASE	18
+#define CFP_KEY_LL_RELEASE	19
+#define CFP_KEY_LR_RELEASE	20
 
 
 typedef unsigned char ubyte;
