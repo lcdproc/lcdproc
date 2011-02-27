@@ -97,11 +97,11 @@ MODULE_EXPORT void t6963_vbar (Driver *drvthis, int x, int y, int len, int promi
 MODULE_EXPORT void t6963_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void t6963_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  t6963_icon (Driver *drvthis, int x, int y, int icon);
-MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, char *dat);
+MODULE_EXPORT void t6963_set_char (Driver *drvthis, int n, unsigned char *dat);
 
 /* Internal functions */
 static void t6963_graphic_clear(Driver *drvthis);
-static void t6963_set_nchar(Driver *drvthis, int n, unsigned char *dat, int num);
+static void t6963_set_nchar(Driver *drvthis, int n, int num);
 static inline int t6963_low_dsp_ready(Driver *drvthis, u8 sta);
 static void t6963_low_data(Driver *drvthis, u8 byte);
 static void t6963_low_auto_write(Driver *drvthis, u8 byte);

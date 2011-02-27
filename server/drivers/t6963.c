@@ -186,7 +186,7 @@ t6963_init(Driver * drvthis)
 	t6963_low_command_word(drvthis, SET_OFFSET_REGISTER, CHARGEN_BASE >> 11);
 
 	/* Load font data */
-	t6963_set_nchar(drvthis, 0, fontdata_6x8, 256);
+	t6963_set_nchar(drvthis, 0, 256);
 
 	/* Clear display */
 	t6963_clear(drvthis);
@@ -371,46 +371,46 @@ t6963_chr(Driver * drvthis, int x, int y, char c)
 }
 
 /**
- * Changes the font data of character n.
+ * Load the custom font into LCD. Font data may be modified by the \c set_char
+ * function on the fly.
+ *
  * \param drvthis  Pointer to driver structure.
- * \param n        Index of character in CGRAM to update.
- * \param dat      Data (must consist of num*cellwidth*cellheight bytes).
- * \param num      Number of characters stored in data.
+ * \param n        Index of starting character in CGRAM
+ * \param num      Number of characters to update
  */
 static void
-t6963_set_nchar(Driver * drvthis, int n, unsigned char *dat, int num)
+t6963_set_nchar(Driver *drvthis, int n, int num)
 {
 	PrivateData *p = drvthis->private_data;
-	int row, col;
+	int chr, row;
 	char letter;
+	unsigned char mask = (1 << p->cellwidth) - 1;
 
-	debug(RPT_DEBUG, "Setting char %d", n);
+	debug(RPT_DEBUG, "Loading font");
 
-	if ((!dat) || (n + num > 256))
-		return;
-
-	t6963_low_command_word(drvthis, SET_ADDRESS_POINTER, CHARGEN_BASE + n * 8);
+	t6963_low_command_word(drvthis, SET_ADDRESS_POINTER, CHARGEN_BASE + n * p->cellheight);
 	t6963_low_command(drvthis, AUTO_WRITE);
-	for (row = 0; row < p->cellheight * num; row++) {
-		letter = 0;
-		/* Accumulate data for one pixel row */
-		for (col = 0; col < p->cellwidth; col++) {
-			letter <<= 1;
-			letter |= (dat[(row * p->cellwidth) + col] > 0);
+	for (chr = 0; chr < num; chr++) {
+		for (row = 0; row < p->cellheight; row++) {
+			letter = fontdata_6x8[chr][row] & mask;
+			t6963_low_auto_write(drvthis, letter);
 		}
-
-		t6963_low_auto_write(drvthis, letter);
 	}
 	t6963_low_command(drvthis, AUTO_RESET);
 }
 
 /**
- * API: Define a custom character and write it to the LCD.
+ * API: Define a custom character and write it into the font data, possibly
+ * overwriting an existing character.
  */
 MODULE_EXPORT void
-t6963_set_char(Driver * drvthis, int n, char *dat)
+t6963_set_char(Driver * drvthis, int n, unsigned char *dat)
 {
-	t6963_set_nchar(drvthis, n, (unsigned char *)dat, 1);
+	if (!dat || n < 0 || n > 255)
+		return;
+
+	memcpy(fontdata_6x8[n], dat, 8);
+	t6963_set_nchar(drvthis, n, 1);
 }
 
 /**
