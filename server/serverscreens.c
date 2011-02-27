@@ -9,7 +9,8 @@
  * to clients.
  */
 
-/* This file is part of LCDd, the lcdproc server.
+/*-
+ * This file is part of LCDd, the lcdproc server.
  *
  * This file is released under the GNU General Public License.
  * Refer to the COPYING file distributed with this package.
@@ -50,6 +51,12 @@ static int has_hello_msg = 0;
 /* file-local function declarations */
 static int reset_server_screen(int rotate, int heartbeat, int title);
 
+
+/**
+ * Create the server screen and (optionally) print the hello message to it.
+ * \return  -1 on error allocating the screen or one of its widgets,
+ *           0 otherwise.
+ */
 int
 server_screen_init(void)
 {
@@ -125,6 +132,12 @@ server_screen_shutdown(void)
 }
 
 
+/**
+ * Print the numbers of connected clients and screens on the server screen
+ * unless screen is set to be blank. If a custom hello message has been set
+ * it is shown until the first client connects.
+ * \return  Always 0.
+ */
 int
 update_server_screen(void)
 {
@@ -137,7 +150,7 @@ update_server_screen(void)
 	/* get info on the number of connected clients...*/
 	num_clients = clients_client_count();
 
-	/* turn off the Hello message after the first client onnected */
+	/* turn off the Hello message after the first client connected */
 	if (has_hello_msg && !hello_done) {
 		/* TODO:
 		 * checking for num_clients is not really correct; we really
@@ -148,12 +161,12 @@ update_server_screen(void)
 		 * 1st round of screens showing) num_screens still is 0.
 		 */
 		if (num_clients != 0) {
-			if (!hello_done)
-				reset_server_screen(rotate_server_screen, 1, 1);
+			reset_server_screen(rotate_server_screen, 1, 1);
 			hello_done = 1;
 		}
-		if (!hello_done)
+		else {
 			return 0;
+		}
 	}
 
 	/* ... and screens */
@@ -191,6 +204,12 @@ update_server_screen(void)
 }
 
 
+/**
+ * Writes the default or a custom goodbye message defined in the config file
+ * to the screen. Default message is centered on the screen while the custom
+ * message has to be formatted by the user.
+ * \return  Always 0.
+ */
 int
 goodbye_screen(void)
 {
@@ -233,7 +252,16 @@ goodbye_screen(void)
 }
 
 
-
+/**
+ * Clear all text on the server screen and (optionally) reset the title. If
+ * the screen is blank or off it is put in the background. If it is on, the
+ * screen is shown as a regular screen (priority info).
+ *
+ * \param rotate     Server screen state (on/off/blank).
+ * \param heartbeat  If true (1) show the heartbeat unless the screen is blank.
+ * \param title      If true (1) and screen is not blank print the default title.
+ * \return  -1 if no server screen has been created yet, 0 otherwise.
+ */
 static int
 reset_server_screen(int rotate, int heartbeat, int title)
 {
@@ -270,4 +298,3 @@ reset_server_screen(int rotate, int heartbeat, int title)
 	}
 	return 0;
 }
-
