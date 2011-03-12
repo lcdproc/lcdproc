@@ -426,18 +426,23 @@ dnl			else
 			actdrivers=["$actdrivers SureElec"]
 			;;
 		svga)
-			AC_CHECK_HEADERS([vga.h vgagl.h],[
-				AC_CHECK_LIB(vga, main,[
-					LIBSVGA="-lvga -lvgagl"
-					DRIVERS="$DRIVERS svga${SO}"
-					actdrivers=["$actdrivers svga"]
+			AC_CHECK_HEADER([vga.h], [
+				AC_CHECK_HEADER([vgagl.h],[
+					AC_CHECK_LIB(vga, main,[
+						LIBSVGA="-lvga -lvgagl"
+						DRIVERS="$DRIVERS svga${SO}"
+						actdrivers=["$actdrivers svga"]
+					],[
+dnl					else
+						AC_MSG_WARN([The svga driver needs the vga library])
+					])
 				],[
 dnl				else
-					AC_MSG_WARN([The svga driver needs the vga library])
+					AC_MSG_WARN([The svga driver needs vgagl.h])
 				])
 			],[
 dnl			else
-				AC_MSG_WARN([The svga driver needs vga.h and vgagl.h])
+				AC_MSG_WARN([The svga driver needs vga.h])
 			])
 			;;
 		t6963)
