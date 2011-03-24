@@ -1,4 +1,4 @@
-.TH lcdproc 1 "22 November 2008" LCDproc "LCDproc suite"
+.TH lcdproc 1 "24 March 2011" LCDproc "LCDproc suite"
 
 .SH NAME
 lcdproc - system status information client
@@ -20,7 +20,7 @@ Due to the client-server architecture it does not matter whether the LCDd daemon
 on the local machine or on a remote system.
 .PP
 Most settings of \fBlcdproc\fP are configured through its configuration file
-\fI@SYSCONFDIR@/lcdproc.conf\fP, some of them can be overriden using command line options.
+\fI@SYSCONFDIR@/lcdproc.conf\fP, some of them can be overridden using command line options.
 .PP
 Before running \fBlcdproc\fP you should carefully read through that file and modify
 the settings therein according to your needs.

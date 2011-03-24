@@ -1,4 +1,4 @@
-.TH lcdexec 1 "30 May 2009" LCDproc "LCDproc suite"
+.TH lcdexec 1 "24 March 2011" LCDproc "LCDproc suite"
 .SH NAME
 lcdexec - LCDproc client to execute commands from the LCDd menu
 .SH SYNOPSIS
@@ -102,7 +102,7 @@ The \fB[MainMenu]\fP section and the sections it refers to define the menu hiera
 to be displayed.
 Each menu and each menu entry in the menu hierarchy is defined as its own section.
 Whether a given section is a sub-menu or a command entry is defined by the
-option keys occuring in the section.
+option keys occurring in the section.
 .PP
 Menu / menu entry sections may contain the following options:
 .TP 8
@@ -182,33 +182,33 @@ Entry=RebootNow
 
 [Shutdown5min]
 DisplayName="Shutdown in 5 minutes"
-Exec="shutdown -h +5"
+Exec="shutdown \-h +5"
 Feedback=yes
 
 [Reboot5min]
 DisplayName="Reboot in 5 minutes"
-Exec="shutdown -r +5"
+Exec="shutdown \-r +5"
 Feedback=yes
 
 [CanclShutdown]
 DisplayName="Cancel shutdown/reboot"
-Exec="shutdown -c"
+Exec="shutdown \-c"
 Feedback=yes
 
 [ShutdownNow]
 DisplayName="Shutdown now"
-Exec="shutdown -h now"
+Exec="shutdown \-h now"
 
 [RebootNow]
 DisplayName="Reboot now"
-Exec="shutdown -r now"
+Exec="shutdown \-r now"
 .ft R
 .fi
 .DE
 
 .PP
 Start lcdexec with:
-lcdexec -c /usr/local/etc/lcdexec.conf
+lcdexec \-c /usr/local/etc/lcdexec.conf
 
 .PP
 This will allow you to eject the CD-ROM by opening the LCDd menu, selecting "lcdexec"

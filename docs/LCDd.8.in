@@ -1,4 +1,4 @@
-.TH LCDd 8 "14 May 2009" LCDproc "LCDproc suite"
+.TH LCDd 8 "24 March 2011" LCDproc "LCDproc suite"
 
 .SH NAME
 LCDd - LCDproc server daemon
@@ -17,14 +17,14 @@ LCDd - LCDproc server daemon
 [\fB\-s\fP \fIbool\fP]
 
 .SH DESCRIPTION
-\fBLCDd\fP is the server part of LCDproc, a deamon which listens to a certain port (normally 13666)
+\fBLCDd\fP is the server part of LCDproc, a daemon which listens to a certain port (normally 13666)
 and displays information on an LCD display.  It works with several types
 and sizes of displays.
 .PP
 Most settings of \fBLCDd\fP are configured through its configuration file
-\fI@SYSCONFDIR@/LCDd.conf\fP, some of them can be overriden using command line options.
+\fI@SYSCONFDIR@/LCDd.conf\fP, some of them can be overridden using command line options.
 Before running \fBLCDd\fP you should carefully
-read through that file and modify everything neccessary according to your needs.
+read through that file and modify everything necessary according to your needs.
 Otherwise you might encounter \fBLCDd\fP not running properly on your system.
 .PP
 To make full use of \fBLCDd\fP, a client such as lcdproc(1), lcdexec(1), or lcdvc
@@ -451,7 +451,7 @@ A scrolling text display, scrolling either horizontally or vertically.
 .TP
 .B frame
 A \fIcontainer\fR to contain other widgets, permitting them to be refered to
-as a single unit.  A widget is put inside a frame by using the -in \fI#id\fR
+as a single unit.  A widget is put inside a frame by using the \-in \fI#id\fR
 parameter, where \fI#id\fR refers to the id of the frame.
 .TP
 .B num

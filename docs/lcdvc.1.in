@@ -19,7 +19,7 @@ This program shows content from a system console on a LCD controlled by
 \fBLCDd\fR. As the console is usually larger than a LCD, the area shown on
 the LCD screen can be scrolled using keys attached to the display.
 .LP
-Additionally it features an autoscroll feature, which is on by default and can
+Additionally it has an autoscroll feature, which is on by default and can
 only be disabled by using \fBlcdvc\fR's menu.
 .LP
 By default it uses \fI/dev/vcs\fR and \fI/dev/vcsa\fR devices as the
