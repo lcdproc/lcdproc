@@ -49,8 +49,8 @@ static ConfigSection *find_section(const char *sectionname);
 static ConfigSection *add_section(const char *sectionname);
 static ConfigKey *find_key(ConfigSection *s, const char *keyname, int skip);
 static ConfigKey *add_key(ConfigSection *s, const char *keyname, const char *value);
-static char get_next_char_f(FILE *f);
 #if defined(LCDPROC_CONFIG_READ_STRING)
+static char get_next_char_f(FILE *f);
 static int process_config(ConfigSection **current_section, char(*get_next_char)(), const char *source_descr, FILE *f);
 #else
 static int process_config(ConfigSection **current_section, const char *source_descr, FILE *f);
@@ -96,7 +96,7 @@ int config_read_string(const char *sectionname, const char *str)
 	int pos = 0;
 	ConfigSection *s;
 
-	/* We use a nested fuction to transfer the characters from buffer to parser*/
+	/* We use a nested function to transfer the characters from buffer to parser*/
 	char get_next_char() {
 		return str[pos++];
 	}
@@ -122,7 +122,7 @@ int config_read_string(const char *sectionname, const char *str)
  *     sscanf(s, "%dx%d", &w, &h);  // scan format like: 20x4
  *    \endcode
  *    ...and check the w and h values...
- * \li Copy it to a preallocated buffer like \c device[256]:
+ * \li Copy it to a pre-allocated buffer like \c device[256]:
  *     \code
  *     s = config_get_string(...);
  *     strncpy(device, s, sizeof(device));
@@ -267,7 +267,7 @@ long int config_get_int(const char *sectionname, const char *keyname,
 		long int v = strtol(k->value, &end, 0);
 
 		if ((end != NULL) && (end != k->value) && (*end == '\0'))
-			/* Conversion succesful */
+			/* Conversion successful */
 			return v;
 	}
 	return default_value;
@@ -294,7 +294,7 @@ double config_get_float(const char *sectionname, const char *keyname,
 		double v = strtod(k->value, &end);
 
 		if ((end != NULL) && (end != k->value) && (*end == '\0'))
-			/* Conversion succesful*/
+			/* Conversion successful*/
 			return v;
 	}
 	return default_value;
@@ -312,7 +312,7 @@ int config_has_section(const char *sectionname)
 }
 
 
-/** Test whether the configuration contains a specific key in a specfic section.
+/** Test whether the configuration contains a specific key in a specific section.
  * \param sectionname  Name of the section where the key is sought.
  * \param keyname      Name of the key to look for.
  * \retval 0           key or section not found
@@ -361,7 +361,7 @@ void config_clear(void)
 		free(s->name);
 		free(s);
 	}
-	/* Finally make everything inaccessable */
+	/* Finally make everything inaccessible */
 	first_section = NULL;
 }
 
@@ -536,7 +536,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 			  case '\t':
 			  case ' ':
 				/* ignore spaces */
-			  	break;
+				break;
 			  case '[':
 				/* section name */
 				state = ST_SECTIONLABEL;
@@ -544,7 +544,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				sectionname[sectionname_pos] = '\0';
 				break;
 			  default:
-			  	/* key word */
+				/* key word */
 				state = ST_KEYNAME;
 				keyname_pos = 0;
 				keyname[keyname_pos++] = ch;
@@ -552,34 +552,34 @@ static int process_config(ConfigSection **current_section, const char *source_de
 			}
 			break;
 		  case ST_SECTIONLABEL:
-		  	/* section label: "["{non-space chars}+"]" */
+			/* section label: "["{non-space chars}+"]" */
 			switch (ch) {
 			  case '\0':
 			  case '\n':
-			  	/* premature end of label */
+				/* premature end of label */
 				report(RPT_WARNING, "Unterminated section label on line %d of %s: %s",
 						line_nr, source_descr, sectionname);
 				error = 1;
-				state = ST_INITIAL;	/* alrady at the end, no resync required */
+				state = ST_INITIAL;	/* already at the end, no resync required */
 				break;
 			  case ']':
-			  	/* label terminated: find/create section */
+				/* label terminated: find/create section */
 				if (!(*current_section = find_section(sectionname))) {
-               				*current_section = add_section(sectionname);
+					*current_section = add_section(sectionname);
 				}
 				state = ST_SECTIONLABEL_DONE;
 				break;
 			//  case '\r':
 			//  case '\t':
 			//  case ' ':
-			//  	/* no spaces allowed in section labels WHY? */
+			//	/* no spaces allowed in section labels WHY? */
 			//	report(RPT_WARNING, "Invalid character in section label on line %d of %s: %s",
 			//			line_nr, source_descr, sectionname);
 			//	error = 1;
 			//	state = ST_INVALID_SECTIONLABEL;	/* resync required */
 			//	break;
 			  default:
-			  	/* append char to section label */
+				/* append char to section label */
 				if (sectionname_pos < MAXSECTIONLABELLENGTH) {
 					sectionname[sectionname_pos++] = ch;
 					sectionname[sectionname_pos] = '\0';
@@ -592,13 +592,13 @@ static int process_config(ConfigSection **current_section, const char *source_de
 			}
 			break;
 		  case ST_KEYNAME:
-		  	/* key name: {non-space chars}+ */
+			/* key name: {non-space chars}+ */
 			switch (ch) {
 			  case '\r':
 			  case '\t':
 			  case ' ':
-			  	/* ignore trailing spaces */
-			  	if (keyname_pos != 0)
+				/* ignore trailing spaces */
+				if (keyname_pos != 0)
 					state = ST_ASSIGNMENT;
 				break;
 			  case '\0':
@@ -610,7 +610,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				state = ST_INITIAL;	/* already at the end; no resync required */
 				break;
 			  case '=':
-			  	/* end of key reached, "=" found, now we need a value */
+				/* end of key reached, "=" found, now we need a value */
 				state = ST_VALUE;
 				value[0] = '\0';
 				value_pos = 0;
@@ -618,14 +618,14 @@ static int process_config(ConfigSection **current_section, const char *source_de
 			//  case '"':
 			//  case '[':
 			//  case ']':
-			//  	/* character invalid in key names WHY ? */
+			//	/* character invalid in key names WHY ? */
 			//	report(RPT_WARNING, "Invalid character in key name on line %d of %s: %s",
 			//			line_nr, source_descr, keyname);
 			//	error = 1;
 			//	state = ST_INVALID_KEYNAME;	/* resync required */
 			//	break;
 			  default:
-			  	/* append char to key name */
+				/* append char to key name */
 				if (keyname_pos < MAXKEYNAMELENGTH) {
 					keyname[keyname_pos++] = ch;
 					keyname[keyname_pos] = '\0';
@@ -638,33 +638,33 @@ static int process_config(ConfigSection **current_section, const char *source_de
 			}
 			break;
 		  case ST_ASSIGNMENT:
-			/* assignement: "=" */
+			/* assignment: "=" */
 			switch (ch) {
 			  case '\t':
 			  case ' ':
 				/* ignore leading spaces */
-			  	break;
+				break;
 			  case '=':
-			  	/* "=" found, now we need a value */
+				/* "=" found, now we need a value */
 				state = ST_VALUE;
 				value[0] = '\0';
 				value_pos = 0;
 				break;
 			  default:
-			  	report(RPT_WARNING, "Assigment expected on line %d of %s: %s",
+				report(RPT_WARNING, "Assignment expected on line %d of %s: %s",
 						line_nr, source_descr, keyname);
 				error = 1;
 				state = ST_INVALID_ASSIGNMENT;
 			}
 			break;
 		  case ST_VALUE:
-		  	/* value: {non-space char}+ | "\""{any potentially-quoted char}+"\"" */
+			/* value: {non-space char}+ | "\""{any potentially-quoted char}+"\"" */
 			switch (ch) {
 			  case '#':
 			  case ';':
-			  	/* allow comment if we already had a value */
+				/* allow comment if we already had a value */
 				/* WHY ONLY THEN ? 'xx=' can be seen as equivalent to 'xx=""' */
-			  	if (value_pos > 0) {
+				if (value_pos > 0) {
 					state = ST_COMMENT;
 					break;
 				}
@@ -681,7 +681,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 			  case '\t':
 			  case ' ':
 				/* ignore leading spaces */
-			  	if (value_pos == 0)
+				if (value_pos == 0)
 					break;
 				/* fall through */
 			  case '\0':
@@ -701,11 +701,11 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				state = ((ch == ' ') || (ch == '\t')) ? ST_VALUE_DONE : ST_INITIAL;
 				break;
 			  case '"':
-			  	/* quoted string */
+				/* quoted string */
 				state = ST_QUOTEDVALUE;
 				break;
 			  default:
-			  	/* append char to value */
+				/* append char to value */
 				if (value_pos < MAXVALUELENGTH) {
 					value[value_pos++] = ch;
 					value[value_pos] = '\0';
@@ -718,7 +718,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 			}
 			break;
 		  case ST_QUOTEDVALUE:
-		  	/* a quoted part of a string */
+			/* a quoted part of a string */
 			switch (ch) {
 			  case '\0':
 			  case '\n':
@@ -732,13 +732,13 @@ static int process_config(ConfigSection **current_section, const char *source_de
 					escape = 1;
 					break;
 				}
-				/* fall though */
+				/* fall through */
 			  case '"':
 				if (!escape) {
 					state = ST_VALUE;
 					break;
 				}
-				/* fall though */
+				/* fall through */
 			  default:
 				if (escape) {
 					switch (ch) {
@@ -756,17 +756,17 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				value[value_pos++] = ch;
 				value[value_pos] = '\0';
 			}
-		  	break;
+			break;
 		  case ST_SECTIONLABEL_DONE:
 		  case ST_VALUE_DONE:
-		  	switch (ch) {
+			switch (ch) {
 			  case ';':
 			  case '#':
-			  	state = ST_COMMENT;
+				state = ST_COMMENT;
 				break;
 			  case '\0':
 			  case '\n':
-			  	state = ST_INITIAL;
+				state = ST_INITIAL;
 				break;
 			  case '\t':
 			  case ' ':
@@ -787,7 +787,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 		  case ST_INVALID_KEYNAME:
 		  case ST_INVALID_VALUE:
 		  case ST_COMMENT:
-		  	/* comment or error: ignore anything up to the next line */
+			/* comment or error: ignore anything up to the next line */
 			if (ch == '\n')
 				state = ST_INITIAL;
 		}
