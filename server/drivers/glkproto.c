@@ -8,11 +8,12 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <string.h>
 #include <errno.h>
 #include <stdarg.h>
-#include <sys/poll.h>
+#include <poll.h>
+
 #include "glkproto.h"
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif

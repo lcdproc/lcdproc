@@ -16,7 +16,6 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <errno.h>
 
 #define __u32 unsigned int
 #define __u8 unsigned char
@@ -96,7 +95,7 @@ irmanin_init (Driver *drvthis)
 	if (p->device[0] != '\0') {
 		report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
 		ptrdevice = p->device;
-	}	
+	}
 
 	/* What config file should be used */
 	strncpy(p->config, drvthis->config_get_string(drvthis->name, "Config", 0,

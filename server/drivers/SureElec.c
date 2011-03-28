@@ -43,11 +43,8 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
-#include <strings.h>
 #include <errno.h>
-#include <syslog.h>
 #include <ctype.h>
-#include <sys/poll.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -84,7 +81,7 @@ typedef struct SureElec_private_data {
 	unsigned char *framebuf;
 	unsigned char *backingstore;
 
-	/* defineable characters */
+	/* definable characters */
 	CGmode ccmode;
 
 	int output_state;	/**< current output state */

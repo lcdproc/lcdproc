@@ -73,7 +73,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
@@ -699,7 +698,7 @@ HD44780_flush(Driver *drvthis)
 	}
 	debug(RPT_DEBUG, "HD44780: flushed %d chars", count);
 
-	/* Check which defineable chars we need to update */
+	/* Check which definable chars we need to update */
 	count = 0;
 	for (i = 0; i < NUM_CCs; i++) {
 		if (!p->cc[i].clean) {

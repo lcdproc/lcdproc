@@ -234,7 +234,6 @@ sock_send (int fd, void *src, size_t size)
 			if (errno != EAGAIN) {
 				report (RPT_ERR, "sock_send: socket write error");
 				report (RPT_DEBUG, "Message was: '%.*s'", size-offset, (char *) src);
-				//shutdown(fd, SHUT_RDWR);
 				return sent;
 			}
 			continue;
@@ -270,7 +269,6 @@ sock_recv (int fd, void *dest, size_t maxlen)
 	err = read (fd, dest, maxlen);
 	if (err < 0) {
 		//report (RPT_DEBUG,"sock_recv: socket read error");
-		//shutdown(fd, SHUT_RDWR);
 		return err;
 	}
 	//debug(RPT_DEBUG, "sock_recv: Got message \"%s\"", (char *)dest);

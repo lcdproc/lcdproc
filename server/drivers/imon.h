@@ -26,8 +26,6 @@
 #ifndef IMON_H
 #define IMON_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int  imon_init (Driver *drvthis);
 MODULE_EXPORT void imon_close (Driver *drvthis);
 MODULE_EXPORT int  imon_width (Driver *drvthis);

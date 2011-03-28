@@ -1,8 +1,6 @@
 #ifndef SED1520_H
 #define SED1520_H
 
-#include "lcd.h"
-
 /* Commands for SED1520 */
 #define DISP_OFF	0xAE
 #define DISP_ON		0xAF

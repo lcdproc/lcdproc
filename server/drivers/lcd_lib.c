@@ -8,10 +8,6 @@
  *       the height of hbars, etc.
  */
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-
 #include "lcd.h"
 
 #ifdef HAVE_CONFIG_H

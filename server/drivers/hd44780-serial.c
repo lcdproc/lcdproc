@@ -50,6 +50,8 @@
 #include <termios.h>
 #include <errno.h>
 
+#include "lcd.h"
+#include "hd44780-low.h"
 #include "hd44780-serial.h"
 #include "report.h"
 
@@ -81,8 +83,8 @@ unsigned int bitrate_conversion[][2] = {
 #endif
 #if defined(B230400)
 	, { 230400, B230400 }
-#endif	
-#if defined(B460800)	
+#endif
+#if defined(B460800)
 	, { 460800, B460800 }
 #endif
 #if defined(B500000)

@@ -5,8 +5,6 @@
 #ifndef SOCKETS_H
 #define SOCKETS_H
 
-#include <stdlib.h>
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif

@@ -54,7 +54,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -81,7 +80,7 @@ typedef struct NoritakeVFD_private_data {
 	/* framebuffer and buffer for old LCD contents */
 	unsigned char *framebuf;
 	unsigned char *backingstore;
-	/* defineable characters */
+	/* definable characters */
 	CGmode ccmode;
 	int brightness;
 	int offbrightness;

@@ -19,8 +19,6 @@
 #ifndef LIS_H
 #define LIS_H
 
-#include "lcd.h"
-
 #ifndef bool
 # define bool short
 # define true 1

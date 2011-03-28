@@ -25,8 +25,6 @@
 #ifndef MS6931_H
 #define MS6931_H
 
-#include "lcd.h"
-
 #define MS6931_DEF_DEVICE "/dev/ttyS1"
 #define MS6931_DEF_SIZE "16x2"
 #define MS6931_DEF_CELL_WIDTH 5

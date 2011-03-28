@@ -31,8 +31,6 @@
 #ifndef LCD_TEXT_H
 #define LCD_TEXT_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int irtrans_init(Driver *drvthis);
 MODULE_EXPORT void irtrans_close(Driver *drvthis);
 MODULE_EXPORT int irtrans_width(Driver *drvthis);

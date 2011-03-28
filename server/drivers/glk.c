@@ -17,14 +17,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <string.h>
-#include <errno.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
 #if TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>

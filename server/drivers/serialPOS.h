@@ -1,8 +1,6 @@
 #ifndef SERPOS_H
 #define SERPOS_H
 
-#include "lcd.h"
-
 #define DEFAULT_DEVICE		"/dev/Stty"
 #define DEFAULT_SPEED		9800
 #define DEFAULT_LINEWRAP	0

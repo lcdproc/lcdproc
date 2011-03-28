@@ -28,14 +28,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 #include <ctype.h>
-#include <sys/poll.h>
+#include <poll.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

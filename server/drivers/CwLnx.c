@@ -54,7 +54,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -94,7 +93,7 @@ typedef struct CwLnx_private_data {
 	unsigned char *framebuf;
 	unsigned char *backingstore;
 
-	/* defineable characters */
+	/* definable characters */
 	CGmode ccmode;
 
 	char saved_backlight;	/* current state of the backlight */

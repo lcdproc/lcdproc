@@ -26,8 +26,6 @@
 #ifndef SHUTTLE_VFD_H
 #define SHUTTLE_VFD_H
 
-#include "lcd.h"
-
 // mandatory functions (necessary for all drivers)
 MODULE_EXPORT int shuttleVFD_init(Driver *drvthis);
 MODULE_EXPORT void shuttleVFD_close(Driver *drvthis);

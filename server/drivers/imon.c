@@ -30,11 +30,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <termios.h>
 #include <fcntl.h>
 #include <string.h>
+#include <strings.h>
 #include <errno.h>
-
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

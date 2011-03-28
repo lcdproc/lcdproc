@@ -52,11 +52,8 @@ Different implementations of (n)curses available on:
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <string.h>
 #include <strings.h>
-#include <errno.h>
 #include <ctype.h>
 #ifdef HAVE_NCURSES_H
 #include <ncurses.h>
@@ -67,7 +64,6 @@ Different implementations of (n)curses available on:
 #include "lcd.h"
 #include "curses_drv.h"
 #include "report.h"
-//#include "configfile.h"
 
 // ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
 // However, ACS_S3 and ACS_S7 are not; these definitions were created to support

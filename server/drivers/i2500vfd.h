@@ -1,8 +1,6 @@
 #ifndef I2500VFD_H
 #define I2500VFD_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int i2500vfd_init (Driver *drvthis);
 MODULE_EXPORT void i2500vfd_close (Driver *drvthis);
 MODULE_EXPORT int i2500vfd_width (Driver *drvthis);

@@ -32,13 +32,8 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <time.h>
 
 #include "lcd.h"
 #include "sed1520.h"

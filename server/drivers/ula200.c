@@ -27,11 +27,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 
 #include <usb.h>
 #include <ftdi.h>

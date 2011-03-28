@@ -33,7 +33,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

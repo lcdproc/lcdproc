@@ -1,8 +1,6 @@
 #ifndef MTXORB_H
 #define MTXORB_H
 
-#include "lcd.h"
-
 #define DEFAULT_CONTRAST	480
 #define DEFAULT_ADJ_BACKLIGHT	1
 #define DEFAULT_BRIGHTNESS	1000

@@ -66,9 +66,7 @@ get_info	Implemented.
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
-#include <syslog.h>
 #include <ctype.h>
-#include <sys/poll.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

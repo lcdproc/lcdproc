@@ -24,34 +24,36 @@
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 */
+    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+*/
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
-#include <time.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#ifdef TIME_WITH_SYS_TIME
+#if TIME_WITH_SYS_TIME
 # include <sys/time.h>
+# include <time.h>
+#else
+# if HAVE_SYS_TIME_H
+#  include <sys/time.h>
+# else
+#  include <time.h>
+# endif
 #endif
 
 #include "lcd.h"
 #include "ms6931.h"
 #include "report.h"
 #include "lcd_lib.h"
-/*
-#include "server/configfile.h"
-*/
 
 /** private data for the \c ms6931 driver */
 typedef struct ms6931_private_data {

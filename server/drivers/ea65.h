@@ -1,8 +1,6 @@
 #ifndef EA65_H
 #define EA65_H
 
-#include "lcd.h"
-
 #define DEFAULT_BRIGHTNESS 500
 #define DEFAULT_OFFBRIGHTNESS 0
 

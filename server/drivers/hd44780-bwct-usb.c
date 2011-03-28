@@ -14,18 +14,10 @@
  */
 
 #include "hd44780-bwct-usb.h"
-
+#include "hd44780-low.h"
 #include "report.h"
 
-#include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <usb.h>
-
-#include <stdio.h>
-#include <sys/types.h>
-#include <fcntl.h>
-
 #include <errno.h>
 
 #ifdef HAVE_CONFIG_H

@@ -39,7 +39,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-//#include <time.h>
 #include <sys/time.h>
 
 #ifdef HAVE_CONFIG_H

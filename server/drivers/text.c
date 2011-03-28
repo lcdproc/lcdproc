@@ -27,14 +27,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
 
 #include "lcd.h"
 #include "text.h"
 #include "report.h"
-//#include "drv_base.h"
 
 
 /** private data for the \c text driver */

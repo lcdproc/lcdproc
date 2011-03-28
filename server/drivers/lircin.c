@@ -33,7 +33,6 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-#include <errno.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
@@ -101,7 +100,7 @@ lircin_init (Driver *drvthis)
 	if (drvthis->config_get_string(drvthis->name, "lircrc", 0 , NULL) != NULL) {
 		strncpy(s, drvthis->config_get_string(drvthis->name, "lircrc", 0, ""), sizeof(s));
 		s[sizeof(s)-1] = '\0';
-	}	
+	}
 
 	if (*s != '\0') {
 		p->lircrc = malloc(strlen(s) + 1);
@@ -185,7 +184,7 @@ lircin_close (Driver *drvthis)
 		if (p->lircin_fd >= 0) {
 			lirc_deinit ();
 			close (p->lircin_fd);
-		}	
+		}
 		p->lircin_fd = -1;
 
 		free(p);

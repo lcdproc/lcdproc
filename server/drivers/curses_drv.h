@@ -1,8 +1,6 @@
 #ifndef LCD_CURSES_H
 #define LCD_CURSES_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int  curses_init (Driver *drvthis);
 MODULE_EXPORT void curses_close (Driver *drvthis);
 MODULE_EXPORT int  curses_width (Driver *drvthis);

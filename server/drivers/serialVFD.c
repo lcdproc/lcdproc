@@ -46,9 +46,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
-#include <fcntl.h>
 #include <string.h>
-#include <errno.h>
 
 #include "lcd.h"
 #include "report.h"
@@ -422,7 +420,7 @@ serialVFD_flush (Driver *drvthis)
 		}
 	}
 	/* line mode Display (partitially borrowed from serialPOS.c) */
-	else { 
+	else {
 		for (j = 0; j < p->height; j++) {
 			/* set pointers to start of the line in frame buffer
 			 * & backing store */
@@ -652,7 +650,7 @@ serialVFD_get_free_chars (Driver *drvthis)
  *
  * Converts the 5x7 matrix of bits stored in 7 bytes into a VFD specific
  * byte sequence.
- * 
+ *
  * \param drvthis  Pointer to driver structure.
  * \param n        Custom character to define [0 - (p->customchars)].
  * \param dat      Array of 7(=cellheight) bytes, each representing a pixel row
@@ -856,7 +854,7 @@ serialVFD_put_char (Driver *drvthis, int n)
  * ISO_8859_1 is enabled.
  * \param  drvthis  Pointer to driver
  * \param  i        Index of character in framebuffer to write
- * 
+ *
  */
 static void
 serialVFD_hw_write (Driver *drvthis, int i)

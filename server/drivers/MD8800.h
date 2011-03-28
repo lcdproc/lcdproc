@@ -22,7 +22,6 @@
 
 #ifndef MD8800_H
 #define MD8800_H
-#include "lcd.h"
 
 #define DEFAULT_CELL_WIDTH	5
 #define DEFAULT_CELL_HEIGHT	7

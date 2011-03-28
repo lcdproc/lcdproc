@@ -1,8 +1,6 @@
 #ifndef LCD_TEXT_H
 #define LCD_TEXT_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int  text_init (Driver *drvthis);
 MODULE_EXPORT void text_close (Driver *drvthis);
 MODULE_EXPORT int  text_width (Driver *drvthis);

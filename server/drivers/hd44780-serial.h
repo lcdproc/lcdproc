@@ -6,9 +6,6 @@
 #ifndef HD44780_SERIAL_H
 #define HD44780_SERIAL_H
 
-#include "lcd.h"
-#include "hd44780-low.h"
-
 #define SERIALIF_NAME_LENGTH 20
 #define DEFAULT_DEVICE       "/dev/lcd"
 

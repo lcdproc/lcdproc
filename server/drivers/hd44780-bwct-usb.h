@@ -2,7 +2,6 @@
 #define HD_BWCT_USB_H
 
 #include "lcd.h"		/* for Driver */
-#include "hd44780-low.h"
 
 /* vendor and product id */
 #define BWCT_USB_VENDORID	0x03DA

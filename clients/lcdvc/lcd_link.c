@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include "lcd_link.h"
 #include "vc_link.h"

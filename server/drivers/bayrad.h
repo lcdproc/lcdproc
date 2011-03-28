@@ -8,8 +8,6 @@
 #ifndef _BAYRAD_H
 #define _BAYRAD_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int  bayrad_init(Driver *drvthis);
 MODULE_EXPORT void bayrad_close(Driver *drvthis);
 MODULE_EXPORT int  bayrad_width(Driver *drvthis);

@@ -16,8 +16,6 @@
 #ifndef IMONLCD_H
 #define IMONLCD_H
 
-#include "lcd.h"
-
 /* mandatory functions (necessary for all drivers) */
 MODULE_EXPORT int  imonlcd_init (Driver *drvthis);
 MODULE_EXPORT void imonlcd_close (Driver *drvthis);

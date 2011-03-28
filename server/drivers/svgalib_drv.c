@@ -2,14 +2,11 @@
  * LCDd \c svga driver for displaying on SVGA screens.
  */
 
-/*
+/*-
    This is a hack of the curses driver.  It's my first attempt at SVGALIB
    programming so please send comments to <smh@remove_this@dr.com>.
 
    Simon Harrison.  27 Dec 1999.
-
-   IMPORTANT NOTE:  In order to make this work properly LCDd should not be
-   allowed to fork (-f option), otherwise k/b input won't work.
 
    Changes:
    9 Jan 2000:  Figured out svgalib driver needs a hack to main.c just like
@@ -19,17 +16,12 @@
    26 Jul 2005: adapted better to 0.5 API; changed font from 5x7 to 6x8;
    		take options from the config file: mode, size, brightness,
 		contrast, ...
-
 */
 
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <string.h>
-#include <errno.h>
 #include <vga.h>
 #include <vgagl.h>
 
@@ -316,14 +308,14 @@ svga_init (Driver *drvthis)
 	if (vga_init() != 0) {
 		report(RPT_ERR, "%s: vga_init() failed", drvthis->name);
 		return -1;
-	}	
+	}
 
 	/* check for legal VGA mode */
 	tmp = vga_getmodenumber(modestr);
 	if (tmp <= 0) {
 		report(RPT_ERR, "%s: illegal VGA mode %s", drvthis->name, modestr);
 		return -1;
-	}		
+	}
 	p->mode = tmp;
 
 	/* switch to selected VGA mode if it is available */
@@ -347,7 +339,7 @@ svga_init (Driver *drvthis)
 	if (vga_setmode (p->mode) < 0) {
 		report(RPT_ERR, "%s: unable to switch to mode %s", drvthis->name, modestr);
 		return -1;
-	}	
+	}
 	gl_setcontextvga(p->mode);	/* Physical screen context. */
 	gl_setrgbpalette();
 
@@ -356,7 +348,7 @@ svga_init (Driver *drvthis)
 	if (p->font == NULL) {
 		report(RPT_ERR, "%s: unable to allocate font memory", drvthis->name);
 		return -1;
-	}	
+	}
 
 	tmp = (p->brightness * 255) / 1000;
 	if (tmp <= 0)
@@ -388,7 +380,7 @@ svga_close (Driver *drvthis)
 		p->font = NULL;
 
 		free(p);
-	}	
+	}
 	drvthis->store_private_ptr(drvthis, NULL);
 
 	vga_setmode(TEXT);
@@ -614,8 +606,8 @@ svga_get_key (Driver *drvthis)
 			/* otherwise key not recognised; ignore it */
 			return NULL;
 		case '\t':	/* TAB, LF and CR serve as "Enter" */
-		case 0x0A:	
-		case 0x0D:	
+		case 0x0A:
+		case 0x0D:
 			return "Enter";
 		default:
 			buf[0] = (char) key & 0xFF;	/* make sure it fits into a char */

@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include "lcdvc.h"
 #include "vc_link.h"
@@ -79,7 +80,7 @@ int read_vcdata(void)
 			if (vc_buf == NULL) {
 				report(RPT_ERR, "malloc failure: %s", strerror(errno));
 				return -1;
-			}	
+			}
 			memset(vc_buf, ' ', vc_width * vc_height);
 		}
 	}

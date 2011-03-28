@@ -141,7 +141,7 @@ typedef struct hd44780_private_data {
 	// For incremental updates store last lcd contents
 	unsigned char *backingstore;
 
-	// The defineable characters
+	// The definable characters
 	CGram cc[NUM_CCs];
 	CGmode ccmode;
 

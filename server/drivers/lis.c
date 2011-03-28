@@ -52,20 +52,16 @@
  * 	2007/11/01	Change Linux-centric clone() to POSIX
  * 			threads for portability.
  */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 #include <pthread.h>
 
 #include <usb.h>
 #include <ftdi.h>
-
-#include <sys/syscall.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

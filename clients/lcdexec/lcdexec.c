@@ -20,6 +20,7 @@
 #include <signal.h>
 #include <time.h>
 #include <sys/wait.h>
+#include <stdlib.h>
 
 #include "getopt.h"
 
@@ -209,7 +210,7 @@ static void sigchld_handler(int signal)
 				p->status = status;
 				p->endtime = time(NULL);
 			}
-		}	
+		}
 	}
 }
 
@@ -342,7 +343,7 @@ static int process_configfile(char *configfile)
 	if (main_menu == NULL) {
 		report(RPT_ERR, "no main menu found in configuration");
 		return -1;
-	}	
+	}
 
 	return 0;
 }
@@ -364,12 +365,12 @@ static int connect_and_setup(void)
 	}
 	else {
 		struct utsname unamebuf;
-	
+
 		if (uname(&unamebuf) == 0)
 			sock_printf(sock, "client_set -name {%s %s}\n", progname, unamebuf.nodename);
-		else		
+		else
 			sock_printf(sock, "client_set -name {%s}\n", progname);
-	}	
+	}
 
 	/* Create our menu */
 	if (menu_sock_send(main_menu, NULL, sock) < 0) {
@@ -406,7 +407,7 @@ static int process_response(char *str)
 		if ((strcmp(argv[1], "select") == 0) ||
 		    (strcmp(argv[1], "leave") == 0)) {
 			MenuEntry *entry;
-			
+
 			if (argc < 3) {
 				report(RPT_WARNING, "Server gave invalid response");
 				free(str2);
@@ -434,13 +435,13 @@ static int process_response(char *str)
 
 				if (entry->type == MT_EXEC)
 					exec_command(entry);
-			}		
+			}
 		}
 		else if ((strcmp(argv[1], "plus") == 0) ||
 			 (strcmp(argv[1], "minus") == 0) ||
 			 (strcmp(argv[1], "update") == 0)) {
 			MenuEntry *entry;
-			
+
 			if (argc < 4) {
 				report(RPT_WARNING, "Server gave invalid response");
 				free(str2);
@@ -509,7 +510,7 @@ static int process_response(char *str)
 		// TODO: make it better
 		report(RPT_INFO, "Server said: \"%s\"", str);
 		exit_program(EXIT_SUCCESS);
-	}	
+	}
 	else if (strcmp(argv[0], "huh?") == 0) {
 		/* Report errors */
 		report(RPT_WARNING, "Server said: \"%s\"", str);
@@ -575,7 +576,7 @@ static int exec_command(MenuEntry *cmd)
 				default:
 					/* error ? */
 					break;
-			}		
+			}
 			buf[sizeof(buf)-1] ='\0';
 			envp[i] = strdup(buf);
 
@@ -651,7 +652,7 @@ static int show_procinfo_msg(ProcInfo *p)
 					else {
 						sock_printf(sock, "widget_set [%u] s2 1 3 {with code 0x%02X.}\n",
 								p->pid, WEXITSTATUS(p->status));
-					}			
+					}
 				}
 				else if (WIFSIGNALED(p->status)) {
 					sock_printf(sock, "widget_set [%u] s2 1 3 {killed by SIG %d.}\n",
@@ -680,7 +681,7 @@ static int show_procinfo_msg(ProcInfo *p)
 				else if (WIFSIGNALED(p->status)) {
 					sock_printf(sock, "widget_set [%u] s2 1 2 {killed by SIG %d}\n",
 							p->pid, WTERMSIG(p->status));
-				
+
 				}
 			}
 			return 1;
@@ -737,7 +738,7 @@ static int main_loop(void)
 				for (p = proc_queue; p != NULL; p = p->next) {
 					p->shown |= show_procinfo_msg(p);
 				}
-			}	
+			}
 		}
 		else {
 			process_response(buf);

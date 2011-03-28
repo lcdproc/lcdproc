@@ -33,8 +33,6 @@
 # include "config.h"
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
@@ -84,7 +82,7 @@ serialVFD_write_serial (Driver *drvthis, unsigned char *dat, size_t length)
  * Portwait = 2; as 1 + additional WR pulse width\n
  * Portwait = 3; as 2 + additional WR setup delay\n
  * Portwait >= 4; as 3 + additional wait delay to next command
- * 
+ *
  * \param drvthis  Pointer to driver
  * \param dat      Pointer to array storing the data
  * \param length   Number of bytes to write

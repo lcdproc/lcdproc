@@ -1,8 +1,6 @@
 #ifndef EYEBOXONE_H
 #define EYEBOXONE_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int  EyeboxOne_init (Driver *drvthis);
 MODULE_EXPORT void EyeboxOne_close (Driver *drvthis);
 MODULE_EXPORT int  EyeboxOne_width (Driver *drvthis);
@@ -21,7 +19,7 @@ MODULE_EXPORT const char * EyeboxOne_get_info (Driver *drvthis);
 
 #define DEFAULT_DEVICE		"/dev/ttyS1"
 #define DEFAULT_SPEED		19200
-#define DEFAULT_CURSOR		0	
+#define DEFAULT_CURSOR		0
 
 #endif
 

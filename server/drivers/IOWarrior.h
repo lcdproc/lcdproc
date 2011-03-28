@@ -27,9 +27,6 @@
 #ifndef IOWARRIOR_H
 #define IOWARRIOR_H
 
-#include <usb.h>
-#include "lcd.h"
-
 #define DEFAULT_SERIALNO	""
 #define DEFAULT_SIZE		"20x4"
 #define DEFAULT_BACKLIGHT	1
@@ -89,7 +86,7 @@ typedef struct IOWarrior_private_data {
   /* last LCD contents (for incremental updates) */
   unsigned char *backingstore;
 
-  /* defineable characters */
+  /* definable characters */
   CGram cc[NUM_CCs];
   CGmode ccmode;
 

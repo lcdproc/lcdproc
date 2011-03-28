@@ -42,7 +42,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
 
 #include "lcd.h"
 #include "CFontzPacket.h"
@@ -80,7 +79,7 @@ typedef struct CFontzPacket_private_data {
 	unsigned char *framebuf;
 	unsigned char *backingstore;
 
-	/* defineable characters */
+	/* definable characters */
 	CGmode ccmode;
 
 	int contrast;

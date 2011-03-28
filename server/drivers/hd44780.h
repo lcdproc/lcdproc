@@ -17,8 +17,6 @@
 #ifndef HD44780_H
 #define HD44780_H
 
-#include "lcd.h"
-
 MODULE_EXPORT int  HD44780_init(Driver *drvthis);
 MODULE_EXPORT void HD44780_close(Driver *drvthis);
 MODULE_EXPORT int  HD44780_width(Driver *drvthis);

@@ -22,13 +22,6 @@
 #ifndef CWLNX_H
 #define CWLNX_H
 
-#include "lcd.h"
-
-// #define DEFAULT_CONTRAST 560
-// #define DEFAULT_BRIGHTNESS 60
-// #define DEFAULT_OFFBRIGHTNESS 0
-// #define DEFAULT_EXITBRIGHTNESS 0
-
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_BACKLIGHT	1
 #define DEFAULT_BRIGHTNESS	700

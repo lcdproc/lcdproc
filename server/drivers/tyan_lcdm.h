@@ -20,8 +20,6 @@
 #ifndef TYAN_LCDM_H
 #define TYAN_LCDM_H
 
-#include "lcd.h"
-
 #define DEFAULT_CELL_WIDTH	5
 #define DEFAULT_CELL_HEIGHT	8
 #define DEFAULT_DEVICE		"/dev/lcd"
@@ -54,19 +52,19 @@ typedef struct tyan_lcdm_private_data {
 	char device[200];
 	int speed;
 	int fd;
-	
+
 	unsigned char *framebuf;
 	unsigned char *backingstore;
-	
+
 	int width;
 	int height;
 	int cellwidth;
 	int cellheight;
 
-	/* defineable characters */
+	/* definable characters */
 	CGram cc[NUM_CCs];
 	CGmode ccmode;
-} PrivateData;	
+} PrivateData;
 
 
 /* API: variables for the server core */

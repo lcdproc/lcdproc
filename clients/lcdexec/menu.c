@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <strings.h>
+#include <stdlib.h>
 
 #include "shared/report.h"
 #include "shared/configfile.h"

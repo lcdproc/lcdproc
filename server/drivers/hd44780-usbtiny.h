@@ -2,7 +2,6 @@
 #define HD_USBTINY_H
 
 #include "lcd.h"		/* for Driver */
-#include "hd44780-low.h"
 
 /* vendor and product id */
 #define USBTINY_VENDORID	0x03EB

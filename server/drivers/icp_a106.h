@@ -31,7 +31,6 @@
 #ifndef ICP_A106_H
 #define ICP_A106_H
 
-#include "lcd.h"
 MODULE_EXPORT int  icp_a106_init (Driver *drvthis);
 MODULE_EXPORT void icp_a106_close (Driver *drvthis);
 MODULE_EXPORT int  icp_a106_width (Driver *drvthis);

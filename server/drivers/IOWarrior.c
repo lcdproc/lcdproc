@@ -30,10 +30,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
 #include <errno.h>
-#include <syslog.h>
+#include <usb.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -591,7 +590,7 @@ IOWarrior_flush(Driver *drvthis)
     }
   }
 
-  /* Check which defineable chars we need to update */
+  /* Check which definable chars we need to update */
   count = 0;
   for (i = 0; i < NUM_CCs; i++) {
     if (!p->cc[i].clean) {

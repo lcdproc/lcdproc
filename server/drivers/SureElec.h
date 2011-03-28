@@ -4,8 +4,6 @@
 #ifndef SUREELEC_H
 #define SUREELEC_H
 
-#include "lcd.h"
-
 #define DEFAULT_DEVICE		"/dev/ttyUSB0"
 #define DEFAULT_SPEED		9600
 #define DEFAULT_LINEWRAP	1

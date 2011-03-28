@@ -69,6 +69,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "lcd.h"
 #include "sed1330.h"

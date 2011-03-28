@@ -22,25 +22,21 @@
 // package for further details.                                         //
 //////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
-#include <string.h>
-#include <errno.h>
-#include <time.h>
-#include "port.h"
-#include "timing.h"
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+
 #include "lcd.h"
 #include "stv5730.h"
 #include "report.h"
-
+#include "port.h"
+#include "timing.h"
 
 #ifndef LPTPORT
 #define LPTPORT 0x378

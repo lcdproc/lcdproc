@@ -1,8 +1,6 @@
 #ifndef CFONTZ_H
 #define CFONTZ_H
 
-#include "lcd.h"
-
 #define DEFAULT_CELL_WIDTH	6
 #define DEFAULT_CELL_HEIGHT	8
 #define DEFAULT_CONTRAST	560

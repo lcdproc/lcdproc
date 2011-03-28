@@ -32,9 +32,6 @@
 #ifndef REPORT_H
 #define REPORT_H
 
-#include <stdarg.h>
-#include <stdio.h>
-
 /* Reporting levels */
 /**
  * \def RPT_CRIT
