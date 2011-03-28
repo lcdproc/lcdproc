@@ -29,6 +29,7 @@ v.0.5dev (ongoing development)
  * convert i2500vfd and mdm166a driver to use 8 byte bitmap custom character
  * ula200: convert custom characters to 8 byte bitmap
  * Build system: Fix trying to install svga driver twice
+ + imon: Add bignum support (Y. Scheglyuk)
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)

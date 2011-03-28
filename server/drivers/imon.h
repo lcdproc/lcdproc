@@ -26,27 +26,27 @@
 #ifndef IMON_H
 #define IMON_H
 
-MODULE_EXPORT int  imon_init (Driver *drvthis);
-MODULE_EXPORT void imon_close (Driver *drvthis);
-MODULE_EXPORT int  imon_width (Driver *drvthis);
-MODULE_EXPORT int  imon_height (Driver *drvthis);
-MODULE_EXPORT int  imon_cellwidth (Driver *drvthis);
-MODULE_EXPORT int  imon_cellheight (Driver *drvthis);
-MODULE_EXPORT void imon_clear (Driver *drvthis);
-MODULE_EXPORT void imon_flush (Driver *drvthis);
-MODULE_EXPORT void imon_string (Driver *drvthis, int x, int y, const char string[]);
-MODULE_EXPORT void imon_chr (Driver *drvthis, int x, int y, char c);
-MODULE_EXPORT int  imon_icon (Driver *drvthis, int x, int y, int icon);
-MODULE_EXPORT const char *imon_get_info (Driver *drvthis);
-MODULE_EXPORT void imon_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void imon_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT int  imon_init(Driver *drvthis);
+MODULE_EXPORT void imon_close(Driver *drvthis);
+MODULE_EXPORT int  imon_width(Driver *drvthis);
+MODULE_EXPORT int  imon_height(Driver *drvthis);
+MODULE_EXPORT int  imon_cellwidth(Driver *drvthis);
+MODULE_EXPORT int  imon_cellheight(Driver *drvthis);
+MODULE_EXPORT void imon_clear(Driver *drvthis);
+MODULE_EXPORT void imon_flush(Driver *drvthis);
+MODULE_EXPORT void imon_string(Driver *drvthis, int x, int y, const char string[]);
+MODULE_EXPORT void imon_chr(Driver *drvthis, int x, int y, char c);
+MODULE_EXPORT int  imon_icon(Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT const char *imon_get_info(Driver *drvthis);
+MODULE_EXPORT void imon_vbar(Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void imon_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT int  imon_get_free_chars(Driver *drvthis);
+MODULE_EXPORT void imon_num(Driver *drvthis, int x, int num);
 
 /**
  * these are not (yet?) supported by the iMON IR/VFD kernel module
  */
-//MODULE_EXPORT int  imon_get_free_chars (Driver *drvthis);
-//MODULE_EXPORT void imon_set_char (Driver *drvthis, int n, char *dat);
-//MODULE_EXPORT void imon_num (Driver *drvthis, int x, int num);
+//MODULE_EXPORT void imon_set_char(Driver *drvthis, int n, char *dat);
 //MODULE_EXPORT int  imon_get_brightness(Driver *drvthis, int state);
 //MODULE_EXPORT void imon_set_brightness(Driver *drvthis, int state, int promille);
 //MODULE_EXPORT void imon_backlight(Driver *drvthis, int on);
