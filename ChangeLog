@@ -30,6 +30,7 @@ v.0.5dev (ongoing development)
  * ula200: convert custom characters to 8 byte bitmap
  * Build system: Fix trying to install svga driver twice
  + imon: Add bignum support (Y. Scheglyuk)
+ * hd44780/ethlcd: fix LCDd hang up on network error (exits now) (M. Bialonczyk)
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)

@@ -1,15 +1,14 @@
 #ifndef HD_ETHLCD_H
 #define HD_ETHLCD_H
 
-#include "lcd.h"		/* for Driver */
-
-// initialise this particular driver
+/* initialise this particular driver */
 int hd_init_ethlcd(Driver *drvthis);
 
-#define ETHLCD_DRV_NAME "ethlcd"
-#define DEFAULT_ETHLCD_PORT 2425
+#define ETHLCD_DRV_NAME      "ethlcd"
+#define DEFAULT_ETHLCD_PORT  2425
+#define ETHLCD_TIMEOUT       5
 
-// ethlcd protocol constants:
+/* ethlcd protocol constants: */
 #define ETHLCD_SEND_INSTR               0x01
 #define ETHLCD_SEND_DATA                0x02
 #define ETHLCD_GET_BUTTONS              0x03
