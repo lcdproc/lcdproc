@@ -24,22 +24,20 @@
 // package for further details.                                         //
 //////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-
-#include "i2500vfdfm.h"
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <ftdi.h>
+
 #include "lcd.h"
 #include "i2500vfd.h"
+#include "glcd_font5x8.h"
 #include "report.h"
-
-#include <ftdi.h>
 
 // The display itself stores three pixels in one byte
 // We waste a little memory as we store one pixel per byte
@@ -89,7 +87,7 @@ drawchar2fb (Driver *drvthis, int x, int y, unsigned char z)
     int font_x, font_y;
     for (font_y = 0; font_y < 8; font_y++) {
         for (font_x = 5; font_x > -1; font_x--) {
-            if ((i2500vfd_fontmap[z][font_y] & 1<<font_x) == 1<<font_x)
+            if ((glcd_iso8859_1[z][font_y] & 1<<font_x) == 1<<font_x)
                 p->framebuf[INTRA2NET_VFD_XSHIFT+x*6-font_x + (y*8+font_y)*140] = 1;
             else
                 p->framebuf[INTRA2NET_VFD_XSHIFT+x*6-font_x + (y*8+font_y)*140] = 0;
@@ -340,7 +338,7 @@ i2500vfd_set_char (Driver *drvthis, int n, char *dat)
         return;
 
     for (row = 0; row < CELLHEIGHT; row++) {
-        i2500vfd_fontmap[n][row] = dat[row] & mask;
+        glcd_iso8859_1[n][row] = dat[row] & mask;
     }
 }
 
@@ -396,7 +394,7 @@ i2500vfd_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
         return;
     }
 
-    offset = INTRA2NET_VFD_XSHIFT + 2 + x*CELLWIDTH + y*INTRA2NET_VFD_XSIZE*CELLHEIGHT;
+    offset = INTRA2NET_VFD_XSHIFT + 2 + x*CELLWIDTH + (y*CELLHEIGHT+1)*INTRA2NET_VFD_XSIZE;
 
     // calculate length of bar
     pixels = len*CELLWIDTH*promille/1000;
@@ -419,19 +417,5 @@ i2500vfd_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 MODULE_EXPORT int
 i2500vfd_icon (Driver *drvthis, int x, int y, int icon)
 {
-    switch (icon) {
-        case ICON_BLOCK_FILLED:
-            i2500vfd_chr(drvthis, x, y, 255);
-            break;
-        case ICON_HEART_FILLED:
-            i2500vfd_chr(drvthis, x, y, 3);
-            break;
-        case ICON_HEART_OPEN:
-            i2500vfd_chr(drvthis, x, y, 4);
-            break;
-        default:
-            return -1;
-    }
-
-    return 0;
+    return (glcd_icon5x8(drvthis, x, y, icon));
 }

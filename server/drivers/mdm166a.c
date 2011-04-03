@@ -1,23 +1,17 @@
 /** \file server/drivers/mdm166a.c
  * LCDd \c mdm166a driver for Futuba MDM166A displays.
  *
- * The 96x16 pixel dot matrix area is used for 2x16 characters with a
- * 6x8 pixel font. The icons on the display are supported by using the
- * output-function.
+ * The 96x16 pixel dot matrix area is used for 16x2 characters with a
+ * 5x8 pixel font (in a 6x8 cell). The icons on the display are supported by
+ * using the output-function.
  *
  * The display features a self-running clock mode, which can be
  * activated in the config file and will be shown on LCDproc shutdown.
  */
 
 /*-
- * (C) 2010 Christoph Rasim (christoph@rasim.net)
- *
- * Code here is basend on i2500vfd.c:
- * (C) 2003,2007 Intra2net AG
- *
- * i2500vfdfm.c is used for the font, no need for another copy of it.
- * The HD44780 font in i2500vfdfm.c was taken from Michael Reinelt /
- * lcd4linux and is (C) 2000 by him.
+ * Copyright (C) 2003,2007 Intra2net AG
+ *               2010 Christoph Rasim (christoph@rasim.net)
  *
  * This driver is released under the GPL. See file COPYING in this
  * package for further details.
@@ -35,11 +29,11 @@
 
 #include "lcd.h"
 #include "mdm166a.h"
-#include "i2500vfdfm.h"
+#include "glcd_font5x8.h"
 #include "report.h"
 
 /*
- * The display itself stores eight pixels in one byte We waste a little
+ * The display itself stores eight pixels in one byte. We waste a little
  * memory as we store one pixel per byte as we want to keep the drawing code
  * simple. Take a look at mdm166a_flush for the conversion.
  */
@@ -118,7 +112,7 @@ drawchar2fb(Driver *drvthis, int x, int y, unsigned char z)
 
 	for (font_y = 0; font_y < 8; font_y++) {
 		for (font_x = 5; font_x > -1; font_x--) {
-			if ((i2500vfd_fontmap[z][font_y] & 1 << font_x) == 1 << font_x)
+			if ((glcd_iso8859_1[z][font_y] & 1 << font_x) == 1 << font_x)
 				p->framebuf[x * 6 - 1 - font_x + (y * 8 + font_y) * MDM166A_XSIZE] = 1;
 			else
 				p->framebuf[x * 6 - 1 - font_x + (y * 8 + font_y) * MDM166A_XSIZE] = 0;
@@ -455,10 +449,12 @@ mdm166a_chr(Driver *drvthis, int x, int y, char c)
 
 
 /**
- * Define a custom character and write it to the VFD.
+ * Define a custom character and write it to the VFD. As the font is completely
+ * held in memory every character may be overridden.
+ *
  * \param drvthis  Pointer to driver structure.
- * \param n        Custom character to define [0 - (p->customchars)].
- * \param dat      Array of 7(=cellheight) bytes, each representing a pixel row
+ * \param n        Custom character to define [0 - 255].
+ * \param dat      Array of 8 (=cellheight) bytes, each representing a pixel row
  *                 starting from the top to bottom. \n
  *                 The bits in each byte represent the pixels where the LSB
  *                 (least significant bit) is the rightmost pixel in each pixel row.
@@ -475,7 +471,7 @@ mdm166a_set_char(Driver *drvthis, int n, char *dat)
 		return;
 
 	for (row = 0; row < CELLHEIGHT; row++) {
-		i2500vfd_fontmap[n][row] = dat[row] & mask;
+		glcd_iso8859_1[n][row] = dat[row] & mask;
 	}
 }
 
@@ -496,7 +492,7 @@ mdm166a_vbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 	unsigned int offset;
 	int i, j, pixels;
 
-	debug(RPT_INFO, "%s: x=%i, y=%i, len=%i, promille=%i, options=%i",
+	debug(RPT_DEBUG, "%s: x=%i, y=%i, len=%i, promille=%i, options=%i",
 	      __FUNCTION__, x, y, len, promille, pattern);
 
 	x--;
@@ -537,7 +533,7 @@ mdm166a_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 	unsigned int offset;
 	int i, j, pixels;
 
-	debug(RPT_INFO, "%s: x=%i, y=%i, len=%i, promille=%i, options=%i",
+	debug(RPT_DEBUG, "%s: x=%i, y=%i, len=%i, promille=%i, options=%i",
 	      __FUNCTION__, x, y, len, promille, pattern);
 
 	x--;
@@ -551,7 +547,7 @@ mdm166a_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 	 * Calculate starting point in framebuffer. Leave the leftmost column
 	 * empty (+1). Shorten the length by 1 then.
 	 */
-	offset = x * CELLWIDTH + y * MDM166A_XSIZE * CELLHEIGHT + 1;
+	offset = x * CELLWIDTH + (y * CELLHEIGHT + 1) * MDM166A_XSIZE + 1;
 
 	/* calculate length of bar */
 	pixels = len * CELLWIDTH * promille / 1000 - 1;
@@ -580,21 +576,7 @@ mdm166a_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 MODULE_EXPORT int
 mdm166a_icon(Driver *drvthis, int x, int y, int icon)
 {
-	switch (icon) {
-	    case ICON_BLOCK_FILLED:
-		mdm166a_chr(drvthis, x, y, 255);
-		break;
-	    case ICON_HEART_FILLED:
-		mdm166a_chr(drvthis, x, y, 3);
-		break;
-	    case ICON_HEART_OPEN:
-		mdm166a_chr(drvthis, x, y, 4);
-		break;
-	    default:
-		return -1;
-	}
-
-	return 0;
+	return (glcd_icon5x8(drvthis, x, y, icon));
 }
 
 

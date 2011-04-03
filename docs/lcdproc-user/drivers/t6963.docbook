@@ -9,8 +9,9 @@ displays that can often act as a screen.
 
 <para>
 The driver uses the text mode of the chipset with a custom font loaded which
-resembles the characters from Code Page 437. If your display has a 'Font Select'
-pin it must be wired to use the 6x8 font.
+resembles the characters from HD44780 ROM 002 character set (European
+character set). If your display has a 'Font Select' pin it must be wired to
+use the 6x8 font.
 </para>
 
 <para>
@@ -130,11 +131,9 @@ can be done by specifying "--enable-drivers=all" or by
     <property>Size</property> = &parameters.size;
   </term>
   <listitem><para>
-    Set display size in characters [default: <literal>20x6</literal>]. Do set
-    it as close as possible to the pixel size of the display (based on a
-    <literal>6x8</literal> font). Otherwise characters will repeat on the
-    right of a line. Example: <literal>21x8</literal> on a <literal>128x64</literal>
-    display.
+    Set display size in pixels [default: <literal>128x64</literal>]. The size
+    in characters is automatically calculated assuming the font size is set to
+    <literal>6x8</literal> for the display.
   </para></listitem>
 </varlistentry>
 

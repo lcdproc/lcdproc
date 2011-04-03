@@ -25,12 +25,10 @@ MODULE_EXPORT void sed1520_clear (Driver *drvthis);
 MODULE_EXPORT void sed1520_flush (Driver *drvthis);
 MODULE_EXPORT void sed1520_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void sed1520_chr (Driver *drvthis, int x, int y, char c);
-
-MODULE_EXPORT void sed1520_old_vbar (Driver *drvthis, int x, int len);
-MODULE_EXPORT void sed1520_old_hbar (Driver *drvthis, int x, int y, int len);
+MODULE_EXPORT void sed1520_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
+MODULE_EXPORT void sed1520_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void sed1520_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  sed1520_icon (Driver *drvthis, int x, int y, int icon);
-
 MODULE_EXPORT void sed1520_set_char (Driver *drvthis, int n, char *dat);
 
 #endif

@@ -16,14 +16,20 @@
 
 #define DEFAULT_CELL_WIDTH 6
 #define DEFAULT_CELL_HEIGHT 8
-#define DEFAULT_SIZE "20x6"
+#define DEFAULT_SIZE "128x64"
 #define DEFAULT_PORT 0x378
 
-#define T6963_MAX_WIDTH  40	/* These value are for 240x128 */
-#define T6963_MAX_HEIGHT 16
+/*
+ * These are the maximum values the controller supports in single-scan
+ * setting (note that heigth of 128 is possible with dual-scan setting, too.
+ * This will not work with this driver, but there is no possibility to check
+ * this in software.
+ */
+#define T6963_MAX_WIDTH  80 * DEFAULT_CELL_WIDTH
+#define T6963_MAX_HEIGHT 128
 
-/* RAM layout base addresses (for 8 KB RAM) */
-#define TEXT_BASE	0x0000	/* 1K, fine for 40x16 */
+/* RAM layout base addresses (suitable for 8 KB RAM) */
+#define TEXT_BASE	0x0000	/* 1K, fine for 40x16 or 80x8 */
 #define GRAPHIC_BASE	0x0400	/* 5K, fine for 240x128 */
 #define CHARGEN_BASE	0x1800	/* 2K, required for 256 CC */
 

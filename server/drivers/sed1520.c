@@ -15,18 +15,6 @@
  * COPYING file distributed with this package.
  */
 
-/*-
- * Driver history:
- * 2001, Guillaume Filion <gfk@logidac.com>:
- *  - Moved the delay timing code by Charles Steinkuehler to timing.h.
- * 2011, Markus Dolze:
- *  - Add 68-familiy style interface support and make it configurable
- *  - Make delay configurable
- *  - Correct swapped display halves
- *  - Resurrect vBar / hBar functions
- *  - Fix icon definitions and modify set_char for common data format
- */
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -37,10 +25,11 @@
 
 #include "lcd.h"
 #include "sed1520.h"
+#include "glcd_font5x8.h"
+#include "sed1520fm.h"
 #include "report.h"
 #include "port.h"
 #include "timing.h"
-#include "sed1520fm.h"
 #include "lpt-port.h"
 
 #define uPause timing_uPause
@@ -88,7 +77,7 @@ MODULE_EXPORT char *symbol_prefix = "sed1520_";
  * \note It is a little code duplication having writecommand and writedata
  *       both, but I leave it that way.
  */
-void
+static void
 writecommand(PrivateData *p, int value, int chip)
 {
     if (p->interface == 68) {
@@ -121,7 +110,7 @@ writecommand(PrivateData *p, int value, int chip)
  * \param value  Data byte to write
  * \param chip   Bitmap of controllers to send value to
  */
-void
+static void
 writedata(PrivateData *p, int value, int chip)
 {
     if (p->interface == 68) {
@@ -148,7 +137,7 @@ writedata(PrivateData *p, int value, int chip)
  * \param p     Pointer to private data structure
  * \param page  Page (=row) number (0-3)
  */
-void
+static void
 selectpage(PrivateData *p, int page)
 {
     writecommand(p, PAGE_ADR + (page & 0x03), CS1 + CS2);
@@ -160,7 +149,7 @@ selectpage(PrivateData *p, int page)
  * \param column  Select column (segment) in controller (0-60)
  * \param chip    Bitmap of controllers to send value to
  */
-void
+static void
 selectcolumn(PrivateData *p, int column, int chip)
 {
     writecommand(p, COLUMN_ADR + (column & 0x7F), chip);
@@ -191,7 +180,7 @@ selectcolumn(PrivateData *p, int column, int chip)
  * \param y         Line (zero-based)
  * \param z         Character index in fontmap
  */
-void
+static void
 drawchar2fb(unsigned char *framebuf, int x, int y, unsigned char z)
 {
     int i, j;
@@ -205,7 +194,7 @@ drawchar2fb(unsigned char *framebuf, int x, int y, unsigned char z)
 
 	/* gather the bits from the fontmap for each raster row */
 	for (j = 0; j < CELLHEIGHT; j++)
-	    k |= ((fontmap[(int)z][j] >> (i - 1)) & 0x01) << j;
+	    k |= ((glcd_iso8859_1[(int)z][j] >> (i - 1)) & 0x01) << j;
 
 	/* And store it in framebuffer pixel column */
 	framebuf[(y * PIXELWIDTH) + (x * CELLWIDTH) + (CELLWIDTH - i)] = k;
@@ -401,14 +390,12 @@ sed1520_chr(Driver * drvthis, int x, int y, char c)
  * API: This function draws a number num into the last 3 rows of the
  * framebuffer at 1-based position x. It should draw a 4-row font, but me
  * thinks this would look a little stretched. When num=10 a colon is drawn.
- *
- * FIXME: make big numbers use less memory
  */
 MODULE_EXPORT void
 sed1520_num(Driver * drvthis, int x, int num)
 {
     PrivateData *p = drvthis->private_data;
-    int z, c, i, s;
+    int z, c;
 
     x--;
 
@@ -416,38 +403,20 @@ sed1520_num(Driver * drvthis, int x, int num)
     if ((x >= WIDTH) || (num < 0) || (num > 10))
 	return;
 
-    if (num == 10) {		/* colon */
-	for (z = 0; z < 3; z++) {	/* 3 rows at 8 dots */
-	    for (c = 0; c < 6; c++) {	/* 6 columns */
-		s = 0;
-		/* convert font definition to bitmap */
-		for (i = 0; i < 8; i++) {
-		    s >>= 1;
-		    if (*(fontbigdp[(z * 8) + i] + c) == '.')
-			s |= 0x80;
-		}
-		/* Draw directly into framebuffer */
-		if ((x * CELLWIDTH + c >= 0) && (x * CELLWIDTH + c < PIXELWIDTH))
-		    p->framebuf[((z + 1) * PIXELWIDTH) + (x * CELLWIDTH) + c] = s;
-	    }
-	}
-    }
-    else {			/* digits 0 - 9 */
-	for (z = 0; z < 3; z++) {	/* 3 rows at 8 dots */
-	    for (c = 0; c < 18; c++) {	/* 18 columns */
-		s = 0;
-		for (i = 0; i < 8; i++) {
-		    s >>= 1;
-		    if (*(fontbignum[num][z * 8 + i] + c) == '.')
-			s |= 0x80;
-		}
-		if ((x * CELLWIDTH + c >= 0) && (x * CELLWIDTH + c < PIXELWIDTH))
-		    p->framebuf[((z + 1) * PIXELWIDTH) + (x * CELLWIDTH) + c] = s;
+    /*
+     * For each page (= row of 8 dots) starting in page 1 (page 0 is left
+     * empty - thus the numbers are aligned at the bottom of the display),
+     * copy <width> number of bytes into the framebuffer.
+     */
+    for (z = 0; z < 3; z++) {
+	for (c = 0; c < widtbl_NUM[num]; c++) {
+	    if ((x * CELLWIDTH + c >= 0) && (x * CELLWIDTH + c < PIXELWIDTH)) {
+		p->framebuf[((z + 1) * PIXELWIDTH) + (x * CELLWIDTH) + c] =
+		    chrtbl_NUM[num][c * 3 + z];
 	    }
 	}
     }
 }
-
 
 /**
  * API: Changes the font of character n to a pattern given by *dat.
@@ -470,7 +439,7 @@ sed1520_set_char(Driver * drvthis, int n, char *dat)
 	return;
 
     for (row = 0; row < CELLHEIGHT; row++)
-	fontmap[n][row] = dat[row] & mask;
+	glcd_iso8859_1[n][row] = dat[row] & mask;
 }
 
 /**
@@ -534,7 +503,7 @@ sed1520_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
      * column in a page. Use 5 dots in the middle (0x3E).
      */
     for (i = 0; i < pixels; i++)
-	p->framebuf[(y * PIXELWIDTH) + (x * CELLWIDTH) + i] = 0x3E;
+	p->framebuf[(y * PIXELWIDTH) + (x * CELLWIDTH) + i] = 0x7C;
 }
 
 /**
@@ -543,44 +512,5 @@ sed1520_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT int
 sed1520_icon(Driver * drvthis, int x, int y, int icon)
 {
-    static char heart_open[] =
-    {
-	b_OOOOO,
-	b_O_O_O,
-	b______,
-	b______,
-	b______,
-	b_O___O,
-	b_OO_OO,
-	b_OOOOO
-    };
-
-    static char heart_filled[] =
-    {
-	b_OOOOO,
-	b_O_O_O,
-	b__O_O_,
-	b__OOO_,
-	b__OOO_,
-	b_O_O_O,
-	b_OO_OO,
-	b_OOOOO
-    };
-
-    switch (icon) {
-	case ICON_BLOCK_FILLED:
-	    sed1520_chr(drvthis, x, y, 255);
-	    break;
-	case ICON_HEART_FILLED:
-	    sed1520_set_char(drvthis, 0, heart_filled);
-	    sed1520_chr(drvthis, x, y, 0);
-	    break;
-	case ICON_HEART_OPEN:
-	    sed1520_set_char(drvthis, 0, heart_open);
-	    sed1520_chr(drvthis, x, y, 0);
-	    break;
-	default:
-	    return -1;
-    }
-    return 0;
+	return (glcd_icon5x8(drvthis, x, y, icon));
 }
