@@ -32,6 +32,7 @@ v.0.5dev (ongoing development)
  + imon: Add bignum support (Y. Scheglyuk)
  * hd44780/ethlcd: fix LCDd hang up on network error (exits now) (M. Bialonczyk)
  + New common 5x8 font for t6963, sed1520, mdm166a and i2500vfd
+ * t6963: Size has now to be configured in pixels instead of characters
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)
