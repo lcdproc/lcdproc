@@ -115,8 +115,12 @@ typedef struct imon_private_data {
 static char * imon_charmaps[] = {
 	"none",
 	"hd44780_euro",
+#ifdef EXTRA_CHARMAPS
 	"hd44780_koi8_r",
+	"hd44780_cp1251",
+	"hd44780_8859_5",
 	"upd16314",
+#endif
 	NULL
 };
 

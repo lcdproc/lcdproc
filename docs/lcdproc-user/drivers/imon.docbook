@@ -84,11 +84,14 @@ For further details, please consult the page and the forum at
     {
       <emphasis><parameter><literal>hd44780_euro</literal></parameter></emphasis> |
       <parameter><literal>hd44780_koi8_r</literal></parameter> |
+      <parameter><literal>hd44780_cp1251</literal></parameter> |
+      <parameter><literal>hd44780_8859_5</literal></parameter> |
       <parameter><literal>upd16314</literal></parameter> |
       <parameter><literal>none</literal></parameter>
     }
   </term>
-  <listitem><para>
+  <listitem>
+    <para>
       Set the character mapping depending on the display you have:
       <itemizedlist>
         <listitem><para>
@@ -96,8 +99,29 @@ For further details, please consult the page and the forum at
           a ROM mask supporting the european charset (ROM code A02).
         </para></listitem>
         <listitem><para>
+          The <literal>none</literal> charmap does not translate any characters
+          and is only useful for debugging.
+        </para></listitem>
+      </itemizedlist>
+      You only need to set this parameter if you have a non-standard charmap.
+    </para>
+    <para>
+      If LCDproc was configured with '--enable-extra-charmaps' option the
+      following character mappings are available, too:
+      <itemizedlist>
+        <listitem><para>
           <literal>hd44780_koi8_r</literal> maps input from a client in
           Russian KOI8-R to displays with a ROM mask supporting the european
+          charset (ROM code A02).
+        </para></listitem>
+        <listitem><para>
+          <literal>hd44780_cp1251</literal> maps input from a client in
+          Russian CP1251 (Windows-1251) to displays with a ROM mask supporting
+          the european charset (ROM code A02).
+        </para></listitem>
+        <listitem><para>
+          <literal>hd44780_8859_5</literal>  maps input from a client in
+          Russian ISO 8859-5 to displays with a ROM mask supporting the european
           charset (ROM code A02).
         </para></listitem>
         <listitem><para>
@@ -106,23 +130,16 @@ For further details, please consult the page and the forum at
           character set. If your display has ROM code 001 character set you
           may use the <literal>hd44780_euro</literal> charmap instead.
         </para></listitem>
-        <listitem><para>
-          The <literal>none</literal> charmap does not translate any characters.
-          It displays the characters the display controllers actually has
-          stored in its CGROM for that position instead. This setting is
-          intended for debugging purpose.
-        </para></listitem>
       </itemizedlist>
-      You only need to set this parameter if you have a non-standard charmap.
-
-      <tip>
-        <para>
-        See <filename>server/drivers/hd44780-charset.h</filename>
-        in <package>LCDproc</package>'s source directory for the actual
-        mappings.
-        </para>
-      </tip>
-  </para></listitem>
+    </para>
+    <tip>
+      <para>
+      See <filename>server/drivers/hd44780-charset.h</filename>
+      in <package>LCDproc</package>'s source directory for the actual
+      mappings.
+      </para>
+    </tip>
+  </listitem>
 </varlistentry>
 </variablelist>
 

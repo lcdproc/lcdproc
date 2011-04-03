@@ -39,7 +39,7 @@ AC_DEFINE_UNQUOTED([SYSTEM_HOST], [$ac_system_host], [Set this to your system ho
 dnl treat Darwin special in Makefiles
 AM_CONDITIONAL(DARWIN, test x$ac_system_host = xDarwin)
 
-AC_MSG_CHECKING(whether to enable debugging)
+AC_MSG_CHECKING([whether to enable debugging])
 AC_ARG_ENABLE(debug,
   [AS_HELP_STRING([--enable-debug], [show debug information])],
   [ if test "$enableval" != "no"; then
@@ -93,7 +93,7 @@ AC_CHECK_HEADERS(procfs.h sys/procfs.h sys/loadavg.h utmpx.h)
 dnl Some versions of Solaris require -lelf for -lkvm
 AC_CHECK_LIB(kvm, kvm_open,[
   LIBS="-lkvm $LIBS"
-],[AC_MSG_CHECKING(for kvm_open in -lkvm with -lelf)
+],[AC_MSG_CHECKING([for kvm_open in -lkvm with -lelf])
    AC_CACHE_VAL(ac_cv_lib_kvm_with_elf,
    [ac_save_LIBS="$LIBS"
     LIBS="-lkvm -lelf $LIBS"
@@ -158,7 +158,7 @@ if test "$ac_cv_port_have_lpt" = yes; then
 	AC_DEFINE([HAVE_PCSTYLE_LPT_CONTROL], [1],
 		[Define if you have a parallel port and LCDproc knows how to talk to it.])
 else
-	AC_MSG_WARN([Can't talk to the parallel port, disabling drivers that use it.])
+	AC_MSG_WARN([Cannot talk to the parallel port, disabling drivers that use it.])
 fi
 
 x_ac_have_i2c=no
@@ -409,6 +409,15 @@ AC_ARG_ENABLE(stat-smbfs,
 	[ if test "$enableval" != "no" ; then
 		AC_DEFINE(STAT_SMBFS, [1],
 			[Define to 1 to display SMBFS filesystem stats in lcdproc client])
+	fi ]
+)
+
+AC_ARG_ENABLE(extra-charmaps,
+	[AS_HELP_STRING([--enable-extra-charmaps],
+		[enable additional character mapping tables in drivers])],
+	[ if test "$enableval" != "no" ; then
+		AC_DEFINE(EXTRA_CHARMAPS, [1],
+			[Define to 1 to enable additional charmaps in drivers])
 	fi ]
 )
 
