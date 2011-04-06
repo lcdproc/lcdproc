@@ -233,7 +233,7 @@ ula200_ftdi_read_response(Driver *drvthis)
 /**
  * Write a command to the display. Adds the STX and ETX header/trailer.
  *
- * \param p        the private data
+ * \param drvthis  Pointer to driver structure
  * \param data     the data bytes
  * \param length   the number of bytes in @p data which are valid
  * \param escape   if the data should be escaped (see the User's Guide of the
