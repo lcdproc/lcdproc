@@ -2102,7 +2102,7 @@ You have all the tools and the code to build it yourself and to customize the be
 <listitem><para>Some electronic knowledge and familiarity with the soldering iron</para></listitem>
 <listitem><para>A PIC16F84 (I used PIC16F84A) or PIC16C54</para></listitem>
 <listitem><para><ulink url="http://jdm.homepage.dk/newpic.htm">JDM PIC programmer</ulink></para></listitem>
-<listitem><para><ulink url="http://gputils.sourceforge.net/">gputils</ulink> and <ulink url="hyvatti.iki.fi/~jaakko/pic/picprog.html">picprog</ulink> installed on your GNU/Linux box</para></listitem>
+<listitem><para><ulink url="http://gputils.sourceforge.net/">gputils</ulink> and <ulink url="http://hyvatti.iki.fi/~jaakko/pic/picprog.html">picprog</ulink> installed on your GNU/Linux box</para></listitem>
 </itemizedlist>
 </para>
 </sect4>
