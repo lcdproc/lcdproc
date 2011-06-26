@@ -105,6 +105,9 @@ static int read_(Driver * drvthis, void *buf, size_t count);
  * \param drvthis  Pointer to driver structure.
  * \retval 0       Success.
  * \retval <0      Error.
+ *
+ * \todo This function returns at several points without properly freeing
+ *       file descriptors and allocated memory.
  */
 MODULE_EXPORT int
 SureElec_init(Driver * drvthis)
@@ -150,6 +153,7 @@ SureElec_init(Driver * drvthis)
 	if (open_port(drvthis, device) == -1) {
 		return -1;
 	}
+
 	/* Get edition version */
 	sedition = drvthis->config_get_string(drvthis->name, "Edition", 0, "");
 
@@ -873,43 +877,50 @@ static int
 open_port(Driver * drvthis, const char *device)
 {
 	PrivateData *p = drvthis->private_data;
-	int fd;
 	struct termios portset;
 
 	unsigned char cmd[3] = {'\xFE', '\x56', 0};
 	unsigned char init_seq[7] = {'\x54', '\x58', '\x4B', '\x52', '\x44', '\x41', '\x60'};
 	int i;
 
-
-	fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
-	if (fd == -1) {
+	/* Set up io port correctly, and open it... */
+	p->fd = open(device, O_RDWR | O_NOCTTY);
+	if (p->fd == -1) {
 		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
-		if (errno == EACCES) {
-			report(RPT_ERR, "%s: %s device could not be opened... (check your device and / or config file)", drvthis->name, device);
-		}
+		if (errno == EACCES)
+			report(RPT_ERR, "%s: %s device could not be opened", drvthis->name, device);
 		return -1;
 	}
-	tcgetattr(fd, &portset);
+	report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
 
-	/* Set port parameters */
-	portset.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
-			     | INLCR | IGNCR | ICRNL | IXON);
+	tcgetattr(p->fd, &portset);
+
+	/* We use RAW mode */
+#ifdef HAVE_CFMAKERAW
+	/* The easy way */
+	cfmakeraw(&portset);
+#else
+	/* The hard way */
+	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
+			      | INLCR | IGNCR | ICRNL | IXON );
 	portset.c_oflag &= ~OPOST;
-	portset.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-	portset.c_cflag &= ~(CSIZE | PARENB | CRTSCTS | CSTOPB);
+	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
+	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
 	portset.c_cflag |= CS8 | CREAD | CLOCAL;
+#endif
+	/* Set timeouts */
 	portset.c_cc[VMIN] = 1;
-	portset.c_cc[VTIME] = 10;
+	portset.c_cc[VTIME] = 3;
 
 	/* Set port speed */
 	cfsetospeed(&portset, B9600);
-	cfsetispeed(&portset, B9600);
+	cfsetispeed(&portset, B0);
 
 	/* Do it... */
-	tcsetattr(fd, TCSANOW, &portset);
-
-	/* Set port file desc. in private data */
-	p->fd = fd;
+	if (tcsetattr(p->fd, TCSANOW, &portset) == -1) {
+		report(RPT_ERR, "%s: failed to configure port (%s)", drvthis->name, strerror(errno));
+		return -1;
+	}
 
 	/* Send initialization sequence */
 	for (i = 1; i <= 8; i++) {
