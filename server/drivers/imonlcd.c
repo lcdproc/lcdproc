@@ -5,22 +5,6 @@
  */
 
 /*-
- * Modified March 2009 by Jonathan Kyler for inclusion in lcdproc
- *  Added 0038 support
- *  Added Protocol configuration parameter
- *  Converted and upgraded t6963 font for use with iMon Soundgraph LCD
- *
- * Modified March 2009 by Eric Pooch - lots of cleanup and streamlining
- *  Removed fixed "96" width listed everywhere
- *  Streamlined config file parsing
- *  Sped up font access
- *  Implemented backing store to avoid unnecessary refreshes
- *  Adjusted p->width and p->height to use character width and height properly
- *  Fixed long long defines
- *  Replaced send_data() and send_byte_data() with send_packet()
- *  Improved send_command_data()
- *  Reduced functions for basic character drawing - removed draw_char() and draw_string()
- *
  * Copyright (c) 2004, Venky Raju <dev (at) venky (dot) ws>
  *               2007, Dean Harding <dean (at) codeka dotcom>
  *               2007, Christian Leuschen <christian (dot) leuschen (at) gmx (dot) de>
@@ -127,6 +111,7 @@ typedef struct imonlcd_private_data {
 
 	/* save the last output state so we don't needlessly reset the icons */
 	int last_output_state;
+	int last_output_bar_state;
 } PrivateData;
 
 /*
@@ -291,6 +276,7 @@ imonlcd_init(Driver *drvthis)
 
 	p->last_cd_state = 0;
 	p->last_output_state = 0x0;	/* no icons turned on at startup */
+	p->last_output_bar_state = 0x0;	/* no bars turned on at startup */
 	p->discMode = 0;
 
 	/* Get settings from config file */
@@ -863,17 +849,41 @@ imonlcd_output(Driver *drvthis, int state)
 	PrivateData *p = drvthis->private_data;
 	uint64_t icon = 0x0;
 
-	if (state == p->last_output_state)
-		return;
+	/* bit 28 : Abuse this for progress bars. See above for usage. */
+	if (state & IMON_OUTPUT_PBARS_MASK) {
+		if (state != p->last_output_bar_state) {
+			p->last_output_bar_state = state;
 
+			/* extract the bar-values for each bar separately */
+			int topProgress = (state & 63);
+			int topLine = (state & (63 << 6)) >> 6;
+			int botProgress = (state & (63 << 12)) >> 12;
+			int botLine = (state & (63 << 18)) >> 18;
+
+			botProgress = botProgress > 32 ? -(botProgress - 32) : botProgress;
+			topProgress = topProgress > 32 ? -(topProgress - 32) : topProgress;
+			botLine = botLine > 32 ? -(botLine - 32) : botLine;
+			topLine = topLine > 32 ? -(topLine - 32) : topLine;
+
+			setLineLength(topLine, botLine, topProgress, botProgress, p);
+
+		}
+		/* Update the icons also. */
+		state = p->last_output_state;
+	}
+
+	/* Don't update if no icons need to be changed. */
+	if (state == p->last_output_state && !(state & IMON_OUTPUT_CD_MASK)) {
+		return;
+	}
 	p->last_output_state = state;
 
 	if (state == -1) {	/* the value for "on" in the lcdproc-protocol */
 		icon = (uint64_t) IMON_ICON_ALL;
 		send_command_data(COMMANDS_SET_ICONS | icon, p);
 		setLineLength(32, 32, 32, 32, p);
-
 		return;
+
 	} else if (state == 0x0) {	/* the value for "off" in the
 					 * lcdproc-protocol */
 		icon = (uint64_t) 0x0;;
@@ -881,22 +891,7 @@ imonlcd_output(Driver *drvthis, int state)
 		setLineLength(0, 0, 0, 0, p);
 		return;
 	}
-	/* bit 28 : Abuse this for progress bars. See above for usage. */
-	else if ((state & IMON_OUTPUT_PBARS_MASK) != 0 && state > 0) {
-		/* extract the bar-values for each bar separately */
-		int topProgress = (state & 63);
-		int topLine = (state & (63 << 6)) >> 6;
-		int botProgress = (state & (63 << 12)) >> 12;
-		int botLine = (state & (63 << 18)) >> 18;
 
-		botProgress = botProgress > 32 ? -(botProgress - 32) : botProgress;
-		topProgress = topProgress > 32 ? -(topProgress - 32) : topProgress;
-		botLine = botLine > 32 ? -(botLine - 32) : botLine;
-		topLine = topLine > 32 ? -(topLine - 32) : topLine;
-
-		setLineLength(topLine, botLine, topProgress, botProgress, p);
-		return;
-	}
 	/* bit 0 : disc icon (0=off, 1='spin') */
 	if (state & IMON_OUTPUT_CD_MASK) {
 		/* Each icon bit represents a section of the cd,
@@ -917,19 +912,12 @@ imonlcd_output(Driver *drvthis, int state)
 			tmp_cd_bitmap = ~tmp_cd_bitmap;
 
 		icon |= ((uint64_t)tmp_cd_bitmap) << 40;
-
-		/* Change the cached output state so that we will continue to
-		 * update / spin the cd. The set value makes a missed refresh
-		 * or clear very unusual.  The server core makes sure we get
-		 * the correct value next time around.
-		 */
-		p->last_output_state = (~IMON_OUTPUT_PBARS_MASK & ~IMON_OUTPUT_CD_MASK);
 	}
 	/*
-	 * bit 1,2,3 : top row (0=none, 1=music, 2=movie, 3=photo, 4=CD/DVD,
-	 * 5=TV, 6=Web, 7=News/Weather)
+	 * bit 1,2,3 : top row
+	 * (0=off, 1=MUSIC, 2=MOVIE, 3=PHOTO, 4=CD/DVD, 5=TV, 6=WEB, 7=NEWS/WEATHER)
 	 */
-	if (((state & IMON_OUTPUT_TOPROW_MASK) != 0)) {
+	if (state & IMON_OUTPUT_TOPROW_MASK) {
 		switch (((state & IMON_OUTPUT_TOPROW_MASK) >> 1)) {
 		case 1:
 			icon |= IMON_ICON_MUSIC;
@@ -970,24 +958,24 @@ imonlcd_output(Driver *drvthis, int state)
 		}
 	}
 	/* bit 6 : S/PDIF icon */
-	icon = ((state & IMON_OUTPUT_SPDIF_MASK) != 0) ? (icon | IMON_SPKR_SPDIF) : (icon & ~IMON_SPKR_SPDIF);
+	if (state & IMON_OUTPUT_SPDIF_MASK)	icon |= IMON_SPKR_SPDIF;
 	/* bit 7 : 'SRC' */
-	icon = ((state & IMON_OUTPUT_SRC_MASK) != 0) ? (icon | IMON_ICON_SRC) : (icon & ~IMON_ICON_SRC);
+	if (state & IMON_OUTPUT_SRC_MASK)	icon |= IMON_ICON_SRC;
 	/* bit 8 : 'FIT' */
-	icon = ((state & IMON_OUTPUT_FIT_MASK) != 0) ? (icon | IMON_ICON_FIT) : (icon & ~IMON_ICON_FIT);
+	if (state & IMON_OUTPUT_FIT_MASK)	icon |= IMON_ICON_FIT;
 	/* bit 9 : 'TV' */
-	icon = ((state & IMON_OUTPUT_TV_MASK) != 0) ? (icon | IMON_ICON_TV_2) : (icon & ~IMON_ICON_TV_2);
+	if (state & IMON_OUTPUT_TV_MASK)	icon |= IMON_ICON_TV_2;
 	/* bit 10 : 'HDTV' */
-	icon = ((state & IMON_OUTPUT_HDTV_MASK) != 0) ? (icon | IMON_ICON_HDTV) : (icon & ~IMON_ICON_HDTV);
+	if (state & IMON_OUTPUT_HDTV_MASK)	icon |= IMON_ICON_HDTV;
 	/* bit 11 : 'SRC1' */
-	icon = ((state & IMON_OUTPUT_SCR1_MASK) != 0) ? (icon | IMON_ICON_SCR1) : (icon & ~IMON_ICON_SCR1);
+	if (state & IMON_OUTPUT_SCR1_MASK)	icon |= IMON_ICON_SCR1;
 	/* bit 12 : 'SRC2' */
-	icon = ((state & IMON_OUTPUT_SCR2_MASK) != 0) ? (icon | IMON_ICON_SCR2) : (icon & ~IMON_ICON_SCR2);
+	if (state & IMON_OUTPUT_SCR2_MASK)	icon |= IMON_ICON_SCR2;
 	/*
-	 * bit 13,14,15: bottom-right icons (0=off, 1=MP3, 2=OGG, 3=WMA,
-	 * 4=WAV)
+	 * bit 13,14,15: bottom-right icons
+	 * (0=off, 1=MP3, 2=OGG, 3=WMA, 4=WAV)
 	 */
-	if (((state & IMON_OUTPUT_BRICONS_MASK) != 0)) {
+	if (state & IMON_OUTPUT_BRICONS_MASK) {
 		switch (((state & IMON_OUTPUT_BRICONS_MASK) >> 13)) {
 		case 1:
 			icon |= IMON_ICON_MP3;
@@ -1006,10 +994,10 @@ imonlcd_output(Driver *drvthis, int state)
 		}
 	}
 	/*
-	 * bit 16,17,18: bottom-middle icons (0=off, 1=MPG, 2=AC3, 3=DTS,
-	 * 4=WMA)
+	 * bit 16,17,18: bottom-middle icons
+	 * (0=off, 1=MPG, 2=AC3, 3=DTS, 4=WMA)
 	 */
-	if (((state & IMON_OUTPUT_BMICONS_MASK) != 0)) {
+	if (state & IMON_OUTPUT_BMICONS_MASK) {
 		switch (((state & IMON_OUTPUT_BMICONS_MASK) >> 16)) {
 		case 1:
 			icon |= IMON_ICON_MPG2;
@@ -1028,10 +1016,10 @@ imonlcd_output(Driver *drvthis, int state)
 		}
 	}
 	/*
-	 * bit 19,20,21: bottom-left icons (0=off, 1=MPG, 2=DIVX, 3=XVID,
-	 * 4=WMV)
+	 * bit 19,20,21: bottom-left icons
+	 * (0=off, 1=MPG, 2=DIVX, 3=XVID, 4=WMV)
 	 */
-	if (((state & IMON_OUTPUT_BLICONS_MASK) != 0)) {
+	if (state & IMON_OUTPUT_BLICONS_MASK) {
 		switch (((state & IMON_OUTPUT_BLICONS_MASK) >> 19)) {
 		case 1:
 			icon |= IMON_ICON_MPG;
@@ -1050,19 +1038,19 @@ imonlcd_output(Driver *drvthis, int state)
 		}
 	}
 	/* bit 22 : 'VOL' (volume) */
-	icon = ((state & IMON_OUTPUT_VOL_MASK) != 0) ? (icon | IMON_ICON_VOL) : (icon & ~IMON_ICON_VOL);
+	if (state & IMON_OUTPUT_VOL_MASK)	icon |= IMON_ICON_VOL;
 	/* bit 23 : 'TIME' */
-	icon = ((state & IMON_OUTPUT_TIME_MASK) != 0) ? (icon | IMON_ICON_TIME) : (icon & ~IMON_ICON_TIME);
+	if (state & IMON_OUTPUT_TIME_MASK)	icon |= IMON_ICON_TIME;
 	/* bit 24 : 'ALARM' */
-	icon = ((state & IMON_OUTPUT_ALARM_MASK) != 0) ? (icon | IMON_ICON_ALARM) : (icon & ~IMON_ICON_ALARM);
+	if (state & IMON_OUTPUT_ALARM_MASK)	icon |= IMON_ICON_ALARM;
 	/* bit 25 : 'REC' (recording) */
-	icon = ((state & IMON_OUTPUT_REC_MASK) != 0) ? (icon | IMON_ICON_REC) : (icon & ~IMON_ICON_REC);
+	if (state & IMON_OUTPUT_REC_MASK)	icon |= IMON_ICON_REC;
 	/* bit 26 : 'REP' (repeat) */
-	icon = ((state & IMON_OUTPUT_REP_MASK) != 0) ? (icon | IMON_ICON_REP) : (icon & ~IMON_ICON_REP);
+	if (state & IMON_OUTPUT_REP_MASK)	icon |= IMON_ICON_REP;
 	/* bit 27 : 'SFL' (shuffle) */
-	icon = ((state & IMON_OUTPUT_SFL_MASK) != 0) ? (icon | IMON_ICON_SFL) : (icon & ~IMON_ICON_SFL);
+	if (state & IMON_OUTPUT_SFL_MASK)	icon |= IMON_ICON_SFL;
 	/* bit 29 : 'disc-in' */
-	icon = ((state & IMON_OUTPUT_DISK_IN_MASK) != 0) ? (icon | IMON_ICON_DISK_IN) : (icon & ~IMON_ICON_DISK_IN);
+	if (state & IMON_OUTPUT_DISK_IN_MASK)	icon |= IMON_ICON_DISK_IN;
 
 	send_command_data(COMMANDS_SET_ICONS | icon, p);
 }
