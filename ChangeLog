@@ -36,6 +36,7 @@ v.0.5dev (ongoing development)
  + Build system: --enable-extra-charmaps option adds language specific charmaps
  * imonlcd: Fix spinning of disc icon (E. Pooch)
  * SureElec: Change port initialization (SF 3212891)
+ - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)

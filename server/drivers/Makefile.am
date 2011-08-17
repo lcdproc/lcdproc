@@ -21,7 +21,7 @@ AM_LDFLAGS = @LDSHARED@
 ## Keep the lists sorted!
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontz633 CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -37,7 +37,6 @@ xosd_CFLAGS =        @LIBXOSD_CFLAGS@ $(AM_CFLAGS)
 
 bayrad_LDADD =       libLCD.a
 CFontz_LDADD =       libLCD.a libbignum.a
-CFontz633_LDADD =    libLCD.a libbignum.a
 CFontzPacket_LDADD = libLCD.a libbignum.a
 curses_LDADD =       @LIBCURSES@
 CwLnx_LDADD =        libLCD.a libbignum.a
@@ -78,7 +77,6 @@ libbignum_a_SOURCES = adv_bignum.h  adv_bignum.c
 
 bayrad_SOURCES =     lcd.h lcd_lib.h bayrad.h bayrad.c report.h
 CFontz_SOURCES =     lcd.h lcd_lib.h CFontz.c CFontz.h CFontz-charmap.h report.h adv_bignum.h
-CFontz633_SOURCES =  lcd.h lcd_lib.h CFontz633.c CFontz633.h CFontz-charmap.h CFontz633io.c CFontz633io.h report.h adv_bignum.h
 CFontzPacket_SOURCES = lcd.h lcd_lib.h CFontzPacket.c CFontzPacket.h CFontz-charmap.h CFontz633io.c CFontz633io.h report.h adv_bignum.h
 curses_SOURCES =     lcd.h curses_drv.h curses_drv.c report.h
 CwLnx_SOURCES =      lcd.h lcd_lib.h CwLnx.c CwLnx.h report.h

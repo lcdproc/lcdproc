@@ -8,7 +8,7 @@ AC_ARG_ENABLE(drivers,
 	[  --enable-drivers=<list> compile drivers for LCDs in <list>,]
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
-	[                    bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,]
+	[                    bayrad,CFontz,CFontzPacket,curses,CwLnx,]
 	[                    ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,]
 	[                    icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,]
@@ -20,9 +20,9 @@ AC_ARG_ENABLE(drivers,
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
-	drivers=[bayrad,CFontz,CFontz633,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
+	drivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontz633,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,xosd]
 if test "$debug" = yes; then
 	allDrivers=["${allDrivers},debug"]
 fi
@@ -57,15 +57,6 @@ for driver in $selectdrivers ; do
 		CFontz)
 			DRIVERS="$DRIVERS CFontz${SO}"
 			actdrivers=["$actdrivers CFontz"]
-			;;
-		CFontz633)
-			DRIVERS="$DRIVERS CFontz633${SO}"
-			actdrivers=["$actdrivers CFontz633"]
-			AC_CHECK_FUNCS(select, [
-				AC_CHECK_HEADERS(sys/select.h)
-			],[
-				AC_MSG_WARN([The CFontz633 driver needs the select() function])
-			])
 			;;
 		CFontzPacket)
 			DRIVERS="$DRIVERS CFontzPacket${SO}"

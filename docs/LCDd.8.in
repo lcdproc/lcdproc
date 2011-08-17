@@ -87,11 +87,8 @@ BayRAD LCD modules by EMAC Inc.
 .B CFontz
 CrystalFontz CFA-632 and CFA-634 serial LCD displays
 .TP
-.B CFontz633
-CrystalFontz CFA-633 serial/USB LCD displays
-.TP
 .B CFontzPacket
-CrystalFontz CFA-631, CFA-633 and CFA-635 serial/USB LCD displays
+CrystalFontz CFA-533, CFA-631, CFA-633 and CFA-635 serial/USB LCD displays
 .TP
 .B curses
 Standard video display using the (n)curses library

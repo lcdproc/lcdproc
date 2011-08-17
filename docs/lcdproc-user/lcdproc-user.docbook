@@ -16,7 +16,6 @@
 
   <!ENTITY bayrad SYSTEM "drivers/bayrad.docbook">
   <!ENTITY CFontz SYSTEM "drivers/CFontz.docbook">
-  <!ENTITY CFontz633 SYSTEM "drivers/CFontz633.docbook">
   <!ENTITY CFontzPacket SYSTEM "drivers/CFontzPacket.docbook">
   <!ENTITY curses SYSTEM "drivers/curses.docbook">
   <!ENTITY CwLnx SYSTEM "drivers/CwLnx.docbook">
