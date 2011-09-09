@@ -5,7 +5,11 @@ Key:
      + Something added
      * Something changed / fixed
 
-v.0.5dev (ongoing development)
+v0.5dev (ongoing development)
+ - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!
+ + new driver: glcd unified graphic display driver (M. Dolze)
+
+v0.5.5
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)
  * Build system: Fix xosd detection
  * Reset ccmode on screen clear for NoritakeVFD, tyan driver
@@ -36,7 +40,6 @@ v.0.5dev (ongoing development)
  + Build system: --enable-extra-charmaps option adds language specific charmaps
  * imonlcd: Fix spinning of disc icon (E. Pooch)
  * SureElec: Change port initialization (SF 3212891)
- - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!
 
 v0.5.4
  * Update driver includes and LDFLAGS (fixed glk and bayrad binding error)

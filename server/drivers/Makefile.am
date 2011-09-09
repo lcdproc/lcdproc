@@ -1,3 +1,4 @@
+
 ## Process this file with automake to produce Makefile.in
 
 ## We use bin_ to generate the shared libraries, because automake only
@@ -21,7 +22,7 @@ AM_LDFLAGS = @LDSHARED@
 ## Keep the lists sorted!
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcd glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -41,6 +42,8 @@ CFontzPacket_LDADD = libLCD.a libbignum.a
 curses_LDADD =       @LIBCURSES@
 CwLnx_LDADD =        libLCD.a libbignum.a
 g15_LDADD =          @LIBG15@
+glcd_LDADD =         libLCD.a @GLCD_DRIVERS@
+glcd_DEPENDENCIES =  @GLCD_DRIVERS@
 glcdlib_LDADD =      @LIBGLCD@
 glk_LDADD =          libbignum.a
 hd44780_LDADD =      libLCD.a @HD44780_DRIVERS@ @LIBUSB_LIBS@ @LIBFTDI_LIBS@ libbignum.a
@@ -84,6 +87,8 @@ debug_SOURCES =      lcd.h report.h debug.c debug.h
 ea65_SOURCES =       lcd.h ea65.h ea65.c report.h
 EyeboxOne_SOURCES =  lcd.h lcd_lib.h EyeboxOne.c EyeboxOne.h report.h
 g15_SOURCES =        lcd.h lcd_lib.h g15.h g15-num.c g15.c report.h
+glcd_SOURCES =       lcd.h report.h glcd_drv.c glcd_drv.h glcd-low.h glcd-drivers.h
+EXTRA_glcd_SOURCES = glcd-t6963.c glcd-t6963.h t6963_low.c t6963_low.h
 glcdlib_SOURCES =    lcd.h lcd_lib.h glcdlib.h glcdlib.c report.h
 glk_SOURCES =        lcd.h glk.c glk.h glkproto.c glkproto.h report.h
 hd44780_SOURCES =    lcd.h lcd_lib.h hd44780.h hd44780.c hd44780-drivers.h hd44780-low.h hd44780-charmap.h report.h adv_bignum.h

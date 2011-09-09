@@ -9,7 +9,7 @@ AC_ARG_ENABLE(drivers,
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
 	[                    bayrad,CFontz,CFontzPacket,curses,CwLnx,]
-	[                    ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,]
+	[                    ea65,EyeboxOne,g15,glcd,glcdlib,glk,hd44780,i2500vfd,]
 	[                    icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,]
 	[                    joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,]
 	[                    ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,]
@@ -22,7 +22,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,xosd]
 if test "$debug" = yes; then
 	allDrivers=["${allDrivers},debug"]
 fi
@@ -164,6 +164,14 @@ dnl				else
 dnl			else
 				AC_MSG_WARN([The g15driver needs libg15render.h])
 			])
+			;;
+		glcd)
+			GLCD_DRIVERS=""
+			if test "$ac_cv_port_have_lpt" = yes ; then
+				GLCD_DRIVERS="$GLCD_DRIVERS glcd-t6963.o t6963_low.o"
+			fi
+			DRIVERS="$DRIVERS glcd${SO}"
+			actdrivers=["$actdrivers glcd"]
 			;;
 		glcdlib)
 			AC_CHECK_HEADERS([glcdproclib/glcdprocdriver.h],[
@@ -493,6 +501,7 @@ AC_SUBST(LIBLIRC_CLIENT)
 AC_SUBST(LIBSVGA)
 AC_SUBST(DRIVERS)
 AC_SUBST(HD44780_DRIVERS)
+AC_SUBST(GLCD_DRIVERS)
 AC_SUBST(LIBG15)
 AC_SUBST(LIBGLCD)
 AC_SUBST(LIBFTDI)
