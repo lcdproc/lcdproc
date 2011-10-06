@@ -2,16 +2,18 @@
  * \c ftdi connection type of \c hd44780 driver for Hitachi HD44780 based LCD displays.
  *
 \verbatim
-   info for 4bit mode (ftdi_mode == 4):
+   Info for 4bit mode (ftdi_mode == 4):
    wiring example:
    FTDI chip: D0 D1 D2 D3 D4 D5 D6 D7
               |  |  |  |  |  |  |  |
    HD44780:   D4 D5 D6 D7 EN RS RW n/c
 
    in LCDd.conf we then need to define
-    ftdi_line_RS=0x40
-    ftdi_line_RW=0x20
     ftdi_line_EN=0x10
+    ftdi_line_RS=0x20
+    ftdi_line_RW=0x40
+
+   RW of your display can either be connected to D6 or GND.
 \endverbatim
  */
 
@@ -81,6 +83,7 @@ hd_init_ftdi(Driver *drvthis)
     p->ftdi_line_RW = drvthis->config_get_int(drvthis->name, "ftdi_line_RW", 0, 0x02);
     p->ftdi_line_EN = drvthis->config_get_int(drvthis->name, "ftdi_line_EN", 0, 0x04);
     p->ftdi_line_backlight = drvthis->config_get_int(drvthis->name, "ftdi_line_backlight", 0, 0x08);
+    p->backlight_bit = 0;
 
     /* some foolproof check */
     if (p->ftdi_mode != 4 && p->ftdi_mode != 8) {
@@ -166,7 +169,7 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
 	    exit(-1);
 	}
 
-	/* Setup RS and R/W and EN */
+	/* Setup RS and R/W and EN on second channel */
 	ch = p->ftdi_line_EN | p->backlight_bit;
 	if (flags == RS_DATA) {
 	    ch |= p->ftdi_line_RS;
@@ -178,7 +181,7 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
 	    exit(-1);
 	}
 
-	/* Disable E */
+	/* Disable EN */
 	ch = 0x00 | p->backlight_bit;
 	if (flags == RS_DATA) {
 	    ch |= p->ftdi_line_RS;

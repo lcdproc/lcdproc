@@ -1964,9 +1964,9 @@ channel FTDI FIFO chip:
 [hd44780]
 ConnectionType=ftdi
 ftdi_mode=4
-ftdi_line_RS=0x40
-ftdi_line_RW=0x20
 ftdi_line_EN=0x10
+ftdi_line_RS=0x20
+ftdi_line_RW=0x40
 ]]>
 </screen>
 </example>
