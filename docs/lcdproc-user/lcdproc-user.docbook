@@ -59,6 +59,7 @@
   <!ENTITY t6963 SYSTEM "drivers/t6963.docbook">
   <!ENTITY text SYSTEM "drivers/text.docbook">
   <!ENTITY tyan SYSTEM "drivers/tyan.docbook">
+  <!ENTITY vlsys_m428 SYSTEM "drivers/vlsys_m428.docbook">
   <!ENTITY ula200 SYSTEM "drivers/ula200.docbook">
   <!ENTITY xosd SYSTEM "drivers/xosd.docbook">
 

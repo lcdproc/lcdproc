@@ -15,14 +15,14 @@ AC_ARG_ENABLE(drivers,
 	[                    ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,]
 	[                    picolcd,pyramid,sed1330,sed1520,serialPOS,]
 	[                    serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,]
-	[                    t6963,text,tyan,ula200,xosd]
+	[                    t6963,text,tyan,ula200,vlsys_m428,xosd]
 	[                    ]
 	[                  'all' compiles all drivers;]
 	[                  'all,!xxx,!yyy' de-selects previously selected drivers],
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,xosd]
+allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,picolcd,pyramid,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,vlsys_m428,xosd]
 if test "$debug" = yes; then
 	allDrivers=["${allDrivers},debug"]
 fi
@@ -468,6 +468,10 @@ dnl			else
 			else
 				AC_MSG_WARN([The ula200 driver needs the ftdi library])
 			fi
+			;;
+		vlsys_m428)
+			DRIVERS="$DRIVERS vlsys_m428${SO}"
+			actdrivers=["$actdrivers vlsys_m428"]
 			;;
 		xosd)
 			AC_PATH_PROG([LIBXOSD_CONFIG], [xosd-config], [no])

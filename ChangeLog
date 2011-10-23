@@ -10,6 +10,7 @@ v0.5dev (ongoing development)
  + new driver: glcd unified graphic display driver (M. Dolze)
  * curses: Fix missed keystrokes (from Debian)
  * curses: Correct the name of the info function.
+ + new driver: vlsys_m428 driver for Moneual MonCaso 320 (W. Hauck)
 
 v0.5.5
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)

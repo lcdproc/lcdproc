@@ -22,7 +22,7 @@ AM_LDFLAGS = @LDSHARED@
 ## Keep the lists sorted!
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcd glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 xosd i2500vfd irtrans
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcd glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 vlsys_m428 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -128,6 +128,7 @@ t6963_SOURCES =      lcd.h lcd_lib.h t6963.c t6963.h glcd_font5x8.h report.h t69
 text_SOURCES =       lcd.h text.h text.c report.h
 tyan_SOURCES =       lcd.h lcd_lib.h tyan_lcdm.h tyan_lcdm.c report.h adv_bignum.h
 ula200_SOURCES =     lcd.h adv_bignum.h ula200.h ula200.c report.h
+vlsys_m428_SOURCES = lcd.h report.h vlsys_m428.c vlsys_m428.h
 xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h adv_bignum.h
 
 AM_CPPFLAGS = -I$(top_srcdir)

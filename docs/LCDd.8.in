@@ -283,6 +283,9 @@ LCD module in Tyan Barebone GS series
 .B ula200
 ULA-200 device from ELV (http://www.elv.de)
 .TP
+.B vlsys_m428
+VFD/IR combination in case MonCaso 320 from Moneual
+.TP
 .B xosd
 On Screen Display on X11
 .PP

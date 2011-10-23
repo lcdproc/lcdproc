@@ -12,6 +12,7 @@ EXTRA_DIST =	bayrad.docbook \
 		glcdlib.docbook \
 		glk.docbook \
 		hd44780.docbook \
+		i2500vfd.docbook \
 		icp_a106.docbook \
 		imon.docbook \
 		imonlcd.docbook \
@@ -47,7 +48,7 @@ EXTRA_DIST =	bayrad.docbook \
 		text.docbook \
 		tyan.docbook \
 		ula200.docbook \
-		xosd.docbook \
-		i2500vfd.docbook
+		vlsys_m428.docbook \
+		xosd.docbook
 
 ## EOF
