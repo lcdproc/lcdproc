@@ -1,4 +1,4 @@
-/** \file server/drivers/t6963_io.c
+/** \file server/drivers/t6963_low.c
  * Low level output routines for Toshiba T6963 based LCD displays connected
  * to a parallel port.
  *

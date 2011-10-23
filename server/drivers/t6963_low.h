@@ -1,4 +1,4 @@
-/** \file server/drivers/t6963_io.h
+/** \file server/drivers/t6963_low.h
  * Command set for Toshiba T6963 based LCD displays.
  *
  * This header file defines the T6963 command set and various controller

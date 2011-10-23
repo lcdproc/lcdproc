@@ -453,7 +453,7 @@ glcd_draw_pixel(PrivateData *p, int x, int y, int color)
  * \param drvthis  Pointer to driver structure.
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
- * \param z        Character that gets written.
+ * \param c        Character that gets written.
  */
 static void
 glcd_render_char(Driver *drvthis, int x, int y, unsigned char c)
