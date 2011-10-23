@@ -850,10 +850,8 @@ imonlcd_output(Driver *drvthis, int state)
 	uint64_t icon = 0x0;
 
 	/* bit 28 : Abuse this for progress bars. See above for usage. */
-	if (state & IMON_OUTPUT_PBARS_MASK) {
+	if ( state & IMON_OUTPUT_PBARS_MASK || state == 0 ) {
 		if (state != p->last_output_bar_state) {
-			p->last_output_bar_state = state;
-
 			/* extract the bar-values for each bar separately */
 			int topProgress = (state & 63);
 			int topLine = (state & (63 << 6)) >> 6;
@@ -867,13 +865,21 @@ imonlcd_output(Driver *drvthis, int state)
 
 			setLineLength(topLine, botLine, topProgress, botProgress, p);
 
+			p->last_output_bar_state = state;
 		}
-		/* Update the icons also. */
-		state = p->last_output_state;
+
+		/*
+		 * If the current output state is 'all on' (-1) or 'all off' (0), update
+		 * the icons with that state. Otherwise, update the icons with the last
+		 * icon output state (this is only used to keep the CD spinning).
+		 */
+		if (state != 0 && state != -1 ) {
+			state = p->last_output_state;
+		}
 	}
 
 	/* Don't update if no icons need to be changed. */
-	if (state == p->last_output_state && !(state & IMON_OUTPUT_CD_MASK)) {
+	if (state == p->last_output_state && !(state != -1 && (state & IMON_OUTPUT_CD_MASK))) {
 		return;
 	}
 	p->last_output_state = state;
@@ -881,14 +887,6 @@ imonlcd_output(Driver *drvthis, int state)
 	if (state == -1) {	/* the value for "on" in the lcdproc-protocol */
 		icon = (uint64_t) IMON_ICON_ALL;
 		send_command_data(COMMANDS_SET_ICONS | icon, p);
-		setLineLength(32, 32, 32, 32, p);
-		return;
-
-	} else if (state == 0x0) {	/* the value for "off" in the
-					 * lcdproc-protocol */
-		icon = (uint64_t) 0x0;;
-		send_command_data(COMMANDS_SET_ICONS | icon, p);
-		setLineLength(0, 0, 0, 0, p);
 		return;
 	}
 
