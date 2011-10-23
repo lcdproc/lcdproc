@@ -110,6 +110,19 @@
 		      Indicates the widget language version number. This number is
 		      only changed when the language of a newer version has become
 		      incompatible with the previous version.
+		      <note><para>
+			Each part of the version number shall be treated as an independent
+			numeric value. This means that 0.9 is followed by 0.10.
+		      </para></note>
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>
+		    <computeroutput>lcd</computeroutput>
+		  </term>
+		  <listitem><para>
+		      This word introduces the next key / value pairs that
+		      describe the display's properties.
 		    </para></listitem>
 		</varlistentry>
 		<varlistentry>
@@ -144,15 +157,6 @@
 		  <listitem><para>
 		      How many pixels is a character high (space between character
 		      cells not included)
-		    </para></listitem>
-		</varlistentry>
-		<varlistentry>
-		  <term>
-		    <computeroutput>lcd</computeroutput>
-		  </term>
-		  <listitem><para>
-		      This word is NOT followed by a value !
-		      Hey do we really need this word in the response string ?
 		    </para></listitem>
 		</varlistentry>
 	      </variablelist>
