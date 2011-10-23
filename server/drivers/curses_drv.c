@@ -669,9 +669,8 @@ curses_get_key (Driver *drvthis)
  * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
-text_get_info (Driver *drvthis)
+curses_get_info (Driver *drvthis)
 {
-        //PrivateData *p = drvthis->private_data;
         static char *info_string = "curses driver";
 
         return info_string;
