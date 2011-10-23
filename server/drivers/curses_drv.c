@@ -606,11 +606,12 @@ curses_flush (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	int c;
 
-	if ((c = getch()) != ERR)
+	if ((c = getch()) != ERR) {
 		if (c == 0x0C) {	/* ^L restores screen */
 			curses_restore_screen(drvthis);
-			ungetch(c);
 		}
+		ungetch(c);
+	}
 
 	if (p->drawBorder)
 		curses_wborder(drvthis);
