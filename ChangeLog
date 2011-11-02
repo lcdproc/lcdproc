@@ -11,6 +11,8 @@ v0.5dev (ongoing development)
  * curses: Fix missed keystrokes (from Debian)
  * curses: Correct the name of the info function.
  + new driver: vlsys_m428 driver for Moneual MonCaso 320 (W. Hauck)
+ * hd44780/serial: Fix handling of keys for LoS-Panel (M. Kirchner)
+ * hd44780/serial: Change backlight handling (see commit message)
 
 v0.5.5
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)

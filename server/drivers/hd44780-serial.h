@@ -22,14 +22,12 @@ struct hd44780_SerialInterface {
 	unsigned int default_bitrate;	/**< Bitrate device is set to by default */
 	char         if_bits;		/**< Initialize to 8 or 4 bit interface */
 	char         keypad;		/**< Flag: keypad available */
-	char         keypad_escape;	/**< Keys must escaped with this character */
+	char         keypad_escape;	/**< Keys are escaped with this character */
 	char         backlight;		/**< Flag: backlight available */
 	/** Escape character to send to indicate a backlight state change */
 	char         backlight_escape;
-	/** Character to send to set display off. If not configured 0xFF is sent */
-	char         backlight_off;
-	/** Character to send to set display on. If not configured 0x00 is sent */
-	char         backlight_on;
+	char         backlight_off;	/**< Character sent to set display off */
+	char         backlight_on;	/**< Character sent to set display on */
 	/** Flag: Device has multiple controllers. If enabled, the displayID
 	 * is added to data escape */
 	char         multiple_displays;
@@ -44,7 +42,7 @@ static const struct hd44780_SerialInterface serial_interfaces[] = {
 	/*    type                  instr data     v     ^ bitrate bits  K   esc  B  Besc  Boff   Bon Multi  End */
 	{ HD44780_CT_PICANLCD,      0x11, 0x12, 0x00, 0x20,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
 	{ HD44780_CT_LCDSERIALIZER, 0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
-	{ HD44780_CT_LOS_PANEL,     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 1, 0xFF,    0,    0,   0,    0 },
+	{ HD44780_CT_LOS_PANEL,     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 1, 0xFD,    0, 0xFF,   0,    0 },
 	{ HD44780_CT_VDR_LCD,       0xFE,    0, 0x00, 0x00,   9600,   4, 0, 0x00, 0,    0,    0,    0,   0,    0 },
 	{ HD44780_CT_VDR_WAKEUP,    0xC0, 0xC4, 0xC0, 0xD0,   9600,   4, 0, 0x00, 1,    0, 0xC9, 0xC8,   1, 0xCF },
 	{ HD44780_CT_PERTELIAN,     0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 1, 0xFE, 0x02, 0x03,   0,    0 },

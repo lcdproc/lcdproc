@@ -2004,6 +2004,26 @@ module <filename>ftdi_sio.ko</filename> that maps the USB port to a serial port
 <sect3 id="hd44780-los-panel">
 <title>LCD on Serial panel device "los-panel"</title>
 
+<para>The LoS-Panel is a DIY device built using an Atmel ATtiny2313 and
+supports the following features:
+<itemizedlist>
+  <listitem><para>Drives displays with one controller.</para></listitem>
+  <listitem><para>Switchable backlight.</para></listitem>
+  <listitem><para>One 4x4 matrix keypad and 4 direct keys.</para></listitem>
+</itemizedlist>
+</para>
+
+<note>
+  <para>
+    The direct keys are reported as a fifth column of a matrix keypad to LCDd.
+  </para>
+  <para>
+    Column and rows are reported reverse (column 1 / row 1 is in the lower
+    right corner) to LCDd which expects (1/1) to be the upper left corner.
+    You have to take this into account when configuring keys.
+  </para>
+</note>
+
 <para>
 See <ulink url="http://www.xs4all.nl/~mlf/los/"></ulink>
 for more information on this device.
