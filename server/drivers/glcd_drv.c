@@ -25,25 +25,15 @@
  * \li  glcd-drivers.h  CT-driver registry. Add a pointer to your CT-driver's
  *                      init() function here.
  * \li  glcd-low.h      Base driver's PrivateData and ConnectionType API.
+ * \li  glcd-render.c   Render characters using FreeType 2 or standard font.
  * \li  glcd_font5x8.h  LCDproc's default fixed 5x8 font.
  */
 
 /*-
  * Copyright (C) 2011, Markus Dolze
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+ * This file is released under the GNU General Public License. Refer to the
+ * COPYING file distributed with this package.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -60,16 +50,13 @@
 #include "glcd-low.h"
 #include "glcd-drivers.h"
 #include "report.h"
-#include "glcd_font5x8.h"
+#include "glcd-render.h"
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "glcd_";
-
-static void glcd_render_char(Driver *drvthis, int x, int y, unsigned char c);
-static inline void glcd_draw_pixel(PrivateData *p, int x, int y, int color);
 
 /**
  * Initialize the driver. (Required)
@@ -162,12 +149,16 @@ glcd_init(Driver *drvthis)
 	p->height = p->px_height / p->cellheight;
 
 	/* Allocate framebuffer */
-	p->framebuf = malloc(BYTES_PER_LINE * p->px_height);
+	p->framebuf = malloc(FB_BYTES_TOTAL);
 	if (p->framebuf == NULL) {
 		report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
 		return -1;
 	}
-	memset(p->framebuf, 0x00, BYTES_PER_LINE * p->px_height);
+	memset(p->framebuf, 0x00, FB_BYTES_TOTAL);
+
+	/* Initialize renderer */
+	if (glcd_render_init(drvthis) != 0)
+		return -1;
 
 	glcd_clear(drvthis);
 
@@ -192,6 +183,7 @@ glcd_close(Driver *drvthis)
 		if (p->framebuf != NULL)
 			free(p->framebuf);
 		p->framebuf = NULL;
+		glcd_render_close(drvthis);
 
 		free(p);
 	}
@@ -274,7 +266,7 @@ glcd_clear(Driver *drvthis)
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	memset(p->framebuf, 0x00, BYTES_PER_LINE * p->px_height);
+	memset(p->framebuf, 0x00, FB_BYTES_TOTAL);
 
 }
 
@@ -313,14 +305,17 @@ glcd_string(Driver *drvthis, int x, int y, const char string[])
 
 	debug(RPT_DEBUG, "%s(%i,%i,%.40s)", __FUNCTION__, x, y, string);
 
-	y--;			/* Convert 1-based coords to 0-based... */
-	x--;
-
-	if ((y < 0) || (y >= p->height))
+	if ((y < 1) || (y > p->height))
 		return;
 
-	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++)
-		glcd_render_char(drvthis, x, y, string[i]);
+	for (i = 0; (string[i] != '\0') && (x <= p->width); i++, x++) {
+#ifdef HAVE_FT2
+		if (p->use_ft2)
+			glcd_render_char_unicode(drvthis, x, y, string[i] & 0xFF);
+		else
+#endif
+			glcd_render_char(drvthis, x, y, string[i]);
+	}
 }
 
 
@@ -341,31 +336,30 @@ glcd_string(Driver *drvthis, int x, int y, const char string[])
 MODULE_EXPORT void
 glcd_chr(Driver *drvthis, int x, int y, char c)
 {
+#ifdef HAVE_FT2
+	PrivateData *p = drvthis->private_data;
+#endif
 	debug(RPT_DEBUG, "%s(%i,%i,%c)", __FUNCTION__, x, y, c);
 
-	x--;
-	y--;
-	glcd_render_char(drvthis, x, y, c);
+#ifdef HAVE_FT2
+	if (p->use_ft2)
+		glcd_render_char_unicode(drvthis, x, y, c & 0xFF);
+	else
+#endif
+		glcd_render_char(drvthis, x, y, c);
 }
 
 
 /**
- * Place an icon on the screen. (Optional)
- * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal character position (column).
- * \param y        Vertical character position (row).
- * \param icon     synbolic value representing the icon.
- * \retval 0       Icon has been successfully defined/written.
- * \retval <0      Server core shall define/write the icon.
+ * API: Place an icon on the screen.
  */
 MODULE_EXPORT int
 glcd_icon(Driver *drvthis, int x, int y, int icon)
 {
 	debug(RPT_DEBUG, "%s(%i,%i,%i)", __FUNCTION__, x, y, icon);
 
-	return (glcd_icon5x8(drvthis, x, y, icon));
+	return (glcd_render_icon(drvthis, x, y, icon));
 }
-
 
 /**
  * API: Draws a vertical bar, from the bottom of the screen up.
@@ -373,34 +367,50 @@ glcd_icon(Driver *drvthis, int x, int y, int icon)
 MODULE_EXPORT void
 glcd_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
+	PrivateData *p = drvthis->private_data;
+	int xstart, xend, ystart, yend;
+	int col, row;
+
 	debug(RPT_DEBUG, "%s(%i,%i,%i,%i,%i)", __FUNCTION__, x, y, len, promille, options);
-	lib_vbar_static(drvthis, x, y, len, promille, options, GLCD_FONT_HEIGHT, 0x90);
+
+	/* leave first column and top row empty */
+	xstart = (x - 1) * p->cellwidth + 1;
+	xend = xstart + p->cellwidth - 1;
+	ystart = y * p->cellheight;
+	yend = ystart - (((long) 2 * len * p->cellheight) * promille / 2000) + 1;
+
+	for (col = xstart; col < xend; col++) {
+		for (row = ystart; row > yend; row--) {
+			fb_draw_pixel(p, col, row, 1);
+		}
+	}
 }
 
 
 /**
  * API: Draws a horizontal bar to the right.
- *
- * \note  For hBars the actual width of the font (5) has to be used instead
- *        of the cell width (6)!
  */
 MODULE_EXPORT void
 glcd_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
-	int pixels = ((long) 2 * len * GLCD_FONT_WIDTH) * promille / 2000;
-	int pos;
+	PrivateData *p = drvthis->private_data;
+	int xstart, xend, ystart, yend;
+	int col, row;
 
 	debug(RPT_DEBUG, "%s(%i,%i,%i,%i,%i)", __FUNCTION__, x, y, len, promille, options);
 
-	for (pos = 0; pos < len; pos++) {
-		if (pixels >= GLCD_FONT_WIDTH )
-			glcd_chr(drvthis, x + pos, y, 0x9e);
-		else if (pixels >= 1)
-			glcd_chr(drvthis, x + pos, y, 0x99 + pixels);
-		else
-			;	/* do nothing */
-		pixels -= GLCD_FONT_WIDTH;
+	/* leave first column and top row empty */
+	xstart = (x - 1) * p->cellwidth + 1;
+	xend = xstart + (((long) 2 * len * p->cellwidth) * promille / 2000) - 1;
+	ystart = (y - 1) * p->cellheight + 1;
+	yend = ystart + p->cellheight - 1;
+
+	for (row = ystart; row < yend; row++) {
+		for (col = xstart; col < xend; col++) {
+			fb_draw_pixel(p, col, row, 1);
+		}
 	}
+
 }
 
 
@@ -417,76 +427,4 @@ glcd_get_info(Driver *drvthis)
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	return info_string;
-}
-
-
-/**
- * Draw one pixel into the framebuffer using 1bpp (black and white). This
- * function actually decides about the format of the framebuffer. Using this
- * implementation (0,0) is top left and bytes contain pixels from left to right.
- *
- * \param p      Pointer to driver's private data.
- * \param x      X-position
- * \param y      Y-position
- * \param color  Pixel color: 1 = set (black), 0 = not set (blank)
- */
-static inline void
-glcd_draw_pixel(PrivateData *p, int x, int y, int color)
-{
-	unsigned int pos;	/* Byte within the framebuffer */
-	unsigned char bit;	/* Bit within the framebuffer byte */
-
-	pos = y * BYTES_PER_LINE + (x / 8);
-	bit = 0x80 >> (x % 8);
-
-	if (color == 1)
-		p->framebuf[pos] |= bit;
-	else
-		p->framebuf[pos] &= ~bit;
-}
-
-
-/**
- * Draws char c from font definition to the framebuffer at position
- * x,y. These are zero-based textmode positions.
- *
- * \param drvthis  Pointer to driver structure.
- * \param x        Horizontal character position (column).
- * \param y        Vertical character position (row).
- * \param c        Character that gets written.
- */
-static void
-glcd_render_char(Driver *drvthis, int x, int y, unsigned char c)
-{
-	PrivateData *p = drvthis->private_data;
-	int font_x, font_y;	/* Position in the font definition array */
-	int px, py;		/* Pixel position on the display */
-
-	if (x < 0 || x >= p->width || y < 0 || y >= p->height)
-		return;
-
-	/*
-	 * Algorithm: For each row in the font definition check if bit (dot)
-	 * at each column is set. If yes, plot a dot into the framebuffer. If
-	 * the bit is not set then clear the dot. Currently it is wrong to
-	 * assume the framebuffer is clear (e.g. the heartbeat does not clear
-	 * it's contents in advance).
-	 */
-	/* FIXME: What happens if font is larger than cell size? */
-	py = y * p->cellheight;
-	for (font_y = 0; (font_y < GLCD_FONT_HEIGHT) && (py < p->px_height); font_y++) {
-		px = x * p->cellwidth;
-		/*
-		 * Note: Initializing font_x with font's width leaves one
-		 * empty column to the left.
-		 */
-		for (font_x = GLCD_FONT_WIDTH; (font_x > -1) && (px < p->px_width); font_x--) {
-			if (glcd_iso8859_1[c][font_y] & (1 << font_x))
-				glcd_draw_pixel(p, px, py, 1);
-			else
-				glcd_draw_pixel(p, px, py, 0);
-			px++;
-		}
-		py++;
-	}
 }

@@ -16,10 +16,14 @@
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
 # include "glcd-t6963.h"
 #endif
+#ifdef HAVE_LIBPNG
+# include "glcd-png.h"
+#endif
 
 /* symbolic names for connection types */
 #define GLCD_CT_UNKNOWN		0
 #define GLCD_CT_T6963		1
+#define GLCD_CT_PNG		2
 
 /** Structure linking symbolic names to initialization routines */
 typedef struct ConnectionMapping {
@@ -37,6 +41,9 @@ typedef struct ConnectionMapping {
 static const ConnectionMapping connectionMapping[] = {
 #ifdef HAVE_PCSTYLE_LPT_CONTROL
 	{"t6963", GLCD_CT_T6963, glcd_t6963_init},
+#endif
+#ifdef HAVE_LIBPNG
+	{"png", GLCD_CT_PNG, glcd_png_init},
 #endif
 	/* default, end of structure element (do not delete) */
 	{NULL, GLCD_CT_UNKNOWN, NULL}

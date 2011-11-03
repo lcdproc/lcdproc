@@ -170,6 +170,9 @@ dnl			else
 			if test "$ac_cv_port_have_lpt" = yes ; then
 				GLCD_DRIVERS="$GLCD_DRIVERS glcd-t6963.o t6963_low.o"
 			fi
+			if test "$enable_libpng" = yes ; then
+				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-png.o"
+			fi
 			DRIVERS="$DRIVERS glcd${SO}"
 			actdrivers=["$actdrivers glcd"]
 			;;
@@ -1057,7 +1060,7 @@ AC_DEFUN([AX_CXXFLAGS_GCC_OPTION],[ifelse(m4_bregexp([$2],[-]),-1,
 [AX_CXXFLAGS_GCC_OPTION_NEW($@)],[AX_CXXFLAGS_GCC_OPTION_OLD($@)])])
 
 dnl
-dnl Check if system has SA_RESTART defined. Copied from GNU's make configure.
+dnl Check if system has SA_RESTART defined. Copied from GNUs make configure.
 dnl
 AC_DEFUN([LCD_SA_RESTART], [
 AC_CACHE_CHECK([for SA_RESTART], lcd_cv_sa_restart, [
@@ -1068,5 +1071,55 @@ AC_CACHE_CHECK([for SA_RESTART], lcd_cv_sa_restart, [
 if test "$lcd_cv_sa_restart" != no; then
   AC_DEFINE([HAVE_SA_RESTART], [1],
      [Define to 1 if <signal.h> defines the SA_RESTART constant.])
+fi
+])
+
+dnl
+dnl Check for PNG library
+dnl
+AC_DEFUN([LCD_PNG_LIB], [
+AC_MSG_CHECKING([if PNG support has been enabled]);
+AC_ARG_ENABLE(libpng,
+	[AS_HELP_STRING([--disable-png],[disable PNG support using libpng])],
+	[ if test "$enableval" != "no"; then
+		enable_libpng=yes
+	fi ],
+	[ enable_libpng=yes ]
+)
+AC_MSG_RESULT($enable_libpng)
+
+if test "$enable_libpng" = "yes"; then
+	AC_PATH_PROG([_png_config], [libpng-config])
+	_libpng_save_libs=$LIBS
+	_libpng_save_cflags=$CFLAGS
+
+	if test x$_png_config != "x" ; then
+		_libpng_try_libs=`$_png_config --ldflags`
+		_libpng_try_cflags=`$_png_config --cflags`
+	fi
+
+	LIBS="$LIBS $_libpng_try_libs"
+	CFLAGS="$CFLAGS $_libpng_try_cflags"
+
+	AC_MSG_CHECKING([whether libpng is present and sane])
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <png.h>],[
+		png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+		])],enable_libpng=yes,enable_libpng=no)
+	AC_MSG_RESULT([$enable_libpng])
+
+	if test "$enable_libpng" = "yes" ; then
+		AC_DEFINE(HAVE_LIBPNG, [1], [Define to 1 if you have libpng])
+		AC_SUBST(LIBPNG_CFLAGS, $_libpng_try_cflags)
+		AC_SUBST(LIBPNG_LIBS, $_libpng_try_libs)
+	fi
+
+	LIBS=$_libpng_save_libs
+	CFLAGS=$_libpng_save_cflags
+
+	unset _libpng_save_libs
+	unset _libpng_save_cflags
+	unset _libpng_try_libs
+	unset _libpng_try_cflags
+	unset _png_config
 fi
 ])

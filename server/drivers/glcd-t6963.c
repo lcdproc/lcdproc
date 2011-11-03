@@ -67,7 +67,7 @@ glcd_t6963_init(Driver *drvthis)
 	/* Allocate memory structures */
 	ct_data = (CT_t6963_data *) calloc(1, sizeof(CT_t6963_data));
 	if (ct_data == NULL) {
-		report(RPT_ERR, "GLCD/T6963: error allocation connection data");
+		report(RPT_ERR, "GLCD/T6963: error allocating connection data");
 		return -1;
 	}
 	p->ct_data = ct_data;
@@ -79,12 +79,12 @@ glcd_t6963_init(Driver *drvthis)
 	}
 	ct_data->port_config = port_config;
 
-	ct_data->backingstore = malloc(BYTES_PER_LINE * p->px_height);
+	ct_data->backingstore = malloc(FB_BYTES_TOTAL);
 	if (ct_data->backingstore == NULL) {
 		report(RPT_ERR, "GLCD/T6963: unable to allocate backing store");
 		return -1;
 	}
-	memset(ct_data->backingstore, 0x00, BYTES_PER_LINE * p->px_height);
+	memset(ct_data->backingstore, 0x00, FB_BYTES_TOTAL);
 
 	/* Get port from config */
 	port_config->port = drvthis->config_get_int(drvthis->name, "Port", 0, DEFAULT_PORT);
@@ -189,6 +189,7 @@ glcd_t6963_close(PrivateData *p)
 			free(ct_data->backingstore);
 
 		free(p->ct_data);
+		p->ct_data = NULL;
 	}
 }
 
@@ -201,7 +202,7 @@ static void
 t6963_graphic_clear(PrivateData *p)
 {
 	CT_t6963_data *ct_data = (CT_t6963_data *) p->ct_data;
-	int num = BYTES_PER_LINE * p->px_height;
+	int num = FB_BYTES_TOTAL;
 	int i;
 
 	p->glcd_functions->drv_debug(RPT_DEBUG, "GLCD/T6963: Clearing graphic: %d bytes", num);

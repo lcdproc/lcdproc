@@ -14,8 +14,6 @@
 #define GLCD_MAX_WIDTH		640
 #define GLCD_MAX_HEIGHT		480
 
-#define BYTES_PER_LINE (p->px_width / 8)
-
 /** private data for the \c glcd driver */
 typedef struct glcd_private_data {
 	unsigned char *framebuf;	/**< frame buffer */
@@ -27,6 +25,8 @@ typedef struct glcd_private_data {
 	int height;			/**< display height in characters */
 	struct hwDependentFns *glcd_functions;	/**< pointers to low-level functions */
 	void *ct_data;			/**< Connection type specific data */
+	void *render_config;		/**< Settings for the font renderer */
+	char use_ft2;			/**< (Not) use FreeType if available */
 } PrivateData;
 
 /** Structure holding pointers to display specific functions */
@@ -50,5 +50,38 @@ typedef struct hwDependentFns {
 	/* Close the interface on shutdown */
 	void (*close)(PrivateData *p);
 } GLCD_functions;
+
+/* ================== Framebuffer functions and macros =================== */
+
+#define BYTES_PER_LINE (p->px_width / 8)
+#define FB_BYTES_TOTAL (p->px_height * BYTES_PER_LINE)
+
+/**
+ * Draw one pixel into the framebuffer using 1bpp (black and white). This
+ * function actually decides about the format of the framebuffer. Using this
+ * implementation (0,0) is top left and bytes contain pixels from left to right.
+ *
+ * \param p      Pointer to driver's private data.
+ * \param x      X-position
+ * \param y      Y-position
+ * \param color  Pixel color: 1 = set (black), 0 = not set (blank/white)
+ */
+static inline void
+fb_draw_pixel(PrivateData *p, int x, int y, int color)
+{
+	unsigned int pos;	/* Byte within the framebuffer */
+	unsigned char bit;	/* Bit within the framebuffer byte */
+
+	if (x < 0 || x >= p->px_width || y < 0 || y >= p->px_height)
+		return;
+
+	pos = y * BYTES_PER_LINE + (x / 8);
+	bit = 0x80 >> (x % 8);
+
+	if (color == 1)
+		p->framebuf[pos] |= bit;
+	else
+		p->framebuf[pos] &= ~bit;
+}
 
 #endif
