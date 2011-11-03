@@ -448,9 +448,14 @@ t6963_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT int
 t6963_icon(Driver *drvthis, int x, int y, int icon)
 {
+	int icon_char;
 	debug(RPT_DEBUG, "T6963: set icon %d", icon);
 
-	return (glcd_icon5x8(drvthis, x, y, icon));
+	if ((icon_char = glcd_icon5x8(icon)) != -1) {
+		t6963_chr(drvthis, x, y, icon_char);
+		return 0;
+	}
+	return -1;
 }
 
 /* EOF */

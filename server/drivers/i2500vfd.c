@@ -411,11 +411,17 @@ i2500vfd_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 }
 
 /////////////////////////////////////////////////////////////////
-// Reprogrammes character dest to contain an icon given by
-// which. Calls set_char() to do this.
+// Gets an icon character from the font definition and calls
+// chr() to draw it.
 //
 MODULE_EXPORT int
 i2500vfd_icon (Driver *drvthis, int x, int y, int icon)
 {
-    return (glcd_icon5x8(drvthis, x, y, icon));
+    int icon_char;
+
+    if ((icon_char = glcd_icon5x8(icon)) != -1) {
+        i2500vfd_chr(drvthis, x, y, icon_char);
+        return 0;
+    }
+    return -1;
 }

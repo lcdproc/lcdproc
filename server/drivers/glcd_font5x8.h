@@ -1776,79 +1776,82 @@ unsigned char glcd_iso8859_1[256][8] = {
 };
 
 static int
-glcd_icon5x8(Driver *drvthis, int x, int y, int icon)
+glcd_icon5x8(int icon)
 {
+	int icon_char;
+
 	switch (icon) {
 	    case ICON_BLOCK_FILLED:
-		drvthis->chr(drvthis, x, y, 0x98);
+		icon_char =  0x98;
 		break;
 	    case ICON_HEART_FILLED:
-		drvthis->chr(drvthis, x, y, 0x80);
+		icon_char =  0x80;
 		break;
 	    case ICON_HEART_OPEN:
-		drvthis->chr(drvthis, x, y, 0x81);
+		icon_char =  0x81;
 		break;
 	    case ICON_ARROW_UP:
-		drvthis->chr(drvthis, x, y, 0x82);
+		icon_char =  0x82;
 		break;
 	    case ICON_ARROW_DOWN:
-		drvthis->chr(drvthis, x, y, 0x83);
+		icon_char =  0x83;
 		break;
 	    case ICON_ARROW_LEFT:
-		drvthis->chr(drvthis, x, y, 0x84);
+		icon_char =  0x84;
 		break;
 	    case ICON_ARROW_RIGHT:
-		drvthis->chr(drvthis, x, y, 0x85);
+		icon_char =  0x85;
 		break;
 	    case ICON_CHECKBOX_OFF:
-		drvthis->chr(drvthis, x, y, 0x86);
+		icon_char =  0x86;
 		break;
 	    case ICON_CHECKBOX_ON:
-		drvthis->chr(drvthis, x, y, 0x87);
+		icon_char =  0x87;
 		break;
 	    case ICON_CHECKBOX_GRAY:
-		drvthis->chr(drvthis, x, y, 0x88);
+		icon_char =  0x88;
 		break;
 	    case ICON_SELECTOR_AT_LEFT:
-		drvthis->chr(drvthis, x, y, 0x89);
+		icon_char =  0x89;
 		break;
 	    case ICON_SELECTOR_AT_RIGHT:
-		drvthis->chr(drvthis, x, y, 0x8a);
+		icon_char =  0x8a;
 		break;
 	    case ICON_ELLIPSIS:
-		drvthis->chr(drvthis, x, y, 0x8b);
+		icon_char =  0x8b;
 		break;
 	    case ICON_STOP:
-		drvthis->chr(drvthis, x, y, 0x8c);
+		icon_char =  0x8c;
 		break;
 	    case ICON_PAUSE:
-		drvthis->chr(drvthis, x, y, 0x8d);
+		icon_char =  0x8d;
 		break;
 	    case ICON_PLAY:
-		drvthis->chr(drvthis, x, y, 0x89);
+		icon_char =  0x89;
 		break;
 	    case ICON_PLAYR:
-		drvthis->chr(drvthis, x, y, 0x8a);
+		icon_char =  0x8a;
 		break;
 	    case ICON_FF:
-		drvthis->chr(drvthis, x, y, 0xab);
+		icon_char =  0xab;
 		break;
 	    case ICON_FR:
-		drvthis->chr(drvthis, x, y, 0xbb);
+		icon_char =  0xbb;
 		break;
 	    case ICON_NEXT:
-		drvthis->chr(drvthis, x, y, 0x8e);
+		icon_char =  0x8e;
 		break;
 	    case ICON_PREV:
-		drvthis->chr(drvthis, x, y, 0x8f);
+		icon_char =  0x8f;
 		break;
 	    case ICON_REC:
-		drvthis->chr(drvthis, x, y, 0xac);
+		icon_char =  0xac;
 		break;
 	    default:
-		return -1;
+		icon_char = -1;
 	}
-	return 0;
+
+	return icon_char;
 }
 
 #endif

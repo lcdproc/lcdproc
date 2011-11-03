@@ -576,7 +576,13 @@ mdm166a_hbar(Driver *drvthis, int x, int y, int len, int promille, int pattern)
 MODULE_EXPORT int
 mdm166a_icon(Driver *drvthis, int x, int y, int icon)
 {
-	return (glcd_icon5x8(drvthis, x, y, icon));
+	int icon_char;
+
+	if ((icon_char = glcd_icon5x8(icon)) != -1) {
+		mdm166a_chr(drvthis, x, y, icon_char);
+		return 0;
+	}
+	return -1;
 }
 
 

@@ -512,5 +512,11 @@ sed1520_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 MODULE_EXPORT int
 sed1520_icon(Driver * drvthis, int x, int y, int icon)
 {
-	return (glcd_icon5x8(drvthis, x, y, icon));
+    int icon_char;
+
+    if ((icon_char = glcd_icon5x8(icon)) != -1) {
+        sed1520_chr(drvthis, x, y, icon_char);
+        return 0;
+    }
+    return -1;
 }
