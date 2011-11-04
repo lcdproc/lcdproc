@@ -1,7 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
 EXTRA_DIST =	bayrad.docbook \
-		CFontz633.docbook \
 		CFontz.docbook \
 		CFontzPacket.docbook \
 		curses.docbook \
