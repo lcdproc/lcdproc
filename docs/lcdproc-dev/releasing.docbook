@@ -183,7 +183,7 @@ release.
     <listitem><para>New drivers</para></listitem>
     <listitem><para>Other important changes within drivers, the server core and
     clients</para></listitem>
-    <listitem><para>Everything else the user has to now for upgrading his
+    <listitem><para>Everything else the user has to know for upgrading his
     installed version</para></listitem>
   </itemizedlist>
   grouped by topics of interest.
