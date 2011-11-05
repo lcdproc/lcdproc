@@ -339,6 +339,9 @@ if test "$enable_freetype" = "yes"; then
 			[enable_freetype=no])],
 		[AC_MSG_WARN([freetype does not seem to be installed])])
 fi
+AC_SUBST([FT2_CFLAGS])
+AC_SUBST([FT2_LIBS])
+
 
 dnl ######################################################################
 dnl ethlcd support
