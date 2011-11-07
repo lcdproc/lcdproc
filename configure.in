@@ -1,9 +1,9 @@
 # -*- mode: m4; -*-
-dnl Process this file with autoconf  2.50 (or higher) to produce a configure script.
-AC_PREREQ(2.59)
-AC_INIT(lcdproc, 0.5dev, lcdproc@lists.omnipotent.net)
+dnl Process this file with autoconf 2.61 (or higher) to produce a configure script.
+AC_PREREQ(2.61)
+AC_INIT([lcdproc], [0.5dev], [lcdproc@lists.omnipotent.net])
 AC_CONFIG_SRCDIR([clients/lcdproc/batt.c])
-AM_INIT_AUTOMAKE(1.7)
+AM_INIT_AUTOMAKE
 
 AC_CONFIG_HEADERS(config.h)
 
