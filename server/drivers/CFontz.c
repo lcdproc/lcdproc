@@ -243,6 +243,12 @@ CFontz_init(Driver *drvthis)
 		report(RPT_INFO, "%s: rebooting LCD...", drvthis->name);
 		CFontz_reboot(drvthis);
 	}
+
+#ifndef SEAMLESS_HBARS
+	report(RPT_WARNING, "%s: driver built without SEAMLESS_HBARS. "
+	       "Hbars will NOT display correctly!", drvthis->name);
+#endif
+
 	sleep (1);
 	CFontz_hidecursor(drvthis);
 	CFontz_linewrap(drvthis, 1);
@@ -916,7 +922,7 @@ CFontz_icon(Driver *drvthis, int x, int y, int icon)
 	/* Yes we know, this is a VERY BAD implementation :-) */
 	switch (icon) {
 		case ICON_BLOCK_FILLED:
-			CFontz_raw_chr(drvthis, x, y, (p->newfirmware) ? 214 : 255);
+			CFontz_raw_chr(drvthis, x, y, (p->newfirmware) ? 0x1F : 255);
 			break;
 		case ICON_HEART_FILLED:
 			CFontz_set_char(drvthis, 0, heart_filled);

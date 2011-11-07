@@ -6,6 +6,15 @@ This section talks about using LCDproc with the serial LCD displays of the
 CFA632 and CFA634 series by CrystalFontz, Inc.
 </para>
 
+<important>
+  <para>
+    This driver must be compiled with SEAMLESS_HBARS option enabled. Otherwise
+    horizontal bars will not display correctly. Use
+    <command>configure --enable-driver=CFontz --enable-seamless-hbars</command>
+    to accomplish this.
+  </para>
+</important>
+
 <sect2 id="CFontz-config">
 <title>Configuration in LCDd.conf</title>
 
@@ -43,7 +52,7 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
     Set the initial contrast.
     Legal values for <replaceable>CONTRAST</replaceable> are in the range
     between <literal>0</literal> and <literal>1000</literal>.
-    If not given, it defaults to <literal>140</literal>.
+    If not given, it defaults to <literal>560</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -97,7 +106,7 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
     <property>NewFirmware</property> = &parameters.yesnodef;
   </term>
   <listitem><para>
-    Set the firmware version (<emphasis>New</emphasis> means >= 2.0) [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
+    Set the firmware version (<emphasis>New</emphasis> means >= 2.0) [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>].
   </para></listitem>
 </varlistentry>
 
@@ -107,7 +116,7 @@ CFA632 and CFA634 series by CrystalFontz, Inc.
   </term>
   <listitem><para>
     Reinitialize the LCD's BIOS [default: <literal>no</literal>; legal: <literal>yes</literal>, <literal>no</literal>]
-    normally you shouldn't need this
+    normally you shouldn't need this.
   </para></listitem>
 </varlistentry>
 </variablelist>

@@ -3,7 +3,7 @@ pre.screen {
   border: 1px solid #006600 ;
 }
 
-div.note, div.tip, div.warning {
+div.note, div.tip, div.warning, div.important {
   margin-top: 5px;
   margin-bottom: 5px;
   padding: 5px;
@@ -13,6 +13,9 @@ div.note, div.tip {
   border-left: solid palegreen 20px;
 }
 
+div.important {
+  border-left: solid gold 20px;
+}
 div.warning {
   border-left: solid red 20px;
 }
