@@ -35,11 +35,11 @@ MODULE_EXPORT void imonlcd_chr (Driver *drvthis, int x, int y, char c);
 MODULE_EXPORT void imonlcd_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void imonlcd_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void imonlcd_num (Driver *drvthis, int x, int num);
+MODULE_EXPORT int  imonlcd_icon (Driver *drvthis, int x, int y, int icon);
 /* MODULE_EXPORT void imonlcd_heartbeat (Driver *drvthis, int state); NOT IMPLEMENTED */
-/* MODULE_EXPORT int  imonlcd_icon (Driver *drvthis, int x, int y, int icon); NOT IMPLEMENTED */
 /* MODULE_EXPORT void imonlcd_cursor (Driver *drvthis, int x, int y, int type); NOT IMPLEMENTED */
 
-/* user-defined character functions, are those still supported ? */
+/* user-defined character functions */
 /* MODULE_EXPORT void imonlcd_set_char (Driver *drvthis, int n, char *dat); NOT IMPLEMENTED */
 /* MODULE_EXPORT int  imonlcd_get_free_chars (Driver *drvthis); NOT IMPLEMENTED */
 MODULE_EXPORT int  imonlcd_cellwidth (Driver *drvthis);
@@ -57,4 +57,3 @@ MODULE_EXPORT void imonlcd_output (Driver *drvthis, int state);
 MODULE_EXPORT const char *imonlcd_get_info (Driver *drvthis);
 
 #endif
-

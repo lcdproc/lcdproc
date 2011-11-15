@@ -34,11 +34,11 @@
 typedef struct mx5000_private_data {
     char device[200];
     int wait;
-    int fd;	
+    int fd;
     struct MX5000ScreenContent *sc;
     char info[255];
     char changed;
-} PrivateData;	
+} PrivateData;
 
 
 /* API: variables for the server core */
@@ -65,7 +65,6 @@ MODULE_EXPORT int  mx5000_icon(Driver *drvthis, int x, int y, int icon);
 
 /*
 MODULE_EXPORT void mx5000_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT int  mx5000_icon(Driver *drvthis, int x, int y, int icon);
 */
 
 MODULE_EXPORT int  mx5000_get_free_chars (Driver *drvthis);
