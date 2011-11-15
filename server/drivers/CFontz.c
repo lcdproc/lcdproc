@@ -815,44 +815,6 @@ CFontz_icon(Driver *drvthis, int x, int y, int icon)
 		  b__X_X_X,
 		  b__XX_XX,
 		  b__XXXXX };
-	/*
-	static unsigned char arrow_up[] =
-		{ b____X__,
-		  b___XXX_,
-		  b__X_X_X,
-		  b____X__,
-		  b____X__,
-		  b____X__,
-		  b____X__,
-		  b_______ };
-	static unsigned char arrow_down[] =
-		{ b____X__,
-		  b____X__,
-		  b____X__,
-		  b____X__,
-		  b__X_X_X,
-		  b___XXX_,
-		  b____X__,
-		  b_______ };
-	static unsigned char arrow_left[] =
-		{ b_______,
-		  b____X__,
-		  b___X___,
-		  b__XXXXX,
-		  b___X___,
-		  b____X__,
-		  b_______,
-		  b_______ };
-	static unsigned char arrow_right[] =
-		{ b_______,
-		  b____X__,
-		  b_____X_,
-		  b__XXXXX,
-		  b_____X_,
-		  b____X__,
-		  b_______,
-		  b_______ };
-	*/
 	static unsigned char checkbox_off[] =
 		{ b_______,
 		  b_______,
@@ -899,24 +861,6 @@ CFontz_icon(Driver *drvthis, int x, int y, int icon)
 		  b____XX_,
 		  b_____X_,
 		  b_______ };
-	static unsigned char ellipsis[] =
-		{ b_______,
-		  b_______,
-		  b_______,
-		  b_______,
-		  b_______,
-		  b_______,
-		  b__X_X_X,
-		  b_______ };
-	static unsigned char block_filled[] =
-		{ b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX,
-		  b__XXXXX };
 	*/
 
 	/* Yes we know, this is a VERY BAD implementation :-) */
@@ -956,9 +900,20 @@ CFontz_icon(Driver *drvthis, int x, int y, int icon)
 			CFontz_set_char(drvthis, 5, checkbox_gray);
 			CFontz_raw_chr(drvthis, x, y, 5);
 			break;
+		case ICON_SELECTOR_AT_LEFT:
+			if (!p->newfirmware)
+				return -1;
+			CFontz_raw_chr(drvthis, x, y, 0x10);
+			break;
+		case ICON_SELECTOR_AT_RIGHT:
+			if (!p->newfirmware)
+				return -1;
+			CFontz_raw_chr(drvthis, x, y, 0x11);
+			break;
 		default:
 			return -1; /* Let the core do other icons */
 	}
+
 	return 0;
 }
 
