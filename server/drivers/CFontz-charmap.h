@@ -1,11 +1,17 @@
-/*
- * Character mapping for CFontz 63x by Peter Marschall <peter@adpm.de>
- *
+/** \file server/drivers/CFontz-charmap.h
  * Translates ISO 8859-1 to CFontz 63x charset (not for CF633).
+ */
+
+/*-
+ * Copyright (C) 2005 Peter Marschall <peter@adpm.de>
  *
  * This file is released under the GNU General Public License.
  * Refer to the COPYING file distributed with this package.
- *
+ */
+
+#include "hd44780-charmap.h"
+
+/*
  * The following translations are being performed:
  * - map umlaut characters to the corresponding umlaut characters
  * - map other accented characters to the corresponding accented characters
@@ -17,12 +23,12 @@
  * - multiplication sign simulated by x
  * - division sign simulated by :
  *
+ * Note: The ROM character set of the 63x series is the same as for the KS0073
+ *       controller used in the EA_KS0073_charmap, but the mappings are
+ *       different. So keep this seperately!
  */
-
-#include "hd44780-charmap.h"
-
-const unsigned char CFontz_charmap[] = {	// mapped chars: ? means ToDo
-/* #0 */
+const unsigned char CFontz_charmap[] = {
+  /* #0 */
     0,   1,   2,   3,   4,   5,   6,   7,
     8,   9,  10,  11,  12,  13,  14,  15,
    16,  17,  18,  19,  20,  21,  22,  23,
@@ -50,7 +56,7 @@ const unsigned char CFontz_charmap[] = {	// mapped chars: ? means ToDo
   /* #160 */
    32,  64, 177, 161,  36, 163, 254,  95,	// SPC ¡ ¢ £ CURR ¥ | §
    34, 169, 170,  20, 172, 173, 174, 175,	// " ? ? « ? ? ? ?
-  128, 140, 130, 131, 180, 143, 182, 222,	// ° ± ² ³ ? µ ? ·
+  128, 140, 130, 131, 180, 143, 182, 221,	// ° ± ² ³ ? µ ? ·
   184, 129, 186,  21, 139, 138, 190,  96,	// ? ¹ ? » 1/4 1/2 ? ¿
   /* #192 */
    65, 226,  65,  65,  91, 174, 188, 169,	// À Á Â Ã Ä Å Æ Ç
