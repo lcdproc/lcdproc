@@ -33,10 +33,10 @@
 #include <usb.h>
 #include <ftdi.h>
 
-#include "hd44780-charmap.h"
 #include "lcd.h"
 #include "ula200.h"
 #include "report.h"
+#include "hd44780-charmap.h"
 #include "adv_bignum.h"
 
 
@@ -880,10 +880,10 @@ ula200_icon(Driver *drvthis, int x, int y, int icon)
 		ula200_chr(drvthis, x, y, 4);
 		break;
 	    case ICON_ARROW_LEFT:
-		ula200_chr(drvthis, x, y, 0x7F);
+		ula200_chr(drvthis, x, y, 0x1B);
 		break;
 	    case ICON_ARROW_RIGHT:
-		ula200_chr(drvthis, x, y, 0x7E);
+		ula200_chr(drvthis, x, y, 0x1A);
 		break;
 	    case ICON_CHECKBOX_OFF:
 		ula200_chr(drvthis, x, y, 5);

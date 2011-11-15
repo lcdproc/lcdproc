@@ -688,8 +688,7 @@ HD44780_flush(Driver *drvthis)
 					drawing = 1;
 					HD44780_position(drvthis,x,y);
 				}
-				p->hd44780_functions->senddata(p, dispID, RS_DATA,
-							       available_charmaps[p->charmap].charmap[*sp]);
+				p->hd44780_functions->senddata(p, dispID, RS_DATA, *sp);
 				p->hd44780_functions->uPause(p, 40);  /* Minimum exec time for all commands */
 				*sq = *sp;	/* Update backing store */
 				count++;
@@ -754,7 +753,8 @@ HD44780_chr(Driver *drvthis, int x, int y, char ch)
 	x--;
 
 	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
-		p->framebuf[(y * p->width) + x] = ch;
+		p->framebuf[(y * p->width) + x] =
+			available_charmaps[p->charmap].charmap[(unsigned char) ch];
 }
 
 
@@ -780,7 +780,8 @@ HD44780_string(Driver *drvthis, int x, int y, const char string[])
 
 	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
 		if (x >= 0)	/* no write left of left border */
-			p->framebuf[(y * p->width) + x] = string[i];
+			p->framebuf[(y * p->width) + x] =
+				available_charmaps[p->charmap].charmap[(unsigned char) string[i]];
 	}
 }
 
@@ -909,15 +910,6 @@ HD44780_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	/*
-	 * x and y are the start position of the bar.
-	 * The bar by default grows in the 'up' direction
-	 * (other direction not yet implemented).
-	 * len is the number of characters that the bar is long at 100%
-	 * promille is the number of promilles (0..1000) that the bar should
-	 * be filled.
-	 */
-
 	if (p->ccmode != vbar) {
 		unsigned char vBar[p->cellheight];
 		int i;
@@ -957,14 +949,6 @@ HD44780_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	/*
-	 * x and y are the start position of the bar.
-	 * The bar by default grows in the 'right' direction
-	 * (other direction not yet implemented).
-	 * len is the number of characters that the bar is long at 100%
-	 * promille is the number of promilles (0..1000) that the bar should be filled.
-	 */
-
 	if (p->ccmode != hbar) {
 		unsigned char hBar[p->cellheight];
 		int i;
@@ -973,7 +957,7 @@ HD44780_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 			/* Not supported(yet) */
 			report(RPT_WARNING, "%s: hbar: cannot combine two modes using user-defined characters",
 			      drvthis->name);
-		return;
+			return;
 		}
 
 		p->ccmode = hbar;
@@ -1062,7 +1046,7 @@ HD44780_set_char(Driver *drvthis, int n, unsigned char *dat)
 			letter = dat[row] & mask;
 
 		if (p->cc[n].cache[row] != letter)
-			p->cc[n].clean = 0;	 /* only mark dirty if really different */
+			p->cc[n].clean = 0;	/* only mark dirty if really different */
 		p->cc[n].cache[row] = letter;
 	}
 }
@@ -1080,6 +1064,8 @@ HD44780_set_char(Driver *drvthis, int n, unsigned char *dat)
 MODULE_EXPORT int
 HD44780_icon(Driver *drvthis, int x, int y, int icon)
 {
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+
 	static unsigned char heart_open[] =
 		{ b__XXXXX,
 		  b__X_X_X,
@@ -1116,26 +1102,6 @@ HD44780_icon(Driver *drvthis, int x, int y, int icon)
 		  b___XXX_,
 		  b____X__,
 		  b_______ };
-	/*-
-	static unsigned char arrow_left[] =
-		{ b_______,
-		  b____X__,
-		  b___X___,
-		  b__XXXXX,
-		  b___X___,
-		  b____X__,
-		  b_______,
-		  b_______ };
-	static unsigned char arrow_right[] =
-		{ b_______,
-		  b____X__,
-		  b_____X_,
-		  b__XXXXX,
-		  b_____X_,
-		  b____X__,
-		  b_______,
-		  b_______ };
-	*/
 	static unsigned char checkbox_off[] =
 		{ b_______,
 		  b_______,
@@ -1163,35 +1129,6 @@ HD44780_icon(Driver *drvthis, int x, int y, int icon)
 		  b__X_X_X,
 		  b__XXXXX,
 		  b_______ };
-	/*-
-	static unsigned char selector_left[] =
-		{ b___X___,
-		  b___XX__,
-		  b___XXX_,
-		  b___XXXX,
-		  b___XXX_,
-		  b___XX__,
-		  b___X___,
-		  b_______ };
-	static unsigned char selector_right[] =
-		{ b_____X_,
-		  b____XX_,
-		  b___XXX_,
-		  b__XXXX_,
-		  b___XXX_,
-		  b____XX_,
-		  b_____X_,
-		  b_______ };
-	static unsigned char ellipsis[] =
-		{ b_______,
-		  b_______,
-		  b_______,
-		  b_______,
-		  b_______,
-		  b_______,
-		  b__X_X_X,
-		  b_______ };
-	*/
 	static unsigned char block_filled[] =
 		{ b__XXXXX,
 		  b__XXXXX,
@@ -1202,20 +1139,59 @@ HD44780_icon(Driver *drvthis, int x, int y, int icon)
 		  b__XXXXX,
 		  b__XXXXX };
 
-	/* Yes I know, this is a VERY BAD implementation */
+	/* Icons from CGROM will always work */
 	switch (icon) {
-		case ICON_BLOCK_FILLED:
-			HD44780_set_char(drvthis, 6, block_filled);
-			HD44780_chr(drvthis, x, y, 6);
-			break;
-		case ICON_HEART_FILLED:
-			HD44780_set_char(drvthis, 0, heart_filled);
+	    case ICON_ARROW_LEFT:
+		HD44780_chr(drvthis, x, y, 0x1B);
+		return 0;
+	    case ICON_ARROW_RIGHT:
+		HD44780_chr(drvthis, x, y, 0x1A);
+		return 0;
+	}
+
+	/* The full block works except if ccmode=bignum */
+	if (icon == ICON_BLOCK_FILLED) {
+		if (p->ccmode != bignum) {
+			HD44780_set_char(drvthis, 0, block_filled);
 			HD44780_chr(drvthis, x, y, 0);
-			break;
-		case ICON_HEART_OPEN:
-			HD44780_set_char(drvthis, 0, heart_open);
-			HD44780_chr(drvthis, x, y, 0);
-			break;
+			return 0;
+		}
+		else {
+			return -1;
+		}
+	}
+
+	/* The heartbeat icons do not work in bignum and vbar mode */
+	if ((icon == ICON_HEART_FILLED) || (icon == ICON_HEART_OPEN)) {
+		if ((p->ccmode != bignum) && (p->ccmode != vbar)) {
+			switch (icon) {
+			    case ICON_HEART_FILLED:
+				HD44780_set_char(drvthis, 7, heart_filled);
+				HD44780_chr(drvthis, x, y, 7);
+				return 0;
+			    case ICON_HEART_OPEN:
+				HD44780_set_char(drvthis, 7, heart_open);
+				HD44780_chr(drvthis, x, y, 7);
+				return 0;
+			}
+		}
+		else {
+			return -1;
+		}
+	}
+
+	/* All other icons work only in the standard or icon ccmode */
+	if (p->ccmode != icons) {
+		if (p->ccmode != standard) {
+			/* Not supported (yet) */
+			report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
+					drvthis->name);
+			return -1;
+		}
+		p->ccmode = icons;
+	}
+
+	switch (icon) {
 		case ICON_ARROW_UP:
 			HD44780_set_char(drvthis, 1, arrow_up);
 			HD44780_chr(drvthis, x, y, 1);
@@ -1223,12 +1199,6 @@ HD44780_icon(Driver *drvthis, int x, int y, int icon)
 		case ICON_ARROW_DOWN:
 			HD44780_set_char(drvthis, 2, arrow_down);
 			HD44780_chr(drvthis, x, y, 2);
-			break;
-		case ICON_ARROW_LEFT:
-			HD44780_chr(drvthis, x, y, 0x7F);
-			break;
-		case ICON_ARROW_RIGHT:
-			HD44780_chr(drvthis, x, y, 0x7E);
 			break;
 		case ICON_CHECKBOX_OFF:
 			HD44780_set_char(drvthis, 3, checkbox_off);

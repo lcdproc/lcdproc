@@ -13,6 +13,7 @@ v0.5dev (ongoing development)
  * hd44780/serial: Change backlight handling (see commit message)
  + glcd driver: Add FreeType 2 rendering support (B. Walle and M. Dolze)
  + glcd driver: New connection type PNG, writes framebuffer as PNG image
+ + hd44780: Fix vBars and block icon not working correctly on the same screen
 
 v0.5.5
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)

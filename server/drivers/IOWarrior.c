@@ -1044,10 +1044,10 @@ static unsigned char block_filled[] =
       IOWarrior_chr(drvthis, x, y, 2);
       break;
     case ICON_ARROW_LEFT:
-      IOWarrior_chr(drvthis, x, y, 0x7F);
+      IOWarrior_chr(drvthis, x, y, 0x1B);
       break;
     case ICON_ARROW_RIGHT:
-      IOWarrior_chr(drvthis, x, y, 0x7E);
+      IOWarrior_chr(drvthis, x, y, 0x1A);
       break;
     case ICON_CHECKBOX_OFF:
       IOWarrior_set_char(drvthis, 3, checkbox_off);

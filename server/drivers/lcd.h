@@ -107,12 +107,12 @@
 
 /* Type of characters currently stored in CGRAM. */
 typedef enum {
-	standard,		/* only char 0 is used for heartbeat */
+	standard,		/* one char is used for heartbeat */
 	vbar,			/* vertical bars */
 	hbar,			/* horizontal bars */
+	icons,			/* standard icons */
 	custom,			/* custom settings */
 	bignum,			/* big numbers */
-	bigchar			/* big characters */
 } CGmode;
 
 /* What does the shared module handle look like on the current platform? */

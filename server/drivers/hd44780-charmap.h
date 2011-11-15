@@ -1,6 +1,13 @@
 /** \file server/drivers/hd44780-charmap.h
  * Character mapping for HD44780 devices. Translates ISO 8859-1 to known
  * HD44780 (and compatible) ROM character sets.
+ *
+ * \note  All supported display controllers have their custom characters
+ *        available as codes 0x00 (0) to 0x0F (15). Theses character codes
+ *        MUST NOT be mapped.
+ * \note  By convention drivers (hd44780, IOWarrior, ula200) use codes
+ *        0x1A (26) and 0x1B (27) to access left and right arrow characters.
+ *        Map these to the corresponding characters of the controller CGROM.
  */
 
 /*-
@@ -12,6 +19,7 @@
  * This file is released under the GNU General Public License.
  * Refer to the COPYING file distributed with this package.
  */
+
 
 /*
  * The 'none' charmap does map each character to itself, not replacing
@@ -72,7 +80,7 @@ const unsigned char none_charmap[] = {
  * - map beta (=sharp s), micro and Yen
  * - map 'n/N with tilde' to 'n with bar above'
  *
- * HD44780 misses backslash
+ * HD44780 misses backslash and tilde
  *
  */
 const unsigned char HD44780_charmap[] = {
@@ -80,7 +88,7 @@ const unsigned char HD44780_charmap[] = {
           0,   1,   2,   3,   4,   5,   6,   7,
           8,   9,  10,  11,  12,  13,  14,  15,
          16,  17,  18,  19,  20,  21,  22,  23,
-         24,  25,  26,  27,  28,  29,  30,  31,
+         24,  25, 126, 127,  28,  29,  30,  31,
         /* #32 */
          32,  33,  34,  35,  36,  37,  38,  39,
          40,  41,  42,  43,  44,  45,  46,  47,
@@ -195,7 +203,7 @@ const unsigned char EA_KS0073_charmap[] = {
           0,   1,   2,   3,   4,   5,   6,   7,
           8,   9,  10,  11,  12,  13,  14,  15,
          16,  17,  18,  19,  20,  21,  22,  23,
-         24,  25,  26,  27,  28,  29,  30,  31,
+         24,  25, 223, 225,  28,  29,  30,  31,
         /* #32 */
          32,  33,  34,  35,  36,  37,  38,  39,
          40,  41,  42,  43,  44,  45,  46,  47,
@@ -210,7 +218,7 @@ const unsigned char EA_KS0073_charmap[] = {
          39,  97,  98,  99, 100, 101, 102, 103,
         104, 105, 106, 107, 108, 109, 110, 111,
         112, 113, 114, 115, 116, 117, 118, 119,
-        120, 121, 122, 253, 218, 255, 223, 225,
+        120, 121, 122, 253, 218, 255, 206, 127,
         /* #128 */
          16,  17,  18,  19,  20,  21,  22,  23,
          24,  25,  26,  27,  28, 140, 141, 142,
@@ -241,7 +249,7 @@ const unsigned char SED1278F_0B_charmap[] = {
           0,   1,   2,   3,   4,   5,   6,   7,
           8,  32,  32,  32,  32,  32,  14,  15,
          16,  17,  18,  19,  20,  21,  22,  23,
-         24,  25,  26,  27,  28,  29,  30,  31,
+         24,  25, 199, 200,  28,  29,  30,  31,
         /* #32 */
          32,  33,  39,  35,  36,  37,  38,  39,
          40,  41,  42,  43,  44,  45,  46,  47,
@@ -444,7 +452,7 @@ const unsigned char uPD16314_charmap[] = {
           0,   1,   2,   3,   4,   5,   6,   7,
           8,   9,  10,  11,  12,  13,  14,  15,
          16,  17,  18,  19,  20,  21,  22,  23,
-         24,  25,  26,  27,  28,  29,  30,  31,
+         24,  25, 126, 127,  28,  29,  30,  31,
         /* 20h - 3Fh : Numbers and punctuation */
          32,  33,  34,  35,  36,  37,  38,  39,
          40,  41,  42,  43,  44,  45,  46,  47,
@@ -458,7 +466,7 @@ const unsigned char uPD16314_charmap[] = {
          96,  97,  98,  99, 100, 101, 102, 103,
         104, 105, 106, 107, 108, 109, 110, 111,
         112, 113, 114, 115, 116, 117, 118, 119,
-        120, 121, 122, 123, 124, 125, 142, 127,
+        120, 121, 122, 123, 124, 125, 142,  32,
         /* 80h - 9Fh : Control characters */
         128, 129, 130, 131, 132, 133, 134, 135,
         136, 137, 138, 139, 140, 141, 142, 143,
