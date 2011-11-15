@@ -628,7 +628,12 @@
 		      vertical (<literal>v</literal>) direction at a speed
 		      of <replaceable>speed</replaceable>, which is the number of
 		      movements per rendering stroke (8 times/second).
-		    </para></listitem>
+		    </para>
+		    <note><para>
+		      In the current implementation frames can only scroll vertically
+		      and only string and hbar widgets work inside frames.
+		    </para></note>
+		  </listitem>
 		</varlistentry>
 		<varlistentry>
 		  <term>
