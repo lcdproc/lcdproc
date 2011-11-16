@@ -7,8 +7,6 @@ V0.5dev:
     a non full block from the vBar. Affected drivers: IOWarrior, CwLinux
   - On Solaris the mtc_s16209x driver fails to compile. Configure LCDproc to
     exclude this driver.
-  - On FreeBSD drivers using the pthread library are known not to work.
-    Currently affected are the lis and xosd driver.
 
 
 Bugs in previous versions (not checked if the still exist):
