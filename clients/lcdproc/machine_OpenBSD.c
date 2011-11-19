@@ -49,8 +49,7 @@
 #include <sys/mount.h>
 #include <sys/time.h>
 #include <sys/user.h>
-/* take care if $ARCH != i386! */
-#include <i386/apmvar.h>
+#include <machine/apmvar.h>
 #include <kvm.h>
 #include <errno.h>
 
