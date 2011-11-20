@@ -15,9 +15,10 @@
 #ifndef IFACE_H
 #define IFACE_H
 
-#define MAX_INTERFACES 3  /* max number of interfaces in multi-interface mode */
+/** max number of interfaces in multi-interface mode */
+#define MAX_INTERFACES 3
 
-IfaceInfo iface[MAX_INTERFACES];  /* interface info */
+IfaceInfo iface[MAX_INTERFACES];	/* interface info */
 
 /** Update screen content */
 int iface_screen(int rep, int display, int *flags_ptr);

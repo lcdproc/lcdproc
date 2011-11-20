@@ -3,25 +3,15 @@
  */
 
 /*-
-   Copyright (C) 2002 Luis Llorente Campo <luisllorente@luisllorente.com>
-   Multiinterface Extension by Stephan Skrodzki <skrodzki@stevekist.de>
-   Adaptions to lcdproc by Andrew Foss with fixes by M. Dolze
-   Cleanup, reorganization by Peter Marschall
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*/
+ * Copyright (C) 2002 Luis Llorente Campo <luisllorente@luisllorente.com>
+ *
+ * Multi-interface extension by Stephan Skrodzki <skrodzki@stevekist.de>
+ * Adaptions to lcdproc by Andrew Foss with fixes by M. Dolze
+ * Cleanup, reorganization by Peter Marschall
+ *
+ * This file is released under the GNU General Public License.
+ * Refer to the COPYING file distributed with this package.
+ */
 
 #include <stdio.h>
 #include <signal.h>
@@ -43,9 +33,9 @@
 #define UNSET_STR "\01"
 
 
-static int iface_count = 0;  /* number of interfaces */
-static char unit_label[10] = "B";  /* default unit label is Bytes */
-static int transfer_screen = 0;  /* by default, transfer screen is not shown */
+static int iface_count = 0;	/* number of interfaces */
+static char unit_label[10] = "B";	/* default unit label is Bytes */
+static int transfer_screen = 0;	/* by default, transfer screen is not shown */
 
 
 /** Reads and parses configuration file.
@@ -56,10 +46,9 @@ iface_process_configfile(void)
 {
 	const char *unit;
 
-	debug( RPT_DEBUG, "%s()", __FUNCTION__ );
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Read config settings */
-
 	for (iface_count = 0; iface_count < MAX_INTERFACES; iface_count++) {
 		char iface_label[12];
 
@@ -75,10 +64,13 @@ iface_process_configfile(void)
 		sprintf(iface_label, "Alias%i", iface_count);
 		iface[iface_count].alias = strdup(config_get_string("Iface", iface_label, 0, iface[iface_count].name));
 		if (iface[iface_count].alias == NULL)
-			// make alia the same as the interface name in case strdup() failed
+			/*
+			 * make alias the same as the interface name in case #
+			 * strdup() failed
+			 */
 			iface[iface_count].alias = iface[iface_count].name;
 		debug(RPT_DEBUG, "Interface %i: %s alias %s",
-			iface_count, iface[iface_count].name, iface[iface_count].alias);
+		      iface_count, iface[iface_count].name, iface[iface_count].alias);
 	}
 
 	unit = config_get_string("Iface", "Unit", 0, "byte");
@@ -95,7 +87,7 @@ iface_process_configfile(void)
 		report(RPT_ERR, "illegal Unit value: %s", unit);
 		return -1;
 	}
-	unit_label[sizeof(unit_label)-1] = '\0';
+	unit_label[sizeof(unit_label) - 1] = '\0';
 
 	transfer_screen = config_get_bool("Iface", "Transfer", 0, 0);
 
@@ -126,12 +118,12 @@ iface_process_configfile(void)
 int
 iface_screen(int rep, int display, int *flags_ptr)
 {
-	/* ALF TODO need to make this actual time since last run */
-	unsigned int interval = difftime(time(NULL), iface[0].last_online);  /* interval since last update */
+	/* interval since last update */
+	unsigned int interval = difftime(time(NULL), iface[0].last_online);
 	int iface_nmbr;
 
 	if (!interval)
-		return 0; /* need at least 1 second, no divide by 0 */
+		return 0;	/* need at least 1 second, no divide by 0 */
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
@@ -149,15 +141,15 @@ iface_screen(int rep, int display, int *flags_ptr)
 
 		/* initialize all interface structs */
 		for (iface_nmbr = 0; iface_nmbr < iface_count; iface_nmbr++) {
-		    	iface[iface_nmbr].last_online = 0;
-		    	iface[iface_nmbr].status = down;
+			iface[iface_nmbr].last_online = 0;
+			iface[iface_nmbr].status = down;
 		}
 		return 0;
 	}
 
 	/* for each interface do */
 	for (iface_nmbr = 0; iface_nmbr < iface_count; iface_nmbr++) {
-		/*read iface_parameter stats */
+		/* read iface_parameter stats */
 		if (!machine_get_iface_stats(&iface[iface_nmbr])) {
 			/* there was an error, so we exit the loop */
 			break;
@@ -178,8 +170,7 @@ iface_screen(int rep, int display, int *flags_ptr)
 	}
 
 	return 0;
-} /* End iface_screen() */
-
+}
 
 
 /**
@@ -188,22 +179,15 @@ iface_screen(int rep, int display, int *flags_ptr)
 void
 initialize_speed_screen(void)
 {
-	int iface_nmbr; /* interface number */
+	int iface_nmbr;	/* interface number */
 
-	/* Add screen */
 	sock_send_string(sock, "screen_add I\n");
-
-	/* Set screen name */
 	sock_send_string(sock, "screen_set I name {Load}\n");
-
-	/* Add title to screen */
 	sock_send_string(sock, "widget_add I title title\n");
 
-	if ((iface_count == 1) && (lcd_hgt >= 4 )) { /* Single interface mode */
-		/* Set title */
+	/* Single interface mode */
+	if ((iface_count == 1) && (lcd_hgt >= 4 )) {
 		sock_printf(sock, "widget_set I title {Net Load: %s}\n", iface[0].alias);
-
-		/* Add and set download, upload and total string widgets */
 		sock_send_string(sock, "widget_add I dl string\n");
 		sock_send_string(sock, "widget_set I dl 1 2 {DL:}\n");
 		sock_send_string(sock, "widget_add I ul string\n");
@@ -211,7 +195,8 @@ initialize_speed_screen(void)
 		sock_send_string(sock, "widget_add I total string\n");
 		sock_send_string(sock, "widget_set I total 1 4 {Total:}\n");
 	}
-	else { /* multi-interfaces mode: one line per interface */
+	/* multi-interfaces mode: one line per interface */
+	else {
 		/* Set title */
 		if (strstr(unit_label, "B")) {
 			sock_printf(sock, "widget_set I title {Net Load (bytes)}\n");
@@ -225,22 +210,22 @@ initialize_speed_screen(void)
 			}
 		}
 
+		/* frame from (2, left) to (width, height) that is iface_count lines high */
 		sock_send_string (sock, "widget_add I f frame\n");
-
-		// frame from (2, left) to (width, height) that is iface_count lines high
 		sock_printf(sock, "widget_set I f 1 2 %d %d %d %d v 16\n",
-				lcd_wid, lcd_hgt, lcd_wid, iface_count,
-				// scroll rate: 1 line every X ticks (=1/8 sec)
-				((lcd_hgt >= 4) ? 8 : 16));
+			    lcd_wid, lcd_hgt, lcd_wid, iface_count,
+			    /* scroll rate: 1 line every X ticks (=1/8 sec) */
+			    ((lcd_hgt >= 4) ? 8 : 16));
 
+		/* Add interfaces to frame */
 		for (iface_nmbr = 0; iface_nmbr < iface_count; iface_nmbr++) {
 			sock_printf(sock, "widget_add I i%1d string -in f\n", iface_nmbr);
-			sock_printf(sock, "widget_set I i%1d 1 %1d {%5.5s NA (never)}\n",\
-						iface_nmbr, iface_nmbr+1, iface[iface_nmbr].alias);
+			sock_printf(sock, "widget_set I i%1d 1 %1d {%5.5s NA (never)}\n",
+				    iface_nmbr, iface_nmbr+1, iface[iface_nmbr].alias);
 		}
 	}
+}
 
-} /* initialize_speed_screen() */
 
 /**
  * Format the value (in bytes) passed as parameter according to its scale,
@@ -264,7 +249,8 @@ format_value (char *buff, double value, char *unit)
 	/* If units are bytes, then divide by 2^10, otherwise by 10^3 */
 	mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
 
-	/* Formatting rules:
+	/*-
+	 * Formatting rules:
 	 * - if original value was < 1000, output decimal value only
 	 * - otherwise format with 3 precision
 	 */
@@ -272,8 +258,8 @@ format_value (char *buff, double value, char *unit)
 		sprintf(buff, "%8ld %s", (long) value, unit);
 	else
 		sprintf(buff, "%7.3f %s%s", value, mag, unit);
+}
 
-} /* format_value() */
 
 /**
  * Format the value (in bytes) passed as parameter according to its scale,
@@ -286,7 +272,7 @@ format_value (char *buff, double value, char *unit)
  *               to binary multiples (1024 bytes = 1 KiB).
  */
 void
-format_value_multi_interface (char *buff, double value, char *unit)
+format_value_multi_interface(char *buff, double value, char *unit)
 {
 	char *mag;
 
@@ -295,7 +281,8 @@ format_value_multi_interface (char *buff, double value, char *unit)
 
 	mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
 
-	/* Formatting rules:
+	/*-
+	 * Formatting rules:
 	 * - if original value was < 1000, output decimal value only
 	 * - with 1 precision if <10
 	 * - decimal value with magnitude otherwise
@@ -306,8 +293,8 @@ format_value_multi_interface (char *buff, double value, char *unit)
 		sprintf(buff, "%3.1f%s", value, mag);
 	else
 		sprintf(buff, "%3.0f%s", value, mag);
+}
 
-} /* format_value_multi_interface() */
 
 /**
  * Format the time in ASCII, depending on the elapsed time.
@@ -315,15 +302,15 @@ format_value_multi_interface (char *buff, double value, char *unit)
  * \param last_online  Time value
  */
 void
-get_time_string (char *buff, time_t last_online)
+get_time_string(char *buff, time_t last_online)
 {
 
-	time_t act_time;  /* actual time */
+	time_t act_time;	/* actual time */
 	char timebuff[30];
 
 	act_time = time(NULL);
 
-	if (last_online == 0) { /* never was online */
+	if (last_online == 0) {	/* never was online */
 		sprintf(buff, "never");
 		return;
 	}
@@ -331,7 +318,8 @@ get_time_string (char *buff, time_t last_online)
 	/* Transform Unix time format to UTC time format */
 	strcpy(timebuff, ctime(&last_online));
 
-	if ((act_time - last_online) > 86400 ) { /* 86400 = 24 * 60 * 60. Is it more than 24 hours? */
+	/* 86400 = 24 * 60 * 60. Is it more than 24 hours? */
+	if ((act_time - last_online) > 86400 ) {
 		timebuff[10] = '\0';
 		sprintf(buff, "%s", &timebuff[4]);
 		return;
@@ -341,7 +329,8 @@ get_time_string (char *buff, time_t last_online)
 		sprintf(buff, "%s", &timebuff[11]);
 		return;
 	}
-} /* get_time_string() */
+}
+
 
 /**
  * Actualize values in display, calculating speeds in the defined interval
@@ -354,14 +343,15 @@ get_time_string (char *buff, time_t last_online)
 void
 actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 {
-	char speed[20];      /* buffer to store the formated speed string */
+	char speed[20];		/* buffer to store the formated speed string */
 	double rc_speed;
 	double tr_speed;
 
-	if ((iface_count == 1) && ( lcd_hgt >= 4)) { /* single interface mode */
+	/* single interface mode */
+	if ((iface_count == 1) && ( lcd_hgt >= 4)) {
 		if (iface->status == up) {
-			/* Calculate Download speed */
-			if (strstr(unit_label, "pkt")) { /* don't format this value */
+			/* Calculate and actualize download speed */
+			if (strstr(unit_label, "pkt")) {
 				rc_speed = (iface->rc_pkt - iface->rc_pkt_old) / interval;
 				sprintf(speed, "%8ld %s", (long) rc_speed, unit_label);
 			}
@@ -369,12 +359,10 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 				rc_speed = (iface->rc_byte - iface->rc_byte_old) / interval;
 				format_value(speed, rc_speed, unit_label);
 			}
-
-			/* Actualize Download speed */
 			sock_printf(sock, "widget_set I dl 1 2 {DL: %*s/s}\n", lcd_wid - 6, speed);
 
-			/* Calculate Upload speed */
-			if (strstr(unit_label, "pkt")) { /* don't format this value */
+			/* Calculate and actualize upload speed */
+			if (strstr(unit_label, "pkt")) {
 				tr_speed = (iface->tr_pkt - iface->tr_pkt_old) / interval;
 				sprintf(speed, "%8ld %s", (long)tr_speed, unit_label);
 			}
@@ -382,30 +370,27 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 				tr_speed = (iface->tr_byte - iface->tr_byte_old) / interval;
 				format_value(speed, tr_speed, unit_label);
 			}
-
-			/* Actualize Upload speed */
 			sock_printf(sock, "widget_set I ul 1 3 {UL: %*s/s}\n", lcd_wid - 6, speed);
 
-			/* Calculate Total speed */
-			if (strstr(unit_label, "pkt")) { /* don't format this value */
+			/* Calculate and actualize total speed */
+			if (strstr(unit_label, "pkt")) {
 				sprintf(speed, "%7ld %s", (long)(rc_speed + tr_speed), unit_label);
 			}
 			else {
 				format_value(speed, rc_speed + tr_speed, unit_label);
 			}
-
-			/* Actualize Total speed */
 			sock_printf(sock, "widget_set I total 1 4 {Total: %*s/s}\n", lcd_wid - 9, speed);
 		}
-		else { /* Interface is down */
+		else {
 			get_time_string(speed, iface->last_online);
 			sock_printf(sock, "widget_set I dl 1 2 {NA (%s)}\n", speed);
 			sock_send_string(sock, "widget_set I ul 1 3 {}\n");
 			sock_send_string(sock, "widget_set I total 1 4 {}\n");
 		}
 	}
-	else { /* multi-interfaces mode: 1 line per interface */
-		char speed1[20];      /* buffer to store the formated speed string */
+	/* multi-interfaces mode: 1 line per interface */
+	else {
+		char speed1[20];	/* buffer to store the formated speed string */
 
 		if (iface->status == up) {
 			if (strstr(unit_label, "pkt")) {
@@ -425,13 +410,14 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 				sock_printf(sock, "widget_set I i%1d 1 %1d {%4.4s ^%.4s v%.4s}\n",
 					    index, index+1, iface->alias, speed1, speed);
 		}
-		else { /* Interface is down */
+		else {
 			get_time_string(speed, iface->last_online);
 			sock_printf(sock, "widget_set I i%1d 1 %1d {%5.5s NA (%s)}\n",
 					index, index+1, iface->alias, speed);
 		}
 	}
-} /* actualize_speed_screen() */
+}
+
 
 /**
  * Send commands to server to add transfer screen with all required widgets.
@@ -439,22 +425,15 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 void
 initialize_transfer_screen(void)
 {
-	int iface_nmbr;  /* interface number */
+	int iface_nmbr;		/* interface number */
 
-	/* Add screen */
 	sock_send_string(sock, "screen_add NT\n");
-
-	/* Set screen name */
 	sock_send_string(sock, "screen_set NT name {Transfer}\n");
-
-	/* Add title to screen */
 	sock_send_string(sock, "widget_add NT title title\n");
 
-	if ((iface_count == 1) && (lcd_hgt >= 4)) { /* single interface mode */
-    		/* Set title */
+	/* single interface mode */
+	if ((iface_count == 1) && (lcd_hgt >= 4)) {
 		sock_printf(sock, "widget_set NT title {Transfer: %s}\n", iface[0].alias);
-
-		/* Add and set download, upload and total string widgets */
 		sock_send_string(sock, "widget_add NT dl string\n");
 		sock_send_string(sock, "widget_set NT dl 1 2 {DL:}\n");
 		sock_send_string(sock, "widget_add NT ul string\n");
@@ -462,24 +441,27 @@ initialize_transfer_screen(void)
 		sock_send_string(sock, "widget_add NT total string\n");
 		sock_send_string(sock, "widget_set NT total 1 4 {Total:}\n");
 	}
-	else { /* multi-interfaces mode: one line per interface */
+	/* multi-interfaces mode: one line per interface */
+	else {
 		/* Set title (transfer screen is always in "bytes") */
 		sock_send_string(sock, "widget_set NT title {Net Transfer (bytes)}\n");
+
+		/* frame from (2, left) to (width, height) that is iface_count lines high */
 		sock_send_string(sock, "widget_add NT f frame\n");
-
-		// frame from (2, left) to (width, height) that is iface_count lines high
 		sock_printf(sock, "widget_set NT f 1 2 %d %d %d %d v 16\n",
-				lcd_wid, lcd_hgt, lcd_wid, iface_count,
-				// scroll rate: 1 line every X ticks (=1/8 sec)
-				((lcd_hgt >= 4) ? 8 : 16));
+			    lcd_wid, lcd_hgt, lcd_wid, iface_count,
+			    /* scroll rate: 1 line every X ticks (=1/8 sec) */
+			    ((lcd_hgt >= 4) ? 8 : 16));
 
+		/* Add interfaces */
 		for (iface_nmbr = 0; iface_nmbr < iface_count; iface_nmbr++) {
 			sock_printf(sock, "widget_add NT i%1d string -in f\n", iface_nmbr);
 			sock_printf(sock, "widget_set NT i%1d 1 %1d {%5.5s NA (never)}\n",
-					iface_nmbr, iface_nmbr+1, iface[iface_nmbr].alias);
+				    iface_nmbr, iface_nmbr+1, iface[iface_nmbr].alias);
 		}
 	}
-} /* initialize_transfer_screen() */
+}
+
 
 /**
  * Actualize values in display, formatting transfer measures and sending
@@ -490,9 +472,10 @@ initialize_transfer_screen(void)
 void
 actualize_transfer_screen(IfaceInfo *iface, int index)
 {
-	char transfer[20];   /* buffer to store the formated traffic string */
+	char transfer[20];	/* buffer to store the formated traffic string */
 
-	if ((iface_count == 1) && (lcd_hgt >= 4)) { /* single interface mode */
+	/* single interface mode */
+	if ((iface_count == 1) && (lcd_hgt >= 4)) {
 		if (iface->status == up) {
 			/* download traffic */
 			format_value(transfer, iface->rc_byte, "B");
@@ -506,15 +489,16 @@ actualize_transfer_screen(IfaceInfo *iface, int index)
 			format_value(transfer, iface->rc_byte + iface->tr_byte, "B");
 			sock_printf(sock, "widget_set NT total 1 4 {Total: %*s}\n", lcd_wid - 7, transfer);
 		}
-		else { /* Interface is down */
+		else {
 			get_time_string(transfer, iface->last_online);
 			sock_printf(sock, "widget_set NT dl 1 2 {NA (%s)}\n", transfer);
 			sock_send_string(sock, "widget_set NT ul 1 3 {}\n");
 			sock_send_string(sock, "widget_set NT total 1 4 {}\n");
 		}
 	}
-	else { /* multi-interfaces mode: one line per interface */
-		char transfer1[20];   /* buffer to store the formated traffic string */
+	/* multi-interfaces mode: one line per interface */
+	else {
+		char transfer1[20];	/* buffer to store the formated traffic string */
 
 		if (iface->status == up) {
 			format_value_multi_interface(transfer, iface->rc_byte, "B");
@@ -526,10 +510,10 @@ actualize_transfer_screen(IfaceInfo *iface, int index)
 				sock_printf(sock, "widget_set NT i%1d 1 %1d {%4.4s ^%.4s v%.4s}\n",
 					    index, index+1, iface->alias, transfer1, transfer);
 		}
-		else { /* Interface is down */
+		else {
 			get_time_string(transfer, iface->last_online);
 			sock_printf(sock, "widget_set NT i%1d 1 %1d {%5.5s NA (%s)}\n",
 					index, index+1, iface->alias, transfer);
 		}
 	}
-} /* actualize_transfer_screen() */
+}

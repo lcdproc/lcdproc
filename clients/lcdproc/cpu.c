@@ -52,14 +52,14 @@ cpu_screen(int rep, int display, int *flags_ptr)
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 4
-	static double cpu[CPU_BUF_SIZE + 1][5];	// last buffer is scratch
+	static double cpu[CPU_BUF_SIZE + 1][5];	/* last buffer is scratch */
 	static int gauge_wid = 0;
 	static int usni_wid = 0;
 
 	int i, j, n;
 	double value;
 	load_type load;
-	char tmp[25];	// should be large enough
+	char tmp[25];		/* should be large enough */
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
@@ -67,7 +67,7 @@ cpu_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "screen_add C\n");
 		sock_printf(sock, "screen_set C -name {CPU Use: %s}\n", get_hostname());
 		if (lcd_hgt >= 4) {
-			gauge_wid = lcd_wid - 6;		// room between 0%...100%
+			gauge_wid = lcd_wid - 6;	/* room between 0%...100% */
 
 			sock_send_string(sock, "widget_add C title title\n");
 			sock_send_string(sock, "widget_set C title {CPU LOAD}\n");
@@ -87,8 +87,8 @@ cpu_screen(int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_set C bar 3 4 0\n");
 		}
 		else {
-			usni_wid = (lcd_wid - 4) / 4;	// 4 gauges + 1 letter for each
-			gauge_wid = lcd_wid - 12;	// room between [...]
+			usni_wid = (lcd_wid - 4) / 4;	/* 4 gauges + 1 letter for each */
+			gauge_wid = lcd_wid - 12;	/* room between [...] */
 
 			sock_send_string(sock, "widget_add C cpu string\n");
 			sock_printf(sock, "widget_set C cpu 1 1 {CPU [%*s]}\n", gauge_wid, "");
@@ -105,43 +105,33 @@ cpu_screen(int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_set C total 6 1 0\n");
 		}
 
-		return(0);
+		return (0);
 	}
 
 	machine_get_load(&load);
 
-	// Shift values over by one
+	/* Shift values over by one */
 	for (i = 0; i < (CPU_BUF_SIZE - 1); i++)
 		for (j = 0; j < 5; j++)
 			cpu[i][j] = cpu[i + 1][j];
 
-	// Read new data
+	/* Read new data */
 	if (load.total > 0L) {
-	  cpu[CPU_BUF_SIZE - 1][0] = 100.0 * ((double) load.user / (double) load.total);
-	  cpu[CPU_BUF_SIZE - 1][1] = 100.0 * ((double) load.system / (double) load.total);
-	  cpu[CPU_BUF_SIZE - 1][2] = 100.0 * ((double) load.nice / (double) load.total);
-	  cpu[CPU_BUF_SIZE - 1][3] = 100.0 * ((double) load.idle / (double) load.total);
-	  cpu[CPU_BUF_SIZE - 1][4] = 100.0 * (((double) load.user + (double) load.system + (double) load.nice) / (double) load.total);
+		cpu[CPU_BUF_SIZE - 1][0] = 100.0 * ((double) load.user / (double) load.total);
+		cpu[CPU_BUF_SIZE - 1][1] = 100.0 * ((double) load.system / (double) load.total);
+		cpu[CPU_BUF_SIZE - 1][2] = 100.0 * ((double) load.nice / (double) load.total);
+		cpu[CPU_BUF_SIZE - 1][3] = 100.0 * ((double) load.idle / (double) load.total);
+		cpu[CPU_BUF_SIZE - 1][4] = 100.0 * (((double) load.user + (double) load.system + (double) load.nice) / (double) load.total);
 	}
 	else {
-	  cpu[CPU_BUF_SIZE - 1][0] = 0.0;
-	  cpu[CPU_BUF_SIZE - 1][1] = 0.0;
-	  cpu[CPU_BUF_SIZE - 1][2] = 0.0;
-	  cpu[CPU_BUF_SIZE - 1][3] = 0.0;
-	  cpu[CPU_BUF_SIZE - 1][4] = 0.0;
+		cpu[CPU_BUF_SIZE - 1][0] = 0.0;
+		cpu[CPU_BUF_SIZE - 1][1] = 0.0;
+		cpu[CPU_BUF_SIZE - 1][2] = 0.0;
+		cpu[CPU_BUF_SIZE - 1][3] = 0.0;
+		cpu[CPU_BUF_SIZE - 1][4] = 0.0;
 	}
 
-	/*
-	// Only clear on first display...
-	if (!rep) {
-		// Make all the same, if this is the first time...
-		for (i=0; i < CPU_BUF_SIZE-1; i++)
-			for (j=0; j < 5; j++)
-				cpu[i][j] = cpu[CPU_BUF_SIZE-1][j];
-	}
-	*/
-
-	// Average values for final result
+	/* Average values for final result */
 	for (i = 0; i < 5; i++) {
 		value = 0.0;
 		for (j = 0; j < CPU_BUF_SIZE; j++)
@@ -151,9 +141,9 @@ cpu_screen(int rep, int display, int *flags_ptr)
 	}
 
 	if (!display)
-		return(0);
+		return (0);
 
-	if (lcd_hgt >= 4) {				// 4-line display
+	if (lcd_hgt >= 4) {	/* 4-line display */
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][4]);
 		sock_printf(sock, "widget_set C title {CPU %5s: %s}\n", tmp, get_hostname());
 
@@ -172,7 +162,7 @@ cpu_screen(int rep, int display, int *flags_ptr)
 		n = (int) ((cpu[CPU_BUF_SIZE][4] * lcd_cellwid * gauge_wid) / 100.0);
 		sock_printf(sock, "widget_set C bar 3 4 %d\n", n);
 	}
-	else {						// 2-line display
+	else {			/* 2-line display */
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][4]);
 		sock_printf(sock, "widget_set C cpu%% %d 1 {%5s}\n", lcd_wid - 5, tmp);
 
@@ -192,8 +182,8 @@ cpu_screen(int rep, int display, int *flags_ptr)
 		sock_printf(sock, "widget_set C idle %d 2 %d\n", 3 * (usni_wid + 1) + 2, n);
 	}
 
-	return(0);
-}	  // End cpu_screen()
+	return (0);
+}				/* End cpu_screen() */
 
 
 
@@ -226,7 +216,7 @@ cpu_graph_screen(int rep, int display, int *flags_ptr)
 	static int gauge_hgt = 0;
 
 	int i, n = 0;
-	double value ;
+	double value;
 	load_type load;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
@@ -249,34 +239,34 @@ cpu_graph_screen(int rep, int display, int *flags_ptr)
 		for (i = 1; i <= lcd_wid; i++) {
 			sock_printf(sock, "widget_add G bar%d vbar\n", i);
 			sock_printf(sock, "widget_set G bar%d %d %d 0\n", i, i, lcd_hgt);
-			cpu_past[i-1] = 0;
+			cpu_past[i - 1] = 0;
 		};
 
-		// Clear out CPU averaging array
-		for (i = 0; i < CPU_BUF_SIZE ; i++)
+		/* Clear out CPU averaging array */
+		for (i = 0; i < CPU_BUF_SIZE; i++)
 			cpu[i] = 0.;
 	}
 
-	// Shift values over by one
-	for (i = 0; i < (CPU_BUF_SIZE-1); i++)
-		cpu[i] = cpu[i+1];
+	/* Shift values over by one */
+	for (i = 0; i < (CPU_BUF_SIZE - 1); i++)
+		cpu[i] = cpu[i + 1];
 
-	// Read and save new data
+	/* Read and save new data */
 	machine_get_load(&load);
 	cpu[CPU_BUF_SIZE-1] = (load.total > 0L)
 			      ? ((double) load.user + (double) load.system + (double) load.nice) / (double) load.total
 			      : 0;
 
-	// Average values for final result
+	/* Average values for final result */
 	value = 0.0;
 	for (i = 0; i < CPU_BUF_SIZE; i++)
 		value += cpu[i];
 	value /= CPU_BUF_SIZE;
 
-	// Scale result to available height (leave 1st line free when height > 2)
+	/* Scale result to available height (leave 1st line free when height > 2) */
 	n = (int) (value * lcd_cellhgt * gauge_hgt);
 
-	// Shift and update display the graph
+	/* Shift and update display the graph */
 	for (i = 0; i < lcd_wid - 1; i++) {
 		cpu_past[i] = cpu_past[i + 1];
 
@@ -286,12 +276,11 @@ cpu_graph_screen(int rep, int display, int *flags_ptr)
 		}
 	}
 
-	// Save the newest entry and display it
+	/* Save the newest entry and display it */
 	cpu_past[lcd_wid - 1] = n;
 	if (display) {
 		sock_printf(sock, "widget_set G bar%d %d %d %d\n", lcd_wid, lcd_wid, lcd_hgt, n);
 	}
 
-	return(0);
-}  // End cpu_graph_screen()
-
+	return (0);
+}				/* End cpu_graph_screen() */

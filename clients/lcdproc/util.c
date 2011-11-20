@@ -2,7 +2,7 @@
  * Utility functions to print some numerical values in a nice fashion
  */
 
-/*
+/*-
  *  Copyright (C) 2005  Peter Marschall
  *
  *  This program is free software; you can redistribute it and/or
@@ -76,7 +76,7 @@ sprintf_percent(char *dst, double percent)
 char *
 convert_double(double *value, int base, double roundlimit)
 {
-	static char *units[] = { "", "k", "M", "G", "T", "P", "E", "Z", "Y", NULL };
+	static char *units[] = {"", "k", "M", "G", "T", "P", "E", "Z", "Y", NULL};
 	int off = 0;
 
 	if ((roundlimit <= 0.0) || (roundlimit > 1.0))
@@ -84,8 +84,10 @@ convert_double(double *value, int base, double roundlimit)
 
 	/* Get value's order of magnitude */
 	while (units[off] != NULL) {
-		/* Note: the check for 1000 is to idenfity the number of
-		 * characters in the output needed, not to decide if to scale value.
+		/*
+		 * Note: the check for 1000 is to idenfity the number of
+		 * characters in the output needed, not to decide if to scale
+		 * value.
 		 */
 		if (*value < 1000 * roundlimit)
 			break;

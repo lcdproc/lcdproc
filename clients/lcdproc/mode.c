@@ -18,11 +18,11 @@
 #include <string.h>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+# include "config.h"
 #endif
 
 #if defined( IRIX ) || defined( SOLARIS )
-#include <strings.h>
+# include <strings.h>
 #endif
 
 #include "shared/sockets.h"
@@ -40,7 +40,7 @@ mode_init(void)
 {
 	machine_init();
 
-	return(0);
+	return (0);
 }
 
 /** Clean up modes on exit */
@@ -75,9 +75,9 @@ update_screen(ScreenMode *m, int display)
 #ifdef LCDPROC_EYEBOXONE
 		/* Eyebox Init */
 		if (init_flag == 0)
-			eyebox_screen(m->which,0);
+			eyebox_screen(m->which, 0);
 		/* Eyebox Flush */
-		eyebox_screen(m->which,1);
+		eyebox_screen(m->which, 1);
 #endif
 	}
 
@@ -90,7 +90,7 @@ update_screen(ScreenMode *m, int display)
 			sock_send_string(sock, "backlight blink\n");
 	}
 
-	return(status);
+	return (status);
 }
 
 
@@ -106,8 +106,8 @@ int
 credit_screen(int rep, int display, int *flags_ptr)
 {
 	/*
-	 * List of persons who contributed to LCDproc.
-	 * Keep in sync with CREDITS file (ordered by appearance)
+	 * List of persons who contributed to LCDproc. Keep in sync with
+	 * CREDITS file (ordered by appearance)
 	 */
 	const char *contributors[] = {
 		"William Ferrell",
@@ -184,7 +184,8 @@ credit_screen(int rep, int display, int *flags_ptr)
 
 		/* get number of contributors */
 		for (contr_num = 0; contributors[contr_num] != NULL; contr_num++)
-			;
+			;	/* NADA */
+
 		sock_send_string(sock, "screen_add A\n");
 		sock_send_string(sock, "screen_set A -name {Credits for LCDproc}\n");
 		sock_send_string(sock, "widget_add A title title\n");
@@ -192,15 +193,15 @@ credit_screen(int rep, int display, int *flags_ptr)
 		if (lcd_hgt >= 4) {
 			sock_send_string(sock, "widget_add A text scroller\n");
 			sock_printf(sock, "widget_set A text 1 2 %d 2 h 8 {%s}\n",
-					lcd_wid, "LCDproc was brought to you by:");
+				    lcd_wid, "LCDproc was brought to you by:");
 		}
 
 		/* frame from (2nd/3rd line, left) to (last line, right) */
 		sock_send_string(sock, "widget_add A f frame\n");
 		sock_printf(sock, "widget_set A f 1 %i %i %i %i %i v %i\n",
-				((lcd_hgt >= 4) ? 3 : 2), lcd_wid, lcd_hgt, lcd_wid, contr_num,
-				// scroll rate: 1 line every X ticks (= 1/8 sec)
-				((lcd_hgt >= 4) ? 8 : 12));
+			    ((lcd_hgt >= 4) ? 3 : 2), lcd_wid, lcd_hgt, lcd_wid, contr_num,
+			    /* scroll rate: 1 line every X ticks (= 1/8 sec) */
+			    ((lcd_hgt >= 4) ? 8 : 12));
 
 		/* frame contents */
 		for (i = 1; i < contr_num; i++) {
@@ -209,7 +210,7 @@ credit_screen(int rep, int display, int *flags_ptr)
 		}
 	}
 
-	return(0);
+	return 0;
 }
 
 /* EOF */

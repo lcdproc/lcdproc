@@ -56,7 +56,7 @@ disk_screen(int rep, int display, int *flags_ptr)
 	static mounts_type mnt[256];
 	static int count = 0;
 
-	// Holds info to display (avoid recalculating it)
+	/* Holds info to display (avoid recalculating it) */
 	struct disp {
 		char dev[16];
 		char cap[8];
@@ -87,12 +87,11 @@ disk_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "widget_set D err1 5 2 {  Reading  }\n");
 		sock_send_string(sock, "widget_set D err2 5 3 {Filesystems}\n");
 	}
-	// Grab disk stats on first display, and fill "table".
-	// Get rid of old, unmounted filesystems...
 
+	/* Get rid of old, unmounted filesystems... */
 	machine_get_fs(mnt, &count);
 
-	// Fill the display structure...
+	/* Fill the display structure... */
 	if (count) {
 		sock_send_string(sock, "widget_set D err1 0 0 .\n");
 		sock_send_string(sock, "widget_set D err2 0 0 .\n");
@@ -103,8 +102,8 @@ disk_screen(int rep, int display, int *flags_ptr)
 				sprintf(table[i].dev, "%s", mnt[i].mpoint);
 
 			table[i].full = (huge) (lcd_cellwid * gauge_wid)
-				 * (huge) (mnt[i].blocks - mnt[i].bfree)
-				 / (huge) mnt[i].blocks;
+				* (huge) (mnt[i].blocks - mnt[i].bfree)
+				/ (huge) mnt[i].blocks;
 
 			size = (huge) mnt[i].bsize * (huge) mnt[i].blocks;
 			memset(table[i].cap, '\0', 8);
@@ -118,33 +117,35 @@ disk_screen(int rep, int display, int *flags_ptr)
 		return 0;
 	}
 
-	// Display stuff...  (show for two seconds, then scroll once per
-	//  second, then hold at the end for two seconds)
+	/*
+	 * Display stuff...  (show for two seconds, then scroll once per
+	 * second, then hold at the end for two seconds)
+	 */
 	sock_printf(sock, "widget_set D f 1 2 %i %i %i %i v 12\n", lcd_wid, lcd_hgt, lcd_wid, count);
 	for (i = 0; i < count; i++) {
-		char tmp[lcd_wid+1];	// should be large enough
+		char tmp[lcd_wid + 1];	/* should be large enough */
 
 		if (table[i].dev[0] == '\0')
 			continue;
 
-		if (i >= num_disks) {			// Make sure we have enough lines...
+		if (i >= num_disks) {	/* Make sure we have enough lines... */
 			sock_printf(sock, "widget_add D s%i string -in f\n", i);
 			sock_printf(sock, "widget_add D h%i hbar -in f\n", i);
 		}
-		if (lcd_wid >= 20) {			// 20+x columns
+		if (lcd_wid >= 20) {	/* 20+x columns */
 			sprintf(tmp, "%-*s %6s E%*sF", dev_wid, table[i].dev, table[i].cap, gauge_wid, "");
 			sock_printf(sock, "widget_set D s%i 1 %i {%s}\n", i, i + 1, tmp);
 			sock_printf(sock, "widget_set D h%i %i %i %i\n", i, 10 + dev_wid, i + 1, table[i].full);
 		}
-		else {					// < 20 columns
+		else {		/* < 20 columns */
 			sprintf(tmp, "%-*s E%*sF", dev_wid, table[i].dev, gauge_wid, "");
 			sock_printf(sock, "widget_set D s%i 1 %i {%s}\n", i, i + 1, tmp);
 			sock_printf(sock, "widget_set D h%i %i %i %i\n", i, 3 + dev_wid, i + 1, table[i].full);
 		}
 	}
 
-	// Now remove extra widgets...
-	for ( ; i < num_disks; i++) {
+	/* Now remove extra widgets... */
+	for (; i < num_disks; i++) {
 		sock_printf(sock, "widget_del D s%i\n", i);
 		sock_printf(sock, "widget_del D h%i\n", i);
 	}

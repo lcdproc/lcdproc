@@ -139,14 +139,14 @@ battery_screen(int rep, int display, int *flags_ptr)
 				(acstat == LCDP_AC_ON && battstat == LCDP_BATT_ABSENT) ? "AC" : "Batt",
 				tmp, get_hostname());
 
-		if (lcd_hgt >= 4) {		  // 4-line version of the screen
+		if (lcd_hgt >= 4) {		/* 4-line version of the screen */
 			sock_printf(sock, "widget_set B one 1 2 {AC: %s}\n", ac_status(acstat));
 			sock_printf(sock, "widget_set B two 1 3 {Batt: %s}\n", battery_status(battstat));
 			if (percent > 0)
 				sock_printf(sock, "widget_set B gauge 2 4 %d\n",
 						(percent * gauge_wid * lcd_cellwid) / 100);
 		}
-		else {				  // two-line version of the screen
+		else {				/* two-line version of the screen */
 			sock_printf(sock, "widget_set B one 1 2 {%sBatt: %s}\n",
 					(acstat == LCDP_AC_ON) ? "AC, " : "",
 					battery_status(battstat));
