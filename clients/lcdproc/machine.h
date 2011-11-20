@@ -195,7 +195,9 @@ int machine_get_smpload(load_type *result, int *numcpus);
 int machine_get_uptime(double *up, double *idle);
 
 /**
- * Get network interface status.
+ * Read network interface statistics for a single interface from system and
+ * store results in the struct IfaceInfo.
+ *
  * \param  interface Pointer where to store interface info.
  * \retval  FALSE  Error, do not trust the contents of the parameter pointers.
  * \retval  TRUE   OK, parameter pointers are filled with sensible data.
