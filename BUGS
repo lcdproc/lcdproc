@@ -7,6 +7,9 @@ V0.5dev:
     a non full block from the vBar. Affected drivers: IOWarrior, CwLinux
   - On Solaris the mtc_s16209x driver fails to compile. Configure LCDproc to
     exclude this driver.
+  - The lcdproc client currently ignores errors from the machine dependent
+    functions. This may result in strange behaviour of the screens or core
+    dumps.
 
 
 Bugs in previous versions (not checked if the still exist):

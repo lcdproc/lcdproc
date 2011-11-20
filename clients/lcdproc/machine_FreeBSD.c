@@ -106,7 +106,10 @@ machine_init(void)
 int
 machine_close(void)
 {
-	kvm_close(kvmd);
+	if (kvmd != NULL) {
+		kvm_close(kvmd);
+		kvmd = NULL;
+	}
 	return (TRUE);
 }
 
@@ -311,10 +314,12 @@ machine_get_procs(LinkedList * procs)
 	int nproc, i;
 	procinfo_type *p;
 
+	if (kvmd == NULL)
+		return (FALSE);
+
 	kprocs = kvm_getprocs(kvmd, KERN_PROC_ALL, 0, &nproc);
 	if (kprocs == NULL) {
 		perror("kvm_getprocs");
-		kvm_close(kvmd);
 		return (FALSE);
 	}
 
@@ -322,7 +327,6 @@ machine_get_procs(LinkedList * procs)
 		p = malloc(sizeof(procinfo_type));
 		if (!p) {
 			perror("mem_top_malloc");
-			kvm_close(kvmd);
 			return (FALSE);
 		}
 #if (__FreeBSD_version > 500000)
@@ -355,6 +359,9 @@ machine_get_smpload(load_type * result, int *numcpus)
 #ifdef HAVE_SYS_PCPU_H
 	static load_type last_load[MAX_CPUS];
 	struct pcpu *pcpudata;
+
+	if (kvmd == NULL)
+		return (FALSE);
 #endif
 
 	if (numcpus == NULL)
@@ -439,20 +446,23 @@ machine_get_uptime(double *up, double *idle)
 	return (TRUE);
 }
 
+/**
+ * Reads info about swap space from system and returns it in parameters passed.
+ * \param retavail  Total available swap space
+ * \param retfree   Free swap space
+ * \return  -1 on error, otherwise number of swap areas (typically 0 for total)
+ */
 static int
 swapmode(int *retavail, int *retfree)
 {
 	int n;
 	struct kvm_swap swapary[1];
-	kvm_t *kvmd;
 
 	*retavail = 0;
 	*retfree = 0;
 
-	if ((kvmd = kvm_open(NULL, NULL, NULL, O_RDONLY, "kvm_open")) == NULL) {
-		perror("read kvm");
-		return (-1);
-	}
+	if (kvmd == NULL)
+		return -1;
 
 	n = kvm_getswapinfo(kvmd, swapary, 1, 0);
 	if (n < 0 || swapary[0].ksw_total == 0) {
@@ -462,8 +472,6 @@ swapmode(int *retavail, int *retfree)
 		*retavail = pagetok(swapary[0].ksw_total);
 		*retfree = pagetok(swapary[0].ksw_total - swapary[0].ksw_used);
 	}
-
-	kvm_close(kvmd);
 
 	return (n);
 }

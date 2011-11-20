@@ -288,6 +288,7 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "widget_set S 1 1 1 Checking...\n");
 	}
 
+	/* Create a new process list */
 	procs = LL_new();
 	if (procs == NULL) {
 		fprintf(stderr, "mem_top_screen: Error allocating list\n");
@@ -295,6 +296,10 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 	}
 
 	machine_get_procs(procs);
+	/*
+	 * Ignore if machine_get_procs returns an errror. The list will be
+	 * empty then and all process info will be shown empty, too.
+	 */
 
 	/* Now, print some info... */
 	LL_Rewind(procs);
@@ -325,7 +330,7 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 		LL_Next(procs);
 	}
 
-	/* Now clean it all up... */
+	/* Delete the process list */
 	LL_Rewind(procs);
 	do {
 		procinfo_type *p = (procinfo_type *) LL_Get(procs);
