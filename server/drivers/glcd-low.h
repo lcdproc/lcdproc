@@ -13,6 +13,9 @@
 #define GLCD_DEFAULT_CELLHEIGHT	8
 #define GLCD_MAX_WIDTH		640
 #define GLCD_MAX_HEIGHT		480
+#define GLCD_DEFAULT_CONTRAST	600
+#define GLCD_DEFAULT_BRIGHTNESS		800
+#define GLCD_DEFAULT_OFFBRIGHTNESS	100
 
 /** private data for the \c glcd driver */
 typedef struct glcd_private_data {
@@ -23,6 +26,11 @@ typedef struct glcd_private_data {
 	int cellheight;			/**< character cell height */
 	int width;			/**< display width in characters */
 	int height;			/**< display height in characters */
+	int contrast;			/**< current contrast */
+	int brightness;			/**< current brightness (for backlight on) */
+	int offbrightness;		/**< current brightness (for backlight off) */
+	int last_output_state;		/**< cache last value to output() */
+	int backlightstate;		/**< state of backlight currently used */
 	struct hwDependentFns *glcd_functions;	/**< pointers to low-level functions */
 	void *ct_data;			/**< Connection type specific data */
 	void *render_config;		/**< Settings for the font renderer */
@@ -39,13 +47,13 @@ typedef struct hwDependentFns {
 	void (*blit)(PrivateData *p);
 
 	/* Switch the backlight on or off */
-	/* void (*set_backlight)(PrivateData *p, char state); */
+	void (*set_backlight)(PrivateData *p, int state);
 
-	/* Set the contrast (value from 0-1000) */
-	/* void (*set_contrast)(PrivateData *p, unsigned int value); */
+	/* Set contrast */
+	void (*set_contrast)(PrivateData *p, int value);
 
 	/* Output "data" to output latch if there is one */
-	/* void (*output)(PrivateData *p, int data); */
+	void (*output)(PrivateData *p, int data);
 
 	/* Close the interface on shutdown */
 	void (*close)(PrivateData *p);

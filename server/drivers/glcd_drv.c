@@ -51,6 +51,7 @@
 #include "glcd-drivers.h"
 #include "report.h"
 #include "glcd-render.h"
+#include "shared/defines.h"
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
@@ -72,7 +73,7 @@ glcd_init(Driver *drvthis)
 	int (*init_fn) (Driver *drvthis)= NULL;
 	const char *s;
 	char size[200];
-	int w, h;
+	int w, h, tmp;
 
 	report(RPT_DEBUG, "%s()", __FUNCTION__);
 
@@ -109,6 +110,9 @@ glcd_init(Driver *drvthis)
 	p->glcd_functions->drv_debug = debug;
 	p->glcd_functions->blit = NULL;
 	p->glcd_functions->close = NULL;
+	p->glcd_functions->set_contrast = NULL;
+	p->glcd_functions->set_backlight = NULL;
+	p->glcd_functions->output = NULL;
 
 	/* Read display size in pixels */
 	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, GLCD_DEFAULT_SIZE), sizeof(size));
@@ -123,6 +127,37 @@ glcd_init(Driver *drvthis)
 	p->px_width = w;
 	p->px_height = h;
 
+	/* Set contrast */
+	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, GLCD_DEFAULT_CONTRAST);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: Contrast must be between 0 and 1000; using default %d",
+			drvthis->name, GLCD_DEFAULT_CONTRAST);
+		tmp = GLCD_DEFAULT_CONTRAST;
+	}
+	p->contrast = tmp;
+
+	/* Set brightness */
+	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, GLCD_DEFAULT_BRIGHTNESS);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
+			drvthis->name, GLCD_DEFAULT_BRIGHTNESS);
+		tmp = GLCD_DEFAULT_BRIGHTNESS;
+	}
+	p->brightness = tmp;
+
+	/* Set backlight-off "brightness" */
+	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, GLCD_DEFAULT_OFFBRIGHTNESS);
+	if ((tmp < 0) || (tmp > 1000)) {
+		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
+			drvthis->name, GLCD_DEFAULT_OFFBRIGHTNESS);
+		tmp = GLCD_DEFAULT_OFFBRIGHTNESS;
+	}
+	p->offbrightness = tmp;
+
+	/* Invalidate cached values */
+	p->last_output_state = -1;
+	p->backlightstate = -1;
+
 	/* Do local (=connection type specific) display init */
 	if (init_fn(drvthis) != 0)
 		return -1;
@@ -135,6 +170,15 @@ glcd_init(Driver *drvthis)
 	}
 
 	/*
+	 * Currently this driver supports only display which width is a multiple
+	 * of 8!
+	 */
+	if ((p->px_width % 8) != 0) {
+		report(RPT_ERR, "%s: Pixel width must be mutiple of 8", drvthis->name);
+		return -1;
+	}
+
+	/*
 	 * Calculate these values AFTER driver initialization, as the driver
 	 * may update them.
 	 */
@@ -143,10 +187,6 @@ glcd_init(Driver *drvthis)
 		       drvthis->name, p->px_width, p->px_height);
 		return -1;
 	}
-	p->cellwidth = GLCD_DEFAULT_CELLWIDTH;
-	p->cellheight = GLCD_DEFAULT_CELLHEIGHT;
-	p->width = p->px_width / p->cellwidth;
-	p->height = p->px_height / p->cellheight;
 
 	/* Allocate framebuffer */
 	p->framebuf = malloc(FB_BYTES_TOTAL);
@@ -159,6 +199,10 @@ glcd_init(Driver *drvthis)
 	/* Initialize renderer */
 	if (glcd_render_init(drvthis) != 0)
 		return -1;
+
+	/* Cellwidth / height are set by the renderer */
+	p->width = p->px_width / p->cellwidth;
+	p->height = p->px_height / p->cellheight;
 
 	glcd_clear(drvthis);
 
@@ -311,7 +355,7 @@ glcd_string(Driver *drvthis, int x, int y, const char string[])
 	for (i = 0; (string[i] != '\0') && (x <= p->width); i++, x++) {
 #ifdef HAVE_FT2
 		if (p->use_ft2)
-			glcd_render_char_unicode(drvthis, x, y, string[i] & 0xFF);
+			glcd_render_char_unicode(drvthis, x, y, string[i] & 0xFF, 1, 1);
 		else
 #endif
 			glcd_render_char(drvthis, x, y, string[i]);
@@ -343,7 +387,7 @@ glcd_chr(Driver *drvthis, int x, int y, char c)
 
 #ifdef HAVE_FT2
 	if (p->use_ft2)
-		glcd_render_char_unicode(drvthis, x, y, c & 0xFF);
+		glcd_render_char_unicode(drvthis, x, y, c & 0xFF, 1, 1);
 	else
 #endif
 		glcd_render_char(drvthis, x, y, c);
@@ -427,4 +471,171 @@ glcd_get_info(Driver *drvthis)
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	return info_string;
+}
+
+
+/**
+ * Write a big number to the screen.
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      Character to write (0 - 10 with 10 representing ':')
+ */
+MODULE_EXPORT void
+glcd_num(Driver *drvthis, int x, int num)
+{
+	PrivateData *p = drvthis->private_data;
+
+	debug(RPT_DEBUG, "%s(%i,%i)", __FUNCTION__, x, num);
+
+	if (x < 1 || x > p->width || num < 0 || num > 10)
+		return;
+
+#ifdef HAVE_FT2
+	if (p->use_ft2) {
+		int y;
+		int sc;
+
+		sc = min(p->height, 3);
+		y = p->height - (p->height - sc)/2;
+
+		if (num == 10)
+			glcd_render_char_unicode(drvthis, x, y, ':', sc, 1);
+		else
+			glcd_render_char_unicode(drvthis, x, y, '0' + num, sc, sc);
+		return;
+	}
+#endif
+	glcd_render_bignum(drvthis, x, num);
+}
+
+
+/**
+ * Get current LCD contrast. This is only the locally stored contrast.
+ * \param drvthis  Pointer to driver structure.
+ * \return         Stored contrast in promille.
+ */
+MODULE_EXPORT int
+glcd_get_contrast(Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+
+	debug(RPT_INFO, "%s()", __FUNCTION__);
+
+	return p->contrast;
+}
+
+
+/**
+ * Change LCD contrast.
+ * \param drvthis  Pointer to driver structure.
+ * \param promille New contrast value in promille.
+ */
+MODULE_EXPORT void
+glcd_set_contrast(Driver *drvthis, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	debug(RPT_INFO, "%s(%i)", __FUNCTION__, promille);
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* Cache the value */
+	p->contrast = promille;
+
+	/* call local function */
+	if (p->glcd_functions->set_contrast != NULL)
+		p->glcd_functions->set_contrast(p, promille);
+}
+
+
+/**
+ * Retrieve brightness. This only reads the locally stored values.
+ * \param drvthis  Pointer to driver structure.
+ * \param state    Brightness state (on/off) for which we want the value.
+ * \return         Stored brightness in promille.
+ */
+MODULE_EXPORT int
+glcd_get_brightness(Driver *drvthis, int state)
+{
+	PrivateData *p = drvthis->private_data;
+
+	debug(RPT_INFO, "%s(%i)", __FUNCTION__, state);
+
+	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+}
+
+
+/**
+ * Set on/off brightness.
+ * \param drvthis   Pointer to driver structure.
+ * \param state     Brightness state (on/off) for which we want to store the value.
+ * \param promille  New brightness in promille.
+ */
+MODULE_EXPORT void
+glcd_set_brightness(Driver *drvthis, int state, int promille)
+{
+	PrivateData *p = drvthis->private_data;
+
+	debug(RPT_INFO, "%s(%i,%i)", __FUNCTION__, state, promille);
+
+	/* Check it */
+	if (promille < 0 || promille > 1000)
+		return;
+
+	/* store the software value since there is not get */
+	if (state == BACKLIGHT_ON) {
+		p->brightness = promille;
+	}
+	else {
+		p->offbrightness = promille;
+	}
+
+	/* Force update on next render cycle */
+	p->backlightstate = -1;
+}
+
+/**
+ * Turn the backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
+ */
+MODULE_EXPORT void
+glcd_backlight(Driver *drvthis, int on)
+{
+	PrivateData *p = drvthis->private_data;
+	debug(RPT_DEBUG, "%s(%i)", __FUNCTION__, on);
+
+	/* Immediately return if no change is necessary */
+	if (p->backlightstate == on)
+		return;
+
+	if (p->glcd_functions->set_backlight != NULL)
+		p->glcd_functions->set_backlight(p, on);
+
+	p->backlightstate = on;
+}
+
+
+/**
+ * Send out-of-band data to the device.
+ * \param drvthis  Pointer to driver structure.
+ * \param value    Integer. Meaning is specific to the device
+ */
+MODULE_EXPORT void
+glcd_output(Driver *drvthis, int value)
+{
+	PrivateData *p = drvthis->private_data;
+	debug(RPT_DEBUG, "%s(%i)", __FUNCTION__, value);
+
+	/* return is no change */
+	if (p->last_output_state == value)
+		return;
+
+	p->last_output_state = value;
+
+	/* call output function only if it is defined for the commenction type */
+	if (p->glcd_functions->output != NULL)
+		p->glcd_functions->output(p, value);
 }

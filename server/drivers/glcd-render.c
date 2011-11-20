@@ -26,6 +26,7 @@
 #include "glcd-low.h"
 #include "glcd-render.h"
 #include "glcd_font5x8.h"
+#include "sed1520fm.h"
 #include "shared/defines.h"
 
 #ifdef HAVE_FT2
@@ -52,12 +53,16 @@ static int icon2unicode(int icon);
 int
 glcd_render_init(Driver *drvthis)
 {
-#ifdef HAVE_FT2
 	PrivateData *p = drvthis->private_data;
+	p->cellwidth = GLCD_DEFAULT_CELLWIDTH;
+	p->cellheight = GLCD_DEFAULT_CELLHEIGHT;
+
+#ifdef HAVE_FT2
 	int rc;
 	const char *tmp;
 	char font_file[255];
 	RenderConfig *rconf;
+	int w, h;
 
 	debug(RPT_INFO, "%s(): Freetype", __FUNCTION__);
 
@@ -99,6 +104,20 @@ glcd_render_init(Driver *drvthis)
 
 		/* If the font does not have icons use default 5x8 font */
 		rconf->ft_has_icons = drvthis->config_get_bool(drvthis->name, "fontHasIcons", 0, 1);
+
+		/* Read display size in pixels */
+		tmp = drvthis->config_get_string(drvthis->name, "CellSize", 0, "6x8");
+		if ((sscanf(tmp, "%dx%d", &w, &h) != 2)
+		    || (w <= 4) || (w > 24)
+		    || (h <= 6) || (h > 32)) {
+			report(RPT_WARNING, "%s: cannot read CellSize: %s, Using default %dx%d",
+			       drvthis->name, tmp, GLCD_DEFAULT_CELLWIDTH, GLCD_DEFAULT_CELLHEIGHT);
+			w = GLCD_DEFAULT_CELLWIDTH;
+			h = GLCD_DEFAULT_CELLHEIGHT;
+		}
+		p->cellwidth = w;
+		p->cellheight = h;
+		debug(RPT_INFO, "%s: using cellsize %dx%d", drvthis->name, p->cellwidth, p->cellheight);
 	}
 #endif
 
@@ -148,16 +167,18 @@ glcd_render_close(Driver *drvthis)
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
  * \param c        Character that gets written.
+ * \param yscale   Use multiple of cellheight
+ * \param xscale   Use multiple of cellwidth
  */
 void
-glcd_render_char_unicode(Driver *drvthis, int x, int y, int c)
+glcd_render_char_unicode(Driver *drvthis, int x, int y, int c, int yscale, int xscale)
 {
 	static int last_font_size = -1;
 	PrivateData *p = drvthis->private_data;
 	RenderConfig *rconf = p->render_config;
-	int font_size;
 	int col, row;		/* Position in the font bitmap */
 	int px, py;		/* Pixel position on the display */
+	int r_width, r_height;	/* Size of the cell used to render char into */
 	int rc;
 	FT_Face face;
 	FT_GlyphSlot glyph;
@@ -168,19 +189,30 @@ glcd_render_char_unicode(Driver *drvthis, int x, int y, int c)
 		return;
 
 	x--;			/* convert coordinates to zero-based */
-	y--;
 
-	/* set the font size */
-	font_size = max(p->cellheight, p->cellwidth);
-	if (last_font_size != font_size) {
-		rc = FT_Set_Pixel_Sizes(rconf->ft_normal_font, font_size, font_size);
+	/*
+	 * Implementation note: This function can be used to render characters
+	 * that are multiple the size of one cell. Currently this is used to
+	 * draw big numbers. Therefore use a scaled cell (render_cell) for all
+	 * calculations.
+	 */
+	r_height = p->cellheight * yscale;
+	r_width = p->cellwidth * xscale;
+
+	/*
+	 * Set the font size. We set the font pixel width and height to the
+	 * same value (r_height), otherwise characters look too much condensed.
+	 */
+	if (last_font_size != r_height) {
+		debug(RPT_INFO, "%s: Setting font size to %d",  drvthis->name, r_height);
+		rc = FT_Set_Pixel_Sizes(rconf->ft_normal_font, r_height, r_height);
 		if (rc != 0) {
 			report(RPT_ERR, "%s: Failed to set pixel size (%dx%x)", drvthis->name,
 			       p->cellwidth, p->cellheight);
 			return;
 		}
 
-		last_font_size = font_size;
+		last_font_size = r_height;
 	}
 
 	/* load the glyph and render it */
@@ -196,24 +228,33 @@ glcd_render_char_unicode(Driver *drvthis, int x, int y, int c)
 	bitmap = &glyph->bitmap;
 	bitmap_buf = bitmap->buffer;
 
-	py = y * p->cellheight;
-	/* clear the cell */
-	for (row = 0; row < p->cellheight; row++, py++) {
+	/* Clear the cell. */
+	py = max(y * p->cellheight - r_height, 0);
+	for (row = 0; row < r_height; row++, py++) {
 		px = x * p->cellwidth;
-		for (col = 0; col < p->cellwidth; col++, px++) {
+		for (col = 0; col < r_width; col++, px++) {
 			fb_draw_pixel(p, px, py, 0);
 		}
 	}
 
 	/*
-	 * Note: the font metrics may result in negative py value! So protect
-	 * it by restricting it to 0.
+	 * Copy the pixels. Important: The font metrics may result in negative
+	 * py value! So protect it by restricting it to 0.
 	 */
-	py = max((y + 1) * p->cellheight + (face->size->metrics.descender >> 6) - glyph->bitmap_top, 0);
-	/* and now copy the pixels */
-	for (row = 0; (row < bitmap->rows) && (row < p->cellheight); row++) {
-		px = x * p->cellwidth + glyph->bitmap_left;
-		for (col = 0; col < bitmap->width; col++) {
+	py = max(y * p->cellheight + (face->size->metrics.descender >> 6) - glyph->bitmap_top, 0);
+	for (row = 0; (row < bitmap->rows) && (row < r_height); row++) {
+		px = x * p->cellwidth;
+		/*
+		 * Hack: If scales are not the same, ignore Freetype's idea of
+		 * character position, but just center it. Currently only used
+		 * for the ':' of the bignum.
+		 */
+		if (yscale == xscale)
+			px += glyph->bitmap_left;
+		else
+			px += (r_width - bitmap->width)/2;
+
+		for (col = 0; (col < bitmap->width) && (col < r_width); col++) {
 			fb_draw_pixel(p, px, py, bitmap_buf[col / 8] >> (7 - (col % 8)) & 1);
 			px++;
 		}
@@ -297,12 +338,12 @@ icon2unicode(int icon)
 		return 0x2190;	/* Leftwards arrow */
 	    case ICON_ARROW_RIGHT:
 		return 0x2192;	/* Rightwards arrow */
-	    case ICON_CHECKBOX_OFF:
-		return 0x2610;	/* Ballot box */
-	    case ICON_CHECKBOX_ON:
-		return 0x2611;	/* Ballot box with check */
-	    case ICON_CHECKBOX_GRAY:
-		return 0x2612;	/* Ballot box with x */
+//	    case ICON_CHECKBOX_OFF:
+//		return 0x2610;	/* Ballot box */
+//	    case ICON_CHECKBOX_ON:
+//		return 0x2611;	/* Ballot box with check */
+//	    case ICON_CHECKBOX_GRAY:
+//		return 0x2612;	/* Ballot box with x */
 	    case ICON_ELLIPSIS:
 		return 0x2026;	/* Horizontal ellipsis */
 	    default:
@@ -334,7 +375,7 @@ glcd_render_icon(Driver *drvthis, int x, int y, int icon)
 
 	if (p->use_ft2 && rconf->ft_has_icons) {
 		if ((icon_char = icon2unicode(icon)) != -1) {
-			glcd_render_char_unicode(drvthis, x, y, icon_char);
+			glcd_render_char_unicode(drvthis, x, y, icon_char, 1, 1);
 			return 0;
 		}
 		return -1;
@@ -345,4 +386,46 @@ glcd_render_icon(Driver *drvthis, int x, int y, int icon)
 		return 0;
 	}
 	return -1;
+}
+
+
+/**
+ * Draw a big digit (or colon) using the built-in 16x24 font. Although the font
+ * is stored in different pixel layout (column format, LSB top) this does not
+ * matter as we need to address pixels in frame buffer anyway. The digit is
+ * centered vertically.
+ *
+ * \note  Works only for displays with pixel height >= 24! Smaller displays are
+ *        not supported and nothing will be drawn.
+ *
+ * \param drvthis  Pointer to driver structure.
+ * \param x        Horizontal character position (column).
+ * \param num      The digit to draw (0-10 with 10 = colon)
+ */
+void
+glcd_render_bignum(Driver *drvthis, int x, int num)
+{
+	PrivateData *p = drvthis->private_data;
+	int c, z;		/* Column and byte within font definition */
+	int px, py;		/* Pixel coordinates within the frame buffer */
+
+	if (p->px_height < chr_hgt_NUM)
+		return;
+
+	x--;
+
+	px = x * p->cellwidth;
+	for (c = 0; c < widtbl_NUM[num]; c++) {
+		/* center vertically */
+		py = (p->px_height - chr_hgt_NUM) / 2;
+		for (z = 0; z < chr_hgt_NUM; z++) {
+			/* Test if pixel bit is set and draw it */
+			if (chrtbl_NUM[num][c * 3 + z / 8] & (1 << (z % 8)))
+				fb_draw_pixel(p, px, py, 1);
+			else
+				fb_draw_pixel(p, px, py, 0);
+			py++;
+		}
+		px++;
+	}
 }
