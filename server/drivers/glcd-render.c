@@ -64,7 +64,7 @@ glcd_render_init(Driver *drvthis)
 	RenderConfig *rconf;
 	int w, h;
 
-	debug(RPT_INFO, "%s(): Freetype", __FUNCTION__);
+	debug(RPT_INFO, "%s: render_init: Freetype", drvthis->name);
 
 	/* Allocate memory structures */
 	rconf = (RenderConfig *) calloc(1, sizeof(RenderConfig));
@@ -117,11 +117,10 @@ glcd_render_init(Driver *drvthis)
 		}
 		p->cellwidth = w;
 		p->cellheight = h;
-		debug(RPT_INFO, "%s: using cellsize %dx%d", drvthis->name, p->cellwidth, p->cellheight);
 	}
 #endif
+	debug(RPT_INFO, "%s: using cellsize %dx%d", drvthis->name, p->cellwidth, p->cellheight);
 
-	debug(RPT_INFO, "%s() successful", __FUNCTION__);
 	return 0;
 
 #ifdef HAVE_FT2
@@ -233,7 +232,7 @@ glcd_render_char_unicode(Driver *drvthis, int x, int y, int c, int yscale, int x
 	for (row = 0; row < r_height; row++, py++) {
 		px = x * p->cellwidth;
 		for (col = 0; col < r_width; col++, px++) {
-			fb_draw_pixel(p, px, py, 0);
+			fb_draw_pixel(&(p->framebuf), px, py, 0);
 		}
 	}
 
@@ -255,7 +254,7 @@ glcd_render_char_unicode(Driver *drvthis, int x, int y, int c, int yscale, int x
 			px += (r_width - bitmap->width)/2;
 
 		for (col = 0; (col < bitmap->width) && (col < r_width); col++) {
-			fb_draw_pixel(p, px, py, bitmap_buf[col / 8] >> (7 - (col % 8)) & 1);
+			fb_draw_pixel(&(p->framebuf), px, py, bitmap_buf[col / 8] >> (7 - (col % 8)) & 1);
 			px++;
 		}
 		bitmap_buf += bitmap->pitch;
@@ -303,9 +302,9 @@ glcd_render_char(Driver *drvthis, int x, int y, unsigned char c)
 		 */
 		for (font_x = GLCD_FONT_WIDTH; font_x >= 0; font_x--) {
 			if (glcd_iso8859_1[c][font_y] & (1 << font_x))
-				fb_draw_pixel(p, px, py, 1);
+				fb_draw_pixel(&(p->framebuf), px, py, 1);
 			else
-				fb_draw_pixel(p, px, py, 0);
+				fb_draw_pixel(&(p->framebuf), px, py, 0);
 			px++;
 		}
 		py++;
@@ -409,7 +408,7 @@ glcd_render_bignum(Driver *drvthis, int x, int num)
 	int c, z;		/* Column and byte within font definition */
 	int px, py;		/* Pixel coordinates within the frame buffer */
 
-	if (p->px_height < chr_hgt_NUM)
+	if (p->framebuf.px_height < chr_hgt_NUM)
 		return;
 
 	x--;
@@ -417,13 +416,13 @@ glcd_render_bignum(Driver *drvthis, int x, int num)
 	px = x * p->cellwidth;
 	for (c = 0; c < widtbl_NUM[num]; c++) {
 		/* center vertically */
-		py = (p->px_height - chr_hgt_NUM) / 2;
+		py = (p->framebuf.px_height - chr_hgt_NUM) / 2;
 		for (z = 0; z < chr_hgt_NUM; z++) {
 			/* Test if pixel bit is set and draw it */
 			if (chrtbl_NUM[num][c * 3 + z / 8] & (1 << (z % 8)))
-				fb_draw_pixel(p, px, py, 1);
+				fb_draw_pixel(&(p->framebuf), px, py, 1);
 			else
-				fb_draw_pixel(p, px, py, 0);
+				fb_draw_pixel(&(p->framebuf), px, py, 0);
 			py++;
 		}
 		px++;

@@ -27,7 +27,10 @@
 #include "lcd.h"
 #include "report.h"
 #include "glcd-low.h"
-#include "glcd-png.h"
+
+/* Prototypes */
+void glcd_png_blit(PrivateData *p);
+void glcd_png_close(PrivateData *p);
 
 /** Private data for the PNG connection type */
 typedef struct glcd_png_data {
@@ -89,7 +92,7 @@ glcd_png_blit(PrivateData *p)
 	png_bytep row_pointer;
 
 	/* Check if framebufer has changed. If not there's nothing to do */
-	if (memcmp(p->framebuf, ct_data->backingstore, FB_BYTES_TOTAL) == 0)
+	if (memcmp(p->framebuf.data, ct_data->backingstore, FB_BYTES_TOTAL) == 0)
 		return;
 
 	snprintf(filename, sizeof(filename), "/tmp/lcdproc%06d.png", num++);
@@ -120,7 +123,7 @@ glcd_png_blit(PrivateData *p)
 
 	png_init_io(png_ptr, fp);
 
-	png_set_IHDR(png_ptr, info_ptr, p->px_width, p->px_height,
+	png_set_IHDR(png_ptr, info_ptr, p->framebuf.px_width, p->framebuf.px_height,
 		     1, PNG_COLOR_TYPE_GRAY, PNG_INTERLACE_NONE,
 		     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 	png_set_invert_mono(png_ptr);
@@ -128,8 +131,8 @@ glcd_png_blit(PrivateData *p)
 	png_write_info(png_ptr, info_ptr);
 
 	/* Write the image row by row */
-	row_pointer = p->framebuf;
-	for (row = 0; row < p->px_height; row++) {
+	row_pointer = p->framebuf.data;
+	for (row = 0; row < p->framebuf.px_height; row++) {
 		png_write_row(png_ptr, row_pointer);
 		row_pointer += BYTES_PER_LINE;
 	}
@@ -139,7 +142,7 @@ glcd_png_blit(PrivateData *p)
 	fp = NULL;
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
-	memcpy(ct_data->backingstore, p->framebuf, FB_BYTES_TOTAL);
+	memcpy(ct_data->backingstore, p->framebuf.data, FB_BYTES_TOTAL);
 
 	return;
 

@@ -26,12 +26,13 @@
 #include "lcd.h"
 #include "report.h"
 #include "glcd-low.h"
-#include "glcd-t6963.h"
 #include "t6963_low.h"
 
 #define DEFAULT_PORT 0x378
 
 static void t6963_graphic_clear(PrivateData *p);
+void glcd_t6963_blit(PrivateData *p);
+void glcd_t6963_close(PrivateData *p);
 
 typedef struct glcd_t6963_data {
 	unsigned char *backingstore;	/**< backing buffer */
@@ -54,9 +55,9 @@ glcd_t6963_init(Driver *drvthis)
 	report(RPT_INFO, "GLCD/T6963: intializing");
 
 	/* Check the size before doing anything else! */
-	if ((p->px_width > T6963_MAX_WIDTH) || (p->px_height > T6963_MAX_HEIGHT)) {
+	if ((p->framebuf.px_width > T6963_MAX_WIDTH) || (p->framebuf.px_height > T6963_MAX_HEIGHT)) {
 		report(RPT_ERR, "GLCD/T6963: Size %dx%d not supported by connection type",
-		       p->px_width, p->px_height);
+		       p->framebuf.px_width, p->framebuf.px_height);
 		return -1;
 	}
 
@@ -136,9 +137,9 @@ glcd_t6963_blit(PrivateData *p)
 	CT_t6963_data *ct_data = (CT_t6963_data *) p->ct_data;
 	int x, y;
 
-	for (y = 0; y < p->px_height; y++) {
+	for (y = 0; y < p->framebuf.px_height; y++) {
 		/* set pointers to start of the line */
-		unsigned char *sp = p->framebuf + (y * BYTES_PER_LINE);
+		unsigned char *sp = p->framebuf.data + (y * BYTES_PER_LINE);
 		unsigned char *sq = ct_data->backingstore + (y * BYTES_PER_LINE);
 
 		/* set pointers to end of the line */

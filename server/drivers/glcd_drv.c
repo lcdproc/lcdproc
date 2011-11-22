@@ -124,8 +124,10 @@ glcd_init(Driver *drvthis)
 		       drvthis->name, size, GLCD_DEFAULT_SIZE);
 		sscanf(GLCD_DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
-	p->px_width = w;
-	p->px_height = h;
+	p->framebuf.px_width = w;
+	p->framebuf.px_height = h;
+	p->framebuf.bytesPerLine = (p->framebuf.px_width + 7) / 8;
+	debug(RPT_INFO, "%s: bytesPerLine (first) = %d", drvthis->name, BYTES_PER_LINE);
 
 	/* Set contrast */
 	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, GLCD_DEFAULT_CONTRAST);
@@ -170,39 +172,33 @@ glcd_init(Driver *drvthis)
 	}
 
 	/*
-	 * Currently this driver supports only display which width is a multiple
-	 * of 8!
+	 * Check these values AFTER driver initialization, as the driver may
+	 * update them.
 	 */
-	if ((p->px_width % 8) != 0) {
-		report(RPT_ERR, "%s: Pixel width must be mutiple of 8", drvthis->name);
-		return -1;
-	}
-
-	/*
-	 * Calculate these values AFTER driver initialization, as the driver
-	 * may update them.
-	 */
-	if ((p->px_width > GLCD_MAX_WIDTH) || (p->px_height > GLCD_MAX_HEIGHT)) {
+	if ((p->framebuf.px_width > GLCD_MAX_WIDTH) || (p->framebuf.px_height > GLCD_MAX_HEIGHT)) {
 		report(RPT_ERR, "%s: Size %dx%d set by ConnectionType is not supported",
-		       drvthis->name, p->px_width, p->px_height);
+		       drvthis->name, p->framebuf.px_width, p->framebuf.px_height);
 		return -1;
 	}
 
-	/* Allocate framebuffer */
-	p->framebuf = malloc(FB_BYTES_TOTAL);
-	if (p->framebuf == NULL) {
+	/* Allocate framebuffer (re-calculate bytesPerLine before) */
+	p->framebuf.bytesPerLine = (p->framebuf.px_width + 7) / 8;
+	debug(RPT_INFO, "%s: bytesPerLine (final) = %d", drvthis->name, BYTES_PER_LINE);
+	p->framebuf.data = malloc(FB_BYTES_TOTAL);
+	if (p->framebuf.data == NULL) {
 		report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
 		return -1;
 	}
-	memset(p->framebuf, 0x00, FB_BYTES_TOTAL);
+	memset(p->framebuf.data, 0x00, FB_BYTES_TOTAL);
 
 	/* Initialize renderer */
 	if (glcd_render_init(drvthis) != 0)
 		return -1;
 
 	/* Cellwidth / height are set by the renderer */
-	p->width = p->px_width / p->cellwidth;
-	p->height = p->px_height / p->cellheight;
+	p->width = p->framebuf.px_width / p->cellwidth;
+	p->height = p->framebuf.px_height / p->cellheight;
+	debug(RPT_INFO, "%s: Screen size (final) = %dx%d", drvthis->name, p->width, p->height);
 
 	glcd_clear(drvthis);
 
@@ -224,9 +220,9 @@ glcd_close(Driver *drvthis)
 	if (p != NULL) {
 		if (p->glcd_functions->close != NULL)
 			p->glcd_functions->close(p);
-		if (p->framebuf != NULL)
-			free(p->framebuf);
-		p->framebuf = NULL;
+		if (p->framebuf.data != NULL)
+			free(p->framebuf.data);
+		p->framebuf.data = NULL;
 		glcd_render_close(drvthis);
 
 		free(p);
@@ -310,7 +306,7 @@ glcd_clear(Driver *drvthis)
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	memset(p->framebuf, 0x00, FB_BYTES_TOTAL);
+	memset(p->framebuf.data, 0x00, FB_BYTES_TOTAL);
 
 }
 
@@ -327,7 +323,6 @@ glcd_flush(Driver *drvthis)
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	p->glcd_functions->blit(p);
-
 }
 
 
@@ -425,7 +420,7 @@ glcd_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 
 	for (col = xstart; col < xend; col++) {
 		for (row = ystart; row > yend; row--) {
-			fb_draw_pixel(p, col, row, 1);
+			fb_draw_pixel(&(p->framebuf), col, row, 1);
 		}
 	}
 }
@@ -451,7 +446,7 @@ glcd_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 
 	for (row = ystart; row < yend; row++) {
 		for (col = xstart; col < xend; col++) {
-			fb_draw_pixel(p, col, row, 1);
+			fb_draw_pixel(&(p->framebuf), col, row, 1);
 		}
 	}
 

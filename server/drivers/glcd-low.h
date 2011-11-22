@@ -17,11 +17,17 @@
 #define GLCD_DEFAULT_BRIGHTNESS		800
 #define GLCD_DEFAULT_OFFBRIGHTNESS	100
 
+/** The framebuffer and its properties */
+struct glcd_framebuf {
+	unsigned char *data;	/**< frame buffer */
+	int px_width;		/**< display width in dots */
+	int px_height;		/**< display height in dots */
+	int bytesPerLine;	/**< number of bytes per pixel row */
+};
+
 /** private data for the \c glcd driver */
 typedef struct glcd_private_data {
-	unsigned char *framebuf;	/**< frame buffer */
-	int px_width;			/**< display width in dots */
-	int px_height;			/**< display height in dots */
+	struct glcd_framebuf framebuf;	/**< the main framebuffer */
 	int cellwidth;			/**< character cell width */
 	int cellheight;			/**< character cell height */
 	int width;			/**< display width in characters */
@@ -61,8 +67,10 @@ typedef struct hwDependentFns {
 
 /* ================== Framebuffer functions and macros =================== */
 
-#define BYTES_PER_LINE (p->px_width / 8)
-#define FB_BYTES_TOTAL (p->px_height * BYTES_PER_LINE)
+#define BYTES_PER_LINE (p->framebuf.bytesPerLine)
+#define FB_BYTES_TOTAL (p->framebuf.px_height * BYTES_PER_LINE)
+#define FB_BLACK 1
+#define FB_WHITE 0
 
 /**
  * Draw one pixel into the framebuffer using 1bpp (black and white). This
@@ -75,21 +83,47 @@ typedef struct hwDependentFns {
  * \param color  Pixel color: 1 = set (black), 0 = not set (blank/white)
  */
 static inline void
-fb_draw_pixel(PrivateData *p, int x, int y, int color)
+fb_draw_pixel(struct glcd_framebuf *fb, int x, int y, int color)
 {
 	unsigned int pos;	/* Byte within the framebuffer */
 	unsigned char bit;	/* Bit within the framebuffer byte */
 
-	if (x < 0 || x >= p->px_width || y < 0 || y >= p->px_height)
+	if (x < 0 || x >= fb->px_width || y < 0 || y >= fb->px_height)
 		return;
 
-	pos = y * BYTES_PER_LINE + (x / 8);
+	pos = y * fb->bytesPerLine + (x / 8);
 	bit = 0x80 >> (x % 8);
 
-	if (color == 1)
-		p->framebuf[pos] |= bit;
+	if (color == FB_BLACK)
+		fb->data[pos] |= bit;
 	else
-		p->framebuf[pos] &= ~bit;
+		fb->data[pos] &= ~bit;
 }
 
+
+/**
+ * Get color value of one pixel from the framebuffer.
+ *
+ * \param p  Pointer to driver's private data.
+ * \param x  X-position
+ * \param y  Y-position
+ * \return  Pixel color: 1 = set (black), 0 = not set (blank/white)
+ */
+static inline int
+fb_get_pixel(struct glcd_framebuf *fb, int x, int y)
+{
+	unsigned int pos;
+	unsigned char bit;
+
+	if (x < 0 || x >= fb->px_width || y < 0 || y >= fb->px_height)
+		return FB_WHITE;
+
+	pos = y * fb->bytesPerLine + (x / 8);
+	bit = 0x80 >> (x % 8);
+
+	if (fb->data[pos] & bit)
+		return FB_BLACK;
+	else
+		return FB_WHITE;
+}
 #endif
