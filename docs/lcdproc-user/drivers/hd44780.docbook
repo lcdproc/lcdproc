@@ -2978,7 +2978,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   <listitem><para>
     Set the initial off-brightness, i.e. the brightness when the backlight is off,
     for the <code>lcd2usb</code> connection type.
-    The ilegal range is <literal>0</literal> - <literal>1000</literal>.
+    The legal range is <literal>0</literal> - <literal>1000</literal>.
     If not given, it defaults to <literal>300</literal>.
   </para></listitem>
 </varlistentry>

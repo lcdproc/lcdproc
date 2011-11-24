@@ -22,6 +22,7 @@
   <!ENTITY ea65 SYSTEM "drivers/ea65.docbook">
   <!ENTITY EyeboxOne SYSTEM "drivers/eyeboxone.docbook">
   <!ENTITY g15 SYSTEM "drivers/g15.docbook">
+  <!ENTITY glcd SYSTEM "drivers/glcd.docbook">
   <!ENTITY glcdlib SYSTEM "drivers/glcdlib.docbook">
   <!ENTITY glk SYSTEM "drivers/glk.docbook">
   <!ENTITY hd44780 SYSTEM "drivers/hd44780.docbook">

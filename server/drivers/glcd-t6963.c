@@ -10,7 +10,6 @@
  * Copyright (c) 2011 Markus Dolze, based on the t6963 driver by
  *               2001 Manuel Stahl <mythos@xmythos.de>
  *
- *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  */
@@ -34,6 +33,7 @@ static void t6963_graphic_clear(PrivateData *p);
 void glcd_t6963_blit(PrivateData *p);
 void glcd_t6963_close(PrivateData *p);
 
+/** Data local to the t6963 connection type */
 typedef struct glcd_t6963_data {
 	unsigned char *backingstore;	/**< backing buffer */
 	T6963_port *port_config;	/**< parallel port configuration */

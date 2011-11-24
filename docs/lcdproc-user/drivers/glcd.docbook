@@ -1,0 +1,278 @@
+<sect1 id="glcd-howto">
+<sect1info>
+  <author>
+    <firstname>Markus</firstname>
+    <surname>Dolze</surname>
+  </author>
+</sect1info>
+<title>The glcd Driver</title>
+
+<para>
+The glcd driver (graphic lcd) driver is a "meta driver" that renders text for
+display on graphic displays. It uses either a built-in 5x8 font (the same as
+used in elsewhere in LCDproc) or Freetype 2 to draw the characters and icons
+into an internal frame buffer. That frame buffer is then copied to the display
+by a small sub-driver called connection type driver (CT-driver).
+</para>
+
+<note><para>
+LCDproc is compiled with FreeType support by default if it is installed on your
+system.
+</para></note>
+
+<sect2 id="glcd-connections">
+<title>Connections</title>
+
+<sect3 id="glcd-ct-t6963">
+<title>Connection type t6963</title>
+<para>TBD</para>
+</sect3>
+
+<sect3 id="glcd-ct-png">
+<title>Connection type png</title>
+<para>TBD</para>
+</sect3>
+
+<sect3 id="glcd-ct-serdisplib">
+<title>Connection type serdisplib</title>
+<para>TBD</para>
+</sect3>
+
+</sect2>
+
+<!-- ## glcdlib meta driver for graphical LCDs ## -->
+<sect2 id="glcd-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="glcd-config-global">
+<title>[glcd]</title>
+
+<variablelist>
+<title>Settings affecting all connection type drivers</title>
+<varlistentry>
+  <term>
+    <property>ConnectionType</property> =
+    {
+    <emphasis><parameter><literal>t6963</literal></parameter></emphasis> |
+    <parameter><literal>png</literal></parameter> |
+    <parameter><literal>serdisplib</literal></parameter>
+    }
+  </term>
+  <listitem><para>
+    Specify which connection type to use. See <link linkend="glcd-connections">
+    above</link> for details.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Size</property> = &parameters.size;
+  </term>
+  <listitem><para>
+    Specifies the size of the LCD in pixels.
+    Default: <literal>128x64</literal>.
+    Maximum value supported: <literal>640x480</literal>.
+  </para><para>
+    The size in characters is automatically calculated from this value and the
+    CellSize value (see below) and cannot be configured.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Contrast</property> =
+    <parameter><replaceable>CONTRAST</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Set the initial contrast (if supported by the connection type driver).
+    Legal values for <replaceable>CONTRAST</replaceable> are
+    <literal>0</literal> - <literal>1000</literal>.
+    If not given, it defaults to <literal>600</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Brightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Set the initial brightness when the backlight is "on" (if supported by the
+    connection type driver).
+    Legal values are <literal>0</literal> - <literal>1000</literal>.
+    If not given, it defaults to <literal>800</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>OffBrightness</property> =
+    <parameter><replaceable>BRIGHTNESS</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Set the initial brightness when the backlight is set "off" (if supported by
+    the connection type driver).
+    Legal values are <literal>0</literal> - <literal>1000</literal>.
+    If not given, it defaults to <literal>100</literal>.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+<variablelist>
+<title>Available parameters if compiled with FreeType support</title>
+<varlistentry>
+  <term>
+    <property>useFT2</property> = &parameters.yesdefno;
+  </term>
+  <listitem><para>
+    Tell whether to use FreeType2 or not. It is set to <literal>yes</literal> by
+    default. If turned off (set to <literal>no</literal>), the fixed internal
+    5x8 font is used to draw characters and icons.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>normal_font</property> =
+    <parameter><replaceable>FONTFILE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Set path to the font file to use, e.g. <filename>/usr/local/lib/X11/fonts/TTF/andalemo.ttf</filename>.
+    This option is required if FreeType 2 support is enabled, but it is not set
+    to any default value. A font with a fixed character width (monotype) is
+    strongly recommended.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>fontHasIcons</property> = &parameters.yesdefno;
+  </term>
+  <listitem><para>
+    Many fonts to not include the Unicode glyphs used for drawing icons. If this
+    option is set to <literal>no</literal> then the internal 5x8 font is used
+    even if FreeType is enabled. This option is on (<literal>yes</literal>) by
+    default.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>CellSize</property> = &parameters.size;
+  </term>
+  <listitem><para>
+    Specifies the size of the character cell in pixels. Characters will be
+    drawn within this cell.
+    Default: <literal>6x8</literal>; minimum value <literal>4x6</literal>;
+    maximum value: <literal>24x32</literal>.
+  </para></listitem>
+</varlistentry>
+
+<!--
+<varlistentry>
+  <term>
+    <property>CharEncoding</property> =
+    <parameter><replaceable>CHARSET</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Specify character encoding to use, e.g. <literal>iso8859-2</literal>.
+    If not given, use the default <literal>ISO8859-1</literal>.
+  </para></listitem>
+</varlistentry>
+-->
+</variablelist>
+
+<variablelist>
+<title>Settings for the t6963 connection type</title>
+<varlistentry>
+  <term>
+    <property>Port</property> =
+    <parameter><replaceable>PORT</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Specify the address of the parallel port the LCD is connected to.
+    Common values for <replaceable>PORT</replaceable> are <literal>0x278</literal>,
+    <literal>0x378</literal> and <literal>0x3BC</literal>.
+    If not given, the default is <literal>0x378</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>bidirectional</property> = &parameters.yesdefno;
+  </term>
+  <listitem>
+  <para>
+    Use parallel port in bi-directional mode. [default: <literal>yes</literal>;
+    legal: <literal>yes</literal>, <literal>no</literal>]
+  </para>
+  <para>
+    Most LPT ports can be used in bi-directional mode. It is required for
+    proper timing of the display.
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>delayBus</property> = &parameters.yesnodef;
+  </term>
+  <listitem>
+  <para>
+     Use additional delay in read / write operations. [default: <literal>no</literal>;
+     legal: <literal>yes</literal>, <literal>no</literal>]. As the driver
+     implements busy checking usually no additional delays are required.
+  </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+
+<variablelist>
+<title>Settings for the serdisplib connection type</title>
+<varlistentry>
+  <term>
+    <property>serdisp_name</property> =
+    <parameter><replaceable>NAME</replaceable></parameter>
+  </term>
+  <listitem><para>
+    This is the name or alias to select a display driver in the serdisplib
+    library. As there is not default value setting this option is mandatory.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>serdisp_device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Set the device to use. Unlike elsewhere in <filename>LCDd.conf</filename>
+    this is a device description understood by serdisplib. As there is not
+    default value setting this option is mandatory.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>serdisp_options</property> =
+    <parameter><replaceable>OPTIONS</replaceable></parameter>
+  </term>
+  <listitem><para>
+    <replaceable>OPTIONS</replaceable> is a serdisplib option string, which is
+    a list of semicolon separated key / value pairs. Use this to pass any
+    additional options to serdisplib, e.g. wiring or rotation settings.
+  </para>
+  <note>
+    <para>As the value will contain equal signs the whole <replaceable>OPTIONS</replaceable>
+    value must be enclosed in double quotes.</para>
+    <para>The display width and height are always set using the values from the
+    glcd driver (see above). Any width / height values set in the option string
+    will be ignored.</para>
+  </note>
+  </listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+</sect2>
+</sect1>

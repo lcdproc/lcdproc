@@ -77,7 +77,7 @@ typedef struct hwDependentFns {
  * function actually decides about the format of the framebuffer. Using this
  * implementation (0,0) is top left and bytes contain pixels from left to right.
  *
- * \param p      Pointer to driver's private data.
+ * \param fb     Pointer to framebuffer
  * \param x      X-position
  * \param y      Y-position
  * \param color  Pixel color: 1 = set (black), 0 = not set (blank/white)
@@ -104,9 +104,9 @@ fb_draw_pixel(struct glcd_framebuf *fb, int x, int y, int color)
 /**
  * Get color value of one pixel from the framebuffer.
  *
- * \param p  Pointer to driver's private data.
- * \param x  X-position
- * \param y  Y-position
+ * \param fb  Pointer to framebuffer
+ * \param x   X-position
+ * \param y   Y-position
  * \return  Pixel color: 1 = set (black), 0 = not set (blank/white)
  */
 static inline int

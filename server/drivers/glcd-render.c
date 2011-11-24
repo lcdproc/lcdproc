@@ -1,5 +1,7 @@
 /** \file server/drivers/glcd-render.c
  * Render glyphs to a framebuffer using FreeType2 or fixed 5x8 font.
+ *
+ * \todo  Add character encoding option.
  */
 
 /*-
