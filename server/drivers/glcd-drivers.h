@@ -22,12 +22,16 @@ int glcd_png_init(Driver *drvthis);
 #ifdef HAVE_SERDISPLIB
 int glcd_serdisp_init(Driver *drvthis);
 #endif
+#ifdef HAVE_LIBUSB
+int glcd2usb_init(Driver *drvthis);
+#endif
 
 /* symbolic names for connection types */
 #define GLCD_CT_UNKNOWN		0
 #define GLCD_CT_T6963		1
 #define GLCD_CT_PNG		2
 #define GLCD_CT_SERDISP		3
+#define GLCD_CT_GLCD2USB	4
 
 /** Structure linking symbolic names to initialization routines */
 typedef struct ConnectionMapping {
@@ -51,6 +55,9 @@ static const ConnectionMapping connectionMapping[] = {
 #endif
 #ifdef HAVE_SERDISPLIB
 	{"serdisplib", GLCD_CT_SERDISP, glcd_serdisp_init},
+#endif
+#ifdef HAVE_LIBUSB
+	{"glcd2usb", GLCD_CT_GLCD2USB, glcd2usb_init},
 #endif
 	/* default, end of structure element (do not delete) */
 	{NULL, GLCD_CT_UNKNOWN, NULL}

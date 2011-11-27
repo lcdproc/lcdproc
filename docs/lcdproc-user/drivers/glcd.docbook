@@ -25,18 +25,64 @@ system.
 
 <sect3 id="glcd-ct-t6963">
 <title>Connection type t6963</title>
-<para>TBD</para>
+<para>
+Support for displays using a Toshiba T6863 controller connected to the
+parallel port. Wiring is the same as for the t6963 driver. Refer to
+<xref linkend="t6963-connections" /> for details.
+</para>
+<para>
+If used without FreeType this connection type uses the same font as the
+t6963 driver but draws the characters into the graphic memory of the T6963.
+</para>
+<important><para>
+You must configure the display for 8x8 font to make this connection type work!
+</para></important>
 </sect3>
 
 <sect3 id="glcd-ct-png">
 <title>Connection type png</title>
-<para>TBD</para>
+<para>
+This connection type writes out the frame buffer into files in <filename>/tmp</filename>.
+The files are named <filename>lcdproc######.png</filename> where <replaceable>######</replaceable>
+is a number starting at 0.
+</para>
+<tip><para>
+As a new file is written on any change to the screen it is best to turn off the
+heartbeat.
+</para></tip>
 </sect3>
 
 <sect3 id="glcd-ct-serdisplib">
 <title>Connection type serdisplib</title>
-<para>TBD</para>
+<para>
+Use the serdisplib library (<ulink url="http://serdisplib.sourceforge.net/" />)
+for output. This enables use of a number of graphical displays connected to a
+parallel, serial, or USB port. See the serdisplib web page for details,
+especially for available options for your display.
+</para>
 </sect3>
+
+<sect3 id="glcd-ct-glcd2usb">
+<title>Connection type glcd2usb</title>
+<para>
+Support for the glcd2usb device (<ulink url="http://www.harbaum.org/till/glcd2usb/index.shtml" />,
+a graphic LCD to USB converter based on Atmel ATmega16 and the V-USB stack.
+This device features an adjustable backlight and 4 keys. Right now only displays
+with the KS0108 controller are supported.
+</para>
+<para>
+Note that any size setting configured in <filename>LCDd.conf</filename> is
+ignored as the size reported by the device is used.
+</para>
+</sect3>
+
+<!--
+<sect3 id="glcd-ct-xyz">
+<title>Connection type xyz</title>
+<para>
+</para>
+</sect3>
+-->
 
 </sect2>
 
@@ -54,6 +100,7 @@ system.
     <property>ConnectionType</property> =
     {
     <emphasis><parameter><literal>t6963</literal></parameter></emphasis> |
+    <parameter><literal>glcd2usb</literal></parameter> |
     <parameter><literal>png</literal></parameter> |
     <parameter><literal>serdisplib</literal></parameter>
     }

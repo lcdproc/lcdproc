@@ -59,14 +59,14 @@ glcd_render_init(Driver *drvthis)
 	p->cellwidth = GLCD_DEFAULT_CELLWIDTH;
 	p->cellheight = GLCD_DEFAULT_CELLHEIGHT;
 
+	debug(RPT_DEBUG, "%s: render_init()", drvthis->name);
+
 #ifdef HAVE_FT2
 	int rc;
 	const char *tmp;
 	char font_file[255];
 	RenderConfig *rconf;
 	int w, h;
-
-	debug(RPT_INFO, "%s: render_init: Freetype", drvthis->name);
 
 	/* Allocate memory structures */
 	rconf = (RenderConfig *) calloc(1, sizeof(RenderConfig));
@@ -81,6 +81,8 @@ glcd_render_init(Driver *drvthis)
 
 	/* Only configure FreeType if enabled */
 	if (p->use_ft2) {
+		debug(RPT_INFO, "%s: render_init: Using FreeType", drvthis->name);
+
 		/* get font from config file */
 		tmp = drvthis->config_get_string(drvthis->name, "normal_font", 0, NULL);
 		if (tmp == NULL) {
