@@ -207,9 +207,13 @@ glcd2usb_backlight(PrivateData *p, int state)
 {
 	int err = 0;
 	CT_glcd2usb_data *ctd = (CT_glcd2usb_data *) p->ct_data;
+	int promille = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 
 	ctd->tx_buffer.bytes[0] = GLCD2USB_RID_SET_BL;
-	ctd->tx_buffer.bytes[1] = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+	ctd->tx_buffer.bytes[1] = promille * 255 / 1000;
+
+	p->glcd_functions->drv_debug(RPT_DEBUG, "glcd2usb_backlight: new value = %d",
+		ctd->tx_buffer.bytes[1]);
 
 	if ((err = usbSetReport(ctd->device, USB_HID_REPORT_TYPE_FEATURE, ctd->tx_buffer.bytes, 2)) != 0) {
 		p->glcd_functions->drv_report(RPT_ERR, "Error freeing display: %s\n", usbErrorMessage(err));
