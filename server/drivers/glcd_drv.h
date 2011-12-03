@@ -26,4 +26,5 @@ MODULE_EXPORT void glcd_set_brightness (Driver *drvthis, int state, int promille
 MODULE_EXPORT void glcd_backlight (Driver *drvthis, int promille);
 MODULE_EXPORT void glcd_output(Driver *drvthis, int value);
 
+MODULE_EXPORT const char *glcd_get_key(Driver *drvthis);
 #endif

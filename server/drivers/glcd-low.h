@@ -16,6 +16,9 @@
 #define GLCD_DEFAULT_CONTRAST	600
 #define GLCD_DEFAULT_BRIGHTNESS		800
 #define GLCD_DEFAULT_OFFBRIGHTNESS	100
+#define GLCD_KEYPAD_MAX			26
+#define GLCD_DEFAULT_REPEAT_DELAY	500	/* milliseconds */
+#define GLCD_DEFAULT_REPEAT_INTERVAL	300	/* milliseconds */
 
 /** The framebuffer and its properties */
 struct glcd_framebuf {
@@ -27,11 +30,13 @@ struct glcd_framebuf {
 
 /** private data for the \c glcd driver */
 typedef struct glcd_private_data {
+	/* framebuffer and size settings */
 	struct glcd_framebuf framebuf;	/**< the main framebuffer */
 	int cellwidth;			/**< character cell width */
 	int cellheight;			/**< character cell height */
 	int width;			/**< display width in characters */
 	int height;			/**< display height in characters */
+	/* low-level hardware-related stuff */
 	int contrast;			/**< current contrast */
 	int brightness;			/**< current brightness (for backlight on) */
 	int offbrightness;		/**< current brightness (for backlight off) */
@@ -39,8 +44,15 @@ typedef struct glcd_private_data {
 	int backlightstate;		/**< state of backlight currently used */
 	struct hwDependentFns *glcd_functions;	/**< pointers to low-level functions */
 	void *ct_data;			/**< Connection type specific data */
+	/* Renderer settings */
 	void *render_config;		/**< Settings for the font renderer */
 	char use_ft2;			/**< (Not) use FreeType if available */
+	/* Keypad related settings */
+	char *keyMap[GLCD_KEYPAD_MAX];	/**< Maps scancode number to key strings */
+	char *pressed_key;		/**< The last key string */
+	struct timeval *key_wait_time;	/**< Time until key auto repeat */
+	int key_repeat_delay;		/**< Time until first key repeat */
+	int key_repeat_interval;	/**< Time between auto repeated keys */
 } PrivateData;
 
 /** Structure holding pointers to display specific functions */
@@ -60,6 +72,9 @@ typedef struct hwDependentFns {
 
 	/* Output "data" to output latch if there is one */
 	void (*output)(PrivateData *p, int data);
+
+	/* Poll for key presses */
+	unsigned char (*poll_keys)(PrivateData *p);
 
 	/* Close the interface on shutdown */
 	void (*close)(PrivateData *p);

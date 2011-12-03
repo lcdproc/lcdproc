@@ -52,12 +52,15 @@
 #include "report.h"
 #include "glcd-render.h"
 #include "shared/defines.h"
+#include "timing.h"
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "glcd_";
+
+static char *defaultKeyMap[GLCD_KEYPAD_MAX] = {"Up", "Down", "Left", "Right", "Enter", "Escape"};
 
 /**
  * Initialize the driver. (Required)
@@ -113,6 +116,7 @@ glcd_init(Driver *drvthis)
 	p->glcd_functions->set_contrast = NULL;
 	p->glcd_functions->set_backlight = NULL;
 	p->glcd_functions->output = NULL;
+	p->glcd_functions->poll_keys = NULL;
 
 	/* Read display size in pixels */
 	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, GLCD_DEFAULT_SIZE), sizeof(size));
@@ -199,6 +203,52 @@ glcd_init(Driver *drvthis)
 	p->width = p->framebuf.px_width / p->cellwidth;
 	p->height = p->framebuf.px_height / p->cellheight;
 	debug(RPT_INFO, "%s: Screen size (final) = %dx%d", drvthis->name, p->width, p->height);
+
+	/* Initialize key map */
+	for (i = 0; i < GLCD_KEYPAD_MAX; i++) {
+		char buf[40];
+
+		/* First fill with default value */
+		p->keyMap[i] = defaultKeyMap[i];
+
+		/* Read config value */
+		sprintf(buf, "KeyMap_%c", i + 'A');
+		s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
+
+		/* Was a key specified in the config file ? */
+		if (s) {
+			p->keyMap[i] = strdup(s);
+			debug(RPT_INFO, "%s: Key '%c' = \"%s\"", drvthis->name, i + 'A', s);
+		}
+	}
+
+	/* Initialize delay */
+	if ((p->key_wait_time = malloc(sizeof(struct timeval))) == NULL) {
+		report(RPT_ERR, "%s: error allocating memory", drvthis->name);
+		return -1;
+	}
+	timerclear(p->key_wait_time);
+
+	/* Get key auto repeat delay */
+	tmp = drvthis->config_get_int(drvthis->name, "KeyRepeatDelay", 0, GLCD_DEFAULT_REPEAT_DELAY);
+	if (tmp < 0 || tmp > 3000) {
+		report(RPT_WARNING, "%s: KeyRepeatDelay must be between 0-3000; using default %d",
+			drvthis->name, GLCD_DEFAULT_REPEAT_DELAY);
+		tmp = GLCD_DEFAULT_REPEAT_DELAY;
+	}
+	p->key_repeat_delay = tmp;
+
+	/* Get key auto repeat interval */
+	tmp = drvthis->config_get_int(drvthis->name, "KeyRepeatInterval", 0, GLCD_DEFAULT_REPEAT_INTERVAL);
+	if (tmp < 0 || tmp > 3000) {
+		report(RPT_WARNING, "%s: KeyRepeatInterval must be between 0-3000; using default %d",
+			drvthis->name, GLCD_DEFAULT_REPEAT_INTERVAL);
+		tmp = GLCD_DEFAULT_REPEAT_INTERVAL;
+	}
+	p->key_repeat_interval = tmp;
+
+	debug(RPT_INFO, "%s: Key repeat: delay = %d, interval = %d",
+			drvthis->name, p->key_repeat_delay, p->key_repeat_interval);
 
 	glcd_clear(drvthis);
 
@@ -556,7 +606,7 @@ glcd_get_brightness(Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
 
-	debug(RPT_INFO, "%s(%i)", __FUNCTION__, state);
+	debug(RPT_DEBUG, "%s(%i)", __FUNCTION__, state);
 
 	return (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 }
@@ -573,7 +623,7 @@ glcd_set_brightness(Driver *drvthis, int state, int promille)
 {
 	PrivateData *p = drvthis->private_data;
 
-	debug(RPT_INFO, "%s(%i,%i)", __FUNCTION__, state, promille);
+	debug(RPT_DEBUG, "%s(%i,%i)", __FUNCTION__, state, promille);
 
 	/* Check it */
 	if (promille < 0 || promille > 1000)
@@ -633,4 +683,76 @@ glcd_output(Driver *drvthis, int value)
 	/* call output function only if it is defined for the commenction type */
 	if (p->glcd_functions->output != NULL)
 		p->glcd_functions->output(p, value);
+}
+
+
+/**
+ * Get key from the key panel connected to the display.
+ * \param drvthis  Pointer to driver structure.
+ * \return         String representation of the key;
+ *                 \c NULL if nothing available / unmapped key.
+ */
+MODULE_EXPORT const char *
+glcd_get_key(Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	unsigned char scancode;
+	char *keystr = NULL;
+	struct timeval current_time, delay_time;
+
+	/* return "no key pressed" if required functions missing */
+	if (p->glcd_functions->poll_keys == NULL)
+		return NULL;
+
+	/*
+	 * scancode is either '0' (no key pressed) or an index into the key
+	 * string mapping table ('1-26').
+	 */
+	scancode = p->glcd_functions->poll_keys(p);
+	if (scancode != '\0') {
+		if (scancode > GLCD_KEYPAD_MAX)
+			return NULL;
+		keystr = p->keyMap[scancode - 1];
+	}
+
+	/*
+	 * If a key has been pressed and it is not the same as in the previous
+	 * call to this function return that key string and start a timer. If
+	 * it is the same, check if the timer has passed. If not (or the timer
+	 * has been disabled) return no key string. Otherwise set the repeat
+	 * interval timer and return that key.
+	 */
+	if (keystr != NULL) {
+		if (keystr == p->pressed_key) {
+			if (timerisset(p->key_wait_time)) {
+				gettimeofday(&current_time, NULL);
+				if (timercmp(&current_time, p->key_wait_time, >)) {
+					/* Set timer for next key */
+					delay_time.tv_sec  = p->key_repeat_interval / 1000;
+					delay_time.tv_usec = (p->key_repeat_interval % 1000) * 1000;
+					timeradd(&current_time, &delay_time, p->key_wait_time);
+				}
+				else {
+					return NULL;
+				}
+			}
+			else {
+				return NULL;
+			}
+		}
+		else {
+			/* Set the time for repeated key press if enabled */
+			if (p->key_repeat_delay > 0) {
+				gettimeofday(&current_time, NULL);
+				delay_time.tv_sec  = p->key_repeat_interval / 1000;
+				delay_time.tv_usec = (p->key_repeat_interval % 1000) * 1000;
+				timeradd(&current_time, &delay_time, p->key_wait_time);
+			}
+			report(RPT_DEBUG, "%s: New key pressed: %s", drvthis->name, keystr);
+		}
+	}
+
+	p->pressed_key = keystr;
+
+	return keystr;
 }

@@ -4,7 +4,7 @@
  *
  * \note  This connection type uses the screen size as reported by the glcd2usb
  *        device. Any size configured in LCDd.conf will be ignored.
- * \note  The glcd2usb with KS108 firmware uses a vertival (aka paged) frame
+ * \note  The glcd2usb with KS108 firmware uses a vertical (aka paged) frame
  *        buffer layout. Other layouts are not supported by this driver.
  *
  * \todo  Keypad input
@@ -33,7 +33,7 @@
 #define GLCD2USB_VID	0x1c40
 #define GLCD2USB_PID	0x0525
 
-/* Some useful sortcuts */
+/* Some useful shortcuts */
 #define PAGES		(p->framebuf.px_height / 8)
 #define PAGED_SIZE	(p->framebuf.px_width * PAGES)
 
@@ -56,7 +56,7 @@ typedef struct glcd_glcd2usb_data {
  * Note: The glcd2usb device implements a HID device. My first try to use
  * libhid failed, because glcd2usb uses report descriptors that totally confuse
  * libhid's parser. Therefor we need to roll our own. The code below has been
- * copied from the lcd4linux implementation of this driver.
+ * copied from the LCD4Linux implementation of this driver.
  */
 
 /* Error codes */
@@ -123,7 +123,7 @@ usbSetReport(usb_dev_handle * device, int reportType, unsigned char *buffer, int
 
 /**
  * Sends a 'get report' request to the default control end point of glcd2usb
- * device. The amout of data read is stored in parameter len.
+ * device. The amount of data read is stored in parameter len.
  *
  * \param device        USB device handle of the device to talk to
  * \param reportType    A HID report type (input / output / feature)
@@ -132,7 +132,7 @@ usbSetReport(usb_dev_handle * device, int reportType, unsigned char *buffer, int
  *                      be allocated beforehand and be at least of 'len' size.
  * \param len           Pointer to an integer with the number of bytes to read
  *                      at most. Upon return, this hold the number of bytes
- *                      actually read or -1 if an error occured.
+ *                      actually read or -1 if an error occurred.
  * \return  0 on success, USB_ERROR_IO otherwise
  */
 static int
@@ -319,6 +319,37 @@ glcd2usb_blit(PrivateData *p)
 
 
 /**
+ * API: Poll for any pressed keys. Converts the bitmap of keys pressed into a
+ * scancode (1-4) for each pressed key.
+ * \note Only single key presses are detected.
+ */
+unsigned char
+glcd2usb_poll_keys(PrivateData *p)
+{
+	CT_glcd2usb_data *ctd = (CT_glcd2usb_data *) p->ct_data;
+	unsigned char keycode = 0;
+	int err = 0, len = 2;
+	int i;
+
+	if ((err = usbGetReport(ctd->device, USB_HID_REPORT_TYPE_FEATURE,
+				GLCD2USB_RID_GET_BUTTONS, ctd->tx_buffer.bytes, &len)) != 0) {
+		p->glcd_functions->drv_report(RPT_ERR, "glcd2usb_poll_keys: Error getting button state: %s",
+					      usbErrorMessage(err));
+		return 0;
+	}
+
+	for (i = 0; i < 4; i++) {
+		if (ctd->tx_buffer.bytes[1] & (1 << i)) {
+			keycode = i + 1;
+			break;
+		}
+	}
+
+	return keycode;
+}
+
+
+/**
  * API: Initialize glcd2usb connection type.
  */
 int
@@ -339,6 +370,7 @@ glcd2usb_init(Driver *drvthis)
 	p->glcd_functions->blit = glcd2usb_blit;
 	p->glcd_functions->close = glcd2usb_close;
 	p->glcd_functions->set_backlight = glcd2usb_backlight;
+	p->glcd_functions->poll_keys = glcd2usb_poll_keys;
 
 	/* Allocate memory structures */
 	ctd = (CT_glcd2usb_data *) calloc(1, sizeof(CT_glcd2usb_data));
@@ -407,7 +439,7 @@ found_dev:
 
 	/*
 	 * now try to claim the interface and detach the kernel HID driver on
-	 * linux and other operating systems which support the call.
+	 * Linux and other operating systems which support the call.
 	 */
 	while ((rval = usb_claim_interface(handle, 0)) != 0 && retries-- > 0) {
 #ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
@@ -463,7 +495,7 @@ found_dev:
 		       ctd->tx_buffer.display_info.width, ctd->tx_buffer.display_info.height);
 	}
 
-	/* Allocate the display (turn off the 'screensaver') */
+	/* Allocate the display (turn off the 'whirl') */
 	ctd->tx_buffer.bytes[0] = GLCD2USB_RID_SET_ALLOC;
 	ctd->tx_buffer.bytes[1] = 1;
 	if ((err = usbSetReport(ctd->device, USB_HID_REPORT_TYPE_FEATURE, ctd->tx_buffer.bytes, 2)) != 0) {

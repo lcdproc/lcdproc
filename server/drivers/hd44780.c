@@ -1233,7 +1233,7 @@ HD44780_get_key(Driver *drvthis)
 	char *keystr = NULL;
 	struct timeval curr_time, time_diff;
 
-	/* return "no key pressed" if required functions mission or input disabled */
+	/* return "no key pressed" if required function is missing or input disabled */
 	if ((!p->have_keypad) || (p->hd44780_functions->scankeypad == NULL))
 		return NULL;
 
