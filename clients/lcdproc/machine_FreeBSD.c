@@ -96,7 +96,7 @@ machine_init(void)
 
 	/* open kernel virtual memory */
 	if ((kvmd = kvm_open(NULL, NULL, NULL, O_RDONLY, "kvm_open")) == NULL) {
-		perror("kvm_open");
+		perror("kvm_open failed");
 		return (FALSE);
 	}
 
@@ -317,7 +317,7 @@ machine_get_procs(LinkedList * procs)
 	if (kvmd == NULL)
 		return (FALSE);
 
-	kprocs = kvm_getprocs(kvmd, KERN_PROC_ALL, 0, &nproc);
+	kprocs = kvm_getprocs(kvmd, KERN_PROC_PROC, 0, &nproc);
 	if (kprocs == NULL) {
 		perror("kvm_getprocs");
 		return (FALSE);
