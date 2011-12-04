@@ -105,6 +105,24 @@ LCD display on the EyeboxOne
 .B g15
 LCD display on the Logitech G15 keyboard
 .TP
+.B glcd
+generic driver for graphical LCDs with FreeType rendering support. This driver
+supports the following sub-drivers (a.k.a. \fIconnection types\fP):
+.RS
+.TP
+.B glcd2usb
+Till Harbaum's open source/open hardware GLCD2USB (http://www.harbaum.org/till/glcd2usb/)
+.TP
+.B png
+Write out screens as PNG images
+.TP
+.B serdisplib
+Uses serdisplib (http://serdisplib.sourceforge.net/) for output
+.TP
+.B t6963
+Toshiba T6963 based LCD displays (graphic mode)
+.RE
+.TP
 .B glcdlib
 graphical LCDs supported by graphlcd-base
 .TP
@@ -272,7 +290,7 @@ LCD devices from SURE electronics  (http://www.sureelectronics.net)
 VGA monitors using svgalib
 .TP
 .B t6963
-Toshiba T6963 based LCD displays
+Toshiba T6963 based LCD displays (text mode)
 .TP
 .B text
 Standard "hard-copy" text display
