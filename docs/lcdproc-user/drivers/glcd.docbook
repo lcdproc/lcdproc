@@ -71,6 +71,10 @@ This device features an adjustable backlight and 4 keys. Right now only displays
 with the KS0108 controller are supported.
 </para>
 <para>
+The device has 4 keys which may be configured using the <literal>KeyMap_A</literal>
+(leftmost key) to <literal>KeyMap_D</literal> (rightmost key) settings.
+</para>
+<para>
 Note that any size setting configured in <filename>LCDd.conf</filename> is
 ignored as the size reported by the device is used.
 </para>
@@ -227,6 +231,101 @@ ignored as the size reported by the device is used.
   </para></listitem>
 </varlistentry>
 -->
+</variablelist>
+
+<variablelist>
+<title>Keypad settings</title>
+<varlistentry>
+  <term>
+    <property>KeyRepeatDelay</property> =
+    <parameter><replaceable>DELAY</replaceable></parameter>
+  </term>
+  <listitem><para>
+    <replaceable>DELAY</replaceable>is the time in milliseconds from first key
+    report to first repeat. Set to <literal>0</literal> to disable repeated key
+    reports. Allowed values are between <literal>0</literal> and <literal>3000</literal>,
+    the default is <literal>500</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>KeyRepeatInterval</property> =
+    <parameter><replaceable>DELAY</replaceable></parameter>
+  </term>
+  <listitem><para>
+    <replaceable>DELAY</replaceable>is the time in milliseconds between repeated
+    key strokes. Allowed values are between <literal>0</literal> and <literal>3000</literal>,
+    the default is <literal>300</literal>. This setting is ignored, if KeyRepeatDelay
+    is disabled (set to zero).
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>KeyMap_A</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
+  </term>
+  <term>
+    <property>KeyMap_B</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
+  </term>
+  <term>
+    <property>KeyMap_C</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
+  </term>
+  <term>
+    <property>KeyMap_D</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
+  </term>
+  <term>
+    <property>KeyMap_E</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
+  </term>
+  <term>
+    <property>KeyMap_F</property> =
+    <parameter><replaceable>KEY</replaceable></parameter>
+  </term>
+  <listitem><para>
+    These settings allow to assign arbitrary key strings to key strokes. Up to
+    26 keys may be configured ('<literal>A</literal>' to '<literal>Z</literal>').
+    </para>
+    <para>
+    The following is the built-in default mapping hard-coded in the driver. Only
+    keys '<literal>A</literal>' to '<literal>F</literal>' are used by default.
+    </para>
+    <informaltable>
+    <tgroup cols="2">
+      <tbody>
+        <row>
+          <entry>KeyMap_A</entry>
+          <entry><literal>Up</literal></entry>
+        </row>
+        <row>
+          <entry>KeyMap_B</entry>
+          <entry><literal>Down</literal></entry>
+        </row>
+        <row>
+          <entry>KeyMap_C</entry>
+          <entry><literal>Left</literal></entry>
+        </row>
+        <row>
+          <entry>KeyMap_D</entry>
+          <entry><literal>Right</literal></entry>
+        </row>
+        <row>
+          <entry>KeyMap_E</entry>
+          <entry><literal>Enter</literal></entry>
+        </row>
+        <row>
+          <entry>KeyMap_F</entry>
+          <entry><literal>Escape</literal></entry>
+        </row>
+      </tbody>
+    </tgroup>
+    </informaltable>
+  </listitem>
+</varlistentry>
 </variablelist>
 
 <variablelist>
