@@ -68,7 +68,7 @@ For serial RS-232 ports you can choose among these connection types:
 
   <listitem><para>
     <link linkend="hd44780-los-panel">los-panel</link>:
-    LCD on Serial panel device (<ulink url="http://www.xs4all.nl/~mlf/los/"></ulink>)
+    LCD on Serial panel device (<ulink url="http://mlf.home.xs4all.nl/los/"></ulink>)
   </para></listitem>
 
   <listitem><para>
@@ -2025,7 +2025,7 @@ supports the following features:
 </note>
 
 <para>
-See <ulink url="http://www.xs4all.nl/~mlf/los/"></ulink>
+See <ulink url="http://mlf.home.xs4all.nl/los/"></ulink>
 for more information on this device.
 </para>
 
@@ -2789,7 +2789,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
         </row>
         <row>
           <entry><literal><link linkend="hd44780-los-panel">los-panel</link></literal></entry>
-          <entry>LCD on Serial panel device "los-panel" (<ulink url="http://www.xs4all.nl/~mlf/los/"></ulink>)</entry>
+          <entry>LCD on Serial panel device "los-panel" (<ulink url="http://mlf.home.xs4all.nl/los/"></ulink>)</entry>
         </row>
         <row>
           <entry><literal><link linkend="hd44780-vdr-lcd">vdr-lcd</link></literal></entry>
