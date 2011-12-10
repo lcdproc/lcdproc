@@ -20,6 +20,7 @@ v0.5dev (ongoing development)
  + glcd driver: new connection type 'serdisplib'
  + glcd driver: new connection type 'glcd2usb'
  * lcdproc client: On FreeBSD show only unique processes in 'S' screen
+ * picolcd: Use libusb-1.0 asynchronous transfers to fix missed keys (M. Jones)
 
 v0.5.5
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)

@@ -14,6 +14,14 @@
 #ifndef PICOLCD_H
 #define PCIOLCD_H
 
+#ifdef HAVE_LIBUSB_1_0
+# include <libusb.h>
+# define USB_DEVICE_HANDLE libusb_device_handle
+#else
+# include <usb.h>
+# define USB_DEVICE_HANDLE usb_dev_handle
+#endif
+
 /* 12 keys plus a 0 placeholder */
 #define KEYPAD_MAX		13
 #define KEYPAD_LIGHTS		8
@@ -34,7 +42,10 @@
 #define DEFAULT_OFFBRIGHTNESS	0    /* Off */
 #define DEFAULT_BACKLIGHT	1    /* On */
 #define DEFAULT_KEYLIGHTS	1    /* On */
+#define DEFAULT_LINKLIGHTS	1    /* On */
 #define DEFAULT_TIMEOUT		500  /* Half second */
+#define DEFAULT_REPEAT_DELAY 300	/* milliseconds */
+#define DEFAULT_REPEAT_INTERVAL 200	/* milliseconds */
 
 
 typedef struct _lcd_packet {
@@ -56,7 +67,7 @@ typedef struct _picolcd_device {
 	int width;                  /* width of lcd screen */
 	int height;                 /* height of lcd screen */
 	/* Pointer to function that writes data to the LCD format */
-	void (*write) (usb_dev_handle *lcd, const int row, const int col, const unsigned char *data);
+	void (*write) (USB_DEVICE_HANDLE *lcd, const int row, const int col, const unsigned char *data);
 	/* Pointer to function that defines a custom character */
 	void (*cchar) (Driver *drvthis, int n, unsigned char *dat);
 } picolcd_device;

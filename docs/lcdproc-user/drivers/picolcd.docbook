@@ -56,7 +56,10 @@
 <para>
 	Finally, the picoLCD 20x2 (OEM) supports 8 general purpose outputs
 	and 10 custom splash screens.
-	Although these features are not supported by this driver, the
+	When the keypad is connected the outputs control the key LEDs. The
+	output command and KeyLight settings below can be used to control the
+	outputs.
+	Although splash screens are not supported by this driver, the
 	splash screens can be changed using the <command>usblcd</command>
 	tool, that can be built from the Linux SDK available on the picoLCD web page.
 </para>
@@ -115,7 +118,7 @@
   <para>
     The Brightness and OffBrightness settings only have an effect on the 20x4
     device. With the 20x2 device the backlight can only be set on (any value
-    greater than <literal>1000</literal>) or off (<literal>0</literal>).
+    <literal>1</literal> or greater) or off (<literal>0</literal>).
   </para>
 </note>
 
@@ -164,6 +167,15 @@
   <listitem><para>
     Contrast: <literal>0</literal>-<literal>1000</literal>, default to
     <literal>1000</literal> (full contrast).
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>LinkLights</property> = &parameters.yesdefno;
+  </term>
+  <listitem><para>
+    Allow key LEDs to be turned on or off with the backlight. Default is <literal>yes</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -243,14 +255,60 @@
     <property>KeyTimeout</property> =
     <parameter><replaceable>DURATION</replaceable></parameter>
   </term>
-  <listitem><para>
+  <listitem>
+  <para>
+    KeyTimeout is only used if the picoLCD driver is built with libusb-0.1, when
+    built with libusb-1.0 key and IR data is input asynchronously so there is no
+    need to wait for the USB data thus allowing LCDd to process other inputs at
+    the correct rate.
+  </para>
+  <para>
     This value controls how long <application>LCDd</application> waits for a key press when
     get_key() is called.  The value represents milliseconds and the default is <literal>500</literal>
     or .5 seconds.  Lowering this value will make LCDd more responsive but also causes LCDd to use
     more CPU time and, as the timeout grows shorter, key presses become harder to detect.
     Large values make key presses more reliable but may slow down LCDd. Values
     in the range <literal>0</literal>-<literal>1000</literal> (1s) are allowed.
-  </para></listitem>
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>KeyRepeatDelay</property> =
+    <parameter><replaceable>DURATION</replaceable></parameter>
+  </term>
+  <listitem>
+  <para>
+    KeyRepeatDelay is only used if the picoLCD driver is built with libusb-1.0, when
+    built with libusb-0.1 key input blocks all other processing until the key is released.
+  </para>
+  <para>
+    This value controls how long <application>LCDd</application> waits from when a key is
+	pressed and reported before generating the first repeat.  The value represents milliseconds
+	and the default is <literal>300</literal> (0.3 second).  Use zero to disable auto repeat.
+	Values in the range <literal>0</literal>-<literal>3000</literal> (3s) are allowed.
+  </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>KeyRepeatInterval</property> =
+    <parameter><replaceable>DURATION</replaceable></parameter>
+  </term>
+  <listitem>
+  <para>
+    KeyRepeatInterval is only used if the picoLCD driver is built with libusb-1.0, when
+    built with libusb-0.1 key input blocks all other processing until the key is released.
+  </para>
+  <para>
+    This value controls how long <application>LCDd</application> waits between key reports
+	after generating the first repeat.  The value represents milliseconds and the default
+	is <literal>200</literal> (0.2 second). Use zero to disable auto repeat.
+	Values in the range <literal>0</literal>-<literal>3000</literal> (3s) are allowed.
+  </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
@@ -320,6 +378,10 @@
 	deal with this in a sane way and toss out all key-up events for now.  The hardware is
 	touchy and both combo key-down and key-up actions may be reported as multiple events if
 	the user is more than a tenth of a second (maybe less?) off in motions.
+	The hardware is <emphasis>not</emphasis> "touchy" it reports what it receives. Two key
+	presses or releases may appear simultaneous to a human but they are always some time apart.
+	The hardware probably samples the keys for every USB transfer cycle; that is every 10ms,
+	significantly faster than the typical human response time of a few hundred milliseconds!
 </para>
 
 <sect3 id="picolcd-ir-status">
