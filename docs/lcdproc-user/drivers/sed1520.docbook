@@ -48,11 +48,12 @@ without having a datasheet to check against!</para>
 <sect3 id="sed1520-80">
 <title>80-style connection style</title>
 
-<para>This mode of operation is selected if the RESET line is wired to ground.
-The wiring used by this driver in 80-style mode requires the use of an external
-74HC04 inverter and assumes you have /CS1 and /CS2 lines available (thus you
-must have an external clock generator) and toggles the /RW line. This is the
-original wiring by Robin Adams.</para>
+<para>This mode of operation is selected if the RESET line is wired to
+ground. The wiring used by this driver in 80-style mode assumes you have
+/CS1 and /CS2 lines available (thus you must have an external clock
+generator) and toggles the /RW line. This is the original wiring by Robin Adams
+(<ulink url="http://www.usblcd.de/lcdproc/sed1520.php4">SED1520 LPT Port</ulink>).
+</para>
 
 <table id="sed1520-connections-80-mapping">
 <title>SED1520 80-style wiring schematic</title>
@@ -214,14 +215,6 @@ line. Writing is controlled by toggling the E1 and E2 line while /RW is low.
 </tgroup>
 </table>
 
-<note>
-<para>This is the only wiring I was able to test. My display (Crystalfontz
-CFAG12232J-TFH-TA) has E1 and E2 lines. Trying to use it with 80-style wiring
-was not successful. I suspect that (as the E# line is used as /RD line in
-80-style mode) the wiring resulted in reading from one chip while writing to
-the other at the same time and the data bus got fuzzed.</para>
-</note>
-
 </sect3>
 
 </sect2>
@@ -257,10 +250,11 @@ the other at the same time and the data bus got fuzzed.</para>
     the level of the RESET line: 68-style MCU interface (high level) or
     80-style MCU interface (low level).
   </para><para>
-    Use value <literal>68</literal> if your display is connected 68-style
-    style. In this mode the E1 and E2 lines are cycled to write the data. If
-    you use <literal>80</literal> (the default), 80-style style is selected
-    and the /WR line is cycled and /CS1 and /CS2 lines are required.
+    Use value <literal>68</literal> if your display is connected using
+    &quot;68 family MPU&quot; style. In this mode E1 and E2 lines are cycled to
+    write the data. If you use <literal>80</literal> (the default),
+    &quot;80 family MPU&quot; style is selected and the /WR line is cycled and
+    /CS1 and /CS2 lines are required.
   </para></listitem>
 </varlistentry>
 
@@ -274,6 +268,16 @@ the other at the same time and the data bus got fuzzed.</para>
     the 80-style connection type actual two delays are added each. The
     default value of <literal>1</literal> already slows down communication a
     lot, larger value should likely be avoided.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>haveInverter</property> = &parameters.yesdefno;
+  </term>
+  <listitem><para>
+    The original wiring by Robin used an inverter to drive the control lines.
+    If you do not use an inverter set this to <literal>no</literal>.
   </para></listitem>
 </varlistentry>
 </variablelist>

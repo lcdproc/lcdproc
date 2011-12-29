@@ -57,6 +57,7 @@ typedef struct sed1520_private_data {
     unsigned short port;
     int interface;
     int delayMult;
+    int haveInverter;
 
     unsigned char *framebuf;
 } PrivateData;
@@ -90,17 +91,31 @@ writecommand(PrivateData *p, int value, int chip)
     }
     else {
 	port_out(p->port, value);
-	/*
-	* lower WR, rise A0 and CS1 and/or CS2. Take bit inversion of parallel
-	* port into account. External inverter required!
-	*/
-	port_out(p->port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
-	/* rise WR */
-	port_out(p->port + 2, CS1 - (chip & CS1) + (chip & CS2));
-	if (p->delayMult) uPause(p->delayMult);
-	/* lower WR again */
-	port_out(p->port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
-	if (p->delayMult) uPause(p->delayMult);
+	if (p->haveInverter) {
+	    /*
+	     * lower WR, rise A0 and CS1 and/or CS2 taking bit inversion of
+	     * parallel port into account. External inverter required!
+	     */
+	    port_out(p->port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
+	    /* rise WR */
+	    port_out(p->port + 2, CS1 - (chip & CS1) + (chip & CS2));
+	    if (p->delayMult)
+		uPause(p->delayMult);
+	    /* lower WR again */
+	    port_out(p->port + 2, WR + CS1 - (chip & CS1) + (chip & CS2));
+	    if (p->delayMult)
+		uPause(p->delayMult);
+	}
+	else {			/* No inverter connected */
+	    /* Note: CS?-(chip&CS?) drive the pin low if controller is set */
+	    port_out(p->port + 2, (WR + CS1 - (chip & CS1) + CS2 - (chip & CS2)) ^ OUTMASK);
+	    port_out(p->port + 2, (CS1 - (chip & CS1) + CS2 - (chip & CS2)) ^ OUTMASK);
+	    if (p->delayMult)
+		uPause(p->delayMult);
+	    port_out(p->port + 2, (WR + CS1 - (chip & CS1) + CS2 - (chip & CS2)) ^ OUTMASK);
+	    if (p->delayMult)
+		uPause(p->delayMult);
+	}
     }
 }
 
@@ -123,12 +138,25 @@ writedata(PrivateData *p, int value, int chip)
     }
     else {
 	port_out(p->port, value);
-	/* lower WR and A0, rise CS1 and/or CS2. See also writecommand. */
-	port_out(p->port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
-	port_out(p->port + 2, A0 + CS1 - (chip & CS1) + (chip & CS2));
-	if (p->delayMult) uPause(p->delayMult);
-	port_out(p->port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
-	if (p->delayMult) uPause(p->delayMult);
+	if (p->haveInverter) {
+	    /* lower WR and A0, rise CS1 and/or CS2. See also writecommand. */
+	    port_out(p->port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
+	    port_out(p->port + 2, A0 + CS1 - (chip & CS1) + (chip & CS2));
+	    if (p->delayMult)
+		uPause(p->delayMult);
+	    port_out(p->port + 2, A0 + WR + CS1 - (chip & CS1) + (chip & CS2));
+	    if (p->delayMult)
+		uPause(p->delayMult);
+	}
+	else {
+	    port_out(p->port + 2, (A0 + WR + CS1 - (chip & CS1) + CS2 - (chip & CS2)) ^ OUTMASK);
+	    port_out(p->port + 2, (A0 + CS1 - (chip & CS1) + CS2 - (chip & CS2)) ^ OUTMASK);
+	    if (p->delayMult)
+		uPause(p->delayMult);
+	    port_out(p->port + 2, (A0 + WR + CS1 - (chip & CS1) + CS2 - (chip & CS2)) ^ OUTMASK);
+	    if (p->delayMult)
+		uPause(p->delayMult);
+	}
     }
 }
 
@@ -254,6 +282,12 @@ sed1520_init(Driver * drvthis)
 	report(RPT_WARNING, "%s: Invalid interface configured, using type 80", drvthis->name);
 	p->interface = 80;
     }
+
+    /*
+     * The original wiring used an inverter to drive the control lines. As
+     * someone may still be using this, the following setting in ON by default.
+     */
+    p->haveInverter = drvthis->config_get_bool(drvthis->name, "haveInverter", 0, 1);
 
     /* Initialize display */
     writecommand(p, SOFT_RESET, CS1 + CS2);
