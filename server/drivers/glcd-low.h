@@ -42,7 +42,7 @@ typedef struct glcd_private_data {
 	int offbrightness;		/**< current brightness (for backlight off) */
 	int last_output_state;		/**< cache last value to output() */
 	int backlightstate;		/**< state of backlight currently used */
-	struct hwDependentFns *glcd_functions;	/**< pointers to low-level functions */
+	struct glcdHwFcns *glcd_functions;	/**< pointers to low-level functions */
 	void *ct_data;			/**< Connection type specific data */
 	/* Renderer settings */
 	void *render_config;		/**< Settings for the font renderer */
@@ -56,7 +56,7 @@ typedef struct glcd_private_data {
 } PrivateData;
 
 /** Structure holding pointers to display specific functions */
-typedef struct hwDependentFns {
+struct glcdHwFcns {
 	/* report and debug helper. Set by global glcd init */
 	void (*drv_report)(const int level, const char *format,... /* args */ );
 	void (*drv_debug)(const int level, const char *format,... /* args */ );
@@ -78,7 +78,7 @@ typedef struct hwDependentFns {
 
 	/* Close the interface on shutdown */
 	void (*close)(PrivateData *p);
-} GLCD_functions;
+};
 
 /* ================== Framebuffer functions and macros =================== */
 

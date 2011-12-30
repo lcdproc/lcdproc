@@ -105,7 +105,7 @@ glcd_init(Driver *drvthis)
 	 * Set up low-level functions. These should be overwritten by the
 	 * connection type's init function.
 	 */
-	if ((p->glcd_functions = (GLCD_functions *) calloc(1, sizeof(GLCD_functions))) == NULL) {
+	if ((p->glcd_functions = (struct glcdHwFcns *) calloc(1, sizeof(struct glcdHwFcns))) == NULL) {
 		report(RPT_ERR, "%s: error mallocing", drvthis->name);
 		return -1;
 	}
