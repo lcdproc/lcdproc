@@ -1,30 +1,23 @@
 /** \file server/drivers/lis.c
- * LCDd \c lis driver for the L.I.S MCE VFD by vlsys.co.kr.
+ * LCDd \c lis driver for the L.I.S MCE VFD by vlsys.co.kr. This is a 20x2 VFD
+ * using NEC UPD16314 driver and FTDI FT232RQ USB-to-serial converter.
+ *
+ * \note  This driver uses the libftdi library to interface to the FTDI chip.
+ *        Make sure kernel module ftdi_sio doesn't claim the device.
  */
 
-/*
- * LIS driver for lcdproc
- * For the L.I.S MCE vacuum fluorescent display from vlsys.co.kr
- * 20x2 display using NEC UPD16314 driver and FTDI FT232RQ USB-to-serial
- * converter.
+/*-
+ * Copyright (c) 2007, Daryl Fonseca-Holt <wyatt@prairieturtle.ca>
  *
- * This driver uses the libftdi library to interface to the FTDI chip. Make
- * sure kernel module ftdi_sio doesn't claim the device.
- *
- * Based on:   ula200 driver Copyright (C) 2006, Bernhard Walle
- *             IOWarrior driver Copyright(C) 2004-2006 Peter Marschall <peter@adpm.de>
- *
- * Copyright (c)  2007, Daryl Fonseca-Holt <wyatt@prairieturtle.ca>
+ * Based on:
+ * ula200 driver, Copyright (C) 2006, Bernhard Walle
+ * IOWarrior driver, Copyright(C) 2004-2006 Peter Marschall <peter@adpm.de>
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
- *
- *
- *
- *
  */
 
-/*
+/*-
  * Notes on this driver
  *
  * vlsys is unwilling to provide information about the protocol for this
@@ -37,21 +30,9 @@
  * was which line would be written at column 1.
  */
 
-/* CHANGES:
- *
- * 	2007/05/22	Removed useless Device= config option.
- * 			Added VendorID= and ProductID= config
- * 			option parsting. Moved constants to
- * 			lis.h where they belong. Added
- * 			lis_cellheight() and lis_cellwidth().
- * 			Completely commented out lis_test() to
- * 			save memory.
- * 	2007/05/30	Remove set_custom_chars(). Implement
- * 			lis_set_chars(), lis_vbar(), lis_hbar()
- * 			and lis_num() using helper functions.
- * 	2007/11/01	Change Linux-centric clone() to POSIX
- * 			threads for portability.
- */
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -62,10 +43,6 @@
 
 #include <usb.h>
 #include <ftdi.h>
-
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
 
 #include "lcd.h"
 #include "lis.h"
@@ -83,24 +60,13 @@ MODULE_EXPORT int supports_multiple = 1;
 MODULE_EXPORT char *symbol_prefix = "lis_";
 
 
-/*
- * Charactar mapping for UPD16314 device by Daryl Fonseca-Holt
+/**
+ * UPD16314 table. Charactar mapping for UPD16314 device by Daryl Fonseca-Holt
  * <wyatt@prairieturtle.ca> taken from Mark Haemmerling's HD44780 table.
  * Character mapping for HD44780 devices by Mark Haemmerling <mail@markh.de>.
  *
  * Translates ISO 8859-1 to any HD44780 charset.
- *
- * Charmap selector (C) 2006 Pillon Matteo <matteo.pillon@email.it>
- *
- * This file is released under the GNU General Public License.
- * Refer to the COPYING file distributed with this package.
  */
-
-/*
- * UPD16314 table
- *
- */
-
 const unsigned char UPD16314_charmap[] = {
 	/* #0 */
 	 0,   1,   2,   3,   4,   5,   6,   7,
@@ -144,12 +110,14 @@ const unsigned char UPD16314_charmap[] = {
 	248, 249, 250, 251, 252, 253, 254, 1
 };
 
-/////////////////////////////////////////
-// Cache standard custom chars
-void
-lis_standard_custom_chars (Driver *drvthis) {
-
-PrivateData *p = drvthis->private_data;
+/**
+ * Setup standard custom chars. By default, the full block character is placed
+ * at 0x01 as the UPD16314 has none.
+ */
+static void
+lis_standard_custom_chars (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
 
 	static unsigned char checkbox_gray[] =
 		{ b_______,
@@ -171,21 +139,19 @@ PrivateData *p = drvthis->private_data;
 		  b__XXXXX,
 		  b__XXXXX };
 
-		  lis_set_char(drvthis, 1, block_filled);
-		  lis_set_char(drvthis, 2, checkbox_gray);
-
-		  p->ccmode = standard;
-
+	lis_set_char(drvthis, 1, block_filled);
+	lis_set_char(drvthis, 2, checkbox_gray);
+	p->ccmode = standard;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Write a command to the display.
-//
-// @param p the private data
-// @param data the data bytes
-// @param length the number of bytes in @p data which are valid
-// @return 0 on success, negative value on error
-//
+/**
+ * Write a command to the display.
+ *
+ * \param drvthis  Pointer to Driver
+ * \param data     Data bytes
+ * \param length   The number of bytes in data which are valid
+ * \return 0 on success, negative value on error
+ */
 static int
 lis_ftdi_write_command(Driver *drvthis, unsigned char *data, int length)
 {
@@ -203,9 +169,16 @@ lis_ftdi_write_command(Driver *drvthis, unsigned char *data, int length)
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////////
-// Displays a string at line n (n typically 1 or 2)
-//
+/**
+ * Displays a string at line n (n typically 1 or 2), starting in the first
+ * column.
+ *
+ * \param drvthis  Pointer to Driver
+ * \param line     The line number (counting from 1)
+ * \param string   Pointer to data bytes
+ * \param len      The number of bytes in string which are valid
+ * \return 0 on success, negative value on error
+ */
 static int
 lis_ftdi_line_to_display(Driver *drvthis, int line, unsigned char *string, int len)
 {
@@ -236,9 +209,9 @@ lis_ftdi_line_to_display(Driver *drvthis, int line, unsigned char *string, int l
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Flush the framebuffer to the display
-//
+/**
+ * API: Flush the framebuffer to the display.
+ */
 MODULE_EXPORT void
 lis_flush(Driver *drvthis)
 {
@@ -304,12 +277,11 @@ lis_read_thread(void *arg)
 	}
 	p->parent_flag = 0;
 	return 0;
-
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Control the display brightness
-//
+/**
+ * API: Control the display brightness
+ */
 MODULE_EXPORT int
 lis_set_brightness(Driver *drvthis, int state, int promille)
 {
@@ -319,37 +291,37 @@ lis_set_brightness(Driver *drvthis, int state, int promille)
 
 	if (promille < 0 || promille > 1000) {
 		report(RPT_WARNING, "%s: invalid brightness %d less then 0 or greater than 1000",
-			drvthis->name, promille);
-
+		       drvthis->name, promille);
 		return -EINVAL;
 	}
 
 	buffer[0] = 0xA5;
-	if ( promille < 251 )
-		buffer[1] = 0x3;		// 25%
-	else if ( promille < 501 )
-		buffer[1] = 0x2;		// 50%
-	else if ( promille < 751 )
-		buffer[1] = 0x1;		// 75%
+	if (promille < 251)
+		buffer[1] = 0x3;/* 25% */
+	else if (promille < 501)
+		buffer[1] = 0x2;/* 50% */
+	else if (promille < 751)
+		buffer[1] = 0x1;/* 75% */
 	else
-		buffer[1] = 0x0;		// 100%
+		buffer[1] = 0x0;/* 100% */
 
 	err = ftdi_write_data(&p->ftdic, buffer, 2);
 	if (err < 0) {
-		report(RPT_WARNING, "%s: lis_set_brightness(): ftdi_write_data failed with %d", drvthis->name, err);
+		report(RPT_WARNING, "%s: lis_set_brightness(): ftdi_write_data failed with %d",
+		       drvthis->name, err);
 		return err;
 	}
 	else
 		p->brightness = promille;
 
-	report(RPT_DEBUG, "%s: brightness set to %d",
-		drvthis->name, promille);
+	report(RPT_DEBUG, "%s: brightness set to %d", drvthis->name, promille);
 
 	return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Get the brightness setting
+/***
+ * API: Get the brightness setting
+ */
 MODULE_EXPORT int
 lis_get_brightness(Driver *drvthis, int state)
 {
@@ -361,9 +333,9 @@ lis_get_brightness(Driver *drvthis, int state)
 	return p->brightness;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Init the driver and display
-//
+/**
+ * API: Init the driver and display
+ */
 MODULE_EXPORT int
 lis_init(Driver *drvthis)
 {
@@ -405,7 +377,7 @@ lis_init(Driver *drvthis)
 		return -1;
 	}
 	for (count = 0; count < p->height; count++)
-		p->line_flags[count] = 1;					// dirty!
+		p->line_flags[count] = 1;	/* dirty! */
 
 	/* Which display brightness */
 	count = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
@@ -419,6 +391,7 @@ lis_init(Driver *drvthis)
 	p->VendorID = drvthis->config_get_int(drvthis->name, "VendorID", 0, DISPLAY_VENDOR_ID);
 	p->ProductID = drvthis->config_get_int(drvthis->name, "ProductID", 0, DISPLAY_PRODUCT_ID);
 
+	p->lastline = drvthis->config_get_bool(drvthis->name, "lastline", 0, 1);
 	/* End of config file parsing */
 
 
@@ -1164,18 +1137,17 @@ err_begin:
 	return -1;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Clean-up
-//
+/**
+ * API: Clean-up
+ */
 MODULE_EXPORT void
 lis_close(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	report(RPT_DEBUG, "%s: closing driver",
-		drvthis->name);
+	report(RPT_DEBUG, "%s: closing driver", drvthis->name);
 	if (p != NULL) {
-		if (p->parent_flag) {			// terminate the child
+		if (p->parent_flag) {	/* terminate the child */
 			p->child_flag = 1;
 			while(p->parent_flag)
 				timing_uPause(5*16000);
@@ -1185,16 +1157,16 @@ lis_close(Driver *drvthis)
 		ftdi_deinit(&p->ftdic);
 
 		if (p->framebuf != NULL)
-				free(p->framebuf);
+			free(p->framebuf);
 
 		free(p);
 	}
 	drvthis->store_private_ptr(drvthis, NULL);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Returns the display width
-//
+/**
+ * API: Returns the display width
+ */
 MODULE_EXPORT int
 lis_width (Driver *drvthis)
 {
@@ -1203,28 +1175,27 @@ lis_width (Driver *drvthis)
 	return p->width;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Returns the display height
-//
+/**
+ * API: Returns the display height
+ */
 MODULE_EXPORT int
-lis_height (Driver *drvthis)
+lis_height(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	return p->height;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Clear the framebuffer
-//
+/**
+ * API: Clear the framebuffer
+ */
 MODULE_EXPORT void
-lis_clear (Driver *drvthis)
+lis_clear(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	int line;
 
-	report(RPT_DEBUG, "%s: Clearing display",
-		drvthis->name);
+	report(RPT_DEBUG, "%s: Clearing display", drvthis->name);
 	for (line = 0; line < p->height; line++) {
 		memset(p->framebuf + (line * p->width), ' ', p->width);
 		p->line_flags[line] = 1;
@@ -1232,70 +1203,71 @@ lis_clear (Driver *drvthis)
 	lis_standard_custom_chars(drvthis);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Place a character in the framebuffer
-//
+/**
+ * API: Place a character in the framebuffer
+ */
 MODULE_EXPORT void
-lis_chr (Driver *drvthis, int x, int y, unsigned char ch)
+lis_chr(Driver *drvthis, int x, int y, unsigned char ch)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	// ignore out-of-range
+	/* ignore out-of-range */
 	if (y > p->height || x > p->width) {
 		report(RPT_WARNING, "%s: Writing char %x at %d,%d"
-			" ignored out of range %d,%d",
-		 	drvthis->name, ch, x, y, p->height, p->width);
+		       " ignored out of range %d,%d",
+		       drvthis->name, ch, x, y, p->height, p->width);
 		return;
 	}
 
 	y--;
 	x--;
 
-	if ( p->framebuf[ (y * p->width) + x] != ch) {
-		p->framebuf[ (y * p->width) + x] = ch;
+	if (p->framebuf[(y * p->width) + x] != ch) {
+		p->framebuf[(y * p->width) + x] = ch;
 
 		p->line_flags[y] = 1;
 		report(RPT_DEBUG, "%s: Caching char %x at %d,%d",
-			drvthis->name, ch, x, y);
+		       drvthis->name, ch, x, y);
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Place a string in the framebuffer
-//
+/**
+ * API: Place a string in the framebuffer
+ */
 MODULE_EXPORT void
-lis_string (Driver *drvthis, int x, int y, char *s)
+lis_string(Driver *drvthis, int x, int y, char *s)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	int i;
 
-	x --;  // Convert 1-based coords to 0-based
-	y --;
+	x--;			/* Convert 1-based coords to 0-based */
+	y--;
 
 	report(RPT_DEBUG, "%s: Write string to framebuffer  %d,%d \"%s\"",
-	 	drvthis->name, x, y, s);
+	       drvthis->name, x, y, s);
 
 	for (i = 0; s[i]; i++) {
-		// Check for buffer overflows...
+		/* Check for buffer overflows... */
 		if ((y * p->width) + x + i > (p->width * p->height)) {
 			report(RPT_WARNING, "%s: Writing string ignored, out of range",
-			 	drvthis->name, x, y);
+			       drvthis->name, x, y);
 			break;
 		}
 
-		if ( p->framebuf[(y*p->width) + x + i] != s[i] ) {
-			p->framebuf[(y*p->width) + x + i] = s[i];
-			p->line_flags[((y*p->width) + x + i ) / p->width ] = 1;  // dirty
+		if (p->framebuf[(y * p->width) + x + i] != s[i]) {
+			p->framebuf[(y * p->width) + x + i] = s[i];
+			p->line_flags[((y * p->width) + x + i) / p->width] = 1;	/* dirty */
 		}
 	}
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// Set default icon into a userdef char
-//
+/**
+ * API: Place an icon on the screen. The uPD16314 comes with a lot of icons
+ * already in CGROM, so use them.
+ */
 MODULE_EXPORT int
-lis_icon (Driver *drvthis, int x, int y, int icon)
+lis_icon(Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	unsigned char ch;
@@ -1409,9 +1381,9 @@ lis_set_char(Driver *drvthis, int n, unsigned char *dat)
 
 
 	if ((n < 0) || (n >= NUM_CCs))
-	    	return;
+		return;
 	if (dat == NULL)
-	    	return;
+		return;
 
 	for (row = 0; row < p->cellheight; row++) {
 		int letter = 0;
@@ -1420,12 +1392,12 @@ lis_set_char(Driver *drvthis, int n, unsigned char *dat)
 			letter = dat[row] & mask;
 
 		if (p->cc[n].cache[row] != letter) {
-	      		p->cc[n].clean = 0;	 /* only mark dirty if really different */
-	    	}
+			p->cc[n].clean = 0;	/* only mark dirty if really
+						 * different */
+		}
 		p->cc[n].cache[row] = letter;
 	}
-	report(RPT_DEBUG, "%s: cached custom character #%d",
-		drvthis->name, n);
+	report(RPT_DEBUG, "%s: cached custom character #%d", drvthis->name, n);
 }
 
 
@@ -1530,7 +1502,7 @@ lis_num(Driver *drvthis, int x, int num)
 		if (p->ccmode != standard) {
 			/* Not supported (yet) */
 			report(RPT_WARNING, "%s: num: cannot combine two modes using user-defined characters",
-					drvthis->name);
+			       drvthis->name);
 			return;
 		}
 
@@ -1538,11 +1510,12 @@ lis_num(Driver *drvthis, int x, int num)
 
 		do_init = 1;
 	}
-  	report(RPT_DEBUG, "%s: big number %d @ %d",
- 		drvthis->name, x, num);
+	report(RPT_DEBUG, "%s: big number %d @ %d", drvthis->name, x, num);
 
-	// Lib_adv_bignum does everything needed to show the bignumbers.
-	// offset by 2 because driver uses first three custom characters
+	/*
+	 * Lib_adv_bignum does everything needed to show the bignumbers.
+	 * offset by 2 because driver uses first three custom characters
+	 */
 	lib_adv_bignum(drvthis, x, num, 3, do_init);
 }
 
@@ -1553,10 +1526,9 @@ lis_num(Driver *drvthis, int x, int num)
  * \return  Number of custom characters.
  */
 MODULE_EXPORT int
-lis_get_free_chars (Driver *drvthis)
+lis_get_free_chars(Driver *drvthis)
 {
-	//PrivateData *p = drvthis->private_data;
-
-	return NUM_CCs - 3;		// first three are reserved
+	return NUM_CCs - 3;	/* first three are reserved */
 }
 
+/* EOF */
