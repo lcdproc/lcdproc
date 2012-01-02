@@ -1872,6 +1872,39 @@ The wiring of the control lines can optionally be reconfigured,
 please look at the driver source if you really need that.
 </para>
 
+<note><para>
+The backlight line is driven high when the backlight is <literal>on</literal>.
+Therefore the standard backlight circuit (<xref linkend="hd44780-connections-backlight.circuit"/>)
+will not work. Use the following instead.
+</para></note>
+
+<figure id="hd44780-ftdi-backlight">
+<title>hd44780/ftdi: Backlight Wiring</title>
+<screen>
+<![CDATA[
+                                             O 5V
+                                             |
+                                             +--------o 15 backlight
+
+                                             +--------o 16 GND backlight
+                                             |
+                           small resistor   .-.
+                           10 - 47 ohm      | |
+                           depending on     | |
+                           display          '-'
+                                             |
+                                             |c
+                          ___            b |/
+     BL pin o------------|___|-------------|
+                          4k7              |\
+                                       BC547 |e
+                                             |
+                                            === GND
+]]>
+</screen>
+</figure>
+
+
 <para>
 Alternatively you can use a single channel FTDI FT245BM USB &lt;-&gt; parallel
 FIFO chip and use the display in its 4 bit mode.
@@ -1948,6 +1981,13 @@ FIFO chip and use the display in its 4 bit mode.
       <entry>RW</entry>
       <entry>5</entry>
     </row>
+    <row>
+      <entry>D7</entry>
+      <entry>18</entry>
+      <entry></entry>
+      <entry>BL</entry>
+      <entry>Backlight (optional)</entry>
+    </row>
   </tbody>
 </tgroup>
 </table>
@@ -1967,6 +2007,7 @@ ftdi_mode=4
 ftdi_line_EN=0x10
 ftdi_line_RS=0x20
 ftdi_line_RW=0x40
+ftdi_line_backlight=0x80
 ]]>
 </screen>
 </example>
