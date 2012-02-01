@@ -1,0 +1,29 @@
+<sect1 id="sdeclcd-howto">
+<title>The SDEC LCD Driver</title>
+<para>
+The SDEC LCD modules are fitted to the Watchguard Firebox firewall appliances.
+Watchguard identifies these units by the X-Core, X-e and X-Peak product lines.
+The model number indicates a software license level, and has no bearing on the
+hardware configuration.
+</para>
+<sect2 id="sdeclcd-features">
+<title>Features</title>
+
+<para>
+The SDEC LCDs are interfaced to the appliance using a parallel port. All lines
+are hard-wired by Watchguard.
+The LCD displays are 20 characters wide and 2 lines high, and 
+have 4 buttons: <literal>Up</literal>, <literal>Down</literal>,
+<literal>Left</literal>, and <literal>Right</literal>. The SDEC model number is
+<literal>LMC-S2D20-01</literal>. There is a back light that can be controlled
+by software. Due to its low half-life, the driver tries to keep the light off a
+short while after buttons have been pressed.
+</para>
+
+<para>
+For more detailed information about the SDEC LCD, locate the technical and 
+programming guide LMC-S2D20-01.pdf. The manufacturer web site is:
+<ulink url="http://www.sdec.com.tw">SDEC home page</ulink>
+</para>
+</sect2>
+</sect1>

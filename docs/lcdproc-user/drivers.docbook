@@ -41,6 +41,7 @@ well as the configuration of LCDd.
 &NoritakeVFD;
 &picolcd;
 &pylcd;
+&sdeclcd;
 &sed1330;
 &sed1520;
 &serialPOS;

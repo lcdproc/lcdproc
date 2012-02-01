@@ -262,6 +262,9 @@ Mini-box.com USB LCD (PicoLCD 20x4 & picoLCD 20x2)
 .B pyramid
 LCD displays from Pyramid (http://www.pyramid.de)
 .TP
+.B sdeclcd
+Watchguard Firebox LCD display based on SDEC LMC-S2D20 (http://www.sdec.com.tw)
+.TP
 .B sed1330
 SED1330/SED1335 (aka S1D13300/S1D13305) based graphical displays
 .TP

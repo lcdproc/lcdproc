@@ -48,6 +48,7 @@
   <!ENTITY NoritakeVFD SYSTEM "drivers/NoritakeVFD.docbook">
   <!ENTITY picolcd SYSTEM "drivers/picolcd.docbook">
   <!ENTITY pylcd SYSTEM "drivers/pylcd.docbook">
+  <!ENTITY sdeclcd SYSTEM "drivers/sdeclcd.docbook">
   <!ENTITY sed1330 SYSTEM "drivers/sed1330.docbook">
   <!ENTITY sed1520 SYSTEM "drivers/sed1520.docbook">
   <!ENTITY serialPOS SYSTEM "drivers/serialPOS.docbook">

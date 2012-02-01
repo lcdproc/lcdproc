@@ -22,7 +22,7 @@ AM_LDFLAGS = @LDSHARED@
 ## Keep the lists sorted!
 
 pkglib_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcd glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 vlsys_m428 xosd i2500vfd irtrans
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcd glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 vlsys_m428 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -65,6 +65,7 @@ mx5000_LDADD =       @LIBMX5000@
 NoritakeVFD_LDADD =  libbignum.a
 picolcd_LDADD =      @LIBUSB_LIBS@ @LIBUSB_1_0_LIBS@ libLCD.a libbignum.a
 pyramid_LDADD =      libLCD.a libbignum.a
+sdeclcd_LDADD =      libLCD.a libbignum.a
 serialPOS_LDADD =    libbignum.a
 serialVFD_LDADD =    libLCD.a libbignum.a
 shuttleVFD_LDADD =   @LIBUSB_LIBS@
@@ -116,6 +117,7 @@ mx5000_SOURCES =     lcd.h mx5000.c mx5000.h report.h
 NoritakeVFD_SOURCES = lcd.h lcd_lib.h NoritakeVFD.c NoritakeVFD.h report.h adv_bignum.h
 picolcd_SOURCES =    lcd.h picolcd.h picolcd.c report.h
 pyramid_SOURCES =    lcd.h pylcd.c pylcd.h
+sdeclcd_SOURCES =    lcd.h sdeclcd.h sdeclcd.c lcd_lib.h report.h adv_bignum.h port.h lpt-port.h timing.h
 sed1330_SOURCES =    lcd.h sed1330.h sed1330.c port.h lpt-port.h timing.h report.h
 sed1520_SOURCES =    lcd.h sed1520.c sed1520.h port.h report.h glcd_font5x8.h sed1520fm.h
 serialPOS_SOURCES =  lcd.h lcd_lib.h serialPOS.c serialPOS.h report.h adv_bignum.h
