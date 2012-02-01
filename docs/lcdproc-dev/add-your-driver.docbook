@@ -335,7 +335,7 @@ Size=20x4
 <title>The daemon's manual page, LCDd.8</title>
 
 <para>
-Append your driver to the list of drivers in <filename>docs/LCDd.conf</filename>,
+Append your driver to the list of drivers in <filename>docs/LCDd.8.in</filename>,
 the manual page of LCD, so that users can find your driver when doing <userinput>man LCDd</userinput>.
 </para>
 
@@ -421,6 +421,27 @@ to include the documentation of your driver into the
 &amp;pylcd;
 &amp;sed1330;
 &hellip;
+</screen>
+
+</sect3>
+
+<sect3 id="userdocbook-docmakefile">
+<title>Step 4</title>
+
+<para>
+Add the newly defined file <filename>myDriver.docbook</filename>
+to the Makefile in the directory <filename>docs/lcdproc-user/drivers/</filename>.
+</para>
+
+<screen>
+## Process this file with automake to produce Makefile.in
+
+EXTRA_DIST =	bayrad.docbook \
+		CFontz.docbook \
+		...
+		<emphasis>MyDriver.docbook \</emphasis>
+		...
+## EOF
 </screen>
 
 </sect3>
