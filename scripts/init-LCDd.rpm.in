@@ -24,7 +24,6 @@
 #	Apart from the main client lcdproc(1) there are various clients. \
 #	See http://lcdproc.omnipotent.net for details.
 # processname: LCDd
-# pidfile: /var/run/LCDd.pid
 # config: @sysconfdir@/LCDd.conf
 
 # Source function library.
