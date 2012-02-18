@@ -25,6 +25,7 @@ v0.5dev (ongoing development)
  * lis driver: Make the last pixel row work (add lastline option parsing)
  * hd44780/ftdi: Fix error in setting backlight and add backlight for 4bit mode
  + new driver: sdeclcd for Watchguard FireBox appliances (F. Mertz)
+ + hd44780: Added 'usb4all' connection type (T. Mohaupt)
 
 v0.5.5
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)

@@ -52,6 +52,7 @@
 #define HD44780_CT_USS720		18
 #define HD44780_CT_USBLCD		19
 #define HD44780_CT_USBTINY		20
+#define HD44780_CT_USB4ALL		21
 /**@}*/
 
 /** \name Symbolic names for interface types
@@ -132,6 +133,10 @@ typedef struct hd44780_private_data {
 	/* libusb-based connection types */
 	usb_dev_handle *usbHandle;	/**< USB device handle */
 	int usbIndex;		/**< USB interface index */
+	int usbMode;		/**< USB write mode (bulk or interrupt)*/
+	int usbEpOut;		/**< USB Endpoint Out */
+	int usbEpIn;		/**< USB Endpoint In */
+	tx_buffer rx_buf;	/**< Input buffer */
 #endif
 
 #ifdef HAVE_LIBFTDI

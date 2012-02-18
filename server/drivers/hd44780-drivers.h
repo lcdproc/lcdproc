@@ -24,6 +24,7 @@
 # include "hd44780-lcd2usb.h"
 # include "hd44780-usbtiny.h"
 # include "hd44780-uss720.h"
+# include "hd44780-usb4all.h"
 #endif
 #ifdef HAVE_LIBFTDI
 # include "hd44780-ftdi.h"
@@ -68,6 +69,7 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "lcd2usb",       HD44780_CT_LCD2USB,       IF_TYPE_USB,     hd_init_lcd2usb   },
 	{ "usbtiny",       HD44780_CT_USBTINY,       IF_TYPE_USB,     hd_init_usbtiny   },
 	{ "uss720",        HD44780_CT_USS720,        IF_TYPE_USB,     hd_init_uss720    },
+	{ "usb4all",       HD44780_CT_USB4ALL,       IF_TYPE_USB,     hd_init_usb4all   },
 #endif
 #ifdef HAVE_LIBFTDI
 	{ "ftdi",          HD44780_CT_FTDI,          IF_TYPE_USB,     hd_init_ftdi      },

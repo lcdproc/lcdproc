@@ -193,6 +193,9 @@ LCD device from Adams IT Services (http://www.usblcd.de/)
 .TP
 .B usbtiny
 Devices based on Dick Streefland's USBtiny firmware
+.TP
+.B usb4all
+Sprut's open source / open hardware USB-4-all (http://www.sprut.de/)
 .RE
 .TP
 .B i2500vfd
