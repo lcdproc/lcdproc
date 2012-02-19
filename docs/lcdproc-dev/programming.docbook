@@ -109,7 +109,7 @@ should look like.
 </para>
 <note>
   <para>
-  All new submitted files will be passed through BSD <command>indent</command>
+  All new submitted files will be passed through GNU <command>indent</command>
   to enforce the style described below.
   </para>
 </note>
@@ -133,14 +133,13 @@ should look like.
   <listitem>
     <para>
     <emphasis>Line length: </emphasis>Lines of source code should be wrapped
-    at column 80.
+    at column 100. Comment lines should wrap at column 79.
     </para>
   </listitem>
   <listitem>
     <para>
     <emphasis>Indention: </emphasis>Tab indention shall be used (with tab
-    width set to 8 characters). Only exception are switch labels which are
-    indented a half tab (4 spaces).
+    width set to 8 characters).
     </para>
   </listitem>
   <listitem>
@@ -217,7 +216,7 @@ unsigned char HD44780_scankeypad(PrivateData *p);
     comments or using pre-processor directives (#if ... #endif).
     </para>
     <para>
-    <literal>C++</literal>-style comments shall not be used in general.
+    <literal>C++</literal>-style comments should not be used in general.
     </para>
   </listitem>
   <listitem>
@@ -368,18 +367,18 @@ for (a = 0; a &lt; max; a++) {
 	code
 }
 
-/* case labels are indented one half tab stop (4 spaces) */
+/* case labels are not indented */
 switch (icon) {
-    case ICON_BLOCK_FILLED:
+case ICON_BLOCK_FILLED:
 	HD44780_set_char(drvthis, 6, block_filled);
 	break;
-    case ICON_HEART_FILLED:
+case ICON_HEART_FILLED:
 	HD44780_set_char(drvthis, 0, heart_filled);
 	break;
-    case ICON_HEART_OPEN:
+case ICON_HEART_OPEN:
 	HD44780_set_char(drvthis, 0, heart_open);
 	break;
-    default:
+default:
 	return -1;      /* Let the core do other icons */
 }
       </screen>
@@ -388,6 +387,54 @@ switch (icon) {
 </itemizedlist>
 </sect2>
 
+<sect2 id="code-style-indent-profile">
+<title>Example indent profile</title>
+  <para>The following example shows an indent profile that checks and corrects
+  the coding style guideline described above. Copy the following text into
+  file <filename>.indent.pro</filename> in your home directory.</para>
+  <example>
+    <title>indent.pro example</title>
+    <screen>
+-TPrivateData
+-TDriver
+
+-l100
+-lc79
+-i8
+-ip8
+-di1
+-cd33
+-ci8
+-cli0
+-ts8
+
+-ut
+-nsob
+-sc
+-psl
+-npcs
+-lp
+-fc1
+-nbc
+-nce
+-brs
+-br
+-sbi0
+-saw
+-sai
+-saf
+-nprs
+-hnl
+-fca
+-cdw
+-nbfda
+-nbbo
+-ncdb
+-nbad
+-cs
+    </screen>
+  </example>
+</sect2>
 
 </sect1>
 
