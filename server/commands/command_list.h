@@ -13,7 +13,7 @@
 #ifndef COMMANDS_COMMAND_LIST_H
 #define COMMANDS_COMMAND_LIST_H
 
-#include "../client.h"
+#include "client.h"
 
 /**
  * The function list for clients is stored in a table, and the items each

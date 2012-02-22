@@ -17,12 +17,14 @@
 #include <string.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "shared/report.h"
 #include "shared/defines.h"
 
+#include "widget.h"
+#include "screen.h"
 #include "menuitem.h"
-#include "menuscreens.h"
 #include "menu.h"
 #include "drivers.h"
 
@@ -134,7 +136,10 @@ MenuItem *menuitem_search(char *menu_id, Client *client)
 }
 
 /******** FUNCTION TABLES ********/
-/* Tables with functions to call for all different item types */
+/*-
+ * Tables with functions to call for all different item types. The order is:
+ * "menu", "action", "checkbox", "ring", "slider", "numeric", "alpha", "ip".
+ */
 
 void (*destructor_table[NUM_ITEMTYPES]) (MenuItem *item) =
 {
@@ -284,7 +289,7 @@ MenuItem *menuitem_create_checkbox(char *id, MenuEventFunc(*event_func),
 	if (new_item != NULL) {
 		new_item->data.checkbox.allow_gray = allow_gray;
 		new_item->data.checkbox.value = value;
-	}	
+	}
 
 	return new_item;
 }
@@ -301,7 +306,7 @@ MenuItem *menuitem_create_ring(char *id, MenuEventFunc(*event_func),
 	if (new_item != NULL) {
 		new_item->data.ring.strings = tablist2linkedlist(strings);
 		new_item->data.ring.value = value;
-	}	
+	}
 
 	return new_item;
 }
@@ -328,7 +333,7 @@ MenuItem *menuitem_create_slider(char *id, MenuEventFunc(*event_func),
 		new_item->data.slider.maxvalue = maxvalue;
 		new_item->data.slider.stepsize = stepsize;
 		new_item->data.slider.value = value;
-	}	
+	}
 
 	return new_item;
 }
@@ -351,7 +356,7 @@ MenuItem *menuitem_create_numeric(char *id, MenuEventFunc(*event_func),
 			menuitem_destroy(new_item);
 			return NULL;
 		}
-	}	
+	}
 
 	return new_item;
 }
@@ -445,7 +450,7 @@ MenuItem *menuitem_create_ip(char *id, MenuEventFunc(*event_func),
 					    __FUNCTION__, id, value);
 			strncpy(new_item->data.ip.value, ipinfo->dummy, new_item->data.ip.maxlength);
 			new_item->data.ip.value[new_item->data.ip.maxlength] = '\0';
-		}	
+		}
 	}
 
 	new_item->data.ip.edit_str = malloc(new_item->data.ip.maxlength + 1);
@@ -476,7 +481,7 @@ void menuitem_destroy(MenuItem *item)
 
 		/* And finally...*/
 		free(item);
-	}	
+	}
 }
 
 void menuitem_destroy_ring(MenuItem *item)
@@ -495,7 +500,7 @@ void menuitem_destroy_ring(MenuItem *item)
 		}
 		/* and the list */
 		LL_Destroy(item->data.ring.strings);
-	}	
+	}
 }
 
 void menuitem_destroy_slider(MenuItem *item)
@@ -507,7 +512,7 @@ void menuitem_destroy_slider(MenuItem *item)
 		/* These strings should always be allocated */
 		free(item->data.slider.mintext);
 		free(item->data.slider.maxtext);
-	}	
+	}
 }
 
 void menuitem_destroy_numeric(MenuItem *item)
@@ -518,7 +523,7 @@ void menuitem_destroy_numeric(MenuItem *item)
 	if (item != NULL) {
 		/* This string should always be allocated */
 		free(item->data.numeric.edit_str);
-	}	
+	}
 }
 
 void menuitem_destroy_alpha(MenuItem *item)
@@ -531,7 +536,7 @@ void menuitem_destroy_alpha(MenuItem *item)
 		free(item->data.alpha.allowed_extra);
 		free(item->data.alpha.value);
 		free(item->data.alpha.edit_str);
-	}	
+	}
 }
 
 void menuitem_destroy_ip(MenuItem *item)
@@ -559,7 +564,7 @@ void menuitem_reset(MenuItem *item)
 		func = reset_table[item->type];
 		if (func)
 			func(item);
-	}	
+	}
 }
 
 void menuitem_reset_numeric(MenuItem *item)
@@ -577,7 +582,7 @@ void menuitem_reset_numeric(MenuItem *item)
 		} else {
 			snprintf(item->data.numeric.edit_str, MAX_NUMERIC_LEN,
 					"%d", item->data.numeric.value);
-		}	
+		}
 	}
 }
 
@@ -591,7 +596,7 @@ void menuitem_reset_alpha(MenuItem *item)
 		item->data.alpha.edit_offs = 0;
 		memset(item->data.alpha.edit_str, '\0', item->data.alpha.maxlength+1);
 		strcpy(item->data.alpha.edit_str, item->data.alpha.value);
-	}	
+	}
 }
 
 void menuitem_reset_ip(MenuItem *item)
@@ -620,8 +625,8 @@ void menuitem_reset_ip(MenuItem *item)
 			tmpstr[0] = ipinfo->sep;
 			tmpstr[1] = '\0';
 			strcat(item->data.ip.edit_str, tmpstr);
-		}	
-	}	
+		}
+	}
 }
 
 
@@ -664,8 +669,8 @@ void menuitem_rebuild_screen(MenuItem *item, Screen *s)
 
 			/* Also always call update_screen */
 			menuitem_update_screen(item, s);
-		}	
-	}	
+		}
+	}
 }
 
 void menuitem_rebuild_screen_slider(MenuItem *item, Screen *s)
@@ -1027,7 +1032,7 @@ MenuResult menuitem_process_input_slider(MenuItem *item, MenuToken token, const 
 		 * Note: The max value is actually reached,
 		 * because of min(maxvalue, value + stepsize) below.
 		 * Wrapping then happens on the next key press.
-		 */		
+		 */
 		if ((!(keymask & (MENUTOKEN_LEFT | MENUTOKEN_DOWN))) &&
 		    (item->data.slider.value == item->data.slider.maxvalue))
 			item->data.slider.value = item->data.slider.minvalue;
@@ -1210,7 +1215,7 @@ MenuResult menuitem_process_input_numeric(MenuItem *item, MenuToken token, const
 		  default:
 			return MENURESULT_NONE;
 		}
-	}	
+	}
 	return MENURESULT_ERROR;
 }
 
@@ -1339,7 +1344,7 @@ MenuResult menuitem_process_input_alpha(MenuItem *item, MenuToken token, const c
 				item->data.alpha.edit_pos--;
 				if (item->data.alpha.edit_offs > item->data.alpha.edit_pos)
 					item->data.alpha.edit_offs = item->data.alpha.edit_pos;
-			}	
+			}
 			return MENURESULT_NONE;
 		  case MENUTOKEN_OTHER:
 			if (pos >= item->data.alpha.maxlength) {
@@ -1356,9 +1361,9 @@ MenuResult menuitem_process_input_alpha(MenuItem *item, MenuToken token, const c
 				if (pos >= display_props->width - 2)
 					item->data.alpha.edit_offs++;
 			}
-		  default:	
+		  default:
 			return MENURESULT_NONE;
-		}	
+		}
 	}
 	return MENURESULT_ERROR;
 }
@@ -1489,7 +1494,7 @@ MenuResult menuitem_process_input_ip(MenuItem *item, MenuToken token, const char
 				}
 			}
 			/* FALLTHROUGH */
-		default:	
+		default:
 			return MENURESULT_NONE;
 	}
 	/* NOTREACHED */

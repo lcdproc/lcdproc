@@ -18,8 +18,10 @@
 #include "shared/LL.h"
 #include "shared/sockets.h"
 #include "shared/report.h"
-#include "screenlist.h"
+
+#include "client.h"
 #include "screen.h"
+#include "screenlist.h"
 
 #include "main.h" /* for timer */
 

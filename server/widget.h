@@ -10,13 +10,12 @@
  * Copyright (c) 1999, William Ferrell, Selene Scriven
  */
 
-#include "screen.h"
-/* These headers are placed here on purpose ! (circular references) */
-
 #ifndef WIDGET_H
 #define WIDGET_H
 
-struct Widget;
+#define INC_TYPES_ONLY 1
+#include "screen.h"
+#undef INC_TYPES_ONLY
 
 /* These correspond to the index into the "types" array...*/
 typedef enum WidgetType {

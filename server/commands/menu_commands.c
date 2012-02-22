@@ -31,11 +31,11 @@
 #include "shared/report.h"
 #include "shared/sockets.h"
 
-#include "menu.h"
+#include "client.h"
 #include "menuitem.h"
+#include "menu.h"
 #include "menuscreens.h"
 #include "menu_commands.h"
-#include "client.h"
 
 /* Local functions */
 MenuEventFunc(menu_commands_handler);

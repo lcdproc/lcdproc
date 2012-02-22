@@ -1,5 +1,15 @@
 /** \file server/client.h
  * Defines all the client data and actions.
+ *
+ * \note If you only need 'struct Client' to work with you should use the
+ *       following code (which does not create an indirect dependency on
+ *       'struct Screen'):
+ *
+ * \code
+ * #define INC_TYPES_ONLY 1
+ * #include "client.h"
+ * #undef INC_TYPES_ONLY
+ * \endcode
  */
 
 /* This file is part of LCDd, the lcdproc server.
@@ -11,15 +21,10 @@
  *		 2002, Joris Robijn
  */
 
-#include "menu.h"
-#include "menuitem.h"
-/* These headers are placed here on purpose ! (circular references) */
-
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef CLIENT_H_TYPES
+#define CLIENT_H_TYPES
 
 #include "shared/LL.h"
-#include <stdio.h>
 
 #define CLIENT_NAME_SIZE 256
 
@@ -42,11 +47,18 @@ typedef struct Client {
 	LinkedList *messages;		/**< Messages that the client sent. */
 	LinkedList *screenlist;		/**< List of client's screens. */
 
-	Menu *menu;			/**< Menu hierarchy, if any */
+	void* menu;			/**< Menu hierarchy, if any */
 } Client;
 
+#endif
 
+#ifndef INC_TYPES_ONLY
+#ifndef CLIENT_H_FNCS
+#define CLIENT_H_FNCS
+
+#define INC_TYPES_ONLY 1
 #include "screen.h"
+#undef INC_TYPES_ONLY
 
 /* When a new client connects, set up a new client data struct */
 Client *client_create(int sock);
@@ -73,4 +85,4 @@ int client_remove_screen(Client *c, Screen *s);
 int client_screen_count(Client *c);
 
 #endif
-
+#endif

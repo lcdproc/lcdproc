@@ -29,6 +29,7 @@
 
 #include "client.h"
 #include "render.h"
+#include "server_commands.h"
 
 #define ALL_OUTPUTS_ON -1
 #define ALL_OUTPUTS_OFF 0

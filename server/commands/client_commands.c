@@ -28,9 +28,10 @@
 #include "shared/sockets.h"
 
 #include "drivers.h"
-#include "render.h"
 #include "client.h"
+#include "render.h"
 #include "input.h"
+#include "client_commands.h"
 
 
 /**
@@ -96,7 +97,7 @@ bye_func(Client *c, int argc, char **argv)
 
 		c->state = GONE;
 		//sock_send_error(c->sock, "\"bye\" is currently ignored\n");
-	}	
+	}
 	return 0;
 }
 

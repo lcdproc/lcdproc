@@ -20,4 +20,11 @@
 # define max(a,b) (((a) > (b)) ? (a) : (b))
 #endif
 
+/* Our own way of saying yes/no */
+#ifndef bool
+# define bool short
+# define true 1
+# define false 0
+#endif
+
 #endif

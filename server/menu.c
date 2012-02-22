@@ -32,13 +32,12 @@
 # include "config.h"
 #endif
 
+#include "widget.h"
+#include "screen.h"
 #include "menuitem.h"
 #include "menu.h"
 #include "shared/report.h"
 #include "drivers.h"
-
-#include "screen.h"
-#include "widget.h"
 
 
 extern Menu *custom_main_menu;
@@ -209,7 +208,7 @@ menu_create(char *id, MenuEventFunc(*event_func),
 	if (new_menu != NULL) {
 		new_menu->data.menu.contents = LL_new();
 		new_menu->data.menu.association = NULL;
-	}	
+	}
 
 	return new_menu;
 }

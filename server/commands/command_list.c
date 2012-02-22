@@ -14,15 +14,15 @@
  *		 2003, Joris Robijn
  */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "command_list.h"
 #include "server_commands.h"
 #include "client_commands.h"
 #include "screen_commands.h"
 #include "widget_commands.h"
 #include "menu_commands.h"
-
-#include <stdlib.h>
-#include <string.h>
 
 static client_function commands[] = {
 	{ "test_func",      test_func_func      },

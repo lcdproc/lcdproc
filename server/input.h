@@ -13,16 +13,16 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include <stdlib.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif
+#include "shared/defines.h"
 
 /* Accepts and uses keypad input while displaying screens... */
 int handle_input(void);
-
-#ifndef bool
-# define bool short
-# define true 1
-# define false 0
-#endif
 
 typedef struct KeyReservation {
 	char *key;

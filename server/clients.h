@@ -14,9 +14,6 @@
 #define CLIENTS_H
 
 #include "client.h"
-#include "shared/LL.h"
-
-/* extern LinkedList *clientlist;   Not needed outside ? */
 
 /* Initialize and kill client list...*/
 int clients_init(void);

@@ -12,8 +12,6 @@
 #ifndef RENDER_H
 #define RENDER_H
 
-#include "screen.h"
-
 #define HEARTBEAT_OFF		0
 #define HEARTBEAT_ON		1
 #define HEARTBEAT_OPEN		2
@@ -31,7 +29,7 @@
 #define CURSOR_UNDER		5
 
 #define TITLESPEED_NO		0	/* needs to be (TITLESPEED_MIN - 1) */
-#define TITLESPEED_MIN		1	
+#define TITLESPEED_MIN		1
 #define TITLESPEED_MAX		10
 
 extern int heartbeat;

@@ -11,8 +11,6 @@
  *		 2003, Joris Robijn
  */
 
-
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -20,13 +18,16 @@
 #include "shared/sockets.h"
 #include "shared/report.h"
 #include "shared/configfile.h"
+#include "shared/LL.h"
 
 #include "drivers.h"
 
+#define INC_TYPES_ONLY 1
 #include "client.h"
+#include "screen.h"
+#undef INC_TYPES_ONLY
 #include "screenlist.h"
 #include "menuscreens.h"
-
 #include "input.h"
 #include "render.h" /* For server_msg* */
 
@@ -137,7 +138,7 @@ void input_send_to_client(Client *c, const char *key)
 		snprintf(s, size, "key %s\n", key);
 		sock_send_string(c->sock, s);
 		free(s);
-	}	
+	}
 	else
 		report(RPT_ERR, "%s: malloc failure", __FUNCTION__);
 }

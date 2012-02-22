@@ -12,26 +12,24 @@
  *               2005, Peter Marschall - error checks, ...
  */
 
-#include "menuitem.h"
-/* These headers are placed here on purpose ! (circular references) */
-
 #ifndef MENU_H
 #define MENU_H
 
-#ifndef bool
-# define bool short
-# define true 1
-# define false 0
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif
+#include "shared/defines.h"
 
 #include "shared/LL.h"
+#include "menuitem.h"
 
 /** A Menu is a MenuItem too.
  * This definition is only for better understanding of this code.
  */
 typedef MenuItem Menu;
-
-#include "screen.h"
 
 /** Creates a new menu. */
 Menu *menu_create(char *id, MenuEventFunc(*event_func),
@@ -43,8 +41,8 @@ Menu *menu_create(char *id, MenuEventFunc(*event_func),
  */
 void menu_destroy(Menu *menu);
 
-void menu_add_item(Menu *menu, MenuItem *item);
 /** Adds an item to the menu */
+void menu_add_item(Menu *menu, MenuItem *item);
 
 /** Removes an item from the menu (does not destroy it) */
 void menu_remove_item(Menu *menu, MenuItem *item);

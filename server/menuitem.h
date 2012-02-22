@@ -11,7 +11,7 @@
  *
  * The slider, numeric & string input and menu have their own screen,
  * that comes to front when the items are selected.
- * One menuitem is in a different file: Menu data is in menu,h.
+ * One menuitem is in a different file: Menu data is in menu.h.
  */
 
 /* This file is part of LCDd, the lcdproc server.
@@ -27,13 +27,15 @@
 #ifndef MENUITEM_H
 #define MENUITEM_H
 
-#include "shared/LL.h"
-
-#ifndef bool
-# define bool short
-# define true 1
-# define false 0
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif
+#include "shared/defines.h"
+
+#include "shared/LL.h"
 
 /*********************************************************************
  * Data definitions of the menustuff
@@ -190,8 +192,6 @@ typedef struct MenuItem {
 	} data;
 } MenuItem;
 
-
-#include "screen.h"
 
 /*********************************************************************
  * Functions to use the menustuff

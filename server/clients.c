@@ -19,9 +19,10 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "shared/report.h"
+#include "shared/LL.h"
 #include "client.h"
 #include "clients.h"
-#include "shared/report.h"
 #include "render.h"
 
 LinkedList *clientlist = NULL;
@@ -91,7 +92,7 @@ Client *
 clients_remove_client(Client *c, Direction whereto)
 {
 	Client *client = LL_Remove(clientlist, c, whereto);
-	
+
 	return client;
 }
 

@@ -30,6 +30,7 @@
 #include "client.h"
 #include "screen.h"
 #include "render.h"
+#include "screen_commands.h"
 
 /**
  * Tells the server the client has another screen to offer

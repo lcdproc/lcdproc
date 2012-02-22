@@ -37,14 +37,12 @@
 #include <fcntl.h>
 #include <string.h>
 
-#include "sock.h"
-#include "client.h"
-#include "clients.h"
-#include "screen.h"
 #include "shared/report.h"
-#include "screenlist.h"
 #include "shared/sring.h"
 #include "shared/defines.h"
+
+#include "clients.h"
+#include "sock.h"
 
 
 /****************************************************************************/

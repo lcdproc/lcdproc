@@ -1,5 +1,15 @@
 /** \file server/screen.h
  * Public interface to the screen management methods.
+ *
+ * \note If you only need 'struct Screen' to work with you should use the
+ *       following code (which does not create an indirect dependency on
+ *       'struct Widget'):
+ *
+ * \code
+ * #define INC_TYPES_ONLY 1
+ * #include "screen.h"
+ * #undef INC_TYPES_ONLY
+ * \endcode
  */
 
 /* This file is part of LCDd, the lcdproc server.
@@ -11,16 +21,18 @@
  * 		 2003, Joris Robijn
  */
 
-#include "menu.h"
-#include "menuitem.h"
-#include "client.h"
-/* These headers are placed here on purpose ! (circular references) */
-
-#ifndef SCREEN_H
-#define SCREEN_H
+#ifndef SCREEN_H_TYPES
+#define SCREEN_H_TYPES
 
 #include "shared/LL.h"
-#include "client.h"
+
+#ifdef INC_TYPES_ONLY
+# include "client.h"
+#else
+# define INC_TYPES_ONLY 1
+# include "client.h"
+# undef INC_TYPES_ONLY
+#endif
 
 typedef enum {	PRI_HIDDEN, PRI_BACKGROUND, PRI_INFO, PRI_FOREGROUND,
 		PRI_ALERT, PRI_INPUT
@@ -43,13 +55,18 @@ typedef struct Screen {
 	struct Client *client;
 } Screen;
 
-#include "widget.h"
-
-
 extern int  default_duration ;
 extern int  default_priority ;
 
-#include "client.h"
+#endif
+
+#ifndef INC_TYPES_ONLY
+#ifndef SCREEN_H_FNCS
+#define SCREEN_H_FNCS
+
+#define INC_TYPES_ONLY 1
+#include "widget.h"
+#undef INC_TYPES_ONLY
 
 /* Creates a new screen */
 Screen *screen_create(char *id, Client *client);
@@ -86,4 +103,5 @@ Widget *screen_find_widget(Screen *s, char *id);
 Priority screen_pri_name_to_pri(char *pri_name);
 char *screen_pri_to_pri_name(Priority pri);
 
+#endif
 #endif

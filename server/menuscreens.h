@@ -16,7 +16,6 @@
 #define MENUSCREENS_H
 
 #include "menu.h"
-#include "menuitem.h"
 #include "screen.h"
 
 extern Screen *menuscreen;

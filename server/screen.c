@@ -25,7 +25,6 @@
 #include "clients.h"
 #include "widget.h"
 #include "screenlist.h"
-#include "screen.h"
 #include "menuscreens.h"
 #include "main.h"
 #include "render.h"

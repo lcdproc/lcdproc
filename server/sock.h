@@ -16,8 +16,9 @@
 #define SOCK_H
 
 #include "shared/sockets.h"
-
+#define INC_TYPES_ONLY 1
 #include "client.h"
+#undef INC_TYPES_ONLY
 
 /* Server functions...*/
 int sock_init(char* bind_addr, int bind_port);

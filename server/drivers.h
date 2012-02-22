@@ -22,13 +22,6 @@ typedef struct DisplayProps {
 
 extern DisplayProps *display_props;
 
-#ifndef bool
-# define bool short
-# define true 1
-# define false 0
-#endif
-
-
 int
 drivers_load_driver(const char *name);
 

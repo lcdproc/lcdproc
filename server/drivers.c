@@ -24,11 +24,9 @@
 #include "shared/report.h"
 #include "shared/configfile.h"
 
-#include "drivers.h"
 #include "driver.h"
-#include "drivers/lcd.h"
+#include "drivers.h"
 #include "widget.h"
-/* lcd.h is used for the driver API definition */
 
 
 LinkedList *loaded_drivers = NULL;		/**< list of loaded drivers */

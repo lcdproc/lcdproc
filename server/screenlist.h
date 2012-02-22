@@ -13,7 +13,13 @@
 #ifndef SCREENLIST_H
 #define SCREENLIST_H
 
-#include "screen.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+#ifdef HAVE_STDBOOL_H
+# include <stdbool.h>
+#endif
+#include "shared/defines.h"
 
 #define AUTOROTATE_OFF		0
 #define AUTOROTATE_ON		1

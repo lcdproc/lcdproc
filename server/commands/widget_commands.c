@@ -30,8 +30,8 @@
 #include "client.h"
 #include "screen.h"
 #include "widget.h"
-
 #include "drivers.h"
+#include "widget_commands.h"
 
 
 /**
