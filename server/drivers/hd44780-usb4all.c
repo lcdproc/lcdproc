@@ -356,10 +356,10 @@ hd_init_usb4all(Driver *drvthis)
 
 /**
  * Send a single byte of data to the LCD.
- * \param p       pointer to private date structure
- * \param dispID  display to send data to (0 = all displays)
- * \param flags   data or instruction command (RS_DATA | RS_INSTR)
- * \param ch      character to display or instruction value
+ * \param p          pointer to private date structure
+ * \param displayID  display to send data to (0 = all displays)
+ * \param flags      data or instruction command (RS_DATA | RS_INSTR)
+ * \param ch         character to display or instruction value
  */
 void
 usb4all_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
@@ -414,6 +414,7 @@ usb4all_HD44780_set_contrast(PrivateData *p, unsigned char value)
 
 /**
  * Read the keypad
+ * \param p      Pointer to driver's private data structure.
  * \param Ydata  the up to 4 bits that should be put on the Y side of the matrix
  * \return       the up to 4 bits that are read out on the X side of the matrix
  */
