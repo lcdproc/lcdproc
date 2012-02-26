@@ -61,10 +61,14 @@
 
 static int pageshift;
 #define pagetok(size) ((size) << pageshift)
+#if OpenBSD >= 201111
+#define PROCSIZE(pp) ((pp)->p_vm_tsize + (pp)->p_vm_dsize + (pp)->p_vm_ssize)
+#else
 #define PROCSIZE(pp) ((pp).vm_tsize + (pp).vm_dsize + (pp).vm_ssize)
+#endif
 
 
-int 
+int
 machine_init(void)
 {
 	/*
@@ -84,13 +88,13 @@ machine_init(void)
 	return (TRUE);
 }
 
-int 
+int
 machine_close(void)
 {
 	return (TRUE);
 }
 
-int 
+int
 machine_get_battstat(int *acstat, int *battflag, int *percent)
 {
 	int apmd;
@@ -150,7 +154,7 @@ machine_get_battstat(int *acstat, int *battflag, int *percent)
 	return (TRUE);
 }
 
-int 
+int
 machine_get_fs(mounts_type fs[], int *cnt)
 {
 	struct statfs *mntbuf;
@@ -192,7 +196,7 @@ machine_get_fs(mounts_type fs[], int *cnt)
 	return (TRUE);
 }
 
-int 
+int
 machine_get_load(load_type * curr_load)
 {
 	static load_type last_load = {0, 0, 0, 0, 0};
@@ -232,7 +236,7 @@ machine_get_load(load_type * curr_load)
 	return (TRUE);
 }
 
-int 
+int
 machine_get_loadavg(double *load)
 {
 	double loadavg[LOADAVG_NSTATS];
@@ -245,7 +249,7 @@ machine_get_loadavg(double *load)
 	return (TRUE);
 }
 
-int 
+int
 machine_get_meminfo(meminfo_type * result)
 {
 	size_t size;
@@ -278,7 +282,7 @@ machine_get_meminfo(meminfo_type * result)
 	return (TRUE);
 }
 
-int 
+int
 machine_get_procs(LinkedList * procs)
 {
 	struct kinfo_proc *kprocs;
@@ -291,7 +295,11 @@ machine_get_procs(LinkedList * procs)
 		return (FALSE);
 	}
 
+#if OpenBSD >= 201111
+	kprocs = kvm_getprocs(kvmd, KERN_PROC_ALL, 0, sizeof(struct kinfo_proc), &nproc);
+#else
 	kprocs = kvm_getprocs(kvmd, KERN_PROC_ALL, 0, &nproc);
+#endif
 	if (kprocs == NULL) {
 		perror("kvm_getprocs");
 		kvm_close(kvmd);
@@ -305,10 +313,17 @@ machine_get_procs(LinkedList * procs)
 			kvm_close(kvmd);
 			return (FALSE);
 		}
+#if OpenBSD >= 201111
+		strncpy(p->name, kprocs->p_comm, 15);
+		p->name[15] = '\0';
+		p->totl = pagetok(PROCSIZE(kprocs));
+		p->number = kprocs->p_pid;
+#else
 		strncpy(p->name, kprocs->kp_proc.p_comm, 15);
 		p->name[15] = '\0';
 		p->totl = pagetok(PROCSIZE(kprocs->kp_eproc.e_vm));
 		p->number = kprocs->kp_proc.p_pid;
+#endif
 		LL_Push(procs, (void *)p);
 
 		kprocs++;
@@ -318,7 +333,7 @@ machine_get_procs(LinkedList * procs)
 	return (TRUE);
 }
 
-int 
+int
 machine_get_smpload(load_type * result, int *numcpus)
 {
 	int mib[2], i, num;
@@ -352,7 +367,7 @@ machine_get_smpload(load_type * result, int *numcpus)
 	return (TRUE);
 }
 
-int 
+int
 machine_get_uptime(double *up, double *idle)
 {
 	size_t size;
@@ -381,7 +396,7 @@ machine_get_uptime(double *up, double *idle)
 }
 
 /* Get network statistics */
-int 
+int
 machine_get_iface_stats(IfaceInfo * interface)
 {
 	/* Implementation missing */
