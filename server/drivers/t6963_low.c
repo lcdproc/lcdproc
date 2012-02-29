@@ -145,7 +145,7 @@ t6963_low_command_word(T6963_port *p, u8 cmd, u16 word)
  * \param sta      Bitmap of expected STA flags
  * \return  0 on success, -1 if ready could not be read
  */
-inline int
+int
 t6963_low_dsp_ready(T6963_port *p, u8 sta)
 {
 	int portcontrol = 0;

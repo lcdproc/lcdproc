@@ -223,7 +223,7 @@ glkclose(GLKDisplay *fd)
  *
  * Send a character to the GLK
  */
-int  INLINE
+INLINE int
 glkput(GLKDisplay *fd, int c)
 {
    unsigned char val;
@@ -266,7 +266,7 @@ glkunget(GLKDisplay *fd, int c)
  *
  * Read a character from the GLK
  */
-int  INLINE
+INLINE int
 glkget(GLKDisplay *fd)
 {
    unsigned char c;

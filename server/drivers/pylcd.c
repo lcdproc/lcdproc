@@ -77,7 +77,7 @@ static int read_tele(PrivateData *p, char *buffer);
 static int real_send_tele(PrivateData *p, char *buffer, int len);
 static int send_tele(PrivateData *p, char *buffer);
 static int send_ACK(PrivateData *p);
-static unsigned long long timestamp(PrivateData *p);
+static unsigned long long timestamp(void);
 static int initTTY(Driver *drvthis, int FD);
 
 /* local functions for pylcd.c */
@@ -239,7 +239,7 @@ send_ACK(PrivateData *p)
  * Returns the current time in microseconds since the Epoch.
  */
 static unsigned long long
-timestamp(PrivateData *p)
+timestamp(void)
 {
     struct timeval tv;
 
@@ -314,7 +314,7 @@ pyramid_init(Driver *drvthis)
     memset(p->backingstore, ' ', SCREEN_SIZE);
 
     strcpy(p->last_key_pressed, NOKEY);
-    p->last_key_time = timestamp(p);
+    p->last_key_time = timestamp();
 
     p->timeout.tv_sec = 0;
     p->timeout.tv_usec = MICROTIMEOUT;
@@ -1074,7 +1074,7 @@ pyramid_get_key(Driver *drvthis)
     if (p->last_key_pressed[0] == NOKEY[0])
 	return NULL;
 
-    current_time = timestamp(p);
+    current_time = timestamp();
     if (current_time > p->last_key_time + 500000)	/* New keys only every
 							 * 0.5 seconds */
 	p->last_key_time = current_time;
