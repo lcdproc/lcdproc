@@ -21,7 +21,8 @@ AM_LDFLAGS = @LDSHARED@
 
 ## Keep the lists sorted!
 
-pkglib_PROGRAMS = @DRIVERS@
+lcdexecbindir = $(pkglibdir)
+lcdexecbin_PROGRAMS = @DRIVERS@
 EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcd glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 vlsys_m428 xosd i2500vfd irtrans
 noinst_LIBRARIES = libLCD.a libbignum.a
 
