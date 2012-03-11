@@ -304,15 +304,24 @@ serial_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	unsigned char send;
 
-	if (SERIAL_IF.backlight) {
-		if (SERIAL_IF.backlight_escape) {
-			send = SERIAL_IF.backlight_escape;
-			write(p->fd, &send, 1);
-		}
+	/* If backlight available and escape sequence defined send it */
+	if (SERIAL_IF.backlight && SERIAL_IF.backlight_escape) {
+		send = SERIAL_IF.backlight_escape;
+		write(p->fd, &send, 1);
+	}
+
+	if (SERIAL_IF.backlight == 1) {	/* Backlight is just switchable */
 		if (state == BACKLIGHT_ON)
 			send = SERIAL_IF.backlight_on;
 		else
 			send = SERIAL_IF.backlight_off;
+		write(p->fd, &send, 1);
+	}
+	else if (SERIAL_IF.backlight == 2) {	/* Backlight is adjustable */
+		int val = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
+
+		/* Map the value to output range (rounding up) */
+		send = (val * (SERIAL_IF.backlight_on - SERIAL_IF.backlight_off) + 999) / 1000 + SERIAL_IF.backlight_off;;
 		write(p->fd, &send, 1);
 	}
 }
@@ -330,7 +339,7 @@ serial_HD44780_scankeypad(PrivateData *p)
 	char hangcheck = 100;
 
 	read(p->fd, &buffer, 1);
-	if (buffer == (SERIAL_IF.keypad_escape & 0xFF)) {
+	if (buffer == SERIAL_IF.keypad_escape) {
 		while (hangcheck > 0) {
 			/* Check if I can read another byte */
 			if (read(p->fd, &buffer, 1) == 1) {

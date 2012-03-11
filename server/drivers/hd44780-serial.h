@@ -9,29 +9,55 @@
 #define SERIALIF_NAME_LENGTH 20
 #define DEFAULT_DEVICE       "/dev/lcd"
 
-/** Declares one configuration enty in the serial_interfaces table */
+/** Declares one configuration entry in the serial_interfaces table */
 struct hd44780_SerialInterface {
-	int          connectiontype;	/**< Connection type from hd44780 config */
-	/** Command escape character. This is always sent, even if 0x00 */
-	char         instruction_escape;
-	/** Data escape character. Only sent if not NUL data is within range
-	 * configure by data_escape_min and data_escape_max. */
-	char         data_escape;
-	char         data_escape_min;	/**< Escaped data lower limit (inclusive) */
-	char         data_escape_max;	/**< Escaped data upper limit (exclusive) */
-	unsigned int default_bitrate;	/**< Bitrate device is set to by default */
-	char         if_bits;		/**< Initialize to 8 or 4 bit interface */
-	char         keypad;		/**< Flag: keypad available */
-	char         keypad_escape;	/**< Keys are escaped with this character */
-	char         backlight;		/**< Flag: backlight available */
-	/** Escape character to send to indicate a backlight state change */
-	char         backlight_escape;
-	char         backlight_off;	/**< Character sent to set display off */
-	char         backlight_on;	/**< Character sent to set display on */
+	int           connectiontype;	/**< Connection type from hd44780 config */
+
+	/** \name Instruction / data escape sequence
+	 * Determines if escape characters have to be sent for instruction or
+	 * data values. The instruction escape character is always sent, even
+	 * if its value is 0x00. The data escape character is only sent it it
+	 * is not NUL and data is within range set by data_escape_min and
+	 * data_escape_max.
+	 *@{*/
+	unsigned char instruction_escape;	/**< Instruction escape character. */
+	unsigned char data_escape;	/**< Data escape character. */
+	unsigned char data_escape_min;	/**< Escaped data lower limit (inclusive) */
+	unsigned char data_escape_max;	/**< Escaped data upper limit (exclusive) */
+	/**@}*/
+
+	unsigned int  default_bitrate;	/**< Bitrate device is set to by default */
+	char          if_bits;		/**< Initialize to 8 or 4 bit interface */
+
+	/** \name Keypad settings
+	 *@{*/
+	char          keypad;		/**< Flag: keypad available */
+	unsigned char keypad_escape;	/**< Keys are escaped with this character */
+	/**@}*/
+
+	/** \name Backlight options
+	 * The backlight flag determines the type of backlight available.
+	 * If the backlight is just switchable, the backlight_off or
+	 * backlight_on characters are sent according to backlight state.
+	 * If the backlight is switchable, these characters must define a range
+	 * of values that are understood as different brightness levels by
+	 * the display. The 'brightness' and 'offbrightness' values from config
+	 * are used according to the backlight state and mapped to this range.
+	 *@{*/
+	char          backlight;	/**< Flag: backlight available
+					 * 0 = none, 1 = switchable, 2 = adjustable */
+	unsigned char backlight_escape;	/**< Escape character to send to indicate
+					 * a backlight state change */
+	unsigned char backlight_off;	/**< Character sent to set display off
+					 * or minimum value if adjustable */
+	unsigned char backlight_on;	/**< Character sent to set display on
+					 * or maximum value if adjustable */
+	/**@}*/
+
 	/** Flag: Device has multiple controllers. If enabled, the displayID
-	 * is added to data escape */
-	char         multiple_displays;
-	char         end_code;         /**< Code to send on shutdown */
+	 * is added to data_escape and it is always sent. */
+	char          multiple_displays;
+	unsigned char end_code;         /**< Code to send on shutdown */
 };
 
 /**

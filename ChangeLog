@@ -28,6 +28,7 @@ v0.5dev (ongoing development)
  + hd44780: Added 'usb4all' connection type (T. Mohaupt)
  * Fix RPM init script hanging on recent OS (#3488223)
  * lcdproc client: Fix build on OpenBSD >= 5.0
+ * hd44780/serial: Add support for adjustable backlight
 
 v0.5.5
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)
