@@ -347,7 +347,7 @@ adv_bignum_num_2_1(Driver * drvthis, int x, int num, int height, int offset, int
 	/* Set customcharacters if needed. */
 	if (do_init) {
 		static unsigned char bignum[1][8] = {	/* stored customcharacter */
-			[0] {
+			[0] = {
 				b__XXXXX,
 				b_______,
 				b_______,
@@ -446,7 +446,7 @@ adv_bignum_num_2_2(Driver * drvthis, int x, int num, int height, int offset, int
 	if (do_init) {
 		int i;
 		static unsigned char bignum[2][8] = {	/* stored customcharacter */
-			[0] {
+			[0] = {
 				b__XXXXX,
 				b_______,
 				b_______,
@@ -456,7 +456,7 @@ adv_bignum_num_2_2(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 			},
-			[1] {
+			[1] = {
 				b__XXXXX,
 				b_______,
 				b_______,
@@ -538,7 +538,7 @@ adv_bignum_num_2_5(Driver * drvthis, int x, int num, int height, int offset, int
 	if (do_init) {
 		int i;
 		static unsigned char bignum[5][8] = {	/* stored customcharacter */
-			[0] {
+			[0] = {
 				b__XXXXX,
 				b__XXXXX,
 				b_______,
@@ -548,7 +548,7 @@ adv_bignum_num_2_5(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 			},
-			[1] {
+			[1] = {
 				b_______,
 				b_______,
 				b_______,
@@ -558,7 +558,7 @@ adv_bignum_num_2_5(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XXXXX,
 				b__XXXXX,
 			},
-			[2] {
+			[2] = {
 				b__XXX__,
 				b__XXX__,
 				b__XXX__,
@@ -568,7 +568,7 @@ adv_bignum_num_2_5(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XXX__,
 				b__XXX__,
 			},
-			[3] {
+			[3] = {
 				b____XXX,
 				b____XXX,
 				b____XXX,
@@ -578,7 +578,7 @@ adv_bignum_num_2_5(Driver * drvthis, int x, int num, int height, int offset, int
 				b____XXX,
 				b____XXX,
 			},
-			[4] {
+			[4] = {
 				b__XXXXX,
 				b__XXXXX,
 				b_______,
@@ -658,7 +658,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 	if (do_init) {
 		int i;
 		static unsigned char bignum[6][8] = {	/* stored customcharacter */
-			[0] {
+			[0] = {
 				b__XXXXX,
 				b__XXXXX,
 				b_______,
@@ -668,7 +668,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 			},
-			[1] {
+			[1] = {
 				b_______,
 				b_______,
 				b_______,
@@ -678,7 +678,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XXXXX,
 				b__XXXXX,
 			},
-			[2] {
+			[2] = {
 				b__XXX__,
 				b__XXX__,
 				b__XXX__,
@@ -688,7 +688,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XXX__,
 				b__XXX__,
 			},
-			[3] {
+			[3] = {
 				b____XXX,
 				b____XXX,
 				b____XXX,
@@ -698,7 +698,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b____XXX,
 				b____XXX,
 			},
-			[4] {
+			[4] = {
 				b__XXXXX,
 				b_______,
 				b_______,
@@ -708,7 +708,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XXXXX,
 				b__XXXXX,
 			},
-			[5] {
+			[5] = {
 				b__XXXXX,
 				b__XXXXX,
 				b_______,
@@ -788,7 +788,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 	if (do_init) {
 		int i;
 		static unsigned char bignum[28][8] = {	/* stored customcharacter */
-			[0] {
+			[0] = {
 				b_____XX,
 				b____XXX,
 				b____XXX,
@@ -798,7 +798,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_______,
 				b_______,
 			},
-			[1] {
+			[1] = {
 				b_____XX,
 				b____XXX,
 				b____XXX,
@@ -808,7 +808,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_______,
 				b_______,
 			},
-			[2] {
+			[2] = {
 				b__XX___,
 				b__XXX__,
 				b__XXX__,
@@ -818,7 +818,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XXX__,
 				b__XXX__,
 			},
-			[3] {
+			[3] = {
 				b_______,
 				b_______,
 				b_______,
@@ -828,7 +828,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_____XX,
 				b_____XX,
 			},
-			[4] {
+			[4] = {
 				b_______,
 				b_______,
 				b_______,
@@ -838,7 +838,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XXXXX,
 				b__XXXXX,
 			},
-			[5] {
+			[5] = {
 				b__XXX__,
 				b__XXX__,
 				b__XXX__,
@@ -848,7 +848,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XX___,
 				b__X____,
 			},
-			[6] {
+			[6] = {
 				b__XXXXX,
 				b__XXXXX,
 				b__XXXXX,
@@ -858,7 +858,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_______,
 				b_______,
 			},
-			[7] {
+			[7] = {
 				b_______,
 				b_______,
 				b_______,
@@ -868,7 +868,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b____XXX,
 				b____XXX,
 			},
-			[8] {
+			[8] = {
 				b____XXX,
 				b___XXXX,
 				b__XXXX_,
@@ -878,7 +878,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XXXXX,
 				b__XXXXX,
 			},
-			[9] {
+			[9] = {
 				b__X____,
 				b_______,
 				b_______,
@@ -888,7 +888,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XXX__,
 				b__XXX__,
 			},
-			[10] {
+			[10] = {
 				b____XXX,
 				b____XXX,
 				b____XXX,
@@ -898,7 +898,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b____XXX,
 				b____XXX,
 			},
-			[11] {
+			[11] = {
 				b__XXXXX,
 				b__XXXXX,
 				b__XXXXX,
@@ -908,7 +908,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XXXXX,
 				b__XXXXX,
 			},
-			[12] {
+			[12] = {
 				b__XXX__,
 				b__XXX__,
 				b__XXX__,
@@ -918,7 +918,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_______,
 				b_______,
 			},
-			[13] {
+			[13] = {
 				b__XXXXX,
 				b_______,
 				b_______,
@@ -928,7 +928,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XXXXX,
 				b__XXXXX,
 			},
-			[14] {
+			[14] = {
 				b____XXX,
 				b____XXX,
 				b____XXX,
@@ -938,7 +938,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_____XX,
 				b_____XX,
 			},
-			[15] {
+			[15] = {
 				b_____XX,
 				b____XXX,
 				b____XXX,
@@ -948,7 +948,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b____XXX,
 				b____XXX,
 			},
-			[16] {
+			[16] = {
 				b__XX___,
 				b__XXX__,
 				b__XXX__,
@@ -958,7 +958,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_______,
 				b_______,
 			},
-			[17] {
+			[17] = {
 				b____XXX,
 				b____XXX,
 				b____XXX,
@@ -968,7 +968,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_______,
 				b_______,
 			},
-			[18] {
+			[18] = {
 				b__XXXXX,
 				b__XXXXX,
 				b__XXXXX,
@@ -978,7 +978,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b____XXX,
 				b____XXX,
 			},
-			[19] {
+			[19] = {
 				b__XXX__,
 				b__XXX__,
 				b__XXX__,
@@ -988,7 +988,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b_______,
 				b_______,
 			},
-			[20] {
+			[20] = {
 				b___XXX_,
 				b___XXX_,
 				b__XXXX_,
@@ -998,7 +998,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XXX__,
 				b__XXX__,
 			},
-			[21] {
+			[21] = {
 				b______X,
 				b_____XX,
 				b____XXX,
@@ -1008,7 +1008,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__XX__X,
 				b__XX__X,
 			},
-			[22] {
+			[22] = {
 				b__XXXXX,
 				b__XXXXX,
 				b__XXXXX,
@@ -1018,7 +1018,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b______X,
 				b______X,
 			},
-			[23] {
+			[23] = {
 				b__X____,
 				b__X____,
 				b__X____,
@@ -1028,7 +1028,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__X____,
 				b__X____,
 			},
-			[24] {
+			[24] = {
 				b__XXX__,
 				b__XXX__,
 				b__XXX__,
@@ -1038,7 +1038,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b__X____,
 				b__X____,
 			},
-			[25] {
+			[25] = {
 				b_______,
 				b_______,
 				b_______,
@@ -1048,7 +1048,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b______X,
 				b______X,
 			},
-			[26] {
+			[26] = {
 				b____XXX,
 				b____XXX,
 				b___XXXX,
@@ -1058,7 +1058,7 @@ adv_bignum_num_2_28(Driver * drvthis, int x, int num, int height, int offset, in
 				b____XXX,
 				b____XXX,
 			},
-			[27] {
+			[27] = {
 				b_______,
 				b_______,
 				b_______,
@@ -1223,7 +1223,7 @@ adv_bignum_num_4_3(Driver * drvthis, int x, int num, int height, int offset, int
 	if (do_init) {
 		int i;
 		static unsigned char bignum[3][8] = {	/* stored customcharacter */
-			[0] {
+			[0] = {
 				b__XXXXX,
 				b__XXXXX,
 				b__XXXXX,
@@ -1233,7 +1233,7 @@ adv_bignum_num_4_3(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 			},
-			[1] {
+			[1] = {
 				b_______,
 				b_______,
 				b_______,
@@ -1243,7 +1243,7 @@ adv_bignum_num_4_3(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XXXXX,
 				b__XXXXX,
 			},
-			[2] {
+			[2] = {
 				b___XXX_,
 				b___XXX_,
 				b___XXX_,
@@ -1324,7 +1324,7 @@ adv_bignum_num_4_8(Driver * drvthis, int x, int num, int height, int offset, int
 	if (do_init) {
 		int i;
 		static unsigned char bignum[8][8] = {	/* stored customcharacter */
-			[0] {
+			[0] = {
 				b__XX___,
 				b__XX___,
 				b__XX___,
@@ -1334,7 +1334,7 @@ adv_bignum_num_4_8(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 			},
-			[1] {
+			[1] = {
 				b_____XX,
 				b_____XX,
 				b_____XX,
@@ -1344,7 +1344,7 @@ adv_bignum_num_4_8(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XX___,
 				b__XX___,
 			},
-			[2] {
+			[2] = {
 				b__XX_XX,
 				b__XX_XX,
 				b__XX_XX,
@@ -1354,7 +1354,7 @@ adv_bignum_num_4_8(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 			},
-			[3] {
+			[3] = {
 				b_______,
 				b_______,
 				b_______,
@@ -1364,7 +1364,7 @@ adv_bignum_num_4_8(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XX___,
 				b__XX___,
 			},
-			[4] {
+			[4] = {
 				b__XX___,
 				b__XX___,
 				b__XX___,
@@ -1374,7 +1374,7 @@ adv_bignum_num_4_8(Driver * drvthis, int x, int num, int height, int offset, int
 				b_____XX,
 				b_____XX,
 			},
-			[5] {
+			[5] = {
 				b_______,
 				b_______,
 				b_______,
@@ -1384,7 +1384,7 @@ adv_bignum_num_4_8(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XX_XX,
 				b__XX_XX,
 			},
-			[6] {
+			[6] = {
 				b__XX___,
 				b__XX___,
 				b__XX___,
@@ -1394,7 +1394,7 @@ adv_bignum_num_4_8(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XX___,
 				b__XX___,
 			},
-			[7] {
+			[7] = {
 				b_____XX,
 				b_____XX,
 				b_____XX,

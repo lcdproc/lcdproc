@@ -39,7 +39,7 @@ struct hd44780_SerialInterface {
 	 * The backlight flag determines the type of backlight available.
 	 * If the backlight is just switchable, the backlight_off or
 	 * backlight_on characters are sent according to backlight state.
-	 * If the backlight is switchable, these characters must define a range
+	 * If the backlight is adjustable, these characters must define a range
 	 * of values that are understood as different brightness levels by
 	 * the display. The 'brightness' and 'offbrightness' values from config
 	 * are used according to the backlight state and mapped to this range.

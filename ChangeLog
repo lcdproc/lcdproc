@@ -30,6 +30,7 @@ v0.5dev (ongoing development)
  * lcdproc client: Fix build on OpenBSD >= 5.0
  * hd44780/serial: Add support for adjustable backlight
  * Build system: Fix build with automake >= 1.11.3 (#3494755)
+ * Fix clang compiler warnings about obsolete GNU designated initializers
 
 v0.5.5
  + sed1330 driver: Add support for HG25504 (L. Lagendijk)

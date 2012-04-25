@@ -321,7 +321,7 @@ serial_HD44780_backlight(PrivateData *p, unsigned char state)
 		int val = (state == BACKLIGHT_ON) ? p->brightness : p->offbrightness;
 
 		/* Map the value to output range (rounding up) */
-		send = (val * (SERIAL_IF.backlight_on - SERIAL_IF.backlight_off) + 999) / 1000 + SERIAL_IF.backlight_off;;
+		send = (val * (SERIAL_IF.backlight_on - SERIAL_IF.backlight_off) + 999) / 1000 + SERIAL_IF.backlight_off;
 		write(p->fd, &send, 1);
 	}
 }
