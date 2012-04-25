@@ -43,6 +43,7 @@
 
 /** These values are used in the function tables in menuitem.c ! */
 typedef enum MenuItemType {
+	MENUITEM_INVALID  = -1,
 	MENUITEM_MENU     = 0,
 	MENUITEM_ACTION   = 1,
 	MENUITEM_CHECKBOX = 2,
@@ -87,6 +88,7 @@ typedef enum MenuResult {
 
 /** Events caused by a menuitem */
 typedef enum MenuEventType {
+	MENUEVENT_INVALID = -1,	/**< Special value for error handling */
 	MENUEVENT_SELECT = 0,	/**< Item has been selected
 				 * (action chosen) */
 	MENUEVENT_UPDATE = 1,	/**< Item has been modified

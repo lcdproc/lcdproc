@@ -1555,7 +1555,7 @@ MenuItemType menuitem_typename_to_type(char *name)
 			}
 		}
 	}
-	return -1;
+	return MENUITEM_INVALID;
 }
 
 char *menuitem_type_to_typename(MenuItemType type)
@@ -1576,7 +1576,7 @@ MenuEventType menuitem_eventtypename_to_eventtype(char *name)
 			}
 		}
 	}
-	return -1;
+	return MENUEVENT_INVALID;
 }
 
 char *menuitem_eventtype_to_eventtypename(MenuEventType type)
