@@ -77,7 +77,7 @@
 #define AUTO_READ	0xb1
 #define AUTO_RESET	0xb2
 
-/* 'Status read' anwer codes */
+/* 'Status read' answer codes */
 #define STA0		0x01
 #define STA1		0x02
 #define STA3		0x08
