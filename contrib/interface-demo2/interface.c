@@ -7,7 +7,6 @@
    8/2000  Andi Kleen make the list operations a bit more efficient.
    People are crazy enough to use thousands of aliases now.
 
-   $Id$
  */
 
 #include "config.h"

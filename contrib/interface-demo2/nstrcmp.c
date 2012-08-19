@@ -1,6 +1,5 @@
 /* Copyright 1998 by Andi Kleen. Subject to the GPL. */
 /* rewritten by bernd eckenfels because of complicated alias semantic */
-/* $Id$ */ 
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,7 +128,7 @@ int main()
 	err |= dotest("a:", "a:", 0);
 	err |= dotest(":a", ":a", 0);
 
-	err |= dotest("a", "aa", -1);	
+	err |= dotest("a", "aa", -1);
 	err |= dotest("eth0", "eth1", -1);
 	err |= dotest("eth1", "eth20", -1);
 	err |= dotest("eth20", "eth100", -1);
@@ -142,7 +141,7 @@ int main()
 
 	err |= dotest("aa", "a", 1);
 	err |= dotest("eth2", "eth1", 1);
-	err |= dotest("eth13", "eth1", 1);	
+	err |= dotest("eth13", "eth1", 1);
 	err |= dotest("eth2", "eth", 1);
 	err |= dotest("eth2:10", "eth2:1", 1);
 	err |= dotest("eth2:5", "eth2:4", 1);

@@ -1,7 +1,5 @@
 #!/usr/bin/perl -w
 
-# $Id$
-#
 # Copyright (c) 2008, Ethan Dicks <ethan.dicks@gmail.com>
 #
 # This file is free software; you can redistribute it and/or modify
