@@ -22,8 +22,8 @@
 
 </authorgroup>
 
-<date>2010-12-27</date>
-<releaseinfo>0.0.4</releaseinfo>
+<date>2012-08-19</date>
+<releaseinfo>0.5.x</releaseinfo>
 
 <abstract>
 <para>
@@ -33,7 +33,7 @@ It covers LCDproc 0.5.x. Users should read the user guide.
 </abstract>
 
 <copyright>
-<year>2010</year>
+<year>2012</year>
 <holder>Markus Dolze</holder>
 </copyright>
 <copyright>
@@ -59,7 +59,7 @@ Free Documentation License".
 <keywordset>
 <keyword>documentation</keyword>
 <keyword>LCDproc</keyword>
-<keyword>0.5</keyword>
+<keyword>0.5.x</keyword>
 <keyword>developer guide</keyword>
 </keywordset>
 
