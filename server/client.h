@@ -1,7 +1,7 @@
 /** \file server/client.h
  * Defines all the client data and actions.
  *
- * \note If you only need 'struct Client' to work with you should use the
+ * \note If you only need 'struct Client' to work with, you should use the
  *       following code (which does not create an indirect dependency on
  *       'struct Screen'):
  *

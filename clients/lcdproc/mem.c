@@ -276,9 +276,10 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 
 		/* frame from (2nd line, left) to (last line, right) */
 		sock_send_string(sock, "widget_add S f frame\n");
+
+		/* scroll rate: 1 line every X ticks (= 1/8 sec) */
 		sock_printf(sock, "widget_set S f 1 2 %i %i %i 5 v %i\n",
 			    lcd_wid, lcd_hgt, lcd_wid,
-			    /* scroll rate: 1 line every X ticks (= 1/8 sec) */
 			    ((lcd_hgt >= 4) ? 8 : 12));
 
 		/* frame contents */

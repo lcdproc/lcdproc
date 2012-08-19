@@ -1,7 +1,7 @@
 /** \file server/screen.h
  * Public interface to the screen management methods.
  *
- * \note If you only need 'struct Screen' to work with you should use the
+ * \note If you only need 'struct Screen' to work with, you should use the
  *       following code (which does not create an indirect dependency on
  *       'struct Widget'):
  *

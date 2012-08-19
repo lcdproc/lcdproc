@@ -65,7 +65,7 @@ iface_process_configfile(void)
 		iface[iface_count].alias = strdup(config_get_string("Iface", iface_label, 0, iface[iface_count].name));
 		if (iface[iface_count].alias == NULL)
 			/*
-			 * make alias the same as the interface name in case #
+			 * make alias the same as the interface name in case
 			 * strdup() failed
 			 */
 			iface[iface_count].alias = iface[iface_count].name;
