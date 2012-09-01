@@ -85,7 +85,7 @@ static int driver_store_private_ptr(Driver *driver, void *private_data);
 
 /** Create a driver object.
  * Allocate memory for the driver object, load it from file and bind its symbols.
- * \param name      Name under which the driver shall be kbown forther on.
+ * \param name      Name under which the driver shall be known further on.
  * \param filename  Name of the file containing the drivers object code.
  * \return          Pointer to the freshly created driver; \c NULL on error.
  */
@@ -290,7 +290,7 @@ driver_bind_module(Driver *driver)
 
 
 /** Unload a Driver's module.
- * \param driver  Pointer to he driver object.
+ * \param driver  Pointer to the driver object.
  * \retval <0     Error.
  * \retval  0     Success.
  */
@@ -308,7 +308,7 @@ driver_unbind_module(Driver *driver)
 /** Determine if the driver is an output driver.
  * This is done by checking whether the driver knows dimensions
  * and supports the methods that write to the screen.
- * \param driver  Pointer to he driver object.
+ * \param driver  Pointer to the driver object.
  * \retval 0      No, it is not an output driver.
  * \retval 1      Yes, it is an output driver.
  */
@@ -325,7 +325,7 @@ driver_does_output(Driver *driver)
 
 /** Determine if the driver is an input driver.
  * This is done by checking whether the driver supports the \c get_key method.
- * \param driver  Pointer to he driver object.
+ * \param driver  Pointer to the driver object.
  * \retval 0      No, it is not an input driver.
  * \retval 1      Yes, it is an input driver.
  */
@@ -337,7 +337,7 @@ driver_does_input(Driver *driver)
 
 
 /** Tell if the driver needs to stay in the foreground.
- * \param driver  Pointer to he driver object.
+ * \param driver  Pointer to the driver object.
  * \retval 0      No, the driver does not need to stay in the foreground.
  * \retval 1      Yes, the driver needs to stay in the foreground.
  */
@@ -349,7 +349,7 @@ driver_stay_in_foreground(Driver *driver)
 
 
 /** Tell if the driver supports multiple instances.
- * \param driver  Pointer to he driver object.
+ * \param driver  Pointer to the driver object.
  * \retval 0      No, it doesn't.
  * \retval 1      Yes, it does.
  */

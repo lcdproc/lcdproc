@@ -177,7 +177,7 @@ widget_destroy(Widget *w)
 
 
 /** Convert a widget type name to a widget type.
- * \param typename  Name of the idget type.
+ * \param typename  Name of the widget type.
  * \return          Widget type.
  */
 WidgetType

@@ -75,7 +75,7 @@ menu_get_subitem(Menu *menu, int index)
  * Search a menu for an entry by its ID, ignoring hidden entries.
  * \param menu     Pointer to menu to search in.
  * \param item_id  ID to search for.
- * \return  Index of subitem if found, and -1 otherwise.r
+ * \return  Index of subitem if found, and -1 otherwise.
  */
 static int
 menu_get_index_of(Menu *menu, char *item_id)
