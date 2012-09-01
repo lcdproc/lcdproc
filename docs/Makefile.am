@@ -2,7 +2,7 @@
 
 man_MANS = lcdproc.1 lcdexec.1 lcdvc.1 LCDd.8 lcdproc-config.5
 SUBDIRS = lcdproc-user lcdproc-dev
-doxygen_input = header.html footer.html
+doxygen_input = doxy-mainpage.md
 
 EXTRA_DIST = lcdproc.1.in \
 	lcdexec.1 \
