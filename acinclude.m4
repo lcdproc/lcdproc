@@ -1116,7 +1116,7 @@ dnl
 AC_DEFUN([LCD_PNG_LIB], [
 AC_MSG_CHECKING([if PNG support has been enabled]);
 AC_ARG_ENABLE(libpng,
-	[AS_HELP_STRING([--disable-png],[disable PNG support using libpng])],
+	[AS_HELP_STRING([--disable-libpng],[disable PNG support using libpng])],
 	[ if test "$enableval" != "no"; then
 		enable_libpng=yes
 	fi ],
