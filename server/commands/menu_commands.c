@@ -67,13 +67,14 @@ static char *argv2string(int argc, char **argv)
  * Adds an item to a menu.
  *
  *\verbatim
- * Usage: menu_add_item <menuid> <newitemid> <type> [<text>]
+ * Usage: menu_add_item <menuid> <newitemid> <type> [<text>] {<option>}+
  *\endverbatim
  *
  * You should use "" as id for the client's main menu. This menu will be
  * created automatically when you add an item to it the first time.
  *
- * You (currently?) cannot create a menu in the main level yourself.
+ * You cannot create a menu in the main level yourself, unless you replace the
+ * main menu with the client's menu.
  * The names you use for items should be unique for your client.
  * The text is the visible text for the item.
  *
@@ -86,6 +87,8 @@ static char *argv2string(int argc, char **argv)
  * - numeric
  * - alpha
  * - ip
+ *
+ * For the list of supported options see menu_set_item_func.
  */
 int
 menu_add_item_func(Client *c, int argc, char **argv)
@@ -108,7 +111,7 @@ menu_add_item_func(Client *c, int argc, char **argv)
 	}
 
 	if (argc < 4) {
-		sock_send_error(c->sock, "Usage: menu_add_item <menuid> <newitemid> <type> [<text>]\n");
+		sock_send_error(c->sock, "Usage: menu_add_item <menuid> <newitemid> <type> [<text>] [<option>]+\n");
 		return 0;
 	}
 
@@ -198,8 +201,8 @@ menu_add_item_func(Client *c, int argc, char **argv)
 
 	/* call menu_set_item() with a temporarily allocated argv
 	 * to process the remaining options */
-	if ((argc > 5) || (argv[4][0] == '-')) {
-		// menu_add_item <menuid> <newitemid> <type> [<text>]
+	if ((argc > 5) || ((argc == 5) && (argv[4][0] == '-'))) {
+		// menu_add_item <menuid> <newitemid> <type> [<text>] [<option>]+
 		// menu_set_item <menuid> <itemid> {<option>}+
 		int i, j;
 		char **tmp_argv = malloc(argc * sizeof(char *));

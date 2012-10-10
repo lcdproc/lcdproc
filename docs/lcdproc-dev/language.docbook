@@ -707,6 +707,7 @@
 	  menu_set_item "test" test_ip -next "test_menu" -prev "test_alpha"
 	  menu_set_item "test" test_menu_action -next "_close_"
 
+	  # replace the main menu with the client's menu as created above
 	  menu_set_main ""
 	</programlisting>
       </para>
@@ -757,7 +758,8 @@
 	      <option><replaceable>menu_id</replaceable></option>
 	      <option><replaceable>new_item_id</replaceable></option>
 	      <option><replaceable>type</replaceable></option>
-	      <optional><option><replaceable>options</replaceable></option></optional>
+	      <optional><option><replaceable>text</replaceable></option></optional>
+	      <optional><option><replaceable>item_specific_options</replaceable></option></optional>
 	    </command>
 	  </term>
 	  <listitem>
@@ -765,8 +767,10 @@
 	      Adds a new menu item to a menu. The main menu of a client,
 	      will be created automatically as soon as the client adds
 	      an item. This main menu has an empty id ("") and the name
-	      is identical to the name of the client. The options are
-	      described under menu_set_item below.
+	      is identical to the name of the client. The item specific options
+	      are described under menu_set_item below. Use of <replaceable>text</replaceable>
+	      is optional and is a shortcut for "-text <replaceable>text</replaceable>"
+	      option.
 	    </para>
 	    <para>
 	      <note>
@@ -776,6 +780,11 @@
 		  (<option>-prev</option>, <option>-next</option>) assume that
 		  <replaceable>menu_ids</replaceable> are <emphasis>unique</emphasis>
 		  (at least within a clients menu hierarchy).
+		</para>
+		<para>
+		  If you want to use a text label that starts with a '-' (minus)
+		  character, you have to use the "-text <replaceable>text</replaceable>"
+		  option.
 		</para>
 	      </note>
 	      <variablelist><title>menu item types</title>
