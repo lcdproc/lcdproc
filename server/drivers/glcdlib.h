@@ -1,16 +1,14 @@
-/*
+/*-
  * This so-called "meta-driver" extends LCDproc's supported drivers by
  * all the drivers supported by graphlcd-base, which you can get from
- * http://graphlcd.berlios.de.
+ * http://projects.vdr-developer.org/projects/graphlcd/ .
  * In order to be able to use it, you have to get and install the glcdprocdriver
- * from http://www.muresan.de/graphlcd/lcdproc/.
+ * from http://lucianm.github.com/GLCDprocDriver/ .
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
  *
  * Copyright (c)  2005 Lucian Muresan <lucianm AT users.sourceforge.net>
- *
- *
  */
 
 

@@ -47,7 +47,8 @@ need some additional programs or libraries installed:
   see http://www.g15tools.com/
 
 * GraphLCD and GLCDprocDriver for use with the 'glcdlib' driver, see
-  http://graphlcd.berlios.de/ and http://www.muresan.de/graphlcd/lcdproc/
+  http://projects.vdr-developer.org/projects/graphlcd/ and
+  http://lucianm.github.com/GLCDprocDriver/
 
 * libirman for use with the 'irman' driver, see
   http://www.evation.com/libirman/libirman.html for the home page and

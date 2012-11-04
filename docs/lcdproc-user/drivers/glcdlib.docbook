@@ -18,11 +18,11 @@ graphlcd-base.
 <para>
 The so-called "meta-driver" glcdlib extends LCDproc's supported drivers by
 all the drivers supported by graphlcd-base, which you can get from
-<ulink url="http://graphlcd.berlios.de"></ulink>.
+<ulink url="http://projects.vdr-developer.org/projects/graphlcd/"></ulink>.
 </para>
 <para>
 In order to be able to use it, you have to get and install the glcdprocdriver
-from <ulink url="http://www.muresan.de/graphlcd/lcdproc/"></ulink>
+from <ulink url="http://lucianm.github.com/GLCDprocDriver/"></ulink>
 before configuring the LCDproc build process --enable-drivers=glcdlib.
 </para>
 

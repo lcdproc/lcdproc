@@ -3,7 +3,7 @@
  * from Pyramid Computer GmbH.
  *
  * For more information see
- * https://www.pyramid.de/de/hardware/spezialkomponenten.php
+ * http://www.pyramid.de/en/products/specialities.php
  */
 
 /*-
