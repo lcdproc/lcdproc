@@ -734,18 +734,20 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 			break;
 		switch (subitem->type) {
 		  case MENUITEM_CHECKBOX:
-			/* Note: this works as CheckboxValue is an enum >= 0. */
-			subitem->data.checkbox.value--;
-			subitem->data.checkbox.value %= (subitem->data.checkbox.allow_gray) ? 3 : 2;
+			if (subitem->data.checkbox.value == 0)
+				subitem->data.checkbox.value = (subitem->data.checkbox.allow_gray) ? 2 : 1;
+			else
+				subitem->data.checkbox.value--;
 
 			if (subitem->event_func)
 				subitem->event_func(subitem, MENUEVENT_UPDATE);
 			return MENURESULT_NONE;
 		  case MENUITEM_RING:
 			/* ring: jump to the end if beginning is reached */
-			/* Note: this works as data.ring.value is a short >= 0 */
-			subitem->data.ring.value--;
-			subitem->data.ring.value %= LL_Length(subitem->data.ring.strings);
+			if (subitem->data.ring.value == 0)
+				subitem->data.ring.value = LL_Length(subitem->data.ring.strings) - 1;
+			else
+				subitem->data.ring.value--;
 
 			if (subitem->event_func)
 				subitem->event_func(subitem, MENUEVENT_UPDATE);

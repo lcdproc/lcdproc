@@ -6,6 +6,7 @@ Key:
      * Something changed / fixed
 
 v0.5dev (ongoing development)
+ * Fix using the left key to change the ring and checkbox menu items
  * sed1520: Add an option for inverted segment mapping (idea by R. Buchert)
 
 v0.5.6
