@@ -48,8 +48,8 @@
 #define HEIGHT		((int) (PIXELHEIGHT / CELLHEIGHT))	/*  4 */
 
 #define A0	nSEL		/* pin 17 */
-#define CS1	nLF		/* pin 14 */
-#define CS2	INIT		/* pin 16 */
+#define CS1	nLF		/* pin 14, EN1 for 68-style connection */
+#define CS2	INIT		/* pin 16, EN2 for 68-style connection */
 #define WR	nSTRB		/* pin 1 */
 
 /** private data for the \c sed1520 driver */
@@ -58,6 +58,7 @@ typedef struct sed1520_private_data {
     int interface;
     int delayMult;
     int haveInverter;
+    unsigned char colStartAdd;
 
     unsigned char *framebuf;
 } PrivateData;
@@ -70,7 +71,7 @@ MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "sed1520_";
 
 /**
- * Writes command value to one or both sed1520 selected by chip.
+ * Writes command value to one or both SED1520 selected by chip.
  * \param p      Pointer to private data structure
  * \param value  Command byte to write
  * \param chip   Bitmap of controllers to send value to
@@ -86,7 +87,8 @@ writecommand(PrivateData *p, int value, int chip)
 	port_out(p->port, value);
 	/* cycle E */
 	port_out(p->port + 2, ((chip & CS1) + (chip & CS2)) ^ OUTMASK);
-	if (p->delayMult) uPause(p->delayMult);
+	if (p->delayMult)
+	    uPause(p->delayMult);
 	port_out(p->port + 2, 0 ^ OUTMASK);
     }
     else {
@@ -120,7 +122,7 @@ writecommand(PrivateData *p, int value, int chip)
 }
 
 /**
- * Writes data value to one or both sed 1520 selected by chip.
+ * Writes data value to one or both SED1520 selected by chip.
  * \param p      Pointer to private data structure
  * \param value  Data byte to write
  * \param chip   Bitmap of controllers to send value to
@@ -133,7 +135,8 @@ writedata(PrivateData *p, int value, int chip)
 	port_out(p->port, value);
 	/* cycle E */
 	port_out(p->port + 2, (A0 + (chip & CS1) + (chip & CS2)) ^ OUTMASK);
-	if (p->delayMult) uPause(p->delayMult);
+	if (p->delayMult)
+	    uPause(p->delayMult);
 	port_out(p->port + 2, (A0) ^ OUTMASK);
     }
     else {
@@ -161,7 +164,7 @@ writedata(PrivateData *p, int value, int chip)
 }
 
 /**
- * Selects a page (=row) on both sed1520s.
+ * Selects a page (=row) on both SED1520.
  * \param p     Pointer to private data structure
  * \param page  Page (=row) number (0-3)
  */
@@ -172,7 +175,7 @@ selectpage(PrivateData *p, int page)
 }
 
 /**
- * Selects a column on the sed1520 specified by chip.
+ * Selects a column on the SED1520 specified by chip.
  * \param p       Pointer to private data structure
  * \param column  Select column (segment) in controller (0-60)
  * \param chip    Bitmap of controllers to send value to
@@ -194,13 +197,13 @@ selectcolumn(PrivateData *p, int column, int chip)
  *
  * To write data to display memory one selects the page and column and then
  * writes bytes of pixel data to the display. The column counter is increased
- * by each write so the display fills from left ro right (the SED1520 can
- * also be configured to write from right to left).
+ * by each write so the display fills from left to right (normal mode) or
+ * right to left (inverted mapping).
  */
 
 /**
  * Draws character z from fontmap to the framebuffer at position x,y.
- * The Fontmap is stored in rows while the framebuffer is stored in columns,
+ * The fontmap is stored in rows while the framebuffer is stored in columns,
  * so we need a little conversion.
  *
  * \param framebuf  Pointer to framebuffer
@@ -236,6 +239,7 @@ MODULE_EXPORT int
 sed1520_init(Driver * drvthis)
 {
     PrivateData *p;
+    char inverted;
 
     /* Allocate and store private data */
     p = (PrivateData *) calloc(1, sizeof(PrivateData));
@@ -287,10 +291,26 @@ sed1520_init(Driver * drvthis)
      * The original wiring used an inverter to drive the control lines. As
      * someone may still be using this, the following setting in ON by default.
      */
-    p->haveInverter = drvthis->config_get_bool(drvthis->name, "haveInverter", 0, 1);
+    p->haveInverter = drvthis->config_get_bool(drvthis->name, "HaveInverter", 0, 1);
+
+    /*
+     * Inverted Mapping: Segments are addressed from right to left and start
+     * at column 19 (address 0x13) up to column 79 (address 0x4F).
+     */
+    inverted = drvthis->config_get_bool(drvthis->name, "InvertedMapping", 0, 0);
+    if (inverted)
+	p->colStartAdd = 0x13;
+    else
+	p->colStartAdd = 0;
 
     /* Initialize display */
+    if (drvthis->config_get_bool(drvthis->name, "UseHardReset", 0, 0) == 1) {
+	writedata(p, 0xFF, CS1 + CS2);
+	writedata(p, 0xFF, CS1 + CS2);
+	writedata(p, 0xFF, CS1 + CS2);
+    }
     writecommand(p, SOFT_RESET, CS1 + CS2);
+    writecommand(p, (inverted) ? ADC_INV : ADC_NORM, CS1 + CS2);
     writecommand(p, DISP_ON, CS1 + CS2);
     writecommand(p, DISP_START_LINE, CS1 + CS2);
     selectpage(p, 3);
@@ -300,7 +320,7 @@ sed1520_init(Driver * drvthis)
 }
 
 /**
- * API: Frees the frambuffer and exits the driver.
+ * API: Frees the framebuffer and exits the driver.
  */
 MODULE_EXPORT void
 sed1520_close(Driver * drvthis)
@@ -378,12 +398,12 @@ sed1520_flush(Driver * drvthis)
 	selectpage(p, i);
 
 	/* update left half of display */
-	selectcolumn(p, 0, CS1);
+	selectcolumn(p, p->colStartAdd, CS1);
 	for (j = 0; j < PIXELWIDTH / 2; j++)
 	    writedata(p, p->framebuf[j + (i * PIXELWIDTH)], CS1);
 
 	/* update right half of display */
-	selectcolumn(p, 0, CS2);
+	selectcolumn(p, p->colStartAdd, CS2);
 	for (j = PIXELWIDTH / 2; j < PIXELWIDTH; j++)
 	    writedata(p, p->framebuf[j + (i * PIXELWIDTH)], CS2);
     }
