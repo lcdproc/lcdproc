@@ -168,7 +168,7 @@ dnl			else
 		glcd)
 			GLCD_DRIVERS=""
 			if test "$ac_cv_port_have_lpt" = yes ; then
-				GLCD_DRIVERS="$GLCD_DRIVERS glcd-t6963.o t6963_low.o"
+				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-t6963.o t6963_low.o"
 			fi
 			if test "$enable_libpng" = yes ; then
 				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-png.o"
