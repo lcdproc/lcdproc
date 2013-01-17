@@ -125,12 +125,14 @@ glcd_serdisp_init(Driver *drvthis)
 	ct_data->bsbuf.px_width = p->framebuf.px_width;
 	ct_data->bsbuf.px_height = p->framebuf.px_height;
 	ct_data->bsbuf.bytesPerLine = p->framebuf.bytesPerLine;
-	ct_data->bsbuf.data = malloc(ct_data->bsbuf.px_height * ct_data->bsbuf.bytesPerLine);
+	ct_data->bsbuf.size = p->framebuf.size;
+	ct_data->bsbuf.data = malloc(ct_data->bsbuf.size);
 	if (ct_data->bsbuf.data == NULL) {
 		report(RPT_ERR, "%s: error allocating backing store",
 		       drvthis->name);
+		goto err_out;
 	}
-	memset(ct_data->bsbuf.data, 0x00, ct_data->bsbuf.px_height * ct_data->bsbuf.bytesPerLine);
+	memset(ct_data->bsbuf.data, 0x00, ct_data->bsbuf.size);
 
 	serdisp_clearbuffer(ct_data->disp);
 

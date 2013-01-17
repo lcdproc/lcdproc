@@ -20,12 +20,19 @@
 #define GLCD_DEFAULT_REPEAT_DELAY	500	/* milliseconds */
 #define GLCD_DEFAULT_REPEAT_INTERVAL	300	/* milliseconds */
 
+enum fb_types {
+	FB_TYPE_LINEAR = 0,
+	FB_TYPE_VPAGED
+};
+
 /** The framebuffer and its properties */
 struct glcd_framebuf {
 	unsigned char *data;	/**< frame buffer */
 	int px_width;		/**< display width in dots */
 	int px_height;		/**< display height in dots */
 	int bytesPerLine;	/**< number of bytes per pixel row */
+	int size;		/**< total size in bytes */
+	enum fb_types layout;	/**< memory layout */
 };
 
 /** private data for the \c glcd driver */
@@ -82,8 +89,6 @@ struct glcdHwFcns {
 
 /* ================== Framebuffer functions and macros =================== */
 
-#define BYTES_PER_LINE (p->framebuf.bytesPerLine)
-#define FB_BYTES_TOTAL (p->framebuf.px_height * BYTES_PER_LINE)
 #define FB_BLACK 1
 #define FB_WHITE 0
 
@@ -106,8 +111,14 @@ fb_draw_pixel(struct glcd_framebuf *fb, int x, int y, int color)
 	if (x < 0 || x >= fb->px_width || y < 0 || y >= fb->px_height)
 		return;
 
-	pos = y * fb->bytesPerLine + (x / 8);
-	bit = 0x80 >> (x % 8);
+	if (fb->layout == FB_TYPE_LINEAR) {
+		pos = y * fb->bytesPerLine + (x / 8);
+		bit = 0x80 >> (x % 8);
+	}
+	else {
+		pos = (y / 8) * fb->px_width + x;
+		bit = 1 << (y % 8);
+	}
 
 	if (color == FB_BLACK)
 		fb->data[pos] |= bit;
@@ -133,8 +144,14 @@ fb_get_pixel(struct glcd_framebuf *fb, int x, int y)
 	if (x < 0 || x >= fb->px_width || y < 0 || y >= fb->px_height)
 		return FB_WHITE;
 
-	pos = y * fb->bytesPerLine + (x / 8);
-	bit = 0x80 >> (x % 8);
+	if (fb->layout == FB_TYPE_LINEAR) {
+		pos = y * fb->bytesPerLine + (x / 8);
+		bit = 0x80 >> (x % 8);
+	}
+	else {
+		pos = (y / 8) * fb->px_width + x;
+		bit = 0x01 << (y % 8);
+	}
 
 	if (fb->data[pos] & bit)
 		return FB_BLACK;

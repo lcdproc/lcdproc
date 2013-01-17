@@ -33,10 +33,6 @@
 #define GLCD2USB_VID	0x1c40
 #define GLCD2USB_PID	0x0525
 
-/* Some useful shortcuts */
-#define PAGES		(p->framebuf.px_height / 8)
-#define PAGED_SIZE	(p->framebuf.px_width * PAGES)
-
 /** Data local to the glcd2usb connection type */
 typedef struct glcd_glcd2usb_data {
 	usb_dev_handle *device;
@@ -229,37 +225,25 @@ void
 glcd2usb_blit(PrivateData *p)
 {
 	CT_glcd2usb_data *ctd = (CT_glcd2usb_data *) p->ct_data;
-	int c, r;
+	int r;
 	int i, j;
 	int err;
+	int pos;
 
 	p->glcd_functions->drv_debug(RPT_DEBUG, "glcd2usb_blit: starting");
 
 	/* Reset the dirty buffer */
-	memset(ctd->dirty_buffer, 0x00, PAGED_SIZE);
+	memset(ctd->dirty_buffer, 0x00, p->framebuf.size);
 
 	/*
-	 * Step 1: Convert the linear frame buffer format of the glcd driver
-	 * into the paged format of the glcd2usb device. Compare newly
-	 * written data with what was stored previously and set the dirty
-	 * buffer.
+	 * Step 1: Compare the content of the secondary buffer with the frame
+	 * buffer and copy the differences. For each different byte, set the
+	 * flag in the dirty buffer.
 	 */
-	for (r = 0; r < p->framebuf.px_height; r++) {
-		int position, bit;
-		unsigned char tmp;
-		for (c = 0; c < p->framebuf.px_width; c++) {
-			position = (r / 8) * p->framebuf.px_width + c;
-			bit = r % 8;
-
-			tmp = ctd->paged_buffer[position];
-
-			if (fb_get_pixel(&(p->framebuf), c, r) == FB_BLACK)
-				ctd->paged_buffer[position] |= 1 << bit;
-			else
-				ctd->paged_buffer[position] &= ~(1 << bit);
-
-			if (ctd->paged_buffer[position] != tmp)
-				ctd->dirty_buffer[position] = 1;
+	for (pos = 0; pos < p->framebuf.size; pos++) {
+		if (ctd->paged_buffer[pos] != p->framebuf.data[pos]) {
+			ctd->paged_buffer[pos] = p->framebuf.data[pos];
+			ctd->dirty_buffer[pos] = 1;
 		}
 	}
 
@@ -267,7 +251,7 @@ glcd2usb_blit(PrivateData *p)
 	 * Step 2: Short gaps of unchanged bytes in fact increase the
 	 * communication overhead. So we eliminate them here.
 	 */
-	for (j = -1, i = 0; i < PAGED_SIZE; i++) {
+	for (j = -1, i = 0; i < p->framebuf.size; i++) {
 		if (ctd->dirty_buffer[i] && j >= 0 && i - j <= 4) {
 			/* found a clean gap <= 4 bytes: mark it dirty */
 			for (r = j; r < i; r++)
@@ -285,7 +269,7 @@ glcd2usb_blit(PrivateData *p)
 
 	/* Step 3: Send the changes. */
 	ctd->tx_buffer.bytes[0] = 0;
-	for (i = 0; i < PAGED_SIZE; i++) {
+	for (i = 0; i < p->framebuf.size; i++) {
 		if (ctd->dirty_buffer[i]) {
 			/* Start a new packet */
 			if (!ctd->tx_buffer.bytes[0]) {
@@ -303,7 +287,7 @@ glcd2usb_blit(PrivateData *p)
 		 * the frame or reached the maximum payload for a write
 		 * request.
 		 */
-		if (!ctd->dirty_buffer[i] || i == PAGED_SIZE - 1 || ctd->tx_buffer.bytes[3] == 128) {
+		if (!ctd->dirty_buffer[i] || i == p->framebuf.size - 1 || ctd->tx_buffer.bytes[3] == 128) {
 			/* Only write if there IS something to be written */
 			if (ctd->tx_buffer.bytes[0] == GLCD2USB_RID_WRITE && ctd->tx_buffer.bytes[3] > 0) {
 				err = usbSetReport(ctd->device, USB_HID_REPORT_TYPE_FEATURE,
@@ -379,19 +363,6 @@ glcd2usb_init(Driver *drvthis)
 		return -1;
 	}
 	p->ct_data = ctd;
-
-	ctd->paged_buffer = malloc(PAGED_SIZE);
-	if (ctd->paged_buffer == NULL) {
-		report(RPT_ERR, "%s/glcd2usb: cannot allocate memory", drvthis->name);
-		goto err_out;
-	}
-	memset(ctd->paged_buffer, 0x00, PAGED_SIZE);
-
-	ctd->dirty_buffer = malloc(PAGED_SIZE);
-	if (ctd->dirty_buffer == NULL) {
-		report(RPT_ERR, "%s/glcd2usb: cannot allocate memory", drvthis->name);
-		goto err_out;
-	}
 
 	/*
 	 * Try to find and open a device. Only the first device found will be
@@ -488,11 +459,24 @@ found_dev:
 		       ctd->tx_buffer.display_info.height);
 		goto err_out;
 	}
-	else {
-		p->framebuf.px_width = ctd->tx_buffer.display_info.width;
-		p->framebuf.px_height = ctd->tx_buffer.display_info.height;
-		report(RPT_INFO, "%s/glcd2usb: using display size %dx%d", drvthis->name,
-		       ctd->tx_buffer.display_info.width, ctd->tx_buffer.display_info.height);
+	p->framebuf.layout = FB_TYPE_VPAGED;
+	p->framebuf.px_width = ctd->tx_buffer.display_info.width;
+	p->framebuf.px_height = ctd->tx_buffer.display_info.height;
+	p->framebuf.size = (p->framebuf.px_height + 7) / 8 * p->framebuf.px_width;
+	report(RPT_INFO, "%s/glcd2usb: using display size %dx%d", drvthis->name,
+	       ctd->tx_buffer.display_info.width, ctd->tx_buffer.display_info.height);
+
+	ctd->paged_buffer = malloc(p->framebuf.size);
+	if (ctd->paged_buffer == NULL) {
+		report(RPT_ERR, "%s/glcd2usb: cannot allocate memory", drvthis->name);
+		goto err_out;
+	}
+	memset(ctd->paged_buffer, 0x55, p->framebuf.size);
+
+	ctd->dirty_buffer = malloc(p->framebuf.size);
+	if (ctd->dirty_buffer == NULL) {
+		report(RPT_ERR, "%s/glcd2usb: cannot allocate memory", drvthis->name);
+		goto err_out;
 	}
 
 	/* Allocate the display (turn off the 'whirl') */

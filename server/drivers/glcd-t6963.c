@@ -80,12 +80,12 @@ glcd_t6963_init(Driver *drvthis)
 	}
 	ct_data->port_config = port_config;
 
-	ct_data->backingstore = malloc(FB_BYTES_TOTAL);
+	ct_data->backingstore = malloc(p->framebuf.size);
 	if (ct_data->backingstore == NULL) {
 		report(RPT_ERR, "GLCD/T6963: unable to allocate backing store");
 		return -1;
 	}
-	memset(ct_data->backingstore, 0x00, FB_BYTES_TOTAL);
+	memset(ct_data->backingstore, 0x00, p->framebuf.size);
 
 	/* Get port from config */
 	port_config->port = drvthis->config_get_int(drvthis->name, "Port", 0, DEFAULT_PORT);
@@ -110,9 +110,9 @@ glcd_t6963_init(Driver *drvthis)
 	debug(RPT_INFO, "GLCD/T6963: Sending init to display...");
 	/* Set graphic address (and text address even though not needed) */
 	t6963_low_command_word(port_config, SET_GRAPHIC_HOME_ADDRESS, GRAPHIC_BASE);
-	t6963_low_command_word(port_config, SET_GRAPHIC_AREA, BYTES_PER_LINE);
+	t6963_low_command_word(port_config, SET_GRAPHIC_AREA, p->framebuf.bytesPerLine);
 	t6963_low_command_word(port_config, SET_TEXT_HOME_ADDRESS, TEXT_BASE);
-	t6963_low_command_word(port_config, SET_TEXT_AREA, BYTES_PER_LINE);
+	t6963_low_command_word(port_config, SET_TEXT_AREA, p->framebuf.bytesPerLine);
 
 	/* Use OR-mode for text and graphics */
 	t6963_low_command(port_config, SET_MODE | OR_MODE);
@@ -139,12 +139,12 @@ glcd_t6963_blit(PrivateData *p)
 
 	for (y = 0; y < p->framebuf.px_height; y++) {
 		/* set pointers to start of the line */
-		unsigned char *sp = p->framebuf.data + (y * BYTES_PER_LINE);
-		unsigned char *sq = ct_data->backingstore + (y * BYTES_PER_LINE);
+		unsigned char *sp = p->framebuf.data + (y * p->framebuf.bytesPerLine);
+		unsigned char *sq = ct_data->backingstore + (y * p->framebuf.bytesPerLine);
 
 		/* set pointers to end of the line */
-		unsigned char *ep = sp + (BYTES_PER_LINE - 1);
-		unsigned char *eq = sq + (BYTES_PER_LINE - 1);
+		unsigned char *ep = sp + (p->framebuf.bytesPerLine - 1);
+		unsigned char *eq = sq + (p->framebuf.bytesPerLine - 1);
 
 		/* find begin and end of differences */
 		x = 0;
@@ -158,7 +158,7 @@ glcd_t6963_blit(PrivateData *p)
 		/* there are differences, ... */
 		if (sp <= ep) {
 			t6963_low_command_word(ct_data->port_config, SET_ADDRESS_POINTER,
-				  GRAPHIC_BASE + (y * BYTES_PER_LINE) + x);
+				  GRAPHIC_BASE + (y * p->framebuf.bytesPerLine) + x);
 			t6963_low_command(ct_data->port_config, AUTO_WRITE);
 			while (sp <= ep) {
 				t6963_low_auto_write(ct_data->port_config, *sp);
@@ -203,7 +203,7 @@ static void
 t6963_graphic_clear(PrivateData *p)
 {
 	CT_t6963_data *ct_data = (CT_t6963_data *) p->ct_data;
-	int num = FB_BYTES_TOTAL;
+	int num = p->framebuf.size;
 	int i;
 
 	p->glcd_functions->drv_debug(RPT_DEBUG, "GLCD/T6963: Clearing graphic: %d bytes", num);

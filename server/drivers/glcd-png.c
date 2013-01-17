@@ -63,12 +63,12 @@ glcd_png_init(Driver *drvthis)
 	}
 	p->ct_data = ct_data;
 
-	ct_data->backingstore = malloc(FB_BYTES_TOTAL);
+	ct_data->backingstore = malloc(p->framebuf.size);
 	if (ct_data->backingstore == NULL) {
 		report(RPT_ERR, "GLCD/png: unable to allocate backing store");
 		return -1;
 	}
-	memset(ct_data->backingstore, 0x00, FB_BYTES_TOTAL);
+	memset(ct_data->backingstore, 0x00, p->framebuf.size);
 
 	debug(RPT_DEBUG, "GLCD/png: init() done");
 
@@ -92,7 +92,7 @@ glcd_png_blit(PrivateData *p)
 	png_bytep row_pointer;
 
 	/* Check if framebufer has changed. If not there's nothing to do */
-	if (memcmp(p->framebuf.data, ct_data->backingstore, FB_BYTES_TOTAL) == 0)
+	if (memcmp(p->framebuf.data, ct_data->backingstore, p->framebuf.size) == 0)
 		return;
 
 	snprintf(filename, sizeof(filename), "/tmp/lcdproc%06d.png", num++);
@@ -134,7 +134,7 @@ glcd_png_blit(PrivateData *p)
 	row_pointer = p->framebuf.data;
 	for (row = 0; row < p->framebuf.px_height; row++) {
 		png_write_row(png_ptr, row_pointer);
-		row_pointer += BYTES_PER_LINE;
+		row_pointer += p->framebuf.bytesPerLine;
 	}
 
 	png_write_end(png_ptr, NULL);
@@ -142,7 +142,7 @@ glcd_png_blit(PrivateData *p)
 	fp = NULL;
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
-	memcpy(ct_data->backingstore, p->framebuf.data, FB_BYTES_TOTAL);
+	memcpy(ct_data->backingstore, p->framebuf.data, p->framebuf.size);
 
 	return;
 
