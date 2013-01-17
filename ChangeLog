@@ -8,6 +8,7 @@ Key:
 v0.5dev (ongoing development)
  * Fix using the left key to change the ring and checkbox menu items
  * sed1520: Add an option for inverted segment mapping (idea by R. Buchert)
+ * Fix build if compiled with --enable-permissive-menu-goto (#3599609)
 
 v0.5.6
  - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!

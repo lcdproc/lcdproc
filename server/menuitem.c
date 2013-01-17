@@ -33,6 +33,8 @@
 
 #define MAX_NUMERIC_LEN 40
 
+extern Menu *main_menu;		/* Access to the main menu */
+
 char *error_strs[] = {"", "Out of range", "Too long", "Too short", "Invalid Address"};
 char *menuitemtypenames[] = {"menu", "action", "checkbox", "ring", "slider", "numeric", "alpha", "ip"};
 char *menueventtypenames[] = {"select", "update", "plus", "minus", "enter", "leave"};
