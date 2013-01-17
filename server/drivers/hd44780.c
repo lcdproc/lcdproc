@@ -8,10 +8,10 @@
  * to form a 16x8 display.
  *
  * To add support for additional HD44780 connections:
- * \li Add a connection type and mapping to hd44780-drivers.h
- * \li Call your initialization routine
- * \li Create the low-level driver (use hd44780-ext8bit.c as a starting point)
- * \li Modify the makefile
+ * - Add a connection type and mapping to hd44780-drivers.h
+ * - Call your initialization routine
+ * - Create the low-level driver (use hd44780-ext8bit.c as a starting point)
+ * - Modify the makefile
  */
 
 /*-
@@ -456,7 +456,7 @@ HD44780_init(Driver *drvthis)
  * - set display on & cursor off, not blinking,
  * - set output mode to left-to-right & turn off display scolling
  * - clear display & move cursor home
- * .
+ *
  * \param p       Pointer to PrivateData structure.
  * \param if_bit  Command bits for 4- resp. 8-bit mode
  */
@@ -1022,7 +1022,7 @@ HD44780_get_free_chars(Driver *drvthis)
  * Define a custom character and write it to the LCD.
  * \param drvthis  Pointer to driver structure.
  * \param n        Custom character to define [0 - (NUM_CCs-1)].
- * \param dat      Array of 8(=cellheight) bytes, each representing a pixel row
+ * \param dat      Array of 8 (=cellheight) bytes, each representing a pixel row
  *                 starting from the top to bottom.
  *                 The bits in each byte represent the pixels where the LSB
  *                 (least significant bit) is the rightmost pixel in each pixel row.
@@ -1293,8 +1293,8 @@ HD44780_get_key(Driver *drvthis)
  *
  * The returned scancode consists of 4 bits for the row and 4 bits for the
  * column of the keypad. This allows for a 16x16 matrix keypad in theory, but
- * on a parallel port we are limited to a 11x5 matrix (8 data + 3 control pins
- * - excluding one for EN1, 5 status pins).
+ * on a parallel port we are limited to a 11x5 matrix (8 data + 3 control
+ * pins - excluding one for EN1, 5 status pins).
  *
  * Note that a connection type may support even less rows/columns!
  *
