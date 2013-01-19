@@ -491,11 +491,11 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 
 					if (w->speed > 0) {
 						necessaryTimeUnits = length * w->speed;
-						offset = (timer % (length * w->speed)) / w->speed;
+						offset = (timer % necessaryTimeUnits) / w->speed;
 					}
 					else if (w->speed < 0) {
 						necessaryTimeUnits = length / (w->speed * -1);
-						offset = (timer % (length / (w->speed * -1))) * w->speed * -1;
+						offset = (timer % necessaryTimeUnits) * w->speed * -1;
 					}
 					else {
 						offset = 0;
@@ -532,7 +532,7 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 
 					if (w->speed > 0) {
 						necessaryTimeUnits = effLength * w->speed;
-						if (((timer / (effLength * w->speed)) % 2) == 0) {
+						if (((timer / necessaryTimeUnits) % 2) == 0) {
 							/* wiggle one way */
 							offset = (timer % (effLength * w->speed))
 								 / w->speed;
@@ -546,7 +546,7 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 					}
 					else if (w->speed < 0) {
 						necessaryTimeUnits = effLength / (w->speed * -1);
-						if (((timer / (effLength / (w->speed * -1))) % 2) == 0) {
+						if (((timer / necessaryTimeUnits) % 2) == 0) {
 							offset = (timer % (effLength / (w->speed * -1)))
 								 * w->speed * -1;
 						}
@@ -603,26 +603,26 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 						/*debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);*/
 						if (w->speed > 0) {
 							necessaryTimeUnits = effLines * w->speed;
-							if (((timer / (effLines * w->speed)) % 2) == 0) {
+							if (((timer / necessaryTimeUnits) % 2) == 0) {
 								/*debug(RPT_DEBUG, "up ");*/
-								begin = (timer % (effLines * w->speed))
+								begin = (timer % (necessaryTimeUnits))
 									 / w->speed;
 							}
 							else {
 								/*debug(RPT_DEBUG, "down ");*/
-								begin = (((timer % (effLines * w->speed))
-									 - (effLines * w->speed) + 1) / w->speed)
+								begin = (((timer % necessaryTimeUnits)
+									 - necessaryTimeUnits + 1) / w->speed)
 									 * -1;
 							}
 						}
 						else if (w->speed < 0) {
 							necessaryTimeUnits = effLines / (w->speed * -1);
-							if (((timer / (effLines / (w->speed * -1))) % 2) == 0) {
-								begin = (timer % (effLines / (w->speed * -1)))
+							if (((timer / necessaryTimeUnits) % 2) == 0) {
+								begin = (timer % necessaryTimeUnits)
 									 * w->speed * -1;
 							}
 							else {
-								begin = (((timer % (effLines / (w->speed * -1)))
+								begin = (((timer % necessaryTimeUnits)
 									 * w->speed * -1) - effLines + 1)
 									 * -1;
 							}
