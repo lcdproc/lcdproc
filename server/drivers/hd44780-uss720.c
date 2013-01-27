@@ -277,9 +277,7 @@ uss720_HD44780_uPause(PrivateData *p, int usecs)
 	usleep(10*usecs);
 }
 
-
-#pragma mark -
-#pragma mark -Basic Register Methods
+/* === Basic Register Methods === */
 
 int
 uss720_get_1284_register(usb_dev_handle *usbHandle, unsigned int regIndex, unsigned char *value)
@@ -319,9 +317,7 @@ uss720_set_1284_register(usb_dev_handle *usbHandle, unsigned int regAddress, uns
                 	            10000 );
 }
 
-
-#pragma mark -
-#pragma mark -Extended Methods
+/* === Extended Methods === */
 
 int
 uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode)
@@ -343,4 +339,3 @@ uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode)
 
 	return uss720_set_1284_register(usbHandle, 6, regByte);
 }
-
