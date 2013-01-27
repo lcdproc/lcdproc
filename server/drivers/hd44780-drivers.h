@@ -35,7 +35,10 @@
 #ifdef WITH_ETHLCD
 # include "hd44780-ethlcd.h"
 #endif
-# include "hd44780-usblcd.h"
+#include "hd44780-usblcd.h"
+#ifdef WITH_RASPBERRYPI
+# include "hd44780-rpi.h"
+#endif
 /* add new connection type header files to the correct section above or here */
 
 
@@ -81,6 +84,9 @@ static const ConnectionMapping connectionMapping[] = {
 	/* TCP socket connection types */
 #ifdef WITH_ETHLCD
 	{ "ethlcd",        HD44780_CT_ETHLCD,        IF_TYPE_TCP,     hd_init_ethlcd    },
+#endif
+#ifdef WITH_RASPBERRYPI
+	{ "raspberrypi",   HD44780_CT_RASPBERRYPI,   IF_TYPE_PARPORT,  hd_init_rpi      },
 #endif
 	/* add new connection types in the correct section above or here */
 

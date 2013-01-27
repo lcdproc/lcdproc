@@ -228,6 +228,15 @@ dnl			else
 			if test "$x_ac_have_i2c" = yes; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-i2c.o"
 			fi
+dnl			The hd4470-rpi driver only works on a Raspberry Pi,
+dnl			which is an ARM platform. Require people to compile on
+dnl			(or for) ARM to get it.
+			case $host in
+			arm*-*-linux*)
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-rpi.o"
+				AC_DEFINE([WITH_RASPBERRYPI],[1],[Define if you are using a Raspberry Pi.])
+				;;
+			esac
 			DRIVERS="$DRIVERS hd44780${SO}"
 			actdrivers=["$actdrivers hd44780"]
 			;;
