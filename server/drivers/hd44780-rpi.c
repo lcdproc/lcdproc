@@ -14,13 +14,12 @@
  * P1-24 (8)	  EN (6)
  * GND		  R/W (5)
  * P1-26 (7)	  RS (4)
+ * P1-15 (22)	  EN2 (second controller, optional)
  * P1-11 (17)	  BL (backlight optional)
  *
  * Mappings can be set in the config file using the key-words:
- * pin_EN, pin_RS, pin_D7, pin_D6, pin_D5, pin_D4, pin_BL
+ * pin_EN, pin_EN2, pin_RS, pin_D7, pin_D6, pin_D5, pin_D4, pin_BL
  * in the [HD44780] section.
- *
- * Only a single LCD is currently supported.
  */
 
 /*-
@@ -38,13 +37,14 @@
  */
 
 /* Default GPIO pin assignment */
-#define RPI_DEF_D7 18
-#define RPI_DEF_D6 23
-#define RPI_DEF_D5 24
-#define RPI_DEF_D4 25
-#define RPI_DEF_RS 7
-#define RPI_DEF_EN 8
-#define RPI_DEF_BL 17
+#define RPI_DEF_D7  18
+#define RPI_DEF_D6  23
+#define RPI_DEF_D5  24
+#define RPI_DEF_D4  25
+#define RPI_DEF_RS   7
+#define RPI_DEF_EN   8
+#define RPI_DEF_EN2 22
+#define RPI_DEF_BL  17
 
 #include <stdio.h>
 #include <string.h>
@@ -121,8 +121,8 @@ setup_io(Driver *drvthis)
 					 mem_fd,
 					 GPIO_BASE);
 
-	if ((long) gpio_map < 0) {
-		report(RPT_ERR, "setup_io: mmap error %s", strerror(errno));
+	if (gpio_map == MAP_FAILED) {
+		report(RPT_ERR, "setup_io: mmap failed: %s", strerror(errno));
 		close(mem_fd);
 		return -1;
 	}
@@ -280,6 +280,8 @@ lcdrpi_HD44780_close(PrivateData *p)
 	INP_GPIO(p->rpi_gpio->d4);
 	if (p->have_backlight)
 		INP_GPIO(p->backlight_bit);
+	if (p->numDisplays > 1)
+		INP_GPIO(p->rpi_gpio->en2);
 
 	/* Unmap and free memory */
 	if (gpio_map != NULL)
@@ -336,6 +338,15 @@ hd_init_rpi(Driver *drvthis)
 		return -1;
 	}
 
+	if (p->numDisplays > 1) {	/* For displays with two controllers */
+		p->rpi_gpio->en2 = drvthis->config_get_int(drvthis->name, "pin_EN2", 0, RPI_DEF_EN2);
+		debug(RPT_INFO, "hd_init_rpi: Pin EN2 mapped to GPIO%d", p->rpi_gpio->en2);
+		if (check_pin(drvthis, p->rpi_gpio->en2, allowed_gpio_pins, used_pins)) {
+			free(p->rpi_gpio);
+			return -1;
+		}
+	}
+
 	if (p->have_backlight) {	/* Backlight setup is optional */
 		p->backlight_bit = drvthis->config_get_int(drvthis->name, "pin_BL", 0, RPI_DEF_BL);
 		debug(RPT_INFO, "hd_init_rpi: Backlight mapped to GPIO%d", p->backlight_bit);
@@ -368,6 +379,10 @@ hd_init_rpi(Driver *drvthis)
 		p->hd44780_functions->backlight = lcdrpi_HD44780_backlight;
 	}
 
+	if (p->numDisplays > 1) {
+		setup_gpio(drvthis, p->rpi_gpio->en2);
+	}
+
 	/* Setup the lcd in 4 bit mode: Send (FUNCSET | IF_8BIT) three times
 	 * followed by (FUNCSET | IF_4BIT) using four nibbles. Timing is not
 	 * exactly what is required by HD44780. */
@@ -392,10 +407,6 @@ hd_init_rpi(Driver *drvthis)
 void
 lcdrpi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-	/* Only one display is (currently) supported */
-	if (displayID > 1) {
-		return;
-	}
 	/* Safeguard: This should never happen */
 	if (gpio_map == NULL) {
 		return;
@@ -422,9 +433,16 @@ lcdrpi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 	p->hd44780_functions->uPause(p, 50);
 
 	/* Data is clocked on the falling edge of EN */
-	SET_GPIO(p->rpi_gpio->en, 1);
+	if (displayID == 1 || displayID == 0)
+		SET_GPIO(p->rpi_gpio->en, 1);
+	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
+		SET_GPIO(p->rpi_gpio->en2, 1);
 	p->hd44780_functions->uPause(p, 50);
-	SET_GPIO(p->rpi_gpio->en, 0);
+
+	if (displayID == 1 || displayID == 0)
+		SET_GPIO(p->rpi_gpio->en, 0);
+	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
+		SET_GPIO(p->rpi_gpio->en2, 0);
 	p->hd44780_functions->uPause(p, 50);
 
 	/* Do same for lower nibble */
@@ -433,14 +451,23 @@ lcdrpi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 	SET_GPIO(p->rpi_gpio->d5, 0);
 	SET_GPIO(p->rpi_gpio->d4, 0);
 	p->hd44780_functions->uPause(p, 50);
+
 	SET_GPIO(p->rpi_gpio->d7, (ch & 0x08));
 	SET_GPIO(p->rpi_gpio->d6, (ch & 0x04));
 	SET_GPIO(p->rpi_gpio->d5, (ch & 0x02));
 	SET_GPIO(p->rpi_gpio->d4, (ch & 0x01));
 	p->hd44780_functions->uPause(p, 50);
-	SET_GPIO(p->rpi_gpio->en, 1);
+
+	if (displayID == 1 || displayID == 0)
+		SET_GPIO(p->rpi_gpio->en, 1);
+	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
+		SET_GPIO(p->rpi_gpio->en2, 1);
 	p->hd44780_functions->uPause(p, 50);
-	SET_GPIO(p->rpi_gpio->en, 0);
+
+	if (displayID == 1 || displayID == 0)
+		SET_GPIO(p->rpi_gpio->en, 0);
+	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
+		SET_GPIO(p->rpi_gpio->en2, 0);
 	p->hd44780_functions->uPause(p, 50);
 }
 

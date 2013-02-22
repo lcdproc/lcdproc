@@ -11,6 +11,7 @@ int hd_init_rpi(Driver *drvthis);
  * stored here is used for mapping physical GPIO pins to BCM2835 gpio. */
 struct rpi_gpio_map {
 	int en;
+	int en2;
 	int rs;
 	int d7;
 	int d6;

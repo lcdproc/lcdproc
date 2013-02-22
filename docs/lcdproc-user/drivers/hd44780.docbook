@@ -2962,8 +2962,8 @@ software adjustable contrast and brightness (backlight).
 <sect3 id="hd44780-raspberrypi">
 <title>Raspberry Pi</title>
 
-<para>This connection type supports a single LCD connected to the GPIO header P1
-on a Raspberry Pi.</para>
+<para>This connection type supports a LCD connected to the GPIO header P1 on
+a Raspberry Pi. Displays with one or two controllers are supported.</para>
 
 <para>It supports a switchable backlight connected to pin P1-11 by default. Use
 the switch circuit as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
@@ -3052,6 +3052,13 @@ the switch circuit as described in <xref linkend="hd44780-ftdi-backlight"/>.</pa
       <entry>5</entry>
     </row>
     <row>
+      <entry>GPIO22</entry>
+      <entry>P1-15</entry>
+      <entry></entry>
+      <entry>EN2</entry>
+      <entry>Second controller (optional)</entry>
+    </row>
+    <row>
       <entry>GPIO17</entry>
       <entry>P1-11</entry>
       <entry></entry>
@@ -3066,17 +3073,21 @@ the switch circuit as described in <xref linkend="hd44780-ftdi-backlight"/>.</pa
 bus. If you loaded the SPI driver you will need to assign them to a different
 GPIO, e.g. GPIO04 and GPIO22.</para>
 
+<para>When using a display with two controllers the <literal>vspan</literal>
+option has to be configured as well (e.g. <literal>vspan=2,2</literal> for a
+40x4 display).</para>
+
 <sect4 id="hd44780-raspberrypi-config">
 <title>Special Raspberry Pi configuration options</title>
 
 <para>This connection driver can be configured to use other pins than the
 one described in <link linkend="hd44780-raspberrypi.pin-mapping">the table
-above</link>. Using the <literal> pin_<replaceable>&lt;name&gt;
+above</link>. Using the <literal>pin_<replaceable>&lt;LCD pin name&gt;
 </replaceable></literal> configuration option, any LCD pin can be assigned
 to any GPIO pin.</para>
 
 <important>
-  <para>The values for the <literal>pin_<replaceable>&lt;name&gt;
+  <para>The values for the <literal>pin_<replaceable>&lt;LCD pin name&gt;
   </replaceable></literal> configuration option are the number part from the
   GPIO signal name, not the pin number from the header connector! To find
   out which signal is routed to which connector pin refer to the <ulink url=
