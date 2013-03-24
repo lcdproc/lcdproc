@@ -214,7 +214,7 @@ release.
   <title>Files that need version numbers updated</title>
   <listitem><para><filename>BUGS</filename></para></listitem>
   <listitem><para><filename>ChangeLog</filename></para></listitem>
-  <listitem><para><filename>configure.in</filename></para></listitem>
+  <listitem><para><filename>configure.ac</filename></para></listitem>
   <listitem><para><filename>server/menuscreens.c</filename></para></listitem>
   <listitem><para><filename>docs/lcdproc-dev/bookinfo.docbook</filename></para></listitem>
   <listitem><para><filename>docs/lcdproc-dev/driver-api.docbook</filename></para></listitem>

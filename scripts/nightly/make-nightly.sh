@@ -56,14 +56,14 @@ if [ -e README ] && [ -e ChangeLog ] && [ -e LCDd.conf ]; then
   ${CVS2CL} -l '-d yesterday<=' --stdout 2>/dev/null >> ChangeLog
 
   # Change the version number to CVS-${BRANCH}-${DATE}
-  cp -a configure.in configure.in.nightly-temp
+  cp -a configure.ac configure.ac.nightly-temp
   BRANCH=${BRANCH} \
   ${PERL} -MPOSIX -i -p \
           -e '$version = "CVS-".$ENV{BRANCH}."-".strftime("%Y%m%d", localtime);
               s/(AM_INIT_AUTOMAKE\s*)\(\s*(\[?lcdproc\]?)\s*,\s*[\w\d.-]+\s*\)/$1($2, $version)/;
               s/(AC_INIT\s*)\(\s*(\[?lcdproc\]?)\s*,\s*[\w\d.-]+\s*\)/$1($2, $version)/;
               s/(AC_INIT\s*)\(\s*(\[?lcdproc\]?)\s*,\s*[\w\d.-]+(\s*[^)]+)\s*\)/$1($2, $version$3)/;' \
-          configure.in
+          configure.ac
 
   # Debian-specific stuff
   for dir in debian scripts/debian ; do
@@ -102,7 +102,7 @@ if [ -e README ] && [ -e ChangeLog ] && [ -e LCDd.conf ]; then
   rm lcdproc-CVS-${BRANCH}.tar.bz2
 
   # Cleanup
-  mv configure.in.nightly-temp configure.in
+  mv configure.ac.nightly-temp configure.ac
   mv README.nightly-temp README
   mv ChangeLog.nightly-temp ChangeLog
   rm -f nightly-cvsChanges.txt last-nightly.txt
@@ -117,7 +117,7 @@ if [ -e README ] && [ -e ChangeLog ] && [ -e LCDd.conf ]; then
   # re-create files accidentially deleted
   ${CVS} update -d &> /dev/null
 
-  # build configure (& Makefile.in's ?) based on original configure.in from CVS
+  # build configure (& Makefile.in's ?) based on original configure.ac from CVS
   sh autogen.sh >/dev/null
 
 fi

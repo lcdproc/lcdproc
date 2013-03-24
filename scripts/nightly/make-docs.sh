@@ -15,20 +15,21 @@ RSYNC=/usr/bin/rsync
 
 DOCSPATH=${NIGHTLY_DIR}/${BRANCH}/docs/lcdproc-${DOCS}
 DOCSFILE=${DOCSPATH}/lcdproc-${DOCS}.docbook
+CSSFILE=${DOCSPATH}/lcdproc-${DOCS}.css
 
 #############################
 test -d ${NIGHTLY_DIR} && cd ${NIGHTLY_DIR}
 
 # Generate HTML
-${XMLTO}  xhtml-nochunks ${DOCSFILE} >/dev/null  2>&1
+${XMLTO} xhtml-nochunks --stringparam html.stylesheet=${CSSFILE} ${DOCSFILE} >/dev/null 2>&1
 mv lcdproc-${DOCS}.html ${BRANCH}-${DOCS}.html
 
 # Generate PDF
-#${XMLTO} pdf ${DOCSFILE} >/dev/null  2>&1
+#${XMLTO} pdf ${DOCSFILE} >/dev/null 2>&1
 #mv lcdproc-${DOCS}.pdf ${BRANCH}-${DOCS}.pdf
 
 # Generate TXT
-${XMLTO} txt ${DOCSFILE} >/dev/null  2>&1
+${XMLTO} txt ${DOCSFILE} >/dev/null 2>&1
 mv lcdproc-${DOCS}.txt ${BRANCH}-${DOCS}.txt
 
 # Upload to sf.net

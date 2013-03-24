@@ -42,7 +42,7 @@ fi
 
 echo "Running aclocal ..."
 $ACLOCAL
-if grep "^A[CM]_CONFIG_HEADER" configure.in >/dev/null; then
+if grep "^A[CM]_CONFIG_HEADER" configure.ac >/dev/null; then
   echo "Running autoheader..."
   $AUTOHEADER
 fi
