@@ -45,7 +45,7 @@
 
 /**
  * Acquires access to parallel port and initializes timing. The parallel port
- * must be an I/O-address between 0x200 and 0x300.
+ * must be an I/O-address between 0x200 and 0x400.
  * \param p        Pointer to port configuration.
  * \return  0 on success, -1 if an error occured.
  */
