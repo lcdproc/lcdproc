@@ -16,7 +16,7 @@
  * 		 2007-2008 Mini-Box.com, Nicu Pavel <npavel@ituner.com>
  * 		 2008 Jack Cleaver
  * 		 2009 Andries van Schie
- * 		 2010-2011 Martin Jones <martin@brasskipper.org.uk>
+ * 		 2010-2013 Martin Jones <martin@brasskipper.org.uk>
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -286,14 +286,13 @@ picoLCD_init(Driver *drvthis)
 		report(RPT_ERR, "%s: libusb_claim_interface error %d", drvthis->name, error);
 		return -1;
 	}
-	/*
-	 * FIXME: Is this the libusb-1.0 equivalent to if
-	 * (usb_set_altinterface(p->lcd, 0) < 0) report(RPT_WARNING, "%s:
-	 * unable to set alternate configuration", drvthis->name); I always
-	 * get error -5 (LIBUSB_ERROR_NOT_FOUND the requested alternate
-	 * setting does not exist) Is this needed? Has it ever worked? lsusb
-	 * reports one configuration with one interface and no alternate
-	 * settings.
+	/*-
+	 * FIXME: Is this the libusb-1.0 equivalent to
+	 *    if (usb_set_altinterface(p->lcd, 0) < 0)
+	 *        report(RPT_WARNING, "%s: unable to set alternate configuration", drvthis->name);
+	 * I always get error -5 (LIBUSB_ERROR_NOT_FOUND the requested alternate
+	 * setting does not exist). Is this needed? Has it ever worked?
+	 * lsusb reports one configuration with one interface and no alternate settings.
 	 */
 	error = libusb_set_interface_alt_setting(p->lcd, 1, 0);
 	if (error) {
@@ -924,9 +923,11 @@ picoLCD_num(Driver *drvthis, int x, int num)
 
 		do_init = 1;
 	}
-
-	/* Lib_adv_bignum does everything needed to show the big numbers. */
-	lib_adv_bignum(drvthis, x, num, 0, do_init);
+	/*
+	 * Lib_adv_bignum does everything needed to show the big numbers.
+	 * Use an offset so that custom character zero is available for the heart-beat
+	 */
+	lib_adv_bignum(drvthis, x, num, 1, do_init);
 }
 
 
@@ -965,6 +966,53 @@ picoLCD_icon(Driver *drvthis, int x, int y, int icon)
 		b__XXXXX,
 		b___XXX_,
 		b____X__,
+		b_______
+	};
+
+	static unsigned char bar_right[] =
+	{
+		b____XXX,
+		b____XXX,
+		b____XXX,
+		b____XXX,
+		b____XXX,
+		b____XXX,
+		b____XXX,
+		b_______
+	};
+
+	static unsigned char bar_left[] =
+	{
+		b__XXX__,
+		b__XXX__,
+		b__XXX__,
+		b__XXX__,
+		b__XXX__,
+		b__XXX__,
+		b__XXX__,
+		b_______
+	};
+	static unsigned char triangle_right[] =
+	{
+		b__X____,
+		b__XX___,
+		b__XXX__,
+		b__XXXX_,
+		b__XXX__,
+		b__XX___,
+		b__X____,
+		b_______
+	};
+
+	static unsigned char triangle_left[] =
+	{
+		b______X,
+		b_____XX,
+		b____XXX,
+		b___XXXX,
+		b____XXX,
+		b_____XX,
+		b______X,
 		b_______
 	};
 
@@ -1020,10 +1068,10 @@ picoLCD_icon(Driver *drvthis, int x, int y, int icon)
 	/*
 	 * Icons loaded to the display's custom character RAM. Horizontal &
 	 * vertical bars do not use RAM address zero so the heart can be used
-	 * in these modes. Big numbers use all eight locations.
+	 * in these modes. Big numbers use an offset to avoid address zero.
 	 */
-	if ((p->ccmode != custom)
-	    && !((p->ccmode == hbar || p->ccmode == vbar)
+	if ((p->ccmode != icons)
+	    && !((p->ccmode == hbar || p->ccmode == vbar || p->ccmode != bignum)
 		 && (icon == ICON_HEART_FILLED || icon == ICON_HEART_OPEN))) {
 		if (p->ccmode != standard) {
 			/* Combined custom character modes not supported */
@@ -1031,7 +1079,7 @@ picoLCD_icon(Driver *drvthis, int x, int y, int icon)
 			       drvthis->name);
 			return -1;	/* Let the core do the icon */
 		}
-		p->ccmode = custom;
+		p->ccmode = icons;
 	}
 
 	switch (icon) {
@@ -1055,6 +1103,66 @@ picoLCD_icon(Driver *drvthis, int x, int y, int icon)
 		picoLCD_set_char(drvthis, 7, checkbox_off);
 		picoLCD_chr(drvthis, x, y, 7);
 		break;
+		case ICON_SELECTOR_AT_LEFT:
+			picoLCD_set_char(drvthis, 2, triangle_right);
+			picoLCD_chr(drvthis, x, y, 2);
+			break;
+		case ICON_SELECTOR_AT_RIGHT:
+			picoLCD_set_char(drvthis, 1, triangle_left);
+			picoLCD_chr(drvthis, x, y, 1);
+			break;
+		/* Icons below are two characters wide */
+		case ICON_STOP:       /* should look like  []  */
+			picoLCD_set_char(drvthis, 4, bar_right);
+			picoLCD_chr(drvthis, x, y, 4);
+			picoLCD_set_char(drvthis, 3, bar_left);
+			picoLCD_chr(drvthis, x+1, y, 3);
+			break;
+		case ICON_PAUSE:      /* should look like  ||  */
+			picoLCD_set_char(drvthis, 3, bar_left);
+			picoLCD_chr(drvthis, x, y, 3);
+			picoLCD_set_char(drvthis, 4, bar_right);
+			picoLCD_chr(drvthis, x+1, y, 4);
+			break;
+		case ICON_PLAY:       /* should look like  >   */
+			picoLCD_set_char(drvthis, 2, triangle_right);
+			picoLCD_chr(drvthis, x, y, 2);
+			picoLCD_chr(drvthis, x+1, y, ' ');
+			break;
+		case ICON_PLAYR:      /* should look like  <   */
+			picoLCD_set_char(drvthis, 1, triangle_left);
+			picoLCD_chr(drvthis, x, y, 1);
+			picoLCD_chr(drvthis, x+1, y, ' ');
+			break;
+		case ICON_FF:         /* should look like  >>  */
+			picoLCD_set_char(drvthis, 2, triangle_right);
+			picoLCD_chr(drvthis, x, y, 2);
+			picoLCD_chr(drvthis, x+1, y, 2);
+			break;
+		case ICON_FR:         /* should look like  <<  */
+			picoLCD_set_char(drvthis, 1, triangle_left);
+			picoLCD_chr(drvthis, x, y, 1);
+			picoLCD_chr(drvthis, x+1, y, 1);
+			break;
+		case ICON_NEXT:       /* should look like  >|  */
+			picoLCD_set_char(drvthis, 2, triangle_right);
+			picoLCD_chr(drvthis, x, y, 2);
+			picoLCD_set_char(drvthis, 3, bar_left);
+			picoLCD_chr(drvthis, x+1, y, 3);
+			break;
+		case ICON_PREV:       /* should look like  |<  */
+			picoLCD_set_char(drvthis, 4, bar_right);
+			picoLCD_chr(drvthis, x, y, 4);
+			picoLCD_set_char(drvthis, 1, triangle_left);
+			picoLCD_chr(drvthis, x+1, y, 1);
+			break;
+		case ICON_REC:        /* should look like  () */
+			/* There aren't enough custom characters to draw a circle so use a diamond. */
+			picoLCD_set_char(drvthis, 1, triangle_left);
+			picoLCD_chr(drvthis, x, y, 1);
+			picoLCD_set_char(drvthis, 2, triangle_right);
+			picoLCD_chr(drvthis, x+1, y, 2);
+			break;
 	    default:
 		return -1;	/* Let the core do other icons */
 	}
@@ -1161,8 +1269,8 @@ picoLCD_get_key(Driver *drvthis)
 		/* Set the time for repeated key press if enabled */
 		if (p->key_repeat_delay > 0) {
 			gettimeofday(&current_time, NULL);
-			delay_time.tv_sec  = p->key_repeat_interval / 1000;
-			delay_time.tv_usec = (p->key_repeat_interval % 1000) * 1000;
+			delay_time.tv_sec  = p->key_repeat_delay / 1000;
+			delay_time.tv_usec = (p->key_repeat_delay % 1000) * 1000;
 			timeradd(&current_time,&delay_time,p->key_wait_time);
 		}
 	}
