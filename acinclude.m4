@@ -227,6 +227,7 @@ dnl			else
 			fi
 			if test "$x_ac_have_i2c" = yes; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-i2c.o"
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-piplate.o"
 			fi
 dnl			The hd4470-rpi driver only works on a Raspberry Pi,
 dnl			which is an ARM platform. Require people to compile on

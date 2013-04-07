@@ -25,164 +25,162 @@ of the driver.
 </para>
 
 <para>
-On a parallel port, probably the first interface type HD44780 devices were
-historically connected to, the driver supports the connection types:
-</para>
-
-<itemizedlist>
-  <listitem><para>
-    <link linkend="hd44780-4bit">4bit</link>:
-    4bit Wiring
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-8bit-lcdtime">8bit</link>:
-    8bit Wiring ("lcdtime")
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-8bit-winamp">winamp</link>:
-    8bit Wiring "winamp" Style
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-seriallpt">serialLpt</link>:
-    Serial LPT Wiring
-  </para></listitem>
-</itemizedlist>
-
-<para>
-For serial RS-232 ports you can choose among these connection types:
-</para>
-
-<itemizedlist>
-  <listitem><para>
-    <link linkend="hd44780-picanlcd">picanlcd</link>:
-    PIC-an-LCD serial device
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-lcdserializer">lcdserializer</link>:
-   LCD serializer
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-los-panel">los-panel</link>:
-    LCD on Serial panel device (<ulink url="http://mlf.home.xs4all.nl/los/"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-vdr-lcd">vdr-lcd</link>:
-    VDR LCD serial device
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-vdr-wakeup">vdr-wakeup</link>:
-    VDR-Wakeup module
-  </para></listitem>
-</itemizedlist>
-
-<para>
-In recent years, with with parallel ports and serial ports being declared legacy
-and on the demise on modern computers, the USB connection types get
-more important. Here are the USB connection types the HD44780 driver supports:
-</para>
-
-<itemizedlist>
-  <listitem><para>
-    <link linkend="hd44780-pertelian">pertelian</link>:
-    Pertelian X2040 LCD display (<ulink url="http://pertelian.com/joomla/index.php?option=com_content&amp;task=view&amp;id=43&amp;Itemid=48"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-bwctusb">bwctusb</link>:
-    BWCT USB LCD module (<ulink url="http://www.bwct.de/lcd.html"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-lcd2usb">lcd2usb</link>:
-    Till Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-usbtiny">usbtiny</link>:
-    Dick Streefland's USBtiny (<ulink url="http://www.xs4all.nl/~dicks/avr/usbtiny/"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-uss720">uss720</link>:
-    Display connected to USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-lis2">lis2</link>:
-    LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-mplay">mplay</link>:
-    MPlay Blast from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-ftdi">ftdi</link>:
-    Display connected to a dual channel FTDI 2232D USB chip
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-usblcd">usblcd</link>:
-    USBLCD from Adams IT Services (<ulink url="http://www.usblcd.de/"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-usb4all">USB-4-all</link>:
-    Display connected to USB-4-all controller (<ulink url="http://www.sprut.de/"></ulink>)
-  </para></listitem>
-
-</itemizedlist>
-
-<para>
-Last but not least, for special purposes, there are even more connection types:
-</para>
-
-<itemizedlist>
-  <listitem><para>
-    <link linkend="hd44780-i2c">i2c</link>:
-    LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-ethlcd">ethlcd</link>:
-    Display connected via TCP to PoE powered ethlcd device (<ulink url="http://manio.skyboo.net/ethlcd/"></ulink>)
-  </para></listitem>
-
-  <listitem><para>
-    <link linkend="hd44780-raspberrypi">raspberrypi</link>:
-    LCD connected to the GPIO header of a Raspberry Pi
-  </para></listitem>
-
-</itemizedlist>
-
-
-<para>
 Depending on the connection type and the display connected, the driver supports
 various special features.
 <itemizedlist>
   <listitem><para>Input keys</para></listitem>
-  <listitem><para>software controllable brightness / backlight</para></listitem>
-  <listitem><para>software controllable contrast</para></listitem>
+  <listitem><para>Software controllable brightness / backlight</para></listitem>
+  <listitem><para>Software controllable contrast</para></listitem>
   <listitem><para>multiple displays / multi-controller displays</para></listitem>
 </itemizedlist>
 </para>
 
-<!--
 <para>
-The driver also lets you use multiple displays as a single virtual
-display.  For example, a 4, 2 and 1 line display can be used to form a
-7 line display. The number of displays is limited by the individual
-HD44780 driver.
+The following table lists the available connection types, sorted by the kind
+of connection (parallel port, serial port, USB, I2C or others).
 </para>
--->
+
+<para>
+  <table id="hd44780-connection-types">
+  <title>HD44780: Connection Types</title>
+  <tgroup cols="2" align="left">
+    <colspec colname="conectionName"/>
+    <colspec colname="conectionDesc"/>
+    <spanspec spanname="fullwidth" namest="conectionName" nameend="conectionDesc"/>
+    <thead>
+      <row>
+        <entry>ConnectionType</entry>
+        <entry>Wiring / Display Type</entry>
+      </row>
+    </thead>
+    <tbody>
+      <!-- parallel -->
+      <row>
+        <entry spanname="fullwidth">Parallel port connection types:</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-4bit">4bit</link></literal></entry>
+        <entry>4-bit wiring. This is the default.</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-8bit-lcdtime">8bit</link></literal></entry>
+        <entry>8-bit wiring ("lcdtime" style)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-8bit-winamp">winamp</link></literal></entry>
+        <entry>8-bit wiring ("winamp" style)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-seriallpt">serialLpt</link></literal></entry>
+        <entry>Serial LPT wiring</entry>
+      </row>
+      <!-- serial -->
+      <row>
+        <entry spanname="fullwidth">Serial (RS-232) connection types:</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-picanlcd">picanlcd</link></literal></entry>
+        <entry>PIC-an-LCD serial device "picanlcd"</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-lcdserializer">lcdserializer</link></literal></entry>
+        <entry>LCD serializer "lcdserializer"</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-los-panel">los-panel</link></literal></entry>
+        <entry>LCD on Serial panel device "los-panel" (<ulink url="http://mlf.home.xs4all.nl/los/"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-vdr-lcd">vdr-lcd</link></literal></entry>
+        <entry>VDR LCD serial device "vdr-lcd"</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-vdr-wakeup">vdr-wakeup</link></literal></entry>
+        <entry>VDR-Wakeup module "vdr-wakeup"</entry>
+      </row>
+      <!-- USB -->
+      <row>
+        <entry spanname="fullwidth">USB connection types:</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-pertelian">pertelian</link></literal></entry>
+        <entry>Pertelian X2040 LCD display (<ulink url="http://pertelian.com/joomla/index.php?option=com_content&amp;task=view&amp;id=43&amp;Itemid=48"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-lis2">lis2</link></literal></entry>
+        <entry>LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-mplay">mplay</link></literal></entry>
+        <entry>MPlay Blast from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-usblcd">usblcd</link></literal></entry>
+        <entry>USBLCD adapter from Adams IT Services (<ulink url="http://www.usblcd.de/"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-bwctusb">bwctusb</link></literal></entry>
+        <entry>BWCT USB device "bwctusb" (<ulink url="http://www.bwct.de/lcd.html"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-lcd2usb">lcd2usb</link></literal></entry>
+        <entry>Till Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-usbtiny">usbtiny</link></literal></entry>
+        <entry>Dick Streefland's USBtiny (<ulink url="http://www.xs4all.nl/~dicks/avr/usbtiny/"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-uss720">uss720</link></literal></entry>
+        <entry>Belkin USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-usb4all">USB-4-all</link></literal></entry>
+        <entry>The USB-4-all controller board from Sprut (<ulink url="http://www.sprut.de/electronic/pic/projekte/usb4all/usb4all.htm"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-ftdi">ftdi</link></literal>
+        </entry> <entry>Display connected to a FTDI RS2232 (dual channel) or
+        FTDI RS232 (single channel) USB chip</entry>
+      </row>
+      <!-- I2C -->
+      <row>
+        <entry spanname="fullwidth">I<superscript>2</superscript>C connection types:</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-i2c">i2c</link></literal></entry>
+        <entry>LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-piplate">piplate</link></literal></entry>
+        <entry>Adafruit RGB Positive 16x2 LCD+Keypad for Raspberry Pi</entry>
+      </row>
+      <!-- Other -->
+      <row>
+        <entry spanname="fullwidth">Other connection types:</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-ethlcd">ethlcd</link></literal></entry>
+        <entry>Display connected via TCP to PoE powered ethlcd device
+        (<ulink url="http://manio.skyboo.net/ethlcd/"></ulink>)</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-raspberrypi">raspberrypi</link></literal></entry>
+        <entry>LCD connected to the GPIO header of a Raspberry Pi</entry>
+      </row>
+    </tbody>
+  </tgroup>
+  </table>
+
+  <tip>
+    <para>
+    <!-- The above table might be outdated, when you read this. -->
+    If you suspect the table above to be outdated, you might want to have a look at
+    <filename>server/drivers/hd44780-drivers.h</filename> in <package>LCDproc</package>'s
+    source directory which contains the actual translation code.
+    </para>
+  </tip>
+</para>
 
 
 <sect2 id="hd44780-connections">
@@ -2229,105 +2227,6 @@ Device=/dev/ttyS0
 Finally, start the daemon and relax watching lcdproc running.
 </para>
 </sect4>
-
-<sect4 id="hd44780-lcdserializer-customizemsg">
-<title>Customizing startup message</title>
-
-<para>
-If want to change the default startup message (OK.), you can edit the asm source
-and write anything you want.
-Open the asm source with your preferred editor and look for this:
-</para>
-
-<para>
-<programlisting>
-<![CDATA[
-;******* START Main Loop Here **************
-
-; This is where we should insert any little startup LCD messages...
-;   Print "OK." on startup...
-                        movlw   0x4F
-                        movwf   ARG1
-                        call    SendLCDData
-                        call    InitDelay200MS
-                        movlw   0x4B
-                        movwf   ARG1
-                        call    SendLCDData
-                        call    InitDelay200MS
-                        movlw   0x2E
-                        movwf   ARG1
-                        call    SendLCDData
-                        call    InitDelay200MS
-]]>
-</programlisting>
-</para>
-
-<para>
-This piece of code sends three characters to the LCD.
-The first line sets the value of w register (working register, aka accumulator) to 0x4F ('O' in ascii). The second line copies this
-value to ARG1, then the value is sent to the LCD. The fourth line delays the execution.
-</para>
-
-<para>
-You don't have to write the ASCII values in your modification, gpasm does the translation for you, so
-if you want to see Booting... at startup, change the code above to look like this:
-</para>
-
-<para>
-<programlisting>
-<![CDATA[
-;******* START Main Loop Here **************
-
-; This is where we should insert any little startup LCD messages...
-;   Print "Booting..." on startup...
-                       movlw   'B'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   'o'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   'o'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   't'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   'i'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   'n'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   'g'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   '.'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   '.'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-                       movlw   '.'
-                       movwf   ARG1
-                       call    SendLCDData
-                       call    InitDelay200MS
-]]>
-</programlisting>
-</para>
-
-<para>
-Refer to <link linkend="hd44780-lcdserializer-burning">burning section</link> in order to compile and reflash the new firmware.
-</para>
-</sect4>
 </sect3>
 
 
@@ -3121,9 +3020,46 @@ pin_BL=17
 </example>
 
 </sect4>
-
 </sect3>
 
+<sect3 id="hd44780-piplate">
+<title>Adafruit Pi Plate</title>
+
+<para>
+The Adafruit RGB Positive 16x2 LCD+Keypad for Raspberry Pi (aka Pi Plate,
+see (<ulink url="http://www.adafruit.com/products/1109"></ulink>)) combines
+a 16x2 Character LCD, up to 3 backlight pins AND 5 keypad pins using only
+the two I<superscript>2</superscript>C pins on the Rasperry Pi.
+</para>
+
+<para>
+Note that this connection type drives all RGB pins of the backlight at the
+same time, resulting in a white backlight. You will need to modify the
+source code if you want to have some other color.
+</para>
+
+<example id="hd44780-piplate-config.example">
+<title>HD44780: Configuration example for Pi Plate connection type</title>
+<screen>
+<![CDATA[
+[hd44780]
+ConnectionType=piplate
+Device=/dev/i2c-1
+Port=0x20
+Size=16x2
+Backlight=yes
+
+Keypad=yes
+KeyDirect_1=Enter
+KeyDirect_2=Up
+KeyDirect_3=Down
+KeyDirect_4=Left
+KeyDirect_5=Right
+]]>
+</screen>
+</example>
+
+</sect3>
 
 </sect2>
 
@@ -3159,6 +3095,9 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
     Common values for <replaceable>PORT</replaceable> are <literal>0x278</literal>,
     <literal>0x378</literal> and <literal>0x3BC</literal>.
     If not given, the default is <literal>0x378</literal>.
+  </para><para>
+    For I<superscript>2</superscript>C connection types this sets the slave
+    address.
   </para></listitem>
 </varlistentry>
 
@@ -3201,130 +3140,16 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>usb4all</literal></parameter> |
       <parameter><literal>ftdi</literal></parameter> |
       <parameter><literal>i2c</literal></parameter> |
+      <parameter><literal>piplate</literal></parameter> |
       <parameter><literal>ethlcd</literal></parameter> |
       <parameter><literal>raspberrypi</literal></parameter>
     }
   </term>
   <listitem>
     <para>
-    Select the type of the wiring / display connection.
+    Select the type of the wiring / display connection. See also
+    (<xref linkend="hd44780-connection-types"/>).
     </para>
-    <informaltable>
-    <tgroup cols="2" align="left">
-      <thead>
-        <row>
-          <entry>ConnectionType</entry>
-          <entry>Wiring / Display Type</entry>
-        </row>
-      </thead>
-      <tbody>
-        <!-- parallel -->
-        <row>
-          <entry><literal><link linkend="hd44780-4bit">4bit</link></literal></entry>
-          <entry>4bit Wiring to parallel port(default)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-8bit-lcdtime">8bit</link></literal></entry>
-          <entry>8bit Wiring to parallel port ("lcdtime")</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-8bit-winamp">winamp</link></literal></entry>
-          <entry>8bit Wiring "winamp" Style to parallel port</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-seriallpt">serialLpt</link></literal></entry>
-          <entry>Serial LPT Wiring</entry>
-        </row>
-        <!-- serial -->
-        <row>
-          <entry><literal><link linkend="hd44780-picanlcd">picanlcd</link></literal></entry>
-          <entry>PIC-an-LCD serial device "picanlcd"</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-lcdserializer">lcdserializer</link></literal></entry>
-          <entry>LCD serializer "lcdserializer"</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-los-panel">los-panel</link></literal></entry>
-          <entry>LCD on Serial panel device "los-panel" (<ulink url="http://mlf.home.xs4all.nl/los/"></ulink>)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-vdr-lcd">vdr-lcd</link></literal></entry>
-          <entry>VDR LCD serial device "vdr-lcd"</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-vdr-wakeup">vdr-wakeup</link></literal></entry>
-          <entry>VDR-Wakeup module "vdr-wakeup"</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-pertelian">pertelian</link></literal></entry>
-          <entry>Pertelian X2040 LCD display (<ulink url="http://pertelian.com/joomla/index.php?option=com_content&amp;task=view&amp;id=43&amp;Itemid=48"></ulink>)</entry>
-        </row>
-        <!-- USB -->
-        <row>
-          <entry><literal><link linkend="hd44780-lis2">lis2</link></literal></entry>
-          <entry>LIS2 from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-mplay">mplay</link></literal></entry>
-          <entry>MPlay Blast from VLSystem (<ulink url="http://www.vlsys.co.kr"></ulink>)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-usblcd">usblcd</link></literal></entry>
-          <entry>USBLCD adapter from Adams IT Services (<ulink url="http://www.usblcd.de/"></ulink>)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-bwctusb">bwctusb</link></literal></entry>
-          <entry>BWCT USB device "bwctusb" (<ulink url="http://www.bwct.de/lcd.html"></ulink>)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-lcd2usb">lcd2usb</link></literal></entry>
-          <entry>Till Harbaum's LCD2USB (<ulink url="http://www.harbaum.org/till/lcd2usb/"></ulink>)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-usbtiny">usbtiny</link></literal></entry>
-          <entry>Dick Streefland's USBtiny (<ulink url="http://www.xs4all.nl/~dicks/avr/usbtiny/"></ulink>)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-uss720">uss720</link></literal></entry>
-          <entry>Belkin USS-720 USB-to-IEEE 1284 Bridge</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-usb4all">USB-4-all</link></literal></entry>
-          <entry>The USB-4-all controller board from Sprut (<ulink url="http://www.sprut.de/electronic/pic/projekte/usb4all/usb4all.htm"></ulink>)</entry>
-        </row>
-        <row>
-          <entry><literal><link linkend="hd44780-ftdi">ftdi</link></literal></entry>
-          <entry>Display connected to a dual channel FTDI 2232D USB chip</entry>
-        </row>
-        <!-- I2C -->
-        <row>
-          <entry><literal><link linkend="hd44780-i2c">i2c</link></literal></entry>
-          <entry>LCD driven by PCF8574(A)/PCA9554(A) connected via I<superscript>2</superscript>C</entry>
-        </row>
-        <!-- Ethernet -->
-        <row>
-          <entry><literal><link linkend="hd44780-ethlcd">ethlcd</link></literal></entry>
-          <entry>ethlcd device (<ulink url="http://manio.skyboo.net/ethlcd/"></ulink>)</entry>
-        </row>
-        <!-- Other -->
-        <row>
-          <entry><literal><link linkend="hd44780-raspberrypi">raspberrypi</link></literal></entry>
-          <entry>LCD connected to the GPIO header of a Raspberry Pi</entry>
-        </row>
-      </tbody>
-    </tgroup>
-    </informaltable>
-
-    <tip>
-      <para>
-      <!-- The above table might be outdated, when you read this. -->
-      If you suspect the table above to be outdated, you might want to have a look at
-      <filename>server/drivers/hd44780-drivers.h</filename> in <package>LCDproc</package>'s
-      source directory which contains the actual translation code.
-      </para>
-    </tip>
-
   </listitem>
 </varlistentry>
 

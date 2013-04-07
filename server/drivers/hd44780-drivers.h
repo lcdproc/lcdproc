@@ -31,6 +31,7 @@
 #endif
 #ifdef HAVE_I2C
 # include "hd44780-i2c.h"
+# include "hd44780-piplate.h"
 #endif
 #ifdef WITH_ETHLCD
 # include "hd44780-ethlcd.h"
@@ -80,6 +81,7 @@ static const ConnectionMapping connectionMapping[] = {
 	/* I2C connection types */
 #ifdef HAVE_I2C
 	{ "i2c",           HD44780_CT_I2C,           IF_TYPE_I2C,     hd_init_i2c       },
+        { "piplate",       HD44780_CT_PIPLATE,       IF_TYPE_I2C,     hd_init_i2c_piplate },
 #endif
 	/* TCP socket connection types */
 #ifdef WITH_ETHLCD

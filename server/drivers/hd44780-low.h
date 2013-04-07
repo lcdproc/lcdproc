@@ -54,6 +54,7 @@
 #define HD44780_CT_USBTINY		20
 #define HD44780_CT_USB4ALL		21
 #define HD44780_CT_RASPBERRYPI		22
+#define HD44780_CT_PIPLATE		23
 /**@}*/
 
 /** \name Symbolic names for interface types

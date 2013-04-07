@@ -13,6 +13,7 @@ v0.5dev (ongoing development)
  + hd44780: Added 'raspberrypi' connection type (P. Corner)
  * Build system: Rename configure.in to configure.ac
  + hd44780: Add support for FreeBSD's iic I2C framework
+ + hd44780: New connection type 'piplate' (J. Brogdon)
 
 v0.5.6
  - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!
