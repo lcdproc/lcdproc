@@ -162,7 +162,7 @@ else
 fi
 
 x_ac_have_i2c=no
-AC_CHECK_HEADERS([linux/i2c-dev.h], [x_ac_have_i2c=yes])
+AC_CHECK_HEADERS([linux/i2c-dev.h dev/iicbus/iic.h], [x_ac_have_i2c=yes])
 if test "$x_ac_have_i2c" = yes; then
 	AC_DEFINE(HAVE_I2C,[1],[Define to 1 if you have the i2c headers])
 fi

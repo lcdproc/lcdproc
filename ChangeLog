@@ -12,6 +12,7 @@ v0.5dev (ongoing development)
  * glcd driver: Add direct support for framebuffer with paged memory layout
  + hd44780: Added 'raspberrypi' connection type (P. Corner)
  * Build system: Rename configure.in to configure.ac
+ + hd44780: Add support for FreeBSD's iic I2C framework
 
 v0.5.6
  - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!
