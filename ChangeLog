@@ -14,7 +14,7 @@ v0.5dev (ongoing development)
  * Build system: Rename configure.in to configure.ac
  + hd44780: Add support for FreeBSD's iic I2C framework
  + hd44780: New connection type 'piplate' (J. Brogdon)
- * lcdproc client: Add option to turn off title and heartbeat on OldTime screen
+ * lcdproc client: Add option to turn off title on OldTime screen
  + glcd driver: Connection type 'x11' that draws to a X window (S. Meharg)
 
 v0.5.6

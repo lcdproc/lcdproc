@@ -203,7 +203,6 @@ clock_screen(int rep, int display, int *flags_ptr)
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		char tmp[257];	/* should be large enough for host name */
-		int disableHeart;	/* Disables server heartbeat icon */
 
 		*flags_ptr |= INITIALIZED;
 
@@ -211,11 +210,10 @@ clock_screen(int rep, int display, int *flags_ptr)
 		timeFormat = config_get_string("OldTime", "TimeFormat", 0, "%H:%M:%S");
 		dateFormat = config_get_string("OldTime", "DateFormat", 0, "%b %d %Y");
 		showTitle = config_get_bool("OldTime", "ShowTitle", 0, 1);
-		disableHeart = config_get_bool("OldTime", "DisableHeartbeat", 0, 0);
 
 		sock_send_string(sock, "screen_add O\n");
 		sock_printf(sock, "screen_set O -name {Old Clock Screen: %s}\n", get_hostname());
-		if (disableHeart)
+		if (!showTitle)
 			sock_send_string(sock, "screen_set O -heartbeat off\n");
 		sock_send_string(sock, "widget_add O one string\n");
 		if (lcd_hgt >= 4) {
