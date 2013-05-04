@@ -174,6 +174,13 @@ time_screen(int rep, int display, int *flags_ptr)
  * |       May 17, 2005 |
  * +--------------------+
  *
+ * Alternate 2-line version without the title bar:
+ *
+ * +----------------+
+ * |   2012-12-27  @|
+ * |    15:07:01    |
+ * +----------------+
+ *
  *\endverbatim
  *
  * \param rep        Time since last screen update
@@ -188,6 +195,7 @@ clock_screen(int rep, int display, int *flags_ptr)
 	char today[40];
 	int xoffs;
 	static int heartbeat = 0;
+	static int showTitle = 1;
 	static const char *timeFormat = NULL;
 	static const char *dateFormat = NULL;
 	time_t thetime;
@@ -195,18 +203,23 @@ clock_screen(int rep, int display, int *flags_ptr)
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		char tmp[257];	/* should be large enough for host name */
+		int disableHeart;	/* Disables server heartbeat icon */
 
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
 		timeFormat = config_get_string("OldTime", "TimeFormat", 0, "%H:%M:%S");
 		dateFormat = config_get_string("OldTime", "DateFormat", 0, "%b %d %Y");
+		showTitle = config_get_bool("OldTime", "ShowTitle", 0, 1);
+		disableHeart = config_get_bool("OldTime", "DisableHeartbeat", 0, 0);
 
 		sock_send_string(sock, "screen_add O\n");
 		sock_printf(sock, "screen_set O -name {Old Clock Screen: %s}\n", get_hostname());
-		sock_send_string(sock, "widget_add O title title\n");
+		if (disableHeart)
+			sock_send_string(sock, "screen_set O -heartbeat off\n");
 		sock_send_string(sock, "widget_add O one string\n");
 		if (lcd_hgt >= 4) {
+			sock_send_string(sock, "widget_add O title title\n");
 			sock_send_string(sock, "widget_add O two string\n");
 			sock_send_string(sock, "widget_add O three string\n");
 
@@ -217,7 +230,13 @@ clock_screen(int rep, int display, int *flags_ptr)
 			sock_printf(sock, "widget_set O one %i 2 {%s}\n", xoffs, tmp);
 		}
 		else {
-			sock_printf(sock, "widget_set O title {TIME: %s}\n", get_hostname());
+			if (showTitle) {
+				sock_send_string(sock, "widget_add O title title\n");
+				sock_printf(sock, "widget_set O title {TIME: %s}\n", get_hostname());
+			}
+			else {
+				sock_send_string(sock, "widget_add O two string\n");
+			}
 		}
 	}
 
@@ -243,10 +262,20 @@ clock_screen(int rep, int display, int *flags_ptr)
 			sock_printf(sock, "widget_set O three %i 4 {%s}\n", xoffs, now);
 	}
 	else {			/* 2-line version of the screen */
-		xoffs = (lcd_wid > (strlen(today) + strlen(now) + 1))
-			? ((lcd_wid - ((strlen(today) + strlen(now) + 1))) / 2) + 1 : 1;
-		if (display)
-			sock_printf(sock, "widget_set O one %i 2 {%s %s}\n", xoffs, today, now);
+		if (showTitle) {
+			xoffs = (lcd_wid > (strlen(today) + strlen(now) + 1))
+				? ((lcd_wid - ((strlen(today) + strlen(now) + 1))) / 2) + 1 : 1;
+			if (display)
+				sock_printf(sock, "widget_set O one %i 2 {%s %s}\n", xoffs, today, now);
+		}
+		else {
+			xoffs = (lcd_wid > strlen(today)) ? ((lcd_wid - strlen(today)) / 2) + 1 : 1;
+			if (display)
+				sock_printf(sock, "widget_set O one %i 1 {%s}\n", xoffs, today);
+			xoffs = (lcd_wid > strlen(now)) ? ((lcd_wid - strlen(now)) / 2) + 1 : 1;
+			if (display)
+				sock_printf(sock, "widget_set O two %i 2 {%s}\n", xoffs, now);
+		}
 	}
 
 	return 0;
