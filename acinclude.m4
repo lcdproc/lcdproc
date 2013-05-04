@@ -186,6 +186,9 @@ dnl			else
 				])
 			])
 			AC_SUBST(LIBSERDISP)
+			if test "$enable_libX11" = yes ; then
+				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-x11.o"
+			fi
 			DRIVERS="$DRIVERS glcd${SO}"
 			actdrivers=["$actdrivers glcd"]
 			;;

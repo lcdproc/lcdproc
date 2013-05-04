@@ -317,6 +317,29 @@ AC_SUBST(LIBFTDI_LIBS)
 AC_SUBST(LIBFTDI_CFLAGS)
 
 dnl ######################################################################
+dnl X11 library support
+dnl ######################################################################
+AC_MSG_CHECKING([if X11 support has been enabled]);
+AC_ARG_ENABLE(libX11,
+	[AS_HELP_STRING([--disable-libX11],[disable X11 support])],
+	[ if test "$enableval" != "no"; then
+		enable_libX11=yes
+	fi ],
+	[ enable_libX11=yes ]
+)
+AC_MSG_RESULT($enable_libX11)
+
+if test "$enable_libX11" = "yes"; then
+	ifdef([PKG_CHECK_MODULES],
+	 	[PKG_CHECK_MODULES([LIBX11], [x11],
+			[AC_DEFINE(HAVE_LIBX11, [1], [Define to 1 if you have X11 library])],
+			[ enable_libX11=no ])],
+		[AC_MSG_WARN([pkg-config not (fully) installed; drivers requiring X11 may not be built])])
+fi
+AC_SUBST(LIBX11_LIBS)
+AC_SUBST(LIBX11_CFLAGS)
+
+dnl ######################################################################
 dnl libhid support
 dnl ######################################################################
 AC_MSG_CHECKING([if libhid support has been enabled]);

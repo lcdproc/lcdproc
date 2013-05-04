@@ -574,7 +574,7 @@ glcd_get_contrast(Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	debug(RPT_INFO, "%s()", __FUNCTION__);
+	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	return p->contrast;
 }
@@ -590,7 +590,7 @@ glcd_set_contrast(Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
 
-	debug(RPT_INFO, "%s(%i)", __FUNCTION__, promille);
+	debug(RPT_DEBUG, "%s(%i)", __FUNCTION__, promille);
 
 	/* Check it */
 	if (promille < 0 || promille > 1000)

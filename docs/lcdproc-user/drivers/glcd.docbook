@@ -80,6 +80,15 @@ ignored as the size reported by the device is used.
 </para>
 </sect3>
 
+<sect3 id="glcd-ct-x11">
+<title>Connection type x11</title>
+<para>
+This connection type draws the frame buffer to a X window. It features
+adjustable LCD pixel size, pixel color, backlight color and simulates
+contrast and brightness. PC keyboard is used to simulate buttons.
+</para>
+</sect3>
+
 <!--
 <sect3 id="glcd-ct-xyz">
 <title>Connection type xyz</title>
@@ -107,6 +116,7 @@ ignored as the size reported by the device is used.
     <parameter><literal>glcd2usb</literal></parameter> |
     <parameter><literal>png</literal></parameter> |
     <parameter><literal>serdisplib</literal></parameter>
+    <parameter><literal>x11</literal></parameter>
     }
   </term>
   <listitem><para>
@@ -416,6 +426,65 @@ ignored as the size reported by the device is used.
     will be ignored.</para>
   </note>
   </listitem>
+</varlistentry>
+</variablelist>
+
+<variablelist>
+<title>Settings for the x11 connection type</title>
+<varlistentry>
+  <term>
+    <property>x11_PixelSize</property> =
+    <parameter>
+      <replaceable>PIXELS</replaceable>
+      <literal>+</literal>
+      <replaceable>GAP</replaceable>
+    </parameter>
+  </term>
+  <listitem><para>
+    Each LCD dot is drawn in the X window as a filled rectangle of this size
+    plus a gap between each filled rectangle. A PixelSize of <literal>3+1</literal>
+    would draw a 3x3 filled rectangle with a gap of 1 pixel to the right and
+    bottom, effectively using a 4x4 area of the window. Default is <literal>3+1</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <property>x11_PixelColor</property> =
+    <parameter><literal>0x</literal><replaceable>RRGGBB</replaceable></parameter>
+  </term>
+  <listitem><para>
+    The color used to draw each LCD dot at full contrast and full brightness.
+    Default is <literal>0x000000</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <property>x11_BacklightColor</property> =
+    <parameter><literal>0x</literal><replaceable>RRGGBB</replaceable></parameter>
+  </term>
+  <listitem><para>
+    The color used for the backlight at full brightness.
+    Default is <literal>0x80FF80</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <property>x11_Border</property> =
+    <parameter><replaceable>PIXELS</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Extra space in pixels around the LCD portion of the X window.
+    Default is <literal>20</literal>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <property>x11_Inverted</property> = &parameters.yesnodef;
+  </term>
+  <listitem><para>
+    Swap the colors for the pixel and backlight within the LCD portion of the
+    X window. This results in an inverted display.
+  </para></listitem>
 </varlistentry>
 </variablelist>
 
