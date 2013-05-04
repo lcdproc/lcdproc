@@ -564,7 +564,7 @@ pyramid_set_char(Driver *drvthis, int n, unsigned char *dat)
     PrivateData *p = (PrivateData *) drvthis->private_data;
     unsigned char mask = (1 << p->cellwidth) - 1;
 
-    if (n < 0 && n > 7) {
+    if (n < 0 || n > 7) {
 	debug(RPT_WARNING, "only characters 0-7 can be changed");
 	return;
     }
