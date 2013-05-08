@@ -89,6 +89,13 @@ contrast and brightness. PC keyboard is used to simulate buttons.
 </para>
 </sect3>
 
+<sect3 id="glcd-ct-picolcdgfx">
+<title>Connection type picolcdgfx</title>
+<para>
+Support for the picoLCD Graphics 256x64 display from mini-box.com.
+</para>
+</sect3>
+
 <!--
 <sect3 id="glcd-ct-xyz">
 <title>Connection type xyz</title>
@@ -115,7 +122,8 @@ contrast and brightness. PC keyboard is used to simulate buttons.
     <emphasis><parameter><literal>t6963</literal></parameter></emphasis> |
     <parameter><literal>glcd2usb</literal></parameter> |
     <parameter><literal>png</literal></parameter> |
-    <parameter><literal>serdisplib</literal></parameter>
+    <parameter><literal>picolcdgfx</literal></parameter> |
+    <parameter><literal>serdisplib</literal></parameter> |
     <parameter><literal>x11</literal></parameter>
     }
   </term>
@@ -484,6 +492,28 @@ contrast and brightness. PC keyboard is used to simulate buttons.
   <listitem><para>
     Swap the colors for the pixel and backlight within the LCD portion of the
     X window. This results in an inverted display.
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+<variablelist>
+<title>Settings for the picolcdgfx connection type</title>
+<varlistentry>
+  <term>
+    <property>picolcdgfx_KeyTimeout</property> =
+    <parameter><replaceable>TIMEOUT</replaceable></parameter>
+  </term>
+  <listitem><para>
+    The time in milliseconds to wait for a key press before assuming no key was
+    pressed. This settings is the usb_read timeout. Default 125.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <property>picolcdgfx_Inverted</property> = &parameters.yesnodef;
+  </term>
+  <listitem><para>
+    When set to yes, the pixel will be inverted. Default no.
   </para></listitem>
 </varlistentry>
 </variablelist>

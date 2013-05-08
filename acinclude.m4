@@ -174,7 +174,7 @@ dnl			else
 				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-png.o"
 			fi
 			if test "$enable_libusb" = yes ; then
-				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-glcd2usb.o"
+				GLCD_DRIVERS="$GLCD_DRIVERS glcd-glcd-glcd2usb.o glcd-glcd-picolcdgfx.o"
 			fi
 			AC_CHECK_HEADERS([serdisplib/serdisp.h],[
 				AC_CHECK_LIB(serdisp, serdisp_nextdisplaydescription,[
