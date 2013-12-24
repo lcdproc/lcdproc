@@ -102,7 +102,7 @@ glcd_render_init(Driver *drvthis)
 		/* load the font face for freetype */
 		rc = FT_New_Face(rconf->ft_library, font_file, 0, &rconf->ft_normal_font);
 		if (rc != 0) {
-			report(RPT_ERR, "s: Creation of font '%s' failed", drvthis->name, font_file);
+			report(RPT_ERR, "%s: Creation of font '%s' failed", drvthis->name, font_file);
 			goto err_out;
 		}
 
