@@ -22,7 +22,7 @@
 	It is an external USB 2.0 full speed device that comes in a stylish case and
 	sports a 4 line by 20 character display with white letters
 	on a blue background, a built-in InfraRed receiver as well as a
-	keypad with 8 keys labelled <literal>Escape</literal>, <literal>F1</literal>,
+	keypad with 8 keys labeled <literal>Escape</literal>, <literal>F1</literal>,
 	<literal>F2</literal>, <literal>F3</literal>, <literal>Home</literal>,
 	<literal>Up</literal>, <literal>Down</literal> and <literal>Enter</literal>.
 </para>
@@ -323,7 +323,7 @@
   </para>
   <para>
     LIRC should be configured to use the driver "udp", which will cause it to listen on some
-    UDP port for packets containing a series of integers, representing pulse and mark
+    UDP port for packets containing a series of integers, representing mark and space
     intervals from the sensor. It doesn't matter whether LCDd or LIRC is started first; if LIRC
     isn't listening, the packets from LCDd will be discarded. When LIRC comes back, it will
     start picking up the packets. Similarly, LCDd can be stopped and restarted without affecting
@@ -347,16 +347,58 @@
 
 <varlistentry>
   <term>
+    <property>LircTime_us</property> = &parameters.yesnodef;
+  </term>
+  <listitem>
+  <para>
+	If <property>LircTime_us</property> is set to on mark and space times
+	are sent to LIRC in microseconds (requires a LIRC UDP driver that
+	accepts this).
+  </para>
+  <para>
+	If <property>LircTime_us</property> is set to off mark and space times
+	are sent to LIRC in 'jiffies' (1/16384s) (supported by the standard LIRC
+	UDP driver).
+  </para>
+  <para>
+	Default is <literal>off</literal>.
+  </para>
+  <note>
+  <para>
+	One 'jiffy' is approximately 61 microseconds about a tenth of typical IR
+	mark and space times. LIRC configuration program <code>irrecord</code>
+	cannot reliably detect the IR data timing when measured in 'jiffies' it
+	works better with microseconds.
+  </para>
+  <para>
+	I have submitted a patch that modifies the LIRC udp driver to support
+	timing data in microseconds but it has been ignored. The LIRC team
+	currently seems only to be interested in adding IR support to the kernel.
+	You can obtain my modified files from
+	<ulink url="https://github.com/emteejay/Patched-LIRC.git">GitHub</ulink>.
+	The standard UDP driver is satisfactory for most uses but I recommend
+	using the modified driver if you intend to use <code>irrecord</code>
+  </para>
+  </note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <property>LircFlushThreshold</property> =
     <parameter><replaceable>DURATION</replaceable></parameter>
   </term>
   <listitem>
   <para>
-    This value is the length in jiffies (1/16384 seconds) of the synthesized sync space that will
-    trigger sending the queued IR data to LIRC. Values up to 32767 (2s) are permitted, values lower
-    than 16 will suppress the flushing IR data during processing. The default is
-    <literal>100</literal> jiffies (6.1ms). It's should only be needed to change this value
-    when lircd.conf has a gap &lt; 6100 or the samples &gt; 6300.
+	This value is the length in microseconds of the gap that will trigger
+	sending the queued IR data to LIRC. Values greater than 1000 (1ms) are
+	permitted, lower values will set the default value 8000 (8ms). The
+	maximum depends on the setting of LircTime_us; if LircTime_us is on
+	values greater than 32.767ms will disable the flush, if LircTime_us is
+	off values greater than 1.999938s will disable the flush. The value
+	should be less than the gap times specified in <code>lircd.conf</code>
+	and greater than any space time specified in any header, one, zero, etc.
+	field.
   </para>
   </listitem>
 </varlistentry>
@@ -397,11 +439,26 @@
 	working, this driver by default adds the gap as well as the sync. However I have
 	<emphasis>still</emphasis> had trouble getting <code>irrecord</code> to work; you need at least
 	to feed it a template configuration containing sync and gap data.
+	The LIRC configuration program <code>irrecord</code> cannot reliably
+	detect the IR data timing when measured in 'jiffies' it works better
+	with microseconds, see <code>LircTime_us</code> above.
 </para>
-
+<note>
+  <para>
+	The current libusb-1.0 implementation polls at 32Hz to see if any USB
+	processing is required, this is  needed when a key has been pressed or
+	some IR data has been received. 32Hz has a period of 31.25ms this is not
+	really fast enough the picoLCD USB transfers can occur every 10ms. This
+	may cause buffer overrun problems for long bursts of IR data. The best
+	solution would be to include USB processing in the main loop <code>select</code>
+	statement this has not been done to avoid major changes to the core
+	code, to work-round this extra USB transfer buffers are allocated. It
+	may also be worth building with <code>PROCESS_FREQ</code> set to 100Hz
+	(in <code>server/main.h</code>).
+  </para>
+</note>
 </sect3>
 </sect2>
-
 
 <sect2 id="picolcd-copy">
 <title>Copyright</title>

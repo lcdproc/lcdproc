@@ -48,15 +48,22 @@
 #define NUM_CCs         8	/* max. number of custom characters */
 #define KEY_BUFFER_SIZE 8	/* size of the key ring buffer */
 
+#define ANSI_ESCAPES		/* Use color to make (IR) debug easier to read */
+#ifdef ANSI_ESCAPES
+#define	TEXT_NORMAL		"\033[0m"
+#define	TEXT_RED		"\033[31m"
+#else
+#define	TEXT_NORMAL		""
+#define	TEXT_RED		""
+#endif
+
 #ifdef HAVE_LIBUSB_1_0
 /**
- * This structure holds the keys reported in a key event. high_key is set if
- * a single key is pressed or it holds the first key if two keys are pressed.
- * low_key holds the second key pressed (if any).
+ * This structure holds the keys reported in a key event.
  */
 typedef struct {
-	unsigned char high_key;
-	unsigned char low_key;
+	unsigned char high_key;	/**< Set if a single key is pressed or it holds the first key if two keys are pressed.*/
+	unsigned char low_key;	/**< Holds the second key pressed (if any). */
 } keys;
 #endif
 
@@ -74,6 +81,39 @@ typedef struct {
  * default context.
  */
 #undef USE_LIBUSB_SINGLE_SELECT
+
+/**
+ * Multiple buffers are needed to ensure that no USB transfer is missed. Ideally
+ * a single select statement with appropriate timeout should be used, in this
+ * case double buffering is sufficient. When distributed select statements are
+ * used processing of the USB signals is performed by
+ * libusb_handle_events_timeout() in picoLCD_get_key(). This is called at 32Hz
+ * (PROCESS_FREQ) i.e. every 31.25ms which is not really fast enough as the
+ * picoLCD USB transfers can occur every 10ms. This may cause buffer overrun
+ * problems for long bursts of IR data, to avoid problems there must be more
+ * than 3 buffers.
+ */
+#ifdef USE_LIBUSB_SINGLE_SELECT
+#define USB_BUFFERS 2
+#else
+#define USB_BUFFERS 4
+#endif
+
+#ifdef HAVE_LIBUSB_1_0
+/**
+ * This structure holds the data for a USB transfer.
+ */
+typedef struct usb_transfer_data {
+	/** structure for the details of the asynchronous USB transfer */
+	struct libusb_transfer *transfer;
+	/** transfer status */
+	int status;
+	/** Pointer to driver private data */
+	Driver *drvthis;
+	/** data buffer for the USB transfer */
+	unsigned char buffer[PICOLCD_MAX_DATA_LEN];
+}UsbTransferData;
+#endif
 
 /** Private data for the picoLCD driver */
 typedef struct picolcd_private_data {
@@ -104,15 +144,13 @@ typedef struct picolcd_private_data {
 	unsigned char *resptr;
 	struct timeval lastmsg;
 	int lastval;
+	int lirc_time_us;
 	int flush_threshold;
 #ifdef HAVE_LIBUSB_1_0
 	/* Pointer to libusb 1.0 session */
 	libusb_context *lib_ctx;
-	/* data buffer for the asynchronous USB transfer */
-	unsigned char input_buffer[PICOLCD_MAX_DATA_LEN];
-	/* structure for the details of the asynchronous USB transfer */
-	struct libusb_transfer *input_transfer;
-	int libusb_status;
+	/* structure for the details of the USB transfer */
+	UsbTransferData input_transfer[USB_BUFFERS];
 	/* buffer for the key press data */
 	keys key_buffer[KEY_BUFFER_SIZE];
 	int key_read_index;	/* Read index in the key_buffer */
@@ -136,6 +174,7 @@ static void set_key_lights(USB_DEVICE_HANDLE *lcd, int keys[], int state);
 static void picolcd_lircsend(Driver *drvthis);
 static void ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdata);
 #ifdef HAVE_LIBUSB_1_0
+static void free_usb_transfers(Driver *drvthis);
 static void key_buffer_put(Driver *drvthis, unsigned char high_key, unsigned char low_key);
 static void usb_cb_input(struct libusb_transfer *transfer);
 #else
@@ -231,7 +270,7 @@ picoLCD_init(Driver *drvthis)
 #ifndef USE_LIBUSB_SINGLE_SELECT
 	/*
 	 * When using a single select statement libusb-1.0 should be
-	 * initialised once for all usb drivers so code equivalent to that
+	 * initialised once for all USB drivers so code equivalent to that
 	 * below should be somewhere common, before init_drivers() perhaps.
 	 */
 	error = libusb_init(&p->lib_ctx);
@@ -242,8 +281,6 @@ picoLCD_init(Driver *drvthis)
 	libusb_set_debug(p->lib_ctx, 3);
 #endif
 
-	p->libusb_status = LIBUSB_SUCCESS;
-	p->input_transfer = NULL;
 	p->key_read_index = 0;
 	p->key_write_index = 0;
 
@@ -270,7 +307,7 @@ picoLCD_init(Driver *drvthis)
 		return -1;
 	}
 
-	if (libusb_kernel_driver_active(p->lcd, 0)) {
+	if (libusb_kernel_driver_active(p->lcd, 0) == 1) {
 		debug(RPT_DEBUG, "%s: libusb_kernel_driver_active returned true", drvthis->name);
 		error = libusb_detach_kernel_driver(p->lcd, 0);
 		if (error) {
@@ -281,6 +318,7 @@ picoLCD_init(Driver *drvthis)
 	else {
 		debug(RPT_DEBUG, "%s: libusb_kernel_driver_active returned false", drvthis->name);
 	}
+
 	error = libusb_claim_interface(p->lcd, 0);
 	if (error) {
 		report(RPT_ERR, "%s: libusb_claim_interface error %d", drvthis->name, error);
@@ -298,19 +336,36 @@ picoLCD_init(Driver *drvthis)
 	if (error) {
 		report(RPT_WARNING, "%s: libusb_set_interface_alt_setting error %d", drvthis->name, error);
 	}
-	p->input_transfer = libusb_alloc_transfer(0);
-	if (p->input_transfer == NULL) {
-		report(RPT_ERR, "%s: libusb_alloc_transfer failed", drvthis->name);
-		return -1;
-	}
-	libusb_fill_interrupt_transfer(p->input_transfer, p->lcd, LIBUSB_ENDPOINT_IN + 1, p->input_buffer,
-		 sizeof(p->input_buffer), usb_cb_input, (void *)drvthis, 0);
-	error = libusb_submit_transfer(p->input_transfer);
-	if (error) {
-		report(RPT_ERR, "%s: libusb_submit_transfer error %d", drvthis->name, error);
-		libusb_free_transfer(p->input_transfer);
-		p->input_transfer = NULL;
-		return -1;
+
+	/* Set-up USB input transfer data structures */
+	for (i = 0; i < USB_BUFFERS; i++)
+		p->input_transfer[i].transfer = NULL;
+	for (i = 0; i < USB_BUFFERS; i++)
+	{
+		UsbTransferData *utdp = &p->input_transfer[i];
+
+		utdp->drvthis = drvthis;
+		utdp->transfer = libusb_alloc_transfer(0);
+		if (utdp->transfer == NULL) {
+			report(RPT_ERR, "%s: libusb_alloc_transfer failed", drvthis->name);
+			free_usb_transfers(drvthis);
+			return -1;
+		}
+		libusb_fill_interrupt_transfer(utdp->transfer,
+				p->lcd,
+				LIBUSB_ENDPOINT_IN + 1,
+				utdp->buffer,
+				sizeof(utdp->buffer),
+				usb_cb_input,
+				(void *)utdp,
+				0);
+		utdp->status = libusb_submit_transfer(utdp->transfer);
+		if (utdp->status) {
+			report(RPT_ERR, "%s: libusb_submit_transfer error %d",
+					drvthis->name, utdp->status);
+			free_usb_transfers(drvthis);
+			return -1;
+		}
 	}
 
 #else				/* The libusb 0.1 way */
@@ -500,20 +555,42 @@ done:
 	/* LIRC is only enabled if a hostname is set */
 	p->IRenabled = (lirchost != NULL && *lirchost != '\0') ? 1 : 0;
 
-	tmp = drvthis->config_get_int(drvthis->name, "LircFlushThreshold", 0, DEFAULT_FLUSH_THRESHOLD_JIFFY);
-	/* Prevent small 'foolish' values these will disable the check also! */
-	if (p->flush_threshold < 16) {
-		report(RPT_WARNING, "%s: flush threshold to small - disabled");
-		tmp = 0x8000;	/* Disabled, send check will always fail! */
+	p->lirc_time_us = drvthis->config_get_bool(drvthis->name, "LircTime_us", 0, DEFAULT_LIRC_TIME_us);
+
+	tmp = drvthis->config_get_int(drvthis->name, "LircFlushThreshold", 0, DEFAULT_FLUSH_THRESHOLD);
+	/*
+	 * Enforce a sensible minimum. Only want to flush on gaps between IR
+	 * bursts not the spaces between marks.
+	 */
+	if (tmp < 1000) {
+		report(RPT_WARNING, "%s: flush threshold to small (%d) , using default", drvthis->name, tmp);
+		tmp = DEFAULT_FLUSH_THRESHOLD;
 	}
-	else if (p->flush_threshold > 0x7FFF) {
-		report(RPT_WARNING, "%s: flush threshold to large, using default");
-		tmp = DEFAULT_FLUSH_THRESHOLD_JIFFY;
+	if (p->lirc_time_us) {
+		/*
+		 * Values greater than 32.767ms will disable the flush.
+		 */
+		if (tmp > 32727) {
+			report(RPT_WARNING, "%s: flush threshold to large (%d), disabled", drvthis->name, tmp);
+		}
+	}
+	else {
+		/*
+		 * Scale between microseconds and jiffies (1/16384s)
+		 * Values greater than 1999.938ms will disable the flush.
+		 */
+		if (0x7FFF * 15625 / 256 < tmp) {
+			report(RPT_WARNING, "%s: flush threshold to large (%d), disabled", drvthis->name, tmp);
+			tmp = 0x8000;
+		}
+		else {
+			tmp = tmp * 256 / 15625;
+		}
 	}
 	p->flush_threshold = tmp;
 
 	/*
-	 * Simulate that the last value send was a PULSE, so we start with
+	 * Simulate that the last value send was a MARK, so we start with
 	 * sending a SPACE to make LIRC happy
 	 */
 	p->lastval = 0;
@@ -545,8 +622,8 @@ done:
 		p->lircserver.sin_addr = *(struct in_addr *) hostinfo->h_addr;	/* IP address */
 		p->lircserver.sin_port = htons(lircport);			/* server port */
 
-		report(RPT_INFO, "%s: IR events will be sent to LIRC on %s:%d, with flush threshold=%d",
-			drvthis->name, lirchost, lircport, p->flush_threshold);
+		report(RPT_INFO, "%s: IR events will be sent to LIRC on %s:%d, with flush threshold=%d, time unit: %s",
+			drvthis->name, lirchost, lircport, p->flush_threshold, p->lirc_time_us ? "us" : "1/16384s");
 	}
 
 	report(RPT_INFO, "%s: init complete", drvthis->name);
@@ -567,22 +644,7 @@ picoLCD_close(Driver *drvthis)
 #ifdef HAVE_LIBUSB_1_0
 		int error;
 
-		if (p->input_transfer != NULL) {
-			/* Need to cancel transfer before it is freed */
-			libusb_cancel_transfer(p->input_transfer);
-			while (p->libusb_status != LIBUSB_TRANSFER_CANCELLED) {
-				struct timeval timeout;
-				/*
-				 * Wait for the cancellation to complete, the
-				 * call-back will then have freed the
-				 * transfer.
-				 */
-				report(RPT_INFO, "%s: waiting for usb transfer to be cancelled", drvthis->name);
-				timeout.tv_sec = 1;
-				timeout.tv_usec = 0;
-				libusb_handle_events_timeout(p->lib_ctx, &timeout);
-			}
-		}
+		free_usb_transfers(drvthis);
 
 		error = libusb_release_interface(p->lcd, 0);
 		if (error) {
@@ -670,7 +732,7 @@ picoLCD_clear(Driver *drvthis)
 
 
 /**
- *  Flush data on screen to the display.
+ *  Flush data in screen buffer to the display.
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
@@ -716,6 +778,20 @@ picoLCD_flush(Driver *drvthis)
  * \param x        Horizontal character position (column).
  * \param y        Vertical character position (row).
  * \param string   String that gets written.
+ *
+ * The picoLCD uses a HD44780UA00 which provides ASCII and Japanese fonts.
+ *
+ * Characters 0x20-0x7F are ASCII with the following substitutions:
+ *	| Index | ASCII | Substitute       |
+ *	| :---: | :---: | :--------------- |
+ *	| 0x5C  |   \   | Yen              |
+ *	| 0x7E  |   ~   | Rightwards Arrow |
+ *	| 0x7F  |  DEL  | Leftwards Arrow  |
+ *
+ * Characters 0xA0-0xDF are half-width Katakana. They map to
+ * the Unicode block starting at U+FF60 and ending at U+FF9F.
+ *
+ * Characters 0xE0-0xFF are various Greek letters and symbols.
  */
 MODULE_EXPORT void
 picoLCD_string(Driver *drvthis, int x, int y, unsigned char string[])
@@ -1215,8 +1291,9 @@ picoLCD_get_key(Driver *drvthis)
 	struct timeval timeout;
 	/*
 	 * FIXME: It is not efficient to call this at 32Hz, it is only needed
-	 * if a key has been pressed or IR data has been received. Process
-	 * any outstanding USB events for our session.
+	 * if a key has been pressed or IR data has been received.
+	 *
+	 * Process any outstanding USB events for our session.
 	 */
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
@@ -1547,7 +1624,7 @@ picoLCD_get_info(Driver *drvthis)
  * LIRC UDP packets expect 16-bit intervals, with MSB set for space.
  * Intervals are measured in jiffies (1/16384 s).
  * PicoLCD USB packets contain 16-bit intervals, with value negated
- * for space. Intervals are in microseconds.
+ * for mark. Intervals are in microseconds.
  * PicoLCD presents the bytes in network order, and they must be put back
  * in that order for transmission via UDP.
  * One jiffy == 61 us. 537 us == 9j.
@@ -1557,15 +1634,18 @@ picoLCD_get_info(Driver *drvthis)
  * \param cbdata    Length of data to be transcoded.
  *
  * \note The picoLCD introduces two issues:
+ *
  * \note 1. Every read contains a maximum of 10 samples (20 bytes), sending the
  *       converted samples direct to LIRC will lead to timeouts, in LIRC
  *       while we are still waiting for the rest of the samples. To fix this I
  *       queue the samples and send it when a sync is detected or by a timeout.
+ *
  * \note 2. The sync (long space) are not send by the picoLCD. To fix this we
- *       look for a pulse at the end of the last message and a pulse at the
+ *       look for a mark at the end of the last message and a mark at the
  *       begin new message, we then flush the queue and start with a (sync)
  *       space, with the duration of the time between the last and current
  *       message.
+ *
  * \note To make LIRC happy I send the queued samples with the sync space a the
  *       begin, and not at the end (the next 'calculated' sync is put at the
  *       begin of the next message), this is because LIRC requires a space at
@@ -1582,14 +1662,33 @@ ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdata)
 
 	/* Check for odd buffer length (invalid buffer) */
 	if (cbdata & 1) {
+		report(RPT_WARNING, "picolcd: buffer invalid length (%d)", cbdata);
 		return;
 	}
 
 	/* Get time needed to calculate the time between 2 IR data messages */
 	gettimeofday(&now, 0);
 
+#ifdef DEBUG
+	debug(RPT_DEBUG, "picolcd: received %d IR samples", cIntervals);
+	{
+		unsigned char *ptr = data;
+		int c = cIntervals;
+		char logbuf[cbdata * 5];
+		char *logptr = logbuf;
+		while (c--) {
+			unsigned int val = *ptr++;
+			val |= *ptr++ << 8;
+			logptr += sprintf(logptr, " %s%04x",
+						(0x7fff < val) ? TEXT_RED : TEXT_NORMAL,
+						(0x7fff < val) ? 0x10000 - val : val);
+		}
+		debug(RPT_DEBUG, "picolcd: data:%s" TEXT_NORMAL, logbuf);
+	}
+#endif
+
 	/* Check for a missing SPACE since the last message */
-	debug(RPT_INFO, "picolcd: last %04x first %04x", p->lastval, (-w & 0xFFFF));
+	debug(RPT_DEBUG, "picolcd: last %04x first %04x", p->lastval, (-w & 0xFFFF));
 	if (((p->lastval & 0x8000) == 0) && ((-w & 0x8000) == 0)) {
 		/*
 		 * Calculate the time passed from the last IR message to now
@@ -1600,53 +1699,105 @@ ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdata)
 
 		timersub(&now, &p->lastmsg, &time_gap);
 
-		/* previous message is complete send it without the added space */
-		debug(RPT_INFO, "picolcd: missing sync detected, flushing queue before adding sync");
-		picolcd_lircsend(drvthis);
+		if (p->resptr != p->result) {
+			/* previous message is complete send it without the added space */
+			debug(RPT_INFO, "picolcd: missing space detected, flushing queue before adding sync");
+			picolcd_lircsend(drvthis);
+		}
+		else {
+			debug(RPT_INFO, "picolcd: missing space detected, adding timed space to buffer");
+		}
 
-		/*
-		 * Prevent the overflow (2 secs = 32678 jiffies), but allow
-		 * 2.99 seconds to reach the max
-		 */
-		if (2 <= time_gap.tv_sec) {
+		if (p->lirc_time_us) {
 			/*
-			 * microseconds to jiffies (same as (16384/1000000)
-			 * but no possible int32 overflow)
+			 * When sending times in microseconds a single word gives a range up
+			 * to 32767us. I am not aware of anything that uses IR pulse or space
+			 * times as long as 32ms so the pulse and space times can just be
+			 * copied from the buffer see below. The gap between transmissions can
+			 * be very long so may need special encoding. LIRC processes times in
+			 * microseconds using 24 bits so send a zero word as a flag followed
+			 * by a three byte time sent as four bytes to keep the buffer length
+			 * even. 24 bits gives a range up to 16777215 so we limit to 16s for
+			 * simplicity.
 			 */
-			gap = ((time_gap.tv_sec * 1000000 + time_gap.tv_usec) * 256) / 15625;
+			if (time_gap.tv_sec >= 16) {
+				debug(RPT_INFO, "picolcd: IR transmission gap: 8000 00F42400");
+				*p->resptr++ = 0x00;	/* zero */
+				*p->resptr++ = 0x80;	/* with space bit */
+				*p->resptr++ = 0x00;	/* 16s as 24 bit value */
+				*p->resptr++ = 0x24;
+				*p->resptr++ = 0xf4;
+				*p->resptr++ = 0x00;
+			}
+			else {
+				gap = (time_gap.tv_sec * 1000000 + time_gap.tv_usec);
+				if (gap > 0x7FFF) {
+					/* Send as 24 bits */
+					debug(RPT_INFO, "picolcd: IR transmission gap: 8000 %08x", gap);
+					*p->resptr++ = 0x00;	/* zero */
+					*p->resptr++ = 0x80;	/* with space bit */
+					*p->resptr++ = (unsigned char)(gap & 0xff);
+					*p->resptr++ = (unsigned char)((gap >> 8) & 0xff);
+					*p->resptr++ = (unsigned char)((gap >> 16) & 0xff);
+					*p->resptr++ = 0x00;
+				}
+				else {
+					/* Send a 16 bit space */
+					gap |= 0x8000;
+					debug(RPT_INFO, "picolcd: IR transmission gap: %04x", gap);
+					*p->resptr++ = (unsigned char)(gap & 0xff);
+					*p->resptr++ = (unsigned char)((gap >> 8) & 0xff);
+				}
+			}
 		}
+		else {	/* Intervals measured in jiffies (1/16384 s). */
+			/*
+			 * Prevent the overflow (2 secs = 32678 jiffies), but allow
+			 * 2.99 seconds to reach the max
+			 */
+			if (time_gap.tv_sec >= 2) {
+				/*
+				 * microseconds to jiffies (same as (16384/1000000)
+				 * but no possible int32 overflow)
+				 */
+				gap = ((time_gap.tv_sec * 1000000 + time_gap.tv_usec) * 256) / 15625;
+			}
+			/* Saturate on 15 bit overflow */
+			if (gap >= 0x8000) {
+				gap = 0x7FFF;
+			}
+			/* Make it a space */
+			gap |= 0x8000;
 
-		/* Saturate on 15 bit overflow */
-		if (gap >= 0x8000) {
-			gap = 0x7FFF;
+			debug(RPT_INFO, "picolcd: injecting space %04x between %04x and %04x",
+				gap, p->lastval, -w & 0xFFFF);
+			*p->resptr++ = (unsigned char)(gap & 0xff);
+			*p->resptr++ = (unsigned char)((gap >> 8) & 0xff);
 		}
-		/* Make it a space */
-		gap |= 0x8000;
-
-		debug(RPT_INFO, "picolcd: injecting space %04x between %04x and %04x",
-			gap, p->lastval, -w & 0xFFFF);
-		*p->resptr++ = (unsigned char)(gap & 0xff);
-		*p->resptr++ = (unsigned char)((gap >> 8) & 0xff);
 	}
 	/* Check if there is enough space left in buffer to store all new samples */
 	else if (cbdata >= (&p->result[sizeof(p->result)] - p->resptr)) {
 		/* This should never happen but just to be sure. */
-		debug(RPT_INFO, "picolcd: buffer almost full send lirc data now");
+		report(RPT_WARNING, "picolcd: buffer almost full send lirc data now");
 		picolcd_lircsend(drvthis);
 	}
 	for (i = 0; i < cIntervals; i++) {
 		w = *data++;
 		w |= *data++ << 8;
 
-		if (w & 0x8000) {
-			/* IF w is negative THEN negate. E.g. 0xDCA1 (-9055) -> 9055. */
+		if (w & 0x8000) {	/* Mark */
+			/* picoLCD uses negative for mark so negate. E.g. 0xDCA1 (-9055) -> 9055. */
 			w = 0x10000 - w;
-			/* scale: orig is usec, new is jiffy. E.g. 9055usec = 148 jiffy. */
-			w = (w * 16384 / 1000000) & 0xFFFF;
+			if (!p->lirc_time_us) {
+				/* scale: orig is usec, new is jiffy. E.g. 9055usec = 148 jiffy. */
+				w = (w * 16384 / 1000000) & 0xFFFF;
+			}
 		}
-		else {
-			/* Scale */
-			w = w * 16384 / 1000000;
+		else {	/* Space */
+			if (!p->lirc_time_us) {
+				/* Scale */
+				w = w * 16384 / 1000000;
+			}
 			if (w >= p->flush_threshold) {
 				report(RPT_INFO, "picolcd: detected sync space sending lirc data now");
 				picolcd_lircsend(drvthis);
@@ -1661,7 +1812,7 @@ ir_transcode(Driver *drvthis, unsigned char *data, unsigned int cbdata)
 	p->lastmsg = now;
 	/*
 	 * Look for a short buffer (a full buffer has 10 samples) with a
-	 * terminal PULSE
+	 * terminal mark
 	 */
 	if ((cIntervals < 10) && ((w & 0x8000) == 0)) {
 		debug(RPT_INFO, "picolcd: IR data end detected sending lirc data now");
@@ -1833,7 +1984,7 @@ picolcd_20x2_set_char(Driver *drvthis, int n, unsigned char *dat)
 
 	if ((n < 0) || (n >= NUM_CCs))
 		return;
-	if (!dat)
+	if (dat == NULL)
 		return;
 
 	packet[1] = n;		/* Custom char to define. */
@@ -1859,7 +2010,7 @@ picolcd_20x4_set_char(Driver *drvthis, int n, unsigned char *dat)
 
 	if ((n < 0) || (n >= NUM_CCs))
 		return;
-	if (!dat)
+	if (dat == NULL)
 		return;
 
 	unsigned char command[6] = {
@@ -1943,6 +2094,43 @@ set_key_lights(USB_DEVICE_HANDLE * lcd, int keys[], int state)
 
 #ifdef HAVE_LIBUSB_1_0
 /**
+ * Free the USB transfer data.
+ *
+ * \param drvthis   Pointer to driver structure
+ */
+static void
+free_usb_transfers(Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+	int i;
+
+	for (i = 0; i < USB_BUFFERS; i++) {
+		if (p->input_transfer[i].transfer != NULL) {
+			if (p->input_transfer[i].status == LIBUSB_SUCCESS) {
+				/* Need to cancel transfer before it is freed */
+				libusb_cancel_transfer(p->input_transfer[i].transfer);
+				while (p->input_transfer[i].status != LIBUSB_TRANSFER_CANCELLED) {
+					struct timeval timeout;
+					/*
+					 * Wait for the cancellation to complete, the
+					 * call-back will then have freed the
+					 * transfer.
+					 */
+					report(RPT_INFO, "%s: waiting for usb transfer %d to be cancelled", drvthis->name, i);
+					timeout.tv_sec = 1;
+					timeout.tv_usec = 0;
+					libusb_handle_events_timeout(p->lib_ctx, &timeout);
+				}
+			}
+			else {
+				libusb_free_transfer(p->input_transfer[i].transfer);
+				p->input_transfer[i].transfer = NULL;
+			}
+		}
+	}
+}
+
+/**
  * Store key press and release events in a buffer ready for the get key function.
  * If the buffer is full key codes are discarded.
  *
@@ -1985,14 +2173,15 @@ usb_cb_input(struct libusb_transfer *transfer)
 		"COMPLETED", "ERROR", "TIMED_OUT", "CANCELLED", "STALL",
 		"NO_DEVICE", "OVERFLOW"
 	};
-	Driver *drvthis = (Driver *)transfer->user_data;
-	PrivateData *p = drvthis->private_data;
+	UsbTransferData *p = (UsbTransferData *)transfer->user_data;
+	Driver *drvthis = p->drvthis;
+	PrivateData *p_data = drvthis->private_data;
 
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
 		report(RPT_ERR, "%s: input transfer status: %s", drvthis->name, status[transfer->status]);
-		p->libusb_status = transfer->status;
+		p->status = transfer->status;
 		libusb_free_transfer(transfer);
-		p->input_transfer = NULL;
+		p->transfer = NULL;
 		return;
 	}
 
@@ -2003,17 +2192,18 @@ usb_cb_input(struct libusb_transfer *transfer)
 		break;
 	    case IN_REPORT_IR_DATA:
 		debug(RPT_INFO, "%s: USB input call-back IR length %i", drvthis->name, transfer->buffer[1]);
-		if (p->IRenabled)
+		if (p_data->IRenabled)
 			ir_transcode(drvthis, &transfer->buffer[2], transfer->buffer[1]);
 		break;
 	    default:
 		report(RPT_ERR, "%s: input transfer unexpected data %d", drvthis->name, transfer->buffer[0]);
+		break;
 	}
 
 	/* Re-transmit the input request transfer */
-	p->libusb_status = libusb_submit_transfer(p->input_transfer);
-	if (p->libusb_status != LIBUSB_SUCCESS)
-		report(RPT_ERR, "%s: input transfer submit status %d", drvthis->name, p->libusb_status);
+	p->status = libusb_submit_transfer(transfer);
+	if (p->status != LIBUSB_SUCCESS)
+		report(RPT_ERR, "%s: input transfer submit status %d", drvthis->name, p->status);
 }
 #endif
 
