@@ -17,6 +17,7 @@ v0.5dev (ongoing development)
  * lcdproc client: Add option to turn off title on OldTime screen
  + glcd driver: Connection type 'x11' that draws to a X window (S. Meharg)
  + glcd driver: 'picolcdgfx' for picoLCD 256x64 from Mini-Box.com (S. Meharg)
+ * picolcd: Improvements to IR processing (M. Jones).
 
 v0.5.6
  - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!
