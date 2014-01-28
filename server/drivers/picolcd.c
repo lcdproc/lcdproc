@@ -16,7 +16,7 @@
  * 		 2007-2008 Mini-Box.com, Nicu Pavel <npavel@ituner.com>
  * 		 2008 Jack Cleaver
  * 		 2009 Andries van Schie
- * 		 2010-2013 Martin Jones <martin@brasskipper.org.uk>
+ * 		 2010-2014 Martin Jones <martin@brasskipper.org.uk>
  *
  * This file is released under the GNU General Public License. Refer to the
  * COPYING file distributed with this package.
@@ -247,6 +247,7 @@ picoLCD_init(Driver *drvthis)
 	PrivateData *p;
 #ifdef HAVE_LIBUSB_1_0
 	int error = 0;
+	int i;
 #else
 	struct usb_bus *bus;
 	struct usb_device *dev;
