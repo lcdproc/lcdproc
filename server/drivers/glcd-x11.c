@@ -68,7 +68,7 @@ void glcd_x11_set_backlight(PrivateData *p, int state);
 static void x11w_adj_contrast_brightness(unsigned long *pfgc, unsigned long *pbgc, int contrast,
 					 int brightness);
 static void x11w_draw_pixel(CT_x11_data * ct_data, int x, int y, unsigned long fgc,
-			    unsigned long bgc, int backlightstate);
+			    unsigned long bgc);
 
 /**
  * Draws a single LCD pixel in the X11 window.
@@ -76,11 +76,10 @@ static void x11w_draw_pixel(CT_x11_data * ct_data, int x, int y, unsigned long f
  * \param x        LCD x position.
  * \param y        LCD y position.
  * \param fgc      Foreground color.
- * \param bgc      Background color
+ * \param bgc      Background color.
  */
 static void
-x11w_draw_pixel(CT_x11_data * ct_data, int x, int y, unsigned long fgc, unsigned long bgc,
-		int backlightstate)
+x11w_draw_pixel(CT_x11_data * ct_data, int x, int y, unsigned long fgc, unsigned long bgc)
 {
 	int pxlsize = ct_data->pixel + ct_data->pgap;
 	int xoffset = ct_data->border + (x * pxlsize);
@@ -312,9 +311,9 @@ glcd_x11_blit(PrivateData *p)
 	for (y = 0; y < p->framebuf.px_height; y++) {
 		for (x = 0; x < p->framebuf.px_width; x++) {
 			if ((fb_get_pixel(&p->framebuf, x, y) ^ ct_data->inverted) == FB_BLACK)
-				x11w_draw_pixel(ct_data, x, y, fgc, bgc, p->backlightstate);
+				x11w_draw_pixel(ct_data, x, y, fgc, bgc);
 			else
-				x11w_draw_pixel(ct_data, x, y, bgc, bgc, p->backlightstate);
+				x11w_draw_pixel(ct_data, x, y, bgc, bgc);
 		}
 	}
 
