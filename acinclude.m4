@@ -232,6 +232,9 @@ dnl			else
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-i2c.o"
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-piplate.o"
 			fi
+			if test "$x_ac_have_spi" = yes; then
+				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-spi.o"
+			fi
 dnl			The hd4470-rpi driver only works on a Raspberry Pi,
 dnl			which is an ARM platform. Require people to compile on
 dnl			(or for) ARM to get it.

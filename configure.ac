@@ -167,6 +167,12 @@ if test "$x_ac_have_i2c" = yes; then
 	AC_DEFINE(HAVE_I2C,[1],[Define to 1 if you have the i2c headers])
 fi
 
+x_ac_have_spi=no
+AC_CHECK_HEADERS([linux/spi/spidev.h], [x_ac_have_spi=yes])
+if test "$x_ac_have_spi" = yes; then
+	AC_DEFINE(HAVE_SPI,[1],[Define to 1 if you have the spi headers])
+fi
+
 dnl Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC

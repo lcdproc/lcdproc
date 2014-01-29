@@ -37,7 +37,7 @@ various special features.
 
 <para>
 The following table lists the available connection types, sorted by the kind
-of connection (parallel port, serial port, USB, I2C or others).
+of connection (parallel port, serial port, USB, I2C, SPI or others).
 </para>
 
 <para>
@@ -154,6 +154,14 @@ of connection (parallel port, serial port, USB, I2C or others).
       <row>
         <entry><literal><link linkend="hd44780-piplate">piplate</link></literal></entry>
         <entry>Adafruit RGB Positive 16x2 LCD+Keypad for Raspberry Pi</entry>
+      </row>
+      <!-- SPI -->
+      <row>
+        <entry spanname="fullwidth">SPI (Serial Peripheral Interface):</entry>
+      </row>
+      <row>
+        <entry><literal><link linkend="hd44780-spi">spi</link></literal></entry>
+        <entry>Display using a KS0073 or similar in serial mode accessed via Linux SPI device</entry>
       </row>
       <!-- Other -->
       <row>
@@ -1757,6 +1765,27 @@ that. The BL output below should be connected to the BL input in the
 
 </sect3>
 
+<sect3 id="hd44780-spi">
+<title>spi</title>
+
+<para>
+This connection type drives a LCD in serial mode (supported on Hitachi HD66712,
+Samsung KS0073 and KS0074 (and clones) controllers) connected to some Linux
+SPI device.
+</para>
+<para>
+This connection type is currently only supported on Linux. It is strongly
+recommended to use a SPI implementation with hardware support, e.g. on the
+Raspberry Pi.
+</para>
+<para>
+As the SPI communication to the display cannot drive a backlight switch, this
+connection type features a <replaceable>BacklightDevice</replaceable> option
+that can use a GPIO pin exposed via sysfs (see <ulink url="http://elinux.org/GPIO">eLinux GPIO</ulink>).
+</para>
+
+</sect3>
+
 <sect3 id="hd44780-ftdi">
 <title>FTDI FT2232D USB chip "ftdi"</title>
 
@@ -3122,8 +3151,8 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <!-- Keep this list sorted according to the table in hd44780-drivers.h -->
       <emphasis><parameter><literal>4bit</literal></parameter></emphasis> |
       <parameter><literal>8bit</literal></parameter> |
-      <parameter><literal>winamp</literal></parameter> |
       <parameter><literal>serialLpt</literal></parameter> |
+      <parameter><literal>winamp</literal></parameter> |
       <parameter><literal>picanlcd</literal></parameter> |
       <parameter><literal>lcdserializer</literal></parameter> |
       <parameter><literal>los-panel</literal></parameter> |
@@ -3141,6 +3170,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>ftdi</literal></parameter> |
       <parameter><literal>i2c</literal></parameter> |
       <parameter><literal>piplate</literal></parameter> |
+      <parameter><literal>spi</literal></parameter> |
       <parameter><literal>ethlcd</literal></parameter> |
       <parameter><literal>raspberrypi</literal></parameter>
     }

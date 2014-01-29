@@ -55,6 +55,7 @@
 #define HD44780_CT_USB4ALL		21
 #define HD44780_CT_RASPBERRYPI		22
 #define HD44780_CT_PIPLATE		23
+#define HD44780_CT_SPI			24
 /**@}*/
 
 /** \name Symbolic names for interface types
@@ -65,6 +66,7 @@
 #define IF_TYPE_USB		3
 #define IF_TYPE_I2C		4
 #define IF_TYPE_TCP		5
+#define IF_TYPE_SPI		6
 /**@}*/
 
 /** \name Symbolic default values

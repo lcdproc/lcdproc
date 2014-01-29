@@ -182,6 +182,9 @@ USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002 USB Parallel Printer Adapters)
 .B i2c
 LCD in 4-bit mode driven by PCF8574(A) / PCA9554(A), connected via I2C bus
 .TP
+.B spi
+LCD with KS0073 or equivalent in serial mode, connected via SPI bus
+.TP
 .B ftdi
 USB connection via a FTDI FT2232D chip in bitbang mode
 .TP

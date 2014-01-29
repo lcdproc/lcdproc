@@ -33,6 +33,9 @@
 # include "hd44780-i2c.h"
 # include "hd44780-piplate.h"
 #endif
+#ifdef HAVE_SPI
+# include "hd44780-spi.h"
+#endif
 #ifdef WITH_ETHLCD
 # include "hd44780-ethlcd.h"
 #endif
@@ -82,6 +85,9 @@ static const ConnectionMapping connectionMapping[] = {
 #ifdef HAVE_I2C
 	{ "i2c",           HD44780_CT_I2C,           IF_TYPE_I2C,     hd_init_i2c       },
         { "piplate",       HD44780_CT_PIPLATE,       IF_TYPE_I2C,     hd_init_i2c_piplate },
+#endif
+#ifdef HAVE_SPI
+	{ "spi",           HD44780_CT_SPI,           IF_TYPE_SPI,     hd_init_spi       },
 #endif
 	/* TCP socket connection types */
 #ifdef WITH_ETHLCD
