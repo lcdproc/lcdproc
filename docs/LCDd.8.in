@@ -1,4 +1,4 @@
-.TH LCDd 8 "24 March 2011" LCDproc "LCDproc suite"
+.TH LCDd 8 "February 10, 2014" LCDproc "LCDproc suite"
 
 .SH NAME
 LCDd - LCDproc server daemon
@@ -184,6 +184,9 @@ LCD in 4-bit mode driven by PCF8574(A) / PCA9554(A), connected via I2C bus
 .TP
 .B spi
 LCD with KS0073 or equivalent in serial mode, connected via SPI bus
+.TP
+.B pifacecad
+PiFace Control and Display for the Raspberry Pi (http://www.piface.org.uk/)
 .TP
 .B ftdi
 USB connection via a FTDI FT2232D chip in bitbang mode

@@ -20,6 +20,7 @@ v0.5dev (ongoing development)
  * picolcd: Improvements to IR processing (M. Jones)
  + hd44780: Added 'spi' connection type (S. Dawson)
  * hd55780/serial: Change data escape handling (G. Smith)
+ + hd44780: New connection type 'pifacecad' (T. Preston)
 
 v0.5.6
  - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!

@@ -163,6 +163,10 @@ of connection (parallel port, serial port, USB, I2C, SPI or others).
         <entry><literal><link linkend="hd44780-spi">spi</link></literal></entry>
         <entry>Display using a KS0073 or similar in serial mode accessed via Linux SPI device</entry>
       </row>
+      <row>
+        <entry><literal><link linkend="hd44780-pifacecad">pifacecad</link></literal></entry>
+        <entry>PiFace Control and Display for Raspberry Pi</entry>
+      </row>
       <!-- Other -->
       <row>
         <entry spanname="fullwidth">Other connection types:</entry>
@@ -3090,6 +3094,49 @@ KeyDirect_5=Right
 
 </sect3>
 
+<sect3 id="hd44780-pifacecad">
+<title>PiFace Control and Display</title>
+
+<para>
+The <ulink url="http://www.piface.org.uk/products/piface_control_and_display/">PiFace Control and Display for Raspberry Pi</ulink>
+from OpenLX SP Ltd combines a 16x2 Character LCD and navigation buttons using
+the SPI bus on the Rasperry Pi.
+</para>
+
+<note>
+<para>
+The PiFace Control and Display features a IR receiver, which LCDproc does not
+make use of. You have to setup and use LIRC for that. See
+<ulink url="http://www.piface.org.uk/guides/setting_up_pifacecad/setting_up_PiFace_CAD_to_use_a_remote/">
+Setting up PiFace Control And Display to use a remote</ulink>.
+</para>
+</note>
+
+<example id="hd44780-pifacecad-config.example">
+<title>HD44780: Configuration example for PiFace Control and Display connection type</title>
+<screen>
+<![CDATA[
+[hd44780]
+ConnectionType=pifacecad
+Device=/dev/spidev0.1
+Size=16x2
+Backlight=yes
+
+Keypad=yes
+KeyMatrix_1_1=Left
+KeyMatrix_1_2=Down
+KeyMatrix_1_3=Up
+KeyMatrix_1_4=Right
+KeyMatrix_1_5=Escape
+KeyMatrix_1_6=Enter
+KeyMatrix_1_7=Left
+KeyMatrix_1_8=Right
+]]>
+</screen>
+</example>
+
+</sect3>
+
 </sect2>
 
 
@@ -3171,6 +3218,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>i2c</literal></parameter> |
       <parameter><literal>piplate</literal></parameter> |
       <parameter><literal>spi</literal></parameter> |
+      <parameter><literal>pifacecad</literal></parameter> |
       <parameter><literal>ethlcd</literal></parameter> |
       <parameter><literal>raspberrypi</literal></parameter>
     }

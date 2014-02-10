@@ -56,6 +56,7 @@
 #define HD44780_CT_RASPBERRYPI		22
 #define HD44780_CT_PIPLATE		23
 #define HD44780_CT_SPI			24
+#define HD44780_CT_PIFACECAD		25
 /**@}*/
 
 /** \name Symbolic names for interface types

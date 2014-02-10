@@ -35,6 +35,7 @@
 #endif
 #ifdef HAVE_SPI
 # include "hd44780-spi.h"
+# include "hd44780-pifacecad.h"
 #endif
 #ifdef WITH_ETHLCD
 # include "hd44780-ethlcd.h"
@@ -88,6 +89,7 @@ static const ConnectionMapping connectionMapping[] = {
 #endif
 #ifdef HAVE_SPI
 	{ "spi",           HD44780_CT_SPI,           IF_TYPE_SPI,     hd_init_spi       },
+	{ "pifacecad",     HD44780_CT_PIFACECAD,     IF_TYPE_SPI,     hd_init_pifacecad },
 #endif
 	/* TCP socket connection types */
 #ifdef WITH_ETHLCD
