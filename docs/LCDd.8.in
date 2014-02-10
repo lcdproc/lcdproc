@@ -113,6 +113,9 @@ supports the following sub-drivers (a.k.a. \fIconnection types\fP):
 .B glcd2usb
 Till Harbaum's open source/open hardware GLCD2USB (http://www.harbaum.org/till/glcd2usb/)
 .TP
+.B picolcdgfx
+picoLCD 256x64 Sideshow graphic LCD (Mini-Box.com)
+.TP
 .B png
 Write out screens as PNG images
 .TP
@@ -170,17 +173,32 @@ LIS2 from VLSystem (http://www.vlsys.co.kr), connected to USB
 .B mplay
 MPlay Blast from VLSystem (http://www.vlsys.co.kr), connected to USB
 .TP
+.B usblcd
+LCD device from Adams IT Services (http://www.usblcd.de/)
+.TP
 .B bwctusb
 USB-to-HD44780 converter by BWCT (http://www.bwct.de)
 .TP
 .B lcd2usb
 Till Harbaum's open source/open hardware LCD2USB (http://www.harbaum.org/till/lcd2usb/)
 .TP
+.B usbtiny
+Devices based on Dick Streefland's USBtiny firmware
+.TP
 .B uss720
 USS-720 USB-to-IEEE 1284 Bridge (Belkin F5U002 USB Parallel Printer Adapters)
 .TP
+.B usb4all
+Sprut's open source / open hardware USB-4-all (http://www.sprut.de/)
+.TP
+.B ftdi
+USB connection via a FTDI FT2232D chip in bitbang mode
+.TP
 .B i2c
 LCD in 4-bit mode driven by PCF8574(A) / PCA9554(A), connected via I2C bus
+.TP
+.B piplate
+Adafruit RGB Positive 16x2 LCD+Keypad for Raspberry Pi
 .TP
 .B spi
 LCD with KS0073 or equivalent in serial mode, connected via SPI bus
@@ -188,20 +206,11 @@ LCD with KS0073 or equivalent in serial mode, connected via SPI bus
 .B pifacecad
 PiFace Control and Display for the Raspberry Pi (http://www.piface.org.uk/)
 .TP
-.B ftdi
-USB connection via a FTDI FT2232D chip in bitbang mode
-.TP
 .B ethlcd
 TCP connection using open source/open hardware ethlcd (http://manio.skyboo.net/ethlcd/)
 .TP
-.B usblcd
-LCD device from Adams IT Services (http://www.usblcd.de/)
-.TP
-.B usbtiny
-Devices based on Dick Streefland's USBtiny firmware
-.TP
-.B usb4all
-Sprut's open source / open hardware USB-4-all (http://www.sprut.de/)
+.B raspberrypi
+LCD driven by the GPIO pins of a Raspberry Pi
 .RE
 .TP
 .B i2500vfd
