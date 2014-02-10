@@ -280,9 +280,10 @@ serial_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 		/* Do we need a DATA indicator byte? */
 		if ((SERIAL_IF.data_escape != '\0') &&
 		    (((ch >= SERIAL_IF.data_escape_min) &&
-		      (ch < SERIAL_IF.data_escape_max)) ||
+		      (ch <= SERIAL_IF.data_escape_max)) ||
 		     (SERIAL_IF.multiple_displays && displayID != lastdisplayID))) {
-			write(p->fd, &SERIAL_IF.data_escape + displayID, 1);
+			unsigned char esc_ch = SERIAL_IF.data_escape + (SERIAL_IF.multiple_displays) ? displayID : 0;
+			write(p->fd, &esc_ch, 1);
 		}
 		write(p->fd, &ch, 1);
 	}

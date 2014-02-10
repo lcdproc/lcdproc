@@ -19,6 +19,7 @@ v0.5dev (ongoing development)
  + glcd driver: 'picolcdgfx' for picoLCD 256x64 from Mini-Box.com (S. Meharg)
  * picolcd: Improvements to IR processing (M. Jones)
  + hd44780: Added 'spi' connection type (S. Dawson)
+ * hd55780/serial: Change data escape handling (G. Smith)
 
 v0.5.6
  - Remove deprecated CFontz633 driver. Use CFontzPacket with Model=633 instead!

@@ -23,7 +23,7 @@ struct hd44780_SerialInterface {
 	unsigned char instruction_escape;	/**< Instruction escape character. */
 	unsigned char data_escape;	/**< Data escape character. */
 	unsigned char data_escape_min;	/**< Escaped data lower limit (inclusive) */
-	unsigned char data_escape_max;	/**< Escaped data upper limit (exclusive) */
+	unsigned char data_escape_max;	/**< Escaped data upper limit (inclusive) */
 	/**@}*/
 
 	unsigned int  default_bitrate;	/**< Bitrate device is set to by default */
@@ -66,11 +66,11 @@ struct hd44780_SerialInterface {
  */
 static const struct hd44780_SerialInterface serial_interfaces[] = {
 	/*    type                  instr data     v     ^ bitrate bits  K   esc  B  Besc  Boff   Bon Multi  End */
-	{ HD44780_CT_PICANLCD,      0x11, 0x12, 0x00, 0x20,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
+	{ HD44780_CT_PICANLCD,      0x11, 0x12, 0x00, 0x1F,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
 	{ HD44780_CT_LCDSERIALIZER, 0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 0,    0,    0,    0,   0,    0 },
 	{ HD44780_CT_LOS_PANEL,     0xFE,    0, 0x00, 0x00,   9600,   4, 1, 0xFE, 1, 0xFD,    0, 0xFF,   0,    0 },
 	{ HD44780_CT_VDR_LCD,       0xFE,    0, 0x00, 0x00,   9600,   4, 0, 0x00, 0,    0,    0,    0,   0,    0 },
-	{ HD44780_CT_VDR_WAKEUP,    0xC0, 0xC4, 0xC0, 0xD0,   9600,   4, 0, 0x00, 1,    0, 0xC9, 0xC8,   1, 0xCF },
+	{ HD44780_CT_VDR_WAKEUP,    0xC0, 0xC4, 0xC0, 0xCF,   9600,   4, 0, 0x00, 1,    0, 0xC9, 0xC8,   1, 0xCF },
 	{ HD44780_CT_PERTELIAN,     0xFE,    0, 0x00, 0x00,   9600,   8, 0, 0x00, 1, 0xFE, 0x02, 0x03,   0,    0 },
 	{ HD44780_CT_UNKNOWN, 0x00, 0, 0x00, 0x00, 0, 0, 0, 0, 0, 0x00, 0x00, 0x00, 0, 0 }
 };
