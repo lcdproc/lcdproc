@@ -1,0 +1,134 @@
+<sect1 id="howto">
+<sect1info>
+  <author>
+    <firstname>Connor</firstname>
+    <surname>Wolf</surname>
+  </author>
+</sect1info>
+<!-- Only as a comment, as inline presentation is awful in Docbook 4.5
+Imaginary Industries
+imaginaryindustries.com
+Email: lcdproc@imaginaryindustries.com
+-->
+<title>The *Really* Simple Serial interface (rawserial)</title>
+
+<para>
+This section talks about using LCDproc with custom hardware.
+</para>
+
+<para>
+This driver is intended for using LCDproc with custom hardware. In the
+original implementation, this was for a PFsense router with a homemade
+arduino-style circuit that controlled analog panel meters to display network
+traffic. It is intended for this sort of application, where the LCD control
+characters emitted normally, as well as the partial screen drawing, make
+parsing the serial stream a considerably complex affair, particularly on
+small (generally 8 bit) microprocessors.
+</para>
+
+
+<sect2 id="features">
+<title>Features</title>
+
+<para>
+The driver emulates a 40x4 display, and simply dumps the entire framebuffer
+out the serial port at a rate configured in the config file (default of 1
+Hz), post-pended with a single "\n" character. At 1 Hz, it therefore
+generates 161 serial characters per second.
+</para>
+
+<para>
+The maximum update-rate is limited by the internal update-rate of LCDproc,
+which is currently 8 Hz, so speeds greater then 8 Hz will be simply limited
+to 8 Hz. The update-rate is also granular at 1 second/8 time-intervals (125
+ms), so interesting fractional update-rates will behave oddly. The
+event-loop is rigidly deterministic, so fractional rates will *average* out
+to the desired rate, but that will be achieved by dithering between nearby
+available intervals.
+</para>
+
+<para>
+The baud rate is configurable, with a default of 9600 baud. Baud rate will
+have to be chosen with the required data-per-second in mind, since at 1 Hz,
+there are 161 characters (40x4+1) per second, which requires that's a
+theoretical minimum baud of 161*10 = 1610 baud. Higher frame-rates will
+require higher baud rates.
+</para>
+
+</sect2>
+
+
+<sect2 id="requirements">
+<title>Requirements</title>
+
+<para>
+None. The only requirement is a serial port of some sort.
+</para>
+
+</sect2>
+
+
+<sect2 id="config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="config-section">
+<title>[rawserial]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
+  </term>
+  <listitem><para>
+  Serial port to use. Default: <filename>/dev/cuaU0</filename>
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Speed</property> =
+    <parameter><replaceable>NUMBER</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Desired baud-rate. Possible values:
+    <literal>1200</literal>,
+    <literal>2400</literal>,
+    <literal>9600</literal> (default),
+    <literal>19200</literal>, and
+    <literal>115200</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Size</property> = &parameters.size;
+  </term>
+  <listitem><para>
+    Specifies the size of the LCD. If this driver is loaded as a secondary
+    driver it always adopts to the size of the primary driver. If loaded as
+    the only (or primary) driver, the size can be set.
+    Default: <literal>40x4</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>UpdateRate</property> =
+    <parameter><replaceable>NUMBER</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Desired update-rate in Hertz (e.g. updates per second). Fractional
+    values and values less than one are valid (e.g. 0.5). Legal values are
+    <literal>0.0005</literal> (equals 2000 seconds) - <literal>10</literal>,
+    with <literal>1.0 </literal> being the default.
+  </para></listitem>
+</varlistentry>
+
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

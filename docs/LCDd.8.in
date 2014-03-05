@@ -274,6 +274,9 @@ LCD display on the Logitech MX5000 keyboard
 .B NoritakeVFD
 Noritake VFD Device CU20045SCPB-T28A
 .TP
+.B rawserial
+Dumps the entire framebuffer to the serial port at a configurable rate.
+.TP
 .B picolcd
 Mini-box.com USB LCD (PicoLCD 20x4 & picoLCD 20x2)
 .TP

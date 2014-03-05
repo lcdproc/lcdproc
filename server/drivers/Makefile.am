@@ -23,7 +23,7 @@ AM_LDFLAGS = @LDSHARED@
 
 lcdexecbindir = $(pkglibdir)
 lcdexecbin_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses debug CwLnx ea65 EyeboxOne g15 glcd glcdlib glk hd44780 icp_a106 imon imonlcd IOWarrior irman joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD stv5730 SureElec svga t6963 text tyan sli ula200 vlsys_m428 xosd i2500vfd irtrans
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -116,6 +116,7 @@ mtc_s16209x_SOURCES =  lcd.h lcd_lib.h mtc_s16209x.c mtc_s16209x.h report.h
 MtxOrb_SOURCES =     lcd.h lcd_lib.h MtxOrb.c MtxOrb.h report.h adv_bignum.h
 mx5000_SOURCES =     lcd.h mx5000.c mx5000.h report.h
 NoritakeVFD_SOURCES = lcd.h lcd_lib.h NoritakeVFD.c NoritakeVFD.h report.h adv_bignum.h
+rawserial_SOURCES =  lcd.h rawserial.c rawserial.h
 picolcd_SOURCES =    lcd.h picolcd.h picolcd.c report.h
 pyramid_SOURCES =    lcd.h pylcd.c pylcd.h
 sdeclcd_SOURCES =    lcd.h sdeclcd.h sdeclcd.c lcd_lib.h report.h adv_bignum.h port.h lpt-port.h timing.h

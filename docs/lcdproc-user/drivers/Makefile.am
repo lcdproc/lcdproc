@@ -35,6 +35,7 @@ EXTRA_DIST =	bayrad.docbook \
 		picolcd.docbook \
 		ppttrouble.docbook \
 		pylcd.docbook \
+		rawserial.docbook \
 		sdeclcd.docbook \
 		sed1330.docbook \
 		sed1520.docbook \

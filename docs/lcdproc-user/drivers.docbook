@@ -39,6 +39,7 @@ well as the configuration of LCDd.
 &MtxOrb;
 &mx5000;
 &NoritakeVFD;
+&rawserial;
 &picolcd;
 &pylcd;
 &sdeclcd;
