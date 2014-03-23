@@ -55,23 +55,6 @@ release.
 
   <step>
     <para>
-    Revert files that need to retain their version number after merge. Due to
-    some wired import of external files, some files always get their &dollar;Id&dollar; tag
-    updated, even if there has been no change. The following files should be
-    reverted to their previous version (given that there has really no change
-    happened):
-    <itemizedlist spacing="compact">
-      <listitem><para><filename>clients/examples/lcdident.pl</filename></para></listitem>
-      <listitem><para><filename>clients/metar/lcdmetar.pl</filename></para></listitem>
-      <listitem><para><filename>contrib/interface-demo2/interface.c</filename></para></listitem>
-      <listitem><para><filename>contrib/interface-demo2/nstrcmp.c</filename></para></listitem>
-    </itemizedlist>
-    Run <userinput>cvs update -C</userinput> on these files.
-    </para>
-  </step>
-
-  <step>
-    <para>
     Update version numbers for stable branch. See <xref linkend="files-with-version-numbers"/>
     for the list of affected files.
     </para>
