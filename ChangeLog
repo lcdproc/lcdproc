@@ -6,6 +6,8 @@ Key:
      * Something changed / fixed
 
 v0.5dev (ongoing development)
+
+v0.5.7
  * Fix using the left key to change the ring and checkbox menu items
  * sed1520: Add an option for inverted segment mapping (idea by R. Buchert)
  * Fix build if compiled with --enable-permissive-menu-goto (#3599609)

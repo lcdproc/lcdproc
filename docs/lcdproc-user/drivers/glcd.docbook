@@ -17,7 +17,8 @@ by a small sub-driver called connection type driver (CT-driver).
 
 <note><para>
 LCDproc is compiled with FreeType support by default if it is installed on your
-system.
+system. It is enabled by default, too. However a font is not configured by
+default. Thus the driver will not start unless a font is configured!
 </para></note>
 
 <sect2 id="glcd-connections">

@@ -12,31 +12,21 @@ around on the internet:
 <variablelist>
 
 <varlistentry>
-  <term>LCDproc 0.5.3</term>
+  <term>LCDproc 0.5.7</term>
   <listitem>
     <para>
-      LCDproc 0.5.3 is the current stable version of LCDproc.
+      LCDproc 0.5.7 is the current stable version of LCDproc.
       This is the version recommended to use.
     </para>
   </listitem>
 </varlistentry>
 
 <varlistentry>
-  <term>LCDproc 0.5.2</term>
+  <term>Older releases</term>
   <listitem>
     <para>
-      LCDproc 0.5.2 is an old stable version of LCDproc.
-      It now has been superseded with LCDproc 0.5.3.
-    </para>
-  </listitem>
-</varlistentry>
-
-<varlistentry>
-  <term>LCDproc 0.5.1</term>
-    <listitem>
-    <para>
-      LCDproc 0.5.1 is an old stable version of LCDproc.
-      It was the second stable version of LCDproc after the move to the 0.5 API.
+    Older releases of LCDproc can be found on the Sourceforge project page at
+    <ulink url="http://sourceforge.net/projects/lcdproc/files/lcdproc/"></ulink>.
     </para>
   </listitem>
 </varlistentry>
@@ -46,11 +36,12 @@ around on the internet:
 </sect1>
 
 <sect1 id="tar">
-<title>Download Yesterday's CVS Version of LCDproc as a Tarball</title>
+<title>Download CVS Version of LCDproc as a Tarball</title>
 
 <para>
-There are nightly distributions of the CVS branches of LCDproc. You can download them from
-<ulink url="http://lcdproc.sourceforge.net/nightly/"></ulink>
+The snapshot of the current source code repository may be downloaded from the
+web. Goto <ulink url="http://lcdproc.cvs.sourceforge.net/viewvc/lcdproc/"></ulink>
+and click on "Download GNU tarball".
 </para>
 
 <para>
@@ -58,7 +49,7 @@ To extract the files run
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>tar xvfz lcdproc-CVS-*.tar.gz</userinput>
+<prompt>$</prompt> <userinput>tar xvfz lcdproc.tar.gz</userinput>
 </screen>
 
 </sect1>
@@ -104,26 +95,6 @@ Now that once you have downloaded the files you can prepare them for
 compiling, but first you should (you don't have to) copy them to another
 place on your machine.
 </para>
-
-</sect1>
-
-<sect1 id="apt-get">
-<title>apt-get</title>
-
-<para>
-Debian GNU/Linux users can get the Debian package of <package>LCDproc</package>,
-which is in the unstable and testing distributions.
-</para>
-
-<para>
-Provided apt-get is configured properly, you should be able to install the package running:
-</para>
-
-<screen>
-<prompt>$</prompt> <userinput>su</userinput>
-<prompt>Password:</prompt> <userinput>top secret</userinput>
-<prompt>#</prompt> <userinput>apt-get install lcdproc</userinput>
-</screen>
 
 </sect1>
 
