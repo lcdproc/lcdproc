@@ -12,6 +12,7 @@
 #ifndef _lcdproc_machine_h_
 #define _lcdproc_machine_h_
 
+#include <time.h>
 #include "shared/LL.h"
 
 #ifndef LOADAVG_NSTATS
