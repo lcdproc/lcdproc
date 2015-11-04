@@ -60,13 +60,13 @@ typedef struct rawserial_private_data {
 	/** \name Event loop timing. refresh_time and refresh_delta form the
 	 * event loop timing mechanism for configurable update rates.
 	 *@{*/
-	uint refresh_time;		/**< time at the last screen update */
-	uint refresh_delta;		/**< time step to next screen update */
+	unsigned int refresh_time;	/**< time at the last screen update */
+	unsigned int refresh_delta;	/**< time step to next screen update */
 	/**@}*/
 } PrivateData;
 
 /* Local prototypes */
-static uint get_millisecond_time(void);
+static unsigned int get_millisecond_time(void);
 
 
 /* Vars for the server core */
@@ -303,7 +303,7 @@ rawserial_flush(Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	char out[LCD_MAX_WIDTH * LCD_MAX_HEIGHT];
 
-	uint currentTime = get_millisecond_time();
+	unsigned int currentTime = get_millisecond_time();
 	int t_delta = currentTime - p->refresh_time;
 
 	/*
@@ -415,7 +415,7 @@ rawserial_get_info(Driver *drvthis)
  *
  * \return  int with current millisecond time.
  */
-static uint
+static unsigned
 get_millisecond_time(void)
 {
 	struct timeval ts;
