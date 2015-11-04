@@ -285,7 +285,7 @@ lcdrpi_HD44780_close(PrivateData *p)
 
 	/* Unmap and free memory */
 	if (gpio_map != NULL)
-		munmap((caddr_t) gpio_map, GPIO_BLOCK_SIZE);
+		munmap((void *) gpio_map, GPIO_BLOCK_SIZE);
 	if (p->rpi_gpio != NULL)
 		free(p->rpi_gpio);
 	p->rpi_gpio = NULL;
