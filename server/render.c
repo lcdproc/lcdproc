@@ -310,9 +310,6 @@ render_string(Widget *w, int left, int top, int right, int bottom, int fy)
 
 	if ((w != NULL) && (w->text != NULL) &&
 	    (w->x > 0) && (w->y > 0) && (w->y > fy) && (w->y <= bottom - top)) {
-		int length;
-		char str[BUFSIZE];
-
 		/*
 		 * FIXME: Could be a bug here? w->x is recalculated (On first
 		 * call only? Is it preserved between calls?) and first
@@ -320,10 +317,7 @@ render_string(Widget *w, int left, int top, int right, int bottom, int fy)
 		 * strings totally off-screen. Is this on purpose? (M. Dolze)
 		 */
 		w->x = min(w->x, right - left);
-		length = min(right - left - w->x + 1, sizeof(str)-1);
-		strncpy(str, w->text, length);
-		str[length] = '\0';
-		drivers_string(w->x + left, w->y + top, str);
+		drivers_string(w->x + left, w->y + top, w->text);
 	}
 	return 0;
 }
