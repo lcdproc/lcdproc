@@ -37,6 +37,7 @@
   <!ENTITY lb216 SYSTEM "drivers/lb216.docbook">
   <!ENTITY lcdm001 SYSTEM "drivers/lcdm001.docbook">
   <!ENTITY lcterm SYSTEM "drivers/lcterm.docbook">
+  <!ENTITY linux_input SYSTEM "drivers/linux_input.docbook">
   <!ENTITY lirc SYSTEM "drivers/lircin.docbook">
   <!ENTITY lis SYSTEM "drivers/lis.docbook">
   <!ENTITY MD8800 SYSTEM "drivers/MD8800.docbook">
