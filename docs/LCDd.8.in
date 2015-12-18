@@ -277,6 +277,9 @@ LCD display on the Logitech MX5000 keyboard
 .B NoritakeVFD
 Noritake VFD Device CU20045SCPB-T28A
 .TP
+.B Olimex_MOD_LCD1x9
+Olimex MOD-LCD1x9 14 segment display
+.TP
 .B rawserial
 Dumps the entire framebuffer to the serial port at a configurable rate.
 .TP

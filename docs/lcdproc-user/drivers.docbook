@@ -40,6 +40,7 @@ well as the configuration of LCDd.
 &MtxOrb;
 &mx5000;
 &NoritakeVFD;
+&Olimex_MOD_LCD1x9;
 &rawserial;
 &picolcd;
 &pylcd;

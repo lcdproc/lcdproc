@@ -47,6 +47,7 @@
   <!ENTITY MtxOrb SYSTEM "drivers/mtxorb.docbook">
   <!ENTITY mx5000 SYSTEM "drivers/mx5000.docbook">
   <!ENTITY NoritakeVFD SYSTEM "drivers/NoritakeVFD.docbook">
+  <!ENTITY Olimex_MOD_LCD1x9 SYSTEM "drivers/Olimex_MOD_LCD1x9.docbook">
   <!ENTITY rawserial SYSTEM "drivers/rawserial.docbook">
   <!ENTITY picolcd SYSTEM "drivers/picolcd.docbook">
   <!ENTITY pylcd SYSTEM "drivers/pylcd.docbook">

@@ -1,0 +1,32 @@
+<sect1 id="olimex1x9-howto">
+<title>The Olimex_MOD_LCD1x9  Driver</title>
+
+<para>
+The Olimex_MOD_LCD1x9 driver supports the popular MOD-LCD1x9 14 segment
+display on I2C lines. Currently this driver only supports Linux.
+</para>
+
+<!-- ## Olimex_MOD_LCD1x9 driver ## -->
+<sect2 id="olimex1x9-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="olimex1x9-config-section">
+<title>[Olimex_MOD_LCD1x9]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Set the I2C device [default: <filename>/dev/i2c-0</filename>]
+  </para></listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>
