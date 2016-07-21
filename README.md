@@ -25,8 +25,8 @@ Visit our [website](http://lcdproc.org/) for more information. The project's
 repository, issue tracking and pull request management can be found at
 http://github.com/willfe/lcdproc.
 
-LCDproc was originally written by William Ferrell <willfe@gmail.com>
-and Selene Scriven <lcdproc@toykeeper.net>.
+LCDproc was originally written by [William Ferrell](mailto:willfe@gmail.com)
+and [Selene Scriven](lcdproc@toykeeper.net).
 
 # Installation
 
