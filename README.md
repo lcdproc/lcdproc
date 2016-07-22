@@ -1,4 +1,6 @@
-_Note: this project is currently being migrated from Sourceforge. Documentation 
+This is the official repository for the LCDproc project.
+
+_Note: this project is currently being migrated from Sourceforge. Documentation
 is still being updated to reflect this and we're still getting our bearings here
 on GitHub, so please excuse the dust while we set up shop._
 
@@ -23,7 +25,7 @@ display in the United States.
 
 Visit our [website](http://lcdproc.org/) for more information. The project's
 repository, issue tracking and pull request management can be found at
-http://github.com/willfe/lcdproc.
+http://github.com/lcdproc/lcdproc.
 
 LCDproc was originally written by [William Ferrell](mailto:willfe@gmail.com)
 and [Selene Scriven](lcdproc@toykeeper.net).
@@ -71,7 +73,7 @@ _From William Ferrell, original developer:_ This project is almost twenty years
 old as I write this, and I'm so proud of what it's become over the years thanks
 in no small part to the people (past and present) who not only contributed their
 work and ideas to the project, but helped to manage and maintain it when I
-couldn't. To see this project start as a small single-system utility program 
+couldn't. To see this project start as a small single-system utility program
 supporting a single type of device and flourish into a client/server daemon used
 around the world to drive all sorts of display devices is beyond anything I could
 have ever hoped for, and I'm eternally grateful to everyone who's contributed
