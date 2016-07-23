@@ -2,6 +2,9 @@
 
 language: c
 
+before_install:
+    - chmod +x ./autogen.sh
+
 script:
-    - ./autogen.sh && ./configure ./configure --enable-drivers=all
+    - ./autogen.sh && ./configure --enable-drivers=all
     - make
