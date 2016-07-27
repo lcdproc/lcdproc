@@ -1,0 +1,10 @@
+# Travis-CI file for Espruino
+
+language: c
+
+before_install:
+    - chmod +x ./autogen.sh
+
+script:
+    - ./autogen.sh && ./configure --enable-drivers=all
+    - make
