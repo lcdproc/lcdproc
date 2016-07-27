@@ -155,6 +155,21 @@ typedef struct hd44780_private_data {
 	int ftdi_line_backlight;
 #endif
 
+#ifdef HAVE_I2C
+	/* libi2c-based connection types */
+	
+	int i2c_backlight_invert;
+	int i2c_line_RS;
+	int i2c_line_RW;
+	int i2c_line_EN;
+	int i2c_line_BL;
+	int i2c_line_D4;
+	int i2c_line_D5;
+	int i2c_line_D6;
+	int i2c_line_D7;
+
+#endif
+
 #ifdef WITH_ETHLCD
 	int sock;		/**< socket for TCP devices */
 #endif

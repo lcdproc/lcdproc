@@ -2516,6 +2516,61 @@ Size=40x2
 DelayBus=false
 DelayMult=1
 Keypad=no
+#i2c_line_RS=0x10
+#i2c_line_RW=0x20
+#i2c_line_EN=0x40
+#i2c_line_BL=0x80
+#i2c_line_D4=0x01
+#i2c_line_D5=0x02
+#i2c_line_D6=0x04
+#i2c_line_D7=0x08
+# BacklightInvert=yes
+# The Backlight Invert is used if a 0 turns the backlight on, and 1 turns it off, i.e. npn transistor
+]]>
+</screen>
+</example>
+
+<para>
+If your port expander has different wiring you can re-assign the pins in the config file
+</para>
+
+<example id="hd44780-i2c-config.example alternative wiring">
+<title>HD44780: Configuration for I<superscript>2</superscript>C with port expander 
+Alternative Wiring</title>
+<screen>
+<![CDATA[
+-   PCF8574AP: P0 P1 P2 P3 P4 P5 P6 P7
+-              |  |  |  |  |  |  |  |
+-   HD44780:   RS RW EN BL D4 D5 D6 D7
+]]>
+</screen>
+</example>
+
+<example id="hd44780-i2c-config.example alternative config">
+<title>HD44780: Configuration for I<superscript>2</superscript>C with port expander
+alternative config</title>
+<screen>
+<![CDATA[
+[HD44780]
+ConnectionType=i2c
+Device=/dev/i2c-0
+Port=0x20
+Size=40x2
+DelayBus=false
+DelayMult=1
+Keypad=no
+i2c_line_RS=0x01
+i2c_line_RW=0x02
+i2c_line_EN=0x04
+i2c_line_BL=0x08
+i2c_line_D4=0x10
+i2c_line_D5=0x20
+i2c_line_D6=0x40
+i2c_line_D7=0x80
+Backlight=yes
+BacklightInvert=yes
+#The Backlight Invert is used if a 0 turns the backlight on, and 1 turns it off, 
+i.e. PNP transistor
 ]]>
 </screen>
 </example>
