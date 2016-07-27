@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lcdproc/lcdproc.svg?branch=master)](https://travis-ci.org/lcdproc/lcdproc)
+
 This is the official repository for the LCDproc project.
 
 _Note: this project is currently being migrated from Sourceforge. Documentation
