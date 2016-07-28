@@ -16,6 +16,7 @@
 # include "hd44780-ext8bit.h"
 # include "hd44780-serialLpt.h"
 # include "hd44780-winamp.h"
+# include "hd44780-lcm162.h"
 #endif
 #include "hd44780-serial.h"
 #include "hd44780-lis2.h"
@@ -60,6 +61,7 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "8bit",          HD44780_CT_8BIT,          IF_TYPE_PARPORT, hd_init_ext8bit   },
 	{ "serialLpt",     HD44780_CT_SERIALLPT,     IF_TYPE_PARPORT, hd_init_serialLpt },
 	{ "winamp",        HD44780_CT_WINAMP,        IF_TYPE_PARPORT, hd_init_winamp    },
+	{ "lcm162",        HD44780_CT_LCM162,        IF_TYPE_PARPORT, hd_init_lcm162    },
 #endif
 	/* serial connection types */
 	{ "picanlcd",      HD44780_CT_PICANLCD,      IF_TYPE_SERIAL,  hd_init_serial    },
