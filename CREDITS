@@ -1,28 +1,30 @@
 This is the CREDITS file that should list all people that are or have
 been involved in LCDproc.
 
-Please help us keeping this file up to date. Developers, please insert
-your name and a short description of your activities. Other people
-involved, please tell us if your name is missing or your credit
-information is incorrect. LCDproc is a community effort, and as such
-we'd like to recognize everyone's efforts!
+Please help us keeping this file up to date. Developers, please insert your
+name and a short description of your activities. Other people involved, please
+tell us if your name is missing or your credit information is incorrect.
+LCDproc is a community effort, and as such we'd like to recognize everyone's
+efforts!
 
 CONTRIBUTORS
 
 (in order of appearance :)
 
-William Ferrell (Choadstre) <willfe@yahoo.com>:
+William Ferrell (willfe) <willfe@gmail.com>:
 	- Project founder, wrote 1st version, much documentation, design
 	  for V0.4, continued maintenance
-It's Choadstre's fault that LCDproc exists. He wanted his computer to have
-a heartbeat, like some HP workstations do. So he found a nice LCD, wrote
-some amazingly spiffy software for it, and life was good.
+
+It's willfe's fault that LCDproc exists. He wanted his computer to have a
+heartbeat, like some HP workstations do. So he found a nice LCD, wrote some
+amazingly spiffy software for it, and life was good.
 
 Selene Scriven (ToyKeeper) <lcdproc@toykeeper.net>:
 	- wrote V0.3 and most of V0.4, and helped procrastinate the rest
 	  of the time...
-ToyKeeper was the main programmer for LCDproc 0.2 - 0.4-pre9.  She took
-Choadstre's idea and put it in its current form.
+
+ToyKeeper was the main programmer for LCDproc 0.2 - 0.4-pre9. She took
+willfe's idea and put it in its current form.
 
 Gareth Watts (Xeno42):
 	- Patches, mailing list, ideas, web hosting, CVS, etc.
@@ -32,11 +34,15 @@ Matrix Orbital Corporation <http://www.matrixorbital.com/>:
 
 Crystalfontz America, Inc. <http://www.crystalfontz.com/>:
 	- Sends us testing LCDs to get LCDproc going on all their models
+	- Rescued the lcdproc.org/com/net domains when their registrations
+	  expired and they were "ransomed" by a domain squatter
 
 Lorand Bruhacs <bruhacs@ip23.net>:
-	- Lorand made LCDproc V0.3.5, which added lots of nifty stuff while keeping the old program model
+	- Lorand made LCDproc V0.3.5, which added lots of nifty stuff while
+	  keeping the old program model
 
-Benjamin Tse <blt@Comports.com>, Matthias Prinke <m.prinke@trashcan.mcnet.de>:
+Benjamin Tse <blt@Comports.com>,
+Matthias Prinke <m.prinke@trashcan.mcnet.de>:
 	- HD44780 driver and predecessors
 
 Richard Rognlie <rrognlie@gamerz.net>:
@@ -179,7 +185,8 @@ Matteo Pillon:
 	- various improvements to the serial connections of the hd44780 driver
 
 Laurent Arnal:
-	- connectiontype for LIS2 displays from VLSystem (http://www.vlsys.co.kr)
+	- connectiontype for LIS2 displays from VLSystem
+	  (http://www.vlsys.co.kr)
 
 Simon Funke:
 	- driver for Noritake VFD
@@ -214,7 +221,8 @@ Eric Pooch:
 
 Benjamin Wiedmann
 	- Added functionality for HITACHI SP14Q002 gLCD (320x240)
-	- Implemented dynamic wiring scheme selection for SED1330 driver ("ConnectionType")
+	- Implemented dynamic wiring scheme selection for SED1330 driver
+	  ("ConnectionType")
 
 Frank Jepsen
 	- vdr-wakeup support in hd44780 driver (originally for v0.4.5)
@@ -270,9 +278,13 @@ Laurent Latil
 Christoph Rasim
 	- MDM166A driver for Futaba/Targa USB VFD
 
+bjo81
+	- Driver for lcm162-module (by H. Rasch)
+	  (https://github.com/lcdproc/lcdproc/pull/6)
 
 Further developers in the sourceforge lcdproc team:
 Colin Munro             colinmunro
 Shane Spencer           hardwire
 Jim McCracken           merlin_jim
 Luis Llorente		luisllo
+
