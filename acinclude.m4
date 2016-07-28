@@ -214,7 +214,7 @@ dnl			else
 			actdrivers=["$actdrivers glk"]
 			;;
 		hd44780)
-			HD44780_DRIVERS="hd44780-hd44780-serial.o hd44780-hd44780-lis2.o hd44780-hd44780-usblcd.o"
+			HD44780_DRIVERS="hd44780-hd44780-serial.o hd44780-hd44780-lis2.o hd44780-hd44780-usblcd.o hd44780-hd44780-lcm162.o"
 			if test "$ac_cv_port_have_lpt" = yes ; then
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-4bit.o hd44780-hd44780-ext8bit.o hd44780-lcd_sem.o hd44780-hd44780-winamp.o hd44780-hd44780-serialLpt.o"
 			fi
