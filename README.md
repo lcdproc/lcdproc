@@ -54,6 +54,28 @@ To learn more about how LCDproc works, first have a look at the docs/
 directory. Some important things are documented there, but because this is
 still somewhat a big hacking project, some documentation will be missing ;)
 
+Please don't hesitate to ask us for help if you're having trouble getting LCDproc
+working with your hardware or you'd like to contribute to the project but need
+guidance on how something works or how things fit together. We're a friendly
+bunch!
+
+## Mailing List
+
+We also maintain a [mailing list](https://groups.google.com/d/forum/lcdproc-mailing-list)
+for development and user discussions. There are several ways to join the mailing list:
+
+- If you have a Google account, and you're already logged in, browse to
+  https://groups.google.com/d/forum/lcdproc-mailing-list and click "Join this group".
+
+- If you'd like to subscribe with a non-Google email address, you can either:
+
+  - Browse to https://groups.google.com/forum/#!forum/lcdproc-mailing-list/join
+    and provide your email address, solve the displayed captcha (if any) and
+    click "Subscribe". You may need to click a confirmation link (that Google will
+    mail to the provided address) to actually be subscribed to the mailing list.
+
+  - Send an email to lcdproc-mailing-list+subscribe@googlegroups.com.
+
 ## Code of Merit
 
 This project adopts the Code of Merit, version 1.0, originally published at
