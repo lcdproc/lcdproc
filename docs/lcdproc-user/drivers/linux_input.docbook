@@ -1,0 +1,57 @@
+<sect1 id="linux_input-howto">
+<title>The Linux Event Device Input Driver</title>
+
+<para>
+This section covers the linux event device input driver for LCDd.
+</para>
+
+<!-- ## Linux input driver ## -->
+<sect2 id="linux_input-config">
+<title>Configuration in LCDd.conf</title>
+
+<sect3 id="linux_input-config-section">
+<title>[linux_input]</title>
+
+<variablelist>
+<varlistentry>
+  <term>
+    <property>Device</property> =
+    <parameter><replaceable>DEVICE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Select the input device to use [default: <filename>/dev/input/event0</filename>]
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>key</property> =
+    <parameter><replaceable>KEYCODE</replaceable>,<replaceable>KEY</replaceable></parameter>
+  </term>
+  <listitem>
+    <para>
+    Set an alternate key map, e.g. to use custom buttons instead of the
+    standard codes for Escape, Enter, Left, Right, Up and Down. This entry
+    typically repeaded for any non-standard key code.
+    </para>
+
+    <para>
+    <replaceable>KEYCODE</replaceable> is an integer like the ones defined in
+    <filename>/usr/include/linux/input.h</filename>.
+    </para>
+
+    <para>
+    <replaceable>KEY</replaceable> can be one of the keys that LCDd recognizes
+    (<literal>Left</literal>, <literal>Right</literal>, <literal>Up</literal>,
+    <literal>Down</literal>, <literal>Enter</literal> or <literal>Escape</literal>)
+    or any other string that a client can parse.
+    </para>
+  </listitem>
+</varlistentry>
+</variablelist>
+
+</sect3>
+
+</sect2>
+
+</sect1>

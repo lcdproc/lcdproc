@@ -23,7 +23,7 @@ AM_LDFLAGS = @LDSHARED@
 
 lcdexecbindir = $(pkglibdir)
 lcdexecbin_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy lb216 lcdm001 lcterm lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy lb216 lcdm001 lcterm linux_input lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
@@ -107,6 +107,7 @@ joy_SOURCES =        lcd.h joy.c joy.h port.h report.h
 lb216_SOURCES =      lcd.h lcd_lib.h lb216.c lb216.h report.h
 lcdm001_SOURCES =    lcd.h lcdm001.c lcdm001.h report.h
 lcterm_SOURCES =     lcd.h lcd_lib.h lcterm.c lcterm.h report.h
+linux_input_SOURCES = lcd.h linux_input.h linux_input.c report.h
 lirc_SOURCES =       lcd.h lircin.c lircin.h report.h
 lis_SOURCES =        lcd.h lcd_lib.h lis.h lis.c report.h
 MD8800_SOURCES =     lcd.h lcd_lib.h MD8800.c MD8800.h report.h

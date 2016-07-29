@@ -247,6 +247,9 @@ kernelconcepts.de 20x4 serial LCD displays
 .B lcterm
 serial LCD terminal from Helmut Neumark Elektronik (http://www.neumark.de)
 .TP
+.B linux_input
+Linux event devices (input)
+.TP
 .B lirc
 Infrared (input)
 .TP

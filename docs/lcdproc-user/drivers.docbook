@@ -30,6 +30,7 @@ well as the configuration of LCDd.
 &lb216;
 &lcdm001;
 &lcterm;
+&linux_input;
 &lirc;
 &lis;
 &MD8800;
