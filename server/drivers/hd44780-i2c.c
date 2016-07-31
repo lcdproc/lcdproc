@@ -82,19 +82,8 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
 
-#ifdef HAVE_DEV_IICBUS_IIC_H
-#include <dev/iicbus/iic.h>
-#else /* HAVE_LINUX_I2C_DEV_H */
-#include <linux/i2c-dev.h>
-/* I2C_SLAVE is missing in linux/i2c-dev.h from kernel headers of 2.4.x kernels */
-#ifndef I2C_SLAVE
-#define I2C_SLAVE 0x0703  /* Change slave address */
-#endif
-#endif
-
+#include "i2c.h"
 
 // Generally, any function that accesses the LCD control lines needs to be
 // implemented separately for each HW design. This is typically (but not
@@ -123,13 +112,9 @@ void i2c_HD44780_close(PrivateData *p);
 static void
 i2c_out(PrivateData *p, unsigned char val)
 {
-	char data[2];
+	unsigned char data[2];
 	int datalen;
 	static int no_more_errormsgs=0;
-#ifdef HAVE_DEV_IICBUS_IIC_H
-	struct iiccmd cmd;
-	bzero(&cmd, sizeof(cmd));
-#endif
 
 	if (p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs a 2-byte command
 		data[0]=1; // command: read/write output port register
@@ -140,23 +125,12 @@ i2c_out(PrivateData *p, unsigned char val)
 		datalen=1;
 	}
 
-#ifdef HAVE_DEV_IICBUS_IIC_H
-	cmd.slave = (p->port & I2C_ADDR_MASK) << 1;
-	cmd.last = 1;
-	cmd.count = datalen;
-	cmd.buf = data;
-
-	if (ioctl(p->fd, I2CWRITE, &cmd) < 0) {
-#else /* HAVE_LINUX_I2C_DEV_H */
-	if (write(p->fd,data,datalen) != datalen) {
-#endif
-		p->hd44780_functions->drv_report(no_more_errormsgs?RPT_DEBUG:RPT_ERR, "HD44780: I2C: i2c write data %u to address 0x%02X failed: %s",
-			val, p->port & I2C_ADDR_MASK, strerror(errno));
+	if (i2c_write(p->i2c, data, datalen) < 0) {
+		p->hd44780_functions->drv_report(no_more_errormsgs?RPT_DEBUG:RPT_ERR, "HD44780: I2C: i2c write data %u failed: %s",
+			val, strerror(errno));
 		no_more_errormsgs=1;
 	}
 }
-
-#define DEFAULT_DEVICE		"/dev/i2c-0"
 
 
 /**
@@ -170,6 +144,7 @@ hd_init_i2c(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
+	char device[256] = I2C_DEFAULT_DEVICE;
 
 	p->i2c_backlight_invert = drvthis->config_get_bool(drvthis->name, "BacklightInvert", 0, BL_INVERT);
 	p->i2c_line_RS = drvthis->config_get_int(drvthis->name, "i2c_line_RS", 0, RS);
@@ -192,7 +167,6 @@ hd_init_i2c(Driver *drvthis)
 	report(RPT_INFO, "HD44780: I2C: Pin D7 mapped to 0x%02X", p->i2c_line_D7);
 	report(RPT_INFO, "HD44780: I2C: Invert Backlight %d", p->i2c_backlight_invert);
 	
-    char device[256] = DEFAULT_DEVICE;
 #ifdef HAVE_DEV_IICBUS_IIC_H
 	struct iiccmd cmd;
 	bzero(&cmd, sizeof(cmd));
@@ -203,48 +177,27 @@ hd_init_i2c(Driver *drvthis)
 	/* READ CONFIG FILE */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, I2C_DEFAULT_DEVICE), sizeof(device));
 	device[sizeof(device)-1] = '\0';
 	report(RPT_INFO,"HD44780: I2C: Using device '%s' and address 0x%02X for a %s",
 		device, p->port & I2C_ADDR_MASK, (p->port & I2C_PCAX_MASK) ? "PCA9554(A)" : "PCF8574(A)");
 
-	// Open the I2C device
-	p->fd = open(device, O_RDWR);
-	if (p->fd < 0) {
-		report(RPT_ERR, "HD44780: I2C: open i2c device '%s' failed: %s", device, strerror(errno));
+	p->i2c = i2c_open(device, p->port & I2C_ADDR_MASK);
+	if (!p->i2c) {
+		report(RPT_ERR, "HD44780: I2C: connecting to device '%s' slave 0x%02X failed:", device, p->port & I2C_ADDR_MASK, strerror(errno));
 		return(-1);
 	}
-
-	// Set I2C address
-#ifdef HAVE_DEV_IICBUS_IIC_H
-	cmd.slave = (p->port & I2C_ADDR_MASK) << 1;
-	cmd.last = 0;
-	cmd.count = 0;
-	if (ioctl(p->fd, I2CRSTCARD, &cmd) < 0) {
-		report(RPT_ERR, "HD44780: I2C: reset bus failed: %s", strerror(errno));
-		return -1;
-	}
-	if (ioctl(p->fd, I2CSTART, &cmd) < 0) {
-		report(RPT_ERR, "HD44780: I2C: set address to 0x%02X: %s", p->port & I2C_ADDR_MASK, strerror(errno));
-		return -1;
-	}
-#else /* HAVE_LINUX_I2C_DEV_H */
-	if (ioctl(p->fd,I2C_SLAVE, p->port & I2C_ADDR_MASK) < 0) {
-		report(RPT_ERR, "HD44780: I2C: set address to '%i': %s", p->port & I2C_ADDR_MASK, strerror(errno));
-		return(-1);
-	}
-#endif
 
 	if (p->port & I2C_PCAX_MASK) { // we have a PCA9554 or similar, that needs special config
-		char data[2];
+		unsigned char data[2];
 		data[0] = 2; // command: set polarity inversion
 		data[1] = 0; // -> no polarity inversion
-		if (write(p->fd,data,2) != 2) {
+		if (i2c_write(p->i2c, data, 2) < 0) {
 			report(RPT_ERR, "HD44780: I2C: i2c set polarity inversion failed: %s", strerror(errno));
 		}
 		data[0] = 3; // command: set output direction
 		data[1] = 0; // -> all pins are outputs
-		if (write(p->fd,data,2) != 2) {
+		if (i2c_write(p->i2c, data, 2) <0) {
 			report(RPT_ERR, "HD44780: I2C: i2c set output direction failed: %s", strerror(errno));
 		}
 	}
@@ -311,12 +264,8 @@ hd_init_i2c(Driver *drvthis)
 
 void
 i2c_HD44780_close(PrivateData *p) {
-	if (p->fd >= 0) {
-#ifdef HAVE_DEV_IICBUS_IIC_H
-		ioctl(p->fd, I2CSTOP);
-#endif
-		close(p->fd);
-	}
+	if (p->i2c >= 0)
+		i2c_close(p->i2c);
 }
 
 

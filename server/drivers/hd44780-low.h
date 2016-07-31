@@ -29,6 +29,8 @@
 # include <ftdi.h>
 #endif
 
+#include "i2c.h"
+
 /** \name Symbolic names for connection types
  *@{*/
 #define HD44780_CT_UNKNOWN		0
@@ -157,7 +159,7 @@ typedef struct hd44780_private_data {
 #endif
 
 #ifdef HAVE_I2C
-	/* libi2c-based connection types */
+	/* i2c based connection types */
 	
 	int i2c_backlight_invert;
 	int i2c_line_RS;
@@ -169,6 +171,7 @@ typedef struct hd44780_private_data {
 	int i2c_line_D6;
 	int i2c_line_D7;
 
+	I2CHandle *i2c;
 #endif
 
 #ifdef WITH_ETHLCD
