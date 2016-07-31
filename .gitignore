@@ -233,3 +233,11 @@ missing
 mkinstalldirs
 stamp-h1
 tags
+
+*.a
+*.o
+*.so
+.deps
+*.debian
+*.LSB
+*.rpm
