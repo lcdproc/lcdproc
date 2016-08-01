@@ -4,6 +4,8 @@ v0.5dev (ongoing development)
   - [fixed] Portability fixes (https://github.com/lcdproc/lcdproc/pull/4)
   - [added] Add driver for lcm162-module (by H. Rasch) (https://github.com/lcdproc/lcdproc/pull/6)
   - [added] New driver linux_input (https://github.com/lcdproc/lcdproc/pull/7)
+  - [fixed] Cleanup I2C handling (https://github.com/lcdproc/lcdproc/pull/8)
+  - [fixed] Add more patterns to .gitignore (https://github.com/lcdproc/lcdproc/pull/9)
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items

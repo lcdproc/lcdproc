@@ -418,6 +418,12 @@ flexible :)
 	  (https://github.com/lcdproc/lcdproc/pull/6)
 
 
+- [Harald Geyer](mailto:harald@ccbib.org)
+
+  - Cleanup I2C handling (https://github.com/lcdproc/lcdproc/pull/8)
+  - Add more patterns to .gitignore (https://github.com/lcdproc/lcdproc/pull/9)
+
+
 - Colin Munro (colinmunro)
 - Shane Spencer (hardwire)
 - Jim McCracken (merlin_jim)
