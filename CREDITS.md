@@ -420,8 +420,9 @@ flexible :)
 
 - [Harald Geyer](mailto:harald@ccbib.org)
 
-  - Cleanup I2C handling (https://github.com/lcdproc/lcdproc/pull/8)
-  - Add more patterns to .gitignore (https://github.com/lcdproc/lcdproc/pull/9)
+  - Driver for the linux input subsystem
+  - Driver and font for Olimex MOD-LCD1x9 14 segment display
+  - Various minor and not-so-minor cleanups and fixes
 
 
 - Colin Munro (colinmunro)

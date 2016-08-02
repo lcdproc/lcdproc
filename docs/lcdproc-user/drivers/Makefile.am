@@ -32,6 +32,7 @@ EXTRA_DIST =	bayrad.docbook \
 		mtxorb.docbook \
 		mx5000.docbook \
 		NoritakeVFD.docbook \
+		Olimex_MOD_LCD1x9.docbook \
 		picolcd.docbook \
 		ppttrouble.docbook \
 		pylcd.docbook \
