@@ -188,6 +188,11 @@ glk_init(Driver *drvthis)
 	p->width = 40; p->height = 8;
 	p->gpo_count = 1;
 	break;
+      case 0x20 :
+	p->model = "GLK12232-25-SM-USB";
+	p->width = 20; p->height = 4;
+	p->gpo_count = 2;
+	break;
       case 0x21 :
         p->model = "GLK128128-25";
 	p->width = 20; p->height = 16;
@@ -198,6 +203,10 @@ glk_init(Driver *drvthis)
 	p->gpo_count = 2;
 	break;
       case 0x23 :
+	p->model = "GLT12232-SM-USB";
+	p->width = 20; p->height = 4;
+	p->gpo_count = 2;
+	break;
       case 0x24 :
         p->model = "GLK12232-25-SM";
 	p->width = 20; p->height = 4;
@@ -753,17 +762,23 @@ glk_get_key(Driver *drvthis)
 
   /* Remap keys according to what LCDproc expects */
   switch (c) {
-    case 'V' : key = "Enter";
+    case 'V' :			// default mapping
+    case 'I' : key = "Enter";	// pyramid mapping
 	       break;
-    case 'P' : key = "Left";
+    case 'P' :			// default mapping
+    case 'D' : key = "Left";	// pyramid mapping
 	       break;
-    case 'Q' : key = "Right";
+    case 'Q' :			// default mapping
+    case 'E' : key = "Right";	// pyramid mapping
 	       break;
-    case 'L' : key = "Escape";
+    case 'L' :			// default mapping
+    case 'J' : key = "Escape";	// pyramid mapping
 	       break;
-    case 'U' : key = "Up";
+    case 'U' :			// default mapping
+    case 'C' : key = "Up";	// pyramid mapping
 	       break;
-    case 'K' : key = "Down";
+    case 'K' :			// default mapping
+    case 'H' : key = "Down";	// pyramid mapping
 	       break;
     default :  break;
 
