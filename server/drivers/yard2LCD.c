@@ -1,6 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2009 by M. Feser                                        *
- *   Copyright (C) 1013 by R. Geigenberger (Update for YARD2)              *
+ *   Copyright (C) 2013 by R. Geigenberger (Update for YARD2)              *
+ *                         yard2lcdproc (.A.T.) yard2usb.de                *
  *                                                                         *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -171,11 +172,9 @@ yard_hwGotoXY(Driver *drvthis, unsigned char x, unsigned char y)
 			cmdBuf[2] = y - 1;
 			return yard_hwWrite(drvthis, cmdBuf, 3);
 			
-			break;
 		}
 		default: {
 			return -1;
-			break;
 		}
 	}
 }
@@ -353,7 +352,7 @@ yard_init(Driver *drvthis)
 		report(RPT_ERR, "%s: Can't create framebuffer !", drvthis->name);
 		return -1;
 	}
-	memset(p->framebuf, ' ', p->width * p->height);
+	memset(p->framebuf, ' ', (p->width * p->height)*2);
 
 /* not done yet
 	// Init size and graphical size
@@ -362,8 +361,7 @@ yard_init(Driver *drvthis)
 /*	
 	// Init backlight-on brightness -> done by YARD2 normally in auto mode
 */
-	tmp = DEFAULT_ON_BRIGHTNESS;
-	p->on_brightness = tmp;
+	p->on_brightness = DEFAULT_ON_BRIGHTNESS;
 /*
 	// Init backlight-off brightness -> done by YARD2 normally in auto mode
 */
@@ -433,7 +431,7 @@ yard_clear(Driver *drvthis)
 }
 
 /*
- * Flushes a single frame to the VFD
+ * Flushes a single frame to the LCD
  */
 MODULE_EXPORT void
 yard_flush(Driver *drvthis)
@@ -474,7 +472,7 @@ yard_flush(Driver *drvthis)
 }
 
 /*
- * Prints a string on the VFD
+ * Prints a string on the LCD
  */
 MODULE_EXPORT void
 yard_string(Driver *drvthis, int x, int y, const char string[])
@@ -493,6 +491,18 @@ yard_string(Driver *drvthis, int x, int y, const char string[])
 	
 	x--; //start with 0,0
 	y--;
+
+	if ((y < 0) || (y >= p->height)) return;
+
+	
+
+	for (i = 0; (string[i] != '\0') && (x < p->width); i++) //, x++) 
+	{
+		if (x >= 0) // no write left of left border
+			p->framebuf[(y * p->width) + x + i] = string[i];
+	}
+
+/*
 	for (i = 0; string[i] != '\0'; i++) 
 	{
 		// Check for buffer overflow
@@ -500,10 +510,11 @@ yard_string(Driver *drvthis, int x, int y, const char string[])
 			break;
 		p->framebuf[(y * p->width) + x + i] = string[i];
 	}
+*/
 }
 
 /*
- * Prints a single character on the VFD
+ * Prints a single character on the LCD
  */
 MODULE_EXPORT void
 yard_chr(Driver *drvthis, int x, int y, char c)
