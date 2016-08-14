@@ -7,6 +7,7 @@ v0.5dev (ongoing development)
   - [fixed] Cleanup I2C handling (https://github.com/lcdproc/lcdproc/pull/8)
   - [fixed] Add more patterns to .gitignore (https://github.com/lcdproc/lcdproc/pull/9)
   - [added] New driver for Olimex MOD-LCD1x9
+  - [fixed] Allow multibyte characters (from string widget)
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items
