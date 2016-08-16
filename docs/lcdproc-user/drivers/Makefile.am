@@ -52,6 +52,7 @@ EXTRA_DIST =	bayrad.docbook \
 		tyan.docbook \
 		ula200.docbook \
 		vlsys_m428.docbook \
+		yard2.docbook \
 		xosd.docbook
 
 ## EOF

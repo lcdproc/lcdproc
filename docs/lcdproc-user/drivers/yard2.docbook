@@ -1,0 +1,30 @@
+<sect1 id="yard2-howto">
+<title>The yard2 driver</title>
+
+<sect2 id="yard2-general">
+<title>General</title>
+
+<para>
+The yard2 driver handles the yard2 LCD device.
+The driver functionality is currently limited to character LCD.
+</para>
+
+<para>
+This driver writes via socket to yard2srvd deamon.
+</para>
+
+<para>
+The yard2 driver assumes the character encoding ISO 8859-1.
+</para>
+</sect2>
+
+<sect2 id="yard2-configuration">
+<title>Configuration</title>
+
+<para>
+The only configuration parameter is <property>Size</property>.
+All other settings are done in yard2srvd daemon.
+</para>
+</sect2>
+
+</sect1>

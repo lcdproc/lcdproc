@@ -67,6 +67,7 @@
   <!ENTITY vlsys_m428 SYSTEM "drivers/vlsys_m428.docbook">
   <!ENTITY ula200 SYSTEM "drivers/ula200.docbook">
   <!ENTITY xosd SYSTEM "drivers/xosd.docbook">
+  <!ENTITY yard2 SYSTEM "drivers/yard2.docbook">
 
   <!-- Note: The parameters include file provides commonly used entities for
   config file descriptions. DO NOT DELETE! -->
