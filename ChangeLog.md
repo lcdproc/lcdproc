@@ -8,6 +8,7 @@ v0.5dev (ongoing development)
   - [fixed] Add more patterns to .gitignore (https://github.com/lcdproc/lcdproc/pull/9)
   - [added] New driver for Olimex MOD-LCD1x9
   - [fixed] Allow multibyte characters (from string widget)
+  - [added] New driver for YARD2 devices (https://github.com/lcdproc/lcdproc/pull/19)
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items

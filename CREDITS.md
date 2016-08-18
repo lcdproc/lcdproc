@@ -425,6 +425,11 @@ flexible :)
   - Various minor and not-so-minor cleanups and fixes
 
 
+- M. Feser and R. Geigenberger <yard2lcdproc (.A.T.) yard2usb.de>
+
+  - Driver for YARD2 display devices
+  
+
 - Colin Munro (colinmunro)
 - Shane Spencer (hardwire)
 - Jim McCracken (merlin_jim)
