@@ -71,6 +71,8 @@ void lcdrpi_HD44780_close(PrivateData *p);
  */
 static volatile unsigned int *gpio_map = NULL;
 
+static unsigned int gpio_base_address = 0;
+
 /*
  * Two different board revisions are currently in widespread use. The
  * GPIO mappings differ slightly - Not enough to kill a system yet.
@@ -119,7 +121,7 @@ setup_io(Driver *drvthis)
 					 PROT_READ | PROT_WRITE,
 					 MAP_SHARED,
 					 mem_fd,
-					 GPIO_BASE);
+					 gpio_base_address);
 
 	if (gpio_map == MAP_FAILED) {
 		report(RPT_ERR, "setup_io: mmap failed: %s", strerror(errno));
@@ -161,8 +163,7 @@ check_board_rev(Driver *drvthis)
 
 	/* On boards that have been overvolted, the MSB will be set */
 	rev &= 0x00ff;
-
-	if (strcmp(hw, "BCM2708") != 0 || rev == 0) {
+	if ((strcmp(hw, "BCM2708") != 0 && strcmp(hw, "BCM2709") != 0) || rev == 0) {
 		report(RPT_ERR, "check_board_rev: This board is not recognized as a Raspberry Pi!");
 		return NULL;
 	}
@@ -171,17 +172,22 @@ check_board_rev(Driver *drvthis)
 	 * in the wild). */
 	if (rev < 4) {
 		report(RPT_INFO, "check_board_rev: Revision 1 board detected");
+		gpio_base_address = BCM2835_PERI_BASE_PI12 + 	GPIO_BASE_OFFSET;
 		return gpio_pins_R1;
 	}
 	/* Currently, Rev 2 boards are 0x004, 0x005, or 0x006. This will need
 	 * updating as new revisions are released, but it is unlikely that P1
 	 * will change. */
-	if (rev > 3) {
+	if (rev > 3 && rev <= 21) {
 		report(RPT_INFO, "check_board_rev: Revision 2 board detected");
+		gpio_base_address = BCM2835_PERI_BASE_PI12 + 	GPIO_BASE_OFFSET;
 		return gpio_pins_R2;
 	}
 
-	return NULL;
+	report(RPT_INFO, "check_board_rev: Raspberry Pi 3 board detected");
+	gpio_base_address = BCM2835_PERI_BASE_PI3 + 	GPIO_BASE_OFFSET;
+	return gpio_pins_R2;
+
 }
 
 
