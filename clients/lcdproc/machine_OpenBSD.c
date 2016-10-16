@@ -45,7 +45,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/sysctl.h>
-#include <sys/dkstat.h>
+#include <sys/sched.h>
 #include <sys/ucred.h>
 #include <sys/mount.h>
 #include <sys/time.h>
