@@ -78,7 +78,6 @@ screen_create(char *id, Client *client)
 	s->name = NULL;
 	s->priority = PRI_INFO;
 	s->duration = default_duration;
-	s->backlight = BACKLIGHT_OPEN;
 	s->heartbeat = HEARTBEAT_OPEN;
 	s->width = display_props->width;
 	s->height = display_props->height;
