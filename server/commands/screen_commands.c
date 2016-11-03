@@ -319,21 +319,27 @@ screen_set_func(Client *c, int argc, char **argv)
 				if (strcmp("on", argv[i]) == 0)
 					s->backlight = BACKLIGHT_ON;
 
-				if (strcmp("off", argv[i]) == 0)
+				else if (strcmp("off", argv[i]) == 0)
 					s->backlight = BACKLIGHT_OFF;
 
-				if (strcmp("toggle", argv[i]) == 0) {
+				else if (strcmp("toggle", argv[i]) == 0) {
 					if (s->backlight == BACKLIGHT_ON)
 						s->backlight = BACKLIGHT_OFF;
 					else if (s-backlight == BACKLIGHT_OFF)
 						s->backlight = BACKLIGHT_ON;
 				}
 
-				if (strcmp("blink", argv[i]) == 0)
+				else if (strcmp("blink", argv[i]) == 0)
 					s->backlight  |= BACKLIGHT_BLINK;
 
-				if (strcmp("flash", argv[i]) == 0)
+				else if (strcmp("flash", argv[i]) == 0)
 					s->backlight |= BACKLIGHT_FLASH;
+
+				else if (strcmp("open", argv[i]) == 0)
+					s->backlight = BACKLIGHT_OPEN;
+
+				else
+					sock_send_error(c->sock, "unknown backlight mode\n");
 
 				sock_send_string(c->sock, "success\n");
 			}
