@@ -9,6 +9,7 @@ v0.5dev (ongoing development)
   - [added] New driver for Olimex MOD-LCD1x9
   - [fixed] Allow multibyte characters (from string widget)
   - [added] New driver for YARD2 devices (https://github.com/lcdproc/lcdproc/pull/19)
+  - [fixed] Handle backlight mode 'open' correctly (Bug#48 at sourceforge)
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items
