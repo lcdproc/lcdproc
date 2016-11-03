@@ -234,7 +234,7 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 			me->next = NULL;
 			me->children = NULL;
 			me->numChildren = 0;
-			me->type = MT_ARG_ACTION | MT_AUTOMATIC;
+			me->type = MT_ACTION;
 
 			return me;
 		}
@@ -405,8 +405,7 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						return -1;
 				}
 				break;
-			case MT_AUTOMATIC:
-			case MT_ARG_ACTION:
+			case MT_ACTION:
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" action \"%s\"\n",
 						parent_id, me->id, me->displayname) < 0)
 					return -1;
@@ -543,7 +542,7 @@ void menu_dump(MenuEntry *me)
 {
 	if (me != NULL) {
 		/* the quick way out */
-		if (me->type & MT_AUTOMATIC)
+		if (me->type & MT_ACTION)
 			return;
 
 		report(RPT_DEBUG, "# menu ID: %d", me->id);

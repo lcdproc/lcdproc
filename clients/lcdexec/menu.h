@@ -29,7 +29,7 @@ typedef enum {
 	MT_MENU         = 0x10,	/**< MenuEntry representing a menu. */
 	MT_EXEC         = 0x20,	/**< MenuEntry representing an executable command. */
 	MT_ARGUMENT     = 0x40,	/**< Mask denoting a parameter of any type */
-	MT_AUTOMATIC	= 0x80,	/**< BitFlag denoting automatically generated entries */
+	MT_ACTION	= 0x80,	/**< Automatically generated action menu */
 
 	MT_ARG_SLIDER   = 0x41,	/**< MenuEntry representing a slider parameter. */
 	MT_ARG_RING     = 0x42,	/**< MenuEntry representing a ring parameter. */
@@ -37,7 +37,6 @@ typedef enum {
 	MT_ARG_ALPHA    = 0x44,	/**< MenuEntry representing a alpha input parameter. */
 	MT_ARG_IP       = 0x45,	/**< MenuEntry representing a IP input parameter. */
 	MT_ARG_CHECKBOX = 0x46,	/**< MenuEntry representing a checkbox input parameter. */
-	MT_ARG_ACTION   = 0x47,	/**< MenuEntry representing a checkbox input parameter. */
 } MenuType;	
 
 
