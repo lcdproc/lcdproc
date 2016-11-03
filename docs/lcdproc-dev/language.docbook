@@ -345,7 +345,7 @@
 		      If set to the default value <literal>open</literal>,
 		      the state will be determined by the client's setting.
 		      <literal>blink</literal> is a moderately striking backlight variation,
-		      <literal>flash</literal> is <emphasis>very</emphasis> strinking.
+		      <literal>flash</literal> is <emphasis>very</emphasis> striking.
 		    </para></listitem>
 		</varlistentry>
 		<varlistentry>

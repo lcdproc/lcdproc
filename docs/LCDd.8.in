@@ -409,7 +409,7 @@ No heartbeat display.
 Use client's heartbeat setting. This is the default.
 
 .SS BACKLIGHT MODES
-Valid heartbeat mode values (for the \fBscreen_set\fR command) are:
+Valid backlight mode values (for the \fBscreen_set\fR command) are:
 .TP
 .B on
 Turn backlight on.
