@@ -353,7 +353,7 @@
   <para>
 	If <property>LircTime_us</property> is set to on mark and space times
 	are sent to LIRC in microseconds (requires a LIRC UDP driver that
-	accepts this).
+	accepts this (LIRC 0.9.3 onwards)).
   </para>
   <para>
 	If <property>LircTime_us</property> is set to off mark and space times
@@ -372,12 +372,12 @@
   </para>
   <para>
 	I have submitted a patch that modifies the LIRC udp driver to support
-	timing data in microseconds but it has been ignored. The LIRC team
-	currently seems only to be interested in adding IR support to the kernel.
-	You can obtain my modified files from
-	<ulink url="https://github.com/emteejay/Patched-LIRC.git">GitHub</ulink>.
-	The standard UDP driver is satisfactory for most uses but I recommend
-	using the modified driver if you intend to use <code>irrecord</code>
+	timing data in microseconds. This was included in LIRC 0.9.3.
+	The default (61&micro;s) UDP driver settings will work but I recommend
+	using 1 microsecond.
+	The LIRC upd plugin timing resolution can be set using the
+	<code>--driver-option=clocktick:value</code>
+	or <code>-A clocktick:value</code> command line switch.
   </para>
   </note>
   </listitem>
