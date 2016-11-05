@@ -11,6 +11,7 @@ v0.5dev (ongoing development)
   - [added] New driver for YARD2 devices (https://github.com/lcdproc/lcdproc/pull/19)
   - [fixed] Handle backlight mode 'open' correctly (Bug#48 at sourceforge)
   - [fixed] lcdexec: make automatic action menus work (https://sourceforge.net/p/lcdproc/bugs/47/)
+  - [added] Add support for icp_a125 to icp_a106 driver (https://github.com/lcdproc/lcdproc/pull/22)
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items
