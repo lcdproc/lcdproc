@@ -1,10 +1,10 @@
 /** \file server/drivers/icp_a106.c
- * LCDd \c icp_a106 for the ICP A106 alarm/LCD board used in 19 inch rack cases by ICP.
+ * LCDd \c icp_a106 for ICP Peripheral Communication Protocol devices
  */
 
 /* 
- * This is the LCDproc driver for the ICP A106 alarm/LCD board, used in 19"
- * rack cases by ICP
+ * This is the LCDproc driver for the ICP Peripheral Communication Protocol
+ * used by the ICP A106 and A125 LCD boards.  The A125 is used in QNAP devices
  * 
  * Both LCD and alarm functions are accessed via one serial port, using
  * separate commands. Unfortunately, the device runs at slow 1200bps and the
@@ -29,6 +29,9 @@
  * This driver is mostly based on the HD44780 and the LCDM001 driver.
  * (Hopefully I have NOT forgotten any file I have stolen code from. If so
  * send me an e-mail or add your copyright here!)
+ * 
+ * - changes to support A125 and buttons made by Sam Bingner <sam@bingner.com>
+ *
  */
 
 #include <stdlib.h>
@@ -37,8 +40,11 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdint.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <sys/time.h>
+#include <sys/timeb.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -53,10 +59,21 @@
 typedef struct icp_a106_private_data {
 	unsigned char *framebuf;
 	unsigned char *last_framebuf;
+	unsigned char serial_buf[4];
+	int serial_buf_offset;
+	struct timeb time_pressed[MAX_BUTTONS];
+	bool buttonState[MAX_BUTTONS];
+	uint16_t buttonStates;
 	int width;
 	int height;
+	int backlight;
 	int fd;
 } PrivateData;
+
+enum {
+	A106_BL_OFF = 0,
+	A106_BL_ON = 1
+};
 
 
 // Vars for the server core
@@ -92,8 +109,6 @@ icp_a106_init(Driver *drvthis)
 
 	// initialize PrivateData
 	p->fd = -1;
-	p->width = 20;
-	p->height = 2;
 
 	// READ CONFIG FILE:
 	// which serial device should be used
@@ -101,6 +116,25 @@ icp_a106_init(Driver *drvthis)
 		sizeof(device));
 	device[sizeof(device) - 1] = '\0';
 	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
+
+	// which text resolution
+	char strSize[7];
+	int nCfgTextWidth = 0;
+	int nCfgTextHeight = 0;
+	strncpy(strSize,
+		drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE),
+		sizeof(strSize));
+	strSize[sizeof(strSize) - 1] = '\0';
+	if ((sscanf(strSize, "%dx%d", &nCfgTextWidth, &nCfgTextHeight) != 2)
+	    || (nCfgTextWidth <= 0) || (nCfgTextWidth > LCD_MAX_WIDTH)
+	    || (nCfgTextHeight <= 0) || (nCfgTextHeight > LCD_MAX_HEIGHT)) {
+		report(RPT_WARNING,
+		       "%s: cannot read or invalid Size: %s; using default %s",
+		       drvthis->name, strSize, DEFAULT_SIZE);
+		sscanf(DEFAULT_SIZE, "%dx%d", &nCfgTextWidth, &nCfgTextHeight);
+	}
+	p->width = nCfgTextWidth;
+	p->height = nCfgTextHeight;
 
 	p->framebuf = malloc(p->width * p->height);
 	p->last_framebuf = malloc(p->width * p->height);
@@ -142,6 +176,9 @@ icp_a106_init(Driver *drvthis)
 
 	// stop auto clock display, clear display
 	write(p->fd, "\x4D\x28\x4D\x0D", 4);
+
+	// Turn on the backlight
+	icp_a106_backlight(drvthis, true);
 
 	report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -222,7 +259,7 @@ icp_a106_flush(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	/* 
-	 * The ICP A106 is a bit difficult to handle - 1200bps, ho handshake,
+	 * The ICP protocol is a bit difficult to handle - 1200bps, ho handshake,
 	 * and the controller is easily overrun and displays garbage when it
 	 * has too much of work to do. It seems we can handle two full updates 
 	 * per second, so if the last update was less than 0.5 seconds ago, we 
@@ -230,7 +267,8 @@ icp_a106_flush(Driver *drvthis)
 	struct timeval tv, tv2;
 	static struct timeval tv_old;	/* time of last update */
 	int line;
-	static char cmd[] = "\x4D\x0c\x00\x14";
+	static char cmd[] = "\x4D\x0c\x00\x00";
+	cmd[3] = p->width;
 
 	gettimeofday(&tv, 0);
 	timersub(&tv, &tv_old, &tv2);
@@ -242,11 +280,12 @@ icp_a106_flush(Driver *drvthis)
 	tv_old = tv;
 
 	for (line = 0; line < p->height; line++) {
+		// If line changed
 		if (memcmp(p->framebuf + line * p->width,
 			   p->last_framebuf + line * p->width, p->width) != 0) {
 			cmd[2] = line;
 			write(p->fd, cmd, 4);
-			write(p->fd, p->framebuf + line * p->width, 20);
+			write(p->fd, p->framebuf + line * p->width, p->width);
 		}
 	}
 	memcpy(p->last_framebuf, p->framebuf, p->width * p->height);
@@ -405,4 +444,116 @@ icp_a106_icon(Driver *drvthis, int x, int y, int icon)
 		return -1;
 	}
 	return 0;
+}
+
+
+/**
+ * Turn the LCD backlight on or off.
+ * \param drvthis  Pointer to driver structure.
+ * \param on       New backlight status.
+ */
+MODULE_EXPORT void
+icp_a106_backlight(Driver *drvthis, int on)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	static char cmd[] = "\x4D\x5E\x00";
+	if (on != p->backlight) {
+		p->backlight = cmd[2] = on ? A106_BL_ON : A106_BL_OFF;
+		write(p->fd, cmd, 3);
+	}
+}
+
+/**
+ * Get key from the device.  There are probably only two buttons.
+ *     Enter:  short press = ENTER  long press = ESC
+ *     Select: short press = DOWN   long press = UP
+ *
+ * \param drvthis  Pointer to driver structure.
+ * \return         String representation of the key;
+ *                 \c NULL for nothing available / unmapped key.
+ */
+MODULE_EXPORT const char *
+icp_a106_get_key(Driver *drvthis)
+{
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	char *button = NULL;
+	unsigned char byte;
+	struct timeb tp;
+
+	ftime(&tp);
+	int nbuf = read(p->fd, &byte, 1);
+
+	if (nbuf != 1)
+		return NULL;
+
+	// Don't allow buffer overflows and resync if 0x53 is received
+	if (byte == 0x53 || p->serial_buf_offset >= 4)
+		p->serial_buf_offset = 0;
+
+	// Write current byte to buffer
+	p->serial_buf[p->serial_buf_offset++] = byte;
+
+	// Only check full buffers
+	if (p->serial_buf_offset != 4)
+		return NULL;
+
+	// Test that the signature matches that of a key press
+	int mschange;
+
+	// Make sure this is a "Button Status" packet
+	if (memcmp(p->serial_buf, "\x53\x05", 2) != 0)
+		return NULL;
+
+	// Read a bitmap of buttonStates for 0xXXYY => buttons 1-15
+	uint16_t buttonStates = (p->serial_buf[2] << 8) | p->serial_buf[3];
+	debug(RPT_DEBUG, "%s: Button state: 0x%04x", __FUNCTION__, buttonStates);
+
+	// Don't do anything unless it's different from last time
+	if (buttonStates != p->buttonStates) {
+		// Check each button
+		int i;
+		for (i = 0; i < MAX_BUTTONS; i++) {
+			// Read the state of this button from the bitmap
+			bool buttonState = (buttonStates >> i) & 0x1;
+
+			// Skip to the next button if this one didn't change
+			if (p->buttonState[i] == buttonState)
+				continue;
+
+			p->buttonState[i] = buttonState;
+			debug(RPT_DEBUG, "%s: Button %d state updated to %s", __FUNCTION__, i,
+			      p->buttonState[i] ? "on" : "off");
+
+			if (buttonState) {
+				debug(RPT_INFO, "ICP_A106: Button %d pressed", i);
+				memcpy(&p->time_pressed[i], &tp, sizeof(struct timeb));
+			}
+			else {
+				debug(RPT_INFO, "ICP_A106: Button %d released", i);
+				mschange = (tp.time - p->time_pressed[i].time) * 1000 +
+					tp.millitm - p->time_pressed[i].millitm;
+				switch (i) {
+				case 0:	// Button 1
+					if (mschange < 300)
+						button = "Enter";
+					else
+						button = "Escape";
+					break;
+				case 1:	// Button 2
+					if (mschange < 300)
+						button = "Down";
+					else
+						button = "Up";
+					break;
+				default:
+					// Don't support other buttons yet.
+					// Does anything have them?
+					break;
+				}
+			}
+		}
+		p->buttonStates = buttonStates;
+	}
+
+	return button;
 }

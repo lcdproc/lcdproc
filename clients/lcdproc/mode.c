@@ -174,6 +174,7 @@ credit_screen(int rep, int display, int *flags_ptr)
 		"Dean Harding",
 		"Christian Leuschen",
 		"Jonathan Kyler",
+		"Sam Bingner",
 		NULL
 	};
 	int contr_num = 0;

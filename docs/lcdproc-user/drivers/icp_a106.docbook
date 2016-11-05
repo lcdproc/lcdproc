@@ -2,17 +2,24 @@
 <title>The icp_a106 Driver</title>
 
 <para>
-This section talks about using LCDproc with the ICP A106 alarm/LCD board,
-used in 19" rack cases by ICP.
+This section talks about using LCDproc with the ICP Peripheral Communication 
+Protocol used by A125 and A106 LCD displays
 </para>
 
-<!-- 20x2 characters, serial connection -->
+<!-- 16x2 A125 or 20x2 in A106 characters, serial connection -->
 
 <para>
 Both LCD and alarm functions are accessed via one serial port, using
 separate commands. Unfortunately, the device runs at slow 1200bps and the
 LCD does not allow user-defined characters, so the bargraphs do not look
 very nice.
+
+The A125 does include two buttons marked ENTER and SELECT.
+
+Short press of ENTER: ENTER
+Long press of ENTER: ESC
+Short press of SELECT: DOWN
+Long press of SELECT: UP
 </para>
 
 <!-- ## ICP A106 driver ## -->
@@ -30,6 +37,15 @@ very nice.
   </term>
   <listitem><para>
     Sets the device to use. Defaults to <filename>/dev/lcd</filename>.
+  </para></listitem>
+</varlistentry>
+<varlistentry>
+  <term>
+    <property>Size</property> =
+    <parameter><replaceable>SIZE</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Sets the display resolution to use. Defaults to 20x2
   </para></listitem>
 </varlistentry>
 </variablelist>

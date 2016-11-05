@@ -44,7 +44,11 @@ MODULE_EXPORT void icp_a106_vbar(Driver *drvthis, int x, int y, int len, int pro
 MODULE_EXPORT void icp_a106_hbar(Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void icp_a106_num(Driver *drvthis, int x, int num);
 MODULE_EXPORT int icp_a106_icon(Driver *drvthis, int x, int y, int icon);
+MODULE_EXPORT void icp_a106_backlight(Driver *drvthis, int on);
+MODULE_EXPORT const char *icp_a106_get_key(Driver *drvthis);
 
+#define MAX_BUTTONS 15
 #define DEFAULT_DEVICE "/dev/lcd"
+#define DEFAULT_SIZE "20x2"
 
 #endif
