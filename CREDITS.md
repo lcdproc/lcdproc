@@ -434,3 +434,8 @@ flexible :)
 - Shane Spencer (hardwire)
 - Jim McCracken (merlin_jim)
 - Luis Llorente	(luisllo)
+
+- [Sam Bingner](mailto:sam@bingner.com)
+
+	- Updated icp_a106 driver to support icp_a125 used in QNAP devices
+	  and to add button support

@@ -217,7 +217,7 @@ LCD driven by the GPIO pins of a Raspberry Pi
 140x32 pixel VFD Display of the Intra2net Intranator 2500 appliance
 .TP
 .B icp_a106
-ICP A106 alarm/LCD board in 19" rack cases by ICP
+ICP Peripheral Communication Protocol alarm/LCD board used in QNAP devices and 19" rack cases made by ICP
 .TP
 .B imon
 iMON IR/VFD modules in cases by Soundgraph/Ahanix/Silverstone/Uneed/Accent
