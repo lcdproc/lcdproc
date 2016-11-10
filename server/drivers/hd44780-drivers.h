@@ -45,6 +45,7 @@
 #ifdef WITH_RASPBERRYPI
 # include "hd44780-rpi.h"
 #endif
+#include "hd44780-gpio.h"
 /* add new connection type header files to the correct section above or here */
 
 
@@ -100,6 +101,7 @@ static const ConnectionMapping connectionMapping[] = {
 #ifdef WITH_RASPBERRYPI
 	{ "raspberrypi",   HD44780_CT_RASPBERRYPI,   IF_TYPE_PARPORT,  hd_init_rpi      },
 #endif
+	{ "gpio",          HD44780_CT_GPIO,          IF_TYPE_PARPORT, hd_init_gpio      },
 	/* add new connection types in the correct section above or here */
 
 	/* default, end of structure element (do not delete) */

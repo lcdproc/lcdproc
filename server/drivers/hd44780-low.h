@@ -60,6 +60,7 @@
 #define HD44780_CT_SPI			24
 #define HD44780_CT_PIFACECAD		25
 #define HD44780_CT_LCM162		26
+#define HD44780_CT_GPIO			27
 /**@}*/
 
 /** \name Symbolic names for interface types
@@ -195,6 +196,7 @@ typedef struct hd44780_private_data {
 	/* Connection type data */
 	int connectiontype;
 	struct hwDependentFns *hd44780_functions;
+	void *connection_data;
 
 	/** \name Screens spanning several display
 	 *@{*/
