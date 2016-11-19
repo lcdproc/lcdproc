@@ -6,7 +6,7 @@
  * low to prevent 5V logic appearing on the GPIO pins.
  *
  * Mappings can be set in the config file using the keys:
- * pin_EN, pin_RS, pin_D7, pin_D6, pin_D5, pin_D4, pin_BL
+ * pin_EN, pin_RS, pin_D7, pin_D6, pin_D5, pin_D4, pin_BL, pin_RW
  * in the [hd44780] section.
  */
 
@@ -42,6 +42,7 @@ typedef struct {
 	ugpio_t *d5;
 	ugpio_t *d4;
 	ugpio_t *bl;
+	ugpio_t *rw;
 } gpio_pins;
 
 /**
@@ -61,6 +62,8 @@ init_gpio_pin(Driver *drvthis, ugpio_t **pin, const char *name)
 
 	snprintf(config_key, sizeof(config_key), "pin_%s", name);
 	number = drvthis->config_get_int(drvthis->name, config_key, 0, -1);
+	if (number == -1)
+		return -1;
 
 	*pin = ugpio_request_one(number, GPIOF_OUT_INIT_LOW, name);
 	if (*pin == NULL) {
@@ -151,6 +154,9 @@ hd_init_gpio(Driver *drvthis)
 		}
 	}
 
+	/* This is enough to set the RW pin to low, if it is available. */
+	init_gpio_pin(drvthis, &pins->rw, "RW");
+
 	ugpio_set_value(pins->rs, 0);
 
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4);
@@ -233,6 +239,9 @@ gpio_HD44780_close(PrivateData *p)
 
 	if (p->have_backlight)
 		release_gpio_pin(&pins->bl);
+
+	if (pins->rw)
+		release_gpio_pin(&pins->rw);
 
 	free(pins);
 }

@@ -3209,9 +3209,12 @@ controller.</para>
 as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
 
 <warning>
-  <para>A configuration option for R/W pin of the display does not exist
-  since the driver always performs write operations and keeps the direction of
-  data pins as output. Therefore, the R/W pin <emphasis>must</emphasis> be
+  <para>The configuration option for R/W pin of the display is optional.
+  If the pin is configured, it is always held in low state since
+  the driver always performs write operations and keeps the direction of
+  data pins as output. This is what you need for i2c port expanders.
+  If you ommit configuration of R/W pin (maybe you are manually wiring
+  the display to a SoC), the R/W pin <emphasis>must</emphasis> be
   wired to GND. This is also necessary to prevent 5V logic appearing on
   I/O pins which are not 5V tolerant.</para>
 </warning>
