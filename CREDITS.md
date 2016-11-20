@@ -439,3 +439,7 @@ flexible :)
 
 	- Updated icp_a106 driver to support icp_a125 used in QNAP devices
 	  and to add button support
+
+- [Fatih Aşıcı](mailto:fatih.asici@gmail.com)
+
+  - Driver for hd44780 connection type using linux GPIO interface

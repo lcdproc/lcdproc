@@ -3213,11 +3213,20 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
   If the pin is configured, it is always held in low state since
   the driver always performs write operations and keeps the direction of
   data pins as output. This is what you need for i2c port expanders.
-  If you ommit configuration of R/W pin (maybe you are manually wiring
+  If you omit configuration of R/W pin (maybe you are manually wiring
   the display to a SoC), the R/W pin <emphasis>must</emphasis> be
   wired to GND. This is also necessary to prevent 5V logic appearing on
   I/O pins which are not 5V tolerant.</para>
 </warning>
+
+<note>
+  <para>The driver exports the configured GPIOs to sysfs automatically,
+  before using them. At exit it tries to unexport them again, but this
+  only succeeds if the daemon is still running with root permissions.
+  If the daemon was configured to drop root privileges after initialization,
+  the GPIOs will remain accessible from sysfs and unloading the respective
+  kernel module will fail.</para>
+</note>
 
 <table id="hd44780-gpio.pin-mapping-example">
 <title>HD44780: Example pin mapping for Beaglebone Black</title>

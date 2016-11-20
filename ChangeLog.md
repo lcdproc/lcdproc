@@ -12,6 +12,7 @@ v0.5dev (ongoing development)
   - [fixed] Handle backlight mode 'open' correctly (Bug#48 at sourceforge)
   - [fixed] lcdexec: make automatic action menus work (https://sourceforge.net/p/lcdproc/bugs/47/)
   - [added] Add support for icp_a125 to icp_a106 driver (https://github.com/lcdproc/lcdproc/pull/22)
+  - [added] New hd44780 connection type using libugpio
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items
