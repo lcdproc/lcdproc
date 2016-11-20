@@ -9,25 +9,25 @@ the most current source code available. You can get it several ways:</para>
 
 <orderedlist>
   <listitem>
-    <para>Download yesterday's CVS version of as a tarball (preferred).</para>
+    <para>Download GIT version of as a tarball (preferred).</para>
   </listitem>
   <listitem>
-    <para>Download the latest version from CVS.</para>
+    <para>Download the latest version from GIT.</para>
   </listitem>
   <listitem>
-    <para>Download the last stable release from Sourceforge. (This is not
+    <para>Download the last stable release from Github. (This is not
     recommended as stable release may be months behind the current version.)
     </para>
   </listitem>
 </orderedlist>
 
 <sect2 id="downloadtar">
-<title>Download Yesterday's CVS Version of LCDproc as a Tarball</title>
+<title>Download GIT Version of LCDproc as a Tarball</title>
 
 <para>
-There are nightly distributions of the CVS branches of LCDproc. You can
-download them from <ulink url="http://lcdproc.sourceforge.net/nightly/"></ulink>.
-For development we recommended to use the 'current' branch.
+The source is available as tarball. You can
+download them from <ulink url="https://github.com/lcdproc/lcdproc/archive/master.tar.gz"></ulink>.
+For development we recommended to use the 'master' branch.
 </para>
 
 <para>
@@ -35,48 +35,31 @@ To extract the files run
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>tar xvfz lcdproc-CVS-current.tar.gz</userinput>
+<prompt>$</prompt> <userinput>tar xvfz lcdproc-master.tar.gz</userinput>
 </screen>
 
 </sect2>
 
-<sect2 id="downloadcvs">
-<title>Download The Latest Version of LCDproc from CVS</title>
+<sect2 id="downloadgit">
+<title>Download The Latest Version of LCDproc from GitHub</title>
 
 <para>
-Of course you can download the latest stuff from CVS via anonymous login.
-For more information on how to use CVS see
-<ulink url="http://sourceforge.net/scm/?type=cvs&amp;group_id=119">About CVS</ulink>
-on Sourceforge.
-</para>
-
-<para>
-Login to CVS:
+Of course you can download the latest stuff from GitHub.
+For more information on how to use GitHub see
+<ulink url="https://guides.github.com/"></ulink>.
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc login</userinput>
-</screen>
-
-<para>
-(Hit enter when prompted for a password.)
-</para>
-
-<para>
-Get the files from CVS:
-</para>
-
-<screen>
-<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc checkout -P lcdproc</userinput>
+<prompt>$</prompt> <userinput>git clone https://github.com/lcdproc/lcdproc.git</userinput>
 </screen>
 
 <para>
 Once you've done that and want to update the downloaded files to the latest stuff
-you can use the "update" command of CVS (make sure to be in the lcdproc directory!):
+you can use the "pull" command of git (make sure to be in the lcdproc directory!):
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>cvs update -d</userinput>
+<prompt>$</prompt> <userinput>git pull</userinput>
 </screen>
 
 <para>
@@ -444,40 +427,9 @@ default:
 <title>Submitting code</title>
 
 <para>When you have finished modifying the code you may decide to submit it to
-the LCDproc project. You usually do this by submitting a patch for review to the
-mailing list.</para>
-
-<para>To create a patch you need the unmodified files and the files containing
-your modifications. Usually you do this by storing an unmodified copy of the
-sources in one directory and another copy with your modifications in another
-one. You then run <command>diff</command> like this:</para>
-
-<para><command>diff</command><option>-urN</option>
-<option>-X <replaceable>unmodified-dir</replaceable>/diff_ignore</option>
-<option><replaceable>unmodified-dir</replaceable></option>
-<option><replaceable>your-source-dir</replaceable></option>
-&gt; <replaceable>mymodifications.patch</replaceable></para>
-
-<important>
-<para>Please use unified diff format (<option>-u</option> option) only!</para>
-<para>When running <command>diff</command> using <option>-X diff_ignore</option>
-is strongly recommended. The file <filename>diff_ignore</filename> contains an
-exclusion list which makes <command>cvs</command> ignore all generated files
-(Makefiles, log files, object files, etc.)</para>
-</important>
-
-<para>If you have modified files in a source tree you checked out from CVS
-you can also run <command>cvs diff</command> from the working directory:</para>
-
-<para><command>cvs diff</command><option>-u</option>
-&gt; <replaceable>mymodifications.patch</replaceable></para>
-
-<note>
-<para>Some versions of <command>cvs diff</command> will not handle new files
-because these are unknown to the repository. There are ways to make cvs believe
-the files existed previously (fake add) but this is not recommended. You will
-need to submit new files 'as-is' in this case.</para>
-</note>
+the LCDproc project as a pull request.
+<ulink url="https://help.github.com/articles/about-pull-requests/">Read the
+documentation</ulink> to learn how to make one.</para>
 
 </sect1>
 

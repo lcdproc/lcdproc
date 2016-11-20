@@ -27,7 +27,7 @@ In order to compile LCDproc, you'll need the following programs:
   compile it yourself, see http://www.gnu.org/software/make/make.html .
 
 * The GNU autotools, that is automake and autoconf. They are only required
-  if you want to build LCdproc directory from CVS.
+  if you want to build LCdproc directory from Git.
   The GNU autotools are available for all major distributions. If you want
   to compile them yourself, see
   http://www.gnu.org/software/autoconf/ and
@@ -104,8 +104,8 @@ different types of displays are now supported.
 
 -- BUILDING LCDPROC -------------------------------------------------
 
---- Preparing a CVS distro ---
-If you retrieved these files from the CVS, you will first need to run:
+--- Preparing a Git distro ---
+If you retrieved these files from the Git, you will first need to run:
     sh ./autogen.sh
 
 --- Configuration ---
