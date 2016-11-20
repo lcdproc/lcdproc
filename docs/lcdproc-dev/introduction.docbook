@@ -16,9 +16,9 @@ See <ulink url="http://lcdproc.org/mail.php3">http://lcdproc.org/mail.php3</ulin
 for details on how to subscribe to the list.
 </para>
 <para>
-Therefore you might want to have a look at <ulink url="http://lcdproc.sourceforge.net/docs/"></ulink>,
+Therefore you might want to have a look at <ulink url="https://github.com/lcdproc/lcdproc/tree/master/docs"></ulink>,
 to get the latest version of this document, unless you want to generate it yourself from the
-docbook files in the CVS).
+docbook files in GIT).
 </para></note>
 
 <para>
