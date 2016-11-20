@@ -35,7 +35,7 @@ http://www.intra2net.com/en/developer/libftdi/</ulink>.
 
 <para>
 <filename>libftdi</filename> itself depends on the
-<ulink url="http://libusb.sourceforge.net/"><filename>libusb</filename></ulink>
+<ulink url="http://libusb.info/"><filename>libusb</filename></ulink>
 USB library.
 
 <note>

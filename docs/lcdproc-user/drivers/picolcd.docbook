@@ -75,7 +75,7 @@
 
 <para>
 	The driver is based on the
-	<ulink url="http://libusb.sourceforge.net/"><filename>libusb</filename></ulink>
+	<ulink url="http://libusb.info/"><filename>libusb</filename></ulink>
 	USB library, which should make it work with Linux, the different BSB variants
 	as well as Darwin/MacOS X.
 
