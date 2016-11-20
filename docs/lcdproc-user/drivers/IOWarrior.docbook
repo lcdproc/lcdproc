@@ -81,7 +81,7 @@ lack of the required hardware.
 <title>Requirements</title>
 
 <para>
-The driver is based on the <ulink url="http://libusb.sourceforge.net/"><filename>libusb</filename></ulink>
+The driver is based on the <ulink url="http://libusb.info/"><filename>libusb</filename></ulink>
 USB library, which should make it work with Linux, the different BSD variants
 as well as Darwin/MacOS X.
 
