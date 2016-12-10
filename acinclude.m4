@@ -219,6 +219,7 @@ dnl			else
 			AC_CHECK_LIB(ugpio, main,[
 				HD44780_DRIVERS="$HD44780_DRIVERS hd44780-hd44780-gpio.o"
 				LIBUGPIO="-lugpio"
+				AC_DEFINE(HAVE_UGPIO, [1], [Define to 1 if you have libugpio])
 			],[
 				AC_MSG_WARN([Could not find libugpio, not building hd44780-gpio driver])
 			])
