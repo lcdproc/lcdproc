@@ -66,7 +66,7 @@
 
 
 /* Constants for userdefchar_mode */
-#define NUM_CCs		2 /* max. number of custom characters */
+#define NUM_CCs		8 /* max. number of custom characters */
 
 /** private data for the \c NoritakeVFD driver */
 typedef struct NoritakeVFD_private_data {
