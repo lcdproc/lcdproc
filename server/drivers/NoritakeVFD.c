@@ -412,7 +412,7 @@ NoritakeVFD_chr (Driver *drvthis, int x, int y, char c)
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-NoritakeVFD_string (Driver *drvthis, int x, int y, const char string[])
+NoritakeVFD_string (Driver *drvthis, int x, int y, unsigned char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -636,9 +636,8 @@ NoritakeVFD_icon (Driver *drvthis, int x, int y, int icon)
  * \param y        Vertical cursor position (row).
  * \param state    New cursor state.
  */
-/*
 MODULE_EXPORT void
-CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
+NoritakeVFD_cursor (Driver *drvthis, int x, int y, int state)
 {
 	PrivateData *p = drvthis->private_data;
 	char out[2] = { 0x15 };
@@ -659,9 +658,8 @@ CFontzPacket_cursor (Driver *drvthis, int x, int y, int state)
 	}
 	write(p->fd, out, 1);
 
-	NoritakeVFD_cursor_goto(x, y);
+	NoritakeVFD_cursor_goto(drvthis, x, y);
 }
-*/
 
 
 /**
@@ -747,7 +745,7 @@ NoritakeVFD_set_brightness(Driver *drvthis, int state, int promille)
 	else {
 		p->offbrightness = promille;
 	}
-	//Noritake_backlight(drvthis, state);
+	NoritakeVFD_backlight(drvthis, state);
 }
 
 
@@ -832,11 +830,11 @@ static void
 NoritakeVFD_cursor_goto(Driver *drvthis, int x, int y)
 {
 	PrivateData *p = drvthis->private_data;
-	unsigned char out[4] = { 0x1B, 0x48, 0 };
+	unsigned char out[3] = { 0x1B, 0x48, 0 };
 
 	/* set cursor position */
 	if ((x > 0) && (x <= p->width) && (y > 0) && (y <= p->height))
-		out[2] = (x-1) * p->width + (y-1);
+		out[2] = (y-1) * p->width + (x-1);
 	write(p->fd, out, 3);
 }
 
