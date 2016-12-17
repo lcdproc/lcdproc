@@ -14,6 +14,7 @@ v0.5dev (ongoing development)
   - [added] Add support for icp_a125 to icp_a106 driver (https://github.com/lcdproc/lcdproc/pull/22)
   - [added] New hd44780 connection type using libugpio
   - [fixed] glcd driver: apply initial contrast setting (https://github.com/lcdproc/lcdproc/issues/12)
+  - [API] removed report() pointer from struct lcd_logical_driver
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items
