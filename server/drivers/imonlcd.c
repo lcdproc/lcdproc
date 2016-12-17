@@ -233,11 +233,11 @@ typedef struct imonlcd_private_data {
 /* prototypes for driver internal functions */
 static void imonlcd_display_init(Driver *drvthis);
 static void draw_bigchar(imon_bigfont *font, int ch, int x, int y, PrivateData *p);
-static void setLineLength(int topLine, int botLine, int topProgress, int botProgress, PrivateData *p);
-static void setBuiltinProgressBars(int topLine, int botLine, int topProgress, int botProgress, PrivateData *p);
+static void setLineLength(int topLine, int botLine, int topProgress, int botProgress, Driver *drvthis);
+static void setBuiltinProgressBars(int topLine, int botLine, int topProgress, int botProgress, Driver *drvthis);
 static int lengthToPixels(int length);
-static void send_command_data(uint64_t commandData, PrivateData *p);
-static void send_packet(PrivateData *p);
+static void send_command_data(uint64_t commandData, Driver *drvthis);
+static int send_packet(PrivateData *p);
 
 /**
  * Initialize the driver.
@@ -369,7 +369,7 @@ imonlcd_init(Driver *drvthis)
 
 	/*
 	 * We need a little bit of extra memory in the frame buffer so that
-	 * all of the last 7-bit-long packet data will be within the frame
+	 * all of the last 7-byte-long packet data will be within the frame
 	 * buffer. See imonlcd_flush() for where we take advantage of this.
 	 */
 	tmp = 0;
@@ -418,18 +418,18 @@ imonlcd_display_init(Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	if (p->backlightOn)
-		send_command_data(p->command_display_on, p);
+		send_command_data(p->command_display_on, drvthis);
 	else
-		send_command_data(p->command_shutdown, p);
+		send_command_data(p->command_shutdown, drvthis);
 
-	send_command_data(p->command_clear_alarm, p);
+	send_command_data(p->command_clear_alarm, drvthis);
 	imonlcd_set_contrast(drvthis, p->contrast);
-	send_command_data(COMMANDS_INIT, p);	/* unknown, required init command */
-	send_command_data(COMMANDS_SET_ICONS, p);
+	send_command_data(COMMANDS_INIT, drvthis);	/* unknown, required init command */
+	send_command_data(COMMANDS_SET_ICONS, drvthis);
 	/* clear the progress-bars on top and bottom of the display */
-	send_command_data(COMMANDS_SET_LINES0, p);
-	send_command_data(COMMANDS_SET_LINES1, p);
-	send_command_data(COMMANDS_SET_LINES2, p);
+	send_command_data(COMMANDS_SET_LINES0, drvthis);
+	send_command_data(COMMANDS_SET_LINES1, drvthis);
+	send_command_data(COMMANDS_SET_LINES2, drvthis);
 }
 
 
@@ -462,8 +462,8 @@ imonlcd_close(Driver *drvthis)
 				 * off with this command)
 				 */
 				report(RPT_INFO, "%s: closing, turning backlight off.", drvthis->name);
-				send_command_data(p->command_shutdown, p);
-				send_command_data(p->command_clear_alarm, p);
+				send_command_data(p->command_shutdown, drvthis);
+				send_command_data(p->command_clear_alarm, drvthis);
 			} else {
 				/*
 				 * by default, show the big clock. We need to
@@ -483,8 +483,8 @@ imonlcd_close(Driver *drvthis)
 				data += ((uint64_t) t->tm_mon << 16);
 				data += (((uint64_t) t->tm_year) << 8);
 				data += 0x80;
-				send_command_data(data, p);
-				send_command_data(p->command_clear_alarm, p);
+				send_command_data(data, drvthis);
+				send_command_data(p->command_clear_alarm, drvthis);
 			}
 
 			close(p->imon_fd);
@@ -537,7 +537,7 @@ imonlcd_flush(Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	unsigned char msb;
-	int offset = 0;
+	int offset = 0, ret;
 
 	/*
 	 * The display only provides for a complete screen refresh. If
@@ -553,7 +553,12 @@ imonlcd_flush(Driver *drvthis)
 		/* Add the memory register byte to the packet data. */
 		p->tx_buf[IMONLCD_PACKET_DATA_SIZE] = msb;
 
-		send_packet(p);
+		ret = send_packet(p);
+		if (ret < 0)
+			report(RPT_ERR, "imonlcd_flush: sending data for msb=%x: %s\n",
+					(int) msb, strerror(errno));
+		else if (ret != sizeof(p->tx_buf))
+			report(RPT_ERR, "imonlcd: incomplete write\n");
 
 		offset += IMONLCD_PACKET_DATA_SIZE;
 	}
@@ -863,7 +868,7 @@ imonlcd_output(Driver *drvthis, int state)
 			botLine = botLine > 32 ? -(botLine - 32) : botLine;
 			topLine = topLine > 32 ? -(topLine - 32) : topLine;
 
-			setLineLength(topLine, botLine, topProgress, botProgress, p);
+			setLineLength(topLine, botLine, topProgress, botProgress, drvthis);
 
 			p->last_output_bar_state = state;
 		}
@@ -886,7 +891,7 @@ imonlcd_output(Driver *drvthis, int state)
 
 	if (state == -1) {	/* the value for "on" in the lcdproc-protocol */
 		icon = (uint64_t) IMON_ICON_ALL;
-		send_command_data(COMMANDS_SET_ICONS | icon, p);
+		send_command_data(COMMANDS_SET_ICONS | icon, drvthis);
 		return;
 	}
 
@@ -1050,7 +1055,7 @@ imonlcd_output(Driver *drvthis, int state)
 	/* bit 29 : 'disc-in' */
 	if (state & IMON_OUTPUT_DISK_IN_MASK)	icon |= IMON_ICON_DISK_IN;
 
-	send_command_data(COMMANDS_SET_ICONS | icon, p);
+	send_command_data(COMMANDS_SET_ICONS | icon, drvthis);
 }
 
 /**
@@ -1115,36 +1120,39 @@ imonlcd_cellheight(Driver *drvthis)
  * the data as a 64-bit integer.
  * However, we have to reverse the bytes to the order the display requires.
  *
- * \param value  The data to send. Must be in a format that is recognized by
- *               the device. The kernel module doesn't actually do validation.
- * \param p      The private data containing the file descriptor to write to.
+ * \param value   The data to send. Must be in a format that is recognized by
+ *                the device. The kernel module doesn't actually do validation.
+ * \param drvthis Pointer to driver structure.
  */
 static void
-send_command_data(uint64_t value, PrivateData *p)
+send_command_data(uint64_t value, Driver *drvthis)
 {
 	int i;
+	PrivateData *p = drvthis->private_data;
 
 	/* Fill the send buffer. */
 	for (i = 0; i < sizeof(p->tx_buf); i++) {
 		p->tx_buf[i] = (unsigned char)((value >> (i * 8)) & 0xFF);
 	}
 
-	send_packet(p);
+	i = send_packet(p);
+	if (i < 0)
+		report(RPT_ERR, "imonlcd: error sending command %llx: %s\n",
+				value, strerror(errno));
+	else if (i != sizeof(p->tx_buf))
+		report(RPT_ERR, "imonlcd: send_command_data: incomplete write\n");
 }
 
 /**
  * Sends data to the screen.
  *
  * \param p The private data structure containing a tx_buf with the data to send.
+ * \return  Number of byte written or error code.
  */
-static void
+static int
 send_packet(PrivateData *p)
 {
-	int err;
-	err = write(p->imon_fd, p->tx_buf, sizeof(p->tx_buf));
-
-	if (err <= 0)
-		printf("%s: error writing to file descriptor: %d", "imon", err);
+	return write(p->imon_fd, p->tx_buf, sizeof(p->tx_buf));
 }
 
 
@@ -1174,7 +1182,7 @@ imonlcd_set_contrast(Driver *drvthis, int promille)
 	 * to 40). 0 is the lowest and 40 is the highest. The actual
 	 * perceived contrast varies depending on the type of display.
 	 */
-	send_command_data(COMMANDS_LOW_CONTRAST + (uint64_t) (p->contrast / 25), p);
+	send_command_data(COMMANDS_LOW_CONTRAST + (uint64_t) (p->contrast / 25), drvthis);
 }
 
 /**
@@ -1209,9 +1217,9 @@ imonlcd_backlight(Driver *drvthis, int on)
 		p->backlightOn = on;
 
 	if (on)
-		send_command_data(p->command_display_on, p);
+		send_command_data(p->command_display_on, drvthis);
 	else
-		send_command_data(p->command_shutdown, p);
+		send_command_data(p->command_shutdown, drvthis);
 }
 
 
@@ -1265,16 +1273,16 @@ draw_bigchar(imon_bigfont *font, int ch, int x, int y, PrivateData *p)
  * \param botLine      Length of the bottom line (-32 to 32)
  * \param topProgress  Length of the top progress bar (-32 to 32)
  * \param botProgress  Length of the bottom progress bar (-32 to 32)
- * \param p The private data structure containing the file descriptor to write to.
+ * \param drvthis      Pointer to driver structure.
  */
 static void
-setLineLength(int topLine, int botLine, int topProgress, int botProgress, PrivateData *p)
+setLineLength(int topLine, int botLine, int topProgress, int botProgress, Driver *drvthis)
 {
 	setBuiltinProgressBars(lengthToPixels(topLine),
 			       lengthToPixels(botLine),
 			       lengthToPixels(topProgress),
 			       lengthToPixels(botProgress),
-			       p
+			       drvthis
 	);
 }
 
@@ -1288,11 +1296,11 @@ setLineLength(int topLine, int botLine, int topProgress, int botProgress, Privat
  * \param botLine      Pitmap of the bottom line
  * \param topProgress  Pitmap of the top progress bar
  * \param botProgress  Pitmap of the bottom progress bar
- * \param p The private data structure containing the file descriptor to write to.
+ * \param drvthis      Pointer to driver structure.
  */
 static void
 setBuiltinProgressBars(int topLine, int botLine,
-		       int topProgress, int botProgress, PrivateData *p)
+		       int topProgress, int botProgress, Driver *drvthis)
 {
 	/* Least sig. bit is on the right */
 	uint64_t data;
@@ -1300,17 +1308,17 @@ setBuiltinProgressBars(int topLine, int botLine,
 	/* send bytes 1-4 of topLine and 1-3 of topProgress */
 	data = (uint64_t) topLine & 0x00000000FFFFFFFFLL;
 	data |= (((uint64_t) topProgress) << 8 * 4) & 0x00FFFFFF00000000LL;
-	send_command_data(COMMANDS_SET_LINES0 | data, p);
+	send_command_data(COMMANDS_SET_LINES0 | data, drvthis);
 
 	/* send byte 4 of topProgress, bytes 1-4 of botProgress and 1-2 of botLine */
 	data = (((uint64_t) topProgress) >> 8 * 3) & 0x00000000000000FFLL;
 	data |= (((uint64_t) botProgress) << 8) & 0x000000FFFFFFFF00LL;
 	data |= (((uint64_t) botLine) << 8 * 5) & 0x00FFFF0000000000LL;
-	send_command_data(COMMANDS_SET_LINES1 | data, p);
+	send_command_data(COMMANDS_SET_LINES1 | data, drvthis);
 
 	/* send remaining bytes 3-4 of botLine */
 	data = ((uint64_t) botLine) >> 8 * 2;
-	send_command_data(COMMANDS_SET_LINES2 | data, p);
+	send_command_data(COMMANDS_SET_LINES2 | data, drvthis);
 }
 
 /**
