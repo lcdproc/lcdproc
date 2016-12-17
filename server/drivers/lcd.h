@@ -206,10 +206,6 @@ typedef struct lcd_logical_driver {
 	int (*config_has_section)	(const char *sectionname);
 	int (*config_has_key)		(const char *sectionname, const char *keyname);
 
-	/* Reporting function */
-	/* Easily usable by including drivers/report.h */
-	void (*report)			(const int level, const char *format, .../*args*/ );
-
 	/* Display properties functions (for drivers that adapt to other loaded drivers) */
 	int (*request_display_width) ();
 	int (*request_display_height) ();

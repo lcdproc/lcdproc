@@ -22,8 +22,7 @@
 #define RPT_INFO 4
 #define RPT_DEBUG 5
 
-#define report drvthis->report
-// This assumes drvthis is locally defined... Anyone has a better idea ?
+extern void report(const int level, const char *format, .../*args*/ );
 
 static inline void dont_report( const int level, const char *format, .../*args*/ )
 {} // The idea is that this gets optimized out

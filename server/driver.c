@@ -275,9 +275,6 @@ driver_bind_module(Driver *driver)
 	driver->config_has_section	= config_has_section;
 	driver->config_has_key		= config_has_key;
 
-	/* Reporting */
-	driver->report			= report;
-
 	/* Driver private data */
 	driver->store_private_ptr	= driver_store_private_ptr;
 
