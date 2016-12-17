@@ -15,6 +15,7 @@ v0.5dev (ongoing development)
   - [added] New hd44780 connection type using libugpio
   - [fixed] glcd driver: apply initial contrast setting (https://github.com/lcdproc/lcdproc/issues/12)
   - [API] removed report() pointer from struct lcd_logical_driver
+  - [fixed] imonlcd: improve error logging
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items
