@@ -163,32 +163,44 @@ check_board_rev(Driver *drvthis)
 	fclose(fp);
 
 	/* On boards that have been overvolted, the MSB will be set */
-	rev &= 0x00ff;
-	if ((strcmp(hw, "BCM2708") != 0 && strcmp(hw, "BCM2709") != 0) || rev == 0) {
+	if ((strcmp(hw, "BCM2708") != 0 && strcmp(hw, "BCM2709") != 0) || rev & 0xFFFFFF == 0) {
 		report(RPT_ERR, "check_board_rev: This board is not recognized as a Raspberry Pi!");
 		return NULL;
 	}
 
-	/* Rev 1 boards will be 0x002 or 0x003 (not sure if 0x001 ever existed
-	 * in the wild). */
-	if (rev < 4) {
-		report(RPT_INFO, "check_board_rev: Revision 1 board detected");
-		gpio_base_address = BCM2835_PERI_BASE_PI12 + 	GPIO_BASE_OFFSET;
-		return gpio_pins_R1;
-	}
-	/* Currently, Rev 2 boards are 0x004, 0x005, or 0x006. This will need
-	 * updating as new revisions are released, but it is unlikely that P1
-	 * will change. */
-	if (rev > 3 && rev <= 21) {
-		report(RPT_INFO, "check_board_rev: Revision 2 board detected");
-		gpio_base_address = BCM2835_PERI_BASE_PI12 + 	GPIO_BASE_OFFSET;
+	/* detect boards based on WiringPi's logic: */
+	/* + new style of detection: rev has 23rd bit set */
+	if ((rev & (1 << 23)) != 0) {
+		unsigned int bType = (rev & (0xFF << 4)) >> 4;
+
+		if (bType <= 3 || bType == 5 || bType == 6) {
+			/* older boards: A, B, A+, B+, ALPHA, CM */
+			report(RPT_INFO, "check_board_rev: Revision 2 board detected");
+			gpio_base_address = BCM2835_PERI_BASE_OLD + GPIO_BASE_OFFSET;
+		}
+		else {
+			/* modern boards: Pi2 B, Pi3 B */
+			report(RPT_INFO, "check_board_rev: Raspberry Pi 2 or higher detected");
+			gpio_base_address = BCM2835_PERI_BASE_NEW + GPIO_BASE_OFFSET;
+		}
 		return gpio_pins_R2;
 	}
+	/* + old style of detection */
+	else {
+		gpio_base_address = BCM2835_PERI_BASE_OLD + GPIO_BASE_OFFSET;
 
-	report(RPT_INFO, "check_board_rev: Raspberry Pi 3 board detected");
-	gpio_base_address = BCM2835_PERI_BASE_PI3 + 	GPIO_BASE_OFFSET;
-	return gpio_pins_R2;
-
+		rev &= 0xFF;
+		if (rev < 0x04) {
+			/* Rev 1 boards will be 0x02 or 0x03. */
+			report(RPT_INFO, "check_board_rev: Revision 1 board detected");
+			return gpio_pins_R1;
+		}
+		else {
+			/* Rev 2 boards are 0x04, and higher */
+			report(RPT_INFO, "check_board_rev: Revision 2 board detected");
+			return gpio_pins_R2;
+		}
+	}
 }
 
 
