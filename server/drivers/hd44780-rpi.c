@@ -157,6 +157,7 @@ check_board_rev(Driver *drvthis)
 	while (!feof(fp)) {
 		fgets(buf, sizeof(buf), fp);
 		sscanf(buf, "Hardware	: %7s", hw);
+		hw[7] = '\0';
 		sscanf(buf, "Revision	: %x", &rev);
 	}
 	fclose(fp);
