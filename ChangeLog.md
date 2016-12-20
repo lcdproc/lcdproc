@@ -1,4 +1,6 @@
 v0.5dev (ongoing development)
+
+v0.5.8
   - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs
   - [added] Add travis file for Auto build testing of lcdproc (https://github.com/lcdproc/lcdproc/pull/2)
   - [fixed] Update hd44780-i2c driver, pins defined via config file, rather than hardcoded (https://github.com/lcdproc/lcdproc/pull/1)
