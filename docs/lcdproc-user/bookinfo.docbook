@@ -1,7 +1,7 @@
 <bookinfo>
 
 <title>LCDproc User's Guide</title>
-<subtitle>The Ultimate Guide to LCDproc 0.5</subtitle>
+<subtitle>The Ultimate Guide to LCDproc 0.5.8</subtitle>
 
 <authorgroup>
 
@@ -32,11 +32,11 @@
 </authorgroup>
 
 <date>2016-12-20</date>
-<releaseinfo>0.5.x</releaseinfo>
+<releaseinfo>0.5.8</releaseinfo>
 
 <abstract>
 <para>
-This document is a guide to LCDproc written for users. It covers LCDproc 0.5.x
+This document is a guide to LCDproc written for users. It covers LCDproc 0.5.8
 </para>
 </abstract>
 
@@ -72,7 +72,7 @@ Free Documentation License".
 <keywordset>
 <keyword>documentation</keyword>
 <keyword>LCDproc</keyword>
-<keyword>0.5.x</keyword>
+<keyword>0.5.8</keyword>
 <keyword>user guide</keyword>
 </keywordset>
 
