@@ -4,11 +4,24 @@
  * As found on the Black Artisan media center case.
  * This is a 7 digit VFD plus a load of symbols
  */
-#ifndef FUTABA_TSOD_5711BB_INCLUDED
-#define FUTABA_TSOD_5711BB_INCLUDED
+#ifndef FUTABA_H
+#define FUTABA_H
 
 //---------------------------INCLUDES------------------------------------------
 #include <stdint.h>
+#ifdef HAVE_LIBUSB_1_0
+# include <libusb.h>
+# define USB_DEVICE_HANDLE    libusb_device_handle
+# define USB_RESET_DEVICE     libusb_reset_device
+# define USB_CLOSE_DEVICE     libusb_close
+# define USB_CONTROL_TRANSFER libusb_control_transfer
+#else
+# include <usb.h>
+# define USB_DEVICE_HANDLE    usb_dev_handle
+# define USB_RESET_DEVICE     usb_reset
+# define USB_CLOSE_DEVICE     usb_close
+# define USB_CONTROL_TRANSFER usb_control_msg
+#endif
 
 //---------------------------DEFINITIONS---------------------------------------
 #define FUTABA_REPORT_LENGTH 64
@@ -25,7 +38,7 @@
 //---------------------------SYMBOL DEFINITIONS--------------------------------
 #define FUTABA_VOLUME_START      0x02
 #define FUTABA_VOLUME_BARS       11
-#define FUTABA_ICON_ARRAY_LENGTH 39
+#define FUTABA_ICON_ARRAY_LENGTH 40
 //--------------------------REPORT STRUCTURE-----------------------------------
 
 // The report definition for a string
@@ -50,7 +63,6 @@ typedef struct
 	futabaSymAttr_t	symbol[FUTABA_SYM_LEN];
 }futabaSymbolRep_t;
 
-
 // Put it all together to get the overall structure of a report
 typedef struct
 {
@@ -64,18 +76,19 @@ typedef struct
 
 }futabaReport_t;
 
-
 // The driver object definition
 typedef struct
 {
-	libusb_device_handle	*my_handle;
+	USB_DEVICE_HANDLE	*my_handle;
+#ifdef HAVE_LIBUSB_1_0
 	libusb_context 		*ctx;
+#endif
 }futabaDriver_t;
 
 //---------------------------Function declarations-----------------------------
-int futabaSendReport(libusb_device_handle *my_handle, futabaReport_t *report);
+int futabaSendReport(USB_DEVICE_HANDLE *my_handle, futabaReport_t *report);
 
-int futabaSetVolume(libusb_device_handle *my_handle, int volPercent);
+int futabaSetVolume(USB_DEVICE_HANDLE *my_handle, int volPercent);
 
 int futabaInitDriver( futabaDriver_t *my_driver, Driver *drvthis);
 
@@ -91,9 +104,7 @@ MODULE_EXPORT void futaba_clear (Driver *drvthis);
 MODULE_EXPORT void futaba_flush (Driver *drvthis);
 MODULE_EXPORT void futaba_string (Driver *drvthis, int x, int y, const char string[]);
 MODULE_EXPORT void futaba_chr (Driver *drvthis, int x, int y, char c);
-MODULE_EXPORT void futaba_set_contrast (Driver *drvthis, int promille);
-MODULE_EXPORT void futaba_backlight (Driver *drvthis, int on);
-MODULE_EXPORT void futaba_output (Driver *drvthis, int icon_map);
+MODULE_EXPORT void futaba_output (Driver *drvthis, uint64_t icon_map);
 MODULE_EXPORT const char * futaba_get_info (Driver *drvthis);
 
-#endif		//#ifndef FUTABA_TSOD_5711BB_INCLUDED
+#endif		//#ifndef FUTABA_H

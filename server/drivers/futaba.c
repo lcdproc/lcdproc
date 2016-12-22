@@ -4,20 +4,29 @@
  */
 
 /* Copyright (C) 2014 Blackeagle  email: gm(dot)blackeagle(at)gmail(dot)com
- * Additions by Alex Wood (2015)  email: thetewood(at)gmail(dot)com
+ * Additions by Alex Wood (2015 & 2016)  email: thetewood(at)gmail(dot)com
  *
  * CREDITS to Steve Williams for the original driver code and the
  * inspiration to write this.
  *
- * V E R S I O N  - 1.2
+ * V E R S I O N  - 1.3
  *
  * C H A N G E L O G
  * =================
  *
+ * 22/12/16 - More strictly defined the Icon array int type to uint64_t.  This is
+ *            to prevent compiler warnings when bit shift operations are condicted
+ *            on it.  (by AJW107)
+ *
+ * 22/12/16 - Included support for the libusb0.1 library (originally only lisusb1.0
+ *            was supported) (by AJW107)
+ *
+ * 22/12/16 - Updated code to be in line with lcdproc coding style (by AJW107)
+ *
  * 29/08/15 - Added all remaining extra icon symbols (including colons for time display)
  *            Added explaination of all codes (4 are unknown)
  *            Cleaned up code formatting
- *            (by AJW)
+ *            (by AJW107)
  *
  * 24/03/14 - Attempt to add some custom icon support.
  *
@@ -58,11 +67,10 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <libusb-1.0/libusb.h>
 #include <string.h>
 #include <ctype.h>
 #include "lcd.h"
-#include "futaba.h" 
+#include "futaba.h"
 #include "errno.h"
 #include "report.h"
 
@@ -81,9 +89,11 @@ typedef struct futaba_private_data {
 	char *framebuf;				/**< frame buffer */
 	char *old_framebuf;			/** < old framebuffer */
 	int is_busy;				/** < busy flag for futaba_flush  */
-	int old_icon_map;			/** < futaba icon map  */
-	libusb_device_handle *my_handle;	/** < usb device handle  */
+	uint64_t old_icon_map;			/** < futaba icon map  */
+	USB_DEVICE_HANDLE *my_handle;		/** < usb device handle  */
+#ifdef HAVE_LIBUSB_1_0
 	libusb_context *ctx;			/** < usb context  */
+#endif
 } PrivateData;
 
 /* Vars for the server core */
@@ -98,18 +108,26 @@ MODULE_EXPORT char *symbol_prefix = "futaba_";
  * \param my_handle  Pointer to usb handle.
  * \retval 	     0 on success, -1 on error.
  */
- int futabaSendReport(libusb_device_handle *my_handle, futabaReport_t *my_report)
+ int futabaSendReport(USB_DEVICE_HANDLE *my_handle, futabaReport_t *my_report)
 {
 	int retVal = -1;
 	uint8_t *p_rep = (uint8_t *)my_report;
 
-	retVal  = libusb_control_transfer(
+	retVal  = USB_CONTROL_TRANSFER(
 					my_handle,
-					LIBUSB_DT_HID,		// Request Type
+#ifdef HAVE_LIBUSB_1_0
+					LIBUSB_DT_HID,		// Request Type (LIBUSB1.0)
+#else
+					USB_DT_HID,		// Request Type (USB0.1)
+#endif
 					SET_REPORT,		// Request
 					0x0200,			// Report Type OUTPUT | ID 0
 					0,			// Endpoint
-					p_rep,			// Data to go
+#ifdef HAVE_LIBUSB_1_0
+					p_rep,			// Data to go (LIBUSB1.0)
+#else
+					(char*)p_rep,		// Data to go (USB0.1)
+#endif
 					sizeof(futabaReport_t),	// Length
 					5000);
 
@@ -135,17 +153,19 @@ MODULE_EXPORT char *symbol_prefix = "futaba_";
 	p->is_busy = 1;
 
 	// get our string
-	for (i = 0; i < p->height; i++) {
+	for (i = 0; i < p->height; i++)
+	{
 		memcpy(string, p->framebuf + (i * p->width), p->width);
 		string[p->width] = '\0';
 
 		// swap the : chars for -
 		len = strlen (string);
-
 		for(n=0; n < len; n++)
 		{
 			if (string[n] == ':')
+			{
 				string[n] ='-';
+			}
 		}
 
 		len = strlen (string);
@@ -167,7 +187,7 @@ MODULE_EXPORT char *symbol_prefix = "futaba_";
 			{
 				if( futabaSendReport(p->my_handle, &my_report) )
 				{
-					fprintf(stderr,"Failed in futabaSendString()\n");
+					debug(RPT_ERR,"[%s] Failed to send report", drvthis->name);
 					return -1;
 					usleep(500000);
 				}
@@ -195,13 +215,26 @@ MODULE_EXPORT char *symbol_prefix = "futaba_";
 int futabaInitDriver( futabaDriver_t *my_driver, Driver *drvthis)
 {
 	int retVal = -1;
+#ifdef HAVE_LIBUSB_1_0
+	int error = 0;
+#else
+	struct usb_bus *bus;
+	struct usb_device *dev;
+#endif
 
+#ifdef HAVE_LIBUSB_1_0
+/* libusb1.0 code */
 	if( my_driver->ctx == NULL )
 	{
-		if( libusb_init(&my_driver->ctx) < 0 )
+		error = libusb_init(&my_driver->ctx);
+		if( error )
 		{
-			report(RPT_DEBUG, "%s: USB init Failed", drvthis->name);
-			retVal--;
+			report(RPT_ERR, "LIBUSB1.0: [%s] USB init Failed with Error [%d]", drvthis->name, error);
+			retVal = -1;
+		}
+		else
+		{
+			debug(RPT_INFO, "LIBUSB1.0: [%s] USB init succeded", drvthis->name);
 		}
 	}
 
@@ -211,23 +244,87 @@ int futabaInitDriver( futabaDriver_t *my_driver, Driver *drvthis)
 				VENDOR_ID,
 				PRODUCT_ID)) == NULL )
 	{
-		report(RPT_DEBUG, "%s: LibUsb open failed", drvthis->name);
+		report(RPT_ERR, "LIBUSB1.0: [%s] open failed, no device found", drvthis->name);
+		return -1;
 	}
 	else
 	{
-	        retVal++;
+		debug(RPT_INFO, "LIBUSB1.0: [%s] open succeded, device found", drvthis->name);
+	        retVal = 0;
 	}
 
-	if( libusb_kernel_driver_active(my_driver->my_handle,0) )
+	if( libusb_kernel_driver_active(my_driver->my_handle, 0) == 1 )
 	{
-		report(RPT_DEBUG, "%s: Kernel driver found. Detatching it...", drvthis->name);
+		debug(RPT_DEBUG, "LIBUSB1.0: [%s] Kernel driver found. Detatching it...", drvthis->name);
 
-		if( libusb_detach_kernel_driver(my_driver->my_handle,0) )
+		error = libusb_detach_kernel_driver(my_driver->my_handle, 0);
+		if ( error )
 		{
-			report(RPT_DEBUG, "%s: Can't detach kernel driver", drvthis->name);
-			retVal--;
+			report(RPT_ERR, "LIBUSB1.0: [%s] Can't detach kernel driver with error [%d]", drvthis->name, error);
+			return -1;
+		}
+		else
+		{
+			debug(RPT_INFO, "LIBUSB1.0: [%s] Detaching successful", drvthis->name);
+			retVal = 0;
 		}
 	}
+	else
+	{
+		debug(RPT_DEBUG, "LIBUSB1.0: [%s] no kernel driver found", drvthis->name);
+		retVal = 0;
+	}
+#else  /* HAVE_LIBUSB_1_0 */
+/* libusb0.1 code */
+	usb_init();
+	usb_find_busses();
+	usb_find_devices();
+
+	for (bus = usb_get_busses(); bus != NULL; bus = bus->next)
+	{
+		for (dev = bus->devices; dev != NULL; dev = dev->next)
+		{
+			if ((dev->descriptor.idVendor == VENDOR_ID) && (dev->descriptor.idProduct == PRODUCT_ID))
+			{
+				report(RPT_INFO, "USB0.1: [%s] found display on bus [%s] device [%s]", drvthis->name, bus->dirname, dev->filename);
+				my_driver->my_handle = usb_open(dev);
+				goto done;
+			}
+		}
+	}
+done:
+	if ( my_driver->my_handle != NULL )
+	{
+		debug(RPT_DEBUG, "USB0.1: [%s] opening device succeeded", drvthis->name);
+		retVal = 0;
+#ifdef LIBUSB_HAS_GET_DRIVER_NP
+		char driver[1024];
+
+		if (usb_get_driver_np(my_driver->my_handle, 0, driver, sizeof(driver)) == 0)
+		{
+			report(RPT_WARNING, "USB0.1: [%s] interface 0 already claimed by [%s] - detaching", drvthis->name, driver);
+#ifdef LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP
+			if (usb_detach_kernel_driver_np(my_driver->my_handle, 0) < 0)
+			{
+				report(RPT_ERR, "USB0.1: [%s] unable to detach [%s] driver", drvthis->name, driver);
+				//probably should return -1 here, but let's give it a go still
+			}
+			else
+			{
+				debug(RPT_INFO, "USB0.1: [%s] detached [%s] driver", drvthis->name, driver);
+				retVal = 0;
+			}
+#endif /* LIBUSB_HAS_DETACH_KERNEL_DRIVER_NP */
+		}
+#endif /* LIBUSB_HAS_GET_DRIVER_NP */
+	}
+	else
+	{
+		report(RPT_ERR, "USB0.1: [%s] no device found", drvthis->name);
+		return -1;
+	}
+#endif	/* HAVE_LIBUSB_1_0 */
+
 	return retVal;
 }
 
@@ -238,43 +335,81 @@ int futabaInitDriver( futabaDriver_t *my_driver, Driver *drvthis)
  */
 int futaba_start_driver(Driver *drvthis)
 {
-	int n;
+	int error;
 	futabaDriver_t *my_driver = &g_futabaDriver;
 	PrivateData *p = drvthis->private_data;
 
+	if (p == NULL)
+	{
+		report(RPT_ERR, "[%s] unable to initalise private data, is NULL", drvthis->name);
+		return -1;
+	}
+
 	if( futabaInitDriver(my_driver,drvthis) )
 	{
-		report(RPT_DEBUG, "%s: Failed to init driver", drvthis->name);
+		report(RPT_ERR, "[%s] Failed to init driver", drvthis->name);
 		futaba_shutdown(drvthis);
+		return -1;
 	}
 	else
 	{
-		report(RPT_DEBUG, "%s: RESET Device", drvthis->name);
-		if( (n = libusb_reset_device(my_driver->my_handle)) )
+		debug(RPT_INFO, "[%s] RESET Device", drvthis->name);
+		error =  USB_RESET_DEVICE(my_driver->my_handle);
+		if ( error )
 		{
-			report(RPT_DEBUG, "%s: RESET Failed", drvthis->name);
-			libusb_close(my_driver->my_handle);
-			if( futabaInitDriver(my_driver, drvthis) )
+			report(RPT_ERR, "[%s] RESET Failed with error [%d], retrying ...", drvthis->name, error);
+			USB_CLOSE_DEVICE(my_driver->my_handle);
+			//try again, slower, just incase
+			futabaInitDriver(my_driver, drvthis);
+			usleep(500000);
+			error =  USB_RESET_DEVICE(my_driver->my_handle);
+			usleep(500000);
+			if (error)
 			{
-				report(RPT_DEBUG, "%s: Failed to re-init driver", drvthis->name);
+				report(RPT_ERR, "[%s] Failed to re-init driver", drvthis->name);
 				futaba_shutdown(drvthis);
+				return -1;
 			}
+			else
+			{
+				debug(RPT_INFO, "[%s] re-init succeeded", drvthis->name);
+			}
+		}
+		else
+		{
+			debug(RPT_INFO, "[%s] reset succeded", drvthis->name);
 		}
 	}
 
+#ifdef HAVE_LIBUSB_1_0
 	// Claim the interface for us
-	if( (n = libusb_claim_interface(my_driver->my_handle,0)) )
+	error = libusb_claim_interface(my_driver->my_handle, 0);
+	if ( error )
 	{
-		report(RPT_DEBUG, "%s: Failed to claim interface", drvthis->name);
+		report(RPT_ERR, "LIBUSB1.0: [%s] Failed to claim interface with error [%d]", drvthis->name, error);
 		libusb_close(my_driver->my_handle);
 		libusb_exit(my_driver->ctx);
-		exit(-1);
+		return -1;
 	}
 	else
 	{ // Write the usb handle and context to the private_data
+		debug(RPT_INFO, "LIBUSB1.0: [%s] device successfully claimed", drvthis->name);
 		p->my_handle = my_driver->my_handle;
 		p->ctx = my_driver->ctx;
 	}
+
+#else /* HAVE_LIBUSB_1_0 */
+	if (usb_claim_interface(my_driver->my_handle, 0) < 0)
+	{
+		report(RPT_ERR, "USB0.1: [%s] cannot claim interface!", drvthis->name);
+		usb_close(my_driver->my_handle);
+		return -1;
+	}
+	else
+	{
+		debug(RPT_INFO, "USB0.1: [%s] claimed interface", drvthis->name);
+	}
+#endif /* HAVE_LIBUSB_1_0 */
 	return 0;
 }
 
@@ -284,13 +419,32 @@ int futaba_start_driver(Driver *drvthis)
  */
 void futaba_shutdown(Driver *drvthis)
 {
+	//no need to check for failure, just try it
 	PrivateData *p = drvthis->private_data;
+#ifdef HAVE_LIBUSB_1_0
+	int error;
 
-	libusb_release_interface(p->my_handle,0);
+	error = libusb_release_interface(p->my_handle, 0);
+	if (error)
+	{
+		report(RPT_ERR, "LIBUSB1.0: [%s] usb interface release failed with error [%d]", drvthis->name, error);
+	}
+
+	/* FIXME: Does it make sense to re-attach a kernel driver? */
+	error = libusb_attach_kernel_driver(p->my_handle, 0);
+	if (error)
+	{
+		report(RPT_ERR, "LIBUSB1.0: [%s] failed to re-attach to kernel driver (not serious, mau never have been a kernel driver initialy) with error [%d]", drvthis->name, error);
+	}
+
 	libusb_close(p->my_handle);
 
 	libusb_exit(p->ctx);
-	// printf("Futaba display driver shutdown complete\n");
+#else	/* The libusb 0.1 way */
+	usb_release_interface(p->my_handle, 0);
+	usb_close(p->my_handle);
+#endif
+	debug(RPT_INFO, "[%s] USB connection closed", drvthis->name);
 }
 
  /**
@@ -298,7 +452,6 @@ void futaba_shutdown(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  * \return         0 on success, -1 on error.
  */
-
 MODULE_EXPORT int
 futaba_init (Driver *drvthis)
 {
@@ -307,17 +460,23 @@ futaba_init (Driver *drvthis)
 	/* Allocate and store private data */
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL)
+	{
+		report(RPT_ERR, "%s: Private Data is NULL", drvthis->name);
 		return -1;
+	}
+
 	if (drvthis->store_private_ptr(drvthis, p))
+	{
+		report(RPT_ERR, "%s: Error creating pointer to Private Data [%d]", drvthis->name, p);
 		return -1;
+	}
 
 	/* initialize private data */
-
 	p->width = 7;
 	p->height = 1;
         p->old_icon_map = 0;
-	p->framebuf = (char *)malloc(p->width * p->height);
 
+	p->framebuf = (char *)malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
 		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 		return -1;
@@ -333,7 +492,7 @@ futaba_init (Driver *drvthis)
 	futaba_start_driver(drvthis);
 	memset(p->framebuf, ' ', p->width * p->height);
 	memcpy(p->old_framebuf, p->framebuf,p->width * p->height);
-	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+	debug(RPT_INFO, "%s: init() succeded", drvthis->name);
 	return 0;
 }
 
@@ -346,16 +505,29 @@ futaba_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	if (p != NULL) {
+	if (p != NULL)
+	{
+		//terminate usb driver
+		futaba_shutdown(drvthis);
+		//clean up data structures used and release memory
 		if (p->framebuf != NULL)
+		{
+			debug(RPT_INFO, "[%s] Freeing framebuffer memory", drvthis->name);
 			free(p->framebuf);
+		}
+
 		if (p->old_framebuf)
+		{
+			debug(RPT_INFO, "[%s] Freeing memory from old framebuffer", drvthis->name);
 			free(p->old_framebuf);
+		}
+		debug(RPT_INFO, "[%s] Freeing Private Data structure from memory", drvthis->name);
 		free(p);
 	}
+	debug(RPT_INFO, "[%s] Private Data already empty/NULL", drvthis->name);
 	drvthis->store_private_ptr(drvthis, NULL);
 
-	futaba_shutdown(drvthis);
+	debug(RPT_DEBUG, "[%s] USB driver close complete", drvthis->name);
 	return;
 }
 
@@ -370,7 +542,6 @@ futaba_width (Driver *drvthis)
  	PrivateData *p = drvthis->private_data;
 	return p->width;
 }
-
 
 /**
  * Return the display height in characters.
@@ -393,6 +564,7 @@ futaba_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	memset(p->framebuf, ' ', p->width * p->height);
+        debug(RPT_DEBUG, "[%s] clear complete", drvthis->name);
 }
 
 /**
@@ -410,20 +582,25 @@ futaba_flush (Driver *drvthis)
 	 * the correct sized strings */
 
 	if (p->is_busy == 1)
+	{
+		debug(RPT_INFO, "%s: is busy, unable to flush - this should not happen", drvthis->name);
 		return;
+	}
 
-	for (i = 0; i < p->height; i++) {
+	for (i = 0; i < p->height; i++)
+	{
 		int offset = i * p->width;
 
 		/* Backing-store based implementation:
 		 * Only put it on the screen if it's not already there
 		 * Otherwise the display flickers badly !!   */
-
-		if (memcmp(p->old_framebuf+offset, p->framebuf+offset, p->width) != 0) {
+		if (memcmp(p->old_framebuf+offset, p->framebuf+offset, p->width) != 0)
+		{
 			memcpy(p->old_framebuf+offset, p->framebuf+offset, p->width);
 			futaba_send_string(drvthis);
 		}
 	}
+        debug(RPT_DEBUG, "[%s] flush complete\n\t[%s]\n\t[%s]", drvthis->name, p->framebuf, p->old_framebuf);
 }
 
 /**
@@ -440,15 +617,24 @@ futaba_string (Driver *drvthis, int x, int y, const char string[])
 	PrivateData *p = drvthis->private_data;
 	int i;
 
+	debug(RPT_DEBUG, "[%s] string start [%s]", drvthis->name, string);
+
 	x--; y--; // Convert 1-based coords to 0-based...
 
 	if ((y < 0) || (y >= p->height))
+	{
+		debug(RPT_DEBUG, "[%s] string y co-ordinates out of bounds [%d]>[%d]", drvthis->name, y, p->height);
 		return;
-
-	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++) {
-		if (x >= 0)	// no write left of left border
-			p->framebuf[(y * p->width) + x] = string[i];
 	}
+
+	for (i = 0; (string[i] != '\0') && (x < p->width); i++, x++)
+	{
+		if (x >= 0)
+		{ // only write text after the left border
+			p->framebuf[(y * p->width) + x] = string[i];
+		}
+	}
+	debug(RPT_DEBUG, "[%s] string complete [%s]", drvthis->name, string);
 }
 
 /**
@@ -464,35 +650,18 @@ futaba_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
+	debug(RPT_DEBUG, "[%s] chr start [%c]", drvthis->name, c);
+
 	y--; x--;
 	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
+	{ //make sure co-ordinates are sensible
 		p->framebuf[x] = c;
-}
-
-/**
- * Change the display contrast.
- * Display is LED so we ignore it.
- * \param drvthis  Pointer to driver structure.
- * \param promille New contrast value in promille.
- */
-MODULE_EXPORT void
-futaba_set_contrast (Driver *drvthis, int promille)
-{
-	//PrivateData *p = drvthis->private_data;
-	debug(RPT_DEBUG, "Contrast: %d command ignored as not supported", promille);
-}
-
-/**
- * Turn the display backlight on or off.
- * Display is LED so we ignore it.
- * \param drvthis  Pointer to driver structure.
- * \param on       New backlight status.
- */
-MODULE_EXPORT void
-futaba_backlight (Driver *drvthis, int on)
-{
-	//PrivateData *p = drvthis->private_data;
-	debug(RPT_DEBUG, "Backlight %s command ignored as not supported", (on) ? "ON" : "OFF");
+	}
+	else
+	{
+		debug(RPT_DEBUG, "[%s] co-ordinates (%d,%d) out of bounds (%d,%d) [%c]", drvthis->name, x, y, p->width, p->height, c);
+	}
+	debug(RPT_DEBUG, "[%s] chr complete [%c]", drvthis->name, c);
 }
 
 /**
@@ -504,7 +673,7 @@ MODULE_EXPORT const char *
 futaba_get_info (Driver *drvthis)
 {
     	//PrivateData *p = drvthis->private_data;
-        static char *info_string = "Futaba TOSD-5711BB Driver v1.1 (c) Blackeagle 2014";
+        static char *info_string = "Futaba TOSD-5711BB Driver v1.1 (c) Blackeagle 2014 & AJW107 2016";
 	return info_string;
 }
 
@@ -561,10 +730,10 @@ futaba_get_info (Driver *drvthis)
  * \param state	   integer with bits representing LED states
  */
 MODULE_EXPORT void
-futaba_output (Driver *drvthis, int icon_map)
+futaba_output (Driver *drvthis, uint64_t icon_map)
 {
 	PrivateData *p = drvthis->private_data;
-	int icons_changed = icon_map ^ p->old_icon_map;
+	uint64_t icons_changed = icon_map ^ p->old_icon_map;
         /* Apart from the codes in the array below:
          * Volume Bar Codes: 0x02 to 0x0C are each line of the volume bar
          * Unknown Codes:    0x0D, 0x1C, 0x1D, 0x27 where not SEEN to do anything (but may do)
@@ -572,7 +741,8 @@ futaba_output (Driver *drvthis, int icon_map)
          * Unused Codes:     0x9A onwards just produce garbage */
 	const char Icon[FUTABA_ICON_ARRAY_LENGTH] = {0x01, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37 };
 	futabaReport_t my_report;
-	int i, numBars, the_volume, n;
+	int i, n;
+	uint64_t numBars, the_volume;
 
 	memset(&my_report,0,sizeof(futabaReport_t));
 
@@ -587,6 +757,7 @@ futaba_output (Driver *drvthis, int icon_map)
 			my_report.type.sym.symbol[0].symName = Icon[i];
 			my_report.type.sym.symbol[0].state = ((icon_map & (1 << i)) < 1) ? 0 : 1;;
 			futabaSendReport(p->my_handle, &my_report);
+			debug(RPT_INFO, "[%s] Icon no.%d [%c] updated",drvthis->name, i, Icon[i]);
 		}
 	}
 
@@ -607,9 +778,14 @@ futaba_output (Driver *drvthis, int icon_map)
 			if( n <= numBars)
 			{ /* if we don't do this we always light one bar ! */
 				if (the_volume != 0)
+				{
 					my_report.type.sym.symbol[n].state = FUTABA_SYM_ON;
+					debug(RPT_INFO, "[%s] volume changed", drvthis->name);
+				}
 				else
+				{
 					my_report.type.sym.symbol[n].state = 0;
+				}
 			}
 		}
 		futabaSendReport(p->my_handle, &my_report);
