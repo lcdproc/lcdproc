@@ -284,6 +284,45 @@ setup_gpio(Driver *drvthis, int gpio)
 
 
 /**
+ * Send 4-bit data.
+ *
+ * \param p     Pointer to driver's private data structure.
+ * \param ch    The value to send (lower nibble must contain the data).
+ */
+static void
+send_nibble(PrivateData *p, unsigned char ch, unsigned char displayID)
+{
+	if (gpio_map != NULL) {
+		/* Clear data lines ready for nibbles */
+		SET_GPIO(p->rpi_gpio->d7, 0);
+		SET_GPIO(p->rpi_gpio->d6, 0);
+		SET_GPIO(p->rpi_gpio->d5, 0);
+		SET_GPIO(p->rpi_gpio->d4, 0);
+		p->hd44780_functions->uPause(p, 50);
+
+		SET_GPIO(p->rpi_gpio->d7, ch & 0x08);
+		SET_GPIO(p->rpi_gpio->d6, ch & 0x04);
+		SET_GPIO(p->rpi_gpio->d5, ch & 0x02);
+		SET_GPIO(p->rpi_gpio->d4, ch & 0x01);
+		p->hd44780_functions->uPause(p, 50);
+
+		/* Data is clocked on the falling edge of EN */
+		if (displayID == 1 || displayID == 0)
+			SET_GPIO(p->rpi_gpio->en, 1);
+		if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
+			SET_GPIO(p->rpi_gpio->en2, 1);
+		p->hd44780_functions->uPause(p, 50);
+
+		if (displayID == 1 || displayID == 0)
+			SET_GPIO(p->rpi_gpio->en, 0);
+		if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
+			SET_GPIO(p->rpi_gpio->en2, 0);
+		p->hd44780_functions->uPause(p, 50);
+	}		
+}
+
+
+/**
  * Free resources used by this connection type.
  * \param p  Pointer to driver's PrivateData structure.
  */
@@ -426,64 +465,13 @@ hd_init_rpi(Driver *drvthis)
 void
 lcdrpi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
-	/* Safeguard: This should never happen */
-	if (gpio_map == NULL) {
-		return;
+	/* Safeguard */
+	if (gpio_map != NULL) {
+		SET_GPIO(p->rpi_gpio->rs, (flags == RS_INSTR) ? 0 : 1);
+
+		send_nibble(p, ch >> 4, displayID);
+		send_nibble(p, ch, displayID);
 	}
-
-	SET_GPIO(p->rpi_gpio->rs, (flags == RS_INSTR) ? 0 : 1);
-
-	/* Clear data lines ready for nibbles */
-	SET_GPIO(p->rpi_gpio->d7, 0);
-	SET_GPIO(p->rpi_gpio->d6, 0);
-	SET_GPIO(p->rpi_gpio->d5, 0);
-	SET_GPIO(p->rpi_gpio->d4, 0);
-	p->hd44780_functions->uPause(p, 50);
-
-	/* Output upper nibble first */
-	SET_GPIO(p->rpi_gpio->d7, (ch & 0x80));
-	SET_GPIO(p->rpi_gpio->d6, (ch & 0x40));
-	SET_GPIO(p->rpi_gpio->d5, (ch & 0x20));
-	SET_GPIO(p->rpi_gpio->d4, (ch & 0x10));
-	p->hd44780_functions->uPause(p, 50);
-
-	/* Data is clocked on the falling edge of EN */
-	if (displayID == 1 || displayID == 0)
-		SET_GPIO(p->rpi_gpio->en, 1);
-	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-		SET_GPIO(p->rpi_gpio->en2, 1);
-	p->hd44780_functions->uPause(p, 50);
-
-	if (displayID == 1 || displayID == 0)
-		SET_GPIO(p->rpi_gpio->en, 0);
-	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-		SET_GPIO(p->rpi_gpio->en2, 0);
-	p->hd44780_functions->uPause(p, 50);
-
-	/* Do same for lower nibble */
-	SET_GPIO(p->rpi_gpio->d7, 0);
-	SET_GPIO(p->rpi_gpio->d6, 0);
-	SET_GPIO(p->rpi_gpio->d5, 0);
-	SET_GPIO(p->rpi_gpio->d4, 0);
-	p->hd44780_functions->uPause(p, 50);
-
-	SET_GPIO(p->rpi_gpio->d7, (ch & 0x08));
-	SET_GPIO(p->rpi_gpio->d6, (ch & 0x04));
-	SET_GPIO(p->rpi_gpio->d5, (ch & 0x02));
-	SET_GPIO(p->rpi_gpio->d4, (ch & 0x01));
-	p->hd44780_functions->uPause(p, 50);
-
-	if (displayID == 1 || displayID == 0)
-		SET_GPIO(p->rpi_gpio->en, 1);
-	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-		SET_GPIO(p->rpi_gpio->en2, 1);
-	p->hd44780_functions->uPause(p, 50);
-
-	if (displayID == 1 || displayID == 0)
-		SET_GPIO(p->rpi_gpio->en, 0);
-	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-		SET_GPIO(p->rpi_gpio->en2, 0);
-	p->hd44780_functions->uPause(p, 50);
 }
 
 
