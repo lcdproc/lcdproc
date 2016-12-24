@@ -293,13 +293,6 @@ static void
 send_nibble(PrivateData *p, unsigned char ch, unsigned char displayID)
 {
 	if (gpio_map != NULL) {
-		/* Clear data lines ready for nibbles */
-		SET_GPIO(p->rpi_gpio->d7, 0);
-		SET_GPIO(p->rpi_gpio->d6, 0);
-		SET_GPIO(p->rpi_gpio->d5, 0);
-		SET_GPIO(p->rpi_gpio->d4, 0);
-		p->hd44780_functions->uPause(p, 50);
-
 		SET_GPIO(p->rpi_gpio->d7, ch & 0x08);
 		SET_GPIO(p->rpi_gpio->d6, ch & 0x04);
 		SET_GPIO(p->rpi_gpio->d5, ch & 0x02);
