@@ -247,11 +247,11 @@ setup_gpio(Driver *drvthis, int gpio)
 {
 	volatile int i;
 
-#define GPPUP    gpio_map + 37
+#define GPPUD    gpio_map + 37
 #define GPPUDCLK gpio_map + 38
 
 	/* Disable pull-up/down */
-	*(GPPUP) &= ~3;
+	*(GPPUD) &= ~3;
 
 	/*
 	 * After writing to the GPPUD register, need to wait 150 cycles as per
@@ -270,7 +270,7 @@ setup_gpio(Driver *drvthis, int gpio)
 	while (--i);
 
 	/* Write again to GPPUD and disable clock */
-	*(GPPUP) &= ~3;
+	*(GPPUD) &= ~3;
 	*(GPPUDCLK + (gpio / 32)) = 0;
 
 	/*
@@ -431,12 +431,8 @@ lcdrpi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 		return;
 	}
 
-	if (flags == RS_INSTR) {
-		SET_GPIO(p->rpi_gpio->rs, 0);
-	}
-	else {			/* flags == RS_DATA */
-		SET_GPIO(p->rpi_gpio->rs, 1);
-	}
+	SET_GPIO(p->rpi_gpio->rs, (flags == RS_INSTR) ? 0 : 1);
+
 	/* Clear data lines ready for nibbles */
 	SET_GPIO(p->rpi_gpio->d7, 0);
 	SET_GPIO(p->rpi_gpio->d6, 0);
