@@ -442,12 +442,14 @@ hd_init_rpi(Driver *drvthis)
 	}
 
 	/* Setup the lcd in 4 bit mode: Send (FUNCSET | IF_8BIT) three times
-	 * followed by (FUNCSET | IF_4BIT) using four nibbles. Timing is not
-	 * exactly what is required by HD44780. */
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, 0x33);
+	 * followed by (FUNCSET | IF_4BIT) using four nibbles. */
+	SET_GPIO(p->rpi_gpio->rs, 0);
+	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	p->hd44780_functions->uPause(p, 4100);
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, 0x32 );
+	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	p->hd44780_functions->uPause(p, 150);
+	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
+	send_nibble(p, (FUNCSET | IF_4BIT) >> 4, 0);
 
 	common_init(p, IF_4BIT);
 
