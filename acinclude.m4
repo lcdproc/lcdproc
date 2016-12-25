@@ -9,7 +9,7 @@ AC_ARG_ENABLE(drivers,
 	[                  which is a comma-separated list of drivers.]
 	[                  Possible drivers are:]
 	[                    bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,]
-	[                    EyeboxOne,g15,glcd,glcdlib,glk,hd44780,i2500vfd,]
+	[                    EyeboxOne,futaba,g15,glcd,glcdlib,glk,hd44780,i2500vfd,]
 	[                    icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,]
 	[                    joy,lb216,lcdm001,lcterm,linux_input,lirc,lis,MD8800,mdm166a,]
 	[                    ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,]
@@ -23,7 +23,7 @@ AC_ARG_ENABLE(drivers,
 	drivers="$enableval",
 	drivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,glk,lb216,lcdm001,MtxOrb,pyramid,text])
 
-allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,linux_input,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,Olimex_MOD_LCD1x9,picolcd,pyramid,sdeclcd,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,vlsys_m428,xosd,rawserial,yard2LCD]
+allDrivers=[bayrad,CFontz,CFontzPacket,curses,CwLnx,ea65,EyeboxOne,futaba,g15,glcd,glcdlib,glk,hd44780,i2500vfd,icp_a106,imon,imonlcd,IOWarrior,irman,irtrans,joy,lb216,lcdm001,lcterm,linux_input,lirc,lis,MD8800,mdm166a,ms6931,mtc_s16209x,MtxOrb,mx5000,NoritakeVFD,Olimex_MOD_LCD1x9,picolcd,pyramid,sdeclcd,sed1330,sed1520,serialPOS,serialVFD,shuttleVFD,sli,stv5730,SureElec,svga,t6963,text,tyan,ula200,vlsys_m428,xosd,rawserial,yard2LCD]
 if test "$debug" = yes; then
 	allDrivers=["${allDrivers},debug"]
 fi
@@ -136,6 +136,19 @@ dnl				else
 			DRIVERS="$DRIVERS EyeboxOne${SO}"
 			actdrivers=["$actdrivers EyeboxOne"]
 			;;
+                futaba)
+			if test "$enable_libusb" = yes ; then
+	                        DRIVERS="$DRIVERS futaba${SO}"
+        	                actdrivers=["$actdrivers futaba"]
+                                if test "$enable_libusb_1_0" = yes ; then
+                                        AC_MSG_RESULT([The futaba driver is using the libusb-1.0 library.])
+                                else
+                                        AC_MSG_RESULT([The futaba driver is using the libusb-0.1 library.])
+                                fi
+                        else
+                                AC_MSG_WARN([The futaba driver needs the libusb library.])
+                        fi
+                        ;;
 		g15)
 			AC_CHECK_HEADERS([g15daemon_client.h],[
 				AC_CHECK_LIB(g15daemon_client, new_g15_screen,[

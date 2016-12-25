@@ -102,6 +102,9 @@ VFD front panel display on Aopen XC Cube EA65 media barebone
 .B EyeboxOne
 LCD display on the EyeboxOne
 .TP
+.B futaba
+The Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo Media Centre PCs
+.TP
 .B g15
 LCD display on the Logitech G15 keyboard
 .TP
