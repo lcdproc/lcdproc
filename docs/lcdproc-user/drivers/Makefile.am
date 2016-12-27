@@ -7,6 +7,7 @@ EXTRA_DIST =	bayrad.docbook \
 		CwLnx.docbook \
 		ea65.docbook \
 		eyeboxone.docbook \
+		futaba.docbook \
 		g15.docbook \
 		glcd.docbook \
 		glcdlib.docbook \

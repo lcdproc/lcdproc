@@ -443,3 +443,9 @@ flexible :)
 - [Fatih Aşıcı](mailto:fatih.asici@gmail.com)
 
   - Driver for hd44780 connection type using linux GPIO interface
+
+- [Alex Wood](mailto:thetewood@gmail.com)
+
+  - Driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC
+    Spectra Media Cenre PCs amoungst others
+

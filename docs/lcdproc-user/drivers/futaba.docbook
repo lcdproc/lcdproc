@@ -27,7 +27,7 @@
       </inlinemediaobject></para>
 
     <para>The IR attached is a standard MCE eHome remote which does not need
-    any new drivers to work with lirc. It also work with
+    any new drivers to work with lirc. It also works with
     <application>scripts.xbmc.lcdproc</application> on
     <application>Kodi</application>.</para>
 
@@ -62,24 +62,18 @@
     <para>The driver is based on the <ulink
     url="http://libusb.info/"><filename>libusb</filename></ulink> USB library
     (Versions 1.0 and 0.1), which should make it work with Linux, the
-    different BSB variants as well as Darwin/MacOS X.</para>
+    different BSD variants as well as Darwin/MacOS X.</para>
 
     <note>
       <para>When using a <filename>libusb</filename> based driver like
       <code>futaba</code>, <application>LCDd</application> needs to be started
-      as root.</para>
+      as root.  However LCDd may then drop down to a less privlidged user, such
+      as nobody, after it has started.</para>
     </note>
 
     <para>On Linux, the only kernel module required is the USB host controller
-    driver (<filename>uhci_hcd</filename> on the M300) to fire up the USB bus
-    to which the LCD is attached. For other operating systems, analogous
-    requirements apply.</para>
-
-    <para>Lastly, for <filename>libusb</filename> to work correctly, the
-    <filename>usbfs</filename> file system must be mounted on
-    <filename>/proc/bus/usb</filename>, e.g. using the command <code>mount -t
-    usbfs usbfs /proc/bus/usb</code> or by your system's default
-    configuration.</para>
+    driver to fire up the USB bus to which the LCD is attached. For other
+    operating systems, analogous requirements apply.</para>
   </sect2>
 
   <sect2 id="futaba-config">
@@ -87,29 +81,6 @@
 
     <sect3 id="futaba-config-section">
       <title>[futaba]</title>
-
-      <variablelist>
-
-        <varlistentry>
-          <term><property>Size</property> =
-          <parameter>WIDTHxHEIGHT</parameter></term>
-
-          <listitem>
-            <para>Should not be changed from the default of 7x1.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
-          <term><property>TitleSpeed</property> =
-          <parameter><replaceable>TITLESPEED</replaceable></parameter></term>
-
-          <listitem>
-            <para>Set the speed the text marquee scrolls at. Legal values are:
-            <literal>1</literal> - <literal>10</literal>. If not given, it
-            defaults to <literal>5</literal>.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
 
 <note>
 <para>There are no Brightness, Contrast or Back-light controls as
