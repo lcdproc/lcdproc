@@ -1,0 +1,111 @@
+<sect1 id="futaba">
+  <title>The Futaba Driver</title>
+
+  <para>This section covers the use of the <ulink
+  url="http://www.futaba.co.jp/en/display/vfd/lineup.html"><uri>Futaba</uri></ulink>
+  TOSD-5711BB USB VFD display. This as commonly used on Elonex Artisan,
+  Fujitsu Scaleo E and FIC Spectra Media Centre PCs.</para>
+
+  <sect2 id="futaba-displays">
+    <title>Displays</title>
+
+    <para>The Futaba TOSD-5711BB is a VFD based USB 2.0 display, very much in
+    the style of VHS Recorders/Players from the 1990s. It contains a single
+    line, 7 Character 14-segment display and multiple icons to show the media
+    type, codec, etc; current state of the PC; Volume knob and indicator. Each
+    segment will display one character (Letters can only be in Capitals), and
+    has a '<literal>:</literal>' (colon) and '.' (dot) between each character.
+    There is no contrast control or back-light. The volume knob is lit using a
+    blue LED and spins eternally. An image of the VFD circuit board and Volume
+    knob can be seen <ulink
+    url="http://images.esellerpro.com/2131/I/772/87/DCP_1700.JPG"><uri>here</uri></ulink>.</para>
+
+    <para><inlinemediaobject>
+        <imageobject>
+          <imagedata fileref="http://images.esellerpro.com/2131/I/772/87/DCP_1700.JPG"/>
+        </imageobject>
+      </inlinemediaobject></para>
+
+    <para>The IR attached is a standard MCE eHome remote which does not need
+    any new drivers to work with lirc. It also works with
+    <application>scripts.xbmc.lcdproc</application> on
+    <application>Kodi</application>.</para>
+
+    <para>It comes pre-installed on Elonex Artisan, Fujitsu Scaleo E and FIC
+    Spectra Media Centre PCs <ulink
+    url="http://www.fic.com.tw/spectraviiv/drivers/SPECTRA%20ID1%20Viiv%20User%20Manual.pdf">FIC
+    Spectra Manual</ulink>.</para>
+
+    <note>
+      <itemizedlist>
+        <listitem>
+          <para>If the display crashes on start-up, this diff will solve the
+          problem: <ulink
+          url="https://github.com/ajw107/LibreELEC.tv/blob/master/packages/linux/patches/default/linux-061-add-elonex-artisan-vfd-support.patch">Linux
+          Diff</ulink>. I have submitted this patch for inclusion into the
+          standard Linux Kernel.</para>
+        </listitem>
+
+        <listitem>
+          <para>The patched version of
+          <application>scripts.xbmc.lcproc</application> can be found <ulink
+          url="https://github.com/ajw107/script.xbmc.lcdproc">here</ulink>,
+          this should be added upstream soon too.</para>
+        </listitem>
+      </itemizedlist>
+    </note>
+  </sect2>
+
+  <sect2 id="futaba-requirements">
+    <title>Requirements</title>
+
+    <para>The driver is based on the <ulink
+    url="http://libusb.info/"><filename>libusb</filename></ulink> USB library
+    (Versions 1.0 and 0.1), which should make it work with Linux, the
+    different BSD variants as well as Darwin/MacOS X.</para>
+
+    <note>
+      <para>When using a <filename>libusb</filename> based driver like
+      <code>futaba</code>, <application>LCDd</application> needs to be started
+      as root.  However LCDd may then drop down to a less privlidged user, such
+      as nobody, after it has started.</para>
+    </note>
+
+    <para>On Linux, the only kernel module required is the USB host controller
+    driver to fire up the USB bus to which the LCD is attached. For other
+    operating systems, analogous requirements apply.</para>
+  </sect2>
+
+  <sect2 id="futaba-config">
+    <title>Configuration in LCDd.conf</title>
+
+    <sect3 id="futaba-config-section">
+      <title>[futaba]</title>
+
+<note>
+<para>There are no Brightness, Contrast or Back-light controls as
+the display does not support these functions</para>
+</note>
+
+    </sect3>
+  </sect2>
+
+  <sect2 id="futaba-status">
+    <title>futaba driver status</title>
+
+    <para>All icons/indicators function well. Currently the ':' (colon) or '.'
+    (dot) in between characters do NOT operate. In a future update I hope to
+    get these to work, with three settings: one to enable/disable flashing;
+    one to set the flash rate; and one to choose between ':' (colon) or '.'
+    (dot).</para>
+  </sect2>
+
+  <sect2 id="futaba-copy">
+    <title>Copyright</title>
+
+    <para>The lcdproc futaba driver originally was written by Blackeagle
+    email: gm(dot)blackeagle(at)gmail(dot)com Additions by Alex Wood
+    (<literal>2015</literal><literal>/6</literal>) email:
+    thetewood(at)gmail(dot)com.</para>
+  </sect2>
+</sect1>

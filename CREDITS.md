@@ -447,3 +447,8 @@ flexible :)
 - Guillaume Membré
 
   - Documentation updates
+
+- [Alex Wood](mailto:thetewood@gmail.com)
+
+  - Driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC
+    Spectra Media Cenre PCs amoungst others

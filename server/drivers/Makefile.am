@@ -23,9 +23,10 @@ AM_LDFLAGS = @LDSHARED@
 
 lcdexecbindir = $(pkglibdir)
 lcdexecbin_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy lb216 lcdm001 lcterm linux_input lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD Olimex_MOD_LCD1x9 picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd yard2LCD
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne futaba g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy lb216 lcdm001 lcterm linux_input lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD Olimex_MOD_LCD1x9 picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd yard2LCD
 noinst_LIBRARIES = libLCD.a libbignum.a
 
+futaba_CFLAGS =      @LIBUSB_CFLAGS@ @LIBUSB_1_0_CFLAGS@ $(AM_CFLAGS)
 g15_CFLAGS =         @LIBUSB_CFLAGS@ $(AM_CFLAGS)
 glcd_CFLAGS =        @FT2_CFLAGS@ @LIBPNG_CFLAGS@ @LIBUSB_CFLAGS@ @LIBX11_CFLAGS@ $(AM_CFLAGS)
 hd44780_CFLAGS =     @LIBUSB_CFLAGS@ @LIBFTDI_CFLAGS@ $(AM_CFLAGS)
@@ -43,6 +44,7 @@ CFontz_LDADD =       libLCD.a libbignum.a
 CFontzPacket_LDADD = libLCD.a libbignum.a
 curses_LDADD =       @LIBCURSES@
 CwLnx_LDADD =        libLCD.a libbignum.a
+futaba_LDADD =       @LIBUSB_LIBS@ @LIBUSB_1_0_LIBS@ libLCD.a
 g15_LDADD =          @LIBG15@
 glcd_LDADD =         libLCD.a @GLCD_DRIVERS@ @FT2_LIBS@ @LIBPNG_LIBS@ @LIBSERDISP@ @LIBUSB_LIBS@ @LIBX11_LIBS@
 glcd_DEPENDENCIES =  @GLCD_DRIVERS@ glcd-glcd-render.o
@@ -89,6 +91,7 @@ CwLnx_SOURCES =      lcd.h lcd_lib.h CwLnx.c CwLnx.h report.h
 debug_SOURCES =      lcd.h report.h debug.c debug.h
 ea65_SOURCES =       lcd.h ea65.h ea65.c report.h
 EyeboxOne_SOURCES =  lcd.h lcd_lib.h EyeboxOne.c EyeboxOne.h report.h
+futaba_SOURCES =     lcd.h futaba.c futaba.h report.h
 g15_SOURCES =        lcd.h lcd_lib.h g15.h g15-num.c g15.c report.h
 glcd_SOURCES =       lcd.h report.h glcd_drv.c glcd_drv.h glcd-low.h glcd-drivers.h glcd-render.c glcd-render.h
 EXTRA_glcd_SOURCES = glcd-t6963.c t6963_low.c t6963_low.h glcd-png.c glcd-serdisp.c glcd-glcd2usb.c glcd-glcd2usb.h glcd-x11.c glcd-picolcdgfx.c
