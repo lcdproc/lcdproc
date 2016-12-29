@@ -237,7 +237,7 @@ static void setLineLength(int topLine, int botLine, int topProgress, int botProg
 static void setBuiltinProgressBars(int topLine, int botLine, int topProgress, int botProgress, PrivateData *p);
 static int lengthToPixels(int length);
 static void send_command_data(uint64_t commandData, PrivateData *p);
-static void send_packet(PrivateData *p);
+static int send_packet(PrivateData *p);
 
 /**
  * Initialize the driver.
@@ -369,7 +369,7 @@ imonlcd_init(Driver *drvthis)
 
 	/*
 	 * We need a little bit of extra memory in the frame buffer so that
-	 * all of the last 7-bit-long packet data will be within the frame
+	 * all of the last 7-byte-long packet data will be within the frame
 	 * buffer. See imonlcd_flush() for where we take advantage of this.
 	 */
 	tmp = 0;
@@ -537,7 +537,7 @@ imonlcd_flush(Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	unsigned char msb;
-	int offset = 0;
+	int offset = 0, ret;
 
 	/*
 	 * The display only provides for a complete screen refresh. If
@@ -553,7 +553,12 @@ imonlcd_flush(Driver *drvthis)
 		/* Add the memory register byte to the packet data. */
 		p->tx_buf[IMONLCD_PACKET_DATA_SIZE] = msb;
 
-		send_packet(p);
+		ret = send_packet(p);
+		if (ret < 0)
+			report(RPT_ERR, "imonlcd_flush: sending data for msb=%x: %s\n",
+					(int) msb, strerror(errno));
+		else if (ret != sizeof(p->tx_buf))
+			report(RPT_ERR, "imonlcd: incomplete write\n");
 
 		offset += IMONLCD_PACKET_DATA_SIZE;
 	}
@@ -1129,22 +1134,24 @@ send_command_data(uint64_t value, PrivateData *p)
 		p->tx_buf[i] = (unsigned char)((value >> (i * 8)) & 0xFF);
 	}
 
-	send_packet(p);
+	i = send_packet(p);
+	if (i < 0)
+		report(RPT_ERR, "imonlcd: error sending command %llx: %s\n",
+				value, strerror(errno));
+	else if (i != sizeof(p->tx_buf))
+		report(RPT_ERR, "imonlcd: send_command_data: incomplete write\n");
 }
 
 /**
  * Sends data to the screen.
  *
  * \param p The private data structure containing a tx_buf with the data to send.
+ * \return  Number of byte written or error code.
  */
-static void
+static int
 send_packet(PrivateData *p)
 {
-	int err;
-	err = write(p->imon_fd, p->tx_buf, sizeof(p->tx_buf));
-
-	if (err <= 0)
-		printf("%s: error writing to file descriptor: %d", "imon", err);
+	return write(p->imon_fd, p->tx_buf, sizeof(p->tx_buf));
 }
 
 

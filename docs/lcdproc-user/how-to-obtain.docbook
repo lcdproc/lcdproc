@@ -25,8 +25,8 @@ around on the internet:
   <term>Older releases</term>
   <listitem>
     <para>
-    Older releases of LCDproc can be found on the Sourceforge project page at
-    <ulink url="http://sourceforge.net/projects/lcdproc/files/lcdproc/"></ulink>.
+    Older releases of LCDproc can be found on the GitHub project page at
+    <ulink url="https://github.com/lcdproc/lcdproc"></ulink>.
     </para>
   </listitem>
 </varlistentry>
@@ -36,12 +36,11 @@ around on the internet:
 </sect1>
 
 <sect1 id="tar">
-<title>Download CVS Version of LCDproc as a Tarball</title>
+<title>Download Git Version of LCDproc as a Tarball</title>
 
 <para>
 The snapshot of the current source code repository may be downloaded from the
-web. Goto <ulink url="http://lcdproc.cvs.sourceforge.net/viewvc/lcdproc/"></ulink>
-and click on "Download GNU tarball".
+web. Goto <ulink url="https://github.com/lcdproc/lcdproc/archive/master.tar.gz"></ulink>.
 </para>
 
 <para>
@@ -54,47 +53,27 @@ To extract the files run
 
 </sect1>
 
-<sect1 id="cvs">
-<title>Download The Latest Version of LCDproc from CVS</title>
+<sect1 id="git">
+<title>Download The Latest Version of LCDproc from GitHub</title>
 
 <para>
-Of course you can download the latest stuff from CVS via anonymous login.
-</para>
-
-<para>
-Login to CVS:
-</para>
-
-<screen>
-<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc login</userinput>
-</screen>
-
-<para>
-(Hit enter when prompted for a password.)
-</para>
-
-<para>
-Get the files from CVS:
+Of course you can download the latest stuff from GitHub.
+For more information on how to use GitHub see
+<ulink url="https://guides.github.com/"></ulink>.
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>cvs -d:pserver:anonymous@lcdproc.cvs.sourceforge.net:/cvsroot/lcdproc checkout -r stable-0-5-x lcdproc</userinput>
+<prompt>$</prompt> <userinput>git clone https://github.com/lcdproc/lcdproc.git</userinput>
 </screen>
 
 <para>
 Once you've done that and want to update the downloaded files to the latest stuff
-you can use the "update" command of CVS (Make sure to be in the lcdproc directory.):
+you can use the "pull" command of git (make sure to be in the lcdproc directory!):
 </para>
 
 <screen>
-<prompt>$</prompt> <userinput>cvs update -d</userinput>
+<prompt>$</prompt> <userinput>git pull</userinput>
 </screen>
-
-<para>
-Now that once you have downloaded the files you can prepare them for
-compiling, but first you should (you don't have to) copy them to another
-place on your machine.
-</para>
 
 </sect1>
 

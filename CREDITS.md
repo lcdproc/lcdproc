@@ -418,7 +418,7 @@ flexible :)
 	  (https://github.com/lcdproc/lcdproc/pull/6)
 
 
-- [Harald Geyer](mailto:harald@ccbib.org)
+- [Harald Geyer](http://friends.ccbib.org/harald/supporting/)
 
   - Driver for the linux input subsystem
   - Driver and font for Olimex MOD-LCD1x9 14 segment display
@@ -443,3 +443,12 @@ flexible :)
 - [Fatih Aşıcı](mailto:fatih.asici@gmail.com)
 
   - Driver for hd44780 connection type using linux GPIO interface
+
+- Guillaume Membré
+
+  - Documentation updates
+
+- [Alex Wood](mailto:thetewood@gmail.com)
+
+  - Driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC
+    Spectra Media Cenre PCs amoungst others

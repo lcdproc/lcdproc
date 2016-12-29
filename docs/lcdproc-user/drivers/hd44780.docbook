@@ -2538,7 +2538,7 @@ Keypad=no
 If your port expander has different wiring you can re-assign the pins in the config file
 </para>
 
-<example id="hd44780-i2c-config.example alternative wiring">
+<example id="hd44780-i2c-config.example.alternative.wiring">
 <title>HD44780: Configuration for I<superscript>2</superscript>C with port expander 
 Alternative Wiring</title>
 <screen>
@@ -2550,7 +2550,7 @@ Alternative Wiring</title>
 </screen>
 </example>
 
-<example id="hd44780-i2c-config.example alternative config">
+<example id="hd44780-i2c-config.example.alternative.config">
 <title>HD44780: Configuration for I<superscript>2</superscript>C with port expander
 alternative config</title>
 <screen>

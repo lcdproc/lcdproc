@@ -7,7 +7,7 @@ SUBDIRS = shared clients server docs scripts
 
 sysconf_DATA = LCDd.conf
 
-EXTRA_DIST = $(sysconf_DATA) CREDITS contrib
+EXTRA_DIST = $(sysconf_DATA) CREDITS.md contrib
 
 
 dist-hook:

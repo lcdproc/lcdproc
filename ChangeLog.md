@@ -1,4 +1,5 @@
 v0.5dev (ongoing development)
+  - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs
   - [added] Add travis file for Auto build testing of lcdproc (https://github.com/lcdproc/lcdproc/pull/2)
   - [fixed] Update hd44780-i2c driver, pins defined via config file, rather than hardcoded (https://github.com/lcdproc/lcdproc/pull/1)
   - [fixed] Portability fixes (https://github.com/lcdproc/lcdproc/pull/4)
@@ -14,6 +15,8 @@ v0.5dev (ongoing development)
   - [added] Add support for icp_a125 to icp_a106 driver (https://github.com/lcdproc/lcdproc/pull/22)
   - [added] New hd44780 connection type using libugpio
   - [fixed] glcd driver: apply initial contrast setting (https://github.com/lcdproc/lcdproc/issues/12)
+  - [API] removed report() pointer from struct lcd_logical_driver
+  - [fixed] imonlcd: improve error logging
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items

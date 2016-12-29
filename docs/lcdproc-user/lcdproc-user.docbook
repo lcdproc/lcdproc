@@ -21,6 +21,7 @@
   <!ENTITY CwLnx SYSTEM "drivers/CwLnx.docbook">
   <!ENTITY ea65 SYSTEM "drivers/ea65.docbook">
   <!ENTITY EyeboxOne SYSTEM "drivers/eyeboxone.docbook">
+  <!ENTITY futaba SYSTEM "drivers/futaba.docbook">
   <!ENTITY g15 SYSTEM "drivers/g15.docbook">
   <!ENTITY glcd SYSTEM "drivers/glcd.docbook">
   <!ENTITY glcdlib SYSTEM "drivers/glcdlib.docbook">
