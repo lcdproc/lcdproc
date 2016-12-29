@@ -412,7 +412,7 @@ NoritakeVFD_chr (Driver *drvthis, int x, int y, char c)
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-NoritakeVFD_string (Driver *drvthis, int x, int y, unsigned char string[])
+NoritakeVFD_string (Driver *drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
