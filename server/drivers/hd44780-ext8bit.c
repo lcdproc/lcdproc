@@ -56,7 +56,6 @@
 #include "hd44780-low.h"
 #include "lpt-port.h"
 #include "port.h"
-#include "lcd_sem.h"
 #include "report.h"
 
 #include <stdio.h>
@@ -80,9 +79,6 @@ void lcdtime_HD44780_output(PrivateData *p, int data);
 #define BL	SEL
 #define LE	SEL
 
-static int semid;
-
-
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
@@ -94,8 +90,6 @@ hd_init_ext8bit(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
-
-	semid = sem_get();
 
 	// Reserve the port registers
 	if (port_access_multiple(p->port,3)) {
@@ -150,14 +144,12 @@ lcdtime_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 
 	portControl |= p->backlight_bit;
 
-	sem_wait(semid);
 	port_out(p->port + 2, portControl ^ OUTMASK);
 	port_out(p->port, ch);
 	if (p->delayBus) p->hd44780_functions->uPause(p, 1);
 	port_out(p->port + 2, (enableLines|portControl) ^ OUTMASK);
 	if (p->delayBus) p->hd44780_functions->uPause(p, 1);
 	port_out(p->port + 2, portControl ^ OUTMASK);
-	sem_signal(semid);
 }
 
 
@@ -186,8 +178,6 @@ unsigned char lcdtime_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 {
 	unsigned char readval;
 
-	sem_wait(semid);
-
 	// Convert the positive logic to the negative logic on the LPT port
 	port_out(p->port, ~YData & 0x00FF);
 	// 9 bits output if backlight is used, 10 bits otherwise
@@ -202,7 +192,6 @@ unsigned char lcdtime_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 
 	// Put port back into idle state
 	port_out(p->port, p->backlight_bit ^ OUTMASK);
-	sem_signal(semid);
 
 	// And convert value back (MSB first).
 	return (((readval & FAULT) / FAULT <<4) |		/* pin 15 */
