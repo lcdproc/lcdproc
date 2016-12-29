@@ -44,7 +44,7 @@ MODULE_EXPORT void NoritakeVFD_chr (Driver *drvthis, int x, int y, char c);
 
 MODULE_EXPORT void NoritakeVFD_vbar (Driver *drvthis, int x, int y, int len, int promille, int options);
 MODULE_EXPORT void NoritakeVFD_hbar (Driver *drvthis, int x, int y, int len, int promille, int options);
-MODULE_EXPORT void NoritakeVFD_num(Driver *drvthis, int x, int num);
+MODULE_EXPORT void NoritakeVFD_num (Driver *drvthis, int x, int num);
 MODULE_EXPORT int  NoritakeVFD_icon (Driver *drvthis, int x, int y, int icon);
 MODULE_EXPORT void NoritakeVFD_cursor (Driver *drvthis, int x, int y, int state);
 
