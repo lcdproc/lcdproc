@@ -71,6 +71,10 @@ of connection (parallel port, serial port, USB, I2C, SPI or others).
         <entry>8-bit wiring ("winamp" style)</entry>
       </row>
       <row>
+        <entry><literal><link linkend="hd44780-8bit-lcm162">lcm162</link></literal></entry>
+        <entry>8-bit wiring ("lcm162" style)</entry>
+      </row>
+      <row>
         <entry><literal><link linkend="hd44780-seriallpt">serialLpt</link></literal></entry>
         <entry>Serial LPT wiring</entry>
       </row>
@@ -1491,6 +1495,22 @@ The optional keypad can be connected as follows:
 The backlight wiring should be attached to nSEL, pin 17. Because the portato
 program (mentioned above) also uses this pin to control the bargraph, you
 cannot use the backlight control together with the bargraph.
+</para>
+
+</sect3>
+
+<sect3 id="hd44780-8bit-lcm162">
+<title>8bit ("LCM-162" style)</title>
+
+<para>
+This interface is pretty similar to the
+<link linkend="hd44780-8bit-lcdtime">8bit</link> connection type except that
+the RS, RW and ENABLE signals are wired differently.
+</para>
+
+<para>
+This device is usually found directly wired in the Nextgate NSA network
+appliances, so no soldering is necessary.
 </para>
 
 </sect3>
@@ -3404,6 +3424,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>8bit</literal></parameter> |
       <parameter><literal>serialLpt</literal></parameter> |
       <parameter><literal>winamp</literal></parameter> |
+      <parameter><literal>lcm162</literal></parameter> |
       <parameter><literal>picanlcd</literal></parameter> |
       <parameter><literal>lcdserializer</literal></parameter> |
       <parameter><literal>los-panel</literal></parameter> |
