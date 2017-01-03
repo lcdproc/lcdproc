@@ -140,7 +140,7 @@ tyan_SOURCES =       lcd.h lcd_lib.h tyan_lcdm.h tyan_lcdm.c report.h adv_bignum
 ula200_SOURCES =     lcd.h adv_bignum.h ula200.h ula200.c report.h
 vlsys_m428_SOURCES = lcd.h report.h vlsys_m428.c vlsys_m428.h
 xosd_SOURCES =       lcd.h xosdlib_drv.c xosdlib_drv.h report.h adv_bignum.h
-yard2LCD =           lcd.h yard2LCD.c yard2LCD.h report.h
+yard2LCD_SOURCES =   lcd.h yard2LCD.c yard2LCD.h report.h
 
 
 AM_CPPFLAGS = -I$(top_srcdir)
