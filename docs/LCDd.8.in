@@ -507,7 +507,7 @@ A graphic icon.
 A scrolling text display, scrolling either horizontally or vertically.
 .TP
 .B frame
-A \fIcontainer\fR to contain other widgets, permitting them to be refered to
+A \fIcontainer\fR to contain other widgets, permitting them to be referred to
 as a single unit.  A widget is put inside a frame by using the \-in \fI#id\fR
 parameter, where \fI#id\fR refers to the id of the frame.
 .TP
