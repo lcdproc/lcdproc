@@ -633,7 +633,7 @@ MD8800_output (Driver *drvthis, int on)
 		return;
 	p->last_command = on;
 
-	report(RPT_ERR, "commmand send is: %i", on);
+	report(RPT_ERR, "command send is: %i", on);
 	switch (on) {
 	// +0 -> off
 		case 1: // 'hdd'
