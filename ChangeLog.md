@@ -23,6 +23,7 @@ v0.5.8
   - [fixed] NoritakeVFD: Increase # of Custom Characters (https://github.com/lcdproc/lcdproc/pull/29)
   - [fixed] hd44780: removed outdated semaphore code (https://github.com/lcdproc/lcdproc/issues/34)
   - [fixed] hd44780-rpi: Improve board detection (https://github.com/lcdproc/lcdproc/pull/42)
+  - [fixed] Don't disable libusb-1.0 just because legacy libusb isn't available
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items
