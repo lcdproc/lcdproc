@@ -64,6 +64,8 @@
 #include "lcd.h"
 #include "adv_bignum.h"
 
+#define SLIM
+
 /* internal functions to set up bignumbers on 2- or 3-line displays */
 static void adv_bignum_num_2_0(Driver * drvthis, int x, int num, int height, int offset, int do_init);
 static void adv_bignum_num_2_1(Driver * drvthis, int x, int num, int height, int offset, int do_init);
@@ -645,7 +647,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 		{"   "},
 		{"   "}},
 		{{3, 5, 2},	/* 9 */
-		{' ', 1, 2},
+		{' ', 4, 2},
 		{"   "},
 		{"   "}},
 		{{'.'},		/* : */
@@ -674,11 +676,25 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 				b_______,
+#ifdef SLIM
+				b_______,
+#else
 				b__XXXXX,
+#endif
 				b__XXXXX,
 				b__XXXXX,
 			},
 			[2] = {
+#ifdef SLIM
+				b__XX___,
+				b__XX___,
+				b__XX___,
+				b__XX___,
+				b__XX___,
+				b__XX___,
+				b__XX___,
+				b__XX___,
+#else
 				b__XXX__,
 				b__XXX__,
 				b__XXX__,
@@ -687,8 +703,19 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b__XXX__,
 				b__XXX__,
 				b__XXX__,
+#endif
 			},
 			[3] = {
+#ifdef SLIM
+				b_____XX,
+				b_____XX,
+				b_____XX,
+				b_____XX,
+				b_____XX,
+				b_____XX,
+				b_____XX,
+				b_____XX,
+#else
 				b____XXX,
 				b____XXX,
 				b____XXX,
@@ -697,6 +724,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b____XXX,
 				b____XXX,
 				b____XXX,
+#endif
 			},
 			[4] = {
 				b__XXXXX,
@@ -704,7 +732,11 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 				b_______,
+#ifdef SLIM
+				b_______,
+#else
 				b__XXXXX,
+#endif
 				b__XXXXX,
 				b__XXXXX,
 			},
@@ -715,7 +747,11 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 				b_______,
 				b_______,
 				b_______,
+#ifdef SLIM
+				b_______,
+#else
 				b__XXXXX,
+#endif
 				b__XXXXX,
 			},
 		};
