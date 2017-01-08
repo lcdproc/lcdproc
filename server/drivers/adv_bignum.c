@@ -645,7 +645,7 @@ adv_bignum_num_2_6(Driver * drvthis, int x, int num, int height, int offset, int
 		{"   "},
 		{"   "}},
 		{{3, 5, 2},	/* 9 */
-		{' ', 1, 2},
+		{' ', 4, 2},
 		{"   "},
 		{"   "}},
 		{{'.'},		/* : */
