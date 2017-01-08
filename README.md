@@ -88,7 +88,7 @@ it.
 LCDproc wouldn't be possible without the ongoing patience and efforts by its
 amazing community of developers and users. We'd like to recognize everyone's
 contributions to the project, and we've tried to list them all in
-[CREDITS](CREDITS). If we've overlooked your contributions, please let us know
+[CREDITS](CREDITS.md). If we've overlooked your contributions, please let us know
 so we can attribute your work immediately!
 
 _From William Ferrell, original developer:_ This project is almost twenty years
