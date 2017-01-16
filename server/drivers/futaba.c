@@ -432,7 +432,7 @@ futaba_start_driver(Driver *drvthis)
 
 #else /* HAVE_LIBUSB_1_0 */
 	/* USB 0.1 code */
-	if (usb_claim_interface(my_driver->my_handle, 0) < 0) {
+	if (usb_claim_interface(p->my_handle, 0) < 0) {
 		report(RPT_ERR, "USB0.1: [%s] cannot claim interface!", drvthis->name);
 		futaba_shutdown(drvthis);
 		return -1;
