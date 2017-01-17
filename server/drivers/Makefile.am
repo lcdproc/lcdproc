@@ -23,7 +23,7 @@ AM_LDFLAGS = @LDSHARED@
 
 lcdexecbindir = $(pkglibdir)
 lcdexecbin_PROGRAMS = @DRIVERS@
-EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug ea65 EyeboxOne futaba g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy lb216 lcdm001 lcterm linux_input lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD Olimex_MOD_LCD1x9 picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd yard2LCD
+EXTRA_PROGRAMS = bayrad CFontz CFontzPacket curses CwLnx debug dm140 ea65 EyeboxOne futaba g15 glcd glcdlib glk hd44780 i2500vfd icp_a106 imon imonlcd IOWarrior irman irtrans joy lb216 lcdm001 lcterm linux_input lirc lis MD8800 mdm166a ms6931 mtc_s16209x MtxOrb mx5000 NoritakeVFD Olimex_MOD_LCD1x9 picolcd pyramid rawserial sdeclcd sed1330 sed1520 serialPOS serialVFD shuttleVFD sli stv5730 SureElec svga t6963 text tyan ula200 vlsys_m428 xosd yard2LCD
 noinst_LIBRARIES = libLCD.a libbignum.a
 
 futaba_CFLAGS =      @LIBUSB_CFLAGS@ @LIBUSB_1_0_CFLAGS@ $(AM_CFLAGS)
@@ -89,6 +89,7 @@ CFontzPacket_SOURCES = lcd.h lcd_lib.h CFontzPacket.c CFontzPacket.h CFontz-char
 curses_SOURCES =     lcd.h curses_drv.h curses_drv.c report.h
 CwLnx_SOURCES =      lcd.h lcd_lib.h CwLnx.c CwLnx.h report.h
 debug_SOURCES =      lcd.h report.h debug.c debug.h
+dm140_SOURCES =      lcd.h led.c libvfd.h led.h dm140.c dm140.h report.h
 ea65_SOURCES =       lcd.h ea65.h ea65.c report.h
 EyeboxOne_SOURCES =  lcd.h lcd_lib.h EyeboxOne.c EyeboxOne.h report.h
 futaba_SOURCES =     lcd.h futaba.c futaba.h report.h
