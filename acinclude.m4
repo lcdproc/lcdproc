@@ -137,14 +137,14 @@ dnl				else
 			actdrivers=["$actdrivers EyeboxOne"]
 			;;
                 futaba)
-			if test "$enable_libusb" = yes ; then
+			if test "$enable_libusb_1_0" = yes ; then
 	                        DRIVERS="$DRIVERS futaba${SO}"
-					actdrivers=["$actdrivers futaba"]
-                                if test "$enable_libusb_1_0" = yes ; then
-                                        AC_MSG_RESULT([The futaba driver is using the libusb-1.0 library.])
-                                else
-                                        AC_MSG_RESULT([The futaba driver is using the libusb-0.1 library.])
-                                fi
+				actdrivers=["$actdrivers futaba"]
+				AC_MSG_RESULT([The futaba driver is using the libusb-1.0 library.])
+                        elif test "$enable_libusb" = yes ; then
+                                DRIVERS="$DRIVERS futaba${SO}"
+				actdrivers=["$actdrivers futaba"]
+				AC_MSG_RESULT([The futaba driver is using the libusb-0.1 library.])
                         else
                                 AC_MSG_WARN([The futaba driver needs the libusb library.])
                         fi
@@ -439,14 +439,14 @@ dnl			else
 			actdrivers=["$actdrivers rawserial"]
 			;;
 		picolcd)
-			if test "$enable_libusb" = yes ; then
+			if test "$enable_libusb_1_0" = yes ; then
 				DRIVERS="$DRIVERS picolcd${SO}"
 				actdrivers=["$actdrivers picolcd"]
-				if test "$enable_libusb_1_0" = yes ; then
-					AC_MSG_RESULT([The picolcd driver is using the libusb-1.0 library.])
-				else
-					AC_MSG_RESULT([The picolcd driver is using the libusb-0.1 library.])
-				fi
+				AC_MSG_RESULT([The picolcd driver is using the libusb-1.0 library.])
+			elif test "$enable_libusb" = yes ; then
+				DRIVERS="$DRIVERS picolcd${SO}"
+				actdrivers=["$actdrivers picolcd"]
+				AC_MSG_RESULT([The picolcd driver is using the libusb-0.1 library.])
 			else
 				AC_MSG_WARN([The picolcd driver needs the libusb library.])
 			fi
