@@ -241,7 +241,7 @@ associated with your driver. You put your driver name followed by
 of the source and header files. See below for an example.</para>
 
 <screen>
-myDriver_SOURCES =  lcd.h myDriver.c myDriver.h report.h
+myDriver_SOURCES =  lcd.h myDriver.c myDriver.h
 </screen>
 
 </sect3>

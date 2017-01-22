@@ -27,7 +27,7 @@
 #include "sed1520.h"
 #include "glcd_font5x8.h"
 #include "sed1520fm.h"
-#include "report.h"
+#include "shared/report.h"
 #include "port.h"
 #include "timing.h"
 #include "lpt-port.h"

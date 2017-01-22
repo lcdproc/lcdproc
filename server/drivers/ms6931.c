@@ -52,7 +52,7 @@
 
 #include "lcd.h"
 #include "ms6931.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 
 /** private data for the \c ms6931 driver */

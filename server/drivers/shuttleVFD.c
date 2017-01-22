@@ -37,7 +37,7 @@
 
 #include "lcd.h"
 #include "shuttleVFD.h"
-#include "report.h"
+#include "shared/report.h"
 
 
 // Variables for the server core

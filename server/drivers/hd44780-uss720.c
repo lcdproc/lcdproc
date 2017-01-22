@@ -27,7 +27,7 @@
 #include "hd44780-uss720.h"
 #include "hd44780-low.h"
 #include "lpt-port.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <unistd.h>
 #include <string.h>

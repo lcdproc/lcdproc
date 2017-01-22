@@ -32,7 +32,7 @@
 
 #include "lcd.h"
 #include "debug.h"
-#include "report.h"
+#include "shared/report.h"
 
 
 #define DEFAULT_WIDTH		LCD_DEFAULT_WIDTH

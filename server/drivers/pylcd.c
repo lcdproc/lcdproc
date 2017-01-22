@@ -55,7 +55,7 @@
 #include "lcd.h"
 #include "pylcd.h"
 #include "lcd_lib.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 
 #define True 1

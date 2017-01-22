@@ -15,7 +15,7 @@
 
 #include "hd44780-bwct-usb.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <string.h>
 #include <errno.h>

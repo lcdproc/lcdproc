@@ -58,7 +58,7 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "mtc_s16209x.h"
-#include "report.h"
+#include "shared/report.h"
 
 #define MTC_DEFAULT_DEVICE	"/dev/lcd"
 #define MTC_DEFAULT_BRIGHTNESS	255

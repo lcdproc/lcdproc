@@ -20,7 +20,7 @@
 
 #include "lcd.h"
 #include "linux_input.h"
-#include "report.h"
+#include "shared/report.h"
 #include "shared/LL.h"
 
 #define LINUXINPUT_DEFAULT_DEVICE	"/dev/input/event0"

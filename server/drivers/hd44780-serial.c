@@ -53,7 +53,7 @@
 #include "lcd.h"
 #include "hd44780-low.h"
 #include "hd44780-serial.h"
-#include "report.h"
+#include "shared/report.h"
 
 /** Shortcut to select an entry from serial_interfaces table */
 #define SERIAL_IF serial_interfaces[p->serial_type]

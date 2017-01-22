@@ -25,7 +25,7 @@
 #include <usb.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "glcd-low.h"
 #include "glcd-glcd2usb.h"
 

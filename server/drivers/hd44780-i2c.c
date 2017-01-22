@@ -74,7 +74,7 @@
 #include "hd44780-i2c.h"
 #include "hd44780-low.h"
 
-#include "report.h"
+#include "shared/report.h"
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif

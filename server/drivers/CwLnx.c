@@ -61,7 +61,7 @@
 
 #include "lcd.h"
 #include "CwLnx.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 
 /* for the icon definitions & the big numbers */

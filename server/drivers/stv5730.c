@@ -34,7 +34,7 @@
 
 #include "lcd.h"
 #include "stv5730.h"
-#include "report.h"
+#include "shared/report.h"
 #include "port.h"
 #include "timing.h"
 

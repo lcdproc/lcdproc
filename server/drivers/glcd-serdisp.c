@@ -21,7 +21,7 @@
 #include <serdisplib/serdisp.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "glcd-low.h"
 
 #define SERDISPLIB_MAX_DISPLAYNAME	32

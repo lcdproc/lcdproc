@@ -49,7 +49,7 @@
 #include <string.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 #include "adv_bignum.h"
 #include "serialVFD.h"

@@ -40,7 +40,7 @@
 #include <errno.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lpt-port.h"
 #include "port.h"
 #include "serialVFD_io.h"

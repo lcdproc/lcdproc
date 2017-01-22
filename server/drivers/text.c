@@ -31,7 +31,7 @@
 
 #include "lcd.h"
 #include "text.h"
-#include "report.h"
+#include "shared/report.h"
 
 
 /** private data for the \c text driver */

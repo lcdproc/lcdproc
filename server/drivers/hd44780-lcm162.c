@@ -25,7 +25,7 @@
 #include "hd44780-low.h"
 #include "lpt-port.h"
 #include "port.h"
-#include "report.h"
+#include "shared/report.h"
 
 #include <stdio.h>
 #include <string.h>
