@@ -1,4 +1,5 @@
 v0.5dev (ongoing development)
+  - [removed] scripts/debian (https://github.com/lcdproc/lcdproc/issues/39)
 
 v0.5.8
   - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs
