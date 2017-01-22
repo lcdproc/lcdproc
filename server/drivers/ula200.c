@@ -30,7 +30,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include <usb.h>
 #include <ftdi.h>
 
 #include "lcd.h"

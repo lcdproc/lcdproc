@@ -41,7 +41,6 @@
 #include <errno.h>
 #include <pthread.h>
 
-#include <usb.h>
 #include <ftdi.h>
 
 #include "lcd.h"
