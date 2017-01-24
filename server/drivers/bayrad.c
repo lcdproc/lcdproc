@@ -34,7 +34,7 @@
 #endif
 #include "lcd.h"
 #include "bayrad.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 
 #define NUM_CCs 8 /* number of characters */

@@ -37,7 +37,7 @@
 #include "lcd.h"
 #include "glk.h"
 #include "glkproto.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 
 #define GLK_DEFAULT_DEVICE	"/dev/lcd"

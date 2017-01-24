@@ -32,7 +32,7 @@
 #include "lcd.h"
 #include "lb216.h"
 #include "lcd_lib.h"
-#include "report.h"
+#include "shared/report.h"
 
 #define LB216_DEFAULT_DEVICE		"/dev/lcd"
 #define LB216_DEFAULT_SPEED		9600

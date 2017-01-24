@@ -84,7 +84,7 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "hd44780.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 
 #include "timing.h"

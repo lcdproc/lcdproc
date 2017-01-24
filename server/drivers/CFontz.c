@@ -40,7 +40,7 @@
 
 #include "lcd.h"
 #include "CFontz.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 #include "CFontz-charmap.h"
 #include "adv_bignum.h"

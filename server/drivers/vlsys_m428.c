@@ -27,7 +27,7 @@
 #include <termios.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "vlsys_m428.h"
 
 

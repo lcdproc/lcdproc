@@ -33,7 +33,7 @@
 
 #include "lcd.h"
 //#define DEBUG
-#include "report.h"
+#include "shared/report.h"
 #include "yard2LCD.h"
 #include "lcd_lib.h"
 

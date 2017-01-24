@@ -19,10 +19,3 @@ This directory contains
   - init-*.rpm		init-scripts for RPM based distributions that are
 			not LSB 3.x conforming.
 			Please try the LSB scripts first.
-
-- a sub-directory debian/ that contains the infrastructure to create a
-  Debian package for lcdproc.
-  Simply copy the debian/ directory to the top-level source directory,
-  adapt the call in debian/rules to your wishes, call
-  	dpkg -rfakeoot -sd
-  and you're done.

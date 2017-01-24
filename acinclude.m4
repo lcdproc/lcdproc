@@ -368,15 +368,11 @@ dnl			else
 				AC_MSG_WARN([The lis driver needs pthread.h])
 			])
 			if test "$enable_libftdi" = yes ; then
-				if test "$enable_libusb" = yes; then
-					if test "$ac_cv_lis_pthread" = yes; then
-						DRIVERS="$DRIVERS lis${SO}"
-						actdrivers=["$actdrivers lis"]
-					else
-						AC_MSG_WARN([The lis driver needs the pthread library])
-					fi
+				if test "$ac_cv_lis_pthread" = yes; then
+					DRIVERS="$DRIVERS lis${SO}"
+					actdrivers=["$actdrivers lis"]
 				else
-					AC_MSG_WARN([The lis driver needs the usb library])
+					AC_MSG_WARN([The lis driver needs the pthread library])
 				fi
 			else
 				AC_MSG_WARN([The lis driver needs the ftdi library])

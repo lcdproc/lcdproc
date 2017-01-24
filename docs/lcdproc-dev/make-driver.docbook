@@ -387,7 +387,7 @@ myDriver_num( Driver * drvthis, int x, int num )
 <programlisting>
 myDriver_LDADD: libLCD.a <emphasis>libbignum.a</emphasis>
 
-myDriver_SOURCES: lcd.h lcd_lib.h myDriver.c myDriver.h report.h <emphasis>adv_bignum.h</emphasis>
+myDriver_SOURCES: lcd.h lcd_lib.h myDriver.c myDriver.h <emphasis>adv_bignum.h</emphasis>
 </programlisting>
 
 </example>

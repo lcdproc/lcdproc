@@ -40,7 +40,7 @@
 /* #define DEBUG 1 */
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "xosdlib_drv.h"
 #include "adv_bignum.h"
 

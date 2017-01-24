@@ -29,7 +29,7 @@
 #include <X11/Xresource.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "glcd-low.h"
 
 #define X11_DEF_PIXEL_SIZE		"3+1"

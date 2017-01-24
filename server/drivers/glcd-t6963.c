@@ -23,7 +23,7 @@
 #include <string.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "glcd-low.h"
 #include "t6963_low.h"
 

@@ -44,7 +44,7 @@
 #include "lcd.h"
 #include "g15.h"
 
-#include "report.h"
+#include "shared/report.h"
 
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;

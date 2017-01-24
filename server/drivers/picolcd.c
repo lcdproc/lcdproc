@@ -41,7 +41,7 @@
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "adv_bignum.h"
-#include "report.h"
+#include "shared/report.h"
 #include "picolcd.h"
 #include "timing.h"
 
@@ -1879,8 +1879,7 @@ picolcd_send(USB_DEVICE_HANDLE * lcd, unsigned char *data, int size)
 	unsigned int timeout = 1000;	/* milliseconds */
 	error = libusb_interrupt_transfer(lcd, LIBUSB_ENDPOINT_OUT + 1, data, size, &transferred, timeout);
 	if (error) {
-		/* can't use report here */
-		fprintf(stderr, "libusb_interrupt_transfer error %d, sent %d of %d bytes\n",
+		report(RPT_WARN, "libusb_interrupt_transfer error %d, sent %d of %d bytes\n",
 			error, transferred, size);
 	}
 #else

@@ -23,7 +23,7 @@
 #include "hd44780-lis2.h"
 #include "hd44780-low.h"
 
-#include "report.h"
+#include "shared/report.h"
 
 #include <stdlib.h>
 #include <unistd.h>

@@ -56,7 +56,7 @@
 
 #include "hd44780-rpi.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 void lcdrpi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
 void lcdrpi_HD44780_backlight(PrivateData *p, unsigned char state);
@@ -88,7 +88,7 @@ static const int gpio_pins_R1[GPIO_PINS] = {
 };
 
 static const int gpio_pins_R2[GPIO_PINS] = {
-	-1, -1, -1, 3, 4, -1, -1, 7,
+	-1, -1, 2, 3, 4, -1, -1, 7,
 	8, 9, 10, 11, -1, -1, 14, 15,
 	-1, 17, 18, -1, -1, -1, 22, 23,
 	/* 28-31 accessible via P5 */

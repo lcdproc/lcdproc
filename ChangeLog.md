@@ -1,4 +1,7 @@
 v0.5dev (ongoing development)
+  - [removed] scripts/debian (https://github.com/lcdproc/lcdproc/issues/39)
+  - [fixed] spurious (direct) dependencies of ftdi drivers on libusb
+  - [API] now drivers need to include "shared/report.h" instead of "report.h"
 
 v0.5.8
   - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs
@@ -24,6 +27,7 @@ v0.5.8
   - [fixed] hd44780: removed outdated semaphore code (https://github.com/lcdproc/lcdproc/issues/34)
   - [fixed] hd44780-rpi: Improve board detection (https://github.com/lcdproc/lcdproc/pull/42)
   - [fixed] Don't disable libusb-1.0 just because legacy libusb isn't available
+  - [fixed] hd44780-rpi.c: Allow pin 2 on raspberry pi rev. 2 baords (https://github.com/lcdproc/lcdproc/issues/43)
 
 v0.5.7
  - [fixed] Fix using the left key to change the ring and checkbox menu items

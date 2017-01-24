@@ -75,7 +75,7 @@
 #include "sed1330.h"
 #include "port.h"
 #include "lpt-port.h"
-#include "report.h"
+#include "shared/report.h"
 #include "timing.h"
 
 /* Use uPause from timing.h */

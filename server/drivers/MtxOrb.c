@@ -60,7 +60,7 @@
 #include "MtxOrb.h"
 #include "adv_bignum.h"
 
-#include "report.h"
+#include "shared/report.h"
 
 
 /* MO displays allow 25 keys that map by default to 'A' - 'Y' */

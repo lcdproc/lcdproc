@@ -33,7 +33,7 @@
 
 #include "lcd.h"
 #include "lcd_lib.h"
-#include "report.h"
+#include "shared/report.h"
 
 /* Defines a 6x8 font based on ISO 8859-15 */
 #define LCD_DEFAULT_CELL_WIDTH	6

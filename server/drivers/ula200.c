@@ -30,12 +30,11 @@
 #include <string.h>
 #include <errno.h>
 
-#include <usb.h>
 #include <ftdi.h>
 
 #include "lcd.h"
 #include "ula200.h"
-#include "report.h"
+#include "shared/report.h"
 #include "hd44780-charmap.h"
 #include "adv_bignum.h"
 

@@ -39,7 +39,7 @@
 #include "lpt-port.h"
 #include "timing.h"
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 #include "lcd_lib.h"
 

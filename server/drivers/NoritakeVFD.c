@@ -61,7 +61,7 @@
 
 #include "lcd.h"
 #include "NoritakeVFD.h"
-#include "report.h"
+#include "shared/report.h"
 #include "adv_bignum.h"
 
 

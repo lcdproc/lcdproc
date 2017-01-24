@@ -25,7 +25,7 @@
 #include <usb.h>
 
 #include "lcd.h"
-#include "report.h"
+#include "shared/report.h"
 #include "glcd-low.h"
 
 #define picoLCDGfx_VENDOR  0x04d8

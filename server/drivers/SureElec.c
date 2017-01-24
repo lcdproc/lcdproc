@@ -55,7 +55,7 @@
 #include "SureElec.h"
 #include "adv_bignum.h"
 
-#include "report.h"
+#include "shared/report.h"
 
 /* API: variables for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;

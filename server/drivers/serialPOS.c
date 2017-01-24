@@ -76,7 +76,7 @@ get_info	Implemented.
 #include "serialPOS.h"
 #include "adv_bignum.h"
 
-#include "report.h"
+#include "shared/report.h"
 
 
 /*

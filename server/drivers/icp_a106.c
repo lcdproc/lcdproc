@@ -52,7 +52,7 @@
 
 #include "lcd.h"
 #include "icp_a106.h"
-#include "report.h"
+#include "shared/report.h"
 
 
 /** private data for the \c icp_a106 driver */

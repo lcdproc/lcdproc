@@ -41,7 +41,7 @@
 
 #include "lcd.h"
 #include "lcd_lib.h"
-#include "report.h"
+#include "shared/report.h"
 #include "imon.h"
 #include "hd44780-charmap.h"
 #include "adv_bignum.h"

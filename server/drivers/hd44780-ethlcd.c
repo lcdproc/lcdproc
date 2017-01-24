@@ -25,7 +25,7 @@
 #include "hd44780-ethlcd.h"
 #include "hd44780-low.h"
 #include "shared/sockets.h"
-#include "report.h"
+#include "shared/report.h"
 
 
 void ethlcd_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);

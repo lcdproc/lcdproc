@@ -49,7 +49,7 @@
 #include "glcd_drv.h"
 #include "glcd-low.h"
 #include "glcd-drivers.h"
-#include "report.h"
+#include "shared/report.h"
 #include "glcd-render.h"
 #include "shared/defines.h"
 #include "timing.h"

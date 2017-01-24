@@ -45,7 +45,7 @@
 
 #include "lcd.h"
 #include "mx5000.h"
-#include "report.h"
+#include "shared/report.h"
 
 
 /* Internal functions */

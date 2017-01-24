@@ -27,7 +27,7 @@
 #include "lcd.h"
 #include "t6963.h"
 #include "glcd_font5x8.h"
-#include "report.h"
+#include "shared/report.h"
 #include "lcd_lib.h"
 #include "t6963_low.h"
 

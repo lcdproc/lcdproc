@@ -20,7 +20,7 @@
 
 #include "hd44780-lcd2usb.h"
 #include "hd44780-low.h"
-#include "report.h"
+#include "shared/report.h"
 
 /* connection type specific functions to be exposed using pointers in init() */
 void lcd2usb_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch);
