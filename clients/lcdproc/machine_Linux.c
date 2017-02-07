@@ -62,6 +62,7 @@
 #include "mode.h"
 #include "machine.h"
 #include "shared/LL.h"
+#include "shared/report.h"
 
 
 static int batt_fd;
@@ -256,7 +257,7 @@ machine_get_fs(mounts_type fs[], int *cnt)
 	struct statfs fsinfo;
 #endif
 	char line[256];
-	int x = 0, y;
+	int x = 0, err;
 
 #ifdef MTAB_FILE
 	mtab_fd = fopen(MTAB_FILE, "r");
@@ -286,14 +287,18 @@ machine_get_fs(mounts_type fs[], int *cnt)
 #endif
 			) {
 #ifdef STAT_STATVFS
-			y = statvfs(fs[x].mpoint, &fsinfo);
+			err = statvfs(fs[x].mpoint, &fsinfo);
 #elif STAT_STATFS2_BSIZE
-			y = statfs(fs[x].mpoint, &fsinfo);
+			err = statfs(fs[x].mpoint, &fsinfo);
 #elif STAT_STATFS4
-			y = statfs(fs[x].mpoint, &fsinfo, sizeof(fsinfo), 0);
+			err = statfs(fs[x].mpoint, &fsinfo, sizeof(fsinfo), 0);
 #else
 #error "statfs for this system not yet supported"
 #endif
+			if (err < 0) {
+				debug(RPT_INFO, "statvfs(%s): %s", fs[x].mpoint, strerror(errno));
+				break;
+			}
 
 			fs[x].blocks = fsinfo.f_blocks;
 			if (fs[x].blocks > 0) {
