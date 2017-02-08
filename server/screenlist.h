@@ -16,15 +16,12 @@
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
-#ifdef HAVE_STDBOOL_H
-# include <stdbool.h>
-#endif
 #include "shared/defines.h"
 
 #define AUTOROTATE_OFF		0
 #define AUTOROTATE_ON		1
 
-extern bool autorotate;		/**< If enabled, screens will rotate */
+extern int autorotate;		/**< If enabled, screens will rotate */
 
 int screenlist_init(void);
 	/* Initializes the screenlist. */
