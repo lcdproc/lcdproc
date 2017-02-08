@@ -269,11 +269,8 @@ machine_get_fs(mounts_type fs[], int *cnt)
 	memset(fs, 0, sizeof(mounts_type) * 256);
 
 	while (x < 256) {
-		if (fgets(line, 256, mtab_fd) == NULL) {
-			fclose(mtab_fd);
-			*cnt = x;
-			return (FALSE);
-		}
+		if (fgets(line, 256, mtab_fd) == NULL)
+			break;
 
 		sscanf(line, "%s %s %s", fs[x].dev, fs[x].mpoint, fs[x].type);
 
