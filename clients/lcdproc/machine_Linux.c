@@ -297,7 +297,7 @@ machine_get_fs(mounts_type fs[], int *cnt)
 #endif
 			if (err < 0) {
 				debug(RPT_INFO, "statvfs(%s): %s", fs[x].mpoint, strerror(errno));
-				break;
+				continue;
 			}
 
 			fs[x].blocks = fsinfo.f_blocks;
