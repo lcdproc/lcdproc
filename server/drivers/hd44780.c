@@ -50,18 +50,6 @@
  *		  2007 Peter Marschall <peter@adpm.de>
  */
 
-
-/*
- * Uncomment one of the lines below to select your desired delay generation
- * mechanism. Using DELAY_NANOSLEEP  seems to provide the best performance.
- *
- * Setting this here, overrides the set or selected algorithm in timing.h.
- * FIXME: Is this on purpose?
- */
-//#define DELAY_GETTIMEOFDAY
-#define DELAY_NANOSLEEP
-//#define DELAY_IOCALLS
-
 /* Default parallel port address */
 #define LPTPORT	 0x378
 
