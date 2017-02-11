@@ -40,6 +40,8 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include "shared/report.h"
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -132,13 +134,12 @@ timing_init()
 {
 #if defined DELAY_NANOSLEEP
 	/* Change to Round-Robin scheduling for nanosleep */
-	{
-		/* Set priority to 1 */
-		struct sched_param param;
-		param.sched_priority=1;
-		if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-			return -1;
-		}
+	/* Set priority to 1 */
+	struct sched_param param;
+	param.sched_priority=1;
+	if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
+		report(RPT_WARNING, "Can't obtain realtime priority: strerror(errno)");
+		report(RPT_WARNING, "Device communication might be unreliable or slow");
 	}
 #elif defined DELAY_IOCALLS
 	if (port_access(0x3BD) == -1) {
