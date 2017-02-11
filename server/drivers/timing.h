@@ -26,13 +26,14 @@
  * delay generation mechanism.
  * Mechanism DELAY_NANOSLEEP seems to provide the best performance.
  * Mechanism DELAY_IOCALLS can be quite inaccurate.
- * Mechanism DELAY_AUTOSELECT lets the system determine a mechanism, and is
- * the default.
+ *
+ * This should be a configure option. However probably nobody wants to
+ * change this nowadays anyway. Maybe we should just get rid of the
+ * alternatives.
  */
 
-#define DELAY_AUTOSELECT
 //#define DELAY_GETTIMEOFDAY
-//#define DELAY_NANOSLEEP
+#define DELAY_NANOSLEEP
 //#define DELAY_IOCALLS
 
 
@@ -44,15 +45,6 @@
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
-#endif
-
-/* Autoselect...  Does this always work well ? */
-#ifdef DELAY_AUTOSELECT
-# if defined HAVE_SCHED_H && defined HAVE_SCHED_SETSCHEDULER
-#  define DELAY_NANOSLEEP
-# else
-#  define DELAY_GETTIMEOFDAY
-# endif
 #endif
 
 /* Include the correct time.h stuff (regardless of selected mechanism) */
@@ -67,6 +59,10 @@
 # endif
 #endif
 
+#if defined HAVE_SCHED_H
+# include <sched.h>
+#endif
+
 /* Only one alternate delay method at a time, please ;-) */
 #if defined DELAY_GETTIMEOFDAY
 # undef DELAY_NANOSLEEP
@@ -78,7 +74,6 @@
 #else /* assume DELAY_NANOSLEEP */
 # undef DELAY_GETTIMEOFDAY
 # undef DELAY_IOCALLS
-# include <sched.h>
 #endif
 
 /*
@@ -133,12 +128,17 @@ static inline int
 timing_init()
 {
 #if defined DELAY_NANOSLEEP
-	/* Change to Round-Robin scheduling for nanosleep */
+# if defined HAVE_SCHED_SETSCHEDULER
+	/* Change to Round-Robin scheduling for nanosleep if possible */
 	/* Set priority to 1 */
 	struct sched_param param;
 	param.sched_priority=1;
 	if (( sched_setscheduler(0, SCHED_RR, &param)) == -1) {
-		report(RPT_WARNING, "Can't obtain realtime priority: strerror(errno)");
+		report(RPT_WARNING, "Can't obtain realtime priority: %s", strerror(errno));
+# else
+	{
+		report(RPT_WARNING, "Not compiled for realtime priority");
+# endif
 		report(RPT_WARNING, "Device communication might be unreliable or slow");
 	}
 #elif defined DELAY_IOCALLS
