@@ -43,6 +43,9 @@
 #define T_DATA	0x00		/* ~INIT didn't work here */
 
 
+inline void
+t6963_low_send(T6963_port *p, u8 type, u8 byte);
+
 /**
  * Acquires access to parallel port and initializes timing. The parallel port
  * must be an I/O-address between 0x200 and 0x400.
