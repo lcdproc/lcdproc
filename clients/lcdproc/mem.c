@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <time.h>
 
 #include "shared/sockets.h"
 #include "shared/LL.h"

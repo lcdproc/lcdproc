@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <sys/utsname.h>
 #include <string.h>
+#include <time.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

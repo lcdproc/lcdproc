@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/utsname.h>
+#include <time.h>
 
 #include "shared/sockets.h"
 
