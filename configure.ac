@@ -314,9 +314,12 @@ AC_MSG_RESULT($enable_libftdi)
 
 if test "$enable_libftdi" = "yes"; then
 	ifdef([PKG_CHECK_MODULES],
-	 	[PKG_CHECK_MODULES(LIBFTDI, libftdi >= 0.8,
+		[PKG_CHECK_MODULES(LIBFTDI, [libftdi1 >= 0.8],
 			[AC_DEFINE(HAVE_LIBFTDI, [1], [Define to 1 if you have libftdi])],
-			[ enable_libftdi=no ])],
+			[PKG_CHECK_MODULES(LIBFTDI, [libftdi >= 0.8],
+				[AC_DEFINE(HAVE_LIBFTDI, [1], [Define to 1 if you have libftdi])],
+				[ enable_libftdi=no ])],
+		)],
 		[AC_MSG_WARN([pkg-config not (fully) installed; drivers requiring libftdi may not be built])])
 fi
 AC_SUBST(LIBFTDI_LIBS)

@@ -4,6 +4,7 @@ v0.5dev (ongoing development)
   - [API] now drivers need to include "shared/report.h" instead of "report.h"
   - [fixed] autorotate setting - the old code was likely broken on most systems
   - [fixed] As default always use nanosleep() for delays
+  - [fixed] Use libftdi1 if it is available instead of obsolete libftdi
 
 v0.5.8
   - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs
