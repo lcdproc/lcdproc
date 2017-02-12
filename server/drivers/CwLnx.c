@@ -114,7 +114,9 @@ MODULE_EXPORT char *symbol_prefix = "CwLnx_";
 static void CwLnx_linewrap(int fd, int on);
 static void CwLnx_autoscroll(int fd, int on);
 static void CwLnx_hidecursor(int fd);
+#if defined(SEAMLESS_HBARS)
 static void CwLnx_set_char_unrestricted(Driver *drvthis, int n, unsigned char *dat);
+#endif
 
 
 #define LCD_CMD			254
