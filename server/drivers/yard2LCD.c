@@ -76,7 +76,6 @@ typedef struct driver_private_data {
 /* Prototypes of internal functions */
 static int yard_hwWrite(Driver *drvthis, unsigned char *yardData, unsigned char Datalen);
 static int yard_hwClearLCD(Driver *drvthis);
-static int yard_hwEnterGmode(Driver *drvthis);
 static int yard_hwGotoXY(Driver *drvthis, unsigned char x, unsigned char y);
 static int yard_hwPrintChar(Driver *drvthis, char c);
 static int yard_hwPrintCharArray(Driver *drvthis, char *str, unsigned char len);
@@ -223,6 +222,7 @@ yard_hwPrintCharArray(Driver *drvthis, char *str, unsigned char len)
 /*
  * Hardware function: Sets brightness of the backlight
  */
+static int
 yard_hwSetBrightness(Driver *drvthis, unsigned char brightVal)
 {
 	debug(RPT_DEBUG, "%s: Event 06 - Enter yard_hwSetBrightness: %d",drvthis->name,brightVal);
@@ -305,8 +305,8 @@ yard_init(Driver *drvthis)
 	}
 	
 	//Get the config from yard2srvd. Config is not in LCDd.conf !
-	sprintf(Recbuffer,"LCDPROC\0");
-	byteCnt = write(p->fd,Recbuffer, strlen(Recbuffer)); 
+	snprintf(Recbuffer, sizeof(Recbuffer), "LCDPROC");
+	byteCnt = write(p->fd, Recbuffer, strlen(Recbuffer)); 
 	if (byteCnt < 0) 
 	{
 		report(RPT_ERR, "%s: Can't send config request to YARD2 LCDserver !", drvthis->name);
@@ -346,7 +346,7 @@ yard_init(Driver *drvthis)
 	}
 	
 	// Allocate framebuf & Setup frame buffer x2 to be sure that the buffer is big enough
-	p->framebuf = (unsigned char *) malloc((p->width * p->height)*2);
+	p->framebuf = (char *) malloc((p->width * p->height)*2);
 	if (p->framebuf == NULL) 
 	{
 		report(RPT_ERR, "%s: Can't create framebuffer !", drvthis->name);
