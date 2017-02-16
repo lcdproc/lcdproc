@@ -6,6 +6,12 @@ Watchguard identifies these units by the X-Core, X-e and X-Peak product lines.
 The model number indicates a software license level, and has no bearing on the
 hardware configuration.
 </para>
+
+<para>
+This driver implements the same protocol as the
+<link linkend="hd44780-8bit-lcm162">HD44780 with lcm162 connection type</link>.
+</para>
+
 <sect2 id="sdeclcd-features">
 <title>Features</title>
 
