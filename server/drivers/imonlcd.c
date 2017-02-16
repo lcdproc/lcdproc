@@ -655,32 +655,8 @@ imonlcd_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
 
-	/*
-	 * I don't like the reliance on SEAMLESS_HBARS, so the
-	 * lib_hbar_static code is replicated here.  (./configure
-	 * --enable-seamless hbars would be required for the hbar display to
-	 * look right if lib_hbar_static() were used.)
-	 */
-
-	int total_pixels = ((long)2 * len * p->cellwidth + 1) * promille / 2000;
-	int pos;
-
-	for (pos = 0; pos < len; pos++) {
-
-		int pixels = total_pixels - p->cellwidth * pos;
-
-		if (pixels >= p->cellwidth) {
-			/* write a "full" block to the screen... */
-			imonlcd_chr(drvthis, x + pos, y, p->cellwidth + IMONLCD_FONT_START_HBAR_NARROW - 1);
-		} else if (pixels > 0) {
-			/* write a partial block... */
-			imonlcd_chr(drvthis, x + pos, y, pixels + IMONLCD_FONT_START_HBAR_NARROW - 1);
-			break;
-		} else {
-			;	/* write nothing (not even a space) */
-		}
-	}
-
+	lib_hbar_static(drvthis, x, y, len, promille, options | BAR_SEAMLESS,
+			p->cellwidth, IMONLCD_FONT_START_HBAR_NARROW - 1);
 }
 
 

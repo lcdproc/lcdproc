@@ -3,9 +3,6 @@
  *
  * Drawn from the "base driver" which really was the precursor
  * to this library.
- *
- * \todo Make use of the \c options parameter to specify SEAMLESS_HBARS,
- *       the height of hbars, etc.
  */
 
 #include "lcd.h"
@@ -34,11 +31,10 @@ lib_hbar_static (Driver *drvthis, int x, int y, int len, int promille, int optio
 
 		if ( pixels >= cellwidth ) {
 			/* write a "full" block to the screen... */
-#if defined(SEAMLESS_HBARS)
-			drvthis->chr (drvthis, x+pos, y, cellwidth + cc_offset);
-#else
-			drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
-#endif
+			if ( options & BAR_SEAMLESS )
+				drvthis->chr (drvthis, x+pos, y, cellwidth + cc_offset);
+			else
+				drvthis->icon (drvthis, x+pos, y, ICON_BLOCK_FILLED);
 		}
 		else if ( pixels > 0 ) {
 			/* write a partial block... */

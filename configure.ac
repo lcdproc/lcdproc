@@ -445,14 +445,6 @@ AC_SUBST(pidfiledir)
 
 
 # Features applicable to the server
-AC_ARG_ENABLE(seamless-hbars,
-	[AS_HELP_STRING([--enable-seamless-hbars], [no gaps in horizontal bar graphs (if HW supports it)])],
-	[ if test "$enableval" != "no" ; then
-		AC_DEFINE(SEAMLESS_HBARS, [1],
-			[Define to 1 to avoid gaps in horizontal bar graphs (if HW supports it)])
-	fi ]
-)
-
 AC_ARG_ENABLE(testmenus,
 	[AS_HELP_STRING([--enable-testmenus], [enable server test menus])],
 	[ if test "$enableval" != "no" ; then
