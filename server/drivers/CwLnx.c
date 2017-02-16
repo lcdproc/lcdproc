@@ -1029,7 +1029,6 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
     PrivateData *p = drvthis->private_data;
 
     char c;
-    int rc;
 
     if ((n <= 0) || (n > CwLnx_get_free_chars(drvthis)))
 	return;
@@ -1037,11 +1036,11 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
 	return;
 
     c = LCD_CMD;
-    rc = Write_LCD(p->fd, &c, 1);
+    Write_LCD(p->fd, &c, 1);
     c = LCD_SETCHAR;
-    rc = Write_LCD(p->fd, &c, 1);
+    Write_LCD(p->fd, &c, 1);
     c = (char) n;
-    rc = Write_LCD(p->fd, &c, 1);
+    Write_LCD(p->fd, &c, 1);
 
     if (p->model == 1602) {	// the character model
 	unsigned char mask = (1 << p->cellwidth) - 1;
@@ -1070,7 +1069,7 @@ CwLnx_set_char(Driver *drvthis, int n, unsigned char *dat)
     }
 
     c = LCD_CMD_END;
-    rc = Write_LCD(p->fd, &c, 1);
+    Write_LCD(p->fd, &c, 1);
 }
 
 
