@@ -79,7 +79,7 @@ static int yard_hwClearLCD(Driver *drvthis);
 //static int yard_hwEnterGmode(Driver *drvthis);
 static int yard_hwGotoXY(Driver *drvthis, unsigned char x, unsigned char y);
 //static int yard_hwPrintChar(Driver *drvthis, char c);
-static int yard_hwPrintCharArray(Driver *drvthis, char *str, unsigned char len);
+static int yard_hwPrintCharArray(Driver *drvthis, unsigned char *str, unsigned char len);
 static int yard_hwSetBrightness(Driver *drvthis, unsigned char brightVal);
 static int yard_hwWriteCGRam(Driver *drvthis, unsigned char numChar, unsigned char *data);
 
@@ -203,7 +203,7 @@ yard_hwPrintChar(Driver *drvthis, char c)
  * Hardware function: Prints a character array
  */
 static int 
-yard_hwPrintCharArray(Driver *drvthis, char *str, unsigned char len)
+yard_hwPrintCharArray(Driver *drvthis, unsigned char *str, unsigned char len)
 {
 	debug(RPT_DEBUG, "%s: Event 05 - Enter yard_hwPrintCharArray: %d - %s",drvthis->name,len,str);
 	unsigned char cmdBuf[MAX_YARDDATA_SIZE];
@@ -308,7 +308,7 @@ yard_init(Driver *drvthis)
 	}
 	
 	//Get the config from yard2srvd. Config is not in LCDd.conf !
-	sprintf(Recbuffer,"LCDPROC\0"); // \0 is needed for YARD daemon
+	sprintf(Recbuffer,"LCDPROC");
 	byteCnt = write(p->fd,Recbuffer, strlen(Recbuffer)); 
 	if (byteCnt < 0) 
 	{
