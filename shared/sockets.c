@@ -326,6 +326,6 @@ sock_printf_error(int fd, const char *format, .../*args*/ )
 	if (size >= sizeof(buf) - (sizeof(huh)-1))
 		report(RPT_WARNING, "sock_printf_error: vsnprintf truncated message");
 
-	report(RPT_ERR, "error: %s", buf);
+	report(RPT_INFO, "client error: %s", buf);
 	return sock_send_string(fd, buf);
 }
