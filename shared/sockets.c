@@ -295,7 +295,7 @@ sock_geterror(void)
 int sock_send_error(int fd, char* message)
 {
 	// simple: performance penalty isn't worth more work...
-	return sock_printf_error(fd, message);
+	return sock_printf_error(fd, "%s", message);
 }
 
 /**
