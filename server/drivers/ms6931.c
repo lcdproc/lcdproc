@@ -447,12 +447,9 @@ ms6931_heartbeat (Driver *drvthis, int state)
 {
 	PrivateData *p = drvthis->private_data;
 	static int timer = 0;
-	static int saved_state = HEARTBEAT_ON;
 
 	report(RPT_DEBUG, "%s: heartbeat: state=%d", drvthis->name, state);
 
-	if (state)
-		saved_state = state;
 	if (state == HEARTBEAT_ON) {
 		char ch = ((timer + 4) & 5) ? p->heartbeatCharacter : ' ';
 
