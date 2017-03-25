@@ -462,7 +462,7 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 {
 	char str[BUFSIZE];
 	int length;
-	int offset;
+	int offset, gap;
 	int screen_width;
 	int necessaryTimeUnits = 0;
 
@@ -484,6 +484,9 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 			break;
 		}
 
+		gap = screen_width / 2;
+		length += gap; /* Allow gap between end and beginning */
+
 		if (w->speed > 0) {
 			necessaryTimeUnits = length * w->speed;
 			offset = (timer % necessaryTimeUnits) / w->speed;
@@ -496,19 +499,23 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 			offset = 0;
 		}
 		if (offset <= length) {
-			int room = screen_width - (length - offset);
-
-			strncpy(str, &w->text[offset], screen_width);
-
-			// if there's more room, restart at the beginning
-			if (room > 0) {
-				strncat(str, w->text, room);
+			if (gap > offset) {
+				memset(str, ' ', gap - offset);
+				strncpy(&str[gap-offset], w->text, screen_width);
 			}
+			else {
+				int room = screen_width - (length - offset);
 
+				strncpy(str, &w->text[offset-gap], screen_width);
+				if (room > 0) {
+					memset(&str[length-offset], ' ', min(room, gap));
+					room -= gap;
+					if (room > 0)
+						strncpy(&str[length-offset+gap], w->text, room);
+				}
+			}
 			str[screen_width] = '\0';
 			drivers_string(w->left, w->top, str);
-
-			/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset);*/
 		}
 		break;
 	case 'h':
