@@ -79,9 +79,6 @@ client_destroy(Client *c)
 
 	debug(RPT_DEBUG, "%s(c=[%d])", __FUNCTION__, c->sock);
 
-	/* Close the socket */
-	close(c->sock);
-
 	/* Eat messages */
 	while ((str = client_get_message(c))) {
 		free(str);
@@ -111,6 +108,9 @@ client_destroy(Client *c)
 
 	/* Forget client's key reservations */
 	input_release_client_keys(c);
+
+	/* Close the socket */
+	close(c->sock);
 
 	/* Free client's other data */
 	c->state = GONE;
