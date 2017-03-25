@@ -460,183 +460,174 @@ render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 static int
 render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 {
+	char str[BUFSIZE];
+	int length;
+	int offset;
+	int screen_width;
+	int necessaryTimeUnits = 0;
+
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d, timer=%ld)",
 			  __FUNCTION__, w, left, top, right, bottom, timer);
 
-	if ((w->text != NULL) && (w->right >= w->left)) {
-		char str[BUFSIZE];
-		int length;
-		int offset;
-		int screen_width;
+	if ((w->text == NULL) || (w->right < w->left))
+		return 0;
 
-		/*debug(RPT_DEBUG, "%s: %s %d",__FUNCTION__,w->text,timer);*/
-		screen_width = abs(w->right - w->left + 1);
-		screen_width = min(screen_width, sizeof(str)-1);
+	screen_width = abs(w->right - w->left + 1);
+	screen_width = min(screen_width, sizeof(str)-1);
 
-		switch (w->length) {	/* actually, direction... */
-		case 'm': // Marquee
-			length = strlen(w->text);
-			if (length <= screen_width) {
-				/* it fits within the box, just render it */
-				drivers_string(w->left, w->top, w->text);
-			}
-			else {
-				int necessaryTimeUnits = 0;
-
-				if (w->speed > 0) {
-					necessaryTimeUnits = length * w->speed;
-					offset = (timer % necessaryTimeUnits) / w->speed;
-				}
-				else if (w->speed < 0) {
-					necessaryTimeUnits = length / (w->speed * -1);
-					offset = (timer % necessaryTimeUnits) * w->speed * -1;
-				}
-				else {
-					offset = 0;
-				}
-				if (offset <= length) {
-					int room = screen_width - (length - offset);
-
-					strncpy(str, &w->text[offset], screen_width);
-
-					// if there's more room, restart at the beginning
-					if (room > 0) {
-						strncat(str, w->text, room);
-					}
-
-					str[screen_width] = '\0';
-
-					/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset);*/
-				}
-				else {
-					str[0] = '\0';
-				}
-				drivers_string(w->left, w->top, str);
-			}
+	switch (w->length) {	/* actually, direction... */
+	case 'm': // Marquee
+		length = strlen(w->text);
+		if (length <= screen_width) {
+			/* it fits within the box, just render it */
+			drivers_string(w->left, w->top, w->text);
 			break;
-		case 'h':
-			length = strlen(w->text) + 1;
-			if (length <= screen_width) {
-				/* it fits within the box, just render it */
-				drivers_string(w->left, w->top, w->text);
+		}
+
+		if (w->speed > 0) {
+			necessaryTimeUnits = length * w->speed;
+			offset = (timer % necessaryTimeUnits) / w->speed;
+		}
+		else if (w->speed < 0) {
+			necessaryTimeUnits = length / (w->speed * -1);
+			offset = (timer % necessaryTimeUnits) * w->speed * -1;
+		}
+		else {
+			offset = 0;
+		}
+		if (offset <= length) {
+			int room = screen_width - (length - offset);
+
+			strncpy(str, &w->text[offset], screen_width);
+
+			// if there's more room, restart at the beginning
+			if (room > 0) {
+				strncat(str, w->text, room);
+			}
+
+			str[screen_width] = '\0';
+			drivers_string(w->left, w->top, str);
+
+			/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset);*/
+		}
+		break;
+	case 'h':
+		length = strlen(w->text) + 1;
+		if (length <= screen_width) {
+			/* it fits within the box, just render it */
+			drivers_string(w->left, w->top, w->text);
+		}
+		else {
+			int effLength = length - screen_width;
+
+			if (w->speed > 0) {
+				necessaryTimeUnits = effLength * w->speed;
+				if (((timer / necessaryTimeUnits) % 2) == 0) {
+					/* wiggle one way */
+					offset = (timer % (effLength*w->speed))
+						 / w->speed;
+				}
+				else {
+					/* wiggle the other */
+					offset = (((timer % (effLength * w->speed))
+						  - (effLength * w->speed) + 1)
+						 / w->speed) * -1;
+				}
+			}
+			else if (w->speed < 0) {
+				necessaryTimeUnits = effLength / (w->speed * -1);
+				if (((timer / necessaryTimeUnits) % 2) == 0) {
+					offset = (timer % (effLength / (w->speed * -1)))
+						 * w->speed * -1;
+				}
+				else {
+					offset = (((timer % (effLength / (w->speed * -1)))
+						  * w->speed * -1)
+						  - effLength + 1) * -1;
+				}
 			}
 			else {
-				int effLength = length - screen_width;
-				int necessaryTimeUnits = 0;
+				offset = 0;
+			}
+			if (offset <= length) {
+				strncpy(str, &((w->text)[offset]), screen_width);
+				str[screen_width] = '\0';
+				drivers_string(w->left, w->top, str);
+				/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset); */
+			}
+		}
+		break;
 
+	/* FIXME:  Vert scrollers don't always seem to scroll */
+	/* back up after hitting the bottom.  They jump back to */
+	/* the top instead...  (nevermind?) */
+	case 'v':
+		length = strlen(w->text);
+		if (length <= screen_width) {
+			/* no scrolling required... */
+			drivers_string(w->left, w->top, w->text);
+		}
+		else {
+			int lines_required = (length / screen_width)
+				 + (length % screen_width ? 1 : 0);
+			int available_lines = (w->bottom - w->top + 1);
+
+			if (lines_required <= available_lines) {
+				/* easy... */
+				int i;
+
+				for (i = 0; i < lines_required; i++) {
+					strncpy(str, &((w->text)[i * screen_width]), screen_width);
+					str[screen_width] = '\0';
+					drivers_string(w->left, w->top + i, str);
+				}
+			}
+			else {
+				int effLines = lines_required - available_lines + 1;
+				int begin = 0;
+				int i = 0;
+
+				/*debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);*/
 				if (w->speed > 0) {
-					necessaryTimeUnits = effLength * w->speed;
+					necessaryTimeUnits = effLines * w->speed;
 					if (((timer / necessaryTimeUnits) % 2) == 0) {
-						/* wiggle one way */
-						offset = (timer % (effLength * w->speed))
+						/*debug(RPT_DEBUG, "up ");*/
+						begin = (timer % (necessaryTimeUnits))
 							 / w->speed;
 					}
 					else {
-						/* wiggle the other */
-						offset = (((timer % (effLength * w->speed))
-							  - (effLength * w->speed) + 1)
-							 / w->speed) * -1;
+						/*debug(RPT_DEBUG, "down ");*/
+						begin = (((timer % necessaryTimeUnits)
+							 - necessaryTimeUnits + 1) / w->speed)
+							 * -1;
 					}
 				}
 				else if (w->speed < 0) {
-					necessaryTimeUnits = effLength / (w->speed * -1);
+					necessaryTimeUnits = effLines / (w->speed * -1);
 					if (((timer / necessaryTimeUnits) % 2) == 0) {
-						offset = (timer % (effLength / (w->speed * -1)))
+						begin = (timer % necessaryTimeUnits)
 							 * w->speed * -1;
 					}
 					else {
-						offset = (((timer % (effLength / (w->speed * -1)))
-							  * w->speed * -1)
-							  - effLength + 1) * -1;
+						begin = (((timer % necessaryTimeUnits)
+							 * w->speed * -1) - effLines + 1)
+							 * -1;
 					}
 				}
 				else {
-					offset = 0;
+					begin = 0;
 				}
-				if (offset <= length) {
-					strncpy(str, &((w->text)[offset]), screen_width);
+				/*debug(RPT_DEBUG, "rendering begin: %d  timer: %d effLines: %d",begin,timer,effLines); */
+				for (i = begin; i < begin + available_lines; i++) {
+					strncpy(str, &((w->text)[i * (screen_width)]), screen_width);
 					str[screen_width] = '\0';
-					/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset); */
-				}
-				else {
-					str[0] = '\0';
-				}
-				drivers_string(w->left, w->top, str);
-			}
-			break;
-
-		/* FIXME:  Vert scrollers don't always seem to scroll */
-		/* back up after hitting the bottom.  They jump back to */
-		/* the top instead...  (nevermind?) */
-		case 'v':
-			length = strlen(w->text);
-			if (length <= screen_width) {
-				/* no scrolling required... */
-				drivers_string(w->left, w->top, w->text);
-			}
-			else {
-				int lines_required = (length / screen_width)
-					 + (length % screen_width ? 1 : 0);
-				int available_lines = (w->bottom - w->top + 1);
-
-				if (lines_required <= available_lines) {
-					/* easy... */
-					int i;
-
-					for (i = 0; i < lines_required; i++) {
-						strncpy(str, &((w->text)[i * screen_width]), screen_width);
-						str[screen_width] = '\0';
-						drivers_string(w->left, w->top + i, str);
-					}
-				}
-				else {
-					int necessaryTimeUnits = 0;
-					int effLines = lines_required - available_lines + 1;
-					int begin = 0;
-					int i = 0;
-
-					/*debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);*/
-					if (w->speed > 0) {
-						necessaryTimeUnits = effLines * w->speed;
-						if (((timer / necessaryTimeUnits) % 2) == 0) {
-							/*debug(RPT_DEBUG, "up ");*/
-							begin = (timer % (necessaryTimeUnits))
-								 / w->speed;
-						}
-						else {
-							/*debug(RPT_DEBUG, "down ");*/
-							begin = (((timer % necessaryTimeUnits)
-								 - necessaryTimeUnits + 1) / w->speed)
-								 * -1;
-						}
-					}
-					else if (w->speed < 0) {
-						necessaryTimeUnits = effLines / (w->speed * -1);
-						if (((timer / necessaryTimeUnits) % 2) == 0) {
-							begin = (timer % necessaryTimeUnits)
-								 * w->speed * -1;
-						}
-						else {
-							begin = (((timer % necessaryTimeUnits)
-								 * w->speed * -1) - effLines + 1)
-								 * -1;
-						}
-					}
-					else {
-						begin = 0;
-					}
-					/*debug(RPT_DEBUG, "rendering begin: %d  timer: %d effLines: %d",begin,timer,effLines); */
-					for (i = begin; i < begin + available_lines; i++) {
-						strncpy(str, &((w->text)[i * (screen_width)]), screen_width);
-						str[screen_width] = '\0';
-						/*debug(RPT_DEBUG, "rendering: '%s' of %s", */
-						/*str,w->text); */
-						drivers_string(w->left, w->top + (i - begin), str);
-					}
+					/*debug(RPT_DEBUG, "rendering: '%s' of %s", */
+					/*str,w->text); */
+					drivers_string(w->left, w->top + (i - begin), str);
 				}
 			}
-			break;
 		}
+		break;
 	}
 	return 0;
 }
