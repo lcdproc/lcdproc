@@ -251,50 +251,50 @@ render_frame(LinkedList *list,
 
 		/* TODO:  Make this cleaner and more flexible! */
 		switch (w->type) {
-			case WID_STRING:
-				render_string(w, left, top - fy, right, bottom, fy);
-				break;
-			case WID_HBAR:
-				render_hbar(w, left, top - fy, right, bottom, fy);
-				break;
-			case WID_VBAR:			  /* FIXME:  Vbars don't work in frames! */
-				render_vbar(w, left, top, right, bottom);
-				break;
-			case WID_ICON:			  /* FIXME:  Icons don't work in frames! */
-				drivers_icon(w->x, w->y, w->length);
-				break;
-			case WID_TITLE:			  /* FIXME:  Doesn't work quite right in frames... */
-				render_title(w, left, top, right, bottom, timer);
-				break;
-			case WID_SCROLLER:		  /* FIXME: doesn't work in frames... */
-				render_scroller(w, left, top, right, bottom, timer);
-				break;
-			case WID_FRAME:
-				{
-					/* FIXME: doesn't handle nested frames quite right!
-					 * doesn't handle scrolling in nested frames at all...
-					 */
-					int new_left = left + w->left - 1;
-					int new_top = top + w->top - 1;
-					int new_right = min(left + w->right, right);
-					int new_bottom = min(top + w->bottom, bottom);
+		case WID_STRING:
+			render_string(w, left, top - fy, right, bottom, fy);
+			break;
+		case WID_HBAR:
+			render_hbar(w, left, top - fy, right, bottom, fy);
+			break;
+		case WID_VBAR:	  /* FIXME:  Vbars don't work in frames! */
+			render_vbar(w, left, top, right, bottom);
+			break;
+		case WID_ICON:	  /* FIXME:  Icons don't work in frames! */
+			drivers_icon(w->x, w->y, w->length);
+			break;
+		case WID_TITLE:	  /* FIXME:  Doesn't work quite right in frames... */
+			render_title(w, left, top, right, bottom, timer);
+			break;
+		case WID_SCROLLER: /* FIXME: doesn't work in frames... */
+			render_scroller(w, left, top, right, bottom, timer);
+			break;
+		case WID_FRAME:
+			{
+				/* FIXME: doesn't handle nested frames quite right!
+				 * doesn't handle scrolling in nested frames at all...
+				 */
+				int new_left = left + w->left - 1;
+				int new_top = top + w->top - 1;
+				int new_right = min(left + w->right, right);
+				int new_bottom = min(top + w->bottom, bottom);
 
-					if ((new_left < right) && (new_top < bottom))	/* Render only if it's visible... */
-						render_frame(w->frame_screen->widgetlist, new_left, new_top,
-								new_right, new_bottom, w->width, w->height,
-								w->length, w->speed, timer);
-				}
-				break;
-			case WID_NUM:				  /* FIXME: doesn't work in frames... */
-				/* NOTE: y=10 means COLON (:) */
-				if ((w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
-					drivers_num(w->x + left, w->y);
-				}
-				break;
-			case WID_NONE:
-				/* FALLTHROUGH */
-			default:
-				break;
+				if ((new_left < right) && (new_top < bottom))	/* Render only if it's visible... */
+					render_frame(w->frame_screen->widgetlist, new_left, new_top,
+							new_right, new_bottom, w->width, w->height,
+							w->length, w->speed, timer);
+			}
+			break;
+		case WID_NUM:	  /* FIXME: doesn't work in frames... */
+			/* NOTE: y=10 means COLON (:) */
+			if ((w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
+				drivers_num(w->x + left, w->y);
+			}
+			break;
+		case WID_NONE:
+			/* FALLTHROUGH */
+		default:
+			break;
 		}
 	} while (LL_Next(list) == 0);
 
@@ -474,167 +474,168 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 		screen_width = min(screen_width, sizeof(str)-1);
 
 		switch (w->length) {	/* actually, direction... */
-			case 'm': // Marquee
-				length = strlen(w->text);
-				if (length <= screen_width) {
-					/* it fits within the box, just render it */
-					drivers_string(w->left, w->top, w->text);
+		case 'm': // Marquee
+			length = strlen(w->text);
+			if (length <= screen_width) {
+				/* it fits within the box, just render it */
+				drivers_string(w->left, w->top, w->text);
+			}
+			else {
+				int necessaryTimeUnits = 0;
+
+				if (w->speed > 0) {
+					necessaryTimeUnits = length * w->speed;
+					offset = (timer % necessaryTimeUnits) / w->speed;
+				}
+				else if (w->speed < 0) {
+					necessaryTimeUnits = length / (w->speed * -1);
+					offset = (timer % necessaryTimeUnits) * w->speed * -1;
 				}
 				else {
-					int necessaryTimeUnits = 0;
+					offset = 0;
+				}
+				if (offset <= length) {
+					int room = screen_width - (length - offset);
 
-					if (w->speed > 0) {
-						necessaryTimeUnits = length * w->speed;
-						offset = (timer % necessaryTimeUnits) / w->speed;
+					strncpy(str, &w->text[offset], screen_width);
+
+					// if there's more room, restart at the beginning
+					if (room > 0) {
+						strncat(str, w->text, room);
 					}
-					else if (w->speed < 0) {
-						necessaryTimeUnits = length / (w->speed * -1);
-						offset = (timer % necessaryTimeUnits) * w->speed * -1;
+
+					str[screen_width] = '\0';
+
+					/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset);*/
+				}
+				else {
+					str[0] = '\0';
+				}
+				drivers_string(w->left, w->top, str);
+			}
+			break;
+		case 'h':
+			length = strlen(w->text) + 1;
+			if (length <= screen_width) {
+				/* it fits within the box, just render it */
+				drivers_string(w->left, w->top, w->text);
+			}
+			else {
+				int effLength = length - screen_width;
+				int necessaryTimeUnits = 0;
+
+				if (w->speed > 0) {
+					necessaryTimeUnits = effLength * w->speed;
+					if (((timer / necessaryTimeUnits) % 2) == 0) {
+						/* wiggle one way */
+						offset = (timer % (effLength * w->speed))
+							 / w->speed;
 					}
 					else {
-						offset = 0;
+						/* wiggle the other */
+						offset = (((timer % (effLength * w->speed))
+							  - (effLength * w->speed) + 1)
+							 / w->speed) * -1;
 					}
-					if (offset <= length) {
-						int room = screen_width - (length - offset);
+				}
+				else if (w->speed < 0) {
+					necessaryTimeUnits = effLength / (w->speed * -1);
+					if (((timer / necessaryTimeUnits) % 2) == 0) {
+						offset = (timer % (effLength / (w->speed * -1)))
+							 * w->speed * -1;
+					}
+					else {
+						offset = (((timer % (effLength / (w->speed * -1)))
+							  * w->speed * -1)
+							  - effLength + 1) * -1;
+					}
+				}
+				else {
+					offset = 0;
+				}
+				if (offset <= length) {
+					strncpy(str, &((w->text)[offset]), screen_width);
+					str[screen_width] = '\0';
+					/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset); */
+				}
+				else {
+					str[0] = '\0';
+				}
+				drivers_string(w->left, w->top, str);
+			}
+			break;
 
-						strncpy(str, &w->text[offset], screen_width);
+		/* FIXME:  Vert scrollers don't always seem to scroll */
+		/* back up after hitting the bottom.  They jump back to */
+		/* the top instead...  (nevermind?) */
+		case 'v':
+			length = strlen(w->text);
+			if (length <= screen_width) {
+				/* no scrolling required... */
+				drivers_string(w->left, w->top, w->text);
+			}
+			else {
+				int lines_required = (length / screen_width)
+					 + (length % screen_width ? 1 : 0);
+				int available_lines = (w->bottom - w->top + 1);
 
-						// if there's more room, restart at the beginning
-						if (room > 0) {
-							strncat(str, w->text, room);
-						}
+				if (lines_required <= available_lines) {
+					/* easy... */
+					int i;
 
+					for (i = 0; i < lines_required; i++) {
+						strncpy(str, &((w->text)[i * screen_width]), screen_width);
 						str[screen_width] = '\0';
-
-						/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset);*/
+						drivers_string(w->left, w->top + i, str);
 					}
-					else {
-						str[0] = '\0';
-					}
-					drivers_string(w->left, w->top, str);
-				}
-				break;
-			case 'h':
-				length = strlen(w->text) + 1;
-				if (length <= screen_width) {
-					/* it fits within the box, just render it */
-					drivers_string(w->left, w->top, w->text);
 				}
 				else {
-					int effLength = length - screen_width;
 					int necessaryTimeUnits = 0;
+					int effLines = lines_required - available_lines + 1;
+					int begin = 0;
+					int i = 0;
 
+					/*debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);*/
 					if (w->speed > 0) {
-						necessaryTimeUnits = effLength * w->speed;
+						necessaryTimeUnits = effLines * w->speed;
 						if (((timer / necessaryTimeUnits) % 2) == 0) {
-							/* wiggle one way */
-							offset = (timer % (effLength * w->speed))
+							/*debug(RPT_DEBUG, "up ");*/
+							begin = (timer % (necessaryTimeUnits))
 								 / w->speed;
 						}
 						else {
-							/* wiggle the other */
-							offset = (((timer % (effLength * w->speed))
-								  - (effLength * w->speed) + 1)
-								 / w->speed) * -1;
+							/*debug(RPT_DEBUG, "down ");*/
+							begin = (((timer % necessaryTimeUnits)
+								 - necessaryTimeUnits + 1) / w->speed)
+								 * -1;
 						}
 					}
 					else if (w->speed < 0) {
-						necessaryTimeUnits = effLength / (w->speed * -1);
+						necessaryTimeUnits = effLines / (w->speed * -1);
 						if (((timer / necessaryTimeUnits) % 2) == 0) {
-							offset = (timer % (effLength / (w->speed * -1)))
+							begin = (timer % necessaryTimeUnits)
 								 * w->speed * -1;
 						}
 						else {
-							offset = (((timer % (effLength / (w->speed * -1)))
-								  * w->speed * -1)
-								  - effLength + 1) * -1;
+							begin = (((timer % necessaryTimeUnits)
+								 * w->speed * -1) - effLines + 1)
+								 * -1;
 						}
 					}
 					else {
-						offset = 0;
+						begin = 0;
 					}
-					if (offset <= length) {
-						strncpy(str, &((w->text)[offset]), screen_width);
+					/*debug(RPT_DEBUG, "rendering begin: %d  timer: %d effLines: %d",begin,timer,effLines); */
+					for (i = begin; i < begin + available_lines; i++) {
+						strncpy(str, &((w->text)[i * (screen_width)]), screen_width);
 						str[screen_width] = '\0';
-						/*debug(RPT_DEBUG, "scroller %s : %d", str, length-offset); */
-					}
-					else {
-						str[0] = '\0';
-					}
-					drivers_string(w->left, w->top, str);
-				}
-				break;
-				/* FIXME:  Vert scrollers don't always seem to scroll */
-				/* back up after hitting the bottom.  They jump back to */
-				/* the top instead...  (nevermind?) */
-			case 'v':
-				length = strlen(w->text);
-				if (length <= screen_width) {
-					/* no scrolling required... */
-					drivers_string(w->left, w->top, w->text);
-				}
-				else {
-					int lines_required = (length / screen_width)
-						 + (length % screen_width ? 1 : 0);
-					int available_lines = (w->bottom - w->top + 1);
-
-					if (lines_required <= available_lines) {
-						/* easy... */
-						int i;
-
-						for (i = 0; i < lines_required; i++) {
-							strncpy(str, &((w->text)[i * screen_width]), screen_width);
-							str[screen_width] = '\0';
-							drivers_string(w->left, w->top + i, str);
-						}
-					}
-					else {
-						int necessaryTimeUnits = 0;
-						int effLines = lines_required - available_lines + 1;
-						int begin = 0;
-						int i = 0;
-
-						/*debug(RPT_DEBUG, "length: %d sw: %d lines req: %d  avail lines: %d  effLines: %d ",length,screen_width,lines_required,available_lines,effLines);*/
-						if (w->speed > 0) {
-							necessaryTimeUnits = effLines * w->speed;
-							if (((timer / necessaryTimeUnits) % 2) == 0) {
-								/*debug(RPT_DEBUG, "up ");*/
-								begin = (timer % (necessaryTimeUnits))
-									 / w->speed;
-							}
-							else {
-								/*debug(RPT_DEBUG, "down ");*/
-								begin = (((timer % necessaryTimeUnits)
-									 - necessaryTimeUnits + 1) / w->speed)
-									 * -1;
-							}
-						}
-						else if (w->speed < 0) {
-							necessaryTimeUnits = effLines / (w->speed * -1);
-							if (((timer / necessaryTimeUnits) % 2) == 0) {
-								begin = (timer % necessaryTimeUnits)
-									 * w->speed * -1;
-							}
-							else {
-								begin = (((timer % necessaryTimeUnits)
-									 * w->speed * -1) - effLines + 1)
-									 * -1;
-							}
-						}
-						else {
-							begin = 0;
-						}
-						/*debug(RPT_DEBUG, "rendering begin: %d  timer: %d effLines: %d",begin,timer,effLines); */
-						for (i = begin; i < begin + available_lines; i++) {
-							strncpy(str, &((w->text)[i * (screen_width)]), screen_width);
-							str[screen_width] = '\0';
-							/*debug(RPT_DEBUG, "rendering: '%s' of %s", */
-							/*str,w->text); */
-							drivers_string(w->left, w->top + (i - begin), str);
-						}
+						/*debug(RPT_DEBUG, "rendering: '%s' of %s", */
+						/*str,w->text); */
+						drivers_string(w->left, w->top + (i - begin), str);
 					}
 				}
-				break;
+			}
+			break;
 		}
 	}
 	return 0;
