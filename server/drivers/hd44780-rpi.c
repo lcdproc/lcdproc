@@ -163,7 +163,10 @@ check_board_rev(Driver *drvthis)
 	fclose(fp);
 
 	/* On boards that have been overvolted, the MSB will be set */
-	if ((strcmp(hw, "BCM2708") != 0 && strcmp(hw, "BCM2709") != 0) || rev & 0xFFFFFF == 0) {
+	if ((strcmp(hw, "BCM2708") != 0 &&
+	     strcmp(hw, "BCM2709") != 0 &&
+	     strcmp(hw, "BCM2835") != 0) ||
+	    rev & 0xFFFFFF == 0) {
 		report(RPT_ERR, "check_board_rev: This board is not recognized as a Raspberry Pi!");
 		return NULL;
 	}
