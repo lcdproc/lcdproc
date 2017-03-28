@@ -154,6 +154,7 @@ check_board_rev(Driver *drvthis)
 		return NULL;
 	}
 
+	hw[0] = '\0';	/* initialize hw as empty string */
 	while (!feof(fp)) {
 		fgets(buf, sizeof(buf), fp);
 		sscanf(buf, "Hardware	: %7s", hw);
