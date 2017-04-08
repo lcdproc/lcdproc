@@ -3239,8 +3239,8 @@ KeyMatrix_1_8=Right
 <para>This connection type supports an LCD connected to GPIO lines that
 can be controlled via the linux sysfs interface. This is common for
 System-On-Chip (SOC) processors and i2c port expanders.
-Currently it supports displays with one
-controller.</para>
+Currently it supports displays with one or two
+controllers.</para>
 
 <para>A GPIO pin can be configured for backlight switch. Use the switch circuit
 as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
@@ -3337,6 +3337,12 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
       <entry>5</entry>
     </row>
     <row>
+      <entry>P8_14</entry>
+      <entry>26</entry>
+      <entry></entry>
+      <entry>EN2</entry>
+      <entry>Second controller (optional)</entry>
+    <row>
       <entry>P8_15</entry>
       <entry>47</entry>
       <entry></entry>
@@ -3353,6 +3359,10 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
 <para>The GPIO connection driver can be configured to assign any LCD pin to
 any GPIO pin using the <literal>pin_<replaceable>&lt;LCD pin name&gt;
 </replaceable></literal> configuration option.</para>
+
+<para>When using a display with two controllers the <literal>vspan</literal>
+option has to be configured as well (e.g. <literal>vspan=2,2</literal> for a
+40x4 display).</para>
 
 <example id="hd44780-gpio-config.example">
 <title>HD44780: Example configuration for Beaglebone Black GPIO pins</title>

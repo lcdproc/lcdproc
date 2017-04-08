@@ -6,6 +6,7 @@ v0.5dev (ongoing development)
   - [fixed] As default always use nanosleep() for delays
   - [fixed] Use libftdi1 if it is available instead of obsolete libftdi
   - [fixed] Make SEAMLESS_HBARS feature selectable by the drivers individually
+  - [added] hd44780-gpio now supports dual controller displays
 
 v0.5.8
   - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs
