@@ -84,6 +84,7 @@
 #define DEFAULT_REPORTDEST		RPT_DEST_STDERR
 #define DEFAULT_REPORTLEVEL		RPT_WARNING
 
+#define DEFAULT_FRAME_INTERVAL		125000
 #define DEFAULT_SCREEN_DURATION		32
 #define DEFAULT_BACKLIGHT		BACKLIGHT_OPEN
 #define DEFAULT_HEARTBEAT		HEARTBEAT_OPEN
@@ -121,6 +122,8 @@ unsigned int bind_port = UNSET_INT;
 char bind_addr[64];	/* Do not preinit these strings as they will occupy */
 char configfile[256];	/* a lot of space in the executable. */
 char user[64];		/* The values will be overwritten anyway... */
+
+int frame_interval = DEFAULT_FRAME_INTERVAL;
 
 /* The drivers and their driver parameters */
 char *drivernames[MAX_DRIVERS];
@@ -338,8 +341,8 @@ process_command_line(int argc, char **argv)
 				user[sizeof(user)-1] = '\0'; /* Terminate string */
 				break;
 			case 'w':
-				default_duration = (int) (atof(optarg) * 1e6 / TIME_UNIT);
-				if (default_duration * TIME_UNIT < 2e6) {
+				default_duration = (int) (atof(optarg) * 1e6 / frame_interval);
+				if (default_duration * frame_interval < 2e6) {
 					report(RPT_ERR, "Waittime should be at least 2 (seconds), not %.8s", optarg);
 					e = -1;
 				}
@@ -413,12 +416,12 @@ process_configfile(char *configfile)
 		strncpy(user, config_get_string("Server", "User", 0, UNSET_STR), sizeof(user));
 
 	if (default_duration == UNSET_INT) {
-		default_duration = (config_get_float("Server", "WaitTime", 0, 0) * 1e6 / TIME_UNIT);
+		default_duration = (config_get_float("Server", "WaitTime", 0, 0) * 1e6 / frame_interval);
 		if (default_duration == 0)
 			default_duration = UNSET_INT;
-		else if (default_duration * TIME_UNIT < 2e6) {
+		else if (default_duration * frame_interval < 2e6) {
 			report(RPT_WARNING, "Waittime should be at least 2 (seconds). Set to 2 seconds.");
-			default_duration = 2e6 / TIME_UNIT;
+			default_duration = 2e6 / frame_interval;
 		}
 	}
 
@@ -453,6 +456,8 @@ process_configfile(char *configfile)
 			     ? TITLESPEED_NO
 			     : min(speed, TITLESPEED_MAX);
 	}
+
+	frame_interval = config_get_int("Server", "FrameInterval", 0, DEFAULT_FRAME_INTERVAL);
 
 	if (report_dest == UNSET_INT) {
 		int rs = config_get_bool("Server", "ReportToSyslog", 0, UNSET_INT);
@@ -776,7 +781,7 @@ do_mainloop(void)
 			/* We're going to overflow the calculation - probably been to sleep, fudge the values */
 			t_diff = 0;
 			process_lag = 1;
-			render_lag = (1e6/RENDER_FREQ);
+			render_lag = frame_interval;
 		} else {
 			t_diff *= 1e6;
 			t_diff += t.tv_usec - last_t.tv_usec;
@@ -809,11 +814,11 @@ do_mainloop(void)
 			render_screen(s, timer);
 
 			/* We've done the job... */
-			if (render_lag > (1e6/RENDER_FREQ) * MAX_RENDER_LAG_FRAMES) {
+			if (render_lag > frame_interval * MAX_RENDER_LAG_FRAMES) {
 				/* Cause rendering slowdown because too much lag */
-				render_lag = (1e6/RENDER_FREQ) * MAX_RENDER_LAG_FRAMES;
+				render_lag = frame_interval * MAX_RENDER_LAG_FRAMES;
 			}
-			render_lag -= (1e6/RENDER_FREQ);
+			render_lag -= frame_interval;
 			/* Note: this DOES make a fixed frequency (except with slowdown) */
 		}
 
@@ -961,7 +966,7 @@ output_help_screen(void)
 	fprintf(stdout, "    -u <user>           User to run as [%s]\n",
 		DEFAULT_USER);
 	fprintf(stdout, "    -w <waittime>       Time to pause at each screen (in seconds) [%d]\n",
-		DEFAULT_SCREEN_DURATION/RENDER_FREQ);
+		(DEFAULT_SCREEN_DURATION * frame_interval) / 1e6);
 	fprintf(stdout, "    -s <bool>           If set, reporting will be done using syslog\n");
 	fprintf(stdout, "    -r <level>          Report level [%d]\n",
 		DEFAULT_REPORTLEVEL);

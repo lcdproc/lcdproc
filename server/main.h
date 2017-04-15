@@ -27,15 +27,11 @@ extern char *protocol_version;
 extern char *build_date;
 
 /* You should be able to modify the following freqencies... */
-#define RENDER_FREQ 8
-/* We want 8 frames per second */
 #define PROCESS_FREQ 32
 /* And 32 times per second processing of messages and keypresses. */
 #define MAX_RENDER_LAG_FRAMES 16
 /* Allow the rendering strokes to lag behind this many frames.
  * More lag will not be corrected, but will cause slow-down. */
-#define TIME_UNIT (1e6/RENDER_FREQ)
-/* Variable from stone age, still used a lot.  */
 
 extern long timer;
 /* 32 bits at 8Hz will overflow in 2 ^ 29 = 5e8 seconds = 17 years.
@@ -51,6 +47,8 @@ extern unsigned int bind_port;
 extern char bind_addr[];	/* Do not preinit these strings as they will occupy */
 extern char configfile[];	/* a lot of space in the executable. */
 extern char user[];		/* The values will be overwritten anyway... */
+
+extern int frame_interval;	/* Not a command line option, but could be */
 
 /* The drivers and their driver parameters */
 extern char *drivernames[];

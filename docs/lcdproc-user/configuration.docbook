@@ -354,6 +354,19 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
+    <property>FrameInterval</property> =
+    <parameter><replaceable>MICROSECONDS</replaceable></parameter>
+  </term>
+  <listitem>
+    <para>
+      Sets the interval in microseconds for updating the display.
+      If not specified the default value for <replaceable>MICROSECONDS</replaceable> is <literal>125000</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <property>WaitTime</property> =
     <parameter><replaceable>SECONDS</replaceable></parameter>
   </term>
