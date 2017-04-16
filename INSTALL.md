@@ -23,18 +23,24 @@ of this file.
 
 In order to compile LCDproc, you'll need the following programs:
 
-* A C compiler which supports C99, we recommend GCC. Most Linux or BSD systems come with GCC.
+* A C compiler which supports C99, we recommend GCC. Most Linux or BSD systems
+ come with GCC.
 
-* GNU Make. It is available for all major distributions. If you want to compile it yourself, see http://www.gnu.org/software/make/make.html .
+* GNU Make. It is available for all major distributions. If you want to
+ compile it yourself, see http://www.gnu.org/software/make/make.html .
 
-* The GNU autotools, that is automake and autoconf. They are only required if you want to build LCdproc directory from Git. The GNU autotools are available for all major distributions. If you want
+* The GNU autotools, that is automake and autoconf. They are only required
+ if you want to build LCdproc directory from Git.
+  The GNU autotools are available for all major distributions. If you want
   to compile them yourself, see
   http://www.gnu.org/software/autoconf/ and
   http://www.gnu.org/software/automake/.
 
-Depending on the ```./configure``` options and your choice of drivers, you will need some additional programs or libraries installed:
+Depending on the ```./configure``` options and your choice of drivers, you will
+need some additional programs or libraries installed:
 
-* DocBook XML converter ```xmlto``` if you want to create the documentation or Doxygen when used with ```--enable-doxygen```, also see
+* DocBook XML converter ```xmlto``` if you want to create the documentation
+ or Doxygen when used with ```--enable-doxygen```, also see
   http://cyberelk.net/tim/software/xmlto/ and
   http://www.stack.nl/~dimitri/doxygen/
 
@@ -47,7 +53,9 @@ Depending on the ```./configure``` options and your choice of drivers, you will 
   http://projects.vdr-developer.org/projects/graphlcd/ and
   http://lucianm.github.com/GLCDprocDriver/
 
-* ```libirman``` for use with the ```irman``` driver, see http://www.evation.com/libirman/libirman.html for the home page and http://www.lirc.org/software/snapshots/ for current downloads
+* ```libirman``` for use with the ```irman``` driver, see
+ http://www.evation.com/libirman/libirman.html for the home page and
+ http://www.lirc.org/software/snapshots/ for current downloads
 
 * LIRC for use with the ```lirc``` driver, see http://www.lirc.org/
 
@@ -56,9 +64,12 @@ Depending on the ```./configure``` options and your choice of drivers, you will 
 
 * ```svgalib``` for use with the ```svga``` driver, see http://www.svgalib.org/
 
-* ```libftdi``` and ```libusb``` for use with the ```ula200```, ```lis```, and ```i2500vfd``` driver, see http://www.intra2net.com/en/developer/libftdi/ and http://libusb.sourceforge.net/
+* ```libftdi``` and ```libusb``` for use with the ```ula200```, ```lis```, and ```i2500vfd``` driver,
+ see http://www.intra2net.com/en/developer/libftdi/ and
+ http://libusb.sourceforge.net/
 
-* ```XOSD``` for use with the ```xosd``` driver, see http://sourceforge.net/projects/libxosd/, as well as an x11 implementation, more precisely libX11 and ```libXext```.
+* ```XOSD``` for use with the ```xosd``` driver, see http://sourceforge.net/projects/libxosd/,
+ as well as an x11 implementation, more precisely libX11 and ```libXext```.
 
 # DISPLAYS
 
@@ -143,36 +154,6 @@ You may have to copy the configuration file (```LCDd.conf```) to ```/etc```
 (or ```/usr/local/etc```) manually.
 
 
-# CREATING DISTRIBUTION SPECIFIC PACKAGES
-
-Instead of manually configuring, compiling and installing LCDproc you
-may use the support files in the LCDproc source tree to create an
-installation package specific to your distribution
-
-## Debian
-  - Rename the ```.tgz``` file with the sources to ```lcdproc_VERSION.orig.tar.gz```
-```
-cp lcdproc-VERSION.tgz lcdproc_VERSION.orig.tar.gz
-```
-  - Extract the source tar ball
-```
-tar xvzf lcdproc_VERSION.orig.tar.gz
-```
-  - Copy the ```debian/``` directory below scripts/ to the root of the source tree
-```  
-cp -a lcdproc-VERSION/scripts/debian lcdproc-VERSION/
-```
-  - Generate ```.deb``` debian package
-```
-cd lcdproc-VERSION/
-dpkg-buildpackage -rfakeroot -sd
-cd ..
-```
-
-This creates a file named ```lcdproc_VERSION-RELEASE_ARCH.deb``` that contains the LCDproc suite as a regular Debian package.
-
-
-
 # PLATFORM SPECIFIC
 
 The lcdproc crew has tried to support a number of platforms. Platforms
@@ -201,7 +182,8 @@ Nothing special to say, everything should go well.
 
 You may not be able to compile all drivers on something else than i386
 if your linux installation does not have ```ioperm```, ```inb``` and ```outb``` commands.
-```./configure``` should leave all drivers that need those functions out (drivers for parallel port displays), so that LCDd should compile anyway.
+```./configure``` should leave all drivers that need those functions out
+(drivers for parallel port displays), so that LCDd should compile anyway.
 
 ## NetBSD
 You need to use GNU Make instead of NetBSD's make.
