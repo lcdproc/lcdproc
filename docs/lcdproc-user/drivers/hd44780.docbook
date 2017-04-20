@@ -3342,6 +3342,7 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
       <entry></entry>
       <entry>EN2</entry>
       <entry>Second controller (optional)</entry>
+    </row>
     <row>
       <entry>P8_15</entry>
       <entry>47</entry>
