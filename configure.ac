@@ -453,13 +453,6 @@ AC_ARG_ENABLE(testmenus,
 	fi ]
 )
 
-AC_ARG_ENABLE(permissive_menu_goto,
-	[AS_HELP_STRING([--enable-permissive-menu-goto], [allow transitions between different client's menus])],
-	[ if test "$enableval" != "no" ; then
-		AC_DEFINE(LCDPROC_PERMISSIVE_MENU_GOTO, [1],
-			[Define to 1 to allow transitions between different client's menus])
-	fi ]
-)
 
 dnl Features applicable to the lcdproc client
 AC_ARG_ENABLE(lcdproc-menus,

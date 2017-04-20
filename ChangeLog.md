@@ -9,6 +9,7 @@ v0.5dev (ongoing development)
   - [added] hd44780-gpio now supports dual controller displays
   - [added] percent glyph to 14-segment font
   - [fixed] Make display update interval selectable from LCDd.conf
+  - [fixed] Move --enable-permissive-menu-goto from configure to LCDd.conf
 
 v0.5.8
   - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs

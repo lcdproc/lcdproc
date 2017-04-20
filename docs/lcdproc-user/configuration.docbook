@@ -578,6 +578,20 @@ You can configure what keys the menu should use.
 <variablelist>
 <varlistentry>
   <term>
+    <property>PermissiveGoto</property> =
+    <parameter><replaceable>BOOL</replaceable></parameter>
+  </term>
+  <listitem>
+    <para>
+      The flag controls whether transitions between the menus of different
+      clients are allowed. The default <literal>false</literal> is to allow
+      only menu gotos local to the client.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <property>MenuKey</property> =
     <parameter><replaceable>KEY</replaceable></parameter>
   </term>
