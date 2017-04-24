@@ -966,7 +966,7 @@ output_help_screen(void)
 	fprintf(stdout, "    -u <user>           User to run as [%s]\n",
 		DEFAULT_USER);
 	fprintf(stdout, "    -w <waittime>       Time to pause at each screen (in seconds) [%d]\n",
-		(DEFAULT_SCREEN_DURATION * frame_interval) / 1e6);
+		(int) ((DEFAULT_SCREEN_DURATION * frame_interval) / 1e6));
 	fprintf(stdout, "    -s <bool>           If set, reporting will be done using syslog\n");
 	fprintf(stdout, "    -r <level>          Report level [%d]\n",
 		DEFAULT_REPORTLEVEL);
