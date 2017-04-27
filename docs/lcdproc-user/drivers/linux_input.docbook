@@ -37,7 +37,10 @@ This section covers the linux event device input driver for LCDd.
 
     <para>
     <replaceable>KEYCODE</replaceable> is an integer like the ones defined in
-    <filename>/usr/include/linux/input.h</filename>.
+    <filename>/usr/include/linux/input.h</filename>. You can also find the
+    key code in the log output of <application>LCDd</application> when the
+    <link linkend="server-section"><parameter>ReportLevel</parameter></link>
+    is at least 4.
     </para>
 
     <para>

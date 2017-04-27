@@ -224,6 +224,8 @@ linuxInput_get_key (Driver *drvthis)
 		k = LL_Find(p->buttonmap, compare_with_keycode, &event.code);
 		if (k)
 			return k->button;
+		else
+			report(RPT_INFO, "linux_input: Unknown key code: %d", event.code);
 
 		return NULL;
 	}
