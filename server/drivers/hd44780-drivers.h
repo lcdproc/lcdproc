@@ -73,6 +73,7 @@ static const ConnectionMapping connectionMapping[] = {
 	{ "vdr-lcd",       HD44780_CT_VDR_LCD,       IF_TYPE_SERIAL,  hd_init_serial    },
 	{ "vdr-wakeup",    HD44780_CT_VDR_WAKEUP,    IF_TYPE_SERIAL,  hd_init_serial    },
 	{ "pertelian",     HD44780_CT_PERTELIAN,     IF_TYPE_SERIAL,  hd_init_serial    },
+	{ "ezio",          HD44780_CT_EZIO,          IF_TYPE_SERIAL,  hd_init_serial    },
 	/* USB connection types */
 	{ "lis2",          HD44780_CT_LIS2,          IF_TYPE_USB,     hd_init_lis2      },
 	{ "mplay",         HD44780_CT_MPLAY,         IF_TYPE_USB,     hd_init_lis2      },
