@@ -69,6 +69,7 @@ fi
 
 dnl Checks for programs used in building
 AC_PROG_CC
+AC_PROG_CC_STDC
 AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
