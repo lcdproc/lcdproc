@@ -385,21 +385,21 @@ serial_HD44780_scankeypad(PrivateData *p)
 				if (SERIAL_IF.connectiontype == HD44780_CT_EZIO) {
 					/* Support EZIO-100 0x4n and EZIO-300 0xBn */
 					switch (buffer) {
-						case 0x4B:
-						case 0xBB:
-							return 0x14;	/* KeyMatrix_4_1=Enter  */
-						case 0x4D:
-						case 0xBE:
-							return 0x24;	/* KeyMatrix_4_2=Up     */
-						case 0x47:
-						case 0xBD:
-							return 0x34;	/* KeyMatrix_4_3=Down   */
-						case 0x4E:
-						case 0xB7:
-							return 0x44;	/* KeyMAtrix_4_4=Escape */
-						/* No key 0x4F/0xBF or more than one key */ 
-						default:
-							return 0;
+					    case 0x4B:
+					    case 0xBB:
+						return 0x14;	/* KeyMatrix_4_1=Enter  */
+					    case 0x4D:
+					    case 0xBE:
+						return 0x24;	/* KeyMatrix_4_2=Up     */
+					    case 0x47:
+					    case 0xBD:
+						return 0x34;	/* KeyMatrix_4_3=Down   */
+					    case 0x4E:
+					    case 0xB7:
+						return 0x44;	/* KeyMAtrix_4_4=Escape */
+					    /* No key 0x4F/0xBF or more than one key */ 
+					    default:
+						return 0;
 					}
 				}
 				return buffer;
