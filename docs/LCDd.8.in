@@ -161,6 +161,9 @@ LCD driven by a PIC16C54-based piggy-back board, connected to a serial port
 .B los-panel
 LCD driven by an Atmel AVR based board, connected to a serial port
 .TP
+.B ezio
+Portwell EZIO-100 and EZIO-300 LCD connected to a serial port (http://drivers.portwell.com/CA_Manual/EZIO/)
+.TP
 .B vdr-lcd
 ???, connected to a serial port
 .TP
