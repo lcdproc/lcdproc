@@ -87,7 +87,10 @@ AC_CHECK_FUNC(gethostbyname,,[AC_CHECK_LIB(nsl,gethostbyname)])
 AC_CHECK_FUNC(connect,,[AC_CHECK_LIB(socket,connect)])
 AC_CHECK_FUNC(inet_aton,,[AC_CHECK_LIB(resolv,inet_aton)])
 AC_CHECK_LIB(kstat, kstat_open)
-AC_CHECK_LIB(posix4, nanosleep)
+dnl nanosleep should be in libc and if not, try in a POSIX compability library
+dnl even if we don't use this conditionally in any C code, it's still useful
+dnl to have this information about the system this is being built on.
+AC_CHECK_FUNC(nanosleep,, [AC_CHECK_LIB(posix4, nanosleep)])
 AC_CHECK_FUNCS(getloadavg swapctl)
 AC_CHECK_HEADERS(procfs.h sys/procfs.h sys/loadavg.h utmpx.h)
 
