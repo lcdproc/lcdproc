@@ -313,7 +313,7 @@ HD44780_init(Driver *drvthis)
 				/* Was a key specified in the config file ? */
 				if (s) {
 					p->keyMapMatrix[y][x] = strdup(s);
-					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x, y, s);
+					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x+1, y+1, s);
 				}
 			}
 		}

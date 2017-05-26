@@ -102,6 +102,10 @@ of connection (parallel port, serial port, USB, I2C, SPI or others).
         <entry><literal><link linkend="hd44780-vdr-wakeup">vdr-wakeup</link></literal></entry>
         <entry>VDR-Wakeup module "vdr-wakeup"</entry>
       </row>
+      <row>
+        <entry><literal><link linkend="hd44780-ezio">ezio</link></literal></entry>
+        <entry>EZIO-100 and EZIO-300 by Portwell</entry>
+      </row>
       <!-- USB -->
       <row>
         <entry spanname="fullwidth">USB connection types:</entry>
@@ -2167,6 +2171,28 @@ See <ulink url="http://www.jepsennet.de/vdr/"></ulink>
 
 </sect3>
 
+<sect3 id="hd44780-ezio">
+<title>EZIO-100 and EZIO-300 by Portwell</title>
+
+<para>
+Portwell EZIO-100 and EZIO-300 are 20x2 HD44780-compatible devices featuring
+a serial port interface to the host on "COM2", and a 4-key keypad. These devices
+are typically found in firewall appliances by Portwell, Caswell, Check Point and others.
+</para>
+
+<para>
+The backlight is always on. The serial port is operating at 2400 bps (2400-N-8-1),
+which the driver defaults to with this connection type. The keypad keys map to the
+default KeyMatrix_4_x settings in the [HD44780] section of LCDd.conf.
+</para>
+<para>
+See <ulink url="http://drivers.portwell.com/CA_Manual/EZIO/EZIO-FINAL.PDF"></ulink> for the EZIO-100 technical document.
+See <ulink url="http://drivers.portwell.com/CA_Manual/EZIO/EZIO-300.pdf"></ulink> for the EZIO-300 technical document.
+</para>
+
+</sect3>
+
+
 <sect3 id="hd44780-pertelian">
 <title>Pertelian X2040 "pertelian"</title>
 
@@ -3474,7 +3500,8 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>pifacecad</literal></parameter> |
       <parameter><literal>ethlcd</literal></parameter> |
       <parameter><literal>raspberrypi</literal></parameter> |
-      <parameter><literal>gpio</literal></parameter>
+      <parameter><literal>gpio</literal></parameter> |
+      <parameter><literal>ezio</literal></parameter>
     }
   </term>
   <listitem>

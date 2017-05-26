@@ -103,7 +103,8 @@ should look like.
   <listitem>
     <para>
     <emphasis>Language: </emphasis>The programming language used for LCDd
-    (server core), drivers and the lcdproc client is <literal>C</literal>.
+    (server core), drivers and the lcdproc client is Standard <literal>C</literal>,
+    currently <literal>C99</literal>.
     No other programming language will be accepted.
     </para>
   </listitem>
