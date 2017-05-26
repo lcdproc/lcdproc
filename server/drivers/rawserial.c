@@ -37,6 +37,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/types.h>
 
 #include <errno.h>
 #include <limits.h>

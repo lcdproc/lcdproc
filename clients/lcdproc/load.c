@@ -14,6 +14,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <time.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"

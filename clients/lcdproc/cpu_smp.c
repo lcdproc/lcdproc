@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <time.h>
 
 #include "shared/sockets.h"
 
