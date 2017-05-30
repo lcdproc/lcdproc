@@ -13,6 +13,8 @@ v0.5dev (ongoing development)
   - [fixed] Segfault in LL_Find() on empty list
   - [fixed] Add C99 (https://github.com/lcdproc/lcdproc/issues/81)
   - [added] Add Portwell EZIO-100 and EZIO-300 support to serial HD44780 driver
+  - [fixed] Added guarded include file for FreeBSD
+  - [fixed] Fixed end of string assignment
 
 v0.5.8
   - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs

@@ -85,6 +85,10 @@
 
 #include "i2c.h"
 
+#ifdef HAVE_DEV_IICBUS_IIC_H
+#include <dev/iicbus/iic.h>
+#endif
+
 // Generally, any function that accesses the LCD control lines needs to be
 // implemented separately for each HW design. This is typically (but not
 // restricted to):

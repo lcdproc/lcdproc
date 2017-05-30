@@ -559,7 +559,7 @@ screen_del_key_func(Client *c, int argc, char **argv)
 				*to++ = *from++;
 			}
 		}
-		to = '\0';	/* terminates the new keys string...*/
+		*to = '\0';	/* terminates the new keys string...*/
 	}
 
 	sock_send_string(c->sock, "success\n");
