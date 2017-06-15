@@ -15,8 +15,6 @@
 int screen_add_func(Client *c, int argc, char **argv);
 int screen_del_func(Client *c, int argc, char **argv);
 int screen_set_func(Client *c, int argc, char **argv);
-int screen_add_key_func(Client *c, int argc, char **argv);
-int screen_del_key_func(Client *c, int argc, char **argv);
 
 #endif
 
