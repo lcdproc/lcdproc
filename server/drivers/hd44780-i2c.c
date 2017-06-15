@@ -85,10 +85,6 @@
 
 #include "i2c.h"
 
-#ifdef HAVE_DEV_IICBUS_IIC_H
-#include <dev/iicbus/iic.h>
-#endif
-
 // Generally, any function that accesses the LCD control lines needs to be
 // implemented separately for each HW design. This is typically (but not
 // restricted to):
@@ -171,11 +167,6 @@ hd_init_i2c(Driver *drvthis)
 	report(RPT_INFO, "HD44780: I2C: Pin D7 mapped to 0x%02X", p->i2c_line_D7);
 	report(RPT_INFO, "HD44780: I2C: Invert Backlight %d", p->i2c_backlight_invert);
 	
-#ifdef HAVE_DEV_IICBUS_IIC_H
-	struct iiccmd cmd;
-	bzero(&cmd, sizeof(cmd));
-#endif
-
 	p->backlight_bit = p->i2c_line_BL;
 
 	/* READ CONFIG FILE */
