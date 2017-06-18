@@ -1,4 +1,6 @@
 v0.5dev (ongoing development)
+
+v0.5.9
   - [removed] scripts/debian (https://github.com/lcdproc/lcdproc/issues/39)
   - [fixed] spurious (direct) dependencies of ftdi drivers on libusb
   - [API] now drivers need to include "shared/report.h" instead of "report.h"
