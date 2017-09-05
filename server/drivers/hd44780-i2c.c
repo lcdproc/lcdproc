@@ -317,9 +317,30 @@ i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flag
  */
 void i2c_HD44780_backlight(PrivateData *p, unsigned char state)
 {
+	static unsigned char old_state=0;
 	if ( p->i2c_backlight_invert == 0 )
 		p->backlight_bit = ((!p->have_backlight||state) ? 0 : p->i2c_line_BL);
 	else // Inverted backlight - npn transistor
 		p->backlight_bit = ((p->have_backlight && state) ? p->i2c_line_BL : 0);
 	i2c_out(p, p->backlight_bit);
+	if (state!=old_state)
+	{
+		    if (state == BACKLIGHT_ON)
+		    {
+    			/*100% brightness*/
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, 0x28 );
+			p->hd44780_functions->uPause(p, 150);
+		    }
+		    else
+		    {
+    			/*25% brightness*/
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, 0x2B );
+			p->hd44780_functions->uPause(p, 150);
+		    }
+	}
+	else
+	{ /*no need to update state*/
+	}
+	/*save old state*/
+	old_state = state;
 }

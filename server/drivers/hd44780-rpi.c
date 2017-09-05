@@ -482,6 +482,28 @@ lcdrpi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 void
 lcdrpi_HD44780_backlight(PrivateData *p, unsigned char state)
 {
+
+	static unsigned char old_state=0;	
 	if (p->backlight_bit > -1 && p->backlight_bit < 32)
 		SET_GPIO(p->backlight_bit, (state == BACKLIGHT_ON) ? 1 : 0);
+	if (state!=old_state)
+	{
+		    if (state == BACKLIGHT_ON)
+		    {
+    			/*100% brightness*/
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, 0x28 );
+			p->hd44780_functions->uPause(p, 150);
+		    }
+		    else
+		    {
+    			/*25% brightness*/
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, 0x2B );
+			p->hd44780_functions->uPause(p, 150);
+		    }
+	}
+	else
+	{ /*no need to update state*/
+	}
+	/*save old state*/
+	old_state = state;
 }
