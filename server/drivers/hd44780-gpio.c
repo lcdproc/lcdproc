@@ -46,6 +46,9 @@ typedef struct {
 	ugpio_t *rw;
 } gpio_pins;
 
+/*function set buffer to store during init*/
+static unsigned char bufferFUNCSET = 0;
+
 /**
  * Initialize a ugpio_t context by reading the related configuration
  * option.
@@ -182,6 +185,8 @@ hd_init_gpio(Driver *drvthis)
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	send_nibble(p, (FUNCSET | IF_4BIT) >> 4, 0);
 
+	bufferFUNCSET = FUNCSET | IF_4BIT;
+
 	common_init(p, IF_4BIT);
 
 	return 0;
@@ -218,9 +223,39 @@ gpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
 void
 gpio_HD44780_backlight(PrivateData *p, unsigned char state)
 {
+
+	static unsigned char old_state=0;
+	unsigned char brightnessLevelVFD = 0;
+
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
 	ugpio_set_value(pins->bl, (state == BACKLIGHT_ON) ? 1 : 0);
+	if (p->isVFDDisplay)
+	{
+		if (state!=old_state)
+		{
+			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
+			if (p->backlightstate)
+			{
+				brightnessLevelVFD = 0x03u; //100% brightness
+			}
+			else
+			{
+				brightnessLevelVFD = 0x01u;//25% brightness
+			}
+			/*update brightness level of VFD*/
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, bufferFUNCSET | brightnessLevelVFD);
+		}
+		else
+		{ /*no need to update state*/
+		}
+		/*save old state*/
+		old_state = state;
+	}
+	else
+	{
+
+	}
 }
 
 /**

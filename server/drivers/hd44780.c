@@ -157,6 +157,7 @@ HD44780_init(Driver *drvthis)
 	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
 	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
 	p->have_backlight	= drvthis->config_get_bool(drvthis->name, "backlight", 0, 0);
+	p->isVFDDisplay		= drvthis->config_get_bool(drvthis->name, "VFDDisplay", 0, 0);
 	p->have_output		= drvthis->config_get_bool(drvthis->name, "outputport", 0, 0);
 	p->delayMult 		= drvthis->config_get_int(drvthis->name, "delaymult", 0, 1);
 	p->delayBus 		= drvthis->config_get_bool(drvthis->name, "delaybus", 0, 1);
@@ -465,7 +466,15 @@ common_init(PrivateData *p, unsigned char if_bit)
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR);
+	if ((p->have_backlight) && (p->isVFDDisplay))
+	{
+		/*set 100% brightness by default*/
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | VFDBRIMAX);
+	}
+	else
+	{
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR);
+	}
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause(p, 40);
@@ -477,6 +486,7 @@ common_init(PrivateData *p, unsigned char if_bit)
 	p->hd44780_functions->uPause(p, 1600);
 	if (p->hd44780_functions->flush != NULL)
 		p->hd44780_functions->flush(p);
+
 }
 
 

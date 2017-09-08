@@ -109,6 +109,10 @@ void i2c_HD44780_close(PrivateData *p);
 #define I2C_ADDR_MASK 0x7f
 #define I2C_PCAX_MASK 0x80
 
+/*function set buffer to store during init*/
+static unsigned char bufferFUNCSET = 0;
+
+
 static void
 i2c_out(PrivateData *p, unsigned char val)
 {
@@ -249,7 +253,8 @@ hd_init_i2c(Driver *drvthis)
 	hd44780_functions->uPause(p, 100);
 
 	// Set up two-line, small character (5x8) mode
-	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	bufferFUNCSET = (FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	hd44780_functions->senddata(p, 0, RS_INSTR,  bufferFUNCSET );
 	hd44780_functions->uPause(p, 40);
 
 	common_init(p, IF_4BIT);
@@ -318,29 +323,37 @@ i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flag
 void i2c_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	static unsigned char old_state=0;
+	unsigned char brightnessLevelVFD = 0;
 	if ( p->i2c_backlight_invert == 0 )
 		p->backlight_bit = ((!p->have_backlight||state) ? 0 : p->i2c_line_BL);
 	else // Inverted backlight - npn transistor
 		p->backlight_bit = ((p->have_backlight && state) ? p->i2c_line_BL : 0);
 	i2c_out(p, p->backlight_bit);
-	if (state!=old_state)
+	if (p->isVFDDisplay)
 	{
-		    if (state == BACKLIGHT_ON)
-		    {
-    			/*100% brightness*/
-			p->hd44780_functions->senddata(p, 0, RS_INSTR, 0x28 );
+		if (state!=old_state)
+		{
+			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
+			if (p->backlightstate)
+			{
+				brightnessLevelVFD = 0x03u; //100% brightness
+			}
+			else
+			{
+				brightnessLevelVFD = 0x01u;//25% brightness
+			}
+			/*update brightness level of VFD*/
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, bufferFUNCSET | brightnessLevelVFD);
 			p->hd44780_functions->uPause(p, 150);
-		    }
-		    else
-		    {
-    			/*25% brightness*/
-			p->hd44780_functions->senddata(p, 0, RS_INSTR, 0x2B );
-			p->hd44780_functions->uPause(p, 150);
-		    }
+		}
+		else
+		{ /*no need to update state*/
+		}
+		/*save old state*/
+		old_state = state;
 	}
 	else
-	{ /*no need to update state*/
+	{
+
 	}
-	/*save old state*/
-	old_state = state;
 }

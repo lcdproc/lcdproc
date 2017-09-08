@@ -224,6 +224,7 @@ typedef struct hd44780_private_data {
 	 *@{*/
 	char have_keypad;
 	char have_backlight;
+	char isVFDDisplay;
 	char have_output;
 	/**@}*/
 
@@ -429,6 +430,8 @@ void common_init(PrivateData *p, unsigned char if_bit);
 #define SMALLCHAR	0x00	/**< 5x8 characters */
 #define EXTREG		0x04	/**< Select ext. registers (Yes, the same bits) */
 #define SEGBLINK	0x02	/**< CGRAM/SEGRAM blink, only if RE=1 */
+
+#define VFDBRIMAX  	0x03    /**< Maximum brightness (100% for PT6314 controller) */
 
 /** Set CGRAM address (RE=0) */
 #define SETCHAR		0x40
