@@ -8,7 +8,7 @@ SET PATH_TO_OUTPUT_FILE=/mnt/local/work/lcdproc/server
 REM PATH TO PLINK EXECUTABLE
 SET PLINK_EXEC=plink.exe
 SET USERNAME=root
-SET PASSWORD=l3dyh@wk3
+SET PASSWORD=password
 SET IP_ADDR=192.168.1.3
 REM END OF CONFIGURATION
 REM ====================
