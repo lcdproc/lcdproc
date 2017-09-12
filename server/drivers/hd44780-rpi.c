@@ -73,9 +73,6 @@ static volatile unsigned int *gpio_map = NULL;
 
 static unsigned int gpio_base_address = 0;
 
-/*function set buffer to store during init*/
-static unsigned char bufferFUNCSET = 0;
-
 /*
  * Two different board revisions are currently in widespread use. The
  * GPIO mappings differ slightly - Not enough to kill a system yet.
@@ -360,7 +357,6 @@ hd_init_rpi(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	const int *allowed_gpio_pins = NULL;
-	unsigned char bufferFUNCSET =0;
 	int used_pins[GPIO_PINS] = {};
 
 	if ((allowed_gpio_pins = check_board_rev(drvthis)) == NULL)
@@ -452,7 +448,7 @@ hd_init_rpi(Driver *drvthis)
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	send_nibble(p, (FUNCSET | IF_4BIT) >> 4, 0);
 
-	bufferFUNCSET = (FUNCSET | IF_4BIT);
+	p->bufferFUNCSET = (FUNCSET | IF_4BIT);
 
 	common_init(p, IF_4BIT);
 
@@ -490,33 +486,27 @@ lcdrpi_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 
 	static unsigned char old_state=0;
-	unsigned char brightnessLevelVFD = 0;
 	if (p->backlight_bit > -1 && p->backlight_bit < 32)
 		SET_GPIO(p->backlight_bit, (state == BACKLIGHT_ON) ? 1 : 0);
-	if (p->isVFDDisplay)
+	if (p->isPT6314VFDDisplay)
 	{
 		if (state!=old_state)
 		{
 			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
 			if (p->backlightstate)
 			{
-				brightnessLevelVFD = 0x03u; //100% brightness
+				/*update brightness level of VFD to 100% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMAX);
+
 			}
 			else
 			{
-				brightnessLevelVFD = 0x01u;//25% brightness
+				/*update brightness level of VFD to 25% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMIN);
+
 			}
-			/*update brightness level of VFD*/
-			p->hd44780_functions->senddata(p, 0, RS_INSTR, bufferFUNCSET | brightnessLevelVFD);
-		}
-		else
-		{ /*no need to update state*/
 		}
 		/*save old state*/
 		old_state = state;
-	}
-	else
-	{
-
 	}
 }

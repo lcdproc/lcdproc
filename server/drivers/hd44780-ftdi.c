@@ -55,8 +55,6 @@ void ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned cha
 void ftdi_HD44780_backlight(PrivateData *p, unsigned char state);
 void ftdi_HD44780_close(PrivateData *p);
 
-/*function set buffer to store during init*/
-static unsigned char bufferFUNCSET = 0;
 
 /**
  * Initialize the driver.
@@ -135,17 +133,17 @@ hd_init_ftdi(Driver *drvthis)
 	 * FTDI bug: Sometimes first write gets lost on kernel 2.6, needs
 	 * investigation.
 	 */
-	bufferFUNCSET = FUNCSET | IF_8BIT;
-	ftdi_HD44780_senddata(p, 0, RS_INSTR, bufferFUNCSET);
+	p->bufferFUNCSET = FUNCSET | IF_8BIT;
+	ftdi_HD44780_senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
 	usleep(4100);
 
 	common_init(p, IF_8BIT);
     }
     else if (p->ftdi_mode == 4) {
-    bufferFUNCSET = FUNCSET | IF_4BIT;
-	ftdi_HD44780_senddata(p, 0, RS_INSTR, bufferFUNCSET);
-	ftdi_HD44780_senddata(p, 0, RS_INSTR, bufferFUNCSET);
-	ftdi_HD44780_senddata(p, 0, RS_INSTR, bufferFUNCSET);
+    p->bufferFUNCSET = FUNCSET | IF_4BIT;
+	ftdi_HD44780_senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
+	ftdi_HD44780_senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
+	ftdi_HD44780_senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
 
 	common_init(p, IF_4BIT);
     }
@@ -237,7 +235,6 @@ ftdi_HD44780_backlight(PrivateData *p, unsigned char state)
     unsigned char buf[1];
     int f;
 	static unsigned char old_state=0;
-	unsigned char brightnessLevelVFD = 0;
 
     p->backlight_bit = state ? p->ftdi_line_backlight : 0;
     buf[0] = p->backlight_bit;
@@ -258,31 +255,26 @@ ftdi_HD44780_backlight(PrivateData *p, unsigned char state)
 	    exit(-1);
 	}
     }
-	if (p->isVFDDisplay)
+	if (p->isPT6314VFDDisplay)
 	{
 		if (state!=old_state)
 		{
 			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
 			if (p->backlightstate)
 			{
-				brightnessLevelVFD = 0x03u; //100% brightness
+				/*update brightness level of VFD to 100% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMAX);
+
 			}
 			else
 			{
-				brightnessLevelVFD = 0x01u;//25% brightness
+				/*update brightness level of VFD to 25% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMIN);
+
 			}
-			/*update brightness level of VFD*/
-			p->hd44780_functions->senddata(p, 0, RS_INSTR, bufferFUNCSET | brightnessLevelVFD);
-		}
-		else
-		{ /*no need to update state*/
 		}
 		/*save old state*/
 		old_state = state;
-	}
-	else
-	{
-
 	}
 }
 

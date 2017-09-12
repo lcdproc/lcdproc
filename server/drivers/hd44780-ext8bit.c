@@ -79,8 +79,6 @@ void lcdtime_HD44780_output(PrivateData *p, int data);
 #define BL	SEL
 #define LE	SEL
 
-/*function set buffer to store during init*/
-static unsigned char bufferFUNCSET = 0;
 
 /**
  * Initialize the driver.
@@ -113,7 +111,7 @@ hd_init_ext8bit(Driver *drvthis)
 	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_8BIT | TWOLINE | SMALLCHAR);
 	hd44780_functions->uPause(p, 40);
 
-	bufferFUNCSET = (FUNCSET | IF_8BIT | TWOLINE | SMALLCHAR);
+	p->bufferFUNCSET = (FUNCSET | IF_8BIT | TWOLINE | SMALLCHAR);
 
 	common_init (p, IF_8BIT);
 
@@ -166,37 +164,31 @@ lcdtime_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
 void lcdtime_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	static unsigned char old_state=0;
-	unsigned char brightnessLevelVFD = 0;
 	p->backlight_bit = (state?0:BL);
 
 	// Semaphores not needed because backlight will not go together with
 	// the bargraph anyway...
 	port_out(p->port + 2, p->backlight_bit ^ OUTMASK);
-	if (p->isVFDDisplay)
+	if (p->isPT6314VFDDisplay)
 	{
 		if (state!=old_state)
 		{
 			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
 			if (p->backlightstate)
 			{
-				brightnessLevelVFD = 0x03u; //100% brightness
+				/*update brightness level of VFD to 100% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMAX);
+
 			}
 			else
 			{
-				brightnessLevelVFD = 0x01u;//25% brightness
+				/*update brightness level of VFD to 25% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMIN);
+
 			}
-			/*update brightness level of VFD*/
-			p->hd44780_functions->senddata(p, 0, RS_INSTR, bufferFUNCSET | brightnessLevelVFD);
-		}
-		else
-		{ /*no need to update state*/
 		}
 		/*save old state*/
 		old_state = state;
-	}
-	else
-	{
-
 	}
 }
 

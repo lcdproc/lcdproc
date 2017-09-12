@@ -152,21 +152,21 @@ HD44780_init(Driver *drvthis)
 
 	/* READ THE CONFIG FILE */
 
-	p->port			= drvthis->config_get_int(drvthis->name, "port", 0, LPTPORT);
-	p->ext_mode		= drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
-	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
-	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
-	p->have_backlight	= drvthis->config_get_bool(drvthis->name, "backlight", 0, 0);
-	p->isVFDDisplay		= drvthis->config_get_bool(drvthis->name, "VFDDisplay", 0, 0);
-	p->have_output		= drvthis->config_get_bool(drvthis->name, "outputport", 0, 0);
-	p->delayMult 		= drvthis->config_get_int(drvthis->name, "delaymult", 0, 1);
-	p->delayBus 		= drvthis->config_get_bool(drvthis->name, "delaybus", 0, 1);
-	p->lastline 		= drvthis->config_get_bool(drvthis->name, "lastline", 0, 1);
+	p->port					= drvthis->config_get_int(drvthis->name, "port", 0, LPTPORT);
+	p->ext_mode				= drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
+	p->line_address 		= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
+	p->have_keypad			= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
+	p->have_backlight		= drvthis->config_get_bool(drvthis->name, "backlight", 0, 0);
+	p->isPT6314VFDDisplay 	= drvthis->config_get_bool(drvthis->name, "PT6314VFDDisplay", 0, 0);
+	p->have_output			= drvthis->config_get_bool(drvthis->name, "outputport", 0, 0);
+	p->delayMult 			= drvthis->config_get_int(drvthis->name, "delaymult", 0, 1);
+	p->delayBus 			= drvthis->config_get_bool(drvthis->name, "delaybus", 0, 1);
+	p->lastline 			= drvthis->config_get_bool(drvthis->name, "lastline", 0, 1);
 
-	p->nextrefresh		= 0;
-	p->refreshdisplay 	= drvthis->config_get_int(drvthis->name, "refreshdisplay", 0, 0);
-	p->nextkeepalive	= 0;
-	p->keepalivedisplay	= drvthis->config_get_int(drvthis->name, "keepalivedisplay", 0, 0);
+	p->nextrefresh			= 0;
+	p->refreshdisplay 		= drvthis->config_get_int(drvthis->name, "refreshdisplay", 0, 0);
+	p->nextkeepalive		= 0;
+	p->keepalivedisplay		= drvthis->config_get_int(drvthis->name, "keepalivedisplay", 0, 0);
 
 	/* Get and search for the connection type */
 	s = drvthis->config_get_string(drvthis->name, "ConnectionType", 0, "4bit");
@@ -466,7 +466,7 @@ common_init(PrivateData *p, unsigned char if_bit)
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
-	if ((p->have_backlight) && (p->isVFDDisplay))
+	if ((p->have_backlight) && (p->isPT6314VFDDisplay))
 	{
 		/*set 100% brightness by default*/
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | VFDBRIMAX);
