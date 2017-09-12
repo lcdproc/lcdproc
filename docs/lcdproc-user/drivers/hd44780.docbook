@@ -3535,6 +3535,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>hd44780_cp1251</literal></parameter> |
       <parameter><literal>hd44780_8859_5</literal></parameter> |
       <parameter><literal>upd16314</literal></parameter> |
+      <parameter><literal>weh001602a_1</literal></parameter> |
       <parameter><literal>none</literal></parameter>
     }
   </term>
@@ -3594,6 +3595,12 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
           character set. If your display has ROM code 001 character set you
           may use the <literal>hd44780_euro</literal> charmap instead.
         </para></listitem>
+        <listitem><para>
+          <literal>weh001602a_1</literal> is for displays such as the
+          WINSTAR WEH001602A OLED display with bank font 1 (Western Europe I)
+          selected. Clients should use ISO 8859-1.
+          See <literal>FontBank</literal> to select the font bank.
+        </para></listitem>
       </itemizedlist>
     </para>
     <tip>
@@ -3603,6 +3610,43 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       mappings.
       </para>
     </tip>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>FontBank</property> =
+    {
+      <emphasis><parameter><literal>0</literal></parameter></emphasis> |
+      <parameter><literal>1</literal></parameter> |
+      <parameter><literal>2</literal></parameter> |
+      <parameter><literal>3</literal></parameter>
+    }
+  </term>
+  <listitem>
+    <para>
+      For some displays such as the WINSTAR WEH001602A, set the
+      font bank to be used.
+      <itemizedlist>
+        <listitem><para>
+          <literal>0</literal> (default) is the English/Japanese font bank.
+        </para></listitem>
+        <listitem><para>
+          <literal>1</literal> is the Western Europe I font bank. You can use
+          the following <literal>CharMap</literal> with this font bank:
+          <literal>weh001602a_1</literal>.
+        </para></listitem>
+        <listitem><para>
+          <literal>2</literal> is the English/Rusian font bank.
+        </para></listitem>
+        <listitem><para>
+          <literal>3</literal> is the Western Europe II font bank.
+        </para></listitem>
+      </itemizedlist>
+      You only need to set this parameter if you have a HD44780 display
+      such as the WINSTAR WEH001602A, which allows selecting the font bank
+      during initialization.
+    </para>
   </listitem>
 </varlistentry>
 
