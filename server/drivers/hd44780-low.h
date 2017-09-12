@@ -184,6 +184,7 @@ typedef struct hd44780_private_data {
 #endif
 
 	int charmap;		/**< index of currently used charmap */
+	int font_bank;		/**< index of currently used font bank */
 
 	int width, height;	/**< size of display (characters) */
 	int cellwidth, cellheight;	/**< size a one cell (pixels) */

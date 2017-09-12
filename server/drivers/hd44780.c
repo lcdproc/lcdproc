@@ -333,6 +333,14 @@ HD44780_init(Driver *drvthis)
 	}
 	report(RPT_INFO, "%s: Using %s charmap", drvthis->name, available_charmaps[p->charmap].name);
 
+	/* Get configured font bank */
+	tmp = drvthis->config_get_int(drvthis->name, "FontBank", 0, 0);
+	if ((tmp < 0) || (tmp > 3)) {
+		report(RPT_WARNING, "%s: FontBank must be between 0 and 3; using default %d", drvthis->name, 0);
+		tmp = 0;
+	}
+	p->font_bank = tmp;
+
 	/* Output latch state - init to a non-valid value */
 	p->output_state = 999999;
 
@@ -465,7 +473,7 @@ common_init(PrivateData *p, unsigned char if_bit)
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR);
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | p->font_bank);
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause(p, 40);
