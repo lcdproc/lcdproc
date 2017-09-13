@@ -42,6 +42,7 @@ ethlcd_HD44780_uPause(PrivateData *p, int usecs)
 {
 }
 
+
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
@@ -103,7 +104,8 @@ hd_init_ethlcd(Driver *drvthis)
 	}
 
 	/* Set up two-line, small character (5x8) mode */
-	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	p->bufferFUNCSET = (FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
 
 	common_init(p, IF_4BIT);
 
@@ -185,6 +187,7 @@ void
 ethlcd_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	static unsigned char buff[2];
+	static unsigned char old_state=0;
 
 	buff[0] = ETHLCD_SET_BACKLIGHT;
 
@@ -198,6 +201,26 @@ ethlcd_HD44780_backlight(PrivateData *p, unsigned char state)
 		buff[1] = ETHLCD_BACKLIGHT_OFF;
 
 	ethlcd_send_low(p, buff, 2);
+	if (p->isPT6314VFDDisplay)
+	{
+		if (state!=old_state)
+		{
+			if (p->backlightstate)
+			{
+				/*update brightness level of VFD to 100% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMAX);
+
+			}
+			else
+			{
+				/*update brightness level of VFD to 25% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMIN);
+
+			}
+		}
+		/*save old state*/
+		old_state = state;
+	}
 }
 
 

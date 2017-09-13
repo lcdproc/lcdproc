@@ -182,6 +182,8 @@ hd_init_gpio(Driver *drvthis)
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	send_nibble(p, (FUNCSET | IF_4BIT) >> 4, 0);
 
+	bufferFUNCSET = FUNCSET | IF_4BIT;
+
 	common_init(p, IF_4BIT);
 
 	return 0;
@@ -218,9 +220,33 @@ gpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
 void
 gpio_HD44780_backlight(PrivateData *p, unsigned char state)
 {
+
+	static unsigned char old_state=0;
+
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
 	ugpio_set_value(pins->bl, (state == BACKLIGHT_ON) ? 1 : 0);
+	if (p->isPT6314VFDDisplay)
+	{
+		if (state!=old_state)
+		{
+			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
+			if (p->backlightstate)
+			{
+				/*update brightness level of VFD to 100% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMAX);
+
+			}
+			else
+			{
+				/*update brightness level of VFD to 25% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMIN);
+
+			}
+		}
+		/*save old state*/
+		old_state = state;
+	}
 }
 
 /**

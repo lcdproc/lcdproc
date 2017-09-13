@@ -448,6 +448,8 @@ hd_init_rpi(Driver *drvthis)
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	send_nibble(p, (FUNCSET | IF_4BIT) >> 4, 0);
 
+	p->bufferFUNCSET = (FUNCSET | IF_4BIT);
+
 	common_init(p, IF_4BIT);
 
 	return 0;
@@ -482,6 +484,29 @@ lcdrpi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char f
 void
 lcdrpi_HD44780_backlight(PrivateData *p, unsigned char state)
 {
+
+	static unsigned char old_state=0;
 	if (p->backlight_bit > -1 && p->backlight_bit < 32)
 		SET_GPIO(p->backlight_bit, (state == BACKLIGHT_ON) ? 1 : 0);
+	if (p->isPT6314VFDDisplay)
+	{
+		if (state!=old_state)
+		{
+			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
+			if (p->backlightstate)
+			{
+				/*update brightness level of VFD to 100% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMAX);
+
+			}
+			else
+			{
+				/*update brightness level of VFD to 25% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMIN);
+
+			}
+		}
+		/*save old state*/
+		old_state = state;
+	}
 }

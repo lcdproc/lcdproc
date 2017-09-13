@@ -101,6 +101,7 @@ unsigned char lcdstat_HD44780_readkeypad(PrivateData *p, unsigned int YData);
 
 static const unsigned char EnMask[] = { EN1, EN2, EN3, STRB, LF, INIT, SEL };
 
+
 #define ALLEXT  (STRB|LF|INIT|SEL)
 // The above bits are on the control port of LPT
 
@@ -177,8 +178,10 @@ hd_init_4bit(Driver *drvthis)
 	hd44780_functions->uPause(p, 100);
 
 	// Set up two-line, small character (5x8) mode
-	hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR);
+	p->bufferFUNCSET = FUNCSET | IF_4BIT | TWOLINE | SMALLCHAR;
+	hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
 	hd44780_functions->uPause(p, 40);
+
 
 	common_init(p, IF_4BIT);
 
@@ -262,9 +265,33 @@ lcdstat_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char 
  */
 void lcdstat_HD44780_backlight(PrivateData *p, unsigned char state)
 {
+	static unsigned char old_state=0;
+
 	p->backlight_bit = ((!p->have_backlight||state)?0:BL);
 
 	port_out(p->port, p->backlight_bit);
+
+	if (p->isPT6314VFDDisplay)
+	{
+		if (state!=old_state)
+		{
+			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
+			if (p->backlightstate)
+			{
+				/*update brightness level of VFD to 100% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMAX);
+
+			}
+			else
+			{
+				/*update brightness level of VFD to 25% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMIN);
+
+			}
+		}
+		/*save old state*/
+		old_state = state;
+	}
 }
 
 

@@ -224,6 +224,8 @@ typedef struct hd44780_private_data {
 	 *@{*/
 	char have_keypad;
 	char have_backlight;
+	char isPT6314VFDDisplay;/**< Display is VFD type with PT6314 driver */
+
 	char have_output;
 	/**@}*/
 
@@ -286,6 +288,7 @@ typedef struct hd44780_private_data {
 	int offbrightness;	/**< Brightness when backlight is "off" (range 0 - 1000) */
 	int backlightstate;	/**< Saves the last backlight state (on/off) */
 	/**@}*/
+	unsigned char bufferFUNCSET;	/**< Store the content of the FUNCSET register */
 
 	/** Output buffer to collect command or data bytes */
 	tx_buffer tx_buf;
@@ -429,6 +432,11 @@ void common_init(PrivateData *p, unsigned char if_bit);
 #define SMALLCHAR	0x00	/**< 5x8 characters */
 #define EXTREG		0x04	/**< Select ext. registers (Yes, the same bits) */
 #define SEGBLINK	0x02	/**< CGRAM/SEGRAM blink, only if RE=1 */
+
+#define VFDBRIMAX  	0x00    /**< Maximum brightness (100% for PT6314 controller) */
+#define VFDBRIHIGH 	0x01   /**< 75& brightness for PT6314 controller, currently not used) */
+#define VFDBRIMID  	0x02    /**< 50& brightness for PT6314 controller, currently not used) */
+#define VFDBRIMIN  	0x03    /**< 25& brightness for PT6314 controller, used when backlight is not requested) */
 
 /** Set CGRAM address (RE=0) */
 #define SETCHAR		0x40

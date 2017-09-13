@@ -133,15 +133,17 @@ hd_init_ftdi(Driver *drvthis)
 	 * FTDI bug: Sometimes first write gets lost on kernel 2.6, needs
 	 * investigation.
 	 */
-	ftdi_HD44780_senddata(p, 0, RS_INSTR, FUNCSET | IF_8BIT);
+	p->bufferFUNCSET = FUNCSET | IF_8BIT;
+	ftdi_HD44780_senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
 	usleep(4100);
 
 	common_init(p, IF_8BIT);
     }
     else if (p->ftdi_mode == 4) {
-	ftdi_HD44780_senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT);
-	ftdi_HD44780_senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT);
-	ftdi_HD44780_senddata(p, 0, RS_INSTR, FUNCSET | IF_4BIT);
+    p->bufferFUNCSET = FUNCSET | IF_4BIT;
+	ftdi_HD44780_senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
+	ftdi_HD44780_senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
+	ftdi_HD44780_senddata(p, 0, RS_INSTR, p->bufferFUNCSET);
 
 	common_init(p, IF_4BIT);
     }
@@ -232,6 +234,7 @@ ftdi_HD44780_backlight(PrivateData *p, unsigned char state)
 {
     unsigned char buf[1];
     int f;
+	static unsigned char old_state=0;
 
     p->backlight_bit = state ? p->ftdi_line_backlight : 0;
     buf[0] = p->backlight_bit;
@@ -252,6 +255,27 @@ ftdi_HD44780_backlight(PrivateData *p, unsigned char state)
 	    exit(-1);
 	}
     }
+	if (p->isPT6314VFDDisplay)
+	{
+		if (state!=old_state)
+		{
+			//for PT6314 VFD driver call init function to update BR0-BR1 registers for backlight level
+			if (p->backlightstate)
+			{
+				/*update brightness level of VFD to 100% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMAX);
+
+			}
+			else
+			{
+				/*update brightness level of VFD to 25% brightness*/
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, p->bufferFUNCSET | VFDBRIMIN);
+
+			}
+		}
+		/*save old state*/
+		old_state = state;
+	}
 }
 
 
