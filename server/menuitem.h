@@ -37,6 +37,8 @@
 
 #include "shared/LL.h"
 
+extern bool menu_permissive_goto; /* Flag from the configuration file */
+
 /*********************************************************************
  * Data definitions of the menustuff
  */

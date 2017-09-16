@@ -28,7 +28,7 @@
 /* Local functions */
 int compare_priority(void *one, void *two);
 
-bool autorotate = UNSET_INT;	/* If on, INFO and FOREGROUND screens will rotate */
+int autorotate = UNSET_INT;	/* If on, INFO and FOREGROUND screens will rotate */
 LinkedList *screenlist = NULL;
 Screen *current_screen = NULL;
 long int current_screen_start_time = 0;

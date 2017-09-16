@@ -84,6 +84,8 @@ menuscreens_init(void)
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
+	menu_permissive_goto = config_get_bool("menu", "PermissiveGoto", 0, 0);
+
 	/*
 	 * Get keys from config file: MenuKey, EnterKey, UpKey, DownKey,
 	 * LeftKey, RightKey. For a working menu at least 3 are necessary:

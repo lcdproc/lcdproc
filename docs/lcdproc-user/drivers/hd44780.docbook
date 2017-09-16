@@ -102,6 +102,10 @@ of connection (parallel port, serial port, USB, I2C, SPI or others).
         <entry><literal><link linkend="hd44780-vdr-wakeup">vdr-wakeup</link></literal></entry>
         <entry>VDR-Wakeup module "vdr-wakeup"</entry>
       </row>
+      <row>
+        <entry><literal><link linkend="hd44780-ezio">ezio</link></literal></entry>
+        <entry>EZIO-100 and EZIO-300 by Portwell</entry>
+      </row>
       <!-- USB -->
       <row>
         <entry spanname="fullwidth">USB connection types:</entry>
@@ -2167,6 +2171,28 @@ See <ulink url="http://www.jepsennet.de/vdr/"></ulink>
 
 </sect3>
 
+<sect3 id="hd44780-ezio">
+<title>EZIO-100 and EZIO-300 by Portwell</title>
+
+<para>
+Portwell EZIO-100 and EZIO-300 are 20x2 HD44780-compatible devices featuring
+a serial port interface to the host on "COM2", and a 4-key keypad. These devices
+are typically found in firewall appliances by Portwell, Caswell, Check Point and others.
+</para>
+
+<para>
+The backlight is always on. The serial port is operating at 2400 bps (2400-N-8-1),
+which the driver defaults to with this connection type. The keypad keys map to the
+default KeyMatrix_4_x settings in the [HD44780] section of LCDd.conf.
+</para>
+<para>
+See <ulink url="http://drivers.portwell.com/CA_Manual/EZIO/EZIO-FINAL.PDF"></ulink> for the EZIO-100 technical document.
+See <ulink url="http://drivers.portwell.com/CA_Manual/EZIO/EZIO-300.pdf"></ulink> for the EZIO-300 technical document.
+</para>
+
+</sect3>
+
+
 <sect3 id="hd44780-pertelian">
 <title>Pertelian X2040 "pertelian"</title>
 
@@ -3239,8 +3265,8 @@ KeyMatrix_1_8=Right
 <para>This connection type supports an LCD connected to GPIO lines that
 can be controlled via the linux sysfs interface. This is common for
 System-On-Chip (SOC) processors and i2c port expanders.
-Currently it supports displays with one
-controller.</para>
+Currently it supports displays with one or two
+controllers.</para>
 
 <para>A GPIO pin can be configured for backlight switch. Use the switch circuit
 as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
@@ -3337,6 +3363,13 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
       <entry>5</entry>
     </row>
     <row>
+      <entry>P8_14</entry>
+      <entry>26</entry>
+      <entry></entry>
+      <entry>EN2</entry>
+      <entry>Second controller (optional)</entry>
+    </row>
+    <row>
       <entry>P8_15</entry>
       <entry>47</entry>
       <entry></entry>
@@ -3353,6 +3386,10 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
 <para>The GPIO connection driver can be configured to assign any LCD pin to
 any GPIO pin using the <literal>pin_<replaceable>&lt;LCD pin name&gt;
 </replaceable></literal> configuration option.</para>
+
+<para>When using a display with two controllers the <literal>vspan</literal>
+option has to be configured as well (e.g. <literal>vspan=2,2</literal> for a
+40x4 display).</para>
 
 <example id="hd44780-gpio-config.example">
 <title>HD44780: Example configuration for Beaglebone Black GPIO pins</title>
@@ -3463,7 +3500,8 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>pifacecad</literal></parameter> |
       <parameter><literal>ethlcd</literal></parameter> |
       <parameter><literal>raspberrypi</literal></parameter> |
-      <parameter><literal>gpio</literal></parameter>
+      <parameter><literal>gpio</literal></parameter> |
+      <parameter><literal>ezio</literal></parameter>
     }
   </term>
   <listitem>
@@ -3497,6 +3535,7 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       <parameter><literal>hd44780_cp1251</literal></parameter> |
       <parameter><literal>hd44780_8859_5</literal></parameter> |
       <parameter><literal>upd16314</literal></parameter> |
+      <parameter><literal>weh001602a_1</literal></parameter> |
       <parameter><literal>none</literal></parameter>
     }
   </term>
@@ -3556,6 +3595,12 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
           character set. If your display has ROM code 001 character set you
           may use the <literal>hd44780_euro</literal> charmap instead.
         </para></listitem>
+        <listitem><para>
+          <literal>weh001602a_1</literal> is for displays such as the
+          WINSTAR WEH001602A OLED display with bank font 1 (Western Europe I)
+          selected. Clients should use ISO 8859-1.
+          See <literal>FontBank</literal> to select the font bank.
+        </para></listitem>
       </itemizedlist>
     </para>
     <tip>
@@ -3565,6 +3610,43 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       mappings.
       </para>
     </tip>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>FontBank</property> =
+    {
+      <emphasis><parameter><literal>0</literal></parameter></emphasis> |
+      <parameter><literal>1</literal></parameter> |
+      <parameter><literal>2</literal></parameter> |
+      <parameter><literal>3</literal></parameter>
+    }
+  </term>
+  <listitem>
+    <para>
+      For some displays such as the WINSTAR WEH001602A, set the
+      font bank to be used.
+      <itemizedlist>
+        <listitem><para>
+          <literal>0</literal> (default) is the English/Japanese font bank.
+        </para></listitem>
+        <listitem><para>
+          <literal>1</literal> is the Western Europe I font bank. You can use
+          the following <literal>CharMap</literal> with this font bank:
+          <literal>weh001602a_1</literal>.
+        </para></listitem>
+        <listitem><para>
+          <literal>2</literal> is the English/Rusian font bank.
+        </para></listitem>
+        <listitem><para>
+          <literal>3</literal> is the Western Europe II font bank.
+        </para></listitem>
+      </itemizedlist>
+      You only need to set this parameter if you have a HD44780 display
+      such as the WINSTAR WEH001602A, which allows selecting the font bank
+      during initialization.
+    </para>
   </listitem>
 </varlistentry>
 

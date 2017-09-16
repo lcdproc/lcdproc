@@ -97,6 +97,7 @@
 #define BAR_PATTERN_FILLED	0x000 /* default */
 #define BAR_PATTERN_OPEN	0x010
 #define BAR_PATTERN_STRIPED	0x020
+#define BAR_SEAMLESS		0x040
 #define BAR_WITH_PERCENTAGE	0x100
 
 /* Cursor types */

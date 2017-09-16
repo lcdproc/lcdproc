@@ -61,6 +61,7 @@
 #define HD44780_CT_PIFACECAD		25
 #define HD44780_CT_LCM162		26
 #define HD44780_CT_GPIO			27
+#define HD44780_CT_EZIO			28
 /**@}*/
 
 /** \name Symbolic names for interface types
@@ -183,6 +184,7 @@ typedef struct hd44780_private_data {
 #endif
 
 	int charmap;		/**< index of currently used charmap */
+	int font_bank;		/**< index of currently used font bank */
 
 	int width, height;	/**< size of display (characters) */
 	int cellwidth, cellheight;	/**< size a one cell (pixels) */

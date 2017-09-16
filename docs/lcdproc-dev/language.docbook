@@ -55,7 +55,9 @@
       along with the responses you can expect. If you need a space or
       a special char in a string, you should quote the string with
       double quotes. If you need to use a double quote, escape it with
-      a backslash. The listing is divided into subsections for
+      a backslash. Escaping also works for "\n\r\t", however not all
+      widget types or display drivers will handle these characters well.
+      The listing is divided into subsections for
       <orderedlist>
 	<listitem>
 	  <para><link linkend="language-basic">Basic stuff</link></para>

@@ -762,12 +762,9 @@ LL_Find(LinkedList *list, int (*compare)(void *, void *), void *value)
 	if (!value)
 		return NULL;
 
-	do {
-		void *data = LL_Get(list);
-
+	for (void *data = LL_Get(list); data; data = LL_GetNext(list))
 		if (0 == compare(data, value))
 			return data;
-	} while (LL_Next(list) == 0);
 
 	return NULL;
 }

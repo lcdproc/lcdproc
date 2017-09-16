@@ -452,3 +452,9 @@ flexible :)
 
   - Driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC
     Spectra Media Cenre PCs amoungst others
+
+- [Francois Mertz](mailto:fireboxled@gmail.com)
+
+  - Parallel Port LCD driver for the Watchguard/Lanner firewall appliances (sdeclcd)
+
+  - Supplemented HD44780 serial driver to support Portwell EZIO-100 and EZIO-300 LCDs found in Portwell, Caswell and Check Point firewall appliances

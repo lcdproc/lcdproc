@@ -205,11 +205,9 @@ typedef struct lcd_logical_driver {
   <title>Private Data</title>
 
 <para>
-  With the introduction of loadable modules it is necessary to stop using global
+  To support multiple instances it is necessary to stop using global
   variables to store a driver's data in. Instead, you should store it in a
-  structure, that you allocate and store on driver's init. If you don't use
-  this system, but use globals, you get queer results if you run two LCDd
-  daemons on one machine. They will then use the same variables !
+  structure, that you allocate and store on driver's init.
 </para>
 
 <para>

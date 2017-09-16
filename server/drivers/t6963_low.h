@@ -107,6 +107,6 @@ void t6963_low_command(T6963_port *p, u8 byte);
 void t6963_low_command_byte(T6963_port *p, u8 cmd, u8 byte);
 void t6963_low_command_word(T6963_port *p, u8 cmd, u16 word);
 int t6963_low_dsp_ready(T6963_port *p, u8 sta);
-inline void t6963_low_send(T6963_port *p, u8 type, u8 byte);
+void t6963_low_send(T6963_port *p, u8 type, u8 byte);
 
 #endif

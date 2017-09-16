@@ -295,7 +295,7 @@ sock_geterror(void)
 int sock_send_error(int fd, char* message)
 {
 	// simple: performance penalty isn't worth more work...
-	return sock_printf_error(fd, message);
+	return sock_printf_error(fd, "%s", message);
 }
 
 /**
@@ -326,6 +326,6 @@ sock_printf_error(int fd, const char *format, .../*args*/ )
 	if (size >= sizeof(buf) - (sizeof(huh)-1))
 		report(RPT_WARNING, "sock_printf_error: vsnprintf truncated message");
 
-	report(RPT_ERR, "error: %s", buf);
+	report(RPT_INFO, "client error: %s", buf);
 	return sock_send_string(fd, buf);
 }

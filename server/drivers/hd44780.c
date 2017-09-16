@@ -50,18 +50,6 @@
  *		  2007 Peter Marschall <peter@adpm.de>
  */
 
-
-/*
- * Uncomment one of the lines below to select your desired delay generation
- * mechanism. Using DELAY_NANOSLEEP  seems to provide the best performance.
- *
- * Setting this here, overrides the set or selected algorithm in timing.h.
- * FIXME: Is this on purpose?
- */
-//#define DELAY_GETTIMEOFDAY
-#define DELAY_NANOSLEEP
-//#define DELAY_IOCALLS
-
 /* Default parallel port address */
 #define LPTPORT	 0x378
 
@@ -325,7 +313,7 @@ HD44780_init(Driver *drvthis)
 				/* Was a key specified in the config file ? */
 				if (s) {
 					p->keyMapMatrix[y][x] = strdup(s);
-					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x, y, s);
+					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x+1, y+1, s);
 				}
 			}
 		}
@@ -344,6 +332,14 @@ HD44780_init(Driver *drvthis)
 		return -1;
 	}
 	report(RPT_INFO, "%s: Using %s charmap", drvthis->name, available_charmaps[p->charmap].name);
+
+	/* Get configured font bank */
+	tmp = drvthis->config_get_int(drvthis->name, "FontBank", 0, 0);
+	if ((tmp < 0) || (tmp > 3)) {
+		report(RPT_WARNING, "%s: FontBank must be between 0 and 3; using default %d", drvthis->name, 0);
+		tmp = 0;
+	}
+	p->font_bank = tmp;
 
 	/* Output latch state - init to a non-valid value */
 	p->output_state = 999999;
@@ -477,7 +473,7 @@ common_init(PrivateData *p, unsigned char if_bit)
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR);
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | p->font_bank);
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause(p, 40);
