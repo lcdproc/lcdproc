@@ -234,6 +234,13 @@ typedef struct hd44780_private_data {
 	int delayMult;		/**< Delay multiplier for slow displays */
 	char delayBus;		/**< Delay if data is sent too fast over LPT port */
 
+	char winstar_mode;	/**< is Winstar OLED compatible? If yes, it needs special initialization routine
+	                             and enables handling of display brightness as below: */
+	char winstar_map_bl;	/**< This sets enables handling of brightness of display based on backlight state,
+	                             by default it is only managed by brightness setting.
+	                             This uses nonstandard command, Internal Power function */
+
+
 	/**
 	 * lastline controls the use of the last line, if pixel addressable
 	 * (true, default) or underline effect (false). To avoid the
@@ -419,6 +426,14 @@ void common_init(PrivateData *p, unsigned char if_bit);
 
 /** Shift or scroll enable (RE=1) */
 #define HSCROLLEN	0x10
+
+/** Extra definitions on Winstar OLED displays - set last 2 bits (=0x03) to activate */
+#define WINST_MODESET	0x13	/**< required bits for command */
+#define WINST_TEXTMODE	0x00	/**< Activate text mode */
+#define WINST_GRAPHMODE	0x08	/**< Activate graphic mode */
+#define WINST_PWRON	0x04	/**< Internal power on (high brightness)*/
+#define WINST_PWROFF	0x00	/**< Internal power off (low brightness)*/
+
 
 /** Function set (RE=0) */
 #define FUNCSET		0x20

@@ -3772,6 +3772,57 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 
 <varlistentry>
   <term>
+    <property>WinstarMode</property> = &parameters.yesnodef;
+  </term>
+  <listitem><para>
+      Some OLED displays (particularly WINSTAR WEH001602A, WEH002002A, and others)
+      require slightly different initialization sequence, which is particularly important
+      on reinitializations without powering off display. If you have this kind 
+      of display and have garbage on it after restarting LCDd, turn this option to TRUE.
+    
+      Default: <literal>no</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>WinstarMapBl</property> = &parameters.yesnodef;
+  </term>
+  <listitem>
+    <para>
+      This option works only when <literal>WinstarMode</literal> is turned ON, otherwise it is ignored.
+    </para>
+    <para>
+      WINSTAR OLED WEH001602A and compatible have two levels of brightness 
+      (dimmed and full), which can be set using special LCD command, not with dedicated
+      backlight pin. This option if enabled maps backlight setting to these two levels of brightness,
+      depending on values of options <literal>Brightness</literal> and <literal>OffBrightness</literal>:
+      <itemizedlist>
+        <listitem><para>
+          <literal>&lt;500</literal> causes dimmed brightness
+        </para></listitem>
+        <listitem><para>
+          <literal>&gt;=500</literal> causes full brightness.
+        </para></listitem>
+      </itemizedlist>
+    </para>
+    <para>
+      If this option is OFF, brightness setting is not managed with backlight, but it is
+      set to constant value at time of initialization, depending on configured setting
+      of <literal>Brightness</literal>.
+  </para>    
+    <para>           
+      By default it is set to <literal>yes</literal>, as it appears to be common usage.
+      With default values of <literal>Brightness</literal> <literal>(300)</literal> and 
+      <literal>OffBrightness</literal> <literal>(800)</literal>,
+      when backlight is OFF, OLED display is dimmed and lights at full brightness when Backlight is ON.
+    </para>
+    </listitem>
+</varlistentry>
+
+
+<varlistentry>
+  <term>
     <property>ExtendedMode</property> = &parameters.yesnodef;
   </term>
   <listitem><para>

@@ -162,6 +162,9 @@ HD44780_init(Driver *drvthis)
 	p->delayBus 		= drvthis->config_get_bool(drvthis->name, "delaybus", 0, 1);
 	p->lastline 		= drvthis->config_get_bool(drvthis->name, "lastline", 0, 1);
 
+	p->winstar_mode		= drvthis->config_get_bool(drvthis->name, "winstarmode", 0, 0);
+	p->winstar_map_bl	= drvthis->config_get_bool(drvthis->name, "winstarmapbl", 0, 1);
+
 	p->nextrefresh		= 0;
 	p->refreshdisplay 	= drvthis->config_get_int(drvthis->name, "refreshdisplay", 0, 0);
 	p->nextkeepalive	= 0;
@@ -254,6 +257,13 @@ HD44780_init(Driver *drvthis)
 			p->numDisplays = 1;
 		} else
 			report(RPT_ERR, "%s: error mallocing", drvthis->name);
+	}
+
+	if (p->winstar_mode) {
+		if (p->winstar_map_bl)
+			report(RPT_INFO, "HD44780: enabling Winstar mode: enable backlight handling (ON/OFF: %d/%d)", p->brightness, p->offbrightness);
+		else
+			report(RPT_INFO, "HD44780: enabling Winstar mode: forcing constant brightness %d)", p->brightness);
 	}
 
 	/* Set up timing */
@@ -473,16 +483,37 @@ common_init(PrivateData *p, unsigned char if_bit)
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
+
+	if (p->winstar_mode) {
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPOFF | CURSOROFF | CURSORNOBLINK);
+		p->hd44780_functions->uPause(p, 40);
+	}
+
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | p->font_bank);
 	p->hd44780_functions->uPause(p, 40);
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
-	p->hd44780_functions->uPause(p, 40);
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, CLEAR);
-	p->hd44780_functions->uPause(p, 1600);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | NOSCROLL);
 	p->hd44780_functions->uPause(p, 40);
+	if (p->winstar_mode) {
+		unsigned char pwr = WINST_PWROFF;
+		if (!p->winstar_map_bl && p->brightness >= 500) {
+			pwr = WINST_PWRON;
+		}
+		else if (p->winstar_map_bl) {
+			if ((p->backlightstate && p->brightness >= 500) ||
+			    (!p->backlightstate && p->offbrightness >= 500))
+				pwr = WINST_PWRON;
+		}
+
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, WINST_MODESET | WINST_TEXTMODE | pwr);
+		p->hd44780_functions->uPause(p, 500);
+	}
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, CLEAR);
+	/* winstar OLEDs require 6.2ms for this command, according to spec */
+	p->hd44780_functions->uPause(p, p->winstar_mode ? 6200 : 1600);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, HOMECURSOR);
 	p->hd44780_functions->uPause(p, 1600);
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
+	p->hd44780_functions->uPause(p, 40);
 	if (p->hd44780_functions->flush != NULL)
 		p->hd44780_functions->flush(p);
 }
@@ -888,8 +919,20 @@ HD44780_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	/* Immediately return if no backlight is available or no change is necessary */
-	if (!p->have_backlight || p->backlightstate == on)
+	/* Immediately return if no change is necessary */
+	if (p->backlightstate == on)
+		return;
+
+	/* Special handling of Winstar backlight mode */
+	if (p->winstar_mode && p->winstar_map_bl ) {
+		int bright = on ? p->brightness : p->offbrightness;
+		unsigned char pwr = bright >= 500  ?  WINST_PWRON : WINST_PWROFF;
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, WINST_MODESET | WINST_TEXTMODE | pwr);
+		p->hd44780_functions->uPause(p, 40);
+	}
+
+	/* Return if no backlight is available */
+	if (!p->have_backlight)
 		return;
 
 	if (p->hd44780_functions->backlight != NULL)
