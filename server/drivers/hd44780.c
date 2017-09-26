@@ -484,16 +484,18 @@ common_init(PrivateData *p, unsigned char if_bit)
 		p->hd44780_functions->uPause(p, 40);
 	}
 
-	if (p->winstar_mode) {
-		p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPOFF | CURSOROFF | CURSORNOBLINK);
-		p->hd44780_functions->uPause(p, 40);
-	}
+	/* First turn display off */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPOFF | CURSOROFF | CURSORNOBLINK);
+	p->hd44780_functions->uPause(p, 40);
 
+	/* perform initialization in off state, so it does not cause flickering and other strange things */
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | p->font_bank);
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | NOSCROLL);
 	p->hd44780_functions->uPause(p, 40);
 	if (p->winstar_mode) {
+		/* For WINSTAR OLED displays need to set TEXT mode and additionally level of brigtness.
+		 * It is particularly important on reinitialization without powering off it first */
 		unsigned char pwr = WINST_PWROFF;
 		if (!p->winstar_map_bl && p->brightness >= 500) {
 			pwr = WINST_PWRON;
