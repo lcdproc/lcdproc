@@ -473,16 +473,27 @@ common_init(PrivateData *p, unsigned char if_bit)
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | p->font_bank);
+	else {
+		/* set up standard mode. by default font_bank is zero (and is ignored on most of displays) */
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | p->font_bank);
+		p->hd44780_functions->uPause(p, 40);
+	}
+
+	/* Turn off display, as manipulatimg below can cause some garbage on screen */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPOFF | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause(p, 40);
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
-	p->hd44780_functions->uPause(p, 40);
+
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, CLEAR);
 	p->hd44780_functions->uPause(p, 1600);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | NOSCROLL);
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, HOMECURSOR);
 	p->hd44780_functions->uPause(p, 1600);
+
+	/* Turn on display again */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
+	p->hd44780_functions->uPause(p, 40);
+
 	if (p->hd44780_functions->flush != NULL)
 		p->hd44780_functions->flush(p);
 }
