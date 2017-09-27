@@ -112,6 +112,49 @@ unsigned char HD44780_scankeypad(PrivateData *p);
 static int parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[], int *dOffsize, int *dispSizeArray[], const char *spanlist);
 
 
+static const struct ModelMapping {
+	const char *name;
+	int model;
+} model_mapping[] = {
+	{ "default",      HD44780_MODEL_DEFAULT },
+	{ "standard",     HD44780_MODEL_DEFAULT },
+
+	{ "extended",     HD44780_MODEL_EXTENDED },
+	{ "ks0073",       HD44780_MODEL_EXTENDED },
+	{ "hd66710",      HD44780_MODEL_EXTENDED },
+
+	{ "winstar_oled", HD44780_MODEL_WINSTAR_OLED },
+	{ "weh00xxyya",   HD44780_MODEL_WINSTAR_OLED },
+
+	{ "pt6314_vfd",   HD44780_MODEL_PT6314_VFD },
+
+	{ "",             HD44780_MODEL_DEFAULT }
+};
+
+static int model_by_name( const char *name )
+{
+	int i;
+
+	for (i=0; i<sizeof(model_mapping)/sizeof(model_mapping[0]); i++) {
+		if (strcasecmp(model_mapping[i].name, name) == 0 )
+			return model_mapping[i].model;
+	}
+
+	return -1;
+}
+
+static const char *model_name( int type )
+{
+	int i;
+
+	for (i=0; i<sizeof(model_mapping)/sizeof(model_mapping[0]); i++) {
+		if (model_mapping[i].model == type)
+			return model_mapping[i].name;
+	}
+
+	return "";
+}
+
 /**
  * Initialize the driver.
  * Initialize common part of drive & call sub-initialization
@@ -129,7 +172,7 @@ HD44780_init(Driver *drvthis)
 	int i = 0;
 	int (*init_fn) (Driver *drvthis) = NULL;
 	int if_type = IF_TYPE_UNKNOWN;
-	int tmp;
+	int tmp, ext_mode;
 	PrivateData *p;
 	char conf_charmap[MAX_CHARMAP_NAME_LENGTH];
 
@@ -153,7 +196,27 @@ HD44780_init(Driver *drvthis)
 	/* READ THE CONFIG FILE */
 
 	p->port			= drvthis->config_get_int(drvthis->name, "port", 0, LPTPORT);
-	p->ext_mode		= drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
+	s			= drvthis->config_get_string(drvthis->name, "model", 0, "default");
+	p->model		= model_by_name(s);
+	if (p->model < 0) {
+		report(RPT_ERR, "%s: unknown Model: %s", drvthis->name, s);
+		return -1;
+	}
+	/* config file compability stuff */
+	if (p->model == HD44780_MODEL_DEFAULT) {
+		ext_mode	= drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
+		if (ext_mode)
+			p->model = HD44780_MODEL_EXTENDED;
+	}
+	else {
+		tmp = (p->model == HD44780_MODEL_EXTENDED);
+		ext_mode = !!drvthis->config_get_bool(drvthis->name, "extendedmode", 0, tmp);
+		if (ext_mode != tmp) {
+			report(RPT_ERR, "%s: conflicting Model %s and extended mode: %d", drvthis->name, model_name(p->model), ext_mode);
+			return -1;
+		}
+	}
+
 	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
 	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
 	p->have_backlight	= drvthis->config_get_bool(drvthis->name, "backlight", 0, 0);
@@ -184,6 +247,7 @@ HD44780_init(Driver *drvthis)
 		if_type = connectionMapping[i].if_type;
 		init_fn = connectionMapping[i].init_fn;
 	}
+	report(RPT_INFO, "HD44780: selecting Model: %s", model_name(p->model));
 
 	/* Get and parse vspan only when specified */
 	s = drvthis->config_get_string(drvthis->name, "vspan", 0, "");
@@ -466,23 +530,46 @@ HD44780_init(Driver *drvthis)
 void
 common_init(PrivateData *p, unsigned char if_bit)
 {
-	if (p->ext_mode) {
+	if (has_extended_mode(p)) {
 		/* Set up extended mode */
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | EXTREG);
 		p->hd44780_functions->uPause(p, 40);
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
+
+	/* set up standard mode. by default font_bank is zero (and is ignored on most of displays) */
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | p->font_bank);
 	p->hd44780_functions->uPause(p, 40);
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
+
+	/* Turn off display, as manipulatimg below can cause some garbage on screen */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPOFF | CURSOROFF | CURSORNOBLINK);
 	p->hd44780_functions->uPause(p, 40);
+
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, CLEAR);
-	p->hd44780_functions->uPause(p, 1600);
+	/* winstar OLEDs require 6.2ms for this command, according to spec */
+	p->hd44780_functions->uPause(p, (p->model == HD44780_MODEL_WINSTAR_OLED) ? 6200 : 1600);
+
+	if (p->model == HD44780_MODEL_WINSTAR_OLED) {
+		/* For WINSTAR OLED displays need to set TEXT mode and additionally level of brigtness.
+		 * It is particularly important on reinitialization without powering off it first */
+		unsigned char pwr = WINST_PWROFF;
+		if (p->brightness >= 500) {
+			pwr = WINST_PWRON;
+		}
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, WINST_MODESET | WINST_TEXTMODE | pwr);
+		p->hd44780_functions->uPause(p, 500);
+	}
+
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, ENTRYMODE | E_MOVERIGHT | NOSCROLL);
 	p->hd44780_functions->uPause(p, 40);
 	p->hd44780_functions->senddata(p, 0, RS_INSTR, HOMECURSOR);
 	p->hd44780_functions->uPause(p, 1600);
+
+	/* Turn on display again */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, ONOFFCTRL | DISPON | CURSOROFF | CURSORNOBLINK);
+	p->hd44780_functions->uPause(p, 40);
+
 	if (p->hd44780_functions->flush != NULL)
 		p->hd44780_functions->flush(p);
 }
@@ -595,7 +682,7 @@ HD44780_position(Driver *drvthis, int x, int y)
 	int relY = y - p->dispVOffset[dispID - 1];
 	int DDaddr;
 
-	if (p->ext_mode) {
+	if (has_extended_mode(p)) {
 		/* Linear addressing, each line starts 0x20 higher. */
 		DDaddr = x + relY * p->line_address;
 	} else {
