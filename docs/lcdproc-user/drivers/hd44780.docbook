@@ -2585,7 +2585,7 @@ If your port expander has different wiring you can re-assign the pins in the con
 </para>
 
 <example id="hd44780-i2c-config.example.alternative.wiring">
-<title>HD44780: Configuration for I<superscript>2</superscript>C with port expander 
+<title>HD44780: Configuration for I<superscript>2</superscript>C with port expander
 Alternative Wiring</title>
 <screen>
 <![CDATA[
@@ -2619,7 +2619,7 @@ i2c_line_D6=0x40
 i2c_line_D7=0x80
 Backlight=yes
 BacklightInvert=yes
-#The Backlight Invert is used if a 0 turns the backlight on, and 1 turns it off, 
+#The Backlight Invert is used if a 0 turns the backlight on, and 1 turns it off,
 i.e. PNP transistor
 ]]>
 </screen>
@@ -3514,6 +3514,64 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 
 <varlistentry>
   <term>
+    <property>Model</property> =
+    {
+      <!-- Keep this list sorted according to the table in hd44780-low.h -->
+      <emphasis><parameter><literal>standard</literal></parameter></emphasis> |
+      <parameter><literal>extended</literal></parameter> |
+      <parameter><literal>winstar_oled</literal></parameter> |
+      <parameter><literal>pt6314_vfd</literal></parameter>
+    }
+  </term>
+  <listitem>
+    <para>
+      Some devices (ie. WINSTAR WEH001602A OLED or PTC PT6314 VFD) require additional
+      initialization or configuration incompatible with "classic" LCD or just have extra
+      features, such as internal commands for brightness handling. If you have such display
+      setting this option may help in problems with initialization or adds extra
+      functionality.
+      <itemizedlist>
+        <listitem><para>
+          The default, <literal>standard</literal> or <literal>default</literal>,
+          is for "classic" HD44780 displays.
+        </para></listitem>
+        <listitem><para>
+          <literal>extended</literal> or <literal>ks0073</literal> is for displays
+          which have "extended mode" turned on with special instruction.
+          If you have a KS0073 or an other 'almost HD44780-compatible', set
+          <literal>Model</literal> to this value to get into extended,
+          4-line linear addressing mode.
+        </para>
+        <para>
+          Use this instead of deprecated option <literal>ExtendedMode</literal>.
+        </para></listitem>
+        <listitem><para>
+          <literal>winstar_oled</literal> is for WINSTAR WEH00xxyyA OLED displays
+          and allows performing proper initialization of display device,
+          especially after display reset without powering it off.
+        </para>
+        <para>It also allows handling backlight setting using internal commands
+        for such displays.
+        </para>
+        </listitem>
+        <listitem><para>
+          <literal>pt6314_vfd</literal> is for some PTC's PT6314 VFDs and allows
+          handling brightness of display.
+        </para></listitem>
+      </itemizedlist>
+      You only may need to set this parameter if you have a non-standard
+      HD44780 display such as specified above and have problems with it and/or
+      want reveal extra functionality with these displays.
+    </para>
+    <para>
+      This option should be independent of connection type.
+    </para>
+  </listitem>
+</varlistentry>
+
+
+<varlistentry>
+  <term>
     <property>Speed</property> =
     <parameter><replaceable>BITRATE</replaceable></parameter>
   </term>
@@ -3645,7 +3703,15 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       </itemizedlist>
       You only need to set this parameter if you have a HD44780 display
       such as the WINSTAR WEH001602A, which allows selecting the font bank
-      during initialization.
+      during initialization. Additionally you may need to set correct
+      <literal>CharMap</literal>.
+      <note>
+      <para>Setting this to nonzero value on standard HD44780 is usually harmless,
+      but some non-standard displays may use bits used for <literal>FontBank</literal>
+      selection, so it is safer to leave this option at default value for displays
+      not supporting Font bank.
+      </para>
+      </note>
     </para>
   </listitem>
 </varlistentry>
@@ -3777,7 +3843,10 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   <listitem><para>
     If you have a KS0073 or an other 'almost HD44780-compatible', set this
     flag to get into extended,4-line linear addressing mode.
-  </para></listitem>
+  </para>
+  <note><para>
+    Deprecated, use <code>Model=extended</code> for such displays.
+  </para></note></listitem>
 </varlistentry>
 
 <varlistentry>

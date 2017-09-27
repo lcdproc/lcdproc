@@ -75,6 +75,28 @@
 #define IF_TYPE_SPI		6
 /**@}*/
 
+/** \name Symbolic name for specific models
+ * @{
+ * Used here to handle various conflicting differences in command sets.
+ * Some optional features are nottied to model even if it appears only in that model
+ * unless not are not conflicting, as default settings are compatible across all devices.
+ * (for example FontBank) */
+
+/** Standard / default model. Should work with most of HD44780-compatible displays */
+#define HD44780_MODEL_DEFAULT		0
+/** Extended model - 4 lines activated with special bits and extra commands (EXTREG) */
+#define HD44780_MODEL_EXTENDED		1
+/** WINSTAR WEH00xxyyA (WEH001604A, WEH002004A, ...) and others, requires slightly different
+ * initialization sequence and have extra commands for handling brightness */
+#define HD44780_MODEL_WINSTAR_OLED	2
+/** PTC PT6314 VFD Displays - have extra command for setting four-level brightness.
+ *  Otherwise is compatible to other HD44780s */
+#define HD44780_MODEL_PT6314_VFD	3
+
+/* Possibly extended further...*/
+
+/** @} */
+
 /** \name Symbolic default values
  *@{*/
 #define DEFAULT_CONTRAST	800
@@ -162,7 +184,7 @@ typedef struct hd44780_private_data {
 
 #ifdef HAVE_I2C
 	/* i2c based connection types */
-	
+
 	int i2c_backlight_invert;
 	int i2c_line_RS;
 	int i2c_line_RW;
@@ -228,7 +250,9 @@ typedef struct hd44780_private_data {
 	char have_output;
 	/**@}*/
 
-	char ext_mode;		/**< use extended mode on some weird controllers */
+	int model;		/**< model selected in configuration.
+	          		     For extended mode on some weird controllers
+	          		     set to HD44780_MODEL_EXTENDED */
 	int line_address;	/**< address of the next line in extended mode  */
 
 	int delayMult;		/**< Delay multiplier for slow displays */
@@ -419,6 +443,13 @@ void common_init(PrivateData *p, unsigned char if_bit);
 
 /** Shift or scroll enable (RE=1) */
 #define HSCROLLEN	0x10
+
+/** Extra definitions on Winstar OLED displays - set last 2 bits (=0x03) to activate */
+#define WINST_MODESET	0x13	/**< required bits for command */
+#define WINST_TEXTMODE	0x00	/**< Activate text mode */
+#define WINST_GRAPHMODE	0x08	/**< Activate graphic mode */
+#define WINST_PWRON	0x04	/**< Internal power on (high brightness)*/
+#define WINST_PWROFF	0x00	/**< Internal power off (low brightness)*/
 
 /** Function set (RE=0) */
 #define FUNCSET		0x20
