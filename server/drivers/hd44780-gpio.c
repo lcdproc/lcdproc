@@ -81,7 +81,7 @@ init_gpio_pin(Driver *drvthis, ugpio_t **pin, const char *name)
 		return -1;
 	}
 
-	debug(RPT_INFO, "init_gpio_pin: Pin %s mapped to GPIO%d", name, number);
+	report(RPT_INFO, "init_gpio_pin: Pin %s mapped to GPIO%d", name, number);
 
 	return 0;
 }
@@ -159,11 +159,11 @@ hd_init_gpio(Driver *drvthis)
 	p->hd44780_functions->senddata = gpio_HD44780_senddata;
 	p->hd44780_functions->close = gpio_HD44780_close;
 
-	if (p->have_backlight) {
+	if (have_backlight_pin(p)) {
 		if (init_gpio_pin(drvthis, &pins->bl, "BL") != 0) {
 			report(RPT_WARNING,
 			       "hd_init_gpio: unable to initialize pin_BL - disabling backlight");
-			p->have_backlight = 0;
+			set_have_backlight_pin(p, 0);
 		}
 		else {
 			p->hd44780_functions->backlight = gpio_HD44780_backlight;
@@ -256,7 +256,7 @@ gpio_HD44780_close(PrivateData *p)
 	if (p->numDisplays > 1)
 		release_gpio_pin(&pins->en2);
 
-	if (p->have_backlight)
+	if (have_backlight_pin(p))
 		release_gpio_pin(&pins->bl);
 
 	if (pins->rw)

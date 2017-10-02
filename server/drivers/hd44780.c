@@ -155,6 +155,84 @@ static const char *model_name( int type )
 	return "";
 }
 
+static const struct BacklightValueMapping {
+	const char *name;
+	int value;
+} bl_value_mapping[] = {
+	/* these below can be combined with comma */
+	{"external",     BACKLIGHT_EXTERNAL_PIN },
+	{"internal",     BACKLIGHT_INTERNAL     },
+	{"internalCmds", BACKLIGHT_CONFIG_CMDS },
+
+	/* special marker used below */
+	{ "",            BACKLIGHT_NONE },
+
+	{"none",         BACKLIGHT_NONE },
+
+	/* compability stuff for old boolean option */
+	{"0",            BACKLIGHT_NONE },
+	{"n",            BACKLIGHT_NONE },
+	{"no",           BACKLIGHT_NONE },
+	{"off",          BACKLIGHT_NONE },
+	{"false",        BACKLIGHT_NONE },
+
+	{"1",            BACKLIGHT_EXTERNAL_PIN },
+	{"y",            BACKLIGHT_EXTERNAL_PIN },
+	{"yes",          BACKLIGHT_EXTERNAL_PIN },
+	{"on",           BACKLIGHT_EXTERNAL_PIN },
+	{"true",         BACKLIGHT_EXTERNAL_PIN }
+
+};
+
+/* parses null-terminated option value for backlight handling and returns bitmask of enabled values
+ * Returns -1 if value is not valid */
+static int parse_backlight_option( const char *value )
+{
+	int result = 0;
+	int i;
+	int any = 0;
+
+	/* first find just whole option name */
+	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
+		if (strcasecmp(value, bl_value_mapping[i].name) == 0)
+			return bl_value_mapping[i].value;
+	}
+
+	/* now find possibly all instances */
+	while (*value != '\0') {
+		const char *eot = strpbrk(value, ", |");
+
+		i = 0;
+		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
+			size_t len;
+
+			/* break loop when marker found*/
+			if (bl_value_mapping[i].name[0] == '\0')
+				/* found unknown value name - so invalid format */
+				return -1;
+
+			len = strlen(bl_value_mapping[i].name);
+			if (len != eot - value)
+				continue;
+
+			if( strncasecmp(value, bl_value_mapping[i].name, len) == 0) {
+				result |= bl_value_mapping[i].value;
+				any = 1;
+			}
+		}
+
+		while (*value == ' ' || *value == '|' || *value == ',')
+			value ++;
+
+		/* try next one if present */
+	}
+
+	if (any)
+		return result;
+
+	return -1;
+}
+
 /**
  * Initialize the driver.
  * Initialize common part of drive & call sub-initialization
@@ -219,7 +297,13 @@ HD44780_init(Driver *drvthis)
 
 	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
 	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
-	p->have_backlight	= drvthis->config_get_bool(drvthis->name, "backlight", 0, 0);
+	/* parse backlight option */
+	s			= drvthis->config_get_string(drvthis->name, "backlight", 0, "none");
+	p->backlight_type	= parse_backlight_option(s);
+	if (p->backlight_type < 0) {
+		report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, s);
+		return -1;
+	}
 	p->have_output		= drvthis->config_get_bool(drvthis->name, "outputport", 0, 0);
 	p->delayMult 		= drvthis->config_get_int(drvthis->name, "delaymult", 0, 1);
 	p->delayBus 		= drvthis->config_get_bool(drvthis->name, "delaybus", 0, 1);
@@ -450,9 +534,11 @@ HD44780_init(Driver *drvthis)
 	if (p->hd44780_functions->scankeypad == NULL)
 		p->have_keypad = 0;
 
-	/* consistency check: no local backlight function => no backlight */
+	/* consistency check: no local backlight function => no external backlight
+	 * still backlight might be set using internal commands of display independant
+	 * of connection type*/
 	if (p->hd44780_functions->backlight == NULL)
-		p->have_backlight = 0;
+		set_have_backlight_pin(p, 0);
 
 	/* consistency check: no local output function => no output */
 	if (p->hd44780_functions->output == NULL)
@@ -468,35 +554,35 @@ HD44780_init(Driver *drvthis)
  	switch(if_type) {
  	  case IF_TYPE_USB:
   		sprintf(buf, "USB %s%s%s",
- 			 (p->have_backlight?" bl":""),
+ 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
  	  case IF_TYPE_SERIAL:
  		sprintf(buf, "SERIAL %s%s%s",
- 			 (p->have_backlight?" bl":""),
+ 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
  	  case IF_TYPE_I2C:
  		sprintf(buf, "I2C %s%s%s",
- 			 (p->have_backlight?" bl":""),
+ 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
  	  case IF_TYPE_SPI:
  		sprintf(buf, "SPI %s%s%s",
- 			 (p->have_backlight?" bl":""),
+ 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
  	  case IF_TYPE_TCP:
  		sprintf(buf, "TCP %s%s%s",
- 			 (p->have_backlight?" bl":""),
+ 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
@@ -504,7 +590,7 @@ HD44780_init(Driver *drvthis)
 	  case IF_TYPE_PARPORT:
  	  default:
  		sprintf(buf, "LPT 0x%x%s%s%s", p->port,
- 			 (p->have_backlight?" bl":""),
+ 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
   			);
@@ -976,7 +1062,7 @@ HD44780_backlight(Driver *drvthis, int on)
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
 	/* Immediately return if no backlight is available or no change is necessary */
-	if (!p->have_backlight || p->backlightstate == on)
+	if (!have_backlight_pin(p) || p->backlightstate == on)
 		return;
 
 	if (p->hd44780_functions->backlight != NULL)

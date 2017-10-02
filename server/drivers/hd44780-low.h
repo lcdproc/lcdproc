@@ -97,6 +97,28 @@
 
 /** @} */
 
+/** \name Types of backlight handling
+ * @{
+ * Shall be treated as bitmask
+ */
+
+
+/** No backlight handling at all */
+#define BACKLIGHT_NONE              0
+
+/** Backlight handled hrough external pin. */
+#define BACKLIGHT_EXTERNAL_PIN 0x0001
+
+/** Backlight handled through internal commands built in driver,
+ *  usually through special commands for model chosen with Model option*/
+#define BACKLIGHT_INTERNAL     0x0002
+
+/** Backlight handled through internal commands defined in configuration file */
+#define BACKLIGHT_CONFIG_CMDS  0x0004
+
+/** @} */
+
+
 /** \name Symbolic default values
  *@{*/
 #define DEFAULT_CONTRAST	800
@@ -246,14 +268,15 @@ typedef struct hd44780_private_data {
 	/** \name Display features
 	 *@{*/
 	char have_keypad;
-	char have_backlight;
 	char have_output;
+	/* have_backlight moved to function have_backlight_pin() below */
 	/**@}*/
 
 	int model;		/**< model selected in configuration.
 	          		     For extended mode on some weird controllers
 	          		     set to HD44780_MODEL_EXTENDED */
 	int line_address;	/**< address of the next line in extended mode  */
+	int backlight_type;	/**< way of handling backlight. */
 
 	int delayMult;		/**< Delay multiplier for slow displays */
 	char delayBus;		/**< Delay if data is sent too fast over LPT port */
@@ -394,6 +417,19 @@ has_extended_mode(PrivateData *p) {
 	return p->model == HD44780_MODEL_EXTENDED;
 }
 
+/* returns if display is configured to use external backlight pin */
+static char have_backlight_pin(PrivateData *p) {
+
+	return (p->backlight_type & BACKLIGHT_EXTERNAL_PIN);
+}
+
+/* sets configration value for using external pin for backlight */
+static void set_have_backlight_pin(PrivateData *p, int on) {
+	if (on)
+		p->backlight_type |= BACKLIGHT_EXTERNAL_PIN;
+	else
+		p->backlight_type &= ~BACKLIGHT_EXTERNAL_PIN;
+}
 
 
 /* commands for senddata */

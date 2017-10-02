@@ -3771,11 +3771,51 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 
 <varlistentry>
   <term>
-    <property>Backlight</property> = &parameters.yesnodef;
+    <property>Backlight</property> =
+    {
+      <emphasis><parameter><literal>none</literal></parameter></emphasis> |
+      <parameter><literal>external</literal></parameter> |
+      <parameter><literal>internal</literal></parameter> |
+      <parameter><literal>internalCmds</literal></parameter>
+    }
   </term>
-  <listitem><para>
-    Specify if you have a switchable backlight.
-  </para></listitem>
+  <listitem>
+    <para>
+      Specify if you have a switchable backlight and if yes, can select method for
+      turning it on/off:
+      <itemizedlist>
+        <listitem><para>
+          <literal>none</literal> - no switchable backlight is available.
+          For compability also boolean <literal>0</literal>, <literal>n</literal>,
+          <literal>no</literal>, <literal>off</literal> and <literal>false</literal> are aliases.
+        </para></listitem>
+        <listitem><para>
+          <literal>external</literal> - use external pin or any other method defined with <literal>ConnectionType</literal>
+          backlight handling. For backward compability also this value is chosen for boolean TRUE values:
+          <literal>1</literal>, <literal>y</literal>, <literal>yes</literal>, <literal>on</literal> and <literal>true</literal>.
+        </para></listitem>
+        <listitem><para>
+          <literal>internal</literal> means that backlight is handled using internal commands according to
+          selected display model (with <literal>Model</literal> option).
+          Depending on model, <literal>Brightness</literal> and <literal>OffBrightness</literal> options can be taken into account.
+        </para></listitem>
+        <listitem>
+          <para>
+            <literal>internalCmds</literal> means that commands for turning on and off backlight are given with
+            extra options <literal>BacklightOnCmd</literal> and <literal>BacklightOffCmd</literal>,
+            which would be treated as catch up (last resort) for other types of displays which have similar features.
+          </para>
+          <note><para>
+           This is advanced option, if command contains bits other than only brighness handling, they must be
+           set accordingly to not disrupt display state. If for example 'FUNCTION SET' command is used for this
+           purpose, bits of interface length (4-bit / 8-bit) must be set according to selected ConnectionType.
+         </para></note>
+        </listitem>
+      </itemizedlist>
+    </para>
+    <para>It is possible to combine <literal>external</literal>,  <literal>internal</literal> and <literal>internalCmds</literal>
+    </para>
+  </listitem>
 </varlistentry>
 
 <varlistentry>
