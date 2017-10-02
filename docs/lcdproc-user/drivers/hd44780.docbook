@@ -3536,27 +3536,27 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
           is for "classic" HD44780 displays.
         </para></listitem>
         <listitem><para>
-          <literal>extended</literal> or <literal>ks0073</literal> is for displays
-          which have "extended mode" turned on with special instruction.
-          If you have a KS0073 or an other 'almost HD44780-compatible', set
-          <literal>Model</literal> to this value to get into extended,
-          4-line linear addressing mode.
+          <literal>extended</literal>, <literal>hd66712</literal> or <literal>ks0073</literal>
+          is for displays which have "extended mode" turned on with special instruction.
+          If you have a Samsung KS0073, PowerTip Corp. PC2004LRU, other based on HD66710/HD66712 chip
+          or an other 'almost HD44780-compatible', set  <literal>Model</literal> to
+          this value to get into extended, 4-line linear addressing mode.
         </para>
         <para>
           Use this instead of deprecated option <literal>ExtendedMode</literal>.
         </para></listitem>
         <listitem><para>
-          <literal>winstar_oled</literal> is for WINSTAR WEH00xxyyA OLED displays
-          and allows performing proper initialization of display device,
-          especially after display reset without powering it off.
+          <literal>winstar_oled</literal> or <literal>weh00xxyya</literal> is for
+          WINSTAR WEH00xxyyA OLED displays and allows performing proper initialization
+          of display device, especially after display reset without powering it off.
         </para>
         <para>It also allows handling backlight setting using internal commands
         for such displays.
         </para>
         </listitem>
         <listitem><para>
-          <literal>pt6314_vfd</literal> is for some PTC's PT6314 VFDs and allows
-          handling brightness of display.
+          <literal>pt6314_vfd</literal> is for some Princeton Technology Corp.'s
+          PT6314 VFDs and allows handling brightness of display.
         </para></listitem>
       </itemizedlist>
       You only may need to set this parameter if you have a non-standard

@@ -121,15 +121,12 @@ static const struct ModelMapping {
 
 	{ "extended",     HD44780_MODEL_EXTENDED },
 	{ "ks0073",       HD44780_MODEL_EXTENDED },
+	{ "hd66710",      HD44780_MODEL_EXTENDED },
 
 	{ "winstar_oled", HD44780_MODEL_WINSTAR_OLED },
 	{ "weh00xxyya",   HD44780_MODEL_WINSTAR_OLED },
-	{ "winstar",      HD44780_MODEL_WINSTAR_OLED },
-	{ "winstaroled",  HD44780_MODEL_WINSTAR_OLED },
 
 	{ "pt6314_vfd",   HD44780_MODEL_PT6314_VFD },
-	{ "pt6314",       HD44780_MODEL_PT6314_VFD },
-	{ "pt6314vfd",    HD44780_MODEL_PT6314_VFD },
 
 	{ "",             HD44780_MODEL_DEFAULT }
 };
@@ -533,7 +530,7 @@ HD44780_init(Driver *drvthis)
 void
 common_init(PrivateData *p, unsigned char if_bit)
 {
-	if (p->model == HD44780_MODEL_EXTENDED) {
+	if (has_extended_mode(p)) {
 		/* Set up extended mode */
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | EXTREG);
 		p->hd44780_functions->uPause(p, 40);
@@ -685,7 +682,7 @@ HD44780_position(Driver *drvthis, int x, int y)
 	int relY = y - p->dispVOffset[dispID - 1];
 	int DDaddr;
 
-	if (p->model == HD44780_MODEL_EXTENDED) {
+	if (has_extended_mode(p)) {
 		/* Linear addressing, each line starts 0x20 higher. */
 		DDaddr = x + relY * p->line_address;
 	} else {

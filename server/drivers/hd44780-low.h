@@ -388,6 +388,13 @@ typedef struct hwDependentFns {
 /* Prototypes */
 void common_init(PrivateData *p, unsigned char if_bit);
 
+/* returns if display needs/is using 'Extended mode'- nonzero if yes */
+static short
+has_extended_mode(PrivateData *p) {
+	return p->model == HD44780_MODEL_EXTENDED;
+}
+
+
 
 /* commands for senddata */
 #define RS_DATA		0x00
