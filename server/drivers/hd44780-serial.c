@@ -188,7 +188,7 @@ hd_init_serial(Driver *drvthis)
 		report(RPT_ERR, "HD44780: serial: check your configuration file and disable it");
 		return -1;
 	}
-	if (p->have_backlight && !(SERIAL_IF.backlight)) {
+	if (have_backlight_pin(p) && !(SERIAL_IF.backlight)) {
 		report(RPT_ERR, "HD44780: serial: backlight control is not supported by connection type");
 		report(RPT_ERR, "HD44780: serial: check your configuration file and disable it");
 		return -1;
@@ -252,7 +252,7 @@ hd_init_serial(Driver *drvthis)
 			SERIAL_IF.pre_init);
 		p->hd44780_functions->uPause(p, 40);
 	}
-	
+
 	/* Do initialization */
 	if (SERIAL_IF.if_bits == 8) {
 		report(RPT_INFO,"HD44780: serial: initializing with 8 bits interface");
@@ -353,13 +353,13 @@ serial_HD44780_scankeypad(PrivateData *p)
 	char hangcheck = 100;
 
 	if (SERIAL_IF.keypad_command) {
-	
+
 		serial_HD44780_senddata(p, 0, RS_INSTR, SERIAL_IF.keypad_command);
 
 		if (poll(&pfd, 1, 250) != 1)
 			return 0;
 	}
-	
+
 	if (read(p->fd, &buffer, 1) == 1 && buffer == SERIAL_IF.keypad_escape) {
 		while (hangcheck > 0) {
 			/* Check if I can read another byte */
@@ -397,7 +397,7 @@ serial_HD44780_scankeypad(PrivateData *p)
 					    case 0x4E:
 					    case 0xB7:
 						return 0x44;	/* KeyMAtrix_4_4=Escape */
-					    /* No key 0x4F/0xBF or more than one key */ 
+					    /* No key 0x4F/0xBF or more than one key */
 					    default:
 						return 0;
 					}
