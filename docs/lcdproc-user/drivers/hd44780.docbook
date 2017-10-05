@@ -3805,17 +3805,49 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
             extra options <literal>BacklightOnCmd</literal> and <literal>BacklightOffCmd</literal>,
             which would be treated as catch up (last resort) for other types of displays which have similar features.
           </para>
-          <note><para>
-           This is advanced option, if command contains bits other than only brighness handling, they must be
-           set accordingly to not disrupt display state. If for example 'FUNCTION SET' command is used for this
-           purpose, bits of interface length (4-bit / 8-bit) must be set according to selected ConnectionType.
-         </para></note>
         </listitem>
       </itemizedlist>
     </para>
-    <para>It is possible to combine <literal>external</literal>,  <literal>internal</literal> and <literal>internalCmds</literal>
+    <para>
+      You can combine <literal>external</literal>, <literal>internal</literal> and <literal>internalCmds</literal>
+      separating them with comma or pipe (<literal>|</literal>) character, to use more than one method.
+      This can be useful for example for glowing buttons with external pin when backlight is on and
+      using internal command to set high brightness of display.
     </para>
   </listitem>
+</varlistentry>
+
+
+<varlistentry>
+  <term>
+    <property>BacklightCmdOn</property> =
+    <parameter><replaceable>COMMAND(s)</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Commands for enabling internal backlight for use with <literal>Backlight=internalCmds</literal>.
+    Up to 4 bytes can be encoded, as integer number (hex) in big-endian order.
+    Ignored if <literal>Backlight</literal> does not specify <literal>internalCmds</literal>,
+    required otherwise.
+  </para>
+  <note><para>
+    This is advanced option, if command contains bits other than only brighness handling, they must be
+    set accordingly to not disrupt display state. If for example 'FUNCTION SET' command is used for this
+    purpose, bits of interface length (4-bit / 8-bit) must be set according to selected ConnectionType.
+   </para></note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>BacklightCmdOff</property> =
+    <parameter><replaceable>COMMAND(s)</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Commands for disabling internal backlight for use with <literal>Backlight=internalCmds</literal>.
+    Up to 4 bytes can be encoded, as integer number (hex) in big-endian order.
+    Ignored if <literal>Backlight</literal> does not specify <literal>internalCmds</literal>,
+    required otherwise. See above note about <literal>BacklightCmdOn</literal>.
+  </para></listitem>
 </varlistentry>
 
 <varlistentry>

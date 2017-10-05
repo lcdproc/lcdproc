@@ -126,6 +126,9 @@
 #define DEFAULT_OFFBRIGHTNESS	300
 /**@}*/
 
+/** Maximum value of brightness */
+#define MAX_BRIGHTNESS		1000
+
 /** \name Maximum sizes of the keypad
  *@{*/
 /* DO NOT CHANGE THESE VALUES, unless you change the functions too! */
@@ -277,6 +280,15 @@ typedef struct hd44780_private_data {
 	          		     set to HD44780_MODEL_EXTENDED */
 	int line_address;	/**< address of the next line in extended mode  */
 	int backlight_type;	/**< way of handling backlight. */
+	int backlight_cmd_on;	/**< internal command(s) for enabling backlight */
+	int backlight_cmd_off;	/**< internal command(s) for disabling backlight */
+
+	/** Value saved during display initialization in common_init(),
+	 *  given for FUNC_SET command, to use for later.
+	 *
+	 *  NOTE: if common_init() from specific connection type is not called,
+	 *  update it for correct value. For now used only for PT6314_VFD model */
+	int func_set_mode;
 
 	int delayMult;		/**< Delay multiplier for slow displays */
 	char delayBus;		/**< Delay if data is sent too fast over LPT port */
@@ -494,6 +506,7 @@ static void set_have_backlight_pin(PrivateData *p, int on) {
 #define WINST_PWRON	0x04	/**< Internal power on (high brightness)*/
 #define WINST_PWROFF	0x00	/**< Internal power off (low brightness)*/
 
+
 /** Function set (RE=0) */
 #define FUNCSET		0x20
 #define IF_8BIT		0x10
@@ -504,6 +517,18 @@ static void set_have_backlight_pin(PrivateData *p, int on) {
 #define SMALLCHAR	0x00	/**< 5x8 characters */
 #define EXTREG		0x04	/**< Select ext. registers (Yes, the same bits) */
 #define SEGBLINK	0x02	/**< CGRAM/SEGRAM blink, only if RE=1 */
+
+/** Extra definitions for setting PT6314_VFD brihtness
+ *  yes - same bits used as extended registers */
+#define PT6314_BRIGHT_100	0x00
+#define PT6314_BRIGHT_75	0x01
+#define PT6314_BRIGHT_50	0x02
+#define PT6314_BRIGHT_25	0x03
+
+/* mask for brightness */
+#define PT6314_BRIGHT_MASK	0x03
+
+
 
 /** Set CGRAM address (RE=0) */
 #define SETCHAR		0x40

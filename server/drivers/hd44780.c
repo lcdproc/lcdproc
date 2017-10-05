@@ -304,6 +304,13 @@ HD44780_init(Driver *drvthis)
 		report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, s);
 		return -1;
 	}
+	p->backlight_cmd_on	= drvthis->config_get_int(drvthis->name, "backlightcmdon", 0, 0);
+	p->backlight_cmd_off	= drvthis->config_get_int(drvthis->name, "backlightcmdoff", 0, 0);
+	if ((p->backlight_type & BACKLIGHT_CONFIG_CMDS) && (!p->backlight_cmd_on || !p->backlight_cmd_off)) {
+		report(RPT_ERR, "%s: No commands for enabling or disabling backlight specified for backlight type internalCmds", drvthis->name);
+		return -1;
+	}
+
 	p->have_output		= drvthis->config_get_bool(drvthis->name, "outputport", 0, 0);
 	p->delayMult 		= drvthis->config_get_int(drvthis->name, "delaymult", 0, 1);
 	p->delayBus 		= drvthis->config_get_bool(drvthis->name, "delaybus", 0, 1);
@@ -616,16 +623,45 @@ HD44780_init(Driver *drvthis)
 void
 common_init(PrivateData *p, unsigned char if_bit)
 {
+	/* If currently backlightstate is not yet initialized, it is -1, which is != 0,
+	 * so set brightness based on Brightness setting. This will work also if backlight handling
+	 * is not used */
+	int init_brightness = (p->backlightstate) ? p->brightness : p->offbrightness;
+
+	unsigned char cmd_funcset =  FUNCSET | if_bit | TWOLINE | SMALLCHAR;
 	if (has_extended_mode(p)) {
 		/* Set up extended mode */
-		p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | EXTREG);
+		p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd_funcset | EXTREG);
 		p->hd44780_functions->uPause(p, 40);
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, EXTMODESET | FOURLINE);
 		p->hd44780_functions->uPause(p, 40);
 	}
 
-	/* set up standard mode. by default font_bank is zero (and is ignored on most of displays) */
-	p->hd44780_functions->senddata(p, 0, RS_INSTR, FUNCSET | if_bit | TWOLINE | SMALLCHAR | p->font_bank);
+	if (p->model == HD44780_MODEL_PT6314_VFD) {
+		cmd_funcset &= ~PT6314_BRIGHT_MASK;
+		p->func_set_mode = cmd_funcset;
+
+		if (init_brightness >= 3 * (MAX_BRIGHTNESS / 4))
+			cmd_funcset |= PT6314_BRIGHT_100; /* = 0x00 */
+		else if (init_brightness >= MAX_BRIGHTNESS / 2)
+			cmd_funcset |= PT6314_BRIGHT_75; /* = 0x01 */
+		else if (init_brightness > MAX_BRIGHTNESS / 4)
+			cmd_funcset |= PT6314_BRIGHT_50; /* = 0x02 */
+		else
+			cmd_funcset |= PT6314_BRIGHT_25; /* = 0x03 */
+	}
+	else {
+		/* by default font_bank is zero
+		 * this is ignored on most of displays, except of PT6314 VFD,
+		 * which this value means completely different, but is handled above */
+		cmd_funcset |=  p->font_bank;
+	}
+
+	/* save used cmd for FUNCSET */
+	p->func_set_mode = cmd_funcset;
+
+	/* set up standard mode.  */
+	p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd_funcset);
 	p->hd44780_functions->uPause(p, 40);
 
 	/* Turn off display, as manipulatimg below can cause some garbage on screen */
@@ -640,7 +676,7 @@ common_init(PrivateData *p, unsigned char if_bit)
 		/* For WINSTAR OLED displays need to set TEXT mode and additionally level of brigtness.
 		 * It is particularly important on reinitialization without powering off it first */
 		unsigned char pwr = WINST_PWROFF;
-		if (p->brightness >= 500) {
+		if (init_brightness >= MAX_BRIGHTNESS / 2) {
 			pwr = WINST_PWRON;
 		}
 		p->hd44780_functions->senddata(p, 0, RS_INSTR, WINST_MODESET | WINST_TEXTMODE | pwr);
@@ -1032,7 +1068,7 @@ HD44780_set_brightness(Driver *drvthis, int state, int promille)
 	PrivateData *p = drvthis->private_data;
 
 	/* Check it */
-	if (promille < 0 || promille > 1000)
+	if (promille < 0 || promille > MAX_BRIGHTNESS)
 		return;
 
 	/* store the software value since there is not get */
@@ -1050,6 +1086,60 @@ HD44780_set_brightness(Driver *drvthis, int state, int promille)
 	p->backlightstate = -1;
 }
 
+/** Sets internal backlight state using internal commands (based on configured model) */
+static void
+hd44780_set_backlight_internal(PrivateData *p, int state)
+{
+	unsigned char cmd = 0;
+	int brightness = state ? p->brightness : p->offbrightness;
+	switch (p->model) {
+		case HD44780_MODEL_WINSTAR_OLED:
+			cmd = WINST_MODESET | WINST_TEXTMODE \
+			    | (brightness >= MAX_BRIGHTNESS/2 ? WINST_PWRON : WINST_PWROFF);
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			break;
+
+		case HD44780_MODEL_PT6314_VFD:
+			cmd =  p->func_set_mode & ~PT6314_BRIGHT_MASK;
+			if (brightness >= 3 * MAX_BRIGHTNESS / 4)
+				cmd |= PT6314_BRIGHT_100; /* = 0x00 */
+			else if (brightness >= MAX_BRIGHTNESS / 2)
+				cmd |= PT6314_BRIGHT_75; /* = 0x01 */
+			else if (brightness > MAX_BRIGHTNESS / 4)
+				cmd |= PT6314_BRIGHT_50; /* = 0x02 */
+			else
+				cmd |= PT6314_BRIGHT_25; /* = 0x03 */
+			p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			break;
+
+		default:
+			/* do nothing for other models */
+			break;
+	}
+}
+
+static void
+hd44780_set_backlight_config_cmds(PrivateData *p, int state)
+{
+	int brightness = state ? p->brightness : p->offbrightness;
+	int i;
+	unsigned char cmd;
+
+	if (brightness >= MAX_BRIGHTNESS/2) {
+		for (i=0; i<sizeof(p->backlight_cmd_on); i++) {
+			cmd =  (unsigned char)(p->backlight_cmd_on >> (24 - i*8)) & 0xff;
+			if (cmd)
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+		}
+	}
+	else {
+		for (i=0; i<sizeof(p->backlight_cmd_off); i++) {
+			cmd =  (unsigned char)(p->backlight_cmd_off >> (24 - i*8)) & 0xff;
+			if (cmd)
+				p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+		}
+	}
+}
 
 /**
  * Turn the LCD backlight on or off.
@@ -1061,12 +1151,19 @@ HD44780_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	/* Immediately return if no backlight is available or no change is necessary */
-	if (!have_backlight_pin(p) || p->backlightstate == on)
+	/* Immediately return if no way of setting backlight is available
+           or no change is necessary */
+	if (!p->backlight_type|| p->backlightstate == on)
 		return;
 
 	if (p->hd44780_functions->backlight != NULL)
 		p->hd44780_functions->backlight(p, on);
+
+	if (p->backlight_type & BACKLIGHT_INTERNAL)
+		hd44780_set_backlight_internal(p, on);
+
+	if (p->backlight_type& BACKLIGHT_CONFIG_CMDS)
+		hd44780_set_backlight_config_cmds(p, on);
 
 	p->backlightstate = on;
 }
