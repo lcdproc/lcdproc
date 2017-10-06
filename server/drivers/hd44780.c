@@ -201,6 +201,8 @@ static int parse_backlight_option( const char *value )
 	/* now find possibly all instances */
 	while (*value != '\0') {
 		const char *eot = strpbrk(value, ", |");
+		if (!eot)
+			eot = value + strlen(value);
 
 		i = 0;
 		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
@@ -218,19 +220,54 @@ static int parse_backlight_option( const char *value )
 			if( strncasecmp(value, bl_value_mapping[i].name, len) == 0) {
 				result |= bl_value_mapping[i].value;
 				any = 1;
+				break;
 			}
 		}
 
+		value = eot;
 		while (*value == ' ' || *value == '|' || *value == ',')
 			value ++;
 
 		/* try next one if present */
 	}
 
-	if (any)
+	if (any) {
 		return result;
+	}
 
 	return -1;
+}
+
+static const char *backlight_type_str(int backlight_type)
+{
+	static char buffer[256] = "";
+	int i, unknown = 0;
+
+	/* first find just whole option name */
+	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
+		if (bl_value_mapping[i].value == backlight_type)
+			return bl_value_mapping[i].name;
+	}
+
+	/* now find possibly all instances */
+	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]) && bl_value_mapping[i].name[0] != '\0'; i++) {
+
+		if ((bl_value_mapping[i].value & backlight_type) == bl_value_mapping[i].value) {
+			if (buffer[0])
+				strcat(buffer, ", ");
+			strcat(buffer, bl_value_mapping[i].name);
+			unknown &= ~bl_value_mapping[i].value;
+		}
+
+	}
+
+	if (unknown) {
+		if (buffer[0])
+			strcat(buffer, ", ");
+		sprintf(buffer+strlen(buffer), "%08x", unknown);
+	}
+
+	return buffer;
 }
 
 /**
@@ -297,8 +334,10 @@ HD44780_init(Driver *drvthis)
 
 	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
 	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
-	/* parse backlight option */
-	s			= drvthis->config_get_string(drvthis->name, "backlight", 0, "none");
+	/* parse backlight option. Default is model specific */
+	s			= p->model ==  (HD44780_MODEL_WINSTAR_OLED || p->model == HD44780_MODEL_PT6314_VFD) ?
+				               "internal" : "none";
+	s			= drvthis->config_get_string(drvthis->name, "backlight", 0, s);
 	p->backlight_type	= parse_backlight_option(s);
 	if (p->backlight_type < 0) {
 		report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, s);
@@ -339,6 +378,10 @@ HD44780_init(Driver *drvthis)
 		init_fn = connectionMapping[i].init_fn;
 	}
 	report(RPT_INFO, "HD44780: selecting Model: %s", model_name(p->model));
+	report(RPT_INFO, "HD44780: backlight: %s", backlight_type_str(p->backlight_type));
+	if (p->backlight_type & BACKLIGHT_CONFIG_CMDS) {
+		report(RPT_INFO, "HD44780: backlight config commands: on: %02x, off: %02x", p->backlight_cmd_on, p->backlight_cmd_off);
+	}
 
 	/* Get and parse vspan only when specified */
 	s = drvthis->config_get_string(drvthis->name, "vspan", 0, "");
@@ -623,10 +666,9 @@ HD44780_init(Driver *drvthis)
 void
 common_init(PrivateData *p, unsigned char if_bit)
 {
-	/* If currently backlightstate is not yet initialized, it is -1, which is != 0,
-	 * so set brightness based on Brightness setting. This will work also if backlight handling
-	 * is not used */
-	int init_brightness = (p->backlightstate) ? p->brightness : p->offbrightness;
+	/* Set initial brightness according to Brightness setting.
+	 * This assumes that initially backlight is on (or if not used at all) */
+	int init_brightness = p->brightness;
 
 	unsigned char cmd_funcset =  FUNCSET | if_bit | TWOLINE | SMALLCHAR;
 	if (has_extended_mode(p)) {
@@ -1122,21 +1164,28 @@ static void
 hd44780_set_backlight_config_cmds(PrivateData *p, int state)
 {
 	int brightness = state ? p->brightness : p->offbrightness;
-	int i;
+	int i, shift;
 	unsigned char cmd;
 
+	/* Assume two levels of brightness */
 	if (brightness >= MAX_BRIGHTNESS/2) {
 		for (i=0; i<sizeof(p->backlight_cmd_on); i++) {
-			cmd =  (unsigned char)(p->backlight_cmd_on >> (24 - i*8)) & 0xff;
-			if (cmd)
+			shift = (sizeof(p->backlight_cmd_on) - i - 1)*8;
+			cmd =  (unsigned char)(p->backlight_cmd_on >> shift) & 0xff;
+			if (cmd) {
+				fprintf(stderr, "hd44780_set_backlight_config_cmds: sending BL on %02x\n", cmd);
 				p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			}
 		}
 	}
 	else {
 		for (i=0; i<sizeof(p->backlight_cmd_off); i++) {
-			cmd =  (unsigned char)(p->backlight_cmd_off >> (24 - i*8)) & 0xff;
-			if (cmd)
+			shift = (sizeof(p->backlight_cmd_on) - i - 1)*8;
+			cmd =  (unsigned char)(p->backlight_cmd_off >> shift) & 0xff;
+			if (cmd) {
+				fprintf(stderr, "hd44780_set_backlight_config_cmds: sending BL off %02x\n", cmd);
 				p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			}
 		}
 	}
 }

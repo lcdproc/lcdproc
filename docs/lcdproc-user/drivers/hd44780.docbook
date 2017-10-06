@@ -3814,6 +3814,10 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       This can be useful for example for glowing buttons with external pin when backlight is on and
       using internal command to set high brightness of display.
     </para>
+    <para>
+       Default is model specific (depends on <literal>Model</literal> option): Winstar OLED and PT6314 VFD
+       enables <literal>internal</literal> backlight mode,for others it is set to <literal>none</literal>.
+    </para>
   </listitem>
 </varlistentry>
 
