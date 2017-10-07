@@ -4,22 +4,17 @@
  */
 
 /*- Copyright (C)
- *- 2014/17   Blackeagle            email: g(dot) moore (at)gmx(dot)co(dot)uk
- *- 2015/6 Alex Wood (AJW107)       email: thetewood(at)gmail(dot)com
+ *- 2014   Blackeagle         email: gm(dot)blackeagle(at)gmail(dot)com
+ *- 2015/6 Alex Wood (AJW107) email: thetewood(at)gmail(dot)com
  *-
  *- CREDITS
  *- Steve Williams for the original driver code and the inspiration
  *- to write this.
  *-
- *- V E R S I O N - 1.5
+ *- V E R S I O N - 1.3
  *-
  *- C H A N G E L O G
  *- =================
- *-
- *-
- *- 05/10/2017 - Added support for displaying time correctly, using a separate
- *-              thread to flash the appropriate colon icon(s) on the display
- *-              (By blackeagle) - updated email address
  *-
  *- 23/12/2016 - Improved function descriptions
  *-              Aligned more with lcdproc code style, function name changes
@@ -65,7 +60,7 @@
  *- 26/03/14 - Added support to XBMC client for FWD/REW icons.  Volume bar
  *-            algorithm tweaked to display 0 bars when muted. (by blackeagle)
  *-
- *- 27/03/14 - As the display doesn't support ':', added a routine to swap
+ *- 27/03/14 - As the display doesnt support ':', added a routine to swap
  *-            this to '-' for the clock display (by blackeagle)
  *-
  * This program is free software; you can redistribute it and/or
@@ -92,36 +87,28 @@
 #include "lcd.h"
 #include "futaba.h"
 #include "errno.h"
-#include "report.h"
-#include "syslog.h"
-#include "pthread.h"
+#include "shared/report.h"
 
 #define SET_REPORT 0x09
 
 #define VENDOR_ID 0x0547
 #define PRODUCT_ID 0x7000
-// futabaDriver_t g_futabaDriver;
+//futabaDriver_t g_futabaDriver;
 
 // ----------------------------------------------------------------------
 
 /** private data for the futaba TOSD-5711BB LED driver */
 typedef struct futaba_private_data {
-    int width;                      /* display width in characters */
-    int height;                     /* display height in characters */
-    char *framebuf;                 /* frame buffer */
-    char *old_framebuf;             /* old framebuffer */
-    int is_busy;                    /* busy flag for futaba_flush */
-    uint64_t old_icon_map;          /* futaba icon map */
-    int flash;                      /* < flag to turn flashing colon(s) on/off */
-    int flash_state;                /* indicates if colon is lit or not */
-    int long_time;                  /* flag for time in format HH:MM:SS */
-    int driver_init_complete;       /* flag to indicate successful driver init */
-    pthread_t thread_timer_var;     /* Pointer to thread handle */
+    int width;          /* display width in characters */
+    int height;         /* display height in characters */
+    char *framebuf;         /* frame buffer */
+    char *old_framebuf;     /* old framebuffer */
+    int is_busy;            /* busy flag for futaba_flush */
+    uint64_t old_icon_map;      /* futaba icon map */
     USB_DEVICE_HANDLE *my_handle;   /* usb device handle */
-    futabaDriver_t *device;         /* data structure to store info about the *
-                                     * futaba device */
+    futabaDriver_t *device;     /* data structure to store info about the futaba device */
 #ifdef HAVE_LIBUSB_1_0
-    libusb_context *ctx;             /* usb context */
+    libusb_context *ctx;        /* usb context */
 #endif
 } PrivateData;
 
@@ -130,66 +117,6 @@ MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "futaba_";
-
-static void
-thread_timer(void *params)
-
-    /* This thread loops continually. If p->flash is set then the colon icon(s)
-     * on the display will flash once per second approximately. Trying to send
-     * the report BEFORE the driver is fully initialised causes a crash in
-     * libusb, hence the need for the driver_init_complete flag */
-{
-    futabaReport_t my_report;
-    Driver *drvthis;
-    PrivateData *p;
-
-    drvthis = (Driver *) params;
-    p = (PrivateData *) drvthis->private_data;
-
-    while (1) {
-        if (p->flash) {
-            my_report.opcode = FUTABA_OPCODE_SYMBOL;
-            my_report.param1 = 0x02;
-            my_report.type.sym.count = 1;
-            my_report.type.sym.symbol[0].symName = 0x30;
-            my_report.type.sym.symbol[0].state = FUTABA_SYM_ON;
-            futaba_send_report(p->my_handle, &my_report);
-            if (p->long_time) { // turn on second colon if
-                // time is HH:MM:SS
-                my_report.opcode = FUTABA_OPCODE_SYMBOL;
-                my_report.param1 = 0x02;
-                my_report.type.sym.count = 1;
-                my_report.type.sym.symbol[0].symName = 0x34;
-                my_report.type.sym.symbol[0].state = FUTABA_SYM_ON;
-                futaba_send_report(p->my_handle, &my_report);
-            }
-            p->flash_state = 1;
-            sleep(1);
-        }
-        if (p->driver_init_complete && p->flash_state) {
-            // only turn the colon off if driver is
-            // initialised AND colon is lit
-            // otherwise the display will flash intermittently
-            // when scrolling text
-            my_report.opcode = FUTABA_OPCODE_SYMBOL;
-            my_report.param1 = 0x02;
-            my_report.type.sym.count = 1;
-            my_report.type.sym.symbol[0].symName = 0x30;
-            my_report.type.sym.symbol[0].state = FUTABA_SYM_OFF;
-            futaba_send_report(p->my_handle, &my_report);
-            my_report.opcode = FUTABA_OPCODE_SYMBOL;
-            my_report.param1 = 0x02;
-            my_report.type.sym.count = 1;
-            my_report.type.sym.symbol[0].symName = 0x34;
-            my_report.type.sym.symbol[0].state = FUTABA_SYM_OFF;
-            futaba_send_report(p->my_handle, &my_report);
-            p->flash_state = 0;
-            sleep(1);
-        }
-    }
-
-    return;
-}
 
 /**
  * Send the report to the display.
@@ -205,22 +132,20 @@ futaba_send_report(USB_DEVICE_HANDLE * my_handle, futabaReport_t * my_report)
 
     retVal = USB_CONTROL_TRANSFER(my_handle,
 #ifdef HAVE_LIBUSB_1_0
-                      LIBUSB_DT_HID,    // Request Type
-                      // (LIBUSB1.0)
+                LIBUSB_DT_HID,  // Request Type (LIBUSB1.0)
 #else
-                      USB_DT_HID,   // Request Type
-                      // (USB0.1)
+                USB_DT_HID, // Request Type (USB0.1)
 #endif
-                      SET_REPORT,   // Request
-                      0x0200,   // Report Type OUTPUT | ID 0
-                      0,    // Endpoint
+                SET_REPORT, // Request
+                0x0200,     // Report Type OUTPUT | ID 0
+                0,      // Endpoint
 #ifdef HAVE_LIBUSB_1_0
-                      p_rep,    // Data (LIBUSB1.0)
+                p_rep,      // Data (LIBUSB1.0)
 #else
-                      (char *) p_rep,   // Data (USB0.1)
+                (char *) p_rep, // Data (USB0.1)
 #endif
-                      sizeof(futabaReport_t),   // Length
-                      5000);
+                sizeof(futabaReport_t), // Length
+                5000);
 
     return (retVal != sizeof(futabaReport_t));
 }
@@ -237,11 +162,10 @@ futaba_send_string(Driver *drvthis)
     int len;
     int i, n;
     futabaReport_t my_report;
-    /* store the private data in a variable to make the code easier to
-     * read (no a->b->c) */
+    /* store the private data in a variable to make the code easier to read (no a->b->c) */
     PrivateData *p = drvthis->private_data;
     char string[p->width * p->height];
-    char string2[p->width * p->height];
+
     memset(&my_report, 0, sizeof(futabaReport_t));
 
     p->is_busy = 1;
@@ -250,52 +174,17 @@ futaba_send_string(Driver *drvthis)
     for (i = 0; i < p->height; i++) {
         memcpy(string, p->framebuf + (i * p->width), p->width);
         string[p->width] = '\0';
-        *string2 = '\0';
 
-        /* check to see if we want to display a time, and remove colon
-         * char if so and use display colon icon instead Note, this is
-         * a time in the format HH:MM */
+        /* swap all occurances of the ':' char for '-'
+         * TODO: Keep the ':' chars and use the ':' in between each
+         *       Segment of the display */
+        len = strlen(string);
+        for (n = 0; n < len; n++) {
+            if (string[n] == ':') {
+                string[n] = '-';
+            }
+        }
 
-        if (string[2] == ':' && isdigit(string[0]) && isdigit(string[1]) &&
-            isdigit(string[3]) && isdigit(string[4]) && (string[5] == ' ')) {
-            string2[0] = ' ';
-            string2[1] = string[0];
-            string2[2] = string[1];
-            string2[3] = string[3];
-            string2[4] = string[4];
-            string2[5] = ' ';
-            string2[6] = ' ';
-            string2[7] = '\0';
-            strcpy(string, string2);
-            p->flash = 1;   /* signal to thread_timer that we need
-                     * to start blinking the colon */
-            p->long_time = 0;
-        }       /* Only blink the one colon */
-
-        /* The following block is for a time in the format HH:MM:SS
-         * (Note that extra processing is needed in Kodi's xbmc
-         * lcdproc addon for this to work!)
-         * addon available at https://github.com/the-black-eagle/script.xbmc.lcdproc */
-
-        else if (string[2] == ':' && isdigit(string[0]) && isdigit(string[1]) &&
-             isdigit(string[3]) && isdigit(string[4]) && isdigit(string[5])) {
-            // Time in format HH:MMSS (Extra ':' dropped in
-            // script.xbmc.lcdproc
-            string2[0] = ' ';
-            string2[1] = string[0];
-            string2[2] = string[1];
-            string2[3] = string[3];
-            string2[4] = string[4];
-            string2[5] = string[5];
-            string2[6] = string[6];
-            string2[7] = '\0';
-            strcpy(string, string2);
-            p->flash = 1;
-            p->long_time = 1;
-        }       // blink both colons
-        else if (p->flash && string[2] != ':') {
-            p->flash = 0;
-        }       // Stop blinking the colons
         len = strlen(string);
 
         my_report.opcode = FUTABA_OPCODE_STRING;
@@ -340,13 +229,11 @@ int
 futaba_init_driver(Driver *drvthis)
 {
     int retVal = -1;
-    /* store the private data in a variable to make the code easier to
-     * read (no a->b->c) */
+    /* store the private data in a variable to make the code easier to read (no a->b->c) */
     PrivateData *p = drvthis->private_data;
 
 #ifdef HAVE_LIBUSB_1_0
-    /* somewhere to store the return codes from libusb 1.0 functions to
-     * check against and display in logs */
+    /* somewhere to store the return codes from libusb 1.0 functions to check against and display in logs */
     int error = 0;
 
     /* libusb1.0 code */
@@ -366,7 +253,9 @@ futaba_init_driver(Driver *drvthis)
     libusb_set_debug(p->ctx, 3);
 
     // Get a handle to our device
-    if ((p->my_handle = libusb_open_device_with_vid_pid(p->ctx, VENDOR_ID, PRODUCT_ID)) == NULL) {
+    if ((p->my_handle = libusb_open_device_with_vid_pid(p->ctx,
+                                VENDOR_ID,
+                                PRODUCT_ID)) == NULL) {
         report(RPT_ERR, "LIBUSB1.0: [%s] open failed, no device found", drvthis->name);
         return -1;
     }
@@ -391,7 +280,7 @@ futaba_init_driver(Driver *drvthis)
             retVal = 0;
         }
 
-    /*-
+        /*-
              *- FIXME: Is this the libusb-1.0 equivalent to
          *-    if (usb_set_altinterface(p->lcd, 0) < 0)
          *-        report(RPT_WARNING, "%s: unable to set alternate configuration", drvthis->name);
@@ -402,9 +291,7 @@ futaba_init_driver(Driver *drvthis)
         usleep(100);
         error = libusb_set_interface_alt_setting(p->my_handle, 1, 0);
         if (error) {
-            report(RPT_WARNING,
-                   "LIBUSB1.0: [%s] unable to aquire alternate usb settings error [%d]",
-                   drvthis->name, error);
+            report(RPT_WARNING, "LIBUSB1.0: [%s] unable to aquire alternate usb settings error [%d]",drvthis->name, error);
         }
     }
     else {
@@ -432,11 +319,11 @@ futaba_init_driver(Driver *drvthis)
                 p->my_handle = usb_open(dev);
                 found_dev = 1;
             }
-            if (found_dev == 1) {
+            if ( found_dev == 1){
                 break;
             }
         }
-        if (found_dev == 1) {
+        if ( found_dev == 1){
             break;
         }
     }
@@ -467,8 +354,7 @@ futaba_init_driver(Driver *drvthis)
 
         usleep(100);
         if (usb_set_altinterface(p->my_handle, 0) < 0) {
-            report(RPT_WARNING, "USB0.1: [%s] unable to set alternate configuration",
-                   drvthis->name);
+            report(RPT_WARNING, "USB0.1: [%s] unable to set alternate configuration", drvthis->name);
         }
 #endif /* LIBUSB_HAS_GET_DRIVER_NP */
     }
@@ -489,17 +375,13 @@ futaba_init_driver(Driver *drvthis)
 int
 futaba_start_driver(Driver *drvthis)
 {
-    /* somewhere to store the return codes from libusb 1.0 functions to
-     * check against and display in logs */
+    /* somewhere to store the return codes from libusb 1.0 functions to check against and display in logs */
     int error;
-    /* store the private data in a variable to make the code easier to
-     * read (no a->b->c) */
+    /* store the private data in a variable to make the code easier to read (no a->b->c) */
     PrivateData *p = drvthis->private_data;
 
     if (p == NULL) {
-        report(RPT_ERR,
-               "[%s] unable to initalise private data, is NULL. Could be out of memory?",
-               drvthis->name);
+        report(RPT_ERR, "[%s] unable to initalise private data, is NULL. Could be out of memory?", drvthis->name);
         return -1;
     }
 
@@ -571,8 +453,7 @@ void
 futaba_shutdown(Driver *drvthis)
 {
     /* no need to check for failure, just try it */
-    /* store the private data in a variable to make the code easier to
-     * read (no a->b->c) */
+    /* store the private data in a variable to make the code easier to read (no a->b->c) */
     PrivateData *p = drvthis->private_data;
 #ifdef HAVE_LIBUSB_1_0
     /* LIBUSB 1.0 version of code */
@@ -584,9 +465,9 @@ futaba_shutdown(Driver *drvthis)
                drvthis->name, error);
     }
 
-    /* FIXME: Does it make sense to re-attach a kernel driver? picolcd *
-     * does it, but questions it's value, so maybe we should too, even *
-     * though we aren't keeping track if a kernel driver is used initially */
+    /* FIXME: Does it make sense to re-attach a kernel driver? picolcd
+    *  does it, but questions it's value, so maybe we should too, even
+        * though we aren't keeping track if a kernel driver is used initially */
     error = libusb_attach_kernel_driver(p->my_handle, 0);
     if (error) {
         report(RPT_WARNING,
@@ -613,7 +494,7 @@ MODULE_EXPORT int
 futaba_init(Driver *drvthis)
 {
     PrivateData *p;
-    pthread_t thread_timer_var;
+
     /* Allocate and store private data */
     p = (PrivateData *) calloc(1, sizeof(PrivateData));
     if (p == NULL) {
@@ -633,7 +514,6 @@ futaba_init(Driver *drvthis)
     p->width = 7;
     p->height = 1;
     p->old_icon_map = 0;
-    p->flash = 0;
 
     /* all frame buffers shout be initalised but empty */
     p->framebuf = (char *) malloc(p->width * p->height);
@@ -647,13 +527,7 @@ futaba_init(Driver *drvthis)
         report(RPT_ERR, "[%s] unable to create old_framebuffer", drvthis->name);
         return -1;
     }
-    if (pthread_create(&thread_timer_var, NULL, (void *) thread_timer, drvthis)) {
-        syslog(LOG_DEBUG, "Error creating timer thread");
-    }
-    else {
-        p->thread_timer_var = thread_timer_var;
-        syslog(LOG_DEBUG, "Sucessfully created timer thread");
-    }
+
     /* write to the file */
     futaba_start_driver(drvthis);
     memset(p->framebuf, ' ', p->width * p->height);
@@ -669,8 +543,7 @@ futaba_init(Driver *drvthis)
 MODULE_EXPORT void
 futaba_close(Driver *drvthis)
 {
-    /* store the private data in a variable to make the code easier to
-     * read (no a->b->c) */
+    /* store the private data in a variable to make the code easier to read (no a->b->c) */
     PrivateData *p = drvthis->private_data;
 
     if (p != NULL) {
@@ -742,7 +615,7 @@ futaba_flush(Driver *drvthis)
     PrivateData *p = drvthis->private_data;
     int i;
 
-    /* If driver is busy scrolling, do nothing. This shouldn't occur as
+    /* If driver is busy scrolling, do nothing This shouldn't occur as
      * LCDd should be sending the correct sized strings */
 
     if (p->is_busy == 1) {
@@ -777,8 +650,7 @@ futaba_flush(Driver *drvthis)
 MODULE_EXPORT void
 futaba_string(Driver *drvthis, int x, int y, const char string[])
 {
-    /* store the private data in a variable to make the code easier to
-     * read (no a->b->c) */
+    /* store the private data in a variable to make the code easier to read (no a->b->c) */
     PrivateData *p = drvthis->private_data;
     int i;
 
@@ -814,8 +686,7 @@ futaba_string(Driver *drvthis, int x, int y, const char string[])
 MODULE_EXPORT void
 futaba_chr(Driver *drvthis, int x, int y, char c)
 {
-    /* store the private data in a variable to make the code easier to
-     * read (no a->b->c) */
+    /* store the private data in a variable to make the code easier to read (no a->b->c) */
     PrivateData *p = drvthis->private_data;
 
     debug(RPT_DEBUG, "[%s] chr start [%c]", drvthis->name, c);
@@ -843,7 +714,7 @@ futaba_get_info(Driver *drvthis)
 {
     // PrivateData *p = drvthis->private_data;
     static char *info_string =
-        "Futaba TOSD-5711BB Driver v1.5 (c) Blackeagle 2014-2017 & AJW107 2016";
+        "Futaba TOSD-5711BB Driver v1.3 (c) Blackeagle 2014 & AJW107 2016";
     return info_string;
 }
 
@@ -866,7 +737,7 @@ futaba_get_info(Driver *drvthis)
  * music                9   0x16
  * photo                10  0x17
  * tv                   11  0x18
- * disk in tray         12  0x19
+ * disk in tray             12  0x19
  * 5.1                  13  0x1A
  * 7.1                  14  0x1B
  * repeat               15  0x1E
@@ -882,28 +753,27 @@ futaba_get_info(Driver *drvthis)
  * fwd                  25  0x29
  * KHz                  26  0x2A (Not Used)
  * MHz                  27  0x2B (Not Used)
- * 1st Colon            28  0x2C
+ * 1st Colon                28  0x2C
  * 1st Dot              29  0x2D
- * 2nd Colon            30  0x2E
+ * 2nd Colon                30  0x2E
  * 2nd Dot              31  0x2F
- * 3rd Colon            32  0x30
+ * 3rd Colon                32  0x30
  * 3rd Dot              33  0x31
- * 4th Colon            34  0x32
+ * 4th Colon                34  0x32
  * 4th Dot              35  0x33
- * 5th Colon            36  0x34
+ * 5th Colon                36  0x34
  * 5th Dot              37  0x35
- * 6th Colon            38  0x36
+ * 6th Colon                38  0x36
  * 6th Dot              39  0x37
- * vol (decimal 1-10)   3A....3D (No actual codes, just 4 values put aside)
- *                               (to differentiate volume bar control)
+ * vol (decimal 1-10)           3A....3D (No actual codes, just 4 values put aside)
+ *                       (to differentiate volume bar control)
  * \param drvthis   pointer to driver structure
  * \param icon_map  integer with bits representing LED states
  */
 MODULE_EXPORT void
 futaba_output(Driver *drvthis, uint64_t icon_map)
 {
-    /* store the private data in a variable to make the code easier to
-     * read (no a->b->c) */
+    /* store the private data in a variable to make the code easier to read (no a->b->c) */
     PrivateData *p = drvthis->private_data;
     uint64_t icons_changed = icon_map ^ p->old_icon_map;
     /*- Apart from the codes in the array below:
@@ -939,7 +809,7 @@ futaba_output(Driver *drvthis, uint64_t icon_map)
         }
     }
 
-    /* this is 0 - 10 */
+    /* this is 0 -  10 */
     the_volume = (icon_map >> FUTABA_ICON_ARRAY_LENGTH) & 0x0F;
 
     /* Only write to the display if the volume has changed */
@@ -954,8 +824,7 @@ futaba_output(Driver *drvthis, uint64_t icon_map)
             my_report.type.sym.symbol[n].symName = FUTABA_VOLUME_START + n;
 
             if (n <= numBars) {
-                /* if we don't do this we always light one bar
-                 * ! */
+                /* if we don't do this we always light one bar ! */
                 if (the_volume != 0) {
                     my_report.type.sym.symbol[n].state = FUTABA_SYM_ON;
                     debug(RPT_INFO, "[%s] volume changed", drvthis->name);
