@@ -164,12 +164,14 @@ static const struct BacklightValueMapping {
 	{"internal",     BACKLIGHT_INTERNAL     },
 	{"internalCmds", BACKLIGHT_CONFIG_CMDS },
 
-	/* special marker used below */
-	{ "",            BACKLIGHT_NONE },
+	/* special (empty) marker used below, after which elements cannot be combined
+	 * on the other hand empty value should be treated as invalid*/
+	{ "",            -1 },
 
 	{"none",         BACKLIGHT_NONE },
 
-	/* compability stuff for old boolean option */
+	/* values below are for compability with old boolean option.
+	 * They cannot be combined with others */
 	{"0",            BACKLIGHT_NONE },
 	{"n",            BACKLIGHT_NONE },
 	{"no",           BACKLIGHT_NONE },
@@ -181,10 +183,10 @@ static const struct BacklightValueMapping {
 	{"yes",          BACKLIGHT_EXTERNAL_PIN },
 	{"on",           BACKLIGHT_EXTERNAL_PIN },
 	{"true",         BACKLIGHT_EXTERNAL_PIN }
-
 };
 
 /* parses null-terminated option value for backlight handling and returns bitmask of enabled values
+ * Allows to combine several options with comma or pipe ('|') character.
  * Returns -1 if value is not valid */
 static int parse_backlight_option( const char *value )
 {
@@ -192,23 +194,26 @@ static int parse_backlight_option( const char *value )
 	int i;
 	int any = 0;
 
-	/* first find just whole option name */
+	/* first find just whole option name. This should be most common usage */
 	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
 		if (strcasecmp(value, bl_value_mapping[i].name) == 0)
 			return bl_value_mapping[i].value;
 	}
 
-	/* now find possibly all instances */
+	/* Now find all possible combinations. The trick is to iterate through
+	 * only first items till special marker "" (empty) is found, after which elements
+	 * of array cannot be combined. So after loop above if we don't value matching first
+	 * three, we return error. This way we also handle old boolean options.
+	 */
 	while (*value != '\0') {
 		const char *eot = strpbrk(value, ", |");
 		if (!eot)
 			eot = value + strlen(value);
 
-		i = 0;
 		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
 			size_t len;
 
-			/* break loop when marker found*/
+			/* break loop when marker found, as any next */
 			if (bl_value_mapping[i].name[0] == '\0')
 				/* found unknown value name - so invalid format */
 				return -1;
@@ -238,30 +243,62 @@ static int parse_backlight_option( const char *value )
 	return -1;
 }
 
+static void strappend(char *dst, size_t dsize, const char *src) {
+
+	size_t dlen = strlen(dst);
+	size_t slen = strlen(src);
+
+	if (slen + dlen < dsize) {
+		memcpy(dst + dlen, src, slen);
+		dst[dlen+slen] = 0;
+	}
+	else if (dlen < dsize) {
+		memcpy(dst + dlen, src, slen - (dsize - dlen));
+		dst[dsize-1] = 0;
+	}
+}
+
 /* reports textually setting of backlight */
 static void report_backlight_type(int report_level, int backlight_type)
 {
 	/* should be enough for current options set and all possible combinations */
+	const char *text_value = NULL;
 	char buffer[256] = "";
-	int i, unknown = 0;
+	int i;
 
-	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]) && bl_value_mapping[i].name[0] != '\0'; i++) {
-
-		if ((bl_value_mapping[i].value & backlight_type) == bl_value_mapping[i].value) {
-			if (buffer[0])
-				strcat(buffer, ", ");
-			strcat(buffer, bl_value_mapping[i].name);
-			unknown &= ~bl_value_mapping[i].value;
+	/* first find just whole option name */
+	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
+		if (bl_value_mapping[i].value == backlight_type) {
+			text_value = bl_value_mapping[i].name;
+			break;
 		}
 	}
 
-	if (unknown) {
-		if (buffer[0])
-			strcat(buffer, ", ");
-		sprintf(buffer+strlen(buffer), "%08x", unknown);
+	if (!text_value) {
+		/* no single option value found, search for combinations */
+		int unknown = backlight_type;
+		char *s;
+
+		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]) && bl_value_mapping[i].name[0] != '\0'; i++) {
+
+			if ((bl_value_mapping[i].value & backlight_type) == bl_value_mapping[i].value) {
+				if (buffer[0])
+					strappend(buffer, sizeof(buffer), ",");
+
+				strappend(buffer, sizeof(buffer), bl_value_mapping[i].name);
+				unknown &= ~bl_value_mapping[i].value;
+			}
+		}
+		if (unknown) {
+			if (buffer[0])
+				strappend(buffer, sizeof(buffer), ",");
+			s = buffer + strlen(buffer);
+			snprintf(s, buffer + sizeof(buffer) - s, "%08x", unknown);
+		}
+		text_value = buffer;
 	}
 
-	report(report_level, "HD44780: backlight: %s", buffer);
+	report(report_level, "HD44780: backlight: %s", text_value);
 }
 
 /**
@@ -680,7 +717,8 @@ common_init(PrivateData *p, unsigned char if_bit)
 			cmd_funcset |= PT6314_BRIGHT_100; /* = 0x00 */
 		else if (init_brightness >= MAX_BRIGHTNESS / 2)
 			cmd_funcset |= PT6314_BRIGHT_75; /* = 0x01 */
-		else if (init_brightness > MAX_BRIGHTNESS / 4)
+		else if (init_brightness > MAX_BRIGHTNESS / 4 && init_brightness > DEFAULT_OFFBRIGHTNESS)
+			/* Idea is to set to lowest default */
 			cmd_funcset |= PT6314_BRIGHT_50; /* = 0x02 */
 		else
 			cmd_funcset |= PT6314_BRIGHT_25; /* = 0x03 */
@@ -1132,6 +1170,7 @@ hd44780_set_backlight_internal(PrivateData *p, int state)
 			cmd = WINST_MODESET | WINST_TEXTMODE \
 			    | (brightness >= MAX_BRIGHTNESS/2 ? WINST_PWRON : WINST_PWROFF);
 			p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			report(RPT_DEBUG, "hd44780: setting BL %s using winstar_oled internal cmd: %02x", state ? "on" : "off", cmd);
 			break;
 
 		case HD44780_MODEL_PT6314_VFD:
@@ -1145,6 +1184,7 @@ hd44780_set_backlight_internal(PrivateData *p, int state)
 			else
 				cmd |= PT6314_BRIGHT_25; /* = 0x03 */
 			p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
+			report(RPT_DEBUG, "hd44780: setting BL %s using pt6314_vfd internal cmd: %02x", state ? "on" : "off", cmd);
 			break;
 
 		default:
@@ -1166,7 +1206,7 @@ hd44780_set_backlight_config_cmds(PrivateData *p, int state)
 			shift = (sizeof(p->backlight_cmd_on) - i - 1)*8;
 			cmd =  (unsigned char)(p->backlight_cmd_on >> shift) & 0xff;
 			if (cmd) {
-				report(RPT_DEBUG, "hd44780_set_backlight_config_cmds: sending BL on %02x\n", cmd);
+				report(RPT_DEBUG, "hd44780: setting BL on using cmd %02x", cmd);
 				p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
 			}
 		}
@@ -1176,7 +1216,7 @@ hd44780_set_backlight_config_cmds(PrivateData *p, int state)
 			shift = (sizeof(p->backlight_cmd_on) - i - 1)*8;
 			cmd =  (unsigned char)(p->backlight_cmd_off >> shift) & 0xff;
 			if (cmd) {
-				report(RPT_DEBUG, "hd44780_set_backlight_config_cmds: sending BL off %02x\n", cmd);
+				report(RPT_DEBUG, "hd44780: setting BL off using cmd %02x", cmd);
 				p->hd44780_functions->senddata(p, 0, RS_INSTR, cmd);
 			}
 		}
