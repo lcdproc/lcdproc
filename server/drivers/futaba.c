@@ -93,22 +93,23 @@
 
 #define VENDOR_ID 0x0547
 #define PRODUCT_ID 0x7000
-//futabaDriver_t g_futabaDriver;
+// futabaDriver_t g_futabaDriver;
 
 // ----------------------------------------------------------------------
 
 /** private data for the futaba TOSD-5711BB LED driver */
 typedef struct futaba_private_data {
-	int width;			/* display width in characters */
-	int height;			/* display height in characters */
-	char *framebuf;			/* frame buffer */
-	char *old_framebuf;		/* old framebuffer */
-	int is_busy;			/* busy flag for futaba_flush */
-	uint64_t old_icon_map;		/* futaba icon map */
+	int width;		/* display width in characters */
+	int height;		/* display height in characters */
+	char *framebuf;		/* frame buffer */
+	char *old_framebuf;	/* old framebuffer */
+	int is_busy;		/* busy flag for futaba_flush */
+	uint64_t old_icon_map;	/* futaba icon map */
 	USB_DEVICE_HANDLE *my_handle;	/* usb device handle */
-	futabaDriver_t *device;		/* data structure to store info about the futaba device */
+	futabaDriver_t *device;	/* data structure to store info about the
+				 * futaba device */
 #ifdef HAVE_LIBUSB_1_0
-	libusb_context *ctx;		/* usb context */
+	libusb_context *ctx;	/* usb context */
 #endif
 } PrivateData;
 
@@ -122,7 +123,7 @@ MODULE_EXPORT char *symbol_prefix = "futaba_";
  * Send the report to the display.
  * \param my_handle  Pointer to usb handle.
  * \param my_report  Pointer to the report holding the string.
- * \return	     0 on success, -1 on error.
+ * \return       0 on success, -1 on error.
  */
 int
 futaba_send_report(USB_DEVICE_HANDLE * my_handle, futabaReport_t * my_report)
@@ -132,20 +133,22 @@ futaba_send_report(USB_DEVICE_HANDLE * my_handle, futabaReport_t * my_report)
 
 	retVal = USB_CONTROL_TRANSFER(my_handle,
 #ifdef HAVE_LIBUSB_1_0
-				LIBUSB_DT_HID,	// Request Type (LIBUSB1.0)
+				      LIBUSB_DT_HID,	// Request Type
+							// (LIBUSB1.0)
 #else
-				USB_DT_HID,	// Request Type (USB0.1)
+				      USB_DT_HID,	// Request Type
+							// (USB0.1)
 #endif
-				SET_REPORT,	// Request
-				0x0200,		// Report Type OUTPUT | ID 0
-				0,		// Endpoint
+				      SET_REPORT,	// Request
+				      0x0200,	// Report Type OUTPUT | ID 0
+				      0,	// Endpoint
 #ifdef HAVE_LIBUSB_1_0
-				p_rep,		// Data (LIBUSB1.0)
+				      p_rep,	// Data (LIBUSB1.0)
 #else
-				(char *) p_rep,	// Data (USB0.1)
+				      (char *) p_rep,	// Data (USB0.1)
 #endif
-				sizeof(futabaReport_t),	// Length
-				5000);
+				      sizeof(futabaReport_t),	// Length
+				      5000);
 
 	return (retVal != sizeof(futabaReport_t));
 }
@@ -162,7 +165,8 @@ futaba_send_string(Driver *drvthis)
 	int len;
 	int i, n;
 	futabaReport_t my_report;
-	/* store the private data in a variable to make the code easier to read (no a->b->c) */
+	/* store the private data in a variable to make the code easier to
+	 * read (no a->b->c) */
 	PrivateData *p = drvthis->private_data;
 	char string[p->width * p->height];
 
@@ -175,9 +179,9 @@ futaba_send_string(Driver *drvthis)
 		memcpy(string, p->framebuf + (i * p->width), p->width);
 		string[p->width] = '\0';
 
-		/* swap all occurances of the ':' char for '-'
-		 * TODO: Keep the ':' chars and use the ':' in between each
-		 *       Segment of the display */
+		/* swap all occurances of the ':' char for '-' TODO: Keep the
+		 * ':' chars and use the ':' in between each Segment of the
+		 * display */
 		len = strlen(string);
 		for (n = 0; n < len; n++) {
 			if (string[n] == ':') {
@@ -229,11 +233,13 @@ int
 futaba_init_driver(Driver *drvthis)
 {
 	int retVal = -1;
-	/* store the private data in a variable to make the code easier to read (no a->b->c) */
+	/* store the private data in a variable to make the code easier to
+	 * read (no a->b->c) */
 	PrivateData *p = drvthis->private_data;
 
 #ifdef HAVE_LIBUSB_1_0
-	/* somewhere to store the return codes from libusb 1.0 functions to check against and display in logs */
+	/* somewhere to store the return codes from libusb 1.0 functions to
+	 * check against and display in logs */
 	int error = 0;
 
 	/* libusb1.0 code */
@@ -253,9 +259,7 @@ futaba_init_driver(Driver *drvthis)
 	libusb_set_debug(p->ctx, 3);
 
 	// Get a handle to our device
-	if ((p->my_handle = libusb_open_device_with_vid_pid(p->ctx,
-							    VENDOR_ID,
-							    PRODUCT_ID)) == NULL) {
+	if ((p->my_handle = libusb_open_device_with_vid_pid(p->ctx, VENDOR_ID, PRODUCT_ID)) == NULL) {
 		report(RPT_ERR, "LIBUSB1.0: [%s] open failed, no device found", drvthis->name);
 		return -1;
 	}
@@ -280,18 +284,20 @@ futaba_init_driver(Driver *drvthis)
 			retVal = 0;
 		}
 
-		/*-
-	         *- FIXME: Is this the libusb-1.0 equivalent to
-		 *-    if (usb_set_altinterface(p->lcd, 0) < 0)
-		 *-        report(RPT_WARNING, "%s: unable to set alternate configuration", drvthis->name);
-		 * I always get error -5 (LIBUSB_ERROR_NOT_FOUND the requested alternate
-		 * setting does not exist). Is this needed? Has it ever worked?
-		 * lsusb reports one configuration with one interface and no alternate settings.
-		 */
+	/*-
+             *- FIXME: Is this the libusb-1.0 equivalent to
+         *-    if (usb_set_altinterface(p->lcd, 0) < 0)
+         *-        report(RPT_WARNING, "%s: unable to set alternate configuration", drvthis->name);
+         * I always get error -5 (LIBUSB_ERROR_NOT_FOUND the requested alternate
+         * setting does not exist). Is this needed? Has it ever worked?
+         * lsusb reports one configuration with one interface and no alternate settings.
+         */
 		usleep(100);
 		error = libusb_set_interface_alt_setting(p->my_handle, 1, 0);
 		if (error) {
-			report(RPT_WARNING, "LIBUSB1.0: [%s] unable to aquire alternate usb settings error [%d]",drvthis->name, error);
+			report(RPT_WARNING,
+			       "LIBUSB1.0: [%s] unable to aquire alternate usb settings error [%d]",
+			       drvthis->name, error);
 		}
 	}
 	else {
@@ -319,11 +325,11 @@ futaba_init_driver(Driver *drvthis)
 				p->my_handle = usb_open(dev);
 				found_dev = 1;
 			}
-			if ( found_dev == 1){
+			if (found_dev == 1) {
 				break;
 			}
 		}
-		if ( found_dev == 1){
+		if (found_dev == 1) {
 			break;
 		}
 	}
@@ -354,7 +360,8 @@ futaba_init_driver(Driver *drvthis)
 
 		usleep(100);
 		if (usb_set_altinterface(p->my_handle, 0) < 0) {
-			report(RPT_WARNING, "USB0.1: [%s] unable to set alternate configuration", drvthis->name);
+			report(RPT_WARNING, "USB0.1: [%s] unable to set alternate configuration",
+			       drvthis->name);
 		}
 #endif /* LIBUSB_HAS_GET_DRIVER_NP */
 	}
@@ -375,13 +382,17 @@ futaba_init_driver(Driver *drvthis)
 int
 futaba_start_driver(Driver *drvthis)
 {
-	/* somewhere to store the return codes from libusb 1.0 functions to check against and display in logs */
+	/* somewhere to store the return codes from libusb 1.0 functions to
+	 * check against and display in logs */
 	int error;
-	/* store the private data in a variable to make the code easier to read (no a->b->c) */
+	/* store the private data in a variable to make the code easier to
+	 * read (no a->b->c) */
 	PrivateData *p = drvthis->private_data;
 
 	if (p == NULL) {
-		report(RPT_ERR, "[%s] unable to initalise private data, is NULL. Could be out of memory?", drvthis->name);
+		report(RPT_ERR,
+		       "[%s] unable to initalise private data, is NULL. Could be out of memory?",
+		       drvthis->name);
 		return -1;
 	}
 
@@ -453,7 +464,8 @@ void
 futaba_shutdown(Driver *drvthis)
 {
 	/* no need to check for failure, just try it */
-	/* store the private data in a variable to make the code easier to read (no a->b->c) */
+	/* store the private data in a variable to make the code easier to
+	 * read (no a->b->c) */
 	PrivateData *p = drvthis->private_data;
 #ifdef HAVE_LIBUSB_1_0
 	/* LIBUSB 1.0 version of code */
@@ -465,9 +477,10 @@ futaba_shutdown(Driver *drvthis)
 		       drvthis->name, error);
 	}
 
-	/* FIXME: Does it make sense to re-attach a kernel driver? picolcd
-	*  does it, but questions it's value, so maybe we should too, even
-        * though we aren't keeping track if a kernel driver is used initially */
+	/* FIXME: Does it make sense to re-attach a kernel driver? picolcd *
+	 * does it, but questions it's value, so maybe we should too, even *
+	 * though we aren't keeping track if a kernel driver is used initially 
+	 */
 	error = libusb_attach_kernel_driver(p->my_handle, 0);
 	if (error) {
 		report(RPT_WARNING,
@@ -543,7 +556,8 @@ futaba_init(Driver *drvthis)
 MODULE_EXPORT void
 futaba_close(Driver *drvthis)
 {
-	/* store the private data in a variable to make the code easier to read (no a->b->c) */
+	/* store the private data in a variable to make the code easier to
+	 * read (no a->b->c) */
 	PrivateData *p = drvthis->private_data;
 
 	if (p != NULL) {
@@ -650,7 +664,8 @@ futaba_flush(Driver *drvthis)
 MODULE_EXPORT void
 futaba_string(Driver *drvthis, int x, int y, const char string[])
 {
-	/* store the private data in a variable to make the code easier to read (no a->b->c) */
+	/* store the private data in a variable to make the code easier to
+	 * read (no a->b->c) */
 	PrivateData *p = drvthis->private_data;
 	int i;
 
@@ -686,7 +701,8 @@ futaba_string(Driver *drvthis, int x, int y, const char string[])
 MODULE_EXPORT void
 futaba_chr(Driver *drvthis, int x, int y, char c)
 {
-	/* store the private data in a variable to make the code easier to read (no a->b->c) */
+	/* store the private data in a variable to make the code easier to
+	 * read (no a->b->c) */
 	PrivateData *p = drvthis->private_data;
 
 	debug(RPT_DEBUG, "[%s] chr start [%c]", drvthis->name, c);
@@ -724,63 +740,64 @@ futaba_get_info(Driver *drvthis)
  * The bits of the \c icon_map value map to icons as this (a bit set '1' means the
  * icon is switched on, a bit set '0' means the icon is turned off):
  *
- * Icon					Bit	Code
- * Volume (the word)			0	0x01
- * shuffle				1	0x0E
- * mute					2	0x0F
- * phone				3	0x10 (unused)
- * rec					4	0x11
- * radio				5	0x12
- * dvd					6	0x13 (set on movie / tv show playback)
- * vcd					7	0x14
- * cd					8	0x15
- * music				9	0x16
- * photo				10	0x17
- * tv					11	0x18
- * disk in tray				12	0x19
- * 5.1					13	0x1A
- * 7.1					14	0x1B
- * repeat				15	0x1E
- * all					16	0x1F
- * rew					17	0x20
- * pause				18	0x21
- * play					19	0x22
- * timer				20	0x23
- * guide1				21	0x24 (A physically long word, so both)
- * guide2				22	0x25 (guide1 and guide2 need to be on)
- * home					23	0x26
- * eject				24	0x28
- * fwd					25	0x29
- * KHz					26	0x2A (Not Used)
- * MHz					27	0x2B (Not Used)
- * 1st Colon				28	0x2C
- * 1st Dot				29	0x2D
- * 2nd Colon				30	0x2E
- * 2nd Dot				31	0x2F
- * 3rd Colon				32	0x30
- * 3rd Dot				33	0x31
- * 4th Colon				34	0x32
- * 4th Dot				35	0x33
- * 5th Colon				36	0x34
- * 5th Dot				37	0x35
- * 6th Colon				38	0x36
- * 6th Dot				39	0x37
- * vol (decimal 1-10)			3A....3D (No actual codes, just 4 values put aside)
- *						 (to differentiate volume bar control)
+ * Icon                 Bit Code
+ * Volume (the word)            0   0x01
+ * shuffle              1   0x0E
+ * mute                 2   0x0F
+ * phone                3   0x10 (unused)
+ * rec                  4   0x11
+ * radio                5   0x12
+ * dvd                  6   0x13 (set on movie / tv show playback)
+ * vcd                  7   0x14
+ * cd                   8   0x15
+ * music                9   0x16
+ * photo                10  0x17
+ * tv                   11  0x18
+ * disk in tray             12  0x19
+ * 5.1                  13  0x1A
+ * 7.1                  14  0x1B
+ * repeat               15  0x1E
+ * all                  16  0x1F
+ * rew                  17  0x20
+ * pause                18  0x21
+ * play                 19  0x22
+ * timer                20  0x23
+ * guide1               21  0x24 (A physically long word, so both)
+ * guide2               22  0x25 (guide1 and guide2 need to be on)
+ * home                 23  0x26
+ * eject                24  0x28
+ * fwd                  25  0x29
+ * KHz                  26  0x2A (Not Used)
+ * MHz                  27  0x2B (Not Used)
+ * 1st Colon                28  0x2C
+ * 1st Dot              29  0x2D
+ * 2nd Colon                30  0x2E
+ * 2nd Dot              31  0x2F
+ * 3rd Colon                32  0x30
+ * 3rd Dot              33  0x31
+ * 4th Colon                34  0x32
+ * 4th Dot              35  0x33
+ * 5th Colon                36  0x34
+ * 5th Dot              37  0x35
+ * 6th Colon                38  0x36
+ * 6th Dot              39  0x37
+ * vol (decimal 1-10)           3A....3D (No actual codes, just 4 values put aside)
+ *                       (to differentiate volume bar control)
  * \param drvthis   pointer to driver structure
  * \param icon_map  integer with bits representing LED states
  */
 MODULE_EXPORT void
 futaba_output(Driver *drvthis, uint64_t icon_map)
 {
-	/* store the private data in a variable to make the code easier to read (no a->b->c) */
+	/* store the private data in a variable to make the code easier to
+	 * read (no a->b->c) */
 	PrivateData *p = drvthis->private_data;
 	uint64_t icons_changed = icon_map ^ p->old_icon_map;
-	/*- Apart from the codes in the array below:
+    /*- Apart from the codes in the array below:
          *- Volume Bar Codes: 0x02 to 0x0C are each line of the volume bar
          *- Unknown Codes: 0x0D, 0x1C, 0x1D, 0x27 where not SEEN to do anything (but may do)
          *- Segment Codes: 0x38 to 0x99 contol each of the 14 segments of each character
-	 *- Unused Codes: 0x9A onwards just produce garbage */
+     *- Unused Codes: 0x9A onwards just produce garbage */
 	const char Icon[FUTABA_ICON_ARRAY_LENGTH] =
 		{ 0x01, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
 		0x1a, 0x1b, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x28, 0x29, 0x2A,
@@ -809,7 +826,7 @@ futaba_output(Driver *drvthis, uint64_t icon_map)
 		}
 	}
 
-	/* this is 0 -  10 */
+	/* this is 0 - 10 */
 	the_volume = (icon_map >> FUTABA_ICON_ARRAY_LENGTH) & 0x0F;
 
 	/* Only write to the display if the volume has changed */
@@ -824,7 +841,8 @@ futaba_output(Driver *drvthis, uint64_t icon_map)
 			my_report.type.sym.symbol[n].symName = FUTABA_VOLUME_START + n;
 
 			if (n <= numBars) {
-				/* if we don't do this we always light one bar ! */
+				/* if we don't do this we always light one bar 
+				 * ! */
 				if (the_volume != 0) {
 					my_report.type.sym.symbol[n].state = FUTABA_SYM_ON;
 					debug(RPT_INFO, "[%s] volume changed", drvthis->name);
