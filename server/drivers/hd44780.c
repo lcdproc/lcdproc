@@ -253,7 +253,7 @@ static void strappend(char *dst, size_t dsize, const char *src) {
 		dst[dlen+slen] = 0;
 	}
 	else if (dlen < dsize) {
-		memcpy(dst + dlen, src, slen - (dsize - dlen));
+		memcpy(dst + dlen, src, dsize - dlen);
 		dst[dsize-1] = 0;
 	}
 }
