@@ -129,6 +129,10 @@
 /** Maximum value of brightness */
 #define MAX_BRIGHTNESS		1000
 
+/** Maximum value of contrast */
+#define MAX_CONTRAST		1000
+
+
 /** \name Maximum sizes of the keypad
  *@{*/
 /* DO NOT CHANGE THESE VALUES, unless you change the functions too! */
