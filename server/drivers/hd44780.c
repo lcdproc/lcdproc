@@ -159,74 +159,78 @@ static const struct BacklightValueMapping {
 	const char *name;
 	int value;
 } bl_value_mapping[] = {
-	/* these below can be combined with comma */
+	{"none",         BACKLIGHT_NONE },
 	{"external",     BACKLIGHT_EXTERNAL_PIN },
 	{"internal",     BACKLIGHT_INTERNAL     },
 	{"internalCmds", BACKLIGHT_CONFIG_CMDS },
-
-	/* special (empty) marker used below, after which elements cannot be combined
-	 * on the other hand empty value should be treated as invalid*/
-	{ "",            -1 },
-
-	{"none",         BACKLIGHT_NONE },
 };
 
-/* parses null-terminated option value for backlight handling and returns bitmask of enabled values
- * Allows to combine several options with comma or pipe ('|') character.
- * Returns -1 if value is not valid */
-static int parse_backlight_option( const char *value )
+/* Reads from configuration setting for `Backlight` option, which can occur multiple times
+ * Returns -1 if configuration value is not valid */
+static int get_config_backlight_type(Driver *drvthis)
 {
-	int result = 0;
-	int i;
-	int any = 0;
+	int i, opt_idx;
+	int result = BACKLIGHT_NONE;
+	const char *value;
+	int was_none = 0;
+	PrivateData *p = drvthis->private_data;
 
-	/* first find just whole option name. This should be most common usage */
-	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
-		if (strcasecmp(value, bl_value_mapping[i].name) == 0)
-			return bl_value_mapping[i].value;
-	}
+	/* allow multiple occurences of option Backlight, with values specified above
+	 * in bl_value_mapping, first one occurrence may be also boolean for backward compability */
 
-	/* Now find all possible combinations. The trick is to iterate through
-	 * only first items till special marker "" (empty) is found, after which elements
-	 * of array cannot be combined. So after loop above if we don't value matching first
-	 * three, we return error. This way we also handle old boolean options.
-	 */
-	while (*value != '\0') {
-		const char *eot = strpbrk(value, ", |");
-		if (!eot)
-			eot = value + strlen(value);
+	for (opt_idx=0; /* nop */; opt_idx++) {
+		const char *def_value;
+		/* for first occurence of option 'backlight' default value depends
+		 * on model (which should be read before invoking this function) */
+		if (opt_idx != 0)
+			def_value = NULL;
+		else if (p->model ==  (HD44780_MODEL_WINSTAR_OLED || p->model == HD44780_MODEL_PT6314_VFD))
+			def_value = "internal";
+		else
+			def_value = "none";
+		value = drvthis->config_get_string(drvthis->name, "backlight", opt_idx, def_value);
 
+		if (value == NULL)
+			/* this is for second and next occurrences */
+			break;
+
+		/* find option name. */
 		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
-			size_t len;
-
-			/* break loop when marker found, as any next */
-			if (bl_value_mapping[i].name[0] == '\0')
-				/* found unknown value name - so invalid format */
-				return -1;
-
-			len = strlen(bl_value_mapping[i].name);
-			if (len != eot - value)
-				continue;
-
-			if( strncasecmp(value, bl_value_mapping[i].name, len) == 0) {
+			if (strcasecmp(value, bl_value_mapping[i].name) == 0) {
 				result |= bl_value_mapping[i].value;
-				any = 1;
+				if (bl_value_mapping[i].value == BACKLIGHT_NONE)
+					was_none = 1;
 				break;
 			}
 		}
 
-		value = eot;
-		while (*value == ' ' || *value == '|' || *value == ',')
-			value ++;
-
-		/* try next one if present */
+		if (i == sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0])) {
+			/* name not recognized */
+			if (opt_idx == 0) {
+				/* not found - try boolean for backward compability. If found, ignore other occurences */
+				short tmp = drvthis->config_get_bool(drvthis->name, "backlight", opt_idx, -1);
+				if (tmp < 0) {
+					report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, value);
+					return -1;
+				}
+				result = tmp ? BACKLIGHT_EXTERNAL_PIN : BACKLIGHT_NONE;
+				report(RPT_WARNING, "%s: deprecated boolean '%s' for 'Backlight' option found, consider updating configuration !!", drvthis->name, value);
+				return result;
+			}
+			else {
+				/* invalid option value */
+				report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, value);
+				return -1;
+			}
+		}
 	}
 
-	if (any) {
-		return result;
+	if (result != BACKLIGHT_NONE && was_none) {
+		report(RPT_ERR, "%s: conflicting types of 'Backlight' option provided", drvthis->name);
+		return -2;
 	}
 
-	return -1;
+	return result;
 }
 
 static void strappend(char *dst, size_t dsize, const char *src) {
@@ -267,7 +271,7 @@ static void report_backlight_type(int report_level, int backlight_type)
 
 		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]) && bl_value_mapping[i].name[0] != '\0'; i++) {
 
-			if ((bl_value_mapping[i].value & backlight_type) == bl_value_mapping[i].value) {
+			if (bl_value_mapping[i].value & backlight_type) {
 				if (buffer[0])
 					strappend(buffer, sizeof(buffer), ",");
 
@@ -353,21 +357,9 @@ HD44780_init(Driver *drvthis)
 	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
 
 	/* parse backlight option. Default is model specific */
-	s			= p->model ==  (HD44780_MODEL_WINSTAR_OLED || p->model == HD44780_MODEL_PT6314_VFD) ?
-				               "internal" : "none";
-	s			= drvthis->config_get_string(drvthis->name, "backlight", 0, s);
-	p->backlight_type	= parse_backlight_option(s);
+	p->backlight_type	= get_config_backlight_type(drvthis);
 	if (p->backlight_type < 0) {
-		/* invalid value - try to parse as boolean, with default value also of -1.
-		 * This is for backward compability, where 'Backlight' option was TRUE/FALSE */
-		tmp = drvthis->config_get_bool(drvthis->name, "backlight", 0, -1);
-		if (tmp < 0)
-			p->backlight_type = -1;
-		else
-			p->backlight_type = tmp ? BACKLIGHT_EXTERNAL_PIN : BACKLIGHT_NONE;
-	}
-	if (p->backlight_type < 0) {
-		report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, s);
+		/* error already logged in get_config_backlight_type() */
 		return -1;
 	}
 
