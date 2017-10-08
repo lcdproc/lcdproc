@@ -169,20 +169,6 @@ static const struct BacklightValueMapping {
 	{ "",            -1 },
 
 	{"none",         BACKLIGHT_NONE },
-
-	/* values below are for compability with old boolean option.
-	 * They cannot be combined with others */
-	{"0",            BACKLIGHT_NONE },
-	{"n",            BACKLIGHT_NONE },
-	{"no",           BACKLIGHT_NONE },
-	{"off",          BACKLIGHT_NONE },
-	{"false",        BACKLIGHT_NONE },
-
-	{"1",            BACKLIGHT_EXTERNAL_PIN },
-	{"y",            BACKLIGHT_EXTERNAL_PIN },
-	{"yes",          BACKLIGHT_EXTERNAL_PIN },
-	{"on",           BACKLIGHT_EXTERNAL_PIN },
-	{"true",         BACKLIGHT_EXTERNAL_PIN }
 };
 
 /* parses null-terminated option value for backlight handling and returns bitmask of enabled values
@@ -365,15 +351,26 @@ HD44780_init(Driver *drvthis)
 
 	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
 	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
+
 	/* parse backlight option. Default is model specific */
 	s			= p->model ==  (HD44780_MODEL_WINSTAR_OLED || p->model == HD44780_MODEL_PT6314_VFD) ?
 				               "internal" : "none";
 	s			= drvthis->config_get_string(drvthis->name, "backlight", 0, s);
 	p->backlight_type	= parse_backlight_option(s);
 	if (p->backlight_type < 0) {
+		/* invalid value - try to parse as boolean, with default value also of -1.
+		 * This is for backward compability, where 'Backlight' option was TRUE/FALSE */
+		tmp = drvthis->config_get_bool(drvthis->name, "backlight", 0, -1);
+		if (tmp < 0)
+			p->backlight_type = -1;
+		else
+			p->backlight_type = tmp ? BACKLIGHT_EXTERNAL_PIN : BACKLIGHT_NONE;
+	}
+	if (p->backlight_type < 0) {
 		report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, s);
 		return -1;
 	}
+
 	p->backlight_cmd_on	= drvthis->config_get_int(drvthis->name, "backlightcmdon", 0, 0);
 	p->backlight_cmd_off	= drvthis->config_get_int(drvthis->name, "backlightcmdoff", 0, 0);
 	if ((p->backlight_type & BACKLIGHT_CONFIG_CMDS) && (!p->backlight_cmd_on || !p->backlight_cmd_off)) {
