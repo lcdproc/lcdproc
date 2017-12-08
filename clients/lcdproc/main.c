@@ -58,7 +58,6 @@ int Quit = 0;
 int sock = -1;
 
 char *version = VERSION;
-char *build_date = __DATE__;
 
 int lcd_wid = 0;
 int lcd_hgt = 0;
