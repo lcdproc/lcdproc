@@ -1,4 +1,8 @@
 v0.5dev (ongoing development)
+  - [added] WINSTAR WEH001602A font bank 1 charmap and font bank selector
+  - [fixed] HD44780: turn off display during initialization to not show garbage
+  - [added] HD44780: support almost compatible WINSTAR OLED displays
+  - [added] HD44780: support internal backlight mode of modern controllers
 
 v0.5.9
   - [removed] scripts/debian (https://github.com/lcdproc/lcdproc/issues/39)

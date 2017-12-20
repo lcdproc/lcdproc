@@ -75,12 +75,63 @@
 #define IF_TYPE_SPI		6
 /**@}*/
 
+/** \name Symbolic name for specific models
+ * @{
+ * Used here to handle various conflicting differences in command sets.
+ * Some optional features are nottied to model even if it appears only in that model
+ * unless not are not conflicting, as default settings are compatible across all devices.
+ * (for example FontBank) */
+
+/** Standard / default model. Should work with most of HD44780-compatible displays */
+#define HD44780_MODEL_DEFAULT		0
+/** Extended model - 4 lines activated with special bits and extra commands (EXTREG) */
+#define HD44780_MODEL_EXTENDED		1
+/** WINSTAR WEH00xxyyA (WEH001604A, WEH002004A, ...) and others, requires slightly different
+ * initialization sequence and have extra commands for handling brightness */
+#define HD44780_MODEL_WINSTAR_OLED	2
+/** PTC PT6314 VFD Displays - have extra command for setting four-level brightness.
+ *  Otherwise is compatible to other HD44780s */
+#define HD44780_MODEL_PT6314_VFD	3
+
+/* Possibly extended further...*/
+
+/** @} */
+
+/** \name Types of backlight handling
+ * @{
+ * Shall be treated as bitmask
+ */
+
+
+/** No backlight handling at all */
+#define BACKLIGHT_NONE              0
+
+/** Backlight handled hrough external pin. */
+#define BACKLIGHT_EXTERNAL_PIN 0x0001
+
+/** Backlight handled through internal commands built in driver,
+ *  usually through special commands for model chosen with Model option*/
+#define BACKLIGHT_INTERNAL     0x0002
+
+/** Backlight handled through internal commands defined in configuration file */
+#define BACKLIGHT_CONFIG_CMDS  0x0004
+
+/** @} */
+
+
 /** \name Symbolic default values
  *@{*/
 #define DEFAULT_CONTRAST	800
 #define DEFAULT_BRIGHTNESS	800
 #define DEFAULT_OFFBRIGHTNESS	300
 /**@}*/
+
+/** Maximum value of brightness */
+#define MAX_BRIGHTNESS		1000
+
+/** Maximum value of contrast */
+#define MAX_CONTRAST		1000
+
 
 /** \name Maximum sizes of the keypad
  *@{*/
@@ -162,7 +213,7 @@ typedef struct hd44780_private_data {
 
 #ifdef HAVE_I2C
 	/* i2c based connection types */
-	
+
 	int i2c_backlight_invert;
 	int i2c_line_RS;
 	int i2c_line_RW;
@@ -224,12 +275,24 @@ typedef struct hd44780_private_data {
 	/** \name Display features
 	 *@{*/
 	char have_keypad;
-	char have_backlight;
 	char have_output;
+	/* have_backlight moved to function have_backlight_pin() below */
 	/**@}*/
 
-	char ext_mode;		/**< use extended mode on some weird controllers */
+	int model;		/**< model selected in configuration.
+				     For extended mode on some weird controllers
+				     set to HD44780_MODEL_EXTENDED */
 	int line_address;	/**< address of the next line in extended mode  */
+	int backlight_type;	/**< way of handling backlight. */
+	int backlight_cmd_on;	/**< internal command(s) for enabling backlight */
+	int backlight_cmd_off;	/**< internal command(s) for disabling backlight */
+
+	/** Value saved during display initialization in common_init(),
+	 *  given for FUNC_SET command, to use for later.
+	 *
+	 *  NOTE: if common_init() from specific connection type is not called,
+	 *  update it for correct value. For now used only for PT6314_VFD model */
+	int func_set_mode;
 
 	int delayMult;		/**< Delay multiplier for slow displays */
 	char delayBus;		/**< Delay if data is sent too fast over LPT port */
@@ -364,6 +427,26 @@ typedef struct hwDependentFns {
 /* Prototypes */
 void common_init(PrivateData *p, unsigned char if_bit);
 
+/* returns if display needs/is using 'Extended mode'- nonzero if yes */
+static short
+has_extended_mode(PrivateData *p) {
+	return p->model == HD44780_MODEL_EXTENDED;
+}
+
+/* returns if display is configured to use external backlight pin */
+static char have_backlight_pin(PrivateData *p) {
+
+	return (p->backlight_type & BACKLIGHT_EXTERNAL_PIN);
+}
+
+/* sets configration value for using external pin for backlight */
+static void set_have_backlight_pin(PrivateData *p, int on) {
+	if (on)
+		p->backlight_type |= BACKLIGHT_EXTERNAL_PIN;
+	else
+		p->backlight_type &= ~BACKLIGHT_EXTERNAL_PIN;
+}
+
 
 /* commands for senddata */
 #define RS_DATA		0x00
@@ -420,6 +503,14 @@ void common_init(PrivateData *p, unsigned char if_bit);
 /** Shift or scroll enable (RE=1) */
 #define HSCROLLEN	0x10
 
+/** Extra definitions on Winstar OLED displays - set last 2 bits (=0x03) to activate */
+#define WINST_MODESET	0x13	/**< required bits for command */
+#define WINST_TEXTMODE	0x00	/**< Activate text mode */
+#define WINST_GRAPHMODE	0x08	/**< Activate graphic mode */
+#define WINST_PWRON	0x04	/**< Internal power on (high brightness)*/
+#define WINST_PWROFF	0x00	/**< Internal power off (low brightness)*/
+
+
 /** Function set (RE=0) */
 #define FUNCSET		0x20
 #define IF_8BIT		0x10
@@ -430,6 +521,18 @@ void common_init(PrivateData *p, unsigned char if_bit);
 #define SMALLCHAR	0x00	/**< 5x8 characters */
 #define EXTREG		0x04	/**< Select ext. registers (Yes, the same bits) */
 #define SEGBLINK	0x02	/**< CGRAM/SEGRAM blink, only if RE=1 */
+
+/** Extra definitions for setting PT6314_VFD brihtness
+ *  yes - same bits used as extended registers */
+#define PT6314_BRIGHT_100	0x00
+#define PT6314_BRIGHT_75	0x01
+#define PT6314_BRIGHT_50	0x02
+#define PT6314_BRIGHT_25	0x03
+
+/* mask for brightness */
+#define PT6314_BRIGHT_MASK	0x03
+
+
 
 /** Set CGRAM address (RE=0) */
 #define SETCHAR		0x40

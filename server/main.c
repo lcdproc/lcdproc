@@ -104,7 +104,6 @@
 char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
 char *api_version = API_VERSION;
-char *build_date = __DATE__;
 
 
 /**** Configuration variables ****/
@@ -197,8 +196,8 @@ main(int argc, char **argv)
 
 	/* Report that server is starting (report will be delayed) */
 	report(RPT_NOTICE, "LCDd version %s starting", version);
-	report(RPT_INFO, "Built on %s, protocol version %s, API version %s",
-		build_date, protocol_version, api_version);
+	report(RPT_INFO, "Protocol version %s, API version %s",
+		protocol_version, api_version);
 
 	clear_settings();
 

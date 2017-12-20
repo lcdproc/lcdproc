@@ -2,9 +2,12 @@
   * server/main.c (two times)
   * clients/lcdproc/main.c
 
-2. Update date in
+2a. Update date in
   * docs/lcdproc-user/bookinfo.docbook
   * docs/lcdproc-dev/bookinfo.docbook
+
+2b. Update version in
+  * docs/lcdproc-user/how-to-obtain.docbook
 
 3. Add release to ChangeLog.md
 
@@ -14,7 +17,6 @@
 5. Update version in
   * configure.ac
   * docs/lcdproc-user/bookinfo.docbook
-  * docs/lcdproc-user/how-to-obtain.docbook
   * docs/lcdproc-dev/bookinfo.docbook
 
   Major version only:
@@ -44,7 +46,10 @@
    + Everything else the user has to know for upgrading his installed version
      grouped by topics of interest.
 
-9. Create the release on github. Use the release notes as description and
+9a. Add the release branch on github:
+  git push -u origin lcdproc-0.5.9:lcdproc-0.5.9
+
+9b. Create the release on github. Use the release notes as description and
   upload the release tarball. You need to disable noscript entirely to
   successfully upload a file.
 

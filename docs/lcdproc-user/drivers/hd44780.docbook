@@ -2585,7 +2585,7 @@ If your port expander has different wiring you can re-assign the pins in the con
 </para>
 
 <example id="hd44780-i2c-config.example.alternative.wiring">
-<title>HD44780: Configuration for I<superscript>2</superscript>C with port expander 
+<title>HD44780: Configuration for I<superscript>2</superscript>C with port expander
 Alternative Wiring</title>
 <screen>
 <![CDATA[
@@ -2619,7 +2619,7 @@ i2c_line_D6=0x40
 i2c_line_D7=0x80
 Backlight=yes
 BacklightInvert=yes
-#The Backlight Invert is used if a 0 turns the backlight on, and 1 turns it off, 
+#The Backlight Invert is used if a 0 turns the backlight on, and 1 turns it off,
 i.e. PNP transistor
 ]]>
 </screen>
@@ -3514,6 +3514,64 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 
 <varlistentry>
   <term>
+    <property>Model</property> =
+    {
+      <!-- Keep this list sorted according to the table in hd44780-low.h -->
+      <emphasis><parameter><literal>standard</literal></parameter></emphasis> |
+      <parameter><literal>extended</literal></parameter> |
+      <parameter><literal>winstar_oled</literal></parameter> |
+      <parameter><literal>pt6314_vfd</literal></parameter>
+    }
+  </term>
+  <listitem>
+    <para>
+      Some devices (ie. WINSTAR WEH001602A OLED or PTC PT6314 VFD) require additional
+      initialization or configuration incompatible with "classic" LCD or just have extra
+      features, such as internal commands for brightness handling. If you have such display
+      setting this option may help in problems with initialization or adds extra
+      functionality.
+      <itemizedlist>
+        <listitem><para>
+          The default, <literal>standard</literal> or <literal>default</literal>,
+          is for "classic" HD44780 displays.
+        </para></listitem>
+        <listitem><para>
+          <literal>extended</literal>, <literal>hd66712</literal> or <literal>ks0073</literal>
+          is for displays which have "extended mode" turned on with special instruction.
+          If you have a Samsung KS0073, PowerTip Corp. PC2004LRU, other based on HD66710/HD66712 chip
+          or an other 'almost HD44780-compatible', set  <literal>Model</literal> to
+          this value to get into extended, 4-line linear addressing mode.
+        </para>
+        <para>
+          Use this instead of deprecated option <literal>ExtendedMode</literal>.
+        </para></listitem>
+        <listitem><para>
+          <literal>winstar_oled</literal> or <literal>weh00xxyya</literal> is for
+          WINSTAR WEH00xxyyA OLED displays and allows performing proper initialization
+          of display device, especially after display reset without powering it off.
+        </para>
+        <para>It also allows handling backlight setting using internal commands
+        for such displays.
+        </para>
+        </listitem>
+        <listitem><para>
+          <literal>pt6314_vfd</literal> is for some Princeton Technology Corp.'s
+          PT6314 VFDs and allows handling brightness of display.
+        </para></listitem>
+      </itemizedlist>
+      You only may need to set this parameter if you have a non-standard
+      HD44780 display such as specified above and have problems with it and/or
+      want reveal extra functionality with these displays.
+    </para>
+    <para>
+      This option should be independent of connection type.
+    </para>
+  </listitem>
+</varlistentry>
+
+
+<varlistentry>
+  <term>
     <property>Speed</property> =
     <parameter><replaceable>BITRATE</replaceable></parameter>
   </term>
@@ -3645,7 +3703,15 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
       </itemizedlist>
       You only need to set this parameter if you have a HD44780 display
       such as the WINSTAR WEH001602A, which allows selecting the font bank
-      during initialization.
+      during initialization. Additionally you may need to set correct
+      <literal>CharMap</literal>.
+      <note>
+      <para>Setting this to nonzero value on standard HD44780 is usually harmless,
+      but some non-standard displays may use bits used for <literal>FontBank</literal>
+      selection, so it is safer to leave this option at default value for displays
+      not supporting Font bank.
+      </para>
+      </note>
     </para>
   </listitem>
 </varlistentry>
@@ -3705,10 +3771,85 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
 
 <varlistentry>
   <term>
-    <property>Backlight</property> = &parameters.yesnodef;
+    <property>Backlight</property> =
+    {
+      <emphasis><parameter><literal>none</literal></parameter></emphasis> |
+      <parameter><literal>external</literal></parameter> |
+      <parameter><literal>internal</literal></parameter> |
+      <parameter><literal>internalCmds</literal></parameter>
+    }
+  </term>
+  <listitem>
+    <para>
+      Specify if you have a switchable backlight and if yes, can select method for
+      turning it on/off:
+      <itemizedlist>
+        <listitem><para>
+          <literal>none</literal> - no switchable backlight is available.
+          For compability also boolean <literal>0</literal>, <literal>n</literal>,
+          <literal>no</literal>, <literal>off</literal> and <literal>false</literal> are aliases.
+        </para></listitem>
+        <listitem><para>
+          <literal>external</literal> - use external pin or any other method defined with <literal>ConnectionType</literal>
+          backlight handling. For backward compability also this value is chosen for boolean TRUE values:
+          <literal>1</literal>, <literal>y</literal>, <literal>yes</literal>, <literal>on</literal> and <literal>true</literal>.
+        </para></listitem>
+        <listitem><para>
+          <literal>internal</literal> means that backlight is handled using internal commands according to
+          selected display model (with <literal>Model</literal> option).
+          Depending on model, <literal>Brightness</literal> and <literal>OffBrightness</literal> options can be taken into account.
+        </para></listitem>
+        <listitem>
+          <para>
+            <literal>internalCmds</literal> means that commands for turning on and off backlight are given with
+            extra options <literal>BacklightOnCmd</literal> and <literal>BacklightOffCmd</literal>,
+            which would be treated as catch up (last resort) for other types of displays which have similar features.
+          </para>
+        </listitem>
+      </itemizedlist>
+    </para>
+    <para>
+      You can provide multiple occurences of this option to use more than one method.
+      This can be useful for example for glowing buttons with external pin when backlight is on and
+      using internal command to set high brightness of display.
+    </para>
+    <para>
+       Default is model specific (depends on <literal>Model</literal> option): Winstar OLED and PT6314 VFD
+       enables <literal>internal</literal> backlight mode, for others it is set to <literal>none</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+
+<varlistentry>
+  <term>
+    <property>BacklightCmdOn</property> =
+    <parameter><replaceable>COMMAND(s)</replaceable></parameter>
   </term>
   <listitem><para>
-    Specify if you have a switchable backlight.
+    Commands for enabling internal backlight for use with <literal>Backlight=internalCmds</literal>.
+    Up to 4 bytes can be encoded, as integer number (hex) in big-endian order.
+    Ignored if <literal>Backlight</literal> does not specify <literal>internalCmds</literal>,
+    required otherwise.
+  </para>
+  <note><para>
+    This is advanced option, if command contains bits other than only brighness handling, they must be
+    set accordingly to not disrupt display state. If for example 'FUNCTION SET' command is used for this
+    purpose, bits of interface length (4-bit / 8-bit) must be set according to selected ConnectionType.
+   </para></note>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>BacklightCmdOff</property> =
+    <parameter><replaceable>COMMAND(s)</replaceable></parameter>
+  </term>
+  <listitem><para>
+    Commands for disabling internal backlight for use with <literal>Backlight=internalCmds</literal>.
+    Up to 4 bytes can be encoded, as integer number (hex) in big-endian order.
+    Ignored if <literal>Backlight</literal> does not specify <literal>internalCmds</literal>,
+    required otherwise. See above note about <literal>BacklightCmdOn</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -3777,7 +3918,10 @@ This can be done by specifying <option>--enable-drivers=all</option> or by inclu
   <listitem><para>
     If you have a KS0073 or an other 'almost HD44780-compatible', set this
     flag to get into extended,4-line linear addressing mode.
-  </para></listitem>
+  </para>
+  <note><para>
+    Deprecated, use <code>Model=extended</code> for such displays.
+  </para></note></listitem>
 </varlistentry>
 
 <varlistentry>
