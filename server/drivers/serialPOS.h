@@ -22,9 +22,14 @@ MODULE_EXPORT void serialPOS_num(Driver * drvthis, int x, int num);
 MODULE_EXPORT void serialPOS_cursor(Driver * drvthis, int x, int y,
 				    int state);
 
-MODULE_EXPORT int serialPOS_get_free_chars(Driver * drvthis);
+MODULE_EXPORT int serialPOS_get_free_chars(Driver* drvthis);
 // MODULE_EXPORT void serialPOS_set_char (Driver *drvthis, int n, unsigned char
 // *dat);
+
+MODULE_EXPORT int serialPOS_get_brightness(Driver * drvthis, int state);
+MODULE_EXPORT void serialPOS_set_brightness(Driver * drvthis, int state,
+					    int promille);
+MODULE_EXPORT void serialPOS_backlight(Driver * drvthis, int state);
 
 MODULE_EXPORT void serialPOS_output(Driver * drvthis, int state);
 MODULE_EXPORT const char *serialPOS_get_info(Driver * drvthis);
