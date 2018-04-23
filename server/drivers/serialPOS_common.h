@@ -144,6 +144,7 @@ typedef struct serialPOS_ops {
  * Externally defined operations structures
  */
 extern const ops serialPOS_aedex_ops;
+extern const ops serialPOS_cd5220_ops;
 extern const ops serialPOS_epson_ops;
 extern const ops serialPOS_logic_controls_ops;
 

@@ -7,8 +7,8 @@ This section talks about using LCDproc with a point of sale ("POS") character-di
 
 <para>
 The <code>serialPOS</code> driver is currently working with the AEDEX emulation protocol,
-and may support Epson ESC/POS, Logic Controls, EMAX, and Ultimate (UTC/S).
-It can be extended to work with various other protocol displays.
+and may support the CD5220, Epson ESC/POS, Logic Controls, EMAX, and Ultimate (UTC/S)
+protocols. It can be extended to work with various other protocol displays.
 </para>
 
 <para>
@@ -74,6 +74,12 @@ Feedback is welcome.
       <entry> </entry>
       <entry>No</entry>
       <entry> </entry>
+    </row>
+    <row>
+      <entry>CD5220</entry>
+      <entry>KPD220V7</entry>
+      <entry>Yes</entry>
+      <entry>Max size: 20x2, Cell size must be 5x7 for custom characters</entry>
     </row>
     <row>
       <entry>Epson</entry>
@@ -204,6 +210,7 @@ arrow, delete, and return keys by default.
     <property>Type</property> =
     {
       <emphasis><parameter><literal>AEDEX</literal></parameter></emphasis> |
+      <parameter><literal>CD5220</literal></parameter> |
       <parameter><literal>Epson</literal></parameter> |
       <parameter><literal>Emax</literal></parameter> |
       <parameter><literal>LogicControls</literal></parameter> |

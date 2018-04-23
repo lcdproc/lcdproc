@@ -73,7 +73,6 @@
 #include <errno.h>
 #include <ctype.h>
 #include <limits.h>
-#include <stdio.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -178,6 +177,9 @@ serialPOS_init(Driver * drvthis)
 	if (strncasecmp(buf, "AED", 3) == 0) {
 		p->protocol_ops = &serialPOS_aedex_ops;
 	}
+	else if (strncasecmp(buf, "CD5", 3) == 0) {
+		p->protocol_ops = &serialPOS_cd5220_ops;
+	}
 	else if (strncasecmp(buf, "Eps", 3) == 0) {
 		p->protocol_ops = &serialPOS_epson_ops;
 	}
@@ -196,7 +198,7 @@ serialPOS_init(Driver * drvthis)
 	else {
 		report(RPT_ERR,
 		       "%s: unknown display Type %s; must be one of "
-		       "AEDEX, Epson, Emax, Logic Controls or Ultimate",
+		       "AEDEX, CD5220, Epson, Emax, Logic Controls or Ultimate",
 		       drvthis->name, buf);
 		return -1;
 	}
