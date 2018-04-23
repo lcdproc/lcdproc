@@ -52,9 +52,9 @@
  * cellheight  Implemented.
  * get_contrast    NOT IMPLEMENTED: not part of AEDEX protocol
  * set_contrast    NOT IMPLEMENTED: not part of AEDEX protocol
- * get_brightness  NOT IMPLEMENTED: not part of AEDEX protocol
- * set_brightness  NOT IMPLEMENTED: not part of AEDEX protocol
- * backlight   NOT IMPLEMENTED: not part of AEDEX protocol
+ * get_brightness  IMPLEMENTED
+ * set_brightness  IMPLEMENTED
+ * backlight   IMPLEMENTED
  * output      NOT IMPLEMENTED: not part of any POS protocol
  * get_key     Implemented for devices using a pass-through serial port
  * 	       connected to an RS232 terminal or keyboard.
@@ -403,6 +403,61 @@ serialPOS_cellheight(Driver * drvthis)
 	PrivateData *p = drvthis->private_data;
 
 	return p->cellheight;
+}
+
+/**
+ * Get backlight for a particular state
+ *
+ * This implementation returns the brightness in promille for
+ * \c BACKLIGHT_ON only, otherwise it returns \c 0.
+ *
+ * \param drvthis pointer to driver structure
+ * \param state backlight state
+ */
+MODULE_EXPORT int
+serialPOS_get_brightness(Driver* drvthis, int state)
+{
+	PrivateData* p = drvthis->private_data;
+	return ((state == BACKLIGHT_ON) ?
+		p->buffered_misc_state.brightness : 0);
+}
+
+/**
+ * Set brightness for a particular state
+ *
+ * The implementation in serialPOS doesn't care about the state, and it
+ * always sets the brightness value to the one given, because there is
+ * only an OFF state and an ON state - the rest of the backlight states
+ * are handled by the core.
+ *
+ * \param drvthis Pointer to driver structure
+ * \param state backlight state
+ * \param promille brightness value in promille
+ */
+MODULE_EXPORT void
+serialPOS_set_brightness(Driver* drvthis, int state, int promille)
+{
+	PrivateData* p			  = drvthis->private_data;
+	p->buffered_misc_state.brightness = promille;
+	debug(RPT_DEBUG, "serialPOS: backlight value set to: %d", promille);
+}
+
+/**
+ * Set backlight state
+ *
+ * \param drvthis Pointer to driver structure
+ * \param state backlight state
+ */
+MODULE_EXPORT void
+serialPOS_backlight(Driver* drvthis, int state)
+{
+	PrivateData* p			       = drvthis->private_data;
+	p->buffered_misc_state.backlight_state = state;
+	if (state != BACKLIGHT_OFF)
+		p->buffered_misc_state.brightness = 1000;
+	else
+		p->buffered_misc_state.brightness = 0;
+	debug(RPT_DEBUG, "serialPOS: backlight state set to: %d", state);
 }
 
 /**
