@@ -7,8 +7,8 @@ This section talks about using LCDproc with a point of sale ("POS") character-di
 
 <para>
 The <code>serialPOS</code> driver is currently working with the AEDEX emulation protocol,
-and may support Epson ESC/POS and Logic Controls. It can be extended to work with various
-other protocol displays.
+and may support Epson ESC/POS, Logic Controls, EMAX, and Ultimate (UTC/S).
+It can be extended to work with various other protocol displays.
 </para>
 
 <para>
@@ -50,7 +50,7 @@ Feedback is welcome.
     <row>
       <entry>Emax</entry>
       <entry> </entry>
-      <entry>No</entry>
+      <entry>Yes</entry>
       <entry> </entry>
     </row>
     <row>
@@ -68,7 +68,7 @@ Feedback is welcome.
     <row>
       <entry>Ultimate</entry>
       <entry> </entry>
-      <entry>No</entry>
+      <entry>Yes</entry>
       <entry> </entry>
     </row>
   </tbody>
@@ -122,8 +122,9 @@ arrow, delete, and return keys by default.
     <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
-    Device to use in serial mode. Usual values are <filename>/dev/ttyS0</filename> or
-    <filename>/dev/cu.usbserial</filename>. Default is <filename>/dev/lcd</filename>.
+    Device to use in serial mode.
+    Usual values are <filename>/dev/ttyS0</filename> or <filename>/dev/cu.usbserial</filename>.
+    Default is <filename>/dev/ttyS0</filename>.
   </para></listitem>
 </varlistentry>
 
@@ -141,11 +142,9 @@ arrow, delete, and return keys by default.
   <term>
     <property>Type</property> =
     {
-      <parameter><literal>IEE</literal></parameter> |
       <emphasis><parameter><literal>AEDEX</literal></parameter></emphasis> |
       <parameter><literal>Epson</literal></parameter> |
       <parameter><literal>Emax</literal></parameter> |
-      <parameter><literal>IBM</literal></parameter> |
       <parameter><literal>LogicControls</literal></parameter> |
       <parameter><literal>Ultimate</literal></parameter>
     }
@@ -153,7 +152,6 @@ arrow, delete, and return keys by default.
   <listitem><para>
     Set the communication protocol to use with the POS display.
     If not specified it defaults to <literal>AEDEX</literal>.
-    Currently, only AEDEX is supported.
   </para></listitem>
 </varlistentry>
 
@@ -163,6 +161,7 @@ arrow, delete, and return keys by default.
     {
       <parameter><literal>1200</literal></parameter> |
       <parameter><literal>2400</literal></parameter> |
+      <parameter><literal>4800</literal></parameter> |
       <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
       <parameter><literal>19200</literal></parameter> |
       <parameter><literal>115200</literal></parameter>
