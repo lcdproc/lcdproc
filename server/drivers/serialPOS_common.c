@@ -30,19 +30,6 @@
 
 #include "serialPOS_common.h"
 
-void
-serialPOS_convert_cuschar(uint8_t* cuschar)
-{
-	unsigned char buffer[5];
-	memset(buffer, 0, sizeof(buffer));
-	for (int column = 4; column >= 0; column--) {
-		for (int row = 6; row >= 0; row--) {
-			buffer[column] |= ((cuschar[row] >> column) << row);
-		}
-	}
-	memcpy(cuschar, buffer, sizeof(buffer));
-}
-
 uint8_t
 serialPOS_convert_brightness(int promille)
 {

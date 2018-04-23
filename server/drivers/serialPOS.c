@@ -47,7 +47,7 @@
  * icon        NOT IMPLEMENTED: not part of any POS protocol
  * cursor      Implemented.
  * set_char    NOT IMPLEMENTED
- * get_free_chars  Implemented, always returns 0.
+ * get_free_chars  Implemented: always returns 0
  * cellwidth   Implemented.
  * cellheight  Implemented.
  * get_contrast    NOT IMPLEMENTED: not part of AEDEX protocol
@@ -72,6 +72,7 @@
 #include <strings.h>
 #include <errno.h>
 #include <ctype.h>
+#include <limits.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -131,8 +132,9 @@ serialPOS_init(Driver * drvthis)
 	char device[256] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
 	char size[256] = DEFAULT_SIZE;
+	char cell_size[256] = DEFAULT_CELL_SIZE;
 	char buf[256] = "";
-	int tmp, w, h;
+	int tmp, w, h, cw, ch;
 
 	PrivateData *p;
 
@@ -149,8 +151,15 @@ serialPOS_init(Driver * drvthis)
 	p->cellwidth = LCD_DEFAULT_CELLWIDTH;
 	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
 
+	p->buffered_misc_state.brightness = 1000;
+	p->buffered_misc_state.backlight_state = BACKLIGHT_ON;
+	p->buffered_misc_state.cursor_state = CURSOR_OFF;
+
+	p->custom_chars_supported = DEFAULT_CUSTOM_CHARS;
+
 	p->framebuf = NULL;
 	p->backingstore = NULL;
+	p->protocol_ops = NULL;
 
 	p->emulation_mode = POS_AEDEX;
 
@@ -202,12 +211,46 @@ serialPOS_init(Driver * drvthis)
 	    || (w > MAX_WIDTH)
 	    || (h <= 0) || (h > MAX_HEIGHT)) {
 		report(RPT_WARNING,
-		       "%s: cannot read Size: %s; using default %s",
+		       "%s: cannot read Size / "
+		       "Size out-of-range: %s; using default %s",
 		       drvthis->name, size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
+
+	/* Read custom character setting */
+	long int config_n_cust_chars =
+	    drvthis->config_get_int(drvthis->name, "Custom_chars", 0, INT_MIN);
+	if ((config_n_cust_chars < 0)
+	    || (config_n_cust_chars > MAX_CUSTOM_CHARS)) {
+		report(RPT_WARNING,
+		       "%s: cannot read / out-of-range values for "
+		       "Custom_chars: %ld; using default: %d",
+		       drvthis->name, config_n_cust_chars,
+		       DEFAULT_CUSTOM_CHARS);
+	} else {
+		p->custom_chars_supported = config_n_cust_chars;
+	}
+
+	/* Read cell size */
+	strncpy(cell_size,
+		drvthis->config_get_string(drvthis->name, "Cellsize", 0,
+					   DEFAULT_CELL_SIZE),
+					   sizeof(cell_size));
+	cell_size[sizeof(cell_size) - 1] = '\0';
+	if ((sscanf(cell_size, "%dx%d", &cw, &ch) != 2) || (cw <= 0)
+	    || (cw > MAX_CELLWID)
+	    || (ch <= 0) || (ch > MAX_CELLHGT)) {
+		report(RPT_WARNING,
+		       "%s: cannot read Cellsize / "
+		       "Cellsize out-of-range: %s; using default %s",
+		       drvthis->name, cell_size, DEFAULT_CELL_SIZE);
+		sscanf(DEFAULT_CELL_SIZE, "%dx%d", &cw, &ch);
+	}
+	p->cellheight = ch;
+	p->cellwidth = cw;
+
 
 	/* Get speed */
 	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0,
@@ -289,7 +332,7 @@ serialPOS_init(Driver * drvthis)
 	}
 
 	/* Make sure the frame buffer is there... */
-	p->framebuf = (uint8_t *) calloc(p->width * p->height, 1);
+	p->framebuf = (uint8_t *) malloc(p->width * p->height);
 	if (p->framebuf == NULL) {
 		report(RPT_ERR, "%s: unable to create framebuffer",
 		       drvthis->name);
@@ -307,9 +350,17 @@ serialPOS_init(Driver * drvthis)
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
 
+	p->buffer_size =
+	    ((p->protocol_ops != NULL) ?
+		    p->protocol_ops->command_buffer_sz(p) : 0);
 	/* set initial LCD configuration */
 	serialPOS_hardware_init(drvthis);
 
+	report(RPT_INFO, "%s: initialized with display size of %dx%d, "
+		"cell size of: %dx%d, with %d custom characters supported"
+		" using the %s protocol", drvthis->name,
+		p->width, p->height, p->cellwidth, p->cellheight,
+		p->custom_chars_supported, buf);
 	debug(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
@@ -518,63 +569,69 @@ serialPOS_flush(Driver * drvthis)
 	int modified = 0;
 	int i;
 
-	for (i = 0; i < p->height; i++) {
-		/*
-		 * set pointers to start of the line in frame buffer
-		 * & backing store
-		 */
-		uint8_t *sp = p->framebuf + (i * p->width);
-		uint8_t *sq = p->backingstore + (i * p->width);
+	if (!p->protocol_ops) {
+		for (i = 0; i < p->height; i++) {
+			/*
+			 * set pointers to start of the line in frame buffer
+			 * & backing store
+			 */
+			uint8_t* sp = p->framebuf + (i * p->width);
+			uint8_t* sq = p->backingstore + (i * p->width);
 
-		unsigned int length = p->width + 5;
-		char out[length];
+			unsigned int length = p->width + 5;
+			char out[length];
 
-		debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
-		debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
+			debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
+			debug(RPT_DEBUG, "Backingstore: '%.*s'", p->width, sq);
 
-		/* Strategy:
-		 * - not more than one update command per line
-		 * - skip lines that are identical
-		 */
+			/* Strategy:
+			 * - not more than one update command per line
+			 * - skip lines that are identical
+			 */
 
-		/* skip over identical lines */
-		if (memcmp(sp, sq, p->width) == 0) {
-			/* The lines are the same. */
-			continue;
-		}
-
-		/* there are differences, ... */
-		debug(RPT_DEBUG, "%s: l=%d string='%.*s'", __FUNCTION__, i,
-		      p->width, sp);
-
-		switch ((int) p->emulation_mode) {
-		    case POS_AEDEX:
-			{
-				int command = i + 1;
-				snprintf(out, length, "%s%d%.*s%c",
-				     AEDEXPrefix, command, p->width,
-				     sp, 13);
-				debug(RPT_DEBUG, "%s%d%.*s%c",
-				  AEDEXPrefix, command, p->width, sp,
-				  13);
-				break;
+			/* skip over identical lines */
+			if (memcmp(sp, sq, p->width) == 0) {
+				/* The lines are the same. */
+				continue;
 			}
-		    default:
-			/* Send to correct line, then write the data */
-			serialPOS_cursor_goto(drvthis, 1, i + 1);
-			length = p->width + 1;
-			snprintf(out, length, "%s", sp);
-			break;
+
+			/* there are differences, ... */
+			debug(RPT_DEBUG, "%s: l=%d string='%.*s'", __FUNCTION__,
+			      i, p->width, sp);
+
+			switch ((int) p->emulation_mode) {
+				case POS_AEDEX: {
+					int command = i + 1;
+					snprintf(out, length, "%s%d%.*s%c",
+						 AEDEXPrefix, command, p->width,
+						 sp, 13);
+					debug(RPT_DEBUG, "%s%d%.*s%c",
+					      AEDEXPrefix, command, p->width,
+					      sp, 13);
+					break;
+				}
+				default:
+					/* Send to correct line, then write the
+					 * data */
+					serialPOS_cursor_goto(drvthis, 1,
+							      i + 1);
+					length = p->width + 1;
+					snprintf(out, length, "%s", sp);
+					break;
+			}
+			debug(RPT_DEBUG, "%s%c", out);
+
+			write(p->fd, out, length);
+
+			modified++;
 		}
-		debug(RPT_DEBUG, "%s%c", out);
 
-		write(p->fd, out, length);
+		if (modified)
+			memcpy(p->backingstore, p->framebuf,
+			       p->width * p->height);
+	} else {
 
-		modified++;
 	}
-
-	if (modified)
-		memcpy(p->backingstore, p->framebuf, p->width * p->height);
 
 	debug(RPT_DEBUG, "serialPOS: frame buffer flushed");
 }

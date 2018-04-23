@@ -140,6 +140,27 @@ arrow, delete, and return keys by default.
 
 <varlistentry>
   <term>
+    <property>Cellsize</property> =
+  </term>
+  <listitem><para>
+    Specifies the cell size of each character cell on the display in characters.
+    If not given, it defaults to <literal>5x8</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Custom_chars</property> =
+  </term>
+  <listitem><para>
+    Specifies the number of custom characters supported by the display.
+    Maximum number of custom characters supported by the driver is <literal>32</literal>
+    If not given, it defaults to <literal>0</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <property>Type</property> =
     {
       <emphasis><parameter><literal>AEDEX</literal></parameter></emphasis> |
