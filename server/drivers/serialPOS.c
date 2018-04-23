@@ -1,60 +1,64 @@
-/** \file server/drivers/serialPOS.c
+/**
+ * \file server/drivers/serialPOS.c
+ *
  * LCDd \c serialPOS driver for Point Of Sale ("POS") devices using
  * various protocols.
  */
 
-/* 	This is the LCDproc driver for Point Of Sale ("POS") devices using
-	various protocols.  While it currently only supports AEDEX,
-	it can be extended to provide support for many POS emulation types.
-
-	Copyright (C) 2006, 2007 Eric Pooch
-
-	This driver is based on MtxOrb.c driver and is subject to its copyrights.
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
-
-
-List of driver entry point:
-
-init		Implemented.
-close		Implemented.
-width		Implemented.
-height		Implemented.
-clear		Implemented.
-flush		Implemented.
-string		Implemented.
-chr		Implemented.
-vbar		Implemented.
-hbar		Implemented.
-num		Implemented.
-heartbeat	Implemented.
-icon		NOT IMPLEMENTED: not part of any POS protocol
-cursor		Implemented.
-set_char	NOT IMPLEMENTED
-get_free_chars	Implemented, always returns 0.
-cellwidth	Implemented.
-cellheight	Implemented.
-get_contrast	NOT IMPLEMENTED: not part of AEDEX protocol
-set_contrast	NOT IMPLEMENTED: not part of AEDEX protocol
-get_brightness	NOT IMPLEMENTED: not part of AEDEX protocol
-set_brightness	NOT IMPLEMENTED: not part of AEDEX protocol
-backlight	NOT IMPLEMENTED: not part of AEDEX protocol
-output		NOT IMPLEMENTED: not part of any POS protocol
-get_key		Implemented for devices using a pass-through serial port connected to an RS232 terminal or keyboard.
-get_info	Implemented.
-*/
+/*-
+ * This is the LCDproc driver for Point Of Sale ("POS") devices using
+ * various protocols.  While it currently only supports AEDEX,
+ * it can be extended to provide support for many POS emulation types.
+ *
+ * Copyright (C) 2006, 2007 Eric Pooch
+ * Copyright (C) 2018 Shenghao Yang
+ *
+ * This driver is based on MtxOrb.c driver and is subject to its copyrights.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301
+ *
+ *
+ * List of driver entry point:
+ *
+ * init        Implemented.
+ * close       Implemented.
+ * width       Implemented.
+ * height      Implemented.
+ * clear       Implemented.
+ * flush       Implemented.
+ * string      Implemented.
+ * chr     Implemented.
+ * vbar        Implemented.
+ * hbar        Implemented.
+ * num     Implemented.
+ * heartbeat   Implemented.
+ * icon        NOT IMPLEMENTED: not part of any POS protocol
+ * cursor      Implemented.
+ * set_char    NOT IMPLEMENTED
+ * get_free_chars  Implemented, always returns 0.
+ * cellwidth   Implemented.
+ * cellheight  Implemented.
+ * get_contrast    NOT IMPLEMENTED: not part of AEDEX protocol
+ * set_contrast    NOT IMPLEMENTED: not part of AEDEX protocol
+ * get_brightness  NOT IMPLEMENTED: not part of AEDEX protocol
+ * set_brightness  NOT IMPLEMENTED: not part of AEDEX protocol
+ * backlight   NOT IMPLEMENTED: not part of AEDEX protocol
+ * output      NOT IMPLEMENTED: not part of any POS protocol
+ * get_key     Implemented for devices using a pass-through serial port connected to an RS232 terminal or keyboard.
+ * get_info    Implemented.
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -74,10 +78,10 @@ get_info	Implemented.
 
 #include "lcd.h"
 #include "serialPOS.h"
+#include "serialPOS_common.h"
 #include "adv_bignum.h"
 
 #include "shared/report.h"
-
 
 /*
  * The serialPOS driver does not use a lot of hardware features.
@@ -103,55 +107,6 @@ get_info	Implemented.
  * characters sent to the display.
  */
 
-
-typedef enum {
-	POS_IEE = 0,
-	POS_AEDEX,				/* http://www.posguys.com/download/CD5220_Manual.pdf */
-	POS_Epson,				/* http://www.barcode-manufacturer.com/pdf/vfd_manual.pdf */
-	POS_Emax,
-	POS_IBM,
-	POS_LogicControls,		/* http://www.posguys.com/download/CD5220_Manual.pdf */
-	POS_Ultimate
-} POS_EmulationType;
-
-#define AEDEXDefaultPrefix "!#"
-#define AEDEXPrefix "~`"
-
-typedef enum {
-	AEDEXLine1Display = 1,	/*	upper line display	*/
-	AEDEXLine2Display,		/*	bottom line display	*/
-	AEDEXLine3Display,		/*	not sure what this code really is	*/
-	AEDEXContinuousScroll,	/*	upper line message scroll continuously	*/
-	AEDEXDisplayTime,		/*	"hh':'mm" h,m='0'-'9' display time	*/
-	AEDEXSingleScroll,		/*	upper line message scroll one pass	*/
-	AEDEXAllScroll,			/*	not sure what this code really is	*/
-	AEDEXChangeCode,		/*	change attention code	*/
-	AEDEXAllLineDisplay		/*	two line display	*/
-} AEDEXCommands;
-
-
-/** private data for the \c serialPOS driver */
-typedef struct serialPOS_private_data {
-	int fd;			/**< LCD file descriptor */
-
-	/* dimensions */
-	int width, height;
-	int cellwidth, cellheight;
-
-	/* framebuffer and buffer for old LCD contents */
-	unsigned char *framebuf;
-	unsigned char *backingstore;
-
-	/* feature enable */
-	int hardwrap;
-	int hardscroll;
-
-	POS_EmulationType emulation_mode;	/**< emulation type */
-
-	char info[255];		/**< static data from serialPOS_get_info */
-} PrivateData;
-
-
 /* Vars for the server core */
 MODULE_EXPORT char *api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
@@ -159,32 +114,7 @@ MODULE_EXPORT int supports_multiple = 1;
 MODULE_EXPORT char *symbol_prefix = "serialPOS_";
 
 static void serialPOS_hardware_init(Driver *drvthis);
-static void serialPOS_hardware_clear(Driver *drvthis);
-static void serialPOS_linewrap(Driver *drvthis, int on);
-static void serialPOS_autoscroll(Driver *drvthis, int on);
-static void serialPOS_cursorblink(Driver *drvthis, int on);
 static void serialPOS_cursor_goto(Driver *drvthis, int x, int y);
-
-
-/* Parse one key from the configfile */
-static char
-serialPOS_parse_keypad_setting (Driver *drvthis, char *keyname, char default_value)
-{
-	char return_val = 0;
-	const char *s;
-	char buf[255];
-
-	s = drvthis->config_get_string(drvthis->name, keyname, 0, NULL);
-	if (s != NULL) {
-		strncpy(buf, s, sizeof(buf));
-		buf[sizeof(buf)-1] = '\0';
-		return_val = buf[0];
-	} else {
-		return_val = default_value;
-	}
-	return return_val;
-}
-
 
 /**
  * Initialize the driver.
@@ -206,9 +136,7 @@ serialPOS_init (Driver *drvthis)
 	PrivateData *p;
 
 	/* Alocate and store private data */
-	p = (PrivateData *) malloc(sizeof(PrivateData));
-	if (p == NULL)
-		return -1;
+	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (drvthis->store_private_ptr(drvthis, p))
 		return -1;
 
@@ -223,9 +151,6 @@ serialPOS_init (Driver *drvthis)
 	p->framebuf = NULL;
 	p->backingstore = NULL;
 
-	p->hardwrap = 0;
-	p->hardscroll = 0;
-
 	p->emulation_mode = POS_AEDEX;
 
 	debug(RPT_INFO, "serialPOS: init(%p)", drvthis);
@@ -233,42 +158,45 @@ serialPOS_init (Driver *drvthis)
 	/* READ CONFIG FILE */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device)-1] = '\0';
+	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
+	DEFAULT_DEVICE), sizeof(device));
+	device[sizeof(device) - 1] = '\0';
 	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
 	/* Get emulation type */
-	strncpy(buf, drvthis->config_get_string(drvthis->name, "Type", 0, DEFAULT_TYPE), sizeof(buf));
-	buf[sizeof(buf)-1] = '\0';
-	if (strncasecmp(buf, "IEE", 3) == 0) {
-		p->emulation_mode = POS_IEE;
-	} else if (strncasecmp(buf, "AED", 3) == 0) {
+	strncpy(buf, drvthis->config_get_string(drvthis->name, "Type", 0,
+	DEFAULT_TYPE), sizeof(buf));
+	buf[sizeof(buf) - 1] = '\0';
+	if (strncasecmp(buf, "AED", 3) == 0) {
 		p->emulation_mode = POS_AEDEX;
-	} else if (strncasecmp(buf, "Eps", 3) == 0) {
+	}
+	else if (strncasecmp(buf, "Eps", 3) == 0) {
 		p->emulation_mode = POS_Epson;
-	} else if (strncasecmp(buf, "Ema", 3) == 0) {
+	}
+	else if (strncasecmp(buf, "Ema", 3) == 0) {
 		p->emulation_mode = POS_Emax;
-	} else if (strncasecmp(buf, "Log", 3) == 0) {
+	}
+	else if (strncasecmp(buf, "Log", 3) == 0) {
 		p->emulation_mode = POS_LogicControls;
-	} else if (strncasecmp(buf, "IBM", 3) == 0) {
-		p->emulation_mode = POS_IBM;
-	} else if (strncasecmp(buf, "Ult", 3) == 0) {
+	}
+	else if (strncasecmp(buf, "Ult", 3) == 0) {
 		p->emulation_mode = POS_Ultimate;
-	} else {
-		report(RPT_ERR, "%s: unknown display Type %s; must be one of IEE, AEDEX, Epson, Emax, Logic Controls or Ultimate",
-				drvthis->name, buf);
+	}
+	else {
+		report(RPT_ERR, "%s: unknown display Type %s; must be one of "
+			"AEDEX, Epson, Emax, Logic Controls or Ultimate", drvthis->name, buf);
 		return -1;
 	}
 
 	/* Get display size */
-	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
-	size[sizeof(size)-1] = '\0';
-	if ((sscanf(size, "%dx%d", &w, &h) != 2)
-	    || (w <= 0) || (w > LCD_MAX_WIDTH)
-	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
+	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0,
+	DEFAULT_SIZE), sizeof(size));
+	size[sizeof(size) - 1] = '\0';
+	if ((sscanf(size, "%dx%d", &w, &h) != 2) || (w <= 0) || (w > MAX_WIDTH)
+		|| (h <= 0) || (h > MAX_HEIGHT)) {
 		report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-				drvthis->name, size, DEFAULT_SIZE);
-		sscanf(DEFAULT_SIZE , "%dx%d", &w, &h);
+			drvthis->name, size, DEFAULT_SIZE);
+		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
@@ -288,23 +216,36 @@ serialPOS_init (Driver *drvthis)
 		case 9600:
 			speed = B9600;
 			break;
+		case 19200:
+			speed = B19200;
+			break;
+		case 115200:
+			speed = B115200;
+			break;
 		default:
 			speed = B9600;
-			report(RPT_WARNING, "%s: Speed must be 1200, 2400, 4800 or 9600; using default %d",
-					drvthis->name, tmp);
+			report(RPT_WARNING, "%s: Speed must be either "
+				"1200, 2400, 4800, 9600, 19200, or 115200 "
+				"; using default %d", drvthis->name, tmp);
 	}
 
 	/* Set up io port correctly, and open it... */
 	p->fd = open(device, O_RDWR | O_NOCTTY);
 	if (p->fd == -1) {
-		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
+		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device,
+			strerror(errno));
 		if (errno == EACCES)
-			report(RPT_ERR, "%s: %s device could not be opened...", drvthis->name, device);
-  		return -1;
+			report(RPT_ERR, "%s: %s device could not be opened...", drvthis->name,
+				device);
+		return -1;
 	}
 	report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
 
-	tcgetattr(p->fd, &portset);
+	if (tcgetattr(p->fd, &portset)) {
+		report(RPT_ERR, "%s: unable to get terminal attributes for "
+			"device: %s", drvthis->name, device);
+		return -1;
+	}
 
 	/* We use RAW mode */
 #ifdef HAVE_CFMAKERAW
@@ -313,7 +254,7 @@ serialPOS_init (Driver *drvthis)
 #else
 	/* The hard way */
 	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-			      | INLCR | IGNCR | ICRNL | IXON );
+		| INLCR | IGNCR | ICRNL | IXON );
 	portset.c_oflag &= ~OPOST;
 	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
 	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
@@ -328,10 +269,13 @@ serialPOS_init (Driver *drvthis)
 	cfsetispeed(&portset, B0);
 
 	/* Do it... */
-	tcsetattr(p->fd, TCSANOW, &portset);
+	if (tcsetattr(p->fd, TCSANOW, &portset)) {
+		report(RPT_ERR, "%s: unable to set terminal attributes for"
+			" device: %s", drvthis->name, device);
+	}
 
 	/* Make sure the frame buffer is there... */
-	p->framebuf = (unsigned char *) calloc(p->width * p->height, 1);
+	p->framebuf = (uint8_t *) calloc(p->width * p->height, 1);
 	if (p->framebuf == NULL) {
 		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
 		return -1;
@@ -339,23 +283,21 @@ serialPOS_init (Driver *drvthis)
 	memset(p->framebuf, ' ', p->width * p->height);
 
 	/* make sure the framebuffer backing store is there... */
-	p->backingstore = (unsigned char *) malloc(p->width * p->height);
+	p->backingstore = (uint8_t *) malloc(p->width * p->height);
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
+		report(RPT_ERR, "%s: unable to create framebuffer backing store",
+			drvthis->name);
 		return -1;
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
 
 	/* set initial LCD configuration */
 	serialPOS_hardware_init(drvthis);
-	serialPOS_linewrap(drvthis, DEFAULT_LINEWRAP);
-	serialPOS_autoscroll(drvthis, DEFAULT_AUTOSCROLL);
 
-	report(RPT_DEBUG, "%s: init() done", drvthis->name);
+	debug(RPT_DEBUG, "%s: init() done", drvthis->name);
 
 	return 0;
 }
-
 
 /**
  * Close the driver (do necessary clean-up).
@@ -384,7 +326,6 @@ serialPOS_close (Driver *drvthis)
 	debug(RPT_DEBUG, "serialPOS: closed");
 }
 
-
 /**
  * Return the display width in characters.
  * \param drvthis  Pointer to driver structure.
@@ -397,7 +338,6 @@ serialPOS_width (Driver *drvthis)
 
 	return p->width;
 }
-
 
 /**
  * Return the display height in characters.
@@ -412,7 +352,6 @@ serialPOS_height (Driver *drvthis)
 	return p->height;
 }
 
-
 /**
  * Get total number of custom characters available.
  * \param drvthis  Pointer to driver structure.
@@ -423,7 +362,6 @@ serialPOS_get_free_chars (Driver *drvthis)
 {
 	return 0;
 }
-
 
 /**
  * Return the width of a character in pixels.
@@ -438,7 +376,6 @@ serialPOS_cellwidth (Driver *drvthis)
 	return p->cellwidth;
 }
 
-
 /**
  * Return the height of a character in pixels.
  * \param drvthis  Pointer to driver structure.
@@ -452,17 +389,17 @@ serialPOS_cellheight (Driver *drvthis)
 	return p->cellheight;
 }
 
-
 /**
  * Print a string on the screen at position (x,y).
  * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
  * \param drvthis  Pointer to driver structure.
- * \param x	Horizontal character position (column).
- * \param y	Vertical character position (row).
+ * \param x Horizontal character position (column).
+ * \param y Vertical character position (row).
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-serialPOS_string (Driver *drvthis, int x, int y, const char string[])
+serialPOS_string (Driver *drvthis, int x, int y,
+	const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -480,9 +417,8 @@ serialPOS_string (Driver *drvthis, int x, int y, const char string[])
 			p->framebuf[(y * p->width) + x] = string[i];
 	}
 
-	report(RPT_DEBUG, "serialPOS: printed string at (%d,%d)", x, y);
+	debug(RPT_DEBUG, "serialPOS: printed string at (%d,%d)", x, y);
 }
-
 
 /**
  * Clear the framebuffer.
@@ -496,9 +432,8 @@ serialPOS_clear (Driver *drvthis)
 	/* replace all chars in framebuf with spaces */
 	memset(p->framebuf, ' ', (p->width * p->height));
 
-	report(RPT_DEBUG, "serialPOS: cleared framebuffer");
+	debug(RPT_DEBUG, "serialPOS: cleared framebuffer");
 }
-
 
 /**
  * Flush data on screen to the LCD.
@@ -513,11 +448,14 @@ serialPOS_flush (Driver *drvthis)
 	int i;
 
 	for (i = 0; i < p->height; i++) {
-		// set  pointers to start of the line in frame buffer & backing store
-		unsigned char *sp = p->framebuf + (i * p->width);
-		unsigned char *sq = p->backingstore + (i * p->width);
+		/*
+		 * set  pointers to start of the line in frame buffer
+		 * & backing store
+		 */
+		uint8_t *sp = p->framebuf + (i * p->width);
+		uint8_t *sq = p->backingstore + (i * p->width);
 
-		unsigned int length = p->width+5;
+		unsigned int length = p->width + 5;
 		char out[length];
 
 		debug(RPT_DEBUG, "Framebuf: '%.*s'", p->width, sp);
@@ -529,36 +467,32 @@ serialPOS_flush (Driver *drvthis)
 		 */
 
 		// skip over identical lines
-		if ( memcmp(sp, sq, p->width) == 0) {
+		if (memcmp(sp, sq, p->width) == 0) {
 			/* The lines are the same. */
 			continue;
 		}
 
 		/* there are differences, ... */
-		report(RPT_DEBUG, "%s: l=%d string='%.*s'", __FUNCTION__, i, p->width, sp);
+		debug(RPT_DEBUG, "%s: l=%d string='%.*s'", __FUNCTION__, i, p->width, sp);
 
-		switch ((int)p->emulation_mode) {
-			case POS_AEDEX:	{
-
-				int command = i+1;
-				if ( i == 0 && p->hardscroll == 1 )
-					command = AEDEXContinuousScroll;
-
-				snprintf(out, length, "%s%d%.*s%c", AEDEXPrefix, command, p->width, sp, 13);
+		switch ((int) p->emulation_mode) {
+			case POS_AEDEX: {
+				int command = i + 1;
+				snprintf(out, length, "%s%d%.*s%c", AEDEXPrefix, command, p->width, sp,
+					13);
 				debug(RPT_DEBUG, "%s%d%.*s%c", AEDEXPrefix, command, p->width, sp, 13);
 				break;
 			}
-
 			default:
 				/* Send to correct line, then write the data */
-				serialPOS_cursor_goto(drvthis, 1, i+1);
-				length = p->width+1;
+				serialPOS_cursor_goto(drvthis, 1, i + 1);
+				length = p->width + 1;
 				snprintf(out, length, "%s", sp);
 				break;
 		}
 		debug(RPT_DEBUG, "%s%c", out);
 
- 		write(p->fd, out, length);
+		write(p->fd, out, length);
 
 		modified++;
 	}
@@ -566,17 +500,16 @@ serialPOS_flush (Driver *drvthis)
 	if (modified)
 		memcpy(p->backingstore, p->framebuf, p->width * p->height);
 
-	report(RPT_DEBUG, "serialPOS: frame buffer flushed");
+	debug(RPT_DEBUG, "serialPOS: frame buffer flushed");
 }
-
 
 /**
  * Print a character on the screen at position (x,y).
  * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
  * \param drvthis  Pointer to driver structure.
- * \param x	Horizontal character position (column).
- * \param y	Vertical character position (row).
- * \param c	Character that gets written.
+ * \param x Horizontal character position (column).
+ * \param y Vertical character position (row).
+ * \param c Character that gets written.
  */
 MODULE_EXPORT void
 serialPOS_chr (Driver *drvthis, int x, int y, char c)
@@ -590,7 +523,7 @@ serialPOS_chr (Driver *drvthis, int x, int y, char c)
 	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
 			p->framebuf[(y * p->width) + x] = c;
 
-	report(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x, y);
+	debug(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x, y);
 }
 
 /**
@@ -598,20 +531,21 @@ serialPOS_chr (Driver *drvthis, int x, int y, char c)
  * \param drvthis  Pointer to driver structure.
  */
 static void
-serialPOS_hardware_init(Driver *drvthis)
+serialPOS_hardware_init (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-
-	switch ((int)p->emulation_mode) {
-		case POS_AEDEX:	{
+	switch ((int) p->emulation_mode) {
+		case POS_Emax:
+		case POS_AEDEX: {
 			/* The # character might interfere with the AEDEX command set,
-			   so change the AEDEX attention code.
-			*/
+			 so change the AEDEX attention code.
+			 */
 			unsigned int length = 8;
 			char out[length];
 
-			snprintf(out, length, "%s%d%s%c", AEDEXDefaultPrefix, AEDEXChangeCode, AEDEXPrefix, 13);
+			snprintf(out, length, "%s%d%s%c", AEDEXDefaultPrefix, AEDEXChangeCode,
+			AEDEXPrefix, 13);
 			write(p->fd, out, length);
 
 			break;
@@ -620,6 +554,7 @@ serialPOS_hardware_init(Driver *drvthis)
 			write(p->fd, "\x1B\x40", 2);
 			break;
 
+		case POS_Ultimate:
 		case POS_LogicControls:
 			write(p->fd, "\x11", 1);
 			break;
@@ -629,95 +564,11 @@ serialPOS_hardware_init(Driver *drvthis)
 	}
 }
 
-
-/**
- * Clear the LCD using its hardware command
- * \param drvthis  Pointer to driver structure.
- */
-static void
-serialPOS_hardware_clear (Driver *drvthis)
-{
-	/* Do a hardware clear, if possible. */
-	PrivateData *p = drvthis->private_data;
-
-	switch ((int)p->emulation_mode) {
-		case POS_AEDEX: {
-			unsigned int length = 7;
-			char out[length];
-
-			snprintf(out, length, "%s%c %d", AEDEXPrefix, AEDEXAllLineDisplay, 13);
-			write(p->fd, out, length);
-			break;
-		}
-
-		case POS_Epson:
-			write(p->fd, "\x0C", 1);
-			break;
-
-		case POS_LogicControls:
-			write(p->fd, "\x1F", 1);
-			break;
-
-		default:
-			return;
-	}
-
-	debug(RPT_DEBUG, "serialPOS: cleared LCD");
-}
-
-
-/**
- * Turn the POS's built-in linewrapping feature on or off.
- * \param drvthis  Pointer to driver structure.
- * \param on       New state.
- */
-static void
-serialPOS_linewrap (Driver *drvthis, int on)
-{
-	PrivateData *p = drvthis->private_data;
-
-	p->hardwrap = on;
-
-	debug(RPT_DEBUG, "serialPOS: linewrap turned %s", (on) ? "on" : "off");
-}
-
-
-/**
- * Turn the POS's built-in automatic scrolling feature on or off.
- * \param drvthis  Pointer to driver structure.
- * \param on       New state.
- */
-static void
-serialPOS_autoscroll (Driver *drvthis, int on)
-{
-	PrivateData *p = drvthis->private_data;
-
-	p->hardscroll = on;
-
-	debug(RPT_DEBUG, "serialPOS: autoscroll turned %s", (on) ? "on" : "off");
-}
-
-
-/**
- * Turn POS's hardware cursor blinking on or off.
- * \param drvthis  Pointer to driver structure.
- * \param on       New state.
- *
- */
-static void
-serialPOS_cursorblink (Driver *drvthis, int on)
-{
-	//PrivateData *p = drvthis->private_data;
-
-	debug(RPT_DEBUG, "serialPOS: cursorblink turned %s", (on) ? "on" : "off");
-}
-
-
 /**
  * Move cursor to position (x,y).
  * \param drvthis  Pointer to driver structure.
- * \param x	Horizontal character position (column).
- * \param y	Vertical character position (row).
+ * \param x Horizontal character position (column).
+ * \param y Vertical character position (row).
  */
 static void
 serialPOS_cursor_goto(Driver *drvthis, int x, int y)
@@ -726,17 +577,18 @@ serialPOS_cursor_goto(Driver *drvthis, int x, int y)
 	unsigned int length = 8;
 	char out[length];
 
-	switch ((int)p->emulation_mode) {
+	switch ((int) p->emulation_mode) {
 		case POS_Epson:
 			length = 7;
 
 			snprintf(out, length, "%c%c%02d%02d", 0x1F, 0x24, x, y);
 			break;
 
+		case POS_Ultimate:
 		case POS_LogicControls:
 			length = 4;
 
-			snprintf(out, length, "%c%02d", 0x10, (x-1+((y-1)*(p->width))));
+			snprintf(out, length, "%c%02d", 0x10, (x - 1 + ((y - 1) * (p->width))));
 			break;
 
 		default:
@@ -745,7 +597,6 @@ serialPOS_cursor_goto(Driver *drvthis, int x, int y)
 
 	write(p->fd, out, length);
 }
-
 
 /**
  * Provide general information about the POS display.
@@ -760,26 +611,25 @@ serialPOS_get_info (Driver *drvthis)
 	return p->info;
 }
 
-
 /**
  * Draw a vertical bar bottom-up.
  * \param drvthis  Pointer to driver structure.
- * \param x	Horizontal character position (column) of the starting point.
- * \param y	Vertical character position (row) of the starting point.
+ * \param x Horizontal character position (column) of the starting point.
+ * \param y Vertical character position (row) of the starting point.
  * \param len      Number of characters that the bar is high at 100%
  * \param promille Current height level of the bar in promille.
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-serialPOS_vbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+serialPOS_vbar (Driver *drvthis, int x, int y, int len,
+	int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
 	// map
 	char ascii_map[] = { ' ', ' ', '-', '-', '=', '=', '%', '%' };
 	char *map = ascii_map;
-	int pixels = ((long) 2 * len * p->cellheight) * promille / 2000;
+	int pixels = (promille / (1000 / (p->cellheight * len)));
 	int pos;
-
 
 	if ((x <= 0) || (y <= 0) || (x > p->width))
 		return;
@@ -788,7 +638,8 @@ serialPOS_vbar (Driver *drvthis, int x, int y, int len, int promille, int option
 	 * The bar by default grows in the 'up' direction
 	 * (other direction not yet implemented).
 	 * len is the number of characters that the bar is long at 100%
-	 * promille is the number of promilles (0..1000) that the bar should be filled.
+	 * promille is the number of promilles (0..1000) that the bar
+	 * should be filled.
 	 */
 
 	for (pos = 0; pos < len; pos++) {
@@ -798,11 +649,11 @@ serialPOS_vbar (Driver *drvthis, int x, int y, int len, int promille, int option
 
 		if (pixels >= p->cellheight) {
 			/* write a "full" block to the screen... */
-			serialPOS_chr(drvthis, x, y-pos, '%');
+			serialPOS_chr(drvthis, x, y - pos, '%');
 		}
 		else if (pixels > 0) {
 			// write a partial block...
-			serialPOS_chr(drvthis, x, y-pos, map[len-1]);
+			serialPOS_chr(drvthis, x, y - pos, map[pixels]);
 			break;
 		}
 		else {
@@ -813,21 +664,21 @@ serialPOS_vbar (Driver *drvthis, int x, int y, int len, int promille, int option
 	}
 }
 
-
 /**
  * Draw a horizontal bar to the right.
  * \param drvthis  Pointer to driver structure.
- * \param x	Horizontal character position (column) of the starting point.
- * \param y	Vertical character position (row) of the starting point.
+ * \param x Horizontal character position (column) of the starting point.
+ * \param y Vertical character position (row) of the starting point.
  * \param len      Number of characters that the bar is long at 100%
  * \param promille Current length level of the bar in promille.
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-serialPOS_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
+serialPOS_hbar (Driver *drvthis, int x, int y, int len,
+	int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
-	int pixels = ((long) 2 * len * p->cellwidth) * promille / 2000;
+	int pixels = (promille / (1000 / (p->cellwidth * len)));
 	int pos;
 
 	if ((x <= 0) || (y <= 0) || (y > p->height))
@@ -837,7 +688,8 @@ serialPOS_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 	 * The bar by default grows in the 'right' direction
 	 * (other direction not yet implemented).
 	 * len is the number of characters that the bar is long at 100%
-	 * promille is the number of promilles (0..1000) that the bar should be filled.
+	 * promille is the number of promilles (0..1000) that the bar
+	 * should be filled.
 	 */
 
 	for (pos = 0; pos < len; pos++) {
@@ -845,13 +697,13 @@ serialPOS_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 		if (x + pos > p->width)
 			return;
 
-		if (pixels >= p->cellwidth * 2/3) {
+		if (pixels >= p->cellwidth * 2 / 3) {
 			/* write a "full" block to the screen... */
-			serialPOS_chr(drvthis, x+pos, y, '=');
+			serialPOS_chr(drvthis, x + pos, y, '=');
 		}
-		else if (pixels > p->cellwidth * 1/3) {
+		else if (pixels > p->cellwidth * 1 / 3) {
 			/* write a partial block... */
-			serialPOS_chr(drvthis, x+pos, y, '-');
+			serialPOS_chr(drvthis, x + pos, y, '-');
 			break;
 		}
 		else {
@@ -862,25 +714,24 @@ serialPOS_hbar (Driver *drvthis, int x, int y, int len, int promille, int option
 	}
 }
 
-
 /**
  * Write a big number to the screen.
  * \param drvthis  Pointer to driver structure.
- * \param x	Horizontal character position (column).
+ * \param x Horizontal character position (column).
  * \param num      Character to write (0 - 10 with 10 representing ':')
  */
 MODULE_EXPORT void
 serialPOS_num(Driver * drvthis, int x, int num)
 {
-        // Lib_adv_bignum does everything needed to show the bignumbers.
-        lib_adv_bignum(drvthis, x, num, 0, 0);
+	// Lib_adv_bignum does everything needed to show the bignumbers.
+	lib_adv_bignum(drvthis, x, num, 0, 0);
 }
 
 /**
  * Set cursor position and state.
  * \param drvthis  Pointer to driver structure.
- * \param x	Horizontal cursor position (column).
- * \param y	Vertical cursor position (row).
+ * \param x Horizontal cursor position (column).
+ * \param y Vertical cursor position (row).
  * \param state    New cursor state.
  */
 MODULE_EXPORT void
@@ -888,7 +739,8 @@ serialPOS_cursor (Driver *drvthis, int x, int y, int state)
 {
 	PrivateData *p = drvthis->private_data;
 
-	switch ((int)p->emulation_mode) {
+	switch ((int) p->emulation_mode) {
+		case POS_Ultimate:
 		case POS_LogicControls:
 			switch (state) {
 				case CURSOR_OFF:        // no cursor
@@ -911,7 +763,6 @@ serialPOS_cursor (Driver *drvthis, int x, int y, int state)
 	serialPOS_cursor_goto(drvthis, x, y);
 }
 
-
 /**
  * Get key from a pass-through port of the POS display.
  * \param drvthis  Pointer to driver structure.
@@ -932,8 +783,8 @@ serialPOS_get_key (Driver *drvthis)
 	FD_SET(p->fd, &fdset);
 
 	if ((ret = select(FD_SETSIZE, &fdset, NULL, NULL, &selectTimeout)) < 0) {
-		report(RPT_DEBUG, "%s: get_key: select() failed (%s)",
-				drvthis->name, strerror(errno));
+		debug(RPT_DEBUG, "%s: get_key: select() failed (%s)", drvthis->name,
+			strerror(errno));
 		return NULL;
 	}
 	if (!ret) {
@@ -945,8 +796,8 @@ serialPOS_get_key (Driver *drvthis)
 		return NULL;
 
 	if ((ret = read(p->fd, &buf, 1)) < 0) {
-		report(RPT_DEBUG, "%s: get_key: read() failed (%s)",
-				drvthis->name, strerror(errno));
+		debug(RPT_DEBUG, "%s: get_key: read() failed (%s)", drvthis->name,
+			strerror(errno));
 		return NULL;
 	}
 
@@ -972,17 +823,15 @@ serialPOS_get_key (Driver *drvthis)
 			key = "Escape";
 			break;
 		default:
-			report(RPT_DEBUG, "%s get_key: illegal key 0x%02X",
-					drvthis->name, buf);
+			debug(RPT_DEBUG, "%s get_key: illegal key 0x%02X", drvthis->name, buf);
 			return NULL;
 		}
 
-		report(RPT_DEBUG, "%s: get_key: returns %s", drvthis->name, key);
+		debug(RPT_DEBUG, "%s: get_key: returns %s", drvthis->name, key);
 		return key;
 	}
 
 	return NULL;
 }
-
 
 /* EOF */

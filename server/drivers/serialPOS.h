@@ -1,15 +1,6 @@
 #ifndef SERPOS_H
 #define SERPOS_H
 
-#define DEFAULT_DEVICE		"/dev/Stty"
-#define DEFAULT_SPEED		9800
-#define DEFAULT_LINEWRAP	0
-#define DEFAULT_AUTOSCROLL	0
-#define DEFAULT_CURSORBLINK	0
-#define DEFAULT_SIZE		"16x2"
-#define DEFAULT_TYPE		"AEDEX"
-
-
 MODULE_EXPORT int  serialPOS_init (Driver *drvthis);
 MODULE_EXPORT void serialPOS_close (Driver *drvthis);
 MODULE_EXPORT int  serialPOS_width (Driver *drvthis);
