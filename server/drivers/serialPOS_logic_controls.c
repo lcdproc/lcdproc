@@ -209,7 +209,8 @@ flush(PrivateData* data, uint8_t* buffer)
 		if (data->display_misc_state.cursor_state) {
 			buffer = bytecpy_advance_ptr(buffer, LOGIC_CURSOR_OFF,
 						     sizeof(LOGIC_CURSOR_OFF));
-		} else {
+		}
+		else {
 			buffer = bytecpy_advance_ptr(buffer, LOGIC_CURSOR_ON,
 						     sizeof(LOGIC_CURSOR_ON));
 		}
@@ -258,7 +259,8 @@ flush(PrivateData* data, uint8_t* buffer)
 			target_brightness = 0xff;
 			break;
 		}
-	} else {
+	}
+	else {
 		target_brightness = 0x20;
 	}
 	if (data->display_misc_state.brightness != target_brightness) {

@@ -338,7 +338,8 @@ flush(PrivateData* data, uint8_t* buffer)
 	if (data->buffered_misc_state.backlight_state != BACKLIGHT_OFF) {
 		target_brightness = serialPOS_convert_brightness(
 		    data->buffered_misc_state.brightness);
-	} else {
+	}
+	else {
 		target_brightness = 1;
 	}
 	if (data->display_misc_state.brightness != target_brightness) {
@@ -355,7 +356,8 @@ cust_char_code(PrivateData* data, int idx)
 {
 	if (idx < data->custom_chars_supported) {
 		return (CUSTOM_START + idx);
-	} else {
+	}
+	else {
 		return -1;
 	}
 }

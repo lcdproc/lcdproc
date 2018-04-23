@@ -110,10 +110,10 @@
  */
 
 /* Vars for the server core */
-MODULE_EXPORT char *api_version = API_VERSION;
+MODULE_EXPORT char* api_version = API_VERSION;
 MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1;
-MODULE_EXPORT char *symbol_prefix = "serialPOS_";
+MODULE_EXPORT char* symbol_prefix = "serialPOS_";
 
 /**
  * Initialize the driver.
@@ -122,7 +122,7 @@ MODULE_EXPORT char *symbol_prefix = "serialPOS_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-serialPOS_init(Driver * drvthis)
+serialPOS_init(Driver* drvthis)
 {
 	struct termios portset;
 
@@ -136,7 +136,7 @@ serialPOS_init(Driver * drvthis)
 	PrivateData *p;
 
 	/* Alocate and store private data */
-	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	p = (PrivateData*) calloc(1, sizeof(PrivateData));
 	if (drvthis->store_private_ptr(drvthis, p))
 		return -1;
 
@@ -664,7 +664,8 @@ serialPOS_vbar(Driver* drvthis, int x, int y, int len, int promille,
 						  p, p->cellwidth - 1));
 			else
 				serialPOS_chr(drvthis, x, y - pos, '%');
-		} else if (pixels > 0) {
+		}
+		else if (pixels > 0) {
 			/* write a partial block... */
 			if (p->vbar_custom)
 				serialPOS_chr(
@@ -674,7 +675,8 @@ serialPOS_vbar(Driver* drvthis, int x, int y, int len, int promille,
 			else
 				serialPOS_chr(drvthis, x, y - pos, map[pixels]);
 			break;
-		} else {
+		}
+		else {
 			;
 		}
 
@@ -723,7 +725,8 @@ serialPOS_hbar(Driver* drvthis, int x, int y, int len, int promille,
 			} else {
 				; /* write nothing (not even a space) */
 			}
-		} else {
+		}
+		else {
 			if (pixels > p->cellwidth)
 				serialPOS_chr(drvthis, x + pos, y,
 					      p->protocol_ops->cust_char_code(
@@ -776,8 +779,8 @@ serialPOS_cursor(Driver* drvthis, int x, int y, int state)
  * \return         String representation of the key;
  *                 \c NULL if nothing available / unmapped key.
  */
-MODULE_EXPORT const char *
-serialPOS_get_key(Driver * drvthis)
+MODULE_EXPORT const char*
+serialPOS_get_key(Driver* drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	int ret;
