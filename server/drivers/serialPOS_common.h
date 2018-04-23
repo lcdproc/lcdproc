@@ -37,8 +37,11 @@
 #define DEFAULT_SPEED 		9800
 #define DEFAULT_SIZE 		"16x2"
 #define DEFAULT_TYPE 		"AEDEX"
-#define MAX_CELLWID 5
-#define MAX_CELLHGT 8
+#define DEFAULT_CELL_SIZE	"5x8"
+#define DEFAULT_CUSTOM_CHARS 	0
+#define MAX_CUSTOM_CHARS 	32
+#define MAX_CELLWID 		5
+#define MAX_CELLHGT 		8
 
 #define AEDEXDefaultPrefix "!#"
 #define AEDEXPrefix "~`"
@@ -126,26 +129,6 @@ typedef struct serialPOS_ops {
 	int (*flush)(struct serialPOS_private_data* data, uint8_t* buffer);
 
 	/**
-	 * Obtain the command required to store a custom character in the
-	 * display.
-	 *
-	 * \param data private data used by the display
-	 * \param buffer buffer to write the command to
-	 * \param idx index of the custom character,
-	 * from \ref PrivateData::custom_chars_reserved to
-	 * \ref PrivateData::custom_chars_supported.
-	 * \param ch custom character to store, given as an array of bytes,
-	 * one for each vertical display cell segment. Data format:
-	 * Array of \c data->cellheight bytes, each representing a pixel row
-	 * starting from the top to bottom. The bits in each byte represent
-	 * the pixels of the custom character, where the LSB
-	 * (least significant bit) is the rightmost pixel in each pixel row.
-	 * \return number of bytes written to the buffer, or -1 on error
-	 */
-	int (*store_cust_char)(struct serialPOS_private_data* data,
-			       uint8_t* buffer, int idx, const uint8_t* ch);
-
-	/**
 	 * Obtain the character code assigned to a custom character
 	 * at a particular index.
 	 *
@@ -223,7 +206,6 @@ typedef struct serialPOS_private_data {
 
 	/* number of custom characters supported by the display */
 	int custom_chars_supported; /**< number of custom character supported */
-	int custom_chars_reserved;  /**< num reserved by protocol driver */
 	/**
 	 * Whether display supports custom chars for hbar
 	 *
@@ -274,7 +256,8 @@ typedef struct serialPOS_private_data {
 
 	POS_EmulationType emulation_mode; /**< emulation type */
 
-	/* protocol-type specific data */
+	/* protocol specific data */
+	int buffer_size;	 /**< Buffer size required by the protocol */
 	const ops* protocol_ops; /**< Protocol specific operations */
 
 	char info[255]; /**< static data from serialPOS_get_info */
@@ -297,21 +280,6 @@ bytecpy_advance_ptr(uint8_t* restrict to, const uint8_t* restrict from,
 	memcpy(to, from, len);
 	return (to + len);
 }
-
-/**
- * Convert a custom character in standard HD44780 format to the
- * format required by the CD5220, EPSON, FIRICH,
- * LCI3400, and PTC7220 protocols. The conversion is performed in-place.
- *
- * \param cuschar the
- * custom character to convert, given as an array of bytes,
- * one for each vertical display cell segment. Data format:
- * Array of \c data->cellheight bytes, each representing a pixel row
- * starting from the top to bottom. The bits in each byte represent
- * the pixels of the custom character, where the LSB
- * (least significant bit) is the rightmost pixel in each pixel row.
- */
-void serialPOS_convert_cuschar(uint8_t* cuschar);
 
 /**
  * Convert a brightness value in promille to a brightness value
