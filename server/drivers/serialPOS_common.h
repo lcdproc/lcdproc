@@ -140,6 +140,13 @@ typedef struct serialPOS_ops {
 	int (*cust_char_code)(struct serialPOS_private_data* data, int idx);
 } ops;
 
+/*
+ * Externally defined operations structures
+ */
+extern const ops serialPOS_aedex_ops;
+extern const ops serialPOS_epson_ops;
+extern const ops serialPOS_logic_controls_ops;
+
 /**
  * All POS protocols supported by serialPOS
  */
@@ -150,7 +157,7 @@ typedef enum {
 	 */
 	POS_AEDEX,
 	/*
-	 * Implemented, no custom character support, no cursor support, no
+	 * Implemented, with custom character support, cursor support, and
 	 * backlight support.
 	 */
 	POS_Epson, /* http://www.barcode-manufacturer.com/pdf/vfd_manual.pdf */
@@ -159,7 +166,7 @@ typedef enum {
 	 */
 	POS_Emax,
 	/*
-	 * Implemented, no custom character support, no cursor support, no
+	 * Implemented, with custom character support, cursor support, and
 	 * backlight support.
 	 */
 	POS_LogicControls,
@@ -168,19 +175,6 @@ typedef enum {
 	 */
 	POS_Ultimate,
 } POS_EmulationType;
-
-typedef enum {
-	AEDEXLine1Display = 1,	/*       upper line display      */
-	AEDEXLine2Display,	/*   bottom line display     */
-	AEDEXLine3Display,	/*   not sure what this code really is       */
-	AEDEXContinuousScroll,	/*       upper line message scroll continuously
-				 */
-	AEDEXDisplayTime,	/*    "hh':'mm" h,m='0'-'9' display time      */
-	AEDEXSingleScroll,	/*   upper line message scroll one pass      */
-	AEDEXAllScroll,		/*      not sure what this code really is       */
-	AEDEXChangeCode,	/*     change attention code   */
-	AEDEXAllLineDisplay	/*  two line display        */
-} AEDEXCommands;
 
 /**
  * Structure use by \c serialPOS to track miscellaneous display state.
@@ -253,8 +247,6 @@ typedef struct serialPOS_private_data {
 	/* framebuffer and buffer for old LCD contents */
 	uint8_t* framebuf;     /**< Framebuffer mutated by server calls */
 	uint8_t* backingstore; /**< real LCD display buffer */
-
-	POS_EmulationType emulation_mode; /**< emulation type */
 
 	/* protocol specific data */
 	int buffer_size;	 /**< Buffer size required by the protocol */
