@@ -56,7 +56,8 @@
  * set_brightness  NOT IMPLEMENTED: not part of AEDEX protocol
  * backlight   NOT IMPLEMENTED: not part of AEDEX protocol
  * output      NOT IMPLEMENTED: not part of any POS protocol
- * get_key     Implemented for devices using a pass-through serial port connected to an RS232 terminal or keyboard.
+ * get_key     Implemented for devices using a pass-through serial port
+ * 	       connected to an RS232 terminal or keyboard.
  * get_info    Implemented.
  */
 
@@ -73,7 +74,7 @@
 #include <ctype.h>
 
 #ifdef HAVE_CONFIG_H
-# include "config.h"
+#include "config.h"
 #endif
 
 #include "lcd.h"
@@ -113,8 +114,8 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 1;
 MODULE_EXPORT char *symbol_prefix = "serialPOS_";
 
-static void serialPOS_hardware_init(Driver *drvthis);
-static void serialPOS_cursor_goto(Driver *drvthis, int x, int y);
+static void serialPOS_hardware_init(Driver * drvthis);
+static void serialPOS_cursor_goto(Driver * drvthis, int x, int y);
 
 /**
  * Initialize the driver.
@@ -123,7 +124,7 @@ static void serialPOS_cursor_goto(Driver *drvthis, int x, int y);
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-serialPOS_init (Driver *drvthis)
+serialPOS_init(Driver * drvthis)
 {
 	struct termios portset;
 
@@ -158,14 +159,16 @@ serialPOS_init (Driver *drvthis)
 	/* READ CONFIG FILE */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0,
-	DEFAULT_DEVICE), sizeof(device));
+	strncpy(device,
+		drvthis->config_get_string(drvthis->name, "Device", 0,
+					   DEFAULT_DEVICE), sizeof(device));
 	device[sizeof(device) - 1] = '\0';
 	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
 	/* Get emulation type */
-	strncpy(buf, drvthis->config_get_string(drvthis->name, "Type", 0,
-	DEFAULT_TYPE), sizeof(buf));
+	strncpy(buf,
+		drvthis->config_get_string(drvthis->name, "Type", 0,
+					   DEFAULT_TYPE), sizeof(buf));
 	buf[sizeof(buf) - 1] = '\0';
 	if (strncasecmp(buf, "AED", 3) == 0) {
 		p->emulation_mode = POS_AEDEX;
@@ -183,67 +186,76 @@ serialPOS_init (Driver *drvthis)
 		p->emulation_mode = POS_Ultimate;
 	}
 	else {
-		report(RPT_ERR, "%s: unknown display Type %s; must be one of "
-			"AEDEX, Epson, Emax, Logic Controls or Ultimate", drvthis->name, buf);
+		report(RPT_ERR,
+		       "%s: unknown display Type %s; must be one of "
+		       "AEDEX, Epson, Emax, Logic Controls or Ultimate",
+		       drvthis->name, buf);
 		return -1;
 	}
 
 	/* Get display size */
-	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0,
-	DEFAULT_SIZE), sizeof(size));
+	strncpy(size,
+		drvthis->config_get_string(drvthis->name, "Size", 0,
+					   DEFAULT_SIZE), sizeof(size));
 	size[sizeof(size) - 1] = '\0';
-	if ((sscanf(size, "%dx%d", &w, &h) != 2) || (w <= 0) || (w > MAX_WIDTH)
-		|| (h <= 0) || (h > MAX_HEIGHT)) {
-		report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-			drvthis->name, size, DEFAULT_SIZE);
+	if ((sscanf(size, "%dx%d", &w, &h) != 2) || (w <= 0)
+	    || (w > MAX_WIDTH)
+	    || (h <= 0) || (h > MAX_HEIGHT)) {
+		report(RPT_WARNING,
+		       "%s: cannot read Size: %s; using default %s",
+		       drvthis->name, size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
 
 	/* Get speed */
-	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
+	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0,
+				      DEFAULT_SPEED);
 	switch (tmp) {
-		case 1200:
-			speed = B1200;
-			break;
-		case 2400:
-			speed = B2400;
-			break;
-		case 4800:
-			speed = B4800;
-			break;
-		case 9600:
-			speed = B9600;
-			break;
-		case 19200:
-			speed = B19200;
-			break;
-		case 115200:
-			speed = B115200;
-			break;
-		default:
-			speed = B9600;
-			report(RPT_WARNING, "%s: Speed must be either "
-				"1200, 2400, 4800, 9600, 19200, or 115200 "
-				"; using default %d", drvthis->name, tmp);
+	    case 1200:
+		speed = B1200;
+		break;
+	    case 2400:
+		speed = B2400;
+		break;
+	    case 4800:
+		speed = B4800;
+		break;
+	    case 9600:
+		speed = B9600;
+		break;
+	    case 19200:
+		speed = B19200;
+		break;
+	    case 115200:
+		speed = B115200;
+		break;
+	    default:
+		speed = B9600;
+		report(RPT_WARNING,
+		       "%s: Speed must be either "
+		       "1200, 2400, 4800, 9600, 19200, or 115200 "
+		       "; using default %d", drvthis->name, tmp);
 	}
 
 	/* Set up io port correctly, and open it... */
 	p->fd = open(device, O_RDWR | O_NOCTTY);
 	if (p->fd == -1) {
-		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device,
-			strerror(errno));
+		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name,
+		       device, strerror(errno));
 		if (errno == EACCES)
-			report(RPT_ERR, "%s: %s device could not be opened...", drvthis->name,
-				device);
+			report(RPT_ERR,
+			       "%s: %s device could not be opened...",
+			       drvthis->name, device);
 		return -1;
 	}
 	report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
 
 	if (tcgetattr(p->fd, &portset)) {
-		report(RPT_ERR, "%s: unable to get terminal attributes for "
-			"device: %s", drvthis->name, device);
+		report(RPT_ERR,
+		       "%s: unable to get terminal attributes for "
+		       "device: %s", drvthis->name, device);
 		return -1;
 	}
 
@@ -253,11 +265,12 @@ serialPOS_init (Driver *drvthis)
 	cfmakeraw(&portset);
 #else
 	/* The hard way */
-	portset.c_iflag &= ~( IGNBRK | BRKINT | PARMRK | ISTRIP
-		| INLCR | IGNCR | ICRNL | IXON );
+	portset.c_iflag &=
+		~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL |
+		  IXON);
 	portset.c_oflag &= ~OPOST;
-	portset.c_lflag &= ~( ECHO | ECHONL | ICANON | ISIG | IEXTEN );
-	portset.c_cflag &= ~( CSIZE | PARENB | CRTSCTS );
+	portset.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+	portset.c_cflag &= ~(CSIZE | PARENB | CRTSCTS);
 	portset.c_cflag |= CS8 | CREAD | CLOCAL;
 #endif
 	/* Set timeouts */
@@ -270,14 +283,16 @@ serialPOS_init (Driver *drvthis)
 
 	/* Do it... */
 	if (tcsetattr(p->fd, TCSANOW, &portset)) {
-		report(RPT_ERR, "%s: unable to set terminal attributes for"
-			" device: %s", drvthis->name, device);
+		report(RPT_ERR,
+		       "%s: unable to set terminal attributes for"
+		       " device: %s", drvthis->name, device);
 	}
 
 	/* Make sure the frame buffer is there... */
 	p->framebuf = (uint8_t *) calloc(p->width * p->height, 1);
 	if (p->framebuf == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer", drvthis->name);
+		report(RPT_ERR, "%s: unable to create framebuffer",
+		       drvthis->name);
 		return -1;
 	}
 	memset(p->framebuf, ' ', p->width * p->height);
@@ -285,8 +300,9 @@ serialPOS_init (Driver *drvthis)
 	/* make sure the framebuffer backing store is there... */
 	p->backingstore = (uint8_t *) malloc(p->width * p->height);
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer backing store",
-			drvthis->name);
+		report(RPT_ERR,
+		       "%s: unable to create framebuffer backing store",
+		       drvthis->name);
 		return -1;
 	}
 	memset(p->backingstore, ' ', p->width * p->height);
@@ -304,7 +320,7 @@ serialPOS_init (Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
-serialPOS_close (Driver *drvthis)
+serialPOS_close(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -332,7 +348,7 @@ serialPOS_close (Driver *drvthis)
  * \return         Number of characters the display is wide.
  */
 MODULE_EXPORT int
-serialPOS_width (Driver *drvthis)
+serialPOS_width(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -345,7 +361,7 @@ serialPOS_width (Driver *drvthis)
  * \return         Number of characters the display is high.
  */
 MODULE_EXPORT int
-serialPOS_height (Driver *drvthis)
+serialPOS_height(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -358,7 +374,7 @@ serialPOS_height (Driver *drvthis)
  * \return         Number of custom characters (always \c 0 ).
  */
 MODULE_EXPORT int
-serialPOS_get_free_chars (Driver *drvthis)
+serialPOS_get_free_chars(Driver * drvthis)
 {
 	return 0;
 }
@@ -369,7 +385,7 @@ serialPOS_get_free_chars (Driver *drvthis)
  * \return         Number of pixel columns a character cell is wide.
  */
 MODULE_EXPORT int
-serialPOS_cellwidth (Driver *drvthis)
+serialPOS_cellwidth(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -382,7 +398,7 @@ serialPOS_cellwidth (Driver *drvthis)
  * \return         Number of pixel lines a character cell is high.
  */
 MODULE_EXPORT int
-serialPOS_cellheight (Driver *drvthis)
+serialPOS_cellheight(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -391,15 +407,15 @@ serialPOS_cellheight (Driver *drvthis)
 
 /**
  * Print a string on the screen at position (x,y).
- * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * The upper-left corner is (1,1), the lower-right corner is
+ * (p->width, p->height).
  * \param drvthis  Pointer to driver structure.
  * \param x Horizontal character position (column).
  * \param y Vertical character position (row).
  * \param string   String that gets written.
  */
 MODULE_EXPORT void
-serialPOS_string (Driver *drvthis, int x, int y,
-	const char string[])
+serialPOS_string(Driver * drvthis, int x, int y, const char string[])
 {
 	PrivateData *p = drvthis->private_data;
 	int i;
@@ -425,7 +441,7 @@ serialPOS_string (Driver *drvthis, int x, int y,
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
-serialPOS_clear (Driver *drvthis)
+serialPOS_clear(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -440,7 +456,7 @@ serialPOS_clear (Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  */
 MODULE_EXPORT void
-serialPOS_flush (Driver *drvthis)
+serialPOS_flush(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -449,7 +465,7 @@ serialPOS_flush (Driver *drvthis)
 
 	for (i = 0; i < p->height; i++) {
 		/*
-		 * set  pointers to start of the line in frame buffer
+		 * set pointers to start of the line in frame buffer
 		 * & backing store
 		 */
 		uint8_t *sp = p->framebuf + (i * p->width);
@@ -466,29 +482,34 @@ serialPOS_flush (Driver *drvthis)
 		 * - skip lines that are identical
 		 */
 
-		// skip over identical lines
+		/* skip over identical lines */
 		if (memcmp(sp, sq, p->width) == 0) {
 			/* The lines are the same. */
 			continue;
 		}
 
 		/* there are differences, ... */
-		debug(RPT_DEBUG, "%s: l=%d string='%.*s'", __FUNCTION__, i, p->width, sp);
+		debug(RPT_DEBUG, "%s: l=%d string='%.*s'", __FUNCTION__, i,
+		      p->width, sp);
 
 		switch ((int) p->emulation_mode) {
-			case POS_AEDEX: {
+		    case POS_AEDEX:
+			{
 				int command = i + 1;
-				snprintf(out, length, "%s%d%.*s%c", AEDEXPrefix, command, p->width, sp,
-					13);
-				debug(RPT_DEBUG, "%s%d%.*s%c", AEDEXPrefix, command, p->width, sp, 13);
+				snprintf(out, length, "%s%d%.*s%c",
+				     AEDEXPrefix, command, p->width,
+				     sp, 13);
+				debug(RPT_DEBUG, "%s%d%.*s%c",
+				  AEDEXPrefix, command, p->width, sp,
+				  13);
 				break;
 			}
-			default:
-				/* Send to correct line, then write the data */
-				serialPOS_cursor_goto(drvthis, 1, i + 1);
-				length = p->width + 1;
-				snprintf(out, length, "%s", sp);
-				break;
+		    default:
+			/* Send to correct line, then write the data */
+			serialPOS_cursor_goto(drvthis, 1, i + 1);
+			length = p->width + 1;
+			snprintf(out, length, "%s", sp);
+			break;
 		}
 		debug(RPT_DEBUG, "%s%c", out);
 
@@ -505,14 +526,15 @@ serialPOS_flush (Driver *drvthis)
 
 /**
  * Print a character on the screen at position (x,y).
- * The upper-left corner is (1,1), the lower-right corner is (p->width, p->height).
+ * The upper-left corner is (1,1), the lower-right corner is
+ * (p->width, p->height).
  * \param drvthis  Pointer to driver structure.
  * \param x Horizontal character position (column).
  * \param y Vertical character position (row).
  * \param c Character that gets written.
  */
 MODULE_EXPORT void
-serialPOS_chr (Driver *drvthis, int x, int y, char c)
+serialPOS_chr(Driver * drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
 
@@ -521,9 +543,10 @@ serialPOS_chr (Driver *drvthis, int x, int y, char c)
 	y--;
 
 	if ((x >= 0) && (y >= 0) && (x < p->width) && (y < p->height))
-			p->framebuf[(y * p->width) + x] = c;
+		p->framebuf[(y * p->width) + x] = c;
 
-	debug(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x, y);
+	debug(RPT_DEBUG, "writing character %02X to position (%d,%d)", c, x,
+	      y);
 }
 
 /**
@@ -531,36 +554,41 @@ serialPOS_chr (Driver *drvthis, int x, int y, char c)
  * \param drvthis  Pointer to driver structure.
  */
 static void
-serialPOS_hardware_init (Driver *drvthis)
+serialPOS_hardware_init(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
 	switch ((int) p->emulation_mode) {
-		case POS_Emax:
-		case POS_AEDEX: {
-			/* The # character might interfere with the AEDEX command set,
-			 so change the AEDEX attention code.
-			 */
+	    case POS_Emax:
+	    case POS_AEDEX:
+		{
+			/*
+			* The # character might interfere with the
+			* AEDEX command set,
+			*
+			* so change the AEDEX attention code.
+			*/
 			unsigned int length = 8;
 			char out[length];
 
-			snprintf(out, length, "%s%d%s%c", AEDEXDefaultPrefix, AEDEXChangeCode,
-			AEDEXPrefix, 13);
+			snprintf(out, length, "%s%d%s%c",
+			     AEDEXDefaultPrefix, AEDEXChangeCode,
+			     AEDEXPrefix, 13);
 			write(p->fd, out, length);
 
 			break;
 		}
-		case POS_Epson:
-			write(p->fd, "\x1B\x40", 2);
-			break;
+	    case POS_Epson:
+		write(p->fd, "\x1B\x40", 2);
+		break;
 
-		case POS_Ultimate:
-		case POS_LogicControls:
-			write(p->fd, "\x11", 1);
-			break;
+	    case POS_Ultimate:
+	    case POS_LogicControls:
+		write(p->fd, "\x11", 1);
+		break;
 
-		default:
-			return;
+	    default:
+		    return;
 	}
 }
 
@@ -571,28 +599,29 @@ serialPOS_hardware_init (Driver *drvthis)
  * \param y Vertical character position (row).
  */
 static void
-serialPOS_cursor_goto(Driver *drvthis, int x, int y)
+serialPOS_cursor_goto(Driver * drvthis, int x, int y)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned int length = 8;
 	char out[length];
 
 	switch ((int) p->emulation_mode) {
-		case POS_Epson:
-			length = 7;
+	    case POS_Epson:
+		length = 7;
 
-			snprintf(out, length, "%c%c%02d%02d", 0x1F, 0x24, x, y);
-			break;
+		snprintf(out, length, "%c%c%02d%02d", 0x1F, 0x24, x, y);
+		break;
 
-		case POS_Ultimate:
-		case POS_LogicControls:
-			length = 4;
+	    case POS_Ultimate:
+	    case POS_LogicControls:
+		length = 4;
 
-			snprintf(out, length, "%c%02d", 0x10, (x - 1 + ((y - 1) * (p->width))));
-			break;
+		snprintf(out, length, "%c%02d", 0x10,
+		     (x - 1 + ((y - 1) * (p->width))));
+		break;
 
-		default:
-			return;
+	    default:
+		return;
 	}
 
 	write(p->fd, out, length);
@@ -604,7 +633,7 @@ serialPOS_cursor_goto(Driver *drvthis, int x, int y)
  * \return         Constant string with information.
  */
 MODULE_EXPORT const char *
-serialPOS_get_info (Driver *drvthis)
+serialPOS_get_info(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	strcpy(p->info, "Driver for Point of Sale Displays.");
@@ -621,8 +650,8 @@ serialPOS_get_info (Driver *drvthis)
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-serialPOS_vbar (Driver *drvthis, int x, int y, int len,
-	int promille, int options)
+serialPOS_vbar(Driver * drvthis, int x, int y, int len, int promille,
+	       int options)
 {
 	PrivateData *p = drvthis->private_data;
 	// map
@@ -643,7 +672,6 @@ serialPOS_vbar (Driver *drvthis, int x, int y, int len,
 	 */
 
 	for (pos = 0; pos < len; pos++) {
-
 		if (y - pos <= 0)
 			return;
 
@@ -657,7 +685,7 @@ serialPOS_vbar (Driver *drvthis, int x, int y, int len,
 			break;
 		}
 		else {
-			; // write nothing (not even a space)
+			;	// write nothing (not even a space)
 		}
 
 		pixels -= p->cellheight;
@@ -674,8 +702,8 @@ serialPOS_vbar (Driver *drvthis, int x, int y, int len,
  * \param options  Options (currently unused).
  */
 MODULE_EXPORT void
-serialPOS_hbar (Driver *drvthis, int x, int y, int len,
-	int promille, int options)
+serialPOS_hbar(Driver * drvthis, int x, int y, int len, int promille,
+	       int options)
 {
 	PrivateData *p = drvthis->private_data;
 	int pixels = (promille / (1000 / (p->cellwidth * len)));
@@ -693,7 +721,6 @@ serialPOS_hbar (Driver *drvthis, int x, int y, int len,
 	 */
 
 	for (pos = 0; pos < len; pos++) {
-
 		if (x + pos > p->width)
 			return;
 
@@ -707,7 +734,7 @@ serialPOS_hbar (Driver *drvthis, int x, int y, int len,
 			break;
 		}
 		else {
-			; // write nothing (not even a space)
+			;	// write nothing (not even a space)
 		}
 
 		pixels -= p->cellwidth;
@@ -735,28 +762,28 @@ serialPOS_num(Driver * drvthis, int x, int num)
  * \param state    New cursor state.
  */
 MODULE_EXPORT void
-serialPOS_cursor (Driver *drvthis, int x, int y, int state)
+serialPOS_cursor(Driver * drvthis, int x, int y, int state)
 {
 	PrivateData *p = drvthis->private_data;
 
 	switch ((int) p->emulation_mode) {
-		case POS_Ultimate:
-		case POS_LogicControls:
-			switch (state) {
-				case CURSOR_OFF:        // no cursor
-					write(p->fd, "\x14", 1);
-					break;
-				case CURSOR_DEFAULT_ON: // blinking block
-					write(p->fd, "\x13", 1);
-					break;
-				default:
-					break;
-			}
+	    case POS_Ultimate:
+	    case POS_LogicControls:
+		switch (state) {
+		    case CURSOR_OFF:
+			write(p->fd, "\x14", 1);
 			break;
+		    case CURSOR_DEFAULT_ON:
+			write(p->fd, "\x13", 1);
+			break;
+		    default:
+			break;
+		}
+		break;
 
-		default:
-			/* set cursor state not supported */
-			break;
+	    default:
+		    /* set cursor state not supported */
+		break;
 	}
 
 	/* set cursor position */
@@ -770,7 +797,7 @@ serialPOS_cursor (Driver *drvthis, int x, int y, int state)
  *                 \c NULL if nothing available / unmapped key.
  */
 MODULE_EXPORT const char *
-serialPOS_get_key (Driver *drvthis)
+serialPOS_get_key(Driver * drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 	int ret;
@@ -782,9 +809,10 @@ serialPOS_get_key (Driver *drvthis)
 	FD_ZERO(&fdset);
 	FD_SET(p->fd, &fdset);
 
-	if ((ret = select(FD_SETSIZE, &fdset, NULL, NULL, &selectTimeout)) < 0) {
-		debug(RPT_DEBUG, "%s: get_key: select() failed (%s)", drvthis->name,
-			strerror(errno));
+	if ((ret = select(FD_SETSIZE, &fdset, NULL, NULL, &selectTimeout))
+	    < 0) {
+		debug(RPT_DEBUG, "%s: get_key: select() failed (%s)",
+		      drvthis->name, strerror(errno));
 		return NULL;
 	}
 	if (!ret) {
@@ -796,38 +824,40 @@ serialPOS_get_key (Driver *drvthis)
 		return NULL;
 
 	if ((ret = read(p->fd, &buf, 1)) < 0) {
-		debug(RPT_DEBUG, "%s: get_key: read() failed (%s)", drvthis->name,
-			strerror(errno));
+		debug(RPT_DEBUG, "%s: get_key: read() failed (%s)",
+		      drvthis->name, strerror(errno));
 		return NULL;
 	}
 
 	if (ret == 1) {
-
 		switch (buf) {
-		case 13:
+		    case 13:
 			key = "Enter";
 			break;
-		case 65:
+		    case 65:
 			key = "Up";
 			break;
-		case 66:
+		    case 66:
 			key = "Down";
 			break;
-		case 67:
+		    case 67:
 			key = "Right";
 			break;
-		case 68:
+		    case 68:
 			key = "Left";
 			break;
-		case 8:
+		    case 8:
 			key = "Escape";
 			break;
-		default:
-			debug(RPT_DEBUG, "%s get_key: illegal key 0x%02X", drvthis->name, buf);
+		    default:
+			debug(RPT_DEBUG,
+				"%s get_key: illegal key 0x%02X",
+				drvthis->name, buf);
 			return NULL;
 		}
 
-		debug(RPT_DEBUG, "%s: get_key: returns %s", drvthis->name, key);
+		debug(RPT_DEBUG, "%s: get_key: returns %s", drvthis->name,
+		      key);
 		return key;
 	}
 
