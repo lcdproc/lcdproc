@@ -43,8 +43,6 @@
 #define MAX_CELLWID 		5
 #define MAX_CELLHGT 		8
 
-#define AEDEXDefaultPrefix "!#"
-#define AEDEXPrefix "~`"
 /*
  * Max width is limited because the following expression can not evaluate
  * to zero - used in hbar()
@@ -147,35 +145,6 @@ extern const ops serialPOS_aedex_ops;
 extern const ops serialPOS_cd5220_ops;
 extern const ops serialPOS_epson_ops;
 extern const ops serialPOS_logic_controls_ops;
-
-/**
- * All POS protocols supported by serialPOS
- */
-typedef enum {
-	/*
-	 * Implemented, no custom character support, no cursor support, no
-	 * backlight support.
-	 */
-	POS_AEDEX,
-	/*
-	 * Implemented, with custom character support, cursor support, and
-	 * backlight support.
-	 */
-	POS_Epson, /* http://www.barcode-manufacturer.com/pdf/vfd_manual.pdf */
-	/*
-	 * Implemented as POS_AEDEX
-	 */
-	POS_Emax,
-	/*
-	 * Implemented, with custom character support, cursor support, and
-	 * backlight support.
-	 */
-	POS_LogicControls,
-	/*
-	 * Implemented as POS_LogicControls
-	 */
-	POS_Ultimate,
-} POS_EmulationType;
 
 /**
  * Structure use by \c serialPOS to track miscellaneous display state.

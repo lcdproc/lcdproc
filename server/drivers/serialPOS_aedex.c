@@ -192,7 +192,8 @@ flush(PrivateData* data, uint8_t* buffer)
 			buffer =
 			    bytecpy_advance_ptr(buffer, AEDEX_LINE_END,
 						sizeof(AEDEX_LINE_END));
-		} else {
+		}
+		else {
 			/*
 			 * Display width is not 20 chars, we must do two
 			 * separate updates
