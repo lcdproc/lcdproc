@@ -121,7 +121,7 @@ static const uint8_t CD5220_BRIGHTNESS_ADJUST[] = {0x1b, 0x2a};
  * - Two bytes in the range [\c 0x20, \c 0xff],
  *   henceforth called \c CSTART, \c CEND representing the
  *   start and end codes of the characters whose glyphs we want to replace
- * - \c CEND - \c CSTART repetitons of 6 bytes, consisting of:
+ * - (\c CEND - \c CSTART + 1) repetitons of 6 bytes, consisting of:
  *   - The byte \c 0x05
  *   - Five bytes defining the custom character
  */
@@ -181,7 +181,7 @@ command_buffer_sz(PrivateData* data)
 	     + 1 + sizeof(CD5220_BRIGHTNESS_ADJUST) + 1);
 	int display_init_size =
 	    (sizeof(CD5220_INIT_DISPLAY) + sizeof(CD5220_UPLOAD_CUSTOM_CHARS)
-	     + (6 * data->custom_chars_supported)
+	     + 2 + (6 * data->custom_chars_supported)
 	     + sizeof(CD5220_RENDER_CUSTOM_CHARS) + 1);
 	return ((full_update_size > display_init_size) ? full_update_size :
 							 display_init_size);
