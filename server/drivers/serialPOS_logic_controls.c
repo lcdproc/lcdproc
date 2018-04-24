@@ -10,7 +10,7 @@
 
 /*-
  * These are the helper functions for driving Point Of Sale ("POS") devices
- * using the LCproc serialPOS driver through the logic controls protocol.
+ * using the LCDproc serialPOS driver through the logic controls protocol.
  *
  * This helper implements the basic logic controls
  * command set, which should work with all displays. It does not

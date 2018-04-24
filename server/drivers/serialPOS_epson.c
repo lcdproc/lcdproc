@@ -10,7 +10,7 @@
 
 /*-
  * These are the helper functions for driving Point Of Sale ("POS") devices
- * using the LCproc serialPOS driver through the ESC / POS protocol
+ * using the LCDproc serialPOS driver through the ESC / POS protocol
  *
  * Copyright (C) 2006, 2007 Eric Pooch
  * Copyright (C) 2018, Shenghao Yang

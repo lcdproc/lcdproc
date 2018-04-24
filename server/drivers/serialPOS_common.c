@@ -6,7 +6,7 @@
 
 /*-
  * These are the common helper functions for driving Point Of Sale ("POS")
- * devices using the LCproc serialPOS driver.
+ * devices using the LCDproc serialPOS driver.
  *
  * Some protocols share common initialization sequences / operations, and,
  * hence, their common functions are defined here to avoid code replication.
