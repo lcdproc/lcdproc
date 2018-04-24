@@ -117,7 +117,7 @@ static const uint8_t EPSON_BRIGHTNESS_ADJUST[] = {0x1f, 0x58};
  * - Two bytes in the range [\c 0x20, \c 0xff],
  *   henceforth called \c CSTART, \c CEND representing the
  *   start and end codes of the characters whose glyphs we want to replace
- * - \c CEND - \c CSTART repetitons of 6 bytes, consisting of:
+ * - (\c CEND - \c CSTART + 1) repetitons of 6 bytes, consisting of:
  *   - The byte \c 0x05
  *   - Five bytes defining the custom character
  */
@@ -185,7 +185,7 @@ command_buffer_sz(PrivateData* data)
 	    /* Take into account adjusting the display brightness */
 	    + sizeof(EPSON_BRIGHTNESS_ADJUST) + 1);
 	int display_init_size =
-	    (sizeof(EPSON_INIT_DISPLAY) + sizeof(EPSON_UPLOAD_CUSTOM_CHARS)
+	    (sizeof(EPSON_INIT_DISPLAY) + sizeof(EPSON_UPLOAD_CUSTOM_CHARS) + 2
 	     + (6 * data->custom_chars_supported)
 	     + sizeof(EPSON_RENDER_CUSTOM_CHARS) + 1);
 	return ((full_update_size > display_init_size) ? full_update_size :
@@ -208,7 +208,7 @@ init(PrivateData* data, uint8_t* buffer)
 	 * for custom character support, we ignore this limitation - because
 	 * it's not going to affect what we're going to send to the display.
 	 */
-	if (data->custom_chars_supported > data->cellwidth)
+	if (data->custom_chars_supported)
 		if ((data->cellheight != EPSON_CELLHGT)
 		    || (data->cellwidth != EPSON_CELLWID)) {
 			return -1;
