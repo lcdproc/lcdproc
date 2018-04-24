@@ -10,7 +10,7 @@
 
 /*-
  * These are the helper functions for driving Point Of Sale ("POS") devices
- * using the LCproc serialPOS driver through the CD5220 protocol
+ * using the LCDproc serialPOS driver through the CD5220 protocol
  *
  * Copyright (C) 2018, Shenghao Yang
  *
