@@ -275,14 +275,13 @@ init(PrivateData* data, uint8_t* buffer)
 				buffer += 0x05;
 			}
 		}
+		/*
+		 * Enable custom charcters
+		 */
+		buffer = bytecpy_advance_ptr(buffer, EPSON_RENDER_CUSTOM_CHARS,
+					     sizeof(EPSON_RENDER_CUSTOM_CHARS));
+		*(buffer++) = 0x01;
 	}
-
-	/*
-	 * Enable custom charcters
-	 */
-	buffer      = bytecpy_advance_ptr(buffer, EPSON_RENDER_CUSTOM_CHARS,
-					  sizeof(EPSON_RENDER_CUSTOM_CHARS));
-	*(buffer++) = 0x01;
 	return (buffer - start);
 }
 
