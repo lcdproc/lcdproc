@@ -86,27 +86,46 @@
 #include "shared/report.h"
 
 /*
- * The serialPOS driver does not use a lot of hardware features.
- * We try to replace them with more flexible software alternatives.
- * That's why vbar/hbar/bignum are using locally-defined functions;
- * it permits simultaneous use of those features and custom chars.
+ * The serialPOS driver does not use a lot of hardware features,
+ * because the available hardware features (automatic blinking,
+ * scrolling, multi-segment scrolling) vary between displays,
+ * and are also not very configurable.
  *
- * For the same reason, we don't use the hardware clear but rather
- * empty the internal frame buffer.  The frame buffer holds all
- * the requested changes until the server asks us to flush the
- * changes to the display.  This also permits us to do an
- * incremental update and reduce the number of characters to be
- * sent to the display across the serial link.
+ * In order to keep the interface between protocol drivers and the
+ * main driver simple, we let the server core handle most of the work
+ * while we step in to draw some of the widgets like hbar and vbar.
+ *
+ * The frame buffer holds all the requested changes until the
+ * server asks us to flush the changes to the display.
+ * This also permits us to do an incremental update and reduce the
+ * number of characters to be sent to the display across the serial link.
+ *
+ * The rationale for sending as little commands as possible through
+ * the serial link is to ensure that the display does not get flooded
+ * with commands. Some displays cannot keep up with high command rates.
+ *
+ * At the same time, we do not want to minimize expenditure too much.
+ * Updating individual characters by commanding multiple cursor shifts
+ * is a good idea, but some displays cannot cope, and will garble
+ * the screen, as they misplace newly received characters.
+ *
+ * Hence, most protocol drivers utilize the atomic single
+ * line update operations as much as possible, (see AEDEX, CD5220: this
+ * has the added side effect of making updating smoother, as the user
+ * does not see intermediate characters), or, shift the cursor to
+ * each line and update a whole line's worth of information at one go.
  *
  * In order to display graphic widgets, we define and use our own
- * custom characters.  To avoid multiple definitions of the same
- * custom characters, we use a caching mechanism that remembers
- * what is currently defined.  In order to avoid always redefining
- * the same custom character at the beginning of the table, we
- * rotate the beginning of the table.  This is supposed to reduce
- * the number of character redefinitions and make the caching more
- * effective.  The overall goal is to reduce the number of
- * characters sent to the display.
+ * custom characters. At this time, only custom characters for
+ * vertical bars, and horizontal bars, the most commonly used
+ * custom character features by LCDproc, are defined. Additions to
+ * support icons are welcome, but that has to be done in the protocol
+ * driver initialization code itself.
+ *
+ * Note that for some displays, the custom characters uploaded
+ * are immediately written to EEPROM, and, hence, we do not support
+ * uploading custom characters after display
+ * initialization, as that can cause excessive EEPROM wear.
  */
 
 /* Vars for the server core */
