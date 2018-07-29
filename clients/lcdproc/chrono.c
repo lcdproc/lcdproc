@@ -392,9 +392,16 @@ big_clock_screen(int rep, int display, int *flags_ptr)
 	static char old_fulltxt[16];
 	static int heartbeat = 0;
 	static int TwentyFourHour = 1;
+	static int showSecs = 1;
 	int j = 0;
 	int digits = (lcd_wid >= 20) ? 6 : 4;
-	int xoffs = (lcd_wid + 1 - (pos[digits - 1] + 2)) / 2;
+	int xoffs = 0;
+
+	showSecs = config_get_bool("BigClock", "showSecs", 0, 1);
+	if (!showSecs) {
+		digits = 4;
+	}
+	xoffs = (lcd_wid + 1 - (pos[digits - 1] + 2)) / 2;
 
 	/* toggle colon display */
 	heartbeat ^= 1;
