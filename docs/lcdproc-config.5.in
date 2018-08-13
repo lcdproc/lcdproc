@@ -46,50 +46,538 @@ where <TAB> stands for the TAB character.
 In case of a a parsing error the rest of the line is ignored and parsing
 continues with the next line.
 
-.SH EXAMPLE
-Here is fully working example of an LCDd.conf
-(formatted somewhat strange to show the features):
+.SH GENERAL CONFIGURATION
+
+The section '\fB[lcdproc]\fP' defines the options to connect to the LCDd server : hostname, port, log level...
+
+.PP
+\fIServer=\fR
+.RS 4
+address of the LCDd server to connect to
+.RE
+.PP
+\fIPort=\fR
+.RS 4
+Port of the server to connect to
+.RE
+.PP
+\fIReportLevel=\fR
+.RS 4
+set reporting level
+.RE
+.PP
+\fIReportToSyslog=\fR
+.RS 4
+[default: false; legal: true, false]
+.RE
+.PP
+\fIForeground=\fR
+.RS 4
+run in foreground [default: false; legal: true, false]
+.RE
+.PP
+\fIPidFile=\fR
+.RS 4
+PidFile location when running as daemon [default: /var/run/lcdproc.pid]
+.RE
+.PP
+\fIdelay=\fR
+.RS 4
+slow down initial announcement of modes (in 1/100s) [default: 2]
+.RE
+.PP
+\fIDisplayName=\fR
+.RS 4
+display name for the main menu [default: LCDproc HOST]
+.RE
+
+.SH SCREEN SPECIFIC CONFIGURATION
+the following section of the \fI@SYSCONFDIR@/lcdproc.conf\fP contains screen specific configuration options. Each section refers to a screen which can be enabled and configured.
+ 
+.SH [CPU] SECTION OPTIONS
+Displays CPU usage.
+
+Screen example (depending on screen size): 
 .na
 .nf
-# the server section
-[server]
-Bind=127.0.0.1
+ +--------------------+   +--------------------+
+ |## CPU 51.9%: myh #@|   |CPU [----    ]48.1%@|
+ |Usr 46.0% Nice  0.0%|   |U--  S-   N    I--- |
+ |Sys  5.9% Idle 48.1%|   +--------------------+
+ |0%--------      100%|
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+.PP
+\fIOnTime=\fR
+.RS 4
+[integer; 1]
+.RE
+.PP
+\fIOffTime=\fR
+.RS 4
+[integer; 2]
+.RE
+.PP
+\fIShowInvisible=\fR
+.RS 4
+[default: false; legal: true, false]
+.RE
+
+.SH [Iface] SECTION OPTIONS
+Displays stats about network interfaces.
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## Net Load: LAN ##@|   |### Net Load ######@|
+ |UL:       123.456 Kb|   |LAN: U: 34kb D: 56Mb|
+ |DL:       654.321 Kb|   +--------------------+
+ |Total:    777.777 Kb|
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+.PP
+\fIInterface0=\fR
+.RS 4
+defines the interface name : eth0
+.RE
+.PP
+\fIAlias0=\fR
+.RS 4
+Interface alias name to display [default: <interface name>]
+.RE
+.PP
+Note:
+.RS 4
+\fIInterface0\fR and \fIAlias0\fR can be repeated to display more interfaces, the last digit in the option must be incremented. For more than 3 interfaces change \fBMAX_INTERFACES\fP in \fIiface.h\fP and rebuild.
+.RE
+.PP
+\fIunit=\fR
+.RS 4
+Units to display [default: byte; legal: byte, bit, packet]
+.RE
+.PP
+\fItransfer=\fR
+.RS 4
+add screen with transferred traffic [default: false; legal: true, false]
+.RE
+
+.SH [Memory] SECTION OPTIONS
+Displays stats about memory.
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |##  MEM #### SWAP #@|   |M 758.3M [- ] 35.3%@|
+ | 758.3M Totl 1.884G |   |S 1.884G [  ]  0.1% |
+ | 490.8M Free 1.882G |   +--------------------+
+ |E---    F  E       F|
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+
+.SH [Load] SECTION OPTIONS
+Shows a display very similar to "xload"'s histogram
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## LOAD 0.44: myh #@|   |myhost 0.24        1|
+ |                   1|   |        |||||||||||0|
+ |            ||||||  |   +--------------------+
+ |    ||||  |||||||| 0|
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+.PP
+\fILowLoad=\fR
+.RS 4
+Min Load Avg at which the backlight will be turned off [default: 0.05]
+.RE
+.PP
+\fIHighLoad=\fR
+.RS 4
+Max Load Avg at which the backlight will start blinking [default: 1.3]
+.RE
+
+.SH [TimeDate] SECTION OPTIONS
+Displays current time and date, uptime, OS ver
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## Linux 2.6.11 ###@|   |### TIME: myhost ##@|
+ |Up xxx days hh:mm:ss|   |17.05.2005 11:32:57a|
+ |  Wed May 17, 1998  |   +--------------------+
+ |11:32:57a  100% idle|
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+.PP
+\fITimeFormat=\fR
+.RS 4
+Time format [default: "%H:%M:%S"; legal: see strftime(3)]
+.RE
+.PP
+\fIDateFormat=\fR
+.RS 4
+Date format [default: "%x"; legal: see strftime(3)]
+.RE
+
+.SH [About] SECTION OPTIONS
+Shows who wrote this software
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+
+.SH [SMP-CPU] SECTION OPTIONS
+Shows a current usage percentage graph for each CPU.
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+
+.SH [OldTime] SECTION OPTIONS
+Displays current time and date
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## DATE & TIME ####@|   |### TIME: myhost ##@|
+ |       myhost       |   |2005-05-17 11:32:57a|
+ |11:32:75a Wednesday,|   +--------------------+
+ |       May 17, 2005 |
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+.PP
+\fITimeFormat=\fR
+.RS 4
+time format [default: "%H:%M:%S"; legal: see strftime(3)]
+.RE
+.PP
+\fIDateFormat=\fR
+.RS 4
+date format [default: "%x"; legal: see strftime(3)]
+.RE
+.PP
+\fIShowTitle=\fR
+.RS 4
+Display the title bar in two-line mode. Note that with four lines or more the title is always shown. [default: true; legal: true, false]
+Screen example : 
+.na
+.nf
+ +----------------+
+ |   2012-12-27  @|
+ |    15:07:01    |
+ +----------------+
+.RE
+
+.SH [BigClock] SECTION OPTIONS
+Displays current time with big number
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+
+ |    _   _      _  _ |
+ |  ||_ . _||_|. _|  ||
+ |  ||_|. _|  |.|_   ||
+ |                    |
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+.PP
+\fIshowSecs=\fR
+.RS 4
+display seconds [default: true; legal: true, false]
+true : the date is displayed in format HH:MM:SS (default)
+false : the date is displayed in format HH:MM
+Screen example : 
+.na
+.nf
+ +--------------------+
+ |       _   _        |
+ |     ||_ . _||_|    |
+ |     ||_|. _|  |    |
+ |                    |
+ +--------------------+
+.RE
+
+.SH [Uptime] SECTION OPTIONS
+Shows info about system uptime and OS version
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## SYSTEM UPTIME ##@|   |# Linux 2.6.11: my#@|
+ |       myhost       |   | xxx days hh:mm:ss  |
+ | xxx days hh:mm:ss  |   +--------------------+
+ |   Linux 2.6.11     |
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+
+.SH [Battery] SECTION OPTIONS
+Shows apm battery status
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## AC: 100%: myho #@|   |## AC: 100%: myho #@|
+ |AC: On              |   |AC, Batt: Absent    |
+ |Batt: Absent        |   +--------------------+
+ |E------------------F|
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+
+.SH [CPUGraph] SECTION OPTIONS
+Shows a quick-moving histogram of CPU use
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## CPU: myhost ####@|   |CPU: myhos||       @|
+ |             ||     |   |         ||||       |
+ |            |||     |   +--------------------+
+ |            ||||    |
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+
+.SH [ProcSize] SECTION OPTIONS
+Displays info about top 5 memory hogs
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## TOP MEM: myhos #@|   |## TOP MEM: myhos #@|
+ |1 110.4M mysqld     |   |1 110.4M mysqld     |
+ |2 35.38M konqueror(2|   +--------------------+
+ |3 29.21M XFree86    |
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+
+.SH [Disk] SECTION OPTIONS
+Displays disks stats
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |## DISKS: myhost ##@|   |## DISKS: myhost ##@|
+ |/       18.3G E--  F|   |-local  18.3G E--- F|
+ |-local  18.3G E--- F|   +--------------------+
+ |/boot  949.6M E-   F|
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+
+.SH [MiniClock] SECTION OPTIONS
+Displays the current time
+
+Screen example (depending on screen size): 
+.na
+.nf
+ +--------------------+   +--------------------+
+ |                    |   |       11:32        |
+ |       11:32        |   |                    |
+ |                    |   +--------------------+
+ |                    |
+ +--------------------+
+.PP
+\fIActive=\fR
+.RS 4
+Show the screen [default: false; legal: true, false]
+.RE
+.PP
+\fITimeFormat=\fR
+.RS 4
+Time format [default: "%H:%M"; legal: see strftime(3)]
+.RE
+
+.SH EXAMPLE
+Here is fully working example of an \fIlcdproc.conf\fR
+(formatted somewhat strange to show the features):
+
+.na
+.nf
+# LCDproc client configuration file
+
+## general options ##
+[lcdproc]
+# address of the LCDd server to connect to
+ Server=localhost
+# Port of the server to connect to
 Port=13666
-User="nobody"
-#Foreground=no
-#ReportLevel=3
-#ReportToSyslog=yes
-Driver="my Curses Driver"
-DriverPath=/usr/lib/lcdproc/
-WaitTime= "5"
-ServerScreen=no
+# set reporting level
+ReportLevel=2
+# report to to syslog ?
+ReportToSyslog=false
+# run in foreground [default: false; legal: true, false]
+# Foreground=true
+# PidFile location when running as daemon [default: /var/run/lcdproc.pid]
+ #PidFile=/var/run/lcdproc.pid
+# slow down initial announcement of modes (in 1/100s)
+#delay=2
+# display name for the main menu [default: LCDproc HOST]
+#DisplayName=lcdproc
 
-# assign keys to special functions #
-ToggleRotateKey = Enter
-PrevScreenKey = Left
-NextScreenKey = Right
-# ScrollUpKey = Up
- #ScrollDownKey=Down
+## screen specific configuration options ##
 
-#  menu section: define keys to use in the server menu #
-	 [menu]
-MenuKey = Escape	# ESC switches to server menu
-EnterKey =Enter
-UpKey= Up	
-DownKey="Down"
- LeftKey= "Left"
- RightKey = "Right"
+   [CPU]
+# Show screen
+Active=True
+   OnTime=1
+OffTime=2
+ShowInvisible=false
 
-# configuration of the curses driver #
-[my curses Driver]	# yes I use the curse driver
-File= "curses.so"
-Size="20"x"4"		# LCD screen dimensions
-TopLeftX=7		# screen position: X coordinate
-TopLeftY=7		# screen position: Y coordinate
-Foreground=blue		# foreground color
-Background=cyan		# background color when backight is off
-Backlight=red		# background color when backight is on
+[Iface]
+# Show screen
+Active=True
 
+# Show stats for Interface0
+Interface0=eth0
+# Interface alias name to display [default: <interface name>]
+Alias0=LAN
+# Show stats for Interface1
+#Interface1=eth1
+#Alias1=WAN
+# Show stats for Interface2
+#Interface2=eth2
+#Alias2=MGMT
+# for more than 3 interfaces change MAX_INTERFACES in iface.h and rebuild
+# Units to display [default: byte; legal: byte, bit, packet]
+unit=bit
+# add screen with transferred traffic
+#transfer=TRUE
+
+[Memory]
+# Show screen
+Active=True
+
+[Load]
+# Show screen
+Active=True
+# Min Load Avg at which the backlight will be turned off [default: 0.05]
+LowLoad=0.05
+# Max Load Avg at which the backlight will start blinking [default: 1.3]
+HighLoad=1.3
+
+[TimeDate]
+# Show screen
+Active=True
+# time format [default: %H:%M:%S; legal: see strftime(3)]
+TimeFormat="%H:%M:%S"
+# date format [default: %x; legal: see strftime(3)]
+DateFormat="%x"
+
+[About]
+# Show screen
+Active=false
+
+[SMP-CPU]
+# Show screen
+Active=false
+
+[OldTime]
+# Show screen
+Active=false
+# time format [default: %H:%M:%S; legal: see strftime(3)]
+TimeFormat="%H:%M:%S"
+# date format [default: %x; legal: see strftime(3)]
+DateFormat="%x"
+# Display the title bar in two-line mode. Note that with four lines or more
+# the title is always shown. [default: true; legal: true, false]
+#ShowTitle=false
+
+[BigClock]
+# Show screen
+Active=false
+# display seconds
+# true : the date is displayed in format HH:MM:SS (default)
+# false : the date is displayed in format HH:MM
+# [default: true; legal: true, false]
+#showSecs=true
+
+[Uptime]
+# Show screen
+Active=false
+
+[Battery]
+# Show screen
+Active=false
+
+[CPUGraph]
+# Show screen
+Active=false
+
+[ProcSize]
+# Show screen
+Active=false
+
+[Disk]
+# Show screen
+Active=false
+
+[MiniClock]
+# Show screen
+Active=True
+# time format [default: %H:%M; legal: see strftime(3)]
+TimeFormat="%H:%M"
+
+# EOF
 
 .SH FILES
 
