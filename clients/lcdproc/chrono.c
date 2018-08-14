@@ -375,6 +375,15 @@ uptime_screen(int rep, int display, int *flags_ptr)
  * |                    |
  * +--------------------+
  *
+ * Alternate version without seconds : 
+ *
+ * +--------------------+ 
+ * |       _   _        |
+ * |     ||_ . _||_|    |
+ * |     ||_|. _|  |    |
+ * |                    |
+ * +--------------------+
+ *
  *\endverbatim
  *
  * \param rep        Time since last screen update
@@ -394,7 +403,13 @@ big_clock_screen(int rep, int display, int *flags_ptr)
 	static int TwentyFourHour = 1;
 	int j = 0;
 	int digits = (lcd_wid >= 20) ? 6 : 4;
-	int xoffs = (lcd_wid + 1 - (pos[digits - 1] + 2)) / 2;
+	int xoffs = 0;
+
+	int showSecs = config_get_bool("BigClock", "showSecs", 0, 1);
+	if (!showSecs) {
+		digits = 4;
+	}
+	xoffs = (lcd_wid + 1 - (pos[digits - 1] + 2)) / 2;
 
 	/* toggle colon display */
 	heartbeat ^= 1;
