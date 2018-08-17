@@ -67,16 +67,27 @@ hd_init_ftdi(Driver *drvthis)
 {
     int vendor_id, product_id;
     int f;
+    const char *s;
+    char *usb_description, *serial_number;
 
     PrivateData *p = (PrivateData *)drvthis->private_data;
 
     p->hd44780_functions->senddata = ftdi_HD44780_senddata;
     p->hd44780_functions->backlight = ftdi_HD44780_backlight;
     p->hd44780_functions->close = ftdi_HD44780_close;
+    usb_description = serial_number = NULL;
 
     /* Load config */
     vendor_id = drvthis->config_get_int(drvthis->name, "VendorID", 0, 0x0403);
     product_id = drvthis->config_get_int(drvthis->name, "ProductID", 0, 0x6001);
+    if ((s = drvthis->config_get_string(drvthis->name, "UsbDescription", 0, NULL)) != NULL) {
+        usb_description = malloc(sizeof (char) * strlen(s) + 1);
+        strcpy(usb_description, s);
+    }
+    if ((s = drvthis->config_get_string(drvthis->name, "SerialNumber", 0, NULL)) != NULL) {
+        serial_number = malloc(sizeof (char) * strlen(s) + 1);
+        strcpy(serial_number, s);
+    }
 
     /* these config settings are not documented intentionally */
     p->ftdi_mode = drvthis->config_get_int(drvthis->name, "ftdi_mode", 0, 8);
@@ -89,16 +100,26 @@ hd_init_ftdi(Driver *drvthis)
     /* some foolproof check */
     if (p->ftdi_mode != 4 && p->ftdi_mode != 8) {
 	report(RPT_ERR, "invalid ftdi_mode: %d", p->ftdi_mode);
-	return -1;
+	f = -1;
+	goto hd_init_ftdi_done;
     }
 
     /* Init 1. channel: data */
     ftdi_init(&p->ftdic);
     ftdi_set_interface(&p->ftdic, INTERFACE_A);
-    f = ftdi_usb_open(&p->ftdic, vendor_id, product_id);
+
+    report(RPT_INFO,
+        "opening usb ftdi lcd with vendorID: %#x, productID: %#x, description: %s, serial: %s",
+        vendor_id, product_id,
+        (usb_description==NULL?"<any>":usb_description),
+        (serial_number==NULL?"<any>":serial_number)
+    );
+    f = ftdi_usb_open_desc(&p->ftdic, vendor_id, product_id, usb_description, serial_number);
+
     if (f < 0 && f != -5) {
 	report(RPT_ERR, "unable to open ftdi device: %d (%s)", f, ftdi_get_error_string(&p->ftdic));
-	return -1;
+	f = -1;
+        goto hd_init_ftdi_done;
     }
     debug(RPT_DEBUG, "ftdi open succeeded(channel 1): %d", f);
 
@@ -109,7 +130,8 @@ hd_init_ftdi(Driver *drvthis)
 	f = ftdi_set_baudrate(&p->ftdic, 921600);
 	if (f < 0) {
 	    report(RPT_ERR, "unable to open ftdi device: %d (%s)", f, ftdi_get_error_string(&p->ftdic));
-	    return -1;
+	    f = -1;
+            goto hd_init_ftdi_done;
 	}
     }
 
@@ -119,10 +141,17 @@ hd_init_ftdi(Driver *drvthis)
 	/* Init 2. channel: control */
 	ftdi_init(&p->ftdic2);
 	ftdi_set_interface(&p->ftdic2, INTERFACE_B);
-	f = ftdi_usb_open(&p->ftdic2, vendor_id, product_id);
+        report(RPT_INFO,
+            "opening usb ftdi2 lcd with vendorID: %#x, productID: %#x, description: %s, serial: %s",
+            vendor_id, product_id,
+            (usb_description==NULL?"<any>":usb_description),
+            (serial_number==NULL?"<any>":serial_number)
+        );
+        f = ftdi_usb_open_desc(&p->ftdic2, vendor_id, product_id, usb_description, serial_number);
 	if (f < 0 && f != -5) {
 	    report(RPT_ERR, "unable to open second ftdi device: %d (%s)", f, ftdi_get_error_string(&p->ftdic2));
-	    return -2;
+	    f = -2;
+	    goto hd_init_ftdi_done;
 	}
 	debug(RPT_DEBUG, "ftdi open succeeded(channel 2): %d", f);
 
@@ -146,8 +175,11 @@ hd_init_ftdi(Driver *drvthis)
 	common_init(p, IF_4BIT);
     }
 
-
-    return 0;
+    f = 0;
+hd_init_ftdi_done:
+    if (usb_description) free(usb_description);
+    if (serial_number) free(serial_number);
+    return f;
 }
 
 
