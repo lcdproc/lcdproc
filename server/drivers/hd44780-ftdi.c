@@ -81,12 +81,10 @@ hd_init_ftdi(Driver *drvthis)
     vendor_id = drvthis->config_get_int(drvthis->name, "VendorID", 0, 0x0403);
     product_id = drvthis->config_get_int(drvthis->name, "ProductID", 0, 0x6001);
     if ((s = drvthis->config_get_string(drvthis->name, "UsbDescription", 0, NULL)) != NULL) {
-        usb_description = malloc(sizeof (char) * strlen(s) + 1);
-        strcpy(usb_description, s);
+        usb_description = strdup(s);
     }
     if ((s = drvthis->config_get_string(drvthis->name, "SerialNumber", 0, NULL)) != NULL) {
-        serial_number = malloc(sizeof (char) * strlen(s) + 1);
-        strcpy(serial_number, s);
+        serial_number = strdup(s);
     }
 
     /* these config settings are not documented intentionally */
