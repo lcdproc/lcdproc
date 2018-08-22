@@ -1,25 +1,30 @@
 ## General
 
-- [ ] Some ports have ranges like this: 0x200 - 0x400
+- [x] Some ports have ranges like this: 0x200 - 0x400
     - Is there also ABCDEF possible? 
+    - **yes**
 
 ## server
 
-- [ ] DriverPath
+- [x] DriverPath
     - Where exactly are those? `server/drivers` is not available on my system. Maybe /usr/lib/x86_64-linux-gnu/lcdproc?
+    - **Just for testing, users have to set it themselves correctly, relative path: No validation possible!**
 - [ ] Hello & Goodbye:
     - Any validation? Maybe maximum number of characters
 - [ ] Frameinterval
     - Any validation? `[default: 125000 meaning 8Hz]` is all which is given
-- [ ] Wait time 
+- [x] Wait time 
     - max/min?
-- [ ] Keys(Up, Enter, Escape, etc.)
+    - **No borders definable -> will take regex requiring any positive number**
+- [x] Keys(Up, Enter, Escape, etc.)
     - Which values are allowed?
+    - **Everything, even keys which do not exist**
 
 ## menu
 
-- [ ] MenuKey, EnterKey, etc.
+- [x] MenuKey, EnterKey, etc.
     - What are all allowed Keys?
+    - **Everything, even keys which do not exist**
 
 ## curses
 
@@ -28,23 +33,25 @@
 
 ## CwLnx
 
-- [ ] KeyMap_A/B/C/D/E/F
+- [x] KeyMap_A/B/C/D/E/F
     - What values are allowed?
+    - **Everything, even keys which do not exist**
 
 
 ## EyeboxOne
 
-- [ ] LeftKey/ RightKey/ UpKey/ DownKey/ EscapeKey
+- [x] LeftKey/ RightKey/ UpKey/ DownKey/ EscapeKey
     - What values are allowed?
+    - **Everything, even keys which do not exist**
 
 
 ## glcd
 
 - [ ] ConnectionType
     - t6963, serdisp, lcdp2usb, png .... these are all?
-- [ ] KeyMap_A/B/C/D
-    - What values are allowed?
-    - "There may be up to 16 keys numbered 'A' to 'Z'." Alphabet has 26 letters though?
+- [x] KeyMap_A/B/C/D
+    - "There may be up to 16 keys numbered 'A' to 'Z'." Alphabet has 26 letters though? 
+    - **I assume arbitrary keys, cannot limit the number of keys though**
 - [ ] serdisp_name: "Name of the underlying serdisplib driver"
     - what are allowed values?
     - http://serdisplib.sourceforge.net/docs/index.html gives nothing concerning that
@@ -78,9 +85,9 @@
     - Validation 0x and four numbers ranging between 0-9? eg. 0x9999 is max and 0x0000 is min?
 - [ ] vspan
     - what kind of validation is possible here? [0-9]*,[0-9]* as regex?
-- [ ] KeyMatrix_x_y
+- [x] KeyMatrix_x_y
     - allowed values?
-    - max x and y? eg KeyMatrix_102_193 also possible?
+    - **Everything, even keys which do not exist**
 
 ## IOWarrior
 
@@ -91,13 +98,15 @@
 
 ## joy
 
-- [ ] Map_Axis1neg, Map_Axis1pos, Map_Axis2neg, Map_Axis2pos, Map_Button1, Map_Button2
+- [x] Map_Axis1neg, Map_Axis1pos, Map_Axis2neg, Map_Axis2pos, Map_Button1, Map_Button2
     - allowed values?
+    - **Everything, even keys which do not exist**
 
 ## lcdm001
 
-- [ ] PauseKey, BackKey, ForwardKey, MainMenuKey
+- [x] PauseKey, BackKey, ForwardKey, MainMenuKey
     - allowed values?
+    - **Everything, even keys which do not exist**
 
 ## linux_input
 - [ ] `#key=1,Escape .. #key=28,Enter .. `
@@ -113,41 +122,48 @@
     - Any validation possible?
 
 ## lis
-- [ ] VendorID/ ProductID
+- [x] VendorID/ ProductID
     - validation possible? eg regex?
+    - **USB spec lookup required: Would be too hard to maintain imo, no validation**
 
 ## MtxOrb
-- [ ] KeyMap_A, KeyMap_B, KeyMap_C, KeyMap_D, KeyMap_E, KeyMap_F
+- [x] KeyMap_A, KeyMap_B, KeyMap_C, KeyMap_D, KeyMap_E, KeyMap_F
     - Allowed values?
+    - **Everything, even keys which do not exist**
 
-## MtxOrb
-- [ ] WaitAfterRefresh
+## mx5000
+- [x] WaitAfterRefresh
     - Allowed Range?
+    - **No borders definable -> will take regex requiring any positive number**
 
 ## picolcd
-- [ ] LircFlushThreshold: `legal: 1000 -`
+- [x] LircFlushThreshold: `legal: 1000 -`
     - Unbounded upper value?
+    - **No borders definable -> will take regex requiring any positive number above 1000**
 
 ## rawserial
 - [ ] Speed
     - What values?
 
 ## serialPOS
-- [ ] Custom_chars
+- [x] Custom_chars
     - What range should be allowed?
+    - **No borders definable -> will take regex requiring any positive number**
 
 ## serialVFD
-- [ ] Custom-Characters
+- [x] Custom-Characters
     - What range should be allowed?
-    - Why once "Custom-Characters" and once "Custom_chars"?
+    - Why once "Custom-Characters" and once "Custom_chars"? **guess due to inconsistency**
+    - **No borders definable -> will take regex requiring any positive number**
 
 ## svga
 - [ ] Mode
     - Any validation possible? Any ranges?
 
 ## ula200
-- [ ] KeyMap_A, KeyMap_B, KeyMap_C, KeyMap_D, KeyMap_E, KeyMap_F
+- [x] KeyMap_A, KeyMap_B, KeyMap_C, KeyMap_D, KeyMap_E, KeyMap_F
     - Allowed values?
+    - **Everything, even keys which do not exist**
 
 ## xosd
 - [ ] Offset
