@@ -47,21 +47,24 @@
 
 ## glcd
 
-- [ ] ConnectionType
+- [x] ConnectionType
     - t6963, serdisp, lcdp2usb, png .... these are all?
+    - **No: t6963, png, serdisplib, glcd2usb, x11, picolcdgfx, xyz**
 - [x] KeyMap_A/B/C/D
     - "There may be up to 16 keys numbered 'A' to 'Z'." Alphabet has 26 letters though? 
     - **I assume arbitrary keys, cannot limit the number of keys though**
 - [ ] serdisp_name: "Name of the underlying serdisplib driver"
     - what are allowed values?
     - http://serdisplib.sourceforge.net/docs/index.html gives nothing concerning that
+    - Whats a default?
 - [ ] serdisp_options
     - Is validating possible except for requiring quotes?
 - [ ] x11_PixelSize
     - What kind of validation should i do there? any number? or [0-9]+\+[0-9]+ as regex?
-- [ ] x11_Border
+- [x] x11_Border
     - Any allowed range? I took 0-100 for now
-
+    - **Took unbounded positive number**
+    
 ## glcdlib
 
 - [ ] Driver: "see /etc/graphlcd.conf for possible drivers"
@@ -75,16 +78,21 @@
 
 ## hd44780
 
-- [ ] ConnectionType: "See documentation for available types"
+- [x] ConnectionType: "See documentation for available types"
     - What are all allowed enumerations? The documentation is very confusing to me.
-- [ ] Model: "Available: standard (default), extended, winstar_oled, pt6314_vfd"
+    - **I took all entries from [here](https://github.com/lcdproc/lcdproc/blob/master/docs/lcdproc-user/drivers/hd44780.docbook)**
+- [x] Model: "Available: standard (default), extended, winstar_oled, pt6314_vfd"
     - Documentation also mentions: hd66712, ks0073, weh00xxyya... what is correct now?
+    - **I took all entries from [here](https://github.com/lcdproc/lcdproc/blob/master/docs/lcdproc-user/drivers/hd44780.docbook)**
 - [ ] Speed
     - What are allowed values?
-- [ ] BacklightCmdOn/BacklightCmdOff
-    - Validation 0x and four numbers ranging between 0-9? eg. 0x9999 is max and 0x0000 is min?
-- [ ] vspan
+- [x] BacklightCmdOn/BacklightCmdOff
+    - Validation 0x and four numbers ranging between 0-9? eg. 0xFFFF is max and 0x0000 is min?
+    - **"4 bytes encoded as hex in big endian-order": so 0000-FFFF**
+- [x] vspan
     - what kind of validation is possible here? [0-9]*,[0-9]* as regex?
+    - **I took `^[1-9][0-9]*(,[1-9][0-9]*)*$` as regex. Forms like this:
+    `1,1` or `2,1,3` are allowed but not `0,3` or `1,`**
 - [x] KeyMatrix_x_y
     - allowed values?
     - **Everything, even keys which do not exist**
@@ -109,12 +117,14 @@
     - **Everything, even keys which do not exist**
 
 ## linux_input
-- [ ] `#key=1,Escape .. #key=28,Enter .. `
+- [x] `#key=1,Escape .. #key=28,Enter .. `
     - I have no idea what this is and how it is set
     - Please give a more detailed explanation of
         - What are possible keys, `#key` is a number or keyboard char or ..?
         - What are possible values? Is it always of the form `[number],[key]`?
         - Enter, Escape, Left etc. ... What are allowed values?
+        - **Like elektra arrays with [number], [key] as values. Will
+        need to rewrite code though to work like this**
 
 ## lirc
 - [ ] prog: `Must be the same as in your lircrc`
@@ -124,7 +134,7 @@
 ## lis
 - [x] VendorID/ ProductID
     - validation possible? eg regex?
-    - **USB spec lookup required: Would be too hard to maintain imo, no validation**
+    - **0x0000-0xFFFF**
 
 ## MtxOrb
 - [x] KeyMap_A, KeyMap_B, KeyMap_C, KeyMap_D, KeyMap_E, KeyMap_F
