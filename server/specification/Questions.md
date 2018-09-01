@@ -28,8 +28,9 @@
 
 ## curses
 
-- [ ] Foreground, Background, Backlight
+- [x] Foreground, Background, Backlight
     - What are valid colors? Hex values also allowed?
+    - **legal: red, black, green, yellow, blue, magenta, cyan, white according to curses.docbook**
 
 ## CwLnx
 
@@ -59,22 +60,26 @@
     - Whats a default?
 - [ ] serdisp_options
     - Is validating possible except for requiring quotes?
-- [ ] x11_PixelSize
+- [x] x11_PixelSize
     - What kind of validation should i do there? any number? or [0-9]+\+[0-9]+ as regex?
+    = **Yes, number+number according to docbook**
 - [x] x11_Border
     - Any allowed range? I took 0-100 for now
     - **Took unbounded positive number**
     
 ## glcdlib
 
-- [ ] Driver: "see /etc/graphlcd.conf for possible drivers"
+- [x] Driver: "see /etc/graphlcd.conf for possible drivers"
     - I dont have such a file on my PC
     - What values could be possible?
+    - **docbook says: avrctl, framebuffer, gu140x32f, gu256x64-372, gu256x64C-3xx0, hd61830, image, ks0108, noritake800, sed1330, sed1520, serdisp, simlcd, t6963c.
+    As it is variable i will take a string only and not enum**
 - [ ] CharEncoding
     - Any list of all allowed encodings?
-- [ ] PixelShiftX/Y
+- [x] PixelShiftX/Y
     - Any range limit?
     - No description at all
+    - **Took unbounded positive number**
 
 ## hd44780
 
@@ -167,8 +172,9 @@
     - **No borders definable -> will take regex requiring any positive number**
 
 ## svga
-- [ ] Mode
+- [x] Mode
     - Any validation possible? Any ranges?
+    - **docbook says: "can be any legal mode string for svgalib"**
 
 ## ula200
 - [x] KeyMap_A, KeyMap_B, KeyMap_C, KeyMap_D, KeyMap_E, KeyMap_F
