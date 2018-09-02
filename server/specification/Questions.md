@@ -11,8 +11,9 @@
     - **Just for testing, users have to set it themselves correctly, relative path: No validation possible!**
 - [ ] Hello & Goodbye:
     - Any validation? Maybe maximum number of characters
-- [ ] Frameinterval
+- [x] Frameinterval
     - Any validation? `[default: 125000 meaning 8Hz]` is all which is given
+    - **Harald told any positive number ([link](https://github.com/lcdproc/lcdproc/pull/104#issuecomment-417918133))**
 - [x] Wait time 
     - max/min?
     - **No borders definable -> will take regex requiring any positive number**
@@ -54,12 +55,14 @@
 - [x] KeyMap_A/B/C/D
     - "There may be up to 16 keys numbered 'A' to 'Z'." Alphabet has 26 letters though? 
     - **I assume arbitrary keys, cannot limit the number of keys though**
-- [ ] serdisp_name: "Name of the underlying serdisplib driver"
+- [x] serdisp_name: "Name of the underlying serdisplib driver"
     - what are allowed values?
     - http://serdisplib.sourceforge.net/docs/index.html gives nothing concerning that
     - Whats a default?
-- [ ] serdisp_options
+    - **Harald told to not worry about it and neglect it ([link](https://github.com/lcdproc/lcdproc/pull/104#issuecomment-417918133))**
+- [x] serdisp_options
     - Is validating possible except for requiring quotes?
+    - **Harald told to not worry about it and neglect it ([link](https://github.com/lcdproc/lcdproc/pull/104#issuecomment-417918133))**
 - [x] x11_PixelSize
     - What kind of validation should i do there? any number? or [0-9]+\+[0-9]+ as regex?
     = **Yes, number+number according to docbook**
@@ -157,8 +160,10 @@
     - **No borders definable -> will take regex requiring any positive number above 1000**
 
 ## rawserial
-- [ ] Speed
+- [x] Speed
     - What values?
+    - **Harald told to not worry about it and neglect it ([link](https://github.com/lcdproc/lcdproc/pull/104#issuecomment-417918133))**
+    
 
 ## serialPOS
 - [x] Custom_chars
