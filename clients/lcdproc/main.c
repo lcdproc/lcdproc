@@ -95,22 +95,22 @@ ScreenMode sequence[] =
 {
 	/* flags default ACTIVE will run by default */
 	/* longname    which on  off inv  timer   flags */
-	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen        },	// [C]PU
-	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen      }, 	// [I]face
-	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen        },	// [M]emory
-	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen      },	// [L]oad (load histogram)
-	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen       },	// [T]ime/Date
-	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen     },	// [A]bout (credits)
-	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen    },	// CPU_SM[P]
-	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen      },	// [O]ld Timescreen
-	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen  },	// big cloc[K]
-	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen     },	// Old [U]ptime Screen
-	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen    },	// [B]attery Status
-	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen  },	// CPU histogram [G]raph
-	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen    },	// [S]ize of biggest processes
-	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen       },	// [D]isk stats
-	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen },	// Mi[n]i clock
-	{  NULL, 0, 0, 0, 0, 0, 0, NULL},			  	// No more..  all done.
+	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen,	     NULL                },	// [C]PU
+	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen,	     iface_shutdown      }, 	// [I]face
+	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen,	     NULL                },	// [M]emory
+	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen,	     NULL                },	// [L]oad (load histogram)
+	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen,	     NULL                },	// [T]ime/Date
+	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen,     NULL                },	// [A]bout (credits)
+	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen,    NULL                },	// CPU_SM[P]
+	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen,      NULL                },	// [O]ld Timescreen
+	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen,  NULL                },	// big cloc[K]
+	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen,     NULL                },	// Old [U]ptime Screen
+	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen,    NULL                },	// [B]attery Status
+	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen,  NULL                },	// CPU histogram [G]raph
+	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen,    NULL                },	// [S]ize of biggest processes
+	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen,       NULL                },	// [D]isk stats
+	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen, NULL                },	// Mi[n]i clock
+	{  NULL, 0, 0, 0, 0, 0, 0, NULL, NULL},			  	                                // No more..  all done.
 };
 
 
@@ -441,7 +441,6 @@ process_configfile(char *configfile)
 				sequence[k].flags &= (~ACTIVE);
 		}
 	}
-
 	return 1;
 }
 
@@ -493,12 +492,25 @@ HelpScreen(int exit_state)
 void
 exit_program(int val)
 {
+	int i;
 #ifdef LCDPROC_EYEBOXONE
 	/*
 	 * Clear Eyebox Leds
 	 */
 	eyebox_clear();
 #endif
+
+	config_clear();
+	free(pidfile);
+	free(configfile);
+	free(server);
+	for (i = 0; sequence[i].which > 0; i++) {
+		if (sequence[i].shutdown_function != NULL)
+		{
+			sequence[i].shutdown_function();
+		}
+	}
+
 	Quit = 1;
 	sock_close(sock);
 	mode_close();

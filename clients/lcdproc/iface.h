@@ -39,5 +39,7 @@ void format_value_multi_interface(char *buff, double value, char *unit);
 void actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index);
 /** actualize widgets values in transfer screen */
 void actualize_transfer_screen(IfaceInfo *iface, int index);
+/** clear resources on exit */
+void iface_shutdown(void);
 
 #endif
