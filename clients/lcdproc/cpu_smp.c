@@ -81,7 +81,7 @@ cpu_smp_screen (int rep, int display, int *flags_ptr)
 		/* print title if he have room for it */
 		if (lines_used < lcd_hgt) {
 			sock_send_string(sock, "widget_add P title title\n");
-			sock_printf(sock, "widget_set P title {SMP CPU %s}\n", get_hostname());
+			sock_printf(sock, "widget_set P title {SMP CPU%s}\n", get_hostname());
 		}
 		else {
 			sock_send_string(sock, "screen_set P -heartbeat off\n");

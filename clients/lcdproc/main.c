@@ -126,12 +126,14 @@ char *configfile = NULL;
 char *pidfile = NULL;
 int pidfile_written = FALSE;
 char *displayname = NULL;	/**< display name for the main menu */
+int showhostname = TRUE;
+char *hostname = NULL;
 
 /** Returns the network name of this machine */
 const char *
 get_hostname(void)
 {
-	return (unamebuf.nodename);
+	return hostname;
 }
 
 /** Returns the name of the client's OS */
@@ -217,7 +219,7 @@ main(int argc, char **argv)
 	opterr = 0;
 
 	/* get options from command line */
-	while ((c = getopt(argc, argv, "s:p:e:c:fhv")) > 0) {
+	while ((c = getopt(argc, argv, "s:p:e:c:fkhv")) > 0) {
 		char *end;
 
 		switch (c) {
@@ -269,6 +271,16 @@ main(int argc, char **argv)
 	if (cfgresult < 0) {
 		fprintf(stderr, "Error reading config file\n");
 		exit(EXIT_FAILURE);
+	}
+	if (showhostname == TRUE)
+	{
+		hostname = malloc(strlen(unamebuf.nodename)+2);
+		hostname[0] = ' ';
+		strcpy(hostname+1,unamebuf.nodename);
+	}
+	else
+	{
+		hostname = strdup("");
 	}
 
 	/* Set default reporting options */
@@ -422,9 +434,12 @@ process_configfile(char *configfile)
 	if (islow < 0) {
 		islow = config_get_int(progname, "Delay", 0, -1);
 	}
-
-	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
+	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL) {
 		displayname = strdup(tmp);
+	}
+	if (showhostname != FALSE) {
+		showhostname = config_get_bool(progname, "ShowHostname", 0, TRUE);
+	}
 
 	/*
 	 * check for config file variables to override all the sequence
@@ -499,6 +514,7 @@ exit_program(int val)
 	 */
 	eyebox_clear();
 #endif
+	free(hostname);
 	Quit = 1;
 	sock_close(sock);
 	mode_close();

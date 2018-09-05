@@ -117,8 +117,11 @@ mem_screen(int rep, int display, int *flags_ptr)
 
 		/* flip the title back and forth... (every 4 updates) */
 		if (which_title & 4) {
-			sock_printf(sock, "widget_set M subtitle %i 1 {}\n", lcd_wid - 7);
-			sock_printf(sock, "widget_set M title {%s}\n", get_hostname());
+			if (get_hostname()[0] != '\0')
+			{
+				sock_printf(sock, "widget_set M subtitle %i 1 {}\n", lcd_wid - 7);
+				sock_printf(sock, "widget_set M title {%s}\n", get_hostname());
+			}
 		}
 		else {
 			sock_send_string(sock, "widget_set M title { MEM}\n");
@@ -272,7 +275,7 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "screen_add S\n");
 		sock_printf(sock, "screen_set S -name {Top Memory Use: %s}\n", get_hostname());
 		sock_send_string(sock, "widget_add S title title\n");
-		sock_printf(sock, "widget_set S title {TOP MEM: %s}\n", get_hostname());
+		sock_printf(sock, "widget_set S title {TOP MEM:%s}\n", get_hostname());
 
 		/* frame from (2nd line, left) to (last line, right) */
 		sock_send_string(sock, "widget_add S f frame\n");
@@ -343,4 +346,3 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 
 	return 0;
 }
-

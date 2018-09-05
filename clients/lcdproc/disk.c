@@ -79,7 +79,7 @@ disk_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "screen_add D\n");
 		sock_printf(sock, "screen_set D -name {Disk Use: %s}\n", get_hostname());
 		sock_send_string(sock, "widget_add D title title\n");
-		sock_printf(sock, "widget_set D title {DISKS: %s}\n", get_hostname());
+		sock_printf(sock, "widget_set D title {DISKS:%s}\n", get_hostname());
 		sock_send_string(sock, "widget_add D f frame\n");
 		sock_printf(sock, "widget_set D f 1 2 %i %i %i %i v 12\n", lcd_wid, lcd_hgt, lcd_wid, lcd_hgt - 1);
 		sock_send_string(sock, "widget_add D err1 string\n");
