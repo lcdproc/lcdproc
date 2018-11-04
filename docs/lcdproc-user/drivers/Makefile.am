@@ -24,6 +24,7 @@ EXTRA_DIST =	bayrad.docbook \
 		lb216.docbook \
 		lcdm001.docbook \
 		lcterm.docbook \
+		linux_input.docbook \
 		lircin.docbook \
 		lis.docbook \
 		MD8800.docbook \
