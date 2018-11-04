@@ -16,6 +16,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <inttypes.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -67,8 +68,7 @@ disk_screen(int rep, int display, int *flags_ptr)
 	static int dev_wid = 6;
 	static int gauge_wid = 6, gauge_scale, hbar_pos;
 
-#define huge long long int
-	huge size;
+	u_int64_t size;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
@@ -108,10 +108,10 @@ disk_screen(int rep, int display, int *flags_ptr)
 			sprintf(table[i].dev, "%s", mnt[i].mpoint);
 
 		table[i].full = !mnt[i].blocks ? gauge_scale :
-			gauge_scale * (huge) (mnt[i].blocks - mnt[i].bfree)
-			/ (huge) mnt[i].blocks;
+			gauge_scale * (u_int64_t) (mnt[i].blocks - mnt[i].bfree)
+			/ mnt[i].blocks;
 
-		size = (huge) mnt[i].bsize * (huge) mnt[i].blocks;
+		size = (u_int64_t) mnt[i].bsize * mnt[i].blocks;
 		memset(table[i].cap, '\0', 8);
 
 		sprintf_memory(table[i].cap, (double) size, 1);
@@ -150,8 +150,6 @@ disk_screen(int rep, int display, int *flags_ptr)
 	}
 
 	num_disks = count;
-
-#undef huge
 
 	return 0;
 }
