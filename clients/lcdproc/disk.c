@@ -107,8 +107,8 @@ disk_screen(int rep, int display, int *flags_ptr)
 		else
 			sprintf(table[i].dev, "%s", mnt[i].mpoint);
 
-		table[i].full = (huge) gauge_scale
-			* (huge) (mnt[i].blocks - mnt[i].bfree)
+		table[i].full = !mnt[i].blocks ? gauge_scale :
+			gauge_scale * (huge) (mnt[i].blocks - mnt[i].bfree)
 			/ (huge) mnt[i].blocks;
 
 		size = (huge) mnt[i].bsize * (huge) mnt[i].blocks;
