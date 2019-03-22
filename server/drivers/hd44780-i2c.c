@@ -34,7 +34,7 @@
     i2c_line_RS=0x01
     i2c_line_RW=0x02
     i2c_line_EN=0x04
-    i2c_line_BL=0x80
+    i2c_line_BL=0x08
     i2c_line_D4=0x10
     i2c_line_D5=0x20
     i2c_line_D6=0x40
