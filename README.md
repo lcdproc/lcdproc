@@ -34,7 +34,7 @@ and [Selene Scriven](mailto:lcdproc@toykeeper.net).
 
 # Installation
 
-Refer to [INSTALL](INSTALL) (included with this archive) for installation
+Refer to [INSTALL](INSTALL.md) (included with this archive) for installation
 instructions (including how to connect an LCD to your system).
 
 # Changes
