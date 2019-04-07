@@ -55,6 +55,8 @@ cpu_screen(int rep, int display, int *flags_ptr)
 	static double cpu[CPU_BUF_SIZE + 1][5];	/* last buffer is scratch */
 	static int gauge_wid = 0;
 	static int usni_wid = 0;
+	static int us_wid = 0;
+	static int ni_wid = 0;
 
 	int i, j, n;
 	double value;
@@ -68,16 +70,18 @@ cpu_screen(int rep, int display, int *flags_ptr)
 		sock_printf(sock, "screen_set C -name {CPU Use: %s}\n", get_hostname());
 		if (lcd_hgt >= 4) {
 			gauge_wid = lcd_wid - 6;	/* room between 0%...100% */
+			us_wid = ((lcd_wid + 1) / 2) - 7; /* Usr/Sys label width -7 for " xx.x% " */
+			ni_wid = lcd_wid / 2 - 6;       /* Nice/Idle label width -6 for " xx.x%" */
 
 			sock_send_string(sock, "widget_add C title title\n");
 			sock_send_string(sock, "widget_set C title {CPU LOAD}\n");
 			sock_send_string(sock, "widget_add C one string\n");
 			sock_send_string(sock, "widget_add C two string\n");
 			sock_send_string(sock, "widget_add C three string\n");
-			sock_printf(sock, "widget_set C one 1 2 {%-*s%-*s}\n",
-					(lcd_wid + 1) / 2, "Usr", lcd_wid / 2, "Nice");
-			sock_printf(sock, "widget_set C two 1 3 {%-*s%-*s}\n",
-					(lcd_wid + 1) / 2, "Sys", lcd_wid / 2, "Idle");
+			sock_printf(sock, "widget_set C one 1 2 {%-*.*s       %-*.*s}\n",
+					us_wid, us_wid, "Usr", ni_wid, ni_wid, "Nice");
+			sock_printf(sock, "widget_set C two 1 3 {%-*.*s       %-*.*s}\n",
+					us_wid, us_wid, "Sys", ni_wid, ni_wid, "Idle");
 			sock_printf(sock, "widget_set C three 1 4 {0%%%*s100%%}\n", gauge_wid, "");
 			sock_send_string(sock, "widget_add C usr string\n");
 			sock_send_string(sock, "widget_add C nice string\n");
