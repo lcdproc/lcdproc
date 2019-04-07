@@ -75,9 +75,9 @@ cpu_screen(int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_add C two string\n");
 			sock_send_string(sock, "widget_add C three string\n");
 			sock_printf(sock, "widget_set C one 1 2 {%-*s%-*s}\n",
-					lcd_wid / 2, "Usr", lcd_wid / 2, "Nice");
+					(lcd_wid + 1) / 2, "Usr", lcd_wid / 2, "Nice");
 			sock_printf(sock, "widget_set C two 1 3 {%-*s%-*s}\n",
-					lcd_wid / 2, "Sys", lcd_wid / 2, "Idle");
+					(lcd_wid + 1) / 2, "Sys", lcd_wid / 2, "Idle");
 			sock_printf(sock, "widget_set C three 1 4 {0%%%*s100%%}\n", gauge_wid, "");
 			sock_send_string(sock, "widget_add C usr string\n");
 			sock_send_string(sock, "widget_add C nice string\n");
@@ -148,10 +148,10 @@ cpu_screen(int rep, int display, int *flags_ptr)
 		sock_printf(sock, "widget_set C title {CPU %5s: %s}\n", tmp, get_hostname());
 
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][0]);
-		sock_printf(sock, "widget_set C usr %i 2 {%5s}\n", (lcd_wid / 2) - 5, tmp);
+		sock_printf(sock, "widget_set C usr %i 2 {%5s}\n", ((lcd_wid + 1) / 2) - 5, tmp);
 
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][1]);
-		sock_printf(sock, "widget_set C sys %i 3 {%5s}\n", (lcd_wid / 2) - 5, tmp);
+		sock_printf(sock, "widget_set C sys %i 3 {%5s}\n", ((lcd_wid + 1) / 2) - 5, tmp);
 
 		sprintf_percent(tmp, cpu[CPU_BUF_SIZE][2]);
 		sock_printf(sock, "widget_set C nice %i 2 {%5s}\n", lcd_wid - 4, tmp);
