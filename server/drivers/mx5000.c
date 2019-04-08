@@ -276,7 +276,7 @@ mx5000_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
     py = y * CELL_HEIGHT;
 
     mx5000_sc_add_progress_bar(p->sc,
-			       promille * len / 1000,
+			       (promille * len + 500) / 1000,
 			       len,
 			       STATIC,
 			       py,
