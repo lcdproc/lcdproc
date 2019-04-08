@@ -56,6 +56,7 @@ mem_screen(int rep, int display, int *flags_ptr)
 	static int gauge_wid = 0;
 	static int gauge_offs = 0;
 	static int title_sep_wid = 0;
+	int label_wid, label_offs;
 	meminfo_type mem[2];
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
@@ -71,12 +72,15 @@ mem_screen(int rep, int display, int *flags_ptr)
 				    ? (lcd_wid - 6) / 2		/* room for E..F pairs and 2 spaces in between */
 				    : (lcd_wid - 4) / 2;	/* leave room for the  E...F pairs */
 
+			label_wid = (title_sep_wid >= 4) ? 4 : title_sep_wid;
+			label_offs = (lcd_wid - label_wid) / 2 + 1;
+
 			sock_send_string(sock, "widget_add M title title\n");
 			sock_printf(sock, "widget_set M title { MEM %.*s SWAP}\n", title_sep_wid, title_sep);
 			sock_send_string(sock, "widget_add M totl string\n");
-			sock_send_string(sock, "widget_add M used string\n");
-			sock_printf(sock, "widget_set M totl %i 2 Totl\n", lcd_wid/2 - 1);
-			sock_printf(sock, "widget_set M used %i 3 Free\n", lcd_wid/2 - 1);
+			sock_send_string(sock, "widget_add M free string\n");
+			sock_printf(sock, "widget_set M totl %i 2 %.*s\n", label_offs, label_wid, "Totl");
+			sock_printf(sock, "widget_set M free %i 3 %.*s\n", label_offs, label_wid, "Free");
 			sock_send_string(sock, "widget_add M EFmem string\n");
 			sock_printf(sock, "widget_set M EFmem 1 4 {E%*sF}\n", gauge_wid, "");
 			sock_send_string(sock, "widget_add M EFswap string\n");
