@@ -51,9 +51,11 @@
 int
 mem_screen(int rep, int display, int *flags_ptr)
 {
+	const char *title_sep = "####################################################################################################";
 	static int which_title = 0;
 	static int gauge_wid = 0;
 	static int gauge_offs = 0;
+	static int title_sep_wid = 0;
 	meminfo_type mem[2];
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
@@ -62,15 +64,15 @@ mem_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "screen_add M\n");
 		sock_printf(sock, "screen_set M -name {Memory & Swap: %s}\n", get_hostname());
 
+		title_sep_wid = (lcd_wid >= 16) ? lcd_wid - 16 : 0;
+
 		if (lcd_hgt >= 4) {
 			gauge_wid = (lcd_wid >= 18)
 				    ? (lcd_wid - 6) / 2		/* room for E..F pairs and 2 spaces in between */
 				    : (lcd_wid - 4) / 2;	/* leave room for the  E...F pairs */
 
 			sock_send_string(sock, "widget_add M title title\n");
-			sock_send_string(sock, "widget_set M title { MEM}\n");
-			sock_send_string(sock, "widget_add M subtitle string\n");
-			sock_printf(sock, "widget_set M subtitle %i 1 { SWAP }\n", lcd_wid - 6);
+			sock_printf(sock, "widget_set M title { MEM %.*s SWAP}\n", title_sep_wid, title_sep);
 			sock_send_string(sock, "widget_add M totl string\n");
 			sock_send_string(sock, "widget_add M used string\n");
 			sock_printf(sock, "widget_set M totl %i 2 Totl\n", lcd_wid/2 - 1);
@@ -116,14 +118,10 @@ mem_screen(int rep, int display, int *flags_ptr)
 		char tmp[12];	/* should be sufficient */
 
 		/* flip the title back and forth... (every 4 updates) */
-		if (which_title & 4) {
-			sock_printf(sock, "widget_set M subtitle %i 1 {}\n", lcd_wid - 7);
+		if (which_title & 4)
 			sock_printf(sock, "widget_set M title {%s}\n", get_hostname());
-		}
-		else {
-			sock_send_string(sock, "widget_set M title { MEM}\n");
-			sock_printf(sock, "widget_set M subtitle %i 1 { SWAP }\n", lcd_wid - 7);
-		}
+		else
+			sock_printf(sock, "widget_set M title { MEM %.*s SWAP}\n", title_sep_wid, title_sep);
 		which_title = (which_title + 1) & 7;
 
 		/* Total memory */
