@@ -37,9 +37,9 @@ sprintf_memory(char *dst, double value, double roundlimit)
 
 		char *unit = convert_double(&value, 1024, roundlimit);
 
-		if (value < 100)
+		if (value <= 99.994999999)
 			format = "%.2f%s";
-		if (value < 10)
+		if (value <= 9.9994999999)
 			format = "%.3f%s";
 
 		sprintf(dst, format, value, unit);
