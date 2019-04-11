@@ -289,7 +289,7 @@ mx5000_num (Driver *drvthis, int x, int num)
 {
     PrivateData *p = drvthis->private_data;
     int px, py;
-    char text[10];
+    char text[12];
     px = (x - 1) * CELL_WIDTH;
     py = 33;
 
