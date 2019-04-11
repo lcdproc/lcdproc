@@ -35,6 +35,7 @@ typedef struct mx5000_private_data {
     char device[200];
     int wait;
     int fd;
+    int input_fd;
     struct MX5000ScreenContent *sc;
     char info[255];
     char changed;
