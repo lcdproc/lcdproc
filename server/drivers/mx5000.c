@@ -303,17 +303,16 @@ mx5000_backlight (Driver *drvthis, int on)
 }
 
 /*
- * Draws a horizontal bar to the right.
- */
-MODULE_EXPORT void
-mx5000_hbar (Driver *drvthis, int x, int y, int len, int promille, int options)
-{
-/* x and y are the start position of the bar.
+ * Draws a progressbar.
+ * x and y are the start position of the bar.
  * The bar by default grows in the 'right' direction
  * (other direction not yet implemented).
  * len is the number of characters that the bar is long at 100%
  * promille is the number of promilles (0..1000) that the bar should be filled.
  */
+MODULE_EXPORT void
+mx5000_pbar (Driver *drvthis, int x, int y, int len, int promille)
+{
     PrivateData *p = drvthis->private_data;
     // The position should be given in pixels
     int px, py;
