@@ -33,6 +33,7 @@ char *typenames[] = {
 	"string",	/* WID_STRING */
 	"hbar",		/* WID_HBAR */
 	"vbar",		/* WID_VBAR */
+	"pbar",		/* WID_PBAR */
 	"icon",		/* WID_ICON */
 	"title",	/* WID_TITLE */
 	"scroller",	/* WID_SCROLLER */
@@ -85,7 +86,7 @@ widget_create(char *id, WidgetType type, Screen *screen)
 	debug(RPT_DEBUG, "%s(id=\"%s\", type=%d, screen=[%s])", __FUNCTION__, id, type, screen->id);
 
 	/* Create it */
-	w = malloc(sizeof(Widget));
+	w = calloc(1, sizeof(Widget));
 	if (w == NULL) {
 		report(RPT_DEBUG, "%s: Error allocating", __FUNCTION__);
 		return NULL;

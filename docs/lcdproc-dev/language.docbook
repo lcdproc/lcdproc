@@ -452,6 +452,14 @@
 		</varlistentry>
 		<varlistentry>
 		  <term>
+		    <literal>pbar</literal>
+		  </term>
+		  <listitem><para>
+		      A percentage / progress bar.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>
 		    <literal>icon</literal>
 		  </term>
 		  <listitem><para>
@@ -564,6 +572,27 @@
 		      vertical (<literal>vbar</literal>) starting at
 		      position (<replaceable>x</replaceable>,<replaceable>y</replaceable>)
 		      that is <replaceable>length</replaceable> pixels wide resp. high.
+		    </para></listitem>
+		</varlistentry>
+		<varlistentry>
+		  <term>
+		    <literal>pbar</literal>
+		  </term>
+		  <listitem>
+		    <cmdsynopsis>
+		      <arg choice="plain"><replaceable>x</replaceable></arg>
+		      <arg choice="plain"><replaceable>y</replaceable></arg>
+		      <arg choice="plain"><replaceable>width</replaceable></arg>
+		      <arg choice="plain"><replaceable>promille</replaceable></arg>
+		      <arg choice="opt"><replaceable>begin-label</replaceable></arg>
+		      <arg choice="opt"><replaceable>end-label</replaceable></arg>
+		    </cmdsynopsis>
+		    <para>
+		      Displays a horizontal (<literal>pbar</literal>) and its
+		      optional (<literal>begin-label</literal>) and (<literal>end-label</literal>)
+		      labels covering <replaceable>width</replaceable> characters starting at
+		      position (<replaceable>x</replaceable>,<replaceable>y</replaceable>)
+		      where a fraction of (<replaceable>promille</replaceable> / 1000) is filled.
 		    </para></listitem>
 		</varlistentry>
 		<varlistentry>

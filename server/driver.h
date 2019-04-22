@@ -46,6 +46,9 @@ driver_support_multiple(Driver *driver);
 bool
 driver_stay_in_foreground(Driver *driver);
 
+void
+driver_pbar(Driver *drv, int x, int y, int width, int promille, char *begin_label, char *end_label);
+
 
 /* Alternative functions for all extended functions */
 

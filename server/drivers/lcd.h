@@ -156,6 +156,7 @@ typedef struct lcd_logical_driver {
 	/* extended output functions (optional; core provides alternatives) */
 	void (*vbar)		(struct lcd_logical_driver *drvthis, int x, int y, int len, int promille, int pattern);
 	void (*hbar)		(struct lcd_logical_driver *drvthis, int x, int y, int len, int promille, int pattern);
+	void (*pbar)		(struct lcd_logical_driver *drvthis, int x, int y, int width, int promille);
 	void (*num)		(struct lcd_logical_driver *drvthis, int x, int num);
 	void (*heartbeat)	(struct lcd_logical_driver *drvthis, int state);
 	int (*icon)		(struct lcd_logical_driver *drvthis, int x, int y, int icon);

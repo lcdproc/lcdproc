@@ -296,6 +296,31 @@ widget_set_func(Client *c, int argc, char **argv)
 			sock_send_string(c->sock, "success\n");
 		}
 		break;
+	case WID_PBAR:			/* Pbar takes "x y width promille [begin-label end-label]" */
+		if (argc < i + 4 || argc > i + 6) {
+			sock_send_error(c->sock, "Wrong number of arguments\n");
+			break;
+		}
+		if ((!isdigit((unsigned int) argv[i][0])) ||
+		    (!isdigit((unsigned int) argv[i + 1][0]))) {
+			sock_send_error(c->sock, "Invalid coordinates\n");
+			break;
+		}
+		free(w->begin_label);
+		free(w->end_label);
+		w->begin_label = NULL;
+		w->end_label = NULL;
+		w->x = atoi(argv[i]);
+		w->y = atoi(argv[i + 1]);
+		w->width = atoi(argv[i + 2]);
+		w->promille = atoi(argv[i + 3]);
+		if (argc >= i + 5)
+			w->begin_label = strdup(argv[i + 4]);
+		if (argc >= i + 6)
+			w->end_label = strdup(argv[i + 5]);
+		debug(RPT_DEBUG, "Widget %s set to %i", wid, w->promille);
+		sock_send_string(c->sock, "success\n");
+		break;
 	case WID_ICON:			/* Icon takes "x y icon" */
 		if (argc != i + 3)
 			sock_send_error(c->sock, "Wrong number of arguments\n");
