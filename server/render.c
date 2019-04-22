@@ -66,6 +66,7 @@ static void render_frame(LinkedList *list, int left, int top, int right, int bot
 static void render_string(Widget *w, int left, int top, int right, int bottom, int fy);
 static void render_hbar(Widget *w, int left, int top, int right, int bottom, int fy);
 static void render_vbar(Widget *w, int left, int top, int right, int bottom);
+static void render_pbar(Widget *w, int left, int top, int right, int bottom);
 static void render_title(Widget *w, int left, int top, int right, int bottom, long timer);
 static void render_scroller(Widget *w, int left, int top, int right, int bottom, long timer);
 static void render_num(Widget *w, int left, int top, int right, int bottom);
@@ -260,6 +261,9 @@ render_frame(LinkedList *list,
 		case WID_VBAR:	  /* FIXME:  Vbars don't work in frames! */
 			render_vbar(w, left, top, right, bottom);
 			break;
+		case WID_PBAR:
+			render_pbar(w, left, top - fy, right, bottom);
+			break;
 		case WID_ICON:	  /* FIXME:  Icons don't work in frames! */
 			drivers_icon(w->x, w->y, w->length);
 			break;
@@ -376,6 +380,18 @@ render_vbar(Widget *w, int left, int top, int right, int bottom)
 	}
 }
 
+static void
+render_pbar(Widget *w, int left, int top, int right, int bottom)
+{
+	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d)",
+			  __FUNCTION__, w, left, top, right, bottom);
+
+	if (!((w->x > 0) && (w->y > 0) && (w->width > 0)))
+		return;
+
+        drivers_pbar(w->x + left, w->y + top, w->width, w->promille,
+       		     w->begin_label, w->end_label);
+}
 
 static void
 render_title(Widget *w, int left, int top, int right, int bottom, long timer)

@@ -310,6 +310,30 @@ drivers_hbar(int x, int y, int len, int promille, int pattern)
 
 
 /**
+ * Draw a percentage-bar to all drivers.
+ * \param x            Horizontal character position (column) of the starting point.
+ * \param y            Vertical character position (row) of the starting point.
+ * \param width        Width of the widget in characters, including the
+ *                     optional begin and end-labels.
+ * \param promille     Current length level of the bar in promille.
+ * \param begin_label  Optional (may be NULL) text to render in front of /
+ *                     at the beginning of the percentage-bar.
+ * \param end_label    Optional text to render at the end of the pbar.
+ *
+ * Note the driver may choose to not render the labels if there is not enough
+ * space.
+ */
+void
+drivers_pbar(int x, int y, int width, int promille, char *begin_label, char *end_label)
+{
+	Driver *drv;
+
+	ForAllDrivers(drv)
+		driver_pbar(drv, x, y, width, promille, begin_label, end_label);
+}
+
+
+/**
  * Write a big number to all output drivers.
  * For drivers that define a num() function, call it;
  * otherwise call the general driver_alt_num() function from the server core.

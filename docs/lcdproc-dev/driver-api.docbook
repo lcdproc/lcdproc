@@ -104,6 +104,9 @@ typedef struct lcd_logical_driver {
 	void (*vbar)		(Driver *drvthis, int x, int y, int len, int promille, int options);
 	void (*hbar)		(Driver *drvthis, int x, int y, int len, int promille, int options);
 
+	// draw a progressbar covering lenght chars at pos (x,y) showing promille% progress
+	void (*pbar)		(Driver *drvthis, int x, int y, int len, int promille);
+
 	// display (big) number num at horizontal position x
 	void (*num)		(Driver *drvthis, int x, int num);
 
@@ -396,9 +399,30 @@ typedef struct MyDriver_private_data {
   </funcprototype>
 </funcsynopsis>
 <para>
-  Draw a horizontal bar at position (<replaceable>x</replaceable>,<replaceable>y</replaceable>)
+  Draw a solid horizontal bar at position (<replaceable>x</replaceable>,<replaceable>y</replaceable>)
   that has maximal length <replaceable>len</replaceable>, where a fraction of
-  (<replaceable>promille</replaceable> / 1000) is filled.
+  (<replaceable>promille</replaceable> / 1000) is filled. The non filled
+  part of the maximum length should not be drawn / touched by this function.
+</para>
+
+<funcsynopsis>
+  <funcprototype>
+	<funcdef>void <function>(*pbar)</function></funcdef>
+	<paramdef>Driver *<parameter>drvthis</parameter></paramdef>
+	<paramdef>int <parameter>x</parameter></paramdef>
+	<paramdef>int <parameter>y</parameter></paramdef>
+	<paramdef>int <parameter>len</parameter></paramdef>
+	<paramdef>int <parameter>promille</parameter></paramdef>
+  </funcprototype>
+</funcsynopsis>
+<para>
+  Draw a progress bar covering <replaceable>len</replaceable> characters at
+  position (<replaceable>x</replaceable>,<replaceable>y</replaceable>),
+  where a fraction of (<replaceable>promille</replaceable> / 1000) is filled.
+  Unlike a hbar, this function must draw a background for the the non-filled
+  part of the bar. For example this function may draw an outline in the form
+  of a (non-filled) rectangle covering the entire length and then fill part
+  of that rectangle to indicate the current progress.
 </para>
 
 <funcsynopsis>

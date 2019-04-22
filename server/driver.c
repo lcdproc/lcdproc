@@ -56,6 +56,7 @@ DriverSymbols driver_symbols[] = {
 	{ "chr",                offsetof(Driver, chr),                0 },
 	{ "vbar",               offsetof(Driver, vbar),               0 },
 	{ "hbar",               offsetof(Driver, hbar),               0 },
+	{ "pbar",               offsetof(Driver, pbar),               0 },
 	{ "num",                offsetof(Driver, num),                0 },
 	{ "heartbeat",          offsetof(Driver, heartbeat),          0 },
 	{ "icon",               offsetof(Driver, icon),               0 },
@@ -447,6 +448,63 @@ driver_alt_hbar(Driver *drv, int x, int y, int len, int promille, int options)
 	}
 }
 
+/**
+ * Draw a percentage-bar including its (optional) labels.
+ * \param drv          Pointer to driver structure.
+ * \param x            Horizontal character position (column) of the starting point.
+ * \param y            Vertical character position (row) of the starting point.
+ * \param width        Width of the widget in characters, including the
+ *                     optional begin and end-labels.
+ * \param promille     Current length level of the bar in promille.
+ * \param begin_label  Optional (may be NULL) text to render in front of /
+ *                     at the beginning of the percentage-bar.
+ * \param end_label    Optional text to render at the end of the pbar.
+ */
+void
+driver_pbar(Driver *drv, int x, int y, int width, int promille, char *begin_label, char *end_label)
+{
+	int begin_length, end_length, len;
+
+	debug(RPT_DEBUG, "%s(drv=[%.40s], x=%d, y=%d, width=%d, promille=%d)", __FUNCTION__, drv->name, x, y, width, promille);
+
+	/* if the driver does not support output, do nothing. */
+	if (drv->chr == NULL || drv->string == NULL)
+		return;
+
+	/* if we are falling back to drawing a hbar because the driver does
+	 * not provide a pbar method *and* no labels are given, draw []
+	 * around the hbar to mark the beginning and end of the bar.
+	 */
+	if (!drv->pbar && begin_label == NULL && end_label == NULL) {
+		begin_label = "[";
+		end_label = "]";
+	}
+
+	begin_length = begin_label ? strlen(begin_label) : 0;
+	end_length = end_label ? strlen(end_label) : 0;
+
+	/* We want at least 2 chars for the bar itself */
+	if ((begin_length + end_length + 2) > width)
+		begin_length = end_length = 0;
+
+	len = width - begin_length - end_length;
+
+	if (begin_length) {
+		drv->string(drv, x, y, begin_label);
+		x += begin_length;
+	}
+
+	if (drv->pbar)
+		drv->pbar(drv, x, y, len, promille);
+	else if (drv->hbar)
+		drv->hbar(drv, x, y, len, promille, BAR_PATTERN_FILLED);
+	else
+		driver_alt_hbar(drv, x, y, len, promille, BAR_PATTERN_FILLED);
+	x += len;
+
+	if (end_length)
+		drv->string(drv, x, y, end_label);
+}
 
 /** Write a big number to the screen.
  * Fallback for the driver's \c num method if the driver does not provide one.

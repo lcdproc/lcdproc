@@ -50,6 +50,9 @@ void
 drivers_hbar(int x, int y, int len, int promille, int pattern);
 
 void
+drivers_pbar(int x, int y, int width, int promille, char *begin_label, char *end_label);
+
+void
 drivers_num(int x, int num);
 
 void
