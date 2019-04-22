@@ -26,4 +26,11 @@ char *sprintf_percent(char *dst, double percent);
 /** converts value into power-of-x representation */
 char *convert_double(double *value, int base, double roundlimit);
 
+/** add a pbar widget, auto-falling back to hbar if the server is too old */
+void pbar_widget_add(const char *screen, const char *name);
+
+/** set parameters for a pbar widget added with pbar_widget_add() */
+void pbar_widget_set(const char *screen, const char *name, int x, int y, int width,
+		     int promille, char *begin_label, char *end_label);
+
 #endif
