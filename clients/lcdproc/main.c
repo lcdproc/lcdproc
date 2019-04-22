@@ -64,6 +64,9 @@ int lcd_hgt = 0;
 int lcd_cellwid = 0;
 int lcd_cellhgt = 0;
 
+static int protocol_major_version = 0;
+static int protocol_minor_version = 0;
+
 static struct utsname unamebuf;
 
 /* local prototypes */
@@ -148,6 +151,21 @@ get_sysrelease(void)
 	return (unamebuf.release);
 }
 
+/** Check the protocol version.
+ * \param major  Major version to check for.
+ * \param minor  Minor version to check for.
+ * \return true if the the protocol version is equal to; or greater then the
+ * passed in major.minor; false otherwise.
+ */
+bool check_protocol_version(int major, int minor)
+{
+	if (protocol_major_version > major)
+		return true;
+	if (protocol_major_version == major && protocol_minor_version >= minor)
+		return true;
+
+	return false;
+}
 
 /** Enables or disables (and deletes) a screen */
 static int
@@ -638,6 +656,8 @@ main_loop(void)
 										lcd_cellwid = atoi(argv[++a]);
 									else if (0 == strcmp(argv[a], "cellhgt"))
 										lcd_cellhgt = atoi(argv[++a]);
+									else if (0 == strcmp(argv[a], "protocol"))
+										sscanf(argv[++a], "%d.%d", &protocol_major_version, &protocol_minor_version);
 								}
 								connected = 1;
 								if (displayname != NULL)
