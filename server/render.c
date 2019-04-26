@@ -62,13 +62,13 @@ char *server_msg_text;
 int server_msg_expire = 0;
 
 
-static int render_frame(LinkedList *list, int left, int top, int right, int bottom, int fwid, int fhgt, char fscroll, int fspeed, long timer);
-static int render_string(Widget *w, int left, int top, int right, int bottom, int fy);
-static int render_hbar(Widget *w, int left, int top, int right, int bottom, int fy);
-static int render_vbar(Widget *w, int left, int top, int right, int bottom);
-static int render_title(Widget *w, int left, int top, int right, int bottom, long timer);
-static int render_scroller(Widget *w, int left, int top, int right, int bottom, long timer);
-static int render_num(Widget *w, int left, int top, int right, int bottom);
+static void render_frame(LinkedList *list, int left, int top, int right, int bottom, int fwid, int fhgt, char fscroll, int fspeed, long timer);
+static void render_string(Widget *w, int left, int top, int right, int bottom, int fy);
+static void render_hbar(Widget *w, int left, int top, int right, int bottom, int fy);
+static void render_vbar(Widget *w, int left, int top, int right, int bottom);
+static void render_title(Widget *w, int left, int top, int right, int bottom, long timer);
+static void render_scroller(Widget *w, int left, int top, int right, int bottom, long timer);
+static void render_num(Widget *w, int left, int top, int right, int bottom);
 
 
 /**
@@ -197,7 +197,7 @@ render_screen(Screen *s, long timer)
 /* The following function is positively ghastly (as was mentioned above!) */
 /* Best thing to do is to remove support for frames... but anyway... */
 /* */
-static int
+static void
 render_frame(LinkedList *list,
 		int left,	/* left edge of frame */
 		int top,	/* top edge of frame */
@@ -219,7 +219,7 @@ render_frame(LinkedList *list,
 
 	/* return on no data or illegal height */
 	if ((list == NULL) || (fhgt <= 0))
-		return -1;
+		return;
 
 	if (fscroll == 'v') {		/* vertical scrolling */
 		// only set offset !=0 when fspeed is != 0 and there is something to scroll
@@ -247,7 +247,7 @@ render_frame(LinkedList *list,
 		Widget *w = (Widget *) LL_Get(list);
 
 		if (w == NULL)
-			return -1;
+			return;
 
 		/* TODO:  Make this cleaner and more flexible! */
 		switch (w->type) {
@@ -297,12 +297,10 @@ render_frame(LinkedList *list,
 			break;
 		}
 	} while (LL_Next(list) == 0);
-
-	return 0;
 }
 
 
-static int
+static void
 render_string(Widget *w, int left, int top, int right, int bottom, int fy)
 {
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d, fy=%d)",
@@ -319,18 +317,17 @@ render_string(Widget *w, int left, int top, int right, int bottom, int fy)
 		w->x = min(w->x, right - left);
 		drivers_string(w->x + left, w->y + top, w->text);
 	}
-	return 0;
 }
 
 
-static int
+static void
 render_hbar(Widget *w, int left, int top, int right, int bottom, int fy)
 {
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d, fy=%d)",
 			  __FUNCTION__, w, left, top, right, bottom, fy);
 
 	if (!((w->x > 0) && (w->y > 0) && (w->y > fy) && (w->y <= bottom - top)))
-		return 0;
+		return;
 
 	if (w->length > 0) {
 		int full_len = display_props->width - w->x - left + 1;
@@ -348,18 +345,17 @@ render_hbar(Widget *w, int left, int top, int right, int bottom, int fy)
 		 * so I'll leave it out for now.
 		 */
 	}
-	return 0;
 }
 
 
-static int
+static void
 render_vbar(Widget *w, int left, int top, int right, int bottom)
 {
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d)",
 			  __FUNCTION__, w, left, top, right, bottom);
 
 	if (!((w->x > 0) && (w->y > 0)))
-		return 0;
+		return;
 
 	if (w->length > 0) {
 		int full_len = display_props->height;
@@ -374,11 +370,10 @@ render_vbar(Widget *w, int left, int top, int right, int bottom)
 		 * so I'll leave it out for now.
 		 */
 	}
-	return 0;
 }
 
 
-static int
+static void
 render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 {
 	int vis_width = right - left;
@@ -389,7 +384,7 @@ render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 			  __FUNCTION__, w, left, top, right, bottom, timer);
 
 	if ((w->text == NULL) || (vis_width < 8))
-		return 0;
+		return;
 
 	length = strlen(w->text);
 
@@ -455,11 +450,10 @@ render_title(Widget *w, int left, int top, int right, int bottom, long timer)
 	for ( ; x < vis_width; x++) {
 		drivers_icon(w->x + x + left, w->y + top, ICON_BLOCK_FILLED);
 	}
-	return 0;
 }
 
 
-static int
+static void
 render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 {
 	char str[BUFSIZE];
@@ -472,7 +466,7 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 			  __FUNCTION__, w, left, top, right, bottom, timer);
 
 	if ((w->text == NULL) || (w->right < w->left))
-		return 0;
+		return;
 
 	screen_width = abs(w->right - w->left + 1);
 	screen_width = min(screen_width, sizeof(str)-1);
@@ -638,11 +632,10 @@ render_scroller(Widget *w, int left, int top, int right, int bottom, long timer)
 		}
 		break;
 	}
-	return 0;
 }
 
 
-static int render_num(Widget *w, int left, int top, int right, int bottom)
+static void render_num(Widget *w, int left, int top, int right, int bottom)
 {
 	debug(RPT_DEBUG, "%s(w=%p, left=%d, top=%d, right=%d, bottom=%d)",
 			  __FUNCTION__, w, left, top, right, bottom);
@@ -651,7 +644,6 @@ static int render_num(Widget *w, int left, int top, int right, int bottom)
 	if ((w->x > 0) && (w->y >= 0) && (w->y <= 10)) {
 		drivers_num(w->x + left, w->y);
 	}
-	return 0;
 }
 
 
