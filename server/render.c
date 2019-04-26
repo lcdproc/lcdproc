@@ -330,13 +330,17 @@ render_hbar(Widget *w, int left, int top, int right, int bottom, int fy)
 		return;
 
 	if (w->length > 0) {
-		int full_len = display_props->width - w->x - left + 1;
+		int len = display_props->width - w->x - left + 1;
 		int promille = 1000;
 
-		if ((w->length / display_props->cellwidth) < right - left - w->x + 1)
-			promille = (long) 1000 * w->length / (display_props->cellwidth * full_len);
+		if ((w->length / display_props->cellwidth) < right - left - w->x + 1) {
+			len = w->length / display_props->cellwidth +
+			      (w->length % display_props->cellwidth ? 1 : 0);
+			promille = (long) 1000 * w->length /
+				   (display_props->cellwidth * len);
+		}
 
-		drivers_hbar(w->x + left, w->y + top, full_len, promille, BAR_PATTERN_FILLED);
+		drivers_hbar(w->x + left, w->y + top, len, promille, BAR_PATTERN_FILLED);
 	}
 	else if (w->length < 0) {
 		/* TODO:  Rearrange stuff to get left-extending
