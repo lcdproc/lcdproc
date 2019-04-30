@@ -68,9 +68,9 @@ mem_screen(int rep, int display, int *flags_ptr)
 		title_sep_wid = (lcd_wid >= 16) ? lcd_wid - 16 : 0;
 
 		if (lcd_hgt >= 4) {
-			gauge_wid = (lcd_wid >= 18)
-				    ? (lcd_wid - 6) / 2		/* room for E..F pairs and 2 spaces in between */
-				    : (lcd_wid - 4) / 2;	/* leave room for the  E...F pairs */
+			gauge_wid = lcd_wid / 2; /* Room for 2 E...F pbars */
+			if ((lcd_wid % 2) == 0 && gauge_wid >= 9)
+				gauge_wid--; /* Put 2 spaces between the pbars */
 
 			label_wid = (title_sep_wid >= 4) ? 4 : title_sep_wid;
 			label_offs = (lcd_wid - label_wid) / 2 + 1;
@@ -81,23 +81,18 @@ mem_screen(int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_add M free string\n");
 			sock_printf(sock, "widget_set M totl %i 2 %.*s\n", label_offs, label_wid, "Totl");
 			sock_printf(sock, "widget_set M free %i 3 %.*s\n", label_offs, label_wid, "Free");
-			sock_send_string(sock, "widget_add M EFmem string\n");
-			sock_printf(sock, "widget_set M EFmem 1 4 {E%*sF}\n", gauge_wid, "");
-			sock_send_string(sock, "widget_add M EFswap string\n");
-			sock_printf(sock, "widget_set M EFswap %i 4 {E%*sF}\n",
-				    lcd_wid - gauge_wid - 1, gauge_wid, "");
 			sock_send_string(sock, "widget_add M memused string\n");
 			sock_send_string(sock, "widget_add M swapused string\n");
 		}
 		else {
 			if (lcd_wid >= 20) {
 				/* We have room for spaces to separate the bars and the mem / % strings */
-				gauge_wid = lcd_wid - 18;
-				gauge_offs = 11;
-			} else if (lcd_wid >= 17) {
-				/* We can fit the bars of we leave out the spaces separating them from the strings */
 				gauge_wid = lcd_wid - 16;
 				gauge_offs = 10;
+			} else if (lcd_wid >= 17) {
+				/* We can fit the bars of we leave out the spaces separating them from the strings */
+				gauge_wid = lcd_wid - 14;
+				gauge_offs = 9;
 			} else {
 				/* no space for the bars */
 				gauge_wid = gauge_offs = 0;
@@ -105,16 +100,8 @@ mem_screen(int rep, int display, int *flags_ptr)
 
 			sock_send_string(sock, "widget_add M m string\n");
 			sock_send_string(sock, "widget_add M s string\n");
-			if (gauge_wid > 0) {
-				sock_printf(sock, "widget_set M m 1 1 {M%*s[%*s]}\n",
-					    gauge_offs - 3, "", gauge_wid, "");
-				sock_printf(sock, "widget_set M s 1 2 {S%*s[%*s]}\n",
-					    gauge_offs - 3, "", gauge_wid, "");
-			}
-			else {
-				sock_send_string(sock, "widget_set M m 1 1 {M   }\n");
-				sock_send_string(sock, "widget_set M s 1 2 {S   }\n");
-			}
+			sock_send_string(sock, "widget_set M m 1 1 {M}\n");
+			sock_send_string(sock, "widget_set M s 1 2 {S}\n");
 			sock_send_string(sock, "widget_add M mem% string\n");
 			sock_send_string(sock, "widget_add M swap% string\n");
 		}
@@ -122,8 +109,8 @@ mem_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "widget_add M memtotl string\n");
 		sock_send_string(sock, "widget_add M swaptotl string\n");
 
-		sock_send_string(sock, "widget_add M memgauge hbar\n");
-		sock_send_string(sock, "widget_add M swapgauge hbar\n");
+		pbar_widget_add("M", "memgauge");
+		pbar_widget_add("M", "swapgauge");
 	}
 
 	if (lcd_hgt >= 4) {
@@ -165,18 +152,14 @@ mem_screen(int rep, int display, int *flags_ptr)
 				double value = 1.0 - (double) (mem[0].free + mem[0].buffers + mem[0].cache)
 					       / (double) mem[0].total;
 
-				/* printf(".0f", val) only prints the integer part */
-				sock_printf(sock, "widget_set M memgauge 2 4 %.0f\n",
-					    lcd_cellwid * gauge_wid * value);
+				pbar_widget_set("M", "memgauge", 1, 4, gauge_wid, value * 1000, "E", "F");
 			}
 
 			/* Free swap graph */
 			if (mem[1].total > 0) {
 				double value = 1.0 - ((double) mem[1].free / (double) mem[1].total);
 
-				/* printf(".0f", val) only prints the integer part */
-				sock_printf(sock, "widget_set M swapgauge %i 4 %.0f\n",
-					    lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
+				pbar_widget_set("M", "swapgauge", 1 + lcd_wid - gauge_wid, 4, gauge_wid, value * 1000, "E", "F");
 			}
 		}
 	}
@@ -197,11 +180,8 @@ mem_screen(int rep, int display, int *flags_ptr)
 			double value = 1.0 - (double) (mem[0].free + mem[0].buffers + mem[0].cache)
 					 / (double) mem[0].total;
 
-			if (gauge_wid > 0) {
-				/* printf(".0f", val) only prints the integer part */
-				sock_printf(sock, "widget_set M memgauge %i 1 %.0f\n",
-					    gauge_offs, lcd_cellwid * gauge_wid * value);
-			}
+			if (gauge_wid > 0)
+				pbar_widget_set("M", "memgauge", gauge_offs, 1, gauge_wid, value * 1000, NULL, NULL);
 
 			sprintf_percent(tmp, value * 100);
 		}
@@ -212,11 +192,8 @@ mem_screen(int rep, int display, int *flags_ptr)
 		if (mem[1].total > 0) {
 			double value = 1.0 - ((double) mem[1].free / (double) mem[1].total);
 
-			if (gauge_wid > 0) {
-				/* printf(".0f", val) only prints the integer part */
-				sock_printf(sock, "widget_set M swapgauge %i 2 %.0f\n",
-					    gauge_offs, lcd_cellwid * gauge_wid * value);
-			}
+			if (gauge_wid > 0)
+				pbar_widget_set("M", "swapgauge", gauge_offs, 2, gauge_wid, value * 1000, NULL, NULL);
 
 			sprintf_percent(tmp, value * 100);
 		}
