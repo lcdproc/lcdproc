@@ -126,37 +126,38 @@ mem_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "widget_add M swapgauge hbar\n");
 	}
 
-	machine_get_meminfo(mem);
-
 	if (lcd_hgt >= 4) {
-		char tmp[12];	/* should be sufficient */
-
 		/* flip the title back and forth... (every 4 updates) */
 		if (which_title & 4)
 			sock_printf(sock, "widget_set M title {%s}\n", get_hostname());
 		else
 			sock_printf(sock, "widget_set M title { MEM %.*s SWAP}\n", title_sep_wid, title_sep);
 		which_title = (which_title + 1) & 7;
+	}
+
+	if (!display)
+		return 0;
+
+	machine_get_meminfo(mem);
+
+	if (lcd_hgt >= 4) {
+		char tmp[12];	/* should be sufficient */
 
 		/* Total memory */
 		sprintf_memory(tmp, mem[0].total * 1024.0, 1);
-		if (display)
-			sock_printf(sock, "widget_set M memtotl 1 2 {%7s}\n", tmp);
+		sock_printf(sock, "widget_set M memtotl 1 2 {%7s}\n", tmp);
 
 		/* Free memory (plus buffers and cache) */
 		sprintf_memory(tmp, (mem[0].free + mem[0].buffers + mem[0].cache) * 1024.0, 1);
-		if (display)
-			sock_printf(sock, "widget_set M memused 1 3 {%7s}\n", tmp);
+		sock_printf(sock, "widget_set M memused 1 3 {%7s}\n", tmp);
 
 		/* Total swap */
 		sprintf_memory(tmp, mem[1].total * 1024.0, 1);
-		if (display)
-			sock_printf(sock, "widget_set M swaptotl %i 2 {%7s}\n", lcd_wid - 7, tmp);
+		sock_printf(sock, "widget_set M swaptotl %i 2 {%7s}\n", lcd_wid - 7, tmp);
 
 		/* Free swap */
 		sprintf_memory(tmp, mem[1].free * 1024.0, 1);
-		if (display)
-			sock_printf(sock, "widget_set M swapused %i 3 {%7s}\n", lcd_wid - 7, tmp);
+		sock_printf(sock, "widget_set M swapused %i 3 {%7s}\n", lcd_wid - 7, tmp);
 
 		if (gauge_wid > 0) {
 			/* Free memory graph */
@@ -165,9 +166,8 @@ mem_screen(int rep, int display, int *flags_ptr)
 					       / (double) mem[0].total;
 
 				/* printf(".0f", val) only prints the integer part */
-				if (display)
-					sock_printf(sock, "widget_set M memgauge 2 4 %.0f\n",
-						    lcd_cellwid * gauge_wid * value);
+				sock_printf(sock, "widget_set M memgauge 2 4 %.0f\n",
+					    lcd_cellwid * gauge_wid * value);
 			}
 
 			/* Free swap graph */
@@ -175,9 +175,8 @@ mem_screen(int rep, int display, int *flags_ptr)
 				double value = 1.0 - ((double) mem[1].free / (double) mem[1].total);
 
 				/* printf(".0f", val) only prints the integer part */
-				if (display)
-					sock_printf(sock, "widget_set M swapgauge %i 4 %.0f\n",
-						    lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
+				sock_printf(sock, "widget_set M swapgauge %i 4 %.0f\n",
+					    lcd_wid - gauge_wid, lcd_cellwid * gauge_wid * value);
 			}
 		}
 	}
@@ -186,13 +185,11 @@ mem_screen(int rep, int display, int *flags_ptr)
 
 		/* Total memory */
 		sprintf_memory(tmp, mem[0].total * 1024.0, 1);
-		if (display)
-			sock_printf(sock, "widget_set M memtotl 3 1 {%6s}\n", tmp);
+		sock_printf(sock, "widget_set M memtotl 3 1 {%6s}\n", tmp);
 
 		/* Total swap */
 		sprintf_memory(tmp, mem[1].total * 1024.0, 1);
-		if (display)
-			sock_printf(sock, "widget_set M swaptotl 3 2 {%6s}\n", tmp);
+		sock_printf(sock, "widget_set M swaptotl 3 2 {%6s}\n", tmp);
 
 		/* Free memory graph */
 		strcpy(tmp, "N/A");
@@ -202,15 +199,13 @@ mem_screen(int rep, int display, int *flags_ptr)
 
 			if (gauge_wid > 0) {
 				/* printf(".0f", val) only prints the integer part */
-				if (display)
-					sock_printf(sock, "widget_set M memgauge %i 1 %.0f\n",
-							gauge_offs, lcd_cellwid * gauge_wid * value);
+				sock_printf(sock, "widget_set M memgauge %i 1 %.0f\n",
+					    gauge_offs, lcd_cellwid * gauge_wid * value);
 			}
 
 			sprintf_percent(tmp, value * 100);
 		}
-		if (display)
-			sock_printf(sock, "widget_set M mem%% %i 1 {%5s}\n", lcd_wid - 5, tmp);
+		sock_printf(sock, "widget_set M mem%% %i 1 {%5s}\n", lcd_wid - 5, tmp);
 
 		/* Free swap graph */
 		strcpy(tmp, "N/A");
@@ -219,15 +214,13 @@ mem_screen(int rep, int display, int *flags_ptr)
 
 			if (gauge_wid > 0) {
 				/* printf(".0f", val) only prints the integer part */
-				if (display)
-					sock_printf(sock, "widget_set M swapgauge %i 2 %.0f\n",
-						gauge_offs, lcd_cellwid * gauge_wid * value);
+				sock_printf(sock, "widget_set M swapgauge %i 2 %.0f\n",
+					    gauge_offs, lcd_cellwid * gauge_wid * value);
 			}
 
 			sprintf_percent(tmp, value * 100);
 		}
-		if (display)
-			sock_printf(sock, "widget_set M swap%% %i 2 {%5s}\n", lcd_wid - 5, tmp);
+		sock_printf(sock, "widget_set M swap%% %i 2 {%5s}\n", lcd_wid - 5, tmp);
 	}
 
 	return 0;
@@ -301,6 +294,9 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "widget_set S 1 1 1 Checking...\n");
 	}
 
+	if (!display)
+		return 0;
+
 	/* Create a new process list */
 	procs = LL_new();
 	if (procs == NULL) {
@@ -326,18 +322,15 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 
 			sprintf_memory(mem, (double) p->totl * 1024.0, 1);
 
-			if (display) {
-				if (p->number > 1)
-					sock_printf(sock, "widget_set S %i 1 %i {%i %5s %s(%i)}\n",
-						    i, i, i, mem, p->name, p->number);
-				else
-					sock_printf(sock, "widget_set S %i 1 %i {%i %5s %s}\n",
-						    i, i, i, mem, p->name);
-			}
+			if (p->number > 1)
+				sock_printf(sock, "widget_set S %i 1 %i {%i %5s %s(%i)}\n",
+					    i, i, i, mem, p->name, p->number);
+			else
+				sock_printf(sock, "widget_set S %i 1 %i {%i %5s %s}\n",
+					    i, i, i, mem, p->name);
 		}
 		else {
-			if (display)
-				sock_printf(sock, "widget_set S %i 1 %i { }\n", i, i);
+			sock_printf(sock, "widget_set S %i 1 %i { }\n", i, i);
 		}
 
 		LL_Next(procs);
