@@ -90,8 +90,18 @@ mem_screen(int rep, int display, int *flags_ptr)
 			sock_send_string(sock, "widget_add M swapused string\n");
 		}
 		else {
-			gauge_wid = (lcd_wid >= 18) ? max(2, lcd_wid - 18) : 0;
-			gauge_offs = (lcd_wid - gauge_wid) / 2 + 2;
+			if (lcd_wid >= 20) {
+				/* We have room for spaces to separate the bars and the mem / % strings */
+				gauge_wid = lcd_wid - 18;
+				gauge_offs = 11;
+			} else if (lcd_wid >= 17) {
+				/* We can fit the bars of we leave out the spaces separating them from the strings */
+				gauge_wid = lcd_wid - 16;
+				gauge_offs = 10;
+			} else {
+				/* no space for the bars */
+				gauge_wid = gauge_offs = 0;
+			}
 
 			sock_send_string(sock, "widget_add M m string\n");
 			sock_send_string(sock, "widget_add M s string\n");
