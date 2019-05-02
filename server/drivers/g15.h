@@ -28,9 +28,6 @@
 
 /** private data for the \c g15 driver */
 typedef struct g15_private_data {
-	/* dimensions */
-	int width, height;
-	int cellwidth, cellheight;
 	/* file descriptor for g15daemon socket */
 	int g15screen_fd;
 	/* g15daemon version for compatibility checks */

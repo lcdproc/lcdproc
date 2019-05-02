@@ -67,10 +67,6 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 		return -1;
 
    /* Initialize the PrivateData structure */
-   p->width = G15_CHAR_WIDTH;
-   p->height = G15_CHAR_HEIGHT;
-   p->cellwidth = G15_CELL_WIDTH;
-   p->cellheight = G15_CELL_HEIGHT;
    p->backlight_state = BACKLIGHT_ON;
    p->g15screen_fd = 0;
    p->g15d_ver = g15daemon_version();
@@ -140,36 +136,28 @@ MODULE_EXPORT void g15_close (Driver *drvthis)
 //
 MODULE_EXPORT int g15_width (Driver *drvthis)
 {
-	PrivateData *p = drvthis->private_data;
-
-	return p->width;
+	return G15_CHAR_WIDTH;
 }
 
 // Returns the display height in characters
 //
 MODULE_EXPORT int g15_height (Driver *drvthis)
 {
-	PrivateData *p = drvthis->private_data;
-
-	return p->height;
+	return G15_CHAR_HEIGHT;
 }
 
 // Returns the width of a character in pixels
 //
 MODULE_EXPORT int g15_cellwidth (Driver *drvthis)
 {
-	PrivateData *p = drvthis->private_data;
-
-	return p->cellwidth;
+	return G15_CELL_WIDTH;
 }
 
 // Returns the height of a character in pixels
 //
 MODULE_EXPORT int g15_cellheight (Driver *drvthis)
 {
-	PrivateData *p = drvthis->private_data;
-
-	return p->cellheight;
+	return G15_CELL_HEIGHT;
 }
 
 // Clears the LCD screen
@@ -423,7 +411,7 @@ MODULE_EXPORT void g15_num(Driver *drvthis, int x, int num)
 	PrivateData *p = drvthis->private_data;
 
 	x--;
-	int ox = x * p->cellwidth;
+	int ox = x * G15_CELL_WIDTH;
 
 	if ((num < 0) || (num > 10))
 		return;
