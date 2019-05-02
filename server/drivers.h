@@ -25,7 +25,7 @@ extern DisplayProps *display_props;
 int
 drivers_load_driver(const char *name);
 
-int
+void
 drivers_unload_all(void);
 
 const char *
@@ -82,6 +82,8 @@ drivers_output(int state);
 const char *
 drivers_get_key(void);
 
+
+extern Driver *output_driver;
 
 /* Please don't read this list except using the following functions */
 extern LinkedList *loaded_drivers;

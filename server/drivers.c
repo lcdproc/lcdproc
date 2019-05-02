@@ -28,7 +28,7 @@
 #include "drivers.h"
 #include "widget.h"
 
-
+Driver *output_driver = NULL;
 LinkedList *loaded_drivers = NULL;		/**< list of loaded drivers */
 DisplayProps *display_props = NULL;		/**< properties of the display */
 
@@ -40,9 +40,8 @@ DisplayProps *display_props = NULL;		/**< properties of the display */
  * "File" configuration setting in the driver's section.
  * \param name  Driver section name.
  * \retval  <0  error.
- * \retval   0  OK, driver is an input driver only.
- * \retval   1  OK, driver is an output driver.
- * \retval   2  OK, driver is an output driver that needs to run in the foreground.
+ * \retval   0  OK
+ * \retval   2  OK, driver needs to run in the foreground.
  */
 int
 drivers_load_driver(const char *name)
@@ -83,26 +82,20 @@ drivers_load_driver(const char *name)
 
 	/* Load the module */
 	driver = driver_load(name, filename);
+	free(driverpath);
+	free(filename);
 	if (driver == NULL) {
 		/* It failed. The message has already been given by driver_load() */
 		report(RPT_INFO, "Module %.40s could not be loaded", filename);
-		free(driverpath);
-		free(filename);
 		return -1;
 	}
 
 	/* Add driver to list */
 	LL_Push(loaded_drivers, driver);
 
-	free(driverpath);
-	free(filename);
-
-	/* If first driver, store display properties */
-	if (driver_does_output(driver) && !display_props) {
-		if (driver->width(driver) <= 0 || driver->width(driver) > LCD_MAX_WIDTH
-		|| driver->height(driver) <= 0 || driver->height(driver) > LCD_MAX_HEIGHT) {
-			report(RPT_ERR, "Driver [%.40s] has invalid display size", driver->name);
-		}
+	/* If first output driver, store display properties */
+	if (driver_does_output(driver) && !output_driver) {
+		output_driver = driver;
 
 		/* Allocate new DisplayProps structure */
 		display_props = malloc(sizeof(DisplayProps));
@@ -121,21 +114,17 @@ drivers_load_driver(const char *name)
 	}
 
 	/* Return the driver type */
-	if (driver_does_output(driver)) {
-		if (driver_stay_in_foreground(driver))
-			return 2;
-		else
-			return 1;
-	}
+	if (driver_stay_in_foreground(driver))
+		return 2;
+
 	return 0;
 }
 
 
 /**
  * Unload all loaded drivers.
- * \retval  0
  */
-int
+void
 drivers_unload_all(void)
 {
 	Driver *driver;
@@ -145,8 +134,6 @@ drivers_unload_all(void)
 	while ((driver = LL_Pop(loaded_drivers)) != NULL) {
 		driver_unload(driver);
 	}
-
-	return 0;
 }
 
 
