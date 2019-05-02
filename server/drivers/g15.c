@@ -301,7 +301,7 @@ MODULE_EXPORT void g15_vbar(Driver *drvthis, int x, int y, int len, int promille
 	int px1 = x * p->cellwidth;
 	int py1 = y * p->cellheight - total_pixels;
 	int px2 = px1 + (p->cellwidth - 2);
-	int py2 = py1 + total_pixels;
+	int py2 = py1 + total_pixels - 1;
 
 	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 
