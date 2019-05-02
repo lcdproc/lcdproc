@@ -184,6 +184,19 @@ MODULE_EXPORT void g15_flush (Driver *drvthis)
 	g15_send(p->g15screen_fd,(char*)p->canvas->buffer,1048);
 }
 
+// LCDd 1-dimension char coordinates to g15r 0-(dimension-1) pixel coords */
+int g15_convert_coords(int x, int y, int *px, int *py)
+{
+	*px = (x - 1) * G15_CELL_WIDTH;
+	*py = (y - 1) * G15_CELL_HEIGHT;
+
+	if ((*px + G15_CELL_WIDTH)  > G15_LCD_WIDTH ||
+	    (*py + G15_CELL_HEIGHT) > G15_LCD_HEIGHT)
+		return 0; /* Failure */
+
+	return 1; /* Success */
+}
+
 // Character function for the lcdproc driver API
 //
 MODULE_EXPORT void g15_chr (Driver *drvthis, int x, int y, char c)
@@ -276,15 +289,14 @@ MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon)
 MODULE_EXPORT void g15_hbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
+	int total_pixels = ((long) 2 * len * G15_CELL_WIDTH + 1) * promille / 2000;
+	int px1, py1, px2, py2;
 
-	x--;
-	y--;
+	if (!g15_convert_coords(x, y, &px1, &py1))
+		return;
 
-	int total_pixels = ((long) 2 * len * p->cellwidth + 1) * promille / 2000;
-	int px1 = x * p->cellwidth;
-	int py1 = y * p->cellheight;
-	int px2 = px1 + total_pixels;
-	int py2 = py1 + (p->cellheight - 2);
+	px2 = px1 + total_pixels;
+	py2 = py1 + G15_CELL_HEIGHT - 2;
 
 	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 }
@@ -294,17 +306,18 @@ MODULE_EXPORT void g15_hbar(Driver *drvthis, int x, int y, int len, int promille
 MODULE_EXPORT void g15_vbar(Driver *drvthis, int x, int y, int len, int promille, int options)
 {
 	PrivateData *p = drvthis->private_data;
+	int total_pixels = ((long) 2 * len * G15_CELL_WIDTH + 1) * promille / 2000;
+	int px1, py1, px2, py2;
 
-	x--;
+	if (!g15_convert_coords(x, y, &px1, &py1))
+		return;
 
-	int total_pixels = ((long) 2 * len * p->cellwidth + 1) * promille / 2000;
-	int px1 = x * p->cellwidth;
-	int py1 = y * p->cellheight - total_pixels;
-	int px2 = px1 + (p->cellwidth - 2);
-	int py2 = py1 + total_pixels - 1;
+	/* vbar grow from the bottom upwards, flip the Y-coordinates */
+	py1 = py1 + G15_CELL_HEIGHT - total_pixels;
+	py2 = py1 + total_pixels - 1;
+	px2 = px1 + G15_CELL_WIDTH - 2;
 
 	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
-
 }
 
 //  Return one char from the Keyboard
