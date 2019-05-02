@@ -94,6 +94,16 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 		return -1;
 	}
 
+	p->font = g15r_requestG15DefaultFont(G15_TEXT_LARGE);
+	if (p->font == NULL) {
+		report(RPT_ERR, "%s: unable to load default large font", drvthis->name);
+		g15_close_screen(p->g15screen_fd);
+		free(p->canvas);
+		free(p->backingstore);
+		free(p);
+		return -1;
+	}
+
 	g15r_initCanvas(p->canvas);
 	g15r_initCanvas(p->backingstore);
 	p->canvas->buffer[0] = G15_LCD_WRITE_CMD;
@@ -110,6 +120,7 @@ MODULE_EXPORT void g15_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
+	g15r_deleteG15Font(p->font);
 	g15_close_screen(p->g15screen_fd);
 
 	if (p != NULL) {
@@ -202,13 +213,18 @@ int g15_convert_coords(int x, int y, int *px, int *py)
 MODULE_EXPORT void g15_chr (Driver *drvthis, int x, int y, char c)
 {
 	PrivateData *p = drvthis->private_data;
+	int px, py;
 
-	y--;
-	x--;
-	if ((x > p->width) || (y > p->height))
+	if (!g15_convert_coords(x, y, &px, &py))
 		return;
 
-	g15r_renderCharacterLarge(p->canvas, x, y, c, 0, 0);
+	/* Clear background */
+	g15r_pixelReverseFill(p->canvas, px, py,
+			      px + G15_CELL_WIDTH - 1,
+			      py + G15_CELL_HEIGHT - 1,
+			      G15_PIXEL_FILL, G15_COLOR_WHITE);
+	/* Render character, coords - 1 because of g15r peculiarities  */
+	g15r_renderG15Glyph(p->canvas, p->font, c, px - 1, py - 1, G15_COLOR_BLACK, 0);
 }
 
 // Prints a string on the lcd display, at position (x,y).  The
@@ -216,18 +232,10 @@ MODULE_EXPORT void g15_chr (Driver *drvthis, int x, int y, char c)
 //
 MODULE_EXPORT void g15_string (Driver *drvthis, int x, int y, const char string[])
 {
-	PrivateData *p = drvthis->private_data;
 	int i;
 
-	x--;
-	y--;
-
-	for (i = 0; string[i] != '\0'; i++) {
-		// Check for buffer overflows...
-		if ((y * p->width) + x + i > (p->width * p->height))
-			break;
-		g15r_renderCharacterLarge(p->canvas, x + i, y, string[i], 0, 0);
-	}
+	for (i = 0; string[i] != '\0'; i++)
+		g15_chr(drvthis, x + i, y, string[i]);
 }
 
 // Draws an icon on the screen
@@ -235,28 +243,25 @@ MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
 	unsigned char character;
-
-	x--;
-	y--;
+	int px1, py1, px2, py2;
 
 	switch (icon) {
 	/* Special cases */
 	case ICON_BLOCK_FILLED:
-		{
-			int px1 = x * p->cellwidth;
-			int py1 = y * p->cellheight;
-			int px2 = px1 + (p->cellwidth - 2);
-			int py2 = py1 + (p->cellheight - 2);
-			g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
-			return 0;
-		}
+		if (!g15_convert_coords(x, y, &px1, &py1))
+			return -1;
+
+		px2 = px1 + G15_CELL_WIDTH - 2;
+		py2 = py1 + G15_CELL_HEIGHT - 2;
+		g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
+		return 0;
+
 	case ICON_HEART_OPEN:
-		{
-			p->canvas->mode_reverse = 1;
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_HEART_OPEN, 0, 0);
-			p->canvas->mode_reverse = 0;
-			return 0;
-		}
+		p->canvas->mode_reverse = 1;
+		g15_chr(drvthis, x, y, G15_ICON_HEART_OPEN);
+		p->canvas->mode_reverse = 0;
+		return 0;
+
 	/* Simple 1:1 mapping cases */
 	case ICON_HEART_FILLED:	 character = G15_ICON_HEART_FILLED;	break;
 	case ICON_ARROW_UP:	 character = G15_ICON_ARROW_UP;		break;
@@ -280,7 +285,7 @@ MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon)
 		return -1;
 	}
 
-	g15r_renderCharacterLarge(p->canvas, x, y, character, 0, 0);
+	g15_chr(drvthis, x, y, character);
 	return 0;
 }
 

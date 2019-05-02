@@ -38,6 +38,8 @@ typedef struct g15_private_data {
 	/* canvas for LCD contents */
 	g15canvas *canvas;
 	g15canvas *backingstore;
+	/* font */
+	g15font *font;
 	/* status indicators */
 	int backlight_state;
 } PrivateData;
