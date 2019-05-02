@@ -221,116 +221,53 @@ MODULE_EXPORT void g15_string (Driver *drvthis, int x, int y, const char string[
 MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon)
 {
 	PrivateData *p = drvthis->private_data;
+	unsigned char character;
 
 	x--;
 	y--;
 
 	switch (icon) {
-		case ICON_BLOCK_FILLED:
-			{
+	/* Special cases */
+	case ICON_BLOCK_FILLED:
+		{
 			int px1 = x * p->cellwidth;
 			int py1 = y * p->cellheight;
 			int px2 = px1 + (p->cellwidth - 2);
 			int py2 = py1 + (p->cellheight - 2);
 			g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
-			break;
-			}
-		case ICON_HEART_FILLED:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_HEART_FILLED, 0, 0);
-			break;
-			}
-		case ICON_HEART_OPEN:
-			{
+			return 0;
+		}
+	case ICON_HEART_OPEN:
+		{
 			p->canvas->mode_reverse = 1;
 			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_HEART_OPEN, 0, 0);
 			p->canvas->mode_reverse = 0;
-			break;
-			}
-		case ICON_ARROW_UP:
-			{
-			g15r_renderCharacterLarge(p->canvas, x , y, G15_ICON_ARROW_UP, 0, 0);
-			break;
-			}
-		case ICON_ARROW_DOWN:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_ARROW_DOWN, 0, 0);
-			break;
-			}
-		case ICON_ARROW_LEFT:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_ARROW_LEFT, 0, 0);
-			break;
-			}
-		case ICON_ARROW_RIGHT:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_ARROW_RIGHT, 0, 0);
-			break;
-			}
-		case ICON_CHECKBOX_OFF:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_CHECKBOX_OFF, 0, 0);
-			break;
-			}
-		case ICON_CHECKBOX_ON:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_CHECKBOX_ON, 0, 0);
-			break;
-			}
-		case ICON_CHECKBOX_GRAY:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_CHECKBOX_GRAY, 0, 0);
-			break;
-			}
-		case ICON_STOP:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_STOP, 0, 0);
-			break;
-			}
-		case ICON_PAUSE:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_PAUSE, 0, 0);
-			break;
-			}
-		case ICON_PLAY:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_PLAY, 0, 0);
-			break;
-			}
-		case ICON_PLAYR:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_PLAYR, 0, 0);
-			break;
-			}
-		case ICON_FF:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_FF, 0, 0);
-			break;
-			}
-		case ICON_FR:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_FR, 0, 0);
-			break;
-			}
-		case ICON_NEXT:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_NEXT, 0, 0);
-			break;
-			}
-		case ICON_PREV:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_PREV, 0, 0);
-			break;
-			}
-		case ICON_REC:
-			{
-			g15r_renderCharacterLarge(p->canvas, x, y, G15_ICON_REC, 0, 0);
-			break;
-			}
-		default:
-			return -1; /* Let the core do other icons */
+			return 0;
+		}
+	/* Simple 1:1 mapping cases */
+	case ICON_HEART_FILLED:	 character = G15_ICON_HEART_FILLED;	break;
+	case ICON_ARROW_UP:	 character = G15_ICON_ARROW_UP;		break;
+	case ICON_ARROW_DOWN:	 character = G15_ICON_ARROW_DOWN;	break;
+	case ICON_ARROW_LEFT:	 character = G15_ICON_ARROW_LEFT;	break;
+	case ICON_ARROW_RIGHT:	 character = G15_ICON_ARROW_RIGHT;	break;
+	case ICON_CHECKBOX_OFF:	 character = G15_ICON_CHECKBOX_OFF;	break;
+	case ICON_CHECKBOX_ON:	 character = G15_ICON_CHECKBOX_ON;	break;
+	case ICON_CHECKBOX_GRAY: character = G15_ICON_CHECKBOX_GRAY;	break;
+	case ICON_STOP:		 character = G15_ICON_STOP;		break;
+	case ICON_PAUSE:	 character = G15_ICON_PAUSE;		break;
+	case ICON_PLAY:		 character = G15_ICON_PLAY;		break;
+	case ICON_PLAYR:	 character = G15_ICON_PLAYR;		break;
+	case ICON_FF:		 character = G15_ICON_FF;		break;
+	case ICON_FR:		 character = G15_ICON_FR;		break;
+	case ICON_NEXT:		 character = G15_ICON_NEXT;		break;
+	case ICON_PREV:		 character = G15_ICON_PREV;		break;
+	case ICON_REC:		 character = G15_ICON_REC;		break;
+	/* Let the core do other icons */
+	default:
+		return -1;
 	}
 
+	g15r_renderCharacterLarge(p->canvas, x, y, character, 0, 0);
 	return 0;
 }
 
