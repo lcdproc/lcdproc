@@ -44,6 +44,7 @@
 #include "lcd.h"
 #include "g15.h"
 
+#include "shared/defines.h"
 #include "shared/report.h"
 
 /* Vars for the server core */
@@ -200,6 +201,15 @@ int g15_convert_coords(int x, int y, int *px, int *py)
 {
 	*px = (x - 1) * G15_CELL_WIDTH;
 	*py = (y - 1) * G15_CELL_HEIGHT;
+
+	/* We have 5 lines of 8 pixels heigh, so 40 pixels, but the LCD is
+	 * 43 pixels high. This allows us to add an empty line between 4 of
+	 * the 5 lines. This is desirable to avoid the descenders from the
+	 * non caps 'g' and 'y' glyphs touching the top of the chars of the
+	 * next line.
+	 * This also makes us better use the whole height of the LCD.
+	 */
+	*py += min(y - 1, 3);
 
 	if ((*px + G15_CELL_WIDTH)  > G15_LCD_WIDTH ||
 	    (*py + G15_CELL_HEIGHT) > G15_LCD_HEIGHT)
