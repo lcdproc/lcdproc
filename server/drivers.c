@@ -131,6 +131,8 @@ drivers_unload_all(void)
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
+	output_driver = NULL;
+
 	while ((driver = LL_Pop(loaded_drivers)) != NULL) {
 		driver_unload(driver);
 	}
