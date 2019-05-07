@@ -10,6 +10,7 @@
  * Copyright(c) 2001, Joris Robijn
  */
 
+#include <alloca.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -65,16 +66,16 @@ drivers_load_driver(const char *name)
 
 	/* Retrieve data from config file */
 	s = config_get_string("server", "DriverPath", 0, "");
-	driverpath = malloc(strlen(s) + 1);
+	driverpath = alloca(strlen(s) + 1);
 	strcpy(driverpath, s);
 
 	s = config_get_string(name, "File", 0, NULL);
 	if (s) {
-		filename = malloc(strlen(driverpath) + strlen(s) + 1);
+		filename = alloca(strlen(driverpath) + strlen(s) + 1);
 		strcpy(filename, driverpath);
 		strcat(filename, s);
 	} else {
-		filename = malloc(strlen(driverpath) + strlen(name) + strlen(MODULE_EXTENSION) + 1);
+		filename = alloca(strlen(driverpath) + strlen(name) + strlen(MODULE_EXTENSION) + 1);
 		strcpy(filename, driverpath);
 		strcat(filename, name);
 		strcat(filename, MODULE_EXTENSION);
@@ -82,8 +83,6 @@ drivers_load_driver(const char *name)
 
 	/* Load the module */
 	driver = driver_load(name, filename);
-	free(driverpath);
-	free(filename);
 	if (driver == NULL) {
 		/* It failed. The message has already been given by driver_load() */
 		report(RPT_INFO, "Module %.40s could not be loaded", filename);
