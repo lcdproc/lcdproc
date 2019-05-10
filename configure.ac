@@ -88,13 +88,13 @@ AC_PATH_PROG([XMLTO], [xmlto], [no])
 
 dnl elektra
 ifdef([PKG_CHECK_MODULES],
-		[PKG_CHECK_MODULES([ELEKTRA], [elektra],,)],
+		[PKG_CHECK_MODULES([ELEKTRA], [elektra-codegen], [ELEKTRA_LIBDIR=`pkg-config --variable=libdir elektra-codegen`],)],
 		[AC_MSG_ERROR([pkg-config not (fully) installed, but needed to find Elektra])])
 AC_SUBST([ELEKTRA_CFLAGS])
 AC_SUBST([ELEKTRA_LIBS])
 
 CFLAGS="$ELEKTRA_CFLAGS $CFLAGS"
-LIBS="$ELEKTRA_LIBS $LIBS"
+LIBS="$ELEKTRA_LIBS $LIBS -Wl,-rpath $ELEKTRA_LIBDIR"
 
 dnl Avoid unused static function warnings
 CFLAGS="-Wall $CFLAGS"
