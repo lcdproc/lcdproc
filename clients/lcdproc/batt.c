@@ -98,10 +98,11 @@ battery_status(int status)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-battery_screen(int rep, int display, int *flags_ptr)
+battery_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	int acstat = 0, battstat = 0, percent = 0;
 	int gauge_wid = lcd_wid - 2;

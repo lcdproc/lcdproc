@@ -45,10 +45,11 @@
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-cpu_screen(int rep, int display, int *flags_ptr)
+cpu_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 4
@@ -190,10 +191,11 @@ cpu_screen(int rep, int display, int *flags_ptr)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-cpu_graph_screen(int rep, int display, int *flags_ptr)
+cpu_graph_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 #undef CPU_BUF_SIZE
 #define CPU_BUF_SIZE 2

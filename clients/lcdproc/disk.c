@@ -49,10 +49,11 @@
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-disk_screen(int rep, int display, int *flags_ptr)
+disk_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	mounts_type mnt[256];
 	int count = 0;

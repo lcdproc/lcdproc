@@ -46,10 +46,11 @@
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-mem_screen(int rep, int display, int *flags_ptr)
+mem_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	const char *title_sep = "####################################################################################################";
 	static int which_title = 0;
@@ -240,10 +241,11 @@ sort_procs(void *a, void *b)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-mem_top_screen(int rep, int display, int *flags_ptr)
+mem_top_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	LinkedList *procs;
 	int i;

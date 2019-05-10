@@ -66,10 +66,11 @@ static char *tickTime(char *time, int heartbeat);
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-time_screen(int rep, int display, int *flags_ptr)
+time_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	char now[40];
 	char today[40];
@@ -86,8 +87,8 @@ time_screen(int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
-		timeFormat = config_get_string("TimeDate", "TimeFormat", 0, "%H:%M:%S");
-		dateFormat = config_get_string("TimeDate", "DateFormat", 0, "%b %d %Y");
+		timeFormat = elektraGet(elektra, ELEKTRA_TAG_TIMEDATE_TIMEFORMAT);
+		dateFormat = elektraGet(elektra, ELEKTRA_TAG_TIMEDATE_DATEFORMAT);
 
 		sock_send_string(sock, "screen_add T\n");
 		sock_printf(sock, "screen_set T -name {Time Screen: %s}\n", get_hostname());
@@ -186,10 +187,11 @@ time_screen(int rep, int display, int *flags_ptr)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-clock_screen(int rep, int display, int *flags_ptr)
+clock_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	char now[40];
 	char today[40];
@@ -207,9 +209,9 @@ clock_screen(int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
-		timeFormat = config_get_string("OldTime", "TimeFormat", 0, "%H:%M:%S");
-		dateFormat = config_get_string("OldTime", "DateFormat", 0, "%b %d %Y");
-		showTitle = config_get_bool("OldTime", "ShowTitle", 0, 1);
+		timeFormat = elektraGet(elektra, ELEKTRA_TAG_OLDTIME_TIMEFORMAT);
+		dateFormat = elektraGet(elektra, ELEKTRA_TAG_OLDTIME_DATEFORMAT);
+		showTitle = elektraGet(elektra, ELEKTRA_TAG_OLDTIME_SHOWTITLE);
 
 		sock_send_string(sock, "screen_add O\n");
 		sock_printf(sock, "screen_set O -name {Old Clock Screen: %s}\n", get_hostname());
@@ -297,10 +299,11 @@ clock_screen(int rep, int display, int *flags_ptr)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-uptime_screen(int rep, int display, int *flags_ptr)
+uptime_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	int xoffs;
 	int days, hour, min, sec;
@@ -389,10 +392,11 @@ uptime_screen(int rep, int display, int *flags_ptr)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-big_clock_screen(int rep, int display, int *flags_ptr)
+big_clock_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	time_t thetime;
 	struct tm *rtime;
@@ -405,7 +409,7 @@ big_clock_screen(int rep, int display, int *flags_ptr)
 	int digits = (lcd_wid >= 20) ? 6 : 4;
 	int xoffs = 0;
 
-	int showSecs = config_get_bool("BigClock", "showSecs", 0, 1);
+	int showSecs = elektraGet(elektra, ELEKTRA_TAG_BIGCLOCK_SHOWSECS);
 	if (!showSecs) {
 		digits = 4;
 	}
@@ -480,10 +484,11 @@ big_clock_screen(int rep, int display, int *flags_ptr)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-mini_clock_screen(int rep, int display, int *flags_ptr)
+mini_clock_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	char now[40];
 	time_t thetime;
@@ -499,7 +504,7 @@ mini_clock_screen(int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
-		timeFormat = config_get_string("MiniClock", "TimeFormat", 0, "%H:%M");
+		timeFormat = elektraGet(elektra, ELEKTRA_TAG_MINICLOCK_TIMEFORMAT);
 
 		sock_send_string(sock, "screen_add N\n");
 		sock_send_string(sock, "screen_set N -name {Mini Clock Screen} -heartbeat off\n");

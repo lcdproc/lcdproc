@@ -34,18 +34,32 @@
 
 
 static int iface_count = 0;	/* number of interfaces */
-static char unit_label[10] = "B";	/* default unit label is Bytes */
+static IfaceUnit unit = IFACE_UNIT_BYTE; /* default unit label is Bytes */
 static int transfer_screen = 0;	/* by default, transfer screen is not shown */
+
+static inline char *
+unit_label(IfaceUnit unit)
+{
+	switch (unit)
+	{
+	case IFACE_UNIT_BYTE:
+		return "B";
+	case IFACE_UNIT_BIT:
+		return "b";
+	case IFACE_UNIT_PACKET:
+		return "pkt";
+	default:
+		return NULL;
+	}
+}
 
 
 /** Reads and parses configuration file.
  * \return  0 on success, -1 on error
  */
 static int
-iface_process_configfile(void)
+iface_process_config(Elektra * elektra)
 {
-	const char *unit;
-
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Read config settings */
@@ -54,42 +68,19 @@ iface_process_configfile(void)
 
 		sprintf(iface_label, "Interface%i", iface_count);
 		debug(RPT_DEBUG, "Label %s count %i", iface_label, iface_count);
-		iface[iface_count].name = strdup(config_get_string("Iface", iface_label, 0, ""));
-		if (iface[iface_count].name == NULL) {
-			report(RPT_CRIT, "malloc failure");
-			return -1;
-		}
-		if (*iface[iface_count].name == '\0')
-			break;
+		iface[iface_count].name = strdup(elektraGetV(elektra, ELEKTRA_TAG_IFACE_INTERFACE_NAME, iface_count));
+
 		sprintf(iface_label, "Alias%i", iface_count);
-		iface[iface_count].alias = strdup(config_get_string("Iface", iface_label, 0, iface[iface_count].name));
-		if (iface[iface_count].alias == NULL)
-			/*
-			 * make alias the same as the interface name in case
-			 * strdup() failed
-			 */
+		iface[iface_count].alias = strdup(elektraGetV(elektra, ELEKTRA_TAG_IFACE_INTERFACE_ALIAS, iface_count));
+		if (strlen(iface[iface_count].alias) == 0)
 			iface[iface_count].alias = iface[iface_count].name;
+		
 		debug(RPT_DEBUG, "Interface %i: %s alias %s",
 		      iface_count, iface[iface_count].name, iface[iface_count].alias);
 	}
 
-	unit = config_get_string("Iface", "Unit", 0, "byte");
-	if ((strcasecmp(unit, "byte") == 0) ||
-	    (strcasecmp(unit, "bytes") == 0))
-		strncpy(unit_label, "B", sizeof(unit_label));
-	else if ((strcasecmp(unit, "bit") == 0) ||
-		 (strcasecmp(unit, "bits") == 0))
-		strncpy(unit_label, "b", sizeof(unit_label));
-	else if ((strcasecmp(unit, "packet") == 0) ||
-		 (strcasecmp(unit, "packets") == 0))
-		strncpy(unit_label, "pkt", sizeof(unit_label));
-	else {
-		report(RPT_ERR, "illegal Unit value: %s", unit);
-		return -1;
-	}
-	unit_label[sizeof(unit_label) - 1] = '\0';
-
-	transfer_screen = config_get_bool("Iface", "Transfer", 0, 0);
+	unit = elektraGet(elektra, ELEKTRA_TAG_IFACE_UNIT);
+	transfer_screen = elektraGet(elektra, ELEKTRA_TAG_IFACE_TRANSFER);
 
 	return 0;
 }
@@ -113,10 +104,11 @@ iface_process_configfile(void)
  * \param rep        Time since last screen update
  * \param display    1 if screen is visible or data should be updated
  * \param flags_ptr  Mode flags
+ * \param elektra    Elektra instance holding the configuration
  * \return  Always 0
  */
 int
-iface_screen(int rep, int display, int *flags_ptr)
+iface_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 {
 	/* interval since last update */
 	unsigned int interval = difftime(time(NULL), iface[0].last_online);
@@ -129,7 +121,7 @@ iface_screen(int rep, int display, int *flags_ptr)
 		*flags_ptr |= INITIALIZED;
 
 		/* get configuration options */
-		iface_process_configfile();
+		iface_process_config(elektra);
 
 		/* set initial speed screen with widgets */
 		initialize_speed_screen();
@@ -198,16 +190,19 @@ initialize_speed_screen(void)
 	/* multi-interfaces mode: one line per interface */
 	else {
 		/* Set title */
-		if (strstr(unit_label, "B")) {
+		switch (unit)
+		{
+		case IFACE_UNIT_BIT:
+			sock_printf(sock, "widget_set I title {Net Load (bits)}\n");
+			break;
+		case IFACE_UNIT_BYTE:
 			sock_printf(sock, "widget_set I title {Net Load (bytes)}\n");
-		}
-		else {
-			if (strstr(unit_label, "b")) {
-				sock_printf(sock, "widget_set I title {Net Load (bits)}\n");
-			}
-			else {
-				sock_printf(sock, "widget_set I title {Net Load (packets)}\n");
-			}
+			break;
+		case IFACE_UNIT_PACKET:
+			sock_printf(sock, "widget_set I title {Net Load (packets)}\n");
+			break;
+		default:
+			break;
 		}
 
 		/* frame from (2, left) to (width, height) that is iface_count lines high */
@@ -238,16 +233,16 @@ initialize_speed_screen(void)
  *               to binary multiples (1024 bytes = 1 KiB).
  */
 void
-format_value (char *buff, double value, char *unit)
+format_value (char *buff, double value, IfaceUnit unit)
 {
 	char *mag;
 
 	/* Convert bytes to bits, if necessary */
-	if (strstr(unit, "b"))
+	if (unit == IFACE_UNIT_BIT)
 		value *= 8;
 
 	/* If units are bytes, then divide by 2^10, otherwise by 10^3 */
-	mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
+	mag = convert_double(&value, (unit == IFACE_UNIT_BYTE) ? 1024 : 1000, 1.0f);
 
 	/*-
 	 * Formatting rules:
@@ -255,9 +250,9 @@ format_value (char *buff, double value, char *unit)
 	 * - otherwise format with 3 precision
 	 */
 	if (mag[0] == 0)
-		sprintf(buff, "%8ld %s", (long) value, unit);
+		sprintf(buff, "%8ld %s", (long) value, unit_label(unit));
 	else
-		sprintf(buff, "%7.3f %s%s", value, mag, unit);
+		sprintf(buff, "%7.3f %s%s", value, mag, unit_label(unit));
 }
 
 
@@ -272,14 +267,14 @@ format_value (char *buff, double value, char *unit)
  *               to binary multiples (1024 bytes = 1 KiB).
  */
 void
-format_value_multi_interface(char *buff, double value, char *unit)
+format_value_multi_interface(char *buff, double value, IfaceUnit unit)
 {
 	char *mag;
 
-	if (strstr(unit, "b"))
+	if (unit == IFACE_UNIT_BIT)
 		value *= 8;
 
-	mag = convert_double(&value, (strstr(unit, "B")) ? 1024 : 1000, 1.0f);
+	mag = convert_double(&value, (unit == IFACE_UNIT_BYTE) ? 1024 : 1000, 1.0f);
 
 	/*-
 	 * Formatting rules:
@@ -351,33 +346,33 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 	if ((iface_count == 1) && ( lcd_hgt >= 4)) {
 		if (iface->status == up) {
 			/* Calculate and actualize download speed */
-			if (strstr(unit_label, "pkt")) {
+			if (unit == IFACE_UNIT_PACKET) {
 				rc_speed = (iface->rc_pkt - iface->rc_pkt_old) / interval;
-				sprintf(speed, "%8ld %s", (long) rc_speed, unit_label);
+				sprintf(speed, "%8ld %s", (long) rc_speed, unit_label(unit));
 			}
 			else {
 				rc_speed = (iface->rc_byte - iface->rc_byte_old) / interval;
-				format_value(speed, rc_speed, unit_label);
+				format_value(speed, rc_speed, unit);
 			}
 			sock_printf(sock, "widget_set I dl 1 2 {DL: %*s/s}\n", lcd_wid - 6, speed);
 
 			/* Calculate and actualize upload speed */
-			if (strstr(unit_label, "pkt")) {
+			if (unit == IFACE_UNIT_PACKET) {
 				tr_speed = (iface->tr_pkt - iface->tr_pkt_old) / interval;
-				sprintf(speed, "%8ld %s", (long)tr_speed, unit_label);
+				sprintf(speed, "%8ld %s", (long)tr_speed, unit_label(unit));
 			}
 			else {
 				tr_speed = (iface->tr_byte - iface->tr_byte_old) / interval;
-				format_value(speed, tr_speed, unit_label);
+				format_value(speed, tr_speed, unit);
 			}
 			sock_printf(sock, "widget_set I ul 1 3 {UL: %*s/s}\n", lcd_wid - 6, speed);
 
 			/* Calculate and actualize total speed */
-			if (strstr(unit_label, "pkt")) {
-				sprintf(speed, "%7ld %s", (long)(rc_speed + tr_speed), unit_label);
+			if (unit == IFACE_UNIT_PACKET) {
+				sprintf(speed, "%7ld %s", (long)(rc_speed + tr_speed), unit_label(unit));
 			}
 			else {
-				format_value(speed, rc_speed + tr_speed, unit_label);
+				format_value(speed, rc_speed + tr_speed, unit);
 			}
 			sock_printf(sock, "widget_set I total 1 4 {Total: %*s/s}\n", lcd_wid - 9, speed);
 		}
@@ -393,7 +388,7 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 		char speed1[20];	/* buffer to store the formated speed string */
 
 		if (iface->status == up) {
-			if (strstr(unit_label, "pkt")) {
+			if (unit == IFACE_UNIT_PACKET) {
 				rc_speed = (iface->rc_pkt - iface->rc_pkt_old) / interval;
 				tr_speed = (iface->tr_pkt - iface->tr_pkt_old) / interval;
 			}
@@ -401,8 +396,8 @@ actualize_speed_screen(IfaceInfo *iface, unsigned int interval, int index)
 				rc_speed = (iface->rc_byte - iface->rc_byte_old) / interval;
 				tr_speed = (iface->tr_byte - iface->tr_byte_old) / interval;
 			}
-			format_value_multi_interface(speed, rc_speed, unit_label);
-			format_value_multi_interface(speed1, tr_speed, unit_label);
+			format_value_multi_interface(speed, rc_speed, unit);
+			format_value_multi_interface(speed1, tr_speed, unit);
 			if (lcd_wid > 16)
 				sock_printf(sock, "widget_set I i%1d 1 %1d {%5.5s U:%.4s D:%.4s}\n",
 					    index, index+1, iface->alias, speed1, speed);
@@ -478,15 +473,15 @@ actualize_transfer_screen(IfaceInfo *iface, int index)
 	if ((iface_count == 1) && (lcd_hgt >= 4)) {
 		if (iface->status == up) {
 			/* download traffic */
-			format_value(transfer, iface->rc_byte, "B");
+			format_value(transfer, iface->rc_byte, IFACE_UNIT_BYTE);
 			sock_printf(sock, "widget_set NT dl 1 2 {DL: %*s}\n", lcd_wid - 4, transfer);
 
 			/* upload traffic */
-			format_value(transfer, iface->tr_byte, "B");
+			format_value(transfer, iface->tr_byte, IFACE_UNIT_BYTE);
 			sock_printf(sock, "widget_set NT ul 1 3 {UL: %*s}\n", lcd_wid - 4, transfer);
 
 			/* total traffic */
-			format_value(transfer, iface->rc_byte + iface->tr_byte, "B");
+			format_value(transfer, iface->rc_byte + iface->tr_byte, IFACE_UNIT_BYTE);
 			sock_printf(sock, "widget_set NT total 1 4 {Total: %*s}\n", lcd_wid - 7, transfer);
 		}
 		else {
@@ -501,8 +496,8 @@ actualize_transfer_screen(IfaceInfo *iface, int index)
 		char transfer1[20];	/* buffer to store the formated traffic string */
 
 		if (iface->status == up) {
-			format_value_multi_interface(transfer, iface->rc_byte, "B");
-			format_value_multi_interface(transfer1, iface->tr_byte, "B");
+			format_value_multi_interface(transfer, iface->rc_byte, IFACE_UNIT_BYTE);
+			format_value_multi_interface(transfer1, iface->tr_byte, IFACE_UNIT_BYTE);
 			if (lcd_wid > 16)
 				sock_printf(sock, "widget_set NT i%1d 1 %1d {%5.5s U:%.4s D:%.4s}\n",
 					    index, index+1, iface->alias, transfer1, transfer);
