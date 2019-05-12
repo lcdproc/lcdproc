@@ -820,6 +820,12 @@
 	      (with <command>key_add</command>) just fine. In this case
 	      the per screen reservation wins.
 	    </para>
+	    <para>
+	      Starting with protocol version 0.4 for each
+	      <replaceable>key</replaceable> argument the server answers
+	      with either a success message or an error message if there
+	      is a reservation conflict.
+	    </para>
 	  </listitem>
 	</varlistentry>
 
@@ -831,7 +837,8 @@
 	  </term>
 	  <listitem>
 	    <para>
-	      Ends the reservation of the given key(s).
+	      Ends the reservation of the given key(s). Always returns
+	      exactly one success message.
 	    </para>
 	  </listitem>
 	</varlistentry>
