@@ -93,7 +93,7 @@ widget_add_func(Client *c, int argc, char **argv)
 			}
 
 			/* Now we replace s with the framescreen.
-			 * This way it will not be plaed in the normal screen
+			 * This way it will not be placed in the normal screen
 			 * but in the framescreen.
 			 */
 			frame = screen_find_widget(s, argv[5]);
@@ -188,11 +188,7 @@ widget_set_func(Client *c, int argc, char **argv)
 	char *wid;
 	char *sid;
 
-	int x, y;
-	int left, top, right, bottom;
-	int length, direction;
-	int width, height;
-	int speed;
+	int direction;
 	Screen *s;
 	Widget *w;
 
@@ -242,17 +238,10 @@ widget_set_func(Client *c, int argc, char **argv)
 				sock_send_error(c->sock, "Invalid coordinates\n");
 			}
 			else {					  /* Set all the data...*/
-				x = atoi(argv[i]);
-				y = atoi(argv[i + 1]);
-				w->x = x;
-				w->y = y;
-				if (w->text != NULL)
-					free(w->text);
+				w->x = atoi(argv[i]);
+				w->y = atoi(argv[i + 1]);
+				free(w->text);
 				w->text = strdup(argv[i + 2]);
-				if (w->text == NULL) {
-					report(RPT_WARNING, "widget_set_func: Allocation error");
-					return -1;
-				}
 				debug(RPT_DEBUG, "Widget %s set to %s", wid, w->text);
 				sock_send_string(c->sock, "success\n");
 			}
@@ -266,12 +255,9 @@ widget_set_func(Client *c, int argc, char **argv)
 			    (!isdigit((unsigned int) argv[i + 1][0]))) {
 				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else {
-				x = atoi(argv[i]);
-				y = atoi(argv[i + 1]);
-				length = atoi(argv[i + 2]);
-				w->x = x;
-				w->y = y;
-				w->length = length;	/* This is the length in pixels */
+				w->x = atoi(argv[i]);
+				w->y = atoi(argv[i + 1]);
+				w->length = atoi(argv[i + 2]);
 			}
 			debug(RPT_DEBUG, "Widget %s set to %i", wid, w->length);
 			sock_send_string(c->sock, "success\n");
@@ -285,12 +271,9 @@ widget_set_func(Client *c, int argc, char **argv)
 			    (!isdigit((unsigned int) argv[i + 1][0]))) {
 				sock_send_error(c->sock, "Invalid coordinates\n");
 			} else {
-				x = atoi(argv[i]);
-				y = atoi(argv[i + 1]);
-				length = atoi(argv[i + 2]);
-				w->x = x;
-				w->y = y;
-				w->length = length;
+				w->x = atoi(argv[i]);
+				w->y = atoi(argv[i + 1]);
+				w->length = atoi(argv[i + 2]);
 			}
 			debug(RPT_DEBUG, "Widget %s set to %i", wid, w->length);
 			sock_send_string(c->sock, "success\n");
@@ -331,15 +314,13 @@ widget_set_func(Client *c, int argc, char **argv)
 			} else {
 				int icon;
 
-				x = atoi(argv[i]);
-				y = atoi(argv[i + 1]);
 				icon = widget_iconname_to_icon(argv[i + 2]);
 				if (icon == -1) {
 					sock_send_error(c->sock, "Invalid icon name\n");
 				}
 				else {
-					w->x = x;
-					w->y = y;
+					w->x = atoi(argv[i]);
+					w->y = atoi(argv[i + 1]);
 					w->length = icon;
 					sock_send_string(c->sock, "success\n");
 				}
@@ -350,13 +331,8 @@ widget_set_func(Client *c, int argc, char **argv)
 		if (argc != i + 1)
 			sock_send_error(c->sock, "Wrong number of arguments\n");
 		else {
-			if (w->text != NULL)
-				free(w->text);
+			free(w->text);
 			w->text = strdup(argv[i]);
-			if (w->text == NULL) {
-				report(RPT_WARNING, "widget_set_func: Allocation error");
-				return -1;
-			}
 			/* Set width too */
 			w->width = display_props->width;
 			debug(RPT_DEBUG, "Widget %s set to %s", wid, w->text);
@@ -374,31 +350,21 @@ widget_set_func(Client *c, int argc, char **argv)
 				sock_send_error(c->sock, "Invalid coordinates\n");
 			}
 			else {
-				left = atoi(argv[i]);
-				top = atoi(argv[i + 1]);
-				right = atoi(argv[i + 2]);
-				bottom = atoi(argv[i + 3]);
 				direction = (int) (argv[i + 4][0]);
-				speed = atoi(argv[i + 5]);
 				/* Direction must be m, v or h*/
 				if (((char) direction != 'h') && ((char) direction != 'v') &&
 				    ((char) direction != 'm')) {
 					sock_send_error(c->sock, "Invalid direction\n");
 				}
 				else {
-					w->left = left;
-					w->top = top;
-					w->right = right;
-					w->bottom = bottom;
+					w->left = atoi(argv[i]);
+					w->top = atoi(argv[i + 1]);
+					w->right = atoi(argv[i + 2]);
+					w->bottom = atoi(argv[i + 3]);
 					w->length = direction;
-					w->speed = speed;
-					if (w->text != NULL)
-						free(w->text);
+					w->speed = atoi(argv[i + 5]);
+					free(w->text);
 					w->text = strdup(argv[i + 6]);
-					if (w->text == NULL) {
-						sock_send_error(c->sock, "Allocation error\n");
-						return -1;
-					}
 					debug(RPT_DEBUG, "Widget %s set to %s", wid, w->text);
 					sock_send_string(c->sock, "success\n");
 				}
@@ -418,28 +384,21 @@ widget_set_func(Client *c, int argc, char **argv)
 				sock_send_error(c->sock, "Invalid coordinates\n");
 			}
 			else {
-				left = atoi(argv[i]);
-				top = atoi(argv[i + 1]);
-				right = atoi(argv[i + 2]);
-				bottom = atoi(argv[i + 3]);
-				width = atoi(argv[i + 4]);
-				height = atoi(argv[i + 5]);
 				direction = (int) (argv[i + 6][0]);
-				speed = atoi(argv[i + 7]);
 				/* Direction must be v or h*/
 				if (((char) direction != 'h') && ((char) direction != 'v')) {
 					sock_send_error(c->sock, "Invalid direction\n");
 				}
 				else {
-					w->left = left;
-					w->top = top;
-					w->right = right;
-					w->bottom = bottom;
-					w->width = width;
-					w->height = height;
+					w->left = atoi(argv[i]);
+					w->top = atoi(argv[i + 1]);
+					w->right = atoi(argv[i + 2]);
+					w->bottom = atoi(argv[i + 3]);
+					w->width = atoi(argv[i + 4]);
+					w->height = atoi(argv[i + 5]);
 					w->length = direction;
-					w->speed = speed;
-					debug(RPT_DEBUG, "Widget %s set to (%i,%i)-(%i,%i) %ix%i", wid, left, top, right, bottom, width, height);
+					w->speed = atoi(argv[i + 7]);
+					debug(RPT_DEBUG, "Widget %s set to (%i,%i)-(%i,%i) %ix%i", wid, w->left, w->top, w->right, w->bottom, w->width, w->height);
 					sock_send_string(c->sock, "success\n");
 				}
 			}
@@ -456,10 +415,8 @@ widget_set_func(Client *c, int argc, char **argv)
 				sock_send_error(c->sock, "Invalid number\n");
 			}
 			else {
-				x = atoi(argv[i]);
-				y = atoi(argv[i + 1]);
-				w->x = x;
-				w->y = y;
+				w->x = atoi(argv[i]);
+				w->y = atoi(argv[i + 1]);
 			}
 			debug(RPT_DEBUG, "Widget %s set to %i", wid, w->y);
 			sock_send_string(c->sock, "success\n");
