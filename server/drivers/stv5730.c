@@ -282,7 +282,7 @@ stv5730_drawchar2fb (Driver *drvthis, int x, int y, unsigned char z)
 // a command line argument.
 //
 MODULE_EXPORT int
-stv5730_init (Driver *drvthis)
+stv5730_init (Driver *drvthis, Elektra * elektra)
 {
     PrivateData *p;
     int i;

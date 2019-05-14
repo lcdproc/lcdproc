@@ -22,6 +22,8 @@
 #ifndef CWLNX_H
 #define CWLNX_H
 
+#include <elektra.h>
+
 #define DEFAULT_DEVICE		"/dev/lcd"
 #define DEFAULT_BACKLIGHT	1
 #define DEFAULT_BRIGHTNESS	700
@@ -47,7 +49,7 @@
 #define DEFAULT_SIZE		DEFAULT_SIZE_12232
 
 
-MODULE_EXPORT int  CwLnx_init(Driver *drvthis);
+MODULE_EXPORT int  CwLnx_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void CwLnx_close(Driver *drvthis);
 MODULE_EXPORT int  CwLnx_width(Driver *drvthis);
 MODULE_EXPORT int  CwLnx_height(Driver *drvthis);

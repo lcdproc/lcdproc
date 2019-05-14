@@ -21,6 +21,7 @@
 # include <usb.h>
 # define USB_DEVICE_HANDLE usb_dev_handle
 #endif
+#include <elektra.h>
 
 /* 12 keys plus a 0 placeholder */
 #define KEYPAD_MAX		13
@@ -74,7 +75,7 @@ typedef struct _picolcd_device {
 } picolcd_device;
 
 
-MODULE_EXPORT int  picoLCD_init(Driver *drvthis);
+MODULE_EXPORT int  picoLCD_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void picoLCD_close(Driver *drvthis);
 MODULE_EXPORT int  picoLCD_width(Driver *drvthis);
 MODULE_EXPORT int  picoLCD_height(Driver *drvthis);

@@ -18,10 +18,12 @@
 #include "menu.h"
 #include "screen.h"
 
+#include <elektra.h>
+
 extern Screen *menuscreen;
 extern Menu *main_menu;
 
-int menuscreens_init(void);
+int menuscreens_init(Elektra * elektra);
 
 int menuscreens_shutdown(void);
 

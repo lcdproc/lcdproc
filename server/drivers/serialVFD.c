@@ -89,7 +89,7 @@ static void serialVFD_hw_write (Driver *drvthis, int i);
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-serialVFD_init (Driver *drvthis)
+serialVFD_init (Driver *drvthis, Elektra * elektra)
 {
 	int tmp, w, h;
 	char size[200] = DEFAULT_SIZE;

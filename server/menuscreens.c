@@ -42,6 +42,8 @@
 /* Next include files are needed for settings that we can modify */
 #include "render.h"
 
+#include "elektragen.h"
+
 
 char *menu_key;
 char *enter_key;
@@ -78,13 +80,13 @@ MenuEventFunc(contrast_handler);
 MenuEventFunc(brightness_handler);
 
 int
-menuscreens_init(void)
+menuscreens_init(Elektra * elektra)
 {
 	const char *tmp;
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	menu_permissive_goto = config_get_bool("menu", "PermissiveGoto", 0, 0);
+	menu_permissive_goto = elektraGet(elektra, ELEKTRA_TAG_MENU_PERMISSIVEGOTO);
 
 	/*
 	 * Get keys from config file: MenuKey, EnterKey, UpKey, DownKey,
@@ -93,53 +95,53 @@ menuscreens_init(void)
 	 */
 	keymask = 0;
 	menu_key = enter_key = NULL;
-	tmp = config_get_string("menu", "MenuKey", 0, NULL);
-	if (tmp != NULL) {
+	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_MENUKEY);
+	if (strlen(tmp) > 0) {
 		menu_key = strdup(tmp);
 		keymask |= MENUTOKEN_MENU;
 	}
-	tmp = config_get_string("menu", "EnterKey", 0, NULL);
-	if (tmp != NULL) {
+	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_ENTERKEY);
+	if (strlen(tmp) > 0) {
 		enter_key = strdup(tmp);
 		keymask |= MENUTOKEN_ENTER;
 	}
 
 	up_key = down_key = NULL;
-	tmp = config_get_string("menu", "UpKey", 0, NULL);
-	if (tmp != NULL) {
+	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_UPKEY);
+	if (strlen(tmp) > 0) {
 		up_key = strdup(tmp);
 		keymask |= MENUTOKEN_UP;
 	}
-	tmp = config_get_string("menu", "DownKey", 0, NULL);
-	if (tmp != NULL) {
+	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_DOWNKEY);
+	if (strlen(tmp) > 0) {
 		down_key = strdup(tmp);
 		keymask |= MENUTOKEN_DOWN;
 	}
 
 	left_key = right_key = NULL;
-	tmp = config_get_string("menu", "LeftKey", 0, NULL);
-	if (tmp != NULL) {
+	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_LEFTKEY);
+	if (strlen(tmp) > 0) {
 		left_key = strdup(tmp);
 		keymask |= MENUTOKEN_LEFT;
 	}
-	tmp = config_get_string("menu", "RightKey", 0, NULL);
-	if (tmp != NULL) {
+	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_RIGHTKEY);
+	if (strlen(tmp) > 0) {
 		right_key = strdup(tmp);
 		keymask |= MENUTOKEN_RIGHT;
 	}
 
 	/* Now reserve the keys that were defined */
-	if (menu_key != NULL)
+	if (keymask & MENUTOKEN_MENU)
 		input_reserve_key(menu_key, true, NULL);
-	if (enter_key != NULL)
+	if (keymask & MENUTOKEN_ENTER)
 		input_reserve_key(enter_key, false, NULL);
-	if (up_key != NULL)
+	if (keymask & MENUTOKEN_UP)
 		input_reserve_key(up_key, false, NULL);
-	if (down_key != NULL)
+	if (keymask & MENUTOKEN_DOWN)
 		input_reserve_key(down_key, false, NULL);
-	if (left_key != NULL)
+	if (keymask & MENUTOKEN_LEFT)
 		input_reserve_key(left_key, false, NULL);
-	if (right_key != NULL)
+	if (keymask & MENUTOKEN_RIGHT)
 		input_reserve_key(right_key, false, NULL);
 
 	/* Create screen */

@@ -55,7 +55,7 @@ MODULE_EXPORT char *symbol_prefix = "g15_";
 
 // Find the proper usb device and initialize it
 //
-MODULE_EXPORT int g15_init (Driver *drvthis)
+MODULE_EXPORT int g15_init (Driver *drvthis, Elektra * elektra)
 {
    PrivateData *p;
 

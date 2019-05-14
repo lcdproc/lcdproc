@@ -213,7 +213,7 @@ static void MtxOrb_cursor_goto(Driver *drvthis, int x, int y);
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-MtxOrb_init (Driver *drvthis)
+MtxOrb_init (Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
 

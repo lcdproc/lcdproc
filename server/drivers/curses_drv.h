@@ -1,7 +1,9 @@
 #ifndef LCD_CURSES_H
 #define LCD_CURSES_H
 
-MODULE_EXPORT int  curses_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  curses_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void curses_close (Driver *drvthis);
 MODULE_EXPORT int  curses_width (Driver *drvthis);
 MODULE_EXPORT int  curses_height (Driver *drvthis);

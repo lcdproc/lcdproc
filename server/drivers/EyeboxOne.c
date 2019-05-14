@@ -126,7 +126,7 @@ EyeboxOne_parse_keypad_setting (Driver *drvthis, char * keyname, char default_va
  * Called to initialize driver settings
  */
 MODULE_EXPORT int
-EyeboxOne_init (Driver *drvthis)
+EyeboxOne_init (Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
 

@@ -122,7 +122,7 @@ static void CFontzPacket_raw_chr (Driver *drvthis, int x, int y, unsigned char c
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-CFontzPacket_init (Driver *drvthis)
+CFontzPacket_init (Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
 	int tmp, w, h, i;

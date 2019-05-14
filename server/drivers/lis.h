@@ -11,6 +11,8 @@
 #ifndef LIS_H
 #define LIS_H
 
+#include <elektra.h>
+
 /*----------------------------- Constants ---------------------------------*/
 
 #define DISPLAY_VENDOR_ID	0x0403
@@ -76,7 +78,7 @@ typedef struct lis_private_data {
 } PrivateData;
 
 
-MODULE_EXPORT int  lis_init(Driver *drvthis);
+MODULE_EXPORT int  lis_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void lis_close(Driver *drvthis);
 MODULE_EXPORT int  lis_width(Driver *drvthis);
 MODULE_EXPORT int  lis_height(Driver *drvthis);

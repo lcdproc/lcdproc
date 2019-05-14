@@ -1,6 +1,8 @@
 #ifndef CFONTZ_H
 #define CFONTZ_H
 
+#include <elektra.h>
+
 #define DEFAULT_CELL_WIDTH	6
 #define DEFAULT_CELL_HEIGHT	8
 #define DEFAULT_CONTRAST	560
@@ -41,7 +43,7 @@
 #define CFONTZ_Show_Information_Screen		0x1F
 
 
-MODULE_EXPORT int  CFontz_init(Driver *drvthis);
+MODULE_EXPORT int  CFontz_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void CFontz_close(Driver *drvthis);
 MODULE_EXPORT int  CFontz_width(Driver *drvthis);
 MODULE_EXPORT int  CFontz_height(Driver *drvthis);

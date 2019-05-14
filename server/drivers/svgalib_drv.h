@@ -1,6 +1,8 @@
 #ifndef LCD_SVGALIB_H
 #define LCD_SVGALIB_H
 
+#include <elektra.h>
+
 #define DEFAULT_MODESTR		"G320x200x256"
 #define DEFAULT_SIZE		"20x4"
 #define DEFAULT_CONTRAST	500
@@ -27,7 +29,7 @@ typedef struct svga_private_data {
 } PrivateData;
 
 
-MODULE_EXPORT int  svga_init (Driver *drvthis);
+MODULE_EXPORT int  svga_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void svga_close (Driver *drvthis);
 MODULE_EXPORT int  svga_width (Driver *drvthis);
 MODULE_EXPORT int  svga_height (Driver *drvthis);

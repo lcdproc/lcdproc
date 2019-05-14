@@ -85,7 +85,7 @@ int InitClientSocket(char host[], SOCKET *sock, unsigned long id);
 int SendCommand(Driver *drvthis, LCDCOMMAND *com, STATUSBUFFER *stat);
 
 
-MODULE_EXPORT int irtrans_init(Driver *drvthis)
+MODULE_EXPORT int irtrans_init(Driver *drvthis, Elektra * elektra)
 {
     PrivateData *p;
     char buf[256];

@@ -49,6 +49,11 @@ Different implementations of (n)curses available on:
 #include "config.h"
 #endif
 
+#include "lcd.h"
+#include "curses_drv.h"
+
+#define ELEKTRA_KEY_END 0
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -61,8 +66,6 @@ Different implementations of (n)curses available on:
 #include <curses.h>
 #endif
 
-#include "lcd.h"
-#include "curses_drv.h"
 #include "shared/report.h"
 
 // ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
@@ -142,7 +145,7 @@ static void curses_restore_screen (Driver *drvthis);
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-curses_init (Driver *drvthis)
+curses_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	char buf[256];

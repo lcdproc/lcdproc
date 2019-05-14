@@ -100,7 +100,7 @@ static void CFontz_raw_chr(Driver *drvthis, int x, int y, unsigned char c);
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-CFontz_init(Driver *drvthis)
+CFontz_init(Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
 	int tmp, w, h;

@@ -90,7 +90,7 @@ MODULE_EXPORT char *symbol_prefix = "icp_a106_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-icp_a106_init(Driver *drvthis)
+icp_a106_init(Driver *drvthis, Elektra * elektra)
 {
 	char device[200];
 	int speed = B1200;

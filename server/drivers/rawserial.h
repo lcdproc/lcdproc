@@ -1,6 +1,8 @@
 #ifndef LCD_rawserial_H
 #define LCD_rawserial_H
 
+#include <elektra.h>
+
 #define DEFAULT_DEVICE		"/dev/cuaU0"
 #define DISPLAY_DEFAULT_SIZE 	"40x4"
 
@@ -9,7 +11,7 @@
 #define DEFAULT_UPDATE_RATE	1.0
 #define SECOND_GRANULARITY	1000
 
-MODULE_EXPORT int rawserial_init(Driver *drvthis);
+MODULE_EXPORT int rawserial_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void rawserial_close(Driver *drvthis);
 MODULE_EXPORT int rawserial_width(Driver *drvthis);
 MODULE_EXPORT int rawserial_height(Driver *drvthis);

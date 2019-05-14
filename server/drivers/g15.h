@@ -25,6 +25,7 @@
 #include <libg15.h>
 #include <libg15render.h>
 #include "lcd.h"
+#include <elektra.h>
 
 /** private data for the \c g15 driver */
 typedef struct g15_private_data {
@@ -72,7 +73,7 @@ typedef struct g15_private_data {
 
 extern short g15_bignum_data[11][G15_BIGNUM_LEN];
 
-MODULE_EXPORT int  g15_init (Driver *drvthis);
+MODULE_EXPORT int  g15_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void g15_close (Driver *drvthis);
 MODULE_EXPORT int  g15_width (Driver *drvthis);
 MODULE_EXPORT int  g15_height (Driver *drvthis);

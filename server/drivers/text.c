@@ -56,7 +56,7 @@ MODULE_EXPORT char *symbol_prefix = "text_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-text_init (Driver *drvthis)
+text_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	char buf[256];

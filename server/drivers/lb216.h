@@ -1,7 +1,9 @@
 #ifndef LB216_H
 #define LB216_H
 
-MODULE_EXPORT int  LB216_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  LB216_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void LB216_close(Driver *drvthis);
 MODULE_EXPORT int  LB216_width (Driver *drvthis);
 MODULE_EXPORT int  LB216_height (Driver *drvthis);

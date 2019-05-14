@@ -300,7 +300,7 @@ static void report_backlight_type(int report_level, int backlight_type)
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-HD44780_init(Driver *drvthis)
+HD44780_init(Driver *drvthis, Elektra * elektra)
 {
 	/* TODO: single point of return */
 	char buf[40];

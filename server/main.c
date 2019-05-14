@@ -51,8 +51,8 @@
 #endif
 /* TODO: fill in what to include otherwise */
 
-#include "shared/report.h"
-#include "shared/defines.h"
+#include <shared/report.h>
+#include <shared/defines.h>
 
 #include "drivers.h"
 #include "sock.h"
@@ -64,9 +64,10 @@
 #include "serverscreens.h"
 #include "menuscreens.h"
 #include "input.h"
-#include "shared/configfile.h"
 #include "drivers.h"
 #include "main.h"
+
+#include "elektragen.h"
 
 #if !defined(SYSCONFDIR)
 # define SYSCONFDIR "/etc"
@@ -125,7 +126,6 @@ char user[64];		/* The values will be overwritten anyway... */
 int frame_interval = DEFAULT_FRAME_INTERVAL;
 
 /* The drivers and their driver parameters */
-char *drivernames[MAX_DRIVERS];
 int num_drivers = 0;
 
 /* End of configuration variables */
@@ -139,14 +139,14 @@ static int stored_argc;
 static char **stored_argv;
 static volatile short got_reload_signal = 0;
 
+static Elektra * elektra;
+
 /* Local exported variables */
 long timer = 0;
 
 /**** Local functions ****/
 static void clear_settings(void);
-static int process_command_line(int argc, char **argv);
-static int process_configfile(char *cfgfile);
-static void set_default_settings(void);
+static int process_config();
 static void install_signal_handlers(int allow_reload);
 static void child_ok_func(int signal);
 static pid_t daemonize(void);
@@ -157,17 +157,24 @@ static void do_reload(void);
 static void do_mainloop(void);
 static void exit_program(int val);
 static void catch_reload_signal(int val);
-static int interpret_boolean_arg(char *s);
 static void output_help_screen(void);
 static void output_GPL_notice(void);
 
 #define CHAIN(e,f) { if (e>=0) { e=(f); }}
 #define CHAIN_END(e,msg) { if (e<0) { report(RPT_CRIT,(msg)); exit(EXIT_FAILURE); }}
 
+static const char * help_prefix =
+	"LCDd - LCDproc Server Daemon, "VERSION"\n\n"
+	"Copyright (c) 1998-2017 Selene Scriven, William Ferrell, and misc. contributors.\n"
+	"This program is released under the terms of the GNU General Public License.\n\n";
+
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
+	// only returns, if not in specload mode
+	doSpecloadCheck(argc, argv);
+
 	int e = 0;
 	pid_t parent_pid = 0;
 
@@ -201,17 +208,8 @@ main(int argc, char **argv)
 
 	clear_settings();
 
-	/* Read command line*/
-	CHAIN(e, process_command_line(argc, argv));
-
-	/* Read config file
-	 * If config file was not given on command line use default */
-	if (strcmp(configfile, UNSET_STR) == 0)
-		strncpy(configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	CHAIN(e, process_configfile(configfile));
-
-	/* Set default values*/
-	set_default_settings();
+	/* Read config */
+	CHAIN(e, process_config());
 
 	/* Set reporting settings (will also flush delayed reports) */
 	set_reporting("LCDd", report_level, report_dest);
@@ -238,9 +236,9 @@ main(int argc, char **argv)
 	CHAIN(e, screenlist_init());
 	CHAIN(e, init_drivers());
 	CHAIN(e, clients_init());
-	CHAIN(e, input_init());
-	CHAIN(e, menuscreens_init());
-	CHAIN(e, server_screen_init());
+	CHAIN(e, input_init(elektra));
+	CHAIN(e, menuscreens_init(elektra));
+	CHAIN(e, server_screen_init(elektra));
 	CHAIN_END(e, "Critical error while initializing, abort.");
 	if (!foreground_mode) {
 		/* Tell to parent that startup went OK. */
@@ -276,270 +274,66 @@ clear_settings(void)
 	default_duration = UNSET_INT;
 	report_dest = UNSET_INT;
 	report_level = UNSET_INT;
-
-	for (i = 0; i < num_drivers; i++) {
-		free(drivernames[i]);
-		drivernames[i] = NULL;
-	}
 	num_drivers = 0;
 }
 
-
-/* parses arguments given on command line */
-static int
-process_command_line(int argc, char **argv)
+static void on_fatal_error(ElektraError * error) // TODO: finalize method
 {
-	int c, b;
-	int e = 0, help = 0;
-
-	debug(RPT_DEBUG, "%s(argc=%d, argv=...)", __FUNCTION__, argc);
-
-	/* Reset getopt */
-	opterr = 0; /* Prevent some messages to stderr */
-
-	/* Analyze options here.. (please try to keep list of options the
-	 * same everywhere) */
-	while ((c = getopt(argc, argv, "hc:d:fa:p:u:w:s:r:i:")) > 0) {
-		switch(c) {
-			case 'h':
-				help = 1; /* Continue to process the other
-					   * options */
-				break;
-			case 'c':
-				strncpy(configfile, optarg, sizeof(configfile));
-				configfile[sizeof(configfile)-1] = '\0'; /* Terminate string */
-				break;
-	 		case 'd':
-				/* Add to a list of drivers to be initialized later...*/
-				if (num_drivers < MAX_DRIVERS) {
-					drivernames[num_drivers] = strdup(optarg);
-					if (drivernames[num_drivers] != NULL) {
-						num_drivers++;
-					}
-					else {
-						report(RPT_ERR, "alloc error storing driver name: %s", optarg);
-						e = -1;
-					}
-				} else {
-					report(RPT_ERR, "Too many drivers!");
-					e = -1;
-				}
-				break;
-			case 'f':
-				foreground_mode = 1;
-				break;
-			case 'a':
-				strncpy(bind_addr, optarg, sizeof(bind_addr));
-				bind_addr[sizeof(bind_addr)-1] = '\0'; /* Terminate string */
-				break;
-			case 'p':
-				bind_port = atoi(optarg);
-				break;
-			case 'u':
-				strncpy(user, optarg, sizeof(user));
-				user[sizeof(user)-1] = '\0'; /* Terminate string */
-				break;
-			case 'w':
-				default_duration = (int) (atof(optarg) * 1e6 / frame_interval);
-				if (default_duration * frame_interval < 2e6) {
-					report(RPT_ERR, "Waittime should be at least 2 (seconds), not %.8s", optarg);
-					e = -1;
-				}
-				break;
-			case 's':
-				b = interpret_boolean_arg(optarg);
-				if (b == -1) {
-					report(RPT_ERR, "Not a boolean value: '%s'", optarg);
-					e = -1;
-				} else {
-					report_dest = (b) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
-				}
-				break;
-			case 'r':
-				report_level = atoi(optarg);
-				break;
-			case 'i':
-				b = interpret_boolean_arg(optarg);
-				if (b == -1) {
-					report(RPT_ERR, "Not a boolean value: '%s'", optarg);
-					e = -1;
-				} else {
-					rotate_server_screen = b;
-				}
-				break;
-			case '?':
-				/* For some reason getopt also returns an '?'
-				 * when an option argument is mission... */
-				report(RPT_ERR, "Unknown option: '%c'", optopt);
-				e = -1;
-				break;
-			case ':':
-				report(RPT_ERR, "Missing option argument!");
-				e = -1;
-				break;
-		}
-	}
-
-	if (optind < argc) {
-		report(RPT_ERR, "Non-option arguments on the command line !");
-		e = -1;
-	}
-	if (help) {
-		output_help_screen();
-		e = -1;
-	}
-	return e;
+	fprintf(stderr, "ERROR: %s\n", elektraErrorDescription(error));
+	exit(EXIT_FAILURE);
 }
 
 
-/* reads and parses configuration file */
+/* reads and parses configuration */
 static int
-process_configfile(char *configfile)
+process_config()
 {
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	/* Read server settings*/
+	ElektraError * error = NULL;
+	elektra = NULL;
+	int rc = loadConfiguration(&elektra, &error);
 
-	if (config_read_file(configfile) != 0) {
-		report(RPT_CRIT, "Could not read config file: %s", configfile);
-		return -1;
+	if (rc == -1)
+	{
+		fprintf(stderr, "An error occurred while initializing elektra: %s", elektraErrorDescription(error));
+		elektraErrorReset(&error);
+		return EXIT_FAILURE;
 	}
 
-	if (bind_port == UNSET_INT)
-		bind_port = config_get_int("Server", "Port", 0, UNSET_INT);
-
-	if (strcmp(bind_addr, UNSET_STR) == 0)
-		strncpy(bind_addr, config_get_string("Server", "Bind", 0, UNSET_STR), sizeof(bind_addr));
-
-	if (strcmp(user, UNSET_STR) == 0)
-		strncpy(user, config_get_string("Server", "User", 0, UNSET_STR), sizeof(user));
-
-	if (default_duration == UNSET_INT) {
-		default_duration = (config_get_float("Server", "WaitTime", 0, 0) * 1e6 / frame_interval);
-		if (default_duration == 0)
-			default_duration = UNSET_INT;
-		else if (default_duration * frame_interval < 2e6) {
-			report(RPT_WARNING, "Waittime should be at least 2 (seconds). Set to 2 seconds.");
-			default_duration = 2e6 / frame_interval;
-		}
+	if (rc == 1)
+	{
+		// help mode
+		printHelpMessage(NULL, help_prefix);
+		return EXIT_SUCCESS;
 	}
 
-	if (foreground_mode == UNSET_INT) {
-		int fg = config_get_bool("Server", "Foreground", 0, UNSET_INT);
+	elektraFatalErrorHandler(elektra, on_fatal_error);
 
-		if (fg != UNSET_INT)
-			foreground_mode = fg;
+	bind_port = elektraGet(elektra, ELEKTRA_TAG_SERVER_PORT);
+	strncpy(bind_addr, elektraGet(elektra, ELEKTRA_TAG_SERVER_BIND), sizeof(bind_addr));
+	strncpy(user, elektraGet(elektra, ELEKTRA_TAG_SERVER_USER), sizeof(user));
+
+	frame_interval = elektraGet(elektra, ELEKTRA_TAG_SERVER_FRAMEINTERVAL);
+	default_duration = elektraGet(elektra, ELEKTRA_TAG_SERVER_WAITTIME) * 1e6 / frame_interval;
+	if (default_duration * frame_interval < 2e6) {
+		report(RPT_WARNING, "Waittime should be at least 2 (seconds). Set to 2 seconds.");
+		default_duration = 2e6 / frame_interval;
 	}
 
-	if (rotate_server_screen == UNSET_INT) {
-		rotate_server_screen = config_get_tristate("Server", "ServerScreen", 0, "blank", UNSET_INT);
-	}
+	foreground_mode = elektraGet(elektra, ELEKTRA_TAG_SERVER_FOREGROUND);
+	rotate_server_screen = elektraGet(elektra, ELEKTRA_TAG_SERVER_SERVERSCREEN);
+	backlight = elektraGet(elektra, ELEKTRA_TAG_SERVER_BACKLIGHT);
+	heartbeat = elektraGet(elektra, ELEKTRA_TAG_SERVER_HEARTBEAT);
+	autorotate = elektraGet(elektra, ELEKTRA_TAG_SERVER_AUTOROTATE);
 
-	if (backlight == UNSET_INT) {
-		backlight = config_get_tristate("Server", "Backlight", 0, "open", UNSET_INT);
-	}
+	titlespeed = elektraGet(elektra, ELEKTRA_TAG_SERVER_TITLESPEED);
+	report_dest = (elektraGet(elektra, ELEKTRA_TAG_SERVER_REPORTTOSYSLOG)) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
 
-	if (heartbeat == UNSET_INT) {
-		heartbeat = config_get_tristate("Server", "Heartbeat", 0, "open", UNSET_INT);
-	}
-
-	if (autorotate == UNSET_INT) {
-		autorotate = config_get_bool("Server", "AutoRotate", 0, DEFAULT_AUTOROTATE);
-	}
-
-	if (titlespeed == UNSET_INT) {
-		int speed = config_get_int("Server", "TitleSpeed", 0, DEFAULT_TITLESPEED);
-
-		/* set titlespeed */
-		titlespeed = (speed <= TITLESPEED_NO)
-			     ? TITLESPEED_NO
-			     : min(speed, TITLESPEED_MAX);
-	}
-
-	frame_interval = config_get_int("Server", "FrameInterval", 0, DEFAULT_FRAME_INTERVAL);
-
-	if (report_dest == UNSET_INT) {
-		int rs = config_get_bool("Server", "ReportToSyslog", 0, UNSET_INT);
-
-		if (rs != UNSET_INT)
-			report_dest = (rs) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
-	}
-	if (report_level == UNSET_INT) {
-		report_level = config_get_int("Server", "ReportLevel", 0, UNSET_INT);
-	}
-
-
-	/* Read drivers */
-
-	 /* If drivers have been specified on the command line, then do not
-	 * use the driver list from the config file.
-	 */
-	if (num_drivers == 0) {
-		/* loop over all the Driver= directives to read the driver names */
-		while (1) {
-			const char *s = config_get_string("Server", "Driver", num_drivers, NULL);
-			if (s == NULL)
-				break;
-			if (s[0] != '\0') {
-				drivernames[num_drivers] = strdup(s);
-				if (drivernames[num_drivers] == NULL) {
-					report(RPT_ERR, "alloc error storing driver name: %s", s);
-					exit(EXIT_FAILURE);
-				}
-				num_drivers++;
-			}
-		}
-	}
+	report_level = elektraGet(elektra, ELEKTRA_TAG_SERVER_REPORTLEVEL);
 
 	return 0;
 }
-
-
-static void
-set_default_settings(void)
-{
-	debug(RPT_DEBUG, "%s()", __FUNCTION__);
-
-	/* Set defaults into unfilled variables... */
-
-	if (bind_port == UNSET_INT)
-		bind_port = DEFAULT_BIND_PORT;
-	if (strcmp(bind_addr, UNSET_STR) == 0)
-		strncpy(bind_addr, DEFAULT_BIND_ADDR, sizeof(bind_addr));
-	if (strcmp(user, UNSET_STR) == 0)
-		strncpy(user, DEFAULT_USER, sizeof(user));
-
-	if (foreground_mode == UNSET_INT)
-		foreground_mode = DEFAULT_FOREGROUND_MODE;
-	if (rotate_server_screen == UNSET_INT)
-		rotate_server_screen = DEFAULT_ROTATE_SERVER_SCREEN;
-
-	if (default_duration == UNSET_INT)
-		default_duration = DEFAULT_SCREEN_DURATION;
-	if (backlight == UNSET_INT)
-		backlight = DEFAULT_BACKLIGHT;
-	if (heartbeat == UNSET_INT)
-		heartbeat = DEFAULT_HEARTBEAT;
-	if (titlespeed == UNSET_INT)
-		titlespeed = DEFAULT_TITLESPEED;
-
-	if (report_dest == UNSET_INT)
-		report_dest = DEFAULT_REPORTDEST;
-	if (report_level == UNSET_INT)
-		report_level = DEFAULT_REPORTLEVEL;
-
-
-	/* Use default driver */
-	if (num_drivers == 0) {
-		drivernames[0] = strdup(DEFAULT_DRIVER);
-		if (drivernames[0] == NULL) {
-			report(RPT_ERR, "alloc error storing driver name: %s", DEFAULT_DRIVER);
-			exit(EXIT_FAILURE);
-		}
-		num_drivers = 1;
-	}
-}
-
 
 static void
 install_signal_handlers(int allow_reload)
@@ -667,16 +461,23 @@ init_drivers(void)
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	for (i = 0; i < num_drivers; i++) {
+	/* Read drivers */
+	num_drivers = elektraSize(elektra, ELEKTRA_TAG_SERVER_DRIVERS);
+	for (kdb_long_long_t i = 0; i < num_drivers; ++i) {
+		if(i > MAX_DRIVERS)
+		{
+			report(RPT_ERR, "too many driver; max = %d", MAX_DRIVERS);
+			exit(EXIT_FAILURE);
+		}
 
-		res = drivers_load_driver(drivernames[i]);
+		res = drivers_load_driver(elektra, i);
 		if (res >= 0) {
 			/* Load went OK */
 
 			if (res == 2)
 				foreground_mode = 1;
 		} else {
-			report(RPT_ERR, "Could not load driver %.40s", drivernames[i]);
+			report(RPT_ERR, "Could not load driver #"ELEKTRA_LONG_LONG_F, i);
 		}
 	}
 
@@ -722,16 +523,9 @@ do_reload(void)
 	config_clear();
 	clear_settings();
 
-	/* Reread command line*/
-	CHAIN(e, process_command_line(stored_argc, stored_argv));
-
-	/* Reread config file */
-	if (strcmp(configfile, UNSET_STR)==0)
-		strncpy(configfile, DEFAULT_CONFIGFILE, sizeof(configfile));
-	CHAIN(e, process_configfile(configfile));
-
-	/* Set default values */
-	CHAIN(e, (set_default_settings(), 0));
+	elektraClose(elektra);
+	/* Reread config */
+	CHAIN(e, process_config());
 
 	/* Set reporting values */
 	CHAIN(e, set_reporting("LCDd", report_level, report_dest));
@@ -857,7 +651,7 @@ exit_program(int val)
 		report_dest = DEFAULT_REPORTDEST;
 	set_reporting("LCDd", report_level, report_dest);
 
-	goodbye_screen();		/* display goodbye screen on LCD display */
+	goodbye_screen(elektra);		/* display goodbye screen on LCD display */
 	drivers_unload_all();		/* release driver memory and file descriptors */
 
 	/* Shutdown things if server start was complete */
@@ -866,6 +660,8 @@ exit_program(int val)
 	screenlist_shutdown();		/* shutdown screens (must come after client_shutdown) */
 	input_shutdown();		/* shutdown key input part */
         sock_shutdown();                /* shutdown the sockets server */
+
+	elektraClose(elektra);
 
 	report(RPT_INFO, "Exiting.");
 	_exit(EXIT_SUCCESS);
@@ -878,25 +674,6 @@ catch_reload_signal(int val)
 	debug(RPT_DEBUG, "%s(val=%d)", __FUNCTION__, val);
 
 	got_reload_signal = 1;
-}
-
-
-static int
-interpret_boolean_arg(char *s)
-{
-	/* keep these checks consistent with config_get_boolean() */
-	if (strcasecmp(s, "0") == 0 || strcasecmp(s, "false") == 0
-	|| strcasecmp(s, "n") == 0 || strcasecmp(s, "no") == 0
-	|| strcasecmp(s, "off") == 0) {
-		return 0;
-	}
-	if (strcasecmp(s, "1") == 0 || strcasecmp(s, "true") == 0
-	|| strcasecmp(s, "y") == 0 || strcasecmp(s, "yes") == 0
-	|| strcasecmp(s, "on") == 0) {
-		return 1;
-	}
-	/* no legal boolean string given */
-	return -1;
 }
 
 
@@ -926,40 +703,3 @@ output_GPL_notice(void)
 	                "Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n\n");
 }
 
-
-static void
-output_help_screen(void)
-{
-	/* Help screen is printed to stdout on purpose. No reason to have
-	 * this in syslog...
-	 */
-	debug(RPT_DEBUG, "%s()", __FUNCTION__);
-
-	fprintf(stdout, "LCDd - LCDproc Server Daemon, %s\n\n", version);
-	fprintf(stdout, "Copyright (c) 1998-2017 Selene Scriven, William Ferrell, and misc. contributors.\n");
-	fprintf(stdout, "This program is released under the terms of the GNU General Public License.\n\n");
-	fprintf(stdout, "Usage: LCDd [<options>]\n");
-	fprintf(stdout, "  where <options> are:\n");
-	fprintf(stdout, "    -h                  Display this help screen\n");
-	fprintf(stdout, "    -c <config>         Use a configuration file other than %s\n",
-		DEFAULT_CONFIGFILE);
-	fprintf(stdout, "    -d <driver>         Add a driver to use (overrides drivers in config file) [%s]\n",
-		DEFAULT_DRIVER);
-	fprintf(stdout, "    -f                  Run in the foreground\n");
-	fprintf(stdout, "    -a <addr>           Network (IP) address to bind to [%s]\n",
-		DEFAULT_BIND_ADDR);
-	fprintf(stdout, "    -p <port>           Network port to listen for connections on [%i]\n",
-		DEFAULT_BIND_PORT);
-	fprintf(stdout, "    -u <user>           User to run as [%s]\n",
-		DEFAULT_USER);
-	fprintf(stdout, "    -w <waittime>       Time to pause at each screen (in seconds) [%d]\n",
-		(int) ((DEFAULT_SCREEN_DURATION * frame_interval) / 1e6));
-	fprintf(stdout, "    -s <bool>           If set, reporting will be done using syslog\n");
-	fprintf(stdout, "    -r <level>          Report level [%d]\n",
-		DEFAULT_REPORTLEVEL);
-	fprintf(stdout, "    -i <bool>           Whether to rotate the server info screen\n");
-
-	/* Error messages will be flushed to the configured output after this
-	 * help message.
-	 */
-}

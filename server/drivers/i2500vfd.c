@@ -101,7 +101,7 @@ drawchar2fb (Driver *drvthis, int x, int y, unsigned char z)
 // This initialises the stuff.
 //
 MODULE_EXPORT int
-i2500vfd_init (Driver *drvthis)
+i2500vfd_init (Driver *drvthis, Elektra * elektra)
 {
     PrivateData *p;
     int i;

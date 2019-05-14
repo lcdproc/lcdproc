@@ -15,6 +15,8 @@
 
 #include "screen.h"
 
+#include <elektra.h>
+
 /* server screen rotation states */
 #define SERVERSCREEN_OFF	0	/**< Show server screen in rotation. */
 #define SERVERSCREEN_ON		1	/**< Show server sreen only when there is no other screen. */
@@ -24,9 +26,9 @@ extern Screen *server_screen;
 
 extern int rotate_server_screen;
 
-int server_screen_init(void);
+int server_screen_init(Elektra * elektra);
 int server_screen_shutdown(void);
 int update_server_screen(void);
-int goodbye_screen(void);
+int goodbye_screen(Elektra * elektra);
 
 #endif

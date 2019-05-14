@@ -3,7 +3,7 @@
  */
 
 /*
-    Copyright (C) 2006 Stefan Herdler in collaboration with Martin Møller.
+    Copyright (C) 2006 Stefan Herdler in collaboration with Martin Mï¿½ller.
 
     This source Code is based on the NoritakeVFD, the serialVFD and the
     CFontzPacket Driver of this package.
@@ -28,7 +28,7 @@
     ==============================================================================
 
     Known hardware-commands of the MD8800 display
-    discovered by Martin Møller (listed in octal notation):
+    discovered by Martin Mï¿½ller (listed in octal notation):
 
     \33\0abcdef (abcdef can be anything, it seems) - set clock, I think.
 	   	The mapping is: bb:aa dd.cc.eeff
@@ -224,7 +224,7 @@ MODULE_EXPORT char *symbol_prefix = "MD8800_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-MD8800_init (Driver *drvthis)
+MD8800_init (Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
 	int tmp, w, h;

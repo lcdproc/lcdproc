@@ -88,7 +88,7 @@ picolcdgfx_write(usb_dev_handle * lcd, unsigned char *data, int size)
  * \retval <0      Error.
  */
 int
-glcd_picolcdgfx_init(Driver *drvthis)
+glcd_picolcdgfx_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	CT_picolcdgfx_data *ct_data;

@@ -7,7 +7,9 @@
 #ifndef SLI_H
 #define SLI_H
 
-MODULE_EXPORT int  sli_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  sli_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void sli_close (Driver *drvthis);
 MODULE_EXPORT int  sli_width (Driver *drvthis);
 MODULE_EXPORT int  sli_height (Driver *drvthis);

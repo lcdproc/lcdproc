@@ -438,7 +438,7 @@ static void CwLnx_reboot(int fd)
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-CwLnx_init(Driver *drvthis)
+CwLnx_init(Driver *drvthis, Elektra * elektra)
 {
     char device[200] = DEFAULT_DEVICE;
     int speed = DEFAULT_SPEED;

@@ -155,7 +155,7 @@ x11w_adj_contrast_brightness(unsigned long *pfgc, unsigned long *pbgc, int contr
  * \retval <0      Error.
  */
 int
-glcd_x11_init(Driver *drvthis)
+glcd_x11_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	CT_x11_data *ct_data;

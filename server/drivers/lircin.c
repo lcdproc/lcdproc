@@ -71,7 +71,7 @@ MODULE_EXPORT char *symbol_prefix = "lircin_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-lircin_init (Driver *drvthis)
+lircin_init (Driver *drvthis, Elektra * elektra)
 {
 	char s[256] = "";
 

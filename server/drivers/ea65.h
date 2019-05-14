@@ -1,10 +1,12 @@
 #ifndef EA65_H
 #define EA65_H
 
+#include <elektra.h>
+
 #define DEFAULT_BRIGHTNESS 500
 #define DEFAULT_OFFBRIGHTNESS 0
 
-MODULE_EXPORT int  EA65_init (Driver *drvthis);
+MODULE_EXPORT int  EA65_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void EA65_close (Driver *drvthis);
 MODULE_EXPORT int  EA65_width (Driver *drvthis);
 MODULE_EXPORT int  EA65_height (Driver *drvthis);

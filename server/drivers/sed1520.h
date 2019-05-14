@@ -1,6 +1,8 @@
 #ifndef SED1520_H
 #define SED1520_H
 
+#include <elektra.h>
+
 /* Commands for SED1520 */
 #define DISP_OFF	0xAE
 #define DISP_ON		0xAF
@@ -15,7 +17,7 @@
 #define DUTY_1_32	0xA9
 #define SOFT_RESET	0xE2
 
-MODULE_EXPORT int sed1520_init (Driver *drvthis);
+MODULE_EXPORT int sed1520_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void sed1520_close (Driver *drvthis);
 MODULE_EXPORT int sed1520_width (Driver *drvthis);
 MODULE_EXPORT int sed1520_height (Driver *drvthis);

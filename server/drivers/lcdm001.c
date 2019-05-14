@@ -137,7 +137,7 @@ lcdm001_cursorblink(Driver *drvthis, int on)
  * API: Set up any device-specific stuff.
  */
 MODULE_EXPORT int
-lcdm001_init (Driver *drvthis)
+lcdm001_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	struct termios portset;

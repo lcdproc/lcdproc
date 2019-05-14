@@ -85,7 +85,7 @@ MODULE_EXPORT char *symbol_prefix = "linuxInput_";
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-linuxInput_init (Driver *drvthis)
+linuxInput_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	const char *s;

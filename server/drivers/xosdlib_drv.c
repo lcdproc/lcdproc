@@ -61,7 +61,7 @@ MODULE_EXPORT char *symbol_prefix = "xosdlib_drv_";
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-xosdlib_drv_init (Driver *drvthis)
+xosdlib_drv_init (Driver *drvthis, Elektra * elektra)
 {
 	const char *size;
 	const char *offset;

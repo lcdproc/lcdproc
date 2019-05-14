@@ -40,6 +40,8 @@
 #include "main.h"
 #include "serverscreens.h"
 
+#include "elektragen.h"
+
 
 /* global variables */
 Screen *server_screen = NULL;
@@ -58,12 +60,13 @@ static int reset_server_screen(int rotate, int heartbeat, int title);
  *           0 otherwise.
  */
 int
-server_screen_init(void)
+server_screen_init(Elektra * elektra)
 {
 	Widget *w;
 	int i;
 
-	has_hello_msg = config_has_key("Server", "Hello");
+	kdb_long_long_t helloArraySize = elektraSize(elektra, ELEKTRA_TAG_SERVER_GOODBYE);
+	has_hello_msg = helloArraySize > 0;
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
@@ -97,10 +100,8 @@ server_screen_init(void)
 
 	/* set the widgets depending on the Hello option in LCDd.conf */
 	if (has_hello_msg) {		/* show whole Hello message */
-		int i;
-
-		for (i = 0; i < display_props->height; i++) {
-	 		const char *line = config_get_string("Server", "Hello", i, "");
+		for (kdb_long_long_t i = 0; i < display_props->height && i < helloArraySize; i++) {
+	 		const char *line = elektraGetV(elektra, ELEKTRA_TAG_SERVER_HELLO, i);
 			char id[8];
 
 			sprintf(id, "line%d", i+1);
@@ -211,19 +212,18 @@ update_server_screen(void)
  * \return  Always 0.
  */
 int
-goodbye_screen(void)
+goodbye_screen(Elektra * elektra)
 {
 	if (!display_props)
 		return 0;
 
 	drivers_clear();
 
-	if (config_has_key("Server", "GoodBye")) {	/* custom GoodBye */
-		int i;
-
+	kdb_long_long_t arraySize = elektraSize(elektra, ELEKTRA_TAG_SERVER_GOODBYE);
+	if (arraySize > 0) {	/* custom GoodBye */
 		/* loop over all display lines to read config & display message */
-		for (i = 0; i < display_props->height; i++) {
-			const char *line = config_get_string("Server", "GoodBye", i, "");
+		for (kdb_long_long_t i = 0; i < display_props->height && i < arraySize; i++) {
+			const char *line = elektraGetV(elektra, ELEKTRA_TAG_SERVER_GOODBYE, i);
 
 			drivers_string(1, 1+i, line);
 		}

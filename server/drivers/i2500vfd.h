@@ -1,7 +1,9 @@
 #ifndef I2500VFD_H
 #define I2500VFD_H
 
-MODULE_EXPORT int i2500vfd_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int i2500vfd_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void i2500vfd_close (Driver *drvthis);
 MODULE_EXPORT int i2500vfd_width (Driver *drvthis);
 MODULE_EXPORT int i2500vfd_height (Driver *drvthis);

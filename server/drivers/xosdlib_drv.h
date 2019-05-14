@@ -2,6 +2,7 @@
 #define LCD_XOSDLIB_H
 
 #include <xosd.h>
+#include <elektra.h>
 
 #define DEFAULT_FONT		"fixed"
 #define DEFAULT_SIZE		"20x4"
@@ -34,7 +35,7 @@ typedef struct xosd_private_data {
 } PrivateData;
 
 
-MODULE_EXPORT int  xosdlib_drv_init (Driver *drvthis);
+MODULE_EXPORT int  xosdlib_drv_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void xosdlib_drv_close (Driver *drvthis);
 MODULE_EXPORT int  xosdlib_drv_width (Driver *drvthis);
 MODULE_EXPORT int  xosdlib_drv_height (Driver *drvthis);

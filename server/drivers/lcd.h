@@ -30,6 +30,7 @@
 #define LCD_H
 
 #include <stddef.h>
+#include <elektra.h>
 
 /* Maximum supported sizes */
 #define LCD_MAX_WIDTH 256
@@ -139,7 +140,7 @@ typedef struct lcd_logical_driver {
 	/* The driver loader will look for symbols with these names ! */
 
 	/* mandatory functions (necessary for all drivers) */
-	int (*init)		(struct lcd_logical_driver *drvthis);
+	int (*init)		(struct lcd_logical_driver *drvthis, Elektra * elektra);
 	void (*close)		(struct lcd_logical_driver *drvthis);
 
 	/* essential output functions (necessary for output drivers) */
@@ -183,6 +184,7 @@ typedef struct lcd_logical_driver {
 	/******** Variables in server core available for drivers ********/
 
 	char *name;		/* Name of this driver */
+	kdb_long_long_t index;		/* Index of this driver's config */
 	char *filename;		/* Filename of the shared module */
 
 	MODULE_HANDLE module_handle;	/* The handle of the loaded shared module
@@ -198,9 +200,7 @@ typedef struct lcd_logical_driver {
 	int (*store_private_ptr) (struct lcd_logical_driver * driver, void * private_data);
 	/* Store the driver's private data */
 
-	/* Configfile functions */
-	/* See configfile.h for descriptions and usage. */
-
+	/* TODO: remove; all unset just here to avoid compile errors */
 	short (*config_get_bool)	(const char *sectionname, const char *keyname, int skip, short default_value);
 	long int (*config_get_int)	(const char *sectionname, const char *keyname, int skip, long int default_value);
 	double (*config_get_float)	(const char *sectionname, const char *keyname, int skip, double default_value);

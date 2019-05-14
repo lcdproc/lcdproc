@@ -23,7 +23,9 @@
 #ifndef ULA200_H
 #define ULA200_H
 
-MODULE_EXPORT int  ula200_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  ula200_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void ula200_close (Driver *drvthis);
 MODULE_EXPORT int  ula200_width (Driver *drvthis);
 MODULE_EXPORT int  ula200_height (Driver *drvthis);

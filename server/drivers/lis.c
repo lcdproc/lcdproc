@@ -336,7 +336,7 @@ lis_get_brightness(Driver *drvthis, int state)
  * API: Init the driver and display
  */
 MODULE_EXPORT int
-lis_init(Driver *drvthis)
+lis_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	int err;

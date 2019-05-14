@@ -220,7 +220,7 @@ sdec_init()
  * API: Initialize the driver.
  */
 MODULE_EXPORT int
-sdeclcd_init(Driver *drvthis)
+sdeclcd_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	int i, j;

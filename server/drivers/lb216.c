@@ -69,7 +69,7 @@ MODULE_EXPORT char *symbol_prefix = "LB216_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-LB216_init(Driver *drvthis)
+LB216_init(Driver *drvthis, Elektra * elektra)
 {
   PrivateData *p;
   struct termios portset;
