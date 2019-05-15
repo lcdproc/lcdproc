@@ -144,9 +144,19 @@ driver_load(Elektra * elektra, const char * driverpath, kdb_long_long_t index)
 	}
 	++name_start;
 
-	size_t len_name = index_start - name_start;
-	char * name = malloc(len_name + 1);
-	strncpy(name, name_start, len_name);
+	/* extract index for passing to driver */
+	kdb_long_long_t driver_index;
+	int offset = elektraArrayValidateBaseNameString(index_start + 1);
+	if (offset < 1) {
+		report(RPT_ERR, "%s: error getting index", __FUNCTION__);
+		return NULL;
+	}
+	Key * index_key = keyNew("", KEY_VALUE, &index_start[offset + 1], KEY_END);
+	if(!elektraKeyToLongLong(index_key, &driver_index))	{
+		report(RPT_ERR, "%s: error getting index", __FUNCTION__);
+		return NULL;
+	}
+	keyDel(index_key);
 
 	Driver *driver = NULL;
 	int res;
@@ -159,8 +169,8 @@ driver_load(Elektra * elektra, const char * driverpath, kdb_long_long_t index)
 	}
 
 	/* And store its name, index and filename */
-	driver->name = name;
-	driver->index = index;
+	driver->name = strdup(name_start);
+	driver->index = driver_index;
 	driver->filename = filename;
 
 	/* Load and bind the driver module and locate the symbols */

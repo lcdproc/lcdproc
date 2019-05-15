@@ -68,6 +68,8 @@ Different implementations of (n)curses available on:
 
 #include "shared/report.h"
 
+#include "../elektragen.h"
+
 // ACS_S9 and ACS_S1 are defined as part of XSI Curses standard, Issue 4.
 // However, ACS_S3 and ACS_S7 are not; these definitions were created to support
 // commonly available graphics found in many terminfo definitions.  The acsc character
@@ -134,7 +136,7 @@ MODULE_EXPORT char *symbol_prefix = "curses_";
 
 /* local helper functions */
 static void curses_wborder (Driver *drvthis);
-static chtype get_color_by_name (char *colorname, chtype default_color);
+static chtype map_color_to_curses (CursesColor color);
 static void curses_restore_screen (Driver *drvthis);
 
 
@@ -148,8 +150,6 @@ MODULE_EXPORT int
 curses_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
-	char buf[256];
-	int tmp;
 
 	// Colors....
 	chtype	back_color = DEFAULT_BACKGROUND_COLOR,
@@ -180,31 +180,26 @@ curses_init (Driver *drvthis, Elektra * elektra)
 
 	/* Get color settings */
 
+	CursesDriverConfig config;
+	elektraGet2V(elektra, &config, ELEKTRA_TAG_CURSES, drvthis->index);
+
 	/* foreground color */
-	strncpy(buf, drvthis->config_get_string(drvthis->name, "Foreground", 0, CONF_DEF_FOREGR), sizeof(buf));
-	buf[sizeof(buf)-1] = '\0';
-	fore_color = get_color_by_name(buf, DEFAULT_FOREGROUND_COLOR);
-	debug(RPT_DEBUG, "%s: using foreground color %s", drvthis->name, buf);
+	fore_color = map_color_to_curses(config.foreground);
+	debug(RPT_DEBUG, "%s: using foreground color %s", drvthis->name, ELEKTRA_TO_STRING(EnumCursesColor) (config.foreground));
 
 	/* background color */
-	strncpy(buf, drvthis->config_get_string(drvthis->name, "Background", 0, CONF_DEF_BACKGR), sizeof(buf));
-	buf[sizeof(buf)-1] = '\0';
-	back_color = get_color_by_name(buf, DEFAULT_BACKGROUND_COLOR);
-	debug(RPT_DEBUG, "%s: using background color %s", drvthis->name, buf);
+	back_color = map_color_to_curses(config.background);
+	debug(RPT_DEBUG, "%s: using background color %s", drvthis->name, ELEKTRA_TO_STRING(EnumCursesColor) (config.background));
 
 	/* backlight color */
-	strncpy(buf, drvthis->config_get_string(drvthis->name, "Backlight", 0, CONF_DEF_BACKLIGHT), sizeof(buf));
-	buf[sizeof(buf)-1] = '\0';
-	backlight_color = get_color_by_name(buf, DEFAULT_BACKGROUND_COLOR);
-	debug(RPT_DEBUG, "%s: using backlight color %s", drvthis->name, buf);
+	backlight_color = map_color_to_curses(config.backlight);
+	debug(RPT_DEBUG, "%s: using backlight color %s", drvthis->name, ELEKTRA_TO_STRING(EnumCursesColor) (config.backlight));
 
 	/* use ACS characters? */
-	p->useACS = drvthis->config_get_bool(drvthis->name, "UseACS", 0, CONF_DEF_USEACS);
-	debug(RPT_DEBUG, "%s: using ACS %s", drvthis->name, (p->useACS) ? "ON" : "OFF");
+	p->useACS = config.useacs;
 
 	/* draw border ? */
-	p->drawBorder = drvthis->config_get_bool(drvthis->name, "DrawBorder", 0, CONF_DEF_DRAWBORDER);
-	debug(RPT_DEBUG, "%s: drawing Border %s", drvthis->name, (p->drawBorder) ? "ON" : "OFF");
+	p->drawBorder = config.drawborder;
 
 	/* Get size settings */
 	if ((drvthis->request_display_width() > 0)
@@ -215,33 +210,29 @@ curses_init (Driver *drvthis, Elektra * elektra)
 	}
 	else {
 		/* Use our own size from config file */
-		strncpy(buf, drvthis->config_get_string(drvthis->name, "Size", 0, CONF_DEF_SIZE), sizeof(buf));
-		buf[sizeof(buf)-1] = '\0';
-		if ((sscanf(buf , "%dx%d", &p->width, &p->height) != 2)
+		if ((sscanf(config.size , "%dx%d", &p->width, &p->height) != 2)
 		    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
 		    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
 			report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-					drvthis->name, buf, CONF_DEF_SIZE);
+					drvthis->name, config.size, CONF_DEF_SIZE);
 			sscanf(CONF_DEF_SIZE, "%dx%d", &p->width, &p->height);
 		}
 	}
 
 	/*Get position settings*/
-	tmp = drvthis->config_get_int(drvthis->name, "TopLeftX", 0, CONF_DEF_TOP_LEFT_X);
-	if ((tmp < 0) || (tmp > 255)) {
+	if ((config.topleftx < 0) || (config.topleftx > 255)) {
 		report(RPT_WARNING, "%s: TopLeftX must be between 0 and 255; using default %d",
 				drvthis->name, CONF_DEF_TOP_LEFT_X);
-		tmp = CONF_DEF_TOP_LEFT_X;
+		config.topleftx = CONF_DEF_TOP_LEFT_X;
 	}
-	p->xoffs = tmp;
+	p->xoffs = config.topleftx;
 
-	tmp = drvthis->config_get_int(drvthis->name, "TopLeftY", 0, CONF_DEF_TOP_LEFT_Y);
-	if ((tmp < 0) || (tmp > 255)) {
+	if ((config.toplefty < 0) || (config.toplefty > 255)) {
 		report(RPT_WARNING, "%s: TopLeftY must be between 0 and 255; using default %d",
 				drvthis->name, CONF_DEF_TOP_LEFT_Y);
-		tmp = CONF_DEF_TOP_LEFT_Y;
+		config.toplefty = CONF_DEF_TOP_LEFT_Y;
 	}
-	p->yoffs = tmp;
+	p->yoffs = config.toplefty;
 
 	//debug: sleep(1);
 
@@ -708,25 +699,27 @@ curses_wborder (Driver *drvthis)
 
 
 static chtype
-get_color_by_name (char *colorname, chtype default_color) {
-	if (strcasecmp(colorname, "red") == 0)
-		return COLOR_RED;
-	else if (strcasecmp(colorname, "black") == 0)
-		return COLOR_BLACK;
-	else if (strcasecmp(colorname, "green") == 0)
-		return COLOR_GREEN;
-	else if (strcasecmp(colorname, "yellow") == 0)
-		return COLOR_YELLOW;
-	else if (strcasecmp(colorname, "blue") == 0)
-		return COLOR_BLUE;
-	else if (strcasecmp(colorname, "magenta") == 0)
-		return COLOR_MAGENTA;
-	else if (strcasecmp(colorname, "cyan") == 0)
-		return COLOR_CYAN;
-	else if (strcasecmp(colorname, "white") == 0)
-		return COLOR_WHITE;
-
-	return default_color;
+map_color_to_curses (CursesColor color) {
+	switch(color) {
+		case CURSES_COLOR_RED:
+			return COLOR_RED;
+		case CURSES_COLOR_BLACK:
+			return COLOR_BLACK;
+		case CURSES_COLOR_GREEN:
+			return COLOR_GREEN;
+		case CURSES_COLOR_YELLOW:
+			return COLOR_YELLOW;
+		case CURSES_COLOR_BLUE:
+			return COLOR_BLUE;
+		case CURSES_COLOR_MAGENTA:
+			return COLOR_MAGENTA;
+		case CURSES_COLOR_CYAN:
+			return COLOR_CYAN;
+		case CURSES_COLOR_WHITE:
+			return COLOR_WHITE;
+		default:
+			return -1;
+	}
 }
 
 
