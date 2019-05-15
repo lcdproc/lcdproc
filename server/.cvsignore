@@ -3,3 +3,5 @@ LCDd
 Makefile
 Makefile.in
 main.d
+elektragen.c
+elektragen.h

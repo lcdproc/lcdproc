@@ -2,3 +2,5 @@
 Makefile
 Makefile.in
 lcdexec
+elektragen.c
+elektragen.h

@@ -2,3 +2,5 @@
 Makefile
 Makefile.in
 lcdproc
+elektragen.c
+elektragen.h
