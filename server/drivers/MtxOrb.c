@@ -62,6 +62,8 @@
 
 #include "shared/report.h"
 
+#include "../elektragen.h"
+
 
 /* MO displays allow 25 keys that map by default to 'A' - 'Y' */
 #define MAX_KEY_MAP	25
@@ -216,12 +218,8 @@ MODULE_EXPORT int
 MtxOrb_init (Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
-
-	char device[256] = DEFAULT_DEVICE;
 	int speed = DEFAULT_SPEED;
-	char size[256] = DEFAULT_SIZE;
-	char buf[256] = "";
-	int tmp, w, h;
+	int w, h;
 
 	PrivateData *p;
 
@@ -250,62 +248,37 @@ MtxOrb_init (Driver *drvthis, Elektra * elektra)
 	debug(RPT_INFO, "MtxOrb: init(%p)", drvthis);
 
 	/* READ CONFIG FILE */
+	MtxOrbDriverConfig config;
+	elektraGet2V(elektra, &config, ELEKTRA_TAG_MTXORB, drvthis->index);
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device)-1] = '\0';
-	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
+  report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
 	/* Get display size */
-	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
-	size[sizeof(size)-1] = '\0';
-	if ((sscanf(size, "%dx%d", &w, &h) != 2)
+	if ((sscanf(config.size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 		report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-				drvthis->name, size, DEFAULT_SIZE);
+				drvthis->name, config.size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE , "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
 
 	/* Get contrast */
-	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Contrast must be between 0 and 1000; using default %d",
-				drvthis->name, DEFAULT_CONTRAST);
-		tmp = DEFAULT_CONTRAST;
-	}
-	p->contrast = tmp;
+	p->contrast = config.contrast;
 
 	/* Does it have an adjustable backlight */
-	tmp = drvthis->config_get_bool(drvthis->name, "hasAdjustableBacklight", 0, DEFAULT_ADJ_BACKLIGHT);
-	debug(RPT_INFO, "%s: hasAdjustableBacklight is '%d'", __FUNCTION__, tmp);
-	p->adjustable_backlight = tmp;
+	p->adjustable_backlight = config.hasAdjustableBacklight;
 
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_BRIGHTNESS);
-		tmp = DEFAULT_BRIGHTNESS;
-	}
-	p->brightness = tmp;
+	p->brightness = config.brightness;
 
 	/* Which backlight-off "brightness" */
-	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_OFFBRIGHTNESS);
-		tmp = DEFAULT_OFFBRIGHTNESS;
-	}
-	p->offbrightness = tmp;
+	p->offbrightness = config.offbrightness;
 
 	/* Get speed */
-	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
-	switch (tmp) {
+	switch (config.speed) {
 		case 1200:
 			speed = B1200;
 			break;
@@ -321,30 +294,30 @@ MtxOrb_init (Driver *drvthis, Elektra * elektra)
 		default:
 			speed = B19200;
 			report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600 or 19200; using default %d",
-					drvthis->name, tmp);
+					drvthis->name, config.speed);
 	}
 
 	/* Get display type */
-	strncpy(buf, drvthis->config_get_string(drvthis->name, "Type", 0, DEFAULT_TYPE), sizeof(buf));
-	buf[sizeof(buf)-1] = '\0';
-	if (strncasecmp(buf, "lcd", 3) == 0) {
+	switch (config.type)
+	{
+	case ELEKTRA_ENUM_MTXORB_TYPE_LCD:
 		p->MtxOrb_type = MTXORB_LCD;
-	} else if (strncasecmp(buf, "lkd", 3) == 0) {
+		break;
+	case ELEKTRA_ENUM_MTXORB_TYPE_LKD:
 		p->MtxOrb_type = MTXORB_LKD;
-	} else if (strncasecmp(buf, "vfd", 3) == 0) {
+		break;
+	case ELEKTRA_ENUM_MTXORB_TYPE_VFD:
 		p->MtxOrb_type = MTXORB_VFD;
-	} else if (strncasecmp(buf, "vkd", 3) == 0) {
+		break;
+	case ELEKTRA_ENUM_MTXORB_TYPE_VKD:
 		p->MtxOrb_type = MTXORB_VKD;
-	} else {
-		report(RPT_ERR, "%s: unknown display Type %s; must be one of lcd, lkd, vfd, or vkd",
-				drvthis->name, buf);
-		return -1;
+		break;
 	}
 
 	/* Get keypad settings */
 
 	/* keypad test mode? */
-	if (drvthis->config_get_bool(drvthis->name, "keypad_test_mode", 0, 0)) {
+	if (config.keypadTestMode) {
 		fprintf(stdout, "MtxOrb: Entering keypad test mode...\n");
 		p->keypad_test_mode = 1;
 		stay_in_foreground = 1;
@@ -362,36 +335,65 @@ MtxOrb_init (Driver *drvthis, Elektra * elektra)
 		p->keys = 0;
 
 		/* read the keymap */
-		for (i = 0; i < MAX_KEY_MAP; i++) {
-			const char *s;
+		if(strlen(config.keymapA) > 0) {
+			p->keymap[0] = strdup(config.keymapA);
+			p->keys++;
+			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'A' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapA);
+		} else {
+			p->keymap[0] = NULL;
+		}
 
-			/* First fill with NULL; */
-			p->keymap[i] = NULL;
+		if(strlen(config.keymapB) > 0) {
+			p->keymap[1] = strdup(config.keymapB);
+			p->keys++;
+			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'B' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapB);
+		} else {
+			p->keymap[1] = NULL;
+		}
 
-			/* Read config value */
-			sprintf(buf, "KeyMap_%c", i+'A');
-			s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
+		if(strlen(config.keymapC) > 0) {
+			p->keymap[2] = strdup(config.keymapC);
+			p->keys++;
+			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'C' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapC);
+		} else {
+			p->keymap[2] = NULL;
+		}
 
-			/* Was a key specified in the config file ? */
-			if (s != NULL) {
-				p->keys++;
-				p->keymap[i] = strdup(s);
-				report(RPT_INFO, "%s: Key '%c' mapped to \"%s\"",
-					drvthis->name, i+'A', s );
-			}
+		if(strlen(config.keymapD) > 0) {
+			p->keymap[3] = strdup(config.keymapD);
+			p->keys++;
+			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'D' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapD);
+		} else {
+			p->keymap[4] = NULL;
+		}
+
+		if(strlen(config.keymapE) > 0) {
+			p->keymap[4] = strdup(config.keymapE);
+			p->keys++;
+			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'E' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapE);
+		} else {
+			p->keymap[4] = NULL;
+		}
+
+		if(strlen(config.keymapF) > 0) {
+			p->keymap[5] = strdup(config.keymapF);
+			p->keys++;
+			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'F' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapF);
+		} else {
+			p->keymap[5] = NULL;
 		}
 	}
-	/* End of config file parsing */
+	/* End of config processing */
 
 	/* Set up io port correctly, and open it... */
-	p->fd = open(device, O_RDWR | O_NOCTTY);
+	p->fd = open(config.device, O_RDWR | O_NOCTTY);
 	if (p->fd == -1) {
-		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
+		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, config.device, strerror(errno));
 		if (errno == EACCES)
-			report(RPT_ERR, "%s: %s device could not be opened...", drvthis->name, device);
+			report(RPT_ERR, "%s: %s device could not be opened...", drvthis->name, config.device);
   		return -1;
 	}
-	report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
+	report(RPT_INFO, "%s: opened display on %s", drvthis->name, config.device);
 
 	tcgetattr(p->fd, &portset);
 

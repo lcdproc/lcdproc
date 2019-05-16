@@ -67,6 +67,8 @@
 /* for the icon definitions & the big numbers */
 #include "adv_bignum.h"
 
+#include "../elektragen.h"
+
 #define ValidX(x) if ((x) > p->width) { (x) = p->width; } else (x) = (x) < 1 ? 1 : (x);
 #define ValidY(y) if ((y) > p->height) { (y) = p->height; } else (y) = (y) < 1 ? 1 : (y);
 
@@ -83,7 +85,7 @@ typedef struct CwLnx_private_data {
 	int keypad_test_mode;
 	char *KeyMap[MaxKeyMap];
 
-	int model;
+	CwLnxModel model;
 
 	/* dimensions */
 	int width, height;
@@ -440,9 +442,7 @@ static void CwLnx_reboot(int fd)
 MODULE_EXPORT int
 CwLnx_init(Driver *drvthis, Elektra * elektra)
 {
-    char device[200] = DEFAULT_DEVICE;
     int speed = DEFAULT_SPEED;
-    char size[200] = DEFAULT_SIZE;
     int default_speed = DEFAULT_SPEED;
     char *default_size = DEFAULT_SIZE;
 
@@ -473,51 +473,48 @@ CwLnx_init(Driver *drvthis, Elektra * elektra)
     p->saved_brightness = -1;
     p->brightness = DEFAULT_BRIGHTNESS;
 
-    debug(RPT_INFO, "%s: init(%p)", drvthis->name, drvthis);
+    debug(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": init(%p)", drvthis->name, drvthis->index, drvthis);
 
-    /* Read config file */
+    /* Read config */
+
+	CwLnxDriverConfig config;
+	elektraGet2V(elektra, &config, ELEKTRA_TAG_CWLNX, drvthis->index);
 
     /* Which model is it (1602, 12232 or 12832)? */
-    tmp = drvthis->config_get_int(drvthis->name, "Model", 0, 12232);
-    debug(RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, tmp);
-    if ((tmp != 1602) && (tmp != 12232) && (tmp != 12832)) {
-	tmp = 12232;
-	report(RPT_WARNING, "%s: Model must be 12232, 12832 or 1602; using default %d",
-		drvthis->name, tmp);
-    }
-    p->model = tmp;
+    p->model = config.model;
 
     /* Which size & cell dimensions */
-    if (p->model == 1602) {
-	default_size = DEFAULT_SIZE_1602;
-	default_speed = DEFAULT_SPEED_1602;
-	p->cellwidth = DEFAULT_CELL_WIDTH_1602;
-	p->cellheight = DEFAULT_CELL_HEIGHT_1602;
-    } else if (p->model == 12232) {
-	default_size = DEFAULT_SIZE_12232;
-	default_speed = DEFAULT_SPEED_12232;
-	p->cellwidth = DEFAULT_CELL_WIDTH_12232;
-	p->cellheight = DEFAULT_CELL_HEIGHT_12232;
-    } else if (p->model == 12832) {
-	default_size = DEFAULT_SIZE_12832;
-	default_speed = DEFAULT_SPEED_12832;
-	p->cellwidth = DEFAULT_CELL_WIDTH_12832;
-	p->cellheight = DEFAULT_CELL_HEIGHT_12832;
-    }
+	switch (p->model)
+	{
+	case CW_LNX_MODEL_1602:
+			default_size = DEFAULT_SIZE_1602;
+			default_speed = DEFAULT_SPEED_1602;
+			p->cellwidth = DEFAULT_CELL_WIDTH_1602;
+			p->cellheight = DEFAULT_CELL_HEIGHT_1602;
+		break;
+	case CW_LNX_MODEL_12232:
+			default_size = DEFAULT_SIZE_12232;
+			default_speed = DEFAULT_SPEED_12232;
+			p->cellwidth = DEFAULT_CELL_WIDTH_12232;
+			p->cellheight = DEFAULT_CELL_HEIGHT_12232;
+		break;
+	case CW_LNX_MODEL_12832:
+			default_size = DEFAULT_SIZE_12832;
+			default_speed = DEFAULT_SPEED_12832;
+			p->cellwidth = DEFAULT_CELL_WIDTH_12832;
+			p->cellheight = DEFAULT_CELL_HEIGHT_12832;
+		break;
+	}
 
     /* Which device should be used */
-    strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
-    device[sizeof(device) - 1] = '\0';
-    report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
+	report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
     /* Which size */
-    strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, default_size), sizeof(size));
-    size[sizeof(size) - 1] = '\0';
-    if ((sscanf(size, "%dx%d", &w, &h) != 2)
+    if ((sscanf(config.size, "%dx%d", &w, &h) != 2)
 	|| (w <= 0) || (w > LCD_MAX_WIDTH)
 	|| (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 	report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-			drvthis->name, size, default_size);
+			drvthis->name, config.size, default_size);
 	sscanf(default_size, "%dx%d", &w, &h);
     }
     p->width = w;
@@ -526,9 +523,7 @@ CwLnx_init(Driver *drvthis, Elektra * elektra)
     /* Contrast of the LCD can be changed by adjusting the trimpot R7  */
 
     /* Which speed */
-    tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, default_speed);
-
-    switch (tmp) {
+    switch (config.speed) {
 	case 9600:
 	    speed = B9600;
 	    break;
@@ -542,46 +537,41 @@ CwLnx_init(Driver *drvthis, Elektra * elektra)
     }
 
     /* do we have a keypad? */
-    if (drvthis->config_get_bool(drvthis->name , "Keypad", 0, 0)) {
-	report(RPT_INFO, "%s: Config tells us we have a keypad", drvthis->name);
-	p->have_keypad = 1;
+    if (config.keypad) {
+		report(RPT_INFO, "%s: Config tells us we have a keypad", drvthis->name);
+		p->have_keypad = 1;
     }
 
     /* keypad test mode? */
-    if (drvthis->config_get_bool(drvthis->name , "keypad_test_mode", 0, 0)) {
-	report(RPT_INFO, "%s: Config tells us to test the keypad mapping", drvthis->name);
-	p->keypad_test_mode = 1;
-	stay_in_foreground = 1;
+    if (config.keypadTestMode) {
+		report(RPT_INFO, "%s: Config tells us to test the keypad mapping", drvthis->name);
+		p->keypad_test_mode = 1;
+		stay_in_foreground = 1;
     }
 
     /* read the keypad mapping only if we have a keypad. */
     if (p->have_keypad) {
-	int x;
+		/* Read keymap */
+		p->KeyMap[0] = strdup(config.keymapA);
+		report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'A' to \"%s\"", drvthis->name, drvthis->index, config.keymapA);
 
-	/* Read keymap */
-	for (x = 0; x < MaxKeyMap; x++) {
-	    char buf[40];
+		p->KeyMap[1] = strdup(config.keymapB);
+		report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'B' to \"%s\"", drvthis->name, drvthis->index, config.keymapB);
 
-	    /* First fill with default value */
+		p->KeyMap[2] = strdup(config.keymapC);
+		report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'C' to \"%s\"", drvthis->name, drvthis->index, config.keymapC);
 
-	    p->KeyMap[x] = defaultKeyMap[x];
-/* The line above make a warning... the code is comming from hd44780.c */
+		p->KeyMap[3] = strdup(config.keymapD);
+		report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'D' to \"%s\"", drvthis->name, drvthis->index, config.keymapD);
 
-/* printf("%s-%s\n", defaultKeyMap[x], p->KeyMap[x]);     */
+		p->KeyMap[4] = strdup(config.keymapE);
+		report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'E' to \"%s\"", drvthis->name, drvthis->index, config.keymapE);
 
-	    /* Read config value */
-	    sprintf(buf, "KeyMap_%c", x+'A');
-	    s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
-
-	    /* Was a key specified in the config file ? */
-	    if (s != NULL) {
-		p->KeyMap[x] = strdup(s);
-		report(RPT_INFO, "%s: Key '%c' to \"%s\"", drvthis->name, x+'A', s);
-	    }
-	}
+		p->KeyMap[5] = strdup(config.keymapF);
+		report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'F' to \"%s\"", drvthis->name, drvthis->index, config.keymapF);
     }
 
-    /* End of config file parsing */
+    /* End of config processing */
 
     /* Allocate framebuffer memory */
     p->framebuf = (unsigned char *) malloc(p->width * p->height);
@@ -601,13 +591,13 @@ CwLnx_init(Driver *drvthis, Elektra * elektra)
 
 
     /* Set up io port correctly, and open it... */
-    debug(RPT_DEBUG, "%s: Opening device: %s", drvthis->name, device);
-    p->fd = open(device, O_RDWR | O_NOCTTY | O_NDELAY);
+    debug(RPT_DEBUG, "%s: Opening device: %s", drvthis->name, config.device);
+    p->fd = open(config.device, O_RDWR | O_NOCTTY | O_NDELAY);
     if (p->fd == -1) {
-	report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, device, strerror(errno));
+	report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, config.device, strerror(errno));
 	return -1;
     }
-    report(RPT_INFO, "%s: opened display on %s", drvthis->name, device);
+    report(RPT_INFO, "%s: opened display on %s", drvthis->name, config.device);
 
     /*
        Since we don't know what speed the display is using when

@@ -33,6 +33,7 @@
 #include "text.h"
 #include "shared/report.h"
 
+#include "../elektragen.h"
 
 /** private data for the \c text driver */
 typedef struct text_private_data {
@@ -59,7 +60,6 @@ MODULE_EXPORT int
 text_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
-	char buf[256];
 
 	/* Allocate and store private data */
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
@@ -70,6 +70,9 @@ text_init (Driver *drvthis, Elektra * elektra)
 
 	/* initialize private data */
 
+	TextDriverConfig config;
+	elektraGet2V(elektra, &config, ELEKTRA_TAG_TEXT, drvthis->index);
+
 	// Set display sizes
 	if ((drvthis->request_display_width() > 0)
 	    && (drvthis->request_display_height() > 0)) {
@@ -79,13 +82,11 @@ text_init (Driver *drvthis, Elektra * elektra)
 	}
 	else {
 		/* Use our own size from config file */
-		strncpy(buf, drvthis->config_get_string(drvthis->name, "Size", 0, TEXTDRV_DEFAULT_SIZE), sizeof(buf));
-		buf[sizeof(buf)-1] = '\0';
-		if ((sscanf(buf , "%dx%d", &p->width, &p->height) != 2)
+		if ((sscanf(config.size , "%dx%d", &p->width, &p->height) != 2)
 		    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
 		    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
 			report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-					drvthis->name, buf, TEXTDRV_DEFAULT_SIZE);
+					drvthis->name, config.size, TEXTDRV_DEFAULT_SIZE);
 			sscanf(TEXTDRV_DEFAULT_SIZE, "%dx%d", &p->width, &p->height);
 		}
 	}

@@ -23,7 +23,7 @@ MODULE_EXPORT void curses_backlight (Driver *drvthis, int on);
 MODULE_EXPORT const char *curses_get_key (Driver *drvthis);
 MODULE_EXPORT const char *curses_get_info(Driver *drvthis);
 
-/* Default settings for config file parsing */
+/* Default settings for config */
 #define CONF_DEF_FOREGR		"blue"
 #define CONF_DEF_BACKGR		"cyan"
 #define CONF_DEF_BACKLIGHT	"red"

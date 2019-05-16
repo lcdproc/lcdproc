@@ -41,7 +41,6 @@
 typedef struct pyramid_private_data {
     /* device io */
     int FD;
-    char device[255];
     fd_set rdfs;
     struct timeval timeout;
 

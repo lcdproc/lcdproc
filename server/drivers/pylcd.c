@@ -58,6 +58,8 @@
 #include "shared/report.h"
 #include "adv_bignum.h"
 
+#include "../elektragen.h"
+
 #define True 1
 #define False 0
 
@@ -320,22 +322,23 @@ pyramid_init(Driver *drvthis, Elektra * elektra)
     p->timeout.tv_usec = MICROTIMEOUT;
 
     /*
-     * read config file, fill configuration dependent elements of private
+     * read config, fill configuration dependent elements of private
      * data
      */
 
+	PyramidDriverConfig config;
+	elektraGet2V(elektra, &config, ELEKTRA_TAG_PYRAMID, drvthis->index);
+
     /* Which serial device should be used? */
-    strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(p->device));
-    p->device[sizeof(p->device) - 1] = '\0';
-    report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+	report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
     /* Initialize connection to the LCD  */
 
     /* open and initialize serial device */
-    p->FD = open(p->device, O_RDWR);
+    p->FD = open(config.device, O_RDWR);
 
     if (p->FD == -1) {
-	report(RPT_ERR, "%s: open(%s) failed: %s", drvthis->name, p->device, strerror(errno));
+	report(RPT_ERR, "%s: open(%s) failed: %s", drvthis->name, config.device, strerror(errno));
 	return -1;
     }
 

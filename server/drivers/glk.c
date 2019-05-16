@@ -42,6 +42,8 @@
 #include "shared/report.h"
 #include "adv_bignum.h"
 
+#include "../elektragen.h"
+
 #define GLK_DEFAULT_DEVICE	"/dev/lcd"
 #define GLK_DEFAULT_SPEED	19200
 #define GLK_DEFAULT_CONTRAST	500
@@ -51,7 +53,6 @@
 
 /** private data for the \c glk driver */
 typedef struct glk_private_data {
-  char device[256];
   GLKDisplay *fd;
   speed_t speed;
 
@@ -115,16 +116,15 @@ glk_init(Driver *drvthis, Elektra * elektra)
   p->contrast = GLK_DEFAULT_CONTRAST;
   p->clearcount = 0;
 
-  /* Read config file */
+  /* Read config */
+  GlkDriverConfig config;
+  elektraGet2V(elektra, &config, ELEKTRA_TAG_GLK, drvthis->index);
 
   /* What device should be used */
-  strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0,
-					     GLK_DEFAULT_DEVICE), sizeof(p->device));
-  p->device[sizeof(p->device)-1] = '\0';
-  report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+  report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
   /* What speed to use */
-  p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 19200);
+  p->speed = config.speed;
 
   if (p->speed == 9600)       p->speed = B9600;
   else if (p->speed == 19200) p->speed = B19200;
@@ -138,19 +138,14 @@ glk_init(Driver *drvthis, Elektra * elektra)
   }
 
   /* Which contrast */
-  p->contrast = drvthis->config_get_int(drvthis->name, "Contrast" , 0 , GLK_DEFAULT_CONTRAST);
-  if ((p->contrast < 0) || (p->contrast > 1000)) {
-    report(RPT_WARNING, "%s: Contrast must be between 0 and 1000. Using default %d",
-		    drvthis->name, GLK_DEFAULT_CONTRAST);
-    p->contrast = GLK_DEFAULT_CONTRAST;
-  }
+  p->contrast = config.contrast;
 
-  /* End of config file parsing */
+  /* End of config processing */
 
   /* open device */
-  p->fd = glkopen(p->device, p->speed);
+  p->fd = glkopen(config.device, p->speed);
   if (p->fd == NULL) {
-    report(RPT_ERR, "%s: unable to open device %s", drvthis->name, p->device);
+    report(RPT_ERR, "%s: unable to open device %s", drvthis->name, config.device);
     return -1;
   }
 

@@ -37,6 +37,8 @@
 #include "shared/report.h"
 #include "lcd_lib.h"
 
+#include "../elektragen.h"
+
 #define NUM_CCs 8 /* number of characters */
 
 #define BAYRAD_DEFAULT_DEVICE	"/dev/lcd"
@@ -44,7 +46,6 @@
 
 /** private data for the \c bayrad driver */
 typedef struct bayrad_private_data {
-  char device[256];
   int speed;
   int fd;
   int width;
@@ -93,31 +94,21 @@ bayrad_init(Driver *drvthis, Elektra * elektra)
   p->ccmode = standard;
 
 
-  /* Read config file */
+  /* Read config */
+
+  BayradDriverConfig config;
+  elektraGet2V (elektra, &config, ELEKTRA_TAG_BAYRAD, drvthis->index);
 
   /* What device should be used */
-  strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0,
-						   BAYRAD_DEFAULT_DEVICE), sizeof(p->device));
-  p->device[sizeof(p->device)-1] = '\0';
-  report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+  report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
   /* What speed to use */
-  p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, 9600);
-
-  if (p->speed == 1200)       p->speed = B1200;
-  else if (p->speed == 2400)  p->speed = B2400;
-  else if (p->speed == 9600)  p->speed = B9600;
-  else if (p->speed == 19200) p->speed = B19200;
-  else {
-    report(RPT_WARNING, "%s: illegal Speed %d; must be one of 1200, 2400, 9600 or 19200; using default %d",
-		    drvthis->name, p->speed, 9600);
-    p->speed = B9600;
-  }
+  p->speed = config.speed;
 
   // Set up io port correctly, and open it...
-  p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
+  p->fd = open(config.device, O_RDWR | O_NOCTTY | O_NDELAY);
   if (p->fd == -1) {
-    report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, p->device, strerror(errno));
+    report(RPT_ERR, "%s#"ELEKTRA_LONG_LONG_F": open(%s) failed (%s)", drvthis->name, drvthis->index, config.device, strerror(errno));
     return -1;
   }
 

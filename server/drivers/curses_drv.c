@@ -176,12 +176,12 @@ curses_init (Driver *drvthis, Elektra * elektra)
 	p->cellheight = LCD_DEFAULT_CELLHEIGHT;
 	p->drawBorder = CONF_DEF_DRAWBORDER;
 
-	/* Get settings from config file */
-
-	/* Get color settings */
+	/* Get settings from config */
 
 	CursesDriverConfig config;
 	elektraGet2V(elektra, &config, ELEKTRA_TAG_CURSES, drvthis->index);
+
+	/* Get color settings */
 
 	/* foreground color */
 	fore_color = map_color_to_curses(config.foreground);
