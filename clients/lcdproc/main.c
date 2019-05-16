@@ -258,7 +258,7 @@ main(int argc, const char **argv)
 	set_reporting("lcdproc", report_level, report_dest);
 
 
-	// TODO	/* parse non-option arguments: modes to add/delete */
+	// TODO (elektra):	/* parse non-option arguments: modes to add/delete */
 	/*if (argc > max(optind, 1)) {
 		int i;
 
@@ -334,7 +334,7 @@ main(int argc, const char **argv)
 	return EXIT_SUCCESS;
 }
 
-static void on_fatal_error(ElektraError * error) // TODO: finalize method
+static void on_fatal_error(ElektraError * error) // TODO (elektra): finalize method
 {
 	fprintf(stderr, "ERROR: %s\n", elektraErrorDescription(error));
 	exit(EXIT_FAILURE);

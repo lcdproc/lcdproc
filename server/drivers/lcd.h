@@ -200,14 +200,6 @@ typedef struct lcd_logical_driver {
 	int (*store_private_ptr) (struct lcd_logical_driver * driver, void * private_data);
 	/* Store the driver's private data */
 
-	/* TODO: remove; all unset just here to avoid compile errors */
-	short (*config_get_bool)	(const char *sectionname, const char *keyname, int skip, short default_value);
-	long int (*config_get_int)	(const char *sectionname, const char *keyname, int skip, long int default_value);
-	double (*config_get_float)	(const char *sectionname, const char *keyname, int skip, double default_value);
-	const char *( *config_get_string)(const char *sectionname, const char *keyname, int skip, const char *default_value);
-	int (*config_has_section)	(const char *sectionname);
-	int (*config_has_key)		(const char *sectionname, const char *keyname);
-
 	/* Display properties functions (for drivers that adapt to other loaded drivers) */
 	int (*request_display_width) ();
 	int (*request_display_height) ();

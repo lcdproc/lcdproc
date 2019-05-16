@@ -277,7 +277,7 @@ clear_settings(void)
 	num_drivers = 0;
 }
 
-static void on_fatal_error(ElektraError * error) // TODO: finalize method
+static void on_fatal_error(ElektraError * error) // TODO (elektra): finalize method
 {
 	fprintf(stderr, "ERROR: %s\n", elektraErrorDescription(error));
 	exit(EXIT_FAILURE);
