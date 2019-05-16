@@ -104,23 +104,23 @@ static const char * help_prefix =
 ScreenMode sequence[] =
 {
 	/* flags default ACTIVE will run by default */
-	/* longname    which on  off inv  timer   flags */
-	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen,        ELEKTRA_GET(ELEKTRA_TAG_CPU)       },	// [C]PU
-	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen,      ELEKTRA_GET(ELEKTRA_TAG_IFACE)     }, 	// [I]face
-	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen,        ELEKTRA_GET(ELEKTRA_TAG_MEMORY)    },	// [M]emory
-	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen,      ELEKTRA_GET(ELEKTRA_TAG_LOAD)      },	// [L]oad (load histogram)
-	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen,       ELEKTRA_GET(ELEKTRA_TAG_TIMEDATE)  },	// [T]ime/Date
-	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen,     ELEKTRA_GET(ELEKTRA_TAG_ABOUT)     },	// [A]bout (credits)
-	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen,    ELEKTRA_GET(ELEKTRA_TAG_SMPCPU)    },	// CPU_SM[P]
-	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen,      ELEKTRA_GET(ELEKTRA_TAG_OLDTIME)   },	// [O]ld Timescreen
-	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen,  ELEKTRA_GET(ELEKTRA_TAG_BIGCLOCK)  },	// big cloc[K]
-	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen,     ELEKTRA_GET(ELEKTRA_TAG_UPTIME)    },	// Old [U]ptime Screen
-	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen,    ELEKTRA_GET(ELEKTRA_TAG_BATTERY)   },	// [B]attery Status
-	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen,  ELEKTRA_GET(ELEKTRA_TAG_CPUGRAPH)  },	// CPU histogram [G]raph
-	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen,    ELEKTRA_GET(ELEKTRA_TAG_PROCSIZE)  },	// [S]ize of biggest processes
-	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen,       ELEKTRA_GET(ELEKTRA_TAG_DISK)      },	// [D]isk stats
-	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen, ELEKTRA_GET(ELEKTRA_TAG_MINICLOCK) },	// Mi[n]i clock
-	{  NULL, 0, 0, 0, 0, 0, 0, NULL},			  	// No more..  all done.
+	/* screen                   longname    which    on   off inv  timer   flags  func               base_conf*/
+	{ LCDPROC_SCREEN_CPU,        "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen,        ELEKTRA_GET(ELEKTRA_TAG_CPU)       },	// [C]PU
+	{ LCDPROC_SCREEN_IFACE,      "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen,      ELEKTRA_GET(ELEKTRA_TAG_IFACE)     }, 	// [I]face
+	{ LCDPROC_SCREEN_MEMORY,     "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen,        ELEKTRA_GET(ELEKTRA_TAG_MEMORY)    },	// [M]emory
+	{ LCDPROC_SCREEN_LOAD,       "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen,      ELEKTRA_GET(ELEKTRA_TAG_LOAD)      },	// [L]oad (load histogram)
+	{ LCDPROC_SCREEN_TIME_DATE,  "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen,       ELEKTRA_GET(ELEKTRA_TAG_TIMEDATE)  },	// [T]ime/Date
+	{ LCDPROC_SCREEN_ABOUT,      "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen,     ELEKTRA_GET(ELEKTRA_TAG_ABOUT)     },	// [A]bout (credits)
+	{ LCDPROC_SCREEN_SMP_CPU,    "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen,    ELEKTRA_GET(ELEKTRA_TAG_SMPCPU)    },	// CPU_SM[P]
+	{ LCDPROC_SCREEN_OLD_TIME,   "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen,      ELEKTRA_GET(ELEKTRA_TAG_OLDTIME)   },	// [O]ld Timescreen
+	{ LCDPROC_SCREEN_BIG_CLOCK,  "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen,  ELEKTRA_GET(ELEKTRA_TAG_BIGCLOCK)  },	// big cloc[K]
+	{ LCDPROC_SCREEN_UPTIME,     "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen,     ELEKTRA_GET(ELEKTRA_TAG_UPTIME)    },	// Old [U]ptime Screen
+	{ LCDPROC_SCREEN_BATTERY,    "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen,    ELEKTRA_GET(ELEKTRA_TAG_BATTERY)   },	// [B]attery Status
+	{ LCDPROC_SCREEN_CPU_GRAPH,  "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen,  ELEKTRA_GET(ELEKTRA_TAG_CPUGRAPH)  },	// CPU histogram [G]raph
+	{ LCDPROC_SCREEN_PROC_SIZE,  "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen,    ELEKTRA_GET(ELEKTRA_TAG_PROCSIZE)  },	// [S]ize of biggest processes
+	{ LCDPROC_SCREEN_DISK,       "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen,       ELEKTRA_GET(ELEKTRA_TAG_DISK)      },	// [D]isk stats
+	{ LCDPROC_SCREEN_MINI_CLOCK, "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen, ELEKTRA_GET(ELEKTRA_TAG_MINICLOCK) },	// Mi[n]i clock
+	{ 0, NULL, 0, 0, 0, 0, 0, 0, NULL},			  	// No more..  all done.
 };
 
 
@@ -178,14 +178,12 @@ bool check_protocol_version(int major, int minor)
 
 /** Enables or disables (and deletes) a screen */
 static int
-set_mode(int shortname, char *longname, int state)
+set_mode(LcdprocScreen screen, int state)
 {
 	int k;
 
 	for (k = 0; sequence[k].which != 0; k++) {
-		if (((sequence[k].longname != NULL) &&
-		     (0 == strcasecmp(longname, sequence[k].longname))) ||
-		    (toupper(shortname) == sequence[k].which)) {
+		if (sequence[k].screen == screen) {
 			if (!state) {
 				/*
 				 * clean both the active and initialized bits
@@ -197,8 +195,9 @@ set_mode(int shortname, char *longname, int state)
 					sock_printf(sock, "screen_del %c\n", sequence[k].which);
 				}
 			}
-			else
+			else {
 				sequence[k].flags |= ACTIVE;
+			}
 			return 1;	/* found */
 		}
 	}
@@ -256,32 +255,6 @@ main(int argc, const char **argv)
 
 	/* Set reporting settings */
 	set_reporting("lcdproc", report_level, report_dest);
-
-
-	// TODO (elektra):	/* parse non-option arguments: modes to add/delete */
-	/*if (argc > max(optind, 1)) {
-		int i;
-
-		/ *
-		 * if no config file was read, ignore hard coded default
-		 * modes
-		 * /
-		if (cfgresult == 0)
-			clear_modes();
-
-		/ * turn additional options on or off (using ! as prefix) * /
-		for (i = max(optind, 1); i < argc; i++) {
-			int state = (*argv[i] == '!') ? 0 : 1;
-			const char *name = (state) ? argv[i] : argv[i] + 1;
-			int shortname = (strlen(name) == 1) ? name[0] : '\0';
-			int found = set_mode(shortname, name, state);
-
-			if (!found) {
-				fprintf(stderr, "Invalid Screen: %s\n", name);
-				return (EXIT_FAILURE);
-			}
-		}
-	}*/
 
 	/* Connect to the server... */
 	sock = sock_connect(server, port);
@@ -382,17 +355,29 @@ process_config()
 	 * defaults
 	 */
 	for (int k = 0; sequence[k].which != 0; k++) {
-		if (sequence[k].longname != NULL) {
-			ScreenBaseConfig base_config;
-			sequence[k].get_base_config(elektra, &base_config);
+		ScreenBaseConfig base_config;
+		sequence[k].get_base_config(elektra, &base_config);
 
-			sequence[k].on_time = base_config.on_time;
-			sequence[k].off_time = base_config.off_time;
-			sequence[k].show_invisible = base_config.show_invisible;
-			if (base_config.active)
-				sequence[k].flags |= ACTIVE;
-			else
-				sequence[k].flags &= (~ACTIVE);
+		sequence[k].on_time = base_config.on_time;
+		sequence[k].off_time = base_config.off_time;
+		sequence[k].show_invisible = base_config.show_invisible;
+		if (base_config.active)
+			sequence[k].flags |= ACTIVE;
+		else
+			sequence[k].flags &= (~ACTIVE);
+	}
+
+	/* read enabled screens, if defined */
+	kdb_long_long_t screen_count = elektraSize(elektra, ELEKTRA_TAG_LCDPROC_SCREENS);
+	if(screen_count > 0)
+	{
+		/* unset defaults */
+		clear_modes();
+
+		for (kdb_long_long_t i = 0; i < screen_count; ++i)
+		{
+			LcdprocScreen screen = elektraGetV(elektra, ELEKTRA_TAG_LCDPROC_SCREENS, i);
+			set_mode(screen, 1);
 		}
 	}
 

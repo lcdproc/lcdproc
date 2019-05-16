@@ -14,7 +14,7 @@
 
 #include "shared/defines.h"
 
-#include <elektra.h>
+#include "elektragen.h"
 #include "screen_config.h"
 
 #ifndef TRUE
@@ -49,6 +49,7 @@ extern int lcd_cellhgt;
 /** Screen data structure */
 typedef struct _screen_mode
 {
+	LcdprocScreen screen; /** < Which screen is it (enum)? */
 	char *longname;		/**< Which screen is it (long name)? */
 	char which;		/**< Which screen is it (short name)? */
 	int on_time;		/**< How often to update while visible? */
