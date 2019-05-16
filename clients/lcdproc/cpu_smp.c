@@ -41,6 +41,7 @@
 #include "machine.h"
 #include "cpu_smp.h"
 
+#include "elektragen.h"
 
 /**
  * CPU screen shows info about percentage of the CPU being used

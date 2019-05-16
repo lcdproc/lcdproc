@@ -36,8 +36,8 @@
 #include "mode.h"
 #include "shared/sockets.h"
 #include "shared/report.h"
-#include "shared/configfile.h"
-#include "getopt.h"		/* This is our local getopt.h! */
+
+#include "elektragen.h"
 
 /* Import screens */
 #include "batt.h"
@@ -105,21 +105,21 @@ ScreenMode sequence[] =
 {
 	/* flags default ACTIVE will run by default */
 	/* longname    which on  off inv  timer   flags */
-	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen,        ELEKTRA_GET(ELEKTRA_TAG_CPU_ACTIVE)       },	// [C]PU
-	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen,      ELEKTRA_GET(ELEKTRA_TAG_IFACE_ACTIVE)     }, 	// [I]face
-	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen,        ELEKTRA_GET(ELEKTRA_TAG_MEMORY_ACTIVE)    },	// [M]emory
-	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen,      ELEKTRA_GET(ELEKTRA_TAG_LOAD_ACTIVE)      },	// [L]oad (load histogram)
-	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen,       ELEKTRA_GET(ELEKTRA_TAG_TIMEDATE_ACTIVE)  },	// [T]ime/Date
-	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen,     ELEKTRA_GET(ELEKTRA_TAG_ABOUT_ACTIVE)     },	// [A]bout (credits)
-	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen,    ELEKTRA_GET(ELEKTRA_TAG_SMPCPU_ACTIVE)    },	// CPU_SM[P]
-	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen,      ELEKTRA_GET(ELEKTRA_TAG_OLDTIME_ACTIVE)   },	// [O]ld Timescreen
-	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen,  ELEKTRA_GET(ELEKTRA_TAG_BIGCLOCK_ACTIVE)  },	// big cloc[K]
-	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen,     ELEKTRA_GET(ELEKTRA_TAG_UPTIME_ACTIVE)    },	// Old [U]ptime Screen
-	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen,    ELEKTRA_GET(ELEKTRA_TAG_BATTERY_ACTIVE)   },	// [B]attery Status
-	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen,  ELEKTRA_GET(ELEKTRA_TAG_CPUGRAPH_ACTIVE)  },	// CPU histogram [G]raph
-	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen,    ELEKTRA_GET(ELEKTRA_TAG_PROCSIZE_ACTIVE)  },	// [S]ize of biggest processes
-	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen,       ELEKTRA_GET(ELEKTRA_TAG_DISK_ACTIVE)      },	// [D]isk stats
-	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen, ELEKTRA_GET(ELEKTRA_TAG_MINICLOCK_ACTIVE) },	// Mi[n]i clock
+	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen,        ELEKTRA_GET(ELEKTRA_TAG_CPU)       },	// [C]PU
+	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen,      ELEKTRA_GET(ELEKTRA_TAG_IFACE)     }, 	// [I]face
+	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen,        ELEKTRA_GET(ELEKTRA_TAG_MEMORY)    },	// [M]emory
+	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen,      ELEKTRA_GET(ELEKTRA_TAG_LOAD)      },	// [L]oad (load histogram)
+	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen,       ELEKTRA_GET(ELEKTRA_TAG_TIMEDATE)  },	// [T]ime/Date
+	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen,     ELEKTRA_GET(ELEKTRA_TAG_ABOUT)     },	// [A]bout (credits)
+	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen,    ELEKTRA_GET(ELEKTRA_TAG_SMPCPU)    },	// CPU_SM[P]
+	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen,      ELEKTRA_GET(ELEKTRA_TAG_OLDTIME)   },	// [O]ld Timescreen
+	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen,  ELEKTRA_GET(ELEKTRA_TAG_BIGCLOCK)  },	// big cloc[K]
+	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen,     ELEKTRA_GET(ELEKTRA_TAG_UPTIME)    },	// Old [U]ptime Screen
+	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen,    ELEKTRA_GET(ELEKTRA_TAG_BATTERY)   },	// [B]attery Status
+	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen,  ELEKTRA_GET(ELEKTRA_TAG_CPUGRAPH)  },	// CPU histogram [G]raph
+	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen,    ELEKTRA_GET(ELEKTRA_TAG_PROCSIZE)  },	// [S]ize of biggest processes
+	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen,       ELEKTRA_GET(ELEKTRA_TAG_DISK)      },	// [D]isk stats
+	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen, ELEKTRA_GET(ELEKTRA_TAG_MINICLOCK) },	// Mi[n]i clock
 	{  NULL, 0, 0, 0, 0, 0, 0, NULL},			  	// No more..  all done.
 };
 
@@ -383,10 +383,13 @@ process_config()
 	 */
 	for (int k = 0; sequence[k].which != 0; k++) {
 		if (sequence[k].longname != NULL) {
-			// TODO: sequence[k].on_time = config_get_int(sequence[k].longname, "OnTime", 0, sequence[k].on_time);
-			// TODO: sequence[k].off_time = config_get_int(sequence[k].longname, "OffTime", 0, sequence[k].off_time);
-			// TODO: sequence[k].show_invisible = config_get_bool(sequence[k].longname, "ShowInvisible", 0, sequence[k].show_invisible);
-			if (sequence[k].is_active(elektra))
+			ScreenBaseConfig base_config;
+			sequence[k].get_base_config(elektra, &base_config);
+
+			sequence[k].on_time = base_config.on_time;
+			sequence[k].off_time = base_config.off_time;
+			sequence[k].show_invisible = base_config.show_invisible;
+			if (base_config.active)
 				sequence[k].flags |= ACTIVE;
 			else
 				sequence[k].flags &= (~ACTIVE);

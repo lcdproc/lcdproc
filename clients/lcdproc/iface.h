@@ -15,6 +15,8 @@
 #ifndef IFACE_H
 #define IFACE_H
 
+#include "elektragen.h"
+
 /** max number of interfaces in multi-interface mode */
 #define MAX_INTERFACES 3
 

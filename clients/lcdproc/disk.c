@@ -30,6 +30,7 @@
 #include "disk.h"
 #include "util.h"
 
+#include "elektragen.h"
 
 /**
  * Gives disk stats.

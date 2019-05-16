@@ -27,6 +27,7 @@
 #include "cpu.h"
 #include "util.h"
 
+#include "elektragen.h"
 
 /**
  * CPU screen shows info about percentage of the CPU being used

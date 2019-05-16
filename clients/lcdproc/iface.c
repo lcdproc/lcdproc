@@ -29,9 +29,10 @@
 #include "util.h"
 #include "iface.h"
 
+#include "elektragen.h"
+
 #define UNSET_INT -1
 #define UNSET_STR "\01"
-
 
 static int iface_count = 0;	/* number of interfaces */
 static IfaceUnit unit = IFACE_UNIT_BYTE; /* default unit label is Bytes */

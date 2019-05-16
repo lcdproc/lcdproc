@@ -45,6 +45,7 @@
 #include "machine.h"
 #include "chrono.h"
 
+#include "elektragen.h"
 
 static char *tickTime(char *time, int heartbeat);
 

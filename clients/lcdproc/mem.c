@@ -28,6 +28,7 @@
 #include "mem.h"
 #include "util.h"
 
+#include "elektragen.h"
 
 /**
  * Mem Screen displays info about memory and swap usage...

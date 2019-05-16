@@ -26,6 +26,7 @@
 #include "machine.h"
 #include "load.h"
 
+#include "elektragen.h"
 
 /**
  * Shows a display very similar to "xload"'s histogram.

@@ -14,12 +14,8 @@
 
 #include "shared/defines.h"
 
-#ifdef DEBUG
-#include "elektragen.h"
-#define DEBUG 1 // FIXME: fix debug stuff
-#else
-#include "elektragen.h"
-#endif
+#include <elektra.h>
+#include "screen_config.h"
 
 #ifndef TRUE
 # define TRUE    1
@@ -61,7 +57,7 @@ typedef struct _screen_mode
 	int timer;		/**< Time since last update */
 	int flags;		/**< See mode flags defines */
 	int (*func)(int,int,int *, Elektra *);	/**< Pointer to init / update function */
-	kdb_boolean_t (*is_active)(Elektra *); /**< Pointer to elektraGet function for active key */
+	ScreenBaseConfig (*get_base_config)(Elektra *, ScreenBaseConfig *); /**< Pointer to elektraGet function for base config */
 } ScreenMode;
 
 /* mode flags */

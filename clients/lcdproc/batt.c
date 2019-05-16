@@ -23,6 +23,8 @@
 #include "batt.h"
 #include "machine.h"
 
+#include "elektragen.h"
+
 /** Map status code > status text */
 typedef struct {
 	int status;
