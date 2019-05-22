@@ -12,7 +12,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <linux/input.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -23,6 +22,10 @@
 #include "shared/report.h"
 #include "shared/LL.h"
 
+#include "../elektragen.h"
+
+#include <linux/input.h>
+
 #define LINUXINPUT_DEFAULT_DEVICE	"/dev/input/event0"
 
 /** describe the button of a keycode */
@@ -30,39 +33,6 @@ struct keycode {
 	unsigned short code;
 	char *button;
 };
-
-/**
- * Parse key definition from config file
- * \param configvalue value part of the config file entry
- * \retval NULL Error.
- * \retval else Pointer to newly allocated struct keycode.
- */
-static struct keycode *
-keycode_create(const char *configvalue)
-{
-	int code;
-	char *button;
-	struct keycode *ret;
-
-	code = atoi(configvalue);
-	if (code < 0 || code > UINT16_MAX)
-		return NULL;
-
-	button = strchr(configvalue,',');
-	if (!button)
-		return NULL;
-	button = strdup(&button[1]);
-	if (!button)
-		return NULL;
-
-	ret = malloc(sizeof(*ret));
-	if (ret) {
-		ret->code = code;
-		ret->button = button;
-	}
-
-	return ret;
-}
 
 /** private data for the linux event device driver */
 typedef struct linuxInput_private_data {
@@ -87,13 +57,8 @@ MODULE_EXPORT char *symbol_prefix = "linuxInput_";
 MODULE_EXPORT int
 linuxInput_init (Driver *drvthis, Elektra * elektra)
 {
-	PrivateData *p;
-	const char *s;
-	struct keycode *key;
-	int i;
-
-        /* Allocate and store private data */
-	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+    /* Allocate and store private data */
+	PrivateData *p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL)
 		return -1;
 	if (drvthis->store_private_ptr(drvthis, p))
@@ -106,26 +71,26 @@ linuxInput_init (Driver *drvthis, Elektra * elektra)
 		return -1;
 	}
 
-	/* Read config file */
+	/* Read config */
+	/* not using struct, since it is inconvenient for keymap */
 
 	/* What device should be used */
-	s = drvthis->config_get_string(drvthis->name, "Device", 0,
-						   LINUXINPUT_DEFAULT_DEVICE);
-	report(RPT_INFO, "%s: using Device %s", drvthis->name, s);
+	const char * device = elektraGetV(elektra, ELEKTRA_TAG_LINUX_INPUT_DEVICE, drvthis->index);
+	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
 
-	if ((p->fd = open(s, O_RDONLY | O_NONBLOCK)) < 0) {
+	if ((p->fd = open(device, O_RDONLY | O_NONBLOCK)) < 0) {
 		report(RPT_ERR, "%s: open(%s) failed (%s)",
-				drvthis->name, s, strerror(errno));
+				drvthis->name, device, strerror(errno));
 		return -1;
 	}
 
-	for (i = 0; (s = drvthis->config_get_string(drvthis->name, "key", i, NULL)) != NULL; i++) {
-		if ((key = keycode_create(s)) == NULL) {
-			report(RPT_ERR, "%s: parsing configvalue '%s' failed",
-					drvthis->name, s);
-			continue;
-		}
+	kdb_long_long_t size = elektraSizeV(elektra, ELEKTRA_TAG_LINUX_INPUT_KEYS, drvthis->index);
+
+	for (kdb_long_long_t i = 0; i < size; ++i) {
+		struct keycode * key = malloc(sizeof(struct keycode));
+		key->code = elektraGetV(elektra, ELEKTRA_TAG_LINUX_INPUT_KEYS_CODE, drvthis->index, i);
+		key->button = strdup(elektraGetV(elektra, ELEKTRA_TAG_LINUX_INPUT_KEYS_BUTTON, drvthis->index, i));
 		LL_AddNode(p->buttonmap, key);
 	}
 

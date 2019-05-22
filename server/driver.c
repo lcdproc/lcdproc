@@ -111,6 +111,12 @@ driver_load(Elektra * elektra, const char * driverpath, kdb_long_long_t index)
 	elektraWriteArrayNumber(&buf[sizeof("server/drivers/") - 1], index);
 
 	const char * filekey = elektraFindReference(elektra, buf);
+
+	if(filekey == NULL) {
+		report(RPT_ERR, "could not resolve reference stored in '%s'", buf);
+		free(buf);
+		return NULL;
+	}
 	free(buf);
 
 	size_t len_filekey = strlen(filekey);
