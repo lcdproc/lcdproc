@@ -113,9 +113,14 @@ int main_menu_sock_send(Menu *menu, int sock)
 
 static int menu_sock_send(Menu *menu, Menu *parent, int sock)
 {
+	char parent_id[ELEKTRA_MAX_ARRAY_SIZE] = ""; // more than big enough
+	if (parent != NULL && parent->id > 0) {
+		snprintf(parent_id, ELEKTRA_MAX_ARRAY_SIZE-1, "%d", parent->id);
+	}
+
 	// create entry for the menu
 	if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" menu \"%s\"\n",
-					parent->id, menu->id, menu->displayname) < 0)
+					parent_id, menu->id, menu->displayname) < 0)
 		return -1;
 
 	return menu_entries_sock_send(menu, sock);
@@ -143,20 +148,25 @@ static int menu_entries_sock_send(Menu *menu, int sock)
 
 static int command_sock_send(Command *command, Menu *parent, int sock)
 {
+	char parent_id[ELEKTRA_MAX_ARRAY_SIZE] = ""; // more than big enough
+	if (parent != NULL && parent->id > 0) {
+		snprintf(parent_id, ELEKTRA_MAX_ARRAY_SIZE-1, "%d", parent->id);
+	}
+
 	if (command->parametersSize == 0)
 	{
 		if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" action \"%s\"\n",
-						parent->id, command->id, command->displayname) < 0)
+						parent_id, command->id, command->displayname) < 0)
 			return -1;
 
 		if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -menu_result quit\n",
-						parent->id, command->id) < 0)
+						parent_id, command->id) < 0)
 			return -1;
 	}
 	else
 	{
 		if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" menu \"%s\"\n",
-						parent->id, command->id, command->displayname) < 0)
+						parent_id, command->id, command->displayname) < 0)
 			return -1;
 
 		kdb_long_t lastId = 0;
@@ -170,7 +180,7 @@ static int command_sock_send(Command *command, Menu *parent, int sock)
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" slider -text \"%s\""
 									  " -value %d -minvalue %d -maxvalue %d"
 									  " -mintext \"%s\" -maxtext \"%s\" -stepsize %d\n",
-								parent->id, param.slider->id, param.slider->displayname,
+								parent_id, param.slider->id, param.slider->displayname,
 								param.slider->value,
 								param.slider->minvalue,
 								param.slider->maxvalue,
@@ -185,7 +195,7 @@ static int command_sock_send(Command *command, Menu *parent, int sock)
 				char *strValue = ELEKTRA_TO_STRING(EnumCheckboxState)(param.checkbox->value);
 				int ret = sock_printf(sock, "menu_add_item \"%s\" \"%d\" checkbox -text \"%s\""
 											" -value %s -allow_gray %s\n",
-									  parent->id, param.checkbox->id, param.checkbox->displayname,
+									  parent_id, param.checkbox->id, param.checkbox->displayname,
 									  strValue, param.checkbox->allowgray ? "true" : "false");
 				if (ret < 0)
 					return -1;
@@ -196,7 +206,7 @@ static int command_sock_send(Command *command, Menu *parent, int sock)
 				lastId = param.numeric->id;
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" numeric -text \"%s\""
 									  " -value %d -minvalue %d -maxvalue %d\n",
-								parent->id, param.numeric->id, param.numeric->displayname,
+								parent_id, param.numeric->id, param.numeric->displayname,
 								param.numeric->value,
 								param.numeric->minvalue,
 								param.numeric->maxvalue) < 0)
@@ -226,7 +236,7 @@ static int command_sock_send(Command *command, Menu *parent, int sock)
 
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" ring -text \"%s\""
 									  " -value %d -strings \"%s\"\n",
-								parent->id, param.ring->id, param.ring->displayname,
+								parent_id, param.ring->id, param.ring->displayname,
 								param.ring->value, strings) < 0)
 					return -1;
 
@@ -238,7 +248,7 @@ static int command_sock_send(Command *command, Menu *parent, int sock)
 									  " -value \"%s\" -minlength %d -maxlength %d"
 									  " -allow_caps false -allow_noncaps false"
 									  " -allow_numbers false -allowed_extra \"%s\"\n",
-								parent->id, param.alpha->id, param.alpha->displayname,
+								parent_id, param.alpha->id, param.alpha->displayname,
 								param.alpha->value,
 								param.alpha->minlength,
 								param.alpha->maxlength,
@@ -249,7 +259,7 @@ static int command_sock_send(Command *command, Menu *parent, int sock)
 				lastId = param.ip->id;
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" ip -text \"%s\""
 									  " -value \"%s\" -v6 %s\n",
-								parent->id, param.ip->id, param.ip->displayname,
+								parent_id, param.ip->id, param.ip->displayname,
 								param.ip->value,
 								param.ip->v6 ? "true" : "false") < 0)
 					return -1;
@@ -258,15 +268,15 @@ static int command_sock_send(Command *command, Menu *parent, int sock)
 		}
 
 		if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -next _quit_\n",
-						parent->id, lastId) < 0)
+						parent_id, lastId) < 0)
 			return -1;
 
 		if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" action \"%s\"\n",
-						parent->id, command->actionId, "Apply!") < 0)
+						parent_id, command->actionId, "Apply!") < 0)
 			return -1;
 
 		if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -menu_result quit\n",
-						parent->id, command->actionId) < 0)
+						parent_id, command->actionId) < 0)
 			return -1;
 	}
 	return 0;
@@ -280,7 +290,7 @@ static void command_dump(Command *command, int level)
 		return;
 	}
 
-	report(RPT_DEBUG, "%*sCommand("ELEKTRA_LONG_F") {\n", level, command->id);
+	report(RPT_DEBUG, "%*sCommand("ELEKTRA_LONG_F") {\n", level, "", command->id);
 	report(RPT_DEBUG, "%*sdisplayname = \"%s\"\n", level + 1, "", command->displayname);
 	report(RPT_DEBUG, "%*sexec = \"%s\"\n", level + 1, "", command->exec);
 	report(RPT_DEBUG, "%*sfeedback = %s\n", level + 1, "", command->feedback ? "true" : "false");

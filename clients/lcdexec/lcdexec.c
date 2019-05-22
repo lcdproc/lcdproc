@@ -459,7 +459,7 @@ static int process_response(char *str)
 				}
 
 				/* Find the entry by id */
-				Command * command;
+				Command * command; // TODO (elektra): last entry of command with args?
 				if (!find_triggered_command(main_menu, atoi(argv[2]), &command)) {
 					report(RPT_WARNING, "Could not find the item id given by the server");
 					free(str2);
