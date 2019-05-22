@@ -44,6 +44,8 @@
 #include "xosdlib_drv.h"
 #include "adv_bignum.h"
 
+#include "../elektragen.h"
+
 
 static char icon_char = '@';
 
@@ -63,15 +65,8 @@ MODULE_EXPORT char *symbol_prefix = "xosdlib_drv_";
 MODULE_EXPORT int
 xosdlib_drv_init (Driver *drvthis, Elektra * elektra)
 {
-	const char *size;
-	const char *offset;
-	int x, y;
-	int tmp;
-
-	PrivateData *p;
-
 	/* Allocate and store private data */
-	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	PrivateData *p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL)
 		return -1;
 	if (drvthis->store_private_ptr(drvthis, p))
@@ -85,74 +80,53 @@ xosdlib_drv_init (Driver *drvthis, Elektra * elektra)
 
 	debug(RPT_DEBUG, "%s(%p)", __FUNCTION__, drvthis);
 
-	/* Read config file */
+	/* Read config */
+	XosdDriverConfig config;
+	elektraGet2V(elektra, &config, ELEKTRA_TAG_XOSD, drvthis->index);
 
 	/* Which size */
-	if (drvthis->config_has_key(drvthis->name, "Size")) {
-		int w;
-		int h;
-
-		size = drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE);
-		debug(RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
-		if ((sscanf(size, "%dx%d", &w, &h) != 2) ||
-		    (w <= 0) || (w > LCD_MAX_WIDTH) ||
-		    (h <= 0) || (h > LCD_MAX_HEIGHT)) {
-			report(RPT_WARNING, "%s: cannot read Size: %s. using default %s",
-					drvthis->name, size, DEFAULT_SIZE);
-			sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
-		}
-		p->width = w;
-		p->height = h;
-	}
-	else {
-		/* Determine the size of the screen */
+	if ((drvthis->request_display_width() > 0)
+	    && (drvthis->request_display_height() > 0)) {
+		/* If this driver is secondary driver, use size from primary driver */
 		p->width = drvthis->request_display_width();
 		p->height = drvthis->request_display_height();
-		if ((p->width <= 0) || (p->width >= LCD_MAX_WIDTH) ||
-		    (p->height <= 0) || (p->height >= LCD_MAX_HEIGHT)) {
-			p->width = LCD_DEFAULT_WIDTH;
-			p->height = LCD_DEFAULT_HEIGHT;
+	}
+	else {
+		/* Use our own size from config file */
+		if ((sscanf(config.size , "%dx%d", &p->width, &p->height) != 2)
+		    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
+		    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
+			report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
+					drvthis->name, config.size, DEFAULT_SIZE);
+			sscanf(DEFAULT_SIZE, "%dx%d", &p->width, &p->height);
 		}
 	}
 	report(RPT_INFO, "%s: using size %dx%d", drvthis->name, p->width, p->height);
 
 	/* Which x/y offsets */
-	offset = drvthis->config_get_string(drvthis->name, "Offset", 0, DEFAULT_OFFSET);
-	debug(RPT_INFO, "%s: Offset (in config) is '%s'", __FUNCTION__, offset);
-	if (sscanf(offset, "%dx%d", &x, &y) != 2) {
+	debug(RPT_INFO, "%s: Offset (in config) is '%s'", __FUNCTION__, config.offset);
+	if (sscanf(config.offset, "%dx%d", &p->xoffs, &p->yoffs) != 2) {
 		report(RPT_WARNING, "%s: cannot read Offset: %s. using default %s",
-				drvthis->name, offset, DEFAULT_OFFSET);
-		sscanf(DEFAULT_OFFSET, "%dx%d", &x, &y);
+				drvthis->name, config.offset, DEFAULT_OFFSET);
+		sscanf(DEFAULT_OFFSET, "%dx%d", &p->xoffs, &p->yoffs);
 	}
-	p->xoffs= x;
-	p->yoffs = y;
-
 	report(RPT_INFO, "%s: using offset %dx%d", drvthis->name, p->xoffs, p->yoffs);
 
 
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_BRIGHTNESS);
-		tmp = DEFAULT_BRIGHTNESS;
-	}
-	p->brightness = tmp;
+	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, config.brightness);
+	p->brightness = config.brightness;
 
 	/* Which backlight-off "brightness" */
-	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_OFFBRIGHTNESS);
-		tmp = DEFAULT_OFFBRIGHTNESS;
-	}
-	p->offbrightness = tmp;
+	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, config.offbrightness);
+	p->offbrightness = config.offbrightness;
+
+	/* Which contrast */
+	debug(RPT_INFO, "%s: Contrast (in config) is '%d'", __FUNCTION__, config.contrast);
+	p->contrast = config.contrast;
 
 	/* which font */
-	strncpy(p->font, drvthis->config_get_string(drvthis->name, "Font",
-						    0, DEFAULT_FONT), sizeof(p->font));
+	strncpy(p->font, config.font, sizeof(p->font));
 	p->font[sizeof(p->font) - 1] = '\0';
 	debug(RPT_INFO, "%s: Font (in config) is '%s'", __FUNCTION__, p->font);
 
