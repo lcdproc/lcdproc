@@ -185,15 +185,15 @@ curses_init (Driver *drvthis, Elektra * elektra)
 
 	/* foreground color */
 	fore_color = map_color_to_curses(config.foreground);
-	debug(RPT_DEBUG, "%s: using foreground color %s", drvthis->name, ELEKTRA_TO_STRING(EnumCursesColor) (config.foreground));
+	debug(RPT_DEBUG, "%s: using foreground color %s", drvthis->name, ELEKTRA_TO_CONST_STRING(EnumCursesColor) (config.foreground));
 
 	/* background color */
 	back_color = map_color_to_curses(config.background);
-	debug(RPT_DEBUG, "%s: using background color %s", drvthis->name, ELEKTRA_TO_STRING(EnumCursesColor) (config.background));
+	debug(RPT_DEBUG, "%s: using background color %s", drvthis->name, ELEKTRA_TO_CONST_STRING(EnumCursesColor) (config.background));
 
 	/* backlight color */
 	backlight_color = map_color_to_curses(config.backlight);
-	debug(RPT_DEBUG, "%s: using backlight color %s", drvthis->name, ELEKTRA_TO_STRING(EnumCursesColor) (config.backlight));
+	debug(RPT_DEBUG, "%s: using backlight color %s", drvthis->name, ELEKTRA_TO_CONST_STRING(EnumCursesColor) (config.backlight));
 
 	/* use ACS characters? */
 	p->useACS = config.useacs;

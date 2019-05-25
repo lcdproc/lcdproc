@@ -192,7 +192,7 @@ static int command_sock_send(Command *command, Menu *parent, int sock)
 			case COMMAND_PARAMETER_TYPE_CHECKBOX:
 			{
 				lastId = param.checkbox->id;
-				char *strValue = ELEKTRA_TO_STRING(EnumCheckboxState)(param.checkbox->value);
+				const char *strValue = ELEKTRA_TO_CONST_STRING(EnumCheckboxState)(param.checkbox->value);
 				int ret = sock_printf(sock, "menu_add_item \"%s\" \"%d\" checkbox -text \"%s\""
 											" -value %s -allow_gray %s\n",
 									  parent_id, param.checkbox->id, param.checkbox->displayname,
@@ -343,7 +343,7 @@ static void command_dump(Command *command, int level)
 			report(RPT_DEBUG, "%*sontext = \"%s\"\n", level + 3, "", parameter.checkbox->ontext);
 			report(RPT_DEBUG, "%*sofftext = \"%s\"\n", level + 3, "", parameter.checkbox->offtext);
 			report(RPT_DEBUG, "%*sgraytext = \"%s\"\n", level + 3, "", parameter.checkbox->graytext);
-			char *strValue = ELEKTRA_TO_STRING(EnumCheckboxState)(parameter.checkbox->value);
+			const char *strValue = ELEKTRA_TO_CONST_STRING(EnumCheckboxState)(parameter.checkbox->value);
 			report(RPT_DEBUG, "%*svalue = %s\n", level + 3, "", strValue);
 			elektraFree(strValue);
 			report(RPT_DEBUG, "%*s}\n", level + 2, "");
