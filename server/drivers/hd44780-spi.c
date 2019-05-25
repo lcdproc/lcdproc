@@ -111,20 +111,15 @@ spi_transfer(PrivateData *p, const unsigned char *outbuf, unsigned char *inbuf, 
  * \retval -1      Error.
  */
 int
-hd_init_spi(Driver *drvthis)
+hd_init_spi(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
 
-	char device[256] = DEFAULT_DEVICE;
-	char backlight_device[256] = "";
-
-	/* READ CONFIG FILE */
+	/* READ CONFIG */
 
 	/* Get and open SPI device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE),
-		sizeof(device));
-	device[sizeof(device) - 1] = '\0';
+	const char * device = strlen(config->device) == 0 ? DEFAULT_DEVICE : config->device;
 	report(RPT_INFO, "HD44780: SPI: Using device '%s'", device);
 
 	p->fd = open(device, O_RDWR);
@@ -136,10 +131,7 @@ hd_init_spi(Driver *drvthis)
 
 	/* Get and open the backlight device */
 	p->backlight_bit = -1;
-	strncpy(backlight_device,
-		drvthis->config_get_string(drvthis->name, "BacklightDevice", 0, ""),
-		sizeof(backlight_device));
-	backlight_device[sizeof(backlight_device) - 1] = '\0';
+	const char * backlight_device = config->spiBacklightDevice;
 
 	if (strlen(backlight_device) > 0) {
 		report(RPT_INFO, "HD44780: SPI: Using backlight_device '%s'", backlight_device);

@@ -157,17 +157,15 @@ void serial_HD44780_close(PrivateData *p);
  * \retval -1      Error.
  */
 int
-hd_init_serial(Driver *drvthis)
+hd_init_serial(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	struct termios portset;
-	char device[256] = DEFAULT_DEVICE;
-	unsigned int conf_bitrate;
 	size_t bitrate;
 	int i;
 
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 
-	/* READ CONFIG FILE */
+	/* READ CONFIG */
 
 	/* Get interface type */
 	p->serial_type = 0;
@@ -195,18 +193,19 @@ hd_init_serial(Driver *drvthis)
 	}
 
 	/* Get bitrate */
-	conf_bitrate = drvthis->config_get_int(drvthis->name, "Speed", 0, SERIAL_IF.default_bitrate);
-	if (conf_bitrate == 0)
-		conf_bitrate = SERIAL_IF.default_bitrate;
-	if (convert_bitrate(conf_bitrate, &bitrate)) {
+	kdb_unsigned_long_t speed = config->speed;
+	if (speed == 0) {
+		speed = SERIAL_IF.default_bitrate;
+	}
+
+	if (convert_bitrate(speed, &bitrate)) {
 		report(RPT_ERR, "HD44780: serial: invalid configured bitrate speed");
 		return -1;
 	}
-	report(RPT_INFO,"HD44780: serial: using speed: %d", conf_bitrate);
+	report(RPT_INFO,"HD44780: serial: using speed: %d", speed);
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "device", 0, DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device)-1] = '\0';
+	const char * device = strlen(config->device) == 0 ? DEFAULT_DEVICE : config->device;
 	report(RPT_INFO,"HD44780: serial: using device: %s", device);
 
 	/* Set up io port correctly, and open it... */

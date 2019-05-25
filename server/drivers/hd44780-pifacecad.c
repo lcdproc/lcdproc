@@ -205,17 +205,15 @@ write_and_pulse(PrivateData *p, unsigned char data)
  * \retval -1      Error.
  */
 int
-hd_init_pifacecad(Driver *drvthis)
+hd_init_pifacecad(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
-	char device[256] = DEFAULT_DEVICE;
 	p->backlight_bit = BL;		/* Backlight on during init */
 
-	/* READ CONFIG FILE */
+	/* READ CONFIG */
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device) - 1] = '\0';
+	const char * device = strlen(config->device) == 0 ? DEFAULT_DEVICE : config->device;
 	report(RPT_INFO, "HD44780: PiFaceCAD: Using device '%s'", device);
 
 	/* Open the SPI device */

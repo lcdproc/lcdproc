@@ -2,6 +2,7 @@
 #define HD_USBTINY_H
 
 #include "lcd.h"		/* for Driver */
+#include "../elektragen.h"
 
 /* vendor and product id */
 #define USBTINY_VENDORID	0x03EB
@@ -13,6 +14,6 @@
 
 
 /* initialise this particular driver */
-int hd_init_usbtiny(Driver *drvthis);
+int hd_init_usbtiny(Driver *drvthis, const Hd44780DriverConfig * config);
 
 #endif

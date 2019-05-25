@@ -69,6 +69,8 @@
 # include "config.h"
 #endif
 
+#include "../elektragen.h"
+
 #include "lcd.h"
 #include "lcd_lib.h"
 #include "hd44780.h"
@@ -87,13 +89,13 @@ static char *defaultKeyMapMatrix[KEYPAD_MAXY][KEYPAD_MAXX] = {
 		{ "4", "5", "6", "B", "F" },
 		{ "7", "8", "9", "C", "G" },
 		{ "*", "0", "#", "D", "H" },
-		{ NULL, NULL, NULL, NULL, NULL },
-		{ NULL, NULL, NULL, NULL, NULL },
-		{ NULL, NULL, NULL, NULL, NULL },
-		{ NULL, NULL, NULL, NULL, NULL },
-		{ NULL, NULL, NULL, NULL, NULL },
-		{ NULL, NULL, NULL, NULL, NULL },
-		{ NULL, NULL, NULL, NULL, NULL }};
+		{ "",   "",  "",  "",  "" },
+		{ "",   "",  "",  "",  "" },
+		{ "",   "",  "",  "",  "" },
+		{ "",   "",  "",  "",  "" },
+		{ "",   "",  "",  "",  "" },
+		{ "",   "",  "",  "",  "" },
+		{ "",   "",  "",  "",  "" }};
 
 
 /* Vars for the server core */
@@ -113,182 +115,152 @@ static int parse_span_list(int *spanListArray[], int *spLsize, int *dispOffsets[
 
 
 static const struct ModelMapping {
-	const char *name;
+	ElektraEnumHd44780Model elektraModel;
 	int model;
 } model_mapping[] = {
-	{ "default",      HD44780_MODEL_DEFAULT },
-	{ "standard",     HD44780_MODEL_DEFAULT },
+	{ ELEKTRA_ENUM_HD44780_MODEL_DEFAULT,      HD44780_MODEL_DEFAULT },
+	{ ELEKTRA_ENUM_HD44780_MODEL_STANDARD,     HD44780_MODEL_DEFAULT },
 
-	{ "extended",     HD44780_MODEL_EXTENDED },
-	{ "ks0073",       HD44780_MODEL_EXTENDED },
-	{ "hd66710",      HD44780_MODEL_EXTENDED },
+	{ ELEKTRA_ENUM_HD44780_MODEL_EXTENDED,     HD44780_MODEL_EXTENDED },
+	{ ELEKTRA_ENUM_HD44780_MODEL_KS0073,       HD44780_MODEL_EXTENDED },
+	{ ELEKTRA_ENUM_HD44780_MODEL_HD66710,      HD44780_MODEL_EXTENDED },
 
-	{ "winstar_oled", HD44780_MODEL_WINSTAR_OLED },
-	{ "weh00xxyya",   HD44780_MODEL_WINSTAR_OLED },
+	{ ELEKTRA_ENUM_HD44780_MODEL_WINSTAR_OLED, HD44780_MODEL_WINSTAR_OLED },
+	{ ELEKTRA_ENUM_HD44780_MODEL_WEH00XXYYA,   HD44780_MODEL_WINSTAR_OLED },
 
-	{ "pt6314_vfd",   HD44780_MODEL_PT6314_VFD },
-
-	{ "",             HD44780_MODEL_DEFAULT }
+	{ ELEKTRA_ENUM_HD44780_MODEL_PT6314_VFD,   HD44780_MODEL_PT6314_VFD }
 };
 
-static int model_by_name( const char *name )
+static int map_model ( ElektraEnumHd44780Model elektraModel )
 {
 	int i;
 
 	for (i=0; i<sizeof(model_mapping)/sizeof(model_mapping[0]); i++) {
-		if (strcasecmp(model_mapping[i].name, name) == 0 )
+		if (model_mapping[i].elektraModel == elektraModel)
 			return model_mapping[i].model;
 	}
 
 	return -1;
 }
 
-static const char *model_name( int type )
+static ElektraEnumHd44780Model reverse_map_model ( int type )
 {
 	int i;
 
 	for (i=0; i<sizeof(model_mapping)/sizeof(model_mapping[0]); i++) {
 		if (model_mapping[i].model == type)
-			return model_mapping[i].name;
+			return model_mapping[i].elektraModel;
 	}
 
-	return "";
+	return -1;
 }
 
 static const struct BacklightValueMapping {
-	const char *name;
+	ElektraEnumHd44780Backlightmode elektraMode;
 	int value;
 } bl_value_mapping[] = {
-	{"none",         BACKLIGHT_NONE },
-	{"external",     BACKLIGHT_EXTERNAL_PIN },
-	{"internal",     BACKLIGHT_INTERNAL     },
-	{"internalCmds", BACKLIGHT_CONFIG_CMDS },
+	{ELEKTRA_ENUM_HD44780_BACKLIGHTMODE_EXTERNAL,     BACKLIGHT_EXTERNAL_PIN },
+	{ELEKTRA_ENUM_HD44780_BACKLIGHTMODE_INTERNAL,     BACKLIGHT_INTERNAL     },
+	{ELEKTRA_ENUM_HD44780_BACKLIGHTMODE_INTERNAL_CMDS, BACKLIGHT_CONFIG_CMDS },
 };
+
+static int map_backlight_mode(ElektraEnumHd44780Backlightmode elektraMode)
+{
+		for (int i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
+			if (elektraMode == bl_value_mapping[i].elektraMode) {
+				return bl_value_mapping[i].value;
+			}
+		}
+
+		return -1;
+}
+
 
 /* Reads from configuration setting for `Backlight` option, which can occur multiple times
  * Returns -1 if configuration value is not valid */
-static int get_config_backlight_type(Driver *drvthis)
+static int get_config_backlight_type(Driver *drvthis, const Hd44780DriverConfig * config, Elektra * elektra)
 {
-	int i, opt_idx;
-	int result = BACKLIGHT_NONE;
-	const char *value;
-	int was_none = 0;
 	PrivateData *p = drvthis->private_data;
 
-	/* allow multiple occurences of option Backlight, with values specified above
-	 * in bl_value_mapping, first one occurrence may be also boolean for backward compability */
-
-	for (opt_idx=0; /* nop */; opt_idx++) {
-		const char *def_value;
-		/* for first occurence of option 'backlight' default value depends
-		 * on model (which should be read before invoking this function) */
-		if (opt_idx != 0)
-			def_value = NULL;
-		else if (p->model ==  (HD44780_MODEL_WINSTAR_OLED || p->model == HD44780_MODEL_PT6314_VFD))
-			def_value = "internal";
-		else
-			def_value = "none";
-		value = drvthis->config_get_string(drvthis->name, "backlight", opt_idx, def_value);
-
-		if (value == NULL)
-			/* this is for second and next occurrences */
-			break;
-
-		/* find option name. */
-		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
-			if (strcasecmp(value, bl_value_mapping[i].name) == 0) {
-				result |= bl_value_mapping[i].value;
-				if (bl_value_mapping[i].value == BACKLIGHT_NONE)
-					was_none = 1;
-				break;
-			}
-		}
-
-		if (i == sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0])) {
-			/* name not recognized */
-			if (opt_idx == 0) {
-				/* not found - try boolean for backward compability. If found, ignore other occurences */
-				short tmp = drvthis->config_get_bool(drvthis->name, "backlight", opt_idx, -1);
-				if (tmp < 0) {
-					report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, value);
-					return -1;
-				}
-				result = tmp ? BACKLIGHT_EXTERNAL_PIN : BACKLIGHT_NONE;
-				report(RPT_WARNING, "%s: deprecated boolean '%s' for 'Backlight' option found, consider updating configuration !!", drvthis->name, value);
-				return result;
-			}
-			else {
-				/* invalid option value */
-				report(RPT_ERR, "%s: unknown Backlight type: %s", drvthis->name, value);
-				return -1;
-			}
-		}
+	if(config->backlight == ELEKTRA_ENUM_HD44780_BACKLIGHT_DEFAULT)
+	{
+		return p->model == HD44780_MODEL_WINSTAR_OLED || p->model == HD44780_MODEL_PT6314_VFD ? BACKLIGHT_INTERNAL : BACKLIGHT_NONE;
 	}
 
-	if (result != BACKLIGHT_NONE && was_none) {
-		report(RPT_ERR, "%s: conflicting types of 'Backlight' option provided", drvthis->name);
-		return -2;
+	if(config->backlight == ELEKTRA_ENUM_HD44780_BACKLIGHT_DISABLED)
+	{
+		return BACKLIGHT_NONE;
+	}
+
+	int result = BACKLIGHT_NONE;
+	kdb_long_long_t size = elektraSizeV(elektra, ELEKTRA_TAG_HD44780_BACKLIGHTMODE, drvthis->index);
+	for (kdb_long_long_t i = 0; i < size; ++i)
+	{
+		ElektraEnumHd44780Backlightmode elektraMode = elektraGetV(elektra, ELEKTRA_TAG_HD44780_BACKLIGHTMODE, drvthis->index, i);
+		int mode = map_backlight_mode(elektraMode);
+		if (mode < 0) {
+			report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): unknown Backlight mode: %d", drvthis->name, drvthis->index, elektraMode);
+			return -1;
+		}
+		result |= mode;
 	}
 
 	return result;
 }
 
-static void strappend(char *dst, size_t dsize, const char *src) {
-
-	size_t dlen = strlen(dst);
-	size_t slen = strlen(src);
-
-	if (slen + dlen < dsize) {
-		memcpy(dst + dlen, src, slen);
-		dst[dlen+slen] = 0;
-	}
-	else if (dlen < dsize) {
-		memcpy(dst + dlen, src, dsize - dlen);
-		dst[dsize-1] = 0;
-	}
-}
-
 /* reports textually setting of backlight */
 static void report_backlight_type(int report_level, int backlight_type)
 {
-	/* should be enough for current options set and all possible combinations */
-	const char *text_value = NULL;
-	char buffer[256] = "";
 	int i;
 
 	/* first find just whole option name */
 	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
 		if (bl_value_mapping[i].value == backlight_type) {
-			text_value = bl_value_mapping[i].name;
-			break;
+			report(report_level, "HD44780: backlight: %s", ELEKTRA_TO_CONST_STRING(ElektraEnumHd44780Backlightmode)(bl_value_mapping[i].elektraMode));
+			return;
 		}
 	}
 
-	if (!text_value) {
-		/* no single option value found, search for combinations */
-		int unknown = backlight_type;
-		char *s;
+	/* no single option value found, search for combinations */
+	char *result = elektraStrDup("");
 
-		for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]) && bl_value_mapping[i].name[0] != '\0'; i++) {
+	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
 
-			if (bl_value_mapping[i].value & backlight_type) {
-				if (buffer[0])
-					strappend(buffer, sizeof(buffer), ",");
-
-				strappend(buffer, sizeof(buffer), bl_value_mapping[i].name);
-				unknown &= ~bl_value_mapping[i].value;
-			}
+		if (bl_value_mapping[i].value & backlight_type) {		
+			char *tmp = elektraFormat("%s%s,", result, ELEKTRA_TO_CONST_STRING(ElektraEnumHd44780Backlightmode)(bl_value_mapping[i].elektraMode));
+			elektraFree(result);
+			result = tmp;
+			
+			backlight_type &= ~bl_value_mapping[i].value;
 		}
-		if (unknown) {
-			if (buffer[0])
-				strappend(buffer, sizeof(buffer), ",");
-			s = buffer + strlen(buffer);
-			snprintf(s, buffer + sizeof(buffer) - s, "%08x", unknown);
-		}
-		text_value = buffer;
 	}
 
-	report(report_level, "HD44780: backlight: %s", text_value);
+	if (backlight_type != 0) {
+		char *tmp = elektraFormat("%s%08x,", result, backlight_type);
+		elektraFree(result);
+		result = tmp;
+	}
+
+	result[strlen(result) - 1] = '\0'; // replace comma at end
+
+	report(report_level, "HD44780: backlight: %s", result);
+}
+
+static const ConnectionMapping * map_connection_type(Hd44780ConnectionType type)
+{
+	for(int i = 0; connectionMapping[i].init_fn != NULL; ++i)
+	{
+		if(connectionMapping[i].elektraType == type)
+		{
+			return &connectionMapping[i];
+		}
+	}
+	return NULL;
+}
+
+static const char * model_name(ElektraEnumHd44780Model model)
+{
+	return ELEKTRA_TO_CONST_STRING(EnumHd44780Model)(model);
 }
 
 /**
@@ -303,14 +275,10 @@ MODULE_EXPORT int
 HD44780_init(Driver *drvthis, Elektra * elektra)
 {
 	/* TODO: single point of return */
-	char buf[40];
-	const char *s;
 	int i = 0;
-	int (*init_fn) (Driver *drvthis) = NULL;
+	int (*init_fn) (Driver *drvthis, Hd44780DriverConfig *config) = NULL;
 	int if_type = IF_TYPE_UNKNOWN;
-	int tmp, ext_mode;
 	PrivateData *p;
-	char conf_charmap[MAX_CHARMAP_NAME_LENGTH];
 
 	/* Alocate and store private data */
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
@@ -329,123 +297,103 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 	p->fd = -1;
 
 
-	/* READ THE CONFIG FILE */
+	/* READ THE CONFIG */
+	Hd44780DriverConfig config;
+	elektraGet2V(elektra, &config, ELEKTRA_TAG_HD44780, drvthis->index);
 
-	p->port			= drvthis->config_get_int(drvthis->name, "port", 0, LPTPORT);
-	s			= drvthis->config_get_string(drvthis->name, "model", 0, "default");
-	p->model		= model_by_name(s);
+	// TODO (elektra): use hexnumber?
+	p->port			= (unsigned int)strtoul(config.port, NULL, 16); /* works because, spec enforces hex string */
+	p->model		= map_model(config.model);
 	if (p->model < 0) {
-		report(RPT_ERR, "%s: unknown Model: %s", drvthis->name, s);
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): unknown Model: %s", drvthis->name, drvthis->index, model_name(config.model));
 		return -1;
 	}
 	/* config file compability stuff */
 	if (p->model == HD44780_MODEL_DEFAULT) {
-		ext_mode	= drvthis->config_get_bool(drvthis->name, "extendedmode", 0, 0);
-		if (ext_mode)
+		if (config.extendedmode)
 			p->model = HD44780_MODEL_EXTENDED;
 	}
 	else {
-		tmp = (p->model == HD44780_MODEL_EXTENDED);
-		ext_mode = !!drvthis->config_get_bool(drvthis->name, "extendedmode", 0, tmp);
-		if (ext_mode != tmp) {
-			report(RPT_ERR, "%s: conflicting Model %s and extended mode: %d", drvthis->name, model_name(p->model), ext_mode);
+		if (config.extendedmode != (p->model == HD44780_MODEL_EXTENDED)) {
+			report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): conflicting Model %s and extended mode: %d", drvthis->name, drvthis->index, model_name(config.model), config.extendedmode);
 			return -1;
 		}
 	}
 
-	p->line_address 	= drvthis->config_get_int(drvthis->name, "lineaddress", 0, LADDR);
-	p->have_keypad		= drvthis->config_get_bool(drvthis->name, "keypad", 0, 0);
+	// TODO (elektra): use hexnumber?
+	p->line_address 	= (int)strtol(config.lineaddress, NULL, 16); /* works because, spec enforces hex string */
+	p->have_keypad		= config.keypad;
 
 	/* parse backlight option. Default is model specific */
-	p->backlight_type	= get_config_backlight_type(drvthis);
+	p->backlight_type	= get_config_backlight_type(drvthis, &config, elektra);
 	if (p->backlight_type < 0) {
 		/* error already logged in get_config_backlight_type() */
 		return -1;
 	}
 
-	p->backlight_cmd_on	= drvthis->config_get_int(drvthis->name, "backlightcmdon", 0, 0);
-	p->backlight_cmd_off	= drvthis->config_get_int(drvthis->name, "backlightcmdoff", 0, 0);
+	// TODO (elektra): use hexnumber?
+	p->backlight_cmd_on	= (int)strtol(config.backlightcmdon, NULL, 16); /* works because, spec enforces hex string */
+	p->backlight_cmd_off	= (int)strtol(config.backlightcmdoff, NULL, 16); /* works because, spec enforces hex string */
 	if ((p->backlight_type & BACKLIGHT_CONFIG_CMDS) && (!p->backlight_cmd_on || !p->backlight_cmd_off)) {
-		report(RPT_ERR, "%s: No commands for enabling or disabling backlight specified for backlight type internalCmds", drvthis->name);
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): No commands for enabling or disabling backlight specified for backlight type internalCmds", drvthis->name, drvthis->index);
 		return -1;
 	}
 
-	p->have_output		= drvthis->config_get_bool(drvthis->name, "outputport", 0, 0);
-	p->delayMult 		= drvthis->config_get_int(drvthis->name, "delaymult", 0, 1);
-	p->delayBus 		= drvthis->config_get_bool(drvthis->name, "delaybus", 0, 1);
-	p->lastline 		= drvthis->config_get_bool(drvthis->name, "lastline", 0, 1);
+	p->have_output		= config.outputport;
+	p->delayMult 		= config.delaymult;
+	p->delayBus 		= config.delaybus;
+	p->lastline 		= config.lastline;
 
 	p->nextrefresh		= 0;
-	p->refreshdisplay 	= drvthis->config_get_int(drvthis->name, "refreshdisplay", 0, 0);
+	p->refreshdisplay 	= config.refreshdisplay;
 	p->nextkeepalive	= 0;
-	p->keepalivedisplay	= drvthis->config_get_int(drvthis->name, "keepalivedisplay", 0, 0);
+	p->keepalivedisplay	= config.keepalivedisplay;
 
 	/* Get and search for the connection type */
-	s = drvthis->config_get_string(drvthis->name, "ConnectionType", 0, "4bit");
-	for (i = 0; (connectionMapping[i].name != NULL) &&
-		    (strcasecmp(s, connectionMapping[i].name) != 0); i++)
-		;
-	if (connectionMapping[i].name == NULL) {
-		report(RPT_ERR, "%s: unknown ConnectionType: %s", drvthis->name, s);
+	const ConnectionMapping * connectionMapping = map_connection_type(config.connectiontype);
+
+	if (connectionMapping == NULL) {
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): unknown ConnectionType: %s", drvthis->name, drvthis->index, ELEKTRA_TO_CONST_STRING(EnumHd44780ConnectionType)(config.connectiontype));
 		return -1;
-	} else {
-		/* set connection type */
-		p->connectiontype = connectionMapping[i].connectiontype;
-
-		report(RPT_INFO, "HD44780: using ConnectionType: %s", connectionMapping[i].name);
-
-		if_type = connectionMapping[i].if_type;
-		init_fn = connectionMapping[i].init_fn;
 	}
-	report(RPT_INFO, "HD44780: selecting Model: %s", model_name(p->model));
+
+	/* set connection type */
+	p->connectiontype = connectionMapping->connectiontype;
+
+	report(RPT_INFO, "HD44780: using ConnectionType: %s", ELEKTRA_TO_CONST_STRING(EnumHd44780ConnectionType)(config.connectiontype));
+
+	if_type = connectionMapping->if_type;
+	init_fn = connectionMapping->init_fn;
+	
+	report(RPT_INFO, "HD44780: selecting Model: %d", reverse_map_model(p->model));
 	report_backlight_type(RPT_INFO, p->backlight_type);
 	if (p->backlight_type & BACKLIGHT_CONFIG_CMDS) {
 		report(RPT_INFO, "HD44780: backlight config commands: on: %02x, off: %02x", p->backlight_cmd_on, p->backlight_cmd_off);
 	}
 
 	/* Get and parse vspan only when specified */
-	s = drvthis->config_get_string(drvthis->name, "vspan", 0, "");
-	if (s[0] != '\0') {
-		if (parse_span_list(&(p->spanList), &(p->numLines), &(p->dispVOffset), &(p->numDisplays), &(p->dispSizes), s) == -1) {
-			report(RPT_ERR, "%s: invalid vspan value: %s", drvthis->name, s);
+	if (strlen(config.vspan) > 0) {
+		if (parse_span_list(&(p->spanList), &(p->numLines), &(p->dispVOffset), &(p->numDisplays), &(p->dispSizes), config.vspan) == -1) {
+			report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): invalid vspan value: %s", drvthis->name, drvthis->index, config.vspan);
 			return -1;
 		}
 	}
 
 	/* Get and parse size */
-	s = drvthis->config_get_string(drvthis->name, "size", 0, "20x4");
-	if (sscanf(s, "%dx%d", &(p->width), &(p->height)) != 2
+	if (sscanf(config.size, "%dx%d", &(p->width), &(p->height)) != 2
 	    || (p->width <= 0) || (p->width > LCD_MAX_WIDTH)
 	    || (p->height <= 0) || (p->height > LCD_MAX_HEIGHT)) {
-		report(RPT_ERR, "%s: cannot read Size %s", drvthis->name, s);
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): cannot read Size %s", drvthis->name, drvthis->index, config.size);
 	}
 
 	/* set contrast */
-	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
-	if ((tmp < 0) || (tmp > MAX_CONTRAST)) {
-		report(RPT_WARNING, "%s: Contrast must be between 0 and %d; using default %d",
-			drvthis->name, MAX_CONTRAST, DEFAULT_CONTRAST);
-		tmp = DEFAULT_CONTRAST;
-	}
-	p->contrast = tmp;
+	p->contrast = config.contrast;
 
 	/* set brightness */
-	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	if ((tmp < 0) || (tmp > MAX_BRIGHTNESS)) {
-		report(RPT_WARNING, "%s: Brightness must be between 0 and %d; using default %d",
-			drvthis->name, MAX_BRIGHTNESS, DEFAULT_BRIGHTNESS);
-		tmp = DEFAULT_BRIGHTNESS;
-	}
-	p->brightness = tmp;
+	p->brightness = config.brightness;
 
 	/* set backlight-off "brightness" */
-	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	if ((tmp < 0) || (tmp > MAX_BRIGHTNESS)) {
-		report(RPT_WARNING, "%s: OffBrightness must be between 0 and %d; using default %d",
-			drvthis->name, MAX_BRIGHTNESS, DEFAULT_OFFBRIGHTNESS);
-		tmp = DEFAULT_OFFBRIGHTNESS;
-	}
-	p->offbrightness = tmp;
+	p->offbrightness = config.offbrightness;
 
 	/* default case for when spans aren't indicated */
 	if (p->numLines == 0) {
@@ -456,12 +404,12 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 				p->numLines = p->height;
 			}
 		} else
-			report(RPT_ERR, "%s: error allocing", drvthis->name);
+			report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): error allocing", drvthis->name, drvthis->index);
 	}
 	else {
 		/* sanity check against p->height */
 		if (p->numLines != p->height)
-			report(RPT_ERR, "%s: height in Size does not match vSpan", drvthis->name);
+			report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): height in Size does not match vSpan", drvthis->name, drvthis->index);
 	}
 
 	if (p->numDisplays == 0) {
@@ -471,19 +419,19 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 			p->dispSizes[0] = p->height;
 			p->numDisplays = 1;
 		} else
-			report(RPT_ERR, "%s: error mallocing", drvthis->name);
+			report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): error mallocing", drvthis->name, drvthis->index);
 	}
 
 	/* Set up timing */
 	if (timing_init() == -1) {
-		report(RPT_ERR, "%s: timing_init() failed (%s)", drvthis->name, strerror(errno));
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): timing_init() failed (%s)", drvthis->name, drvthis->index, strerror(errno));
 		return -1;
 	}
 
 	/* Allocate framebuffer */
 	p->framebuf = (unsigned char *) calloc(p->width * p->height, sizeof(char));
 	if (p->framebuf == NULL) {
-		report(RPT_ERR, "%s: unable to allocate framebuffer", drvthis->name);
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): unable to allocate framebuffer", drvthis->name, drvthis->index);
 		//HD44780_close();
 		return -1;
 	}
@@ -491,7 +439,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 	/* Allocate and clear the buffer for incremental updates */
 	p->backingstore = (unsigned char *) calloc(p->width * p->height, sizeof(char));
 	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to allocate framebuffer backing store", drvthis->name);
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): unable to allocate framebuffer backing store", drvthis->name, drvthis->index);
 		return -1;
 	}
 
@@ -501,70 +449,53 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 
 		/* Read keymap */
 		for (x = 0; x < KEYPAD_MAXX; x++) {
-			char buf[40];
-
-			/* First fill with default value */
-			p->keyMapDirect[x] = defaultKeyMapDirect[x];
-
-			/* Read config value */
-			sprintf(buf, "keydirect_%1d", x+1);
-			s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
+			const char * key = elektraGetV(elektra, ELEKTRA_TAG_HD44780_KEYDIRECT, drvthis->index, x);
 
 			/* Was a key specified in the config file ? */
-			if (s) {
-				p->keyMapDirect[x] = strdup(s);
-				report(RPT_INFO, "HD44780: Direct key %d: \"%s\"", x, s);
+			if (strlen(key) == 0) {
+				key = defaultKeyMapDirect[x];
+			} else {
+				report(RPT_INFO, "HD44780: Direct key %d: \"%s\"", x, key);
 			}
-		}
 
-		for (x = 0; x < KEYPAD_MAXX; x++) {
+			p->keyMapDirect[x] = strdup(key);
+
 			for (y = 0; y < KEYPAD_MAXY; y++) {
-				char buf[40];
-
-				/* First fill with default value */
-				p->keyMapMatrix[y][x] = defaultKeyMapMatrix[y][x];
-
-				/* Read config value */
-				sprintf(buf, "keymatrix_%1d_%d", x+1, y+1);
-				s = drvthis->config_get_string(drvthis->name, buf, 0, NULL);
-
+				key = elektraGetV(elektra, ELEKTRA_TAG_HD44780_KEYMATRIX, drvthis->index, x, y);
+				
 				/* Was a key specified in the config file ? */
-				if (s) {
-					p->keyMapMatrix[y][x] = strdup(s);
-					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x+1, y+1, s);
+				if (strlen(key) == 0) {
+					key = defaultKeyMapMatrix[y][x];
+				} else {
+					report(RPT_INFO, "HD44780: Matrix key %d %d: \"%s\"", x+1, y+1, key);
 				}
+
+				p->keyMapMatrix[y][x] = strdup(key);
 			}
 		}
 	}
 
 	/* Get configured charmap */
-	strncpy(conf_charmap, drvthis->config_get_string(drvthis->name, "charmap", 0, "hd44780_default"), MAX_CHARMAP_NAME_LENGTH);
-	conf_charmap[MAX_CHARMAP_NAME_LENGTH-1] = '\0';
-	p->charmap = charmap_get_index(conf_charmap);
+	p->charmap = charmap_get_index(config.charmap);
 	if (p->charmap == -1) {
-		report(RPT_ERR, "%s: Charmap %s is unknown", drvthis->name, conf_charmap);
-		report(RPT_ERR, "%s: Available charmaps:", drvthis->name);
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): Charmap %d is unknown", drvthis->name, drvthis->index, config.charmap);
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): Available charmaps:", drvthis->name, drvthis->index);
 		for (i = 0; i < (sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
-			report(RPT_ERR, " %s", available_charmaps[i].name);
+			report(RPT_ERR, " %s", ELEKTRA_TO_CONST_STRING(EnumHd44780Charmap)(available_charmaps[i].elektraCharmap));
 		}
 		return -1;
 	}
-	report(RPT_INFO, "%s: Using %s charmap", drvthis->name, available_charmaps[p->charmap].name);
+	report(RPT_INFO, "%s ("ELEKTRA_LONG_LONG_F"): Using %s charmap", drvthis->name, drvthis->index, ELEKTRA_TO_CONST_STRING(EnumHd44780Charmap)(config.charmap));
 
 	/* Get configured font bank */
-	tmp = drvthis->config_get_int(drvthis->name, "FontBank", 0, 0);
-	if ((tmp < 0) || (tmp > 3)) {
-		report(RPT_WARNING, "%s: FontBank must be between 0 and 3; using default %d", drvthis->name, 0);
-		tmp = 0;
-	}
-	p->font_bank = tmp;
+	p->font_bank = config.fontbank;
 
 	/* Output latch state - init to a non-valid value */
 	p->output_state = 999999;
 
 	/* allocate local function pointers */
 	if ((p->hd44780_functions = (HD44780_functions *) calloc(1, sizeof(HD44780_functions))) == NULL) {
-		report(RPT_ERR, "%s: error mallocing", drvthis->name);
+		report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): error mallocing", drvthis->name, drvthis->index);
 		return -1;
 	}
 	/*
@@ -584,7 +515,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 	p->hd44780_functions->flush = NULL;
 
 	/* Do local (=connection type specific) display init */
-	if (init_fn(drvthis) != 0)
+	if (init_fn(drvthis, &config) != 0)
 		return -1;
 
 	/* consistency check: fail if local senddata function was not defined */
@@ -619,39 +550,40 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 
 	/* Display startup parameters on the LCD */
 	HD44780_clear(drvthis);
-	sprintf(buf, "HD44780 %dx%d", p->width, p->height);
+	char buf[256];
+	snprintf(buf, 255, "HD44780 %dx%d", p->width, p->height);
 	HD44780_string(drvthis, 1, 1, buf);
  	switch(if_type) {
  	  case IF_TYPE_USB:
-  		sprintf(buf, "USB %s%s%s",
+  		snprintf(buf, 255, "USB %s%s%s",
 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
  	  case IF_TYPE_SERIAL:
- 		sprintf(buf, "SERIAL %s%s%s",
+ 		snprintf(buf, 255, "SERIAL %s%s%s",
 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
  	  case IF_TYPE_I2C:
- 		sprintf(buf, "I2C %s%s%s",
+ 		snprintf(buf, 255, "I2C %s%s%s",
 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
  	  case IF_TYPE_SPI:
- 		sprintf(buf, "SPI %s%s%s",
+ 		snprintf(buf, 255, "SPI %s%s%s",
 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
  			);
  		break;
  	  case IF_TYPE_TCP:
- 		sprintf(buf, "TCP %s%s%s",
+ 		snprintf(buf, 255, "TCP %s%s%s",
 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
@@ -659,7 +591,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
  		break;
 	  case IF_TYPE_PARPORT:
  	  default:
- 		sprintf(buf, "LPT 0x%x%s%s%s", p->port,
+ 		snprintf(buf, 255, "LPT 0x%x%s%s%s", p->port,
 			 (have_backlight_pin(p)?" bl":""),
  			 (p->have_keypad?" key":""),
  			 (p->have_output?" out":"")
@@ -992,7 +924,7 @@ HD44780_flush(Driver *drvthis)
 	}
 	if (p->hd44780_functions->flush != NULL)
 		p->hd44780_functions->flush(p);
-	debug(RPT_DEBUG, "%s: flushed %d custom chars", drvthis->name, count);
+	debug(RPT_DEBUG, "%s ("ELEKTRA_LONG_LONG_F"): flushed %d custom chars", drvthis->name, drvthis->index, count);
 }
 
 

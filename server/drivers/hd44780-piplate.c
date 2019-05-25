@@ -159,19 +159,17 @@ i2c_write_reg(PrivateData *p, unsigned char reg, unsigned char val)
  * \retval -1      Error.
  */
 int
-hd_init_i2c_piplate(Driver *drvthis)
+hd_init_i2c_piplate(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
-	char device[256] = DEFAULT_DEVICE;
 #ifdef HAVE_DEV_IICBUS_IIC_H
 	struct iiccmd cmd;
 	bzero(&cmd, sizeof(cmd));
 #endif
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device) - 1] = '\0';
+	const char * device = strlen(config->device) == 0 ? DEFAULT_DEVICE : config->device;
 	report(RPT_INFO, "HD44780: piplate: Using device '%s' and address 0x%02X for a MCP23017",
 	       device, p->port & I2C_ADDR_MASK);
 

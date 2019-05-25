@@ -63,7 +63,7 @@ void ftdi_HD44780_close(PrivateData *p);
  * \retval -1      Error.
  */
 int
-hd_init_ftdi(Driver *drvthis)
+hd_init_ftdi(Driver *drvthis, const Hd44780DriverConfig * config)
 {
     int vendor_id, product_id;
     int f;
@@ -78,21 +78,21 @@ hd_init_ftdi(Driver *drvthis)
     usb_description = serial_number = NULL;
 
     /* Load config */
-    vendor_id = drvthis->config_get_int(drvthis->name, "VendorID", 0, 0x0403);
-    product_id = drvthis->config_get_int(drvthis->name, "ProductID", 0, 0x6001);
-    if ((s = drvthis->config_get_string(drvthis->name, "UsbDescription", 0, NULL)) != NULL) {
+    vendor_id = config->usbVendorid == 0 ? 0x0403 : config->usbVendorid;
+    product_id = config->usbProductid == 0 ? 0x6001 : config->usbProductid;
+    if (strlen(config->usbDescription) != 0) {
         usb_description = strdup(s);
     }
-    if ((s = drvthis->config_get_string(drvthis->name, "SerialNumber", 0, NULL)) != NULL) {
+    if (strlen(config->usbSerialnumber) != 0) {
         serial_number = strdup(s);
     }
 
     /* these config settings are not documented intentionally */
-    p->ftdi_mode = drvthis->config_get_int(drvthis->name, "ftdi_mode", 0, 8);
-    p->ftdi_line_RS = drvthis->config_get_int(drvthis->name, "ftdi_line_RS", 0, 0x01);
-    p->ftdi_line_RW = drvthis->config_get_int(drvthis->name, "ftdi_line_RW", 0, 0x02);
-    p->ftdi_line_EN = drvthis->config_get_int(drvthis->name, "ftdi_line_EN", 0, 0x04);
-    p->ftdi_line_backlight = drvthis->config_get_int(drvthis->name, "ftdi_line_backlight", 0, 0x08);
+    p->ftdi_mode = config->ftdiMode;
+    p->ftdi_line_RS = config->ftdiLineRs;
+    p->ftdi_line_RW = config->ftdiLineRw;
+    p->ftdi_line_EN = config->ftdiLineEn;
+    p->ftdi_line_backlight = config->ftdiLineBacklight;
     p->backlight_bit = 0;
 
     /* some foolproof check */

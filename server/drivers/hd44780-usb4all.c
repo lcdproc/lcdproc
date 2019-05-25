@@ -273,7 +273,7 @@ usb4all_HD44780_uPause(PrivateData *p, int usecs)
  * \retval -1      Error.
  */
 int
-hd_init_usb4all(Driver *drvthis)
+hd_init_usb4all(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 

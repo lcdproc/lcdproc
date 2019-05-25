@@ -53,17 +53,15 @@ void usblcd_HD44780_close(PrivateData *p);
  * \retval -3      Error reading or unsupported hardware version.
  */
 int
-hd_init_usblcd(Driver *drvthis)
+hd_init_usblcd(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 
-	char device[256] = DEFAULT_DEVICE;
 	char buf[128];
 	int major, minor;
 
 	/* Get device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "device", 0, DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device) - 1] = '\0';
+	const char * device = strlen(config->device) == 0 ? DEFAULT_DEVICE : config->device;
 	report(RPT_INFO, "HD44780: USBLCD: using device: %s", device);
 
 	/* Set up io port correctly, and open it... */

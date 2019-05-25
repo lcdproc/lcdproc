@@ -95,17 +95,6 @@ void i2c_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char
 void i2c_HD44780_backlight(PrivateData *p, unsigned char state);
 void i2c_HD44780_close(PrivateData *p);
 
-#define RS	0x10
-#define RW	0x20
-#define EN	0x40
-#define BL	0x80
-#define D4	0x01
-#define D5	0x02
-#define D6	0x04
-#define D7	0x08
-#define BL_INVERT  0
-// note that the above bits are all meant for the data port of PCF8574
-
 #define I2C_ADDR_MASK 0x7f
 #define I2C_PCAX_MASK 0x80
 
@@ -140,21 +129,20 @@ i2c_out(PrivateData *p, unsigned char val)
  * \retval -1      Error.
  */
 int
-hd_init_i2c(Driver *drvthis)
+hd_init_i2c(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;
-	char device[256] = I2C_DEFAULT_DEVICE;
 
-	p->i2c_backlight_invert = drvthis->config_get_bool(drvthis->name, "BacklightInvert", 0, BL_INVERT);
-	p->i2c_line_RS = drvthis->config_get_int(drvthis->name, "i2c_line_RS", 0, RS);
-	p->i2c_line_RW = drvthis->config_get_int(drvthis->name, "i2c_line_RW", 0, RW);
-	p->i2c_line_EN = drvthis->config_get_int(drvthis->name, "i2c_line_EN", 0, EN);
-	p->i2c_line_BL = drvthis->config_get_int(drvthis->name, "i2c_line_BL", 0, BL);
-	p->i2c_line_D4 = drvthis->config_get_int(drvthis->name, "i2c_line_D4", 0, D4);
-	p->i2c_line_D5 = drvthis->config_get_int(drvthis->name, "i2c_line_D5", 0, D5);
-	p->i2c_line_D6 = drvthis->config_get_int(drvthis->name, "i2c_line_D6", 0, D6);
-	p->i2c_line_D7 = drvthis->config_get_int(drvthis->name, "i2c_line_D7", 0, D7);
+	p->i2c_backlight_invert = config->i2cBacklightInvert;
+	p->i2c_line_RS = config->i2cLineRs;
+	p->i2c_line_RW = config->i2cLineRw;
+	p->i2c_line_EN = config->i2cLineEn;
+	p->i2c_line_BL = config->i2cLineBl;
+	p->i2c_line_D4 = config->i2cLineD4;
+	p->i2c_line_D5 = config->i2cLineD5;
+	p->i2c_line_D6 = config->i2cLineD6;
+	p->i2c_line_D7 = config->i2cLineD7;
 
 	report(RPT_INFO, "HD44780: I2C: Init using D4 and D5, and or'd lines, invert", p->i2c_line_RS);
 	report(RPT_INFO, "HD44780: I2C: Pin RS mapped to 0x%02X", p->i2c_line_RS);
@@ -169,11 +157,10 @@ hd_init_i2c(Driver *drvthis)
 
 	p->backlight_bit = p->i2c_line_BL;
 
-	/* READ CONFIG FILE */
+	/* READ CONFIG */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, I2C_DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device)-1] = '\0';
+	const char * device = strlen(config->device) == 0 ? I2C_DEFAULT_DEVICE : config->device;
 	report(RPT_INFO,"HD44780: I2C: Using device '%s' and address 0x%02X for a %s",
 		device, p->port & I2C_ADDR_MASK, (p->port & I2C_PCAX_MASK) ? "PCA9554(A)" : "PCF8574(A)");
 
