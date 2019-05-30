@@ -116,8 +116,6 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 
 	g15r_initCanvas(p->canvas);
 	g15r_initCanvas(p->backingstore);
-	p->canvas->buffer[0] = G15_LCD_WRITE_CMD;
-	p->backingstore->buffer[0] = G15_LCD_WRITE_CMD;
 
 	return 0;
 }
