@@ -57,25 +57,25 @@ MODULE_EXPORT char *symbol_prefix = "g15_";
 //
 MODULE_EXPORT int g15_init (Driver *drvthis)
 {
-   PrivateData *p;
+	PrivateData *p;
 
-   /* Allocate and store private data */
-   p = (PrivateData *) calloc(1, sizeof(PrivateData));
-   if (p == NULL)
+	/* Allocate and store private data */
+	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	if (p == NULL)
 		return -1;
-   if (drvthis->store_private_ptr(drvthis, p))
+	if (drvthis->store_private_ptr(drvthis, p))
 		return -1;
 
-   /* Initialize the PrivateData structure */
-   p->backlight_state = BACKLIGHT_ON;
-   p->g15screen_fd = 0;
-   p->g15d_ver = g15daemon_version();
+	/* Initialize the PrivateData structure */
+	p->backlight_state = BACKLIGHT_ON;
+	p->g15screen_fd = 0;
+	p->g15d_ver = g15daemon_version();
 
-   if((p->g15screen_fd = new_g15_screen(G15_G15RBUF)) < 0)
-   {
-        report(RPT_ERR, "%s: Sorry, cant connect to the G15daemon", drvthis->name);
-        return -1;
-   }
+	if((p->g15screen_fd = new_g15_screen(G15_G15RBUF)) < 0)
+	{
+		report(RPT_ERR, "%s: Sorry, cant connect to the G15daemon", drvthis->name);
+		return -1;
+	}
 
 	/* make sure the canvas is there... */
 	p->canvas = (g15canvas *) malloc(sizeof(g15canvas));
@@ -106,9 +106,7 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 	p->canvas->buffer[0] = G15_LCD_WRITE_CMD;
 	p->backingstore->buffer[0] = G15_LCD_WRITE_CMD;
 
-//	ret = setLCDBrightness(G15_BRIGHTNESS_BRIGHT);
-
-   return 0;
+	return 0;
 }
 
 // Close the connection to the LCD
