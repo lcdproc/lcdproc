@@ -10,12 +10,19 @@ gaming keyboards.
 <title>Features</title>
 
 <para>
-This driver uses g15daemon's virtual screen capabilities to enable
-multiple LCDd instances to display on the LCD of the Logitech G15
-gaming keyboard.  Text and other rendering services are provided by
-libg15render from the g15tools project.  Input is provided by g15daemon,
-enabling use of the L1-L5 and G1 keys.  The required libraries are
+If libg15daemon_client is present during build time, the g15 driver will
+include g15daemon support. If build with g15daemon support, the driver
+first tries to connect to the g15daemon. If the g15 is build without
+g15daemon support, or cannot connect to the g15daemon, it will use direct
+/dev/hidraw? device access. The g15 driver uses text and other rendering
+functions from libg15render. The g15daemon client-lib and libg15render are
 available from the g15daemon and g15tools projects at sourceforge.net.
+</para>
+
+<para>
+If g15daemon is used, then input is provided by g15daemon, enabling use of
+the L1-L5 and G1 keys. When hidraw access is used the linux_input driver can
+be used for input.
 </para>
 
 </sect2>
