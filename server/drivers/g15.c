@@ -65,6 +65,8 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "g15_";
 
+void g15_close (Driver *drvthis);
+
 // Find the proper usb device and initialize it
 //
 MODULE_EXPORT int g15_init (Driver *drvthis)
@@ -75,17 +77,17 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 	p = (PrivateData *) calloc(1, sizeof(PrivateData));
 	if (p == NULL)
 		return -1;
-	if (drvthis->store_private_ptr(drvthis, p))
-		return -1;
+	drvthis->private_data = p;
 
 	/* Initialize the PrivateData structure */
 	p->backlight_state = BACKLIGHT_ON;
-	p->g15screen_fd = 0;
+	p->g15screen_fd = -1;
 	p->g15d_ver = g15daemon_version();
 
 	if((p->g15screen_fd = new_g15_screen(G15_G15RBUF)) < 0)
 	{
 		report(RPT_ERR, "%s: Sorry, cant connect to the G15daemon", drvthis->name);
+		g15_close(drvthis);
 		return -1;
 	}
 
@@ -93,6 +95,7 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 	p->canvas = (g15canvas *) malloc(sizeof(g15canvas));
 	if (p->canvas == NULL) {
 		report(RPT_ERR, "%s: unable to create canvas", drvthis->name);
+		g15_close(drvthis);
 		return -1;
 	}
 
@@ -100,16 +103,14 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 	p->backingstore = (g15canvas *) malloc(sizeof(g15canvas));
 	if (p->backingstore == NULL) {
 		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
+		g15_close(drvthis);
 		return -1;
 	}
 
 	p->font = g15r_requestG15DefaultFont(G15_TEXT_LARGE);
 	if (p->font == NULL) {
 		report(RPT_ERR, "%s: unable to load default large font", drvthis->name);
-		g15_close_screen(p->g15screen_fd);
-		free(p->canvas);
-		free(p->backingstore);
-		free(p);
+		g15_close(drvthis);
 		return -1;
 	}
 
@@ -126,20 +127,15 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 MODULE_EXPORT void g15_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
+	drvthis->private_data = NULL;
 
 	g15r_deleteG15Font(p->font);
-	g15_close_screen(p->g15screen_fd);
+	if (p->g15screen_fd != -1)
+		g15_close_screen(p->g15screen_fd);
 
-	if (p != NULL) {
-		if (p->canvas)
-			free(p->canvas);
-
-		if (p->backingstore)
-			free(p->backingstore);
-
-		free(p);
-	}
-	drvthis->store_private_ptr(drvthis, NULL);
+	free(p->canvas);
+	free(p->backingstore);
+	free(p);
 }
 
 // Returns the display width in characters
