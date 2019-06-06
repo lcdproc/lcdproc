@@ -42,11 +42,11 @@ struct keycode {
 static struct keycode *
 keycode_create(const char *configvalue)
 {
-	int code;
+	long code;
 	char *button;
 	struct keycode *ret;
 
-	code = atoi(configvalue);
+	code = strtol(configvalue, NULL, 0);
 	if (code < 0 || code > UINT16_MAX)
 		return NULL;
 
