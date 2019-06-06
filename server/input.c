@@ -99,7 +99,7 @@ void handle_input(void)
 
 		/* Find what client wants the key */
 		kr = input_find_key(key, current_client);
-		if (kr) {
+		if (kr && kr->client) {
 			/* A hit ! */
 			debug(RPT_DEBUG, "%s: reserved key: \"%.40s\"", __FUNCTION__, key);
 			sock_printf(kr->client->sock, "key %s\n", key);
