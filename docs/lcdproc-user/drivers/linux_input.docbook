@@ -19,7 +19,9 @@ This section covers the linux event device input driver for LCDd.
     <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
-    Select the input device to use [default: <filename>/dev/input/event0</filename>]
+    Select the input device to use [default: <filename>/dev/input/event0</filename>].
+    This may be either an absolute path to the input node, starting with '/',
+    or an input device name, e.g. "Logitech Gaming Keyboard Gaming Keys".
   </para></listitem>
 </varlistentry>
 
