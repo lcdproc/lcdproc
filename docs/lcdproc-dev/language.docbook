@@ -729,14 +729,14 @@
 	  # own predecessors defined the "ask" rule will not work for them
 	  menu_set_item "" test -prev "ask"
 
-	  menu_set_item "test" test_action -next "test_checkbox"
-	  menu_set_item "test" test_checkbox -next "test_ring" -prev "test_action"
-	  menu_set_item "test" test_ring -next "test_slider" -prev "test_checkbox"
-	  menu_set_item "test" test_slider -next "test_numeric" -prev "test_ring"
-	  menu_set_item "test" test_numeric -next "test_alpha" -prev "test_slider"
-	  menu_set_item "test" test_alpha -next "test_ip" -prev "test_numeric"
-	  menu_set_item "test" test_ip -next "test_menu" -prev "test_alpha"
-	  menu_set_item "test" test_menu_action -next "_close_"
+	  menu_set_item "" test_action -next "test_checkbox"
+	  menu_set_item "" test_checkbox -next "test_ring" -prev "test_action"
+	  menu_set_item "" test_ring -next "test_slider" -prev "test_checkbox"
+	  menu_set_item "" test_slider -next "test_numeric" -prev "test_ring"
+	  menu_set_item "" test_numeric -next "test_alpha" -prev "test_slider"
+	  menu_set_item "" test_alpha -next "test_ip" -prev "test_numeric"
+	  menu_set_item "" test_ip -next "test_menu" -prev "test_alpha"
+	  menu_set_item "" test_menu_action -next "_close_"
 
 	  # replace the main menu with the client's menu as created above
 	  menu_set_main ""
@@ -807,9 +807,7 @@
 	      <note>
 	        <title>Note:</title>
 		<para>
-		  Some menu commands (<command>menu_goto</command>) and options
-		  (<option>-prev</option>, <option>-next</option>) assume that
-		  <replaceable>menu_ids</replaceable> are <emphasis>unique</emphasis>
+		  <replaceable>menu_ids</replaceable> need to be <emphasis>unique</emphasis>
 		  (at least within a clients menu hierarchy).
 		</para>
 		<para>
@@ -914,7 +912,13 @@
 	    <command>menu_del_item
 	      <option><replaceable>menu_id</replaceable></option>
 	      <option><replaceable>item_id</replaceable></option>
-	    </command>
+	    </command> (version 0.3)
+	  </term>
+	  <term>
+	    <command>menu_del_item
+	      <optional><option><replaceable>ignored</replaceable></option></optional>
+	      <option><replaceable>item_id</replaceable></option>
+	    </command> (version 0.4)
 	  </term>
 	  <listitem>
 	    <para>
@@ -931,11 +935,24 @@
 	      <option><replaceable>menu_id</replaceable></option>
 	      <option><replaceable>item_id</replaceable></option>
 	      <option><replaceable>item_specific_options</replaceable></option>
-	    </command>
+	    </command> (version 0.3)
+	  </term>
+	  <term>
+	    <command>menu_set_item
+	      <option><replaceable>""</replaceable></option>
+	      <option><replaceable>item_id</replaceable></option>
+	      <option><replaceable>item_specific_options</replaceable></option>
+	    </command> (version 0.4)
 	  </term>
 	  <listitem>
 	    <para>
-	      Sets parameters for the menu item(s). Each item type knows different parameters.
+	      Sets parameters for the menu item. Each item type knows
+	      different parameters. Older versions of LCDd checked that
+	      <replaceable>menu_id</replaceable> is valid, but otherwise
+	      ignored the parameter. Newer version dropped this unnecessary
+	      check. It is recommended to pass an empty string, which is
+	      compatible with all versions.
+
 	      <variablelist><title>options for the various menu items</title>
 		<varlistentry>
 		  <term>for all item types

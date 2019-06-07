@@ -564,14 +564,14 @@ menus_init()
 	 */
 	sock_send_string(sock, "menu_set_item {} test -prev {ask}\n");
 
-	sock_send_string(sock, "menu_set_item {test} test_action -next {test_checkbox}\n");
-	sock_send_string(sock, "menu_set_item {test} test_checkbox -next {test_ring} -prev test_action\n");
-	sock_send_string(sock, "menu_set_item {test} test_ring -next {test_slider} -prev {test_checkbox}\n");
-	sock_send_string(sock, "menu_set_item {test} test_slider -next {test_numeric} -prev {test_ring}\n");
-	sock_send_string(sock, "menu_set_item {test} test_numeric -next {test_alpha} -prev {test_slider}\n");
-	sock_send_string(sock, "menu_set_item {test} test_alpha -next {test_ip} -prev {test_numeric}\n");
-	sock_send_string(sock, "menu_set_item {test} test_ip -next {test_menu} -prev {test_alpha}\n");
-	sock_send_string(sock, "menu_set_item {test} test_menu_action -next {_close_}\n");
+	sock_send_string(sock, "menu_set_item {} test_action -next {test_checkbox}\n");
+	sock_send_string(sock, "menu_set_item {} test_checkbox -next {test_ring} -prev test_action\n");
+	sock_send_string(sock, "menu_set_item {} test_ring -next {test_slider} -prev {test_checkbox}\n");
+	sock_send_string(sock, "menu_set_item {} test_slider -next {test_numeric} -prev {test_ring}\n");
+	sock_send_string(sock, "menu_set_item {} test_numeric -next {test_alpha} -prev {test_slider}\n");
+	sock_send_string(sock, "menu_set_item {} test_alpha -next {test_ip} -prev {test_numeric}\n");
+	sock_send_string(sock, "menu_set_item {} test_ip -next {test_menu} -prev {test_alpha}\n");
+	sock_send_string(sock, "menu_set_item {} test_menu_action -next {_close_}\n");
 #endif				/* LCDPROC_CLIENT_TESTMENUS */
 
 	return 0;
