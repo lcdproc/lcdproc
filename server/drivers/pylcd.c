@@ -472,22 +472,22 @@ pyramid_flush(Driver *drvthis)
 	 */
 	for (i = 1; i < 33; i++) {
 	    switch ((unsigned char)mesg[i]) {
-	    case 0xe4:		/* � */
+	    case 0xe4:		/* ä */
 		mesg[i] = 0xe1;
 		break;
-	    case 0xf6:		/* � */
+	    case 0xf6:		/* ö */
 		mesg[i] = 0xef;
 		break;
-	    case 0xfc:		/* � */
+	    case 0xfc:		/* ü */
 		mesg[i] = 0xf5;
 		break;
-	    case 0xdf:		/* � */
+	    case 0xdf:		/* ß */
 		mesg[i] = 0xe2;
 		break;
-	    case 0xb7:		/* � */
+	    case 0xb7:		/* · */
 		mesg[i] = 0xa5;
 		break;
-	    case 0xb0:		/* � */
+	    case 0xb0:		/* ° */
 		mesg[i] = 0xdf;
 		break;
 	    }

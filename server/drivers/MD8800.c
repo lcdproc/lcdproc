@@ -3,7 +3,7 @@
  */
 
 /*
-    Copyright (C) 2006 Stefan Herdler in collaboration with Martin M�ller.
+    Copyright (C) 2006 Stefan Herdler in collaboration with Martin Møller.
 
     This source Code is based on the NoritakeVFD, the serialVFD and the
     CFontzPacket Driver of this package.
@@ -28,7 +28,7 @@
     ==============================================================================
 
     Known hardware-commands of the MD8800 display
-    discovered by Martin M�ller (listed in octal notation):
+    discovered by Martin Møller (listed in octal notation):
 
     \33\0abcdef (abcdef can be anything, it seems) - set clock, I think.
 	   	The mapping is: bb:aa dd.cc.eeff

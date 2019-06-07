@@ -1,6 +1,6 @@
 /*  This is the LCDproc driver for the VFD of the Medion MD8800 PC
 
-    Copyright (C) 2006 Stefan Herdler in collaboration with Martin M�ller.
+    Copyright (C) 2006 Stefan Herdler in collaboration with Martin Møller.
     This source Code is based on the NoritakeVFD, the serialVFD and the
     CFontzPacket Driver of this package.
 
