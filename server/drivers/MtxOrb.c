@@ -208,6 +208,18 @@ static void MtxOrb_cursorblink(Driver *drvthis, int on);
 static void MtxOrb_cursor_goto(Driver *drvthis, int x, int y);
 
 
+static void read_keymap_key(Driver *drvthis, PrivateData *p, int index, char key, const char * mapped_key)
+{
+		if(strlen(mapped_key) > 0) {
+			p->keymap[index] = strdup(key);
+			p->keys++;
+			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key '%c' mapped to \"%s\"", drvthis->name, drvthis->index, key, mapped_key);
+		} else {
+			p->keymap[index] = NULL;
+		}
+}
+
+
 /**
  * Initialize the driver.
  * \param drvthis  Pointer to driver structure.
@@ -215,7 +227,7 @@ static void MtxOrb_cursor_goto(Driver *drvthis, int x, int y);
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-MtxOrb_init (Driver *drvthis, Elektra * elektra)
+MtxOrb_init (Driver *drvthis, Elektra *elektra)
 {
 	struct termios portset;
 	int speed = DEFAULT_SPEED;
@@ -335,53 +347,12 @@ MtxOrb_init (Driver *drvthis, Elektra * elektra)
 		p->keys = 0;
 
 		/* read the keymap */
-		if(strlen(config.keymapA) > 0) {
-			p->keymap[0] = strdup(config.keymapA);
-			p->keys++;
-			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'A' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapA);
-		} else {
-			p->keymap[0] = NULL;
-		}
-
-		if(strlen(config.keymapB) > 0) {
-			p->keymap[1] = strdup(config.keymapB);
-			p->keys++;
-			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'B' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapB);
-		} else {
-			p->keymap[1] = NULL;
-		}
-
-		if(strlen(config.keymapC) > 0) {
-			p->keymap[2] = strdup(config.keymapC);
-			p->keys++;
-			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'C' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapC);
-		} else {
-			p->keymap[2] = NULL;
-		}
-
-		if(strlen(config.keymapD) > 0) {
-			p->keymap[3] = strdup(config.keymapD);
-			p->keys++;
-			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'D' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapD);
-		} else {
-			p->keymap[4] = NULL;
-		}
-
-		if(strlen(config.keymapE) > 0) {
-			p->keymap[4] = strdup(config.keymapE);
-			p->keys++;
-			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'E' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapE);
-		} else {
-			p->keymap[4] = NULL;
-		}
-
-		if(strlen(config.keymapF) > 0) {
-			p->keymap[5] = strdup(config.keymapF);
-			p->keys++;
-			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key 'F' mapped to \"%s\"", drvthis->name, drvthis->index, config.keymapF);
-		} else {
-			p->keymap[5] = NULL;
-		}
+		read_keymap_key(drvthis, p, 0, 'A', config.keymapA);
+		read_keymap_key(drvthis, p, 1, 'B', config.keymapB);
+		read_keymap_key(drvthis, p, 2, 'C', config.keymapC);
+		read_keymap_key(drvthis, p, 3, 'D', config.keymapD);
+		read_keymap_key(drvthis, p, 4, 'E', config.keymapE);
+		read_keymap_key(drvthis, p, 5, 'F', config.keymapF);
 	}
 	/* End of config processing */
 
