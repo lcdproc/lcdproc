@@ -216,7 +216,7 @@ static void report_backlight_type(int report_level, int backlight_type)
 	/* first find just whole option name */
 	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
 		if (bl_value_mapping[i].value == backlight_type) {
-			report(report_level, "HD44780: backlight: %s", ELEKTRA_TO_CONST_STRING(ElektraEnumHd44780Backlightmode)(bl_value_mapping[i].elektraMode));
+			report(report_level, "HD44780: backlight: %s", ELEKTRA_TO_CONST_STRING(EnumHd44780Backlightmode)(bl_value_mapping[i].elektraMode));
 			return;
 		}
 	}
@@ -227,7 +227,7 @@ static void report_backlight_type(int report_level, int backlight_type)
 	for (i=0; i<sizeof(bl_value_mapping)/sizeof(bl_value_mapping[0]); i++) {
 
 		if (bl_value_mapping[i].value & backlight_type) {		
-			char *tmp = elektraFormat("%s%s,", result, ELEKTRA_TO_CONST_STRING(ElektraEnumHd44780Backlightmode)(bl_value_mapping[i].elektraMode));
+			char *tmp = elektraFormat("%s%s,", result, ELEKTRA_TO_CONST_STRING(EnumHd44780Backlightmode)(bl_value_mapping[i].elektraMode));
 			elektraFree(result);
 			result = tmp;
 			
@@ -276,7 +276,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 {
 	/* TODO: single point of return */
 	int i = 0;
-	int (*init_fn) (Driver *drvthis, Hd44780DriverConfig *config) = NULL;
+	int (*init_fn) (Driver *drvthis, const Hd44780DriverConfig *config) = NULL;
 	int if_type = IF_TYPE_UNKNOWN;
 	PrivateData *p;
 

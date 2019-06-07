@@ -211,7 +211,7 @@ static void MtxOrb_cursor_goto(Driver *drvthis, int x, int y);
 static void read_keymap_key(Driver *drvthis, PrivateData *p, int index, char key, const char * mapped_key)
 {
 		if(strlen(mapped_key) > 0) {
-			p->keymap[index] = strdup(key);
+			p->keymap[index] = strdup(mapped_key);
 			p->keys++;
 			report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": Key '%c' mapped to \"%s\"", drvthis->name, drvthis->index, key, mapped_key);
 		} else {
@@ -340,8 +340,6 @@ MtxOrb_init (Driver *drvthis, Elektra *elektra)
 		 * So there's no need to get them from the configfile in keypad
 		 * test mode.
 		 */
-
-		int i;
 
 		/* assume no mapped keys */
 		p->keys = 0;

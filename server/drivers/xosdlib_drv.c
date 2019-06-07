@@ -444,7 +444,6 @@ MODULE_EXPORT void
 xosdlib_drv_set_contrast (Driver *drvthis, int promille)
 {
 	PrivateData *p = drvthis->private_data;
-	int contrast;
 
 	/* Check it */
 	if (promille < 0 || promille > 1000)
@@ -454,7 +453,7 @@ xosdlib_drv_set_contrast (Driver *drvthis, int promille)
 	p->contrast = promille;
 
 	/* map range [0, 1000] to [0, 255] */
-	contrast = (p->contrast * 255) / 1000;
+	/* int contrast = (p->contrast * 255) / 1000; */
 
 	/* What to do with it ? */
 }

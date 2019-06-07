@@ -74,8 +74,6 @@
 
 #define MaxKeyMap 6
 
-static char *defaultKeyMap[MaxKeyMap] = { "Up", "Down", "Left", "Right", "Enter", "Escape" };
-
 
 /** private data for the \c CwLnx driver */
 typedef struct CwLnx_private_data {
@@ -446,10 +444,8 @@ CwLnx_init(Driver *drvthis, Elektra * elektra)
     int default_speed = DEFAULT_SPEED;
     char *default_size = DEFAULT_SIZE;
 
-    int tmp;
     int w;
     int h;
-    const char *s;
 
     PrivateData *p;
 

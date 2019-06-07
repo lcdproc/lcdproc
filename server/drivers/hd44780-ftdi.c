@@ -67,7 +67,6 @@ hd_init_ftdi(Driver *drvthis, const Hd44780DriverConfig * config)
 {
     int vendor_id, product_id;
     int f;
-    const char *s;
     char *usb_description, *serial_number;
 
     PrivateData *p = (PrivateData *)drvthis->private_data;
@@ -81,10 +80,10 @@ hd_init_ftdi(Driver *drvthis, const Hd44780DriverConfig * config)
     vendor_id = config->usbVendorid == 0 ? 0x0403 : config->usbVendorid;
     product_id = config->usbProductid == 0 ? 0x6001 : config->usbProductid;
     if (strlen(config->usbDescription) != 0) {
-        usb_description = strdup(s);
+        usb_description = strdup(config->usbDescription);
     }
     if (strlen(config->usbSerialnumber) != 0) {
-        serial_number = strdup(s);
+        serial_number = strdup(config->usbSerialnumber);
     }
 
     /* these config settings are not documented intentionally */

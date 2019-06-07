@@ -98,6 +98,8 @@ map_key(Lcdm001Keys key)
 	case LCDM001_KEYS_DOWN_KEY:
 		return DOWN_KEY;
 	}
+
+	return 0; // unreachable
 }
 
 /**
