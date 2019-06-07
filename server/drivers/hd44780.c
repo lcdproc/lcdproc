@@ -299,7 +299,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 
 	/* READ THE CONFIG */
 	Hd44780DriverConfig config;
-	elektraGet2V(elektra, &config, ELEKTRA_TAG_HD44780, drvthis->index);
+	elektraFillStructV(elektra, &config, ELEKTRA_TAG_HD44780, drvthis->index);
 
 	// TODO (elektra): use hexnumber?
 	p->port			= (unsigned int)strtoul(config.port, NULL, 16); /* works because, spec enforces hex string */

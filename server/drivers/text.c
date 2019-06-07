@@ -71,7 +71,7 @@ text_init (Driver *drvthis, Elektra * elektra)
 	/* initialize private data */
 
 	TextDriverConfig config;
-	elektraGet2V(elektra, &config, ELEKTRA_TAG_TEXT, drvthis->index);
+	elektraFillStructV(elektra, &config, ELEKTRA_TAG_TEXT, drvthis->index);
 
 	// Set display sizes
 	if ((drvthis->request_display_width() > 0)

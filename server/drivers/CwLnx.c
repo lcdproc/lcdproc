@@ -478,7 +478,7 @@ CwLnx_init(Driver *drvthis, Elektra * elektra)
     /* Read config */
 
 	CwLnxDriverConfig config;
-	elektraGet2V(elektra, &config, ELEKTRA_TAG_CWLNX, drvthis->index);
+	elektraFillStructV(elektra, &config, ELEKTRA_TAG_CWLNX, drvthis->index);
 
     /* Which model is it (1602, 12232 or 12832)? */
     p->model = config.model;

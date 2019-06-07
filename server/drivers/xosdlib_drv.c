@@ -82,7 +82,7 @@ xosdlib_drv_init (Driver *drvthis, Elektra * elektra)
 
 	/* Read config */
 	XosdDriverConfig config;
-	elektraGet2V(elektra, &config, ELEKTRA_TAG_XOSD, drvthis->index);
+	elektraFillStructV(elektra, &config, ELEKTRA_TAG_XOSD, drvthis->index);
 
 	/* Which size */
 	if ((drvthis->request_display_width() > 0)

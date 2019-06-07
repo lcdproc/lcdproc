@@ -95,7 +95,7 @@ LB216_init(Driver *drvthis, Elektra * elektra)
 
   /* Read config */
   Lb216DriverConfig config;
-  elektraGet2V(elektra, &config, ELEKTRA_TAG_LB216, drvthis->index);
+  elektraFillStructV(elektra, &config, ELEKTRA_TAG_LB216, drvthis->index);
 
   /* What device should be used */
   report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);

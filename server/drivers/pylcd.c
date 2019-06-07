@@ -327,7 +327,7 @@ pyramid_init(Driver *drvthis, Elektra * elektra)
      */
 
 	PyramidDriverConfig config;
-	elektraGet2V(elektra, &config, ELEKTRA_TAG_PYRAMID, drvthis->index);
+	elektraFillStructV(elektra, &config, ELEKTRA_TAG_PYRAMID, drvthis->index);
 
     /* Which serial device should be used? */
 	report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
