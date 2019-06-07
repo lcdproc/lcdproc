@@ -67,7 +67,7 @@ sock_init_sockaddr (sockaddr_in *name, const char *hostname, unsigned short int 
  * \return  socket file descriptor on success, -1 on error
  */
 int
-sock_connect (char *host, unsigned short int port)
+sock_connect (const char *host, unsigned short int port)
 {
 	struct sockaddr_in servername;
 	int sock;
@@ -312,7 +312,7 @@ sock_printf_error(int fd, const char *format, .../*args*/ )
 	va_list ap;
 	int size = 0;
 
-	strncpy(buf, huh, sizeof(huh)); // note: sizeof(huh) < MAXMSG
+	strcpy(buf, huh); // note: sizeof(huh) < MAXMSG
 
 	va_start(ap, format);
 	size = vsnprintf(buf + (sizeof(huh)-1), sizeof(buf) - (sizeof(huh)-1), format, ap);

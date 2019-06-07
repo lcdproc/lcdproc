@@ -18,7 +18,7 @@
 #endif
 
 /** Connect to server on host, port */
-int sock_connect (char *host, unsigned short int port);
+int sock_connect (const char *host, unsigned short int port);
 /** Disconnect from server */
 int sock_close (int fd);
 /** Send printf-like formatted output */
