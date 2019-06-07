@@ -8,6 +8,8 @@
 #define LOAD_MIN 0.05
 #endif
 
+#include <elektra/elektra.h>
+
 int xload_screen(int rep, int display, int *flags_ptr, Elektra * elektra);
 
 #endif

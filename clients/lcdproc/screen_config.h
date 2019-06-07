@@ -3,7 +3,7 @@
 
 #include <elektra.h>
 
-typedef struct {
+typedef struct _screen_base_config {
     kdb_boolean_t active;
     kdb_unsigned_long_t on_time;
     kdb_unsigned_long_t off_time;

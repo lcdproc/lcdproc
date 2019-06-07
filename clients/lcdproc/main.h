@@ -15,7 +15,6 @@
 #include "shared/defines.h"
 
 #include "elektragen.h"
-#include "screen_config.h"
 
 #ifndef TRUE
 # define TRUE    1
@@ -58,7 +57,7 @@ typedef struct _screen_mode
 	int timer;		/**< Time since last update */
 	int flags;		/**< See mode flags defines */
 	int (*func)(int,int,int *, Elektra *);	/**< Pointer to init / update function */
-	ScreenBaseConfig (*get_base_config)(Elektra *, ScreenBaseConfig *); /**< Pointer to elektraGet function for base config */
+	void (*get_base_config)(Elektra *, ScreenBaseConfig *); /**< Pointer to elektraGet function for base config */
 } ScreenMode;
 
 /* mode flags */

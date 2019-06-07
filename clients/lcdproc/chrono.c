@@ -122,7 +122,7 @@ time_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 	tickTime(now, heartbeat);
 
 	if (lcd_hgt >= 4) {
-		char tmp[40];	/* should be large enough */
+		char tmp[64];	/* should be large enough */
 
 		machine_get_uptime(&uptime, &idle);
 
@@ -148,7 +148,8 @@ time_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 			sock_printf(sock, "widget_set T two %i 3 {%s}\n", xoffs, today);
 
 		/* display the time & idle time... */
-		sprintf(tmp, "%s %3i%% idle", now, (int) idle);
+		int idle_int = max(0, min(100, (int) idle));
+		sprintf(tmp, "%s %3i%% idle", now, idle_int);
 		xoffs = (lcd_wid > strlen(tmp)) ? ((lcd_wid - strlen(tmp)) / 2) + 1 : 1;
 		if (display)
 			sock_printf(sock, "widget_set T three %i 4 {%s}\n", xoffs, tmp);
