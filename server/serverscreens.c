@@ -80,7 +80,7 @@ server_screen_init(Elektra * elektra)
 
 	/* Create all the widgets...*/
 	for (i = 0; i < display_props->height; i++) {
-		char id[8];
+		char id[20];
 		sprintf(id, "line%d", i+1);
 
 		w = widget_create(id, WID_STRING, server_screen);
@@ -101,9 +101,9 @@ server_screen_init(Elektra * elektra)
 	if (has_hello_msg) {		/* show whole Hello message */
 		for (kdb_long_long_t i = 0; i < display_props->height && i < helloArraySize; i++) {
 	 		const char *line = elektraGetV(elektra, ELEKTRA_TAG_SERVER_HELLO, i);
-			char id[8];
+			char id[30];
 
-			sprintf(id, "line%d", i+1);
+			sprintf(id, "line"ELEKTRA_LONG_LONG_F, i+1);
 			w = screen_find_widget(server_screen, id);
 			if ((w != NULL) && (w->text != NULL)) {
 				strncpy(w->text, line, LCD_MAX_WIDTH);
@@ -275,7 +275,7 @@ reset_server_screen(int rotate, int heartbeat, int title)
 					? PRI_INFO : PRI_BACKGROUND;
 
 	for (i = 0; i < display_props->height; i++) {
-		char id[8];
+		char id[20];
 		Widget *w;
 
 		sprintf(id, "line%d", i+1);

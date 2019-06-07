@@ -136,7 +136,7 @@ static int report_dest = UNSET_INT;
 static int report_level = UNSET_INT;
 
 static int stored_argc;
-static char **stored_argv;
+static const char **stored_argv;
 static volatile short got_reload_signal = 0;
 
 static Elektra * elektra;
@@ -257,8 +257,6 @@ main(int argc, const char **argv)
 static void
 clear_settings(void)
 {
-	int i;
-
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	bind_port = UNSET_INT;
@@ -457,7 +455,7 @@ wave_to_parent(pid_t parent_pid)
 static int
 init_drivers(void)
 {
-	int i, res;
+	int res;
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
