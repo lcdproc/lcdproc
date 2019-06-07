@@ -37,7 +37,6 @@
 # endif
 #endif
 
-#include "shared/configfile.h"
 #include "shared/sockets.h"
 
 #include "main.h"

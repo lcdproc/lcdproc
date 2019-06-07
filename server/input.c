@@ -17,7 +17,6 @@
 
 #include "shared/sockets.h"
 #include "shared/report.h"
-#include "shared/configfile.h"
 #include "shared/LL.h"
 
 #include "drivers.h"

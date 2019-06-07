@@ -29,7 +29,6 @@
 #endif
 
 #include "shared/report.h"
-#include "shared/configfile.h"
 
 #include "drivers.h"
 #include "clients.h"

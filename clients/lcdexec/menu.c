@@ -18,7 +18,6 @@
 #include <stdlib.h>
 
 #include "shared/report.h"
-#include "shared/configfile.h"
 #include "shared/sockets.h"
 
 #include "menu.h"

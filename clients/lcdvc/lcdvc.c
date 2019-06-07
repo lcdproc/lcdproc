@@ -25,7 +25,6 @@
 #include "getopt.h"
 
 #include "shared/report.h"
-#include "shared/configfile.h"
 #include "shared/sockets.h"
 #include "lcd_link.h"
 #include "vc_link.h"

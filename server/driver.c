@@ -25,7 +25,6 @@
 #include "main.h" /* for timer  */
 
 #include "shared/report.h"
-#include "shared/configfile.h"
 
 #include "widget.h"
 #include "driver.h"

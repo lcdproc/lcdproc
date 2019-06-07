@@ -520,7 +520,6 @@ do_reload(void)
 
 	drivers_unload_all();		/* Close all drivers */
 
-	config_clear();
 	clear_settings();
 
 	elektraClose(elektra);

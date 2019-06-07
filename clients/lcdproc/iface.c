@@ -23,7 +23,6 @@
 
 #include "shared/sockets.h"
 #include "shared/report.h"
-#include "shared/configfile.h"
 #include "main.h"
 #include "machine.h"
 #include "util.h"
