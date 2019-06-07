@@ -345,7 +345,6 @@ static void command_dump(Command *command, int level)
 			report(RPT_DEBUG, "%*sgraytext = \"%s\"\n", level + 3, "", parameter.checkbox->graytext);
 			const char *strValue = ELEKTRA_TO_CONST_STRING(EnumCheckboxState)(parameter.checkbox->value);
 			report(RPT_DEBUG, "%*svalue = %s\n", level + 3, "", strValue);
-			elektraFree(strValue);
 			report(RPT_DEBUG, "%*s}\n", level + 2, "");
 			break;
 		case COMMAND_PARAMETER_TYPE_ALPHA:
