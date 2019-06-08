@@ -91,22 +91,6 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 		return -1;
 	}
 
-	/* make sure the canvas is there... */
-	p->canvas = (g15canvas *) malloc(sizeof(g15canvas));
-	if (p->canvas == NULL) {
-		report(RPT_ERR, "%s: unable to create canvas", drvthis->name);
-		g15_close(drvthis);
-		return -1;
-	}
-
-	/* make sure the backingstore is there... */
-	p->backingstore = (g15canvas *) malloc(sizeof(g15canvas));
-	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
-		g15_close(drvthis);
-		return -1;
-	}
-
 	p->font = g15r_requestG15DefaultFont(G15_TEXT_LARGE);
 	if (p->font == NULL) {
 		report(RPT_ERR, "%s: unable to load default large font", drvthis->name);
@@ -114,8 +98,8 @@ MODULE_EXPORT int g15_init (Driver *drvthis)
 		return -1;
 	}
 
-	g15r_initCanvas(p->canvas);
-	g15r_initCanvas(p->backingstore);
+	g15r_initCanvas(&p->canvas);
+	g15r_initCanvas(&p->backingstore);
 
 	return 0;
 }
@@ -131,8 +115,6 @@ MODULE_EXPORT void g15_close (Driver *drvthis)
 	if (p->g15screen_fd != -1)
 		g15_close_screen(p->g15screen_fd);
 
-	free(p->canvas);
-	free(p->backingstore);
 	free(p);
 }
 
@@ -170,8 +152,8 @@ MODULE_EXPORT void g15_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	g15r_clearScreen(p->canvas, 0);
-	g15r_clearScreen(p->backingstore, 0);
+	g15r_clearScreen(&p->canvas, 0);
+	g15r_clearScreen(&p->backingstore, 0);
 }
 
 // Blasts a single frame onscreen, to the lcd...
@@ -180,12 +162,12 @@ MODULE_EXPORT void g15_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	if (memcmp(p->backingstore->buffer, p->canvas->buffer, G15_BUFFER_LEN * sizeof(unsigned char)) == 0)
+	if (memcmp(p->backingstore.buffer, p->canvas.buffer, G15_BUFFER_LEN * sizeof(unsigned char)) == 0)
 		return;
 
-	memcpy(p->backingstore->buffer, p->canvas->buffer, G15_BUFFER_LEN * sizeof(unsigned char));
+	memcpy(p->backingstore.buffer, p->canvas.buffer, G15_BUFFER_LEN * sizeof(unsigned char));
 
-	g15_send(p->g15screen_fd,(char*)p->canvas->buffer,1048);
+	g15_send(p->g15screen_fd, (char*)p->canvas.buffer, 1048);
 }
 
 // LCDd 1-dimension char coordinates to g15r 0-(dimension-1) pixel coords */
@@ -221,12 +203,12 @@ MODULE_EXPORT void g15_chr (Driver *drvthis, int x, int y, char c)
 		return;
 
 	/* Clear background */
-	g15r_pixelReverseFill(p->canvas, px, py,
+	g15r_pixelReverseFill(&p->canvas, px, py,
 			      px + G15_CELL_WIDTH - 1,
 			      py + G15_CELL_HEIGHT - 1,
 			      G15_PIXEL_FILL, G15_COLOR_WHITE);
 	/* Render character, coords - 1 because of g15r peculiarities  */
-	g15r_renderG15Glyph(p->canvas, p->font, c, px - 1, py - 1, G15_COLOR_BLACK, 0);
+	g15r_renderG15Glyph(&p->canvas, p->font, c, px - 1, py - 1, G15_COLOR_BLACK, 0);
 }
 
 // Prints a string on the lcd display, at position (x,y).  The
@@ -255,13 +237,13 @@ MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon)
 
 		px2 = px1 + G15_CELL_WIDTH - 2;
 		py2 = py1 + G15_CELL_HEIGHT - 2;
-		g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
+		g15r_pixelBox(&p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 		return 0;
 
 	case ICON_HEART_OPEN:
-		p->canvas->mode_reverse = 1;
+		p->canvas.mode_reverse = 1;
 		g15_chr(drvthis, x, y, G15_ICON_HEART_OPEN);
-		p->canvas->mode_reverse = 0;
+		p->canvas.mode_reverse = 0;
 		return 0;
 
 	/* Simple 1:1 mapping cases */
@@ -305,7 +287,7 @@ MODULE_EXPORT void g15_hbar(Driver *drvthis, int x, int y, int len, int promille
 	px2 = px1 + total_pixels;
 	py2 = py1 + G15_CELL_HEIGHT - 2;
 
-	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
+	g15r_pixelBox(&p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 }
 
 // Draws a vertical bar growing up
@@ -324,7 +306,7 @@ MODULE_EXPORT void g15_vbar(Driver *drvthis, int x, int y, int len, int promille
 	py2 = py1 + total_pixels - 1;
 	px2 = px1 + G15_CELL_WIDTH - 2;
 
-	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
+	g15r_pixelBox(&p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 }
 
 //  Return one char from the Keyboard
@@ -432,9 +414,9 @@ MODULE_EXPORT void g15_num(Driver *drvthis, int x, int num)
 
    	for (i=0;i<(width*height);++i)
    	{
-      	int color = (g15_bignum_data[num][i] ? G15_COLOR_WHITE : G15_COLOR_BLACK);
-      	int px = ox + i % width;
-      	int py = i / width;
-      	g15r_setPixel(p->canvas, px, py, color);
+		int color = (g15_bignum_data[num][i] ? G15_COLOR_WHITE : G15_COLOR_BLACK);
+		int px = ox + i % width;
+		int py = i / width;
+		g15r_setPixel(&p->canvas, px, py, color);
    	}
 }
