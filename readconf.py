@@ -208,7 +208,7 @@ def write_to_kdb(kdb_config):
 
 
 def export_kdb_tmp(outfile):
-    cmd = ["kdb", "export", "user/sw/lcdproc/tmp", "yamlcpp", outfile.name]
+    cmd = ["kdb", "export", "user/sw/lcdproc/tmp", "ini", outfile.name]
     subprocess.run(cmd, stdout=subprocess.DEVNULL)
 
 
@@ -246,4 +246,4 @@ write_to_kdb(kdb_config)
 export_kdb_tmp(args.outfile)
 clean_kdb_tmp()
 
-print("Success: Please mount '" + args.outfile.name + "' with yamlcpp under 'user/sw/lcdproc/" + mode + "/#0/current'")
+print("Success: Please import '" + args.outfile.name + "' with ini into '/sw/lcdproc/" + mode + "/#0/current'")
