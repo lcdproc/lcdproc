@@ -33,8 +33,8 @@ typedef struct g15_private_data {
 	/* g15daemon version for compatibility checks */
 	const char *g15d_ver;
 	/* canvas for LCD contents */
-	g15canvas *canvas;
-	g15canvas *backingstore;
+	g15canvas canvas;
+	g15canvas backingstore;
 	/* font */
 	g15font *font;
 	/* status indicators */
