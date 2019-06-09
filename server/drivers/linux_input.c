@@ -294,34 +294,35 @@ linuxInput_get_key (Driver *drvthis)
 	if (event.type != EV_KEY || event.value == 0)
 		return NULL;
 
-	switch (event.code) {
-	case KEY_ESC:
-		return "Escape";
-
-	case KEY_UP:
-		return "Up";
-
-	case KEY_LEFT:
-		return "Left";
-
-	case KEY_RIGHT:
-		return "Right";
-
-	case KEY_DOWN:
-		return "Down";
-
-	case KEY_ENTER:
-	case KEY_KPENTER:
-		return "Enter";
-
-	default:
-		LL_Rewind(p->buttonmap);
+	if (LL_GetFirst(p->buttonmap)) {
+		/* Use user config for button mapping */
 		k = LL_Find(p->buttonmap, compare_with_keycode, &event.code);
 		if (k)
 			return k->button;
-		else
-			report(RPT_INFO, "linux_input: Unknown key code: %d", event.code);
+	} else {
+		/* No user config, fallback to defaults. */
+		switch (event.code) {
+		case KEY_ESC:
+			return "Escape";
 
-		return NULL;
+		case KEY_UP:
+			return "Up";
+
+		case KEY_LEFT:
+			return "Left";
+
+		case KEY_RIGHT:
+			return "Right";
+
+		case KEY_DOWN:
+			return "Down";
+
+		case KEY_ENTER:
+		case KEY_KPENTER:
+			return "Enter";
+		}
 	}
+
+	report(RPT_INFO, "linux_input: Unknown key code: %d", event.code);
+	return NULL;
 }
