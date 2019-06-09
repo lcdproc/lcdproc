@@ -69,6 +69,8 @@ keycode_create(const char *configvalue)
 /** private data for the linux event device driver */
 typedef struct linuxInput_private_data {
 	int fd;
+	/* For re-acquiring the device on connection loss when openen by name */
+	const char *name;
 	LinkedList *buttonmap;
 } PrivateData;
 
@@ -183,6 +185,7 @@ linuxInput_init (Driver *drvthis)
 					drvthis->name, s);
 			return -1;
 		}
+		p->name = s;
 	}
 
 	for (i = 0; (s = drvthis->config_get_string(drvthis->name, "key", i, NULL)) != NULL; i++) {
@@ -256,8 +259,35 @@ linuxInput_get_key (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	struct input_event event;
 	struct keycode *k;
+	int result = -1;
 
-	if (read(p->fd, &event, sizeof(event)) != sizeof(event))
+	if (p->fd != -1) {
+		result = read(p->fd, &event, sizeof(event));
+		/* Device unplugged / lost connection ? */
+		if (result == -1 && errno == ENODEV) {
+			report(RPT_WARNING, "Lost input device connection");
+			close(p->fd);
+			p->fd = -1;
+		}
+	}
+
+	/*
+	 * We may temporary loose access to the device. Possible causes are e.g.:
+	 * 1. A temporary connection loss (Bluetooth); or
+	 * 2. The device dropping of the bus to re-appear with another prod-id
+	 *    (the G510 keyboard does this when (un)plugging the headphones).
+	 * If the device was opened by name, we try to re-acquire the device
+	 * here to deal with these kinda temporary device losses.
+	 */
+	if (p->fd == -1 && p->name) {
+		p->fd = linuxInput_search_by_name(p->name);
+		if (p->fd != -1) {
+			report(RPT_WARNING, "Successfully re-opened input device '%s'", p->name);
+			result = read(p->fd, &event, sizeof(event));
+		}
+	}
+
+	if (result != sizeof(event))
 		return NULL;
 
 	/* Ignore release events and not-key events */
