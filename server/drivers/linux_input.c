@@ -248,17 +248,16 @@ compare_with_keycode (void *data, void *codep)
 }
 
 /**
- * Read the next input event.
- * \param drvthis  Pointer to driver structure.
- * \retval         String representation of the key;
- *                 \c NULL for nothing available / error.
+ * Helper function to read a key code from the linux input device.
+ * \param p      Pointer to driver linuxInput PrivateData structure
+ * \retval > 0   Linux KEY_ key-code
+ * \retval 0     Non key-press event read
+ * \retval -1    No events are queued
  */
-MODULE_EXPORT const char *
-linuxInput_get_key (Driver *drvthis)
+static int
+linuxInput_get_key_code (PrivateData *p)
 {
-	PrivateData *p = drvthis->private_data;
 	struct input_event event;
-	struct keycode *k;
 	int result = -1;
 
 	if (p->fd != -1) {
@@ -288,20 +287,35 @@ linuxInput_get_key (Driver *drvthis)
 	}
 
 	if (result != sizeof(event))
-		return NULL;
+		return -1;
 
 	/* Ignore release events and not-key events */
-	if (event.type != EV_KEY || event.value == 0)
+	return (event.type == EV_KEY && event.value) ? event.code : 0;
+}
+
+/**
+ * Helper function to convert a key code to a key name.
+ * \param p      Pointer to driver linuxInput PrivateData structure
+ * \param code   Linux KEY_ key-code to convert
+ * \retval       String representation of the key;
+ *               \c NULL for nothing available / error.
+ */
+static const char *
+linuxInput_key_code_to_key_name (PrivateData *p, uint16_t code)
+{
+	struct keycode *k;
+
+	if (code == 0)
 		return NULL;
 
 	if (LL_GetFirst(p->buttonmap)) {
 		/* Use user config for button mapping */
-		k = LL_Find(p->buttonmap, compare_with_keycode, &event.code);
+		k = LL_Find(p->buttonmap, compare_with_keycode, &code);
 		if (k)
 			return k->button;
 	} else {
 		/* No user config, fallback to defaults. */
-		switch (event.code) {
+		switch (code) {
 		case KEY_ESC:
 			return "Escape";
 
@@ -323,6 +337,31 @@ linuxInput_get_key (Driver *drvthis)
 		}
 	}
 
-	report(RPT_INFO, "linux_input: Unknown key code: %d", event.code);
+	report(RPT_INFO, "linux_input: Unknown key code: %d", code);
 	return NULL;
+}
+
+/**
+ * Read the next input event.
+ * \param drvthis  Pointer to driver structure.
+ * \retval         String representation of the key;
+ *                 \c NULL for nothing available / error.
+ */
+MODULE_EXPORT const char *
+linuxInput_get_key (Driver *drvthis)
+{
+	PrivateData *p = drvthis->private_data;
+	const char *retval = NULL;
+	int code;
+
+	/*
+	 * We may have buildup a backlog of events between polls, keep reading
+	 * events until we are out of events, or we get a valid key-name.
+	 */
+	do {
+		code = linuxInput_get_key_code(p);
+	} while(code >= 0 &&
+		(retval = linuxInput_key_code_to_key_name(p, code)) == NULL);
+
+	return retval;
 }
