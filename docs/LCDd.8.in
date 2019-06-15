@@ -377,7 +377,9 @@ of display available.
 
 .SS CLIENT COMMANDS
 There are many commands for the client to send to the LCDd server, here is
-the list of commands for versions \fI0.3\fP - \fI0.4\fP of the protocol:
+a list of the most important commands for versions \fI0.3\fP - \fI0.4\fP
+of the protocol. For a full command reference see the
+\fILCDProc Developers Guide\fP:
 .TP
 .B hello
 This starts a client-server session with the LCDd server; the server will

@@ -51,6 +51,7 @@ typedef struct Screen {
 	short int cursor_x;
 	short int cursor_y;
 	char *keys;
+	int keys_size;
 	LinkedList *widgetlist;
 	struct Client *client;
 } Screen;
@@ -72,7 +73,7 @@ extern int  default_priority ;
 Screen *screen_create(char *id, Client *client);
 
 /* Destroys a screen */
-int screen_destroy(Screen *s);
+void screen_destroy(Screen *s);
 
 /* Add a widget to a screen */
 int screen_add_widget(Screen *s, Widget *w);
@@ -98,6 +99,9 @@ static inline Widget *screen_getnext_widget(Screen *s)
 
 /* Find a widget in a screen */
 Widget *screen_find_widget(Screen *s, char *id);
+
+/* Test if key is used by screen */
+char *screen_find_key(Screen *s, const char *key);
 
 /* Convert priority names to priority and vv */
 Priority screen_pri_name_to_pri(char *pri_name);
