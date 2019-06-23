@@ -9,8 +9,10 @@
  *
  * Copyright(c) 2001, Joris Robijn
  */
-
+#ifdef HAVE_ALLOCA_H
 #include <alloca.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>

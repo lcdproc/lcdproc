@@ -14,8 +14,10 @@
  *		 2002, Joris Robijn
  *		 2008, Peter Marschall
  */
-
+#ifdef HAVE_ALLOCA_H
 #include <alloca.h>
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

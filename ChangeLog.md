@@ -3,6 +3,7 @@ v0.5dev (ongoing development)
   - [fixed] HD44780: turn off display during initialization to not show garbage
   - [added] HD44780: support almost compatible WINSTAR OLED displays
   - [added] HD44780: support internal backlight mode of modern controllers
+  - [fixed] alloca.h
 
 v0.5.9
   - [removed] scripts/debian (https://github.com/lcdproc/lcdproc/issues/39)
