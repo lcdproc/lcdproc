@@ -1,4 +1,10 @@
 v0.5dev (ongoing development)
+  - [added] WINSTAR WEH001602A font bank 1 charmap and font bank selector
+  - [fixed] HD44780: turn off display during initialization to not show garbage
+  - [added] HD44780: support almost compatible WINSTAR OLED displays
+  - [added] HD44780: support internal backlight mode of modern controllers
+
+v0.5.9
   - [removed] scripts/debian (https://github.com/lcdproc/lcdproc/issues/39)
   - [fixed] spurious (direct) dependencies of ftdi drivers on libusb
   - [API] now drivers need to include "shared/report.h" instead of "report.h"
@@ -13,6 +19,9 @@ v0.5dev (ongoing development)
   - [fixed] Segfault in LL_Find() on empty list
   - [fixed] Add C99 (https://github.com/lcdproc/lcdproc/issues/81)
   - [added] Add Portwell EZIO-100 and EZIO-300 support to serial HD44780 driver
+  - [fixed] Removed stale variable in hd44780-i2c.c
+  - [fixed] Removed stale screen_add_key_func
+  - [fixed] Removed stale screen_del_key_func 
 
 v0.5.8
   - [added] Add driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC Spectra Media Centre PCs

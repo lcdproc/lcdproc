@@ -206,7 +206,7 @@ usb4all_init(PrivateData *p)
 	}
 
 	usb4all_init_pwm(p, USB4ALL_PWM_CONTRAST);
-	if (p->have_backlight) {
+	if (have_backlight_pin(p)) {
 		usb4all_init_pwm(p, USB4ALL_PWM_BRIGHTNESS);
 	}
 
@@ -452,7 +452,7 @@ void
 usb4all_HD44780_close(PrivateData *p)
 {
 	if (p->usbHandle != NULL) {
-		if (p->have_backlight) {
+		if (have_backlight_pin(p)) {
 			usb4all_HD44780_backlight(p, BACKLIGHT_OFF);
 		}
 

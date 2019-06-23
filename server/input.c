@@ -41,7 +41,6 @@ char *scroll_down_key;
 
 /* Local functions */
 int server_input(int key);
-void input_send_to_client(Client *c, const char *key);
 void input_internal_key(const char *key);
 
 
@@ -62,11 +61,11 @@ int input_init(void)
 }
 
 
-int input_shutdown()
+void input_shutdown()
 {
 	if (!keylist) {
 		/* Program shutdown before completed startup */
-		return -1;
+		return;
 	}
 
 	free(keylist);
@@ -76,18 +75,15 @@ int input_shutdown()
 	free(next_screen_key);
 	free(scroll_up_key);
 	free(scroll_down_key);
-
-	return 0;
 }
 
 
-int
-handle_input(void)
+
+void handle_input(void)
 {
 	const char *key;
 	Screen *current_screen;
 	Client *current_client;
-	Client *target;
 	KeyReservation *kr;
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
@@ -103,44 +99,15 @@ handle_input(void)
 
 		/* Find what client wants the key */
 		kr = input_find_key(key, current_client);
-		if (kr) {
+		if (kr && kr->client) {
 			/* A hit ! */
-			report(RPT_DEBUG, "%s: reserved key: \"%.40s\"", __FUNCTION__, key);
-			target = kr->client;
+			debug(RPT_DEBUG, "%s: reserved key: \"%.40s\"", __FUNCTION__, key);
+			sock_printf(kr->client->sock, "key %s\n", key);
 		} else {
-			report(RPT_DEBUG, "%s: left over key: \"%.40s\"", __FUNCTION__, key);
-			/*target = current_client;*/
-			target = NULL; /* left-over keys are always for internal client */
-		}
-		if (target == NULL) {
-			report(RPT_DEBUG, "%s: key is for internal client", __FUNCTION__);
+			debug(RPT_DEBUG, "%s: left over key: \"%.40s\"", __FUNCTION__, key);
 			input_internal_key(key);
-		} else {
-			/* It's an external client */
-			report(RPT_DEBUG, "%s: key is for external client on socket %d", __FUNCTION__, target->sock);
-			input_send_to_client(target, key);
 		}
 	}
-	return 0;
-}
-
-
-void input_send_to_client(Client *c, const char *key)
-{
-	char *s;
-	size_t size = strlen(key) + sizeof("key %s\n"); // this is large enough
-
-	debug(RPT_DEBUG, "%s(client=[%d], key=\"%.40s\")", __FUNCTION__, c->sock, key);
-
-	/* Allocate just as much as we need */
-	s = calloc(1, size);
-	if (s != NULL) {
-		snprintf(s, size, "key %s\n", key);
-		sock_send_string(c->sock, s);
-		free(s);
-	}
-	else
-		report(RPT_ERR, "%s: malloc failure", __FUNCTION__);
 }
 
 

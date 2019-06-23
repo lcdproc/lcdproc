@@ -149,7 +149,7 @@ sock_printf(int fd, const char *format, .../*args*/ )
  * \return  Number of bytes sent.
  */
 int
-sock_send_string (int fd, char *string)
+sock_send_string (int fd, const char *string)
 {
 	return sock_send(fd, string, strlen(string));
 }
@@ -219,7 +219,7 @@ sock_recv_string (int fd, char *dest, size_t maxlen)
  * \return  Number of bytes sent.
  */
 int
-sock_send (int fd, void *src, size_t size)
+sock_send (int fd, const void *src, size_t size)
 {
 	int offset = 0;
 
@@ -292,7 +292,7 @@ sock_geterror(void)
  * Send an already formatted error message to the client.
  * \param fd  socket
  * \param message  the message to send (without the "huh? ") */
-int sock_send_error(int fd, char* message)
+int sock_send_error(int fd, const char *message)
 {
 	// simple: performance penalty isn't worth more work...
 	return sock_printf_error(fd, "%s", message);

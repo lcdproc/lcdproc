@@ -315,7 +315,7 @@ send_nibble(PrivateData *p, unsigned char ch, unsigned char displayID)
 		if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
 			SET_GPIO(p->rpi_gpio->en2, 0);
 		p->hd44780_functions->uPause(p, 50);
-	}		
+	}
 }
 
 
@@ -333,7 +333,7 @@ lcdrpi_HD44780_close(PrivateData *p)
 	INP_GPIO(p->rpi_gpio->d6);
 	INP_GPIO(p->rpi_gpio->d5);
 	INP_GPIO(p->rpi_gpio->d4);
-	if (p->have_backlight)
+	if (have_backlight_pin(p))
 		INP_GPIO(p->backlight_bit);
 	if (p->numDisplays > 1)
 		INP_GPIO(p->rpi_gpio->en2);
@@ -376,12 +376,12 @@ hd_init_rpi(Driver *drvthis)
 	p->rpi_gpio->d5 = drvthis->config_get_int(drvthis->name, "pin_D5", 0, RPI_DEF_D5);
 	p->rpi_gpio->d4 = drvthis->config_get_int(drvthis->name, "pin_D4", 0, RPI_DEF_D4);
 
-	debug(RPT_INFO, "hd_init_rpi: Pin EN mapped to GPIO%d", p->rpi_gpio->en);
-	debug(RPT_INFO, "hd_init_rpi: Pin RS mapped to GPIO%d", p->rpi_gpio->rs);
-	debug(RPT_INFO, "hd_init_rpi: Pin D4 mapped to GPIO%d", p->rpi_gpio->d4);
-	debug(RPT_INFO, "hd_init_rpi: Pin D5 mapped to GPIO%d", p->rpi_gpio->d5);
-	debug(RPT_INFO, "hd_init_rpi: Pin D6 mapped to GPIO%d", p->rpi_gpio->d6);
-	debug(RPT_INFO, "hd_init_rpi: Pin D7 mapped to GPIO%d", p->rpi_gpio->d7);
+	report(RPT_INFO, "hd_init_rpi: Pin EN mapped to GPIO%d", p->rpi_gpio->en);
+	report(RPT_INFO, "hd_init_rpi: Pin RS mapped to GPIO%d", p->rpi_gpio->rs);
+	report(RPT_INFO, "hd_init_rpi: Pin D4 mapped to GPIO%d", p->rpi_gpio->d4);
+	report(RPT_INFO, "hd_init_rpi: Pin D5 mapped to GPIO%d", p->rpi_gpio->d5);
+	report(RPT_INFO, "hd_init_rpi: Pin D6 mapped to GPIO%d", p->rpi_gpio->d6);
+	report(RPT_INFO, "hd_init_rpi: Pin D7 mapped to GPIO%d", p->rpi_gpio->d7);
 
 	if (check_pin(drvthis, p->rpi_gpio->en, allowed_gpio_pins, used_pins) ||
 	    check_pin(drvthis, p->rpi_gpio->rs, allowed_gpio_pins, used_pins) ||
@@ -402,13 +402,13 @@ hd_init_rpi(Driver *drvthis)
 		}
 	}
 
-	if (p->have_backlight) {	/* Backlight setup is optional */
+	if (have_backlight_pin(p)) {	/* Backlight setup is optional */
 		p->backlight_bit = drvthis->config_get_int(drvthis->name, "pin_BL", 0, RPI_DEF_BL);
 		debug(RPT_INFO, "hd_init_rpi: Backlight mapped to GPIO%d", p->backlight_bit);
 
 		if (check_pin(drvthis, p->backlight_bit, allowed_gpio_pins, used_pins) != 0) {
 			report(RPT_WARNING, "hd_init_rpi: Invalid backlight configuration - disabling backlight");
-			p->have_backlight = 0;
+			set_have_backlight_pin(p, 0);
 		}
 	}
 
@@ -429,7 +429,7 @@ hd_init_rpi(Driver *drvthis)
 	p->hd44780_functions->senddata = lcdrpi_HD44780_senddata;
 	p->hd44780_functions->close = lcdrpi_HD44780_close;
 
-	if (p->have_backlight) {
+	if (have_backlight_pin(p)) {
 		setup_gpio(drvthis, p->backlight_bit);
 		p->hd44780_functions->backlight = lcdrpi_HD44780_backlight;
 	}

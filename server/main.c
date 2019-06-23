@@ -104,7 +104,6 @@
 char *version = VERSION;
 char *protocol_version = PROTOCOL_VERSION;
 char *api_version = API_VERSION;
-char *build_date = __DATE__;
 
 
 /**** Configuration variables ****/
@@ -197,8 +196,8 @@ main(int argc, char **argv)
 
 	/* Report that server is starting (report will be delayed) */
 	report(RPT_NOTICE, "LCDd version %s starting", version);
-	report(RPT_INFO, "Built on %s, protocol version %s, API version %s",
-		build_date, protocol_version, api_version);
+	report(RPT_INFO, "Protocol version %s, API version %s",
+		protocol_version, api_version);
 
 	clear_settings();
 
@@ -666,8 +665,6 @@ init_drivers(void)
 {
 	int i, res;
 
-	int output_loaded = 0;
-
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	for (i = 0; i < num_drivers; i++) {
@@ -676,29 +673,19 @@ init_drivers(void)
 		if (res >= 0) {
 			/* Load went OK */
 
-			switch(res) {
-			  case 0: /* Driver does input only */
-			  	break;
-			  case 1: /* Driver does output */
-			  	output_loaded = 1;
-			  	break;
-			  case 2: /* Driver does output in foreground (don't daemonize) */
-			  	foreground_mode = 1;
-			  	output_loaded = 1;
-			  	break;
-			}
+			if (res == 2)
+				foreground_mode = 1;
 		} else {
 			report(RPT_ERR, "Could not load driver %.40s", drivernames[i]);
 		}
 	}
 
 	/* Do we have a running output driver ?*/
-	if (output_loaded) {
+	if (output_driver)
 		return 0;
-	} else {
-		report(RPT_ERR, "There is no output driver");
-		return -1;
-	}
+
+	report(RPT_ERR, "There is no output driver");
+	return -1;
 }
 
 

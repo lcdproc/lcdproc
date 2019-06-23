@@ -58,12 +58,14 @@ int Quit = 0;
 int sock = -1;
 
 char *version = VERSION;
-char *build_date = __DATE__;
 
 int lcd_wid = 0;
 int lcd_hgt = 0;
 int lcd_cellwid = 0;
 int lcd_cellhgt = 0;
+
+static int protocol_major_version = 0;
+static int protocol_minor_version = 0;
 
 static struct utsname unamebuf;
 
@@ -149,6 +151,21 @@ get_sysrelease(void)
 	return (unamebuf.release);
 }
 
+/** Check the protocol version.
+ * \param major  Major version to check for.
+ * \param minor  Minor version to check for.
+ * \return true if the the protocol version is equal to; or greater then the
+ * passed in major.minor; false otherwise.
+ */
+bool check_protocol_version(int major, int minor)
+{
+	if (protocol_major_version > major)
+		return true;
+	if (protocol_major_version == major && protocol_minor_version >= minor)
+		return true;
+
+	return false;
+}
 
 /** Enables or disables (and deletes) a screen */
 static int
@@ -547,14 +564,14 @@ menus_init()
 	 */
 	sock_send_string(sock, "menu_set_item {} test -prev {ask}\n");
 
-	sock_send_string(sock, "menu_set_item {test} test_action -next {test_checkbox}\n");
-	sock_send_string(sock, "menu_set_item {test} test_checkbox -next {test_ring} -prev test_action\n");
-	sock_send_string(sock, "menu_set_item {test} test_ring -next {test_slider} -prev {test_checkbox}\n");
-	sock_send_string(sock, "menu_set_item {test} test_slider -next {test_numeric} -prev {test_ring}\n");
-	sock_send_string(sock, "menu_set_item {test} test_numeric -next {test_alpha} -prev {test_slider}\n");
-	sock_send_string(sock, "menu_set_item {test} test_alpha -next {test_ip} -prev {test_numeric}\n");
-	sock_send_string(sock, "menu_set_item {test} test_ip -next {test_menu} -prev {test_alpha}\n");
-	sock_send_string(sock, "menu_set_item {test} test_menu_action -next {_close_}\n");
+	sock_send_string(sock, "menu_set_item {} test_action -next {test_checkbox}\n");
+	sock_send_string(sock, "menu_set_item {} test_checkbox -next {test_ring} -prev test_action\n");
+	sock_send_string(sock, "menu_set_item {} test_ring -next {test_slider} -prev {test_checkbox}\n");
+	sock_send_string(sock, "menu_set_item {} test_slider -next {test_numeric} -prev {test_ring}\n");
+	sock_send_string(sock, "menu_set_item {} test_numeric -next {test_alpha} -prev {test_slider}\n");
+	sock_send_string(sock, "menu_set_item {} test_alpha -next {test_ip} -prev {test_numeric}\n");
+	sock_send_string(sock, "menu_set_item {} test_ip -next {test_menu} -prev {test_alpha}\n");
+	sock_send_string(sock, "menu_set_item {} test_menu_action -next {_close_}\n");
 #endif				/* LCDPROC_CLIENT_TESTMENUS */
 
 	return 0;
@@ -639,6 +656,8 @@ main_loop(void)
 										lcd_cellwid = atoi(argv[++a]);
 									else if (0 == strcmp(argv[a], "cellhgt"))
 										lcd_cellhgt = atoi(argv[++a]);
+									else if (0 == strcmp(argv[a], "protocol"))
+										sscanf(argv[++a], "%d.%d", &protocol_major_version, &protocol_minor_version);
 								}
 								connected = 1;
 								if (displayname != NULL)
