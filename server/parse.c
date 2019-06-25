@@ -15,7 +15,6 @@
  *               2008, Peter Marschall
  */
 
-#include <alloca.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -56,7 +55,7 @@ static void parse_message(const char *str, Client *c)
 	int error = 0;
 	char quote = '\0';	/* The quote used to open a quote string */
 	int pos = 0;
-	char *arg_space;
+	char arg_space[strlen(str)+1];
 	int argc = 0;
 	char *argv[MAX_ARGUMENTS];
 	int argpos = 0;
@@ -67,8 +66,6 @@ static void parse_message(const char *str, Client *c)
 	/* We will create a list of strings that is shorter or equally long as
 	 * the original string str.
 	 */
-	arg_space = alloca(strlen(str)+1);
-
 	argv[0] = arg_space;
 
 	while ((state != ST_FINAL) && !error) {

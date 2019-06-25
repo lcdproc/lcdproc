@@ -10,7 +10,6 @@
  * Copyright(c) 2001, Joris Robijn
  */
 
-#include <alloca.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -49,8 +48,6 @@ drivers_load_driver(const char *name)
 {
 	Driver *driver;
 	const char *s;
-	char *driverpath;
-	char *filename;
 
 	debug(RPT_DEBUG, "%s(name=\"%.40s\")", __FUNCTION__, name);
 
@@ -66,16 +63,16 @@ drivers_load_driver(const char *name)
 
 	/* Retrieve data from config file */
 	s = config_get_string("server", "DriverPath", 0, "");
-	driverpath = alloca(strlen(s) + 1);
+	char driverpath[strlen(s) + 1];
 	strcpy(driverpath, s);
 
 	s = config_get_string(name, "File", 0, NULL);
+	char filename[strlen(driverpath) + strlen(s) + strlen(name) +
+			sizeof(MODULE_EXTENSION)];
 	if (s) {
-		filename = alloca(strlen(driverpath) + strlen(s) + 1);
 		strcpy(filename, driverpath);
 		strcat(filename, s);
 	} else {
-		filename = alloca(strlen(driverpath) + strlen(name) + strlen(MODULE_EXTENSION) + 1);
 		strcpy(filename, driverpath);
 		strcat(filename, name);
 		strcat(filename, MODULE_EXTENSION);

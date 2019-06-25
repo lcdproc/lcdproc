@@ -15,7 +15,6 @@
  *		 2008, Peter Marschall
  */
 
-#include <alloca.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -101,7 +100,7 @@ widget_create(char *id, WidgetType type, Screen *screen)
 
 	if (type == WID_FRAME) {
 		/* create a screen for the frame widget */
-		char *frame_name = alloca(sizeof("frame_") + strlen(id));
+		char frame_name[sizeof("frame_") + strlen(id)];
 
 		strcpy(frame_name, "frame_");
 		strcat(frame_name, id);
