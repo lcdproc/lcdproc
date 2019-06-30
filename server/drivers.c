@@ -66,17 +66,12 @@ drivers_load_driver(const char *name)
 	char driverpath[strlen(s) + 1];
 	strcpy(driverpath, s);
 
-	s = config_get_string(name, "File", 0, NULL);
-	char filename[strlen(driverpath) + strlen(s) + strlen(name) +
-			sizeof(MODULE_EXTENSION)];
-	if (s) {
-		strcpy(filename, driverpath);
-		strcat(filename, s);
-	} else {
-		strcpy(filename, driverpath);
-		strcat(filename, name);
+	s = config_get_string(name, "File", 0, name);
+	char filename[strlen(driverpath) + strlen(s) + sizeof(MODULE_EXTENSION)];
+	strcpy(filename, driverpath);
+	strcat(filename, s);
+	if (s == name)
 		strcat(filename, MODULE_EXTENSION);
-	}
 
 	/* Load the module */
 	driver = driver_load(name, filename);
