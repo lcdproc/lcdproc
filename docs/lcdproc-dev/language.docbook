@@ -455,7 +455,9 @@
 		    <literal>pbar</literal>
 		  </term>
 		  <listitem><para>
-		      A percentage / progress bar.
+		      A percentage / progress bar. This widget-type is only
+                      available on servers which report a widget language
+                      version of 0.4 or higher in their hello response.
 		    </para></listitem>
 		</varlistentry>
 		<varlistentry>
