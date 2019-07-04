@@ -224,7 +224,7 @@ sort_procs(void *a, void *b)
 
 
 /**
- * Mem Top Screen displays info about top 5 memory hogs...
+ * Mem Top Screen displays info about top memory hogs...
  *
  *\verbatim
  *
@@ -246,7 +246,24 @@ int
 mem_top_screen(int rep, int display, int *flags_ptr)
 {
 	LinkedList *procs;
+	int lines;
 	int i;
+
+	/* On screen <= 4 lines show info for 5 processes and use scrolling */
+	if (lcd_hgt <= 4)
+		lines = 5;
+	/*
+	 * On 5 lines displays we have 4 free lines, using 5 lines with
+	 * scrolling here makes things look like we scroll 1 line down and
+	 * then 1 line back up again, which looks wrong. So we use as many
+	 * lines as fit (4) instead of 5 on a 5 lines display, so that we do
+	 * not get the weird scrolling.
+	 *
+	 * Likewise for > 5 lines we also want to show as many lines as fit
+	 * so that we use the entire screen.
+	 */
+	else
+		lines = lcd_hgt - 1;
 
 	if ((*flags_ptr & INITIALIZED) == 0) {
 		*flags_ptr |= INITIALIZED;
@@ -260,12 +277,12 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 		sock_send_string(sock, "widget_add S f frame\n");
 
 		/* scroll rate: 1 line every X ticks (= 1/8 sec) */
-		sock_printf(sock, "widget_set S f 1 2 %i %i %i 5 v %i\n",
-			    lcd_wid, lcd_hgt, lcd_wid,
+		sock_printf(sock, "widget_set S f 1 2 %i %i %i %i v %i\n",
+			    lcd_wid, lcd_hgt, lcd_wid, lines,
 			    ((lcd_hgt >= 4) ? 8 : 12));
 
 		/* frame contents */
-		for (i = 1; i <= 5; i++) {
+		for (i = 1; i <= lines; i++) {
 			sock_printf(sock, "widget_add S %i string -in f\n", i);
 		}
 		sock_send_string(sock, "widget_set S 1 1 1 Checking...\n");
@@ -291,7 +308,7 @@ mem_top_screen(int rep, int display, int *flags_ptr)
 	LL_Rewind(procs);
 	LL_Sort(procs, sort_procs);
 	LL_Rewind(procs);
-	for (i = 1; i <= 5; i++) {
+	for (i = 1; i <= lines; i++) {
 		procinfo_type *p = LL_Get(procs);
 
 		if (p != NULL) {
