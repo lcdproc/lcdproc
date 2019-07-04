@@ -243,6 +243,14 @@ MenuEntry *menu_read(MenuEntry *parent, const char *name)
 	return NULL;
 }
 
+/* Helper for repetitive code */
+static int menu_set_quit(MenuEntry *me, int sock) {
+	if (me->next != NULL)
+		return 0;
+
+	return sock_printf(sock, "menu_set_item {} {%d} -next _quit_\n",
+			   me->id);
+}
 
 /** create LCDproc commands for the menu entry hierarchy and send it to the server */
 int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
@@ -254,7 +262,7 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 		if ((parent != NULL) && (parent->id != 0))
 			sprintf(parent_id, "%d", parent->id);
 		else
-			strcpy(parent_id, "");
+			parent_id[0] = 0;
 
 		switch (me->type) {
 			MenuEntry *entry;
@@ -279,8 +287,8 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 							parent_id, me->id, me->displayname) < 0)
 						return -1;
 
-					if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -menu_result quit\n",
-							parent_id, me->id) < 0)
+					if (sock_printf(sock, "menu_set_item {} {%d} -menu_result quit\n",
+							me->id) < 0)
 						return -1;
 				}
 				else {
@@ -310,11 +318,9 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						      me->data.slider.stepsize) <0)
 					return -1;
 
-				if (me->next == NULL) {
-					if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -next _quit_\n",
-							parent_id, me->id) < 0)
-						return -1;
-				}
+				if (menu_set_quit(me, sock) < 0)
+					return -1;
+
 				break;
 			case MT_ARG_RING:
 				{
@@ -338,11 +344,9 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						return -1;
 				}
 
-				if (me->next == NULL) {
-					if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -next _quit_\n",
-							parent_id, me->id) < 0)
-						return -1;
-				}
+				if (menu_set_quit(me, sock) < 0)
+					return -1;
+
 				break;
 			case MT_ARG_NUMERIC:
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" numeric -text \"%s\""
@@ -353,11 +357,9 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						      me->data.numeric.maxval) < 0)
 					return -1;
 
-				if (me->next == NULL) {
-					if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -next _quit_\n",
-							parent_id, me->id) < 0)
-						return -1;
-				}
+				if (menu_set_quit(me, sock) < 0)
+					return -1;
+
 				break;
 			case MT_ARG_ALPHA:
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" alpha -text \"%s\""
@@ -371,11 +373,9 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						      me->data.alpha.allowed) <0)
 					return -1;
 
-				if (me->next == NULL) {
-					if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -next _quit_\n",
-							parent_id, me->id) < 0)
-						return -1;
-				}
+				if (menu_set_quit(me, sock) < 0)
+					return -1;
+
 				break;
 			case MT_ARG_IP:
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" ip -text \"%s\""
@@ -385,11 +385,9 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						      boolValueName[me->data.ip.v6]) < 0)
 					return -1;
 
-				if (me->next == NULL) {
-					if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -next _quit_\n",
-							parent_id, me->id) < 0)
-						return -1;
-				}
+				if (menu_set_quit(me, sock) < 0)
+					return -1;
+
 				break;
 			case MT_ARG_CHECKBOX:
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" checkbox -text \"%s\""
@@ -399,19 +397,17 @@ int menu_sock_send(MenuEntry *me, MenuEntry *parent, int sock)
 						      boolValueName[me->data.checkbox.allow_gray]) < 0)
 					return -1;
 
-				if (me->next == NULL) {
-					if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -next _quit_\n",
-							parent_id, me->id) < 0)
-						return -1;
-				}
+				if (menu_set_quit(me, sock) < 0)
+					return -1;
+
 				break;
 			case MT_ACTION:
 				if (sock_printf(sock, "menu_add_item \"%s\" \"%d\" action \"%s\"\n",
 						parent_id, me->id, me->displayname) < 0)
 					return -1;
 
-				if (sock_printf(sock, "menu_set_item \"%s\" \"%d\" -menu_result quit\n",
-						parent_id, me->id) < 0)
+				if (sock_printf(sock, "menu_set_item {} {%d} -menu_result quit\n",
+						me->id) < 0)
 					return -1;
 				break;
 			default:

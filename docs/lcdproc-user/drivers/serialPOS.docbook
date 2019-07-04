@@ -7,8 +7,42 @@ This section talks about using LCDproc with a point of sale ("POS") character-di
 
 <para>
 The <code>serialPOS</code> driver is currently working with the AEDEX emulation protocol,
-and may support Epson ESC/POS and Logic Controls. It can be extended to work with various
-other protocol displays.
+and may support the CD5220, Epson ESC/POS, Logic Controls, EMAX, and Ultimate (UTC/S)
+protocols. It can be extended to work with various other protocol displays.
+</para>
+
+<para>
+Brightness adjustment, custom characters, and cursor control are available
+for protocols that support them.
+At this moment, custom character support is limited to only devices with
+protocols that are able to load custom characters into
+the "extended"-ASCII range, characters from <literal>0x80</literal>
+onwards. This is to avoid clashing with the usual ASCII characters.
+</para>
+
+<para>
+Custom characters are only used for the rendering of horizontal bars
+and vertical bars. For displays whose cell character cell widths are
+lower than the number of custom characters supported,
+then custom characters will be used to render the horizontal bars.
+</para>
+
+<para>
+For displays with sufficient custom character support to include another
+set of custom characters, equal in size to the character cell height minus one,
+on top of the characters already used to support rendering custom horizontal
+bars, then custom characters will be used to render the vertical bars as well.
+</para>
+
+<para>
+Note that some displays use EEPROM to contain their custom characters, and,
+upon receiving custom character commands, directly write the received
+characters to EEPROM. Excessive writes to EEPROM on initialization may
+then cause fast EEPROM wear. Users who do not want this may like to set
+the number of custom characters supported by their display to zero.
+Displays that store their custom characters in RAM should work fine, as the
+driver does not attempt to send commands to permanently store the custom
+characters.
 </para>
 
 <para>
@@ -31,9 +65,9 @@ Feedback is welcome.
   <tbody>
     <row>
       <entry>AEDEX</entry>
-      <entry>Emax</entry>
+      <entry>Emax, KPD220V7</entry>
       <entry>Yes</entry>
-      <entry> </entry>
+      <entry>Max size: 40x2</entry>
     </row>
     <row>
       <entry>IEE</entry>
@@ -42,15 +76,21 @@ Feedback is welcome.
       <entry> </entry>
     </row>
     <row>
-      <entry>Epson</entry>
-      <entry>No</entry>
+      <entry>CD5220</entry>
+      <entry>KPD220V7</entry>
       <entry>Yes</entry>
-      <entry> </entry>
+      <entry>Max size: 20x2, Cell size must be 5x7 for custom characters</entry>
+    </row>
+    <row>
+      <entry>Epson</entry>
+      <entry>KPD220V7</entry>
+      <entry>Yes</entry>
+      <entry>Max size: 20x4, Cell size must be 5x7 for custom characters</entry>
     </row>
     <row>
       <entry>Emax</entry>
       <entry> </entry>
-      <entry>No</entry>
+      <entry>Yes</entry>
       <entry> </entry>
     </row>
     <row>
@@ -61,15 +101,15 @@ Feedback is welcome.
     </row>
     <row>
       <entry>Logic Controls</entry>
-      <entry>No</entry>
+      <entry>KPD220V7</entry>
       <entry>Yes</entry>
-      <entry> </entry>
+      <entry>Max size: 20x2</entry>
     </row>
     <row>
       <entry>Ultimate</entry>
-      <entry> </entry>
-      <entry>No</entry>
-      <entry> </entry>
+      <entry>KPD220V7</entry>
+      <entry>Yes</entry>
+      <entry>Max size: 20x2</entry>
     </row>
   </tbody>
 </tgroup>
@@ -122,8 +162,9 @@ arrow, delete, and return keys by default.
     <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
-    Device to use in serial mode. Usual values are <filename>/dev/ttyS0</filename> or
-    <filename>/dev/cu.usbserial</filename>. Default is <filename>/dev/lcd</filename>.
+    Device to use in serial mode.
+    Usual values are <filename>/dev/ttyS0</filename> or <filename>/dev/cu.usbserial</filename>.
+    Default is <filename>/dev/ttyS0</filename>.
   </para></listitem>
 </varlistentry>
 
@@ -139,13 +180,39 @@ arrow, delete, and return keys by default.
 
 <varlistentry>
   <term>
+    <property>Cellsize</property> =
+  </term>
+  <listitem><para>
+    Specifies the cell size of each character cell on the display, in pixels.
+    If not given, it defaults to <literal>5x8</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
+    <property>Custom_chars</property> =
+  </term>
+  <listitem><para>
+    Specifies the number of custom characters supported by the display.
+    Maximum number of custom characters supported by the driver is
+    <literal>32</literal>.
+
+    If the protocol supports custom characters but your display is not of the
+    right cell size, set this to zero so the protocol driver skips initializing
+    custom character support and succeeds initialization.
+
+    If not given, it defaults to <literal>0</literal>.
+  </para></listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <property>Type</property> =
     {
-      <parameter><literal>IEE</literal></parameter> |
       <emphasis><parameter><literal>AEDEX</literal></parameter></emphasis> |
+      <parameter><literal>CD5220</literal></parameter> |
       <parameter><literal>Epson</literal></parameter> |
       <parameter><literal>Emax</literal></parameter> |
-      <parameter><literal>IBM</literal></parameter> |
       <parameter><literal>LogicControls</literal></parameter> |
       <parameter><literal>Ultimate</literal></parameter>
     }
@@ -153,7 +220,6 @@ arrow, delete, and return keys by default.
   <listitem><para>
     Set the communication protocol to use with the POS display.
     If not specified it defaults to <literal>AEDEX</literal>.
-    Currently, only AEDEX is supported.
   </para></listitem>
 </varlistentry>
 
@@ -163,6 +229,7 @@ arrow, delete, and return keys by default.
     {
       <parameter><literal>1200</literal></parameter> |
       <parameter><literal>2400</literal></parameter> |
+      <parameter><literal>4800</literal></parameter> |
       <emphasis><parameter><literal>9600</literal></parameter></emphasis> |
       <parameter><literal>19200</literal></parameter> |
       <parameter><literal>115200</literal></parameter>

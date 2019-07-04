@@ -22,22 +22,23 @@
 #define G15_H_
 
 //#include <usb.h>
-#include <libg15.h>
 #include <libg15render.h>
 #include "lcd.h"
+#include "hidraw_lib.h"
 
 /** private data for the \c g15 driver */
 typedef struct g15_private_data {
-	/* dimensions */
-	int width, height;
-	int cellwidth, cellheight;
 	/* file descriptor for g15daemon socket */
 	int g15screen_fd;
+	/* lib_hidraw_handle for when we are not using g15daemon */
+	struct lib_hidraw_handle *hidraw_handle;
 	/* g15daemon version for compatibility checks */
 	const char *g15d_ver;
 	/* canvas for LCD contents */
-	g15canvas *canvas;
-	g15canvas *backingstore;
+	g15canvas canvas;
+	g15canvas backingstore;
+	/* font */
+	g15font *font;
 	/* status indicators */
 	int backlight_state;
 } PrivateData;

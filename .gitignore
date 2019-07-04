@@ -221,6 +221,7 @@ LCDd
 lcdproc
 lcdexec
 lcdvc
+Doxyfile
 aclocal.m4
 autom4te.cache
 compile
@@ -249,6 +250,7 @@ tags
 *.5
 *.8
 *.gz
+*.db
 
 *.patch
 *.diff

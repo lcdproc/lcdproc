@@ -74,5 +74,6 @@ typedef struct _screen_mode
 const char *get_hostname(void);
 const char *get_sysname(void);
 const char *get_sysrelease(void);
+bool check_protocol_version(int major, int minor);
 
 #endif

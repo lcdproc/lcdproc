@@ -35,6 +35,8 @@
 
 extern Menu *main_menu;		/* Access to the main menu */
 
+bool menu_permissive_goto;	/* Flag from configuration file */
+
 char *error_strs[] = {"", "Out of range", "Too long", "Too short", "Invalid Address"};
 char *menuitemtypenames[] = {"menu", "action", "checkbox", "ring", "slider", "numeric", "alpha", "ip"};
 char *menueventtypenames[] = {"select", "update", "plus", "minus", "enter", "leave"};
@@ -124,15 +126,11 @@ MenuResult menuitem_successor2menuresult(char *successor_id, MenuResult default_
 }
 
 /** Returns the MenuItem with the specified id if found or NULL. The search
- * for itemid is restricted to the client's menus if the preprocessor macro
- * LCDPROC_PERMISSIVE_MENU_GOTO is *not* set. */
+ * for itemid is restricted to the client's menus if perissive gotos are
+ * disabled in the configuration. */
 MenuItem *menuitem_search(char *menu_id, Client *client)
 {
-# ifdef LCDPROC_PERMISSIVE_MENU_GOTO
-	MenuItem *top = main_menu;
-# else
-	MenuItem *top = client->menu;
-# endif /* LCDPROC_PERMISSIVE_MENU_GOTO */
+	MenuItem *top = menu_permissive_goto ? main_menu : client->menu;
 
 	return menu_find_item(top, menu_id, true);
 }

@@ -452,3 +452,16 @@ flexible :)
 
   - Driver for the Futaba TOSD-5711BB VFDisplay on Elonex Artisan/Scaleo/FIC
     Spectra Media Cenre PCs amoungst others
+
+- [Francois Mertz](mailto:fireboxled@gmail.com)
+
+  - Parallel Port LCD driver for the Watchguard/Lanner firewall appliances (sdeclcd)
+
+  - Supplemented HD44780 serial driver to support Portwell EZIO-100 and EZIO-300 LCDs found in Portwell, Caswell and Check Point firewall appliances
+
+- [Michał Skalski](mailto:mskalski13@gmail.com)
+
+  - Support for HD44780-compatible Winstar OLED displays: WEH001604A, WEH002004A and similar in hd44780 driver
+
+  - Added to HD44780 driver support for internal backlight handling (by means of levels of brightness)
+    for Winsar OLED and PTC PT6314 VFD (for the latter credits go to trex2000 GitHub user).

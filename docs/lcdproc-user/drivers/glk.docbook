@@ -41,6 +41,9 @@ Matrix Orbital GLK and GLC chipset.
   <listitem>
     <para>GLK24064-25 (40x8)</para>
   </listitem>
+  <listitem>
+    <para>GLK19264-7T-1U-USB (32x8)</para>
+  </listitem>
 </itemizedlist>
 
 <note>
@@ -76,7 +79,7 @@ Matrix Orbital GLK and GLC chipset.
   <listitem><para>
     Set the initial contrast.
     Legal values for <replaceable>CONTRAST</replaceable> are <literal>0</literal> - <literal>1000</literal>.
-    If not given, it defaults to <literal>560</literal>.
+    If not given, it defaults to <literal>500</literal>.
   </para></listitem>
 </varlistentry>
 
@@ -86,7 +89,9 @@ Matrix Orbital GLK and GLC chipset.
     {
       <parameter><literal>9600</literal></parameter> |
       <emphasis><parameter><literal>19200</literal></parameter></emphasis> |
-      <parameter><literal>38400</literal></parameter>
+      <parameter><literal>38400</literal></parameter> |
+      <parameter><literal>57600</literal></parameter> |
+      <parameter><literal>115200</literal></parameter>
     }
   </term>
   <listitem><para>

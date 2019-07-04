@@ -153,15 +153,16 @@ dnl				else
 			AC_CHECK_HEADERS([g15daemon_client.h],[
 				AC_CHECK_LIB(g15daemon_client, new_g15_screen,[
 					LIBG15="-lg15daemon_client"
+					AC_DEFINE(HAVE_G15DAEMON_CLIENT, [1], [Define to 1 if you have the g15daemon_client library])
 				],[
 dnl				else
-					AC_MSG_WARN([The g15 driver needs libg15daemon_client-1.2 or better])
+					AC_MSG_WARN([libg15daemon_client not found, the g15 driver will lack g15daemon support])
 				],
 				[-lg15daemon_client]
 				)
 			],[
 dnl			else
-				AC_MSG_WARN([The g15 driver needs g15daemon_client.h])
+				AC_MSG_WARN([libg15daemon_client.h not found, the g15 driver will lack g15daemon support])
 			])
 			AC_CHECK_HEADERS([libg15render.h],[
 				AC_CHECK_LIB(g15render, g15r_initCanvas,[

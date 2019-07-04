@@ -354,6 +354,19 @@ settings for the LCDproc server <application>LCDd</application>.
 
 <varlistentry>
   <term>
+    <property>FrameInterval</property> =
+    <parameter><replaceable>MICROSECONDS</replaceable></parameter>
+  </term>
+  <listitem>
+    <para>
+      Sets the interval in microseconds for updating the display.
+      If not specified the default value for <replaceable>MICROSECONDS</replaceable> is <literal>125000</literal>.
+    </para>
+  </listitem>
+</varlistentry>
+
+<varlistentry>
+  <term>
     <property>WaitTime</property> =
     <parameter><replaceable>SECONDS</replaceable></parameter>
   </term>
@@ -563,6 +576,20 @@ You can configure what keys the menu should use.
 </para>
 
 <variablelist>
+<varlistentry>
+  <term>
+    <property>PermissiveGoto</property> =
+    <parameter><replaceable>BOOL</replaceable></parameter>
+  </term>
+  <listitem>
+    <para>
+      The flag controls whether transitions between the menus of different
+      clients are allowed. The default <literal>false</literal> is to allow
+      only menu gotos local to the client.
+    </para>
+  </listitem>
+</varlistentry>
+
 <varlistentry>
   <term>
     <property>MenuKey</property> =

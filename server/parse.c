@@ -47,7 +47,7 @@ static inline int is_closing_quote(char x, char q) {
 }
 
 
-static int parse_message(const char *str, Client *c)
+static void parse_message(const char *str, Client *c)
 {
 	typedef enum { ST_INITIAL, ST_WHITESPACE, ST_ARGUMENT, ST_FINAL } State;
 	State state = ST_INITIAL;
@@ -55,7 +55,7 @@ static int parse_message(const char *str, Client *c)
 	int error = 0;
 	char quote = '\0';	/* The quote used to open a quote string */
 	int pos = 0;
-	char *arg_space;
+	char arg_space[strlen(str)+1];
 	int argc = 0;
 	char *argv[MAX_ARGUMENTS];
 	int argpos = 0;
@@ -66,12 +66,6 @@ static int parse_message(const char *str, Client *c)
 	/* We will create a list of strings that is shorter or equally long as
 	 * the original string str.
 	 */
-	arg_space = malloc(strlen(str)+1);
-	if (arg_space == NULL) {
-		report(RPT_ERR, "%s: Could not allocate memory", __FUNCTION__);
-		sock_send_error(c->sock, "error allocating memory!\n");
-	}
-
 	argv[0] = arg_space;
 
 	while ((state != ST_FINAL) && !error) {
@@ -182,16 +176,8 @@ static int parse_message(const char *str, Client *c)
 
 	if (error) {
 		sock_send_error(c->sock, "Could not parse command\n");
-		free(arg_space);
-		return 0;
+		return;
 	}
-
-#if 0 /* show what we have parsed */
-	int i;
-	for (i = 0; i < argc; i++) {
-		printf("%s%c", argv[i], (i == argc-1) ? '\n' : ' ');
-	}
-#endif
 
 	/* Now find and call the appropriate function...*/
 	function = get_command_function(argv[0]);
@@ -207,13 +193,10 @@ static int parse_message(const char *str, Client *c)
 		sock_printf_error(c->sock, "Invalid command \"%.40s\"\n", argv[0]);
 		report(RPT_WARNING, "Invalid command from client on socket %d: %.40s", c->sock, str);
 	}
-
-	free(arg_space);
-	return 0;
 }
 
 
-int
+void
 parse_all_client_messages(void)
 {
 	Client *c;
@@ -224,7 +207,6 @@ parse_all_client_messages(void)
 		char *str;
 
 		/* And parse all its messages...*/
-		/*debug(RPT_DEBUG, "parse: Getting messages...");*/
 		for (str = client_get_message(c); str != NULL; str = client_get_message(c)) {
 			parse_message(str, c);
 			free(str);
@@ -235,7 +217,6 @@ parse_all_client_messages(void)
 			}
 		}
 	}
-	return 0;
 }
 
 

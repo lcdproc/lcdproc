@@ -534,8 +534,8 @@ sed1330_close(Driver * drvthis)
 			if (p->keyMapDirect[i] != NULL)
 				free(p->keyMapDirect[i]);
 			for (j = 0; j < KEYPAD_MAXY; j++) {
-				if (p->keyMapMatrix[i][j] != NULL)
-					free(p->keyMapMatrix[i][j]);
+				if (p->keyMapMatrix[j][i] != NULL)
+					free(p->keyMapMatrix[j][i]);
 			}
 		}
 

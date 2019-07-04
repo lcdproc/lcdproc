@@ -181,7 +181,7 @@ unsigned char lcdtime_HD44780_readkeypad(PrivateData *p, unsigned int YData)
 	// Convert the positive logic to the negative logic on the LPT port
 	port_out(p->port, ~YData & 0x00FF);
 	// 9 bits output if backlight is used, 10 bits otherwise
-	if (p->have_backlight)
+	if (have_backlight_pin(p))
 		port_out(p->port + 2, (((~YData & 0x0100) >> 8) | p->backlight_bit) ^ OUTMASK);
 	else
 		port_out(p->port + 2, (((~YData & 0x0100) >> 8) | ((~YData & 0x0200) >> 6)) ^ OUTMASK);

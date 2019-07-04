@@ -23,6 +23,7 @@ typedef enum WidgetType {
 	WID_STRING,
 	WID_HBAR,
 	WID_VBAR,
+	WID_PBAR,
 	WID_ICON,
 	WID_TITLE,
 	WID_SCROLLER,
@@ -41,7 +42,10 @@ typedef struct Widget {
 	int left, top, right, bottom;	/**< bounding rectangle */
 	int length;			/**< size or direction */
 	int speed;			/**< For scroller... */
+	int promille;                   /**< For percentage / pbars */
 	char *text;			/**< text or binary data */
+	char *begin_label;		/**< label in front of pbars; or NULL */
+	char *end_label;		/**< label at end of pbars; or NULL */
 	struct Screen *frame_screen;	/**< frame widget get an associated screen */
 	//LinkedList *kids;		/* Frames can contain more widgets...*/
 } Widget;
@@ -52,7 +56,7 @@ typedef struct Widget {
 Widget *widget_create(char *id, WidgetType type, Screen *screen);
 
 /* Destroy a widget */
-int widget_destroy(Widget *w);
+void widget_destroy(Widget *w);
 
 /* Convert a widget typename to a widget type */
 WidgetType widget_typename_to_type(char *typename);

@@ -497,7 +497,6 @@ static int process_config(ConfigSection **current_section, const char *source_de
 	char value[MAXVALUELENGTH+1];
 	int value_pos = 0;
 	int escape = 0;
-	ConfigKey *k;
 	int line_nr = 1;
 	int error = 0;
 
@@ -695,7 +694,7 @@ static int process_config(ConfigSection **current_section, const char *source_de
 				}
 				else {
 					/* Store the value*/
-					k = add_key(*current_section, keyname, value);
+					(void) add_key(*current_section, keyname, value);
 				}
 				/* And be ready for next thing...*/
 				state = ((ch == ' ') || (ch == '\t')) ? ST_VALUE_DONE : ST_INITIAL;
