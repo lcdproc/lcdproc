@@ -1,5 +1,5 @@
 /** \file server/drivers/jw002.c
- * This is the LCDproc driver for Hyundai HG12603A equipped wit
+ * This is the LCDproc driver for Hyundai HG12603A equipped with
  * PJRC firmware (http://www.pjrc.com/tech/mp3/pushbutton_info.html)
  * */
 
