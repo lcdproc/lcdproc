@@ -134,15 +134,15 @@
 #define NUM_CCs		28   // max. number of custom characters
 #define CC_OFFSET	192  // first custom char
 
-typedef enum {
-	standard,	/* only char 0 is used for heartbeat */
-	vbar,		/* vertical bars */
-	hbar,		/* horizontal bars */
-	custom,		/* custom settings */
-	bignum,		/* big numbers */
-	bigchar		/* big characters */
-} CGmode;
-
+//Type of characters currently stored in CGRAM. from lcd.h as info
+//typedef enum {
+//	standard,	/* only char 0 is used for heartbeat */
+//	vbar,		/* vertical bars */
+//	hbar,		/* horizontal bars */
+//	custom,		/* custom settings */
+//	bignum,		/* big numbers */
+//	bigchar		/* big characters */
+//} CGmode;
 
 /** private data for the \c jw002 driver */
 typedef struct jw002_private_data {
