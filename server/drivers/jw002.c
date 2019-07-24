@@ -12,50 +12,13 @@
     KS107B would make this a graphical LCD, but the actual pixels on
     the glass are diced up into 8 lines of 24 5x7 character areas. 
 
-    This LCD module seems to have originally been used in some sort of
-    AT&T telephone product, but has been available for a number of years
-    in the surplus channel, typically selling for between $20 and $50,
-    depending on quantity and if it was being sold as a bare module or
-    with the necessary circuitry to interface to a host machine.
-
-    The most visible use of this LCD module has been the PJRC MP3 player
-    (http://www.pjrc.com/tech/mp3/index.html).  The original AT&T firmware
-    was severely limited as to what it could do.  Paul Stoffregen of PJRC
-    has made replacement firmware available in the public domain.  Owners
-    of "stock" HG12603A modules (also sold as "JW-002" modules) can either
-    download Paul's firmware from his site and burn their own chips, or
-    more simply, purchase a chip ready to drop into a stock display.
-
-    The PJRC firmware takes care of the command set, but the module itself
-    needs a few external components added to it for easy PC use.  The
-    HG12603A requires a Vee of about -7V for LCD contrast.  In addition,
-    the serial interface to the 8051 microcontroller is at TTL levels
-    (0 and +5VDC), not RS-232 levels (+/- 3-12VDC).  Fortunately, it's
-    easy to tap off the charge pump caps of an ordinary MAX232A chip for
-    Vee, making the interface a single chip and a few caps.  As a bonus.
-    the PJRC software uses the 8051 I/O lines present on the 17-pin
-    connector to scan a 3x4 keypad matrix.
-
-    Paul has also made the schematics to a level shifter/Vee supply/keypad
-    available on his website - http://www.pjrc.com/tech/mp3/pushbutton_info.html
-    If you have your own HG12603A/JW-002 module, you can roll your own,
-    or, as of this writing, it's still possible to buy a ready-to-plug-in
-    LCD module *with* a "pushbutton adaptor board" and cables directly
-    from PJRC - http://www.pjrc.com/store/mp3_display.html
-
-    While the PJRC display was really designed to work hand-in-hand with
-    the PJRC MP3 player, an intelligent, serially interfaced, 8x24 character
-    display with 12 buttons is a luxury compared to the standard LCDproc
-    4x20 display with 0-5 buttons.
-
-
     Applicable external links:
     - http://www.pjrc.com/tech/mp3/index.html
     - http://www.pjrc.com/store/mp3_display.html
     - http://www.pjrc.com/tech/mp3/firmware.html
     - http://www.pjrc.com/tech/mp3/lcd_protocol.html
 
-    Copyright (C) 2008, 2009, Ethan Dicks
+    Copyright (C) 2008, 2009, 2019 Ethan Dicks
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
