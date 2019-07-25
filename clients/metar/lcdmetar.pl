@@ -117,7 +117,7 @@ use Fcntl;
 # 0 : None (only fatal errors)
 # 1 : Warnings
 # 5 : Explain every step.
-my $verbose = 1;
+my $verbose = 5;
 
 # METAR Code for your city/region.
 my $site_code;
@@ -180,7 +180,9 @@ print $remote "widget_add metar cloud string\n" if ($lcdheight > 4);
 while (1) {
 	# fetch weather information
 	print "Fetching weather information\n" if ($verbose >= 5);
-	my $data = get("http://weather.noaa.gov/cgi-bin/mgetmetar.pl?cccc=$site_code");
+	# NOAA decomissioned weather.noaa.gov on 15-Jun-2016.
+	#my $data = get("http://weather.noaa.gov/cgi-bin/mgetmetar.pl?cccc=$site_code");
+	my $data = get("http://tgftp.nws.noaa.gov/data/observations/metar/stations/${site_code}.TXT");
 
 	if (not $data) {
 	    warn "Can't connect to METAR source." if ($verbose >= 1);
@@ -190,8 +192,9 @@ while (1) {
 
 	    my $m = new Geo::METAR;
 	    $data =~ s/\n//go;                          # remove newlines
-	    $data =~ m/($site_code\s\d+Z.*?)</go;       # find the METAR string
+	    $data =~ m/($site_code\s\d+Z.*)/go;       # find the METAR string
 	    my $metar = $1;                             # keep it
+            print "Metar is '${metar}'\n" if ($verbose >= 5);
 
 	    # Sanity check
 		die "METAR is too short! Something went wrong." if (length($metar)<1);
