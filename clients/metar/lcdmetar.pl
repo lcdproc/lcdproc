@@ -117,7 +117,7 @@ use Fcntl;
 # 0 : None (only fatal errors)
 # 1 : Warnings
 # 5 : Explain every step.
-my $verbose = 5;
+my $verbose = 1;
 
 # METAR Code for your city/region.
 my $site_code;
