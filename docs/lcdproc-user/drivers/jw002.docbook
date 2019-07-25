@@ -12,8 +12,8 @@
           The "JW002 LCD Module" is an HG12603(A) 2" x 4" display with a
           Samsung KS107B controller driven by an on-board MCS/51 microcontroller.
           Normally, the KS107B is used to drive a graphical LCD, but on this
-          display, the pixles on the glass are dices up into 8 lines of 24 5x7
-          pixel character areas.
+          display, the pixels on the glass are diced up into 8 lines of 24 5x7
+          pixel character areas rather than a contiguous 120x56 drawing area.
         </para>
         <para>
           This LCD module seems to have originally been used in some sort of
