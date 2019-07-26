@@ -36,6 +36,7 @@ For fun, here are some example METAR codes:
  Chicago: KMDW
  Graz/Austria (Thalerhof) : LOWG
  Quebec City: CYQB
+ Amundsen-Scott South Pole Station: NZSP
 
 More informations about METAR codes is available at:
 https://www.weather.gov/media/wrh/mesowest/metar_decode_key.pdf
