@@ -118,6 +118,7 @@ flexible :)
 	- PIC-an-LCD original driver (later merged into HD44780 driver)
 	- fixes & tests to the MtxOrb driver and some clients
 	- lcdident.pl client
+	- updated lcdmetar.pl client to pull METARs from the new NOAA site
 
 
 - Michael Reinelt
