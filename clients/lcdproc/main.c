@@ -220,9 +220,6 @@ clear_modes(void)
 int
 main(int argc, const char **argv)
 {
-	// only returns, if not in specload mode
-	doSpecloadCheck (argc, argv);
-
 	int cfgresult;
 
 	/* set locale for cwdate & time formatting in chrono.c */
@@ -336,7 +333,8 @@ process_config()
 	if (rc == 1)
 	{
 		// help mode
-		printHelpMessage(NULL, help_prefix);
+		printHelpMessage(elektra, NULL, help_prefix);
+		elektraClose (elektra);
 		return 0;
 	}
 

@@ -4,3 +4,4 @@ Makefile.in
 lcdproc
 elektragen.c
 elektragen.h
+elektragen.spec.eqd

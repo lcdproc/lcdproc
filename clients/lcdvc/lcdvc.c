@@ -63,9 +63,6 @@ static int main_loop(void);
 
 int main(int argc, const char **argv)
 {
-	// only returns, if not in specload mode
-	doSpecloadCheck (argc, argv);
-
 	int e = 0;
 	struct sigaction sa;
 
@@ -149,7 +146,8 @@ static int process_config()
 	if (rc == 1)
 	{
 		// help mode
-		printHelpMessage(NULL, help_prefix);
+		printHelpMessage(elektra, NULL, help_prefix);
+		elektraClose (elektra);
 		return EXIT_SUCCESS;
 	}
 
