@@ -201,7 +201,7 @@ static void sigchld_handler(int signal)
 	}
 }
 
-static void on_fatal_error(ElektraError * error) // TODO (elektra): finalize method
+static void on_fatal_error(ElektraError * error) // TODO (kodebach): finalize method
 {
 	fprintf(stderr, "ERROR: %s\n", elektraErrorDescription(error));
 	exit(EXIT_FAILURE);
@@ -456,7 +456,7 @@ static int process_response(char *str)
 				}
 
 				/* Find the entry by id */
-				Command * command; // TODO (elektra): last entry of command with args?
+				Command * command; // TODO (kodebach): last entry of command with args?
 				if (!find_triggered_command(main_menu, atoi(argv[2]), &command)) {
 					report(RPT_WARNING, "Could not find the item id given by the server");
 					free(str2);

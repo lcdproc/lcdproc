@@ -54,7 +54,7 @@ specification contains restrictions, so that only known drivers are allowed.
 ```ini
 [server/drivers]
 default = ""
-array = #0 ; TODO (elektra): max drivers
+array = #0
 check/reference = single
 check/reference/restrict = #_51
 check/reference/restrict/#0 = @/bayrad/#
@@ -74,7 +74,7 @@ we would get:
 ```ini
 [server/drivers]
 default = ""
-array = #0 ; TODO (elektra): max drivers
+array = #0
 check/reference = single
 check/reference/restrict = #_52
 check/reference/restrict/#0 = @/bayrad/#
