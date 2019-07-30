@@ -369,12 +369,12 @@ hd_init_rpi(Driver *drvthis, const Hd44780DriverConfig * config)
 		return -1;
 	}
 
-	p->rpi_gpio->en = config->gpioEn > 0 ? config->gpioEn : RPI_DEF_EN;
-	p->rpi_gpio->rs = config->gpioRs > 0 ? config->gpioRs : RPI_DEF_RS;
-	p->rpi_gpio->d7 = config->gpioD7 > 0 ? config->gpioD7 : RPI_DEF_D7;
-	p->rpi_gpio->d6 = config->gpioD6 > 0 ? config->gpioD6 : RPI_DEF_D6;
-	p->rpi_gpio->d5 = config->gpioD5 > 0 ? config->gpioD5 : RPI_DEF_D5;
-	p->rpi_gpio->d4 = config->gpioD4 > 0 ? config->gpioD4 : RPI_DEF_D4;
+	p->rpi_gpio->en = config->gpioPinEn > 0 ? config->gpioPinEn : RPI_DEF_EN;
+	p->rpi_gpio->rs = config->gpioPinRs > 0 ? config->gpioPinRs : RPI_DEF_RS;
+	p->rpi_gpio->d7 = config->gpioPinD7 > 0 ? config->gpioPinD7 : RPI_DEF_D7;
+	p->rpi_gpio->d6 = config->gpioPinD6 > 0 ? config->gpioPinD6 : RPI_DEF_D6;
+	p->rpi_gpio->d5 = config->gpioPinD5 > 0 ? config->gpioPinD5 : RPI_DEF_D5;
+	p->rpi_gpio->d4 = config->gpioPinD4 > 0 ? config->gpioPinD4 : RPI_DEF_D4;
 
 	report(RPT_INFO, "hd_init_rpi: Pin EN mapped to GPIO%d", p->rpi_gpio->en);
 	report(RPT_INFO, "hd_init_rpi: Pin RS mapped to GPIO%d", p->rpi_gpio->rs);
@@ -394,7 +394,7 @@ hd_init_rpi(Driver *drvthis, const Hd44780DriverConfig * config)
 	}
 
 	if (p->numDisplays > 1) {	/* For displays with two controllers */
-		p->rpi_gpio->en2 = config->gpioEn2 > 0 ? config->gpioEn2 : RPI_DEF_EN2;
+		p->rpi_gpio->en2 = config->gpioPinEn2 > 0 ? config->gpioPinEn2 : RPI_DEF_EN2;
 		debug(RPT_INFO, "hd_init_rpi: Pin EN2 mapped to GPIO%d", p->rpi_gpio->en2);
 		if (check_pin(drvthis, p->rpi_gpio->en2, allowed_gpio_pins, used_pins)) {
 			free(p->rpi_gpio);
@@ -403,7 +403,7 @@ hd_init_rpi(Driver *drvthis, const Hd44780DriverConfig * config)
 	}
 
 	if (have_backlight_pin(p)) {	/* Backlight setup is optional */
-		p->backlight_bit = config->gpioBl > 0 ? config->gpioBl : RPI_DEF_BL;
+		p->backlight_bit = config->gpioPinBl > 0 ? config->gpioPinBl : RPI_DEF_BL;
 		debug(RPT_INFO, "hd_init_rpi: Backlight mapped to GPIO%d", p->backlight_bit);
 
 		if (check_pin(drvthis, p->backlight_bit, allowed_gpio_pins, used_pins) != 0) {
