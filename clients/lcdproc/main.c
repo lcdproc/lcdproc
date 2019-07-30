@@ -105,21 +105,21 @@ ScreenMode sequence[] =
 {
 	/* flags default ACTIVE will run by default */
 	/* screen                   longname    which    on   off inv  timer   flags  func               base_conf*/
-	{ LCDPROC_SCREEN_CPU,        "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen,        ELEKTRA_GET(ELEKTRA_TAG_CPU)       },	// [C]PU
-	{ LCDPROC_SCREEN_IFACE,      "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen,      ELEKTRA_GET(ELEKTRA_TAG_IFACE)     }, 	// [I]face
-	{ LCDPROC_SCREEN_MEMORY,     "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen,        ELEKTRA_GET(ELEKTRA_TAG_MEMORY)    },	// [M]emory
-	{ LCDPROC_SCREEN_LOAD,       "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen,      ELEKTRA_GET(ELEKTRA_TAG_LOAD)      },	// [L]oad (load histogram)
-	{ LCDPROC_SCREEN_TIME_DATE,  "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen,       ELEKTRA_GET(ELEKTRA_TAG_TIMEDATE)  },	// [T]ime/Date
-	{ LCDPROC_SCREEN_ABOUT,      "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen,     ELEKTRA_GET(ELEKTRA_TAG_ABOUT)     },	// [A]bout (credits)
-	{ LCDPROC_SCREEN_SMP_CPU,    "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen,    ELEKTRA_GET(ELEKTRA_TAG_SMPCPU)    },	// CPU_SM[P]
-	{ LCDPROC_SCREEN_OLD_TIME,   "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen,      ELEKTRA_GET(ELEKTRA_TAG_OLDTIME)   },	// [O]ld Timescreen
-	{ LCDPROC_SCREEN_BIG_CLOCK,  "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen,  ELEKTRA_GET(ELEKTRA_TAG_BIGCLOCK)  },	// big cloc[K]
-	{ LCDPROC_SCREEN_UPTIME,     "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen,     ELEKTRA_GET(ELEKTRA_TAG_UPTIME)    },	// Old [U]ptime Screen
-	{ LCDPROC_SCREEN_BATTERY,    "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen,    ELEKTRA_GET(ELEKTRA_TAG_BATTERY)   },	// [B]attery Status
-	{ LCDPROC_SCREEN_CPU_GRAPH,  "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen,  ELEKTRA_GET(ELEKTRA_TAG_CPUGRAPH)  },	// CPU histogram [G]raph
-	{ LCDPROC_SCREEN_PROC_SIZE,  "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen,    ELEKTRA_GET(ELEKTRA_TAG_PROCSIZE)  },	// [S]ize of biggest processes
-	{ LCDPROC_SCREEN_DISK,       "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen,       ELEKTRA_GET(ELEKTRA_TAG_DISK)      },	// [D]isk stats
-	{ LCDPROC_SCREEN_MINI_CLOCK, "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen, ELEKTRA_GET(ELEKTRA_TAG_MINICLOCK) },	// Mi[n]i clock
+	{ LCDPROC_SCREEN_CPU,        "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen,        "cpu"       },	// [C]PU
+	{ LCDPROC_SCREEN_IFACE,      "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen,      "iface"     }, 	// [I]face
+	{ LCDPROC_SCREEN_MEMORY,     "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen,        "memory"    },	// [M]emory
+	{ LCDPROC_SCREEN_LOAD,       "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen,      "load"      },	// [L]oad (load histogram)
+	{ LCDPROC_SCREEN_TIME_DATE,  "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen,       "timedate"  },	// [T]ime/Date
+	{ LCDPROC_SCREEN_ABOUT,      "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen,     "about"     },	// [A]bout (credits)
+	{ LCDPROC_SCREEN_SMP_CPU,    "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen,    "smpcpu"    },	// CPU_SM[P]
+	{ LCDPROC_SCREEN_OLD_TIME,   "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen,      "oldtime"   },	// [O]ld Timescreen
+	{ LCDPROC_SCREEN_BIG_CLOCK,  "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen,  "bigclock"  },	// big cloc[K]
+	{ LCDPROC_SCREEN_UPTIME,     "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen,     "uptime"    },	// Old [U]ptime Screen
+	{ LCDPROC_SCREEN_BATTERY,    "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen,    "battery"   },	// [B]attery Status
+	{ LCDPROC_SCREEN_CPU_GRAPH,  "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen,  "cpugraph"  },	// CPU histogram [G]raph
+	{ LCDPROC_SCREEN_PROC_SIZE,  "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen,    "procsize"  },	// [S]ize of biggest processes
+	{ LCDPROC_SCREEN_DISK,       "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen,       "disk"      },	// [D]isk stats
+	{ LCDPROC_SCREEN_MINI_CLOCK, "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen, "miniclock" },	// Mi[n]i clock
 	{ 0, NULL, 0, 0, 0, 0, 0, 0, NULL},			  	// No more..  all done.
 };
 
@@ -355,7 +355,7 @@ process_config()
 	 */
 	for (int k = 0; sequence[k].which != 0; k++) {
 		ScreenBaseConfig base_config;
-		sequence[k].get_base_config(elektra, &base_config);
+		ELEKTRA_GET (StructScreenBaseConfig) (elektra, sequence[k].base_config_name, &base_config);
 
 		sequence[k].on_time = base_config.on_time;
 		sequence[k].off_time = base_config.off_time;

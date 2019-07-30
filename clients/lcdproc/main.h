@@ -57,7 +57,7 @@ typedef struct _screen_mode
 	int timer;		/**< Time since last update */
 	int flags;		/**< See mode flags defines */
 	int (*func)(int,int,int *, Elektra *);	/**< Pointer to init / update function */
-	void (*get_base_config)(Elektra *, ScreenBaseConfig *); /**< Pointer to elektraGet function for base config */
+	const char * base_config_name; /**< Key name of base config, will be read with ELEKTRA_GET (StructScreenBaseConfig) */
 } ScreenMode;
 
 /* mode flags */
