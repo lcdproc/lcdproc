@@ -1,7 +1,7 @@
 #ifndef MODE_H
 #define MODE_H
 
-#include <elektra/elektra.h>
+#include <elektra.h>
 
 int mode_init(void);
 void mode_close(void);
