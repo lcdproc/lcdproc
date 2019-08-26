@@ -25,6 +25,6 @@ EXTRA_DIST = $(sysconf_DATA)
 
 KDB ?= kdb
 elektragen.c elektragen.h elektragen.spec.eqd: specification/lcdvc-spec.ini
-	$(KDB) gen -F ni=specification/lcdvc-spec.ini elektra "spec/sw/lcdproc/lcdvc/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage specLocation=external defaultsHandling=speconly helpFn=printHelpMessage
+	$(KDB) gen -F ni=specification/lcdvc-spec.ini highlevel "spec/sw/lcdproc/lcdvc/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage specLocation=external defaultsHandling=speconly helpFn=printHelpMessage
 
 ## EOF

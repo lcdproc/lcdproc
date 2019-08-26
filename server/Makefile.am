@@ -21,6 +21,6 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir
 
 KDB ?= kdb
 elektragen.c elektragen.h elektragen.spec.eqd: specification/LCDd-spec.ini
-	$(KDB) gen -F ni=specification/LCDd-spec.ini elektra "spec/sw/lcdproc/lcdd/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage specLocation=external defaultsHandling=speconly helpFn=printHelpMessage
+	$(KDB) gen -F ni=specification/LCDd-spec.ini highlevel "spec/sw/lcdproc/lcdd/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage specLocation=external defaultsHandling=speconly helpFn=printHelpMessage
 
 ## EOF
