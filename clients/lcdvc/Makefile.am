@@ -7,7 +7,7 @@ lcdvc_SOURCES = lcdvc.c lcdvc.h lcd_link.c lcd_link.h vc_link.c vc_link.h
 nodist_lcdvc_SOURCES = elektragen.c elektragen.h
 lcdvc.$(OBJEXT): elektragen.c elektragen.h
 
-CLEANFILES = elektragen.c elektragen.h
+CLEANFILES = elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh
 
 lcdvc_LDADD = ../../shared/libLCDstuff.a
 
@@ -24,7 +24,7 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir
 EXTRA_DIST = $(sysconf_DATA)
 
 KDB ?= kdb
-elektragen.c elektragen.h elektragen.spec.eqd: specification/lcdvc-spec.ini
-	$(KDB) gen -F ni=specification/lcdvc-spec.ini highlevel "spec/sw/lcdproc/lcdvc/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage specLocation=external defaultsHandling=speconly helpFn=printHelpMessage
+elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh: specification/lcdvc-spec.ini
+	$(KDB) gen -F ni=specification/lcdvc-spec.ini highlevel "spec/sw/lcdproc/lcdvc/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults helpFn=printHelpMessage
 
 ## EOF

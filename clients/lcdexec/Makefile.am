@@ -9,7 +9,7 @@ nodist_lcdexec_SOURCES = elektragen.c elektragen.h
 lcdexec.$(OBJEXT): elektragen.c elektragen.h
 BUILT_SOURCES= elektragen.c elektragen.h
 
-CLEANFILES = elektragen.c elektragen.h
+CLEANFILES = elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh
 
 lcdexec_LDADD = ../../shared/libLCDstuff.a
 
@@ -18,7 +18,7 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir
 EXTRA_DIST = $(sysconf_DATA)
 
 KDB ?= kdb
-elektragen.c elektragen.h elektragen.spec.eqd: specification/lcdexec-spec.ini
-	$(KDB) gen -F ni=specification/lcdexec-spec.ini highlevel "spec/sw/lcdproc/lcdexec/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage specLocation=external defaultsHandling=speconly headers=menu.h
+elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh: specification/lcdexec-spec.ini
+	$(KDB) gen -F ni=specification/lcdexec-spec.ini highlevel "spec/sw/lcdproc/lcdexec/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults headers=menu.h
 
 ## EOF

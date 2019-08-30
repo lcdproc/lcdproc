@@ -9,7 +9,7 @@ nodist_LCDd_SOURCES = elektragen.c elektragen.h
 LCDd.$(OBJEXT): elektragen.c elektragen.h
 BUILT_SOURCES = elektragen.c elektragen.h
 
-CLEANFILES = elektragen.c elektragen.h
+CLEANFILES = elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh
 
 LDADD = ../shared/libLCDstuff.a commands/libLCDcommands.a @LIBPTHREAD_LIBS@
 
@@ -20,7 +20,7 @@ endif
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir)\"
 
 KDB ?= kdb
-elektragen.c elektragen.h elektragen.spec.eqd: specification/LCDd-spec.ini
-	$(KDB) gen -F ni=specification/LCDd-spec.ini highlevel "spec/sw/lcdproc/lcdd/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage specLocation=external defaultsHandling=speconly helpFn=printHelpMessage
+elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh: specification/LCDd-spec.ini
+	$(KDB) gen -F ni=specification/LCDd-spec.ini highlevel "spec/sw/lcdproc/lcdd/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults
 
 ## EOF
