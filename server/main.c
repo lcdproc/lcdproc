@@ -293,7 +293,7 @@ process_config()
 	{
 		fprintf(stderr, "An error occurred while initializing elektra: %s", elektraErrorDescription(error));
 		elektraErrorReset(&error);
-		return EXIT_FAILURE;
+		return -1;
 	}
 
 	if (rc == 1)
@@ -301,7 +301,7 @@ process_config()
 		// help mode
 		printHelpMessage(elektra, NULL, help_prefix);
 		elektraClose (elektra);
-		return EXIT_SUCCESS;
+		exit (EXIT_SUCCESS);
 	}
 
 	elektraFatalErrorHandler(elektra, on_fatal_error);
