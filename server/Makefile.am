@@ -19,8 +19,20 @@ endif
 
 AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir)\"
 
+scriptsdir = $(prefix)/libexec
+scripts_DATA = LCDd.mount.sh
+
+specdir = $(prefix)/share/lcdproc
+spec_DATA = LCDd.spec.eqd
+
 KDB ?= kdb
 elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh: specification/LCDd-spec.ini
 	$(KDB) gen -F ni=specification/LCDd-spec.ini highlevel "spec/sw/lcdproc/lcdd/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults
+
+LCDd.mount.sh: elektragen.mount.sh
+	cp elektragen.mount.sh LCDd.mount.sh
+
+LCDd.spec.eqd: elektragen.spec.eqd
+	cp elektragen.spec.eqd LCDd.spec.eqd
 
 ## EOF

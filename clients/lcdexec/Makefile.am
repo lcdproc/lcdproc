@@ -17,8 +17,20 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_srcdir)/shared -DSYSCONFDIR=\"$(sysconfdir
 
 EXTRA_DIST = $(sysconf_DATA)
 
+scriptsdir = $(prefix)/libexec
+scripts_DATA = lcdexec.mount.sh
+
+specdir = $(prefix)/share/lcdproc
+spec_DATA = lcdexec.spec.eqd
+
 KDB ?= kdb
 elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh: specification/lcdexec-spec.ini
 	$(KDB) gen -F ni=specification/lcdexec-spec.ini highlevel "spec/sw/lcdproc/lcdexec/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults headers=menu.h
+
+lcdexec.mount.sh: elektragen.mount.sh
+	cp elektragen.mount.sh lcdexec.mount.sh
+
+lcdexec.spec.eqd: elektragen.spec.eqd
+	cp elektragen.spec.eqd lcdexec.spec.eqd
 
 ## EOF

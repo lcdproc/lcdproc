@@ -67,16 +67,6 @@ dnl (the spaces before $CFLAGS and -O are significant)
 	fi
 fi
 
-dnl Driver path
-if test "x$prefix" = "xNONE" ; then
-  prefix="/usr/local"
-fi
-if test "x$exec_prefix" = "xNONE" ; then
-  exec_prefix=$prefix
-fi
-libdir="$exec_prefix/lib"
-AC_DEFINE_UNQUOTED([DRIVER_LIB_PATH], ["$libdir/$PACKAGE"], [The default path for drivers.])
-
 dnl Checks for programs used in building
 AC_PROG_CC
 AC_PROG_CC_STDC
@@ -92,6 +82,8 @@ ifdef([PKG_CHECK_MODULES],
 		[AC_MSG_ERROR([pkg-config not (fully) installed, but needed to find Elektra])])
 AC_SUBST([ELEKTRA_CFLAGS])
 AC_SUBST([ELEKTRA_LIBS])
+
+AC_CONFIG_FILES([post-install.sh], [chmod +x post-install.sh])
 
 CFLAGS="$ELEKTRA_CFLAGS $CFLAGS"
 LIBS="$ELEKTRA_LIBS $LIBS -Wl,-rpath $ELEKTRA_LIBDIR"
