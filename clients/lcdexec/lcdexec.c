@@ -201,7 +201,7 @@ static void sigchld_handler(int signal)
 	}
 }
 
-static void on_fatal_error(ElektraError * error) // TODO (kodebach): finalize method
+static void on_fatal_error(ElektraError * error) // TODO: finalize method
 {
 	fprintf(stderr, "ERROR: %s\n", elektraErrorDescription(error));
 	exit(EXIT_FAILURE);
