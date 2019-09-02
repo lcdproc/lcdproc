@@ -325,7 +325,7 @@ process_config()
 
 	if (rc == -1)
 	{
-		fprintf(stderr, "An error occurred while initializing elektra: %s", elektraErrorDescription(error));
+		fprintf(stderr, "An error occurred while initializing elektra: %s\n", elektraErrorDescription(error));
 		elektraErrorReset(&error);
 		return -1;
 	}
