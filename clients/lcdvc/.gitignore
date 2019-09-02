@@ -2,4 +2,7 @@
 Makefile
 Makefile.in
 lcdvc
-elektragen.*
+elektragen.c
+elektragen.h
+lcdvc.spec.eqd
+lcdvc.mount.sh

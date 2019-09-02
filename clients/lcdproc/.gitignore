@@ -2,4 +2,7 @@
 Makefile
 Makefile.in
 lcdproc
-elektragen.*
+elektragen.c
+elektragen.h
+lcdproc.mount.sh
+lcdproc.spec.eqd

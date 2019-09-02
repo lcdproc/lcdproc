@@ -3,4 +3,7 @@ LCDd
 Makefile
 Makefile.in
 main.d
-elektragen.*
+elektragen.c
+elektragen.h
+LCDd.mount.sh
+LCDd.spec.eqd

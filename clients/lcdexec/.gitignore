@@ -2,4 +2,7 @@
 Makefile
 Makefile.in
 lcdexec
-elektragen.*
+elektragen.c
+elektragen.h
+lcdexec.mount.sh
+lcdexec.spec.eqd

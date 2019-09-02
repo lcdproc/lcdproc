@@ -9,7 +9,7 @@ nodist_lcdexec_SOURCES = elektragen.c elektragen.h
 lcdexec.$(OBJEXT): elektragen.c elektragen.h
 BUILT_SOURCES= elektragen.c elektragen.h
 
-CLEANFILES = elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh
+CLEANFILES = elektragen.c elektragen.h lcdexec.spec.eqd lcdexec.mount.sh
 
 lcdexec_LDADD = ../../shared/libLCDstuff.a
 
@@ -24,13 +24,7 @@ specdir = $(prefix)/share/lcdproc
 spec_DATA = lcdexec.spec.eqd
 
 KDB ?= kdb
-elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh: specification/lcdexec-spec.ini
-	$(KDB) gen -F ni=specification/lcdexec-spec.ini highlevel "spec/sw/lcdproc/lcdexec/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults headers=menu.h
-
-lcdexec.mount.sh: elektragen.mount.sh
-	cp elektragen.mount.sh lcdexec.mount.sh
-
-lcdexec.spec.eqd: elektragen.spec.eqd
-	cp elektragen.spec.eqd lcdexec.spec.eqd
+elektragen.c elektragen.h lcdexec.spec.eqd lcdexec.mount.sh: specification/lcdexec-spec.ini
+	$(KDB) gen -F ni=specification/lcdexec-spec.ini highlevel "spec/sw/lcdproc/lcdexec/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults headers=menu.h; mv elektragen.mount.sh lcdexec.mount.sh; mv elektragen.spec.eqd lcdexec.spec.eqd
 
 ## EOF

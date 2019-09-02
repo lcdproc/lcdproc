@@ -7,7 +7,7 @@ lcdvc_SOURCES = lcdvc.c lcdvc.h lcd_link.c lcd_link.h vc_link.c vc_link.h
 nodist_lcdvc_SOURCES = elektragen.c elektragen.h
 lcdvc.$(OBJEXT): elektragen.c elektragen.h
 
-CLEANFILES = elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh
+CLEANFILES = elektragen.c elektragen.h lcdvc.spec.eqd lcdvc.mount.sh
 
 lcdvc_LDADD = ../../shared/libLCDstuff.a
 
@@ -30,13 +30,8 @@ specdir = $(prefix)/share/lcdproc
 spec_DATA = lcdvc.spec.eqd
 
 KDB ?= kdb
-elektragen.c elektragen.h elektragen.spec.eqd elektragen.mount.sh: specification/lcdvc-spec.ini
-	$(KDB) gen -F ni=specification/lcdvc-spec.ini highlevel "spec/sw/lcdproc/lcdvc/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults helpFn=printHelpMessage
+elektragen.c elektragen.h lcdvc.spec.eqd lcdvc.mount.sh: specification/lcdvc-spec.ini
+	$(KDB) gen -F ni=specification/lcdvc-spec.ini highlevel "spec/sw/lcdproc/lcdvc/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults helpFn=printHelpMessage; mv elektragen.mount.sh lcdvc.mount.sh; mv elektragen.spec.eqd lcdvc.spec.eqd
 
-lcdvc.mount.sh: elektragen.mount.sh
-	cp elektragen.mount.sh lcdvc.mount.sh
-
-lcdvc.spec.eqd: elektragen.spec.eqd
-	cp elektragen.spec.eqd lcdvc.spec.eqd
 
 ## EOF
