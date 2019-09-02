@@ -51,3 +51,19 @@ sudo make install
 ```
 
 The script `post-install.sh` sets up Elektra such that it knows about LCDprocs specifications.
+
+If you run `LCDd` now, you will see an error:
+
+```
+An error occurred while initializing elektra: Validation Semantic: Required key /sw/lcdproc/lcdd/#0/current/server/drivers/#0 is missing.
+```
+
+This simply means that you haven't chosen a driver yet. To choose a driver run:
+
+```sh
+kdb set '/sw/lcdproc/lcdd/#0/current/server/drivers/#0' '@/curses/#0'
+```
+
+This chooses the `curses` driver. Specifically it choses the first configuration of the `curses` driver,
+which is stored below `/sw/lcdproc/lcdd/#0/current/curses/#0` (`@` stands for the parent key
+`/sw/lcdproc/lcdd/#0/current`).
