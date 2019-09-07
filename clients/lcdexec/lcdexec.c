@@ -230,18 +230,18 @@ static int process_config()
 
 	elektraFatalErrorHandler(elektra, on_fatal_error);
 
-	address = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDEXEC_ADDRESS));
-	port = elektraGet(elektra, ELEKTRA_TAG_LCDEXEC_PORT);
-	report_level = elektraGet(elektra, ELEKTRA_TAG_LCDEXEC_REPORTLEVEL);
-	report_dest = elektraGet(elektra, ELEKTRA_TAG_LCDEXEC_REPORTTOSYSLOG) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
-	foreground = elektraGet(elektra, ELEKTRA_TAG_LCDEXEC_FOREGROUND);
-	pidfile = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDEXEC_PIDFILE));
+	address = strdup(elektraGet(elektra, CONF_LCDEXEC_ADDRESS));
+	port = elektraGet(elektra, CONF_LCDEXEC_PORT);
+	report_level = elektraGet(elektra, CONF_LCDEXEC_REPORTLEVEL);
+	report_dest = elektraGet(elektra, CONF_LCDEXEC_REPORTTOSYSLOG) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
+	foreground = elektraGet(elektra, CONF_LCDEXEC_FOREGROUND);
+	pidfile = strdup(elektraGet(elektra, CONF_LCDEXEC_PIDFILE));
 
-	displayname = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDEXEC_DISPLAYNAME));
+	displayname = strdup(elektraGet(elektra, CONF_LCDEXEC_DISPLAYNAME));
 
-	default_shell = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDEXEC_SHELL));
+	default_shell = strdup(elektraGet(elektra, CONF_LCDEXEC_SHELL));
 
-	main_menu = elektraGet(elektra, ELEKTRA_TAG_MENU_MAIN);
+	main_menu = elektraGet(elektra, CONF_MENU_MAIN);
 	// fail on non-existent main menu;
 	if (main_menu == NULL) {
 		report(RPT_ERR, "no main menu found in configuration");

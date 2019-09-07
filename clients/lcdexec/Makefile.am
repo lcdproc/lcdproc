@@ -25,6 +25,6 @@ spec_DATA = lcdexec.spec.eqd
 
 KDB ?= kdb
 elektragen.c elektragen.h lcdexec.spec.eqd lcdexec.mount.sh: specification/lcdexec-spec.ini
-	$(KDB) gen -F ni=specification/lcdexec-spec.ini highlevel "spec/sw/lcdproc/lcdexec/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults headers=menu.h; mv elektragen.mount.sh lcdexec.mount.sh; mv elektragen.spec.eqd lcdexec.spec.eqd
+	$(KDB) gen -F ni=specification/lcdexec-spec.ini highlevel "spec/sw/lcdproc/lcdexec/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults headers=menu.h tagPrefix=CONF_; mv elektragen.mount.sh lcdexec.mount.sh; mv elektragen.spec.eqd lcdexec.spec.eqd
 
 ## EOF
