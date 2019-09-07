@@ -153,20 +153,20 @@ static int process_config()
 
 	elektraFatalErrorHandler(elektra, on_fatal_error);
 
-	address = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDVC_ADDRESS));
-	port = elektraGet(elektra, ELEKTRA_TAG_LCDVC_PORT);
-	report_level = elektraGet(elektra, ELEKTRA_TAG_LCDVC_REPORTLEVEL);
-	report_dest = elektraGet(elektra, ELEKTRA_TAG_LCDVC_REPORTTOSYSLOG) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
-	foreground = elektraGet(elektra, ELEKTRA_TAG_LCDVC_FOREGROUND);
-	pidfile = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDVC_PIDFILE));
+	address = strdup(elektraGet(elektra, CONF_LCDVC_ADDRESS));
+	port = elektraGet(elektra, CONF_LCDVC_PORT);
+	report_level = elektraGet(elektra, CONF_LCDVC_REPORTLEVEL);
+	report_dest = elektraGet(elektra, CONF_LCDVC_REPORTTOSYSLOG) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
+	foreground = elektraGet(elektra, CONF_LCDVC_FOREGROUND);
+	pidfile = strdup(elektraGet(elektra, CONF_LCDVC_PIDFILE));
 	
-	vcs_device = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDVC_VCSDEVICE));
-	vcsa_device = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDVC_VCSADEVICE));
+	vcs_device = strdup(elektraGet(elektra, CONF_LCDVC_VCSDEVICE));
+	vcsa_device = strdup(elektraGet(elektra, CONF_LCDVC_VCSADEVICE));
 
-	keys[0] = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDVC_UPKEY));
-	keys[1] = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDVC_DOWNKEY));
-	keys[2] = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDVC_LEFTKEY));
-	keys[3] = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDVC_RIGHTKEY));
+	keys[0] = strdup(elektraGet(elektra, CONF_LCDVC_UPKEY));
+	keys[1] = strdup(elektraGet(elektra, CONF_LCDVC_DOWNKEY));
+	keys[2] = strdup(elektraGet(elektra, CONF_LCDVC_LEFTKEY));
+	keys[3] = strdup(elektraGet(elektra, CONF_LCDVC_RIGHTKEY));
 
 	elektraClose(elektra);
 
