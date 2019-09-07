@@ -141,7 +141,7 @@ driver_load(Elektra * elektra, const char * driverpath, kdb_long_long_t index)
 	strcpy(&filename[len_driverpath + len_file], MODULE_EXTENSION);
 
 	/* extract name for passing to driver */
-	const char * reference = elektraGetV(elektra, ELEKTRA_TAG_SERVER_DRIVERS, index);
+	const char * reference = elektraGetV(elektra, CONF_SERVER_DRIVERS, index);
 	const char * index_start = strrchr(reference, '#') - 1;
 	const char * name_start = index_start - 1;
 	while (*name_start != '/') {

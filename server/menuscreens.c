@@ -85,7 +85,7 @@ menuscreens_init(Elektra * elektra)
 
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
-	menu_permissive_goto = elektraGet(elektra, ELEKTRA_TAG_MENU_PERMISSIVEGOTO);
+	menu_permissive_goto = elektraGet(elektra, CONF_MENU_PERMISSIVEGOTO);
 
 	/*
 	 * Get keys from config file: MenuKey, EnterKey, UpKey, DownKey,
@@ -94,36 +94,36 @@ menuscreens_init(Elektra * elektra)
 	 */
 	keymask = 0;
 	menu_key = enter_key = NULL;
-	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_MENUKEY);
+	tmp = elektraGet(elektra, CONF_MENU_MENUKEY);
 	if (strlen(tmp) > 0) {
 		menu_key = strdup(tmp);
 		keymask |= MENUTOKEN_MENU;
 	}
-	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_ENTERKEY);
+	tmp = elektraGet(elektra, CONF_MENU_ENTERKEY);
 	if (strlen(tmp) > 0) {
 		enter_key = strdup(tmp);
 		keymask |= MENUTOKEN_ENTER;
 	}
 
 	up_key = down_key = NULL;
-	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_UPKEY);
+	tmp = elektraGet(elektra, CONF_MENU_UPKEY);
 	if (strlen(tmp) > 0) {
 		up_key = strdup(tmp);
 		keymask |= MENUTOKEN_UP;
 	}
-	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_DOWNKEY);
+	tmp = elektraGet(elektra, CONF_MENU_DOWNKEY);
 	if (strlen(tmp) > 0) {
 		down_key = strdup(tmp);
 		keymask |= MENUTOKEN_DOWN;
 	}
 
 	left_key = right_key = NULL;
-	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_LEFTKEY);
+	tmp = elektraGet(elektra, CONF_MENU_LEFTKEY);
 	if (strlen(tmp) > 0) {
 		left_key = strdup(tmp);
 		keymask |= MENUTOKEN_LEFT;
 	}
-	tmp = elektraGet(elektra, ELEKTRA_TAG_MENU_RIGHTKEY);
+	tmp = elektraGet(elektra, CONF_MENU_RIGHTKEY);
 	if (strlen(tmp) > 0) {
 		right_key = strdup(tmp);
 		keymask |= MENUTOKEN_RIGHT;

@@ -75,7 +75,7 @@ linuxInput_init (Driver *drvthis, Elektra * elektra)
 	/* not using struct, since it is inconvenient for keymap */
 
 	/* What device should be used */
-	const char * device = elektraGetV(elektra, ELEKTRA_TAG_LINUX_INPUT_DEVICE, drvthis->index);
+	const char * device = elektraGetV(elektra, CONF_LINUX_INPUT_DEVICE, drvthis->index);
 	report(RPT_INFO, "%s: using Device %s", drvthis->name, device);
 
 
@@ -85,12 +85,12 @@ linuxInput_init (Driver *drvthis, Elektra * elektra)
 		return -1;
 	}
 
-	kdb_long_long_t size = elektraSizeV(elektra, ELEKTRA_TAG_LINUX_INPUT_KEYS, drvthis->index);
+	kdb_long_long_t size = elektraSizeV(elektra, CONF_LINUX_INPUT_KEYS, drvthis->index);
 
 	for (kdb_long_long_t i = 0; i < size; ++i) {
 		struct keycode * key = malloc(sizeof(struct keycode));
-		key->code = elektraGetV(elektra, ELEKTRA_TAG_LINUX_INPUT_KEYS_CODE, drvthis->index, i);
-		key->button = strdup(elektraGetV(elektra, ELEKTRA_TAG_LINUX_INPUT_KEYS_BUTTON, drvthis->index, i));
+		key->code = elektraGetV(elektra, CONF_LINUX_INPUT_KEYS_CODE, drvthis->index, i);
+		key->button = strdup(elektraGetV(elektra, CONF_LINUX_INPUT_KEYS_BUTTON, drvthis->index, i));
 		LL_AddNode(p->buttonmap, key);
 	}
 

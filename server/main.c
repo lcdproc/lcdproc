@@ -306,27 +306,27 @@ process_config()
 
 	elektraFatalErrorHandler(elektra, on_fatal_error);
 
-	bind_port = elektraGet(elektra, ELEKTRA_TAG_SERVER_PORT);
-	strncpy(bind_addr, elektraGet(elektra, ELEKTRA_TAG_SERVER_BIND), sizeof(bind_addr));
-	strncpy(user, elektraGet(elektra, ELEKTRA_TAG_SERVER_USER), sizeof(user));
+	bind_port = elektraGet(elektra, CONF_SERVER_PORT);
+	strncpy(bind_addr, elektraGet(elektra, CONF_SERVER_BIND), sizeof(bind_addr));
+	strncpy(user, elektraGet(elektra, CONF_SERVER_USER), sizeof(user));
 
-	frame_interval = elektraGet(elektra, ELEKTRA_TAG_SERVER_FRAMEINTERVAL);
-	default_duration = elektraGet(elektra, ELEKTRA_TAG_SERVER_WAITTIME) * 1e6 / frame_interval;
+	frame_interval = elektraGet(elektra, CONF_SERVER_FRAMEINTERVAL);
+	default_duration = elektraGet(elektra, CONF_SERVER_WAITTIME) * 1e6 / frame_interval;
 	if (default_duration * frame_interval < 2e6) {
 		report(RPT_WARNING, "Waittime should be at least 2 (seconds). Set to 2 seconds.");
 		default_duration = 2e6 / frame_interval;
 	}
 
-	foreground_mode = elektraGet(elektra, ELEKTRA_TAG_SERVER_FOREGROUND);
-	rotate_server_screen = elektraGet(elektra, ELEKTRA_TAG_SERVER_SERVERSCREEN);
-	backlight = elektraGet(elektra, ELEKTRA_TAG_SERVER_BACKLIGHT);
-	heartbeat = elektraGet(elektra, ELEKTRA_TAG_SERVER_HEARTBEAT);
-	autorotate = elektraGet(elektra, ELEKTRA_TAG_SERVER_AUTOROTATE);
+	foreground_mode = elektraGet(elektra, CONF_SERVER_FOREGROUND);
+	rotate_server_screen = elektraGet(elektra, CONF_SERVER_SERVERSCREEN);
+	backlight = elektraGet(elektra, CONF_SERVER_BACKLIGHT);
+	heartbeat = elektraGet(elektra, CONF_SERVER_HEARTBEAT);
+	autorotate = elektraGet(elektra, CONF_SERVER_AUTOROTATE);
 
-	titlespeed = elektraGet(elektra, ELEKTRA_TAG_SERVER_TITLESPEED);
-	report_dest = (elektraGet(elektra, ELEKTRA_TAG_SERVER_REPORTTOSYSLOG)) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
+	titlespeed = elektraGet(elektra, CONF_SERVER_TITLESPEED);
+	report_dest = (elektraGet(elektra, CONF_SERVER_REPORTTOSYSLOG)) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
 
-	report_level = elektraGet(elektra, ELEKTRA_TAG_SERVER_REPORTLEVEL);
+	report_level = elektraGet(elektra, CONF_SERVER_REPORTLEVEL);
 
 	return 0;
 }
@@ -458,7 +458,7 @@ init_drivers(void)
 	debug(RPT_DEBUG, "%s()", __FUNCTION__);
 
 	/* Read drivers */
-	num_drivers = elektraSize(elektra, ELEKTRA_TAG_SERVER_DRIVERS);
+	num_drivers = elektraSize(elektra, CONF_SERVER_DRIVERS);
 	for (kdb_long_long_t i = 0; i < num_drivers; ++i) {
 		if(i > MAX_DRIVERS)
 		{

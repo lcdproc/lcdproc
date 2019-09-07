@@ -150,7 +150,7 @@ CFontzPacket_init (Driver *drvthis, Elektra * elektra)
 
 	/* Read config */
 	CFontzPacketDriverConfig config;
-	elektraFillStructV(elektra, &config, ELEKTRA_TAG_CFONTZPACKET, drvthis->index);
+	elektraFillStructV(elektra, &config, CONF_CFONTZPACKET, drvthis->index);
 
 	/* Try to find a matching model from our list of known modules */
 	debug(RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, config.model);

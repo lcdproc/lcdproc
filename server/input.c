@@ -51,11 +51,11 @@ int input_init(Elektra * elektra)
 	keylist = LL_new();
 
 	/* Get rotate/scroll keys from config file */
-	toggle_rotate_key = strdup(elektraGet(elektra, ELEKTRA_TAG_SERVER_TOGGLEROTATEKEY));
-	prev_screen_key = strdup(elektraGet(elektra, ELEKTRA_TAG_SERVER_PREVSCREENKEY));
-	next_screen_key = strdup(elektraGet(elektra, ELEKTRA_TAG_SERVER_NEXTSCREENKEY));
-	scroll_up_key = strdup(elektraGet(elektra, ELEKTRA_TAG_SERVER_SCROLLUPKEY));
-	scroll_down_key = strdup(elektraGet(elektra, ELEKTRA_TAG_SERVER_SCROLLDOWNKEY));
+	toggle_rotate_key = strdup(elektraGet(elektra, CONF_SERVER_TOGGLEROTATEKEY));
+	prev_screen_key = strdup(elektraGet(elektra, CONF_SERVER_PREVSCREENKEY));
+	next_screen_key = strdup(elektraGet(elektra, CONF_SERVER_NEXTSCREENKEY));
+	scroll_up_key = strdup(elektraGet(elektra, CONF_SERVER_SCROLLUPKEY));
+	scroll_down_key = strdup(elektraGet(elektra, CONF_SERVER_SCROLLDOWNKEY));
 
 	return 0;
 }

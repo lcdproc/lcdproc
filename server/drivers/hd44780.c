@@ -193,10 +193,10 @@ static int get_config_backlight_type(Driver *drvthis, const Hd44780DriverConfig 
 	}
 
 	int result = BACKLIGHT_NONE;
-	kdb_long_long_t size = elektraSizeV(elektra, ELEKTRA_TAG_HD44780_BACKLIGHTMODE, drvthis->index);
+	kdb_long_long_t size = elektraSizeV(elektra, CONF_HD44780_BACKLIGHTMODE, drvthis->index);
 	for (kdb_long_long_t i = 0; i < size; ++i)
 	{
-		ElektraEnumHd44780Backlightmode elektraMode = elektraGetV(elektra, ELEKTRA_TAG_HD44780_BACKLIGHTMODE, drvthis->index, i);
+		ElektraEnumHd44780Backlightmode elektraMode = elektraGetV(elektra, CONF_HD44780_BACKLIGHTMODE, drvthis->index, i);
 		int mode = map_backlight_mode(elektraMode);
 		if (mode < 0) {
 			report(RPT_ERR, "%s ("ELEKTRA_LONG_LONG_F"): unknown Backlight mode: %d", drvthis->name, drvthis->index, elektraMode);
@@ -299,7 +299,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 
 	/* READ THE CONFIG */
 	Hd44780DriverConfig config;
-	elektraFillStructV(elektra, &config, ELEKTRA_TAG_HD44780, drvthis->index);
+	elektraFillStructV(elektra, &config, CONF_HD44780, drvthis->index);
 
 	// TODO (elektra): use hexnumber?
 	p->port			= (unsigned int)strtoul(config.port, NULL, 16); /* works because, spec enforces hex string */
@@ -449,7 +449,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 
 		/* Read keymap */
 		for (x = 0; x < KEYPAD_MAXX; x++) {
-			const char * key = elektraGetV(elektra, ELEKTRA_TAG_HD44780_KEYDIRECT, drvthis->index, x);
+			const char * key = elektraGetV(elektra, CONF_HD44780_KEYDIRECT, drvthis->index, x);
 
 			/* Was a key specified in the config file ? */
 			if (strlen(key) == 0) {
@@ -461,7 +461,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 			p->keyMapDirect[x] = strdup(key);
 
 			for (y = 0; y < KEYPAD_MAXY; y++) {
-				key = elektraGetV(elektra, ELEKTRA_TAG_HD44780_KEYMATRIX, drvthis->index, x, y);
+				key = elektraGetV(elektra, CONF_HD44780_KEYMATRIX, drvthis->index, x, y);
 				
 				/* Was a key specified in the config file ? */
 				if (strlen(key) == 0) {

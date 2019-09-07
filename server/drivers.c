@@ -65,7 +65,7 @@ drivers_load_driver(Elektra * elektra, kdb_long_long_t index)
 	}
 
 	/* Retrieve data from config file */
-	const char * driverpath = elektraGet(elektra, ELEKTRA_TAG_SERVER_DRIVERPATH);
+	const char * driverpath = elektraGet(elektra, CONF_SERVER_DRIVERPATH);
 
 	/* Load the module */
 	driver = driver_load(elektra, driverpath, index);

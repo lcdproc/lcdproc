@@ -161,7 +161,7 @@ lcdm001_init (Driver *drvthis, Elektra * elektra)
 
 	/* READ CONFIG FILE: */
 	Lcdm001DriverConfig config;
-	elektraFillStructV(elektra, &config, ELEKTRA_TAG_LCDM001, drvthis->index);
+	elektraFillStructV(elektra, &config, CONF_LCDM001, drvthis->index);
 
 	/* which serial device should be used */
 	report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);

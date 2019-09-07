@@ -179,7 +179,7 @@ curses_init (Driver *drvthis, Elektra * elektra)
 	/* Get settings from config */
 
 	CursesDriverConfig config;
-	elektraFillStructV(elektra, &config, ELEKTRA_TAG_CURSES, drvthis->index);
+	elektraFillStructV(elektra, &config, CONF_CURSES, drvthis->index);
 
 	/* Get color settings */
 

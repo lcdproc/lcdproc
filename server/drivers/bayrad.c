@@ -97,7 +97,7 @@ bayrad_init(Driver *drvthis, Elektra * elektra)
   /* Read config */
 
   BayradDriverConfig config;
-  elektraFillStructV (elektra, &config, ELEKTRA_TAG_BAYRAD, drvthis->index);
+  elektraFillStructV (elektra, &config, CONF_BAYRAD, drvthis->index);
 
   /* What device should be used */
   report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);

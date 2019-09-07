@@ -127,7 +127,7 @@ CFontz_init(Driver *drvthis, Elektra * elektra)
 	/* Read config */
 
   CFontzDriverConfig config;
-  elektraFillStructV (elektra, &config, ELEKTRA_TAG_CFONTZ, drvthis->index);
+  elektraFillStructV (elektra, &config, CONF_CFONTZ, drvthis->index);
 
 	/* Which device should be used */
   report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);

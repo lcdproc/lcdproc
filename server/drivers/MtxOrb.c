@@ -261,7 +261,7 @@ MtxOrb_init (Driver *drvthis, Elektra *elektra)
 
 	/* READ CONFIG FILE */
 	MtxOrbDriverConfig config;
-	elektraFillStructV(elektra, &config, ELEKTRA_TAG_MTXORB, drvthis->index);
+	elektraFillStructV(elektra, &config, CONF_MTXORB, drvthis->index);
 
 	/* Get serial device to use */
   report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
