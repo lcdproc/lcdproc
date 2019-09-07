@@ -68,10 +68,10 @@ iface_process_config(Elektra * elektra)
 
 		sprintf(iface_label, "Interface%i", iface_count);
 		debug(RPT_DEBUG, "Label %s count %i", iface_label, iface_count);
-		iface[iface_count].name = strdup(elektraGetV(elektra, ELEKTRA_TAG_IFACE_INTERFACE_NAME, iface_count));
+		iface[iface_count].name = strdup(elektraGetV(elektra, CONF_IFACE_INTERFACE_NAME, iface_count));
 
 		sprintf(iface_label, "Alias%i", iface_count);
-		iface[iface_count].alias = strdup(elektraGetV(elektra, ELEKTRA_TAG_IFACE_INTERFACE_ALIAS, iface_count));
+		iface[iface_count].alias = strdup(elektraGetV(elektra, CONF_IFACE_INTERFACE_ALIAS, iface_count));
 		if (strlen(iface[iface_count].alias) == 0)
 			iface[iface_count].alias = iface[iface_count].name;
 		
@@ -79,8 +79,8 @@ iface_process_config(Elektra * elektra)
 		      iface_count, iface[iface_count].name, iface[iface_count].alias);
 	}
 
-	unit = elektraGet(elektra, ELEKTRA_TAG_IFACE_UNIT);
-	transfer_screen = elektraGet(elektra, ELEKTRA_TAG_IFACE_TRANSFER);
+	unit = elektraGet(elektra, CONF_IFACE_UNIT);
+	transfer_screen = elektraGet(elektra, CONF_IFACE_TRANSFER);
 
 	return 0;
 }

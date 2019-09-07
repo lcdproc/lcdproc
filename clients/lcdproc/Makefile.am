@@ -28,7 +28,7 @@ spec_DATA = lcdproc.spec.eqd
 
 KDB ?= kdb
 elektragen.c elektragen.h lcdproc.spec.eqd lcdproc.mount.sh: specification/lcdproc-spec.ini
-	$(KDB) gen -F ni=specification/lcdproc-spec.ini highlevel "spec/sw/lcdproc/lcdproc/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults headers=screen_config.h; mv elektragen.mount.sh lcdproc.mount.sh; mv elektragen.spec.eqd lcdproc.spec.eqd
+	$(KDB) gen -F ni=specification/lcdproc-spec.ini highlevel "spec/sw/lcdproc/lcdproc/#0/current" elektragen initFn=loadConfiguration helpFn=printHelpMessage embeddedSpec=defaults headers=screen_config.h tagPrefix=CONF_; mv elektragen.mount.sh lcdproc.mount.sh; mv elektragen.spec.eqd lcdproc.spec.eqd
 
 
 ## EOF

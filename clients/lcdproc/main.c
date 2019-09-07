@@ -340,14 +340,14 @@ process_config()
 
 	elektraFatalErrorHandler(elektra, on_fatal_error);
 
-	server = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDPROC_SERVER));
-	port = elektraGet(elektra, ELEKTRA_TAG_LCDPROC_PORT);
-	report_level = elektraGet(elektra, ELEKTRA_TAG_LCDPROC_REPORTLEVEL);
-	report_dest = elektraGet(elektra, ELEKTRA_TAG_LCDPROC_REPORTTOSYSLOG) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
-	foreground = elektraGet(elektra, ELEKTRA_TAG_LCDPROC_FOREGROUND);
-	pidfile = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDPROC_PIDFILE));
-	islow = elektraGet(elektra, ELEKTRA_TAG_LCDPROC_DELAY);
-	displayname = strdup(elektraGet(elektra, ELEKTRA_TAG_LCDPROC_DISPLAYNAME));
+	server = strdup(elektraGet(elektra, CONF_LCDPROC_SERVER));
+	port = elektraGet(elektra, CONF_LCDPROC_PORT);
+	report_level = elektraGet(elektra, CONF_LCDPROC_REPORTLEVEL);
+	report_dest = elektraGet(elektra, CONF_LCDPROC_REPORTTOSYSLOG) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
+	foreground = elektraGet(elektra, CONF_LCDPROC_FOREGROUND);
+	pidfile = strdup(elektraGet(elektra, CONF_LCDPROC_PIDFILE));
+	islow = elektraGet(elektra, CONF_LCDPROC_DELAY);
+	displayname = strdup(elektraGet(elektra, CONF_LCDPROC_DISPLAYNAME));
 
 	/*
 	 * check for config file variables to override all the sequence
@@ -367,7 +367,7 @@ process_config()
 	}
 
 	/* read enabled screens, if defined */
-	kdb_long_long_t screen_count = elektraSize(elektra, ELEKTRA_TAG_LCDPROC_SCREENS);
+	kdb_long_long_t screen_count = elektraSize(elektra, CONF_LCDPROC_SCREENS);
 	if(screen_count > 0)
 	{
 		/* unset defaults */
@@ -375,7 +375,7 @@ process_config()
 
 		for (kdb_long_long_t i = 0; i < screen_count; ++i)
 		{
-			LcdprocScreen screen = elektraGetV(elektra, ELEKTRA_TAG_LCDPROC_SCREENS, i);
+			LcdprocScreen screen = elektraGetV(elektra, CONF_LCDPROC_SCREENS, i);
 			set_mode(screen, 1);
 		}
 	}

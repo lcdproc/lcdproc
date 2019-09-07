@@ -87,8 +87,8 @@ time_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
-		timeFormat = elektraGet(elektra, ELEKTRA_TAG_TIMEDATE_TIMEFORMAT);
-		dateFormat = elektraGet(elektra, ELEKTRA_TAG_TIMEDATE_DATEFORMAT);
+		timeFormat = elektraGet(elektra, CONF_TIMEDATE_TIMEFORMAT);
+		dateFormat = elektraGet(elektra, CONF_TIMEDATE_DATEFORMAT);
 
 		sock_send_string(sock, "screen_add T\n");
 		sock_printf(sock, "screen_set T -name {Time Screen: %s}\n", get_hostname());
@@ -210,9 +210,9 @@ clock_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
-		timeFormat = elektraGet(elektra, ELEKTRA_TAG_OLDTIME_TIMEFORMAT);
-		dateFormat = elektraGet(elektra, ELEKTRA_TAG_OLDTIME_DATEFORMAT);
-		showTitle = elektraGet(elektra, ELEKTRA_TAG_OLDTIME_SHOWTITLE);
+		timeFormat = elektraGet(elektra, CONF_OLDTIME_TIMEFORMAT);
+		dateFormat = elektraGet(elektra, CONF_OLDTIME_DATEFORMAT);
+		showTitle = elektraGet(elektra, CONF_OLDTIME_SHOWTITLE);
 
 		sock_send_string(sock, "screen_add O\n");
 		sock_printf(sock, "screen_set O -name {Old Clock Screen: %s}\n", get_hostname());
@@ -410,7 +410,7 @@ big_clock_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 	int digits = (lcd_wid >= 20) ? 6 : 4;
 	int xoffs = 0;
 
-	int showSecs = elektraGet(elektra, ELEKTRA_TAG_BIGCLOCK_SHOWSECS);
+	int showSecs = elektraGet(elektra, CONF_BIGCLOCK_SHOWSECS);
 	if (!showSecs) {
 		digits = 4;
 	}
@@ -505,7 +505,7 @@ mini_clock_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
-		timeFormat = elektraGet(elektra, ELEKTRA_TAG_MINICLOCK_TIMEFORMAT);
+		timeFormat = elektraGet(elektra, CONF_MINICLOCK_TIMEFORMAT);
 
 		sock_send_string(sock, "screen_add N\n");
 		sock_send_string(sock, "screen_set N -name {Mini Clock Screen} -heartbeat off\n");

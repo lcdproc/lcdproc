@@ -62,8 +62,8 @@ xload_screen(int rep, int display, int *flags_ptr, Elektra * elektra)
 		*flags_ptr |= INITIALIZED;
 
 		/* get config values */
-		lowLoad = elektraGet(elektra, ELEKTRA_TAG_LOAD_LOWLOAD);
-		highLoad = elektraGet(elektra, ELEKTRA_TAG_LOAD_HIGHLOAD);
+		lowLoad = elektraGet(elektra, CONF_LOAD_LOWLOAD);
+		highLoad = elektraGet(elektra, CONF_LOAD_HIGHLOAD);
 
 		gauge_hgt = (lcd_hgt > 2) ? (lcd_hgt - 1) : lcd_hgt;
 		memset(loads, '\0', sizeof(double) * LCD_MAX_WIDTH);
