@@ -2,8 +2,8 @@
 
 ## Setting up Elektra
 
--   Checkout the latest version of Elektra's `master` branch (or PR #2805, if that hasn't been merged
-    yet).
+-   Checkout the latest version of Elektra's `master` branch (commit `79408a3509d4e8f97369c877ff08709f7de04976`
+    or later).
 -   Compile Elektra
     ```sh
     # inside Elektra source directory
