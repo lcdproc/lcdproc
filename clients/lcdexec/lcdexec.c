@@ -225,7 +225,7 @@ static int process_config()
 		// help mode
 		printHelpMessage(elektra, NULL, help_prefix);
 		elektraClose (elektra);
-		return 0;
+		exit(EXIT_SUCCESS);
 	}
 
 	elektraFatalErrorHandler(elektra, on_fatal_error);

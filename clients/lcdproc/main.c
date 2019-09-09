@@ -312,8 +312,10 @@ static void on_fatal_error(ElektraError * error) // TODO: finalize method
 }
 
 /**
- * Reads and parses configuration file.
- * \param configfile  The configfile to read or NULL for the default config.
+ * Loads the configuration from the KDB.
+ * 
+ * If Elektra reports help mode, we print the help message and call exit(EXIT_SUCCESS);
+ * 
  * \retval 0 on success
  * \retval !=0 on error
  */
@@ -335,7 +337,7 @@ process_config()
 		// help mode
 		printHelpMessage(elektra, NULL, help_prefix);
 		elektraClose (elektra);
-		return 0;
+		exit(EXIT_SUCCESS);
 	}
 
 	elektraFatalErrorHandler(elektra, on_fatal_error);
