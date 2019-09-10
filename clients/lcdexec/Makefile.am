@@ -3,6 +3,7 @@
 sysconf_DATA = lcdexec.conf
 
 bin_PROGRAMS = lcdexec
+bin_SCRIPTS = lcdexec-setup
 
 lcdexec_SOURCES = lcdexec.c menu.c menu.h
 nodist_lcdexec_SOURCES = elektragen.c elektragen.h
