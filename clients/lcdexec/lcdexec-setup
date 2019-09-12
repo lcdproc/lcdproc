@@ -1,13 +1,18 @@
 #!/bin/sh
 
+VERBOSE=${VERBOSE:-0}
+BACKUP="$(mktemp)"
+
 usage() {
-    echo "lcdexec-setup <command> [...]" >&2
+    echo "lcdexec-setup [-v] <command> [...]" >&2
     echo "" >&2
+    echo "-v          Log what is happening to the KDB to stderr." >&2
     echo "<command>" >&2
     echo "     menu - to create a new menu" >&2
     echo "  command - to create a new command" >&2
     echo "    param - to create a new parameter" >&2
     echo "     help - to display more help" >&2
+    echo "   delete - delete a menu/command/parameter" >&2
     echo "[...]" >&2
     echo "  Use 'lcdexec-setup help <command>' to show available values." >&2
     echo "  For paramters 'lcdexec-setup help param <param-type>' shows even more info." >&2
@@ -113,6 +118,17 @@ usage_param_slider() {
     echo "-T <max>              The text to display instead of the maximum value." >&2
 }
 
+usage_delete() {
+    echo "lcdexec-setup delete (menu|command|param/<kind>) <index>" >&2
+    echo "" >&2
+    echo "Delete a menu/command/parameter and move other entries in the array" >&2
+    echo "to keep it continuous." >&2
+    echo "" >&2
+    echo "<kind>             What kind of parameter should be deleted?" >&2
+    echo "                   One of: alpha, checkbox, ip, numeric, ring, slider" >&2
+    echo "<index>            Index of the entry to delete." >&2
+}
+
 show_help() {
     if [ "$#" -lt 1 ]; then
         usage
@@ -158,6 +174,9 @@ show_help() {
     help)
         usage
         ;;
+    delete)
+        usage_delete
+        ;;
     *)
         usage
         exit 1
@@ -172,20 +191,64 @@ else
     NAMESPACE="user"
 fi
 
+log() {
+    [ "$VERBOSE" = "1" ] && echo "$@"
+}
+
+run_kdb() {
+    log "$ kdb $*" >&2
+    kdb "$@"
+    rc=$?
+    if [ "$rc" != "0" ]; then
+        exit_error "FAILED ($rc): kdb $*"
+    fi
+}
+
 kdb_set() {
-    kdb set -N "$NAMESPACE" "$BASE_KEY/$1" "$2"
+    run_kdb set -N "$NAMESPACE" "$BASE_KEY/$1" "$2"
 }
 
 kdb_setmeta() {
-    kdb setmeta "$NAMESPACE$BASE_KEY/$1" "$2" "$3"
+    run_kdb setmeta "$NAMESPACE$BASE_KEY/$1" "$2" "$3"
+}
+
+kdb_rm_r() {
+    run_kdb rm -r "$NAMESPACE$BASE_KEY/$1"
+}
+
+kdb_exists() {
+    [ -n "$(run_kdb ls "$NAMESPACE$BASE_KEY/$1")" ]
+}
+
+kdb_array_last() {
+    kdb getmeta "$BASE_KEY/$1" array 2>/dev/null
+}
+
+kdb_export() {
+    run_kdb export "$NAMESPACE$BASE_KEY/$1" ni | grep -v '^ internal/'
+}
+
+kdb_import() {
+    run_kdb import "$NAMESPACE$BASE_KEY/$1" ni
 }
 
 elektra_index() {
     echo "$1" | awk '{ i=$0; gsub(".", "_", i); printf("#%s%s", substr(i, 2), $0) }'
 }
 
+prev_index() {
+    last="$(kdb_array_last "$1")"
+    last="${last#\#}"
+    last="${last##*_}"
+    if [ -z "$last" ] || [ "$last" -eq 0 ]; then
+        printf ""
+    else
+        elektra_index $((last - 1))
+    fi
+}
+
 next_index() {
-    last="$(basename "$(kdb getmeta "$BASE_KEY/$1" array 2> /dev/null)")"
+    last="$(kdb_array_last "$1")"
     last="${last#\#}"
     last="${last##*_}"
     if [ -z "$last" ]; then
@@ -197,7 +260,30 @@ next_index() {
 
 exit_error() {
     echo "ERROR: $1" >&2
+    cleanup 1
     exit 1
+}
+
+backup() {
+    kdb_export "" >"$BACKUP"
+}
+
+restore() {
+    kdb_rm_r ""
+    kdb_import "" <"$BACKUP"
+}
+
+cleanup() {
+    rc=$1
+    shift
+
+    if [ "$rc" != "0" ]; then
+        if [ "$#" -gt 0 ]; then
+            log "-- FAILED ($rc): $*"
+        fi
+        log "-- Restoring backup $BACKUP"
+        restore
+    fi
 }
 
 # create_menu <display-name> [<entry>...]
@@ -734,6 +820,117 @@ create_param_slider() {
     [ -n "$T" ] && kdb_set "$param/maxtext" "$max_text"
 }
 
+# delete_entry (menu|command|param/<kind>) <index>
+delete_entry() {
+    if [ "$#" -lt 2 ]; then
+        usage_delete
+        exit 1
+    fi
+
+    index="$2"
+
+    case "$1" in
+    menu)
+        array="menu"
+        ;;
+    command)
+        array="command"
+        ;;
+    param/alpha)
+        array="parameter/alpha"
+        ;;
+    param/checkbox)
+        array="parameter/checkbox"
+        ;;
+    param/ip)
+        array="parameter/ip"
+        ;;
+    param/numeric)
+        array="parameter/numeric"
+        ;;
+    param/ring)
+        array="parameter/ring"
+        ;;
+    param/slider)
+        array="parameter/slider"
+        ;;
+    *)
+        usage_delete
+        exit 1
+        ;;
+    esac
+
+    entry="$array/$(elektra_index "$index")"
+
+    if ! kdb_exists "$entry"; then
+        exit_error "$entry doesn't exist"
+    fi
+
+    kdb_rm_r "$entry"
+
+    new_last="$(prev_index "$array")"
+    kdb_setmeta "$array" "array" "$new_last"
+
+    if [ -z "$new_last" ]; then
+        return
+    fi
+
+    tmp_file="$(mktemp)"
+
+    kdb_export "$array" >"$tmp_file"
+    kdb_rm_r "$array"
+
+    mawk -v idx="$index" -F '[/ \]]' '
+    /^#_*[0-9]+/ {
+        n = $1
+        sub("^#_*", "", n)
+
+        if (n > idx) {
+            m = n - 1
+
+            p = $1
+            sub("[0-9]+$", "", p)
+
+            if (length(m) < length(n)) {
+                p = substr(p, 0, length(p) - 1)
+            }
+
+            s = $0
+            sub("^#_*[0-9]+", "", s)
+            print p m s
+            
+            next
+        }
+    }
+
+    /^\[#_*[0-9]+/ {
+        n = $1
+        sub("^\[#_*", "", n)
+
+        if (n > idx) {
+            m = n - 1
+
+            p = $1
+            sub("[0-9]+$", "", p)
+
+            if (length(m) < length(n)) {
+                p = substr(p, 0, length(p) - 1)
+            }
+
+            s = $0
+            sub("^\[#_*[0-9]+", "", s)
+            print p m s
+            
+            next
+        }
+    }
+    
+    { print }
+    ' "$tmp_file" | kdb_import "$array"
+
+    rm "$tmp_file"
+}
+
 # main <command> [...]
 main() {
     if [ "$#" -lt 1 ]; then
@@ -741,8 +938,25 @@ main() {
         exit 1
     fi
 
+    OPTIND=1
+    while getopts ":v" o; do
+        case "$o" in
+        v)
+            VERBOSE=1
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
     type="$1"
     shift
+
+    log "-- Creating backup $BACKUP"
+    backup
 
     case "$type" in
     menu)
@@ -757,11 +971,16 @@ main() {
     help)
         show_help "$@"
         ;;
+    delete)
+        delete_entry "$@"
+        ;;
     *)
         usage
         exit 1
         ;;
     esac
+
+    echo "-- SUCCESS: removing backup $BACKUP"
 }
 
 main "$@"
