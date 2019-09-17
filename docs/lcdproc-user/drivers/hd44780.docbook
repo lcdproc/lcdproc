@@ -1978,7 +1978,9 @@ will not work. Use the following instead.
 
 <para>
 Alternatively you can use a single channel FTDI FT245BM USB &lt;-&gt; parallel
-FIFO chip and use the display in its 4 bit mode.
+FIFO chip and use the display in its 4 bit mode. If the LCD display you are
+using has two chip selects, then also configure CE2, and set RW to 0x00. Don't
+forget to wire RW to ground.
 </para>
 
 <table id="hd44780-ftdi.4bit-mapping">
@@ -2053,6 +2055,13 @@ FIFO chip and use the display in its 4 bit mode.
       <entry>5</entry>
     </row>
     <row>
+      <entry>D6</entry>
+      <entry>19</entry>
+      <entry></entry>
+      <entry>EN2</entry>
+      <entry>(alternative)</entry>
+    </row>
+    <row>
       <entry>D7</entry>
       <entry>18</entry>
       <entry></entry>
@@ -2079,6 +2088,7 @@ ftdi_line_EN=0x10
 ftdi_line_RS=0x20
 ftdi_line_RW=0x40
 ftdi_line_backlight=0x80
+#ftdi_line_EN2=0x40
 ]]>
 </screen>
 </example>
