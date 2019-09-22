@@ -32,7 +32,7 @@ usage_command() {
     echo "" >&2
     echo "<exec>                What the command should do." >&2
     echo "-d <display-name>     The display name for the command." >&2
-    echo "-f                    What the command should do." >&2
+    echo "-f                    Set to enable feedback." >&2
     echo "<param>" >&2
     echo "  Each <param> is a reference to a parameter." >&2
     echo "  All references must be of the form '<param-type>/#'," >&2
@@ -980,7 +980,7 @@ main() {
         ;;
     esac
 
-    echo "-- SUCCESS: removing backup $BACKUP"
+    log "-- SUCCESS: removing backup $BACKUP"
 }
 
 main "$@"
