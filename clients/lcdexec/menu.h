@@ -133,8 +133,9 @@ typedef struct RingParameter
 	kdb_long_t id;
 	const char *displayname;
 	const char *envname;
-	kdb_long_long_t stringsSize;
+	kdb_long_long_t stringsCount;
 	const char **strings;
+	size_t stringsLength;
 	kdb_long_t value;
 } RingParameter;
 

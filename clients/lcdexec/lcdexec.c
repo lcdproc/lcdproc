@@ -359,6 +359,7 @@ static bool find_triggered_command(Menu * menu, int id, Command ** command)
 				*command = menu->entries[i].command;
 				return true;
 			} else if(menu->entries[i].command->actionId == id) {
+				*command = menu->entries[i].command;
 				return true;
 			}
 			CommandParameterType t;
@@ -429,6 +430,12 @@ static int process_response(char *str)
 	char *argv[20];
 	int argc;
 
+	char * strCopy = NULL;
+	if (strncmp(str, "huh?", 4) == 0) {
+		// for error handling
+		strCopy = strdup(str);
+	}
+
 	debug(RPT_DEBUG, "Server said: \"%s\"", str);
 
 	/* Check what the server just said to us... */
@@ -447,19 +454,22 @@ static int process_response(char *str)
 				if (argc < 3)
 					goto err_invalid;
 
-				/* Find the entry by id */
-				Command * command; // TODO (kodebach): last entry of command with args?
+				/* Look for command by id or actionId */
+				Command * command;
 				if (!find_triggered_command(main_menu, atoi(argv[2]), &command)) {
+					// unknown id
 					report(RPT_WARNING, "Could not find the item id given by the server");
 					return -1;
 				}
 
-				if(command == NULL) {
-						report(RPT_WARNING, "Illegal menu entry type for event");
-						return -1;
+				if(command != NULL) {
+					// found command
+					exec_command(command);
+				} else {
+					// found menu or parameter
+					debug(RPT_DEBUG, "got %s for %s", argv[1], argv[2]);
+					return 0;	
 				}
-
-				exec_command(command);
 		}
 		else if ((strcmp(argv[1], "plus") == 0) ||
 			 (strcmp(argv[1], "minus") == 0) ||
@@ -472,13 +482,15 @@ static int process_response(char *str)
 			CommandParameter * parameter;
 			CommandParameterType parameterType;
 			if (!find_triggered_parameter(main_menu, atoi(argv[2]), &parameter, &parameterType)) {
+				// unknown id
 				report(RPT_WARNING, "Could not find the item id given by the server");
 				return -1;
 			}
 
 			if(parameter == NULL) {
-					report(RPT_WARNING, "Illegal menu entry type for event");
-					return -1;
+				// found menu or command
+				debug(RPT_DEBUG, "got %s for %s", argv[1], argv[2]);
+				return 0;
 			}
 
 			switch (parameterType) {
@@ -511,7 +523,7 @@ static int process_response(char *str)
 						parameter->checkbox->value = 0;
 					break;
 				default:
-					report(RPT_WARNING, "Illegal menu entry type for event");
+					report(RPT_WARNING, "Illegal parameter type for event %s", argv[1]);
 					return -1;
 			}
 		}
@@ -537,11 +549,16 @@ static int process_response(char *str)
 	}
 	else if (strcmp(argv[0], "huh?") == 0) {
 		/* Report errors */
-		report(RPT_WARNING, "Server said: \"%s\"", str);
+		report(RPT_WARNING, "Server said: \"%s\"", strCopy);
 	}
 	else {
 		; /* Ignore all other responses */
 	}
+
+	if (strCopy != NULL) {
+		free(strCopy);
+	}
+
 	return 0;
 
 err_invalid:
@@ -559,7 +576,7 @@ static int exec_command(Command *cmd)
 	const char *argv[4];
 	pid_t pid;
 	ProcInfo *p;
-	char *envp[cmd->parametersSize+1];
+	char ** envp = malloc((cmd->parametersSize + 1) * sizeof(char*));
 
 	/* set argument vector */
 	argv[0] = default_shell;
@@ -569,47 +586,45 @@ static int exec_command(Command *cmd)
 
 	/* set environment vector: allocate & fill contents */
 	for (kdb_long_long_t i = 0; i < cmd->parametersSize; ++i) {
-		char buf[1025];
-
 		CommandParameter param = cmd->parameters[i];
 		switch (cmd->parameterTypes[i]) {
 			case COMMAND_PARAMETER_TYPE_SLIDER:
-				envp[i] = elektraFormat(buf, "%s="ELEKTRA_LONG_F, param.slider->envname, param.slider->value);
+				envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.slider->envname, param.slider->value);
 				break;
 			case COMMAND_PARAMETER_TYPE_RING:
-				envp[i] = elektraFormat(buf, "%s=%s", param.ring->envname, param.ring->strings[param.ring->value]);
+				envp[i] = elektraFormat("%s=%s", param.ring->envname, param.ring->strings[param.ring->value]);
 				break;
 			case COMMAND_PARAMETER_TYPE_NUMERIC:
-				envp[i] = elektraFormat(buf, "%s="ELEKTRA_LONG_F, param.numeric->envname, param.numeric->value);
+				envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.numeric->envname, param.numeric->value);
 				break;
 			case COMMAND_PARAMETER_TYPE_ALPHA:
-				envp[i] = elektraFormat(buf, "%s=%s", param.alpha->envname, param.alpha->value);
+				envp[i] = elektraFormat("%s=%s", param.alpha->envname, param.alpha->value);
 				break;
 			case COMMAND_PARAMETER_TYPE_IP:
-				envp[i] = elektraFormat(buf, "%s=%s", param.ip->envname, param.ip->value);
+				envp[i] = elektraFormat("%s=%s", param.ip->envname, param.ip->value);
 				break;
 			case COMMAND_PARAMETER_TYPE_CHECKBOX:
 				switch (param.checkbox->value)
 				{
 				case CHECKBOX_STATE_ON:
 					if(strlen(param.checkbox->ontext) > 0) {
-						envp[i] = elektraFormat(buf, "%s", param.checkbox->ontext);
+						envp[i] = elektraFormat("%s", param.checkbox->ontext);
 					} else {
-						envp[i] = elektraFormat(buf, "%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
+						envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
 					}
 					break;
 				case CHECKBOX_STATE_OFF:
 					if(strlen(param.checkbox->offtext) > 0) {
-						envp[i] = elektraFormat(buf, "%s", param.checkbox->offtext);
+						envp[i] = elektraFormat("%s", param.checkbox->offtext);
 					} else {
-						envp[i] = elektraFormat(buf, "%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
+						envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
 					}
 					break;
 				case CHECKBOX_STATE_GRAY:
 					if(strlen(param.checkbox->graytext) > 0) {
-						envp[i] = elektraFormat(buf, "%s", param.checkbox->graytext);
+						envp[i] = elektraFormat("%s", param.checkbox->graytext);
 					} else {
-						envp[i] = elektraFormat(buf, "%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
+						envp[i] = elektraFormat("%s="ELEKTRA_LONG_F, param.checkbox->envname, param.checkbox->value);
 					}
 					break;
 				}
@@ -653,6 +668,7 @@ static int exec_command(Command *cmd)
 	for (kdb_long_long_t i = 0; i < cmd->parametersSize; i++) {
 		elektraFree(envp[i]);
 	}
+	free (envp);
 
 	return 0;
 }
