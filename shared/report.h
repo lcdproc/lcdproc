@@ -61,6 +61,10 @@
  *	Ex: What function has been called, what subpart of a function is being
  *	executed, what was received and sent over the socket, etc.
  */
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #define RPT_CRIT 0
 #define RPT_ERR 1
 #define RPT_WARNING 2
