@@ -10,7 +10,6 @@
  * Copyright(c) 2001, Joris Robijn
  */
 
-#include <alloca.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>

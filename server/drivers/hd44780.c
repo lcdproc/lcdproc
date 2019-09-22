@@ -548,58 +548,7 @@ HD44780_init(Driver *drvthis, Elektra * elektra)
 	/* set contrast */
 	HD44780_set_contrast(drvthis, p->contrast);
 
-	/* Display startup parameters on the LCD */
 	HD44780_clear(drvthis);
-	char buf[256];
-	snprintf(buf, 255, "HD44780 %dx%d", p->width, p->height);
-	HD44780_string(drvthis, 1, 1, buf);
- 	switch(if_type) {
- 	  case IF_TYPE_USB:
-  		snprintf(buf, 255, "USB %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_SERIAL:
- 		snprintf(buf, 255, "SERIAL %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_I2C:
- 		snprintf(buf, 255, "I2C %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_SPI:
- 		snprintf(buf, 255, "SPI %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
- 	  case IF_TYPE_TCP:
- 		snprintf(buf, 255, "TCP %s%s%s",
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
- 			);
- 		break;
-	  case IF_TYPE_PARPORT:
- 	  default:
- 		snprintf(buf, 255, "LPT 0x%x%s%s%s", p->port,
-			 (have_backlight_pin(p)?" bl":""),
- 			 (p->have_keypad?" key":""),
- 			 (p->have_output?" out":"")
-  			);
-  	}
-	HD44780_string(drvthis, 1, 2, buf);
-	HD44780_flush(drvthis);
-	sleep(2);
 
 	return 0;
 }

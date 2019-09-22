@@ -19,7 +19,9 @@ This section covers the linux event device input driver for LCDd.
     <parameter><replaceable>DEVICE</replaceable></parameter>
   </term>
   <listitem><para>
-    Select the input device to use [default: <filename>/dev/input/event0</filename>]
+    Select the input device to use [default: <filename>/dev/input/event0</filename>].
+    This may be either an absolute path to the input node, starting with '/',
+    or an input device name, e.g. "Logitech Gaming Keyboard Gaming Keys".
   </para></listitem>
 </varlistentry>
 
@@ -37,8 +39,10 @@ This section covers the linux event device input driver for LCDd.
 
     <para>
     <replaceable>KEYCODE</replaceable> is an integer like the ones defined in
-    <filename>/usr/include/linux/input.h</filename>. You can also find the
-    key code in the log output of <application>LCDd</application> when the
+    <filename>/usr/include/linux/input.h</filename>. This may be specified
+    as either a decimal number, or as a hexadecimal number prefixed with 0x.
+    You can also find the key code in the log output of
+    <application>LCDd</application> when the
     <link linkend="server-section"><parameter>ReportLevel</parameter></link>
     is at least 4.
     </para>

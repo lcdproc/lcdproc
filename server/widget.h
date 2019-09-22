@@ -56,7 +56,7 @@ typedef struct Widget {
 Widget *widget_create(char *id, WidgetType type, Screen *screen);
 
 /* Destroy a widget */
-int widget_destroy(Widget *w);
+void widget_destroy(Widget *w);
 
 /* Convert a widget typename to a widget type */
 WidgetType widget_typename_to_type(char *typename);

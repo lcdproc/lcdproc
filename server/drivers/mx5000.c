@@ -31,16 +31,11 @@
  *
  */
 
-#include <dirent.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <linux/input.h>
 #include <libmx5000/mx5000.h>
 #include <libmx5000/mx5000screencontent.h>
 
@@ -54,45 +49,6 @@
 
 
 /* Internal functions */
-
-/* Get optional input FD for the menu buttons */
-static int
-mx5000_get_input_fd (void)
-{
-    struct input_id input_id;
-    char devname[PATH_MAX];
-    struct dirent *dirent;
-    DIR *dir;
-    int err, fd;
-
-    dir = opendir("/dev/input");
-    if (!dir)
-        return -1;
-
-    while((dirent = readdir(dir)) != NULL) {
-        if (dirent->d_type != DT_CHR ||
-            strncmp(dirent->d_name, "event", 5))
-                continue;
-
-        strcpy(devname, "/dev/input/");
-        strcat(devname, dirent->d_name);
-
-        fd = open(devname, O_RDONLY | O_NONBLOCK);
-        if (fd == -1)
-            continue;
-
-        err = ioctl(fd, EVIOCGID, &input_id);
-        if (err == 0 && input_id.vendor == 0x046d && input_id.product == 0xb305)
-        {
-            report(RPT_DEBUG, "mx5000: Reading input events from %s", devname);
-            return fd;
-        }
-
-        close(fd);
-    }
-
-    return -1;
-}
 
 /*
  * Prepare a static screen
@@ -137,8 +93,6 @@ mx5000_init (Driver *drvthis, char *args)
                 drvthis->name, strerror(errno));
         return -1;
     }
-
-    p->input_fd = mx5000_get_input_fd();
 
     report(RPT_DEBUG, "%s: init() done", drvthis->name);
 
@@ -448,74 +402,4 @@ mx5000_get_info (Driver *drvthis)
     strcpy(p->info, "Logitech MX 5000 Driver");
 
     return p->info;
-}
-
-/*
- * Map scancodes for the buttons below the LCD to the default [menu]
- * config key strings for the example LCDd.conf .
- */
-static const char *
-mx5000_translate_scancode(int scan_code)
-{
-    const char *key_name = NULL;
-
-    switch (scan_code) {
-    case 0xc100c:
-        /* Most left key below the LCD, we use this to enter/exit the menu */
-	key_name = "Escape";
-	break;
-    case 0xc100d:
-        /* Most right key below the LCD, we use this to select menu items */
-	key_name = "Enter";
-	break;
-    case 0xc100e:
-        /* Left button of the 2 middle buttons, marked with an arrow pointing up */
-	key_name = "Up";
-	break;
-    case 0xc100f:
-        /* Right button of the 2 middle buttons, marked with an arrow pointing down */
-	key_name = "Down";
-	break;
-    }
-
-    if (key_name)
-        report(RPT_DEBUG, "mx5000_get_key detected %s key-press", key_name);
-
-    return key_name;
-}
-
-/**
- * Read the next input event.
- * \param drvthis  Pointer to driver structure.
- * \retval         String representation of the key;
- *                 \c NULL for nothing available / error.
- */
-MODULE_EXPORT const char *
-mx5000_get_key (Driver *drvthis)
-{
-    PrivateData *p = drvthis->private_data;
-    struct input_event event;
-    int scan_code = 0;
-    int value = 0;
-
-    while (read(p->input_fd, &event, sizeof(event)) == sizeof(event)) {
-	switch (event.type) {
-	case EV_SYN:
-	    /* If we got a keypress return the scancode translated to a string */
-	    if (scan_code && value)
-                return mx5000_translate_scancode(scan_code);
-            /* Reset */
-            scan_code = 0;
-            value = 0;
-            break;
-        case EV_KEY:
-            value = event.value;
-            break;
-        case EV_MSC:
-            if (event.code == MSC_SCAN)
-                scan_code = event.value;
-            break;
-	}
-    }
-    return NULL;
 }

@@ -428,44 +428,34 @@ static int process_response(char *str)
 {
 	char *argv[20];
 	int argc;
-	char *str2 = strdup(str); /* get_args modifies str2 */
 
-	report(RPT_DEBUG, "Server said: \"%s\"", str);
+	debug(RPT_DEBUG, "Server said: \"%s\"", str);
 
 	/* Check what the server just said to us... */
-	argc = get_args(argv, str2, sizeof(argv)/sizeof(argv[0]));
-	if (argc < 1) {
-		free(str2);
+	argc = get_args(argv, str, sizeof(argv)/sizeof(argv[0]));
+	if (argc < 1)
 		return 0;
-	}
 
 	if (strcmp(argv[0], "menuevent") == 0) {
 		/* Ah, this is what we were waiting for ! */
 
-		if (argc < 2) {
-			report(RPT_WARNING, "Server gave invalid response");
-			free(str2);
-			return -1;
-		}
+		if (argc < 2)
+			goto err_invalid;
+
 		if ((strcmp(argv[1], "select") == 0) ||
 		    (strcmp(argv[1], "leave") == 0)) {
-				if (argc < 3) {
-					report(RPT_WARNING, "Server gave invalid response");
-					free(str2);
-					return -1;
-				}
+				if (argc < 3)
+					goto err_invalid;
 
 				/* Find the entry by id */
 				Command * command; // TODO (kodebach): last entry of command with args?
 				if (!find_triggered_command(main_menu, atoi(argv[2]), &command)) {
 					report(RPT_WARNING, "Could not find the item id given by the server");
-					free(str2);
 					return -1;
 				}
 
 				if(command == NULL) {
 						report(RPT_WARNING, "Illegal menu entry type for event");
-						free(str2);
 						return -1;
 				}
 
@@ -475,24 +465,19 @@ static int process_response(char *str)
 			 (strcmp(argv[1], "minus") == 0) ||
 			 (strcmp(argv[1], "update") == 0)) {
 
-			if (argc < 4) {
-				report(RPT_WARNING, "Server gave invalid response");
-				free(str2);
-				return -1;
-			}
+			if (argc < 4)
+				goto err_invalid;
 
 			/* Find the entry by id */
 			CommandParameter * parameter;
 			CommandParameterType parameterType;
 			if (!find_triggered_parameter(main_menu, atoi(argv[2]), &parameter, &parameterType)) {
 				report(RPT_WARNING, "Could not find the item id given by the server");
-				free(str2);
 				return -1;
 			}
 
 			if(parameter == NULL) {
 					report(RPT_WARNING, "Illegal menu entry type for event");
-					free(str2);
 					return -1;
 			}
 
@@ -524,7 +509,10 @@ static int process_response(char *str)
 						parameter->checkbox->value = 1;
 					else
 						parameter->checkbox->value = 0;
-					break;					
+					break;
+				default:
+					report(RPT_WARNING, "Illegal menu entry type for event");
+					return -1;
 			}
 		}
 		else {
@@ -554,8 +542,11 @@ static int process_response(char *str)
 	else {
 		; /* Ignore all other responses */
 	}
-	free(str2);
 	return 0;
+
+err_invalid:
+	report(RPT_WARNING, "Server gave invalid response");
+	return -1;
 }
 
 static int exec_command(Command *cmd)

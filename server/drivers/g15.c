@@ -33,13 +33,35 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <libg15.h>
-#include <g15daemon_client.h>
-#include <libg15render.h>
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+
+#ifdef HAVE_G15DAEMON_CLIENT
+#include <libg15.h>
+#include <g15daemon_client.h>
+#else
+/* Define stubs for the g15daemon_client (and use hidraw access instead). */
+#define G15_G15RBUF 3
+static inline const char *g15daemon_version(void) { return NULL; }
+static inline int new_g15_screen(int screentype) { return -1; }
+static inline int g15_close_screen(int sock) { return -1; }
+static inline int g15_send(int sock, char *buf, unsigned int len) { return -1; }
+#endif
+
+/*
+ * If we have freetype2, assume libg15render is build with TTF support,
+ * the TTF_SUPPORT define makes the size of the g15 struct bigger, if we do
+ * not set this define while libg15render is build with TTF support we get
+ * heap corruption. The other way around does not matter, then we just alloc
+ * a little bit too much memory (the TTF related variables live at the end
+ * of the struct).
+ */
+#ifdef HAVE_FT2
+#define TTF_SUPPORT
+#endif
+#include <libg15render.h>
 
 #include "lcd.h"
 #include "g15.h"
@@ -53,62 +75,64 @@ MODULE_EXPORT int stay_in_foreground = 0;
 MODULE_EXPORT int supports_multiple = 0;
 MODULE_EXPORT char *symbol_prefix = "g15_";
 
+void g15_close (Driver *drvthis);
+
+static const struct lib_hidraw_id hidraw_ids[] = {
+	/* G15 */
+	{ { BUS_USB, 0x046d, 0xc222 } },
+	/* G15 v2 */
+	{ { BUS_USB, 0x046d, 0xc227 } },
+	/* G510 without a headset plugged in */
+	{ { BUS_USB, 0x046d, 0xc22d },
+	  { 0x05, 0x0c, 0x09, 0x01, 0xa1, 0x01, 0x85, 0x02,
+	    0x15, 0x00, 0x25, 0x01, 0x75, 0x01, 0x95, 0x07 } },
+	/* G510 with headset plugged in / with extra USB audio interface */
+	{ { BUS_USB, 0x046d, 0xc22e },
+	  { 0x05, 0x0c, 0x09, 0x01, 0xa1, 0x01, 0x85, 0x02,
+	    0x15, 0x00, 0x25, 0x01, 0x75, 0x01, 0x95, 0x07 } },
+	/* Terminator */
+	{}
+};
+
 // Find the proper usb device and initialize it
 //
 MODULE_EXPORT int g15_init (Driver *drvthis, Elektra * elektra)
 {
-   PrivateData *p;
+	PrivateData *p;
 
-   /* Allocate and store private data */
-   p = (PrivateData *) calloc(1, sizeof(PrivateData));
-   if (p == NULL)
+	/* Allocate and store private data */
+	p = (PrivateData *) calloc(1, sizeof(PrivateData));
+	if (p == NULL)
 		return -1;
-   if (drvthis->store_private_ptr(drvthis, p))
-		return -1;
+	drvthis->private_data = p;
 
-   /* Initialize the PrivateData structure */
-   p->backlight_state = BACKLIGHT_ON;
-   p->g15screen_fd = 0;
-   p->g15d_ver = g15daemon_version();
+	/* Initialize the PrivateData structure */
+	p->backlight_state = BACKLIGHT_ON;
+	p->g15screen_fd = -1;
+	p->g15d_ver = g15daemon_version();
 
-   if((p->g15screen_fd = new_g15_screen(G15_G15RBUF)) < 0)
-   {
-        report(RPT_ERR, "%s: Sorry, cant connect to the G15daemon", drvthis->name);
-        return -1;
-   }
-
-	/* make sure the canvas is there... */
-	p->canvas = (g15canvas *) malloc(sizeof(g15canvas));
-	if (p->canvas == NULL) {
-		report(RPT_ERR, "%s: unable to create canvas", drvthis->name);
-		return -1;
-	}
-
-	/* make sure the backingstore is there... */
-	p->backingstore = (g15canvas *) malloc(sizeof(g15canvas));
-	if (p->backingstore == NULL) {
-		report(RPT_ERR, "%s: unable to create framebuffer backing store", drvthis->name);
-		return -1;
+	if((p->g15screen_fd = new_g15_screen(G15_G15RBUF)) < 0)
+	{
+		/* g15daemon is not running, use hidraw access instead */
+		p->hidraw_handle = lib_hidraw_open(hidraw_ids);
+		if (!p->hidraw_handle) {
+			report(RPT_ERR, "%s: Sorry, cannot find a G15 keyboard", drvthis->name);
+			g15_close(drvthis);
+			return -1;
+		}
 	}
 
 	p->font = g15r_requestG15DefaultFont(G15_TEXT_LARGE);
 	if (p->font == NULL) {
 		report(RPT_ERR, "%s: unable to load default large font", drvthis->name);
-		g15_close_screen(p->g15screen_fd);
-		free(p->canvas);
-		free(p->backingstore);
-		free(p);
+		g15_close(drvthis);
 		return -1;
 	}
 
-	g15r_initCanvas(p->canvas);
-	g15r_initCanvas(p->backingstore);
-	p->canvas->buffer[0] = G15_LCD_WRITE_CMD;
-	p->backingstore->buffer[0] = G15_LCD_WRITE_CMD;
+	g15r_initCanvas(&p->canvas);
+	g15r_initCanvas(&p->backingstore);
 
-//	ret = setLCDBrightness(G15_BRIGHTNESS_BRIGHT);
-
-   return 0;
+	return 0;
 }
 
 // Close the connection to the LCD
@@ -116,20 +140,15 @@ MODULE_EXPORT int g15_init (Driver *drvthis, Elektra * elektra)
 MODULE_EXPORT void g15_close (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
+	drvthis->private_data = NULL;
 
 	g15r_deleteG15Font(p->font);
-	g15_close_screen(p->g15screen_fd);
+	if (p->g15screen_fd != -1)
+		g15_close_screen(p->g15screen_fd);
+	if (p->hidraw_handle)
+		lib_hidraw_close(p->hidraw_handle);
 
-	if (p != NULL) {
-		if (p->canvas)
-			free(p->canvas);
-
-		if (p->backingstore)
-			free(p->backingstore);
-
-		free(p);
-	}
-	drvthis->store_private_ptr(drvthis, NULL);
+	free(p);
 }
 
 // Returns the display width in characters
@@ -166,8 +185,81 @@ MODULE_EXPORT void g15_clear (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
 
-	g15r_clearScreen(p->canvas, 0);
-	g15r_clearScreen(p->backingstore, 0);
+	g15r_clearScreen(&p->canvas, 0);
+	g15r_clearScreen(&p->backingstore, 0);
+}
+
+// Convert libg15render canvas format to raw data for the USB output endpoint.
+// Based on libg15.c code, which is licensed GPL v2 or later.
+//
+static void g15_pixmap_to_lcd(unsigned char *lcd_buffer, unsigned char const *data)
+{
+/* For a set of bytes (A, B, C, etc.) the bits representing pixels will appear
+   on the LCD like this:
+
+	A0 B0 C0
+	A1 B1 C1
+	A2 B2 C2
+	A3 B3 C3 ... and across for G15_LCD_WIDTH bytes
+	A4 B4 C4
+	A5 B5 C5
+	A6 B6 C6
+	A7 B7 C7
+
+	A0
+	A1  <- second 8-pixel-high row starts straight after the last byte on
+	A2     the previous row
+	A3
+	A4
+	A5
+	A6
+	A7
+	A8
+
+	A0
+	...
+	A0
+	...
+	A0
+	...
+	A0
+	A1 <- only the first three bits are shown on the bottom row (the last three
+	A2    pixels of the 43-pixel high display.)
+*/
+
+	const unsigned int stride = G15_LCD_WIDTH / 8;
+	unsigned int row, col;
+
+	lcd_buffer[0] = 0x03; /* Set output report 3 */
+	memset(lcd_buffer + 1, 0, G15_LCD_OFFSET - 1);
+	lcd_buffer += G15_LCD_OFFSET;
+
+	/* 43 pixels height, requires 6 bytes for each column */
+	for (row = 0; row < 6; row++) {
+		for (col = 0; col < G15_LCD_WIDTH; col++) {
+			unsigned int bit = col % 8;
+
+			/* Copy a 1x8 column of pixels across from the source
+			 * image to the LCD buffer. */
+
+			*lcd_buffer++ =
+				(((data[stride * 0] << bit) & 0x80) >> 7) |
+				(((data[stride * 1] << bit) & 0x80) >> 6) |
+				(((data[stride * 2] << bit) & 0x80) >> 5) |
+				(((data[stride * 3] << bit) & 0x80) >> 4) |
+				(((data[stride * 4] << bit) & 0x80) >> 3) |
+				(((data[stride * 5] << bit) & 0x80) >> 2) |
+				(((data[stride * 6] << bit) & 0x80) >> 1) |
+				(((data[stride * 7] << bit) & 0x80) >> 0);
+
+			if (bit == 7)
+				data++;
+		}
+		/* Jump down seven pixel-rows in the source image,
+		 * since we've just done a row of eight pixels in one pass
+		 * (and we counted one pixel-row while we were going). */
+		data += 7 * stride;
+	}
 }
 
 // Blasts a single frame onscreen, to the lcd...
@@ -175,13 +267,20 @@ MODULE_EXPORT void g15_clear (Driver *drvthis)
 MODULE_EXPORT void g15_flush (Driver *drvthis)
 {
 	PrivateData *p = drvthis->private_data;
+	/* 43 pixels height, requires 6 bytes for each column */
+	unsigned char lcd_buf[G15_LCD_OFFSET + 6 * G15_LCD_WIDTH];
 
-	if (memcmp(p->backingstore->buffer, p->canvas->buffer, G15_BUFFER_LEN * sizeof(unsigned char)) == 0)
+	if (memcmp(p->backingstore.buffer, p->canvas.buffer, G15_BUFFER_LEN * sizeof(unsigned char)) == 0)
 		return;
 
-	memcpy(p->backingstore->buffer, p->canvas->buffer, G15_BUFFER_LEN * sizeof(unsigned char));
+	memcpy(p->backingstore.buffer, p->canvas.buffer, G15_BUFFER_LEN * sizeof(unsigned char));
 
-	g15_send(p->g15screen_fd,(char*)p->canvas->buffer,1048);
+	if (p->g15screen_fd != -1) {
+		g15_send(p->g15screen_fd, (char*)p->canvas.buffer, 1048);
+	} else {
+		g15_pixmap_to_lcd(lcd_buf, p->canvas.buffer);
+		lib_hidraw_send_output_report(p->hidraw_handle, lcd_buf, sizeof(lcd_buf));
+	}
 }
 
 // LCDd 1-dimension char coordinates to g15r 0-(dimension-1) pixel coords */
@@ -217,12 +316,12 @@ MODULE_EXPORT void g15_chr (Driver *drvthis, int x, int y, char c)
 		return;
 
 	/* Clear background */
-	g15r_pixelReverseFill(p->canvas, px, py,
+	g15r_pixelReverseFill(&p->canvas, px, py,
 			      px + G15_CELL_WIDTH - 1,
 			      py + G15_CELL_HEIGHT - 1,
 			      G15_PIXEL_FILL, G15_COLOR_WHITE);
 	/* Render character, coords - 1 because of g15r peculiarities  */
-	g15r_renderG15Glyph(p->canvas, p->font, c, px - 1, py - 1, G15_COLOR_BLACK, 0);
+	g15r_renderG15Glyph(&p->canvas, p->font, c, px - 1, py - 1, G15_COLOR_BLACK, 0);
 }
 
 // Prints a string on the lcd display, at position (x,y).  The
@@ -251,13 +350,13 @@ MODULE_EXPORT int g15_icon (Driver *drvthis, int x, int y, int icon)
 
 		px2 = px1 + G15_CELL_WIDTH - 2;
 		py2 = py1 + G15_CELL_HEIGHT - 2;
-		g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
+		g15r_pixelBox(&p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 		return 0;
 
 	case ICON_HEART_OPEN:
-		p->canvas->mode_reverse = 1;
+		p->canvas.mode_reverse = 1;
 		g15_chr(drvthis, x, y, G15_ICON_HEART_OPEN);
-		p->canvas->mode_reverse = 0;
+		p->canvas.mode_reverse = 0;
 		return 0;
 
 	/* Simple 1:1 mapping cases */
@@ -301,7 +400,7 @@ MODULE_EXPORT void g15_hbar(Driver *drvthis, int x, int y, int len, int promille
 	px2 = px1 + total_pixels;
 	py2 = py1 + G15_CELL_HEIGHT - 2;
 
-	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
+	g15r_pixelBox(&p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 }
 
 // Draws a vertical bar growing up
@@ -320,9 +419,10 @@ MODULE_EXPORT void g15_vbar(Driver *drvthis, int x, int y, int len, int promille
 	py2 = py1 + total_pixels - 1;
 	px2 = px1 + G15_CELL_WIDTH - 2;
 
-	g15r_pixelBox(p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
+	g15r_pixelBox(&p->canvas, px1, py1, px2, py2, G15_COLOR_BLACK, 1, G15_PIXEL_FILL);
 }
 
+#ifdef HAVE_G15DAEMON_CLIENT
 //  Return one char from the Keyboard
 //
 MODULE_EXPORT const char * g15_get_key (Driver *drvthis)
@@ -330,6 +430,9 @@ MODULE_EXPORT const char * g15_get_key (Driver *drvthis)
 	PrivateData *p = drvthis->private_data;
 	int toread = 0;
 	unsigned int key_state = 0;
+
+	if (p->g15screen_fd == -1)
+		return NULL;
 
 	if ((strncmp("1.2", p->g15d_ver, 3)))
 	  {	/* other than g15daemon-1.2 (should be >=1.9) */
@@ -379,6 +482,9 @@ MODULE_EXPORT void g15_backlight(Driver *drvthis, int on)
 {
 	PrivateData *p = drvthis->private_data;
 
+	if (p->g15screen_fd == -1)
+		return;
+
 	if (p->backlight_state == on)
 		return;
 
@@ -405,6 +511,7 @@ MODULE_EXPORT void g15_backlight(Driver *drvthis, int on)
 			}
 		}
 }
+#endif
 
 MODULE_EXPORT void g15_num(Driver *drvthis, int x, int num)
 {
@@ -428,9 +535,9 @@ MODULE_EXPORT void g15_num(Driver *drvthis, int x, int num)
 
    	for (i=0;i<(width*height);++i)
    	{
-      	int color = (g15_bignum_data[num][i] ? G15_COLOR_WHITE : G15_COLOR_BLACK);
-      	int px = ox + i % width;
-      	int py = i / width;
-      	g15r_setPixel(p->canvas, px, py, color);
+		int color = (g15_bignum_data[num][i] ? G15_COLOR_WHITE : G15_COLOR_BLACK);
+		int px = ox + i % width;
+		int py = i / width;
+		g15r_setPixel(&p->canvas, px, py, color);
    	}
 }

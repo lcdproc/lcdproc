@@ -710,7 +710,10 @@ MenuResult menu_process_input(Menu *menu, MenuToken token, const char *key, unsi
 		else if (menu->data.menu.selector_pos == 0) {
 			// wrap around to last menu entry
 			menu->data.menu.selector_pos = menu_visible_item_count(menu) - 1;
-			menu->data.menu.scroll = menu->data.menu.selector_pos + 2 - display_props->height;
+			if (menu_visible_item_count(menu) >= display_props->height)
+				menu->data.menu.scroll = menu->data.menu.selector_pos + 2 - display_props->height;
+			else
+				menu->data.menu.scroll = 0;
 		}
 		return MENURESULT_NONE;
 	  case MENUTOKEN_DOWN:
