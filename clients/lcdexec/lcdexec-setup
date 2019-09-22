@@ -269,8 +269,8 @@ backup() {
 }
 
 restore() {
-    kdb_rm_r ""
-    kdb_import "" <"$BACKUP"
+    kdb rm -r "$NAMESPACE$BASE_KEY"
+    kdb import "$NAMESPACE$BASE_KEY" ni <"$BACKUP"
 }
 
 cleanup() {
@@ -369,7 +369,7 @@ create_command() {
         kdb_setmeta "$cmd/parameters" "array" "$(elektra_index $((count - 1)))"
         index=0
         for param in "$@"; do
-            kdb_set "$cmd/parameters/$(elektra_index "$index")" "@/menu/$param"
+            kdb_set "$cmd/parameters/$(elektra_index "$index")" "@/menu/parameter/$param"
             index=$((index + 1))
         done
     fi
@@ -468,7 +468,7 @@ create_param_alpha() {
         exit_error "unknown argument: $1"
     fi
 
-    if ! echo "$initial" | grep -qE "^[$allowed]{$min,$max}$"; then
+    if ! echo "$initial" | grep -qE "^[${allowed:-ABCDEFGHIJKLMNOPQRSTUVWXYZ}]{${min:-0},${max:-100}}$"; then
         exit_error "invalid initial value: $initial"
     fi
 
@@ -651,8 +651,12 @@ create_param_numeric() {
         exit_error "unknown argument $1"
     fi
 
-    if [ "$initial" -lt "$min" ] || [ "$initial" -gt "$max" ]; then
-        exit_error "initial value out of range: $initial (min: $min, max: $max)"
+    _min=${min:-0}
+    _max=${max:-0}
+    _initial=${initial:-0}
+
+    if [ "$_initial" -lt "$_min" ] || [ "$_initial" -gt "$_max" ]; then
+        exit_error "initial value out of range: $_initial (min: $_min, max: $_max)"
     fi
 
     index="$(next_index "parameter/numeric")"
@@ -791,20 +795,25 @@ create_param_slider() {
         exit_error "unknown argument $1"
     fi
 
-    if [ "$min" -ge "$max" ]; then
-        exit_error "min must be less than max: $min >= $max"
+    _min=${min:-0}
+    _max=${max:-1000}
+    _step=${step:-1}
+    _initial=${step:-0}
+
+    if [ "$_min" -ge "$_max" ]; then
+        exit_error "min must be less than max: $_min >= $_max"
     fi
 
-    if [ "$step" -le 0 ]; then
-        exit_error "step must be positive (non-zero): $step"
+    if [ "$_step" -le 0 ]; then
+        exit_error "step must be positive (non-zero): $_step"
     fi
 
-    if [ "$step" -gt "$((max - min))" ]; then
-        exit_error "step must not be greater than (max - min): $step > ($max - $min) = $((max - min))"
+    if [ "$_step" -gt "$((_max - _min))" ]; then
+        exit_error "step must not be greater than (max - min): $_step > ($_max - $_min) = $((_max - _min))"
     fi
 
-    if [ "$initial" -lt "$min" ] || [ "$initial" -gt "$max" ]; then
-        exit_error "initial value out of range: $initial (min: $min, max: $max)"
+    if [ "$_initial" -lt "$_min" ] || [ "$_initial" -gt "$_max" ]; then
+        exit_error "initial value out of range: $_initial (min: $_min, max: $_max)"
     fi
 
     index="$(next_index "parameter/slider")"
@@ -951,6 +960,11 @@ main() {
         esac
     done
     shift $((OPTIND - 1))
+
+    if [ "$#" -lt 1 ]; then
+        usage
+        exit 1
+    fi
 
     type="$1"
     shift
