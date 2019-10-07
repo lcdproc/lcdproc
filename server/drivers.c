@@ -22,7 +22,10 @@
 
 #include "shared/LL.h"
 #include "shared/report.h"
-#include "shared/configfile.h"
+
+#include "elektragen.h"
+#include <kdbease.h>
+#include <elektra/conversion.h>
 
 #include "driver.h"
 #include "drivers.h"
@@ -38,18 +41,17 @@ DisplayProps *display_props = NULL;		/**< properties of the display */
 /**
  * Load driver based on "DriverPath" config setting and section name or
  * "File" configuration setting in the driver's section.
- * \param name  Driver section name.
+ * \param reference  Driver configuration reference.
  * \retval  <0  error.
  * \retval   0  OK
  * \retval   2  OK, driver needs to run in the foreground.
  */
 int
-drivers_load_driver(const char *name)
+drivers_load_driver(Elektra * elektra, kdb_long_long_t index)
 {
 	Driver *driver;
-	const char *s;
 
-	debug(RPT_DEBUG, "%s(name=\"%.40s\")", __FUNCTION__, name);
+	debug(RPT_DEBUG, "%s(index=\"%.40s\")", __FUNCTION__, index);
 
 	/* First driver ? */
 	if (!loaded_drivers) {
@@ -62,22 +64,13 @@ drivers_load_driver(const char *name)
 	}
 
 	/* Retrieve data from config file */
-	s = config_get_string("server", "DriverPath", 0, "");
-	char driverpath[strlen(s) + 1];
-	strcpy(driverpath, s);
-
-	s = config_get_string(name, "File", 0, name);
-	char filename[strlen(driverpath) + strlen(s) + sizeof(MODULE_EXTENSION)];
-	strcpy(filename, driverpath);
-	strcat(filename, s);
-	if (s == name)
-		strcat(filename, MODULE_EXTENSION);
+	const char * driverpath = elektraGet(elektra, CONF_SERVER_DRIVERPATH);
 
 	/* Load the module */
-	driver = driver_load(name, filename);
+	driver = driver_load(elektra, driverpath, index);
 	if (driver == NULL) {
 		/* It failed. The message has already been given by driver_load() */
-		report(RPT_INFO, "Module %.40s could not be loaded", filename);
+		report(RPT_INFO, "Driver #"ELEKTRA_LONG_LONG_F" could not be loaded", index);
 		return -1;
 	}
 

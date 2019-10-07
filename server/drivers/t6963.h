@@ -11,8 +11,10 @@
 #ifndef T6963_H
 #define T6963_H
 
+#include <elektra.h>
+
 /* API functions */
-MODULE_EXPORT int  t6963_init (Driver *drvthis);
+MODULE_EXPORT int  t6963_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void t6963_close (Driver *drvthis);
 MODULE_EXPORT int  t6963_width (Driver *drvthis);
 MODULE_EXPORT int  t6963_height (Driver *drvthis);

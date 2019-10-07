@@ -9,6 +9,8 @@
 #define SERIALIF_NAME_LENGTH 20
 #define DEFAULT_DEVICE       "/dev/lcd"
 
+#include "../elektragen.h"
+
 /** Declares one configuration entry in the serial_interfaces table */
 struct hd44780_SerialInterface {
 	int           connectiontype;	/**< Connection type from hd44780 config */
@@ -79,6 +81,6 @@ static const struct hd44780_SerialInterface serial_interfaces[] = {
 };
 
 /* initialize this particular driver */
-int hd_init_serial(Driver *drvthis);
+int hd_init_serial(Driver *drvthis, const Hd44780DriverConfig * config);
 
 #endif

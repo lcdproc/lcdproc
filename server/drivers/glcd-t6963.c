@@ -46,7 +46,7 @@ typedef struct glcd_t6963_data {
  * \retval <0      Error.
  */
 int
-glcd_t6963_init(Driver *drvthis)
+glcd_t6963_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = (PrivateData *)drvthis->private_data;
 	T6963_port *port_config;

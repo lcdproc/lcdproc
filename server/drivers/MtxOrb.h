@@ -1,6 +1,8 @@
 #ifndef MTXORB_H
 #define MTXORB_H
 
+#include <elektra.h>
+
 #define DEFAULT_CONTRAST	480
 #define DEFAULT_ADJ_BACKLIGHT	1
 #define DEFAULT_BRIGHTNESS	1000
@@ -20,7 +22,7 @@ typedef struct MtxOrbModule {
 	int flags;
 } MtxOrbModuleEntry;
 
-MODULE_EXPORT int  MtxOrb_init (Driver *drvthis);
+MODULE_EXPORT int  MtxOrb_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void MtxOrb_close (Driver *drvthis);
 MODULE_EXPORT int  MtxOrb_width (Driver *drvthis);
 MODULE_EXPORT int  MtxOrb_height (Driver *drvthis);

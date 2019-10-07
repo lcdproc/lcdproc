@@ -75,7 +75,7 @@ MODULE_EXPORT char *symbol_prefix = "joy_";
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-joy_init (Driver *drvthis)
+joy_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	int i;

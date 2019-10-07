@@ -24,7 +24,9 @@
 #ifndef LCDM001_H
 #define LCDM001_H
 
-MODULE_EXPORT int  lcdm001_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  lcdm001_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void lcdm001_close (Driver *drvthis);
 MODULE_EXPORT int  lcdm001_width (Driver *drvthis);
 MODULE_EXPORT int  lcdm001_height (Driver *drvthis);

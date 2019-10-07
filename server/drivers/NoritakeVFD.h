@@ -22,6 +22,8 @@
 #ifndef NORITAKEVFD_H
 #define NORITAKEVFD_H
 
+#include <elektra.h>
+
 #define DEFAULT_CELL_WIDTH	5
 #define DEFAULT_CELL_HEIGHT	7
 #define DEFAULT_DEVICE		"/dev/lcd"
@@ -31,7 +33,7 @@
 #define DEFAULT_SIZE		"20x4"
 #define DEFAULT_PARITY		0
 
-MODULE_EXPORT int  NoritakeVFD_init (Driver *drvthis);
+MODULE_EXPORT int  NoritakeVFD_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void NoritakeVFD_close (Driver *drvthis);
 MODULE_EXPORT int  NoritakeVFD_width (Driver *drvthis);
 MODULE_EXPORT int  NoritakeVFD_height (Driver *drvthis);

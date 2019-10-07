@@ -1,0 +1,8 @@
+.deps
+Makefile
+Makefile.in
+lcdproc
+elektragen.c
+elektragen.h
+lcdproc.mount.sh
+lcdproc.spec.eqd

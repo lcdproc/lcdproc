@@ -57,7 +57,7 @@ typedef struct glcd_serdisp_data {
  * \retval <0      Error.
  */
 int
-glcd_serdisp_init(Driver *drvthis)
+glcd_serdisp_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = (PrivateData *)drvthis->private_data;
 	CT_serdisp_data *ct_data;

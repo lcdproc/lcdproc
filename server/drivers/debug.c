@@ -71,7 +71,7 @@ MODULE_EXPORT char *symbol_prefix = "debug_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-debug_init(Driver *drvthis)
+debug_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 

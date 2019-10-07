@@ -38,7 +38,9 @@
 #ifndef MTC_S16209X_H
 #define MTC_S16209X_H
 
-MODULE_EXPORT int  MTC_S16209X_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  MTC_S16209X_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void MTC_S16209X_close(Driver *drvthis);
 MODULE_EXPORT int  MTC_S16209X_width (Driver *drvthis);
 MODULE_EXPORT int  MTC_S16209X_height (Driver *drvthis);

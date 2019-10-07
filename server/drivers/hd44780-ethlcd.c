@@ -49,9 +49,8 @@ ethlcd_HD44780_uPause(PrivateData *p, int usecs)
  * \retval -1      Error.
  */
 int
-hd_init_ethlcd(Driver *drvthis)
+hd_init_ethlcd(Driver *drvthis, const Hd44780DriverConfig * config)
 {
-	char hostname[256];
 	unsigned long flags = 0;
 	struct timeval tv;
 
@@ -65,8 +64,7 @@ hd_init_ethlcd(Driver *drvthis)
 	hd44780_functions->close = ethlcd_HD44780_close;
 
 	/* reading configuration file */
-	strncpy(hostname, drvthis->config_get_string(drvthis->name, "Device", 0, "ethlcd"), sizeof(hostname));
-	hostname[sizeof(hostname) - 1] = '\0';
+	const char * hostname = strlen(config->device) == 0 ? "ethlcd" : config->device;
 
 	p->sock = sock_connect(hostname, DEFAULT_ETHLCD_PORT);
 	if (p->sock < 0) {

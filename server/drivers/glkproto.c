@@ -36,7 +36,7 @@ unsigned char GLKBufferEmpty = 0xff;
  * Open and configure a serial port for communication with
  *   a Matrix Orbital module (GLK or otherwise)
  */
-GLKDisplay *glkopen(char *name, tcflag_t speed)
+GLKDisplay *glkopen(const char *name, tcflag_t speed)
 {
    int fd;
    struct termios new;

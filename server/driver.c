@@ -25,13 +25,16 @@
 #include "main.h" /* for timer  */
 
 #include "shared/report.h"
-#include "shared/configfile.h"
 
 #include "widget.h"
 #include "driver.h"
 #include "drivers.h"
 #include "drivers/lcd.h"
 /* lcd.h is used for the driver API definition */
+
+#include <kdbease.h>
+#include <elektra/conversion.h>
+#include "elektragen.h"
 
 
 /** property / method symbols in a Driver structure */
@@ -91,17 +94,77 @@ static int driver_store_private_ptr(Driver *driver, void *private_data);
  * \return          Pointer to the freshly created driver; \c NULL on error.
  */
 Driver *
-driver_load(const char *name, const char *filename)
+driver_load(Elektra * elektra, const char * driverpath, kdb_long_long_t index)
 {
-	Driver *driver = NULL;
-	int res;
-
-	report(RPT_DEBUG, "%s(name=\"%.40s\", filename=\"%.80s\")",
-		__FUNCTION__, name, filename);
+	report(RPT_DEBUG, "%s(driverpath=\"%.40s\", index=\"%.80s\")",
+		__FUNCTION__, driverpath, index);
 
 	/* fail on wrong / missing parameters */
-	if ((name == NULL) || (filename == NULL))
+	if (elektra == NULL || driverpath == NULL || index < 0)	{
 		return NULL;
+	}
+
+	/* resolve reference */
+	char * buf = malloc(sizeof("server/drivers/") + ELEKTRA_MAX_ARRAY_SIZE);
+	strcpy(buf, "server/drivers/");
+	elektraWriteArrayNumber(&buf[sizeof("server/drivers/") - 1], index);
+
+	const char * filekey = elektraFindReference(elektra, buf);
+
+	if(filekey == NULL) {
+		report(RPT_ERR, "could not resolve reference stored in '%s'", buf);
+		free(buf);
+		return NULL;
+	}
+	free(buf);
+
+	size_t len_filekey = strlen(filekey);
+	buf = malloc(strlen(filekey) + sizeof("/file"));
+	strcpy(buf, filekey);
+	strcpy(&buf[len_filekey], "/file");
+
+	/* construct full path for module file */
+	const char * file = elektraGetString(elektra, buf);
+	free(buf);
+	
+	size_t len_driverpath = strlen(driverpath);
+	size_t len_file = strlen(file);
+
+	char * filename = malloc(len_driverpath + len_file + sizeof(MODULE_EXTENSION));
+	if (filename == NULL) {
+		report(RPT_ERR, "%s: error allocating driver filename", __FUNCTION__);
+		return NULL;
+	}
+
+	strcpy(filename, driverpath);
+	strcpy(&filename[len_driverpath], file);
+	strcpy(&filename[len_driverpath + len_file], MODULE_EXTENSION);
+
+	/* extract name for passing to driver */
+	const char * reference = elektraGetV(elektra, CONF_SERVER_DRIVERS, index);
+	const char * index_start = strrchr(reference, '#') - 1;
+	const char * name_start = index_start - 1;
+	while (*name_start != '/') {
+		--name_start;
+	}
+	++name_start;
+
+	/* extract index for passing to driver */
+	kdb_long_long_t driver_index;
+	int offset = elektraArrayValidateBaseNameString(index_start + 1);
+	if (offset < 1) {
+		report(RPT_ERR, "%s: error getting index", __FUNCTION__);
+		return NULL;
+	}
+	Key * index_key = keyNew("", KEY_VALUE, &index_start[offset + 1], KEY_END);
+	if(!elektraKeyToLongLong(index_key, &driver_index))	{
+		report(RPT_ERR, "%s: error getting index", __FUNCTION__);
+		return NULL;
+	}
+	keyDel(index_key);
+
+	Driver *driver = NULL;
+	int res;
 
 	/* Allocate memory for new driver struct */
 	driver = calloc(1, sizeof(Driver));
@@ -110,27 +173,14 @@ driver_load(const char *name, const char *filename)
 		return NULL;
 	}
 
-	/* And store its name and filename */
-	driver->name = malloc(strlen(name) + 1);
-	if (driver->name == NULL) {
-		report(RPT_ERR, "%s: error allocating driver name", __FUNCTION__);
-		free(driver);
-		return NULL;
-	}
-	strcpy(driver->name, name);
-
-	driver->filename = malloc(strlen(filename) + 1);
-	if (driver->filename == NULL) {
-		report(RPT_ERR, "%s: error allocating driver filename", __FUNCTION__);
-		free(driver->name);
-		free(driver);
-		return NULL;
-	}
-	strcpy(driver->filename, filename);
+	/* And store its name, index and filename */
+	driver->name = strdup(name_start);
+	driver->index = driver_index;
+	driver->filename = filename;
 
 	/* Load and bind the driver module and locate the symbols */
 	if (driver_bind_module(driver) < 0) {
-		report(RPT_ERR, "Driver [%.40s] binding failed", name);
+		report(RPT_ERR, "Driver [%.40s] binding failed", reference);
 		free(driver->name);
 		free(driver->filename);
 		free(driver);
@@ -139,7 +189,7 @@ driver_load(const char *name, const char *filename)
 
 	/* Check module version */
 	if (strcmp(*(driver->api_version), API_VERSION) != 0) {
-		report(RPT_ERR, "Driver [%.40s] is of an incompatible version", name);
+		report(RPT_ERR, "Driver [%.40s] is of an incompatible version", reference);
 		driver_unbind_module(driver);
 		free(driver->name);
 		free(driver->filename);
@@ -149,12 +199,12 @@ driver_load(const char *name, const char *filename)
 
 	/* Call the init function */
 	debug(RPT_DEBUG, "%s: Calling driver [%.40s] init function",
-		__FUNCTION__, driver->name);
+		__FUNCTION__, reference);
 
-	res = driver->init(driver);
+	res = driver->init(driver, elektra);
 	if (res < 0) {
 		report(RPT_ERR, "Driver [%.40s] init failed, return code %d",
-			driver->name, res);
+			reference, res);
 		/* Driver load failed, driver should not be added to list
 		 * Free driver structure again
 		 */
@@ -165,7 +215,7 @@ driver_load(const char *name, const char *filename)
 		return NULL;
 	}
 
-	debug(RPT_NOTICE, "Driver [%.40s] loaded", driver->name);
+	debug(RPT_NOTICE, "Driver [%.40s] loaded", reference);
 
 	return driver;
 }
@@ -179,7 +229,7 @@ driver_load(const char *name, const char *filename)
 int
 driver_unload(Driver *driver)
 {
-	debug(RPT_NOTICE, "Closing driver [%.40s]", driver->name);
+	debug(RPT_NOTICE, "Closing driver [%.40s, #"ELEKTRA_LONG_LONG_F"]", driver->name, driver->index);
 
 	/* close the driver, if its \c close method is [already] defined */
 	if (driver->close != NULL)
@@ -213,7 +263,7 @@ driver_bind_module(Driver *driver)
 	int i;
 	int missing_symbols = 0;
 
-	debug(RPT_DEBUG, "%s(driver=[%.40s])", __FUNCTION__, driver->name);
+	debug(RPT_DEBUG, "%s(driver=[%.40s, #"ELEKTRA_LONG_LONG_F"])", __FUNCTION__, driver->index);
 
 	/* Load the module */
 	driver->module_handle = dlopen(driver->filename, RTLD_NOW);
@@ -267,14 +317,6 @@ driver_bind_module(Driver *driver)
 	}
 
 	/* Add our exported functions */
-
-	/* Config file functions */
-	driver->config_get_bool		= config_get_bool;
-	driver->config_get_int		= config_get_int;
-	driver->config_get_float	= config_get_float;
-	driver->config_get_string	= config_get_string;
-	driver->config_has_section	= config_has_section;
-	driver->config_has_key		= config_has_key;
 
 	/* Driver private data */
 	driver->store_private_ptr	= driver_store_private_ptr;

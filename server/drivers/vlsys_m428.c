@@ -261,7 +261,7 @@ initialise_display(PrivateData *p)
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-vlsys_m428_init(Driver *drvthis)
+vlsys_m428_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = NULL;
 	char path[PATH_SIZE];	/* device path (serial port) */

@@ -20,6 +20,8 @@
  * Refer to the COPYING file distributed with this package.
  */
 
+#include "../elektragen.h"
+
 
 /*
  * The 'none' charmap does map each character to itself, not replacing
@@ -536,28 +538,24 @@ const unsigned char WEH001602A_1_charmap[] = {
 };
 #endif  /* EXTRA_CHARMAPS */
 
-#define MAX_CHARMAP_NAME_LENGTH 16
-
 struct charmap {
-	char name[MAX_CHARMAP_NAME_LENGTH];	/**< Name of the mapping table */
-	const unsigned char *charmap;		/**< Pointer to mapping table */
+	ElektraEnumHd44780Charmap elektraCharmap;	/**< Config value of the mapping table */
+	const unsigned char *charmap;		        /**< Pointer to mapping table */
 };
 
 /** List of available character mappings. This list is sorted by relevance! */
 const struct charmap available_charmaps[] = {
-	{ "hd44780_default", HD44780_charmap           },
-	{ "hd44780_euro",    HD44780_euro_charmap      },
-	{ "ea_ks0073",       EA_KS0073_charmap         },
-	{ "sed1278f_0b",     SED1278F_0B_charmap       },
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_HD44780_DEFAULT, HD44780_charmap           },
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_HD44780_EURO,    HD44780_euro_charmap      },
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_EA_KS0073,       EA_KS0073_charmap         },
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_SED1278F_0B,     SED1278F_0B_charmap       },
 #ifdef EXTRA_CHARMAPS
-	{ "hd44780_koi8_r",  HD44780_KOI8R_charmap     },
-	{ "hd44780_cp1251",  HD44780_CP1251_charmap    },
-	{ "hd44780_8859_5",  HD44780_ISO_8859_5_charmap},
-	{ "upd16314",        uPD16314_charmap          },
-	{ "weh001602a_1",    WEH001602A_1_charmap      },
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_HD44780_KOI8_R,  HD44780_KOI8R_charmap     },
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_HD44780_CP1251,  HD44780_CP1251_charmap    },
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_HD44780_8859_5,  HD44780_ISO_8859_5_charmap},
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_UPD16314,        uPD16314_charmap          },
+	{ ELEKTRA_ENUM_HD44780_CHARMAP_WEH001602A_1,    WEH001602A_1_charmap      },
 #endif
-	/* This is the last entry. */
-	{ "none",            none_charmap              }
 };
 
 /**
@@ -571,15 +569,12 @@ const struct charmap available_charmaps[] = {
  *        algorithm (e.g. binary search) should be used.
  */
 static int
-charmap_get_index(const char * req_charmap)
+charmap_get_index(ElektraEnumHd44780Charmap req_charmap)
 {
 	int i;
 
-	if (req_charmap == NULL)
-		return -1;
-
 	for (i = 0; i < (sizeof(available_charmaps)/sizeof(struct charmap)); i++) {
-		if (strcasecmp(req_charmap, available_charmaps[i].name) == 0) {
+		if (req_charmap == available_charmaps[i].elektraCharmap) {
 			return i;
 		}
 	}

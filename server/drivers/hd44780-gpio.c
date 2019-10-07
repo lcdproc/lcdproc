@@ -56,13 +56,8 @@ typedef struct {
  * \return          0 on success; -1 on error.
  */
 static int
-init_gpio_pin(Driver *drvthis, ugpio_t **pin, const char *name)
+init_gpio_pin(kdb_long_t number, ugpio_t **pin, const char * name)
 {
-	char config_key[8];
-	int number;
-
-	snprintf(config_key, sizeof(config_key), "pin_%s", name);
-	number = drvthis->config_get_int(drvthis->name, config_key, 0, -1);
 	if (number == -1)
 		return -1;
 
@@ -125,7 +120,7 @@ send_nibble(PrivateData *p, unsigned char ch, unsigned char displayID)
  * \return          0 on success; -1 on error.
  */
 int
-hd_init_gpio(Driver *drvthis)
+hd_init_gpio(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
 	gpio_pins *pins = malloc(sizeof(gpio_pins));
@@ -137,19 +132,19 @@ hd_init_gpio(Driver *drvthis)
 
 	p->connection_data = pins;
 
-	if (init_gpio_pin(drvthis, &pins->en, "EN") != 0 ||
-	    init_gpio_pin(drvthis, &pins->rs, "RS") != 0 ||
-	    init_gpio_pin(drvthis, &pins->d7, "D7") != 0 ||
-	    init_gpio_pin(drvthis, &pins->d6, "D6") != 0 ||
-	    init_gpio_pin(drvthis, &pins->d5, "D5") != 0 ||
-	    init_gpio_pin(drvthis, &pins->d4, "D4") != 0) {
+	if (init_gpio_pin(config->gpioPinEn, &pins->en, "EN") != 0 ||
+	    init_gpio_pin(config->gpioPinRs, &pins->rs, "RS") != 0 ||
+	    init_gpio_pin(config->gpioPinD7, &pins->d7, "D7") != 0 ||
+	    init_gpio_pin(config->gpioPinD6, &pins->d6, "D6") != 0 ||
+	    init_gpio_pin(config->gpioPinD5, &pins->d5, "D5") != 0 ||
+	    init_gpio_pin(config->gpioPinD4, &pins->d4, "D4") != 0) {
 		report(RPT_ERR, "hd_init_gpio: unable to initialize GPIO pins");
 		gpio_HD44780_close(p);
 		return -1;
 	}
 
 	if (p->numDisplays > 1) {       /* For displays with two controllers */
-		if (init_gpio_pin(drvthis, &pins->en2, "EN2") != 0) {
+		if (init_gpio_pin(config->gpioPinEn2, &pins->en2, "EN2") != 0) {
 			report(RPT_ERR, "hd_init_gpio: unable to initialize GPIO pins");
 			gpio_HD44780_close(p);
 			return -1;
@@ -160,7 +155,7 @@ hd_init_gpio(Driver *drvthis)
 	p->hd44780_functions->close = gpio_HD44780_close;
 
 	if (have_backlight_pin(p)) {
-		if (init_gpio_pin(drvthis, &pins->bl, "BL") != 0) {
+		if (init_gpio_pin(config->gpioPinBl, &pins->bl, "BL") != 0) {
 			report(RPT_WARNING,
 			       "hd_init_gpio: unable to initialize pin_BL - disabling backlight");
 			set_have_backlight_pin(p, 0);
@@ -171,7 +166,7 @@ hd_init_gpio(Driver *drvthis)
 	}
 
 	/* This is enough to set the RW pin to low, if it is available. */
-	init_gpio_pin(drvthis, &pins->rw, "RW");
+	init_gpio_pin(config->gpioPinRw, &pins->rw, "RW");
 
 	ugpio_set_value(pins->rs, 0);
 

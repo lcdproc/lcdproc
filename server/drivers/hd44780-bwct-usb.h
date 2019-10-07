@@ -2,6 +2,7 @@
 #define HD_BWCT_USB_H
 
 #include "lcd.h"		/* for Driver */
+#include "../elektragen.h"
 
 /* vendor and product id */
 #define BWCT_USB_VENDORID	0x03DA
@@ -15,6 +16,6 @@
 #define DEFAULT_SERIALNO	""
 
 // initialise this particular driver
-int hd_init_bwct_usb(Driver *drvthis);
+int hd_init_bwct_usb(Driver *drvthis, const Hd44780DriverConfig * config);
 
 #endif

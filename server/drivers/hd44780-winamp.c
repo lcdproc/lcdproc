@@ -102,7 +102,7 @@ static const unsigned char EnMask[] = { EN1, EN2, EN3 };
  * \retval -1      Error.
  */
 int
-hd_init_winamp(Driver *drvthis)
+hd_init_winamp(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;

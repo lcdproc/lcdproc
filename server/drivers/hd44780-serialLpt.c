@@ -81,7 +81,7 @@ static void shiftreg(PrivateData *p, unsigned char displayID, unsigned char r);
  * \retval -1      Error.
  */
 int
-hd_init_serialLpt(Driver *drvthis)
+hd_init_serialLpt(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;

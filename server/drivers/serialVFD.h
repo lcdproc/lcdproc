@@ -26,6 +26,8 @@
 #ifndef SERIALVFD_H
 #define SERIALVFD_H
 
+#include <elektra.h>
+
 #define DEFAULT_CELL_WIDTH	5
 #define DEFAULT_CELL_HEIGHT	7
 #define DEFAULT_DEVICE		"/dev/lcd"
@@ -39,7 +41,7 @@
 #define DEFAULT_LPTPORT		0x378
 
 
-MODULE_EXPORT int  serialVFD_init (Driver *drvthis);
+MODULE_EXPORT int  serialVFD_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void serialVFD_close (Driver *drvthis);
 MODULE_EXPORT int  serialVFD_width (Driver *drvthis);
 MODULE_EXPORT int  serialVFD_height (Driver *drvthis);

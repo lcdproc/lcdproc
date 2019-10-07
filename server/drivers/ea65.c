@@ -68,7 +68,7 @@ MODULE_EXPORT char *symbol_prefix = "EA65_";
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-EA65_init (Driver *drvthis)
+EA65_init (Driver *drvthis, Elektra * elektra)
 {
         struct termios portset;
         /* device is fixed */

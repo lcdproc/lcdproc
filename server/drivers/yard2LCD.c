@@ -257,7 +257,7 @@ yard_hwWriteCGRam(Driver *drvthis, unsigned char numChar, unsigned char *data)
  * Inits settings and connection
  */
 MODULE_EXPORT int 
-yard_init(Driver *drvthis)
+yard_init(Driver *drvthis, Elektra * elektra)
 {
 	debug(RPT_DEBUG, "%s: Event 08 - Enter yard_init",drvthis->name);
 	struct sockaddr_un srvAddr;

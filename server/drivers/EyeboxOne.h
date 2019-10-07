@@ -1,7 +1,9 @@
 #ifndef EYEBOXONE_H
 #define EYEBOXONE_H
 
-MODULE_EXPORT int  EyeboxOne_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  EyeboxOne_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void EyeboxOne_close (Driver *drvthis);
 MODULE_EXPORT int  EyeboxOne_width (Driver *drvthis);
 MODULE_EXPORT int  EyeboxOne_height (Driver *drvthis);

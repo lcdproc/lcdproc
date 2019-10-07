@@ -36,8 +36,8 @@
 #include "mode.h"
 #include "shared/sockets.h"
 #include "shared/report.h"
-#include "shared/configfile.h"
-#include "getopt.h"		/* This is our local getopt.h! */
+
+#include "elektragen.h"
 
 /* Import screens */
 #include "batt.h"
@@ -73,8 +73,15 @@ static struct utsname unamebuf;
 static void HelpScreen(int exit_state);
 static void exit_program(int val);
 static void main_loop(void);
-static int process_configfile(char *cfgfile);
+static int process_config();
 
+
+static const char * help_prefix =
+		"lcdproc - LCDproc system status information viewer\n"
+		"\n"
+		"Copyright (c) 1999-2017 Selene Scriven, William Ferrell, and misc. contributors.\n"
+		"This program is released under the terms of the GNU General Public License.\n"
+		"\n";
 
 #define TIME_UNIT	125000	/**< 1/8th second is a single time unit. */
 
@@ -97,23 +104,23 @@ static int process_configfile(char *cfgfile);
 ScreenMode sequence[] =
 {
 	/* flags default ACTIVE will run by default */
-	/* longname    which on  off inv  timer   flags */
-	{ "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen        },	// [C]PU
-	{ "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen      }, 	// [I]face
-	{ "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen        },	// [M]emory
-	{ "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen      },	// [L]oad (load histogram)
-	{ "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen       },	// [T]ime/Date
-	{ "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen     },	// [A]bout (credits)
-	{ "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen    },	// CPU_SM[P]
-	{ "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen      },	// [O]ld Timescreen
-	{ "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen  },	// big cloc[K]
-	{ "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen     },	// Old [U]ptime Screen
-	{ "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen    },	// [B]attery Status
-	{ "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen  },	// CPU histogram [G]raph
-	{ "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen    },	// [S]ize of biggest processes
-	{ "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen       },	// [D]isk stats
-	{ "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen },	// Mi[n]i clock
-	{  NULL, 0, 0, 0, 0, 0, 0, NULL},			  	// No more..  all done.
+	/* screen                   longname    which    on   off inv  timer   flags  func               base_conf*/
+	{ LCDPROC_SCREEN_CPU,        "CPU",       'C',   1,    2, 0, 0xffff, ACTIVE, cpu_screen,        "cpu"       },	// [C]PU
+	{ LCDPROC_SCREEN_IFACE,      "Iface",     'I',   1,    2, 0, 0xffff, 0,      iface_screen,      "iface"     }, 	// [I]face
+	{ LCDPROC_SCREEN_MEMORY,     "Memory",    'M',   4,   16, 0, 0xffff, ACTIVE, mem_screen,        "memory"    },	// [M]emory
+	{ LCDPROC_SCREEN_LOAD,       "Load",      'L',  64,  128, 1, 0xffff, ACTIVE, xload_screen,      "load"      },	// [L]oad (load histogram)
+	{ LCDPROC_SCREEN_TIME_DATE,  "TimeDate",  'T',   4,   64, 0, 0xffff, ACTIVE, time_screen,       "timedate"  },	// [T]ime/Date
+	{ LCDPROC_SCREEN_ABOUT,      "About",     'A', 999, 9999, 0, 0xffff, ACTIVE, credit_screen,     "about"     },	// [A]bout (credits)
+	{ LCDPROC_SCREEN_SMP_CPU,    "SMP-CPU",   'P',   1,    2, 0, 0xffff, 0,      cpu_smp_screen,    "smpcpu"    },	// CPU_SM[P]
+	{ LCDPROC_SCREEN_OLD_TIME,   "OldTime",   'O',   4,   64, 0, 0xffff, 0,      clock_screen,      "oldtime"   },	// [O]ld Timescreen
+	{ LCDPROC_SCREEN_BIG_CLOCK,  "BigClock",  'K',   4,   64, 0, 0xffff, 0,      big_clock_screen,  "bigclock"  },	// big cloc[K]
+	{ LCDPROC_SCREEN_UPTIME,     "Uptime",    'U',   4,  128, 0, 0xffff, 0,      uptime_screen,     "uptime"    },	// Old [U]ptime Screen
+	{ LCDPROC_SCREEN_BATTERY,    "Battery",   'B',  32,  256, 1, 0xffff, 0,      battery_screen,    "battery"   },	// [B]attery Status
+	{ LCDPROC_SCREEN_CPU_GRAPH,  "CPUGraph",  'G',   1,    2, 0, 0xffff, 0,      cpu_graph_screen,  "cpugraph"  },	// CPU histogram [G]raph
+	{ LCDPROC_SCREEN_PROC_SIZE,  "ProcSize",  'S',  16,  256, 1, 0xffff, 0,      mem_top_screen,    "procsize"  },	// [S]ize of biggest processes
+	{ LCDPROC_SCREEN_DISK,       "Disk",      'D', 256,  256, 1, 0xffff, 0,      disk_screen,       "disk"      },	// [D]isk stats
+	{ LCDPROC_SCREEN_MINI_CLOCK, "MiniClock", 'N',   4,   64, 0, 0xffff, 0,      mini_clock_screen, "miniclock" },	// Mi[n]i clock
+	{ 0, NULL, 0, 0, 0, 0, 0, 0, NULL},			  	// No more..  all done.
 };
 
 
@@ -129,6 +136,8 @@ char *configfile = NULL;
 char *pidfile = NULL;
 int pidfile_written = FALSE;
 char *displayname = NULL;	/**< display name for the main menu */
+
+static Elektra * elektra = NULL;
 
 /** Returns the network name of this machine */
 const char *
@@ -169,14 +178,12 @@ bool check_protocol_version(int major, int minor)
 
 /** Enables or disables (and deletes) a screen */
 static int
-set_mode(int shortname, char *longname, int state)
+set_mode(LcdprocScreen screen, int state)
 {
 	int k;
 
 	for (k = 0; sequence[k].which != 0; k++) {
-		if (((sequence[k].longname != NULL) &&
-		     (0 == strcasecmp(longname, sequence[k].longname))) ||
-		    (toupper(shortname) == sequence[k].which)) {
+		if (sequence[k].screen == screen) {
 			if (!state) {
 				/*
 				 * clean both the active and initialized bits
@@ -188,8 +195,9 @@ set_mode(int shortname, char *longname, int state)
 					sock_printf(sock, "screen_del %c\n", sequence[k].which);
 				}
 			}
-			else
+			else {
 				sequence[k].flags |= ACTIVE;
+			}
 			return 1;	/* found */
 		}
 	}
@@ -210,10 +218,9 @@ clear_modes(void)
 
 
 int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
 	int cfgresult;
-	int c;
 
 	/* set locale for cwdate & time formatting in chrono.c */
 	setlocale(LC_TIME, "");
@@ -231,60 +238,9 @@ main(int argc, char **argv)
 	signal(SIGPIPE, exit_program);	/* write to closed socket */
 	signal(SIGKILL, exit_program);	/* kill -9 [cannot be trapped; but ...] */
 
-	/* No error output from getopt */
-	opterr = 0;
-
-	/* get options from command line */
-	while ((c = getopt(argc, argv, "s:p:e:c:fhv")) > 0) {
-		char *end;
-
-		switch (c) {
-			/* c is for config file */
-			case 'c':
-				configfile = optarg;
-				break;
-			/* s is for server */
-			case 's':
-				server = optarg;
-				break;
-			/* p is for port */
-			case 'p':
-				port = strtol(optarg, &end, 0);
-				if ((*optarg == '\0') || (*end != '\0') ||
-				    (port <= 0) || (port >= 0xFFFF)) {
-					fprintf(stderr, "Illegal port value %s\n", optarg);
-					exit(EXIT_FAILURE);
-				}
-				break;
-			case 'e':
-				islow = strtol(optarg, &end, 0);
-				if ((*optarg == '\0') || (*end != '\0') || (islow < 0)) {
-					fprintf(stderr, "Illegal delay value %s\n", optarg);
-					exit(EXIT_FAILURE);
-				}
-				break;
-			case 'f':
-				foreground = TRUE;
-				break;
-			case 'h':
-				HelpScreen(EXIT_SUCCESS);
-				break;
-			case 'v':
-				fprintf(stderr, "LCDproc %s\n", version);
-				exit(EXIT_SUCCESS);
-				break;
-			/* otherwise...  Get help! */
-			case '?':	/* unknown option or missing argument */
-				/* FALLTHROUGH */
-			default:
-				HelpScreen(EXIT_FAILURE);
-				break;
-		}
-	}
-
 	/* Read config file */
-	cfgresult = process_configfile(configfile);
-	if (cfgresult < 0) {
+	cfgresult = process_config();
+	if (cfgresult != 0) {
 		fprintf(stderr, "Error reading config file\n");
 		exit(EXIT_FAILURE);
 	}
@@ -297,34 +253,6 @@ main(int argc, char **argv)
 
 	/* Set reporting settings */
 	set_reporting("lcdproc", report_level, report_dest);
-
-	/* parse non-option arguments: modes to add/delete */
-	if (argc > max(optind, 1)) {
-		int i;
-
-		/*
-		 * if no config file was read, ignore hard coded default
-		 * modes
-		 */
-		if (cfgresult == 0)
-			clear_modes();
-
-		/* turn additional options on or off (using ! as prefix) */
-		for (i = max(optind, 1); i < argc; i++) {
-			int state = (*argv[i] == '!') ? 0 : 1;
-			char *name = (state) ? argv[i] : argv[i] + 1;
-			int shortname = (strlen(name) == 1) ? name[0] : '\0';
-			int found = set_mode(shortname, name, state);
-
-			if (!found) {
-				fprintf(stderr, "Invalid Screen: %s\n", name);
-				return (EXIT_FAILURE);
-			}
-		}
-	}
-
-	if (server == NULL)
-		server = DEFAULT_SERVER;
 
 	/* Connect to the server... */
 	sock = sock_connect(server, port);
@@ -377,96 +305,91 @@ main(int argc, char **argv)
 	return EXIT_SUCCESS;
 }
 
+static void on_fatal_error(ElektraError * error) // TODO: finalize method
+{
+	fprintf(stderr, "ERROR: %s\n", elektraErrorDescription(error));
+	exit(EXIT_FAILURE);
+}
 
 /**
- * Reads and parses configuration file.
- * \param configfile  The configfile to read or NULL for the default config.
- * \retval 1 if configfile was read,
- * \retval 0 if default configfile doesn't exist
- * \retval <0 on error
+ * Loads the configuration from the KDB.
+ * 
+ * If Elektra reports help mode, we print the help message and call exit(EXIT_SUCCESS);
+ * 
+ * \retval 0 on success
+ * \retval !=0 on error
  */
 static int
-process_configfile(char *configfile)
+process_config()
 {
-	int k;
-	const char *tmp;
+	ElektraError * error = NULL;
+	int rc = loadConfiguration(&elektra, &error);
 
-	debug(RPT_DEBUG, "%s(%s)", __FUNCTION__, (configfile) ? configfile : "<null>");
-
-	/* Read config settings */
-
-	if (configfile == NULL) {
-		struct stat statbuf;
-
-		/*
-		 * if default config file does not exist, do not consider
-		 * this an error and continue
-		 */
-		if ((lstat(DEFAULT_CONFIGFILE, &statbuf) == -1) && (errno = ENOENT))
-			return 0;
-
-		configfile = DEFAULT_CONFIGFILE;
-	}
-
-	if (config_read_file(configfile) != 0) {
-		report(RPT_CRIT, "Could not read config file: %s", configfile);
+	if (rc == -1)
+	{
+		fprintf(stderr, "An error occurred while initializing elektra: %s\n", elektraErrorDescription(error));
+		elektraErrorReset(&error);
 		return -1;
 	}
 
-	if (server == NULL) {
-		server = strdup(config_get_string(progname, "Server", 0, DEFAULT_SERVER));
-	}
-	if (port == UNSET_INT) {
-		port = config_get_int(progname, "Port", 0, LCDPORT);
-	}
-
-	if (report_level == UNSET_INT) {
-		report_level = config_get_int(progname, "ReportLevel", 0, RPT_WARNING);
-	}
-	if (report_dest == UNSET_INT) {
-		if (config_get_bool(progname, "ReportToSyslog", 0, 0)) {
-			report_dest = RPT_DEST_SYSLOG;
-		}
-		else {
-			report_dest = RPT_DEST_STDERR;
-		}
-	}
-	if (foreground != TRUE) {
-		foreground = config_get_bool(progname, "Foreground", 0, FALSE);
-	}
-	if (pidfile == NULL) {
-		pidfile = strdup(config_get_string(progname, "PidFile", 0, DEFAULT_PIDFILE));
-	}
-	if (islow < 0) {
-		islow = config_get_int(progname, "Delay", 0, -1);
+	if (rc == 1)
+	{
+		// help mode
+		printHelpMessage(elektra, NULL, help_prefix);
+		elektraClose (elektra);
+		exit(EXIT_SUCCESS);
 	}
 
-	if ((tmp = config_get_string(progname, "DisplayName", 0, NULL)) != NULL)
-		displayname = strdup(tmp);
+	elektraFatalErrorHandler(elektra, on_fatal_error);
+
+	server = strdup(elektraGet(elektra, CONF_LCDPROC_SERVER));
+	port = elektraGet(elektra, CONF_LCDPROC_PORT);
+	report_level = elektraGet(elektra, CONF_LCDPROC_REPORTLEVEL);
+	report_dest = elektraGet(elektra, CONF_LCDPROC_REPORTTOSYSLOG) ? RPT_DEST_SYSLOG : RPT_DEST_STDERR;
+	foreground = elektraGet(elektra, CONF_LCDPROC_FOREGROUND);
+	pidfile = strdup(elektraGet(elektra, CONF_LCDPROC_PIDFILE));
+	islow = elektraGet(elektra, CONF_LCDPROC_DELAY);
+	displayname = strdup(elektraGet(elektra, CONF_LCDPROC_DISPLAYNAME));
 
 	/*
 	 * check for config file variables to override all the sequence
 	 * defaults
 	 */
-	for (k = 0; sequence[k].which != 0; k++) {
-		if (sequence[k].longname != NULL) {
-			sequence[k].on_time = config_get_int(sequence[k].longname, "OnTime", 0, sequence[k].on_time);
-			sequence[k].off_time = config_get_int(sequence[k].longname, "OffTime", 0, sequence[k].off_time);
-			sequence[k].show_invisible = config_get_bool(sequence[k].longname, "ShowInvisible", 0, sequence[k].show_invisible);
-			if (config_get_bool(sequence[k].longname, "Active", 0, sequence[k].flags & ACTIVE))
-				sequence[k].flags |= ACTIVE;
-			else
-				sequence[k].flags &= (~ACTIVE);
+	for (int k = 0; sequence[k].which != 0; k++) {
+		ScreenBaseConfig base_config;
+		ELEKTRA_GET (StructScreenBaseConfig) (elektra, sequence[k].base_config_name, &base_config);
+
+		sequence[k].on_time = base_config.on_time;
+		sequence[k].off_time = base_config.off_time;
+		sequence[k].show_invisible = base_config.show_invisible;
+		if (base_config.active)
+			sequence[k].flags |= ACTIVE;
+		else
+			sequence[k].flags &= (~ACTIVE);
+	}
+
+	/* read enabled screens, if defined */
+	kdb_long_long_t screen_count = elektraSize(elektra, CONF_LCDPROC_SCREENS);
+	if(screen_count > 0)
+	{
+		/* unset defaults */
+		clear_modes();
+
+		for (kdb_long_long_t i = 0; i < screen_count; ++i)
+		{
+			LcdprocScreen screen = elektraGetV(elektra, CONF_LCDPROC_SCREENS, i);
+			set_mode(screen, 1);
 		}
 	}
 
-	return 1;
+	return 0;
 }
 
 /** Print help screen and exit */
 void
 HelpScreen(int exit_state)
 {
+	// TODO: screen arg
 	fprintf(stderr,
 		"lcdproc - LCDproc system status information viewer\n"
 		"\n"
@@ -522,6 +445,10 @@ exit_program(int val)
 	mode_close();
 	if ((foreground != TRUE) && (pidfile != NULL) && (pidfile_written == TRUE))
 		unlink(pidfile);
+	if (elektra != NULL) {
+		elektraClose(elektra);
+	}
+	
 	exit(val);
 }
 
@@ -705,14 +632,14 @@ main_loop(void)
 					if (sequence[i].timer >= sequence[i].on_time) {
 						sequence[i].timer = 0;
 						/* Now, update the screen... */
-						update_screen(&sequence[i], 1);
+						update_screen(&sequence[i], 1, elektra);
 					}
 				}
 				else {
 					if (sequence[i].timer >= sequence[i].off_time) {
 						sequence[i].timer = 0;
 						/* Now, update the screen... */
-						update_screen(&sequence[i], sequence[i].show_invisible);
+						update_screen(&sequence[i], sequence[i].show_invisible, elektra);
 					}
 				}
 				if (islow > 0)

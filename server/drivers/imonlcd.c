@@ -231,7 +231,7 @@ typedef struct imonlcd_private_data {
 
 
 /* prototypes for driver internal functions */
-static void imonlcd_display_init(Driver *drvthis);
+static void imonlcd_display_init(Driver *drvthis, Elektra * elektra);
 static void draw_bigchar(imon_bigfont *font, int ch, int x, int y, PrivateData *p);
 static void setLineLength(int topLine, int botLine, int topProgress, int botProgress, PrivateData *p);
 static void setBuiltinProgressBars(int topLine, int botLine, int topProgress, int botProgress, PrivateData *p);
@@ -246,7 +246,7 @@ static int send_packet(PrivateData *p);
  * \retval <0	  Error.
  */
 MODULE_EXPORT int
-imonlcd_init(Driver *drvthis)
+imonlcd_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = NULL;
 	char buf[256];
@@ -413,7 +413,7 @@ imonlcd_init(Driver *drvthis)
  * \param drvthis  Pointer to driver structure.
  */
 static void
-imonlcd_display_init(Driver *drvthis)
+imonlcd_display_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p = drvthis->private_data;
 

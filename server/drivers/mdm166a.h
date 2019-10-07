@@ -1,7 +1,9 @@
 #ifndef MDM166A_H
 #define MDM166A_H
 
-MODULE_EXPORT int mdm166a_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int mdm166a_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void mdm166a_close (Driver *drvthis);
 MODULE_EXPORT int mdm166a_width (Driver *drvthis);
 MODULE_EXPORT int mdm166a_height (Driver *drvthis);

@@ -242,7 +242,7 @@ MODULE_EXPORT char *symbol_prefix     = "picoLCD_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-picoLCD_init(Driver *drvthis)
+picoLCD_init(Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 #ifdef HAVE_LIBUSB_1_0

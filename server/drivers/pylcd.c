@@ -58,6 +58,8 @@
 #include "shared/report.h"
 #include "adv_bignum.h"
 
+#include "../elektragen.h"
+
 #define True 1
 #define False 0
 
@@ -290,7 +292,7 @@ initTTY(Driver *drvthis, int FD)
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-pyramid_init(Driver *drvthis)
+pyramid_init(Driver *drvthis, Elektra * elektra)
 {
     char buffer[MAXCOUNT];
     int i;
@@ -320,22 +322,23 @@ pyramid_init(Driver *drvthis)
     p->timeout.tv_usec = MICROTIMEOUT;
 
     /*
-     * read config file, fill configuration dependent elements of private
+     * read config, fill configuration dependent elements of private
      * data
      */
 
+	PyramidDriverConfig config;
+	elektraFillStructV(elektra, &config, CONF_PYRAMID, drvthis->index);
+
     /* Which serial device should be used? */
-    strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(p->device));
-    p->device[sizeof(p->device) - 1] = '\0';
-    report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+	report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
     /* Initialize connection to the LCD  */
 
     /* open and initialize serial device */
-    p->FD = open(p->device, O_RDWR);
+    p->FD = open(config.device, O_RDWR);
 
     if (p->FD == -1) {
-	report(RPT_ERR, "%s: open(%s) failed: %s", drvthis->name, p->device, strerror(errno));
+	report(RPT_ERR, "%s: open(%s) failed: %s", drvthis->name, config.device, strerror(errno));
 	return -1;
     }
 
@@ -469,22 +472,22 @@ pyramid_flush(Driver *drvthis)
 	 */
 	for (i = 1; i < 33; i++) {
 	    switch ((unsigned char)mesg[i]) {
-	    case 0xe4:		/* ä */
+	    case 0xe4:		/* Ã¤ */
 		mesg[i] = 0xe1;
 		break;
-	    case 0xf6:		/* ö */
+	    case 0xf6:		/* Ã¶ */
 		mesg[i] = 0xef;
 		break;
-	    case 0xfc:		/* ü */
+	    case 0xfc:		/* Ã¼ */
 		mesg[i] = 0xf5;
 		break;
-	    case 0xdf:		/* ß */
+	    case 0xdf:		/* ÃŸ */
 		mesg[i] = 0xe2;
 		break;
-	    case 0xb7:		/* · */
+	    case 0xb7:		/* Â· */
 		mesg[i] = 0xa5;
 		break;
-	    case 0xb0:		/* ° */
+	    case 0xb0:		/* Â° */
 		mesg[i] = 0xdf;
 		break;
 	    }

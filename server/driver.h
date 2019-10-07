@@ -23,7 +23,7 @@
 #include "shared/defines.h"
 
 Driver *
-driver_load(const char *name, const char *filename);
+driver_load(Elektra * elektra, const char * driverpath, kdb_long_long_t index);
 
 int
 driver_unload(Driver *driver);

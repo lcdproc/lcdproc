@@ -219,7 +219,7 @@ MODULE_EXPORT char *symbol_prefix = "svga_";
  * Init driver
  */
 MODULE_EXPORT int
-svga_init (Driver *drvthis)
+svga_init (Driver *drvthis, Elektra * elektra)
 {
 	char modestr[LCD_MAX_WIDTH+1] = DEFAULT_MODESTR;
 	char size[LCD_MAX_WIDTH+1] = DEFAULT_SIZE;

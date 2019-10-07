@@ -50,7 +50,7 @@ void lcm162_HD44780_output(PrivateData *p, int data);
 
 // initialise the driver
 int
-hd_init_lcm162(Driver *drvthis)
+hd_init_lcm162(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 	HD44780_functions *hd44780_functions = p->hd44780_functions;

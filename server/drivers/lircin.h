@@ -21,7 +21,9 @@
 #ifndef LCD_LIRCIN_H
 #define LCD_LIRCIN_H
 
-MODULE_EXPORT int lircin_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int lircin_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void lircin_close (Driver *drvthis);
 MODULE_EXPORT const char * lircin_get_key (Driver *drvthis);
 

@@ -132,7 +132,7 @@ client_set_func(Client *c, int argc, char **argv)
 		/* Handle the "name" option */
 		if (strcmp(p, "name") == 0) {
 			i++;
-			if (argv[i] == '\0') {
+			if (argv[i][0] == '\0') {
 				sock_printf_error(c->sock, "internal error: no parameter #%d\n", i);
 				continue;
 			}

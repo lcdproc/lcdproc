@@ -130,7 +130,7 @@ drawchar2fb(Driver *drvthis, int x, int y, unsigned char z)
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-mdm166a_init(Driver *drvthis)
+mdm166a_init(Driver *drvthis, Elektra * elektra)
 {
 	char clock[256] = DEFAULT_CLOCK;
 	PrivateData *p;

@@ -17,7 +17,9 @@
 #ifndef HD44780_H
 #define HD44780_H
 
-MODULE_EXPORT int  HD44780_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  HD44780_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void HD44780_close(Driver *drvthis);
 MODULE_EXPORT int  HD44780_width(Driver *drvthis);
 MODULE_EXPORT int  HD44780_height(Driver *drvthis);

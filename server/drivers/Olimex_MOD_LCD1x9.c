@@ -58,7 +58,7 @@ MODULE_EXPORT char *symbol_prefix = "olimex1x9_";
  * \retval <0      Error.
  */
 MODULE_EXPORT int
-olimex1x9_init (Driver *drvthis)
+olimex1x9_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	const char *configvalue;

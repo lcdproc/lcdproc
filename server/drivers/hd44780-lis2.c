@@ -67,18 +67,16 @@ static void writeChar(int fd, unsigned char code);
  * \retval 0       Success.
  * \retval -1      Error.
  */
-int hd_init_lis2(Driver *drvthis)
+int hd_init_lis2(Driver *drvthis, const Hd44780DriverConfig * config)
 {
 	PrivateData *p = (PrivateData*) drvthis->private_data;
 
 	struct termios portset;
-	char device[256] = DEFAULT_DEVICE;
 
-	/* READ CONFIG FILE */
+	/* READ CONFIG */
 
 	/* Get serial device to use */
-	strncpy(device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(device));
-	device[sizeof(device)-1] = '\0';
+	const char * device = strlen(config->device) == 0 ? DEFAULT_DEVICE : device;
 	report(RPT_INFO, "HD44780: lis2: Using device: %s", device);
 
 	// Set up io port correctly, and open it...
@@ -117,7 +115,7 @@ int hd_init_lis2(Driver *drvthis)
 		unsigned int conf_bitrate;
 		size_t bitrate;
 
-		conf_bitrate = drvthis->config_get_int(drvthis->name, "Speed", 0, 38400);
+		conf_bitrate = config->speed == 0 ? 38400 : config->speed;
 		if (convert_bitrate(conf_bitrate, &bitrate)) {
 			report(RPT_ERR, "HD44780: lis2: invalid configured bitrate speed");
 			return -1;

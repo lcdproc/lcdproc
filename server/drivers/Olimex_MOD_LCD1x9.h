@@ -1,7 +1,9 @@
 #ifndef OLIMEX_LCD1x9_H
 #define OLIMEX_LCD1x9_H
 
-MODULE_EXPORT int  olimex1x9_init (Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  olimex1x9_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void olimex1x9_close (Driver *drvthis);
 MODULE_EXPORT int  olimex1x9_width (Driver *drvthis);
 MODULE_EXPORT int  olimex1x9_height (Driver *drvthis);

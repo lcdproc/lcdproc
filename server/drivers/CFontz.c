@@ -45,14 +45,13 @@
 #include "CFontz-charmap.h"
 #include "adv_bignum.h"
 
+#include "../elektragen.h"
 
 /* Constants for userdefchar_mode */
 #define NUM_CCs		8 /* max. number of custom characters */
 
 /** private data for the \c CFontz driver */
 typedef struct CFontz_private_data {
-	char device[200];
-
 	int fd;
 
 	int model;
@@ -100,14 +99,13 @@ static void CFontz_raw_chr(Driver *drvthis, int x, int y, unsigned char c);
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-CFontz_init(Driver *drvthis)
+CFontz_init(Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
-	int tmp, w, h;
+	int w, h;
 	int reboot = 0;
 	int usb = 0;
 	int speed = DEFAULT_SPEED;
-	char size[200] = DEFAULT_SIZE;
 
 	PrivateData *p;
 
@@ -126,80 +124,52 @@ CFontz_init(Driver *drvthis)
 
 	debug(RPT_INFO, "CFontz: init(%p)", drvthis);
 
-	/* Read config file */
+	/* Read config */
+
+  CFontzDriverConfig config;
+  elektraFillStructV (elektra, &config, CONF_CFONTZ, drvthis->index);
+
 	/* Which device should be used */
-	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
-	p->device[sizeof(p->device)-1] = '\0';
-	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+  report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
 	/* Which size */
-	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, DEFAULT_SIZE), sizeof(size));
-	size[sizeof(size)-1] = '\0';
-	if ((sscanf(size, "%dx%d", &w, &h) != 2)
+	if ((sscanf(config.size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 		report(RPT_WARNING, "%s: cannot read Size: %s; using default %s",
-				drvthis->name, size, DEFAULT_SIZE);
+				drvthis->name, config.size, DEFAULT_SIZE);
 		sscanf(DEFAULT_SIZE, "%dx%d", &w, &h);
 	}
 	p->width = w;
 	p->height = h;
 
 	/* Which contrast */
-	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Contrast must be between 0 and 1000; using default %d",
-				drvthis->name, DEFAULT_CONTRAST);
-		tmp = DEFAULT_CONTRAST;
-	}
-	p->contrast = tmp;
+	p->contrast = config.contrast;
 
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
-				drvthis->name, DEFAULT_BRIGHTNESS);
-		tmp = DEFAULT_BRIGHTNESS;
-	}
-	p->brightness = tmp;
+	p->brightness = config.brightness;
 
 	/* Which backlight-off "brightness" */
-	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
-				drvthis->name, DEFAULT_OFFBRIGHTNESS);
-		tmp = DEFAULT_OFFBRIGHTNESS;
-	}
-	p->offbrightness = tmp;
+	p->offbrightness = config.offbrightness;
 
 	/* Which speed */
-	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, DEFAULT_SPEED);
-	if (tmp == 1200) speed = B1200;
-	else if (tmp == 2400) speed = B2400;
-	else if (tmp == 9600) speed = B9600;
-	else if (tmp == 19200) speed = B19200;
-	else if (tmp == 115200) speed = B115200;
-	else {
-		report(RPT_WARNING, "%s: Speed must be 1200, 2400, 9600, 19200 or 115200; using default %d",
-				drvthis->name, DEFAULT_SPEED);
-		speed = DEFAULT_SPEED;
-	}
+	speed = config.speed;
 
 	/* New firmware version? */
-	p->newfirmware = drvthis->config_get_bool(drvthis->name, "NewFirmware", 0, 0);
+	p->newfirmware = config.newfirmware;
 
 	/* Reboot display? */
-	reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
-
+	reboot = config.reboot;
+	
 	/* Am I USB or not? */
-	usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
+	usb = config.usb;
 
 	/* Set up io port correctly, and open it... */
-	debug(RPT_DEBUG, "CFontz: Opening device: %s", p->device);
-	p->fd = open(p->device, (usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
+	debug(RPT_DEBUG, "CFontz: Opening device: %s", config.device);
+	p->fd = open(config.device, (usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
 	if (p->fd == -1) {
-		report(RPT_ERR, "%s: open(%s) failed (%s)",
-				drvthis->name, p->device, strerror(errno));
+		report(RPT_ERR, "%s/#"ELEKTRA_LONG_LONG_F": open(%s) failed (%s)",
+				drvthis->name, drvthis->index, config.device, strerror(errno));
 		return -1;
 	}
 

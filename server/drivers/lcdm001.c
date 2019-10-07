@@ -46,10 +46,10 @@
 #include "lcdm001.h"
 #include "shared/report.h"
 
+#include "../elektragen.h"
 
 /** private data for the \c lcdm001 driver */
 typedef struct lcdm001_private_data {
-	char device[200];
 	int fd;
 	int speed;
 
@@ -85,32 +85,21 @@ static char lcdm001_parse_keypad_setting(Driver *drvthis, char * keyname, char *
  *          pressed.
  */
 static char
-lcdm001_parse_keypad_setting(Driver *drvthis, char * keyname, char * default_value)
+map_key(Lcdm001Keys key)
 {
-	char return_val = 0;
-
-	if (strcmp(drvthis->config_get_string(drvthis->name, keyname, 0, default_value), "LeftKey") == 0) {
-		return_val = LEFT_KEY;
-	} else if (strcmp(drvthis->config_get_string(drvthis->name, keyname, 0, default_value), "RightKey") == 0) {
-		return_val = RIGHT_KEY;
-	} else if (strcmp(drvthis->config_get_string(drvthis->name, keyname, 0, default_value), "UpKey") == 0) {
-		return_val = UP_KEY;
-	} else if (strcmp(drvthis->config_get_string(drvthis->name, keyname, 0, default_value), "DownKey") == 0) {
-		return_val = DOWN_KEY;
-	} else {
-		report(RPT_WARNING, "%s: invalid config setting for %s; using default %s",
-				drvthis->name, keyname, default_value);
-		if (strcmp(default_value, "LeftKey") == 0) {
-			return_val = LEFT_KEY;
-		} else if (strcmp(default_value, "RightKey") == 0) {
-			return_val = RIGHT_KEY;
-		} else if (strcmp(default_value, "UpKey") == 0) {
-			return_val = UP_KEY;
-		} else if (strcmp(default_value, "DownKey") == 0) {
-			return_val = DOWN_KEY;
-		}
+	switch (key)
+	{
+	case LCDM001_KEYS_LEFT_KEY:
+		return LEFT_KEY;
+	case LCDM001_KEYS_RIGHT_KEY:
+		return RIGHT_KEY;
+	case LCDM001_KEYS_UP_KEY:
+		return UP_KEY;
+	case LCDM001_KEYS_DOWN_KEY:
+		return DOWN_KEY;
 	}
-	return return_val;
+
+	return 0; // unreachable
 }
 
 /**
@@ -137,7 +126,7 @@ lcdm001_cursorblink(Driver *drvthis, int on)
  * API: Set up any device-specific stuff.
  */
 MODULE_EXPORT int
-lcdm001_init (Driver *drvthis)
+lcdm001_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 	struct termios portset;
@@ -171,30 +160,30 @@ lcdm001_init (Driver *drvthis)
 	memset(p->framebuf, ' ', p->width * p->height);
 
 	/* READ CONFIG FILE: */
+	Lcdm001DriverConfig config;
+	elektraFillStructV(elektra, &config, CONF_LCDM001, drvthis->index);
 
 	/* which serial device should be used */
-	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, "/dev/lcd"), sizeof(p->device));
-	p->device[sizeof(p->device)-1] = '\0';
-	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+	report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
 	/* keypad settings */
-	p->pause_key =      lcdm001_parse_keypad_setting(drvthis, "PauseKey", "DownKey");
-	p->back_key =       lcdm001_parse_keypad_setting(drvthis, "BackKey", "LeftKey");
-	p->forward_key =    lcdm001_parse_keypad_setting(drvthis, "ForwardKey", "RightKey");
-	p->main_menu_key =  lcdm001_parse_keypad_setting(drvthis, "MainMenuKey", "UpKey");
+	p->pause_key =      map_key(config.pausekey);
+	p->back_key =       map_key(config.backkey);
+	p->forward_key =    map_key(config.forwardkey);
+	p->main_menu_key =  map_key(config.mainmenukey);
 
 	/* Set up io port correctly, and open it... */
-	debug(RPT_DEBUG, "%s: opening serial device: %s", __FUNCTION__, p->device);
-	p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
+	debug(RPT_DEBUG, "%s: opening serial device: %s", __FUNCTION__, config.device);
+	p->fd = open(config.device, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (p->fd == -1) {
 		report(RPT_ERR, "%s: open(%d) failed (%s)",
-				drvthis->name, p->device, strerror(errno));
+				drvthis->name, config.device, strerror(errno));
 		if (errno == EACCES)
 			report(RPT_ERR, "%s: make sure you have rw access to %s!",
-					drvthis->name, p->device);
+					drvthis->name, config.device);
   		return -1;
 	}
-	report(RPT_INFO, "%s: opened display on %s", drvthis->name, p->device);
+	report(RPT_INFO, "%s: opened display on %s", drvthis->name, config.device);
 
 	tcgetattr(p->fd, &portset);
 #ifdef HAVE_CFMAKERAW

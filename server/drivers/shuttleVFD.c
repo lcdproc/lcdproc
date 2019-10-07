@@ -94,7 +94,7 @@ static void send_packet(Driver *drvthis, char* packet)
  * \retval 0       Success.
  * \retval <0      Error.
  */
-MODULE_EXPORT int shuttleVFD_init(Driver *drvthis)
+MODULE_EXPORT int shuttleVFD_init(Driver *drvthis, Elektra * elektra)
 {
   PrivateData *p;
   struct usb_bus *bus;

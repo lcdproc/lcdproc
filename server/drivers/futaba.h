@@ -23,6 +23,7 @@
 #define USB_CLOSE_DEVICE     usb_close
 #define USB_CONTROL_TRANSFER usb_control_msg
 #endif
+#include <elektra.h>
 
 /* DEFINITIONS----------------------------------- */
 #define FUTABA_REPORT_LENGTH 64
@@ -91,7 +92,7 @@ int futaba_set_icon(Driver *drvthis);
 
 void futaba_shutdown(Driver *drvthis);
 
-MODULE_EXPORT int futaba_init(Driver *drvthis);
+MODULE_EXPORT int futaba_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void futaba_close(Driver *drvthis);
 MODULE_EXPORT int futaba_width(Driver *drvthis);
 MODULE_EXPORT int futaba_height(Driver *drvthis);

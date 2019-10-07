@@ -393,7 +393,7 @@ void menu_build_screen(MenuItem *menu, Screen *s)
 	     subitem != NULL;
 	     subitem = LL_GetNext(menu->data.menu.contents), itemnr ++)
 	{
-		char buf[10];
+		char buf[20];
 
 		if (subitem->is_hidden)
 			continue;

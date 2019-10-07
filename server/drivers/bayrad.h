@@ -8,7 +8,9 @@
 #ifndef _BAYRAD_H
 #define _BAYRAD_H
 
-MODULE_EXPORT int  bayrad_init(Driver *drvthis);
+#include <elektra.h>
+
+MODULE_EXPORT int  bayrad_init(Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void bayrad_close(Driver *drvthis);
 MODULE_EXPORT int  bayrad_width(Driver *drvthis);
 MODULE_EXPORT int  bayrad_height(Driver *drvthis);

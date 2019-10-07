@@ -1,6 +1,8 @@
 #ifndef CFONTZPACKET_H
 #define CFONTZPACKET_H
 
+#include <elektra.h>
+
 #define DEFAULT_CELL_HEIGHT	8
 #define DEFAULT_CONTRAST	560
 #define DEFAULT_DEVICE		"/dev/lcd"
@@ -22,7 +24,7 @@ typedef struct CFA_Model {
 	int flags;		/**< Bitmap of display features, see CFA_HAS_* above */
 } CFA_Model;
 
-MODULE_EXPORT int  CFontzPacket_init (Driver *drvthis);
+MODULE_EXPORT int  CFontzPacket_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void CFontzPacket_close (Driver *drvthis);
 MODULE_EXPORT int  CFontzPacket_width (Driver *drvthis);
 MODULE_EXPORT int  CFontzPacket_height (Driver *drvthis);

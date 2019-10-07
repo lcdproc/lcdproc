@@ -34,13 +34,14 @@
 #include "lcd_lib.h"
 #include "shared/report.h"
 
+#include "../elektragen.h"
+
 #define LB216_DEFAULT_DEVICE		"/dev/lcd"
 #define LB216_DEFAULT_SPEED		9600
 #define LB216_DEFAULT_BRIGHTNESS	255
 
 /** private data for the \c lb216 driver */
 typedef struct LB216_private_data {
-	char device[256];
 	int speed;
 	int fd;
 	char *framebuf;
@@ -69,7 +70,7 @@ MODULE_EXPORT char *symbol_prefix = "LB216_";
 // Opens com port and sets baud correctly...
 //
 MODULE_EXPORT int
-LB216_init(Driver *drvthis)
+LB216_init(Driver *drvthis, Elektra * elektra)
 {
   PrivateData *p;
   struct termios portset;
@@ -92,16 +93,15 @@ LB216_init(Driver *drvthis)
   p->cellheight = LCD_DEFAULT_CELLHEIGHT;
   p->custom = standard;
 
-  /* Read config file */
+  /* Read config */
+  Lb216DriverConfig config;
+  elektraFillStructV(elektra, &config, CONF_LB216, drvthis->index);
 
   /* What device should be used */
-  strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0,
-					     LB216_DEFAULT_DEVICE), sizeof(p->device));
-  p->device[sizeof(p->device)-1] = '\0';
-  report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+  report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
   /* What speed to use */
-  p->speed = drvthis->config_get_int(drvthis->name, "Speed", 0, LB216_DEFAULT_SPEED);
+  p->speed = config.speed;
 
   if (p->speed == 2400)       p->speed = B2400;
   else if (p->speed == 9600)  p->speed = B9600;
@@ -112,25 +112,20 @@ LB216_init(Driver *drvthis)
   }
 
   /* Which backlight brightness */
-  p->backlight_brightness = drvthis->config_get_int(drvthis->name, "Brightness", 0, LB216_DEFAULT_BRIGHTNESS);
-  if ((p->backlight_brightness < 0) || (p->backlight_brightness > 255)) {
-    report(RPT_WARNING, "%s: Brightness must be between 0 and 255; using default %d",
-		    drvthis->name, LB216_DEFAULT_BRIGHTNESS);
-    p->backlight_brightness = LB216_DEFAULT_BRIGHTNESS;
-  }
+  p->backlight_brightness = config.brightness;
 
   /* Reboot display? */
-  reboot = drvthis->config_get_bool(drvthis->name , "Reboot", 0, 0);
+  reboot = config.reboot;
 
-  /* End of config file parsing */
+  /* End of config processing */
 
   // Set up io port correctly, and open it...
-  p->fd = open(p->device, O_RDWR | O_NOCTTY | O_NDELAY);
+  p->fd = open(config.device, O_RDWR | O_NOCTTY | O_NDELAY);
   if (p->fd == -1) {
-    report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, p->device, strerror(errno));
+    report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, config.device, strerror(errno));
     return -1;
   }
-  report(RPT_DEBUG, "%s: opened device %s", drvthis->name, p->device);
+  report(RPT_DEBUG, "%s: opened device %s", drvthis->name, config.device);
 
   tcgetattr(p->fd, &portset);
 

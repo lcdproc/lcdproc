@@ -1,0 +1,1000 @@
+#!/bin/sh
+
+VERBOSE=${VERBOSE:-0}
+BACKUP="$(mktemp)"
+
+usage() {
+    echo "lcdexec-setup [-v] <command> [...]" >&2
+    echo "" >&2
+    echo "-v          Log what is happening to the KDB to stderr." >&2
+    echo "<command>" >&2
+    echo "     menu - to create a new menu" >&2
+    echo "  command - to create a new command" >&2
+    echo "    param - to create a new parameter" >&2
+    echo "     help - to display more help" >&2
+    echo "   delete - delete a menu/command/parameter" >&2
+    echo "[...]" >&2
+    echo "  Use 'lcdexec-setup help <command>' to show available values." >&2
+    echo "  For paramters 'lcdexec-setup help param <param-type>' shows even more info." >&2
+}
+
+usage_menu() {
+    echo "lcdexec-setup menu <display-name> [<entry>...]" >&2
+    echo "" >&2
+    echo "<display-name>     The display name for the menu." >&2
+    echo "<entry>" >&2
+    echo "  Each <entry> is either a reference to a command or a menu." >&2
+    echo "  Command entries are of the form 'command/#', menu entries 'menu/#'." >&2
+}
+
+usage_command() {
+    echo "lcdexec-setup command <exec> [-d <display-name>] [-f] [<param>...]" >&2
+    echo "" >&2
+    echo "<exec>                What the command should do." >&2
+    echo "-d <display-name>     The display name for the command." >&2
+    echo "-f                    Set to enable feedback." >&2
+    echo "<param>" >&2
+    echo "  Each <param> is a reference to a parameter." >&2
+    echo "  All references must be of the form '<param-type>/#'," >&2
+    echo "  where <param-type> is one of the parameter types:" >&2
+    echo "    alpha, checkbox, ip, numeric, ring, slider" >&2
+}
+
+usage_param() {
+    echo "lcdexec-setup param <param-type> <envname> [-d <display-name>] [...]" >&2
+    echo "" >&2
+    echo "<param-type>          One of: alpha, checkbox, ip, numeric, ring, slider" >&2
+    echo "<envname>             The environment variable the parameter uses." >&2
+    echo "-d <display-name>     The display name for the parameter." >&2
+    echo "[...]" >&2
+    echo "  Depends on <param-type>" >&2
+    echo "  For more info use 'lcdexec-setup help param <param-type>'" >&2
+    echo "  where <param-type> is one of: alpha, checkbox, ip, numeric, ring, slider" >&2
+}
+
+usage_param_alpha() {
+    echo "lcdexec-setup param alpha <envname> [-d <display-name>] [-i <initial>] [-a <allowed>] [-m <min>] [-M <max>]" >&2
+    echo "" >&2
+    echo "<envname>             The environment variable the parameter uses." >&2
+    echo "-d <display-name>     The display name for the parameter." >&2
+    echo "-i <initial>          The initial value of the parameter." >&2
+    echo "-a <allowed>          The set of allowed characters. Any character in the string" >&2
+    echo "                      <allowed> will be allowed." >&2
+    echo "-m <min>              (integer) The minimum length." >&2
+    echo "-M <max>              (integer) The maximum length." >&2
+}
+
+usage_param_checkbox() {
+    echo "lcdexec-setup param checkbox <envname> [-d <display-name>] [-i (on|off|gray)] [-y <on-text>] [-n <off-text>] [-g [<gray-text>]]" >&2
+    echo "" >&2
+    echo "<envname>             The environment variable the parameter uses." >&2
+    echo "-d <display-name>     The display name for the parameter." >&2
+    echo "-i (on|off|gray)      The initial value of the checkbox. One of: on, off, gray" >&2
+    echo "-y <on-text>          Changes the text to display, when in the 'on' state." >&2
+    echo "-n <off-text>         Changes the text to display, when in the 'gray' state." >&2
+    echo "-g [<gray-text>]      Enables the third 'gray' state of the checkbox, and" >&2
+    echo "                      optionally sets the text to display in that state." >&2
+}
+
+usage_param_ip() {
+    echo "lcdexec-setup param ip <envname> [-d <display-name>] [-i <initial>] [-6]" >&2
+    echo "" >&2
+    echo "<envname>             The environment variable the parameter uses." >&2
+    echo "-d <display-name>     The display name for the parameter." >&2
+    echo "-i <initial>          The initial value of the parameter." >&2
+    echo "-6                    Enables IPv6 mode." >&2
+}
+
+usage_param_numeric() {
+    echo "lcdexec-setup param numeric <envname> [-d <display-name>] [-i <initial>] [-m <min>] [-M <max>]" >&2
+    echo "" >&2
+    echo "<envname>             The environment variable the parameter uses." >&2
+    echo "-d <display-name>     The display name for the parameter." >&2
+    echo "-i <initial>          (integer) The initial value of the parameter." >&2
+    echo "-m <min>              (integer) The minimum value." >&2
+    echo "-M <max>              (integer) The maximum value." >&2
+}
+
+usage_param_ring() {
+    echo "lcdexec-setup param ring <envname> [-d <display-name>] [-i <initial>] <string>..." >&2
+    echo "" >&2
+    echo "<envname>             The environment variable the parameter uses." >&2
+    echo "-d <display-name>     The display name for the parameter." >&2
+    echo "-i <initial>          (integer) The initial value of the parameter. This is an" >&2
+    echo "                      index (zero-based) NOT the initial string value." >&2
+    echo "<string>...           The set of strings that can be chosen from." >&2
+}
+
+usage_param_slider() {
+    echo "lcdexec-setup param slider <envname> [-d <display-name>] [-i <initial>] [-m <min>] [-M <max>] [-s <step>] [-t <min-text>] [-T <max-text>]" >&2
+    echo "" >&2
+    echo "<envname>             The environment variable the parameter uses." >&2
+    echo "-d <display-name>     The display name for the parameter." >&2
+    echo "-i <initial>          (integer) The initial value of the parameter." >&2
+    echo "-m <min>              (integer) The minimum value." >&2
+    echo "-M <max>              (integer) The maximum value." >&2
+    echo "-s <step>             (integer) The step size." >&2
+    echo "-t <min>              The text to display instead of the minimum value." >&2
+    echo "-T <max>              The text to display instead of the maximum value." >&2
+}
+
+usage_delete() {
+    echo "lcdexec-setup delete (menu|command|param/<kind>) <index>" >&2
+    echo "" >&2
+    echo "Delete a menu/command/parameter and move other entries in the array" >&2
+    echo "to keep it continuous." >&2
+    echo "" >&2
+    echo "<kind>             What kind of parameter should be deleted?" >&2
+    echo "                   One of: alpha, checkbox, ip, numeric, ring, slider" >&2
+    echo "<index>            Index of the entry to delete." >&2
+}
+
+show_help() {
+    if [ "$#" -lt 1 ]; then
+        usage
+        return
+    fi
+
+    case "$1" in
+    menu)
+        usage_menu
+        ;;
+    command)
+        usage_command
+        ;;
+    param)
+        case "$2" in
+        alpha)
+            usage_param_alpha
+            ;;
+        checkbox)
+            usage_param_checkbox
+            ;;
+        ip)
+            usage_param_ip
+            ;;
+        numeric)
+            usage_param_numeric
+            ;;
+        ring)
+            usage_param_ring
+            ;;
+        slider)
+            usage_param_slider
+            ;;
+        *)
+            usage_param
+
+            if [ -n "$2" ]; then
+                exit 1
+            fi
+            ;;
+        esac
+        ;;
+    help)
+        usage
+        ;;
+    delete)
+        usage_delete
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+    esac
+}
+
+BASE_KEY="/sw/lcdproc/lcdexec/#0/current/menu"
+if [ "$(id -u)" = "0" ]; then
+    NAMESPACE="system"
+else
+    NAMESPACE="user"
+fi
+
+log() {
+    [ "$VERBOSE" = "1" ] && echo "$@"
+}
+
+run_kdb() {
+    log "$ kdb $*" >&2
+    kdb "$@"
+    rc=$?
+    if [ "$rc" != "0" ]; then
+        exit_error "FAILED ($rc): kdb $*"
+    fi
+}
+
+kdb_set() {
+    run_kdb set -N "$NAMESPACE" "$BASE_KEY/$1" "$2"
+}
+
+kdb_setmeta() {
+    run_kdb setmeta "$NAMESPACE$BASE_KEY/$1" "$2" "$3"
+}
+
+kdb_rm_r() {
+    run_kdb rm -r "$NAMESPACE$BASE_KEY/$1"
+}
+
+kdb_exists() {
+    [ -n "$(run_kdb ls "$NAMESPACE$BASE_KEY/$1")" ]
+}
+
+kdb_array_last() {
+    kdb getmeta "$BASE_KEY/$1" array 2>/dev/null
+}
+
+kdb_export() {
+    run_kdb export "$NAMESPACE$BASE_KEY/$1" ni | grep -v '^ internal/'
+}
+
+kdb_import() {
+    run_kdb import "$NAMESPACE$BASE_KEY/$1" ni
+}
+
+elektra_index() {
+    echo "$1" | awk '{ i=$0; gsub(".", "_", i); printf("#%s%s", substr(i, 2), $0) }'
+}
+
+prev_index() {
+    last="$(kdb_array_last "$1")"
+    last="${last#\#}"
+    last="${last##*_}"
+    if [ -z "$last" ] || [ "$last" -eq 0 ]; then
+        printf ""
+    else
+        elektra_index $((last - 1))
+    fi
+}
+
+next_index() {
+    last="$(kdb_array_last "$1")"
+    last="${last#\#}"
+    last="${last##*_}"
+    if [ -z "$last" ]; then
+        printf "#0"
+    else
+        elektra_index $((last + 1))
+    fi
+}
+
+exit_error() {
+    echo "ERROR: $1" >&2
+    cleanup 1
+    exit 1
+}
+
+backup() {
+    kdb_export "" >"$BACKUP"
+}
+
+restore() {
+    kdb rm -r "$NAMESPACE$BASE_KEY"
+    kdb import "$NAMESPACE$BASE_KEY" ni <"$BACKUP"
+}
+
+cleanup() {
+    rc=$1
+    shift
+
+    if [ "$rc" != "0" ]; then
+        if [ "$#" -gt 0 ]; then
+            log "-- FAILED ($rc): $*"
+        fi
+        log "-- Restoring backup $BACKUP"
+        restore
+    fi
+}
+
+# create_menu <display-name> [<entry>...]
+create_menu() {
+    if [ -z "$1" ]; then
+        usage_menu
+        exit 1
+    fi
+
+    name="$1"
+    shift
+
+    for entry in "$@"; do
+        if ! echo "$entry" | grep -Eq '(menu|command)/#_*[0-9]+'; then
+            exit_error "not a valid menu entry: $entry"
+        fi
+    done
+
+    index="$(next_index "menu")"
+    menu="menu/$index"
+    kdb_setmeta "menu" "array" "$index"
+    kdb_set "$menu/displayname" "$name"
+
+    if [ "$#" -gt 0 ]; then
+        count="$#"
+        kdb_setmeta "$menu/entries" "array" "$(elektra_index $((count - 1)))"
+        index=0
+        for entry in "$@"; do
+            kdb_set "$menu/entries/$(elektra_index "$index")" "@/menu/$entry"
+            index=$((index + 1))
+        done
+    fi
+}
+
+# create_command <exec> [-d <display-name>] [-f] [<param>...]
+create_command() {
+    if [ -z "$1" ]; then
+        usage_command
+        exit 1
+    fi
+
+    exec_cmd="$1"
+    shift
+
+    OPTIND=1
+    while getopts ":fd:" o; do
+        case "$o" in
+        f)
+            feedback=1
+            ;;
+        d)
+            name="$OPTARG"
+            ;;
+        *)
+            usage_command
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    for param in "$@"; do
+        if ! echo "$param" | grep -Eq '(alpha|checkbox|ip|numeric|ring|slider)/#_*[0-9]+'; then
+            exit_error "not a valid parameter: $param"
+        fi
+    done
+
+    index="$(next_index "command")"
+    cmd="command/$index"
+    kdb_setmeta "command" "array" "$index"
+    kdb_set "$cmd/exec" "$exec_cmd"
+
+    if [ -n "$name" ]; then
+        kdb_set "$cmd/displayname" "$name"
+    fi
+
+    if [ "$feedback" = "1" ]; then
+        kdb_set "$cmd/feedback" "1"
+    fi
+
+    if [ "$#" -gt 0 ]; then
+        count="$#"
+        kdb_setmeta "$cmd/parameters" "array" "$(elektra_index $((count - 1)))"
+        index=0
+        for param in "$@"; do
+            kdb_set "$cmd/parameters/$(elektra_index "$index")" "@/menu/parameter/$param"
+            index=$((index + 1))
+        done
+    fi
+}
+
+# create_param <param-type> <envname> [-d <display-name>] [...]
+create_param() {
+    if [ "$#" -lt 1 ]; then
+        usage_param
+        exit 1
+    fi
+
+    type="$1"
+    shift
+
+    case "$type" in
+    alpha)
+        create_param_alpha "$@"
+        ;;
+    checkbox)
+        create_param_checkbox "$@"
+        ;;
+    ip)
+        create_param_ip "$@"
+        ;;
+    numeric)
+        create_param_numeric "$@"
+        ;;
+    ring)
+        create_param_ring "$@"
+        ;;
+    slider)
+        create_param_slider "$@"
+        ;;
+    *)
+        usage_param
+        exit 1
+        ;;
+    esac
+}
+
+# create_param_alpha <envname> [-d <display-name>] [-i <initial>] [-a <allowed>] [-m <min>] [-M <max>]
+create_param_alpha() {
+    if [ "$#" -lt 1 ]; then
+        usage_param_alpha
+        exit 1
+    fi
+
+    envname="$1"
+    shift
+
+    OPTIND=1
+    while getopts ":d:i:a:m:M:" o; do
+        case "$o" in
+        i)
+            i=1
+            initial="$OPTARG"
+            ;;
+        a)
+            a=1
+            allowed="$OPTARG"
+            ;;
+        m)
+            m=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "min must be an integer not: $OPTARG"
+            fi
+            if [ "$OPTARG" -lt 0 ] 2>/dev/null; then
+                exit_error "min must be positive: $OPTARG"
+            fi
+            min="$OPTARG"
+            ;;
+        M)
+            M=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "max must be an integer not: $OPTARG"
+            fi
+            if [ "$OPTARG" -lt 0 ] 2>/dev/null; then
+                exit_error "max must be positive: $OPTARG"
+            fi
+            max="$OPTARG"
+            ;;
+        d)
+            d=1
+            name="$OPTARG"
+            ;;
+        *)
+            usage_param_alpha
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [ -n "$1" ]; then
+        exit_error "unknown argument: $1"
+    fi
+
+    if ! echo "$initial" | grep -qE "^[${allowed:-ABCDEFGHIJKLMNOPQRSTUVWXYZ}]{${min:-0},${max:-100}}$"; then
+        exit_error "invalid initial value: $initial"
+    fi
+
+    index="$(next_index "parameter/alpha")"
+    param="parameter/alpha/$index"
+    kdb_setmeta "parameter/alpha" "array" "$index"
+    kdb_set "$param/envname" "$envname"
+    [ -n "$d" ] && kdb_set "$param/displayname" "$name"
+    [ -n "$i" ] && kdb_set "$param/value" "$initial"
+    [ -n "$a" ] && kdb_set "$param/allowed" "$allowed"
+    [ -n "$m" ] && kdb_set "$param/minlength" "$min"
+    [ -n "$M" ] && kdb_set "$param/maxlength" "$max"
+}
+
+# create_param_checkbox <envname> [-d <display-name>] [-i (on|off|gray)] [-y <on-text>] [-n <off-text>] [-g [<gray-text>]]
+create_param_checkbox() {
+    if [ "$#" -lt 1 ]; then
+        usage_param_checkbox
+        exit 1
+    fi
+
+    envname="$1"
+    shift
+
+    OPTIND=1
+    while getopts ":d:i:y:n:g:" o; do
+        case "$o" in
+        i)
+            i=1
+            if [ "$OPTARG" != "on" ] && [ "$OPTARG" != "off" ] && [ "$OPTARG" != "gray" ]; then
+                exit_error "illegal initial value: $OPTARG (allowed: on, off, gray)"
+            fi
+            initial="$OPTARG"
+            ;;
+        y)
+            y=1
+            ontext="$OPTARG"
+            ;;
+        n)
+            n=1
+            offtext="$OPTARG"
+            ;;
+        g)
+            g=1
+            gray=1
+            graytext="$OPTARG"
+            ;;
+        d)
+            d=1
+            name="$OPTARG"
+            ;;
+        :)
+            if [ "$OPTARG" = "g" ]; then
+                g=1
+            else
+                usage_param_checkbox
+                exit 1
+            fi
+            ;;
+        *)
+            usage_param_checkbox
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [ -n "$1" ]; then
+        exit_error "unknown argument $1"
+    fi
+
+    if [ "$initial" = "gray" ] && [ -z "$g" ]; then
+        exit_error "initial value 'gray' only allowed with -g"
+    fi
+
+    index="$(next_index "parameter/checkbox")"
+    param="parameter/checkbox/$index"
+    kdb_setmeta "parameter/checkbox" "array" "$index"
+    kdb_set "$param/envname" "$envname"
+    [ -n "$d" ] && kdb_set "$param/displayname" "$name"
+    [ -n "$i" ] && kdb_set "$param/value" "$initial"
+    [ -n "$y" ] && kdb_set "$param/ontext" "$ontext"
+    [ -n "$n" ] && kdb_set "$param/offtext" "$offtext"
+    [ -n "$g" ] && kdb_set "$param/allowgray" "1"
+    [ -n "$gray" ] && kdb_set "$param/graytext" "$graytext"
+}
+
+# create_param_ip <envname> [-d <display-name>] [-i <initial>] [-6]
+create_param_ip() {
+    if [ "$#" -lt 1 ]; then
+        usage_param_ip
+        exit 1
+    fi
+
+    envname="$1"
+    shift
+
+    OPTIND=1
+    while getopts ":d:i:6" o; do
+        case "$o" in
+        i)
+            i=1
+            initial="$OPTARG"
+            ;;
+        6)
+            v6=1
+            ;;
+        d)
+            d=1
+            name="$OPTARG"
+            ;;
+        *)
+            usage_param_ip
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [ -n "$1" ]; then
+        exit_error "unknown argument $1"
+    fi
+
+    index="$(next_index "parameter/ip")"
+    param="parameter/ip/$index"
+    kdb_setmeta "parameter/ip" "array" "$index"
+    kdb_set "$param/envname" "$envname"
+    [ -n "$d" ] && kdb_set "$param/displayname" "$name"
+    [ -n "$i" ] && kdb_set "$param/value" "$initial"
+    [ -n "$v6" ] && kdb_set "$param/v6" "1"
+}
+
+# create_param_numeric <envname> [-d <display-name>] [-i <initial>] [-m <min>] [-M <max>]
+create_param_numeric() {
+    if [ "$#" -lt 1 ]; then
+        usage_param_numeric
+        exit 1
+    fi
+
+    envname="$1"
+    shift
+
+    OPTIND=1
+    while getopts ":d:i:m:M:" o; do
+        case "$o" in
+        i)
+            i=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "initial must be an integer not: $OPTARG"
+            fi
+            initial="$OPTARG"
+            ;;
+        m)
+            m=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "min must be an integer not: $OPTARG"
+            fi
+            min="$OPTARG"
+            ;;
+        M)
+            M=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "max must be an integer not: $OPTARG"
+            fi
+            max="$OPTARG"
+            ;;
+        d)
+            d=1
+            name="$OPTARG"
+            ;;
+        *)
+            usage_param_numeric
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [ -n "$1" ]; then
+        exit_error "unknown argument $1"
+    fi
+
+    _min=${min:-0}
+    _max=${max:-0}
+    _initial=${initial:-0}
+
+    if [ "$_initial" -lt "$_min" ] || [ "$_initial" -gt "$_max" ]; then
+        exit_error "initial value out of range: $_initial (min: $_min, max: $_max)"
+    fi
+
+    index="$(next_index "parameter/numeric")"
+    param="parameter/numeric/$index"
+    kdb_setmeta "parameter/numeric" "array" "$index"
+    kdb_set "$param/envname" "$envname"
+    [ -n "$d" ] && kdb_set "$param/displayname" "$name"
+    [ -n "$i" ] && kdb_set "$param/value" "$initial"
+    [ -n "$m" ] && kdb_set "$param/minvalue" "$min"
+    [ -n "$M" ] && kdb_set "$param/maxvalue" "$max"
+}
+
+# create_param_ring <envname> [-d <display-name>] [-i <initial>] <string>...
+create_param_ring() {
+    if [ "$#" -lt 1 ]; then
+        usage_param_ring
+        exit 1
+    fi
+
+    envname="$1"
+    shift
+
+    OPTIND=1
+    while getopts ":d:i:" o; do
+        case "$o" in
+        i)
+            i=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "initial must be an integer not: $OPTARG"
+            fi
+            if [ "$OPTARG" -lt 0 ] 2>/dev/null; then
+                exit_error "initial must be positive: $OPTARG"
+            fi
+            initial="$OPTARG"
+            ;;
+        d)
+            d=1
+            name="$OPTARG"
+            ;;
+        *)
+            usage_param_ring
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    count="$#"
+    if [ "$count" -lt 1 ]; then
+        exit_error "at least one string required"
+    fi
+
+    if [ "$initial" -ge "$count" ]; then
+        exit_error "initial value out of range: $initial (max: $((count - 1)))"
+    fi
+
+    index="$(next_index "parameter/ring")"
+    param="parameter/ring/$index"
+    kdb_setmeta "parameter/ring" "array" "$index"
+    kdb_set "$param/envname" "$envname"
+    [ -n "$d" ] && kdb_set "$param/displayname" "$name"
+    [ -n "$i" ] && kdb_set "$param/value" "$initial"
+
+    if [ "$count" -gt 0 ]; then
+        kdb_setmeta "$param/strings" "array" "$(elektra_index $((count - 1)))"
+        index=0
+        for string in "$@"; do
+            kdb_set "$param/strings/$(elektra_index "$index")" "$string"
+            index=$((index + 1))
+        done
+    fi
+}
+
+# create_param_slider <envname> [-d <display-name>] [-i <initial>] [-m <min>] [-M <max>] [-s <step>] [-t <min-text>] [-T <max-text>]
+create_param_slider() {
+    if [ "$#" -lt 1 ]; then
+        usage_param_slider
+        exit 1
+    fi
+
+    envname="$1"
+    shift
+
+    OPTIND=1
+    while getopts ":d:i:m:M:s:t:T:" o; do
+        case "$o" in
+        i)
+            i=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "initial must be an integer not: $OPTARG"
+            fi
+            initial="$OPTARG"
+            ;;
+        m)
+            m=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "min must be an integer not: $OPTARG"
+            fi
+            min="$OPTARG"
+            ;;
+        M)
+            M=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "max must be an integer not: $OPTARG"
+            fi
+            max="$OPTARG"
+            ;;
+        s)
+            s=1
+            if ! [ "$OPTARG" -eq "$OPTARG" ] 2>/dev/null; then
+                exit_error "step must be an integer not: $OPTARG"
+            fi
+            step="$OPTARG"
+            ;;
+        t)
+            t=1
+            min_text="$OPTARG"
+            ;;
+        T)
+            T=1
+            max_text="$OPTARG"
+            ;;
+        d)
+            d=1
+            name="$OPTARG"
+            ;;
+        *)
+            usage_param_slider
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [ -n "$1" ]; then
+        exit_error "unknown argument $1"
+    fi
+
+    _min=${min:-0}
+    _max=${max:-1000}
+    _step=${step:-1}
+    _initial=${step:-0}
+
+    if [ "$_min" -ge "$_max" ]; then
+        exit_error "min must be less than max: $_min >= $_max"
+    fi
+
+    if [ "$_step" -le 0 ]; then
+        exit_error "step must be positive (non-zero): $_step"
+    fi
+
+    if [ "$_step" -gt "$((_max - _min))" ]; then
+        exit_error "step must not be greater than (max - min): $_step > ($_max - $_min) = $((_max - _min))"
+    fi
+
+    if [ "$_initial" -lt "$_min" ] || [ "$_initial" -gt "$_max" ]; then
+        exit_error "initial value out of range: $_initial (min: $_min, max: $_max)"
+    fi
+
+    index="$(next_index "parameter/slider")"
+    param="parameter/slider/$index"
+    kdb_setmeta "parameter/slider" "array" "$index"
+    kdb_set "$param/envname" "$envname"
+    [ -n "$d" ] && kdb_set "$param/displayname" "$name"
+    [ -n "$i" ] && kdb_set "$param/value" "$initial"
+    [ -n "$m" ] && kdb_set "$param/minvalue" "$min"
+    [ -n "$M" ] && kdb_set "$param/maxvalue" "$max"
+    [ -n "$s" ] && kdb_set "$param/stepsize" "$step"
+    [ -n "$t" ] && kdb_set "$param/mintext" "$min_text"
+    [ -n "$T" ] && kdb_set "$param/maxtext" "$max_text"
+}
+
+# delete_entry (menu|command|param/<kind>) <index>
+delete_entry() {
+    if [ "$#" -lt 2 ]; then
+        usage_delete
+        exit 1
+    fi
+
+    index="$2"
+
+    case "$1" in
+    menu)
+        array="menu"
+        ;;
+    command)
+        array="command"
+        ;;
+    param/alpha)
+        array="parameter/alpha"
+        ;;
+    param/checkbox)
+        array="parameter/checkbox"
+        ;;
+    param/ip)
+        array="parameter/ip"
+        ;;
+    param/numeric)
+        array="parameter/numeric"
+        ;;
+    param/ring)
+        array="parameter/ring"
+        ;;
+    param/slider)
+        array="parameter/slider"
+        ;;
+    *)
+        usage_delete
+        exit 1
+        ;;
+    esac
+
+    entry="$array/$(elektra_index "$index")"
+
+    if ! kdb_exists "$entry"; then
+        exit_error "$entry doesn't exist"
+    fi
+
+    kdb_rm_r "$entry"
+
+    new_last="$(prev_index "$array")"
+    kdb_setmeta "$array" "array" "$new_last"
+
+    if [ -z "$new_last" ]; then
+        return
+    fi
+
+    tmp_file="$(mktemp)"
+
+    kdb_export "$array" >"$tmp_file"
+    kdb_rm_r "$array"
+
+    mawk -v idx="$index" -F '[/ \]]' '
+    /^#_*[0-9]+/ {
+        n = $1
+        sub("^#_*", "", n)
+
+        if (n > idx) {
+            m = n - 1
+
+            p = $1
+            sub("[0-9]+$", "", p)
+
+            if (length(m) < length(n)) {
+                p = substr(p, 0, length(p) - 1)
+            }
+
+            s = $0
+            sub("^#_*[0-9]+", "", s)
+            print p m s
+            
+            next
+        }
+    }
+
+    /^\[#_*[0-9]+/ {
+        n = $1
+        sub("^\[#_*", "", n)
+
+        if (n > idx) {
+            m = n - 1
+
+            p = $1
+            sub("[0-9]+$", "", p)
+
+            if (length(m) < length(n)) {
+                p = substr(p, 0, length(p) - 1)
+            }
+
+            s = $0
+            sub("^\[#_*[0-9]+", "", s)
+            print p m s
+            
+            next
+        }
+    }
+    
+    { print }
+    ' "$tmp_file" | kdb_import "$array"
+
+    rm "$tmp_file"
+}
+
+# main <command> [...]
+main() {
+    if [ "$#" -lt 1 ]; then
+        usage
+        exit 1
+    fi
+
+    OPTIND=1
+    while getopts ":v" o; do
+        case "$o" in
+        v)
+            VERBOSE=1
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+        esac
+    done
+    shift $((OPTIND - 1))
+
+    if [ "$#" -lt 1 ]; then
+        usage
+        exit 1
+    fi
+
+    type="$1"
+    shift
+
+    log "-- Creating backup $BACKUP"
+    backup
+
+    case "$type" in
+    menu)
+        create_menu "$@"
+        ;;
+    command)
+        create_command "$@"
+        ;;
+    param)
+        create_param "$@"
+        ;;
+    help)
+        show_help "$@"
+        ;;
+    delete)
+        delete_entry "$@"
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+    esac
+
+    log "-- SUCCESS: removing backup $BACKUP"
+}
+
+main "$@"

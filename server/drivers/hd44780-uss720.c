@@ -110,7 +110,7 @@ int uss720_set_1284_mode(usb_dev_handle *usbHandle, unsigned int mode);
  * \retval -1      Error.
  */
 int
-hd_init_uss720(Driver *drvthis)
+hd_init_uss720(Driver *drvthis, const Hd44780DriverConfig * config)
 {
     unsigned int vendor_id, product_id;
 	struct usb_bus *bus;
@@ -123,8 +123,8 @@ hd_init_uss720(Driver *drvthis)
 	p->hd44780_functions->uPause = uss720_HD44780_uPause;
 
     /* load config */
-    vendor_id = drvthis->config_get_int(drvthis->name, "VendorID", 0, 0x1293);
-    product_id = drvthis->config_get_int(drvthis->name, "ProductID", 0, 0x0002);
+    vendor_id = config->usbVendorid == 0 ? 0x1293 : config->usbVendorid;
+    product_id = config->usbProductid == 0 ? 0x0002 : config->usbProductid;
 
 	/* Hardware Init */
 

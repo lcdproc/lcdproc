@@ -76,6 +76,18 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 AC_PATH_PROG([XMLTO], [xmlto], [no])
 
+dnl elektra
+ifdef([PKG_CHECK_MODULES],
+		[PKG_CHECK_MODULES([ELEKTRA], [elektra-codegen], [ELEKTRA_LIBDIR=`pkg-config --variable=libdir elektra-codegen`],)],
+		[AC_MSG_ERROR([pkg-config not (fully) installed, but needed to find Elektra])])
+AC_SUBST([ELEKTRA_CFLAGS])
+AC_SUBST([ELEKTRA_LIBS])
+
+AC_CONFIG_FILES([post-install.sh], [chmod +x post-install.sh])
+
+CFLAGS="$ELEKTRA_CFLAGS $CFLAGS"
+LIBS="$ELEKTRA_LIBS $LIBS -Wl,-rpath $ELEKTRA_LIBDIR"
+
 dnl Avoid unused static function warnings
 CFLAGS="-Wall $CFLAGS"
 AX_CFLAGS_GCC_OPTION(-Wno-unused-function)
@@ -213,25 +225,6 @@ dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(select socket strdup strerror strtol uname cfmakeraw snprintf)
-
-dnl Many people on non-GNU/Linux systems don't have getopt
-AC_CONFIG_LIBOBJ_DIR(shared)
-AC_CHECK_FUNC(getopt,
-  [
-    AC_ARG_WITH(included-getopt,
-      [AS_HELP_STRING([--with-included-getopt], [Use the included getopt rather than glibc's])],
-      with_getopt=$withval,
-      with_getopt=$no)
-    if test "x$with_getopt" = xyes; then
-      AC_LIBOBJ(getopt)
-      AC_LIBOBJ(getopt1)
-    fi
-  ],
-  [
-    AC_LIBOBJ(getopt)
-    AC_LIBOBJ(getopt1)
-  ])
-
 
 dnl Check how to find the mtab file and how to get filesystem staticstics
 AC_FIND_MTAB_FILE

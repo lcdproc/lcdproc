@@ -51,7 +51,6 @@ extern char user[];		/* The values will be overwritten anyway... */
 extern int frame_interval;	/* Not a command line option, but could be */
 
 /* The drivers and their driver parameters */
-extern char *drivernames[];
 extern int num_drivers;
 
 /* End of configuration variables */

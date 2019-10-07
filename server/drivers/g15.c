@@ -96,7 +96,7 @@ static const struct lib_hidraw_id hidraw_ids[] = {
 
 // Find the proper usb device and initialize it
 //
-MODULE_EXPORT int g15_init (Driver *drvthis)
+MODULE_EXPORT int g15_init (Driver *drvthis, Elektra * elektra)
 {
 	PrivateData *p;
 

@@ -51,6 +51,8 @@
 #include "CFontz-charmap.h"
 #include "adv_bignum.h"
 
+#include "../elektragen.h"
+
 /* LEDs dispatch */
 #define CF635_NUM_LEDs	8
 
@@ -60,8 +62,6 @@
 
 /** private data for the \c CFontzPacket driver */
 typedef struct CFontzPacket_private_data {
-	char device[200];
-
 	int fd;
 
 	int model;
@@ -92,11 +92,11 @@ typedef struct CFontzPacket_private_data {
 
 /** List of known models and their default settings and features */
 static CFA_Model CFA_ModelList[] = {
-	{533, "16x2", 5, 19200 , HD44780_charmap, CFA_HAS_TEMP | CFA_HAS_4_TEMP_SLOTS},
-	{631, "20x2", 5, 115200, CFontz_charmap , CFA_HAS_FAN | CFA_HAS_TEMP |
+	{C_FONTZ_PACKET_MODEL_533, "16x2", 5, 19200 , HD44780_charmap, CFA_HAS_TEMP | CFA_HAS_4_TEMP_SLOTS},
+	{C_FONTZ_PACKET_MODEL_631, "20x2", 5, 115200, CFontz_charmap , CFA_HAS_FAN | CFA_HAS_TEMP |
 						CFA_HAS_KS0073 | CFA_HAS_4_TEMP_SLOTS},
-	{633, "16x2", 5, 19200 , HD44780_charmap, CFA_HAS_FAN | CFA_HAS_TEMP},
-	{635, "20x4", 5, 115200, CFontz_charmap , CFA_HAS_KS0073},
+	{C_FONTZ_PACKET_MODEL_633, "16x2", 5, 19200 , HD44780_charmap, CFA_HAS_FAN | CFA_HAS_TEMP},
+	{C_FONTZ_PACKET_MODEL_635, "20x4", 5, 115200, CFontz_charmap , CFA_HAS_KS0073},
 	{0, NULL, 0, 0, NULL, 0}
 };
 
@@ -122,12 +122,11 @@ static void CFontzPacket_raw_chr (Driver *drvthis, int x, int y, unsigned char c
  * \retval <0  Error.
  */
 MODULE_EXPORT int
-CFontzPacket_init (Driver *drvthis)
+CFontzPacket_init (Driver *drvthis, Elektra * elektra)
 {
 	struct termios portset;
-	int tmp, w, h, i;
+	int w, h, i;
 	int cf_reboot = 0;
-	char size[200] = "";
 
 	PrivateData *p;
 
@@ -149,38 +148,35 @@ CFontzPacket_init (Driver *drvthis)
 	EmptyKeyRing(&keyring);
 	EmptyReceiveBuffer(&receivebuffer);
 
-	/* Read config file */
+	/* Read config */
+	CFontzPacketDriverConfig config;
+	elektraFillStructV(elektra, &config, CONF_CFONTZPACKET, drvthis->index);
 
 	/* Try to find a matching model from our list of known modules */
-	tmp = drvthis->config_get_int(drvthis->name, "Model", 0, 633);
-	debug(RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, tmp);
+	debug(RPT_INFO, "%s: Model (in config) is '%d'", __FUNCTION__, config.model);
 	i = 0;
-	while ((CFA_ModelList[i].model != 0) && (CFA_ModelList[i].model != tmp)) {
+	while ((CFA_ModelList[i].model != 0) && (CFA_ModelList[i].model != config.model)) {
 		i++;
 	}
 	if (CFA_ModelList[i].model == 0) {
-		report(RPT_ERR, "%s: Invalid model configured", drvthis->name);
+		report(RPT_ERR, "%s/#"ELEKTRA_LONG_LONG_F": Invalid model configured", drvthis->name, drvthis->index);
 		return -1;
 	}
-	p->model = tmp;
+	p->model = config.model;
 	p->model_desc = &(CFA_ModelList[i]);
 	report(RPT_INFO, "%s: Found configuration for %d", __FUNCTION__, p->model_desc->model);
 	debug(RPT_INFO, "%s: Flags are 0x%04X", __FUNCTION__, p->model_desc->flags);
 
 	/* Which device should be used */
-	strncpy(p->device, drvthis->config_get_string(drvthis->name, "Device", 0, DEFAULT_DEVICE), sizeof(p->device));
-	p->device[sizeof(p->device)-1] = '\0';
-	report(RPT_INFO, "%s: using Device %s", drvthis->name, p->device);
+  report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": using Device %s", drvthis->name, drvthis->index, config.device);
 
 	/* Size setting */
-	strncpy(size, drvthis->config_get_string(drvthis->name, "Size", 0, p->model_desc->size), sizeof(size));
-	size[sizeof(size)-1] = '\0';
-	debug(RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, size);
-	if ((sscanf(size, "%dx%d", &w, &h) != 2)
+	debug(RPT_INFO, "%s: Size (in config) is '%s'", __FUNCTION__, config.size);
+	if ((sscanf(config.size, "%dx%d", &w, &h) != 2)
 	    || (w <= 0) || (w > LCD_MAX_WIDTH)
 	    || (h <= 0) || (h > LCD_MAX_HEIGHT)) {
 		report(RPT_WARNING, "%s: cannot parse Size: %s; using default %s",
-			drvthis->name, size, p->model_desc->size);
+			drvthis->name, config.size, p->model_desc->size);
 		sscanf(p->model_desc->size, "%dx%d", &w, &h);
 	}
 	p->width = w;
@@ -191,61 +187,33 @@ CFontzPacket_init (Driver *drvthis)
 	p->cellwidth = p->model_desc->cell_width;
 
 	/* Which contrast */
-	tmp = drvthis->config_get_int(drvthis->name, "Contrast", 0, DEFAULT_CONTRAST);
-	debug(RPT_INFO, "%s: Contrast (in config) is '%d'", __FUNCTION__, tmp);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Contrast must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_CONTRAST);
-		tmp = DEFAULT_CONTRAST;
-	}
-	p->contrast = tmp;
+	p->contrast = config.contrast;
 
 	/* Which backlight brightness */
-	tmp = drvthis->config_get_int(drvthis->name, "Brightness", 0, DEFAULT_BRIGHTNESS);
-	debug(RPT_INFO, "%s: Brightness (in config) is '%d'", __FUNCTION__, tmp);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: Brightness must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_BRIGHTNESS);
-		tmp = DEFAULT_BRIGHTNESS;
-	}
-	p->brightness = tmp;
+	p->brightness = config.brightness;
 
 	/* Which backlight-off "brightness" */
-	tmp = drvthis->config_get_int(drvthis->name, "OffBrightness", 0, DEFAULT_OFFBRIGHTNESS);
-	debug(RPT_INFO, "%s: OffBrightness (in config) is '%d'", __FUNCTION__, tmp);
-	if ((tmp < 0) || (tmp > 1000)) {
-		report(RPT_WARNING, "%s: OffBrightness must be between 0 and 1000; using default %d",
-			drvthis->name, DEFAULT_OFFBRIGHTNESS);
-		tmp = DEFAULT_OFFBRIGHTNESS;
-	}
-	p->offbrightness = tmp;
+	p->offbrightness = config.offbrightness;
 
 	/* Get speed setting. */
-	tmp = drvthis->config_get_int(drvthis->name, "Speed", 0, p->model_desc->speed);
-	debug(RPT_INFO, "%s: Speed (in config) is '%d'", __FUNCTION__, tmp);
-	if ((tmp != 19200) && (tmp != 115200)) {
-		report(RPT_WARNING, "%s: Speed must be 19200 or 115200; using default %d",
-			drvthis->name, p->model_desc->speed);
-		tmp = p->model_desc->speed;
-	}
-	p->speed = (tmp == 19200) ? B19200 : B115200;
+	p->speed = (config.speed == 19200) ? B19200 : B115200;
 
 	/* Does the display has an old firmware (<= 0.6)? */
-	p->oldfirmware = drvthis->config_get_bool(drvthis->name, "OldFirmware", 0, 0);
+	p->oldfirmware = config.oldfirmware;
 
 	/* Reboot display? */
-	cf_reboot = drvthis->config_get_bool(drvthis->name, "Reboot", 0, 0);
+	cf_reboot = config.reboot;
 
 	/* Am I USB or not? */
-	p->usb = drvthis->config_get_bool(drvthis->name, "USB", 0, 0);
+	p->usb = config.usb;
 	if (p->usb)
-		report(RPT_INFO, "%s: USB is indicated (in config)", drvthis->name);
+		report(RPT_INFO, "%s/#"ELEKTRA_LONG_LONG_F": USB is indicated (in config)", drvthis->name, drvthis->index);
 
 	/* Set up io port correctly, and open it... */
-	debug(RPT_INFO, "%s: Opening device: %s", __FUNCTION__, p->device);
-	p->fd = open(p->device, (p->usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
+	debug(RPT_INFO, "%s: Opening device: %s", __FUNCTION__, config.device);
+	p->fd = open(config.device, (p->usb) ? (O_RDWR | O_NOCTTY) : (O_RDWR | O_NOCTTY | O_NDELAY));
 	if (p->fd == -1) {
-		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, p->device, strerror(errno));
+		report(RPT_ERR, "%s: open(%s) failed (%s)", drvthis->name, config.device, strerror(errno));
 		return -1;
 	}
 

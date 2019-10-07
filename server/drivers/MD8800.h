@@ -1,6 +1,6 @@
 /*  This is the LCDproc driver for the VFD of the Medion MD8800 PC
 
-    Copyright (C) 2006 Stefan Herdler in collaboration with Martin Møller.
+    Copyright (C) 2006 Stefan Herdler in collaboration with Martin MÃ¸ller.
     This source Code is based on the NoritakeVFD, the serialVFD and the
     CFontzPacket Driver of this package.
 
@@ -23,13 +23,15 @@
 #ifndef MD8800_H
 #define MD8800_H
 
+#include <elektra.h>
+
 #define DEFAULT_CELL_WIDTH	5
 #define DEFAULT_CELL_HEIGHT	7
 #define DEFAULT_DEVICE		"/dev/ttyS1"
 #define DEFAULT_SPEED		9600
 #define DEFAULT_SIZE		"16x2"
 
-MODULE_EXPORT int  MD8800_init (Driver *drvthis);
+MODULE_EXPORT int  MD8800_init (Driver *drvthis, Elektra * elektra);
 MODULE_EXPORT void MD8800_close (Driver *drvthis);
 MODULE_EXPORT int  MD8800_width (Driver *drvthis);
 MODULE_EXPORT int  MD8800_height (Driver *drvthis);

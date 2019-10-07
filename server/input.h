@@ -21,6 +21,8 @@
 #endif
 #include "shared/defines.h"
 
+#include <elektra.h>
+
 /* Accepts and uses keypad input while displaying screens... */
 void handle_input(void);
 
@@ -31,7 +33,7 @@ typedef struct KeyReservation {
 } KeyReservation;
 
 
-int input_init(void);
+int input_init(Elektra * elektra);
 	/* Init the input handling system */
 
 void input_shutdown(void);
