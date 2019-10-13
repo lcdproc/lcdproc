@@ -202,68 +202,70 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
 {
     unsigned char enableLines = 0;
     /* Which EN to control */
-    if (displayID == 1 || displayID == 0)
-            enableLines |= p->ftdi_line_EN;
-    if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-            enableLines |= p->ftdi_line_EN2;
+    if (displayID == 1 || displayID == 0) {
+        enableLines |= p->ftdi_line_EN;
+    }
+    if (displayID == 2 || (p->numDisplays > 1 && displayID == 0)) {
+        enableLines |= p->ftdi_line_EN2;
+    }
 
     if (p->ftdi_mode == 8) {
-	    /* Output data on first channel */
-	    int f = ftdi_write_data(&p->ftdic, &ch, 1);
-	    if (f < 0) {
-	        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
-				           f, ftdi_get_error_string(&p->ftdic));
-	        exit(-1);
-	    }
+	/* Output data on first channel */
+	int f = ftdi_write_data(&p->ftdic, &ch, 1);
+	if (f < 0) {
+	    p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
+				       f, ftdi_get_error_string(&p->ftdic));
+	    exit(-1);
+	}
 
-	    /* Setup RS and R/W and EN on second channel */
-	    ch = enableLines | p->backlight_bit;
-	    if (flags == RS_DATA) {
-	        ch |= p->ftdi_line_RS;
-	    }
-	    f = ftdi_write_data(&p->ftdic2, &ch, 1);
-	    if (f < 0) {
-	        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
-				          f, ftdi_get_error_string(&p->ftdic2));
-	        exit(-1);
-	    }
+	/* Setup RS and R/W and EN on second channel */
+	ch = enableLines | p->backlight_bit;
+	if (flags == RS_DATA) {
+	    ch |= p->ftdi_line_RS;
+	}
+	f = ftdi_write_data(&p->ftdic2, &ch, 1);
+	if (f < 0) {
+	    p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
+				      f, ftdi_get_error_string(&p->ftdic2));
+	    exit(-1);
+	}
 
-	    /* Disable EN */
-	    ch = 0x00 | p->backlight_bit;
-	    if (flags == RS_DATA) {
-	        ch |= p->ftdi_line_RS;
-	    }
-	    f = ftdi_write_data(&p->ftdic2, &ch, 1);
-	    if (f < 0) {
-	        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
-				          f, ftdi_get_error_string(&p->ftdic2));
-	        exit(-1);
-	    }
+	/* Disable EN */
+	ch = 0x00 | p->backlight_bit;
+	if (flags == RS_DATA) {
+	    ch |= p->ftdi_line_RS;
+	}
+	f = ftdi_write_data(&p->ftdic2, &ch, 1);
+	if (f < 0) {
+	    p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
+				      f, ftdi_get_error_string(&p->ftdic2));
+	    exit(-1);
+	}
     }
     else if (p->ftdi_mode == 4) {
-	    unsigned char buf[4];
-	    unsigned char portControl = 0;
+	unsigned char buf[4];
+	unsigned char portControl = 0;
 
-	    portControl = 0x00 | p->backlight_bit;
-	    if (flags == RS_DATA) {
-	        portControl |= p->ftdi_line_RS;
-	    }
+	portControl = 0x00 | p->backlight_bit;
+	if (flags == RS_DATA) {
+	    portControl |= p->ftdi_line_RS;
+	}
 
-	    buf[0] = ((ch >> 4) & 0x0F) | portControl | enableLines;
-	    buf[1] = ((ch >> 4) & 0x0F) | portControl;
-	    buf[2] = (ch & 0x0F) | portControl | enableLines;
-	    buf[3] = (ch & 0x0F) | portControl;
-	    int f = ftdi_write_data(&p->ftdic, buf, 4);
+	buf[0] = ((ch >> 4) & 0x0F) | portControl | enableLines;
+	buf[1] = ((ch >> 4) & 0x0F) | portControl;
+	buf[2] = (ch & 0x0F) | portControl | enableLines;
+	buf[3] = (ch & 0x0F) | portControl;
+	int f = ftdi_write_data(&p->ftdic, buf, 4);
 
-	    if (f < 0) {
-	        p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
-				           f, ftdi_get_error_string(&p->ftdic));
-	        exit(-1);
-	    }
+	if (f < 0) {
+	    p->hd44780_functions->drv_report(RPT_ERR, "failed to write: %d (%s). Exiting",
+				       f, ftdi_get_error_string(&p->ftdic));
+	    exit(-1);
+	}
 
-	    if (flags == RS_INSTR) {
-	        usleep(4100);
-	    }
+	if (flags == RS_INSTR) {
+	    usleep(4100);
+	}
     }
 }
 
