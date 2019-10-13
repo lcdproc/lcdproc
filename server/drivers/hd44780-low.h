@@ -208,6 +208,7 @@ typedef struct hd44780_private_data {
 	int ftdi_line_RS;
 	int ftdi_line_RW;
 	int ftdi_line_EN;
+	int ftdi_line_EN2;
 	int ftdi_line_backlight;
 #endif
 

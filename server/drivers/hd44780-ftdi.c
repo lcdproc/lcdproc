@@ -13,6 +13,7 @@
     ftdi_line_RS=0x20
     ftdi_line_RW=0x40
     ftdi_line_backlight=0x80
+    ftdi_line_EN2=0x00
 
    RW of your display can either be connected to D6 or GND.
 \endverbatim
@@ -94,6 +95,14 @@ hd_init_ftdi(Driver *drvthis)
     p->ftdi_line_EN = drvthis->config_get_int(drvthis->name, "ftdi_line_EN", 0, 0x04);
     p->ftdi_line_backlight = drvthis->config_get_int(drvthis->name, "ftdi_line_backlight", 0, 0x08);
     p->backlight_bit = 0;
+
+    if (p->numDisplays > 1) {       /* For displays with two controllers */
+        p->ftdi_line_EN2 = drvthis->config_get_int(drvthis->name, "ftdi_line_EN2", 0, 0x00);
+        if(p->ftdi_line_EN2 == 0) {
+            report(RPT_WARNING, "multiple displays enabled but ftdi_line_EN2 not configured");
+        }
+    }
+
 
     /* some foolproof check */
     if (p->ftdi_mode != 4 && p->ftdi_mode != 8) {
@@ -191,6 +200,15 @@ hd_init_ftdi_done:
 void
 ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char flags, unsigned char ch)
 {
+    unsigned char enableLines = 0;
+    /* Which EN to control */
+    if (displayID == 1 || displayID == 0) {
+        enableLines |= p->ftdi_line_EN;
+    }
+    if (displayID == 2 || (p->numDisplays > 1 && displayID == 0)) {
+        enableLines |= p->ftdi_line_EN2;
+    }
+
     if (p->ftdi_mode == 8) {
 	/* Output data on first channel */
 	int f = ftdi_write_data(&p->ftdic, &ch, 1);
@@ -201,7 +219,7 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
 	}
 
 	/* Setup RS and R/W and EN on second channel */
-	ch = p->ftdi_line_EN | p->backlight_bit;
+	ch = enableLines | p->backlight_bit;
 	if (flags == RS_DATA) {
 	    ch |= p->ftdi_line_RS;
 	}
@@ -233,9 +251,9 @@ ftdi_HD44780_senddata(PrivateData *p, unsigned char displayID, unsigned char fla
 	    portControl |= p->ftdi_line_RS;
 	}
 
-	buf[0] = ((ch >> 4) & 0x0F) | portControl | p->ftdi_line_EN;
+	buf[0] = ((ch >> 4) & 0x0F) | portControl | enableLines;
 	buf[1] = ((ch >> 4) & 0x0F) | portControl;
-	buf[2] = (ch & 0x0F) | portControl | p->ftdi_line_EN;
+	buf[2] = (ch & 0x0F) | portControl | enableLines;
 	buf[3] = (ch & 0x0F) | portControl;
 	int f = ftdi_write_data(&p->ftdic, buf, 4);
 
