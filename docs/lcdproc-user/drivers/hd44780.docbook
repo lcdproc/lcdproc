@@ -3273,7 +3273,7 @@ KeyMatrix_1_8=Right
 <title>GPIO</title>
 
 <para>This connection type supports an LCD connected to GPIO lines that
-can be controlled via the linux sysfs interface. This is common for
+can be controlled via the linux libgpiod interface. This is common for
 System-On-Chip (SOC) processors and i2c port expanders.
 Currently it supports displays with one or two
 controllers.</para>
@@ -3291,15 +3291,6 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
   wired to GND. This is also necessary to prevent 5V logic appearing on
   I/O pins which are not 5V tolerant.</para>
 </warning>
-
-<note>
-  <para>The driver exports the configured GPIOs to sysfs automatically,
-  before using them. At exit it tries to unexport them again, but this
-  only succeeds if the daemon is still running with root permissions.
-  If the daemon was configured to drop root privileges after initialization,
-  the GPIOs will remain accessible from sysfs and unloading the respective
-  kernel module will fail.</para>
-</note>
 
 <table id="hd44780-gpio.pin-mapping-example">
 <title>HD44780: Example pin mapping for Beaglebone Black</title>
@@ -3395,9 +3386,15 @@ as described in <xref linkend="hd44780-ftdi-backlight"/>.</para>
 
 <para>The GPIO connection driver can be configured to assign any LCD pin to
 any GPIO pin using the <literal>pin_<replaceable>&lt;LCD pin name&gt;
-</replaceable></literal> configuration option.</para>
+</replaceable></literal> configuration option. A <literal>gpiochip</literal>
+configuration setting must be present to specify which gpio controller to
+use, even if only one gpio controller is present on the system. Any value
+understood by libgpiod might be used, ie. pathname, device name, label or
+sequential number in the system. However only labels are guaranteed to stay
+the same across system boot and kernel versions and thus are recommended
+on systems with multiple gpio controllers.</para>
 
-<para>When using a display with two controllers the <literal>vspan</literal>
+<para>When using a display with two display controllers the <literal>vspan</literal>
 option has to be configured as well (e.g. <literal>vspan=2,2</literal> for a
 40x4 display).</para>
 
@@ -3410,6 +3407,7 @@ ConnectionType=gpio
 Backlight=yes
 Size=16x2
 
+gpiochip=0
 pin_D4=76
 pin_D5=77
 pin_D6=81

@@ -219,7 +219,7 @@ TCP connection using open source/open hardware ethlcd (http://manio.skyboo.net/e
 LCD driven by the GPIO pins of a Raspberry Pi
 .TP
 .B gpio
-LCD connection via GPIO pins controlled by the linux sysfs interface
+LCD connection via GPIO pins controlled by the linux libgpiod interface
 .RE
 .TP
 .B i2500vfd

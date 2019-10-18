@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <ugpio/ugpio.h>
+#include <gpiod.h>
 
 #include "hd44780-gpio.h"
 #include "hd44780-low.h"
@@ -35,29 +35,32 @@ void gpio_HD44780_backlight(PrivateData *p, unsigned char state);
 void gpio_HD44780_close(PrivateData *p);
 
 typedef struct {
-	ugpio_t *en;
-	ugpio_t *rs;
-	ugpio_t *d7;
-	ugpio_t *d6;
-	ugpio_t *d5;
-	ugpio_t *d4;
-	ugpio_t *en2;
-	ugpio_t *bl;
-	ugpio_t *rw;
+	struct gpiod_chip *chip;
+	struct gpiod_line *en;
+	struct gpiod_line *rs;
+	struct gpiod_line *d7;
+	struct gpiod_line *d6;
+	struct gpiod_line *d5;
+	struct gpiod_line *d4;
+	struct gpiod_line *en2;
+	struct gpiod_line *bl;
+	struct gpiod_line *rw;
 } gpio_pins;
 
 /**
- * Initialize a ugpio_t context by reading the related configuration
+ * Initialize a struct gpiod_line context by reading the related configuration
  * option.
  *
  * \param drvthis   Pointer to driver structure.
- * \param pin       Pointer to ugpio_t *structure to be initialized.
+ * \param pin       Pointer to struct gpiod_line *structure to be initialized.
  * \param name      Name of the GPIO pin.
  * \return          0 on success; -1 on error.
  */
 static int
-init_gpio_pin(Driver *drvthis, ugpio_t **pin, const char *name)
+init_gpio_pin(Driver *drvthis, struct gpiod_line **pin, const char *name)
 {
+	PrivateData *p = (PrivateData *) drvthis->private_data;
+	gpio_pins *pins = (gpio_pins *) p->connection_data;
 	char config_key[8];
 	int number;
 
@@ -66,17 +69,16 @@ init_gpio_pin(Driver *drvthis, ugpio_t **pin, const char *name)
 	if (number == -1)
 		return -1;
 
-	*pin = ugpio_request_one(number, GPIOF_OUT_INIT_LOW, name);
+	*pin = gpiod_chip_get_line(pins->chip, number);
 	if (*pin == NULL) {
 		report(RPT_ERR, "init_gpio_pin: unable to request GPIO%d: %s",
 		       number, strerror(errno));
 		return -1;
 	}
 
-	if (ugpio_open(*pin) < 0) {
+	if (gpiod_line_request_output(*pin, "LCDd", 0) < 0) {
 		report(RPT_ERR, "init_gpio_pin: unable to open file descriptor for GPIO%d: %s",
 		       number, strerror(errno));
-		ugpio_free(*pin);
 		*pin = NULL;
 		return -1;
 	}
@@ -98,22 +100,22 @@ send_nibble(PrivateData *p, unsigned char ch, unsigned char displayID)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
-	ugpio_set_value(pins->d7, ch & 0x08);
-	ugpio_set_value(pins->d6, ch & 0x04);
-	ugpio_set_value(pins->d5, ch & 0x02);
-	ugpio_set_value(pins->d4, ch & 0x01);
+	gpiod_line_set_value(pins->d7, ch & 0x08);
+	gpiod_line_set_value(pins->d6, ch & 0x04);
+	gpiod_line_set_value(pins->d5, ch & 0x02);
+	gpiod_line_set_value(pins->d4, ch & 0x01);
 
 	/* Data is clocked on the falling edge of EN */
 	if (displayID == 1 || displayID == 0)
-		ugpio_set_value(pins->en, 1);
+		gpiod_line_set_value(pins->en, 1);
 	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-		ugpio_set_value(pins->en2, 1);
+		gpiod_line_set_value(pins->en2, 1);
         p->hd44780_functions->uPause(p, 50);
 
 	if (displayID == 1 || displayID == 0)
-		ugpio_set_value(pins->en, 0);
+		gpiod_line_set_value(pins->en, 0);
 	if (displayID == 2 || (p->numDisplays > 1 && displayID == 0))
-		ugpio_set_value(pins->en2, 0);
+		gpiod_line_set_value(pins->en2, 0);
 	p->hd44780_functions->uPause(p, 50);
 }
 
@@ -128,10 +130,31 @@ int
 hd_init_gpio(Driver *drvthis)
 {
 	PrivateData *p = (PrivateData *) drvthis->private_data;
-	gpio_pins *pins = malloc(sizeof(gpio_pins));
+	gpio_pins *pins;
+	const char *chip;
+
+	/* Be strict here instead of just using the first chip:
+	 * Better to force everybody to update instead of silently breaking
+	 * some configurations and have others stay with unsafe configurations.
+	 */
+	chip = drvthis->config_get_string(drvthis->name, "gpiochip", 0, NULL);
+	if (!chip) {
+		report(RPT_ERR, "%s: gpio chip not configured, but legacy GPIO numbering not supported", drvthis->name);
+		report(RPT_ERR, "Please add 'gpiochip' setting and update pin numbers accordingly.");
+		return -1;
+	}
+
+	pins = malloc(sizeof(gpio_pins));
 
 	if (pins == NULL) {
 		report(RPT_ERR, "hd_init_gpio: unable to allocate memory");
+		return -1;
+	}
+
+	pins->chip = gpiod_chip_open_lookup(chip);
+	if (!pins->chip) {
+		report(RPT_ERR, "%s: can't open gpio chip '%s'", drvthis->name, chip);
+		free(pins);
 		return -1;
 	}
 
@@ -173,7 +196,7 @@ hd_init_gpio(Driver *drvthis)
 	/* This is enough to set the RW pin to low, if it is available. */
 	init_gpio_pin(drvthis, &pins->rw, "RW");
 
-	ugpio_set_value(pins->rs, 0);
+	gpiod_line_set_value(pins->rs, 0);
 
 	send_nibble(p, (FUNCSET | IF_8BIT) >> 4, 0);
 	p->hd44780_functions->uPause(p, 4100);
@@ -202,7 +225,7 @@ gpio_HD44780_senddata(PrivateData *p, unsigned char displayID,
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
-	ugpio_set_value(pins->rs, (flags == RS_INSTR) ? 0 : 1);
+	gpiod_line_set_value(pins->rs, (flags == RS_INSTR) ? 0 : 1);
 
 	send_nibble(p, ch >> 4, displayID);
 	send_nibble(p, ch, displayID);
@@ -220,21 +243,9 @@ gpio_HD44780_backlight(PrivateData *p, unsigned char state)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
-	ugpio_set_value(pins->bl, (state == BACKLIGHT_ON) ? 1 : 0);
+	gpiod_line_set_value(pins->bl, (state == BACKLIGHT_ON) ? 1 : 0);
 }
 
-/**
- * Free resources used by pin
- *
- * \param pin     Pointer to gpio context.
- */
-void
-release_gpio_pin(ugpio_t **pin)
-{
-	ugpio_close(*pin);
-	ugpio_free(*pin);
-	*pin = NULL;
-}
 
 /**
  * Free resources used by this connection type.
@@ -246,21 +257,7 @@ gpio_HD44780_close(PrivateData *p)
 {
 	gpio_pins *pins = (gpio_pins *) p->connection_data;
 
-	release_gpio_pin(&pins->en);
-	release_gpio_pin(&pins->rs);
-	release_gpio_pin(&pins->d7);
-	release_gpio_pin(&pins->d6);
-	release_gpio_pin(&pins->d5);
-	release_gpio_pin(&pins->d4);
-
-	if (p->numDisplays > 1)
-		release_gpio_pin(&pins->en2);
-
-	if (have_backlight_pin(p))
-		release_gpio_pin(&pins->bl);
-
-	if (pins->rw)
-		release_gpio_pin(&pins->rw);
+	gpiod_chip_close(pins->chip);
 
 	free(pins);
 }
