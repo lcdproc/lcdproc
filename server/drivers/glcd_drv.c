@@ -411,7 +411,22 @@ glcd_string(Driver *drvthis, int x, int y, const char string[])
 	for (i = 0; (string[i] != '\0') && (x <= p->width); i++, x++) {
 #ifdef HAVE_FT2
 		if (p->use_ft2)
-			glcd_render_char_unicode(drvthis, x, y, string[i] & 0xFF, 1, 1);
+		{
+			/* Convert UTF-8 string to Unicode */
+		    wchar_t wc;
+		    int consumed;
+
+		    consumed = mbtowc(&wc, &string[i], strlen(&string[i]));
+		    if (consumed > 0)
+		    {
+		        glcd_render_char_unicode(drvthis, x, y, wc, 1, 1);
+		        i += consumed - 1;
+		    }
+		    else
+		    {
+		        report(RPT_DEBUG, "%s failed to convert character '%c'", __FUNCTION__, string[i]);
+		    }
+		}
 		else
 #endif
 			glcd_render_char(drvthis, x, y, string[i]);
